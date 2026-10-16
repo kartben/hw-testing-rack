@@ -93,6 +93,10 @@ def board() -> Board:
         # stay: without them every SMD GND pad needs its own via, and on 64 × 80 mm Freerouting then
         # leaves ~25 connections unrouted.  stitch_gnd() ties the outer pours to In1.
         "inner": [("In1.GND", "power"), ("In2.PWR", "mixed")],
+        # JLC's standard 4-layer build (In1 sits 0.21 mm under F.Cu, In2 0.21 mm over B.Cu), ENIG for
+        # the ESP32 module's LGA pads and the USB-C receptacles
+        "stackup": "JLC04161H-7628", "finish": "ENIG",
+        "edge_parts": ["J*", "U3"],
         "defer_pours": ["In2.Cu"],
         "stitch": 4.0,
         # GND pads the router tends to wall in (U9's middle pin, U5's corner pin between the SVC
@@ -102,9 +106,14 @@ def board() -> Board:
             {"layer": "In1.Cu", "net": "GND"},
             {"layer": "F.Cu", "net": "GND"},
             {"layer": "B.Cu", "net": "GND"},
-            {"layer": "In2.Cu", "net": "+5V"},
-            {"layer": "In2.Cu", "net": "+3V3", "priority": 1, "poly": [(18, 0.5), (46, 0.5), (46, 23), (18, 23)]},
-            {"layer": "In2.Cu", "net": "24V_BUS", "priority": 2, "defer": False, "poly": bus},
+            # In2: GND fills whatever the power pours leave (pieces of +5V cut off by In2 tracks are
+            # removed; the GND stitching vias then tie that copper down), so In2 stays as full as In1
+            {"layer": "In2.Cu", "net": "GND", "name": "fill"},
+            {"layer": "In2.Cu", "net": "+5V", "priority": 1},
+            # +3V3 under the module, and down to the LDO's tab (its heat spreader, see "ldo-tab")
+            {"layer": "In2.Cu", "net": "+3V3", "priority": 2,
+             "poly": [(18, 0.5), (52, 0.5), (52, 31), (45.4, 31), (45.4, 23), (18, 23)]},
+            {"layer": "In2.Cu", "net": "24V_BUS", "priority": 3, "defer": False, "poly": bus},
             # buck hot loop (TI SLUSF64B §8.4): top-side islands joining CIN, U1 and COUT
             {"layer": "F.Cu", "net": "GND", "connection": "solid", "name": "buck-gnd", "priority": 3,
              "poly": [(8.05, 34.5), (10.1, 34.5), (10.1, 36.2), (11.9, 36.2), (11.9, 40.3), (20.6, 40.3), (20.6, 44.4),
@@ -117,6 +126,10 @@ def board() -> Board:
             # top-side island, stitched to In1 around the centre pads
             {"layer": "F.Cu", "net": "GND", "name": "esp-gnd", "priority": 3,
              "poly": [(24.7, 5.6), (39.3, 5.6), (39.3, 16.4), (24.7, 16.4)]},
+            # AMS1117 tab: up to ~0.7 W at Wi-Fi peaks (1.7 V × 0.4 A); top-side copper on the tab,
+            # vias down to the +3V3 area on In2
+            {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 3,
+             "poly": [(45.7, 25.2), (52.0, 25.2), (52.0, 31.0), (48.6, 31.0), (48.6, 32.3), (45.7, 32.3)]},
         ],
         # GND vias from the hot-loop island down to the In1 plane, next to the capacitors' GND ends
         "vias": [("GND", 11.0, 36.9), ("GND", 11.0, 39.4), ("GND", 11.2, 43.4), ("GND", 13.0, 43.6),
@@ -124,7 +137,9 @@ def board() -> Board:
                  *[("GND", x, 8.6) for x in (28, 30, 32, 34, 36)],
                  *[("GND", x, y) for x in (28.6, 35.4) for y in (12.2, 14.2)],
                  ("GND", 30.35, 16.0), ("GND", 33.65, 16.0),
-                 ("24V_BUS", 14.0, 58.1), ("24V_BUS", 16.0, 58.1)],
+                 ("24V_BUS", 14.0, 58.1), ("24V_BUS", 16.0, 58.1),
+                 *[("+3V3", x, y) for x, y in ((46.6, 26.2), (47.9, 26.2), (49.2, 26.2), (50.6, 26.2),
+                                               (49.2, 27.8), (50.6, 27.8), (49.2, 29.4), (50.6, 29.4))]],
         # ESP32 antenna: no copper on any layer under/around the antenna (module top 5 mm + edge)
         "keepouts": [
             {"name": "antenna", "poly": [(9.3, -0.1), (54.7, -0.1), (54.7, 5.4), (9.3, 5.4)]},
@@ -134,12 +149,12 @@ def board() -> Board:
         ],
         "texts": [
             {"text": "hw-testing-rack · bay node v0.2", "x": 29, "y": 26.6, "size": 0.8},
-            {"text": "PC", "x": 32, "y": 71.2, "size": 0.9},
+            {"text": "PC", "x": 37.0, "y": 70.2, "size": 0.9},
             {"text": "SVC", "x": 50, "y": 73.6, "size": 0.8},
             {"text": "24V IN", "x": 5.5, "y": PWR_Y - 5.0, "size": 0.8},
             {"text": "24V OUT", "x": 58.0, "y": PWR_Y - 5.0, "size": 0.8},
             {"text": "DUT", "x": 57.5, "y": 17, "size": 0.8},
-            {"text": "AUX", "x": 57.5, "y": 34.2, "size": 0.8},
+            {"text": "AUX", "x": 61.2, "y": 34.1, "size": 0.8},
             {"text": "CAM", "x": 55.5, "y": 11, "size": 0.8},
         ],
     }

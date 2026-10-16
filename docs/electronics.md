@@ -29,8 +29,11 @@ junctions and refuses any wire that would touch another net's pin or wire, and
 KiCad's ERC plus the PCB's schematic-parity check catch the rest.
 
 **Stackup** (bay node, 4 layers, symmetric): F.Cu signals + GND pour · In1 solid
-GND · In2 power (+5V pour, +3V3 under the ESP32, the 24 V bus strip) · B.Cu
-signals + GND pour.  The router may still use In2 for signals; its pours are
+GND · In2 power (+5V pour, +3V3 under the ESP32 and down to the LDO, the 24 V bus
+strip; GND fills what they leave) · B.Cu signals + GND pour.  The board declares JLCPCB's standard
+JLC04161H-7628 build (0.21 mm prepreg between F.Cu and In1, 1.065 mm core, 0.5 oz
+inner copper) and ENIG; the hub declares 2 layers, 1.6 mm, lead-free HASL
+(`stackup` / `finish` in `design.py`, written into the board by `pcbgen.py`).  The router may still use In2 for signals; its pours are
 added after routing, around them.  A version without the outer pours left
 about 25 connections unrouted on 64 × 80 mm (every SMD GND pad then needs its
 own via), so they stay.  **Every pour connects pads through thermal reliefs**
@@ -39,7 +42,11 @@ of its part, so small parts don't tombstone in reflow and hand-soldered pins
 take solder.  `<board>.kicad_dru` accepts a single spoke where fine-pitch
 neighbours leave no room for two.  The LMR51635's hot loop (CIN – VIN – GND) and
 its output capacitors sit on small solid top-side islands, with hand-placed
-vias to In1, as TI's layout guide asks.
+vias to In1, as TI's layout guide asks; the AMS1117's tab gets a solid +3V3
+island with vias to In2.  Hand-soldered through-hole pads always get thermal
+reliefs, even on solid pours.  Connectors that overhang the outline on purpose
+are listed as `edge_parts`: their silkscreen may cross the board edge (the fab
+clips it), every other silkscreen check still applies.
 
 How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 
@@ -100,6 +107,18 @@ each with ON (green) and FAULT (red) LEDs.  1.6 A keeps the PH contacts (2 A)
 safe; a row realistically draws ≈ 0.5 A (see [power.md](power.md)).
 SHDN/FLT/IMON of every channel go to an unpopulated 2 × 8 header for a future
 supervisor.
+
+The 24 V path is copper pours, not tracks (up to 8 A if all five eFuses sit at
+their limit): `VIN_RAW` from J1 to Q1's drain tab (also Q1's heat spreader), a
+top-side `+24V` pour over Q1's source, D2 and C1/C2, a bottom-side `+24V` strip
+under the eFuse row and, per eFuse, a top island on its IN pins with two vias
+into the strip.  Those pours exist while routing and are `exclusive`: a
+tracks-only keep-out over their core keeps other nets out (Freerouting would
+otherwise run tracks through them).  Each eFuse's exposed pad has six tented GND vias to the bottom
+GND pour, and its 1 µF input/output caps sit beside its IN/OUT pins.
+
+A review of both boards with the Konnect MCP server (findings, fixes, what is
+still open) is in [review-konnect.md](review-konnect.md).
 
 ## Sourcing
 

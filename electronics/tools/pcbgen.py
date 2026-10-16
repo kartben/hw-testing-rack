@@ -18,6 +18,7 @@ from pathlib import Path
 
 import pcbnew
 
+from catalog import HAND_SOLDER_LCSC
 from eda import Board, Part, REPO
 
 FP_DIR = Path(os.environ.get("KICAD_FOOTPRINT_DIR", "/usr/share/kicad/footprints"))
@@ -35,9 +36,80 @@ DRU = """(version 1)
 	(constraint min_resolved_spokes 1))
 """
 
+# b.pcb["edge_parts"]: footprints that sit on the outline on purpose (side-entry connector mouths,
+# USB-C receptacles, the ESP32 antenna edge).  Their own silkscreen outline crosses the board edge;
+# the fab clips it, so only that pairing is let through (every other silkscreen check still runs).
+DRU_EDGE = """
+(rule "parts overhanging the outline"
+	(layer "F.SilkS")
+	(condition "({cond}) && B.Layer == 'Edge.Cuts'")
+	(constraint silk_clearance (min -10mm)))
+"""
+
+# b.pcb["stackup"]: what the fab builds, written into the board so KiCad's Board Setup, impedance
+# calculator and 3D view use it (pcbnew's Python API has no stackup bindings: the block is added to
+# the saved file, and KiCad keeps it on every later load/save).  (layer, thickness mm[, material, εr])
+STACKUPS = {
+    # JLCPCB JLC04161H-7628, their standard 4-layer 1.6 mm: 1 oz outer, 0.5 oz inner copper
+    "JLC04161H-7628": [("F.Cu", 0.035), ("prepreg", 0.2104, "7628", 4.4), ("In1.Cu", 0.0152),
+                       ("core", 1.065, "FR4", 4.6), ("In2.Cu", 0.0152), ("prepreg", 0.2104, "7628", 4.4),
+                       ("B.Cu", 0.035)],
+    # standard 2-layer 1.6 mm FR4, 1 oz copper
+    "2L-1.6": [("F.Cu", 0.035), ("core", 1.51, "FR4", 4.5), ("B.Cu", 0.035)],
+}
+
+
+def stackup_sexpr(name: str, finish: str) -> str:
+    rows = [("F.SilkS", "Top Silk Screen", None), ("F.Paste", "Top Solder Paste", None),
+            ("F.Mask", "Top Solder Mask", 0.01)]
+    out = ["\t\t(stackup"]
+
+    def layer(lname, ltype, thick=None, extra=""):
+        out.append(f'\t\t\t(layer "{lname}"\n\t\t\t\t(type "{ltype}")'
+                   + (f"\n\t\t\t\t(thickness {thick})" if thick is not None else "") + extra + "\n\t\t\t)")
+
+    for lname, ltype, thick in rows:
+        layer(lname, ltype, thick)
+    n = 0
+    for item in STACKUPS[name]:
+        if item[0].endswith(".Cu"):
+            layer(item[0], "copper", item[1])
+        else:
+            n += 1
+            kind, thick, material, er = item
+            layer(f"dielectric {n}", kind, thick,
+                  f'\n\t\t\t\t(material "{material}")\n\t\t\t\t(epsilon_r {er})\n\t\t\t\t(loss_tangent 0.02)')
+    for lname, ltype, thick in (("B.Mask", "Bottom Solder Mask", 0.01), ("B.Paste", "Bottom Solder Paste", None),
+                                ("B.SilkS", "Bottom Silk Screen", None)):
+        layer(lname, ltype, thick)
+    out.append(f'\t\t\t(copper_finish "{finish}")\n\t\t\t(dielectric_constraints no)\n\t\t)')
+    return "\n".join(out) + "\n"
+
+
+def write_stackup(path: Path, cfg: dict):
+    if "stackup" not in cfg:
+        return
+    text = path.read_text(encoding="utf-8")
+    if "(stackup" in text:
+        return
+    i = text.index("\t(setup\n") + len("\t(setup\n")
+    path.write_text(text[:i] + stackup_sexpr(cfg["stackup"], cfg.get("finish", "None")) + text[i:], encoding="utf-8")
+
 
 def V(x, y):
     return pcbnew.VECTOR2I(MM(x), MM(y))
+
+
+def inset_poly(poly, d: float) -> list[list[tuple[float, float]]]:
+    """Polygon (mm) shrunk by d mm; a narrow neck may split it, hence a list of outlines."""
+    ps = pcbnew.SHAPE_POLY_SET()
+    ps.NewOutline()
+    for x, y in poly:
+        ps.Append(MM(x), MM(y))
+    ps.Inflate(-MM(d), pcbnew.CORNER_STRATEGY_ALLOW_ACUTE_CORNERS, MM(0.01))
+    mm = pcbnew.ToMM
+    return [[(mm(ps.Outline(i).CPoint(k).x), mm(ps.Outline(i).CPoint(k).y)) for k in range(ps.Outline(i).PointCount())]
+            for i in range(ps.OutlineCount())]
 
 
 def load_fp(fpid: str) -> pcbnew.FOOTPRINT:
@@ -84,7 +156,10 @@ class PcbBuilder:
         ds.m_CopperEdgeClearance = MM(0.3)
         ds.SetBoardThickness(MM(1.6))
         # custom DRC rules, next to the project (KiCad and kicad-cli read <board>.kicad_dru)
-        (self.outdir / f"{self.b.name}.kicad_dru").write_text(DRU, encoding="utf-8")
+        dru = DRU
+        if self.b.pcb.get("edge_parts"):
+            dru += DRU_EDGE.format(cond=" || ".join(f"A.memberOfFootprint('{r}')" for r in self.b.pcb["edge_parts"]))
+        (self.outdir / f"{self.b.name}.kicad_dru").write_text(dru, encoding="utf-8")
         tb = bd.GetTitleBlock()
         tb.SetTitle(self.b.title)
         tb.SetRevision(self.b.rev)
@@ -136,8 +211,12 @@ class PcbBuilder:
                 print(f"note: {p.ref} has no placement hint, dropped at board centre")
             nets = p.pin_nets()
             pins = {pin.number: pin for pin in p.sym.pins}
+            hand = p.fields.get("LCSC") in HAND_SOLDER_LCSC
             for pad in fp.Pads():
                 num = pad.GetNumber()
+                if hand:
+                    # soldered by hand: thermal reliefs even on the solid power pours
+                    pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_THERMAL)
                 if num in nets:
                     pad.SetNet(self.net(self.b.pcb_net_name(nets[num])))
                 elif num in pins:
@@ -258,6 +337,13 @@ class PcbBuilder:
                      "In1.Cu": getattr(pcbnew, "In1_Cu", None), "In2.Cu": getattr(pcbnew, "In2_Cu", None)}[spec["layer"]]
             self.zone(layer, spec["net"], spec.get("poly", full), priority=spec.get("priority", 0),
                       name=spec.get("name", ""), connection=spec.get("connection", "thermal"))
+            if spec.get("exclusive") and which != "deferred":
+                # Freerouting doesn't treat a copper area on a signal layer as an obstacle: other nets'
+                # tracks would cross the pour and cut it in pieces.  Keep tracks out of its core; the
+                # margin (spec["exclusive"], mm) still lets the router reach the pour with its own net.
+                for i, core in enumerate(inset_poly(spec["poly"], spec["exclusive"])):
+                    self.zone(pcbnew.F_Cu, None, core, keepout=True, name=f"core:{spec.get('name', spec['net'])}:{i}",
+                              layers=[layer], tracks_only=True)
         if which != "deferred":
             for ko in self.b.pcb.get("keepouts", []):
                 layers = [getattr(pcbnew, n.replace(".", "_")) for n in ko["layers"]] if "layers" in ko else None
@@ -330,6 +416,7 @@ class PcbBuilder:
             self.autoroute(self.b.pcb.get("passes", 40))
         # zones are filled by `kicad-cli pcb drc --refill-zones --save-board` (KiCad's own filler)
         pcbnew.SaveBoard(str(self.path), self.board)
+        write_stackup(self.path, self.b.pcb)
         return self.path
 
 
@@ -614,7 +701,8 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
         filler.Fill(board.Zones())
         out = {l: [] for l in copper}
         for z in board.Zones():
-            if z.GetIsRuleArea() or z.GetNetCode() != gnd_code:
+            # "fill" zones (GND behind a power layer's pours) don't make it a GND layer
+            if z.GetIsRuleArea() or z.GetNetCode() != gnd_code or z.GetZoneName().startswith("fill"):
                 continue
             for l in copper:
                 if z.IsOnLayer(l):

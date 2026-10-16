@@ -314,10 +314,6 @@
       },
       {
         "netclass": "Power",
-        "pattern": "+24V"
-      },
-      {
-        "netclass": "Power",
         "pattern": "*ROW_*"
       }
     ]

@@ -63,9 +63,42 @@ def board() -> Board:
         "Outputs: rows A, B, C, D (one feed per row, daisy-chained bay to bay) and AUX.",
         "RTN is tied to GND: reverse polarity is handled by Q1, so the eFuses' own reverse blocking is not needed.",
     ]
+    xs = [40 + i * 16 for i in range(len(CHANNELS))]         # eFuse centres (y = 30, IN pins at the bottom)
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 3.0, "passes": 40,
-        "zones": [{"layer": "B.Cu", "net": "GND"}],
+        "stackup": "2L-1.6", "finish": "HAL lead-free",
+        # The input carries the whole rack (≤ 7.3 A, 8 A if all five eFuses sit at their limit): the
+        # 24 V path is copper pours, not 1.5 mm tracks.  VIN_RAW: J1 → Q1's drain tab (also Q1's heat
+        # spreader, ~1 W at 7 A).  +24V: Q1's source, D2, C1/C2 and a top-side branch, vias down to a
+        # bottom-side strip under the eFuse row, and per eFuse a top island on its IN pins with two
+        # vias into that strip.  The rest of B.Cu stays the GND pour (added after routing).  The pours
+        # are there while routing, and "exclusive" keeps other nets' tracks out of them.
+        "zones": [
+            {"layer": "B.Cu", "net": "GND"},
+            {"layer": "F.Cu", "net": "VIN_RAW", "name": "vin-raw", "priority": 2, "defer": False, "connection": "solid",
+             "exclusive": 0.6,
+             "poly": [(3.6, 32.6), (9.5, 32.6), (9.5, 42.3), (22.3, 42.3), (22.3, 56.0), (7.3, 56.0), (7.3, 37.0),
+                      (3.6, 37.0)]},
+            {"layer": "F.Cu", "net": "+24V", "name": "24v-trunk", "priority": 2, "defer": False, "connection": "solid",
+             "exclusive": 0.6,
+             "poly": [(8.0, 9.6), (13.4, 9.6), (13.4, 14.4), (20.9, 14.4), (20.9, 9.6), (26.4, 9.6), (26.4, 17.4),
+                      (17.6, 17.4), (17.6, 31.0), (33.6, 31.0), (33.6, 37.6), (17.6, 37.6), (17.6, 41.8), (9.8, 41.8),
+                      (9.8, 14.4), (8.0, 14.4)]},
+            {"layer": "B.Cu", "net": "+24V", "name": "24v-strip", "priority": 1, "defer": False, "connection": "solid",
+             "exclusive": 0.6,
+             "poly": [(30.4, 33.8), (106.6, 33.8), (106.6, 38.2), (30.4, 38.2)]},
+            *[{"layer": "F.Cu", "net": "+24V", "name": f"24v-in-{ch}", "priority": 2, "defer": False, "exclusive": 0.5,
+               "poly": [(x - 4.25, 32.15), (x - 1.42, 32.15), (x - 1.42, 35.5), (x - 4.25, 35.5)]}
+              for x, ch in zip(xs, CHANNELS)],
+        ],
+        "vias": [
+            # trunk branch → bottom strip
+            *[("+24V", x, y, 0.8, 0.4) for x in (31.0, 32.1, 33.0) for y in (34.6, 36.8)],
+            # each eFuse: IN island → strip, and six GND vias in the exposed pad's copper, outside its
+            # 2.46 × 2.66 mm solder-mask opening (tented: no solder wicks down) to the B.Cu GND pour
+            *[v for x in xs for v in (("+24V", x - 3.55, 34.85, 0.8, 0.4), ("+24V", x - 2.3, 34.85, 0.8, 0.4),
+                                      *[("GND", x + dx, y) for dx in (-1.85, 1.85) for y in (29.1, 30.0, 30.9)])],
+        ],
         "keepouts": [],
         "texts": [
             {"text": "hw-testing-rack · power hub v0.2", "x": 60, "y": 66.5, "size": 1.2},
@@ -124,10 +157,11 @@ def board() -> Board:
                                    "IMON": f"IMON_{ch}", "~{FLT}": f"FLT_{ch}", "OUT": f"ROW_{ch}"},
              pcb=P(x, 30, 90), sch=at(*g(24, 16), fields=(-4, -9.5)))
         u = f"U{n}"
-        # input: +24V, decoupling, SHDN pull-up (the supervisor header may pull it low)
+        # input: +24V, decoupling (right next to the IN pins, on their +24V island), SHDN pull-up (the
+        # supervisor header may pull it low)
         o.tag("+24V", g(6, 8), "up")
         o.wire(g(6, 8), g(17, 8), g(17, 11), f"{u}.IN")
-        C(o, f"C{10 + n}", "1u", "+24V", "GND", size="0805", pcb=P(x - 5, 24, 90), sch=at(*g(10, 9.5)))
+        C(o, f"C{10 + n}", "1u", "+24V", "GND", size="0805", pcb=P(x - 4.6, 33.3, 180), sch=at(*g(10, 9.5)))
         o.wire(g(10, 8), f"C{10 + n}.1")
         R(o, f"R{10 + n}", "470k", "+24V", f"SHDN_{ch}", pcb=P(x - 5, 36, 90), sch=at(*g(14, 11.5)))
         o.wire(g(14, 8), f"R{10 + n}.1")
@@ -139,7 +173,7 @@ def board() -> Board:
         o.wire(f"{u}.OUT", g(31, 11), g(31, 8), f"J{1 + n}.1")
         o.wire(f"J{1 + n}.2", g(45, 9), g(45, 11))
         o.tag("GND", g(45, 11), "down")
-        C(o, f"C{30 + n}", "1u", f"ROW_{ch}", "GND", size="0805", pcb=P(x + 5, 24, 90), sch=at(*g(35, 9.5)))
+        C(o, f"C{30 + n}", "1u", f"ROW_{ch}", "GND", size="0805", pcb=P(x - 4.6, 26.6, 180), sch=at(*g(35, 9.5)))
         o.wire(g(35, 8), f"C{30 + n}.1")
         R(o, f"R{40 + n}", "10k", f"ROW_{ch}", f"ON_{ch}", size="0805", pcb=P(x - 3, 52, 90), sch=at(*g(40, 9.5)))
         o.wire(g(40, 8), f"R{40 + n}.1")
@@ -192,5 +226,6 @@ NETCLASSES = [
     {"name": "Power", "clearance": 0.2, "track_width": 1.5, "via_diameter": 1.0, "via_drill": 0.5,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
-     "_patterns": ["*VIN_RAW", "+24V", "*ROW_*"]},
+     # +24V carries its current in pours (see b.pcb["zones"]); its tracks only feed pull-ups and LEDs
+     "_patterns": ["*VIN_RAW", "*ROW_*"]},
 ]
