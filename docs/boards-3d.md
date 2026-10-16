@@ -15,7 +15,8 @@ python tools/assembly_glb.py --hq --with-pc-cable --open-bays B3 --out render/as
 `board_models.py` finds the PCB (the two biggest planes of the dominant flat axis), turns the
 component side up and lays the outline on the drawing's bottom-left corner.  It turns the model
 90° if its aspect says so, and checks the size against `boards.yaml`.  `assembly_glb.py` then
-turns it like every board (debug USB towards the drawer's rear port).  If a model comes out
+turns it like every board (debug USB towards the drawer's port wall, or its right wall for
+`orient: side` boards).  If a model comes out
 wrong, add a fix-up to the board in `boards.yaml`:
 
 ```yaml

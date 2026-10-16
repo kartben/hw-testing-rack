@@ -211,11 +211,12 @@ function makeBoard(b) {
   if (w > 24 && l > 40) {
     for (const x of [1.2, w - 3.7]) g.add(box(2.5, l * 0.62, 8.5, MAT.blackPlastic, x, l * 0.18, 1.6));
   }
-  // debug USB on the rear edge (+Y), second connector if any
+  // debug USB on the rear edge (+Y) — or the right edge (+X) for boards turned sideways
   for (const [ux, type] of [[b.usb_x, b.usb_type], [b.usb2_x, 'usb-c']]) {
     if (ux == null) continue;
     const d = USB_DIM[type] || USB_DIM['usb-c'];
-    g.add(box(d[0], d[1], d[2], MAT.silver, ux - d[0] / 2, l - d[1] + 0.8, 1.6));
+    if (b.usb_side) g.add(box(d[1], d[0], d[2], MAT.silver, w - d[1] + 0.8, ux - d[0] / 2, 1.6));
+    else g.add(box(d[0], d[1], d[2], MAT.silver, ux - d[0] / 2, l - d[1] + 0.8, 1.6));
   }
   // silkscreen-style label
   const tex = textTexture(b.label || b.id, { bg: 'rgba(0,0,0,0)', fg: '#ffffff', w: 512, h: 96, font: 'bold 54px Inter, Arial' });
@@ -712,6 +713,7 @@ function select(id, showPanel = true) {
       <dt>Board</dt><dd>${b.board ?? '<em>empty — universal plate</em>'}</dd>
       <dt>Debug USB</dt><dd>${b.usb ?? '—'}</dd>
       <dt>Cable</dt><dd>${b.cable ?? '—'}</dd>
+      <dt>DATA socket</dt><dd>${b.data_port ? b.data_port.join(' + ') + ' position' : '—'}</dd>
       <dt>USB/IP</dt><dd>ESP32-S3 node · <code>usbip attach -r bay-${b.id.toLowerCase()}.local -b 1-1</code></dd>
     </dl>
     <div class="actions">

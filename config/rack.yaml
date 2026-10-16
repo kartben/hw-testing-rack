@@ -49,6 +49,9 @@ drawer:
   front_height: 30       # front panel height above the deck
   front_thickness: 4
   rear_bay: 30           # enclosed strip at the back: panel-mount USB-C ports + cable entry
+  data_ports: [0.20, 0.80]   # two DATA socket positions on the port wall (× drawer width): the
+                             # panel-mount socket goes in the one farther from the board's USB
+  aux_port: 0.50             # slot for the optional AUX (JST-SH) pigtail
   flange: [3.0, 3.0]     # runner flange (width, height) captured by the guides
   magnet: [6, 3]         # closed-position detent magnet Ø × t (one in drawer, one in deck)
   plate: 2.5             # board plate thickness

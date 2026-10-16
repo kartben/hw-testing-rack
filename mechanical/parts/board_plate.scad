@@ -6,8 +6,9 @@
 //
 // Plates drop into any drawer (two 180°-symmetric locating pins), so a board
 // can move between bays without touching a screw.  The board is placed with
-// its debug USB facing the drawer's rear DATA port; the short cable loops
-// under the two cable hooks.
+// its debug USB facing the drawer's rear port wall; boards too long for a plug
+// behind them (usb_side) turn it to the right wall instead and sit to the left.
+// The short cable loops under the two cable hooks.
 //   MODE = "insert": heat-set inserts (M3, or M2/M2.5 for small boards)
 //   MODE = "snap"  : split snap pins, push the board on, pinch to release
 // Hole-less or not-yet-measured boards (fence = true) get corner fences.
@@ -21,7 +22,10 @@ REAR_GAP_MAX = 26;                    // room for the USB plug + cable bend behi
 
 function board_rec(id) = BOARD_DB[search([id], BOARD_DB, 1, 0)[0]];
 function rear_gap(l) = max(3, min(REAR_GAP_MAX, PLATE_D - l - 4));
-function board_origin(rec) = [(PLATE_W - rec[2][0]) / 2, PLATE_D - rear_gap(rec[2][1]) - rec[2][1]];
+function usb_side(rec) = len(rec) > 12 && rec[12];
+function board_origin(rec) = usb_side(rec)
+    ? [6, (PLATE_D - rec[2][1]) / 2]
+    : [(PLATE_W - rec[2][0]) / 2, PLATE_D - rear_gap(rec[2][1]) - rec[2][1]];
 
 module plate_body() {
     difference() {
@@ -70,8 +74,17 @@ module fences(rec, o) {
 
 module cable_hooks(rec, o) {
     // two open hooks either side of the USB plug path
-    ux = o[0] + rec[5];
-    for (dx = [-22, 22]) translate([ux + dx, PLATE_D - 8, PLATE_T]) difference() {
+    if (usb_side(rec)) {
+        uy = o[1] + rec[5];
+        for (dy = [-22, 22]) translate([PLATE_W - 8, uy + dy, PLATE_T]) rotate([0, 0, 90]) hook();
+    } else {
+        ux = o[0] + rec[5];
+        for (dx = [-22, 22]) translate([ux + dx, PLATE_D - 8, PLATE_T]) hook();
+    }
+}
+
+module hook() {
+    difference() {
         translate([-5, -3, 0]) cube([10, 6, 9]);
         translate([-5 - EPS, 0, 5]) rotate([0, 90, 0]) cylinder(d = 4.6, h = 10 + 2 * EPS);
         translate([-5 - EPS, -0.8, 5]) cube([10 + 2 * EPS, 1.6, 5]);

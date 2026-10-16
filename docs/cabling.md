@@ -19,16 +19,22 @@ bay node (plenum)                              drawer
    panel-mount USB-C female (M3 ears) plugs into the node's DUT receptacle,
    runs ~6 cm in the plenum to the chain's fixed end, through the drag chain,
    up through the deck slot beside the drawer foot, and is screwed into the
-   drawer's rear port wall.  It never needs to be touched again.
+   drawer's rear port wall — in the left or the right DATA position, whichever
+   is farther from the board's USB, so the two plugs never meet.  It never
+   needs to be touched again (unless a board with its USB on the other side
+   moves in: two M3 screws).
 2. **The drag chain lies flat in the plenum** and bends in the horizontal
    plane (7 × 7 mm, R18, ≈ 160 mm).  Its fixed end is screwed to the carrier
    base, its moving end to the drawer foot.  Open the drawer 140 mm and the
    U-bend rolls forward 70 mm: the cable never drags, kinks or snags.
 3. **Drawer → board: a short cable that belongs to the board.**  10–15 cm,
    USB-C on the drawer side, whatever the board needs on the other: C,
-   micro-B or mini-B (right-angle versions keep it tidy).  The board's plate
-   orients its debug USB towards the DATA port and has two hooks for the
-   spare length.  Swapping boards = swapping plate + cable; the bay doesn't care.
+   micro-B or mini-B, right-angle at both ends: with the socket on the
+   opposite side, the cable makes a small arch over the board's rear edge.
+   The board's plate turns its debug USB towards the port wall (or, for a
+   board too long for a plug behind it like the F746G-DISCO, towards the
+   right wall: give that one a 20 cm cable) and has two hooks for the spare
+   length.  Swapping boards = swapping plate + cable; the bay doesn't care.
 
 **USB-C or micro-B in every bay?**  Yes — the bay's port is always USB-C and
 the short cable adapts.  Recommended kit: a few C↔C (Adafruit right-angle

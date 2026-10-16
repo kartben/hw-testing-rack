@@ -33,7 +33,7 @@ Core One, Bambu …).
 | Carrier base | `carrier_base.scad` | plenum box on the beams; node standoffs, chain anchor, deck pillars, fascia cut-outs, camera inserts underneath, VH notches in both side walls |
 | Deck | `carrier_deck.scad` | removable floor; guide screws, chain-foot slot, detent magnet, vents over the buck, window over RESET/BOOT |
 | Drawer guides L/R | `drawer_guide.scad` | C-channels; capture the drawer's rear flange (anti-tip at full stroke); an M2.5 screw through the lip is the end stop |
-| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; rear bay with the DATA panel port (+ AUX slot), cable window and the foot groove |
+| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; rear bay with two DATA panel-socket positions (left/right, the socket goes in the one farther from the board's USB) and the AUX slot, cable window and the foot groove |
 | Chain foot / anchor | `chain_parts.scad` | the foot slides into the drawer's rear-open groove and is locked by one M2.5 from inside the rear bay; a printable 7×7 link is included if you'd rather not buy chain |
 | Board plates | `board_plate.scad` | one per form factor, generated from [`mechanical/boards/boards.yaml`](../mechanical/boards/boards.yaml) |
 | Bridge bars | `bridge_bar.scad` | lock two neighbouring drawers into one double-width drawer |
@@ -51,7 +51,9 @@ Want smoother?  Print the guides in a POM-like "igus" filament.
 `boards.yaml` holds each board's outline, holes (in the vendor drawing's
 coordinates), debug-USB edge and standoff height (Nucleo morpho pins stick
 out ~10 mm underneath!).  The generator rotates the board so its debug USB
-faces the drawer's DATA port.  Mounting styles:
+faces the drawer's port wall; a board too long for a plug behind it
+(`orient: side`, e.g. the F746G-DISCO) turns its USB towards the right wall
+and sits to the left of its plate.  Mounting styles:
 
 * `MODE="insert"` heat-set inserts (M3, M2.5 or M2 picked from the hole size);
 * `MODE="snap"` split snap pins — push the board on, pinch to release;

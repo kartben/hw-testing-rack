@@ -267,7 +267,7 @@ def build(rack) -> Path:
                 add("roof_deck", (rack.unit_x(u), 0, P), row=i, layer="roof")
 
     port_wall_y = d["depth"] - d["rear_bay"]
-    port_x = rack.drawer_w * 0.38
+    data_ports = rack.data_port_x          # two DATA socket positions per drawer
     port_z = d["bottom"] + 7
     plate_x0 = d["wall"] + 0.3
     plate_y0 = d["front_thickness"] + 0.3
@@ -335,9 +335,13 @@ def build(rack) -> Path:
             if b.span == 1:
                 add(f"plate_{info['board']}", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i,
                     layer="plates", bay=b.id, movable=True)
-                rear_gap = max(3, min(26, plate_d - o["l"] - 4))
-                bx = dxw + plate_x0 + (plate_w - o["w"]) / 2
-                by = dy + plate_y0 + plate_d - rear_gap - o["l"]
+                if o["usb_side"]:            # same placement as board_plate.scad
+                    bx = dxw + plate_x0 + 6
+                    by = dy + plate_y0 + (plate_d - o["l"]) / 2
+                else:
+                    rear_gap = max(3, min(26, plate_d - o["l"] - 4))
+                    bx = dxw + plate_x0 + (plate_w - o["w"]) / 2
+                    by = dy + plate_y0 + plate_d - rear_gap - o["l"]
                 bz = dz + d["bottom"] + d["plate"] + bd.get("standoff", 6)
             else:
                 # double bay: two bridge bars across both drawers, EVK on 12 mm standoffs
@@ -355,19 +359,32 @@ def build(rack) -> Path:
                                     "size": [o["w"], o["l"], 1.6], "height": bd.get("height", 10),
                                     "color": bd.get("color", "#1b5e20"), "usb_x": o["usb_x"],
                                     "usb_type": bd["usb"]["type"], "usb2_x": o.get("usb2_x"),
+                                    "usb_side": o["usb_side"],
                                     "verified": bd.get("verified", False), "movable": True})
             # DUT cable(s): drawer DATA port(s) → board USB connector(s)
-            targets = [(dxw + port_x, o["usb_x"], info["cable"])]
+            # the DATA socket goes in the port farther from the board's USB (the right one for a
+            # USB turned to the right wall), so the two plugs never meet
+            def socket_x(drawer_x, usb_abs_x):
+                if o["usb_side"]:
+                    return drawer_x + max(data_ports)
+                return max((drawer_x + px for px in data_ports), key=lambda x: abs(x - usb_abs_x))
+
+            targets = [(socket_x(dxw, bx + o["usb_x"]), o["usb_x"], info["cable"])]
             if b.span == 2 and o.get("usb2_x") is not None:
-                targets.append((dxw + rack.pitch + port_x, o["usb2_x"], "c-to-c"))
+                targets.append((socket_x(dxw + rack.pitch, bx + o["usb2_x"]), o["usb2_x"], "c-to-c"))
+            meta["data_port"] = ["left" if sx - dxw - k * rack.pitch < rack.drawer_w / 2 else "right"
+                                 for k, (sx, _, _) in enumerate(targets)]
             for sx, ux, ctype in targets:
                 # short right-angle cable: USB-C into the panel-mount socket on the drawer's rear wall,
                 # the board's own connector (micro-B, USB-C…) at the other end, an arch in between
                 btype = cables_cfg[ctype].get("b", "usb-c")
                 end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 1.5, dz + port_z], "dir": [0, 1, 0],
                          "type": "usb-c", "style": "right", "socket": "panel"}
-                end_b = {"at": [bx + ux, by + o["l"] + 0.6, bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)],
-                         "dir": [0, -1, 0], "type": btype, "style": "right"}
+                zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
+                if o["usb_side"]:
+                    end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": "right"}
+                else:
+                    end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": "right"}
                 cable(usb_cable(end_a, end_b, 26), row=i, kind="dut", bay=b.id, type=ctype,
                       label=cables_cfg[ctype]["label"], a="usb-c", b=btype, ends=[end_a, end_b], radius=1.9,
                       movable=True)

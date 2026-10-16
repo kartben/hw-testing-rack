@@ -3,9 +3,10 @@
 //
 // - Front panel with a finger pull and a recess for 12 mm label tape.
 // - Board-plate pocket: plates drop in (two 180°-symmetric locating pins).
-// - Rear bay behind the port wall: two panel-mount USB-C females (DATA, PWR)
-//   face the board; their cables come up from the drag chain through the
-//   cable window.  The chain foot slides into the rear-open groove under the
+// - Rear bay behind the port wall: the panel-mount USB-C DATA socket faces the
+//   board from one of two positions (left or right: whichever is farther from
+//   the board's USB, so the two plugs never meet), next to the AUX pigtail
+//   slot; the cables come up from the drag chain through the cable window.  The chain foot slides into the rear-open groove under the
 //   bottom and is locked by one M2.5 screw from inside the rear bay.
 // - Rear flange segments run under the guide lips (anti-tip); a magnet under
 //   the rear bay gives a soft closed detent.

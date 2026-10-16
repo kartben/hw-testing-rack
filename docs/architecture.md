@@ -49,8 +49,8 @@ constants, the web scene, the BOM and the PCB outlines/connector positions.
 * **Deck** (printed, removable): the bay floor; carries the drawer guides,
   the chain slot and the closed-position magnet.
 * **Drawer** (printed): front panel with label recess and finger pull, plate
-  pocket, rear bay with a panel-mount USB-C female (DATA) and the cable
-  window; a foot under the rear reaches through the deck slot to the chain.
+  pocket, rear bay with a panel-mount USB-C female (DATA, in the left or right
+  position: whichever is farther from the board's USB) and the cable window; a foot under the rear reaches through the deck slot to the chain.
 * **Plate** (printed, per board form factor): heat-set-insert or snap-pin
   standoffs at the board's holes, or corner fences for hole-less boards.
 

@@ -33,8 +33,9 @@ STOP_Y = FLANGE_Y[0] - DRAWER_TRAVEL - 4.5;        // stop pin position (carrier
 DETENT_DRAWER = [22, DRAWER_D - 14];               // magnet in drawer bottom (drawer coords)
 DETENT_DECK = [DRAWER_X0 + DETENT_DRAWER[0], DETENT_DRAWER[1]];
 
-// panel-mount USB-C (DATA) and a slot for the optional AUX (JST-SH) pigtail, on the port wall
-PORT_X = [DRAWER_W * 0.38, DRAWER_W * 0.62];       // [DATA, AUX]
+// port wall: two positions for the panel-mount USB-C DATA socket (it goes in the one farther
+// from the board's USB, so the two plugs never meet) and a slot for the optional AUX pigtail
+PORT_X = concat(DATA_PORT_X, [AUX_PORT_X]);        // from config/rack.yaml (drawer.data_ports, aux_port)
 PORT_Z = DRAWER_BOTTOM + 7;
 PORT_EARS = 26;                                    // M3 ear pitch of common panel-mount USB-C extensions
 

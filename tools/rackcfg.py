@@ -193,6 +193,15 @@ class Rack:
         return self.drawer_w_span(1)
 
     @property
+    def data_port_x(self) -> list[float]:
+        """X of the two DATA socket positions on the drawer's port wall (drawer coords)."""
+        return [self.drawer_w * f for f in self.drawer["data_ports"]]
+
+    @property
+    def aux_port_x(self) -> float:
+        return self.drawer_w * self.drawer["aux_port"]
+
+    @property
     def drawer_x0(self) -> float:
         return (self.carrier_w - self.drawer_w) / 2
 
@@ -275,6 +284,8 @@ def scad_config(rack: Rack) -> str:
         "DRAWER_REAR_BAY": d["rear_bay"],
         "DRAWER_FLANGE": d["flange"],
         "DRAWER_MAGNET": d["magnet"],
+        "DATA_PORT_X": [round(x, 3) for x in rack.data_port_x],
+        "AUX_PORT_X": round(rack.aux_port_x, 3),
         "PLATE_T": d["plate"],
         "CHAIN_INNER": ch["inner"],
         "CHAIN_OUTER": ch["outer"],
@@ -303,10 +314,12 @@ def scad_config(rack: Rack) -> str:
 
 
 def orient_board(b: dict) -> dict:
-    """Rotate a library board so its debug USB edge faces the drawer rear (+Y).
+    """Rotate a library board so its debug USB edge faces the drawer rear (+Y), or, for boards
+    marked `orient: side` (too long for a plug behind them), the drawer's right wall (+X).
 
-    Returns a dict with w, l, holes, usb_x (centre of the USB on the rear edge)
-    and, if present, usb2_x for a second connector on the same edge.
+    Returns a dict with w, l, holes, usb_side (False: rear, True: right), usb_x (centre of the
+    USB along its edge: X on the rear edge, Y on the right edge) and, if present, usb2_x for a
+    second connector on the same edge.
     """
     w, l = b["size"]
     edge = b.get("usb", {}).get("edge", "top")
@@ -340,4 +353,12 @@ def orient_board(b: dict) -> dict:
     }
     if "second_usb" in b and b["second_usb"].get("edge", edge) == edge:
         out["usb2_x"] = along(b["second_usb"]["pos"], edge)
+    out["usb_side"] = b.get("orient") == "side"
+    if out["usb_side"]:
+        # quarter turn clockwise (seen from above): the rear edge becomes the right edge
+        out["holes"] = [[y, W - x] for x, y in out["holes"]]
+        out["usb_x"] = W - out["usb_x"]
+        if "usb2_x" in out:
+            out["usb2_x"] = W - out["usb2_x"]
+        out["w"], out["l"] = L, W
     return out

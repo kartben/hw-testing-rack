@@ -45,7 +45,8 @@ carrier (4 node, 6 side, 3 pillar, 2 chain, 4 camera underneath), roof decks
    into the three pillars.  **Guides** on top with the M3×12 side screws
    (through guide and deck into the carrier wall).  Magnet into the deck pocket.
 5. **Drawer**: magnet underneath; screw the panel-mount female into the DATA
-   port (M3 ears); slide the drawer in from the front (its rear flange enters
+   port position **farther from the board's debug USB** (left or right; the
+   viewer's bay panel says which: *DATA socket*), M3 ears; slide the drawer in from the front (its rear flange enters
    the guide channels), engage the foot in the rear groove, lock it with the
    M2.5 from inside the rear bay; drop the two M2.5 stop screws through the
    guide lips.

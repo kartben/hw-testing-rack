@@ -62,7 +62,7 @@ Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `
 | plate_nucleo-144 | 1 | 38.0 | `mechanical/stl/plate_nucleo-144.stl` |
 | plate_nucleo-64 | 2 | 34.9 | `mechanical/stl/plate_nucleo-64.stl` |
 | plate_rpi-pico2 | 1 | 29.6 | `mechanical/stl/plate_rpi-pico2.stl` |
-| plate_stm32f746g-disco | 1 | 40.7 | `mechanical/stl/plate_stm32f746g-disco.stl` |
+| plate_stm32f746g-disco | 1 | 39.4 | `mechanical/stl/plate_stm32f746g-disco.stl` |
 | roof_deck | 4 | 93.5 | `mechanical/stl/roof_deck.stl` |
 | slot_cable_clip | 12 | 0.5 | `mechanical/stl/slot_cable_clip.stl` |
 | tier_bracket_left | 5 | 54.0 | `mechanical/stl/tier_bracket_left.stl` |

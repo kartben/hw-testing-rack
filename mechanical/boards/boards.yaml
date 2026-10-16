@@ -15,6 +15,8 @@
 # standoff     = plate-to-PCB distance (Nucleo morpho pins stick out underneath!)
 # height       = tallest component above the PCB (viewer only)
 # fence        = true → hole-less corner-fence mounting
+# orient: side = turn the debug USB towards the drawer's right wall (board too long for a plug
+#                behind it); the board then sits to the left of its plate
 
 boards:
   arduino-uno-r4:
@@ -192,7 +194,10 @@ boards:
     size: [86.0, 154.0]
     holes: []
     fence: true
-    usb: { edge: top, pos: 30.0, type: micro-b }
+    # ST-LINK USB on a long edge (to confirm on a real board), turned towards the drawer's side
+    # wall: at 154 mm the board leaves no room for a plug behind it
+    usb: { edge: right, pos: 40.0, type: micro-b }
+    orient: side
     standoff: 10
     height: 10
     color: "#0b2c4a"

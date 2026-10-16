@@ -1623,7 +1623,7 @@
 "part": "drawer",
 "qty": 16,
 "grams_each": 64.1,
-"grams_total": 1025.9,
+"grams_total": 1026.4,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
@@ -1720,8 +1720,8 @@
 {
 "part": "plate_stm32f746g-disco",
 "qty": 1,
-"grams_each": 40.7,
-"grams_total": 40.7,
+"grams_each": 39.4,
+"grams_total": 39.4,
 "stl": "mechanical/stl/plate_stm32f746g-disco.stl"
 },
 {
