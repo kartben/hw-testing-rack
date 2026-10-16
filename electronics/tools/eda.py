@@ -584,30 +584,33 @@ def write_root(b: Board, outdir: Path):
 
 
 def write_project(b: Board, outdir: Path, netclasses: list[dict] | None = None):
-    pro = {
-        "board": {"design_settings": {"defaults": {"board_outline_line_width": 0.1}}},
-        "meta": {"filename": f"{b.name}.kicad_pro", "version": 3},
-        "net_settings": {
-            "classes": [
-                {"name": "Default", "clearance": 0.15, "track_width": 0.25, "via_diameter": 0.6,
-                 "via_drill": 0.3, "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6,
-                 "bus_width": 12, "line_style": 0, "pcb_color": "rgba(0, 0, 0, 0.000)",
-                 "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2147483647},
-                *(netclasses or []),
-            ],
-            "meta": {"version": 4},
-            "netclass_patterns": [
-                {"netclass": nc["name"], "pattern": pat}
-                for nc in (netclasses or []) for pat in nc.get("_patterns", [])
-            ],
-        },
-        "schematic": {"legacy_lib_dir": "", "legacy_lib_list": []},
-        "sheets": [[b.root_uuid, "Root"]] + [[b.sheet_uuid(s), s.name] for s in b.sheets],
-        "text_variables": {"REV": b.rev},
-    }
-    for nc in pro["net_settings"]["classes"]:
-        nc.pop("_patterns", None)
-    (outdir / f"{b.name}.kicad_pro").write_text(json.dumps(pro, indent=2) + "\n", encoding="utf-8")
+    """Write the generator-owned parts of <board>.kicad_pro (net classes, sheets, REV).
+
+    Everything else — board design rules, rule severities, teardrops, … — is set by
+    PcbBuilder and written back by pcbnew.SaveBoard, so an existing file is updated in place
+    instead of being reset to KiCad defaults by a schematic-only run."""
+    path = outdir / f"{b.name}.kicad_pro"
+    classes = [
+        {"name": "Default", "clearance": 0.15, "track_width": 0.25, "via_diameter": 0.6,
+         "via_drill": 0.3, "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6,
+         "bus_width": 12, "line_style": 0, "pcb_color": "rgba(0, 0, 0, 0.000)",
+         "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2147483647},
+        *({k: v for k, v in nc.items() if k != "_patterns"} for nc in (netclasses or [])),
+    ]
+    patterns = [{"netclass": nc["name"], "pattern": pat}
+                for nc in (netclasses or []) for pat in nc.get("_patterns", [])]
+    pro = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {
+        "board": {"design_settings": {"defaults": {"board_outline_line_width": 0.1}}}}
+    pro["meta"] = {**pro.get("meta", {}), "filename": path.name, "version": 3}
+    ns = pro.setdefault("net_settings", {})
+    old = {nc.get("name"): nc for nc in ns.get("classes", [])}
+    ns["classes"] = [{**old.get(nc["name"], {}), **nc} for nc in classes]
+    ns.setdefault("meta", {"version": 4})
+    ns["netclass_patterns"] = patterns
+    pro["schematic"] = {**pro.get("schematic", {}), "legacy_lib_dir": "", "legacy_lib_list": []}
+    pro["sheets"] = [[b.root_uuid, "Root"]] + [[b.sheet_uuid(s), s.name] for s in b.sheets]
+    pro["text_variables"] = {**pro.get("text_variables", {}), "REV": b.rev}
+    path.write_text(json.dumps(pro, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def write_lib_tables(outdir: Path):
