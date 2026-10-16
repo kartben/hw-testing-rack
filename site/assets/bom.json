@@ -819,24 +819,35 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "Bare PCB bay-node (4-layer 64×80 mm, ENIG, JLCPCB)",
-"supplier": "JLCPCB",
-"qty": 16,
-"unit_eur": 1.9,
-"notes": "indicative, min 5 pcs",
+"item": "Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA)",
+"supplier": "JLCPCB quote 2026-10-16",
+"qty": 20,
+"unit_eur": 2.7094,
+"notes": "engineering $25.00, ENIG $19.30, board $14.60 = $58.90 for 20 PCBs, 16 of them assembled",
 "unit": "pcs",
-"ext_eur": 30.4
+"ext_eur": 54.19
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "PCBA setup (Standard) + 21 extended-part loading fees",
-"supplier": "JLCPCB",
+"item": "Standard PCBA, 16 boards: setup, stencil, feeders, SMT, hand soldering, manual assembly, X-ray, packaging",
+"supplier": "JLCPCB quote 2026-10-16",
 "qty": 1,
-"unit_eur": 88.32,
-"notes": "Standard PCBA: setup $25, stencil ≈$8.0, $3 per unique extended part; Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 117.39,
+"notes": "setup $25.75, stencil $8.27, feeders $65.10, SMT $9.45, hand soldering $3.61, manual assembly $1.62, X-ray $13.28, packaging $0.52; Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 88.32
+"ext_eur": 117.39
+},
+{
+"category": "Electronics",
+"group": "bay-node",
+"item": "Components bay-node: JLC quote minus the catalogue prices above",
+"supplier": "JLCPCB quote 2026-10-16",
+"qty": 1,
+"unit_eur": -8.49,
+"notes": "quoted components $181.21 (≈ €166.71) for 16 boards; catalogue unit prices give €175.20",
+"unit": "pcs",
+"ext_eur": -8.49
 },
 {
 "category": "Electronics",
@@ -847,13 +858,13 @@
 "manufacturer": "Honor Elec",
 "supplier": "LCSC/JLCPCB",
 "part": "C3358",
-"qty": 2,
+"qty": 4,
 "unit_eur": 0.1288,
 "basic": false,
 "standard_only": false,
-"notes": "2 per board × 1 boards",
+"notes": "2 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.26
+"ext_eur": 0.52
 },
 {
 "category": "Electronics",
@@ -864,13 +875,13 @@
 "manufacturer": "Samsung Electro-Mechanics",
 "supplier": "LCSC/JLCPCB",
 "part": "C28323",
-"qty": 10,
+"qty": 20,
 "unit_eur": 0.0268,
 "basic": true,
 "standard_only": false,
-"notes": "10 per board × 1 boards",
+"notes": "10 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.27
+"ext_eur": 0.54
 },
 {
 "category": "Electronics",
@@ -881,13 +892,13 @@
 "manufacturer": "Samsung Electro-Mechanics",
 "supplier": "LCSC/JLCPCB",
 "part": "C21122",
-"qty": 5,
+"qty": 10,
 "unit_eur": 0.0069,
 "basic": true,
 "standard_only": false,
-"notes": "5 per board × 1 boards",
+"notes": "5 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.03
+"ext_eur": 0.07
 },
 {
 "category": "Electronics",
@@ -898,13 +909,13 @@
 "manufacturer": "CJ",
 "supplier": "LCSC/JLCPCB",
 "part": "C43491",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.0184,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.02
+"ext_eur": 0.04
 },
 {
 "category": "Electronics",
@@ -915,13 +926,13 @@
 "manufacturer": "Littelfuse",
 "supplier": "LCSC/JLCPCB",
 "part": "C224049",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.3036,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.3
+"ext_eur": 0.61
 },
 {
 "category": "Electronics",
@@ -932,13 +943,13 @@
 "manufacturer": "Hubei KENTO",
 "supplier": "LCSC/JLCPCB",
 "part": "C2297",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.02
+"ext_eur": 0.04
 },
 {
 "category": "Electronics",
@@ -949,13 +960,13 @@
 "manufacturer": "Hubei KENTO",
 "supplier": "LCSC/JLCPCB",
 "part": "C2297",
-"qty": 5,
+"qty": 10,
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
-"notes": "5 per board × 1 boards",
+"notes": "5 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.09
+"ext_eur": 0.18
 },
 {
 "category": "Electronics",
@@ -966,13 +977,13 @@
 "manufacturer": "NationStar",
 "supplier": "LCSC/JLCPCB",
 "part": "C84256",
-"qty": 5,
+"qty": 10,
 "unit_eur": 0.0092,
 "basic": true,
 "standard_only": false,
-"notes": "5 per board × 1 boards",
+"notes": "5 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.05
+"ext_eur": 0.09
 },
 {
 "category": "Electronics",
@@ -983,13 +994,13 @@
 "manufacturer": "Cixi Kefa",
 "supplier": "LCSC/JLCPCB",
 "part": "C474952",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.1748,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.17
+"ext_eur": 0.35
 },
 {
 "category": "Electronics",
@@ -1000,13 +1011,13 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C160315",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.06
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -1017,13 +1028,13 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C160315",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.06
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -1034,13 +1045,13 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C160315",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.06
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -1051,13 +1062,13 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C160315",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.06
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -1068,13 +1079,13 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C160315",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.06
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -1085,13 +1096,13 @@
 "manufacturer": "UMW / Vishay",
 "supplier": "LCSC/JLCPCB",
 "part": "C7503186",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.3312,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.33
+"ext_eur": 0.66
 },
 {
 "category": "Electronics",
@@ -1102,13 +1113,13 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25803",
-"qty": 1,
+"qty": 2,
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
-"notes": "1 per board × 1 boards",
+"notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.0
+"ext_eur": 0.01
 },
 {
 "category": "Electronics",
@@ -1119,13 +1130,13 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C17414",
-"qty": 11,
+"qty": 22,
 "unit_eur": 0.003,
 "basic": true,
 "standard_only": false,
-"notes": "11 per board × 1 boards",
+"notes": "11 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.03
+"ext_eur": 0.07
 },
 {
 "category": "Electronics",
@@ -1136,13 +1147,13 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C23178",
-"qty": 5,
+"qty": 10,
 "unit_eur": 0.0028,
 "basic": true,
 "standard_only": false,
-"notes": "5 per board × 1 boards",
+"notes": "5 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.01
+"ext_eur": 0.03
 },
 {
 "category": "Electronics",
@@ -1153,13 +1164,13 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C23189",
-"qty": 5,
+"qty": 10,
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
-"notes": "5 per board × 1 boards",
+"notes": "5 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.01
+"ext_eur": 0.03
 },
 {
 "category": "Electronics",
@@ -1170,13 +1181,13 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25810",
-"qty": 5,
+"qty": 10,
 "unit_eur": 0.0037,
 "basic": true,
 "standard_only": false,
-"notes": "5 per board × 1 boards",
+"notes": "5 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.02
+"ext_eur": 0.04
 },
 {
 "category": "Electronics",
@@ -1187,35 +1198,46 @@
 "manufacturer": "Texas Instruments",
 "supplier": "LCSC/JLCPCB",
 "part": "C544399",
-"qty": 5,
+"qty": 10,
 "unit_eur": 1.4168,
 "basic": false,
 "standard_only": false,
-"notes": "5 per board × 1 boards",
+"notes": "5 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 7.08
+"ext_eur": 14.17
 },
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "Bare PCB power-hub (2-layer 120×70 mm, ENIG, JLCPCB)",
-"supplier": "JLCPCB",
+"item": "Bare PCB power-hub (2-layer 120×70 mm, ENIG)",
+"supplier": "JLCPCB quote 2026-10-16",
 "qty": 5,
-"unit_eur": 2.4,
-"notes": "indicative, min 5 pcs",
+"unit_eur": 4.7288,
+"notes": "engineering $4.00, ENIG $17.60, board $4.10 = $25.70 for 5 PCBs, 2 of them assembled",
 "unit": "pcs",
-"ext_eur": 12.0
+"ext_eur": 23.64
 },
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "PCBA setup (Economic) + 7 extended-part loading fees",
-"supplier": "JLCPCB",
+"item": "Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, hand soldering, manual assembly, nitrogen reflow",
+"supplier": "JLCPCB quote 2026-10-16",
 "qty": 1,
-"unit_eur": 29.9,
-"notes": "Economic PCBA: setup $8, stencil ≈$3.5, $3 per unique extended part",
+"unit_eur": 28.4,
+"notes": "setup $8.24, stencil $1.55, extended parts $15.45, SMT $0.73, hand soldering $3.61, manual assembly $0.43, nitrogen reflow $0.86",
 "unit": "pcs",
-"ext_eur": 29.9
+"ext_eur": 28.4
+},
+{
+"category": "Electronics",
+"group": "power-hub",
+"item": "Components power-hub: JLC quote minus the catalogue prices above",
+"supplier": "JLCPCB quote 2026-10-16",
+"qty": 1,
+"unit_eur": -1.84,
+"notes": "quoted components $17.56 (≈ €16.16) for 2 boards; catalogue unit prices give €18.00",
+"unit": "pcs",
+"ext_eur": -1.84
 },
 {
 "category": "Printed parts",
@@ -1476,7 +1498,7 @@
 }
 ],
 "by_category": {
-"Electronics": 344.8099999999998,
+"Electronics": 406.49000000000007,
 "Printed parts": 120.0,
 "Frame": 79.35,
 "Fasteners": 25.6,
@@ -1485,7 +1507,7 @@
 "Power": 76.6,
 "Cameras": 72.4
 },
-"total_eur": 827.86,
+"total_eur": 889.54,
 "cut_list": [
 {
 "part": "front post",
@@ -1754,5 +1776,57 @@
 }
 ],
 "bays": 14,
-"units": 16
+"units": 16,
+"jlc_quote": {
+"date": "2026-10-16",
+"currency": "USD",
+"shipping": "DHL ≈ $27–40",
+"boards": {
+"bay-node": {
+"pcbs": 20,
+"assembled": 16,
+"service": "Standard",
+"total": 367.71,
+"spec": "4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA",
+"pcb": {
+"engineering": 25.0,
+"ENIG": 19.3,
+"board": 14.6
+},
+"pcba": {
+"setup": 25.75,
+"stencil": 8.27,
+"components": 181.21,
+"feeders": 65.1,
+"SMT": 9.45,
+"hand soldering": 3.61,
+"manual assembly": 1.62,
+"X-ray": 13.28,
+"packaging": 0.52
+}
+},
+"power-hub": {
+"pcbs": 5,
+"assembled": 2,
+"service": "Economic",
+"total": 74.13,
+"spec": "2-layer 120×70 mm, ENIG",
+"pcb": {
+"engineering": 4.0,
+"ENIG": 17.6,
+"board": 4.1
+},
+"pcba": {
+"setup": 8.24,
+"stencil": 1.55,
+"components": 17.56,
+"extended parts": 15.45,
+"SMT": 0.73,
+"hand soldering": 3.61,
+"manual assembly": 0.43,
+"nitrogen reflow": 0.86
+}
+}
+}
+}
 }

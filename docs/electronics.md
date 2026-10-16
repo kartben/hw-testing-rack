@@ -87,19 +87,33 @@ where it didn't matter (e.g. 150k RT, 120k/22k FB).
 `--fab` writes, per board:
 
 * `fab/<board>-gerbers.zip` (Gerber X2 + Excellon), ready for JLCPCB/PCBWay;
-* `fab/<board>-bom-jlcpcb.csv` and `fab/<board>-cpl-jlcpcb.csv` (PCBA);
-* `<board>-bom.csv` (detailed: MPN, manufacturer, LCSC, alternatives);
+* `fab/<board>-bom-jlcpcb.csv` (one line per LCSC part) and
+  `fab/<board>-cpl-jlcpcb.csv` (placement, corrected to JLC's footprints: see
+  [Placement corrections](#placement-corrections));
+* `<board>-bom.csv` (detailed, one line per value: MPN, manufacturer, LCSC,
+  alternatives);
 * `docs/<board>-schematic.pdf`, SVGs, top/bottom/iso renders;
 * `fab/<board>.step` and `fab/<board>.glb` (the web viewer uses the GLB).
 
-Through-hole parts (JST VH, KF128) need JLC's THT service or a soldering iron.
+JLC hand-solders the through-hole connectors (JST VH/PH, KF128): that is the
+quotes' "hand soldering" line.
 
 ## Assembly at JLCPCB
 
+Real quote taken on jlcpcb.com on 2026-10-16 from the `fab/` files (USD,
+indicative; shipping, DHL ≈ $27–40, and import VAT come on top).  The full
+breakdown is in [`bom/README.md`](../bom/README.md), and `tools/bom.py`
+(`JLC_QUOTE`) carries the same figures:
+
+| Board | Order | PCB | PCBA | Total |
+|---|---|---:|---:|---:|
+| bay node | 20 PCBs, 4-layer ENIG (JLC adds 5 mm edge rails for Standard PCBA), 16 assembled, Standard | $58.90 | $308.81, of which components $181.21 and feeders $65.10 | **$367.71** |
+| power hub | 5 PCBs, 2-layer ENIG, 2 assembled, Economic | $25.70 | $48.43, of which components $17.56 and extended parts $15.45 | **$74.13** |
+
 * **Bay node: Standard PCBA.** JLC can only place the ESP32-S3-MINI-1 module
   (C2913206) and the WS2812B-2020 LED with its Standard PCBA service, not
-  Economic, so the node is quoted with Standard fees (≈ $25 setup + ≈ $8
-  stencil, indicative).  These parts are flagged `standard_only` in
+  Economic, so the node pays Standard fees (setup $25.75, stencil $8.27, X-ray
+  $13.28 in the quote above).  These parts are flagged `standard_only` in
   `electronics/tools/catalog.py`, which `tools/bom.py` reads.  The WS2812C-2020-V6
   (C55109522) is Economic-capable, but the module keeps the board on Standard
   anyway.  Check the WS2812C pinout against the WS2812B-2020 footprint before
@@ -109,12 +123,83 @@ Through-hole parts (JST VH, KF128) need JLC's THT service or a soldering iron.
   100 µF moved to C3352 the same way.
 * **No Basic drop-ins.** Every extended part was checked against JLC's Basic
   library (October 2026): none has a Basic equivalent with the same ratings
-  and footprint, so the $3-per-part extended loading fees stay.  Near misses
-  were rejected:
+  and footprint, so the extended-part loading fees stay (the node's $65.10 of
+  feeders, the hub's $15.45).  Near misses were rejected:
   * SS54 Schottky: 40 V, below the buck's 60 V input rating;
   * AO3401A P-FET: 30 V, on a 24 V bus with transients up to 53 V;
   * 100 mΩ / 250 mW 1206 shunt: INA226 full scale would drop to 0.82 A, below
     the 1.5 A DUT limit.
+* **One BOM line per LCSC part.** JLC refuses several lines that resolve to
+  the same part ("Multiple lines in the BOM have been matched to the same
+  part") and deselects them, so the JLC BOM merges them: J1/J2 VH, J3/J4
+  USB-C, SW1/SW2, U5/U6 on the node; D3 + D11–D15 on the hub.  Merged lines
+  carry the MPN as comment.
+
+### Placement corrections
+
+JLC does not place KiCad's footprint: for each LCSC part it takes its own
+(EasyEDA) footprint, puts that footprint's origin on the CPL's Mid X/Y and
+turns it by the CPL rotation.  Where JLC's footprint has a different 0° or a
+different origin from KiCad's (connectors anchored on pin 1, SOT-23 drawn the
+other way round, ICs drawn with pin 1 at the bottom), the part lands rotated
+or shifted.  `JLC_CPL_FIX` in `electronics/tools/build_board.py` corrects the
+CPL per LCSC part: an extra rotation (degrees, counter-clockwise) and an
+origin offset in the KiCad footprint's own axes, both turned with the part.
+The export stops if a part listed there changes footprint or moves to the
+bottom side.
+
+The values were worked out on 2026-10-16 by fitting each part's EasyEDA
+footprint pads (`https://easyeda.com/api/products/<LCSC>/components`) onto
+the KiCad pads, pin by pin, then checking that the bodies overlap and that
+diodes, LEDs and electrolytics keep their cathode or + side.  JLC's
+placement preview had shown the first three rows wrong before the fix; the
+others come from the fit alone.
+
+| LCSC part | Refs | Correction | Status |
+|---|---|---|---|
+| C160355 JST S2P-VH | node J1 J2 | 180°, origin +1.98 mm x | was wrong in the preview; confirm the fix |
+| C173752 JST S2B-PH-K | node J6 | 180°, +1.00 mm x | was wrong in the preview; confirm the fix |
+| C6186 AMS1117 SOT-223 | node U2 | 180° | looked wrong in the preview; confirm the fix |
+| C165948 HRO TYPE-C-31-M-12 | node J3 J4 | −1.57 mm y | to confirm |
+| C2913206 ESP32-S3-MINI-1 | node U3 | +2.55 mm y | to confirm |
+| C431540 MSK12C02 | node SW3 | −0.25 mm y (lines up the pins; JLC's body outline then sits 0.25 mm off KiCad's) | to confirm |
+| C524806 TPS54360B SO PowerPAD-8 | node U1 | 270° | to confirm |
+| C11355 FSUSB42 MSOP-10 | node U5 U6 | 270° | to confirm |
+| C49851 INA226 VSSOP-10 | node U10 | 270° | to confirm |
+| C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8 | 270° | to confirm |
+| C55266 TPS2553 SOT-23-6 | node U9 | 180° | to confirm |
+| C10096 74LVC1G32 SOT-23-5 | node U7 | 180° | to confirm |
+| C8545 2N7002 SOT-23 | node Q2 Q3 | 180° | to confirm |
+| C7503186 SUD50P06 TO-252 | node Q1, hub Q1 | −1.89 mm x | to confirm |
+| C544399 TPS26600 HTSSOP-16 | hub U1–U5 | 270° | to confirm |
+| C474952 KF128 terminal | hub J1 | +2.54 mm x | to confirm |
+| C160315 JST B2P-VH | hub J2–J6 | +1.98 mm x | to confirm |
+| C56123098 XYECONN SM06B-SRSS-TB | node J5 | none: JLC's footprint could not be read (the JST original, C160405, needs none) | to confirm |
+
+Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
+0805, 1206), the electrolytics (+ pad), the diodes and LEDs (cathode side),
+the WS2812B-2020, the FXL1040 inductor and the TS-1187A buttons.  The green
+LED C2297 numbers its pads the other way round (pad 2 is the cathode), but
+its cathode sits where KiCad's pad 1 is at 0°: don't "fix" it from the pad
+numbers.
+
+To confirm a part, upload the Gerber zip, BOM and CPL at jlcpcb.com, and in
+the "Component Placement" step look at it in JLC's 2D and 3D preview:
+
+1. The body sits over its pads, centred (a shift of half a pin pitch means
+   an origin offset is wrong).
+2. Pin 1, the cathode bar or the + side lines up with the board's silkscreen
+   mark; through-hole pins drop into their holes.
+3. Side-entry connectors (VH, PH, SH, USB-C) open towards the board edge, the
+   terminal block's wire entries face outwards.
+
+If a part is off, rotate or move it in JLC's editor until it fits, then copy
+that change into `JLC_CPL_FIX` (add the extra degrees; an offset measured on
+the board has to be turned back into the footprint's axes) and re-export with
+`tools/kicad.sh <board> --check --fab`, so the next order needs no hand
+correction.  Mark the row confirmed here once a preview shows it right.  A new
+LCSC part needs the same check: until it is in the table it is placed exactly
+as KiCad has it.
 
 ## Custom library
 

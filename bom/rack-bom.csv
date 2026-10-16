@@ -47,31 +47,33 @@ Electronics,bay-node,MUX_DUT — USB 2.0 HS 2:1 switch,16,pcs,0.2852,4.56,LCSC/J
 Electronics,bay-node,SN74LVC1G32DBVR — single 2-input OR,16,pcs,0.0644,1.03,LCSC/JLCPCB,C10096,SN74LVC1G32DBVR,Texas Instruments,U7,1 per board × 16 boards
 Electronics,bay-node,TPS2553DBVR — adjustable current-limited power switch,16,pcs,0.4968,7.95,LCSC/JLCPCB,C55266,TPS2553DBVR,Texas Instruments,U9,1 per board × 16 boards
 Electronics,bay-node,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",16,pcs,0.69,11.04,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,U10,1 per board × 16 boards
-Electronics,bay-node,"Bare PCB bay-node (4-layer 64×80 mm, ENIG, JLCPCB)",16,pcs,1.9,30.4,JLCPCB,,,,,"indicative, min 5 pcs"
-Electronics,bay-node,PCBA setup (Standard) + 21 extended-part loading fees,1,pcs,88.32,88.32,JLCPCB,,,,,"Standard PCBA: setup $25, stencil ≈$8.0, $3 per unique extended part; Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
-Electronics,power-hub,220u/50V — 220 µF 50 V aluminium electrolytic,2,pcs,0.1288,0.26,LCSC/JLCPCB,C3358,RVT1H221M1010,Honor Elec,"C1,C2",2 per board × 1 boards
-Electronics,power-hub,1u — Capacitor 1u 0805,10,pcs,0.0268,0.27,LCSC/JLCPCB,C28323,CL21B105KBFNNNE,Samsung Electro-Mechanics,"C11,C12,C13,C14,C15,C31,C32,C33,C34,C35",10 per board × 1 boards
-Electronics,power-hub,22n — Capacitor 22n 0603,5,pcs,0.0069,0.03,LCSC/JLCPCB,C21122,CL10B223KB8NNNC,Samsung Electro-Mechanics,"C21,C22,C23,C24,C25",5 per board × 1 boards
-Electronics,power-hub,"BZT52C12 — 12 V zener, P-FET gate clamp",1,pcs,0.0184,0.02,LCSC/JLCPCB,C43491,BZT52C12,CJ,D1,1 per board × 1 boards
-Electronics,power-hub,"SMCJ33A — TVS 33 V stand-off, 1500 W (unidirectional)",1,pcs,0.3036,0.3,LCSC/JLCPCB,C224049,SMCJ33A,Littelfuse,D2,1 per board × 1 boards
-Electronics,power-hub,24V — green LED 0805,1,pcs,0.0184,0.02,LCSC/JLCPCB,C2297,KT-0805G,Hubei KENTO,D3,1 per board × 1 boards
-Electronics,power-hub,ON — green LED 0805,5,pcs,0.0184,0.09,LCSC/JLCPCB,C2297,KT-0805G,Hubei KENTO,"D11,D12,D13,D14,D15",5 per board × 1 boards
-Electronics,power-hub,FAULT — red LED 0805,5,pcs,0.0092,0.05,LCSC/JLCPCB,C84256,NCD0805R1,NationStar,"D21,D22,D23,D24,D25",5 per board × 1 boards
-Electronics,power-hub,"24V IN — screw terminal 5.08 mm, 24 A",1,pcs,0.1748,0.17,LCSC/JLCPCB,C474952,KF128-5.08-2P-AA,Cixi Kefa,J1,1 per board × 1 boards
-Electronics,power-hub,"ROW A — JST VH 2-pin, top entry, 10 A",1,pcs,0.0552,0.06,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J2,1 per board × 1 boards
-Electronics,power-hub,"ROW B — JST VH 2-pin, top entry, 10 A",1,pcs,0.0552,0.06,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J3,1 per board × 1 boards
-Electronics,power-hub,"ROW C — JST VH 2-pin, top entry, 10 A",1,pcs,0.0552,0.06,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J4,1 per board × 1 boards
-Electronics,power-hub,"ROW D — JST VH 2-pin, top entry, 10 A",1,pcs,0.0552,0.06,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J5,1 per board × 1 boards
-Electronics,power-hub,"ROW AUX — JST VH 2-pin, top entry, 10 A",1,pcs,0.0552,0.06,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J6,1 per board × 1 boards
-Electronics,power-hub,"SUD50P06-15 — P-MOSFET 60 V, reverse-polarity protection",1,pcs,0.3312,0.33,LCSC/JLCPCB,C7503186,SUD50P06-15,UMW / Vishay,Q1,1 per board × 1 boards
-Electronics,power-hub,100k — Resistor 100k 0603,1,pcs,0.0029,0.0,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),R1,1 per board × 1 boards
-Electronics,power-hub,10k — Resistor 10k 0805,11,pcs,0.003,0.03,LCSC/JLCPCB,C17414,0805W8F1002T5E,UNI-ROYAL(Uniroyal Elec),"R2,R41,R42,R43,R44,R45,R51,R52,R53,R54,R55",11 per board × 1 boards
-Electronics,power-hub,470k — Resistor 470k 0603,5,pcs,0.0028,0.01,LCSC/JLCPCB,C23178,0603WAF4703T5E,UNI-ROYAL(Uniroyal Elec),"R11,R12,R13,R14,R15",5 per board × 1 boards
-Electronics,power-hub,5.6k — Resistor 5.6k 0603,5,pcs,0.0029,0.01,LCSC/JLCPCB,C23189,0603WAF5601T5E,UNI-ROYAL(Uniroyal Elec),"R21,R22,R23,R24,R25",5 per board × 1 boards
-Electronics,power-hub,18k — Resistor 18k 0603,5,pcs,0.0037,0.02,LCSC/JLCPCB,C25810,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),"R31,R32,R33,R34,R35",5 per board × 1 boards
-Electronics,power-hub,TPS26600PWPR — 4.2–60 V 2.23 A eFuse,5,pcs,1.4168,7.08,LCSC/JLCPCB,C544399,TPS26600PWPR,Texas Instruments,"U1,U2,U3,U4,U5",5 per board × 1 boards
-Electronics,power-hub,"Bare PCB power-hub (2-layer 120×70 mm, ENIG, JLCPCB)",5,pcs,2.4,12.0,JLCPCB,,,,,"indicative, min 5 pcs"
-Electronics,power-hub,PCBA setup (Economic) + 7 extended-part loading fees,1,pcs,29.9,29.9,JLCPCB,,,,,"Economic PCBA: setup $8, stencil ≈$3.5, $3 per unique extended part"
+Electronics,bay-node,"Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA)",20,pcs,2.7094,54.19,JLCPCB quote 2026-10-16,,,,,"engineering $25.00, ENIG $19.30, board $14.60 = $58.90 for 20 PCBs, 16 of them assembled"
+Electronics,bay-node,"Standard PCBA, 16 boards: setup, stencil, feeders, SMT, hand soldering, manual assembly, X-ray, packaging",1,pcs,117.39,117.39,JLCPCB quote 2026-10-16,,,,,"setup $25.75, stencil $8.27, feeders $65.10, SMT $9.45, hand soldering $3.61, manual assembly $1.62, X-ray $13.28, packaging $0.52; Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
+Electronics,bay-node,Components bay-node: JLC quote minus the catalogue prices above,1,pcs,-8.49,-8.49,JLCPCB quote 2026-10-16,,,,,quoted components $181.21 (≈ €166.71) for 16 boards; catalogue unit prices give €175.20
+Electronics,power-hub,220u/50V — 220 µF 50 V aluminium electrolytic,4,pcs,0.1288,0.52,LCSC/JLCPCB,C3358,RVT1H221M1010,Honor Elec,"C1,C2",2 per board × 2 boards
+Electronics,power-hub,1u — Capacitor 1u 0805,20,pcs,0.0268,0.54,LCSC/JLCPCB,C28323,CL21B105KBFNNNE,Samsung Electro-Mechanics,"C11,C12,C13,C14,C15,C31,C32,C33,C34,C35",10 per board × 2 boards
+Electronics,power-hub,22n — Capacitor 22n 0603,10,pcs,0.0069,0.07,LCSC/JLCPCB,C21122,CL10B223KB8NNNC,Samsung Electro-Mechanics,"C21,C22,C23,C24,C25",5 per board × 2 boards
+Electronics,power-hub,"BZT52C12 — 12 V zener, P-FET gate clamp",2,pcs,0.0184,0.04,LCSC/JLCPCB,C43491,BZT52C12,CJ,D1,1 per board × 2 boards
+Electronics,power-hub,"SMCJ33A — TVS 33 V stand-off, 1500 W (unidirectional)",2,pcs,0.3036,0.61,LCSC/JLCPCB,C224049,SMCJ33A,Littelfuse,D2,1 per board × 2 boards
+Electronics,power-hub,24V — green LED 0805,2,pcs,0.0184,0.04,LCSC/JLCPCB,C2297,KT-0805G,Hubei KENTO,D3,1 per board × 2 boards
+Electronics,power-hub,ON — green LED 0805,10,pcs,0.0184,0.18,LCSC/JLCPCB,C2297,KT-0805G,Hubei KENTO,"D11,D12,D13,D14,D15",5 per board × 2 boards
+Electronics,power-hub,FAULT — red LED 0805,10,pcs,0.0092,0.09,LCSC/JLCPCB,C84256,NCD0805R1,NationStar,"D21,D22,D23,D24,D25",5 per board × 2 boards
+Electronics,power-hub,"24V IN — screw terminal 5.08 mm, 24 A",2,pcs,0.1748,0.35,LCSC/JLCPCB,C474952,KF128-5.08-2P-AA,Cixi Kefa,J1,1 per board × 2 boards
+Electronics,power-hub,"ROW A — JST VH 2-pin, top entry, 10 A",2,pcs,0.0552,0.11,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J2,1 per board × 2 boards
+Electronics,power-hub,"ROW B — JST VH 2-pin, top entry, 10 A",2,pcs,0.0552,0.11,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J3,1 per board × 2 boards
+Electronics,power-hub,"ROW C — JST VH 2-pin, top entry, 10 A",2,pcs,0.0552,0.11,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J4,1 per board × 2 boards
+Electronics,power-hub,"ROW D — JST VH 2-pin, top entry, 10 A",2,pcs,0.0552,0.11,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J5,1 per board × 2 boards
+Electronics,power-hub,"ROW AUX — JST VH 2-pin, top entry, 10 A",2,pcs,0.0552,0.11,LCSC/JLCPCB,C160315,B2P-VH(LF)(SN),JST,J6,1 per board × 2 boards
+Electronics,power-hub,"SUD50P06-15 — P-MOSFET 60 V, reverse-polarity protection",2,pcs,0.3312,0.66,LCSC/JLCPCB,C7503186,SUD50P06-15,UMW / Vishay,Q1,1 per board × 2 boards
+Electronics,power-hub,100k — Resistor 100k 0603,2,pcs,0.0029,0.01,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),R1,1 per board × 2 boards
+Electronics,power-hub,10k — Resistor 10k 0805,22,pcs,0.003,0.07,LCSC/JLCPCB,C17414,0805W8F1002T5E,UNI-ROYAL(Uniroyal Elec),"R2,R41,R42,R43,R44,R45,R51,R52,R53,R54,R55",11 per board × 2 boards
+Electronics,power-hub,470k — Resistor 470k 0603,10,pcs,0.0028,0.03,LCSC/JLCPCB,C23178,0603WAF4703T5E,UNI-ROYAL(Uniroyal Elec),"R11,R12,R13,R14,R15",5 per board × 2 boards
+Electronics,power-hub,5.6k — Resistor 5.6k 0603,10,pcs,0.0029,0.03,LCSC/JLCPCB,C23189,0603WAF5601T5E,UNI-ROYAL(Uniroyal Elec),"R21,R22,R23,R24,R25",5 per board × 2 boards
+Electronics,power-hub,18k — Resistor 18k 0603,10,pcs,0.0037,0.04,LCSC/JLCPCB,C25810,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),"R31,R32,R33,R34,R35",5 per board × 2 boards
+Electronics,power-hub,TPS26600PWPR — 4.2–60 V 2.23 A eFuse,10,pcs,1.4168,14.17,LCSC/JLCPCB,C544399,TPS26600PWPR,Texas Instruments,"U1,U2,U3,U4,U5",5 per board × 2 boards
+Electronics,power-hub,"Bare PCB power-hub (2-layer 120×70 mm, ENIG)",5,pcs,4.7288,23.64,JLCPCB quote 2026-10-16,,,,,"engineering $4.00, ENIG $17.60, board $4.10 = $25.70 for 5 PCBs, 2 of them assembled"
+Electronics,power-hub,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, hand soldering, manual assembly, nitrogen reflow",1,pcs,28.4,28.4,JLCPCB quote 2026-10-16,,,,,"setup $8.24, stencil $1.55, extended parts $15.45, SMT $0.73, hand soldering $3.61, manual assembly $0.43, nitrogen reflow $0.86"
+Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,-1.84,-1.84,JLCPCB quote 2026-10-16,,,,,quoted components $17.56 (≈ €16.16) for 2 boards; catalogue unit prices give €18.00
 Printed parts,filament,PETG filament (ASA/PC-blend near mains),6.0,kg,20.0,120.0,any,,,,,"≈5.4 kg estimated + 10 % waste, 198 parts"
 Frame,,"2020 aluminium extrusion, B-type slot 6, black anodised, cut to length",13.11,m,4.1,53.75,Motedis / Dold / Misumi HFS5-2020,,,,,see cut list; ≈ €1.5 per cut extra
 Frame,,"Inside corner bracket, slot 6, with screws (base frame)",16,pcs,0.5,8.0,AliExpress (bulk) / Motedis,,,,,

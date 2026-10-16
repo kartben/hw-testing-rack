@@ -14,6 +14,7 @@ import argparse
 import csv
 import importlib.util
 import json
+import math
 import os
 import shutil
 import subprocess
@@ -110,6 +111,72 @@ def bom_rows(b):
     return rows
 
 
+def jlc_bom_rows(rows):
+    """One line per LCSC part: JLC deselects lines that resolve to the same part ("Multiple lines in
+    the BOM have been matched to the same part"), so e.g. J1 24V IN + J2 24V OUT become one line."""
+    groups: dict[str, list] = {}
+    for r in rows:
+        if not r["DNP"]:
+            groups.setdefault(r["LCSC"] or f"{r['Value']}|{r['Footprint']}", []).append(r)
+    out = []
+    for rs in groups.values():
+        fps = {r["Footprint"] for r in rs}
+        if len(fps) > 1:
+            raise SystemExit(f"LCSC {rs[0]['LCSC']} on different footprints {sorted(fps)}")
+        values = list(dict.fromkeys(r["Value"] for r in rs))
+        comment = values[0] if len(values) == 1 else (rs[0]["MPN"] or " / ".join(values))
+        out.append([comment, ",".join(r["Designator"] for r in rs), rs[0]["Footprint"], rs[0]["LCSC"]])
+    return out
+
+
+# JLC places its own footprint for each LCSC part (the EasyEDA one) at the CPL point, turned by
+# the CPL rotation.  Where that footprint's 0° or origin differs from KiCad's, correct it here:
+# LCSC part -> (KiCad footprint it was checked against, extra rotation in degrees CCW, origin
+# offset x, y in mm in the KiCad footprint's own axes, Y down).  The correction belongs to the LCSC
+# listing, not the footprint name: C7519 and C55266 share SOT-23-6 but JLC draws them 90° apart.
+# Derived on 2026-10-16 by fitting each part's EasyEDA pads onto the KiCad pads, pin by pin; "seen"
+# marks the parts JLC's placement preview showed wrong before the fix.  Every entry still has to
+# be confirmed in the preview: see "Placement corrections" in docs/electronics.md.
+JLC_CPL_FIX = {
+    "C160355": ("JST_VH_S2P-VH_1x02_P3.96mm_Horizontal", 180, 1.98, 0.0),     # bay J1 J2 (seen)
+    "C173752": ("JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal", 180, 1.0, 0.0),    # bay J6 (seen)
+    "C6186": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                            # bay U2 (seen)
+    "C165948": ("USB_C_Receptacle_HRO_TYPE-C-31-M-12", 0, 0.0, -1.57),        # bay J3 J4
+    "C2913206": ("ESP32-S2-MINI-1", 0, 0.0, 2.55),                            # bay U3
+    "C431540": ("SW_SPDT_Shouhan_MSK12C02", 0, 0.0, -0.25),                   # bay SW3
+    "C524806": ("TI_SO-PowerPAD-8_ThermalVias", 270, 0.0, 0.0),               # bay U1
+    "C11355": ("MSOP-10_3x3mm_P0.5mm", 270, 0.0, 0.0),                        # bay U5 U6
+    "C49851": ("TSSOP-10_3x3mm_P0.5mm", 270, 0.0, 0.0),                       # bay U10
+    "C7519": ("SOT-23-6", 270, 0.0, 0.0),                                     # bay U4 U8
+    "C55266": ("SOT-23-6", 180, 0.0, 0.0),                                    # bay U9
+    "C10096": ("SOT-23-5", 180, 0.0, 0.0),                                    # bay U7
+    "C8545": ("SOT-23", 180, 0.0, 0.0),                                       # bay Q2 Q3
+    "C7503186": ("TO-252-2", 0, -1.89, 0.0),                                  # bay Q1, hub Q1
+    "C544399": ("HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.66x2.46mm", 270, 0.0, 0.0),  # hub U1–U5
+    "C474952": ("TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal", 0, 2.54, 0.0),  # hub J1
+    "C160315": ("JST_VH_B2P-VH_1x02_P3.96mm_Vertical", 0, 1.98, 0.0),         # hub J2–J6
+}
+
+
+def jlc_cpl_row(row, lcsc: str):
+    """KiCad pos row (anchor, Y up) -> JLC CPL row, with the JLC_CPL_FIX correction applied."""
+    x, y, rot = row["PosX"], row["PosY"], row["Rot"]
+    fix = JLC_CPL_FIX.get(lcsc)
+    if fix:
+        fp, drot, dx, dy = fix
+        if fp != row["Package"]:
+            raise SystemExit(f"{row['Ref']}: JLC_CPL_FIX[{lcsc}] was checked on {fp}, not {row['Package']}")
+        if row["Side"] != "top":
+            raise SystemExit(f"{row['Ref']}: JLC_CPL_FIX is only worked out for top-side parts")
+        a = math.radians(float(rot))
+        # offset from footprint axes to board axes (KiCad, Y down), then to the pos file's Y up
+        x = f"{float(x) + dx * math.cos(a) + dy * math.sin(a):.6f}"
+        y = f"{float(y) + dx * math.sin(a) - dy * math.cos(a):.6f}"
+        r = (float(rot) + drot) % 360
+        rot = f"{r - 360 if r > 180 else r:.6f}"
+    return [row["Ref"], x + "mm", y + "mm", "Top" if row["Side"] == "top" else "Bottom", rot]
+
+
 def export_fab(outdir: Path, name: str, b):
     fab = outdir / "fab"
     if fab.exists():
@@ -129,10 +196,12 @@ def export_fab(outdir: Path, name: str, b):
     with zipfile.ZipFile(fab / f"{name}-gerbers.zip", "w", zipfile.ZIP_DEFLATED) as z:
         for f in sorted(gerb.iterdir()):
             z.write(f, f.name)
-    # pick & place (JLCPCB column names)
+    # pick & place (JLCPCB column names), corrected to JLC's own footprints
     raw = fab / "pos-raw.csv"
     run(["kicad-cli", "pcb", "export", "pos", "--format", "csv", "--units", "mm", "--side", "both",
          "--exclude-dnp", "-o", raw, pcb], check=True, capture_output=True)
+    lcsc = {p.ref: p.fields.get("LCSC", "") for p in b.parts.values()}
+    fixed = []
     with raw.open() as fi, (fab / f"{name}-cpl-jlcpcb.csv").open("w", newline="") as fo:
         r = csv.DictReader(fi)
         w = csv.writer(fo)
@@ -140,17 +209,16 @@ def export_fab(outdir: Path, name: str, b):
         for row in r:
             if row["Ref"].startswith(("H", "TP")):
                 continue
-            w.writerow([row["Ref"], row["PosX"] + "mm", row["PosY"] + "mm",
-                        "Top" if row["Side"] == "top" else "Bottom", row["Rot"]])
+            w.writerow(jlc_cpl_row(row, lcsc.get(row["Ref"], "")))
+            if lcsc.get(row["Ref"]) in JLC_CPL_FIX:
+                fixed.append(row["Ref"])
     raw.unlink()
+    print("CPL: JLC footprint corrections on", " ".join(fixed))
     rows = bom_rows(b)
     with (fab / f"{name}-bom-jlcpcb.csv").open("w", newline="") as fo:
         w = csv.writer(fo)
         w.writerow(["Comment", "Designator", "Footprint", "LCSC Part #"])
-        for r in rows:
-            if r["DNP"]:
-                continue
-            w.writerow([r["Value"], r["Designator"], r["Footprint"], r["LCSC"]])
+        w.writerows(jlc_bom_rows(rows))
     with (outdir / f"{name}-bom.csv").open("w", newline="", encoding="utf-8") as fo:
         w = csv.DictWriter(fo, fieldnames=list(rows[0].keys()))
         w.writeheader()
