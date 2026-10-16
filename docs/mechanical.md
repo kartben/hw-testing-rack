@@ -26,6 +26,8 @@ Core One, Bambu …).
 
 ## Bay
 
+![Bay C2's drawer pulled out, still wired through its drag chain](img/drawer.jpg)
+
 | Part | File | Notes |
 |---|---|---|
 | Carrier base | `carrier_base.scad` | plenum box on the beams; node standoffs, chain anchor, deck pillars, fascia cut-outs, camera inserts underneath, VH notches in both side walls |

@@ -4,7 +4,7 @@
 board in its own sliding drawer, power-switched, current-metered and exposed
 over the network with USB/IP by a Zephyr-powered ESP32-S3 in each bay.**
 
-![The rack](docs/img/hero.jpg)
+![The rack on a desk, a laptop wired to one bay's front port](docs/img/photo-desk.jpg)
 
 **[▶ Interactive 3D model](https://kartben.github.io/hw-testing-rack/)** · [BOM](bom/README.md) ·
 [Architecture](docs/architecture.md) · [Mechanics](docs/mechanical.md) · [Cabling](docs/cabling.md) ·
@@ -38,8 +38,10 @@ over the network with USB/IP by a Zephyr-powered ESP32-S3 in each bay.**
 
 | | |
 |---|---|
-| ![bay node](electronics/bay-node/docs/bay-node-iso.png) | ![drawer](docs/img/drawer.jpg) |
-| Bay node — ESP32-S3, 2 USB muxes, TPS2553, INA226, 60 V buck | A drawer pulled out, board still connected |
+| ![drawer](docs/img/photo-drawer.jpg) | ![status LEDs](docs/img/photo-detail.jpg) |
+| A drawer pulled out, board still connected | Printed drawer fronts and status LEDs along a row |
+| ![bay node](electronics/bay-node/docs/bay-node-iso.png) | ![technical render](docs/img/hero.jpg) |
+| Bay node — ESP32-S3, 2 USB muxes, TPS2553, INA226, 60 V buck | Neutral technical render (more in [docs/](docs/architecture.md)) |
 
 ## Repository layout
 
@@ -84,6 +86,16 @@ python tools/blender_live.py exec render/live_render.py drawer:C2 docs/img/drawe
 python tools/assembly_glb.py --explode-bay C3 --out render/bay-exploded.glb   # one bay, layers apart
 python tools/blender_live.py exec render/live_scene.py render/bay-exploded.glb
 python tools/blender_live.py exec render/live_render.py exploded
+```
+
+The photo shots (`docs/img/photo-*.jpg`) use their own scene: anodised
+aluminium, PETG with 0.2 mm layer lines, an oak desk against a wall, a laptop
+wired to bay C4, window light and depth of field:
+
+```bash
+python tools/assembly_glb.py --with-pc-cable --out render/assembly-photo.glb
+python tools/blender_live.py exec render/live_photo.py build
+python tools/blender_live.py exec render/live_photo.py shot desk          # desk, drawer, detail → docs/img/photo-*.jpg
 ```
 
 Change the shelf in `config/rack.yaml` (tilt, row layouts, bay pitch, which

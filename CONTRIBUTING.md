@@ -11,7 +11,7 @@ Everything is generated from sources you can diff:
 | Part sourcing | `electronics/tools/catalog.py`, `electronics/tools/passives.py` | `python electronics/tools/passives.py`, then the board |
 | BOM roll-up | `tools/bom.py` | `python tools/bom.py` |
 | Viewer | `site/*.html`, `site/app.js` | `python tools/build.py web` |
-| Renders | `render/render.py` (headless), `render/live_scene.py` + `render/live_render.py` (running Blender) | `python tools/assembly_glb.py`, then `tools/render.sh` or `tools/blender_live.py exec …` |
+| Renders | `render/render.py` (headless), `render/live_scene.py` + `render/live_render.py` (technical), `render/live_photo.py` (photo set) in a running Blender | `python tools/assembly_glb.py`, then `tools/render.sh` or `tools/blender_live.py exec …` |
 
 ## Toolchain
 
