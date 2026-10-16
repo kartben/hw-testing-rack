@@ -579,7 +579,7 @@ def build(glb):
     sc.cycles.glossy_bounces = 6
     sc.cycles.sample_clamp_indirect = 8.0
     sc.cycles.use_adaptive_sampling = True
-    sc.cycles.adaptive_threshold = 0.005
+    sc.cycles.adaptive_threshold = 0.01
     sc.cycles.glossy_bounces = 8
     sc.cycles.transmission_bounces = 8
     sc.cycles.denoiser = "OPENIMAGEDENOISE"
@@ -704,5 +704,5 @@ if MODE == "build":
 else:
     name = sys.argv[2] if len(sys.argv) > 2 else "desk"
     out = str(REPO / (sys.argv[3] if len(sys.argv) > 3 else f"docs/img/photo-{name}.jpg"))
-    result = shot(name, out, int(sys.argv[4]) if len(sys.argv) > 4 else 1024,
-                  sys.argv[5] if len(sys.argv) > 5 else "3840x2400")
+    result = shot(name, out, int(sys.argv[4]) if len(sys.argv) > 4 else 384,
+                  sys.argv[5] if len(sys.argv) > 5 else "1600x1000")
