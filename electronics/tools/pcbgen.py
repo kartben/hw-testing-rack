@@ -27,6 +27,15 @@ FREEROUTING = os.environ.get("FREEROUTING", "/tmp/freerouting-cli")
 MM = pcbnew.FromMM
 
 
+DRU = """(version 1)
+# Thermal reliefs on every pour (pcbgen.py).  On fine-pitch pads (ESP32 module, MSOP/SOT pins)
+# the neighbours leave room for one spoke only: one spoke is still a relief, and enough current
+# for a GND pin.
+(rule "one thermal spoke is enough"
+	(constraint min_resolved_spokes 1))
+"""
+
+
 def V(x, y):
     return pcbnew.VECTOR2I(MM(x), MM(y))
 
@@ -59,10 +68,13 @@ class PcbBuilder:
         bd = self.board
         bd.SetCopperLayerCount(self.layers)
         if self.layers == 4:
-            bd.SetLayerName(pcbnew.In1_Cu, "In1.GND")
-            bd.SetLayerType(pcbnew.In1_Cu, pcbnew.LT_POWER)
-            bd.SetLayerName(pcbnew.In2_Cu, "In2.SIG")
-            bd.SetLayerType(pcbnew.In2_Cu, pcbnew.LT_SIGNAL)
+            # b.pcb["inner"]: name and type of In1/In2.  "mixed" = a power layer the router may still
+            # use for signals (its pours are added after routing, around the tracks)
+            types = {"signal": pcbnew.LT_SIGNAL, "power": pcbnew.LT_POWER, "mixed": pcbnew.LT_MIXED}
+            inner = self.b.pcb.get("inner", [("In1.GND", "power"), ("In2.SIG", "signal")])
+            for layer, (name, kind) in zip((pcbnew.In1_Cu, pcbnew.In2_Cu), inner):
+                bd.SetLayerName(layer, name)
+                bd.SetLayerType(layer, types[kind])
         ds = bd.GetDesignSettings()
         # JLCPCB: 0.09 mm (4-layer) / 0.127 mm (2-layer); Freerouting necks down to 0.12 at fine-pitch pads
         ds.m_TrackMinWidth = MM(0.1 if self.layers >= 4 else 0.125)
@@ -71,6 +83,8 @@ class PcbBuilder:
         ds.m_MinThroughDrill = MM(0.25)
         ds.m_CopperEdgeClearance = MM(0.3)
         ds.SetBoardThickness(MM(1.6))
+        # custom DRC rules, next to the project (KiCad and kicad-cli read <board>.kicad_dru)
+        (self.outdir / f"{self.b.name}.kicad_dru").write_text(DRU, encoding="utf-8")
         tb = bd.GetTitleBlock()
         tb.SetTitle(self.b.title)
         tb.SetRevision(self.b.rev)
@@ -169,7 +183,8 @@ class PcbBuilder:
         arc(r, r, 0, r, r, 0)
 
     # -------------------------------------------------------------- zones
-    def zone(self, layer, net: str | None, poly, priority=0, keepout=False, name="", layers=None, tracks_only=False):
+    def zone(self, layer, net: str | None, poly, priority=0, keepout=False, name="", layers=None, tracks_only=False,
+             connection="thermal"):
         z = pcbnew.ZONE(self.board)
         z.SetLayer(layer)
         if net:
@@ -197,7 +212,15 @@ class PcbBuilder:
         else:
             z.SetMinThickness(MM(0.2))
             z.SetLocalClearance(MM(0.25))
-            z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+            # thermal reliefs: a pad on a pour heats up like the pad at its other end, so small
+            # parts don't tombstone in reflow and hand-soldered pins can be soldered.  "solid" is
+            # for the buck's hot-loop islands, where both ends of every part sit on copper anyway.
+            if connection == "solid":
+                z.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+            else:
+                z.SetPadConnection(pcbnew.ZONE_CONNECTION_THERMAL)
+                z.SetThermalReliefGap(MM(0.3))
+                z.SetThermalReliefSpokeWidth(MM(0.4))
             z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
         self.board.Add(z)
         return z
@@ -223,10 +246,10 @@ class PcbBuilder:
         m = 0.4
         full = [(m, m), (self.w - m, m), (self.w - m, self.h - m), (m, self.h - m)]
         late = self.deferred_layers()
-        have = {(self.board.GetLayerName(z.GetLayer()), z.GetNetname()) for z in self.board.Zones()
-                if not z.GetIsRuleArea()}
+        have = {(pcbnew.LayerName(z.GetLayer()) if hasattr(pcbnew, "LayerName") else self.board.GetStandardLayerName(z.GetLayer()),
+                 z.GetNetname()) for z in self.board.Zones() if not z.GetIsRuleArea()}
         for spec in self.b.pcb.get("zones", []):
-            deferred = spec["layer"] in late
+            deferred = spec.get("defer", spec["layer"] in late)
             if (which == "routing" and deferred) or (which == "deferred" and not deferred):
                 continue
             if which == "deferred" and (spec["layer"], self.b.pcb_net_name(spec["net"])) in have:
@@ -234,7 +257,7 @@ class PcbBuilder:
             layer = {"F.Cu": pcbnew.F_Cu, "B.Cu": pcbnew.B_Cu,
                      "In1.Cu": getattr(pcbnew, "In1_Cu", None), "In2.Cu": getattr(pcbnew, "In2_Cu", None)}[spec["layer"]]
             self.zone(layer, spec["net"], spec.get("poly", full), priority=spec.get("priority", 0),
-                      name=spec.get("name", ""))
+                      name=spec.get("name", ""), connection=spec.get("connection", "thermal"))
         if which != "deferred":
             for ko in self.b.pcb.get("keepouts", []):
                 layers = [getattr(pcbnew, n.replace(".", "_")) for n in ko["layers"]] if "layers" in ko else None
@@ -243,6 +266,21 @@ class PcbBuilder:
             for ref, num in self.b.pcb.get("fanout", []):
                 _, _, poly = fanout_geometry(self.board, ref, num)
                 self.zone(pcbnew.F_Cu, None, poly, keepout=True, name=f"fanout:{ref}.{num}")
+
+    # -------------------------------------------------------------- fixed vias
+    def vias(self):
+        """b.pcb["vias"]: [(net, x, y)] placed by hand before routing (e.g. the GND vias tying the
+        buck's top-side GND island to the inner plane, right next to the capacitors' GND pads)."""
+        for net, x, y, *size in self.b.pcb.get("vias", []):
+            d, drill = size or (0.6, 0.3)
+            v = pcbnew.PCB_VIA(self.board)
+            v.SetPosition(V(x, y))
+            v.SetWidth(MM(d))
+            v.SetDrill(MM(drill))
+            v.SetNet(self.net(self.b.pcb_net_name(net)))
+            if hasattr(v, "SetIsFree"):
+                v.SetIsFree(True)       # tied to the copper through zones only: keep its net
+            self.board.Add(v)
 
     # -------------------------------------------------------------- texts
     def texts(self):
@@ -286,6 +324,7 @@ class PcbBuilder:
         self.place_parts()
         self.outline()
         self.texts()
+        self.vias()
         self.zones("routing" if defer_pours else "all")
         if route:
             self.autoroute(self.b.pcb.get("passes", 40))
@@ -338,12 +377,139 @@ def import_session(b: Board, outdir: Path) -> Path:
         v.SetNet(pad.GetNet())
         board.Add(v)
     board.GetDesignSettings().m_TrackMinWidth = MM(0.1 if pb.layers >= 4 else 0.125)
+    gnd = pb.net(b.pcb_net_name("GND"))
     if b.pcb.get("stitch"):
-        n = stitch_gnd(board, pb.net(b.pcb_net_name("GND")), b.pcb["stitch"])
+        n = stitch_gnd(board, gnd, b.pcb["stitch"])
         print(f"stitching: {n} GND vias")
     pcbnew.SaveBoard(str(path), board)
+    # without outer GND pours every SMD GND pad needs its own way down to the plane: Freerouting
+    # fans most of them out, the ones it leaves get a short track to a GND via (KiCad's DRC says which)
+    for _ in range(2):
+        spots = unconnected_gnd_pads(path)
+        if not spots:
+            break
+        board = pcbnew.LoadBoard(str(path))
+        gnd = board.FindNet(b.pcb_net_name("GND"))
+        n = connect_gnd_pads(board, gnd, spots)
+        print(f"gnd: {n} of {len(spots)} isolated GND pads tied to the plane")
+        pcbnew.SaveBoard(str(path), board)
     print("imported", ses)
     return path
+
+
+def unconnected_gnd_pads(path: Path, gnd_name: str = "GND") -> list[tuple[float, float]]:
+    """Positions (mm) of the GND pads KiCad's DRC reports as unconnected (zones refilled)."""
+    import json
+    import tempfile
+    rpt = Path(tempfile.mkstemp(suffix=".json")[1])
+    subprocess.run(["kicad-cli", "pcb", "drc", "--format", "json", "--refill-zones", "-o", str(rpt), str(path)],
+                   check=False, capture_output=True)
+    data = json.loads(rpt.read_text(encoding="utf-8"))
+    out = []
+    for v in data.get("unconnected_items", []):
+        for it in v.get("items", []):
+            d = it.get("description", "")
+            if d.startswith("Pad") and f"[{gnd_name}]" in d:
+                out.append((it["pos"]["x"], it["pos"]["y"]))
+    return sorted(set(out))
+
+
+def connect_gnd_pads(board, gnd, spots_mm, via_d=0.45, drill=0.25, width_mm=0.25) -> int:
+    """Tie each listed (isolated) SMD GND pad to the GND plane: the shortest straight track that
+    reaches a GND via / through-hole pad, or a spot where a small via fits (on every layer)."""
+    code = gnd.GetNetCode()
+    err = MM(0.005)
+    layers = [l for l in (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu) if board.GetEnabledLayers().Contains(l)]
+    clr = MM(0.2)
+
+    def obstacles_on(layer):
+        sh = pcbnew.SHAPE_POLY_SET()
+        for t in board.GetTracks():
+            if t.GetNetCode() != code and t.IsOnLayer(layer):
+                t.TransformShapeToPolygon(sh, layer, clr, err, pcbnew.ERROR_OUTSIDE)
+        for fp in board.GetFootprints():
+            for p in fp.Pads():
+                if p.GetNetCode() != code and p.IsOnLayer(layer):
+                    p.TransformShapeToPolygon(sh, layer, clr, err, pcbnew.ERROR_OUTSIDE)
+        for z in board.Zones():
+            if z.GetIsRuleArea() and z.IsOnLayer(layer) and (z.GetDoNotAllowTracks() or z.GetDoNotAllowVias()):
+                sh.Append(z.Outline())
+        return sh
+
+    obst = {l: obstacles_on(l) for l in layers}
+    # foreign-net zone fills on the inner layers: a via may cross them (KiCad refills around it), so
+    # only tracks, pads and keep-outs count there; holes must keep their distance everywhere
+    holes = []
+    anchors = []
+    for t in board.GetTracks():
+        if t.GetClass() == "PCB_VIA":
+            holes.append((t.GetPosition(), t.GetDrillValue()))
+            if t.GetNetCode() == code:
+                anchors.append((t.GetPosition(), MM(0.2)))
+    for fp in board.GetFootprints():
+        for p in fp.Pads():
+            if p.GetDrillSize().x > 0:
+                holes.append((p.GetPosition(), max(p.GetDrillSize().x, p.GetDrillSize().y)))
+                if p.GetNetCode() == code:
+                    anchors.append((p.GetPosition(), min(p.GetSize().x, p.GetSize().y) // 2))
+    edge = board.GetBoardEdgesBoundingBox()
+    edge.Inflate(-MM(0.6))
+
+    def via_fits(e):
+        if not edge.Contains(e):
+            return False
+        for q, d in holes:
+            if math.hypot(e.x - q.x, e.y - q.y) < d / 2 + MM(drill) / 2 + MM(0.35):
+                return False
+        return not any(obst[l].Collide(e, MM(via_d) // 2) for l in layers)
+
+    pads = [p for fp in board.GetFootprints() for p in fp.Pads() if p.GetNetCode() == code and p.GetDrillSize().x == 0]
+    n = 0
+    for x, y in spots_mm:
+        pad = min(pads, key=lambda p: (p.GetPosition().x - MM(x)) ** 2 + (p.GetPosition().y - MM(y)) ** 2)
+        layer = pcbnew.F_Cu if pad.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
+        a = pad.GetPosition()
+        half = MM(width_mm) // 2
+        best = None
+        for k in range(48):
+            ang = k * math.pi / 24
+            dx, dy = math.cos(ang), math.sin(ang)
+            for step in range(2, 41):
+                L = MM(step * 0.1)
+                if best and L >= best[0]:
+                    break
+                e = pcbnew.VECTOR2I(int(a.x + dx * L), int(a.y + dy * L))
+                if obst[layer].Collide(pcbnew.SEG(a, e), half):
+                    break
+                hit = next((q for q, r in anchors if math.hypot(e.x - q.x, e.y - q.y) < r), None)
+                if hit is not None:
+                    best = (L, e, False)
+                    break
+                if via_fits(e):
+                    best = (L, e, True)
+                    break
+        if not best:
+            print(f"gnd: pad {pad.GetParentFootprint().GetReference()}.{pad.GetNumber()} at ({x:.2f}, {y:.2f}) still isolated")
+            continue
+        _, e, via = best
+        t = pcbnew.PCB_TRACK(board)
+        t.SetStart(a)
+        t.SetEnd(e)
+        t.SetWidth(MM(width_mm))
+        t.SetLayer(layer)
+        t.SetNet(gnd)
+        board.Add(t)
+        if via:
+            v = pcbnew.PCB_VIA(board)
+            v.SetPosition(e)
+            v.SetWidth(MM(via_d))
+            v.SetDrill(MM(drill))
+            v.SetNet(gnd)
+            board.Add(v)
+            holes.append((e, MM(drill)))
+            anchors.append((e, MM(via_d) // 2))
+        n += 1
+    return n
 
 
 def _strip_zones(text: str, name_prefix: str) -> str:

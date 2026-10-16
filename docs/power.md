@@ -13,7 +13,10 @@ fanless 24 V supply lives inside the printed base.
 | **worst case** (every board at its current limit) | ≈ 11 W at 24 V | ≈ 175 W |
 | **realistic** (dev boards idle/running firmware) | 2–4 W | 40–60 W |
 
-Per row: worst case ≈ 1.9 A at 24 V → each row has its own 2.1 A eFuse.
+Per row: worst case ≈ 1.9 A at 24 V, realistic ≈ 0.5 A.  Each row has its own
+eFuse, set to **1.6 A**: rows are wired with JST PH (2 A per contact), so the
+limit protects the connectors and the 24 AWG jumpers.  Four DUTs at their own
+1.5 A limit at the same time would trip it (it retries on its own).
 
 ## Options compared
 
@@ -35,8 +38,11 @@ Per row: worst case ≈ 1.9 A at 24 V → each row has its own 2.1 A eFuse.
 
 ### Bus voltage: 24 V
 
-At 24 V a row draws ≤ 1.9 A and the whole rack ≤ 7.3 A: JST VH (10 A) and
-0.75 mm² wire are comfortable, and every bay's 24→5 V buck runs at ~21 % duty.
+At 24 V a row draws ≤ 1.9 A and the whole rack ≤ 7.3 A: the hub input is a
+JST VH (10 A) on 16 AWG, the rows JST PH (2 A, eFuse-limited to 1.6 A) on
+24 AWG, and every bay's 24→5 V buck runs at ~21 % duty.  One connector family
+for everything inside the shelf (PH), VH only where the whole rack's current
+comes in, no screw terminals.
 12 V would double the currents and exclude 28 V PD; 48 V would need 100 V
 converters.  The bay nodes accept **9–30 V** with 60 V-rated silicon, so the
 same boards also run from 20 V / 28 V USB-PD or 24 V PoE modules.
@@ -45,14 +51,15 @@ same boards also run from 20 V / 28 V USB-PD or 24 V PoE modules.
 
 ```
 mains → DD11 inlet (2-pole switch, T3.15 A) → UHP-200-24 → hub:
-  KF128 terminal → SUD50P06 P-FET (reverse polarity) → SMCJ33A TVS → 2 × 220 µF
-  → 5 × TPS26600 eFuse (2.1 A limit, 4 ms soft start, UV 15 V / OV 33 V, auto-retry)
-  → JST VH → row daisy chain → each bay node:
-     SUD50P06 P-FET → SMBJ33A TVS → 100 µF → TPS54360B (60 V) → 5 V → TPS2553 → DUT
+  JST VH → SUD50P06 P-FET (reverse polarity) → SMCJ33A TVS → 2 × 220 µF
+  → 5 × TPS26600 eFuse (1.6 A limit, 4 ms soft start, UV 15 V / OV 33 V, auto-retry)
+  → JST PH → row daisy chain → each bay node:
+     SUD50P06 P-FET → SMBJ33A TVS → 100 µF → LMR51635 (60 V, on above 13.5 V) → 5 V
+     → TPS2553 → 50 mΩ shunt (INA226) → DUT
 ```
 
 * Hot-plugging a bay node into a live 24 V bus rings up to ~2× the bus on
-  ceramic caps: the bay buck is a **60 V** TPS54360B (not a 36 V part) and the
+  ceramic caps: the bay buck is a **60 V** LMR51635 (not a 36 V part) and the
   TVS clamps below 54 V; the electrolytic damps the ringing.
 * The hub eFuses soft-start each row, so plugging a row never browns out the
   others, and a shorted bay only trips its own row.
@@ -73,7 +80,7 @@ mains → DD11 inlet (2-pole switch, T3.15 A) → UHP-200-24 → hub:
 Not comfortable with mains wiring?  Use the **external brick variant**: a
 Mean Well GST160A24-R7B (160 W, Power-DIN plug) into the Kycon KPJX-PM-4S
 panel jack pre-cut (knock-out) on the base's rear panel, wired to the same
-hub terminal.  Nothing above 24 V then enters the shelf.
+hub input.  Nothing above 24 V then enters the shelf.
 
 ## Mini BOM — base power path
 
@@ -88,5 +95,5 @@ hub terminal.  Nothing above 24 V then enters the shelf.
 | Hub | see `electronics/power-hub` (5 × TPS26600, SMCJ33A, …); JLC quote 2026-10-16: $74.13 for 5 PCBs, 2 assembled, ≈ $49.51 in lead-free HASL with the connectors hand-soldered; shipping and VAT extra | JLCPCB | ≈ 46 |
 
 Sources: Mean Well LRS-150/LRS-200/RSP-200/UHP-200/GST160A datasheets,
-Schurter DD11 datasheet, TI TPS2660 / TPS54360B datasheets, ADI AN-88
+Schurter DD11 datasheet, TI TPS2660 / LMR51635 (SLUSF64B) datasheets, ADI AN-88
 (hot-plug ringing), TME/RS/Mouser listings (Oct 2026).

@@ -6,7 +6,7 @@
 	(paper "A3")
 	(title_block
 		(title "Power hub — Overview")
-		(rev "0.1")
+		(rev "0.2")
 		(company "hw-testing-rack")
 		(comment 1 "24 V distribution for the hw-testing-rack shelf: 5 eFused outputs")
 		(comment 2 "Generated from electronics/power-hub/design.py — edit the Python, then regenerate")
@@ -287,7 +287,7 @@
 		)
 		(uuid "42f086dd-cac4-55ff-bc47-ee86f796b392")
 	)
-	(text_box "Power hub — 24 V in (screw terminal) → reverse protection + TVS → 5 × TPS26600 eFuse → JST VH outputs.\nOutputs: rows A, B, C, D (one feed per row, daisy-chained bay to bay) and AUX.\nRTN is tied to GND: reverse polarity is handled by Q1, so the eFuses' own reverse blocking is not needed."
+	(text_box "Power hub — 24 V in (JST VH) → reverse protection + TVS → 5 × TPS26600 eFuse (1.6 A) → JST PH outputs.\nOutputs: rows A, B, C, D (one feed per row, daisy-chained bay to bay) and AUX.\nRTN is tied to GND: reverse polarity is handled by Q1, so the eFuses' own reverse blocking is not needed."
 		(exclude_from_sim no)
 		(at 30 128.27 0)
 		(size 360 12.7)

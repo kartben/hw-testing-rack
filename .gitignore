@@ -6,8 +6,9 @@ __pycache__/
 # Machine-specific Claude Code MCP config (see CONTRIBUTING.md)
 .mcp.json
 
-# KiCad scratch / backups
+# KiCad scratch / backups (incl. KiCad 10's per-project local history)
 *-backups/
+.history/
 *.kicad_prl
 *.lck
 fp-info-cache

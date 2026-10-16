@@ -108,8 +108,8 @@ cables:
   c-to-micro-b: { label: "USB-C ↔ micro-B, 10–15 cm",      a: usb-c, b: micro-b, length: 120 }
   c-to-mini-b:  { label: "USB-C ↔ mini-B, 15–25 cm",       a: usb-c, b: mini-b,  length: 150 }
   drawer-ext:   { label: "USB-C male → panel-mount USB-C female, 30 cm", length: 300 }
-  row-jumper:   { label: "JST VH 2-pin jumper, 0.75 mm², 120 mm", length: 120 }
-  row-feed:     { label: "JST VH 2-pin feed, 0.75 mm²",          length: 1000 }
+  row-jumper:   { label: "JST PH 2-pin jumper, 24 AWG, 120 mm", length: 120 }
+  row-feed:     { label: "JST PH 2-pin feed, 24 AWG",            length: 1000 }
 
 pcb:
   bay_node:
@@ -120,7 +120,7 @@ pcb:
     front_gap: 0.5          # PCB front edge → fascia inner face
     holes: [[3.5, 3.5], [60.5, 3.5], [3.5, 76.5], [60.5, 76.5]]   # M3, KiCad coordinates
     front: { pc_port: 32, led: 12, svc: 50 }        # KiCad X of the front-edge parts
-    vh_y: 64                # KiCad Y of the power in/out connectors (left/right edges)
+    pwr_y: 63               # KiCad Y of the 24 V in/out connectors (JST PH, left/right edges)
     right: { dut: 24, aux: 40 }                     # KiCad Y of the right-edge connectors
     cam: [64, 11]           # camera 5 V connector (JST-PH) mouth, right edge near the rear
   power_hub:

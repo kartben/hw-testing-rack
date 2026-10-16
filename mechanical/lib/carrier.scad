@@ -10,7 +10,7 @@ BOSS_D = 7.5;
 // KiCad coordinates on the node (y = 0 at the REAR edge) → carrier XY.
 function node_xy(k) = [NODE_X0 + k[0], NODE_FRONT_Y + (NODE_SIZE[1] - k[1])];
 NODE_REAR_Y = NODE_FRONT_Y + NODE_SIZE[1];
-VH_NOTCH_Y = node_xy([0, NODE_VH_Y])[1];
+PWR_NOTCH_Y = node_xy([0, NODE_PWR_Y])[1];        // 24 V jumper (JST PH) between neighbouring nodes
 
 // ---------------------------------------------------------------- deck fixings
 // Side screws go guide → deck → base wall boss (one screw holds all three).

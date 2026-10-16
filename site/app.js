@@ -240,26 +240,26 @@ function makeNodeStandIn() {
   kbox(g, 32, 76.5, 8.9, 7.4, 3.2, MAT.silver);                   // PC port
   kbox(g, 60.5, 20, 7.4, 8.9, 3.2, MAT.silver);                   // DUT port
   kbox(g, 60.5, 32, 7.4, 8.9, 3.2, MAT.silver);                   // PWR port
-  kbox(g, 14, 58, 10, 11.5, 4.2, MAT.inductor);                   // buck inductor
-  kbox(g, 4.5, 70, 9, 7.8, 9.8, MAT.whitePlastic);                // VH in
-  kbox(g, 59.5, 70, 9, 7.8, 9.8, MAT.whitePlastic);               // VH out
+  kbox(g, 15.7, 34, 7, 6.6, 3, MAT.inductor);                     // buck inductor (FXL0630)
+  kbox(g, 3, 63, 7.6, 6, 4.8, MAT.whitePlastic);                  // 24 V in (JST PH)
+  kbox(g, 61, 63, 7.6, 6, 4.8, MAT.whitePlastic);                 // 24 V out (JST PH)
   kbox(g, 59, 45, 4.5, 6, 3, MAT.whitePlastic);                   // AUX SH
   kbox(g, 50, 3, 6, 4.5, 6, MAT.whitePlastic);                    // CAM PH
   kbox(g, 12, 78.5, 2, 2, 0.9, MAT.whitePlastic);                 // LED
-  kbox(g, 26, 60, 8, 8, 10.2, MAT.silver);                        // bulk cap
+  kbox(g, 6, 49, 8, 8, 10.2, MAT.silver);                         // bulk cap
   return g;
 }
 
 function makeHubStandIn() {
   const g = new THREE.Group();
   g.add(box(120, 70, 1.6, MAT.pcb, 0, -70, 0));
-  kbox(g, 12, 35, 10.5, 13, 12, std(0x2e8b57));                   // KF128 input
+  kbox(g, 5.6, 37, 9.8, 8.5, 11, MAT.whitePlastic);               // 24 V input (JST VH)
   for (let i = 0; i < 5; i++) {
-    kbox(g, 40 + i * 17, 8, 9, 7.8, 9.8, MAT.whitePlastic);       // row outputs
-    kbox(g, 40 + i * 17, 30, 6.4, 5.2, 1.2, MAT.blackPlastic);    // eFuse
+    kbox(g, 40 + i * 16, 6.5, 6, 4.5, 6, MAT.whitePlastic);       // row outputs (JST PH)
+    kbox(g, 40 + i * 16, 30, 6.4, 5.2, 1.2, MAT.blackPlastic);    // eFuse
   }
-  kbox(g, 26, 52, 10, 10, 10.5, MAT.silver);
-  kbox(g, 26, 22, 10, 10, 10.5, MAT.silver);
+  kbox(g, 14.5, 12, 10, 10, 10.5, MAT.silver);                    // 220 µF bulk caps
+  kbox(g, 27.5, 12, 10, 10, 10.5, MAT.silver);
   return g;
 }
 

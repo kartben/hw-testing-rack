@@ -69,10 +69,11 @@ module carrier_base() {
         // bay label recess on the fascia, right of the controls
         translate([CARRIER_W - 34, 0.6 - EPS, CARRIER_WALL_H / 2]) rotate([90, 0, 0])
             linear_extrude(0.7) square([52, 11], center = true);
-        // power jumper notches through both side walls, at the node's JST-VH height
+        // 24 V jumper notches through both side walls, at the node's JST PH height (a PHR-2 plug,
+        // 6 × 4.5 mm, threads through)
         for (x = [-EPS, CARRIER_W - WALL - EPS])
-            translate([x, VH_NOTCH_Y - 7, CARRIER_BOTTOM + CARRIER_STANDOFF])
-                cube([WALL + 2 * EPS, 14, CARRIER_WALL_H]);
+            translate([x, PWR_NOTCH_Y - 4.5, CARRIER_BOTTOM + CARRIER_STANDOFF])
+                cube([WALL + 2 * EPS, 9, CARRIER_WALL_H]);
         // camera 5 V cable to the pod below
         translate([CAM_CABLE_HOLE[0], CAM_CABLE_HOLE[1], -EPS]) rslot(10, 5, CARRIER_BOTTOM + 2);
         // rear service slot (row feed for the left bay, top-row camera cables, airflow)

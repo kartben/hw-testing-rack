@@ -6,7 +6,7 @@
 	(paper "A3")
 	(title_block
 		(title "Bay node — Overview")
-		(rev "0.1")
+		(rev "0.2")
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
@@ -513,7 +513,7 @@
 		)
 		(uuid "2516458d-20d9-5223-8a0c-7ccc2fbc0da1")
 	)
-	(text "VBUS_DUT"
+	(text "DUT_5V"
 		(exclude_from_sim no)
 		(at 276.86 119.38 0)
 		(effects
@@ -551,7 +551,7 @@
 		)
 		(uuid "6f69dc48-6ed5-5c76-93a7-d6be14dadd4e")
 	)
-	(text_box "Bay node — one per bay.  Sheets:\n  Power: 24 V bus (daisy-chain), reverse protection, TPS54360B buck to 5 V, AMS1117 3.3 V\n  MCU: ESP32-S3-MINI-1, boot/reset, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls VBUS/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
+	(text_box "Bay node — one per bay.  Sheets:\n  Power: 24 V bus (JST PH daisy chain), reverse protection, LMR51635 buck to 5 V, AMS1117 3.3 V\n  MCU: ESP32-S3-MINI-1, reset/boot, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
 		(exclude_from_sim no)
 		(at 30 146.05 0)
 		(size 360 27.94)

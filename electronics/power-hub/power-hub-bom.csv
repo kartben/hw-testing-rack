@@ -7,17 +7,17 @@ D2,1,SMCJ33A,D_SMC,SMCJ33A,Littelfuse,C224049,"TVS 33 V stand-off, 1500 W (unidi
 D3,1,24V,LED_0805_2012Metric,KT-0805G,Hubei KENTO,C2297,green LED 0805,,,
 "D11,D12,D13,D14,D15",5,ON,LED_0805_2012Metric,KT-0805G,Hubei KENTO,C2297,green LED 0805,,,
 "D21,D22,D23,D24,D25",5,FAULT,LED_0805_2012Metric,NCD0805R1,NationStar,C84256,red LED 0805,,,
-J1,1,24V IN,"TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",KF128-5.08-2P-AA,Cixi Kefa,C474952,"screw terminal 5.08 mm, 24 A",,,"hand-solder, buy loose (LCSC)"
-J2,1,ROW A,JST_VH_B2P-VH_1x02_P3.96mm_Vertical,B2P-VH(LF)(SN),JST,C160315,"JST VH 2-pin, top entry, 10 A",,,"hand-solder, buy loose (LCSC)"
-J3,1,ROW B,JST_VH_B2P-VH_1x02_P3.96mm_Vertical,B2P-VH(LF)(SN),JST,C160315,"JST VH 2-pin, top entry, 10 A",,,"hand-solder, buy loose (LCSC)"
-J4,1,ROW C,JST_VH_B2P-VH_1x02_P3.96mm_Vertical,B2P-VH(LF)(SN),JST,C160315,"JST VH 2-pin, top entry, 10 A",,,"hand-solder, buy loose (LCSC)"
-J5,1,ROW D,JST_VH_B2P-VH_1x02_P3.96mm_Vertical,B2P-VH(LF)(SN),JST,C160315,"JST VH 2-pin, top entry, 10 A",,,"hand-solder, buy loose (LCSC)"
-J6,1,ROW AUX,JST_VH_B2P-VH_1x02_P3.96mm_Vertical,B2P-VH(LF)(SN),JST,C160315,"JST VH 2-pin, top entry, 10 A",,,"hand-solder, buy loose (LCSC)"
+J1,1,24V IN,JST_VH_B2P-VH_1x02_P3.96mm_Vertical,B2P-VH(LF)(SN),JST,C160315,"JST VH 2-pin, top entry, 10 A",,,"hand-solder, buy loose (LCSC)"
+J2,1,ROW A,JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,B2B-PH-K-S(LF)(SN),JST,C131337,"JST PH 2-pin, top entry, 2 A",,,"hand-solder, buy loose (LCSC)"
+J3,1,ROW B,JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,B2B-PH-K-S(LF)(SN),JST,C131337,"JST PH 2-pin, top entry, 2 A",,,"hand-solder, buy loose (LCSC)"
+J4,1,ROW C,JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,B2B-PH-K-S(LF)(SN),JST,C131337,"JST PH 2-pin, top entry, 2 A",,,"hand-solder, buy loose (LCSC)"
+J5,1,ROW D,JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,B2B-PH-K-S(LF)(SN),JST,C131337,"JST PH 2-pin, top entry, 2 A",,,"hand-solder, buy loose (LCSC)"
+J6,1,ROW AUX,JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,B2B-PH-K-S(LF)(SN),JST,C131337,"JST PH 2-pin, top entry, 2 A",,,"hand-solder, buy loose (LCSC)"
 J7,1,SUPERVISOR,PinHeader_2x08_P2.54mm_Vertical,2x8 pin header 2.54 mm,generic,,control header (DNP by default),yes,,
 Q1,1,SUD50P06-15,TO-252-2,SUD50P06-15,UMW / Vishay,C7503186,"P-MOSFET 60 V, reverse-polarity protection",,"C7472883 (TECH PUBLIC), C141584 (Vishay)",
 R1,1,100k,R_0603_1608Metric,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),C25803,Resistor 100k 0603,,,
 "R2,R41,R42,R43,R44,R45,R51,R52,R53,R54,R55",11,10k,R_0805_2012Metric,0805W8F1002T5E,UNI-ROYAL(Uniroyal Elec),C17414,Resistor 10k 0805,,,
 "R11,R12,R13,R14,R15",5,470k,R_0603_1608Metric,0603WAF4703T5E,UNI-ROYAL(Uniroyal Elec),C23178,Resistor 470k 0603,,,
-"R21,R22,R23,R24,R25",5,5.6k,R_0603_1608Metric,0603WAF5601T5E,UNI-ROYAL(Uniroyal Elec),C23189,Resistor 5.6k 0603,,,
+"R21,R22,R23,R24,R25",5,7.5k,R_0603_1608Metric,0603WAF7501T5E,UNI-ROYAL(Uniroyal Elec),C23234,Resistor 7.5k 0603,,,
 "R31,R32,R33,R34,R35",5,18k,R_0603_1608Metric,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),C25810,Resistor 18k 0603,,,
 "U1,U2,U3,U4,U5",5,TPS26600PWPR,HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.66x2.46mm,TPS26600PWPR,Texas Instruments,C544399,4.2–60 V 2.23 A eFuse,,,

@@ -263,10 +263,11 @@ def hardware(rack) -> tuple[list[dict], list[dict]]:
          "supplier": "AliExpress / igus E2 micro", "qty": round(0.17 * n_units + 0.3, 1), "unit": "m", "unit_eur": 4.0},
         {"category": "Cables", "item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
          "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_units, "unit_eur": 1.5},
-        {"category": "Cables", "item": "JST VH 2-pin jumper, 0.75 mm², 120 mm (bay → bay, 24 V)",
-         "supplier": "pre-crimped or DIY", "qty": sum(rack.units - 1 for _ in rack.rows), "unit_eur": 0.8},
-        {"category": "Cables", "item": "JST VH 2-pin feed, 0.75 mm², ≈1 m (hub → first bay of each row)",
-         "supplier": "DIY", "qty": n_rows + 1, "unit_eur": 1.5},
+        {"category": "Cables", "item": "JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay, 24 V)",
+         "supplier": "pre-crimped (AliExpress) or DIY", "qty": sum(rack.units - 1 for _ in rack.rows), "unit_eur": 0.3},
+        {"category": "Cables", "item": "JST PH 2-pin feed, 24 AWG, ≈1 m, PHR-2 + 2 × SPH-002T-P0.5S (hub → first bay of each row)",
+         "supplier": "DIY", "qty": n_rows + 1, "unit_eur": 0.8,
+         "notes": "PH: 2 A per contact; each row's eFuse limits it to 1.6 A"},
     ]
     cab = Counter(info["cable"] for info in pop.values())
     for b in rack.bays():
@@ -287,8 +288,9 @@ def hardware(rack) -> tuple[list[dict], list[dict]]:
         {"category": "Power", "item": "IEC C13 mains cord, 1.0 mm²", "supplier": "any", "qty": 1, "unit_eur": 5.0},
         {"category": "Power", "item": "H05V-K 1.0 mm² wire (brown, blue, green/yellow) + 4.8 mm insulated receptacles",
          "supplier": "any", "qty": 1, "unit": "set", "unit_eur": 5.0},
-        {"category": "Power", "item": "1.5 mm² DC wire PSU → hub, ferrules, M5 ring lug + serrated washer (PE bond)",
-         "supplier": "any", "qty": 1, "unit": "set", "unit_eur": 4.0},
+        {"category": "Power", "item": "16 AWG (1.3 mm²) DC wire PSU → hub, JST VHR-2N + 2 × SVH-41T-P1.1 "
+                                       "(16–20 AWG), ferrules (PSU side), M5 ring lug + serrated washer (PE bond)",
+         "supplier": "any / LCSC", "qty": 1, "unit": "set", "unit_eur": 4.5},
         {"category": "Power", "item": "(variant) Mean Well GST160A24-R7B brick + Kycon KPJX-PM-4S panel jack",
          "supplier": "RS / Mouser", "qty": 0, "unit_eur": 70.0, "notes": "instead of the UHP + inlet if you skip mains wiring"},
     ]

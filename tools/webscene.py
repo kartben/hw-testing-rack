@@ -421,14 +421,14 @@ def build(rack) -> Path:
     # --- row power: jumpers between adjacent nodes, feeds from the hub ------------------
     for i, r in enumerate(rack.rows):
         zc = P + pcb_top + 5
-        vy = rack.node_front_y + node["size"][1] - node["vh_y"]
+        vy = rack.node_front_y + node["size"][1] - node["pwr_y"]
         for u in range(rack.units - 1):
             xa = rack.unit_x(u) + node["x0"] + node["size"][0]
             xb = rack.unit_x(u + 1) + node["x0"]
             for k, col in ((0, "#c62828"), (1, "#222222")):
-                off = (k - 0.5) * 3
+                off = (k - 0.5) * 2         # JST PH, 2 mm pitch, 24 AWG
                 cable(bezier((xa, vy + off, zc), (xa + 40, vy + off - 4, zc + 2), (xb - 40, vy + off - 4, zc + 2),
-                             (xb, vy + off, zc)), row=i, kind="power-jumper", color=col, radius=1.1)
+                             (xb, vy + off, zc)), row=i, kind="power-jumper", color=col, radius=0.7)
         # feed: hub (base, right side) → up the rear-left post → the row's first node
         hub_end = [rack.unit_x(3) + 40, D / 2 + 20, P + 3 + 9 + 12]
         entry = rack.to_frame(i, [rack.unit_x(0) + node["x0"], vy, zc])

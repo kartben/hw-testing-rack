@@ -301,7 +301,7 @@ def scad_config(rack: Rack) -> str:
         "NODE_FRONT_Y": rack.node_front_y,
         "NODE_PCB_TOP": rack.pcb_top,
         "NODE_FRONT": [node["front"]["pc_port"], node["front"]["led"], node["front"]["svc"]],
-        "NODE_VH_Y": node["vh_y"],
+        "NODE_PWR_Y": node["pwr_y"],
         "NODE_RIGHT": [node["right"]["dut"], node["right"]["aux"]],
         "NODE_CAM": node["cam"],
         "HUB_SIZE": hub["size"],

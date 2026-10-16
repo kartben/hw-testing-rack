@@ -183,6 +183,15 @@
   "stock": 717589,
   "basic": true
  },
+ "R:1M:0603": {
+  "lcsc": "C22935",
+  "mpn": "0603WAF1004T5E",
+  "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+  "description": "100mW 1MΩ 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
+  "price": 0.0021,
+  "stock": 5504928,
+  "basic": true
+ },
  "R:1k:0603": {
   "lcsc": "C21190",
   "mpn": "0603WAF1001T5E",
@@ -258,6 +267,15 @@
  },
  "R:523k:0603": null,
  "R:53.6k:0603": null,
+ "R:7.5k:0603": {
+  "lcsc": "C23234",
+  "mpn": "0603WAF7501T5E",
+  "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+  "description": "100mW 7.5kΩ 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
+  "price": 0.0018,
+  "stock": 1188985,
+  "basic": true
+ },
  "R:82k:0603": {
   "lcsc": "C23254",
   "mpn": "0603WAF8202T5E",

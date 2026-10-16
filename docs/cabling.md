@@ -60,10 +60,10 @@ DATA ports, each with its own switched, current-limited, metered VBUS.
 
 ## 24 V
 
-* **Bay to bay:** JST VH 2-pin jumpers, 0.75 mm², 120 mm, plugged into the
+* **Bay to bay:** JST PH 2-pin jumpers, 24 AWG, 120 mm, plugged into the
   node's left (IN) and right (OUT) connectors through notches in the carrier
   side walls, at the front of the plenum where the chain never goes.
-* **Hub to row:** one VH feed per row from the power hub (base, rear) up the
+* **Hub to row:** one JST PH feed per row from the power hub (base, rear) up the
   rear-left post, held in the extrusion slot with printed `slot_cable_clip`s,
   into the first bay's left notch.
 * **Cameras:** a JST-PH lead from the node above, down through the hole in
@@ -72,5 +72,5 @@ DATA ports, each with its own switched, current-limited, metered VBUS.
 ## Mains
 
 IEC C13 cord → rear inlet panel.  Inside the base: inlet → PSU AC terminals
-under the printed mains cover; PSU DC → hub terminal (1.5 mm², ferrules); PE
+under the printed mains cover; PSU DC → hub's JST VH input (16 AWG, ferrules on the PSU side); PE
 bonded to the PSU and the frame.  See [power.md](power.md).

@@ -140,7 +140,7 @@
       },
       "rules": {
         "max_error": 0.005,
-        "min_clearance": 0.15,
+        "min_clearance": 0.127,
         "min_connection": 0.0,
         "min_copper_edge_clearance": 0.3,
         "min_groove_width": 0.0,
@@ -364,7 +364,7 @@
     ]
   ],
   "text_variables": {
-    "REV": "0.1"
+    "REV": "0.2"
   },
   "tuning_profiles": {
     "meta": {

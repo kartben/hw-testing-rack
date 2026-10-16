@@ -98,8 +98,8 @@ laptop gets full high-speed.
 ## Power
 
 24 V from a Mean Well UHP-200-24 (fanless, PFC) in the base → power hub
-(reverse protection, TVS, one TPS26600 eFuse per row) → one JST-VH feed per
-row → daisy-chained bay to bay → each bay node's own 60 V buck to 5 V.
+(reverse protection, TVS, one 1.6 A TPS26600 eFuse per row) → one JST PH feed per
+row → daisy-chained bay to bay → each bay node's own 60 V LMR51635 buck to 5 V.
 Details and alternatives (external brick, USB-C PD EPR, PoE++) in
 [power.md](power.md).
 

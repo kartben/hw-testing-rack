@@ -10,11 +10,21 @@ parity) then validate that both views agree.
 The generated schematics are meant to be read and reviewed in KiCad.  Edit
 the Python description and regenerate rather than editing the outputs.
 
-Layout: in every block the part with the most pins is the anchor; the two-pin
-parts (R, C, L, diodes) that share a signal with one of its side pins hang off
-that pin on a real wire ("rail"), and parts chained behind them (R -> C -> GND)
-stack underneath.  Supplies use power symbols; every wired net still carries
-one label, so net names (and thus the PCB) never depend on the drawing.
+Two layouts:
+
+* **Drawn** (a sheet whose parts all carry `sch=` hints): the design places
+  every symbol on the 0.1" grid and draws the wires between pins
+  (`Sheet.wire("U1.SW", "L1.1")`), like a hand-made schematic.  Pins left
+  unwired get a short stub with their net label or power symbol.  The writer
+  adds junctions and refuses any wire or stub that would touch a pin or wire
+  of another net, so a drawing mistake cannot change the netlist.
+* **Automatic** (no hints): in every block the part with the most pins is the
+  anchor; the two-pin parts (R, C, L, diodes) that share a signal with one of
+  its side pins hang off that pin on a real wire ("rail"), and parts chained
+  behind them (R -> C -> GND) stack underneath.
+
+Supplies use power symbols; every wired net still carries one label, so net
+names (and thus the PCB) never depend on the drawing.
 """
 
 from __future__ import annotations
@@ -26,6 +36,7 @@ import os
 import textwrap
 import uuid
 from dataclasses import dataclass, field
+from typing import Any
 from pathlib import Path
 
 from sexp import S, Sym, dumps, find, find_all, loads, yes
@@ -205,8 +216,10 @@ class Part:
     on_board: bool = True
     pcb: dict = field(default_factory=dict)  # placement hints: x, y, rot, side
     sheet: "Sheet | None" = None
+    sch: dict = field(default_factory=dict)  # drawn placement: x, y (0.1" grid units), rot, mirror, fields
     sch_at: tuple[float, float] | None = None
-    sch_rot: int = 0          # 0 or 180 (the writer only flips two-pin parts)
+    sch_rot: int = 0          # 0/90/180/270 (the automatic layout only flips two-pin parts)
+    sch_mirror: str = ""      # "y": mirrored left-right (drawn layout, rot 0 only)
 
     @property
     def sym(self) -> SymbolDef:
@@ -242,6 +255,31 @@ class Sheet:
     notes: list[str] = field(default_factory=list)
     blocks: list[tuple[str, list[Part]]] = field(default_factory=list)
     paper: str = "A3"
+    # drawn layout (all coordinates in 0.1" grid units, see Sheet.wire)
+    wires: list = field(default_factory=list)       # [(points, net or None)]
+    tags: list = field(default_factory=list)        # [(net, point, direction)]
+    frames: list = field(default_factory=list)      # [(title, x0, y0, x1, y1)]
+    texts: list = field(default_factory=list)       # [(text, x, y, size, bold)]
+    notes_at: tuple | None = None                   # (x, y, width) of the notes box
+
+    def wire(self, *pts: Any, net: str | None = None):
+        """Draw a wire through `pts`: "REF.PIN" (pin number or name), ("REF.PIN", dx, dy) or (x, y).
+        Consecutive points that are not aligned get an elbow, horizontal leg first."""
+        self.wires.append((pts, net))
+
+    def tag(self, net: str, at: Any, d: str = "up"):
+        """Net label (or power symbol) at a wire end / pin: d = up, down, left or right."""
+        self.tags.append((net, at, d))
+
+    def frame(self, title: str, x0: float, y0: float, x1: float, y1: float):
+        self.frames.append((title, x0, y0, x1, y1))
+
+    def text(self, txt: str, x: float, y: float, size: float = 1.27, bold: bool = False):
+        self.texts.append((txt, x, y, size, bold))
+
+    @property
+    def drawn(self) -> bool:
+        return any(p.sch for p in self.parts)
 
     def block(self, title: str):
         self.blocks.append((title, []))
@@ -370,18 +408,25 @@ def _text_w(s: str, size=1.27) -> float:
     return len(s) * size * 0.75 + 2.0
 
 
-def _pin_at(pin: Pin, rot: int):
-    """Pin connection point relative to the symbol origin (schematic coords) and its outward direction."""
+def _pin_at(pin: Pin, rot: int, mirror: str = ""):
+    """Pin connection point relative to the symbol origin (schematic coords) and its outward
+    direction, for a symbol turned `rot` degrees counter-clockwise (and/or mirrored left-right)."""
     x, y = pin.x, -pin.y
     dx, dy = pin.outward
-    if rot == 180:
-        return (-x, -y), (-dx, -dy)
+    if mirror == "y":
+        x, dx = -x, -dx
+    for _ in range((rot // 90) % 4):
+        x, y, dx, dy = y, -x, dy, -dx
     return (x, y), (dx, dy)
 
 
-def _rot_bbox(bbox, rot: int):
+def _rot_bbox(bbox, rot: int, mirror: str = ""):
     x0, y0, x1, y1 = bbox
-    return (-x1, -y1, -x0, -y0) if rot == 180 else bbox
+    if mirror == "y":
+        x0, x1 = -x1, -x0
+    for _ in range((rot // 90) % 4):
+        x0, y0, x1, y1 = y0, -x1, y1, -x0
+    return x0, y0, x1, y1
 
 
 def _two_pin_kind(p: "Part") -> str | None:
@@ -658,6 +703,188 @@ class SheetWriter:
             x = W  # force new row for next block
         self.used_h = y + row_h
 
+    # drawn layout ----------------------------------------------------------
+    U = 2.54           # drawn coordinates are in 0.1" grid units
+    DIRS = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
+
+    def _place_drawn(self):
+        for p in self.sh.parts:
+            if not p.sch:
+                raise ValueError(f"sheet {self.sh.name}: {p.ref} has no sch= placement "
+                                 "(on a drawn sheet every part needs one)")
+            p.sch_at = (snap(p.sch["x"] * self.U), snap(p.sch["y"] * self.U))
+            p.sch_rot = p.sch.get("rot", 0) % 360
+            p.sch_mirror = p.sch.get("mirror", "")
+            if p.sch_mirror and p.sch_rot:
+                raise ValueError(f"{p.ref}: mirror is only supported at rot 0")
+
+    def _pin_xy(self, p: Part, pin: Pin):
+        (rx, ry), d = _pin_at(pin, p.sch_rot, p.sch_mirror)
+        return (snap(p.sch_at[0] + rx), snap(p.sch_at[1] + ry)), d
+
+    def _resolve(self, pt):
+        """A drawing point -> ((x, y) in mm, the part pin it names or None)."""
+        if isinstance(pt, str):
+            ref, key = pt.split(".", 1)
+            p = self.b.parts.get(ref)
+            if p is None or p.sheet is not self.sh:
+                raise KeyError(f"sheet {self.sh.name}: wire point {pt!r}: no part {ref} on this sheet")
+            pins = [q for q in p.sym.pins if q.number == key] or [q for q in p.sym.pins if q.name == key]
+            if not pins:
+                raise KeyError(f"wire point {pt!r}: {ref} has no pin {key!r}")
+            q = next((q for q in pins if not q.hidden), pins[0])
+            return self._pin_xy(p, q)[0], (p, q)
+        if isinstance(pt[0], str):
+            (x, y), _ = self._resolve(pt[0])
+            return (snap(x + pt[1] * self.U), snap(y + pt[2] * self.U)), None
+        return (snap(pt[0] * self.U), snap(pt[1] * self.U)), None
+
+    @staticmethod
+    def _on_seg(pt, a, b, interior=False):
+        (x, y), (ax, ay), (bx, by) = pt, a, b
+        if ax == bx == x:
+            lo, hi = sorted((ay, by))
+        elif ay == by == y:
+            lo, hi = sorted((ax, bx))
+            y = x
+        else:
+            return False
+        return lo < y < hi if interior else lo <= y <= hi
+
+    def layout_drawn(self):
+        self._place_drawn()
+        sh = self.sh
+        self.segs: list = []          # (a, b, net, is_stub)
+        self.dlabels: list = []       # (net, (x, y), direction)
+        pin_pts: list = []            # ((x, y), net, ref)
+        # wires
+        for pts, net_kw in sh.wires:
+            res = [self._resolve(p) for p in pts]
+            nets = set()
+            for _, pq in res:
+                if pq:
+                    n = pq[0].pin_nets().get(pq[1].number)
+                    if n is None:
+                        raise ValueError(f"sheet {sh.name}: wire to unconnected pin {pq[0].ref}.{pq[1].name}")
+                    nets.add(n)
+            if net_kw:
+                nets.add(net_kw)
+            if len(nets) != 1:
+                raise ValueError(f"sheet {sh.name}: wire {pts} joins nets {sorted(nets) or 'none'}")
+            net = nets.pop()
+            for (a, _), (b, _) in zip(res, res[1:]):
+                corner = (b[0], a[1])
+                for s0, s1 in ((a, corner), (corner, b)):
+                    if s0 != s1:
+                        self.segs.append((s0, s1, net, False))
+        wire_pts = {(a, n) for a, b, n, _ in self.segs} | {(b, n) for a, b, n, _ in self.segs}
+        # pins: wired when a wire of their net ends on (or runs through) them, else a stub + label
+        for p in sh.parts:
+            nets = p.pin_nets()
+            for pin in p.sym.pins:
+                net = nets.get(pin.number)
+                if net is None:
+                    continue
+                xy, d = self._pin_xy(p, pin)
+                pin_pts.append((xy, net, p.ref))
+                if (xy, net) in wire_pts or any(self._on_seg(xy, a, b) and n == net for a, b, n, s in self.segs):
+                    self.wired.add((p.ref, pin.number))
+                elif not any(q == xy and n == net and r == p.ref for q, n, r in pin_pts[:-1]):
+                    end = (snap(xy[0] + d[0] * self.STUB), snap(xy[1] + d[1] * self.STUB))
+                    self.segs.append((xy, end, net, True))
+        # explicit tags
+        for net, at, d in sh.tags:
+            xy, pq = self._resolve(at)
+            if not (pq or any(self._on_seg(xy, a, b) for a, b, n, s in self.segs if n == net)):
+                raise ValueError(f"sheet {sh.name}: tag {net} at {at} is not on a wire of that net")
+            self.dlabels.append((net, xy, self.DIRS[d]))
+        # nothing may touch copper of another net
+        for a, b, net, _ in self.segs:
+            for xy, n, ref in pin_pts:
+                if n != net and self._on_seg(xy, a, b):
+                    raise ValueError(f"sheet {sh.name}: wire {net} {a}-{b} touches pin of {ref} ({n})")
+            for c, e, n2, _ in self.segs:
+                if n2 != net and (self._on_seg(c, a, b) or self._on_seg(e, a, b)):
+                    raise ValueError(f"sheet {sh.name}: wire {net} {a}-{b} touches wire {n2} {c}-{e}")
+        # junctions: three or more connections meeting at a point
+        cands = {a for a, b, n, s in self.segs if not s} | {b for a, b, n, s in self.segs if not s} \
+            | {xy for xy, n, r in pin_pts} | {xy for n, xy, d in self.dlabels}
+        self.djunctions = []
+        for pt in sorted(cands):
+            deg = 0
+            for a, b, n, stub in self.segs:
+                if stub:
+                    continue
+                if pt in (a, b):
+                    deg += 1
+                elif self._on_seg(pt, a, b, interior=True):
+                    deg += 2
+            if deg == 0:
+                continue
+            deg += len({r for xy, n, r in pin_pts if xy == pt})
+            deg += sum(1 for n, xy, d in self.dlabels if xy == pt and n in POWER_SYMBOLS)
+            if deg >= 3:
+                self.djunctions.append(pt)
+        # every drawn island (wires joined end to end or by a T) needs its own name: KiCad does not join
+        # two pins just because they share a name (USBLC6 I/O1 = pins 1 and 6), so a label elsewhere on
+        # the same net does not name this island.  A tag on it, or an automatic label.
+        wsegs = [(a, b, n) for a, b, n, s in self.segs if not s]
+        parent = list(range(len(wsegs)))
+
+        def root(i):
+            while parent[i] != i:
+                parent[i] = parent[parent[i]]
+                i = parent[i]
+            return i
+        for i, (a, b, n) in enumerate(wsegs):
+            for j, (c, e, m) in enumerate(wsegs[:i]):
+                if n == m and (self._on_seg(a, c, e) or self._on_seg(b, c, e)
+                               or self._on_seg(c, a, b) or self._on_seg(e, a, b)):
+                    parent[root(i)] = root(j)
+        islands: dict[int, list] = {}
+        for i, sg in enumerate(wsegs):
+            islands.setdefault(root(i), []).append(sg)
+        for segs3 in islands.values():
+            net = segs3[0][2]
+            if any(n == net and any(self._on_seg(xy, a, b) for a, b, _ in segs3) for n, xy, d in self.dlabels):
+                continue
+            if net in POWER_SYMBOLS:
+                raise ValueError(f"sheet {sh.name}: power net {net} is drawn but has no power symbol: tag it")
+            segs = [(a, b) for a, b, _ in segs3]
+            hz = [(a, b) for a, b in segs if a[1] == b[1]]
+            a, b = max(hz or segs, key=lambda ab: abs(ab[1][0] - ab[0][0]) + abs(ab[1][1] - ab[0][1]))
+            if hz:
+                lo, hi = sorted((a[0], b[0]))
+                mid = (snap(lo + max(1.27, (hi - lo - _text_w(net) + 2.0) / 2)), a[1])
+            else:
+                mid = (a[0], snap((a[1] + b[1]) / 2))
+            self.dlabels.append((net, mid, (1, 0) if hz else (0, -1)))
+        self.used_h = 0
+
+    def emit_drawn(self):
+        sh = self.sh
+        for i, (a, b, net, stub) in enumerate(self.segs):
+            if stub:
+                continue
+            self.items.append(S("wire", S("pts", S("xy", *a), S("xy", *b)),
+                                S("stroke", S("width", 0), S("type", Sym("default"))),
+                                S("uuid", uid(self.b.name, sh.file, "dw", str(i)))))
+        for i, (x, y) in enumerate(self.djunctions):
+            self.items.append(S("junction", S("at", x, y), S("diameter", 0), S("color", 0, 0, 0, 0),
+                                S("uuid", uid(self.b.name, sh.file, "dj", str(i)))))
+        for i, (net, (x, y), d) in enumerate(self.dlabels):
+            self.connect(net, x, y, d, f"{sh.file}.tag{i}")
+        for i, (title, x0, y0, x1, y1) in enumerate(sh.frames):
+            u = self.U
+            self.items.append(S("rectangle", S("start", snap(x0 * u), snap(y0 * u)), S("end", snap(x1 * u), snap(y1 * u)),
+                                S("stroke", S("width", 0.2), S("type", Sym("dash"))), S("fill", S("type", Sym("none"))),
+                                S("uuid", uid(self.b.name, sh.file, "frame", str(i)))))
+            self.items.append(_gtext(title, x0 * u + 1.27, y0 * u + 3.0, (self.b.name, sh.file, "frametitle", str(i)),
+                                     1.8, "left bottom", True))
+        for i, (txt, x, y, size, bold) in enumerate(sh.texts):
+            self.items.append(_gtext(txt, x * self.U, y * self.U, (self.b.name, sh.file, "text", str(i)), size,
+                                     "left bottom", bold))
+
     def emit_groups(self):
         for gi, g in enumerate(self.groups):
             for i, (a, b) in enumerate(g.wires):
@@ -677,20 +904,28 @@ class SheetWriter:
         sd = p.sym
         self.lib_ids.add(p.lib_id)
         ox, oy = p.sch_at
-        x0, y0, x1, y1 = _rot_bbox(sd.bbox, p.sch_rot)
+        x0, y0, x1, y1 = _rot_bbox(sd.bbox, p.sch_rot, p.sch_mirror)
+        frot = 0
+        if p.sch:
+            (rx, ry), (vx, vy), just = self._field_spots(p, (x0, y0, x1, y1))
+            ref_at, val_at = (round(ox + rx, 3), round(oy + ry, 3)), (round(ox + vx, 3), round(oy + vy, 3))
+            frot = 90 if p.sch_rot in (90, 270) else 0
+        else:
+            narrow = (x1 - x0) < 8
+            just = "left" if narrow else None
+            ref_at = (snap(ox + x1 + 1.27) if narrow else ox, snap(oy + y0 - 1.27))
+            val_at = (snap(ox + x1 + 1.27) if narrow else ox, snap(oy + y0 + 1.27) if narrow else snap(oy + y1 + 1.27))
         props = [
-            _prop("Reference", p.ref, snap(ox + x1 + 1.27) if (x1 - x0) < 8 else ox, snap(oy + y0 - 1.27),
-                  hide=p.ref.startswith("#"),
-                  justify="left" if (x1 - x0) < 8 else None),
-            _prop("Value", p.value, snap(ox + x1 + 1.27) if (x1 - x0) < 8 else ox, snap(oy + y1 + 1.27) if (x1 - x0) >= 8 else snap(oy + y0 + 1.27),
-                  justify="left" if (x1 - x0) < 8 else None),
+            _prop("Reference", p.ref, *ref_at, rot=frot, hide=p.ref.startswith("#"), justify=just),
+            _prop("Value", p.value, *val_at, rot=frot, justify=just),
             _prop("Footprint", p.footprint, ox, oy, hide=True),
             _prop("Datasheet", p.datasheet, ox, oy, hide=True),
             _prop("Description", p.description, ox, oy, hide=True),
         ]
         for k, v in p.fields.items():
             props.append(_prop(k, v, ox, oy, hide=True))
-        node = S("symbol", S("lib_id", p.lib_id), S("at", ox, oy, p.sch_rot), S("unit", 1),
+        node = S("symbol", S("lib_id", p.lib_id), S("at", ox, oy, p.sch_rot),
+                 *([S("mirror", Sym(p.sch_mirror))] if p.sch_mirror else []), S("unit", 1),
                  S("exclude_from_sim", Sym("no")), S("in_bom", yes(p.in_bom)), S("on_board", yes(p.on_board)),
                  S("dnp", yes(p.dnp)), S("fields_autoplaced", Sym("yes")),
                  S("uuid", self.b.sym_uuid(p)), *props)
@@ -702,12 +937,14 @@ class SheetWriter:
         self.items.append(node)
         # connections
         nets = p.pin_nets()
+        done = set()
         for pin in sd.pins:
-            (rx, ry), (dx, dy) = _pin_at(pin, p.sch_rot)
+            (rx, ry), (dx, dy) = _pin_at(pin, p.sch_rot, p.sch_mirror)
             px, py = snap(ox + rx), snap(oy + ry)
             net = nets.get(pin.number)
-            if (p.ref, pin.number) in self.wired:
+            if (p.ref, pin.number) in self.wired or (px, py, net) in done:
                 continue
+            done.add((px, py, net))
             if net is None:
                 if pin.etype != "no_connect" and not pin.hidden:
                     self.items.append(S("no_connect", S("at", px, py), S("uuid", uid(self.b.name, p.ref, "nc", pin.number))))
@@ -763,8 +1000,8 @@ class SheetWriter:
     @staticmethod
     def _power_value(name, x, y, d, gnd):
         """Value text just beyond the power symbol's body."""
-        if d[1] == 0:            # side pin: body points outward, text past it
-            return _prop("Value", name, snap(x + d[0] * 4.6), y, justify="left" if d[0] > 0 else "right")
+        if d[1] == 0:            # side pin: body points outward, text past it (centred: the symbol is turned)
+            return _prop("Value", name, round(x + d[0] * (4.2 + len(name) * 0.53), 3), y, rot=90)
         down = (gnd and d != (0, -1)) or (not gnd and d == (0, 1))
         return _prop("Value", name, x, snap(y + (3.81 if down else -3.81)))
 
@@ -772,22 +1009,62 @@ class SheetWriter:
         if not self.sh.notes:
             return
         W, H = self.paper_size()
-        y = max(self.used_h + 10, 40)
+        x, y, w = 20, max(self.used_h + 10, 40), W - 40 - 140
+        if self.sh.notes_at:
+            x, y, w = (v * self.U for v in self.sh.notes_at)
         txt = "\n".join(self.sh.notes)
-        self.items.append(S("text_box", txt, S("exclude_from_sim", Sym("no")), S("at", 20, snap(y), 0),
-                            S("size", W - 40 - 140, snap(5 + 2.2 * (txt.count("\n") + 1))),
+        self.items.append(S("text_box", txt, S("exclude_from_sim", Sym("no")), S("at", snap(x), snap(y), 0),
+                            S("size", snap(w), snap(5 + 2.2 * (txt.count("\n") + 1))),
                             S("margins", 1.5, 1.5, 1.5, 1.5),
                             S("stroke", S("width", 0), S("type", Sym("dash"))),
                             S("fill", S("type", Sym("none"))),
                             _font(1.5, justify="left top"),
                             S("uuid", uid(self.b.name, self.sh.file, "notes"))))
 
+    @staticmethod
+    def _tw(s: str) -> float:
+        """Width of a 1.27 mm field text, roughly (KiCad's stroke font)."""
+        return len(s) * 1.05
+
+    def _field_spots(self, p: Part, bbox):
+        """Centres of the reference / value texts of a drawn part, relative to its origin (texts are
+        centred: KiCad would apply a justification in the symbol's own, maybe mirrored, frame)."""
+        x0, y0, x1, y1 = bbox
+        f = p.sch.get("fields")
+        wr, wv = self._tw(p.ref), self._tw(p.value)
+        if isinstance(f, tuple):                      # explicit start (dx, dy) in grid units, value one row below
+            dx, dy = f[0] * self.U, f[1] * self.U
+            return (dx + wr / 2, dy), (dx + wv / 2, dy + self.U), None
+        if f is None:
+            if len(p.sym.pins) <= 3 and (x1 - x0) > (y1 - y0) + 2:
+                f = "above"                            # horizontal two-pin part
+            elif len(p.sym.pins) <= 3 or (x1 - x0) < 8:
+                f = "right"
+            else:
+                f = "corner"
+        cx = (x0 + x1) / 2
+        if f == "above":
+            return (cx, y0 - 1.6), (cx, y1 + 1.6), None
+        if f == "below":
+            return (cx, y1 + 1.6), (cx, y1 + 3.8), None
+        if f == "right":
+            return (x1 + 1.0 + wr / 2, -1.27), (x1 + 1.0 + wv / 2, 1.27), None
+        if f == "left":
+            return (x0 - 1.0 - wr / 2, -1.27), (x0 - 1.0 - wv / 2, 1.27), None
+        return (x0 + wr / 2, y0 - 1.27), (x0 + wv / 2, y1 + 1.27), None
+
     def document(self) -> list:
-        self.layout()
+        if self.sh.drawn:
+            self.layout_drawn()
+        else:
+            self.layout()
         for _, parts in self.sh.blocks:
             for p in parts:
                 self.emit_symbol(p)
-        self.emit_groups()
+        if self.sh.drawn:
+            self.emit_drawn()
+        else:
+            self.emit_groups()
         self.emit_notes()
         lib_symbols = S("lib_symbols", *[copy.deepcopy(LIB.get(l).node) for l in sorted(self.lib_ids)])
         return S("kicad_sch", S("version", 20250610), S("generator", "hw-testing-rack-eda"),

@@ -27,8 +27,8 @@ carrier (4 node, 6 side, 3 pillar, 2 chain, 4 camera underneath), roof decks
 1. Base plates on the bottom beams; PSU on its saddles (cable ties or M3 strap).
 2. Inlet panel with the Schurter DD11; mains wiring with insulated 4.8 mm
    receptacles; PE to the PSU FG **and** to the frame (serrated washer).
-3. Mains cover over the PSU AC terminals.  Hub on its mount, 1.5 mm² DC from
-   the PSU to the hub terminal.  Close the panels.
+3. Mains cover over the PSU AC terminals.  Hub on its mount, 16 AWG DC from
+   the PSU to the hub's JST VH input.  Close the panels.
 4. Before anything else is connected: power up, check 24 V at every hub
    output and that all five ON LEDs light.
 
@@ -39,7 +39,7 @@ carrier (4 node, 6 side, 3 pillar, 2 chain, 4 camera underneath), roof decks
    to the `chain_anchor` (screwed to the carrier), moving end to the
    `chain_foot`.  Lay the drawer extension cable in the chain (links snap open),
    plug its male end into the node's DUT port.
-3. **Carrier** onto the row's beams (4 × M5 + T-nuts); VH jumper to the
+3. **Carrier** onto the row's beams (4 × M5 + T-nuts); JST PH jumper to the
    neighbour through the side notches (row feed into the first bay).
 4. **Deck**: drop it on with the foot's tongue through the slot; M3 flat-heads
    into the three pillars.  **Guides** on top with the M3×12 side screws
