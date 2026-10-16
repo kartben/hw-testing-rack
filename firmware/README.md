@@ -143,6 +143,12 @@ an ES module, no framework or CDN, about 5 KB gzipped in flash.  It follows
 the browser's light/dark theme, polls `/api/status` every 2 s while visible,
 and offers the shell's main actions.
 
+![Status page of bay B3, dark theme: VBUS on with live V/I/P and a current sparkline, a USB/IP client attached](../docs/img/web-ui-dark.png)
+
+| ![Status page, light theme: the DUT is enumerated and ready to be attached](../docs/img/web-ui-light.png) | ![Status page after an over-current trip: red banner with a Power on button, VBUS off](../docs/img/web-ui-fault.png) |
+|---|---|
+| Light theme, DUT enumerated and ready to attach | Over-current: VBUS cut by the firmware |
+
 | Endpoint | |
 |---|---|
 | `GET /api/status` | everything `bay status` shows, as JSON |
@@ -164,7 +170,10 @@ $ curl -s bay-b3.local/metrics
 
 To work on the page without a node, `python firmware/bay-node/web/dev_server.py`
 serves it on <http://localhost:8766> with a simulated API (`/dev/fault`
-trips a fake over-current).
+trips a fake over-current, `/dev/attach` toggles a fake USB/IP client).
+The screenshots above come from that simulation:
+`python firmware/bay-node/web/screenshots.py` (Playwright and an installed
+Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
 
 ### Status LED
 

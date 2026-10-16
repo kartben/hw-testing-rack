@@ -99,7 +99,8 @@ button {
   display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: 10px;
   background: var(--soft); border: 1px solid var(--line);
   & code { flex: 1; min-width: 0; font: 0.82rem/1.4 ui-monospace, "Cascadia Code", Menlo, monospace;
-           overflow-x: auto; scrollbar-width: none; white-space: nowrap; user-select: all; }
+           overflow-x: auto; scrollbar-width: none; white-space: nowrap; user-select: all;
+           mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
   & button { padding: 4px 10px; font-size: 0.8rem; }
 }
 footer { margin-top: 20px; color: var(--muted); font-size: 0.85rem; display: flex; gap: 16px; flex-wrap: wrap;

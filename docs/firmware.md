@@ -49,6 +49,12 @@ Zephyr's new USB host stack.  The firmware lives in [`firmware/`](../firmware/)
 | Control interface | written | `bay …` shell on the UART test pads and over telnet; status page and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`) |
 | Updates | not yet | MCUboot + mcumgr over UDP; for now `west flash` through the front port in SERVICE mode |
 
+![The node's status page (simulated node): live V/I/P, power and reset actions, USB/IP state](img/web-ui-dark.png)
+
+*The status page at `http://bay-<id>.local/`, here with a USB/IP client
+attached.  More states and the API in
+[`firmware/README.md`](../firmware/README.md#web-page-and-api).*
+
 ## Flashing a node
 
 1. Slide the bay's **SERVICE** switch on (fascia).  The firmware stops its
