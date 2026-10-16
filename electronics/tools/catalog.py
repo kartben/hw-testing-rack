@@ -25,6 +25,7 @@ class Cat:
     datasheet: str = ""
     description: str = ""
     alt: str = ""          # alternative sourcing notes
+    hand_solder: bool = False     # through-hole, soldered by hand: kept out of the JLC BOM and CPL
 
     def fields(self) -> dict:
         f = {"MPN": self.mpn, "Manufacturer": self.manufacturer}
@@ -87,14 +88,14 @@ CAT = {
     "nfet": Cat("Transistor_FET:2N7002", "Package_TO_SOT_SMD:SOT-23", "2N7002", "CJ", "C8545", 0.02, basic=True,
                 description="N-MOSFET 60 V (open-drain AUX outputs)"),
     "vh_h": Cat("Connector_Generic:Conn_01x02", "Connector_JST:JST_VH_S2P-VH_1x02_P3.96mm_Horizontal", "S2P-VH(LF)(SN)",
-                "JST", "C160355", 0.16, description="JST VH 2-pin, side entry, 10 A"),
+                "JST", "C160355", 0.16, hand_solder=True, description="JST VH 2-pin, side entry, 10 A"),
     "vh_v": Cat("Connector_Generic:Conn_01x02", "Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical", "B2P-VH(LF)(SN)",
-                "JST", "C160315", 0.06, description="JST VH 2-pin, top entry, 10 A"),
+                "JST", "C160315", 0.06, hand_solder=True, description="JST VH 2-pin, top entry, 10 A"),
     "sh6": Cat("Connector_Generic_MountingPin:Conn_01x06_MountingPin",
                "Connector_JST:JST_SH_SM06B-SRSS-TB_1x06-1MP_P1.00mm_Horizontal", "XY-SM06B-SRSS-TB", "XYECONN",
                "C56123098", 0.07, alt="JST SM06B-SRSS-TB(LF)(SN) C160405", description="JST-SH 6-pin side entry"),
     "ph2": Cat("Connector_Generic:Conn_01x02", "Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal",
-               "S2B-PH-K-S(LF)(SN)", "JST", "C173752", 0.04, description="JST-PH 2-pin side entry"),
+               "S2B-PH-K-S(LF)(SN)", "JST", "C173752", 0.04, hand_solder=True, description="JST-PH 2-pin side entry"),
     "pptc500": Cat("Device:Polyfuse_Small", "Fuse:Fuse_1206_3216Metric", "SMD1206P050TF", "RUILON", "C20799", 0.08,
                    description="PTC 0.5 A hold, 1206"),
     "efuse": Cat("Power_Management:TPS26600PWP",
@@ -103,7 +104,8 @@ CAT = {
                  datasheet="https://www.ti.com/lit/ds/symlink/tps2660.pdf", description="4.2–60 V 2.23 A eFuse"),
     "terminal": Cat("Connector:Screw_Terminal_01x02",
                     "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
-                    "KF128-5.08-2P-AA", "Cixi Kefa", "C474952", 0.19, description="screw terminal 5.08 mm, 24 A"),
+                    "KF128-5.08-2P-AA", "Cixi Kefa", "C474952", 0.19, hand_solder=True,
+                    description="screw terminal 5.08 mm, 24 A"),
     "led_g": Cat("Device:LED", "LED_SMD:LED_0805_2012Metric", "KT-0805G", "Hubei KENTO", "C2297", 0.02, basic=True,
                  description="green LED 0805"),
     "led_r": Cat("Device:LED", "LED_SMD:LED_0805_2012Metric", "NCD0805R1", "NationStar", "C84256", 0.01, basic=True,
@@ -113,6 +115,8 @@ CAT = {
     "testpad": Cat("Connector:TestPoint", "TestPoint:TestPoint_Pad_D1.5mm", "test pad", "-", "", 0.0),
     "hole": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_3.2mm_M3", "M3 mounting hole", "-", "", 0.0),
 }
+
+HAND_SOLDER_LCSC = {c.lcsc for c in CAT.values() if c.hand_solder}
 
 
 def passive(kind: str, value: str, size: str) -> dict:
