@@ -170,9 +170,49 @@ def export_fab(outdir: Path, name: str, b):
         check=False, capture_output=True)
     run(["kicad-cli", "pcb", "export", "step", "--subst-models", "-f", "-o", fab / f"{name}.step", pcb], check=False,
         capture_output=True)
-    run(["kicad-cli", "pcb", "export", "glb", "--subst-models", "--include-tracks", "--include-pads",
-         "--include-zones", "--include-silkscreen", "--include-soldermask", "-f", "-o", fab / f"{name}.glb", pcb],
+    # board body + component models only: the layer art goes to the viewer as a texture
+    # (tools/pcb_glb.py), from the polygons export_art() writes
+    run(["kicad-cli", "pcb", "export", "glb", "--subst-models", "-f", "-o", fab / f"{name}.glb", pcb],
         check=False, capture_output=True)
+    export_art(outdir, name)
+
+
+ART_LAYERS = ("F.Cu", "B.Cu", "F.Mask", "B.Mask", "F.SilkS", "B.SilkS")
+
+
+def export_art(outdir: Path, name: str) -> Path:
+    """Copper, mask-opening and silkscreen layers as simple polygons (mm, KiCad axes) plus the
+    drill holes, for tools/pcb_glb.py to paint the board's top and bottom textures."""
+    import pcbnew
+    board = pcbnew.LoadBoard(str(outdir / f"{name}.kicad_pcb"))
+    bb = board.GetBoardEdgesBoundingBox()
+    mm = pcbnew.ToMM
+    art = {"origin": [mm(bb.GetX()), mm(bb.GetY())], "size": [mm(bb.GetWidth()), mm(bb.GetHeight())],
+           "layers": {}, "holes": []}
+    for lname in ART_LAYERS:
+        ps = pcbnew.SHAPE_POLY_SET()
+        board.ConvertBrdLayerToPolygonalContours(board.GetLayerID(lname), ps)
+        ps.Fracture()
+        polys = []
+        for i in range(ps.OutlineCount()):
+            ol = ps.Outline(i)
+            polys.append([[round(mm(ol.CPoint(k).x), 4), round(mm(ol.CPoint(k).y), 4)] for k in range(ol.PointCount())])
+        art["layers"][lname] = polys
+    for t in board.GetTracks():
+        if t.GetClass() == "PCB_VIA":
+            q = t.GetPosition()
+            art["holes"].append([mm(q.x), mm(q.y), mm(t.GetDrillValue())])
+    for fp in board.GetFootprints():
+        for pad in fp.Pads():
+            d = pad.GetDrillSize()
+            if d.x > 0:
+                q = pad.GetPosition()
+                art["holes"].append([mm(q.x), mm(q.y), mm(min(d.x, d.y))])
+    dst = outdir / "build" / f"{name}-art.json"
+    dst.parent.mkdir(exist_ok=True)
+    dst.write_text(json.dumps(art, separators=(",", ":")))
+    print("wrote", dst, {k: len(v) for k, v in art["layers"].items()}, "holes", len(art["holes"]))
+    return dst
 
 
 def main():
