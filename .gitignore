@@ -37,3 +37,4 @@ render/*.glb
 
 # Local preview server config (machine-specific paths)
 .claude/
+render/assets/

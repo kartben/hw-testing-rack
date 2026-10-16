@@ -88,11 +88,15 @@ python tools/blender_live.py exec render/live_scene.py render/bay-exploded.glb
 python tools/blender_live.py exec render/live_render.py exploded
 ```
 
-The photo shots (`docs/img/photo-*.jpg`) use their own scene: anodised
-aluminium, PETG with 0.2 mm layer lines, an oak desk against a wall, a laptop
-wired to bay C4, window light and depth of field:
+The photo shots (`docs/img/photo-*.jpg`) use their own scene: a small office
+lit through a window, anodised aluminium, PETG with 0.2 mm layer lines and
+rounded edges, scanned oak and plaster (CC0 textures from Poly Haven), a laptop
+showing a Zephyr shell, wired to bay C4 by a USB-C cable that hangs as a real
+one would (a catenary), depth of field and lens effects:
 
 ```bash
+python tools/fetch_render_assets.py                     # CC0 textures → render/assets/ (not committed)
+python render/screen_terminal.py                        # the laptop's screen → render/assets/
 python tools/assembly_glb.py --with-pc-cable --out render/assembly-photo.glb
 python tools/blender_live.py exec render/live_photo.py build
 python tools/blender_live.py exec render/live_photo.py shot desk          # desk, drawer, detail → docs/img/photo-*.jpg
