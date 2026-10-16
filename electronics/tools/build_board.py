@@ -26,6 +26,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 REPO = HERE.parents[1]
 
+from catalog import HAND_SOLDER_LCSC  # noqa: E402
 from eda import generate_schematic  # noqa: E402
 
 
@@ -107,16 +108,18 @@ def bom_rows(b):
             "Footprint": fp.split(":")[1], "MPN": mpn, "Manufacturer": p0.fields.get("Manufacturer", ""),
             "LCSC": lcsc, "Description": p0.description, "DNP": "yes" if p0.dnp else "",
             "Alternative": p0.fields.get("Alternative", ""),
+            "Assembly": "hand-solder, buy loose (LCSC)" if lcsc in HAND_SOLDER_LCSC else "",
         })
     return rows
 
 
 def jlc_bom_rows(rows):
     """One line per LCSC part: JLC deselects lines that resolve to the same part ("Multiple lines in
-    the BOM have been matched to the same part"), so e.g. J1 24V IN + J2 24V OUT become one line."""
+    the BOM have been matched to the same part"), so e.g. J3 PC + J4 DUT become one line.  Parts
+    soldered by hand stay out."""
     groups: dict[str, list] = {}
     for r in rows:
-        if not r["DNP"]:
+        if not r["DNP"] and not r["Assembly"]:
             groups.setdefault(r["LCSC"] or f"{r['Value']}|{r['Footprint']}", []).append(r)
     out = []
     for rs in groups.values():
@@ -136,10 +139,12 @@ def jlc_bom_rows(rows):
 # listing, not the footprint name: C7519 and C55266 share SOT-23-6 but JLC draws them 90° apart.
 # Derived on 2026-10-16 by fitting each part's EasyEDA pads onto the KiCad pads, pin by pin; "seen"
 # marks the parts JLC's placement preview showed wrong before the fix.  Every entry still has to
-# be confirmed in the preview: see "Placement corrections" in docs/electronics.md.
+# be confirmed in the preview: see "Placement corrections" in docs/electronics.md.  The through-hole
+# connectors are hand-soldered now (catalog hand_solder), so they leave the CPL and their rows only
+# matter if JLC ever places them again.
 JLC_CPL_FIX = {
-    "C160355": ("JST_VH_S2P-VH_1x02_P3.96mm_Horizontal", 180, 1.98, 0.0),     # bay J1 J2 (seen)
-    "C173752": ("JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal", 180, 1.0, 0.0),    # bay J6 (seen)
+    "C160355": ("JST_VH_S2P-VH_1x02_P3.96mm_Horizontal", 180, 1.98, 0.0),     # bay J1 J2 (seen; hand-soldered)
+    "C173752": ("JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal", 180, 1.0, 0.0),    # bay J6 (seen; hand-soldered)
     "C6186": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                            # bay U2 (seen)
     "C165948": ("USB_C_Receptacle_HRO_TYPE-C-31-M-12", 0, 0.0, -1.57),        # bay J3 J4
     "C2913206": ("ESP32-S2-MINI-1", 0, 0.0, 2.55),                            # bay U3
@@ -153,8 +158,8 @@ JLC_CPL_FIX = {
     "C8545": ("SOT-23", 180, 0.0, 0.0),                                       # bay Q2 Q3
     "C7503186": ("TO-252-2", 0, -1.89, 0.0),                                  # bay Q1, hub Q1
     "C544399": ("HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.66x2.46mm", 270, 0.0, 0.0),  # hub U1–U5
-    "C474952": ("TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal", 0, 2.54, 0.0),  # hub J1
-    "C160315": ("JST_VH_B2P-VH_1x02_P3.96mm_Vertical", 0, 1.98, 0.0),         # hub J2–J6
+    "C474952": ("TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal", 0, 2.54, 0.0),  # hub J1 (hand-soldered)
+    "C160315": ("JST_VH_B2P-VH_1x02_P3.96mm_Vertical", 0, 1.98, 0.0),         # hub J2–J6 (hand-soldered)
 }
 
 
@@ -207,7 +212,7 @@ def export_fab(outdir: Path, name: str, b):
         w = csv.writer(fo)
         w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
         for row in r:
-            if row["Ref"].startswith(("H", "TP")):
+            if row["Ref"].startswith(("H", "TP")) or lcsc.get(row["Ref"]) in HAND_SOLDER_LCSC:
                 continue
             w.writerow(jlc_cpl_row(row, lcsc.get(row["Ref"], "")))
             if lcsc.get(row["Ref"]) in JLC_CPL_FIX:

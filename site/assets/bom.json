@@ -13,6 +13,7 @@
 "unit_eur": 0.0635,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.02
@@ -30,6 +31,7 @@
 "unit_eur": 0.2504,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 8.01
@@ -47,6 +49,7 @@
 "unit_eur": 0.0124,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "8 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.59
@@ -64,6 +67,7 @@
 "unit_eur": 0.0067,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.11
@@ -81,6 +85,7 @@
 "unit_eur": 0.0059,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.09
@@ -98,6 +103,7 @@
 "unit_eur": 0.1138,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "7 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 12.75
@@ -115,6 +121,7 @@
 "unit_eur": 0.0403,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.64
@@ -132,6 +139,7 @@
 "unit_eur": 0.013,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.21
@@ -149,6 +157,7 @@
 "unit_eur": 0.0184,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.29
@@ -166,6 +175,7 @@
 "unit_eur": 0.0644,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.03
@@ -183,6 +193,7 @@
 "unit_eur": 0.1748,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 2.8
@@ -200,6 +211,7 @@
 "unit_eur": 0.0828,
 "basic": false,
 "standard_only": true,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.32
@@ -217,6 +229,7 @@
 "unit_eur": 0.0736,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.18
@@ -228,13 +241,14 @@
 "ref": "J1",
 "mpn": "S2P-VH(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC/JLCPCB",
+"supplier": "LCSC (hand-solder, buy loose)",
 "part": "C160355",
 "qty": 16,
 "unit_eur": 0.1472,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 16 boards",
+"hand_solder": true,
+"notes": "1 per board × 16 boards; hand-solder, buy loose (LCSC)",
 "unit": "pcs",
 "ext_eur": 2.36
 },
@@ -245,13 +259,14 @@
 "ref": "J2",
 "mpn": "S2P-VH(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC/JLCPCB",
+"supplier": "LCSC (hand-solder, buy loose)",
 "part": "C160355",
 "qty": 16,
 "unit_eur": 0.1472,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 16 boards",
+"hand_solder": true,
+"notes": "1 per board × 16 boards; hand-solder, buy loose (LCSC)",
 "unit": "pcs",
 "ext_eur": 2.36
 },
@@ -268,6 +283,7 @@
 "unit_eur": 0.1748,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 2.8
@@ -285,6 +301,7 @@
 "unit_eur": 0.1748,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 2.8
@@ -302,6 +319,7 @@
 "unit_eur": 0.0644,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.03
@@ -313,13 +331,14 @@
 "ref": "J6",
 "mpn": "S2B-PH-K-S(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC/JLCPCB",
+"supplier": "LCSC (hand-solder, buy loose)",
 "part": "C173752",
 "qty": 16,
 "unit_eur": 0.0368,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 16 boards",
+"hand_solder": true,
+"notes": "1 per board × 16 boards; hand-solder, buy loose (LCSC)",
 "unit": "pcs",
 "ext_eur": 0.59
 },
@@ -336,6 +355,7 @@
 "unit_eur": 0.2392,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 3.83
@@ -353,6 +373,7 @@
 "unit_eur": 0.3312,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 5.3
@@ -370,6 +391,7 @@
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.59
@@ -387,6 +409,7 @@
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "5 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.23
@@ -404,6 +427,7 @@
 "unit_eur": 0.0015,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.02
@@ -421,6 +445,7 @@
 "unit_eur": 0.0014,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.02
@@ -438,6 +463,7 @@
 "unit_eur": 0.0038,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "3 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.18
@@ -455,6 +481,7 @@
 "unit_eur": 0.0025,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.04
@@ -472,6 +499,7 @@
 "unit_eur": 0.0048,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "5 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.38
@@ -489,6 +517,7 @@
 "unit_eur": 0.0023,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.04
@@ -506,6 +535,7 @@
 "unit_eur": 0.0014,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.04
@@ -523,6 +553,7 @@
 "unit_eur": 0.002,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.03
@@ -540,6 +571,7 @@
 "unit_eur": 0.0037,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.06
@@ -557,6 +589,7 @@
 "unit_eur": 0.1104,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.77
@@ -574,6 +607,7 @@
 "unit_eur": 0.0026,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.08
@@ -591,6 +625,7 @@
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.05
@@ -608,6 +643,7 @@
 "unit_eur": 0.0017,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.05
@@ -625,6 +661,7 @@
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.29
@@ -642,6 +679,7 @@
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.29
@@ -659,6 +697,7 @@
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.88
@@ -676,6 +715,7 @@
 "unit_eur": 0.69,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 11.04
@@ -693,6 +733,7 @@
 "unit_eur": 0.1932,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 3.09
@@ -710,6 +751,7 @@
 "unit_eur": 4.3424,
 "basic": false,
 "standard_only": true,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 69.48
@@ -727,6 +769,7 @@
 "unit_eur": 0.1656,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 5.3
@@ -744,6 +787,7 @@
 "unit_eur": 0.2852,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 4.56
@@ -761,6 +805,7 @@
 "unit_eur": 0.2852,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 4.56
@@ -778,6 +823,7 @@
 "unit_eur": 0.0644,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.03
@@ -795,6 +841,7 @@
 "unit_eur": 0.4968,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 7.95
@@ -812,6 +859,7 @@
 "unit_eur": 0.69,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 11.04
@@ -830,13 +878,13 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "Standard PCBA, 16 boards: setup, stencil, feeders, SMT, hand soldering, manual assembly, X-ray, packaging",
-"supplier": "JLCPCB quote 2026-10-16",
+"item": "Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",
+"supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": 117.39,
-"notes": "setup $25.75, stencil $8.27, feeders $65.10, SMT $9.45, hand soldering $3.61, manual assembly $1.62, X-ray $13.28, packaging $0.52; Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 108.37,
+"notes": "setup $25.75, stencil $8.27, feeders $58.90, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; feeders −$6.20 (2 of 21 extended part types hand-soldered); no hand soldering (−$3.61); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 117.39
+"ext_eur": 108.37
 },
 {
 "category": "Electronics",
@@ -862,6 +910,7 @@
 "unit_eur": 0.1288,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "2 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.52
@@ -879,6 +928,7 @@
 "unit_eur": 0.0268,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "10 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.54
@@ -896,6 +946,7 @@
 "unit_eur": 0.0069,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "5 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.07
@@ -913,6 +964,7 @@
 "unit_eur": 0.0184,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.04
@@ -930,6 +982,7 @@
 "unit_eur": 0.3036,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.61
@@ -947,6 +1000,7 @@
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.04
@@ -964,6 +1018,7 @@
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "5 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.18
@@ -981,6 +1036,7 @@
 "unit_eur": 0.0092,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "5 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.09
@@ -992,13 +1048,14 @@
 "ref": "J1",
 "mpn": "KF128-5.08-2P-AA",
 "manufacturer": "Cixi Kefa",
-"supplier": "LCSC/JLCPCB",
+"supplier": "LCSC (hand-solder, buy loose)",
 "part": "C474952",
 "qty": 2,
 "unit_eur": 0.1748,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 2 boards",
+"hand_solder": true,
+"notes": "1 per board × 2 boards; hand-solder, buy loose (LCSC)",
 "unit": "pcs",
 "ext_eur": 0.35
 },
@@ -1009,13 +1066,14 @@
 "ref": "J2",
 "mpn": "B2P-VH(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC/JLCPCB",
+"supplier": "LCSC (hand-solder, buy loose)",
 "part": "C160315",
 "qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 2 boards",
+"hand_solder": true,
+"notes": "1 per board × 2 boards; hand-solder, buy loose (LCSC)",
 "unit": "pcs",
 "ext_eur": 0.11
 },
@@ -1026,13 +1084,14 @@
 "ref": "J3",
 "mpn": "B2P-VH(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC/JLCPCB",
+"supplier": "LCSC (hand-solder, buy loose)",
 "part": "C160315",
 "qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 2 boards",
+"hand_solder": true,
+"notes": "1 per board × 2 boards; hand-solder, buy loose (LCSC)",
 "unit": "pcs",
 "ext_eur": 0.11
 },
@@ -1043,13 +1102,14 @@
 "ref": "J4",
 "mpn": "B2P-VH(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC/JLCPCB",
+"supplier": "LCSC (hand-solder, buy loose)",
 "part": "C160315",
 "qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 2 boards",
+"hand_solder": true,
+"notes": "1 per board × 2 boards; hand-solder, buy loose (LCSC)",
 "unit": "pcs",
 "ext_eur": 0.11
 },
@@ -1060,13 +1120,14 @@
 "ref": "J5",
 "mpn": "B2P-VH(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC/JLCPCB",
+"supplier": "LCSC (hand-solder, buy loose)",
 "part": "C160315",
 "qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 2 boards",
+"hand_solder": true,
+"notes": "1 per board × 2 boards; hand-solder, buy loose (LCSC)",
 "unit": "pcs",
 "ext_eur": 0.11
 },
@@ -1077,13 +1138,14 @@
 "ref": "J6",
 "mpn": "B2P-VH(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC/JLCPCB",
+"supplier": "LCSC (hand-solder, buy loose)",
 "part": "C160315",
 "qty": 2,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
-"notes": "1 per board × 2 boards",
+"hand_solder": true,
+"notes": "1 per board × 2 boards; hand-solder, buy loose (LCSC)",
 "unit": "pcs",
 "ext_eur": 0.11
 },
@@ -1100,6 +1162,7 @@
 "unit_eur": 0.3312,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.66
@@ -1117,6 +1180,7 @@
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.01
@@ -1134,6 +1198,7 @@
 "unit_eur": 0.003,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "11 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.07
@@ -1151,6 +1216,7 @@
 "unit_eur": 0.0028,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "5 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.03
@@ -1168,6 +1234,7 @@
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "5 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.03
@@ -1185,6 +1252,7 @@
 "unit_eur": 0.0037,
 "basic": true,
 "standard_only": false,
+"hand_solder": false,
 "notes": "5 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.04
@@ -1202,6 +1270,7 @@
 "unit_eur": 1.4168,
 "basic": false,
 "standard_only": false,
+"hand_solder": false,
 "notes": "5 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 14.17
@@ -1209,24 +1278,24 @@
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "Bare PCB power-hub (2-layer 120×70 mm, ENIG)",
-"supplier": "JLCPCB quote 2026-10-16",
+"item": "Bare PCB power-hub (2-layer 120×70 mm, HASL lead-free)",
+"supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 5,
-"unit_eur": 4.7288,
-"notes": "engineering $4.00, ENIG $17.60, board $4.10 = $25.70 for 5 PCBs, 2 of them assembled",
+"unit_eur": 1.6744,
+"notes": "engineering $4.00, HASL lead-free $1.00, board $4.10 = $9.10 for 5 PCBs, 2 of them assembled; HASL lead-free ≈ $1.00 instead of ENIG $17.60",
 "unit": "pcs",
-"ext_eur": 23.64
+"ext_eur": 8.37
 },
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, hand soldering, manual assembly, nitrogen reflow",
-"supplier": "JLCPCB quote 2026-10-16",
+"item": "Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, manual assembly, nitrogen reflow",
+"supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": 28.4,
-"notes": "setup $8.24, stencil $1.55, extended parts $15.45, SMT $0.73, hand soldering $3.61, manual assembly $0.43, nitrogen reflow $0.86",
+"unit_eur": 21.02,
+"notes": "setup $8.24, stencil $1.55, extended parts $11.04, SMT $0.73, manual assembly $0.43, nitrogen reflow $0.86; extended parts −$4.41 (2 of 7 extended part types hand-soldered); no hand soldering (−$3.61)",
 "unit": "pcs",
-"ext_eur": 28.4
+"ext_eur": 21.02
 },
 {
 "category": "Electronics",
@@ -1498,7 +1567,7 @@
 }
 ],
 "by_category": {
-"Electronics": 406.49000000000007,
+"Electronics": 374.8200000000001,
 "Printed parts": 120.0,
 "Frame": 79.35,
 "Fasteners": 25.6,
@@ -1507,7 +1576,7 @@
 "Power": 76.6,
 "Cameras": 72.4
 },
-"total_eur": 889.54,
+"total_eur": 857.87,
 "cut_list": [
 {
 "part": "front post",
@@ -1826,6 +1895,52 @@
 "manual assembly": 0.43,
 "nitrogen reflow": 0.86
 }
+}
+},
+"order": {
+"bay-node": {
+"pcb": {
+"engineering": 25.0,
+"ENIG": 19.3,
+"board": 14.6
+},
+"pcba": {
+"setup": 25.75,
+"stencil": 8.27,
+"components": 181.21,
+"feeders": 58.9,
+"SMT": 9.45,
+"manual assembly": 1.62,
+"X-ray": 13.28,
+"packaging": 0.52
+},
+"changes": [
+"feeders −$6.20 (2 of 21 extended part types hand-soldered)",
+"no hand soldering (−$3.61)"
+],
+"total": 357.9
+},
+"power-hub": {
+"pcb": {
+"engineering": 4.0,
+"HASL lead-free": 1.0,
+"board": 4.1
+},
+"pcba": {
+"setup": 8.24,
+"stencil": 1.55,
+"components": 17.56,
+"extended parts": 11.04,
+"SMT": 0.73,
+"manual assembly": 0.43,
+"nitrogen reflow": 0.86
+},
+"changes": [
+"HASL lead-free ≈ $1.00 instead of ENIG $17.60",
+"extended parts −$4.41 (2 of 7 extended part types hand-soldered)",
+"no hand soldering (−$3.61)"
+],
+"total": 49.51
 }
 }
 }

@@ -55,20 +55,26 @@ JLC_QUOTE = {
                  "hand soldering": 3.61, "manual assembly": 0.43, "nitrogen reflow": 0.86},
     },
 }
+# What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
+# instead of ENIG (≈ $0–2 for 5 PCBs; the node keeps ENIG for the ESP32 module and USB-C), and the
+# through-hole connectors soldered by hand (catalog hand_solder), bought loose from LCSC: no JLC
+# hand-soldering fee, and their extended part types no longer need loading.
+JLC_FINISH = {"power-hub": ("HASL lead-free", 1.00)}
 
 
 def _catalog_prices() -> dict:
-    """MPN → (unit USD, LCSC, basic, JLC Standard-PCBA only) from the electronics catalogue and passive cache."""
+    """MPN → (unit USD, LCSC, basic, JLC Standard-PCBA only, hand-soldered) from the electronics
+    catalogue and passive cache."""
     try:
         import catalog
     except Exception:  # pragma: no cover
         return {}
-    out = {c.mpn: (c.price, c.lcsc, c.basic, c.standard_only) for c in catalog.CAT.values()}
+    out = {c.mpn: (c.price, c.lcsc, c.basic, c.standard_only, c.hand_solder) for c in catalog.CAT.values()}
     cache = REPO / "electronics" / "lib" / "passives.json"
     if cache.exists():
         for hit in json.loads(cache.read_text(encoding="utf-8")).values():
             if hit:
-                out[hit["mpn"]] = (hit.get("price") or 0.0, hit["lcsc"], True, False)
+                out[hit["mpn"]] = (hit.get("price") or 0.0, hit["lcsc"], True, False, False)
     return out
 
 
@@ -76,12 +82,31 @@ def _usd(fees: dict) -> str:
     return ", ".join(f"{k} ${v:.2f}" for k, v in fees.items())
 
 
-def electronics(rack) -> list[dict]:
+def jlc_order(name: str, ext: set, hand: set) -> tuple[dict, dict, list[str]]:
+    """The quoted PCB and PCBA lines of one board, adjusted for JLC_FINISH and for the hand-soldered
+    parts (`hand`) among its extended part types (`ext`)."""
+    q = JLC_QUOTE[name]
+    pcb, pcba, changes = dict(q["pcb"]), dict(q["pcba"]), []
+    if name in JLC_FINISH:
+        finish, usd = JLC_FINISH[name]
+        changes.append(f"{finish} ≈ ${usd:.2f} instead of ENIG ${pcb['ENIG']:.2f}")
+        pcb = {(finish if k == "ENIG" else k): (usd if k == "ENIG" else v) for k, v in pcb.items()}
+    if hand:
+        fee = "feeders" if "feeders" in pcba else "extended parts"
+        cut = round(pcba[fee] * len(hand & ext) / len(ext), 2)
+        pcba[fee] = round(pcba[fee] - cut, 2)
+        changes.append(f"{fee} −${cut:.2f} ({len(hand & ext)} of {len(ext)} extended part types hand-soldered)")
+        changes.append(f"no hand soldering (−${pcba.pop('hand soldering'):.2f})")
+    return pcb, pcba, changes
+
+
+def electronics(rack) -> tuple[list[dict], dict]:
     """Per-part lines at catalogue prices for the boards JLC assembles, plus the quote's PCB and
-    PCBA fees; a last line per board brings the parts up to the quote's components figure."""
+    PCBA fees as adjusted by jlc_order(); a last line per board brings the parts up to the quote's
+    components figure.  Also returns the adjusted order per board."""
     prices = _catalog_prices()
     n_nodes = rack.units * len(rack.rows)          # every carrier unit gets a node (double bays: 2nd is optional)
-    rows = []
+    rows, orders = [], {}
     for name, need in (("bay-node", n_nodes), ("power-hub", 1)):
         q = JLC_QUOTE[name]
         assert abs(sum(q["pcb"].values()) + sum(q["pcba"].values()) - q["total"]) < 0.005, f"{name}: quote lines ≠ total"
@@ -97,27 +122,38 @@ def electronics(rack) -> list[dict]:
         for r in csv.DictReader(path.open(encoding="utf-8")):
             if r.get("DNP"):
                 continue
-            usd, lcsc, basic, std_only = prices.get(r["MPN"], (0.0, r.get("LCSC", ""), False, False))
+            usd, lcsc, basic, std_only, hand = prices.get(r["MPN"], (0.0, r.get("LCSC", ""), False, False, False))
             mine.append({"category": "Electronics", "group": name, "item": f"{r['Value']} — {r['Description'] or r['MPN']}",
                          "ref": r["Designator"], "mpn": r["MPN"], "manufacturer": r["Manufacturer"],
-                         "supplier": "LCSC/JLCPCB", "part": r.get("LCSC", "") or lcsc, "qty": int(r["Qty"]) * n,
+                         "supplier": "LCSC (hand-solder, buy loose)" if hand else "LCSC/JLCPCB",
+                         "part": r.get("LCSC", "") or lcsc, "qty": int(r["Qty"]) * n,
                          "unit_eur": round(usd * USD_EUR, 4), "basic": basic, "standard_only": std_only,
-                         "notes": f"{r['Qty']} per board × {n} boards"})
+                         "hand_solder": hand,
+                         "notes": f"{r['Qty']} per board × {n} boards" + ("; hand-solder, buy loose (LCSC)" if hand else "")})
         rows += mine
+        pcb, pcba, changes = jlc_order(name, {r["mpn"] for r in mine if not r["basic"]},
+                                       {r["mpn"] for r in mine if r["hand_solder"]})
+        orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
+                        "total": round(sum(pcb.values()) + sum(pcba.values()), 2)}
         src = f"JLCPCB quote {JLC_QUOTE_DATE}"
-        pcb = sum(q["pcb"].values())
-        rows.append({"category": "Electronics", "group": name, "item": f"Bare PCB {name} ({q['spec']})",
-                     "supplier": src, "qty": q["pcbs"], "unit_eur": round(pcb * USD_EUR / q["pcbs"], 4),
-                     "notes": f"{_usd(q['pcb'])} = ${pcb:.2f} for {q['pcbs']} PCBs, {n} of them assembled"})
+        pcb_src = src + (", adjusted" if name in JLC_FINISH else "")
+        pcba_src = src + (", adjusted" if pcba != q["pcba"] else "")
+        spec = q["spec"].replace("ENIG", JLC_FINISH[name][0]) if name in JLC_FINISH else q["spec"]
+        rows.append({"category": "Electronics", "group": name, "item": f"Bare PCB {name} ({spec})",
+                     "supplier": pcb_src, "qty": q["pcbs"], "unit_eur": round(sum(pcb.values()) * USD_EUR / q["pcbs"], 4),
+                     "notes": f"{_usd(pcb)} = ${sum(pcb.values()):.2f} for {q['pcbs']} PCBs, {n} of them assembled"
+                              + "".join(f"; {c}" for c in changes if "ENIG" in c)})
         std = sorted({r["mpn"] for r in mine if r.get("standard_only")})
         if std and q["service"] != "Standard":
             print(f"warning: {name} has Standard-only parts ({', '.join(std)}) but was quoted {q['service']} PCBA")
-        fees = {k: v for k, v in q["pcba"].items() if k != "components"}
+        fees = {k: v for k, v in pcba.items() if k != "components"}
         rows.append({"category": "Electronics", "group": name,
                      "item": f"{q['service']} PCBA, {n} boards: {', '.join(fees)}",
-                     "supplier": src, "qty": 1, "unit_eur": round(sum(fees.values()) * USD_EUR, 2),
-                     "notes": _usd(fees) + (f"; Standard because {', '.join(std)} cannot be placed with Economic PCBA"
-                                            if std else "")})
+                     "supplier": pcba_src, "qty": 1, "unit_eur": round(sum(fees.values()) * USD_EUR, 2),
+                     "notes": _usd(fees) + "".join(f"; {c}" for c in changes if "ENIG" not in c)
+                              + (f"; Standard because {', '.join(std)} cannot be placed with Economic PCBA" if std else "")})
+        # the quoted components include the connectors JLC no longer buys; they reappear above at
+        # catalogue prices (bought loose), so the difference stays quote minus all catalogue lines
         parts_eur = sum(round(r["qty"] * r["unit_eur"], 2) for r in mine)
         quoted_eur = q["pcba"]["components"] * USD_EUR
         rows.append({"category": "Electronics", "group": name,
@@ -125,7 +161,7 @@ def electronics(rack) -> list[dict]:
                      "supplier": src, "qty": 1, "unit_eur": round(quoted_eur - parts_eur, 2),
                      "notes": f"quoted components ${q['pcba']['components']:.2f} (≈ €{quoted_eur:.2f}) for {n} boards; "
                               f"catalogue unit prices give €{parts_eur:.2f}"})
-    return rows
+    return rows, orders
 
 
 def printed(rack) -> tuple[list[dict], list[dict]]:
@@ -270,7 +306,7 @@ def hardware(rack) -> tuple[list[dict], list[dict]]:
 
 def main():
     rack = rackcfg.load()
-    elec = electronics(rack)
+    elec, orders = electronics(rack)
     prt, prints = printed(rack)
     hw, cut = hardware(rack)
     rows = elec + prt + hw
@@ -292,7 +328,8 @@ def main():
     n_bays = sum(1 for _ in rack.bays())
     data = {"rows": rows, "by_category": dict(by_cat), "total_eur": round(total, 2), "cut_list": cut,
             "prints": prints, "bays": n_bays, "units": rack.units * len(rack.rows),
-            "jlc_quote": {"date": JLC_QUOTE_DATE, "currency": "USD", "shipping": JLC_SHIPPING, "boards": JLC_QUOTE}}
+            "jlc_quote": {"date": JLC_QUOTE_DATE, "currency": "USD", "shipping": JLC_SHIPPING, "boards": JLC_QUOTE,
+                          "order": orders}}
     (REPO / "site" / "assets").mkdir(parents=True, exist_ok=True)
     (REPO / "site" / "assets" / "bom.json").write_text(json.dumps(data, ensure_ascii=False, indent=0), encoding="utf-8")
 
@@ -300,8 +337,8 @@ def main():
           "Generated by `python tools/bom.py` from `config/rack.yaml`, the KiCad BOMs and the STL volumes.",
           f"Configuration: **{n_bays} bays** ({rack.units * len(rack.rows)} carrier units) in {len(rack.rows)} rows. "
           "Prices are indicative (EUR excl. VAT, small quantities, October 2026); re-quote before ordering. "
-          f"The boards follow a real JLCPCB quote of {JLC_QUOTE_DATE} (below, converted at $1 = €{USD_EUR:.2f}); "
-          f"shipping ({JLC_SHIPPING}) and import VAT are extra.", "",
+          f"The boards follow a real JLCPCB quote of {JLC_QUOTE_DATE}, adjusted for the changes since (below, "
+          f"converted at $1 = €{USD_EUR:.2f}); shipping ({JLC_SHIPPING}) and import VAT are extra.", "",
           "| Category | Cost (€) |", "|---|---:|"]
     md += [f"| {k} | {v:,.0f} |" for k, v in sorted(by_cat.items(), key=lambda kv: -kv[1])]
     md += [f"| **Total** | **{total:,.0f}** |", "", f"≈ **€{total / n_bays:,.0f} per bay** all-in.", "",
@@ -310,13 +347,18 @@ def main():
            f"## JLCPCB quote ({JLC_QUOTE_DATE})", "",
            f"Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without shipping ({JLC_SHIPPING}) "
            "and import VAT.  The per-part lines below use catalogue prices; a *Components* line per board brings "
-           "them up to the quoted components figure.", "",
+           "them up to the quoted components figure.  *Order* applies what changed since, not re-quoted: the hub "
+           "in lead-free HASL, and the through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping "
+           "extra).", "",
            "| Board | Order | Line | USD |", "|---|---|---|---:|"]
     for name, q in JLC_QUOTE.items():
         order = f"{q['pcbs']} PCBs ({q['spec']}), {q['assembled']} assembled, {q['service']} PCBA"
         md.append(f"| {name} | {order} | PCB: {_usd(q['pcb'])} | {sum(q['pcb'].values()):.2f} |")
         md.append(f"| | | PCBA: {_usd(q['pcba'])} | {sum(q['pcba'].values()):.2f} |")
-        md.append(f"| | | **Total** | **{q['total']:.2f}** |")
+        md.append(f"| | | **Quoted total** | **{q['total']:.2f}** |")
+        if name in orders:
+            o = orders[name]
+            md.append(f"| | | Order (indicative): {'; '.join(o['changes']) or 'as quoted'} | {o['total']:.2f} |")
     md += ["", "## Aluminium cut list (2020, B-type slot 6)", "", "| Part | Length (mm) | Qty |", "|---|---:|---:|"]
     md += [f"| {c['part']} | {c['length_mm']} | {c['qty']} |" for c in cut]
     md += ["", "## Printed parts", "", "| Part | Qty | g each (est.) | STL |", "|---|---:|---:|---|"]

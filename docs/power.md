@@ -85,7 +85,7 @@ hub terminal.  Nothing above 24 V then enters the shelf.
 | Cord | C13 → Schuko/FR, 1.0 mm² | any | 5 |
 | Wiring | H05V-K 1.0 mm² + 4.8 mm insulated receptacles + ferrules | any | 8 |
 | DC | 1.5 mm² PSU → hub; 0.75 mm² row feeds | any | 4 |
-| Hub | see `electronics/power-hub` (5 × TPS26600, SMCJ33A, …); JLC quote 2026-10-16: $74.13 for 5 PCBs, 2 assembled, shipping and VAT extra | JLCPCB | ≈ 68 |
+| Hub | see `electronics/power-hub` (5 × TPS26600, SMCJ33A, …); JLC quote 2026-10-16: $74.13 for 5 PCBs, 2 assembled, ≈ $49.51 in lead-free HASL with the connectors hand-soldered; shipping and VAT extra | JLCPCB | ≈ 46 |
 
 Sources: Mean Well LRS-150/LRS-200/RSP-200/UHP-200/GST160A datasheets,
 Schurter DD11 datasheet, TI TPS2660 / TPS54360B datasheets, ADI AN-88

@@ -95,8 +95,10 @@ where it didn't matter (e.g. 150k RT, 120k/22k FB).
 * `docs/<board>-schematic.pdf`, SVGs, top/bottom/iso renders;
 * `fab/<board>.step` and `fab/<board>.glb` (the web viewer uses the GLB).
 
-JLC hand-solders the through-hole connectors (JST VH/PH, KF128): that is the
-quotes' "hand soldering" line.
+The through-hole connectors (JST VH/PH, KF128) are soldered by hand, from
+loose LCSC parts: `hand_solder=True` in `electronics/tools/catalog.py` keeps
+them out of the JLC BOM and CPL, and the detailed BOM flags them "hand-solder,
+buy loose (LCSC)" in its `Assembly` column.
 
 ## Assembly at JLCPCB
 
@@ -109,6 +111,23 @@ breakdown is in [`bom/README.md`](../bom/README.md), and `tools/bom.py`
 |---|---|---:|---:|---:|
 | bay node | 20 PCBs, 4-layer ENIG (JLC adds 5 mm edge rails for Standard PCBA), 16 assembled, Standard | $58.90 | $308.81, of which components $181.21 and feeders $65.10 | **$367.71** |
 | power hub | 5 PCBs, 2-layer ENIG, 2 assembled, Economic | $25.70 | $48.43, of which components $17.56 and extended parts $15.45 | **$74.13** |
+
+Two changes were made after that quote and are not re-quoted (`JLC_FINISH`
+and `jlc_order()` in `tools/bom.py` apply them, indicatively):
+
+* **Power hub in lead-free HASL** instead of ENIG: ≈ $1 instead of $17.60
+  for the 5 PCBs.  The hub has no fine-pitch part that needs a flat finish;
+  the bay node stays ENIG for the ESP32 module and the USB-C receptacles.
+* **Through-hole connectors soldered by hand**: node J1 J2 (VH) and J6 (PH),
+  hub J1 (KF128) and J2–J6 (VH).  JLC's hand-soldering fee ($3.61 per board
+  order) goes, and so do the loading fees of these two extended part types
+  per board (pro rata of the quoted fee: −$6.20 on the node, −$4.41 on the
+  hub).  The connectors cost the same bought loose from LCSC, plus LCSC's
+  shipping.
+
+That brings the order to ≈ **$357.90** for the nodes and ≈ **$49.51** for
+the hub.  The quote's "manual assembly" lines are kept: re-quote to see
+whether they go too.
 
 * **Bay node: Standard PCBA.** JLC can only place the ESP32-S3-MINI-1 module
   (C2913206) and the WS2812B-2020 LED with its Standard PCBA service, not
@@ -131,9 +150,9 @@ breakdown is in [`bom/README.md`](../bom/README.md), and `tools/bom.py`
     the 1.5 A DUT limit.
 * **One BOM line per LCSC part.** JLC refuses several lines that resolve to
   the same part ("Multiple lines in the BOM have been matched to the same
-  part") and deselects them, so the JLC BOM merges them: J1/J2 VH, J3/J4
-  USB-C, SW1/SW2, U5/U6 on the node; D3 + D11–D15 on the hub.  Merged lines
-  carry the MPN as comment.
+  part") and deselects them, so the JLC BOM merges them: J3/J4 USB-C,
+  SW1/SW2, U5/U6 on the node; D3 + D11–D15 on the hub.  Merged lines carry
+  the MPN as comment.
 
 ### Placement corrections
 
@@ -153,12 +172,14 @@ footprint pads (`https://easyeda.com/api/products/<LCSC>/components`) onto
 the KiCad pads, pin by pin, then checking that the bodies overlap and that
 diodes, LEDs and electrolytics keep their cathode or + side.  JLC's
 placement preview had shown the first three rows wrong before the fix; the
-others come from the fit alone.
+others come from the fit alone.  The through-hole connectors are soldered by
+hand now and are no longer in the CPL, so their rows (JST VH/PH, KF128) don't
+matter for JLC: they stay in the table for an order where JLC places them.
 
 | LCSC part | Refs | Correction | Status |
 |---|---|---|---|
-| C160355 JST S2P-VH | node J1 J2 | 180°, origin +1.98 mm x | was wrong in the preview; confirm the fix |
-| C173752 JST S2B-PH-K | node J6 | 180°, +1.00 mm x | was wrong in the preview; confirm the fix |
+| C160355 JST S2P-VH | node J1 J2 | 180°, origin +1.98 mm x | was wrong in the preview; hand-soldered now, not in the CPL |
+| C173752 JST S2B-PH-K | node J6 | 180°, +1.00 mm x | was wrong in the preview; hand-soldered now, not in the CPL |
 | C6186 AMS1117 SOT-223 | node U2 | 180° | looked wrong in the preview; confirm the fix |
 | C165948 HRO TYPE-C-31-M-12 | node J3 J4 | −1.57 mm y | to confirm |
 | C2913206 ESP32-S3-MINI-1 | node U3 | +2.55 mm y | to confirm |
@@ -172,8 +193,8 @@ others come from the fit alone.
 | C8545 2N7002 SOT-23 | node Q2 Q3 | 180° | to confirm |
 | C7503186 SUD50P06 TO-252 | node Q1, hub Q1 | −1.89 mm x | to confirm |
 | C544399 TPS26600 HTSSOP-16 | hub U1–U5 | 270° | to confirm |
-| C474952 KF128 terminal | hub J1 | +2.54 mm x | to confirm |
-| C160315 JST B2P-VH | hub J2–J6 | +1.98 mm x | to confirm |
+| C474952 KF128 terminal | hub J1 | +2.54 mm x | hand-soldered, not in the CPL |
+| C160315 JST B2P-VH | hub J2–J6 | +1.98 mm x | hand-soldered, not in the CPL |
 | C56123098 XYECONN SM06B-SRSS-TB | node J5 | none: JLC's footprint could not be read (the JST original, C160405, needs none) | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
@@ -189,9 +210,8 @@ the "Component Placement" step look at it in JLC's 2D and 3D preview:
 1. The body sits over its pads, centred (a shift of half a pin pitch means
    an origin offset is wrong).
 2. Pin 1, the cathode bar or the + side lines up with the board's silkscreen
-   mark; through-hole pins drop into their holes.
-3. Side-entry connectors (VH, PH, SH, USB-C) open towards the board edge, the
-   terminal block's wire entries face outwards.
+   mark.
+3. Side-entry connectors (SH, USB-C) open towards the board edge.
 
 If a part is off, rotate or move it in JLC's editor until it fits, then copy
 that change into `JLC_CPL_FIX` (add the extra degrees; an offset measured on
