@@ -4,4 +4,5 @@ trimesh>=4.4
 fast-simplification>=0.1   # optional: decimates big meshes for the web viewer
 shapely>=2.0          # assembly_glb.py: extrusion profiles
 mapbox-earcut>=1.0    # polygon triangulation for trimesh
+pillow>=10            # pcb_glb.py: board textures; render/screen_terminal.py
 cascadio>=0.1         # optional: STEP → glTF (OpenCascade) for tools/board_models.py
