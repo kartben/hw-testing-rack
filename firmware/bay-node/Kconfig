@@ -33,6 +33,11 @@ config BAY_AUX_BUF_SIZE
 	int "AUX UART receive buffer (bytes)"
 	default 2048
 
+config BAY_HTTP_PORT
+	int "TCP port of the web page, JSON API and /metrics"
+	default 80
+	range 1 65535
+
 config BAY_SERVICE_PHY_HANDOVER
 	bool "Give the USB PHY back to USB-Serial-JTAG in SERVICE mode"
 	default y

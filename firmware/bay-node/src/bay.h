@@ -87,6 +87,10 @@ const char *bay_net_addr(void);
 const char *bay_id(void);
 int bay_id_set(const char *id);
 
+/* --- Web page, JSON API, /metrics (web.c) --------------------------------- */
+
+int web_init(void);
+
 /* --- Settings (main.c) ---------------------------------------------------- */
 
 int bay_settings_save_force_pc(bool force);

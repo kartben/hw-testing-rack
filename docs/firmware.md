@@ -18,10 +18,10 @@ Zephyr's new USB host stack.  The firmware lives in [`firmware/`](../firmware/)
   zephyrproject-rtos/zephyr#102967 and follow-ups (tracking issue #102931).
   Control, bulk and interrupt IN transfers; interrupt OUT, isochronous and
   split transactions (hubs) are not implemented yet.
-* Wi-Fi, mDNS, telnet shell, settings, `ti,ina226` sensor driver,
-  `worldsemi,ws2812-pulse-io` LED strip on the RMT: all used by the node
-  application.  MCUboot + mcumgr OTA and the HTTP server are available but
-  not used yet.
+* Wi-Fi, mDNS, telnet shell, settings, HTTP server, Prometheus library,
+  `ti,ina226` sensor driver, `worldsemi,ws2812-pulse-io` LED strip on the
+  RMT: all used by the node application.  MCUboot + mcumgr OTA is available
+  but not used yet.
 
 ## Board and application
 
@@ -40,14 +40,13 @@ Zephyr's new USB host stack.  The firmware lives in [`firmware/`](../firmware/)
 | USB/IP export of the DUT | written | `CONFIG_USBIP=y`, `zephyr_uhc0` → OTG controller; client: `usbip attach -r bay-<id>.local -b 1-1` |
 | Power control | written | IO6 → TPS2553 EN, kept on at boot (pull-up: the board is on before the firmware runs); `bay power on/off/cycle` |
 | Over-current | written | FAULT on IO7 (interrupt): logged, counted, VBUS cut and latched after 1 s in current limit |
-| Telemetry | written (shell) | INA226 (0x40, 50 mΩ) through the sensor API → V, I, P in `bay power` / `bay status` |
-| Telemetry over HTTP | not yet | REST `GET /api/power`, Prometheus `/metrics` |
+| Telemetry | written | INA226 (0x40, 50 mΩ) through the sensor API → V, I, P in the shell, `GET /api/status` and Prometheus `/metrics` |
 | Modes | written | reads PC_DET (IO4) and SVC (IO5); `bay mode classic\|usbip` drives MUX_FORCE_PC (IO10), persisted in settings |
 | SERVICE mode | written | stops the USB host and gives the ESP32-S3's single PHY back to the USB-Serial-JTAG (flash/JTAG from the front port); restarts it afterwards |
 | AUX | written | UART1 (IO17/18) ↔ raw TCP port 4000; RESET/BOOT pulses on IO11/IO12 (`bay reset`, `bay boot`) |
 | Status LED | written | WS2812B on IO13 (RMT): fault / service / classic / power off / no network / USB/IP idle / enumerated / attached |
 | Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS |
-| Control interface | written (shell) | `bay …` shell on the UART test pads and over telnet; REST API not yet |
+| Control interface | written | `bay …` shell on the UART test pads and over telnet; status page and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`) |
 | Updates | not yet | MCUboot + mcumgr over UDP; for now `west flash` through the front port in SERVICE mode |
 
 ## Flashing a node
@@ -72,8 +71,11 @@ First boot: set the Wi-Fi credentials and the bay id from the UART test pads
 * **Interrupt OUT / isochronous transfers and hubs** in `uhc_dwc2`: needed
   for some debug probes, audio/video class DUTs and boards with an on-board
   hub.
-* REST API + Prometheus metrics, DNS-SD (`_usbip._tcp`), MCUboot/mcumgr OTA,
-  shell on the USB-Serial-JTAG in SERVICE mode, INA226 alert.
+* DUT console in the web page (WebSocket), DNS-SD (`_usbip._tcp`,
+  `_http._tcp`), MCUboot/mcumgr OTA, shell on the USB-Serial-JTAG in SERVICE
+  mode, INA226 alert.
+* Upstream nits seen while dogfooding: the Prometheus library needs exactly
+  one label per metric and rejects negative gauge values.
 
 ## Camera pods
 

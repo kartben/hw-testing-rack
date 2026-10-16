@@ -19,4 +19,12 @@ target_sources(app PRIVATE
   src/aux_bridge.c
   src/net.c
   src/shell.c
+  src/web.c
 )
+
+# Status page, gzipped into the image (served as-is with Content-Encoding: gzip)
+generate_inc_file_for_target(app web/index.html
+  ${ZEPHYR_BINARY_DIR}/include/generated/index.html.gz.inc --gzip)
+
+# HTTP resources of the bay_http service live in their own iterable section
+zephyr_linker_sources(SECTIONS web/sections-rom.ld)

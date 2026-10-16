@@ -4,7 +4,7 @@
  * The USB/IP service (CONFIG_USBIP) starts by itself before main() and
  * exports whatever enumerates on the DUT port.  main() brings up the rest:
  * DUT power and fault handling, the data-path muxes, the AUX UART bridge,
- * Wi-Fi, and then drives the status LED.
+ * Wi-Fi, the web server, and then drives the status LED.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -127,6 +127,11 @@ int main(void)
 	ret = bay_net_init(stored_id);
 	if (ret != 0) {
 		LOG_ERR("network init failed: %d", ret);
+	}
+
+	ret = web_init();
+	if (ret != 0) {
+		LOG_ERR("web server init failed: %d", ret);
 	}
 
 	while (true) {

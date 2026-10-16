@@ -17,6 +17,7 @@ firmware/
   dts/bindings/                  hwtr,dut-port and hwtr,usb-mux bindings
   bay-node/                      the application
     boards/esp32s3_devkitc_procpu.overlay   stand-in: same pin map on a DevKitC-1
+    web/index.html               status page (embedded gzipped), web/dev_server.py to work on it
     wifi.conf.example            build-time Wi-Fi credentials (copy to wifi.conf)
 ```
 
@@ -87,6 +88,7 @@ Then, from any Linux machine on the LAN:
 ```console
 $ usbip list -r bay-b3.local
 $ sudo usbip attach -r bay-b3.local -b 1-1
+$ open http://bay-b3.local/                # status page
 $ telnet bay-b3.local                     # bay shell
 $ socat -,raw,echo=0 TCP:bay-b3.local:4000   # DUT console (AUX UART)
 ```
@@ -106,6 +108,7 @@ $ socat -,raw,echo=0 TCP:bay-b3.local:4000   # DUT console (AUX UART)
 | Buttons | BOOT (IO0) held ≥ 1 s once booted: DUT power cycle.  RESET is the ESP32's EN |
 | Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS |
 | Shell | `bay …` commands plus the stock `wifi`, `net` shells, on UART0 and telnet |
+| Web | Zephyr HTTP server on port 80: status page, JSON API (same actions as the shell), Prometheus `/metrics` through Zephyr's Prometheus library |
 
 ### Shell
 
@@ -128,9 +131,40 @@ $ socat -,raw,echo=0 TCP:bay-b3.local:4000   # DUT console (AUX UART)
 | Port | Service |
 |---|---|
 | TCP 3240 | USB/IP (`usbip list` / `usbip attach`) |
+| TCP 80 | status page, JSON API, `/metrics` (`CONFIG_BAY_HTTP_PORT`) |
 | TCP 23 | telnet shell (no authentication: keep the rack on a lab network) |
 | TCP 4000 | AUX UART, raw bytes, one client (`CONFIG_BAY_AUX_TCP_PORT`) |
 | UDP 5353 | mDNS: `bay-<id>.local` (default `bay<MAC>` until an id is set) |
+
+### Web page and API
+
+`http://bay-<id>.local/` is a single self-contained page: plain HTML, CSS and
+an ES module, no framework or CDN, about 5 KB gzipped in flash.  It follows
+the browser's light/dark theme, polls `/api/status` every 2 s while visible,
+and offers the shell's main actions.
+
+| Endpoint | |
+|---|---|
+| `GET /api/status` | everything `bay status` shows, as JSON |
+| `POST /api/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}` |
+| `POST /api/reset` | `{"ms": 100}` (body optional) |
+| `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |
+| `POST /api/mode` | `{"mode": "usbip" \| "classic"}` (persistent) |
+| `GET /metrics` | Prometheus: `bay_dut_vbus_volts`, `bay_dut_current_amperes`, `bay_dut_power_watts`, `bay_dut_power_on`, `bay_dut_fault`, `bay_dut_faults_total`, `bay_usb_devices`, `bay_usbip_sessions`, `bay_aux_{rx,tx}_bytes_total`, all labelled `bay="<id>"` |
+
+Every POST answers with the new status document; errors come back as
+`{"error": "..."}` with a 4xx status.  Like telnet, there is no
+authentication.
+
+```console
+$ curl -s bay-b3.local/api/status | jq .dut
+$ curl -s -X POST bay-b3.local/api/power -d '{"action":"cycle","ms":2000}'
+$ curl -s bay-b3.local/metrics
+```
+
+To work on the page without a node, `python firmware/bay-node/web/dev_server.py`
+serves it on <http://localhost:8766> with a simulated API (`/dev/fault`
+trips a fake over-current).
 
 ### Status LED
 
@@ -189,8 +223,11 @@ map, moves the LED to the devkit's GPIO38 and disables SPI2 (IO10–IO13).
   devices and DUTs behind an on-board hub won't work over USB/IP.
 * **USB/IP service** is experimental upstream: one device per controller,
   fixed bus id `1-<address>`, no access control.
-* **Not yet written:** REST API (`/api/power`, `/api/mode`) and Prometheus
-  `/metrics`, DNS-SD advertisement of `_usbip._tcp`, MCUboot + mcumgr OTA
-  (the partition table already has two 3.75 MB slots), the shell on the
-  USB-Serial-JTAG in SERVICE mode, INA226 alert handling, tri-stating AUX TX
-  while the DUT is off.
+* **Not yet written:** the DUT console in the web page (WebSocket ↔ AUX
+  UART), DNS-SD advertisement of `_usbip._tcp` and `_http._tcp`, MCUboot +
+  mcumgr OTA (the partition table already has two 3.75 MB slots), the shell
+  on the USB-Serial-JTAG in SERVICE mode, INA226 alert handling, tri-stating
+  AUX TX while the DUT is off.
+* **Zephyr's Prometheus library** wants exactly one label per metric and
+  refuses negative gauge values (the INA226 reads a few mA below zero at no
+  load), so the firmware labels everything `bay="<id>"` and clamps at 0.
