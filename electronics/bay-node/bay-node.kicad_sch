@@ -14,32 +14,32 @@
 	)
 	(lib_symbols)
 	(sheet
-		(at 30.48 49.53)
-		(size 60.96 25.4)
+		(at 36.83 70)
+		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
-			(width 0.1524)
+			(width 0.3)
 			(type solid)
 		)
 		(fill
-			(color 0 0 0 0)
+			(color 255 255 225 1)
 		)
 		(uuid "6bdbf57d-f796-52cd-9884-75545352918b")
 		(property "Sheetname" "Power"
-			(at 30.48 49.53 0)
+			(at 36.83 69.85 0)
 			(effects
 				(font
-					(size 1.27 1.27)
+					(size 2 2)
 				)
 				(justify left bottom)
 			)
 		)
 		(property "Sheetfile" "power.kicad_sch"
-			(at 30.48 76.2 0)
+			(at 36.83 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -55,33 +55,44 @@
 			)
 		)
 	)
+	(text "24 V input, 5 V buck, 3.3 V LDO"
+		(exclude_from_sim no)
+		(at 39.37 77.47 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "f8fb0e46-de19-5e4f-9177-56a290e17170")
+	)
 	(sheet
-		(at 115.57 49.53)
-		(size 60.96 25.4)
+		(at 130.81 70)
+		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
-			(width 0.1524)
+			(width 0.3)
 			(type solid)
 		)
 		(fill
-			(color 0 0 0 0)
+			(color 255 255 225 1)
 		)
 		(uuid "342cf2d8-2555-5c90-a32c-abde03bd4d01")
 		(property "Sheetname" "MCU"
-			(at 115.57 49.53 0)
+			(at 130.81 69.85 0)
 			(effects
 				(font
-					(size 1.27 1.27)
+					(size 2 2)
 				)
 				(justify left bottom)
 			)
 		)
 		(property "Sheetfile" "mcu.kicad_sch"
-			(at 115.57 76.2 0)
+			(at 130.81 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -97,33 +108,44 @@
 			)
 		)
 	)
+	(text "ESP32-S3 module"
+		(exclude_from_sim no)
+		(at 133.35 77.47 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "d9bf817d-7472-5403-874f-f238c0cc52d6")
+	)
 	(sheet
-		(at 201.93 49.53)
-		(size 60.96 25.4)
+		(at 226.06 70)
+		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
-			(width 0.1524)
+			(width 0.3)
 			(type solid)
 		)
 		(fill
-			(color 0 0 0 0)
+			(color 255 255 225 1)
 		)
 		(uuid "c87ef098-13d8-5d4c-814e-a4c6487f5259")
 		(property "Sheetname" "USB"
-			(at 201.93 49.53 0)
+			(at 226.06 69.85 0)
 			(effects
 				(font
-					(size 1.27 1.27)
+					(size 2 2)
 				)
 				(justify left bottom)
 			)
 		)
 		(property "Sheetfile" "usb.kicad_sch"
-			(at 201.93 76.2 0)
+			(at 226.06 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -139,33 +161,44 @@
 			)
 		)
 	)
+	(text "USB ports and data-path muxes"
+		(exclude_from_sim no)
+		(at 228.6 77.47 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "42806cd3-6376-555f-bb24-081dc0c93d3c")
+	)
 	(sheet
-		(at 288.29 49.53)
-		(size 60.96 25.4)
+		(at 320.04 70)
+		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(stroke
-			(width 0.1524)
+			(width 0.3)
 			(type solid)
 		)
 		(fill
-			(color 0 0 0 0)
+			(color 255 255 225 1)
 		)
 		(uuid "a569d74c-9c07-57e9-a349-c34419c82b47")
 		(property "Sheetname" "DUT power & AUX"
-			(at 288.29 49.53 0)
+			(at 320.04 69.85 0)
 			(effects
 				(font
-					(size 1.27 1.27)
+					(size 2 2)
 				)
 				(justify left bottom)
 			)
 		)
 		(property "Sheetfile" "dut.kicad_sch"
-			(at 288.29 76.2 0)
+			(at 320.04 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -181,9 +214,346 @@
 			)
 		)
 	)
+	(text "DUT power switch, monitor, AUX and"
+		(exclude_from_sim no)
+		(at 322.58 77.47 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "1bafdb06-e022-59a7-bdaf-3290432e76af")
+	)
+	(text "camera power"
+		(exclude_from_sim no)
+		(at 322.58 81.28 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "29b129ae-041c-5479-bcc0-8201edff0b7b")
+	)
+	(polyline
+		(pts
+			(xy 25.4 58.42)
+			(xy 388.62 58.42)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "1a69d96b-1aba-5d2c-b290-fe867713a0c6")
+	)
+	(text "+3V3"
+		(exclude_from_sim no)
+		(at 22.86 58.42 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "d9bd143b-9e84-5154-b656-db04e02415ab")
+	)
+	(polyline
+		(pts
+			(xy 46.99 58.42)
+			(xy 46.99 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "cac88250-4a42-51cd-8b3f-0d13c6e8f292")
+	)
+	(circle
+		(center 46.99 58.42)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "db36cfab-b8d0-55e6-b39c-5575ffdfbf6a")
+	)
+	(polyline
+		(pts
+			(xy 140.97 58.42)
+			(xy 140.97 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "b0f8a5e0-61d2-5bea-8d49-35f883f2fa22")
+	)
+	(circle
+		(center 140.97 58.42)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "940d9e4e-87c5-54c7-ac7e-2baa3aa5b51f")
+	)
+	(polyline
+		(pts
+			(xy 236.22 58.42)
+			(xy 236.22 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "b8db4070-75d6-52e0-bc5c-c34037d6afb0")
+	)
+	(circle
+		(center 236.22 58.42)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "f56650be-90cb-5df4-9b12-8db4eb068680")
+	)
+	(polyline
+		(pts
+			(xy 330.2 58.42)
+			(xy 330.2 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "028f8cd7-1d51-594e-9dc7-818c355fd182")
+	)
+	(circle
+		(center 330.2 58.42)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "c32f18e4-506a-5d19-8ba1-d801e9dce1b3")
+	)
+	(polyline
+		(pts
+			(xy 25.4 50.8)
+			(xy 388.62 50.8)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "27145c5a-47f9-5505-b8cb-44ed7f993ecd")
+	)
+	(text "+5V"
+		(exclude_from_sim no)
+		(at 22.86 50.8 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+				(bold yes)
+			)
+			(justify right)
+		)
+		(uuid "17d9dd89-e12b-5de0-9c41-fd2f7b615634")
+	)
+	(polyline
+		(pts
+			(xy 54.61 50.8)
+			(xy 54.61 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "124f9874-845e-5008-b713-371d04709af6")
+	)
+	(circle
+		(center 54.61 50.8)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "5e30118a-8a7a-5c7f-abe0-b57c6098d450")
+	)
+	(polyline
+		(pts
+			(xy 243.84 50.8)
+			(xy 243.84 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "c763c666-a8ae-56ca-af75-8212ec1ab096")
+	)
+	(circle
+		(center 243.84 50.8)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "5caef943-7b4d-560b-8f80-3ef8fa6ec4e7")
+	)
+	(polyline
+		(pts
+			(xy 337.82 50.8)
+			(xy 337.82 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "f3e6d3dc-c59a-5e1b-b1fa-bde74f55d1f1")
+	)
+	(circle
+		(center 337.82 50.8)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "2f966a58-37ab-5aaf-9b1f-274172c341dc")
+	)
+	(polyline
+		(pts
+			(xy 186.69 100.33)
+			(xy 186.69 110.49)
+			(xy 233.68 110.49)
+			(xy 233.68 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "c6829a7b-2315-5f70-b4aa-e6258ce3401d")
+	)
+	(text "ESP_DN/DP, MUX_FORCE_PC, PC_DET, SVC"
+		(exclude_from_sim no)
+		(at 189.23 109.22 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "365a5790-c67b-5d5c-bb49-72ea4ac0a6d9")
+	)
+	(polyline
+		(pts
+			(xy 274.32 100.33)
+			(xy 274.32 120.65)
+			(xy 327.66 120.65)
+			(xy 327.66 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "2516458d-20d9-5223-8a0c-7ccc2fbc0da1")
+	)
+	(text "VBUS_DUT"
+		(exclude_from_sim no)
+		(at 276.86 119.38 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "5d4fdb7d-bc94-5051-8623-2f425bedc75b")
+	)
+	(polyline
+		(pts
+			(xy 179.07 100.33)
+			(xy 179.07 130.81)
+			(xy 335.28 130.81)
+			(xy 335.28 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "54079f9b-69f5-59c7-83c5-1bd34780706e")
+	)
+	(text "AUX_BOOT_CTL, AUX_RST_CTL, AUX_RX/TX, DUT_EN, DUT_FLT_N, I2C_SCL/SDA, INA_ALERT_N"
+		(exclude_from_sim no)
+		(at 181.61 129.54 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "6f69dc48-6ed5-5c76-93a7-d6be14dadd4e")
+	)
 	(text_box "Bay node — one per bay.  Sheets:\n  Power: 24 V bus (daisy-chain), reverse protection, TPS54360B buck to 5 V, AMS1117 3.3 V\n  MCU: ESP32-S3-MINI-1, boot/reset, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls VBUS/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
 		(exclude_from_sim no)
-		(at 30 149.86 0)
+		(at 30 146.05 0)
 		(size 360 27.94)
 		(margins 2 2 2 2)
 		(stroke

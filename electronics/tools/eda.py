@@ -3,12 +3,18 @@
 A board is described in Python (see `electronics/<board>/design.py`): parts,
 the nets their pins connect to, BOM fields and PCB placement hints.  From that
 single description this module writes a real, hierarchical KiCad schematic
-(`.kicad_sch`, one sheet per functional block, label-based connections), and
+(`.kicad_sch`, one sheet per functional block), and
 `pcbgen.py` builds the matching `.kicad_pcb`.  KiCad's ERC/DRC (with schematic
 parity) then validate that both views agree.
 
 The generated schematics are meant to be read and reviewed in KiCad.  Edit
 the Python description and regenerate rather than editing the outputs.
+
+Layout: in every block the part with the most pins is the anchor; the two-pin
+parts (R, C, L, diodes) that share a signal with one of its side pins hang off
+that pin on a real wire ("rail"), and parts chained behind them (R -> C -> GND)
+stack underneath.  Supplies use power symbols; every wired net still carries
+one label, so net names (and thus the PCB) never depend on the drawing.
 """
 
 from __future__ import annotations
@@ -17,6 +23,7 @@ import copy
 import json
 import math
 import os
+import textwrap
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -199,6 +206,7 @@ class Part:
     pcb: dict = field(default_factory=dict)  # placement hints: x, y, rot, side
     sheet: "Sheet | None" = None
     sch_at: tuple[float, float] | None = None
+    sch_rot: int = 0          # 0 or 180 (the writer only flips two-pin parts)
 
     @property
     def sym(self) -> SymbolDef:
@@ -362,8 +370,47 @@ def _text_w(s: str, size=1.27) -> float:
     return len(s) * size * 0.75 + 2.0
 
 
+def _pin_at(pin: Pin, rot: int):
+    """Pin connection point relative to the symbol origin (schematic coords) and its outward direction."""
+    x, y = pin.x, -pin.y
+    dx, dy = pin.outward
+    if rot == 180:
+        return (-x, -y), (-dx, -dy)
+    return (x, y), (dx, dy)
+
+
+def _rot_bbox(bbox, rot: int):
+    x0, y0, x1, y1 = bbox
+    return (-x1, -y1, -x0, -y0) if rot == 180 else bbox
+
+
+def _two_pin_kind(p: "Part") -> str | None:
+    """'v' for a vertical two-pin symbol (pins up/down), 'h' for a horizontal one."""
+    pins = p.sym.pins
+    if len(pins) != 2:
+        return None
+    dirs = {q.outward for q in pins}
+    if dirs == {(0, -1), (0, 1)}:
+        return "v"
+    if dirs == {(-1, 0), (1, 0)}:
+        return "h"
+    return None
+
+
+@dataclass
+class Group:
+    """Parts laid out together (an anchor and its wired satellites), in local coordinates."""
+    parts: list
+    wires: list = field(default_factory=list)       # ((x1, y1), (x2, y2))
+    junctions: list = field(default_factory=list)   # (x, y)
+    labels: list = field(default_factory=list)      # (net, x, y, direction, key)
+    bbox: tuple = (0.0, 0.0, 0.0, 0.0)
+
+
 class SheetWriter:
     STUB = 2.54
+    COL = 10.16        # column pitch of the satellites hanging off a rail
+    CHAIN = 5.08       # wire length between chained satellites
 
     def __init__(self, board: Board, sheet: Sheet, page: int, cross_nets: set[str]):
         self.b = board
@@ -373,6 +420,8 @@ class SheetWriter:
         self.items: list = []
         self.lib_ids: set[str] = set()
         self.pwr_n = 0
+        self.wired: set[tuple[str, str]] = set()   # (ref, pin) drawn by a group, not by a stub
+        self.groups: list[Group] = []
 
     @property
     def inst_path(self) -> str:
@@ -400,15 +449,178 @@ class SheetWriter:
                 bt = max(bt, w)
             else:
                 t = max(t, w)
+        if x1 - x0 < 8:
+            shown = [p.value] + ([] if p.ref.startswith("#") else [p.ref])
+            r = max(r, max(_text_w(t_) for t_ in shown) + 1.27)
         return (x0 - l - 2, y0 - max(t, 4) - 2, x1 + r + 2, y1 + max(bt, 4) + 2)
+
+    def _label_room(self, net: str | None) -> float:
+        if not net or net in POWER_SYMBOLS:
+            return 5.0
+        return _text_w(net) + (4.0 if net in self.cross else 0.0)
+
+    def _sat_extent(self, p: Part, skip: set[str]):
+        """Bbox of a placed satellite (local coords), with its unwired pins' stubs and labels."""
+        ox, oy = p.sch_at
+        x0, y0, x1, y1 = _rot_bbox(p.sym.bbox, p.sch_rot)
+        bx = [ox + x0, ox + x1 + 9.0]          # reference/value text on the right
+        by = [oy + y0, oy + y1]
+        nets = p.pin_nets()
+        for pin in p.sym.pins:
+            if pin.number in skip:
+                continue
+            (px, py), (dx, dy) = _pin_at(pin, p.sch_rot)
+            reach = self.STUB + self._label_room(nets.get(pin.number))
+            bx.append(ox + px + dx * reach)
+            by.append(oy + py + dy * reach)
+        return min(bx), min(by), max(bx), max(by)
+
+    def _cluster(self, parts: list[Part], extra: list[Part] = ()) -> tuple[Group | None, list[Part]]:
+        """Anchor + wired satellites for one block, or (None, parts) when nothing can be wired.
+
+        `extra` are two-pin parts from anchor-less blocks of the same sheet (pull-ups, reset
+        button, …): they may hang off this anchor too."""
+        cands = [p for p in parts if len(p.sym.pins) >= 3]
+        if not cands:
+            return None, parts
+        M = max(cands, key=lambda p: (len(p.pin_nets()), len(p.sym.pins)))
+        mnets = M.pin_nets()
+        mpins = {q.number: q for q in M.sym.pins}
+        side_pin: dict[str, str] = {}               # net -> first anchor pin carrying it on a side
+        for num, net in mnets.items():
+            q = mpins[num]
+            if net in POWER_SYMBOLS or q.hidden or q.outward[1] != 0:
+                continue
+            side_pin.setdefault(net, num)
+        rails: dict[str, dict] = {}
+        taken: set[str] = set()
+        others = [p for p in parts if p is not M]
+        for p in others + list(extra):
+            kind = _two_pin_kind(p)
+            if not kind:
+                continue
+            for num, net in p.pin_nets().items():
+                if net not in side_pin:
+                    continue
+                r = rails.setdefault(side_pin[net], {"v": [], "h": None})
+                if kind == "v":
+                    r["v"].append((p, num))
+                elif r["h"] is None:
+                    r["h"] = (p, num)
+                else:
+                    continue
+                taken.add(p.ref)
+                break
+        if not rails:
+            return None, parts
+
+        g = Group(parts=[M])
+        M.sch_at, M.sch_rot = (0.0, 0.0), 0
+        ex0, ey0, ex1, ey1 = self._extent(M)
+        bx, by = [ex0, ex1], [ey0, ey1]
+        free = [p for p in others if p.ref not in taken]
+        spare = [p for p in extra if p.ref not in taken]     # chain candidates from other blocks
+
+        def other_pin(p, num):
+            return next((q for q in p.sym.pins if q.number != num), None)
+
+        def place_v(p, num, x, y):
+            """Vertical two-pin part p, pin `num` on top, its connection point at (x, y)."""
+            pin = next(q for q in p.sym.pins if q.number == num)
+            p.sch_rot = 0 if pin.outward == (0, -1) else 180
+            (px, py), _ = _pin_at(pin, p.sch_rot)
+            p.sch_at = (snap(x - px), snap(y - py))
+            g.parts.append(p)
+            self.wired.add((p.ref, num))
+
+        def chain(p, num, x):
+            """Stack the parts sharing p's bottom net under p (R -> C -> ...), wired."""
+            for _ in range(3):
+                q = other_pin(p, num)
+                net = p.pin_nets().get(q.number) if q else None
+                if not net or net in POWER_SYMBOLS or net in side_pin:
+                    return
+                nxt = next((t for t in free + spare if _two_pin_kind(t) == "v" and net in t.pin_nets().values()), None)
+                if nxt is None:
+                    return
+                (qx, qy), _ = _pin_at(q, p.sch_rot)
+                bx_, by_ = p.sch_at[0] + qx, p.sch_at[1] + qy
+                tnum = next(k for k, v in nxt.pin_nets().items() if v == net)
+                (free if nxt in free else spare).remove(nxt)
+                place_v(nxt, tnum, x, by_ + self.CHAIN)
+                self.wired.add((p.ref, q.number))
+                g.wires.append(((bx_, by_), (bx_, by_ + self.CHAIN)))
+                g.labels.append((net, bx_, snap(by_ + self.CHAIN / 2), (1, 0), f"{p.ref}.{q.number}.chain"))
+                p, num = nxt, tnum
+
+        def grow(i0):
+            for t in g.parts[i0:]:
+                e = self._sat_extent(t, {k for (r, k) in self.wired if r == t.ref})
+                bx.extend([e[0], e[2]])
+                by.extend([e[1], e[3]])
+
+        for side in (1, -1):
+            pins_side = [(num, mpins[num]) for num in rails if mpins[num].outward == (side, 0)]
+            if not pins_side:
+                continue
+            # labels on this side need room between the anchor and the first column
+            room = max([self._label_room(mnets.get(q.number)) for q in M.sym.pins
+                        if q.outward == (side, 0) and mnets.get(q.number)] + [5.0])
+            xs = [q.x for q in M.sym.pins if q.outward == (side, 0)]
+            edge = max(xs) if side > 0 else min(xs)
+            x = snap(edge + side * (2 * self.STUB + room + (9.0 if side < 0 else 0.0)))
+            # bottom pin nearest: the rails of the pins above pass over, never through, the parts below
+            for num, q in sorted(pins_side, key=lambda t: t[1].y):
+                ex, ey = q.x, -q.y
+                pts = [(ex, ey)]
+                for p, anum in rails[num]["v"]:
+                    i0 = len(g.parts)
+                    place_v(p, anum, x, ey)
+                    pts.append((x, ey))
+                    chain(p, anum, x)
+                    grow(i0)
+                    x = snap(x + side * self.COL)
+                h = rails[num]["h"]
+                if h:
+                    p, anum = h
+                    pin = next(t for t in p.sym.pins if t.number == anum)
+                    p.sch_rot = 0 if pin.outward == (-side, 0) else 180
+                    (px, py), _ = _pin_at(pin, p.sch_rot)
+                    p.sch_at = (snap(x - px), snap(ey - py))
+                    i0 = len(g.parts)
+                    g.parts.append(p)
+                    self.wired.add((p.ref, anum))
+                    pts.append((x, ey))
+                    grow(i0)
+                    e = self._sat_extent(p, {anum})
+                    x = snap(x + side * (e[2] - e[0] + 2.54))
+                g.wires += list(zip(pts, pts[1:]))
+                g.junctions += pts[1:-1]
+                g.labels.append((mnets[num], snap(ex + side * self.STUB), ey, (side, 0), f"{M.ref}.{num}.rail"))
+                self.wired.add((M.ref, num))
+                bx.append(x)
+                by.append(ey)
+        g.bbox = (min(bx), min(by), max(bx), max(by))
+        return g, free
 
     def layout(self):
         W, H = self.paper_size()
         margin_x, top = 20.0, 30.0
         x, y = margin_x, top
         row_h = 0.0
+        # pass 1: clusters (an anchor may adopt the small parts of anchor-less blocks)
+        adoptable = [p for _, ps in self.sh.blocks if not any(len(q.sym.pins) >= 3 for q in ps) for p in ps]
+        adopted: set[str] = set()
+        plans = []
         for title, parts in self.sh.blocks:
-            if not parts:
+            group, rest = self._cluster(parts, [p for p in adoptable if p.ref not in adopted and p not in parts])
+            if group:
+                adopted |= {p.ref for p in group.parts}
+            plans.append((title, group, rest))
+        # pass 2: place blocks
+        for title, group, rest in plans:
+            rest = [p for p in rest if p.ref not in adopted]
+            if not group and not rest:
                 continue
             # block header
             if x > margin_x:
@@ -420,28 +632,55 @@ class SheetWriter:
                                     S("at", snap(x), snap(y), 0), _font(2.0, justify="left bottom", bold=True),
                                     S("uuid", uid(self.b.name, self.sh.file, "blk", title))))
                 y += 6
-            for p in parts:
-                ex0, ey0, ex1, ey1 = self._extent(p)
+            for it in ([group] if group else []) + rest:
+                if isinstance(it, Group):
+                    ex0, ey0, ex1, ey1 = it.bbox
+                else:
+                    ex0, ey0, ex1, ey1 = self._extent(it)
                 w, h = ex1 - ex0, ey1 - ey0
                 if x + w > W - margin_x and x > margin_x:
                     x = margin_x
                     y += row_h + 4
                     row_h = 0
                 ox, oy = snap(x - ex0), snap(y - ey0)
-                p.sch_at = (ox, oy)
+                if isinstance(it, Group):
+                    for p in it.parts:
+                        p.sch_at = (snap(ox + p.sch_at[0]), snap(oy + p.sch_at[1]))
+                    it.wires = [((snap(ox + a[0]), snap(oy + a[1])), (snap(ox + b[0]), snap(oy + b[1])))
+                                for a, b in it.wires]
+                    it.junctions = [(snap(ox + jx), snap(oy + jy)) for jx, jy in it.junctions]
+                    it.labels = [(n, snap(ox + lx), snap(oy + ly), d, k) for n, lx, ly, d, k in it.labels]
+                    self.groups.append(it)
+                else:
+                    it.sch_at, it.sch_rot = (ox, oy), 0
                 x += w + 4
                 row_h = max(row_h, h)
             x = W  # force new row for next block
         self.used_h = y + row_h
+
+    def emit_groups(self):
+        for gi, g in enumerate(self.groups):
+            for i, (a, b) in enumerate(g.wires):
+                if a == b:
+                    continue
+                self.items.append(S("wire", S("pts", S("xy", *a), S("xy", *b)),
+                                    S("stroke", S("width", 0), S("type", Sym("default"))),
+                                    S("uuid", uid(self.b.name, self.sh.file, "gw", str(gi), str(i)))))
+            for i, (jx, jy) in enumerate(g.junctions):
+                self.items.append(S("junction", S("at", jx, jy), S("diameter", 0), S("color", 0, 0, 0, 0),
+                                    S("uuid", uid(self.b.name, self.sh.file, "gj", str(gi), str(i)))))
+            for net, lx, ly, d, key in g.labels:
+                self.connect(net, lx, ly, d, key)
 
     # emitters ------------------------------------------------------------
     def emit_symbol(self, p: Part):
         sd = p.sym
         self.lib_ids.add(p.lib_id)
         ox, oy = p.sch_at
-        x0, y0, x1, y1 = sd.bbox
+        x0, y0, x1, y1 = _rot_bbox(sd.bbox, p.sch_rot)
         props = [
             _prop("Reference", p.ref, snap(ox + x1 + 1.27) if (x1 - x0) < 8 else ox, snap(oy + y0 - 1.27),
+                  hide=p.ref.startswith("#"),
                   justify="left" if (x1 - x0) < 8 else None),
             _prop("Value", p.value, snap(ox + x1 + 1.27) if (x1 - x0) < 8 else ox, snap(oy + y1 + 1.27) if (x1 - x0) >= 8 else snap(oy + y0 + 1.27),
                   justify="left" if (x1 - x0) < 8 else None),
@@ -451,7 +690,7 @@ class SheetWriter:
         ]
         for k, v in p.fields.items():
             props.append(_prop(k, v, ox, oy, hide=True))
-        node = S("symbol", S("lib_id", p.lib_id), S("at", ox, oy, 0), S("unit", 1),
+        node = S("symbol", S("lib_id", p.lib_id), S("at", ox, oy, p.sch_rot), S("unit", 1),
                  S("exclude_from_sim", Sym("no")), S("in_bom", yes(p.in_bom)), S("on_board", yes(p.on_board)),
                  S("dnp", yes(p.dnp)), S("fields_autoplaced", Sym("yes")),
                  S("uuid", self.b.sym_uuid(p)), *props)
@@ -464,13 +703,15 @@ class SheetWriter:
         # connections
         nets = p.pin_nets()
         for pin in sd.pins:
-            px, py = snap(ox + pin.x), snap(oy - pin.y)
+            (rx, ry), (dx, dy) = _pin_at(pin, p.sch_rot)
+            px, py = snap(ox + rx), snap(oy + ry)
             net = nets.get(pin.number)
+            if (p.ref, pin.number) in self.wired:
+                continue
             if net is None:
                 if pin.etype != "no_connect" and not pin.hidden:
                     self.items.append(S("no_connect", S("at", px, py), S("uuid", uid(self.b.name, p.ref, "nc", pin.number))))
                 continue
-            dx, dy = pin.outward
             sx, sy = snap(px + dx * self.STUB), snap(py + dy * self.STUB)
             self.items.append(S("wire", S("pts", S("xy", px, py), S("xy", sx, sy)),
                                 S("stroke", S("width", 0), S("type", Sym("default"))),
@@ -497,18 +738,19 @@ class SheetWriter:
         self.pwr_n += 1
         sd = LIB.get(lib_id)
         name = lib_id.split(":")[1]
-        # GND-like symbols hang down, supply symbols point up
-        rot = 0
-        if name.startswith("GND"):
-            rot = {(0, -1): 180}.get(d, 0)
+        # GND-like symbols hang down, supply symbols point up; on a side pin both point outward
+        # (KiCad angles are counter-clockwise)
+        gnd = name.startswith("GND")
+        if gnd:
+            rot = {(0, -1): 180, (1, 0): 90, (-1, 0): 270}.get(d, 0)
         else:
-            rot = {(0, 1): 180}.get(d, 0)
+            rot = {(0, 1): 180, (1, 0): 270, (-1, 0): 90}.get(d, 0)
         ref = f"#PWR{self.page:02d}{self.pwr_n:03d}"
         node = S("symbol", S("lib_id", lib_id), S("at", x, y, rot), S("unit", 1),
                  S("exclude_from_sim", Sym("no")), S("in_bom", Sym("yes")), S("on_board", Sym("yes")),
                  S("dnp", Sym("no")), S("fields_autoplaced", Sym("yes")), S("uuid", uid(self.b.name, key, "pwr")),
                  _prop("Reference", ref, x, y, hide=True),
-                 _prop("Value", name, x, snap(y + (3.81 if name.startswith("GND") else -3.81)) if rot == 0 else snap(y + (-3.81 if name.startswith("GND") else 3.81))),
+                 self._power_value(name, x, y, d, gnd),
                  _prop("Footprint", "", x, y, hide=True),
                  _prop("Datasheet", "", x, y, hide=True),
                  _prop("Description", "", x, y, hide=True))
@@ -517,6 +759,14 @@ class SheetWriter:
         node.append(S("instances", S("project", self.b.name,
                                      S("path", self.inst_path, S("reference", ref), S("unit", 1)))))
         self.items.append(node)
+
+    @staticmethod
+    def _power_value(name, x, y, d, gnd):
+        """Value text just beyond the power symbol's body."""
+        if d[1] == 0:            # side pin: body points outward, text past it
+            return _prop("Value", name, snap(x + d[0] * 4.6), y, justify="left" if d[0] > 0 else "right")
+        down = (gnd and d != (0, -1)) or (not gnd and d == (0, 1))
+        return _prop("Value", name, x, snap(y + (3.81 if down else -3.81)))
 
     def emit_notes(self):
         if not self.sh.notes:
@@ -537,6 +787,7 @@ class SheetWriter:
         for _, parts in self.sh.blocks:
             for p in parts:
                 self.emit_symbol(p)
+        self.emit_groups()
         self.emit_notes()
         lib_symbols = S("lib_symbols", *[copy.deepcopy(LIB.get(l).node) for l in sorted(self.lib_ids)])
         return S("kicad_sch", S("version", 20250610), S("generator", "hw-testing-rack-eda"),
@@ -552,27 +803,108 @@ def _title_block(b: Board, title: str):
     return tb
 
 
+def _gline(pts, key, width=0.3):
+    return S("polyline", S("pts", *[S("xy", snap(x), snap(y)) for x, y in pts]),
+             S("stroke", S("width", width), S("type", Sym("default"))), S("fill", S("type", Sym("none"))),
+             S("uuid", uid(*key)))
+
+
+def _gtext(txt, x, y, key, size=1.5, justify="left bottom", bold=False):
+    return S("text", txt, S("exclude_from_sim", Sym("no")), S("at", snap(x), snap(y), 0),
+             _font(size, justify=justify, bold=bold), S("uuid", uid(*key)))
+
+
+def _net_summary(nets: list[str]) -> list[str]:
+    """['FLT_A', 'FLT_B', 'IMON_A'] -> ['FLT_A/B', 'IMON_A'] (one entry per name prefix)."""
+    groups: dict[str, list[str]] = {}
+    for n in sorted(nets):
+        head, _, tail = n.rpartition("_")
+        if head and len(tail) <= 3:
+            groups.setdefault(head, []).append(tail)
+        else:
+            groups.setdefault(n, [])
+    return [f"{k}_{'/'.join(v)}" if v else k for k, v in groups.items()]
+
+
+def _wrap(items: list[str], width: int) -> list[str]:
+    lines, cur = [], ""
+    for it in items:
+        if cur and len(cur) + 2 + len(it) > width:
+            lines.append(cur + ",")
+            cur = it
+        else:
+            cur = f"{cur}, {it}" if cur else it
+    return lines + ([cur] if cur else [])
+
+
 def write_root(b: Board, outdir: Path):
+    """Overview sheet: the hierarchical sheets as a block diagram (non-electrical drawing): the supply
+    rails each sheet uses across the top, the signals shared between sheets as lanes below."""
     items = []
-    x, y = 30.0, 50.0
+    n = len(b.sheets)
+    w, h, gap = (64.0, 30.48, 30.48) if n > 3 else (80.0, 30.48, 40.64)
+    x0 = snap((420 - (n * w + (n - 1) * gap)) / 2)
+    top = 70.0
+    boxes = {}
     for i, sh in enumerate(b.sheets):
-        w, h = 60.96, 25.4
+        x = snap(x0 + i * (w + gap))
+        boxes[sh.file] = (x, top, x + w, top + h)
         su = b.sheet_uuid(sh)
-        items.append(S("sheet", S("at", snap(x), snap(y)), S("size", w, h),
+        items.append(S("sheet", S("at", x, top), S("size", w, h),
                        S("exclude_from_sim", Sym("no")), S("in_bom", Sym("yes")), S("on_board", Sym("yes")),
                        S("dnp", Sym("no")), S("fields_autoplaced", Sym("yes")),
-                       S("stroke", S("width", 0.1524), S("type", Sym("solid"))),
-                       S("fill", S("color", 0, 0, 0, 0.0)), S("uuid", su),
-                       _prop("Sheetname", sh.name, snap(x), snap(y - 0.7), justify="left bottom"),
-                       _prop("Sheetfile", sh.file, snap(x), snap(y + h + 0.6), justify="left top"),
+                       S("stroke", S("width", 0.3), S("type", Sym("solid"))),
+                       S("fill", S("color", 255, 255, 225, 1.0)), S("uuid", su),
+                       _prop("Sheetname", sh.name, x, snap(top - 0.7), justify="left bottom", size=2.0),
+                       _prop("Sheetfile", sh.file, x, snap(top + h + 0.6), justify="left top"),
                        S("instances", S("project", b.name, S("path", f"/{b.root_uuid}", S("page", str(i + 2)))))))
-        x += w + 25
-        if x > 330:
-            x = 30.0
-            y += h + 25
+        lines = textwrap.wrap(sh.title, int((w - 6) / 1.6))
+        for k, ln in enumerate(lines[:6]):
+            items.append(_gtext(ln, x + 3, top + 8 + k * 3.6, (b.name, "rootdesc", sh.file, str(k)), 1.8))
+
+    ns = b.net_sheets()
+    # supply rails across the top, with a drop into every sheet that uses them
+    rails = [net for net in POWER_SYMBOLS if net != "GND" and len(ns.get(net, ())) > 1]
+    xl, xr = x0 - 12, x0 + n * w + (n - 1) * gap + 4
+    for k, net in enumerate(rails):
+        y = snap(top - 12 - k * 7.62)
+        items.append(_gline([(xl, y), (xr, y)], (b.name, "rail", net), 0.5))
+        items.append(_gtext(net, xl - 1.5, y + 0.6, (b.name, "railtxt", net), 1.8, "right", True))
+        for j, sh in enumerate(b.sheets):
+            if sh.file not in ns.get(net, ()):
+                continue
+            bx = boxes[sh.file][0] + 10 + k * 7.62
+            items.append(_gline([(bx, y), (bx, top)], (b.name, "drop", net, sh.file), 0.5))
+            items.append(S("circle", S("center", snap(bx), y), S("radius", 0.6),
+                           S("stroke", S("width", 0.3), S("type", Sym("default"))), S("fill", S("type", Sym("outline"))),
+                           S("uuid", uid(b.name, "tap", net, sh.file))))
+    # signal lanes below: one per pair of sheets sharing nets
+    pairs: dict[tuple[str, str], list[str]] = {}
+    order = [sh.file for sh in b.sheets]
+    for net, files in ns.items():
+        if net in POWER_SYMBOLS or len(files) < 2:
+            continue
+        fs = sorted(files, key=order.index)
+        for a_ in range(len(fs)):
+            for c_ in range(a_ + 1, len(fs)):
+                pairs.setdefault((fs[a_], fs[c_]), []).append(net)
+    plist = sorted(pairs.items(), key=lambda kv: (order.index(kv[0][1]) - order.index(kv[0][0]), order.index(kv[0][0])))
+    used: dict[str, int] = {}
+    y = top + h
+    for k, ((fa, fb), nets) in enumerate(plist):
+        xa = boxes[fa][2] - 8 - used.get(fa, 0) * 7.62
+        xb = boxes[fb][0] + 8 + used.get(fb, 0) * 7.62
+        lines = _wrap(_net_summary(nets), max(16, int((xb - xa - 4) / 1.1)))
+        lane = snap(y + 10 + 2.2 * (len(lines) - 1))
+        used[fa] = used.get(fa, 0) + 1
+        used[fb] = used.get(fb, 0) + 1
+        items.append(_gline([(xa, top + h), (xa, lane), (xb, lane), (xb, top + h)], (b.name, "lane", fa, fb)))
+        for m, ln in enumerate(lines):
+            items.append(_gtext(ln, xa + 2, lane - 1.0 - 2.2 * (len(lines) - 1 - m), (b.name, "lanetxt", fa, fb, str(m)), 1.4))
+        y = lane
     if b.root_notes:
         txt = "\n".join(b.root_notes)
-        items.append(S("text_box", txt, S("exclude_from_sim", Sym("no")), S("at", 30, snap(y + 50), 0),
+        items.append(S("text_box", txt, S("exclude_from_sim", Sym("no")), S("at", 30, snap(y + 15), 0),
                        S("size", 360, snap(6 + 2.2 * (txt.count("\n") + 1))), S("margins", 2, 2, 2, 2),
                        S("stroke", S("width", 0), S("type", Sym("default"))), S("fill", S("type", Sym("none"))),
                        _font(1.6, justify="left top"), S("uuid", uid(b.name, "rootnotes"))))
