@@ -121,3 +121,28 @@ Through-hole parts (JST VH, KF128) need JLC's THT service or a soldering iron.
 `electronics/lib/bench.kicad_sym` holds the one symbol the stock library
 lacks (TPS2553DBV).  All footprints and 3D models come from KiCad 10's
 standard libraries.
+
+## Future: chip-down ESP32-S3 (v2)
+
+Every ESP32-S3 *module* (MINI-1, MINI-1U, WROOM-1, all memory variants) is
+Standard-PCBA-only at JLC, which is what keeps the bay node off Economic
+PCBA.  The bare **ESP32-S3FH4R2** (C3013940, ≈ $3.67, QFN-56 7 × 7 mm, 4 MB
+flash + 2 MB PSRAM in package) is Economic-capable and is the same SoC, so the
+Zephyr firmware (Wi-Fi, `uhc_dwc2` USB host) carries over unchanged.
+
+* Saves ≈ $35–45 per 16-node order: about $1 per chip, plus Economic instead
+  of Standard setup and stencil fees, and no added edge rails.  That is ≈ €2.5
+  per node, more for larger runs.
+* Costs: 40 MHz crystal, antenna (PCB trace or ceramic chip) with a matching
+  network to tune on a VNA, extra decoupling, and the loss of the module's
+  radio certification.  4 MB flash is enough for the USB/IP firmware with
+  dual-slot updates.
+* Not worth the RF risk at 16 nodes; worth revisiting for ≥ 50.
+
+Alternatives considered:
+* ESP32-S2FN4R2: cheaper, Economic, Zephyr Wi-Fi, but `uhc_dwc2` is not yet
+  validated on the S2.
+* ESP32-C3/C5/C6: no USB OTG, so no USB host.
+* nRF54LM20 + nRF7002, or ESP32-P4 + C6: USB host supported, but two chips and
+  more cost.
+* NXP RW612: good Zephyr support, but no module stocked at LCSC.
