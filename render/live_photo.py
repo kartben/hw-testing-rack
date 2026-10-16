@@ -1,7 +1,7 @@
 """Photoreal "on a desk" shots of the rack, in a RUNNING Blender (see tools/blender_live.py).
 
     python tools/blender_live.py exec render/live_photo.py build [glb]
-    python tools/blender_live.py exec render/live_photo.py shot <desk|drawer|detail> [out.jpg] [samples] [WxH]
+    python tools/blender_live.py exec render/live_photo.py shot <desk|drawer|boards|detail> [out.jpg] [samples] [WxH]
 
 (Renders at full size take ~1 min: use blender_live.py rather than an MCP call with a short timeout.)
 
@@ -12,7 +12,7 @@ lines (along each part's print Z) and shading-rounded edges for the printed
 parts; lacquered solder mask on the PCBs.  The set is a small office: oak desk
 against a plaster wall, a laptop wired to bay C4's front port by a hanging
 USB-C cable, a mug, lit only through a window (sun + sky, with a light portal).
-The GLB comes from `tools/assembly_glb.py --with-pc-cable --out render/assembly-photo.glb`; the scanned
+The GLB comes from `tools/assembly_glb.py --with-pc-cable --open-bays B3 --out render/assembly-photo.glb`; the scanned
 textures from `tools/fetch_render_assets.py` and the laptop screen from `render/screen_terminal.py`
 (both into render/assets/, optional: procedural fallbacks).
 """
@@ -180,6 +180,12 @@ def dress(rack):
             elif cat in ("pcb", "boards", "xiao") and src and src.use_nodes:
                 bsdf = next((n for n in src.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
                 if bsdf and not src.get("photo"):
+                    r, g, b_, _ = bsdf.inputs["Base Color"].default_value
+                    hi, lo = max(r, g, b_), min(r, g, b_)
+                    sat = (hi - lo) / hi if hi else 0
+                    if cat != "pcb" and hi > 0.45 and (sat < 0.12 or (r > g > b_ and sat > 0.35 and hi > 0.5)):
+                        bsdf.inputs["Metallic"].default_value = 1.0       # nickel shells, gold pins / pads
+                        bsdf.inputs["Roughness"].default_value = 0.25
                     if bsdf.inputs["Metallic"].default_value < 0.5:
                         bsdf.inputs["Roughness"].default_value = 0.32
                         bsdf.inputs["Coat Weight"].default_value = 0.35      # solder-mask lacquer
@@ -331,8 +337,24 @@ def disc(name, radius, loc, mat, coll):
     return ob
 
 
-def mug(coll, at=(-0.36, -0.30)):
-    ceramic = simple("photo-ceramic", (0.86, 0.85, 0.82), rough=0.18, coat=0.6)
+def ceramic():
+    """Glazed stoneware: white body under a thin, very glossy glaze."""
+    name = "photo-ceramic"
+    if name in bpy.data.materials:
+        return bpy.data.materials[name]
+    m, nt, b = _principled(name)
+    b.inputs["Base Color"].default_value = (0.90, 0.89, 0.86, 1)
+    b.inputs["Roughness"].default_value = 0.35
+    b.inputs["Coat Weight"].default_value = 1.0
+    b.inputs["Coat Roughness"].default_value = 0.03
+    b.inputs["Coat IOR"].default_value = 1.52
+    b.inputs["Subsurface Weight"].default_value = 0.08
+    b.inputs["Subsurface Scale"].default_value = 0.002
+    return m
+
+
+def mug(coll, at=(-0.20, -0.08)):
+    ceramic_ = ceramic()
     me = bpy.data.meshes.new("mug")
     bm = bmesh.new()
     bmesh.ops.create_cone(bm, cap_ends=True, segments=64, radius1=0.041, radius2=0.043, depth=0.095)
@@ -344,9 +366,9 @@ def mug(coll, at=(-0.36, -0.30)):
         p.use_smooth = True
     ob = bpy.data.objects.new("mug", me)
     ob.location = (at[0], at[1], 0.0475)
-    me.materials.append(ceramic)
+    me.materials.append(ceramic_)
     coll.objects.link(ob)
-    ob.modifiers.new("wall", "SOLIDIFY").thickness = 0.004
+    ob.modifiers.new("wall", "SOLIDIFY").thickness = 0.005
     ob.modifiers.new("smooth", "SUBSURF").levels = 1
     me = bpy.data.meshes.new("mug-handle")
     bm = bmesh.new()
@@ -361,8 +383,9 @@ def mug(coll, at=(-0.36, -0.30)):
     for v in h.data.skin_vertices[0].data:
         v.radius = (0.006, 0.006)
     h.modifiers.new("smooth", "SUBSURF").levels = 2
-    h.data.materials.append(ceramic)
-    disc("coffee", 0.038, (at[0], at[1], 0.083), simple("photo-coffee", (0.05, 0.025, 0.012), rough=0.05), coll)
+    h.data.materials.append(ceramic_)
+    disc("coffee", 0.038, (at[0], at[1], 0.083), simple("photo-coffee", (0.06, 0.03, 0.015), rough=0.02, coat=0.5),
+         coll)
 
 
 def screen_material():
@@ -514,6 +537,8 @@ def build(glb):
         bpy.data.objects.remove(ob, do_unlink=True)
     for coll in list(sc.collection.children):
         bpy.data.collections.remove(coll)
+    for m in [m for m in bpy.data.materials if m.name.startswith("photo-")]:
+        bpy.data.materials.remove(m)          # rebuilt from this file every time
     rack = bpy.data.collections.new("photo-rack")
     sc.collection.children.link(rack)
     setc = bpy.data.collections.new("photo-set")
@@ -677,6 +702,17 @@ def aim(cam, loc, target, lens, fstop, focus=None):
     cam.data.dof.focus_distance = (Vector(focus or target) - Vector(loc)).length
 
 
+def led_world(bay):
+    """Frame-space position (m) of a bay's front status LED, from site/assets/rack.json."""
+    import json
+    data = json.loads((REPO / "site" / "assets" / "rack.json").read_text(encoding="utf-8"))
+    led = next(x for x in data["leds"] if x["bay"] == bay)
+    row = data["rack"]["rows"][led["row"]]
+    t = math.radians(row["tilt"])
+    x, y, z = led["pos"]
+    return (Vector(row["origin"]) + Vector((x, y * math.cos(t) - z * math.sin(t), y * math.sin(t) + z * math.cos(t)))) / 1000.0
+
+
 def bay_center(bay):
     import json
     data = json.loads((REPO / "site" / "assets" / "rack.json").read_text(encoding="utf-8"))
@@ -693,11 +729,17 @@ def shot(name, out, samples, res):
         c = bay_center("C2")
         aim(cam, c + Vector((0.30, -0.62, 0.28)), c + Vector((-0.02, -0.12, -0.03)), 50, 4.0,
             focus=c + Vector((0.0, -0.16, -0.02)))
+    elif name == "boards":
+        # the vendor models up close: Raspberry Pi Pico 2 on B3's pulled-out drawer, the
+        # Arduino UNO R4 WiFi next door in B4 (the photo GLB is baked with --open-bays B3)
+        c = bay_center("B3") + Vector((0.0, -0.13, -0.05))
+        aim(cam, c + Vector((-0.20, -0.42, 0.30)), c + Vector((0.03, 0.0, 0.0)), 70, 4.0, focus=c)
     elif name == "detail":
-        # raking view along row B's drawer fronts: status LEDs, printed fronts, bracket and post
+        # raking view along row B's drawer fronts: status LEDs, printed fronts, bracket and post;
+        # sharp on B2's LED
         c = bay_center("B1")
-        aim(cam, c + Vector((-0.24, -0.36, 0.05)), c + Vector((0.20, -0.08, -0.03)), 50, 4.0,
-            focus=c + Vector((0.02, -0.12, -0.02)))
+        aim(cam, c + Vector((-0.24, -0.36, 0.05)), c + Vector((0.20, -0.08, -0.03)), 50, 5.6,
+            focus=led_world("B2"))
     w, h = (int(v) for v in res.split("x"))
     sc.render.resolution_x, sc.render.resolution_y = w, h
     sc.cycles.samples = samples

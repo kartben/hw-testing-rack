@@ -156,6 +156,53 @@ def chain_path(ch, frac):
     return np.array([(o[0] + x, o[1] + y, o[2] + ch["z"]) for x, y in pts])
 
 
+BOARD_MODELS = REPO / "render" / "assets" / "boards"      # tools/board_models.py output (not committed)
+_LIB = None
+
+
+def real_board(b):
+    """The vendor's 3D model of this board, if tools/board_models.py normalised one, turned like
+    rackcfg.orient_board() turns the board (debug USB towards the drawer rear)."""
+    global _LIB
+    f = BOARD_MODELS / f"{b['id']}.norm.glb"
+    if not f.exists():
+        return None
+    if _LIB is None:
+        import yaml
+        _LIB = yaml.safe_load((REPO / "mechanical" / "boards" / "boards.yaml").read_text(encoding="utf-8"))["boards"]
+    spec = _LIB[b["id"]]
+    w, l = spec["size"]
+    edge = spec.get("usb", {}).get("edge", "top")
+    M = np.eye(4)
+    if edge == "bottom":
+        M = translate([w, l, 0]) @ rot_xyz([0, 0, 180])
+    elif edge == "left":
+        M = translate([0, w, 0]) @ rot_xyz([0, 0, -90])
+    elif edge == "right":
+        M = translate([l, 0, 0]) @ rot_xyz([0, 0, 90])
+    s = trimesh.load(f, force="scene")
+    out = []
+    for node in s.graph.nodes_geometry:
+        tf, g = s.graph[node]
+        out.append(s.geometry[g].copy().apply_transform(M @ tf))
+    return out
+
+
+def real_xiao(size):
+    """The XIAO ESP32S3 Sense model for a camera pod: camera side down, seated at the top of the
+    pod's box (size = the box the viewer draws)."""
+    f = BOARD_MODELS / "xiao.norm.glb"
+    if not f.exists():
+        return None
+    s = trimesh.load(f, force="scene")
+    ms = [s.geometry[g].copy().apply_transform(rot_xyz([180, 0, 0]) @ tf)
+          for tf, g in (s.graph[n] for n in s.graph.nodes_geometry)]
+    lo = np.min([m.bounds[0] for m in ms], axis=0)
+    hi = np.max([m.bounds[1] for m in ms], axis=0)
+    shift = translate([size[0] / 2 - (lo[0] + hi[0]) / 2, size[1] / 2 - (lo[1] + hi[1]) / 2, size[2] - hi[2]])
+    return [m.apply_transform(shift) for m in ms]
+
+
 def board_meshes(b):
     w, l = b["size"][:2]
     out = [with_mat(trimesh.creation.box([w, l, 1.6], transform=translate([w / 2, l / 2, 0.8])),
@@ -188,7 +235,7 @@ def bay_layer(name):
     return next((k for key, k in BAY_LAYERS if key in name), None)
 
 
-def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=None, gap=45.0):
+def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=None, gap=45.0, open_bays=()):
     scene_json = json.loads((ASSETS / "rack.json").read_text(encoding="utf-8"))
     parts = trimesh.load(ASSETS / "parts.glb")
     geoms = {}
@@ -219,7 +266,11 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
                 translate([0, 0, explode * (row or 0) * 150]) if row is not None else np.eye(4)) @ local
 
     def drawer_dy(item):
-        if not item.get("movable") or not item.get("bay") or open_frac is None:
+        if not item.get("movable") or not item.get("bay"):
+            return 0.0
+        if item["bay"] in open_bays:
+            return -travel * (1.0 - initial.get(item["bay"], 0))
+        if open_frac is None:
             return 0.0
         return -travel * (open_frac - initial.get(item["bay"], 0))
 
@@ -251,13 +302,19 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         add(with_mat(g, mat(part_category(it["part"]))), f"{part_category(it['part'])}:{it['part']}",
             place(it.get("space"), it.get("row"), local), it.get("bay"))
     for b in scene_json["boards"]:
-        for m in board_meshes(b):
+        for m in real_board(b) or board_meshes(b):
             add(m, f"boards:{b['id']}", place("row", b["row"], translate(np.add(b["pos"], [0, drawer_dy(b), 0]))),
                 b.get("bay"))
     for p in scene_json["pcbs"]:
         for m in pcb.get(p["board"], []):
             add(m, f"pcb:{p['board']}", place(p.get("space"), p.get("row"), translate(p["pos"])), p.get("bay"))
     for bx in scene_json["boxes"]:
+        real = real_xiao(bx["size"]) if bx["kind"] == "xiao" else None
+        if real:
+            for m in real:
+                add(m, f"xiao:{bx.get('bay', '')}", place(bx.get("space"), bx.get("row"), translate(bx["pos"])),
+                    bx.get("bay"))
+            continue
         m = trimesh.creation.box(bx["size"], transform=translate(np.array(bx["size"]) / 2))
         add(with_mat(m, mat("psu") if bx["kind"] == "psu" else mat(hex_rgba(bx["color"]))), f"{bx['kind']}:{bx.get('bay', '')}",
             place(bx.get("space"), bx.get("row"), translate(bx["pos"])), bx.get("bay"))
@@ -270,7 +327,7 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         add(with_mat(m, em), f"led:{led['bay']}", place("row", led["row"], translate(led["pos"])), led["bay"])
     link = trimesh.creation.box([8.4, 10, 11])
     for ch in scene_json["chains"]:
-        frac = ch["open"] if open_frac is None else open_frac
+        frac = 1.0 if ch["bay"] in open_bays else (ch["open"] if open_frac is None else open_frac)
         pts = chain_path(ch, frac)
         seg = np.linalg.norm(np.diff(pts, axis=0), axis=1)
         cum = np.concatenate([[0], np.cumsum(seg)])
@@ -310,5 +367,7 @@ if __name__ == "__main__":
     ap.add_argument("--with-pc-cable", action="store_true", help="include the demo laptop cable")
     ap.add_argument("--explode-bay", metavar="BAY", help="only this bay, laid flat, its layers pulled apart")
     ap.add_argument("--gap", type=float, default=45.0, help="layer gap for --explode-bay (mm)")
+    ap.add_argument("--open-bays", metavar="B3,B4", help="also pull these drawers fully out")
     a = ap.parse_args()
-    build(a.open, a.explode, a.out, a.with_pc_cable, a.explode_bay, a.gap)
+    build(a.open, a.explode, a.out, a.with_pc_cable, a.explode_bay, a.gap,
+          tuple(b for b in (a.open_bays or "").split(",") if b))

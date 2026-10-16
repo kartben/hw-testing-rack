@@ -38,10 +38,13 @@ over the network with USB/IP by a Zephyr-powered ESP32-S3 in each bay.**
 
 | | |
 |---|---|
-| ![drawer](docs/img/photo-drawer.jpg) | ![status LEDs](docs/img/photo-detail.jpg) |
-| A drawer pulled out, board still connected | Printed drawer fronts and status LEDs along a row |
-| ![bay node](electronics/bay-node/docs/bay-node-iso.png) | ![technical render](docs/img/hero.jpg) |
-| Bay node — ESP32-S3, 2 USB muxes, TPS2553, INA226, 60 V buck | Neutral technical render (more in [docs/](docs/architecture.md)) |
+| ![drawer](docs/img/photo-drawer.jpg) | ![boards](docs/img/photo-boards.jpg) |
+| A drawer pulled out, board still connected | Raspberry Pi Pico 2 on its plate, UNO R4 WiFi next door ([real models](docs/boards-3d.md)) |
+| ![status LEDs](docs/img/photo-detail.jpg) | ![bay node](electronics/bay-node/docs/bay-node-iso.png) |
+| Printed drawer fronts and status LEDs along a row | Bay node — ESP32-S3, 2 USB muxes, TPS2553, INA226, 60 V buck |
+
+Neutral technical renders: [the rack](docs/img/hero.jpg), [one bay exploded](docs/architecture.md),
+[side view](docs/mechanical.md).
 
 ## Repository layout
 
@@ -95,9 +98,10 @@ showing a Zephyr shell, wired to bay C4 by a USB-C cable that hangs as a real
 one would (a catenary), depth of field and lens effects:
 
 ```bash
-python tools/fetch_render_assets.py                     # CC0 textures → render/assets/ (not committed)
+python tools/fetch_render_assets.py                     # CC0 textures + vendor board models → render/assets/
+python tools/board_models.py                            # normalise the board models (docs/boards-3d.md)
 python render/screen_terminal.py                        # the laptop's screen → render/assets/
-python tools/assembly_glb.py --with-pc-cable --out render/assembly-photo.glb
+python tools/assembly_glb.py --with-pc-cable --open-bays B3 --out render/assembly-photo.glb
 python tools/blender_live.py exec render/live_photo.py build
 python tools/blender_live.py exec render/live_photo.py shot desk          # desk, drawer, detail → docs/img/photo-*.jpg
 ```
