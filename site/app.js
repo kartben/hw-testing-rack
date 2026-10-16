@@ -7,6 +7,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -304,22 +305,141 @@ function cableColor(c) {
   if (c.kind === 'dut') return new THREE.Color(CABLE_COLORS[c.type] ?? 0x8f5cff);
   return new THREE.Color(CABLE_COLORS[c.kind] ?? 0x888888);
 }
+// USB plugs, modelled from the connectors' real outlines (mm).  Plug frame: +z = into the
+// receptacle (the shell, mostly hidden in it), x = connector width, y = its "up".
+const PLUG = {
+  'usb-c':   { shell: 'pill', sw: 8.3, sh: 2.5, sl: 6.5, mw: 12.0, mh: 6.2, ml: 15, relief: 7 },
+  'micro-b': { shell: 'trap', sw: 6.9, sh: 1.85, sl: 5.5, bw: 5.4, mw: 10.5, mh: 5.4, ml: 13, relief: 6 },
+  'mini-b':  { shell: 'trap', sw: 7.7, sh: 3.9, sl: 6.0, bw: 6.2, mw: 11.0, mh: 7.0, ml: 14, relief: 6 },
+  'usb-a':   { shell: 'box', sw: 12.0, sh: 4.5, sl: 12.0, mw: 15.5, mh: 7.5, ml: 20, relief: 8 },
+};
+const RIGHT_ANGLE = { depth: 12, height: 9, relief: 6 };   // must match tools/webscene.py
+const PLUG_MAT = {
+  mold: std(0x1d1f23, 0, 0.5),
+  shell: std(0xd4d7dc, 0.95, 0.28),
+  tongue: std(0x0b0c0e, 0, 0.6),
+  screw: std(0xb9bdc4, 0.9, 0.35),
+};
+const plugGeoCache = new Map();
+function cached(key, make) {
+  if (!plugGeoCache.has(key)) plugGeoCache.set(key, make());
+  return plugGeoCache.get(key);
+}
+function shellGeometry(d) {
+  return cached(`shell-${d.shell}-${d.sw}-${d.sh}-${d.sl}`, () => {
+    const s = new THREE.Shape();
+    const w = d.sw / 2, h = d.sh / 2;
+    if (d.shell === 'pill') {                    // USB-C: a stadium
+      s.moveTo(-w + h, -h); s.lineTo(w - h, -h); s.absarc(w - h, 0, h, -Math.PI / 2, Math.PI / 2);
+      s.lineTo(-w + h, h); s.absarc(-w + h, 0, h, Math.PI / 2, 3 * Math.PI / 2);
+    } else if (d.shell === 'trap') {             // micro-B / mini-B: a trapezoid, wide side up
+      const b = d.bw / 2;
+      s.moveTo(-b, -h); s.lineTo(b, -h); s.lineTo(w, h * 0.2); s.lineTo(w, h); s.lineTo(-w, h); s.lineTo(-w, h * 0.2);
+    } else {
+      s.moveTo(-w, -h); s.lineTo(w, -h); s.lineTo(w, h); s.lineTo(-w, h);
+    }
+    s.closePath();
+    return new THREE.ExtrudeGeometry(s, { depth: d.sl, bevelEnabled: false, curveSegments: 10 });
+  });
+}
+function plugBasis(e) {
+  const z = v3(e.dir).normalize();
+  const up = v3(e.up ?? [0, 0, 1]);
+  const x = new THREE.Vector3().crossVectors(up, z);
+  if (x.lengthSq() < 1e-6) x.set(1, 0, 0);
+  x.normalize();
+  const y = new THREE.Vector3().crossVectors(z, x);
+  return new THREE.Matrix4().makeBasis(x, y, z).setPosition(v3(e.at));
+}
+function makePlug(e) {
+  const d = PLUG[e.type] ?? PLUG['usb-c'];
+  const g = new THREE.Group();
+  g.matrixAutoUpdate = false;
+  g.matrix.copy(plugBasis(e));
+  g.add(new THREE.Mesh(shellGeometry(d), PLUG_MAT.shell));
+  if (e.style === 'right') {
+    const { depth, height, relief } = RIGHT_ANGLE;
+    const lo = -d.mh / 2 - 0.4;
+    const mold = new THREE.Mesh(cached(`rmold-${d.mw}-${depth}-${height}-${lo}`,
+      () => new RoundedBoxGeometry(d.mw, height - lo, depth, 3, 1.8)), PLUG_MAT.mold);
+    mold.position.set(0, (height + lo) / 2, -depth / 2);
+    const rel = new THREE.Mesh(cached('rrelief', () => new THREE.CylinderGeometry(2.2, 2.7, relief, 20)), PLUG_MAT.mold);
+    rel.position.set(0, height + relief / 2, -depth / 2);
+    g.add(mold, rel);
+  } else {
+    const mold = new THREE.Mesh(cached(`mold-${d.mw}-${d.mh}-${d.ml}`,
+      () => new RoundedBoxGeometry(d.mw, d.mh, d.ml, 3, Math.min(2.2, d.mh / 2 - 0.2))), PLUG_MAT.mold);
+    mold.position.set(0, 0, -d.ml / 2);
+    const rel = new THREE.Mesh(cached('relief', () => new THREE.CylinderGeometry(2.7, 2.2, d.relief, 20)), PLUG_MAT.mold);
+    rel.rotation.x = Math.PI / 2;
+    rel.position.set(0, 0, -d.ml - d.relief / 2);
+    g.add(mold, rel);
+  }
+  if (e.socket === 'panel') {
+    // panel-mount female USB-C (the drawer's DATA port): flange with two M3 screws on the wall face
+    const flange = new THREE.Mesh(cached('flange', () => new RoundedBoxGeometry(23, 8, 1.5, 2, 0.6)), PLUG_MAT.mold);
+    flange.position.set(0, 0, 0.75);
+    g.add(flange);
+    for (const sx of [-9, 9]) {
+      const scr = new THREE.Mesh(cached('screw', () => new THREE.CylinderGeometry(2.6, 2.6, 1.1, 16)), PLUG_MAT.screw);
+      scr.rotation.x = Math.PI / 2;
+      scr.position.set(sx, 0, -0.5);
+      g.add(scr);
+    }
+  }
+  return g;
+}
+
 function makeCable(c) {
   const g = new THREE.Group();
   const pts = c.points.map(v3);
   const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
-  const mat = std(cableColor(c), 0, 0.55);
-  g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(24, pts.length * 4), c.radius || 1.5, 8, false), mat));
-  // connector boots at both ends
-  if (['dut', 'power', 'pc', 'ext'].includes(c.kind)) {
-    for (const [tt, kind] of [[0, c.a || 'usb-c'], [1, c.b || 'usb-c']]) {
-      const p = curve.getPointAt(tt), tan = curve.getTangentAt(tt).multiplyScalar(tt ? 1 : -1);
-      const boot = new THREE.Mesh(new THREE.BoxGeometry(kind === 'usb-a' ? 16 : 11, 6, 18), std(0x1b1d21, 0, 0.6));
-      boot.position.copy(p).addScaledVector(tan, -9);
-      boot.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan);
-      g.add(boot);
-    }
-  }
+  const jacket = std(cableColor(c), 0, c.kind.startsWith('power') || c.kind === 'mains' ? 0.6 : 0.45,
+    { envMapIntensity: 0.6 });
+  const len = curve.getLength();
+  g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(48, Math.round(len / 2)), c.radius || 1.5, 14, false), jacket));
+  for (const e of c.ends ?? []) g.add(makePlug(e));
+  return g;
+}
+
+function makeLaptop(p) {
+  // a plain laptop, so the "classic mode" cable has somewhere to go
+  const g = new THREE.Group();
+  const [w, d, t] = p.size;
+  const alu = std(0x8a8f96, 0.85, 0.32);
+  const base = new THREE.Mesh(new RoundedBoxGeometry(w, d, t, 3, 3), alu);
+  base.position.z = t / 2;
+  const keys = new THREE.Mesh(new THREE.BoxGeometry(w - 40, d * 0.42, 0.6), std(0x202226, 0, 0.7));
+  keys.position.set(0, d * 0.12, t + 0.2);
+  const pad = new THREE.Mesh(new THREE.BoxGeometry(110, 65, 0.4), std(0x9aa0a8, 0.6, 0.3));
+  pad.position.set(0, -d * 0.27, t + 0.1);
+  const hinge = new THREE.Group();
+  hinge.position.set(0, d / 2 - 2, t);
+  hinge.rotation.x = -THREE.MathUtils.degToRad((p.lid_deg ?? 110) - 90);
+  const lid = new THREE.Mesh(new RoundedBoxGeometry(w, 5, d - 6, 3, 2.5), alu);
+  lid.position.set(0, 2.5, (d - 6) / 2);
+  const c = document.createElement('canvas');
+  c.width = 1024; c.height = 640;
+  const x = c.getContext('2d');
+  x.fillStyle = '#16181f'; x.fillRect(0, 0, 1024, 640);
+  x.font = '26px Consolas, Menlo, monospace';
+  const lines = [['#82d678', 'dev@bench:~$ ', '#d6dae4', 'tio /dev/ttyACM0'], ['#66d6de', '*** Booting Zephyr OS ***', '', ''],
+    ['#82d678', 'uart:~$ ', '#d6dae4', 'kernel version'], ['#d6dae4', 'Zephyr version 4.2.0', '', ''],
+    ['#82d678', 'uart:~$ ', '#d6dae4', 'device list'], ['#d6dae4', '- gpio@40020000 (READY)', '', ''],
+    ['#82d678', 'uart:~$ ', '#d6dae4', '█']];
+  lines.forEach(([c1, t1, c2, t2], i) => {
+    x.fillStyle = c1; x.fillText(t1, 40, 70 + i * 44);
+    x.fillStyle = c2; x.fillText(t2, 40 + x.measureText(t1).width, 70 + i * 44);
+  });
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(w - 24, d - 30),
+    new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.9, roughness: 0.15 }));
+  screen.rotation.x = Math.PI / 2;
+  screen.position.set(0, -0.2, (d - 6) / 2);
+  hinge.add(lid, screen);
+  g.add(base, keys, pad, hinge);
+  g.position.set(...p.pos);
   return g;
 }
 
@@ -429,6 +549,9 @@ function build(pcbGlb) {
   for (const c of DATA.cables) {
     const layer = ['power-jumper', 'power-feed', 'mains'].includes(c.kind) ? 'power' : 'cables';
     track(makeCable(c), { layer, bay: c.bay || null, row: c.row ?? null, movable: !!c.movable, zone: c.kind, space: c.space });
+  }
+  for (const p of DATA.props ?? []) {
+    if (p.kind === 'laptop') track(makeLaptop(p), { layer: 'cables', bay: p.bay ?? null, zone: 'laptop', space: p.space });
   }
   // bay labels
   for (const b of DATA.bays) {

@@ -113,6 +113,57 @@ def build_parts_glb(rack, boards: dict, hq: bool = False) -> dict:
     return stats
 
 
+# ------------------------------------------------------------------ USB plugs
+# Plug dimensions (mm): metal shell (goes into the receptacle), overmold, strain relief.
+# Right-angle plugs (the short DUT cables) let the cable leave upwards.
+PLUG = {"usb-c": (6.5, 15.0, 7.0), "micro-b": (5.5, 13.0, 6.0), "mini-b": (6.0, 14.0, 6.0), "usb-a": (12.0, 20.0, 8.0)}
+RIGHT_ANGLE = (12.0, 9.0, 6.0)        # overmold depth along the plug, height above its axis, relief
+
+
+def plug_exit(end):
+    """Where the cable leaves a plug and which way: straight plugs out of their back, right-angle
+    plugs out of their top.  end = {at: receptacle face, dir: into the receptacle, up, type, style}."""
+    at, d = np.array(end["at"], float), np.array(end["dir"], float)
+    up = np.array(end.get("up", (0, 0, 1)), float)
+    if end.get("style") == "right":
+        depth, height, relief = RIGHT_ANGLE
+        return at - d * depth / 2 + up * (height + relief), up
+    _, mold, relief = PLUG[end["type"]]
+    return at - d * (mold + relief), -d
+
+
+def usb_cable(a, b, reach=22.0, n=28):
+    """Cable between two plugs: leaves each along its exit direction, a cubic in between."""
+    pa, ta = plug_exit(a)
+    pb, tb = plug_exit(b)
+    return bezier(pa, pa + ta * reach, pb + tb * reach, pb, n)
+
+
+def catenary_cable(a, touchdown, b, r=2.0):
+    """A cable hanging from plug a under its own weight (a catenary) to `touchdown` on the floor,
+    then lying there up to plug b.  Frame coordinates."""
+    s, ta = plug_exit(a)
+    pts = [s + ta * k for k in (0.0, 8.0, 16.0)]
+    s = pts[-1]
+    t = np.array([touchdown[0], touchdown[1], r])
+    horiz = np.array([t[0] - s[0], t[1] - s[1], 0.0])
+    h, height = np.linalg.norm(horiz), s[2] - r
+    lo, hi = 1e-3, 1e5
+    for _ in range(100):                                  # a·(cosh(h/a) − 1) = height
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if mid * (math.cosh(h / mid) - 1) > height else (lo, mid)
+    ca, u = (lo + hi) / 2, horiz / max(h, 1e-9)
+    for k in range(1, 33):
+        left = h * (1 - k / 32)
+        p = t - u * left
+        p[2] = r + ca * (math.cosh(left / ca) - 1)
+        pts.append(p)
+    e, tb = plug_exit(b)
+    floor = bezier(t, t + u * 60, e + tb * 60, e, 20)
+    pts += [np.array(p) for p in floor[1:]]
+    return [[round(float(c), 2) for c in p] for p in pts]
+
+
 # ------------------------------------------------------------------ geometry helpers
 
 def bezier(p0, p1, p2, p3, n=24):
@@ -176,7 +227,7 @@ def build(rack) -> Path:
     n_rows = len(rack.rows)
     x_in = rack.inner_x0
 
-    items = {"instances": [], "frame": [], "cables": [], "chains": [], "boards": [], "pcbs": [], "boxes": [],
+    items = {"instances": [], "frame": [], "cables": [], "chains": [], "boards": [], "pcbs": [], "boxes": [], "props": [],
              "leds": []}
     bays = []
 
@@ -253,11 +304,15 @@ def build(rack) -> Path:
                                   "pos": [x0 + node["x0"], rack.node_front_y + node["size"][1],
                                           z0 + c["bottom"] + c["standoff"]],
                                   "size": [node["size"][0], node["size"][1], node["thickness"]]})
-            ex0 = (x0 + node["x0"] + node["size"][0] + 6, rack.node_front_y + node["size"][1] - node["right"]["dut"],
-                   z0 + pcb_top + 1.6)
-            cable(bezier(ex0, (ex0[0] + 18, ex0[1], ex0[2]), (x0 + fixed[0], fixed[1] - 22, z0 + 8.6),
-                         (x0 + fixed[0], fixed[1] - 4, z0 + 8.6)), row=i, kind="ext", bay=bid, radius=1.6,
-                  label="Drawer extension (runs through the drag chain)")
+            # extension cable: straight USB-C plug in the node's DUT port, then into the drag chain,
+            # whose moving end carries it to the panel-mount socket at the drawer's rear (DATA port)
+            ext_a = {"at": [x0 + node["x0"] + node["size"][0] + 0.4,
+                            rack.node_front_y + node["size"][1] - node["right"]["dut"], z0 + pcb_top + 1.6],
+                     "dir": [-1, 0, 0], "type": "usb-c", "style": "straight"}
+            pa, ta = plug_exit(ext_a)
+            end = (x0 + fixed[0], fixed[1] - 4, z0 + 8.6)
+            cable(bezier(pa, pa + ta * 16, (end[0], end[1] - 22, end[2]), end), row=i, kind="ext", bay=bid,
+                  radius=1.6, ends=[ext_a], label="Drawer extension (runs through the drag chain)")
         return x0, z0 + plenum
 
     for b in rack.bays():
@@ -306,22 +361,34 @@ def build(rack) -> Path:
             if b.span == 2 and o.get("usb2_x") is not None:
                 targets.append((dxw + rack.pitch + port_x, o["usb2_x"], "c-to-c"))
             for sx, ux, ctype in targets:
-                ps = (sx, dy + port_wall_y - d["wall"] - 6, dz + port_z)
-                pe = (bx + ux, by + o["l"] + 3, bz + 2.0)
-                mid_y = (ps[1] + pe[1]) / 2
-                cable(bezier(ps, (ps[0], mid_y + 4, max(ps[2], pe[2]) + 4), (pe[0] + 10, mid_y, pe[2] + 6), pe),
-                      row=i, kind="dut", bay=b.id, type=ctype, label=cables_cfg[ctype]["label"], a="usb-c",
-                      b=cables_cfg[ctype].get("b", "usb-c"), radius=1.9, movable=True)
+                # short right-angle cable: USB-C into the panel-mount socket on the drawer's rear wall,
+                # the board's own connector (micro-B, USB-C…) at the other end, an arch in between
+                btype = cables_cfg[ctype].get("b", "usb-c")
+                end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 1.5, dz + port_z], "dir": [0, 1, 0],
+                         "type": "usb-c", "style": "right", "socket": "panel"}
+                end_b = {"at": [bx + ux, by + o["l"] + 0.6, bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)],
+                         "dir": [0, -1, 0], "type": btype, "style": "right"}
+                cable(usb_cable(end_a, end_b, 26), row=i, kind="dut", bay=b.id, type=ctype,
+                      label=cables_cfg[ctype]["label"], a="usb-c", b=btype, ends=[end_a, end_b], radius=1.9,
+                      movable=True)
             meta.update({"board": bd["name"], "board_id": info["board"], "cable": cab["label"],
                          "usb": bd["usb"]["type"], "classic": bool(info.get("pc_cable")), "open": bool(info.get("open")),
                          "verified": bd.get("verified", False)})
             if info.get("pc_cable"):
                 fx = x0 + node["x0"] + node["front"]["pc_port"]
                 fz = P + pcb_top + 1.6
-                pts = [rack.to_frame(i, p) for p in ((fx, -8, fz), (fx, -120, fz + 10))]
-                end = [W + 280, -60, 0]
-                cable(bezier(pts[0], pts[1], [W + 200, -160, pts[1][2] - 80], end), space="frame", kind="pc",
-                      bay=b.id, label="Laptop → front PC port (classic mode)", a="usb-c", b="usb-a", radius=2.0)
+                o0 = np.array(rack.to_frame(i, (0, 0, 0)))
+                frame_dir = lambda v: [round(float(c), 4) for c in np.array(rack.to_frame(i, v)) - o0]  # noqa: E731
+                pc_a = {"at": rack.to_frame(i, (fx, rack.node_front_y - 0.3, fz)), "dir": frame_dir((0, 1, 0)),
+                        "up": frame_dir((0, 0, 1)), "type": "usb-c", "style": "straight"}
+                # a laptop on the floor/desk to the right of the rack, its left-side USB-C port wired in
+                lap = [W + 270, -200, 0]
+                pc_b = {"at": [lap[0] - 156, lap[1] + 40, 7.5], "dir": [1, 0, 0], "type": "usb-c", "style": "straight"}
+                items["props"].append({"kind": "laptop", "space": "frame", "pos": lap, "size": [312, 218, 14],
+                                       "lid_deg": 110, "bay": b.id})
+                cable(catenary_cable(pc_a, (W + 30, -150), pc_b), space="frame", kind="pc", bay=b.id,
+                      label="Laptop → front PC port (classic mode)", a="usb-c", b="usb-c", ends=[pc_a, pc_b],
+                      radius=2.0)
         # camera pod: on the ceiling = carrier bottom of the row above (or the roof)
         if b.id in cams:
             cm = raw["bay"]["camera_mount"]
