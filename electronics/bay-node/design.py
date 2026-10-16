@@ -62,6 +62,78 @@ def at(x, y, rot=0, mirror="", fields=None):
     return d
 
 
+def usb_hs_routes():
+    """The classic-mode USB path (laptop on J3 ↔ DUT on J4 through U4, U5, U6, U8) carries High-Speed
+    (480 Mb/s) whenever the DUT supports it, so it is routed here by hand instead of by Freerouting:
+    coupled pairs on F.Cu over the solid In1 plane, 0.25 mm tracks with a 0.15 mm gap (≈ 90 Ω on
+    JLC04161H-7628 by closed-form estimate; confirm in JLC's impedance calculator before ordering an
+    impedance-controlled board), 0.5 mm pitch only where the pairs meet 0.5 mm pins, ESD parts in
+    flow-through, lengths matched per segment.
+
+    U4/U8 sit in line (their I/O pin pairs are the two tracks), with their GND and VBUS pins tied by a
+    short track to a via between the spread tracks.  The two FSUSB42s number their pins the same way
+    round, so PCPATH (U5 HSD1 → U6 HSD2) must cross over once: PCPATH_DN hops under PCPATH_DP on B.Cu,
+    and three bumps on PCPATH_DP make up its extra length.  On each USB-C receptacle the A-side pins
+    (A6/A7) are the through path; B6 joins A6 by a loop around the pad row, B7 joins A7 through
+    B.Cu (two vias).  Returns (tracks, vias) for b.pcb."""
+    tracks, vias = [], []
+
+    def t(net, *pts, layer="F.Cu", w=0.25):
+        tracks.append((net, layer, w, list(pts)))
+
+    def via(net, x, y, d=0.45, drill=0.25):
+        vias.append((net, x, y, d, drill))
+
+    # J3 (front PC port) → U4 (ESD, rot 270: D+ through pins 4/3 at x 31.05, D− through 6/1 at 32.95)
+    # → U5 (MUX_PC, rot 90: D+ pin 3 at 31.75, D− pin 4 at 32.25, y 61.7)
+    t("PC_DP", (31.75, 72.555), (31.75, 70.9), (31.05, 70.2), (31.05, 64.3), (31.75, 63.6), (31.75, 61.7))
+    t("PC_DN", (32.25, 72.555), (32.25, 70.9), (32.95, 70.2), (32.95, 64.3), (32.25, 63.6), (32.25, 61.7))
+    t("PC_DP", (32.75, 72.555), (32.75, 73.85), (31.75, 73.85), (31.75, 72.555))      # B6 → A6
+    t("PC_DN", (31.25, 72.555), (31.25, 71.35))                                         # B7 → A7
+    t("PC_DN", (31.25, 71.35), (32.25, 71.25), layer="B.Cu")
+    via("PC_DN", 31.25, 71.35)
+    via("PC_DN", 32.25, 71.25)
+    t("+5V", (32.0, 68.1375), (32.0, 69.55), w=0.3)                                     # U4 VBUS
+    via("+5V", 32.0, 69.55)
+    t("GND", (32.0, 65.8625), (32.0, 64.55), w=0.3)                                     # U4 GND
+    via("GND", 32.0, 64.55)
+    t("GND", (30.75, 57.5), (29.4, 57.5), w=0.3)                                        # U5 pin 10 (~OE)
+    via("GND", 29.25, 57.5, 0.6, 0.3)
+    t("GND", (32.75, 61.7), (33.85, 61.7), w=0.3)                                       # U5 pin 5
+    via("GND", 34.0, 61.7, 0.6, 0.3)
+
+    # U5 HSD1 (pins 7/6 at 32.25/32.75, y 57.5) → U6 HSD2 (rot 180: pins 8/9 at y 39.0/39.5, x 48.4).
+    # North, cross over (DN on B.Cu between the two vias), north with DP's three length bumps, east.
+    t("PCPATH_DP", (32.25, 57.5), (32.25, 56.4), (33.6, 55.05), (33.6, 51.9), (34.0, 51.5), (34.0, 50.9),
+      (35.5, 49.4), (35.5, 48.9), (34.0, 47.4), (35.5, 45.9), (35.5, 45.4), (34.0, 43.9), (35.5, 42.4),
+      (35.5, 41.9), (34.0, 40.4), (34.0, 39.816), (34.366, 39.45), (47.6, 39.45), (48.4, 39.5))
+    t("PCPATH_DN", (32.75, 57.5), (32.75, 56.5), (34.0, 55.25), (34.0, 54.0), (34.6, 53.4))
+    t("PCPATH_DN", (34.6, 53.4), (32.6, 52.0), layer="B.Cu")
+    t("PCPATH_DN", (32.6, 52.0), (32.6, 51.6), (33.6, 50.6), (33.6, 39.65), (34.2, 39.05), (47.6, 39.05),
+      (48.4, 39.0))
+    via("PCPATH_DN", 34.6, 53.4)
+    via("PCPATH_DN", 32.6, 52.0)
+
+    # U6 D± (pins 4/3 at y 38.5/39.0, x 52.6) → north through U8 (ESD, rot 90: DN through pins 1/6 at
+    # x 53.15, DP through 3/4 at 55.05) → east into J4 (DUT port) A7/A6
+    t("DUT_DN", (52.6, 38.5), (53.0, 38.55), (53.5, 38.55), (53.9, 38.15), (53.9, 35.6), (53.15, 34.85),
+      (53.15, 29.6), (53.9, 28.85), (53.9, 24.25), (54.4, 23.75), (56.35, 23.75))
+    t("DUT_DP", (52.6, 39.0), (53.0, 38.95), (53.666, 38.95), (54.3, 38.316), (54.3, 35.6), (55.05, 34.85),
+      (55.05, 29.6), (54.3, 28.85), (54.3, 24.65), (54.7, 24.25), (56.35, 24.25))
+    t("DUT_DP", (56.35, 23.25), (57.45, 23.25), (57.45, 24.25), (56.35, 24.25))         # B6 → A6
+    t("DUT_DN", (56.35, 24.75), (55.05, 24.75))                                         # B7 → A7
+    t("DUT_DN", (55.05, 24.75), (55.05, 23.75), layer="B.Cu")
+    via("DUT_DN", 55.05, 24.75)
+    via("DUT_DN", 55.05, 23.75)
+    t("GND", (52.9, 38.0), (53.15, 37.3), w=0.3)                                        # U6 pin 5
+    via("GND", 53.15, 37.3, 0.6, 0.3)
+    t("GND", (54.1, 33.1375), (54.1, 34.4), w=0.3)                                      # U8 GND
+    via("GND", 54.1, 34.4)
+    t("+5V", (54.1, 30.8625), (54.1, 29.75), w=0.3)                                     # U8 VBUS
+    via("+5V", 54.1, 29.75)
+    return tracks, vias
+
+
 def board() -> Board:
     b = Board("bay-node", "Bay node", "0.2",
               comments=["ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf",
@@ -84,6 +156,7 @@ def board() -> Board:
     # bump under Q1 where two vias at the edge of its drain tab drop into it
     bus = [(0.5, PWR_Y - 3.2), (13.0, PWR_Y - 3.2), (13.0, 57.4), (17.0, 57.4), (17.0, PWR_Y - 3.2),
            (63.5, PWR_Y - 3.2), (63.5, PWR_Y + 2.6), (0.5, PWR_Y + 2.6)]
+    hs_tracks, hs_vias = usb_hs_routes()
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
         # 4 layers, symmetric: S+GND / GND / PWR / S+GND.  In1 is a solid GND plane, In2 the power
@@ -99,9 +172,10 @@ def board() -> Board:
         "edge_parts": ["J*", "U3"],
         "defer_pours": ["In2.Cu"],
         "stitch": 4.0,
-        # GND pads the router tends to wall in (U9's middle pin, U5's corner pin between the SVC
-        # line and the ESP pair): reserve a dog-bone via outside the package before routing
-        "fanout": [("U9", "2"), ("U5", "10"), ("U6", "5")],
+        # GND pads the router tends to wall in (U9's middle pin): reserve a dog-bone via outside the
+        # package before routing.  The muxes' and ESD parts' GND/VBUS pins get fixed vias in
+        # usb_hs_routes(), next to the hand-routed USB pairs.
+        "fanout": [("U9", "2")],
         "zones": [
             {"layer": "In1.Cu", "net": "GND"},
             {"layer": "F.Cu", "net": "GND"},
@@ -139,7 +213,10 @@ def board() -> Board:
                  ("GND", 30.35, 16.0), ("GND", 33.65, 16.0),
                  ("24V_BUS", 14.0, 58.1), ("24V_BUS", 16.0, 58.1),
                  *[("+3V3", x, y) for x, y in ((46.6, 26.2), (47.9, 26.2), (49.2, 26.2), (50.6, 26.2),
-                                               (49.2, 27.8), (50.6, 27.8), (49.2, 29.4), (50.6, 29.4))]],
+                                               (49.2, 27.8), (50.6, 27.8), (49.2, 29.4), (50.6, 29.4))],
+                 *hs_vias],
+        # the USB High-Speed pairs, routed by hand (see usb_hs_routes)
+        "tracks": hs_tracks,
         # ESP32 antenna: no copper on any layer under/around the antenna (module top 5 mm + edge)
         "keepouts": [
             {"name": "antenna", "poly": [(9.3, -0.1), (54.7, -0.1), (54.7, 5.4), (9.3, 5.4)]},
@@ -299,7 +376,7 @@ def board() -> Board:
          sch=at(14, 28, fields=(-4, -9)))
     u.wire("J3.A7", (22, 27), (22, 28), "J3.B7")
     u.wire("J3.A6", (23, 29), (23, 30), "J3.B6")
-    part(u, "U4", "esd", {"I/O1": "PC_DN", "I/O2": "PC_DP", "VBUS": "+5V", "GND": "GND"}, pcb=P(32, 69.5, 0),
+    part(u, "U4", "esd", {"I/O1": "PC_DN", "I/O2": "PC_DP", "VBUS": "+5V", "GND": "GND"}, pcb=P(32.0, 67.0, 270),
          sch=at(30, 28, fields=(1.5, 3.5)))
     u.wire((22, 28), "U4.1")
     u.wire((23, 29), "U4.3")
@@ -317,14 +394,14 @@ def board() -> Board:
     u.frame("USB 2.0 data muxes (FSUSB42): MUX_PC → DUT path or ESP32, MUX_DUT → ESP32 or PC path", 58, 6, 124, 36)
     part(u, "U5", "mux", {"VCC": "+3V3", "GND": "GND", "D+": "PC_DP", "D-": "PC_DN", "HSD1+": "PCPATH_DP",
                           "HSD1-": "PCPATH_DN", "HSD2+": "ESP_DP", "HSD2-": "ESP_DN", "SEL": "SVC", "~{OE}": "GND"},
-         "MUX_PC", pcb=P(32, 63.5, 0), sch=at(76, 26, fields=(1.5, 4.5)))
-    C(u, "C17", "100n", "+3V3", "GND", pcb=P(27.5, 63.5, 90), sch=at(68, 17.5))
+         "MUX_PC", pcb=P(31.75, 59.6, 90), sch=at(76, 26, fields=(1.5, 4.5)))
+    C(u, "C17", "100n", "+3V3", "GND", pcb=P(28.9, 63.0, 90), sch=at(68, 17.5))
     u.wire("U5.VCC", (76, 16), "C17.1")
     u.tag("+3V3", (76, 16), "up")
     part(u, "U6", "mux", {"VCC": "+3V3", "GND": "GND", "D+": "DUT_DP", "D-": "DUT_DN", "HSD1+": "ESP_DP",
                           "HSD1-": "ESP_DN", "HSD2+": "PCPATH_DP", "HSD2-": "PCPATH_DN", "SEL": "MUX_SEL",
-                          "~{OE}": "SVC"}, "MUX_DUT", pcb=P(51, 39, 0), sch=at(104, 26, mirror="y", fields=(1.5, 4.5)))
-    C(u, "C18", "100n", "+3V3", "GND", pcb=P(51, 42.8, 0), sch=at(112, 17.5))
+                          "~{OE}": "SVC"}, "MUX_DUT", pcb=P(50.5, 39, 180), sch=at(104, 26, mirror="y", fields=(1.5, 4.5)))
+    C(u, "C18", "100n", "+3V3", "GND", pcb=P(52.5, 41.8, 0), sch=at(112, 17.5))
     u.wire("U6.VCC", (104, 16), "C18.1")
     u.wire("U6.SEL", (115, 28))
     u.tag("MUX_SEL", (115, 28), "right")
@@ -336,7 +413,7 @@ def board() -> Board:
          pcb=P(60.4, CFG["right"]["dut"], 90), sch=at(150, 58, mirror="y", fields=(1, -9)))
     u.wire("J4.A7", (142, 57), (142, 58), "J4.B7")
     u.wire("J4.A6", (141, 59), (141, 60), "J4.B6")
-    part(u, "U8", "esd", {"I/O1": "DUT_DN", "I/O2": "DUT_DP", "VBUS": "+5V", "GND": "GND"}, pcb=P(51, 33, 0),
+    part(u, "U8", "esd", {"I/O1": "DUT_DN", "I/O2": "DUT_DP", "VBUS": "+5V", "GND": "GND"}, pcb=P(54.1, 32.0, 90),
          sch=at(134, 58, fields=(1.5, 3.5)))
     u.wire("U8.6", (142, 58))
     u.wire("U8.4", (141, 59))
@@ -387,16 +464,19 @@ def board() -> Board:
     d.wire("U9.~{FAULT}", (48, 31), (48, 38), (55, 38))
     d.wire("R18.2", (52, 38))
     d.tag("DUT_FLT_N", (55, 38), "right")
-    part(d, "R19", "shunt50m", {"1": "DUT_5V_SW", "2": "DUT_5V"}, "50m", pcb=P(44, 51, 0), sch=at(62, 33.5))
+    # Kelvin shunt: pins 1/4 carry the DUT current, pins 2/3 are sense pads on the inner edge of each
+    # terminal (bench:R_1206_3216Metric_Kelvin), so the INA226 reads the resistor, not the load copper
+    part(d, "R19", "shunt50m", {"1": "DUT_5V_SW", "4": "DUT_5V", "2": "SHUNT_P", "3": "SHUNT_N"}, "50m",
+         pcb=P(44, 51, 0), sch=at(62, 33.5))
     d.wire("U9.OUT", (62, 29), "R19.1")
-    d.wire("R19.2", (62, 40), (100, 40))
+    d.wire("R19.4", (62, 40), (100, 40))
     d.tag("DUT_5V", (100, 40), "right")
     C(d, "C21", "22u", "DUT_5V", "GND", size="1206", pcb=P(49, 46, 90), sch=at(96, 41.5))
     part(d, "U10", "ina226", {"VS": "+3V3", "GND": "GND", "A0": "GND", "A1": "GND", "SDA": "I2C_SDA",
-                              "SCL": "I2C_SCL", "~{Alert}": "INA_ALERT_N", "Vin+": "DUT_5V_SW", "Vin-": "DUT_5V",
+                              "SCL": "I2C_SCL", "~{Alert}": "INA_ALERT_N", "Vin+": "SHUNT_P", "Vin-": "SHUNT_N",
                               "Vbus": "DUT_5V"}, pcb=P(44, 56, 0), sch=at(74, 31, fields=(-10, -7)))
-    d.wire((62, 30), (66, 30), (66, 32), "U10.Vin+")
-    d.wire((62, 37), (67, 37), (67, 33), "U10.Vin-")
+    d.wire("R19.2", (66, 32.5), (66, 32), "U10.Vin+")
+    d.wire("R19.3", (67, 34.5), (67, 33), "U10.Vin-")
     d.wire("U10.A1", (80, 28), (80, 29), "U10.A0")
     d.tag("GND", (80, 29), "right")
     C(d, "C22", "100n", "+3V3", "GND", pcb=P(49, 56, 90), sch=at(84, 25.5))
@@ -417,8 +497,8 @@ def board() -> Board:
                           "6": "AUX_BOOT_N", "MP": "GND"}, "AUX", pcb=P(60.8, CFG["right"]["aux"], 90),
          sch=at(106, 64, fields=(1, -5)))
     R(d, "R23", "10", "+3V3", "AUX_VREF", pcb=P(57.6, 47.4, 0), sch=at(90.5, 54, rot=90))
-    R(d, "R24", "1k", "AUX_TX", "AUX_TX_R", pcb=P(57, 33.6, 0), sch=at(90.5, 58, rot=90))
-    R(d, "R25", "1k", "AUX_RX", "AUX_RX_R", pcb=P(54.6, 30.8, 90), sch=at(90.5, 62, rot=90))
+    R(d, "R24", "1k", "AUX_TX", "AUX_TX_R", pcb=P(57.8, 31.0, 0), sch=at(90.5, 58, rot=90))
+    R(d, "R25", "1k", "AUX_RX", "AUX_RX_R", pcb=P(57.8, 33.3, 0), sch=at(90.5, 62, rot=90))
     d.wire("J5.2", (98, 63), (98, 54), "R23.2")
     d.wire("R23.1", (87, 54), (87, 52))
     d.tag("+3V3", (87, 52), "up")
@@ -455,7 +535,7 @@ def board() -> Board:
     d.note("TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on")
     d.note("  even with no firmware; ~FAULT flags current limit / over-temperature.")
     d.note("INA226 (I2C 0x40) runs from +3V3: it measures the drop across")
-    d.note("  R19 (50 mΩ → 1.64 A full scale) and DUT_5V on Vbus.")
+    d.note("  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads) and DUT_5V on Vbus.")
     d.note("AUX: TX/RX through 1k, VREF = +3V3 through 10 Ω (level hint),")
     d.note("  RESET/BOOT open-drain (2N7002, 100k gate pull-downs).")
     return b
@@ -467,7 +547,7 @@ NETCLASSES = [
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
      "_patterns": ["*24V_BUS", "+24V", "+5V", "*DUT_5V_SW", "*DUT_5V", "*BUCK_SW", "*CAM_5V"]},
     {"name": "USB", "clearance": 0.15, "track_width": 0.2, "via_diameter": 0.6, "via_drill": 0.3,
-     "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
+     "diff_pair_width": 0.25, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,
      "_patterns": ["*_DP", "*_DN"]},
 ]

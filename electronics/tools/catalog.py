@@ -75,8 +75,9 @@ CAT = {
     "ina226": Cat("Sensor_Energy:INA226", "Package_SO:TSSOP-10_3x3mm_P0.5mm", "INA226AIDGSR", "Texas Instruments",
                   "C49851", 0.75, datasheet="https://www.ti.com/lit/ds/symlink/ina226.pdf",
                   description="36 V current/voltage/power monitor, I2C"),
-    "shunt50m": Cat("Device:R", "Resistor_SMD:R_1206_3216Metric", "HoLR1206-1W-50mR-1%", "Milliohm", "C601102", 0.12,
-                    description="50 mΩ 1 % 1 W current shunt"),
+    # 1206 pads plus Kelvin sense pads (electronics/tools/footprints.py): pins 1/4 current, 2/3 sense
+    "shunt50m": Cat("Device:R_Shunt", "bench:R_1206_3216Metric_Kelvin", "HoLR1206-1W-50mR-1%", "Milliohm", "C601102",
+                    0.12, description="50 mΩ 1 % 1 W current shunt"),
     "rgb": Cat("LED:WS2812B-2020", "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm", "WS2812B-2020-V6", "Worldsemi",
                "C52917434", 0.09, standard_only=True, description="addressable RGB LED, 3.3–5.3 V",
                alt="WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping"),

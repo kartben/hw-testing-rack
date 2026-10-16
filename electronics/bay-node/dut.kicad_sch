@@ -951,6 +951,206 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Device:R_Shunt"
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "R"
+				(at -2.032 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R_Shunt"
+				(at 0 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Shunt resistor with Kelvin connections"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "R res shunt resistor"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "R_*Shunt*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "R_Shunt_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 -2.54)
+						(xy 1.27 -2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 2.54)
+						(xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_Shunt_1_1"
+				(pin passive line
+					(at 0 5.08 270)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 2.54 180)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 -2.54 180)
+					(length 1.27)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -5.08 90)
+					(length 2.54)
+					(name ""
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Mechanical:MountingHole"
 			(pin_names
 				(offset 1.016)
@@ -3122,7 +3322,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
+		(lib_id "Device:R_Shunt")
 		(at 157.48 85.09 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -3132,7 +3332,7 @@
 		(fields_autoplaced yes)
 		(uuid "51e955d3-e06a-535c-b910-ede79b14c312")
 		(property "Reference" "R19"
-			(at 161.071 83.82 0)
+			(at 162.595 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3140,14 +3340,14 @@
 			)
 		)
 		(property "Value" "50m"
-			(at 161.071 86.36 0)
+			(at 162.595 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
+		(property "Footprint" "bench:R_1206_3216Metric_Kelvin"
 			(at 157.48 85.09 0)
 			(effects
 				(font
@@ -3206,6 +3406,12 @@
 		)
 		(pin "2"
 			(uuid "cf2ca571-e3d3-5986-960e-36f545ae97f4")
+		)
+		(pin "3"
+			(uuid "35076cae-5962-59f9-a001-7c4154e63c71")
+		)
+		(pin "4"
+			(uuid "8935d9fc-3d24-5728-8df9-1fb30adc40e3")
 		)
 		(instances
 			(project "bay-node"
@@ -6125,7 +6331,7 @@
 	(wire
 		(pts
 			(xy 157.48 73.66)
-			(xy 157.48 81.28)
+			(xy 157.48 80.01)
 		)
 		(stroke
 			(width 0)
@@ -6135,7 +6341,7 @@
 	)
 	(wire
 		(pts
-			(xy 157.48 88.9)
+			(xy 157.48 90.17)
 			(xy 157.48 101.6)
 		)
 		(stroke
@@ -6157,8 +6363,8 @@
 	)
 	(wire
 		(pts
-			(xy 157.48 76.2)
-			(xy 167.64 76.2)
+			(xy 160.02 82.55)
+			(xy 167.64 82.55)
 		)
 		(stroke
 			(width 0)
@@ -6168,7 +6374,7 @@
 	)
 	(wire
 		(pts
-			(xy 167.64 76.2)
+			(xy 167.64 82.55)
 			(xy 167.64 81.28)
 		)
 		(stroke
@@ -6190,8 +6396,8 @@
 	)
 	(wire
 		(pts
-			(xy 157.48 93.98)
-			(xy 170.18 93.98)
+			(xy 160.02 87.63)
+			(xy 170.18 87.63)
 		)
 		(stroke
 			(width 0)
@@ -6201,7 +6407,7 @@
 	)
 	(wire
 		(pts
-			(xy 170.18 93.98)
+			(xy 170.18 87.63)
 			(xy 170.18 83.82)
 		)
 		(stroke
@@ -6658,58 +6864,46 @@
 		(uuid "53c57e07-fc54-5dd1-a778-1ccdec018a0f")
 	)
 	(junction
-		(at 157.48 76.2)
+		(at 187.96 60.96)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "05d2bcc0-d55e-54ff-a255-4327159f30f9")
 	)
 	(junction
-		(at 157.48 93.98)
+		(at 203.2 73.66)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "64c77b7b-9949-571a-b8e3-76351d3ad0b8")
 	)
 	(junction
-		(at 187.96 60.96)
+		(at 205.74 175.26)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "31528ff1-1685-5b02-814a-839a4a80d572")
 	)
 	(junction
-		(at 203.2 73.66)
+		(at 205.74 200.66)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8ed85e2f-8df1-5ae4-bfd1-7299730be718")
 	)
 	(junction
-		(at 205.74 175.26)
+		(at 243.84 101.6)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d046adb8-9161-5972-b4a6-957e4c34f53d")
 	)
 	(junction
-		(at 205.74 200.66)
+		(at 254 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fe907298-caa4-5835-8100-186cd71df4b9")
 	)
 	(junction
-		(at 243.84 101.6)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "99491311-05ca-5af9-b945-c6a6eecf579d")
-	)
-	(junction
-		(at 254 45.72)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6ee86801-d274-5a81-875c-80a02c89f1ec")
-	)
-	(junction
 		(at 274.32 45.72)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "82fbb9f0-df93-5df9-8584-837896bc537f")
+		(uuid "99491311-05ca-5af9-b945-c6a6eecf579d")
 	)
 	(symbol
 		(lib_id "power:+5V")
@@ -7426,6 +7620,28 @@
 		)
 		(uuid "83fd3020-f9c7-517f-a2e2-c7130b5948a5")
 	)
+	(label "SHUNT_P"
+		(at 168.91 81.28 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0759eee4-8cc0-57fc-9171-0924ea4e4d98")
+	)
+	(label "SHUNT_N"
+		(at 161.29 87.63 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2ac66a12-41ee-5853-ab0a-61fac8ce1815")
+	)
 	(label "CAM_5V"
 		(at 331.47 137.16 0)
 		(fields_autoplaced yes)
@@ -7435,7 +7651,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0759eee4-8cc0-57fc-9171-0924ea4e4d98")
+		(uuid "16602ac2-aa09-599b-84d9-e79e37e162ec")
 	)
 	(rectangle
 		(start 15.24 30.48)
@@ -7545,7 +7761,7 @@
 		)
 		(uuid "57ee726b-5e11-530c-bf29-d684624a5ddd")
 	)
-	(text_box "TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on\n  even with no firmware; ~FAULT flags current limit / over-temperature.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale) and DUT_5V on Vbus.\nAUX: TX/RX through 1k, VREF = +3V3 through 10 Ω (level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
+	(text_box "TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on\n  even with no firmware; ~FAULT flags current limit / over-temperature.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads) and DUT_5V on Vbus.\nAUX: TX/RX through 1k, VREF = +3V3 through 10 Ω (level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
 		(exclude_from_sim no)
 		(at 15.24 132.08 0)
 		(size 152.4 17.78)

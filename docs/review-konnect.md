@@ -29,8 +29,8 @@ reviewer would accept for a board that gets ordered · **Low** = cosmetic / docu
 | B1 | bay | Medium | no stackup / finish in the board (KiCad default 3 × 0.48 mm, "None") | fixed |
 | B2 | bay | Medium | AMS1117 tab has no copper to spread up to ~0.7 W | fixed |
 | B2b | bay | Low | In2 `+5V` pieces cut off by In2 tracks get removed (copper balance) | fixed |
-| B3 | bay | Medium | USB pairs not fit for High-Speed pass-through (classic mode) | **open — your call** |
-| B4 | bay | Medium | INA226 Vin− tapped ≈ 2.8 mm down the load path (≈ 4–5 % gain error) | **open — your call** |
+| B3 | bay | Medium | USB pairs not fit for High-Speed pass-through (classic mode) | fixed (hand-routed) |
+| B4 | bay | Medium | INA226 Vin− tapped ≈ 2.8 mm down the load path (≈ 4–5 % gain error) | fixed (Kelvin footprint) |
 | B5 | bay | Low | "PC" and "AUX" silkscreen over pads (5 warnings) | fixed |
 | B6 | bay | Low | 23 silk-to-edge warnings from connectors that overhang on purpose | fixed (rule) |
 | B7 | bay | OK | LMR51635 hot loop, SW node, FB, EN, CB | — |
@@ -138,14 +138,14 @@ a lowest-priority GND "fill" zone on In2 takes the area the power pours leave, t
 GND stitching vias (`stitch_gnd()` doesn't count it as a GND layer, so the stitching grid is
 unchanged).
 
-### B3 — Medium — USB pairs and High-Speed pass-through — open
+### B3 — Medium — USB pairs and High-Speed pass-through — fixed (hand-routed)
 
 *Where:* `PC_DP/DN` (J3 → U4 → U5), `PCPATH_DP/DN` (U5 → U6), `DUT_DP/DN` (U6 → U8 → J4),
 `ESP_DP/DN`.
 
 *Why:* the ESP32-S3 is full-speed only, but in **classic mode** a laptop talks to the DUT through
-both FSUSB42s, and a High-Speed DUT will negotiate 480 Mb/s.  Measured on the routed board
-(da40db9 → after this review's re-route):
+both FSUSB42s, and a High-Speed DUT will negotiate 480 Mb/s.  Freerouting has no differential-pair
+support; measured on its routing (da40db9 → first re-route of this review):
 
 | pair | P / N length | skew | coupled | layers, vias |
 |---|---|---|---|---|
@@ -154,29 +154,55 @@ both FSUSB42s, and a High-Speed DUT will negotiate 480 Mb/s.  Measured on the ro
 | DUT | 27.3 / 28.7 → 29.2 / 28.6 mm | 1.4 → 0.6 mm | 80 → 34 % | F.Cu + In2 / B.Cu, 0–2 vias |
 | ESP | 69.8 / 70.4 → 86.5 / 82.0 mm | 0.7 → 4.6 mm | 44 → 4 % | three layers, 3 vias each |
 
-For full speed this is all fine.  For High-Speed, 10 mm of skew and the D+ loop on the PC pair are
-out of any guideline (≈ 1 mm), and the In2 / B.Cu segments are referenced to the +5V pour rather
-than the In1 plane.  The numbers also move a lot from one re-route to the next: nothing constrains
-them, Freerouting has no differential-pair support.
+Fine for full speed; for High-Speed, 10 mm of skew, the stub loop and the In2 / B.Cu segments
+(referenced to the +5V pour, not the In1 plane) are out of any guideline, and the numbers moved a
+lot from one re-route to the next.
 
-*Proposed:* decide whether classic mode must carry High-Speed.  If yes: route the PC → PCPATH →
-DUT chain by hand on F.Cu over In1, as coupled 90 Ω pairs (check width/gap for JLC04161H-7628 in
-JLC's impedance calculator; 0.2/0.15 mm today), matched, no stubs, and move U5 next to U6 to
-shorten PCPATH.  Hand routing is overwritten by the next regeneration, so it needs a way to keep
-pre-routed tracks in `design.py` (or a frozen board) — not done without your go-ahead.  If no:
-document classic mode as full-speed only.
+*Fix (done, at your request):* the classic-mode chain is routed by hand in `design.py`
+(`usb_hs_routes()`), drawn before Freerouting runs and locked, so the router works around it
+(`b.pcb["tracks"]`, new in `pcbgen.py`):
+* coupled pairs on F.Cu over the solid In1 plane: 0.25 mm tracks, 0.15 mm gap (≈ 90 Ω on
+  JLC04161H-7628 by closed-form estimate — check in JLC's impedance calculator if you order the board
+  impedance-controlled; USB allows ±15 %), 0.5 mm pitch only where the pairs meet 0.5 mm pins;
+* parts re-placed for a straight path: U4 (ESD) in line under J3, U5 (MUX_PC) right above it
+  (rot 90, D± facing J3), U6 (MUX_DUT, rot 180) and U8 (ESD, rot 90) on the way to J4; the ESD
+  parts are flow-through (each line runs through its two I/O pins), their GND/VBUS pins get a short
+  track to a via between the two lines;
+* the two FSUSB42s number their pins the same way round, so a single-layer PCPATH would have to
+  cross itself: `PCPATH_DN` hops under `PCPATH_DP` on B.Cu between two vias, and three bumps on
+  `PCPATH_DP` (the zig-zag) make up for the extra length;
+* on each USB-C receptacle the A-side pins (A6/A7) are the through path; B6 joins A6 with a loop
+  around the pad row, B7 joins A7 through B.Cu (two vias, ≈ 1 mm stub);
+* the full-speed ESP pair (U3 → U5 / U6) stays with Freerouting.
 
-### B4 — Medium — INA226 sense not fully Kelvin — open
+Result (pad to pad, vias counted as the 1.6 mm they cross):
+
+| segment | D+ | D− | skew |
+|---|---|---|---|
+| PC (J3 → U5) | 11.43 mm | 11.43 mm | 0.00 mm |
+| PCPATH (U5 → U6) | 36.69 mm | 38.32 mm | 1.63 mm |
+| DUT (U6 → J4) | 18.47 mm | 18.65 mm | 0.18 mm |
+| J3 → J4 | 66.6 mm | 68.4 mm | 1.8 mm ≈ 12 ps |
+
+What it can't fix: two FSUSB42s and two USBLC6s in series still add a few pF each, so the eye has
+less margin than a direct connection; check with a High-Speed DUT on the first boards.  The new
+U4/U5/U6/U8 orientations go through the existing `JLC_CPL_FIX` rotations: confirm them in JLC's
+placement preview like the others.
+
+### B4 — Medium — INA226 sense not fully Kelvin — fixed
 
 *Where:* R19 (50 mΩ 1206) and U10 (INA226).
 
-*Why:* Vin+ leaves R19 pin 1 from the pad itself, but Vin− joins `DUT_5V` ≈ 2.8 mm down the 0.6 mm
-load track, so ≈ 2.3 mΩ of copper is in the measured drop: ≈ 4–5 % high readings, plus copper's
-0.39 %/°C.  The router can't tell sense from load: both are the same net.
+*Why:* Vin+ left R19 pin 1 from the pad itself, but Vin− joined `DUT_5V` ≈ 2.8 mm down the 0.6 mm
+load track, so ≈ 2.3 mΩ of copper was in the measured drop: ≈ 4–5 % high readings, plus copper's
+0.39 %/°C.  The router can't tell sense from load: both were the same net.
 
-*Proposed:* a 4-terminal shunt footprint (KiCad net-tie pad groups: two current pads, two sense
-pads) with `R_Shunt`-style sense nets to the INA226, or calibrate the gain once in firmware
-against a known load.  Not done: it needs a new footprint in `electronics/lib/bench.pretty`.
+*Fix (done, at your request):* R19 is now `Device:R_Shunt` on a new footprint,
+`bench:R_1206_3216Metric_Kelvin` (generated from the stock 1206 by `electronics/tools/footprints.py`):
+the two current pads (1, 4) as before, plus a sense pad (2, 3) on the inner edge of each, tied to
+its current pad by KiCad net-tie pad groups, copper only (tented, no paste) under the resistor
+body.  U10's Vin+ / Vin− get their own nets, `SHUNT_P` / `SHUNT_N`, which leave from those sense
+pads only; Vbus stays on `DUT_5V`.  Same part (C601102), same BOM line.
 
 ### B5 / B6 — Low — silkscreen
 
@@ -227,8 +253,9 @@ with 0.3–0.45 mm necks only at SOT-23 pins (1.5 A), `24V_BUS` daisy chain in a
 
 ## Results after the fixes
 
-Both boards regenerated and re-routed with `tools/kicad.sh <board> --route --fab`, then checked
-again with Konnect on the saved files:
+Both boards regenerated and re-routed with `tools/kicad.sh <board> --route --fab` (the bay node's
+last pass re-imported its Freerouting session with `--ses`), then checked again with Konnect on the
+saved files:
 
 | | bay node | power hub |
 |---|---|---|
@@ -238,10 +265,15 @@ again with Konnect on the saved files:
 | JLCPCB DFM audit | 0 findings | 0 findings |
 | stackup / finish | JLC04161H-7628, ENIG | 2-layer 1.6 mm, HAL lead-free |
 | 24 V copper | (unchanged) | VIN_RAW pour 229 mm², +24V pours 394 mm² (top) + 321 mm² (bottom strip) + 5 IN islands, 16 vias 0.8/0.4 |
-| other | LDO tab island 33 mm² + 8 vias; In2: +5V 2306, +3V3 516, GND fill 849, 24V bus 352 mm² (In1: 4587 mm²) | 30 tented thermal vias under the eFuse pads; input/output caps at the pins |
+| USB / shunt | HS pairs hand-routed, 1.8 mm skew J3 → J4; Kelvin sense pads on R19 | — |
+| other | LDO tab island + 8 vias; In2: +5V 3020, +3V3 566, GND fill 112, 24V bus 351 mm² (In1: 4582 mm²) | 30 tented thermal vias under the eFuse pads; input/output caps at the pins |
 
-The fab outputs (`fab/*-gerbers.zip`, `power-hub-cpl-jlcpcb.csv`, renders) are regenerated; the
-hub's CPL changed for C11–C15 / C31–C35 (new positions), the BOMs did not change.
+`pcbgen.py` also drops the pass-through vias Freerouting sometimes leaves (a via whose tracks all
+stay on one layer: two such vias showed up as DRC warnings on the bay node).
 
-**Before ordering:** reload both boards in KiCad (File → Revert) and look at them; decide B3
-(High-Speed in classic mode) and B4 (Kelvin shunt), and optionally H5.
+The fab outputs (`fab/*`, BOMs, renders, schematic PDF) are regenerated.  CPL changes: the hub's
+C11–C15 / C31–C35, the bay node's U4, U5, U6, U8, C17, C18, R24, R25 (new positions and
+orientations); R19's BOM footprint is now `R_1206_3216Metric_Kelvin` (same LCSC part).
+
+**Before ordering:** reload both boards in KiCad (File → Revert) and look at them, check the new
+orientations in JLC's placement preview, and optionally decide H5.

@@ -366,7 +366,26 @@ class PcbBuilder:
             v.SetNet(self.net(self.b.pcb_net_name(net)))
             if hasattr(v, "SetIsFree"):
                 v.SetIsFree(True)       # tied to the copper through zones only: keep its net
+            v.SetLocked(True)           # protected wiring for Freerouting
             self.board.Add(v)
+
+    # -------------------------------------------------------------- fixed tracks
+    def tracks(self):
+        """b.pcb["tracks"]: [(net, layer, width mm, [(x, y), ...])] drawn before routing and locked,
+        so the DSN hands them to Freerouting as protected wiring it routes around (e.g. the USB
+        High-Speed pairs, which need coupling and length matching the router can't do)."""
+        layers = {"F.Cu": pcbnew.F_Cu, "B.Cu": pcbnew.B_Cu, "In1.Cu": getattr(pcbnew, "In1_Cu", None),
+                  "In2.Cu": getattr(pcbnew, "In2_Cu", None)}
+        for net, layer, width, pts in self.b.pcb.get("tracks", []):
+            for a, c in zip(pts, pts[1:]):
+                t = pcbnew.PCB_TRACK(self.board)
+                t.SetStart(V(*a))
+                t.SetEnd(V(*c))
+                t.SetWidth(MM(width))
+                t.SetLayer(layers[layer])
+                t.SetNet(self.net(self.b.pcb_net_name(net)))
+                t.SetLocked(True)
+                self.board.Add(t)
 
     # -------------------------------------------------------------- texts
     def texts(self):
@@ -411,6 +430,7 @@ class PcbBuilder:
         self.outline()
         self.texts()
         self.vias()
+        self.tracks()
         self.zones("routing" if defer_pours else "all")
         if route:
             self.autoroute(self.b.pcb.get("passes", 40))
@@ -480,8 +500,38 @@ def import_session(b: Board, outdir: Path) -> Path:
         n = connect_gnd_pads(board, gnd, spots)
         print(f"gnd: {n} of {len(spots)} isolated GND pads tied to the plane")
         pcbnew.SaveBoard(str(path), board)
+    drop_passthrough_vias(path)
     print("imported", ses)
     return path
+
+
+def drop_passthrough_vias(path: Path) -> int:
+    """Freerouting sometimes leaves a via where its route stays on one layer (KiCad's DRC: "via
+    connected on only one layer").  Remove those whose tracks all sit on a single layer and meet at
+    the via: the route stays connected through the tracks."""
+    import json
+    import tempfile
+    rpt = Path(tempfile.mkstemp(suffix=".json")[1])
+    subprocess.run(["kicad-cli", "pcb", "drc", "--format", "json", "--refill-zones", "-o", str(rpt), str(path)],
+                   check=False, capture_output=True)
+    data = json.loads(rpt.read_text(encoding="utf-8"))
+    uuids = {it["uuid"] for v in data.get("violations", []) if v["type"] == "via_dangling" for it in v["items"]}
+    if not uuids:
+        return 0
+    board = pcbnew.LoadBoard(str(path))
+    gone = []
+    for v in [t for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.m_Uuid.AsString() in uuids]:
+        p = v.GetPosition()
+        ends = [t.GetLayer() for t in board.GetTracks() if t.GetClass() != "PCB_VIA"
+                and t.GetNetCode() == v.GetNetCode() and p in (t.GetStart(), t.GetEnd())]
+        if not v.IsLocked() and len(ends) >= 2 and len(set(ends)) == 1:
+            gone.append(v)
+    for v in gone:
+        board.Remove(v)
+    if gone:
+        pcbnew.SaveBoard(str(path), board)
+        print(f"vias: dropped {len(gone)} pass-through via(s)")
+    return len(gone)
 
 
 def unconnected_gnd_pads(path: Path, gnd_name: str = "GND") -> list[tuple[float, float]]:
