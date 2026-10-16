@@ -65,8 +65,8 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 5. Finally KiCad's own DRC lists the GND pads still unconnected, and each gets
    a short track to a GND via or to a spot where a small via fits.
 
-> **Status: v0.2 — autorouted, reviewed against Fabio's v0.1 feedback, not yet
-> ordered.**  ERC is clean and DRC reports no copper errors, no unconnected
+> **Status: v0.3 — autorouted, reviewed against Fabio's v0.1 feedback and with
+> Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.**  ERC is clean and DRC reports no copper errors, no unconnected
 > items and full schematic parity (0 DRC warnings).  The buck's hot loop, the
 > 24 V bus, the hub's 24 V pours and the USB High-Speed pairs are placed or
 > drawn by hand in `design.py`; the rest is the router's draft: before
@@ -191,8 +191,10 @@ whether they go too.
 Rev 0.2 came after the quote as well and is not re-quoted: on the node the
 LMR51635 + FXL0630 replace the TPS54360B, its B560C Schottky, the FXL1040 and
 the compensation network (≈ +$0.70 of parts per board, one extended part type
-fewer), and the JST PH connectors cost less than the VH ones.  Re-quote before
-ordering.
+fewer), and the JST PH connectors cost less than the VH ones.  Rev 0.3 (the
+Konnect review) adds no part type: the hub's power pours and thermal vias are
+copper only, and the node's Kelvin shunt is the same LCSC part on a new
+footprint.  Re-quote before ordering.
 
 * **Bay node: Standard PCBA.** JLC can only place the ESP32-S3-MINI-1 module
   (C2913206) and the WS2812B-2020 LED with its Standard PCBA service, not

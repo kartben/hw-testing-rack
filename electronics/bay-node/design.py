@@ -125,6 +125,11 @@ def usb_hs_routes():
     t("DUT_DN", (55.05, 24.75), (55.05, 23.75), layer="B.Cu")
     via("DUT_DN", 55.05, 24.75)
     via("DUT_DN", 55.05, 23.75)
+    # J4's VBUS pads sit behind the pair: a via each, so DUT_5V arrives from In2 / B.Cu
+    t("DUT_5V", (56.35, 26.45), (55.2, 26.45), w=0.6)
+    via("DUT_5V", 55.2, 26.45, 0.8, 0.4)
+    t("DUT_5V", (56.35, 21.55), (55.2, 21.55), w=0.6)
+    via("DUT_5V", 55.2, 21.55, 0.8, 0.4)
     t("GND", (52.9, 38.0), (53.15, 37.3), w=0.3)                                        # U6 pin 5
     via("GND", 53.15, 37.3, 0.6, 0.3)
     t("GND", (54.1, 33.1375), (54.1, 34.4), w=0.3)                                      # U8 GND
@@ -135,7 +140,7 @@ def usb_hs_routes():
 
 
 def board() -> Board:
-    b = Board("bay-node", "Bay node", "0.2",
+    b = Board("bay-node", "Bay node", "0.3",
               comments=["ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf",
                         "Generated from electronics/bay-node/design.py — edit the Python, then regenerate",
                         "24 V in · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX UART/RST/BOOT"])
@@ -214,9 +219,11 @@ def board() -> Board:
                  ("24V_BUS", 14.0, 58.1), ("24V_BUS", 16.0, 58.1),
                  *[("+3V3", x, y) for x, y in ((46.6, 26.2), (47.9, 26.2), (49.2, 26.2), (50.6, 26.2),
                                                (49.2, 27.8), (50.6, 27.8), (49.2, 29.4), (50.6, 29.4))],
-                 *hs_vias],
-        # the USB High-Speed pairs, routed by hand (see usb_hs_routes)
-        "tracks": hs_tracks,
+                 *hs_vias,
+                 ("GND", 47.75, 56.5)],
+        # the USB High-Speed pairs, routed by hand (see usb_hs_routes), and U10's GND pin, which
+        # the router sometimes leaves walled in between DUT_5V and the shunt's sense lines
+        "tracks": [*hs_tracks, ("GND", "F.Cu", 0.3, [(46.15, 56.5), (47.75, 56.5)])],
         # ESP32 antenna: no copper on any layer under/around the antenna (module top 5 mm + edge)
         "keepouts": [
             {"name": "antenna", "poly": [(9.3, -0.1), (54.7, -0.1), (54.7, 5.4), (9.3, 5.4)]},
@@ -225,7 +232,7 @@ def board() -> Board:
             {"name": "bus-strip", "layers": ["In2.Cu"], "tracks_only": True, "poly": bus},
         ],
         "texts": [
-            {"text": "hw-testing-rack · bay node v0.2", "x": 29, "y": 26.6, "size": 0.8},
+            {"text": "hw-testing-rack · bay node v0.3", "x": 29, "y": 26.6, "size": 0.8},
             {"text": "PC", "x": 37.0, "y": 70.2, "size": 0.9},
             {"text": "SVC", "x": 50, "y": 73.6, "size": 0.8},
             {"text": "24V IN", "x": 5.5, "y": PWR_Y - 5.0, "size": 0.8},

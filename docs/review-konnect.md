@@ -1,8 +1,9 @@
-# Board review with Konnect (rev 0.2)
+# Board review with Konnect (rev 0.2 → 0.3)
 
 Review of the two rev 0.2 boards (`electronics/bay-node`, `electronics/power-hub`, commit
 `da40db9`) with the Konnect MCP server (0.13.0, KiCad PCM plugin) against a
-live KiCad 10.0.7, in the light of Fabio's review of v0.1.  Done on 2026-10-16.
+live KiCad 10.0.7, in the light of Fabio's review of v0.1.  Done on 2026-10-16; the fixes below
+make rev 0.3.
 
 **How it was checked.** Konnect's checks run on the files on disk: `run_erc` / `run_drc`
 (kicad-cli, zones refilled, schematic parity), `audit_manufacturing` (JLCPCB DFM),

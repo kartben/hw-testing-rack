@@ -55,7 +55,7 @@ def at(x, y, rot=0, mirror="", fields=None):
 
 
 def board() -> Board:
-    b = Board("power-hub", "Power hub", "0.2",
+    b = Board("power-hub", "Power hub", "0.3",
               comments=["24 V distribution for the hw-testing-rack shelf: 5 eFused outputs",
                         "Generated from electronics/power-hub/design.py — edit the Python, then regenerate"])
     b.root_notes = [
@@ -101,7 +101,7 @@ def board() -> Board:
         ],
         "keepouts": [],
         "texts": [
-            {"text": "hw-testing-rack · power hub v0.2", "x": 60, "y": 66.5, "size": 1.2},
+            {"text": "hw-testing-rack · power hub v0.3", "x": 60, "y": 66.5, "size": 1.2},
             {"text": "24V IN", "x": 5.5, "y": 45, "size": 1.0},
             *[{"text": ch, "x": 40 + i * 16, "y": 12.5, "size": 1.2} for i, ch in enumerate(CHANNELS)],
         ],

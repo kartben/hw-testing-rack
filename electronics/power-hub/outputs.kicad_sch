@@ -6,7 +6,7 @@
 	(paper "A3")
 	(title_block
 		(title "Power hub — Five eFused row outputs")
-		(rev "0.2")
+		(rev "0.3")
 		(company "hw-testing-rack")
 		(comment 1 "24 V distribution for the hw-testing-rack shelf: 5 eFused outputs")
 		(comment 2 "Generated from electronics/power-hub/design.py — edit the Python, then regenerate")
