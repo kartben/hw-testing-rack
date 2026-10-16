@@ -8,6 +8,7 @@ Same endpoints and JSON as src/web.c; the "node" is a dict that the POSTs change
 from __future__ import annotations
 
 import json
+import math
 import random
 import sys
 import time
@@ -27,9 +28,15 @@ node = {
 }
 
 
+def dut_current_ma(t: float) -> int:
+    """A board idling at ~90 mA with a radio burst every 8 s."""
+    burst = 42 if t % 8 < 1.6 else 0
+    return 90 + burst + int(6 * math.sin(t / 3)) + random.randint(-3, 3)
+
+
 def status() -> dict:
     dut = node["dut"]
-    ma = (95 + random.randint(-6, 30)) if dut["on"] else 0
+    ma = dut_current_ma(time.monotonic()) if dut["on"] else 0
     mv = (5080 - ma // 10) if dut["on"] else 0
     dut.update(ma=ma, mv=mv, mw=ma * mv // 1000)
     if node["force_classic"]:
@@ -82,6 +89,10 @@ class Handler(BaseHTTPRequestHandler):
             # Simulate an over-current trip, to look at the fault state
             node["dut"].update(on=False, latched=True, faults=node["dut"]["faults"] + 1)
             self.json(200, status())
+        elif self.path == "/dev/attach":
+            # Toggle a fake USB/IP client
+            node["usb"]["sessions"] = 1 - node["usb"]["sessions"]
+            self.json(200, status())
         else:
             self.json(404, {"error": "not found"})
 
@@ -115,7 +126,11 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
 
+def serve(port: int = 8766) -> ThreadingHTTPServer:
+    return ThreadingHTTPServer(("127.0.0.1", port), Handler)
+
+
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8766
     print(f"bay node mock on http://localhost:{port}")
-    ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
+    serve(port).serve_forever()
