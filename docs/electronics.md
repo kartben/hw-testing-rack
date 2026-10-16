@@ -136,7 +136,9 @@ whether they go too.
   `electronics/tools/catalog.py`, which `tools/bom.py` reads.  The WS2812C-2020-V6
   (C55109522) is Economic-capable, but the module keeps the board on Standard
   anyway.  Check the WS2812C pinout against the WS2812B-2020 footprint before
-  swapping it in.
+  swapping it in.  Every ESP32-S3/S2 module at JLC is Standard-only; the
+  Economic-capable Ai-M62-32S (BL616) is evaluated, and kept for a v2, in
+  [mcu-alternatives.md](mcu-alternatives.md).
 * **Power hub: Economic PCBA.** Its 220 µF bulk capacitors use C3358, the
   Economic-capable LCSC listing of the same RVT1H221M1010 part.  The node's
   100 µF moved to C3352 the same way.
