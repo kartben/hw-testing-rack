@@ -1,0 +1,67 @@
+name: Firmware
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pinmap:
+    name: Pin map (design.py ↔ README ↔ devicetree)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 firmware/tools/check_pinmap.py
+
+  build:
+    name: Zephyr build (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: bay_node
+            board: bay_node/esp32s3/procpu
+          - name: esp32s3_devkitc
+            board: esp32s3_devkitc/esp32s3/procpu
+    steps:
+      # West workspace = $GITHUB_WORKSPACE, this repository checked out as its
+      # manifest repository (manifest self.path: hw-testing-rack).
+      - uses: actions/checkout@v4
+        with:
+          path: hw-testing-rack
+
+      # Zephyr and its modules only change with the revisions in west.yml.
+      - name: Cache west projects
+        uses: actions/cache@v4
+        with:
+          path: |
+            zephyr
+            modules
+          key: west-${{ hashFiles('hw-testing-rack/firmware/west.yml') }}
+
+      # west init -l / west update, west packages pip, Zephyr SDK (version from
+      # zephyr/SDK_VERSION), with the SDK, pip and ccache cached.
+      - uses: zephyrproject-rtos/action-zephyr-setup@be8136a8bba01580485d98b7ad2d32477c36a49a # v1.0.15
+        with:
+          app-path: hw-testing-rack
+          manifest-file-name: firmware/west.yml
+          toolchains: xtensa-espressif_esp32s3_zephyr-elf
+          ccache-cache-key: ${{ matrix.name }}
+
+      - name: Wi-Fi blobs
+        run: west blobs fetch hal_espressif
+
+      - name: Build (warnings are errors)
+        run: >
+          west build -b ${{ matrix.board }} -d build hw-testing-rack/firmware/bay-node
+          -- -DCONFIG_COMPILER_WARNINGS_AS_ERRORS=y
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.name }}
+          include-hidden-files: true  # .config
+          path: |
+            build/zephyr/zephyr.bin
+            build/zephyr/zephyr.elf
+            build/zephyr/.config

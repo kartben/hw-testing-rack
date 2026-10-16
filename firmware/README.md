@@ -177,6 +177,10 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 Strapping pins IO3/IO45/IO46 are not used.  The DevKitC overlay keeps this
 map, moves the LED to the devkit's GPIO38 and disables SPI2 (IO10–IO13).
 
+`python3 firmware/tools/check_pinmap.py` checks this table and the board
+devicetree against U3 in `design.py`; CI ([`firmware.yml`](../.github/workflows/firmware.yml))
+runs it and builds both targets with warnings as errors on every push.
+
 ## Open items
 
 * **Hardware bring-up not done.**  Nothing here has run on a bay node yet:
