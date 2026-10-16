@@ -1,0 +1,2 @@
+# Vendor prefix for the hw-testing-rack devicetree bindings (out of tree).
+hwtr	hw-testing-rack (https://github.com/kartben/hw-testing-rack)

@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Bay node</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%233b82f6'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#f4f5f7, #0d0f13);
+  --card: light-dark(#ffffff, #161920);
+  --text: light-dark(#15171c, #e6e8ec);
+  --muted: light-dark(#646b78, #9299a6);
+  --line: light-dark(#e2e5ea, #262a33);
+  --soft: light-dark(#f0f2f5, #1d2129);
+  --usbip: #3b82f6;
+  --attached: #16a34a;
+  --classic: #c026d3;
+  --service: #f59e0b;
+  --fault: #ef4444;
+  --idle: #8a919e;
+  --state: var(--idle);
+  --radius: 14px;
+  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); }
+.wrap { max-width: 1040px; margin-inline: auto; padding: 24px 16px 40px; }
+header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 20px;
+  & h1 { margin: 0; font-size: 1.6rem; font-weight: 650; letter-spacing: -0.01em; }
+  & .sub { color: var(--muted); font-size: 0.9rem; }
+  & .title { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; min-width: 0; }
+}
+.led {
+  width: 14px; height: 14px; border-radius: 50%; flex: none; background: var(--state);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--state) 18%, transparent),
+              0 0 14px color-mix(in srgb, var(--state) 60%, transparent);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+body[data-state=fault] .led { animation: blink 0.8s steps(2, jump-none) infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px;
+  font-size: 0.85rem; font-weight: 550; color: var(--state);
+  background: color-mix(in srgb, var(--state) 12%, transparent);
+}
+.banner {
+  display: none; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px 16px;
+  border-radius: var(--radius); color: var(--fault);
+  background: color-mix(in srgb, var(--fault) 10%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--fault) 35%, transparent);
+  & span { flex: 1; }
+}
+body[data-state=fault] .banner { display: flex; }
+main { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;
+  & h2 { margin: 0; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+         letter-spacing: 0.06em; color: var(--muted); display: flex; justify-content: space-between; }
+}
+.readings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.reading {
+  & b { display: block; font-size: 1.75rem; font-weight: 600; font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em; }
+  & small { color: var(--muted); font-size: 0.8rem; }
+}
+.spark { width: 100%; height: 44px; display: block; color: var(--usbip);
+  & polyline { fill: none; stroke: currentColor; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+  & polygon { fill: color-mix(in srgb, currentColor 14%, transparent); }
+}
+dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 16px;
+  & dt { color: var(--muted); }
+  & dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+}
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+button {
+  font: inherit; font-weight: 550; padding: 8px 14px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--soft); color: var(--text);
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+  &:hover { border-color: color-mix(in srgb, var(--text) 25%, var(--line)); }
+  &:disabled { opacity: 0.5; cursor: progress; }
+  &.primary { background: var(--text); color: var(--card); border-color: transparent; }
+  &.danger { color: var(--fault); }
+  &:focus-visible { outline: 2px solid var(--usbip); outline-offset: 2px; }
+}
+.seg {
+  display: inline-grid; grid-auto-flow: column; padding: 3px; gap: 3px; border-radius: 12px;
+  background: var(--soft); border: 1px solid var(--line); width: fit-content;
+  & label { padding: 6px 14px; border-radius: 9px; cursor: pointer; font-weight: 550; color: var(--muted); }
+  & label:has(:checked) { background: var(--card); color: var(--text); box-shadow: 0 1px 3px #0002; }
+  & input { position: absolute; opacity: 0; pointer-events: none; }
+  & label:has(:focus-visible) { outline: 2px solid var(--usbip); }
+}
+.cmd {
+  display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: 10px;
+  background: var(--soft); border: 1px solid var(--line);
+  & code { flex: 1; min-width: 0; font: 0.82rem/1.4 ui-monospace, "Cascadia Code", Menlo, monospace;
+           overflow-x: auto; scrollbar-width: none; white-space: nowrap; user-select: all; }
+  & button { padding: 4px 10px; font-size: 0.8rem; }
+}
+footer { margin-top: 20px; color: var(--muted); font-size: 0.85rem; display: flex; gap: 16px; flex-wrap: wrap;
+  & a { color: inherit; }
+}
+dialog {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
+  padding: 20px; max-width: 360px;
+  &::backdrop { background: #0006; backdrop-filter: blur(2px); }
+  & p { margin: 0 0 16px; }
+  & form { display: flex; gap: 8px; justify-content: flex-end; }
+}
+#toast {
+  inset: auto 16px 16px auto; margin: 0; border: 1px solid var(--line); border-radius: 10px;
+  background: var(--text); color: var(--card); padding: 10px 14px; font-weight: 500;
+}
+</style>
+</head>
+<body data-state="offline">
+<div class="wrap">
+  <header>
+    <div class="title">
+      <span class="led" aria-hidden="true"></span>
+      <div>
+        <h1 id="name">Bay node</h1>
+        <div class="sub" id="where">connecting…</div>
+      </div>
+    </div>
+    <span class="pill" id="state">offline</span>
+  </header>
+
+  <div class="banner" role="alert">
+    <span id="fault-text">DUT VBUS fault</span>
+    <button data-action="power" data-arg="on">Power on</button>
+  </div>
+
+  <main>
+    <section class="card">
+      <h2>Power <span id="vbus">—</span></h2>
+      <div class="readings">
+        <div class="reading"><b id="v">–</b><small>volts</small></div>
+        <div class="reading"><b id="a">–</b><small>amps</small></div>
+        <div class="reading"><b id="w">–</b><small>watts</small></div>
+      </div>
+      <svg class="spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-label="Current, last two minutes">
+        <polygon id="spark-fill" points=""/><polyline id="spark" points=""/>
+      </svg>
+      <div class="actions">
+        <button data-action="power" data-arg="on">On</button>
+        <button data-action="power" data-arg="off" class="danger" data-confirm="Switch the board's 5 V off?">Off</button>
+        <button data-action="power" data-arg="cycle" class="primary">Power cycle</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>USB</h2>
+      <div class="seg" role="radiogroup" aria-label="Data path">
+        <label><input type="radio" name="mode" value="usbip">USB/IP</label>
+        <label><input type="radio" name="mode" value="classic">Classic</label>
+      </div>
+      <dl>
+        <dt>Data path</dt><dd id="path">–</dd>
+        <dt>Front port</dt><dd id="pc">–</dd>
+        <dt>USB host</dt><dd id="host">–</dd>
+        <dt>Clients</dt><dd id="sessions">–</dd>
+      </dl>
+      <div class="cmd"><code id="usbip-cmd">usbip attach -r … -b 1-1</code><button data-copy="usbip-cmd">Copy</button></div>
+    </section>
+
+    <section class="card">
+      <h2>Target</h2>
+      <dl>
+        <dt>AUX UART</dt><dd id="baud">–</dd>
+        <dt>Console client</dt><dd id="aux-client">–</dd>
+        <dt>Bytes in / out</dt><dd id="aux-bytes">–</dd>
+      </dl>
+      <div class="cmd"><code id="aux-cmd">socat -,raw,echo=0 TCP:…:4000</code><button data-copy="aux-cmd">Copy</button></div>
+      <div class="actions">
+        <button data-action="reset">Reset</button>
+        <button data-action="boot">Bootloader</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span id="uptime"></span>
+    <span id="faults"></span>
+    <a href="/metrics">/metrics</a>
+    <a href="/api/status">/api/status</a>
+  </footer>
+</div>
+
+<dialog id="confirm">
+  <p id="confirm-text"></p>
+  <form method="dialog">
+    <button value="cancel">Cancel</button>
+    <button value="ok" class="primary">Confirm</button>
+  </form>
+</dialog>
+<div id="toast" popover="manual"></div>
+
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const samples = [];
+let host = location.hostname;
+let timer;
+
+const LABEL = {
+  fault: "fault", service: "service", classic: "classic", off: "power off",
+  attached: "attached", enumerated: "device ready", usbip: "no device", offline: "offline",
+};
+
+async function api(path, body) {
+  const init = body === undefined ? {} : {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+  };
+  const res = await fetch(path, { ...init, signal: AbortSignal.timeout(body ? 10000 : 4000) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error ?? `${res.status} ${res.statusText}`);
+  return data;
+}
+
+function stateOf(s) {
+  if (s.dut.fault || s.dut.latched) return "fault";
+  if (s.path === "service") return "service";
+  if (s.path === "classic") return "classic";
+  if (!s.dut.on) return "off";
+  if (s.usb.sessions > 0) return "attached";
+  return s.usb.devices > 0 ? "enumerated" : "usbip";
+}
+
+const COLOR = { attached: "--attached", enumerated: "--usbip", usbip: "--usbip", classic: "--classic",
+  service: "--service", fault: "--fault", off: "--idle", offline: "--idle" };
+
+function setState(state) {
+  document.body.dataset.state = state;
+  document.documentElement.style.setProperty("--state", `var(${COLOR[state]})`);
+  $("state").textContent = LABEL[state];
+}
+
+const fix = (v, d) => (v / 1000).toFixed(d);
+
+function uptime(s) {
+  const d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24, m = Math.floor(s / 60) % 60;
+  return d ? `${d} d ${h} h` : h ? `${h} h ${m} min` : `${m} min`;
+}
+
+function spark(ma) {
+  samples.push(ma);
+  if (samples.length > 60) samples.shift();
+  const data = samples.length > 1 ? samples : [ma, ma];
+  const max = Math.max(100, ...data) * 1.1;
+  const step = 120 / (data.length - 1);
+  const pts = data.map((v, i) => `${(i * step).toFixed(1)},${(40 - v / max * 38).toFixed(1)}`);
+  $("spark").setAttribute("points", pts.join(" "));
+  $("spark-fill").setAttribute("points", `0,40 ${pts.join(" ")} 120,40`);
+}
+
+function render(s) {
+  host = s.hostname ? `${s.hostname}.local` : location.hostname;
+  const state = stateOf(s);
+  setState(state);
+  document.title = `${s.id ? `Bay ${s.id.toUpperCase()}` : "Bay node"} · ${LABEL[state]}`;
+  $("name").textContent = s.id ? `Bay ${s.id.toUpperCase()}` : "Bay node";
+  $("where").textContent = [host, s.ip].filter(Boolean).join(" · ");
+
+  $("vbus").textContent = s.dut.on ? "VBUS on" : "VBUS off";
+  if (s.dut.meter) {
+    $("v").textContent = fix(s.dut.mv, 2);
+    $("a").textContent = fix(s.dut.ma, 3);
+    $("w").textContent = fix(s.dut.mw, 2);
+    spark(Math.max(0, s.dut.ma));
+  } else {
+    for (const id of ["v", "a", "w"]) $(id).textContent = "n/a";
+  }
+  $("fault-text").textContent = s.dut.latched
+    ? "Over-current: the board's 5 V was switched off."
+    : "The board is drawing too much current (VBUS in current limit).";
+
+  document.querySelector(`input[name=mode][value=${s.force_classic ? "classic" : "usbip"}]`).checked = true;
+  $("path").textContent = { usbip: "USB/IP", classic: "Classic (front port)", service: "Service" }[s.path];
+  $("pc").textContent = s.service ? "service (node)" : s.pc_detected ? "laptop plugged" : "free";
+  $("host").textContent = s.usb.running ? `${s.usb.devices} device${s.usb.devices === 1 ? "" : "s"}` : "stopped";
+  $("sessions").textContent = s.usb.sessions ? `${s.usb.sessions} attached` : "none";
+  $("usbip-cmd").textContent = `sudo usbip attach -r ${host} -b 1-1`;
+
+  $("baud").textContent = `${s.aux.baud.toLocaleString("en")} baud · tcp/${s.aux.port}`;
+  $("aux-client").textContent = s.aux.client ? "connected" : "none";
+  $("aux-bytes").textContent = `${s.aux.rx.toLocaleString("en")} / ${s.aux.tx.toLocaleString("en")}`;
+  $("aux-cmd").textContent = `socat -,raw,echo=0 TCP:${host}:${s.aux.port}`;
+
+  $("uptime").textContent = `Up ${uptime(s.uptime_s)} · Zephyr ${s.version}`;
+  $("faults").textContent = `${s.dut.faults} fault${s.dut.faults === 1 ? "" : "s"} since boot`;
+}
+
+async function poll() {
+  clearTimeout(timer);
+  try {
+    render(await api("/api/status"));
+  } catch {
+    setState("offline");
+    $("where").textContent = "node unreachable, retrying…";
+  }
+  if (!document.hidden) timer = setTimeout(poll, 2000);
+}
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.showPopover?.();
+  clearTimeout(t.hide);
+  t.hide = setTimeout(() => t.hidePopover?.(), 2500);
+}
+
+function confirmed(text) {
+  const dlg = $("confirm");
+  $("confirm-text").textContent = text;
+  dlg.showModal();
+  return new Promise((ok) => dlg.addEventListener("close", () => ok(dlg.returnValue === "ok"), { once: true }));
+}
+
+const DONE = { on: "Power on", off: "Power off", cycle: "Power cycled", reset: "Target reset",
+  boot: "Target in bootloader", usbip: "USB/IP mode", classic: "Classic mode" };
+
+async function run(btn, path, body, what) {
+  if (btn?.dataset.confirm && !(await confirmed(btn.dataset.confirm))) return;
+  const busy = document.querySelectorAll("button[data-action]");
+  busy.forEach((b) => (b.disabled = true));
+  try {
+    render(await api(path, body));
+    toast(DONE[what]);
+  } catch (e) {
+    toast(`Failed: ${e.message}`);
+  } finally {
+    busy.forEach((b) => (b.disabled = false));
+  }
+}
+
+document.addEventListener("click", async (ev) => {
+  const btn = ev.target.closest("button");
+  if (!btn) return;
+  if (btn.dataset.copy) {
+    const text = $(btn.dataset.copy).textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      getSelection().selectAllChildren($(btn.dataset.copy));
+      document.execCommand("copy");
+    }
+    toast("Copied");
+    return;
+  }
+  const action = btn.dataset.action;
+  if (action === "power") run(btn, "/api/power", { action: btn.dataset.arg }, btn.dataset.arg);
+  else if (action === "reset") run(btn, "/api/reset", {}, "reset");
+  else if (action === "boot") run(btn, "/api/boot", {}, "boot");
+});
+
+document.addEventListener("change", (ev) => {
+  if (ev.target.name === "mode") run(null, "/api/mode", { mode: ev.target.value }, ev.target.value);
+});
+
+document.addEventListener("visibilitychange", () => !document.hidden && poll());
+poll();
+</script>
+</body>
+</html>

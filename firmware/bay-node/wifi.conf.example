@@ -1,0 +1,6 @@
+# Built-in Wi-Fi network, used in addition to the ones stored with
+# "wifi cred add".  Copy to wifi.conf (git-ignored) and build with
+#   west build ... -- -DEXTRA_CONF_FILE=wifi.conf
+CONFIG_WIFI_CREDENTIALS_STATIC=y
+CONFIG_WIFI_CREDENTIALS_STATIC_SSID="MyLab"
+CONFIG_WIFI_CREDENTIALS_STATIC_PASSWORD="secret"
