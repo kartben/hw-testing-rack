@@ -70,8 +70,10 @@ def usb_hs_routes():
     impedance-controlled board), 0.5 mm pitch only where the pairs meet 0.5 mm pins, ESD parts in
     flow-through, lengths matched per segment.
 
-    U4/U8 sit in line (their I/O pin pairs are the two tracks), with their GND and VBUS pins tied by a
-    short track to a via between the spread tracks.  The two FSUSB42s number their pins the same way
+    U4/U8 sit in line, in flow-through: each line enters the USBLC6 on its connector-side pin and leaves
+    on the protected-side pin (separate nets, *_CONN_* on the connector side), so the signal passes
+    through the part and nothing bridges its pins outside; GND and VBUS pins are tied by a short track
+    to a via between the spread tracks.  The two FSUSB42s number their pins the same way
     round, so PCPATH (U5 HSD1 → U6 HSD2) must cross over once: PCPATH_DN hops under PCPATH_DP on B.Cu,
     and three bumps on PCPATH_DP make up its extra length.  On each USB-C receptacle the A-side pins
     (A6/A7) are the through path; B6 joins A6 by a loop around the pad row, B7 joins A7 through
@@ -86,13 +88,15 @@ def usb_hs_routes():
 
     # J3 (front PC port) → U4 (ESD, rot 270: D+ through pins 4/3 at x 31.05, D− through 6/1 at 32.95)
     # → U5 (MUX_PC, rot 90: D+ pin 3 at 31.75, D− pin 4 at 32.25, y 61.7)
-    t("PC_DP", (31.75, 72.555), (31.75, 70.9), (31.05, 70.2), (31.05, 64.3), (31.75, 63.6), (31.75, 61.7))
-    t("PC_DN", (32.25, 72.555), (32.25, 70.9), (32.95, 70.2), (32.95, 64.3), (32.25, 63.6), (32.25, 61.7))
-    t("PC_DP", (32.75, 72.555), (32.75, 73.85), (31.75, 73.85), (31.75, 72.555))      # B6 → A6
-    t("PC_DN", (31.25, 72.555), (31.25, 71.35))                                         # B7 → A7
-    t("PC_DN", (31.25, 71.35), (32.25, 71.25), layer="B.Cu")
-    via("PC_DN", 31.25, 71.35)
-    via("PC_DN", 32.25, 71.25)
+    t("PC_CONN_DP", (31.75, 72.555), (31.75, 70.9), (31.05, 70.2), (31.05, 68.1375))        # → U4 pin 4
+    t("PC_CONN_DN", (32.25, 72.555), (32.25, 70.9), (32.95, 70.2), (32.95, 68.1375))        # → U4 pin 6
+    t("PC_DP", (31.05, 65.8625), (31.05, 64.3), (31.75, 63.6), (31.75, 61.7))               # U4 pin 3 →
+    t("PC_DN", (32.95, 65.8625), (32.95, 64.3), (32.25, 63.6), (32.25, 61.7))               # U4 pin 1 →
+    t("PC_CONN_DP", (32.75, 72.555), (32.75, 73.85), (31.75, 73.85), (31.75, 72.555))  # B6 → A6
+    t("PC_CONN_DN", (31.25, 72.555), (31.25, 71.35))                                    # B7 → A7
+    t("PC_CONN_DN", (31.25, 71.35), (32.25, 71.25), layer="B.Cu")
+    via("PC_CONN_DN", 31.25, 71.35)
+    via("PC_CONN_DN", 32.25, 71.25)
     t("+5V", (32.0, 68.1375), (32.0, 69.55), w=0.3)                                     # U4 VBUS
     via("+5V", 32.0, 69.55)
     t("GND", (32.0, 65.8625), (32.0, 64.55), w=0.3)                                     # U4 GND
@@ -117,14 +121,18 @@ def usb_hs_routes():
     # U6 D± (pins 4/3 at y 38.5/39.0, x 52.6) → north through U8 (ESD, rot 90: DN through pins 1/6 at
     # x 53.15, DP through 3/4 at 55.05) → east into J4 (DUT port) A7/A6
     t("DUT_DN", (52.6, 38.5), (53.0, 38.55), (53.5, 38.55), (53.9, 38.15), (53.9, 35.6), (53.15, 34.85),
-      (53.15, 29.6), (53.9, 28.85), (53.9, 24.25), (54.4, 23.75), (56.35, 23.75))
+      (53.15, 33.1375))                                                                 # → U8 pin 1
     t("DUT_DP", (52.6, 39.0), (53.0, 38.95), (53.666, 38.95), (54.3, 38.316), (54.3, 35.6), (55.05, 34.85),
-      (55.05, 29.6), (54.3, 28.85), (54.3, 24.65), (54.7, 24.25), (56.35, 24.25))
-    t("DUT_DP", (56.35, 23.25), (57.45, 23.25), (57.45, 24.25), (56.35, 24.25))         # B6 → A6
-    t("DUT_DN", (56.35, 24.75), (55.05, 24.75))                                         # B7 → A7
-    t("DUT_DN", (55.05, 24.75), (55.05, 23.75), layer="B.Cu")
-    via("DUT_DN", 55.05, 24.75)
-    via("DUT_DN", 55.05, 23.75)
+      (55.05, 33.1375))                                                                 # → U8 pin 3
+    t("DUT_CONN_DN", (53.15, 30.8625), (53.15, 29.6), (53.9, 28.85), (53.9, 24.25), (54.4, 23.75),
+      (56.35, 23.75))                                                                   # U8 pin 6 →
+    t("DUT_CONN_DP", (55.05, 30.8625), (55.05, 29.6), (54.3, 28.85), (54.3, 24.65), (54.7, 24.25),
+      (56.35, 24.25))                                                                   # U8 pin 4 →
+    t("DUT_CONN_DP", (56.35, 23.25), (57.45, 23.25), (57.45, 24.25), (56.35, 24.25))    # B6 → A6
+    t("DUT_CONN_DN", (56.35, 24.75), (55.05, 24.75))                                    # B7 → A7
+    t("DUT_CONN_DN", (55.05, 24.75), (55.05, 23.75), layer="B.Cu")
+    via("DUT_CONN_DN", 55.05, 24.75)
+    via("DUT_CONN_DN", 55.05, 23.75)
     # J4's VBUS pads sit behind the pair: a via each, so DUT_5V arrives from In2 / B.Cu
     t("DUT_5V", (56.35, 26.45), (55.2, 26.45), w=0.6)
     via("DUT_5V", 55.2, 26.45, 0.8, 0.4)
@@ -220,10 +228,17 @@ def board() -> Board:
                  *[("+3V3", x, y) for x, y in ((46.6, 26.2), (47.9, 26.2), (49.2, 26.2), (50.6, 26.2),
                                                (49.2, 27.8), (50.6, 27.8), (49.2, 29.4), (50.6, 29.4))],
                  *hs_vias,
-                 ("GND", 47.75, 56.5)],
-        # the USB High-Speed pairs, routed by hand (see usb_hs_routes), and U10's GND pin, which
-        # the router sometimes leaves walled in between DUT_5V and the shunt's sense lines
-        "tracks": [*hs_tracks, ("GND", "F.Cu", 0.3, [(46.15, 56.5), (47.75, 56.5)])],
+                 ("GND", 47.75, 56.5), ("GND", 39.35, 42.23), ("DUT_5V", 50.55, 47.475, 0.8, 0.4)],
+        # Drawn before routing, besides the USB High-Speed pairs (see usb_hs_routes): what
+        # Freerouting only manages on some runs.  Two GND pads it walls in, U10's GND pin (between
+        # DUT_5V and the shunt's sense lines) and C20's (under the PCPATH pair), and DUT_5V's long
+        # run from C21 to J4 (1.5 A, across the DUT pair): a via by C21, then B.Cu to J4's two VBUS
+        # vias, which it also joins.
+        "tracks": [*hs_tracks, ("GND", "F.Cu", 0.3, [(46.15, 56.5), (47.75, 56.5)]),
+                   ("GND", "F.Cu", 0.3, [(40.5, 42.23), (39.35, 42.23)]),
+                   ("DUT_5V", "F.Cu", 0.6, [(49.0, 47.475), (50.55, 47.475)]),
+                   ("DUT_5V", "B.Cu", 0.6, [(50.55, 47.475), (55.6, 42.425), (55.6, 27.05), (55.2, 26.45),
+                                            (56.0, 25.65), (56.0, 22.35), (55.2, 21.55)])],
         # ESP32 antenna: no copper on any layer under/around the antenna (module top 5 mm + edge)
         "keepouts": [
             {"name": "antenna", "poly": [(9.3, -0.1), (54.7, -0.1), (54.7, 5.4), (9.3, 5.4)]},
@@ -378,15 +393,17 @@ def board() -> Board:
     # ------------------------------------------------------------------ USB
     u = b.sheet("USB", "usb.kicad_sch", "USB ports and data-path muxes")
     u.frame("Front PC port: USB-C sink (Rd 5.1k on CC), VBUS only sensed", 6, 6, 56, 52)
-    part(u, "J3", "usbc", {"VBUS": "PC_VBUS", "GND": "GND", "CC1": "PC_CC1", "CC2": "PC_CC2", "D+": "PC_DP",
-                           "D-": "PC_DN", "SBU1": None, "SBU2": None, "SHIELD": "GND"}, "PC", pcb=P(32, 76.6, 0),
+    part(u, "J3", "usbc", {"VBUS": "PC_VBUS", "GND": "GND", "CC1": "PC_CC1", "CC2": "PC_CC2", "D+": "PC_CONN_DP",
+                           "D-": "PC_CONN_DN", "SBU1": None, "SBU2": None, "SHIELD": "GND"}, "PC", pcb=P(32, 76.6, 0),
          sch=at(14, 28, fields=(-4, -9)))
     u.wire("J3.A7", (22, 27), (22, 28), "J3.B7")
     u.wire("J3.A6", (23, 29), (23, 30), "J3.B6")
-    part(u, "U4", "esd", {"I/O1": "PC_DN", "I/O2": "PC_DP", "VBUS": "+5V", "GND": "GND"}, pcb=P(32.0, 67.0, 270),
-         sch=at(30, 28, fields=(1.5, 3.5)))
-    u.wire((22, 28), "U4.1")
-    u.wire((23, 29), "U4.3")
+    # USBLC6 flow-through: the connector side (pins 6/4) and the protected side (1/3) are separate nets,
+    # so the only path from J3 to the mux runs through the part (drawn mirrored: connector side left)
+    part(u, "U4", "esd", {"6": "PC_CONN_DN", "1": "PC_DN", "4": "PC_CONN_DP", "3": "PC_DP", "5": "+5V", "2": "GND"},
+         pcb=P(32.0, 67.0, 270), sch=at(33, 28, mirror="y", fields=(1.5, 3.5)))
+    u.wire((22, 28), "U4.6")
+    u.wire((23, 29), "U4.4")
     R(u, "R11", "10k", "PC_VBUS", "PC_DET", pcb=P(41, 70, 0), sch=at(37.5, 22, rot=90))
     R(u, "R12", "20k", "PC_DET", "GND", pcb=P(41, 67.6, 0), sch=at(42, 23.5))
     u.wire("J3.VBUS", "R11.1")
@@ -415,13 +432,13 @@ def board() -> Board:
     u.tag("+3V3", (104, 16), "up")
 
     u.frame("DUT port: USB-C source (Rp 22k → 1.5 A); DUT_5V comes switched from the DUT power sheet", 106, 40, 160, 72)
-    part(u, "J4", "usbc", {"VBUS": "DUT_5V", "GND": "GND", "CC1": "DUT_CC1", "CC2": "DUT_CC2", "D+": "DUT_DP",
-                           "D-": "DUT_DN", "SBU1": None, "SBU2": None, "SHIELD": "GND"}, "DUT",
+    part(u, "J4", "usbc", {"VBUS": "DUT_5V", "GND": "GND", "CC1": "DUT_CC1", "CC2": "DUT_CC2", "D+": "DUT_CONN_DP",
+                           "D-": "DUT_CONN_DN", "SBU1": None, "SBU2": None, "SHIELD": "GND"}, "DUT",
          pcb=P(60.4, CFG["right"]["dut"], 90), sch=at(150, 58, mirror="y", fields=(1, -9)))
     u.wire("J4.A7", (142, 57), (142, 58), "J4.B7")
     u.wire("J4.A6", (141, 59), (141, 60), "J4.B6")
-    part(u, "U8", "esd", {"I/O1": "DUT_DN", "I/O2": "DUT_DP", "VBUS": "+5V", "GND": "GND"}, pcb=P(54.1, 32.0, 90),
-         sch=at(134, 58, fields=(1.5, 3.5)))
+    part(u, "U8", "esd", {"6": "DUT_CONN_DN", "1": "DUT_DN", "4": "DUT_CONN_DP", "3": "DUT_DP", "5": "+5V",
+                          "2": "GND"}, pcb=P(54.1, 32.0, 90), sch=at(134, 58, fields=(1.5, 3.5)))
     u.wire("U8.6", (142, 58))
     u.wire("U8.4", (141, 59))
     R(u, "R14", "22k", "DUT_5V", "DUT_CC1", pcb=P(53, 27.6, 90), sch=at(117.5, 50, rot=90))

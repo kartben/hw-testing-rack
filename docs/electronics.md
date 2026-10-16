@@ -96,7 +96,8 @@ Sheets: **Power · MCU · USB · DUT power & AUX** — see the PDF in
 muxes, at 480 Mb/s if the DUT can.  Freerouting can't route differential pairs, so that chain (J3 →
 U4 → U5 → U6 → U8 → J4) is drawn by `usb_hs_routes()` in `design.py` and locked before routing
 (`b.pcb["tracks"]`): coupled pairs on F.Cu over In1, 0.25 mm / 0.15 mm gap (≈ 90 Ω, estimate),
-ESD parts in flow-through, lengths matched per segment (≈ 1.8 mm skew end to end).  The two
+ESD parts in flow-through (the connector side is its own net, `PC_CONN_*` /
+`DUT_CONN_*`, so the signal can only pass through the USBLC6), lengths matched per segment.  The two
 FSUSB42s need one crossover between them (PCPATH_DN hops under PCPATH_DP on B.Cu); the three bumps
 on PCPATH_DP make up its length.  Moving U4–U8 or the connectors means re-drawing those tracks.
 

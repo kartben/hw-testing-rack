@@ -3018,7 +3018,8 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:USBLC6-2SC6")
-		(at 76.2 71.12 0)
+		(at 83.82 71.12 0)
+		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3027,7 +3028,7 @@
 		(fields_autoplaced yes)
 		(uuid "ce7d3adb-49fa-5716-8269-5c7b9dcd9015")
 		(property "Reference" "U4"
-			(at 81.06 80.01 0)
+			(at 88.68 80.01 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3035,7 +3036,7 @@
 			)
 		)
 		(property "Value" "USBLC6-2SC6"
-			(at 85.785 82.55 0)
+			(at 93.405 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3043,7 +3044,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
-			(at 76.2 71.12 0)
+			(at 83.82 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3052,7 +3053,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 76.2 71.12 0)
+			(at 83.82 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3061,7 +3062,7 @@
 			)
 		)
 		(property "Description" "USB ESD protection"
-			(at 76.2 71.12 0)
+			(at 83.82 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3070,7 +3071,7 @@
 			)
 		)
 		(property "MPN" "USBLC6-2SC6"
-			(at 76.2 71.12 0)
+			(at 83.82 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3079,7 +3080,7 @@
 			)
 		)
 		(property "Manufacturer" "STMicroelectronics"
-			(at 76.2 71.12 0)
+			(at 83.82 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3088,7 +3089,7 @@
 			)
 		)
 		(property "LCSC" "C7519"
-			(at 76.2 71.12 0)
+			(at 83.82 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3097,7 +3098,7 @@
 			)
 		)
 		(property "Alternative" "C2687116 (UMW clone)"
-			(at 76.2 71.12 0)
+			(at 83.82 71.12 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3134,8 +3135,30 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 78.74)
-			(xy 76.2 81.28)
+			(xy 88.9 71.12)
+			(xy 91.44 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "49071bee-8ee9-508a-8044-a40f86655cb4")
+	)
+	(label "PC_DN"
+		(at 91.44 71.12 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "c5f6f00c-4366-58b9-9bba-5c968d219c61")
+	)
+	(wire
+		(pts
+			(xy 83.82 78.74)
+			(xy 83.82 81.28)
 		)
 		(stroke
 			(width 0)
@@ -3145,7 +3168,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 76.2 81.28 0)
+		(at 83.82 81.28 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3154,7 +3177,7 @@
 		(fields_autoplaced yes)
 		(uuid "57e9fdfb-8a43-56c0-8298-d1fcd3c432f9")
 		(property "Reference" "#PWR04003"
-			(at 76.2 81.28 0)
+			(at 83.82 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3163,7 +3186,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 76.2 85.09 0)
+			(at 83.82 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3171,7 +3194,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 76.2 81.28 0)
+			(at 83.82 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3180,7 +3203,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 76.2 81.28 0)
+			(at 83.82 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3189,7 +3212,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 76.2 81.28 0)
+			(at 83.82 81.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3211,17 +3234,17 @@
 	)
 	(wire
 		(pts
-			(xy 81.28 73.66)
-			(xy 83.82 73.66)
+			(xy 88.9 73.66)
+			(xy 91.44 73.66)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "e6c71595-075b-58f3-9a9a-8dac0e17a216")
+		(uuid "bf6c0b14-6602-559f-9f9a-48e479a76d5e")
 	)
 	(label "PC_DP"
-		(at 83.82 73.66 0)
+		(at 91.44 73.66 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3229,12 +3252,12 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "3cf525fd-2b09-582f-91c4-c989ead59579")
+		(uuid "92c4744d-3c20-526f-9c2e-8a7f9328b884")
 	)
 	(wire
 		(pts
-			(xy 76.2 66.04)
-			(xy 76.2 63.5)
+			(xy 83.82 66.04)
+			(xy 83.82 63.5)
 		)
 		(stroke
 			(width 0)
@@ -3244,7 +3267,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 76.2 63.5 0)
+		(at 83.82 63.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3253,7 +3276,7 @@
 		(fields_autoplaced yes)
 		(uuid "2ffa7d75-331e-58f5-8d00-90c9e3696f4b")
 		(property "Reference" "#PWR04004"
-			(at 76.2 63.5 0)
+			(at 83.82 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3262,7 +3285,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 76.2 59.69 0)
+			(at 83.82 59.69 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3270,7 +3293,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 76.2 63.5 0)
+			(at 83.82 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3279,7 +3302,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 76.2 63.5 0)
+			(at 83.82 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3288,7 +3311,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 76.2 63.5 0)
+			(at 83.82 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3307,28 +3330,6 @@
 				)
 			)
 		)
-	)
-	(wire
-		(pts
-			(xy 81.28 71.12)
-			(xy 83.82 71.12)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1669d94a-c981-5b4b-b2bd-e10b6cb656e5")
-	)
-	(label "PC_DN"
-		(at 83.82 71.12 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d3f12034-2036-5870-a9af-ee676bce2470")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -6706,7 +6707,7 @@
 	(wire
 		(pts
 			(xy 55.88 71.12)
-			(xy 71.12 71.12)
+			(xy 78.74 71.12)
 		)
 		(stroke
 			(width 0)
@@ -6717,7 +6718,7 @@
 	(wire
 		(pts
 			(xy 58.42 73.66)
-			(xy 71.12 73.66)
+			(xy 78.74 73.66)
 		)
 		(stroke
 			(width 0)
@@ -7605,8 +7606,8 @@
 			)
 		)
 	)
-	(label "PC_DN"
-		(at 60.96 71.12 0)
+	(label "PC_CONN_DN"
+		(at 62.23 71.12 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7616,8 +7617,8 @@
 		)
 		(uuid "1b511a7e-184b-5c4d-8399-af7b3ceccb8f")
 	)
-	(label "PC_DP"
-		(at 62.23 73.66 0)
+	(label "PC_CONN_DP"
+		(at 63.5 73.66 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7638,8 +7639,8 @@
 		)
 		(uuid "85546f83-a498-5ee1-b810-5627a3b09139")
 	)
-	(label "DUT_DN"
-		(at 350.52 147.32 0)
+	(label "DUT_CONN_DN"
+		(at 347.98 147.32 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7649,8 +7650,8 @@
 		)
 		(uuid "e783f8d9-87d0-5409-8da6-714e97d405cb")
 	)
-	(label "DUT_DP"
-		(at 349.25 149.86 0)
+	(label "DUT_CONN_DP"
+		(at 346.71 149.86 0)
 		(fields_autoplaced yes)
 		(effects
 			(font

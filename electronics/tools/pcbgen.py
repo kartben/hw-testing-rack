@@ -493,10 +493,12 @@ def import_session(b: Board, outdir: Path) -> Path:
     # fans most of them out, the ones it leaves get a short track to a GND via (KiCad's DRC says which)
     for _ in range(2):
         spots = unconnected_gnd_pads(path)
-        if not spots:
-            break
         board = pcbnew.LoadBoard(str(path))
         gnd = board.FindNet(b.pcb_net_name("GND"))
+        # a pad whose pour fragment has no via is reported against the zone, not the pad
+        spots = sorted(set(spots) | set(loose_gnd_pads(board, gnd)))
+        if not spots:
+            break
         n = connect_gnd_pads(board, gnd, spots)
         print(f"gnd: {n} of {len(spots)} isolated GND pads tied to the plane")
         pcbnew.SaveBoard(str(path), board)
@@ -549,6 +551,36 @@ def unconnected_gnd_pads(path: Path, gnd_name: str = "GND") -> list[tuple[float,
             if d.startswith("Pad") and f"[{gnd_name}]" in d:
                 out.append((it["pos"]["x"], it["pos"]["y"]))
     return sorted(set(out))
+
+
+def loose_gnd_pads(board, gnd) -> list[tuple[float, float]]:
+    """Positions (mm) of the SMD GND pads sitting in an outer-layer GND fill fragment that holds no
+    GND via or through-hole pad (zones refilled): KiCad's DRC reports those as an unconnected
+    zone, without saying which pad."""
+    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    code = gnd.GetNetCode()
+    anchors = [t.GetPosition() for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.GetNetCode() == code]
+    anchors += [p.GetPosition() for fp in board.GetFootprints() for p in fp.Pads()
+                if p.GetNetCode() == code and p.GetDrillSize().x > 0]
+    # a GND track leaving the fragment ties it to the rest (e.g. the one connect_gnd_pads just drew)
+    anchors += [e for t in board.GetTracks() if t.GetClass() != "PCB_VIA" and t.GetNetCode() == code
+                for e in (t.GetStart(), t.GetEnd())]
+    out = []
+    for z in board.Zones():
+        if z.GetIsRuleArea() or z.GetNetCode() != code:
+            continue
+        for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+            if not z.IsOnLayer(layer):
+                continue
+            polys = z.GetFilledPolysList(layer)
+            for i in range(polys.OutlineCount()):
+                if any(polys.Contains(a, i) for a in anchors):
+                    continue
+                out += [(pcbnew.ToMM(p.GetPosition().x), pcbnew.ToMM(p.GetPosition().y))
+                        for fp in board.GetFootprints() for p in fp.Pads()
+                        if p.GetNetCode() == code and p.GetDrillSize().x == 0 and p.IsOnLayer(layer)
+                        and polys.Contains(p.GetPosition(), i)]
+    return out
 
 
 def connect_gnd_pads(board, gnd, spots_mm, via_d=0.45, drill=0.25, width_mm=0.25) -> int:

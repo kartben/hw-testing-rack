@@ -166,8 +166,12 @@ lot from one re-route to the next.
   JLC04161H-7628 by closed-form estimate — check in JLC's impedance calculator if you order the board
   impedance-controlled; USB allows ±15 %), 0.5 mm pitch only where the pairs meet 0.5 mm pins;
 * parts re-placed for a straight path: U4 (ESD) in line under J3, U5 (MUX_PC) right above it
-  (rot 90, D± facing J3), U6 (MUX_DUT, rot 180) and U8 (ESD, rot 90) on the way to J4; the ESD
-  parts are flow-through (each line runs through its two I/O pins), their GND/VBUS pins get a short
+  (rot 90, D± facing J3), U6 (MUX_DUT, rot 180) and U8 (ESD, rot 90) on the way to J4;
+* the USBLC6s are used in flow-through: the connector side and the protected side are separate nets
+  (`PC_CONN_DP/DN`, `DUT_CONN_DP/DN` on the connector side), so the signal can only go through the
+  part (pin 6 → 1, 4 → 3) and DRC would flag any copper bridging its pins outside.  The first
+  version of this routing ran one net through both pins and a track under the package — Fabio's
+  remark: the part is meant to be passed through, not bridged.  Their GND/VBUS pins get a short
   track to a via between the two lines;
 * the two FSUSB42s number their pins the same way round, so a single-layer PCPATH would have to
   cross itself: `PCPATH_DN` hops under `PCPATH_DP` on B.Cu between two vias, and three bumps on
@@ -180,10 +184,10 @@ Result (pad to pad, vias counted as the 1.6 mm they cross):
 
 | segment | D+ | D− | skew |
 |---|---|---|---|
-| PC (J3 → U5) | 11.43 mm | 11.43 mm | 0.00 mm |
+| PC (J3 → U4 → U5) | 4.71 + 4.45 mm | 4.71 + 4.45 mm | 0.00 mm |
 | PCPATH (U5 → U6) | 36.69 mm | 38.32 mm | 1.63 mm |
-| DUT (U6 → J4) | 18.47 mm | 18.65 mm | 0.18 mm |
-| J3 → J4 | 66.6 mm | 68.4 mm | 1.8 mm ≈ 12 ps |
+| DUT (U6 → U8 → J4) | 7.45 + 8.74 mm | 6.79 + 9.58 mm | 0.18 mm (−0.66 / +0.84 on each side of U8) |
+| J3 → J4, traces only | 62.0 mm | 63.9 mm | 1.8 mm ≈ 12 ps |
 
 What it can't fix: two FSUSB42s and two USBLC6s in series still add a few pF each, so the eye has
 less margin than a direct connection; check with a High-Speed DUT on the first boards.  The new
@@ -266,11 +270,15 @@ saved files:
 | JLCPCB DFM audit | 0 findings | 0 findings |
 | stackup / finish | JLC04161H-7628, ENIG | 2-layer 1.6 mm, HAL lead-free |
 | 24 V copper | (unchanged) | VIN_RAW pour 229 mm², +24V pours 394 mm² (top) + 321 mm² (bottom strip) + 5 IN islands, 16 vias 0.8/0.4 |
-| USB / shunt | HS pairs hand-routed, 1.8 mm skew J3 → J4; Kelvin sense pads on R19 | — |
+| USB / shunt | HS pairs hand-routed, USBLC6s in true flow-through, 1.8 mm skew J3 → J4; Kelvin sense pads on R19 | — |
 | other | LDO tab island + 8 vias; In2: +5V 3020, +3V3 566, GND fill 112, 24V bus 351 mm² (In1: 4582 mm²) | 30 tented thermal vias under the eFuse pads; input/output caps at the pins |
 
 `pcbgen.py` also drops the pass-through vias Freerouting sometimes leaves (a via whose tracks all
-stay on one layer: two such vias showed up as DRC warnings on the bay node).
+stay on one layer: two such vias showed up as DRC warnings on the bay node), and ties GND pads
+sitting in a pour fragment without a via (KiCad reports those against the zone, not the pad).
+Freerouting doesn't give the same result twice: the spots it left unrouted on some runs are now
+drawn in `design.py` too — a via on J4's VBUS pads and DUT_5V's run from C21 to them on B.Cu, and a
+short GND escape for U10 and C20.
 
 The fab outputs (`fab/*`, BOMs, renders, schematic PDF) are regenerated.  CPL changes: the hub's
 C11–C15 / C31–C35, the bay node's U4, U5, U6, U8, C17, C18, R24, R25 (new positions and
