@@ -1,0 +1,51 @@
+name: Hardware
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  stl:
+    name: Printable parts (OpenSCAD)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r tools/requirements.txt
+      - run: sudo apt-get update && sudo apt-get install -y openscad fonts-liberation
+      - name: Render every part
+        run: python tools/build.py stl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stl
+          path: mechanical/stl/
+
+  kicad:
+    name: KiCad checks + fab outputs (${{ matrix.board }})
+    runs-on: ubuntu-24.04
+    container:
+      image: kicad/kicad:10.0-full
+      options: --user root
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [bay-node, power-hub]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Library tables
+        run: |
+          mkdir -p ~/.config/kicad/10.0
+          cp /usr/share/kicad/template/sym-lib-table /usr/share/kicad/template/fp-lib-table ~/.config/kicad/10.0/
+      - name: ERC, DRC (schematic parity), Gerbers, BOM, CPL, renders, STEP
+        run: python3 electronics/tools/build_board.py ${{ matrix.board }} --check --fab
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fab-${{ matrix.board }}
+          path: |
+            electronics/${{ matrix.board }}/fab/
+            electronics/${{ matrix.board }}/docs/
+            electronics/${{ matrix.board }}/build/*.json

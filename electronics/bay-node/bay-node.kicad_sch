@@ -1,0 +1,210 @@
+(kicad_sch
+	(version 20250610)
+	(generator "hw-testing-rack-eda")
+	(generator_version "10.0")
+	(uuid "76847c0c-2f76-566c-8109-428b2bf58b3f")
+	(paper "A3")
+	(title_block
+		(title "Bay node — Overview")
+		(rev "0.1")
+		(company "hw-testing-rack")
+		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
+		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
+		(comment 3 "24 V in · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX UART/RST/BOOT")
+	)
+	(lib_symbols)
+	(sheet
+		(at 30.48 49.53)
+		(size 60.96 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "6bdbf57d-f796-52cd-9884-75545352918b")
+		(property "Sheetname" "Power"
+			(at 30.48 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 30.48 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 115.57 49.53)
+		(size 60.96 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "342cf2d8-2555-5c90-a32c-abde03bd4d01")
+		(property "Sheetname" "MCU"
+			(at 115.57 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "mcu.kicad_sch"
+			(at 115.57 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 201.93 49.53)
+		(size 60.96 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "c87ef098-13d8-5d4c-814e-a4c6487f5259")
+		(property "Sheetname" "USB"
+			(at 201.93 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "usb.kicad_sch"
+			(at 201.93 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 288.29 49.53)
+		(size 60.96 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "a569d74c-9c07-57e9-a349-c34419c82b47")
+		(property "Sheetname" "DUT power & AUX"
+			(at 288.29 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "dut.kicad_sch"
+			(at 288.29 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f"
+					(page "5")
+				)
+			)
+		)
+	)
+	(text_box "Bay node — one per bay.  Sheets:\n  Power: 24 V bus (daisy-chain), reverse protection, TPS54360B buck to 5 V, AMS1117 3.3 V\n  MCU: ESP32-S3-MINI-1, boot/reset, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls VBUS/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
+		(exclude_from_sim no)
+		(at 30 149.86 0)
+		(size 360 27.94)
+		(margins 2 2 2 2)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.6 1.6)
+			)
+			(justify left top)
+		)
+		(uuid "1ee452e6-6074-54c3-83c6-787d77cc64d8")
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

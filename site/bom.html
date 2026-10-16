@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>hw-testing-rack — Bill of materials</title>
+  <meta name="description" content="Full bill of materials of the hw-testing-rack dev-board test shelf: electronics with LCSC part numbers, printed parts, frame, fasteners, cables and power.">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html, body { overflow: auto; }
+    main { max-width: 1180px; margin: 0 auto; padding: 88px 16px 48px; }
+    h1 { font-size: 26px; margin: 0 0 6px; }
+    .lead { color: var(--muted); margin: 0 0 22px; max-width: 760px; line-height: 1.5; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 26px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+    .card .k { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+    .card .v { font-size: 22px; font-weight: 650; margin-top: 4px; font-variant-numeric: tabular-nums; }
+    .card.total { border-color: rgba(255, 138, 61, .55); }
+    h2 { font-size: 16px; margin: 30px 0 10px; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+    .toolbar input, .toolbar select { font: inherit; color: var(--text); background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; }
+    .toolbar input { flex: 1; min-width: 180px; }
+    .tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { position: sticky; top: 0; background: var(--bg2); font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr:hover td { background: rgba(255,255,255,.025); }
+    .pill { font-size: 11px; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+    a { color: var(--accent2); }
+    .note { color: var(--muted); font-size: 12.5px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <div><h1 style="font-size:17px;margin:0">hw-testing-rack</h1><p>Bill of materials</p></div>
+    </div>
+    <nav>
+      <a href="./">3D model</a>
+      <a href="https://github.com/kartben/hw-testing-rack/tree/main/bom" target="_blank" rel="noopener">CSV</a>
+      <a href="https://github.com/kartben/hw-testing-rack" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Bill of materials</h1>
+    <p class="lead" id="lead">Loading…</p>
+    <div class="cards" id="cards"></div>
+
+    <h2>Line items</h2>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Filter: part, MPN, LCSC, supplier…" aria-label="Filter line items">
+      <select id="cat" aria-label="Category"><option value="">All categories</option></select>
+    </div>
+    <div class="tablewrap"><table id="items"><thead><tr>
+      <th data-k="category">Category</th><th data-k="item">Item</th><th data-k="qty" class="num">Qty</th>
+      <th data-k="unit_eur" class="num">Unit €</th><th data-k="ext_eur" class="num">Total €</th><th data-k="part">Source</th>
+    </tr></thead><tbody></tbody></table></div>
+    <p class="note">Indicative prices, EUR excl. VAT, small quantities (Oct 2026). Electronics lines are per-board BOM × number of boards; LCSC numbers verified against JLCPCB's library. Re-quote before ordering.</p>
+
+    <div class="grid2">
+      <section><h2>Aluminium cut list (2020, slot 6)</h2>
+        <div class="tablewrap"><table id="cut"><thead><tr><th>Part</th><th class="num">Length (mm)</th><th class="num">Qty</th></tr></thead><tbody></tbody></table></div>
+      </section>
+      <section><h2>Printed parts</h2>
+        <div class="tablewrap"><table id="prints"><thead><tr><th>Part</th><th class="num">Qty</th><th class="num">g each</th><th></th></tr></thead><tbody></tbody></table></div>
+      </section>
+    </div>
+  </main>
+  <script type="module">
+    const fmt = (v, d = 0) => Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const data = await fetch('assets/bom.json').then((r) => r.json());
+    document.getElementById('lead').textContent =
+      `${data.bays} bays on ${data.units} carrier units. Generated from config/rack.yaml, the KiCad BOMs and the STL volumes by tools/bom.py.`;
+    const cards = [['Total', data.total_eur, 'total'], ['Per bay', data.total_eur / data.bays, '']]
+      .concat(Object.entries(data.by_category).sort((a, b) => b[1] - a[1]).map(([k, v]) => [k, v, '']));
+    document.getElementById('cards').innerHTML = cards.map(([k, v, c]) =>
+      `<div class="card ${c}"><div class="k">${esc(k)}</div><div class="v">€${fmt(v)}</div></div>`).join('');
+    const cat = document.getElementById('cat');
+    for (const c of Object.keys(data.by_category)) cat.insertAdjacentHTML('beforeend', `<option>${esc(c)}</option>`);
+    let sortKey = null, sortDir = 1;
+    function render() {
+      const q = document.getElementById('q').value.toLowerCase();
+      let rows = data.rows.filter((r) => (!cat.value || r.category === cat.value) &&
+        (!q || [r.item, r.mpn, r.part, r.supplier, r.manufacturer, r.ref, r.group].join(' ').toLowerCase().includes(q)));
+      if (sortKey) rows = rows.slice().sort((a, b) => (a[sortKey] > b[sortKey] ? 1 : a[sortKey] < b[sortKey] ? -1 : 0) * sortDir);
+      document.querySelector('#items tbody').innerHTML = rows.map((r) => `<tr>
+        <td><span class="pill">${esc(r.category)}${r.group ? ' · ' + esc(r.group) : ''}</span></td>
+        <td>${esc(r.item)}${r.mpn && !String(r.item).includes(r.mpn) ? `<br><small style="color:var(--muted)">${esc(r.manufacturer || '')} ${esc(r.mpn)}</small>` : ''}${r.ref ? `<br><small style="color:var(--muted)">${esc(r.ref)}</small>` : ''}</td>
+        <td class="num">${fmt(r.qty, r.unit === 'pcs' ? 0 : 1)}${r.unit && r.unit !== 'pcs' ? ' ' + esc(r.unit) : ''}</td>
+        <td class="num">${fmt(r.unit_eur, 2)}</td><td class="num">${fmt(r.ext_eur, 2)}</td>
+        <td>${esc(r.supplier || '')}${r.part ? ` <span class="pill">${esc(r.part)}</span>` : ''}</td></tr>`).join('');
+    }
+    document.getElementById('q').addEventListener('input', render);
+    cat.addEventListener('change', render);
+    document.querySelectorAll('#items th').forEach((th) => th.addEventListener('click', () => {
+      const k = th.dataset.k; sortDir = sortKey === k ? -sortDir : 1; sortKey = k; render();
+    }));
+    render();
+    document.querySelector('#cut tbody').innerHTML = data.cut_list.map((c) =>
+      `<tr><td>${esc(c.part)}</td><td class="num">${c.length_mm}</td><td class="num">${c.qty}</td></tr>`).join('');
+    document.querySelector('#prints tbody').innerHTML = data.prints.map((p) =>
+      `<tr><td>${esc(p.part)}</td><td class="num">${p.qty}</td><td class="num">${p.grams_each ?? '–'}</td>
+       <td><a href="https://github.com/kartben/hw-testing-rack/actions" target="_blank" rel="noopener">STL</a></td></tr>`).join('');
+  </script>
+</body>
+</html>

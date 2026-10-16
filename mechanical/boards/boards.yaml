@@ -1,0 +1,229 @@
+# Dev-board library used to generate board plates and the 3D viewer stand-ins.
+#
+# Coordinates are given exactly as in the vendor's mechanical drawing:
+# origin = bottom-left corner of the PCB outline, X along `size[0]`.
+# `usb.edge` is the edge (top/bottom/left/right of that drawing) carrying the
+# debug USB connector; `usb.pos` its centre along that edge (from left for
+# top/bottom, from bottom for left/right).  tools/build.py rotates every board
+# so that this connector faces the REAR of the drawer, where the drawer's
+# DATA port is.
+#
+# `verified: false` means the outline or holes come from secondary sources:
+# such boards get a "fence" plate (corner fences, no screws) until someone
+# measures the real hole pattern — PRs welcome.
+#
+# standoff     = plate-to-PCB distance (Nucleo morpho pins stick out underneath!)
+# height       = tallest component above the PCB (viewer only)
+# fence        = true → hole-less corner-fence mounting
+
+boards:
+  arduino-uno-r4:
+    name: Arduino UNO R4 Minima / WiFi (UNO R3 footprint)
+    short: UNO R4
+    size: [68.58, 53.34]
+    holes: [[13.97, 2.54], [15.24, 50.80], [66.04, 7.62], [66.04, 35.56]]
+    hole_d: 3.2
+    usb: { edge: left, pos: 41.0, type: usb-c }
+    standoff: 6
+    height: 11
+    color: "#00878f"
+    source: "Arduino ABX00080 datasheet, mechanical drawing"
+    verified: true
+
+  nucleo-64:
+    name: ST NUCLEO-64 (MB1136 / MB1367)
+    short: NUCLEO-64
+    size: [70.0, 82.5]
+    holes: [[10.87, 54.61], [59.13, 53.34], [43.89, 2.54]]
+    hole_d: 3.2
+    usb: { edge: top, pos: 47.0, type: micro-b }    # MB1136 = mini-B, MB1367 = micro-AB
+    standoff: 12
+    height: 12
+    color: "#f2f2f2"
+    source: "ST UM1724 fig. 5 (holes drawing-derived, ±0.1 mm)"
+    verified: true
+
+  nucleo-144:
+    name: ST NUCLEO-144 (MB1137 / MB1364 / MB1404)
+    short: NUCLEO-144
+    size: [70.0, 133.34]
+    holes: [[10.87, 105.41], [59.13, 104.14], [43.89, 53.34], [12.14, 29.21], [57.86, 29.21]]
+    hole_d: 3.2
+    usb: { edge: top, pos: 49.0, type: micro-b }    # MB1404 (H5) uses USB-C
+    standoff: 12
+    height: 14
+    color: "#f2f2f2"
+    source: "ST UM1974 fig. 6 (holes drawing-derived)"
+    verified: true
+
+  rpi-pico2:
+    name: Raspberry Pi Pico / Pico 2 (W)
+    short: PICO 2
+    size: [21.0, 51.0]
+    holes: [[4.8, 2.0], [16.2, 2.0], [4.8, 49.0], [16.2, 49.0]]
+    hole_d: 2.1
+    usb: { edge: top, pos: 10.5, type: micro-b }
+    standoff: 9
+    height: 4
+    color: "#1e7b34"
+    source: "Raspberry Pi Pico 2 datasheet"
+    verified: true
+
+  esp32-s3-devkitc:
+    name: Espressif ESP32-S3-DevKitC-1 v1.1
+    short: ESP32-S3
+    size: [25.4, 62.74]
+    holes: []
+    fence: true
+    usb: { edge: bottom, pos: 12.7, type: micro-b }  # two micro-B (UART + USB-OTG)
+    standoff: 10            # header pins underneath
+    height: 8
+    color: "#151515"
+    source: "Espressif DXF ESP32-S3-DevKitC-1 v1.1"
+    verified: true
+
+  esp32-c6-devkitc:
+    name: Espressif ESP32-C6-DevKitC-1 v1.2
+    short: ESP32-C6
+    size: [25.4, 51.8]
+    holes: []
+    fence: true
+    usb: { edge: bottom, pos: 12.7, type: usb-c }    # two USB-C
+    standoff: 10
+    height: 8
+    color: "#151515"
+    source: "Espressif dimension drawing v1.2"
+    verified: true
+
+  xiao:
+    name: Seeed Studio XIAO (any)
+    short: XIAO
+    size: [21.0, 17.8]
+    holes: []
+    fence: true
+    usb: { edge: top, pos: 10.5, type: usb-c }
+    standoff: 6
+    height: 4
+    color: "#202a44"
+    source: "Seeed wiki"
+    verified: true
+
+  microbit-v2:
+    name: BBC micro:bit v2
+    short: MICRO:BIT
+    size: [51.6, 42.0]
+    holes: []
+    fence: true
+    usb: { edge: top, pos: 25.8, type: micro-b }
+    standoff: 6
+    height: 6
+    color: "#111111"
+    source: "Mouser listing (outline only)"
+    verified: true
+
+  frdm-mcxn947:
+    name: NXP FRDM-MCXN947
+    short: FRDM-MCXN947
+    size: [118.0, 55.0]
+    holes: []
+    fence: true
+    usb: { edge: left, pos: 40.0, type: usb-c }      # MCU-Link J17 + J11 + RJ45 on one short edge
+    standoff: 10
+    height: 14
+    color: "#1b1b1b"
+    source: "NXP UM12018 (outline only; holes not published)"
+    verified: false
+
+  nrf54l15-dk:
+    name: Nordic nRF54L15 DK
+    short: nRF54L15 DK
+    size: [64.0, 117.0]
+    holes: []
+    fence: true
+    usb: { edge: top, pos: 20.0, type: usb-c }
+    standoff: 10
+    height: 12
+    color: "#1d3557"
+    source: "CNX Software (outline only)"
+    verified: false
+
+  nrf52840-dk:
+    name: Nordic nRF52840 DK
+    short: nRF52840 DK
+    size: [64.0, 136.0]
+    holes: []
+    fence: true
+    usb: { edge: top, pos: 20.0, type: micro-b }
+    standoff: 10
+    height: 12
+    color: "#1d3557"
+    source: "approximate — measure your board"
+    verified: false
+
+  nrf5340-dk:
+    name: Nordic nRF5340 DK
+    short: nRF5340 DK
+    size: [64.0, 136.0]
+    holes: []
+    fence: true
+    usb: { edge: top, pos: 20.0, type: micro-b }
+    standoff: 10
+    height: 12
+    color: "#1d3557"
+    source: "approximate — measure your board"
+    verified: false
+
+  frdm-k64f:
+    name: NXP FRDM-K64F
+    short: FRDM-K64F
+    size: [81.0, 53.0]
+    holes: []
+    fence: true
+    usb: { edge: left, pos: 35.0, type: micro-b }
+    standoff: 10
+    height: 10
+    color: "#f0f0f0"
+    source: "community measurement (outline only)"
+    verified: false
+
+  stm32f746g-disco:
+    name: ST STM32F746G-DISCO
+    short: F746G-DISCO
+    size: [86.0, 154.0]
+    holes: []
+    fence: true
+    usb: { edge: top, pos: 30.0, type: micro-b }
+    standoff: 10
+    height: 10
+    color: "#0b2c4a"
+    source: "approximate — measure your board"
+    verified: false
+
+  mimxrt1060-evkb:
+    name: NXP MIMXRT1060-EVKB
+    short: RT1060-EVKB
+    size: [130.0, 108.0]
+    holes: []
+    fence: true
+    usb: { edge: top, pos: 30.0, type: micro-b }
+    second_usb: { edge: top, pos: 100.0, type: usb-c }
+    standoff: 10
+    height: 16
+    color: "#141414"
+    source: "approximate — measure your board"
+    verified: false
+
+  mimxrt1170-evkb:
+    name: NXP MIMXRT1170-EVKB
+    short: RT1170-EVKB
+    size: [165.0, 127.0]
+    holes: []
+    fence: true
+    usb: { edge: top, pos: 30.0, type: micro-b }
+    second_usb: { edge: top, pos: 140.0, type: usb-c }   # second node's DATA port (power / OTG)
+    standoff: 12
+    height: 16
+    color: "#141414"
+    span: 2
+    source: "approximate — measure your board"
+    verified: false

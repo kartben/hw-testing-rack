@@ -1,0 +1,11 @@
+*.glb binary
+*.stl binary
+*.png binary
+*.zip binary
+*.kicad_sch text eol=lf
+*.kicad_pcb text eol=lf
+*.kicad_pro text eol=lf
+*.kicad_sym text eol=lf
+*.scad text eol=lf
+*.py text eol=lf
+*.sh text eol=lf

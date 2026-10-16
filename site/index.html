@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>hw-testing-rack — interactive 3D</title>
+  <meta name="description" content="A 4×4 dev-board test shelf: ESP32-S3 USB/IP node per bay, sliding drawers with a hidden drag chain, swappable board plates. Interactive 3D model.">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="viewport"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <div>
+        <h1>hw-testing-rack</h1>
+        <p>Up to 16 dev boards · an ESP32-S3 USB/IP node per bay · drawers on a hidden drag chain · 20° stadium rows</p>
+      </div>
+    </div>
+    <nav>
+      <a href="bom.html">BOM</a>
+      <a href="https://github.com/kartben/hw-testing-rack/tree/main/docs" target="_blank" rel="noopener">Docs</a>
+      <a href="https://github.com/kartben/hw-testing-rack" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <aside class="panel" id="controls">
+    <button class="panel-toggle" id="panelToggle" aria-expanded="true" aria-controls="controlsBody">Controls</button>
+    <div class="panel-body" id="controlsBody">
+      <section>
+        <h2>View</h2>
+        <div class="btn-row">
+          <button data-view="iso">Iso</button>
+          <button data-view="front">Front</button>
+          <button data-view="side">Side</button>
+          <button data-view="rear">Rear</button>
+          <button data-view="bay">Bay</button>
+        </div>
+        <label class="slider">Drawers <input type="range" id="drawers" min="0" max="1" step="0.01" value="0"></label>
+        <label class="slider">Explode <input type="range" id="explode" min="0" max="1" step="0.01" value="0"></label>
+        <label class="check"><input type="checkbox" id="xray"> Plenum view (hide decks)</label>
+        <label class="check"><input type="checkbox" id="autorotate"> Auto-rotate</label>
+      </section>
+      <section>
+        <h2>Layers</h2>
+        <div id="layers" class="layers"></div>
+      </section>
+      <section class="legend">
+        <h2>Cables</h2>
+        <ul>
+          <li><i style="--c:#8f5cff"></i>USB-C ↔ USB-C</li>
+          <li><i style="--c:#ffb02e"></i>USB-C ↔ micro-B</li>
+          <li><i style="--c:#ff5a5a"></i>Power-only USB-C</li>
+          <li><i style="--c:#3fb6ff"></i>Laptop (classic mode)</li>
+          <li><i style="--c:#7d8590"></i>Drawer extension (in chain)</li>
+          <li><i style="--c:#c62828"></i>24 V bus</li>
+        </ul>
+      </section>
+    </div>
+  </aside>
+
+  <aside class="info" id="info" hidden>
+    <button class="close" id="infoClose" aria-label="Close">×</button>
+    <div id="infoBody"></div>
+  </aside>
+
+  <div class="hint" id="hint">Drag to orbit · scroll to zoom · click a bay</div>
+  <div class="loading" id="loading">Loading model…</div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

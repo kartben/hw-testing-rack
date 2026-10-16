@@ -1,0 +1,314 @@
+#!/usr/bin/env python3
+"""Bake the whole shelf into one GLB (render/assembly.glb) from site/assets/rack.json.
+
+Same scene as the web viewer, flattened for offline tools: Blender renders
+(render/render.py), any glTF viewer, CAD reference.  Objects are named
+`<category>:<detail>` and carry one material per category so the Blender
+script can restyle them.  Units: metres, Y-up (glTF convention).
+
+    python tools/assembly_glb.py [--open 0.0] [--explode 0]
+    python tools/assembly_glb.py --explode-bay C3 --out render/bay-exploded.glb   # one bay, laid flat, layers apart
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from pathlib import Path
+
+import numpy as np
+import trimesh
+from trimesh.visual.material import PBRMaterial
+
+REPO = Path(__file__).resolve().parents[1]
+ASSETS = REPO / "site" / "assets"
+OUT = REPO / "render" / "assembly.glb"
+
+MATS = {
+    "frame": ([0.06, 0.065, 0.075, 1], 0.85, 0.35),
+    "carrier": ([0.16, 0.18, 0.21, 1], 0.0, 0.62),
+    "deck": ([0.23, 0.25, 0.29, 1], 0.0, 0.58),
+    "guides": ([1.0, 0.45, 0.12, 1], 0.0, 0.42),
+    "drawers": ([0.90, 0.91, 0.92, 1], 0.0, 0.45),
+    "plates": ([0.13, 0.36, 0.86, 1], 0.0, 0.42),
+    "chain": ([0.05, 0.05, 0.06, 1], 0.1, 0.5),
+    "chainparts": ([1.0, 0.45, 0.12, 1], 0.0, 0.45),
+    "cameras": ([0.16, 0.18, 0.21, 1], 0.0, 0.55),
+    "roof": ([0.16, 0.18, 0.21, 1], 0.0, 0.6),
+    "base": ([0.16, 0.18, 0.21, 1], 0.0, 0.6),
+    "basepanels": ([0.19, 0.21, 0.25, 1], 0.0, 0.62),
+    "feet": ([0.05, 0.05, 0.05, 1], 0.0, 0.9),
+    "psu": ([0.72, 0.74, 0.77, 1], 0.9, 0.3),
+    "silver": ([0.78, 0.8, 0.82, 1], 0.95, 0.25),
+    "black": ([0.07, 0.07, 0.08, 1], 0.0, 0.6),
+}
+CABLE = {"c-to-c": [0.56, 0.36, 1.0, 1], "c-to-micro-b": [1.0, 0.69, 0.18, 1], "c-to-mini-b": [0.88, 0.54, 0.12, 1],
+         "pc": [0.25, 0.71, 1.0, 1], "ext": [0.49, 0.52, 0.56, 1], "mains": [0.06, 0.06, 0.07, 1]}
+
+
+def srgb_to_linear(c):
+    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+
+def mat(name_or_rgba, metallic=0.0, rough=0.55):
+    """Colours are written as sRGB (like CSS); glTF baseColorFactor is linear."""
+    if isinstance(name_or_rgba, str):
+        rgba, metallic, rough = MATS[name_or_rgba]
+    else:
+        rgba = name_or_rgba
+    lin = [srgb_to_linear(c) for c in rgba[:3]] + [rgba[3] if len(rgba) > 3 else 1.0]
+    return PBRMaterial(baseColorFactor=lin, metallicFactor=metallic, roughnessFactor=rough)
+
+
+def with_mat(m: trimesh.Trimesh, material) -> trimesh.Trimesh:
+    m = m.copy()
+    m.visual = trimesh.visual.TextureVisuals(material=material)
+    return m
+
+
+def hex_rgba(h):
+    h = h.lstrip("#")
+    return [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)] + [1.0]
+
+
+def part_category(name):
+    for prefix, cat in (("carrier_base", "carrier"), ("carrier_deck", "deck"), ("drawer_guide", "guides"),
+                        ("drawer", "drawers"), ("chain_", "chainparts"), ("plate_", "plates"), ("bridge_bar", "plates"),
+                        ("camera_", "cameras"), ("roof_deck", "roof"), ("tier_bracket", "frame"), ("foot", "feet")):
+        if name.startswith(prefix):
+            return cat
+    if name.endswith("_panel"):
+        return "basepanels"
+    return "base" if name.startswith("base_") else "carrier"
+
+
+def rot_xyz(deg):
+    rx, ry, rz = (math.radians(d) for d in deg)
+    return (trimesh.transformations.rotation_matrix(rz, [0, 0, 1])
+            @ trimesh.transformations.rotation_matrix(ry, [0, 1, 0])
+            @ trimesh.transformations.rotation_matrix(rx, [1, 0, 0]))
+
+
+def translate(v):
+    return trimesh.transformations.translation_matrix(v)
+
+
+def tube(points, radius, sides=10):
+    """Simple swept circle along a polyline (Catmull-Rom smoothed)."""
+    p = np.asarray(points, float)
+    if len(p) > 2:  # smooth
+        q = [p[0]]
+        for i in range(len(p) - 1):
+            p0, p1, p2, p3 = p[max(i - 1, 0)], p[i], p[i + 1], p[min(i + 2, len(p) - 1)]
+            for t in np.linspace(0, 1, 5)[1:]:
+                q.append(0.5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t ** 2
+                                + (-p0 + 3 * p1 - 3 * p2 + p3) * t ** 3))
+        p = np.asarray(q)
+    n = len(p)
+    tang = np.gradient(p, axis=0)
+    tang /= np.linalg.norm(tang, axis=1, keepdims=True) + 1e-12
+    ref = np.array([0, 0, 1.0])
+    verts, faces = [], []
+    normal = np.cross(tang[0], ref)
+    if np.linalg.norm(normal) < 1e-6:
+        normal = np.cross(tang[0], [1, 0, 0])
+    normal /= np.linalg.norm(normal)
+    for i in range(n):
+        # parallel transport
+        normal = normal - np.dot(normal, tang[i]) * tang[i]
+        normal /= np.linalg.norm(normal) + 1e-12
+        binorm = np.cross(tang[i], normal)
+        for k in range(sides):
+            a = 2 * math.pi * k / sides
+            verts.append(p[i] + radius * (math.cos(a) * normal + math.sin(a) * binorm))
+    for i in range(n - 1):
+        for k in range(sides):
+            a, b = i * sides + k, i * sides + (k + 1) % sides
+            c, d = a + sides, b + sides
+            faces += [[a, b, d], [a, d, c]]
+    return trimesh.Trimesh(np.asarray(verts), np.asarray(faces), process=False)
+
+
+def profile_2020(length):
+    s, slot, lip = 10, 3, 1.8
+    pts = []
+    for k in range(4):
+        c, si = math.cos(k * math.pi / 2), math.sin(k * math.pi / 2)
+        for x, y in ((s, -s), (s, -slot), (s - lip, -slot), (s - lip - 2.5, -slot - 1.5), (s - lip - 2.5, slot + 1.5),
+                     (s - lip, slot), (s, slot)):
+            pts.append((x * c - y * si, x * si + y * c))
+    from shapely.geometry import Polygon  # trimesh dependency for extrusions
+    poly = Polygon(pts).buffer(0)
+    return trimesh.creation.extrude_polygon(poly, length)
+
+
+def chain_path(ch, frac):
+    t = ch["travel"] * frac
+    fx, fy = ch["fixed"]
+    mx, my = ch["moving_x"], ch["foot_y"] - t
+    b, r = ch["bend_y"] - t / 2, ch["radius"]
+    cx = (fx + mx) / 2
+    pts = [(fx, y) for y in np.arange(fy, b, 3)]
+    pts += [(cx + r * math.cos(a), b + r * math.sin(a)) for a in np.linspace(math.pi, 0, 25)]
+    pts += [(mx, y) for y in np.arange(b - 3, my, -3)] + [(mx, my)]
+    o = ch["origin"]
+    return np.array([(o[0] + x, o[1] + y, o[2] + ch["z"]) for x, y in pts])
+
+
+def board_meshes(b):
+    w, l = b["size"][:2]
+    out = [with_mat(trimesh.creation.box([w, l, 1.6], transform=translate([w / 2, l / 2, 0.8])),
+                    mat(hex_rgba(b["color"]), 0.05, 0.5))]
+    rng = np.random.default_rng(abs(hash(b["id"] + b["bay"])) % 2 ** 32)
+    for i in range(max(3, int(w * l / 1400))):
+        cw, cl = 4 + rng.random() * min(14, w * .3), 4 + rng.random() * min(14, l * .25)
+        cx, cy = 3 + rng.random() * max(1, w - cw - 6), 3 + rng.random() * max(1, l - cl - 14)
+        h = 1 + rng.random() * 1.4
+        out.append(with_mat(trimesh.creation.box([cw, cl, h], transform=translate([cx + cw / 2, cy + cl / 2, 1.6 + h / 2])),
+                            mat("black" if i % 3 else "silver")))
+    if w > 24 and l > 40:
+        for x in (1.2, w - 3.7):
+            out.append(with_mat(trimesh.creation.box([2.5, l * .62, 8.5], transform=translate([x + 1.25, l * .5, 1.6 + 4.25])),
+                                mat("black")))
+    for ux in (b.get("usb_x"), b.get("usb2_x")):
+        if ux is not None:
+            out.append(with_mat(trimesh.creation.box([9, 7.4, 3.2], transform=translate([ux, l - 2.9, 1.6 + 1.6])),
+                                mat("silver")))
+    return out
+
+
+# stack-up order of one bay, for --explode-bay (multiples of the layer gap, along the shelf normal)
+BAY_LAYERS = [("carrier_base", 0), ("chain", 1), ("pcb", 1), ("led", 1), ("carrier_deck", 2),
+              ("drawer_guide", 3), ("drawer", 4), ("plate", 5), ("bridge_bar", 5), ("boards", 6),
+              ("camera", 5), ("xiao", 5)]   # the pod already hangs a row pitch higher
+
+
+def bay_layer(name):
+    return next((k for key, k in BAY_LAYERS if key in name), None)
+
+
+def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=None, gap=45.0):
+    scene_json = json.loads((ASSETS / "rack.json").read_text(encoding="utf-8"))
+    parts = trimesh.load(ASSETS / "parts.glb")
+    geoms = {}
+    for node in parts.graph.nodes_geometry:
+        tf, g = parts.graph[node]
+        geoms[node] = parts.geometry[g].copy().apply_transform(tf)
+    pcb = {}
+    for name in ("bay-node", "power-hub"):
+        f = ASSETS / "pcb" / f"{name}.glb"
+        if f.exists():
+            s = trimesh.load(f)
+            pcb[name] = [(s.geometry[g].copy().apply_transform(tf)) for tf, g in
+                         (s.graph[n] for n in s.graph.nodes_geometry)]
+    rows = scene_json["rack"]["rows"]
+    travel = scene_json["rack"]["drawer_travel"]
+    row_tf = []
+    for i, r in enumerate(rows):
+        T = translate(np.add(r["origin"], [0, 0, explode * i * 150])) @ rot_xyz([r["tilt"], 0, 0])
+        row_tf.append(T)
+    initial = {c["bay"]: c["open"] for c in scene_json["chains"]}
+    flat = np.eye(4)
+    if explode_bay:
+        base = next(i for i in scene_json["instances"] if i.get("bay") == explode_bay and i["part"] == "carrier_base")
+        flat = np.linalg.inv(row_tf[base["row"]])
+
+    def place(space, row, local):
+        return (row_tf[row] if space == "row" and row is not None else
+                translate([0, 0, explode * (row or 0) * 150]) if row is not None else np.eye(4)) @ local
+
+    def drawer_dy(item):
+        if not item.get("movable") or not item.get("bay") or open_frac is None:
+            return 0.0
+        return -travel * (open_frac - initial.get(item["bay"], 0))
+
+    out = trimesh.Scene()
+    k = 0
+
+    def add(mesh, name, T, bay=None):
+        nonlocal k
+        if explode_bay:
+            layer = bay_layer(name)
+            if bay != explode_bay or layer is None:
+                return
+            T = translate([0, 0, layer * gap]) @ flat @ T
+        k += 1
+        out.add_geometry(mesh, node_name=f"{name}#{k}", geom_name=f"{name}#{k}", transform=T)
+
+    for f in scene_json["frame"]:
+        a, b = np.array(f["from"]), np.array(f["to"])
+        L = np.linalg.norm(b - a)
+        m = with_mat(profile_2020(L), mat("frame"))
+        z = (b - a) / L
+        R = trimesh.geometry.align_vectors([0, 0, 1], z)
+        add(m, "frame:extrusion", place(f.get("space"), f.get("row"), translate(a) @ R))
+    for it in scene_json["instances"]:
+        g = geoms.get(it["part"])
+        if g is None:
+            continue
+        local = translate(np.add(it["pos"], [0, drawer_dy(it), 0])) @ rot_xyz(it["rot"])
+        add(with_mat(g, mat(part_category(it["part"]))), f"{part_category(it['part'])}:{it['part']}",
+            place(it.get("space"), it.get("row"), local), it.get("bay"))
+    for b in scene_json["boards"]:
+        for m in board_meshes(b):
+            add(m, f"boards:{b['id']}", place("row", b["row"], translate(np.add(b["pos"], [0, drawer_dy(b), 0]))),
+                b.get("bay"))
+    for p in scene_json["pcbs"]:
+        for m in pcb.get(p["board"], []):
+            add(m, f"pcb:{p['board']}", place(p.get("space"), p.get("row"), translate(p["pos"])), p.get("bay"))
+    for bx in scene_json["boxes"]:
+        m = trimesh.creation.box(bx["size"], transform=translate(np.array(bx["size"]) / 2))
+        add(with_mat(m, mat("psu") if bx["kind"] == "psu" else mat(hex_rgba(bx["color"]))), f"{bx['kind']}:{bx.get('bay', '')}",
+            place(bx.get("space"), bx.get("row"), translate(bx["pos"])), bx.get("bay"))
+    for led in scene_json.get("leds", []):
+        rgb = hex_rgba(led["color"])[:3]
+        em = PBRMaterial(baseColorFactor=[*(srgb_to_linear(c) for c in rgb), 1.0], emissiveFactor=rgb,
+                         metallicFactor=0.0, roughnessFactor=0.3)
+        m = trimesh.creation.cylinder(radius=1.5, height=1.2, sections=16,
+                                      transform=translate([0, 0.6, 0]) @ rot_xyz([90, 0, 0]))
+        add(with_mat(m, em), f"led:{led['bay']}", place("row", led["row"], translate(led["pos"])), led["bay"])
+    link = trimesh.creation.box([8.4, 10, 11])
+    for ch in scene_json["chains"]:
+        frac = ch["open"] if open_frac is None else open_frac
+        pts = chain_path(ch, frac)
+        seg = np.linalg.norm(np.diff(pts, axis=0), axis=1)
+        cum = np.concatenate([[0], np.cumsum(seg)])
+        links = []
+        for d in np.arange(4.5, cum[-1], 9):
+            i = min(np.searchsorted(cum, d) - 1, len(seg) - 1)
+            t = (d - cum[i]) / max(seg[i], 1e-9)
+            pos = pts[i] + t * (pts[i + 1] - pts[i])
+            R = trimesh.geometry.align_vectors([1, 0, 0], (pts[i + 1] - pts[i]) / max(seg[i], 1e-9))
+            links.append(link.copy().apply_transform(translate(pos) @ R))
+        add(with_mat(trimesh.util.concatenate(links), mat("chain")), f"chain:{ch['bay']}",
+            place("row", ch["row"], np.eye(4)), ch["bay"])
+    for c in scene_json["cables"]:
+        if c["kind"] == "pc" and not with_pc:
+            continue
+        col = c.get("color")
+        rgba = hex_rgba(col) if col else CABLE.get(c.get("type") or c["kind"], [0.5, 0.5, 0.5, 1])
+        pts = np.array(c["points"], float)
+        if c.get("space", "row") == "row" and c.get("movable"):
+            pts = pts + [0, drawer_dy(c), 0]
+        add(with_mat(tube(pts, c.get("radius", 1.5)), mat(rgba, 0, 0.5)), f"cable:{c['kind']}",
+            place(c.get("space"), c.get("row"), np.eye(4)))
+    # mm, Z-up → m, Y-up
+    out.apply_transform(rot_xyz([-90, 0, 0]))
+    out.apply_scale(0.001)
+    dst = Path(out_path)
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    out.export(dst)
+    print("wrote", dst, f"{dst.stat().st_size / 1e6:.1f} MB, {len(out.geometry)} objects")
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--open", type=float, default=None, help="open every drawer by this fraction")
+    ap.add_argument("--explode", type=float, default=0.0)
+    ap.add_argument("--out", default=str(OUT))
+    ap.add_argument("--with-pc-cable", action="store_true", help="include the demo laptop cable")
+    ap.add_argument("--explode-bay", metavar="BAY", help="only this bay, laid flat, its layers pulled apart")
+    ap.add_argument("--gap", type=float, default=45.0, help="layer gap for --explode-bay (mm)")
+    a = ap.parse_args()
+    build(a.open, a.explode, a.out, a.with_pc_cable, a.explode_bay, a.gap)

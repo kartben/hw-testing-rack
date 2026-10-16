@@ -1,0 +1,167 @@
+(kicad_sch
+	(version 20250610)
+	(generator "hw-testing-rack-eda")
+	(generator_version "10.0")
+	(uuid "95d85d3b-2e4d-5514-91a9-629d91bd6731")
+	(paper "A3")
+	(title_block
+		(title "Power hub — Overview")
+		(rev "0.1")
+		(company "hw-testing-rack")
+		(comment 1 "24 V distribution for the hw-testing-rack shelf: 5 eFused outputs")
+		(comment 2 "Generated from electronics/power-hub/design.py — edit the Python, then regenerate")
+	)
+	(lib_symbols)
+	(sheet
+		(at 30.48 49.53)
+		(size 60.96 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "e99cb830-d6b3-58b2-9737-38ff936ff752")
+		(property "Sheetname" "Input"
+			(at 30.48 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "input.kicad_sch"
+			(at 30.48 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 115.57 49.53)
+		(size 60.96 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "2095d87a-d585-5eca-842a-d5acf4a94cae")
+		(property "Sheetname" "Outputs"
+			(at 115.57 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "outputs.kicad_sch"
+			(at 115.57 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 201.93 49.53)
+		(size 60.96 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "d0da990f-9cf4-5ffc-a5d9-1d420e201b0d")
+		(property "Sheetname" "Control"
+			(at 201.93 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "control.kicad_sch"
+			(at 201.93 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731"
+					(page "4")
+				)
+			)
+		)
+	)
+	(text_box "Power hub — 24 V in (screw terminal) → reverse protection + TVS → 5 × TPS26600 eFuse → JST VH outputs.\nOutputs: rows A, B, C, D (one feed per row, daisy-chained bay to bay) and AUX.\nRTN is tied to GND: reverse polarity is handled by Q1, so the eFuses' own reverse blocking is not needed."
+		(exclude_from_sim no)
+		(at 30 100.33 0)
+		(size 360 12.7)
+		(margins 2 2 2 2)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.6 1.6)
+			)
+			(justify left top)
+		)
+		(uuid "61cd8038-dcc9-51f1-bfd8-18b67739d76b")
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

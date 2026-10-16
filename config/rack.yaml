@@ -1,0 +1,127 @@
+# hw-testing-rack — single source of truth for the shelf geometry.
+#
+# Everything is in millimetres.  Frame coordinates: X = left→right (width),
+# Y = front→back (depth), Z = up, origin = front-left-bottom outer corner of
+# the aluminium frame.  Shelves are tilted ("stadium"): each row is a module
+# in its own ROW coordinates (X same, Y along the slope towards the back,
+# Z perpendicular to the shelf), rotated by `frame.tilt` about X so the front
+# edge is lower.  "Carrier coordinates" = row coordinates shifted to the
+# front-left corner of one bay's carrier.
+#
+# `tools/build.py` turns this file into:
+#   mechanical/generated/config.scad   (OpenSCAD constants)
+#   site/assets/rack.json              (3D viewer scene: instances + cables)
+# and the electronics generators read the `pcb:` section so that the board
+# outlines, mounting holes and connector positions always match the prints.
+
+frame:
+  profile: 20            # 2020 aluminium extrusion (B-type, 6 mm slot)
+  depth: 225             # outer depth (Y) of the frame, posts included
+  tilt: 20               # shelf tilt in degrees (front edge lower) — 0 gives flat shelves
+  row_origin_y: 25       # frame Y of every row's front-bottom edge
+  bracket: 10            # printed tier brackets between posts and beams (X thickness)
+  base_height: 80        # top of the base frame = origin Z of the first row
+  foot_height: 10
+  top_cap: true          # extra tilted beam level + roof decks above the last row
+
+bay:
+  pitch: 160             # centre-to-centre, X (one "unit"; wide bays span 2 units)
+  gap: 2                 # clearance between neighbouring carriers
+  depth: 210             # carrier depth along the slope; every print stays ≤ 210 mm (Prusa MK4 bed)
+  carrier:
+    bottom: 2.5          # bottom plate (= ceiling of the bay below)
+    wall: 2.0
+    standoff: 5.0        # bay-node PCB standoff height above the bottom plate
+    pcb_to_floor: 14.0   # PCB top surface → bay floor surface (deck top)
+    deck: 3.0            # removable deck plate thickness
+    fascia: 2.5          # front wall thickness
+  camera_mount: [100, 60, 30]   # insert-pattern centre X, Y and square pitch, carrier coords
+                                # (rows are staggered by height·sin(tilt): this lands mid-bay below)
+
+drawer:
+  depth: 196             # outer, front panel included
+  travel: 140            # pull-out stroke (the drag chain keeps the DUT connected)
+  guide_width: 7.5       # each side rail on the deck (C-channel capturing the drawer flange)
+  clearance: 0.5         # per side, drawer ↔ guide
+  bottom: 2.5
+  wall: 2.0
+  wall_height: 16        # side/rear walls above the drawer bottom
+  front_height: 30       # front panel height above the deck
+  front_thickness: 4
+  rear_bay: 30           # enclosed strip at the back: panel-mount USB-C ports + cable entry
+  flange: [3.0, 3.0]     # runner flange (width, height) captured by the guides
+  magnet: [6, 3]         # closed-position detent magnet Ø × t (one in drawer, one in deck)
+  plate: 2.5             # board plate thickness
+
+chain:                   # drag chain lying flat in the plenum (bends in the XY plane)
+  inner: [7, 7]          # 7×7 mm, the common 3D-printer size
+  outer: [11, 10]        # link outer width (= vertical here) × height (= X here)
+  radius: 18             # bend radius to the chain centre line
+  fixed: [104, 90]       # fixed end, carrier XY
+  moving_x: 140          # X of the moving run / deck slot
+  foot_y: 172            # moving end, measured from the drawer front face
+  bend_y: 182            # bend apex (closed drawer)
+
+rows:                     # bottom → top; each row is an independent module
+  - id: A
+    height: 165           # vertical pitch to the next row's origin
+    layout: [1, 1, 1, 1]  # bay widths in units (2 = double-width bay for big EVKs)
+  - id: B
+    height: 165
+    layout: [1, 1, 1, 1]
+  - id: C
+    height: 165
+    layout: [1, 1, 1, 1]
+  - id: D
+    height: 185           # taller: double bays for i.MX-class EVKs, cameras on the roof
+    layout: [2, 2]
+
+cameras:                  # bays that get a camera pod on their ceiling
+  - B2
+  - C3
+  - D1
+  - D2
+
+# Example population used by the docs, the BOM roll-up and the 3D viewer.
+# board ids refer to mechanical/boards/boards.yaml; cable ids to cables below.
+population:
+  A1: { board: nucleo-64,        cable: c-to-micro-b }
+  A2: { board: nucleo-144,       cable: c-to-micro-b }
+  A3: { board: nrf52840-dk,      cable: c-to-micro-b }
+  A4: { board: nrf54l15-dk,      cable: c-to-c }
+  B1: { board: frdm-mcxn947,     cable: c-to-c }
+  B2: { board: esp32-s3-devkitc, cable: c-to-micro-b }
+  B3: { board: rpi-pico2,        cable: c-to-micro-b }
+  B4: { board: arduino-uno-r4,   cable: c-to-c }
+  C1: { board: stm32f746g-disco, cable: c-to-micro-b }
+  C2: { board: nrf5340-dk,       cable: c-to-micro-b, open: true }    # drawer shown pulled out
+  C3: { board: esp32-c6-devkitc, cable: c-to-c }
+  C4: { board: nucleo-64,        cable: c-to-micro-b, pc_cable: true } # "classic" mode: laptop on the front port
+  D1: { board: mimxrt1060-evkb,  cable: c-to-micro-b }                # double-width bay
+  D2: { board: mimxrt1170-evkb,  cable: c-to-micro-b }                # double-width bay
+
+cables:
+  c-to-c:       { label: "USB-C ↔ USB-C, 10–15 cm",        a: usb-c, b: usb-c,   length: 120 }
+  c-to-micro-b: { label: "USB-C ↔ micro-B, 10–15 cm",      a: usb-c, b: micro-b, length: 120 }
+  c-to-mini-b:  { label: "USB-C ↔ mini-B, 15–25 cm",       a: usb-c, b: mini-b,  length: 150 }
+  drawer-ext:   { label: "USB-C male → panel-mount USB-C female, 30 cm", length: 300 }
+  row-jumper:   { label: "JST VH 2-pin jumper, 0.75 mm², 120 mm", length: 120 }
+  row-feed:     { label: "JST VH 2-pin feed, 0.75 mm²",          length: 1000 }
+
+pcb:
+  bay_node:
+    size: [64, 80]          # X × Y; KiCad y=0 is the REAR edge, y=80 the front edge
+    thickness: 1.6
+    layers: 4
+    x0: 4                   # left edge, carrier X
+    front_gap: 0.5          # PCB front edge → fascia inner face
+    holes: [[3.5, 3.5], [60.5, 3.5], [3.5, 76.5], [60.5, 76.5]]   # M3, KiCad coordinates
+    front: { pc_port: 32, led: 12, svc: 50 }        # KiCad X of the front-edge parts
+    vh_y: 64                # KiCad Y of the power in/out connectors (left/right edges)
+    right: { dut: 24, aux: 40 }                     # KiCad Y of the right-edge connectors
+    cam: [64, 11]           # camera 5 V connector (JST-PH) mouth, right edge near the rear
+  power_hub:
+    size: [120, 70]
+    thickness: 1.6
+    layers: 2
+    holes: [[4, 4], [116, 4], [4, 66], [116, 66]]
