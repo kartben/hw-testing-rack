@@ -1,5 +1,5 @@
 Designator,Qty,Value,Footprint,MPN,Manufacturer,LCSC,Description,DNP,Alternative
-"C1,C2",2,220u/50V,CP_Elec_10x10,RVT1H221M1010,ROQANG,C72499,220 µF 50 V aluminium electrolytic,,
+"C1,C2",2,220u/50V,CP_Elec_10x10,RVT1H221M1010,Honor Elec,C3358,220 µF 50 V aluminium electrolytic,,
 "C11,C12,C13,C14,C15,C31,C32,C33,C34,C35",10,1u,C_0805_2012Metric,CL21B105KBFNNNE,Samsung Electro-Mechanics,C28323,Capacitor 1u 0805,,
 "C21,C22,C23,C24,C25",5,22n,C_0603_1608Metric,CL10B223KB8NNNC,Samsung Electro-Mechanics,C21122,Capacitor 22n 0603,,
 D1,1,BZT52C12,D_SOD-123,BZT52C12,CJ,C43491,"12 V zener, P-FET gate clamp",,

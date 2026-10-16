@@ -94,6 +94,28 @@ where it didn't matter (e.g. 150k RT, 120k/22k FB).
 
 Through-hole parts (JST VH, KF128) need JLC's THT service or a soldering iron.
 
+## Assembly at JLCPCB
+
+* **Bay node: Standard PCBA.** JLC can only place the ESP32-S3-MINI-1 module
+  (C2913206) and the WS2812B-2020 LED with its Standard PCBA service, not
+  Economic, so the node is quoted with Standard fees (≈ $25 setup + ≈ $8
+  stencil, indicative).  These parts are flagged `standard_only` in
+  `electronics/tools/catalog.py`, which `tools/bom.py` reads.  The WS2812C-2020-V6
+  (C55109522) is Economic-capable, but the module keeps the board on Standard
+  anyway.  Check the WS2812C pinout against the WS2812B-2020 footprint before
+  swapping it in.
+* **Power hub: Economic PCBA.** Its 220 µF bulk capacitors use C3358, the
+  Economic-capable LCSC listing of the same RVT1H221M1010 part.  The node's
+  100 µF moved to C3352 the same way.
+* **No Basic drop-ins.** Every extended part was checked against JLC's Basic
+  library (October 2026): none has a Basic equivalent with the same ratings
+  and footprint, so the $3-per-part extended loading fees stay.  Near misses
+  were rejected:
+  * SS54 Schottky: 40 V, below the buck's 60 V input rating;
+  * AO3401A P-FET: 30 V, on a 24 V bus with transients up to 53 V;
+  * 100 mΩ / 250 mW 1206 shunt: INA226 full scale would drop to 0.82 A, below
+    the 1.5 A DUT limit.
+
 ## Custom library
 
 `electronics/lib/bench.kicad_sym` holds the one symbol the stock library

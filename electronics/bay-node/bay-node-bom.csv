@@ -1,5 +1,5 @@
 Designator,Qty,Value,Footprint,MPN,Manufacturer,LCSC,Description,DNP,Alternative
-C1,1,100u/50V,CP_Elec_8x10,RVT1H101M0810,ROQANG,C72480,100 µF 50 V aluminium electrolytic,,
+C1,1,100u/50V,CP_Elec_8x10,RVT1H101M0810,Honor Elec,C3352,100 µF 50 V aluminium electrolytic,,
 "C2,C3",2,10u,C_1206_3216Metric,CL31A106KBHNNNE,Samsung Electro-Mechanics,C13585,Capacitor 10u 1206,,
 "C4,C14,C16,C17,C18,C19,C20,C22",8,100n,C_0603_1608Metric,CC0603KRX7R9BB104,YAGEO,C14663,Capacitor 100n 0603,,
 C5,1,6.8n,C_0603_1608Metric,0603B682K500NT,FH (Guangdong Fenghua Advanced Tech),C1631,Capacitor 6.8n 0603,,
@@ -10,7 +10,7 @@ C15,1,1u,C_0603_1608Metric,CL10A105KB8NNNC,Samsung Electro-Mechanics,C15849,Capa
 D1,1,BZT52C12,D_SOD-123,BZT52C12,CJ,C43491,"12 V zener, P-FET gate clamp",,
 D2,1,SMBJ33A,D_SMB,SMBJ33A,Brightking,C78419,"TVS 33 V stand-off, 600 W (unidirectional)",,
 D3,1,B560C-13-F,D_SMC,B560C-13-F,Diodes Inc,C85100,Schottky 60 V 5 A (buck catch diode),,
-D4,1,WS2812B-2020-V6,LED_WS2812B-2020_PLCC4_2.0x2.0mm,WS2812B-2020-V6,Worldsemi,C52917434,"addressable RGB LED, 3.3–5.3 V",,
+D4,1,WS2812B-2020-V6,LED_WS2812B-2020_PLCC4_2.0x2.0mm,WS2812B-2020-V6,Worldsemi,C52917434,"addressable RGB LED, 3.3–5.3 V",,WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping
 F1,1,0.5A,Fuse_1206_3216Metric,SMD1206P050TF,RUILON,C20799,"PTC 0.5 A hold, 1206",,
 J1,1,24V IN,JST_VH_S2P-VH_1x02_P3.96mm_Horizontal,S2P-VH(LF)(SN),JST,C160355,"JST VH 2-pin, side entry, 10 A",,
 J2,1,24V OUT,JST_VH_S2P-VH_1x02_P3.96mm_Horizontal,S2P-VH(LF)(SN),JST,C160355,"JST VH 2-pin, side entry, 10 A",,

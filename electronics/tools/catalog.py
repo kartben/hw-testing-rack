@@ -21,6 +21,7 @@ class Cat:
     lcsc: str = ""
     price: float = 0.0
     basic: bool = False
+    standard_only: bool = False   # JLC can only place it with Standard PCBA (not Economic)
     datasheet: str = ""
     description: str = ""
     alt: str = ""          # alternative sourcing notes
@@ -36,7 +37,8 @@ class Cat:
 
 CAT = {
     "esp32s3": Cat("RF_Module:ESP32-S3-MINI-1", "RF_Module:ESP32-S2-MINI-1", "ESP32-S3-MINI-1-N8", "Espressif",
-                   "C2913206", 4.72, datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-s3-mini-1_mini-1u_datasheet_en.pdf",
+                   "C2913206", 4.72, standard_only=True,
+                   datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-s3-mini-1_mini-1u_datasheet_en.pdf",
                    description="ESP32-S3 module, 8 MB flash, PCB antenna, USB OTG (full speed)"),
     "buck": Cat("Regulator_Switching:TPS54360DDA", "Package_SO:TI_SO-PowerPAD-8_ThermalVias", "TPS54360BDDAR",
                 "Texas Instruments", "C524806", 0.75, datasheet="https://www.ti.com/lit/ds/symlink/tps54360b.pdf",
@@ -55,9 +57,9 @@ CAT = {
                  description="TVS 33 V stand-off, 600 W (unidirectional)"),
     "tvs33c": Cat("Device:D_Zener", "Diode_SMD:D_SMC", "SMCJ33A", "Littelfuse", "C224049", 0.33,
                   description="TVS 33 V stand-off, 1500 W (unidirectional)"),
-    "cap100u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_8x10", "RVT1H101M0810", "ROQANG", "C72480", 0.06,
+    "cap100u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_8x10", "RVT1H101M0810", "Honor Elec", "C3352", 0.069,
                      description="100 µF 50 V aluminium electrolytic"),
-    "cap220u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_10x10", "RVT1H221M1010", "ROQANG", "C72499", 0.10,
+    "cap220u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_10x10", "RVT1H221M1010", "Honor Elec", "C3358", 0.14,
                      description="220 µF 50 V aluminium electrolytic"),
     "mux": Cat("Interface_USB:FSUSB42MUX", "Package_SO:MSOP-10_3x3mm_P0.5mm", "FSUSB42MUX", "onsemi", "C11355", 0.31,
                datasheet="https://www.onsemi.com/pdf/datasheet/fsusb42-d.pdf", description="USB 2.0 HS 2:1 switch"),
@@ -76,7 +78,8 @@ CAT = {
     "shunt50m": Cat("Device:R", "Resistor_SMD:R_1206_3216Metric", "HoLR1206-1W-50mR-1%", "Milliohm", "C601102", 0.12,
                     description="50 mΩ 1 % 1 W current shunt"),
     "rgb": Cat("LED:WS2812B-2020", "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm", "WS2812B-2020-V6", "Worldsemi",
-               "C52917434", 0.09, description="addressable RGB LED, 3.3–5.3 V"),
+               "C52917434", 0.09, standard_only=True, description="addressable RGB LED, 3.3–5.3 V",
+               alt="WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping"),
     "button": Cat("Switch:SW_Push", "Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A", "TS-1187A-B-A-B", "XKB", "C318884",
                   0.02, basic=True, description="tactile switch 5.1 × 5.1 mm"),
     "slide": Cat("Switch:SW_SPDT", "Button_Switch_SMD:SW_SPDT_Shouhan_MSK12C02", "MSK12C02", "SHOU HAN", "C431540", 0.06,

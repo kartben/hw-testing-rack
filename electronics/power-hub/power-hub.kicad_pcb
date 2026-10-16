@@ -777,7 +777,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "ROQANG"
+		(property "Manufacturer" "Honor Elec"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -789,7 +789,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C72499"
+		(property "LCSC" "C3358"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -6113,7 +6113,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "ROQANG"
+		(property "Manufacturer" "Honor Elec"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -6125,7 +6125,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C72499"
+		(property "LCSC" "C3358"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)

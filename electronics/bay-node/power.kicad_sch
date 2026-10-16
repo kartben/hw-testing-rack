@@ -4477,7 +4477,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "ROQANG"
+		(property "Manufacturer" "Honor Elec"
 			(at 229.87 49.53 0)
 			(effects
 				(font
@@ -4486,7 +4486,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C72480"
+		(property "LCSC" "C3352"
 			(at 229.87 49.53 0)
 			(effects
 				(font

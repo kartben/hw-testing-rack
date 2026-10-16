@@ -6,15 +6,16 @@
 "item": "100u/50V — 100 µF 50 V aluminium electrolytic",
 "ref": "C1",
 "mpn": "RVT1H101M0810",
-"manufacturer": "ROQANG",
+"manufacturer": "Honor Elec",
 "supplier": "LCSC/JLCPCB",
-"part": "C72480",
+"part": "C3352",
 "qty": 16,
-"unit_eur": 0.0552,
+"unit_eur": 0.0635,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.88
+"ext_eur": 1.02
 },
 {
 "category": "Electronics",
@@ -28,6 +29,7 @@
 "qty": 32,
 "unit_eur": 0.2504,
 "basic": true,
+"standard_only": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 8.01
@@ -44,6 +46,7 @@
 "qty": 128,
 "unit_eur": 0.0124,
 "basic": true,
+"standard_only": false,
 "notes": "8 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.59
@@ -60,6 +63,7 @@
 "qty": 16,
 "unit_eur": 0.0067,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.11
@@ -76,6 +80,7 @@
 "qty": 16,
 "unit_eur": 0.0059,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.09
@@ -92,6 +97,7 @@
 "qty": 112,
 "unit_eur": 0.1138,
 "basic": true,
+"standard_only": false,
 "notes": "7 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 12.75
@@ -108,6 +114,7 @@
 "qty": 16,
 "unit_eur": 0.0403,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.64
@@ -124,6 +131,7 @@
 "qty": 16,
 "unit_eur": 0.013,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.21
@@ -140,6 +148,7 @@
 "qty": 16,
 "unit_eur": 0.0184,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.29
@@ -156,6 +165,7 @@
 "qty": 16,
 "unit_eur": 0.0644,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.03
@@ -172,6 +182,7 @@
 "qty": 16,
 "unit_eur": 0.1748,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 2.8
@@ -188,6 +199,7 @@
 "qty": 16,
 "unit_eur": 0.0828,
 "basic": false,
+"standard_only": true,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.32
@@ -204,6 +216,7 @@
 "qty": 16,
 "unit_eur": 0.0736,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.18
@@ -220,6 +233,7 @@
 "qty": 16,
 "unit_eur": 0.1472,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 2.36
@@ -236,6 +250,7 @@
 "qty": 16,
 "unit_eur": 0.1472,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 2.36
@@ -252,6 +267,7 @@
 "qty": 16,
 "unit_eur": 0.1748,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 2.8
@@ -268,6 +284,7 @@
 "qty": 16,
 "unit_eur": 0.1748,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 2.8
@@ -284,6 +301,7 @@
 "qty": 16,
 "unit_eur": 0.0644,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.03
@@ -300,6 +318,7 @@
 "qty": 16,
 "unit_eur": 0.0368,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.59
@@ -316,6 +335,7 @@
 "qty": 16,
 "unit_eur": 0.2392,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 3.83
@@ -332,6 +352,7 @@
 "qty": 16,
 "unit_eur": 0.3312,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 5.3
@@ -348,6 +369,7 @@
 "qty": 32,
 "unit_eur": 0.0184,
 "basic": true,
+"standard_only": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.59
@@ -364,6 +386,7 @@
 "qty": 80,
 "unit_eur": 0.0029,
 "basic": true,
+"standard_only": false,
 "notes": "5 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.23
@@ -380,6 +403,7 @@
 "qty": 16,
 "unit_eur": 0.0015,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.02
@@ -396,6 +420,7 @@
 "qty": 16,
 "unit_eur": 0.0014,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.02
@@ -412,6 +437,7 @@
 "qty": 48,
 "unit_eur": 0.0038,
 "basic": true,
+"standard_only": false,
 "notes": "3 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.18
@@ -428,6 +454,7 @@
 "qty": 16,
 "unit_eur": 0.0025,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.04
@@ -444,6 +471,7 @@
 "qty": 80,
 "unit_eur": 0.0048,
 "basic": true,
+"standard_only": false,
 "notes": "5 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.38
@@ -460,6 +488,7 @@
 "qty": 16,
 "unit_eur": 0.0023,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.04
@@ -476,6 +505,7 @@
 "qty": 32,
 "unit_eur": 0.0014,
 "basic": true,
+"standard_only": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.04
@@ -492,6 +522,7 @@
 "qty": 16,
 "unit_eur": 0.002,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.03
@@ -508,6 +539,7 @@
 "qty": 16,
 "unit_eur": 0.0037,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.06
@@ -524,6 +556,7 @@
 "qty": 16,
 "unit_eur": 0.1104,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.77
@@ -540,6 +573,7 @@
 "qty": 32,
 "unit_eur": 0.0026,
 "basic": true,
+"standard_only": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.08
@@ -556,6 +590,7 @@
 "qty": 16,
 "unit_eur": 0.0029,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.05
@@ -572,6 +607,7 @@
 "qty": 32,
 "unit_eur": 0.0017,
 "basic": true,
+"standard_only": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.05
@@ -588,6 +624,7 @@
 "qty": 16,
 "unit_eur": 0.0184,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.29
@@ -604,6 +641,7 @@
 "qty": 16,
 "unit_eur": 0.0184,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.29
@@ -620,6 +658,7 @@
 "qty": 16,
 "unit_eur": 0.0552,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 0.88
@@ -636,6 +675,7 @@
 "qty": 16,
 "unit_eur": 0.69,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 11.04
@@ -652,6 +692,7 @@
 "qty": 16,
 "unit_eur": 0.1932,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 3.09
@@ -668,6 +709,7 @@
 "qty": 16,
 "unit_eur": 4.3424,
 "basic": false,
+"standard_only": true,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 69.48
@@ -684,6 +726,7 @@
 "qty": 32,
 "unit_eur": 0.1656,
 "basic": false,
+"standard_only": false,
 "notes": "2 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 5.3
@@ -700,6 +743,7 @@
 "qty": 16,
 "unit_eur": 0.2852,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 4.56
@@ -716,6 +760,7 @@
 "qty": 16,
 "unit_eur": 0.2852,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 4.56
@@ -732,6 +777,7 @@
 "qty": 16,
 "unit_eur": 0.0644,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 1.03
@@ -748,6 +794,7 @@
 "qty": 16,
 "unit_eur": 0.4968,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 7.95
@@ -764,6 +811,7 @@
 "qty": 16,
 "unit_eur": 0.69,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
 "ext_eur": 11.04
@@ -782,13 +830,13 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "PCBA setup + 21 extended-part loading fees",
+"item": "PCBA setup (Standard) + 21 extended-part loading fees",
 "supplier": "JLCPCB",
 "qty": 1,
-"unit_eur": 68.54,
-"notes": "setup $8, $3 per unique extended part, stencil",
+"unit_eur": 88.32,
+"notes": "Standard PCBA: setup $25, stencil ≈$8.0, $3 per unique extended part; Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 68.54
+"ext_eur": 88.32
 },
 {
 "category": "Electronics",
@@ -796,15 +844,16 @@
 "item": "220u/50V — 220 µF 50 V aluminium electrolytic",
 "ref": "C1,C2",
 "mpn": "RVT1H221M1010",
-"manufacturer": "ROQANG",
+"manufacturer": "Honor Elec",
 "supplier": "LCSC/JLCPCB",
-"part": "C72499",
+"part": "C3358",
 "qty": 2,
-"unit_eur": 0.092,
+"unit_eur": 0.1288,
 "basic": false,
+"standard_only": false,
 "notes": "2 per board × 1 boards",
 "unit": "pcs",
-"ext_eur": 0.18
+"ext_eur": 0.26
 },
 {
 "category": "Electronics",
@@ -818,6 +867,7 @@
 "qty": 10,
 "unit_eur": 0.0268,
 "basic": true,
+"standard_only": false,
 "notes": "10 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.27
@@ -834,6 +884,7 @@
 "qty": 5,
 "unit_eur": 0.0069,
 "basic": true,
+"standard_only": false,
 "notes": "5 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.03
@@ -850,6 +901,7 @@
 "qty": 1,
 "unit_eur": 0.0184,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.02
@@ -866,6 +918,7 @@
 "qty": 1,
 "unit_eur": 0.3036,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.3
@@ -882,6 +935,7 @@
 "qty": 1,
 "unit_eur": 0.0184,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.02
@@ -898,6 +952,7 @@
 "qty": 5,
 "unit_eur": 0.0184,
 "basic": true,
+"standard_only": false,
 "notes": "5 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.09
@@ -914,6 +969,7 @@
 "qty": 5,
 "unit_eur": 0.0092,
 "basic": true,
+"standard_only": false,
 "notes": "5 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.05
@@ -930,6 +986,7 @@
 "qty": 1,
 "unit_eur": 0.1748,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.17
@@ -946,6 +1003,7 @@
 "qty": 1,
 "unit_eur": 0.0552,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.06
@@ -962,6 +1020,7 @@
 "qty": 1,
 "unit_eur": 0.0552,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.06
@@ -978,6 +1037,7 @@
 "qty": 1,
 "unit_eur": 0.0552,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.06
@@ -994,6 +1054,7 @@
 "qty": 1,
 "unit_eur": 0.0552,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.06
@@ -1010,6 +1071,7 @@
 "qty": 1,
 "unit_eur": 0.0552,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.06
@@ -1026,6 +1088,7 @@
 "qty": 1,
 "unit_eur": 0.3312,
 "basic": false,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.33
@@ -1042,6 +1105,7 @@
 "qty": 1,
 "unit_eur": 0.0029,
 "basic": true,
+"standard_only": false,
 "notes": "1 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.0
@@ -1058,6 +1122,7 @@
 "qty": 11,
 "unit_eur": 0.003,
 "basic": true,
+"standard_only": false,
 "notes": "11 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.03
@@ -1074,6 +1139,7 @@
 "qty": 5,
 "unit_eur": 0.0028,
 "basic": true,
+"standard_only": false,
 "notes": "5 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.01
@@ -1090,6 +1156,7 @@
 "qty": 5,
 "unit_eur": 0.0029,
 "basic": true,
+"standard_only": false,
 "notes": "5 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.01
@@ -1106,6 +1173,7 @@
 "qty": 5,
 "unit_eur": 0.0037,
 "basic": true,
+"standard_only": false,
 "notes": "5 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 0.02
@@ -1122,6 +1190,7 @@
 "qty": 5,
 "unit_eur": 1.4168,
 "basic": false,
+"standard_only": false,
 "notes": "5 per board × 1 boards",
 "unit": "pcs",
 "ext_eur": 7.08
@@ -1140,11 +1209,11 @@
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "PCBA setup + 7 extended-part loading fees",
+"item": "PCBA setup (Economic) + 7 extended-part loading fees",
 "supplier": "JLCPCB",
 "qty": 1,
 "unit_eur": 29.9,
-"notes": "setup $8, $3 per unique extended part, stencil",
+"notes": "Economic PCBA: setup $8, stencil ≈$3.5, $3 per unique extended part",
 "unit": "pcs",
 "ext_eur": 29.9
 },
@@ -1172,84 +1241,84 @@
 {
 "category": "Frame",
 "item": "Inside corner bracket, slot 6, with screws (base frame)",
-"supplier": "Motedis",
+"supplier": "AliExpress (bulk) / Motedis",
 "qty": 16,
-"unit_eur": 1.2,
+"unit_eur": 0.5,
 "unit": "pcs",
-"ext_eur": 19.2
+"ext_eur": 8.0
 },
 {
 "category": "Frame",
 "item": "M5 drop-in T-nut, slot 6",
-"supplier": "any",
+"supplier": "AliExpress (bulk)",
 "qty": 208,
-"unit_eur": 0.15,
+"unit_eur": 0.05,
 "unit": "pcs",
-"ext_eur": 31.2
+"ext_eur": 10.4
 },
 {
 "category": "Frame",
 "item": "M5×12 button head (ISO 7380)",
-"supplier": "any",
+"supplier": "AliExpress (bulk)",
 "qty": 208,
-"unit_eur": 0.08,
+"unit_eur": 0.03,
 "unit": "pcs",
-"ext_eur": 16.64
+"ext_eur": 6.24
 },
 {
 "category": "Frame",
 "item": "M5×16 screw into post core (feet) + beam-end screws",
-"supplier": "any",
+"supplier": "AliExpress (bulk)",
 "qty": 24,
-"unit_eur": 0.08,
+"unit_eur": 0.04,
+"unit": "pcs",
+"ext_eur": 0.96
+},
+{
+"category": "Fasteners",
+"item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
+"supplier": "AliExpress (bulk) / Ruthex",
+"qty": 292,
+"unit_eur": 0.03,
+"notes": "per carrier: 4 node + 9 deck/guide + 2 chain; 4 per camera pod (only where a camera hangs); hub mount; plates",
+"unit": "pcs",
+"ext_eur": 8.76
+},
+{
+"category": "Fasteners",
+"item": "M3×12 button head (guide → deck → carrier)",
+"supplier": "AliExpress (bulk)",
+"qty": 96,
+"unit_eur": 0.02,
 "unit": "pcs",
 "ext_eur": 1.92
 },
 {
 "category": "Fasteners",
-"item": "M3 heat-set insert, 5.7 mm (Ruthex-type)",
-"supplier": "Ruthex / CNC Kitchen",
-"qty": 356,
-"unit_eur": 0.09,
-"notes": "per carrier: 4 node + 9 deck/guide + 4 camera + 2 chain; roof camera inserts; hub mount; plates",
-"unit": "pcs",
-"ext_eur": 32.04
-},
-{
-"category": "Fasteners",
-"item": "M3×12 button head (guide → deck → carrier)",
-"supplier": "any",
-"qty": 96,
-"unit_eur": 0.05,
-"unit": "pcs",
-"ext_eur": 4.8
-},
-{
-"category": "Fasteners",
 "item": "M3×8 countersunk (deck pillars, wide-bay seams)",
-"supplier": "any",
+"supplier": "AliExpress (bulk)",
 "qty": 54,
-"unit_eur": 0.05,
+"unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 2.7
+"ext_eur": 1.08
 },
 {
 "category": "Fasteners",
 "item": "M3×6 (node PCB, chain anchor, hub)",
-"supplier": "any",
+"supplier": "AliExpress (bulk)",
 "qty": 100,
-"unit_eur": 0.04,
+"unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 4.0
+"ext_eur": 2.0
 },
 {
 "category": "Fasteners",
 "item": "M2.5×8 self-tapping (drawer stops, foot lock) + M2.5×6 (chain ends)",
-"supplier": "any",
+"supplier": "AliExpress (bulk)",
 "qty": 112,
-"unit_eur": 0.04,
+"unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 4.48
+"ext_eur": 2.24
 },
 {
 "category": "Fasteners",
@@ -1272,11 +1341,11 @@
 {
 "category": "Cables",
 "item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
-"supplier": "AliExpress / Amazon",
+"supplier": "AliExpress (generic, USB 2.0 is enough)",
 "qty": 16,
-"unit_eur": 3.5,
+"unit_eur": 1.5,
 "unit": "pcs",
-"ext_eur": 56.0
+"ext_eur": 24.0
 },
 {
 "category": "Cables",
@@ -1404,29 +1473,19 @@
 "unit_eur": 0.6,
 "unit": "pcs",
 "ext_eur": 2.4
-},
-{
-"category": "Misc",
-"item": "12 mm label tape for the drawer fronts",
-"supplier": "Brother TZe",
-"qty": 1,
-"unit_eur": 12.0,
-"unit": "pcs",
-"ext_eur": 12.0
 }
 ],
 "by_category": {
-"Electronics": 324.80999999999983,
+"Electronics": 344.8099999999998,
 "Printed parts": 120.0,
-"Frame": 122.71000000000001,
-"Fasteners": 57.62,
+"Frame": 79.35,
+"Fasteners": 25.6,
 "Motion": 12.0,
-"Cables": 129.1,
+"Cables": 97.1,
 "Power": 76.6,
-"Cameras": 72.4,
-"Misc": 12.0
+"Cameras": 72.4
 },
-"total_eur": 927.24,
+"total_eur": 827.86,
 "cut_list": [
 {
 "part": "front post",

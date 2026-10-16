@@ -1,5 +1,5 @@
 category,group,item,qty,unit,unit_eur,ext_eur,supplier,part,mpn,manufacturer,ref,notes
-Electronics,bay-node,100u/50V — 100 µF 50 V aluminium electrolytic,16,pcs,0.0552,0.88,LCSC/JLCPCB,C72480,RVT1H101M0810,ROQANG,C1,1 per board × 16 boards
+Electronics,bay-node,100u/50V — 100 µF 50 V aluminium electrolytic,16,pcs,0.0635,1.02,LCSC/JLCPCB,C3352,RVT1H101M0810,Honor Elec,C1,1 per board × 16 boards
 Electronics,bay-node,10u — Capacitor 10u 1206,32,pcs,0.2504,8.01,LCSC/JLCPCB,C13585,CL31A106KBHNNNE,Samsung Electro-Mechanics,"C2,C3",2 per board × 16 boards
 Electronics,bay-node,100n — Capacitor 100n 0603,128,pcs,0.0124,1.59,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C4,C14,C16,C17,C18,C19,C20,C22",8 per board × 16 boards
 Electronics,bay-node,6.8n — Capacitor 6.8n 0603,16,pcs,0.0067,0.11,LCSC/JLCPCB,C1631,0603B682K500NT,FH (Guangdong Fenghua Advanced Tech),C5,1 per board × 16 boards
@@ -48,8 +48,8 @@ Electronics,bay-node,SN74LVC1G32DBVR — single 2-input OR,16,pcs,0.0644,1.03,LC
 Electronics,bay-node,TPS2553DBVR — adjustable current-limited power switch,16,pcs,0.4968,7.95,LCSC/JLCPCB,C55266,TPS2553DBVR,Texas Instruments,U9,1 per board × 16 boards
 Electronics,bay-node,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",16,pcs,0.69,11.04,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,U10,1 per board × 16 boards
 Electronics,bay-node,"Bare PCB bay-node (4-layer 64×80 mm, ENIG, JLCPCB)",16,pcs,1.9,30.4,JLCPCB,,,,,"indicative, min 5 pcs"
-Electronics,bay-node,PCBA setup + 21 extended-part loading fees,1,pcs,68.54,68.54,JLCPCB,,,,,"setup $8, $3 per unique extended part, stencil"
-Electronics,power-hub,220u/50V — 220 µF 50 V aluminium electrolytic,2,pcs,0.092,0.18,LCSC/JLCPCB,C72499,RVT1H221M1010,ROQANG,"C1,C2",2 per board × 1 boards
+Electronics,bay-node,PCBA setup (Standard) + 21 extended-part loading fees,1,pcs,88.32,88.32,JLCPCB,,,,,"Standard PCBA: setup $25, stencil ≈$8.0, $3 per unique extended part; Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
+Electronics,power-hub,220u/50V — 220 µF 50 V aluminium electrolytic,2,pcs,0.1288,0.26,LCSC/JLCPCB,C3358,RVT1H221M1010,Honor Elec,"C1,C2",2 per board × 1 boards
 Electronics,power-hub,1u — Capacitor 1u 0805,10,pcs,0.0268,0.27,LCSC/JLCPCB,C28323,CL21B105KBFNNNE,Samsung Electro-Mechanics,"C11,C12,C13,C14,C15,C31,C32,C33,C34,C35",10 per board × 1 boards
 Electronics,power-hub,22n — Capacitor 22n 0603,5,pcs,0.0069,0.03,LCSC/JLCPCB,C21122,CL10B223KB8NNNC,Samsung Electro-Mechanics,"C21,C22,C23,C24,C25",5 per board × 1 boards
 Electronics,power-hub,"BZT52C12 — 12 V zener, P-FET gate clamp",1,pcs,0.0184,0.02,LCSC/JLCPCB,C43491,BZT52C12,CJ,D1,1 per board × 1 boards
@@ -71,21 +71,21 @@ Electronics,power-hub,5.6k — Resistor 5.6k 0603,5,pcs,0.0029,0.01,LCSC/JLCPCB,
 Electronics,power-hub,18k — Resistor 18k 0603,5,pcs,0.0037,0.02,LCSC/JLCPCB,C25810,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),"R31,R32,R33,R34,R35",5 per board × 1 boards
 Electronics,power-hub,TPS26600PWPR — 4.2–60 V 2.23 A eFuse,5,pcs,1.4168,7.08,LCSC/JLCPCB,C544399,TPS26600PWPR,Texas Instruments,"U1,U2,U3,U4,U5",5 per board × 1 boards
 Electronics,power-hub,"Bare PCB power-hub (2-layer 120×70 mm, ENIG, JLCPCB)",5,pcs,2.4,12.0,JLCPCB,,,,,"indicative, min 5 pcs"
-Electronics,power-hub,PCBA setup + 7 extended-part loading fees,1,pcs,29.9,29.9,JLCPCB,,,,,"setup $8, $3 per unique extended part, stencil"
+Electronics,power-hub,PCBA setup (Economic) + 7 extended-part loading fees,1,pcs,29.9,29.9,JLCPCB,,,,,"Economic PCBA: setup $8, stencil ≈$3.5, $3 per unique extended part"
 Printed parts,filament,PETG filament (ASA/PC-blend near mains),6.0,kg,20.0,120.0,any,,,,,"≈5.4 kg estimated + 10 % waste, 198 parts"
 Frame,,"2020 aluminium extrusion, B-type slot 6, black anodised, cut to length",13.11,m,4.1,53.75,Motedis / Dold / Misumi HFS5-2020,,,,,see cut list; ≈ €1.5 per cut extra
-Frame,,"Inside corner bracket, slot 6, with screws (base frame)",16,pcs,1.2,19.2,Motedis,,,,,
-Frame,,"M5 drop-in T-nut, slot 6",208,pcs,0.15,31.2,any,,,,,
-Frame,,M5×12 button head (ISO 7380),208,pcs,0.08,16.64,any,,,,,
-Frame,,M5×16 screw into post core (feet) + beam-end screws,24,pcs,0.08,1.92,any,,,,,
-Fasteners,,"M3 heat-set insert, 5.7 mm (Ruthex-type)",356,pcs,0.09,32.04,Ruthex / CNC Kitchen,,,,,per carrier: 4 node + 9 deck/guide + 4 camera + 2 chain; roof camera inserts; hub mount; plates
-Fasteners,,M3×12 button head (guide → deck → carrier),96,pcs,0.05,4.8,any,,,,,
-Fasteners,,"M3×8 countersunk (deck pillars, wide-bay seams)",54,pcs,0.05,2.7,any,,,,,
-Fasteners,,"M3×6 (node PCB, chain anchor, hub)",100,pcs,0.04,4.0,any,,,,,
-Fasteners,,"M2.5×8 self-tapping (drawer stops, foot lock) + M2.5×6 (chain ends)",112,pcs,0.04,4.48,any,,,,,
+Frame,,"Inside corner bracket, slot 6, with screws (base frame)",16,pcs,0.5,8.0,AliExpress (bulk) / Motedis,,,,,
+Frame,,"M5 drop-in T-nut, slot 6",208,pcs,0.05,10.4,AliExpress (bulk),,,,,
+Frame,,M5×12 button head (ISO 7380),208,pcs,0.03,6.24,AliExpress (bulk),,,,,
+Frame,,M5×16 screw into post core (feet) + beam-end screws,24,pcs,0.04,0.96,AliExpress (bulk),,,,,
+Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",292,pcs,0.03,8.76,AliExpress (bulk) / Ruthex,,,,,per carrier: 4 node + 9 deck/guide + 2 chain; 4 per camera pod (only where a camera hangs); hub mount; plates
+Fasteners,,M3×12 button head (guide → deck → carrier),96,pcs,0.02,1.92,AliExpress (bulk),,,,,
+Fasteners,,"M3×8 countersunk (deck pillars, wide-bay seams)",54,pcs,0.02,1.08,AliExpress (bulk),,,,,
+Fasteners,,"M3×6 (node PCB, chain anchor, hub)",100,pcs,0.02,2.0,AliExpress (bulk),,,,,
+Fasteners,,"M2.5×8 self-tapping (drawer stops, foot lock) + M2.5×6 (chain ends)",112,pcs,0.02,2.24,AliExpress (bulk),,,,,
 Fasteners,,"Neodymium disc magnet 6×3 mm (drawer detent: one in drawer, one in deck)",32,pcs,0.3,9.6,supermagnete S-06-03-N,,,,,
 Motion,,"Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",3.0,m,4.0,12.0,AliExpress / igus E2 micro,,,,,
-Cables,,"USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",16,pcs,3.5,56.0,AliExpress / Amazon,,,,,
+Cables,,"USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",16,pcs,1.5,24.0,"AliExpress (generic, USB 2.0 is enough)",,,,,
 Cables,,"JST VH 2-pin jumper, 0.75 mm², 120 mm (bay → bay, 24 V)",12,pcs,0.8,9.6,pre-crimped or DIY,,,,,
 Cables,,"JST VH 2-pin feed, 0.75 mm², ≈1 m (hub → first bay of each row)",5,pcs,1.5,7.5,DIY,,,,,
 Cables,,"USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle)",6,pcs,4.5,27.0,Adafruit / Delock / AliExpress,,,,,
@@ -100,4 +100,3 @@ Power,,(variant) Mean Well GST160A24-R7B brick + Kycon KPJX-PM-4S panel jack,0,p
 Cameras,,Seeed XIAO ESP32S3 Sense (camera pod),4,pcs,13.5,54.0,Seeed,,,,,
 Cameras,,OV2640 wide-angle (120–160°) 24-pin DVP module (check FPC fit),4,pcs,4.0,16.0,AliExpress,,,,,
 Cameras,,JST-PH 2-pin lead to the XIAO 5 V pads + M3×30 pivot screw,4,pcs,0.6,2.4,any,,,,,
-Misc,,12 mm label tape for the drawer fronts,1,pcs,12.0,12.0,Brother TZe,,,,,

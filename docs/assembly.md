@@ -49,7 +49,7 @@ carrier (4 node, 6 side, 3 pillar, 2 chain, 4 camera underneath), roof decks
    the guide channels), engage the foot in the rear groove, lock it with the
    M2.5 from inside the rear bay; drop the two M2.5 stop screws through the
    guide lips.
-6. **Plate + board + short cable**, label tape on the front.
+6. **Plate + board + short cable**, printed `bay_label` (or 12 mm tape) in the front recess.
 
 Double bays: steps 1–5 for both units, then the two **bridge bars** across
 the drawers, then the EVK on M3 standoffs.

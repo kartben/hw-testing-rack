@@ -7435,6 +7435,15 @@
 				(hide yes)
 			)
 		)
+		(property "Alternative" "WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping"
+			(at 45.72 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e14a1281-cd1d-536a-ba38-8a16680275d8")
 		)

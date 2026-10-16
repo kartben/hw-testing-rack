@@ -36,17 +36,17 @@ PETG_EUR_PER_KG = 20.0
 
 
 def _catalog_prices() -> dict:
-    """MPN → (unit USD, LCSC, basic) from the electronics catalogue and passive cache."""
+    """MPN → (unit USD, LCSC, basic, JLC Standard-PCBA only) from the electronics catalogue and passive cache."""
     try:
         import catalog
     except Exception:  # pragma: no cover
         return {}
-    out = {c.mpn: (c.price, c.lcsc, c.basic) for c in catalog.CAT.values()}
+    out = {c.mpn: (c.price, c.lcsc, c.basic, c.standard_only) for c in catalog.CAT.values()}
     cache = REPO / "electronics" / "lib" / "passives.json"
     if cache.exists():
         for hit in json.loads(cache.read_text(encoding="utf-8")).values():
             if hit:
-                out[hit["mpn"]] = (hit.get("price") or 0.0, hit["lcsc"], True)
+                out[hit["mpn"]] = (hit.get("price") or 0.0, hit["lcsc"], True, False)
     return out
 
 
@@ -64,21 +64,28 @@ def electronics(rack) -> list[dict]:
         for r in csv.DictReader(path.open(encoding="utf-8")):
             if r.get("DNP"):
                 continue
-            usd, lcsc, basic = prices.get(r["MPN"], (0.0, r.get("LCSC", ""), False))
+            usd, lcsc, basic, std_only = prices.get(r["MPN"], (0.0, r.get("LCSC", ""), False, False))
             n = int(r["Qty"]) * qty
             rows.append({"category": "Electronics", "group": name, "item": f"{r['Value']} — {r['Description'] or r['MPN']}",
                          "ref": r["Designator"], "mpn": r["MPN"], "manufacturer": r["Manufacturer"],
                          "supplier": "LCSC/JLCPCB", "part": r.get("LCSC", "") or lcsc, "qty": n,
-                         "unit_eur": round(usd * USD_EUR, 4), "basic": basic,
+                         "unit_eur": round(usd * USD_EUR, 4), "basic": basic, "standard_only": std_only,
                          "notes": f"{r['Qty']} per board × {qty} boards"})
         # bare PCBs + assembly (indicative JLCPCB quotes)
         pcb_unit = {"bay-node": 1.9, "power-hub": 2.4}[name]
         rows.append({"category": "Electronics", "group": name, "item": f"Bare PCB {name} ({desc}, ENIG, JLCPCB)",
                      "supplier": "JLCPCB", "qty": max(qty, 5), "unit_eur": pcb_unit, "notes": "indicative, min 5 pcs"})
-        uniq_ext = len({r["mpn"] for r in rows if r.get("group") == name and r.get("mpn") and not r.get("basic")})
-        rows.append({"category": "Electronics", "group": name, "item": f"PCBA setup + {uniq_ext} extended-part loading fees",
-                     "supplier": "JLCPCB", "qty": 1, "unit_eur": round((8.0 + 3.0 * uniq_ext + 3.5) * USD_EUR, 2),
-                     "notes": "setup $8, $3 per unique extended part, stencil"})
+        mine = [r for r in rows if r.get("group") == name and r.get("mpn")]
+        uniq_ext = len({r["mpn"] for r in mine if not r.get("basic")})
+        std = sorted({r["mpn"] for r in mine if r.get("standard_only")})
+        # indicative JLCPCB fees: Economic PCBA $8 setup + ~$3.5 stencil; Standard PCBA ~$25 setup + ~$8 stencil
+        setup, stencil = (25.0, 8.0) if std else (8.0, 3.5)
+        kind = "Standard" if std else "Economic"
+        rows.append({"category": "Electronics", "group": name,
+                     "item": f"PCBA setup ({kind}) + {uniq_ext} extended-part loading fees",
+                     "supplier": "JLCPCB", "qty": 1, "unit_eur": round((setup + 3.0 * uniq_ext + stencil) * USD_EUR, 2),
+                     "notes": f"{kind} PCBA: setup ${setup:.0f}, stencil ≈${stencil:.1f}, $3 per unique extended part"
+                              + (f"; Standard because {', '.join(std)} cannot be placed with Economic PCBA" if std else "")})
     return rows
 
 
@@ -153,29 +160,34 @@ def hardware(rack) -> tuple[list[dict], list[dict]]:
         {"category": "Frame", "item": "2020 aluminium extrusion, B-type slot 6, black anodised, cut to length",
          "supplier": "Motedis / Dold / Misumi HFS5-2020", "qty": round(metres, 2), "unit": "m", "unit_eur": 4.1,
          "notes": "see cut list; ≈ €1.5 per cut extra"},
-        {"category": "Frame", "item": "Inside corner bracket, slot 6, with screws (base frame)", "supplier": "Motedis",
-         "qty": 16, "unit_eur": 1.2},
-        {"category": "Frame", "item": "M5 drop-in T-nut, slot 6", "supplier": "any", "qty": m5_tnuts, "unit_eur": 0.15},
-        {"category": "Frame", "item": "M5×12 button head (ISO 7380)", "supplier": "any", "qty": m5_tnuts, "unit_eur": 0.08},
+        # hardware at bulk prices (packs of 50–100 from AliExpress-type sellers)
+        {"category": "Frame", "item": "Inside corner bracket, slot 6, with screws (base frame)",
+         "supplier": "AliExpress (bulk) / Motedis", "qty": 16, "unit_eur": 0.5},
+        {"category": "Frame", "item": "M5 drop-in T-nut, slot 6", "supplier": "AliExpress (bulk)", "qty": m5_tnuts,
+         "unit_eur": 0.05},
+        {"category": "Frame", "item": "M5×12 button head (ISO 7380)", "supplier": "AliExpress (bulk)", "qty": m5_tnuts,
+         "unit_eur": 0.03},
         {"category": "Frame", "item": "M5×16 screw into post core (feet) + beam-end screws",
-         "supplier": "any", "qty": 4 + 4 * n_levels, "unit_eur": 0.08},
-        {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (Ruthex-type)", "supplier": "Ruthex / CNC Kitchen",
-         "qty": n_units * (4 + 9 + 4 + 2) + 4 * rack.units + 4 + 2 * n_units, "unit_eur": 0.09,
-         "notes": "per carrier: 4 node + 9 deck/guide + 4 camera + 2 chain; roof camera inserts; hub mount; plates"},
-        {"category": "Fasteners", "item": "M3×12 button head (guide → deck → carrier)", "supplier": "any",
-         "qty": 6 * n_units, "unit_eur": 0.05},
-        {"category": "Fasteners", "item": "M3×8 countersunk (deck pillars, wide-bay seams)", "supplier": "any",
-         "qty": 3 * n_units + 6, "unit_eur": 0.05},
-        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor, hub)", "supplier": "any",
-         "qty": 6 * n_units + 4, "unit_eur": 0.04},
+         "supplier": "AliExpress (bulk)", "qty": 4 + 4 * n_levels, "unit_eur": 0.04},
+        {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
+         "supplier": "AliExpress (bulk) / Ruthex", "qty": n_units * (4 + 9 + 2) + 4 * cams + 4 + 2 * n_units,
+         "unit_eur": 0.03,
+         "notes": "per carrier: 4 node + 9 deck/guide + 2 chain; 4 per camera pod (only where a camera hangs); "
+                  "hub mount; plates"},
+        {"category": "Fasteners", "item": "M3×12 button head (guide → deck → carrier)", "supplier": "AliExpress (bulk)",
+         "qty": 6 * n_units, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×8 countersunk (deck pillars, wide-bay seams)", "supplier": "AliExpress (bulk)",
+         "qty": 3 * n_units + 6, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor, hub)", "supplier": "AliExpress (bulk)",
+         "qty": 6 * n_units + 4, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "M2.5×8 self-tapping (drawer stops, foot lock) + M2.5×6 (chain ends)",
-         "supplier": "any", "qty": 3 * n_units + 4 * n_units, "unit_eur": 0.04},
+         "supplier": "AliExpress (bulk)", "qty": 3 * n_units + 4 * n_units, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm (drawer detent: one in drawer, one in deck)",
          "supplier": "supermagnete S-06-03-N", "qty": 2 * n_units, "unit_eur": 0.30},
         {"category": "Motion", "item": "Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",
          "supplier": "AliExpress / igus E2 micro", "qty": round(0.17 * n_units + 0.3, 1), "unit": "m", "unit_eur": 4.0},
         {"category": "Cables", "item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
-         "supplier": "AliExpress / Amazon", "qty": n_units, "unit_eur": 3.5},
+         "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_units, "unit_eur": 1.5},
         {"category": "Cables", "item": "JST VH 2-pin jumper, 0.75 mm², 120 mm (bay → bay, 24 V)",
          "supplier": "pre-crimped or DIY", "qty": sum(rack.units - 1 for _ in rack.rows), "unit_eur": 0.8},
         {"category": "Cables", "item": "JST VH 2-pin feed, 0.75 mm², ≈1 m (hub → first bay of each row)",
@@ -214,8 +226,6 @@ def hardware(rack) -> tuple[list[dict], list[dict]]:
             {"category": "Cameras", "item": "JST-PH 2-pin lead to the XIAO 5 V pads + M3×30 pivot screw",
              "supplier": "any", "qty": cams, "unit_eur": 0.6},
         ]
-    rows.append({"category": "Misc", "item": "12 mm label tape for the drawer fronts", "supplier": "Brother TZe",
-                 "qty": 1, "unit_eur": 12.0})
     return rows, cut
 
 

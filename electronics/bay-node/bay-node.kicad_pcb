@@ -10879,7 +10879,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "ROQANG"
+		(property "Manufacturer" "Honor Elec"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -10891,7 +10891,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C72480"
+		(property "LCSC" "C3352"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -12014,6 +12014,17 @@
 				(font
 					(size 1.27 1.27)
 					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternative" "WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "d03a4d78-26cc-4cdd-bde3-4f5f22515d99")
+			(effects
+				(font
+					(size 1.27 1.27)
 				)
 			)
 		)

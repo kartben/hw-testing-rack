@@ -5,18 +5,17 @@ Configuration: **14 bays** (16 carrier units) in 4 rows. Prices are indicative (
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 325 |
-| Cables | 129 |
-| Frame | 123 |
+| Electronics | 345 |
 | Printed parts | 120 |
+| Cables | 97 |
+| Frame | 79 |
 | Power | 77 |
 | Cameras | 72 |
-| Fasteners | 58 |
+| Fasteners | 26 |
 | Motion | 12 |
-| Misc | 12 |
-| **Total** | **927** |
+| **Total** | **828** |
 
-≈ **€66 per bay** all-in.
+≈ **€59 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -73,7 +72,7 @@ Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `
 
 | Category | Item | Qty | Unit € | Total € | Source |
 |---|---|---:|---:|---:|---|
-| Electronics | 100u/50V — 100 µF 50 V aluminium electrolytic | 16  | 0.06 | 0.88 | LCSC/JLCPCB C72480 |
+| Electronics | 100u/50V — 100 µF 50 V aluminium electrolytic | 16  | 0.06 | 1.02 | LCSC/JLCPCB C3352 |
 | Electronics | 10u — Capacitor 10u 1206 | 32  | 0.25 | 8.01 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 128  | 0.01 | 1.59 | LCSC/JLCPCB C14663 |
 | Electronics | 6.8n — Capacitor 6.8n 0603 | 16  | 0.01 | 0.11 | LCSC/JLCPCB C1631 |
@@ -122,8 +121,8 @@ Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `
 | Electronics | TPS2553DBVR — adjustable current-limited power switch | 16  | 0.50 | 7.95 | LCSC/JLCPCB C55266 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 16  | 0.69 | 11.04 | LCSC/JLCPCB C49851 |
 | Electronics | Bare PCB bay-node (4-layer 64×80 mm, ENIG, JLCPCB) | 16  | 1.90 | 30.40 | JLCPCB |
-| Electronics | PCBA setup + 21 extended-part loading fees | 1  | 68.54 | 68.54 | JLCPCB |
-| Electronics | 220u/50V — 220 µF 50 V aluminium electrolytic | 2  | 0.09 | 0.18 | LCSC/JLCPCB C72499 |
+| Electronics | PCBA setup (Standard) + 21 extended-part loading fees | 1  | 88.32 | 88.32 | JLCPCB |
+| Electronics | 220u/50V — 220 µF 50 V aluminium electrolytic | 2  | 0.13 | 0.26 | LCSC/JLCPCB C3358 |
 | Electronics | 1u — Capacitor 1u 0805 | 10  | 0.03 | 0.27 | LCSC/JLCPCB C28323 |
 | Electronics | 22n — Capacitor 22n 0603 | 5  | 0.01 | 0.03 | LCSC/JLCPCB C21122 |
 | Electronics | BZT52C12 — 12 V zener, P-FET gate clamp | 1  | 0.02 | 0.02 | LCSC/JLCPCB C43491 |
@@ -145,21 +144,21 @@ Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `
 | Electronics | 18k — Resistor 18k 0603 | 5  | 0.00 | 0.02 | LCSC/JLCPCB C25810 |
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 5  | 1.42 | 7.08 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (2-layer 120×70 mm, ENIG, JLCPCB) | 5  | 2.40 | 12.00 | JLCPCB |
-| Electronics | PCBA setup + 7 extended-part loading fees | 1  | 29.90 | 29.90 | JLCPCB |
+| Electronics | PCBA setup (Economic) + 7 extended-part loading fees | 1  | 29.90 | 29.90 | JLCPCB |
 | Printed parts | PETG filament (ASA/PC-blend near mains) | 6.0 kg | 20.00 | 120.00 | any |
 | Frame | 2020 aluminium extrusion, B-type slot 6, black anodised, cut to length | 13.11 m | 4.10 | 53.75 | Motedis / Dold / Misumi HFS5-2020 |
-| Frame | Inside corner bracket, slot 6, with screws (base frame) | 16  | 1.20 | 19.20 | Motedis |
-| Frame | M5 drop-in T-nut, slot 6 | 208  | 0.15 | 31.20 | any |
-| Frame | M5×12 button head (ISO 7380) | 208  | 0.08 | 16.64 | any |
-| Frame | M5×16 screw into post core (feet) + beam-end screws | 24  | 0.08 | 1.92 | any |
-| Fasteners | M3 heat-set insert, 5.7 mm (Ruthex-type) | 356  | 0.09 | 32.04 | Ruthex / CNC Kitchen |
-| Fasteners | M3×12 button head (guide → deck → carrier) | 96  | 0.05 | 4.80 | any |
-| Fasteners | M3×8 countersunk (deck pillars, wide-bay seams) | 54  | 0.05 | 2.70 | any |
-| Fasteners | M3×6 (node PCB, chain anchor, hub) | 100  | 0.04 | 4.00 | any |
-| Fasteners | M2.5×8 self-tapping (drawer stops, foot lock) + M2.5×6 (chain ends) | 112  | 0.04 | 4.48 | any |
+| Frame | Inside corner bracket, slot 6, with screws (base frame) | 16  | 0.50 | 8.00 | AliExpress (bulk) / Motedis |
+| Frame | M5 drop-in T-nut, slot 6 | 208  | 0.05 | 10.40 | AliExpress (bulk) |
+| Frame | M5×12 button head (ISO 7380) | 208  | 0.03 | 6.24 | AliExpress (bulk) |
+| Frame | M5×16 screw into post core (feet) + beam-end screws | 24  | 0.04 | 0.96 | AliExpress (bulk) |
+| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 292  | 0.03 | 8.76 | AliExpress (bulk) / Ruthex |
+| Fasteners | M3×12 button head (guide → deck → carrier) | 96  | 0.02 | 1.92 | AliExpress (bulk) |
+| Fasteners | M3×8 countersunk (deck pillars, wide-bay seams) | 54  | 0.02 | 1.08 | AliExpress (bulk) |
+| Fasteners | M3×6 (node PCB, chain anchor, hub) | 100  | 0.02 | 2.00 | AliExpress (bulk) |
+| Fasteners | M2.5×8 self-tapping (drawer stops, foot lock) + M2.5×6 (chain ends) | 112  | 0.02 | 2.24 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm (drawer detent: one in drawer, one in deck) | 32  | 0.30 | 9.60 | supermagnete S-06-03-N |
 | Motion | Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer | 3.0 m | 4.00 | 12.00 | AliExpress / igus E2 micro |
-| Cables | USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port) | 16  | 3.50 | 56.00 | AliExpress / Amazon |
+| Cables | USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port) | 16  | 1.50 | 24.00 | AliExpress (generic, USB 2.0 is enough) |
 | Cables | JST VH 2-pin jumper, 0.75 mm², 120 mm (bay → bay, 24 V) | 12  | 0.80 | 9.60 | pre-crimped or DIY |
 | Cables | JST VH 2-pin feed, 0.75 mm², ≈1 m (hub → first bay of each row) | 5  | 1.50 | 7.50 | DIY |
 | Cables | USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle) | 6  | 4.50 | 27.00 | Adafruit / Delock / AliExpress |
@@ -174,4 +173,3 @@ Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `
 | Cameras | Seeed XIAO ESP32S3 Sense (camera pod) | 4  | 13.50 | 54.00 | Seeed |
 | Cameras | OV2640 wide-angle (120–160°) 24-pin DVP module (check FPC fit) | 4  | 4.00 | 16.00 | AliExpress |
 | Cameras | JST-PH 2-pin lead to the XIAO 5 V pads + M3×30 pivot screw | 4  | 0.60 | 2.40 | any |
-| Misc | 12 mm label tape for the drawer fronts | 1  | 12.00 | 12.00 | Brother TZe |
