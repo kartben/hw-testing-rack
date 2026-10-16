@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: Apache-2.0
+
+mainmenu "hw-testing-rack bay node"
+
+menu "Bay node"
+
+config BAY_DUT_FAULT_OFF_MS
+	int "Switch the DUT off after this long in current limit (ms)"
+	default 1000
+	help
+	  The TPS2553 limits the current by itself and keeps retrying.  If its
+	  FAULT flag stays asserted this long, the firmware switches VBUS off
+	  and latches the fault until the next "bay power on".  0 disables.
+
+config BAY_POWER_CYCLE_MS
+	int "Default off time of a DUT power cycle (ms)"
+	default 1000
+
+config BAY_RESET_PULSE_MS
+	int "Default AUX RESET pulse length (ms)"
+	default 100
+
+config BAY_BOOTLOADER_HOLD_MS
+	int "How long BOOT stays asserted after the RESET pulse (ms)"
+	default 200
+
+config BAY_AUX_TCP_PORT
+	int "TCP port of the AUX UART bridge (raw, one client), 0 to disable"
+	default 4000
+	range 0 65535
+
+config BAY_AUX_BUF_SIZE
+	int "AUX UART receive buffer (bytes)"
+	default 2048
+
+config BAY_SERVICE_PHY_HANDOVER
+	bool "Give the USB PHY back to USB-Serial-JTAG in SERVICE mode"
+	default y
+	help
+	  The ESP32-S3 has a single full-speed PHY.  The USB host takes it
+	  at boot; with this option the firmware stops the host controller
+	  when the SERVICE switch is on and routes the PHY to the
+	  USB-Serial-JTAG, so a laptop on the front port can flash
+	  (esptool auto-reset) and debug (OpenOCD) the node.  Switching
+	  SERVICE off starts the host again.
+
+config BAY_LED_BRIGHTNESS
+	int "Status LED brightness (1-255)"
+	default 40
+	range 1 255
+
+module = BAY
+module-str = bay node
+source "subsys/logging/Kconfig.template.log_config"
+
+endmenu
+
+source "Kconfig.zephyr"

@@ -1,0 +1,4 @@
+# Local Wi-Fi credentials (see bay-node/wifi.conf.example)
+bay-node/wifi.conf
+# west build output when building from inside the application
+bay-node/build/

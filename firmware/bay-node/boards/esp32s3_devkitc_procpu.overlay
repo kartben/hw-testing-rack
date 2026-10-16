@@ -1,0 +1,30 @@
+/*
+ * ESP32-S3-DevKitC-1 as a stand-in for the bay node: same GPIO map, so the
+ * firmware can be brought up before the PCB exists.  Plug the DUT into the
+ * devkit's "USB" port (IO19/IO20) through an OTG adapter and power it
+ * separately (that port does not source VBUS); an INA226 breakout goes on
+ * IO8/IO9 if you have one, otherwise the V/I readings report -ENODEV.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "../../boards/hwtr/bay_node/bay_node-pinctrl.dtsi"
+#include "../../boards/hwtr/bay_node/bay_node.dtsi"
+
+/* The devkit's own RGB LED: GPIO38 on DevKitC-1 v1.1 (GPIO48 on v1.0) */
+&pinctrl {
+	devkitc_rgb_led: devkitc_rgb_led {
+		group1 {
+			pinmux = <RMT_OUT0_GPIO38>;
+		};
+	};
+};
+
+&rmt {
+	pinctrl-0 = <&devkitc_rgb_led>;
+};
+
+/* SPI2's default pins (IO10-IO13) collide with the bay node map */
+&spi2 {
+	status = "disabled";
+};

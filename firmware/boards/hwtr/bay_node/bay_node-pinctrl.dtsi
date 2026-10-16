@@ -1,0 +1,55 @@
+/*
+ * Bay node pin multiplexing (ESP32-S3-MINI-1).
+ *
+ * Source of truth: electronics/bay-node/design.py (U3 pin map).
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/pinctrl/esp32s3-pinctrl.h>
+
+&pinctrl {
+	/* TXD0/RXD0: UART test pads TP1/TP2 (node console) */
+	bay_uart0_default: bay_uart0_default {
+		group1 {
+			pinmux = <UART0_TX_GPIO43>;
+			output-high;
+		};
+
+		group2 {
+			pinmux = <UART0_RX_GPIO44>;
+			bias-pull-up;
+		};
+	};
+
+	/* IO17 AUX_TX / IO18 AUX_RX: DUT console on the AUX connector (1k series) */
+	bay_aux_uart_default: bay_aux_uart_default {
+		group1 {
+			pinmux = <UART1_TX_GPIO17>;
+			output-high;
+		};
+
+		group2 {
+			pinmux = <UART1_RX_GPIO18>;
+			bias-pull-up;
+		};
+	};
+
+	/* IO8 I2C_SDA / IO9 I2C_SCL: INA226 (4.7k pull-ups on the board) */
+	bay_i2c0_default: bay_i2c0_default {
+		group1 {
+			pinmux = <I2C0_SDA_GPIO8>,
+				 <I2C0_SCL_GPIO9>;
+			bias-pull-up;
+			drive-open-drain;
+			output-high;
+		};
+	};
+
+	/* IO13 LED_DIN: WS2812B status LED (33R series) */
+	bay_led_default: bay_led_default {
+		group1 {
+			pinmux = <RMT_OUT0_GPIO13>;
+		};
+	};
+};

@@ -1,0 +1,29 @@
+# West manifest for the hw-testing-rack node firmware (Zephyr "T2" layout:
+# this repository is the manifest repository, Zephyr is an ordinary project).
+#
+#   west init -m https://github.com/kartben/hw-testing-rack --mf firmware/west.yml rack-ws
+#   cd rack-ws && west update && west blobs fetch hal_espressif
+#
+# Zephyr is pinned to a main-branch commit that has the DWC2 host controller
+# driver with the ESP32-S3 quirk and the USB/IP host service.  Bump it on
+# purpose (and re-run `west update`), the USB host stack is still moving fast.
+
+manifest:
+  self:
+    path: hw-testing-rack
+
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: 3f7ae83e0e7c2f535d89febabf29e11c721fb66d  # main, 2026-10-16
+      import:
+        # Only what an ESP32-S3 Wi-Fi node needs: the HAL (+ Wi-Fi blobs)
+        # and the crypto libraries the Wi-Fi supplicant pulls in.
+        name-allowlist:
+          - hal_espressif
+          - mbedtls
+          - tf-psa-crypto

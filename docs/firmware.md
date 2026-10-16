@@ -1,47 +1,79 @@
-# Firmware (plan)
+# Firmware
 
-The bay nodes are meant to run **Zephyr** — the shelf doubles as a dogfooding
-rig for Zephyr's new USB host stack.
+The bay nodes run **Zephyr** — the shelf doubles as a dogfooding rig for
+Zephyr's new USB host stack.  The firmware lives in [`firmware/`](../firmware/)
+(build, flashing, shell, pin map: [`firmware/README.md`](../firmware/README.md)).
 
-## What exists upstream (Zephyr main, Oct 2026)
+> **Status:** the board definition and the application build against Zephyr
+> main (pinned in `firmware/west.yml`); hardware bring-up has not started.
+
+## What Zephyr provides (main, Oct 2026)
 
 * **USB/IP host service** — `subsys/usb/host/usbip.c`: exports a device
-  attached to a host controller to a Linux `usbip` client.  Still marked
-  under development, one device per controller (exactly our 1-board-per-node
-  topology).  Docs: *Services → USB → USB/IP protocol support*.
+  attached to a host controller to a Linux `usbip` client.  Experimental,
+  one device per controller (exactly our 1-board-per-node topology).  Docs:
+  *Services → USB → USB/IP protocol support*.
 * **DWC2 host controller driver** — `drivers/usb/uhc/uhc_dwc2.c` with the
   ESP32-S3 full-speed OTG quirk (`espressif,esp32-usb-otg-fs`), merged via
   zephyrproject-rtos/zephyr#102967 and follow-ups (tracking issue #102931).
-  Control and bulk transfers today; interrupt/isochronous and split
-  transactions are follow-ups — check them before relying on CDC-ACM
-  notifications or HID-class probes.
-* Wi-Fi, mDNS, HTTP server, shell, `ti,ina226` sensor driver, `worldsemi,ws2812-*`
-  LED strip, MCUboot + mcumgr OTA: all available for ESP32-S3.
+  Control, bulk and interrupt IN transfers; interrupt OUT, isochronous and
+  split transactions (hubs) are not implemented yet.
+* Wi-Fi, mDNS, telnet shell, settings, `ti,ina226` sensor driver,
+  `worldsemi,ws2812-pulse-io` LED strip on the RMT: all used by the node
+  application.  MCUboot + mcumgr OTA and the HTTP server are available but
+  not used yet.
 
-## Node application (to write: `firmware/bay-node/`)
+## Board and application
 
-| Feature | How |
+| | |
 |---|---|
-| USB/IP export of the DUT | `CONFIG_USBIP=y`, `zephyr_uhc0` → OTG controller; client: `usbip attach -r bay-<id>.local -b 1-1` |
-| Power control | GPIO IO6 → TPS2553 EN (pull-up: board is on even before boot); FAULT on IO7 |
-| Telemetry | INA226 (0x40, 50 mΩ) → V, I, P; REST `GET /api/power`, Prometheus `/metrics` |
-| Modes | read PC_DET (IO4) and SVC (IO5); `POST /api/mode {classic|usbip}` drives MUX_FORCE_PC (IO10) |
-| AUX | UART1 (IO17/18) ↔ TCP (RFC 2217-ish raw socket), RESET/BOOT pulses on IO11/IO12 |
-| Status LED | WS2812B on IO13: off / USB/IP idle / attached / classic / fault |
-| Identity | bay id from the carrier (stored in settings on first boot), `bay-<id>.local` via mDNS |
-| Updates | MCUboot + mcumgr over UDP; first flash through the front port in SERVICE mode |
+| Board | `bay_node/esp32s3/procpu` in `firmware/boards/hwtr/bay_node/` (ESP32-S3-MINI-1-N8, 8 MB, two 3.75 MB image slots), pin map from `electronics/bay-node/design.py` |
+| Bindings | `hwtr,dut-port` (TPS2553 EN/FAULT, AUX RESET/BOOT, INA226, AUX UART), `hwtr,usb-mux` (MUX_FORCE_PC, PC_DET, SVC) |
+| Stand-in | `esp32s3_devkitc/esp32s3/procpu` + `firmware/bay-node/boards/esp32s3_devkitc_procpu.overlay` (same GPIO map) |
+| Application | `firmware/bay-node/` |
+| Build | `west build -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node` in a workspace made from `firmware/west.yml` |
 
-Suggested `west.yml`-based app layout and a board overlay for the node will
-come with the first firmware PR.
+## Node application
 
-## Flashing a node the first time
+| Feature | Status | How |
+|---|---|---|
+| USB/IP export of the DUT | written | `CONFIG_USBIP=y`, `zephyr_uhc0` → OTG controller; client: `usbip attach -r bay-<id>.local -b 1-1` |
+| Power control | written | IO6 → TPS2553 EN, kept on at boot (pull-up: the board is on before the firmware runs); `bay power on/off/cycle` |
+| Over-current | written | FAULT on IO7 (interrupt): logged, counted, VBUS cut and latched after 1 s in current limit |
+| Telemetry | written (shell) | INA226 (0x40, 50 mΩ) through the sensor API → V, I, P in `bay power` / `bay status` |
+| Telemetry over HTTP | not yet | REST `GET /api/power`, Prometheus `/metrics` |
+| Modes | written | reads PC_DET (IO4) and SVC (IO5); `bay mode classic\|usbip` drives MUX_FORCE_PC (IO10), persisted in settings |
+| SERVICE mode | written | stops the USB host and gives the ESP32-S3's single PHY back to the USB-Serial-JTAG (flash/JTAG from the front port); restarts it afterwards |
+| AUX | written | UART1 (IO17/18) ↔ raw TCP port 4000; RESET/BOOT pulses on IO11/IO12 (`bay reset`, `bay boot`) |
+| Status LED | written | WS2812B on IO13 (RMT): fault / service / classic / power off / no network / USB/IP idle / enumerated / attached |
+| Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS |
+| Control interface | written (shell) | `bay …` shell on the UART test pads and over telnet; REST API not yet |
+| Updates | not yet | MCUboot + mcumgr over UDP; for now `west flash` through the front port in SERVICE mode |
 
-1. Slide the bay's **SERVICE** switch on (fascia).
-2. Plug a laptop into the bay's front **PC** port: the ESP32-S3's
-   USB-Serial-JTAG appears (`/dev/ttyACM*`).
-3. `west flash` (esptool auto-reset works over USB-Serial-JTAG; the BOOT and
-   RESET buttons are reachable through the deck window if needed).
+## Flashing a node
+
+1. Slide the bay's **SERVICE** switch on (fascia).  The firmware stops its
+   USB host and routes the ESP32-S3's PHY to the USB-Serial-JTAG (LED
+   yellow).
+2. Plug a laptop into the bay's front **PC** port: the USB-Serial-JTAG
+   appears (`/dev/ttyACM*`).
+3. `west flash` (esptool auto-reset works over USB-Serial-JTAG).  A blank or
+   wedged node: hold **BOOT**, tap **RESET** (both reachable through the
+   deck window) to enter the ROM loader.
 4. SERVICE off: the DUT is back on the ESP32's USB OTG.
+
+First boot: set the Wi-Fi credentials and the bay id from the UART test pads
+(TP1/TP2), or build the credentials in — see `firmware/README.md`.
+
+## Open items
+
+* **Hardware bring-up** — nothing has run on a bay node yet (board
+  definition, INA226 calibration, LED timing, SERVICE PHY handover).
+* **Interrupt OUT / isochronous transfers and hubs** in `uhc_dwc2`: needed
+  for some debug probes, audio/video class DUTs and boards with an on-board
+  hub.
+* REST API + Prometheus metrics, DNS-SD (`_usbip._tcp`), MCUboot/mcumgr OTA,
+  shell on the USB-Serial-JTAG in SERVICE mode, INA226 alert.
 
 ## Camera pods
 

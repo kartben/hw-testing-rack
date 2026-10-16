@@ -1,0 +1,5 @@
+board:
+  name: bay_node
+  full_name: hw-testing-rack bay node
+  socs:
+  - name: esp32s3

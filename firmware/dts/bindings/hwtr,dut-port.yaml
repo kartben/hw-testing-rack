@@ -1,0 +1,57 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Power and control lines towards the board under test (DUT) on a
+  hw-testing-rack bay node: the TPS2553 current-limited VBUS switch, the
+  INA226 that measures it, and the AUX connector (UART + open-drain
+  RESET/BOOT lines driven through 2N7002 N-FETs).
+
+  Example:
+
+    dut_port: dut-port {
+        compatible = "hwtr,dut-port";
+        enable-gpios = <&gpio0 6 GPIO_ACTIVE_HIGH>;
+        fault-gpios = <&gpio0 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+        reset-gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
+        boot-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+        power-monitor = <&ina226>;
+        uart = <&uart1>;
+    };
+
+compatible: "hwtr,dut-port"
+
+properties:
+  enable-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      TPS2553 EN.  Active = DUT VBUS on.  The board pulls EN up, so the DUT
+      is powered before (and without) any firmware: the firmware must keep
+      the line in its current state when it configures it.
+
+  fault-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      TPS2553 ~FAULT (open drain, pulled up on the board).  Active while the
+      switch is in current limit or thermal shutdown (7.5 ms deglitch).
+
+  reset-gpios:
+    type: phandle-array
+    description: |
+      Gate of the N-FET on the AUX RESET line.  Active = the DUT's RESET
+      line is pulled low (DUT held in reset).  Pulled down on the board.
+
+  boot-gpios:
+    type: phandle-array
+    description: |
+      Gate of the N-FET on the AUX BOOT line.  Active = the DUT's BOOT strap
+      line is pulled low.  Pulled down on the board.
+
+  power-monitor:
+    type: phandle
+    description: Sensor (INA226) measuring the DUT VBUS voltage and current.
+
+  uart:
+    type: phandle
+    description: UART wired to the AUX connector (DUT console).

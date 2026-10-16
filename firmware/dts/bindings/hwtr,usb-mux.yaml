@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  USB data-path selection on a hw-testing-rack bay node (two FSUSB42
+  switches and an OR gate):
+
+    MUX_SEL = PC_DET OR MUX_FORCE_PC
+      0: DUT D+/D- <-> ESP32-S3 USB OTG (USB/IP mode)
+      1: DUT D+/D- <-> front PC port   (classic mode)
+    SVC = 1: front PC port <-> ESP32-S3 internal PHY (USB-Serial-JTAG),
+             DUT data disconnected.
+
+  Example:
+
+    usb_mux: usb-mux {
+        compatible = "hwtr,usb-mux";
+        force-pc-gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+        pc-detect-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
+        service-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+    };
+
+compatible: "hwtr,usb-mux"
+
+properties:
+  force-pc-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      MUX_FORCE_PC.  Active = route the DUT to the front PC port even when
+      no laptop is detected.  Pulled down on the board.
+
+  pc-detect-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      PC_DET: front port VBUS through a 10k/20k divider.  Active = a laptop
+      is plugged into the front port (it takes the DUT over in hardware).
+
+  service-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      SVC: the SERVICE slide switch.  Active = the front port is routed to
+      the ESP32-S3 itself and the DUT data lines are disconnected.
