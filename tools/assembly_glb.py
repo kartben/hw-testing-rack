@@ -235,9 +235,20 @@ def bay_layer(name):
     return next((k for key, k in BAY_LAYERS if key in name), None)
 
 
-def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=None, gap=45.0, open_bays=()):
+def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=None, gap=45.0, open_bays=(),
+          hq=False):
     scene_json = json.loads((ASSETS / "rack.json").read_text(encoding="utf-8"))
-    parts = trimesh.load(ASSETS / "parts.glb")
+    parts_glb = ASSETS / "parts.glb"
+    if hq:
+        # full-resolution printed parts for the renders ($fn=64, not decimated like the viewer's)
+        parts_glb = REPO / "render" / "parts-hq.glb"
+        if not parts_glb.exists():
+            import sys
+            sys.path.insert(0, str(REPO / "tools"))
+            import rackcfg
+            import webscene
+            webscene.build_parts_glb(rackcfg.load(), rackcfg.load_boards(), hq=True)
+    parts = trimesh.load(parts_glb)
     geoms = {}
     for node in parts.graph.nodes_geometry:
         tf, g = parts.graph[node]
@@ -368,6 +379,7 @@ if __name__ == "__main__":
     ap.add_argument("--explode-bay", metavar="BAY", help="only this bay, laid flat, its layers pulled apart")
     ap.add_argument("--gap", type=float, default=45.0, help="layer gap for --explode-bay (mm)")
     ap.add_argument("--open-bays", metavar="B3,B4", help="also pull these drawers fully out")
+    ap.add_argument("--hq", action="store_true", help="full-resolution part meshes (render/parts-hq.glb)")
     a = ap.parse_args()
     build(a.open, a.explode, a.out, a.with_pc_cable, a.explode_bay, a.gap,
-          tuple(b for b in (a.open_bays or "").split(",") if b))
+          tuple(b for b in (a.open_bays or "").split(",") if b), a.hq)

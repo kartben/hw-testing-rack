@@ -77,7 +77,8 @@ python -m http.server -d site 8000           # open http://localhost:8000
 ```
 
 Photoreal renders (Blender + Cycles) start from `render/assembly.glb`, baked
-from the same scene as the viewer by `python tools/assembly_glb.py`.  Either
+from the same scene as the viewer by `python tools/assembly_glb.py --hq` (`--hq`:
+full-resolution part meshes instead of the viewer's lighter ones).  Either
 render headless in Docker (`tools/render.sh hero`) or drive a Blender you
 already have open — GPU and all — through the Blender MCP add-on's socket:
 
@@ -86,7 +87,7 @@ python tools/blender_live.py exec render/live_scene.py                    # (re)
 python tools/blender_live.py exec render/live_render.py hero              # → docs/img/hero.jpg
 python tools/blender_live.py exec render/live_render.py drawer:C2 docs/img/drawer.jpg
 
-python tools/assembly_glb.py --explode-bay C3 --out render/bay-exploded.glb   # one bay, layers apart
+python tools/assembly_glb.py --hq --explode-bay C3 --out render/bay-exploded.glb   # one bay, layers apart
 python tools/blender_live.py exec render/live_scene.py render/bay-exploded.glb
 python tools/blender_live.py exec render/live_render.py exploded
 ```
@@ -101,7 +102,7 @@ one would (a catenary), depth of field and lens effects:
 python tools/fetch_render_assets.py                     # CC0 textures + vendor board models → render/assets/
 python tools/board_models.py                            # normalise the board models (docs/boards-3d.md)
 python render/screen_terminal.py                        # the laptop's screen → render/assets/
-python tools/assembly_glb.py --with-pc-cable --open-bays B3 --out render/assembly-photo.glb
+python tools/assembly_glb.py --hq --with-pc-cable --open-bays B3 --out render/assembly-photo.glb
 python tools/blender_live.py exec render/live_photo.py build
 python tools/blender_live.py exec render/live_photo.py shot desk          # desk, drawer, detail → docs/img/photo-*.jpg
 ```

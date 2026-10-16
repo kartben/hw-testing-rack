@@ -11,8 +11,8 @@ black anodised, brushed aluminium for the 2020 frame; PETG with 0.2 mm layer
 lines (along each part's print Z) and shading-rounded edges for the printed
 parts; lacquered solder mask on the PCBs.  The set is a small office: oak desk
 against a plaster wall, a laptop wired to bay C4's front port by a hanging
-USB-C cable, a mug, lit only through a window (sun + sky, with a light portal).
-The GLB comes from `tools/assembly_glb.py --with-pc-cable --open-bays B3 --out render/assembly-photo.glb`; the scanned
+USB-C cable, lit only through a window (sun + sky, with a light portal).
+The GLB comes from `tools/assembly_glb.py --hq --with-pc-cable --open-bays B3 --out render/assembly-photo.glb`; the scanned
 textures from `tools/fetch_render_assets.py` and the laptop screen from `render/screen_terminal.py`
 (both into render/assets/, optional: procedural fallbacks).
 """
@@ -324,70 +324,6 @@ def plaster():
     return m
 
 
-def disc(name, radius, loc, mat, coll):
-    me = bpy.data.meshes.new(name)
-    bm = bmesh.new()
-    bmesh.ops.create_circle(bm, cap_ends=True, radius=radius, segments=48)
-    bm.to_mesh(me)
-    bm.free()
-    ob = bpy.data.objects.new(name, me)
-    ob.location = loc
-    me.materials.append(mat)
-    coll.objects.link(ob)
-    return ob
-
-
-def ceramic():
-    """Glazed stoneware: white body under a thin, very glossy glaze."""
-    name = "photo-ceramic"
-    if name in bpy.data.materials:
-        return bpy.data.materials[name]
-    m, nt, b = _principled(name)
-    b.inputs["Base Color"].default_value = (0.90, 0.89, 0.86, 1)
-    b.inputs["Roughness"].default_value = 0.35
-    b.inputs["Coat Weight"].default_value = 1.0
-    b.inputs["Coat Roughness"].default_value = 0.03
-    b.inputs["Coat IOR"].default_value = 1.52
-    b.inputs["Subsurface Weight"].default_value = 0.08
-    b.inputs["Subsurface Scale"].default_value = 0.002
-    return m
-
-
-def mug(coll, at=(-0.20, -0.08)):
-    ceramic_ = ceramic()
-    me = bpy.data.meshes.new("mug")
-    bm = bmesh.new()
-    bmesh.ops.create_cone(bm, cap_ends=True, segments=64, radius1=0.041, radius2=0.043, depth=0.095)
-    top = max(bm.faces, key=lambda f: f.calc_center_median().z)
-    bmesh.ops.delete(bm, geom=[top], context="FACES_ONLY")
-    bm.to_mesh(me)
-    bm.free()
-    for p in me.polygons:
-        p.use_smooth = True
-    ob = bpy.data.objects.new("mug", me)
-    ob.location = (at[0], at[1], 0.0475)
-    me.materials.append(ceramic_)
-    coll.objects.link(ob)
-    ob.modifiers.new("wall", "SOLIDIFY").thickness = 0.005
-    ob.modifiers.new("smooth", "SUBSURF").levels = 1
-    me = bpy.data.meshes.new("mug-handle")
-    bm = bmesh.new()
-    bmesh.ops.create_circle(bm, radius=0.026, segments=32)
-    bm.to_mesh(me)
-    bm.free()
-    h = bpy.data.objects.new("mug-handle", me)       # a ring, thickened by a skin modifier
-    h.location = (at[0] + 0.05, at[1], 0.05)
-    h.rotation_euler = (math.radians(90), 0, 0)
-    coll.objects.link(h)
-    h.modifiers.new("skin", "SKIN")
-    for v in h.data.skin_vertices[0].data:
-        v.radius = (0.006, 0.006)
-    h.modifiers.new("smooth", "SUBSURF").levels = 2
-    h.data.materials.append(ceramic_)
-    disc("coffee", 0.038, (at[0], at[1], 0.083), simple("photo-coffee", (0.06, 0.03, 0.015), rough=0.02, coat=0.5),
-         coll)
-
-
 def screen_material():
     """Laptop screen showing the bay node in KiCad's 3D viewer (its top render), on a dark UI."""
     name = "photo-screen"
@@ -558,7 +494,6 @@ def build(glb):
     box("floor", (7.0, 7.0, 0.02), (0.25, -2.0, -0.76), simple("photo-floor", (0.16, 0.12, 0.09), rough=0.6), setc)
     box("skirting", (4.3, 0.012, 0.08), (0.825, 0.302, -0.71), simple("photo-skirt", (0.85, 0.85, 0.83), rough=0.5), setc)
     port, out = laptop(setc)
-    mug(setc)
     # the demo cable from the GLB is a viewer bezier: replace it with a hanging one with real plugs
     for ob in [o for o in rack.all_objects if o.name.startswith("cable:pc")]:
         bpy.data.objects.remove(ob, do_unlink=True)
@@ -644,7 +579,16 @@ def build(glb):
     sc.cycles.glossy_bounces = 6
     sc.cycles.sample_clamp_indirect = 8.0
     sc.cycles.use_adaptive_sampling = True
-    sc.cycles.adaptive_threshold = 0.02
+    sc.cycles.adaptive_threshold = 0.005
+    sc.cycles.glossy_bounces = 8
+    sc.cycles.transmission_bounces = 8
+    sc.cycles.denoiser = "OPENIMAGEDENOISE"
+    sc.cycles.denoising_input_passes = "RGB_ALBEDO_NORMAL"
+    sc.cycles.denoising_prefilter = "ACCURATE"
+    try:
+        sc.cycles.denoising_quality = "HIGH"
+    except Exception:
+        pass
     lens_fx(sc)
     return {"scene": sc.name, "objects": len(rack.all_objects), "set": len(setc.objects)}
 
@@ -760,5 +704,5 @@ if MODE == "build":
 else:
     name = sys.argv[2] if len(sys.argv) > 2 else "desk"
     out = str(REPO / (sys.argv[3] if len(sys.argv) > 3 else f"docs/img/photo-{name}.jpg"))
-    result = shot(name, out, int(sys.argv[4]) if len(sys.argv) > 4 else 256,
-                  sys.argv[5] if len(sys.argv) > 5 else "1920x1200")
+    result = shot(name, out, int(sys.argv[4]) if len(sys.argv) > 4 else 1024,
+                  sys.argv[5] if len(sys.argv) > 5 else "3840x2400")

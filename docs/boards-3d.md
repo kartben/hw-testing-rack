@@ -9,7 +9,7 @@ downloads the ones that need no login into `render/assets/` (git-ignored), and
 ```bash
 python tools/fetch_render_assets.py     # textures + the board models below
 python tools/board_models.py            # → render/assets/boards/<board-id>.norm.glb
-python tools/assembly_glb.py --with-pc-cable --open-bays B3 --out render/assembly-photo.glb
+python tools/assembly_glb.py --hq --with-pc-cable --open-bays B3 --out render/assembly-photo.glb
 ```
 
 `board_models.py` finds the PCB (the two biggest planes of the dominant flat axis), turns the

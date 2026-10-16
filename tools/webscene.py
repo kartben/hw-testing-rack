@@ -17,7 +17,7 @@ import numpy as np
 import trimesh
 
 import rackcfg
-from build import BUILD, MECH, SITE_ASSETS, openscad_cmd
+from build import BUILD, MECH, REPO, SITE_ASSETS, openscad_cmd
 
 WEB_PARTS = {
     # name: (scad, defines)
@@ -56,8 +56,8 @@ ASSEMBLY_WRAPPERS = {
 }
 
 
-def render_web_stl(name: str, scad: str, defines: dict) -> Path:
-    out = BUILD / "web" / f"{name}.stl"
+def render_web_stl(name: str, scad: str, defines: dict, fn: int = 28, sub: str = "web") -> Path:
+    out = BUILD / sub / f"{name}.stl"
     out.parent.mkdir(parents=True, exist_ok=True)
     src = scad
     if name in ASSEMBLY_WRAPPERS:
@@ -69,8 +69,8 @@ def render_web_stl(name: str, scad: str, defines: dict) -> Path:
                            encoding="utf-8")
     base = openscad_cmd()
     docker = base[0] == "docker"
-    cmd = base + ["--export-format", "binstl", "-D", "$fn=28",
-                  "-o", (f"build/web/{name}.stl" if docker else str(out))]
+    cmd = base + ["--export-format", "binstl", "-D", f"$fn={fn}",
+                  "-o", (f"build/{sub}/{name}.stl" if docker else str(out))]
     for k, v in defines.items():
         cmd += ["-D", f'{k}="{v}"' if isinstance(v, str) else f"{k}={v}"]
     cmd.append(src if docker else str(MECH / src))
@@ -80,8 +80,11 @@ def render_web_stl(name: str, scad: str, defines: dict) -> Path:
     return out
 
 
-def build_parts_glb(rack, boards: dict) -> dict:
-    """Render every web part (in parallel) and pack them into one GLB."""
+def build_parts_glb(rack, boards: dict, hq: bool = False) -> dict:
+    """Render every web part (in parallel) and pack them into one GLB.
+
+    hq=True is for the Blender renders: $fn=64, no decimation (it turns the plates' hexagon
+    holes irregular), written to render/parts-hq.glb instead of the viewer's parts.glb."""
     import concurrent.futures as cf
 
     parts = dict(WEB_PARTS)
@@ -90,22 +93,23 @@ def build_parts_glb(rack, boards: dict) -> dict:
     for bid in used:
         parts[f"plate_{bid}"] = ("parts/board_plate.scad", {"BOARD": bid})
     with cf.ThreadPoolExecutor(max_workers=8) as ex:
-        futs = {ex.submit(render_web_stl, n, s, d): n for n, (s, d) in parts.items()}
+        futs = {ex.submit(render_web_stl, n, s, d, *((64, "hq") if hq else ())): n for n, (s, d) in parts.items()}
         stls = {futs[f]: f.result() for f in cf.as_completed(futs)}
     scene = trimesh.Scene()
     stats = {}
     for name in sorted(stls):
         m = trimesh.load(stls[name], force="mesh")
         m.merge_vertices()
-        if len(m.faces) > 20000:
+        if len(m.faces) > 20000 and not hq:
             try:
                 m = m.simplify_quadric_decimation(face_count=20000)
             except Exception:  # fast_simplification missing: keep full mesh
                 pass
         stats[name] = len(m.faces)
         scene.add_geometry(m, node_name=name, geom_name=name)
-    SITE_ASSETS.mkdir(parents=True, exist_ok=True)
-    scene.export(SITE_ASSETS / "parts.glb")
+    dst = REPO / "render" / "parts-hq.glb" if hq else SITE_ASSETS / "parts.glb"
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    scene.export(dst)
     return stats
 
 
