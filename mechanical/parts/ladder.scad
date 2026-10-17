@@ -80,10 +80,10 @@ module grooves3(k)                   // tray runner grooves on both faces, open 
     in_row3(k) for (z = [-1, PANEL_T - GROOVE_D])
         translate([-40, GROOVE_Z[0], z]) cube([GROOVE_END + 40, GROOVE_Z[1] - GROOVE_Z[0], GROOVE_D + 1]);
 
-module brace_holes3(zs)                // snap-pin holes into the rear edge (in the ladder plane)
+module brace_holes3(zs)                // heat-set insert holes in the rear edge (in the ladder plane)
     for (z = zs) translate([PR + 1, z, PANEL_T / 2]) rotate([0, -90, 0]) {
-        cylinder(d = BRACE_HOLE[0], h = BRACE_HOLE[1] + 1, $fn = 20);
-        translate([0, 0, 1 + 5.4]) cylinder(d = BRACE_HOLE[0] + 0.8, h = 2.6, $fn = 20);   // undercut for the barb
+        cylinder(d = BRACE_INSERT[0], h = BRACE_INSERT[1] + 1, $fn = 20);
+        cylinder(d1 = BRACE_INSERT[0] + 0.8, d2 = BRACE_INSERT[0], h = 1.4, $fn = 20);     // lead-in
     }
 
 // ------------------------------------------------------------------ parts

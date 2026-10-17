@@ -103,7 +103,7 @@ directions.
 | Base ladder / cap strip | `ladder.scad` (`"base"`, `"cap"`) | floor → row A (holds a floor plate); the strip on top holds the cap plate |
 | Tray | `tray.scad` | carrier base + deck + both guides in one part: the drawer rides on two side ledges under the old C-channel lips; runners on both walls slide into the ladder grooves from the front, and a flex arm per wall clicks a barb into the groove's window (pull the drawer out, press both arms to remove the tray) |
 | Cap / floor plate | `tray.scad` (`PART="cap_plate"`, `"floor_plate"`) | ceiling of the top row and the tie between the base ladders: a regular 30 mm grid (the camera pod's pitch) with an M3-insert boss at every crossing, so the pod (or the PSU and hub, on the floor plate) mounts on any square of crossings |
-| Rear brace | `brace.scad` (`ROW=k`, `-1` for the base) | an X behind each bay and row, on four split snap pins in the rear edges of its two ladders (left and right pins at different heights, so neighbouring braces share a ladder).  No slack: the pins are 0.2 mm over the hole and each diagonal is 0.25 mm short, so the X is taut once fitted |
+| Rear brace | `brace.scad` (`ROW=k`, `-1` for the base) | an X behind each bay and row, screwed (4 × M3 × 8 button head) into heat-set inserts in the rear edges of its two ladders; left and right holes at different heights, so neighbouring braces share a ladder.  No slack: snug 3.1 mm holes, and each diagonal is 0.25 mm short, so the X is taut once the fourth screw is in |
 | Drawer | `drawer.scad` (`LIGHT=true`) | open floor (the plate covers it), magnet over the left ledge |
 
 The bay pitch becomes 166 mm (carrier width 158 + a 7.4 mm ladder), so every bay
