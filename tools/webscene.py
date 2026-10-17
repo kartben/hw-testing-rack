@@ -44,6 +44,23 @@ ASSEMBLY_WRAPPERS = {
 LADDER_UP = "multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]])"
 BRACE_UP = "multmatrix([[1, 0, 0, 0], [0, 0, -1, PR + BRACE_T], [0, 1, 0, 0], [0, 0, 0, 1]])"
 
+LAYER_H = 0.2       # mm, docs/mechanical.md › Printing
+
+
+def print_up(name: str) -> list[int]:
+    """The build plate's normal in the part's viewer frame (the layer lines run across it):
+    LADDER_UP / BRACE_UP turn the print Z into +X / -Y, the camera pod prints upside down
+    (rotate([180, 0, 0])), the chain foot on its side (rotate([0, 90, 0])), the rest as placed."""
+    if name.startswith("ladder_"):
+        return [1, 0, 0]
+    if name.startswith("brace_"):
+        return [0, -1, 0]
+    if name.startswith("camera_"):
+        return [0, 0, -1]
+    if name == "chain_foot":
+        return [-1, 0, 0]
+    return [0, 0, 1]
+
 
 def panel_parts(rack) -> dict:
     """Ladders and braces of this rack's rows: name -> (scad, defines, wrapper source)."""
@@ -408,6 +425,7 @@ def build(rack) -> Path:
         "rack": {"width": W, "depth": D, "height": rack.height, "base_height": rack.base_height, "rows": rows_out,
                  "drawer_travel": d["travel"], "plenum": plenum, "pitch": pitch, "panel": T,
                  "bay_depth": BD, "inner_x0": rack.inner_x0},
+        "print": {"layer": LAYER_H, "up": {name: print_up(name) for name in sorted(stats)}},
         **items, "bays": bays,
     }
     out = SITE_ASSETS / "rack.json"

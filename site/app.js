@@ -39,7 +39,8 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.maxPolarAngle = Math.PI * 0.53;
-controls.minDistance = 120;
+controls.minDistance = 40;            // close enough to see the 0.2 mm layers
+controls.zoomToCursor = true;
 controls.maxDistance = 5000;
 
 const sun = new THREE.DirectionalLight(0xffffff, 2.2);
@@ -80,6 +81,39 @@ const CABLE_COLORS = {
   'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
   power: 0xff5a5a, pc: 0x3fb6ff, ext: 0x7d8590, mains: 0x101114,
 };
+
+// Layer lines on the printed parts.  Each part mesh carries `printUp`, its build plate's normal
+// (rack.json › print.up), so the lines run the way the part is printed (ladders and braces lie
+// flat: their lines go round the edges).  Every layer is a rounded bead: the normal tilts down at
+// its bottom and up at its top, with a dark seam between beads.  Both are averaged over the
+// pixel's footprint, so the lines fade out instead of flickering once a layer is under a pixel.
+const LAYER = { h: 0.2 };
+function printLook(mat) {
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.layerH = { value: LAYER.h };
+    sh.vertexShader = sh.vertexShader
+      .replace('void main() {', 'attribute vec3 printUp;\nuniform float layerH;\nvarying float vLayer;\nvarying vec3 vUpView;\nvoid main() {')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvLayer = dot(position, printUp) / layerH;\nvUpView = normalMatrix * printUp;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('void main() {', `varying float vLayer;
+varying vec3 vUpView;
+// box-filtered over [a, b] (in layers): the bead's slope 2t-1 and its seam (2t-1)^2, t = fract
+float beadSlope(float a, float b) { float fa = fract(a), fb = fract(b); return ((fb * fb - fb) - (fa * fa - fa)) / (b - a); }
+float seamG(float x) { float s = 2.0 * fract(x) - 1.0; return floor(x) / 3.0 + (s * s * s + 1.0) / 6.0; }
+void main() {`)
+      .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>
+if (dot(vUpView, vUpView) > 0.01) {
+  vec3 up = normalize(vUpView);
+  float w = max(fwidth(vLayer), 1e-3);
+  float a = vLayer - 0.5 * w, b = vLayer + 0.5 * w;
+  float on = smoothstep(0.15, 0.6, 1.0 - abs(dot(normal, up))) * (1.0 - smoothstep(0.45, 0.9, w));
+  normal = normalize(normal + up * beadSlope(a, b) * 0.8 * on);
+  diffuseColor.rgb *= 1.0 - 0.5 * on * ((seamG(b) - seamG(a)) / w - 1.0 / 3.0);
+}`);
+  };
+  return mat;
+}
+for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras']) printLook(MAT[k]);
 
 function partMaterial(name) {
   if (name.startsWith('ladder_')) return MAT.ladders;
@@ -418,12 +452,17 @@ async function load() {
     new GLTFLoader().loadAsync('assets/parts.glb'),
   ]);
   DATA = json;
+  LAYER.h = DATA.print?.layer ?? LAYER.h;
   gltf.scene.updateMatrixWorld(true);
   gltf.scene.traverse((o) => {
     if (o.isMesh) {
       const name = (o.parent && o.parent !== gltf.scene && !o.name) ? o.parent.name : o.name;
       // sharp edges stay sharp (flat faces, crisp corners), only curved walls are smoothed
-      GEOMS[name] = toCreasedNormals(o.geometry.clone().applyMatrix4(o.matrixWorld), deg(35));
+      const geo = toCreasedNormals(o.geometry.clone().applyMatrix4(o.matrixWorld), deg(35));
+      const up = DATA.print?.up?.[name] ?? [0, 0, 1];
+      geo.setAttribute('printUp', new THREE.Float32BufferAttribute(
+        new Float32Array(geo.attributes.position.count * 3).map((_, i) => up[i % 3]), 3));
+      GEOMS[name] = geo;
     }
   });
   // PCB GLBs exported from KiCad (optional)
