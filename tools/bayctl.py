@@ -9,10 +9,17 @@
     python tools/bayctl.py mode B3 usbip|classic
     python tools/bayctl.py attach B3 [--show]           Linux: usbip attach, list the new /dev/serial/by-id
     python tools/bayctl.py detach B3
-    python tools/bayctl.py prepare B3 [--power-cycle]   what a test runner needs before flashing
+    python tools/bayctl.py prepare B3 [--power-cycle] [--lease 30m]   what a test runner needs before flashing
     python tools/bayctl.py pty B3                       stdin/stdout <-> the AUX UART (twister serial_pty)
     python tools/bayctl.py hwmap -o rack-map.yaml       Zephyr twister hardware map + per-bay pre-scripts
     python tools/bayctl.py export labgrid|pdudaemon     configuration for labgrid / LAVA's PDUDaemon
+    python tools/bayctl.py lease B3 [--for 1h] [--note TEXT]    reserve the bay for this host
+    python tools/bayctl.py release B3 [--force]         end the reservation (--force: someone else's, admin)
+    python tools/bayctl.py access show B3               rights, reservation, connections (admin: rules, refusals)
+    python tools/bayctl.py access push [B3 ...]         the `access:` rules of config/lab.yaml to the nodes
+    python tools/bayctl.py access claim B3 [...]        give the nodes the rack's admin key (press BOOT on each)
+    python tools/bayctl.py access kick B3 usbip:51234   close a connection, refuse its address for a minute
+    python tools/bayctl.py access keygen                a new random admin key
 
 Where the data comes from:
   * config/rack.yaml `population`: which board family sits in which bay;
@@ -20,17 +27,23 @@ Where the data comes from:
   * config/lab.yaml (per installation, git-ignored; see config/lab.example.yaml): probe serial
     numbers, console device paths, bay hosts and any override.
 
-The nodes speak plain HTTP/JSON (firmware/README.md, "Web page and API") and USB/IP on TCP 3240;
-there is no authentication, so keep the rack on a lab network.  `attach`/`detach` call the Linux
-`usbip` tool (package linux-tools / usbip; needs root, so bayctl prefixes `sudo -n` when not root).
+The nodes speak plain HTTP/JSON (firmware/README.md, "Web page and API") and USB/IP on TCP 3240.
+Each node only serves the addresses its access rules allow (firmware/README.md, "Access
+control"); admin requests (rules, kicks) are signed with the rack's admin key, taken from the
+BAYCTL_KEY environment variable, never from a file in the repository.  `attach`/`detach` call
+the Linux `usbip` tool (package linux-tools / usbip; needs root, so bayctl prefixes `sudo -n`).
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
+import hmac
+import ipaddress
 import json
 import os
 import re
+import secrets
 import shlex
 import socket
 import subprocess
@@ -130,6 +143,88 @@ def load_bays(rack_yaml: Path = RACK_YAML, boards_yaml: Path = BOARDS_YAML,
     return out
 
 
+SERVICES = ("status", "control", "console", "usbip", "shell")
+SOURCE_NAME = re.compile(r"[A-Za-z0-9._-]{1,15}$")
+
+
+def _services(value, where: str) -> list[str]:
+    names = [value] if isinstance(value, str) else list(value or [])
+    for n in names:
+        if n != "all" and n not in SERVICES:
+            raise BayError(f"{where}: unknown service {n!r} (one of: all, {', '.join(SERVICES)})")
+    return names
+
+
+def access_rules(lab_yaml: Path | None, bay_id: str) -> dict | None:
+    """The node rules for a bay from config/lab.yaml `access:` (and `bays.<id>.access:`), or None.
+
+        access:
+          everyone: [status]
+          sources:
+            ci-runners: {cidr: 192.168.1.40/30, allow: [status, control, console, usbip]}
+            ben-laptop: {cidr: 192.168.1.23, allow: [all]}
+        bays:
+          C1:
+            access: {sources: {fabio-desk: {cidr: 192.168.1.66, allow: [all]}}}   # added for C1
+
+    A bay's own `access:` adds sources (or replaces one of the same name) and may set
+    `everyone` or `enabled`.
+    """
+    lab = _yaml(lab_yaml if lab_yaml is not None else LAB_YAML)
+    rack = lab.get("access")
+    bay = ((lab.get("bays") or {}).get(bay_id) or (lab.get("bays") or {}).get(bay_id.lower()) or {}).get("access")
+    if rack is None and bay is None:
+        return None
+    merged = {"enabled": True, "everyone": ["status"], "sources": {}}
+    for part, where in ((rack or {}, "access"), (bay or {}, f"bays.{bay_id}.access")):
+        if "enabled" in part:
+            merged["enabled"] = bool(part["enabled"])
+        if "everyone" in part:
+            merged["everyone"] = _services(part["everyone"], f"{where}.everyone")
+        for name, src in (part.get("sources") or {}).items():
+            name = str(name)
+            if not SOURCE_NAME.match(name):
+                raise BayError(f"{where}.sources: {name!r}: 1-15 letters, digits, '.', '_' or '-'")
+            try:
+                net = ipaddress.IPv4Network(str(src.get("cidr", "")), strict=False)
+            except (ValueError, AttributeError):
+                raise BayError(f"{where}.sources.{name}: cidr must be a.b.c.d or a.b.c.d/n") from None
+            cidr = str(net.network_address) if net.prefixlen == 32 else str(net)
+            merged["sources"][name] = {"name": name, "cidr": cidr,
+                                       "allow": _services(src.get("allow", []), f"{where}.sources.{name}.allow")}
+    if len(merged["sources"]) > 8:
+        raise BayError(f"bay {bay_id}: {len(merged['sources'])} access sources, a node holds 8")
+    return {**merged, "sources": list(merged["sources"].values())}
+
+
+def admin_key() -> bytes:
+    """The rack's admin key: BAYCTL_KEY, 64 hex digits (`bayctl access keygen` makes one)."""
+    text = os.environ.get("BAYCTL_KEY", "").strip()
+    if not text:
+        raise BayError("set BAYCTL_KEY to the rack's admin key (a new one: bayctl access keygen)")
+    try:
+        key = bytes.fromhex(text)
+    except ValueError:
+        key = b""
+    if len(key) != 32:
+        raise BayError("BAYCTL_KEY must be 64 hex digits")
+    return key
+
+
+def sign(key: bytes, nonce: str, method: str, path: str, body: bytes) -> str:
+    """X-Bay-Auth for an admin request (firmware src/access.c)."""
+    mac = hmac.new(key, f"{nonce}\n{method}\n{path}\n".encode() + body, hashlib.sha256)
+    return f"{nonce}:{mac.hexdigest()}"
+
+
+def duration(text: str) -> int:
+    """"90", "90s", "15m", "2h" -> seconds."""
+    m = re.fullmatch(r"(\d+)\s*([smh]?)", str(text).strip())
+    if not m:
+        raise BayError(f"duration {text!r}: a number of seconds, or 15m, 2h")
+    return int(m.group(1)) * {"": 1, "s": 1, "m": 60, "h": 3600}[m.group(2)]
+
+
 def get_bay(bays: dict[str, Bay], bid: str) -> Bay:
     b = bays.get(bid.upper())
     if b is None:
@@ -139,11 +234,15 @@ def get_bay(bays: dict[str, Bay], bid: str) -> Bay:
 
 # ------------------------------------------------------------------------- node API
 
-def api(bay: Bay, path: str, body: dict | None = None, timeout: float = 15.0) -> dict:
-    """GET (body None) or POST a node endpoint; returns the JSON document."""
+def api(bay: Bay, path: str, body: dict | None = None, timeout: float = 15.0, key: bytes | None = None) -> dict:
+    """GET (body None) or POST a node endpoint; returns the JSON document.  With a key: signed (admin)."""
     data = None if body is None else json.dumps(body).encode()
-    req = urllib.request.Request(bay.url + path, data=data, method="GET" if body is None else "POST",
-                                 headers={"Content-Type": "application/json"} if data else {})
+    method = "GET" if body is None else "POST"
+    headers = {"Content-Type": "application/json"} if data else {}
+    if key is not None:
+        nonce = api(bay, "/api/access/nonce", timeout=timeout)["nonce"]
+        headers["X-Bay-Auth"] = sign(key, nonce, method, path, data or b"")
+    req = urllib.request.Request(bay.url + path, data=data, method=method, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
             return json.loads(r.read() or b"{}")
@@ -282,6 +381,76 @@ def pty_bridge(bay: Bay) -> None:
         sock.close()
 
 
+# ------------------------------------------------------------------------- access control
+
+def lease(bay: Bay, seconds: int, note: str = "") -> dict:
+    """Reserve (or renew) the bay for this host; BayError (423) while another host holds it."""
+    return api(bay, "/api/lease", {"ttl_s": seconds, "note": note})
+
+
+def release(bay: Bay, force: bool = False) -> dict:
+    return api(bay, "/api/lease", {"release": True}, key=admin_key() if force else None)
+
+
+def access_push(bay: Bay, rules: dict, key: bytes) -> str:
+    """Write the rules to a node: "updated", "unchanged" or "not claimed"."""
+    doc = api(bay, "/api/access", key=key if _claimed(bay) else None)
+    if not doc.get("claimed"):
+        return "not claimed"
+    current = {"enabled": doc["enabled"], **doc["rules"]}
+    if _same_rules(current, rules):
+        return "unchanged"
+    api(bay, "/api/access/rules", rules, key=key)
+    return "updated"
+
+
+def _claimed(bay: Bay) -> bool:
+    return bool(api(bay, "/api/status").get("access", {}).get("claimed"))
+
+
+def _norm(allow: list[str]) -> list[str]:
+    return list(SERVICES) if "all" in allow else sorted(allow, key=SERVICES.index)
+
+
+def _same_rules(a: dict, b: dict) -> bool:
+    def norm(r):
+        return (bool(r.get("enabled")), _norm(r.get("everyone", [])),
+                sorted((s["name"], s["cidr"], tuple(_norm(s["allow"]))) for s in r.get("sources", [])))
+    return norm(a) == norm(b)
+
+
+def access_claim(bay: Bay, key: bytes, timeout: float = 70.0, say=print) -> None:
+    """Give an unclaimed node the rack's key: someone presses its BOOT button."""
+    start = api(bay, "/api/access/claim", {"key": key.hex()})
+    say(f"{bay.id}: press BOOT on bay {bay.id} (its LED blinks white) within {start['remaining_s']} s")
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        r = api(bay, "/api/access/claim", {"ticket": start["ticket"]})
+        if r["state"] == "done":
+            return
+        time.sleep(1.0)
+    raise BayError(f"{bay.id}: nobody pressed BOOT in time")
+
+
+def _print_access(d: dict) -> None:
+    lease_ = d.get("lease")
+    print(f"you {d['you']}{' (' + d['source'] + ')' if d.get('source') else ''}: {', '.join(d['allow']) or 'nothing'}"
+          f"{'  [admin]' if d.get('admin') else ''}")
+    print(f"claimed: {'yes' if d['claimed'] else 'no'}, rules {'on' if d['enabled'] else 'off'}")
+    if "rules" in d:
+        for s_ in d["rules"]["sources"]:
+            print(f"  {s_['name']:16} {s_['cidr']:19} {', '.join(s_['allow'])}")
+        print(f"  {'everyone else':16} {'':19} {', '.join(d['rules']['everyone']) or '-'}")
+    print("lease: " + (f"{lease_['holder']}{' (' + lease_['note'] + ')' if lease_['note'] else ''}, "
+                       f"{lease_['remaining_s']} s left" if lease_ else "none"))
+    for c in d.get("connections", []):
+        peer = f"{c['peer']}:{c['port']}" if c["port"] else c["peer"]
+        print(f"  {c['id']:14} {c['label']:12} {peer:22} {c['since_s']} s")
+    print(f"refused: {d['refused_total']}")
+    for r in d.get("refused", []):
+        print(f"  {r['ip']:15} {r['service']:8} {r['reason']:12} x{r['count']}, last {r['last_s']} s ago")
+
+
 # ------------------------------------------------------------------------- test-framework configs
 
 def _target_or_error(bay: Bay) -> str:
@@ -292,7 +461,7 @@ def _target_or_error(bay: Bay) -> str:
 
 
 def hwmap(bays: dict[str, Bay], scripts_dir: Path, python: str, bayctl: str, lab: Path | None,
-          power_cycle: bool = False) -> tuple[list[dict], list[str]]:
+          power_cycle: bool = False, lease_for: str | None = None) -> tuple[list[dict], list[str]]:
     """Twister hardware map entries (+ writes one pre-script per bay); returns (entries, warnings)."""
     entries, warnings = [], []
     no_id: dict[str, list[str]] = {}            # runner -> bays without a probe id
@@ -311,12 +480,23 @@ def hwmap(bays: dict[str, Bay], scripts_dir: Path, python: str, bayctl: str, lab
             "#!/bin/sh\n"
             f"# Generated by tools/bayctl.py hwmap: bay {bay.id} ({bay.name}) before each test.\n"
             f"exec {shlex.quote(python)} {shlex.quote(bayctl)}{lab_arg} prepare {bay.id}"
-            + (" --power-cycle" if power_cycle else "") + "\n",
+            + (" --power-cycle" if power_cycle else "")
+            + (f" --lease {shlex.quote(lease_for)}" if lease_for else "") + "\n",
             encoding="utf-8", newline="\n")
-        try:
-            pre.chmod(0o755)
-        except OSError:
-            pass
+        scripts = [pre]
+        if lease_for:
+            post = scripts_dir / f"bay-{bay.id.lower()}-post.sh"
+            post.write_text(
+                "#!/bin/sh\n"
+                f"# Generated by tools/bayctl.py hwmap: bay {bay.id} after each test.\n"
+                f"exec {shlex.quote(python)} {shlex.quote(bayctl)}{lab_arg} release {bay.id}\n",
+                encoding="utf-8", newline="\n")
+            scripts.append(post)
+        for script in scripts:
+            try:
+                script.chmod(0o755)
+            except OSError:
+                pass
         e: dict = {"connected": True, "platform": platform, "product": bay.product or f"{bay.name} (bay {bay.id})"}
         if bay.runner:
             e["runner"] = bay.runner
@@ -338,6 +518,8 @@ def hwmap(bays: dict[str, Bay], scripts_dir: Path, python: str, bayctl: str, lab
             no_id.setdefault(bay.runner or "default", []).append(bay.id)
         e["baud"] = bay.baud
         e["pre_script"] = str(pre)
+        if lease_for:
+            e["post_script"] = str(scripts[1])
         e["script_param"] = {"pre_script_timeout": 90}
         e["fixtures"] = [f"bay:{bay.id}", *bay.fixtures]
         if bay.note:
@@ -422,15 +604,34 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("bay")
     p.add_argument("--power-cycle", action="store_true")
     p.add_argument("--timeout", type=float, default=30.0)
+    p.add_argument("--lease", metavar="DURATION", help="reserve (or renew) the bay for this host first: 30m, 2h")
     sub.add_parser("pty").add_argument("bay")
     p = sub.add_parser("hwmap")
     p.add_argument("-o", "--out", type=Path, default=Path("rack-map.yaml"))
     p.add_argument("--scripts", type=Path, default=None, help="pre-script folder (default: next to the map)")
     p.add_argument("--python", default=sys.executable or "python3")
     p.add_argument("--power-cycle", action="store_true", help="power-cycle the DUT before every test")
+    p.add_argument("--lease", metavar="DURATION",
+                   help="each test reserves its bay for this long (pre-script) and releases it (post-script)")
     p = sub.add_parser("export")
     p.add_argument("what", choices=["labgrid", "pdudaemon"])
     p.add_argument("--python", default="python3")
+    p = sub.add_parser("lease")
+    p.add_argument("bay")
+    p.add_argument("--for", dest="ttl", default="1h", help="how long: 15m, 2h, 86400 (default 1h)")
+    p.add_argument("--note", default="", help="shown on the node's page")
+    p = sub.add_parser("release")
+    p.add_argument("bay")
+    p.add_argument("--force", action="store_true", help="someone else's reservation (admin, BAYCTL_KEY)")
+    p = sub.add_parser("access")
+    acc = p.add_subparsers(dest="access_cmd", required=True)
+    acc.add_parser("show").add_argument("bay")
+    acc.add_parser("push").add_argument("bays", nargs="*", help="default: every bay")
+    acc.add_parser("claim").add_argument("bays", nargs="+")
+    q = acc.add_parser("kick")
+    q.add_argument("bay")
+    q.add_argument("id", help="connection id, from `access show`: usbip:51234, rfc2217, web0, ...")
+    acc.add_parser("keygen")
     a = ap.parse_args(argv)
 
     try:
@@ -476,6 +677,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"detached {detach(get_bay(bays, a.bay))} device(s)")
         elif a.cmd == "prepare":
             bay = get_bay(bays, a.bay)
+            if a.lease:
+                lease(bay, duration(a.lease), "bayctl prepare")
             s = api(bay, "/api/status")
             if s.get("path") != "usbip":
                 api(bay, "/api/mode", {"mode": "usbip"})
@@ -494,7 +697,7 @@ def main(argv: list[str] | None = None) -> int:
         elif a.cmd == "hwmap":
             scripts = a.scripts or a.out.resolve().parent / "rack-scripts"
             lab = a.lab.resolve() if a.lab.exists() else None
-            entries, warnings = hwmap(bays, scripts, a.python, bayctl, lab, a.power_cycle)
+            entries, warnings = hwmap(bays, scripts, a.python, bayctl, lab, a.power_cycle, a.lease)
             a.out.write_text("# Generated by tools/bayctl.py hwmap — regenerate rather than edit.\n"
                              + yaml.safe_dump(entries, sort_keys=False), encoding="utf-8")
             for w in warnings:
@@ -508,10 +711,53 @@ def main(argv: list[str] | None = None) -> int:
                 print(json.dumps(doc, indent=2))
             else:
                 print(yaml.safe_dump(doc, sort_keys=False), end="")
+        elif a.cmd == "lease":
+            d = lease(get_bay(bays, a.bay), duration(a.ttl), a.note)
+            print(f"{a.bay.upper()} reserved for {d['you']}, {d['lease']['remaining_s']} s")
+        elif a.cmd == "release":
+            release(get_bay(bays, a.bay), a.force)
+            print(f"{a.bay.upper()} released")
+        elif a.cmd == "access":
+            return access_cli(a, bays)
     except BayError as e:
         print(f"bayctl: {e}", file=sys.stderr)
         return 1
     return 0
+
+
+def access_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
+    if a.access_cmd == "keygen":
+        print(secrets.token_hex(32))
+        return 0
+    if a.access_cmd == "show":
+        key = admin_key() if os.environ.get("BAYCTL_KEY") else None
+        _print_access(api(get_bay(bays, a.bay), "/api/access", key=key))
+        return 0
+    if a.access_cmd == "kick":
+        api(get_bay(bays, a.bay), "/api/access/kick", {"id": a.id}, key=admin_key())
+        print(f"{a.bay.upper()}: kicked {a.id}")
+        return 0
+    key = admin_key()
+    if a.access_cmd == "claim":
+        for bid in a.bays:
+            access_claim(get_bay(bays, bid), key)
+            print(f"{bid.upper()}: claimed")
+        return 0
+    # push
+    failed = 0
+    for bay in [get_bay(bays, b) for b in a.bays] or list(bays.values()):
+        rules = access_rules(a.lab, bay.id)
+        if rules is None:
+            raise BayError(f"no `access:` section in {a.lab} (see config/lab.example.yaml)")
+        try:
+            result = access_push(bay, rules, key)
+        except BayError as e:
+            result, failed = str(e), failed + 1
+        if result == "not claimed":
+            result += f": bayctl access claim {bay.id}"
+            failed += 1
+        print(f"{bay.id:4} {result}")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

@@ -49,14 +49,16 @@ Zephyr's new USB host stack.  The firmware lives in [`firmware/`](../firmware/)
 | AUX RESET/BOOT | written | pulses on IO34/IO48 (`bay reset`, `bay boot`, console buttons), optionally RFC 2217 DTR/RTS like an ESP auto-reset circuit |
 | Status LED | written | WS2812B on IO13 (RMT): fault / service / classic / power off / no network / USB/IP idle / enumerated / attached |
 | Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS |
+| Access control | written, tested on native_sim | per node: which address may use status, control, console, USB/IP, shell (Zephyr packet filter for TCP, a check per HTTP request); a CI reservation (lease); kicks and a refusal log; admin key claimed with a press on BOOT, admin requests signed (HMAC).  See [`firmware/README.md`](../firmware/README.md#access-control) |
 | Control interface | written | `bay …` shell on the UART test pads and over telnet; status page, serial console and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`, `/api/aux`) |
 | Updates | not yet | MCUboot + mcumgr over UDP; for now `west flash` through the front port in SERVICE mode |
 
 ![The node's status page (simulated node): live V/I/P, power and reset actions, USB/IP state](img/web-ui-dark.png)
 
 *The status page at `http://bay-<id>.local/`, here with a USB/IP client
-attached.  More states and the API in
-[`firmware/README.md`](../firmware/README.md#web-page-and-api).*
+attached and the node not claimed yet (open).  More states and the API in
+[`firmware/README.md`](../firmware/README.md#web-page-and-api), access
+control in [its own section](../firmware/README.md#access-control).*
 
 ![Screencast of the web console: a Zephyr shell on the DUT, tab completion, a baud rate change, RESET rebooting the DUT](img/web-console.webp)
 

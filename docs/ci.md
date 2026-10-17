@@ -9,6 +9,7 @@ Every bay node exposes its DUT over the lab network (see
 | The DUT's USB device (debug probe + its virtual COM port) | USB/IP, TCP 3240: `usbip attach -r bay-<id>.local -b 1-1` |
 | The DUT's UART on the AUX connector | RFC 2217 on TCP 4001 (baud set by the client), raw TCP on 4000, and the web page's console |
 | Telemetry | Prometheus, `/metrics` |
+| Who may use the bay | access rules per node, a reservation (lease) per CI job: [Access control](#access-control) |
 
 [`tools/bayctl.py`](../tools/bayctl.py) wraps all of it for a CI host, and
 writes the configuration of three test frameworks: a **Zephyr twister**
@@ -134,6 +135,51 @@ declares the rack as one PDU (`hw-testing-rack`) with PDUDaemon's
 A LAVA device then uses the usual
 `pduclient --daemon <host> --hostname hw-testing-rack --port <n> --command on|off|reboot`.
 
+## Access control
+
+Each node only serves the addresses its rules allow
+([`firmware/README.md`](../firmware/README.md#access-control)); an unclaimed
+node is open.  For a rack used by CI:
+
+1. **A rack key.**  `python tools/bayctl.py access keygen` prints a random
+   key; keep it where your CI keeps secrets and export it as `BAYCTL_KEY`
+   wherever you run admin commands.  It never goes in `config/lab.yaml`.
+2. **Claim the nodes** with it, once: `bayctl access claim A1 A2 ...` asks
+   each node in turn and waits while someone presses its BOOT button (the
+   node's LED blinks white).
+3. **Write the rules** in the `access:` section of `config/lab.yaml` (see
+   [`config/lab.example.yaml`](../config/lab.example.yaml)) and push them:
+
+```console
+$ python tools/bayctl.py access push
+A1   updated
+A2   unchanged
+B2   not claimed: bayctl access claim B2
+...
+$ python tools/bayctl.py access show B3      # with BAYCTL_KEY: the rules and the refusal log too
+```
+
+The CI hosts need status, control, console and USB/IP; telnet (shell) is
+for admin hosts.  A bay's own `access:` adds sources for that bay only.
+
+**Reservations.**  A job that holds a bay keeps the others off it: power,
+reset, the console and USB/IP answer only the holder until it releases the
+bay or the reservation lapses.
+
+```console
+$ python tools/bayctl.py lease B3 --for 30m --note "twister job $CI_JOB_ID"
+$ python tools/bayctl.py release B3
+$ python tools/bayctl.py release B3 --force   # someone else's, with BAYCTL_KEY
+```
+
+`bayctl hwmap --lease 30m` makes each test reserve its bay in the
+pre-script (`prepare --lease`, renewed by every test) and release it in a
+twister `post_script`.  For labgrid, take the reservation in the job
+before acquiring the places.
+
+`bayctl access kick B3 usbip:51234` closes a connection (ids from
+`access show`) and refuses its address that service for a minute.
+
 ## By hand
 
 ```console
@@ -146,8 +192,12 @@ $ python tools/bayctl.py status B3
 
 ## Limits
 
-* **No authentication** on the node (API, USB/IP, telnet, AUX port): keep the
-  rack on a lab network or behind a VPN.
+* **Access control is address based, without TLS.**  The rules keep
+  uninvited hosts and other jobs off a bay; they do not stop someone who
+  spoofs an allowed address on the same network, and a node's key crosses
+  the network in clear once, when it is claimed.  Keep the rack on a lab
+  network or behind a VPN.  A refused `usbip attach` times out (the node
+  drops the connection) rather than failing at once.
 * **USB/IP through the ESP32-S3** is full speed, and Zephyr's DWC2 host driver
   does control, bulk and interrupt IN only: probes that need interrupt OUT
   (CMSIS-DAP v1, i.e. HID) or isochronous endpoints won't work yet; J-Link,

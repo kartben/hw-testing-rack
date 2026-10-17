@@ -128,7 +128,8 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | AUX console | UART1 (IO47 TX / IO33 RX), interrupt driven, shared by the web console (WebSocket, xterm.js), an RFC 2217 server (port 4001) and raw TCP (port 4000); settings persisted per bay; BREAK; TX released while the DUT is off.  See [Serial console](#serial-console) |
 | AUX RESET/BOOT | open-drain pulses (IO34/IO48): `bay reset`, `bay boot`, the console's buttons, optionally RFC 2217 DTR/RTS (esptool) |
 | Status LED | WS2812B on IO12 through the RMT (`worldsemi,ws2812-pulse-io`), see below |
-| Buttons | BOOT (IO0) held ≥ 1 s once booted: DUT power cycle.  RESET is the ESP32's EN |
+| Buttons | BOOT (IO0) once booted: short press confirms an access claim, held ≥ 1 s power-cycles the DUT, ≥ 10 s resets access control.  RESET is the ESP32's EN |
+| Access control | who may use which service, a CI reservation, an admin key confirmed by a BOOT press; Zephyr's packet filter for the TCP services, a check per HTTP request.  See [Access control](#access-control) |
 | Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS |
 | Shell | `bay …` commands plus the stock `wifi`, `net` shells, on UART0 and telnet |
 | Web | Zephyr HTTP server on port 80: status page, JSON API (same actions as the shell), Prometheus `/metrics` through Zephyr's Prometheus library |
@@ -152,6 +153,11 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | `bay aux send <text>` | send a line to the DUT (with the console's Enter) |
 | `bay aux loopback [on\|off]` | test without a DUT: the UART loops its TX back to its RX (ESP32) |
 | `bay id [id]` | show or set the bay id (persistent), hostname `bay-<id>.local` |
+| `bay access` | access control: admin key, rules, lease, connections, refusals |
+| `bay access claim` | confirm a pending claim, like a short press on BOOT (not over telnet) |
+| `bay access on` / `off` | apply the rules / let every address use everything (`off`: not over telnet) |
+| `bay access release` | end the lease |
+| `bay access reset` | forget the admin key, the rules and the lease (not over telnet) |
 
 ### Network services
 
@@ -159,15 +165,18 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 |---|---|
 | TCP 3240 | USB/IP (`usbip list` / `usbip attach`) |
 | TCP 80 | status page, serial console (WebSocket `/console/ws/<n>`), JSON API, `/metrics` (`CONFIG_BAY_HTTP_PORT`) |
-| TCP 23 | telnet shell (no authentication: keep the rack on a lab network) |
+| TCP 23 | telnet shell (no login of its own: give the shell right to admin hosts only) |
 | TCP 4001 | AUX UART, RFC 2217, one client (`CONFIG_BAY_RFC2217_PORT`) |
 | TCP 4000 | AUX UART, raw bytes, one client (`CONFIG_BAY_AUX_TCP_PORT`) |
 | UDP 5353 | mDNS: `bay-<id>.local` (default `bay<MAC>` until an id is set) |
 
+Which address may use which of them: [Access control](#access-control).
+Until a node is claimed it is open, as it always was.
+
 ### Web page and API
 
 `http://bay-<id>.local/` is a single self-contained page: plain HTML, CSS and
-an ES module, no framework or CDN, about 9 KB gzipped in flash (plus
+an ES module, no framework or CDN, about 18 KB gzipped in flash (plus
 xterm.js for the console, below).  It follows the browser's light/dark
 theme, polls `/api/status` every 2 s while visible, and offers the shell's
 main actions.
@@ -188,12 +197,21 @@ main actions.
 | `GET /api/aux` | AUX UART settings, consoles connected, byte counters |
 | `POST /api/aux` | any of `{"baud": 115200, "data_bits": 8, "parity": "none" \| "odd" \| "even", "stop_bits": 1, "enter": "cr" \| "lf" \| "crlf", "echo": false, "esptool_reset": false}`, applied and saved; answers with `GET /api/aux` |
 | `POST /api/aux/break` | `{"ms": 250}` (body optional) |
-| `GET /console/ws/<n>` | WebSocket to the AUX UART, `n` < `CONFIG_BAY_CONSOLE_WEB_CLIENTS` (see below) |
-| `GET /metrics` | Prometheus: `bay_dut_vbus_volts`, `bay_dut_current_amperes`, `bay_dut_power_watts`, `bay_dut_power_on`, `bay_dut_fault`, `bay_dut_faults_total`, `bay_usb_devices`, `bay_usbip_sessions`, `bay_aux_{rx,tx}_bytes_total`, all labelled `bay="<id>"` |
+| `POST /api/console/ticket` | a single-use ticket (10 s) for the next WebSocket, for an address with the console right |
+| `GET /console/ws/<n>?t=<ticket>` | WebSocket to the AUX UART, `n` < `CONFIG_BAY_CONSOLE_WEB_CLIENTS` (see below) |
+| `GET /metrics` | Prometheus: `bay_dut_vbus_volts`, `bay_dut_current_amperes`, `bay_dut_power_watts`, `bay_dut_power_on`, `bay_dut_fault`, `bay_dut_faults_total`, `bay_usb_devices`, `bay_usbip_sessions`, `bay_aux_{rx,tx}_bytes_total`, `bay_access_refused_total`, all labelled `bay="<id>"` |
+| `GET /api/access` | the caller's address and rights, the lease, the connections; signed: the rules and the refusal log too |
+| `POST /api/lease` | `{"ttl_s": 3600, "note": "twister job 8812"}` reserves or renews, `{"release": true}` ends it |
+| `GET /api/access/nonce` | a single-use nonce (60 s) to sign an admin request |
+| `POST /api/access/claim` | `{}` or `{"key": "<64 hex>"}` starts a claim, then `{"ticket": "..."}` until someone presses BOOT |
+| `POST /api/access/rules` | signed: `{"enabled": true, "everyone": ["status"], "sources": [{"name": "ci-runners", "cidr": "192.168.1.40/30", "allow": ["status", "control", "console", "usbip"]}]}` |
+| `POST /api/access/kick` | signed: `{"id": "usbip:51234"}`, an id from `GET /api/access` |
+| `POST /api/access/key` | signed: `{"key": "<64 hex>"}`, a new admin key |
 
-Every other POST answers with the new status document; errors come back as
-`{"error": "..."}` with a 4xx status.  Like telnet, there is no
-authentication.
+Every action POST answers with the new status document; errors come back as
+`{"error": "..."}` with a 4xx status: 403 when the access rules refuse the
+caller (with `reason`, `service` and the address the node saw), 423 while
+another address holds the lease.
 
 ```console
 $ curl -s bay-b3.local/api/status | jq .dut
@@ -208,6 +226,104 @@ serves it on <http://localhost:8766> with a simulated node, console included
 client).  The screenshots come from that simulation:
 `python firmware/bay-node/web/screenshots.py` (Playwright and an installed
 Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
+
+## Access control
+
+![Access card of bay B3 seen by its admin while a CI job holds the bay: the lease with its note and time left, the job's USB/IP and RFC 2217 connections with Kick buttons, the count of refused attempts](../docs/img/web-ui-access.png)
+
+| ![Manage access dialog: sources ben-laptop (everything), ci-runners 192.168.1.40/30 (status, control, console, USB/IP) and prometheus (status), everyone else status only, and the refused connections](../docs/img/web-ui-access-rules.png) | ![The same bay from 192.168.1.77, light theme: read-only banner, power buttons greyed out, Unlock button](../docs/img/web-ui-access-readonly.png) |
+|---|---|
+| Manage access: who may use what, refused connections | From an address without the control right |
+
+Each node decides by itself who may use its bay.  Out of the box it is
+**open**, as before: anyone on the network may do anything until the node
+is claimed and its rules are switched on.
+
+**Services.**  A rule gives an address (or a CIDR) some of five services:
+
+| Service | Covers |
+|---|---|
+| status | the page, `/api/status`, `/api/aux` (read), `/metrics` |
+| control | power, reset, boot, mode; taking a lease |
+| console | the web console, the raw (4000) and RFC 2217 (4001) ports, the AUX settings and BREAK |
+| usbip | USB/IP (3240) |
+| shell | the telnet shell (23), which can do everything: admin hosts only |
+
+Up to 8 sources per node, plus a row for everyone else (status only by
+default).  An address gets what every source it matches allows.
+
+**Where it is enforced.**  TCP connections to USB/IP, telnet and the AUX
+ports go through Zephyr's packet filter (`CONFIG_NET_PKT_FILTER`, its
+local-in hook with our own match function): a refused client's SYN is
+dropped before USB/IP or the shell, which Zephyr runs itself, ever see it
+(the client times out); the AUX ports check again at `accept()`.  The web
+server checks every request (403, or 423 while reserved) and the web
+console needs a ticket from an address with the console right, because a
+WebSocket descriptor carries no peer address.  When the rules or the lease
+change, connections that are no longer allowed are closed.  mDNS is left
+alone.
+
+**Reservation (lease).**  An address with the control right can reserve
+the bay for 10 s to 24 h (`POST /api/lease`, `bayctl lease`, or *Reserve…*
+on the page): while it lasts, control, console and USB/IP answer only that
+address, and everyone else's sessions are closed when it starts.  It works
+on an open node too, so CI jobs keep out of each other's way before any
+rule exists.  The holder renews or releases it; it lapses by itself when a
+job dies; an admin can break it.  It lives in RAM: a reboot ends it.
+
+**Connections, kicks, refusals.**  The Access card lists who holds the
+console, USB/IP and the shell; an admin's *Kick* closes a connection and
+refuses its address that service for `CONFIG_BAY_ACCESS_KICK_S` (60 s).
+The node keeps the last 16 kinds of refusal (address, service, reason,
+count) for the admin view, and counts them in `bay_access_refused_total`.
+
+**Admin key.**  Whoever holds the node's 32-byte key edits the rules, kicks
+and breaks leases, from any address.  The first key comes from a **claim**:
+*Claim this bay…* on the page (or `bayctl access claim`), then a short press
+on the node's BOOT button within `CONFIG_BAY_ACCESS_CLAIM_S` (60 s) while
+its LED blinks white, or `bay access claim` on the UART pads.  Nobody can
+claim a node from the network alone.  The claimer may bring a key, so that
+every bay shares the rack's key (`bayctl access keygen`).  After that,
+admin requests carry `X-Bay-Auth: <nonce>:<HMAC-SHA256(key, nonce \n
+method \n path \n body)>` with a single-use nonce from
+`/api/access/nonce`: the key crosses the network once, at claim time.  The
+page keeps it in the browser's local storage; `bayctl` reads `BAYCTL_KEY`.
+
+**Recovery.**  On the node: `bay access off` (rules off), `bay access
+reset` (no key, no rules), or hold BOOT for 10 s
+(`CONFIG_BAY_ACCESS_RESET_HOLD_MS`) for the same reset.  These are refused
+over telnet.
+
+**Limits.**  There is no TLS on the node: the rules stop mistakes and
+uninvited hosts, not someone who spoofs an allowed address on the same
+network, and the key travels in clear once, when a node is claimed (claim
+on a network you trust).  For more, put the rack behind a VPN or a gateway.
+Refused TCP connections are dropped, not reset: `usbip attach` from a
+refused host waits for its timeout.
+
+**Code.**  The rules, the lease, the refusal log and HMAC-SHA256 are plain
+C without Zephyr ([`src/acl.c`](bay-node/src/acl.c)), tested on the host
+against Python's `hashlib`/`hmac`; [`src/access.c`](bay-node/src/access.c)
+applies them (packet filter, settings `access/rules` and `access/key`,
+claim, kicks, connections).  A rack controller pushing rules over CAN would
+reuse `acl.c` and replace the claim with the bus.
+
+```bash
+python firmware/bay-node/tests/acl/test_acl.py                       # CC=gcc by default
+python3 firmware/bay-node/tests/console_sim/test_access.py --workspace <west workspace> --build <dir>
+```
+
+`test_access.py` runs the node on native_sim and talks to it from several
+loopback addresses: claim, signed requests, rules, the web console ticket,
+the AUX ports refused at `accept()`, kicks, the lease, persistence across a
+restart, the local reset.  The packet filter itself (host sockets bypass
+Zephyr's IP stack there), USB/IP and telnet are not covered.
+
+**Cost.**  On `bay_node`, against the build before it: +13 KB of flash
+(the page grew from 9 to 18 KB gzipped) and +5.3 KB of static RAM, now at
+96.4 % (385 of 399 KB): the rules, lease and refusal log, a 1 KB request
+buffer, header capture and longer header lines for `X-Bay-Auth`, and one
+3 KB response buffer that replaced two.
 
 ## Serial console
 
@@ -305,6 +421,7 @@ python3 firmware/bay-node/tests/console_sim/run.py --workspace <west workspace> 
 | Colour | Meaning |
 |---|---|
 | off | no firmware / booting |
+| white, blinking | access claim pending: press BOOT briefly to confirm |
 | red, blinking | DUT VBUS in current limit, or switched off by a fault |
 | yellow | SERVICE: front port → node |
 | magenta | classic: DUT → front port (laptop plugged, or `bay mode classic`) |
@@ -382,7 +499,15 @@ runs it and builds both targets with warnings as errors on every push.
   not implemented yet.  Probes with an interrupt OUT endpoint, UAC/UVC
   devices and DUTs behind an on-board hub won't work over USB/IP.
 * **USB/IP service** is experimental upstream: one device per controller,
-  fixed bus id `1-<address>`, no access control.
+  fixed bus id `1-<address>`, no access control of its own (the node's
+  packet filter applies the access rules in front of it).
+* **Access control: tested off the board only.**  The rules engine passes
+  its host test; claim, signed requests, rules, tickets, kicks and leases
+  passed on native_sim and against `dev_server.py`.  The packet-filter path
+  (USB/IP, telnet, the AUX ports dropped before accept) has only been
+  built, not run: check on a node that a refused host's `usbip attach`
+  and `telnet` time out, that a kick ends a USB/IP session (shutdown of a
+  socket that the USB/IP thread owns), and the BOOT presses.
 * **Not yet written:** DNS-SD advertisement of `_usbip._tcp`, `_http._tcp`
   and `_rfc2217._tcp`, MCUboot + mcumgr OTA (the partition table already has
   two 3.75 MB slots), the shell on the USB-Serial-JTAG in SERVICE mode,

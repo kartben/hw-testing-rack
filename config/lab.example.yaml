@@ -15,6 +15,17 @@ domain: local          # bay hosts: bay-<id>.<domain> (mDNS); or give `host:` pe
 # aux_port: 4000       # node raw AUX UART port (CONFIG_BAY_AUX_TCP_PORT)
 # rfc2217_port: 4001   # node AUX UART with RFC 2217 (CONFIG_BAY_RFC2217_PORT)
 
+# Who may use the bays (firmware/README.md, "Access control"): `bayctl access push` writes these
+# rules to every node, signed with the rack's admin key from the BAYCTL_KEY environment variable
+# (never put the key in this file).  Services: status, control, console, usbip, shell, or all.
+# A node holds 8 sources; an address gets what every source it matches allows, plus `everyone`.
+access:
+  everyone: [status]                         # any other address: the page and /metrics, read-only
+  sources:
+    ci-runners: {cidr: 192.168.1.40/30, allow: [status, control, console, usbip]}
+    admin-laptop: {cidr: 192.168.1.23, allow: [all]}
+    prometheus: {cidr: 192.168.1.5, allow: [status]}
+
 bays:
   A1:
     platform: nucleo_f401re                  # NUCLEO-64 is a family: say which one
@@ -33,6 +44,9 @@ bays:
     platform: "arduino_uno_r4@wifi"
   C4:
     ci: false                                # this bay is for a laptop (classic mode): not in CI
+    access:                                  # added to the rack's rules for this bay only
+      sources:
+        lab-desk: {cidr: 192.168.1.66, allow: [all]}
   # D1:
   #   host: 192.168.1.71                     # no mDNS on this network
   #   runner: jlink                          # override the board's default runner
