@@ -91,6 +91,38 @@ saddles, the rear inlet panel (Schurter DD11 cut-out, Power-DIN knock-out
 for the brick variant), vented front/side panels, the hub mount and the
 mains cover.  See [power.md](power.md) for the safety rules.
 
+## Panel frame (prototype, no aluminium)
+
+An alternative to the 2020 frame, being prototyped as a 2 × 2 block: every part
+is printed, there are no screws in the structure, and the grid grows in both
+directions.
+
+| Part | File | Notes |
+|---|---|---|
+| Ladder | `ladder.scad` (`PART="row"`, `ROW=k`) | side wall between two bays, shared by both; front and rear posts, a bottom band with the tray grooves (both faces), a top band, one brace; stacks on the ladder below with a ridge/notch joint and two in-plane snap hooks (release through the window) |
+| Base ladder / cap strip | `ladder.scad` (`"base"`, `"cap"`) | floor → row A (holds a floor plate); the strip on top holds the cap plate |
+| Tray | `tray.scad` | carrier base + deck + both guides in one part: the drawer rides on two side ledges under the old C-channel lips; runners on both walls slide into the ladder grooves from the front, and a flex arm per wall clicks a barb into the groove's window (pull the drawer out, press both arms to remove the tray) |
+| Cap / floor plate | `tray.scad` (`PART="cap_plate"`, `"floor_plate"`) | ceiling of the top row and the tie between the base ladders: a regular 30 mm grid (the camera pod's pitch) with an M3-insert boss at every crossing, so the pod (or the PSU and hub, on the floor plate) mounts on any square of crossings |
+| Rear brace | `brace.scad` (`ROW=k`, `-1` for the base) | an X behind each bay and row, screwed (4 × M3 × 8 pan head, Phillips) into heat-set inserts in the rear edges of its two ladders; left and right holes at different heights, so neighbouring braces share a ladder.  No slack: snug 3.1 mm holes, and each diagonal is 0.25 mm short, so the X is taut once the fourth screw is in |
+| Drawer | `drawer.scad` (`LIGHT=true`) | open floor (the plate covers it), magnet over the left ledge |
+
+The bay pitch becomes 166 mm (carrier width 158 + a 7.4 mm ladder), so every bay
+part keeps its geometry.  `python tools/panel_proto.py` renders the parts,
+estimates their filament with a slicer-like rule (1.1 mm shell, 15 % infill;
+applied the same way to today's parts) and writes a 3D scene
+(`mechanical/build/panel/proto.glb` + `proto.json`).  Today: a bay (tray +
+drawer) ≈ 223 g instead of ≈ 359 g (carrier, deck, drawer, guides); a 4 × 4
+rack's structure and bays ≈ 6.0 kg (braces included) instead of ≈ 7.1 kg plus
+13 m of extrusion.
+
+`python tools/panel_frame_fea.py` models the grid from the front (ladder sections from
+the meshes, runner play as a dead band, tension-only braces with pin slack).  Slack
+decides: a 4 × 4 sways ≈ 8 mm without braces, ≈ 2 mm with braces on loose pins, and
+≈ 0.16 mm under 2 N with taut braces, whatever the runner play.
+
+Still open: the braced grid's lateral stiffness on a real print; row D's 185 mm makes a 261 mm ladder (too long for a 250 × 210 bed);
+double bays and the PSU base are not modelled yet.
+
 ## Printing
 
 | | |
