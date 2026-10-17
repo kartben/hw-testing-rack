@@ -28,6 +28,8 @@
 		boot-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
 		power-monitor = <&ina226>;
 		uart = <&uart1>;
+		/* IO47 AUX_TX as a GPIO: released while the DUT is off, low for a BREAK */
+		tx-gpios = <&gpio1 15 GPIO_ACTIVE_HIGH>;
 	};
 
 	usb_mux: usb-mux {

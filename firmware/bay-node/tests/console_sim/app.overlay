@@ -1,0 +1,21 @@
+/*
+ * The DUT port of a bay node, on native_sim: the AUX UART is the second PTY
+ * UART (run.py connects it to the fake DUT); no TX pin control.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	dut_port: dut-port {
+		compatible = "hwtr,dut-port";
+		enable-gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+		fault-gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
+		uart = <&uart1>;
+	};
+};
+
+&uart1 {
+	status = "okay";
+};

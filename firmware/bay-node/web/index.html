@@ -6,6 +6,7 @@
 <meta name="color-scheme" content="light dark">
 <title>Bay node</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%233b82f6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/xterm.css">
 <style>
 :root {
   color-scheme: light dark;
@@ -15,6 +16,7 @@
   --muted: light-dark(#646b78, #9299a6);
   --line: light-dark(#e2e5ea, #262a33);
   --soft: light-dark(#f0f2f5, #1d2129);
+  --term-bg: light-dark(#fafbfc, #0b0d11);
   --usbip: #3b82f6;
   --attached: #16a34a;
   --classic: #c026d3;
@@ -23,6 +25,7 @@
   --idle: #8a919e;
   --state: var(--idle);
   --radius: 14px;
+  --mono: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
   font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
@@ -55,12 +58,15 @@ body[data-state=fault] .led { animation: blink 0.8s steps(2, jump-none) infinite
   & span { flex: 1; }
 }
 body[data-state=fault] .banner { display: flex; }
-main { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+main { display: grid; gap: 16px; }
+.cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .card {
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0;
   & h2 { margin: 0; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
-         letter-spacing: 0.06em; color: var(--muted); display: flex; justify-content: space-between; }
+         letter-spacing: 0.06em; color: var(--muted); display: flex; justify-content: space-between;
+         gap: 12px; }
+  & h2 span { text-transform: none; letter-spacing: 0; font-weight: 500; }
 }
 .readings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .reading {
@@ -85,6 +91,8 @@ button {
   &:disabled { opacity: 0.5; cursor: progress; }
   &.primary { background: var(--text); color: var(--card); border-color: transparent; }
   &.danger { color: var(--fault); }
+  &[aria-pressed=true] { background: color-mix(in srgb, var(--usbip) 16%, var(--soft));
+                         border-color: color-mix(in srgb, var(--usbip) 45%, transparent); }
   &:focus-visible { outline: 2px solid var(--usbip); outline-offset: 2px; }
 }
 .seg {
@@ -97,11 +105,45 @@ button {
 }
 .cmd {
   display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: 10px;
-  background: var(--soft); border: 1px solid var(--line);
-  & code { flex: 1; min-width: 0; font: 0.82rem/1.4 ui-monospace, "Cascadia Code", Menlo, monospace;
+  background: var(--soft); border: 1px solid var(--line); min-width: 0;
+  & code { flex: 1; min-width: 0; font: 0.82rem/1.4 var(--mono);
            overflow-x: auto; scrollbar-width: none; white-space: nowrap; user-select: all;
            mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
   & button { padding: 4px 10px; font-size: 0.8rem; }
+}
+/* Console */
+.toolbar {
+  display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+  & .group { display: flex; gap: 6px; flex-wrap: wrap; }
+  & .group.end { margin-left: auto; }
+  & button { padding: 6px 12px; font-size: 0.88rem; }
+  & .chip { font-family: var(--mono); font-size: 0.82rem; font-weight: 500; }
+}
+.term {
+  height: 440px; padding: 8px 4px 8px 10px; border-radius: 10px; background: var(--term-bg);
+  border: 1px solid var(--line); overflow: hidden;
+  & #term { height: 100%; }
+  & .xterm-viewport { scrollbar-width: thin; }
+}
+.con-foot {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; color: var(--muted); font-size: 0.85rem;
+  & .cmd { flex: 1 1 360px; }
+  & a { color: inherit; }
+}
+#con-settings {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
+  padding: 20px; width: min(380px, calc(100vw - 32px)); box-shadow: 0 16px 48px #0004;
+  &::backdrop { background: #0003; }
+  & h3 { margin: 0 0 14px; font-size: 1rem; }
+  & form { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; align-items: center; }
+  & label { color: var(--muted); }
+  & select, & input[type=number] {
+    font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--soft); color: var(--text); width: 100%; }
+  & .check { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; color: var(--text); }
+  & .row { display: flex; gap: 8px; }
+  & .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
+  & small { grid-column: 1 / -1; color: var(--muted); }
 }
 footer { margin-top: 20px; color: var(--muted); font-size: 0.85rem; display: flex; gap: 16px; flex-wrap: wrap;
   & a { color: inherit; }
@@ -117,6 +159,7 @@ dialog {
   inset: auto 16px 16px auto; margin: 0; border: 1px solid var(--line); border-radius: 10px;
   background: var(--text); color: var(--card); padding: 10px 14px; font-weight: 500;
 }
+@media (max-width: 600px) { .term { height: 360px; } .toolbar .group.end { margin-left: 0; } }
 </style>
 </head>
 <body data-state="offline">
@@ -138,49 +181,65 @@ dialog {
   </div>
 
   <main>
-    <section class="card">
-      <h2>Power <span id="vbus">—</span></h2>
-      <div class="readings">
-        <div class="reading"><b id="v">–</b><small>volts</small></div>
-        <div class="reading"><b id="a">–</b><small>amps</small></div>
-        <div class="reading"><b id="w">–</b><small>watts</small></div>
-      </div>
-      <svg class="spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-label="Current, last two minutes">
-        <polygon id="spark-fill" points=""/><polyline id="spark" points=""/>
-      </svg>
-      <div class="actions">
-        <button data-action="power" data-arg="on">On</button>
-        <button data-action="power" data-arg="off" class="danger" data-confirm="Switch the board's 5 V off?">Off</button>
-        <button data-action="power" data-arg="cycle" class="primary">Power cycle</button>
-      </div>
-    </section>
+    <div class="cards">
+      <section class="card">
+        <h2>Power <span id="vbus">—</span></h2>
+        <div class="readings">
+          <div class="reading"><b id="v">–</b><small>volts</small></div>
+          <div class="reading"><b id="a">–</b><small>amps</small></div>
+          <div class="reading"><b id="w">–</b><small>watts</small></div>
+        </div>
+        <svg class="spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-label="Current, last two minutes">
+          <polygon id="spark-fill" points=""/><polyline id="spark" points=""/>
+        </svg>
+        <div class="actions">
+          <button data-action="power" data-arg="on">On</button>
+          <button data-action="power" data-arg="off" class="danger" data-confirm="Switch the board's 5 V off?">Off</button>
+          <button data-action="power" data-arg="cycle" class="primary">Power cycle</button>
+        </div>
+      </section>
 
-    <section class="card">
-      <h2>USB</h2>
-      <div class="seg" role="radiogroup" aria-label="Data path">
-        <label><input type="radio" name="mode" value="usbip">USB/IP</label>
-        <label><input type="radio" name="mode" value="classic">Classic</label>
-      </div>
-      <dl>
-        <dt>Data path</dt><dd id="path">–</dd>
-        <dt>Front port</dt><dd id="pc">–</dd>
-        <dt>USB host</dt><dd id="host">–</dd>
-        <dt>Clients</dt><dd id="sessions">–</dd>
-      </dl>
-      <div class="cmd"><code id="usbip-cmd">usbip attach -r … -b 1-1</code><button data-copy="usbip-cmd">Copy</button></div>
-    </section>
+      <section class="card">
+        <h2>USB</h2>
+        <div class="seg" role="radiogroup" aria-label="Data path">
+          <label><input type="radio" name="mode" value="usbip">USB/IP</label>
+          <label><input type="radio" name="mode" value="classic">Classic</label>
+        </div>
+        <dl>
+          <dt>Data path</dt><dd id="path">–</dd>
+          <dt>Front port</dt><dd id="pc">–</dd>
+          <dt>USB host</dt><dd id="host">–</dd>
+          <dt>Clients</dt><dd id="sessions">–</dd>
+        </dl>
+        <div class="cmd"><code id="usbip-cmd">usbip attach -r … -b 1-1</code><button data-copy="usbip-cmd">Copy</button></div>
+      </section>
+    </div>
 
-    <section class="card">
-      <h2>Target</h2>
-      <dl>
-        <dt>AUX UART</dt><dd id="baud">–</dd>
-        <dt>Console client</dt><dd id="aux-client">–</dd>
-        <dt>Bytes in / out</dt><dd id="aux-bytes">–</dd>
-      </dl>
-      <div class="cmd"><code id="aux-cmd">socat -,raw,echo=0 TCP:…:4000</code><button data-copy="aux-cmd">Copy</button></div>
-      <div class="actions">
-        <button data-action="reset">Reset</button>
-        <button data-action="boot">Bootloader</button>
+    <section class="card console">
+      <h2>Console <span id="con-meta">loading…</span></h2>
+      <div class="toolbar">
+        <div class="group" aria-label="Target">
+          <button data-action="reset" title="Pulse the board's RESET line">Reset</button>
+          <button data-action="boot" title="Hold BOOT across a RESET pulse: ROM bootloader">Bootloader</button>
+          <button data-con="break" title="Hold the board's RX line low for 250 ms">Break</button>
+        </div>
+        <div class="group" aria-label="Board power">
+          <button data-action="power" data-arg="off" class="danger" data-confirm="Switch the board's 5 V off?">Off</button>
+          <button data-action="power" data-arg="on">On</button>
+          <button data-action="power" data-arg="cycle">Cycle</button>
+        </div>
+        <div class="group end">
+          <button data-con="ts" aria-pressed="false" title="Prefix each line with the time it arrived">Timestamps</button>
+          <button data-con="clear" title="Clear the screen (the log keeps everything)">Clear</button>
+          <button data-con="download" title="Everything received since the page opened">Download</button>
+          <button class="chip" popovertarget="con-settings" title="Port settings"><span id="con-format">115200 8N1</span> ⚙</button>
+        </div>
+      </div>
+      <div class="term"><div id="term"></div></div>
+      <div class="con-foot">
+        <div class="cmd"><code id="rfc-cmd">python -m serial.tools.miniterm rfc2217://…:4001 115200</code><button data-copy="rfc-cmd">Copy</button></div>
+        <span id="con-clients"></span>
+        <a href="/xterm-LICENSE.txt">xterm.js (MIT)</a>
       </div>
     </section>
   </main>
@@ -190,7 +249,38 @@ dialog {
     <span id="faults"></span>
     <a href="/metrics">/metrics</a>
     <a href="/api/status">/api/status</a>
+    <a href="/api/aux">/api/aux</a>
   </footer>
+</div>
+
+<div id="con-settings" popover>
+  <h3>Serial port</h3>
+  <form id="con-form">
+    <label for="f-baud">Baud rate</label>
+    <div class="row">
+      <select id="f-baud" name="baud">
+        <option>9600</option><option>19200</option><option>38400</option><option>57600</option>
+        <option>115200</option><option>230400</option><option>460800</option><option>921600</option>
+        <option value="custom">Custom…</option>
+      </select>
+      <input id="f-baud-custom" name="baud_custom" type="number" min="300" max="5000000" hidden aria-label="Custom baud rate">
+    </div>
+    <label for="f-bits">Data bits</label>
+    <select id="f-bits" name="data_bits"><option>5</option><option>6</option><option>7</option><option>8</option></select>
+    <label for="f-parity">Parity</label>
+    <select id="f-parity" name="parity"><option value="none">None</option><option value="odd">Odd</option><option value="even">Even</option></select>
+    <label for="f-stop">Stop bits</label>
+    <select id="f-stop" name="stop_bits"><option>1</option><option>2</option></select>
+    <label for="f-enter">Enter sends</label>
+    <select id="f-enter" name="enter"><option value="cr">CR</option><option value="lf">LF</option><option value="crlf">CR LF</option></select>
+    <label class="check"><input type="checkbox" name="echo"> Local echo</label>
+    <label class="check"><input type="checkbox" name="esptool_reset"> RFC 2217 DTR/RTS drive BOOT/RESET (esptool)</label>
+    <small>Saved on the node for this bay.  An RFC 2217 client may change the port while it is connected.</small>
+    <div class="form-actions">
+      <button type="button" popovertarget="con-settings" popovertargetaction="hide">Cancel</button>
+      <button type="submit" class="primary">Apply</button>
+    </div>
+  </form>
 </div>
 
 <dialog id="confirm">
@@ -206,6 +296,7 @@ dialog {
 const $ = (id) => document.getElementById(id);
 const samples = [];
 let host = location.hostname;
+let status = null;
 let timer;
 
 const LABEL = {
@@ -242,6 +333,7 @@ function setState(state) {
 }
 
 const fix = (v, d) => (v / 1000).toFixed(d);
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 function uptime(s) {
   const d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24, m = Math.floor(s / 60) % 60;
@@ -260,6 +352,7 @@ function spark(ma) {
 }
 
 function render(s) {
+  status = s;
   host = s.hostname ? `${s.hostname}.local` : location.hostname;
   const state = stateOf(s);
   setState(state);
@@ -283,17 +376,19 @@ function render(s) {
   document.querySelector(`input[name=mode][value=${s.force_classic ? "classic" : "usbip"}]`).checked = true;
   $("path").textContent = { usbip: "USB/IP", classic: "Classic (front port)", service: "Service" }[s.path];
   $("pc").textContent = s.service ? "service (node)" : s.pc_detected ? "laptop plugged" : "free";
-  $("host").textContent = s.usb.running ? `${s.usb.devices} device${s.usb.devices === 1 ? "" : "s"}` : "stopped";
+  $("host").textContent = s.usb.running ? plural(s.usb.devices, "device") : "stopped";
   $("sessions").textContent = s.usb.sessions ? `${s.usb.sessions} attached` : "none";
   $("usbip-cmd").textContent = `sudo usbip attach -r ${host} -b 1-1`;
 
-  $("baud").textContent = `${s.aux.baud.toLocaleString("en")} baud · tcp/${s.aux.port}`;
-  $("aux-client").textContent = s.aux.client ? "connected" : "none";
-  $("aux-bytes").textContent = `${s.aux.rx.toLocaleString("en")} / ${s.aux.tx.toLocaleString("en")}`;
-  $("aux-cmd").textContent = `socat -,raw,echo=0 TCP:${host}:${s.aux.port}`;
+  const aux = s.aux;
+  $("rfc-cmd").textContent =
+    `python -m serial.tools.miniterm rfc2217://${host}:${aux.rfc2217_port} ${aux.baud}`;
+  $("con-clients").textContent = [plural(aux.web_clients, "web console"),
+    `RFC 2217 ${aux.rfc2217 ? "in use" : "free"}`, aux.raw ? "raw TCP in use" : ""]
+    .filter(Boolean).join(" · ");
 
   $("uptime").textContent = `Up ${uptime(s.uptime_s)} · Zephyr ${s.version}`;
-  $("faults").textContent = `${s.dut.faults} fault${s.dut.faults === 1 ? "" : "s"} since boot`;
+  $("faults").textContent = `${plural(s.dut.faults, "fault")} since boot`;
 }
 
 async function poll() {
@@ -339,20 +434,264 @@ async function run(btn, path, body, what) {
   }
 }
 
+async function copy(id) {
+  const text = $(id).textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    getSelection().selectAllChildren($(id));
+    document.execCommand("copy");
+  }
+  toast("Copied");
+}
+
+/* --- Serial console ----------------------------------------------------- */
+
+const con = {
+  term: null, ws: null, cfg: null, slots: 2, boot: null, lastPos: null, timestamps: false,
+  lineStart: true, log: [], logBytes: 0,
+};
+const LOG_MAX = 4 << 20;
+const enc = new TextEncoder();
+const EOL = { cr: "\r", lf: "\n", crlf: "\r\n" };
+
+function cssColor(variable) {
+  const probe = document.createElement("span");
+  probe.style.color = `var(${variable})`;
+  document.body.append(probe);
+  const color = getComputedStyle(probe).color;
+  probe.remove();
+  return color;
+}
+
+function termTheme() {
+  const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+  return {
+    background: cssColor("--term-bg"), foreground: cssColor("--text"), cursor: cssColor("--usbip"),
+    selectionBackground: dark ? "#3b82f655" : "#3b82f633",
+    ...(dark ? {} : { yellow: "#a16207", brightYellow: "#b45309", white: "#6b7280", brightWhite: "#374151" }),
+  };
+}
+
+function setMeta(text) {
+  $("con-meta").textContent = text;
+}
+
+function formatLabel(c) {
+  return `${c.baud} ${c.data_bits}${c.parity[0].toUpperCase()}${c.stop_bits}`;
+}
+
+function applyConfig(c) {
+  con.cfg = c;
+  $("con-format").textContent = formatLabel(c);
+}
+
+function keep(bytes) {
+  con.log.push(bytes);
+  con.logBytes += bytes.length;
+  while (con.logBytes > LOG_MAX) con.logBytes -= con.log.shift().length;
+}
+
+function stamp() {
+  const t = new Date();
+  const s = `[${t.toTimeString().slice(0, 8)}.${String(t.getMilliseconds()).padStart(3, "0")}] `;
+  con.term.write(`\x1b[2m${s}\x1b[22m`);
+  keep(enc.encode(s));
+}
+
+/* Bytes from the board: raw to xterm (it decodes UTF-8 across chunks) */
+function output(bytes) {
+  if (!con.timestamps) {
+    con.term.write(bytes);
+    keep(bytes);
+    return;
+  }
+  let start = 0;
+  for (let i = 0; i < bytes.length; i++) {
+    if (con.lineStart) {
+      stamp();
+      con.lineStart = false;
+    }
+    if (bytes[i] === 0x0a) {
+      const line = bytes.subarray(start, i + 1);
+      con.term.write(line);
+      keep(line.slice());
+      start = i + 1;
+      con.lineStart = true;
+    }
+  }
+  if (start < bytes.length) {
+    const rest = bytes.subarray(start);
+    con.term.write(rest);
+    keep(rest.slice());
+  }
+}
+
+function input(text) {
+  if (!con.ws || con.ws.readyState !== WebSocket.OPEN) return;
+  const out = text.replace(/\r/g, EOL[con.cfg?.enter ?? "cr"]);
+  if (con.cfg?.echo) con.term.write(text.replace(/\r/g, "\r\n"));
+  con.ws.send(enc.encode(out));
+}
+
+/*
+ * One WebSocket slot per console on the node: try them in turn.  The node
+ * says hello with the stream position of the first byte it replays (and a
+ * per-boot id), so a reconnecting page skips what it already shows.
+ */
+function connect(slot = 0) {
+  const url = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/console/ws/${slot}`;
+  const ws = new WebSocket(url);
+  let hello = false;
+  let pos = 0;
+
+  ws.binaryType = "arraybuffer";
+  ws.onmessage = (ev) => {
+    if (typeof ev.data === "string") {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === "hello") {
+        hello = true;
+        pos = msg.pos;
+        if (con.boot !== null && con.boot !== msg.boot) {
+          con.lastPos = null;
+          output(enc.encode("\r\n\x1b[2m--- node restarted ---\x1b[22m\r\n"));
+        }
+        con.boot = msg.boot;
+        applyConfig(msg.config);
+        setMeta("connected");
+      } else if (msg.type === "config") {
+        applyConfig(msg);
+      }
+      return;
+    }
+    let bytes = new Uint8Array(ev.data);
+    const start = pos;
+    pos = (pos + bytes.length) >>> 0;
+    if (con.lastPos !== null) {
+      const seen = (con.lastPos - start) >>> 0;
+      if (seen >= bytes.length && seen < 0x80000000) return;
+      if (seen < 0x80000000) bytes = bytes.subarray(seen);
+    }
+    con.lastPos = pos;
+    output(bytes);
+  };
+  ws.onclose = () => {
+    if (con.ws === ws) con.ws = null;
+    if (!hello) {
+      if (slot + 1 < con.slots) return connect(slot + 1);
+      setMeta(`busy: ${con.slots} consoles already open`);
+      setTimeout(connect, 5000);
+      return;
+    }
+    setMeta("disconnected, reconnecting…");
+    setTimeout(connect, 2000);
+  };
+  con.ws = ws;
+}
+
+function fillSettings() {
+  const c = con.cfg;
+  const form = $("con-form");
+  if (!c) return;
+  const preset = [...form.baud.options].some((o) => o.value === String(c.baud));
+  form.baud.value = preset ? String(c.baud) : "custom";
+  form.baud_custom.hidden = preset;
+  form.baud_custom.value = c.baud;
+  form.data_bits.value = String(c.data_bits);
+  form.parity.value = c.parity;
+  form.stop_bits.value = String(c.stop_bits);
+  form.enter.value = c.enter;
+  form.echo.checked = c.echo;
+  form.esptool_reset.checked = c.esptool_reset;
+}
+
+async function saveSettings(ev) {
+  ev.preventDefault();
+  const form = ev.target;
+  const baud = Number(form.baud.value === "custom" ? form.baud_custom.value : form.baud.value);
+  try {
+    applyConfig(await api("/api/aux", {
+      baud, data_bits: Number(form.data_bits.value), parity: form.parity.value,
+      stop_bits: Number(form.stop_bits.value), enter: form.enter.value,
+      echo: form.echo.checked, esptool_reset: form.esptool_reset.checked,
+    }));
+    $("con-settings").hidePopover();
+    toast(`Serial port: ${formatLabel(con.cfg)}`);
+    con.term?.focus();
+  } catch (e) {
+    toast(`Failed: ${e.message}`);
+  }
+}
+
+function download() {
+  const name = `${status?.hostname ?? "bay"}-console-${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.log`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob(con.log, { type: "text/plain" }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+async function startConsole() {
+  let Terminal, FitAddon;
+  try {
+    ({ Terminal } = await import("/xterm.mjs"));
+    ({ FitAddon } = await import("/addon-fit.mjs"));
+  } catch {
+    setMeta("terminal unavailable");
+    return;
+  }
+  const term = new Terminal({
+    fontFamily: getComputedStyle(document.documentElement).getPropertyValue("--mono"),
+    fontSize: 13, cursorBlink: true, scrollback: 10000, theme: termTheme(),
+  });
+  const fit = new FitAddon();
+  term.loadAddon(fit);
+  term.open($("term"));
+  fit.fit();
+  new ResizeObserver(() => fit.fit()).observe($("term"));
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => (term.options.theme = termTheme()));
+  term.onData(input);
+  term.onBinary((bin) => con.ws?.send(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+  con.term = term;
+
+  try {
+    const aux = await api("/api/aux");
+    con.slots = aux.web_slots;
+    applyConfig(aux);
+  } catch { /* the hello message brings the settings too */ }
+  setMeta("connecting…");
+  connect();
+}
+
+/* --- Events ------------------------------------------------------------- */
+
 document.addEventListener("click", async (ev) => {
   const btn = ev.target.closest("button");
   if (!btn) return;
-  if (btn.dataset.copy) {
-    const text = $(btn.dataset.copy).textContent;
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {
-      getSelection().selectAllChildren($(btn.dataset.copy));
-      document.execCommand("copy");
-    }
-    toast("Copied");
-    return;
+  if (btn.dataset.copy) return copy(btn.dataset.copy);
+
+  switch (btn.dataset.con) {
+    case "break":
+      try {
+        await api("/api/aux/break", {});
+        toast("Break sent");
+      } catch (e) {
+        toast(`Failed: ${e.message}`);
+      }
+      return;
+    case "ts":
+      con.timestamps = !con.timestamps;
+      con.lineStart = true;
+      btn.setAttribute("aria-pressed", con.timestamps);
+      return;
+    case "clear":
+      con.term?.clear();
+      return;
+    case "download":
+      return download();
   }
+
   const action = btn.dataset.action;
   if (action === "power") run(btn, "/api/power", { action: btn.dataset.arg }, btn.dataset.arg);
   else if (action === "reset") run(btn, "/api/reset", {}, "reset");
@@ -361,10 +700,17 @@ document.addEventListener("click", async (ev) => {
 
 document.addEventListener("change", (ev) => {
   if (ev.target.name === "mode") run(null, "/api/mode", { mode: ev.target.value }, ev.target.value);
+  if (ev.target.name === "baud") {
+    $("f-baud-custom").hidden = ev.target.value !== "custom";
+    if (ev.target.value === "custom") $("f-baud-custom").focus();
+  }
 });
 
+$("con-settings").addEventListener("toggle", (ev) => ev.newState === "open" && fillSettings());
+$("con-form").addEventListener("submit", saveSettings);
 document.addEventListener("visibilitychange", () => !document.hidden && poll());
 poll();
+startConsole();
 </script>
 </body>
 </html>

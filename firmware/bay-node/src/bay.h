@@ -68,13 +68,65 @@ int usb_host_claim_phy(void);
 int status_led_init(void);
 void status_led_update(void);
 
-/* --- AUX UART <-> TCP (aux_bridge.c) -------------------------------------- */
+/* --- AUX UART: web console, RFC 2217, raw TCP (aux_console.c) ------------- */
 
-int aux_bridge_init(void);
-uint32_t aux_bridge_baudrate(void);
-int aux_bridge_set_baudrate(uint32_t baudrate);
-bool aux_bridge_client_connected(void);
-void aux_bridge_stats(uint32_t *rx_bytes, uint32_t *tx_bytes, uint32_t *dropped);
+enum aux_parity {
+	AUX_PARITY_NONE,
+	AUX_PARITY_ODD,
+	AUX_PARITY_EVEN,
+};
+
+/* What the web console sends for the Enter key */
+enum aux_enter {
+	AUX_ENTER_CR,
+	AUX_ENTER_LF,
+	AUX_ENTER_CRLF,
+};
+
+struct aux_config {
+	uint32_t baud;
+	uint8_t data_bits;  /* 5..8 */
+	uint8_t parity;     /* enum aux_parity */
+	uint8_t stop_bits;  /* 1 or 2 */
+	uint8_t enter;      /* enum aux_enter */
+	bool echo;          /* web console local echo */
+	bool esptool_reset; /* RFC 2217 DTR/RTS drive BOOT/RESET (ESP auto-reset) */
+};
+
+#define AUX_CONFIG_DEFAULT                                                                         \
+	{.baud = 115200, .data_bits = 8, .parity = AUX_PARITY_NONE, .stop_bits = 1,                \
+	 .enter = AUX_ENTER_CR}
+
+struct aux_stats {
+	uint32_t rx;
+	uint32_t tx;
+	uint32_t dropped;
+	uint8_t web_clients;
+	bool rfc2217_client;
+	bool raw_client;
+};
+
+/* stored: the settings saved in flash, or NULL for the defaults */
+int aux_console_init(const struct aux_config *stored);
+/* Settings in effect (an RFC 2217 client may change them), or the saved ones */
+void aux_config_get(struct aux_config *cfg, bool saved);
+/* Apply now; persist also saves them as the bay's settings */
+int aux_config_set(const struct aux_config *cfg, bool persist);
+int aux_config_json(char *buf, size_t len, const char *type);
+const char *aux_parity_str(uint8_t parity);
+const char *aux_enter_str(uint8_t enter);
+/* Hold the DUT's RX line low for ms (needs the DUT powered) */
+int aux_break(uint32_t ms);
+/* DUT VBUS switched: release the TX pin while the DUT is off */
+void aux_dut_power(bool on);
+void aux_stats_get(struct aux_stats *st);
+/* Test without a DUT: the UART loops TX back to RX (ESP32 only, else -ENOTSUP) */
+int aux_loopback(bool on);
+bool aux_loopback_get(void);
+/* Queue bytes for the DUT like a client; returns how many fit */
+size_t aux_send(const uint8_t *buf, size_t len);
+/* web.c: a WebSocket on /console/ws/<slot> is ready */
+int aux_console_ws_attach(int slot, int ws_sock);
 
 /* --- Network, identity (net.c) -------------------------------------------- */
 
@@ -95,5 +147,6 @@ int web_init(void);
 
 int bay_settings_save_force_pc(bool force);
 int bay_settings_save_id(const char *id);
+int bay_settings_save_aux(const struct aux_config *cfg);
 
 #endif /* BAY_H_ */

@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: Apache-2.0
+# The options of samples/subsys/shell/shell_module/Kconfig
+
+mainmenu "Console simulation: fake DUT"
+
+config SHELL_FOREGROUND_CMDS
+	bool "Shell foreground commands example"
+	default y
+
+config SHELL_DYNAMIC_CMDS
+	bool "Shell dynamic commands example"
+	default y
+
+source "Kconfig.zephyr"

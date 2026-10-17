@@ -23,6 +23,8 @@
 
 #include "bay.h"
 
+#if defined(CONFIG_USBIP)
+
 LOG_MODULE_REGISTER(usb_host, CONFIG_BAY_LOG_LEVEL);
 
 #define UHC_DEV DEVICE_DT_GET(DT_NODELABEL(zephyr_uhc0))
@@ -173,3 +175,37 @@ int usb_host_claim_phy(void)
 }
 
 #endif /* CONFIG_BAY_SERVICE_PHY_HANDOVER */
+
+#else /* !CONFIG_USBIP */
+
+/*
+ * No USB host: a stand-in board whose only USB PHY carries its console
+ * (m5stack_stamps3).  Nothing enumerates, nothing to hand over.
+ */
+
+bool usb_host_running(void)
+{
+	return false;
+}
+
+int usb_host_device_count(void)
+{
+	return 0;
+}
+
+int usb_host_usbip_sessions(void)
+{
+	return 0;
+}
+
+int usb_host_release_phy(void)
+{
+	return -ENOTSUP;
+}
+
+int usb_host_claim_phy(void)
+{
+	return -ENOTSUP;
+}
+
+#endif /* CONFIG_USBIP */

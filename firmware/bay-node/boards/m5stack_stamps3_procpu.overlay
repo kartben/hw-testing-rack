@@ -1,0 +1,94 @@
+/*
+ * M5Stack StampS3 as a bench stand-in for the bay node: the AUX console
+ * (web console, RFC 2217, raw TCP), Wi-Fi, the shell and the web page, on
+ * a module with no muxes, no INA226 and no USB host.  Its only USB PHY is
+ * the USB-Serial-JTAG, which carries the node's console and shell
+ * (boards/m5stack_stamps3_procpu.conf turns USB/IP off).
+ *
+ * Header pins (StampS3 labels):
+ *
+ *   G1  AUX TX -> DUT RX          G6  DUT_EN (no switch on the module)
+ *   G2  AUX RX <- DUT TX          G7  DUT_FLT_N (pull-up: no fault)
+ *   G4  RESET -> DUT EN/RST       G8  MUX_FORCE_PC (unused)
+ *   G5  BOOT  -> DUT IO0/BOOT     G9  PC_DET, G10 SVC (pulled down)
+ *
+ * RESET and BOOT are open-drain and active low here, so they go straight
+ * to an ESP32 DUT's EN and IO0 (the node drives transistors instead).
+ * An INA226 breakout can go on G13 (SDA) / G15 (SCL).  `bay aux loopback
+ * on` loops the UART's TX back to its RX to try the console without a DUT.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "../../boards/hwtr/bay_node/bay_node-pinctrl.dtsi"
+#include "../../boards/hwtr/bay_node/bay_node.dtsi"
+
+&pinctrl {
+	stamps3_aux_uart: stamps3_aux_uart {
+		group1 {
+			pinmux = <UART1_TX_GPIO1>;
+			output-high;
+		};
+
+		group2 {
+			pinmux = <UART1_RX_GPIO2>;
+			bias-pull-up;
+		};
+	};
+
+	/* The module's own WS2812 */
+	stamps3_led: stamps3_led {
+		group1 {
+			pinmux = <RMT_OUT0_GPIO21>;
+		};
+	};
+};
+
+&dut_port {
+	enable-gpios = <&gpio0 6 GPIO_ACTIVE_HIGH>;
+	fault-gpios = <&gpio0 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	reset-gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
+	boot-gpios = <&gpio0 5 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
+	tx-gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
+};
+
+&usb_mux {
+	force-pc-gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>;
+	pc-detect-gpios = <&gpio0 9 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+	service-gpios = <&gpio0 10 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+};
+
+&uart1 {
+	pinctrl-0 = <&stamps3_aux_uart>;
+};
+
+/* The board's I2C0 pins (G13/G15) */
+&i2c0 {
+	pinctrl-0 = <&i2c0_default>;
+};
+
+&rmt {
+	pinctrl-0 = <&stamps3_led>;
+};
+
+/* No USB host: the PHY stays with the USB-Serial-JTAG (console, flashing) */
+&usb_otg {
+	status = "disabled";
+};
+
+/* The LED moves from SPI3 to the RMT; free G3/G5-G7/G9 for the map above */
+&status_rgb_led {
+	status = "disabled";
+};
+
+&spi3 {
+	status = "disabled";
+};
+
+&spi2 {
+	status = "disabled";
+};
+
+&mcpwm0 {
+	status = "disabled";
+};

@@ -44,10 +44,30 @@ static void print_power(const struct shell *sh)
 	}
 }
 
+static char parity_char(uint8_t parity)
+{
+	return parity == AUX_PARITY_ODD ? 'O' : parity == AUX_PARITY_EVEN ? 'E' : 'N';
+}
+
+static void print_aux(const struct shell *sh)
+{
+	struct aux_config cfg;
+	struct aux_stats st;
+
+	aux_config_get(&cfg, false);
+	aux_stats_get(&st);
+	shell_print(sh, "AUX UART:  %u %u%c%u, Enter %s, echo %s, esptool reset %s", cfg.baud,
+		    cfg.data_bits, parity_char(cfg.parity), cfg.stop_bits, aux_enter_str(cfg.enter),
+		    cfg.echo ? "on" : "off", cfg.esptool_reset ? "on" : "off");
+	shell_print(sh, "           %u web console(s), RFC 2217 tcp/%d %s, raw tcp/%d %s",
+		    st.web_clients, CONFIG_BAY_RFC2217_PORT, st.rfc2217_client ? "in use" : "free",
+		    CONFIG_BAY_AUX_TCP_PORT, st.raw_client ? "in use" : "free");
+	shell_print(sh, "           rx %u tx %u dropped %u%s", st.rx, st.tx, st.dropped,
+		    aux_loopback_get() ? ", loopback (test)" : "");
+}
+
 static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 {
-	uint32_t rx, tx, drop;
-
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
@@ -63,10 +83,7 @@ static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 		    usb_host_usbip_sessions());
 	print_power(sh);
 	shell_print(sh, "faults:    %u since boot", dut_fault_count());
-	aux_bridge_stats(&rx, &tx, &drop);
-	shell_print(sh, "AUX UART:  %u baud, client %s, rx %u tx %u dropped %u",
-		    aux_bridge_baudrate(), aux_bridge_client_connected() ? "connected" : "none",
-		    rx, tx, drop);
+	print_aux(sh);
 
 	return 0;
 }
@@ -153,23 +170,94 @@ static int cmd_mode(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
-static int cmd_aux(const struct shell *sh, size_t argc, char **argv)
+/* "8N1", "7E2", ... */
+static int parse_format(const char *fmt, struct aux_config *cfg)
 {
-	char *end;
-	unsigned long baud;
+	const char *parities = "NOE";
+	const char *p;
 
-	if (argc == 1) {
-		shell_print(sh, "%u baud, tcp/%d", aux_bridge_baudrate(), CONFIG_BAY_AUX_TCP_PORT);
-		return 0;
+	if (strlen(fmt) != 3 || fmt[0] < '5' || fmt[0] > '8' || (fmt[2] != '1' && fmt[2] != '2')) {
+		return -EINVAL;
 	}
-
-	baud = strtoul(argv[1], &end, 10);
-	if (*end != '\0' || baud < 300 || baud > 5000000) {
-		shell_error(sh, "usage: bay aux [<baudrate>]");
+	p = strchr(parities, fmt[1] & ~0x20);
+	if (p == NULL || *p == '\0') {
 		return -EINVAL;
 	}
 
-	return aux_bridge_set_baudrate((uint32_t)baud);
+	cfg->data_bits = fmt[0] - '0';
+	cfg->parity = p - parities;
+	cfg->stop_bits = fmt[2] - '0';
+
+	return 0;
+}
+
+static int cmd_aux(const struct shell *sh, size_t argc, char **argv)
+{
+	struct aux_config cfg;
+	uint32_t ms = 250;
+	char *end;
+	unsigned long baud;
+	int ret;
+
+	if (argc == 1) {
+		print_aux(sh);
+		return 0;
+	}
+
+	if (strcmp(argv[1], "break") == 0) {
+		if (argc > 2 && parse_ms(sh, argv[2], &ms) != 0) {
+			return -EINVAL;
+		}
+		ret = aux_break(ms);
+		if (ret != 0) {
+			shell_error(sh, "BREAK failed (%d)%s", ret, ret == -EIO ? ": DUT is off" : "");
+		}
+		return ret;
+	}
+
+	if (strcmp(argv[1], "loopback") == 0) {
+		if (argc == 2) {
+			shell_print(sh, "loopback %s", aux_loopback_get() ? "on" : "off");
+			return 0;
+		}
+		if (strcmp(argv[2], "on") != 0 && strcmp(argv[2], "off") != 0) {
+			shell_error(sh, "usage: bay aux loopback [on|off]");
+			return -EINVAL;
+		}
+		ret = aux_loopback(strcmp(argv[2], "on") == 0);
+		if (ret != 0) {
+			shell_error(sh, "no UART loopback on this SoC (%d)", ret);
+		}
+		return ret;
+	}
+
+	if (strcmp(argv[1], "send") == 0 && argc == 3) {
+		static const char *const enters[] = {"\r", "\n", "\r\n"};
+		const char *enter;
+
+		aux_config_get(&cfg, false);
+		enter = enters[MIN(cfg.enter, AUX_ENTER_CRLF)];
+		aux_send((const uint8_t *)argv[2], strlen(argv[2]));
+		aux_send((const uint8_t *)enter, strlen(enter));
+		return 0;
+	}
+
+	aux_config_get(&cfg, true);
+	baud = strtoul(argv[1], &end, 10);
+	if (*end != '\0' || (argc > 2 && parse_format(argv[2], &cfg) != 0)) {
+		shell_error(sh, "usage: bay aux [<baudrate> [8N1]] | break [ms] | send <text> | "
+				"loopback [on|off]");
+		return -EINVAL;
+	}
+	cfg.baud = baud;
+
+	ret = aux_config_set(&cfg, true);
+	if (ret != 0) {
+		shell_error(sh, "the AUX UART refused %lu %s (%d)", baud, argc > 2 ? argv[2] : "",
+			    ret);
+	}
+
+	return ret;
 }
 
 static int cmd_id(const struct shell *sh, size_t argc, char **argv)
@@ -200,7 +288,10 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 	SHELL_CMD_ARG(boot, NULL, "Reset into the DUT's bootloader, or BOOT line [hold|release]",
 		      cmd_boot, 1, 1),
 	SHELL_CMD_ARG(mode, NULL, "USB data path: [usbip|classic] (persistent)", cmd_mode, 1, 1),
-	SHELL_CMD_ARG(aux, NULL, "AUX UART: [<baudrate>]", cmd_aux, 1, 1),
+	SHELL_CMD_ARG(aux, NULL,
+		      "AUX UART: [<baudrate> [8N1]] (persistent) | break [ms] | send <text> | "
+		      "loopback [on|off] (test)",
+		      cmd_aux, 1, 2),
 	SHELL_CMD_ARG(id, NULL, "Bay id, sets the hostname bay-<id>: [<id>] (persistent)", cmd_id,
 		      1, 1),
 	SHELL_SUBCMD_SET_END
