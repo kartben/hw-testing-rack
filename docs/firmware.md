@@ -38,12 +38,12 @@ Zephyr's new USB host stack.  The firmware lives in [`firmware/`](../firmware/)
 | Feature | Status | How |
 |---|---|---|
 | USB/IP export of the DUT | written | `CONFIG_USBIP=y`, `zephyr_uhc0` → OTG controller; client: `usbip attach -r bay-<id>.local -b 1-1` |
-| Power control | written | IO6 → TPS2553 EN, kept on at boot (pull-up: the board is on before the firmware runs); `bay power on/off/cycle` |
-| Over-current | written | FAULT on IO7 (interrupt): logged, counted, VBUS cut and latched after 1 s in current limit |
+| Power control | written | IO41 → TPS2553 EN, kept on at boot (pull-up: the board is on before the firmware runs); `bay power on/off/cycle` |
+| Over-current | written | FAULT on IO40 (interrupt): logged, counted, VBUS cut and latched after 1 s in current limit |
 | Telemetry | written | INA226 (0x40, 50 mΩ) through the sensor API → V, I, P in the shell, `GET /api/status` and Prometheus `/metrics` |
-| Modes | written | reads PC_DET (IO4) and SVC (IO5); `bay mode classic\|usbip` drives MUX_FORCE_PC (IO10), persisted in settings |
+| Modes | written | reads PC_DET (IO13) and SVC (IO15); `bay mode classic\|usbip` drives MUX_FORCE_PC (IO14), persisted in settings |
 | SERVICE mode | written | stops the USB host and gives the ESP32-S3's single PHY back to the USB-Serial-JTAG (flash/JTAG from the front port); restarts it afterwards |
-| AUX | written | UART1 (IO17/18) ↔ raw TCP port 4000; RESET/BOOT pulses on IO11/IO12 (`bay reset`, `bay boot`) |
+| AUX | written | UART1 (IO47/IO33) ↔ raw TCP port 4000; RESET/BOOT pulses on IO34/IO48 (`bay reset`, `bay boot`) |
 | Status LED | written | WS2812B on IO13 (RMT): fault / service / classic / power off / no network / USB/IP idle / enumerated / attached |
 | Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS |
 | Control interface | written | `bay …` shell on the UART test pads and over telnet; status page and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`) |

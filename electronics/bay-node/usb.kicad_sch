@@ -6,7 +6,7 @@
 	(paper "A3")
 	(title_block
 		(title "Bay node — USB ports and data-path muxes")
-		(rev "0.3")
+		(rev "0.4")
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")

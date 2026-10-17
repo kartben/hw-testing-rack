@@ -6,7 +6,7 @@
 	(paper "A3")
 	(title_block
 		(title "Bay node — DUT power switch, monitor, AUX and camera power")
-		(rev "0.3")
+		(rev "0.4")
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
@@ -171,7 +171,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector_Generic_MountingPin:Conn_01x06_MountingPin"
+		(symbol "Connector_Generic:Conn_01x06"
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -191,15 +191,14 @@
 					)
 				)
 			)
-			(property "Value" "Conn_01x06_MountingPin"
-				(at 1.27 -10.16 0)
+			(property "Value" "Conn_01x06"
+				(at 0 -10.16 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left)
 				)
 			)
 			(property "Footprint" ""
@@ -224,7 +223,7 @@
 					)
 				)
 			)
-			(property "Description" "Generic connectable mounting pin connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(property "Description" "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -246,7 +245,7 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "Connector*:*_1x??-1MP*"
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -257,7 +256,7 @@
 					)
 				)
 			)
-			(symbol "Conn_01x06_MountingPin_1_1"
+			(symbol "Conn_01x06_1_1"
 				(rectangle
 					(start -1.27 6.35)
 					(end 1.27 -8.89)
@@ -333,27 +332,6 @@
 					)
 					(fill
 						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.016 -9.652)
-						(xy 1.016 -9.652)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(text "Mounting"
-					(at 0 -9.271 0)
-					(effects
-						(font
-							(size 0.381 0.381)
-						)
 					)
 				)
 				(pin passive line
@@ -457,24 +435,6 @@
 						)
 					)
 					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -12.7 90)
-					(length 3.048)
-					(name "MountPin"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "MP"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4380,7 +4340,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic_MountingPin:Conn_01x06_MountingPin")
+		(lib_id "Connector_Generic:Conn_01x06")
 		(at 269.24 162.56 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -4405,7 +4365,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_SH_SM06B-SRSS-TB_1x06-1MP_P1.00mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4423,7 +4383,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "JST-SH 6-pin side entry"
+		(property "Description" "JST PH 6-pin, side entry, SMD"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4432,7 +4392,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "XY-SM06B-SRSS-TB"
+		(property "MPN" "S6B-PH-SM4-TB(LF)(SN)"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4441,7 +4401,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "XYECONN"
+		(property "Manufacturer" "JST"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4450,16 +4410,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C56123098"
-			(at 269.24 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Alternative" "JST SM06B-SRSS-TB(LF)(SN) C160405"
+		(property "LCSC" "C265405"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4485,9 +4436,6 @@
 		)
 		(pin "6"
 			(uuid "c2df6889-44cd-5ea6-9528-7a6ce21ada0f")
-		)
-		(pin "MP"
-			(uuid "991f2aff-3bae-5c13-b0bb-a6fcc9a2a20f")
 		)
 		(instances
 			(project "bay-node"
@@ -4570,83 +4518,6 @@
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
 					(reference "#PWR05009")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 269.24 175.26)
-			(xy 269.24 177.8)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1b53c4cb-8936-5c40-b409-91e04b13ccb7")
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 269.24 177.8 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "91e47264-2f7a-566b-bf40-7c39409f05a9")
-		(property "Reference" "#PWR05010"
-			(at 269.24 177.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 269.24 181.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 269.24 177.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 269.24 177.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 269.24 177.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "20c95149-cc20-5c65-8558-86c8868db7a7")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05010")
 					(unit 1)
 				)
 			)
@@ -5122,7 +4993,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8a19f902-e57a-5179-a8fd-b10cfe6c5e91")
-		(property "Reference" "#PWR05011"
+		(property "Reference" "#PWR05010"
 			(at 220.98 182.88 0)
 			(effects
 				(font
@@ -5172,7 +5043,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05011")
+					(reference "#PWR05010")
 					(unit 1)
 				)
 			)
@@ -5297,7 +5168,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "92b8e9c2-dafb-56be-93af-e00d867da463")
-		(property "Reference" "#PWR05012"
+		(property "Reference" "#PWR05011"
 			(at 220.98 208.28 0)
 			(effects
 				(font
@@ -5347,7 +5218,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05012")
+					(reference "#PWR05011")
 					(unit 1)
 				)
 			)
@@ -5469,7 +5340,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "336835b3-37c9-53fb-a2dc-ccd39ea99aa6")
-		(property "Reference" "#PWR05013"
+		(property "Reference" "#PWR05012"
 			(at 205.74 185.42 0)
 			(effects
 				(font
@@ -5519,7 +5390,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05013")
+					(reference "#PWR05012")
 					(unit 1)
 				)
 			)
@@ -5641,7 +5512,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c42cd454-1701-58a0-b2a3-e4f8248a8766")
-		(property "Reference" "#PWR05014"
+		(property "Reference" "#PWR05013"
 			(at 205.74 210.82 0)
 			(effects
 				(font
@@ -5691,7 +5562,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05014")
+					(reference "#PWR05013")
 					(unit 1)
 				)
 			)
@@ -5818,7 +5689,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
 			(at 350.52 137.16 0)
 			(effects
 				(font
@@ -5836,7 +5707,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "JST PH 2-pin, side entry, 2 A"
+		(property "Description" "JST PH 2-pin, side entry, SMD, 2 A"
 			(at 350.52 137.16 0)
 			(effects
 				(font
@@ -5845,7 +5716,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "S2B-PH-K-S(LF)(SN)"
+		(property "MPN" "S2B-PH-SM4-TB(LF)(SN)"
 			(at 350.52 137.16 0)
 			(effects
 				(font
@@ -5863,7 +5734,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C173752"
+		(property "LCSC" "C295747"
 			(at 350.52 137.16 0)
 			(effects
 				(font
@@ -6915,7 +6786,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e9ca73e2-d242-5e5e-b560-85a2d6969421")
-		(property "Reference" "#PWR05015"
+		(property "Reference" "#PWR05014"
 			(at 45.72 73.66 0)
 			(effects
 				(font
@@ -6965,7 +6836,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05015")
+					(reference "#PWR05014")
 					(unit 1)
 				)
 			)
@@ -7047,7 +6918,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "42cd164b-b325-5fd6-9981-32d33c4c3823")
-		(property "Reference" "#PWR05016"
+		(property "Reference" "#PWR05015"
 			(at 203.2 73.66 0)
 			(effects
 				(font
@@ -7097,7 +6968,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05016")
+					(reference "#PWR05015")
 					(unit 1)
 				)
 			)
@@ -7113,7 +6984,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b6431f27-327b-579e-9a9c-11dfd44f8a54")
-		(property "Reference" "#PWR05017"
+		(property "Reference" "#PWR05016"
 			(at 187.96 60.96 0)
 			(effects
 				(font
@@ -7163,7 +7034,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05017")
+					(reference "#PWR05016")
 					(unit 1)
 				)
 			)
@@ -7179,7 +7050,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c1a22cd0-a272-5967-b492-03b6dad2bdb1")
-		(property "Reference" "#PWR05018"
+		(property "Reference" "#PWR05017"
 			(at 254 45.72 0)
 			(effects
 				(font
@@ -7229,7 +7100,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05018")
+					(reference "#PWR05017")
 					(unit 1)
 				)
 			)
@@ -7311,7 +7182,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b736dbaa-48d1-5f6b-b0a5-dba1496a9dc1")
-		(property "Reference" "#PWR05019"
+		(property "Reference" "#PWR05018"
 			(at 220.98 132.08 0)
 			(effects
 				(font
@@ -7361,7 +7232,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05019")
+					(reference "#PWR05018")
 					(unit 1)
 				)
 			)
@@ -7476,7 +7347,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a54d736f-698b-5c6a-80ff-8069e9a06d99")
-		(property "Reference" "#PWR05020"
+		(property "Reference" "#PWR05019"
 			(at 304.8 137.16 0)
 			(effects
 				(font
@@ -7526,7 +7397,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05020")
+					(reference "#PWR05019")
 					(unit 1)
 				)
 			)
@@ -7542,7 +7413,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cc41b74a-3251-507d-aee0-dd31634ef4da")
-		(property "Reference" "#PWR05021"
+		(property "Reference" "#PWR05020"
 			(at 340.36 144.78 0)
 			(effects
 				(font
@@ -7592,7 +7463,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05021")
+					(reference "#PWR05020")
 					(unit 1)
 				)
 			)
@@ -7689,7 +7560,7 @@
 		)
 		(uuid "f54ab3d4-2d21-568f-b5c9-0c6bfddb774b")
 	)
-	(text "AUX: UART + open-drain RESET / BOOT towards the DUT (JST SH 6)"
+	(text "AUX: UART + open-drain RESET / BOOT towards the DUT (JST PH 6)"
 		(exclude_from_sim no)
 		(at 173.99 124.46 0)
 		(effects

@@ -22,34 +22,34 @@
 		};
 	};
 
-	/* IO17 AUX_TX / IO18 AUX_RX: DUT console on the AUX connector (1k series) */
+	/* IO47 AUX_TX / IO33 AUX_RX: DUT console on the AUX connector (1k series) */
 	bay_aux_uart_default: bay_aux_uart_default {
 		group1 {
-			pinmux = <UART1_TX_GPIO17>;
+			pinmux = <UART1_TX_GPIO47>;
 			output-high;
 		};
 
 		group2 {
-			pinmux = <UART1_RX_GPIO18>;
+			pinmux = <UART1_RX_GPIO33>;
 			bias-pull-up;
 		};
 	};
 
-	/* IO8 I2C_SDA / IO9 I2C_SCL: INA226 (4.7k pull-ups on the board) */
+	/* IO38 I2C_SDA / IO37 I2C_SCL: INA226 (4.7k pull-ups on the board) */
 	bay_i2c0_default: bay_i2c0_default {
 		group1 {
-			pinmux = <I2C0_SDA_GPIO8>,
-				 <I2C0_SCL_GPIO9>;
+			pinmux = <I2C0_SDA_GPIO38>,
+				 <I2C0_SCL_GPIO37>;
 			bias-pull-up;
 			drive-open-drain;
 			output-high;
 		};
 	};
 
-	/* IO13 LED_DIN: WS2812B status LED (33R series) */
+	/* IO12 LED_DIN: WS2812B status LED (33R series) */
 	bay_led_default: bay_led_default {
 		group1 {
-			pinmux = <RMT_OUT0_GPIO13>;
+			pinmux = <RMT_OUT0_GPIO12>;
 		};
 	};
 };

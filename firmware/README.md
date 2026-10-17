@@ -98,13 +98,13 @@ $ socat -,raw,echo=0 TCP:bay-b3.local:4000   # DUT console (AUX UART)
 | Feature | Implementation |
 |---|---|
 | USB/IP export of the DUT | `CONFIG_USBIP` on `zephyr_uhc0` (= `&usb_otg`, DWC2 host, ESP32-S3 FS quirk); TCP 3240; one device, bus id `1-<address>` (normally `1-1`) |
-| DUT power | TPS2553 EN on IO6, kept **on** at boot (the board pulls it up); `bay power on/off/cycle` |
-| Over-current | TPS2553 ~FAULT on IO7 (interrupt): logged and counted; after `CONFIG_BAY_DUT_FAULT_OFF_MS` (1 s) in current limit VBUS is switched off and the fault latched until `bay power on` |
+| DUT power | TPS2553 EN on IO41, kept **on** at boot (the board pulls it up); `bay power on/off/cycle` |
+| Over-current | TPS2553 ~FAULT on IO40 (interrupt): logged and counted; after `CONFIG_BAY_DUT_FAULT_OFF_MS` (1 s) in current limit VBUS is switched off and the fault latched until `bay power on` |
 | Telemetry | INA226 @ 0x40 through the Zephyr sensor API (`ti,ina226`, 50 mΩ, 50 µA/LSB, 16× averaging): bus mV, mA, mW in `bay power` / `bay status` |
-| Data path | reads PC_DET (IO4) and SVC (IO5); `bay mode classic` drives MUX_FORCE_PC (IO10), persisted |
+| Data path | reads PC_DET (IO13) and SVC (IO15); `bay mode classic` drives MUX_FORCE_PC (IO14), persisted |
 | SERVICE mode | stops the USB host and routes the internal PHY to the USB-Serial-JTAG (`CONFIG_BAY_SERVICE_PHY_HANDOVER`); restarts the host when SERVICE goes off |
-| AUX | UART1 (IO17/IO18) ↔ raw TCP on port 4000 (one client); `bay aux <baud>`; RESET/BOOT open-drain pulses (IO11/IO12): `bay reset`, `bay boot` |
-| Status LED | WS2812B on IO13 through the RMT (`worldsemi,ws2812-pulse-io`), see below |
+| AUX | UART1 (IO47 TX / IO33 RX) ↔ raw TCP on port 4000 (one client); `bay aux <baud>`; RESET/BOOT open-drain pulses (IO34/IO48): `bay reset`, `bay boot` |
+| Status LED | WS2812B on IO12 through the RMT (`worldsemi,ws2812-pulse-io`), see below |
 | Buttons | BOOT (IO0) held ≥ 1 s once booted: DUT power cycle.  RESET is the ESP32's EN |
 | Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS |
 | Shell | `bay …` commands plus the stock `wifi`, `net` shells, on UART0 and telnet |
@@ -198,27 +198,31 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 | ESP32-S3 | Net | Use | Devicetree |
 |---|---|---|---|
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
-| IO4 | PC_DET | front port VBUS via 10k/20k: laptop plugged | `usb_mux` `pc-detect-gpios` |
-| IO5 | SVC | SERVICE slide switch | `usb_mux` `service-gpios` |
-| IO6 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware) | `dut_port` `enable-gpios` |
-| IO7 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up) | `dut_port` `fault-gpios` |
-| IO8 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
-| IO9 | I2C_SCL | I²C0 | `&i2c0` |
-| IO10 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
-| IO11 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
-| IO12 | AUX_BOOT_CTL | 2N7002 Q3 → AUX BOOT (open drain, 100k pull-down) | `dut_port` `boot-gpios` |
-| IO13 | LED_DIN | WS2812B (33 Ω), RMT channel 0 | `status_led` |
-| IO14 | INA_ALERT_N | INA226 ~ALERT (10k pull-up), not used yet | `ina226` `alert-gpios` |
-| IO17 | AUX_TX | UART1 TX → AUX pin 3 (1k) | `&uart1` (`dut_port` `uart`) |
-| IO18 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
+| IO12 | LED_DIN | WS2812B (33 Ω), RMT channel 0 | `status_led` |
+| IO13 | PC_DET | front port VBUS via 10k/20k: laptop plugged | `usb_mux` `pc-detect-gpios` |
+| IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
+| IO15 | SVC | SERVICE slide switch | `usb_mux` `service-gpios` |
 | IO19 | ESP_DN | USB D−, internal FS PHY → MUX_DUT / MUX_PC | `zephyr_uhc0: &usb_otg` |
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
+| IO33 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
+| IO34 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
+| IO37 | I2C_SCL | I²C0 | `&i2c0` |
+| IO38 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
+| IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up), not used yet | `ina226` `alert-gpios` |
+| IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up) | `dut_port` `fault-gpios` |
+| IO41 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware) | `dut_port` `enable-gpios` |
+| IO47 | AUX_TX | UART1 TX → AUX pin 3 (1k) | `&uart1` (`dut_port` `uart`) |
+| IO48 | AUX_BOOT_CTL | 2N7002 Q3 → AUX BOOT (open drain, 100k pull-down) | `dut_port` `boot-gpios` |
 | TXD0 (IO43) | U0TX | TP1, console + shell | `&uart0` |
 | RXD0 (IO44) | U0RX | TP2 | `&uart0` |
 | EN | EN | SW1 RESET button (10k/1µF) | — |
 
-Strapping pins IO3/IO45/IO46 are not used.  The DevKitC overlay keeps this
-map, moves the LED to the devkit's GPIO38 and disables SPI2 (IO10–IO13).
+Each signal sits on the module edge that faces where it goes on the board (v0.4): the right
+column feeds the DUT power block, the bottom-right pins the AUX connector, the bottom-left pins
+the mode logic and the LED.  Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad
+JTAG pins, free as GPIOs since the node debugs over USB-Serial-JTAG.  The DevKitC overlay keeps
+this map except I²C (IO8/IO9 there: the devkit's LED is on IO38 and its octal PSRAM takes
+IO35–IO37), moves the LED to the devkit's GPIO38 and disables SPI2 (IO10–IO13).
 
 `python3 firmware/tools/check_pinmap.py` checks this table and the board
 devicetree against U3 in `design.py`; CI ([`firmware.yml`](../.github/workflows/firmware.yml))

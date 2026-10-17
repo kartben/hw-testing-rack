@@ -286,3 +286,32 @@ orientations); R19's BOM footprint is now `R_1206_3216Metric_Kelvin` (same LCSC 
 
 **Before ordering:** reload both boards in KiCad (File → Revert) and look at them, check the new
 orientations in JLC's placement preview, and optionally decide H5.
+
+## Second round (Fabio, after v0.3) → bay node v0.4
+
+| Remark | Answer |
+|---|---|
+| The USBLC6s were bridged outside the part (pins 1–6 and 3–4 tied by copper) instead of passing the signal through | Fixed in v0.3 already: connector side and protected side are separate nets (`*_CONN_*`), the line enters on one pin and leaves on the other. |
+| How was the pair's impedance estimated? | 2-D field solver on the JLC04161H-7628 cross-section (0.2104 mm 7628 prepreg, εr 4.4, 35 µm copper): 0.25 mm tracks / 0.15 mm gap give Zdiff ≈ 93.5 Ω bare, ≈ 90 Ω under 15 µm of solder mask (εr 3.8). |
+| "The stackup is still a disaster": L3 was called power but carried signals; wants signals / GND only / power only / signals | v0.4: In2 carries power planes only (+3V3, +5V, 24 V strip), no track.  That needed a new placement (below). |
+| J5 used a JST SH, very small: pick a PH | J5 is a JST PH 6 since v0.3; in v0.4 every PH on the node is the SMD S*B-PH-SM4-TB, placed by JLC. |
+| INA226 Vbus should be tied to IN+ | Withdrawn by Fabio. |
+
+**Why a new placement.** With In2 for power only, Freerouting has two signal layers, and v0.3's
+placement left 13–18 connections unrouted whatever the passes.  The cause was the GPIO map: most
+module pins left from the left column and went to the DUT power block and the AUX connector on the
+right, crossing everything else.  v0.4 keeps every connector and the module where the mechanics
+put them and moves the rest.  The DUT power block (TPS2553, shunt, INA226) goes to the top right,
+next to the module's right column and J4, and the LDO and the two buttons go to the top left.  The
+muxes now sit just under the module, so the front port's pair runs straight up the middle.  Each
+GPIO sits on the module edge that faces its destination (map in [electronics.md](electronics.md),
+firmware updated).  `pcbgen.py` also gives every GND and supply pin its own via to its plane before
+routing (`fanout_nets`), so no pin depends on the outer pours.
+
+| | bay node v0.4 |
+|---|---|
+| ERC (Konnect) | 0 errors, 0 warnings |
+| DRC (Konnect, zones refilled) | 0 errors, 0 warnings, 0 unconnected, schematic parity 0 |
+| Copper on In1 / In2 | GND plane only / power planes only, no track on either |
+| USB HS | hand-drawn again for the new geometry; J3 → J4 D+ 64.5 mm, D− 64.6 mm (0.1 mm skew, vias as 1.6 mm) |
+| JLCPCB DFM audit (Konnect) | 2 notes: the UART test pads are on the bottom side (copper only, not in the BOM or CPL, so no bottom-side assembly), and R6 / TP2 sit 0.73 mm apart, on opposite sides |

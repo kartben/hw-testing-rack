@@ -29,14 +29,16 @@ junctions and refuses any wire that would touch another net's pin or wire, and
 KiCad's ERC plus the PCB's schematic-parity check catch the rest.
 
 **Stackup** (bay node, 4 layers, symmetric): F.Cu signals + GND pour · In1 solid
-GND · In2 power (+5V pour, +3V3 under the ESP32 and down to the LDO, the 24 V bus
-strip; GND fills what they leave) · B.Cu signals + GND pour.  The board declares JLCPCB's standard
+GND · In2 power only (+3V3 under the module, the LDO and the logic around them; +5V from the buck
+to the LDO input, the DUT switch, the camera fuse and the DUT-side ESD part; the 24 V bus strip
+between J1 and J2; +3V3 again under the front edge, fed by a B.Cu track) · B.Cu signals + GND
+pour.  No signal is routed on In2.  The board declares JLCPCB's standard
 JLC04161H-7628 build (0.21 mm prepreg between F.Cu and In1, 1.065 mm core, 0.5 oz
 inner copper) and ENIG; the hub declares 2 layers, 1.6 mm, lead-free HASL
-(`stackup` / `finish` in `design.py`, written into the board by `pcbgen.py`).  The router may still use In2 for signals; its pours are
-added after routing, around them.  A version without the outer pours left
-about 25 connections unrouted on 64 × 80 mm (every SMD GND pad then needs its
-own via), so they stay.  **Every pour connects pads through thermal reliefs**
+(`stackup` / `finish` in `design.py`, written into the board by `pcbgen.py`).  Before routing,
+every GND and supply pin gets a short track to a via of its own on its plane (`fanout_nets` in
+`design.py`, `fanout_pads()` in `pcbgen.py`), locked so Freerouting keeps it: no pin depends on
+the outer GND pours, which stay as a bonus, stitched to In1.  **Every pour connects pads through thermal reliefs**
 (0.3 mm gap, 0.4 mm spokes): a GND pad heats up like the pad at the other end
 of its part, so small parts don't tombstone in reflow and hand-soldered pins
 take solder.  `<board>.kicad_dru` accepts a single spoke where fine-pitch
@@ -61,12 +63,13 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
    connected GND or to a via spot.
 4. Pads the router walls in completely are listed under `fanout` in the
    board's `design.py`: a dog-bone via outside the package is reserved
-   before routing (a keep-out) and placed after it.
+   before routing (a keep-out) and placed after it.  The bay node needs none: its
+   `fanout_nets` give every GND and supply pin its via before routing.
 5. Finally KiCad's own DRC lists the GND pads still unconnected, and each gets
    a short track to a GND via or to a spot where a small via fits.
 
-> **Status: v0.3 — autorouted, reviewed against Fabio's v0.1 feedback and with
-> Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.**  ERC is clean and DRC reports no copper errors, no unconnected
+> **Status: v0.4 — bay node re-placed for In2 power only (Fabio's second round), autorouted,
+> checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.**  ERC is clean and DRC reports no copper errors, no unconnected
 > items and full schematic parity (0 DRC warnings).  The buck's hot loop, the
 > 24 V bus, the hub's 24 V pours and the USB High-Speed pairs are placed or
 > drawn by hand in `design.py`; the rest is the router's draft: before
@@ -81,7 +84,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX** — see the PDF in
 
 | Block | Parts | Notes |
 |---|---|---|
-| 24 V in/out | 2 × JST PH side entry | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it |
+| 24 V in/out | 2 × JST PH side entry, SMD (S2B-PH-SM4-TB) | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it; each pin on a solid island with 4 vias to its plane |
 | Protection | SUD50P06 P-FET + 12 V zener, SMBJ33A, 100 µF/50 V | reverse polarity, hot-plug clamp < 54 V |
 | 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 120k/22k → 5.16 V; EN 1M/100k: on above 13.5 V, off below 10.8 V |
 | 3.3 V | AMS1117-3.3 | logic only |
@@ -89,26 +92,31 @@ Sheets: **Power · MCU · USB · DUT power & AUX** — see the PDF in
 | DUT power | TPS2553 (RILIM 18k → 1.34–1.52 A), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N); default **on** (also without firmware), fault flag to GPIO |
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6, 2 × USB-C | modes in [architecture.md](architecture.md); the classic-mode path (J3 → J4) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
-| AUX | JST-SH 6: GND, 3V3 (10 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | |
-| Camera | JST-PH 2: 5 V via 0.5 A PTC | |
+| AUX | JST PH 6, side entry, SMD (S6B-PH-SM4-TB): GND, 3V3 (10 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | |
+| Camera | JST PH 2, SMD: 5 V via 0.5 A PTC | mouth 0.65 mm behind `pcb.bay_node.cam` in `config/rack.yaml`, to clear the M3 hole |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
 muxes, at 480 Mb/s if the DUT can.  Freerouting can't route differential pairs, so that chain (J3 →
 U4 → U5 → U6 → U8 → J4) is drawn by `usb_hs_routes()` in `design.py` and locked before routing
-(`b.pcb["tracks"]`): coupled pairs on F.Cu over In1, 0.25 mm / 0.15 mm gap (≈ 90 Ω, estimate),
-ESD parts in flow-through (the connector side is its own net, `PC_CONN_*` /
-`DUT_CONN_*`, so the signal can only pass through the USBLC6), lengths matched per segment.  The two
-FSUSB42s need one crossover between them (PCPATH_DN hops under PCPATH_DP on B.Cu); the three bumps
-on PCPATH_DP make up its length.  Moving U4–U8 or the connectors means re-drawing those tracks.
+(`b.pcb["tracks"]`): coupled pairs on F.Cu over In1, 0.25 mm / 0.15 mm gap (≈ 90 Ω, field-solver
+estimate), ESD parts in flow-through (the connector side is its own net, `PC_CONN_*` /
+`DUT_CONN_*`, so the signal can only pass through the USBLC6).  Since v0.4 the PC pair runs
+straight up the middle of the board from U4 to U5, right under the module; U5 → U6 → U8 → J4 then
+runs east.  The two FSUSB42s need one crossover between them (PCPATH_DN hops under PCPATH_DP on
+B.Cu); four small bumps on PC_DP, on the straight run, make up the two vias, and J3 → J4 is matched
+to 0.1 mm (vias counted as the 1.6 mm they cross).  Moving U4–U8 or the connectors means
+re-drawing those tracks.
 
 **Kelvin shunt.** R19 uses `bench:R_1206_3216Metric_Kelvin`
 (generated by `electronics/tools/footprints.py` from the stock 1206): sense pads on the inner edge of
 each terminal, tied to it by net-tie pad groups, so the INA226 reads the resistor and not the load
 copper.
 
-**GPIO map:** IO4 PC_DET · IO5 SVC · IO6 DUT_EN · IO7 DUT_FLT_N · IO8/IO9 I²C ·
-IO10 MUX_FORCE_PC · IO11 AUX_RST · IO12 AUX_BOOT · IO13 LED · IO14 INA_ALERT ·
-IO17/IO18 UART1 (AUX) · IO19/IO20 USB · TXD0/RXD0 on test pads.
+**GPIO map** (v0.4: each signal leaves the module on the edge that faces where it goes): right
+column IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO38/IO37 I²C SDA/SCL (the DUT power block
+sits in the top-right corner); bottom right IO47/IO33 UART1 TX/RX · IO34 AUX_RST · IO48 AUX_BOOT;
+bottom left IO12 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC; IO19/IO20 USB; TXD0/RXD0 on
+test pads (bottom side).
 
 **USB-C roles:** the front PC port is a sink (5.1 k Rd on CC) whose VBUS is
 only sensed; the DUT port is a source (22 k Rp → "1.5 A") with switched VBUS.
@@ -155,10 +163,11 @@ where it didn't matter (e.g. 150k RT, 120k/22k FB).
 * `docs/<board>-schematic.pdf`, SVGs, top/bottom/iso renders;
 * `fab/<board>.step` and `fab/<board>.glb` (the web viewer uses the GLB).
 
-The through-hole connectors (JST PH, and the hub's JST VH input) are soldered by hand, from
-loose LCSC parts: `hand_solder=True` in `electronics/tools/catalog.py` keeps
-them out of the JLC BOM and CPL, and the detailed BOM flags them "hand-solder,
-buy loose (LCSC)" in its `Assembly` column.
+The bay node has no through-hole part since v0.4: its JST PH connectors are the SMD
+S*B-PH-SM4-TB, placed by JLC in the same reflow pass.  The hub's through-hole connectors (JST VH
+input, JST PH outputs) are soldered by hand, from loose LCSC parts: `hand_solder=True` in
+`electronics/tools/catalog.py` keeps them out of the JLC BOM and CPL, and the detailed BOM flags
+them "hand-solder, buy loose (LCSC)" in its `Assembly` column.
 
 ## Assembly at JLCPCB
 
@@ -195,7 +204,10 @@ the compensation network (≈ +$0.70 of parts per board, one extended part type
 fewer), and the JST PH connectors cost less than the VH ones.  Rev 0.3 (the
 Konnect review) adds no part type: the hub's power pours and thermal vias are
 copper only, and the node's Kelvin shunt is the same LCSC part on a new
-footprint.  Re-quote before ordering.
+footprint.  Rev 0.4 puts the node's JST PH connectors back in JLC's hands, as SMD parts: two
+extended part types (C295747, C265405, ≈ $3 loading fee each per order), ≈ +$0.86 of parts per
+board over the through-hole ones, and nothing left to solder by hand on the node.  Re-quote before
+ordering.
 
 * **Bay node: Standard PCBA.** JLC can only place the ESP32-S3-MINI-1 module
   (C2913206) and the WS2812B-2020 LED with its Standard PCBA service, not
@@ -263,7 +275,8 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C7503186 SUD50P06 TO-252 | node Q1, hub Q1 | −1.89 mm x | to confirm |
 | C544399 TPS26600 HTSSOP-16 | hub U1–U5 | 270° | to confirm |
 | C160315 JST B2P-VH | hub J1 | +1.98 mm x | hand-soldered, not in the CPL |
-| C56123098 XYECONN SM06B-SRSS-TB | node J5 | none: JLC's footprint could not be read (the JST original, C160405, needs none) | to confirm |
+| C295747 JST S2B-PH-SM4-TB | node J1 J2 J6 | none yet | not fitted: check in JLC's preview |
+| C265405 JST S6B-PH-SM4-TB | node J5 | none yet | not fitted: check in JLC's preview |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
 0805, 1206), the electrolytics (+ pad), the diodes and LEDs (cathode side),

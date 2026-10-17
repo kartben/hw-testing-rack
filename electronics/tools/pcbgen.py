@@ -432,6 +432,12 @@ class PcbBuilder:
         self.vias()
         self.tracks()
         self.zones("routing" if defer_pours else "all")
+        if self.b.pcb.get("fanout_nets"):
+            specs = {self.b.pcb_net_name(k): v for k, v in self.b.pcb["fanout_nets"].items()}
+            islands = [(self.b.pcb_net_name(z["net"]), z["poly"]) for z in self.b.pcb.get("zones", [])
+                       if z["layer"] in ("F.Cu", "B.Cu") and "poly" in z]
+            for net, n, todo in fanout_pads(self.board, specs, islands):
+                print(f"fan-out {net}: {n} of {todo} pads")
         if route:
             self.autoroute(self.b.pcb.get("passes", 40))
         # zones are filled by `kicad-cli pcb drc --refill-zones --save-board` (KiCad's own filler)
@@ -447,6 +453,12 @@ def export_dsn(b: Board, outdir: Path) -> Path:
     dsn.parent.mkdir(parents=True, exist_ok=True)
     if not pcbnew.ExportSpecctraDSN(board, str(dsn)):
         raise RuntimeError("DSN export failed")
+    # Freerouting rounds its geometry and sometimes lands a hair under the clearance (0.1487 for
+    # 0.15 mm): give it 2 µm of margin over what KiCad's DRC checks
+    import re
+    text = dsn.read_text(encoding="utf-8")
+    dsn.write_text(re.sub(r"\(clearance (\d+(?:\.\d+)?)\)", lambda m: f"(clearance {float(m.group(1)) + 2:g})", text),
+                   encoding="utf-8")
     print("exported", dsn)
     return dsn
 
@@ -492,7 +504,7 @@ def import_session(b: Board, outdir: Path) -> Path:
     # without outer GND pours every SMD GND pad needs its own way down to the plane: Freerouting
     # fans most of them out, the ones it leaves get a short track to a GND via (KiCad's DRC says which)
     for _ in range(2):
-        spots = unconnected_gnd_pads(path)
+        spots = unconnected_pads(path)
         board = pcbnew.LoadBoard(str(path))
         gnd = board.FindNet(b.pcb_net_name("GND"))
         # a pad whose pour fragment has no via is reported against the zone, not the pad
@@ -502,6 +514,19 @@ def import_session(b: Board, outdir: Path) -> Path:
         n = connect_gnd_pads(board, gnd, spots)
         print(f"gnd: {n} of {len(spots)} isolated GND pads tied to the plane")
         pcbnew.SaveBoard(str(path), board)
+    # pads of the power-plane nets (b.pcb["plane_nets"]: net → layer) the router left without a way
+    # down to their plane get a short track to a via landing inside that net's fill
+    for name, layer in b.pcb.get("plane_nets", {}).items():
+        netname = b.pcb_net_name(name)
+        for _ in range(2):
+            spots = unconnected_pads(path, netname)
+            if not spots:
+                break
+            board = pcbnew.LoadBoard(str(path))
+            n = connect_gnd_pads(board, board.FindNet(netname), spots, via_d=0.6, drill=0.3, width_mm=0.4,
+                                 plane=getattr(pcbnew, layer.replace(".", "_")))
+            print(f"plane {name}: {n} of {len(spots)} pads tied to {layer}")
+            pcbnew.SaveBoard(str(path), board)
     drop_passthrough_vias(path)
     print("imported", ses)
     return path
@@ -536,8 +561,8 @@ def drop_passthrough_vias(path: Path) -> int:
     return len(gone)
 
 
-def unconnected_gnd_pads(path: Path, gnd_name: str = "GND") -> list[tuple[float, float]]:
-    """Positions (mm) of the GND pads KiCad's DRC reports as unconnected (zones refilled)."""
+def unconnected_pads(path: Path, net: str = "GND") -> list[tuple[float, float]]:
+    """Positions (mm) of the pads of `net` KiCad's DRC reports as unconnected (zones refilled)."""
     import json
     import tempfile
     rpt = Path(tempfile.mkstemp(suffix=".json")[1])
@@ -548,7 +573,7 @@ def unconnected_gnd_pads(path: Path, gnd_name: str = "GND") -> list[tuple[float,
     for v in data.get("unconnected_items", []):
         for it in v.get("items", []):
             d = it.get("description", "")
-            if d.startswith("Pad") and f"[{gnd_name}]" in d:
+            if d.startswith("Pad") and f"[{net}]" in d:
                 out.append((it["pos"]["x"], it["pos"]["y"]))
     return sorted(set(out))
 
@@ -583,10 +608,25 @@ def loose_gnd_pads(board, gnd) -> list[tuple[float, float]]:
     return out
 
 
-def connect_gnd_pads(board, gnd, spots_mm, via_d=0.45, drill=0.25, width_mm=0.25) -> int:
-    """Tie each listed (isolated) SMD GND pad to the GND plane: the shortest straight track that
-    reaches a GND via / through-hole pad, or a spot where a small via fits (on every layer)."""
+def connect_gnd_pads(board, gnd, spots_mm, via_d=0.45, drill=0.25, width_mm=0.25, plane=None) -> int:
+    """Tie each listed (isolated) SMD pad of net `gnd` to its plane: the shortest straight track that
+    reaches a via / through-hole pad of the net, or a spot where a small via fits (on every layer).
+    With `plane` (the layer of a power net's plane), vias only count where they land inside that
+    net's fill on it."""
     code = gnd.GetNetCode()
+    fill = None
+    if plane is not None:
+        pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+        fill = pcbnew.SHAPE_POLY_SET()
+        for z in board.Zones():
+            if not z.GetIsRuleArea() and z.GetNetCode() == code and z.IsOnLayer(plane):
+                fill.Append(z.GetFilledPolysList(plane))
+
+    def on_plane(e, r=0):
+        if fill is None:
+            return True
+        return all(fill.Contains(pcbnew.VECTOR2I(int(e.x + r * math.cos(a)), int(e.y + r * math.sin(a))))
+                   for a in [k * math.pi / 4 for k in range(8)] + [0]) if r else fill.Contains(e)
     err = MM(0.005)
     layers = [l for l in (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu) if board.GetEnabledLayers().Contains(l)]
     clr = MM(0.2)
@@ -613,7 +653,7 @@ def connect_gnd_pads(board, gnd, spots_mm, via_d=0.45, drill=0.25, width_mm=0.25
     for t in board.GetTracks():
         if t.GetClass() == "PCB_VIA":
             holes.append((t.GetPosition(), t.GetDrillValue()))
-            if t.GetNetCode() == code:
+            if t.GetNetCode() == code and on_plane(t.GetPosition()):
                 anchors.append((t.GetPosition(), MM(0.2)))
     for fp in board.GetFootprints():
         for p in fp.Pads():
@@ -630,6 +670,8 @@ def connect_gnd_pads(board, gnd, spots_mm, via_d=0.45, drill=0.25, width_mm=0.25
         for q, d in holes:
             if math.hypot(e.x - q.x, e.y - q.y) < d / 2 + MM(drill) / 2 + MM(0.35):
                 return False
+        if not on_plane(e, MM(via_d) / 2 + MM(0.1)):
+            return False
         return not any(obst[l].Collide(e, MM(via_d) // 2) for l in layers)
 
     pads = [p for fp in board.GetFootprints() for p in fp.Pads() if p.GetNetCode() == code and p.GetDrillSize().x == 0]
@@ -658,7 +700,8 @@ def connect_gnd_pads(board, gnd, spots_mm, via_d=0.45, drill=0.25, width_mm=0.25
                     best = (L, e, True)
                     break
         if not best:
-            print(f"gnd: pad {pad.GetParentFootprint().GetReference()}.{pad.GetNumber()} at ({x:.2f}, {y:.2f}) still isolated")
+            print(f"{gnd.GetNetname()}: pad {pad.GetParentFootprint().GetReference()}.{pad.GetNumber()} "
+                  f"at ({x:.2f}, {y:.2f}) still isolated")
             continue
         _, e, via = best
         t = pcbnew.PCB_TRACK(board)
@@ -679,6 +722,128 @@ def connect_gnd_pads(board, gnd, spots_mm, via_d=0.45, drill=0.25, width_mm=0.25
             anchors.append((e, MM(via_d) // 2))
         n += 1
     return n
+
+
+def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]:
+    """b.pcb["fanout_nets"]: {net: (plane layer, via Ø, drill, track width)}.  Before routing, every
+    SMD pad of these nets gets a short track out of its footprint to a via of its own landing on the
+    net's plane (In1 for GND, the net's area of In2 for a supply), locked so Freerouting keeps it:
+    no GND or supply pin then depends on an outer pour that signal tracks may cut in pieces.  Pads
+    inside a top-side island of their own net (`islands`: [(net, poly mm)], which carry their own
+    vias) and pads already reached by a fixed track are left alone.  Returns [(net, done, pads)]."""
+    pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+    err, clr = MM(0.005), MM(0.2)
+    layers = [l for l in (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu) if board.GetEnabledLayers().Contains(l)]
+    edge = board.GetBoardEdgesBoundingBox()
+    edge.Inflate(-MM(0.6))
+    out = []
+    for name, (plane_name, via_d, drill, width) in specs.items():
+        net = board.FindNet(name)
+        if net is None:
+            continue
+        code = net.GetNetCode()
+        plane = getattr(pcbnew, plane_name.replace(".", "_"))
+        fill = pcbnew.SHAPE_POLY_SET()
+        for z in board.Zones():
+            if not z.GetIsRuleArea() and z.GetNetCode() == code and z.IsOnLayer(plane):
+                fill.Append(z.GetFilledPolysList(plane))
+        obst = {}
+        for layer in layers:
+            sh = pcbnew.SHAPE_POLY_SET()
+            for t in board.GetTracks():
+                if t.GetNetCode() != code and t.IsOnLayer(layer):
+                    t.TransformShapeToPolygon(sh, layer, clr, err, pcbnew.ERROR_OUTSIDE)
+            for fp in board.GetFootprints():
+                for p in fp.Pads():
+                    if p.GetNetCode() != code and p.IsOnLayer(layer):
+                        p.TransformShapeToPolygon(sh, layer, clr, err, pcbnew.ERROR_OUTSIDE)
+            for z in board.Zones():
+                if z.GetIsRuleArea() and z.IsOnLayer(layer) and (z.GetDoNotAllowTracks() or z.GetDoNotAllowVias()):
+                    sh.Append(z.Outline())
+            obst[layer] = sh
+        holes = [(t.GetPosition(), t.GetDrillValue()) for t in board.GetTracks() if t.GetClass() == "PCB_VIA"]
+        holes += [(p.GetPosition(), max(p.GetDrillSize().x, p.GetDrillSize().y))
+                  for fp in board.GetFootprints() for p in fp.Pads() if p.GetDrillSize().x > 0]
+        ends = {(e.x, e.y) for t in board.GetTracks() if t.GetClass() != "PCB_VIA" and t.GetNetCode() == code
+                for e in (t.GetStart(), t.GetEnd())}
+        skip = []
+        for n_, poly in islands:
+            if n_ == name:
+                s = pcbnew.SHAPE_POLY_SET()
+                s.NewOutline()
+                for x, y in poly:
+                    s.Append(MM(x), MM(y))
+                skip.append(s)
+        r_via = MM(via_d) // 2
+
+        def via_fits(e):
+            if not edge.Contains(e):
+                return False
+            if any(math.hypot(e.x - q.x, e.y - q.y) < d / 2 + MM(drill) / 2 + MM(0.35) for q, d in holes):
+                return False
+            if not all(fill.Contains(pcbnew.VECTOR2I(int(e.x + (r_via + MM(0.15)) * math.cos(a)),
+                                                     int(e.y + (r_via + MM(0.15)) * math.sin(a))))
+                       for a in [k * math.pi / 4 for k in range(8)]):
+                return False
+            return not any(obst[l].Collide(e, r_via) for l in layers)
+
+        pads = [p for fp in board.GetFootprints() for p in fp.Pads()
+                if p.GetNetCode() == code and p.GetDrillSize().x == 0
+                and (p.IsOnLayer(pcbnew.F_Cu) or p.IsOnLayer(pcbnew.B_Cu))]
+        done = todo = 0
+        for pad in pads:
+            a = pad.GetPosition()
+            if any(s.Contains(a) for s in skip):
+                continue
+            bb = pad.GetBoundingBox()
+            if any(bb.Contains(pcbnew.VECTOR2I(x, y)) for x, y in ends):
+                continue
+            todo += 1
+            layer = pcbnew.F_Cu if pad.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
+            c = pad.GetParentFootprint().GetPosition()
+            ux, uy = a.x - c.x, a.y - c.y
+            norm = math.hypot(ux, uy)
+            ux, uy = (ux / norm, uy / norm) if norm > MM(0.05) else (0.0, -1.0)
+            best = None
+            for k in range(16):
+                ang = k * math.pi / 8
+                dx, dy = math.cos(ang), math.sin(ang)
+                bend = 1 - (dx * ux + dy * uy)           # 0 straight out of the footprint, 2 back into it
+                reach = abs(dx) * bb.GetWidth() / 2 + abs(dy) * bb.GetHeight() / 2 + r_via + MM(0.1)
+                for step in range(30):
+                    L = reach + MM(0.1 * step)
+                    score = pcbnew.ToMM(L) + 1.5 * bend
+                    if best and score >= best[0]:
+                        break
+                    e = pcbnew.VECTOR2I(int(a.x + dx * L), int(a.y + dy * L))
+                    if obst[layer].Collide(pcbnew.SEG(a, e), MM(width) // 2):
+                        break
+                    if via_fits(e):
+                        best = (score, e)
+                        break
+            if not best:
+                print(f"fan-out {name}: no room by {pad.GetParentFootprint().GetReference()}.{pad.GetNumber()}")
+                continue
+            e = best[1]
+            t = pcbnew.PCB_TRACK(board)
+            t.SetStart(a)
+            t.SetEnd(e)
+            t.SetWidth(MM(width))
+            t.SetLayer(layer)
+            t.SetNet(net)
+            t.SetLocked(True)
+            board.Add(t)
+            v = pcbnew.PCB_VIA(board)
+            v.SetPosition(e)
+            v.SetWidth(MM(via_d))
+            v.SetDrill(MM(drill))
+            v.SetNet(net)
+            v.SetLocked(True)
+            board.Add(v)
+            holes.append((e, MM(drill)))
+            done += 1
+        out.append((name, done, todo))
+    return out
 
 
 def _strip_zones(text: str, name_prefix: str) -> str:

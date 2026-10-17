@@ -19,25 +19,25 @@
 
 	dut_port: dut-port {
 		compatible = "hwtr,dut-port";
-		/* IO6 DUT_EN -> TPS2553 EN (100k pull-up: on by default) */
-		enable-gpios = <&gpio0 6 GPIO_ACTIVE_HIGH>;
-		/* IO7 DUT_FLT_N <- TPS2553 ~FAULT (10k pull-up) */
-		fault-gpios = <&gpio0 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-		/* IO11 AUX_RST_CTL / IO12 AUX_BOOT_CTL -> 2N7002 gates (100k pull-downs) */
-		reset-gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
-		boot-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+		/* IO41 DUT_EN -> TPS2553 EN (100k pull-up: on by default) */
+		enable-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
+		/* IO40 DUT_FLT_N <- TPS2553 ~FAULT (10k pull-up) */
+		fault-gpios = <&gpio1 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		/* IO34 AUX_RST_CTL / IO48 AUX_BOOT_CTL -> 2N7002 gates (100k pull-downs) */
+		reset-gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
+		boot-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
 		power-monitor = <&ina226>;
 		uart = <&uart1>;
 	};
 
 	usb_mux: usb-mux {
 		compatible = "hwtr,usb-mux";
-		/* IO10 MUX_FORCE_PC -> OR gate (100k pull-down) */
-		force-pc-gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
-		/* IO4 PC_DET <- front port VBUS, 10k/20k divider */
-		pc-detect-gpios = <&gpio0 4 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
-		/* IO5 SVC <- SERVICE slide switch */
-		service-gpios = <&gpio0 5 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+		/* IO14 MUX_FORCE_PC -> OR gate (100k pull-down) */
+		force-pc-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
+		/* IO13 PC_DET <- front port VBUS, 10k/20k divider */
+		pc-detect-gpios = <&gpio0 13 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+		/* IO15 SVC <- SERVICE slide switch */
+		service-gpios = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
 	};
 
 	status_led: ws2812 {
@@ -79,8 +79,8 @@
 		current-lsb-microamps = <50>;
 		rshunt-micro-ohms = <50000>;
 		avg-count = <16>;
-		/* IO14 INA_ALERT_N (10k pull-up), not used by the driver yet */
-		alert-gpios = <&gpio0 14 GPIO_ACTIVE_LOW>;
+		/* IO39 INA_ALERT_N (10k pull-up), not used by the driver yet */
+		alert-gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
 	};
 };
 

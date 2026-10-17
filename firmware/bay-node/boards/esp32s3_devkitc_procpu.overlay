@@ -5,6 +5,11 @@
  * separately (that port does not source VBUS); an INA226 breakout goes on
  * IO8/IO9 if you have one, otherwise the V/I readings report -ENODEV.
  *
+ * Two pins differ from the bay node: I2C moves to IO8/IO9, because the
+ * devkit's RGB LED sits on IO38 (the node's SDA) and the WROOM-1-N8R8's octal
+ * PSRAM takes IO35-IO37 (the node's SCL is IO37).  On a v1.0 devkit the LED
+ * is on IO48, which the node uses for AUX_BOOT_CTL: leave `bay boot` alone.
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -24,7 +29,23 @@
 	pinctrl-0 = <&devkitc_rgb_led>;
 };
 
-/* SPI2's default pins (IO10-IO13) collide with the bay node map */
+&pinctrl {
+	devkitc_i2c0: devkitc_i2c0 {
+		group1 {
+			pinmux = <I2C0_SDA_GPIO8>,
+				 <I2C0_SCL_GPIO9>;
+			bias-pull-up;
+			drive-open-drain;
+			output-high;
+		};
+	};
+};
+
+&i2c0 {
+	pinctrl-0 = <&devkitc_i2c0>;
+};
+
+/* SPI2's default pins (IO10-IO13) collide with the bay node map (IO12/IO13) */
 &spi2 {
 	status = "disabled";
 };

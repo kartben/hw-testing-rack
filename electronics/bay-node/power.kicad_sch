@@ -6,7 +6,7 @@
 	(paper "A3")
 	(title_block
 		(title "Bay node — 24 V input, 5 V buck, 3.3 V LDO")
-		(rev "0.3")
+		(rev "0.4")
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
@@ -2361,7 +2361,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
 			(at 25.4 30.48 0)
 			(effects
 				(font
@@ -2379,7 +2379,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "JST PH 2-pin, side entry, 2 A"
+		(property "Description" "JST PH 2-pin, side entry, SMD, 2 A"
 			(at 25.4 30.48 0)
 			(effects
 				(font
@@ -2388,7 +2388,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "S2B-PH-K-S(LF)(SN)"
+		(property "MPN" "S2B-PH-SM4-TB(LF)(SN)"
 			(at 25.4 30.48 0)
 			(effects
 				(font
@@ -2406,7 +2406,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C173752"
+		(property "LCSC" "C295747"
 			(at 25.4 30.48 0)
 			(effects
 				(font
@@ -2457,7 +2457,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
 			(at 25.4 50.8 0)
 			(effects
 				(font
@@ -2475,7 +2475,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "JST PH 2-pin, side entry, 2 A"
+		(property "Description" "JST PH 2-pin, side entry, SMD, 2 A"
 			(at 25.4 50.8 0)
 			(effects
 				(font
@@ -2484,7 +2484,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "S2B-PH-K-S(LF)(SN)"
+		(property "MPN" "S2B-PH-SM4-TB(LF)(SN)"
 			(at 25.4 50.8 0)
 			(effects
 				(font
@@ -2502,7 +2502,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C173752"
+		(property "LCSC" "C295747"
 			(at 25.4 50.8 0)
 			(effects
 				(font

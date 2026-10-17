@@ -48,8 +48,8 @@ on USB/IP.  Or simply unplug the short cable from the drawer port and use
 your own.
 
 **AUX.**  For boards without a USB serial bridge or to drive RESET/BOOT:
-the node's JST-SH 6 (GND, 3V3 ref, TX, RX, RESET, BOOT) can follow the same
-path through the chain (a 6-wire SH lead fits alongside the USB cable) to
+the node's JST PH 6 (GND, 3V3 ref, TX, RX, RESET, BOOT) can follow the same
+path through the chain (a 6-wire PH lead fits alongside the USB cable) to
 the drawer's AUX slot, then flying leads to the board.
 
 ## Two-cable boards

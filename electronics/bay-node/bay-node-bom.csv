@@ -9,12 +9,12 @@ D1,1,BZT52C12,D_SOD-123,BZT52C12,CJ,C43491,"12 V zener, P-FET gate clamp",,,
 D2,1,SMBJ33A,D_SMB,SMBJ33A,Brightking,C78419,"TVS 33 V stand-off, 600 W (unidirectional)",,,
 D4,1,WS2812B-2020-V6,LED_WS2812B-2020_PLCC4_2.0x2.0mm,WS2812B-2020-V6,Worldsemi,C52917434,"addressable RGB LED, 3.3–5.3 V",,WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping,
 F1,1,0.5A,Fuse_1206_3216Metric,SMD1206P050TF,RUILON,C20799,"PTC 0.5 A hold, 1206",,,
-J1,1,24V IN,JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal,S2B-PH-K-S(LF)(SN),JST,C173752,"JST PH 2-pin, side entry, 2 A",,,"hand-solder, buy loose (LCSC)"
-J2,1,24V OUT,JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal,S2B-PH-K-S(LF)(SN),JST,C173752,"JST PH 2-pin, side entry, 2 A",,,"hand-solder, buy loose (LCSC)"
+J1,1,24V IN,JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal,S2B-PH-SM4-TB(LF)(SN),JST,C295747,"JST PH 2-pin, side entry, SMD, 2 A",,,
+J2,1,24V OUT,JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal,S2B-PH-SM4-TB(LF)(SN),JST,C295747,"JST PH 2-pin, side entry, SMD, 2 A",,,
 J3,1,PC,USB_C_Receptacle_HRO_TYPE-C-31-M-12,TYPE-C-31-M-12,Korean Hroparts,C165948,"USB-C receptacle, USB 2.0, 16 pins",,,
 J4,1,DUT,USB_C_Receptacle_HRO_TYPE-C-31-M-12,TYPE-C-31-M-12,Korean Hroparts,C165948,"USB-C receptacle, USB 2.0, 16 pins",,,
-J5,1,AUX,JST_SH_SM06B-SRSS-TB_1x06-1MP_P1.00mm_Horizontal,XY-SM06B-SRSS-TB,XYECONN,C56123098,JST-SH 6-pin side entry,,JST SM06B-SRSS-TB(LF)(SN) C160405,
-J6,1,CAM,JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal,S2B-PH-K-S(LF)(SN),JST,C173752,"JST PH 2-pin, side entry, 2 A",,,"hand-solder, buy loose (LCSC)"
+J5,1,AUX,JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal,S6B-PH-SM4-TB(LF)(SN),JST,C265405,"JST PH 6-pin, side entry, SMD",,,
+J6,1,CAM,JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal,S2B-PH-SM4-TB(LF)(SN),JST,C295747,"JST PH 2-pin, side entry, SMD, 2 A",,,
 L1,1,3.3u,L_Changjiang_FXL0630,FXL0630-3R3-M,cjiang,C167219,"3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded",,,
 Q1,1,SUD50P06-15,TO-252-2,SUD50P06-15,UMW / Vishay,C7503186,"P-MOSFET 60 V, reverse-polarity protection",,"C7472883 (TECH PUBLIC), C141584 (Vishay)",
 "Q2,Q3",2,2N7002,SOT-23,2N7002,CJ,C8545,N-MOSFET 60 V (open-drain AUX outputs),,,
