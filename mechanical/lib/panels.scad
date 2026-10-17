@@ -20,7 +20,7 @@ include <carrier.scad>
 TILT = FRAME_TILT;
 
 PANEL_T = 7.4;                           // ladder thickness (frame X)
-PANEL_CLEAR = 0.3;                       // tray wall <-> ladder face, per side
+PANEL_CLEAR = 0.2;                       // tray wall <-> ladder face, per side
 PANEL_PITCH = CARRIER_W + PANEL_T + 2 * PANEL_CLEAR;   // 166: bay pitch with ladders
 
 POST_W = 8;                             // front and rear posts (frame Y)
@@ -34,7 +34,7 @@ PR = FRAME_ROW_Y0 + CARRIER_D * cos(TILT);   // ladder rear edge
 
 // tray runner <-> ladder groove (row z), grooves on both faces of the bottom band
 RUNNER_Z = [8, 13];
-GROOVE_Z = [RUNNER_Z[0] - 0.25, RUNNER_Z[1] + 0.25];
+GROOVE_Z = [RUNNER_Z[0] - 0.15, RUNNER_Z[1] + 0.15];
 GROOVE_D = 2.4;                          // per face: leaves a 2.6 mm core
 RUNNER_OUT = PANEL_CLEAR + GROOVE_D - 0.3;
 RUNNER_Y0 = 4;
@@ -57,6 +57,17 @@ HOOK_NECK = 4;                           // neck of the receiving slot
 RIDGE = 2;                               // joint ridge height
 RIDGE_W = PANEL_T - 2.4;                 // ridge base width (45° sides)
 RIDGE_GAP = HOOK_W + 6;                  // no ridge / notch around a hook
+
+// rear diagonal braces: an X per bay and per row, clipped behind the rear posts of its two
+// ladders.  Four pin holes per rear post; a brace uses the 1st and 3rd on its left ladder and
+// the 2nd and 4th on its right one, so the two bays sharing a ladder never meet.
+BRACE_T = 3;
+XBRACE_W = 8;
+BRACE_PIN = [3.4, 8];                    // snap pin Ø × length
+BRACE_HOLE = [3.6, 9.5];                 // hole Ø × depth in the rear edge
+function brace_z(k) = k < 0
+    ? let (top = line_z(0, 0, PR)) [30, 48, top - 44, top - 26]
+    : let (b = line_z(k, 0, PR), h = ROW_HEIGHTS[min(k, len(ROW_HEIGHTS) - 1)]) [b + 28, b + 46, b + h - 47, b + h - 29];
 
 // 24 V jumper between neighbouring nodes: passes through the tray walls and the ladder
 JUMPER_Y = [PWR_NOTCH_Y - 5.5, PWR_NOTCH_Y + 5.5];

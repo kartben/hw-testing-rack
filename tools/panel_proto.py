@@ -47,11 +47,17 @@ PARTS = {
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "drawer_light": ("parts/drawer.scad", {"LIGHT": True}),
+    "brace_base": ("parts/brace.scad", {"ROW": -1}),
+    "brace_a": ("parts/brace.scad", {"ROW": 0}),
+    "brace_b": ("parts/brace.scad", {"ROW": 1}),
+    "brace_c": ("parts/brace.scad", {"ROW": 2}),
+    "brace_d": ("parts/brace.scad", {"ROW": 3}),
 }
 LABELS = {
     "ladder_base": "Base ladder", "ladder_a": "Ladder, row A", "ladder_b": "Ladder, row B",
     "ladder_cap": "Cap strip", "tray": "Tray", "cap_plate": "Cap plate", "floor_plate": "Floor plate",
-    "drawer_light": "Drawer (light)",
+    "drawer_light": "Drawer (light)", "brace_base": "Rear brace, base", "brace_a": "Rear brace, row A",
+    "brace_b": "Rear brace, row B",
 }
 TODAY_PER_BAY = {"carrier_base": 1, "carrier_deck": 1, "drawer": 1, "drawer_guide_left": 1, "drawer_guide_right": 1}
 PROBE = """include <lib/panels.scad>
@@ -60,7 +66,7 @@ echo(PANEL_T=PANEL_T, PANEL_CLEAR=PANEL_CLEAR, PANEL_PITCH=PANEL_PITCH, PF=PF, P
      PLENUM=CARRIER_PLENUM, DRAWER_X0=DRAWER_X0, DRAWER_Y0=DRAWER_Y0, DRAWER_TRAVEL=DRAWER_TRAVEL,
      DRAWER_BOTTOM=DRAWER_BOTTOM, PLATE_X0=PLATE_X0, PLATE_Y0=PLATE_Y0, PLATE_W=PLATE_W, PLATE_D=PLATE_D,
      PLATE_T=PLATE_T, NODE_X0=NODE_X0, NODE_FRONT_Y=NODE_FRONT_Y, NODE_Z=CARRIER_BOTTOM + CARRIER_STANDOFF,
-     NODE_SIZE=NODE_SIZE, FLOOR_Y0=PF + 1);
+     NODE_SIZE=NODE_SIZE, FLOOR_Y0=PF + 1, BRACE_T=BRACE_T);
 """
 
 
@@ -119,6 +125,11 @@ def m_row(c: dict, k: int, x0: float) -> np.ndarray:
                      [0, 0, 0, 1]], float)
 
 
+def m_brace(c: dict, xc: float) -> np.ndarray:
+    # brace: printed flat (x = frame X, y = frame Z, z = thickness, pins up); pins point to -Y
+    return np.array([[1, 0, 0, xc], [0, 0, -1, c["PR"] + c["BRACE_T"]], [0, 1, 0, 0], [0, 0, 0, 1]], float)
+
+
 def m_tr(x, y, z) -> np.ndarray:
     m = np.eye(4)
     m[:3, 3] = [x, y, z]
@@ -147,6 +158,10 @@ def scene(c: dict, cols: int, rows: int, boards: dict) -> dict:
     for j in range(cols):
         x0 = j * pitch + t + clear
         add("floor_plate", m_tr(x0, c["FLOOR_Y0"], 0), "plate", level=0, col=j, slide=[0, -1, 0])
+        xc = j * pitch + t / 2
+        add("brace_base", m_brace(c, xc), "brace", level=0, col=j)
+        for k in range(rows):
+            add(f"brace_{row_names[k]}", m_brace(c, xc), "brace", level=k + 1, col=j)
         add("cap_plate", m_row(c, rows, x0), "plate", level=rows + 1, col=j, row=rows, slide=[-v for v in u])
         for k in range(rows):
             mt = m_row(c, k, x0)
@@ -180,9 +195,10 @@ def rack_counts(cols: int, rows: int) -> dict:
     """Part counts of a cols × rows panel-frame rack of single bays."""
     lad = cols + 1
     counts = {"ladder_base": lad, "ladder_cap": lad, "tray": cols * rows, "drawer_light": cols * rows,
-              "cap_plate": cols, "floor_plate": cols}
+              "cap_plate": cols, "floor_plate": cols, "brace_base": cols}
     for k in range(rows):
         counts[f"ladder_{'abcd'[k]}"] = lad
+        counts[f"brace_{'abcd'[k]}"] = cols
     return counts
 
 

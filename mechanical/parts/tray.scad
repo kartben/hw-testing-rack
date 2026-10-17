@@ -170,23 +170,41 @@ module tray() {
 }
 
 // ------------------------------------------------------------------ plates: cap (ceiling) and floor
+// A regular grid at the camera-pod pitch (CAM_MOUNT[2] = 30 mm), centred on the plate, with a
+// boss and a through hole for an M3 heat-set insert at every rib crossing: the pod screws to
+// any 30 mm square of crossings (centred on the bay by default), and the floor plate takes
+// the PSU / hub brackets the same way.  No insert needed where nothing is mounted.
 PLATE_WALL_H = RUNNER_Z[1] + 2;
-module tie_plate(d, runner_end, cams) {
-    keep = cams ? [for (c = cam_inserts()) concat(c, [5])] : [];
+GRID = CAM_MOUNT[2];
+GRID_RIB = 6;
+GRID_BORDER = 7;
+function grid_lines(len) = [for (k = [-10 : 10]) let (v = len / 2 + GRID / 2 + k * GRID)
+                            if (v > GRID_BORDER + GRID_RIB && v < len - GRID_BORDER - GRID_RIB) v];
+
+module grid_windows_2d(d) {
+    xs = concat([GRID_BORDER - GRID_RIB / 2], grid_lines(CARRIER_W), [CARRIER_W - GRID_BORDER + GRID_RIB / 2]);
+    ys = concat([GRID_BORDER - GRID_RIB / 2], grid_lines(d), [d - GRID_BORDER + GRID_RIB / 2]);
+    for (i = [0 : len(xs) - 2], j = [0 : len(ys) - 2])
+        translate([xs[i] + GRID_RIB / 2, ys[j] + GRID_RIB / 2])
+            offset(r = 3) offset(delta = -3) square([xs[i + 1] - xs[i] - GRID_RIB, ys[j + 1] - ys[j] - GRID_RIB]);
+}
+
+module tie_plate(d, runner_end) {
+    pegs = [for (x = grid_lines(CARRIER_W), y = grid_lines(d)) [x, y]];
     difference() {
         union() {
             linear_extrude(CARRIER_BOTTOM) difference() {
                 square([CARRIER_W, d]);
-                window_grid_2d(d, 3, 4, 7, 7, keep);
+                grid_windows_2d(d);
             }
             both_sides(d, PLATE_WALL_H, runner_end);
             for (y = [0, d - WALL]) translate([0, y, 0]) cube([CARRIER_W, WALL, 8]);   // front / rear lips
-            if (cams) for (c = cam_inserts()) translate([c[0], c[1], 0]) cylinder(d = 7.5, h = CARRIER_BOTTOM + 4);
+            for (p = pegs) translate([p[0], p[1], 0]) cylinder(d = 7.5, h = CARRIER_BOTTOM + 4);
         }
-        if (cams) for (c = cam_inserts()) translate([c[0], c[1], 0]) mirror([0, 0, 1]) insert_hole(INSERT_M3);
+        for (p = pegs) translate([p[0], p[1], -EPS]) cylinder(d = INSERT_M3[0], h = CARRIER_BOTTOM + 5);
     }
 }
 
 if (PART == "tray") tray();
-else if (PART == "cap_plate") tie_plate(CARRIER_D, GROOVE_END, true);
-else if (PART == "floor_plate") tie_plate(FLOOR_D, FLOOR_D, false);
+else if (PART == "cap_plate") tie_plate(CARRIER_D, GROOVE_END);
+else if (PART == "floor_plate") tie_plate(FLOOR_D, FLOOR_D);
