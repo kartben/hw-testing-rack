@@ -33,8 +33,14 @@ jobs:
         include:
           - name: bay_node
             board: bay_node/esp32s3/procpu
+            app: firmware/bay-node
           - name: esp32s3_devkitc
             board: esp32s3_devkitc/esp32s3/procpu
+            app: firmware/bay-node
+          # The console code on native_sim (the screencast's simulation)
+          - name: console_sim
+            board: native_sim/native/64
+            app: firmware/bay-node/tests/console_sim
     steps:
       # West workspace = $GITHUB_WORKSPACE, this repository checked out as its
       # manifest repository (manifest self.path: hw-testing-rack).
@@ -65,7 +71,7 @@ jobs:
 
       - name: Build (warnings are errors)
         run: >
-          west build -b ${{ matrix.board }} -d build hw-testing-rack/firmware/bay-node
+          west build -b ${{ matrix.board }} -d build hw-testing-rack/${{ matrix.app }}
           -- -DCONFIG_COMPILER_WARNINGS_AS_ERRORS=y
 
       - uses: actions/upload-artifact@v4

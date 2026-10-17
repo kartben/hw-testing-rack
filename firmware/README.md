@@ -21,6 +21,7 @@ firmware/
     web/vendor/xterm/            xterm.js 6.0.0 + fit addon (MIT), served from flash
     web/dev_server.py            the page against a simulated node, to work on the UI
     tests/rfc2217/               host test of the RFC 2217 server against pyserial
+    tests/console_sim/           the console, web server and RFC 2217 code on native_sim, with a Zephyr DUT
     wifi.conf.example            build-time Wi-Fi credentials (copy to wifi.conf)
 ```
 
@@ -201,7 +202,12 @@ interleave: one person typing at a time is the rule.
 | RFC 2217 | one client on TCP 4001: pyserial `rfc2217://`, labgrid `NetworkSerialPort`, esptool | set by the client for its session; the saved ones come back when it disconnects |
 | Raw TCP | one client on TCP 4000: `socat`, `nc` | the saved ones |
 
-![The web console: Zephyr boot log in colour, the board's shell, Reset/Bootloader/Break and power buttons, the serial settings chip](../docs/img/web-ui-console.png)
+![Screencast of the web console: the DUT's Zephyr shell answers help and kernel version (with tab completion), the baud rate is changed from the settings panel, RESET reboots the DUT and its boot banner appears](../docs/img/web-console.webp)
+
+*Recorded on [native_sim](bay-node/tests/console_sim/): the node's real
+console, web server and RFC 2217 code, with Zephyr's shell sample running
+as the DUT on its AUX UART.  `python firmware/bay-node/web/screencast.py
+--workspace <west workspace>` records it again (Docker, Playwright, ffmpeg).*
 
 **Web console.**  Raw bytes both ways, so full VT100/xterm escape
 sequences and UTF-8 work.  The node keeps the last
@@ -260,6 +266,18 @@ looped-back "UART":
 ```bash
 pip install pyserial
 python firmware/bay-node/tests/rfc2217/test_rfc2217.py      # needs a C compiler (CC, default gcc)
+```
+
+The whole console also runs on native_sim, no hardware needed (Linux, or the
+Zephyr build image in Docker as `screencast.py` does):
+[`tests/console_sim`](bay-node/tests/console_sim/) builds `aux_console.c`,
+`rfc2217.c` and `web.c` with the hardware stubbed and host sockets (NSOS),
+and `run.py` starts it next to Zephyr's shell sample, wired to its AUX UART
+as the DUT; RESET and the power buttons restart or stop that DUT.
+
+```bash
+python3 firmware/bay-node/tests/console_sim/run.py --workspace <west workspace> --build <dir>
+# http://localhost/ (port 80), rfc2217://localhost:4001
 ```
 
 ### Status LED
@@ -322,9 +340,14 @@ runs it and builds both targets with warnings as errors on every push.
   SERVICE-mode PHY handover (stop host → route the PHY to USB-Serial-JTAG →
   restart host) are untested.
 * **Serial console: tested off the board only.**  The RFC 2217 server
-  passes its host test against pyserial and the web console was exercised
-  against the simulated node (dev_server.py); nothing has gone through the
-  node's UART, WebSocket or TCP stack yet.  To check on a DevKitC with a
+  passes its host test against pyserial; the console, WebSocket and web
+  server code ran on native_sim with a Zephyr DUT (the screencast), over host
+  sockets rather than the node's Wi-Fi/TCP stack.  That run found that a
+  browser's keep-alive connections can hold all 3 HTTP client slots (the
+  server then stops accepting, the console's WebSocket waits), hence the 3 s
+  idle timeout in `prj.conf`; whether it is enough on the node is untested
+  (on native_sim the idle timeout cannot free a slot at all, so the
+  simulation uses 8 slots).  To check on a DevKitC with a
   USB-UART adapter on IO47/IO33: throughput at 921600 baud, the console
   thread's stack (3 KB, unmeasured), BREAK and the TX release on power off
   with a scope, two browsers plus miniterm at once, esptool flashing an ESP32

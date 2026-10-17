@@ -56,6 +56,12 @@ Zephyr's new USB host stack.  The firmware lives in [`firmware/`](../firmware/)
 attached.  More states and the API in
 [`firmware/README.md`](../firmware/README.md#web-page-and-api).*
 
+![Screencast of the web console: a Zephyr shell on the DUT, tab completion, a baud rate change, RESET rebooting the DUT](img/web-console.webp)
+
+*The DUT's serial console in the same page, recorded on native_sim (the
+node's real console code, Zephyr's shell sample as the DUT); details in
+[`firmware/README.md`](../firmware/README.md#serial-console).*
+
 ## Flashing a node
 
 1. Slide the bay's **SERVICE** switch on (fascia).  The firmware stops its

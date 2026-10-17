@@ -29,7 +29,6 @@
 #include <zephyr/kernel.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
-#include <zephyr/drivers/pinctrl.h>
 #include <zephyr/drivers/uart.h>
 #include <zephyr/net/socket.h>
 #include <zephyr/net/websocket.h>
@@ -44,6 +43,13 @@ LOG_MODULE_REGISTER(aux, CONFIG_BAY_LOG_LEVEL);
 
 #define DUT_NODE      DT_NODELABEL(dut_port)
 #define AUX_UART_NODE DT_PHANDLE(DUT_NODE, uart)
+
+/* TX pin control (idle while the DUT is off, BREAK) needs tx-gpios and pinctrl */
+#define HAS_TX_LINE DT_NODE_HAS_PROP(DUT_NODE, tx_gpios)
+
+#if HAS_TX_LINE
+#include <zephyr/drivers/pinctrl.h>
+#endif
 
 #define LOG_SIZE CONFIG_BAY_AUX_LOG_SIZE
 #define LOG_MASK (LOG_SIZE - 1)
@@ -62,8 +68,10 @@ BUILD_ASSERT(CONFIG_WEBSOCKET_MAX_CONTEXTS >= CONFIG_BAY_CONSOLE_WEB_CLIENTS,
 static const struct device *const uart = DEVICE_DT_GET(AUX_UART_NODE);
 static const struct gpio_dt_spec tx_line = GPIO_DT_SPEC_GET_OR(DUT_NODE, tx_gpios, {0});
 
+#if HAS_TX_LINE
 /* The UART's own pin configuration, re-applied when the TX pin goes back to it */
 static const pinctrl_soc_pin_t uart_pins[] = Z_PINCTRL_STATE_PINS_INIT(AUX_UART_NODE, pinctrl_0);
+#endif
 
 /* --- UART: RX log, TX ring ----------------------------------------------- */
 
@@ -151,7 +159,9 @@ static bool in_break;
 
 static void line_to_uart(void)
 {
+#if HAS_TX_LINE
 	(void)pinctrl_configure_pins(uart_pins, ARRAY_SIZE(uart_pins), PINCTRL_REG_NONE);
+#endif
 }
 
 static void tx_drain(void)
