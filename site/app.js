@@ -8,6 +8,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -421,9 +422,8 @@ async function load() {
   gltf.scene.traverse((o) => {
     if (o.isMesh) {
       const name = (o.parent && o.parent !== gltf.scene && !o.name) ? o.parent.name : o.name;
-      const geo = o.geometry.clone().applyMatrix4(o.matrixWorld);
-      geo.computeVertexNormals();
-      GEOMS[name] = geo;
+      // sharp edges stay sharp (flat faces, crisp corners), only curved walls are smoothed
+      GEOMS[name] = toCreasedNormals(o.geometry.clone().applyMatrix4(o.matrixWorld), deg(35));
     }
   });
   // PCB GLBs exported from KiCad (optional)
