@@ -39,3 +39,8 @@ render/*.glb
 # Local preview server config (machine-specific paths)
 .claude/
 render/assets/
+
+# Per-installation CI data for tools/bayctl.py (see config/lab.example.yaml)
+config/lab.yaml
+rack-map.yaml
+rack-scripts/

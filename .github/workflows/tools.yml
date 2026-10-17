@@ -1,0 +1,23 @@
+name: Tools
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  bayctl:
+    name: bayctl (rack CLI, twister hardware map)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - name: Unit tests (simulated node from firmware/bay-node/web/dev_server.py)
+        run: python -m unittest discover -s tools/tests -v
+      - name: Hardware map from the example lab file
+        run: |
+          python tools/bayctl.py --lab config/lab.example.yaml hwmap -o rack-map.yaml --python python3
+          cat rack-map.yaml

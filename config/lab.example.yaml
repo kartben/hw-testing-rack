@@ -1,0 +1,39 @@
+# Per-installation data for tools/bayctl.py: copy to config/lab.yaml (git ignores it) and fill in.
+#
+# Bays and their board family come from config/rack.yaml (`population`), each family's Zephyr
+# target / west runner / console from mechanical/boards/boards.yaml (`zephyr:`).  This file only
+# adds what is specific to your rack: which exact board a family bay holds, probe serial numbers,
+# console device paths on the CI host, hosts.  Any key here overrides the defaults.
+#
+# Finding a probe's serial number and console path (Linux CI host, usbip installed):
+#   python tools/bayctl.py attach A1 --show
+#   → /dev/serial/by-id/usb-STMicroelectronics_STLINK-V3_002B00283232511239353236-if02
+#     the serial number is the part before -ifNN: 002B00283232511239353236
+
+domain: local          # bay hosts: bay-<id>.<domain> (mDNS); or give `host:` per bay
+# http_port: 80        # node web/API port (CONFIG_BAY_HTTP_PORT)
+# aux_port: 4000       # node raw AUX UART port (CONFIG_BAY_AUX_TCP_PORT)
+
+bays:
+  A1:
+    platform: nucleo_f401re                  # NUCLEO-64 is a family: say which one
+    id: "066DFF515251717867193542"           # ST-LINK serial (west flash --dev-id)
+    serial: /dev/serial/by-id/usb-STMicroelectronics_STM32_STLink_066DFF515251717867193542-if02
+  A3:
+    id: "001050012345"                       # J-Link OB serial of the nRF52840 DK
+    serial: /dev/serial/by-id/usb-SEGGER_J-Link_001050012345-if00
+  B2:
+    serial: /dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a1c2b3d-if00-port0
+                                             # esp32 runner: the serial port is also the probe id
+  B3:
+    console: aux                             # Pico 2: console on the AUX UART (TX/RX/GND wired)
+    baud: 115200
+  B4:
+    platform: "arduino_uno_r4@wifi"
+  C4:
+    ci: false                                # this bay is for a laptop (classic mode): not in CI
+  # D1:
+  #   host: 192.168.1.71                     # no mDNS on this network
+  #   runner: jlink                          # override the board's default runner
+  #   product: "STM32 STLink"                # twister product string, when openocd needs it
+  #   fixtures: [ethernet, sd-card]          # twister fixtures this bay provides

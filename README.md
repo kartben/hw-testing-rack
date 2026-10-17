@@ -9,7 +9,7 @@ over the network with USB/IP by a Zephyr-powered ESP32-S3 in each bay.**
 **[▶ Interactive 3D model](https://kartben.github.io/hw-testing-rack/)** · [BOM](bom/README.md) ·
 [Architecture](docs/architecture.md) · [Mechanics](docs/mechanical.md) · [Cabling](docs/cabling.md) ·
 [Power](docs/power.md) · [Electronics](docs/electronics.md) · [Assembly](docs/assembly.md) ·
-[Firmware](docs/firmware.md)
+[Firmware](docs/firmware.md) · [CI](docs/ci.md)
 
 ## Highlights
 

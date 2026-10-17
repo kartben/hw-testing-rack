@@ -17,6 +17,10 @@
 # fence        = true → hole-less corner-fence mounting
 # orient: side = turn the debug USB towards the drawer's right wall (board too long for a plug
 #                behind it); the board then sits to the left of its plate
+# zephyr       = CI defaults for tools/bayctl.py (twister hardware map): `platform` is the target
+#                as twister names it (the board YAML's `identifier`), `runner` the west runner,
+#                `console` usb (the debugger's VCOM, default) or aux (the bay's AUX UART).
+#                Board families list `choices`: config/lab.yaml picks one per bay.
 
 boards:
   arduino-uno-r4:
@@ -31,6 +35,8 @@ boards:
     color: "#00878f"
     source: "Arduino ABX00080 datasheet, mechanical drawing"
     verified: true
+    zephyr: { choices: ["arduino_uno_r4@minima", "arduino_uno_r4@wifi"], runner: pyocd,
+              note: "the UNO R4 WiFi's ESP32-S3 is its CMSIS-DAP probe and USB console; the Minima has neither: SWD probe, console on AUX" }
 
   nucleo-64:
     name: ST NUCLEO-64 (MB1136 / MB1367)
@@ -44,6 +50,8 @@ boards:
     color: "#f2f2f2"
     source: "ST UM1724 fig. 5 (holes drawing-derived, ±0.1 mm)"
     verified: true
+    zephyr: { choices: [nucleo_c031c6, nucleo_f401re, nucleo_f446re, nucleo_g071rb, nucleo_g474re, nucleo_l476rg],
+              runner: stm32cubeprogrammer }
 
   nucleo-144:
     name: ST NUCLEO-144 (MB1137 / MB1364 / MB1404)
@@ -57,6 +65,8 @@ boards:
     color: "#f2f2f2"
     source: "ST UM1974 fig. 6 (holes drawing-derived)"
     verified: true
+    zephyr: { choices: [nucleo_f429zi, nucleo_f767zi, nucleo_h563zi, nucleo_h743zi, nucleo_u575zi_q],
+              runner: stm32cubeprogrammer }
 
   rpi-pico2:
     name: Raspberry Pi Pico / Pico 2 (W)
@@ -70,6 +80,8 @@ boards:
     color: "#1e7b34"
     source: "Raspberry Pi Pico 2 datasheet"
     verified: true
+    zephyr: { platform: rpi_pico2/rp2350a/m33_0, runner: uf2, console: aux,
+              note: "no on-board probe: uf2 needs BOOTSEL (AUX BOOT to TP6, AUX RESET to RUN) and an automounted RP2350 drive; or add a Raspberry Pi Debug Probe (runner openocd)" }
 
   esp32-s3-devkitc:
     name: Espressif ESP32-S3-DevKitC-1 v1.1
@@ -83,6 +95,7 @@ boards:
     color: "#151515"
     source: "Espressif DXF ESP32-S3-DevKitC-1 v1.1"
     verified: true
+    zephyr: { platform: esp32s3_devkitc/esp32s3/procpu, runner: esp32 }
 
   esp32-c6-devkitc:
     name: Espressif ESP32-C6-DevKitC-1 v1.2
@@ -96,6 +109,7 @@ boards:
     color: "#151515"
     source: "Espressif dimension drawing v1.2"
     verified: true
+    zephyr: { platform: esp32c6_devkitc/esp32c6/hpcore, runner: esp32 }
 
   xiao:
     name: Seeed Studio XIAO (any)
@@ -109,6 +123,8 @@ boards:
     color: "#202a44"
     source: "Seeed wiki"
     verified: true
+    zephyr: { choices: [xiao_ble, xiao_esp32c3, xiao_esp32c6/esp32c6/hpcore, xiao_esp32s3/esp32s3/procpu, xiao_rp2040],
+              note: "pick the runner with the platform (esp32, uf2, ...)" }
 
   microbit-v2:
     name: BBC micro:bit v2
@@ -122,6 +138,7 @@ boards:
     color: "#111111"
     source: "Mouser listing (outline only)"
     verified: true
+    zephyr: { platform: bbc_microbit_v2, runner: pyocd }
 
   frdm-mcxn947:
     name: NXP FRDM-MCXN947
@@ -135,6 +152,7 @@ boards:
     color: "#1b1b1b"
     source: "NXP UM12018 (outline only; holes not published)"
     verified: false
+    zephyr: { platform: frdm_mcxn947/mcxn947/cpu0, runner: linkserver }
 
   nrf54l15-dk:
     name: Nordic nRF54L15 DK
@@ -148,6 +166,7 @@ boards:
     color: "#1d3557"
     source: "CNX Software (outline only)"
     verified: false
+    zephyr: { platform: nrf54l15dk/nrf54l15/cpuapp, runner: nrfutil }
 
   nrf52840-dk:
     name: Nordic nRF52840 DK
@@ -161,6 +180,7 @@ boards:
     color: "#1d3557"
     source: "approximate — measure your board"
     verified: false
+    zephyr: { platform: nrf52840dk/nrf52840, runner: nrfutil }
 
   nrf5340-dk:
     name: Nordic nRF5340 DK
@@ -174,6 +194,7 @@ boards:
     color: "#1d3557"
     source: "approximate — measure your board"
     verified: false
+    zephyr: { platform: nrf5340dk/nrf5340/cpuapp, runner: nrfutil }
 
   frdm-k64f:
     name: NXP FRDM-K64F
@@ -187,6 +208,7 @@ boards:
     color: "#f0f0f0"
     source: "community measurement (outline only)"
     verified: false
+    zephyr: { platform: frdm_k64f, runner: pyocd }
 
   stm32f746g-disco:
     name: ST STM32F746G-DISCO
@@ -203,6 +225,7 @@ boards:
     color: "#0b2c4a"
     source: "approximate — measure your board"
     verified: false
+    zephyr: { platform: stm32f746g_disco, runner: stm32cubeprogrammer }
 
   mimxrt1060-evkb:
     name: NXP MIMXRT1060-EVKB
@@ -217,6 +240,7 @@ boards:
     color: "#141414"
     source: "approximate — measure your board"
     verified: false
+    zephyr: { platform: "mimxrt1060_evk@B/mimxrt1062/qspi", runner: linkserver }
 
   mimxrt1170-evkb:
     name: NXP MIMXRT1170-EVKB
@@ -232,3 +256,4 @@ boards:
     span: 2
     source: "approximate — measure your board"
     verified: false
+    zephyr: { platform: "mimxrt1170_evk@B/mimxrt1176/cm7", runner: linkserver }
