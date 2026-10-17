@@ -5,7 +5,7 @@ Configuration: **14 bays** (16 carrier units) in 4 rows. Prices are indicative (
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 377 |
+| Electronics | 381 |
 | Printed parts | 120 |
 | Cables | 88 |
 | Frame | 79 |
@@ -13,7 +13,7 @@ Configuration: **14 bays** (16 carrier units) in 4 rows. Prices are indicative (
 | Cameras | 72 |
 | Fasteners | 26 |
 | Motion | 12 |
-| **Total** | **851** |
+| **Total** | **855** |
 
 ≈ **€61 per bay** all-in.
 
@@ -28,11 +28,11 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | bay-node | 20 PCBs (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA), 16 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $19.30, board $14.60 | 58.90 |
 | | | PCBA: setup $25.75, stencil $8.27, components $181.21, feeders $65.10, SMT $9.45, hand soldering $3.61, manual assembly $1.62, X-ray $13.28, packaging $0.52 | 308.81 |
 | | | **Quoted total** | **367.71** |
-| | | Order (indicative): feeders −$3.43 (1 of 19 extended part types hand-soldered); no hand soldering (−$3.61) | 360.67 |
+| | | Order (indicative): no through-hole part for JLC (hand soldering −$3.61) | 364.10 |
 | power-hub | 5 PCBs (2-layer 120×70 mm, ENIG), 2 assembled, Economic PCBA | PCB: engineering $4.00, ENIG $17.60, board $4.10 | 25.70 |
 | | | PCBA: setup $8.24, stencil $1.55, components $17.56, extended parts $15.45, SMT $0.73, hand soldering $3.61, manual assembly $0.43, nitrogen reflow $0.86 | 48.43 |
 | | | **Quoted total** | **74.13** |
-| | | Order (indicative): HASL lead-free ≈ $1.00 instead of ENIG $17.60; extended parts −$4.41 (2 of 7 extended part types hand-soldered); no hand soldering (−$3.61) | 49.51 |
+| | | Order (indicative): HASL lead-free ≈ $1.00 instead of ENIG $17.60; extended parts −$4.41 (2 of 7 extended part types hand-soldered); no through-hole part for JLC (hand soldering −$3.61) | 49.51 |
 
 ## Aluminium cut list (2020, B-type slot 6)
 
@@ -97,12 +97,12 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | SMBJ33A — TVS 33 V stand-off, 600 W (unidirectional) | 16  | 0.06 | 1.03 | LCSC/JLCPCB C78419 |
 | Electronics | WS2812B-2020-V6 — addressable RGB LED, 3.3–5.3 V | 16  | 0.08 | 1.32 | LCSC/JLCPCB C52917434 |
 | Electronics | 0.5A — PTC 0.5 A hold, 1206 | 16  | 0.07 | 1.18 | LCSC/JLCPCB C20799 |
-| Electronics | 24V IN — JST PH 2-pin, side entry, 2 A | 16  | 0.04 | 0.59 | LCSC (hand-solder, buy loose) C173752 |
-| Electronics | 24V OUT — JST PH 2-pin, side entry, 2 A | 16  | 0.04 | 0.59 | LCSC (hand-solder, buy loose) C173752 |
+| Electronics | 24V IN — JST PH 2-pin, side entry, SMD, 2 A | 16  | 0.20 | 3.24 | LCSC/JLCPCB C295747 |
+| Electronics | 24V OUT — JST PH 2-pin, side entry, SMD, 2 A | 16  | 0.20 | 3.24 | LCSC/JLCPCB C295747 |
 | Electronics | PC — USB-C receptacle, USB 2.0, 16 pins | 16  | 0.17 | 2.80 | LCSC/JLCPCB C165948 |
 | Electronics | DUT — USB-C receptacle, USB 2.0, 16 pins | 16  | 0.17 | 2.80 | LCSC/JLCPCB C165948 |
-| Electronics | AUX — JST-SH 6-pin side entry | 16  | 0.06 | 1.03 | LCSC/JLCPCB C56123098 |
-| Electronics | CAM — JST PH 2-pin, side entry, 2 A | 16  | 0.04 | 0.59 | LCSC (hand-solder, buy loose) C173752 |
+| Electronics | AUX — JST PH 6-pin, side entry, SMD | 16  | 0.36 | 5.74 | LCSC/JLCPCB C265405 |
+| Electronics | CAM — JST PH 2-pin, side entry, SMD, 2 A | 16  | 0.20 | 3.24 | LCSC/JLCPCB C295747 |
 | Electronics | 3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded | 16  | 0.10 | 1.62 | LCSC/JLCPCB C167219 |
 | Electronics | SUD50P06-15 — P-MOSFET 60 V, reverse-polarity protection | 16  | 0.33 | 5.30 | LCSC/JLCPCB C7503186 |
 | Electronics | 2N7002 — N-MOSFET 60 V (open-drain AUX outputs) | 32  | 0.02 | 0.59 | LCSC/JLCPCB C8545 |
@@ -132,8 +132,8 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | TPS2553DBVR — adjustable current-limited power switch | 16  | 0.50 | 7.95 | LCSC/JLCPCB C55266 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 16  | 0.69 | 11.04 | LCSC/JLCPCB C49851 |
 | Electronics | Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA) | 20  | 2.71 | 54.19 | JLCPCB quote 2026-10-16 |
-| Electronics | Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging | 1  | 110.92 | 110.92 | JLCPCB quote 2026-10-16, adjusted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -14.76 | -14.76 | JLCPCB quote 2026-10-16 |
+| Electronics | Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging | 1  | 114.07 | 114.07 | JLCPCB quote 2026-10-16, adjusted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -27.42 | -27.42 | JLCPCB quote 2026-10-16 |
 | Electronics | 220u/50V — 220 µF 50 V aluminium electrolytic | 4  | 0.13 | 0.52 | LCSC/JLCPCB C3358 |
 | Electronics | 1u — Capacitor 1u 0805 | 20  | 0.03 | 0.54 | LCSC/JLCPCB C28323 |
 | Electronics | 22n — Capacitor 22n 0603 | 10  | 0.01 | 0.07 | LCSC/JLCPCB C21122 |

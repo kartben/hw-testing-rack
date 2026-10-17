@@ -9,12 +9,12 @@ Electronics,bay-node,"BZT52C12 — 12 V zener, P-FET gate clamp",16,pcs,0.0184,0
 Electronics,bay-node,"SMBJ33A — TVS 33 V stand-off, 600 W (unidirectional)",16,pcs,0.0644,1.03,LCSC/JLCPCB,C78419,SMBJ33A,Brightking,D2,1 per board × 16 boards
 Electronics,bay-node,"WS2812B-2020-V6 — addressable RGB LED, 3.3–5.3 V",16,pcs,0.0828,1.32,LCSC/JLCPCB,C52917434,WS2812B-2020-V6,Worldsemi,D4,1 per board × 16 boards
 Electronics,bay-node,"0.5A — PTC 0.5 A hold, 1206",16,pcs,0.0736,1.18,LCSC/JLCPCB,C20799,SMD1206P050TF,RUILON,F1,1 per board × 16 boards
-Electronics,bay-node,"24V IN — JST PH 2-pin, side entry, 2 A",16,pcs,0.0368,0.59,"LCSC (hand-solder, buy loose)",C173752,S2B-PH-K-S(LF)(SN),JST,J1,"1 per board × 16 boards; hand-solder, buy loose (LCSC)"
-Electronics,bay-node,"24V OUT — JST PH 2-pin, side entry, 2 A",16,pcs,0.0368,0.59,"LCSC (hand-solder, buy loose)",C173752,S2B-PH-K-S(LF)(SN),JST,J2,"1 per board × 16 boards; hand-solder, buy loose (LCSC)"
+Electronics,bay-node,"24V IN — JST PH 2-pin, side entry, SMD, 2 A",16,pcs,0.2024,3.24,LCSC/JLCPCB,C295747,S2B-PH-SM4-TB(LF)(SN),JST,J1,1 per board × 16 boards
+Electronics,bay-node,"24V OUT — JST PH 2-pin, side entry, SMD, 2 A",16,pcs,0.2024,3.24,LCSC/JLCPCB,C295747,S2B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 16 boards
 Electronics,bay-node,"PC — USB-C receptacle, USB 2.0, 16 pins",16,pcs,0.1748,2.8,LCSC/JLCPCB,C165948,TYPE-C-31-M-12,Korean Hroparts,J3,1 per board × 16 boards
 Electronics,bay-node,"DUT — USB-C receptacle, USB 2.0, 16 pins",16,pcs,0.1748,2.8,LCSC/JLCPCB,C165948,TYPE-C-31-M-12,Korean Hroparts,J4,1 per board × 16 boards
-Electronics,bay-node,AUX — JST-SH 6-pin side entry,16,pcs,0.0644,1.03,LCSC/JLCPCB,C56123098,XY-SM06B-SRSS-TB,XYECONN,J5,1 per board × 16 boards
-Electronics,bay-node,"CAM — JST PH 2-pin, side entry, 2 A",16,pcs,0.0368,0.59,"LCSC (hand-solder, buy loose)",C173752,S2B-PH-K-S(LF)(SN),JST,J6,"1 per board × 16 boards; hand-solder, buy loose (LCSC)"
+Electronics,bay-node,"AUX — JST PH 6-pin, side entry, SMD",16,pcs,0.3588,5.74,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J5,1 per board × 16 boards
+Electronics,bay-node,"CAM — JST PH 2-pin, side entry, SMD, 2 A",16,pcs,0.2024,3.24,LCSC/JLCPCB,C295747,S2B-PH-SM4-TB(LF)(SN),JST,J6,1 per board × 16 boards
 Electronics,bay-node,"3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded",16,pcs,0.1012,1.62,LCSC/JLCPCB,C167219,FXL0630-3R3-M,cjiang,L1,1 per board × 16 boards
 Electronics,bay-node,"SUD50P06-15 — P-MOSFET 60 V, reverse-polarity protection",16,pcs,0.3312,5.3,LCSC/JLCPCB,C7503186,SUD50P06-15,UMW / Vishay,Q1,1 per board × 16 boards
 Electronics,bay-node,2N7002 — N-MOSFET 60 V (open-drain AUX outputs),32,pcs,0.0184,0.59,LCSC/JLCPCB,C8545,2N7002,CJ,"Q2,Q3",2 per board × 16 boards
@@ -44,8 +44,8 @@ Electronics,bay-node,SN74LVC1G32DBVR — single 2-input OR,16,pcs,0.0644,1.03,LC
 Electronics,bay-node,TPS2553DBVR — adjustable current-limited power switch,16,pcs,0.4968,7.95,LCSC/JLCPCB,C55266,TPS2553DBVR,Texas Instruments,U9,1 per board × 16 boards
 Electronics,bay-node,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",16,pcs,0.69,11.04,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,U10,1 per board × 16 boards
 Electronics,bay-node,"Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA)",20,pcs,2.7094,54.19,JLCPCB quote 2026-10-16,,,,,"engineering $25.00, ENIG $19.30, board $14.60 = $58.90 for 20 PCBs, 16 of them assembled"
-Electronics,bay-node,"Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",1,pcs,110.92,110.92,"JLCPCB quote 2026-10-16, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $61.67, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; feeders −$3.43 (1 of 19 extended part types hand-soldered); no hand soldering (−$3.61); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
-Electronics,bay-node,Components bay-node: JLC quote minus the catalogue prices above,1,pcs,-14.76,-14.76,JLCPCB quote 2026-10-16,,,,,quoted components $181.21 (≈ €166.71) for 16 boards; catalogue unit prices give €181.47
+Electronics,bay-node,"Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",1,pcs,114.07,114.07,"JLCPCB quote 2026-10-16, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $65.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
+Electronics,bay-node,Components bay-node: JLC quote minus the catalogue prices above,1,pcs,-27.42,-27.42,JLCPCB quote 2026-10-16,,,,,quoted components $181.21 (≈ €166.71) for 16 boards; catalogue unit prices give €194.13
 Electronics,power-hub,220u/50V — 220 µF 50 V aluminium electrolytic,4,pcs,0.1288,0.52,LCSC/JLCPCB,C3358,RVT1H221M1010,Honor Elec,"C1,C2",2 per board × 2 boards
 Electronics,power-hub,1u — Capacitor 1u 0805,20,pcs,0.0268,0.54,LCSC/JLCPCB,C28323,CL21B105KBFNNNE,Samsung Electro-Mechanics,"C11,C12,C13,C14,C15,C31,C32,C33,C34,C35",10 per board × 2 boards
 Electronics,power-hub,22n — Capacitor 22n 0603,10,pcs,0.0069,0.07,LCSC/JLCPCB,C21122,CL10B223KB8NNNC,Samsung Electro-Mechanics,"C21,C22,C23,C24,C25",5 per board × 2 boards
@@ -68,7 +68,7 @@ Electronics,power-hub,7.5k — Resistor 7.5k 0603,10,pcs,0.0017,0.02,LCSC/JLCPCB
 Electronics,power-hub,18k — Resistor 18k 0603,10,pcs,0.0037,0.04,LCSC/JLCPCB,C25810,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),"R31,R32,R33,R34,R35",5 per board × 2 boards
 Electronics,power-hub,TPS26600PWPR — 4.2–60 V 2.23 A eFuse,10,pcs,1.4168,14.17,LCSC/JLCPCB,C544399,TPS26600PWPR,Texas Instruments,"U1,U2,U3,U4,U5",5 per board × 2 boards
 Electronics,power-hub,"Bare PCB power-hub (2-layer 120×70 mm, HASL lead-free)",5,pcs,1.6744,8.37,"JLCPCB quote 2026-10-16, adjusted",,,,,"engineering $4.00, HASL lead-free $1.00, board $4.10 = $9.10 for 5 PCBs, 2 of them assembled; HASL lead-free ≈ $1.00 instead of ENIG $17.60"
-Electronics,power-hub,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, manual assembly, nitrogen reflow",1,pcs,21.02,21.02,"JLCPCB quote 2026-10-16, adjusted",,,,,"setup $8.24, stencil $1.55, extended parts $11.04, SMT $0.73, manual assembly $0.43, nitrogen reflow $0.86; extended parts −$4.41 (2 of 7 extended part types hand-soldered); no hand soldering (−$3.61)"
+Electronics,power-hub,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, manual assembly, nitrogen reflow",1,pcs,21.02,21.02,"JLCPCB quote 2026-10-16, adjusted",,,,,"setup $8.24, stencil $1.55, extended parts $11.04, SMT $0.73, manual assembly $0.43, nitrogen reflow $0.86; extended parts −$4.41 (2 of 7 extended part types hand-soldered); no through-hole part for JLC (hand soldering −$3.61)"
 Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,-1.39,-1.39,JLCPCB quote 2026-10-16,,,,,quoted components $17.56 (≈ €16.16) for 2 boards; catalogue unit prices give €17.55
 Printed parts,filament,PETG filament (ASA/PC-blend near mains),6.0,kg,20.0,120.0,any,,,,,"≈5.4 kg estimated + 10 % waste, 198 parts"
 Frame,,"2020 aluminium extrusion, B-type slot 6, black anodised, cut to length",13.11,m,4.1,53.75,Motedis / Dold / Misumi HFS5-2020,,,,,see cut list; ≈ €1.5 per cut extra

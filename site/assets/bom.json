@@ -183,38 +183,38 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "24V IN — JST PH 2-pin, side entry, 2 A",
+"item": "24V IN — JST PH 2-pin, side entry, SMD, 2 A",
 "ref": "J1",
-"mpn": "S2B-PH-K-S(LF)(SN)",
+"mpn": "S2B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC (hand-solder, buy loose)",
-"part": "C173752",
+"supplier": "LCSC/JLCPCB",
+"part": "C295747",
 "qty": 16,
-"unit_eur": 0.0368,
+"unit_eur": 0.2024,
 "basic": false,
 "standard_only": false,
-"hand_solder": true,
-"notes": "1 per board × 16 boards; hand-solder, buy loose (LCSC)",
+"hand_solder": false,
+"notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.59
+"ext_eur": 3.24
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "24V OUT — JST PH 2-pin, side entry, 2 A",
+"item": "24V OUT — JST PH 2-pin, side entry, SMD, 2 A",
 "ref": "J2",
-"mpn": "S2B-PH-K-S(LF)(SN)",
+"mpn": "S2B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC (hand-solder, buy loose)",
-"part": "C173752",
+"supplier": "LCSC/JLCPCB",
+"part": "C295747",
 "qty": 16,
-"unit_eur": 0.0368,
+"unit_eur": 0.2024,
 "basic": false,
 "standard_only": false,
-"hand_solder": true,
-"notes": "1 per board × 16 boards; hand-solder, buy loose (LCSC)",
+"hand_solder": false,
+"notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.59
+"ext_eur": 3.24
 },
 {
 "category": "Electronics",
@@ -255,38 +255,38 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "AUX — JST-SH 6-pin side entry",
+"item": "AUX — JST PH 6-pin, side entry, SMD",
 "ref": "J5",
-"mpn": "XY-SM06B-SRSS-TB",
-"manufacturer": "XYECONN",
+"mpn": "S6B-PH-SM4-TB(LF)(SN)",
+"manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
-"part": "C56123098",
+"part": "C265405",
 "qty": 16,
-"unit_eur": 0.0644,
+"unit_eur": 0.3588,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 1.03
+"ext_eur": 5.74
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "CAM — JST PH 2-pin, side entry, 2 A",
+"item": "CAM — JST PH 2-pin, side entry, SMD, 2 A",
 "ref": "J6",
-"mpn": "S2B-PH-K-S(LF)(SN)",
+"mpn": "S2B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
-"supplier": "LCSC (hand-solder, buy loose)",
-"part": "C173752",
+"supplier": "LCSC/JLCPCB",
+"part": "C295747",
 "qty": 16,
-"unit_eur": 0.0368,
+"unit_eur": 0.2024,
 "basic": false,
 "standard_only": false,
-"hand_solder": true,
-"notes": "1 per board × 16 boards; hand-solder, buy loose (LCSC)",
+"hand_solder": false,
+"notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.59
+"ext_eur": 3.24
 },
 {
 "category": "Electronics",
@@ -809,10 +809,10 @@
 "item": "Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": 110.92,
-"notes": "setup $25.75, stencil $8.27, feeders $61.67, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; feeders −$3.43 (1 of 19 extended part types hand-soldered); no hand soldering (−$3.61); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 114.07,
+"notes": "setup $25.75, stencil $8.27, feeders $65.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 110.92
+"ext_eur": 114.07
 },
 {
 "category": "Electronics",
@@ -820,10 +820,10 @@
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-16",
 "qty": 1,
-"unit_eur": -14.76,
-"notes": "quoted components $181.21 (≈ €166.71) for 16 boards; catalogue unit prices give €181.47",
+"unit_eur": -27.42,
+"notes": "quoted components $181.21 (≈ €166.71) for 16 boards; catalogue unit prices give €194.13",
 "unit": "pcs",
-"ext_eur": -14.76
+"ext_eur": -27.42
 },
 {
 "category": "Electronics",
@@ -1221,7 +1221,7 @@
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
 "unit_eur": 21.02,
-"notes": "setup $8.24, stencil $1.55, extended parts $11.04, SMT $0.73, manual assembly $0.43, nitrogen reflow $0.86; extended parts −$4.41 (2 of 7 extended part types hand-soldered); no hand soldering (−$3.61)",
+"notes": "setup $8.24, stencil $1.55, extended parts $11.04, SMT $0.73, manual assembly $0.43, nitrogen reflow $0.86; extended parts −$4.41 (2 of 7 extended part types hand-soldered); no through-hole part for JLC (hand soldering −$3.61)",
 "unit": "pcs",
 "ext_eur": 21.02
 },
@@ -1496,7 +1496,7 @@
 }
 ],
 "by_category": {
-"Electronics": 377.37000000000006,
+"Electronics": 380.52,
 "Printed parts": 120.0,
 "Frame": 79.35,
 "Fasteners": 25.6,
@@ -1505,7 +1505,7 @@
 "Power": 77.1,
 "Cameras": 72.4
 },
-"total_eur": 851.42,
+"total_eur": 854.57,
 "cut_list": [
 {
 "part": "front post",
@@ -1837,17 +1837,16 @@
 "setup": 25.75,
 "stencil": 8.27,
 "components": 181.21,
-"feeders": 61.67,
+"feeders": 65.1,
 "SMT": 9.45,
 "manual assembly": 1.62,
 "X-ray": 13.28,
 "packaging": 0.52
 },
 "changes": [
-"feeders −$3.43 (1 of 19 extended part types hand-soldered)",
-"no hand soldering (−$3.61)"
+"no through-hole part for JLC (hand soldering −$3.61)"
 ],
-"total": 360.67
+"total": 364.1
 },
 "power-hub": {
 "pcb": {
@@ -1867,7 +1866,7 @@
 "changes": [
 "HASL lead-free ≈ $1.00 instead of ENIG $17.60",
 "extended parts −$4.41 (2 of 7 extended part types hand-soldered)",
-"no hand soldering (−$3.61)"
+"no through-hole part for JLC (hand soldering −$3.61)"
 ],
 "total": 49.51
 }

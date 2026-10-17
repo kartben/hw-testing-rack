@@ -56,9 +56,10 @@ JLC_QUOTE = {
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
-# instead of ENIG (≈ $0–2 for 5 PCBs; the node keeps ENIG for the ESP32 module and USB-C), and the
-# through-hole connectors soldered by hand (catalog hand_solder), bought loose from LCSC: no JLC
-# hand-soldering fee, and their extended part types no longer need loading.
+# instead of ENIG (≈ $0–2 for 5 PCBs; the node keeps ENIG for the ESP32 module and USB-C); the hub's
+# through-hole connectors soldered by hand (catalog hand_solder), bought loose from LCSC, so their
+# extended part types no longer need loading; and no JLC hand-soldering fee on either board (the
+# node's JST PH are SMD since rev 0.4, JLC places them).
 JLC_FINISH = {"power-hub": ("HASL lead-free", 1.00)}
 
 
@@ -96,7 +97,10 @@ def jlc_order(name: str, ext: set, hand: set) -> tuple[dict, dict, list[str]]:
         cut = round(pcba[fee] * len(hand & ext) / len(ext), 2)
         pcba[fee] = round(pcba[fee] - cut, 2)
         changes.append(f"{fee} −${cut:.2f} ({len(hand & ext)} of {len(ext)} extended part types hand-soldered)")
-        changes.append(f"no hand soldering (−${pcba.pop('hand soldering'):.2f})")
+    # the quote's hand-soldering line was for the through-hole connectors: JLC solders none any more
+    # (the hub's are hand-soldered, the node's are SMD since rev 0.4)
+    if "hand soldering" in pcba:
+        changes.append(f"no through-hole part for JLC (hand soldering −${pcba.pop('hand soldering'):.2f})")
     return pcb, pcba, changes
 
 

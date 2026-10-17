@@ -315,3 +315,15 @@ routing (`fanout_nets`), so no pin depends on the outer pours.
 | Copper on In1 / In2 | GND plane only / power planes only, no track on either |
 | USB HS | hand-drawn again for the new geometry; J3 → J4 D+ 64.5 mm, D− 64.6 mm (0.1 mm skew, vias as 1.6 mm) |
 | JLCPCB DFM audit (Konnect) | 2 notes: the UART test pads are on the bottom side (copper only, not in the BOM or CPL, so no bottom-side assembly), and R6 / TP2 sit 0.73 mm apart, on opposite sides |
+
+Konnect's full design review on v0.4 (`run_design_review`, `score_placement`, saved files) adds
+findings that are all known false positives, plus one optional improvement:
+
+| Finding | Reading |
+|---|---|
+| `score_placement`: hard fail, 9 parts overlap U3's courtyard | Bounding-box test: the ESP32 footprint's courtyard is a T (wide antenna keep-out at the rear), so its bbox covers the parts beside the module. KiCad's polygon check (DRC) finds no courtyard overlap. |
+| U10 Vin+ / Vin− "no decoupling" | They are the INA226's sense inputs, not supply pins. |
+| +3V3 / +5V "no bulk" or "no decoupling" on the USB and DUT sheets | Checked sheet by sheet: the bulk caps sit on the Power and MCU sheets (C7–C9 3 × 22 µF on +5V, C12 and C13 22 µF on +3V3). |
+| R6 / TP2 0.73 mm apart, parts on both sides | Opposite sides; the bottom-side parts are bare-copper test pads, not assembled. |
+| No test point on +24V / +5V / +3V3 | Info only.  TP4 is +3V3; the others can be probed on C1, C7. |
+| U4 / U8 VBUS (+5V) without a local 100 nF | Optional: they reach the +5V plane through a via, and the buck's output caps are far away. A 100 nF next to each USBLC6 would lower the clamp rail's impedance during ESD. Not added yet. |
