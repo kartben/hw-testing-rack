@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include <zephyr/kernel.h>
+#include <zephyr/settings/settings.h>
 #include <zephyr/sys/printk.h>
 
 #include "bay.h"
@@ -198,7 +199,17 @@ int bay_settings_save_aux(const struct aux_config *cfg)
 
 int main(void)
 {
-	int ret = aux_console_init(NULL);
+	int ret = settings_subsys_init();
+
+	if (ret == 0) {
+		ret = settings_load();
+	}
+	if (ret != 0) {
+		printk("SIM: settings unavailable (%d)\n", ret);
+	}
+	(void)access_init();
+
+	ret = aux_console_init(NULL);
 
 	if (ret == 0) {
 		ret = web_init();

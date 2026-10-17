@@ -4,12 +4,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <zephyr/kernel.h>
 #include <zephyr/net/hostname.h>
 #include <zephyr/shell/shell.h>
+#if defined(CONFIG_SHELL_BACKEND_TELNET)
+#include <zephyr/shell/shell_telnet.h>
+#endif
 
 #include "bay.h"
 
@@ -279,6 +283,150 @@ static int cmd_id(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
+/* --- bay access ----------------------------------------------------------- */
+
+/* Claims and resets need physical presence: not over the network */
+static bool local_shell(const struct shell *sh)
+{
+#if defined(CONFIG_SHELL_BACKEND_TELNET)
+	if (sh == shell_backend_telnet_get_ptr()) {
+		shell_error(sh, "only on the node's own console (UART pads), not over telnet");
+		return false;
+	}
+#endif
+	return true;
+}
+
+static void print_services(const struct shell *sh, const char *what, uint8_t mask)
+{
+	char buf[48] = "";
+
+	for (int svc = 0; svc < ACL_SERVICES; svc++) {
+		if (mask & ACL_BIT(svc)) {
+			strcat(buf, buf[0] ? "," : "");
+			strcat(buf, acl_service_name(svc));
+		}
+	}
+	shell_print(sh, "  %-24s %s", what, mask == ACL_ALL ? "all" : buf[0] ? buf : "-");
+}
+
+static int cmd_access_status(const struct shell *sh, size_t argc, char **argv)
+{
+	struct access_conn conns[ACCESS_MAX_CONNS];
+	struct acl_rules r;
+	struct acl_lease lease;
+	uint32_t remaining;
+	char a[ACL_CIDR_STR_LEN];
+	int n;
+
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	access_rules_get(&r);
+	shell_print(sh, "admin key: %s", access_claimed() ? "set (claimed)" : "none (not claimed)");
+	if (access_claim_pending()) {
+		shell_print(sh, "claim:     pending, \"bay access claim\" or a short BOOT press");
+	}
+	shell_print(sh, "rules:     %s, %u source(s)", r.enabled ? "on" : "off (open)", r.count);
+	for (int i = 0; i < r.count; i++) {
+		char what[ACL_NAME_LEN + ACL_CIDR_STR_LEN + 2];
+
+		acl_format_cidr(r.src[i].addr, r.src[i].prefix, a);
+		snprintf(what, sizeof(what), "%s %s", r.src[i].name, a);
+		print_services(sh, what, r.src[i].allow);
+	}
+	print_services(sh, "everyone else", r.everyone);
+
+	if (access_lease_get(&lease, &remaining)) {
+		acl_format_ip(lease.holder, a);
+		shell_print(sh, "lease:     %s, %u s left%s%s", a, remaining,
+			    lease.note[0] ? ", " : "", lease.note);
+	} else {
+		shell_print(sh, "lease:     none");
+	}
+
+	n = access_connections(conns, ARRAY_SIZE(conns));
+	for (int i = 0; i < n; i++) {
+		acl_format_ip(conns[i].ip, a);
+		shell_print(sh, "  %-12s %-12s %s:%u", conns[i].id, conns[i].label, a,
+			    conns[i].port);
+	}
+	shell_print(sh, "refused:   %u since boot", access_refused_total());
+
+	return 0;
+}
+
+static int cmd_access_claim(const struct shell *sh, size_t argc, char **argv)
+{
+	int ret;
+
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	if (!local_shell(sh)) {
+		return -EPERM;
+	}
+	ret = access_claim_confirm();
+	if (ret == -ENOENT) {
+		shell_error(sh, "no claim pending: start one from the web page or bayctl");
+		return ret;
+	}
+	shell_print(sh, "claimed: the requester gets the admin key%s",
+		    ret == 0 ? "" : " (not saved)");
+
+	return ret;
+}
+
+static int cmd_access_onoff(const struct shell *sh, size_t argc, char **argv)
+{
+	bool on = strcmp(argv[0], "on") == 0;
+
+	ARG_UNUSED(argc);
+
+	if (!on && !local_shell(sh)) {
+		return -EPERM;
+	}
+
+	return access_set_enabled(on);
+}
+
+static int cmd_access_reset(const struct shell *sh, size_t argc, char **argv)
+{
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	if (!local_shell(sh)) {
+		return -EPERM;
+	}
+	shell_print(sh, "no admin key, no rules, no lease: the node is open until claimed again");
+
+	return access_reset();
+}
+
+static int cmd_access_release(const struct shell *sh, size_t argc, char **argv)
+{
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	if (access_lease_release(0, true) != 0) {
+		shell_print(sh, "no lease");
+	}
+
+	return 0;
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_access,
+	SHELL_CMD_ARG(claim, NULL, "Confirm a pending claim (like a short BOOT press)",
+		      cmd_access_claim, 1, 0),
+	SHELL_CMD_ARG(on, NULL, "Apply the rules", cmd_access_onoff, 1, 0),
+	SHELL_CMD_ARG(off, NULL, "Rules off: every address may use everything", cmd_access_onoff,
+		      1, 0),
+	SHELL_CMD_ARG(release, NULL, "End the lease", cmd_access_release, 1, 0),
+	SHELL_CMD_ARG(reset, NULL, "Forget the admin key, the rules and the lease",
+		      cmd_access_reset, 1, 0),
+	SHELL_SUBCMD_SET_END
+);
+
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 	SHELL_CMD_ARG(status, NULL, "Mode, network, power, USB host and AUX state", cmd_status,
 		      1, 0),
@@ -292,6 +440,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 		      "AUX UART: [<baudrate> [8N1]] (persistent) | break [ms] | send <text> | "
 		      "loopback [on|off] (test)",
 		      cmd_aux, 1, 2),
+	SHELL_CMD_ARG(access, &sub_access, "Access control: rules, lease, admin key",
+		      cmd_access_status, 1, 0),
 	SHELL_CMD_ARG(id, NULL, "Bay id, sets the hostname bay-<id>: [<id>] (persistent)", cmd_id,
 		      1, 1),
 	SHELL_SUBCMD_SET_END

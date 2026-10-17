@@ -14,18 +14,33 @@
  *                         "stop_bits": 1, "enter": "cr" | "lf" | "crlf",
  *                         "echo": false, "esptool_reset": false}  (any subset, saved)
  *   POST /api/aux/break  {"ms": 250}
- *   GET  /console/ws/<n> WebSocket to the AUX UART (see aux_console.c)
+ *   POST /api/console/ticket             a ticket for the next WebSocket
+ *   GET  /console/ws/<n>?t=<ticket>      WebSocket to the AUX UART (see aux_console.c)
  *   GET  /xterm.mjs, /xterm.css, /addon-fit.mjs, /xterm-LICENSE.txt  vendored xterm.js
  *
- * Every POST under /api/ except /api/aux answers with the new /api/status
- * document, errors with {"error": "..."} and a 4xx/5xx status.  No
- * authentication: lab network only.
+ *   GET  /api/access          rights of the caller, lease, connections (admin: rules, refusals)
+ *   POST /api/lease           {"ttl_s": 3600, "note": "..."} | {"release": true}
+ *   GET  /api/access/nonce    single-use nonce for an admin request
+ *   POST /api/access/claim    {} | {"key": "<hex>"}, then {"ticket": "<hex>"} until claimed
+ *   POST /api/access/rules    admin: {"enabled": true, "everyone": ["status"],
+ *                              "sources": [{"name": "ci", "cidr": "10.0.4.0/28",
+ *                                           "allow": ["status", "control", ...]}]}
+ *   POST /api/access/kick     admin: {"id": "usbip:51234"}
+ *   POST /api/access/key      admin: {"key": "<64 hex>"} (a new key)
+ *
+ * Every POST of an action answers with the new /api/status document, errors
+ * with {"error": "..."} and a 4xx/5xx status.  Each request needs the right
+ * for what it does (access.c): status to read, control for power, reset,
+ * boot and mode, console for the console and its settings; 403 when the
+ * rules refuse it, 423 while another address holds the lease.  Admin
+ * requests are signed (X-Bay-Auth, see access.c).
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
 #include <zephyr/kernel.h>
 #include <zephyr/version.h>
@@ -79,6 +94,23 @@ struct status_aux {
 	char format_buf[4];
 };
 
+struct status_lease {
+	const char *holder; /* "" when none */
+	const char *note;
+	int32_t remaining_s;
+	bool yours;
+};
+
+struct status_access {
+	bool enabled;
+	bool claimed;
+	const char *you;
+	const char *allow[ACL_SERVICES];
+	size_t allow_len;
+	int32_t refused;
+	struct status_lease lease;
+};
+
 struct status_doc {
 	const char *id;
 	const char *hostname;
@@ -92,6 +124,11 @@ struct status_doc {
 	struct status_usb usb;
 	struct status_dut dut;
 	struct status_aux aux;
+	struct status_access access;
+	/* Storage for the strings above */
+	char you_buf[ACL_IP_STR_LEN];
+	char holder_buf[ACL_IP_STR_LEN];
+	struct acl_lease lease;
 };
 
 static const struct json_obj_descr status_usb_descr[] = {
@@ -124,6 +161,22 @@ static const struct json_obj_descr status_aux_descr[] = {
 	JSON_OBJ_DESCR_PRIM(struct status_aux, dropped, JSON_TOK_NUMBER),
 };
 
+static const struct json_obj_descr status_lease_descr[] = {
+	JSON_OBJ_DESCR_PRIM(struct status_lease, holder, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct status_lease, note, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct status_lease, remaining_s, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct status_lease, yours, JSON_TOK_TRUE),
+};
+
+static const struct json_obj_descr status_access_descr[] = {
+	JSON_OBJ_DESCR_PRIM(struct status_access, enabled, JSON_TOK_TRUE),
+	JSON_OBJ_DESCR_PRIM(struct status_access, claimed, JSON_TOK_TRUE),
+	JSON_OBJ_DESCR_PRIM(struct status_access, you, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_ARRAY(struct status_access, allow, ACL_SERVICES, allow_len, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct status_access, refused, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_OBJECT(struct status_access, lease, status_lease_descr),
+};
+
 static const struct json_obj_descr status_descr[] = {
 	JSON_OBJ_DESCR_PRIM(struct status_doc, id, JSON_TOK_STRING),
 	JSON_OBJ_DESCR_PRIM(struct status_doc, hostname, JSON_TOK_STRING),
@@ -137,17 +190,38 @@ static const struct json_obj_descr status_descr[] = {
 	JSON_OBJ_DESCR_OBJECT(struct status_doc, usb, status_usb_descr),
 	JSON_OBJ_DESCR_OBJECT(struct status_doc, dut, status_dut_descr),
 	JSON_OBJ_DESCR_OBJECT(struct status_doc, aux, status_aux_descr),
+	JSON_OBJ_DESCR_OBJECT(struct status_doc, access, status_access_descr),
 };
 
-/* Responses are built in the HTTP server thread, one at a time */
-static char resp_buf[768];
+/* Responses are built in the HTTP server thread, one at a time (/metrics too) */
+static char resp_buf[3072];
 
-static void status_fill(struct status_doc *s)
+/* X-Bay-Auth, kept from the first callback of a request */
+HTTP_SERVER_REGISTER_HEADER_CAPTURE(bay_auth_header, "X-Bay-Auth");
+
+static void capture_auth(const struct http_request_ctx *req, char *out, size_t size)
+{
+	if (req->headers_status == HTTP_HEADER_STATUS_NONE) {
+		return;
+	}
+	out[0] = '\0';
+	for (size_t i = 0; i < req->header_count; i++) {
+		if (strcasecmp(req->headers[i].name, "X-Bay-Auth") == 0) {
+			strncpy(out, req->headers[i].value, size - 1);
+			out[size - 1] = '\0';
+		}
+	}
+}
+
+/* ip: who asks (their rights, the lease from their side), 0 for /metrics */
+static void status_fill(struct status_doc *s, uint32_t ip)
 {
 	struct dut_power_reading r = {0};
 	struct aux_config cfg;
 	struct aux_stats st;
 	int devices = usb_host_device_count();
+	uint8_t allowed = access_allowed(ip);
+	uint32_t remaining;
 
 	s->id = bay_id();
 	s->hostname = net_hostname_get();
@@ -189,14 +263,35 @@ static void status_fill(struct status_doc *s)
 	s->aux.rx = (int32_t)st.rx;
 	s->aux.tx = (int32_t)st.tx;
 	s->aux.dropped = (int32_t)st.dropped;
+
+	s->access.enabled = access_enabled();
+	s->access.claimed = access_claimed();
+	acl_format_ip(ip, s->you_buf);
+	s->access.you = s->you_buf;
+	s->access.allow_len = 0;
+	for (int svc = 0; svc < ACL_SERVICES; svc++) {
+		if (allowed & ACL_BIT(svc)) {
+			s->access.allow[s->access.allow_len++] = acl_service_name(svc);
+		}
+	}
+	s->access.refused = (int32_t)access_refused_total();
+	if (access_lease_get(&s->lease, &remaining)) {
+		acl_format_ip(s->lease.holder, s->holder_buf);
+		s->access.lease.holder = s->holder_buf;
+		s->access.lease.note = s->lease.note;
+		s->access.lease.remaining_s = (int32_t)remaining;
+		s->access.lease.yours = s->lease.holder == ip;
+	} else {
+		s->access.lease = (struct status_lease){.holder = "", .note = ""};
+	}
 }
 
-static void respond_status(struct http_response_ctx *rsp)
+static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 {
-	struct status_doc s;
+	static struct status_doc s;
 	int ret;
 
-	status_fill(&s);
+	status_fill(&s, ip);
 	ret = json_obj_encode_buf(status_descr, ARRAY_SIZE(status_descr), &s, resp_buf,
 				  sizeof(resp_buf));
 	if (ret != 0) {
@@ -220,16 +315,72 @@ static void respond_error(struct http_response_ctx *rsp, enum http_status status
 	rsp->final_chunk = true;
 }
 
+static void respond_buf(struct http_response_ctx *rsp, int len)
+{
+	if (len < 0) {
+		respond_error(rsp, HTTP_500_INTERNAL_SERVER_ERROR, "response too large");
+		return;
+	}
+	rsp->body = resp_buf;
+	rsp->body_len = len;
+	rsp->final_chunk = true;
+}
+
+/* True (and the response set) when the rules refuse ip this service */
+static bool refused(struct http_response_ctx *rsp, enum acl_service svc, uint32_t ip)
+{
+	enum acl_verdict v = access_check(svc, ip);
+	char who[ACL_IP_STR_LEN];
+	struct acl_lease lease;
+	uint32_t remaining;
+	size_t len;
+
+	if (v == ACL_OK) {
+		return false;
+	}
+
+	if (v == ACL_RESERVED && access_lease_get(&lease, &remaining)) {
+		char holder[ACL_IP_STR_LEN];
+
+		acl_format_ip(lease.holder, holder);
+		snprintf(resp_buf, sizeof(resp_buf),
+			 "{\"error\":\"reserved by %s%s%s%s, %u min left\"",
+			 holder, lease.note[0] ? " (" : "", lease.note, lease.note[0] ? ")" : "",
+			 (remaining + 59) / 60);
+		rsp->status = HTTP_423_LOCKED;
+	} else {
+		snprintf(resp_buf, sizeof(resp_buf), "{\"error\":\"%s\"",
+			 v == ACL_KICKED ? "kicked by an admin: retry in a minute"
+					 : "not allowed from this address");
+		rsp->status = HTTP_403_FORBIDDEN;
+	}
+	/* What was refused, and the address the node saw, for the page to show */
+	acl_format_ip(ip, who);
+	len = strlen(resp_buf);
+	snprintf(&resp_buf[len], sizeof(resp_buf) - len,
+		 ",\"reason\":\"%s\",\"service\":\"%s\",\"you\":\"%s\"}", acl_verdict_name(v),
+		 acl_service_name(svc), who);
+	rsp->body = resp_buf;
+	rsp->body_len = strlen(resp_buf);
+	rsp->final_chunk = true;
+
+	return true;
+}
+
 static int status_handler(struct http_client_ctx *client, enum http_transaction_status status,
 			  const struct http_request_ctx *req, struct http_response_ctx *rsp,
 			  void *user_data)
 {
-	ARG_UNUSED(client);
+	uint32_t ip;
+
 	ARG_UNUSED(req);
 	ARG_UNUSED(user_data);
 
 	if (status == HTTP_SERVER_REQUEST_DATA_FINAL) {
-		respond_status(rsp);
+		ip = access_peer(client->fd);
+		if (!refused(rsp, ACL_STATUS, ip)) {
+			respond_status(rsp, ip);
+		}
 	}
 
 	return 0;
@@ -332,10 +483,10 @@ static int action_handler(struct http_client_ctx *client, enum http_transaction_
 	static size_t len;
 	static bool too_long;
 	struct action_req areq = {0};
+	enum api_action what = (enum api_action)POINTER_TO_INT(user_data);
 	const char *err;
 	int fields = 0;
-
-	ARG_UNUSED(client);
+	uint32_t ip;
 
 	if (status == HTTP_SERVER_TRANSACTION_ABORTED ||
 	    status == HTTP_SERVER_TRANSACTION_COMPLETE) {
@@ -355,6 +506,12 @@ static int action_handler(struct http_client_ctx *client, enum http_transaction_
 		return 0;
 	}
 
+	/* BREAK is the console's; power, reset, boot and mode are control */
+	ip = access_peer(client->fd);
+	if (refused(rsp, what == API_BREAK ? ACL_CONSOLE : ACL_CONTROL, ip)) {
+		return 0;
+	}
+
 	if (too_long) {
 		respond_error(rsp, HTTP_413_PAYLOAD_TOO_LARGE, "body too large");
 		return 0;
@@ -368,13 +525,13 @@ static int action_handler(struct http_client_ctx *client, enum http_transaction_
 		}
 	}
 
-	err = do_action((enum api_action)POINTER_TO_INT(user_data), &areq, fields);
+	err = do_action(what, &areq, fields);
 	if (err != NULL) {
 		respond_error(rsp, HTTP_400_BAD_REQUEST, err);
 		return 0;
 	}
 
-	respond_status(rsp);
+	respond_status(rsp, ip);
 
 	return 0;
 }
@@ -521,6 +678,12 @@ static int aux_handler(struct http_client_ctx *client, enum http_transaction_sta
 		return 0;
 	}
 
+	/* The port settings are the console's */
+	if (refused(rsp, client->method == HTTP_POST ? ACL_CONSOLE : ACL_STATUS,
+		    access_peer(client->fd))) {
+		return 0;
+	}
+
 	if (client->method == HTTP_POST) {
 		if (too_long) {
 			respond_error(rsp, HTTP_413_PAYLOAD_TOO_LARGE, "body too large");
@@ -573,6 +736,302 @@ static struct http_resource_detail_dynamic status_detail = {
 	.cb = status_handler,
 };
 
+/* --- /api/access, /api/lease, /api/console/ticket -------------------------- */
+
+enum access_api {
+	ACC_DOC,    /* GET  /api/access */
+	ACC_NONCE,  /* GET  /api/access/nonce */
+	ACC_CLAIM,  /* POST /api/access/claim */
+	ACC_RULES,  /* POST /api/access/rules, admin */
+	ACC_KICK,   /* POST /api/access/kick, admin */
+	ACC_KEY,    /* POST /api/access/key, admin */
+	ACC_LEASE,  /* POST /api/lease */
+	ACC_TICKET, /* POST /api/console/ticket */
+};
+
+/* What admin requests sign */
+static const char *const access_paths[] = {
+	[ACC_DOC] = "/api/access",
+	[ACC_NONCE] = "/api/access/nonce",
+	[ACC_CLAIM] = "/api/access/claim",
+	[ACC_RULES] = "/api/access/rules",
+	[ACC_KICK] = "/api/access/kick",
+	[ACC_KEY] = "/api/access/key",
+	[ACC_LEASE] = "/api/lease",
+	[ACC_TICKET] = "/api/console/ticket",
+};
+
+/* Default and longest lease when the request gives no ttl_s */
+#define LEASE_DEFAULT_S 3600
+
+struct access_req {
+	char *key;
+	char *ticket;
+	char *id;
+	char *note;
+	int32_t ttl_s;
+	bool release;
+};
+
+static const struct json_obj_descr access_req_descr[] = {
+	JSON_OBJ_DESCR_PRIM(struct access_req, key, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct access_req, ticket, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct access_req, id, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct access_req, note, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct access_req, ttl_s, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct access_req, release, JSON_TOK_TRUE),
+};
+
+#define AREQ_KEY     BIT(0)
+#define AREQ_TICKET  BIT(1)
+#define AREQ_ID      BIT(2)
+#define AREQ_NOTE    BIT(3)
+#define AREQ_TTL     BIT(4)
+#define AREQ_RELEASE BIT(5)
+
+static void respond_access(struct http_response_ctx *rsp, uint32_t ip, bool admin)
+{
+	respond_buf(rsp, access_json(resp_buf, sizeof(resp_buf), ip, admin));
+}
+
+static void respond_claim(struct http_response_ctx *rsp, uint32_t ip, const struct access_req *req,
+			  int fields)
+{
+	uint8_t offered[ACL_KEY_LEN];
+	char hex[2 * ACL_KEY_LEN + 1];
+	int remaining = 0;
+	int ret;
+
+	if (fields & AREQ_TICKET) {
+		ret = access_claim_poll(ip, req->ticket, hex, &remaining);
+		if (ret == -EINPROGRESS) {
+			respond_buf(rsp, snprintf(resp_buf, sizeof(resp_buf),
+						  "{\"state\":\"pending\",\"remaining_s\":%d}",
+						  remaining));
+		} else if (ret == 0) {
+			respond_buf(rsp, snprintf(resp_buf, sizeof(resp_buf),
+						  "{\"state\":\"done\",\"key\":\"%s\"}", hex));
+		} else {
+			respond_error(rsp, HTTP_404_NOT_FOUND,
+				      ret == -ETIMEDOUT ? "nobody pressed BOOT in time"
+							: "no such claim from this address");
+		}
+		return;
+	}
+
+	if ((fields & AREQ_KEY) && acl_hex_decode(req->key, offered, sizeof(offered)) != 0) {
+		respond_error(rsp, HTTP_400_BAD_REQUEST, "key: 64 hex digits");
+		return;
+	}
+	ret = access_claim_start(ip, (fields & AREQ_KEY) ? offered : NULL, hex);
+	if (ret == -EALREADY) {
+		respond_error(rsp, HTTP_409_CONFLICT,
+			      "already claimed: unlock with the admin key, or reset the node");
+		return;
+	}
+	respond_buf(rsp, snprintf(resp_buf, sizeof(resp_buf),
+				  "{\"state\":\"pending\",\"ticket\":\"%s\","
+				  "\"remaining_s\":%d}",
+				  hex, CONFIG_BAY_ACCESS_CLAIM_S));
+}
+
+static void respond_lease(struct http_response_ctx *rsp, uint32_t ip, bool admin,
+			  const struct access_req *req, int fields)
+{
+	int ret;
+
+	if ((fields & AREQ_RELEASE) && req->release) {
+		ret = access_lease_release(ip, admin);
+		if (ret == -EPERM) {
+			respond_error(rsp, HTTP_403_FORBIDDEN,
+				      "only its holder or an admin may release it");
+			return;
+		}
+	} else {
+		/* 423 with the holder when another address has it */
+		if (refused(rsp, ACL_CONTROL, ip)) {
+			return;
+		}
+		ret = access_lease_take(ip, (fields & AREQ_TTL) ? req->ttl_s : LEASE_DEFAULT_S,
+					(fields & AREQ_NOTE) ? req->note : "");
+		if (ret == -EINVAL) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, "ttl_s must be 10..86400");
+			return;
+		}
+	}
+
+	respond_access(rsp, ip, admin);
+}
+
+static void do_access(enum access_api what, struct http_client_ctx *client, char *body,
+		      size_t len, const char *auth, struct http_response_ctx *rsp)
+{
+	const char *method = client->method == HTTP_POST ? "POST" : "GET";
+	uint32_t ip = access_peer(client->fd);
+	struct access_req req = {0};
+	char hex[2 * ACL_KEY_LEN + 1];
+	bool admin = false;
+	int fields = 0;
+	int ret;
+
+	/* Before parsing: the signature covers the body as sent */
+	if (auth[0] != '\0') {
+		admin = access_admin(auth, method, access_paths[what], (const uint8_t *)body, len);
+		if (!admin) {
+			respond_error(rsp, HTTP_403_FORBIDDEN, "bad or expired admin signature");
+			return;
+		}
+	}
+	if (!admin && (what == ACC_RULES || what == ACC_KICK || what == ACC_KEY)) {
+		respond_error(rsp, HTTP_403_FORBIDDEN, "admin only: sign the request with the key");
+		return;
+	}
+
+	switch (what) {
+	case ACC_DOC:
+		if (admin || !refused(rsp, ACL_STATUS, ip)) {
+			respond_access(rsp, ip, admin);
+		}
+		return;
+	case ACC_NONCE:
+		(void)access_nonce(hex);
+		respond_buf(rsp, snprintf(resp_buf, sizeof(resp_buf), "{\"nonce\":\"%s\"}", hex));
+		return;
+	case ACC_RULES: {
+		struct acl_rules rules;
+		const char *err = access_rules_parse(body, len, &rules);
+
+		if (err != NULL) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, err);
+			return;
+		}
+		if (access_rules_set(&rules) != 0) {
+			respond_error(rsp, HTTP_500_INTERNAL_SERVER_ERROR,
+				      "rules applied, not saved");
+			return;
+		}
+		respond_access(rsp, ip, true);
+		return;
+	}
+	default:
+		break;
+	}
+
+	if (len > 0) {
+		fields = json_obj_parse(body, len, access_req_descr, ARRAY_SIZE(access_req_descr),
+					&req);
+		if (fields < 0) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, "bad JSON");
+			return;
+		}
+	}
+
+	switch (what) {
+	case ACC_CLAIM:
+		respond_claim(rsp, ip, &req, fields);
+		break;
+	case ACC_KICK:
+		if (!(fields & AREQ_ID) || access_kick(req.id) != 0) {
+			respond_error(rsp, HTTP_404_NOT_FOUND, "no such connection");
+			break;
+		}
+		respond_access(rsp, ip, true);
+		break;
+	case ACC_KEY: {
+		uint8_t new_key[ACL_KEY_LEN];
+
+		if (!(fields & AREQ_KEY) ||
+		    acl_hex_decode(req.key, new_key, sizeof(new_key)) != 0) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, "key: 64 hex digits");
+			break;
+		}
+		ret = access_set_key(new_key);
+		respond_buf(rsp, snprintf(resp_buf, sizeof(resp_buf), "{\"saved\":%s}",
+					  ret == 0 ? "true" : "false"));
+		break;
+	}
+	case ACC_LEASE:
+		respond_lease(rsp, ip, admin, &req, fields);
+		break;
+	case ACC_TICKET:
+		if (!refused(rsp, ACL_CONSOLE, ip)) {
+			(void)access_console_ticket(ip, hex);
+			respond_buf(rsp, snprintf(resp_buf, sizeof(resp_buf),
+						  "{\"ticket\":\"%s\"}", hex));
+		}
+		break;
+	default:
+		respond_error(rsp, HTTP_404_NOT_FOUND, "not found");
+		break;
+	}
+}
+
+static int access_handler(struct http_client_ctx *client, enum http_transaction_status status,
+			  const struct http_request_ctx *req, struct http_response_ctx *rsp,
+			  void *user_data)
+{
+	/* The rules of 8 sources fit */
+	static char body[1024];
+	static size_t len;
+	static bool too_long;
+	static char auth[100];
+
+	if (status == HTTP_SERVER_TRANSACTION_ABORTED ||
+	    status == HTTP_SERVER_TRANSACTION_COMPLETE) {
+		len = 0;
+		too_long = false;
+		auth[0] = '\0';
+		return 0;
+	}
+
+	capture_auth(req, auth, sizeof(auth));
+
+	if (len + req->data_len >= sizeof(body)) {
+		too_long = true;
+	} else {
+		memcpy(body + len, req->data, req->data_len);
+		len += req->data_len;
+	}
+
+	if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
+		return 0;
+	}
+
+	if (too_long) {
+		respond_error(rsp, HTTP_413_PAYLOAD_TOO_LARGE, "body too large");
+		return 0;
+	}
+	body[len] = '\0';
+
+	do_access((enum access_api)POINTER_TO_INT(user_data), client, body, len, auth, rsp);
+
+	return 0;
+}
+
+#define ACCESS_RESOURCE(_api, _method)                                                             \
+	{                                                                                          \
+		.common = {                                                                        \
+			.type = HTTP_RESOURCE_TYPE_DYNAMIC,                                        \
+			.bitmask_of_supported_http_methods = BIT(_method),                         \
+			.content_type = "application/json",                                        \
+		},                                                                                 \
+		.cb = access_handler,                                                              \
+		.user_data = INT_TO_POINTER(_api),                                                 \
+	}
+
+static struct http_resource_detail_dynamic access_doc_detail = ACCESS_RESOURCE(ACC_DOC, HTTP_GET);
+static struct http_resource_detail_dynamic access_nonce_detail =
+	ACCESS_RESOURCE(ACC_NONCE, HTTP_GET);
+static struct http_resource_detail_dynamic access_claim_detail =
+	ACCESS_RESOURCE(ACC_CLAIM, HTTP_POST);
+static struct http_resource_detail_dynamic access_rules_detail =
+	ACCESS_RESOURCE(ACC_RULES, HTTP_POST);
+static struct http_resource_detail_dynamic access_kick_detail =
+	ACCESS_RESOURCE(ACC_KICK, HTTP_POST);
+static struct http_resource_detail_dynamic access_key_detail = ACCESS_RESOURCE(ACC_KEY, HTTP_POST);
+static struct http_resource_detail_dynamic lease_detail = ACCESS_RESOURCE(ACC_LEASE, HTTP_POST);
+static struct http_resource_detail_dynamic ticket_detail = ACCESS_RESOURCE(ACC_TICKET, HTTP_POST);
+
 /* --- /metrics ------------------------------------------------------------ */
 
 PROMETHEUS_COLLECTOR_DEFINE(bay_collector);
@@ -597,22 +1056,22 @@ PROMETHEUS_COUNTER_DEFINE(bay_aux_rx_bytes_total, "Bytes from the DUT console to
 			  BAY_LABEL, &bay_collector);
 PROMETHEUS_COUNTER_DEFINE(bay_aux_tx_bytes_total, "Bytes from the client to the DUT console",
 			  BAY_LABEL, &bay_collector);
+PROMETHEUS_COUNTER_DEFINE(bay_access_refused_total, "Connections and requests the rules refused",
+			  BAY_LABEL, &bay_collector);
 
 static struct prometheus_metric *const metrics[] = {
 	&bay_dut_vbus_volts.base,   &bay_dut_current_amperes.base, &bay_dut_power_watts.base,
 	&bay_dut_power_on.base,     &bay_dut_fault.base,           &bay_dut_faults_total.base,
 	&bay_usb_devices.base,      &bay_usbip_sessions.base,      &bay_aux_rx_bytes_total.base,
-	&bay_aux_tx_bytes_total.base,
+	&bay_aux_tx_bytes_total.base, &bay_access_refused_total.base,
 };
-
-static char metrics_buf[2048];
 
 static void metrics_update(void)
 {
-	struct status_doc s;
+	static struct status_doc s;
 	const char *label = bay_id()[0] != '\0' ? bay_id() : net_hostname_get();
 
-	status_fill(&s);
+	status_fill(&s, 0);
 
 	ARRAY_FOR_EACH(metrics, i) {
 		metrics[i]->labels[0].value = label;
@@ -629,6 +1088,7 @@ static void metrics_update(void)
 	prometheus_gauge_set(&bay_usbip_sessions, s.usb.sessions);
 	prometheus_counter_set(&bay_aux_rx_bytes_total, (uint32_t)s.aux.rx);
 	prometheus_counter_set(&bay_aux_tx_bytes_total, (uint32_t)s.aux.tx);
+	prometheus_counter_set(&bay_access_refused_total, access_refused_total());
 }
 
 static int metrics_handler(struct http_client_ctx *client, enum http_transaction_status status,
@@ -637,23 +1097,25 @@ static int metrics_handler(struct http_client_ctx *client, enum http_transaction
 {
 	int ret;
 
-	ARG_UNUSED(client);
 	ARG_UNUSED(req);
 	ARG_UNUSED(user_data);
 
 	if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
 		return 0;
 	}
+	if (refused(rsp, ACL_STATUS, access_peer(client->fd))) {
+		return 0;
+	}
 
 	metrics_update();
-	ret = prometheus_format_exposition(&bay_collector, metrics_buf, sizeof(metrics_buf));
+	ret = prometheus_format_exposition(&bay_collector, resp_buf, sizeof(resp_buf));
 	if (ret < 0) {
 		LOG_ERR("metrics formatting failed: %d", ret);
 		return ret;
 	}
 
-	rsp->body = metrics_buf;
-	rsp->body_len = strlen(metrics_buf);
+	rsp->body = resp_buf;
+	rsp->body_len = strlen(resp_buf);
 	rsp->final_chunk = true;
 
 	return 0;
@@ -715,11 +1177,31 @@ static struct http_resource_detail_static xterm_license_detail =
 
 /* --- /console/ws/<slot>: one WebSocket resource (and buffer) per console --- */
 
+/*
+ * A WebSocket descriptor has no peer address: the page asks for a ticket
+ * first (POST /api/console/ticket checks the console right for its
+ * address) and opens /console/ws/<slot>?t=<ticket>.
+ */
 static int console_ws_setup(int ws_socket, struct http_request_ctx *request_ctx, void *user_data)
 {
-	ARG_UNUSED(request_ctx);
+	char ticket[17] = "";
+	const char *t = NULL;
+	uint32_t ip;
 
-	return aux_console_ws_attach(POINTER_TO_INT(user_data), ws_socket);
+	if (request_ctx->data != NULL) {
+		t = strstr((const char *)request_ctx->data, "t=");
+	}
+	if (t != NULL) {
+		strncpy(ticket, t + 2, sizeof(ticket) - 1);
+		ticket[strcspn(ticket, "&")] = '\0';
+	}
+
+	ip = access_console_redeem(ticket);
+	if (ip == 0 || access_check(ACL_CONSOLE, ip) != ACL_OK) {
+		return -EACCES;
+	}
+
+	return aux_console_ws_attach(POINTER_TO_INT(user_data), ws_socket, ip);
 }
 
 /*
@@ -755,6 +1237,14 @@ HTTP_RESOURCE_DEFINE(mode_res, bay_http, "/api/mode", &mode_detail);
 HTTP_RESOURCE_DEFINE(metrics_res, bay_http, "/metrics", &metrics_detail);
 HTTP_RESOURCE_DEFINE(aux_res, bay_http, "/api/aux", &aux_detail);
 HTTP_RESOURCE_DEFINE(break_res, bay_http, "/api/aux/break", &break_detail);
+HTTP_RESOURCE_DEFINE(access_res, bay_http, "/api/access", &access_doc_detail);
+HTTP_RESOURCE_DEFINE(access_nonce_res, bay_http, "/api/access/nonce", &access_nonce_detail);
+HTTP_RESOURCE_DEFINE(access_claim_res, bay_http, "/api/access/claim", &access_claim_detail);
+HTTP_RESOURCE_DEFINE(access_rules_res, bay_http, "/api/access/rules", &access_rules_detail);
+HTTP_RESOURCE_DEFINE(access_kick_res, bay_http, "/api/access/kick", &access_kick_detail);
+HTTP_RESOURCE_DEFINE(access_key_res, bay_http, "/api/access/key", &access_key_detail);
+HTTP_RESOURCE_DEFINE(lease_res, bay_http, "/api/lease", &lease_detail);
+HTTP_RESOURCE_DEFINE(ticket_res, bay_http, "/api/console/ticket", &ticket_detail);
 HTTP_RESOURCE_DEFINE(xterm_mjs_res, bay_http, "/xterm.mjs", &xterm_mjs_detail);
 HTTP_RESOURCE_DEFINE(xterm_css_res, bay_http, "/xterm.css", &xterm_css_detail);
 HTTP_RESOURCE_DEFINE(addon_fit_mjs_res, bay_http, "/addon-fit.mjs", &addon_fit_mjs_detail);

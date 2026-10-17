@@ -21,6 +21,8 @@ target_sources(app PRIVATE
   src/net.c
   src/shell.c
   src/web.c
+  src/acl.c
+  src/access.c
 )
 
 # Status page and the vendored xterm.js, gzipped into the image (served as-is

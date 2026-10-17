@@ -1,6 +1,7 @@
 /*
  * WS2812B status LED behind the fascia.
  *
+ *   white, blinking   access claim pending: press BOOT to confirm
  *   red, blinking     DUT VBUS fault (current limit), or switched off by it
  *   yellow            SERVICE: front port -> node (flash / debug the node)
  *   magenta           classic: DUT -> front port (laptop plugged, or forced)
@@ -37,6 +38,7 @@ static const struct led_rgb orange = RGB(255, 60, 0);
 static const struct led_rgb dim_blue = RGB(0, 0, 60);
 static const struct led_rgb blue = RGB(0, 40, 255);
 static const struct led_rgb green = RGB(0, 255, 40);
+static const struct led_rgb white = RGB(255, 255, 255);
 
 static struct led_rgb shown;
 static uint32_t tick;
@@ -54,6 +56,10 @@ static struct led_rgb pick(void)
 	bool blink_fast = (tick & 1U) != 0U;
 	bool blink_slow = (tick & 4U) != 0U;
 
+	/* Which node wants the BOOT press */
+	if (access_claim_pending()) {
+		return blink_fast ? white : off;
+	}
 	if (dut_fault_latched() || dut_fault_active()) {
 		return blink_fast ? red : off;
 	}

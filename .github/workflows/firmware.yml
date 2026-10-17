@@ -24,6 +24,13 @@ jobs:
       - run: pip install pyserial
       - run: python firmware/bay-node/tests/rfc2217/test_rfc2217.py
 
+  acl:
+    name: Access rules (host test, SHA-256/HMAC against Python)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 firmware/bay-node/tests/acl/test_acl.py
+
   build:
     name: Zephyr build (${{ matrix.name }})
     runs-on: ubuntu-24.04
@@ -41,7 +48,8 @@ jobs:
           - name: m5stack_stamps3
             board: m5stack_stamps3/esp32s3/procpu
             app: firmware/bay-node
-          # The console code on native_sim (the screencast's simulation)
+          # The console and access-control code on native_sim (the screencast's
+          # simulation, and test_access.py below)
           - name: console_sim
             board: native_sim/native/64
             app: firmware/bay-node/tests/console_sim
@@ -77,6 +85,13 @@ jobs:
         run: >
           west build -b ${{ matrix.board }} -d build hw-testing-rack/${{ matrix.app }}
           -- -DCONFIG_COMPILER_WARNINGS_AS_ERRORS=y
+
+      # The node's HTTP server binds port 80: root
+      - name: Access control on native_sim
+        if: matrix.name == 'console_sim'
+        run: >
+          sudo python3 hw-testing-rack/firmware/bay-node/tests/console_sim/test_access.py
+          --exe build/zephyr/zephyr.exe
 
       - uses: actions/upload-artifact@v4
         with:

@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <zephyr/kernel.h>
 
+#include "acl.h"
+
 /* --- DUT power, fault, RESET/BOOT (dut.c) --------------------------------- */
 
 struct dut_power_reading {
@@ -125,8 +127,24 @@ int aux_loopback(bool on);
 bool aux_loopback_get(void);
 /* Queue bytes for the DUT like a client; returns how many fit */
 size_t aux_send(const uint8_t *buf, size_t len);
-/* web.c: a WebSocket on /console/ws/<slot> is ready */
-int aux_console_ws_attach(int slot, int ws_sock);
+/* web.c: a WebSocket on /console/ws/<slot> is ready, for a browser at ip */
+int aux_console_ws_attach(int slot, int ws_sock, uint32_t ip);
+
+/* Connected clients, for the access page: raw, RFC 2217, web console <n> */
+#define AUX_CLIENT_RAW     0
+#define AUX_CLIENT_RFC2217 1
+#define AUX_CLIENT_WEB     2 /* + slot */
+
+struct aux_client_info {
+	int id;
+	uint32_t ip;   /* IPv4, host order */
+	uint16_t port; /* 0 for a web console */
+	int64_t since; /* uptime, ms */
+};
+
+int aux_clients_get(struct aux_client_info *out, int max);
+/* Close a client (from another thread: the console thread does it) */
+int aux_client_kick(int id);
 
 /* --- Network, identity (net.c) -------------------------------------------- */
 
@@ -138,6 +156,70 @@ bool bay_net_connected(void);
 const char *bay_net_addr(void);
 const char *bay_id(void);
 int bay_id_set(const char *id);
+
+/* --- Access control (access.c, rules in acl.c) ------------------------------ */
+
+struct net_sockaddr;
+
+#define ACCESS_MAX_CONNS 8
+
+struct access_conn {
+	char id[12];       /* "raw", "rfc2217", "web<n>", "usbip:<port>", "shell:<port>" */
+	const char *label; /* "RFC 2217", "USB/IP", ... */
+	uint32_t ip;
+	uint16_t port;
+	uint8_t service; /* enum acl_service */
+	int64_t since;
+};
+
+int access_init(void);
+/* IPv4 address in host order, 0 when unknown */
+uint32_t access_ip(const struct net_sockaddr *addr);
+uint32_t access_peer(int fd);
+/* May ip use svc now?  Refusals are logged */
+enum acl_verdict access_check(enum acl_service svc, uint32_t ip);
+/* What ip may use now (ACL_BIT() mask), nothing logged */
+uint8_t access_allowed(uint32_t ip);
+bool access_enabled(void);
+bool access_claimed(void);
+uint32_t access_refused_total(void);
+
+/* Admin requests: X-Bay-Auth "<nonce>:<hmac>" over method, path and body */
+int access_nonce(char *out);
+bool access_admin(const char *auth, const char *method, const char *path, const uint8_t *body,
+		  size_t len);
+int access_set_key(const uint8_t *key);
+
+/* The first admin key: start (offered key or NULL), confirm by physical presence, poll */
+int access_claim_start(uint32_t ip, const uint8_t *offered, char *ticket_hex);
+bool access_claim_pending(void);
+int access_claim_confirm(void);
+/* 0 and the key once confirmed, -EINPROGRESS while pending, -ENOENT, -ETIMEDOUT */
+int access_claim_poll(uint32_t ip, const char *ticket_hex, char *key_hex, int *remaining_s);
+/* Local recovery: no key, no rules, no lease */
+int access_reset(void);
+
+void access_rules_get(struct acl_rules *r);
+int access_rules_set(const struct acl_rules *r);
+int access_set_enabled(bool on);
+/* Rules from a JSON body (modified in place): NULL or an error message */
+const char *access_rules_parse(char *body, size_t len, struct acl_rules *out);
+
+int access_lease_take(uint32_t ip, uint32_t ttl_s, const char *note);
+int access_lease_release(uint32_t ip, bool force);
+/* True while a lease is held */
+bool access_lease_get(struct acl_lease *l, uint32_t *remaining_s);
+
+int access_connections(struct access_conn *out, int max);
+/* Close a connection by id and refuse its address that service for a while */
+int access_kick(const char *id);
+
+/* A WebSocket has no peer address: the page gets a ticket first */
+int access_console_ticket(uint32_t ip, char *out);
+uint32_t access_console_redeem(const char *ticket);
+
+/* GET /api/access document; admin adds the rules and the refusal log */
+int access_json(char *buf, size_t size, uint32_t ip, bool admin);
 
 /* --- Web page, JSON API, /metrics (web.c) --------------------------------- */
 

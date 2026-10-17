@@ -13,7 +13,9 @@ Builds (west, incrementally) and starts two native_sim programs:
 The node's AUX UART is a PTY; the DUT's console is its stdin/stdout; this
 script copies bytes between the two.  The node prints "SIM: dut reset" and
 "SIM: dut power on|off" when the page presses RESET or the power buttons:
-the DUT is restarted, stopped or started accordingly.
+the DUT is restarted, stopped or started accordingly.  What you type goes
+to the node's own shell (its UART pads on a real node): "bay access claim"
+confirms a claim, as a short press on BOOT would.
 """
 
 from __future__ import annotations
@@ -83,6 +85,12 @@ def keyboard(aux_fd: int, dut: Dut) -> None:
         dut.write(os.read(aux_fd, 4096))
 
 
+def node_shell(node: subprocess.Popen) -> None:
+    """Lines typed here go to the node's shell (none when run detached)."""
+    for line in sys.stdin:
+        node.stdin.write(line.rstrip("\n").encode() + b"\r")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--workspace", type=Path, default=Path("/ws"), help="west workspace")
@@ -100,7 +108,9 @@ def main() -> None:
     # The node's console (uart0) on stdout: its "SIM:" lines drive the DUT
     node = subprocess.Popen([str(node_exe), "--uart_stdinout"], stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE, bufsize=0)
+    threading.Thread(target=node_shell, args=(node,), daemon=True).start()
     dut = None
+    # The node's shell shares its console: a "SIM:" line may follow a prompt
     for raw in iter(node.stdout.readline, b""):
         line = raw.decode(errors="replace").rstrip()
         print(f"node: {line}", flush=True)
@@ -109,15 +119,15 @@ def main() -> None:
             tty.setraw(aux_fd)
             dut = Dut(dut_exe, aux_fd)
             threading.Thread(target=keyboard, args=(aux_fd, dut), daemon=True).start()
-        elif dut is not None and line.startswith("SIM: ready"):
+        elif dut is not None and "SIM: ready" in line:
             dut.start()
-        elif dut is not None and line.startswith("SIM: dut reset"):
+        elif dut is not None and "SIM: dut reset" in line:
             dut.stop()
             time.sleep(0.2)
             dut.start()
-        elif dut is not None and line.startswith("SIM: dut power off"):
+        elif dut is not None and "SIM: dut power off" in line:
             dut.stop()
-        elif dut is not None and line.startswith("SIM: dut power on"):
+        elif dut is not None and "SIM: dut power on" in line:
             dut.start()
     sys.exit(node.wait())
 

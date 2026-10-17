@@ -3,8 +3,8 @@
  *
  * The USB/IP service (CONFIG_USBIP) starts by itself before main() and
  * exports whatever enumerates on the DUT port.  main() brings up the rest:
- * DUT power and fault handling, the data-path muxes, the AUX UART bridge,
- * Wi-Fi, the web server, and then drives the status LED.
+ * access control, DUT power and fault handling, the data-path muxes, the AUX
+ * UART bridge, Wi-Fi, the web server, and then drives the status LED.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -78,7 +78,13 @@ int bay_settings_save_aux(const struct aux_config *cfg)
 	return settings_save_one("bay/aux", cfg, sizeof(*cfg));
 }
 
-/* --- BOOT button: a press of 1 s or more power-cycles the DUT -------------- */
+/*
+ * --- BOOT button -----------------------------------------------------------
+ *
+ *   short press      confirms a pending access claim (physical presence)
+ *   1 s or more      power-cycles the DUT
+ *   10 s or more     access control back to an unclaimed, open node
+ */
 
 #define LONG_PRESS_MS 1000
 
@@ -90,6 +96,25 @@ static void power_cycle_handler(struct k_work *work)
 }
 
 static K_WORK_DEFINE(power_cycle_work, power_cycle_handler);
+
+static void claim_handler(struct k_work *work)
+{
+	ARG_UNUSED(work);
+	if (access_claim_confirm() == 0) {
+		LOG_INF("BOOT button: claim confirmed");
+	}
+}
+
+static K_WORK_DEFINE(claim_work, claim_handler);
+
+static void access_reset_handler(struct k_work *work)
+{
+	ARG_UNUSED(work);
+	LOG_WRN("BOOT button held: access reset");
+	(void)access_reset();
+}
+
+static K_WORK_DEFINE(access_reset_work, access_reset_handler);
 
 static void button_cb(struct input_event *evt, void *user_data)
 {
@@ -103,8 +128,12 @@ static void button_cb(struct input_event *evt, void *user_data)
 
 	if (evt->value != 0) {
 		pressed_at = k_uptime_get();
+	} else if (k_uptime_get() - pressed_at >= CONFIG_BAY_ACCESS_RESET_HOLD_MS) {
+		k_work_submit(&access_reset_work);
 	} else if (k_uptime_get() - pressed_at >= LONG_PRESS_MS) {
 		k_work_submit(&power_cycle_work);
+	} else if (access_claim_pending()) {
+		k_work_submit(&claim_work);
 	}
 }
 
@@ -124,6 +153,12 @@ int main(void)
 		/* -EDEADLK: NVS found no usable sector, e.g. another firmware's data */
 		LOG_ERR("settings unavailable (%d): defaults only%s", ret,
 			ret == -EDEADLK ? "; storage partition not NVS: west flash --erase" : "");
+	}
+
+	/* Before any server: the rules apply from the first connection */
+	ret = access_init();
+	if (ret != 0) {
+		LOG_ERR("access control init failed: %d", ret);
 	}
 
 	ret = dut_init();

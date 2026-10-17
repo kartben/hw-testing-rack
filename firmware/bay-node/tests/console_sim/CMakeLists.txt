@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
-# The bay node's serial console, web server and RFC 2217 code on native_sim,
-# with the hardware stubbed (src/sim.c): run.py wires its AUX UART (a PTY) to
-# a second native_sim running a Zephyr shell, the "DUT".  Used to record the
-# console screencast (web/screencast.py) without a board.
+# The bay node's serial console, web server, RFC 2217 and access-control code
+# on native_sim, with the hardware stubbed (src/sim.c): run.py wires its AUX
+# UART (a PTY) to a second native_sim running a Zephyr shell, the "DUT".  Used
+# to record the console screencast (web/screencast.py) and by test_access.py,
+# without a board.  The node's "bay" shell is on its console (stdin/stdout).
 
 cmake_minimum_required(VERSION 3.20.0)
 
@@ -21,6 +22,9 @@ target_sources(app PRIVATE
   ${BAY}/src/aux_console.c
   ${BAY}/src/rfc2217.c
   ${BAY}/src/web.c
+  ${BAY}/src/acl.c
+  ${BAY}/src/access.c
+  ${BAY}/src/shell.c
 )
 
 set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated)

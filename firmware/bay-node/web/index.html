@@ -23,6 +23,8 @@
   --service: #f59e0b;
   --fault: #ef4444;
   --idle: #8a919e;
+  --lease: #7c3aed;
+  --ok: #16a34a;
   --state: var(--idle);
   --radius: 14px;
   --mono: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
@@ -145,6 +147,87 @@ button {
   & .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
   & small { grid-column: 1 / -1; color: var(--muted); }
 }
+/* Access */
+.pill.access { color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent);
+  & svg { width: 13px; height: 13px; } }
+.notice, .ro-banner {
+  display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; font-size: 0.88rem;
+  background: color-mix(in srgb, var(--c, var(--service)) 10%, var(--card));
+  border: 1px solid color-mix(in srgb, var(--c, var(--service)) 35%, transparent);
+  & span { flex: 1; min-width: 0; }
+  & svg { width: 16px; height: 16px; flex: none; color: var(--c, var(--service)); }
+}
+.ro-banner { --c: var(--idle); margin-bottom: 16px; padding: 12px 16px; border-radius: var(--radius); font-size: 0.92rem; }
+.ro-banner[hidden], .notice[hidden], .lease[hidden] { display: none; }
+.who { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.9rem;
+  & code { font: 0.85rem var(--mono); }
+  & .src { color: var(--muted); }
+}
+.tag { font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
+.lease { border-radius: 10px; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+  background: color-mix(in srgb, var(--lease) 9%, var(--card)); border: 1px solid color-mix(in srgb, var(--lease) 30%, transparent);
+  & div { flex: 1; min-width: 0; font-size: 0.88rem; }
+  & b { color: var(--lease); font-weight: 600; }
+  & small { color: var(--muted); display: block; overflow-wrap: anywhere; }
+}
+button.small { padding: 3px 10px; font-size: 0.8rem; border-radius: 8px; }
+.conns { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.88rem;
+  & li { display: grid; grid-template-columns: 82px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+  & .svc { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+  & code { font: 0.82rem var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  & time { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+  & .none { color: var(--muted); display: block; }
+}
+.refused-line { font-size: 0.85rem; color: var(--muted); & b { color: var(--fault); font-weight: 600; } }
+dialog.wide { max-width: min(860px, calc(100vw - 32px)); width: 100%; padding: 0;
+  & header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  & header h3 { margin: 0; font-size: 1.05rem; flex: 1; }
+  & .body { padding: 16px 20px 20px; display: grid; gap: 14px; }
+  & h4 { margin: 4px 0 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+}
+dialog.small-dlg { max-width: 420px; width: calc(100vw - 32px);
+  & h3 { margin: 0 0 8px; font-size: 1.05rem; }
+  & p { margin: 0 0 12px; font-size: 0.92rem; }
+  & label { display: block; font-size: 0.85rem; color: var(--muted); margin: 10px 0 4px; }
+  & input, & select { font: inherit; width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--soft); color: var(--text); }
+  & input.key { font: 0.82rem var(--mono); }
+  & .btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  & .count { font: 600 2.2rem/1 var(--mono); text-align: center; margin: 12px 0; }
+  & .err { color: var(--fault); font-size: 0.85rem; margin: 8px 0 0; }
+  & .err:empty { display: none; }
+}
+.switch { display: inline-flex; align-items: center; gap: 8px; font-weight: 550; font-size: 0.9rem; cursor: pointer;
+  & input { appearance: none; width: 36px; height: 20px; border-radius: 999px; background: var(--line); position: relative; margin: 0; cursor: pointer; transition: background 0.15s; }
+  & input::after { content: ""; position: absolute; width: 16px; height: 16px; top: 2px; left: 2px; border-radius: 50%; background: #fff; transition: left 0.15s; }
+  & input:checked { background: var(--ok); }
+  & input:checked::after { left: 18px; }
+  & input:focus-visible { outline: 2px solid var(--usbip); outline-offset: 2px; }
+}
+.tablewrap { overflow-x: auto; }
+table.matrix { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-width: 660px;
+  & th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; text-align: center; padding: 6px 6px; }
+  & th small { display: block; text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 0.7rem; }
+  & th:first-child, & td:first-child { text-align: left; }
+  & td { border-top: 1px solid var(--line); padding: 7px 6px; text-align: center; }
+  & tr.me td { background: color-mix(in srgb, var(--ok) 6%, transparent); }
+  & tr.else td { background: var(--soft); }
+  & .src { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(120px, 1.3fr); gap: 6px; }
+  & .src input { font: inherit; font-size: 0.85rem; padding: 5px 8px; border-radius: 7px; border: 1px solid var(--line); background: var(--soft); color: var(--text); min-width: 0; }
+  & .src input.cidr { font-family: var(--mono); font-size: 0.8rem; }
+  & .src input:invalid { border-color: var(--fault); }
+}
+button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 1.5px solid var(--line); background: transparent; color: transparent; font-size: 0.85rem; line-height: 1;
+  &[aria-pressed=true] { background: var(--ok); border-color: var(--ok); color: #fff; }
+}
+table.log { width: 100%; border-collapse: collapse; font-size: 0.86rem;
+  & td { padding: 6px 8px; border-top: 1px solid var(--line); }
+  & td:first-child { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  & code { font: 0.82rem var(--mono); }
+  & .why { color: var(--fault); font-size: 0.8rem; }
+}
+.hint { color: var(--muted); font-size: 0.84rem; margin: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; & .grow { flex: 1; } }
 footer { margin-top: 20px; color: var(--muted); font-size: 0.85rem; display: flex; gap: 16px; flex-wrap: wrap;
   & a { color: inherit; }
 }
@@ -163,6 +246,10 @@ dialog {
 </style>
 </head>
 <body data-state="offline">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-lock" viewBox="0 0 16 16"><path fill="currentColor" d="M5 7V5a3 3 0 0 1 6 0v2h.5A1.5 1.5 0 0 1 13 8.5v5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 13.5v-5A1.5 1.5 0 0 1 4.5 7H5Zm1.5 0h3V5a1.5 1.5 0 0 0-3 0v2Z"/></symbol>
+  <symbol id="i-open" viewBox="0 0 16 16"><path fill="currentColor" d="M6.5 7h5A1.5 1.5 0 0 1 13 8.5v5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 13.5v-5A1.5 1.5 0 0 1 4.5 7H5V5a3 3 0 0 1 5.8-1.1l-1.4.6A1.5 1.5 0 0 0 6.5 5v2Z"/></symbol>
+</svg>
 <div class="wrap">
   <header>
     <div class="title">
@@ -172,8 +259,15 @@ dialog {
         <div class="sub" id="where">connecting…</div>
       </div>
     </div>
+    <span class="pill access" id="access-pill" hidden></span>
     <span class="pill" id="state">offline</span>
   </header>
+
+  <div class="ro-banner" id="ro-banner" hidden>
+    <svg viewBox="0 0 16 16"><use href="#i-lock"/></svg>
+    <span id="ro-text"></span>
+    <button class="small" data-acc="unlock">I'm an admin…</button>
+  </div>
 
   <div class="banner" role="alert">
     <span id="fault-text">DUT VBUS fault</span>
@@ -212,6 +306,26 @@ dialog {
           <dt>Clients</dt><dd id="sessions">–</dd>
         </dl>
         <div class="cmd"><code id="usbip-cmd">usbip attach -r … -b 1-1</code><button data-copy="usbip-cmd">Copy</button></div>
+      </section>
+
+      <section class="card" id="access-card">
+        <h2>Access <span id="access-state">—</span></h2>
+        <div class="notice" id="access-open" hidden>
+          <svg viewBox="0 0 16 16"><use href="#i-open"/></svg>
+          <span id="access-open-text">Open: anyone on this network can use this bay.</span>
+        </div>
+        <div class="who"><span>You are</span><code id="you">–</code><span class="src" id="you-src"></span><span class="tag" id="you-admin" hidden>admin</span></div>
+        <div class="lease" id="lease" hidden>
+          <div><b id="lease-who"></b><small id="lease-meta"></small></div>
+          <button class="small" data-acc="renew" hidden>Renew</button>
+          <button class="small danger" data-acc="release">Release</button>
+        </div>
+        <ul class="conns" id="conns"></ul>
+        <div class="refused-line" id="refused-line"></div>
+        <div class="actions">
+          <button data-acc="reserve" id="btn-reserve">Reserve…</button>
+          <button class="primary" data-acc="admin" id="btn-admin">Manage access…</button>
+        </div>
       </section>
     </div>
 
@@ -283,6 +397,100 @@ dialog {
   </form>
 </div>
 
+<dialog id="dlg-claim" class="small-dlg">
+  <form id="claim-form">
+    <h3>Claim this bay</h3>
+    <div id="claim-start">
+      <p>This node has no admin yet.  Claiming it gives this browser its admin key, after a press on the node's <b>BOOT</b> button: nobody can claim a bay from the network alone.</p>
+      <label for="claim-key">The rack's admin key (optional, to use the same key on every bay)</label>
+      <input id="claim-key" class="key" autocomplete="off" spellcheck="false" placeholder="64 hex digits, or leave empty for a new key">
+    </div>
+    <div id="claim-wait" hidden>
+      <p>Press the <b>BOOT</b> button of this bay once, briefly: its LED is blinking white.</p>
+      <div class="count" id="claim-count">1:00</div>
+      <p class="hint">Or type <code>bay access claim</code> on its local console.</p>
+    </div>
+    <div id="claim-done" hidden>
+      <p><b>Claimed.</b>  This browser keeps the admin key.  Keep a copy: <code>bayctl</code> (<code>BAYCTL_KEY</code>) and the other bays can use the same one.</p>
+      <div class="cmd"><code id="claim-new-key"></code><button type="button" data-copy="claim-new-key">Copy</button></div>
+    </div>
+    <p class="err" id="claim-err"></p>
+    <div class="btns">
+      <button type="button" value="cancel" data-close>Close</button>
+      <button type="submit" class="primary" id="claim-go">Claim</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-unlock" class="small-dlg">
+  <form id="unlock-form">
+    <h3>Unlock as admin</h3>
+    <p>Paste this bay's admin key (from <code>bayctl access keygen</code>, another bay, or when you claimed it).  It stays in this browser; requests are signed with it, the key itself is not sent.</p>
+    <label for="unlock-key">Admin key</label>
+    <input id="unlock-key" class="key" type="password" autocomplete="off" spellcheck="false" required pattern="[0-9a-fA-F]{64}">
+    <p class="hint">Lost it?  On the node: <code>bay access reset</code>, or hold BOOT for 10 s.</p>
+    <p class="err" id="unlock-err"></p>
+    <div class="btns">
+      <button type="button" data-close>Cancel</button>
+      <button type="submit" class="primary">Unlock</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-lease" class="small-dlg">
+  <form id="lease-form">
+    <h3>Reserve this bay</h3>
+    <p>While reserved, power, reset, the console and USB/IP answer only your address (and it ends by itself).  CI does this with <code>bayctl lease</code>.</p>
+    <label for="lease-ttl">For</label>
+    <select id="lease-ttl"><option value="900">15 minutes</option><option value="3600" selected>1 hour</option><option value="14400">4 hours</option><option value="86400">24 hours</option></select>
+    <label for="lease-note">Note</label>
+    <input id="lease-note" maxlength="39" placeholder="what for (optional)">
+    <p class="err" id="lease-err"></p>
+    <div class="btns">
+      <button type="button" data-close>Cancel</button>
+      <button type="submit" class="primary">Reserve</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg-access" class="wide">
+  <header>
+    <h3 id="acc-title">Access</h3>
+    <label class="switch"><input type="checkbox" id="acc-enabled"> Rules on</label>
+    <button type="button" class="small" data-close>Close</button>
+  </header>
+  <div class="body">
+    <div class="tablewrap">
+      <table class="matrix">
+        <thead><tr>
+          <th>Source <small>name, address or CIDR</small></th>
+          <th>Status<small>page, API, metrics</small></th>
+          <th>Control<small>power, reset, mode</small></th>
+          <th>Console<small>web, 4000, 4001</small></th>
+          <th>USB/IP<small>3240</small></th>
+          <th>Shell<small>telnet 23</small></th>
+          <th></th>
+        </tr></thead>
+        <tbody id="acc-rows"></tbody>
+      </table>
+    </div>
+    <div class="row">
+      <button type="button" id="acc-add">+ Add source</button>
+      <p class="hint grow" id="acc-hint"></p>
+      <button type="button" id="acc-discard">Discard</button>
+      <button type="button" class="primary" id="acc-save">Save</button>
+    </div>
+    <h4>Refused connections</h4>
+    <table class="log" id="acc-refused"></table>
+    <h4>Admin key</h4>
+    <div class="row">
+      <p class="hint grow">This browser holds the admin key of this bay.</p>
+      <button type="button" class="small" id="acc-copy-key">Copy key</button>
+      <button type="button" class="small danger" id="acc-forget">Forget it here</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="confirm">
   <p id="confirm-text"></p>
   <form method="dialog">
@@ -304,13 +512,16 @@ const LABEL = {
   attached: "attached", enumerated: "device ready", usbip: "no device", offline: "offline",
 };
 
-async function api(path, body) {
-  const init = body === undefined ? {} : {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+/* GET without a body, POST with one; errors carry the HTTP status and the node's reply */
+async function api(path, body, headers = {}) {
+  const text = typeof body === "string" ? body : body === undefined ? undefined : JSON.stringify(body);
+  const init = text === undefined ? { headers } : {
+    method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: text,
   };
-  const res = await fetch(path, { ...init, signal: AbortSignal.timeout(body ? 10000 : 4000) });
+  const res = await fetch(path, { ...init, signal: AbortSignal.timeout(text ? 10000 : 4000) });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? `${res.status} ${res.statusText}`);
+  if (!res.ok) throw Object.assign(new Error(data.error ?? `${res.status} ${res.statusText}`),
+    { status: res.status, data });
   return data;
 }
 
@@ -389,15 +600,21 @@ function render(s) {
 
   $("uptime").textContent = `Up ${uptime(s.uptime_s)} · Zephyr ${s.version}`;
   $("faults").textContent = `${plural(s.dut.faults, "fault")} since boot`;
+  if (s.access) renderRights(s.access);
 }
 
 async function poll() {
   clearTimeout(timer);
   try {
     render(await api("/api/status"));
-  } catch {
+  } catch (e) {
     setState("offline");
-    $("where").textContent = "node unreachable, retrying…";
+    if (e.status === 403 || e.status === 423) {
+      $("where").textContent = "access restricted";
+      restricted(e.data);
+    } else {
+      $("where").textContent = "node unreachable, retrying…";
+    }
   }
   if (!document.hidden) timer = setTimeout(poll, 2000);
 }
@@ -423,14 +640,14 @@ const DONE = { on: "Power on", off: "Power off", cycle: "Power cycled", reset: "
 async function run(btn, path, body, what) {
   if (btn?.dataset.confirm && !(await confirmed(btn.dataset.confirm))) return;
   const busy = document.querySelectorAll("button[data-action]");
-  busy.forEach((b) => (b.disabled = true));
+  busy.forEach((b) => { b.disabled = true; b.dataset.busy = "1"; });
   try {
     render(await api(path, body));
     toast(DONE[what]);
   } catch (e) {
     toast(`Failed: ${e.message}`);
   } finally {
-    busy.forEach((b) => (b.disabled = false));
+    busy.forEach((b) => { b.dataset.busy = ""; b.disabled = b.dataset.denied === "true"; });
   }
 }
 
@@ -444,6 +661,435 @@ async function copy(id) {
   }
   toast("Copied");
 }
+
+/* --- Access control ----------------------------------------------------- */
+
+/*
+ * SHA-256 and HMAC for signed admin requests: crypto.subtle only exists in
+ * secure contexts, and http://bay-b3.local is not one.
+ */
+const SHA_K = Uint32Array.from({ length: 64 }, (_, i) => {
+  const primes = [];
+  for (let n = 2; primes.length < 64; n++) if (primes.every((p) => n % p)) primes.push(n);
+  return (Math.cbrt(primes[i]) % 1) * 2 ** 32;
+});
+const SHA_H = Uint32Array.from([2, 3, 5, 7, 11, 13, 17, 19], (p) => (Math.sqrt(p) % 1) * 2 ** 32);
+
+function sha256(bytes) {
+  const n = ((bytes.length + 72) >> 6) << 6;
+  const m = new Uint8Array(n);
+  m.set(bytes);
+  m[bytes.length] = 0x80;
+  const dv = new DataView(m.buffer);
+  dv.setUint32(n - 8, Math.floor(bytes.length / 2 ** 29));
+  dv.setUint32(n - 4, bytes.length * 8);
+  const H = SHA_H.slice(), W = new Uint32Array(64);
+  const rotr = (x, r) => (x >>> r) | (x << (32 - r));
+  for (let off = 0; off < n; off += 64) {
+    for (let i = 0; i < 16; i++) W[i] = dv.getUint32(off + 4 * i);
+    for (let i = 16; i < 64; i++) {
+      const a = W[i - 15], b = W[i - 2];
+      W[i] = W[i - 16] + (rotr(a, 7) ^ rotr(a, 18) ^ (a >>> 3)) + W[i - 7] + (rotr(b, 17) ^ rotr(b, 19) ^ (b >>> 10));
+    }
+    let [a, b, c, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) {
+      const t1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + SHA_K[i] + W[i]) >>> 0;
+      const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+      [h, g, f, e, d, c, b, a] = [g, f, e, (d + t1) >>> 0, c, b, a, (t1 + t2) >>> 0];
+    }
+    [a, b, c, d, e, f, g, h].forEach((v, i) => (H[i] += v));
+  }
+  const out = new Uint8Array(32);
+  H.forEach((v, i) => new DataView(out.buffer).setUint32(4 * i, v));
+  return out;
+}
+
+function hmac(key, msg) {
+  const block = new Uint8Array(64);
+  block.set(key.length > 64 ? sha256(key) : key);
+  const pad = (x) => {
+    const b = block.map((v) => v ^ x);
+    return (data) => { const all = new Uint8Array(64 + data.length); all.set(b); all.set(data, 64); return all; };
+  };
+  return sha256(pad(0x5c)(sha256(pad(0x36)(msg))));
+}
+
+const hex = (bytes) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+const unhex = (text) => Uint8Array.from(text.match(/../g) ?? [], (h) => parseInt(h, 16));
+const SERVICES = ["status", "control", "console", "usbip", "shell"];
+const SVC_LABEL = { status: "status", control: "control", console: "console", usbip: "USB/IP", shell: "shell" };
+
+const acc = { doc: null, admin: false, rules: null, saved: null };
+
+function storedKey() {
+  try { return localStorage.getItem("bay-admin-key") ?? ""; } catch { return ""; }
+}
+
+function storeKey(key) {
+  try { key ? localStorage.setItem("bay-admin-key", key) : localStorage.removeItem("bay-admin-key"); } catch { /* private window */ }
+}
+
+/* An admin request: X-Bay-Auth = <nonce>:<HMAC(key, nonce \n method \n path \n body)> */
+async function signed(path, body, key = storedKey()) {
+  const { nonce } = await api("/api/access/nonce");
+  const text = body === undefined ? "" : JSON.stringify(body);
+  const mac = hmac(unhex(key), enc.encode(`${nonce}\n${body === undefined ? "GET" : "POST"}\n${path}\n${text}`));
+  return api(path, body === undefined ? undefined : text, { "X-Bay-Auth": `${nonce}:${hex(mac)}` });
+}
+
+const ago = (s) => s < 90 ? `${s} s` : s < 5400 ? `${Math.round(s / 60)} min` : `${Math.round(s / 3600)} h`;
+const can = (a, svc) => a.allow.includes(svc);
+
+/* From /api/status every 2 s: what this address may do now */
+function renderRights(a) {
+  const lease = a.lease.holder ? a.lease : null;
+  const pill = $("access-pill");
+  const [color, icon, text] = lease
+    ? ["--lease", "i-lock", lease.yours ? "reserved by you" : `reserved · ${lease.note || lease.holder}`]
+    : !a.claimed || !a.enabled ? ["--service", "i-open", "open"] : ["--ok", "i-lock", "protected"];
+  pill.hidden = false;
+  pill.style.setProperty("--c", `var(${color})`);
+  pill.innerHTML = `<svg viewBox="0 0 16 16"><use href="#${icon}"/></svg>`;
+  pill.append(text);
+
+  const control = can(a, "control"), console_ = can(a, "console");
+  document.querySelectorAll("button[data-action]").forEach((b) => (b.dataset.denied = !control));
+  document.querySelectorAll("button[data-action], input[name=mode]").forEach((el) => {
+    el.disabled = !control || el.dataset.busy === "1";
+  });
+  document.querySelectorAll("button[data-con=break], button[popovertarget=con-settings]")
+    .forEach((b) => (b.disabled = !console_));
+  if (con.term) con.term.options.disableStdin = !console_;
+
+  const banner = $("ro-banner");
+  banner.hidden = control;
+  if (!control) {
+    $("ro-text").innerHTML = "";
+    const b = document.createElement("b");
+    b.textContent = "Read-only. ";
+    $("ro-text").append(b, lease && !lease.yours
+      ? `Reserved by ${lease.holder}${lease.note ? ` (${lease.note})` : ""} for ${Math.ceil(lease.remaining_s / 60)} min.`
+      : `${a.you} may not control this bay.`);
+    banner.querySelector("button").hidden = !a.claimed || acc.admin;
+  }
+  renderAccessCard(a);
+}
+
+/* The Access card: /api/status for the lease, /api/access for the connections */
+function renderAccessCard(a) {
+  const d = acc.doc;
+  const lease = a.lease.holder ? a.lease : null;
+  $("access-state").textContent = !a.claimed ? "not claimed" : a.enabled ? "rules on" : "rules off";
+  $("access-open").hidden = a.claimed && a.enabled;
+  $("access-open-text").textContent = !a.claimed
+    ? "Open: anyone on this network can use this bay.  Claim it to set rules."
+    : "Rules off: every address may use everything.";
+  $("you").textContent = a.you;
+  $("you-src").textContent = d?.source ?? "";
+  $("you-admin").hidden = !acc.admin;
+
+  $("lease").hidden = !lease;
+  if (lease) {
+    $("lease-who").textContent = lease.yours ? "Reserved by you" : `Reserved by ${lease.holder}`;
+    $("lease-meta").textContent = [lease.note, `${ago(lease.remaining_s)} left`].filter(Boolean).join(" · ");
+    document.querySelector("[data-acc=release]").hidden = !lease.yours && !acc.admin;
+    document.querySelector("[data-acc=renew]").hidden = !lease.yours;
+  }
+  $("btn-reserve").hidden = !!lease || !can(a, "control");
+
+  const list = $("conns");
+  list.replaceChildren();
+  for (const c of d?.connections ?? []) {
+    const li = document.createElement("li");
+    const svc = Object.assign(document.createElement("span"), { className: "svc", textContent: c.label });
+    const peer = Object.assign(document.createElement("code"), { textContent: c.peer, title: c.port ? `${c.peer}:${c.port}` : c.peer });
+    const since = Object.assign(document.createElement("time"), { textContent: ago(c.since_s) });
+    const kick = Object.assign(document.createElement("button"), { className: "small", textContent: "Kick" });
+    kick.dataset.acc = "kick";
+    kick.dataset.id = c.id;
+    kick.hidden = !acc.admin;
+    li.append(svc, peer, since, kick);
+    list.append(li);
+  }
+  if (d && !d.connections.length) {
+    list.innerHTML = `<li><span class="none">No console, USB/IP or shell connection</span></li>`;
+  }
+
+  $("refused-line").innerHTML = a.refused
+    ? `<b>${a.refused} refused</b> since the node started`
+    : "Nothing refused since the node started";
+  $("btn-admin").textContent = !a.claimed ? "Claim this bay…" : acc.admin ? "Manage access…" : "Unlock…";
+}
+
+/* /api/status refused: the page cannot show the bay */
+function restricted(data) {
+  const banner = $("ro-banner");
+  banner.hidden = false;
+  $("ro-text").innerHTML = "";
+  const b = document.createElement("b");
+  b.textContent = "Access restricted. ";
+  $("ro-text").append(b, data?.reason === "reserved" ? data.error
+    : `${data?.you ?? "This address"} may not see this bay.`);
+  banner.querySelector("button").hidden = acc.admin;
+}
+
+async function pollAccess() {
+  try {
+    acc.doc = acc.admin ? await signed("/api/access").catch(() => api("/api/access")) : await api("/api/access");
+    if (acc.admin && !acc.doc.admin) acc.admin = false;
+    if (status?.access) renderAccessCard(status.access);
+  } catch { /* the status poll reports the node */ }
+  setTimeout(pollAccess, document.hidden ? 15000 : 4000);
+}
+
+function showError(id, e) {
+  $(id).textContent = e ? e.message : "";
+}
+
+/* Unlock: a signed GET proves the key */
+async function unlock(key) {
+  const doc = await signed("/api/access", undefined, key);
+  if (!doc.admin) throw new Error("this key is not this bay's");
+  storeKey(key);
+  acc.admin = true;
+  acc.doc = doc;
+  if (status?.access) renderRights(status.access);
+  return doc;
+}
+
+async function claimFlow(ev) {
+  ev.preventDefault();
+  const key = $("claim-key").value.trim();
+  showError("claim-err");
+  if (key && !/^[0-9a-fA-F]{64}$/.test(key)) return showError("claim-err", new Error("the key is 64 hex digits"));
+  let start;
+  try {
+    start = await api("/api/access/claim", key ? { key } : {});
+  } catch (e) {
+    return showError("claim-err", e);
+  }
+  $("claim-start").hidden = true;
+  $("claim-wait").hidden = false;
+  $("claim-go").hidden = true;
+  const dlg = $("dlg-claim");
+  while (dlg.open) {
+    let r;
+    try {
+      r = await api("/api/access/claim", { ticket: start.ticket });
+    } catch (e) {
+      $("claim-wait").hidden = true;
+      return showError("claim-err", e);
+    }
+    if (r.state === "done") {
+      storeKey(r.key);
+      acc.admin = true;
+      $("claim-wait").hidden = true;
+      $("claim-done").hidden = false;
+      $("claim-new-key").textContent = r.key;
+      toast("Claimed: you are admin");
+      return pollNow();
+    }
+    $("claim-count").textContent = `${Math.floor(r.remaining_s / 60)}:${String(r.remaining_s % 60).padStart(2, "0")}`;
+    await new Promise((ok) => setTimeout(ok, 1000));
+  }
+}
+
+function openClaim() {
+  $("claim-start").hidden = false;
+  $("claim-wait").hidden = true;
+  $("claim-done").hidden = true;
+  $("claim-go").hidden = false;
+  $("claim-key").value = "";
+  showError("claim-err");
+  $("dlg-claim").showModal();
+}
+
+/* Manage dialog: an editable copy of the rules */
+function ruleRow(src, i) {
+  const tr = document.createElement("tr");
+  const me = acc.doc && src && src.name === acc.doc.source;
+  if (me) tr.className = "me";
+  if (!src) tr.className = "else";
+  const td = document.createElement("td");
+  if (src) {
+    const box = Object.assign(document.createElement("div"), { className: "src" });
+    const name = Object.assign(document.createElement("input"), {
+      value: src.name, required: true, pattern: "[A-Za-z0-9._\\-]{1,15}", ariaLabel: "Name", placeholder: "name" });
+    const cidr = Object.assign(document.createElement("input"), {
+      className: "cidr", value: src.cidr, required: true, ariaLabel: "Address or CIDR", placeholder: "192.168.1.0/24",
+      pattern: "(\\d{1,3}\\.){3}\\d{1,3}(/\\d{1,2})?" });
+    name.oninput = () => (src.name = name.value);
+    cidr.oninput = () => (src.cidr = cidr.value);
+    box.append(name, cidr);
+    td.append(box);
+  } else {
+    td.innerHTML = "<b>Everyone else</b>";
+  }
+  tr.append(td);
+  const allow = src ? src.allow : acc.rules.everyone;
+  for (const svc of SERVICES) {
+    const cell = document.createElement("td");
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "chk", textContent: "✓" });
+    b.ariaLabel = `${SVC_LABEL[svc]} for ${src ? src.name || "this source" : "everyone else"}`;
+    const on = () => allow.includes("all") || allow.includes(svc);
+    b.setAttribute("aria-pressed", on());
+    b.onclick = () => {
+      let list = allow.includes("all") ? [...SERVICES] : allow.filter((x) => x !== svc);
+      if (!on()) list.push(svc);
+      allow.length = 0;
+      allow.push(...(SERVICES.every((x) => list.includes(x)) ? ["all"] : list));
+      b.setAttribute("aria-pressed", on());
+    };
+    cell.append(b);
+    tr.append(cell);
+  }
+  const del = document.createElement("td");
+  if (src) {
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "small", textContent: "Remove" });
+    b.onclick = () => { acc.rules.sources.splice(i, 1); renderRules(); };
+    del.append(b);
+  }
+  tr.append(del);
+  return tr;
+}
+
+function renderRules() {
+  const rows = $("acc-rows");
+  rows.replaceChildren(...acc.rules.sources.map(ruleRow), ruleRow(null));
+  $("acc-add").disabled = acc.rules.sources.length >= 8;
+  $("acc-enabled").checked = acc.rules.enabled;
+  $("acc-hint").textContent = `Up to 8 sources; an address gets what every matching row gives.  You are ${acc.doc.you}.  The admin key manages access from any address.`;
+  const log = $("acc-refused");
+  log.replaceChildren();
+  for (const r of acc.doc.refused ?? []) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td></td><td><code></code></td><td></td><td class=why></td>";
+    tr.cells[0].textContent = `${ago(r.last_s)} ago`;
+    tr.cells[1].firstChild.textContent = r.ip;
+    tr.cells[2].textContent = SVC_LABEL[r.service];
+    tr.cells[3].textContent = `${r.reason.replace("_", " ")} ×${r.count}`;
+    log.append(tr);
+  }
+  if (!acc.doc.refused?.length) log.innerHTML = "<tr><td>Nothing refused since the node started.</td></tr>";
+}
+
+async function openManage() {
+  try {
+    const doc = await signed("/api/access");
+    if (!doc.admin) throw new Error("the stored key is not this bay's");
+    acc.doc = doc;
+  } catch (e) {
+    acc.admin = false;
+    toast(`Not admin: ${e.message}`);
+    return $("dlg-unlock").showModal();
+  }
+  acc.rules = { enabled: acc.doc.enabled, ...structuredClone(acc.doc.rules) };
+  $("acc-title").textContent = `Access to ${status?.id ? `bay ${status.id.toUpperCase()}` : "this bay"}`;
+  renderRules();
+  $("dlg-access").showModal();
+}
+
+async function saveRules() {
+  const bad = $("acc-rows").querySelector("input:invalid");
+  if (bad) {
+    bad.focus();
+    return toast("Check the highlighted field");
+  }
+  acc.rules.enabled = $("acc-enabled").checked;
+  try {
+    acc.doc = await signed("/api/access/rules", acc.rules);
+    acc.rules = { enabled: acc.doc.enabled, ...structuredClone(acc.doc.rules) };
+    renderRules();
+    toast("Rules saved");
+    pollNow();
+  } catch (e) {
+    toast(`Failed: ${e.message}`);
+  }
+}
+
+async function accessAction(btn) {
+  const lease = status?.access?.lease;
+  try {
+    switch (btn.dataset.acc) {
+      case "admin":
+        if (!status?.access?.claimed) return openClaim();
+        return acc.admin ? openManage() : $("dlg-unlock").showModal();
+      case "unlock":
+        return $("dlg-unlock").showModal();
+      case "reserve":
+        showError("lease-err");
+        return $("dlg-lease").showModal();
+      case "renew":
+        await api("/api/lease", { ttl_s: 3600, note: lease?.note ?? "" });
+        toast("Reservation renewed for 1 hour");
+        break;
+      case "release":
+        await (lease?.yours || !acc.admin ? api : signed)("/api/lease", { release: true });
+        toast("Reservation released");
+        break;
+      case "kick":
+        if (!(await confirmed(`Close this connection and refuse its address for a minute?`))) return;
+        acc.doc = await signed("/api/access/kick", { id: btn.dataset.id });
+        toast("Kicked");
+        break;
+    }
+  } catch (e) {
+    toast(`Failed: ${e.message}`);
+  }
+  pollNow();
+}
+
+function pollNow() {
+  poll();
+  api("/api/access").then((d) => { acc.doc = { ...d, admin: acc.admin }; status?.access && renderAccessCard(status.access); }).catch(() => {});
+}
+
+$("claim-form").addEventListener("submit", claimFlow);
+$("unlock-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  showError("unlock-err");
+  try {
+    await unlock($("unlock-key").value.trim().toLowerCase());
+    $("dlg-unlock").close();
+    $("unlock-key").value = "";
+    toast("Unlocked: you are admin");
+    pollNow();
+  } catch (e) {
+    showError("unlock-err", e);
+  }
+});
+$("lease-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  try {
+    await api("/api/lease", { ttl_s: Number($("lease-ttl").value), note: $("lease-note").value });
+    $("dlg-lease").close();
+    toast("Reserved");
+    pollNow();
+  } catch (e) {
+    showError("lease-err", e);
+  }
+});
+$("acc-add").onclick = () => {
+  acc.rules.sources.push({ name: "", cidr: "", allow: ["status"] });
+  renderRules();
+  $("acc-rows").querySelectorAll("tr:not(.else)")[acc.rules.sources.length - 1]?.querySelector("input")?.focus();
+};
+$("acc-discard").onclick = () => {
+  acc.rules = { enabled: acc.doc.enabled, ...structuredClone(acc.doc.rules) };
+  renderRules();
+};
+$("acc-save").onclick = saveRules;
+$("acc-copy-key").onclick = async () => {
+  try { await navigator.clipboard.writeText(storedKey()); toast("Key copied"); } catch { toast("Copy failed"); }
+};
+$("acc-forget").onclick = async () => {
+  if (!(await confirmed("Forget the admin key in this browser?  You will need it to unlock again."))) return;
+  storeKey("");
+  acc.admin = false;
+  $("dlg-access").close();
+  pollNow();
+};
+document.querySelectorAll("dialog [data-close]").forEach((b) => (b.onclick = () => b.closest("dialog").close()));
 
 /* --- Serial console ----------------------------------------------------- */
 
@@ -539,8 +1185,24 @@ function input(text) {
  * says hello with the stream position of the first byte it replays (and a
  * per-boot id), so a reconnecting page skips what it already shows.
  */
-function connect(slot = 0) {
-  const url = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/console/ws/${slot}`;
+async function connect(slot = 0) {
+  /* No console right now (rules, someone else's lease): wait for the status poll to give one */
+  const a = status?.access;
+  if (a && !can(a, "console")) {
+    setMeta(a.lease.holder && !a.lease.yours ? `reserved by ${a.lease.holder}` : `not allowed from ${a.you}`);
+    setTimeout(connect, 2000);
+    return;
+  }
+  /* A ticket ties the WebSocket to this address's console right */
+  let ticket;
+  try {
+    ({ ticket } = await api("/api/console/ticket", {}));
+  } catch (e) {
+    setMeta(e.status === 403 || e.status === 423 ? `not available: ${e.message}` : "node unreachable, retrying…");
+    setTimeout(connect, 5000);
+    return;
+  }
+  const url = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/console/ws/${slot}?t=${ticket}`;
   const ws = new WebSocket(url);
   let hello = false;
   let pos = 0;
@@ -670,6 +1332,7 @@ document.addEventListener("click", async (ev) => {
   const btn = ev.target.closest("button");
   if (!btn) return;
   if (btn.dataset.copy) return copy(btn.dataset.copy);
+  if (btn.dataset.acc) return accessAction(btn);
 
   switch (btn.dataset.con) {
     case "break":
@@ -709,7 +1372,9 @@ document.addEventListener("change", (ev) => {
 $("con-settings").addEventListener("toggle", (ev) => ev.newState === "open" && fillSettings());
 $("con-form").addEventListener("submit", saveSettings);
 document.addEventListener("visibilitychange", () => !document.hidden && poll());
+acc.admin = /^[0-9a-f]{64}$/.test(storedKey());
 poll();
+pollAccess();
 startConsole();
 </script>
 </body>

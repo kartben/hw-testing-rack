@@ -71,6 +71,25 @@ config BAY_SERVICE_PHY_HANDOVER
 	  (esptool auto-reset) and debug (OpenOCD) the node.  Switching
 	  SERVICE off starts the host again.
 
+config BAY_ACCESS_CLAIM_S
+	int "Seconds to confirm an access claim with BOOT"
+	default 60
+	range 10 600
+	help
+	  A claim (the first admin key) waits this long for a short press on
+	  BOOT, or "bay access claim" on the local shell.
+
+config BAY_ACCESS_KICK_S
+	int "Seconds an address stays refused after a kick"
+	default 60
+
+config BAY_ACCESS_RESET_HOLD_MS
+	int "Holding BOOT this long resets access control (ms)"
+	default 10000
+	help
+	  Releasing BOOT after this long forgets the admin key, the rules
+	  and the lease instead of power-cycling the DUT.
+
 config BAY_LED_BRIGHTNESS
 	int "Status LED brightness (1-255)"
 	default 40

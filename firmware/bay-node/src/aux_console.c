@@ -9,6 +9,9 @@
  *     apply while it is connected, the saved ones come back afterwards;
  *   - one raw TCP client on CONFIG_BAY_AUX_TCP_PORT (socat, nc).
  *
+ * All of them need the Console right (access.c): the TCP ports are checked
+ * at accept(), the web consoles by web.c before the WebSocket attaches.
+ *
  * Everything the DUT sends goes to every client.  Everything a client sends
  * goes to the DUT: with several writers the bytes simply interleave.
  *
@@ -372,6 +375,9 @@ int aux_config_json(char *buf, size_t len, const char *type)
 
 struct client {
 	int fd;           /* -1: free */
+	uint32_t ip;      /* peer, host order */
+	uint16_t port;
+	int64_t since;
 	uint32_t pos;     /* next log byte this client gets */
 	atomic_val_t seq; /* web: last config sent */
 	uint8_t *out;     /* TCP: bytes waiting for the socket */
@@ -387,6 +393,9 @@ static struct client rfc = {.fd = -1, .out = rfc_out};
 static struct client web[WEB_MAX] = {[0 ... WEB_MAX - 1] = {.fd = -1}};
 
 static K_MUTEX_DEFINE(clients_lock);
+
+/* aux_client_kick(): AUX_CLIENT_* bits for the console thread to close */
+static atomic_t kick_mask;
 
 static struct rfc2217 telnet;
 static bool rfc_dtr;
@@ -730,9 +739,19 @@ static int listen_on(uint16_t port)
 /* A new TCP client replaces the previous one (which may be a dead connection) */
 static void accept_client(int lfd, struct client *c, const char *what)
 {
-	int fd = zsock_accept(lfd, NULL, NULL);
+	struct net_sockaddr_in addr = {0};
+	net_socklen_t addr_len = sizeof(addr);
+	int fd = zsock_accept(lfd, (struct net_sockaddr *)&addr, &addr_len);
+	uint32_t ip;
 
 	if (fd < 0) {
+		return;
+	}
+
+	/* The packet filter already drops refused clients on the node */
+	ip = access_ip((struct net_sockaddr *)&addr);
+	if (access_check(ACL_CONSOLE, ip) != ACL_OK) {
+		zsock_close(fd);
 		return;
 	}
 
@@ -741,6 +760,9 @@ static void accept_client(int lfd, struct client *c, const char *what)
 		client_close(c, what);
 	}
 	c->fd = fd;
+	c->ip = ip;
+	c->port = net_ntohs(addr.sin_port);
+	c->since = k_uptime_get();
 	c->pos = (uint32_t)atomic_get(&rx_head);
 	c->out_len = 0;
 	c->out_off = 0;
@@ -813,6 +835,67 @@ static const char *client_name(const struct client *c)
 	return c == &raw ? "raw" : c == &rfc ? "RFC 2217" : "web";
 }
 
+static struct client *client_by_id(int id)
+{
+	if (id == AUX_CLIENT_RAW) {
+		return &raw;
+	}
+	if (id == AUX_CLIENT_RFC2217) {
+		return &rfc;
+	}
+	if (id >= AUX_CLIENT_WEB && id < AUX_CLIENT_WEB + WEB_MAX) {
+		return &web[id - AUX_CLIENT_WEB];
+	}
+
+	return NULL;
+}
+
+int aux_client_kick(int id)
+{
+	if (client_by_id(id) == NULL || client_by_id(id)->fd < 0) {
+		return -ENOENT;
+	}
+	atomic_or(&kick_mask, BIT(id));
+
+	return 0;
+}
+
+int aux_clients_get(struct aux_client_info *out, int max)
+{
+	int n = 0;
+
+	k_mutex_lock(&clients_lock, K_FOREVER);
+	for (int id = 0; id < AUX_CLIENT_WEB + WEB_MAX && n < max; id++) {
+		const struct client *c = client_by_id(id);
+
+		if (c->fd >= 0) {
+			out[n++] = (struct aux_client_info){
+				.id = id, .ip = c->ip, .port = c->port, .since = c->since,
+			};
+		}
+	}
+	k_mutex_unlock(&clients_lock);
+
+	return n;
+}
+
+static void kick_clients(void)
+{
+	atomic_val_t mask = atomic_clear(&kick_mask);
+
+	if (mask == 0) {
+		return;
+	}
+
+	k_mutex_lock(&clients_lock, K_FOREVER);
+	for (int id = 0; id < AUX_CLIENT_WEB + WEB_MAX; id++) {
+		if (mask & BIT(id)) {
+			client_close(client_by_id(id), "kicked");
+		}
+	}
+	k_mutex_unlock(&clients_lock);
+}
+
 static void hub_thread(void *p1, void *p2, void *p3)
 {
 	struct client *const polled[] = {&raw, &rfc};
@@ -831,6 +914,8 @@ static void hub_thread(void *p1, void *p2, void *p3)
 		struct client *who[ARRAY_SIZE(fds)];
 		short in = ring_buf_space_get(&tx_ring) > 0 ? ZSOCK_POLLIN : 0;
 		int n = 0;
+
+		kick_clients();
 
 		if (raw_lfd >= 0) {
 			fds[n] = (struct zsock_pollfd){.fd = raw_lfd, .events = ZSOCK_POLLIN};
@@ -910,7 +995,7 @@ static struct k_thread hub_thread_data;
 static uint32_t boot_id;
 
 /* Called by the HTTP server thread once /console/ws/<slot> is upgraded */
-int aux_console_ws_attach(int slot, int ws_sock)
+int aux_console_ws_attach(int slot, int ws_sock, uint32_t ip)
 {
 	static char hello[288];
 	struct client *c;
@@ -942,6 +1027,9 @@ int aux_console_ws_attach(int slot, int ws_sock)
 				 WS_SEND_MS);
 	if (ret >= 0) {
 		c->fd = ws_sock;
+		c->ip = ip;
+		c->port = 0;
+		c->since = k_uptime_get();
 		c->pos = start;
 		c->seq = atomic_get(&cfg_seq);
 		LOG_INF("web console %d connected", slot);
