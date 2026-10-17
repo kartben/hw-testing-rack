@@ -26,19 +26,20 @@ class Bay:
 class Rack:
     raw: dict
 
-    # ---- frame ---------------------------------------------------------
+    # ---- frame (the panel frame: ladders, trays, braces) ----------------
     @property
-    def profile(self) -> float:
-        return self.raw["frame"]["profile"]
+    def panel_t(self) -> float:
+        """Ladder thickness (X)."""
+        return self.raw["frame"]["panel_thickness"]
 
     @property
-    def depth(self) -> float:
-        """Outer frame depth (Y)."""
-        return self.raw["frame"]["depth"]
+    def panel_clear(self) -> float:
+        """Tray wall ↔ ladder face, per side."""
+        return self.raw["frame"]["panel_clearance"]
 
     @property
     def bay_depth(self) -> float:
-        """Carrier depth along the slope (row Y)."""
+        """Tray depth along the slope (row Y)."""
         return self.raw["bay"]["depth"]
 
     @property
@@ -50,12 +51,9 @@ class Rack:
         return self.raw["frame"].get("row_origin_y", 0)
 
     @property
-    def bracket(self) -> float:
-        return self.raw["frame"].get("bracket", 0)
-
-    @property
     def pitch(self) -> float:
-        return self.raw["bay"]["pitch"]
+        """Column pitch: a tray, a ladder and two clearances."""
+        return self.carrier_w + self.panel_t + 2 * self.panel_clear
 
     @property
     def rows(self) -> list[dict]:
@@ -75,19 +73,29 @@ class Rack:
 
     @property
     def inner_x0(self) -> float:
-        """X where the first carrier unit starts (inside posts + brackets)."""
-        return self.profile + self.bracket
+        """X where the first tray starts (right of the leftmost ladder)."""
+        return self.panel_t + self.panel_clear
 
     @property
     def width(self) -> float:
-        return 2 * self.inner_x0 + self.units * self.pitch
+        return self.units * self.pitch + self.panel_t
+
+    @property
+    def rear_y(self) -> float:
+        """Frame Y of the ladders' rear edges (the braces sit behind them)."""
+        return self.row_origin_y + self.bay_depth * math.cos(math.radians(self.tilt))
+
+    @property
+    def depth(self) -> float:
+        """Overall depth (Y): ladders and the 3 mm braces behind them."""
+        return self.rear_y + 3.0
 
     @property
     def base_height(self) -> float:
         return self.raw["frame"]["base_height"]
 
     def row_z(self, i: int) -> float:
-        """Frame Z of row i's origin (its front-bottom edge); i == len(rows) is the top cap."""
+        """Frame Z of row i's origin (its front-bottom edge); i == len(rows) is the cap strip."""
         return self.base_height + sum(r["height"] for r in self.rows[:i])
 
     @property
@@ -106,14 +114,9 @@ class Rack:
         return [ox + x, oy + y * math.cos(a) - z * math.sin(a), oz + y * math.sin(a) + z * math.cos(a)]
 
     @property
-    def row_stack_h(self) -> float:
-        """Thickness of a row module below the bay floor: beams + carrier."""
-        return self.profile + self.plenum
-
-    @property
     def height(self) -> float:
-        top = self.to_frame(len(self.rows), [0, self.bay_depth, self.row_stack_h])[2]
-        return max(top, self.top_z + self.row_stack_h)
+        """Top of the cap strips (an 18 mm band on the top row's line), at the rear."""
+        return self.to_frame(len(self.rows), [0, self.bay_depth, 18])[2]
 
     # ---- bays -------------------------------------------------------------
     def bays(self):
@@ -128,8 +131,8 @@ class Rack:
             yield b.row, b.index, b.id
 
     def unit_x(self, u: int) -> float:
-        """X of the left edge of carrier unit u."""
-        return self.inner_x0 + u * self.pitch + self.raw["bay"]["gap"] / 2
+        """X of the left edge of tray (unit) u."""
+        return self.inner_x0 + u * self.pitch
 
     def bay_x(self, j: int) -> float:
         return self.unit_x(j)
@@ -141,7 +144,8 @@ class Rack:
 
     @property
     def carrier_w(self) -> float:
-        return self.pitch - self.raw["bay"]["gap"]
+        """Tray outer width (X)."""
+        return self.raw["bay"]["width"]
 
     @property
     def pcb_top(self) -> float:
@@ -184,13 +188,10 @@ class Rack:
     def chain(self) -> dict:
         return self.raw["chain"]
 
-    def drawer_w_span(self, span: int) -> float:
-        d = self.drawer
-        return span * self.pitch - self.raw["bay"]["gap"] - 2 * d["guide_width"] - 2 * d["clearance"]
-
     @property
     def drawer_w(self) -> float:
-        return self.drawer_w_span(1)
+        d = self.drawer
+        return self.carrier_w - 2 * d["guide_width"] - 2 * d["clearance"]
 
     @property
     def data_port_x(self) -> list[float]:
@@ -244,21 +245,18 @@ def scad_config(rack: Rack) -> str:
     node = rack.node
     hub = r["pcb"]["power_hub"]
     vals = {
-        "FRAME_PROFILE": rack.profile,
-        "FRAME_W": rack.width,
-        "FRAME_D": rack.depth,
+        "FRAME_W": round(rack.width, 3),
+        "FRAME_D": round(rack.depth, 3),
         "FRAME_TILT": rack.tilt,
         "FRAME_ROW_Y0": rack.row_origin_y,
-        "FRAME_BRACKET": rack.bracket,
-        "FRAME_INNER_X0": rack.inner_x0,
         "FRAME_BASE_H": rack.base_height,
-        "FRAME_FOOT_H": r["frame"]["foot_height"],
         "FRAME_TOP_Z": rack.top_z,
+        "FRAME_PANEL_T": rack.panel_t,
+        "FRAME_PANEL_CLEAR": rack.panel_clear,
         "ROW_IDS": [row["id"] for row in rack.rows],
         "ROW_HEIGHTS": [row["height"] for row in rack.rows],
         "ROW_LAYOUTS": [rack.layout(i) for i in range(len(rack.rows))],
-        "BAY_PITCH": rack.pitch,
-        "BAY_GAP": r["bay"]["gap"],
+        "BAY_PITCH": round(rack.pitch, 3),
         "CARRIER_W": rack.carrier_w,
         "CARRIER_D": rack.bay_depth,
         "CARRIER_BOTTOM": c["bottom"],

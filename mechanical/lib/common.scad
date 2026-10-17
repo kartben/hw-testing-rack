@@ -45,16 +45,3 @@ module label_text(txt, size = 6, depth = 0.6, font = "Liberation Sans:style=Bold
     linear_extrude(depth) text(txt, size = size, font = font, halign = "center", valign = "center");
 }
 
-// 2020 B-type profile, simplified (good enough for previews and clearance checks).
-module extrusion2020(len) {
-    s = FRAME_PROFILE;
-    difference() {
-        translate([-s / 2, -s / 2, 0]) cube([s, s, len]);
-        for (a = [0, 90, 180, 270]) rotate([0, 0, a])
-            translate([s / 2 - 1.8, -3, -EPS]) {
-                cube([1.8 + EPS, 6, len + 2 * EPS]);
-                translate([-4.2, -2.6, 0]) cube([4.3, 11.2, len + 2 * EPS]);
-            }
-        translate([0, 0, -EPS]) cylinder(d = 4.2, h = len + 2 * EPS);
-    }
-}

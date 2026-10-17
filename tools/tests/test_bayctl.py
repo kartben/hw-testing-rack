@@ -50,8 +50,8 @@ class Config(unittest.TestCase):
         self.assertEqual(b["A3"].runner, "nrfutil")
         self.assertEqual(b["B3"].console, "aux")
         self.assertFalse(b["C4"].ci)
-        self.assertEqual(b["D2"].host, "bay-d2.local")
-        self.assertEqual(b["D2"].url, "http://bay-d2.local")
+        self.assertEqual(b["C3"].host, "bay-c3.local")
+        self.assertEqual(b["C3"].url, "http://bay-c3.local")
 
     def test_hwmap(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -19,9 +19,9 @@ include <carrier.scad>
 
 TILT = FRAME_TILT;
 
-PANEL_T = 7.4;                           // ladder thickness (frame X)
-PANEL_CLEAR = 0.2;                       // tray wall <-> ladder face, per side
-PANEL_PITCH = CARRIER_W + PANEL_T + 2 * PANEL_CLEAR;   // 166: bay pitch with ladders
+PANEL_T = FRAME_PANEL_T;                 // ladder thickness (frame X), config/rack.yaml
+PANEL_CLEAR = FRAME_PANEL_CLEAR;         // tray wall <-> ladder face, per side
+PANEL_PITCH = BAY_PITCH;                 // 165.8: tray + ladder + 2 clearances (tools/rackcfg.py)
 
 POST_W = 8;                             // front and rear posts (frame Y)
 BAND_B = 18;                             // bottom band height (row z): the tray groove

@@ -1,5 +1,5 @@
 // Bay drawer (one per bay) — drawer coordinates: origin at the front-left
-// corner of the drawer body, z = 0 on the deck surface.
+// corner of the drawer body, z = 0 on the tray's ledges.
 //
 // - Front panel with a finger pull and a recess for 12 mm label tape.
 // - Board-plate pocket: plates drop in (two 180°-symmetric locating pins).
@@ -9,16 +9,17 @@
 //   slot; the cables come up from the drag chain through the cable window.  The chain foot slides into the rear-open groove under the
 //   bottom and is locked by one M2.5 screw from inside the rear bay.
 // - Rear flange segments run under the guide lips (anti-tip); a magnet under
-//   the rear bay gives a soft closed detent.
-// LIGHT = true: the panel-frame drawer (parts/tray.scad).  It rides on the tray's two side
-// ledges instead of a deck, so its floor only carries the board plate: nine windows, and the
-// detent magnet moves over the left ledge.
+//   the rear bay, over the tray's left ledge, gives a soft closed detent.
+// - It rides on the tray's two side ledges (parts/tray.scad), so its floor only carries the
+//   board plate: nine windows.
 // Print: bottom down, PETG, 3 walls, no supports.
 include <../lib/carrier.scad>
 
-LIGHT = false;
-DETENT = LIGHT ? [3, DRAWER_D - 14] : DETENT_DRAWER;
-RIB = 6;                                       // LIGHT floor ribs
+// the magnet sits right inside the left wall, its boss within the drawer's footprint (a boss
+// sticking out of the wall would hit the tray's guide lip on the last 10 mm before closing)
+DETENT = [DRAWER_MAGNET[0] / 2 + 1, DRAWER_D - 14];
+DETENT_BOSS = DRAWER_MAGNET[0] + 2;
+RIB = 6;                                       // floor ribs
 
 FRONT_OVERHANG = DRAWER_X0 - 1;            // front panel overhangs the guides
 FOOT_GROOVE = [6.4, DRAWER_D - FOOT_HOLE[1] + 1, 2.3];
@@ -61,7 +62,7 @@ module drawer() {
             for (p = plate_pins()) translate([PLATE_X0 + p[0], PLATE_Y0 + p[1], DRAWER_BOTTOM]) cylinder(d = 3.8, h = 2.2);
             // boss for the foot lock screw, and for the detent magnet
             translate([FOOT_HOLE[0], FOOT_HOLE[1], 0]) cylinder(d = 9, h = DRAWER_BOTTOM + 4);
-            translate([DETENT[0], DETENT[1], 0]) cylinder(d = DRAWER_MAGNET[0] + 4, h = DRAWER_MAGNET[1] + 1.2);
+            translate([DETENT[0], DETENT[1], 0]) cylinder(d = DETENT_BOSS, h = DRAWER_MAGNET[1] + 1.2);
             // zip-tie anchors for the port cables in the rear bay
             for (x = PORT_X) translate([x - 5, DRAWER_D - 12, DRAWER_BOTTOM]) difference() {
                 cube([10, 4, 6]);
@@ -78,22 +79,15 @@ module drawer() {
         translate([FOOT_HOLE[0] - 48, DRAWER_PORT_WALL_Y + 2, -EPS]) rbox([40, 18, DRAWER_BOTTOM + 2 * EPS], r = 3);
         // detent magnet from below
         translate([DETENT[0], DETENT[1], 0]) mirror([0, 0, 1]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
-        // ventilation / weight relief under the plate
-        if (LIGHT) {
-            // open floor: 3 × 3 windows between 6 mm ribs, solid side strips (they ride on the
-            // tray ledges) and solid rings around the plate pins
-            x0 = 8;
-            y0 = DRAWER_FRONT_T + 6;
-            cw = (DRAWER_W - 2 * x0 - 2 * RIB) / 3;
-            ch = (DRAWER_PORT_WALL_Y - 6 - y0 - 2 * RIB) / 3;
-            translate([0, 0, -EPS]) linear_extrude(DRAWER_BOTTOM + 2 * EPS) offset(r = 4) offset(delta = -4) difference() {
-                for (i = [0 : 2], j = [0 : 2]) translate([x0 + i * (cw + RIB), y0 + j * (ch + RIB)]) square([cw, ch]);
-                for (p = plate_pins()) translate([PLATE_X0 + p[0], PLATE_Y0 + p[1]]) circle(r = 7);
-            }
-        } else {
-        for (x = [16 : 14 : DRAWER_W - 16], y = [22 : 14 : DRAWER_PORT_WALL_Y - 18])
-            if (norm([x, y] - [PLATE_X0, PLATE_Y0] - plate_pins()[0]) > 9 && norm([x, y] - [PLATE_X0, PLATE_Y0] - plate_pins()[1]) > 9)
-                translate([x + ((round(y / 14) % 2) ? 7 : 0), y, -EPS]) cylinder(d = 9, h = DRAWER_BOTTOM + 2 * EPS, $fn = 6);
+        // open floor: 3 × 3 windows between 6 mm ribs, solid side strips (they ride on the
+        // tray ledges) and solid rings around the plate pins
+        x0 = 8;
+        y0 = DRAWER_FRONT_T + 6;
+        cw = (DRAWER_W - 2 * x0 - 2 * RIB) / 3;
+        ch = (DRAWER_PORT_WALL_Y - 6 - y0 - 2 * RIB) / 3;
+        translate([0, 0, -EPS]) linear_extrude(DRAWER_BOTTOM + 2 * EPS) offset(r = 4) offset(delta = -4) difference() {
+            for (i = [0 : 2], j = [0 : 2]) translate([x0 + i * (cw + RIB), y0 + j * (ch + RIB)]) square([cw, ch]);
+            for (p = plate_pins()) translate([PLATE_X0 + p[0], PLATE_Y0 + p[1]]) circle(r = 7);
         }
     }
 }

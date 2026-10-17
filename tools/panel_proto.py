@@ -6,11 +6,10 @@
 Writes, in --out:
   * <part>.stl          every part type (OpenSCAD, $fn=24)
   * proto.glb           one mesh per part type (mm, Z up)
-  * proto.json          instances (4×4 matrices, frame coordinates), boards, masses, and the
-                        comparison with today's aluminium-frame rack
+  * proto.json          instances (4×4 matrices, frame coordinates), boards, masses and the
+                        constants tools/panel_frame_fea.py reads
 Filament is estimated from the mesh, as a slicer would lay it: a 1.1 mm shell over the whole
-surface (3 perimeters, 4–5 top/bottom layers), 15 % infill inside, PETG at 1.27 g/cm³.  The
-same rule is applied to today's STLs (mechanical/stl/), so the comparison is like for like.
+surface (3 perimeters, 4–5 top/bottom layers), 15 % infill inside, PETG at 1.27 g/cm³.
 """
 
 from __future__ import annotations
@@ -46,7 +45,7 @@ PARTS = {
     "tray": ("parts/tray.scad", {"PART": "tray"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
-    "drawer_light": ("parts/drawer.scad", {"LIGHT": True}),
+    "drawer_light": ("parts/drawer.scad", {}),
     "brace_base": ("parts/brace.scad", {"ROW": -1}),
     "brace_a": ("parts/brace.scad", {"ROW": 0}),
     "brace_b": ("parts/brace.scad", {"ROW": 1}),
@@ -59,7 +58,6 @@ LABELS = {
     "drawer_light": "Drawer (light)", "brace_base": "Rear brace, base", "brace_a": "Rear brace, row A",
     "brace_b": "Rear brace, row B",
 }
-TODAY_PER_BAY = {"carrier_base": 1, "carrier_deck": 1, "drawer": 1, "drawer_guide_left": 1, "drawer_guide_right": 1}
 PROBE = """include <lib/panels.scad>
 echo(PANEL_T=PANEL_T, PANEL_CLEAR=PANEL_CLEAR, PANEL_PITCH=PANEL_PITCH, PF=PF, PR=PR, ROW_Y0=FRAME_ROW_Y0,
      TILT=TILT, ROW_Z=[for (k = [0 : 4]) row_z(k)], CARRIER_W=CARRIER_W, CARRIER_D=CARRIER_D,
@@ -220,31 +218,20 @@ def main() -> None:
 
     masses = {name: round(grams(m), 1) for name, m in meshes.items()}
     beds = {name: bbox(m) for name, m in meshes.items()}
-    today = {}
-    for name in TODAY_PER_BAY:
-        today[name] = round(grams(trimesh.load(MECH / "stl" / f"{name}.stl")), 1)
-    # today's printed parts tied to the aluminium frame (tier brackets, roof decks, base plates)
-    frame_today = {n: round(grams(trimesh.load(MECH / "stl" / f"{n}.stl")), 1)
-                   for n in ("tier_bracket_left", "tier_bracket_right", "roof_deck", "base_plate")}
-
     boards = rackcfg.load_boards()
     sc = scene(c, a.cols, a.rows, boards)
     proto = {}
     for i in sc["instances"]:
         proto[i["part"]] = proto.get(i["part"], 0) + 1
     rack = rack_counts(4, 4)
-    per_bay_today = sum(today[n] * q for n, q in TODAY_PER_BAY.items())
     per_bay_new = masses["tray"] + masses["drawer_light"]
     rack_new = sum(masses[n] * q for n, q in rack.items())
-    rack_today = 16 * per_bay_today + 5 * (frame_today["tier_bracket_left"] + frame_today["tier_bracket_right"]) \
-        + 4 * frame_today["roof_deck"] + 4 * frame_today["base_plate"]
     data = {
         "constants": c, "scene": sc, "labels": LABELS,
         "parts": {n: {"grams": masses[n], "bbox": beds[n], "proto_qty": proto.get(n, 0)} for n in PARTS if proto.get(n) or n in rack},
         "proto_total": round(sum(masses[n] * q for n, q in proto.items()), 0),
-        "per_bay": {"today": round(per_bay_today, 1), "today_parts": today, "new": round(per_bay_new, 1)},
-        "rack_4x4": {"today": round(rack_today, 0), "new": round(rack_new, 0), "counts": rack,
-                     "today_frame_parts": frame_today},
+        "per_bay": {"new": round(per_bay_new, 1)},
+        "rack_4x4": {"new": round(rack_new, 0), "counts": rack},
         "estimator": {"shell_mm": SHELL, "infill": INFILL, "density": PETG},
     }
     (a.out / "proto.json").write_text(json.dumps(data, indent=1), encoding="utf-8")
@@ -258,9 +245,8 @@ def main() -> None:
     for n, p in data["parts"].items():
         print(f"{n:<16}{p['grams']:>8}{p['proto_qty']:>11}  {p['bbox']}")
     print(f"\nprototype {a.cols}×{a.rows}: {data['proto_total']:.0f} g")
-    print(f"per bay: today {per_bay_today:.0f} g (carrier + deck + drawer + guides) → {per_bay_new:.0f} g (tray + drawer)")
-    print(f"4×4 rack, structure + bays (plates, cameras, base enclosure not counted): "
-          f"today {rack_today:.0f} g + aluminium → {rack_new:.0f} g")
+    print(f"per bay: {per_bay_new:.0f} g (tray + drawer)")
+    print(f"4×4 rack, structure + bays (board plates and cameras not counted): {rack_new:.0f} g")
     print("wrote", a.out / "proto.json", "and", a.out / "proto.glb")
 
 

@@ -14,7 +14,7 @@
 // Print: bottom down, PETG, 3 walls, 15 % infill, no supports (ledges sit on 45° chamfers or
 // bridge short gaps).
 include <../lib/panels.scad>
-use <carrier_base.scad>
+// fascia_cutouts(): lib/carrier.scad
 
 PART = "tray";
 
@@ -22,7 +22,8 @@ LEDGE_X = DRAWER_X0 + 4;                 // ledge reaches 4 mm under the drawer'
 LEDGE_T = 2.5;
 LEDGE_Z = CARRIER_PLENUM;                // ledge top = the old deck surface (drawer bottom)
 GUIDE_TOP = LEDGE_Z + GUIDE_LIP_Z + GUIDE_LIP_T;
-DETENT_LEDGE = [DRAWER_X0 + 3, DRAWER_Y0 + DRAWER_D - 14];   // magnet in the left ledge
+DETENT_LEDGE = [DRAWER_X0 + DRAWER_MAGNET[0] / 2 + 1, DRAWER_Y0 + DRAWER_D - 14];   // magnet in the left ledge, under the drawer's
+DETENT_PAD = [DETENT_LEDGE[0] + DRAWER_MAGNET[0] / 2 + 1, DRAWER_MAGNET[0] + 2];   // the ledge widened around it: x end, length (y)
 FLOOR_D = PR - 2 - (PF + 1);             // as in ladder.scad
 HOLE_R = 7;                              // bottom relief: hexagons on a 16 mm grid
 HOLE_PITCH = 16;
@@ -148,6 +149,12 @@ module tray() {
                 for (dx = [-8, 8]) translate([dx, 0, 0]) cylinder(d = 7.5, h = CARRIER_BOTTOM + 3);
             for (x = [CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 1.6, CHAIN_MOVING_X + CHAIN_H / 2 + 0.4])
                 translate([x, CHAIN_FIXED[1], 0]) cube([1.2, CARRIER_D - CHAIN_FIXED[1] - 30, CARRIER_BOTTOM + 3]);
+            // detent magnet pad: the left ledge widened under the drawer's magnet, on a 45° gusset
+            translate([0, DETENT_LEDGE[1] - DETENT_PAD[1] / 2, LEDGE_Z - LEDGE_T]) {
+                cube([DETENT_PAD[0], DETENT_PAD[1], LEDGE_T]);
+                rotate([90, 0, 0]) mirror([0, 0, 1]) linear_extrude(DETENT_PAD[1])
+                    polygon([[WALL - EPS, 0], [DETENT_PAD[0], 0], [WALL - EPS, -(DETENT_PAD[0] - WALL)]]);
+            }
         }
         for (h = NODE_HOLES) translate(concat(node_xy(h), [CARRIER_BOTTOM + CARRIER_STANDOFF])) insert_hole(INSERT_M3);
         for (c = cam_inserts()) translate([c[0], c[1], 0]) mirror([0, 0, 1]) insert_hole(INSERT_M3);
@@ -164,8 +171,8 @@ module tray() {
         translate([CAM_CABLE_HOLE[0], CAM_CABLE_HOLE[1], -EPS]) rslot(10, 5, CARRIER_BOTTOM + 2);
         // rear service slot (row feed, top-row camera cables, airflow)
         translate([20, CARRIER_D - WALL - EPS, CARRIER_BOTTOM + 2]) cube([60, WALL + 2 * EPS, CARRIER_WALL_H - 5]);
-        // closed-position detent magnet, flush with the left ledge
-        translate([DETENT_LEDGE[0], DETENT_LEDGE[1], LEDGE_Z]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1] - 0.6);
+        // closed-position detent magnet, flush with the left ledge (the pad below gives it its depth)
+        translate([DETENT_LEDGE[0], DETENT_LEDGE[1], LEDGE_Z]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
     }
 }
 

@@ -75,32 +75,24 @@ def openscad_cmd() -> list[str]:
 def part_jobs(rack) -> list[tuple[str, str, dict]]:
     """(output name, scad file relative to mechanical/, -D defines)."""
     jobs = [
-        ("carrier_base", "parts/carrier_base.scad", {}),
-        ("carrier_deck", "parts/carrier_deck.scad", {}),
+        ("ladder_base", "parts/ladder.scad", {"PART": "base"}),
+        ("ladder_cap", "parts/ladder.scad", {"PART": "cap", "ROW": len(rack.rows)}),
+        ("brace_base", "parts/brace.scad", {"ROW": -1}),
+        ("tray", "parts/tray.scad", {"PART": "tray"}),
+        ("floor_plate", "parts/tray.scad", {"PART": "floor_plate"}),
+        ("cap_plate", "parts/tray.scad", {"PART": "cap_plate"}),
         ("drawer", "parts/drawer.scad", {}),
-        ("drawer_guide_left", "parts/drawer_guide.scad", {"SIDE": "left"}),
-        ("drawer_guide_right", "parts/drawer_guide.scad", {"SIDE": "right"}),
         ("chain_foot", "parts/chain_parts.scad", {"PART": "foot"}),
         ("chain_anchor", "parts/chain_parts.scad", {"PART": "anchor"}),
         ("chain_link", "parts/chain_parts.scad", {"PART": "link"}),
         ("plate_universal", "parts/board_plate.scad", {"BOARD": "universal"}),
-        ("tier_bracket_left", "parts/tier_bracket.scad", {"SIDE": "left", "PRINT": True}),
-        ("tier_bracket_right", "parts/tier_bracket.scad", {"SIDE": "right", "PRINT": True}),
-        ("bridge_bar", "parts/bridge_bar.scad", {"PRINT": True}),
         ("camera_pod_mount", "parts/camera_pod.scad", {"PART": "mount"}),
         ("camera_pod_cradle", "parts/camera_pod.scad", {"PART": "cradle"}),
-        ("roof_deck", "parts/roof_deck.scad", {}),
-        ("base_plate", "parts/base.scad", {"PART": "plate"}),
-        ("base_psu_saddle", "parts/base.scad", {"PART": "psu_saddle"}),
-        ("base_inlet_panel", "parts/base.scad", {"PART": "inlet_panel"}),
-        ("base_side_panel", "parts/base.scad", {"PART": "side_panel"}),
-        ("base_front_panel", "parts/base.scad", {"PART": "front_panel"}),
-        ("base_hub_mount", "parts/base.scad", {"PART": "hub_mount"}),
-        ("base_mains_cover", "parts/base.scad", {"PART": "mains_cover"}),
-        ("foot", "parts/frame_parts.scad", {"PART": "foot"}),
-        ("slot_cable_clip", "parts/frame_parts.scad", {"PART": "slot_clip"}),
-        ("bay_label", "parts/frame_parts.scad", {"PART": "label"}),
+        ("bay_label", "parts/label.scad", {}),
     ]
+    for k, row in enumerate(rack.rows):      # one ladder and one brace per row (their heights differ)
+        jobs.append((f"ladder_{row['id'].lower()}", "parts/ladder.scad", {"PART": "row", "ROW": k}))
+        jobs.append((f"brace_{row['id'].lower()}", "parts/brace.scad", {"ROW": k}))
     for bid in sorted(rackcfg.load_boards()):
         jobs.append((f"plate_{bid}", "parts/board_plate.scad", {"BOARD": bid}))
     return [j for j in jobs if (MECH / j[1]).exists()]

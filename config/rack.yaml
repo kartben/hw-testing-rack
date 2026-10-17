@@ -1,12 +1,15 @@
 # hw-testing-rack — single source of truth for the shelf geometry.
 #
 # Everything is in millimetres.  Frame coordinates: X = left→right (width),
-# Y = front→back (depth), Z = up, origin = front-left-bottom outer corner of
-# the aluminium frame.  Shelves are tilted ("stadium"): each row is a module
-# in its own ROW coordinates (X same, Y along the slope towards the back,
-# Z perpendicular to the shelf), rotated by `frame.tilt` about X so the front
-# edge is lower.  "Carrier coordinates" = row coordinates shifted to the
-# front-left corner of one bay's carrier.
+# Y = front→back (depth), Z = up, origin = front-left-bottom corner of the
+# leftmost base ladder.  The structure is the PANEL FRAME: printed ladders
+# (side walls shared by neighbouring bays) stacked row on row, trays sliding
+# into their grooves, an X brace behind every bay and row (see docs/mechanical.md).
+# Shelves are tilted ("stadium"): each row is a module in its own ROW
+# coordinates (X same, Y along the slope towards the back, Z perpendicular to
+# the shelf), rotated by `frame.tilt` about X so the front edge is lower.
+# "Carrier coordinates" = row coordinates shifted to the front-left corner of
+# one bay's tray.
 #
 # `tools/build.py` turns this file into:
 #   mechanical/generated/config.scad   (OpenSCAD constants)
@@ -15,19 +18,15 @@
 # outlines, mounting holes and connector positions always match the prints.
 
 frame:
-  profile: 20            # 2020 aluminium extrusion (B-type, 6 mm slot)
-  depth: 225             # outer depth (Y) of the frame, posts included
   tilt: 20               # shelf tilt in degrees (front edge lower) — 0 gives flat shelves
   row_origin_y: 25       # frame Y of every row's front-bottom edge
-  bracket: 10            # printed tier brackets between posts and beams (X thickness)
-  base_height: 80        # top of the base frame = origin Z of the first row
-  foot_height: 10
-  top_cap: true          # extra tilted beam level + roof decks above the last row
+  base_height: 80        # base ladders: floor → row A's origin (floor plates in between)
+  panel_thickness: 7.4   # ladder thickness (X); one ladder between neighbouring bays
+  panel_clearance: 0.2   # tray wall ↔ ladder face, per side
 
 bay:
-  pitch: 160             # centre-to-centre, X (one "unit"; wide bays span 2 units)
-  gap: 2                 # clearance between neighbouring carriers
-  depth: 210             # carrier depth along the slope; every print stays ≤ 210 mm (Prusa MK4 bed)
+  width: 158             # tray outer width (X); the column pitch adds a ladder and two clearances (165.8)
+  depth: 210             # tray depth along the slope
   carrier:
     bottom: 2.5          # bottom plate (= ceiling of the bay below)
     wall: 2.0
@@ -68,22 +67,17 @@ chain:                   # drag chain lying flat in the plenum (bends in the XY 
 rows:                     # bottom → top; each row is an independent module
   - id: A
     height: 165           # vertical pitch to the next row's origin
-    layout: [1, 1, 1, 1]  # bay widths in units (2 = double-width bay for big EVKs)
+    layout: [1, 1, 1, 1]  # single bays (double-width bays are not designed for the panel frame yet)
   - id: B
     height: 165
     layout: [1, 1, 1, 1]
   - id: C
     height: 165
     layout: [1, 1, 1, 1]
-  - id: D
-    height: 185           # taller: double bays for i.MX-class EVKs, cameras on the roof
-    layout: [2, 2]
 
-cameras:                  # bays that get a camera pod on their ceiling
+cameras:                  # bays that get a camera pod on their ceiling (the tray above, or the cap plate)
   - B2
   - C3
-  - D1
-  - D2
 
 # Example population used by the docs, the BOM roll-up and the 3D viewer.
 # board ids refer to mechanical/boards/boards.yaml; cable ids to cables below.
@@ -100,8 +94,6 @@ population:
   C2: { board: nrf5340-dk,       cable: c-to-micro-b, open: true }    # drawer shown pulled out
   C3: { board: esp32-c6-devkitc, cable: c-to-c }
   C4: { board: nucleo-64,        cable: c-to-micro-b, pc_cable: true } # "classic" mode: laptop on the front port
-  D1: { board: mimxrt1060-evkb,  cable: c-to-micro-b }                # double-width bay
-  D2: { board: mimxrt1170-evkb,  cable: c-to-micro-b }                # double-width bay
 
 cables:
   c-to-c:       { label: "USB-C ↔ USB-C, 10–15 cm",        a: usb-c, b: usb-c,   length: 120 }
