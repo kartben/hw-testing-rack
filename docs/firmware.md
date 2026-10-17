@@ -86,8 +86,9 @@ First boot: set the Wi-Fi credentials and the bay id from the UART test pads
   for some debug probes, audio/video class DUTs and boards with an on-board
   hub.
 * **Serial console on hardware**: the RFC 2217 server is tested on the host
-  against pyserial and the web console against the simulated node; the
-  UART, WebSocket and TCP paths on the node are not.
+  against pyserial and the web console against the simulated node; on a
+  StampS3 the firmware boots with its listeners up and the UART path works
+  in loopback, but the WebSocket and TCP paths have not run over Wi-Fi yet.
 * DNS-SD (`_usbip._tcp`, `_http._tcp`, `_rfc2217._tcp`), MCUboot/mcumgr OTA,
   shell on the USB-Serial-JTAG in SERVICE mode, INA226 alert.
 * Upstream nits seen while dogfooding: the Prometheus library needs exactly

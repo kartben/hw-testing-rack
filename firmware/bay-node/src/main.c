@@ -121,7 +121,9 @@ int main(void)
 		ret = settings_load();
 	}
 	if (ret != 0) {
-		LOG_ERR("settings unavailable (%d): defaults only", ret);
+		/* -EDEADLK: NVS found no usable sector, e.g. another firmware's data */
+		LOG_ERR("settings unavailable (%d): defaults only%s", ret,
+			ret == -EDEADLK ? "; storage partition not NVS: west flash --erase" : "");
 	}
 
 	ret = dut_init();

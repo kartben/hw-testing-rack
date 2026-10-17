@@ -64,8 +64,12 @@ without a DUT:
 
 ```bash
 west build -b m5stack_stamps3/esp32s3/procpu hw-testing-rack/firmware/bay-node
-west flash        # over its USB-C port
+west flash --erase    # over its USB-C port; --erase once, see below
 ```
+
+A module that ran other firmware may hold something else where the
+settings live (`settings unavailable (-45)` at boot, nothing saved): erase
+the flash once (`west flash --erase`, or just the `storage` partition).
 
 Wi-Fi credentials can be built in — handy to flash a whole rack:
 
@@ -363,7 +367,12 @@ runs it and builds both targets with warnings as errors on every push.
   server then stops accepting, the console's WebSocket waits), hence the 3 s
   idle timeout in `prj.conf`; whether it is enough on the node is untested
   (on native_sim the idle timeout cannot free a slot at all, so the
-  simulation uses 8 slots).  To check on a DevKitC with a
+  simulation uses 8 slots).  On a StampS3 (no Wi-Fi credentials yet): it
+  boots, the HTTP, RFC 2217, raw TCP and telnet listeners are up, the AUX
+  settings persist, and with `bay aux loopback on` every byte sent comes
+  back at 115200 and 921600, also with the DUT "off"; 22 KB of system heap
+  free before Wi-Fi connects, the console thread at 768 of 3072 bytes of
+  stack with no client.  Not yet over the network.  To check on a DevKitC with a
   USB-UART adapter on IO47/IO33: throughput at 921600 baud, the console
   thread's stack (3 KB, unmeasured), BREAK and the TX release on power off
   with a scope, two browsers plus miniterm at once, esptool flashing an ESP32
