@@ -120,6 +120,11 @@ int aux_break(uint32_t ms);
 /* DUT VBUS switched: release the TX pin while the DUT is off */
 void aux_dut_power(bool on);
 void aux_stats_get(struct aux_stats *st);
+/* Test without a DUT: the UART loops TX back to RX (ESP32 only, else -ENOTSUP) */
+int aux_loopback(bool on);
+bool aux_loopback_get(void);
+/* Queue bytes for the DUT like a client; returns how many fit */
+size_t aux_send(const uint8_t *buf, size_t len);
 /* web.c: a WebSocket on /console/ws/<slot> is ready */
 int aux_console_ws_attach(int slot, int ws_sock);
 

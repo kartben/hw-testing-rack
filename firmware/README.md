@@ -17,6 +17,7 @@ firmware/
   dts/bindings/                  hwtr,dut-port and hwtr,usb-mux bindings
   bay-node/                      the application
     boards/esp32s3_devkitc_procpu.overlay   stand-in: same pin map on a DevKitC-1
+    boards/m5stack_stamps3_procpu.*         bench node on a StampS3: console + network, no USB host
     web/index.html               status page and serial console (embedded gzipped)
     web/vendor/xterm/            xterm.js 6.0.0 + fit addon (MIT), served from flash
     web/dev_server.py            the page against a simulated node, to work on the UI
@@ -51,6 +52,19 @@ No bay node yet?  An ESP32-S3-DevKitC-1 with the same GPIO map stands in
 
 ```bash
 west build -b esp32s3_devkitc/esp32s3/procpu hw-testing-rack/firmware/bay-node
+```
+
+An M5Stack StampS3 is an even smaller bench node for the serial console and
+the network side: no muxes, INA226 or USB host, and its USB-C port carries
+the node's shell and logs (USB-Serial-JTAG).  The AUX UART and the
+RESET/BOOT lines are on header pins (G1/G2, G4/G5; the map is in
+[the overlay](bay-node/boards/m5stack_stamps3_procpu.overlay)), and
+`bay aux loopback on` loops the UART back on itself to try the console
+without a DUT:
+
+```bash
+west build -b m5stack_stamps3/esp32s3/procpu hw-testing-rack/firmware/bay-node
+west flash        # over its USB-C port
 ```
 
 Wi-Fi credentials can be built in — handy to flash a whole rack:
@@ -131,6 +145,8 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | `bay aux` | AUX UART settings, consoles connected, byte counters |
 | `bay aux <baud> [8N1]` | set and save the AUX UART baud rate and format (`7E1`, `8O2`, …) |
 | `bay aux break [ms]` | hold the DUT's RX line low (default 250 ms) |
+| `bay aux send <text>` | send a line to the DUT (with the console's Enter) |
+| `bay aux loopback [on\|off]` | test without a DUT: the UART loops its TX back to its RX (ESP32) |
 | `bay id [id]` | show or set the bay id (persistent), hostname `bay-<id>.local` |
 
 ### Network services

@@ -62,7 +62,8 @@ static void print_aux(const struct shell *sh)
 	shell_print(sh, "           %u web console(s), RFC 2217 tcp/%d %s, raw tcp/%d %s",
 		    st.web_clients, CONFIG_BAY_RFC2217_PORT, st.rfc2217_client ? "in use" : "free",
 		    CONFIG_BAY_AUX_TCP_PORT, st.raw_client ? "in use" : "free");
-	shell_print(sh, "           rx %u tx %u dropped %u", st.rx, st.tx, st.dropped);
+	shell_print(sh, "           rx %u tx %u dropped %u%s", st.rx, st.tx, st.dropped,
+		    aux_loopback_get() ? ", loopback (test)" : "");
 }
 
 static int cmd_status(const struct shell *sh, size_t argc, char **argv)
@@ -214,10 +215,38 @@ static int cmd_aux(const struct shell *sh, size_t argc, char **argv)
 		return ret;
 	}
 
+	if (strcmp(argv[1], "loopback") == 0) {
+		if (argc == 2) {
+			shell_print(sh, "loopback %s", aux_loopback_get() ? "on" : "off");
+			return 0;
+		}
+		if (strcmp(argv[2], "on") != 0 && strcmp(argv[2], "off") != 0) {
+			shell_error(sh, "usage: bay aux loopback [on|off]");
+			return -EINVAL;
+		}
+		ret = aux_loopback(strcmp(argv[2], "on") == 0);
+		if (ret != 0) {
+			shell_error(sh, "no UART loopback on this SoC (%d)", ret);
+		}
+		return ret;
+	}
+
+	if (strcmp(argv[1], "send") == 0 && argc == 3) {
+		static const char *const enters[] = {"\r", "\n", "\r\n"};
+		const char *enter;
+
+		aux_config_get(&cfg, false);
+		enter = enters[MIN(cfg.enter, AUX_ENTER_CRLF)];
+		aux_send((const uint8_t *)argv[2], strlen(argv[2]));
+		aux_send((const uint8_t *)enter, strlen(enter));
+		return 0;
+	}
+
 	aux_config_get(&cfg, true);
 	baud = strtoul(argv[1], &end, 10);
 	if (*end != '\0' || (argc > 2 && parse_format(argv[2], &cfg) != 0)) {
-		shell_error(sh, "usage: bay aux [<baudrate> [8N1]] | bay aux break [ms]");
+		shell_error(sh, "usage: bay aux [<baudrate> [8N1]] | break [ms] | send <text> | "
+				"loopback [on|off]");
 		return -EINVAL;
 	}
 	cfg.baud = baud;
@@ -259,7 +288,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 	SHELL_CMD_ARG(boot, NULL, "Reset into the DUT's bootloader, or BOOT line [hold|release]",
 		      cmd_boot, 1, 1),
 	SHELL_CMD_ARG(mode, NULL, "USB data path: [usbip|classic] (persistent)", cmd_mode, 1, 1),
-	SHELL_CMD_ARG(aux, NULL, "AUX UART: [<baudrate> [8N1]] (persistent) | break [ms]",
+	SHELL_CMD_ARG(aux, NULL,
+		      "AUX UART: [<baudrate> [8N1]] (persistent) | break [ms] | send <text> | "
+		      "loopback [on|off] (test)",
 		      cmd_aux, 1, 2),
 	SHELL_CMD_ARG(id, NULL, "Bay id, sets the hostname bay-<id>: [<id>] (persistent)", cmd_id,
 		      1, 1),

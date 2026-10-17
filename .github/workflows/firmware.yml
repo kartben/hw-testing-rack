@@ -37,6 +37,10 @@ jobs:
           - name: esp32s3_devkitc
             board: esp32s3_devkitc/esp32s3/procpu
             app: firmware/bay-node
+          # Bench node without the USB host (its PHY is the console)
+          - name: m5stack_stamps3
+            board: m5stack_stamps3/esp32s3/procpu
+            app: firmware/bay-node
           # The console code on native_sim (the screencast's simulation)
           - name: console_sim
             board: native_sim/native/64

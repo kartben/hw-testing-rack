@@ -62,6 +62,7 @@ config BAY_HTTP_PORT
 config BAY_SERVICE_PHY_HANDOVER
 	bool "Give the USB PHY back to USB-Serial-JTAG in SERVICE mode"
 	default y
+	depends on USBIP
 	help
 	  The ESP32-S3 has a single full-speed PHY.  The USB host takes it
 	  at boot; with this option the firmware stops the host controller

@@ -51,6 +51,10 @@ LOG_MODULE_REGISTER(aux, CONFIG_BAY_LOG_LEVEL);
 #include <zephyr/drivers/pinctrl.h>
 #endif
 
+#if defined(CONFIG_SOC_FAMILY_ESPRESSIF_ESP32)
+#include <hal/uart_ll.h>
+#endif
+
 #define LOG_SIZE CONFIG_BAY_AUX_LOG_SIZE
 #define LOG_MASK (LOG_SIZE - 1)
 BUILD_ASSERT(IS_POWER_OF_TWO(LOG_SIZE), "CONFIG_BAY_AUX_LOG_SIZE must be a power of two");
@@ -228,6 +232,32 @@ int aux_break(uint32_t ms)
 	k_msleep(ms);
 
 	return line_break(false);
+}
+
+/* --- Test: TX looped back to RX inside the UART, bytes from the shell ------ */
+
+static bool loopback;
+
+int aux_loopback(bool on)
+{
+#if defined(CONFIG_SOC_FAMILY_ESPRESSIF_ESP32)
+	uart_ll_set_loop_back((uart_dev_t *)DT_REG_ADDR(AUX_UART_NODE), on);
+	loopback = on;
+	return 0;
+#else
+	ARG_UNUSED(on);
+	return -ENOTSUP;
+#endif
+}
+
+bool aux_loopback_get(void)
+{
+	return loopback;
+}
+
+size_t aux_send(const uint8_t *buf, size_t len)
+{
+	return tx_write(buf, len);
 }
 
 /* --- Port settings --------------------------------------------------------- */
