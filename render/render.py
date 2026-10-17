@@ -139,13 +139,13 @@ def main():
     w, h = (int(v) for v in a.res.split("x"))
     sc.render.resolution_x, sc.render.resolution_y = w, h
     sc.render.film_transparent = False
-    centre = Vector((0.35, 0.11, 0.44))
+    centre = Vector((0.335, 0.113, 0.34))     # middle of the 4 × 3 rack (m)
     if a.shot == "hero":
-        camera((1.62, -1.62, 1.18), centre + Vector((0, 0, -0.02)), lens=42)
+        camera((1.62, -1.62, 1.18), centre + Vector((0, 0, -0.02)), lens=53)
     elif a.shot == "side":
-        camera((2.15, 0.06, 0.62), centre, lens=50)
+        camera((2.15, 0.06, 0.62), centre, lens=62)
     elif a.shot == "rear":
-        camera((-0.9, 1.9, 1.2), centre, lens=42)
+        camera((-0.9, 1.9, 1.2), centre, lens=53)
     elif a.shot == "exploded":
         # frame whatever was imported (e.g. one bay from assembly_glb.py --explode-bay)
         pts = [ob.matrix_world @ Vector(c) for ob in sc.objects if ob.type == "MESH" and ob.name != "Plane"

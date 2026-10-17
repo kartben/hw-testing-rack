@@ -172,26 +172,22 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
     """Printed parts with counts per assembly and filament estimate from the STL volume."""
     import trimesh
     pop = rack.raw.get("population", {})
-    n_units = rack.units * len(rack.rows)
-    n_rows = len(rack.rows) + (1 if rack.raw["frame"].get("top_cap", True) else 0)
+    n_bays = sum(1 for _ in rack.bays())
+    cols, n_rows = rack.units, len(rack.rows)
     cams = len(rack.raw.get("cameras", []))
-    wide = sum(1 for b in rack.bays() if b.span == 2)
     counts = Counter({
-        "carrier_base": n_units, "carrier_deck": n_units, "drawer": n_units,
-        "drawer_guide_left": n_units, "drawer_guide_right": n_units,
-        "chain_foot": n_units, "chain_anchor": n_units,
-        "tier_bracket_left": n_rows, "tier_bracket_right": n_rows,
-        "roof_deck": rack.units, "camera_pod_mount": cams, "camera_pod_cradle": cams,
-        "bridge_bar": 2 * wide, "base_plate": rack.units, "base_psu_saddle": 2, "base_inlet_panel": 1,
-        "base_front_panel": 2 * rack.units - 1, "base_side_panel": 2, "base_hub_mount": 1, "base_mains_cover": 1,
-        "foot": 4, "slot_cable_clip": 12, "bay_label": sum(1 for _ in rack.bays()),
+        # the panel frame: a ladder per column boundary and level, a floor plate, a cap plate and
+        # an X brace per column and level
+        "ladder_base": cols + 1, "ladder_cap": cols + 1, "floor_plate": cols, "cap_plate": cols, "brace_base": cols,
+        "tray": n_bays, "drawer": n_bays, "chain_foot": n_bays, "chain_anchor": n_bays,
+        "camera_pod_mount": cams, "camera_pod_cradle": cams, "bay_label": n_bays,
     })
+    for row in rack.rows:
+        counts[f"ladder_{row['id'].lower()}"] += cols + 1
+        counts[f"brace_{row['id'].lower()}"] += cols
     for bay in rack.bays():
         info = pop.get(bay.id)
-        if info and bay.span == 1:
-            counts[f"plate_{info['board']}"] += 1
-        elif not info and bay.span == 1:
-            counts["plate_universal"] += 1
+        counts[f"plate_{info['board']}" if info else "plate_universal"] += 1
     stl_dir = REPO / "mechanical" / "stl"
     rows, prints = [], []
     total_g = 0.0
@@ -207,96 +203,58 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
             total_g += grams * qty
         prints.append({"part": name, "qty": qty, "grams_each": round(grams, 1) if grams else None,
                        "grams_total": round(grams * qty, 1) if grams else None, "stl": f"mechanical/stl/{name}.stl"})
-    rows.append({"category": "Printed parts", "group": "filament", "item": "PETG filament (ASA/PC-blend near mains)",
+    rows.append({"category": "Printed parts", "group": "filament", "item": "PETG filament",
                  "supplier": "any", "qty": math.ceil(total_g / 1000 * 1.1 * 10) / 10, "unit": "kg",
                  "unit_eur": PETG_EUR_PER_KG, "notes": f"≈{total_g / 1000:.1f} kg estimated + 10 % waste, "
                                                     f"{sum(counts.values())} parts"})
     return rows, prints
 
 
-def hardware(rack) -> tuple[list[dict], list[dict]]:
+def hardware(rack) -> list[dict]:
     r = rack.raw
-    P = rack.profile
-    W, D = rack.width, rack.depth
     n_rows = len(rack.rows)
-    n_levels = n_rows + (1 if r["frame"].get("top_cap", True) else 0)
-    n_units = rack.units * n_rows
+    cols = rack.units
+    n_bays = sum(1 for _ in rack.bays())
     pop = r.get("population", {})
     cams = len(r.get("cameras", []))
-    front_h = rack.to_frame(n_rows, [0, P / 2, P / 2])[2] + 26
-    rear_h = rack.to_frame(n_rows, [0, rack.bay_depth - P / 2, P / 2])[2] + 26
-    beam_len = W - 2 * rack.inner_x0
-    cut = [
-        {"part": "front post", "length_mm": round(front_h), "qty": 2},
-        {"part": "rear post", "length_mm": round(rear_h), "qty": 2},
-        {"part": "row / roof beam (M5 tapped both ends)", "length_mm": round(beam_len), "qty": 2 * n_levels},
-        {"part": "base beam X", "length_mm": round(W - 2 * P), "qty": 4},
-        {"part": "base beam Y", "length_mm": round(D - 2 * P), "qty": 4},
-    ]
-    metres = sum(c["length_mm"] * c["qty"] for c in cut) / 1000
-    m5_tnuts = 8 * n_levels + 4 * n_units + 4 * rack.units + 16 * 2 + 4 * rack.units + 10 * 4
+    braces = cols * (n_rows + 1)
     rows = [
-        {"category": "Frame", "item": "2020 aluminium extrusion, B-type slot 6, black anodised, cut to length",
-         "supplier": "Motedis / Dold / Misumi HFS5-2020", "qty": round(metres, 2), "unit": "m", "unit_eur": 4.1,
-         "notes": "see cut list; ≈ €1.5 per cut extra"},
-        # hardware at bulk prices (packs of 50–100 from AliExpress-type sellers)
-        {"category": "Frame", "item": "Inside corner bracket, slot 6, with screws (base frame)",
-         "supplier": "AliExpress (bulk) / Motedis", "qty": 16, "unit_eur": 0.5},
-        {"category": "Frame", "item": "M5 drop-in T-nut, slot 6", "supplier": "AliExpress (bulk)", "qty": m5_tnuts,
-         "unit_eur": 0.05},
-        {"category": "Frame", "item": "M5×12 button head (ISO 7380)", "supplier": "AliExpress (bulk)", "qty": m5_tnuts,
-         "unit_eur": 0.03},
-        {"category": "Frame", "item": "M5×16 screw into post core (feet) + beam-end screws",
-         "supplier": "AliExpress (bulk)", "qty": 4 + 4 * n_levels, "unit_eur": 0.04},
         {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
-         "supplier": "AliExpress (bulk) / Ruthex", "qty": n_units * (4 + 9 + 2) + 4 * cams + 4 + 2 * n_units,
+         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 6 * n_bays + 4 * cams,
          "unit_eur": 0.03,
-         "notes": "per carrier: 4 node + 9 deck/guide + 2 chain; 4 per camera pod (only where a camera hangs); "
-                  "hub mount; plates"},
-        {"category": "Fasteners", "item": "M3×12 button head (guide → deck → carrier)", "supplier": "AliExpress (bulk)",
-         "qty": 6 * n_units, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M3×8 countersunk (deck pillars, wide-bay seams)", "supplier": "AliExpress (bulk)",
-         "qty": 3 * n_units + 6, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor, hub)", "supplier": "AliExpress (bulk)",
-         "qty": 6 * n_units + 4, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M2.5×8 self-tapping (drawer stops, foot lock) + M2.5×6 (chain ends)",
-         "supplier": "AliExpress (bulk)", "qty": 3 * n_units + 4 * n_units, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm (drawer detent: one in drawer, one in deck)",
-         "supplier": "supermagnete S-06-03-N", "qty": 2 * n_units, "unit_eur": 0.30},
+         "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node "
+                  "standoffs + 2 chain anchor; 4 under the ceiling of every camera bay"},
+        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces", "supplier": "AliExpress (bulk)",
+         "qty": 4 * braces, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor)", "supplier": "AliExpress (bulk)",
+         "qty": 6 * n_bays, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends)",
+         "supplier": "AliExpress (bulk)", "qty": 6 * n_bays, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",
+         "supplier": "supermagnete S-06-03-N", "qty": 2 * n_bays, "unit_eur": 0.30},
         {"category": "Motion", "item": "Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",
-         "supplier": "AliExpress / igus E2 micro", "qty": round(0.17 * n_units + 0.3, 1), "unit": "m", "unit_eur": 4.0},
+         "supplier": "AliExpress / igus E2 micro", "qty": round(0.17 * n_bays + 0.3, 1), "unit": "m", "unit_eur": 4.0},
         {"category": "Cables", "item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
-         "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_units, "unit_eur": 1.5},
-        {"category": "Cables", "item": "JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay, 24 V)",
-         "supplier": "pre-crimped (AliExpress) or DIY", "qty": sum(rack.units - 1 for _ in rack.rows), "unit_eur": 0.3},
-        {"category": "Cables", "item": "JST PH 2-pin feed, 24 AWG, ≈1 m, PHR-2 + 2 × SPH-002T-P0.5S (hub → first bay of each row)",
-         "supplier": "DIY", "qty": n_rows + 1, "unit_eur": 0.8,
+         "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_bays, "unit_eur": 1.5},
+        {"category": "Cables", "item": "JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay through the ladder, 24 V)",
+         "supplier": "pre-crimped (AliExpress) or DIY", "qty": sum(cols - 1 for _ in rack.rows), "unit_eur": 0.3},
+        {"category": "Cables", "item": "JST PH 2-pin feed, 24 AWG, ≈1 m, PHR-2 + 2 × SPH-002T-P0.5S (power box → first bay of each row)",
+         "supplier": "DIY", "qty": n_rows, "unit_eur": 0.8,
          "notes": "PH: 2 A per contact; each row's eFuse limits it to 1.6 A"},
     ]
     cab = Counter(info["cable"] for info in pop.values())
-    for b in rack.bays():
-        info = pop.get(b.id)
-        if info and b.span == 2:
-            cab["c-to-c"] += 1          # second cable for the EVK (second node)
     for k, n in sorted(cab.items()):
         price = {"c-to-c": 4.5, "c-to-micro-b": 2.9, "c-to-mini-b": 6.0}.get(k, 4.0)
         rows.append({"category": "Cables", "item": r["cables"][k]["label"] + " (DUT cable, short / right-angle)",
                      "supplier": "Adafruit / Delock / AliExpress", "qty": n, "unit_eur": price})
     rows += [
-        {"category": "Power", "item": "Mean Well UHP-200-24 (24 V 8.4 A, fanless, PFC)", "supplier": "TME / RS / Mouser",
-         "qty": 1, "unit_eur": 51.0},
-        {"category": "Power", "item": "Schurter DD11.0111.1111 C14 inlet, fuse holder + 2-pole switch", "supplier": "Mouser",
-         "qty": 1, "unit_eur": 10.0},
-        {"category": "Power", "item": "Fuse 5×20 T3.15 A H 250 V (Schurter 0001.2509) + spare", "supplier": "Mouser",
-         "qty": 2, "unit_eur": 0.8},
-        {"category": "Power", "item": "IEC C13 mains cord, 1.0 mm²", "supplier": "any", "qty": 1, "unit_eur": 5.0},
-        {"category": "Power", "item": "H05V-K 1.0 mm² wire (brown, blue, green/yellow) + 4.8 mm insulated receptacles",
-         "supplier": "any", "qty": 1, "unit": "set", "unit_eur": 5.0},
-        {"category": "Power", "item": "16 AWG (1.3 mm²) DC wire PSU → hub, JST VHR-2N + 2 × SVH-41T-P1.1 "
-                                       "(16–20 AWG), ferrules (PSU side), M5 ring lug + serrated washer (PE bond)",
-         "supplier": "any / LCSC", "qty": 1, "unit": "set", "unit_eur": 4.5},
-        {"category": "Power", "item": "(variant) Mean Well GST160A24-R7B brick + Kycon KPJX-PM-4S panel jack",
-         "supplier": "RS / Mouser", "qty": 0, "unit_eur": 70.0, "notes": "instead of the UHP + inlet if you skip mains wiring"},
+        # the power box (24 V supply + the hub's per-row eFuses) is not designed yet for the panel
+        # frame; a certified 24 V brick covers three rows (≤ 5.7 A) without mains wiring in the rack
+        {"category": "Power", "item": "Mean Well GST160A24-R7B (24 V 6.67 A desktop brick) + Kycon KPJX-PM-4S panel jack",
+         "supplier": "RS / Mouser", "qty": 1, "unit_eur": 70.0,
+         "notes": "provisional: the power box is still to be designed (docs/power.md)"},
+        {"category": "Power", "item": "16 AWG (1.3 mm²) DC wire jack → hub, JST VHR-2N + 2 × SVH-41T-P1.1 (16–20 AWG)",
+         "supplier": "any / LCSC", "qty": 1, "unit": "set", "unit_eur": 3.0},
     ]
     if cams:
         rows += [
@@ -307,14 +265,14 @@ def hardware(rack) -> tuple[list[dict], list[dict]]:
             {"category": "Cameras", "item": "JST-PH 2-pin lead to the XIAO 5 V pads + M3×30 pivot screw",
              "supplier": "any", "qty": cams, "unit_eur": 0.6},
         ]
-    return rows, cut
+    return rows
 
 
 def main():
     rack = rackcfg.load()
     elec, orders = electronics(rack)
     prt, prints = printed(rack)
-    hw, cut = hardware(rack)
+    hw = hardware(rack)
     rows = elec + prt + hw
     for r in rows:
         r.setdefault("unit", "pcs")
@@ -332,8 +290,8 @@ def main():
         by_cat[r["category"]] += r["ext_eur"]
     total = sum(by_cat.values())
     n_bays = sum(1 for _ in rack.bays())
-    data = {"rows": rows, "by_category": dict(by_cat), "total_eur": round(total, 2), "cut_list": cut,
-            "prints": prints, "bays": n_bays, "units": rack.units * len(rack.rows),
+    data = {"rows": rows, "by_category": dict(by_cat), "total_eur": round(total, 2),
+            "prints": prints, "bays": n_bays, "rows_n": len(rack.rows),
             "jlc_quote": {"date": JLC_QUOTE_DATE, "currency": "USD", "shipping": JLC_SHIPPING, "boards": JLC_QUOTE,
                           "order": orders}}
     (REPO / "site" / "assets").mkdir(parents=True, exist_ok=True)
@@ -341,7 +299,7 @@ def main():
 
     md = ["# Bill of materials", "",
           "Generated by `python tools/bom.py` from `config/rack.yaml`, the KiCad BOMs and the STL volumes.",
-          f"Configuration: **{n_bays} bays** ({rack.units * len(rack.rows)} carrier units) in {len(rack.rows)} rows. "
+          f"Configuration: **{n_bays} bays** ({rack.units} columns × {len(rack.rows)} rows) in the panel frame. "
           "Prices are indicative (EUR excl. VAT, small quantities, October 2026); re-quote before ordering. "
           f"The boards follow a real JLCPCB quote of {JLC_QUOTE_DATE}, adjusted for the changes since (below, "
           f"converted at $1 = €{USD_EUR:.2f}); shipping ({JLC_SHIPPING}) and import VAT are extra.", "",
@@ -365,8 +323,6 @@ def main():
         if name in orders:
             o = orders[name]
             md.append(f"| | | Order (indicative): {'; '.join(o['changes']) or 'as quoted'} | {o['total']:.2f} |")
-    md += ["", "## Aluminium cut list (2020, B-type slot 6)", "", "| Part | Length (mm) | Qty |", "|---|---:|---:|"]
-    md += [f"| {c['part']} | {c['length_mm']} | {c['qty']} |" for c in cut]
     md += ["", "## Printed parts", "", "| Part | Qty | g each (est.) | STL |", "|---|---:|---:|---|"]
     md += [f"| {p['part']} | {p['qty']} | {p['grams_each'] or '–'} | `{p['stl']}` |" for p in prints]
     md += ["", "## Line items", "", "| Category | Item | Qty | Unit € | Total € | Source |", "|---|---|---:|---:|---:|---|"]

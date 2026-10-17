@@ -62,10 +62,7 @@
     </tr></thead><tbody></tbody></table></div>
     <p class="note">Indicative prices, EUR excl. VAT, small quantities (Oct 2026). Electronics lines are per-board BOM × boards assembled, plus the PCB and PCBA fees of a real JLCPCB quote (2026-10-16; shipping and import VAT extra); LCSC numbers verified against JLCPCB's library. Re-quote before ordering.</p>
 
-    <div class="grid2">
-      <section><h2>Aluminium cut list (2020, slot 6)</h2>
-        <div class="tablewrap"><table id="cut"><thead><tr><th>Part</th><th class="num">Length (mm)</th><th class="num">Qty</th></tr></thead><tbody></tbody></table></div>
-      </section>
+    <div>
       <section><h2>Printed parts</h2>
         <div class="tablewrap"><table id="prints"><thead><tr><th>Part</th><th class="num">Qty</th><th class="num">g each</th><th></th></tr></thead><tbody></tbody></table></div>
       </section>
@@ -76,7 +73,7 @@
     const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
     const data = await fetch('assets/bom.json').then((r) => r.json());
     document.getElementById('lead').textContent =
-      `${data.bays} bays on ${data.units} carrier units. Generated from config/rack.yaml, the KiCad BOMs and the STL volumes by tools/bom.py.`;
+      `${data.bays} bays in ${data.rows_n} rows, all printed (panel frame). Generated from config/rack.yaml, the KiCad BOMs and the STL volumes by tools/bom.py.`;
     const cards = [['Total', data.total_eur, 'total'], ['Per bay', data.total_eur / data.bays, '']]
       .concat(Object.entries(data.by_category).sort((a, b) => b[1] - a[1]).map(([k, v]) => [k, v, '']));
     document.getElementById('cards').innerHTML = cards.map(([k, v, c]) =>
@@ -102,8 +99,6 @@
       const k = th.dataset.k; sortDir = sortKey === k ? -sortDir : 1; sortKey = k; render();
     }));
     render();
-    document.querySelector('#cut tbody').innerHTML = data.cut_list.map((c) =>
-      `<tr><td>${esc(c.part)}</td><td class="num">${c.length_mm}</td><td class="num">${c.qty}</td></tr>`).join('');
     document.querySelector('#prints tbody').innerHTML = data.prints.map((p) =>
       `<tr><td>${esc(p.part)}</td><td class="num">${p.qty}</td><td class="num">${p.grams_each ?? '–'}</td>
        <td><a href="https://github.com/kartben/hw-testing-rack/actions" target="_blank" rel="noopener">STL</a></td></tr>`).join('');

@@ -7,9 +7,9 @@
 
 Builds its own scene ("hw-testing-rack-photo"), so the neutral technical scene
 from live_scene.py stays as it is.  Materials are replaced by object category:
-black anodised, brushed aluminium for the 2020 frame; PETG with 0.2 mm layer
-lines (along each part's print Z) and shading-rounded edges for the printed
-parts; lacquered solder mask on the PCBs.  The set is a small office: oak desk
+PETG with 0.2 mm layer lines (along each part's print Z) and shading-rounded
+edges for every printed part (the whole frame is printed); lacquered solder
+mask on the PCBs.  The set is a small office: oak desk
 against a plaster wall, a laptop wired to bay C4's front port by a hanging
 USB-C cable, lit only through a window (sun + sky, with a light portal).
 The GLB comes from `tools/assembly_glb.py --hq --with-pc-cable --open-bays B3 --out render/assembly-photo.glb`; the scanned
@@ -30,10 +30,9 @@ MODE = sys.argv[1] if len(sys.argv) > 1 else "build"
 SCENE = "hw-testing-rack-photo"
 LAYER_MM = 0.2
 
-# printed parts; their layers stack along the part's thinnest local axis (plates, decks,
-# panels and brackets print flat, drawers and carriers floor-down)
-PRINTED = {"carrier", "deck", "guides", "drawers", "chainparts", "plates", "cameras", "base", "basepanels",
-           "roof", "feet", "labels"}
+# printed parts; their layers stack along the part's thinnest local axis (ladders, braces and
+# plates print flat, drawers and trays floor-down)
+PRINTED = {"ladders", "braces", "frameplates", "trays", "drawers", "chainparts", "plates", "cameras", "labels"}
 
 
 def layer_axis(ob):
@@ -107,36 +106,6 @@ def petg(color, axis):
     return m
 
 
-def alu_black():
-    name = "photo-alu-black-anodised"
-    if name in bpy.data.materials:
-        return bpy.data.materials[name]
-    m, nt, b = _principled(name)
-    b.inputs["Base Color"].default_value = (0.03, 0.03, 0.034, 1)
-    b.inputs["Metallic"].default_value = 1.0
-    # brushed: noise stretched along the extrusion axis (object -Y, mm) drives roughness + micro bump
-    tc = nt.nodes.new("ShaderNodeTexCoord")
-    mp = nt.nodes.new("ShaderNodeMapping")
-    mp.inputs["Scale"].default_value = (6.0, 0.03, 6.0)
-    nt.links.new(tc.outputs["Object"], mp.inputs["Vector"])
-    noise = nt.nodes.new("ShaderNodeTexNoise")
-    noise.inputs["Scale"].default_value = 4.0
-    noise.inputs["Detail"].default_value = 8.0
-    nt.links.new(mp.outputs["Vector"], noise.inputs["Vector"])
-    rr = nt.nodes.new("ShaderNodeMapRange")
-    rr.inputs["To Min"].default_value = 0.26
-    rr.inputs["To Max"].default_value = 0.40
-    nt.links.new(noise.outputs["Fac"], rr.inputs["Value"])
-    nt.links.new(rr.outputs["Result"], b.inputs["Roughness"])
-    bump = nt.nodes.new("ShaderNodeBump")
-    bump.inputs["Strength"].default_value = 0.08
-    nt.links.new(noise.outputs["Fac"], bump.inputs["Height"])
-    nt.links.new(rounded_edges(nt, 0.0008).outputs["Normal"], bump.inputs["Normal"])
-    nt.links.new(bump.outputs["Normal"], b.inputs["Normal"])
-    b.inputs["Anisotropic"].default_value = 0.5
-    return m
-
-
 def simple(name, color, rough=0.5, metal=0.0, coat=0.0, emission=0.0):
     if name in bpy.data.materials:
         return bpy.data.materials[name]
@@ -165,9 +134,7 @@ def dress(rack):
         for slot in ob.material_slots:
             src = slot.material
             col = base_color(src)
-            if cat == "frame" and part == "extrusion":
-                slot.material = alu_black()
-            elif cat in PRINTED or (cat == "frame" and "bracket" in part):
+            if cat in PRINTED:
                 slot.material = petg(col, layer_axis(ob))
             elif cat == "psu":
                 slot.material = simple("photo-alu-natural", (0.62, 0.63, 0.65), rough=0.35, metal=1.0)
@@ -668,7 +635,7 @@ def shot(name, out, samples, res):
     bpy.context.window_manager.windows[0].scene = sc
     cam = sc.camera
     if name == "desk":
-        aim(cam, (-0.45, -2.15, 0.60), (0.48, 0.05, 0.40), 42, 2.8, focus=(0.32, 0.0, 0.42))
+        aim(cam, (-0.40, -2.15, 0.50), (0.50, 0.05, 0.30), 58, 2.8, focus=(0.30, 0.0, 0.33))
     elif name == "drawer":
         c = bay_center("C2")
         aim(cam, c + Vector((0.30, -0.62, 0.28)), c + Vector((-0.02, -0.12, -0.03)), 50, 4.0,
@@ -679,7 +646,7 @@ def shot(name, out, samples, res):
         c = bay_center("B3") + Vector((0.0, -0.13, -0.05))
         aim(cam, c + Vector((-0.20, -0.42, 0.30)), c + Vector((0.03, 0.0, 0.0)), 70, 4.0, focus=c)
     elif name == "detail":
-        # raking view along row B's drawer fronts: status LEDs, printed fronts, bracket and post;
+        # raking view along row B's drawer fronts: status LEDs, printed fronts, tray fascias and ladder;
         # sharp on B2's LED
         c = bay_center("B1")
         aim(cam, c + Vector((-0.24, -0.36, 0.05)), c + Vector((0.20, -0.08, -0.03)), 50, 5.6,

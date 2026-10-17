@@ -57,19 +57,15 @@ scene.add(root);
 const std = (color, metalness = 0, roughness = 0.55, extra = {}) =>
   new THREE.MeshStandardMaterial({ color, metalness, roughness, ...extra });
 const MAT = {
-  frame: std(0x1c1e22, 0.8, 0.36),
-  carrier: std(0x2a2e35, 0, 0.62),
-  deck: std(0x3b414b, 0, 0.58),
-  guides: std(0xff8a3d, 0, 0.42),
+  ladders: std(0x2a2e35, 0, 0.62),
+  trays: std(0x3b414b, 0, 0.58),
+  braces: std(0xff8a3d, 0, 0.42),
+  framePlates: std(0x31363f, 0, 0.6),
   drawers: std(0xe3e6ea, 0, 0.48),
   plates: std(0x2f6fde, 0, 0.45),
   chain: std(0x15171b, 0.1, 0.5),
   chainParts: std(0xff8a3d, 0, 0.45),
   cameras: std(0x2a2e35, 0, 0.55),
-  roof: std(0x2a2e35, 0, 0.6),
-  base: std(0x2a2e35, 0, 0.6),
-  basePanels: std(0x31363f, 0, 0.62),
-  feet: std(0x111214, 0, 0.9),
   psu: std(0xb9bdc3, 0.85, 0.32),
   pcb: std(0x10151c, 0.1, 0.42),
   pcbGreen: std(0x0f3d23, 0.1, 0.42),
@@ -85,35 +81,31 @@ const CABLE_COLORS = {
 };
 
 function partMaterial(name) {
-  if (name.startsWith('carrier_base')) return MAT.carrier;
-  if (name.startsWith('carrier_deck')) return MAT.deck;
-  if (name.startsWith('drawer_guide')) return MAT.guides;
+  if (name.startsWith('ladder_')) return MAT.ladders;
+  if (name.startsWith('brace_')) return MAT.braces;
+  if (name === 'tray') return MAT.trays;
+  if (name === 'floor_plate' || name === 'cap_plate') return MAT.framePlates;
   if (name === 'drawer') return MAT.drawers;
   if (name.startsWith('chain_')) return MAT.chainParts;
   if (name.startsWith('plate_')) return MAT.plates;
   if (name.startsWith('camera_')) return MAT.cameras;
-  if (name === 'roof_deck') return MAT.roof;
-  if (name.endsWith('_panel')) return MAT.basePanels;
-  if (name.startsWith('base_')) return MAT.base;
-  if (name === 'foot') return MAT.feet;
-  return MAT.carrier;
+  return MAT.trays;
 }
 
 // ------------------------------------------------------------------ layers
 const LAYERS = [
-  ['frame', 'Frame', true], ['carrier', 'Carriers', true], ['deck', 'Decks', true], ['guides', 'Guides', true],
-  ['drawers', 'Drawers', true], ['plates', 'Plates', true], ['boards', 'Dev boards', true], ['nodes', 'Bay nodes', true],
-  ['chain', 'Drag chains', true], ['cables', 'USB cables', true], ['power', '24 V wiring', true],
-  ['cameras', 'Cameras', true], ['roof', 'Roof', true], ['base', 'Power base', true],
-  ['base-panels', 'Base panels', true], ['labels', 'Bay labels', true],
+  ['ladders', 'Ladders', true], ['braces', 'Rear braces', true], ['frameplates', 'Floor & cap plates', true],
+  ['trays', 'Trays', true], ['drawers', 'Drawers', true], ['plates', 'Board plates', true], ['boards', 'Dev boards', true],
+  ['nodes', 'Bay nodes', true], ['chain', 'Drag chains', true], ['cables', 'USB cables', true], ['power', '24 V wiring', true],
+  ['cameras', 'Cameras', true], ['labels', 'Bay labels', true],
 ];
 const layerOn = Object.fromEntries(LAYERS.map(([k, , on]) => [k, on]));
-const rowGroups = [];             // one group per (tilted) row, roof included
+const rowGroups = [];             // one group per (tilted) row, the cap level included
 
 // Every placed object is tracked so layers / drawers / explode can act on it.
 // space "row": coordinates in that row's frame (child of rowGroups[row]); "frame": child of root.
 const tracked = [];
-function track(obj, { layer, bay = null, row = null, movable = false, zone = 'carrier', space = 'frame' }) {
+function track(obj, { layer, bay = null, row = null, movable = false, zone = 'trays', space = 'frame' }) {
   obj.userData = { ...obj.userData, layer, bay, row, movable, zone, space, base: obj.position.clone() };
   obj.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.bay = bay; } });
   (space === 'row' && row != null ? rowGroups[row] : root).add(obj);
@@ -153,42 +145,6 @@ function seeded(str) {
   let h = 2166136261;
   for (const ch of str) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
   return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)) >>> 0) / 4294967296;
-}
-
-// ------------------------------------------------------------------ 2020 extrusion
-function profileShape() {
-  const s = 10, slot = 3, lip = 1.8, cav = 5.6;
-  const shape = new THREE.Shape();
-  // outline with a slot on each side (walk counter-clockwise)
-  const pts = [];
-  const side = (rot) => {
-    const local = [[s, -s], [s, -slot], [s - lip, -slot], [s - lip, -cav], [s - lip - 2.6, -cav + 1.4],
-      [s - lip - 2.6, cav - 1.4], [s - lip, cav], [s - lip, slot], [s, slot], [s, s]];
-    const c = Math.cos(rot), si = Math.sin(rot);
-    for (const [x, y] of local) pts.push([x * c - y * si, x * si + y * c]);
-  };
-  for (let k = 0; k < 4; k++) side(k * Math.PI / 2);
-  shape.moveTo(pts[0][0], pts[0][1]);
-  for (const p of pts.slice(1)) shape.lineTo(p[0], p[1]);
-  const hole = new THREE.Path();
-  hole.absarc(0, 0, 2.1, 0, Math.PI * 2, true);
-  shape.holes.push(hole);
-  return shape;
-}
-const PROFILE = profileShape();
-const extrusionCache = new Map();
-function extrusion(from, to) {
-  const a = v3(from), b = v3(to);
-  const len = a.distanceTo(b);
-  const key = len.toFixed(1);
-  if (!extrusionCache.has(key)) {
-    const g = new THREE.ExtrudeGeometry(PROFILE, { depth: len, bevelEnabled: false, curveSegments: 6 });
-    extrusionCache.set(key, g);
-  }
-  const m = new THREE.Mesh(extrusionCache.get(key), MAT.frame);
-  m.position.copy(a);
-  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), b.clone().sub(a).normalize());
-  return m;
 }
 
 // ------------------------------------------------------------------ dev boards
@@ -491,8 +447,6 @@ function build(pcbGlb) {
     root.add(g);
     rowGroups.push(g);
   }
-  // frame
-  for (const f of DATA.frame) track(extrusion(f.from, f.to), { layer: 'frame', zone: f.role, row: f.row ?? null, space: f.space });
   // printed parts
   for (const it of DATA.instances) {
     const geo = GEOMS[it.part];
@@ -509,7 +463,7 @@ function build(pcbGlb) {
     const src = pcbGlb[p.board];
     const g = src ? src.clone(true) : (p.board === 'bay-node' ? makeNodeStandIn() : makeHubStandIn());
     g.position.set(...p.pos);
-    track(g, { layer: p.board === 'bay-node' ? 'nodes' : 'base', bay: p.bay || null, row: p.row ?? null, zone: 'pcb', space: p.space });
+    track(g, { layer: p.board === 'bay-node' ? 'nodes' : 'power', bay: p.bay || null, row: p.row ?? null, zone: 'pcb', space: p.space });
   }
   // boxes (PSU, cameras)
   for (const bx of DATA.boxes) {
@@ -579,18 +533,16 @@ function applyTransforms() {
   for (const o of tracked) {
     const u = o.userData;
     o.position.copy(u.base);
-    o.visible = layerOn[u.layer] && !(u.zone === 'post' && explode > 0.04);
+    o.visible = layerOn[u.layer];
     if (u.space === 'row') {
       if (u.movable && u.bay) o.position.y -= R.drawer_travel * (drawerFrac[u.bay] - (initialOpen[u.bay] ?? 0));
-      if (['deck', 'guides'].includes(u.layer)) o.position.z += explode * 30;
       if (u.movable) o.position.z += explode * 70;
       if (u.layer === 'cameras') o.position.z -= explode * 30;
     } else if (u.row != null) {
-      o.position.z += explode * u.row * EXPLODE_ROW;          // brackets follow their row
-    } else if (u.layer === 'base-panels') {
-      const p = u.base;
-      if (p.y < 0) o.position.y -= explode * 80; else if (p.y > R.depth) o.position.y += explode * 80;
-      else if (p.x <= 1) o.position.x -= explode * 80; else o.position.x += explode * 80;
+      o.position.z += explode * u.row * EXPLODE_ROW;          // ladders and braces follow their row
+      if (u.layer === 'braces') o.position.y += explode * 60;
+    } else if (u.layer === 'braces') {
+      o.position.y += explode * 60;
     }
   }
   for (const { inst, ch } of chainInstances) layoutChain(inst, ch, drawerFrac[ch.bay]);
@@ -632,8 +584,8 @@ function buildUI() {
 }
 
 function setXray(on) {
-  layerOn.deck = !on;
-  layerOn.guides = !on;
+  layerOn.ladders = !on;
+  layerOn.braces = !on;
   for (const k of ['drawers', 'plates']) {
     const mat = k === 'drawers' ? MAT.drawers : MAT.plates;
     mat.transparent = on; mat.opacity = on ? 0.18 : 1; mat.depthWrite = !on; mat.needsUpdate = true;
@@ -682,7 +634,7 @@ function isShown(o) {
 
 function bayBounds(id) {
   const box3 = new THREE.Box3();
-  for (const o of tracked) if (o.userData.bay === id && ['carrier', 'drawers', 'boards'].includes(o.userData.layer)) box3.expandByObject(o);
+  for (const o of tracked) if (o.userData.bay === id && ['trays', 'drawers', 'boards'].includes(o.userData.layer)) box3.expandByObject(o);
   // expandByObject works in world space; convert back into root space
   const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
   return box3.applyMatrix4(inv);

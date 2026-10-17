@@ -26,19 +26,15 @@ ASSETS = REPO / "site" / "assets"
 OUT = REPO / "render" / "assembly.glb"
 
 MATS = {
-    "frame": ([0.06, 0.065, 0.075, 1], 0.85, 0.35),
-    "carrier": ([0.16, 0.18, 0.21, 1], 0.0, 0.62),
-    "deck": ([0.23, 0.25, 0.29, 1], 0.0, 0.58),
-    "guides": ([1.0, 0.45, 0.12, 1], 0.0, 0.42),
+    "ladders": ([0.16, 0.18, 0.21, 1], 0.0, 0.62),
+    "trays": ([0.23, 0.25, 0.29, 1], 0.0, 0.58),
+    "braces": ([1.0, 0.45, 0.12, 1], 0.0, 0.42),
+    "frameplates": ([0.19, 0.21, 0.25, 1], 0.0, 0.6),
     "drawers": ([0.90, 0.91, 0.92, 1], 0.0, 0.45),
     "plates": ([0.13, 0.36, 0.86, 1], 0.0, 0.42),
     "chain": ([0.05, 0.05, 0.06, 1], 0.1, 0.5),
     "chainparts": ([1.0, 0.45, 0.12, 1], 0.0, 0.45),
     "cameras": ([0.16, 0.18, 0.21, 1], 0.0, 0.55),
-    "roof": ([0.16, 0.18, 0.21, 1], 0.0, 0.6),
-    "base": ([0.16, 0.18, 0.21, 1], 0.0, 0.6),
-    "basepanels": ([0.19, 0.21, 0.25, 1], 0.0, 0.62),
-    "feet": ([0.05, 0.05, 0.05, 1], 0.0, 0.9),
     "psu": ([0.72, 0.74, 0.77, 1], 0.9, 0.3),
     "silver": ([0.78, 0.8, 0.82, 1], 0.95, 0.25),
     "plug": ([0.11, 0.115, 0.13, 1], 0.0, 0.45),
@@ -127,14 +123,12 @@ def hex_rgba(h):
 
 
 def part_category(name):
-    for prefix, cat in (("carrier_base", "carrier"), ("carrier_deck", "deck"), ("drawer_guide", "guides"),
-                        ("drawer", "drawers"), ("chain_", "chainparts"), ("plate_", "plates"), ("bridge_bar", "plates"),
-                        ("camera_", "cameras"), ("roof_deck", "roof"), ("tier_bracket", "frame"), ("foot", "feet")):
+    for prefix, cat in (("ladder_", "ladders"), ("brace_", "braces"), ("tray", "trays"), ("floor_plate", "frameplates"),
+                        ("cap_plate", "frameplates"), ("drawer", "drawers"), ("chain_", "chainparts"),
+                        ("plate_", "plates"), ("camera_", "cameras")):
         if name.startswith(prefix):
             return cat
-    if name.endswith("_panel"):
-        return "basepanels"
-    return "base" if name.startswith("base_") else "carrier"
+    return "trays"
 
 
 def rot_xyz(deg):
@@ -182,19 +176,6 @@ def tube(points, radius, sides=10):
             c, d = a + sides, b + sides
             faces += [[a, b, d], [a, d, c]]
     return trimesh.Trimesh(np.asarray(verts), np.asarray(faces), process=False)
-
-
-def profile_2020(length):
-    s, slot, lip = 10, 3, 1.8
-    pts = []
-    for k in range(4):
-        c, si = math.cos(k * math.pi / 2), math.sin(k * math.pi / 2)
-        for x, y in ((s, -s), (s, -slot), (s - lip, -slot), (s - lip - 2.5, -slot - 1.5), (s - lip - 2.5, slot + 1.5),
-                     (s - lip, slot), (s, slot)):
-            pts.append((x * c - y * si, x * si + y * c))
-    from shapely.geometry import Polygon  # trimesh dependency for extrusions
-    poly = Polygon(pts).buffer(0)
-    return trimesh.creation.extrude_polygon(poly, length)
 
 
 def chain_path(ch, frac):
@@ -286,9 +267,8 @@ def board_meshes(b):
 
 
 # stack-up order of one bay, for --explode-bay (multiples of the layer gap, along the shelf normal)
-BAY_LAYERS = [("carrier_base", 0), ("chain", 1), ("pcb", 1), ("led", 1), ("carrier_deck", 2),
-              ("drawer_guide", 3), ("drawer", 4), ("plate", 5), ("bridge_bar", 5), ("boards", 6),
-              ("camera", 5), ("xiao", 5)]   # the pod already hangs a row pitch higher
+BAY_LAYERS = [("tray", 0), ("chain", 1), ("pcb", 1), ("led", 1), ("drawer", 3), ("plate", 4), ("boards", 5),
+              ("camera", 4), ("xiao", 4)]   # the pod already hangs a row pitch higher
 
 
 def bay_layer(name):
@@ -329,7 +309,7 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
     initial = {c["bay"]: c["open"] for c in scene_json["chains"]}
     flat = np.eye(4)
     if explode_bay:
-        base = next(i for i in scene_json["instances"] if i.get("bay") == explode_bay and i["part"] == "carrier_base")
+        base = next(i for i in scene_json["instances"] if i.get("bay") == explode_bay and i["part"] == "tray")
         flat = np.linalg.inv(row_tf[base["row"]])
 
     def place(space, row, local):
@@ -358,13 +338,6 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         k += 1
         out.add_geometry(mesh, node_name=f"{name}#{k}", geom_name=f"{name}#{k}", transform=T)
 
-    for f in scene_json["frame"]:
-        a, b = np.array(f["from"]), np.array(f["to"])
-        L = np.linalg.norm(b - a)
-        m = with_mat(profile_2020(L), mat("frame"))
-        z = (b - a) / L
-        R = trimesh.geometry.align_vectors([0, 0, 1], z)
-        add(m, "frame:extrusion", place(f.get("space"), f.get("row"), translate(a) @ R))
     for it in scene_json["instances"]:
         g = geoms.get(it["part"])
         if g is None:

@@ -24,7 +24,7 @@ bpy.context.window_manager.windows[0].scene = sc
 for ob in sc.objects:
     ob.select_set(False)
 cam = sc.camera
-centre = Vector((0.35, 0.11, 0.44))
+centre = Vector((0.335, 0.113, 0.34))     # middle of the rack (m): 0.67 × 0.23 × 0.66
 
 
 def aim(loc, target, lens):
@@ -41,15 +41,15 @@ def bay_center(bay):
 
 name = SHOT.split(":")[0]
 if name == "hero":
-    aim((1.45, -1.55, 1.02), centre + Vector((0.0, 0.0, -0.03)), 40)
+    aim((1.45, -1.55, 1.02), centre + Vector((0.0, 0.0, -0.03)), 51)
 elif name == "side":
-    aim((2.0, -0.95, 0.5), centre + Vector((0.0, 0.0, -0.02)), 42)
+    aim((2.0, -0.95, 0.5), centre + Vector((0.0, 0.0, -0.02)), 53)
 elif name == "front":
-    aim((0.35, -2.35, 0.62), centre, 45)
+    aim((0.35, -2.35, 0.62), centre, 57)
 elif name == "rear":
-    aim((-0.85, 1.85, 1.15), centre, 40)
+    aim((-0.85, 1.85, 1.15), centre, 51)
 elif name == "top":
-    aim((1.2, -1.0, 2.1), centre, 38)
+    aim((1.2, -1.0, 2.1), centre, 48)
 elif name == "drawer":
     c = bay_center(SHOT.split(":")[1] if ":" in SHOT else "C2")
     aim(c + Vector((0.30, -0.55, 0.30)), c + Vector((0.0, -0.10, -0.03)), 50)
