@@ -5,7 +5,7 @@
 // Without it the grid of ladders and trays sways sideways like a shelf without a back panel.
 // tools/panel_frame_fea.py shows that what matters is slack, not stiffness: with taut braces
 // the runner play in the trays no longer counts (0.16 mm of sway under 2 N on a 4 × 4).  So
-// the brace has none: four M3 × 8 button-head screws go through snug 3.1 mm holes into heat-set
+// the brace has none: four M3 × 8 pan-head Phillips screws go through snug 3.1 mm holes into heat-set
 // inserts in the rear edges of its two ladders, and each diagonal is BRACE_PRELOAD shorter than
 // its inserts' spacing, so the X is in tension once the fourth screw is in.  That tension
 // (~2 MPa in the strap) relaxes to about half over the years and stays positive; the clamped
