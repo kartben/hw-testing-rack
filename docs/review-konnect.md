@@ -327,3 +327,30 @@ findings that are all known false positives, plus one optional improvement:
 | R6 / TP2 0.73 mm apart, parts on both sides | Opposite sides; the bottom-side parts are bare-copper test pads, not assembled. |
 | No test point on +24V / +5V / +3V3 | Info only.  TP4 is +3V3; the others can be probed on C1, C7. |
 | U4 / U8 VBUS (+5V) without a local 100 nF | Optional: they reach the +5V plane through a via, and the buck's output caps are far away. A 100 nF next to each USBLC6 would lower the clamp rail's impedance during ESD. Not added yet. |
+
+## Power hub v0.4 (2026-10-18)
+
+This is a new board for the power box: 4 eFused rows on 6-pin PH, and the rack controller (ESP32-S3,
+TCAN1044AV CAN master).  Konnect checked the saved files after Freerouting:
+
+| | power hub v0.4 |
+|---|---|
+| ERC (Konnect) | 0 errors, 0 warnings |
+| DRC (Konnect, zones refilled) | 0 errors, 0 warnings, 0 unconnected, schematic parity 0 |
+| `audit_connections` | 0 findings |
+| `audit_decoupling` | VBUS on the USBLC6 had no capacitor: **fixed** (C120, 1 µF; USB caps VBUS at 10 µF) |
+| JLCPCB DFM audit | 1 note: 7 bottom-side footprints.  They are bare test pads, not in the BOM or CPL, so no bottom-side assembly |
+| `run_design_review` | "NOT READY", driven by per-sheet false positives (below) |
+
+| Finding | Reading |
+|---|---|
+| +3V3 "no decoupling" on the Outputs sheet | The rail's caps sit on the Controller sheet (C113 22 µF, C114 / C117 100 nF, C112 22 µF at the LDO); the Outputs sheet only has the FLT pull-ups and LED resistors on it |
+| +24V "no bulk" on the Outputs sheet | C1 / C2 (2 × 220 µF) are on the Input sheet |
+| VBUS "no bulk (≥ 10 µF)" | On purpose: a USB device may present at most 10 µF on VBUS |
+| No test point on +24V / +5V / +3V3 / VBUS | TP5 (+5V), TP6 (+24V) and TP4 (+3V3) were added on the bottom side |
+
+Open, for a later revision:
+* The bottom GND pour is cut into pieces by the signals that run from the rows to the module.  The
+  signals are slow (I/O, CAN at 250 kbit/s, USB full speed), but a hand placement of the signal
+  bundle, or a 4-layer board, would keep it whole.
+* The schematic uses the automatic block layout; it is not drawn like the bay node's.

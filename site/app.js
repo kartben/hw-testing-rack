@@ -246,19 +246,19 @@ function makeNodeStandIn() {
 }
 
 function makeHubStandIn() {
-  // hub v0.4 (76 × 140, KiCad y = 0 at the rear): row outputs on the left edge, LEDs and USB-C at
-  // the front, the rack controller's ESP32-S3 module at the rear
+  // hub v0.4 (76 × 140, KiCad y = 0 at the rear), used until its GLB exists: row outputs on the left
+  // edge, LEDs and USB-C at the front, the rack controller's ESP32-S3 module at the rear
   const g = new THREE.Group();
   g.add(box(76, 140, 1.6, MAT.pcb, 0, -140, 0));
-  for (const y of [105, 80, 55, 30]) {
-    kbox(g, 3, y, 6, 14, 5.9, MAT.whitePlastic);                   // row outputs (6-pin JST PH, side entry)
-    kbox(g, 22, y, 6.4, 5.2, 1.2, MAT.blackPlastic);               // eFuse
+  for (const y of [115, 92, 69, 46]) {
+    kbox(g, 2.4, y, 7.6, 15.9, 5.5, MAT.whitePlastic);             // row outputs (6-pin JST PH, side entry)
+    kbox(g, 26, y - 0.5, 4.4, 5, 1.2, MAT.blackPlastic);           // eFuse
   }
-  kbox(g, 72, 118, 7.8, 9.8, 10, MAT.whitePlastic);                // 24 V input (JST VH)
-  kbox(g, 52, 112, 10, 10, 10.5, MAT.silver);                     // bulk caps
-  kbox(g, 52, 98, 10, 10, 10.5, MAT.silver);
-  kbox(g, 50, 16, 15.4, 20.5, 2.4, MAT.silver);                    // ESP32-S3-MINI-1
-  kbox(g, 69, 136, 8.9, 7.4, 3.2, MAT.silver);                     // USB-C
+  kbox(g, 69.2, 116, 13.9, 9, 10, MAT.whitePlastic);               // 24 V input (JST VH, side entry)
+  kbox(g, 68.5, 86, 10, 10, 10.5, MAT.silver);                    // bulk caps
+  kbox(g, 68.5, 74, 10, 10, 10.5, MAT.silver);
+  kbox(g, 30, 10.5, 15.4, 20.5, 2.4, MAT.silver);                  // ESP32-S3-MINI-1
+  kbox(g, 70, 136.6, 8.9, 7.4, 3.2, MAT.silver);                   // USB-C
   return g;
 }
 

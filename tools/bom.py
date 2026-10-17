@@ -47,12 +47,15 @@ JLC_QUOTE = {
         "pcba": {"setup": 25.75, "stencil": 8.27, "components": 181.21, "feeders": 65.10, "SMT": 9.45,
                  "hand soldering": 3.61, "manual assembly": 1.62, "X-ray": 13.28, "packaging": 0.52},
     },
+    # v0.4 (eFuses + rack controller) is NOT quoted yet: an estimate built like the bay node's
+    # Standard quote (the ESP32 module needs Standard PCBA and X-ray), components at catalogue prices,
+    # $3 per extended part type (17, the hand-soldered JST VH included: jlc_order() takes it out)
     "power-hub": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 74.13,
-        "spec": "2-layer 120×70 mm, ENIG",
-        "pcb": {"engineering": 4.00, "ENIG": 17.60, "board": 4.10},
-        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 17.56, "extended parts": 15.45, "SMT": 0.73,
-                 "hand soldering": 3.61, "manual assembly": 0.43, "nitrogen reflow": 0.86},
+        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 168.24, "estimate": True,
+        "spec": "2-layer 76×140 mm, ENIG",
+        "pcb": {"engineering": 4.00, "ENIG": 17.60, "board": 5.20},
+        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 41.42, "feeders": 51.00, "SMT": 1.20,
+                 "X-ray": 13.28, "packaging": 0.52},
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
@@ -60,7 +63,7 @@ JLC_QUOTE = {
 # through-hole connectors soldered by hand (catalog hand_solder), bought loose from LCSC, so their
 # extended part types no longer need loading; and no JLC hand-soldering fee on either board (the
 # node's JST PH are SMD since rev 0.4, JLC places them).
-JLC_FINISH = {"power-hub": ("HASL lead-free", 1.00)}
+JLC_FINISH = {}
 
 
 def _catalog_prices() -> dict:
@@ -139,7 +142,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
                                        {r["mpn"] for r in mine if r["hand_solder"]})
         orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
                         "total": round(sum(pcb.values()) + sum(pcba.values()), 2)}
-        src = f"JLCPCB quote {JLC_QUOTE_DATE}"
+        src = "estimate, not quoted (v0.4)" if q.get("estimate") else f"JLCPCB quote {JLC_QUOTE_DATE}"
         pcb_src = src + (", adjusted" if name in JLC_FINISH else "")
         pcba_src = src + (", adjusted" if pcba != q["pcba"] else "")
         spec = q["spec"].replace("ENIG", JLC_FINISH[name][0]) if name in JLC_FINISH else q["spec"]
@@ -321,15 +324,15 @@ def main():
            f"## JLCPCB quote ({JLC_QUOTE_DATE})", "",
            f"Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without shipping ({JLC_SHIPPING}) "
            "and import VAT.  The per-part lines below use catalogue prices; a *Components* line per board brings "
-           "them up to the quoted components figure.  *Order* applies what changed since, not re-quoted: the hub "
-           "in lead-free HASL, and the through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping "
-           "extra).", "",
+           "them up to the quoted components figure.  *Order* applies what changed since, not re-quoted: the "
+           "through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The power hub v0.4 "
+           "(eFuses + rack controller) is an **estimate**, not a quote: re-quote it before ordering.", "",
            "| Board | Order | Line | USD |", "|---|---|---|---:|"]
     for name, q in JLC_QUOTE.items():
         order = f"{q['pcbs']} PCBs ({q['spec']}), {q['assembled']} assembled, {q['service']} PCBA"
         md.append(f"| {name} | {order} | PCB: {_usd(q['pcb'])} | {sum(q['pcb'].values()):.2f} |")
         md.append(f"| | | PCBA: {_usd(q['pcba'])} | {sum(q['pcba'].values()):.2f} |")
-        md.append(f"| | | **Quoted total** | **{q['total']:.2f}** |")
+        md.append(f"| | | **{'Estimated' if q.get('estimate') else 'Quoted'} total** | **{q['total']:.2f}** |")
         if name in orders:
             o = orders[name]
             md.append(f"| | | Order (indicative): {'; '.join(o['changes']) or 'as quoted'} | {o['total']:.2f} |")

@@ -9,16 +9,16 @@ printed box in the base cell under A1, standing on the floor plate.  Inside it:
   mains part in the rack is the brick's own closed case: one standard C13 cord
   plugs into it;
 * the **power hub v0.4**: an eFuse per row, plus the rack controller (an
-  ESP32-S3, CAN master; see [can.md](can.md)).  Its layout is still in progress;
-  the box is drawn around the outline and connector positions in
-  `config/rack.yaml` › `pcb.power_hub`.
+  ESP32-S3, CAN master; see [can.md](can.md) and
+  [electronics.md](electronics.md#power-hub-1--2-layers-76--140-mm-v04)).  The box is drawn
+  around its outline and connector positions in `config/rack.yaml` › `pcb.power_hub`.
 
 One 6-pin JST PH feed per row (24 V, CAN, POS) runs from the box's left wall to
 the row's first node.  Box, cradle and lid: [mechanical.md](mechanical.md#power-box).
 
 ![The power box under A1: the brick in its cradle, the hub, the row feeds up the rack's left side](img/power-box.jpg)
 
-*Left: under A1, its row feeds climbing the rack's left side.  Right: lid off, the GST60A24 in its cradle; the hub is a stand-in until its v0.4 layout exists.*
+*Left: under A1, its row feeds climbing the rack's left side.  Right: lid off, the GST60A24 in its cradle and the power hub v0.4.*
 
 ## Budget
 
@@ -117,7 +117,7 @@ crimped into a JST VH for the hub (the DC side only, SELV).  Nothing above
 | Cord | C13 → Schuko/FR, 1.0 mm² | any | 5 |
 | Wiring | H05V-K 1.0 mm² + 4.8 mm insulated receptacles + ferrules | any | 8 |
 | DC | 1.5 mm² PSU → hub; 0.75 mm² row feeds | any | 4 |
-| Hub | see `electronics/power-hub` (5 × TPS26600, SMCJ33A, …); JLC quote 2026-10-16: $74.13 for 5 PCBs, 2 assembled, ≈ $49.51 in lead-free HASL with the connectors hand-soldered; shipping and VAT extra | JLCPCB | ≈ 46 |
+| Hub | see `electronics/power-hub` (v0.4: 4 × TPS26600, SMCJ33A, the rack controller); not quoted yet, estimate ≈ $168 for 5 PCBs with 2 assembled (Standard PCBA for the ESP32 module); shipping and VAT extra | JLCPCB | ≈ 155 |
 
 Sources: Mean Well LRS-150/LRS-200/RSP-200/UHP-200/GST60A/GST90A/GST160A datasheets,
 Schurter DD11 datasheet, TI TPS2660 / LMR51635 (SLUSF64B) datasheets, ADI AN-88

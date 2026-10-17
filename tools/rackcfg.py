@@ -203,7 +203,7 @@ class Rack:
         top = hub["z"] + hub["thickness"]
         leds = []
         for i, kx in enumerate(hub["front"]["leds"]):
-            for k, dx in enumerate((-2.5, 2.5) if i < 4 else (0,)):
+            for k, dx in enumerate((-3.0, 3.0) if i < 4 else (0,)):
                 leds.append({"x": x0 + hub["x0"] + kx + dx, "kind": ("on", "fault")[k] if i < 4 else ("24v", "ctl")[i - 4],
                              "row": i if i < 4 else None})
         return {

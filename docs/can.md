@@ -1,7 +1,7 @@
 # Rack bus (CAN)
 
-> **Status: decided, not built yet.**  The power hub v0.4 (rack controller,
-> CAN master) and the bay node v0.5 (transceiver, POS) implement this.  The
+> **Status: decided.**  The power hub v0.4 (rack controller, CAN master) is laid out and
+> routed (`electronics/power-hub`); the bay node v0.5 (transceiver, POS) is next.  The
 > v0.4 nodes in `electronics/bay-node` still have 2-pin 24 V connectors.
 
 The 24 V row cables also carry a CAN bus and an addressing line, so the rack
@@ -14,9 +14,12 @@ or configuration.  It can also power-cycle a hung row and read row currents
 JST PH 2.0 mm, **6 pins**, side entry: **S6B-PH-SM4-TB**, the part the node
 already uses for AUX.  On the node, J1 (IN) is on the left edge and J2 (OUT)
 on the right edge.  The hub's row outputs A–D are on its left edge, in the power box's left
-wall.  Cables are wired 1:1 (pin n ↔ pin n), 24 AWG.  On every board, pin 1
-faces the front edge, latch up, so a "same direction" pre-crimped cable joins
-two neighbouring nodes without crossing.
+wall.  Cables are wired 1:1 (pin n ↔ pin n), 24 AWG.  A connector on a left
+edge has its pin 1 towards the rear, one on a right edge towards the front.  So
+between neighbouring nodes (J2 facing J1), the 1:1 cable's bundle makes a half
+twist, as today's 2-pin jumpers already do.  When buying pre-crimped cables,
+check "pin 1 ↔ pin 1": vendors name the "same" and "reverse" types
+inconsistently.
 
 | Pin | Net | |
 |---|---|---|
@@ -35,8 +38,8 @@ two neighbouring nodes without crossing.
 
 A **star**: the hub's transceiver is the centre and every row port carries the
 same CAN_H / CAN_L.  Each row is one branch of ≤ ~1.5 m (feed + three
-jumpers); an unused port is left open.  Both terminations (split, 2 × 60 Ω +
-4.7 nF each, 60 Ω in all) sit in the hub.  The nodes have none, and no plug is
+jumpers); an unused port is left open.  Both terminations (split, 2 × 56 Ω +
+4.7 nF each, 56 Ω in all, JLC basic parts) sit in the hub.  The nodes have none, and no plug is
 needed at a row's end.  At these lengths the lines are electrically short: the
 round trip on 1.5 m is ≈ 15 ns, against ~50 ns edges and a 4 µs bit at
 250 kbit/s (the default; 125 kbit/s as a fallback).
@@ -48,8 +51,10 @@ eFuse is off doesn't load the bus.  Each tap gets a PESD2CAN.
 
 ## Addressing (POS)
 
-POS is a 3.3 V, active-high token.  Each driver has 1 kΩ in series, each input a 100 kΩ
-pull-down and an ESD diode.
+POS is a 3.3 V, active-high token.  Each driver and each input has 10 kΩ in series and a clamp
+behind it, a BAT54S to GND and 3.3 V on the hub.  A cable plugged in reversed (+24 V on pin 6) then
+costs ≈ 2 mA instead of a GPIO.
+Each input has a 100 kΩ pull-down.
 
 1. From reset, a node holds POS_OUT low until it has an address.
 2. The controller raises POS on row *k*.

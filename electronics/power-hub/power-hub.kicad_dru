@@ -4,3 +4,8 @@
 # for a GND pin.
 (rule "one thermal spoke is enough"
 	(constraint min_resolved_spokes 1))
+
+(rule "parts overhanging the outline"
+	(layer "F.SilkS")
+	(condition "(A.memberOfFootprint('J*') || A.memberOfFootprint('U4') || A.memberOfFootprint('D1*') || A.memberOfFootprint('D2*') || A.memberOfFootprint('D3') || A.memberOfFootprint('D8')) && B.Layer == 'Edge.Cuts'")
+	(constraint silk_clearance (min -10mm)))

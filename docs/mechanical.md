@@ -99,7 +99,7 @@ budget: [power.md](power.md).
 
 ![The power box under A1](img/power-box.jpg)
 
-*Left: under A1, its row feeds climbing the rack's left side.  Right: lid off, the GST60A24 in its cradle; the hub is a stand-in until its v0.4 layout exists.*
+*Left: under A1, its row feeds climbing the rack's left side.  Right: lid off, the GST60A24 in its cradle and the power hub v0.4.*
 
 | Part | File | Notes |
 |---|---|---|

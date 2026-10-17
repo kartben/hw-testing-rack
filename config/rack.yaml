@@ -128,9 +128,9 @@ pcb:
     size: [76, 140]         # X × Y; KiCad y=0 is the REAR edge, y=140 the front edge (like the bay node)
     thickness: 1.6
     layers: 2
-    holes: [[4, 4], [72, 4], [4, 128], [72, 128]]   # M3, KiCad coordinates (the front pair clears the LEDs and USB-C)
+    holes: [[3.5, 3.5], [72, 4], [4, 127.2], [72, 127.2]]   # M3, KiCad coordinates (the front pair clears the LEDs and USB-C)
     x0: 3.6                 # left edge, box X (the row connectors' mouths reach into the left wall)
     front_gap: 1.2          # PCB front edge -> box front wall inner face
     z: 19.0                 # PCB bottom above the box bottom: the row connectors clear the base ladder's window sill
-    rows: [105, 80, 55, 30] # KiCad y of the row A, B, C, D connectors (7-pin JST PH, side entry, left edge)
-    front: { leds: [12, 23, 34, 45, 54, 61], usb: 69 }  # KiCad x: ON/FAULT pair centres for rows A-D, then 24V, STATUS; USB-C
+    rows: [115, 92, 69, 46] # KiCad y of the row A, B, C, D connectors (6-pin JST PH, side entry, left edge)
+    front: { leds: [11, 23, 35, 47, 55.6, 61.6], usb: 70 }  # KiCad x: ON/FAULT pair centres (±3) for rows A-D, then 24V, CTL; USB-C
