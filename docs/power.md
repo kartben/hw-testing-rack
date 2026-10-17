@@ -1,17 +1,24 @@
 # Power
 
-**Goal:** "something I can just plug in, ideally without an external power
-supply."  → One standard IEC mains cord into the shelf; a certified,
-fanless 24 V supply lives inside the printed base.
+**Goal:** "something I can just plug in."  The aluminium frame had a closed
+base for a fanless mains supply; the printed **panel frame** has none (its base
+ladders only carry the floor plates), so the power path moves to a separate
+**power box**, not designed yet.  The leading option: a certified 24 V desktop
+brick (Mean Well GST160A24, 160 W, enough for three rows) into a printed box that
+only ever sees 24 V: the hub with its eFuse per row, and later the rack
+controller (an ESP32-S3 and the CAN bus to the nodes, still a design
+discussion).  One feed per row goes from the box to the row's first node.  The
+internal mains supply below stays a variant (it needs a closed mains
+enclosure again).
 
 ## Budget
 
-| | per bay | 16 units |
+| | per bay | 12 bays |
 |---|---|---|
 | DUT (TPS2553 limit 1.34–1.52 A @ 5 V) | ≤ 7.6 W | — |
 | node (ESP32-S3 Wi-Fi peaks, LED, buck/LDO losses) | ≈ 1.5–2 W | — |
-| **worst case** (every board at its current limit) | ≈ 11 W at 24 V | ≈ 175 W |
-| **realistic** (dev boards idle/running firmware) | 2–4 W | 40–60 W |
+| **worst case** (every board at its current limit) | ≈ 11 W at 24 V | ≈ 132 W |
+| **realistic** (dev boards idle/running firmware) | 2–4 W | 30–45 W |
 
 Per row: worst case ≈ 1.9 A at 24 V, realistic ≈ 0.5 A.  Each row has its own
 eFuse, set to **1.6 A**: rows are wired with JST PH (2 A per contact), so the
@@ -22,8 +29,8 @@ limit protects the connectors and the 24 AWG jumpers.  Four DUTs at their own
 
 | Architecture | Cords | Max power | Cost | Verdict |
 |---|---|---|---|---|
-| **Internal AC-DC (UHP-200-24) + C14 inlet** | 1 standard C13 cord | 201 W | ≈ €80–95 power path | **primary** |
-| External 24 V brick (GST160A24 / GST220A24) | brick + cord | 160 / 220 W | ≈ €70–95 | fallback, no mains inside |
+| Internal AC-DC (UHP-200-24) + C14 inlet | 1 standard C13 cord | 201 W | ≈ €80–95 power path | variant: needs a mains enclosure |
+| **External 24 V brick (GST160A24 / GST220A24)** | brick + cord | 160 / 220 W | ≈ €70–95 | **leading option**, no mains in the rack |
 | USB-C PD 3.1 EPR (28 V / 5 A) | 1 laptop charger | 140 W | ≈ €5 sink parts + charger + 5 A e-marked cable | 1–3 rows, or whole rack with power budgeting |
 | PoE++ per row (802.3bt) | 4 Ethernet + PoE++ switch | 51–71 W per row | ≈ €100 modules + switch | not worth it with Wi-Fi nodes |
 
@@ -32,13 +39,12 @@ limit protects the connectors and the 24 AWG jumpers.  Four DUTs at their own
 * **PFC** (PF ≥ 0.94): EN 61000-3-2 harmonic limits apply above 75 W; Mean Well
   itself excludes the cheaper LRS-200 for that case.
 * **Universal input, no 115/230 V selector** (a wrong LRS switch position kills it).
-* **Fanless at full load up to 50 °C**, 94 % efficient, slim (194 × 55 × 26 mm)
-  — it fits flat in the 40 mm-high base with room to spare.
+* **Fanless at full load up to 50 °C**, 94 % efficient, slim (194 × 55 × 26 mm).
 * ≈ €48–54 at TME/RS/Mouser.
 
 ### Bus voltage: 24 V
 
-At 24 V a row draws ≤ 1.9 A and the whole rack ≤ 7.3 A: the hub input is a
+At 24 V a row draws ≤ 1.9 A and three rows ≤ 5.7 A: the hub input is a
 JST VH (10 A) on 16 AWG, the rows JST PH (2 A, eFuse-limited to 1.6 A) on
 24 AWG, and every bay's 24→5 V buck runs at ~21 % duty.  One connector family
 for everything inside the shelf (PH), VH only where the whole rack's current
@@ -64,25 +70,23 @@ mains → DD11 inlet (2-pole switch, T3.15 A) → UHP-200-24 → hub:
 * The hub eFuses soft-start each row, so plugging a row never browns out the
   others, and a shorted bay only trips its own row.
 
-## Safety (DIY mains)
+## Safety (DIY mains, internal-supply variant only)
 
 * **Protective earth:** inlet PE → PSU FG terminal (green/yellow ≥ 1.0 mm²)
-  *and* → the aluminium frame.  Anodising insulates: use a serrated washer /
-  scrape the bonding point.  Check ≤ 0.1 Ω PE-to-frame.
+  and any exposed metal of the box.  Check ≤ 0.1 Ω PE-to-metal.
 * French/Schuko plugs are reversible: the inlet's **2-pole switch** matters.
 * Fuse: **T3.15 A H** (ceramic, high breaking capacity).  UHP inrush is 80 A cold.
-* The mains compartment closes with screws only; print the `base_mains_cover`
-  over the PSU's AC terminals and the inlet tabs.  Use V-0 PETG/ASA/PC — never
-  PLA — around mains parts.  Route mains and 24 V wiring apart and tie them down.
+* The mains compartment closes with screws only, with a cover over the PSU's
+  AC terminals and the inlet tabs.  Use V-0 PETG/ASA/PC — never PLA — around
+  mains parts.  Route mains and 24 V wiring apart and tie them down.
 * A personal build is not "placed on the market"; selling kits or units means
   CE (LVD, EMC, RoHS, EN 62368-1, EN 61000-3-2) on the finished product.
 
-Not comfortable with mains wiring?  Use the **external brick variant**: a
-Mean Well GST160A24-R7B (160 W, Power-DIN plug) into the Kycon KPJX-PM-4S
-panel jack pre-cut (knock-out) on the base's rear panel, wired to the same
-hub input.  Nothing above 24 V then enters the shelf.
+The external brick avoids all of this: a Mean Well GST160A24-R7B (160 W,
+Power-DIN plug) into a Kycon KPJX-PM-4S panel jack on the power box, wired to
+the hub input.  Nothing above 24 V then enters the rack.
 
-## Mini BOM — base power path
+## Mini BOM — internal-supply variant
 
 | Item | Part | Source | € |
 |---|---|---|---:|

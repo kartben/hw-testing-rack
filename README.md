@@ -1,8 +1,9 @@
 # hw-testing-rack
 
-**A 3D-printed, tilted test shelf for up to 16 development boards — every
-board in its own sliding drawer, power-switched, current-metered and exposed
-over the network with USB/IP by a Zephyr-powered ESP32-S3 in each bay.**
+**An all-printed, tilted test rack for development boards (12 in its default
+4 × 3 layout) — every board in its own sliding drawer, power-switched,
+current-metered and exposed over the network with USB/IP by a Zephyr-powered
+ESP32-S3 in each bay.**
 
 ![The rack on a desk, a laptop wired to one bay's front port](docs/img/photo-desk.jpg)
 
@@ -13,10 +14,11 @@ over the network with USB/IP by a Zephyr-powered ESP32-S3 in each bay.**
 
 ## Highlights
 
-* **Stadium shelf** — 2020 aluminium frame, rows tilted 20° by printed tier
-  brackets so every board, LED and label faces you.  Each row is its own
-  module with its own layout: 4 standard bays, or 2 double-width bays for
-  i.MX-class EVKs.
+* **Printed panel frame, no aluminium** — side walls ("ladders") shared by
+  neighbouring bays, stacked row on row with snap hooks; trays slide into
+  their grooves and click in; a taut X brace behind every bay keeps it square.
+  Rows tilt 20° so every board, LED and label faces you, and the grid grows
+  in both directions.
 * **Drawers that stay connected** — each bay is a drawer sliding 140 mm along
   the slope; a drag chain hidden in the floor carries the cable, so you can
   pull a board out to probe it while it keeps running.
@@ -28,9 +30,9 @@ over the network with USB/IP by a Zephyr-powered ESP32-S3 in each bay.**
   exports the board's USB with Zephyr's USB/IP host service.  Plug a laptop
   into the bay's front port and the USB data path switches to it — the
   "classic" way still works, even with no firmware.
-* **Plug in one cord** — fanless 200 W PFC supply inside the base, IEC inlet
-  with fuse and switch, 24 V bus with an eFuse per row and a 60 V-rated buck
-  in every bay.
+* **One 24 V bus** — an eFuse per row and a 60 V-rated buck in every bay; the
+  power box that feeds it (a certified 24 V brick is the leading option) is
+  still to be designed for the panel frame.
 * **Cameras** — optional XIAO ESP32S3 Sense pods hang from any bay's ceiling.
 * **Everything is generated** from [`config/rack.yaml`](config/rack.yaml):
   OpenSCAD parts, KiCad schematics *and* PCBs (schematic-as-code, Freerouting),
@@ -59,7 +61,7 @@ electronics/
 site/                     GitHub Pages: three.js viewer + BOM page (assets generated)
 bom/                      full rack BOM (CSV + summary)
 render/                   Blender scene + photoreal renders
-tools/                    build.py (config/STL/web), kicad.sh, bom.py, jlc_mcp.py
+tools/                    build.py (config/STL/web), kicad.sh, bom.py, jlc_mcp.py, notice/ (FreeCAD line art)
 docs/                     design documentation
 ```
 
@@ -93,7 +95,7 @@ python tools/blender_live.py exec render/live_render.py exploded
 ```
 
 The photo shots (`docs/img/photo-*.jpg`) use their own scene: a small office
-lit through a window, anodised aluminium, PETG with 0.2 mm layer lines and
+lit through a window, PETG with 0.2 mm layer lines and
 rounded edges, scanned oak and plaster (CC0 textures from Poly Haven), a laptop
 showing a Zephyr shell, wired to bay C4 by a USB-C cable that hangs as a real
 one would (a catenary), depth of field and lens effects:
@@ -107,17 +109,18 @@ python tools/blender_live.py exec render/live_photo.py build
 python tools/blender_live.py exec render/live_photo.py shot desk          # desk, drawer, detail → docs/img/photo-*.jpg
 ```
 
-Change the shelf in `config/rack.yaml` (tilt, row layouts, bay pitch, which
-bays get cameras, which board sits where) and rebuild.
+Change the rack in `config/rack.yaml` (tilt, rows, columns, panel thickness,
+which bays get cameras, which board sits where) and rebuild.
 
 ## Status
 
-v0.1 — design complete end to end, **not yet built**.  Mechanics are
-printable and parametric; both PCBs pass ERC and DRC with full schematic
-parity but are **autorouted drafts awaiting human review** (see
-[electronics.md](docs/electronics.md)); the node firmware is a plan
-([firmware.md](docs/firmware.md)).  Board outlines marked `verified: false`
-in `boards.yaml` are approximate.
+v0.2 — the printed panel frame replaces the aluminium frame, **not yet
+built**.  Mechanics are printable and parametric; still to design: the power
+box and double-width bays (see [mechanical.md](docs/mechanical.md)).  Both PCBs
+pass ERC and DRC with full schematic parity but are **autorouted drafts
+awaiting human review** (see [electronics.md](docs/electronics.md)); the node
+firmware: [firmware.md](docs/firmware.md).
+Board outlines marked `verified: false` in `boards.yaml` are approximate.
 
 ## License
 

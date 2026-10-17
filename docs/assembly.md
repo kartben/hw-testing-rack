@@ -1,66 +1,83 @@
 # Assembly
 
-Order of work for the default 14-bay build.  Quantities: [`bom/README.md`](../bom/README.md).
+Order of work for the default build: 12 bays, 4 columns × 3 rows.  Quantities:
+[`bom/README.md`](../bom/README.md).  An illustrated, IKEA-style notice (one bay,
+then adding the next one) is drawn from the same models by
+[`tools/notice/`](../tools/notice/README.md).
 
-## 1. Print
+## 1. Print and prepare
 
-`python tools/build.py stl` → `mechanical/stl/` (or grab the STL bundle
-from the latest CI run).  Per carrier unit: `carrier_base`, `carrier_deck`,
-`drawer_guide_left`, `drawer_guide_right`, `drawer`, `chain_foot`,
-`chain_anchor`; one plate per board; tier brackets L/R per row + roof; base
-parts once.  Press the heat-set inserts while the parts are on the bench:
-carrier (4 node, 6 side, 3 pillar, 2 chain, 4 camera underneath), roof decks
-(camera + accessory grid), plates.
+`python tools/build.py stl` → `mechanical/stl/` (or grab the STL bundle from
+the latest CI run).
 
-## 2. Frame
+* Per column boundary: `ladder_base`, one ladder per row (`ladder_a`,
+  `ladder_b`, `ladder_c`: their heights differ) and a `ladder_cap`.
+* Per column: `floor_plate`, `cap_plate`, one brace per level (`brace_base`,
+  `brace_a` …).
+* Per bay: `tray`, `drawer`, `chain_foot`, `chain_anchor`, one board plate,
+  `bay_label`.
 
-1. Tap both ends of every row/roof beam M5.
-2. Base box: 4 posts + 8 base beams with inside corner brackets; feet on the posts.
-3. For each row, bottom to top: bolt the left/right **tier brackets** to the
-   posts' inner slots (pre-load 4 drop-in T-nuts per post), then the two
-   beams into the brackets' pockets (M5 into the tapped cores).  Leave the
-   bracket screws slightly loose, square the row, tighten.
-4. Roof: same bracket pair + beams, then the roof decks.
+Heat-set inserts (M3 × 5.7) while the parts are on the bench: 4 in the rear
+edge of every base and row ladder (the braces screw into them), 4 in each
+tray's node standoffs and 2 in its chain anchor, 4 under the ceiling of each
+camera bay (the tray above, or the cap plate).
 
-## 3. Base (mains — read [power.md](power.md) first)
+## 2. The first bay
 
-1. Base plates on the bottom beams; PSU on its saddles (cable ties or M3 strap).
-2. Inlet panel with the Schurter DD11; mains wiring with insulated 4.8 mm
-   receptacles; PE to the PSU FG **and** to the frame (serrated washer).
-3. Mains cover over the PSU AC terminals.  Hub on its mount, 16 AWG DC from
-   the PSU to the hub's JST VH input.  Close the panels.
-4. Before anything else is connected: power up, check 24 V at every hub
-   output and that all five ON LEDs light.
+1. Two **base ladders** upright; the **floor plate** slides in from the front,
+   into their bottom grooves.
+2. **Base brace** at the back: 4 × M3×8 pan head into the rear-edge inserts
+   (the 1st and 3rd on the left ladder, the 2nd and 4th on the right one).
+   Each diagonal is 0.25 mm short: the X is taut once the fourth screw is in.
+3. **Row ladders** onto the base ladders: ridge into notch, the two snap hooks
+   click.  (Release a hook by pushing its barb through the window.)
+4. **Tray** from the front: its runners slide into the ladder grooves until
+   the barbs click into the groove windows.
+5. **Row brace**: 4 × M3×8, as in step 2.
+6. More rows: steps 3–5 again.
+7. **Cap strips** on the top ladders; the **cap plate** slides into their grooves.
 
-## 4. Each bay
+## 3. The next bay
 
-1. **Node** onto the carrier standoffs (4 × M3×6).
+It shares the middle ladder: one more ladder per level.  Base ladder on the
+right and floor plate; base brace into the free inserts of the shared ladder
+(its 1st and 3rd); then row ladders, trays and braces; cap strip and cap plate.
+
+## 4. Inside each bay
+
+1. **Node** onto the tray standoffs (4 × M3×6).
 2. **Drag chain**: cut ≈ 160 mm (21 links of the common 7×7 R18); fixed end
-   to the `chain_anchor` (screwed to the carrier), moving end to the
-   `chain_foot`.  Lay the drawer extension cable in the chain (links snap open),
-   plug its male end into the node's DUT port.
-3. **Carrier** onto the row's beams (4 × M5 + T-nuts); JST PH jumper to the
-   neighbour through the side notches (row feed into the first bay).
-4. **Deck**: drop it on with the foot's tongue through the slot; M3 flat-heads
-   into the three pillars.  **Guides** on top with the M3×12 side screws
-   (through guide and deck into the carrier wall).  Magnet into the deck pocket.
-5. **Drawer**: magnet underneath; screw the panel-mount female into the DATA
+   to the `chain_anchor` (2 × M3×6 into the tray), moving end to the
+   `chain_foot`.  Lay the drawer extension cable in the chain (links snap
+   open), plug its male end into the node's DUT port.
+3. **24 V**: JST PH jumper to the neighbouring node, through the windows in
+   both tray walls and the shared ladder; the row feed goes into the row's
+   first bay.
+4. **Drawer**: magnet underneath; screw the panel-mount female into the DATA
    port position **farther from the board's debug USB** (left or right; the
-   viewer's bay panel says which: *DATA socket*), M3 ears; slide the drawer in from the front (its rear flange enters
-   the guide channels), engage the foot in the rear groove, lock it with the
-   M2.5 from inside the rear bay; drop the two M2.5 stop screws through the
-   guide lips.
-6. **Plate + board + short cable**, printed `bay_label` (or 12 mm tape) in the front recess.
+   viewer's bay panel says which: *DATA socket*), M3 ears; slide the drawer
+   in from the front onto the tray's ledges (its rear flange under the guide
+   lips), engage the foot in the rear groove and lock it with the M2.5 from
+   inside the rear bay; then the M2.5×8 stop screw through the left guide lip.
+5. **Plate + board + short cable**, printed `bay_label` (or 12 mm tape) in the
+   front recess.
 
-Double bays: steps 1–5 for both units, then the two **bridge bars** across
-the drawers, then the EVK on M3 standoffs.
+To take a tray out: pull the drawer out, press both latch arms inwards, slide
+the tray forwards.
 
-## 5. Cameras (optional)
+## 5. Power
 
-Mount under the ceiling (4 × M3), cradle on the M3×30 pivot, XIAO in the
-cradle, PH lead to the node above (or the bay's own node for the top row).
+The power box (24 V supply, the hub with an eFuse per row) is not designed for
+the panel frame yet: see [power.md](power.md).  Before the rows are plugged
+in, check 24 V at every hub output and that every ON LED lights.
 
-## 6. Bring-up
+## 6. Cameras (optional)
+
+Mount under the ceiling (4 × M3 into the tray above, or the cap plate),
+cradle on the M3×30 pivot, XIAO in the cradle, PH lead to the node above (or
+the bay's own node for the top row).
+
+## 7. Bring-up
 
 Per node: SERVICE on → laptop on the PC port → flash → SERVICE off.  Then
 `usbip list -r bay-<id>.local`.  See [firmware.md](firmware.md).

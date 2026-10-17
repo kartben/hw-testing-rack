@@ -74,8 +74,8 @@ node's real console code, Zephyr's shell sample as the DUT); details in
 2. Plug a laptop into the bay's front **PC** port: the USB-Serial-JTAG
    appears (`/dev/ttyACM*`).
 3. `west flash` (esptool auto-reset works over USB-Serial-JTAG).  A blank or
-   wedged node: hold **BOOT**, tap **RESET** (both reachable through the
-   deck window) to enter the ROM loader.
+   wedged node: hold **BOOT**, tap **RESET** (both within reach once the
+   drawer is pulled out: the tray is open above the node) to enter the ROM loader.
 4. SERVICE off: the DUT is back on the ESP32's USB OTG.
 
 First boot: set the Wi-Fi credentials and the bay id from the UART test pads

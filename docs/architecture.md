@@ -1,7 +1,8 @@
 # Architecture
 
-hw-testing-rack is a desk-sized, tilted ("stadium") shelf that holds up to 16
-development boards and makes every one of them reachable over the network
+hw-testing-rack is a desk-sized, tilted ("stadium") rack, printed end to end,
+that holds 12 development boards in its default 4 × 3 layout (more by adding
+columns or rows) and makes every one of them reachable over the network
 **and** pluggable by hand:
 
 * each bay has its own **bay node** — an ESP32-S3 that switches the board's
@@ -11,22 +12,24 @@ development boards and makes every one of them reachable over the network
   board stays powered and connected (a drag chain hidden under the floor
   carries the cable);
 * boards are screwed onto **form-factor plates** that drop into any drawer;
-* a single **mains cord** feeds an internal 24 V fanless PSU in the base;
+* 24 V reaches every row from a **power box** (supply + an eFuse per row; its
+  enclosure is not designed yet, see [power.md](power.md));
 * optional **camera pods** look down into selected bays.
 
-![One bay, exploded: carrier with the bay node and drag chain, deck, guides, drawer, board plate, board, camera pod](img/exploded.jpg)
+![One bay, exploded: tray with the bay node and drag chain, drawer, board plate, board, camera pod](img/exploded.jpg)
 
-*One bay (C3), bottom to top: carrier base with the bay-node PCB and the drag chain, removable deck, drawer guides, drawer, form-factor plate, the board (ESP32-C6-DevKitC), and the camera pod hanging from the row above.*
+*One bay (C3), bottom to top: the tray with the bay-node PCB and the drag chain, the drawer, the form-factor plate, the board (ESP32-C6-DevKitC), and the camera pod hanging from the ceiling above.*
 
-## Rows, bays and units
+## Rows, bays and columns
 
-The shelf is a stack of independent **row modules** (config: `rows:` in
-[`config/rack.yaml`](../config/rack.yaml)).  A row is two 2020 beams held at
-the shelf tilt (20° by default) by two printed **tier brackets** bolted to the
-four corner posts, and a row of **carrier units** (160 mm pitch).  Each row
-has its own `layout`, e.g. `[1, 1, 1, 1]` (four standard bays) or `[2, 2]`
-(two double-width bays for i.MX-class EVKs).  The default build is
-A/B/C = 4 bays, D = 2 double bays → 14 bays on 16 units.
+The structure is the **panel frame** (config: `frame:` and `rows:` in
+[`config/rack.yaml`](../config/rack.yaml)): printed side walls ("ladders")
+stand between the columns and are shared by neighbouring bays, one ladder per
+row, stacked on base ladders and topped by cap strips; each bay's **tray**
+slides into the grooves of its two ladders; an X **brace** behind every bay and
+row keeps the grid square.  Rows are tilted 20° by default and stacked
+`rows[].height` apart; the column pitch is 165.8 mm.  The default build is
+three rows of four bays.
 
 Changing the config regenerates everything that depends on it: the OpenSCAD
 constants, the web scene, the BOM and the PCB outlines/connector positions.
@@ -34,23 +37,24 @@ constants, the web scene, the BOM and the PCB outlines/connector positions.
 ## One bay, top to bottom
 
 ```
-            ┌─────────── ceiling: carrier of the row above (camera pod inserts) ──────────┐
-            │                                                                             │
- drawer ──▶ │  [front panel + label]  board on its plate  ⟵ short USB ⟶ [DATA port] [rear bay] │
- deck   ──▶ ├──── guides (C-channel) ──────────────── slot ─────────────── magnet detent ──┤
- plenum ──▶ │  [bay node PCB]  ─ext cable→ [chain fixed end] ⊂═══ drag chain U ═══⊃ [foot] │
- fascia ──▶ │  PC USB-C · status LED · SERVICE switch                                       │
-            └──────────────── front and rear 2020 beams (tilted) ─────────────────────────┘
+            ┌───────── ceiling: tray of the row above, or the cap plate (camera pod inserts) ─────────┐
+            │                                                                                         │
+ drawer ──▶ │  [front panel + label]  board on its plate  ⟵ short USB ⟶ [DATA port] [rear bay]       │
+ ledges ──▶ ├──── C-channel lips ────────────────────────────────────────────────── magnet detent ──┤
+ plenum ──▶ │  [bay node PCB]  ─ext cable→ [chain fixed end] ⊂═══ drag chain U ═══⊃ [foot]          │
+ fascia ──▶ │  PC USB-C · status LED · SERVICE switch                                                 │
+            └──────── tray: runners in the grooves of the ladders on both sides (tilted) ────────────┘
 ```
 
-* **Carrier base** (printed): sits on the row's two beams, forms the 20 mm
-  *plenum* that hides the bay node and the drag chain; its front wall is the
-  fascia; its bottom plate is the ceiling of the bay below.
-* **Deck** (printed, removable): the bay floor; carries the drawer guides,
-  the chain slot and the closed-position magnet.
+* **Tray** (printed): slides into the ladders' grooves and clicks in; forms
+  the 23 mm *plenum* that hides the bay node and the drag chain; its front
+  wall is the fascia, its bottom the ceiling of the bay below; two side
+  ledges under C-channel lips carry the drawer, the left one the
+  closed-position magnet.
 * **Drawer** (printed): front panel with label recess and finger pull, plate
   pocket, rear bay with a panel-mount USB-C female (DATA, in the left or right
-  position: whichever is farther from the board's USB) and the cable window; a foot under the rear reaches through the deck slot to the chain.
+  position: whichever is farther from the board's USB) and the cable window; a
+  foot under the rear carries the chain's moving end.
 * **Plate** (printed, per board form factor): heat-set-insert or snap-pin
   standoffs at the board's holes, or corner fences for hole-less boards.
 
@@ -97,10 +101,11 @@ laptop gets full high-speed.
 
 ## Power
 
-24 V from a Mean Well UHP-200-24 (fanless, PFC) in the base → power hub
+24 V from the power box (a certified 24 V brick, leading option) → power hub
 (reverse protection, TVS, one 1.6 A TPS26600 eFuse per row) → one JST PH feed per
-row → daisy-chained bay to bay → each bay node's own 60 V LMR51635 buck to 5 V.
-Details and alternatives (external brick, USB-C PD EPR, PoE++) in
+row → daisy-chained bay to bay through the ladders → each bay node's own 60 V
+LMR51635 buck to 5 V.  The box itself is not designed yet for the panel frame;
+details and alternatives (internal mains supply, USB-C PD EPR, PoE++) in
 [power.md](power.md).
 
 ## Software

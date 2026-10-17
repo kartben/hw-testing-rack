@@ -4,25 +4,37 @@ Everything is parametric OpenSCAD driven by
 [`config/rack.yaml`](../config/rack.yaml) → `mechanical/generated/config.scad`
 (`python tools/build.py config`).  Printable STLs: `python tools/build.py stl`
 (OpenSCAD from `PATH`, or the `openscad/openscad` Docker image).  Every part
-is designed to print **without supports** on a 250 × 210 mm bed (Prusa MK4,
-Core One, Bambu …).
+prints **without supports**; the row ladders (203 × 241 mm) need a 256 × 256 mm
+bed (Bambu X1/P1/A1, H2D …), everything else fits 250 × 210.
 
-## Frame
+## Frame: the panel frame
 
-* **2020 aluminium extrusion**, B-type slot 6 (Motedis, Dold, Misumi HFS5).
-  Four corner posts (front ones shorter: it's a stadium), two beams per row,
-  a closed base box at the bottom.  Cut list in [`bom/README.md`](../bom/README.md).
-* **Tier brackets** (`tier_bracket.scad`, one pair per row and one for the
-  roof) hold the row's front and rear beams at `frame.tilt` (20°).  Each bolts
-  to the inner slot of the front and rear post (2 × M5 + T-nut each); beams
-  butt into 3 mm pockets and are pulled in by an M5 into their tapped core.
-  `tilt: 0` gives a classic flat shelf with the same parts.
-* Rows are stacked with `rows[].height` of vertical pitch.  Parallel tilted
-  rows are staggered by `height·sin(tilt)` along the slope, so the front of
-  every bay is open upwards (easy access) and a bay's ceiling starts ~55 mm
-  behind its front edge.
+Every part is printed: no aluminium, no screws in the structure except the rear
+braces', and the grid grows in both directions.  Side walls ("ladders") stand
+between the bays and are shared by both neighbours; trays slide into their
+grooves; an X brace behind every bay and row keeps the grid square.
+
+| Part | File | Notes |
+|---|---|---|
+| Ladder | `ladder.scad` (`PART="row"`, `ROW=k`) | side wall between two bays, one per row: front and rear posts, a bottom band with the tray grooves (both faces), a top band, one brace; stacks on the ladder below with a ridge/notch joint and two in-plane snap hooks (release through the window); 4 heat-set inserts in the rear edge |
+| Base ladder / cap strip | `ladder.scad` (`"base"`, `"cap"`) | floor → row A (holds a floor plate); the strip on top holds the cap plate |
+| Floor / cap plate | `tray.scad` (`PART="floor_plate"`, `"cap_plate"`) | the tie between the base ladders and the top row's ceiling: a regular 30 mm grid (the camera pod's pitch) with an M3-insert boss at every crossing, so a pod (or anything else) mounts on any square of crossings |
+| Rear brace | `brace.scad` (`ROW=k`, `-1` for the base) | an X behind each bay and level, screwed (4 × M3×8 pan head, Phillips) into the inserts in the rear edges of its two ladders; left and right holes at different heights, so neighbouring braces share a ladder.  No slack: snug 3.1 mm holes, and each diagonal is 0.25 mm short, so the X is taut once the fourth screw is in |
+
+The column pitch is 165.8 mm: a 158 mm tray, a 7.4 mm ladder and 0.2 mm of
+clearance on each side (`frame.panel_thickness`, `frame.panel_clearance`).
+Rows are stacked with `rows[].height` of vertical pitch and tilted by
+`frame.tilt` (20°, a stadium: every board, LED and label faces you).  The
+default 4 × 3 rack is 671 × 225 × 664 mm.
 
 ![Side view: the 20° stadium rows, bay C2 pulled out](img/side.jpg)
+
+`python tools/panel_frame_fea.py` models the grid from the front (ladder
+sections from the meshes, runner play as a dead band, tension-only braces with
+pin slack).  Slack decides: a 4 × 4 sways ≈ 8 mm without braces, ≈ 2 mm with
+braces on loose pins, and ≈ 0.16 mm under 2 N with taut braces, whatever the
+runner play.  (`python tools/panel_proto.py` renders the parts and the
+constants it reads.)
 
 ## Bay
 
@@ -30,21 +42,22 @@ Core One, Bambu …).
 
 | Part | File | Notes |
 |---|---|---|
-| Carrier base | `carrier_base.scad` | plenum box on the beams; node standoffs, chain anchor, deck pillars, fascia cut-outs, camera inserts underneath, 24 V jumper (JST PH) notches in both side walls |
-| Deck | `carrier_deck.scad` | removable floor; guide screws, chain-foot slot, detent magnet, vents over the buck, window over RESET/BOOT |
-| Drawer guides L/R | `drawer_guide.scad` | C-channels; capture the drawer's rear flange (anti-tip at full stroke); an M2.5 screw through the lip is the end stop |
-| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; rear bay with two DATA panel-socket positions (left/right, the socket goes in the one farther from the board's USB) and the AUX slot, cable window and the foot groove |
+| Tray | `tray.scad` | the plenum under the drawer: node standoffs, chain anchor and rails, fascia with the PC port / LED / SERVICE switch, camera inserts underneath.  The drawer rides on two side ledges under C-channel lips; runners on both walls slide into the ladder grooves from the front, and a flex arm per wall clicks a barb into the groove's window (pull the drawer out, press both arms to remove the tray) |
+| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; open floor under the plate; rear bay with two DATA panel-socket positions (left/right, the socket goes in the one farther from the board's USB) and the AUX slot, cable window and the foot groove |
 | Chain foot / anchor | `chain_parts.scad` | the foot slides into the drawer's rear-open groove and is locked by one M2.5 from inside the rear bay; a printable 7×7 link is included if you'd rather not buy chain |
 | Board plates | `board_plate.scad` | one per form factor, generated from [`mechanical/boards/boards.yaml`](../mechanical/boards/boards.yaml) |
-| Bridge bars | `bridge_bar.scad` | lock two neighbouring drawers into one double-width drawer |
+| Bay label | `label.scad` | 12 × 100 mm blank for the drawer front's recess |
+
+![One bay pulled apart: tray with the node and the drag chain, drawer, board plate, board, camera pod](img/exploded.jpg)
 
 ### Drawer motion
 
-The drawer slides 140 mm along the slope on its bottom (PETG on PETG, with
-shallow grooves in the deck to keep dust from skating).  A pair of 6 × 3 mm
-magnets (drawer + deck) holds it closed against the slope; pulled out, it
-rests on the two stop screws with the flange still under the guide lips.
-Want smoother?  Print the guides in a POM-like "igus" filament.
+The drawer slides 140 mm along the slope on the tray's two ledges (PETG on
+PETG); its rear flange segments run under the lips, so it cannot tip at full
+stroke.  A pair of 6 × 3 mm magnets (one in the drawer, one in the left ledge,
+on a pad) holds it closed against the slope; pulled out, it rests on an M2.5
+stop screw through the left lip, the flange still under the lips.  Want
+smoother?  Print the trays in a POM-like "igus" filament.
 
 ### Plates (form factors)
 
@@ -65,71 +78,48 @@ Verified outlines today: UNO R4, NUCLEO-64, NUCLEO-144, Pico/Pico 2,
 ESP32-S3/C6-DevKitC, XIAO, micro:bit.  Nordic DKs, FRDM, Discovery and i.MX
 EVKs use fences until someone measures them — PRs welcome.
 
-### Double-width bays (big EVKs)
-
-A double bay is two standard units side by side — two carriers, two decks,
-four guides, **two standard drawers**, two drag chains, one or two bay nodes.
-Two **bridge bars** sit across both drawers (dropping onto their plate pins)
-so they slide as one; the EVK goes on M3 standoffs anywhere along the bars'
-slots.  The second node gives the EVK its second USB cable (power / OTG).
-Bridge bars are 298 mm long: print them diagonally.
-
 ## Cameras
 
-`camera_pod.scad`: a mount (4 × M3 into the inserts under the ceiling) and a
-tilting cradle for a Seeed XIAO ESP32S3 Sense, lens down.  The insert pattern
-is offset from the bay centre (it dodges the node and the chain in the plenum
-above), so aim with the ±35° pivot.  Use a ≥ 120° lens: at ~90 mm a stock
-66° lens only covers ~94 × 70 mm.  5 V comes from the node in the carrier the
-pod hangs from (JST-PH `CAM`, PTC-protected); top-row pods hang under the
-roof deck and take 5 V from their own bay through the rear service slot.
+`camera_pod.scad`: a mount (4 × M3 into the inserts under the ceiling: the
+bottom of the tray above, or the cap plate) and a tilting cradle for a Seeed
+XIAO ESP32S3 Sense, lens down.  The insert pattern is offset from the bay
+centre (it dodges the node and the chain in the plenum above), so aim with the
+±35° pivot.  Use a ≥ 120° lens: at ~90 mm a stock 66° lens only covers
+~94 × 70 mm.  5 V comes from the node in the tray the pod hangs from (JST-PH
+`CAM`, PTC-protected); top-row pods hang under the cap plate and take 5 V from
+their own bay through the tray's rear service slot.
 
-## Base
+## Power
 
-`base.scad`: four floor plates on the bottom beams (M3 grid), two PSU
-saddles, the rear inlet panel (Schurter DD11 cut-out, Power-DIN knock-out
-for the brick variant), vented front/side panels, the hub mount and the
-mains cover.  See [power.md](power.md) for the safety rules.
+There is no base enclosure any more: the base ladders only carry the floor
+plates.  The power path (24 V supply, the hub with an eFuse per row, and later
+the rack controller) goes into a separate power box, not designed yet: see
+[power.md](power.md).  24 V reaches the first node of each row; JST PH
+jumpers carry it from node to node through the windows in the tray walls and
+the shared ladder.
 
-## Panel frame (prototype, no aluminium)
+## Not designed yet
 
-An alternative to the 2020 frame, being prototyped as a 2 × 2 block: every part
-is printed, there are no screws in the structure, and the grid grows in both
-directions.
+* Double-width bays for i.MX-class EVKs (the aluminium frame had them): a
+  324 mm tray and drawer, no ladder in between.
+* The power box.
+* Rows taller than 165 mm: a 185 mm row makes a 261 mm ladder (an H2D-class bed).
 
-| Part | File | Notes |
-|---|---|---|
-| Ladder | `ladder.scad` (`PART="row"`, `ROW=k`) | side wall between two bays, shared by both; front and rear posts, a bottom band with the tray grooves (both faces), a top band, one brace; stacks on the ladder below with a ridge/notch joint and two in-plane snap hooks (release through the window) |
-| Base ladder / cap strip | `ladder.scad` (`"base"`, `"cap"`) | floor → row A (holds a floor plate); the strip on top holds the cap plate |
-| Tray | `tray.scad` | carrier base + deck + both guides in one part: the drawer rides on two side ledges under the old C-channel lips; runners on both walls slide into the ladder grooves from the front, and a flex arm per wall clicks a barb into the groove's window (pull the drawer out, press both arms to remove the tray) |
-| Cap / floor plate | `tray.scad` (`PART="cap_plate"`, `"floor_plate"`) | ceiling of the top row and the tie between the base ladders: a regular 30 mm grid (the camera pod's pitch) with an M3-insert boss at every crossing, so the pod (or the PSU and hub, on the floor plate) mounts on any square of crossings |
-| Rear brace | `brace.scad` (`ROW=k`, `-1` for the base) | an X behind each bay and row, screwed (4 × M3 × 8 pan head, Phillips) into heat-set inserts in the rear edges of its two ladders; left and right holes at different heights, so neighbouring braces share a ladder.  No slack: snug 3.1 mm holes, and each diagonal is 0.25 mm short, so the X is taut once the fourth screw is in |
-| Drawer | `drawer.scad` (`LIGHT=true`) | open floor (the plate covers it), magnet over the left ledge |
+## Checks
 
-The bay pitch becomes 166 mm (carrier width 158 + a 7.4 mm ladder), so every bay
-part keeps its geometry.  `python tools/panel_proto.py` renders the parts,
-estimates their filament with a slicer-like rule (1.1 mm shell, 15 % infill;
-applied the same way to today's parts) and writes a 3D scene
-(`mechanical/build/panel/proto.glb` + `proto.json`).  Today: a bay (tray +
-drawer) ≈ 223 g instead of ≈ 359 g (carrier, deck, drawer, guides); a 4 × 4
-rack's structure and bays ≈ 6.0 kg (braces included) instead of ≈ 7.1 kg plus
-13 m of extrusion.
-
-`python tools/panel_frame_fea.py` models the grid from the front (ladder sections from
-the meshes, runner play as a dead band, tension-only braces with pin slack).  Slack
-decides: a 4 × 4 sways ≈ 8 mm without braces, ≈ 2 mm with braces on loose pins, and
-≈ 0.16 mm under 2 N with taut braces, whatever the runner play.
-
-Still open: the braced grid's lateral stiffness on a real print; row D's 185 mm makes a 261 mm ladder (too long for a 250 × 210 bed);
-double bays and the PSU base are not modelled yet.
+An interference check of one assembled bay (exact solids from the OpenSCAD
+sources, SolidCraft's `inspect.interference`) finds no overlaps; it caught the
+drawer's magnet boss hitting the tray's guide lip in the last 10 mm before the
+fix.  Contacts between the ladders, plates, trays and braces are the designed
+bearing faces.
 
 ## Printing
 
 | | |
 |---|---|
-| Material | PETG (ASA/PC-blend near mains); TPU for feet |
-| Layer | 0.2 mm, 3 walls, 15–20 % gyroid (tier brackets: 4 walls, 40 %) |
+| Material | PETG |
+| Layer | 0.2 mm, 3 walls, 15 % gyroid (braces: 100 %, they are mostly perimeter) |
 | Inserts | Ruthex-type M3 × 5.7 (Ø4.0 holes), M2.5, M2 |
-| Filament | ≈ 5–6 kg for the default 14-bay build (see the BOM) |
+| Filament | see the BOM.  Sliced (Bambu Studio, H2D, 0.20 mm Standard, PETG): a bay on its own ≈ 480 g, each bay added beside it ≈ 375 g, each extra cell in a large grid ≈ 210 g (tray 100 g, drawer 56 g, ladder 44 g, brace 8 g) |
 
 Orientation is baked into the exported STLs (`mechanical/stl/`).

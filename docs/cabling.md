@@ -18,14 +18,14 @@ bay node (plenum)                              drawer
 1. **Node → drawer: one off-the-shelf extension.**  A 30 cm USB-C male →
    panel-mount USB-C female (M3 ears) plugs into the node's DUT receptacle,
    runs ~6 cm in the plenum to the chain's fixed end, through the drag chain,
-   up through the deck slot beside the drawer foot, and is screwed into the
+   up beside the drawer foot, and is screwed into the
    drawer's rear port wall — in the left or the right DATA position, whichever
    is farther from the board's USB, so the two plugs never meet.  It never
    needs to be touched again (unless a board with its USB on the other side
    moves in: two M3 screws).
 2. **The drag chain lies flat in the plenum** and bends in the horizontal
-   plane (7 × 7 mm, R18, ≈ 160 mm).  Its fixed end is screwed to the carrier
-   base, its moving end to the drawer foot.  Open the drawer 140 mm and the
+   plane (7 × 7 mm, R18, ≈ 160 mm).  Its fixed end is screwed to the tray,
+   its moving end to the drawer foot.  Open the drawer 140 mm and the
    U-bend rolls forward 70 mm: the cable never drags, kinks or snags.
 3. **Drawer → board: a short cable that belongs to the board.**  10–15 cm,
    USB-C on the drawer side, whatever the board needs on the other: C,
@@ -54,23 +54,18 @@ the drawer's AUX slot, then flying leads to the board.
 
 ## Two-cable boards
 
-i.MX EVKs and friends often want a debug cable *and* a power/OTG cable.  They
-live in **double-width bays**, which have two nodes and two drawers — so two
-DATA ports, each with its own switched, current-limited, metered VBUS.
+i.MX EVKs and friends often want a debug cable *and* a power/OTG cable.  The
+aluminium frame gave them **double-width bays** (two nodes, two drawers, so two
+DATA ports, each with its own switched, current-limited, metered VBUS); the
+panel frame has no double bay yet (see [mechanical.md](mechanical.md)).
 
 ## 24 V
 
 * **Bay to bay:** JST PH 2-pin jumpers, 24 AWG, 120 mm, plugged into the
-  node's left (IN) and right (OUT) connectors through notches in the carrier
-  side walls, at the front of the plenum where the chain never goes.
-* **Hub to row:** one JST PH feed per row from the power hub (base, rear) up the
-  rear-left post, held in the extrusion slot with printed `slot_cable_clip`s,
-  into the first bay's left notch.
+  node's left (IN) and right (OUT) connectors through the windows in both tray
+  walls and the shared ladder, at the front of the plenum where the chain
+  never goes.
+* **Power box to row:** one JST PH feed per row, ≈ 1 m, into the first bay's
+  left window.  (The power box is not designed yet: see [power.md](power.md).)
 * **Cameras:** a JST-PH lead from the node above, down through the hole in
-  the carrier's bottom plate to the pod.
-
-## Mains
-
-IEC C13 cord → rear inlet panel.  Inside the base: inlet → PSU AC terminals
-under the printed mains cover; PSU DC → hub's JST VH input (16 AWG, ferrules on the PSU side); PE
-bonded to the PSU and the frame.  See [power.md](power.md).
+  the tray's bottom to the pod.
