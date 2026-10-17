@@ -89,20 +89,33 @@ centre (it dodges the node and the chain in the plenum above), so aim with the
 `CAM`, PTC-protected); top-row pods hang under the cap plate and take 5 V from
 their own bay through the tray's rear service slot.
 
-## Power
+## Power box
 
-There is no base enclosure any more: the base ladders only carry the floor
-plates.  The power path (24 V supply, the hub with an eFuse per row, and later
-the rack controller) goes into a separate power box, not designed yet: see
-[power.md](power.md).  24 V reaches the first node of each row; JST PH
-jumpers carry it from node to node through the windows in the tray walls and
-the shared ladder.
+The base cell under A1 is otherwise dead space: 154 mm between the floor
+plate's walls, ≈ 196 mm deep, ≈ 70 mm high at the front, rising with the 20°
+slope.  `power_box.scad` fills it with the rack's whole 24 V supply.  Placement
+and sizes: `config/rack.yaml` › `power_box`; why a brick, which one and the
+budget: [power.md](power.md).
+
+![The power box under A1](img/power-box.jpg)
+
+*Left: under A1, its row feeds climbing the rack's left side.  Right: lid off, the GST60A24 in its cradle; the hub is a stand-in until its v0.4 layout exists.*
+
+| Part | File | Notes |
+|---|---|---|
+| Base | `power_box.scad` (`PART="base"`) | 152 × 190 × 44 mm. Under the floor are four sockets that drop over four of the floor plate's insert bosses: it locates without screws, and an M3 through each socket screws it down if wanted. Lift it over the plate's front lip to put it in. **Left wall:** cut-outs for the hub's four 6-pin JST PH row outputs (A–D, engraved), reached from the rack's left side through the base ladder's window. **Front wall:** windows for the hub's ON / FAULT LEDs per row, 24 V and CTL, and the controller's USB-C. **Rear wall:** the brick's C14 window, with a 45° roof so it prints without a bridge. Inside: four standoffs with M3 inserts for the hub, the brick bay with rails, a cable-tie loop for the DC cord, and floor vents under the brick |
+| Lid | `power_box.scad` (`PART="lid"`) | printed top face down. A rim locates it inside the walls, and 4 × M3×8 go into inserts in the walls. Two ribs hold the brick down through a 2 mm foam pad, with vents above the brick |
+| Brick cradle | `power_box.scad` (`PART="cradle"`) → `power_box_cradle_gst60a` / `_gst90a` | the bay takes the largest brick in `power_box.bricks`; only the cradle is made for the chosen one, so changing bricks means printing another cradle. It holds the brick against the rear wall (C14 in the window), with a front notch for the DC cord |
+
+All three print without supports (PETG, 3 walls).  24 V reaches the first node
+of each row through one 6-pin JST PH feed ([cabling.md](cabling.md#24-v)); 6-pin
+jumpers carry it, and the CAN bus, from node to node through the windows in
+the tray walls and the shared ladder.
 
 ## Not designed yet
 
 * Double-width bays for i.MX-class EVKs (the aluminium frame had them): a
   324 mm tray and drawer, no ladder in between.
-* The power box.
 * Rows taller than 165 mm: a 185 mm row makes a 261 mm ladder (an H2D-class bed).
 
 ## Checks

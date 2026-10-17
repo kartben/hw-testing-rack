@@ -6,15 +6,15 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Category | Cost (€) |
 |---|---:|
 | Electronics | 381 |
-| Printed parts | 76 |
-| Power | 73 |
+| Printed parts | 82 |
 | Cables | 64 |
 | Cameras | 36 |
-| Fasteners | 16 |
+| Power | 29 |
+| Fasteners | 17 |
 | Motion | 9 |
-| **Total** | **655** |
+| **Total** | **618** |
 
-≈ **€55 per bay** all-in.
+≈ **€51 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -65,6 +65,9 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | plate_nucleo-64 | 2 | 34.9 | `mechanical/stl/plate_nucleo-64.stl` |
 | plate_rpi-pico2 | 1 | 29.6 | `mechanical/stl/plate_rpi-pico2.stl` |
 | plate_stm32f746g-disco | 1 | 39.4 | `mechanical/stl/plate_stm32f746g-disco.stl` |
+| power_box_base | 1 | 138.2 | `mechanical/stl/power_box_base.stl` |
+| power_box_cradle_gst60a | 1 | 15.1 | `mechanical/stl/power_box_cradle_gst60a.stl` |
+| power_box_lid | 1 | 49.5 | `mechanical/stl/power_box_lid.stl` |
 | tray | 12 | 79.2 | `mechanical/stl/tray.stl` |
 
 ## Line items
@@ -142,20 +145,22 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | Bare PCB power-hub (2-layer 120×70 mm, HASL lead-free) | 5  | 1.67 | 8.37 | JLCPCB quote 2026-10-16, adjusted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, manual assembly, nitrogen reflow | 1  | 21.02 | 21.02 | JLCPCB quote 2026-10-16, adjusted |
 | Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | -1.39 | -1.39 | JLCPCB quote 2026-10-16 |
-| Printed parts | PETG filament | 3.8 kg | 20.00 | 76.00 | any |
-| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 160  | 0.03 | 4.80 | AliExpress (bulk) / Ruthex |
-| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces | 64  | 0.02 | 1.28 | AliExpress (bulk) |
-| Fasteners | M3×6 (node PCB, chain anchor) | 72  | 0.02 | 1.44 | AliExpress (bulk) |
+| Printed parts | PETG filament | 4.1 kg | 20.00 | 82.00 | any |
+| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 168  | 0.03 | 5.04 | AliExpress (bulk) / Ruthex |
+| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid | 68  | 0.02 | 1.36 | AliExpress (bulk) |
+| Fasteners | M3×6 (node PCB, chain anchor, hub PCB) | 76  | 0.02 | 1.52 | AliExpress (bulk) |
 | Fasteners | M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends) | 72  | 0.02 | 1.44 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge) | 24  | 0.30 | 7.20 | supermagnete S-06-03-N |
 | Motion | Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer | 2.3 m | 4.00 | 9.20 | AliExpress / igus E2 micro |
 | Cables | USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port) | 12  | 1.50 | 18.00 | AliExpress (generic, USB 2.0 is enough) |
 | Cables | JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay through the ladder, 24 V) | 9  | 0.30 | 2.70 | pre-crimped (AliExpress) or DIY |
-| Cables | JST PH 2-pin feed, 24 AWG, ≈1 m, PHR-2 + 2 × SPH-002T-P0.5S (power box → first bay of each row) | 3  | 0.80 | 2.40 | DIY |
+| Cables | JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: 24 V, CAN, POS) | 3  | 0.80 | 2.40 | pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S |
 | Cables | USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle) | 4  | 4.50 | 18.00 | Adafruit / Delock / AliExpress |
 | Cables | USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle) | 8  | 2.90 | 23.20 | Adafruit / Delock / AliExpress |
-| Power | Mean Well GST160A24-R7B (24 V 6.67 A desktop brick) + Kycon KPJX-PM-4S panel jack | 1  | 70.00 | 70.00 | RS / Mouser |
-| Power | 16 AWG (1.3 mm²) DC wire jack → hub, JST VHR-2N + 2 × SVH-41T-P1.1 (16–20 AWG) | 1 set | 3.00 | 3.00 | any / LCSC |
+| Power | Mean Well GST60A24-P1J (24 V 60 W desktop brick, IEC C14 inlet) | 1  | 24.00 | 24.00 | RS 880-8414 / TME / Mouser |
+| Power | IEC C13 mains cord, 1.5–2 m (the brick comes without one) | 1  | 4.00 | 4.00 | any |
+| Power | JST VHR-2N + 2 × SVH-21T-P1.1 (18–22 AWG): the brick's DC cord, cut to ≈ 25 cm, into the hub's 24 V input | 1 set | 0.50 | 0.50 | LCSC |
+| Power | EVA foam pad 2 mm, ≈ 60 × 120 mm (the lid's ribs hold the brick through it) + a cable tie | 1 set | 0.50 | 0.50 | any |
 | Cameras | Seeed XIAO ESP32S3 Sense (camera pod) | 2  | 13.50 | 27.00 | Seeed |
 | Cameras | OV2640 wide-angle (120–160°) 24-pin DVP module (check FPC fit) | 2  | 4.00 | 8.00 | AliExpress |
 | Cameras | JST-PH 2-pin lead to the XIAO 5 V pads + M3×30 pivot screw | 2  | 0.60 | 1.20 | any |

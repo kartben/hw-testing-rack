@@ -36,6 +36,7 @@ MATS = {
     "chainparts": ([1.0, 0.45, 0.12, 1], 0.0, 0.45),
     "cameras": ([0.16, 0.18, 0.21, 1], 0.0, 0.55),
     "psu": ([0.72, 0.74, 0.77, 1], 0.9, 0.3),
+    "powerbox": ([0.29, 0.32, 0.36, 1], 0.0, 0.55),
     "silver": ([0.78, 0.8, 0.82, 1], 0.95, 0.25),
     "plug": ([0.11, 0.115, 0.13, 1], 0.0, 0.45),
     "black": ([0.07, 0.07, 0.08, 1], 0.0, 0.6),
@@ -125,7 +126,8 @@ def hex_rgba(h):
 def part_category(name):
     for prefix, cat in (("ladder_", "ladders"), ("brace_", "braces"), ("tray", "trays"), ("floor_plate", "frameplates"),
                         ("cap_plate", "frameplates"), ("drawer", "drawers"), ("chain_", "chainparts"),
-                        ("plate_", "plates"), ("camera_", "cameras")):
+                        ("plate_", "plates"), ("camera_", "cameras"), ("power_box_cradle", "drawers"),
+                        ("power_box_", "powerbox")):
         if name.startswith(prefix):
             return cat
     return "trays"
@@ -368,7 +370,8 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
                          metallicFactor=0.0, roughnessFactor=0.3)
         m = trimesh.creation.cylinder(radius=1.5, height=1.2, sections=16,
                                       transform=translate([0, 0.6, 0]) @ rot_xyz([90, 0, 0]))
-        add(with_mat(m, em), f"led:{led['bay']}", place("row", led["row"], translate(led["pos"])), led["bay"])
+        add(with_mat(m, em), f"led:{led.get('bay', 'power')}",
+            place(led.get("space", "row"), led.get("row"), translate(led["pos"])), led.get("bay"))
     link = trimesh.creation.box([8.4, 10, 11])
     for ch in scene_json["chains"]:
         frac = 1.0 if ch["bay"] in open_bays else (ch["open"] if open_frac is None else open_frac)

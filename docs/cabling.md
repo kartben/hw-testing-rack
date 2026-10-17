@@ -61,11 +61,16 @@ panel frame has no double bay yet (see [mechanical.md](mechanical.md)).
 
 ## 24 V
 
-* **Bay to bay:** JST PH 2-pin jumpers, 24 AWG, 120 mm, plugged into the
+* **Bay to bay:** JST PH jumpers, 24 AWG, 120 mm, plugged into the
   node's left (IN) and right (OUT) connectors through the windows in both tray
   walls and the shared ladder, at the front of the plenum where the chain
-  never goes.
-* **Power box to row:** one JST PH feed per row, ≈ 1 m, into the first bay's
-  left window.  (The power box is not designed yet: see [power.md](power.md).)
+  never goes.  They become 6-pin (24 V, CAN, POS: [can.md](can.md)) with the bay
+  node v0.5; the v0.4 nodes have 2-pin ones.
+* **Power box to row:** one 6-pin JST PH feed per row, 1:1, ≈ 0.25 / 0.45 /
+  0.6 m for rows A / B / C.  Each plugs into the power box's left wall, reached
+  through the left base ladder's window.  It runs forward along that ladder's
+  outer face, climbs the rack's left side tied to the ladders, and enters the
+  first bay's left window to its node's IN connector.  Give the CAN pair 2–3
+  twists per 10 cm.
 * **Cameras:** a JST-PH lead from the node above, down through the hole in
   the tray's bottom to the pod.

@@ -30,6 +30,9 @@ WEB_PARTS = {
     "camera_mount": ("parts/camera_pod.scad", {"PART": "mount"}),
     "camera_cradle": ("parts/camera_pod.scad", {"PART": "cradle"}),
     "plate_universal": ("parts/board_plate.scad", {"BOARD": "universal"}),
+    "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
+    "power_box_lid": ("parts/power_box.scad", {"PART": "lid"}),
+    "power_box_cradle": ("parts/power_box.scad", {"PART": "cradle"}),
 }
 
 # Parts whose print orientation differs from their assembly orientation get an
@@ -38,6 +41,7 @@ ASSEMBLY_WRAPPERS = {
     "camera_mount": "use <parts/camera_pod.scad>\ninclude <lib/carrier.scad>\nmount();\n",
     "camera_cradle": "use <parts/camera_pod.scad>\ninclude <lib/carrier.scad>\ncradle();\n",
     "chain_foot": "use <parts/chain_parts.scad>\ninclude <lib/carrier.scad>\nfoot();\n",
+    "power_box_lid": "use <parts/power_box.scad>\nlid();\n",
 }
 # ladders (profile in the frame's side plane, printed flat) and braces (printed flat) stand up in
 # frame coordinates; placed by a translation along X only
@@ -59,6 +63,8 @@ def print_up(name: str) -> list[int]:
         return [0, 0, -1]
     if name == "chain_foot":
         return [-1, 0, 0]
+    if name == "power_box_lid":
+        return [0, 0, -1]
     return [0, 0, 1]
 
 
@@ -400,8 +406,41 @@ def build(rack) -> Path:
         meta["center"] = rack.to_frame(i, [x0 + rack.carrier_w / 2, BD / 2, plenum + 40])
         bays.append(meta)
 
+    # --- the power box under row A: brick, hub, status LEDs, mains cord, row feeds -------------
+    pb = rack.power_box()
+    add("power_box_base", pb["origin"], space="frame", layer="powerbox")
+    add("power_box_lid", pb["origin"], space="frame", layer="powerlid")
+    add("power_box_cradle", pb["cradle"], space="frame", layer="powerbox")
+    brick = pb["brick"]
+    items["boxes"].append({"kind": "brick", "layer": "powerbox", "space": "frame", "pos": brick["pos"],
+                           "size": brick["size"], "color": "#18191c",
+                           "label": brick["part"].replace("Mean Well ", "MEAN WELL  ").split("-")[0]})
+    items["pcbs"].append({"board": "power-hub", "space": "frame", "pos": pb["hub"]})
+    lit = {"on": "#3ddc84", "24v": "#3ddc84", "ctl": "#4aa3ff"}
+    for led in pb["leds"]:
+        if led["kind"] in lit and (led["row"] is None or led["row"] < n_rows):
+            items["leds"].append({"space": "frame", "layer": "powerbox", "pos": led["pos"], "color": lit[led["kind"]]})
+    bp, bs = brick["pos"], brick["size"]
+    bc = [bp[0] + bs[0] / 2, bp[1], bp[2] + bs[2] / 2]                 # DC cord out of the brick's front end
+    c14 = pb["c14"]
+    cable(poly(c14, (c14[0], c14[1] + 45, c14[2]), (c14[0] + 5, c14[1] + 75, 3), (c14[0] + 40, c14[1] + 260, 3)),
+          space="frame", kind="mains", radius=3.0)
+    hub_w = raw["pcb"]["power_hub"]["size"][0]
+    vh = (pb["hub"][0] + hub_w - 3, pb["hub"][1] - 118, pb["hub"][2] + 6)   # the hub's 24 V input (JST VH)
+    cable(bezier(bc, (bc[0], bc[1] - 25, bc[2]), (vh[0] + 30, vh[1] + 5, vh[2] + 4), vh),
+          space="frame", kind="power-feed", color="#18191c", radius=2.2)
+    # row feeds: out of the box's left wall through the base ladder's window, forward along its
+    # outer face, up the rack's left side, and in through each row's jumper window to the first node
+    vy = rack.node_front_y + node["size"][1] - node["pwr_y"]
+    for i in range(n_rows):
+        x, y, z = pb["rows"][i]
+        j1 = rack.to_frame(i, [rack.unit_x(0) + node["x0"] - 1, vy, pcb_top + 5])
+        lane = -3.0 - 2.6 * i
+        pts = poly((x - 2, y, z), (lane + 2, y, z), (lane, y - 6, z), (lane, j1[1] + 8, z), (lane, j1[1], z + 10),
+                   (lane, j1[1], j1[2] - 10), (lane + 3, j1[1], j1[2]), j1)
+        cable(pts, space="frame", kind="power-feed", color="#c62828", radius=1.4)
+
     # --- row power: 24 V jumpers between neighbouring nodes, through the shared ladder ---------
-    # (the row feeds come from the power bay, not modelled yet)
     for i, r in enumerate(rack.rows):
         zc = pcb_top + 5
         vy = rack.node_front_y + node["size"][1] - node["pwr_y"]

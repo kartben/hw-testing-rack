@@ -70,20 +70,22 @@ Electronics,power-hub,TPS26600PWPR — 4.2–60 V 2.23 A eFuse,10,pcs,1.4168,14.
 Electronics,power-hub,"Bare PCB power-hub (2-layer 120×70 mm, HASL lead-free)",5,pcs,1.6744,8.37,"JLCPCB quote 2026-10-16, adjusted",,,,,"engineering $4.00, HASL lead-free $1.00, board $4.10 = $9.10 for 5 PCBs, 2 of them assembled; HASL lead-free ≈ $1.00 instead of ENIG $17.60"
 Electronics,power-hub,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, manual assembly, nitrogen reflow",1,pcs,21.02,21.02,"JLCPCB quote 2026-10-16, adjusted",,,,,"setup $8.24, stencil $1.55, extended parts $11.04, SMT $0.73, manual assembly $0.43, nitrogen reflow $0.86; extended parts −$4.41 (2 of 7 extended part types hand-soldered); no through-hole part for JLC (hand soldering −$3.61)"
 Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,-1.39,-1.39,JLCPCB quote 2026-10-16,,,,,quoted components $17.56 (≈ €16.16) for 2 boards; catalogue unit prices give €17.55
-Printed parts,filament,PETG filament,3.8,kg,20.0,76.0,any,,,,,"≈3.4 kg estimated + 10 % waste, 125 parts"
-Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",160,pcs,0.03,4.8,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay
-Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces",64,pcs,0.02,1.28,AliExpress (bulk),,,,,
-Fasteners,,"M3×6 (node PCB, chain anchor)",72,pcs,0.02,1.44,AliExpress (bulk),,,,,
+Printed parts,filament,PETG filament,4.1,kg,20.0,82.0,any,,,,,"≈3.6 kg estimated + 10 % waste, 128 parts"
+Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",168,pcs,0.03,5.04,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub standoffs + 4 lid bosses
+Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid",68,pcs,0.02,1.36,AliExpress (bulk),,,,,
+Fasteners,,"M3×6 (node PCB, chain anchor, hub PCB)",76,pcs,0.02,1.52,AliExpress (bulk),,,,,
 Fasteners,,"M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends)",72,pcs,0.02,1.44,AliExpress (bulk),,,,,
 Fasteners,,"Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",24,pcs,0.3,7.2,supermagnete S-06-03-N,,,,,
 Motion,,"Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",2.3,m,4.0,9.2,AliExpress / igus E2 micro,,,,,
 Cables,,"USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",12,pcs,1.5,18.0,"AliExpress (generic, USB 2.0 is enough)",,,,,
 Cables,,"JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay through the ladder, 24 V)",9,pcs,0.3,2.7,pre-crimped (AliExpress) or DIY,,,,,
-Cables,,"JST PH 2-pin feed, 24 AWG, ≈1 m, PHR-2 + 2 × SPH-002T-P0.5S (power box → first bay of each row)",3,pcs,0.8,2.4,DIY,,,,,PH: 2 A per contact; each row's eFuse limits it to 1.6 A
+Cables,,"JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: 24 V, CAN, POS)",3,pcs,0.8,2.4,pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S,,,,,"PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair (pins 3-4) by hand"
 Cables,,"USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle)",4,pcs,4.5,18.0,Adafruit / Delock / AliExpress,,,,,
 Cables,,"USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle)",8,pcs,2.9,23.2,Adafruit / Delock / AliExpress,,,,,
-Power,,Mean Well GST160A24-R7B (24 V 6.67 A desktop brick) + Kycon KPJX-PM-4S panel jack,1,pcs,70.0,70.0,RS / Mouser,,,,,provisional: the power box is still to be designed (docs/power.md)
-Power,,"16 AWG (1.3 mm²) DC wire jack → hub, JST VHR-2N + 2 × SVH-41T-P1.1 (16–20 AWG)",1,set,3.0,3.0,any / LCSC,,,,,
+Power,,"Mean Well GST60A24-P1J (24 V 60 W desktop brick, IEC C14 inlet)",1,pcs,24.0,24.0,RS 880-8414 / TME / Mouser,,,,,the rack draws ≈ 20–30 W; the box takes a GST90A24 too (print its cradle)
+Power,,"IEC C13 mains cord, 1.5–2 m (the brick comes without one)",1,pcs,4.0,4.0,any,,,,,
+Power,,"JST VHR-2N + 2 × SVH-21T-P1.1 (18–22 AWG): the brick's DC cord, cut to ≈ 25 cm, into the hub's 24 V input",1,set,0.5,0.5,LCSC,,,,,
+Power,,"EVA foam pad 2 mm, ≈ 60 × 120 mm (the lid's ribs hold the brick through it) + a cable tie",1,set,0.5,0.5,any,,,,,
 Cameras,,Seeed XIAO ESP32S3 Sense (camera pod),2,pcs,13.5,27.0,Seeed,,,,,
 Cameras,,OV2640 wide-angle (120–160°) 24-pin DVP module (check FPC fit),2,pcs,4.0,8.0,AliExpress,,,,,
 Cameras,,JST-PH 2-pin lead to the XIAO 5 V pads + M3×30 pivot screw,2,pcs,0.6,1.2,any,,,,,

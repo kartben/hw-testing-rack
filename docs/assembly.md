@@ -67,9 +67,22 @@ the tray forwards.
 
 ## 5. Power
 
-The power box (24 V supply, the hub with an eFuse per row) is not designed for
-the panel frame yet: see [power.md](power.md).  Before the rows are plugged
-in, check 24 V at every hub output and that every ON LED lights.
+The power box ([mechanical.md](mechanical.md#power-box)):
+
+1. Heat-set the inserts: 4 in the hub standoffs and 4 in the wall bosses for the lid.
+2. Cut the brick's DC cord to ≈ 25 cm and crimp a JST VHR-2 (SVH-21T-P1.1,
+   18–22 AWG), observing the polarity on the brick's label.
+3. Brick into its cradle, cradle into the bay, C14 into the rear window.  Hub on
+   its standoffs (4 × M3×6), DC cord through the cable-tie loop into the hub's
+   VH input.
+4. Foam pad on the brick, lid on (4 × M3×8).
+5. Lift the box over the floor plate's front lip under A1 and let its sockets
+   drop over the bosses.
+6. C13 cord out of the back, through the base brace.
+
+Before the rows are plugged in, check 24 V at every hub output and that every
+ON LED lights.  Then plug the row feeds through the left base ladder's window,
+run them up the left side and into each row's first node.
 
 ## 6. Cameras (optional)
 

@@ -79,6 +79,15 @@ cameras:                  # bays that get a camera pod on their ceiling (the tra
   - B2
   - C3
 
+power_box:                # mechanical/parts/power_box.scad: brick + hub, in a base cell under row A
+  column: 0               # base cell (under row A) it sits in: its 4 floor sockets take the floor plate's bosses
+  size: [152, 190, 46]    # outer W × D × H
+  wall: 2.4
+  brick: gst60a           # the brick in the cradle (the bay takes either; only the cradle changes)
+  bricks:                 # L × W × H, the IEC C14 inlet centred on the rear end, the DC cord out of the front end
+    gst60a: { part: "Mean Well GST60A24-P1J", size: [125, 50, 31.5], watts: 60 }
+    gst90a: { part: "Mean Well GST90A24-P1M", size: [145, 60, 32], watts: 90 }
+
 # Example population used by the docs, the BOM roll-up and the 3D viewer.
 # board ids refer to mechanical/boards/boards.yaml; cable ids to cables below.
 population:
@@ -101,7 +110,7 @@ cables:
   c-to-mini-b:  { label: "USB-C ↔ mini-B, 15–25 cm",       a: usb-c, b: mini-b,  length: 150 }
   drawer-ext:   { label: "USB-C male → panel-mount USB-C female, 30 cm", length: 300 }
   row-jumper:   { label: "JST PH 2-pin jumper, 24 AWG, 120 mm", length: 120 }
-  row-feed:     { label: "JST PH 2-pin feed, 24 AWG",            length: 1000 }
+  row-feed:     { label: "JST PH 6-pin feed, 1:1, 24 AWG (24 V, CAN, POS)", length: 600 }
 
 pcb:
   bay_node:
@@ -115,8 +124,13 @@ pcb:
     pwr_y: 63               # KiCad Y of the 24 V in/out connectors (JST PH, left/right edges)
     right: { dut: 24, aux: 40 }                     # KiCad Y of the right-edge connectors
     cam: [64, 11]           # camera 5 V connector (JST-PH) mouth, right edge near the rear
-  power_hub:
-    size: [120, 70]
+  power_hub:                # v0.4: eFuses + rack controller (ESP32-S3, CAN master), in the power box
+    size: [76, 140]         # X × Y; KiCad y=0 is the REAR edge, y=140 the front edge (like the bay node)
     thickness: 1.6
     layers: 2
-    holes: [[4, 4], [116, 4], [4, 66], [116, 66]]
+    holes: [[4, 4], [72, 4], [4, 128], [72, 128]]   # M3, KiCad coordinates (the front pair clears the LEDs and USB-C)
+    x0: 3.6                 # left edge, box X (the row connectors' mouths reach into the left wall)
+    front_gap: 1.2          # PCB front edge -> box front wall inner face
+    z: 19.0                 # PCB bottom above the box bottom: the row connectors clear the base ladder's window sill
+    rows: [105, 80, 55, 30] # KiCad y of the row A, B, C, D connectors (7-pin JST PH, side entry, left edge)
+    front: { leds: [12, 23, 34, 45, 54, 61], usb: 69 }  # KiCad x: ON/FAULT pair centres for rows A-D, then 24V, STATUS; USB-C

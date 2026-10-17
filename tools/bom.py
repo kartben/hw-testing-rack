@@ -181,6 +181,8 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         "ladder_base": cols + 1, "ladder_cap": cols + 1, "floor_plate": cols, "cap_plate": cols, "brace_base": cols,
         "tray": n_bays, "drawer": n_bays, "chain_foot": n_bays, "chain_anchor": n_bays,
         "camera_pod_mount": cams, "camera_pod_cradle": cams, "bay_label": n_bays,
+        # the power box: base, lid and the cradle of the chosen brick
+        "power_box_base": 1, "power_box_lid": 1, f"power_box_cradle_{rack.raw['power_box']['brick']}": 1,
     })
     for row in rack.rows:
         counts[f"ladder_{row['id'].lower()}"] += cols + 1
@@ -218,16 +220,18 @@ def hardware(rack) -> list[dict]:
     pop = r.get("population", {})
     cams = len(r.get("cameras", []))
     braces = cols * (n_rows + 1)
+    brick = r["power_box"]["bricks"][r["power_box"]["brick"]]
     rows = [
         {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
-         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 6 * n_bays + 4 * cams,
+         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 6 * n_bays + 4 * cams + 8,
          "unit_eur": 0.03,
          "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node "
-                  "standoffs + 2 chain anchor; 4 under the ceiling of every camera bay"},
-        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces", "supplier": "AliExpress (bulk)",
-         "qty": 4 * braces, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor)", "supplier": "AliExpress (bulk)",
-         "qty": 6 * n_bays, "unit_eur": 0.02},
+                  "standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub "
+                  "standoffs + 4 lid bosses"},
+        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid",
+         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 4, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor, hub PCB)", "supplier": "AliExpress (bulk)",
+         "qty": 6 * n_bays + 4, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends)",
          "supplier": "AliExpress (bulk)", "qty": 6 * n_bays, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",
@@ -238,9 +242,10 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_bays, "unit_eur": 1.5},
         {"category": "Cables", "item": "JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay through the ladder, 24 V)",
          "supplier": "pre-crimped (AliExpress) or DIY", "qty": sum(cols - 1 for _ in rack.rows), "unit_eur": 0.3},
-        {"category": "Cables", "item": "JST PH 2-pin feed, 24 AWG, ≈1 m, PHR-2 + 2 × SPH-002T-P0.5S (power box → first bay of each row)",
-         "supplier": "DIY", "qty": n_rows, "unit_eur": 0.8,
-         "notes": "PH: 2 A per contact; each row's eFuse limits it to 1.6 A"},
+        {"category": "Cables", "item": "JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C "
+                                      "(power box → first bay of each row: 24 V, CAN, POS)",
+         "supplier": "pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S", "qty": n_rows, "unit_eur": 0.8,
+         "notes": "PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair (pins 3-4) by hand"},
     ]
     cab = Counter(info["cable"] for info in pop.values())
     for k, n in sorted(cab.items()):
@@ -248,13 +253,18 @@ def hardware(rack) -> list[dict]:
         rows.append({"category": "Cables", "item": r["cables"][k]["label"] + " (DUT cable, short / right-angle)",
                      "supplier": "Adafruit / Delock / AliExpress", "qty": n, "unit_eur": price})
     rows += [
-        # the power box (24 V supply + the hub's per-row eFuses) is not designed yet for the panel
-        # frame; a certified 24 V brick covers three rows (≤ 5.7 A) without mains wiring in the rack
-        {"category": "Power", "item": "Mean Well GST160A24-R7B (24 V 6.67 A desktop brick) + Kycon KPJX-PM-4S panel jack",
-         "supplier": "RS / Mouser", "qty": 1, "unit_eur": 70.0,
-         "notes": "provisional: the power box is still to be designed (docs/power.md)"},
-        {"category": "Power", "item": "16 AWG (1.3 mm²) DC wire jack → hub, JST VHR-2N + 2 × SVH-41T-P1.1 (16–20 AWG)",
-         "supplier": "any / LCSC", "qty": 1, "unit": "set", "unit_eur": 3.0},
+        # the power box (mechanical/parts/power_box.scad): a certified brick inside, its C14 inlet in
+        # the rear wall, so no mains wiring anywhere in the rack
+        {"category": "Power", "item": f"{brick['part']} (24 V {brick['watts']} W desktop brick, IEC C14 inlet)",
+         "supplier": "RS 880-8414 / TME / Mouser", "qty": 1, "unit_eur": 24.0,
+         "notes": "the rack draws ≈ 20–30 W; the box takes a GST90A24 too (print its cradle)"},
+        {"category": "Power", "item": "IEC C13 mains cord, 1.5–2 m (the brick comes without one)", "supplier": "any",
+         "qty": 1, "unit_eur": 4.0},
+        {"category": "Power", "item": "JST VHR-2N + 2 × SVH-21T-P1.1 (18–22 AWG): the brick's DC cord, cut to ≈ 25 cm, "
+                                      "into the hub's 24 V input", "supplier": "LCSC", "qty": 1, "unit": "set",
+         "unit_eur": 0.5},
+        {"category": "Power", "item": "EVA foam pad 2 mm, ≈ 60 × 120 mm (the lid's ribs hold the brick through it) + a cable tie",
+         "supplier": "any", "qty": 1, "unit": "set", "unit_eur": 0.5},
     ]
     if cams:
         rows += [
