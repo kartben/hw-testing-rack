@@ -6,7 +6,8 @@
 Runs dev_server.py in-process (simulated node), opens the page in the
 installed Chrome (--channel msedge for Edge, or --channel chromium after
 `playwright install chromium`), lets it collect a minute of current samples
-for the sparkline, then shoots each state.
+for the sparkline (and of the fake board's log for the console), then
+shoots each state.
 """
 
 from __future__ import annotations
@@ -57,10 +58,17 @@ def main() -> None:
         print(f"collecting {args.warmup:.0f} s of samples...")
         time.sleep(args.warmup)
 
-        def shoot(page, name: str) -> None:
+        def shoot(page, name: str, what: str = ".wrap") -> None:
             path = args.out / f"{name}.png"
-            page.locator(".wrap").screenshot(path=path, animations="disabled")
+            page.locator(what).screenshot(path=path, animations="disabled")
             print(f"wrote {path}")
+
+        # Use the board's shell from the web console
+        dark.click(".term")
+        dark.keyboard.type("sensor get")
+        dark.keyboard.press("Enter")
+        time.sleep(1)
+        shoot(dark, "web-ui-console", ".console")
 
         poke("/dev/attach")             # a USB/IP client is attached: green
         shoot(dark, "web-ui-dark")

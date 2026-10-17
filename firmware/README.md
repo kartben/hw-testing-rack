@@ -17,7 +17,10 @@ firmware/
   dts/bindings/                  hwtr,dut-port and hwtr,usb-mux bindings
   bay-node/                      the application
     boards/esp32s3_devkitc_procpu.overlay   stand-in: same pin map on a DevKitC-1
-    web/index.html               status page (embedded gzipped), web/dev_server.py to work on it
+    web/index.html               status page and serial console (embedded gzipped)
+    web/vendor/xterm/            xterm.js 6.0.0 + fit addon (MIT), served from flash
+    web/dev_server.py            the page against a simulated node, to work on the UI
+    tests/rfc2217/               host test of the RFC 2217 server against pyserial
     wifi.conf.example            build-time Wi-Fi credentials (copy to wifi.conf)
 ```
 
@@ -88,9 +91,9 @@ Then, from any Linux machine on the LAN:
 ```console
 $ usbip list -r bay-b3.local
 $ sudo usbip attach -r bay-b3.local -b 1-1
-$ open http://bay-b3.local/                # status page
+$ open http://bay-b3.local/                # status page and DUT console
 $ telnet bay-b3.local                     # bay shell
-$ socat -,raw,echo=0 TCP:bay-b3.local:4000   # DUT console (AUX UART)
+$ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT console
 ```
 
 ## What it does
@@ -103,7 +106,8 @@ $ socat -,raw,echo=0 TCP:bay-b3.local:4000   # DUT console (AUX UART)
 | Telemetry | INA226 @ 0x40 through the Zephyr sensor API (`ti,ina226`, 50 mΩ, 50 µA/LSB, 16× averaging): bus mV, mA, mW in `bay power` / `bay status` |
 | Data path | reads PC_DET (IO13) and SVC (IO15); `bay mode classic` drives MUX_FORCE_PC (IO14), persisted |
 | SERVICE mode | stops the USB host and routes the internal PHY to the USB-Serial-JTAG (`CONFIG_BAY_SERVICE_PHY_HANDOVER`); restarts the host when SERVICE goes off |
-| AUX | UART1 (IO47 TX / IO33 RX) ↔ raw TCP on port 4000 (one client); `bay aux <baud>`; RESET/BOOT open-drain pulses (IO34/IO48): `bay reset`, `bay boot` |
+| AUX console | UART1 (IO47 TX / IO33 RX), interrupt driven, shared by the web console (WebSocket, xterm.js), an RFC 2217 server (port 4001) and raw TCP (port 4000); settings persisted per bay; BREAK; TX released while the DUT is off.  See [Serial console](#serial-console) |
+| AUX RESET/BOOT | open-drain pulses (IO34/IO48): `bay reset`, `bay boot`, the console's buttons, optionally RFC 2217 DTR/RTS (esptool) |
 | Status LED | WS2812B on IO12 through the RMT (`worldsemi,ws2812-pulse-io`), see below |
 | Buttons | BOOT (IO0) held ≥ 1 s once booted: DUT power cycle.  RESET is the ESP32's EN |
 | Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS |
@@ -123,7 +127,9 @@ $ socat -,raw,echo=0 TCP:bay-b3.local:4000   # DUT console (AUX UART)
 | `bay boot` | hold BOOT, pulse RESET, release BOOT 200 ms later: ROM bootloader on most MCUs |
 | `bay boot hold` / `release` | hold / release the BOOT strap |
 | `bay mode [usbip\|classic]` | show, or force/release classic mode (persistent) |
-| `bay aux [baud]` | show or set the AUX UART baud rate |
+| `bay aux` | AUX UART settings, consoles connected, byte counters |
+| `bay aux <baud> [8N1]` | set and save the AUX UART baud rate and format (`7E1`, `8O2`, …) |
+| `bay aux break [ms]` | hold the DUT's RX line low (default 250 ms) |
 | `bay id [id]` | show or set the bay id (persistent), hostname `bay-<id>.local` |
 
 ### Network services
@@ -131,17 +137,19 @@ $ socat -,raw,echo=0 TCP:bay-b3.local:4000   # DUT console (AUX UART)
 | Port | Service |
 |---|---|
 | TCP 3240 | USB/IP (`usbip list` / `usbip attach`) |
-| TCP 80 | status page, JSON API, `/metrics` (`CONFIG_BAY_HTTP_PORT`) |
+| TCP 80 | status page, serial console (WebSocket `/console/ws/<n>`), JSON API, `/metrics` (`CONFIG_BAY_HTTP_PORT`) |
 | TCP 23 | telnet shell (no authentication: keep the rack on a lab network) |
+| TCP 4001 | AUX UART, RFC 2217, one client (`CONFIG_BAY_RFC2217_PORT`) |
 | TCP 4000 | AUX UART, raw bytes, one client (`CONFIG_BAY_AUX_TCP_PORT`) |
 | UDP 5353 | mDNS: `bay-<id>.local` (default `bay<MAC>` until an id is set) |
 
 ### Web page and API
 
 `http://bay-<id>.local/` is a single self-contained page: plain HTML, CSS and
-an ES module, no framework or CDN, about 5 KB gzipped in flash.  It follows
-the browser's light/dark theme, polls `/api/status` every 2 s while visible,
-and offers the shell's main actions.
+an ES module, no framework or CDN, about 9 KB gzipped in flash (plus
+xterm.js for the console, below).  It follows the browser's light/dark
+theme, polls `/api/status` every 2 s while visible, and offers the shell's
+main actions.
 
 ![Status page of bay B3, dark theme: VBUS on with live V/I/P and a current sparkline, a USB/IP client attached](../docs/img/web-ui-dark.png)
 
@@ -156,9 +164,13 @@ and offers the shell's main actions.
 | `POST /api/reset` | `{"ms": 100}` (body optional) |
 | `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |
 | `POST /api/mode` | `{"mode": "usbip" \| "classic"}` (persistent) |
+| `GET /api/aux` | AUX UART settings, consoles connected, byte counters |
+| `POST /api/aux` | any of `{"baud": 115200, "data_bits": 8, "parity": "none" \| "odd" \| "even", "stop_bits": 1, "enter": "cr" \| "lf" \| "crlf", "echo": false, "esptool_reset": false}`, applied and saved; answers with `GET /api/aux` |
+| `POST /api/aux/break` | `{"ms": 250}` (body optional) |
+| `GET /console/ws/<n>` | WebSocket to the AUX UART, `n` < `CONFIG_BAY_CONSOLE_WEB_CLIENTS` (see below) |
 | `GET /metrics` | Prometheus: `bay_dut_vbus_volts`, `bay_dut_current_amperes`, `bay_dut_power_watts`, `bay_dut_power_on`, `bay_dut_fault`, `bay_dut_faults_total`, `bay_usb_devices`, `bay_usbip_sessions`, `bay_aux_{rx,tx}_bytes_total`, all labelled `bay="<id>"` |
 
-Every POST answers with the new status document; errors come back as
+Every other POST answers with the new status document; errors come back as
 `{"error": "..."}` with a 4xx status.  Like telnet, there is no
 authentication.
 
@@ -169,11 +181,86 @@ $ curl -s bay-b3.local/metrics
 ```
 
 To work on the page without a node, `python firmware/bay-node/web/dev_server.py`
-serves it on <http://localhost:8766> with a simulated API (`/dev/fault`
-trips a fake over-current, `/dev/attach` toggles a fake USB/IP client).
-The screenshots above come from that simulation:
+serves it on <http://localhost:8766> with a simulated node, console included
+(a fake Zephyr board that boots, logs in colour and runs a small shell;
+`/dev/fault` trips a fake over-current, `/dev/attach` toggles a fake USB/IP
+client).  The screenshots come from that simulation:
 `python firmware/bay-node/web/screenshots.py` (Playwright and an installed
 Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
+
+## Serial console
+
+The DUT's console on the AUX connector (UART1) is reachable three ways at
+once.  Everything the board sends goes to every client; everything a client
+sends goes to the board, so with several writers the keystrokes simply
+interleave: one person typing at a time is the rule.
+
+| Client | How | Port settings |
+|---|---|---|
+| Web console | the Console card of the status page (xterm.js over a binary WebSocket), up to `CONFIG_BAY_CONSOLE_WEB_CLIENTS` (2) browsers | the page's ⚙ panel: applied at once and saved for the bay (Zephyr settings) |
+| RFC 2217 | one client on TCP 4001: pyserial `rfc2217://`, labgrid `NetworkSerialPort`, esptool | set by the client for its session; the saved ones come back when it disconnects |
+| Raw TCP | one client on TCP 4000: `socat`, `nc` | the saved ones |
+
+![The web console: Zephyr boot log in colour, the board's shell, Reset/Bootloader/Break and power buttons, the serial settings chip](../docs/img/web-ui-console.png)
+
+**Web console.**  Raw bytes both ways, so full VT100/xterm escape
+sequences and UTF-8 work.  The node keeps the last
+`CONFIG_BAY_AUX_LOG_SIZE` (16 KB) received in RAM and replays them to a
+browser that connects, so a page opened after a crash still shows it; a page
+that reconnects (Wi-Fi hiccup) skips what it already shows, and marks a node
+reboot.  Next to the terminal: RESET and BOOT pulses, DUT power off/on/cycle,
+BREAK, timestamps (added by the browser to each line), clear, and download
+of everything received since the page opened.  The ⚙ panel sets the baud
+rate (9600–921600 or any value from 300 to 5 M), data bits, parity, stop
+bits, what Enter sends (CR, LF, CR LF), local echo, and whether RFC 2217
+DTR/RTS drive BOOT/RESET.  Default: 115200 8N1, CR, no echo.
+
+**RFC 2217.**  Telnet with the Com Port Control option (baud, data bits,
+parity none/odd/even, stop bits 1/2, BREAK, DTR/RTS, purge); mark/space
+parity, 1.5 stop bits and flow control are refused, as a client expects.
+
+```console
+$ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200
+$ esptool --port 'rfc2217://bay-b3.local:4001' chip-id    # with "DTR/RTS drive BOOT/RESET" on
+```
+
+```yaml
+# labgrid
+NetworkSerialPort:
+  host: bay-b3.local
+  port: 4001
+  speed: 115200
+  protocol: rfc2217
+```
+
+With *DTR/RTS drive BOOT/RESET* on, the lines behave like the two-transistor
+auto-reset circuit of ESP32 boards (RESET while RTS and not DTR, BOOT while
+DTR and not RTS), so esptool can reset an ESP32 DUT into its ROM loader and a
+terminal that raises both lines leaves the board alone.  Off by default.
+
+**BREAK and the TX line.**  BREAK holds the board's RX line low (`tx-gpios`
+of `hwtr,dut-port` takes the pin from the UART for the duration).  While the
+DUT is powered off the same pin is released (input), so the node does not
+feed the unpowered board through its RX pin; it goes back to the UART when
+the power comes back.
+
+**Cost.**  About +170 KB of flash (xterm.js and its CSS, 91 KB gzipped, the
+WebSocket and console code) and +25 KB of RAM: the 16 KB receive log, a
+1 KB transmit ring, one 3 KB thread for all the console sockets, two
+WebSocket contexts and their buffers, two more TCP contexts.  Static data
+RAM is now at 95 % (379 of 399 KB, heaps included).  The knobs, if a
+feature needs RAM later: `CONFIG_BAY_AUX_LOG_SIZE`,
+`CONFIG_BAY_CONSOLE_WEB_CLIENTS`, and `CONFIG_USBIP_BUF_POOL_SIZE` (64 KB by
+default upstream, the largest single buffer in the image).
+
+The RFC 2217 server ([`src/rfc2217.c`](bay-node/src/rfc2217.c)) has no Zephyr
+dependency and is tested on the host against pyserial's client, with a
+looped-back "UART":
+
+```bash
+pip install pyserial
+python firmware/bay-node/tests/rfc2217/test_rfc2217.py      # needs a C compiler (CC, default gcc)
+```
 
 ### Status LED
 
@@ -234,17 +321,28 @@ runs it and builds both targets with warnings as errors on every push.
   the board definition, the INA226 calibration, the LED timing and the
   SERVICE-mode PHY handover (stop host → route the PHY to USB-Serial-JTAG →
   restart host) are untested.
+* **Serial console: tested off the board only.**  The RFC 2217 server
+  passes its host test against pyserial and the web console was exercised
+  against the simulated node (dev_server.py); nothing has gone through the
+  node's UART, WebSocket or TCP stack yet.  To check on a DevKitC with a
+  USB-UART adapter on IO47/IO33: throughput at 921600 baud, the console
+  thread's stack (3 KB, unmeasured), BREAK and the TX release on power off
+  with a scope, two browsers plus miniterm at once, esptool flashing an ESP32
+  DUT through RFC 2217.
 * **USB transfer types.**  The DWC2 host driver does control, bulk and
   interrupt IN; interrupt OUT, isochronous and split transactions (hubs) are
   not implemented yet.  Probes with an interrupt OUT endpoint, UAC/UVC
   devices and DUTs behind an on-board hub won't work over USB/IP.
 * **USB/IP service** is experimental upstream: one device per controller,
   fixed bus id `1-<address>`, no access control.
-* **Not yet written:** the DUT console in the web page (WebSocket ↔ AUX
-  UART), DNS-SD advertisement of `_usbip._tcp` and `_http._tcp`, MCUboot +
-  mcumgr OTA (the partition table already has two 3.75 MB slots), the shell
-  on the USB-Serial-JTAG in SERVICE mode, INA226 alert handling, tri-stating
-  AUX TX while the DUT is off.
+* **Not yet written:** DNS-SD advertisement of `_usbip._tcp`, `_http._tcp`
+  and `_rfc2217._tcp`, MCUboot + mcumgr OTA (the partition table already has
+  two 3.75 MB slots), the shell on the USB-Serial-JTAG in SERVICE mode,
+  INA226 alert handling, RFC 2217 line/modem state notifications (the server
+  answers polls with CTS/DSR/CD up).
+* **Zephyr's HTTP server** registers every WebSocket of a resource with that
+  resource's one data buffer, so two consoles on one resource would share
+  it: the firmware declares one resource per console slot instead.
 * **Zephyr's Prometheus library** wants exactly one label per metric and
   refuses negative gauge values (the INA226 reads a few mA below zero at no
   load), so the firmware labels everything `bay="<id>"` and clamps at 0.

@@ -9,12 +9,22 @@
  *   POST /api/mode     {"mode": "usbip" | "classic"}
  *   GET  /metrics      Prometheus exposition format
  *
- * Every POST answers with the new /api/status document, errors with
- * {"error": "..."} and a 4xx/5xx status.  No authentication: lab network only.
+ *   GET  /api/aux        AUX UART settings and clients
+ *   POST /api/aux        {"baud": 115200, "data_bits": 8, "parity": "none",
+ *                         "stop_bits": 1, "enter": "cr" | "lf" | "crlf",
+ *                         "echo": false, "esptool_reset": false}  (any subset, saved)
+ *   POST /api/aux/break  {"ms": 250}
+ *   GET  /console/ws/<n> WebSocket to the AUX UART (see aux_console.c)
+ *   GET  /xterm.mjs, /xterm.css, /addon-fit.mjs, /xterm-LICENSE.txt  vendored xterm.js
+ *
+ * Every POST under /api/ except /api/aux answers with the new /api/status
+ * document, errors with {"error": "..."} and a 4xx/5xx status.  No
+ * authentication: lab network only.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include <zephyr/kernel.h>
@@ -57,11 +67,16 @@ struct status_dut {
 
 struct status_aux {
 	int32_t baud;
-	int32_t port;
-	bool client;
+	const char *format; /* "8N1" */
+	int32_t port;       /* raw TCP */
+	int32_t rfc2217_port;
+	int32_t web_clients;
+	bool rfc2217;
+	bool raw;
 	int32_t rx;
 	int32_t tx;
 	int32_t dropped;
+	char format_buf[4];
 };
 
 struct status_doc {
@@ -98,8 +113,12 @@ static const struct json_obj_descr status_dut_descr[] = {
 
 static const struct json_obj_descr status_aux_descr[] = {
 	JSON_OBJ_DESCR_PRIM(struct status_aux, baud, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct status_aux, format, JSON_TOK_STRING),
 	JSON_OBJ_DESCR_PRIM(struct status_aux, port, JSON_TOK_NUMBER),
-	JSON_OBJ_DESCR_PRIM(struct status_aux, client, JSON_TOK_TRUE),
+	JSON_OBJ_DESCR_PRIM(struct status_aux, rfc2217_port, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct status_aux, web_clients, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct status_aux, rfc2217, JSON_TOK_TRUE),
+	JSON_OBJ_DESCR_PRIM(struct status_aux, raw, JSON_TOK_TRUE),
 	JSON_OBJ_DESCR_PRIM(struct status_aux, rx, JSON_TOK_NUMBER),
 	JSON_OBJ_DESCR_PRIM(struct status_aux, tx, JSON_TOK_NUMBER),
 	JSON_OBJ_DESCR_PRIM(struct status_aux, dropped, JSON_TOK_NUMBER),
@@ -126,7 +145,8 @@ static char resp_buf[768];
 static void status_fill(struct status_doc *s)
 {
 	struct dut_power_reading r = {0};
-	uint32_t rx, tx, dropped;
+	struct aux_config cfg;
+	struct aux_stats st;
 	int devices = usb_host_device_count();
 
 	s->id = bay_id();
@@ -152,13 +172,23 @@ static void status_fill(struct status_doc *s)
 	s->dut.ma = r.current_ma;
 	s->dut.mw = r.power_mw;
 
-	aux_bridge_stats(&rx, &tx, &dropped);
-	s->aux.baud = (int32_t)aux_bridge_baudrate();
+	aux_config_get(&cfg, false);
+	aux_stats_get(&st);
+	s->aux.baud = (int32_t)cfg.baud;
+	/* "8N1": the fields are validated, one character each */
+	s->aux.format_buf[0] = '0' + cfg.data_bits;
+	s->aux.format_buf[1] = "NOE"[cfg.parity];
+	s->aux.format_buf[2] = '0' + cfg.stop_bits;
+	s->aux.format_buf[3] = '\0';
+	s->aux.format = s->aux.format_buf;
 	s->aux.port = CONFIG_BAY_AUX_TCP_PORT;
-	s->aux.client = aux_bridge_client_connected();
-	s->aux.rx = (int32_t)rx;
-	s->aux.tx = (int32_t)tx;
-	s->aux.dropped = (int32_t)dropped;
+	s->aux.rfc2217_port = CONFIG_BAY_RFC2217_PORT;
+	s->aux.web_clients = st.web_clients;
+	s->aux.rfc2217 = st.rfc2217_client;
+	s->aux.raw = st.raw_client;
+	s->aux.rx = (int32_t)st.rx;
+	s->aux.tx = (int32_t)st.tx;
+	s->aux.dropped = (int32_t)st.dropped;
 }
 
 static void respond_status(struct http_response_ctx *rsp)
@@ -212,7 +242,11 @@ enum api_action {
 	API_RESET,
 	API_BOOT,
 	API_MODE,
+	API_BREAK,
 };
+
+/* Default length of a BREAK, as pyserial's send_break() */
+#define BREAK_MS 250
 
 struct action_req {
 	char *action;
@@ -272,6 +306,15 @@ static const char *do_action(enum api_action what, const struct action_req *req,
 			ret = usb_mux_force_pc_set(false);
 		} else {
 			return "mode must be usbip or classic";
+		}
+		break;
+	case API_BREAK:
+		ret = aux_break((fields & ACTION_FIELD_MS) ? req->ms : BREAK_MS);
+		if (ret == -EIO) {
+			return "the DUT is powered off";
+		}
+		if (ret == -ENOTSUP) {
+			return "no BREAK on this board (no tx-gpios)";
 		}
 		break;
 	default:
@@ -351,6 +394,175 @@ static struct http_resource_detail_dynamic power_detail = ACTION_RESOURCE(API_PO
 static struct http_resource_detail_dynamic reset_detail = ACTION_RESOURCE(API_RESET);
 static struct http_resource_detail_dynamic boot_detail = ACTION_RESOURCE(API_BOOT);
 static struct http_resource_detail_dynamic mode_detail = ACTION_RESOURCE(API_MODE);
+static struct http_resource_detail_dynamic break_detail = ACTION_RESOURCE(API_BREAK);
+
+/* --- /api/aux ------------------------------------------------------------ */
+
+struct aux_req {
+	int32_t baud;
+	int32_t data_bits;
+	char *parity;
+	int32_t stop_bits;
+	char *enter;
+	bool echo;
+	bool esptool_reset;
+};
+
+static const struct json_obj_descr aux_req_descr[] = {
+	JSON_OBJ_DESCR_PRIM(struct aux_req, baud, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct aux_req, data_bits, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct aux_req, parity, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct aux_req, stop_bits, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct aux_req, enter, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct aux_req, echo, JSON_TOK_TRUE),
+	JSON_OBJ_DESCR_PRIM(struct aux_req, esptool_reset, JSON_TOK_TRUE),
+};
+
+static int index_of(const char *s, const char *const *names, int count)
+{
+	for (int i = 0; i < count; i++) {
+		if (strcmp(s, names[i]) == 0) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+/* Fields of the request over the saved settings; NULL or an error message */
+static const char *aux_update(struct aux_config *cfg, const struct aux_req *req, int fields)
+{
+	static const char *const parities[] = {"none", "odd", "even"};
+	static const char *const enters[] = {"cr", "lf", "crlf"};
+	int i;
+
+	if (fields & BIT(0)) {
+		cfg->baud = req->baud;
+	}
+	if (fields & BIT(1)) {
+		cfg->data_bits = req->data_bits;
+	}
+	if (fields & BIT(2)) {
+		i = index_of(req->parity, parities, ARRAY_SIZE(parities));
+		if (i < 0) {
+			return "parity must be none, odd or even";
+		}
+		cfg->parity = i;
+	}
+	if (fields & BIT(3)) {
+		cfg->stop_bits = req->stop_bits;
+	}
+	if (fields & BIT(4)) {
+		i = index_of(req->enter, enters, ARRAY_SIZE(enters));
+		if (i < 0) {
+			return "enter must be cr, lf or crlf";
+		}
+		cfg->enter = i;
+	}
+	if (fields & BIT(5)) {
+		cfg->echo = req->echo;
+	}
+	if (fields & BIT(6)) {
+		cfg->esptool_reset = req->esptool_reset;
+	}
+
+	return NULL;
+}
+
+static void respond_aux(struct http_response_ctx *rsp)
+{
+	struct aux_stats st;
+	int len = aux_config_json(resp_buf, sizeof(resp_buf), "aux");
+
+	aux_stats_get(&st);
+	/* Append the clients to the settings object */
+	snprintf(&resp_buf[len - 1], sizeof(resp_buf) - len + 1,
+		 ",\"web_clients\":%u,\"web_slots\":%d,\"rfc2217\":%s,\"rfc2217_port\":%d,"
+		 "\"raw\":%s,\"raw_port\":%d,\"rx\":%u,\"tx\":%u,\"dropped\":%u}",
+		 st.web_clients, CONFIG_BAY_CONSOLE_WEB_CLIENTS, st.rfc2217_client ? "true" : "false",
+		 CONFIG_BAY_RFC2217_PORT, st.raw_client ? "true" : "false", CONFIG_BAY_AUX_TCP_PORT,
+		 st.rx, st.tx, st.dropped);
+
+	rsp->body = resp_buf;
+	rsp->body_len = strlen(resp_buf);
+	rsp->final_chunk = true;
+}
+
+static int aux_handler(struct http_client_ctx *client, enum http_transaction_status status,
+		       const struct http_request_ctx *req, struct http_response_ctx *rsp,
+		       void *user_data)
+{
+	static uint8_t body[192];
+	static size_t len;
+	static bool too_long;
+	struct aux_req areq = {0};
+	struct aux_config cfg;
+	const char *err;
+	int fields;
+	int ret;
+
+	ARG_UNUSED(user_data);
+
+	if (status == HTTP_SERVER_TRANSACTION_ABORTED ||
+	    status == HTTP_SERVER_TRANSACTION_COMPLETE) {
+		len = 0;
+		too_long = false;
+		return 0;
+	}
+
+	if (len + req->data_len > sizeof(body)) {
+		too_long = true;
+	} else {
+		memcpy(body + len, req->data, req->data_len);
+		len += req->data_len;
+	}
+
+	if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
+		return 0;
+	}
+
+	if (client->method == HTTP_POST) {
+		if (too_long) {
+			respond_error(rsp, HTTP_413_PAYLOAD_TOO_LARGE, "body too large");
+			return 0;
+		}
+		fields = json_obj_parse(body, len, aux_req_descr, ARRAY_SIZE(aux_req_descr), &areq);
+		if (fields < 0) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, "bad JSON");
+			return 0;
+		}
+
+		aux_config_get(&cfg, true);
+		err = aux_update(&cfg, &areq, fields);
+		if (err != NULL) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, err);
+			return 0;
+		}
+		ret = aux_config_set(&cfg, true);
+		if (ret == -EINVAL) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST,
+				      "baud 300..5000000, data bits 5..8, stop bits 1 or 2");
+			return 0;
+		}
+		if (ret != 0) {
+			respond_error(rsp, HTTP_500_INTERNAL_SERVER_ERROR, "the UART refused it");
+			return 0;
+		}
+	}
+
+	respond_aux(rsp);
+
+	return 0;
+}
+
+static struct http_resource_detail_dynamic aux_detail = {
+	.common = {
+		.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+		.bitmask_of_supported_http_methods = BIT(HTTP_GET) | BIT(HTTP_POST),
+		.content_type = "application/json",
+	},
+	.cb = aux_handler,
+};
 
 static struct http_resource_detail_dynamic status_detail = {
 	.common = {
@@ -456,22 +668,76 @@ static struct http_resource_detail_dynamic metrics_detail = {
 	.cb = metrics_handler,
 };
 
-/* --- / ------------------------------------------------------------------- */
+/* --- Static files: the page and xterm.js, gzipped into the image ----------- */
 
 static const uint8_t index_html_gz[] = {
 #include "index.html.gz.inc"
 };
 
-static struct http_resource_detail_static index_detail = {
-	.common = {
-		.type = HTTP_RESOURCE_TYPE_STATIC,
-		.bitmask_of_supported_http_methods = BIT(HTTP_GET),
-		.content_encoding = "gzip",
-		.content_type = "text/html",
-	},
-	.static_data = index_html_gz,
-	.static_data_len = sizeof(index_html_gz),
+static const uint8_t xterm_mjs_gz[] = {
+#include "xterm.mjs.gz.inc"
 };
+
+static const uint8_t xterm_css_gz[] = {
+#include "xterm.css.gz.inc"
+};
+
+static const uint8_t addon_fit_mjs_gz[] = {
+#include "addon-fit.mjs.gz.inc"
+};
+
+static const uint8_t xterm_license_gz[] = {
+#include "xterm-LICENSE.txt.gz.inc"
+};
+
+#define STATIC_DETAIL(_data, _type)                                                                \
+	{                                                                                          \
+		.common = {                                                                        \
+			.type = HTTP_RESOURCE_TYPE_STATIC,                                         \
+			.bitmask_of_supported_http_methods = BIT(HTTP_GET),                        \
+			.content_encoding = "gzip",                                                \
+			.content_type = _type,                                                     \
+		},                                                                                 \
+		.static_data = _data,                                                              \
+		.static_data_len = sizeof(_data),                                                  \
+	}
+
+static struct http_resource_detail_static index_detail =
+	STATIC_DETAIL(index_html_gz, "text/html");
+static struct http_resource_detail_static xterm_mjs_detail =
+	STATIC_DETAIL(xterm_mjs_gz, "text/javascript");
+static struct http_resource_detail_static xterm_css_detail =
+	STATIC_DETAIL(xterm_css_gz, "text/css");
+static struct http_resource_detail_static addon_fit_mjs_detail =
+	STATIC_DETAIL(addon_fit_mjs_gz, "text/javascript");
+static struct http_resource_detail_static xterm_license_detail =
+	STATIC_DETAIL(xterm_license_gz, "text/plain");
+
+/* --- /console/ws/<slot>: one WebSocket resource (and buffer) per console --- */
+
+static int console_ws_setup(int ws_socket, struct http_request_ctx *request_ctx, void *user_data)
+{
+	ARG_UNUSED(request_ctx);
+
+	return aux_console_ws_attach(POINTER_TO_INT(user_data), ws_socket);
+}
+
+/*
+ * The server registers each WebSocket with its resource's data buffer, so
+ * two consoles on one resource would share it: one resource per slot.
+ */
+#define CONSOLE_WS(_slot, _)                                                                       \
+	static uint8_t console_ws_buf_##_slot[256];                                                \
+	static struct http_resource_detail_websocket console_ws_detail_##_slot = {                 \
+		.common = {                                                                        \
+			.type = HTTP_RESOURCE_TYPE_WEBSOCKET,                                      \
+			.bitmask_of_supported_http_methods = BIT(HTTP_GET),                        \
+		},                                                                                 \
+		.cb = console_ws_setup,                                                            \
+		.data_buffer = console_ws_buf_##_slot,                                             \
+		.data_buffer_len = sizeof(console_ws_buf_##_slot),                                 \
+		.user_data = INT_TO_POINTER(_slot),                                                \
+	}
 
 /* --- Service ------------------------------------------------------------- */
 
@@ -487,6 +753,19 @@ HTTP_RESOURCE_DEFINE(reset_res, bay_http, "/api/reset", &reset_detail);
 HTTP_RESOURCE_DEFINE(boot_res, bay_http, "/api/boot", &boot_detail);
 HTTP_RESOURCE_DEFINE(mode_res, bay_http, "/api/mode", &mode_detail);
 HTTP_RESOURCE_DEFINE(metrics_res, bay_http, "/metrics", &metrics_detail);
+HTTP_RESOURCE_DEFINE(aux_res, bay_http, "/api/aux", &aux_detail);
+HTTP_RESOURCE_DEFINE(break_res, bay_http, "/api/aux/break", &break_detail);
+HTTP_RESOURCE_DEFINE(xterm_mjs_res, bay_http, "/xterm.mjs", &xterm_mjs_detail);
+HTTP_RESOURCE_DEFINE(xterm_css_res, bay_http, "/xterm.css", &xterm_css_detail);
+HTTP_RESOURCE_DEFINE(addon_fit_mjs_res, bay_http, "/addon-fit.mjs", &addon_fit_mjs_detail);
+HTTP_RESOURCE_DEFINE(xterm_license_res, bay_http, "/xterm-LICENSE.txt", &xterm_license_detail);
+
+#define CONSOLE_WS_RESOURCE(_slot, _)                                                              \
+	CONSOLE_WS(_slot, _);                                                                      \
+	HTTP_RESOURCE_DEFINE(console_ws_res_##_slot, bay_http, "/console/ws/" STRINGIFY(_slot),    \
+			     &console_ws_detail_##_slot)
+
+LISTIFY(CONFIG_BAY_CONSOLE_WEB_CLIENTS, CONSOLE_WS_RESOURCE, (;));
 
 int web_init(void)
 {

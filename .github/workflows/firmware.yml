@@ -13,6 +13,17 @@ jobs:
       - uses: actions/checkout@v4
       - run: python3 firmware/tools/check_pinmap.py
 
+  rfc2217:
+    name: RFC 2217 server (host test against pyserial)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyserial
+      - run: python firmware/bay-node/tests/rfc2217/test_rfc2217.py
+
   build:
     name: Zephyr build (${{ matrix.name }})
     runs-on: ubuntu-24.04

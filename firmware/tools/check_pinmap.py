@@ -52,6 +52,10 @@ NET_TO_DT = {
     "U0TX": ("pinmux", "UART0_TX"),
     "U0RX": ("pinmux", "UART0_RX"),
 }
+# Nets that also appear a second way (checked like NET_TO_DT).
+NET_ALSO_DT = {
+    "AUX_TX": [("gpio", "tx-gpios")],  # dut-port: the TX pin as a GPIO (idle, BREAK)
+}
 # Nets on fixed-function pins: nothing to check in the devicetree.
 DT_FIXED = {"ESP_DN", "ESP_DP"}  # IO19/IO20, the internal USB PHY (&usb_otg)
 
@@ -143,14 +147,14 @@ def main() -> int:
         if net not in NET_TO_DT:
             errors.append(f"devicetree: no rule for net {net!r} (IO{n}), add it to NET_TO_DT")
             continue
-        kind, key = NET_TO_DT[net]
-        found = (props if kind == "gpio" else pinmux).get(key, set())
-        what = f"{key}" if kind == "gpio" else f"{key}_GPIO<n>"
-        if not found:
-            errors.append(f"devicetree: {what} for {net} (IO{n}) not found")
-        elif found != {n}:
-            pins = ", ".join(f"IO{p}" for p in sorted(found))
-            errors.append(f"devicetree: {what} for {net} is on {pins}, design.py says IO{n}")
+        for kind, key in [NET_TO_DT[net], *NET_ALSO_DT.get(net, [])]:
+            found = (props if kind == "gpio" else pinmux).get(key, set())
+            what = f"{key}" if kind == "gpio" else f"{key}_GPIO<n>"
+            if not found:
+                errors.append(f"devicetree: {what} for {net} (IO{n}) not found")
+            elif found != {n}:
+                pins = ", ".join(f"IO{p}" for p in sorted(found))
+                errors.append(f"devicetree: {what} for {net} is on {pins}, design.py says IO{n}")
 
     for e in errors:
         print(f"error: {e}")

@@ -43,10 +43,11 @@ Zephyr's new USB host stack.  The firmware lives in [`firmware/`](../firmware/)
 | Telemetry | written | INA226 (0x40, 50 mΩ) through the sensor API → V, I, P in the shell, `GET /api/status` and Prometheus `/metrics` |
 | Modes | written | reads PC_DET (IO13) and SVC (IO15); `bay mode classic\|usbip` drives MUX_FORCE_PC (IO14), persisted in settings |
 | SERVICE mode | written | stops the USB host and gives the ESP32-S3's single PHY back to the USB-Serial-JTAG (flash/JTAG from the front port); restarts it afterwards |
-| AUX | written | UART1 (IO47/IO33) ↔ raw TCP port 4000; RESET/BOOT pulses on IO34/IO48 (`bay reset`, `bay boot`) |
+| AUX console | written, host-tested | UART1 (IO47/IO33) shared by a web console in the status page (xterm.js over a WebSocket, 16 KB replayed to late clients), an RFC 2217 server on port 4001 (pyserial, labgrid, esptool) and raw TCP on port 4000; baud/format/Enter/echo saved per bay; BREAK; TX released while the DUT is off |
+| AUX RESET/BOOT | written | pulses on IO34/IO48 (`bay reset`, `bay boot`, console buttons), optionally RFC 2217 DTR/RTS like an ESP auto-reset circuit |
 | Status LED | written | WS2812B on IO13 (RMT): fault / service / classic / power off / no network / USB/IP idle / enumerated / attached |
 | Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS |
-| Control interface | written | `bay …` shell on the UART test pads and over telnet; status page and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`) |
+| Control interface | written | `bay …` shell on the UART test pads and over telnet; status page, serial console and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`, `/api/aux`) |
 | Updates | not yet | MCUboot + mcumgr over UDP; for now `west flash` through the front port in SERVICE mode |
 
 ![The node's status page (simulated node): live V/I/P, power and reset actions, USB/IP state](img/web-ui-dark.png)
@@ -77,11 +78,15 @@ First boot: set the Wi-Fi credentials and the bay id from the UART test pads
 * **Interrupt OUT / isochronous transfers and hubs** in `uhc_dwc2`: needed
   for some debug probes, audio/video class DUTs and boards with an on-board
   hub.
-* DUT console in the web page (WebSocket), DNS-SD (`_usbip._tcp`,
-  `_http._tcp`), MCUboot/mcumgr OTA, shell on the USB-Serial-JTAG in SERVICE
-  mode, INA226 alert.
+* **Serial console on hardware**: the RFC 2217 server is tested on the host
+  against pyserial and the web console against the simulated node; the
+  UART, WebSocket and TCP paths on the node are not.
+* DNS-SD (`_usbip._tcp`, `_http._tcp`, `_rfc2217._tcp`), MCUboot/mcumgr OTA,
+  shell on the USB-Serial-JTAG in SERVICE mode, INA226 alert.
 * Upstream nits seen while dogfooding: the Prometheus library needs exactly
-  one label per metric and rejects negative gauge values.
+  one label per metric and rejects negative gauge values; the HTTP server
+  shares one WebSocket data buffer per resource (one resource per console
+  slot works around it).
 
 ## Camera pods
 

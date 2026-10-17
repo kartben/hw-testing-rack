@@ -34,8 +34,15 @@ static struct gpio_callback flt_cb;
 
 static void power_write(bool on)
 {
+	/* No AUX TX into an unpowered board: release the pin before cutting VBUS */
+	if (!on) {
+		aux_dut_power(false);
+	}
 	gpio_pin_set_dt(&en, on);
 	power_on = on;
+	if (on) {
+		aux_dut_power(true);
+	}
 }
 
 static void fault_work_handler(struct k_work *work)

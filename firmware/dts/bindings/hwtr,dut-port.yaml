@@ -55,3 +55,11 @@ properties:
   uart:
     type: phandle
     description: UART wired to the AUX connector (DUT console).
+
+  tx-gpios:
+    type: phandle-array
+    description: |
+      The UART's TX pin seen as a GPIO.  The firmware takes the pin from the
+      UART to release it (input) while the DUT is powered off, so the node
+      does not feed the board through its RX pin, and to hold it low for a
+      BREAK; it hands the pin back to the UART afterwards.
