@@ -63,7 +63,8 @@ RIDGE_GAP = HOOK_W + 6;                  // no ridge / notch around a hook
 // the 2nd and 4th on its right one, so the two bays sharing a ladder never meet.
 BRACE_T = 3;
 XBRACE_W = 8;
-BRACE_PIN = [3.4, 8];                    // snap pin Ø × length
+BRACE_PIN = [3.8, 8];                    // split snap pin Ø × length: 0.2 over the hole, squeezed shut = no slack
+BRACE_PRELOAD = 0.25;                    // each diagonal is this much shorter than its pins' spacing: taut X
 BRACE_HOLE = [3.6, 9.5];                 // hole Ø × depth in the rear edge
 function brace_z(k) = k < 0
     ? let (top = line_z(0, 0, PR)) [30, 48, top - 44, top - 26]

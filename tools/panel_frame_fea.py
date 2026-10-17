@@ -240,6 +240,8 @@ def main() -> None:
         ("4×4, braces, play 0.5°, rigid stack joints", 4, 4, dict(braces=True, play_deg=0.5, k_tray=2e6, k_stack=1e9)),
         ("4×4, braces, play 0.5°, soft trays (k/10)", 4, 4, dict(braces=True, play_deg=0.5, k_tray=2e5, k_stack=3e4)),
         ("4×4, braces, play 0.25°, pin slack 0.1", 4, 4, dict(braces=True, play_deg=0.25, pin_slack=0.1, **base)),
+        ("4×4, taut braces (design), play 0.5°", 4, 4, dict(braces=True, play_deg=0.5, pin_slack=0.0, **base)),
+        ("4×4, taut braces, trays as hinges", 4, 4, dict(braces=True, play_deg=0.0, pin_slack=0.0, k_tray=1.0, k_stack=3e4)),
     ]
     for name, cols, rows, kw in cases:
         d = sway_curve(c, profs[rows], cols, rows, forces, **kw)
