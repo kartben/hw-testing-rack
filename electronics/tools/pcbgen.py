@@ -27,6 +27,13 @@ FREEROUTING = os.environ.get("FREEROUTING", "/tmp/freerouting-cli")
 
 MM = pcbnew.FromMM
 
+# The smallest via used anywhere (GND ties squeezed between fine-pitch pads): 0.5 mm pad, 0.3 mm drill.
+# 0.3 mm is JLCPCB's smallest drill at no extra cost; 0.25 mm is their "high precision" option, which
+# also forces a 4-wire Kelvin test and FR4 Tg155 (≈ +$40 on a 20-board 4-layer order).  The 0.1 mm ring
+# keeps the hole 0.25 mm from any track the router keeps 0.15 mm from the pad (Freerouting doesn't
+# know KiCad's hole clearance rule).
+SMALL_VIA = (0.5, 0.3)
+
 
 DRU = """(version 1)
 # Thermal reliefs on every pour (pcbgen.py).  On fine-pitch pads (ESP32 module, MSOP/SOT pins)
@@ -152,7 +159,9 @@ class PcbBuilder:
         ds.m_TrackMinWidth = MM(0.1 if self.layers >= 4 else 0.125)
         ds.m_MinClearance = MM(0.127)
         ds.m_ViasMinSize = MM(0.45)
-        ds.m_MinThroughDrill = MM(0.25)
+        # JLC's no-extra-cost via is a 0.3 mm hole in a 0.4 mm (multilayer) / 0.45 mm pad: SMALL_VIA's ring
+        ds.m_ViasMinAnnularWidth = MM((SMALL_VIA[0] - SMALL_VIA[1]) / 2)
+        ds.m_MinThroughDrill = MM(SMALL_VIA[1])
         ds.m_CopperEdgeClearance = MM(0.3)
         ds.SetBoardThickness(MM(1.6))
         # custom DRC rules, next to the project (KiCad and kicad-cli read <board>.kicad_dru)
@@ -443,7 +452,20 @@ class PcbBuilder:
         # zones are filled by `kicad-cli pcb drc --refill-zones --save-board` (KiCad's own filler)
         pcbnew.SaveBoard(str(self.path), self.board)
         write_stackup(self.path, self.b.pcb)
+        write_via_rules(self.path.with_suffix(".kicad_pro"))
         return self.path
+
+
+def write_via_rules(pro: Path):
+    """KiCad's DRC reads the board's minimum drill and annular ring from <board>.kicad_pro, which
+    pcbnew.SaveBoard leaves alone: write SMALL_VIA's limits there, so a via under JLC's no-extra-cost
+    size is a DRC error."""
+    import json
+    data = json.loads(pro.read_text(encoding="utf-8"))
+    rules = data.setdefault("board", {}).setdefault("design_settings", {}).setdefault("rules", {})
+    rules["min_through_hole_diameter"] = SMALL_VIA[1]
+    rules["min_via_annular_width"] = round((SMALL_VIA[0] - SMALL_VIA[1]) / 2, 4)
+    pro.write_text(json.dumps(data, indent=2, ensure_ascii=False) + chr(10), encoding="utf-8")
 
 
 def export_dsn(b: Board, outdir: Path) -> Path:
@@ -608,7 +630,7 @@ def loose_gnd_pads(board, gnd) -> list[tuple[float, float]]:
     return out
 
 
-def connect_gnd_pads(board, gnd, spots_mm, via_d=0.45, drill=0.25, width_mm=0.25, plane=None) -> int:
+def connect_gnd_pads(board, gnd, spots_mm, via_d=SMALL_VIA[0], drill=SMALL_VIA[1], width_mm=0.25, plane=None) -> int:
     """Tie each listed (isolated) SMD pad of net `gnd` to its plane: the shortest straight track that
     reaches a via / through-hole pad of the net, or a spot where a small via fits (on every layer).
     With `plane` (the layer of a power net's plane), vias only count where they land inside that
@@ -1017,8 +1039,8 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
                 if not any(polys.Contains(a, i) for a in anchors)]
 
     # 2. every fragment of every GND fill without an anchor gets a via (fine search,
-    #    standard via first, then JLC's small 0.45/0.25 via)
-    sizes = [(via_d, drill), (0.45, 0.25)]
+    #    standard via first, then the small one)
+    sizes = [(via_d, drill), SMALL_VIA]
     for _ in range(3):
         f = fills()
         added = 0
@@ -1064,7 +1086,7 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
                 t.SetNet(gnd)
                 board.Add(t)
                 if via:
-                    add(ex, ey, 0.45, 0.25)
+                    add(ex, ey, *SMALL_VIA)
                     n += 1
         f = fills()
         for l, pad in lonely_pads(f):

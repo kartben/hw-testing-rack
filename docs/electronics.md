@@ -38,7 +38,10 @@ inner copper) and ENIG; the hub declares 2 layers, 1.6 mm, lead-free HASL
 (`stackup` / `finish` in `design.py`, written into the board by `pcbgen.py`).  Before routing,
 every GND and supply pin gets a short track to a via of its own on its plane (`fanout_nets` in
 `design.py`, `fanout_pads()` in `pcbgen.py`), locked so Freerouting keeps it: no pin depends on
-the outer GND pours, which stay as a bonus, stitched to In1.  **Every pour connects pads through thermal reliefs**
+the outer GND pours, which stay as a bonus, stitched to In1.  **No drill under 0.3 mm**: JLCPCB's
+0.25 mm option costs ≈ $40 more on a 20-board order (it forces a 4-wire Kelvin test and FR4 Tg155), so
+the smallest via is 0.5/0.3 mm (`SMALL_VIA` in `pcbgen.py`, also written into `<board>.kicad_pro` as
+the DRC minimum); most vias are 0.6/0.3 mm.  **Every pour connects pads through thermal reliefs**
 (0.3 mm gap, 0.4 mm spokes): a GND pad heats up like the pad at the other end
 of its part, so small parts don't tombstone in reflow and hand-soldered pins
 take solder.  `<board>.kicad_dru` accepts a single spoke where fine-pitch

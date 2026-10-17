@@ -90,7 +90,7 @@ def usb_hs_routes():
         if not pair(net):
             tracks.append((net, layer, w, list(pts)))
 
-    def via(net, x, y, d=0.45, drill=0.25):
+    def via(net, x, y, d=0.5, drill=0.3):
         if not pair(net):
             vias.append((net, x, y, d, drill))
 
@@ -98,10 +98,10 @@ def usb_hs_routes():
     t("PC_CONN_DP", (31.75, 72.555), (31.75, 70.9), (31.05, 70.2), (31.05, 68.1375))        # → U4 pin 4
     t("PC_CONN_DN", (32.25, 72.555), (32.25, 70.9), (32.95, 70.2), (32.95, 68.1375))        # → U4 pin 6
     t("PC_CONN_DP", (32.75, 72.555), (32.75, 73.85), (31.75, 73.85), (31.75, 72.555))  # B6 → A6
-    t("PC_CONN_DN", (31.25, 72.555), (31.25, 71.35))                                    # B7 → A7
-    t("PC_CONN_DN", (31.25, 71.35), (32.25, 71.25), layer="B.Cu")
-    via("PC_CONN_DN", 31.25, 71.35)
-    via("PC_CONN_DN", 32.25, 71.25)
+    t("PC_CONN_DN", (31.25, 72.555), (31.2, 71.35))                                     # B7 → A7
+    t("PC_CONN_DN", (31.2, 71.35), (32.3, 71.25), layer="B.Cu")
+    via("PC_CONN_DN", 31.2, 71.35)
+    via("PC_CONN_DN", 32.3, 71.25)
     # U4's VBUS pin: its via sits in the front +3V3 area of In2, so a B.Cu track takes it past the 24 V
     # strip to the +5V area; its GND pin gets a via between the spread pins
     t("+5V", (32.0, 68.1375), (32.0, 69.55), w=0.3)
@@ -137,10 +137,10 @@ def usb_hs_routes():
     t("DUT_CONN_DN", (52.44, 23.05), (54.35, 23.05), (55.05, 23.75), (56.35, 23.75))
     t("DUT_CONN_DP", (52.44, 24.95), (54.1, 24.95), (54.8, 24.25), (56.35, 24.25))
     t("DUT_CONN_DP", (56.35, 23.25), (57.45, 23.25), (57.45, 24.25), (56.35, 24.25))    # B6 → A6
-    t("DUT_CONN_DN", (56.35, 24.75), (55.05, 24.75))                                    # B7 → A7
-    t("DUT_CONN_DN", (55.05, 24.75), (55.05, 23.75), layer="B.Cu")
-    via("DUT_CONN_DN", 55.05, 24.75)
-    via("DUT_CONN_DN", 55.05, 23.75)
+    t("DUT_CONN_DN", (56.35, 24.75), (55.05, 24.78))                                    # B7 → A7
+    t("DUT_CONN_DN", (55.05, 24.78), (54.95, 23.65), layer="B.Cu")
+    via("DUT_CONN_DN", 55.05, 24.78)
+    via("DUT_CONN_DN", 54.95, 23.65)
     t("GND", (46.6, 23.5), (47.35, 23.5), (47.85, 23.0))                                # U6 pin 5
     via("GND", 47.85, 23.0)
     t("GND", (50.16, 24.0), (49.0, 24.0))                                               # U8 GND
@@ -148,7 +148,7 @@ def usb_hs_routes():
     t("+5V", (52.44, 24.0), (53.6, 24.0))                                               # U8 VBUS
     via("+5V", 53.6, 24.0)
     # J4's CC1 pin sits below the pair: out to the west, down to R14
-    t("DUT_CC1", (56.35, 25.25), (54.9, 25.25), (54.3, 25.85), (54.3, 27.58), w=0.2)
+    t("DUT_CC1", (56.35, 25.3), (54.95, 25.3), (54.3, 25.95), (54.3, 27.58), w=0.2)
     # J4's two VBUS pads sit behind the pair: a via each, DUT_5V joins them on B.Cu; R14 up to the via
     t("DUT_5V", (56.35, 26.45), (55.2, 26.45), w=0.6)
     via("DUT_5V", 55.2, 26.45, 0.8, 0.4)
@@ -195,7 +195,7 @@ def board() -> Board:
         "edge_parts": ["J*", "U3"],
         "defer_pours": False,
         # net: (plane, via Ø, drill, track width)
-        "fanout_nets": {"GND": ("In1.Cu", 0.45, 0.25, 0.25), "+3V3": ("In2.Cu", 0.6, 0.3, 0.25),
+        "fanout_nets": {"GND": ("In1.Cu", 0.5, 0.3, 0.25), "+3V3": ("In2.Cu", 0.6, 0.3, 0.25),
                         "+5V": ("In2.Cu", 0.6, 0.3, 0.4)},
         # supply pins still left without a via to their In2 area after routing get one (pcbgen.py)
         "plane_nets": {"+5V": "In2.Cu", "+3V3": "In2.Cu"},
