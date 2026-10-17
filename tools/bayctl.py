@@ -70,7 +70,8 @@ class Bay:
     baud: int = 115200
     host: str = ""
     http_port: int = 80
-    aux_port: int = 4000
+    aux_port: int = 4000            # raw AUX UART (twister serial_pty)
+    rfc2217_port: int = 4001        # AUX UART with RFC 2217 (pyserial, labgrid, esptool)
     fixtures: list[str] = field(default_factory=list)
     ci: bool = True                 # false: keep this bay out of the hardware map
     choices: list[str] = field(default_factory=list)   # possible targets of a board family
@@ -116,6 +117,7 @@ def load_bays(rack_yaml: Path = RACK_YAML, boards_yaml: Path = BOARDS_YAML,
             host=over.get("host", f"bay-{bid.lower()}.{domain}"),
             http_port=int(over.get("http_port", lab.get("http_port", 80))),
             aux_port=int(over.get("aux_port", lab.get("aux_port", 4000))),
+            rfc2217_port=int(over.get("rfc2217_port", lab.get("rfc2217_port", 4001))),
             fixtures=list(over.get("fixtures", [])),
             ci=bool(over.get("ci", True)),
             choices=list(z.get("choices", [])),
@@ -352,7 +354,8 @@ def export_labgrid(bays: dict[str, Bay], python: str, bayctl: str) -> dict:
     targets = {}
     for bay in bays.values():
         run = f"{python} {bayctl}"
-        res = {"NetworkSerialPort": {"host": bay.host, "port": bay.aux_port, "speed": bay.baud, "protocol": "raw"}}
+        res = {"NetworkSerialPort": {"host": bay.host, "port": bay.rfc2217_port, "speed": bay.baud,
+                                     "protocol": "rfc2217"}}
         targets[f"bay-{bay.id.lower()}"] = {
             "resources": res,
             "drivers": {

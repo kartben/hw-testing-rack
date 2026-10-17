@@ -77,7 +77,7 @@ class Config(unittest.TestCase):
         lg = bayctl.export_labgrid(self.bays, "python3", "bayctl.py")
         t = lg["targets"]["bay-b3"]
         self.assertEqual(t["resources"]["NetworkSerialPort"],
-                         {"host": "bay-b3.local", "port": 4000, "speed": 115200, "protocol": "raw"})
+                         {"host": "bay-b3.local", "port": 4001, "speed": 115200, "protocol": "rfc2217"})
         self.assertEqual(t["drivers"]["ExternalPowerDriver"]["cmd_cycle"], "python3 bayctl.py power B3 cycle")
         pdu = bayctl.export_pdudaemon(self.bays, "python3", "bayctl.py")
         cmd = pdu["pdus"]["hw-testing-rack"]["cmd_on"]

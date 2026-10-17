@@ -7,7 +7,7 @@ Every bay node exposes its DUT over the lab network (see
 |---|---|
 | DUT power, RESET, BOOT, data path | HTTP/JSON API, port 80: `/api/power`, `/api/reset`, `/api/boot`, `/api/mode`, `/api/status` |
 | The DUT's USB device (debug probe + its virtual COM port) | USB/IP, TCP 3240: `usbip attach -r bay-<id>.local -b 1-1` |
-| The DUT's UART on the AUX connector | raw TCP, port 4000 |
+| The DUT's UART on the AUX connector | RFC 2217 on TCP 4001 (baud set by the client), raw TCP on 4000, and the web page's console |
 | Telemetry | Prometheus, `/metrics` |
 
 [`tools/bayctl.py`](../tools/bayctl.py) wraps all of it for a CI host, and
@@ -116,8 +116,9 @@ Each entry of the map is one bay:
 $ python tools/bayctl.py export labgrid > rack-env.yaml
 ```
 
-gives one target per bay with the AUX UART as a raw `NetworkSerialPort` and the
-node's power switch as an `ExternalPowerDriver` (`bayctl power <bay> on|off|cycle`).
+gives one target per bay with the AUX UART as an RFC 2217 `NetworkSerialPort`
+(port 4001: labgrid sets the baud rate) and the node's power switch as an
+`ExternalPowerDriver` (`bayctl power <bay> on|off|cycle`).
 USB stays with USB/IP: `bayctl attach <bay>` on the machine that runs the
 flashing tool.
 
@@ -152,5 +153,7 @@ $ python tools/bayctl.py status B3
   (CMSIS-DAP v1, i.e. HID) or isochronous endpoints won't work yet; J-Link,
   ST-LINK, MCU-Link / CMSIS-DAP v2 (bulk) and CP210x / CH34x UART bridges do.
   Boards with an on-board USB hub don't work over USB/IP either.
-* The AUX port takes **one client** at a time: while twister's `serial_pty`
-  holds it, the web console and `nc` can't connect.
+* The raw (4000) and RFC 2217 (4001) AUX ports take **one client** each: while
+  twister's `serial_pty` holds the raw port, `nc` can't connect to it (the web
+  console still shows the traffic).  `bayctl pty` uses the node's saved AUX
+  settings: set the baud rate once from the web console or `bay aux <baud>`.
