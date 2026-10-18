@@ -16,7 +16,7 @@ bay node (plenum)                              drawer
 ```
 
 1. **Node → drawer: one off-the-shelf extension.**  A 30 cm USB-C male →
-   panel-mount USB-C female (M3 ears) plugs into the node's DUT receptacle,
+   panel-mount USB-C female (25 mm flange, screw holes 17 mm apart) plugs into the node's DUT receptacle,
    runs ~6 cm in the plenum to the chain's fixed end, through the drag chain,
    out of its moving end (forwards, then curling back over the end piece,
    beside the drawer foot) and up through the rear bay's cable window, and is
@@ -30,7 +30,7 @@ bay node (plenum)                              drawer
    tray's anchor, its moving end to the drawer foot.  Open the drawer 140 mm
    and the U-bend rolls forward 70 mm: the cable never drags, kinks or snags.
    **Lay the cable in, don't thread it:** neither the extension's plug nor its
-   panel-mount socket (with the M3 ears) passes a 7 × 7 channel.  Open the
+   panel-mount socket (with its flange) passes a 7 × 7 channel.  Open the
    links (their bars snap off on both sides), lay the cable in from the fixed
    end's mouth to the moving end's, with ~6 cm out of the fixed end for the
    node and the socket end out of the moving end, then snap the bars back.

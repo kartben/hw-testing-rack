@@ -129,7 +129,7 @@ module guide_left() {
             cube([DRAWER_X0, EPS, 1.4]);
             translate([0, 6, 0]) cube([DRAWER_X0, EPS, EPS]);
         }
-        // drawer end stop: an M2.5 screw through the lip, biting into the ledge
+        // drawer end stop: a PT 2.6 × 8 screw through the lip, biting into the ledge
         translate([STOP_PIN_X, STOP_Y, LEDGE_Z - LEDGE_T - 1]) cylinder(d = 2.1, h = 10);
         translate([STOP_PIN_X, STOP_Y, LEDGE_Z + GUIDE_LIP_Z - 1]) cylinder(d = 2.8, h = GUIDE_LIP_T + 2);
     }

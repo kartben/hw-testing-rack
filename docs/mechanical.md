@@ -42,9 +42,9 @@ constants it reads.)
 
 | Part | File | Notes |
 |---|---|---|
-| Tray | `tray.scad` | the plenum under the drawer: node standoffs, chain anchor and rails, fascia with the PC port / LED / SERVICE switch (the PC port is cut to a USB-C plug's overmold, 12.8 × 7.2 mm: the node's receptacle sits 2.7 mm behind the fascia's face), camera inserts underneath.  The drawer rides on two side ledges under C-channel lips; runners on both walls slide into the ladder grooves from the front, and a flex arm per wall clicks a barb into the groove's window (pull the drawer out, press both arms to remove the tray) |
-| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; open floor under the plate; rear bay with two DATA panel-socket positions (left/right, the socket goes in the one farther from the board's USB; cut to the plug's overmold, so a socket screwed behind the 3 mm wall still takes a plug) and the AUX slot, cable window and the foot groove |
-| Chain foot / anchor | `chain_parts.scad` | take the chain's end pieces (tab with 2 holes 8 mm apart, M2.5 self-tapping + washers).  The anchor is a block outside the fixed run, on two M3 inserts in the tray; the foot carries the moving end on a fin outside the moving run and slides into the drawer's rear-open groove, locked by one M2.5 from inside the rear bay.  A printable link (and its removable bar, so the cable can be laid in) is included if you'd rather not buy chain |
+| Tray | `tray.scad` | the plenum under the drawer: node standoffs, chain anchor and rails, fascia with the PC port / LED / SERVICE switch (the PC port is the USB-C stadium scaled up to 13.4 × 7.8 mm, so a plug's overmold passes: the node's receptacle sits 2.7 mm behind the fascia's face), camera inserts underneath.  The drawer rides on two side ledges under C-channel lips; runners on both walls slide into the ladder grooves from the front, and a flex arm per wall clicks a barb into the groove's window (pull the drawer out, press both arms to remove the tray) |
+| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; open floor under the plate; rear bay with two DATA panel-socket positions (left/right, the socket goes in the one farther from the board's USB; the extension's female end goes through the port wall from the front, its 25 mm flange on the wall with 2 × PT 2.6×8 17 mm apart, so its mouth is flush) and the AUX slot, cable window and the foot groove |
+| Chain foot / anchor | `chain_parts.scad` | take the chain's end pieces (tab with 2 holes 8 mm apart, PT 2.6×8 + washers).  The anchor is a block outside the fixed run, on two M3 inserts in the tray; the foot carries the moving end on a fin outside the moving run and slides into the drawer's rear-open groove, locked by one PT 2.6×8 from inside the rear bay.  A printable link (and its removable bar, so the cable can be laid in) is included if you'd rather not buy chain |
 | Board plates | `board_plate.scad` | one per form factor, generated from [`mechanical/boards/boards.yaml`](../mechanical/boards/boards.yaml) |
 | Bay label | `label.scad` | 12 × 100 mm blank for the drawer front's recess |
 
@@ -55,7 +55,7 @@ constants it reads.)
 The drawer slides 140 mm along the slope on the tray's two ledges (PETG on
 PETG); its rear flange segments run under the lips, so it cannot tip at full
 stroke.  A pair of 6 × 3 mm magnets (one in the drawer, one in the left ledge,
-on a pad) holds it closed against the slope; pulled out, it rests on an M2.5
+on a pad) holds it closed against the slope; pulled out, it rests on a PT 2.6
 stop screw through the left lip, the flange still under the lips.  Want
 smoother?  Print the trays in a POM-like "igus" filament.
 
@@ -73,7 +73,7 @@ piece from its mouth to its pivot on the chain.
 
 The chain lies flat in the plenum, its side plates horizontal, so the end
 pieces' tabs stand vertical on the outer faces of the U: the fixed one
-against the anchor block, the moving one against the foot's fin (2 × M2.5×8
+against the anchor block, the moving one against the foot's fin (2 × PT 2.6×8
 and washers each).  The runs are 36 mm apart (2 × R), 13.5 mm tall from 3 mm
 above the tray floor, under the drawer with 6.5 mm to spare; low rails keep
 them straight.  An end piece cannot bend, so it must stay in a straight run

@@ -8,15 +8,15 @@
 // The reference chain (Olimex DRAG-CHAIN-7X7, links open on both sides) ends in two end
 // pieces with a tab flush with the outer face of the U and two holes 8 mm apart along the
 // chain (config/rack.yaml › chain.end_holes).  Each tab screws to the inner face of the anchor
-// or of the foot's fin with 2 × M2.5 × 8 self-tapping screws and washers (the tab holes may be
-// up to 4.3 mm).  Screw the end pieces on at the bench, then fit the anchor and the foot.
+// or of the foot's fin with 2 × PT 2.6 × 8 (thread-forming, or M2.5 × 8 self-tapping) and washers
+// (the tab holes may be up to 4.3 mm).  Screw the end pieces on at the bench, then fit the anchor and the foot.
 // Print: anchor and bar as modelled, foot on its fin, link on its fixed bar; PETG, no supports.
 include <../lib/carrier.scad>
 
 PART = "foot";
 TONGUE = [6, 10];                     // X × Y of the tongue in the drawer's foot groove
 TONGUE_H = 2.1;                       // the groove is 2.3 deep
-PILOT = 2.2;                          // M2.5 self-tapping pilot
+PILOT = 2.2;                          // PT 2.6 / M2.5 self-tapping pilot
 
 // ------------------------------------------------------------------ foot
 // Foot coordinates: origin on the moving run's axis, at the chain's mouth (y), on the drawer's
@@ -39,7 +39,7 @@ module foot() {
             translate([-TONGUE[0] / 2, LOCK - TONGUE[1] / 2, BRIDGE_Z0]) cube([FIN_X[1] + TONGUE[0] / 2, TONGUE[1], -BRIDGE_Z0]);
             translate([FIN_X[0], FIN_Y[0], FIN_Z0]) cube([FIN_X[1] - FIN_X[0], FIN_Y[1] - FIN_Y[0], -FIN_Z0]);
         }
-        // lock screw (M2.5 self-tapping, down from the drawer's rear bay)
+        // lock screw (PT 2.6 × 8, down from the drawer's rear bay)
         translate([0, LOCK, TONGUE_H - 8]) cylinder(d = PILOT, h = 9);
         // the end piece's tab holes
         for (y = chain_end_holes(0)) translate([FIN_X[0] - EPS, y, CHAIN_Z - CARRIER_PLENUM]) rotate([0, 90, 0]) cylinder(d = PILOT, h = 10);

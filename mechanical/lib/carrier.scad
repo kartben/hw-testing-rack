@@ -12,13 +12,13 @@ function node_xy(k) = [NODE_X0 + k[0], NODE_FRONT_Y + (NODE_SIZE[1] - k[1])];
 NODE_REAR_Y = NODE_FRONT_Y + NODE_SIZE[1];
 PWR_NOTCH_Y = node_xy([0, NODE_PWR_Y])[1];        // row cable (JST PH 6) between neighbouring nodes
 
-// Opening for a USB-C plug's overmold (USB-IF reference: up to 12.35 × 6.5 mm) with clearance:
-// width, height, corner radius.  A receptacle that sits behind a wall's outer face needs it, not
-// a shell-sized cut, or the overmold stops on the wall before the plug seats.
-USBC_PLUG_CUT = [12.8, 7.2, 2];
+// Opening for a USB-C plug's overmold: the USB-C stadium, scaled up.  The USB-IF reference
+// overmold is at most 12.35 × 6.5 mm; this one also passes squarer overmolds (corner radius
+// ≥ 2 mm).  A receptacle behind a wall's outer face needs it, not a shell-sized cut, or the
+// overmold stops on the wall before the plug seats.  Width, height.
+USBC_PLUG_CUT = [13.4, 7.8];
 module usbc_plug_cut(h)         // centred on the plug axis, extruded along +Z
-    linear_extrude(h) offset(r = USBC_PLUG_CUT[2])
-        square([USBC_PLUG_CUT[0] - 2 * USBC_PLUG_CUT[2], USBC_PLUG_CUT[1] - 2 * USBC_PLUG_CUT[2]], center = true);
+    hull() for (dx = [-1, 1] * (USBC_PLUG_CUT[0] - USBC_PLUG_CUT[1]) / 2) translate([dx, 0, 0]) cylinder(d = USBC_PLUG_CUT[1], h = h);
 
 // front wall of the tray: PC/classic USB-C port, status LED window, SERVICE switch.  The node's
 // USB-C receptacle (J3, GCT USB4105) has its face 0.275 mm proud of the PCB edge, i.e. 2.7 mm
@@ -26,7 +26,7 @@ module usbc_plug_cut(h)         // centred on the plug axis, extruded along +Z
 module fascia_cutouts() {
     // [kicad_x, width, height, z above PCB top]
     cuts = [
-        [NODE_FRONT[0], USBC_PLUG_CUT[0], USBC_PLUG_CUT[1], 1.6, "usbc"],    // PC / classic USB-C
+        [NODE_FRONT[0], 0, 0, 1.6, "usbc"],         // PC / classic USB-C (usbc_plug_cut)
         [NODE_FRONT[1], 3.2, 3.2, 0.7, "round"],   // status LED window
         [NODE_FRONT[2], 7.4, 3.0, 1.4, "rect"],    // SERVICE switch
     ];
@@ -49,19 +49,31 @@ GUIDE_Y0 = DRAWER_FRONT_T + 1;
 GUIDE_LIP_Z = DRAWER_FLANGE[1] + 0.4;              // lip underside above the ledge
 GUIDE_LIP_T = 2.0;
 GUIDE_WALL_T = DRAWER_X0 - DRAWER_FLANGE[0] - 0.5;  // solid wall of the C-channel (inner face 0.5 from the flange)
-STOP_PIN_X = DRAWER_X0 - DRAWER_FLANGE[0] / 2 - 0.2; // M2.5 stop screw, in the flange path
+STOP_PIN_X = DRAWER_X0 - DRAWER_FLANGE[0] / 2 - 0.2; // PT 2.6 × 8 stop screw, in the flange path
 FLANGE_Y = [DRAWER_D - 26, DRAWER_D - 6];          // rear flange segment (drawer coords)
 STOP_Y = FLANGE_Y[0] - DRAWER_TRAVEL - 4.5;        // stop pin position (carrier coords)
 
 // port wall: two positions for the panel-mount USB-C DATA socket (it goes in the one farther
-// from the board's USB, so the two plugs never meet) and a slot for the optional AUX pigtail
+// from the board's USB, so the two plugs never meet) and a slot for the optional AUX pigtail.
+// The socket is the female end of the reference extension (QinMSY UC-138, AliExpress
+// 1005009101248402; the seller's drawing of the same moulding, 1005003419765205): a 25 mm flange
+// with two holes 17 mm apart and the receptacle's mouth in its face, a 20 mm body behind.  The
+// flange goes on the wall's front face, so the mouth is flush and any plug seats; the body
+// passes through the wall into the rear bay.  Two PT 2.6 × 8 go through the flange's holes into
+// pilots in the wall, backed by pads behind it.
 PORT_X = concat(DATA_PORT_X, [AUX_PORT_X]);        // from config/rack.yaml (drawer.data_ports, aux_port)
-PORT_Z = DRAWER_BOTTOM + 7;
-PORT_EARS = 26;                                    // M3 ear pitch of common panel-mount USB-C extensions
+PORT_Z = DRAWER_BOTTOM + 8.5;                      // the flange (≈ 9 mm tall) clears the board plate
+PORT_EARS = 17;                                    // the flange's screw pitch
+DATA_FLANGE = [25, 9, 2.5];                        // width, height, thickness (from the photos: measure)
+DATA_BODY_CUT = [13.2, 8.2, 2];                    // the body passes: width, height, corner radius
+PORT_WALL_H = DRAWER_WALL_H + 4;                   // 4 mm taller than the side walls, above the cut
+module data_body_cut(h)         // centred on the socket axis, extruded along +Z
+    linear_extrude(h) offset(r = DATA_BODY_CUT[2])
+        square([DATA_BODY_CUT[0] - 2 * DATA_BODY_CUT[2], DATA_BODY_CUT[1] - 2 * DATA_BODY_CUT[2]], center = true);
 
 // board plate (drops into the drawer between front panel and port wall)
 PLATE_W = DRAWER_INNER_W - 0.6;
-PLATE_D = DRAWER_PORT_WALL_Y - DRAWER_FRONT_T - 0.6;
+PLATE_D = DRAWER_PORT_WALL_Y - DRAWER_WALL - DRAWER_FRONT_T - 0.6;   // up to the port wall's front face
 PLATE_X0 = DRAWER_WALL + 0.3;                      // drawer coords
 PLATE_Y0 = DRAWER_FRONT_T + 0.3;
 function plate_pins() = [[10, 10], [PLATE_W - 10, PLATE_D - 10]];   // 180°-symmetric locating pins

@@ -1953,12 +1953,13 @@
 },
 {
 "category": "Fasteners",
-"item": "M2.5×8 self-tapping (drawer stop, chain-foot lock, 4 for the chain's end pieces)",
-"supplier": "AliExpress (bulk)",
-"qty": 72,
+"item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA socket",
+"supplier": "AliExpress (bulk, e.g. HZYUEGOU)",
+"qty": 96,
 "unit_eur": 0.02,
+"notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)",
 "unit": "pcs",
-"ext_eur": 1.44
+"ext_eur": 1.92
 },
 {
 "category": "Fasteners",
@@ -2000,12 +2001,13 @@
 },
 {
 "category": "Cables",
-"item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
-"supplier": "AliExpress (generic, USB 2.0 is enough)",
+"item": "USB-C male → panel-mount USB-C female extension, 30 cm: 25 mm flange, holes 17 mm apart (drawer DATA port)",
+"supplier": "QinMSY UC-138, AliExpress 1005009101248402 (30 cm)",
 "qty": 12,
-"unit_eur": 1.5,
+"unit_eur": 1.86,
+"notes": "the seller's drawing of the same moulding: AliExpress 1005003419765205 (USB 3.1, second source); measure the flange and the body on arrival (lib/carrier.scad › DATA_FLANGE, DATA_BODY_CUT)",
 "unit": "pcs",
-"ext_eur": 18.0
+"ext_eur": 22.32
 },
 {
 "category": "Cables",
@@ -2096,13 +2098,13 @@
 "by_category": {
 "Electronics": 582.8799999999999,
 "Printed parts": 78.0,
-"Fasteners": 17.24,
+"Fasteners": 17.72,
 "Motion": 22.4,
-"Cables": 67.0,
+"Cables": 71.32,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 885.72,
+"total_eur": 890.52,
 "prints": [
 {
 "part": "bay_label",
@@ -2177,8 +2179,8 @@
 {
 "part": "drawer",
 "qty": 12,
-"grams_each": 44.3,
-"grams_total": 531.5,
+"grams_each": 46.0,
+"grams_total": 551.5,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
@@ -2226,78 +2228,78 @@
 {
 "part": "plate_arduino-uno-r4",
 "qty": 1,
-"grams_each": 31.2,
-"grams_total": 31.2,
+"grams_each": 31.3,
+"grams_total": 31.3,
 "stl": "mechanical/stl/plate_arduino-uno-r4.stl"
 },
 {
 "part": "plate_esp32-c6-devkitc",
 "qty": 1,
-"grams_each": 31.9,
-"grams_total": 31.9,
+"grams_each": 31.5,
+"grams_total": 31.5,
 "stl": "mechanical/stl/plate_esp32-c6-devkitc.stl"
 },
 {
 "part": "plate_esp32-s3-devkitc",
 "qty": 1,
-"grams_each": 32.3,
-"grams_total": 32.3,
+"grams_each": 31.8,
+"grams_total": 31.8,
 "stl": "mechanical/stl/plate_esp32-s3-devkitc.stl"
 },
 {
 "part": "plate_frdm-mcxn947",
 "qty": 1,
-"grams_each": 37.4,
-"grams_total": 37.4,
+"grams_each": 36.9,
+"grams_total": 36.9,
 "stl": "mechanical/stl/plate_frdm-mcxn947.stl"
 },
 {
 "part": "plate_nrf52840-dk",
 "qty": 1,
-"grams_each": 38.1,
-"grams_total": 38.1,
+"grams_each": 37.6,
+"grams_total": 37.6,
 "stl": "mechanical/stl/plate_nrf52840-dk.stl"
 },
 {
 "part": "plate_nrf5340-dk",
 "qty": 1,
-"grams_each": 38.1,
-"grams_total": 38.1,
+"grams_each": 37.6,
+"grams_total": 37.6,
 "stl": "mechanical/stl/plate_nrf5340-dk.stl"
 },
 {
 "part": "plate_nrf54l15-dk",
 "qty": 1,
-"grams_each": 38.1,
-"grams_total": 38.1,
+"grams_each": 37.6,
+"grams_total": 37.6,
 "stl": "mechanical/stl/plate_nrf54l15-dk.stl"
 },
 {
 "part": "plate_nucleo-144",
 "qty": 1,
-"grams_each": 38.0,
-"grams_total": 38.0,
+"grams_each": 37.5,
+"grams_total": 37.5,
 "stl": "mechanical/stl/plate_nucleo-144.stl"
 },
 {
 "part": "plate_nucleo-64",
 "qty": 2,
-"grams_each": 34.9,
-"grams_total": 69.8,
+"grams_each": 34.4,
+"grams_total": 68.8,
 "stl": "mechanical/stl/plate_nucleo-64.stl"
 },
 {
 "part": "plate_rpi-pico2",
 "qty": 1,
-"grams_each": 29.6,
-"grams_total": 29.6,
+"grams_each": 29.1,
+"grams_total": 29.1,
 "stl": "mechanical/stl/plate_rpi-pico2.stl"
 },
 {
 "part": "plate_stm32f746g-disco",
 "qty": 1,
-"grams_each": 39.4,
-"grams_total": 39.4,
+"grams_each": 38.9,
+"grams_total": 38.9,
 "stl": "mechanical/stl/plate_stm32f746g-disco.stl"
 },
 {
@@ -2332,7 +2334,7 @@
 "part": "tray",
 "qty": 12,
 "grams_each": 79.4,
-"grams_total": 953.3,
+"grams_total": 953.2,
 "stl": "mechanical/stl/tray.stl"
 }
 ],

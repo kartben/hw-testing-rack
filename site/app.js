@@ -380,11 +380,11 @@ function makePlug(e) {
     g.add(mold, rel);
   }
   if (e.socket === 'panel') {
-    // panel-mount female USB-C (the drawer's DATA port): flange with two M3 screws on the wall face
-    const flange = new THREE.Mesh(cached('flange', () => new RoundedBoxGeometry(23, 8, 1.5, 2, 0.6)), PLUG_MAT.mold);
-    flange.position.set(0, 0, 0.75);
+    // panel-mount female USB-C (the drawer's DATA port): 25 mm flange on the wall face, two screws 17 mm apart
+    const flange = new THREE.Mesh(cached('flange', () => new RoundedBoxGeometry(25, 9, 2.5, 2, 0.8)), PLUG_MAT.mold);
+    flange.position.set(0, 0, 1.25);
     g.add(flange);
-    for (const sx of [-9, 9]) {
+    for (const sx of [-8.5, 8.5]) {
       const scr = new THREE.Mesh(cached('screw', () => new THREE.CylinderGeometry(2.6, 2.6, 1.1, 16)), PLUG_MAT.screw);
       scr.rotation.x = Math.PI / 2;
       scr.position.set(sx, 0, -0.5);

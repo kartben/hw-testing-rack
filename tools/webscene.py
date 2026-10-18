@@ -286,11 +286,11 @@ def build(rack) -> Path:
 
     port_wall_y = d["depth"] - d["rear_bay"]
     data_ports = rack.data_port_x          # two DATA socket positions per drawer
-    port_z = d["bottom"] + 7
+    port_z = d["bottom"] + 8.5            # lib/carrier.scad › PORT_Z
     plate_x0 = d["wall"] + 0.3
     plate_y0 = d["front_thickness"] + 0.3
     plate_w = rack.drawer_w - 2 * d["wall"] - 0.6
-    plate_d = port_wall_y - d["front_thickness"] - 0.6
+    plate_d = port_wall_y - d["wall"] - d["front_thickness"] - 0.6
     fixed = raw["chain"]["fixed"]
 
     def unit_hardware(i, u, bid, dy, open_frac):
@@ -369,7 +369,7 @@ def build(rack) -> Path:
             # the board's own connector (micro-B, USB-C…) at the other end, an arch in between
             ctype = info["cable"]
             btype = cables_cfg[ctype].get("b", "usb-c")
-            end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 1.5, dz + port_z], "dir": [0, 1, 0],
+            end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 2.5, dz + port_z], "dir": [0, 1, 0],   # mouth on the flange's face
                      "type": "usb-c", "style": "right", "socket": "panel"}
             zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
             ux = o["usb_x"]

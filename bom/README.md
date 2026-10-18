@@ -8,11 +8,11 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Electronics | 583 |
 | Power | 82 |
 | Printed parts | 78 |
-| Cables | 67 |
+| Cables | 71 |
 | Cameras | 36 |
 | Motion | 22 |
-| Fasteners | 17 |
-| **Total** | **886** |
+| Fasteners | 18 |
+| **Total** | **891** |
 
 ≈ **€74 per bay** all-in.
 
@@ -47,24 +47,24 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 12 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 12 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 12 | 44.3 | `mechanical/stl/drawer.stl` |
+| drawer | 12 | 46.0 | `mechanical/stl/drawer.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 49.6 | `mechanical/stl/ladder_a.stl` |
 | ladder_b | 5 | 49.6 | `mechanical/stl/ladder_b.stl` |
 | ladder_base | 5 | 49.3 | `mechanical/stl/ladder_base.stl` |
 | ladder_c | 5 | 49.6 | `mechanical/stl/ladder_c.stl` |
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
-| plate_arduino-uno-r4 | 1 | 31.2 | `mechanical/stl/plate_arduino-uno-r4.stl` |
-| plate_esp32-c6-devkitc | 1 | 31.9 | `mechanical/stl/plate_esp32-c6-devkitc.stl` |
-| plate_esp32-s3-devkitc | 1 | 32.3 | `mechanical/stl/plate_esp32-s3-devkitc.stl` |
-| plate_frdm-mcxn947 | 1 | 37.4 | `mechanical/stl/plate_frdm-mcxn947.stl` |
-| plate_nrf52840-dk | 1 | 38.1 | `mechanical/stl/plate_nrf52840-dk.stl` |
-| plate_nrf5340-dk | 1 | 38.1 | `mechanical/stl/plate_nrf5340-dk.stl` |
-| plate_nrf54l15-dk | 1 | 38.1 | `mechanical/stl/plate_nrf54l15-dk.stl` |
-| plate_nucleo-144 | 1 | 38.0 | `mechanical/stl/plate_nucleo-144.stl` |
-| plate_nucleo-64 | 2 | 34.9 | `mechanical/stl/plate_nucleo-64.stl` |
-| plate_rpi-pico2 | 1 | 29.6 | `mechanical/stl/plate_rpi-pico2.stl` |
-| plate_stm32f746g-disco | 1 | 39.4 | `mechanical/stl/plate_stm32f746g-disco.stl` |
+| plate_arduino-uno-r4 | 1 | 31.3 | `mechanical/stl/plate_arduino-uno-r4.stl` |
+| plate_esp32-c6-devkitc | 1 | 31.5 | `mechanical/stl/plate_esp32-c6-devkitc.stl` |
+| plate_esp32-s3-devkitc | 1 | 31.8 | `mechanical/stl/plate_esp32-s3-devkitc.stl` |
+| plate_frdm-mcxn947 | 1 | 36.9 | `mechanical/stl/plate_frdm-mcxn947.stl` |
+| plate_nrf52840-dk | 1 | 37.6 | `mechanical/stl/plate_nrf52840-dk.stl` |
+| plate_nrf5340-dk | 1 | 37.6 | `mechanical/stl/plate_nrf5340-dk.stl` |
+| plate_nrf54l15-dk | 1 | 37.6 | `mechanical/stl/plate_nrf54l15-dk.stl` |
+| plate_nucleo-144 | 1 | 37.5 | `mechanical/stl/plate_nucleo-144.stl` |
+| plate_nucleo-64 | 2 | 34.4 | `mechanical/stl/plate_nucleo-64.stl` |
+| plate_rpi-pico2 | 1 | 29.1 | `mechanical/stl/plate_rpi-pico2.stl` |
+| plate_stm32f746g-disco | 1 | 38.9 | `mechanical/stl/plate_stm32f746g-disco.stl` |
 | power_box_base | 1 | 45.0 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 20.7 | `mechanical/stl/power_box_lid.stl` |
@@ -188,12 +188,12 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 88  | 0.02 | 1.76 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid) | 52  | 0.02 | 1.04 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
-| Fasteners | M2.5×8 self-tapping (drawer stop, chain-foot lock, 4 for the chain's end pieces) | 72  | 0.02 | 1.44 | AliExpress (bulk) |
+| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA socket | 96  | 0.02 | 1.92 | AliExpress (bulk, e.g. HZYUEGOU) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 48  | 0.01 | 0.48 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge) | 24  | 0.30 | 7.20 | supermagnete S-06-03-N |
 | Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 2.6 m | 4.00 | 10.40 | Olimex DRAG-CHAIN-7X7 |
 | Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer | 12  | 1.00 | 12.00 | AliExpress (generic) / Olimex if included |
-| Cables | USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port) | 12  | 1.50 | 18.00 | AliExpress (generic, USB 2.0 is enough) |
+| Cables | USB-C male → panel-mount USB-C female extension, 30 cm: 25 mm flange, holes 17 mm apart (drawer DATA port) | 12  | 1.86 | 22.32 | QinMSY UC-138, AliExpress 1005009101248402 (30 cm) |
 | Cables | JST PH 6-pin jumper, 1:1, 24 AWG, 120 mm, both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS) | 9  | 0.60 | 5.40 | pre-crimped PH 6-pin, "same direction" (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S |
 | Cables | JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS) | 3  | 0.80 | 2.40 | pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S |
 | Cables | USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle) | 4  | 4.50 | 18.00 | Adafruit / Delock / AliExpress |

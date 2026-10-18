@@ -7,7 +7,7 @@
 //   board from one of two positions (left or right: whichever is farther from
 //   the board's USB, so the two plugs never meet), next to the AUX pigtail
 //   slot; the cables come up from the drag chain through the cable window.  The chain foot slides into the rear-open groove under the
-//   bottom and is locked by one M2.5 screw from inside the rear bay.
+//   bottom and is locked by one PT 2.6 × 8 screw from inside the rear bay.
 // - Rear flange segments run under the guide lips (anti-tip); a magnet under
 //   the rear bay, over the tray's left ledge, gives a soft closed detent.
 // - It rides on the tray's two side ledges (parts/tray.scad), so its floor only carries the
@@ -36,17 +36,22 @@ module front_panel() {
     }
 }
 
+PAD = [4.6, 4];                                // screw pads behind the wall, beside the socket's body: width, depth
 module port_wall() {
     y = DRAWER_PORT_WALL_Y;
+    t = DRAWER_WALL + 1;
     difference() {
-        translate([0, y - DRAWER_WALL, 0]) cube([DRAWER_W, DRAWER_WALL + 1, DRAWER_WALL_H]);
-        // DATA sockets: open to the plug's overmold, so the plug seats whether the panel-mount
-        // socket sits behind the 3 mm wall (ears on the rear face) or passes through it
-        for (x = PORT_X) translate([x, y - DRAWER_WALL - EPS, PORT_Z]) rotate([-90, 0, 0]) {
-            if (x == AUX_PORT_X) hull() for (dx = [-3.0, 3.0]) translate([dx, 0, 0]) cylinder(d = 3.6, h = DRAWER_WALL + 2);
-            else usbc_plug_cut(DRAWER_WALL + 2);
-            for (dx = [-PORT_EARS / 2, PORT_EARS / 2]) translate([dx, 0, 0]) cylinder(d = 3.2, h = DRAWER_WALL + 2);
+        union() {
+            translate([0, y - DRAWER_WALL, 0]) cube([DRAWER_W, t, PORT_WALL_H]);
+            for (x = DATA_PORT_X, s = [-1, 1]) let (x0 = DATA_BODY_CUT[0] / 2 + 0.2)     // from the body's cut outwards
+                translate([x + (s > 0 ? x0 : -x0 - PAD[0]), y + 1 - EPS, PORT_Z - DATA_FLANGE[1] / 2]) cube([PAD[0], PAD[1], DATA_FLANGE[1]]);
         }
+        for (x = DATA_PORT_X) translate([x, y - DRAWER_WALL - EPS, PORT_Z]) rotate([-90, 0, 0]) {
+            data_body_cut(t + 2 * EPS);
+            for (s = [-1, 1]) translate([s * PORT_EARS / 2, 0, 0]) cylinder(d = 2.1, h = t + PAD[1] - 1);   // PT 2.6 pilots
+        }
+        translate([AUX_PORT_X, y - DRAWER_WALL - EPS, PORT_Z]) rotate([-90, 0, 0])
+            hull() for (dx = [-3.0, 3.0]) translate([dx, 0, 0]) cylinder(d = 3.6, h = t + 2 * EPS);
     }
 }
 
