@@ -194,8 +194,8 @@ like the bay node's yet.
 ## DATA port v1.0 — 2 layers, 40 × 17 mm
 
 The drawer's USB-C port for the board under test (×1 per drawer): a small board screwed
-components down under a shelf of the drawer's port wall (2 × PT 2.6×8 from below, through the drawer's cable
-window, one each end), the receptacle's mouth out of the wall, a 5-wire JST PH lead from its rear edge to
+components up to the floor of the drawer's rear bay (2 × PT 2.6×8 from above, one each end), the
+receptacle's mouth behind a U in the port wall, a 5-wire JST PH lead from its rear edge to
 the node's J7 through the drag chain ([cabling.md](cabling.md)).  It replaces the USB-C coupler
 and the 90° extension.  Geometry in `config/rack.yaml` › `pcb.data_port`.
 

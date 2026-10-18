@@ -334,13 +334,13 @@ def hardware(rack) -> list[dict]:
          "notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing "
                   "is for the non-opening 7×7 type: check one on the open links before buying the lot"},
         # the drawer's DATA port: our own small board (electronics/data-port, in the Electronics lines)
-        # under a shelf of the port wall, on a 5-wire PH lead from the node's J7 through the drag chain:
+        # on the rear-bay floor, on a 5-wire PH lead from the node's J7 through the drag chain:
         # the rack's PH cable type (pin n ↔ pin 6−n), 5 pins so a 6-pin row cable cannot go in
         {"category": "Cables", "item": "JST PH 5-pin lead, pin n ↔ pin 6−n (flat, no twist), 50 cm, lot of 5 "
                                       "(DATA lead: node J7 → drag chain → DATA port board; VBUS, GND, D−, D+, GND)",
          "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 5P, Length50CM",
          "qty": math.ceil(n_bays / 5), "unit": "lot", "unit_eur": 4.2,
-         "notes": "price interpolated from the 6-pin lots, not read: check the 5P lengths on the listing (≥ 40 cm).  The route is 34 cm plugs "
+         "notes": "price interpolated from the 6-pin lots, not read: check the 5P lengths on the listing (≥ 40 cm).  The route is ≈ 38 cm plugs "
                   "included (constant over the stroke); the spare goes in a wider bend between the node and the "
                   "chain's fixed end (nothing moves there), never in front of the chain's moving end.  On arrival: "
                   "both plugs show the same face, pin 1 rings to pin 5; twist D−/D+ (pins 3-4) by hand.  Or crimp "

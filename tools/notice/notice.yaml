@@ -128,7 +128,7 @@ pages:
     footer: "{name}"
     steps:
       - {n: 11, drawing: a11t, alt: "Anchor into the tray's inserts; the DATA lead's plug into the node's J7 (DATA)", hardware: {m3x8: 2}}
-      - {n: 12, drawing: a12s, alt: "Drawer: the DATA board under its roof, its USB-C through the port wall's slot, 2 screws from below through the cable window; the lead into its PH from the rear", parts: {dp: 1}, hardware: {pt26x8: 2}}
+      - {n: 12, drawing: a12s, alt: "Drawer: the DATA board on its two bosses, components up, its USB-C behind the port wall's U, 2 screws from above; the lead into its PH from the rear, down through the cable window", parts: {dp: 1}, hardware: {pt26x8: 2}}
 
   - file: A-07.dc.html
     board: {title: "One bay: 13", row: titleA}

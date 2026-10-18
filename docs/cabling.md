@@ -10,7 +10,7 @@ as it can be without ever being taut**.
 bay node (plenum)                                 drawer
  ┌──────────┐  DATA lead: JST PH 5-pin, ~40 cm    ┌────────────────────────────────────┐
  │ DATA J7  ├──────┐                              │ [DATA]◀── short cable ──▶ board    │
- └──────────┘      │  ┌─ drag chain 7×7 R18 ─┐    │   ▲ port board under the shelf     │
+ └──────────┘      │  ┌─ drag chain 7×7 R18 ─┐    │   ▲ port board on the drawer floor │
                    └─▶│ fixed end   moving end├───┼─▶ up through the cable window      │
                       └──────────────────────┘    └────────────────────────────────────┘
 ```
@@ -18,9 +18,9 @@ bay node (plenum)                                 drawer
 1. **Node → drawer: a small port board and a 5-wire lead.**  The drawer's
    DATA port is our own 40 × 17 mm board ([electronics/data-port](../electronics/data-port/design.py)):
    a USB-C receptacle (a source: Rp 22k on CC1/CC2, USBLC6 ESD at the
-   receptacle) screwed components down under a shelf of the port wall
-   (2 × PT 2.6×8, one each end), its mouth out of the wall: the board's short
-   cable plugs into it.  A JST PH 5-pin lead (VBUS, GND, D−, D+, GND) plugs
+   receptacle) screwed components up to the floor behind the port wall
+   (2 × PT 2.6×8, one each end), its mouth behind a U in the wall: the
+   board's short cable plugs into it.  A JST PH 5-pin lead (VBUS, GND, D−, D+, GND) plugs
    into the node's **DATA** header (J7, vertical, in parallel with the DUT
    receptacle J4: one of the two in use), runs ~3 cm in the plenum to the
    chain's fixed end, through the drag chain, out of its moving end

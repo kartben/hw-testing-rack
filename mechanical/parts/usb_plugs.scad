@@ -81,24 +81,24 @@ module adapter_metal() {                      // the female's shell, lining its 
 }
 
 // the drawer's DATA port board (electronics/data-port, a stand-in): origin at its front-left corner on
-// its bare back face, mounted components down: x = KiCad x, y rearwards (KiCad y = BD - y), z up; the
-// board from z = -BT to 0, its parts below.  BW BD BT HOLES USBX PHX from config/rack.yaml › pcb.data_port
-BW = 40; BD = 17; BT = 1.6; HOLES = [[3, 8.5], [37.5, 4]]; USBX = 30.5; PHX = 21;
+// its bare underside, components up: x = KiCad x, y rearwards (KiCad y = BD - y), z up; the board from
+// z = 0 to BT, its parts above.  BW BD BT HOLES USBX PHX from config/rack.yaml › pcb.data_port
+BW = 40; BD = 17; BT = 1.6; HOLES = [[3, 8.5], [37.5, 4]]; USBX = 30.5; PHX = 17.5;
 module dataport_pcb() difference() {
-    translate([0, 0, -BT]) linear_extrude(BT) offset(r = 1.5) offset(delta = -1.5) square([BW, BD]);
-    for (h = HOLES) translate([h[0], BD - h[1], -BT - 1]) cylinder(d = 2.7, h = BT + 2);
+    linear_extrude(BT) offset(r = 1.5) offset(delta = -1.5) square([BW, BD]);
+    for (h = HOLES) translate([h[0], BD - h[1], -1]) cylinder(d = 2.7, h = BT + 2);
 }
 module dataport_usb() difference() {                     // GCT USB4105, its mouth on the front edge
-    translate([USBX - 4.47, -0.28, -BT - 3.40]) cube([8.94, 7.78, 3.40]);
-    translate([USBX, -0.3, -BT - 1.63]) rotate([-90, 0, 0]) linear_extrude(4)
+    translate([USBX - 4.47, -0.28, BT]) cube([8.94, 7.78, 3.40]);
+    translate([USBX, -0.3, BT + 1.63]) rotate([-90, 0, 0]) linear_extrude(4)
         hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 2.56);
 }
 module dataport_ph() difference() {                      // JST S5B-PH-SM4-TB, side entry, its mouth on the rear edge
     union() {
-        translate([PHX - 6, BD - 8.96, -BT - 5.58]) cube([12, 8.61, 5.58]);
-        for (s = [-1, 1]) translate([PHX + s * 6.5 - 0.5, BD - 8.96, -BT - 1.0]) cube([1, 3, 1.0]);
+        translate([PHX - 6, BD - 8.96, BT]) cube([12, 8.61, 5.58]);
+        for (s = [-1, 1]) translate([PHX + s * 6.5 - 0.5, BD - 8.96, BT]) cube([1, 3, 1.0]);
     }
-    translate([PHX - 5.2, BD - 4, -BT - 4.9]) cube([10.4, 4.5, 4.0]);
+    translate([PHX - 5.2, BD - 4, BT + 0.9]) cube([10.4, 4.5, 4.0]);
 }
 // a JST PHR-5 plug and its wires' first millimetres, in the plug frame (+z into the header)
 module ph5_plug() {

@@ -57,18 +57,15 @@ STOP_Y = FLANGE_Y[0] - DRAWER_TRAVEL - 4.5;        // stop pin position (carrier
 // port wall: the DATA port and a slot for the optional AUX pigtail.  The DATA port is our own small
 // board (electronics/data-port, config/rack.yaml › pcb.data_port): a USB-C source on its front edge,
 // a side-entry JST PH 5 on its rear edge for the lead from the node's J7 through the drag chain.
-// Mounted components down under a roof that spans the rear bay from the port wall to the rear wall
-// (a bridge: no supports), 2 × PT 2.6 × 8 from below through the cable window.  Its front edge goes
-// through a slot in the port wall, flush with the wall's front face: the receptacle sits 0.28 mm
-// proud, so any plug, straight or right-angle, seats on it.
+// Components up on two bosses of the rear-bay floor, 2 × PT 2.6 × 8 from above, its front edge against
+// the port wall's back face: the receptacle sits 1.7 mm behind the wall's front face, in the USB-C plug
+// cut carried up through the wall's top (a U): a straight plug's overmold or a right-angle plug's body
+// (19 mm tall, the wall's top only 5 mm over the axis) goes in until the plug seats.
 PORT_X = concat(DATA_PORT_X, [AUX_PORT_X]);        // from config/rack.yaml (drawer.data_ports, aux_port)
 PORT_Z = DRAWER_BOTTOM + 8.5;                      // the USB-C mouth's centre (tools/webscene.py mirrors it)
-DATA_ROOF_Z = PORT_Z + 1.63 + DATA_PCB_T;          // the roof's underside: the board's bare back face
+DATA_PCB_Z = PORT_Z - 1.63 - DATA_PCB_T;           // the board's underside (the USB4105's mouth 1.63 over its top): the bosses' top
 DATA_PCB_X0 = DATA_PORT_X[0] - DATA_PCB_USB;       // drawer x of the board's left edge (KiCad x = 0)
-DATA_PCB_Y0 = DRAWER_PORT_WALL_Y - DRAWER_WALL;    // drawer y of its front edge: the wall's front face
-PORT_WALL_H = DRAWER_WALL_H + 5;                   // 5 mm taller than the side walls: the roof's top
-// the USB4105 below the board's component face: 8.94 wide, 3.40 deep, the mouth 1.63 down
-DATA_USB = [8.94, 3.40];
+DATA_PCB_Y0 = DRAWER_PORT_WALL_Y;                  // drawer y of its front edge: the port wall's back face
 
 // board plate (drops into the drawer between front panel and port wall)
 PLATE_W = DRAWER_INNER_W - 0.6;

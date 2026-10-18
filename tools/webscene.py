@@ -450,8 +450,8 @@ def build(rack) -> Path:
     port_z = d["bottom"] + 8.5            # lib/carrier.scad › PORT_Z: the DATA board's USB-C mouth
     dp = raw["pcb"]["data_port"]
     dp_x0 = data_ports[0] - dp["usb"]      # the DATA board in the drawer (lib/carrier.scad › DATA_PCB_X0, ..)
-    dp_y0 = port_wall_y - d["wall"]       # its front edge: the port wall's front face
-    dp_roof = port_z + 1.63 + dp["thickness"]
+    dp_y0 = port_wall_y                   # its front edge: the port wall's back face
+    dp_z = port_z - 1.63 - dp["thickness"]  # its underside, on the floor bosses (components up)
     plate_x0 = d["wall"] + 0.3
     plate_y0 = d["front_thickness"] + 0.3
     plate_w = rack.drawer_w - 2 * d["wall"] - 0.6
@@ -480,12 +480,12 @@ def build(rack) -> Path:
         items["pcbs"].append({"board": "bay-node", "bay": bid, "row": i, "space": "row",
                               "pos": [x0 + node["x0"], rack.node_front_y + node["size"][1], c["bottom"] + c["standoff"]],
                               "size": [node["size"][0], node["size"][1], node["thickness"]]})
-        # the DATA port board under its roof in the drawer (components down) and its 5-wire PH lead: up
+        # the DATA port board on its floor bosses in the drawer (components up) and its 5-wire PH lead: up
         # out of the node's J7, across the node under the drawer into the drag chain's fixed end; out of
         # its moving end, a U-turn, up through the drawer's cable window into the board's PH from the rear
         dxw_ = x0 + rack.drawer_x0
         for k in ("pcb", "usb", "ph"):
-            add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_roof), row=i, layer="drawers", bay=bid,
+            add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
                 movable=True)
         j7 = {"at": [x0 + node["x0"] + NODE_J7[0], rack.node_front_y + node["size"][1] - NODE_J7[1],
                      pcb_top + NODE_J7[2] - 6.0], "dir": [0, 0, -1], "up": [0, 1, 0], "type": "ph5"}
@@ -494,7 +494,7 @@ def build(rack) -> Path:
         cable(rounded_path([p0, (p0[0], p0[1], top), (x0 + fixed[0], fixed[1] - 21, top),
                             (x0 + fixed[0], fixed[1] - 11, chain_z), (x0 + fixed[0], fixed[1], chain_z)], 6.0),
               row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 5, through the drag chain)")
-        ph = {"at": [dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1], plenum + dp_roof - dp["thickness"] - 2.8],
+        ph = {"at": [dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1], plenum + dp_z + dp["thickness"] + 2.8],
               "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph5"}
         mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
         x_run = max(ph["at"][0], x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0)   # 6 mm off the fixed run
@@ -549,7 +549,7 @@ def build(rack) -> Path:
             ctype = info["cable"]
             btype = cables_cfg[ctype].get("b", "usb-c")
             style = cables_cfg[ctype].get("style", "right")
-            end_a = {"at": [sx, dy + dp_y0 - 0.28, dz + port_z], "dir": [0, 1, 0],   # the DATA board's USB-C, 0.28 proud
+            end_a = {"at": [sx, dy + dp_y0 - 0.28, dz + port_z], "dir": [0, 1, 0],   # the DATA board's USB-C, 0.28 proud of its edge
                      "type": "usb-c", "style": "straight" if style == "straight" else "right"}
             b_style = "straight" if style == "side" else style
             zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)

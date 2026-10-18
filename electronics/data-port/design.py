@@ -1,7 +1,7 @@
 """DATA port v1.0 — the drawer's USB-C port for the board under test.
 
-A small board screwed, components down, under a shelf of the drawer's port wall: a USB-C
-receptacle whose mouth looks out of the wall towards the board's plate, a 5-wire JST PH lead
+A small board screwed, components up, to the floor of the drawer's rear bay: a USB-C
+receptacle whose mouth looks through the port wall towards the board's plate, a 5-wire JST PH lead
 to the bay node's DATA header (J7) through the drag chain.  It replaces the USB-C coupler and
 the 90° extension cable.
 
