@@ -183,17 +183,24 @@ CABLE_MIN_R = 10.0         # and the tightest it takes without kinking
 # the drawer slides.  A longer cable's spare length is looped flat on the plate's hooks instead.
 ARCH_TOP_MAX = 105.0
 
-# The bay camera (2026-10-18 hand-over): an Arducam Mega 3MP with a ~120° M12 lens on the bay's own node, its
-# lens over bay X 64, Y 84 (the one spot that frames every board in the population), 38 mm under the ceiling,
-# looking straight down; on each side a light box, 3 white LEDs behind a 1 mm white PETG diffuser.  The real pod
-# is the mechanics' (mechanical/parts/camera_pod.scad): move these numbers to config/rack.yaml with it.
-CAMERA_LENS = (64.0, 84.0, 38.0)        # bay X and Y (in its own row's frame), drop below the ceiling
+# The bay camera (2026-10-18 hand-over): an Arducam Mega 3MP (B0434, 33 × 33 mm PCB; Arducam gives 35 mm overall
+# with its stock M12 lens, publishes no 3D model) fitted with a ~120° M12 lens, which is shorter: Ø14 front, 9.5 mm
+# out of the holder.  Wired to the bay's own node, its lens over bay X 64, Y 84 (the one spot that frames every board
+# in the population), looking straight down; on each side a light box, 3 white LEDs behind a 1 mm white PETG
+# diffuser.  The real pod is the mechanics' (mechanical/parts/camera_pod.scad): move these numbers to
+# config/rack.yaml with it.
+VIEWER_CAMERAS = ("B2",)                # the user, 2026-10-18: one camera in the viewer, in B2
 CAMERA_RIG = {
-    "plate": [70, 40, 3],                # the pod's plate under the ceiling, centred on the lens
+    "plate": [66, 34, 3],                # the pod's plate under the ceiling, centred on the lens
+    "standoff": 3,                       # plate → the Mega's PCB
     "board": [33, 33, 1.6],              # the Mega's PCB, lens down
+    "holder": [14, 10.5, 22],            # M12 holder: square base, height, span of its two screw ears
+    "optic": [14, 12, 9.5],              # 120° M12 lens: front ring Ø, barrel Ø, length out of the holder
     "fov": 120, "aspect": 4 / 3,         # diagonal field of view (fisheye), sensor aspect
-    "lights": [{"at": [s * 25.5, 0], "size": [14, 30], "gap": 8, "leds": 3, "diffuser": 1.0} for s in (-1, 1)],
+    "lights": [{"at": [s * 25.5, 0], "size": [12, 26], "gap": 8, "leds": 3, "diffuser": 1.0} for s in (-1, 1)],
 }
+CAMERA_LENS = (64.0, 84.0, round(CAMERA_RIG["plate"][2] + CAMERA_RIG["standoff"] + CAMERA_RIG["board"][2]
+                                 + CAMERA_RIG["holder"][1] + CAMERA_RIG["optic"][2], 2))   # bay X, Y; drop below the ceiling
 
 
 def plug_exit(end):
@@ -425,7 +432,7 @@ def build(rack) -> Path:
     pcb_top = rack.pcb_top
     plenum = rack.plenum
     pop = raw.get("population", {})
-    cams = set(raw.get("cameras", []))
+    cams = set(raw.get("cameras", [])) & set(VIEWER_CAMERAS)   # config: the rack's cameras (BOM); the viewer shows one
     cables_cfg = raw["cables"]
     n_rows = len(rack.rows)
     pitch, T = rack.pitch, rack.panel_t

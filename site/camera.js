@@ -86,44 +86,38 @@ export function makeCameraRig(cam, M) {
   g.position.set(lx, ly, 0);
   const drop = -lz;
   const [pw, pl, pt] = cam.plate;
-  // plate and its arm to the ceiling's insert square (the pod is cantilevered off the four inserts)
+  // the plate, and an arm to the ceiling's insert square (the pod is cantilevered off the four inserts)
   const [mx, my, mp] = cam.mount;
-  const hull = (pts) => {                           // convex hull, Andrew's monotone chain
-    pts = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]);
-    const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-    const lo = [], up = [];
-    for (const p of pts) { while (lo.length >= 2 && cross(lo.at(-2), lo.at(-1), p) <= 0) lo.pop(); lo.push(p); }
-    for (const p of pts.reverse()) { while (up.length >= 2 && cross(up.at(-2), up.at(-1), p) <= 0) up.pop(); up.push(p); }
-    return lo.slice(0, -1).concat(up.slice(0, -1));
+  const slab = (w, l, x, y, rot = 0) => {
+    const m = new THREE.Mesh(printed(new RoundedBoxGeometry(w, l, pt, 2, 1.2)), M.cameras);
+    m.position.set(x, y, -pt / 2);
+    m.rotation.z = rot;
+    return m;
   };
-  const s = mp / 2 + 6;
-  const outline = hull([[-pw / 2, -pl / 2], [pw / 2, -pl / 2], [pw / 2, pl / 2], [-pw / 2, pl / 2],
-    [mx - s, my - s], [mx + s, my - s], [mx + s, my + s], [mx - s, my + s]]);
-  const shape = new THREE.Shape(outline.map(([x, y]) => new THREE.Vector2(x, y)));
-  const plateGeo = new THREE.ExtrudeGeometry(shape, { depth: pt, bevelEnabled: true, bevelThickness: 0.6, bevelSize: 0.6, bevelSegments: 2 });
-  plateGeo.translate(0, 0, -pt);
-  const plate = new THREE.Mesh(printed(plateGeo), M.cameras);
-  g.add(plate);
+  g.add(slab(pw, pl, 0, 0), slab(mp + 8, mp + 8, mx, my),
+    slab(Math.hypot(mx, my), 14, mx / 2, my / 2, Math.atan2(my, mx)));
   for (const dx of [-mp / 2, mp / 2]) for (const dy of [-mp / 2, mp / 2]) {     // M3 heads in their recesses
     const h = new THREE.Mesh(new THREE.CylinderGeometry(2.7, 2.7, 1.2, 20), M.silver);
     h.rotation.x = Math.PI / 2;
     h.position.set(mx + dx, my + dy, -pt + 0.5);
     g.add(h);
   }
-  // the Mega: PCB on four standoffs, the M12 holder and the lens below it
+  // the Mega: PCB on four standoffs, the M12 holder (screwed through two ears) and the lens below it
   const [bw, bl, bt] = cam.board;
-  const zb = -pt - 3;                                 // PCB top face
+  const zb = -pt - cam.standoff;                      // PCB top face
   g.add(boxAt(bw, bl, bt, M.megaPcb, 0, 0, zb - bt));
-  for (const sx of [-1, 1]) for (const sy of [-1, 1]) g.add(boxAt(3.4, 3.4, 3, M.cameras, sx * (bw / 2 - 3), sy * (bl / 2 - 3), zb));
+  for (const sx of [-1, 1]) for (const sy of [-1, 1]) g.add(boxAt(3.4, 3.4, cam.standoff, M.cameras, sx * (bw / 2 - 3), sy * (bl / 2 - 3), zb));
   const zh = zb - bt;                                 // underside of the PCB
-  g.add(boxAt(15, 15, 9, M.blackPlastic, 0, 0, zh - 9));
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(6.2, 6.2, drop + zh + 9 - 2.5, 36), M.lensBody);
+  const [hb, hh, he] = cam.holder, [ld, bd, ll] = cam.optic;
+  g.add(boxAt(hb, hb, hh, M.blackPlastic, 0, 0, zh - hh), boxAt(he, 5, 1.6, M.blackPlastic, 0, 0, zh - 1.6));
+  const ringH = 3;
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(bd / 2, bd / 2, ll - ringH, 36), M.lensBody);
   barrel.rotation.x = Math.PI / 2;
-  barrel.position.set(0, 0, (zh - 9 - drop + 2.5) / 2);
-  const ring = new THREE.Mesh(new THREE.CylinderGeometry(7.2, 7.2, 2.5, 36), M.lensBody);
+  barrel.position.set(0, 0, zh - hh - (ll - ringH) / 2);
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(ld / 2, ld / 2, ringH, 36), M.lensBody);
   ring.rotation.x = Math.PI / 2;
-  ring.position.set(0, 0, -drop + 1.25);
-  const glass = new THREE.Mesh(new THREE.CircleGeometry(4.6, 36), M.glass);
+  ring.position.set(0, 0, -drop + ringH / 2);
+  const glass = new THREE.Mesh(new THREE.CircleGeometry(ld / 2 - 2.2, 36), M.glass);
   glass.rotation.x = Math.PI;                        // facing down
   glass.position.set(0, 0, -drop - 0.01);
   g.add(barrel, ring, glass);
