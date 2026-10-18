@@ -6,6 +6,14 @@ their makers publish one.  Those models are **not committed**: `tools/fetch_rend
 downloads the ones that need no login into `render/assets/` (git-ignored), and
 `tools/board_models.py` normalises them into the frame of `mechanical/boards/boards.yaml`.
 
+The viewer uses a maker's model only where its licence lets the repository publish it
+(`model: { web: true }` in `boards.yaml`): `board_models.py` then also writes a lighter copy to
+`site/assets/boards/<board-id>.glb` (the PCBs whole, tiny parts dropped, small ones as boxes,
+the rest decimated, one colour per part), which the viewer draws instead of the stand-in.
+Today: the **GIGA R1 WiFi + GIGA Display Shield** in B2, the camera bay.  A board's `screen:`
+(active area, pixels, which way its top points) gets a live LVGL demo in the viewer
+(`tools/lvgl_wasm/`, LVGL's software renderer built for wasm32).
+
 ```bash
 python tools/fetch_render_assets.py     # textures + the board models below
 python tools/board_models.py            # → render/assets/boards/<board-id>.norm.glb
@@ -29,6 +37,7 @@ model: { rot: 180, flip: false, offset: [0, 0] }
 |---|---|---|---|
 | Raspberry Pi Pico 2 | [official STEP](https://pip.raspberrypi.com/documents/RP-009061-CA) (Raspberry Pi Ltd) | MIT | no — **fetched** |
 | Arduino UNO R4 WiFi | [official STEP](https://docs.arduino.cc/resources/models/ABX00087-step.zip) (Arduino) | CC BY-SA 4.0 | no — **fetched** |
+| Arduino GIGA R1 WiFi + GIGA Display Shield (`giga-r1-display`) | official STEP files [ABX00063](https://docs.arduino.cc/resources/models/ABX00063-step.zip) and [ASX00039](https://docs.arduino.cc/resources/models/ASX00039-step.zip) (Arduino), stacked on their Samtec strips and HLE sockets by `board_models.py` (`model.stack`), PCBs recoloured Arduino teal | CC BY-SA 4.0 — the viewer's copy `site/assets/boards/giga-r1-display.glb` is a derivative under the same licence | no — **fetched** |
 | Seeed XIAO ESP32S3 Sense (camera pods) | [official STEP](https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/seeed-studio-xiao-esp32s3-sense-3d_model.zip) (Seeed Studio) | none stated: renders only | no — **fetched** |
 | Arduino UNO R4 Minima | [official CAD zip](https://docs.arduino.cc/hardware/uno-r4-minima) (STEP inside) | CC BY-SA 4.0 | no |
 | ESP32-S3 / C6-DevKitC-1 | no board model; official DXF outline and module STEP ([espressif/kicad-libraries](https://github.com/espressif/kicad-libraries)) | CC BY-SA 4.0 + KiCad exception | no |
@@ -41,3 +50,6 @@ the ids from `boards.yaml`, and re-run `tools/board_models.py`.
 
 Credits for the photo renders: Raspberry Pi Pico 2 model © Raspberry Pi Ltd (MIT); Arduino
 UNO R4 WiFi model © Arduino S.r.l. (CC BY-SA 4.0); XIAO ESP32S3 Sense model © Seeed Studio.
+Credits for the viewer: Arduino GIGA R1 WiFi and GIGA Display Shield models © Arduino S.r.l.,
+CC BY-SA 4.0, stacked, recoloured and simplified (`site/assets/boards/giga-r1-display.glb`, same
+licence); the screen runs LVGL's music demo (LVGL, MIT).

@@ -219,18 +219,21 @@ def board_model(bid: str, bd: dict) -> dict | None:
     ex, ey = np.subtract(x, o), np.subtract(y, o)
     m = [[ex[0], ey[0], 0, o[0]], [ex[1], ey[1], 0, o[1]], [0, 0, 1, 0], [0, 0, 0, 1]]
     return {"url": f"assets/boards/{bid}.glb", "matrix": [round(float(v), 6) for row in m for v in row],
-            "source": bd.get("model_source", "")}
+            "credit": bd.get("model", {}).get("credit", "")}
 
 
 def board_screen(bd: dict) -> dict | None:
-    """A board's display (boards.yaml › screen: active area's bottom-left corner and size in the drawing, the
-    image's width along the drawing's X, its top towards +Y, the glass's height above the PCB's underside):
-    three corners in the viewer's frame, for a live LVGL texture."""
+    """A board's display (boards.yaml › screen: the active area's bottom-left corner and size in the drawing,
+    `top`: where the image's top edge points in the drawing, +y (default) or -x, the glass's height above the
+    PCB's underside): the image's bottom-left, bottom-right and top-left corners in the viewer's frame, for a
+    live LVGL texture."""
     sc = bd.get("screen")
     if not sc:
         return None
     (x, y), (w, h) = sc["at"], sc["size"]
-    bl, br, tl = board_frame(bd, [(x, y), (x + w, y), (x, y + h)])
+    corners = {"+y": [(x, y), (x + w, y), (x, y + h)],            # landscape: width along +x
+               "-x": [(x + w, y), (x + w, y + h), (x, y)]}        # turned: width along +y, top towards -x
+    bl, br, tl = board_frame(bd, corners[sc.get("top", "+y")])
     return {"bl": bl, "br": br, "tl": tl, "z": sc["z"], "px": sc["px"], "demo": sc.get("demo", "music")}
 
 

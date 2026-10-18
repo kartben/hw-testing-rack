@@ -102,7 +102,7 @@ population:
   A3: { board: nrf52840-dk,      cable: c-to-micro-b }
   A4: { board: nrf54l15-dk,      cable: c-to-c }
   B1: { board: frdm-mcxn947,     cable: c-to-c }
-  B2: { board: esp32-s3-devkitc, cable: c-to-micro-b-straight }
+  B2: { board: giga-r1-display,  cable: c-to-c }                   # the camera bay: a live LVGL screen (2026-10-18)
   B3: { board: rpi-pico2,        cable: c-to-micro-b-straight, open: true }    # drawer shown pulled out
   B4: { board: arduino-uno-r4,   cable: c-to-c-straight, pc_cable: true }      # "classic" mode: laptop on the front port
 

@@ -32,6 +32,11 @@ BOARD_MODELS = {
                        "Arduino UNO R4 WiFi (ABX00087) STEP, Arduino, CC BY-SA 4.0"),
     "xiao": ("https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/seeed-studio-xiao-esp32s3-sense-3d_model.zip",
              "Seeed Studio XIAO ESP32S3 Sense 3D model, Seeed Studio (no licence stated: renders only)"),
+    # the two halves of `giga-r1-display` (tools/board_models.py stacks them)
+    "giga-r1-wifi": ("https://docs.arduino.cc/resources/models/ABX00063-step.zip",
+                     "Arduino GIGA R1 WiFi (ABX00063) STEP, Arduino, CC BY-SA 4.0"),
+    "giga-display-shield": ("https://docs.arduino.cc/resources/models/ASX00039-step.zip",
+                            "Arduino GIGA Display Shield (ASX00039) STEP, Arduino, CC BY-SA 4.0"),
 }
 
 

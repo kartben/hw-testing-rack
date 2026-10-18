@@ -338,8 +338,9 @@ function makeBoard(b) {
 // A board's display: glossy glass over a live LVGL screen (site/screen.js), which the camera sees too, with
 // the light boxes' reflection on it.  One LVGL runs for the rack, started with the first screen.
 let lvgl = null, lvglReady = null;
-const screenMat = new THREE.MeshPhysicalMaterial({ color: 0x050608, roughness: 0.12, metalness: 0, clearcoat: 1,
-  clearcoatRoughness: 0.04, emissive: 0xffffff, emissiveIntensity: 0 });
+const screenMat = new THREE.MeshPhysicalMaterial({ color: 0x050608, roughness: 0.3, metalness: 0, clearcoat: 0.45,
+  clearcoatRoughness: 0.1, emissive: 0xffffff, emissiveIntensity: 0,
+  polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });   // drawn over the model's own glass
 function makeScreen(sc) {
   const [bl, br, tl] = [sc.bl, sc.br, sc.tl].map(([x, y]) => new THREE.Vector3(x, y, sc.z));
   const tr = br.clone().add(tl).sub(bl);
@@ -844,6 +845,7 @@ function select(id, showPanel = true) {
   const info = $('info');
   if (!id) { info.hidden = true; return; }
   const b = DATA.bays.find((x) => x.id === id);
+  const credit = DATA.boards.find((x) => x.bay === id)?.model?.credit;
   const tags = [];
   if (b.camera) tags.push('<span class="tag ok">camera</span>');
   if (b.power_port) tags.push('<span class="tag ok">PWR port used</span>');
@@ -855,6 +857,7 @@ function select(id, showPanel = true) {
     <div class="tags">${tags.join('')}</div>
     <dl>
       <dt>Board</dt><dd>${b.board ?? '<em>empty — universal plate</em>'}</dd>
+      ${credit ? `<dt>3D model</dt><dd>${credit}</dd>` : ''}
       <dt>Debug USB</dt><dd>${b.usb ?? '—'}</dd>
       <dt>Cable</dt><dd>${b.cable ?? '—'}</dd>
       <dt>DATA socket</dt><dd>${b.data_port ? b.data_port.join(' + ') + ' position' : '—'}</dd>
@@ -950,7 +953,7 @@ function tick(now) {
   labelRenderer.render(scene, camera);
 }
 
-if (params.has('debug')) window.__viewer = { renderer, scene, camera, controls, rigs, THREE, select, openPreview, preview: () => preview };
+if (params.has('debug')) window.__viewer = { renderer, scene, camera, controls, rigs, THREE, select, openPreview, preview: () => preview, lvgl: () => lvglReady };
 
 load().then(() => { placeEnvironment(); requestAnimationFrame(tick); }).catch((err) => {
   console.error(err);

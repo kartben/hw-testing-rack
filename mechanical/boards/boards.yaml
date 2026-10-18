@@ -40,6 +40,33 @@ boards:
     zephyr: { choices: ["arduino_uno_r4@minima", "arduino_uno_r4@wifi"], runner: pyocd,
               note: "the UNO R4 WiFi's ESP32-S3 is its CMSIS-DAP probe and USB console; the Minima has neither: SWD probe, console on AUX" }
 
+  giga-r1-display:
+    name: Arduino GIGA R1 WiFi + GIGA Display Shield
+    short: GIGA + display
+    # The shield's Samtec strips plug into the GIGA's two HLE sockets: the shield sits 7.5 mm over the
+    # GIGA's top face, its 3.97" display (480 × 800) facing up, away from the GIGA.  Drawing frame: the
+    # shield's outline (it covers the GIGA), the GIGA's underside at z = 0, its USB-C edge on the left.
+    size: [106.0, 80.0]
+    holes: []
+    fence: true             # the GIGA's Mega holes are under the shield: corner fences until the plate holds the stack
+    usb: { edge: left, pos: 50.2, type: usb-c }   # J12 (CX90B-16P), 0.9 mm proud of the GIGA's edge
+    standoff: 5             # the GIGA's underside: the USB-A shell's tabs reach 1.9 mm below it
+    height: 14.5            # top of the display above the GIGA's PCB
+    color: "#00878f"
+    screen: { at: [9.8, 15.58], size: [86.4, 51.84], px: [480, 800], top: -x, z: 16.21, demo: music }   # portrait, top at the USB edge
+    model:                  # tools/board_models.py stacks Arduino's two STEP files (tools/fetch_render_assets.py)
+      stack:
+        - { src: giga-r1-wifi }
+        - { src: giga-display-shield, rot_x: 180, at: [-0.16, 69.28, 7.53] }   # strips into sockets, measured on the models
+      offset: [0.16, 10.72, 1.68]
+      recolour: { "#003700": "#00828a" }   # the STEP's generic green PCBs → Arduino's teal
+      web: true             # CC BY-SA 4.0: the viewer's copy is published, with credit (docs/boards-3d.md)
+      credit: "© Arduino S.r.l., CC BY-SA 4.0 (stacked, recoloured, simplified)"
+    source: "Arduino STEP files ABX00063 + ASX00039 (CC BY-SA 4.0); datasheets ABX00063, ASX00039"
+    verified: true
+    zephyr: { platform: arduino_giga_r1/stm32h747xx/m7, runner: dfu-util,
+              note: "build with --shield arduino_giga_display_shield (LVGL samples run on it); dfu-util needs the bootloader: double-tap RESET (AUX RESET)" }
+
   nucleo-64:
     name: ST NUCLEO-64 (MB1136 / MB1367)
     short: NUCLEO-64

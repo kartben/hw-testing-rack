@@ -13,6 +13,10 @@ mechanical/boards/boards.yaml uses.  tools/assembly_glb.py then places it exactl
 stand-in box went.  Fix-ups per board in boards.yaml:
 
     model: { rot: 180, flip: false, offset: [0, 0] }   # extra turn about Z, upside-down export, nudge (mm)
+
+A board made of several models (a shield on its host) lists them under model.stack instead (see stack()), and
+model.web: true also writes the viewer's lighter copy to site/assets/boards/<id>.glb, for models whose licence
+lets the repository publish them (see docs/boards-3d.md).
 """
 
 from __future__ import annotations
@@ -119,6 +123,100 @@ def normalise(board_id: str, spec: dict, src: Path) -> dict:
             "size_ok": bool(np.allclose(sorted([bw, bl]), sorted(spec["size"]), atol=3.0)), "out": dst.name}
 
 
+def stack(board_id: str, spec: dict) -> dict:
+    """A board made of several makers' models (boards.yaml › model.stack), e.g. a display shield plugged on its
+    host: each part as its maker drew it (PCB top at z = 0), turned about X (`rot_x`, degrees) and moved (`at`)
+    into the first part's frame, then the whole by `offset` into the drawing's frame (the outline's bottom-left
+    corner at the origin, the lowest PCB's underside at z = 0)."""
+    model = spec["model"]
+    out = trimesh.Scene()
+    k = 0
+    for part in model["stack"]:
+        src = next((p for p in sorted(SRC.glob(f"{part['src']}.*")) if p.suffix.lower() in EXTS and ".norm" not in p.name), None)
+        if not src:
+            raise FileNotFoundError(f"{part['src']}: run tools/fetch_render_assets.py")
+        T = trimesh.transformations.translation_matrix(model.get("offset", [0, 0, 0])) @             trimesh.transformations.translation_matrix(part.get("at", [0, 0, 0])) @ _rot([1, 0, 0], part.get("rot_x", 0))
+        for m in baked(load_mm(src)):
+            m.apply_transform(T)
+            m = _recolour(m, model.get("recolour", {}))
+            out.add_geometry(m, node_name=f"{board_id}-{k}", geom_name=f"{board_id}-{k}")
+            k += 1
+    dst = SRC / f"{board_id}.norm.glb"
+    out.export(dst)
+    lo, hi = out.bounds
+    return {"parts": [p["src"] for p in model["stack"]], "bounds": [[round(float(v), 2) for v in lo], [round(float(v), 2) for v in hi]],
+            "faces": int(sum(len(g.faces) for g in out.geometry.values())), "out": dst.name}
+
+
+WEB = REPO / "site" / "assets" / "boards"
+
+
+def web_model(board_id: str, spec: dict, faces: int = 45000) -> dict:
+    """The viewer's copy (boards.yaml › model.web: the licence lets us publish it), from the normalised model:
+    the PCBs and other large parts as they are (decimation tears a drilled board), parts under 1.2 mm dropped,
+    those under 4 mm as their box, the rest decimated to fit about `faces` triangles; one colour per part."""
+    sc = trimesh.load(SRC / f"{board_id}.norm.glb", force="scene")
+    keep, boxes, rest = [], [], []
+    for m in baked(sc):
+        size = max(m.extents)
+        if size < 1.2:
+            continue
+        (keep if m.area > 3000 else boxes if size < 4.0 else rest).append(m)
+    budget = max(1, faces - sum(len(m.faces) for m in keep) - 12 * len(boxes))
+    ratio = min(1.0, budget / max(1, sum(len(m.faces) for m in rest)))
+    out = trimesh.Scene()
+    parts = [_solid(m, _mean_colour(m)) for m in keep] + [_solid(m.bounding_box_oriented.to_mesh(), _mean_colour(m)) for m in boxes]
+    for m in rest:
+        n = max(12, int(len(m.faces) * ratio))
+        c = _mean_colour(m)
+        if len(m.faces) > n:
+            try:
+                m = m.simplify_quadric_decimation(face_count=n)
+            except Exception:
+                pass
+        parts.append(_solid(m, c))
+    for i, m in enumerate(parts):
+        out.add_geometry(m, node_name=f"{board_id}-{i}", geom_name=f"{board_id}-{i}")
+    WEB.mkdir(parents=True, exist_ok=True)
+    dst = WEB / f"{board_id}.glb"
+    out.export(dst)
+    return {"web": str(dst.relative_to(REPO)), "faces": int(sum(len(g.faces) for g in out.geometry.values())),
+            "kB": round(dst.stat().st_size / 1024)}
+
+
+def _solid(m: trimesh.Trimesh, colour) -> trimesh.Trimesh:
+    """One colour for the whole part, as glTF vertex colours, which are linear: the makers' colours are sRGB."""
+    c = np.asarray(colour, dtype=float) / 255
+    lin = np.where(c[:3] <= 0.04045, c[:3] / 12.92, ((c[:3] + 0.055) / 1.055) ** 2.4)
+    m.visual = trimesh.visual.ColorVisuals(m, face_colors=np.round(np.append(lin, c[3]) * 255).astype(np.uint8))
+    return m
+
+
+def _mean_colour(m: trimesh.Trimesh) -> np.ndarray:
+    """One RGBA colour (uint8) for a part: its material's, else its faces' mean."""
+    v = m.visual
+    try:
+        f = getattr(getattr(v, "material", None), "baseColorFactor", None)
+        if f is not None:
+            f = np.asarray(f, dtype=float)[:4]
+            return np.round(f * 255 if f.max() <= 1 else f).astype(np.uint8)
+        if hasattr(v, "main_color"):
+            return np.asarray(v.main_color, dtype=np.uint8)
+    except Exception:
+        pass
+    return np.array([128, 128, 128, 255], dtype=np.uint8)
+
+
+def _recolour(m: trimesh.Trimesh, table: dict) -> trimesh.Trimesh:
+    """Swap a model's generic colours for the real ones (boards.yaml › model.recolour: "#rrggbb": "#rrggbb")."""
+    c = _mean_colour(m)
+    key = "#%02x%02x%02x" % tuple(int(x) for x in c[:3])
+    if key in table:
+        h = table[key].lstrip("#")
+        m.visual = trimesh.visual.ColorVisuals(m, face_colors=np.array([int(h[i:i + 2], 16) for i in (0, 2, 4)] + [255], dtype=np.uint8))
+    return m
+
+
 def main(only=None):
     lib = yaml.safe_load((REPO / "mechanical" / "boards" / "boards.yaml").read_text(encoding="utf-8"))["boards"]
     SRC.mkdir(parents=True, exist_ok=True)
@@ -126,12 +224,15 @@ def main(only=None):
     for bid, spec in lib.items():
         if only and bid not in only:
             continue
+        model = spec.get("model", {})
         src = next((p for p in sorted(SRC.glob(f"{bid}.*")) if p.suffix.lower() in EXTS and ".norm" not in p.name), None)
-        if not src:
+        if not src and "stack" not in model:
             continue
         found += 1
         try:
-            print(bid, normalise(bid, spec, src))
+            print(bid, stack(bid, spec) if "stack" in model else normalise(bid, spec, src))
+            if model.get("web"):
+                print(bid, web_model(bid, spec))
         except Exception as ex:
             print(bid, "FAILED:", ex)
     if not found:

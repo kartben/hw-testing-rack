@@ -4,6 +4,7 @@
 // [id, label, [w, l], hole_d, holes, usb_pos, usb_type, standoff, fence, height, color, verified, usb_side]
 BOARD_DB = [
   ["arduino-uno-r4", "UNO R4", [68.58, 53.34], 3.2, [[54.61, 50.8], [53.34, 2.54], [2.54, 45.72], [2.54, 17.78]], 12.34, "usb-c", 6, false, 11, "#00878f", true, true],
+  ["giga-r1-display", "GIGA + display", [80, 106], 3.2, [], 50.2, "usb-c", 5, true, 14.5, "#00878f", true, false],
   ["nucleo-64", "NUCLEO-64", [70, 82.5], 3.2, [[10.87, 54.61], [59.13, 53.34], [43.89, 2.54]], 47, "micro-b", 12, false, 12, "#f2f2f2", true, false],
   ["nucleo-144", "NUCLEO-144", [70, 133.34], 3.2, [[10.87, 105.41], [59.13, 104.14], [43.89, 53.34], [12.14, 29.21], [57.86, 29.21]], 49, "micro-b", 12, false, 14, "#f2f2f2", true, false],
   ["rpi-pico2", "PICO 2", [51, 21], 2.1, [[2, 16.2], [2, 4.8], [49, 16.2], [49, 4.8]], 10.5, "micro-b", 9, false, 4, "#1e7b34", true, true],
