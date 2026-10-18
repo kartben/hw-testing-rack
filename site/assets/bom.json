@@ -2011,23 +2011,43 @@
 },
 {
 "category": "Cables",
-"item": "JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 24 AWG, 120 mm, both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS)",
-"supplier": "pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often \"reverse\") or PHR-6 + 12 × SPH-002T-P0.5S",
-"qty": 9,
-"unit_eur": 0.6,
-"notes": "check: laid flat, both plugs show the same face, and pin 1 ↔ pin 6 (docs/can.md)",
-"unit": "pcs",
-"ext_eur": 5.4
+"item": "JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 (bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest flat at the front of the plenum)",
+"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 6P, Length20CM",
+"qty": 2,
+"unit": "lot",
+"unit_eur": 2.85,
+"notes": "9 needed; on arrival: both plugs show the same face, pin 1 rings to pin 6.  Or crimp them: PHR-6 + 12 × SPH-002T-P0.5S, 24 AWG",
+"ext_eur": 5.7
 },
 {
 "category": "Cables",
-"item": "JST PH 6-pin feed, the jumpers' type (pin n ↔ pin 7−n), 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS)",
-"supplier": "pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often \"reverse\") or PHR-6 + 12 × SPH-002T-P0.5S",
-"qty": 3,
-"unit_eur": 0.8,
-"notes": "check as the jumpers; PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair (pins 3-4) by hand",
-"unit": "pcs",
-"ext_eur": 2.4
+"item": "JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS)",
+"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 6P, Length30CM",
+"qty": 1,
+"unit": "lot",
+"unit_eur": 3.19,
+"notes": "checked as the jumpers; the listing doesn't give the gauge (26 AWG is usual): fine for a row's ≈ 0.4 A, warm at the eFuse's 1.6 A limit; twist the CAN pair (pins 3-4) by hand",
+"ext_eur": 3.19
+},
+{
+"category": "Cables",
+"item": "JST PH 6-pin feed, the jumpers' type, 60 cm, lot of 5 (power box → first bay of row B: VRACK, CAN, POS)",
+"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 6P, Length60CM",
+"qty": 1,
+"unit": "lot",
+"unit_eur": 4.69,
+"notes": "checked as the jumpers; the listing doesn't give the gauge (26 AWG is usual): fine for a row's ≈ 0.4 A, warm at the eFuse's 1.6 A limit; twist the CAN pair (pins 3-4) by hand",
+"ext_eur": 4.69
+},
+{
+"category": "Cables",
+"item": "JST PH 6-pin feed, the jumpers' type, 80 cm, lot of 5 (power box → first bay of row C: VRACK, CAN, POS)",
+"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 6P, Length80CM",
+"qty": 1,
+"unit": "lot",
+"unit_eur": 5.29,
+"notes": "checked as the jumpers; the listing doesn't give the gauge (26 AWG is usual): fine for a row's ≈ 0.4 A, warm at the eFuse's 1.6 A limit; twist the CAN pair (pins 3-4) by hand",
+"ext_eur": 5.29
 },
 {
 "category": "Cables",
@@ -2100,11 +2120,11 @@
 "Printed parts": 78.0,
 "Fasteners": 17.72,
 "Motion": 22.4,
-"Cables": 71.32,
+"Cables": 82.39,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 890.52,
+"total_eur": 901.59,
 "prints": [
 {
 "part": "bay_label",
