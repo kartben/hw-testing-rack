@@ -158,6 +158,11 @@ JLC_CPL_FIX = {
     "C7503186": ("TO-252-2", 0, -1.89, 0.0),                                  # bay Q1, hub Q1
     "C544399": ("HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.66x2.46mm", 270, 0.0, 0.0),  # hub U1–U5
     "C160315": ("JST_VH_B2P-VH_1x02_P3.96mm_Vertical", 0, 1.98, 0.0),         # hub J1 (hand-soldered)
+    # rack bus parts, fitted on 2026-10-18 the same way
+    "C265405": ("JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal", 180, 0.0, 0.0),  # bay J1 J2 J5, hub row outputs
+    "C3234993": ("SOIC-8_3.9x4.9mm_P1.27mm", 270, 0.0, 0.0),                  # bay U11, hub U6 (TCAN1044AV)
+    "C75176": ("SOT-23", 180, 0.0, 0.0),                                      # bay D5, hub D9 (PESD2CAN)
+    "C7420333": ("SOT-23", 180, 0.0, 0.0),                                    # bay D6 D7, hub POS clamps (BAT54S)
 }
 
 

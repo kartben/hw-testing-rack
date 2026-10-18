@@ -70,8 +70,10 @@ function brace_z(k) = k < 0
     ? let (top = line_z(0, 0, PR)) [30, 48, top - 44, top - 26]
     : let (b = line_z(k, 0, PR), h = ROW_HEIGHTS[min(k, len(ROW_HEIGHTS) - 1)]) [b + 28, b + 46, b + h - 47, b + h - 29];
 
-// 24 V jumper between neighbouring nodes: passes through the tray walls and the ladder
-JUMPER_Y = [PWR_NOTCH_Y - 5.5, PWR_NOTCH_Y + 5.5];
+// row cable between neighbouring nodes (6-pin JST PH, PHR-6 plug housing about 14 x 4.5 mm,
+// docs/can.md): passes through the tray walls and the ladder
+JUMPER_W = 17;
+JUMPER_Y = [PWR_NOTCH_Y - JUMPER_W / 2, PWR_NOTCH_Y + JUMPER_W / 2];
 JUMPER_Z0 = CARRIER_BOTTOM + CARRIER_STANDOFF;
 
 ROW_Z0 = FRAME_BASE_H;                   // frame Z of row A's front-bottom edge

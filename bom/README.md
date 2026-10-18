@@ -5,16 +5,16 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 487 |
-| Printed parts | 82 |
-| Cables | 64 |
+| Electronics | 509 |
+| Printed parts | 80 |
+| Cables | 67 |
 | Cameras | 36 |
 | Power | 29 |
 | Fasteners | 17 |
 | Motion | 9 |
-| **Total** | **724** |
+| **Total** | **747** |
 
-≈ **€60 per bay** all-in.
+≈ **€62 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -27,7 +27,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | bay-node | 20 PCBs (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA), 16 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $19.30, board $14.60 | 58.90 |
 | | | PCBA: setup $25.75, stencil $8.27, components $181.21, feeders $65.10, SMT $9.45, hand soldering $3.61, manual assembly $1.62, X-ray $13.28, packaging $0.52 | 308.81 |
 | | | **Quoted total** | **367.71** |
-| | | Order (indicative): no through-hole part for JLC (hand soldering −$3.61) | 364.10 |
+| | | Order (indicative): no through-hole part for JLC (hand soldering −$3.61); rev 0.5 rack bus parts (+$14.63 components); rev 0.5: 3 more extended part types (+$9.00 feeders) | 387.73 |
 | power-hub | 5 PCBs (2-layer 76×140 mm, ENIG), 2 assembled, Standard PCBA | PCB: engineering $4.00, ENIG $17.60, board $5.20 | 26.80 |
 | | | PCBA: setup $25.75, stencil $8.27, components $41.42, feeders $51.00, SMT $1.20, X-ray $13.28, packaging $0.52 | 141.44 |
 | | | **Estimated total** | **168.24** |
@@ -49,10 +49,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | chain_foot | 12 | 1.3 | `mechanical/stl/chain_foot.stl` |
 | drawer | 12 | 44.5 | `mechanical/stl/drawer.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
-| ladder_a | 5 | 50.1 | `mechanical/stl/ladder_a.stl` |
-| ladder_b | 5 | 50.1 | `mechanical/stl/ladder_b.stl` |
+| ladder_a | 5 | 49.6 | `mechanical/stl/ladder_a.stl` |
+| ladder_b | 5 | 49.6 | `mechanical/stl/ladder_b.stl` |
 | ladder_base | 5 | 49.3 | `mechanical/stl/ladder_base.stl` |
-| ladder_c | 5 | 50.1 | `mechanical/stl/ladder_c.stl` |
+| ladder_c | 5 | 49.6 | `mechanical/stl/ladder_c.stl` |
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
 | plate_arduino-uno-r4 | 1 | 31.2 | `mechanical/stl/plate_arduino-uno-r4.stl` |
 | plate_esp32-c6-devkitc | 1 | 31.9 | `mechanical/stl/plate_esp32-c6-devkitc.stl` |
@@ -68,7 +68,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | power_box_base | 1 | 138.1 | `mechanical/stl/power_box_base.stl` |
 | power_box_cradle_gst60a | 1 | 15.1 | `mechanical/stl/power_box_cradle_gst60a.stl` |
 | power_box_lid | 1 | 49.5 | `mechanical/stl/power_box_lid.stl` |
-| tray | 12 | 79.2 | `mechanical/stl/tray.stl` |
+| tray | 12 | 78.7 | `mechanical/stl/tray.stl` |
 
 ## Line items
 
@@ -76,16 +76,18 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 |---|---|---:|---:|---:|---|
 | Electronics | 100u/50V — 100 µF 50 V aluminium electrolytic | 16  | 0.06 | 1.02 | LCSC/JLCPCB C3352 |
 | Electronics | 10u — Capacitor 10u 1206 | 32  | 0.25 | 8.01 | LCSC/JLCPCB C13585 |
-| Electronics | 100n — Capacitor 100n 0603 | 144  | 0.01 | 1.79 | LCSC/JLCPCB C14663 |
+| Electronics | 100n — Capacitor 100n 0603 | 176  | 0.01 | 2.18 | LCSC/JLCPCB C14663 |
 | Electronics | 22u — Capacitor 22u 1206 | 96  | 0.11 | 10.92 | LCSC/JLCPCB C12891 |
 | Electronics | 10u — Capacitor 10u 0805 | 16  | 0.04 | 0.64 | LCSC/JLCPCB C15850 |
 | Electronics | 1u — Capacitor 1u 0603 | 16  | 0.01 | 0.21 | LCSC/JLCPCB C15849 |
 | Electronics | BZT52C12 — 12 V zener, P-FET gate clamp | 16  | 0.02 | 0.29 | LCSC/JLCPCB C43491 |
 | Electronics | SMBJ33A — TVS 33 V stand-off, 600 W (unidirectional) | 16  | 0.06 | 1.03 | LCSC/JLCPCB C78419 |
 | Electronics | WS2812B-2020-V6 — addressable RGB LED, 3.3–5.3 V | 16  | 0.08 | 1.32 | LCSC/JLCPCB C52917434 |
+| Electronics | PESD2CAN — CAN bus ESD protection, 24 V stand-off | 16  | 0.07 | 1.15 | LCSC/JLCPCB C75176 |
+| Electronics | BAT54S — dual Schottky in series: clamps a line to GND and +3V3 | 32  | 0.01 | 0.38 | LCSC/JLCPCB C7420333 |
 | Electronics | 0.5A — PTC 0.5 A hold, 1206 | 16  | 0.07 | 1.18 | LCSC/JLCPCB C20799 |
-| Electronics | 24V IN — JST PH 2-pin, side entry, SMD, 2 A | 16  | 0.20 | 3.24 | LCSC/JLCPCB C295747 |
-| Electronics | 24V OUT — JST PH 2-pin, side entry, SMD, 2 A | 16  | 0.20 | 3.24 | LCSC/JLCPCB C295747 |
+| Electronics | ROW IN — JST PH 6-pin, side entry, SMD | 16  | 0.36 | 5.74 | LCSC/JLCPCB C265405 |
+| Electronics | ROW OUT — JST PH 6-pin, side entry, SMD | 16  | 0.36 | 5.74 | LCSC/JLCPCB C265405 |
 | Electronics | PC — USB-C receptacle, USB 2.0, 16 pins | 16  | 0.17 | 2.80 | LCSC/JLCPCB C165948 |
 | Electronics | DUT — USB-C receptacle, USB 2.0, 16 pins | 16  | 0.17 | 2.80 | LCSC/JLCPCB C165948 |
 | Electronics | AUX — JST PH 6-pin, side entry, SMD | 16  | 0.36 | 5.74 | LCSC/JLCPCB C265405 |
@@ -93,11 +95,11 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | 3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded | 16  | 0.10 | 1.62 | LCSC/JLCPCB C167219 |
 | Electronics | SUD50P06-15 — P-MOSFET 60 V, reverse-polarity protection | 16  | 0.33 | 5.30 | LCSC/JLCPCB C7503186 |
 | Electronics | 2N7002 — N-MOSFET 60 V (open-drain AUX outputs) | 32  | 0.02 | 0.59 | LCSC/JLCPCB C8545 |
-| Electronics | 100k — Resistor 100k 0603 | 96  | 0.00 | 0.28 | LCSC/JLCPCB C25803 |
+| Electronics | 100k — Resistor 100k 0603 | 112  | 0.00 | 0.32 | LCSC/JLCPCB C25803 |
 | Electronics | 1M — Resistor 1M 0603 | 16  | 0.00 | 0.03 | LCSC/JLCPCB C22935 |
 | Electronics | 120k — Resistor 120k 0603 | 16  | 0.00 | 0.02 | LCSC/JLCPCB C25808 |
 | Electronics | 22k — Resistor 22k 0603 | 48  | 0.00 | 0.18 | LCSC/JLCPCB C31850 |
-| Electronics | 10k — Resistor 10k 0603 | 80  | 0.00 | 0.38 | LCSC/JLCPCB C25804 |
+| Electronics | 10k — Resistor 10k 0603 | 112  | 0.00 | 0.54 | LCSC/JLCPCB C25804 |
 | Electronics | 33 — Resistor 33 0603 | 16  | 0.00 | 0.04 | LCSC/JLCPCB C23140 |
 | Electronics | 5.1k — Resistor 5.1k 0603 | 32  | 0.00 | 0.04 | LCSC/JLCPCB C23186 |
 | Electronics | 20k — Resistor 20k 0603 | 16  | 0.00 | 0.03 | LCSC/JLCPCB C4184 |
@@ -118,9 +120,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | SN74LVC1G32DBVR — single 2-input OR | 16  | 0.06 | 1.03 | LCSC/JLCPCB C10096 |
 | Electronics | TPS2553DBVR — adjustable current-limited power switch | 16  | 0.50 | 7.95 | LCSC/JLCPCB C55266 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 16  | 0.69 | 11.04 | LCSC/JLCPCB C49851 |
+| Electronics | TCAN1044AV — CAN FD transceiver, VCC 5 V, VIO 1.8–5 V, bus pins ±58 V (MCP2562 pinout) | 16  | 0.40 | 6.33 | LCSC/JLCPCB C3234993 |
 | Electronics | Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA) | 20  | 2.71 | 54.19 | JLCPCB quote 2026-10-16 |
-| Electronics | Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging | 1  | 114.07 | 114.07 | JLCPCB quote 2026-10-16, adjusted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -27.42 | -27.42 | JLCPCB quote 2026-10-16 |
+| Electronics | Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging | 1  | 122.35 | 122.35 | JLCPCB quote 2026-10-16, adjusted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -27.41 | -27.41 | JLCPCB quote 2026-10-16, adjusted |
 | Electronics | 220u/50V — 220 µF 50 V aluminium electrolytic | 4  | 0.13 | 0.52 | LCSC/JLCPCB C3358 |
 | Electronics | 100n — Capacitor 100n 0603 | 12  | 0.01 | 0.15 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0805 | 16  | 0.03 | 0.43 | LCSC/JLCPCB C28323 |
@@ -173,8 +176,8 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 8  | 1.42 | 11.33 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (2-layer 76×140 mm, ENIG) | 5  | 4.93 | 24.66 | estimate, not quoted (v0.4) |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 89.26 | 89.26 | estimate, not quoted (v0.4), adjusted |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | -0.31 | -0.31 | estimate, not quoted (v0.4) |
-| Printed parts | PETG filament | 4.1 kg | 20.00 | 82.00 | any |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | -0.31 | -0.31 | estimate, not quoted (v0.4), adjusted |
+| Printed parts | PETG filament | 4.0 kg | 20.00 | 80.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 168  | 0.03 | 5.04 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid | 68  | 0.02 | 1.36 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, chain anchor, hub PCB) | 76  | 0.02 | 1.52 | AliExpress (bulk) |
@@ -182,7 +185,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Fasteners | Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge) | 24  | 0.30 | 7.20 | supermagnete S-06-03-N |
 | Motion | Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer | 2.3 m | 4.00 | 9.20 | AliExpress / igus E2 micro |
 | Cables | USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port) | 12  | 1.50 | 18.00 | AliExpress (generic, USB 2.0 is enough) |
-| Cables | JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay through the ladder, 24 V) | 9  | 0.30 | 2.70 | pre-crimped (AliExpress) or DIY |
+| Cables | JST PH 6-pin jumper, 1:1, 24 AWG, 120 mm, both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS) | 9  | 0.60 | 5.40 | pre-crimped PH 6-pin, "same direction" (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S |
 | Cables | JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: 24 V, CAN, POS) | 3  | 0.80 | 2.40 | pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S |
 | Cables | USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle) | 4  | 4.50 | 18.00 | Adafruit / Delock / AliExpress |
 | Cables | USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle) | 8  | 2.90 | 23.20 | Adafruit / Delock / AliExpress |

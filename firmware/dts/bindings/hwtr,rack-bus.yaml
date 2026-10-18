@@ -1,0 +1,41 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Rack bus of a hw-testing-rack bay node (docs/can.md): the row cable carries
+  the rack's CAN bus and the POS addressing token.
+
+    POS is an active-high 3.3 V token.  From reset the node holds POS_OUT low.
+    The rack controller raises POS on a row; the node that sees POS_IN high
+    and has no address yet answers on CAN with its MAC, takes (row, position)
+    from the controller, then raises POS_OUT so that the next node answers.
+
+  Example:
+
+    rack_bus: rack-bus {
+        compatible = "hwtr,rack-bus";
+        pos-in-gpios = <&gpio0 16 GPIO_ACTIVE_HIGH>;
+        pos-out-gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+        can = <&twai>;
+    };
+
+compatible: "hwtr,rack-bus"
+
+properties:
+  pos-in-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      POS_IN: the token from the previous node (or the hub), through 10k and
+      a clamp, with a 100k pull-down on the board.
+
+  pos-out-gpios:
+    type: phandle-array
+    required: true
+    description: |
+      POS_OUT: the token to the next node, through 10k and a clamp.  Hold it
+      low until this node has an address.
+
+  can:
+    type: phandle
+    required: true
+    description: The CAN controller on the row cable's CAN pair.

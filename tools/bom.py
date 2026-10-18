@@ -64,6 +64,14 @@ JLC_QUOTE = {
 # extended part types no longer need loading; and no JLC hand-soldering fee on either board (the
 # node's JST PH are SMD since rev 0.4, JLC places them).
 JLC_FINISH = {}
+# Parts added to a board after its quote (indicative, not re-quoted): (what, PCBA line, USD for the
+# quoted order).  Bay node rev 0.5, the rack bus: TCAN1044AV, PESD2CAN, 2 × BAT54S, 3 resistors, 2
+# capacitors and the 6-pin J1/J2, +$0.91 of parts per board at catalogue prices, and three new
+# extended part types at ≈ $3 loading each.
+JLC_SINCE_QUOTE = {
+    "bay-node": [("rev 0.5 rack bus parts", "components", 14.63),
+                 ("rev 0.5: 3 more extended part types", "feeders", 9.00)],
+}
 
 
 def _catalog_prices() -> dict:
@@ -104,6 +112,9 @@ def jlc_order(name: str, ext: set, hand: set) -> tuple[dict, dict, list[str]]:
     # (the hub's are hand-soldered, the node's are SMD since rev 0.4)
     if "hand soldering" in pcba:
         changes.append(f"no through-hole part for JLC (hand soldering −${pcba.pop('hand soldering'):.2f})")
+    for what, line, usd in JLC_SINCE_QUOTE.get(name, []):
+        pcba[line] = round(pcba[line] + usd, 2)
+        changes.append(f"{what} (+${usd:.2f} {line})")
     return pcb, pcba, changes
 
 
@@ -162,12 +173,14 @@ def electronics(rack) -> tuple[list[dict], dict]:
         # the quoted components include the connectors JLC no longer buys; they reappear above at
         # catalogue prices (bought loose), so the difference stays quote minus all catalogue lines
         parts_eur = sum(round(r["qty"] * r["unit_eur"], 2) for r in mine)
-        quoted_eur = q["pcba"]["components"] * USD_EUR
+        quoted_eur = pcba["components"] * USD_EUR
         rows.append({"category": "Electronics", "group": name,
                      "item": f"Components {name}: JLC quote minus the catalogue prices above",
-                     "supplier": src, "qty": 1, "unit_eur": round(quoted_eur - parts_eur, 2),
-                     "notes": f"quoted components ${q['pcba']['components']:.2f} (≈ €{quoted_eur:.2f}) for {n} boards; "
-                              f"catalogue unit prices give €{parts_eur:.2f}"})
+                     "supplier": pcba_src, "qty": 1, "unit_eur": round(quoted_eur - parts_eur, 2),
+                     "notes": f"quoted components ${q['pcba']['components']:.2f}"
+                              + (f" + ${pcba['components'] - q['pcba']['components']:.2f} since"
+                                 if pcba["components"] != q["pcba"]["components"] else "")
+                              + f" (≈ €{quoted_eur:.2f}) for {n} boards; catalogue unit prices give €{parts_eur:.2f}"})
     return rows, orders
 
 
@@ -243,8 +256,11 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress / igus E2 micro", "qty": round(0.17 * n_bays + 0.3, 1), "unit": "m", "unit_eur": 4.0},
         {"category": "Cables", "item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
          "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_bays, "unit_eur": 1.5},
-        {"category": "Cables", "item": "JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay through the ladder, 24 V)",
-         "supplier": "pre-crimped (AliExpress) or DIY", "qty": sum(cols - 1 for _ in rack.rows), "unit_eur": 0.3},
+        {"category": "Cables", "item": "JST PH 6-pin jumper, 1:1, 24 AWG, 120 mm, both ends PHR-6 "
+                                      "(bay → bay through the ladder: row bus, CAN, POS)",
+         "supplier": "pre-crimped PH 6-pin, \"same direction\" (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S",
+         "qty": sum(cols - 1 for _ in rack.rows), "unit_eur": 0.6,
+         "notes": "check pin 1 ↔ pin 1: vendors name the same/reverse types inconsistently (docs/can.md)"},
         {"category": "Cables", "item": "JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C "
                                       "(power box → first bay of each row: 24 V, CAN, POS)",
          "supplier": "pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S", "qty": n_rows, "unit_eur": 0.8,

@@ -6,11 +6,11 @@
 	(paper "A3")
 	(title_block
 		(title "Bay node — USB ports and data-path muxes")
-		(rev "0.4")
+		(rev "0.5")
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
-		(comment 3 "24 V in · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX UART/RST/BOOT")
+		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX")
 	)
 	(lib_symbols
 		(symbol "74xGxx:74LVC1G32"

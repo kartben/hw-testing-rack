@@ -109,7 +109,7 @@ cables:
   c-to-micro-b: { label: "USB-C ↔ micro-B, 10–15 cm",      a: usb-c, b: micro-b, length: 120 }
   c-to-mini-b:  { label: "USB-C ↔ mini-B, 15–25 cm",       a: usb-c, b: mini-b,  length: 150 }
   drawer-ext:   { label: "USB-C male → panel-mount USB-C female, 30 cm", length: 300 }
-  row-jumper:   { label: "JST PH 2-pin jumper, 24 AWG, 120 mm", length: 120 }
+  row-jumper:   { label: "JST PH 6-pin row cable, 1:1, 24 AWG, 120 mm", length: 120 }
   row-feed:     { label: "JST PH 6-pin feed, 1:1, 24 AWG (24 V, CAN, POS)", length: 600 }
 
 pcb:

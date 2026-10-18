@@ -71,8 +71,9 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 5. Finally KiCad's own DRC lists the GND pads still unconnected, and each gets
    a short track to a GND via or to a spot where a small via fits.
 
-> **Status: bay node v0.4 — re-placed for In2 power only (Fabio's second round), autorouted,
-> checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.4 —
+> **Status: bay node v0.5 — the row cable becomes 6-pin (24 V, CAN, POS: [can.md](can.md)), CAN
+> transceiver and POS token added, autorouted, not yet ordered (v0.4 was checked with Konnect:
+> [review-konnect.md](review-konnect.md)).  Power hub v0.4 —
 > new board for the power box (eFuses + rack controller + CAN), autorouted, checked with Konnect,
 > not yet ordered or quoted.**  ERC is clean and DRC reports no copper errors, no unconnected
 > items and full schematic parity (0 DRC warnings).  The buck's hot loop, the
@@ -84,12 +85,13 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 
 ## Bay node (×1 per unit) — 4 layers, 64 × 80 mm
 
-Sheets: **Power · MCU · USB · DUT power & AUX** — see the PDF in
+Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF in
 `electronics/bay-node/docs/`.
 
 | Block | Parts | Notes |
 |---|---|---|
-| 24 V in/out | 2 × JST PH side entry, SMD (S2B-PH-SM4-TB) | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it; each pin on a solid island with 4 vias to its plane |
+| Row cable in/out | 2 × JST PH 6, side entry, SMD (S6B-PH-SM4-TB): 1 +24 V · 2 GND · 3 CAN_H · 4 CAN_L · 5 GND · 6 POS ([can.md](can.md)) | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it; each power pin on a solid island with vias to its plane; CAN runs straight through J1.3/4 → J2.3/4 |
+| Rack bus | TCAN1044AV (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 100k pull-down; POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a cable with +24 V on pin 6 costs ≈ 2 mA |
 | Protection | SUD50P06 P-FET + 12 V zener, SMBJ33A, 100 µF/50 V | reverse polarity, hot-plug clamp < 54 V |
 | 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 120k/22k → 5.16 V; EN 1M/100k: on above 13.5 V, off below 10.8 V |
 | 3.3 V | AMS1117-3.3 | logic only |
@@ -117,11 +119,19 @@ re-drawing those tracks.
 each terminal, tied to it by net-tie pad groups, so the INA226 reads the resistor and not the load
 copper.
 
-**GPIO map** (v0.4: each signal leaves the module on the edge that faces where it goes): right
+**GPIO map** (v0.5: each signal leaves the module on the edge that faces where it goes): right
 column IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO38/IO37 I²C SDA/SCL (the DUT power block
 sits in the top-right corner); bottom right IO47/IO33 UART1 TX/RX · IO34 AUX_RST · IO48 AUX_BOOT;
-bottom left IO12 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC; IO19/IO20 USB; TXD0/RXD0 on
-test pads (bottom side).
+bottom left IO12 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC; IO16 POS_IN · IO17/IO18 CAN
+RX/TX (TWAI) · IO35 POS_OUT for the rack bus; IO19/IO20 USB; TXD0/RXD0 on test pads (bottom side).
+`firmware/README.md` has the full table, checked against the schematic by
+`firmware/tools/check_pinmap.py`.
+
+**Row power from USB-C PD.** The row bus is 24 V nominal, but the input stage also takes a USB-C PD
+supply at 20 V or 28 V (EPR): the SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the LMR51635 runs
+from 4.3 to 60 V and its EN divider (1M/100k) starts it above 13.5 V, and the P-FET and its 12 V
+gate zener are rated 60 V.  At 20 V a row draws more current for the same load; the hub's eFuse
+still caps it at 1.6 A.
 
 **USB-C roles:** the front PC port is a sink (5.1 k Rd on CC) whose VBUS is
 only sensed; the DUT port is a source (22 k Rp → "1.5 A") with switched VBUS.
@@ -227,8 +237,12 @@ Konnect review) adds no part type: the hub's power pours and thermal vias are
 copper only, and the node's Kelvin shunt is the same LCSC part on a new
 footprint.  Rev 0.4 puts the node's JST PH connectors back in JLC's hands, as SMD parts: two
 extended part types (C295747, C265405, ≈ $3 loading fee each per order), ≈ +$0.86 of parts per
-board over the through-hole ones, and nothing left to solder by hand on the node.  Re-quote before
-ordering.
+board over the through-hole ones, and nothing left to solder by hand on the node.  Rev 0.5 (the rack
+bus) turns J1/J2 into the 6-pin S6B (C265405, already the AUX connector: no new type) and adds three
+extended part types, the TCAN1044AV (C3234993), the PESD2CAN (C75176) and the BAT54S (C7420333):
+≈ +$9 of loading fees per order and ≈ +$0.91 of parts per board.  `JLC_SINCE_QUOTE` in
+`tools/bom.py` adds both to the node's order: ≈ **$387.73** for 16 assembled nodes, against
+$364.10 for v0.4.  Re-quote before ordering.
 
 * **Bay node: Standard PCBA.** JLC can only place the ESP32-S3-MINI-1 module
   (C2913206) and the WS2812B-2020 LED with its Standard PCBA service, not
@@ -296,8 +310,11 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C7503186 SUD50P06 TO-252 | node Q1, hub Q1 | −1.89 mm x | to confirm |
 | C544399 TPS26600 HTSSOP-16 | hub U1–U5 | 270° | to confirm |
 | C160315 JST B2P-VH | hub J1 | +1.98 mm x | hand-soldered, not in the CPL |
-| C295747 JST S2B-PH-SM4-TB | node J1 J2 J6 | none yet | not fitted: check in JLC's preview |
-| C265405 JST S6B-PH-SM4-TB | node J5 | none yet | not fitted: check in JLC's preview |
+| C295747 JST S2B-PH-SM4-TB | node J6 | none (fit: +0.08 mm y, left alone) | to confirm |
+| C265405 JST S6B-PH-SM4-TB | node J1 J2 J5, hub row outputs | 180° | to confirm |
+| C3234993 TCAN1044AV SOIC-8 | node U11, hub U6 | 270° | to confirm |
+| C75176 PESD2CAN SOT-23 | node D5, hub D9 | 180° | to confirm |
+| C7420333 BAT54S SOT-23 | node D6 D7, hub POS clamps | 180° | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
 0805, 1206), the electrolytics (+ pad), the diodes and LEDs (cathode side),

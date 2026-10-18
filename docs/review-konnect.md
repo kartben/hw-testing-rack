@@ -328,6 +328,26 @@ findings that are all known false positives, plus one optional improvement:
 | No test point on +24V / +5V / +3V3 | Info only.  TP4 is +3V3; the others can be probed on C1, C7. |
 | U4 / U8 VBUS (+5V) without a local 100 nF | Optional: they reach the +5V plane through a via, and the buck's output caps are far away. A 100 nF next to each USBLC6 would lower the clamp rail's impedance during ESD. Not added yet. |
 
+## Bay node v0.5 (2026-10-18)
+
+The row cable becomes 6-pin (24 V, CAN, POS, [can.md](can.md)) and a Rack bus sheet adds the
+TCAN1044AV, its PESD2CAN and the POS in/out clamps.  Konnect checked the saved files after
+Freerouting:
+
+| | bay node v0.5 |
+|---|---|
+| ERC (Konnect) | 0 errors, 0 warnings |
+| DRC (Konnect) | 0 errors, 0 warnings, 0 unconnected, schematic parity 0 |
+| `audit_connections`, `check_bom_health` | 0 findings |
+| Copper on In1 / In2 | no track on either (checked in the saved board with pcbnew) |
+| CAN pair | J1 → J2 straight through: CAN_H 52 mm, CAN_L 60 mm; stub to U11 1.8 / 2.3 mm, to D5 11 / 2.3 mm (≤ 20 mm asked) |
+| Pin nets | U11 1 TXD · 2 GND · 3 +5V · 4 RXD · 5 +3V3 (VIO) · 6 CAN_L · 7 CAN_H · 8 GND (STB); D5 1 CAN_H · 2 CAN_L · 3 GND; D6 / D7 1 GND · 2 +3V3 · 3 the POS line |
+| `run_design_review` | "NOT READY", from the same per-sheet false positives as v0.4 (above), plus +3V3 / +5V "no bulk" on the new Rack bus sheet: the bulk caps are on the Power and MCU sheets |
+
+The v0.4 open point stays open: no local 100 nF on U4 / U8 VBUS.  A POS line driven high into a
+node whose 3.3 V is off would feed its rail through the two 10k and D6 (≈ 0.15 mA); every node of a row
+shares the row's 24 V, so this only happens if a neighbour's own regulator is dead.
+
 ## Power hub v0.4 (2026-10-18)
 
 This is a new board for the power box: 4 eFused rows on 6-pin PH, and the rack controller (ESP32-S3,

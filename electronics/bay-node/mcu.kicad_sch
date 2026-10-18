@@ -6,11 +6,11 @@
 	(paper "A3")
 	(title_block
 		(title "Bay node — ESP32-S3 module")
-		(rev "0.4")
+		(rev "0.5")
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
-		(comment 3 "24 V in · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX UART/RST/BOOT")
+		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX")
 	)
 	(lib_symbols
 		(symbol "Connector:TestPoint"
@@ -4200,17 +4200,104 @@
 			)
 		)
 	)
-	(no_connect
-		(at 187.96 116.84)
-		(uuid "4b83a46b-b8dd-5633-9597-200063640d38")
+	(wire
+		(pts
+			(xy 187.96 116.84)
+			(xy 185.42 116.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9eff4807-7420-5218-8513-1c81f46a9604")
 	)
-	(no_connect
-		(at 187.96 119.38)
-		(uuid "6e00203a-aa6e-581f-bcd0-b35bce45a4bd")
+	(global_label "POS_IN"
+		(shape bidirectional)
+		(at 185.42 116.84 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "cf79382b-4ec8-5e27-914a-45547d908f4f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 185.42 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
 	)
-	(no_connect
-		(at 187.96 121.92)
-		(uuid "b217f9d3-258e-5b77-a908-da870b555d5e")
+	(wire
+		(pts
+			(xy 187.96 119.38)
+			(xy 185.42 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6cf19207-2be1-533c-aa43-0824558a57b2")
+	)
+	(global_label "CAN_RXD"
+		(shape bidirectional)
+		(at 185.42 119.38 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "dc45939b-c6e2-5e2e-90b5-a105cf607e7f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 185.42 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 187.96 121.92)
+			(xy 185.42 121.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "be10e577-956c-5c44-b0ec-4c3891d89c9d")
+	)
+	(global_label "CAN_TXD"
+		(shape bidirectional)
+		(at 185.42 121.92 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "2127019c-1f64-5ff0-9be8-b6c487debe0d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 185.42 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
 	)
 	(wire
 		(pts
@@ -4418,9 +4505,38 @@
 			)
 		)
 	)
-	(no_connect
-		(at 218.44 93.98)
-		(uuid "8b3c29d6-ca75-5954-a84a-2d93d3291249")
+	(wire
+		(pts
+			(xy 218.44 93.98)
+			(xy 220.98 93.98)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "84ba9b67-b607-5614-bfac-b2dabea4edab")
+	)
+	(global_label "POS_OUT"
+		(shape bidirectional)
+		(at 220.98 93.98 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "71066d48-6318-56f5-9c79-3c600e684005")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 220.98 93.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
 	)
 	(no_connect
 		(at 218.44 96.52)
@@ -6098,10 +6214,10 @@
 		)
 		(uuid "f4ec8d2a-1eb9-56d3-b800-af50c495c063")
 	)
-	(text_box "GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO38/37 I2C SDA/SCL · IO47/33 UART1 TX/RX (AUX) ·\nIO34 AUX_RST · IO48 AUX_BOOT · IO12 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG).\nStrapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY)."
+	(text_box "GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO38/37 I2C SDA/SCL · IO47/33 UART1 TX/RX (AUX) ·\nIO34 AUX_RST · IO48 AUX_BOOT · IO12 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·\nIO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO35 POS_OUT.\nStrapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY)."
 		(exclude_from_sim no)
 		(at 15.24 177.8 0)
-		(size 269.24 11.43)
+		(size 269.24 13.97)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

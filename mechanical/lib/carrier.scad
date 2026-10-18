@@ -10,7 +10,7 @@ BOSS_D = 7.5;
 // KiCad coordinates on the node (y = 0 at the REAR edge) → carrier XY.
 function node_xy(k) = [NODE_X0 + k[0], NODE_FRONT_Y + (NODE_SIZE[1] - k[1])];
 NODE_REAR_Y = NODE_FRONT_Y + NODE_SIZE[1];
-PWR_NOTCH_Y = node_xy([0, NODE_PWR_Y])[1];        // 24 V jumper (JST PH) between neighbouring nodes
+PWR_NOTCH_Y = node_xy([0, NODE_PWR_Y])[1];        // row cable (JST PH 6) between neighbouring nodes
 
 // front wall of the tray: PC/classic USB-C port, status LED window, SERVICE switch
 module fascia_cutouts() {

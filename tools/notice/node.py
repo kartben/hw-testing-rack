@@ -80,10 +80,10 @@ def build():
     sols.append(kbox(32 - 6.4, 10.5 - 10.25 + 6.6, 32 + 6.4, 10.5 + 10.25 - 0.6, TOP + 0.8, TOP + 2.45))
     sols.append(usb_c(32.0, 76.6, 0))            # J3: PC port, front edge
     sols.append(usb_c(60.4, 24.0, 90))           # J4: right edge
-    sols.append(jst_ph_side(59.1, 63.0, 90, 2))   # J2: 24 V out, right
+    sols.append(jst_ph_side(59.1, 63.0, 90, 6))   # J2: row cable out (6-pin: bus, CAN, POS), right
     sols.append(jst_ph_side(59.1, 40.0, 90, 6))   # J5
     sols.append(jst_ph_side(59.1, 11.65, 90, 2))  # J6
-    sols.append(jst_ph_side(4.9, 63.0, -90, 2))   # J1: 24 V in, left
+    sols.append(jst_ph_side(4.9, 63.0, -90, 6))   # J1: row cable in, left
     for x in (7.5, 15.5):                         # SW1, SW2: TS-1187A 5.1 x 5.1 x 1.5 + round button
         sols.append(kbox(x - 2.55, 11.5 - 2.55, x + 2.55, 11.5 + 2.55, TOP, TOP + 1.5))
         sols.append(Part.makeCylinder(1.5, 0.5, V(x, D - 11.5, TOP + 1.5)))

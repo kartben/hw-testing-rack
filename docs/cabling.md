@@ -61,11 +61,12 @@ panel frame has no double bay yet (see [mechanical.md](mechanical.md)).
 
 ## 24 V
 
-* **Bay to bay:** JST PH jumpers, 24 AWG, 120 mm, plugged into the
-  node's left (IN) and right (OUT) connectors through the windows in both tray
-  walls and the shared ladder, at the front of the plenum where the chain
-  never goes.  They become 6-pin (24 V, CAN, POS: [can.md](can.md)) with the bay
-  node v0.5; the v0.4 nodes have 2-pin ones.
+* **Bay to bay:** 6-pin JST PH jumpers, 1:1, 24 AWG, 120 mm (row bus, GND,
+  CAN_H, CAN_L, GND, POS: [can.md](can.md)), plugged into the node's left (IN)
+  and right (OUT) connectors through the 17 mm windows in both tray walls and
+  the shared ladder, at the front of the plenum where the chain never goes.
+  The bundle makes a half twist between two nodes; buy "pin 1 ↔ pin 1" cables.
+  (The v0.4 nodes had 2-pin, 24 V-only jumpers.)
 * **Power box to row:** one 6-pin JST PH feed per row, 1:1, ≈ 0.25 / 0.45 /
   0.6 m for rows A / B / C.  Each plugs into the power box's left wall, reached
   through the left base ladder's window.  It runs forward along that ladder's

@@ -1,16 +1,18 @@
 category,group,item,qty,unit,unit_eur,ext_eur,supplier,part,mpn,manufacturer,ref,notes
 Electronics,bay-node,100u/50V — 100 µF 50 V aluminium electrolytic,16,pcs,0.0635,1.02,LCSC/JLCPCB,C3352,RVT1H101M0810,Honor Elec,C1,1 per board × 16 boards
 Electronics,bay-node,10u — Capacitor 10u 1206,32,pcs,0.2504,8.01,LCSC/JLCPCB,C13585,CL31A106KBHNNNE,Samsung Electro-Mechanics,"C2,C3",2 per board × 16 boards
-Electronics,bay-node,100n — Capacitor 100n 0603,144,pcs,0.0124,1.79,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C4,C5,C14,C16,C17,C18,C19,C20,C22",9 per board × 16 boards
+Electronics,bay-node,100n — Capacitor 100n 0603,176,pcs,0.0124,2.18,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C4,C5,C14,C16,C17,C18,C19,C20,C22,C23,C24",11 per board × 16 boards
 Electronics,bay-node,22u — Capacitor 22u 1206,96,pcs,0.1138,10.92,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,"C7,C8,C9,C12,C13,C21",6 per board × 16 boards
 Electronics,bay-node,10u — Capacitor 10u 0805,16,pcs,0.0403,0.64,LCSC/JLCPCB,C15850,CL21A106KAYNNNE,Samsung Electro-Mechanics,C11,1 per board × 16 boards
 Electronics,bay-node,1u — Capacitor 1u 0603,16,pcs,0.013,0.21,LCSC/JLCPCB,C15849,CL10A105KB8NNNC,Samsung Electro-Mechanics,C15,1 per board × 16 boards
 Electronics,bay-node,"BZT52C12 — 12 V zener, P-FET gate clamp",16,pcs,0.0184,0.29,LCSC/JLCPCB,C43491,BZT52C12,CJ,D1,1 per board × 16 boards
 Electronics,bay-node,"SMBJ33A — TVS 33 V stand-off, 600 W (unidirectional)",16,pcs,0.0644,1.03,LCSC/JLCPCB,C78419,SMBJ33A,Brightking,D2,1 per board × 16 boards
 Electronics,bay-node,"WS2812B-2020-V6 — addressable RGB LED, 3.3–5.3 V",16,pcs,0.0828,1.32,LCSC/JLCPCB,C52917434,WS2812B-2020-V6,Worldsemi,D4,1 per board × 16 boards
+Electronics,bay-node,"PESD2CAN — CAN bus ESD protection, 24 V stand-off",16,pcs,0.0718,1.15,LCSC/JLCPCB,C75176,"PESD2CAN,215",Nexperia,D5,1 per board × 16 boards
+Electronics,bay-node,BAT54S — dual Schottky in series: clamps a line to GND and +3V3,32,pcs,0.012,0.38,LCSC/JLCPCB,C7420333,BAT54S,hongjiacheng,"D6,D7",2 per board × 16 boards
 Electronics,bay-node,"0.5A — PTC 0.5 A hold, 1206",16,pcs,0.0736,1.18,LCSC/JLCPCB,C20799,SMD1206P050TF,RUILON,F1,1 per board × 16 boards
-Electronics,bay-node,"24V IN — JST PH 2-pin, side entry, SMD, 2 A",16,pcs,0.2024,3.24,LCSC/JLCPCB,C295747,S2B-PH-SM4-TB(LF)(SN),JST,J1,1 per board × 16 boards
-Electronics,bay-node,"24V OUT — JST PH 2-pin, side entry, SMD, 2 A",16,pcs,0.2024,3.24,LCSC/JLCPCB,C295747,S2B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 16 boards
+Electronics,bay-node,"ROW IN — JST PH 6-pin, side entry, SMD",16,pcs,0.3588,5.74,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J1,1 per board × 16 boards
+Electronics,bay-node,"ROW OUT — JST PH 6-pin, side entry, SMD",16,pcs,0.3588,5.74,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 16 boards
 Electronics,bay-node,"PC — USB-C receptacle, USB 2.0, 16 pins",16,pcs,0.1748,2.8,LCSC/JLCPCB,C165948,TYPE-C-31-M-12,Korean Hroparts,J3,1 per board × 16 boards
 Electronics,bay-node,"DUT — USB-C receptacle, USB 2.0, 16 pins",16,pcs,0.1748,2.8,LCSC/JLCPCB,C165948,TYPE-C-31-M-12,Korean Hroparts,J4,1 per board × 16 boards
 Electronics,bay-node,"AUX — JST PH 6-pin, side entry, SMD",16,pcs,0.3588,5.74,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J5,1 per board × 16 boards
@@ -18,11 +20,11 @@ Electronics,bay-node,"CAM — JST PH 2-pin, side entry, SMD, 2 A",16,pcs,0.2024,
 Electronics,bay-node,"3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded",16,pcs,0.1012,1.62,LCSC/JLCPCB,C167219,FXL0630-3R3-M,cjiang,L1,1 per board × 16 boards
 Electronics,bay-node,"SUD50P06-15 — P-MOSFET 60 V, reverse-polarity protection",16,pcs,0.3312,5.3,LCSC/JLCPCB,C7503186,SUD50P06-15,UMW / Vishay,Q1,1 per board × 16 boards
 Electronics,bay-node,2N7002 — N-MOSFET 60 V (open-drain AUX outputs),32,pcs,0.0184,0.59,LCSC/JLCPCB,C8545,2N7002,CJ,"Q2,Q3",2 per board × 16 boards
-Electronics,bay-node,100k — Resistor 100k 0603,96,pcs,0.0029,0.28,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),"R1,R3,R13,R17,R26,R27",6 per board × 16 boards
+Electronics,bay-node,100k — Resistor 100k 0603,112,pcs,0.0029,0.32,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),"R1,R3,R13,R17,R26,R27,R29",7 per board × 16 boards
 Electronics,bay-node,1M — Resistor 1M 0603,16,pcs,0.0019,0.03,LCSC/JLCPCB,C22935,0603WAF1004T5E,UNI-ROYAL(Uniroyal Elec),R2,1 per board × 16 boards
 Electronics,bay-node,120k — Resistor 120k 0603,16,pcs,0.0014,0.02,LCSC/JLCPCB,C25808,0603WAF1203T5E,UNI-ROYAL(Uniroyal Elec),R4,1 per board × 16 boards
 Electronics,bay-node,22k — Resistor 22k 0603,48,pcs,0.0038,0.18,LCSC/JLCPCB,C31850,0603WAF2202T5E,UNI-ROYAL(Uniroyal Elec),"R5,R14,R15",3 per board × 16 boards
-Electronics,bay-node,10k — Resistor 10k 0603,80,pcs,0.0048,0.38,LCSC/JLCPCB,C25804,0603WAF1002T5E,UNI-ROYAL(Uniroyal Elec),"R6,R7,R11,R18,R20",5 per board × 16 boards
+Electronics,bay-node,10k — Resistor 10k 0603,112,pcs,0.0048,0.54,LCSC/JLCPCB,C25804,0603WAF1002T5E,UNI-ROYAL(Uniroyal Elec),"R6,R7,R11,R18,R20,R28,R30",7 per board × 16 boards
 Electronics,bay-node,33 — Resistor 33 0603,16,pcs,0.0023,0.04,LCSC/JLCPCB,C23140,0603WAF330JT5E,UNI-ROYAL(Uniroyal Elec),R8,1 per board × 16 boards
 Electronics,bay-node,5.1k — Resistor 5.1k 0603,32,pcs,0.0014,0.04,LCSC/JLCPCB,C23186,0603WAF5101T5E,UNI-ROYAL(Uniroyal Elec),"R9,R10",2 per board × 16 boards
 Electronics,bay-node,20k — Resistor 20k 0603,16,pcs,0.002,0.03,LCSC/JLCPCB,C4184,0603WAF2002T5E,UNI-ROYAL(Uniroyal Elec),R12,1 per board × 16 boards
@@ -43,9 +45,10 @@ Electronics,bay-node,MUX_DUT — USB 2.0 HS 2:1 switch,16,pcs,0.2852,4.56,LCSC/J
 Electronics,bay-node,SN74LVC1G32DBVR — single 2-input OR,16,pcs,0.0644,1.03,LCSC/JLCPCB,C10096,SN74LVC1G32DBVR,Texas Instruments,U7,1 per board × 16 boards
 Electronics,bay-node,TPS2553DBVR — adjustable current-limited power switch,16,pcs,0.4968,7.95,LCSC/JLCPCB,C55266,TPS2553DBVR,Texas Instruments,U9,1 per board × 16 boards
 Electronics,bay-node,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",16,pcs,0.69,11.04,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,U10,1 per board × 16 boards
+Electronics,bay-node,"TCAN1044AV — CAN FD transceiver, VCC 5 V, VIO 1.8–5 V, bus pins ±58 V (MCP2562 pinout)",16,pcs,0.3956,6.33,LCSC/JLCPCB,C3234993,TCAN1044AVDRQ1,Texas Instruments,U11,1 per board × 16 boards
 Electronics,bay-node,"Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA)",20,pcs,2.7094,54.19,JLCPCB quote 2026-10-16,,,,,"engineering $25.00, ENIG $19.30, board $14.60 = $58.90 for 20 PCBs, 16 of them assembled"
-Electronics,bay-node,"Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",1,pcs,114.07,114.07,"JLCPCB quote 2026-10-16, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $65.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
-Electronics,bay-node,Components bay-node: JLC quote minus the catalogue prices above,1,pcs,-27.42,-27.42,JLCPCB quote 2026-10-16,,,,,quoted components $181.21 (≈ €166.71) for 16 boards; catalogue unit prices give €194.13
+Electronics,bay-node,"Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",1,pcs,122.35,122.35,"JLCPCB quote 2026-10-16, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $74.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 rack bus parts (+$14.63 components); rev 0.5: 3 more extended part types (+$9.00 feeders); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
+Electronics,bay-node,Components bay-node: JLC quote minus the catalogue prices above,1,pcs,-27.41,-27.41,"JLCPCB quote 2026-10-16, adjusted",,,,,quoted components $181.21 + $14.63 since (≈ €180.17) for 16 boards; catalogue unit prices give €207.58
 Electronics,power-hub,220u/50V — 220 µF 50 V aluminium electrolytic,4,pcs,0.1288,0.52,LCSC/JLCPCB,C3358,RVT1H221M1010,Honor Elec,"C1,C2",2 per board × 2 boards
 Electronics,power-hub,100n — Capacitor 100n 0603,12,pcs,0.0124,0.15,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C3,C106,C107,C114,C116,C117",6 per board × 2 boards
 Electronics,power-hub,1u — Capacitor 1u 0805,16,pcs,0.0268,0.43,LCSC/JLCPCB,C28323,CL21B105KBFNNNE,Samsung Electro-Mechanics,"C11,C12,C13,C14,C31,C32,C33,C34",8 per board × 2 boards
@@ -98,8 +101,8 @@ Electronics,power-hub,"TCAN1044AV — CAN FD transceiver, VCC 5 V, VIO 1.8–5 V
 Electronics,power-hub,TPS26600PWPR — 4.2–60 V 2.23 A eFuse,8,pcs,1.4168,11.33,LCSC/JLCPCB,C544399,TPS26600PWPR,Texas Instruments,"U11,U12,U13,U14",4 per board × 2 boards
 Electronics,power-hub,"Bare PCB power-hub (2-layer 76×140 mm, ENIG)",5,pcs,4.9312,24.66,"estimate, not quoted (v0.4)",,,,,"engineering $4.00, ENIG $17.60, board $5.20 = $26.80 for 5 PCBs, 2 of them assembled"
 Electronics,power-hub,"Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging",1,pcs,89.26,89.26,"estimate, not quoted (v0.4), adjusted",,,,,"setup $25.75, stencil $8.27, feeders $48.00, SMT $1.20, X-ray $13.28, packaging $0.52; feeders −$3.00 (1 of 17 extended part types hand-soldered); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA"
-Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,-0.31,-0.31,"estimate, not quoted (v0.4)",,,,,quoted components $41.42 (≈ €38.11) for 2 boards; catalogue unit prices give €38.42
-Printed parts,filament,PETG filament,4.1,kg,20.0,82.0,any,,,,,"≈3.6 kg estimated + 10 % waste, 128 parts"
+Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,-0.31,-0.31,"estimate, not quoted (v0.4), adjusted",,,,,quoted components $41.42 (≈ €38.11) for 2 boards; catalogue unit prices give €38.42
+Printed parts,filament,PETG filament,4.0,kg,20.0,80.0,any,,,,,"≈3.6 kg estimated + 10 % waste, 128 parts"
 Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",168,pcs,0.03,5.04,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub standoffs + 4 lid bosses
 Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid",68,pcs,0.02,1.36,AliExpress (bulk),,,,,
 Fasteners,,"M3×6 (node PCB, chain anchor, hub PCB)",76,pcs,0.02,1.52,AliExpress (bulk),,,,,
@@ -107,7 +110,7 @@ Fasteners,,"M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain
 Fasteners,,"Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",24,pcs,0.3,7.2,supermagnete S-06-03-N,,,,,
 Motion,,"Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",2.3,m,4.0,9.2,AliExpress / igus E2 micro,,,,,
 Cables,,"USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",12,pcs,1.5,18.0,"AliExpress (generic, USB 2.0 is enough)",,,,,
-Cables,,"JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay through the ladder, 24 V)",9,pcs,0.3,2.7,pre-crimped (AliExpress) or DIY,,,,,
+Cables,,"JST PH 6-pin jumper, 1:1, 24 AWG, 120 mm, both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS)",9,pcs,0.6,5.4,"pre-crimped PH 6-pin, ""same direction"" (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S",,,,,check pin 1 ↔ pin 1: vendors name the same/reverse types inconsistently (docs/can.md)
 Cables,,"JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: 24 V, CAN, POS)",3,pcs,0.8,2.4,pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S,,,,,"PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair (pins 3-4) by hand"
 Cables,,"USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle)",4,pcs,4.5,18.0,Adafruit / Delock / AliExpress,,,,,
 Cables,,"USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle)",8,pcs,2.9,23.2,Adafruit / Delock / AliExpress,,,,,

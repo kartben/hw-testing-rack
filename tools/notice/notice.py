@@ -125,14 +125,14 @@ def node_shape():
 
 
 def jumper_shape():
-    """24 V jumper, tray-0 carrier coordinates: two JST PH plugs and a two-wire lead with a little sag."""
+    """Row cable, tray-0 carrier coordinates: two 6-pin JST PH plugs and a flat six-wire lead with a little sag."""
     y, z = C["NODE_FRONT_Y"] + C["NODE_SIZE"][1] - 63.0, C["NODE_Z"] + 4.0
     xa = C["NODE_X0"] + 59.0                    # node 0, J2 (right edge, opening towards +x)
     xb = P + C["NODE_X0"] - 2.1                 # node 1, J1 (left edge, opening towards -x)
-    sols = [Part.makeBox(7.0, 4.2, 2.65, V(xa, y - 2.1, z - 1.3)),
-            Part.makeBox(7.1, 4.2, 2.65, V(xb, y - 2.1, z - 1.3))]
+    sols = [Part.makeBox(7.0, 12.2, 2.65, V(xa, y - 6.1, z - 1.3)),
+            Part.makeBox(7.1, 12.2, 2.65, V(xb, y - 6.1, z - 1.3))]
     a, b = V(xa + 7.0, y, z), V(xb, y, z)
-    for dy in (-0.65, 0.65):
+    for dy in (-3.25, -1.95, -0.65, 0.65, 1.95, 3.25):
         e = Part.Arc(a + V(0, dy, 0), (a + b) * 0.5 + V(0, dy, -3.0), b + V(0, dy, 0)).toShape()
         t = e.tangentAt(e.FirstParameter)
         prof = Part.Wire(Part.makeCircle(0.6, e.valueAt(e.FirstParameter), t))
