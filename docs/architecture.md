@@ -19,7 +19,7 @@ columns or rows) and makes every one of them reachable over the network
 
 ![One bay, exploded: tray with the bay node and drag chain, drawer, board plate, board, camera pod](img/exploded.jpg)
 
-*One bay (B2), bottom to top: the tray with the bay-node PCB and the drag chain, the drawer, the board plate, the board, and the camera pod hanging from the ceiling above.*
+*One bay (B2), bottom to top: the tray with the bay-node PCB and the drag chain, the drawer with the DATA port board, the board plate, the board, and the camera pod (an Arducam Mega and the pod board with its light) hanging from the ceiling above.*
 
 ## Rows, bays and columns
 

@@ -7,12 +7,12 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 |---|---:|
 | Electronics | 664 |
 | Power | 82 |
-| Cameras | 68 |
-| Printed parts | 56 |
+| Cameras | 69 |
+| Printed parts | 58 |
 | Cables | 43 |
 | Motion | 21 |
-| Fasteners | 14 |
-| **Total** | **948** |
+| Fasteners | 15 |
+| **Total** | **952** |
 
 ≈ **€119 per bay** all-in.
 
@@ -49,8 +49,8 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | brace_a | 4 | 6.6 | `mechanical/stl/brace_a.stl` |
 | brace_b | 4 | 6.6 | `mechanical/stl/brace_b.stl` |
 | brace_base | 4 | 6.4 | `mechanical/stl/brace_base.stl` |
-| camera_pod_cradle | 1 | 2.4 | `mechanical/stl/camera_pod_cradle.stl` |
-| camera_pod_mount | 1 | 4.3 | `mechanical/stl/camera_pod_mount.stl` |
+| camera_diffuser | 2 | 0.6 | `mechanical/stl/camera_diffuser.stl` |
+| camera_pod | 2 | 12.1 | `mechanical/stl/camera_pod.stl` |
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 8 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 8 | 1.4 | `mechanical/stl/chain_foot.stl` |
@@ -62,7 +62,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
 | plate_arduino-uno-r4 | 1 | 31.2 | `mechanical/stl/plate_arduino-uno-r4.stl` |
 | plate_frdm-mcxn947 | 1 | 36.9 | `mechanical/stl/plate_frdm-mcxn947.stl` |
-| plate_giga-r1-display | 1 | – | `mechanical/stl/plate_giga-r1-display.stl` |
+| plate_giga-r1-display | 1 | 36.6 | `mechanical/stl/plate_giga-r1-display.stl` |
 | plate_nrf52840-dk | 1 | 37.6 | `mechanical/stl/plate_nrf52840-dk.stl` |
 | plate_nrf54l15-dk | 1 | 37.6 | `mechanical/stl/plate_nrf54l15-dk.stl` |
 | plate_nucleo-144 | 1 | 37.5 | `mechanical/stl/plate_nucleo-144.stl` |
@@ -72,7 +72,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 20.8 | `mechanical/stl/power_box_lid.stl` |
 | power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |
-| tray | 8 | 79.4 | `mechanical/stl/tray.stl` |
+| tray | 8 | 79.0 | `mechanical/stl/tray.stl` |
 
 ## Line items
 
@@ -207,10 +207,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL) | 5  | 0.37 | 1.84 | estimate, not quoted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT | 1  | 17.20 | 17.20 | estimate, not quoted |
 | Electronics | Components camera-pod: JLC quote minus the catalogue prices above | 1  | 0.08 | 0.08 | estimate, not quoted |
-| Printed parts | PETG filament | 2.8 kg | 20.00 | 56.00 | any |
-| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 116  | 0.03 | 3.48 | AliExpress (bulk) / Ruthex |
+| Printed parts | PETG filament | 2.9 kg | 20.00 | 58.00 | any |
+| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 144  | 0.03 | 4.32 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 64  | 0.02 | 1.28 | AliExpress (bulk) |
-| Fasteners | M3×6 (node PCB, power box lid) | 36  | 0.02 | 0.72 | AliExpress (bulk) |
+| Fasteners | M3×6 (node PCB, power box lid, camera pods) | 44  | 0.02 | 0.88 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
 | Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board | 64  | 0.02 | 1.28 | AliExpress (bulk, e.g. HZYUEGOU) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 32  | 0.01 | 0.32 | AliExpress (bulk) |
@@ -233,3 +233,4 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Cameras | M12 lens, 1/4", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK) | 2  | 3.00 | 6.00 | AliExpress |
 | Cameras | JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (camera lead: node J6 → pod J1) | 1 lot | 4.50 | 4.50 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P, Length50CM |
 | Cameras | Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order) | 2  | 0.50 | 1.00 | AliExpress |
+| Cameras | Pod hardware: 2 × PT 2.6×14 (the pod board, through the diffuser's posts), cable ties 2.5 × 100 (the lead: 1 at the tray's rear slot, 3 under the ceiling) | 2 set | 0.30 | 0.60 | AliExpress (bulk) |

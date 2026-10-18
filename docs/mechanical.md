@@ -18,7 +18,7 @@ grooves; an X brace behind every bay and row keeps the grid square.
 |---|---|---|
 | Ladder | `ladder.scad` (`PART="row"`, `ROW=k`) | side wall between two bays, one per row: front and rear posts, a bottom band with the tray grooves (both faces), a top band, one brace; stacks on the ladder below with a ridge/notch joint and two in-plane snap hooks (release through the window); 4 heat-set inserts in the rear edge |
 | Base ladder / cap strip | `ladder.scad` (`"base"`, `"cap"`) | floor → row A (holds a floor plate); the strip on top holds the cap plate |
-| Floor / cap plate | `tray.scad` (`PART="floor_plate"`, `"cap_plate"`) | the tie between the base ladders and the top row's ceiling: a regular 30 mm grid (the camera pod's pitch) with an M3-insert boss at every crossing, so a pod (or anything else) mounts on any square of crossings |
+| Floor / cap plate | `tray.scad` (`PART="floor_plate"`, `"cap_plate"`) | the tie between the base ladders and the top row's ceiling: a regular 30 mm grid (the camera pod's pitch) with an M3-insert boss at every crossing: the top row's pods take the same square as under a tray (x 94/124, y 30/60), anything else any square |
 | Rear brace | `brace.scad` (`ROW=k`, `-1` for the base) | an X behind each bay and level, screwed (4 × M3×8 pan head, Phillips) into the inserts in the rear edges of its two ladders; left and right holes at different heights, so neighbouring braces share a ladder.  No slack: snug 3.1 mm holes, and each diagonal is 0.25 mm short, so the X is taut once the fourth screw is in |
 
 The column pitch is 165.8 mm: a 158 mm tray, a 7.4 mm ladder and 0.2 mm of
@@ -118,14 +118,27 @@ EVKs use fences until someone measures them — PRs welcome.
 
 ## Cameras
 
-`camera_pod.scad`: a mount (4 × M3 into the inserts under the ceiling: the
-bottom of the tray above, or the cap plate) and a tilting cradle for a Seeed
-XIAO ESP32S3 Sense, lens down.  The insert pattern is offset from the bay
-centre (it dodges the node and the chain in the plenum above), so aim with the
-±35° pivot.  Use a ≥ 120° lens: at ~90 mm a stock 66° lens only covers
-~94 × 70 mm.  5 V comes from the node in the tray the pod hangs from (JST-PH
-`CAM`, PTC-protected); top-row pods hang under the cap plate and take 5 V from
-their own bay through the tray's rear service slot.
+`camera_pod.scad`: two printed parts under the ceiling (the bottom of the tray
+above, or the cap plate) for an Arducam Mega 3MP SPI camera in its case (B0434,
+a ~120° M12 lens) and the pod board right behind it
+([electronics/camera-pod](../electronics/camera-pod/): the PH-8 lead's J1, the
+Mega's header J2, four white LEDs along the edge beside the camera: nothing to
+solder).  The **pod** (dark PETG, opaque) takes 4 × M3×6 into the camera
+inserts (`bay.camera_mount`: a 30 mm square right of the node above, clear of
+its drag chain, on the cap plate's grid, so one pod fits every row) and reaches
+45 mm left to the lens spot (`bay.camera_lens`, bay (64, 84) below): a sleeve
+the Mega's case snaps into from below (two lips, its XH side open), lens down,
+the lens tip ≈ 30 mm under the ceiling (Z ≈ 125, well over the DUT cables'
+≤ 105 mm arches).  The sleeve's rear wall goes on down as the baffle between the
+LEDs and the lens; the pod board sits behind it, components down, its LED edge
+against it (`pcb.camera_pod`).  The **diffuser** (white PETG) is a 1 mm floor
+7 mm under the LEDs (glare on screens and glossy boards) on two posts that clamp
+the board to its standoffs (2 × PT 2.6×14 through both), open round J2's Dupont
+housing.  The Mega's case is a placeholder (`MEGA_*`: Arducam gives 33 × 33 mm,
+35 mm with the stock M12, no drawing): measure the first one before printing.
+The camera runs from the bay's **own** node (J6, JST-PH 8), its lead through
+the tray's rear slot and up under the ceiling ([cabling.md](cabling.md)).  Print
+the pod upside down, the diffuser floor down; no supports.
 
 ## Power box
 

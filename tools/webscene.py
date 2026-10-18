@@ -27,8 +27,11 @@ WEB_PARTS = {
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "chain_foot": ("parts/chain_parts.scad", {"PART": "foot"}),
     "chain_anchor": ("parts/chain_parts.scad", {"PART": "anchor"}),
-    "camera_mount": ("parts/camera_pod.scad", {"PART": "mount"}),
-    "camera_cradle": ("parts/camera_pod.scad", {"PART": "cradle"}),
+    "camera_pod": ("parts/camera_pod.scad", {"PART": "pod"}),
+    "camera_diffuser": ("parts/camera_pod.scad", {"PART": "diffuser"}),
+    "mega_camera": ("parts/camera_pod.scad", {"PART": "mega"}),
+    "podpcb": ("parts/camera_pod.scad", {"PART": "podpcb"}),
+    "podpcb_parts": ("parts/camera_pod.scad", {"PART": "podpcb_parts"}),
     "plate_universal": ("parts/board_plate.scad", {"BOARD": "universal"}),
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {"PART": "lid"}),
@@ -57,8 +60,10 @@ for _t, _d in USB_PLUGS.items():
         for _piece in ("mold", "metal"):
             WEB_PARTS[f"usbplug_{_t}_adapter_{_piece}"] = ("parts/usb_plugs.scad", {**_d, "STYLE": "adapter", "PIECE": _piece})
 WEB_PARTS["ph5_plug"] = ("parts/usb_plugs.scad", {"STYLE": "ph5"})
-# the node's J7 (DATA, JST PH 5 vertical): KiCad (40, 37.4) in electronics/bay-node/design.py; mated 8 mm tall
-NODE_J7 = (40.0, 37.4, 8.0)
+WEB_PARTS["ph8_plug"] = ("parts/usb_plugs.scad", {"STYLE": "ph8"})
+# the node's J7 (DATA, JST PH 5 vertical): KiCad (40, 47.4) on the 64 × 90 board (electronics/bay-node); mated 8 mm tall
+NODE_J7 = (40.0, 47.4, 8.0)
+NODE_J6_H = 8.0     # J6 (camera, JST PH 8 vertical, at config/rack.yaml › pcb.bay_node.cam): mated height
 
 
 def dataport_parts(rack) -> dict:
@@ -71,8 +76,7 @@ def dataport_parts(rack) -> dict:
 # Parts whose print orientation differs from their assembly orientation get an
 # "assembly" variant rendered with the print rotation undone.
 ASSEMBLY_WRAPPERS = {
-    "camera_mount": "use <parts/camera_pod.scad>\ninclude <lib/carrier.scad>\nmount();\n",
-    "camera_cradle": "use <parts/camera_pod.scad>\ninclude <lib/carrier.scad>\ncradle();\n",
+    "camera_pod": "use <parts/camera_pod.scad>\ninclude <lib/carrier.scad>\npod();\n",
     "chain_foot": "use <parts/chain_parts.scad>\ninclude <lib/carrier.scad>\nfoot();\n",
     "power_box_lid": "use <parts/power_box.scad>\nlid();\n",
     "power_box_lid_labels": "use <parts/power_box.scad>\nlid_labels();\n",
@@ -93,6 +97,8 @@ def print_up(name: str) -> list[int]:
         return [1, 0, 0]
     if name.startswith("brace_"):
         return [0, -1, 0]
+    if name == "camera_diffuser":
+        return [0, 0, 1]
     if name.startswith("camera_"):
         return [0, 0, -1]
     if name == "chain_foot":
@@ -183,49 +189,6 @@ CABLE_MIN_R = 10.0         # and the tightest it takes without kinking
 # the drawer slides.  A longer cable's spare length is looped flat on the plate's hooks instead.
 ARCH_TOP_MAX = 105.0
 
-# The bay camera (2026-10-18 hand-over): an Arducam Mega 3MP (B0434, 33 × 33 mm PCB; Arducam gives 35 mm overall
-# with its stock M12 lens, publishes no 3D model) fitted with a ~120° M12 lens, which is shorter: Ø14 front, 9.5 mm
-# out of the holder.  Wired to the bay's own node, its lens over bay X 64, Y 84 (the one spot that frames every board
-# in the population), looking straight down.  Beside it the camera pod board (config/rack.yaml › pcb.camera_pod,
-# electronics/camera-pod), components down: its four white 2835 LEDs on the edge next to the Mega, a 1 mm white
-# PETG diffuser 8 mm in front of them, its lead's edge towards the bay's rear.  The printed pod is the mechanics'
-# (mechanical/parts/camera_pod.scad): move these numbers to config/rack.yaml with it.
-CAMERA_RIG = {
-    "standoff": 3,                       # the pod's plate → the Mega's PCB
-    "plate_t": 3,                        # the pod's plate under the ceiling
-    "board": [33, 33, 1.6],              # the Mega's PCB, lens down
-    "holder": [14, 10.5, 22],            # M12 holder: square base, height, span of its two screw ears
-    "optic": [14, 12, 9.5],              # 120° M12 lens: front ring Ø, barrel Ø, length out of the holder
-    "fov": 120, "aspect": 4 / 3,         # diagonal field of view (fisheye), sensor aspect
-    "pod_gap": 1.5,                      # the Mega's edge → the pod board's LED edge
-    "diffuser": {"gap": 8, "t": 1.0, "margin": [3.5, 4]},   # LEDs → diffuser; diffuser beyond the LED row (x, y)
-}
-CAMERA_LENS = (64.0, 84.0, round(CAMERA_RIG["plate_t"] + CAMERA_RIG["standoff"] + CAMERA_RIG["board"][2]
-                                 + CAMERA_RIG["holder"][1] + CAMERA_RIG["optic"][2], 2))   # bay X, Y; drop below the ceiling
-
-
-def camera_rig(pod: dict) -> dict:
-    """The rig in the lens' frame (X across the bay, Y towards its rear, the ceiling at z = 0): the Mega centred
-    on the lens, the pod board on its +X side (KiCad y = 0, the LED edge, against the Mega; KiCad x along the
-    bay's depth, the lead's edge at the rear), the plate under both, the light box under the LED row."""
-    r = CAMERA_RIG
-    bw, bl = r["board"][:2]
-    pw, pl = pod["size"]                               # KiCad X (along the bay's Y) × Y (across)
-    x0 = bw / 2 + r["pod_gap"]                         # the LED edge
-    leds = [[round(x0 + pod["led_y"], 2), round(k - pw / 2, 2)] for k in pod["leds"]]
-    ys = [y for _, y in leds]
-    d = r["diffuser"]
-    light = {"at": [leds[0][0], round((min(ys) + max(ys)) / 2, 2)],
-             "size": [2 * d["margin"][0], round(max(ys) - min(ys) + 2 * d["margin"][1], 2)],
-             "gap": d["gap"], "diffuser": d["t"], "leds": [round(y - (min(ys) + max(ys)) / 2, 2) for y in ys]}
-    lo, hi = [-bw / 2 - 4, -max(bl, pw) / 2 - 3], [x0 + pl + 3, max(bl, pw) / 2 + 3]
-    return {**{k: v for k, v in r.items() if k not in ("diffuser", "pod_gap", "plate_t")},
-            "plate": [round(hi[0] - lo[0], 2), round(hi[1] - lo[1], 2), r["plate_t"]],
-            "plate_at": [round((hi[0] + lo[0]) / 2, 2), round((hi[1] + lo[1]) / 2, 2)],
-            "pod": {"size": [pl, pw, pod["thickness"]], "at": [round(x0 + pl / 2, 2), 0]},
-            "lights": [light]}
-
-
 # ------------------------------------------------------------------ boards: real models and screens
 def board_frame(bd: dict, pts):
     """Points of a board's drawing (boards.yaml frame) → the frame the viewer draws it in, turned like
@@ -264,7 +227,7 @@ def plug_exit(end):
     """Where the cable leaves a plug's strain relief and which way: a straight plug out of its back,
     a right-angle one out of its top.  end = {at: receptacle face, dir: into it, up, type, style}."""
     at, d = np.array(end["at"], float), np.array(end["dir"], float)
-    if end["type"] == "ph5":                                # a JST PHR-5: its wires leave its back
+    if end["type"] in ("ph5", "ph8"):                       # a JST PHR-n: its wires leave its back
         return at - d * 6.0, -d
     up = np.array(end.get("up", (0, 0, 1)), float)
     p = USB_PLUGS.get(end["type"], USB_PLUGS["usb-c"])
@@ -396,6 +359,69 @@ def lead_to_board(e, mouth, z_low, x_run, depth=7.0):
     return pts
 
 
+# the camera pod, in its frame (origin at the ceiling's insert square, carrier axes, z down from the ceiling):
+# these mirror parts/camera_pod.scad (MEGA_CASE, the sleeve, POD_GAP...); the pod board's own geometry comes
+# from config/rack.yaml › pcb.camera_pod
+POD_CASE = (34.0, 34.0, 12.0)           # the Mega's case: x, y, height under the 3 mm plate
+POD_XH = (15.0, 6.0, 7.0)               # its XH 6-pin on the case's right side
+POD_SLEEVE_Y = 34.0 + 2 * 0.3 + 2 * 1.6 # the sleeve round the case, across y
+POD_FACE_Z = -3.0 - 2.0 - 1.6           # the pod board's component face (down)
+
+
+POD_LENS_DROP = 3.0 + POD_CASE[2] + 6.0 + 9.5  # plate, case, M12 holder, the 120° lens: its tip under the ceiling
+POD_LED_Z = POD_FACE_Z - 0.8                    # the 2835 LEDs' face
+
+
+def camera_view(x0, lens, cp):
+    """What site/camera.js needs to light the pod and look through it (the pod's meshes are instances): the
+    lens (row i+1 coordinates, its tip POD_LENS_DROP under the ceiling) and the light under the LED row, in
+    the lens' frame: the pod board's LED edge behind the sleeve, its LEDs centred on the lens, the diffuser's
+    floor 7 mm under them (drawn 0.1 mm lower than the printed one, which hides it)."""
+    ly = POD_SLEEVE_Y / 2 + 0.5 + cp["led_y"]       # the LED row, behind the lens axis
+    half = (cp["leds"][-1] - cp["leds"][0]) / 2
+    leds = [[round(k - (cp["leds"][0] + cp["leds"][-1]) / 2, 2), 0] for k in cp["leds"]]
+    return {"lens": [round(x0 + lens[0], 2), lens[1], -POD_LENS_DROP], "instances": True,
+            "fov": 120, "aspect": 4 / 3,
+            "lights": [{"at": [0, round(ly, 2)], "size": [round(2 * half + 8, 2), 10], "gap": 7, "diffuser": 1.0,
+                        "leds": leds, "led_z": round(POD_LED_Z - 0.1, 2)}]}
+
+
+def camera_lead(j6, x0, node_right, row_h, tilt, lens, mount, depth, cp):
+    """The camera's PH-8 lead (double-ended), in the bay's row coordinates: up out of the node's J6
+    (vertical), over to the right of the node (under the DATA lead, which runs higher), back along the
+    plenum and out of the tray's rear slot (x 20-80), straight up behind the tray's rear wall (square to
+    the row, in the gap behind the drawer: the brace's plane leans back, following it would cost ≈ 6 cm),
+    forwards under the ceiling (row i+1's origin is row_h higher, so at y + row_h·sin(tilt),
+    z = row_h·cos(tilt) here) between the node and the chain above,
+    down behind the pod's plate and into the pod board's J1 from its right.  Returns the lead, its pod
+    end, and the Mega's XH → Dupont cable from its case's side round to the board's J2.  cp = config
+    pcb.camera_pod."""
+    t = math.radians(tilt)
+    up_y, up_z = row_h * math.sin(t), row_h * math.cos(t)
+    pod = lambda q: (x0 + mount[0] + q[0], up_y + mount[1] + q[1], up_z + q[2])     # pod frame → row
+    lx, ly = lens[0] - mount[0], lens[1] - mount[1]
+    b0 = (lx - (cp["leds"][0] + cp["leds"][-1]) / 2, ly + POD_SLEEVE_Y / 2 + 0.5)    # the board's KiCad origin
+    board = lambda kx, ky, z: pod((b0[0] + kx, b0[1] + ky, z))
+    p0, d = plug_exit(j6)
+    xs, top = min(node_right + 8.0, x0 + 78.0), up_z - 2.0
+    zr = 12.0                                         # along the plenum floor, through the rear slot
+    yc = depth + 2.5                                  # the climb, just behind the tray's rear wall
+    j1 = board(cp["size"][0], cp["lead"], POD_FACE_Z - 2.8)
+    end = {"at": [round(v, 2) for v in j1], "dir": [-1, 0, 0], "up": [0, 0, -1], "type": "ph8"}
+    q, _ = plug_exit(end)
+    xu = x0 + mount[0] - 24.0                         # under the ceiling: right of the node above, left of its chain
+    behind = board(cp["size"][0] + 8, cp["size"][1] + 6, POD_FACE_Z - 2.8)
+    pts = [p0, p0 + d * 1.5, (xs, p0[1] + 12, p0[2] + 1.5), (xs, p0[1] + 30, zr), (xs, depth - 5, zr), (xs, yc, zr),
+           (xs, yc, top), (xu, yc - 10, top), (xu, behind[1] + 12, top), (behind[0], behind[1], behind[2]),
+           (q[0] + 3, q[1] + 3, q[2]), q]
+    xh = pod((lx + POD_CASE[0] / 2 + POD_XH[1] + 8, ly, -3.0 - POD_CASE[2] / 2))
+    hdr = board(cp["header"][0], cp["header"][1], POD_FACE_Z - 16.5)
+    mega = [xh, (xh[0] + 6, xh[1] + 8, xh[2] - 3), board(cp["size"][0] - 6, 4, POD_FACE_Z - 13),
+            (hdr[0] + 6, hdr[1] + 6, hdr[2] - 2.5), (hdr[0], hdr[1], hdr[2] - 2.5), hdr]   # above the lens tip
+    rnd = lambda q: [[round(float(v), 2) for v in p] for p in q]
+    return rnd(rounded_path(pts, 6.0)), end, rnd(rounded_path(mega, 5.0))
+
+
 def cable_free_length(cab, a, b):
     """A cable's length between its two strain reliefs: its length end to end less both plugs (a
     straight plug: shell, overmold and relief; a right-angle one: about its body's depth)."""
@@ -490,7 +516,6 @@ def build(rack) -> Path:
     plenum = rack.plenum
     pop = raw.get("population", {})
     cams = set(raw.get("cameras", []))
-    rig = camera_rig(raw["pcb"]["camera_pod"])
     cables_cfg = raw["cables"]
     n_rows = len(rack.rows)
     pitch, T = rack.pitch, rack.panel_t
@@ -672,15 +697,22 @@ def build(rack) -> Path:
                 cable(catenary_cable(pc_a, (W + 30, -150), pc_b), space="frame", kind="pc", bay=b.id,
                       label="Laptop → front PC port (classic mode)", a="usb-c", b="usb-c", ends=[pc_a, pc_b],
                       radius=2.0)
-        # camera: an Arducam Mega under the ceiling (the bottom of the tray above, or the cap plate), wired to
-        # this bay's own node; the viewer draws it, its light boxes and its preview (site/camera.js)
+        # camera: an Arducam Mega in the printed pod under the ceiling (the bottom of the tray above, or the cap
+        # plate), lens down at bay.camera_lens, wired to this bay's own node (J6).  The pod's parts are instances
+        # (parts/camera_pod.scad); site/camera.js adds the light and the preview through its lens
         if b.id in cams:
-            lx, ly, drop = CAMERA_LENS
-            up = rack.rows[i]["height"] * math.sin(math.radians(rack.tilt))    # the tray above sits further back
-            cm = raw["bay"]["camera_mount"]          # the ceiling's insert square: the pod's arm reaches it
+            cm = raw["bay"]["camera_mount"]
+            for part in ("camera_pod", "camera_diffuser", "mega_camera", "podpcb", "podpcb_parts"):
+                add(part, (x0 + cm[0], cm[1], 0), row=i + 1, layer="cameras", bay=b.id)
             items["cameras"].append({"bay": b.id, "row": i + 1, "space": "row", "layer": "cameras",
-                                     "lens": [round(x0 + lx, 2), round(ly - up, 2), -drop],
-                                     "mount": [round(cm[0] - lx, 2), round(cm[1] - (ly - up), 2), cm[2]], **rig})
+                                     **camera_view(x0, raw["bay"]["camera_lens"], raw["pcb"]["camera_pod"])})
+            j6 = {"at": [x0 + node["x0"] + node["cam"][0], rack.node_front_y + node["size"][1] - node["cam"][1],
+                         pcb_top + NODE_J6_H - 6.0], "dir": [0, 0, -1], "up": [1, 0, 0], "type": "ph8"}
+            lead, pod_end, mega = camera_lead(j6, x0, x0 + node["x0"] + node["size"][0], rack.rows[i]["height"],
+                                              rack.tilt, raw["bay"]["camera_lens"], cm, BD, raw["pcb"]["camera_pod"])
+            cable(lead, row=i, kind="ext", bay=b.id, radius=1.5, ends=[j6, pod_end],
+                  label="Camera lead (JST PH 8, node J6 → the pod board's J1)")
+            cable(mega, row=i, kind="ext", bay=b.id, radius=1.0, label="XH → Dupont cable (the Mega → the pod board's J2)")
         meta["center"] = rack.to_frame(i, [x0 + rack.carrier_w / 2, BD / 2, plenum + 40])
         bays.append(meta)
 

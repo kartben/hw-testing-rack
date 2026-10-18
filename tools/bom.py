@@ -267,13 +267,13 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
     pop = rack.raw.get("population", {})
     n_bays = sum(1 for _ in rack.bays())
     cols, n_rows = rack.units, len(rack.rows)
-    cams = len(rack.raw.get("cameras", []))
+    cams = CAMERA_SETS                      # pods printed (config cameras: the bays shown with one)
     counts = Counter({
         # the panel frame: a ladder per column boundary and level, a floor plate, a cap plate and
         # an X brace per column and level
         "ladder_base": cols + 1, "ladder_cap": cols + 1, "floor_plate": cols, "cap_plate": cols, "brace_base": cols,
         "tray": n_bays, "drawer": n_bays, "chain_foot": n_bays, "chain_anchor": n_bays,
-        "camera_pod_mount": cams, "camera_pod_cradle": cams, "bay_label": n_bays,
+        "camera_pod": cams, "camera_diffuser": cams, "bay_label": n_bays,
         # the power box: base and lid, and their optional label inlays (a second, light filament)
         "power_box_base": 1, "power_box_lid": 1, "power_box_labels": 1, "power_box_lid_labels": 1,
     })
@@ -311,21 +311,21 @@ def hardware(rack) -> list[dict]:
     cols = rack.units
     n_bays = sum(1 for _ in rack.bays())
     pop = r.get("population", {})
-    cams = len(r.get("cameras", []))
+    cams = CAMERA_SETS                      # camera pods bought, wherever they go
     braces = cols * (n_rows + 1)
     chain_m = math.ceil(0.19 * n_bays + 0.3)      # sold by the metre, one pair of end pieces with each
     charger = r["power_box"]["charger"]
     rows = [
         {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
-         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 6 * n_bays + 4 * cams + 4,
+         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 6 * n_bays + 4 * n_bays + 4,
          "unit_eur": 0.03,
          "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node "
-                  "standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub "
+                  "standoffs + 2 chain anchor; 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub "
                   "standoffs"},
         {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",
          "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_bays, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M3×6 (node PCB, power box lid)", "supplier": "AliExpress (bulk)",
-         "qty": 4 * n_bays + 4, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×6 (node PCB, power box lid, camera pods)", "supplier": "AliExpress (bulk)",
+         "qty": 4 * n_bays + 4 + 4 * cams, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",
          "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
          "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
@@ -440,6 +440,10 @@ def hardware(rack) -> list[dict]:
              "supplier": "AliExpress", "qty": cams, "unit_eur": 0.5,
              "notes": "the Mega's own 6-pin cable does if it ends in Dupont sockets; J2's pins are named on the "
                       "board, so the wires go on by name"},
+            {"category": "Cameras", "item": "Pod hardware: 2 × PT 2.6×14 (the pod board, through the diffuser's "
+                                           "posts), cable ties 2.5 × 100 (the lead: 1 at the tray's rear slot, 3 "
+                                           "under the ceiling)",
+             "supplier": "AliExpress (bulk)", "qty": cams, "unit": "set", "unit_eur": 0.3},
         ]
     return rows
 

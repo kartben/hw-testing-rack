@@ -5,7 +5,8 @@
 //
 //   -D 'STYLE="straight"|"right"' -D 'PIECE="mold"|"shell"' + the plug's dimensions
 //   -D 'STYLE="adapter"' -D 'PIECE="mold"|"metal"'    a 90° adapter (+ AW, AD, ATOP)
-//   -D 'STYLE="dataport"' -D 'PIECE="pcb"|"usb"|"ph"'  the DATA port board; STYLE="ph5" its lead's plug
+//   -D 'STYLE="dataport"' -D 'PIECE="pcb"|"usb"|"ph"'  the DATA port board; STYLE="ph5" its lead's plug,
+//   STYLE="ph8" the camera lead's
 //
 // Plug frame: +z = into the receptacle (the metal shell, z 0..SL, mostly hidden in it), x = the
 // connector's width, y = its "up"; the overmold sits at z < 0.  A right-angle plug's body stands
@@ -100,14 +101,15 @@ module dataport_ph() difference() {                      // JST S5B-PH-SM4-TB, s
     }
     translate([PHX - 5.2, BD - 4, BT + 0.9]) cube([10.4, 4.5, 4.0]);
 }
-// a JST PHR-5 plug and its wires' first millimetres, in the plug frame (+z into the header)
-module ph5_plug() {
-    translate([-6, -2.25, -6]) cube([12, 4.5, 8.5]);
-    for (k = [0 : 4]) translate([(k - 2) * 2, 0, -9]) cylinder(d = 1.4, h = 3.2);
+// a JST PHR-n plug and its wires' first millimetres, in the plug frame (+z into the header)
+module ph_plug(n) {
+    translate([-n - 1, -2.25, -6]) cube([2 * n + 2, 4.5, 8.5]);
+    for (k = [0 : n - 1]) translate([(k - (n - 1) / 2) * 2, 0, -9]) cylinder(d = 1.4, h = 3.2);
 }
 
 if (STYLE == "dataport") { if (PIECE == "pcb") dataport_pcb(); else if (PIECE == "usb") dataport_usb(); else dataport_ph(); }
-else if (STYLE == "ph5") ph5_plug();
+else if (STYLE == "ph5") ph_plug(5);
+else if (STYLE == "ph8") ph_plug(8);
 else if (STYLE == "adapter") { if (PIECE == "mold") adapter_mold(); else adapter_metal(); }
 else if (PIECE == "shell") shell();
 else if (STYLE == "right") mold_right();

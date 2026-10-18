@@ -113,5 +113,12 @@ plugs into the power box's rear wall.
   flash or try one on a desk, give its IN connector 15–30 V (J1.1 +, J1.2 /
   J1.5 GND; e.g. a 19–24 V laptop or lab supply: the buck starts above
   13.5 V); the PC port then reaches the ESP32.
-* **Cameras:** a JST-PH lead from the node above, down through the hole in
-  the tray's bottom to the pod.
+* **Cameras:** the bay's own node drives its camera (SPI) and light: a
+  ready-made 50 cm JST-PH 8 lead, "Same direction" (≈ 45 cm routed between
+  the plugs), up out of J6 (vertical, on the node; pins: CAM_5V, GND, SCK, GND,
+  MOSI, MISO, CS, LED_K), over to the right of the node under the DATA lead,
+  back along the plenum at x ≈ 76, out of the tray's rear slot (a cable tie),
+  straight up behind the tray's rear wall, forwards under the ceiling (cable
+  ties through the ceiling's windows, right of the node above), down behind
+  the pod and into the pod board's J1 from its right.  The board carries the
+  LEDs; an XH → Dupont cable goes from the Mega's side to the board's J2.

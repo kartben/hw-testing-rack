@@ -68,8 +68,8 @@ def plug_meshes(e: dict, geoms: dict) -> list:
     """Meshes of one cable end (tools/webscene.py writes them into rack.json), in its space."""
     t = e["type"] if f"usbplug_{e['type']}_shell" in geoms else "usb-c"
     names = [(f"usbplug_{t}_shell", "silver")]
-    if e["type"] == "ph5":                    # the DATA lead's JST PHR-5
-        names = [("ph5_plug", "powerlabels")]
+    if e["type"] in ("ph5", "ph8"):           # the DATA lead's JST PHR-5, the camera lead's PHR-8
+        names = [(f"{e['type']}_plug", "powerlabels")]
     elif e.get("style") == "adapter":           # a 90° adapter, its female facing up (the cable's plug stands on it)
         names += [(f"usbplug_{t}_adapter_mold", "plug"), (f"usbplug_{t}_adapter_metal", "silver")]
     else:
@@ -99,6 +99,12 @@ def hex_rgba(h):
 def part_category(name):
     if name.endswith("_labels") or name == "dataport_ph":
         return "powerlabels"
+    if name == "mega_camera":
+        return "black"
+    if name in ("camera_diffuser", "podpcb_parts"):          # white PETG, the LEDs and connectors
+        return "powerlabels"
+    if name == "podpcb":
+        return "pcbgreen"
     if name in ("dataport_pcb", "dataport_usb"):
         return {"dataport_pcb": "pcbgreen", "dataport_usb": "silver"}[name]
     for prefix, cat in (("ladder_", "ladders"), ("brace_", "braces"), ("tray", "trays"), ("floor_plate", "frameplates"),
@@ -204,21 +210,6 @@ def real_board(b):
     return out
 
 
-def real_xiao(size):
-    """The XIAO ESP32S3 Sense model for a camera pod: camera side down, seated at the top of the
-    pod's box (size = the box the viewer draws)."""
-    f = BOARD_MODELS / "xiao.norm.glb"
-    if not f.exists():
-        return None
-    s = trimesh.load(f, force="scene")
-    ms = [s.geometry[g].copy().apply_transform(rot_xyz([180, 0, 0]) @ tf)
-          for tf, g in (s.graph[n] for n in s.graph.nodes_geometry)]
-    lo = np.min([m.bounds[0] for m in ms], axis=0)
-    hi = np.max([m.bounds[1] for m in ms], axis=0)
-    shift = translate([size[0] / 2 - (lo[0] + hi[0]) / 2, size[1] / 2 - (lo[1] + hi[1]) / 2, size[2] - hi[2]])
-    return [m.apply_transform(shift) for m in ms]
-
-
 def board_meshes(b):
     w, l = b["size"][:2]
     out = [with_mat(trimesh.creation.box([w, l, 1.6], transform=translate([w / 2, l / 2, 0.8])),
@@ -248,8 +239,8 @@ def board_meshes(b):
 
 
 # stack-up order of one bay, for --explode-bay (multiples of the layer gap, along the shelf normal)
-BAY_LAYERS = [("dataport", 3), ("tray", 0), ("chain", 1), ("pcb", 1), ("led", 1), ("drawer", 3), ("plate", 4), ("boards", 5),
-              ("camera", 4), ("xiao", 4)]   # the pod already hangs a row pitch higher
+BAY_LAYERS = [("dataport", 3), ("podpcb", 4), ("tray", 0), ("chain", 1), ("pcb", 1), ("led", 1), ("drawer", 3), ("plate", 4), ("boards", 5),
+              ("camera", 4), ("mega", 4)]   # the pod already hangs a row pitch higher
 
 
 def bay_layer(name):
@@ -336,12 +327,6 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         for m in pcb.get(p["board"], []):
             add(m, f"pcb:{p['board']}", place(p.get("space"), p.get("row"), translate(p["pos"])), p.get("bay"))
     for bx in scene_json["boxes"]:
-        real = real_xiao(bx["size"]) if bx["kind"] == "xiao" else None
-        if real:
-            for m in real:
-                add(m, f"xiao:{bx.get('bay', '')}", place(bx.get("space"), bx.get("row"), translate(bx["pos"])),
-                    bx.get("bay"))
-            continue
         m = trimesh.creation.box(bx["size"], transform=translate(np.array(bx["size"]) / 2))
         add(with_mat(m, mat("psu") if bx["kind"] == "psu" else mat(hex_rgba(bx["color"]))), f"{bx['kind']}:{bx.get('bay', '')}",
             place(bx.get("space"), bx.get("row"), translate(bx["pos"])), bx.get("bay"))

@@ -134,7 +134,10 @@ function partMaterial(name) {
   if (name === 'drawer') return MAT.drawers;
   if (name.startsWith('chain_')) return MAT.chainParts;
   if (name.startsWith('plate_')) return MAT.plates;
+  if (name === 'camera_diffuser' || name === 'podpcb_parts') return MAT.powerLabels;
   if (name.startsWith('camera_')) return MAT.cameras;
+  if (name === 'mega_camera') return MAT.blackPlastic;
+  if (name === 'podpcb') return MAT.pcbGreen;
   if (name.endsWith('_labels')) return MAT.powerLabels;
   if (name.startsWith('power_box_')) return MAT.powerBox;
   return MAT.trays;
@@ -484,8 +487,8 @@ function makePlug(e) {
   const g = new THREE.Group();
   g.matrixAutoUpdate = false;
   g.matrix.copy(plugBasis(e));
-  if (e.type === 'ph5') {                       // the DATA lead's JST PHR-5
-    const m = plugMesh('ph5_plug', MAT.powerLabels);
+  if (e.type === 'ph5' || e.type === 'ph8') {   // the DATA lead's JST PHR-5, the camera lead's PHR-8
+    const m = plugMesh(`${e.type}_plug`, MAT.powerLabels);
     if (m) g.add(m);
     return g;
   }

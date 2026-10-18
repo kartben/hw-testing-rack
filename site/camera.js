@@ -1,5 +1,6 @@
 // Bay cameras: the Arducam Mega pod under the ceiling, its two LED light boxes, and the preview.
-// Geometry comes from rack.json › cameras (tools/webscene.py › CAMERA_LENS / CAMERA_RIG), in the frame
+// Geometry comes from rack.json › cameras (tools/webscene.py › camera_view: the pod's own meshes are instances
+// from parts/camera_pod.scad, so `instances` skips the stand-in drawn here), in the frame
 // of the row above (millimetres, Z up, the ceiling at z = 0); the lens looks straight down (-Z).
 import * as THREE from 'three';
 import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
@@ -37,8 +38,9 @@ function diffuserTexture(size, leds, gap) {
     for (let i = 0; i < c.width; i++) {
       const x = ((i + 0.5) / c.width - 0.5) * w, y = ((j + 0.5) / c.height - 0.5) * l;
       let v = 0;
-      for (const ly of leds) {
-        const d2 = x * x + (y - ly) * (y - ly);
+      for (const d of leds) {
+        const [lx, ly] = Array.isArray(d) ? d : [0, d];   // an offset along the box, or [x, y]
+        const d2 = (x - lx) * (x - lx) + (y - ly) * (y - ly);
         v += Math.exp(-d2 / (2 * sigma * sigma)) + 0.35 / (1 + d2 / (gap * gap * 4));
       }
       const edge = Math.min(w / 2 - Math.abs(x), l / 2 - Math.abs(y));
@@ -84,59 +86,65 @@ export function makeCameraRig(cam, M) {
   const [lx, ly, lz] = cam.lens;
   g.position.set(lx, ly, 0);
   const drop = -lz;
-  const [pw, pl, pt] = cam.plate, [px, py] = cam.plate_at;
-  // the plate, and an arm to the ceiling's insert square (the pod is cantilevered off the four inserts)
-  const [mx, my, mp] = cam.mount;
-  const slab = (w, l, x, y, rot = 0) => {
-    const m = new THREE.Mesh(printed(new RoundedBoxGeometry(w, l, pt, 2, 1.2)), M.cameras);
-    m.position.set(x, y, -pt / 2);
-    m.rotation.z = rot;
-    return m;
-  };
-  g.add(slab(pw, pl, px, py), slab(mp + 8, mp + 8, mx, my),
-    slab(Math.hypot(mx - px, my - py), 14, (mx + px) / 2, (my + py) / 2, Math.atan2(my - py, mx - px)));
-  for (const dx of [-mp / 2, mp / 2]) for (const dy of [-mp / 2, mp / 2]) {     // M3 heads in their recesses
-    const h = new THREE.Mesh(new THREE.CylinderGeometry(2.7, 2.7, 1.2, 20), M.silver);
-    h.rotation.x = Math.PI / 2;
-    h.position.set(mx + dx, my + dy, -pt + 0.5);
-    g.add(h);
+  let zq = null;                                      // the pod board's component face (stand-in only)
+  if (!cam.instances) {
+    const [pw, pl, pt] = cam.plate, [px, py] = cam.plate_at;
+    // the plate, and an arm to the ceiling's insert square (the pod is cantilevered off the four inserts)
+    const [mx, my, mp] = cam.mount;
+    const slab = (w, l, x, y, rot = 0) => {
+      const m = new THREE.Mesh(printed(new RoundedBoxGeometry(w, l, pt, 2, 1.2)), M.cameras);
+      m.position.set(x, y, -pt / 2);
+      m.rotation.z = rot;
+      return m;
+    };
+    g.add(slab(pw, pl, px, py), slab(mp + 8, mp + 8, mx, my),
+      slab(Math.hypot(mx - px, my - py), 14, (mx + px) / 2, (my + py) / 2, Math.atan2(my - py, mx - px)));
+    for (const dx of [-mp / 2, mp / 2]) for (const dy of [-mp / 2, mp / 2]) {     // M3 heads in their recesses
+      const h = new THREE.Mesh(new THREE.CylinderGeometry(2.7, 2.7, 1.2, 20), M.silver);
+      h.rotation.x = Math.PI / 2;
+      h.position.set(mx + dx, my + dy, -pt + 0.5);
+      g.add(h);
+    }
+    // the Mega: PCB on four standoffs, the M12 holder (screwed through two ears) and the lens below it
+    const [bw, bl, bt] = cam.board;
+    const zb = -pt - cam.standoff;                      // PCB top face
+    g.add(boxAt(bw, bl, bt, M.megaPcb, 0, 0, zb - bt));
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) g.add(boxAt(3.4, 3.4, cam.standoff, M.cameras, sx * (bw / 2 - 3), sy * (bl / 2 - 3), zb));
+    const zh = zb - bt;                                 // underside of the PCB
+    const [hb, hh, he] = cam.holder, [ld, bd, ll] = cam.optic;
+    g.add(boxAt(hb, hb, hh, M.blackPlastic, 0, 0, zh - hh), boxAt(he, 5, 1.6, M.blackPlastic, 0, 0, zh - 1.6));
+    const ringH = 3;
+    const barrel = new THREE.Mesh(new THREE.CylinderGeometry(bd / 2, bd / 2, ll - ringH, 36), M.lensBody);
+    barrel.rotation.x = Math.PI / 2;
+    barrel.position.set(0, 0, zh - hh - (ll - ringH) / 2);
+    const ring = new THREE.Mesh(new THREE.CylinderGeometry(ld / 2, ld / 2, ringH, 36), M.lensBody);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.set(0, 0, -drop + ringH / 2);
+    const glass = new THREE.Mesh(new THREE.CircleGeometry(ld / 2 - 2.2, 36), M.glass);
+    glass.rotation.x = Math.PI;                        // facing down
+    glass.position.set(0, 0, -drop - 0.01);
+    g.add(barrel, ring, glass);
+    // the camera pod board (electronics/camera-pod) beside the Mega, components down: its PH 8 lead at the
+    // rear edge, the 1 × 6 header for the Mega's cable, the four 2835 LEDs along the edge next to the Mega
+    const [qw, ql, qt] = cam.pod.size, [qx, qy] = cam.pod.at;
+    zq = -pt - qt;                                      // the board's component face
+    g.add(boxAt(qw, ql, qt, M.pcb, qx, qy, zq), boxAt(6, 7.6, 4.8, M.whitePlastic, qx + qw / 2 - 6, qy + ql / 2 - 4.5, zq - 4.8),
+      boxAt(2.5, 15.2, 2.5, M.blackPlastic, qx + 2, qy + 2, zq - 2.5));
   }
-  // the Mega: PCB on four standoffs, the M12 holder (screwed through two ears) and the lens below it
-  const [bw, bl, bt] = cam.board;
-  const zb = -pt - cam.standoff;                      // PCB top face
-  g.add(boxAt(bw, bl, bt, M.megaPcb, 0, 0, zb - bt));
-  for (const sx of [-1, 1]) for (const sy of [-1, 1]) g.add(boxAt(3.4, 3.4, cam.standoff, M.cameras, sx * (bw / 2 - 3), sy * (bl / 2 - 3), zb));
-  const zh = zb - bt;                                 // underside of the PCB
-  const [hb, hh, he] = cam.holder, [ld, bd, ll] = cam.optic;
-  g.add(boxAt(hb, hb, hh, M.blackPlastic, 0, 0, zh - hh), boxAt(he, 5, 1.6, M.blackPlastic, 0, 0, zh - 1.6));
-  const ringH = 3;
-  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(bd / 2, bd / 2, ll - ringH, 36), M.lensBody);
-  barrel.rotation.x = Math.PI / 2;
-  barrel.position.set(0, 0, zh - hh - (ll - ringH) / 2);
-  const ring = new THREE.Mesh(new THREE.CylinderGeometry(ld / 2, ld / 2, ringH, 36), M.lensBody);
-  ring.rotation.x = Math.PI / 2;
-  ring.position.set(0, 0, -drop + ringH / 2);
-  const glass = new THREE.Mesh(new THREE.CircleGeometry(ld / 2 - 2.2, 36), M.glass);
-  glass.rotation.x = Math.PI;                        // facing down
-  glass.position.set(0, 0, -drop - 0.01);
-  g.add(barrel, ring, glass);
-  // the camera pod board (electronics/camera-pod) beside the Mega, components down: its PH 8 lead at the
-  // rear edge, the 1 × 6 header for the Mega's cable, the four 2835 LEDs along the edge next to the Mega
-  const [qw, ql, qt] = cam.pod.size, [qx, qy] = cam.pod.at;
-  const zq = -pt - qt;                                // the board's component face
-  g.add(boxAt(qw, ql, qt, M.pcb, qx, qy, zq), boxAt(6, 7.6, 4.8, M.whitePlastic, qx + qw / 2 - 6, qy + ql / 2 - 4.5, zq - 4.8),
-    boxAt(2.5, 15.2, 2.5, M.blackPlastic, qx + 2, qy + 2, zq - 2.5));
   // the light box: white walls (the baffle towards the lens), the diffuser 8 mm in front of the LEDs
   const lights = [];
   for (const L of cam.lights) {
     const [ax, ay] = L.at, [w, l] = L.size;
-    const t = 1.2, zLed = zq - 0.8, zDiff = zLed - L.gap - L.diffuser;
-    for (const [x, y, ww, ll] of [[ax - w / 2 - t / 2, ay, t, l + 2 * t], [ax + w / 2 + t / 2, ay, t, l + 2 * t],
+    const t = 1.2, zLed = L.led_z ?? zq - 0.8, zDiff = zLed - L.gap - L.diffuser;
+    if (!cam.instances) for (const [x, y, ww, ll] of [[ax - w / 2 - t / 2, ay, t, l + 2 * t], [ax + w / 2 + t / 2, ay, t, l + 2 * t],
       [ax, ay - l / 2 - t / 2, w, t], [ax, ay + l / 2 + t / 2, w, t]]) {
       g.add(boxAt(ww, ll, zq - zDiff, M.cameras, x, y, zDiff));
     }
     const ledMat = new THREE.MeshStandardMaterial({ color: 0xf6f3e8, emissive: LED_WHITE, emissiveIntensity: 0, roughness: 0.3 });
-    for (const dy of L.leds) g.add(boxAt(2.8, 3.5, 0.8, ledMat, ax, ay + dy, zLed));
+    for (const d of L.leds) {                     // offsets along the box (2.8 × 3.5 across it), or [x, y]
+      const [dx, dy] = Array.isArray(d) ? d : [0, d];
+      g.add(Array.isArray(d) ? boxAt(3.5, 2.8, 0.8, ledMat, ax + dx, ay + dy, zLed) : boxAt(2.8, 3.5, 0.8, ledMat, ax, ay + dy, zLed));
+    }
     const glow = diffuserTexture(L.size, L.leds, L.gap);
     const diffMat = new THREE.MeshStandardMaterial({ color: 0xf1efe8, roughness: 0.62, emissive: LED_WHITE, emissiveMap: glow, emissiveIntensity: 0 });
     const diff = boxAt(w, l, L.diffuser, diffMat, ax, ay, zDiff);

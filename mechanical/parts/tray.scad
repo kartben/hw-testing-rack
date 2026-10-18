@@ -96,8 +96,7 @@ module tray_bottom_2d() {
     keep = concat(
         [for (h = NODE_HOLES) concat(node_xy(h), [5])],
         [for (c = cam_inserts()) concat(c, [5])],
-        [for (b = ANCHOR_BOSSES) concat(b, [5])],
-        [concat(CAM_CABLE_HOLE, [7])]);
+        [for (b = ANCHOR_BOSSES) concat(b, [5])]);
     difference() {
         square([CARRIER_W, CARRIER_D]);
         relief_2d(CARRIER_D, keep, skip_x = CHAIN_X);
@@ -169,9 +168,7 @@ module tray() {
         // row cable: through both side walls and their runners, under the ledge
         for (x = [-RUNNER_OUT - 1, CARRIER_W - WALL - EPS])
             translate([x, JUMPER_Y[0], JUMPER_Z0]) cube([WALL + RUNNER_OUT + 1 + 2 * EPS, JUMPER_W, LEDGE_Z - LEDGE_T - JUMPER_Z0]);
-        // camera 5 V cable to the pod below
-        translate([CAM_CABLE_HOLE[0], CAM_CABLE_HOLE[1], -EPS]) rslot(10, 5, CARRIER_BOTTOM + 2);
-        // rear service slot (row feed, top-row camera cables, airflow)
+        // rear service slot (row feed, the camera lead, airflow)
         translate([20, CARRIER_D - WALL - EPS, CARRIER_BOTTOM + 2]) cube([60, WALL + 2 * EPS, CARRIER_WALL_H - 5]);
         // the node's RESET button sits under the left ledge's inner edge: a notch over its plunger lets a
         // pin reach it from above, drawer pulled out; the drawer still rests on 1.5 mm of ledge there

@@ -19,8 +19,9 @@ the latest CI run).
 
 Heat-set inserts (M3 × 5.7) while the parts are on the bench: 4 in the rear
 edge of every base and row ladder (the braces screw into them), 4 in each
-tray's node standoffs and 2 in its chain anchor, 4 under the ceiling of each
-camera bay (the tray above, or the cap plate).
+tray's node standoffs and 2 in its chain anchor, 4 under the ceiling of every
+bay (the tray above, or the cap plate: a camera pod's mount, so a pod can go
+in any bay later).
 
 ## 2. The first bay
 
@@ -97,9 +98,15 @@ ladder's window, run them up the left side and into each row's first node.
 
 ## 6. Cameras (optional)
 
-Mount under the ceiling (4 × M3 into the tray above, or the cap plate),
-cradle on the M3×30 pivot, XIAO in the cradle, PH lead to the node above (or
-the bay's own node for the top row).
+At the bench: the pod board on its two standoffs behind the sleeve, LEDs
+down, against the baffle, and the diffuser under it (2 × PT 2.6×14 up through
+its posts and the board); the XH → Dupont cable into the Mega's side and onto
+J2 by name.  Pod under the ceiling, 4 × M3×6 into the camera inserts (the tray
+above, or the cap plate); push the Mega's case up into the sleeve until the
+lips click, lens down, its XH on the open side.  The lead
+([cabling.md](cabling.md)) into the bay's own node (J6), back through the
+plenum and the tray's rear slot, straight up behind the tray, forwards under
+the ceiling (a cable tie every ~5 cm) and into the board's J1.
 
 ## 7. Bring-up
 

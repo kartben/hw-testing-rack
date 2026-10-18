@@ -2243,21 +2243,21 @@
 "group": "filament",
 "item": "PETG filament",
 "supplier": "any",
-"qty": 2.8,
+"qty": 2.9,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈2.5 kg estimated + 10 % waste, 94 parts",
-"ext_eur": 56.0
+"notes": "≈2.6 kg estimated + 10 % waste, 96 parts",
+"ext_eur": 58.0
 },
 {
 "category": "Fasteners",
 "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
 "supplier": "AliExpress (bulk) / Ruthex",
-"qty": 116,
+"qty": 144,
 "unit_eur": 0.03,
-"notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub standoffs",
+"notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs",
 "unit": "pcs",
-"ext_eur": 3.48
+"ext_eur": 4.32
 },
 {
 "category": "Fasteners",
@@ -2270,12 +2270,12 @@
 },
 {
 "category": "Fasteners",
-"item": "M3×6 (node PCB, power box lid)",
+"item": "M3×6 (node PCB, power box lid, camera pods)",
 "supplier": "AliExpress (bulk)",
-"qty": 36,
+"qty": 44,
 "unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 0.72
+"ext_eur": 0.88
 },
 {
 "category": "Fasteners",
@@ -2493,18 +2493,27 @@
 "notes": "the Mega's own 6-pin cable does if it ends in Dupont sockets; J2's pins are named on the board, so the wires go on by name",
 "unit": "pcs",
 "ext_eur": 1.0
+},
+{
+"category": "Cameras",
+"item": "Pod hardware: 2 × PT 2.6×14 (the pod board, through the diffuser's posts), cable ties 2.5 × 100 (the lead: 1 at the tray's rear slot, 3 under the ceiling)",
+"supplier": "AliExpress (bulk)",
+"qty": 2,
+"unit": "set",
+"unit_eur": 0.3,
+"ext_eur": 0.6
 }
 ],
 "by_category": {
 "Electronics": 664.0200000000001,
-"Printed parts": 56.0,
-"Fasteners": 14.47,
+"Printed parts": 58.0,
+"Fasteners": 15.47,
 "Motion": 21.02,
 "Cables": 42.980000000000004,
 "Power": 82.0,
-"Cameras": 68.0
+"Cameras": 68.6
 },
-"total_eur": 948.49,
+"total_eur": 952.09,
 "prints": [
 {
 "part": "bay_label",
@@ -2535,18 +2544,18 @@
 "stl": "mechanical/stl/brace_base.stl"
 },
 {
-"part": "camera_pod_cradle",
-"qty": 1,
-"grams_each": 2.4,
-"grams_total": 2.4,
-"stl": "mechanical/stl/camera_pod_cradle.stl"
+"part": "camera_diffuser",
+"qty": 2,
+"grams_each": 0.6,
+"grams_total": 1.1,
+"stl": "mechanical/stl/camera_diffuser.stl"
 },
 {
-"part": "camera_pod_mount",
-"qty": 1,
-"grams_each": 4.3,
-"grams_total": 4.3,
-"stl": "mechanical/stl/camera_pod_mount.stl"
+"part": "camera_pod",
+"qty": 2,
+"grams_each": 12.1,
+"grams_total": 24.3,
+"stl": "mechanical/stl/camera_pod.stl"
 },
 {
 "part": "cap_plate",
@@ -2628,8 +2637,8 @@
 {
 "part": "plate_giga-r1-display",
 "qty": 1,
-"grams_each": null,
-"grams_total": null,
+"grams_each": 36.6,
+"grams_total": 36.6,
 "stl": "mechanical/stl/plate_giga-r1-display.stl"
 },
 {
@@ -2698,8 +2707,8 @@
 {
 "part": "tray",
 "qty": 8,
-"grams_each": 79.4,
-"grams_total": 635.4,
+"grams_each": 79.0,
+"grams_total": 631.8,
 "stl": "mechanical/stl/tray.stl"
 }
 ],

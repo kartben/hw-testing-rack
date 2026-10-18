@@ -34,8 +34,10 @@ bay:
     pcb_to_floor: 14.0   # PCB top surface → bay floor surface (deck top)
     deck: 3.0            # removable deck plate thickness
     fascia: 2.5          # front wall thickness
-  camera_mount: [100, 60, 30]   # insert-pattern centre X, Y and square pitch, carrier coords
-                                # (rows are staggered by height·sin(tilt): this lands mid-bay below)
+  camera_mount: [109, 45, 30]   # camera pod's insert square under the ceiling: centre X, Y and pitch, carrier
+                                # coords; right of the node above, clear of its chain, on the cap plate's grid
+  camera_lens: [64, 27.6]       # the pod's lens axis, straight down, carrier coords of the ceiling: bay (64, 84)
+                                # below (rows are staggered by height·sin(tilt) = 56.4 mm)
 
 drawer:
   depth: 196             # outer, front panel included

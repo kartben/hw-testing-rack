@@ -34,7 +34,7 @@ ESP32-S3 in each bay.**
   the hub: a USB PD 3.1 sink (20 or 28 V from one charger, no mains in the
   rack) and an eFuse per row; a 60 V-rated buck in every bay.  The same row
   cables carry a CAN bus for the rack controller ([can.md](docs/can.md)).
-* **Cameras** — optional XIAO ESP32S3 Sense pods hang from any bay's ceiling.
+* **Cameras** — an optional Arducam Mega (SPI, ~120° M12 lens) and white LEDs behind a diffuser hang from a bay's ceiling, driven by the bay's own node.
 * **Everything is generated** from [`config/rack.yaml`](config/rack.yaml):
   OpenSCAD parts, KiCad schematics *and* PCBs (schematic-as-code, Freerouting),
   the BOM with LCSC part numbers, and the interactive viewer.
