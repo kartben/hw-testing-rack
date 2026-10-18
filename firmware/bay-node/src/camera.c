@@ -150,28 +150,49 @@ static void light_set(bool on)
 
 /* --- The sensor ------------------------------------------------------------------- */
 
+/*
+ * video_set_ctrl() skips a value equal to the one it has cached, and that
+ * cache starts at the control's default without the camera being written
+ * (quality 0, "high", would never reach it after a boot): the first time,
+ * go through another value so that the camera gets this one
+ */
+static int set_ctrl_written(uint32_t id, int32_t val, bool *written)
+{
+	struct video_control c = {.id = id};
+
+	if (!*written && video_get_ctrl(cam, &c) == 0 && c.val == val) {
+		c.val = val == 0 ? 1 : 0;
+		(void)video_set_ctrl(cam, &c);
+	}
+	c.val = val;
+	*written = true;
+	return video_set_ctrl(cam, &c);
+}
+
 static int apply_format(void)
 {
+	static bool quality_written;
 	struct video_format fmt = {
 		.type = VIDEO_BUF_TYPE_OUTPUT,
 		.pixelformat = VIDEO_PIX_FMT_JPEG,
 	};
-	struct video_control q = {.id = VIDEO_CID_JPEG_COMPRESSION_QUALITY};
+	int32_t quality;
 	int ret;
 
 	k_mutex_lock(&lock, K_FOREVER);
 	fmt.width = resolutions[cfg.res].w;
 	fmt.height = resolutions[cfg.res].h;
-	q.val = cfg.quality;
+	quality = cfg.quality;
 	fmt_dirty = false;
 	k_mutex_unlock(&lock);
 
 	ret = video_set_format(cam, &fmt);
 	if (ret == 0) {
-		ret = video_set_ctrl(cam, &q);
+		ret = set_ctrl_written(VIDEO_CID_JPEG_COMPRESSION_QUALITY, quality,
+				       &quality_written);
 	}
 	if (ret != 0) {
-		LOG_ERR("format %ux%u, quality %d: %d", fmt.width, fmt.height, q.val, ret);
+		LOG_ERR("format %ux%u, quality %d: %d", fmt.width, fmt.height, quality, ret);
 	}
 	return ret;
 }
