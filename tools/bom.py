@@ -329,8 +329,10 @@ def hardware(rack) -> list[dict]:
         {"category": "Cables", "item": "USB-C ↔ USB-C cable, 40 cm, one plug at 90° (up / down), USB 2.0 data "
                                       "(drawer extension: node → drag chain → DATA coupler)",
          "supplier": "AliExpress", "qty": n_bays, "unit_eur": 2.5,
-         "notes": "the 90° plug in the coupler's rear, bent down through the cable window; the route is ≈ 32 cm, "
-                  "so 30 cm is short; 50 cm works too (the spare widens the loop in front of the chain's moving end)"},
+         "notes": "the 90° plug in the coupler's rear, bent down through the cable window.  The route is 34 cm "
+                  "plugs included (constant over the stroke), so 30 cm is short.  The ~6 cm spare goes in a wider "
+                  "bend between the node and the chain's fixed end (nothing moves there), never in front of the "
+                  "chain's moving end: 1.5 mm to the tray's front wall with the drawer fully out"},
         # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up.  Bought in
         # lots of 5 from one AliExpress listing (checked 2026-10-18: its "Same direction" photo shows both
         # plugs on the same face, its "Reverse direction" the 1:1 type); 6 pins
