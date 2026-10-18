@@ -487,7 +487,7 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
 | IO33 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
 | IO34 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
-| IO35 | POS_OUT | POS token to J2.6 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
+| IO35 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
 | IO37 | I2C_SCL | I²C0 | `&i2c0` |
 | IO38 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
 | IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up), not used yet | `ina226` `alert-gpios` |
