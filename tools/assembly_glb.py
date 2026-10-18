@@ -248,7 +248,7 @@ def board_meshes(b):
 
 
 # stack-up order of one bay, for --explode-bay (multiples of the layer gap, along the shelf normal)
-BAY_LAYERS = [("tray", 0), ("chain", 1), ("pcb", 1), ("led", 1), ("drawer", 3), ("plate", 4), ("boards", 5),
+BAY_LAYERS = [("dataport", 3), ("tray", 0), ("chain", 1), ("pcb", 1), ("led", 1), ("drawer", 3), ("plate", 4), ("boards", 5),
               ("camera", 4), ("xiao", 4)]   # the pod already hangs a row pitch higher
 
 
