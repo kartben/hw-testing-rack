@@ -80,7 +80,8 @@ const MAT = {
   inductor: std(0x2b2b2b, 0.2, 0.55),
 };
 const CABLE_COLORS = {
-  'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-micro-b-20': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
+  'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
+  'c-to-c-straight': 0x8f5cff, 'c-to-micro-b-straight': 0xffb02e,
   power: 0xff5a5a, pc: 0x3fb6ff, ext: 0x7d8590, 'usb-pd': 0x101114,
 };
 

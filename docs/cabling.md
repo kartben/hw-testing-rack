@@ -34,19 +34,28 @@ bay node (plenum)                              drawer
    links (their bars snap off on both sides), lay the cable in from the fixed
    end's mouth to the moving end's, with ~6 cm out of the fixed end for the
    node and the socket end out of the moving end, then snap the bars back.
-3. **Drawer → board: a short cable that belongs to the board.**  10–15 cm,
-   USB-C on the drawer side, whatever the board needs on the other: C,
-   micro-B or mini-B, right-angle at both ends: with the socket on the
-   opposite side, the cable makes a small arch over the board's rear edge
-   (straight up out of both plugs, bends no tighter than ~10 mm radius).
-   The board's plate turns its debug USB towards the port wall (or, for a
-   board too long for a plug behind it like the F746G-DISCO, towards the
-   right wall: give that one a 20 cm cable) and has two hooks for the spare
-   length.  Swapping boards = swapping plate + cable; the bay doesn't care.
+3. **Drawer → board: a short cable that belongs to the board.**  USB-C on
+   the drawer side, whatever the board needs on the other (C, micro-B or
+   mini-B).  Two layouts, set by the board's plate:
+   * **a small board** (Pico, ESP32 DevKitC, UNO R4: `orient: side`) turns
+     its USB towards the right wall: a plain **straight** 15–20 cm cable
+     leaves the right DATA socket forwards, bends once (≥ 10 mm radius) and
+     lies flat on the plate into the board's side;
+   * **a long board** (Nucleo, nRF DK, FRDM) faces its USB to the port wall,
+     17–23 mm away, too close for a straight plug: a 10–15 cm cable with
+     **right-angle plugs at both ends** makes a small arch over the board's
+     rear edge (straight up out of both plugs).  The F746G-DISCO, too long
+     for a plug behind it, turns its USB (mini-B) to the right wall: 20–25 cm.
+   A right-angle micro-B or mini-B is not reversible: its cable must leave
+   the board's socket upwards, and sellers name "up" and "down" either way,
+   so buy one of each per board unless you have checked.  The plate has two
+   hooks for the spare length.  Swapping boards = swapping plate + cable;
+   the bay doesn't care.
 
 **USB-C or micro-B in every bay?**  Yes — the bay's port is always USB-C and
-the short cable adapts.  Recommended kit: a few C↔C (Adafruit right-angle
-100 mm), C↔micro-B (Delock 15 cm) and one C↔mini-B for older ST-LINKs.
+the short cable adapts.  The BOM lists one per board type
+([bom/README.md](../bom/README.md)); pick cables that state data (USB 2.0,
+480 Mbps): many short ones are charge-only.
 
 **Classic mode, no cable juggling.**  Plug a laptop into the bay's front
 **PC** port and the node's mux hands the board's USB data to the laptop

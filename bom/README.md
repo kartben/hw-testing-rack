@@ -6,15 +6,15 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Category | Cost (€) |
 |---|---:|
 | Electronics | 583 |
-| Cables | 83 |
 | Power | 82 |
 | Printed parts | 78 |
+| Cables | 77 |
 | Cameras | 36 |
 | Motion | 32 |
 | Fasteners | 18 |
-| **Total** | **911** |
+| **Total** | **905** |
 
-≈ **€76 per bay** all-in.
+≈ **€75 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -54,17 +54,17 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | ladder_base | 5 | 49.3 | `mechanical/stl/ladder_base.stl` |
 | ladder_c | 5 | 49.6 | `mechanical/stl/ladder_c.stl` |
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
-| plate_arduino-uno-r4 | 1 | 31.3 | `mechanical/stl/plate_arduino-uno-r4.stl` |
-| plate_esp32-c6-devkitc | 1 | 31.5 | `mechanical/stl/plate_esp32-c6-devkitc.stl` |
-| plate_esp32-s3-devkitc | 1 | 31.8 | `mechanical/stl/plate_esp32-s3-devkitc.stl` |
+| plate_arduino-uno-r4 | 1 | 31.2 | `mechanical/stl/plate_arduino-uno-r4.stl` |
+| plate_esp32-c6-devkitc | 1 | 30.8 | `mechanical/stl/plate_esp32-c6-devkitc.stl` |
+| plate_esp32-s3-devkitc | 1 | 31.1 | `mechanical/stl/plate_esp32-s3-devkitc.stl` |
 | plate_frdm-mcxn947 | 1 | 36.9 | `mechanical/stl/plate_frdm-mcxn947.stl` |
 | plate_nrf52840-dk | 1 | 37.6 | `mechanical/stl/plate_nrf52840-dk.stl` |
 | plate_nrf5340-dk | 1 | 37.6 | `mechanical/stl/plate_nrf5340-dk.stl` |
 | plate_nrf54l15-dk | 1 | 37.6 | `mechanical/stl/plate_nrf54l15-dk.stl` |
 | plate_nucleo-144 | 1 | 37.5 | `mechanical/stl/plate_nucleo-144.stl` |
 | plate_nucleo-64 | 2 | 34.4 | `mechanical/stl/plate_nucleo-64.stl` |
-| plate_rpi-pico2 | 1 | 29.1 | `mechanical/stl/plate_rpi-pico2.stl` |
-| plate_stm32f746g-disco | 1 | 38.9 | `mechanical/stl/plate_stm32f746g-disco.stl` |
+| plate_rpi-pico2 | 1 | 28.4 | `mechanical/stl/plate_rpi-pico2.stl` |
+| plate_stm32f746g-disco | 1 | 38.2 | `mechanical/stl/plate_stm32f746g-disco.stl` |
 | power_box_base | 1 | 45.0 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 20.8 | `mechanical/stl/power_box_lid.stl` |
@@ -199,9 +199,11 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Cables | JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS) | 1 lot | 3.19 | 3.19 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length30CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 60 cm, lot of 5 (power box → first bay of row B: VRACK, CAN, POS) | 1 lot | 4.69 | 4.69 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length60CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 80 cm, lot of 5 (power box → first bay of row C: VRACK, CAN, POS) | 1 lot | 5.29 | 5.29 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length80CM |
-| Cables | USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle) | 4  | 4.50 | 18.00 | Adafruit / Delock / AliExpress |
-| Cables | USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle) | 7  | 2.90 | 20.30 | Adafruit / Delock / AliExpress |
-| Cables | USB-C ↔ micro-B, 20 cm (DUT cable, short / right-angle) | 1  | 3.20 | 3.20 | Adafruit / Delock / AliExpress |
+| Cables | USB-C 90° ↔ USB-C 90°, 10–15 cm (DUT cable: FRDM-MCXN947, nRF54L15 DK) | 2  | 2.50 | 5.00 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
+| Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: ESP32-C6, UNO R4) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
+| Cables | USB-C 90° ↔ micro-B 90°, 10–15 cm (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK, nRF5340 DK) | 10  | 2.00 | 20.00 | AliExpress (C 90° ↔ micro-B 90°, 10–15 cm: pick a listing with up AND down micro-B variants) |
+| Cables | USB-C ↔ micro-B, straight, 15–20 cm (DUT cable: ESP32-S3, PICO 2) | 2  | 2.50 | 5.00 | AliExpress 1005010391943574 (CableCreation USB-C → micro-B, 0.2 m, 480 Mbps) |
+| Cables | USB-C 90° ↔ mini-B 90°, 20–25 cm (DUT cable: F746G-DISCO) | 2  | 1.00 | 2.00 | AliExpress 2251832791887129 (HOQO, C 90° ↔ mini-B 90°, 25 cm) |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |
 | Cameras | Seeed XIAO ESP32S3 Sense (camera pod) | 2  | 13.50 | 27.00 | Seeed |

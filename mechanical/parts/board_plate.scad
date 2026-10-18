@@ -19,12 +19,13 @@ include <../generated/boards.scad>
 BOARD = "universal";
 MODE = "insert";
 REAR_GAP_MAX = 26;                    // room for the USB plug + cable bend behind the board
+SIDE_X = 2.5;                         // a usb_side board's gap to the plate's left edge (tools/webscene.py)
 
 function board_rec(id) = BOARD_DB[search([id], BOARD_DB, 1, 0)[0]];
 function rear_gap(l) = max(3, min(REAR_GAP_MAX, PLATE_D - l - 4));
 function usb_side(rec) = len(rec) > 12 && rec[12];
 function board_origin(rec) = usb_side(rec)
-    ? [6, (PLATE_D - rec[2][1]) / 2]
+    ? [SIDE_X, (PLATE_D - rec[2][1]) / 2]
     : [(PLATE_W - rec[2][0]) / 2, PLATE_D - rear_gap(rec[2][1]) - rec[2][1]];
 
 module plate_body() {

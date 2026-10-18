@@ -175,7 +175,7 @@ def scene(c: dict, cols: int, rows: int, boards: dict) -> dict:
             b = boards[bid]
             o = rackcfg.orient_board(b)
             if o["usb_side"]:
-                bx, by = 6, (c["PLATE_D"] - o["l"]) / 2
+                bx, by = 2.5, (c["PLATE_D"] - o["l"]) / 2      # board_plate.scad › SIDE_X
             else:
                 gap = max(3, min(26, c["PLATE_D"] - o["l"] - 4))
                 bx, by = (c["PLATE_W"] - o["w"]) / 2, c["PLATE_D"] - gap - o["l"]

@@ -83,6 +83,30 @@ ROW_CABLE_URL = "https://www.aliexpress.com/item/1005008045292937.html"
 ROW_FEED_CM = [(30, 3.19), (60, 4.69), (80, 5.29)]      # rows A, B, C (≈ 0.25 / 0.45 / 0.6 m), then D...
 
 
+# DUT cables (DATA socket → board), per cable type of config/rack.yaml.  Listings found on 2026-10-18;
+# AliExpress then asked for a captcha, so variants and the data lines are to be checked on the page.
+# A right-angle micro-B or mini-B plug is not reversible and its "up" / "down" naming varies by seller:
+# buy one of each per board (the other is a spare) unless you have checked the board's socket.
+DUT_CABLES = {
+    "c-to-c": {"supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)", "unit_eur": 2.5,
+               "notes": "both plugs bent across their wide face (up / down, not left / right); USB-C is "
+                        "reversible, so either bend works.  Check the listing says data, not charge only"},
+    "c-to-micro-b": {"supplier": "AliExpress (C 90° ↔ micro-B 90°, 10–15 cm: pick a listing with up AND down "
+                                 "micro-B variants)", "unit_eur": 2.0, "up_and_down": True,
+                     "notes": "one up + one down per board: the cable must leave the board's socket upwards; "
+                              "the USB-C end any up / down bend"},
+    "c-to-mini-b": {"supplier": "AliExpress 2251832791887129 (HOQO, C 90° ↔ mini-B 90°, 25 cm)", "unit_eur": 1.0,
+                    "up_and_down": True,
+                    "notes": "the F746G-DISCO's ST-LINK port (CN14) is mini-B; one up + one down mini-B variant"},
+    "c-to-micro-b-straight": {"supplier": "AliExpress 1005010391943574 (CableCreation USB-C → micro-B, 0.2 m, "
+                                          "480 Mbps)", "unit_eur": 2.5,
+                              "notes": "straight at both ends, lies flat with one bend (board turned to the side)"},
+    "c-to-c-straight": {"supplier": "AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps)", "unit_eur": 2.0,
+                        "notes": "straight at both ends; any short C ↔ C that states data (many short ones are "
+                                 "charge-only)"},
+}
+
+
 def _feed_lots(rack):
     """(length cm, EUR per lot of 5, [row ids]) for the feeds: row k gets ROW_FEED_CM[k] (the last one beyond)."""
     lots = {}
@@ -321,10 +345,15 @@ def hardware(rack) -> list[dict]:
           for cm, price, rows_ in _feed_lots(rack)],
     ]
     cab = Counter(info["cable"] for info in pop.values())
+    lib = rackcfg.load_boards()
     for k, n in sorted(cab.items()):
-        price = {"c-to-c": 4.5, "c-to-micro-b": 2.9, "c-to-micro-b-20": 3.2, "c-to-mini-b": 6.0}.get(k, 4.0)
-        rows.append({"category": "Cables", "item": r["cables"][k]["label"] + " (DUT cable, short / right-angle)",
-                     "supplier": "Adafruit / Delock / AliExpress", "qty": n, "unit_eur": price})
+        src = DUT_CABLES.get(k, {"supplier": "AliExpress", "unit_eur": 3.0})
+        boards = ", ".join(sorted({lib[info["board"]].get("short", info["board"])
+                                   for info in pop.values() if info["cable"] == k}))
+        both = src.get("up_and_down", False)       # a right-angle micro-B / mini-B: which way it must bend
+        rows.append({"category": "Cables", "item": f"{r['cables'][k]['label']} (DUT cable: {boards})",
+                     "supplier": src["supplier"], "qty": 2 * n if both else n, "unit_eur": src["unit_eur"],
+                     "notes": src.get("notes", "")})
     rows += [
         # the rack's supply: a USB PD charger outside it, into the power box's rear wall (the hub's
         # AP33772S sink asks for 28 V EPR, or 20 V), so no mains wiring anywhere in the rack

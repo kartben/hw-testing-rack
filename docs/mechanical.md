@@ -100,9 +100,11 @@ drawer, the node and the DUT plug never overlap.
 `boards.yaml` holds each board's outline, holes (in the vendor drawing's
 coordinates), debug-USB edge and standoff height (Nucleo morpho pins stick
 out ~10 mm underneath!).  The generator rotates the board so its debug USB
-faces the drawer's port wall; a board too long for a plug behind it
-(`orient: side`, e.g. the F746G-DISCO) turns its USB towards the right wall
-and sits to the left of its plate.  Mounting styles:
+faces the drawer's port wall.  `orient: side` turns it towards the right wall
+instead, the board 2.5 mm from the plate's left edge: for a board too long for
+a plug behind it (the F746G-DISCO), and for the small ones (Pico, ESP32
+DevKitC, UNO R4), whose cable from the right DATA socket is then straight at
+both ends and lies flat ([cabling.md](cabling.md)).  Mounting styles:
 
 * `MODE="insert"` heat-set inserts (M3, M2.5 or M2 picked from the hole size);
 * `MODE="snap"` split snap pins — push the board on, pinch to release;

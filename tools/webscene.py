@@ -159,7 +159,8 @@ def build_parts_glb(rack, boards: dict, hq: bool = False) -> dict:
 
 
 # ------------------------------------------------------------------ USB cables
-CABLE_BEND_R = 12.0        # bend radius of a thin USB cable (≥ 10 mm: no kinks)
+CABLE_BEND_R = 12.0        # bend radius of a thin USB cable
+CABLE_MIN_R = 10.0         # and the tightest it takes without kinking
 
 
 def plug_exit(end):
@@ -209,6 +210,45 @@ def arch_cable(a, b, length, r=CABLE_BEND_R, step=2.5):
     pts += arc(cb, math.pi / 2, 0)
     pts += leg(pb, top - r, pb[2])[1:]
     return [[round(float(c), 2) for c in p] for p in pts], round(shortfall, 1)
+
+
+def flat_cable(a, b, length, r=CABLE_BEND_R, step=2.5):
+    """A short cable between two straight plugs at right angles in plan (the DATA socket's, pointing
+    to the rear, and a board's turned to the side wall): straight out of each strain relief, one
+    bend of radius r where the two lines meet, sloping from one plug's height to the other's.  The
+    spare length lies on the plate (not drawn).  Returns (points, shortfall) like arch_cable."""
+    pa, da = plug_exit(a)
+    pb, db = plug_exit(b)
+    # where the two cable lines meet in plan: pa + t·da = pb + s·db
+    m = np.array([[da[0], -db[0]], [da[1], -db[1]]])
+    t, s = np.linalg.solve(m, (pb - pa)[:2])
+    c = pa + da * t
+    c[2] = 0.0
+    corner = min(t, s)
+    r = min(r, max(corner, 0.0))
+    q = c - da * r - db * r
+    plan = [pa, c - da * r]
+    plan += [q + (db * math.cos(th) + da * math.sin(th)) * r for th in np.linspace(0, math.pi / 2, 9)[1:]]
+    plan += [pb]
+    plan = [np.array([p[0], p[1], 0.0]) for p in plan]
+    dense = [plan[0]]                    # the straight runs filled in, every `step` mm
+    for p0, p1 in zip(plan, plan[1:]):
+        n = max(1, int(np.linalg.norm(p1 - p0) / step))
+        dense += [p0 + (p1 - p0) * k / n for k in range(1, n + 1)]
+    run = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(dense, axis=0), axis=1))])
+    total = float(run[-1])
+    pts = [p + np.array([0.0, 0.0, pa[2] + (pb[2] - pa[2]) * d / total]) for p, d in zip(dense, run)]
+    shortfall = max(0.0, total - length) + max(0.0, CABLE_MIN_R - corner) * 2   # a kink counts as too short
+    return [[round(float(v), 2) for v in p] for p in pts], round(shortfall, 1)
+
+
+def cable_free_length(cab, a, b):
+    """A cable's length between its two strain reliefs: its length end to end less both plugs (a
+    straight plug: shell, overmold and relief; a right-angle one: about its body's depth)."""
+    def plug(e):
+        p = USB_PLUGS.get(e["type"], USB_PLUGS["usb-c"])
+        return 12 if e.get("style") == "right" else p["SL"] + p["L"] + p["REL"]
+    return cab.get("length", 120) - plug(a) - plug(b)
 
 
 def catenary_cable(a, touchdown, b, r=2.0):
@@ -386,7 +426,7 @@ def build(rack) -> Path:
             add(f"plate_{info['board']}", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i,
                 layer="plates", bay=b.id, movable=True)
             if o["usb_side"]:            # same placement as board_plate.scad
-                bx = dxw + plate_x0 + 6
+                bx = dxw + plate_x0 + 2.5    # board_plate.scad › SIDE_X
                 by = dy + plate_y0 + (plate_d - o["l"]) / 2
             else:
                 rear_gap = max(3, min(26, plate_d - o["l"] - 4))
@@ -408,24 +448,26 @@ def build(rack) -> Path:
             else:
                 sx = max((dxw + px for px in data_ports), key=lambda x: abs(x - (bx + o["usb_x"])))
             meta["data_port"] = ["left" if sx - dxw < rack.drawer_w / 2 else "right"]
-            # short right-angle cable: USB-C into the panel-mount socket on the drawer's rear wall,
-            # the board's own connector (micro-B, USB-C…) at the other end, an arch in between
+            # short cable: USB-C into the panel-mount socket on the drawer's rear wall, the board's own
+            # connector (micro-B, USB-C…) at the other end.  Right-angle plugs (a board's USB facing
+            # the port wall): an arch in between; straight plugs (a small board turned to the side
+            # wall, orient: side): one flat bend
             ctype = info["cable"]
             btype = cables_cfg[ctype].get("b", "usb-c")
+            style = cables_cfg[ctype].get("style", "right")
             end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 2.5, dz + port_z], "dir": [0, 1, 0],   # mouth on the flange's face
-                     "type": "usb-c", "style": "right", "socket": "panel"}
+                     "type": "usb-c", "style": style, "socket": "panel"}
             zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
             ux = o["usb_x"]
             if o["usb_side"]:
-                end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": "right"}
+                end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": style}
             else:
-                end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": "right"}
-            # the cable's length is plug to plug: each right-angle plug takes about its body's depth
-            free = cables_cfg[ctype].get("length", 120) - 2 * 12
-            pts, short = arch_cable(end_a, end_b, free)
+                end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": style}
+            free = cable_free_length(cables_cfg[ctype], end_a, end_b)
+            pts, short = (flat_cable if style == "straight" else arch_cable)(end_a, end_b, free)
             if short:
                 print(f"warning: bay {b.id}: the {ctype} cable is {short:.0f} mm too short "
-                      f"for the arch from the DATA socket to the board")
+                      f"from the DATA socket to the board")
             cable(pts, row=i, kind="dut", bay=b.id, type=ctype,
                   label=cables_cfg[ctype]["label"], a="usb-c", b=btype, ends=[end_a, end_b], radius=1.9,
                   movable=True)
