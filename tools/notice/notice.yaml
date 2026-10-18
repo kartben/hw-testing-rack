@@ -127,7 +127,7 @@ pages:
     page: 8
     footer: "{name}"
     steps:
-      - {n: 11, drawing: a11t, alt: "Anchor into the tray's inserts; the DATA lead's plug into the node's J7 (DATA)", hardware: {m3x8: 2}}
+      - {n: 11, drawing: a11t, alt: "Anchor into the tray's inserts; the DATA lead's plug into the node's J7 (DATA), its spare length in a bend before the chain", hardware: {m3x8: 2}}
       - {n: 12, drawing: a12s, alt: "Drawer: the DATA board on its two bosses, components up, its USB-C behind the port wall's U, 2 screws from above; the lead into its PH from the rear, down through the cable window", parts: {dp: 1}, hardware: {pt26x8: 2}}
 
   - file: A-07.dc.html
@@ -198,7 +198,7 @@ pages:
     alt: Two bays sharing the middle ladder
     note: "Another bay: steps 1–7. Another row: row ladders instead of cap strips, then steps 5–13."
 
-  # bom/rack-bom.csv: 4 inserts (hub standoffs), 4 hex spacers, 4 x M3x6 for the lid, one feed per row (A, B, C)
+  # bom/rack-bom.csv: 4 inserts (hub standoffs), 4 hex spacers, 4 x M3x6 for the lid, one feed per row (A, B)
   - file: C-pieces.dc.html
     board: {title: "Power box: parts", row: titleC}
     kind: parts
@@ -206,7 +206,7 @@ pages:
     page: 16
     footer: "{name} · power"
     parts: {pb: 1, pl: 1, hb: 1, ch: 1}
-    hardware: {insert: 4, sp12: 4, m3x6: 4, usbc: 1, feed: 3}
+    hardware: {insert: 4, sp12: 4, m3x6: 4, usbc: 1, feed: 2}
 
   - file: C-01.dc.html
     board: {title: "Power box: 1–2", row: titleC}
@@ -236,7 +236,7 @@ pages:
     footer: "{name} · power"
     steps:
       - {n: 5, drawing: c4, alt: "Rear view: the charger's USB-C cable into the box's rear port", parts: {ch: 1}, cables: {usbc: 1}}
-      - {n: 6, drawing: c5, alt: "6-pin feed: from the box's left side up to the row's first node; one per row", cables: {feed: 3}}
+      - {n: 6, drawing: c5, alt: "6-pin feed: from the box's left side up to the row's first node; one per row", cables: {feed: 2}}
 
   - file: C-04.dc.html
     board: {title: "Power box: done", row: titleC}

@@ -55,7 +55,7 @@ PARTS = {
 JOBS = ["done", "b5", "b5a", "c_done", "b3", "b1", "a9", "c5", "b2", "a8", "a11t", "c3", "c4", "b3n", "b4", "cover",
         "a7", "a6", "a5", "a4", "a12s", "a9b", "a10o", "a3", "a2", "a1", "c0", "c1", "c2", "pin", "pin_b", "hook"] \
        + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch",
-                                  "an", "ft", "dc", "xt")] \
+                                  "an", "ft", "dc", "xt", "dp")] \
        + [f"hw:{h}" for h in ("m3x8", "m3x6", "pt26x8", "w25", "sp12", "mag", "insert", "jumper", "usbc")]
 
 
@@ -88,7 +88,7 @@ def csg() -> None:
         subprocess.run(cmd + [str(src)], cwd=MECH, check=True, capture_output=True)
 
 
-BOARDS = {"bay-node": "bay_node", "power-hub": "hub"}      # KiCad board -> its solid in <build>/parts
+BOARDS = {"bay-node": "bay_node", "power-hub": "hub", "data-port": "data_port"}   # KiCad board -> its solid in <build>/parts
 
 
 def node_step(NODE: str = "bay-node") -> None:
@@ -140,8 +140,9 @@ def main() -> None:
     c["POWER_BOX"] = {**rack.power_box(), "hub_pcb": rack.raw["pcb"]["power_hub"]}
     d, node = rack.drawer, rack.node                 # the drag chain, the DATA socket, the node's DUT port
     c["CHAIN"] = {**rack.chain, "bottom": rack.carrier["bottom"]}
-    c["DATA"] = {"x": max(rack.data_port_x), "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 8.5,   # lib/carrier.scad PORT_Z
-                 "wall": d["wall"], "flange": [25, 9, 2.5], "body": [13.2, 8.2], "ears": 17}   # DATA_FLANGE, DATA_BODY_CUT, PORT_EARS
+    dp = rack.raw["pcb"]["data_port"]               # the DATA port board on the rear-bay floor (lib/carrier.scad DATA_PCB_*)
+    c["DATA"] = {"x": rack.data_port_x[0], "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 8.5,   # PORT_Z
+                 "wall": d["wall"], "pcb": dp, "pcb_z": d["bottom"] + 8.5 - 1.63 - dp["thickness"]}
     c["NODE_DUT"] = [node["size"][0] + 0.4, node["size"][1] - node["right"]["dut"], node["thickness"] + 1.6]
     import webscene                                  # the USB plugs' sizes, as the viewer draws them
     c["USB_PLUGS"] = getattr(webscene, "USB_PLUGS", None)
@@ -153,6 +154,7 @@ def main() -> None:
         print(b, "...")
         node_step(b)
     print("drawings:", " ".join(names))
+    (BUILD / "out" / "notice_log.txt").unlink(missing_ok=True)     # this run's failures only
     groups = [names[k::4] for k in range(4)]
     procs = [subprocess.Popen([freecadcmd(), str(HERE / "notice.py")], env={**os.environ, "NOTICE_BUILD": str(BUILD),
                                                                            "NOTICE": ",".join(g), "REPROJECT": "1"},

@@ -96,13 +96,21 @@ STANDINS = [   # footprint name prefix -> builder(pin count), as tools/pcb_glb.p
 
 # ------------------------------------------------------------------ the board
 def footprints(pcb):
-    """(ref, footprint name, x, y, rotation, side) of every footprint, KiCad coordinates."""
+    """(ref, footprint name, x, y, rotation, side, pins) of every footprint, KiCad coordinates;
+    pins: the numbered pads' positions on the board."""
     out = []
     for fp in sexp.find_all(pcb, "footprint"):
         at = sexp.find(fp, "at")
         ref = next((str(p[2]) for p in sexp.find_all(fp, "property") if str(p[1]) == "Reference"), "")
         side = "top" if str(sexp.find(fp, "layer")[1]) == "F.Cu" else "bottom"
-        out.append((ref, str(fp[1]), float(at[1]), float(at[2]), float(at[3]) if len(at) > 3 else 0.0, side))
+        x, y, rot = float(at[1]), float(at[2]), float(at[3]) if len(at) > 3 else 0.0
+        a = math.radians(rot)                  # KiCad (y down): a footprint turned rot degrees counter-clockwise on screen
+        pins = []
+        for pad in sexp.find_all(fp, "pad"):
+            if str(pad[1]).isdigit():
+                u, v = float(sexp.find(pad, "at")[1]), float(sexp.find(pad, "at")[2])
+                pins.append((x + u * math.cos(a) + v * math.sin(a), y - u * math.sin(a) + v * math.cos(a)))
+        out.append((ref, str(fp[1]), x, y, rot, side, pins))
     return out
 
 
@@ -148,7 +156,7 @@ def build(pcb_path, step, name, coverage=None):
         so.translate(V(0, D, 0))                  # STEP y = -KiCad y
         sols.append(so)
     used, bare, ph = [], [], []
-    for ref, fp, x, y, rot, side in footprints(pcb):
+    for ref, fp, x, y, rot, side, pads in footprints(pcb):
         builder = next((b for prefix, b in STANDINS if fp.startswith(prefix)), None)
         m = re.search(r"_1x(\d+)", fp)
         pins = int(m.group(1)) if m else 0
@@ -156,6 +164,9 @@ def build(pcb_path, step, name, coverage=None):
             a = math.radians(rot)                  # the opening: local -y, 5 mm from the origin
             ph.append({"ref": ref, "pins": pins, "mouth": [x + 5.0 * math.sin(a), D - y - 5.0 * math.cos(a), TOP + 4.75 / 2],
                        "out": [round(math.sin(a), 6), round(-math.cos(a), 6)]})
+        elif fp.startswith("Connector_JST:JST_PH_B") and side == "top" and pads:   # vertical: the mouth on top, over the pins
+            cx, cy = sum(p[0] for p in pads) / len(pads), sum(p[1] for p in pads) / len(pads)
+            ph.append({"ref": ref, "pins": pins, "mouth": [cx, D - cy, TOP + 6.0], "out": [0, 0], "up": True, "rot": rot})
         if only is not None and ref not in only:
             continue
         if builder is None or side != "top":

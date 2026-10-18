@@ -20,7 +20,7 @@ python tools/notice/run.py                 # every drawing → mechanical/build/
 python tools/notice/run.py a3 pin          # some of them
 ```
 
-A full run takes about 20 minutes (four FreeCAD processes); it ends with
+A full run takes about 40 minutes (four FreeCAD processes); it ends with
 `pages.py plan`: the drawings whose SVG is new or changed since it was
 uploaded (`assets.json` keeps each one's SHA-256).
 
@@ -54,7 +54,8 @@ line.  After `run.py`:
   has them (the hexagon reliefs).  Volumes match the STLs to 0.1 %.
 * **Real fasteners.**  ISO 7045 pan-head Phillips screws and heat-set inserts
   from FreeCAD's Fasteners workbench, threads included.
-* **The boards as the viewer has them** (the bay node, the power hub).  KiCad's STEP export of each board,
+* **The boards as the viewer has them** (the bay node, the power hub, the
+  DATA port board on the drawer floor).  KiCad's STEP export of each board,
   its 3D models resolved from KiCad's library and `electronics/lib/3dmodels`
   (`${KIPRJMOD}`), in the `kicad/kicad:10.0-full` image.  Where
   `electronics/tools/build_board.py` has `export_3d_coverage`, the same run
@@ -71,10 +72,11 @@ line.  After `run.py`:
 * **Bought parts in the bay**: the drag chain (Olimex 7 × 7) is drawn with
   `chain_parts.scad`'s link and removable bar at its size, pinned along the
   centre line `config/rack.yaml` › `chain` gives between its two rigid end
-  pieces (closed, open, or its bars pulled out); the panel-mount USB-C
-  extension as its flange, body, cable and plug, the cable laid through the
-  chain (`chain_shape`, `chain_ends_shape`, `data_socket_shape`,
-  `chain_cable_shape`).
+  pieces (closed, open, or its bars pulled out); the 5-wire PH DATA lead from
+  the node's vertical J7 through the chain into the DATA board's side-entry
+  PH, its connectors' positions from the two `.kicad_pcb` (`chain_shape`,
+  `chain_ends_shape`, `data_lead_shape`).  Cables are swept splines (`pipe`:
+  one sweep, or a few fused end to end where OpenCASCADE refuses the whole).
 * **The row cable from the board.**  `notice.yaml` › `row_cable` names the two
   connectors (node 0's out, node 1's in); their pin count and position come
   from the `.kicad_pcb`, for the step drawing and the icon.
