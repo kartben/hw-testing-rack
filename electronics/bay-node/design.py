@@ -720,7 +720,8 @@ def board() -> Board:
     R(c, "R32", "33", "CAM_MOSI", "CAM_MOSI_C", pcb=P(cx - 1.8, ry, 90), sch=at(50, 30, rot=90))
     R(c, "R33", "33", "CAM_MISO_C", "CAM_MISO", pcb=P(cx - 0.1, ry, 90), sch=at(50, 36, rot=90))
     R(c, "R34", "33", "CAM_CS", "CAM_CS_C", pcb=P(cx + 1.6, ry, 90), sch=at(50, 42, rot=90))
-    # open point: the Mega's MISO high level when fed 5 V.  If it drives 5 V: R33 → 330 and fit R35 (3.37 V)
+    # the camera pod (electronics/camera-pod) runs the Mega from 3.3 V, so MISO is 3.3 V; R35 stays a fallback
+    # divider for a camera fed 5 V: R33 → 330 and fit R35 (3.37 V)
     R(c, "R35", "680", "CAM_MISO", "GND", pcb=P(cx + 3.3, ry, 90), sch=at(40, 40), dnp=True)
     # CS pull-up over the In2 +3V3 area under the module's corner (the resistor row sits over +5V)
     R(c, "R37", "10k", "CAM_CS", "+3V3", pcb=P(36.6, 40.2, 0), sch=at(40, 54))
@@ -736,7 +737,8 @@ def board() -> Board:
     c.note("SPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO36 SCK, IO21 MOSI, IO42 MISO, IO11 CS (10k")
     c.note("  pull-up: deselected before firmware), IO10 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).")
     c.note("CAM_5V through F1 (0.5 A PTC): the camera ≈ 120 mA + the LEDs ≤ 150 mA.  USBLC6s on the lead side of the 33 Ω.")
-    c.note("Open: the Mega's MISO level at 5 V supply.  If it drives 5 V: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V.")
+    c.note("The camera pod board runs the Mega from 3.3 V (its own AMS1117): MISO is 3.3 V and R35 stays unpopulated.")
+    c.note("  For a camera fed 5 V that drives MISO at 5 V instead: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V.")
     return b
 
 

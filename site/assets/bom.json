@@ -2062,6 +2062,183 @@
 "ext_eur": 0.44
 },
 {
+"category": "Electronics",
+"group": "camera-pod",
+"item": "10u — Capacitor 10u 0805",
+"ref": "C1",
+"mpn": "CL21A106KAYNNNE",
+"manufacturer": "Samsung Electro-Mechanics",
+"supplier": "LCSC/JLCPCB",
+"part": "C15850",
+"qty": 2,
+"unit_eur": 0.0403,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.08
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "22u — Capacitor 22u 1206",
+"ref": "C2",
+"mpn": "CL31A226KAHNNNE",
+"manufacturer": "Samsung Electro-Mechanics",
+"supplier": "LCSC/JLCPCB",
+"part": "C12891",
+"qty": 2,
+"unit_eur": 0.1138,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.23
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "100n — Capacitor 100n 0603",
+"ref": "C3",
+"mpn": "CC0603KRX7R9BB104",
+"manufacturer": "YAGEO",
+"supplier": "LCSC/JLCPCB",
+"part": "C14663",
+"qty": 2,
+"unit_eur": 0.0124,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.02
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "XL-2835UWC-02 — LED white 6000–7500 K, 2835, 20–33 lm at 60 mA",
+"ref": "D1,D2,D3,D4",
+"mpn": "XL-2835UWC-02",
+"manufacturer": "XINGLIGHT",
+"supplier": "LCSC/JLCPCB",
+"part": "C2843876",
+"qty": 8,
+"unit_eur": 0.011,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "4 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.09
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "LEAD — JST PH 8-pin, side entry, SMD",
+"ref": "J1",
+"mpn": "S8B-PH-SM4-TB(LF)(SN)",
+"manufacturer": "JST",
+"supplier": "LCSC/JLCPCB",
+"part": "C265121",
+"qty": 2,
+"unit_eur": 0.414,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.83
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "MEGA — pin header 1 × 6, 2.54 mm, SMD",
+"ref": "J2",
+"mpn": "HX PZ2.54-1x6P TP-YQ",
+"manufacturer": "hanxia",
+"supplier": "LCSC/JLCPCB",
+"part": "C41417363",
+"qty": 2,
+"unit_eur": 0.0736,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.15
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "56 — Resistor 56 0603",
+"ref": "R1,R2,R3,R4",
+"mpn": "0603WAF560JT5E",
+"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+"supplier": "LCSC/JLCPCB",
+"part": "C25196",
+"qty": 8,
+"unit_eur": 0.0024,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "4 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.02
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "AMS1117-3.3 — 3.3 V 1 A LDO",
+"ref": "U1",
+"mpn": "AMS1117-3.3",
+"manufacturer": "AMS",
+"supplier": "LCSC/JLCPCB",
+"part": "C6186",
+"qty": 2,
+"unit_eur": 0.1932,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.39
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL)",
+"supplier": "estimate, not quoted",
+"qty": 5,
+"unit_eur": 0.368,
+"notes": "board $2.00 = $2.00 for 5 PCBs, 2 of them assembled",
+"unit": "pcs",
+"ext_eur": 1.84
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",
+"supplier": "estimate, not quoted",
+"qty": 1,
+"unit_eur": 17.2,
+"notes": "setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.20",
+"unit": "pcs",
+"ext_eur": 17.2
+},
+{
+"category": "Electronics",
+"group": "camera-pod",
+"item": "Components camera-pod: JLC quote minus the catalogue prices above",
+"supplier": "estimate, not quoted",
+"qty": 1,
+"unit_eur": 0.08,
+"notes": "quoted components $2.05 (≈ €1.89) for 2 boards; catalogue unit prices give €1.81",
+"unit": "pcs",
+"ext_eur": 0.08
+},
+{
 "category": "Printed parts",
 "group": "filament",
 "item": "PETG filament",
@@ -2319,33 +2496,35 @@
 },
 {
 "category": "Cameras",
-"item": "White 5 V LED strip segment, 2–4 LEDs with their resistors (the pod's light, ≤ 150 mA)",
-"supplier": "AliExpress (5 V strip, cut to length)",
-"qty": 2,
-"unit_eur": 0.5,
-"unit": "pcs",
-"ext_eur": 1.0
+"item": "JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (camera lead: node J6 → pod J1)",
+"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 8P, Length50CM",
+"qty": 1,
+"unit": "lot",
+"unit_eur": 4.5,
+"notes": "2 needed; price interpolated from the 6-pin lots, not read: check the 8P lengths (45–50 cm).  On arrival: both plugs show the same face, pin 1 rings to pin 8",
+"ext_eur": 4.5
 },
 {
 "category": "Cameras",
-"item": "JST PH 8-pin lead, 50 cm, single-ended (node J6 → the pod: the Mega's header + the LED strip)",
+"item": "Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order)",
 "supplier": "AliExpress",
 "qty": 2,
-"unit_eur": 1.0,
+"unit_eur": 0.5,
+"notes": "the Mega's own 6-pin cable does if it ends in Dupont sockets; J2's pins are named on the board, so the wires go on by name",
 "unit": "pcs",
-"ext_eur": 2.0
+"ext_eur": 1.0
 }
 ],
 "by_category": {
-"Electronics": 649.6199999999999,
+"Electronics": 670.5500000000001,
 "Printed parts": 78.0,
 "Fasteners": 17.509999999999998,
 "Motion": 31.53,
 "Cables": 61.47,
 "Power": 82.0,
-"Cameras": 65.5
+"Cameras": 68.0
 },
-"total_eur": 985.63,
+"total_eur": 1009.06,
 "prints": [
 {
 "part": "bay_label",
@@ -2648,6 +2827,24 @@
 "extended parts": 9.0,
 "SMT": 0.6
 }
+},
+"camera-pod": {
+"pcbs": 5,
+"assembled": 2,
+"service": "Economic",
+"total": 22.75,
+"estimate": true,
+"spec": "2-layer 40×27 mm, lead-free HASL",
+"pcb": {
+"board": 2.0
+},
+"pcba": {
+"setup": 8.0,
+"stencil": 1.5,
+"components": 2.05,
+"extended parts": 9.0,
+"SMT": 0.2
+}
 }
 },
 "order": {
@@ -2711,6 +2908,20 @@
 },
 "changes": [],
 "total": 41.0
+},
+"camera-pod": {
+"pcb": {
+"board": 2.0
+},
+"pcba": {
+"setup": 8.0,
+"stencil": 1.5,
+"components": 2.05,
+"extended parts": 9.0,
+"SMT": 0.2
+},
+"changes": [],
+"total": 22.75
 }
 }
 }

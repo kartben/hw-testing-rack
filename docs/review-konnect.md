@@ -522,3 +522,25 @@ branch and the branch (here IO12's: 1 via, 3 segments).  Konnect, on the saved f
 
 JLC placement corrections, fitted as before: C2913201 (WROOM-1-N8R8) +3.63 mm y, C495548 (B8B)
 −0.63 mm y, C471518 (B6B) 180° −0.63 mm y, C20917 (AO3400A) 180°.
+
+## Camera pod board (2026-10-18)
+
+So that a camera bay needs no crimping or soldering, the pod gets its own small board,
+`electronics/camera-pod` ([electronics.md](electronics.md#camera-pod-v10--2-layers-40--27-mm)): a PH 8
+side-entry input with J6's pinout mirrored (a ready-made "Same direction" lead), a 1 × 6 2.54 mm
+header in the Mega's own order for its cable, an AMS1117 that runs the Mega from 3.3 V (so MISO
+is 3.3 V and the node's R35 stays unpopulated), and four white 2835 LEDs, 56 Ω each, switched by
+the node's LED_K.  40 × 27 mm, 2 layers, Economic PCBA.  The first route put a via 0.29 mm from
+the edge beside the LEDs; the LEDs moved 0.6 mm in and their resistors 4.2 mm behind them, and
+the cathode line now runs between.  Konnect, on the saved files:
+
+| | camera pod |
+|---|---|
+| J1 pin nets (`get_component_nets`) | LED_K, CS, MISO, MOSI, GND, SCK, GND, CAM_5V (J6 mirrored) |
+| ERC | 0 errors, 0 warnings |
+| DRC (zones refilled) | 0 errors, 0 warnings, 0 unconnected, parity 0 |
+| JLC DFM | 0 findings, 16 parts on the top |
+| 3D coverage | 14 parts with a model, 0 stand-ins |
+
+JLC placement corrections, fitted as before: C2843876 (LED) +0.24 mm x, C41417363 (header) 270°;
+C265121 (S8B) needs none.

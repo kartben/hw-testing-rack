@@ -1,6 +1,6 @@
 # Electronics
 
-Three boards (the bay node, the power hub, the drawer's DATA port), all **schematics as code**: `electronics/<board>/design.py`
+Four boards (the bay node, the power hub, the drawer's DATA port, the camera pod), all **schematics as code**: `electronics/<board>/design.py`
 describes parts (with MPN, manufacturer, LCSC number), the nets their pins
 connect to and PCB placement hints.  From that single description
 `electronics/tools/` writes a real hierarchical KiCad 10 project (one sheet
@@ -75,7 +75,8 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 > [can.md](can.md)), CAN transceiver and POS token added, GCT USB4105 receptacles, the bay's camera on
 > J6 (Arducam Mega SPI + LEDs, PH 8) with the WROOM-1-N8R8 module (octal PSRAM; the board 10 mm longer at the rear), autorouted, checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.5 —
 > USB-C PD input (AP33772S), 4 layers, rows off until the controller enables them, autorouted,
-> checked with Konnect, not yet ordered or quoted.  DATA port v1.0 — the drawer's USB-C port on a
+> checked with Konnect, not yet ordered or quoted.  Camera pod v1.0 — lead, the camera's header and 3.3 V, the
+> light, autorouted, not yet ordered or quoted.  DATA port v1.0 — the drawer's USB-C port on a
 > 5-wire lead to the node's new J7, autorouted, not yet ordered or quoted.**  On all three boards ERC is clean and DRC reports
 > no copper errors, no unconnected items and full schematic parity.  The buck's hot loop, the
 > VRACK bus, the hub's input and VRACK pours, its Kelvin sense pair and the USB High-Speed pairs are placed or
@@ -152,9 +153,10 @@ GND on pins 2 and 4 keeps a return next to SCK.  CS has a 10k pull-up (deselecte
 firmware); the light's AO3400A (5.7 A, 48 mΩ at 2.5 V gate; the 2N7002 is rated 115 mA with a 2.5 V threshold, short of
 the LEDs' 150 mA) is held off by its 100k gate pull-down, PWM ≥ 20 kHz (LEDC) or plain on/off, as
 slow PWM bands a rolling shutter.  CAM_5V stays behind the 0.5 A PTC: the camera ≈ 120 mA, the
-LEDs ≤ 150 mA.  **Open:** the Mega's MISO high level when fed 5 V; check the first unit (≤ 3.6 V).
-If it drives 5 V, R33 becomes 330 Ω and R35 (680 Ω, footprint fitted, not populated) goes on:
-3.37 V.  No edge had room for a side-entry PH 8 (≈ 21 mm), so J6 is vertical, right of the PC
+LEDs ≤ 150 mA.  The camera and the LEDs sit on the [camera pod board](#camera-pod-v10--2-layers-40--27-mm),
+which runs the Mega from 3.3 V: its MISO is a 3.3 V output.  R35 (680 Ω, footprint fitted, not
+populated) stays a fallback for a camera fed 5 V that drives MISO at 5 V: R33 becomes 330 Ω and
+R35 goes on, 3.37 V.  No edge had room for a side-entry PH 8 (≈ 21 mm), so J6 is vertical, right of the PC
 pair and under J7; the lead rises from it (mated height 8 mm, 14 mm to the drawer).
 
 **WROOM-1 and the longer board.**  The camera's frames want PSRAM: U3 is the ESP32-S3-WROOM-1-N8R8
@@ -239,6 +241,23 @@ side, no Standard-only part), ≈ $41 for 15 PCBs with 12 assembled (estimate in
 
 A review of both boards with the Konnect MCP server (findings, fixes, what is
 still open) is in [review-konnect.md](review-konnect.md).
+
+## Camera pod v1.0 — 2 layers, 40 × 27 mm
+
+The board in each camera pod, under the bay's ceiling beside the Arducam Mega (×1 per camera; 2 to
+start), so that nothing is crimped or soldered by hand.  Mounted components down (the LEDs face
+the bay), 2 × PT 2.6 into the printed pod.  Geometry in `config/rack.yaml` › `pcb.camera_pod`
+(KiCad y = 0 is the edge beside the camera).
+
+| Block | Parts | Notes |
+|---|---|---|
+| Lead | J1, JST PH 8, side entry, SMD (S8B-PH-SM4-TB), mouth out of the right edge: 1 LED_K · 2 CS · 3 MISO · 4 MOSI · 5 GND · 6 SCK · 7 GND · 8 CAM_5V | the node's J6 mirrored: a ready-made "Same direction" PH 8 lead (pin n ↔ pin 9−n) |
+| Camera | J2, 1 × 6 pin header, 2.54 mm, SMD (staggered pins), in the Mega's own order VCC · GND · SCK · MISO · MOSI · CS, the names on the silkscreen | an XH 2.54 6-pin → Dupont cable from the Mega's side connector (its own, if it ends in Dupont sockets), plugged on by name |
+| 3.3 V | AMS1117-3.3 (U1) from CAM_5V, 10 µF in, 22 µF + 100 nF out | the Mega at 3.3 V (≈ 0.2 W in U1 at 120 mA): MISO at 3.3 V, the node's R35 stays unpopulated |
+| Light | 4 × XL-2835UWC-02 (white, 2835, 20–33 lm at 60 mA), each from CAM_5V through 56 Ω to LED_K | ≈ 32 mA each (Vf ≈ 3.2 V), 128 mA; along the edge next to the camera, beside the lens, not around it; the node's AO3400A pulls LED_K low; a thin PETG diffuser 5–10 mm in front, in the pod |
+
+Both sides are GND pours; routed by Freerouting.  JLC: Economic PCBA, ≈ $23 for 5 PCBs with 2
+assembled (estimate in `tools/bom.py`).
 
 ## Sourcing
 
@@ -405,6 +424,9 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C5184243 GCT USB4105-GF-A-120 | node J3 J4, hub USB-C, data port J1 | −1.30 mm y | to confirm |
 | C265104 JST S5B-PH-SM4-TB | data port J2 | 180°, +0.14 mm y | to confirm |
 | C265085 JST B5B-PH-SM4-TB | node J7 | 180°, −0.62 mm y | to confirm |
+| C265121 JST S8B-PH-SM4-TB | camera pod J1 | none (fit: −0.03 mm y) | to confirm |
+| C2843876 XL-2835UWC-02 | camera pod D1–D4 | +0.24 mm x | to confirm |
+| C41417363 HX PZ2.54-1x6P TP-YQ | camera pod J2 | 270° | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
 0805, 1206), the electrolytics (+ pad), the diodes and LEDs (cathode side),

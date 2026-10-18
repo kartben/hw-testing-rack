@@ -1,0 +1,94 @@
+(kicad_sch
+	(version 20250610)
+	(generator "hw-testing-rack-eda")
+	(generator_version "10.0")
+	(uuid "3bf0d9e3-63d2-5d40-9668-c238bc67e73e")
+	(paper "A3")
+	(title_block
+		(title "Camera pod — Overview")
+		(rev "1.0")
+		(company "hw-testing-rack")
+		(comment 1 "The bay camera pod's board: lead in, the Arducam Mega's header, its 3.3 V, the light (hw-testing-rack)")
+		(comment 2 "Generated from electronics/camera-pod/design.py — edit the Python, then regenerate")
+	)
+	(lib_symbols)
+	(sheet
+		(at 170.18 70)
+		(size 80 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.3)
+			(type solid)
+		)
+		(fill
+			(color 255 255 225 1)
+		)
+		(uuid "3920aafc-f39a-5057-857c-fbb10af1c9f4")
+		(property "Sheetname" "Pod"
+			(at 170.18 69.85 0)
+			(effects
+				(font
+					(size 2 2)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "pod.kicad_sch"
+			(at 170.18 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "camera-pod"
+				(path "/3bf0d9e3-63d2-5d40-9668-c238bc67e73e"
+					(page "2")
+				)
+			)
+		)
+	)
+	(text "Lead, camera header, 3.3 V, light"
+		(exclude_from_sim no)
+		(at 172.72 77.47 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "6d2e9698-b1e9-53e7-8880-5994b8cf3ba0")
+	)
+	(text_box "Camera pod v1.0 — PH 8 lead from the bay node's J6, 1 × 6 header for the Arducam Mega's cable,\n  AMS1117 3.3 V for the camera, four white 2835 LEDs switched by the node (LED_K).\nLead pinout here: 1 LED_K · 2 CS · 3 MISO · 4 MOSI · 5 GND · 6 SCK · 7 GND · 8 CAM_5V\n  (the node's J6 mirrored: one 'Same direction' PH 8 cable)."
+		(exclude_from_sim no)
+		(at 30 115.57 0)
+		(size 360 15.24)
+		(margins 2 2 2 2)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.6 1.6)
+			)
+			(justify left top)
+		)
+		(uuid "f7b991e3-7bc2-5ceb-a797-963d80cf4b96")
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

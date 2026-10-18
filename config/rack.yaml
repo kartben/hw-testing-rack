@@ -165,3 +165,12 @@ pcb:
     usb: 30.5               # KiCad x of the USB-C (GCT USB4105) on the front edge: the right edge ≤ 9.5 mm right of it (the
                             # chain foot's lock screw); its centre 1.63 mm above the component face (3.23 above the underside)
     ph: 17.5                # KiCad x of the JST PH 5-pin (side entry) on the rear edge: its courtyard clear of the USB4105's (x ≤ 17.6)
+  camera_pod:               # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
+    size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
+    thickness: 1.6
+    layers: 2
+    holes: [[2.6, 13.0], [26.5, 23.5]]   # Ø2.7, PT 2.6 into the printed pod
+    leds: [5, 11, 17, 23]   # KiCad x of the four white 2835 LEDs, at y = led_y
+    led_y: 3.2
+    lead: 13                # KiCad y of J1 (JST PH 8, side entry) on the right edge, its mouth facing +x
+    header: [13, 21]        # J2 (1 × 6, 2.54 mm, pins out of the component face): its centre, pin 1 at x − 6.35

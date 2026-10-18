@@ -129,6 +129,16 @@ CAT = {
     "ph6v": Cat("Connector_Generic:Conn_01x06", "Connector_JST:JST_PH_B6B-PH-SM4-TB_1x06-1MP_P2.00mm_Vertical",
                 "B6B-PH-SM4-TB(LF)(SN)", "JST", "C471518", 0.43, description="JST PH 6-pin, vertical, SMD",
                 model=("easyeda/C471518.step", (-5.0, 0.71, 0), (0, 0, 0))),   # its STEP is not centred (x −3…13) and EasyEDA turns it 180°
+    # the camera pod's side of the camera lead, side entry (docs/electronics.md, Camera pod)
+    "ph8": Cat("Connector_Generic:Conn_01x08", "Connector_JST:JST_PH_S8B-PH-SM4-TB_1x08-1MP_P2.00mm_Horizontal",
+               "S8B-PH-SM4-TB(LF)(SN)", "JST", "C265121", 0.45, description="JST PH 8-pin, side entry, SMD",
+               model=("easyeda/C265121.step", (0, -2.9, 0), (0, 0, 0))),   # drawn like C265405 (S6B)
+    # the Arducam Mega's own cable plugs onto it (staggered SMD pins: JLC places it)
+    "hdr6_smd": Cat("Connector_Generic:Conn_01x06", "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical_SMD_Pin1Right",
+                    "HX PZ2.54-1x6P TP-YQ", "hanxia", "C41417363", 0.08, description="pin header 1 × 6, 2.54 mm, SMD"),
+    "led_w2835": Cat("Device:LED", "LED_SMD:LED_PLCC_2835", "XL-2835UWC-02", "XINGLIGHT", "C2843876", 0.012,
+                     description="LED white 6000–7500 K, 2835, 20–33 lm at 60 mA",
+                     model=("easyeda/C2843876.step", (0, 0, 0), (0, 0, 0))),
     # the camera lead (docs/electronics.md): 5 V, GND, SPI with a GND between, the light's low side
     "ph8v": Cat("Connector_Generic:Conn_01x08", "Connector_JST:JST_PH_B8B-PH-SM4-TB_1x08-1MP_P2.00mm_Vertical",
                 "B8B-PH-SM4-TB(LF)(SN)", "JST", "C495548", 0.57, description="JST PH 8-pin, vertical, SMD",

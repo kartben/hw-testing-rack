@@ -68,6 +68,14 @@ JLC_QUOTE = {
         "pcb": {"board": 4.00},
         "pcba": {"setup": 8.00, "stencil": 1.50, "components": 17.90, "extended parts": 9.00, "SMT": 0.60},
     },
+    # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS): an estimate built like
+    # the DATA port's, Economic PCBA, $3 per extended part type (the S8B, the SMD header, the LED)
+    "camera-pod": {
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 22.75, "estimate": True,
+        "spec": "2-layer 40×27 mm, lead-free HASL",
+        "pcb": {"board": 2.00},
+        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 2.05, "extended parts": 9.00, "SMT": 0.20},
+    },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
 # instead of ENIG (≈ $0–2 for 5 PCBs; the node keeps ENIG for the ESP32 module and USB-C); the hub's
@@ -193,7 +201,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
     prices = _catalog_prices()
     n_nodes = rack.units * len(rack.rows)          # every carrier unit gets a node (double bays: 2nd is optional)
     rows, orders = [], {}
-    for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes)):
+    for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes), ("camera-pod", CAMERA_SETS)):
         q = JLC_QUOTE[name]
         assert abs(sum(q["pcb"].values()) + sum(q["pcba"].values()) - q["total"]) < 0.005, f"{name}: quote lines ≠ total"
         n = q["assembled"]
@@ -419,12 +427,19 @@ def hardware(rack) -> list[dict]:
                       "(≤ 3.6 V, or change R33 and fit R35 on the node)"},
             {"category": "Cameras", "item": "M12 lens, 1/4\", ≈ 120° diagonal (the stock 90° is too narrow for a "
                                            "NUCLEO-144 / nRF DK)", "supplier": "AliExpress", "qty": cams, "unit_eur": 3.0},
-            {"category": "Cameras", "item": "White 5 V LED strip segment, 2–4 LEDs with their resistors (the pod's light, "
-                                           "≤ 150 mA)", "supplier": "AliExpress (5 V strip, cut to length)", "qty": cams,
-             "unit_eur": 0.5},
-            {"category": "Cameras", "item": "JST PH 8-pin lead, 50 cm, single-ended (node J6 → the pod: the Mega's "
-                                           "header + the LED strip)", "supplier": "AliExpress", "qty": cams,
-             "unit_eur": 1.0},
+            # the pod board (electronics/camera-pod, in the Electronics lines) carries the light and the
+            # Mega's 3.3 V: nothing to crimp or solder
+            {"category": "Cameras", "item": "JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 "
+                                           "(camera lead: node J6 → pod J1)",
+             "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 8P, Length50CM",
+             "qty": math.ceil(cams / 5), "unit": "lot", "unit_eur": 4.5,
+             "notes": f"{cams} needed; price interpolated from the 6-pin lots, not read: check the 8P lengths "
+                      "(45–50 cm).  On arrival: both plugs show the same face, pin 1 rings to pin 8"},
+            {"category": "Cameras", "item": "Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm "
+                                           "(the Mega → pod J2, VCC GND SCK MISO MOSI CS in order)",
+             "supplier": "AliExpress", "qty": cams, "unit_eur": 0.5,
+             "notes": "the Mega's own 6-pin cable does if it ends in Dupont sockets; J2's pins are named on the "
+                      "board, so the wires go on by name"},
         ]
     return rows
 
@@ -474,7 +489,7 @@ def main():
            "and import VAT.  The per-part lines below use catalogue prices; a *Components* line per board brings "
            "them up to the quoted components figure.  *Order* applies what changed since, not re-quoted: the "
            "through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The power hub v0.5 "
-           "(USB-C PD input, eFuses, rack controller; 4 layers) and the DATA port board are **estimates**, not "
+           "(USB-C PD input, eFuses, rack controller; 4 layers), the DATA port and the camera pod boards are **estimates**, not "
            "quotes: re-quote them before ordering, and check the AP33772S's sourcing (out of stock at LCSC on "
            "2026-10-18).", "",
            "| Board | Order | Line | USD |", "|---|---|---|---:|"]

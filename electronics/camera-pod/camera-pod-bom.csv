@@ -1,0 +1,9 @@
+Designator,Qty,Value,Footprint,MPN,Manufacturer,LCSC,Description,DNP,Alternative,Assembly
+C1,1,10u,C_0805_2012Metric,CL21A106KAYNNNE,Samsung Electro-Mechanics,C15850,Capacitor 10u 0805,,,
+C2,1,22u,C_1206_3216Metric,CL31A226KAHNNNE,Samsung Electro-Mechanics,C12891,Capacitor 22u 1206,,,
+C3,1,100n,C_0603_1608Metric,CC0603KRX7R9BB104,YAGEO,C14663,Capacitor 100n 0603,,,
+"D1,D2,D3,D4",4,XL-2835UWC-02,LED_PLCC_2835,XL-2835UWC-02,XINGLIGHT,C2843876,"LED white 6000–7500 K, 2835, 20–33 lm at 60 mA",,,
+J1,1,LEAD,JST_PH_S8B-PH-SM4-TB_1x08-1MP_P2.00mm_Horizontal,S8B-PH-SM4-TB(LF)(SN),JST,C265121,"JST PH 8-pin, side entry, SMD",,,
+J2,1,MEGA,PinHeader_1x06_P2.54mm_Vertical_SMD_Pin1Right,HX PZ2.54-1x6P TP-YQ,hanxia,C41417363,"pin header 1 × 6, 2.54 mm, SMD",,,
+"R1,R2,R3,R4",4,56,R_0603_1608Metric,0603WAF560JT5E,UNI-ROYAL(Uniroyal Elec),C25196,Resistor 56 0603,,,
+U1,1,AMS1117-3.3,SOT-223-3_TabPin2,AMS1117-3.3,AMS,C6186,3.3 V 1 A LDO,,,

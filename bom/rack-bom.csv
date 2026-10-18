@@ -117,6 +117,17 @@ Electronics,data-port,USBLC6-2SC6 — USB ESD protection,12,pcs,0.1656,1.99,LCSC
 Electronics,data-port,"Bare PCB data-port (2-layer 40×17 mm, lead-free HASL)",15,pcs,0.2453,3.68,"estimate, not quoted",,,,,"board $4.00 = $4.00 for 15 PCBs, 12 of them assembled"
 Electronics,data-port,"Economic PCBA, 12 boards: setup, stencil, extended parts, SMT",1,pcs,17.57,17.57,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.60"
 Electronics,data-port,Components data-port: JLC quote minus the catalogue prices above,1,pcs,0.44,0.44,"estimate, not quoted",,,,,quoted components $17.90 (≈ €16.47) for 12 boards; catalogue unit prices give €16.03
+Electronics,camera-pod,10u — Capacitor 10u 0805,2,pcs,0.0403,0.08,LCSC/JLCPCB,C15850,CL21A106KAYNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
+Electronics,camera-pod,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C2,1 per board × 2 boards
+Electronics,camera-pod,100n — Capacitor 100n 0603,2,pcs,0.0124,0.02,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,C3,1 per board × 2 boards
+Electronics,camera-pod,"XL-2835UWC-02 — LED white 6000–7500 K, 2835, 20–33 lm at 60 mA",8,pcs,0.011,0.09,LCSC/JLCPCB,C2843876,XL-2835UWC-02,XINGLIGHT,"D1,D2,D3,D4",4 per board × 2 boards
+Electronics,camera-pod,"LEAD — JST PH 8-pin, side entry, SMD",2,pcs,0.414,0.83,LCSC/JLCPCB,C265121,S8B-PH-SM4-TB(LF)(SN),JST,J1,1 per board × 2 boards
+Electronics,camera-pod,"MEGA — pin header 1 × 6, 2.54 mm, SMD",2,pcs,0.0736,0.15,LCSC/JLCPCB,C41417363,HX PZ2.54-1x6P TP-YQ,hanxia,J2,1 per board × 2 boards
+Electronics,camera-pod,56 — Resistor 56 0603,8,pcs,0.0024,0.02,LCSC/JLCPCB,C25196,0603WAF560JT5E,UNI-ROYAL(Uniroyal Elec),"R1,R2,R3,R4",4 per board × 2 boards
+Electronics,camera-pod,AMS1117-3.3 — 3.3 V 1 A LDO,2,pcs,0.1932,0.39,LCSC/JLCPCB,C6186,AMS1117-3.3,AMS,U1,1 per board × 2 boards
+Electronics,camera-pod,"Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL)",5,pcs,0.368,1.84,"estimate, not quoted",,,,,"board $2.00 = $2.00 for 5 PCBs, 2 of them assembled"
+Electronics,camera-pod,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,17.2,17.2,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.20"
+Electronics,camera-pod,Components camera-pod: JLC quote minus the catalogue prices above,1,pcs,0.08,0.08,"estimate, not quoted",,,,,quoted components $2.05 (≈ €1.89) for 2 boards; catalogue unit prices give €1.81
 Printed parts,filament,PETG filament,3.9,kg,20.0,78.0,any,,,,,"≈3.5 kg estimated + 10 % waste, 129 parts"
 Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",164,pcs,0.03,4.92,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub standoffs
 Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",88,pcs,0.02,1.76,AliExpress (bulk),,,,,
@@ -143,5 +154,5 @@ Power,,"USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port",1,pcs,70.0,70.
 Power,,"USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m",1,pcs,12.0,12.0,any (check the 5 A / EPR e-marker),,,,,above 3 A the charger only offers its full current through an e-marked 5 A cable
 Cameras,,"Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm",2,pcs,28.25,56.5,Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey,,,,,"on arrival: its header's order (VCC GND SCK MISO MOSI CS) and its MISO high level when fed 5 V (≤ 3.6 V, or change R33 and fit R35 on the node)"
 Cameras,,"M12 lens, 1/4"", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK)",2,pcs,3.0,6.0,AliExpress,,,,,
-Cameras,,"White 5 V LED strip segment, 2–4 LEDs with their resistors (the pod's light, ≤ 150 mA)",2,pcs,0.5,1.0,"AliExpress (5 V strip, cut to length)",,,,,
-Cameras,,"JST PH 8-pin lead, 50 cm, single-ended (node J6 → the pod: the Mega's header + the LED strip)",2,pcs,1.0,2.0,AliExpress,,,,,
+Cameras,,"JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (camera lead: node J6 → pod J1)",1,lot,4.5,4.5,"AliExpress https://www.aliexpress.com/item/1005008045292937.html, ""Same direction"", 8P, Length50CM",,,,,"2 needed; price interpolated from the 6-pin lots, not read: check the 8P lengths (45–50 cm).  On arrival: both plugs show the same face, pin 1 rings to pin 8"
+Cameras,,"Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order)",2,pcs,0.5,1.0,AliExpress,,,,,"the Mega's own 6-pin cable does if it ends in Dupont sockets; J2's pins are named on the board, so the wires go on by name"

@@ -5,22 +5,22 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 650 |
+| Electronics | 671 |
 | Power | 82 |
 | Printed parts | 78 |
-| Cameras | 66 |
+| Cameras | 68 |
 | Cables | 61 |
 | Motion | 32 |
 | Fasteners | 18 |
-| **Total** | **986** |
+| **Total** | **1,009** |
 
-≈ **€82 per bay** all-in.
+≈ **€84 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
 ## JLCPCB quote (2026-10-16)
 
-Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without shipping (DHL ≈ $27–40) and import VAT.  The per-part lines below use catalogue prices; a *Components* line per board brings them up to the quoted components figure.  *Order* applies what changed since, not re-quoted: the through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The power hub v0.5 (USB-C PD input, eFuses, rack controller; 4 layers) and the DATA port board are **estimates**, not quotes: re-quote them before ordering, and check the AP33772S's sourcing (out of stock at LCSC on 2026-10-18).
+Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without shipping (DHL ≈ $27–40) and import VAT.  The per-part lines below use catalogue prices; a *Components* line per board brings them up to the quoted components figure.  *Order* applies what changed since, not re-quoted: the through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The power hub v0.5 (USB-C PD input, eFuses, rack controller; 4 layers), the DATA port and the camera pod boards are **estimates**, not quotes: re-quote them before ordering, and check the AP33772S's sourcing (out of stock at LCSC on 2026-10-18).
 
 | Board | Order | Line | USD |
 |---|---|---|---:|
@@ -36,6 +36,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | | | PCBA: setup $8.00, stencil $1.50, components $17.90, extended parts $9.00, SMT $0.60 | 37.00 |
 | | | **Estimated total** | **41.00** |
 | | | Order (indicative): as quoted | 41.00 |
+| camera-pod | 5 PCBs (2-layer 40×27 mm, lead-free HASL), 2 assembled, Economic PCBA | PCB: board $2.00 | 2.00 |
+| | | PCBA: setup $8.00, stencil $1.50, components $2.05, extended parts $9.00, SMT $0.20 | 20.75 |
+| | | **Estimated total** | **22.75** |
+| | | Order (indicative): as quoted | 22.75 |
 
 ## Printed parts
 
@@ -197,6 +201,17 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | Bare PCB data-port (2-layer 40×17 mm, lead-free HASL) | 15  | 0.25 | 3.68 | estimate, not quoted |
 | Electronics | Economic PCBA, 12 boards: setup, stencil, extended parts, SMT | 1  | 17.57 | 17.57 | estimate, not quoted |
 | Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | 0.44 | 0.44 | estimate, not quoted |
+| Electronics | 10u — Capacitor 10u 0805 | 2  | 0.04 | 0.08 | LCSC/JLCPCB C15850 |
+| Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
+| Electronics | 100n — Capacitor 100n 0603 | 2  | 0.01 | 0.02 | LCSC/JLCPCB C14663 |
+| Electronics | XL-2835UWC-02 — LED white 6000–7500 K, 2835, 20–33 lm at 60 mA | 8  | 0.01 | 0.09 | LCSC/JLCPCB C2843876 |
+| Electronics | LEAD — JST PH 8-pin, side entry, SMD | 2  | 0.41 | 0.83 | LCSC/JLCPCB C265121 |
+| Electronics | MEGA — pin header 1 × 6, 2.54 mm, SMD | 2  | 0.07 | 0.15 | LCSC/JLCPCB C41417363 |
+| Electronics | 56 — Resistor 56 0603 | 8  | 0.00 | 0.02 | LCSC/JLCPCB C25196 |
+| Electronics | AMS1117-3.3 — 3.3 V 1 A LDO | 2  | 0.19 | 0.39 | LCSC/JLCPCB C6186 |
+| Electronics | Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL) | 5  | 0.37 | 1.84 | estimate, not quoted |
+| Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT | 1  | 17.20 | 17.20 | estimate, not quoted |
+| Electronics | Components camera-pod: JLC quote minus the catalogue prices above | 1  | 0.08 | 0.08 | estimate, not quoted |
 | Printed parts | PETG filament | 3.9 kg | 20.00 | 78.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 164  | 0.03 | 4.92 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 88  | 0.02 | 1.76 | AliExpress (bulk) |
@@ -223,5 +238,5 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |
 | Cameras | Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm | 2  | 28.25 | 56.50 | Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey |
 | Cameras | M12 lens, 1/4", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK) | 2  | 3.00 | 6.00 | AliExpress |
-| Cameras | White 5 V LED strip segment, 2–4 LEDs with their resistors (the pod's light, ≤ 150 mA) | 2  | 0.50 | 1.00 | AliExpress (5 V strip, cut to length) |
-| Cameras | JST PH 8-pin lead, 50 cm, single-ended (node J6 → the pod: the Mega's header + the LED strip) | 2  | 1.00 | 2.00 | AliExpress |
+| Cameras | JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (camera lead: node J6 → pod J1) | 1 lot | 4.50 | 4.50 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P, Length50CM |
+| Cameras | Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order) | 2  | 0.50 | 1.00 | AliExpress |
