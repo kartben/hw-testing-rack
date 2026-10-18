@@ -311,6 +311,20 @@ are saved per bay.  Without a camera, its driver does not start: the port
 answers 503, `present` is false and the rest of the node runs as before.
 The hub shows which bays have one (rack bus STATUS byte 6).
 
+**Focusing the lens.**  The 3 MP Mega's M12 lens has no autofocus: it is
+focused once, by hand, at the real distance (lens tip to board ≈ 75–80 mm).
+
+1. Pod mounted, drawer in, a board on the plate (or a printed target:
+   small text, a ruler) at its working height.
+2. Bay page › Camera: resolution 1600 × 1200 (gear button), light on,
+   **Live view**.  Each frame takes about half a second at 4 MHz.
+3. Loosen the lock nut on the lens barrel and turn the lens in small steps,
+   waiting a frame each time, until the silkscreen text is sharpest.  Take a
+   **Snapshot** and zoom in the browser to judge.  Boards stand 36–42 mm
+   high: focus on a board of middle height and the others stay sharp enough.
+4. Hold the lens still and tighten the nut finger-tight; check with one
+   more snapshot, then set the resolution back (640 × 480 for the stream).
+
 ## Access control
 
 ![Access card of bay B3 seen by its admin while a CI job holds the bay: the lease with its note and time left, the job's USB/IP and RFC 2217 connections with Kick buttons, the count of refused attempts](../docs/img/web-ui-access.png)

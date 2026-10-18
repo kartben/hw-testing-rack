@@ -104,4 +104,6 @@ the bay's own node for the top row).
 ## 7. Bring-up
 
 Per node: SERVICE on → laptop on the PC port → flash → SERVICE off.  Then
-`usbip list -r bay-<id>.local`.  See [firmware.md](firmware.md).
+`usbip list -r bay-<id>.local`.  See [firmware.md](firmware.md).  With a
+camera: focus its lens on the plate from the bay page's live view, then
+lock the nut ([firmware/README.md › Camera](../firmware/README.md#camera)).
