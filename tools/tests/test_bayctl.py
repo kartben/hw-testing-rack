@@ -29,6 +29,7 @@ import bayctl  # noqa: E402
 
 LAB_EXAMPLE = REPO / "config" / "lab.example.yaml"
 DEV_SERVER = REPO / "firmware" / "bay-node" / "web" / "dev_server.py"
+HUB_DEV_SERVER = REPO / "firmware" / "power-hub" / "web" / "dev_server.py"
 
 
 def free_port() -> int:
@@ -355,6 +356,76 @@ class Pty(unittest.TestCase):
             p.stdin.close()
             p.stdout.close()
             srv.close()
+
+
+class Update(unittest.TestCase):
+    """Firmware updates against the simulated hub (firmware/power-hub/web/dev_server.py)."""
+
+    @classmethod
+    def setUpClass(cls):
+        sys.path.insert(0, str(REPO / "firmware" / "common" / "web"))
+        import devserver
+        cls.make_image = staticmethod(devserver.make_image)
+        cls.port = free_port()
+        env = {**os.environ, "HWTR_SIM_RESTART_S": "1", "HWTR_SIM_TRIAL_S": "2"}
+        cls.proc = subprocess.Popen([sys.executable, str(HUB_DEV_SERVER), str(cls.port)], env=env,
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        cls.hub = bayctl.Bay(id="hub", board="power-hub", host="127.0.0.1", http_port=cls.port)
+        cls.key = os.urandom(32)
+        deadline = time.monotonic() + 10
+        while True:
+            try:
+                bayctl.api(cls.hub, "/api/status", timeout=1)
+                break
+            except bayctl.BayError:
+                if time.monotonic() > deadline:
+                    cls.proc.kill()
+                    raise
+                time.sleep(0.2)
+        # Claimed with the test key: someone presses BOOT
+        threading.Timer(1.0, lambda: urllib.request.urlopen(f"http://127.0.0.1:{cls.port}/dev/boot")).start()
+        bayctl.access_claim(cls.hub, cls.key, say=lambda *_: None)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.proc.terminate()
+        cls.proc.wait(5)
+
+    def update(self, image: bytes) -> str:
+        return bayctl.update_device(self.hub, image, self.key, timeout=30, say=lambda *_: None, step=0.3)
+
+    def test_image_info(self):
+        info = bayctl.image_info(self.make_image("1.2.3", "power-hub/power_hub", 1000))
+        self.assertEqual(info, {"version": "1.2.3", "id": "power-hub/power_hub"})
+        for bad in (b"PK\x03\x04" + bytes(100), self.make_image("1.2.3", "x/y", 1000)[:-1]):
+            with self.assertRaises(bayctl.BayError):
+                bayctl.image_info(bad)
+
+    def test_update_then_rollback(self):
+        self.assertEqual(self.update(self.make_image("0.6.0", "power-hub/power_hub")), "confirmed")
+        s = bayctl.api(self.hub, "/api/status")
+        self.assertEqual((s["version"], s["firmware"]["last"]["result"]), ("0.6.0", "confirmed"))
+
+        # Another board's image: refused before anything is sent
+        with self.assertRaisesRegex(bayctl.BayError, "this image is for bay-node/bay_node"):
+            self.update(self.make_image("0.7.0", "bay-node/bay_node"))
+
+        # A firmware that does not confirm itself: MCUboot goes back
+        urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/rollback").read()
+        with self.assertRaisesRegex(bayctl.BayError, "did not stay"):
+            self.update(self.make_image("0.7.0", "power-hub/power_hub"))
+        self.assertTrue(bayctl.wait_for(lambda: bayctl.api(self.hub, "/api/update", timeout=1)["version"] == "0.6.0",
+                                        10))
+
+    def test_wrong_key(self):
+        with self.assertRaisesRegex(bayctl.BayError, "403"):
+            bayctl.update_device(self.hub, self.make_image("0.8.0", "power-hub/power_hub"), os.urandom(32),
+                                 timeout=5, say=lambda *_: None)
+
+    def test_rack_nodes(self):
+        nodes = bayctl.rack_nodes(self.hub)
+        self.assertEqual([n.id for n in nodes][:3], ["A1", "A2", "A3"])
+        self.assertTrue(all(n.host.startswith("192.168.1.") for n in nodes))
 
 
 if __name__ == "__main__":

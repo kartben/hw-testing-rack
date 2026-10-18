@@ -13,6 +13,8 @@
  *   GET  /api/access/nonce single-use nonce for an admin request
  *   POST /api/access/claim {} | {"key": "<hex>"}, then {"ticket": "<hex>"} until claimed
  *   POST /api/access/check {}: 200 if signed with the admin key, else 403
+ *   GET  /api/update       the firmware; POST /api/update/begin, /api/update: an
+ *                          update over the network (firmware/common/web/update_http.c)
  *
  * Reading is open; every POST but the claim is an admin request, signed with
  * the hub's admin key (X-Bay-Auth, firmware/common/lib/admin.c), as on the
@@ -40,6 +42,7 @@
 
 #include <hwtr/admin.h>
 #include <hwtr/net.h>
+#include <hwtr/update.h>
 #include <hwtr/web.h>
 
 #include "hub.h"
@@ -50,7 +53,7 @@ LOG_MODULE_REGISTER(web, CONFIG_HUB_LOG_LEVEL);
 static char resp_buf[6144];
 
 /* X-Bay-Auth, kept from the first callback of a request */
-HTTP_SERVER_REGISTER_HEADER_CAPTURE(hub_auth_header, "X-Bay-Auth");
+HWTR_WEB_AUTH_CAPTURE(hub_auth_header);
 
 static void capture_auth(const struct http_request_ctx *req, char *out, size_t size)
 {
@@ -277,11 +280,24 @@ static void respond_status(struct http_response_ctx *rsp)
 	    pd.contract_mv * pd.contract_ma / 1000, used_mw, rows_shed_order());
 	put(&o, "\"can\":{\"state\":\"%s\",\"bitrate\":%u,\"nodes\":%d,\"lost\":%d,\"rx_fps\":%u,"
 		"\"errors\":%u,\"tx_errors\":%u,\"bus_off\":%u,\"enumerating\":%s,"
-		"\"enumerated_s\":%d,\"enumerations\":%u}}",
+		"\"enumerated_s\":%d,\"enumerations\":%u}",
 	    can_states[MIN(bus.state, ARRAY_SIZE(can_states) - 1)], RACK_BITRATE, bus.nodes,
 	    bus.lost, bus.rx_fps, bus.err.rx_err_cnt + bus.err.tx_err_cnt, bus.tx_errors,
 	    bus.bus_off, bus.enumerating ? "true" : "false",
 	    bus.enumerated_ms ? (int)((now - bus.enumerated_ms) / 1000) : -1, bus.enumerations);
+#if defined(CONFIG_HWTR_UPDATE)
+	put(&o, ",\"firmware\":");
+	if (!o.overflow) {
+		int n = hwtr_update_json(o.buf + o.len, o.size - o.len);
+
+		if (n < 0) {
+			o.overflow = true;
+		} else {
+			o.len += n;
+		}
+	}
+#endif
+	put(&o, "}");
 
 	respond(rsp, &o);
 }

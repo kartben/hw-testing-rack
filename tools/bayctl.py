@@ -20,6 +20,9 @@
     python tools/bayctl.py access claim B3 [...]        give the nodes the rack's admin key (press BOOT on each)
     python tools/bayctl.py access kick B3 usbip:51234   close a connection, refuse its address for a minute
     python tools/bayctl.py access keygen                a new random admin key
+    python tools/bayctl.py update IMAGE B3 [...]        firmware over the network (zephyr.signed.bin)
+    python tools/bayctl.py update IMAGE --all           every bay node the hub lists, one after the other
+    python tools/bayctl.py update IMAGE --hub           the power hub itself (lab.yaml `hub:`, or rack.local)
 
 Where the data comes from:
   * config/rack.yaml `population`: which board family sits in which bay;
@@ -432,6 +435,145 @@ def access_claim(bay: Bay, key: bytes, timeout: float = 70.0, say=print) -> None
     raise BayError(f"{bay.id}: nobody pressed BOOT in time")
 
 
+# ------------------------------------------------------------------------- firmware updates
+
+def image_info(data: bytes) -> dict:
+    """Version and image id of a signed image (zephyr.signed.bin), as the firmware reads it
+    (firmware/common/lib/mcuboot_img.c); BayError if it is not one."""
+    import struct
+    if len(data) < 32 or struct.unpack_from("<I", data)[0] != 0x96F3B83D:
+        raise BayError("not a signed image: zephyr.signed.bin from a `west build --sysbuild`")
+    hdr, prot, size = struct.unpack_from("<HHI", data, 8)
+    major, minor, rev, build = struct.unpack_from("<BBHI", data, 20)
+    tlv = hdr + size + prot
+    if tlv + 4 > len(data) or struct.unpack_from("<H", data, tlv)[0] != 0x6907 \
+            or tlv + struct.unpack_from("<H", data, tlv + 2)[0] != len(data):
+        raise BayError("image truncated, or bytes after it")
+    image_id, o = "", hdr + size + 4
+    while prot and o + 4 <= hdr + size + prot:
+        kind, n = struct.unpack_from("<HH", data, o)
+        if kind == 0xA0:
+            image_id = data[o + 4:o + 4 + n].decode()
+        o += 4 + n
+    if not image_id:
+        raise BayError("no image id: not built from this repository (firmware/common/sysbuild.cmake)")
+    return {"version": f"{major}.{minor}.{rev}" + (f"+{build}" if build else ""), "id": image_id}
+
+
+def hub_device(lab_yaml: Path | None) -> Bay:
+    """The power hub, as a Bay for api(): lab.yaml `hub:` (host), else rack.<domain>."""
+    lab = _yaml(lab_yaml if lab_yaml is not None else LAB_YAML)
+    host = str(lab.get("hub") or f"rack.{lab.get('domain', 'local')}")
+    name, _, port = host.partition(":")
+    return Bay(id="hub", board="power-hub", host=name, http_port=int(port or 80))
+
+
+def rack_nodes(hub: Bay) -> list[Bay]:
+    """The bay nodes the hub lists on its rack bus (/api/status), addressed by IP, named by position."""
+    s = api(hub, "/api/status")
+    out = []
+    for row in s.get("rows", []):
+        for n in row.get("nodes", []):
+            if n.get("ip", "0.0.0.0") != "0.0.0.0" and n.get("state") not in ("lost", "failed", "incompatible"):
+                out.append(Bay(id=n["pos"], board="bay-node", host=n["ip"]))
+    return out
+
+
+def _post_image(dev: Bay, ticket: str, data: bytes, timeout: float) -> dict:
+    req = urllib.request.Request(f"{dev.url}/api/update?ticket={ticket}", data=data, method="POST",
+                                 headers={"Content-Type": "application/octet-stream"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return json.loads(r.read() or b"{}")
+    except urllib.error.HTTPError as e:
+        try:
+            msg = json.loads(e.read()).get("error", e.reason)
+        except Exception:
+            msg = e.reason
+        raise BayError(f"{dev.id}: upload refused: {msg}") from None
+    except (urllib.error.URLError, OSError) as e:
+        raise BayError(f"{dev.id}: upload cut off ({getattr(e, 'reason', e)})") from None
+
+
+def update_device(dev: Bay, data: bytes, key: bytes, force: bool = False, timeout: float = 420.0,
+                  say=print, step: float = 2.0) -> str:
+    """Update one node or the hub: check, send, then follow the restart and the trial.
+    Returns "confirmed"; BayError if refused, rolled back or never back."""
+    info = image_info(data)
+    now = api(dev, "/api/update")
+    if now.get("id") != info["id"]:
+        raise BayError(f"{dev.id}: this image is for {info['id']}; {dev.id} runs {now.get('id')}")
+    if now.get("trial"):
+        raise BayError(f"{dev.id}: {now['version']} is on trial: wait until it confirms itself")
+    t0 = time.monotonic()
+    begun = api(dev, "/api/update/begin", {"size": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+                                            "force": force}, key=key)
+    r = _post_image(dev, begun["ticket"], data, timeout=120)
+    say(f"{dev.id}: {now['version']} -> {r['version']}: sent {len(data) // 1024} KB in "
+        f"{time.monotonic() - t0:.0f} s, restarting")
+    deadline, back, last_note = time.monotonic() + timeout, False, ""
+    while time.monotonic() < deadline:
+        time.sleep(step)
+        try:
+            s = api(dev, "/api/update", timeout=4)
+        except BayError:
+            continue
+        if s.get("state") == "rebooting":
+            continue
+        if not back:
+            back = True
+            say(f"{dev.id}: back after {time.monotonic() - t0:.0f} s, running {s['version']}")
+        t = s.get("trial")
+        if t:
+            missing = [n for n in t["need"] if n not in t["up"]]
+            note = f"on trial, waiting for {' and '.join(missing)}" if missing else "on trial, confirming"
+            if note != last_note:
+                say(f"{dev.id}: {note} ({t['left_s']} s left)")
+                last_note = note
+            continue
+        result = (s.get("last") or {}).get("result")
+        if result == "confirmed":
+            say(f"{dev.id}: {s['version']} confirmed itself ({time.monotonic() - t0:.0f} s)")
+            return "confirmed"
+        raise BayError(f"{dev.id}: {r['version']} did not stay: MCUboot went back, running {s['version']}")
+    raise BayError(f"{dev.id}: not back after {timeout:.0f} s: check it (USB console, or the hub's page)")
+
+
+def update_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
+    data = a.image.read_bytes()
+    info = image_info(data)
+    key = admin_key()
+    if a.hub:
+        targets = [hub_device(a.lab)]
+    elif a.all:
+        targets = rack_nodes(hub_device(a.lab))
+        if not targets:
+            raise BayError("the hub lists no bay node")
+    else:
+        targets = [get_bay(bays, b) for b in a.bays]
+        if not targets:
+            raise BayError("which bays? (or --all, or --hub)")
+    print(f"{info['id']} {info['version']}: {', '.join(t.id for t in targets)}")
+    done, skipped = [], []
+    for dev in targets:
+        try:
+            update_device(dev, data, key, force=a.force, timeout=a.timeout)
+            done.append(dev.id)
+        except BayError as e:
+            msg = str(e)
+            if "did not stay" in msg or "not back" in msg:
+                # Do not take a firmware that fails on one node to the next ones
+                print(f"bayctl: {msg}", file=sys.stderr)
+                rest = [t.id for t in targets[targets.index(dev) + 1:]]
+                if rest:
+                    print(f"bayctl: stopped; not updated: {', '.join(rest)}", file=sys.stderr)
+                return 1
+            print(f"bayctl: {msg}; skipped", file=sys.stderr)
+            skipped.append(dev.id)
+    print(f"updated: {', '.join(done) or 'none'}" + (f"; skipped: {', '.join(skipped)}" if skipped else ""))
+    return 1 if skipped else 0
+
+
 def _print_access(d: dict) -> None:
     lease_ = d.get("lease")
     print(f"you {d['you']}{' (' + d['source'] + ')' if d.get('source') else ''}: {', '.join(d['allow']) or 'nothing'}"
@@ -632,6 +774,13 @@ def main(argv: list[str] | None = None) -> int:
     q.add_argument("bay")
     q.add_argument("id", help="connection id, from `access show`: usbip:51234, rfc2217, web0, ...")
     acc.add_parser("keygen")
+    p = sub.add_parser("update", help="firmware over the network (MCUboot images)")
+    p.add_argument("image", type=Path, help="zephyr.signed.bin from `west build --sysbuild`")
+    p.add_argument("bays", nargs="*")
+    p.add_argument("--all", action="store_true", help="every bay node the hub lists, one after the other")
+    p.add_argument("--hub", action="store_true", help="the power hub itself")
+    p.add_argument("--force", action="store_true", help="also reserved bays")
+    p.add_argument("--timeout", type=float, default=420.0, help="restart and trial, per device (s)")
     a = ap.parse_args(argv)
 
     try:
@@ -719,6 +868,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{a.bay.upper()} released")
         elif a.cmd == "access":
             return access_cli(a, bays)
+        elif a.cmd == "update":
+            return update_cli(a, bays)
     except BayError as e:
         print(f"bayctl: {e}", file=sys.stderr)
         return 1

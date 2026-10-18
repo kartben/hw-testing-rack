@@ -8,8 +8,9 @@ add_subdirectory_ifdef(CONFIG_REGULATOR_AP33772S drivers/regulator)
 add_subdirectory_ifdef(CONFIG_SENSOR_AP33772S drivers/sensor/ap33772s)
 
 # Rack bus protocol (docs/rack-protocol.md): frames, hub and node state
-# machines; Wi-Fi station and hostname; access rules, the admin key
-if(CONFIG_HWTR_RACK_PROTO OR CONFIG_HWTR_NET OR CONFIG_HWTR_ACL)
+# machines; Wi-Fi station and hostname; access rules, the admin key;
+# firmware updates (MCUboot)
+if(CONFIG_HWTR_RACK_PROTO OR CONFIG_HWTR_NET OR CONFIG_HWTR_ACL OR CONFIG_HWTR_IMG)
   zephyr_library_named(hwtr)
   zephyr_library_sources_ifdef(CONFIG_HWTR_RACK_PROTO lib/rack_proto.c)
   zephyr_library_sources_ifdef(CONFIG_HWTR_RACK_HUB lib/rack_hub.c)
@@ -17,6 +18,8 @@ if(CONFIG_HWTR_RACK_PROTO OR CONFIG_HWTR_NET OR CONFIG_HWTR_ACL)
   zephyr_library_sources_ifdef(CONFIG_HWTR_NET lib/net.c)
   zephyr_library_sources_ifdef(CONFIG_HWTR_ACL lib/acl.c)
   zephyr_library_sources_ifdef(CONFIG_HWTR_ADMIN lib/admin.c)
+  zephyr_library_sources_ifdef(CONFIG_HWTR_IMG lib/mcuboot_img.c)
+  zephyr_library_sources_ifdef(CONFIG_HWTR_UPDATE lib/update.c)
 endif()
 
 # The web pages' shared assets, gzipped into the image: hwtr_web_assets(<service>)

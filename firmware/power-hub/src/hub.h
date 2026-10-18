@@ -26,6 +26,7 @@ enum hub_ev_kind {
 	HUB_EV_FAULT,
 	HUB_EV_CAN,
 	HUB_EV_NODE,
+	HUB_EV_FW,
 };
 
 struct hub_event {

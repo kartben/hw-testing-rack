@@ -4,17 +4,22 @@
  * The USB/IP service (CONFIG_USBIP) starts by itself before main() and
  * exports whatever enumerates on the DUT port.  main() brings up the rest:
  * access control, DUT power and fault handling, the data-path muxes, the AUX
- * UART bridge, Wi-Fi, the web server, and then drives the status LED.
+ * UART bridge, Wi-Fi, the web server, and then drives the status LED.  Built
+ * with MCUboot (sysbuild), it also takes firmware updates over the network
+ * (firmware/common/lib/update.c).
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include <zephyr/kernel.h>
 #include <zephyr/input/input.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/logging/log.h>
+
+#include <hwtr/update.h>
 
 #include "bay.h"
 
@@ -139,6 +144,39 @@ static void button_cb(struct input_event *evt, void *user_data)
 
 INPUT_CALLBACK_DEFINE(NULL, button_cb, NULL);
 
+#if defined(CONFIG_HWTR_UPDATE)
+/* A new firmware on trial confirms itself once these work as they did before */
+static uint32_t update_health(void)
+{
+	struct rack_hub_state hub;
+
+	return (bay_net_connected() ? HWTR_UP_WIFI : 0) |
+	       (RACK_NODE_VALID(bay_rack_id()) && bay_rack_hub(&hub) ? HWTR_UP_BUS : 0);
+}
+
+/* A reserved bay is not updated unless the admin insists */
+static const char *update_busy(void)
+{
+	static char why[96];
+	struct acl_lease lease;
+	uint32_t remaining;
+	char ip[16];
+
+	if (!access_lease_get(&lease, &remaining)) {
+		return NULL;
+	}
+	acl_format_ip(lease.holder, ip);
+	snprintf(why, sizeof(why), "reserved by %s for %u min more: force to update anyway", ip,
+		 (unsigned int)DIV_ROUND_UP(remaining, 60));
+	return why;
+}
+
+static const struct hwtr_update_cfg update_cfg = {
+	.health = update_health,
+	.busy = update_busy,
+};
+#endif
+
 int main(void)
 {
 	int ret;
@@ -154,6 +192,13 @@ int main(void)
 		LOG_ERR("settings unavailable (%d): defaults only%s", ret,
 			ret == -EDEADLK ? "; storage partition not NVS: west flash --erase" : "");
 	}
+
+#if defined(CONFIG_HWTR_UPDATE)
+	/* A test boot after an update: on trial (and the watchdog on) from here
+	 * until Wi-Fi and the rack bus work again
+	 */
+	(void)hwtr_update_init(&update_cfg);
+#endif
 
 	/* Before any server: the rules apply from the first connection */
 	ret = access_init();

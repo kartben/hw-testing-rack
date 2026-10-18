@@ -13,6 +13,9 @@ runs a tiny shell on the console.  Test hooks:
     /dev/boot             a short press on BOOT: confirms a pending claim
     /dev/peer?ip=a.b.c.d  requests from this machine look like they come from
                           that address (no ip: back to the real one)
+    /dev/rollback         the next firmware update does not confirm itself (MCUboot goes back)
+    /dev/image?version=0.6.0[&id=power-hub/power_hub]   an image to upload (unsigned, laid
+                          out as zephyr.signed.bin; the bay's own id by default)
 """
 
 from __future__ import annotations
@@ -36,7 +39,7 @@ from urllib.parse import parse_qs, urlsplit
 
 WEB = Path(__file__).resolve().parent
 sys.path.insert(0, str(WEB.parents[1] / "common" / "web"))
-from devserver import COMMON_STATIC, XTERM_STATIC, ws_frame, ws_read  # noqa: E402
+from devserver import COMMON_STATIC, XTERM_STATIC, Firmware, make_image, ws_frame, ws_read  # noqa: E402
 
 # The page, and what firmware/common serves on the node too (/rack.css, xterm.js)
 STATIC = {"/": (WEB / "index.html", "text/html"), **COMMON_STATIC, **XTERM_STATIC}
@@ -461,6 +464,9 @@ class Access:
 access = Access()
 
 
+firmware = Firmware("0.5.0", "bay-node/bay_node")
+
+
 def status(ip: int = 0) -> dict:
     dut = node["dut"]
     ma = dut_current_ma(time.monotonic()) if dut["on"] else 0
@@ -473,7 +479,7 @@ def status(ip: int = 0) -> dict:
                     "web_clients": len(console.clients),
                     "rfc2217": any(c["id"] == "rfc2217" for c in access.fake), "raw": False,
                     "rx": len(console.log), "tx": console.tx, "dropped": 0},
-            "access": access.summary(ip)}
+            "access": access.summary(ip), "firmware": firmware.doc()}
 
 
 def aux_doc() -> dict:
@@ -554,7 +560,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802
         url = urlsplit(self.path)
         path, query = url.path, parse_qs(url.query)
-        if path in STATIC:
+        if firmware.down() and not path.startswith("/dev/"):
+            self.json(503, {"error": "restarting"})
+        elif path in STATIC:
             file, ctype = STATIC[path]
             self.send(200, file.read_bytes(), ctype)
         elif path.startswith("/console/ws/"):
@@ -577,6 +585,14 @@ class Handler(BaseHTTPRequestHandler):
                 self.json(200, access.doc(self.peer(), admin))
         elif path == "/api/access/nonce":
             self.json(200, {"nonce": access.nonce()})
+        elif path == "/api/update":
+            self.json(200, firmware.doc())
+        elif path == "/dev/rollback":
+            firmware.rollback()
+            self.json(200, {"rollback": True})
+        elif path == "/dev/image":
+            self.send(200, make_image(query.get("version", ["0.6.0"])[0],
+                                      query.get("id", [firmware.image_id])[0]), "application/octet-stream")
         elif path == "/dev/fault":
             node["dut"].update(on=False, latched=True, faults=node["dut"]["faults"] + 1)
             self.json(200, status())
@@ -644,11 +660,27 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self) -> None:  # noqa: N802
         length = int(self.headers.get("Content-Length") or 0)
         raw = self.rfile.read(length)
+        url = urlsplit(self.path)
+        if firmware.down():
+            return self.json(503, {"error": "restarting"})
+        if url.path == "/api/update":
+            ticket = parse_qs(url.query).get("ticket", [""])[0]
+            return self.json(*firmware.upload(self.client_address[0], ticket, raw))
         try:
             body = json.loads(raw or b"{}")
         except json.JSONDecodeError:
             return self.json(400, {"error": "bad JSON"})
         path = urlsplit(self.path).path
+        if path == "/api/update/begin":
+            if not access.admin(self.headers.get("X-Bay-Auth", ""), "POST", path, raw):
+                return self.json(403, {"error": "admin only: unlock with the admin key"})
+            firmware.busy = None
+            if access.lease_active():
+                lease = access.lease
+                firmware.busy = (f"reserved by {ip_str(lease['holder'])} for "
+                                 f"{math.ceil((lease['until'] - time.monotonic()) / 60)} min more: "
+                                 "force to update anyway")
+            return self.json(*firmware.begin(self.client_address[0], body))
         if path.startswith("/api/access/") or path in ("/api/lease", "/api/console/ticket"):
             return self.access_post(path, raw, body)
         if self.refused("console" if path in ("/api/aux", "/api/aux/break") else "control"):

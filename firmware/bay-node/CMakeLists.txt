@@ -2,10 +2,10 @@
 
 cmake_minimum_required(VERSION 3.20.0)
 
-# firmware/ is a Zephyr module (zephyr/module.yml): the boards, the bindings
+# The repository is a Zephyr module (zephyr/module.yml): the boards, the bindings
 # and the code shared with the power hub (firmware/common), so this builds
 # from any Zephyr workspace.
-list(APPEND ZEPHYR_EXTRA_MODULES ${CMAKE_CURRENT_SOURCE_DIR}/..)
+list(APPEND ZEPHYR_EXTRA_MODULES ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(bay_node)
@@ -31,6 +31,8 @@ set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated)
 generate_inc_file_for_target(app web/index.html ${gen_dir}/index.html.gz.inc --gzip)
 hwtr_web_assets(bay_http)
 hwtr_web_xterm(bay_http)
+# Firmware updates (when built with MCUboot): /api/update, /api/update/begin
+hwtr_web_update(bay_http)
 
 # HTTP resources of the bay_http service live in their own iterable section
 zephyr_linker_sources(SECTIONS web/sections-rom.ld)

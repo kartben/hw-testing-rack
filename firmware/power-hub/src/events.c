@@ -21,7 +21,7 @@ static K_MUTEX_DEFINE(lock);
 
 static const char *const kinds[] = {
 	[HUB_EV_PD] = "pd", [HUB_EV_ROW] = "row", [HUB_EV_FAULT] = "fault",
-	[HUB_EV_CAN] = "can", [HUB_EV_NODE] = "node",
+	[HUB_EV_CAN] = "can", [HUB_EV_NODE] = "node", [HUB_EV_FW] = "firmware",
 };
 
 const char *hub_ev_kind_str(uint8_t kind)

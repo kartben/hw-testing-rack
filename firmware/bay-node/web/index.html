@@ -199,6 +199,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
 
   <footer>
     <span id="uptime"></span>
+    <span id="fw-line"></span>
     <span id="faults"></span>
     <a href="/metrics">/metrics</a>
     <a href="/api/status">/api/status</a>
@@ -327,6 +328,13 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
       <button type="button" class="small" id="acc-copy-key">Copy key</button>
       <button type="button" class="small danger" id="acc-forget">Forget it here</button>
     </div>
+    <div id="acc-fw-block" hidden>
+      <h4>Firmware</h4>
+      <div class="row">
+        <p class="hint grow" id="acc-fw"></p>
+        <button type="button" class="small" id="acc-update">Update…</button>
+      </div>
+    </div>
   </div>
 </dialog>
 
@@ -340,7 +348,8 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
 <div id="toast" popover="manual"></div>
 
 <script type="module">
-import { $, api, fix, plural, uptime, storedKey, storeKey, signed, claimKey } from "/rack.mjs";
+import { $, api, fix, plural, uptime, storedKey, storeKey, signed, claimKey, firmwareDialog,
+  firmwareLabel } from "/rack.mjs";
 
 const samples = [];
 let host = location.hostname;
@@ -418,6 +427,9 @@ function render(s) {
     .filter(Boolean).join(" · ");
 
   $("uptime").textContent = `Up ${uptime(s.uptime_s)} · Zephyr ${s.version}`;
+  $("fw-line").innerHTML = s.firmware ? `Firmware ${firmwareLabel(s.firmware)}` : "";
+  $("acc-fw-block").hidden = !s.firmware;
+  if (s.firmware) $("acc-fw").innerHTML = `${firmwareLabel(s.firmware)} · <code>${s.firmware.id}</code>`;
   $("faults").textContent = `${plural(s.dut.faults, "fault")} since boot`;
   if (s.access) renderRights(s.access);
 }
@@ -834,6 +846,18 @@ $("acc-forget").onclick = async () => {
   pollNow();
 };
 document.querySelectorAll("dialog [data-close]").forEach((b) => (b.onclick = () => b.closest("dialog").close()));
+
+/* Firmware over the network (admin): built with MCUboot, the status has a "firmware" object */
+const fwDialog = firmwareDialog({
+  admin: (path, body) => signed(path, body),
+  app: "bay-node",
+  force: (why) => confirmed(`This bay is ${why.replace(/: force to update anyway$/, "")}.  Update it anyway?  It restarts: USB/IP and the console drop for a minute.`),
+  changed: () => pollNow(),
+});
+$("acc-update").onclick = () => {
+  $("dlg-access").close();
+  fwDialog.open(status?.firmware);
+};
 
 /* --- Serial console ----------------------------------------------------- */
 

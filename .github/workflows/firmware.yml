@@ -38,16 +38,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # The ESP32-S3 builds go through sysbuild: MCUboot, then the application
+          # signed for it (firmware updates over the network, docs/firmware.md).
+          # CI has no signing key: these images are signed with MCUboot's public
+          # TEST key (the build says so), fine to try on a desk, not for a rack.
           - name: bay_node
             board: bay_node/esp32s3/procpu
             app: firmware/bay-node
+            sysbuild: true
           - name: esp32s3_devkitc
             board: esp32s3_devkitc/esp32s3/procpu
             app: firmware/bay-node
+            sysbuild: true
           # Bench node without the USB host (its PHY is the console)
           - name: m5stack_stamps3
             board: m5stack_stamps3/esp32s3/procpu
             app: firmware/bay-node
+            sysbuild: true
           # The console and access-control code on native_sim (the screencast's
           # simulation, and test_access.py below)
           - name: console_sim
@@ -56,10 +63,16 @@ jobs:
           - name: power_hub
             board: power_hub/esp32s3/procpu
             app: firmware/power-hub
+            sysbuild: true
           # The rack bus protocol on a simulated rack (hub + nodes), run below
           - name: rack_bus
             board: native_sim/native/64
             app: firmware/common/tests/rack_bus
+          # Firmware updates on native_sim: the image parser, the upload into
+          # slot 1, the test boot request, the trial and the rollback, run below
+          - name: update
+            board: native_sim/native/64
+            app: firmware/common/tests/update
     steps:
       # West workspace = $GITHUB_WORKSPACE, this repository checked out as its
       # manifest repository (manifest self.path: hw-testing-rack).
@@ -88,9 +101,10 @@ jobs:
       - name: Wi-Fi blobs
         run: west blobs fetch hal_espressif
 
-      - name: Build (warnings are errors)
+      - name: Build (warnings are errors${{ matrix.sysbuild && '; MCUboot, images signed with its TEST key' || '' }})
         run: >
-          west build -b ${{ matrix.board }} -d build hw-testing-rack/${{ matrix.app }}
+          west build ${{ matrix.sysbuild && '--sysbuild' || '' }}
+          -b ${{ matrix.board }} -d build hw-testing-rack/${{ matrix.app }}
           -- -DCONFIG_COMPILER_WARNINGS_AS_ERRORS=y
 
       # The node's HTTP server binds port 80: root
@@ -100,17 +114,23 @@ jobs:
           sudo python3 hw-testing-rack/firmware/bay-node/tests/console_sim/test_access.py
           --exe build/zephyr/zephyr.exe
 
-      - name: Rack bus protocol on native_sim
-        if: matrix.name == 'rack_bus'
+      - name: Rack bus protocol / firmware updates on native_sim
+        if: matrix.name == 'rack_bus' || matrix.name == 'update'
         run: |
-          build/zephyr/zephyr.exe | tee rack_bus.log
-          grep -q "PROJECT EXECUTION SUCCESSFUL" rack_bus.log
+          build/zephyr/zephyr.exe | tee test.log
+          grep -q "PROJECT EXECUTION SUCCESSFUL" test.log
 
+      # Sysbuild: build/mcuboot (the bootloader, at 0) and build/<app>
+      # (zephyr.signed.bin: the image west flash writes, and what an update sends)
       - uses: actions/upload-artifact@v4
         with:
-          name: firmware-${{ matrix.name }}
+          name: firmware-${{ matrix.name }}${{ matrix.sysbuild && '-test-key' || '' }}
           include-hidden-files: true  # .config
           path: |
             build/zephyr/zephyr.bin
             build/zephyr/zephyr.elf
             build/zephyr/.config
+            build/*/zephyr/zephyr.bin
+            build/*/zephyr/zephyr.signed.bin
+            build/*/zephyr/zephyr.elf
+            build/*/zephyr/.config

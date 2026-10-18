@@ -11,6 +11,7 @@
 #     the serial number is the part before -ifNN: 002B00283232511239353236
 
 domain: local          # bay hosts: bay-<id>.<domain> (mDNS); or give `host:` per bay
+# hub: rack.local      # the power hub (bayctl update --all / --hub); default rack.<domain>
 # http_port: 80        # node web/API port (CONFIG_BAY_HTTP_PORT)
 # aux_port: 4000       # node raw AUX UART port (CONFIG_BAY_AUX_TCP_PORT)
 # rfc2217_port: 4001   # node AUX UART with RFC 2217 (CONFIG_BAY_RFC2217_PORT)

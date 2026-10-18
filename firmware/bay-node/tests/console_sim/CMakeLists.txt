@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 3.20.0)
 set(BAY ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 # Same Kconfig options, devicetree bindings and shared code as the real application
 set(KCONFIG_ROOT ${BAY}/Kconfig)
-list(APPEND ZEPHYR_EXTRA_MODULES ${BAY}/..)
+list(APPEND ZEPHYR_EXTRA_MODULES ${BAY}/../..)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(bay_console_sim)

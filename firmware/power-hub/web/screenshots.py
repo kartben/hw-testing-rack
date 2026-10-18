@@ -8,13 +8,15 @@ bays in three rows), opens the page in the installed Chrome (--channel
 msedge for Edge), lets it collect samples for the input sparkline, then
 shoots: the claim dialog, then as the admin the rack in dark and light, the
 charger renegotiating down to 30 W with a row shed, an eFuse fault and a
-silent node.
+silent node, and the firmware dialog: an update on trial, then one that
+rolls back.
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -22,6 +24,7 @@ WEB = Path(__file__).resolve().parent
 sys.path.insert(0, str(WEB.parents[1] / "common" / "web"))
 
 import dev_server  # noqa: E402
+from devserver import make_image  # noqa: E402
 from shots import DOCS_IMG, POLL_S, Shots  # noqa: E402
 
 TALL = {"width": 1100, "height": 1200}
@@ -65,6 +68,33 @@ def main() -> None:
         s.poke("/dev/fault?row=B")              # an eFuse in current limit
         s.poke("/dev/lose?node=0x22")           # C2 goes silent
         s.shoot(light, "hub-ui-fault")
+        s.poke("/dev/fault?row=B&off=1", wait=0)
+        s.poke("/dev/lose?node=0x22", wait=0)
+
+        # A firmware update: the dialog follows the restart and the trial...
+        images = Path(tempfile.mkdtemp())
+        for version in ("0.6.0", "0.7.0"):
+            (images / version).mkdir()
+            (images / version / "zephyr.signed.bin").write_bytes(make_image(version, "power-hub/power_hub"))
+        dlg = "dialog.fw-dlg"
+        dark.click("#btn-fw")
+        dark.wait_for_selector(f"{dlg}[open]")
+        dark.set_input_files(f"{dlg} input[type=file]", str(images / "0.6.0" / "zephyr.signed.bin"))
+        dark.click(f"{dlg} [data-f=go]")
+        dark.wait_for_selector(f"{dlg} [data-step=trial][data-s=run]", timeout=60000)
+        time.sleep(0.8)
+        s.shoot(dark, "hub-ui-update", dlg)
+        dark.wait_for_selector(f"{dlg} [data-step=done][data-s=ok]", timeout=90000)
+
+        # ...and the next one does not stay: MCUboot goes back
+        s.poke("/dev/rollback", wait=0)
+        dark.click(f"{dlg} [data-f=close]")
+        dark.click("#btn-fw")
+        dark.wait_for_selector(f"{dlg}[open]")
+        dark.set_input_files(f"{dlg} input[type=file]", str(images / "0.7.0" / "zephyr.signed.bin"))
+        dark.click(f"{dlg} [data-f=go]")
+        dark.wait_for_selector(f"{dlg} [data-step=done][data-s=bad]", timeout=90000)
+        s.shoot(dark, "hub-ui-rollback", dlg)
 
 
 if __name__ == "__main__":
