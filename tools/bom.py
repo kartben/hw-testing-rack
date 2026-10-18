@@ -78,6 +78,20 @@ JLC_SINCE_QUOTE = {
 }
 
 
+# the row cables' listing (docs/can.md: one type for feeds and jumpers)
+ROW_CABLE_URL = "https://www.aliexpress.com/item/1005008045292937.html"
+ROW_FEED_CM = [(30, 3.19), (60, 4.69), (80, 5.29)]      # rows A, B, C (≈ 0.25 / 0.45 / 0.6 m), then D...
+
+
+def _feed_lots(rack):
+    """(length cm, EUR per lot of 5, [row ids]) for the feeds: row k gets ROW_FEED_CM[k] (the last one beyond)."""
+    lots = {}
+    for k, row in enumerate(rack.rows):
+        cm, price = ROW_FEED_CM[min(k, len(ROW_FEED_CM) - 1)]
+        lots.setdefault((cm, price), []).append(row["id"])
+    return [(cm, price, ids) for (cm, price), ids in lots.items()]
+
+
 def _catalog_prices() -> dict:
     """MPN → (unit USD, LCSC, basic, JLC Standard-PCBA only, hand-soldered) from the electronics
     catalogue and passive cache."""
@@ -264,18 +278,23 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress / igus E2 micro", "qty": round(0.17 * n_bays + 0.3, 1), "unit": "m", "unit_eur": 4.0},
         {"category": "Cables", "item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
          "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_bays, "unit_eur": 1.5},
-        {"category": "Cables", "item": "JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 24 AWG, 120 mm, "
-                                      "both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS)",
-         "supplier": "pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often \"reverse\") "
-                     "or PHR-6 + 12 × SPH-002T-P0.5S",
-         "qty": sum(cols - 1 for _ in rack.rows), "unit_eur": 0.6,
-         "notes": "check: laid flat, both plugs show the same face, and pin 1 ↔ pin 6 (docs/can.md)"},
-        {"category": "Cables", "item": "JST PH 6-pin feed, the jumpers' type (pin n ↔ pin 7−n), 24 AWG, ≈ 0.25 / 0.45 / "
-                                      "0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS)",
-         "supplier": "pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often \"reverse\") "
-                     "or PHR-6 + 12 × SPH-002T-P0.5S", "qty": n_rows, "unit_eur": 0.8,
-         "notes": "check as the jumpers; PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair "
-                  "(pins 3-4) by hand"},
+        # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up.  Bought in
+        # lots of 5 from one AliExpress listing (checked 2026-10-18: its "Same direction" photo shows both
+        # plugs on the same face, its "Reverse direction" the 1:1 type); 6 pins
+        {"category": "Cables", "item": "JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 "
+                                      "(bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest "
+                                      "flat at the front of the plenum)",
+         "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 6P, Length20CM",
+         "qty": math.ceil(sum(cols - 1 for _ in rack.rows) / 5), "unit": "lot", "unit_eur": 2.85,
+         "notes": f"{sum(cols - 1 for _ in rack.rows)} needed; on arrival: both plugs show the same face, pin 1 rings "
+                  "to pin 6.  Or crimp them: PHR-6 + 12 × SPH-002T-P0.5S, 24 AWG"},
+        *[{"category": "Cables", "item": f"JST PH 6-pin feed, the jumpers' type, {cm} cm, lot of 5 (power box → first "
+                                         f"bay of row {', '.join(rows_)}: VRACK, CAN, POS)",
+           "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 6P, Length{cm}CM",
+           "qty": math.ceil(len(rows_) / 5), "unit": "lot", "unit_eur": price,
+           "notes": "checked as the jumpers; the listing doesn't give the gauge (26 AWG is usual): fine for a row's "
+                    "≈ 0.4 A, warm at the eFuse's 1.6 A limit; twist the CAN pair (pins 3-4) by hand"}
+          for cm, price, rows_ in _feed_lots(rack)],
     ]
     cab = Counter(info["cable"] for info in pop.values())
     for k, n in sorted(cab.items()):

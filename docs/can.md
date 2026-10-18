@@ -34,8 +34,10 @@ a cable whose two plugs show the **same face** when it lies flat on a table.
   ladder.  The bundle turns as one: the CAN pair stays together, between its
   GND pins.
 
-Vendors name this type "same" or "reverse" inconsistently: check that both
-plugs show the same face, and that pin 1 rings through to pin 6.  A 1:1 cable
+Sellers usually call this type **"same direction"** or "same side" (同向),
+and the 1:1 one "reverse"; not all of them do, so check that both plugs show
+the same face, and that pin 1 rings through to pin 6.  The BOM names a listing
+that offers every length (checked 2026-10-18).  A 1:1 cable
 (plugs on opposite faces, e.g. Pololu's) burns nothing if used by mistake:
 VRACK lands on the POS pins (10k + BAT54S, ≈ 2.5 mA at 28 V), CAN_H and CAN_L
 swap, and the next node simply stays off.

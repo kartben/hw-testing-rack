@@ -7,14 +7,14 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 |---|---:|
 | Electronics | 583 |
 | Power | 82 |
+| Cables | 78 |
 | Printed parts | 78 |
-| Cables | 67 |
 | Cameras | 36 |
 | Fasteners | 17 |
 | Motion | 9 |
-| **Total** | **872** |
+| **Total** | **883** |
 
-≈ **€73 per bay** all-in.
+≈ **€74 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -192,8 +192,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Fasteners | Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge) | 24  | 0.30 | 7.20 | supermagnete S-06-03-N |
 | Motion | Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer | 2.3 m | 4.00 | 9.20 | AliExpress / igus E2 micro |
 | Cables | USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port) | 12  | 1.50 | 18.00 | AliExpress (generic, USB 2.0 is enough) |
-| Cables | JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 24 AWG, 120 mm, both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS) | 9  | 0.60 | 5.40 | pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often "reverse") or PHR-6 + 12 × SPH-002T-P0.5S |
-| Cables | JST PH 6-pin feed, the jumpers' type (pin n ↔ pin 7−n), 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS) | 3  | 0.80 | 2.40 | pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often "reverse") or PHR-6 + 12 × SPH-002T-P0.5S |
+| Cables | JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 (bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest flat at the front of the plenum) | 2 lot | 2.85 | 5.70 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length20CM |
+| Cables | JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS) | 1 lot | 3.19 | 3.19 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length30CM |
+| Cables | JST PH 6-pin feed, the jumpers' type, 60 cm, lot of 5 (power box → first bay of row B: VRACK, CAN, POS) | 1 lot | 4.69 | 4.69 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length60CM |
+| Cables | JST PH 6-pin feed, the jumpers' type, 80 cm, lot of 5 (power box → first bay of row C: VRACK, CAN, POS) | 1 lot | 5.29 | 5.29 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length80CM |
 | Cables | USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle) | 4  | 4.50 | 18.00 | Adafruit / Delock / AliExpress |
 | Cables | USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle) | 8  | 2.90 | 23.20 | Adafruit / Delock / AliExpress |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
