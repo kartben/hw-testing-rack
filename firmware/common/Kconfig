@@ -70,6 +70,56 @@ config HWTR_ADMIN_CLAIM_S
 	default 60
 	depends on HWTR_ADMIN
 
+config HWTR_IMG
+	bool "MCUboot image header and TLVs, read as they stream in (plain C)"
+
+config HWTR_UPDATE
+	bool "Firmware updates over the network"
+	default y
+	depends on BOOTLOADER_MCUBOOT && HWTR_ADMIN && FLASH_MAP && SETTINGS
+	depends on $(dt_nodelabel_enabled,slot1_partition)
+	select HWTR_IMG
+	select STREAM_FLASH
+	select IMG_MANAGER # its choice defaults to MCUboot
+	select IMG_ERASE_PROGRESSIVELY
+	select REBOOT
+	imply WATCHDOG
+	help
+	  On when the application is built with MCUboot (sysbuild): an admin
+	  request opens an update, the signed image streams into slot 1, the
+	  device test-boots it, and the new firmware confirms itself once
+	  what worked before the update works again (Wi-Fi, rack bus);
+	  otherwise MCUboot puts the previous one back.  The HTTP endpoints
+	  are firmware/common/web/update_http.c (hwtr_web_update()).
+
+if HWTR_UPDATE
+
+config HWTR_UPDATE_ID
+	string "Image id: <application>/<board>"
+	help
+	  What the image id TLV of an update must say.  Set, with the
+	  imgtool argument that writes it into the signed image, by
+	  firmware/common/sysbuild.cmake.
+
+config HWTR_UPDATE_TRIAL_S
+	int "Time a new firmware has to confirm itself (s)"
+	default 180
+	help
+	  After a test boot, the new firmware must get back what worked
+	  before the update (Wi-Fi, the rack bus) within this time, for 5 s
+	  in a row; otherwise it reboots unconfirmed and MCUboot puts the
+	  previous firmware back.  The watchdog (watchdog0, 30 s) runs during
+	  the trial, for a firmware that hangs.
+
+config HWTR_UPDATE_TEST_KEY
+	bool "Signed with MCUboot's public test key"
+	help
+	  Set by firmware/common/sysbuild.cmake when no signing key was
+	  given (HWTR_SIGNING_KEY): anyone can sign an image this device's
+	  MCUboot accepts.  The page says so.
+
+endif # HWTR_UPDATE
+
 module = HWTR_RACK
 module-str = rack bus
 source "subsys/logging/Kconfig.template.log_config"

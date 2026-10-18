@@ -192,3 +192,256 @@ export async function claimKey(key, ui) {
   }
   return "";
 }
+
+/* --- Firmware updates (firmware/common/web/update_http.c) ------------------------ */
+
+const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms));
+const kb = (n) => `${Math.round(n / 1024)} KB`;
+const mmss = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+const UP_NAMES = { wifi: "Wi-Fi", bus: "the rack bus" };
+
+/* Version, image id and size of a signed image (zephyr.signed.bin), as the firmware reads it */
+export function imageInfo(bytes) {
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const fail = (why) => { throw new Error(why); };
+  if (bytes.length < 32 || v.getUint32(0, true) !== 0x96f3b83d) {
+    fail("not a signed image: pick zephyr.signed.bin from a --sysbuild build");
+  }
+  const hdr = v.getUint16(8, true), prot = v.getUint16(10, true), size = v.getUint32(12, true);
+  const tlv = hdr + size + prot;
+  if (tlv + 4 > bytes.length || v.getUint16(tlv, true) !== 0x6907) fail("image truncated");
+  if (tlv + v.getUint16(tlv + 2, true) !== bytes.length) fail("image truncated, or bytes after it");
+  let id = "";
+  for (let o = hdr + size + 4; prot && o + 4 <= hdr + size + prot; o += 4 + v.getUint16(o + 2, true)) {
+    if (v.getUint16(o, true) === 0xa0) id = new TextDecoder().decode(bytes.subarray(o + 4, o + 4 + v.getUint16(o + 2, true)));
+  }
+  if (!id) fail("no image id: not built from this repository (firmware/common/sysbuild.cmake)");
+  const build = v.getUint32(24, true);
+  return { version: `${bytes[20]}.${bytes[21]}.${v.getUint16(22, true)}${build ? `+${build}` : ""}`, id, size: bytes.length };
+}
+
+/* A POST with upload progress (fetch has none) */
+function postBytes(url, body, progress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", url);
+    xhr.setRequestHeader("Content-Type", "application/octet-stream");
+    xhr.upload.onprogress = (e) => progress?.(e.loaded, e.total);
+    xhr.onload = () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText); } catch { /* not JSON */ }
+      if (xhr.status < 300) resolve(data);
+      else reject(Object.assign(new Error(data.error ?? `${xhr.status} ${xhr.statusText}`), { status: xhr.status, data }));
+    };
+    xhr.onerror = () => reject(new Error("upload cut off: connection lost"));
+    xhr.send(body);
+  });
+}
+
+/*
+ * Send a signed image: an admin request with its size and SHA-256 opens the
+ * update (admin(path, body) is the page's signed request), then the image
+ * goes with the ticket it got.  The device answers once it has checked the
+ * image, and restarts into it.
+ */
+export async function sendFirmware(bytes, { admin, force = false, progress }) {
+  const { ticket } = await admin("/api/update/begin", { size: bytes.length, sha256: hex(sha256(bytes)), force });
+  return postBytes(`/api/update?ticket=${ticket}`, bytes, progress);
+}
+
+/* "0.6.0 on trial" and the like, for a page's Firmware line */
+export function firmwareLabel(f) {
+  if (!f) return "";
+  const tag = f.trial ? `<span class="tag warn">on trial</span>`
+    : f.last?.result === "rolled back" ? `<span class="tag bad" title="The update to ${f.last.to} did not confirm itself">rolled back</span>` : "";
+  return `${f.version}${tag ? ` ${tag}` : ""}`;
+}
+
+const STEPS = [
+  ["upload", "Send", "signed with the admin key, written to the update slot"],
+  ["restart", "Restart", "MCUboot checks the signature and swaps it in"],
+  ["trial", "Trial", "the new firmware must get back what worked before"],
+  ["done", "Confirmed", "it stays; otherwise MCUboot goes back to the previous one"],
+];
+
+/*
+ * The firmware dialog, the same on every page: pick zephyr.signed.bin, check
+ * it (version, image id) before anything is sent, send it, then follow the
+ * restart and the trial until the new firmware confirms itself or the device
+ * goes back to the previous one.
+ *   admin(path, body)   the page's signed request (claims or unlocks first)
+ *   app                 "bay-node" or "power-hub" (where the build puts the image)
+ *   force(why)          a reserved device: ask whether to update anyway -> bool
+ *   changed(firmware)   the device came back
+ */
+export function firmwareDialog({ admin, app, force: askForce = async () => false, changed = () => {} }) {
+  const dlg = document.createElement("dialog");
+  dlg.className = "small-dlg fw-dlg";
+  dlg.innerHTML = `<form method="dialog">
+    <h3>Firmware</h3>
+    <div class="fw-now"><b data-f="version"></b><code data-f="id"></code>
+      <span class="tag warn" data-f="testkey" hidden title="Signed with MCUboot's public test key: any image signed with it boots on this device. Build with your own key (HWTR_SIGNING_KEY) for a rack.">test key</span></div>
+    <p class="hint" data-f="last"></p>
+    <label class="pick"><input type="file" accept=".bin" data-f="file">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4m0 0-4 4m4-4 4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+      <span class="what"><b data-f="pick">Choose zephyr.signed.bin</b><small data-f="pick-sub">build/${app}/zephyr/zephyr.signed.bin, from <code>west build --sysbuild</code></small></span></label>
+    <ol class="steps" data-f="steps" hidden>${STEPS.map(([k, name, what]) =>
+      `<li data-step="${k}" data-s="wait"><span class="dot"></span><b>${name}</b><small>${what}</small></li>`).join("")}</ol>
+    <p class="err" data-f="err"></p>
+    <div class="btns"><button value="close" data-f="close">Close</button><button type="button" class="primary" data-f="go" disabled>Update</button></div>
+  </form>`;
+  document.body.append(dlg);
+  const f = (name) => dlg.querySelector(`[data-f="${name}"]`);
+  let fw = null, bytes = null, busy = false;
+
+  function showNow(x) {
+    fw = x;
+    f("version").textContent = x.version;
+    f("id").textContent = x.id;
+    f("testkey").hidden = !x.test_key;
+    const l = x.last;
+    f("last").textContent = !l ? "Flashed over USB; no update over the network yet."
+      : l.result === "on trial" ? `${l.to} on trial (was ${l.from || "?"}).`
+      : l.result === "confirmed" ? `Last update: ${l.from ? `${l.from} → ` : ""}${l.to}, confirmed.`
+      : `Last update: ${l.to} did not stay; back on ${x.version}.`;
+  }
+
+  function step(name, state, text, title) {
+    const li = dlg.querySelector(`[data-step="${name}"]`);
+    li.dataset.s = state;
+    li.querySelector("b").textContent = title ?? STEPS.find(([k]) => k === name)[1];
+    if (text !== undefined) li.querySelector("small").textContent = text;
+    f("steps").hidden = false;
+  }
+
+  function trialText(t) {
+    const missing = t.need.filter((n) => !t.up.includes(n)).map((n) => UP_NAMES[n]);
+    return `${missing.length ? `waiting for ${missing.join(" and ")}` : `${t.need.map((n) => UP_NAMES[n]).join(" and ")} back: confirming`} · ${mmss(t.left_s)} left`;
+  }
+
+  /* After the upload, or when opened on a firmware on trial */
+  async function follow(t0) {
+    let back = !!fw?.trial;
+    for (let deadline = Date.now() + 10 * 60e3; dlg.open && Date.now() < deadline;) {
+      await sleep(1500);
+      let x;
+      try {
+        x = await api("/api/update");
+      } catch {
+        if (back) step("trial", "run", "restarting…");
+        continue;
+      }
+      if (x.state === "rebooting") continue;
+      if (!back) {
+        back = true;
+        step("restart", "ok", `back after ${Math.round((Date.now() - t0) / 1000)} s, running ${x.version}`);
+      }
+      showNow(x);
+      changed(x);
+      if (x.trial) {
+        step("trial", "run", trialText(x.trial));
+      } else if (x.last?.result === "confirmed") {
+        step("trial", "ok", "what worked before works again");
+        step("done", "ok", `${x.version} confirmed itself: it stays`);
+        return;
+      } else {
+        step("trial", "bad", `${x.last?.to ?? "the new firmware"} did not confirm itself`);
+        step("done", "bad", `MCUboot went back: running ${x.version}`, "Rolled back");
+        return;
+      }
+    }
+  }
+
+  f("file").addEventListener("change", async () => {
+    const file = f("file").files[0];
+    const pick = dlg.querySelector(".pick");
+    bytes = null;
+    f("go").disabled = true;
+    f("err").textContent = "";
+    delete pick.dataset.ok;
+    delete pick.dataset.bad;
+    if (!file) return;
+    try {
+      const b = new Uint8Array(await file.arrayBuffer());
+      const info = imageInfo(b);
+      if (info.id !== fw.id) throw new Error(`this image is for ${info.id}; this device runs ${fw.id}`);
+      bytes = b;
+      pick.dataset.ok = "";
+      f("pick").textContent = `${fw.version} → ${info.version}${info.version === fw.version ? " (same version)" : ""}`;
+      f("pick-sub").textContent = `${file.name} · ${kb(info.size)} · ${info.id}`;
+      f("go").disabled = false;
+    } catch (e) {
+      pick.dataset.bad = "";
+      f("pick").textContent = file.name;
+      f("pick-sub").textContent = e.message;
+    }
+  });
+
+  f("go").addEventListener("click", async () => {
+    if (!bytes || busy) return;
+    busy = true;
+    f("go").disabled = true;
+    dlg.querySelector(".pick").inert = true;
+    f("err").textContent = "";
+    STEPS.forEach(([k, , what]) => step(k, "wait", what));
+    step("upload", "run", `0 of ${kb(bytes.length)}`);
+    try {
+      let r, forced = false;
+      for (;;) {
+        try {
+          r = await sendFirmware(bytes, { admin, force: forced,
+            progress: (sent, total) => step("upload", "run", `${kb(sent)} of ${kb(total)}`) });
+          break;
+        } catch (e) {
+          if (e.status === 409 && !forced && /force/.test(e.message) && await askForce(e.message)) forced = true;
+          else throw e;
+        }
+      }
+      step("upload", "ok", `${kb(bytes.length)} sent; ${r.version} for ${r.id} checked`);
+      step("restart", "run", "restarting into it…");
+      await follow(Date.now());
+    } catch (e) {
+      if (e.quiet) {
+        f("steps").hidden = true;       /* no admin key: the claim or unlock was cancelled */
+      } else {
+        step("upload", "bad", e.message);
+        f("err").textContent = e.message;
+      }
+      dlg.querySelector(".pick").inert = false;
+      f("go").disabled = false;
+    } finally {
+      busy = false;
+    }
+  });
+
+  return {
+    /* x: the page's last status, a fallback: the dialog asks the device itself (fresher) */
+    async open(x) {
+      x = await api("/api/update").catch(() => x);
+      if (!x) return;
+      showNow(x);
+      if (!busy) {
+        bytes = null;
+        f("file").value = "";
+        f("go").disabled = true;
+        f("err").textContent = "";
+        const pick = dlg.querySelector(".pick");
+        pick.inert = !!x.trial;
+        delete pick.dataset.ok;
+        delete pick.dataset.bad;
+        f("pick").textContent = "Choose zephyr.signed.bin";
+        f("pick-sub").innerHTML = `build/${app}/zephyr/zephyr.signed.bin, from <code>west build --sysbuild</code>`;
+        f("steps").hidden = true;
+      }
+      dlg.showModal();
+      if (x.trial && !busy) {
+        STEPS.forEach(([k, , what]) => step(k, "wait", what));
+        step("upload", "ok", `${x.last?.to ?? x.version} sent earlier`);
+        step("restart", "ok", `running ${x.version}`);
+        step("trial", "run", trialText(x.trial));
+        busy = true;
+        follow(Date.now()).finally(() => { busy = false; });
+      }
+    },
+  };
+}

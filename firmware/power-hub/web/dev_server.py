@@ -12,9 +12,15 @@ currents.  Test hooks:
     /dev/lose?node=0x22   a node stops sending STATUS
     /dev/usb              the controller runs from its console USB-C only (no PD charger)
     /dev/boot             a short press on BOOT: confirms a pending claim
+    /dev/rollback         the next firmware update does not confirm itself (MCUboot goes back)
+    /dev/image?version=0.6.0[&id=bay-node/bay_node]   an image to upload (unsigned, laid out
+                          as zephyr.signed.bin; the hub's own id by default)
 
 The page's actions are admin requests signed with the hub's key, as on the
 hub (common/web/devserver.py's Admin): claim it from the page, then /dev/boot.
+A firmware update takes any image laid out like zephyr.signed.bin with the
+hub's image id (devserver.make_image() writes one): the hub "restarts" for a
+few seconds, runs it on trial, then confirms it.
 """
 
 from __future__ import annotations
@@ -29,7 +35,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "common" / "web"))
-from devserver import Admin, PageHandler  # noqa: E402
+from devserver import Admin, Firmware, PageHandler, make_image  # noqa: E402
 
 WEB = Path(__file__).resolve().parent
 START = time.monotonic() - 2 * 86400 - 5 * 3600
@@ -69,6 +75,7 @@ hub = {
 }
 events: list[tuple[float, str, str]] = []
 admin = Admin()
+firmware = Firmware("0.5.0", "power-hub/power_hub", on_event=lambda text: event("firmware", text))
 lock = threading.Lock()
 
 
@@ -151,7 +158,7 @@ def status() -> dict:
     vbus = (c["mv"] - total_ma * 12 // 1000) if c else 0
     found = sum(len(r["nodes"]) for r in rows)
     return {
-        "hostname": hub["hostname"], "ip": hub["ip"], "version": hub["version"],
+        "hostname": hub["hostname"], "ip": hub["ip"], "version": firmware.version,
         "access": {"claimed": admin.key is not None, "claim_pending": admin.claim_pending()},
         "uptime_s": int(t - START),
         "pd": {
@@ -167,6 +174,7 @@ def status() -> dict:
                 "rx_fps": found + found // 10, "errors": hub["can"]["errors"], "bus_off": hub["can"]["bus_off"],
                 "enumerating": False, "enumerated_s": round(t - hub["enumerated_at"]),
                 "enumerations": 3},
+        "firmware": firmware.doc(),
     }
 
 
@@ -201,7 +209,9 @@ class Handler(PageHandler):
         if self.static(path):
             return
         with lock:
-            if path == "/api/status":
+            if firmware.down() and not path.startswith("/dev/"):
+                self.json(503, {"error": "restarting"})
+            elif path == "/api/status":
                 self.json(200, status())
             elif path == "/api/events":
                 self.json(200, events_doc())
@@ -238,13 +248,30 @@ class Handler(PageHandler):
                 self.json(200, {"nonce": admin.nonce()})
             elif path == "/dev/boot":
                 self.json(200, {"claimed": admin.press_boot()})
+            elif path == "/api/update":
+                self.json(200, firmware.doc())
+            elif path == "/dev/rollback":
+                firmware.rollback()
+                self.json(200, {"rollback": True})
+            elif path == "/dev/image":
+                self.send(200, make_image(q.get("version", "0.6.0"), q.get("id", firmware.image_id)),
+                          "application/octet-stream")
             else:
                 self.json(404, {"error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
         import json
-        path = urlsplit(self.path).path
+        url = urlsplit(self.path)
+        path = url.path
         raw = self.body()
+        if firmware.down():
+            self.json(503, {"error": "restarting"})
+            return
+        if path == "/api/update":
+            with lock:
+                ticket = parse_qs(url.query).get("ticket", [""])[0]
+                self.json(*firmware.upload(self.client_address[0], ticket, raw))
+            return
         try:
             body = json.loads(raw or b"{}")
         except ValueError:
@@ -285,6 +312,8 @@ class Handler(PageHandler):
             elif path == "/api/enumerate":
                 enumerate_rack("requested")
                 self.json(200, status())
+            elif path == "/api/update/begin":
+                self.json(*firmware.begin(self.client_address[0], body))
             elif path == "/api/node":
                 nid, action = int(body.get("id", 0)), body.get("action")
                 if action not in ("identify", "reset", "bootloader", "power-cycle", "power-on", "power-off", "reboot"):

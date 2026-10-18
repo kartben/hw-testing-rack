@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Sysbuild options from the hw-testing-rack module (zephyr/module.yml).
+#
+# The key that signs the images, from the environment: HWTR_SIGNING_KEY, the
+# path to a PEM file kept out of the repository (docs/firmware.md, Signing
+# key).  Unset, MCUboot's public test key signs, and
+# firmware/common/sysbuild.cmake warns.  Sysbuild reads the modules' options
+# before MCUboot's, so this default comes first.
+
+config BOOT_SIGNATURE_KEY_FILE
+	string
+	default "$(HWTR_SIGNING_KEY)" if "$(HWTR_SIGNING_KEY)" != ""

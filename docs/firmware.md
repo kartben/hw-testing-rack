@@ -39,9 +39,9 @@ Wi-Fi, the web pages' CSS, helpers and tooling.
 | Bench node | `m5stack_stamps3/esp32s3/procpu` + `firmware/bay-node/boards/m5stack_stamps3_procpu.*`: serial console, network and web page on a StampS3, no USB host (its USB-C is the node's console) |
 | Application | `firmware/bay-node/` |
 | Power hub | `power_hub/esp32s3/procpu` in `firmware/boards/hwtr/power_hub/`, application `firmware/power-hub/`, bindings `hwtr,power-hub`, `hwtr,rack-rows`, `diodes,ap33772s` (+ `-regulator`, `-sensor`) |
-| Shared | `firmware/zephyr/module.yml` makes `firmware/` a Zephyr module (boards, bindings, `common/`), added by each application |
+| Shared | `zephyr/module.yml` at the repository's root makes it a Zephyr module (the boards, bindings and `firmware/common/`): west finds it in the workspace made from `firmware/west.yml` (sysbuild too), and each application adds it for other workspaces |
 | Host side | [`tools/bayctl.py`](../tools/bayctl.py): power, reset, USB/IP, consoles, twister hardware map, labgrid / PDUDaemon configs ([ci.md](ci.md)) |
-| Build | `west build -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node` in a workspace made from `firmware/west.yml` |
+| Build | `west build --sysbuild -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node` in a workspace made from `firmware/west.yml` (MCUboot, then the application signed for it) |
 
 ## Node application
 
@@ -60,7 +60,7 @@ Wi-Fi, the web pages' CSS, helpers and tooling.
 | Rack bus | written, tested on a simulated rack | CAN (IO18/IO17) + POS (IO16 in, IO35 out): position from the hub (`C3` = node 0x23), STATUS every second, INFO, ALERT on DUT faults, the hub's commands (refused while the bay is reserved); [rack-protocol.md](rack-protocol.md) |
 | Access control | written, tested on native_sim | per node: which address may use status, control, console, USB/IP, shell (Zephyr packet filter for TCP, a check per HTTP request); a CI reservation (lease); kicks and a refusal log; admin key claimed with a press on BOOT, admin requests signed (HMAC).  See [`firmware/README.md`](../firmware/README.md#access-control) |
 | Control interface | written | `bay …` shell on the UART test pads and over telnet; status page, serial console and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`, `/api/aux`) |
-| Updates | not yet | USB only, through the front port in SERVICE mode; the plan (MCUboot, signed Wi-Fi updates, later the rack bus) is in [Programming](#programming) |
+| Updates | written, tested on native_sim, not on hardware | over Wi-Fi: MCUboot (sysbuild), signed images sent with the admin key, a test boot, the new firmware confirms itself once Wi-Fi and the rack bus are back, else MCUboot goes back; the page, `bayctl update`.  [Programming › Over the network](#over-the-network); USB through the front port in SERVICE mode |
 
 ![The node's status page (simulated node): live V/I/P, power and reset actions, USB/IP state](img/web-ui-dark.png)
 
@@ -86,6 +86,7 @@ node's real console code, Zephyr's shell sample as the DUT); details in
 | Rack bus master | written, tested on a simulated rack | enumeration over the POS tokens, the node table, commands with retries, the RACK frame every second |
 | Web, shell | written | status page (PD offers, rows and their bays, rack bus, events), JSON API, `/metrics`, `hub …` shell on the console USB-C (no telnet) |
 | Access | written | reading is open; the page's actions (rows, contract, enumeration, node commands) are admin requests signed with the hub's key, claimed with a press on its BOOT button (`firmware/common/lib/admin.c`, as the bay nodes) |
+| Updates | written, tested on native_sim, not on hardware | as the bay nodes (same code, `firmware/common/lib/update.c`): [Programming › Over the network](#over-the-network); the console USB-C otherwise |
 
 ![The hub's status page (simulated hub): the PD contract and the charger's offers, the rack bus, rows A–D with their bays](img/hub-ui-dark.png)
 
@@ -105,9 +106,11 @@ the workspace made from `firmware/west.yml`, then:
 ```bash
 west flash -d build                               # the port found by itself, or:
 west flash -d build --esp-device /dev/ttyACM0
-# without west: the image goes at 0 (simple boot, no second-stage bootloader)
-esptool --chip esp32s3 -p /dev/ttyACM0 -b 921600 write-flash 0x0 build/zephyr/zephyr.bin
 ```
+
+With `--sysbuild` (the default from here on) that writes MCUboot and the
+signed application ([Over the network](#over-the-network)); without it, the
+application alone at 0 (simple boot), with no update over the network.
 
 `west flash --erase` once on a module that ran other firmware (settings).
 
@@ -138,46 +141,106 @@ The row enables are held across the controller's resets (pad hold), so
 flashing the hub should not power-cycle the rack: to be checked on the first
 hub.
 
-### Over the network: not yet
+### Over the network
 
-Both boards boot with Zephyr's *simple boot* (one image at 0, no
-second-stage bootloader): there is no OTA today, every update is a USB
-flash, bay by bay.  Recommended next step, in this order:
+> **Status:** written; tested on native_sim (`firmware/common/tests/update`:
+> the upload into slot 1, the test boot request, the trial, the rollback),
+> against the simulated boards (the pages, `bayctl`), and built for every
+> board.  **Not run on an ESP32-S3 yet**: MCUboot's swap, the rollback, the
+> watchdog and a power loss during a swap are to be checked on the first
+> boards.
 
-1. **MCUboot + a signed update over Wi-Fi, per node.**  The partition table
-   already has MCUboot's 64 KB and two 3.75 MB slots (the images are
-   0.98 MB for the bay, 0.80 MB for the hub): no partition change.  Build
-   with sysbuild (`-DSB_CONFIG_BOOTLOADER_MCUBOOT=y`); MCUboot checks the
-   image's signature (ECDSA P-256 or Ed25519, the key kept out of the
-   repository).  The image arrives as an HTTP upload, `POST /api/update`,
-   signed with the device's admin key like every other admin request
-   (`firmware/common/lib/admin.c`: the access model stays the same, unlike
-   mcumgr's SMP over UDP, which has no authentication), and is written to
-   slot 1 as it streams.  The node reboots into it as a test; the new
-   firmware confirms itself once it is healthy (Wi-Fi and rack bus up),
-   otherwise MCUboot goes back to the old one.  A rack update is a loop
-   from the laptop over the nodes the hub lists (`bayctl update --all`);
-   the hub updates itself the same way.  The same code serves both boards
-   (`firmware/common`).
-   * **Effort:** about 2–3 days of firmware and tooling, then a day on
-     hardware (rollback, power loss during a swap).
-   * **Flash:** none beyond the reserved partitions; the image grows by a
-     few KB.  Every board needs one more USB flash, with MCUboot, before
-     its first OTA.
-   * **RAM:** about 2–3 KB on the node (image writer, a 512-byte block
-     buffer, the upload handler); MCUboot itself runs before the
-     application.  The bay is at 97.6 % (≈ 9.5 KB free), so the change
-     should also shrink the USB/IP buffer pool from 64 KB to 48 KB, the
-     largest single buffer, to keep a margin.  The hub (65 %) has room.
-   * **Downtime:** one reboot plus MCUboot's copy, ≈ 10–30 s per node; the
-     DUT stays powered unless the update says otherwise.
-2. **Later, over the rack bus, from the hub.**  Upload the image once to
-   the hub, which broadcasts it on CAN to every node at once (they all run
-   the same firmware): ≈ 1–1.5 min for 1 MB at 250 kbit/s, for the whole
-   rack, and it works for a node without Wi-Fi.  It needs a transfer layer
-   on top of [rack-protocol.md](rack-protocol.md) (chunks, CRC, nodes asking
-   for the chunks they missed): about a week, worth it once (1) has run on
-   hardware.
+Both boards boot through **MCUboot**, built in front of the application by
+sysbuild: `west build --sysbuild`.  `west flash` then writes MCUboot at 0
+and the signed application in slot 0 (`0x20000`); every board needs that
+one USB flash before its first update over the network (a board flashed
+before, with simple boot, too).
+
+```bash
+west build --sysbuild -b bay_node/esp32s3/procpu -d build-bay hw-testing-rack/firmware/bay-node
+west flash -d build-bay                  # MCUboot, then the signed application
+# without west: esptool ... write-flash 0x0 build-bay/mcuboot/zephyr/zephyr.bin \
+#                                      0x20000 build-bay/bay-node/zephyr/zephyr.signed.bin
+# what an update sends: build-bay/bay-node/zephyr/zephyr.signed.bin
+```
+
+| Step | What happens |
+|---|---|
+| Begin | an admin request, `POST /api/update/begin` with the image's size and SHA-256, signed with the device's admin key like every other admin action (`X-Bay-Auth`, [`firmware/common/lib/admin.c`](../firmware/common/lib/admin.c)), gets a single-use ticket (one minute, this address).  Refused while the running firmware is on trial; a reserved bay only with `force` |
+| Upload | `POST /api/update?ticket=…` with the image: written to slot 1 as it streams in (no copy in RAM), hashed and read on the way.  Refused at the first bytes if it is not an MCUboot image, at the end if the size, the SHA-256 or the image id differ; nothing is written for anyone without the key |
+| Test boot | MCUboot is asked for a test swap and the device restarts 1.5 s later.  MCUboot checks the signature (ECDSA P-256), swaps (swap using offset; ≈ 10–30 s for 1 MB, to be measured) and boots the new firmware |
+| Trial | the new firmware must get back, for 5 s in a row and within 3 minutes (`CONFIG_HWTR_UPDATE_TRIAL_S`), what worked when the image arrived: Wi-Fi, and the rack bus (a node: an address from the hub and the hub heard; the hub: CAN error-active with at least one node).  An update on a desk, without a rack, only needs Wi-Fi.  The watchdog (`watchdog0`, 30 s) runs meanwhile |
+| Confirmed, or rolled back | it confirms itself and stays; otherwise (not healthy in time, or hung) it restarts unconfirmed and MCUboot swaps the previous firmware back.  The page, `/api/update` and the hub's event log say which |
+
+**Image id.**  The build writes `<application>/<board>` (`bay-node/bay_node`,
+`power-hub/power_hub`, `bay-node/esp32s3_devkitc`) into the signed image, as
+a protected TLV (0xa0) the signature covers ([`firmware/common/sysbuild.cmake`](../firmware/common/sysbuild.cmake));
+the firmware refuses an image built for another application or board, so
+a hub image cannot land on a bay.  An image flashed over USB has no trial:
+it is confirmed as it is.
+
+**From a browser.**  The hub's page: *Rack bus › Update firmware…*; a bay's
+page: *Manage access › Firmware › Update…* (admin).  The page reads the
+image before sending it (version, image id) and follows the four steps.
+
+![The firmware dialog on the hub's page: 0.5.0 → 0.6.0 sent, the hub back after a restart, on trial until the rack bus answers](img/hub-ui-update.png)
+
+**From the command line** ([`tools/bayctl.py`](../tools/bayctl.py), with the
+rack's admin key in `BAYCTL_KEY`):
+
+```bash
+python tools/bayctl.py update build-bay/bay-node/zephyr/zephyr.signed.bin B3
+python tools/bayctl.py update build-bay/bay-node/zephyr/zephyr.signed.bin --all
+python tools/bayctl.py update build-hub/power-hub/zephyr/zephyr.signed.bin --hub
+```
+
+`--all` takes the nodes the hub lists, one after the other, and stops at
+the first one whose new firmware does not stay: a firmware that fails on
+one node does not go to the next.  Reserved bays are skipped (`--force`
+updates them anyway).  The hub is `rack.local` unless `config/lab.yaml`
+says `hub:`.
+
+**Cost.**  MCUboot: 48 KB of its 64 KB partition.  The images: 1.03 MB (bay),
+0.79 MB (hub), in 3.75 MB slots.  RAM: MCUboot's layout leaves the
+application 18 KB less DRAM; with the USB/IP buffer pool down from 64 KB to
+48 KB the bay ends at 96.6 % (12.7 KB free, 9.5 KB before), the hub at
+66.5 %.
+
+#### Signing key
+
+MCUboot boots only images signed with the key it was built with; the key
+stays out of the repository.
+
+* **By default, MCUboot's public test key** (`bootloader/mcuboot/root-ec-p256.pem`):
+  the build warns, the page shows *test key*.  Anyone can sign an image
+  these boards boot (sending it still needs the admin key).  Fine on a desk
+  and in CI (the CI artifacts are named `firmware-<board>-test-key`), not
+  for a rack.
+* **Your own:** make one once, keep it (and a backup) outside the
+  repository, and point the build at it:
+
+  ```bash
+  python bootloader/mcuboot/scripts/imgtool.py keygen -t ecdsa-p256 -k ~/keys/rack-signing.pem
+  export HWTR_SIGNING_KEY=$HOME/keys/rack-signing.pem     # an absolute path
+  west build --sysbuild -p -b bay_node/esp32s3/procpu -d build-bay hw-testing-rack/firmware/bay-node
+  ```
+
+  (or `-- -DSB_CONFIG_BOOT_SIGNATURE_KEY_FILE=\"/path/to/key.pem\"`).  Build
+  pristine (`-p`) after changing it.  MCUboot gets the public half, the
+  image its signature: every board takes one USB flash with that MCUboot,
+  and from then on only images signed with that key.  Lose the key and
+  every board needs a USB flash again; moving from the test key to your own
+  is such a flash too.
+
+### Later: over the rack bus, from the hub
+
+Upload the image once to the hub, which broadcasts it on CAN to every node
+at once (they all run the same firmware): ≈ 1–1.5 min for 1 MB at
+250 kbit/s, for the whole rack, and it works for a node without Wi-Fi.  It
+needs a transfer layer on top of [rack-protocol.md](rack-protocol.md)
+(chunks, CRC, nodes asking for the chunks they missed): about a week, worth
+it once the Wi-Fi updates have run on hardware.  The trial and the rollback
+stay as they are.
 
 ### What the hardware gives, and what it could add
 
@@ -207,7 +270,7 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   against pyserial and the web console against the simulated node; on a
   StampS3 the firmware boots with its listeners up and the UART path works
   in loopback, but the WebSocket and TCP paths have not run over Wi-Fi yet.
-* OTA updates ([Programming](#programming)), DNS-SD (`_usbip._tcp`, `_http._tcp`, `_rfc2217._tcp`),
+* Updates over the network on hardware (swap time, rollback, power loss during a swap), then over the rack bus ([Programming](#over-the-network)); DNS-SD (`_usbip._tcp`, `_http._tcp`, `_rfc2217._tcp`),
   shell on the USB-Serial-JTAG in SERVICE mode, INA226 alert.
 * Upstream nits seen while dogfooding: the Prometheus library needs exactly
   one label per metric and rejects negative gauge values; the HTTP server

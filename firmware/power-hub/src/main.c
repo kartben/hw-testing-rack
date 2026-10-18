@@ -3,7 +3,9 @@
  *
  * USB-C PD input (pd.c), the four eFused rows (rows.c), the rack bus master
  * (bus.c), Wi-Fi and the web page (web.c), the "hub" shell (shell.c).
- * main() brings them up in that order and then drives the CTL LED.
+ * main() brings them up in that order and then drives the CTL LED.  Built
+ * with MCUboot (sysbuild), it also takes firmware updates over the network
+ * (firmware/common/lib/update.c).
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -19,6 +21,7 @@
 
 #include <hwtr/admin.h>
 #include <hwtr/net.h>
+#include <hwtr/update.h>
 
 #include "hub.h"
 
@@ -184,6 +187,31 @@ static bool led_level(uint32_t tick)
 	return true;
 }
 
+#if defined(CONFIG_HWTR_UPDATE)
+/* A new firmware on trial confirms itself once these work as they did before */
+static uint32_t update_health(void)
+{
+	struct hub_bus_status bus;
+
+	bus_status(&bus);
+	return (hwtr_net_connected() ? HWTR_UP_WIFI : 0) |
+	       ((bus.state == CAN_STATE_ERROR_ACTIVE || bus.state == CAN_STATE_ERROR_WARNING) &&
+				bus.nodes > 0
+			? HWTR_UP_BUS
+			: 0);
+}
+
+static void update_event(const char *text)
+{
+	hub_event(HUB_EV_FW, "%s", text);
+}
+
+static const struct hwtr_update_cfg update_cfg = {
+	.health = update_health,
+	.event = update_event,
+};
+#endif
+
 int main(void)
 {
 	uint32_t tick = 0;
@@ -201,6 +229,13 @@ int main(void)
 		LOG_ERR("settings unavailable (%d): defaults only%s", ret,
 			ret == -EDEADLK ? "; storage partition not NVS: west flash --erase" : "");
 	}
+
+#if defined(CONFIG_HWTR_UPDATE)
+	/* A test boot after an update: on trial (and the watchdog on) from here
+	 * until Wi-Fi and the rack bus work again
+	 */
+	(void)hwtr_update_init(&update_cfg);
+#endif
 
 	/* First: the rows keep what they were doing across a controller reset */
 	ret = rows_init(stored_rows, stored_shed[0] ? stored_shed : NULL);

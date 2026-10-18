@@ -37,9 +37,13 @@ In the workspace made from [`firmware/west.yml`](../west.yml) (see
 [`firmware/README.md`](../README.md#building)):
 
 ```bash
-west build -b power_hub/esp32s3/procpu hw-testing-rack/firmware/power-hub
-west flash        # over the console USB-C (J6): USB-Serial-JTAG, esptool auto-reset
+west build --sysbuild -b power_hub/esp32s3/procpu hw-testing-rack/firmware/power-hub
+west flash        # over the console USB-C (J6): MCUboot, then the signed application
 ```
+
+`--sysbuild` puts MCUboot in front of the application, for the updates
+over the network ([Updates](#updates)); after this first USB flash the hub
+can be updated from its page or `bayctl update --hub`.
 
 The console USB-C is in the power box's front wall: it can be reached with
 the box closed, and it also powers the controller (not the rows), so the hub
@@ -50,8 +54,7 @@ no button needed.  BOOT and RESET (rear-left corner, top side) are a last
 resort, pressed with a pin through the lid's RESET / BOOT holes.  The row enables are held across the controller's
 resets, so a flash should leave the rack powered (to be checked on the
 first hub).  A module that ran other firmware: `west flash --erase` once
-(settings partition).  The update plan (MCUboot, over Wi-Fi):
-[docs/firmware.md › Programming](../../docs/firmware.md#programming).
+(settings partition).
 
 ## First boot
 
@@ -142,6 +145,9 @@ bootloader; power-cycle the board; open the bay's own page).
 | `GET /api/access/nonce` | a single-use nonce for an admin request |
 | `POST /api/access/claim` | `{}` or `{"key": "<64 hex>"}` (the rack's key), then `{"ticket": "…"}` until someone presses BOOT: `{"state": "done", "key": …}` |
 | `POST /api/access/check` | signed, `{}`: 200 with the right key, else 403 |
+| `GET /api/update` | the firmware: `version`, image `id`, `test_key`, `trial` (on trial: what it waits for, time left), `last` update (`confirmed`, `rolled back`); also `firmware` in `/api/status` |
+| `POST /api/update/begin` | signed, `{"size": N, "sha256": "<64 hex>"}`: `{"ticket": …}` |
+| `POST /api/update?ticket=…` | the image (`zephyr.signed.bin`), streamed into slot 1; `{"state": "rebooting", "version": …}`, then a test boot |
 | `GET /metrics` | `hub_contract_volts`, `hub_contract_amps`, `hub_input_amps`, `hub_sink_celsius`, `hub_row_on{row}`, `hub_row_amps{row}`, `hub_row_faults_total{row}`, `hub_nodes`, `hub_nodes_lost`, CAN counters |
 
 To work on the page without a hub:
@@ -154,7 +160,10 @@ python firmware/power-hub/web/screenshots.py       # docs/img/hub-ui-*.png (Play
 The simulated hub has the same endpoints, a 140 W EPR charger and nine
 bays, unclaimed (claim it from the page, then `/dev/boot` presses BOOT);
 `/dev/drop` makes the charger renegotiate down to 30 W (row C shed),
-`/dev/fault?row=C` trips an eFuse, `/dev/lose?node=0x22` silences a node.
+`/dev/fault?row=C` trips an eFuse, `/dev/lose?node=0x22` silences a node;
+`/dev/image?version=0.6.0` is an image to try the update with (laid out as
+`zephyr.signed.bin`, unsigned), `/dev/rollback` makes the next update roll
+back.
 
 ## Access
 
@@ -177,6 +186,25 @@ crosses the network once, when the hub is claimed:
 Another browser unlocks the page with the key (the page checks it with
 `/api/access/check`); the header's pill says *admin*, *read-only · unlock*
 or *unclaimed · claim*.  Lost key: hold BOOT 10 s, or `hub access reset`.
+
+## Updates
+
+Built with `--sysbuild`, the hub takes firmware updates over the network,
+like the bay nodes and with the same code (`firmware/common/lib/update.c`):
+an admin request opens the update, the signed image streams into slot 1,
+the hub restarts into it as a test, and the new firmware confirms itself
+once Wi-Fi and the rack bus work again (CAN error-active, at least one node
+answering, if there was one before the update); otherwise MCUboot puts the
+previous firmware back.  The rows stay on through the restart (pad hold).
+The page: *Rack bus › Update firmware…*; the command line:
+`bayctl update build/power-hub/zephyr/zephyr.signed.bin --hub`.  The event
+log keeps "confirmed itself" or "rolled back".  Details, the signing key
+and what is still to be checked on hardware:
+[docs/firmware.md › Over the network](../../docs/firmware.md#over-the-network).
+
+| ![The firmware dialog: the hub on trial, waiting for the rack bus](../../docs/img/hub-ui-update.png) | ![An update that did not stay: MCUboot went back to 0.6.0](../../docs/img/hub-ui-rollback.png) |
+|---|---|
+| On trial: back after the restart, waiting for the rack bus | Rolled back: the new firmware did not confirm itself |
 
 ## AP33772S drivers
 
@@ -253,3 +281,6 @@ devicetree against U4 in `design.py`, as it does for the bay node.
   would be safer but sheds rows a 100 W charger could carry.
 * Node hostnames: INFO carries the IPv4 address, not the name; the page
   shows addresses.
+* **Updates over the network not run on hardware** (the swap, the rollback,
+  the rows through the restart): tested on native_sim and against the
+  simulated hub only.

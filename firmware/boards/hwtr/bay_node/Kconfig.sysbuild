@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# MCUboot by default with sysbuild: the firmware updates over the network
+choice BOOTLOADER
+	default BOOTLOADER_MCUBOOT
+endchoice

@@ -143,6 +143,7 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
         </dl>
         <div class="actions">
           <button id="btn-enum" data-admin-only>Re-enumerate</button>
+          <button id="btn-fw" data-admin-only hidden>Update firmware…</button>
         </div>
       </section>
     </div>
@@ -230,14 +231,15 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
 
 <script type="module">
 import { $, api, fix, plural, uptime, ago, Spark, toast, confirmed, poll, copyButtons, storedKey, storeKey,
-  signed, claimKey } from "/rack.mjs";
+  signed, claimKey, firmwareDialog, firmwareLabel } from "/rack.mjs";
 
 const pdSpark = new Spark($("pd-spark"), { floor: 5000 });
 const NODE_LABEL = { attached: "USB/IP attached", enumerated: "device ready", usbip: "no device",
   classic: "classic", service: "service", off: "DUT off", fault: "DUT fault", lost: "no answer",
   failed: "no address", incompatible: "newer protocol" };
 const ROW_LABEL = { on: "on", off: "off", shed: "shed", fault: "fault", cycling: "cycling", waiting: "waiting" };
-const KIND_COLOR = { pd: "var(--pd)", row: "var(--ok)", fault: "var(--fault)", can: "var(--usbip)", node: "var(--muted)" };
+const KIND_COLOR = { pd: "var(--pd)", row: "var(--ok)", fault: "var(--fault)", can: "var(--usbip)", node: "var(--muted)",
+  firmware: "var(--lease)" };
 let last = null;
 
 function hubState(s) {
@@ -333,7 +335,8 @@ function renderBus(s) {
   $("can-state").textContent = c.state + (c.bus_off ? ` · ${plural(c.bus_off, "bus-off")}` : "");
   $("enum").textContent = c.enumerating ? "enumerating…"
     : `${c.enumerated_s < 0 ? "never" : ago(c.enumerated_s)}${c.lost ? ` · ${c.lost} lost` : ""}`;
-  $("fw").textContent = s.version;
+  $("fw").innerHTML = s.firmware ? firmwareLabel(s.firmware) : s.version;
+  $("btn-fw").hidden = !s.firmware;
 }
 
 function render(s) {
@@ -547,6 +550,10 @@ $("btn-enum").addEventListener("click", async () => {
     if (!e.quiet) toast(e.message);
   }
 });
+
+/* Firmware over the network: built with MCUboot, the status has a "firmware" object */
+const fwDialog = firmwareDialog({ admin, app: "power-hub", changed: () => renderEvents().catch(() => {}) });
+$("btn-fw").addEventListener("click", () => fwDialog.open(last?.firmware));
 
 poll(async () => render(await api("/api/status")), 2000, () => {
   document.body.dataset.state = "offline";

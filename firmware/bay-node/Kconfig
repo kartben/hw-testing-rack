@@ -101,4 +101,12 @@ source "subsys/logging/Kconfig.template.log_config"
 
 endmenu
 
+# 48 KB of the 64 KB default: the RAM margin for the firmware updates (image
+# writer, upload handler).  To be watched on hardware with a busy DUT.  A
+# default rather than a prj.conf line: the bench boards without a USB host
+# (m5stack_stamps3) have no pool at all.
+config USBIP_BUF_POOL_SIZE
+	depends on USBIP
+	default 49152
+
 source "Kconfig.zephyr"

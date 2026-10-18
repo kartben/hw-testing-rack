@@ -25,7 +25,6 @@ to its console and RESET/BOOT lines.  It dogfoods Zephyr's new USB host stack
 ```
 firmware/
   west.yml                       west manifest (Zephyr main + hal_espressif + crypto)
-  zephyr/module.yml              firmware/ as a Zephyr module: boards, bindings, common/
   boards/hwtr/bay_node/          board definition: bay_node/esp32s3/procpu
   boards/hwtr/power_hub/         board definition: power_hub/esp32s3/procpu
   dts/bindings/                  hwtr,* bindings (dut-port, usb-mux, rack-bus, rack-rows,
@@ -57,13 +56,21 @@ cd rack-ws
 west update
 west blobs fetch hal_espressif          # Wi-Fi binary blobs
 west packages pip --install             # esptool & co. for the ESP32 build
-west build -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node
+west build --sysbuild -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node
 ```
 
-`firmware/` is a Zephyr module (`zephyr/module.yml`: the boards, the
-bindings, `common/`) that each application adds itself
-(`ZEPHYR_EXTRA_MODULES`), so both also build from any existing Zephyr
-workspace at a recent `main` (with `hal_espressif` blobs fetched):
+`--sysbuild` builds MCUboot in front of the application, for the updates
+over the network ([docs/firmware.md › Over the network](../docs/firmware.md#over-the-network));
+the images are signed with MCUboot's public test key unless
+`HWTR_SIGNING_KEY` points at your own ([Signing key](../docs/firmware.md#signing-key)).
+Without `--sysbuild`: the application alone, no updates over the network.
+
+The repository is a Zephyr module (`zephyr/module.yml` at its root: the
+boards, the bindings, `firmware/common/`).  West finds it in the workspace
+above; each application also adds it itself (`ZEPHYR_EXTRA_MODULES`), so a
+plain build works from any Zephyr workspace at a recent `main` (with
+`hal_espressif` blobs fetched).  Sysbuild needs it known before the
+application: there, add `-- -DEXTRA_ZEPHYR_MODULES=path/to/hw-testing-rack`.
 
 ```bash
 west build -b bay_node/esp32s3/procpu path/to/hw-testing-rack/firmware/bay-node
@@ -74,7 +81,7 @@ No bay node yet?  An ESP32-S3-DevKitC-1 with the same GPIO map stands in
 (status on the devkit's RGB LED, DUT on its "USB" port through an OTG adapter):
 
 ```bash
-west build -b esp32s3_devkitc/esp32s3/procpu hw-testing-rack/firmware/bay-node
+west build --sysbuild -b esp32s3_devkitc/esp32s3/procpu hw-testing-rack/firmware/bay-node
 ```
 
 An M5Stack StampS3 is an even smaller bench node for the serial console and
@@ -86,7 +93,7 @@ RESET/BOOT lines are on header pins (G1/G2, G4/G5; the map is in
 without a DUT:
 
 ```bash
-west build -b m5stack_stamps3/esp32s3/procpu hw-testing-rack/firmware/bay-node
+west build --sysbuild -b m5stack_stamps3/esp32s3/procpu hw-testing-rack/firmware/bay-node
 west flash --erase    # over its USB-C port; --erase once, see below
 ```
 
@@ -98,7 +105,7 @@ Wi-Fi credentials can be built in — handy to flash a whole rack:
 
 ```bash
 cp hw-testing-rack/firmware/bay-node/wifi.conf.example hw-testing-rack/firmware/bay-node/wifi.conf   # edit it
-west build -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node -- -DEXTRA_CONF_FILE=wifi.conf
+west build --sysbuild -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node -- -DEXTRA_CONF_FILE=wifi.conf
 ```
 
 `wifi.conf` is git-ignored.  On Windows keep the workspace and build
@@ -240,6 +247,9 @@ main actions.
 | `POST /api/access/rules` | signed: `{"enabled": true, "everyone": ["status"], "sources": [{"name": "ci-runners", "cidr": "192.168.1.40/30", "allow": ["status", "control", "console", "usbip"]}]}` |
 | `POST /api/access/kick` | signed: `{"id": "usbip:51234"}`, an id from `GET /api/access` |
 | `POST /api/access/key` | signed: `{"key": "<64 hex>"}`, a new admin key |
+| `GET /api/update` | the firmware: `version`, image `id`, `test_key`, `trial` (what it waits for, time left), `last` update (`confirmed`, `rolled back`); also `firmware` in `/api/status` (MCUboot builds) |
+| `POST /api/update/begin` | signed: `{"size": N, "sha256": "<64 hex>", "force": false}` → `{"ticket": …}`; a reserved bay needs `force` |
+| `POST /api/update?ticket=…` | the image (`zephyr.signed.bin`), streamed into slot 1 → `{"state": "rebooting", "version": …}`, then a test boot ([docs/firmware.md › Over the network](../docs/firmware.md#over-the-network)) |
 
 Every action POST answers with the new status document; errors come back as
 `{"error": "..."}` with a 4xx status: 403 when the access rules refuse the
@@ -256,7 +266,9 @@ To work on the page without a node, `python firmware/bay-node/web/dev_server.py`
 serves it on <http://localhost:8766> with a simulated node, console included
 (a fake Zephyr board that boots, logs in colour and runs a small shell;
 `/dev/fault` trips a fake over-current, `/dev/attach` toggles a fake USB/IP
-client).  The screenshots come from that simulation:
+client; `/dev/image?version=0.6.0` is an image to try a firmware update
+with, `/dev/rollback` makes the next update roll back).  The screenshots
+come from that simulation:
 `python firmware/bay-node/web/screenshots.py` (Playwright and an installed
 Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
 
@@ -555,8 +567,10 @@ runs it and builds both targets with warnings as errors on every push.
   built, not run: check on a node that a refused host's `usbip attach`
   and `telnet` time out, that a kick ends a USB/IP session (shutdown of a
   socket that the USB/IP thread owns), and the BOOT presses.
-* **No OTA yet** (MCUboot, signed updates over Wi-Fi, then over the rack
-  bus): the plan is in [docs/firmware.md › Programming](../docs/firmware.md#programming).
+* **Updates over the network not run on hardware yet** (MCUboot, signed
+  images over Wi-Fi, the trial and the rollback: tested on native_sim and
+  against the simulated node), then over the rack bus:
+  [docs/firmware.md › Over the network](../docs/firmware.md#over-the-network).
 * **Not yet written:** DNS-SD advertisement of `_usbip._tcp`, `_http._tcp`
   and `_rfc2217._tcp`, the shell on the USB-Serial-JTAG in SERVICE mode,
   INA226 alert handling, RFC 2217 line/modem state notifications (the server

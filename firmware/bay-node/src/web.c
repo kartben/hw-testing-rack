@@ -54,6 +54,7 @@
 #include <zephyr/net/prometheus/gauge.h>
 #include <zephyr/logging/log.h>
 
+#include <hwtr/update.h>
 #include <hwtr/web.h>
 
 #include "bay.h"
@@ -220,7 +221,7 @@ static const struct json_obj_descr status_descr[] = {
 static char resp_buf[3072];
 
 /* X-Bay-Auth, kept from the first callback of a request */
-HTTP_SERVER_REGISTER_HEADER_CAPTURE(bay_auth_header, "X-Bay-Auth");
+HWTR_WEB_AUTH_CAPTURE(bay_auth_header);
 
 static void capture_auth(const struct http_request_ctx *req, char *out, size_t size)
 {
@@ -330,6 +331,26 @@ static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 		rsp->status = HTTP_500_INTERNAL_SERVER_ERROR;
 		strcpy(resp_buf, "{\"error\":\"encoding\"}");
 	}
+#if defined(CONFIG_HWTR_UPDATE)
+	else {
+		/* The firmware object (hand-written by the update code) before the last brace */
+		size_t len = strlen(resp_buf) - 1;
+		int n = -ENOMEM;
+
+		if (len + sizeof(",\"firmware\":}") < sizeof(resp_buf)) {
+			strcpy(resp_buf + len, ",\"firmware\":");
+			len += strlen(",\"firmware\":");
+			n = hwtr_update_json(resp_buf + len, sizeof(resp_buf) - len - 1);
+		}
+		if (n >= 0) {
+			strcpy(resp_buf + len + n, "}");
+		} else {
+			LOG_WRN("status: no room for the firmware object");
+			resp_buf[len] = '\0';
+			strcpy(resp_buf + strlen(resp_buf), "}");
+		}
+	}
+#endif
 
 	rsp->body = resp_buf;
 	rsp->body_len = strlen(resp_buf);

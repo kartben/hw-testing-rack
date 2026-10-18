@@ -18,6 +18,16 @@ function(hwtr_web_assets service)
     COMPILE_DEFINITIONS HWTR_WEB_SERVICE=${service})
 endfunction()
 
+# hwtr_web_update(<service>): GET and POST /api/update, POST /api/update/begin,
+# when the application is built with MCUboot (CONFIG_HWTR_UPDATE)
+function(hwtr_web_update service)
+  if(CONFIG_HWTR_UPDATE)
+    target_sources(app PRIVATE ${HWTR_WEB_DIR}/update_http.c)
+    set_source_files_properties(${HWTR_WEB_DIR}/update_http.c PROPERTIES
+      COMPILE_DEFINITIONS HWTR_WEB_SERVICE=${service})
+  endif()
+endfunction()
+
 # hwtr_web_xterm(<service>): /xterm.mjs, /xterm.css, /addon-fit.mjs, /xterm-LICENSE.txt
 function(hwtr_web_xterm service)
   set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated)
