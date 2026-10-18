@@ -128,10 +128,10 @@ CAT = {
                    0.078, description="CAN bus ESD protection, 24 V stand-off"),
     "led_side_g": Cat("Device:LED", "LED_SMD:LED_Kingbright_KPA-3010_3x2x1mm", "KPA-3010CGCK", "Kingbright", "C598310",
                       0.24, description="green LED, side view 3 × 2 × 1 mm",
-                      model=("easyeda/C598310.step", (0, -0.5, 0), (-90, 0, 0))),     # the model lies on its back
+                      model=("easyeda/C598310.step", (0, -1.0, 0.51), (0, 0, 0))),     # flat, 1 mm high; lens towards -y
     "led_side_r": Cat("Device:LED", "LED_SMD:LED_Kingbright_KPA-3010_3x2x1mm", "KPA-3010SURCK", "Kingbright",
                       "C4555382", 0.18, description="red LED, side view 3 × 2 × 1 mm",
-                      model=("easyeda/C598310.step", (0, -0.5, 0), (-90, 0, 0))),     # the green one's: same package
+                      model=("easyeda/C598310.step", (0, -1.0, 0.51), (0, 0, 0))),     # the green one's: same package
     "schottky": Cat("Device:D_Schottky", "Diode_SMD:D_SOD-123", "B5819W SL", "Changjing", "C8598", 0.03, basic=True,
                     description="40 V 1 A Schottky"),
     "bat54s": Cat("Diode:BAT54S", "Package_TO_SOT_SMD:SOT-23", "BAT54S", "hongjiacheng", "C7420333", 0.013,

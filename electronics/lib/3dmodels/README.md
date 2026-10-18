@@ -25,7 +25,7 @@ the pads of KiCad's footprints, and checked against the footprints' fab outlines
 | C295747 | JST S2B-PH-SM4-TB (`ph2`) | 1.0, −2.9, 0 | 0, 0, 0 | the model is 1 mm off-centre in x |
 | C318884 | XKB TS-1187A (`button`) | 0, 0, 0 | 0, 0, 0 | |
 | C431540 | Shouhan MSK12C02 (`slide`) | 0, 0.1, 0 | 0, 0, 180 | pins 1-2-3 on KiCad's pads, lever towards +y |
-| C598310 | Kingbright KPA-3010 (`led_side_g`, `led_side_r`) | 0, −0.5, 0 | −90, 0, 0 | the model lies on its back (KiCad turns a model the other way round: −90 stands it up); body on y 0…1 like the footprint |
+| C598310 | Kingbright KPA-3010 (`led_side_g`, `led_side_r`) | 0, −1.0, 0.51 | 0, 0, 0 | a right-angle LED lies flat, 1.0 mm high (its file centres it on z = 0); base on y 0…1, lens towards −y, like the footprint's fab outline |
 
 No model anywhere for the WS2812B-2020 (`rgb`): `WS2812B-2020.step` (in the repo, our own, same licence as the
 repo) is drawn by `tools/make_step_models.py` from the datasheet's 2.0 × 2.0 × 0.84 mm, white body, window on top.
