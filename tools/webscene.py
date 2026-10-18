@@ -300,16 +300,18 @@ def rounded_path(pts, r, step=2.0):
     return [[round(float(v), 2) for v in p] for p in dense]
 
 
-def lead_to_board(e, mouth, z_low, depth=7.0):
+def lead_to_board(e, mouth, z_low, x_run, depth=7.0):
     """The DATA lead from the drag chain's moving mouth (facing forwards) to the PH plug at the DATA
     board's rear edge, drawn from the plug: back out of it, down through the drawer's cable window,
-    forwards under the drawer at z_low (over the camera-pod bosses), a flattened U-turn in front of
-    the mouth (only `depth` deep: the tray's fascia is 17 mm ahead of it with the drawer out), in."""
+    forwards under the drawer at z_low (over the camera-pod bosses) along x_run (clear of the chain's
+    fixed run, which the drawer slides past), a flattened U-turn in front of the mouth (only `depth`
+    deep: the tray's fascia is 17 mm ahead of it with the drawer out), in."""
     p0, d = plug_exit(e)
     p1 = p0 + d * 2.0
-    p2 = np.array([p1[0], p1[1], z_low])
-    p3 = np.array([p1[0], mouth[1] - 1.0, z_low])
-    pts = rounded_path([p0, p1, p2, p3], 3.0)
+    p1b = np.array([x_run, p1[1], p1[2]])            # over to x_run still in the rear bay, then down
+    p2 = np.array([x_run, p1[1], z_low])
+    p3 = np.array([x_run, mouth[1] - 1.0, z_low])
+    pts = rounded_path([p0, p1, p1b, p2, p3], 2.5)
     a, c = (mouth[0] - p3[0]) / 2, np.array([(mouth[0] + p3[0]) / 2, p3[1], 0.0])
     for t in np.linspace(0, math.pi, 16)[1:]:
         z = z_low + (mouth[2] - z_low) * t / math.pi
@@ -495,7 +497,8 @@ def build(rack) -> Path:
         ph = {"at": [dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1], plenum + dp_roof - dp["thickness"] - 2.8],
               "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph5"}
         mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
-        cable(lead_to_board(ph, mouth, z_low=9.0), row=i, kind="ext", bay=bid, radius=1.2, ends=[ph],
+        x_run = max(ph["at"][0], x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0)   # 6 mm off the fixed run
+        cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run), row=i, kind="ext", bay=bid, radius=1.2, ends=[ph],
               label="DATA lead (JST PH 5, through the drag chain)", movable=True)
         return x0, plenum
 
