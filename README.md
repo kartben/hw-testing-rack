@@ -30,9 +30,10 @@ ESP32-S3 in each bay.**
   exports the board's USB with Zephyr's USB/IP host service.  Plug a laptop
   into the bay's front port and the USB data path switches to it — the
   "classic" way still works, even with no firmware.
-* **One 24 V bus** — an eFuse per row and a 60 V-rated buck in every bay; the
-  power box that feeds it (a certified 24 V brick is the leading option) is
-  still to be designed for the panel frame.
+* **One USB-C charger** — a printed power box under the first column holds
+  the hub: a USB PD 3.1 sink (20 or 28 V from one charger, no mains in the
+  rack) and an eFuse per row; a 60 V-rated buck in every bay.  The same row
+  cables carry a CAN bus for the rack controller ([can.md](docs/can.md)).
 * **Cameras** — optional XIAO ESP32S3 Sense pods hang from any bay's ceiling.
 * **Everything is generated** from [`config/rack.yaml`](config/rack.yaml):
   OpenSCAD parts, KiCad schematics *and* PCBs (schematic-as-code, Freerouting),

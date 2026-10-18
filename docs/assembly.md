@@ -50,7 +50,7 @@ right and floor plate; base brace into the free inserts of the shared ladder
    to the `chain_anchor` (2 × M3×6 into the tray), moving end to the
    `chain_foot`.  Lay the drawer extension cable in the chain (links snap
    open), plug its male end into the node's DUT port.
-3. **24 V**: JST PH jumper to the neighbouring node, through the windows in
+3. **Row power (VRACK)**: JST PH jumper to the neighbouring node, through the windows in
    both tray walls and the shared ladder; the row feed goes into the row's
    first bay.
 4. **Drawer**: magnet underneath; screw the panel-mount female into the DATA
@@ -67,9 +67,22 @@ the tray forwards.
 
 ## 5. Power
 
-The power box (24 V supply, the hub with an eFuse per row) is not designed for
-the panel frame yet: see [power.md](power.md).  Before the rows are plugged
-in, check 24 V at every hub output and that every ON LED lights.
+The power box ([mechanical.md](mechanical.md#power-box)):
+
+1. Heat-set the inserts: 4 in the hub standoffs and 4 in the corner lugs for the lid.
+2. Hub on its standoffs (4 × M3×6), its USB-C PD input in the rear wall's port.
+3. Lid on (4 × M3×8).
+4. Lift the box over the floor plate's front lip under A1 and let its sockets
+   drop over the bosses.
+5. The charger's 5 A e-marked USB-C cable into the rear port, out of the back
+   through the base brace, to a dedicated USB PD 3.1 charger (140 W EPR
+   recommended, [power.md](power.md#the-charger)).
+
+On first power-up, check the front **PD** LED: breathing = contract in place,
+steady = the charger can't give what was asked, flicker = a fault.  Rows stay
+off until the controller's firmware turns them on; with it running, check that
+every row's ON LED lights.  Then plug the row feeds through the left base
+ladder's window, run them up the left side and into each row's first node.
 
 ## 6. Cameras (optional)
 
