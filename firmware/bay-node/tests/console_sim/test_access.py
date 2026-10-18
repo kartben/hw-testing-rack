@@ -183,7 +183,7 @@ class AccessSim(unittest.TestCase):
         code, s = get(OTHER, "/api/status")
         self.assertEqual(code, 200)
         self.assertEqual(s["access"], {"enabled": False, "claimed": False, "you": OTHER,
-                                       "allow": ["status", "control", "console", "usbip", "shell"],
+                                       "allow": ["status", "control", "console", "usbip", "shell", "camera"],
                                        "refused": 0, "lease": {"holder": "", "note": "", "remaining_s": 0,
                                                                "yours": False}})
         self.assertEqual(post(OTHER, "/api/reset", {"ms": 10})[0], 200)
