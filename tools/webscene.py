@@ -187,13 +187,30 @@ def plug_exit(end):
 
 
 def arch_cable(a, b, length, r=CABLE_BEND_R, step=2.5, top_max=ARCH_TOP_MAX):
-    """A short cable between two right-angle plugs whose cables both leave upwards: straight up out
-    of each strain relief, a bend of radius r over towards the other plug, across, a bend down.  The
+    """arch_between() the two plugs' exits (both right-angle, their cables leaving upwards)."""
+    pa, _ = plug_exit(a)
+    pb, _ = plug_exit(b)
+    return arch_between(pa, pb, length, r, step, top_max)
+
+
+def side_arch_cable(a, b, length, r=CABLE_BEND_R, step=2.5, top_max=ARCH_TOP_MAX):
+    """Plug a right-angle (its cable up), plug b straight and level (a board's USB facing the side
+    wall with room for it, the F746G-DISCO): out of b's relief, a bend of radius r up, then the arch
+    over to a."""
+    pa, _ = plug_exit(a)
+    p0, d = plug_exit(b)
+    z = np.array([0.0, 0.0, 1.0])
+    bend = [p0 + d * r * math.sin(t) + z * r * (1 - math.cos(t)) for t in np.linspace(0, math.pi / 2, 8)]
+    pts, short = arch_between(pa, bend[-1], length - math.pi / 2 * r, r, step, top_max)
+    return pts + [[round(float(c), 2) for c in p] for p in reversed(bend[:-1])], short
+
+
+def arch_between(pa, pb, length, r=CABLE_BEND_R, step=2.5, top_max=ARCH_TOP_MAX):
+    """A short cable between two upward exits pa, pb (right-angle plugs' reliefs): straight up out of
+    each, a bend of radius r over towards the other, across, a bend down.  The
     arch stands in the vertical plane through both exits and is as tall as the cable is long
     (`length` = the free length between the two strain reliefs).  Returns (points, shortfall): the
     cable could not be shorter than the arch with no straight legs; shortfall > 0 means it is."""
-    pa, _ = plug_exit(a)
-    pb, _ = plug_exit(b)
     z = np.array([0.0, 0.0, 1.0])
     h = (pb - pa) - z * (pb - pa)[2]
     dist = float(np.linalg.norm(h))
@@ -490,6 +507,7 @@ def build(rack) -> Path:
             style = cables_cfg[ctype].get("style", "right")
             end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 2.5, dz + port_z], "dir": [0, 1, 0],   # mouth on the flange's face
                      "type": "usb-c", "style": "straight" if style == "straight" else "right", "socket": "coupler"}
+            b_style = "straight" if style == "side" else style
             # the drawer extension's end: a right-angle plug in the coupler's rear, bent down through the
             # cable window; its cable turns forward under the drawer, U-turns in front of the drag
             # chain's moving end and goes into its mouth (all of it moves with the drawer)
@@ -501,9 +519,9 @@ def build(rack) -> Path:
             zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
             ux = o["usb_x"]
             if o["usb_side"]:
-                end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": style}
+                end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": b_style}
             else:
-                end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": style}
+                end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": b_style}
             ends = [end_a, end_b]
             if style == "adapter":       # the cable's own plug: straight, down into the adapter's female
                 p = USB_PLUGS[btype]
@@ -513,7 +531,8 @@ def build(rack) -> Path:
                          "type": btype, "style": "straight"}
                 ends.append(end_b)
             free = cable_free_length(cables_cfg[ctype], end_a, end_b)
-            pts, short = (flat_cable if style == "straight" else arch_cable)(end_a, end_b, free)
+            route = {"straight": flat_cable, "side": side_arch_cable}.get(style, arch_cable)
+            pts, short = route(end_a, end_b, free)
             if short:
                 print(f"warning: bay {b.id}: the {ctype} cable is {short:.0f} mm too short "
                       f"from the DATA socket to the board")

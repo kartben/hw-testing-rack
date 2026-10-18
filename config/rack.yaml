@@ -118,12 +118,13 @@ cables:
   # right-angle USB-C at the socket and, at the board, a right-angle USB-C (style right) or, micro-B and
   # mini-B not being reversible, a 90° adapter with the cable's straight plug standing on it (style
   # adapter): an arch over the board's rear edge.  A small board turned to the side wall (orient: side):
-  # straight plugs at both ends, one flat bend (style straight).
+  # straight plugs at both ends, one flat bend (style straight).  A long one turned to it (the
+  # F746G-DISCO): its straight plug fits beside it, bends up and arches over to the socket (style side).
   c-to-c:       { label: "USB-C 90° ↔ USB-C 90°, 15 cm",        a: usb-c, b: usb-c,   length: 150 }
-  c-to-micro-b: { label: "USB-C 90° ↔ micro-B straight, 20 cm, on a micro-B 90° adapter", a: usb-c, b: micro-b,
-                  length: 200, style: adapter }
-  c-to-mini-b:  { label: "USB-C 90° ↔ mini-B straight, 25 cm, on a mini-B 90° adapter", a: usb-c, b: mini-b,
+  c-to-micro-b: { label: "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter", a: usb-c, b: micro-b,
                   length: 250, style: adapter }
+  c-to-mini-b:  { label: "USB-C 90° ↔ mini-B straight, 25 cm", a: usb-c, b: mini-b,
+                  length: 250, style: side }       # the F746G-DISCO: its USB faces the side wall, 49 mm away
   c-to-c-straight:       { label: "USB-C ↔ USB-C, straight, 15–20 cm", a: usb-c, b: usb-c,   length: 150, style: straight }
   c-to-micro-b-straight: { label: "USB-C ↔ micro-B, straight, 15–20 cm", a: usb-c, b: micro-b, length: 150, style: straight }
   data-lead:    { label: "JST PH 5-pin DATA lead, pin n ↔ pin 6−n, 400–500 mm (node J7 → DATA port board)", length: 400 }

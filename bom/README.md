@@ -8,13 +8,13 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Electronics | 628 |
 | Power | 82 |
 | Printed parts | 78 |
-| Cables | 70 |
+| Cables | 61 |
 | Cameras | 36 |
 | Motion | 32 |
 | Fasteners | 18 |
-| **Total** | **943** |
+| **Total** | **934** |
 
-≈ **€79 per bay** all-in.
+≈ **€78 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -214,11 +214,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Cables | JST PH 6-pin feed, the jumpers' type, 80 cm, lot of 5 (power box → first bay of row C: VRACK, CAN, POS) | 1 lot | 5.29 | 5.29 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length80CM |
 | Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, nRF54L15 DK) | 2  | 2.50 | 5.00 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
 | Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: ESP32-C6, UNO R4) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
-| Cables | USB-C 90° ↔ micro-B straight, 20 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK, nRF5340 DK) | 5  | 2.00 | 10.00 | AliExpress (USB-C 90° up / down ↔ micro-B straight, 20 cm, data) |
+| Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK, nRF5340 DK) | 5  | 1.00 | 5.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
 | Cables | USB-C ↔ micro-B, straight, 15–20 cm (DUT cable: ESP32-S3, PICO 2) | 2  | 2.50 | 5.00 | AliExpress 1005010391943574 (CableCreation USB-C → micro-B, 0.2 m, 480 Mbps) |
-| Cables | USB-C 90° ↔ mini-B straight, 25 cm, on a mini-B 90° adapter (DUT cable: F746G-DISCO) | 1  | 2.50 | 2.50 | AliExpress (USB-C 90° up / down ↔ mini-B straight, 25 cm, data) |
-| Cables | Micro-B 90° adapter, male → female, set of 4 (up, down, left, right), one set per board | 5 set | 2.00 | 10.00 | AliExpress (Micro-B 90 degree adapter male to female, 4 pcs) |
-| Cables | Mini-B 90° adapter, male → female, set of 4 (up, down, left, right), one set per board | 1 set | 2.00 | 2.00 | AliExpress (Mini-B 90 degree adapter male to female, 4 pcs) |
+| Cables | USB-C 90° ↔ mini-B straight, 25 cm (DUT cable: F746G-DISCO) | 1  | 1.00 | 1.00 | AliExpress 2251832791887129 (HOQO, "to Mini Male", 25 cm) |
+| Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 10  | 1.00 | 10.00 | AliExpress (DIY-018, "UP" and "DOWN") |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |
 | Cameras | Seeed XIAO ESP32S3 Sense (camera pod) | 2  | 13.50 | 27.00 | Seeed |
