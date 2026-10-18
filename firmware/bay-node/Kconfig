@@ -90,6 +90,56 @@ config BAY_ACCESS_RESET_HOLD_MS
 	  Releasing BOOT after this long forgets the admin key, the rules
 	  and the lease instead of power-cycling the DUT.
 
+config BAY_CAMERA
+	bool "Bay camera (Arducam Mega on J6) and its light"
+	default y
+	depends on DT_HAS_ARDUCAM_MEGA_ENABLED
+	depends on SHARED_MULTI_HEAP
+	select VIDEO
+	select HWTR_JPEG
+	select LED if $(dt_nodelabel_enabled,camera_light)
+	select PWM if $(dt_nodelabel_enabled,camera_light)
+	help
+	  Snapshots and an MJPEG stream on their own port, the light switched
+	  with them.  The frames go to PSRAM (the shared multi-heap's
+	  external region).  Without a camera on the connector the node runs
+	  as before and the API says so.
+
+if BAY_CAMERA
+
+config BAY_CAMERA_PORT
+	int "TCP port of the camera (/snapshot.jpg, /stream.mjpg)"
+	default 8081
+	range 1 65535
+
+config BAY_CAMERA_CLIENTS
+	int "Camera clients at the same time (streams and snapshots)"
+	default 3
+	range 1 8
+
+config BAY_CAMERA_FRAME_KB
+	int "Frame buffer size (KB, two of them in PSRAM)"
+	default 512
+	help
+	  A frame larger than this comes over in pieces (it still works).
+	  A 640x480 JPEG is 30-60 KB, 1920x1080 at high quality a few
+	  hundred.
+
+config BAY_CAMERA_FPS
+	int "Stream frame rate cap (frames a second)"
+	default 5
+	range 1 30
+
+config BAY_CAMERA_LIGHT_SETTLE_MS
+	int "Wait after switching the light on, for the auto exposure (ms)"
+	default 300
+
+config BAY_CAMERA_STACK_SIZE
+	int "Camera thread stack size"
+	default 3072
+
+endif # BAY_CAMERA
+
 config BAY_LED_BRIGHTNESS
 	int "Status LED brightness (1-255)"
 	default 40
@@ -100,6 +150,32 @@ module-str = bay node
 source "subsys/logging/Kconfig.template.log_config"
 
 endmenu
+
+# The camera's frame buffers come from the PSRAM region of the shared
+# multi-heap (esp_psram.c registers it as external), not from a heap in DRAM
+config VIDEO_BUFFER_SMH_ATTRIBUTE
+	default 2 if BAY_CAMERA
+
+# That region is the PSRAM heap: two frame buffers and their headers need
+# more than its 1 MB default (the N8R8 has 8 MB)
+config ESP_SPIRAM_HEAP_SIZE
+	default 1572864 if BAY_CAMERA
+
+# usbip listener + 2 sessions, AUX raw and RFC 2217 listeners + clients,
+# telnet listener + client, HTTP listener + 3 clients, 2 web consoles, DHCP,
+# mDNS, spare (a web console is a socket plus a websocket descriptor); the
+# camera's listener and 3 clients
+config NET_MAX_CONTEXTS
+	default 26 if BAY_CAMERA
+	default 22
+
+config NET_MAX_CONN
+	default 26 if BAY_CAMERA
+	default 22
+
+config ZVFS_OPEN_MAX
+	default 36 if BAY_CAMERA
+	default 32
 
 # 48 KB of the 64 KB default: the RAM margin for the firmware updates (image
 # writer, upload handler).  To be watched on hardware with a busy DUT.  A

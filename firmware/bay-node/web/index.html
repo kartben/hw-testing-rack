@@ -29,7 +29,7 @@
   & .cmd { flex: 1 1 360px; }
   & a { color: inherit; }
 }
-#con-settings {
+#con-settings, #cam-settings {
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
   padding: 20px; width: min(380px, calc(100vw - 32px)); box-shadow: 0 16px 48px #0004;
   &::backdrop { background: #0003; }
@@ -44,6 +44,29 @@
   & .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
   & small { grid-column: 1 / -1; color: var(--muted); }
 }
+/* Camera */
+.cam-body { display: grid; grid-template-columns: minmax(0, 640px) minmax(240px, 1fr); gap: 16px 24px; align-items: start; }
+.cam-view {
+  position: relative; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden;
+  background: var(--soft); border: 1px dashed color-mix(in srgb, var(--text) 18%, var(--line));
+  &[data-showing] { background: #0b0d11; border-style: solid; }
+  & img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  & img:not([src]) { visibility: hidden; }
+  & .idle { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center;
+            gap: 12px; padding: 16px; color: var(--muted); font-size: 0.88rem; text-align: center; }
+  &[data-showing] .idle { display: none; }
+  & .badge { position: absolute; top: 10px; left: 10px; padding: 2px 8px; border-radius: 6px;
+             font-size: 0.72rem; font-weight: 650; letter-spacing: 0.05em; color: #fff;
+             background: color-mix(in srgb, var(--fault) 85%, transparent); display: none; }
+  &[data-showing=live] .badge { display: block; }
+}
+.cam-side { display: flex; flex-direction: column; gap: 14px; min-width: 0;
+  & .actions { margin-top: 0; }
+  & .actions a { align-self: center; color: var(--muted); font-size: 0.85rem; }
+  & .label { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; }
+  & dd button { padding: 2px 8px; font-size: 0.82rem; font-weight: 500; }
+}
+@media (max-width: 760px) { .cam-body { grid-template-columns: 1fr; } }
 /* Access */
 .pill.access { color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent);
   & svg { width: 13px; height: 13px; } }
@@ -168,6 +191,42 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
       </section>
     </div>
 
+    <section class="card camera" id="cam-card" hidden>
+      <h2>Camera <span id="cam-meta"></span></h2>
+      <div class="cam-body">
+        <div class="cam-view" id="cam-view">
+          <img id="cam-img" alt="The bay, seen by its camera">
+          <span class="badge">LIVE</span>
+          <div class="idle">
+            <span id="cam-idle-text">Live view off</span>
+            <button class="primary" data-cam="live">Start live view</button>
+          </div>
+        </div>
+        <div class="cam-side">
+          <div class="actions">
+            <button data-cam="live" id="cam-live" aria-pressed="false">Live view</button>
+            <button data-cam="snap">Snapshot</button>
+            <a id="cam-open" target="_blank" rel="noopener" hidden>Open picture ↗</a>
+          </div>
+          <div>
+            <div class="label">Light</div>
+            <div class="seg" role="radiogroup" aria-label="Light">
+              <label title="The bay's setting"><input type="radio" name="cam-light" value="auto" checked><span id="cam-auto">Auto</span></label>
+              <label><input type="radio" name="cam-light" value="on">On</label>
+              <label><input type="radio" name="cam-light" value="off">Off</label>
+            </div>
+          </div>
+          <dl>
+            <dt>Camera</dt><dd id="cam-model">–</dd>
+            <dt>Picture</dt><dd><button popovertarget="cam-settings" id="cam-fmt" title="Resolution, quality, light">–</button></dd>
+            <dt>Last frame</dt><dd id="cam-last">–</dd>
+            <dt>Viewers</dt><dd id="cam-viewers">–</dd>
+          </dl>
+          <div class="cmd"><code id="cam-cmd">curl -o bay.jpg http://…:8081/snapshot.jpg</code><button data-copy="cam-cmd">Copy</button></div>
+        </div>
+      </div>
+    </section>
+
     <section class="card console">
       <h2>Console <span id="con-meta">loading…</span></h2>
       <div class="toolbar">
@@ -232,6 +291,24 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
     <small>Saved on the node for this bay.  An RFC 2217 client may change the port while it is connected.</small>
     <div class="form-actions">
       <button type="button" popovertarget="con-settings" popovertargetaction="hide">Cancel</button>
+      <button type="submit" class="primary">Apply</button>
+    </div>
+  </form>
+</div>
+
+<div id="cam-settings" popover>
+  <h3>Camera</h3>
+  <form id="cam-form">
+    <label for="c-res">Resolution</label>
+    <select id="c-res" name="resolution"></select>
+    <label for="c-quality">JPEG quality</label>
+    <select id="c-quality" name="quality">
+      <option value="high">High</option><option value="default">Default</option><option value="low">Low (smaller)</option>
+    </select>
+    <label class="check"><input type="checkbox" name="light"> Light on while pictures are taken ("Auto")</label>
+    <small>Saved on the node for this bay, for everyone watching.  While the bay is reserved, only its holder switches the light.</small>
+    <div class="form-actions">
+      <button type="button" popovertarget="cam-settings" popovertargetaction="hide">Cancel</button>
       <button type="submit" class="primary">Apply</button>
     </div>
   </form>
@@ -432,6 +509,7 @@ function render(s) {
   if (s.firmware) $("acc-fw").innerHTML = `${firmwareLabel(s.firmware)} · <code>${s.firmware.id}</code>`;
   $("faults").textContent = `${plural(s.dut.faults, "fault")} since boot`;
   if (s.access) renderRights(s.access);
+  renderCamera(s);
 }
 
 async function poll() {
@@ -495,8 +573,9 @@ async function copy(id) {
 
 /* --- Access control ----------------------------------------------------- */
 
-const SERVICES = ["status", "control", "console", "usbip", "shell"];
-const SVC_LABEL = { status: "status", control: "control", console: "console", usbip: "USB/IP", shell: "shell" };
+const SERVICES = ["status", "control", "console", "usbip", "shell", "camera"];
+const SVC_LABEL = { status: "status", control: "control", console: "console", usbip: "USB/IP", shell: "shell",
+  camera: "camera" };
 
 const acc = { doc: null, admin: false, rules: null, saved: null };
 
@@ -1094,6 +1173,96 @@ async function startConsole() {
   connect();
 }
 
+/* --- Camera: its pictures come from its own port (src/camera.c) --------- */
+
+const cam = { live: false, shown: false, resume: false, choices: null };
+const camLight = () => document.querySelector("input[name=cam-light]:checked").value;
+const camUrl = (what) => `http://${location.hostname}:${status.camera.port}/${what}?light=${camLight()}`;
+
+function renderCamera(s) {
+  const c = s.camera;
+  $("cam-card").hidden = !c?.present;
+  if (!c?.present) {
+    if (cam.shown) camStop();
+    return;
+  }
+  const allowed = !s.access || can(s.access, "camera");
+  const snaps = c.clients - c.streams;
+  $("cam-meta").textContent = [cam.live && c.streams ? `${c.fps} fps` : "", c.lit ? "light on" : ""]
+    .filter(Boolean).join(" · ");
+  $("cam-model").textContent = c.model;
+  $("cam-fmt").textContent = `${c.resolution.replace("x", " × ")} · ${c.quality}`;
+  $("cam-view").style.aspectRatio = c.resolution.replace("x", " / ");
+  $("cam-fmt").disabled = s.access && !can(s.access, "control");
+  $("cam-last").textContent = c.frames ? `${Math.max(1, Math.round(c.last_bytes / 1024))} KB · ${c.last_ms} ms` : "none yet";
+  $("cam-viewers").textContent = [c.streams && plural(c.streams, "stream"), snaps && plural(snaps, "snapshot")]
+    .filter(Boolean).join(" · ") || "none";
+  $("cam-auto").textContent = `Auto (${c.light})`;
+  $("cam-cmd").textContent = `curl -o bay-${s.id || "node"}.jpg http://${host}:${c.port}/snapshot.jpg`;
+  document.querySelectorAll("button[data-cam]").forEach((b) => (b.disabled = !allowed));
+  if (!allowed && cam.shown) camStop();
+  if (!cam.shown) {
+    $("cam-idle-text").textContent = !allowed ? `${s.access.you} may not use the camera`
+      : c.clients >= c.slots ? `Camera busy: ${plural(c.clients, "viewer")}` : "Live view off";
+  }
+}
+
+function camShow(live) {
+  const url = live ? camUrl("stream.mjpg") : `${camUrl("snapshot.jpg")}&t=${Date.now()}`;
+  cam.live = live;
+  cam.shown = true;
+  $("cam-img").src = url;
+  $("cam-view").dataset.showing = live ? "live" : "still";
+  $("cam-live").setAttribute("aria-pressed", live);
+  $("cam-live").textContent = live ? "Stop live view" : "Live view";
+  $("cam-open").hidden = live;
+  $("cam-open").href = url;
+}
+
+/* No src: the browser closes the stream, a viewer slot frees on the node */
+function camStop() {
+  cam.live = cam.shown = false;
+  $("cam-img").removeAttribute("src");
+  delete $("cam-view").dataset.showing;
+  $("cam-live").setAttribute("aria-pressed", false);
+  $("cam-live").textContent = "Live view";
+  $("cam-open").hidden = true;
+}
+
+async function fillCamSettings() {
+  const c = status?.camera;
+  if (!c) return;
+  try {
+    cam.choices ??= await api("/api/camera");
+  } catch { /* the current resolution at least */ }
+  const form = $("cam-form");
+  form.resolution.replaceChildren(...(cam.choices?.resolutions ?? [c.resolution]).map((r) =>
+    new Option(r.replace("x", " × "), r)));
+  form.resolution.value = c.resolution;
+  form.quality.value = c.quality;
+  form.light.checked = c.light === "on";
+}
+
+async function saveCamSettings(ev) {
+  ev.preventDefault();
+  const form = ev.target;
+  try {
+    await api("/api/camera", { resolution: form.resolution.value, quality: form.quality.value,
+      light: form.light.checked ? "on" : "off" });
+    $("cam-settings").hidePopover();
+    toast("Camera settings saved");
+    poll();
+  } catch (e) {
+    toast(`Failed: ${e.message}`);
+  }
+}
+
+$("cam-img").addEventListener("error", () => {
+  if (!cam.shown) return;
+  camStop();
+  $("cam-idle-text").textContent = "No picture: the camera is busy or did not answer";
+});
+
 /* --- Events ------------------------------------------------------------- */
 
 document.addEventListener("click", async (ev) => {
@@ -1101,6 +1270,8 @@ document.addEventListener("click", async (ev) => {
   if (!btn) return;
   if (btn.dataset.copy) return copy(btn.dataset.copy);
   if (btn.dataset.acc) return accessAction(btn);
+  if (btn.dataset.cam === "live") return cam.live ? camStop() : camShow(true);
+  if (btn.dataset.cam === "snap") return camShow(false);
 
   switch (btn.dataset.con) {
     case "break":
@@ -1131,6 +1302,7 @@ document.addEventListener("click", async (ev) => {
 
 document.addEventListener("change", (ev) => {
   if (ev.target.name === "mode") run(null, "/api/mode", { mode: ev.target.value }, ev.target.value);
+  if (ev.target.name === "cam-light" && cam.live) camShow(true);
   if (ev.target.name === "baud") {
     $("f-baud-custom").hidden = ev.target.value !== "custom";
     if (ev.target.value === "custom") $("f-baud-custom").focus();
@@ -1139,7 +1311,19 @@ document.addEventListener("change", (ev) => {
 
 $("con-settings").addEventListener("toggle", (ev) => ev.newState === "open" && fillSettings());
 $("con-form").addEventListener("submit", saveSettings);
-document.addEventListener("visibilitychange", () => !document.hidden && poll());
+$("cam-settings").addEventListener("toggle", (ev) => ev.newState === "open" && fillCamSettings());
+$("cam-form").addEventListener("submit", saveCamSettings);
+document.addEventListener("visibilitychange", () => {
+  /* A hidden tab gives its camera slot back */
+  if (document.hidden && cam.live) {
+    cam.resume = true;
+    camStop();
+  } else if (!document.hidden && cam.resume) {
+    cam.resume = false;
+    camShow(true);
+  }
+  if (!document.hidden) poll();
+});
 acc.admin = /^[0-9a-f]{64}$/.test(storedKey());
 poll();
 pollAccess();

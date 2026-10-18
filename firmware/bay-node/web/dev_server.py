@@ -3,7 +3,10 @@
     python firmware/bay-node/web/dev_server.py [port]      # then open http://localhost:8766
 
 Same endpoints and JSON as src/web.c, the web console's WebSockets
-(/console/ws/<n>) and access control included.  The "node" is a dict the
+(/console/ws/<n>) and access control included, and the camera's port
+(src/camera.c) on the next port: /snapshot.jpg and /stream.mjpg, cut from
+a render of a drawer (Pillow draws them at the set resolution, with the
+light and the time; without it, the render as it is).  The "node" is a dict the
 POSTs change; its DUT is a fake Zephyr board that boots, logs in colour and
 runs a tiny shell on the console.  Test hooks:
 
@@ -16,6 +19,7 @@ runs a tiny shell on the console.  Test hooks:
     /dev/rollback         the next firmware update does not confirm itself (MCUboot goes back)
     /dev/image?version=0.6.0[&id=power-hub/power_hub]   an image to upload (unsigned, laid
                           out as zephyr.signed.bin; the bay's own id by default)
+    /dev/camera           unplug or plug the camera
 """
 
 from __future__ import annotations
@@ -189,7 +193,7 @@ console = Console()
 
 # --- Access control (src/access.c, src/acl.c), simulated ----------------------
 
-SERVICES = ["status", "control", "console", "usbip", "shell"]
+SERVICES = ["status", "control", "console", "usbip", "shell", "camera"]
 ALL = (1 << len(SERVICES)) - 1
 LEASED = 0b01110        # control, console, usbip
 LEASE_DEFAULT_S = 3600
@@ -317,7 +321,7 @@ class Access:
             if "everyone" in body:
                 everyone = names_mask(body["everyone"])
                 if everyone is None:
-                    return "everyone: services are status, control, console, usbip, shell or all"
+                    return "everyone: services are status, control, console, usbip, shell, camera or all"
             if "sources" in body:
                 if not isinstance(body["sources"], list) or len(body["sources"]) > 8:
                     return "bad JSON (at most 8 sources)"
@@ -333,7 +337,7 @@ class Access:
                         return "source cidr: a.b.c.d or a.b.c.d/n"
                     allow = names_mask(s.get("allow"))
                     if allow is None:
-                        return "source allow: status, control, console, usbip, shell, all"
+                        return "source allow: status, control, console, usbip, shell, camera, all"
                     sources.append({"name": s["name"], "addr": int(net.network_address),
                                     "prefix": net.prefixlen, "allow": allow})
             self.enabled, self.everyone, self.sources = enabled, everyone, sources
@@ -390,11 +394,18 @@ class Access:
             for slot, (ip, since) in console.info.items():
                 out.append({"id": f"web{slot}", "service": "console", "label": "web console",
                             "peer": ip, "port": 0, "since": since})
+        with camera.lock:
+            for slot, c in camera.clients.items():
+                out.append({"id": f"cam{slot}", "service": "camera",
+                            "label": "camera stream" if c["stream"] else "snapshot",
+                            "peer": c["ip"], "port": c["port"], "since": c["since"]})
         return out + [dict(c) for c in self.fake]
 
     def close(self, conn: dict) -> None:
         if conn["id"].startswith("web"):
             console.kick(int(conn["id"][3:]))
+        elif conn["id"].startswith("cam"):
+            camera.kick(int(conn["id"][3:]))
         else:
             self.fake = [c for c in self.fake if c["id"] != conn["id"]]
             node["usb"]["sessions"] = sum(c["service"] == "usbip" for c in self.fake)
@@ -467,6 +478,172 @@ access = Access()
 firmware = Firmware("0.5.0", "bay-node/bay_node")
 
 
+# --- The fake camera: an Arducam Mega looking down at the drawer -------------
+
+CAM_RESOLUTIONS = ["320x240", "640x480", "1280x720", "1600x1200", "1920x1080"]
+CAM_QUALITIES = {"high": 90, "default": 75, "low": 50}
+CAM_SLOTS = 3
+CAM_FPS = 5
+CAM_SETTLE_S = 0.3
+CAM_SCENE = WEB.parents[2] / "docs" / "img" / "photo-drawer.jpg"
+CAM_CENTRE = (840, 650)   # the board in the pulled-out drawer
+
+
+class Camera:
+    """src/camera.c: the settings, the clients, the frames."""
+
+    def __init__(self) -> None:
+        self.lock = threading.Lock()
+        self.present = True
+        self.port = 0
+        self.cfg = {"resolution": "640x480", "quality": "default", "light": "on"}
+        self.clients: dict[int, dict] = {}   # slot -> stream, ip, port, since, light, kicked
+        self.frames = self.errors = self.last_bytes = self.last_ms = 0
+        self.stamps: list[float] = []
+        self.scene = None
+
+    def lit(self) -> bool:
+        """Like want_light(): during a lease only the holder's wish counts."""
+        holder = access.lease["holder"] if access.lease_active() else None
+        return any((c["light"] or self.cfg["light"]) == "on" for c in self.clients.values()
+                   if holder is None or c["ip"] == holder)
+
+    def doc(self, choices: bool = False) -> dict:
+        with self.lock:
+            streams = sum(c["stream"] for c in self.clients.values())
+            now = time.monotonic()
+            recent = [t for t in self.stamps if now - t < 5]
+            d = {"present": self.present, "model": "Arducam Mega 3MP" if self.present else "",
+                 "port": self.port, **self.cfg, "lit": bool(self.clients) and self.lit(),
+                 "clients": len(self.clients), "streams": streams, "slots": CAM_SLOTS,
+                 "frames": self.frames, "errors": self.errors, "last_bytes": self.last_bytes,
+                 "last_ms": self.last_ms, "fps": round(len(recent) / 5, 1) if streams else 0}
+        if choices:
+            d.update(resolutions=CAM_RESOLUTIONS, qualities=list(CAM_QUALITIES))
+        return d
+
+    def configure(self, body: dict) -> str | None:
+        new = {**self.cfg, **{k: v for k, v in body.items() if k in self.cfg}}
+        if new["resolution"] not in CAM_RESOLUTIONS:
+            return "resolution: 320x240, 640x480, 1280x720, 1600x1200 or 1920x1080"
+        if new["quality"] not in CAM_QUALITIES:
+            return "quality: high, default or low"
+        if new["light"] not in ("on", "off"):
+            return "light: on or off"
+        with self.lock:
+            self.cfg = new
+        return None
+
+    def frame(self) -> bytes:
+        """A JPEG at the set resolution and quality, darker without the light."""
+        t0 = time.monotonic()
+        try:
+            from PIL import Image, ImageDraw, ImageEnhance, ImageFont
+        except ImportError:
+            data = CAM_SCENE.read_bytes()
+        else:
+            if self.scene is None:
+                self.scene = Image.open(CAM_SCENE).convert("RGB")
+            w, h = map(int, self.cfg["resolution"].split("x"))
+            ch = 540 if w * 3 == h * 4 else 450
+            cw = ch * w // h
+            x, y = CAM_CENTRE
+            img = self.scene.crop((x - cw // 2, y - ch // 2, x + cw // 2, y + ch // 2)).resize((w, h))
+            with self.lock:
+                lit = self.lit()
+            if not lit:
+                img = ImageEnhance.Brightness(img).enhance(0.45)
+            draw = ImageDraw.Draw(img)
+            size = max(11, h // 30)
+            draw.text((size // 2, h - size * 3 // 2), time.strftime("%H:%M:%S"),
+                      fill=(255, 255, 255), font=ImageFont.load_default(size))
+            out = __import__("io").BytesIO()
+            img.save(out, "JPEG", quality=CAM_QUALITIES[self.cfg["quality"]])
+            data = out.getvalue()
+        with self.lock:
+            self.frames += 1
+            self.last_bytes = len(data)
+            self.last_ms = int((time.monotonic() - t0) * 1000) + 40
+            self.stamps = [t for t in self.stamps if time.monotonic() - t < 5] + [time.monotonic()]
+        return data
+
+    def kick(self, slot: int) -> None:
+        with self.lock:
+            if slot in self.clients:
+                self.clients[slot]["kicked"] = True
+
+
+camera = Camera()
+
+
+class CameraHandler(BaseHTTPRequestHandler):
+    """The camera's port: GET /snapshot.jpg, /stream.mjpg [?light=on|off|auto]."""
+
+    def text(self, code: int, msg: str) -> None:
+        body = (msg + "\n").encode()
+        self.send_response(code)
+        self.send_header("Content-Type", "text/plain")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self) -> None:  # noqa: N802
+        real = self.client_address[0]
+        ip = ip_int(PEER_OVERRIDE.get(real, real))
+        if access.check("camera", ip) != "ok":
+            self.close_connection = True   # the node closes a refused connection at once
+            return
+        url = urlsplit(self.path)
+        light = parse_qs(url.query).get("light", ["auto"])[0]
+        if url.path not in ("/snapshot.jpg", "/stream.mjpg"):
+            return self.text(404, "GET /snapshot.jpg or /stream.mjpg [?light=on|off|auto]")
+        if not camera.present:
+            return self.text(503, "no camera on this bay")
+        stream = url.path == "/stream.mjpg"
+        with camera.lock:
+            free = [s for s in range(CAM_SLOTS) if s not in camera.clients]
+            if not free:
+                return self.text(503, "camera busy: too many clients")
+            slot = free[0]
+            was_lit = bool(camera.clients) and camera.lit()
+            me = camera.clients[slot] = {"stream": stream, "ip": ip, "port": self.client_address[1],
+                                        "since": time.monotonic(), "kicked": False,
+                                        "light": light if light in ("on", "off") else None}
+            now_lit = camera.lit()
+        try:
+            if now_lit and not was_lit:
+                time.sleep(CAM_SETTLE_S)
+            if not stream:
+                data = camera.frame()
+                self.send_response(200)
+                self.send_header("Content-Type", "image/jpeg")
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "multipart/x-mixed-replace; boundary=frame")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            while not me["kicked"]:
+                t = time.monotonic()
+                data = camera.frame()
+                self.wfile.write(b"--frame\r\nContent-Type: image/jpeg\r\n"
+                                 + f"Content-Length: {len(data)}\r\n\r\n".encode() + data + b"\r\n")
+                self.wfile.flush()
+                time.sleep(max(0.0, 1 / CAM_FPS - (time.monotonic() - t)))
+        except OSError:
+            pass
+        finally:
+            with camera.lock:
+                camera.clients.pop(slot, None)
+            self.close_connection = True
+
+    def log_message(self, fmt: str, *args) -> None:
+        pass
+
+
 def status(ip: int = 0) -> dict:
     dut = node["dut"]
     ma = dut_current_ma(time.monotonic()) if dut["on"] else 0
@@ -479,7 +656,7 @@ def status(ip: int = 0) -> dict:
                     "web_clients": len(console.clients),
                     "rfc2217": any(c["id"] == "rfc2217" for c in access.fake), "raw": False,
                     "rx": len(console.log), "tx": console.tx, "dropped": 0},
-            "access": access.summary(ip), "firmware": firmware.doc()}
+            "access": access.summary(ip), "firmware": firmware.doc(), "camera": camera.doc()}
 
 
 def aux_doc() -> dict:
@@ -587,6 +764,12 @@ class Handler(BaseHTTPRequestHandler):
             self.json(200, {"nonce": access.nonce()})
         elif path == "/api/update":
             self.json(200, firmware.doc())
+        elif path == "/api/camera":
+            if not self.refused("status"):
+                self.json(200, camera.doc(choices=True))
+        elif path == "/dev/camera":
+            camera.present = not camera.present
+            self.json(200, camera.doc())
         elif path == "/dev/rollback":
             firmware.rollback()
             self.json(200, {"rollback": True})
@@ -683,6 +866,14 @@ class Handler(BaseHTTPRequestHandler):
             return self.json(*firmware.begin(self.client_address[0], body))
         if path.startswith("/api/access/") or path in ("/api/lease", "/api/console/ticket"):
             return self.access_post(path, raw, body)
+        if path == "/api/camera":
+            if self.refused("control"):
+                return
+            if not camera.present:
+                return self.json(404, {"error": "no camera on this bay"})
+            if (err := camera.configure(body)) is not None:
+                return self.json(400, {"error": err})
+            return self.json(200, camera.doc(choices=True))
         if self.refused("console" if path in ("/api/aux", "/api/aux/break") else "control"):
             return
         dut = node["dut"]
@@ -814,10 +1005,15 @@ def serve(port: int = 8766) -> ThreadingHTTPServer:
         threading.Thread(target=console.background, daemon=True).start()
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True
+    # The camera on the next port, as the node has it on its own (8081)
+    cam_server = ThreadingHTTPServer(("127.0.0.1", port + 1 if port else 0), CameraHandler)
+    camera.port = cam_server.server_address[1]
+    cam_server.daemon_threads = True
+    threading.Thread(target=cam_server.serve_forever, daemon=True).start()
     return server
 
 
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8766
-    print(f"bay node mock on http://localhost:{port}")
+    print(f"bay node mock on http://localhost:{port} (camera on port {port + 1})")
     serve(port).serve_forever()

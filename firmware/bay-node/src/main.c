@@ -239,6 +239,14 @@ int main(void)
 		LOG_ERR("web server init failed: %d", ret);
 	}
 
+#if defined(CONFIG_BAY_CAMERA)
+	/* Optional: -ENODEV without a camera on J6 */
+	ret = camera_init();
+	if (ret != 0 && ret != -ENODEV) {
+		LOG_ERR("camera init failed: %d", ret);
+	}
+#endif
+
 	while (true) {
 		status_led_update();
 		k_sleep(K_MSEC(250));

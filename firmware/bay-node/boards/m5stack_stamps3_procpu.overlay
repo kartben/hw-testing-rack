@@ -93,11 +93,24 @@
 	status = "disabled";
 };
 
-/* The rack bus pins (IO16-IO18, IO35) are not on the StampS3's pads */
+/* The rack bus is not wired on a StampS3 */
 &rack_bus {
 	status = "disabled";
 };
 
 &twai {
+	status = "disabled";
+};
+
+/* No camera on the StampS3: no PSRAM for its frames (SPI2 is off above) */
+&camera {
+	status = "disabled";
+};
+
+&camera_light {
+	status = "disabled";
+};
+
+&ledc0 {
 	status = "disabled";
 };

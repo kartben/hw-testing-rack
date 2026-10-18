@@ -128,7 +128,9 @@ static void fill_status(void *ctx, struct rack_status *st)
 	if (aux.web_clients > 0 || aux.rfc2217_client || aux.raw_client) {
 		st->flags |= RACK_ST_CONSOLE;
 	}
-	st->flags2 = access_lease_get(&lease, &remaining) ? RACK_ST2_RESERVED : 0;
+	st->flags2 = (access_lease_get(&lease, &remaining) ? RACK_ST2_RESERVED : 0) |
+		     (camera_present() ? RACK_ST2_CAMERA : 0) |
+		     (camera_active() ? RACK_ST2_CAMERA_ON : 0);
 
 	if (dut_power_read(&r) == 0) {
 		st->dut_mv = (uint16_t)CLAMP(r.bus_mv, 0, 0xFFFE);

@@ -66,7 +66,7 @@ lower one wins and the other retries.
 | 1 | counter, +1 per STATUS (a reset shows as a jump) |
 | 2–3 | DUT bus voltage, mV |
 | 4–5 | DUT current, mA |
-| 6 | flags: bit 0 the bay is reserved (access lease) |
+| 6 | flags: bit 0 the bay is reserved (access lease), 1 the bay has a camera, 2 someone is watching it (a stream or a snapshot under way); older nodes send 0, a hub ignores bits it does not know |
 | 7 | 0 |
 
 ### INFO `0x300 + id`

@@ -225,6 +225,11 @@ static __maybe_unused int service_of_port(uint16_t port)
 	if (port == CONFIG_BAY_AUX_TCP_PORT || port == CONFIG_BAY_RFC2217_PORT) {
 		return ACL_CONSOLE;
 	}
+#if defined(CONFIG_BAY_CAMERA)
+	if (port == CONFIG_BAY_CAMERA_PORT) {
+		return ACL_CAMERA;
+	}
+#endif
 
 	return -1;
 }
@@ -528,6 +533,7 @@ static int stack_connections(struct access_conn *out, int max)
 int access_connections(struct access_conn *out, int max)
 {
 	struct aux_client_info aux[2 + CONFIG_BAY_CONSOLE_WEB_CLIENTS];
+	struct camera_client_info cam[8];
 	int n = aux_clients_get(aux, ARRAY_SIZE(aux));
 	int count = 0;
 
@@ -549,6 +555,19 @@ int access_connections(struct access_conn *out, int max)
 			c->id[3] += aux[i].id - AUX_CLIENT_WEB;
 			c->label = "web console";
 		}
+	}
+
+	n = camera_clients_get(cam, ARRAY_SIZE(cam));
+	for (int i = 0; i < n && count < max; i++) {
+		struct access_conn *c = &out[count++];
+
+		c->service = ACL_CAMERA;
+		c->ip = cam[i].ip;
+		c->port = cam[i].port;
+		c->since = cam[i].since;
+		strcpy(c->id, "cam0");
+		c->id[3] += cam[i].slot;
+		c->label = cam[i].stream ? "camera stream" : "snapshot";
 	}
 
 #if defined(HAS_STACK_SERVERS)
@@ -596,6 +615,9 @@ static int close_conn(const struct access_conn *c)
 	}
 	if (strncmp(c->id, "web", 3) == 0) {
 		return aux_client_kick(AUX_CLIENT_WEB + (c->id[3] - '0'));
+	}
+	if (strncmp(c->id, "cam", 3) == 0) {
+		return camera_client_kick(c->id[3] - '0');
 	}
 #if defined(HAS_STACK_SERVERS)
 	return shutdown_peer(c->service, c->ip, c->port);

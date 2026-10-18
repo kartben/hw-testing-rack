@@ -24,6 +24,7 @@ target_sources(app PRIVATE
   src/access.c
   src/rack.c
 )
+target_sources_ifdef(CONFIG_BAY_CAMERA app PRIVATE src/camera.c)
 
 # Status page, the shared /rack.css and /rack.mjs, the vendored xterm.js:
 # gzipped into the image (served as-is with Content-Encoding: gzip)

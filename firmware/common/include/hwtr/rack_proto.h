@@ -88,6 +88,8 @@ enum rack_req_why {
 #define RACK_ST_CONSOLE    (1U << 7)
 /* STATUS byte 6 */
 #define RACK_ST2_RESERVED  (1U << 0)
+#define RACK_ST2_CAMERA    (1U << 1) /* a camera on the bay */
+#define RACK_ST2_CAMERA_ON (1U << 2) /* someone is watching it */
 
 #define RACK_NO_READING 0xFFFF
 

@@ -33,7 +33,7 @@ Wi-Fi, the web pages' CSS, helpers and tooling.
 
 | | |
 |---|---|
-| Board | `bay_node/esp32s3/procpu` in `firmware/boards/hwtr/bay_node/` (ESP32-S3-MINI-1-N8, 8 MB, two 3.75 MB image slots), pin map from `electronics/bay-node/design.py` |
+| Board | `bay_node/esp32s3/procpu` in `firmware/boards/hwtr/bay_node/` (ESP32-S3-WROOM-1-N8R8: 8 MB of flash, two 3.75 MB image slots; 8 MB of octal PSRAM for the camera's frames and a few large buffers; the pin map of a DevKitC-1 v1.1), pin map from `electronics/bay-node/design.py` |
 | Bindings | `hwtr,dut-port` (TPS2553 EN/FAULT, AUX RESET/BOOT, INA226, AUX UART), `hwtr,usb-mux` (MUX_FORCE_PC, PC_DET, SVC) |
 | Stand-in | `esp32s3_devkitc/esp32s3/procpu` + `firmware/bay-node/boards/esp32s3_devkitc_procpu.overlay` (same GPIO map) |
 | Bench node | `m5stack_stamps3/esp32s3/procpu` + `firmware/bay-node/boards/m5stack_stamps3_procpu.*`: serial console, network and web page on a StampS3, no USB host (its USB-C is the node's console) |
@@ -53,14 +53,15 @@ Wi-Fi, the web pages' CSS, helpers and tooling.
 | Telemetry | written | INA226 (0x40, 50 mΩ) through the sensor API → V, I, P in the shell, `GET /api/status` and Prometheus `/metrics` |
 | Modes | written | reads PC_DET (IO13) and SVC (IO15); `bay mode classic\|usbip` drives MUX_FORCE_PC (IO14), persisted in settings |
 | SERVICE mode | written | stops the USB host and gives the ESP32-S3's single PHY back to the USB-Serial-JTAG (flash/JTAG from the front port); restarts it afterwards |
-| AUX console | written, host-tested | UART1 (IO47/IO33) shared by a web console in the status page (xterm.js over a WebSocket, 16 KB replayed to late clients), an RFC 2217 server on port 4001 (pyserial, labgrid, esptool) and raw TCP on port 4000; baud/format/Enter/echo saved per bay; BREAK; TX released while the DUT is off |
-| AUX RESET/BOOT | written | pulses on IO34/IO48 (`bay reset`, `bay boot`, console buttons), optionally RFC 2217 DTR/RTS like an ESP auto-reset circuit |
-| Status LED | written | WS2812B on IO13 (RMT): fault / service / classic / power off / no network / USB/IP idle / enumerated / attached |
+| AUX console | written, host-tested | UART1 (IO47/IO21) shared by a web console in the status page (xterm.js over a WebSocket, 16 KB replayed to late clients), an RFC 2217 server on port 4001 (pyserial, labgrid, esptool) and raw TCP on port 4000; baud/format/Enter/echo saved per bay; BREAK; TX released while the DUT is off |
+| AUX RESET/BOOT | written | pulses on IO12/IO48 (`bay reset`, `bay boot`, console buttons), optionally RFC 2217 DTR/RTS like an ESP auto-reset circuit |
+| Status LED | written | WS2812B on IO38 (RMT): fault / service / classic / power off / no network / USB/IP idle / enumerated / attached |
 | Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS; without an id, the rack position from the hub (`bay-c3.local`) |
-| Rack bus | written, tested on a simulated rack | CAN (IO18/IO17) + POS (IO16 in, IO35 out): position from the hub (`C3` = node 0x23), STATUS every second, INFO, ALERT on DUT faults, the hub's commands (refused while the bay is reserved); [rack-protocol.md](rack-protocol.md) |
-| Access control | written, tested on native_sim | per node: which address may use status, control, console, USB/IP, shell (Zephyr packet filter for TCP, a check per HTTP request); a CI reservation (lease); kicks and a refusal log; admin key claimed with a press on BOOT, admin requests signed (HMAC).  See [`firmware/README.md`](../firmware/README.md#access-control) |
+| Rack bus | written, tested on a simulated rack | CAN (IO18/IO17) + POS (IO16 in, IO42 out): position from the hub (`C3` = node 0x23), STATUS every second, INFO, ALERT on DUT faults, the hub's commands (refused while the bay is reserved); [rack-protocol.md](rack-protocol.md) |
+| Access control | written, tested on native_sim | per node: which address may use status, control, console, USB/IP, shell, camera (Zephyr packet filter for TCP, a check per HTTP request); a CI reservation (lease); kicks and a refusal log; admin key claimed with a press on BOOT, admin requests signed (HMAC).  See [`firmware/README.md`](../firmware/README.md#access-control) |
 | Control interface | written | `bay …` shell on the UART test pads and over telnet; status page, serial console and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`, `/api/aux`) |
 | Updates | written, tested on native_sim, not on hardware | over Wi-Fi: MCUboot (sysbuild), signed images sent with the admin key, a test boot, the new firmware confirms itself once Wi-Fi and the rack bus are back, else MCUboot goes back; the page, `bayctl update`.  [Programming › Over the network](#over-the-network); USB through the front port in SERVICE mode |
+| Camera | written, simulated, not on hardware | optional Arducam Mega on J6 (`arducam,mega` on SPI2, 4 MHz) and its light (`pwm-leds` on LEDC, 25 kHz): snapshots and an MJPEG stream on TCP 8081 for every client at once, frames in PSRAM cut at their JPEG end, the light only while someone watches; settings per bay; its own access right; STATUS tells the hub.  [`firmware/README.md`](../firmware/README.md#camera) |
 
 ![The node's status page (simulated node): live V/I/P, power and reset actions, USB/IP state](img/web-ui-dark.png)
 
@@ -200,11 +201,18 @@ one node does not go to the next.  Reserved bays are skipped (`--force`
 updates them anyway).  The hub is `rack.local` unless `config/lab.yaml`
 says `hub:`.
 
-**Cost.**  MCUboot: 48 KB of its 64 KB partition.  The images: 1.03 MB (bay),
-0.79 MB (hub), in 3.75 MB slots.  RAM: MCUboot's layout leaves the
-application 18 KB less DRAM; with the USB/IP buffer pool down from 64 KB to
-48 KB the bay ends at 96.6 % (12.7 KB free, 9.5 KB before), the hub at
-66.5 %.
+**Cost.**  MCUboot: 48 KB of its 64 KB partition.  The images: 1.07 MB (bay,
+camera included), 0.79 MB (hub), in 3.75 MB slots.  RAM: MCUboot's layout
+leaves the application 18 KB less DRAM; with the USB/IP buffer pool down
+from 64 KB to 48 KB the bay was at 96.6 % (12.7 KB free).  The camera
+costs DRAM too (its thread, the driver's fixed 4 KB work-queue stack, four
+more sockets), paid back by moving CPU-only buffers to the PSRAM (the
+16 KB AUX log, the 3 KB HTTP response buffer; `BAY_EXT_RAM` in `bay.h`):
+96.8 % (12.0 KB free) on the bay node, 96.9 % on the DevKitC; the frames
+take 1 MB of the 1.5 MB PSRAM heap.  Next lever if the node runs short:
+`CONFIG_ESP32_WIFI_NET_ALLOC_SPIRAM` puts the network's buffers and TCP
+connections (≈ 30 KB) in PSRAM, to be measured against USB/IP throughput
+first.  The hub: 66.5 %.
 
 #### Signing key
 
@@ -277,8 +285,16 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   shares one WebSocket data buffer per resource (one resource per console
   slot works around it).
 
-## Camera pods
+## Bay camera
 
-XIAO ESP32S3 Sense, Zephyr board `xiao_esp32s3/esp32s3/procpu/sense`
-(OV2640 on the LCD_CAM DVP interface).  `samples/subsys/video/capture` works;
-an MJPEG/TCP streamer (cf. `tcpserversink`) is the obvious next step.
+Each bay's own node runs its camera (an Arducam Mega SPI on J6, see
+[`firmware/README.md`](../firmware/README.md#camera)); the XIAO ESP32S3
+Sense pods are gone.  What has run: the build for the three boards, the
+JPEG end finder on the host against real JPEGs cut every way, the page
+against the simulated camera.  Not yet: a Mega on SPI (the DevKitC with
+jumper wires first, then the 50 cm lead at 4 MHz), the frame rate, the
+light's PWM, the upstream driver's behaviour under the work-queue plug
+(`src/camera.c`).  Upstream items seen on the way: `video_stream_stop()`
+does not stop the Mega's capture (its `set_stream(false)` returns early),
+its work item resubmits itself in a loop while no buffer is queued, and its
+work-queue stack is a fixed 4 KB in DRAM.

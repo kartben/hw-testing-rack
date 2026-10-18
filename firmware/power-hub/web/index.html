@@ -56,6 +56,8 @@ button.bay {
            box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
   & .pos { font-weight: 650; font-size: 0.9rem; }
   & .pos small { font: 500 0.72rem var(--mono); color: var(--muted); margin-left: 4px; }
+  & .cam { width: 12px; height: 12px; margin-left: 5px; vertical-align: -1px; color: var(--muted); }
+  &[data-camera=active] .cam { color: var(--fault); }
   & .what { font-size: 0.78rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   &[data-state=attached] { --c: var(--attached); }
   &[data-state=enumerated], &[data-state=usbip] { --c: var(--usbip); }
@@ -216,6 +218,7 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
   <button data-node-act="bootloader">Board into its bootloader</button>
   <button data-node-act="power-cycle" class="danger">Power-cycle the board</button>
   <a id="nm-open" target="_blank" rel="noopener">Open the bay's page ↗</a>
+  <a id="nm-cam" target="_blank" rel="noopener" hidden>Camera: live view ↗</a>
 </div>
 
 <template id="t-row">
@@ -275,14 +278,22 @@ function renderPd(pd) {
   $("temp").textContent = c ? `${pd.temp_c} °C at the switch` : "–";
 }
 
+/* STATUS byte 6 of the bay (docs/rack-protocol.md); its camera serves on 8081 */
+const CAM_LABEL = { ready: "camera", active: "camera in use" };
+const CAM_PORT = 8081;
+
 function bayTile(n) {
   const a = document.createElement("button");
   a.className = "bay";
   a.dataset.state = n.state;
   a.dataset.id = n.id;
-  a.title = `${[n.name, n.ip].filter(Boolean).join(" · ")} · node 0x${n.id.toString(16).padStart(2, "0")} · ${n.mac ?? ""}`;
+  a.dataset.camera = n.camera ?? "none";
+  a.title = [`${[n.name, n.ip].filter(Boolean).join(" · ")} · node 0x${n.id.toString(16).padStart(2, "0")} · ${n.mac ?? ""}`,
+    CAM_LABEL[n.camera]].filter(Boolean).join("\n");
   const ma = n.state === "lost" ? `${Math.round(n.seen_s)} s silent` : n.dut_ma ? `${fix(n.dut_ma, 2)} A` : "";
-  a.innerHTML = `<span class="dot"></span><span class="pos">${n.pos}<small>${n.name || n.ip}</small></span>
+  const cam = CAM_LABEL[n.camera] ? `<svg class="cam" viewBox="0 0 16 16" aria-label="${CAM_LABEL[n.camera]}">
+    <path fill="currentColor" fill-rule="evenodd" d="M5.6 2.5h4.8l1 1.5H13a1.5 1.5 0 0 1 1.5 1.5v6.5A1.5 1.5 0 0 1 13 13.5H3A1.5 1.5 0 0 1 1.5 12V5.5A1.5 1.5 0 0 1 3 4h1.6l1-1.5ZM8 5.6a2.9 2.9 0 1 0 0 5.8 2.9 2.9 0 0 0 0-5.8Z"/></svg>` : "";
+  a.innerHTML = `<span class="dot"></span><span class="pos">${n.pos}<small>${n.name || n.ip}</small>${cam}</span>
     <span class="what">${NODE_LABEL[n.state]}${ma ? ` · ${ma}` : ""}</span>`;
   return a;
 }
@@ -489,6 +500,8 @@ $("rack").addEventListener("click", (ev) => {
   $("nm-pos").textContent = `Bay ${menuNode.pos}`;
   $("nm-meta").textContent = `node 0x${menuNode.id.toString(16).padStart(2, "0")} · ${menuNode.ip} · ${menuNode.mac ?? ""}`;
   $("nm-open").href = `http://${menuNode.ip}/`;
+  $("nm-cam").hidden = !CAM_LABEL[menuNode.camera];
+  $("nm-cam").href = `http://${menuNode.ip}:${CAM_PORT}/stream.mjpg`;
   const menu = $("node-menu");
   const box = tile.getBoundingClientRect();
   menu.style.left = `${Math.min(box.left, innerWidth - 240)}px`;

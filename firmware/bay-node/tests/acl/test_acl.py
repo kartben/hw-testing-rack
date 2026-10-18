@@ -22,8 +22,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 COMMON = HERE.parents[2] / "common"
 
-STATUS, CONTROL, CONSOLE, USBIP, SHELL = range(5)
-ALL = 0x1F
+STATUS, CONTROL, CONSOLE, USBIP, SHELL, CAMERA = range(6)
+ALL = 0x3F
 OK, NOT_ALLOWED, RESERVED, KICKED = range(4)
 EBUSY, EINVAL, ENOENT, EPERM, ENOSPC = 16, 22, 2, 1, 28
 
@@ -135,7 +135,7 @@ class TestAcl(unittest.TestCase):
 
     def test_services_and_names(self) -> None:
         for name, svc in [("status", STATUS), ("control", CONTROL), ("console", CONSOLE),
-                          ("usbip", USBIP), ("shell", SHELL)]:
+                          ("usbip", USBIP), ("shell", SHELL), ("camera", CAMERA)]:
             self.assertEqual(self.lib.shim_service_mask(name.encode()), bit(svc))
         self.assertEqual(self.lib.shim_service_mask(b"all"), ALL)
         self.assertEqual(self.lib.shim_service_mask(b"web"), 0)
@@ -183,13 +183,13 @@ class TestAcl(unittest.TestCase):
     def test_add_limits(self) -> None:
         acl = self.acl
         self.assertEqual(acl.add("bad name", "1.2.3.4", ALL), -EINVAL)
-        self.assertEqual(acl.add("x", "1.2.3.4", 0x20), -EINVAL)
+        self.assertEqual(acl.add("x", "1.2.3.4", ALL + 1), -EINVAL)
         for i in range(8):
             self.assertEqual(acl.add(f"h{i}", f"10.0.0.{i + 1}", ALL), 0)
         self.assertEqual(acl.add("h8", "10.0.0.9", ALL), -ENOSPC)
 
     def test_bad_service(self) -> None:
-        self.assertEqual(self.acl.check(0, 5, "192.168.1.1"), NOT_ALLOWED)
+        self.assertEqual(self.acl.check(0, CAMERA + 1, "192.168.1.1"), NOT_ALLOWED)
 
     # --- Lease ----------------------------------------------------------------
 

@@ -123,7 +123,9 @@ the native_sim test drives), wrapped by `src/bus.c`:
 The page polls `/api/status` every 2 s.  Its row buttons ask for a
 confirmation before switching off or power-cycling a row with bays on it; a
 click on a bay opens its actions (identify: its LED blinks; reset; into the
-bootloader; power-cycle the board; open the bay's own page).
+bootloader; power-cycle the board; open the bay's own page, and its
+camera's live view when it has one).  A small camera mark follows the bays
+that have a camera, red while someone watches (STATUS byte 6).
 
 | ![The hub's page, light theme](../../docs/img/hub-ui-light.png) | ![The charger renegotiated down to 30 W: row C shed](../../docs/img/hub-ui-shed.png) |
 |---|---|
@@ -136,7 +138,7 @@ bootloader; power-cycle the board; open the bay's own page).
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | `pd` (state, contract, VBUS, input current, temperature, the charger's PDOs), `rows` (state, current, nodes with position, IP, DUT state and current), `budget`, `can` |
+| `GET /api/status` | `pd` (state, contract, VBUS, input current, temperature, the charger's PDOs), `rows` (state, current, nodes with position, IP, DUT state and current, `camera`: `none`, `ready` or `active`), `budget`, `can` |
 | `GET /api/events` | recent events, newest first (`age_s`, `kind`, `text`) |
 | `POST /api/row` | `{"row": "B", "action": "on" \| "off" \| "cycle", "ms": 2000}` |
 | `POST /api/pd` | `{"pref": "epr" \| "20v"}` |

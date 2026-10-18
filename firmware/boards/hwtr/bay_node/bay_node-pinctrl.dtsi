@@ -1,5 +1,5 @@
 /*
- * Bay node pin multiplexing (ESP32-S3-MINI-1).
+ * Bay node pin multiplexing (ESP32-S3-WROOM-1-N8R8).
  *
  * Source of truth: electronics/bay-node/design.py (U3 pin map).
  *
@@ -22,7 +22,7 @@
 		};
 	};
 
-	/* IO47 AUX_TX / IO33 AUX_RX: DUT console on the AUX connector (1k series) */
+	/* IO47 AUX_TX / IO21 AUX_RX: DUT console on the AUX connector (1k series) */
 	bay_aux_uart_default: bay_aux_uart_default {
 		group1 {
 			pinmux = <UART1_TX_GPIO47>;
@@ -30,16 +30,16 @@
 		};
 
 		group2 {
-			pinmux = <UART1_RX_GPIO33>;
+			pinmux = <UART1_RX_GPIO21>;
 			bias-pull-up;
 		};
 	};
 
-	/* IO38 I2C_SDA / IO37 I2C_SCL: INA226 (4.7k pull-ups on the board) */
+	/* IO2 I2C_SDA / IO1 I2C_SCL: INA226 (4.7k pull-ups on the board) */
 	bay_i2c0_default: bay_i2c0_default {
 		group1 {
-			pinmux = <I2C0_SDA_GPIO38>,
-				 <I2C0_SCL_GPIO37>;
+			pinmux = <I2C0_SDA_GPIO2>,
+				 <I2C0_SCL_GPIO1>;
 			bias-pull-up;
 			drive-open-drain;
 			output-high;
@@ -59,10 +59,36 @@
 		};
 	};
 
-	/* IO12 LED_DIN: WS2812B status LED (33R series) */
+	/*
+	 * J6, the bay camera (Arducam Mega, SPI2 through the GPIO matrix, 33R
+	 * series): IO11 CAM_SCK, IO10 CAM_MOSI, IO9 CAM_MISO; CAM_CS on IO8
+	 * (cs-gpios, 10k pull-up)
+	 */
+	bay_spim2_default: bay_spim2_default {
+		group1 {
+			pinmux = <SPIM2_SCLK_GPIO11>,
+				 <SPIM2_MOSI_GPIO10>;
+			output-low;
+		};
+
+		group2 {
+			pinmux = <SPIM2_MISO_GPIO9>;
+			bias-pull-up;
+		};
+	};
+
+	/* IO7 CAM_LED: AO3400A on LED_K, 100k gate pull-down (off at boot) */
+	bay_ledc0_default: bay_ledc0_default {
+		group1 {
+			pinmux = <LEDC_CH0_GPIO7>;
+			output-enable;
+		};
+	};
+
+	/* IO38 LED_DIN: WS2812B status LED (33R series), the DevKitC-1 v1.1's RGB LED pin */
 	bay_led_default: bay_led_default {
 		group1 {
-			pinmux = <RMT_OUT0_GPIO12>;
+			pinmux = <RMT_OUT0_GPIO38>;
 		};
 	};
 };
