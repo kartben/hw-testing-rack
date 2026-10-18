@@ -22,8 +22,8 @@ function boxAt(w, l, h, mat, x, y, z) {          // centred in x/y, z = its bott
   return m;
 }
 
-// The diffuser's glow: three LEDs 8 mm behind 1 mm of white PETG spread into soft overlapping spots,
-// a little brighter where the box's white walls send light back in; drawn once into a texture.
+// The diffuser's glow: the LEDs (offsets along the box) 8 mm behind 1 mm of white PETG spread into soft
+// overlapping spots, a little brighter where the box's white walls send light back in; drawn once.
 function diffuserTexture(size, leds, gap) {
   const [w, l] = size;
   const c = document.createElement('canvas');
@@ -37,8 +37,7 @@ function diffuserTexture(size, leds, gap) {
     for (let i = 0; i < c.width; i++) {
       const x = ((i + 0.5) / c.width - 0.5) * w, y = ((j + 0.5) / c.height - 0.5) * l;
       let v = 0;
-      for (let k = 0; k < leds; k++) {
-        const ly = ((k + 0.5) / leds - 0.5) * l;
+      for (const ly of leds) {
         const d2 = x * x + (y - ly) * (y - ly);
         v += Math.exp(-d2 / (2 * sigma * sigma)) + 0.35 / (1 + d2 / (gap * gap * 4));
       }
@@ -85,7 +84,7 @@ export function makeCameraRig(cam, M) {
   const [lx, ly, lz] = cam.lens;
   g.position.set(lx, ly, 0);
   const drop = -lz;
-  const [pw, pl, pt] = cam.plate;
+  const [pw, pl, pt] = cam.plate, [px, py] = cam.plate_at;
   // the plate, and an arm to the ceiling's insert square (the pod is cantilevered off the four inserts)
   const [mx, my, mp] = cam.mount;
   const slab = (w, l, x, y, rot = 0) => {
@@ -94,8 +93,8 @@ export function makeCameraRig(cam, M) {
     m.rotation.z = rot;
     return m;
   };
-  g.add(slab(pw, pl, 0, 0), slab(mp + 8, mp + 8, mx, my),
-    slab(Math.hypot(mx, my), 14, mx / 2, my / 2, Math.atan2(my, mx)));
+  g.add(slab(pw, pl, px, py), slab(mp + 8, mp + 8, mx, my),
+    slab(Math.hypot(mx - px, my - py), 14, (mx + px) / 2, (my + py) / 2, Math.atan2(my - py, mx - px)));
   for (const dx of [-mp / 2, mp / 2]) for (const dy of [-mp / 2, mp / 2]) {     // M3 heads in their recesses
     const h = new THREE.Mesh(new THREE.CylinderGeometry(2.7, 2.7, 1.2, 20), M.silver);
     h.rotation.x = Math.PI / 2;
@@ -121,21 +120,23 @@ export function makeCameraRig(cam, M) {
   glass.rotation.x = Math.PI;                        // facing down
   glass.position.set(0, 0, -drop - 0.01);
   g.add(barrel, ring, glass);
-  // light boxes: LED strip on the plate, white walls (the baffle towards the lens), the diffuser
+  // the camera pod board (electronics/camera-pod) beside the Mega, components down: its PH 8 lead at the
+  // rear edge, the 1 × 6 header for the Mega's cable, the four 2835 LEDs along the edge next to the Mega
+  const [qw, ql, qt] = cam.pod.size, [qx, qy] = cam.pod.at;
+  const zq = -pt - qt;                                // the board's component face
+  g.add(boxAt(qw, ql, qt, M.pcb, qx, qy, zq), boxAt(6, 7.6, 4.8, M.whitePlastic, qx + qw / 2 - 6, qy + ql / 2 - 4.5, zq - 4.8),
+    boxAt(2.5, 15.2, 2.5, M.blackPlastic, qx + 2, qy + 2, zq - 2.5));
+  // the light box: white walls (the baffle towards the lens), the diffuser 8 mm in front of the LEDs
   const lights = [];
   for (const L of cam.lights) {
     const [ax, ay] = L.at, [w, l] = L.size;
-    const t = 1.2, zDiff = -pt - L.gap - L.diffuser;
+    const t = 1.2, zLed = zq - 0.8, zDiff = zLed - L.gap - L.diffuser;
     for (const [x, y, ww, ll] of [[ax - w / 2 - t / 2, ay, t, l + 2 * t], [ax + w / 2 + t / 2, ay, t, l + 2 * t],
       [ax, ay - l / 2 - t / 2, w, t], [ax, ay + l / 2 + t / 2, w, t]]) {
-      g.add(boxAt(ww, ll, L.gap + L.diffuser, M.cameras, x, y, zDiff));
+      g.add(boxAt(ww, ll, zq - zDiff, M.cameras, x, y, zDiff));
     }
-    g.add(boxAt(8, l - 2, 0.3, M.ledStrip, ax, ay, -pt - 0.3));
     const ledMat = new THREE.MeshStandardMaterial({ color: 0xf6f3e8, emissive: LED_WHITE, emissiveIntensity: 0, roughness: 0.3 });
-    for (let k = 0; k < L.leds; k++) {
-      const yk = ay + ((k + 0.5) / L.leds - 0.5) * l;
-      g.add(boxAt(5, 5, 1.6, ledMat, ax, yk, -pt - 1.9));
-    }
+    for (const dy of L.leds) g.add(boxAt(2.8, 3.5, 0.8, ledMat, ax, ay + dy, zLed));
     const glow = diffuserTexture(L.size, L.leds, L.gap);
     const diffMat = new THREE.MeshStandardMaterial({ color: 0xf1efe8, roughness: 0.62, emissive: LED_WHITE, emissiveMap: glow, emissiveIntensity: 0 });
     const diff = boxAt(w, l, L.diffuser, diffMat, ax, ay, zDiff);
@@ -175,10 +176,9 @@ export function makeCameraRig(cam, M) {
   return { group: g, lens, lights, level: 0, target: 0, cam };
 }
 
-// Light level 0..1 (fades like a driver's soft start).  Sized from the parts: a 5 V 2835 strip runs its LEDs
-// at ~0.1 W, ~10 lm each; 3 per box behind 1 mm of white PETG (~60 % through) give ~18 lm from 14 × 30 mm,
-// a Lambertian luminance of ~14 000 cd/m², so ~1 100 lux on a board 10 cm below — some 2.5× what the
-// room puts on surfaces in the open.  In the viewer's units (the sun is 2.2) that is ~10 on the board:
+// Light level 0..1 (fades like a driver's soft start).  Sized from the parts: the pod board runs its four 2835
+// LEDs at ~32 mA (~0.1 W, ~11 lm each); behind 1 mm of white PETG (~60 % through) that is ~27 lm from 7 × 26 mm,
+// some 1 000 lux on a board 10 cm below — about 2.5× what the room puts on surfaces in the open.  In the viewer's units (the sun is 2.2) that is ~10 on the board:
 // half from the area lights (soft, wide, no cone), half from the spots, which cast the shadows.  The
 // diffuser is far brighter than the board it lights; it is drawn just short of clipping, so its spread
 // (three soft spots merging) still shows, with a glare rim round it.
@@ -186,8 +186,8 @@ export function setRigLight(rig, k) {
   if (k > 0 && !(rig.level > 0)) refreshRigShadows(rig);
   rig.level = k;
   for (const L of rig.lights) {
-    L.area.intensity = 60 * k;
-    L.spot.intensity = 28000 * k;
+    L.area.intensity = 160 * k;                     // one 7 × 26 mm diffuser, ~40 lm through it
+    L.spot.intensity = 48000 * k;
     L.diffMat.emissiveIntensity = 9 * k;            // bright enough to read white, dim enough to show the spread
     L.ledMat.emissiveIntensity = 40 * k;
     L.glareMat.opacity = 0.75 * k;

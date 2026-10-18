@@ -186,21 +186,44 @@ ARCH_TOP_MAX = 105.0
 # The bay camera (2026-10-18 hand-over): an Arducam Mega 3MP (B0434, 33 × 33 mm PCB; Arducam gives 35 mm overall
 # with its stock M12 lens, publishes no 3D model) fitted with a ~120° M12 lens, which is shorter: Ø14 front, 9.5 mm
 # out of the holder.  Wired to the bay's own node, its lens over bay X 64, Y 84 (the one spot that frames every board
-# in the population), looking straight down; on each side a light box, 3 white LEDs behind a 1 mm white PETG
-# diffuser.  The real pod is the mechanics' (mechanical/parts/camera_pod.scad): move these numbers to
-# config/rack.yaml with it.
-VIEWER_CAMERAS = ("B2",)                # the user, 2026-10-18: one camera in the viewer, in B2
+# in the population), looking straight down.  Beside it the camera pod board (config/rack.yaml › pcb.camera_pod,
+# electronics/camera-pod), components down: its four white 2835 LEDs on the edge next to the Mega, a 1 mm white
+# PETG diffuser 8 mm in front of them, its lead's edge towards the bay's rear.  The printed pod is the mechanics'
+# (mechanical/parts/camera_pod.scad): move these numbers to config/rack.yaml with it.
 CAMERA_RIG = {
-    "plate": [66, 34, 3],                # the pod's plate under the ceiling, centred on the lens
-    "standoff": 3,                       # plate → the Mega's PCB
+    "standoff": 3,                       # the pod's plate → the Mega's PCB
+    "plate_t": 3,                        # the pod's plate under the ceiling
     "board": [33, 33, 1.6],              # the Mega's PCB, lens down
     "holder": [14, 10.5, 22],            # M12 holder: square base, height, span of its two screw ears
     "optic": [14, 12, 9.5],              # 120° M12 lens: front ring Ø, barrel Ø, length out of the holder
     "fov": 120, "aspect": 4 / 3,         # diagonal field of view (fisheye), sensor aspect
-    "lights": [{"at": [s * 25.5, 0], "size": [12, 26], "gap": 8, "leds": 3, "diffuser": 1.0} for s in (-1, 1)],
+    "pod_gap": 1.5,                      # the Mega's edge → the pod board's LED edge
+    "diffuser": {"gap": 8, "t": 1.0, "margin": [3.5, 4]},   # LEDs → diffuser; diffuser beyond the LED row (x, y)
 }
-CAMERA_LENS = (64.0, 84.0, round(CAMERA_RIG["plate"][2] + CAMERA_RIG["standoff"] + CAMERA_RIG["board"][2]
+CAMERA_LENS = (64.0, 84.0, round(CAMERA_RIG["plate_t"] + CAMERA_RIG["standoff"] + CAMERA_RIG["board"][2]
                                  + CAMERA_RIG["holder"][1] + CAMERA_RIG["optic"][2], 2))   # bay X, Y; drop below the ceiling
+
+
+def camera_rig(pod: dict) -> dict:
+    """The rig in the lens' frame (X across the bay, Y towards its rear, the ceiling at z = 0): the Mega centred
+    on the lens, the pod board on its +X side (KiCad y = 0, the LED edge, against the Mega; KiCad x along the
+    bay's depth, the lead's edge at the rear), the plate under both, the light box under the LED row."""
+    r = CAMERA_RIG
+    bw, bl = r["board"][:2]
+    pw, pl = pod["size"]                               # KiCad X (along the bay's Y) × Y (across)
+    x0 = bw / 2 + r["pod_gap"]                         # the LED edge
+    leds = [[round(x0 + pod["led_y"], 2), round(k - pw / 2, 2)] for k in pod["leds"]]
+    ys = [y for _, y in leds]
+    d = r["diffuser"]
+    light = {"at": [leds[0][0], round((min(ys) + max(ys)) / 2, 2)],
+             "size": [2 * d["margin"][0], round(max(ys) - min(ys) + 2 * d["margin"][1], 2)],
+             "gap": d["gap"], "diffuser": d["t"], "leds": [round(y - (min(ys) + max(ys)) / 2, 2) for y in ys]}
+    lo, hi = [-bw / 2 - 4, -max(bl, pw) / 2 - 3], [x0 + pl + 3, max(bl, pw) / 2 + 3]
+    return {**{k: v for k, v in r.items() if k not in ("diffuser", "pod_gap", "plate_t")},
+            "plate": [round(hi[0] - lo[0], 2), round(hi[1] - lo[1], 2), r["plate_t"]],
+            "plate_at": [round((hi[0] + lo[0]) / 2, 2), round((hi[1] + lo[1]) / 2, 2)],
+            "pod": {"size": [pl, pw, pod["thickness"]], "at": [round(x0 + pl / 2, 2), 0]},
+            "lights": [light]}
 
 
 # ------------------------------------------------------------------ boards: real models and screens
@@ -466,7 +489,8 @@ def build(rack) -> Path:
     pcb_top = rack.pcb_top
     plenum = rack.plenum
     pop = raw.get("population", {})
-    cams = set(raw.get("cameras", [])) & set(VIEWER_CAMERAS)   # config: the rack's cameras (BOM); the viewer shows one
+    cams = set(raw.get("cameras", []))
+    rig = camera_rig(raw["pcb"]["camera_pod"])
     cables_cfg = raw["cables"]
     n_rows = len(rack.rows)
     pitch, T = rack.pitch, rack.panel_t
@@ -656,7 +680,7 @@ def build(rack) -> Path:
             cm = raw["bay"]["camera_mount"]          # the ceiling's insert square: the pod's arm reaches it
             items["cameras"].append({"bay": b.id, "row": i + 1, "space": "row", "layer": "cameras",
                                      "lens": [round(x0 + lx, 2), round(ly - up, 2), -drop],
-                                     "mount": [round(cm[0] - lx, 2), round(cm[1] - (ly - up), 2), cm[2]], **CAMERA_RIG})
+                                     "mount": [round(cm[0] - lx, 2), round(cm[1] - (ly - up), 2), cm[2]], **rig})
         meta["center"] = rack.to_frame(i, [x0 + rack.carrier_w / 2, BD / 2, plenum + 40])
         bays.append(meta)
 

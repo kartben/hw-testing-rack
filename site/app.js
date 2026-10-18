@@ -83,7 +83,6 @@ const MAT = {
   megaPcb: std(0x16181d, 0.1, 0.4),                 // the Arducam Mega's black PCB
   lensBody: std(0x101114, 0.3, 0.45),
   glass: new THREE.MeshPhysicalMaterial({ color: 0x05070c, roughness: 0.04, clearcoat: 1, iridescence: 0.6, iridescenceIOR: 1.6 }),
-  ledStrip: std(0xf3f1ea, 0, 0.5),
 };
 const CABLE_COLORS = {
   'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
