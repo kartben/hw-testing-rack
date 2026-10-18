@@ -1,13 +1,14 @@
 # Rack bus (CAN)
 
-> **Status: decided.**  The power hub v0.4 (rack controller, CAN master) is laid out and
-> routed (`electronics/power-hub`); the bay node v0.5 (transceiver, POS) is next.  The
-> v0.4 nodes in `electronics/bay-node` still have 2-pin 24 V connectors.
+> **Status: decided.**  The power hub v0.5 (USB-C PD in, rack controller, CAN master) is
+> laid out and routed (`electronics/power-hub`); the bay node v0.5 (transceiver, POS) is
+> next.  The v0.4 nodes in `electronics/bay-node` still have 2-pin power connectors.
 
-The 24 V row cables also carry a CAN bus and an addressing line, so the rack
+The row power cables (VRACK: 20 or 28 V, [power.md](power.md)) also carry a CAN bus and an addressing line, so the rack
 controller in the power box can find every node and tell it where it sits, without Wi-Fi
 or configuration.  It can also power-cycle a hung row and read row currents
-(the hub's eFuse `SHDN` / `FLT` / `IMON`).
+(the hub's eFuse `SHDN` / `FLT` / `IMON`).  Rows are off until the controller
+turns them on, once the PD contract is final.
 
 ## Row cable
 
@@ -23,7 +24,7 @@ inconsistently.
 
 | Pin | Net | |
 |---|---|---|
-| 1 | +24 V | row power, ≤ 1.6 A (the hub's eFuse; PH contact 2 A) |
+| 1 | VRACK | row power, 20 or 28 V, ≤ 1.6 A (the hub's eFuse; PH contact 2 A) |
 | 2 | GND | |
 | 3 | CAN_H | through every node (J1.3 ↔ J2.3), tapped by its transceiver (stub ≤ 20 mm) |
 | 4 | CAN_L | likewise; pins 3 and 4 run side by side |
@@ -45,15 +46,15 @@ round trip on 1.5 m is ≈ 15 ns, against ~50 ns edges and a 4 µs bit at
 250 kbit/s (the default; 125 kbit/s as a fallback).
 
 Transceiver, on the hub and on every node: **TCAN1044AV** (LCSC C3234993),
-with VCC 5 V and VIO 3.3 V.  Its bus pins take ±58 V, and the 24 V sits two
+with VCC 5 V and VIO 3.3 V.  Its bus pins take ±58 V, and VRACK sits two
 pins away on the same connector.  It is passive when unpowered, so a row whose
 eFuse is off doesn't load the bus.  Each tap gets a PESD2CAN.
 
 ## Addressing (POS)
 
 POS is a 3.3 V, active-high token.  Each driver and each input has 10 kΩ in series and a clamp
-behind it, a BAT54S to GND and 3.3 V on the hub.  A cable plugged in reversed (+24 V on pin 6) then
-costs ≈ 2 mA instead of a GPIO.
+behind it, a BAT54S to GND and 3.3 V on the hub.  A cable plugged in reversed (VRACK on pin 6) then
+costs ≈ 3 mA at 28 V instead of a GPIO.
 Each input has a 100 kΩ pull-down.
 
 1. From reset, a node holds POS_OUT low until it has an address.

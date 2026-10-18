@@ -26,6 +26,9 @@ class Cat:
     description: str = ""
     alt: str = ""          # alternative sourcing notes
     hand_solder: bool = False     # through-hole, soldered by hand: kept out of the JLC BOM and CPL
+    # 3D model replacing the footprint's own (missing from KiCad's library): (file in
+    # electronics/lib/3dmodels, offset xyz mm (KiCad's model frame: y up), rotation xyz deg)
+    model: tuple | None = None
 
     def fields(self) -> dict:
         f = {"MPN": self.mpn, "Manufacturer": self.manufacturer}
@@ -39,6 +42,8 @@ class Cat:
 CAT = {
     "esp32s3": Cat("RF_Module:ESP32-S3-MINI-1", "RF_Module:ESP32-S2-MINI-1", "ESP32-S3-MINI-1-N8", "Espressif",
                    "C2913206", 4.72, standard_only=True,
+                   # Espressif's own model; its corner sits at the module's bottom-left (KiCad footprint frame)
+                   model=("ESP32-S3-MINI-1.step", (-7.7, -10.25, 0), (0, 0, 0)),
                    datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-s3-mini-1_mini-1u_datasheet_en.pdf",
                    description="ESP32-S3 module, 8 MB flash, PCB antenna, USB OTG (full speed)"),
     "buck": Cat("bench:LMR51635", "Package_TO_SOT_SMD:TSOT-23-6", "LMR51635YDDCR", "Texas Instruments",
@@ -125,11 +130,33 @@ CAT = {
                   description="dual Schottky in series: clamps a line to GND and +3V3"),
     "hdr2x8": Cat("Connector_Generic:Conn_02x08_Odd_Even", "Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical",
                   "2x8 pin header 2.54 mm", "generic", "", 0.10, description="control header (DNP by default)"),
+    # power hub v0.5: USB-C PD input (AP33772S sink, back-to-back NMOS switch, Kelvin shunt)
+    "pd_sink": Cat("bench:AP33772S", "Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.7x2.7mm", "AP33772SDKZ-13-FA02",
+                   "Diodes Incorporated", "C50341643", 1.84,
+                   datasheet="https://www.diodes.com/assets/Datasheets/AP33772S.pdf",
+                   alt="LCSC stock was 0 on 2026-10-18: JLC global sourcing (DigiKey/Mouser) or a consigned reel",
+                   description="USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive, V/I/T telemetry"),
+    "usbc5a": Cat("Connector:USB_C_Receptacle_USB2.0_16P",
+                  "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", "USB4105-GF-A-120", "GCT",
+                  "C5184243", 0.91, description="USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS"),
+    "nfet_pwr": Cat("Transistor_FET:Si4162DY", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", "IRF7842TRPBF", "Infineon",
+                    "C495809", 0.84, datasheet="https://www.infineon.com/dgdl/irf7842pbf.pdf",
+                    description="N-MOSFET 40 V 18 A 5 mΩ, SO-8 (Si4162DY symbol: same S-S-S-G-D-D-D-D pinout)"),
+    "shunt5m": Cat("Device:R_Shunt", "bench:R_1206_3216Metric_Kelvin", "HoLLR1206-1W-5mR-1%", "Milliohm", "C2988648",
+                   0.055, description="5 mΩ 1 % 1 W current shunt"),
+    "tvs30": Cat("Device:D_Zener", "Diode_SMD:D_SMA", "SMAJ30A", "MDD", "C113965", 0.044,
+                 description="TVS 30 V stand-off, 400 W (unidirectional): above a 28 V EPR contract"),
+    "ntc10k": Cat("Device:Thermistor_NTC", "Resistor_SMD:R_0603_1608Metric", "NCP18XH103F03RB", "Murata", "C13564",
+                  0.05, description="NTC 10 kΩ B3380, 0603 (the AP33772S's default curve)"),
+    "ldo_lp": Cat("Regulator_Linear:AP2112K-3.3", "Package_TO_SOT_SMD:SOT-23-5", "AP2112K-3.3TRG1",
+                  "Diodes Incorporated", "C51118", 0.17, description="3.3 V 600 mA LDO, 250 mV dropout"),
     "testpad": Cat("Connector:TestPoint", "TestPoint:TestPoint_Pad_D1.5mm", "test pad", "-", "", 0.0),
     "hole": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_3.2mm_M3", "M3 mounting hole", "-", "", 0.0),
 }
 
 HAND_SOLDER_LCSC = {c.lcsc for c in CAT.values() if c.hand_solder}
+# MPN → (file, offset, rotation): see Cat.model and pcbgen.set_model()
+MODELS = {c.mpn: c.model for c in CAT.values() if c.model}
 
 
 def passive(kind: str, value: str, size: str) -> dict:
