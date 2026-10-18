@@ -343,6 +343,7 @@ def scad_config(rack: Rack) -> str:
         "HUB_LEDS": hub["front"]["leds"],
         "HUB_USB": hub["front"]["usb"],
         "HUB_PD": hub["rear"]["pd"],
+        "HUB_BUTTONS": hub["buttons"],
         "PBOX_COLUMN": pbox["column"],
         "PBOX_SIZE": pbox["size"],
         "PBOX_WALL": pbox["wall"],
