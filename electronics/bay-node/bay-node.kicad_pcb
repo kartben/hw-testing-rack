@@ -7817,15 +7817,15 @@
 			(uuid "ad6bb155-5750-49c8-80d4-39929c1b4c8b")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_SPDT_Shouhan_MSK12C02.step"
+		(model "${KIPRJMOD}/../lib/3dmodels/easyeda/C431540.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 0.1 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz 0 0 180)
 			)
 		)
 	)
@@ -9145,9 +9145,9 @@
 			(uuid "4455f682-5667-4511-9d0e-714ef76f3b16")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Connector_JST.3dshapes/JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal.step"
+		(model "${KIPRJMOD}/../lib/3dmodels/easyeda/C265405.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 -2.9 0)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -10199,7 +10199,7 @@
 			(uuid "d426a5ba-4c2d-469b-8d2f-bac63af3143e")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B-2020_PLCC4_2.0x2.0mm.step"
+		(model "${KIPRJMOD}/../lib/3dmodels/WS2812B-2020.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -11764,7 +11764,7 @@
 			(uuid "81269b27-014f-4f6c-9498-8b707618e4ae")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_Push_1P1T_XKB_TS-1187A.step"
+		(model "${KIPRJMOD}/../lib/3dmodels/easyeda/C318884.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -12686,9 +12686,9 @@
 			(uuid "37ca4931-5df4-4b64-9823-fe3e75537ff9")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Connector_JST.3dshapes/JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal.step"
+		(model "${KIPRJMOD}/../lib/3dmodels/easyeda/C265405.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 -2.9 0)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -16132,9 +16132,9 @@
 			(uuid "f308173a-a75f-4fab-bdf6-8180a1d36512")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Connector_JST.3dshapes/JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal.step"
+		(model "${KIPRJMOD}/../lib/3dmodels/easyeda/C265405.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0 -2.9 0)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -17528,9 +17528,9 @@
 			(uuid "4f0cb2c6-23b9-4402-bfc6-d22d915d3082")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Connector_JST.3dshapes/JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal.step"
+		(model "${KIPRJMOD}/../lib/3dmodels/easyeda/C295747.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 1 -2.9 0)
 			)
 			(scale
 				(xyz 1 1 1)
@@ -23967,7 +23967,7 @@
 			(uuid "9a0be43d-4b54-46a2-85ee-ac0b6d9e51ec")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Button_Switch_SMD.3dshapes/SW_Push_1P1T_XKB_TS-1187A.step"
+		(model "${KIPRJMOD}/../lib/3dmodels/easyeda/C318884.step"
 			(offset
 				(xyz 0 0 0)
 			)
