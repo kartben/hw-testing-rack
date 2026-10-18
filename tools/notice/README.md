@@ -68,6 +68,10 @@ line.  After `run.py`:
   A1), the hub on its standoffs; the charger, its USB-C cable and the row
   feed are simple bodies (`notice.py`, `charger_shape`, `pd_cable_shape`,
   `feed_shape`).
+* **Bought parts in the bay**: the drag chain is drawn as its links along the
+  centre line `config/rack.yaml` › `chain` gives (anchor, U bend, foot), the
+  panel-mount USB-C extension as its socket, cable and plug (`chain_shape`,
+  `data_socket_shape`, `ext_cable_shape`).
 * **The row cable from the board.**  `notice.yaml` › `row_cable` names the two
   connectors (node 0's out, node 1's in); their pin count and position come
   from the `.kicad_pcb`, for the step drawing and the icon.
