@@ -79,6 +79,9 @@ python tools/bom.py                          # full rack BOM
 python -m http.server -d site 8000           # open http://localhost:8000
 ```
 
+For screenshots the viewer takes URL parameters: `?bay=B4&openbay=1&view=dut&hideui`
+pulls bay B4's drawer out and frames its DUT cable (DATA socket to board), with no UI.
+
 Photoreal renders (Blender + Cycles) start from `render/assembly.glb`, baked
 from the same scene as the viewer by `python tools/assembly_glb.py --hq` (`--hq`:
 full-resolution part meshes instead of the viewer's lighter ones).  Either

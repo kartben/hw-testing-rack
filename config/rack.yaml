@@ -108,7 +108,7 @@ population:
   B2: { board: esp32-s3-devkitc, cable: c-to-micro-b }
   B3: { board: rpi-pico2,        cable: c-to-micro-b }
   B4: { board: arduino-uno-r4,   cable: c-to-c }
-  C1: { board: stm32f746g-disco, cable: c-to-micro-b }
+  C1: { board: stm32f746g-disco, cable: c-to-micro-b-20 }   # USB on the side: the long way round
   C2: { board: nrf5340-dk,       cable: c-to-micro-b, open: true }    # drawer shown pulled out
   C3: { board: esp32-c6-devkitc, cable: c-to-c }
   C4: { board: nucleo-64,        cable: c-to-micro-b, pc_cable: true } # "classic" mode: laptop on the front port
@@ -116,6 +116,7 @@ population:
 cables:
   c-to-c:       { label: "USB-C ↔ USB-C, 10–15 cm",        a: usb-c, b: usb-c,   length: 120 }
   c-to-micro-b: { label: "USB-C ↔ micro-B, 10–15 cm",      a: usb-c, b: micro-b, length: 120 }
+  c-to-micro-b-20: { label: "USB-C ↔ micro-B, 20 cm",      a: usb-c, b: micro-b, length: 200 }
   c-to-mini-b:  { label: "USB-C ↔ mini-B, 15–25 cm",       a: usb-c, b: mini-b,  length: 150 }
   drawer-ext:   { label: "USB-C male → panel-mount USB-C female, 30 cm", length: 300 }
   row-jumper:   { label: "JST PH 6-pin row cable, 1:1, 24 AWG, 120 mm", length: 120 }

@@ -37,7 +37,8 @@ bay node (plenum)                              drawer
 3. **Drawer → board: a short cable that belongs to the board.**  10–15 cm,
    USB-C on the drawer side, whatever the board needs on the other: C,
    micro-B or mini-B, right-angle at both ends: with the socket on the
-   opposite side, the cable makes a small arch over the board's rear edge.
+   opposite side, the cable makes a small arch over the board's rear edge
+   (straight up out of both plugs, bends no tighter than ~10 mm radius).
    The board's plate turns its debug USB towards the port wall (or, for a
    board too long for a plug behind it like the F746G-DISCO, towards the
    right wall: give that one a 20 cm cable) and has two hooks for the spare

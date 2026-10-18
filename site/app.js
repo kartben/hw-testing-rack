@@ -80,7 +80,7 @@ const MAT = {
   inductor: std(0x2b2b2b, 0.2, 0.55),
 };
 const CABLE_COLORS = {
-  'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
+  'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-micro-b-20': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
   power: 0xff5a5a, pc: 0x3fb6ff, ext: 0x7d8590, 'usb-pd': 0x101114,
 };
 
@@ -309,43 +309,16 @@ function cableColor(c) {
   if (c.kind === 'dut') return new THREE.Color(CABLE_COLORS[c.type] ?? 0x8f5cff);
   return new THREE.Color(CABLE_COLORS[c.kind] ?? 0x888888);
 }
-// USB plugs, modelled from the connectors' real outlines (mm).  Plug frame: +z = into the
-// receptacle (the shell, mostly hidden in it), x = connector width, y = its "up".
-const PLUG = {
-  'usb-c':   { shell: 'pill', sw: 8.3, sh: 2.5, sl: 6.5, mw: 12.0, mh: 6.2, ml: 15, relief: 7 },
-  'micro-b': { shell: 'trap', sw: 6.9, sh: 1.85, sl: 5.5, bw: 5.4, mw: 10.5, mh: 5.4, ml: 13, relief: 6 },
-  'mini-b':  { shell: 'trap', sw: 7.7, sh: 3.9, sl: 6.0, bw: 6.2, mw: 11.0, mh: 7.0, ml: 14, relief: 6 },
-  'usb-a':   { shell: 'box', sw: 12.0, sh: 4.5, sl: 12.0, mw: 15.5, mh: 7.5, ml: 20, relief: 8 },
-};
-const RIGHT_ANGLE = { depth: 12, height: 9, relief: 6 };   // must match tools/webscene.py
+// USB plugs and the drawer's panel-mount socket: meshes from parts.glb, drawn by
+// mechanical/parts/usb_plugs.scad from the dimensions in tools/webscene.py (USB_PLUGS), which
+// also routes the cables out of their strain reliefs.  Plug frame: +z = into the receptacle,
+// x = the connector's width, y = its "up".
 const PLUG_MAT = {
-  mold: std(0x1d1f23, 0, 0.5),
-  shell: std(0xd4d7dc, 0.95, 0.28),
-  tongue: std(0x0b0c0e, 0, 0.6),
+  mold: std(0x1b1c1f, 0, 0.78),       // matte black overmold
+  shell: std(0xd4d7dc, 0.95, 0.28),   // nickel-plated shell
   screw: std(0xb9bdc4, 0.9, 0.35),
 };
-const plugGeoCache = new Map();
-function cached(key, make) {
-  if (!plugGeoCache.has(key)) plugGeoCache.set(key, make());
-  return plugGeoCache.get(key);
-}
-function shellGeometry(d) {
-  return cached(`shell-${d.shell}-${d.sw}-${d.sh}-${d.sl}`, () => {
-    const s = new THREE.Shape();
-    const w = d.sw / 2, h = d.sh / 2;
-    if (d.shell === 'pill') {                    // USB-C: a stadium
-      s.moveTo(-w + h, -h); s.lineTo(w - h, -h); s.absarc(w - h, 0, h, -Math.PI / 2, Math.PI / 2);
-      s.lineTo(-w + h, h); s.absarc(-w + h, 0, h, Math.PI / 2, 3 * Math.PI / 2);
-    } else if (d.shell === 'trap') {             // micro-B / mini-B: a trapezoid, wide side up
-      const b = d.bw / 2;
-      s.moveTo(-b, -h); s.lineTo(b, -h); s.lineTo(w, h * 0.2); s.lineTo(w, h); s.lineTo(-w, h); s.lineTo(-w, h * 0.2);
-    } else {
-      s.moveTo(-w, -h); s.lineTo(w, -h); s.lineTo(w, h); s.lineTo(-w, h);
-    }
-    s.closePath();
-    return new THREE.ExtrudeGeometry(s, { depth: d.sl, bevelEnabled: false, curveSegments: 10 });
-  });
-}
+const plugMesh = (name, mat) => (GEOMS[name] ? new THREE.Mesh(GEOMS[name], mat) : null);
 function plugBasis(e) {
   const z = v3(e.dir).normalize();
   const up = v3(e.up ?? [0, 0, 1]);
@@ -356,41 +329,15 @@ function plugBasis(e) {
   return new THREE.Matrix4().makeBasis(x, y, z).setPosition(v3(e.at));
 }
 function makePlug(e) {
-  const d = PLUG[e.type] ?? PLUG['usb-c'];
   const g = new THREE.Group();
   g.matrixAutoUpdate = false;
   g.matrix.copy(plugBasis(e));
-  g.add(new THREE.Mesh(shellGeometry(d), PLUG_MAT.shell));
-  if (e.style === 'right') {
-    const { depth, height, relief } = RIGHT_ANGLE;
-    const lo = -d.mh / 2 - 0.4;
-    const mold = new THREE.Mesh(cached(`rmold-${d.mw}-${depth}-${height}-${lo}`,
-      () => new RoundedBoxGeometry(d.mw, height - lo, depth, 3, 1.8)), PLUG_MAT.mold);
-    mold.position.set(0, (height + lo) / 2, -depth / 2);
-    const rel = new THREE.Mesh(cached('rrelief', () => new THREE.CylinderGeometry(2.2, 2.7, relief, 20)), PLUG_MAT.mold);
-    rel.position.set(0, height + relief / 2, -depth / 2);
-    g.add(mold, rel);
-  } else {
-    const mold = new THREE.Mesh(cached(`mold-${d.mw}-${d.mh}-${d.ml}`,
-      () => new RoundedBoxGeometry(d.mw, d.mh, d.ml, 3, Math.min(2.2, d.mh / 2 - 0.2))), PLUG_MAT.mold);
-    mold.position.set(0, 0, -d.ml / 2);
-    const rel = new THREE.Mesh(cached('relief', () => new THREE.CylinderGeometry(2.7, 2.2, d.relief, 20)), PLUG_MAT.mold);
-    rel.rotation.x = Math.PI / 2;
-    rel.position.set(0, 0, -d.ml - d.relief / 2);
-    g.add(mold, rel);
-  }
-  if (e.socket === 'panel') {
-    // panel-mount female USB-C (the drawer's DATA port): 25 mm flange on the wall face, two screws 17 mm apart
-    const flange = new THREE.Mesh(cached('flange', () => new RoundedBoxGeometry(25, 9, 2.5, 2, 0.8)), PLUG_MAT.mold);
-    flange.position.set(0, 0, 1.25);
-    g.add(flange);
-    for (const sx of [-8.5, 8.5]) {
-      const scr = new THREE.Mesh(cached('screw', () => new THREE.CylinderGeometry(2.6, 2.6, 1.1, 16)), PLUG_MAT.screw);
-      scr.rotation.x = Math.PI / 2;
-      scr.position.set(sx, 0, -0.5);
-      g.add(scr);
-    }
-  }
+  const t = GEOMS[`usbplug_${e.type}_shell`] ? e.type : 'usb-c';
+  const parts = [plugMesh(`usbplug_${t}_shell`, PLUG_MAT.shell),
+    plugMesh(`usbplug_${t}_${e.style === 'right' ? 'right' : 'straight'}`, PLUG_MAT.mold)];
+  // the drawer's DATA port: the extension's female end, its flange on the port wall
+  if (e.socket === 'panel') parts.push(plugMesh('usbplug_panel_mold', PLUG_MAT.mold), plugMesh('usbplug_panel_metal', PLUG_MAT.screw));
+  for (const m of parts) if (m) g.add(m);
   return g;
 }
 
@@ -570,6 +517,7 @@ function build(pcbGlb) {
     track(o, { layer: 'labels', bay: b.id, row: b.row_index, movable: true, zone: 'label', space: 'row' });
   }
   buildUI();
+  applyTransforms();
   setView(params.get('view') || 'iso', false);
   applyTransforms();
   $('loading').classList.add('done');
@@ -630,7 +578,7 @@ function buildUI() {
   if (params.has('explode')) { explode = +params.get('explode'); $('explode').value = explode; }
   if (params.has('bay')) {
     select(params.get('bay'), !params.has('hideui'));
-    if (params.has('openbay')) drawerTarget[params.get('bay')] = +params.get('openbay') || 1;
+    if (params.has('openbay')) drawerFrac[params.get('bay')] = drawerTarget[params.get('bay')] = +params.get('openbay') || 1;
   }
   if (params.has('hideui')) document.querySelectorAll('.topbar,.panel,.hint,.info').forEach((e) => (e.style.display = 'none'));
 }
@@ -660,6 +608,15 @@ function setView(name, animate = true) {
     const bb = bayBounds(selectedBay || 'B2');
     target = bb.getCenter(new THREE.Vector3());
     eye = target.clone().add(new THREE.Vector3(0.42, -1, 0.62).normalize().multiplyScalar(720));
+  } else if (name === 'dut') {
+    // close-up on the selected bay's DUT cable, DATA socket to board (?view=dut&bay=B4&openbay=1)
+    root.updateMatrixWorld(true);
+    const bb = new THREE.Box3();
+    for (const o of tracked) if (o.userData.bay === (selectedBay || 'B2') && o.userData.zone === 'dut') bb.expandByObject(o);
+    bb.applyMatrix4(new THREE.Matrix4().copy(root.matrixWorld).invert());
+    target = bb.getCenter(new THREE.Vector3());
+    // close enough to stay under the drawer of the bay above when that one is pulled out too
+    eye = target.clone().add(new THREE.Vector3(-0.45, -1, 0.8).normalize().multiplyScalar(Math.max(140, bb.getSize(new THREE.Vector3()).length() * 1.45)));
   } else eye = new THREE.Vector3(R.width * 1.5, -1300, R.height * 1.25);
   const to = { eye: toWorld(eye), target: toWorld(target) };
   if (!animate) { camera.position.copy(to.eye); controls.target.copy(to.target); controls.update(); return; }

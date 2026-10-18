@@ -36,6 +36,22 @@ WEB_PARTS = {
     "power_box_lid_labels": ("parts/power_box.scad", {"PART": "lid_labels"}),
 }
 
+# USB cable plugs (mm), the single source for parts/usb_plugs.scad (which draws them) and for the
+# cable routing (plug_exit): metal shell SW × SH × SL (SB: a trapezoid's narrow side), overmold
+# W × H × L for a straight plug, D deep along the axis and TOP above it for a right-angle one,
+# strain relief REL long, RD its diameters.  USB-C after the USB-IF reference overmold.
+USB_PLUGS = {
+    "usb-c":   dict(SHELL="pill", SW=8.3, SH=2.5, SL=6.65, SB=0,  W=12.4, H=7.0, L=20, D=7.0, TOP=15.5, REL=8, RD=[5.4, 4.2]),
+    "micro-b": dict(SHELL="trap", SW=6.9, SH=1.85, SL=5.6, SB=5.4, W=11.0, H=7.0, L=18, D=7.0, TOP=14.0, REL=7, RD=[5.0, 4.0]),
+    "mini-b":  dict(SHELL="trap", SW=7.7, SH=3.9, SL=6.0, SB=6.2, W=11.5, H=8.5, L=18, D=8.0, TOP=15.0, REL=7, RD=[5.0, 4.0]),
+}
+for _t, _d in USB_PLUGS.items():
+    WEB_PARTS[f"usbplug_{_t}_shell"] = ("parts/usb_plugs.scad", {**_d, "PIECE": "shell"})
+    for _style in ("straight", "right"):
+        WEB_PARTS[f"usbplug_{_t}_{_style}"] = ("parts/usb_plugs.scad", {**_d, "STYLE": _style, "PIECE": "mold"})
+WEB_PARTS["usbplug_panel_mold"] = ("parts/usb_plugs.scad", {"STYLE": "panel", "PIECE": "mold"})
+WEB_PARTS["usbplug_panel_metal"] = ("parts/usb_plugs.scad", {"STYLE": "panel", "PIECE": "metal"})
+
 # Parts whose print orientation differs from their assembly orientation get an
 # "assembly" variant rendered with the print rotation undone.
 ASSEMBLY_WRAPPERS = {
@@ -142,30 +158,57 @@ def build_parts_glb(rack, boards: dict, hq: bool = False) -> dict:
     return stats
 
 
-# ------------------------------------------------------------------ USB plugs
-# Plug dimensions (mm): metal shell (goes into the receptacle), overmold, strain relief.
-# Right-angle plugs (the short DUT cables) let the cable leave upwards.
-PLUG = {"usb-c": (6.5, 15.0, 7.0), "micro-b": (5.5, 13.0, 6.0), "mini-b": (6.0, 14.0, 6.0), "usb-a": (12.0, 20.0, 8.0)}
-RIGHT_ANGLE = (12.0, 9.0, 6.0)        # overmold depth along the plug, height above its axis, relief
+# ------------------------------------------------------------------ USB cables
+CABLE_BEND_R = 12.0        # bend radius of a thin USB cable (≥ 10 mm: no kinks)
 
 
 def plug_exit(end):
-    """Where the cable leaves a plug and which way: straight plugs out of their back, right-angle
-    plugs out of their top.  end = {at: receptacle face, dir: into the receptacle, up, type, style}."""
+    """Where the cable leaves a plug's strain relief and which way: a straight plug out of its back,
+    a right-angle one out of its top.  end = {at: receptacle face, dir: into it, up, type, style}."""
     at, d = np.array(end["at"], float), np.array(end["dir"], float)
     up = np.array(end.get("up", (0, 0, 1)), float)
+    p = USB_PLUGS.get(end["type"], USB_PLUGS["usb-c"])
     if end.get("style") == "right":
-        depth, height, relief = RIGHT_ANGLE
-        return at - d * depth / 2 + up * (height + relief), up
-    _, mold, relief = PLUG[end["type"]]
-    return at - d * (mold + relief), -d
+        return at - d * p["D"] / 2 + up * (p["TOP"] + p["REL"]), up
+    return at - d * (p["L"] + p["REL"]), -d
 
 
-def usb_cable(a, b, reach=22.0, n=28):
-    """Cable between two plugs: leaves each along its exit direction, a cubic in between."""
-    pa, ta = plug_exit(a)
-    pb, tb = plug_exit(b)
-    return bezier(pa, pa + ta * reach, pb + tb * reach, pb, n)
+def arch_cable(a, b, length, r=CABLE_BEND_R, step=2.5):
+    """A short cable between two right-angle plugs whose cables both leave upwards: straight up out
+    of each strain relief, a bend of radius r over towards the other plug, across, a bend down.  The
+    arch stands in the vertical plane through both exits and is as tall as the cable is long
+    (`length` = the free length between the two strain reliefs).  Returns (points, shortfall): the
+    cable could not be shorter than the arch with no straight legs; shortfall > 0 means it is."""
+    pa, _ = plug_exit(a)
+    pb, _ = plug_exit(b)
+    z = np.array([0.0, 0.0, 1.0])
+    h = (pb - pa) - z * (pb - pa)[2]
+    dist = float(np.linalg.norm(h))
+    u = h / max(dist, 1e-9)
+    r = min(r, dist / 2) if dist < 2 * r else r          # very close plugs: a tighter, still smooth arch
+    lo = max(pa[2], pb[2]) + r + 2.0                      # the top of the arch, at least 2 mm of leg
+    top = (length - math.pi * r - (dist - 2 * r) + 2 * r + pa[2] + pb[2]) / 2
+    shortfall = max(0.0, lo - top) * 2
+    top = max(top, lo)
+    pts = []
+
+    def leg(p, z0, z1):
+        n = max(1, int(abs(z1 - z0) / step))
+        return [p + z * (z0 + (z1 - z0) * k / n - p[2]) for k in range(n + 1)]
+
+    def arc(c, a0, a1):
+        n = max(4, int(abs(a1 - a0) * r / step))
+        return [c + (u * math.cos(a0 + (a1 - a0) * k / n) + z * math.sin(a0 + (a1 - a0) * k / n)) * r for k in range(n + 1)]
+
+    ca = pa + u * r + z * (top - r - pa[2])
+    cb = pb - u * r + z * (top - r - pb[2])
+    pts += leg(pa, pa[2], top - r)
+    pts += arc(ca, math.pi, math.pi / 2)[1:]
+    n = max(1, int(np.linalg.norm(cb - ca) / step))
+    pts += [ca + (cb - ca) * k / n + z * r for k in range(1, n)]
+    pts += arc(cb, math.pi / 2, 0)
+    pts += leg(pb, top - r, pb[2])[1:]
+    return [[round(float(c), 2) for c in p] for p in pts], round(shortfall, 1)
 
 
 def catenary_cable(a, touchdown, b, r=2.0):
@@ -377,7 +420,13 @@ def build(rack) -> Path:
                 end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": "right"}
             else:
                 end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": "right"}
-            cable(usb_cable(end_a, end_b, 26), row=i, kind="dut", bay=b.id, type=ctype,
+            # the cable's length is plug to plug: each right-angle plug takes about its body's depth
+            free = cables_cfg[ctype].get("length", 120) - 2 * 12
+            pts, short = arch_cable(end_a, end_b, free)
+            if short:
+                print(f"warning: bay {b.id}: the {ctype} cable is {short:.0f} mm too short "
+                      f"for the arch from the DATA socket to the board")
+            cable(pts, row=i, kind="dut", bay=b.id, type=ctype,
                   label=cables_cfg[ctype]["label"], a="usb-c", b=btype, ends=[end_a, end_b], radius=1.9,
                   movable=True)
             meta.update({"board": bd["name"], "board_id": info["board"], "cable": cab["label"],

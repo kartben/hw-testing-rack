@@ -39,10 +39,11 @@ MATS = {
     "powerbox": ([0.075, 0.08, 0.09, 1], 0.0, 0.55),
     "powerlabels": ([0.93, 0.92, 0.89, 1], 0.0, 0.6),
     "silver": ([0.78, 0.8, 0.82, 1], 0.95, 0.25),
-    "plug": ([0.11, 0.115, 0.13, 1], 0.0, 0.45),
+    "plug": ([0.11, 0.115, 0.13, 1], 0.0, 0.72),        # matte black overmold
     "black": ([0.07, 0.07, 0.08, 1], 0.0, 0.6),
 }
-CABLE = {"c-to-c": [0.56, 0.36, 1.0, 1], "c-to-micro-b": [1.0, 0.69, 0.18, 1], "c-to-mini-b": [0.88, 0.54, 0.12, 1],
+CABLE = {"c-to-c": [0.56, 0.36, 1.0, 1], "c-to-micro-b": [1.0, 0.69, 0.18, 1],
+         "c-to-micro-b-20": [1.0, 0.69, 0.18, 1], "c-to-mini-b": [0.88, 0.54, 0.12, 1],
          "pc": [0.25, 0.71, 1.0, 1], "ext": [0.49, 0.52, 0.56, 1], "usb-pd": [0.06, 0.06, 0.07, 1]}
 
 
@@ -60,48 +61,14 @@ def mat(name_or_rgba, metallic=0.0, rough=0.55):
     return PBRMaterial(baseColorFactor=lin, metallicFactor=metallic, roughnessFactor=rough)
 
 
-# USB plugs (same outlines as site/app.js; plug frame: +z into the receptacle, x = width, y = up)
-PLUG_SHAPE = {
-    "usb-c": dict(shell="pill", sw=8.3, sh=2.5, sl=6.5, mw=12.0, mh=6.2, ml=15.0, relief=7.0),
-    "micro-b": dict(shell="trap", sw=6.9, sh=1.85, sl=5.5, bw=5.4, mw=10.5, mh=5.4, ml=13.0, relief=6.0),
-    "mini-b": dict(shell="trap", sw=7.7, sh=3.9, sl=6.0, bw=6.2, mw=11.0, mh=7.0, ml=14.0, relief=6.0),
-    "usb-a": dict(shell="box", sw=12.0, sh=4.5, sl=12.0, mw=15.5, mh=7.5, ml=20.0, relief=8.0),
-}
-RIGHT_ANGLE = dict(depth=12.0, height=9.0, relief=6.0)      # as in tools/webscene.py
-
-
-def plug_meshes(e: dict) -> list:
+# USB plugs and the panel-mount socket: the parts.glb meshes (mechanical/parts/usb_plugs.scad, sized by
+# tools/webscene.py), as in the viewer.  Plug frame: +z into the receptacle, x = width, y = up.
+def plug_meshes(e: dict, geoms: dict) -> list:
     """Meshes of one cable end (tools/webscene.py writes them into rack.json), in its space."""
-    from shapely.geometry import LineString, Polygon
-    d = PLUG_SHAPE.get(e["type"], PLUG_SHAPE["usb-c"])
-    w, h = d["sw"] / 2, d["sh"] / 2
-    if d["shell"] == "pill":
-        outline = LineString([(-w + h, 0), (w - h, 0)]).buffer(h, quad_segs=8)
-    elif d["shell"] == "trap":
-        b = d["bw"] / 2
-        outline = Polygon([(-b, -h), (b, -h), (w, h * 0.2), (w, h), (-w, h), (-w, h * 0.2)])
-    else:
-        outline = Polygon([(-w, -h), (w, -h), (w, h), (-w, h)])
-    mold, shell = mat("plug"), mat("silver")
-    out = [with_mat(trimesh.creation.extrude_polygon(outline, d["sl"]), shell)]
-    if e.get("style") == "right":
-        depth, height, relief = RIGHT_ANGLE["depth"], RIGHT_ANGLE["height"], RIGHT_ANGLE["relief"]
-        lo = -d["mh"] / 2 - 0.4
-        out.append(with_mat(trimesh.creation.box([d["mw"], height - lo, depth],
-                                                 transform=translate([0, (height + lo) / 2, -depth / 2])), mold))
-        out.append(with_mat(trimesh.creation.cylinder(radius=2.45, height=relief, sections=20,
-                                                      transform=translate([0, height + relief / 2, -depth / 2])
-                                                      @ rot_xyz([90, 0, 0])), mold))
-    else:
-        out.append(with_mat(trimesh.creation.box([d["mw"], d["mh"], d["ml"]],
-                                                 transform=translate([0, 0, -d["ml"] / 2])), mold))
-        out.append(with_mat(trimesh.creation.cylinder(radius=2.45, height=d["relief"], sections=20,
-                                                      transform=translate([0, 0, -d["ml"] - d["relief"] / 2])), mold))
-    if e.get("socket") == "panel":            # the drawer's panel-mount female: flange + two M3 screws
-        out.append(with_mat(trimesh.creation.box([23, 8, 1.5], transform=translate([0, 0, 0.75])), mold))
-        for sx in (-9, 9):
-            out.append(with_mat(trimesh.creation.cylinder(radius=2.6, height=1.1, sections=16,
-                                                          transform=translate([sx, 0, -0.5])), mat("silver")))
+    t = e["type"] if f"usbplug_{e['type']}_shell" in geoms else "usb-c"
+    names = [(f"usbplug_{t}_shell", "silver"), (f"usbplug_{t}_{'right' if e.get('style') == 'right' else 'straight'}", "plug")]
+    if e.get("socket") == "panel":            # the drawer's DATA port: the extension's female end on the port wall
+        names += [("usbplug_panel_mold", "plug"), ("usbplug_panel_metal", "silver")]
     z = np.array(e["dir"], float)
     z /= np.linalg.norm(z)
     up = np.array(e.get("up", (0, 0, 1)), float)
@@ -110,7 +77,7 @@ def plug_meshes(e: dict) -> list:
     y = np.cross(z, x)
     B = np.eye(4)
     B[:3, 0], B[:3, 1], B[:3, 2], B[:3, 3] = x, y, z, e["at"]
-    return [m.apply_transform(B) for m in out]
+    return [with_mat(geoms[n], mat(m)).apply_transform(B) for n, m in names if n in geoms]
 
 
 def with_mat(m: trimesh.Trimesh, material) -> trimesh.Trimesh:
@@ -403,7 +370,7 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
             place(c.get("space"), c.get("row"), np.eye(4)))
         dy = drawer_dy(c) if c.get("space", "row") == "row" and c.get("movable") else 0.0
         for e in c.get("ends", []):
-            for m in plug_meshes(e):
+            for m in plug_meshes(e, geoms):
                 add(m, f"plug:{c['kind']}", place(c.get("space"), c.get("row"), translate([0, dy, 0])), c.get("bay"))
     # mm, Z-up → m, Y-up
     out.apply_transform(rot_xyz([-90, 0, 0]))

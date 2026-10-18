@@ -2062,10 +2062,19 @@
 "category": "Cables",
 "item": "USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle)",
 "supplier": "Adafruit / Delock / AliExpress",
-"qty": 8,
+"qty": 7,
 "unit_eur": 2.9,
 "unit": "pcs",
-"ext_eur": 23.2
+"ext_eur": 20.3
+},
+{
+"category": "Cables",
+"item": "USB-C ↔ micro-B, 20 cm (DUT cable, short / right-angle)",
+"supplier": "Adafruit / Delock / AliExpress",
+"qty": 1,
+"unit_eur": 3.2,
+"unit": "pcs",
+"ext_eur": 3.2
 },
 {
 "category": "Power",
@@ -2120,11 +2129,11 @@
 "Printed parts": 78.0,
 "Fasteners": 17.72,
 "Motion": 22.4,
-"Cables": 82.39,
+"Cables": 82.69,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 901.59,
+"total_eur": 901.89,
 "prints": [
 {
 "part": "bay_label",

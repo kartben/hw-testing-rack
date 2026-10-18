@@ -6,7 +6,7 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Category | Cost (€) |
 |---|---:|
 | Electronics | 583 |
-| Cables | 82 |
+| Cables | 83 |
 | Power | 82 |
 | Printed parts | 78 |
 | Cameras | 36 |
@@ -199,7 +199,8 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Cables | JST PH 6-pin feed, the jumpers' type, 60 cm, lot of 5 (power box → first bay of row B: VRACK, CAN, POS) | 1 lot | 4.69 | 4.69 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length60CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 80 cm, lot of 5 (power box → first bay of row C: VRACK, CAN, POS) | 1 lot | 5.29 | 5.29 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length80CM |
 | Cables | USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle) | 4  | 4.50 | 18.00 | Adafruit / Delock / AliExpress |
-| Cables | USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle) | 8  | 2.90 | 23.20 | Adafruit / Delock / AliExpress |
+| Cables | USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle) | 7  | 2.90 | 20.30 | Adafruit / Delock / AliExpress |
+| Cables | USB-C ↔ micro-B, 20 cm (DUT cable, short / right-angle) | 1  | 3.20 | 3.20 | Adafruit / Delock / AliExpress |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |
 | Cameras | Seeed XIAO ESP32S3 Sense (camera pod) | 2  | 13.50 | 27.00 | Seeed |

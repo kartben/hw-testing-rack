@@ -312,7 +312,7 @@ def hardware(rack) -> list[dict]:
     ]
     cab = Counter(info["cable"] for info in pop.values())
     for k, n in sorted(cab.items()):
-        price = {"c-to-c": 4.5, "c-to-micro-b": 2.9, "c-to-mini-b": 6.0}.get(k, 4.0)
+        price = {"c-to-c": 4.5, "c-to-micro-b": 2.9, "c-to-micro-b-20": 3.2, "c-to-mini-b": 6.0}.get(k, 4.0)
         rows.append({"category": "Cables", "item": r["cables"][k]["label"] + " (DUT cable, short / right-angle)",
                      "supplier": "Adafruit / Delock / AliExpress", "qty": n, "unit_eur": price})
     rows += [
