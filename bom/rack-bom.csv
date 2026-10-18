@@ -113,7 +113,7 @@ Electronics,data-port,"DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS"
 Electronics,data-port,"LEAD — JST PH 5-pin, side entry, SMD",12,pcs,0.3128,3.75,LCSC/JLCPCB,C265104,S5B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 12 boards
 Electronics,data-port,22k — Resistor 22k 0603,24,pcs,0.0038,0.09,LCSC/JLCPCB,C31850,0603WAF2202T5E,UNI-ROYAL(Uniroyal Elec),"R1,R2",2 per board × 12 boards
 Electronics,data-port,USBLC6-2SC6 — USB ESD protection,12,pcs,0.1656,1.99,LCSC/JLCPCB,C7519,USBLC6-2SC6,STMicroelectronics,U1,1 per board × 12 boards; alternative: C2687116 (UMW clone)
-Electronics,data-port,"Bare PCB data-port (2-layer 40×20 mm, lead-free HASL)",15,pcs,0.2453,3.68,"estimate, not quoted",,,,,"board $4.00 = $4.00 for 15 PCBs, 12 of them assembled"
+Electronics,data-port,"Bare PCB data-port (2-layer 40×17 mm, lead-free HASL)",15,pcs,0.2453,3.68,"estimate, not quoted",,,,,"board $4.00 = $4.00 for 15 PCBs, 12 of them assembled"
 Electronics,data-port,"Economic PCBA, 12 boards: setup, stencil, extended parts, SMT",1,pcs,17.57,17.57,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.60"
 Electronics,data-port,Components data-port: JLC quote minus the catalogue prices above,1,pcs,0.44,0.44,"estimate, not quoted",,,,,quoted components $17.90 (≈ €16.47) for 12 boards; catalogue unit prices give €16.03
 Printed parts,filament,PETG filament,3.9,kg,20.0,78.0,any,,,,,"≈3.5 kg estimated + 10 % waste, 129 parts"

@@ -13,8 +13,10 @@ the 90° extension cable.
   pin 6−n); 5 pins, so a 6-pin row cable cannot go in.
 * USB 2.0 only: HS (480 Mb/s) PC ↔ board in classic mode, FS to the node's ESP32 otherwise.
 
-2 layers, 40 × 20 mm, both sides GND pours (config/rack.yaml › pcb.data_port).  KiCad
-coordinates: y = 0 is the REAR edge (the PH lead), y = 20 the FRONT edge (the USB-C mouth).
+2 layers, 40 × 17 mm, both sides GND pours (config/rack.yaml › pcb.data_port, set with the
+drawer: the receptacle off-centre to the right, clear of the chain foot's lock screw; 17 mm deep for
+the PH plug and the wires' turn in the rear bay).  KiCad coordinates: y = 0 is the REAR edge (the PH
+lead), y = 17 the FRONT edge (the USB-C mouth).
 
 Schematic: automatic layout (blocks).
 """
@@ -56,12 +58,12 @@ def board() -> Board:
     part(s, "J1", "usbc5a", {"VBUS": "VBUS", "GND": "GND", "CC1": "CC1", "CC2": "CC2", "D+": "CONN_DP",
                              "D-": "CONN_DN", "SBU1": None, "SBU2": None, "SHIELD": "GND"},
          "DATA", pcb=P(CFG["usb"], H - 3.4, 0))
-    R(s, "R1", "22k", "VBUS", "CC1", pcb=P(CFG["usb"] - 7.0, H - 5.6, 90))
-    R(s, "R2", "22k", "VBUS", "CC2", pcb=P(CFG["usb"] + 7.0, H - 5.6, 90))
+    R(s, "R1", "22k", "VBUS", "CC1", pcb=P(CFG["usb"] - 7.0, H - 4.5, 90))
+    R(s, "R2", "22k", "VBUS", "CC2", pcb=P(CFG["usb"] + 7.0, H - 4.5, 90))
     s.block("ESD on the pair, at the receptacle")
     part(s, "U1", "esd", {"6": "CONN_DN", "1": "LEAD_DN", "4": "CONN_DP", "3": "LEAD_DP", "5": "VBUS", "2": "GND"},
-         pcb=P(CFG["usb"] + 9.5, 10.2, 90))
-    C(s, "C1", "100n", "VBUS", "GND", pcb=P(CFG["usb"] - 9.5, 10.2, 90))
+         pcb=P(CFG["ph"] + 2.0, H - 3.5, 90))
+    C(s, "C1", "100n", "VBUS", "GND", pcb=P(CFG["ph"] - 2.5, H - 3.5, 90))
     s.block("Lead to the bay node's DATA header (J7): 1 GND, 2 D+, 3 D−, 4 GND, 5 VBUS")
     part(s, "J2", "ph5", {"1": "GND", "2": "LEAD_DP", "3": "LEAD_DN", "4": "GND", "5": "VBUS"}, "LEAD",
          pcb=P(CFG["ph"], PH_EDGE, 180))
@@ -90,8 +92,8 @@ def board() -> Board:
 	(constraint hole_clearance (min 0.19mm)))
 """,
         "texts": [
-            {"text": "DATA v1.0", "x": 7.0, "y": 16.2, "size": 0.8},
-            {"text": "VBUS GND D− D+ GND", "x": CFG["ph"], "y": 10.5, "size": 0.8},
+            {"text": "DATA v1.0", "x": 7.0, "y": H - 3.0, "size": 0.8},
+            {"text": "VBUS GND D− D+ GND", "x": CFG["ph"], "y": 10.6, "size": 0.8},
         ],
     }
     return b

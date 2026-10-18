@@ -155,9 +155,11 @@ pcb:
     rear: { pd: 62 }            # KiCad x on the rear edge: the USB-C PD input
     buttons: [[11.5, 10.0], [11.5, 16.5]]   # KiCad: SW1 RESET, SW2 BOOT (design.py), top-actuated, 1.5 mm tall: pin holes in the lid
   data_port:                # the drawer's DATA port: a USB-C source on a small board under a shelf of the drawer's port wall
-    size: [40, 20]          # X × Y; KiCad y=0 is the REAR edge (the 5-pin PH lead to the node), y=20 the FRONT edge (USB-C mouth)
+    size: [40, 17]          # X × Y; KiCad y=0 is the REAR edge (the 5-pin PH lead to the node), y=17 the FRONT edge (USB-C mouth)
+                            # ≤ 17 deep: the PH plug and the wires' turn down fit in the drawer's 30 mm rear bay
     thickness: 1.6
     layers: 2
-    holes: [[3.0, 10.0], [37.0, 10.0]]   # Ø2.7 (PT 2.6 × 8 into the shelf), 34 mm apart; mounted components down
-    usb: 20                 # KiCad x of the USB-C (GCT USB4105) on the front edge: its centre 1.63 mm below the board's component face
-    ph: 20                  # KiCad x of the JST PH 5-pin (side entry) on the rear edge
+    holes: [[3.0, 8.5], [37.5, 4.0]]     # Ø2.7, PT 2.6 × 8 into the shelf from below through the cable window; mounted components down
+    usb: 30.5               # KiCad x of the USB-C (GCT USB4105) on the front edge: the right edge ≤ 9.5 mm right of it (the
+                            # chain foot's lock screw); its centre 1.63 mm below the component face (3.23 below the back face)
+    ph: 17.5                # KiCad x of the JST PH 5-pin (side entry) on the rear edge: its courtyard clear of the USB4105's (x ≤ 17.6)

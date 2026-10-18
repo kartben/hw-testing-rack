@@ -101,7 +101,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 2 × USB-C GCT USB4105-GF-A-120 | modes in [architecture.md](architecture.md); the classic-mode path (J3 → J4) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | JST PH 6, side entry, SMD (S6B-PH-SM4-TB): GND, 3V3 (10 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | |
-| DATA | J7, JST PH 5, vertical, SMD (B5B-PH-SM4-TB): 1 DUT_5V · 2 GND · 3 D− · 4 D+ · 5 GND, in parallel with the DUT receptacle J4 | the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--20-mm); **one of J4 / J7 at a time** (below) |
+| DATA | J7, JST PH 5, vertical, SMD (B5B-PH-SM4-TB): 1 DUT_5V · 2 GND · 3 D− · 4 D+ · 5 GND, in parallel with the DUT receptacle J4 | the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm); **one of J4 / J7 at a time** (below) |
 | Camera | JST PH 2, SMD: 5 V via 0.5 A PTC | mouth 0.65 mm behind `pcb.bay_node.cam` in `config/rack.yaml`, to clear the M3 hole |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
@@ -191,19 +191,19 @@ and the sequencing: [power.md](power.md).
 The schematic uses the generator's automatic layout (blocks with labelled stubs); it is not drawn
 like the bay node's yet.
 
-## DATA port v1.0 — 2 layers, 40 × 20 mm
+## DATA port v1.0 — 2 layers, 40 × 17 mm
 
 The drawer's USB-C port for the board under test (×1 per drawer): a small board screwed
-components down under a shelf of the drawer's port wall (2 × PT 2.6×8, Ø2.7 holes 34 mm apart,
-one each end), the receptacle's mouth out of the wall, a 5-wire JST PH lead from its rear edge to
+components down under a shelf of the drawer's port wall (2 × PT 2.6×8 from below, through the drawer's cable
+window, one each end), the receptacle's mouth out of the wall, a 5-wire JST PH lead from its rear edge to
 the node's J7 through the drag chain ([cabling.md](cabling.md)).  It replaces the USB-C coupler
 and the 90° extension.  Geometry in `config/rack.yaml` › `pcb.data_port`.
 
 | Block | Parts | Notes |
 |---|---|---|
-| USB-C | GCT USB4105-GF-A-120 (J1), front edge centre, its centre 1.63 mm below the component face | a source, as the node's DUT port: 22 k Rp on CC1 and CC2 ("1.5 A"); the shell to GND |
+| USB-C | GCT USB4105-GF-A-120 (J1) on the front edge at x 30.5, the board's right edge 9.5 mm from it (clear of the chain foot's lock screw); its centre 1.63 mm below the component face, 3.23 mm below the back face | a source, as the node's DUT port: 22 k Rp on CC1 and CC2 ("1.5 A"); the shell to GND |
 | ESD | USBLC6-2SC6 (U1) flow-through, 100 nF on VBUS (C1) | right at the receptacle, where the plugs go in |
-| Lead | JST PH 5, side entry, SMD (S5B-PH-SM4-TB, J2), rear edge centre: 1 GND · 2 D+ · 3 D− · 4 GND · 5 VBUS | the node's J7 mirrored: the rack's one PH cable type (pin n ↔ pin 6−n) joins them; 5 pins, so a 6-pin row cable (VRACK) cannot go in |
+| Lead | JST PH 5, side entry, SMD (S5B-PH-SM4-TB, J2), rear edge at x 17.5 (its courtyard clear of the USB4105's on a 17 mm deep board): 1 GND · 2 D+ · 3 D− · 4 GND · 5 VBUS | the node's J7 mirrored: the rack's one PH cable type (pin n ↔ pin 6−n) joins them; 5 pins, so a 6-pin row cable (VRACK) cannot go in |
 
 USB 2.0 only: High Speed PC ↔ board in classic mode, Full Speed to the node's ESP32 otherwise.
 Both sides are GND pours; routed by Freerouting like the other boards.  JLC: Economic PCBA (one

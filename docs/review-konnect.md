@@ -469,9 +469,9 @@ Konnect, on the saved files:
 ## DATA port board and the node's J7 (2026-10-18)
 
 The drawer's USB-C coupler and its 90° extension become our own board, `electronics/data-port`
-(40 × 20 mm, 2 layers: USB4105 source with Rp 22k on CC1/CC2, USBLC6 at the receptacle, JST PH 5
+(40 × 17 mm, 2 layers: USB4105 source with Rp 22k on CC1/CC2, USBLC6 at the receptacle, JST PH 5
 side entry), on a 5-wire PH lead from the node's new J7 (B5B-PH-SM4-TB, vertical) through the drag
-chain ([electronics.md](electronics.md#data-port-v10--2-layers-40--20-mm)).  J7 sits in parallel
+chain ([electronics.md](electronics.md#data-port-v10--2-layers-40--17-mm)).  J7 sits in parallel
 with J4 (one of the two in use).  Both boards were routed by Freerouting; on the node the first
 route ran POS_OUT between J2.6 and its two VRACK vias and cut that pad off its island, so the vias
 now sit at the pad's end, as J1.1's.  Konnect, on the saved files:
@@ -487,3 +487,10 @@ now sit at the pad's end, as J1.1's.  Konnect, on the saved files:
 
 JLC placement corrections for the two new PH parts were fitted the same way as the others
 (EasyEDA pads onto KiCad pads, pin by pin): C265104 180°, +0.14 mm y; C265085 180°, −0.62 mm y.
+
+Reworked the same day to the drawer's constraints (`config/rack.yaml` › `pcb.data_port`): 40 × 17 mm,
+the USB-C at x 30.5 (the right edge 9.5 mm from the mouth, clear of the chain foot's lock screw), the
+PH at x 17.5 (on a 17 mm board its courtyard and the USB4105's overlap in depth, so they must not in
+x), holes (3, 8.5) and (37.5, 4) over the drawer's cable window.  Re-routed (0 unrouted, 0
+violations); Konnect on the saved files: ERC 0, DRC 0 / 0 unconnected / parity 0 (zones refilled),
+JLC DFM 0 findings, 6 parts with a model.

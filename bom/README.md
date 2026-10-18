@@ -32,7 +32,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | | | PCBA: setup $25.75, stencil $8.27, components $52.32, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52 | 159.14 |
 | | | **Estimated total** | **213.74** |
 | | | Order (indicative): as quoted | 213.74 |
-| data-port | 15 PCBs (2-layer 40×20 mm, lead-free HASL), 12 assembled, Economic PCBA | PCB: board $4.00 | 4.00 |
+| data-port | 15 PCBs (2-layer 40×17 mm, lead-free HASL), 12 assembled, Economic PCBA | PCB: board $4.00 | 4.00 |
 | | | PCBA: setup $8.00, stencil $1.50, components $17.90, extended parts $9.00, SMT $0.60 | 37.00 |
 | | | **Estimated total** | **41.00** |
 | | | Order (indicative): as quoted | 41.00 |
@@ -193,7 +193,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | LEAD — JST PH 5-pin, side entry, SMD | 12  | 0.31 | 3.75 | LCSC/JLCPCB C265104 |
 | Electronics | 22k — Resistor 22k 0603 | 24  | 0.00 | 0.09 | LCSC/JLCPCB C31850 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 12  | 0.17 | 1.99 | LCSC/JLCPCB C7519 |
-| Electronics | Bare PCB data-port (2-layer 40×20 mm, lead-free HASL) | 15  | 0.25 | 3.68 | estimate, not quoted |
+| Electronics | Bare PCB data-port (2-layer 40×17 mm, lead-free HASL) | 15  | 0.25 | 3.68 | estimate, not quoted |
 | Electronics | Economic PCBA, 12 boards: setup, stencil, extended parts, SMT | 1  | 17.57 | 17.57 | estimate, not quoted |
 | Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | 0.44 | 0.44 | estimate, not quoted |
 | Printed parts | PETG filament | 3.9 kg | 20.00 | 78.00 | any |

@@ -64,7 +64,7 @@ JLC_QUOTE = {
     # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
     "data-port": {
         "pcbs": 15, "assembled": 12, "service": "Economic", "total": 41.00, "estimate": True,
-        "spec": "2-layer 40×20 mm, lead-free HASL",
+        "spec": "2-layer 40×17 mm, lead-free HASL",
         "pcb": {"board": 4.00},
         "pcba": {"setup": 8.00, "stencil": 1.50, "components": 17.90, "extended parts": 9.00, "SMT": 0.60},
     },

@@ -2013,7 +2013,7 @@
 {
 "category": "Electronics",
 "group": "data-port",
-"item": "Bare PCB data-port (2-layer 40×20 mm, lead-free HASL)",
+"item": "Bare PCB data-port (2-layer 40×17 mm, lead-free HASL)",
 "supplier": "estimate, not quoted",
 "qty": 15,
 "unit_eur": 0.2453,
@@ -2619,7 +2619,7 @@
 "service": "Economic",
 "total": 41.0,
 "estimate": true,
-"spec": "2-layer 40×20 mm, lead-free HASL",
+"spec": "2-layer 40×17 mm, lead-free HASL",
 "pcb": {
 "board": 4.0
 },

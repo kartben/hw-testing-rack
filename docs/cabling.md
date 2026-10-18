@@ -16,7 +16,7 @@ bay node (plenum)                                 drawer
 ```
 
 1. **Node → drawer: a small port board and a 5-wire lead.**  The drawer's
-   DATA port is our own 40 × 20 mm board ([electronics/data-port](../electronics/data-port/design.py)):
+   DATA port is our own 40 × 17 mm board ([electronics/data-port](../electronics/data-port/design.py)):
    a USB-C receptacle (a source: Rp 22k on CC1/CC2, USBLC6 ESD at the
    receptacle) screwed components down under a shelf of the port wall
    (2 × PT 2.6×8, one each end), its mouth out of the wall: the board's short
