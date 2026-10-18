@@ -37,7 +37,7 @@ module screw_through(d = M3_CLEAR, h = 20, head = M3_HEAD, counterbore = true) {
 }
 
 module magnet_pocket(d = DRAWER_MAGNET[0], t = DRAWER_MAGNET[1]) {
-    // Press-fit/glue pocket for a disc magnet, opening at z=0 going -Z.
+    // Slip-fit pocket for a glued disc magnet (docs/mechanical.md), opening at z=0 going -Z.
     translate([0, 0, -t - 0.2]) cylinder(d = d + 0.25, h = t + 0.2 + EPS);
 }
 

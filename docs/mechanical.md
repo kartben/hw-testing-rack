@@ -59,6 +59,13 @@ on a pad) holds it closed against the slope; pulled out, it rests on a PT 2.6
 stop screw through the left lip, the flange still under the lips.  Want
 smoother?  Print the trays in a POM-like "igus" filament.
 
+The magnet pockets are a slip fit (Ø + 0.25 mm): **glue the magnets**, a drop
+of CA gel in each pocket.  The other magnet pulls each one out through its
+pocket's mouth, and the drawer's boss leaves a 0.9 mm wall around its pocket,
+too thin to press-fit into.  **Check the polarity first**: stack the pair, mark both outer
+faces, and glue the marked faces into the pockets, so the two bare faces
+attract.
+
 ### Drag chain
 
 The reference is Olimex's DRAG-CHAIN-7X7 (€4/m): 7 × 7 mm inside, links
@@ -69,7 +76,10 @@ with 2 holes 8 mm apart) from Electrokit's listing of the same generic chain
 (41017996).  The bend radius is not published anywhere: the model keeps
 R18.  **Measure the chain on arrival** and set `config/rack.yaml › chain`:
 `outer`, `radius`, `end_holes` and `end_length`, the rigid length of an end
-piece from its mouth to its pivot on the chain.
+piece from its mouth to its pivot on the chain.  Olimex sells it by the metre
+and, like every seller of this generic chain, with one pair of end pieces per
+metre; it does not sell them alone, so the other drawers' pairs come from
+AliExpress (see the BOM).
 
 The chain lies flat in the plenum, its side plates horizontal, so the end
 pieces' tabs stand vertical on the outer faces of the U: the fixed one

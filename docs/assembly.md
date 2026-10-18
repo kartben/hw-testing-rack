@@ -56,7 +56,10 @@ right and floor plate; base brace into the free inserts of the shared ladder
 3. **Row power (VRACK)**: JST PH jumper to the neighbouring node, through the windows in
    both tray walls and the shared ladder; the row feed goes into the row's
    first bay.
-4. **Drawer**: magnet underneath; the panel-mount female goes into the DATA
+4. **Drawer**: magnets first, one under the drawer and one in the tray's left
+   ledge: stack the pair, mark both outer faces, glue each magnet marked face
+   down into its pocket with a drop of CA, and let it set before the drawer
+   goes in.  The panel-mount female goes into the DATA
    port position **farther from the board's debug USB** (left or right; the
    viewer's bay panel says which: *DATA socket*): body through the port wall
    from the front, flange against the wall, 2 × PT 2.6×8 through the flange's

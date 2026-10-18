@@ -1972,32 +1972,42 @@
 },
 {
 "category": "Fasteners",
-"item": "Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",
-"supplier": "supermagnete S-06-03-N",
-"qty": 24,
-"unit_eur": 0.3,
+"item": "Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge)",
+"supplier": "AliExpress 1005010074888189, \"6x3mm-50 pièces\"",
+"qty": 1,
+"unit": "lot",
+"unit_eur": 3.99,
+"notes": "glued (a drop of CA in the slip-fit pocket): the other magnet pulls each one out of its pocket's mouth.  Polarity: stack the pair, mark both outer faces; marked faces into the pockets",
+"ext_eur": 3.99
+},
+{
+"category": "Fasteners",
+"item": "Cyanoacrylate glue, gel (detent magnets)",
+"supplier": "any",
+"qty": 1,
+"unit_eur": 3.0,
 "unit": "pcs",
-"ext_eur": 7.2
+"ext_eur": 3.0
 },
 {
 "category": "Motion",
 "item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces",
 "supplier": "Olimex DRAG-CHAIN-7X7",
-"qty": 2.6,
+"qty": 3,
 "unit": "m",
 "unit_eur": 4.0,
 "notes": "open the links to lay the extension in (its plug and panel socket do not pass a 7×7 channel); Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)",
-"ext_eur": 10.4
+"ext_eur": 12.0
 },
 {
 "category": "Motion",
-"item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer",
-"supplier": "AliExpress (generic) / Olimex if included",
-"qty": 12,
-"unit_eur": 1.0,
-"notes": "a metre of chain usually comes with one pair only",
+"item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain",
+"supplier": "AliExpress 1005003181041939, \"7x7mm\" (or one more metre of chain per pair)",
+"qty": 9,
+"unit_eur": 2.17,
+"notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing is for the non-opening 7×7 type: check one on the open links before buying the lot",
 "unit": "pcs",
-"ext_eur": 12.0
+"ext_eur": 19.53
 },
 {
 "category": "Cables",
@@ -2127,13 +2137,13 @@
 "by_category": {
 "Electronics": 582.8799999999999,
 "Printed parts": 78.0,
-"Fasteners": 17.72,
-"Motion": 22.4,
+"Fasteners": 17.509999999999998,
+"Motion": 31.53,
 "Cables": 82.69,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 901.89,
+"total_eur": 910.81,
 "prints": [
 {
 "part": "bay_label",

@@ -255,6 +255,7 @@ def hardware(rack) -> list[dict]:
     pop = r.get("population", {})
     cams = len(r.get("cameras", []))
     braces = cols * (n_rows + 1)
+    chain_m = math.ceil(0.19 * n_bays + 0.3)      # sold by the metre, one pair of end pieces with each
     charger = r["power_box"]["charger"]
     rows = [
         {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
@@ -276,17 +277,26 @@ def hardware(rack) -> list[dict]:
          "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)"},
         {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
          "supplier": "AliExpress (bulk)", "qty": 4 * n_bays, "unit_eur": 0.01},
-        {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",
-         "supplier": "supermagnete S-06-03-N", "qty": 2 * n_bays, "unit_eur": 0.30},
+        {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the "
+                                         "drawer, one in the tray ledge)",
+         "supplier": "AliExpress 1005010074888189, \"6x3mm-50 pièces\"", "qty": math.ceil(2 * n_bays / 50),
+         "unit": "lot", "unit_eur": 3.99,
+         "notes": "glued (a drop of CA in the slip-fit pocket): the other magnet pulls each one out of its pocket's "
+                  "mouth.  Polarity: stack the pair, mark both outer faces; marked faces into the pockets"},
+        {"category": "Fasteners", "item": "Cyanoacrylate glue, gel (detent magnets)", "supplier": "any",
+         "qty": 1, "unit_eur": 3.0},
         {"category": "Motion", "item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), "
                                       "≈ 180 mm per drawer with its two end pieces",
-         "supplier": "Olimex DRAG-CHAIN-7X7", "qty": round(0.19 * n_bays + 0.3, 1), "unit": "m", "unit_eur": 4.0,
+         "supplier": "Olimex DRAG-CHAIN-7X7", "qty": chain_m, "unit": "m", "unit_eur": 4.0,
          "notes": "open the links to lay the extension in (its plug and panel socket do not pass a 7×7 channel); "
                   "Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, "
                   "measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)"},
-        {"category": "Motion", "item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer",
-         "supplier": "AliExpress (generic) / Olimex if included", "qty": n_bays, "unit_eur": 1.0,
-         "notes": "a metre of chain usually comes with one pair only"},
+        {"category": "Motion", "item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers "
+                                      "beyond one pair per metre of chain",
+         "supplier": "AliExpress 1005003181041939, \"7x7mm\" (or one more metre of chain per pair)",
+         "qty": max(0, n_bays - chain_m), "unit_eur": 2.17,
+         "notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing "
+                  "is for the non-opening 7×7 type: check one on the open links before buying the lot"},
         {"category": "Cables", "item": "USB-C male → panel-mount USB-C female extension, 30 cm: 25 mm flange, "
                                       "holes 17 mm apart (drawer DATA port)",
          "supplier": "QinMSY UC-138, AliExpress 1005009101248402 (30 cm)", "qty": n_bays, "unit_eur": 1.86,

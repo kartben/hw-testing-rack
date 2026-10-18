@@ -10,11 +10,11 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Power | 82 |
 | Printed parts | 78 |
 | Cameras | 36 |
-| Motion | 22 |
+| Motion | 32 |
 | Fasteners | 18 |
-| **Total** | **902** |
+| **Total** | **911** |
 
-≈ **€75 per bay** all-in.
+≈ **€76 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -190,9 +190,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
 | Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA socket | 96  | 0.02 | 1.92 | AliExpress (bulk, e.g. HZYUEGOU) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 48  | 0.01 | 0.48 | AliExpress (bulk) |
-| Fasteners | Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge) | 24  | 0.30 | 7.20 | supermagnete S-06-03-N |
-| Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 2.6 m | 4.00 | 10.40 | Olimex DRAG-CHAIN-7X7 |
-| Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer | 12  | 1.00 | 12.00 | AliExpress (generic) / Olimex if included |
+| Fasteners | Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge) | 1 lot | 3.99 | 3.99 | AliExpress 1005010074888189, "6x3mm-50 pièces" |
+| Fasteners | Cyanoacrylate glue, gel (detent magnets) | 1  | 3.00 | 3.00 | any |
+| Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 3 m | 4.00 | 12.00 | Olimex DRAG-CHAIN-7X7 |
+| Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain | 9  | 2.17 | 19.53 | AliExpress 1005003181041939, "7x7mm" (or one more metre of chain per pair) |
 | Cables | USB-C male → panel-mount USB-C female extension, 30 cm: 25 mm flange, holes 17 mm apart (drawer DATA port) | 12  | 1.86 | 22.32 | QinMSY UC-138, AliExpress 1005009101248402 (30 cm) |
 | Cables | JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 (bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest flat at the front of the plenum) | 2 lot | 2.85 | 5.70 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length20CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS) | 1 lot | 3.19 | 3.19 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length30CM |
