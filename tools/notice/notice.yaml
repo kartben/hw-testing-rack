@@ -29,7 +29,8 @@ parts:                 # thumbnail key (notice.py THUMBS): name on the pages
   an: Chain anchor
   ft: Chain foot
   dc: Drag chain
-  xt: USB-C extension
+  xt: DATA lead (JST PH 5)
+  dp: DATA port board
   pb: Power box
   pl: Lid
   hb: Power hub
@@ -58,14 +59,14 @@ pages:
     tools: PH1 · insert iron
 
   # counts per bay from bom/rack-bom.csv: inserts 4 per ladder + 6 in the tray; M3x8 4 per brace + 2 for the
-  # chain anchor; M3x6 the node; PT 2.6x8: 4 chain ends, 2 DATA socket, foot lock, drawer stop; 4 washers
+  # chain anchor; M3x6 the node; PT 2.6x8: 4 chain ends, 2 DATA board, foot lock, drawer stop; 4 washers
   - file: A-pieces.dc.html
     board: {title: "One bay: parts", row: titleA}
     kind: parts
     title: One bay, parts
     page: 2
     footer: "{name}"
-    parts: {lb: 2, la: 2, lc: 2, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1}
+    parts: {lb: 2, la: 2, lc: 2, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1}
     hardware: {insert: 22, m3x8: 10, m3x6: 4, pt26x8: 8, w25: 4, mag: 2}
     note: "First, heat-set the inserts: 4 per ladder (rear edge), 6 in the tray. Glue the 2 magnets (drawer, tray ledge) with CA: they must attract. Drag chain: ≈ 180 mm with its two end pieces (or print chain_parts.scad, link + bar)."
 
@@ -117,7 +118,7 @@ pages:
     footer: "{name}"
     steps:
       - {n: 9, drawing: a9b, alt: "At the bench: the chain's end pieces onto the anchor and the foot's fin, a washer under each screw", parts: {dc: 1, an: 1, ft: 1}, hardware: {pt26x8: 4, w25: 4}}
-      - {n: 10, drawing: a10o, alt: "Open the links, lay the extension's cable in, close them", parts: {xt: 1}}
+      - {n: 10, drawing: a10o, alt: "Open the links, lay the DATA lead in, close them", parts: {xt: 1}}
 
   - file: A-06.dc.html
     board: {title: "One bay: 11–12", row: titleA}
@@ -126,8 +127,8 @@ pages:
     page: 8
     footer: "{name}"
     steps:
-      - {n: 11, drawing: a11t, alt: "Anchor into the tray's inserts; the extension's plug into the node's DUT port", hardware: {m3x8: 2}}
-      - {n: 12, drawing: a12s, alt: "Drawer: the extension's socket through the port wall from the front, flange against it", hardware: {pt26x8: 2}}
+      - {n: 11, drawing: a11t, alt: "Anchor into the tray's inserts; the DATA lead's plug into the node's J7 (DATA)", hardware: {m3x8: 2}}
+      - {n: 12, drawing: a12s, alt: "Drawer: the DATA board under its roof, its USB-C through the port wall's slot, 2 screws from below through the cable window; the lead into its PH from the rear", parts: {dp: 1}, hardware: {pt26x8: 2}}
 
   - file: A-07.dc.html
     board: {title: "One bay: 13", row: titleA}
@@ -145,7 +146,7 @@ pages:
     page: 10
     footer: "{name} · next bay"
     banner: "The middle ladder is shared. Heat-set the new inserts and glue the magnets (CA, attracting) first."
-    parts: {lb: 1, la: 1, lc: 1, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1}
+    parts: {lb: 1, la: 1, lc: 1, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1}
     hardware: {jumper: 1, insert: 14, m3x8: 10, m3x6: 4, pt26x8: 8, w25: 4, mag: 2}   # the new lb and la, the tray
 
   - file: B-01.dc.html
@@ -185,7 +186,7 @@ pages:
     page: 14
     footer: "{name} · next bay"
     steps:
-      - {n: 7, drawing: b5, alt: "Chain, socket and drawer of the second bay, as steps 9–13", parts: {dc: 1, an: 1, ft: 1, xt: 1, dr: 1}, hardware: {m3x8: 2, pt26x8: 8, w25: 4}}
+      - {n: 7, drawing: b5, alt: "Chain, DATA board and drawer of the second bay, as steps 9–13", parts: {dc: 1, an: 1, ft: 1, xt: 1, dp: 1, dr: 1}, hardware: {m3x8: 2, pt26x8: 8, w25: 4}}
 
   - file: B-05.dc.html
     board: {title: "Next bay: done", row: titleB}

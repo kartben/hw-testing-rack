@@ -56,9 +56,17 @@ for _t, _d in USB_PLUGS.items():
     if "ATOP" in _d:
         for _piece in ("mold", "metal"):
             WEB_PARTS[f"usbplug_{_t}_adapter_{_piece}"] = ("parts/usb_plugs.scad", {**_d, "STYLE": "adapter", "PIECE": _piece})
-WEB_PARTS["usbplug_coupler_mold"] = ("parts/usb_plugs.scad", {"STYLE": "coupler", "PIECE": "mold"})
-WEB_PARTS["usbplug_coupler_metal"] = ("parts/usb_plugs.scad", {"STYLE": "coupler", "PIECE": "metal"})
-COUPLER_REAR = 11.0        # the DATA coupler's barrel behind its flange (lib/carrier.scad, parts/usb_plugs.scad)
+WEB_PARTS["ph5_plug"] = ("parts/usb_plugs.scad", {"STYLE": "ph5"})
+# the node's J7 (DATA, JST PH 5 vertical): KiCad (40, 37.4) in electronics/bay-node/design.py; mated 8 mm tall
+NODE_J7 = (40.0, 37.4, 8.0)
+
+
+def dataport_parts(rack) -> dict:
+    """The DATA port board's stand-in (parts/usb_plugs.scad), sized from config/rack.yaml › pcb.data_port."""
+    dp = rack.raw["pcb"]["data_port"]
+    defs = {"STYLE": "dataport", "BW": dp["size"][0], "BD": dp["size"][1], "BT": dp["thickness"],
+            "HOLES": dp["holes"], "USBX": dp["usb"], "PHX": dp["ph"]}
+    return {f"dataport_{k}": ("parts/usb_plugs.scad", {**defs, "PIECE": k}, None) for k in ("pcb", "usb", "ph")}
 
 # Parts whose print orientation differs from their assembly orientation get an
 # "assembly" variant rendered with the print rotation undone.
@@ -141,6 +149,7 @@ def build_parts_glb(rack, boards: dict, hq: bool = False) -> dict:
 
     parts = {n: (s, d, None) for n, (s, d) in WEB_PARTS.items()}
     parts.update(panel_parts(rack))
+    parts.update(dataport_parts(rack))
     used = sorted({p["board"] for p in rack.raw.get("population", {}).values()})
     for bid in used:
         parts[f"plate_{bid}"] = ("parts/board_plate.scad", {"BOARD": bid}, None)
@@ -179,6 +188,8 @@ def plug_exit(end):
     """Where the cable leaves a plug's strain relief and which way: a straight plug out of its back,
     a right-angle one out of its top.  end = {at: receptacle face, dir: into it, up, type, style}."""
     at, d = np.array(end["at"], float), np.array(end["dir"], float)
+    if end["type"] == "ph5":                                # a JST PHR-5: its wires leave its back
+        return at - d * 6.0, -d
     up = np.array(end.get("up", (0, 0, 1)), float)
     p = USB_PLUGS.get(end["type"], USB_PLUGS["usb-c"])
     if end.get("style") == "right":
@@ -271,24 +282,40 @@ def flat_cable(a, b, length, r=CABLE_BEND_R, step=2.5):
     return [[round(float(v), 2) for v in p] for p in pts], round(shortfall, 1)
 
 
-def ext_under_drawer(e, mouth, r=10.0, step=2.5):
-    """The drawer extension from its right-angle plug in the DATA coupler's rear (bent down) to the
-    drag chain's moving mouth, which faces forwards: down out of the plug, a bend of radius r forwards
-    just over the tray floor, a run forwards, a U-turn in front of the mouth (tilted: the mouth is to
-    the side and a little higher) and straight into it."""
-    p0, _ = plug_exit(e)
-    y, z = np.array([0.0, 1.0, 0.0]), np.array([0.0, 0.0, 1.0])
-    pts = [p0 - y * r + r * (y * math.cos(t) - z * math.sin(t)) for t in np.linspace(0, math.pi / 2, 8)]
-    low = pts[-1]
-    start = np.array([low[0], mouth[1] - 4.0, low[2]])
-    n = max(1, int((low[1] - start[1]) / step))
-    pts += [low + (start - low) * k / n for k in range(1, n + 1)]
-    end = np.array([mouth[0], start[1], mouth[2]])
-    half = (end - start) / 2
-    ru = float(np.linalg.norm(half))
-    pts += [start + half - half * math.cos(t) - y * ru * math.sin(t) for t in np.linspace(0, math.pi, 14)[1:]]
-    pts += [np.array(mouth, float)]
-    return [[round(float(c), 2) for c in p] for p in pts]
+def rounded_path(pts, r, step=2.0):
+    """A polyline with its corners rounded (a quadratic curve within r of each corner): a flexible lead."""
+    pts = [np.array(p, float) for p in pts]
+    out = [pts[0]]
+    for k in range(1, len(pts) - 1):
+        a, b, c = pts[k - 1], pts[k], pts[k + 1]
+        rk = min(r, np.linalg.norm(b - a) / 2, np.linalg.norm(c - b) / 2)
+        p0 = b + (a - b) / np.linalg.norm(a - b) * rk
+        p1 = b + (c - b) / np.linalg.norm(c - b) * rk
+        out += [(1 - t) ** 2 * p0 + 2 * (1 - t) * t * b + t ** 2 * p1 for t in np.linspace(0, 1, 7)]
+    out.append(pts[-1])
+    dense = [out[0]]
+    for p0, p1 in zip(out, out[1:]):
+        n = max(1, int(np.linalg.norm(p1 - p0) / step))
+        dense += [p0 + (p1 - p0) * j / n for j in range(1, n + 1)]
+    return [[round(float(v), 2) for v in p] for p in dense]
+
+
+def lead_to_board(e, mouth, z_low, depth=7.0):
+    """The DATA lead from the drag chain's moving mouth (facing forwards) to the PH plug at the DATA
+    board's rear edge, drawn from the plug: back out of it, down through the drawer's cable window,
+    forwards under the drawer at z_low (over the camera-pod bosses), a flattened U-turn in front of
+    the mouth (only `depth` deep: the tray's fascia is 17 mm ahead of it with the drawer out), in."""
+    p0, d = plug_exit(e)
+    p1 = p0 + d * 2.0
+    p2 = np.array([p1[0], p1[1], z_low])
+    p3 = np.array([p1[0], mouth[1] - 1.0, z_low])
+    pts = rounded_path([p0, p1, p2, p3], 3.0)
+    a, c = (mouth[0] - p3[0]) / 2, np.array([(mouth[0] + p3[0]) / 2, p3[1], 0.0])
+    for t in np.linspace(0, math.pi, 16)[1:]:
+        z = z_low + (mouth[2] - z_low) * t / math.pi
+        pts.append([round(float(c[0] - a * math.cos(t)), 2), round(float(c[1] - depth * math.sin(t)), 2), round(z, 2)])
+    pts.append([round(float(v), 2) for v in mouth])
+    return pts
 
 
 def cable_free_length(cab, a, b):
@@ -418,7 +445,11 @@ def build(rack) -> Path:
 
     port_wall_y = d["depth"] - d["rear_bay"]
     data_ports = rack.data_port_x          # the DATA coupler's position(s) per drawer
-    port_z = d["bottom"] + 13.5           # lib/carrier.scad › PORT_Z
+    port_z = d["bottom"] + 8.5            # lib/carrier.scad › PORT_Z: the DATA board's USB-C mouth
+    dp = raw["pcb"]["data_port"]
+    dp_x0 = data_ports[0] - dp["usb"]      # the DATA board in the drawer (lib/carrier.scad › DATA_PCB_X0, ..)
+    dp_y0 = port_wall_y - d["wall"]       # its front edge: the port wall's front face
+    dp_roof = port_z + 1.63 + dp["thickness"]
     plate_x0 = d["wall"] + 0.3
     plate_y0 = d["front_thickness"] + 0.3
     plate_w = rack.drawer_w - 2 * d["wall"] - 0.6
@@ -447,15 +478,25 @@ def build(rack) -> Path:
         items["pcbs"].append({"board": "bay-node", "bay": bid, "row": i, "space": "row",
                               "pos": [x0 + node["x0"], rack.node_front_y + node["size"][1], c["bottom"] + c["standoff"]],
                               "size": [node["size"][0], node["size"][1], node["thickness"]]})
-        # extension cable: straight USB-C plug in the node's DUT port, then into the drag chain,
-        # whose moving end carries it to the panel-mount socket at the drawer's rear (DATA port)
-        ext_a = {"at": [x0 + node["x0"] + node["size"][0] + 0.4,
-                        rack.node_front_y + node["size"][1] - node["right"]["dut"], pcb_top + 1.6],
-                 "dir": [-1, 0, 0], "type": "usb-c", "style": "straight"}
-        pa, ta = plug_exit(ext_a)
-        end = (x0 + fixed[0], fixed[1] - 4, chain_z)
-        cable(bezier(pa, pa + ta * 16, (end[0], end[1] - 22, end[2]), end), row=i, kind="ext", bay=bid,
-              radius=1.6, ends=[ext_a], label="Drawer extension (runs through the drag chain)")
+        # the DATA port board under its roof in the drawer (components down) and its 5-wire PH lead: up
+        # out of the node's J7, across the node under the drawer into the drag chain's fixed end; out of
+        # its moving end, a U-turn, up through the drawer's cable window into the board's PH from the rear
+        dxw_ = x0 + rack.drawer_x0
+        for k in ("pcb", "usb", "ph"):
+            add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_roof), row=i, layer="drawers", bay=bid,
+                movable=True)
+        j7 = {"at": [x0 + node["x0"] + NODE_J7[0], rack.node_front_y + node["size"][1] - NODE_J7[1],
+                     pcb_top + NODE_J7[2] - 6.0], "dir": [0, 0, -1], "up": [0, 1, 0], "type": "ph5"}
+        p0, _ = plug_exit(j7)
+        top = plenum - 2.0                                 # under the drawer
+        cable(rounded_path([p0, (p0[0], p0[1], top), (x0 + fixed[0], fixed[1] - 21, top),
+                            (x0 + fixed[0], fixed[1] - 11, chain_z), (x0 + fixed[0], fixed[1], chain_z)], 6.0),
+              row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 5, through the drag chain)")
+        ph = {"at": [dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1], plenum + dp_roof - dp["thickness"] - 2.8],
+              "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph5"}
+        mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
+        cable(lead_to_board(ph, mouth, z_low=9.0), row=i, kind="ext", bay=bid, radius=1.2, ends=[ph],
+              label="DATA lead (JST PH 5, through the drag chain)", movable=True)
         return x0, plenum
 
     for b in rack.bays():
@@ -505,17 +546,9 @@ def build(rack) -> Path:
             ctype = info["cable"]
             btype = cables_cfg[ctype].get("b", "usb-c")
             style = cables_cfg[ctype].get("style", "right")
-            end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 2.5, dz + port_z], "dir": [0, 1, 0],   # mouth on the flange's face
-                     "type": "usb-c", "style": "straight" if style == "straight" else "right", "socket": "coupler"}
+            end_a = {"at": [sx, dy + dp_y0 - 0.28, dz + port_z], "dir": [0, 1, 0],   # the DATA board's USB-C, 0.28 proud
+                     "type": "usb-c", "style": "straight" if style == "straight" else "right"}
             b_style = "straight" if style == "side" else style
-            # the drawer extension's end: a right-angle plug in the coupler's rear, bent down through the
-            # cable window; its cable turns forward under the drawer, U-turns in front of the drag
-            # chain's moving end and goes into its mouth (all of it moves with the drawer)
-            ext_b = {"at": [sx, dy + port_wall_y - d["wall"] + COUPLER_REAR, dz + port_z], "dir": [0, -1, 0],
-                     "up": [0, 0, -1], "type": "usb-c", "style": "right"}
-            mouth = np.array([x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z])
-            cable(ext_under_drawer(ext_b, mouth), row=i, kind="ext", bay=b.id, radius=1.6, ends=[ext_b],
-                  label="Drawer extension (runs through the drag chain)", movable=True)
             zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
             ux = o["usb_x"]
             if o["usb_side"]:

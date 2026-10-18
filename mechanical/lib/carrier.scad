@@ -54,25 +54,21 @@ STOP_PIN_X = DRAWER_X0 - DRAWER_FLANGE[0] / 2 - 0.2; // PT 2.6 × 8 stop screw, 
 FLANGE_Y = [DRAWER_D - 26, DRAWER_D - 6];          // rear flange segment (drawer coords)
 STOP_Y = FLANGE_Y[0] - DRAWER_TRAVEL - 4.5;        // stop pin position (carrier coords)
 
-// port wall: the DATA port, a USB-C female-to-female coupler screwed through it, and a slot for
-// the optional AUX pigtail.  The board's cable plugs into the coupler's front; the drawer
-// extension (a 40 cm C ↔ C, a right-angle plug at this end) plugs into its rear, bent down
-// through the cable window to the drag chain's moving end.  A panel-mount female extension (the
-// UC-138's 20 mm body and strain relief) left no room to turn its cable before the rear wall.
-// The flange goes on the wall's front face, so the mouth is flush and any plug seats; the barrel
-// passes through the wall.  Two PT 2.6 × 8 through the flange's holes into pilots in the wall,
-// backed by pads behind it.  Flange, barrel and pitch: the reference coupler's (measure yours).
+// port wall: the DATA port and a slot for the optional AUX pigtail.  The DATA port is our own small
+// board (electronics/data-port, config/rack.yaml › pcb.data_port): a USB-C source on its front edge,
+// a side-entry JST PH 5 on its rear edge for the lead from the node's J7 through the drag chain.
+// Mounted components down under a roof that spans the rear bay from the port wall to the rear wall
+// (a bridge: no supports), 2 × PT 2.6 × 8 from below through the cable window.  Its front edge goes
+// through a slot in the port wall, flush with the wall's front face: the receptacle sits 0.28 mm
+// proud, so any plug, straight or right-angle, seats on it.
 PORT_X = concat(DATA_PORT_X, [AUX_PORT_X]);        // from config/rack.yaml (drawer.data_ports, aux_port)
-PORT_Z = DRAWER_BOTTOM + 13.5;                     // high enough for the extension's plug and its bend
-                                                   // under the drawer (tools/webscene.py mirrors it)
-PORT_EARS = 17;                                    // the flange's screw pitch
-DATA_FLANGE = [25, 9, 2.5];                        // width, height, thickness
-DATA_BODY_CUT = [13.2, 8.2, 2];                    // the barrel passes: width, height, corner radius
-COUPLER_REAR = 11;                                 // the barrel behind the flange's back face
-PORT_WALL_H = DRAWER_WALL_H + 8;                   // 8 mm taller than the side walls, above the flange
-module data_body_cut(h)         // centred on the socket axis, extruded along +Z
-    linear_extrude(h) offset(r = DATA_BODY_CUT[2])
-        square([DATA_BODY_CUT[0] - 2 * DATA_BODY_CUT[2], DATA_BODY_CUT[1] - 2 * DATA_BODY_CUT[2]], center = true);
+PORT_Z = DRAWER_BOTTOM + 8.5;                      // the USB-C mouth's centre (tools/webscene.py mirrors it)
+DATA_ROOF_Z = PORT_Z + 1.63 + DATA_PCB_T;          // the roof's underside: the board's bare back face
+DATA_PCB_X0 = DATA_PORT_X[0] - DATA_PCB_USB;       // drawer x of the board's left edge (KiCad x = 0)
+DATA_PCB_Y0 = DRAWER_PORT_WALL_Y - DRAWER_WALL;    // drawer y of its front edge: the wall's front face
+PORT_WALL_H = DRAWER_WALL_H + 5;                   // 5 mm taller than the side walls: the roof's top
+// the USB4105 below the board's component face: 8.94 wide, 3.40 deep, the mouth 1.63 down
+DATA_USB = [8.94, 3.40];
 
 // board plate (drops into the drawer between front panel and port wall)
 PLATE_W = DRAWER_INNER_W - 0.6;

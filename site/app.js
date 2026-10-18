@@ -119,6 +119,9 @@ if (dot(vUpView, vUpView) > 0.01) {
 for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras', 'powerBox', 'powerLabels']) printLook(MAT[k]);
 
 function partMaterial(name) {
+  if (name === 'dataport_pcb') return MAT.pcbGreen;
+  if (name === 'dataport_usb') return MAT.psu;
+  if (name === 'dataport_ph') return MAT.powerLabels;
   if (name.startsWith('ladder_')) return MAT.ladders;
   if (name.startsWith('brace_')) return MAT.braces;
   if (name === 'tray') return MAT.trays;
@@ -337,13 +340,16 @@ function makePlug(e) {
   const g = new THREE.Group();
   g.matrixAutoUpdate = false;
   g.matrix.copy(plugBasis(e));
+  if (e.type === 'ph5') {                       // the DATA lead's JST PHR-5
+    const m = plugMesh('ph5_plug', MAT.powerLabels);
+    if (m) g.add(m);
+    return g;
+  }
   const t = GEOMS[`usbplug_${e.type}_shell`] ? e.type : 'usb-c';
   const parts = [plugMesh(`usbplug_${t}_shell`, PLUG_MAT.shell)];
   // a 90° adapter (its female facing up, the cable's straight plug standing on it), or a plug
   if (e.style === 'adapter') parts.push(plugMesh(`usbplug_${t}_adapter_mold`, PLUG_MAT.mold), plugMesh(`usbplug_${t}_adapter_metal`, PLUG_MAT.shell));
   else parts.push(plugMesh(`usbplug_${t}_${e.style === 'right' ? 'right' : 'straight'}`, PLUG_MAT.mold));
-  // the drawer's DATA port: the coupler, its flange on the port wall
-  if (e.socket === 'coupler') parts.push(plugMesh('usbplug_coupler_mold', PLUG_MAT.mold), plugMesh('usbplug_coupler_metal', PLUG_MAT.screw));
   for (const m of parts) if (m) g.add(m);
   return g;
 }

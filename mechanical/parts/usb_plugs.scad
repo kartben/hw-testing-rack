@@ -1,9 +1,11 @@
-// USB cable plugs and the drawer's panel-mount socket, for the 3D viewer and the renders only
+// USB cable plugs, the micro-B / mini-B 90° adapters, the DATA port board and its PH plug, for the
+// 3D viewer and the renders only
 // (nothing here is printed).  tools/webscene.py passes the dimensions (its USB_PLUGS table, the
 // single source: the cable routing uses the same numbers) and packs every piece into parts.glb.
 //
 //   -D 'STYLE="straight"|"right"' -D 'PIECE="mold"|"shell"' + the plug's dimensions
-//   -D 'STYLE="panel"' -D 'PIECE="mold"|"metal"'      the panel-mount female (QinMSY UC-138)
+//   -D 'STYLE="adapter"' -D 'PIECE="mold"|"metal"'    a 90° adapter (+ AW, AD, ATOP)
+//   -D 'STYLE="dataport"' -D 'PIECE="pcb"|"usb"|"ph"'  the DATA port board; STYLE="ph5" its lead's plug
 //
 // Plug frame: +z = into the receptacle (the metal shell, z 0..SL, mostly hidden in it), x = the
 // connector's width, y = its "up"; the overmold sits at z < 0.  A right-angle plug's body stands
@@ -78,54 +80,34 @@ module adapter_metal() {                      // the female's shell, lining its 
     }
 }
 
-// the panel-mount female end of the drawer extension: 25 mm flange with the receptacle's mouth,
-// two pan-head screws 17 mm apart in front, the 20 mm body and its strain relief behind (+z)
-module panel_mold() {
-    difference() {
-        translate([0, 0, 0]) slab(25, 9, 4.4, 0, 2.5, 0.5, 0.4);
-        translate([0, 0, -0.01]) linear_extrude(1.6) hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 3.3);
-        for (s = [-1, 1]) translate([s * 8.5, 0, -0.01]) cylinder(d = 3.2, h = 3);
-    }
-    slab(12.2, 6.8, 1.6, 2.5, 20, 0.2, 1.0);
-    translate([0, 0, 20 - 0.01]) relief(7, 5.4, 4.4);
+// the drawer's DATA port board (electronics/data-port, a stand-in): origin at its front-left corner on
+// its bare back face, mounted components down: x = KiCad x, y rearwards (KiCad y = BD - y), z up; the
+// board from z = -BT to 0, its parts below.  BW BD BT HOLES USBX PHX from config/rack.yaml › pcb.data_port
+BW = 40; BD = 17; BT = 1.6; HOLES = [[3, 8.5], [37.5, 4]]; USBX = 30.5; PHX = 21;
+module dataport_pcb() difference() {
+    translate([0, 0, -BT]) linear_extrude(BT) offset(r = 1.5) offset(delta = -1.5) square([BW, BD]);
+    for (h = HOLES) translate([h[0], BD - h[1], -BT - 1]) cylinder(d = 2.7, h = BT + 2);
 }
-module panel_metal() {
-    for (s = [-1, 1]) translate([s * 8.5, 0, 0]) difference() {
-        mirror([0, 0, 1]) scale([1, 1, 0.55]) intersection() { sphere(d = 4.6); translate([0, 0, 0]) cylinder(d = 4.6, h = 3); }
-        for (a = [0, 90]) rotate([0, 0, a]) translate([0, 0, -1.4]) cube([2.2, 0.5, 1.2], center = true);   // the Phillips cross
-    }
-    // the receptacle's shell lining the mouth
-    translate([0, 0, 0.3]) linear_extrude(1.3) difference() {
-        hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 3.3);
-        hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 2.9);
-    }
+module dataport_usb() difference() {                     // GCT USB4105, its mouth on the front edge
+    translate([USBX - 4.47, -0.28, -BT - 3.40]) cube([8.94, 7.78, 3.40]);
+    translate([USBX, -0.3, -BT - 1.63]) rotate([-90, 0, 0]) linear_extrude(4)
+        hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 2.56);
 }
-
-// the drawer's DATA coupler, USB-C female to female: the panel socket's 25 mm flange with its two
-// screws and front mouth, a short barrel behind (CREAR from the flange's back face) with a second
-// mouth facing the rear, where the drawer extension's right-angle plug goes
-CREAR = 11;
-module coupler_mold() {
-    difference() {
-        union() {
-            slab(25, 9, 4.4, 0, 2.5, 0.5, 0.4);
-            slab(12.2, 6.8, 1.6, 2.5 - 0.01, 2.5 + CREAR, 0.2, 0.6);
-        }
-        for (z = [-0.01, 2.5 + CREAR - 1.6]) translate([0, 0, z]) linear_extrude(1.61)
-            hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 3.3);
-        for (s = [-1, 1]) translate([s * 8.5, 0, -0.01]) cylinder(d = 3.2, h = 3);
+module dataport_ph() difference() {                      // JST S5B-PH-SM4-TB, side entry, its mouth on the rear edge
+    union() {
+        translate([PHX - 6, BD - 8.96, -BT - 5.58]) cube([12, 8.61, 5.58]);
+        for (s = [-1, 1]) translate([PHX + s * 6.5 - 0.5, BD - 8.96, -BT - 1.0]) cube([1, 3, 1.0]);
     }
+    translate([PHX - 5.2, BD - 4, -BT - 4.9]) cube([10.4, 4.5, 4.0]);
 }
-module coupler_metal() {
-    panel_metal();
-    translate([0, 0, 2.5 + CREAR - 1.6]) linear_extrude(1.3) difference() {
-        hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 3.3);
-        hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 2.9);
-    }
+// a JST PHR-5 plug and its wires' first millimetres, in the plug frame (+z into the header)
+module ph5_plug() {
+    translate([-6, -2.25, -6]) cube([12, 4.5, 8.5]);
+    for (k = [0 : 4]) translate([(k - 2) * 2, 0, -9]) cylinder(d = 1.4, h = 3.2);
 }
 
-if (STYLE == "panel") { if (PIECE == "mold") panel_mold(); else panel_metal(); }
-else if (STYLE == "coupler") { if (PIECE == "mold") coupler_mold(); else coupler_metal(); }
+if (STYLE == "dataport") { if (PIECE == "pcb") dataport_pcb(); else if (PIECE == "usb") dataport_usb(); else dataport_ph(); }
+else if (STYLE == "ph5") ph5_plug();
 else if (STYLE == "adapter") { if (PIECE == "mold") adapter_mold(); else adapter_metal(); }
 else if (PIECE == "shell") shell();
 else if (STYLE == "right") mold_right();

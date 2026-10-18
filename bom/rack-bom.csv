@@ -116,7 +116,7 @@ Electronics,data-port,USBLC6-2SC6 — USB ESD protection,12,pcs,0.1656,1.99,LCSC
 Electronics,data-port,"Bare PCB data-port (2-layer 40×17 mm, lead-free HASL)",15,pcs,0.2453,3.68,"estimate, not quoted",,,,,"board $4.00 = $4.00 for 15 PCBs, 12 of them assembled"
 Electronics,data-port,"Economic PCBA, 12 boards: setup, stencil, extended parts, SMT",1,pcs,17.57,17.57,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.60"
 Electronics,data-port,Components data-port: JLC quote minus the catalogue prices above,1,pcs,0.44,0.44,"estimate, not quoted",,,,,quoted components $17.90 (≈ €16.47) for 12 boards; catalogue unit prices give €16.03
-Printed parts,filament,PETG filament,3.9,kg,20.0,78.0,any,,,,,"≈3.5 kg estimated + 10 % waste, 129 parts"
+Printed parts,filament,PETG filament,4.0,kg,20.0,80.0,any,,,,,"≈3.6 kg estimated + 10 % waste, 129 parts"
 Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",164,pcs,0.03,4.92,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub standoffs
 Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",88,pcs,0.02,1.76,AliExpress (bulk),,,,,
 Fasteners,,"M3×6 (node PCB, power box lid)",52,pcs,0.02,1.04,AliExpress (bulk),,,,,

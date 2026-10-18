@@ -7,12 +7,12 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 |---|---:|
 | Electronics | 628 |
 | Power | 82 |
-| Printed parts | 78 |
+| Printed parts | 80 |
 | Cables | 61 |
 | Cameras | 36 |
 | Motion | 32 |
 | Fasteners | 18 |
-| **Total** | **934** |
+| **Total** | **936** |
 
 ≈ **€78 per bay** all-in.
 
@@ -51,7 +51,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 12 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 12 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 12 | 47.0 | `mechanical/stl/drawer.stl` |
+| drawer | 12 | 50.7 | `mechanical/stl/drawer.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 49.6 | `mechanical/stl/ladder_a.stl` |
 | ladder_b | 5 | 49.6 | `mechanical/stl/ladder_b.stl` |
@@ -196,7 +196,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | Bare PCB data-port (2-layer 40×17 mm, lead-free HASL) | 15  | 0.25 | 3.68 | estimate, not quoted |
 | Electronics | Economic PCBA, 12 boards: setup, stencil, extended parts, SMT | 1  | 17.57 | 17.57 | estimate, not quoted |
 | Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | 0.44 | 0.44 | estimate, not quoted |
-| Printed parts | PETG filament | 3.9 kg | 20.00 | 78.00 | any |
+| Printed parts | PETG filament | 4.0 kg | 20.00 | 80.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 164  | 0.03 | 4.92 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 88  | 0.02 | 1.76 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid) | 52  | 0.02 | 1.04 | AliExpress (bulk) |

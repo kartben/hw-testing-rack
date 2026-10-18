@@ -38,6 +38,7 @@ MATS = {
     "psu": ([0.72, 0.74, 0.77, 1], 0.9, 0.3),
     "powerbox": ([0.075, 0.08, 0.09, 1], 0.0, 0.55),
     "powerlabels": ([0.93, 0.92, 0.89, 1], 0.0, 0.6),
+    "pcbgreen": ([0.06, 0.24, 0.14, 1], 0.1, 0.42),
     "silver": ([0.78, 0.8, 0.82, 1], 0.95, 0.25),
     "plug": ([0.11, 0.115, 0.13, 1], 0.0, 0.72),        # matte black overmold
     "black": ([0.07, 0.07, 0.08, 1], 0.0, 0.6),
@@ -67,12 +68,12 @@ def plug_meshes(e: dict, geoms: dict) -> list:
     """Meshes of one cable end (tools/webscene.py writes them into rack.json), in its space."""
     t = e["type"] if f"usbplug_{e['type']}_shell" in geoms else "usb-c"
     names = [(f"usbplug_{t}_shell", "silver")]
-    if e.get("style") == "adapter":           # a 90° adapter, its female facing up (the cable's plug stands on it)
+    if e["type"] == "ph5":                    # the DATA lead's JST PHR-5
+        names = [("ph5_plug", "powerlabels")]
+    elif e.get("style") == "adapter":           # a 90° adapter, its female facing up (the cable's plug stands on it)
         names += [(f"usbplug_{t}_adapter_mold", "plug"), (f"usbplug_{t}_adapter_metal", "silver")]
     else:
         names += [(f"usbplug_{t}_{'right' if e.get('style') == 'right' else 'straight'}", "plug")]
-    if e.get("socket") == "coupler":          # the drawer's DATA port: the coupler, its flange on the port wall
-        names += [("usbplug_coupler_mold", "plug"), ("usbplug_coupler_metal", "silver")]
     z = np.array(e["dir"], float)
     z /= np.linalg.norm(z)
     up = np.array(e.get("up", (0, 0, 1)), float)
@@ -96,8 +97,10 @@ def hex_rgba(h):
 
 
 def part_category(name):
-    if name.endswith("_labels"):
+    if name.endswith("_labels") or name == "dataport_ph":
         return "powerlabels"
+    if name in ("dataport_pcb", "dataport_usb"):
+        return {"dataport_pcb": "pcbgreen", "dataport_usb": "silver"}[name]
     for prefix, cat in (("ladder_", "ladders"), ("brace_", "braces"), ("tray", "trays"), ("floor_plate", "frameplates"),
                         ("cap_plate", "frameplates"), ("drawer", "drawers"), ("chain_", "chainparts"),
                         ("plate_", "plates"), ("camera_", "cameras"), ("power_box_", "powerbox")):

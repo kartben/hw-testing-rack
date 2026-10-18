@@ -47,9 +47,9 @@ drawer:
   wall_height: 16        # side/rear walls above the drawer bottom
   front_height: 30       # front panel height above the deck
   front_thickness: 4
-  rear_bay: 30           # enclosed strip at the back: the DATA coupler + cable entry
-  data_ports: [0.80]     # the DATA coupler's position on the port wall (× drawer width): over the cable
-                         # window, between the chain's runs (a left one would hang over the node)
+  rear_bay: 30           # enclosed strip at the back: the DATA port board + cable entry
+  data_ports: [0.80]     # the DATA port's USB-C mouth on the port wall (× drawer width): its board over the
+                         # cable window, left of the chain foot's lock screw
   aux_port: 0.50             # slot for the optional AUX (JST-SH) pigtail
   flange: [3.0, 3.0]     # runner flange (width, height) captured by the guides
   magnet: [6, 3]         # closed-position detent magnet Ø × t (one in drawer, one in deck)
@@ -160,7 +160,7 @@ pcb:
                             # ≤ 17 deep: the PH plug and the wires' turn down fit in the drawer's 30 mm rear bay
     thickness: 1.6
     layers: 2
-    holes: [[3.0, 8.5], [37.5, 4.0]]     # Ø2.7, PT 2.6 × 8 into the shelf from below through the cable window; mounted components down
+    holes: [[3.0, 8.5], [37.5, 4.0]]     # Ø2.7, PT 2.6 × 8 into the drawer's roof from below through the cable window; mounted components down
     usb: 30.5               # KiCad x of the USB-C (GCT USB4105) on the front edge: the right edge ≤ 9.5 mm right of it (the
                             # chain foot's lock screw); its centre 1.63 mm below the component face (3.23 below the back face)
     ph: 17.5                # KiCad x of the JST PH 5-pin (side entry) on the rear edge: its courtyard clear of the USB4105's (x ≤ 17.6)

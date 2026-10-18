@@ -43,7 +43,7 @@ constants it reads.)
 | Part | File | Notes |
 |---|---|---|
 | Tray | `tray.scad` | the plenum under the drawer: node standoffs, chain anchor and rails, fascia with the PC port / LED / SERVICE switch (the PC port is the USB-C stadium scaled up to 13.4 × 7.8 mm, so a plug's overmold passes: the node's receptacle sits 2.7 mm behind the fascia's face), camera inserts underneath; a notch in the left ledge over the node's RESET button (drawer pulled out, press it with a pin).  The drawer rides on two side ledges under C-channel lips; runners on both walls slide into the ladder grooves from the front, and a flex arm per wall clicks a barb into the groove's window (pull the drawer out, press both arms to remove the tray) |
-| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; open floor under the plate; rear bay with the DATA port: a USB-C female ↔ female coupler through the port wall from the front, its flange on the wall with 2 × PT 2.6×8 17 mm apart (mouth flush), 13.5 mm above the drawer bottom so the extension's 90° plug in its rear and the cable's bend under the drawer clear the tray floor; the cable window under it, the AUX slot and the foot groove |
+| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; open floor under the plate; rear bay with the DATA port: our board (electronics/data-port) components down under a roof that bridges the rear bay from the port wall to the raised rear wall (no supports), 2 × PT 2.6×8 up into it from below through the cable window; its front edge through a slot in the port wall, so its USB-C sits 0.28 mm proud of the wall's front face, 8.5 mm above the drawer bottom, and any plug seats; the board stops left of the chain foot's lock screw (driven from above).  The cable window under it, up to the rear wall, the AUX slot and the foot groove |
 | Chain foot / anchor | `chain_parts.scad` | take the chain's end pieces (tab with 2 holes 8 mm apart, PT 2.6×8 + washers).  The anchor is a block outside the fixed run, on two M3 inserts in the tray; the foot carries the moving end on a fin outside the moving run and slides into the drawer's rear-open groove, locked by one PT 2.6×8 from inside the rear bay.  A printable link (and its removable bar, so the cable can be laid in) is included if you'd rather not buy chain |
 | Board plates | `board_plate.scad` | one per form factor, generated from [`mechanical/boards/boards.yaml`](../mechanical/boards/boards.yaml) |
 | Bay label | `label.scad` | 12 × 100 mm blank for the drawer front's recess |
@@ -69,8 +69,8 @@ attract.
 ### Drag chain
 
 The reference is Olimex's DRAG-CHAIN-7X7 (€4/m): 7 × 7 mm inside, links
-that open on both sides, so the extension can be laid in (its plug and its
-panel socket would not pass through).  Olimex publishes only the inner size;
+that open on both sides, so the DATA lead can be laid in (its PH plugs,
+12 mm wide, do not pass through).  Olimex publishes only the inner size;
 the model takes the outer size (13.5 × 10.2 mm) and the end pieces (a tab
 with 2 holes 8 mm apart) from Electrokit's listing of the same generic chain
 (41017996).  The bend radius is not published anywhere: the model keeps

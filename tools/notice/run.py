@@ -140,7 +140,7 @@ def main() -> None:
     c["POWER_BOX"] = {**rack.power_box(), "hub_pcb": rack.raw["pcb"]["power_hub"]}
     d, node = rack.drawer, rack.node                 # the drag chain, the DATA socket, the node's DUT port
     c["CHAIN"] = {**rack.chain, "bottom": rack.carrier["bottom"]}
-    c["DATA"] = {"x": max(rack.data_port_x), "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 13.5,   # lib/carrier.scad PORT_Z
+    c["DATA"] = {"x": max(rack.data_port_x), "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 8.5,   # lib/carrier.scad PORT_Z
                  "wall": d["wall"], "flange": [25, 9, 2.5], "body": [13.2, 8.2], "ears": 17}   # DATA_FLANGE, DATA_BODY_CUT, PORT_EARS
     c["NODE_DUT"] = [node["size"][0] + 0.4, node["size"][1] - node["right"]["dut"], node["thickness"] + 1.6]
     import webscene                                  # the USB plugs' sizes, as the viewer draws them

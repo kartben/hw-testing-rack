@@ -53,9 +53,9 @@ constants, the web scene, the BOM and the PCB outlines/connector positions.
   ledges under C-channel lips carry the drawer, the left one the
   closed-position magnet.
 * **Drawer** (printed): front panel with label recess and finger pull, plate
-  pocket, rear bay with the DATA port (a USB-C female ↔ female coupler screwed
-  through the port wall, the drawer extension plugged into its rear) and the
-  cable window; a
+  pocket, rear bay with the DATA port (our small board under a printed roof,
+  its USB-C flush in the port wall, the 5-wire PH lead from the node plugged
+  into its rear) and the cable window; a
   foot under the rear carries the chain's moving end.
 * **Plate** (printed, per board form factor): heat-set-insert or snap-pin
   standoffs at the board's holes, or corner fences for hole-less boards.

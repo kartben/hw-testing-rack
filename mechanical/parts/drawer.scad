@@ -3,10 +3,10 @@
 //
 // - Front panel with a finger pull and a recess for 12 mm label tape.
 // - Board-plate pocket: plates drop in (two 180°-symmetric locating pins).
-// - Rear bay behind the port wall: the DATA coupler (USB-C female-female) faces
-//   the board, next to the AUX pigtail slot; the drawer extension plugs into its
-//   rear with a right-angle plug, its cable straight down through the cable
-//   window to the drag chain's moving end.  The chain foot slides into the rear-open groove under the
+// - Rear bay behind the port wall: the DATA port board (USB-C source) under a
+//   roof, its USB-C flush with the wall facing the board, next to the AUX
+//   pigtail slot; its 5-wire PH lead comes up through the cable window from
+//   the drag chain's moving end.  The chain foot slides into the rear-open groove under the
 //   bottom and is locked by one PT 2.6 × 8 screw from inside the rear bay.
 // - Rear flange segments run under the guide lips (anti-tip); a magnet under
 //   the rear bay, over the tray's left ledge, gives a soft closed detent.
@@ -36,20 +36,29 @@ module front_panel() {
     }
 }
 
-PAD = [4.6, 4];                                // screw pads behind the wall, beside the socket's body: width, depth
 module port_wall() {
     y = DRAWER_PORT_WALL_Y;
     t = DRAWER_WALL + 1;
+    W = DATA_PCB_SIZE[0];
+    x0 = DATA_PCB_X0 - 1.5;                         // the roof: the board's width, 1.5 mm more on the left
     difference() {
         union() {
             translate([0, y - DRAWER_WALL, 0]) cube([DRAWER_W, t, PORT_WALL_H]);
-            for (x = DATA_PORT_X, s = [-1, 1]) let (x0 = DATA_BODY_CUT[0] / 2 + 0.2)     // from the body's cut outwards
-                translate([x + (s > 0 ? x0 : -x0 - PAD[0]), y + 1 - EPS, PORT_Z - DATA_FLANGE[1] / 2]) cube([PAD[0], PAD[1], DATA_FLANGE[1]]);
+            // the DATA board's roof, a bridge from the port wall to the rear wall, over the board and
+            // its lead's plug; the rear wall raised under its far end
+            translate([x0, y - DRAWER_WALL + t - EPS, DATA_ROOF_Z])
+                cube([W + 2, DRAWER_D - DRAWER_WALL - (y - DRAWER_WALL + t) + 2 * EPS, PORT_WALL_H - DATA_ROOF_Z]);
+            translate([x0, DRAWER_D - DRAWER_WALL, 0]) cube([W + 2, DRAWER_WALL, PORT_WALL_H]);
         }
-        for (x = DATA_PORT_X) translate([x, y - DRAWER_WALL - EPS, PORT_Z]) rotate([-90, 0, 0]) {
-            data_body_cut(t + 2 * EPS);
-            for (s = [-1, 1]) translate([s * PORT_EARS / 2, 0, 0]) cylinder(d = 2.1, h = t + PAD[1] - 1);   // PT 2.6 pilots
-        }
+        // the board's front edge through the wall, flush with its front face (2 mm under it for the
+        // small parts), and the USB-C receptacle below it
+        translate([DATA_PCB_X0 - 0.3, y - DRAWER_WALL - EPS, DATA_ROOF_Z - DATA_PCB_T - 2])
+            cube([W + 0.6, t + 2 * EPS, DATA_PCB_T + 2 + EPS]);
+        translate([DATA_PORT_X[0] - DATA_USB[0] / 2 - 0.3, y - DRAWER_WALL - EPS, DATA_ROOF_Z - DATA_PCB_T - DATA_USB[1] - 0.3])
+            cube([DATA_USB[0] + 0.6, t + 2 * EPS, DATA_USB[1] + 0.3 + EPS]);
+        // pilots for the board's two PT 2.6 × 8, up into the roof
+        for (h = DATA_PCB_HOLES) translate([DATA_PCB_X0 + h[0], DATA_PCB_Y0 + DATA_PCB_SIZE[1] - h[1], DATA_ROOF_Z - EPS])
+            cylinder(d = 2.1, h = 6.6);
         translate([AUX_PORT_X, y - DRAWER_WALL - EPS, PORT_Z]) rotate([-90, 0, 0])
             hull() for (dx = [-3.0, 3.0]) translate([dx, 0, 0]) cylinder(d = 3.6, h = t + 2 * EPS);
     }
@@ -71,8 +80,8 @@ module drawer() {
             // boss for the foot lock screw, and for the detent magnet
             translate([FOOT_HOLE[0], FOOT_HOLE[1], 0]) cylinder(d = 9, h = DRAWER_BOTTOM + 4);
             translate([DETENT[0], DETENT[1], 0]) cylinder(d = DETENT_BOSS, h = DRAWER_MAGNET[1] + 1.2);
-            // zip-tie anchors for the port cables in the rear bay
-            for (x = PORT_X) translate([x - 5, DRAWER_D - 12, DRAWER_BOTTOM]) difference() {
+            // zip-tie anchor for the AUX pigtail in the rear bay (the DATA lead comes up under the roof)
+            for (x = [AUX_PORT_X]) translate([x - 5, DRAWER_D - 12, DRAWER_BOTTOM]) difference() {
                 cube([10, 4, 6]);
                 translate([-EPS, 1, 2]) cube([10 + 2 * EPS, 2, 2.4]);
             }
@@ -83,9 +92,11 @@ module drawer() {
             cylinder(d = 2.8, h = DRAWER_BOTTOM + 5);
             translate([0, 0, DRAWER_BOTTOM + 4 - 2]) cylinder(d = 5.4, h = 2 + EPS);
         }
-        // cable window in the rear-bay floor, under the coupler's rear: the extension's right-angle
-        // plug passes it; 1 mm short of the foot's boss
-        translate([FOOT_HOLE[0] - 48, DRAWER_PORT_WALL_Y + 2, -EPS]) rbox([42.5, 18, DRAWER_BOTTOM + 2 * EPS], r = 3);
+        // cable window in the rear-bay floor, under the DATA board, up to 1 mm off the rear wall: the
+        // lead comes up through it into the board's PH from the rear, and the board's screws go in
+        // from below through it; 1 mm short of the foot's boss
+        translate([FOOT_HOLE[0] - 48, DRAWER_PORT_WALL_Y + 2, -EPS])
+            rbox([42.5, DRAWER_D - DRAWER_WALL - 1 - DRAWER_PORT_WALL_Y - 2, DRAWER_BOTTOM + 2 * EPS], r = 3);
         // detent magnet from below
         translate([DETENT[0], DETENT[1], 0]) mirror([0, 0, 1]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
         // open floor: 3 × 3 windows between 6 mm ribs, solid side strips (they ride on the
