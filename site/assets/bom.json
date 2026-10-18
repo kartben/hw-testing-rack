@@ -40,19 +40,19 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "100n — Capacitor 100n 0603",
-"ref": "C4,C5,C14,C16,C17,C18,C19,C20,C22,C23,C24",
+"ref": "C4,C5,C14,C16,C17,C18,C19,C20,C22,C23,C24,C25,C26",
 "mpn": "CC0603KRX7R9BB104",
 "manufacturer": "YAGEO",
 "supplier": "LCSC/JLCPCB",
 "part": "C14663",
-"qty": 176,
+"qty": 208,
 "unit_eur": 0.0124,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "11 per board × 16 boards",
+"notes": "13 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 2.18
+"ext_eur": 2.58
 },
 {
 "category": "Electronics",
@@ -255,38 +255,38 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "PC — USB-C receptacle, USB 2.0, 16 pins",
+"item": "PC — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",
 "ref": "J3",
-"mpn": "TYPE-C-31-M-12",
-"manufacturer": "Korean Hroparts",
+"mpn": "USB4105-GF-A-120",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C165948",
+"part": "C5184243",
 "qty": 16,
-"unit_eur": 0.1748,
+"unit_eur": 0.8372,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 2.8
+"ext_eur": 13.4
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "DUT — USB-C receptacle, USB 2.0, 16 pins",
+"item": "DUT — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",
 "ref": "J4",
-"mpn": "TYPE-C-31-M-12",
-"manufacturer": "Korean Hroparts",
+"mpn": "USB4105-GF-A-120",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C165948",
+"part": "C5184243",
 "qty": 16,
-"unit_eur": 0.1748,
+"unit_eur": 0.8372,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 2.8
+"ext_eur": 13.4
 },
 {
 "category": "Electronics",
@@ -864,7 +864,7 @@
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
 "unit_eur": 122.35,
-"notes": "setup $25.75, stencil $8.27, feeders $74.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 rack bus parts (+$14.63 components); rev 0.5: 3 more extended part types (+$9.00 feeders); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"notes": "setup $25.75, stencil $8.27, feeders $74.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
 "ext_eur": 122.35
 },
@@ -875,7 +875,7 @@
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
 "unit_eur": -27.41,
-"notes": "quoted components $181.21 + $14.63 since (≈ €180.17) for 16 boards; catalogue unit prices give €207.58",
+"notes": "quoted components $181.21 + $38.10 since (≈ €201.77) for 16 boards; catalogue unit prices give €229.18",
 "unit": "pcs",
 "ext_eur": -27.41
 },
@@ -1991,7 +1991,7 @@
 }
 ],
 "by_category": {
-"Electronics": 508.73999999999995,
+"Electronics": 530.34,
 "Printed parts": 80.0,
 "Fasteners": 16.56,
 "Motion": 9.2,
@@ -1999,7 +1999,7 @@
 "Power": 29.0,
 "Cameras": 36.2
 },
-"total_eur": 746.7,
+"total_eur": 768.3,
 "prints": [
 {
 "part": "bay_label",
@@ -2289,7 +2289,7 @@
 "pcba": {
 "setup": 25.75,
 "stencil": 8.27,
-"components": 195.84,
+"components": 219.31,
 "feeders": 74.1,
 "SMT": 9.45,
 "manual assembly": 1.62,
@@ -2298,10 +2298,10 @@
 },
 "changes": [
 "no through-hole part for JLC (hand soldering −$3.61)",
-"rev 0.5 rack bus parts (+$14.63 components)",
+"rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components)",
 "rev 0.5: 3 more extended part types (+$9.00 feeders)"
 ],
-"total": 387.73
+"total": 411.2
 },
 "power-hub": {
 "pcb": {

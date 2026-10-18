@@ -125,6 +125,9 @@ CAT = {
                   description="dual Schottky in series: clamps a line to GND and +3V3"),
     "hdr2x8": Cat("Connector_Generic:Conn_02x08_Odd_Even", "Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical",
                   "2x8 pin header 2.54 mm", "generic", "", 0.10, description="control header (DNP by default)"),
+    "usbc5a": Cat("Connector:USB_C_Receptacle_USB2.0_16P",
+                  "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", "USB4105-GF-A-120", "GCT",
+                  "C5184243", 0.91, description="USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS"),
     "testpad": Cat("Connector:TestPoint", "TestPoint:TestPoint_Pad_D1.5mm", "test pad", "-", "", 0.0),
     "hole": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_3.2mm_M3", "M3 mounting hole", "-", "", 0.0),
 }

@@ -326,11 +326,11 @@
     "netclass_patterns": [
       {
         "netclass": "Power",
-        "pattern": "*24V_BUS"
+        "pattern": "*VRACK"
       },
       {
         "netclass": "Power",
-        "pattern": "+24V"
+        "pattern": "*VIN"
       },
       {
         "netclass": "Power",

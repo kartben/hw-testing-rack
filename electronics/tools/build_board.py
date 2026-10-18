@@ -145,7 +145,7 @@ def jlc_bom_rows(rows):
 JLC_CPL_FIX = {
     "C173752": ("JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal", 180, 1.0, 0.0),    # bay J1 J2 J6 (seen; hand-soldered)
     "C6186": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                            # bay U2 (seen)
-    "C165948": ("USB_C_Receptacle_HRO_TYPE-C-31-M-12", 0, 0.0, -1.57),        # bay J3 J4
+    "C165948": ("USB_C_Receptacle_HRO_TYPE-C-31-M-12", 0, 0.0, -1.57),        # bay J3 J4 until v0.4
     "C2913206": ("ESP32-S2-MINI-1", 0, 0.0, 2.55),                            # bay U3
     "C431540": ("SW_SPDT_Shouhan_MSK12C02", 0, 0.0, -0.25),                   # bay SW3
     "C45262770": ("TSOT-23-6", 270, 0.0, 0.0),                                # bay U1 (LMR51635; FXL0630 L1 needs none)
@@ -163,6 +163,7 @@ JLC_CPL_FIX = {
     "C3234993": ("SOIC-8_3.9x4.9mm_P1.27mm", 270, 0.0, 0.0),                  # bay U11, hub U6 (TCAN1044AV)
     "C75176": ("SOT-23", 180, 0.0, 0.0),                                      # bay D5, hub D9 (PESD2CAN)
     "C7420333": ("SOT-23", 180, 0.0, 0.0),                                    # bay D6 D7, hub POS clamps (BAT54S)
+    "C5184243": ("USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", 0, 0.0, -1.30),  # bay J3 J4, hub USB-C
 }
 
 

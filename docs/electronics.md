@@ -30,7 +30,7 @@ KiCad's ERC plus the PCB's schematic-parity check catch the rest.
 
 **Stackup** (bay node, 4 layers, symmetric): F.Cu signals + GND pour · In1 solid
 GND · In2 power only (+3V3 under the module, the LDO and the logic around them; +5V from the buck
-to the LDO input, the DUT switch, the camera fuse and the DUT-side ESD part; the 24 V bus strip
+to the LDO input, the DUT switch, the camera fuse and the DUT-side ESD part; the VRACK bus strip
 between J1 and J2; +3V3 again under the front edge, fed by a B.Cu track) · B.Cu signals + GND
 pour.  No signal is routed on In2.  The board declares JLCPCB's standard
 JLC04161H-7628 build (0.21 mm prepreg between F.Cu and In1, 1.065 mm core, 0.5 oz
@@ -71,9 +71,9 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 5. Finally KiCad's own DRC lists the GND pads still unconnected, and each gets
    a short track to a GND via or to a spot where a small via fits.
 
-> **Status: bay node v0.5 — the row cable becomes 6-pin (24 V, CAN, POS: [can.md](can.md)), CAN
-> transceiver and POS token added, autorouted, not yet ordered (v0.4 was checked with Konnect:
-> [review-konnect.md](review-konnect.md)).  Power hub v0.4 —
+> **Status: bay node v0.5 — the row cable becomes 6-pin (VRACK 20 / 28 V, CAN, POS:
+> [can.md](can.md)), CAN transceiver and POS token added, GCT USB4105 receptacles, autorouted,
+> checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.4 —
 > new board for the power box (eFuses + rack controller + CAN), autorouted, checked with Konnect,
 > not yet ordered or quoted.**  ERC is clean and DRC reports no copper errors, no unconnected
 > items and full schematic parity (0 DRC warnings).  The buck's hot loop, the
@@ -90,14 +90,14 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 
 | Block | Parts | Notes |
 |---|---|---|
-| Row cable in/out | 2 × JST PH 6, side entry, SMD (S6B-PH-SM4-TB): 1 +24 V · 2 GND · 3 CAN_H · 4 CAN_L · 5 GND · 6 POS ([can.md](can.md)) | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it; each power pin on a solid island with vias to its plane; CAN runs straight through J1.3/4 → J2.3/4 |
-| Rack bus | TCAN1044AV (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 100k pull-down; POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a cable with +24 V on pin 6 costs ≈ 2 mA |
+| Row cable in/out | 2 × JST PH 6, side entry, SMD (S6B-PH-SM4-TB): 1 VRACK · 2 GND · 3 CAN_H · 4 CAN_L · 5 GND · 6 POS ([can.md](can.md)) | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it; each power pin on a solid island with vias to its plane; CAN runs straight through J1.3/4 → J2.3/4 |
+| Rack bus | TCAN1044AV (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 100k pull-down; POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a reversed cable (VRACK on pin 6) costs ≈ 2.5 mA at 28 V |
 | Protection | SUD50P06 P-FET + 12 V zener, SMBJ33A, 100 µF/50 V | reverse polarity, hot-plug clamp < 54 V |
 | 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 120k/22k → 5.16 V; EN 1M/100k: on above 13.5 V, off below 10.8 V |
 | 3.3 V | AMS1117-3.3 | logic only |
 | MCU | ESP32-S3-MINI-1-N8 | antenna at the rear edge, keep-out on all layers |
 | DUT power | TPS2553 (RILIM 18k → 1.34–1.52 A), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N); default **on** (also without firmware), fault flag to GPIO |
-| USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6, 2 × USB-C | modes in [architecture.md](architecture.md); the classic-mode path (J3 → J4) is hand-routed for High-Speed, see below |
+| USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 2 × USB-C GCT USB4105-GF-A-120 | modes in [architecture.md](architecture.md); the classic-mode path (J3 → J4) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | JST PH 6, side entry, SMD (S6B-PH-SM4-TB): GND, 3V3 (10 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | |
 | Camera | JST PH 2, SMD: 5 V via 0.5 A PTC | mouth 0.65 mm behind `pcb.bay_node.cam` in `config/rack.yaml`, to clear the M3 hole |
@@ -127,11 +127,13 @@ RX/TX (TWAI) · IO35 POS_OUT for the rack bus; IO19/IO20 USB; TXD0/RXD0 on test 
 `firmware/README.md` has the full table, checked against the schematic by
 `firmware/tools/check_pinmap.py`.
 
-**Row power from USB-C PD.** The row bus is 24 V nominal, but the input stage also takes a USB-C PD
-supply at 20 V or 28 V (EPR): the SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the LMR51635 runs
-from 4.3 to 60 V and its EN divider (1M/100k) starts it above 13.5 V, and the P-FET and its 12 V
-gate zener are rated 60 V.  At 20 V a row draws more current for the same load; the hub's eFuse
-still caps it at 1.6 A.
+**Row power VRACK, 20 or 28 V.** The hub negotiates 20 V, or 28 V (EPR), from a USB-C PD charger
+and passes it to the rows as VRACK (pin 1 of the row cable; the node's net `VRACK`, then `VIN`
+after the reverse-polarity P-FET).  The input stage takes both: the SMBJ33A stands off 33 V
+(28 V + 5 % = 29.4 V), the LMR51635 runs from 4.3 to 60 V and its EN divider (1M/100k) starts it
+above 13.5 V, and the P-FET and its 12 V gate zener are rated 60 V.  At 20 V a row draws more
+current for the same load; the hub's eFuse still caps it at 1.6 A.  The hub keeps every row off
+until the PD contract is final, so a node sees one clean power-up.
 
 **USB-C roles:** the front PC port is a sink (5.1 k Rd on CC) whose VBUS is
 only sensed; the DUT port is a source (22 k Rp → "1.5 A") with switched VBUS.
@@ -239,8 +241,10 @@ footprint.  Rev 0.4 puts the node's JST PH connectors back in JLC's hands, as SM
 extended part types (C295747, C265405, ≈ $3 loading fee each per order), ≈ +$0.86 of parts per
 board over the through-hole ones, and nothing left to solder by hand on the node.  Rev 0.5 (the rack
 bus) turns J1/J2 into the 6-pin S6B (C265405, already the AUX connector: no new type) and adds three
-extended part types, the TCAN1044AV (C3234993), the PESD2CAN (C75176) and the BAT54S (C7420333):
-≈ +$9 of loading fees per order and ≈ +$0.91 of parts per board.  `JLC_SINCE_QUOTE` in
+extended part types, the TCAN1044AV (C3234993), the PESD2CAN (C75176) and the BAT54S (C7420333).
+Its USB-C receptacles become the GCT USB4105-GF-A-120 (C5184243, the part the user chose for the
+hub: 5 A on VBUS), one extended type for another.  In all ≈ +$9 of loading fees per order and
+≈ +$2.38 of parts per board, $1.44 of it for the two GCT receptacles.  `JLC_SINCE_QUOTE` in
 `tools/bom.py` adds both to the node's order: ≈ **$387.73** for 16 assembled nodes, against
 $364.10 for v0.4.  Re-quote before ordering.
 
@@ -297,7 +301,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 |---|---|---|---|
 | C173752 JST S2B-PH-K | node J1 J2 J6 | 180°, +1.00 mm x | was wrong in the preview; hand-soldered now, not in the CPL |
 | C6186 AMS1117 SOT-223 | node U2 | 180° | looked wrong in the preview; confirm the fix |
-| C165948 HRO TYPE-C-31-M-12 | node J3 J4 | −1.57 mm y | to confirm |
+| C165948 HRO TYPE-C-31-M-12 | node J3 J4 until v0.4 | −1.57 mm y | not on the boards since v0.5 |
 | C2913206 ESP32-S3-MINI-1 | node U3 | +2.55 mm y | to confirm |
 | C431540 MSK12C02 | node SW3 | −0.25 mm y (lines up the pins; JLC's body outline then sits 0.25 mm off KiCad's) | to confirm |
 | C45262770 LMR51635 TSOT-23-6 | node U1 | 270° (same EasyEDA footprint as C7519) | to confirm |
@@ -315,6 +319,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C3234993 TCAN1044AV SOIC-8 | node U11, hub U6 | 270° | to confirm |
 | C75176 PESD2CAN SOT-23 | node D5, hub D9 | 180° | to confirm |
 | C7420333 BAT54S SOT-23 | node D6 D7, hub POS clamps | 180° | to confirm |
+| C5184243 GCT USB4105-GF-A-120 | node J3 J4, hub USB-C | −1.30 mm y | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
 0805, 1206), the electrolytics (+ pad), the diodes and LEDs (cathode side),

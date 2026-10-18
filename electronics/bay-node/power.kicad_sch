@@ -5,7 +5,7 @@
 	(uuid "6bdbf57d-f796-52cd-9884-75545352918b")
 	(paper "A3")
 	(title_block
-		(title "Bay node — 24 V input, 5 V buck, 3.3 V LDO")
+		(title "Bay node — VRACK input (20–28 V), 5 V buck, 3.3 V LDO")
 		(rev "0.5")
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
@@ -1773,148 +1773,6 @@
 						)
 					)
 					(number "6"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "power:+24V"
-			(power global)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "#PWR"
-				(at 0 -3.81 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "+24V"
-				(at 0 3.556 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Power symbol creates a global label with name \"+24V\""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "global power"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "+24V_0_1"
-				(polyline
-					(pts
-						(xy -0.762 1.27)
-						(xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54)
-						(xy 0.762 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0)
-						(xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "+24V_1_1"
-				(pin power_in line
-					(at 0 0 90)
-					(length 0)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -7210,137 +7068,27 @@
 			)
 		)
 	)
-	(symbol
-		(lib_id "power:+24V")
-		(at 121.92 30.48 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(label "VIN"
+		(at 121.92 30.48 90)
 		(fields_autoplaced yes)
-		(uuid "09c844e9-b9e3-5163-8591-74124aa9455b")
-		(property "Reference" "#PWR02021"
-			(at 121.92 30.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
-		(property "Value" "+24V"
-			(at 121.92 26.67 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 121.92 30.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 121.92 30.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 121.92 30.48 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "6f3c3ed2-64d8-5eac-8d7b-16b812c5c255")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/6bdbf57d-f796-52cd-9884-75545352918b"
-					(reference "#PWR02021")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "1bb378a7-4255-5bf6-b9d6-86120e89e5e3")
 	)
-	(symbol
-		(lib_id "power:+24V")
-		(at 30.48 96.52 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(label "VIN"
+		(at 30.48 96.52 90)
 		(fields_autoplaced yes)
-		(uuid "ffb405ea-7b24-5521-a338-f0d3cc9349d5")
-		(property "Reference" "#PWR02022"
-			(at 30.48 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify left bottom)
 		)
-		(property "Value" "+24V"
-			(at 30.48 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 30.48 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 30.48 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 30.48 96.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "36ad4692-4074-5d7e-b96a-fed8456de16e")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/6bdbf57d-f796-52cd-9884-75545352918b"
-					(reference "#PWR02022")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "64a4a117-2636-50f4-beaf-895dfe91cc9d")
 	)
 	(symbol
 		(lib_id "power:+5V")
@@ -7352,7 +7100,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "442cb330-abb8-515d-9aa5-5da22b04889a")
-		(property "Reference" "#PWR02023"
+		(property "Reference" "#PWR02021"
 			(at 203.2 116.84 0)
 			(effects
 				(font
@@ -7402,7 +7150,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/6bdbf57d-f796-52cd-9884-75545352918b"
-					(reference "#PWR02023")
+					(reference "#PWR02021")
 					(unit 1)
 				)
 			)
@@ -7418,7 +7166,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "192512e1-b597-5d73-a8bb-e55fc83d6bf3")
-		(property "Reference" "#PWR02024"
+		(property "Reference" "#PWR02022"
 			(at 233.68 106.68 0)
 			(effects
 				(font
@@ -7468,7 +7216,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/6bdbf57d-f796-52cd-9884-75545352918b"
-					(reference "#PWR02024")
+					(reference "#PWR02022")
 					(unit 1)
 				)
 			)
@@ -7484,7 +7232,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "61e3037c-e789-55ad-a662-c42a3362847a")
-		(property "Reference" "#PWR02025"
+		(property "Reference" "#PWR02023"
 			(at 284.48 106.68 0)
 			(effects
 				(font
@@ -7534,14 +7282,14 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/6bdbf57d-f796-52cd-9884-75545352918b"
-					(reference "#PWR02025")
+					(reference "#PWR02023")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(label "24V_BUS"
-		(at 35.56 30.48 0)
+	(label "VRACK"
+		(at 36.83 30.48 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7678,7 +7426,7 @@
 		)
 		(uuid "49c92759-f989-5add-a87e-f01e10797d7a")
 	)
-	(text_box "LMR51635YDDCR: 1.1 MHz, PFM at light load with spread spectrum.  Values from TI SLUSF64B table 8-2 (5 V, 1.1 MHz):\n  L 3.3 µH (FXL0630, 9.5 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.\nFB 120k/22k: VOUT = 0.8 V × (1 + 120/22) = 5.16 V, which covers the DUT switch + shunt drop.\nEN 1M/100k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node\n  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.\nLayout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island\n  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.\nInput: SUD50P06 P-FET (reverse polarity, Vgs clamped by the 12 V zener); SMBJ33A clamps hot-plug ringing below 54 V (U1: 63 V abs max).\nRow bus 24 V nominal, or 20 / 28 V from a USB-C PD (EPR) supply: SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the buck runs\n  4.3–60 V and starts above 13.5 V, the P-FET and the zener clamp are rated 60 V / 12 V.  At 20 V a row draws more current: ≤ 1.6 A."
+	(text_box "LMR51635YDDCR: 1.1 MHz, PFM at light load with spread spectrum.  Values from TI SLUSF64B table 8-2 (5 V, 1.1 MHz):\n  L 3.3 µH (FXL0630, 9.5 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.\nFB 120k/22k: VOUT = 0.8 V × (1 + 120/22) = 5.16 V, which covers the DUT switch + shunt drop.\nEN 1M/100k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node\n  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.\nLayout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island\n  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.\nInput: SUD50P06 P-FET (reverse polarity, Vgs clamped by the 12 V zener); SMBJ33A clamps hot-plug ringing below 54 V (U1: 63 V abs max).\nVRACK is 20 V, or 28 V (EPR), from the hub's USB-C PD supply: SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the buck runs\n  4.3–60 V and starts above 13.5 V, the P-FET and the zener clamp are rated 60 V / 12 V.  At 20 V a row draws more current: ≤ 1.6 A."
 		(exclude_from_sim no)
 		(at 15.24 162.56 0)
 		(size 279.4 26.67)

@@ -65,11 +65,12 @@ JLC_QUOTE = {
 # node's JST PH are SMD since rev 0.4, JLC places them).
 JLC_FINISH = {}
 # Parts added to a board after its quote (indicative, not re-quoted): (what, PCBA line, USD for the
-# quoted order).  Bay node rev 0.5, the rack bus: TCAN1044AV, PESD2CAN, 2 × BAT54S, 3 resistors, 2
-# capacitors and the 6-pin J1/J2, +$0.91 of parts per board at catalogue prices, and three new
-# extended part types at ≈ $3 loading each.
+# quoted order).  Bay node rev 0.5: the rack bus (TCAN1044AV, PESD2CAN, 2 × BAT54S, 3 resistors, 2
+# capacitors, the 6-pin J1/J2), GCT USB4105 receptacles instead of the HRO ones and 2 × 100 nF on
+# the USBLC6s: +$2.38 of parts per board at catalogue prices; four new extended part types and one
+# gone (the HRO), ≈ $3 loading each.
 JLC_SINCE_QUOTE = {
-    "bay-node": [("rev 0.5 rack bus parts", "components", 14.63),
+    "bay-node": [("rev 0.5 parts (rack bus, GCT USB-C)", "components", 38.10),
                  ("rev 0.5: 3 more extended part types", "feeders", 9.00)],
 }
 

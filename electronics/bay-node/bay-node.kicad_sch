@@ -55,7 +55,7 @@
 			)
 		)
 	)
-	(text "24 V input, 5 V buck, 3.3 V LDO"
+	(text "VRACK input (20–28 V), 5 V buck, 3.3"
 		(exclude_from_sim no)
 		(at -8.89 77.47 0)
 		(effects
@@ -65,6 +65,17 @@
 			(justify left bottom)
 		)
 		(uuid "f8fb0e46-de19-5e4f-9177-56a290e17170")
+	)
+	(text "V LDO"
+		(exclude_from_sim no)
+		(at -8.89 81.28 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "6acf6617-540c-51c4-8886-bf6aab51d8ef")
 	)
 	(sheet
 		(at 82.55 70)

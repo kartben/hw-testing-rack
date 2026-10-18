@@ -2696,7 +2696,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12"
+		(property "Footprint" "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal"
 			(at 35.56 71.12 0)
 			(effects
 				(font
@@ -2714,7 +2714,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "USB-C receptacle, USB 2.0, 16 pins"
+		(property "Description" "USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS"
 			(at 35.56 71.12 0)
 			(effects
 				(font
@@ -2723,7 +2723,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TYPE-C-31-M-12"
+		(property "MPN" "USB4105-GF-A-120"
 			(at 35.56 71.12 0)
 			(effects
 				(font
@@ -2732,7 +2732,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Korean Hroparts"
+		(property "Manufacturer" "GCT"
 			(at 35.56 71.12 0)
 			(effects
 				(font
@@ -2741,7 +2741,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C165948"
+		(property "LCSC" "C5184243"
 			(at 35.56 71.12 0)
 			(effects
 				(font
@@ -3332,6 +3332,255 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C")
+		(at 121.92 76.2 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2554d910-8ca7-5a80-b1db-bb1a87756f02")
+		(property "Reference" "C25"
+			(at 126.527 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100n"
+			(at 127.052 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 121.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 121.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Capacitor 100n 0603"
+			(at 121.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 121.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 121.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 121.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5a2413d3-0d31-5bff-b79b-a36fe30388ba")
+		)
+		(pin "2"
+			(uuid "4fbade4f-66ca-5415-9d3f-b7f3a93d6ee9")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
+					(reference "C25")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 121.92 72.39)
+			(xy 121.92 69.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "89af86b2-be66-514e-b4d4-3cb983db59ad")
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 121.92 69.85 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "01987b24-ac44-5fa5-ba7b-f4e7f8a9651e")
+		(property "Reference" "#PWR04005"
+			(at 121.92 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 121.92 66.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 121.92 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 121.92 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 121.92 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c4452865-c446-560b-9a50-75299aac63d4")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
+					(reference "#PWR04005")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 121.92 80.01)
+			(xy 121.92 82.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7a70b10e-cfda-5ffc-a415-7eb00248c801")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 121.92 82.55 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "5886e924-c953-5371-8489-90c875b63043")
+		(property "Reference" "#PWR04006"
+			(at 121.92 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 121.92 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 121.92 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 121.92 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 121.92 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2b510b77-fb1a-5675-9d81-3127b30e3e8f")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
+					(reference "#PWR04006")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 95.25 55.88 90)
 		(unit 1)
@@ -3542,7 +3791,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "12771083-50d8-50c2-b176-4aae2f0ebac8")
-		(property "Reference" "#PWR04005"
+		(property "Reference" "#PWR04007"
 			(at 106.68 66.04 0)
 			(effects
 				(font
@@ -3592,7 +3841,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04005")
+					(reference "#PWR04007")
 					(unit 1)
 				)
 			)
@@ -4049,7 +4298,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2e9aca90-0213-5650-87dd-673addf7465a")
-		(property "Reference" "#PWR04006"
+		(property "Reference" "#PWR04008"
 			(at 193.04 78.74 0)
 			(effects
 				(font
@@ -4099,7 +4348,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04006")
+					(reference "#PWR04008")
 					(unit 1)
 				)
 			)
@@ -4236,7 +4485,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0fbaae7b-10ab-5e8d-aef7-8fd73b81875b")
-		(property "Reference" "#PWR04007"
+		(property "Reference" "#PWR04009"
 			(at 180.34 68.58 0)
 			(effects
 				(font
@@ -4286,7 +4535,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04007")
+					(reference "#PWR04009")
 					(unit 1)
 				)
 			)
@@ -4408,7 +4657,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "782210de-1e88-5709-9fb0-c88736ee9872")
-		(property "Reference" "#PWR04008"
+		(property "Reference" "#PWR04010"
 			(at 172.72 50.8 0)
 			(effects
 				(font
@@ -4458,7 +4707,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04008")
+					(reference "#PWR04010")
 					(unit 1)
 				)
 			)
@@ -4649,7 +4898,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3121036c-3677-5f4b-8fd8-698eb024e308")
-		(property "Reference" "#PWR04009"
+		(property "Reference" "#PWR04011"
 			(at 264.16 78.74 0)
 			(effects
 				(font
@@ -4699,7 +4948,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04009")
+					(reference "#PWR04011")
 					(unit 1)
 				)
 			)
@@ -4964,7 +5213,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "acaa5e41-bf0b-5313-abcc-f7ffbd7b226c")
-		(property "Reference" "#PWR04010"
+		(property "Reference" "#PWR04012"
 			(at 284.48 50.8 0)
 			(effects
 				(font
@@ -5014,7 +5263,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04010")
+					(reference "#PWR04012")
 					(unit 1)
 				)
 			)
@@ -5047,7 +5296,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12"
+		(property "Footprint" "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal"
 			(at 381 147.32 0)
 			(effects
 				(font
@@ -5065,7 +5314,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "USB-C receptacle, USB 2.0, 16 pins"
+		(property "Description" "USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS"
 			(at 381 147.32 0)
 			(effects
 				(font
@@ -5074,7 +5323,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TYPE-C-31-M-12"
+		(property "MPN" "USB4105-GF-A-120"
 			(at 381 147.32 0)
 			(effects
 				(font
@@ -5083,7 +5332,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Korean Hroparts"
+		(property "Manufacturer" "GCT"
 			(at 381 147.32 0)
 			(effects
 				(font
@@ -5092,7 +5341,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C165948"
+		(property "LCSC" "C5184243"
 			(at 381 147.32 0)
 			(effects
 				(font
@@ -5182,7 +5431,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "78c4e108-a140-5bc6-93e3-1cc49ff3c326")
-		(property "Reference" "#PWR04011"
+		(property "Reference" "#PWR04013"
 			(at 381 172.72 0)
 			(effects
 				(font
@@ -5232,7 +5481,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04011")
+					(reference "#PWR04013")
 					(unit 1)
 				)
 			)
@@ -5344,7 +5593,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4c3a13e9-9324-5a2a-95bf-0de3666fe3b4")
-		(property "Reference" "#PWR04012"
+		(property "Reference" "#PWR04014"
 			(at 388.62 172.72 0)
 			(effects
 				(font
@@ -5394,7 +5643,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04012")
+					(reference "#PWR04014")
 					(unit 1)
 				)
 			)
@@ -5559,7 +5808,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d0d04776-2e5d-5273-9c68-b06b97ea31c1")
-		(property "Reference" "#PWR04013"
+		(property "Reference" "#PWR04015"
 			(at 340.36 157.48 0)
 			(effects
 				(font
@@ -5609,7 +5858,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04013")
+					(reference "#PWR04015")
 					(unit 1)
 				)
 			)
@@ -5658,7 +5907,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "89286d14-7487-5b15-a09e-ecb58e56d433")
-		(property "Reference" "#PWR04014"
+		(property "Reference" "#PWR04016"
 			(at 340.36 139.7 0)
 			(effects
 				(font
@@ -5708,7 +5957,256 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04014")
+					(reference "#PWR04016")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 314.96 162.56 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1c839250-deba-5319-b94b-12bb8e8f5d8a")
+		(property "Reference" "C26"
+			(at 319.567 161.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100n"
+			(at 320.092 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 314.96 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 314.96 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Capacitor 100n 0603"
+			(at 314.96 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 314.96 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 314.96 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 314.96 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "7d7f0ee8-620f-57fd-b639-919c95497dca")
+		)
+		(pin "2"
+			(uuid "ff9a1952-889e-51af-9db8-55ee446e64d8")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
+					(reference "C26")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 314.96 158.75)
+			(xy 314.96 156.21)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8bbda40c-a236-5bbd-b4cc-0cfcf082401c")
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 314.96 156.21 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d2cf8d2d-9478-5cd1-b26b-2035f40cc5de")
+		(property "Reference" "#PWR04017"
+			(at 314.96 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 314.96 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 314.96 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 314.96 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 314.96 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "86f4463d-2424-5580-9f9a-515f2ab44084")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
+					(reference "#PWR04017")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 314.96 166.37)
+			(xy 314.96 168.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1c9293f6-ad95-5c5e-9bca-ca6ebc2373eb")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 314.96 168.91 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "42276508-b276-5cd2-820b-255890682c81")
+		(property "Reference" "#PWR04018"
+			(at 314.96 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 314.96 172.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 314.96 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 314.96 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 314.96 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "62ecc480-a18e-5081-be26-380c82bffa64")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
+					(reference "#PWR04018")
 					(unit 1)
 				)
 			)
@@ -6106,7 +6604,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "20dbacec-215d-5228-8c4f-da292acfcc02")
-		(property "Reference" "#PWR04015"
+		(property "Reference" "#PWR04019"
 			(at 101.6 200.66 0)
 			(effects
 				(font
@@ -6156,7 +6654,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04015")
+					(reference "#PWR04019")
 					(unit 1)
 				)
 			)
@@ -6278,7 +6776,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fef99925-93cf-5b51-aa57-b210d89d6aff")
-		(property "Reference" "#PWR04016"
+		(property "Reference" "#PWR04020"
 			(at 116.84 177.8 0)
 			(effects
 				(font
@@ -6328,7 +6826,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04016")
+					(reference "#PWR04020")
 					(unit 1)
 				)
 			)
@@ -6450,7 +6948,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6dd4ddd5-504e-59ea-810b-5f1bf3471b80")
-		(property "Reference" "#PWR04017"
+		(property "Reference" "#PWR04021"
 			(at 71.12 203.2 0)
 			(effects
 				(font
@@ -6500,7 +6998,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04017")
+					(reference "#PWR04021")
 					(unit 1)
 				)
 			)
@@ -7154,7 +7652,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c7c8cf22-254f-516f-967e-2064b1311409")
-		(property "Reference" "#PWR04018"
+		(property "Reference" "#PWR04022"
 			(at 71.12 121.92 0)
 			(effects
 				(font
@@ -7204,7 +7702,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04018")
+					(reference "#PWR04022")
 					(unit 1)
 				)
 			)
@@ -7220,7 +7718,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9e3a0ee2-7cee-5bfa-acf4-39afe3eed8a2")
-		(property "Reference" "#PWR04019"
+		(property "Reference" "#PWR04023"
 			(at 193.04 40.64 0)
 			(effects
 				(font
@@ -7270,7 +7768,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04019")
+					(reference "#PWR04023")
 					(unit 1)
 				)
 			)
@@ -7297,7 +7795,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e0752315-caed-5be1-b1a7-a0a4d74ff76a")
-		(property "Reference" "#PWR04020"
+		(property "Reference" "#PWR04024"
 			(at 264.16 40.64 0)
 			(effects
 				(font
@@ -7347,7 +7845,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04020")
+					(reference "#PWR04024")
 					(unit 1)
 				)
 			)
@@ -7385,7 +7883,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1a58b479-3984-5fe5-9a53-4a610d070a11")
-		(property "Reference" "#PWR04021"
+		(property "Reference" "#PWR04025"
 			(at 101.6 167.64 0)
 			(effects
 				(font
@@ -7435,7 +7933,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04021")
+					(reference "#PWR04025")
 					(unit 1)
 				)
 			)
@@ -7484,7 +7982,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2da2b315-1364-5b79-bb70-e5210e9bb90a")
-		(property "Reference" "#PWR04022"
+		(property "Reference" "#PWR04026"
 			(at 167.64 180.34 0)
 			(effects
 				(font
@@ -7534,7 +8032,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04022")
+					(reference "#PWR04026")
 					(unit 1)
 				)
 			)
@@ -7550,7 +8048,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f781bb26-8870-500d-81ea-87140a5cbb36")
-		(property "Reference" "#PWR04023"
+		(property "Reference" "#PWR04027"
 			(at 167.64 195.58 0)
 			(effects
 				(font
@@ -7600,7 +8098,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04023")
+					(reference "#PWR04027")
 					(unit 1)
 				)
 			)

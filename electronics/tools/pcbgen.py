@@ -168,6 +168,7 @@ class PcbBuilder:
         dru = DRU
         if self.b.pcb.get("edge_parts"):
             dru += DRU_EDGE.format(cond=" || ".join(f"A.memberOfFootprint('{r}')" for r in self.b.pcb["edge_parts"]))
+        dru += self.b.pcb.get("dru", "")           # the board's own rules (design.py)
         (self.outdir / f"{self.b.name}.kicad_dru").write_text(dru, encoding="utf-8")
         tb = bd.GetTitleBlock()
         tb.SetTitle(self.b.title)

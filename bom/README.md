@@ -5,16 +5,16 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 509 |
+| Electronics | 530 |
 | Printed parts | 80 |
 | Cables | 67 |
 | Cameras | 36 |
 | Power | 29 |
 | Fasteners | 17 |
 | Motion | 9 |
-| **Total** | **747** |
+| **Total** | **768** |
 
-≈ **€62 per bay** all-in.
+≈ **€64 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -27,7 +27,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | bay-node | 20 PCBs (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA), 16 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $19.30, board $14.60 | 58.90 |
 | | | PCBA: setup $25.75, stencil $8.27, components $181.21, feeders $65.10, SMT $9.45, hand soldering $3.61, manual assembly $1.62, X-ray $13.28, packaging $0.52 | 308.81 |
 | | | **Quoted total** | **367.71** |
-| | | Order (indicative): no through-hole part for JLC (hand soldering −$3.61); rev 0.5 rack bus parts (+$14.63 components); rev 0.5: 3 more extended part types (+$9.00 feeders) | 387.73 |
+| | | Order (indicative): no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders) | 411.20 |
 | power-hub | 5 PCBs (2-layer 76×140 mm, ENIG), 2 assembled, Standard PCBA | PCB: engineering $4.00, ENIG $17.60, board $5.20 | 26.80 |
 | | | PCBA: setup $25.75, stencil $8.27, components $41.42, feeders $51.00, SMT $1.20, X-ray $13.28, packaging $0.52 | 141.44 |
 | | | **Estimated total** | **168.24** |
@@ -76,7 +76,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 |---|---|---:|---:|---:|---|
 | Electronics | 100u/50V — 100 µF 50 V aluminium electrolytic | 16  | 0.06 | 1.02 | LCSC/JLCPCB C3352 |
 | Electronics | 10u — Capacitor 10u 1206 | 32  | 0.25 | 8.01 | LCSC/JLCPCB C13585 |
-| Electronics | 100n — Capacitor 100n 0603 | 176  | 0.01 | 2.18 | LCSC/JLCPCB C14663 |
+| Electronics | 100n — Capacitor 100n 0603 | 208  | 0.01 | 2.58 | LCSC/JLCPCB C14663 |
 | Electronics | 22u — Capacitor 22u 1206 | 96  | 0.11 | 10.92 | LCSC/JLCPCB C12891 |
 | Electronics | 10u — Capacitor 10u 0805 | 16  | 0.04 | 0.64 | LCSC/JLCPCB C15850 |
 | Electronics | 1u — Capacitor 1u 0603 | 16  | 0.01 | 0.21 | LCSC/JLCPCB C15849 |
@@ -88,8 +88,8 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | 0.5A — PTC 0.5 A hold, 1206 | 16  | 0.07 | 1.18 | LCSC/JLCPCB C20799 |
 | Electronics | ROW IN — JST PH 6-pin, side entry, SMD | 16  | 0.36 | 5.74 | LCSC/JLCPCB C265405 |
 | Electronics | ROW OUT — JST PH 6-pin, side entry, SMD | 16  | 0.36 | 5.74 | LCSC/JLCPCB C265405 |
-| Electronics | PC — USB-C receptacle, USB 2.0, 16 pins | 16  | 0.17 | 2.80 | LCSC/JLCPCB C165948 |
-| Electronics | DUT — USB-C receptacle, USB 2.0, 16 pins | 16  | 0.17 | 2.80 | LCSC/JLCPCB C165948 |
+| Electronics | PC — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 16  | 0.84 | 13.40 | LCSC/JLCPCB C5184243 |
+| Electronics | DUT — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 16  | 0.84 | 13.40 | LCSC/JLCPCB C5184243 |
 | Electronics | AUX — JST PH 6-pin, side entry, SMD | 16  | 0.36 | 5.74 | LCSC/JLCPCB C265405 |
 | Electronics | CAM — JST PH 2-pin, side entry, SMD, 2 A | 16  | 0.20 | 3.24 | LCSC/JLCPCB C295747 |
 | Electronics | 3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded | 16  | 0.10 | 1.62 | LCSC/JLCPCB C167219 |

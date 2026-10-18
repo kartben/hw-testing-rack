@@ -1,7 +1,7 @@
 category,group,item,qty,unit,unit_eur,ext_eur,supplier,part,mpn,manufacturer,ref,notes
 Electronics,bay-node,100u/50V — 100 µF 50 V aluminium electrolytic,16,pcs,0.0635,1.02,LCSC/JLCPCB,C3352,RVT1H101M0810,Honor Elec,C1,1 per board × 16 boards
 Electronics,bay-node,10u — Capacitor 10u 1206,32,pcs,0.2504,8.01,LCSC/JLCPCB,C13585,CL31A106KBHNNNE,Samsung Electro-Mechanics,"C2,C3",2 per board × 16 boards
-Electronics,bay-node,100n — Capacitor 100n 0603,176,pcs,0.0124,2.18,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C4,C5,C14,C16,C17,C18,C19,C20,C22,C23,C24",11 per board × 16 boards
+Electronics,bay-node,100n — Capacitor 100n 0603,208,pcs,0.0124,2.58,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C4,C5,C14,C16,C17,C18,C19,C20,C22,C23,C24,C25,C26",13 per board × 16 boards
 Electronics,bay-node,22u — Capacitor 22u 1206,96,pcs,0.1138,10.92,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,"C7,C8,C9,C12,C13,C21",6 per board × 16 boards
 Electronics,bay-node,10u — Capacitor 10u 0805,16,pcs,0.0403,0.64,LCSC/JLCPCB,C15850,CL21A106KAYNNNE,Samsung Electro-Mechanics,C11,1 per board × 16 boards
 Electronics,bay-node,1u — Capacitor 1u 0603,16,pcs,0.013,0.21,LCSC/JLCPCB,C15849,CL10A105KB8NNNC,Samsung Electro-Mechanics,C15,1 per board × 16 boards
@@ -13,8 +13,8 @@ Electronics,bay-node,BAT54S — dual Schottky in series: clamps a line to GND an
 Electronics,bay-node,"0.5A — PTC 0.5 A hold, 1206",16,pcs,0.0736,1.18,LCSC/JLCPCB,C20799,SMD1206P050TF,RUILON,F1,1 per board × 16 boards
 Electronics,bay-node,"ROW IN — JST PH 6-pin, side entry, SMD",16,pcs,0.3588,5.74,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J1,1 per board × 16 boards
 Electronics,bay-node,"ROW OUT — JST PH 6-pin, side entry, SMD",16,pcs,0.3588,5.74,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 16 boards
-Electronics,bay-node,"PC — USB-C receptacle, USB 2.0, 16 pins",16,pcs,0.1748,2.8,LCSC/JLCPCB,C165948,TYPE-C-31-M-12,Korean Hroparts,J3,1 per board × 16 boards
-Electronics,bay-node,"DUT — USB-C receptacle, USB 2.0, 16 pins",16,pcs,0.1748,2.8,LCSC/JLCPCB,C165948,TYPE-C-31-M-12,Korean Hroparts,J4,1 per board × 16 boards
+Electronics,bay-node,"PC — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",16,pcs,0.8372,13.4,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J3,1 per board × 16 boards
+Electronics,bay-node,"DUT — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",16,pcs,0.8372,13.4,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J4,1 per board × 16 boards
 Electronics,bay-node,"AUX — JST PH 6-pin, side entry, SMD",16,pcs,0.3588,5.74,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J5,1 per board × 16 boards
 Electronics,bay-node,"CAM — JST PH 2-pin, side entry, SMD, 2 A",16,pcs,0.2024,3.24,LCSC/JLCPCB,C295747,S2B-PH-SM4-TB(LF)(SN),JST,J6,1 per board × 16 boards
 Electronics,bay-node,"3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded",16,pcs,0.1012,1.62,LCSC/JLCPCB,C167219,FXL0630-3R3-M,cjiang,L1,1 per board × 16 boards
@@ -47,8 +47,8 @@ Electronics,bay-node,TPS2553DBVR — adjustable current-limited power switch,16,
 Electronics,bay-node,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",16,pcs,0.69,11.04,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,U10,1 per board × 16 boards
 Electronics,bay-node,"TCAN1044AV — CAN FD transceiver, VCC 5 V, VIO 1.8–5 V, bus pins ±58 V (MCP2562 pinout)",16,pcs,0.3956,6.33,LCSC/JLCPCB,C3234993,TCAN1044AVDRQ1,Texas Instruments,U11,1 per board × 16 boards
 Electronics,bay-node,"Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA)",20,pcs,2.7094,54.19,JLCPCB quote 2026-10-16,,,,,"engineering $25.00, ENIG $19.30, board $14.60 = $58.90 for 20 PCBs, 16 of them assembled"
-Electronics,bay-node,"Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",1,pcs,122.35,122.35,"JLCPCB quote 2026-10-16, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $74.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 rack bus parts (+$14.63 components); rev 0.5: 3 more extended part types (+$9.00 feeders); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
-Electronics,bay-node,Components bay-node: JLC quote minus the catalogue prices above,1,pcs,-27.41,-27.41,"JLCPCB quote 2026-10-16, adjusted",,,,,quoted components $181.21 + $14.63 since (≈ €180.17) for 16 boards; catalogue unit prices give €207.58
+Electronics,bay-node,"Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",1,pcs,122.35,122.35,"JLCPCB quote 2026-10-16, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $74.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
+Electronics,bay-node,Components bay-node: JLC quote minus the catalogue prices above,1,pcs,-27.41,-27.41,"JLCPCB quote 2026-10-16, adjusted",,,,,quoted components $181.21 + $38.10 since (≈ €201.77) for 16 boards; catalogue unit prices give €229.18
 Electronics,power-hub,220u/50V — 220 µF 50 V aluminium electrolytic,4,pcs,0.1288,0.52,LCSC/JLCPCB,C3358,RVT1H221M1010,Honor Elec,"C1,C2",2 per board × 2 boards
 Electronics,power-hub,100n — Capacitor 100n 0603,12,pcs,0.0124,0.15,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C3,C106,C107,C114,C116,C117",6 per board × 2 boards
 Electronics,power-hub,1u — Capacitor 1u 0805,16,pcs,0.0268,0.43,LCSC/JLCPCB,C28323,CL21B105KBFNNNE,Samsung Electro-Mechanics,"C11,C12,C13,C14,C31,C32,C33,C34",8 per board × 2 boards
