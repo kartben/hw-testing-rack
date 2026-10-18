@@ -69,9 +69,12 @@ the tray forwards.
 
 The power box ([mechanical.md](mechanical.md#power-box)):
 
-1. Heat-set the inserts: 4 in the hub standoffs and 4 in the corner lugs for the lid.
-2. Hub on its standoffs (4 × M3×6), its USB-C PD input in the rear wall's port.
-3. Lid on (4 × M3×8).
+1. Heat-set the 4 inserts in the hub standoffs, from above (the box is open: the iron reaches
+   each standoff, 13.6 mm down, ≥ 4.7 mm from the walls).
+2. Lower the hub straight in, its USB-C PD input towards the rear wall, and screw the 4 M3×12
+   male-female hex spacers through its holes into the inserts (by hand or with pliers: the row
+   connector next to the front-left hole leaves no room for a 5.5 mm socket).
+3. Lid on: its rim inside the walls, 4 × M3×6 into the spacers.
 4. Lift the box over the floor plate's front lip under A1 and let its sockets
    drop over the bosses.
 5. The charger's 5 A e-marked USB-C cable into the rear port, out of the back

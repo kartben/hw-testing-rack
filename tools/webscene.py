@@ -32,6 +32,8 @@ WEB_PARTS = {
     "plate_universal": ("parts/board_plate.scad", {"BOARD": "universal"}),
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {"PART": "lid"}),
+    "power_box_labels": ("parts/power_box.scad", {"PART": "labels"}),
+    "power_box_lid_labels": ("parts/power_box.scad", {"PART": "lid_labels"}),
 }
 
 # Parts whose print orientation differs from their assembly orientation get an
@@ -41,6 +43,7 @@ ASSEMBLY_WRAPPERS = {
     "camera_cradle": "use <parts/camera_pod.scad>\ninclude <lib/carrier.scad>\ncradle();\n",
     "chain_foot": "use <parts/chain_parts.scad>\ninclude <lib/carrier.scad>\nfoot();\n",
     "power_box_lid": "use <parts/power_box.scad>\nlid();\n",
+    "power_box_lid_labels": "use <parts/power_box.scad>\nlid_labels();\n",
 }
 # ladders (profile in the frame's side plane, printed flat) and braces (printed flat) stand up in
 # frame coordinates; placed by a translation along X only
@@ -62,7 +65,7 @@ def print_up(name: str) -> list[int]:
         return [0, 0, -1]
     if name == "chain_foot":
         return [-1, 0, 0]
-    if name == "power_box_lid":
+    if name in ("power_box_lid", "power_box_lid_labels"):
         return [0, 0, -1]
     return [0, 0, 1]
 
@@ -409,6 +412,8 @@ def build(rack) -> Path:
     pb = rack.power_box()
     add("power_box_base", pb["origin"], space="frame", layer="powerbox")
     add("power_box_lid", pb["origin"], space="frame", layer="powerlid")
+    add("power_box_labels", pb["origin"], space="frame", layer="powerbox")      # the optional inlays
+    add("power_box_lid_labels", pb["origin"], space="frame", layer="powerlid")
     items["pcbs"].append({"board": "power-hub", "space": "frame", "pos": pb["hub"]})
     lit = {"on": "#3ddc84", "pd": "#3ddc84", "ctl": "#4aa3ff"}
     for led in pb["leds"]:

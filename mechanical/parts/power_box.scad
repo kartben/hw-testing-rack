@@ -2,6 +2,8 @@
 //
 //   openscad -D 'PART="base"' -o power_box_base.stl parts/power_box.scad
 //   openscad -D 'PART="lid"'  -o power_box_lid.stl  parts/power_box.scad
+//   openscad -D 'PART="labels"'     -o power_box_labels.stl     parts/power_box.scad   (optional inlays)
+//   openscad -D 'PART="lid_labels"' -o power_box_lid_labels.stl parts/power_box.scad
 //
 // Inside: the power hub v0.5 (USB-C PD sink, an eFuse per row, the rack controller: ESP32-S3 / CAN
 // master) on four standoffs.  Its USB-C PD input looks out of the rear wall: the rack's only
@@ -11,14 +13,17 @@
 //
 // The box stands inside the floor plate's tray, against the cell's left side: sockets under its
 // floor drop over the plate's insert bosses that fall under it (an M3 through each socket screws
-// it down if wanted).  The lid closes with 4 M3 screws into heat-set inserts in corner lugs that
-// hang above the hub (45-degree undersides: no supports).
+// it down if wanted).  Nothing overhangs the hub: it drops straight in.  It sits on four standoffs
+// with heat-set inserts; an M3 male-female hex spacer through each of its holes holds it down, and
+// the lid screws into the spacers' tops (4 × M3×6).
 //
 // Box coordinates: origin at the front-left-bottom outer corner, X right, Y back, Z up.
-// Print: base upright, lid top face down; PETG, no supports.
+// Print: base upright, lid top face down; PETG, no supports.  The labels are engraved; the two
+// *_labels parts fill the engravings exactly, flush with the faces: load each with its part as one
+// object (two parts) and give it a light filament on the H2D's second nozzle, for contrast.
 include <../lib/panels.scad>
 
-PART = "base";      // base | lid | preview
+PART = "base";      // base | lid | labels | lid_labels | preview
 SHOW_LID = false;   // preview only
 
 W = PBOX_SIZE[0];
@@ -52,39 +57,55 @@ SOCKETS = [for (gx = [GX[0], GX[len(GX) - 1]], gy = [GY[0], GY[len(GY) - 1]]) [g
 HUB_FRONT_Y = T + HUB_FRONT_GAP;
 function hub_xy(k) = [HUB_X0 + k[0], HUB_FRONT_Y + (HUB_SIZE[1] - k[1])];   // KiCad -> box
 HUB_TOP = HUB_Z + HUB_T;
-STANDOFF_D = 7;
-ROW_CUT = [19, 8];                  // row connector cut-out in the left wall: width (Y), height (Z)
+STANDOFF_D = 8;                     // 2 mm of wall around the Ø4 insert
+SPACER = [12, 3.2];                 // M3 male-female hex spacer: length (PCB top -> lid), hex circumradius
+ROW_CUT = [16, 6.6];                // row plug window in the left wall, around the 16 × 5.6 mm receptacle: width (Y), height (Z)
 ROW_NAMES = ["A", "B", "C", "D"];
 LED_PAIR = 6;                       // ON / FAULT spacing (the first 4 entries of HUB_LEDS are pairs)
-LED_HOLE = 3.0;
+LED_HOLE = 2.6;
 LED_Z = 0.8;                        // side-view LED centre above the PCB top
-USB_CUT = [9.6, 3.8, 1.6];          // as the tray fascia: width, height, centre above the PCB top
+// USB-C openings sized for the plug's overmold (USB-IF reference: up to 12.35 × 6.5 mm), not the
+// shell: the receptacles sit 3–4 mm behind the walls' outer faces, deeper than a plug reaches
+// past its overmold.  Width, height, centre above the PCB top.
+USB_CUT = [12.4, 7.0, 1.6];
+USB_BOTTOM = HUB_TOP + USB_CUT[2] - USB_CUT[1] / 2;
+TEXT = [5.5, 0.8];                  // labels: size (cap height 5.25 mm, strokes 1.1 mm), engraving depth
+assert(abs(HB - HUB_TOP - SPACER[0]) < 0.01, "the spacers must reach the lid: HB - HUB_TOP = spacer length");
 
-// ---------------------------------------------------------------- lid screws: corner lugs above the hub
-LUG = [8, 4];                       // lug square (from the walls' inner faces), full-height block on top
-LUG_SCREWS = [for (x = [T + LUG[0] / 2, W - T - LUG[0] / 2], y = [T + LUG[0] / 2, D - T - LUG[0] / 2]) [x, y]];
-LUG_BOSS_D = 8;
+// ---------------------------------------------------------------- lid screws: into the hub's spacers
+LID_SCREWS = [for (h = HUB_HOLES) hub_xy(h)];
 
 module rounded(size, r = R) rbox(size, r);
 
-module shell_2d(inset) offset(r = max(R - inset, 0.5)) offset(delta = -R) translate([inset, inset])
-    square([W - 2 * inset, D - 2 * inset]);
+// the outline inset by `inset`, its corners rounded to follow the outer ones (shrink and grow by
+// the same radius: the flat faces stay exactly `inset` in)
+module shell_2d(inset) let (rr = max(R - inset, 0.5)) offset(r = rr) offset(delta = -rr)
+    translate([inset, inset]) square([W - 2 * inset, D - 2 * inset]);
 
-module label(t, size = 4.5, halign = "center")
+module label(t, size = TEXT[0], halign = "center")
     text(t, size = size, font = "Liberation Sans:style=Bold", halign = halign, valign = "center");
 
-// a lug in the inner corner (sx, sy: which walls), its underside at 45 degrees down to the walls
-module lug(sx, sy) {
-    cx = sx > 0 ? W - T : T;
-    cy = sy > 0 ? D - T : T;
-    hull() {
-        translate([sx > 0 ? cx - LUG[0] : cx, sy > 0 ? cy - LUG[0] : cy, HB - LUG[1]]) cube([LUG[0], LUG[0], LUG[1]]);
-        // a sliver in the corner, LUG[0] lower: the 45-degree underside
-        translate([sx > 0 ? cx - EPS : cx, sy > 0 ? cy - EPS : cy, HB - LUG[1] - LUG[0]]) cube([EPS, EPS, EPS]);
-        translate([sx > 0 ? cx - LUG[0] : cx, sy > 0 ? cy - EPS : cy, HB - LUG[1]]) cube([LUG[0], EPS, EPS]);
-        translate([sx > 0 ? cx - EPS : cx, sy > 0 ? cy - LUG[0] : cy, HB - LUG[1]]) cube([EPS, LUG[0], EPS]);
-    }
+// a label engraved TEXT[1] deep into a wall's outer face (p: centre, on that face; rz: 0 front,
+// -90 left, 180 rear), reading left to right from outside.  inlay: exactly the engraving's volume
+module engrave(t, p, rz, inlay = false) translate(p) rotate([90, 0, rz]) translate([0, 0, -TEXT[1]])
+    linear_extrude(TEXT[1] + (inlay ? 0 : 1)) label(t);
+
+// every label of the base: row letters on the left wall, the LED and port labels on the front, the
+// PD input's on the rear
+module base_labels(inlay = false) {
+    for (i = [0 : len(HUB_ROWS) - 1])
+        engrave(ROW_NAMES[i], [0, hub_xy([0, HUB_ROWS[i]])[1], (HUB_TOP - 0.6 + ROW_CUT[1] + HB) / 2], -90, inlay);
+    // row letters under their LED pairs, PD over its LED, CTL under the controller's LED and USB-C
+    for (i = [0 : 3]) engrave(ROW_NAMES[i], [HUB_X0 + HUB_LEDS[i], 0, USB_BOTTOM - 4], 0, inlay);
+    engrave("PD", [HUB_X0 + HUB_LEDS[4], 0, HB - 3.4], 0, inlay);
+    engrave("CTL", [HUB_X0 + (HUB_LEDS[5] + HUB_USB) / 2, 0, USB_BOTTOM - 4], 0, inlay);
+    engrave("PD IN", [HUB_X0 + HUB_PD, D, USB_BOTTOM - 4], 180, inlay);
 }
+
+// the lid's name, in its top face (printed face down: the first layers)
+module lid_label(inlay = false)
+    translate([W / 2, D / 2, HB + LID_T - TEXT[1]]) rotate([0, 0, 90]) linear_extrude(TEXT[1] + (inlay ? 0 : EPS))
+        label("hw-testing-rack · power", 7);
 
 // ---------------------------------------------------------------- base
 module base() {
@@ -98,29 +119,27 @@ module base() {
             for (s = SOCKETS) translate([s[0], s[1], 0]) cylinder(d = SOCKET_PAD[0], h = SOCKET_PAD[1]);
             // hub standoffs
             for (h = HUB_HOLES) translate(concat(hub_xy(h), 0)) cylinder(d = STANDOFF_D, h = HUB_Z);
-            // lid lugs, one per inner corner
-            for (sx = [0, 1], sy = [0, 1]) lug(sx, sy);
         }
         // sockets (open downwards) with an M3 clearance hole each
         for (s = SOCKETS) translate([s[0], s[1], 0]) {
             translate([0, 0, -EPS]) cylinder(d = SOCKET[0], h = SOCKET[1] + EPS);
             translate([0, 0, -EPS]) cylinder(d = M3_CLEAR, h = SOCKET_PAD[1] + 2 * EPS);
         }
-        // inserts: hub standoffs, lid lugs
+        // inserts in the hub standoffs
         for (h = HUB_HOLES) translate(concat(hub_xy(h), HUB_Z)) insert_hole();
-        for (p = LUG_SCREWS) translate([p[0], p[1], HB]) insert_hole();
         left_wall_cuts();
         front_wall_cuts();
         rear_wall_cuts();
+        base_labels();
     }
 }
 
 module left_wall_cuts() {
+    // the plug windows; each row letter goes above its window (base_labels): the base ladder's window
+    // shows this wall only from 0.3 mm under the PCB up, and the windows are too close for a letter between
     for (i = [0 : len(HUB_ROWS) - 1]) {
         y = hub_xy([0, HUB_ROWS[i]])[1];
         translate([-EPS, y - ROW_CUT[0] / 2, HUB_TOP - 0.6]) cube([T + 2 * EPS, ROW_CUT[0], ROW_CUT[1]]);
-        translate([0.6, y, HUB_TOP + ROW_CUT[1] + 4]) rotate([90, 0, -90]) linear_extrude(1)
-            label(ROW_NAMES[i], 5);
     }
 }
 
@@ -131,24 +150,19 @@ module usb_cut(x, y0) {
 }
 
 module front_wall_cuts() {
-    // status LEDs: ON / FAULT per row, then PD (the AP33772S's own LED) and CTL; the console USB-C
+    // status LEDs: ON / FAULT per row, then PD (the AP33772S's own LED) and CTL (the controller's)
     for (i = [0 : len(HUB_LEDS) - 1]) {
         x = HUB_X0 + HUB_LEDS[i];
         for (dx = i < 4 ? [-LED_PAIR / 2, LED_PAIR / 2] : [0])
             translate([x + dx, -EPS, HUB_TOP + LED_Z]) rotate([-90, 0, 0]) cylinder(d = LED_HOLE, h = T + 2 * EPS);
-        // row letters and PD below the LEDs, CTL above (no room for both below)
-        translate([x, 0.6, i == 5 ? HUB_TOP + LED_Z + 5 : HUB_TOP - 5.5]) rotate([90, 0, 0]) linear_extrude(1)
-            label(i < 4 ? ROW_NAMES[i] : (i == 4 ? "PD" : "CTL"), i < 4 ? 4.5 : 3.0);
     }
+    // the controller's console USB-C, next to its LED
     usb_cut(HUB_X0 + HUB_USB, -EPS);
-    translate([HUB_X0 + HUB_USB, 0.6, HUB_TOP - 5.5]) rotate([90, 0, 0]) linear_extrude(1) label("USB", 3.0);
 }
 
 module rear_wall_cuts() {
     // the USB-C PD input, from the charger outside the rack
     usb_cut(HUB_X0 + HUB_PD, D - T - EPS);
-    translate([HUB_X0 + HUB_PD, D - 0.6, HUB_TOP - 5.5]) rotate([90, 0, 180]) linear_extrude(1)
-        label("USB-C PD", 3.0);
     // vents behind the hub's controller (the PD input's right of them)
     for (i = [0 : 3]) translate([14 + i * 9, D - T - EPS, HUB_TOP + 2.5]) rotate([-90, 0, 0])
         hull() for (z = [0, -5]) translate([0, z, 0]) cylinder(d = 3.5, h = T + 2 * EPS);
@@ -160,30 +174,34 @@ module lid() {
     difference() {
         union() {
             translate([0, 0, HB]) rounded([W, D, LID_T]);
-            // rim inside the walls, clear of the corner lugs
+            // rim inside the walls, notched around the spacers
             translate([0, 0, HB - RIM[1]]) linear_extrude(RIM[1] + EPS) difference() {
                 shell_2d(T + RIM_CLEAR);
                 shell_2d(T + RIM_CLEAR + RIM[0]);
-                for (p = LUG_SCREWS) translate(p) square(LUG[0] + 2 * RIM_CLEAR + 2, center = true);
+                for (p = LID_SCREWS) translate(p) circle(r = SPACER[1] + 1.3);
             }
         }
-        for (p = LUG_SCREWS) translate([p[0], p[1], HB]) screw_through(h = LID_T, counterbore = false);
+        for (p = LID_SCREWS) translate([p[0], p[1], HB]) screw_through(h = LID_T, counterbore = false);
         // vents over the PD input and the buck (rear right), and along the eFuse column
         for (i = [0 : 5]) translate([W - 30 + i * 4, D - 60, HB - EPS])
             hull() for (y = [0, 40]) translate([0, y, 0]) cylinder(d = 2.4, h = LID_T + 2 * EPS);
-        // name, engraved in the top face (printed face down: the first layers)
-        translate([W / 2, D / 2, HB + LID_T - 0.6]) rotate([0, 0, 90]) linear_extrude(0.6 + EPS)
-            label("hw-testing-rack · power", 6);
+        lid_label();
     }
 }
 
 // ---------------------------------------------------------------- preview: everything in place
 module preview() {
-    color("#4b515c") base();
-    if (SHOW_LID) color("#4b515c", 0.35) lid();
+    color("#1d1f23") base();
+    color("#f2f1ec") base_labels(inlay = true);
+    if (SHOW_LID) color("#1d1f23", 0.35) lid();
     color("#1d6b3d") translate([HUB_X0, HUB_FRONT_Y, HUB_Z]) cube([HUB_SIZE[0], HUB_SIZE[1], HUB_T]);
+    color("#c9a227") for (p = LID_SCREWS) translate([p[0], p[1], HUB_TOP]) cylinder(r = SPACER[1], h = SPACER[0], $fn = 6);
 }
+
+module lid_labels() lid_label(inlay = true);
 
 if (PART == "base") base();
 else if (PART == "lid") translate([0, D, HB + LID_T]) rotate([180, 0, 0]) lid();
+else if (PART == "labels") base_labels(inlay = true);
+else if (PART == "lid_labels") translate([0, D, HB + LID_T]) rotate([180, 0, 0]) lid_labels();
 else if (PART == "preview") preview();

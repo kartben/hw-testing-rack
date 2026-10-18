@@ -69,7 +69,8 @@ const MAT = {
   chainParts: std(0xff8a3d, 0, 0.45),
   cameras: std(0x2a2e35, 0, 0.55),
   psu: std(0xb9bdc3, 0.85, 0.32),
-  powerBox: std(0x4b525d, 0, 0.55),
+  powerBox: std(0x1d1f23, 0, 0.55),
+  powerLabels: std(0xf2f1ec, 0, 0.6),
   pcb: std(0x10151c, 0.1, 0.42),
   pcbGreen: std(0x0f3d23, 0.1, 0.42),
   silver: std(0xc9ccd1, 0.9, 0.28),
@@ -114,7 +115,7 @@ if (dot(vUpView, vUpView) > 0.01) {
   };
   return mat;
 }
-for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras', 'powerBox']) printLook(MAT[k]);
+for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras', 'powerBox', 'powerLabels']) printLook(MAT[k]);
 
 function partMaterial(name) {
   if (name.startsWith('ladder_')) return MAT.ladders;
@@ -125,6 +126,7 @@ function partMaterial(name) {
   if (name.startsWith('chain_')) return MAT.chainParts;
   if (name.startsWith('plate_')) return MAT.plates;
   if (name.startsWith('camera_')) return MAT.cameras;
+  if (name.endsWith('_labels')) return MAT.powerLabels;
   if (name.startsWith('power_box_')) return MAT.powerBox;
   return MAT.trays;
 }

@@ -65,8 +65,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | plate_nucleo-64 | 2 | 34.9 | `mechanical/stl/plate_nucleo-64.stl` |
 | plate_rpi-pico2 | 1 | 29.6 | `mechanical/stl/plate_rpi-pico2.stl` |
 | plate_stm32f746g-disco | 1 | 39.4 | `mechanical/stl/plate_stm32f746g-disco.stl` |
-| power_box_base | 1 | 66.5 | `mechanical/stl/power_box_base.stl` |
-| power_box_lid | 1 | 21.2 | `mechanical/stl/power_box_lid.stl` |
+| power_box_base | 1 | 45.0 | `mechanical/stl/power_box_base.stl` |
+| power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
+| power_box_lid | 1 | 20.7 | `mechanical/stl/power_box_lid.stl` |
+| power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |
 | tray | 12 | 78.7 | `mechanical/stl/tray.stl` |
 
 ## Line items
@@ -182,9 +184,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 98.27 | 98.27 | estimate, not quoted (v0.5) |
 | Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 0.00 | 0.00 | estimate, not quoted (v0.5) |
 | Printed parts | PETG filament | 3.9 kg | 20.00 | 78.00 | any |
-| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 168  | 0.03 | 5.04 | AliExpress (bulk) / Ruthex |
-| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid | 68  | 0.02 | 1.36 | AliExpress (bulk) |
-| Fasteners | M3×6 (node PCB, chain anchor, hub PCB) | 76  | 0.02 | 1.52 | AliExpress (bulk) |
+| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 164  | 0.03 | 4.92 | AliExpress (bulk) / Ruthex |
+| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces | 64  | 0.02 | 1.28 | AliExpress (bulk) |
+| Fasteners | M3×6 (node PCB, chain anchor, power box lid) | 76  | 0.02 | 1.52 | AliExpress (bulk) |
+| Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
 | Fasteners | M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends) | 72  | 0.02 | 1.44 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge) | 24  | 0.30 | 7.20 | supermagnete S-06-03-N |
 | Motion | Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer | 2.3 m | 4.00 | 9.20 | AliExpress / igus E2 micro |
