@@ -116,13 +116,13 @@ def fastener_z(kind, dia, length=None):
 
 def node_shape():
     """Bay node: KiCad's STEP of the board plus stand-in bodies (node.py), node coordinates;
-    without it, the bare 64 x 80 x 1.6 board with its four holes."""
+    without it, the bare board with its four holes."""
     if os.path.exists(os.path.join(PARTS, "bay_node.brep")):
         return part("bay_node")
     w, d = C["NODE_SIZE"]
     b = Part.makeBox(w, d, 1.6)
-    for x, y in ((3.5, 3.5), (60.5, 3.5), (3.5, 76.5), (60.5, 76.5)):
-        b = b.cut(Part.makeCylinder(1.6, 2, V(x, y, -0.2)))
+    for x, y in C["NODE_HOLES"]:
+        b = b.cut(Part.makeCylinder(1.6, 2, V(x, d - y, -0.2)))
     return b
 
 
@@ -313,7 +313,7 @@ def _data_lead_shape(part="full"):
     and up through the drawer's cable window into the DATA board's PH from the rear; "free": its far
     plug left hanging (the bench, the tray); "stub": only its last bit, up through the window."""
     node = json.load(open(os.path.join(PARTS, "node.json")))
-    j7 = next(c for c in node["ph"] if c.get("up"))
+    j7 = next(c for c in node["ph"] if c["ref"] == "J7")            # the DATA header (vertical PH 5)
     o0 = V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"])
     m7 = o0 + V(*j7["mouth"])
     fx, fy = CH["fixed"]
@@ -563,7 +563,8 @@ FAST = {  # kind: (Fasteners type, diameter, length or None, screw length for th
 
 
 def node_holes_carrier():
-    return [(C["NODE_X0"] + x, C["NODE_FRONT_Y"] + (C["NODE_SIZE"][1] - y)) for x, y in ((3.5, 3.5), (60.5, 3.5), (3.5, 76.5), (60.5, 76.5))]
+    """The node's M3 holes (config/rack.yaml pcb.bay_node.holes, KiCad y from the rear edge), carrier coordinates."""
+    return [(C["NODE_X0"] + x, C["NODE_FRONT_Y"] + (C["NODE_SIZE"][1] - y)) for x, y in C["NODE_HOLES"]]
 
 
 # ------------------------------------------------------------------ the scene (same ids as renderer/manual_build.py)

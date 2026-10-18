@@ -12,6 +12,7 @@ are generated from one data file.
 | `notice.py` | the drawings: scenes (`STEPS`), thumbnails (`THUMBS`), hardware icons (`hw_shape`) |
 | `pages.py` | `notice.yaml` + the drawings' canvas addresses (`assets.json`) → the page files and the canvas index (`canvas.json`) |
 | `run.py` | everything up to the drawings, then the list of drawings to upload |
+| `jobs.py` | on another machine (`NOTICE_REMOTE`): the drawings, within its memory |
 
 ## Regenerating
 
@@ -23,6 +24,34 @@ python tools/notice/run.py a3 pin          # some of them
 A full run takes about 40 minutes (four FreeCAD processes); it ends with
 `pages.py plan`: the drawings whose SVG is new or changed since it was
 uploaded (`assets.json` keeps each one's SHA-256).
+
+### The drawings on another machine
+
+With `NOTICE_REMOTE` set, `run.py` prepares the solids here (OpenSCAD,
+KiCad), draws on a Linux box over ssh and brings the SVGs back:
+
+```bash
+NOTICE_REMOTE="ssh -o BatchMode=yes box" python tools/notice/run.py
+NOTICE_REMOTE="ssh -o BatchMode=yes jump ssh -o BatchMode=yes box" python tools/notice/run.py   # through a jump host
+```
+
+The box needs, in `~/claude-scratch/notice` (`NOTICE_REMOTE_DIR`), a
+conda-forge FreeCAD with the Fasteners workbench in its `Mod` (≈ 3.7 GB):
+
+```bash
+cd ~/claude-scratch/notice
+curl -fsSL https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj bin/micromamba
+MAMBA_ROOT_PREFIX=$PWD/mamba bin/micromamba create -y -p $PWD/env -c conda-forge --override-channels \
+  freecad=1.1.3 python=3.12 shapely numpy scipy pyyaml && rm -rf mamba/pkgs
+git clone https://github.com/shaise/FreeCAD_FastenersWB.git env/Mod/fasteners
+```
+
+`jobs.py` runs the drawings there, one FreeCAD process each, as many at
+once as the box's memory holds: a whole-rack drawing peaks at ≈ 5.5 GB, a
+parts card at ≈ 1 GB; it keeps each drawing's measured peak in
+`peaks.json` beside `env/` for the next run.  On a 16-core, 14 GB box the
+memory sets the pace (two or three whole-rack drawings at a time): ≈ 35
+minutes, about as long as the four local processes, but this PC stays free.
 
 ### Publishing (Claude, with the Artifact tool)
 

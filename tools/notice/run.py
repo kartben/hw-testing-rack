@@ -8,22 +8,35 @@
 2. the printed parts of one bay -> OpenSCAD CSG -> exact solids (csg2part.py, in freecadcmd);
 3. the bay node: KiCad's STEP export and 3D coverage report, stand-ins for the parts without a
    body (node.py);
-4. the drawings: notice.py in four freecadcmd processes -> <build>/out/*.svg;
+4. the drawings: notice.py in four freecadcmd processes -> <build>/out/*.svg, or on another
+   machine (below);
 5. pages.py plan: the drawings the canvas doesn't have yet.  Then upload, record, build and
-   publish the pages: README.md, Publishing.  A full run takes about 15 minutes.
+   publish the pages: README.md, Publishing.  A full run takes about 40 minutes here.
 
 <build> is mechanical/build/notice.  Needs FreeCAD 1.x with the Fasteners workbench
 (FREECADCMD=path/to/freecadcmd if it is not found), OpenSCAD, and kicad-cli (or Docker) for
 the bay node (without it, the node is drawn as a bare board).
+
+Step 4 elsewhere: NOTICE_REMOTE is a command that runs its last argument in a shell on a
+machine with FreeCAD + Fasteners + shapely at <NOTICE_REMOTE_DIR>/env/bin/freecadcmd
+(NOTICE_REMOTE_DIR relative to its home, default claude-scratch/notice; README.md has the
+setup), e.g. NOTICE_REMOTE="ssh -o BatchMode=yes box", or through a jump host whose ssh
+config names the box, "ssh -o BatchMode=yes jump ssh -o BatchMode=yes box" (the command is
+quoted once per ssh after the first).  jobs.py runs the drawings there within the box's
+memory.  The solids and constants go there, the drawings come back; nothing else is left there
+but jobs.py's record of each drawing's peak memory.
 """
 
 from __future__ import annotations
 
 import glob
+import io
 import os
+import shlex
 import shutil
 import subprocess
 import sys
+import tarfile
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -126,6 +139,46 @@ def node_step(NODE: str = "bay-node") -> None:
     print((BUILD / "parts" / f"{BOARDS[NODE]}_log.txt").read_text(encoding="utf-8").strip())
 
 
+def on_remote(cmd: str) -> list[str]:
+    """NOTICE_REMOTE running the shell command `cmd` there: quoted again for each ssh hop after the first."""
+    rem = shlex.split(os.environ["NOTICE_REMOTE"])
+    for _ in range(sum(w == "ssh" for w in rem) - 1):
+        cmd = shlex.quote(cmd)
+    return rem + [cmd]
+
+
+def remote_drawings(names: list[str]) -> None:
+    """Step 4 on NOTICE_REMOTE: notice.py, jobs.py, constants.json and the solids there (a fresh
+    run/), the drawings run by jobs.py, out/ back here, run/ removed."""
+    d = os.environ.get("NOTICE_REMOTE_DIR", "claude-scratch/notice")
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as t:
+        t.add(HERE / "notice.py", "notice.py")
+        t.add(HERE / "jobs.py", "jobs.py")
+        t.add(BUILD / "constants.json", "build/constants.json")
+        for f in sorted((BUILD / "parts").glob("*")):
+            if f.suffix in (".brep", ".json"):
+                t.add(f, f"build/parts/{f.name}")
+    subprocess.run(on_remote(f"rm -rf {d}/run && mkdir -p {d}/run/build/out && tar -xzf - -C {d}/run"),
+                   input=buf.getvalue(), check=True)
+    subprocess.run(on_remote(f"cd {d}/run && NOTICE_BUILD=$PWD/build REPROJECT=1 python3 jobs.py ../env/bin/freecadcmd "
+                             + ",".join(names)), check=True)
+    back = subprocess.run(on_remote(f"tar -czf - -C {d}/run/build out && rm -rf {d}/run"), capture_output=True, check=True)
+    with tarfile.open(fileobj=io.BytesIO(back.stdout), mode="r:gz") as t:
+        t.extractall(BUILD, filter="data")
+
+
+def outputs(name: str) -> list[str]:
+    """The drawings a job writes (out/<name>.svg)."""
+    kind, _, k = name.rpartition(":")
+    return {"thumb": [f"card_{k}", f"chip_{k}"], "hw": [f"hw_{k}"]}.get(kind, [name])
+
+
+def mtime(name: str) -> int | None:
+    f = BUILD / "out" / f"{name}.svg"
+    return f.stat().st_mtime_ns if f.exists() else None
+
+
 def main() -> None:
     import json
     import time
@@ -144,6 +197,7 @@ def main() -> None:
     c["DATA"] = {"x": rack.data_port_x[0], "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 8.5,   # PORT_Z
                  "wall": d["wall"], "pcb": dp, "pcb_z": d["bottom"] + 8.5 - 1.63 - dp["thickness"]}
     c["NODE_DUT"] = [node["size"][0] + 0.4, node["size"][1] - node["right"]["dut"], node["thickness"] + 1.6]
+    c["NODE_HOLES"] = node["holes"]                 # M3, KiCad coordinates (y from the rear edge)
     import webscene                                  # the USB plugs' sizes, as the viewer draws them
     c["USB_PLUGS"] = getattr(webscene, "USB_PLUGS", None)
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
@@ -155,15 +209,19 @@ def main() -> None:
         node_step(b)
     print("drawings:", " ".join(names))
     (BUILD / "out" / "notice_log.txt").unlink(missing_ok=True)     # this run's failures only
-    groups = [names[k::4] for k in range(4)]
-    procs = [subprocess.Popen([freecadcmd(), str(HERE / "notice.py")], env={**os.environ, "NOTICE_BUILD": str(BUILD),
-                                                                           "NOTICE": ",".join(g), "REPROJECT": "1"},
-                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) for g in groups if g]
-    for p in procs:
-        p.wait()
-    log = (BUILD / "out" / "notice_log.txt").read_text(encoding="utf-8", errors="replace")
-    fails = [line for line in log.splitlines() if " FAIL" in line]
-    print(f"{len(names) - len(fails)} written to {BUILD / 'out'}" + (f", failed: {fails}" if fails else ""))
+    before = {o: mtime(o) for n in names for o in outputs(n)}
+    if os.environ.get("NOTICE_REMOTE"):
+        remote_drawings(names)
+    else:
+        groups = [names[k::4] for k in range(4)]
+        procs = [subprocess.Popen([freecadcmd(), str(HERE / "notice.py")], env={**os.environ, "NOTICE_BUILD": str(BUILD),
+                                                                               "NOTICE": ",".join(g), "REPROJECT": "1"},
+                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) for g in groups if g]
+        for p in procs:
+            p.wait()
+    fails = [n for n in names if any(mtime(o) in (None, before[o]) for o in outputs(n))]   # failed, or killed
+    print(f"{len(names) - len(fails)} written to {BUILD / 'out'}"
+          + (f", NOT written: {' '.join(fails)} (out/notice_log.txt)" if fails else ""))
     import pages
     pages.plan()
     print(f"{time.time() - t0:.0f} s.  Next: upload the drawings above to the canvas, pages.py record, "
