@@ -11,6 +11,7 @@ BOSS_D = 7.5;
 function node_xy(k) = [NODE_X0 + k[0], NODE_FRONT_Y + (NODE_SIZE[1] - k[1])];
 NODE_REAR_Y = NODE_FRONT_Y + NODE_SIZE[1];
 PWR_NOTCH_Y = node_xy([0, NODE_PWR_Y])[1];        // row cable (JST PH 6) between neighbouring nodes
+NODE_RESET = [7.5, 11.5];                          // SW1 RESET, TS-1187A (KiCad, electronics/bay-node/design.py)
 
 // Opening for a USB-C plug's overmold: the USB-C stadium, scaled up.  The USB-IF reference
 // overmold is at most 12.35 × 6.5 mm; this one also passes squarer overmolds (corner radius

@@ -173,6 +173,9 @@ module tray() {
         translate([CAM_CABLE_HOLE[0], CAM_CABLE_HOLE[1], -EPS]) rslot(10, 5, CARRIER_BOTTOM + 2);
         // rear service slot (row feed, top-row camera cables, airflow)
         translate([20, CARRIER_D - WALL - EPS, CARRIER_BOTTOM + 2]) cube([60, WALL + 2 * EPS, CARRIER_WALL_H - 5]);
+        // the node's RESET button sits under the left ledge's inner edge: a notch over its plunger lets a
+        // pin reach it from above, drawer pulled out; the drawer still rests on 1.5 mm of ledge there
+        translate(concat(node_xy(NODE_RESET), [LEDGE_Z - LEDGE_T - 1])) cylinder(r = LEDGE_X - node_xy(NODE_RESET)[0] + 1.5, h = LEDGE_T + 2);
         // closed-position detent magnet, flush with the left ledge (the pad below gives it its depth)
         translate([DETENT_LEDGE[0], DETENT_LEDGE[1], LEDGE_Z]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
     }
