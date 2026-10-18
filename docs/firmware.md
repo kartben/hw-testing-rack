@@ -115,7 +115,7 @@ esptool --chip esp32s3 -p /dev/ttyACM0 -b 921600 write-flash 0x0 build/zephyr/ze
 
 The node runs from its row (VRACK), never from the USB port: its row must be
 on (the hub turns rows on by itself; `hub row <A–D> on` otherwise).  On a
-desk, feed 9–30 V on J1 (VRACK, GND).
+desk, feed 15–30 V on J1 (pin 1 +, pins 2 / 5 GND): the buck starts above 13.5 V.
 
 | | How | Bay closed? |
 |---|---|---|
@@ -132,7 +132,7 @@ picks SERVICE up again; `bay status` and the LED show it.
 |---|---|---|
 | **First flash and updates** | laptop on the hub's **console USB-C** (front wall, under A1, engraved "USB"), `west flash`.  That port also powers the controller (not the rows), so a hub with no PD charger, or on a desk, can be flashed too | yes |
 | **Wedged firmware** | the console USB-C is wired straight to the ESP32's USB pins and the hub's firmware never takes the PHY: esptool resets it into the ROM loader whatever the firmware does, short of firmware that reconfigures IO19/IO20 | yes |
-| **Last resort** | lid off (4 × M3×8): **BOOT** (SW2) and **RESET** (SW1) in the rear-left corner, top side; UART0 pads TP1–TP4 on the bottom side (hub off its standoffs) | no |
+| **Last resort** | **BOOT** (SW2) and **RESET** (SW1), rear-left corner, top side: a pin through the lid's two holes (RESET, BOOT, engraved), down a guide tube onto each button; UART0 pads TP1–TP4 on the bottom side (lid off, 4 × M3×6, and the hub off its spacers) | yes, with a pin |
 
 The row enables are held across the controller's resets (pad hold), so
 flashing the hub should not power-cycle the rack: to be checked on the first
@@ -189,11 +189,9 @@ flash, bay by bay.  Recommended next step, in this order:
   in most cases: read SERVICE before the USB host starts, and leave the PHY
   to the USB-Serial-JTAG when it is on.
 * **Power hub:** the console USB-C is reachable with the box closed and
-  covers flashing and recovery.  BOOT and RESET need the lid off; two
-  pinholes in the lid above them (both are top-actuated, in the rear-left
-  corner of the board, ≈ box (15, 127) and (15, 134)) would make the rare
-  last resort possible without opening the box: a nice-to-have, not a
-  requirement.
+  covers flashing and recovery.  BOOT and RESET (top-actuated, rear-left
+  corner, box (15.1, 127.1) and (15.1, 133.6)) are reached with a pin through
+  two holes in the lid, each with a guide tube down to 1 mm above its button.
 
 First boot (Wi-Fi credentials, bay or rack id): [`firmware/README.md`](../firmware/README.md#first-boot)
 and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot).

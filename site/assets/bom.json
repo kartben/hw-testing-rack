@@ -2319,8 +2319,8 @@
 {
 "part": "power_box_lid",
 "qty": 1,
-"grams_each": 20.7,
-"grams_total": 20.7,
+"grams_each": 20.8,
+"grams_total": 20.8,
 "stl": "mechanical/stl/power_box_lid.stl"
 },
 {

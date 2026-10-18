@@ -47,7 +47,7 @@ can be flashed and configured in place or on a desk without a PD charger.
 It goes straight to the ESP32's USB pins, and the hub never takes the PHY
 for anything else: esptool gets the ROM loader whatever the firmware does,
 no button needed.  BOOT and RESET (rear-left corner, top side) are a last
-resort with the lid off.  The row enables are held across the controller's
+resort, pressed with a pin through the lid's RESET / BOOT holes.  The row enables are held across the controller's
 resets, so a flash should leave the rack powered (to be checked on the
 first hub).  A module that ran other firmware: `west flash --erase` once
 (settings partition).  The update plan (MCUboot, over Wi-Fi):

@@ -75,6 +75,14 @@ assert(abs(HB - HUB_TOP - SPACER[0]) < 0.01, "the spacers must reach the lid: HB
 // ---------------------------------------------------------------- lid screws: into the hub's spacers
 LID_SCREWS = [for (h = HUB_HOLES) hub_xy(h)];
 
+// ---------------------------------------------------------------- RESET / BOOT through the lid
+// A pin (paper clip, SIM tool) goes through a hole in the lid and down a guide tube that ends just
+// above the hub's top-actuated button (TS-1187A, 1.5 mm tall): the box stays closed to recover the
+// controller.  The console USB-C on the front wall already flashes it with the box closed.
+BUTTON_TOP = HUB_TOP + 1.5;
+BUTTON_PIN = [2.2, 5.0, 1.0];       // hole Ø, guide tube OD, gap above the button
+BUTTON_NAMES = ["RESET", "BOOT"];
+
 module rounded(size, r = R) rbox(size, r);
 
 // the outline inset by `inset`, its corners rounded to follow the outer ones (shrink and grow by
@@ -102,10 +110,12 @@ module base_labels(inlay = false) {
     engrave("PD IN", [HUB_X0 + HUB_PD, D, USB_BOTTOM - 4], 180, inlay);
 }
 
-// the lid's name, in its top face (printed face down: the first layers)
-module lid_label(inlay = false)
-    translate([W / 2, D / 2, HB + LID_T - TEXT[1]]) rotate([0, 0, 90]) linear_extrude(TEXT[1] + (inlay ? 0 : EPS))
-        label("hw-testing-rack · power", 7);
+// the lid's labels, in its top face (printed face down: the first layers): its name, and RESET / BOOT
+// beside their pin holes
+module lid_label(inlay = false) translate([0, 0, HB + LID_T - TEXT[1]]) linear_extrude(TEXT[1] + (inlay ? 0 : EPS)) {
+    translate([W / 2, D / 2 - 8]) rotate(90) label("hw-testing-rack · power", 7);
+    for (i = [0 : 1]) translate(hub_xy(HUB_BUTTONS[i]) + [BUTTON_PIN[1] / 2 + 1.5, 0]) label(BUTTON_NAMES[i], halign = "left");
+}
 
 // ---------------------------------------------------------------- base
 module base() {
@@ -174,6 +184,9 @@ module lid() {
     difference() {
         union() {
             translate([0, 0, HB]) rounded([W, D, LID_T]);
+            // guide tubes down to the buttons
+            for (b = HUB_BUTTONS) translate(concat(hub_xy(b), BUTTON_TOP + BUTTON_PIN[2]))
+                cylinder(d = BUTTON_PIN[1], h = HB - BUTTON_TOP - BUTTON_PIN[2] + EPS);
             // rim inside the walls, notched around the spacers
             translate([0, 0, HB - RIM[1]]) linear_extrude(RIM[1] + EPS) difference() {
                 shell_2d(T + RIM_CLEAR);
@@ -182,6 +195,11 @@ module lid() {
             }
         }
         for (p = LID_SCREWS) translate([p[0], p[1], HB]) screw_through(h = LID_T, counterbore = false);
+        // the button pin holes, through tube and lid, with a lead-in on top
+        for (b = HUB_BUTTONS) translate(hub_xy(b)) {
+            translate([0, 0, BUTTON_TOP]) cylinder(d = BUTTON_PIN[0], h = HB + LID_T - BUTTON_TOP + EPS);
+            translate([0, 0, HB + LID_T - 0.8]) cylinder(d1 = BUTTON_PIN[0], d2 = BUTTON_PIN[0] + 1.6, h = 0.8 + EPS);
+        }
         // vents over the PD input and the buck (rear right), and along the eFuse column
         for (i = [0 : 5]) translate([W - 30 + i * 4, D - 60, HB - EPS])
             hull() for (y = [0, 40]) translate([0, y, 0]) cylinder(d = 2.4, h = LID_T + 2 * EPS);

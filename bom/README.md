@@ -67,7 +67,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | plate_stm32f746g-disco | 1 | 38.9 | `mechanical/stl/plate_stm32f746g-disco.stl` |
 | power_box_base | 1 | 45.0 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
-| power_box_lid | 1 | 20.7 | `mechanical/stl/power_box_lid.stl` |
+| power_box_lid | 1 | 20.8 | `mechanical/stl/power_box_lid.stl` |
 | power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |
 | tray | 12 | 79.4 | `mechanical/stl/tray.stl` |
 
