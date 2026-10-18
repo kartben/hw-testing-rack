@@ -107,6 +107,20 @@ static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 	print_power(sh);
 	shell_print(sh, "faults:    %u since boot", dut_fault_count());
 	print_aux(sh);
+#if defined(CONFIG_BAY_CAMERA)
+	{
+		struct camera_status cam;
+
+		camera_status(&cam);
+		if (cam.present) {
+			shell_print(sh, "camera:    %s, %s %s, port %u, %u client(s), %u frame(s), "
+				    "%u error(s)", cam.model, cam.resolution, cam.quality, cam.port,
+				    cam.clients, cam.frames, cam.errors);
+		} else {
+			shell_print(sh, "camera:    none");
+		}
+	}
+#endif
 
 	return 0;
 }

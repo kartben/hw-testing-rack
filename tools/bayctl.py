@@ -146,7 +146,7 @@ def load_bays(rack_yaml: Path = RACK_YAML, boards_yaml: Path = BOARDS_YAML,
     return out
 
 
-SERVICES = ("status", "control", "console", "usbip", "shell")
+SERVICES = ("status", "control", "console", "usbip", "shell", "camera")
 SOURCE_NAME = re.compile(r"[A-Za-z0-9._-]{1,15}$")
 
 

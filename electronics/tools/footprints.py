@@ -10,6 +10,9 @@ pads (2, 3) are tied to the current pads (1, 4) by net-tie pad groups, so the se
 where the shunt's own terminations end instead of somewhere along the load current's copper.  They
 are copper only (tented, no paste) under the resistor body.  Pin numbers follow Device:R_Shunt:
 1/4 current, 2/3 sense.
+
+ESP32-S3-WROOM-1_NoEPVias: the stock ESP32-S3-WROOM-1 without the 0.2 mm thermal vias in its exposed
+pad (the bay node's U3).
 """
 
 from __future__ import annotations
@@ -58,11 +61,28 @@ def kelvin_1206() -> pcbnew.FOOTPRINT:
     return fp
 
 
+def wroom_no_ep_vias() -> pcbnew.FOOTPRINT:
+    """The stock ESP32-S3-WROOM-1 without the 0.2 mm thermal vias in its exposed pad (below the 0.3 mm
+    minimum hole the boards keep for JLC's standard price, and open vias wick the pad's solder away):
+    the bay node puts the pad on a top-side GND island stitched to In1 around it instead."""
+    name = "ESP32-S3-WROOM-1_NoEPVias"
+    fp = pcbnew.FootprintLoad(str(STOCK / "RF_Module.pretty"), "ESP32-S3-WROOM-1")
+    for pad in list(fp.Pads()):
+        if pad.GetAttribute() == pcbnew.PAD_ATTRIB_PTH and pad.GetNumber() == "41":
+            fp.Remove(pad)
+    fp.SetFPID(pcbnew.LIB_ID("bench", name))
+    fp.SetValue(name)
+    fp.SetLibDescription("ESP32-S3-WROOM-1 as RF_Module:ESP32-S3-WROOM-1, without the thermal vias in the exposed "
+                         "pad (pad 41): stitch the pad's copper island around it instead")
+    return fp
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
-    for fp in (kelvin_1206(),):
-        pcbnew.PCB_IO_KICAD_SEXPR().FootprintSave(OUT.as_posix(), fp)
-        print("wrote", OUT / f"{fp.GetFPID().GetLibItemName()}.kicad_mod")
+    # one at a time: KiCad's SWIG proxies get lost when two loaded footprints are alive at once
+    for make, name in ((kelvin_1206, "R_1206_3216Metric_Kelvin"), (wroom_no_ep_vias, "ESP32-S3-WROOM-1_NoEPVias")):
+        pcbnew.PCB_IO_KICAD_SEXPR().FootprintSave(OUT.as_posix(), make())
+        print("wrote", OUT / f"{name}.kicad_mod")
 
 
 if __name__ == "__main__":

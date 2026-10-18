@@ -70,6 +70,9 @@ config HWTR_ADMIN_CLAIM_S
 	default 60
 	depends on HWTR_ADMIN
 
+config HWTR_JPEG
+	bool "Where a JPEG ends, in a stream that arrives in pieces (plain C)"
+
 config HWTR_IMG
 	bool "MCUboot image header and TLVs, read as they stream in (plain C)"
 

@@ -1,14 +1,16 @@
 /*
- * ESP32-S3-DevKitC-1 as a stand-in for the bay node: same GPIO map, so the
- * firmware can be brought up before the PCB exists.  Plug the DUT into the
- * devkit's "USB" port (IO19/IO20) through an OTG adapter and power it
+ * ESP32-S3-DevKitC-1 v1.1 (WROOM-1-N8R8, the bay node's module) as a
+ * stand-in for the bay node: the node's pin map is chosen to be the
+ * devkit's, so this only brings in the node's devicetree.  Plug the DUT into
+ * the devkit's "USB" port (IO19/IO20) through an OTG adapter and power it
  * separately (that port does not source VBUS); an INA226 breakout goes on
- * IO8/IO9 if you have one, otherwise the V/I readings report -ENODEV.
+ * IO2 (SDA) / IO1 (SCL) if you have one, otherwise the V/I readings report
+ * -ENODEV; the status LED is the devkit's RGB LED (IO38).  The camera (J6)
+ * on jumper wires to an Arducam Mega: IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS,
+ * IO7 the light.
  *
- * Two pins differ from the bay node: I2C moves to IO8/IO9, because the
- * devkit's RGB LED sits on IO38 (the node's SDA) and the WROOM-1-N8R8's octal
- * PSRAM takes IO35-IO37 (the node's SCL is IO37).  On a v1.0 devkit the LED
- * is on IO48, which the node uses for AUX_BOOT_CTL: leave `bay boot` alone.
+ * On a v1.0 devkit the RGB LED is on IO48, AUX_BOOT_CTL here: it flickers
+ * with `bay boot`, harmless.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -16,41 +18,7 @@
 #include "../../boards/hwtr/bay_node/bay_node-pinctrl.dtsi"
 #include "../../boards/hwtr/bay_node/bay_node.dtsi"
 
-/* The devkit's own RGB LED: GPIO38 on DevKitC-1 v1.1 (GPIO48 on v1.0) */
-&pinctrl {
-	devkitc_rgb_led: devkitc_rgb_led {
-		group1 {
-			pinmux = <RMT_OUT0_GPIO38>;
-		};
-	};
-};
-
-&rmt {
-	pinctrl-0 = <&devkitc_rgb_led>;
-};
-
-&pinctrl {
-	devkitc_i2c0: devkitc_i2c0 {
-		group1 {
-			pinmux = <I2C0_SDA_GPIO8>,
-				 <I2C0_SCL_GPIO9>;
-			bias-pull-up;
-			drive-open-drain;
-			output-high;
-		};
-	};
-};
-
-&i2c0 {
-	pinctrl-0 = <&devkitc_i2c0>;
-};
-
-/* POS_OUT is IO35 on the node, taken by the devkit's octal PSRAM: IO21 here */
-&rack_bus {
-	pos-out-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
-};
-
-/* SPI2's default pins (IO10-IO13) collide with the bay node map (IO12/IO13) */
-&spi2 {
-	status = "disabled";
+/* The 8 MB octal PSRAM (boards/esp32s3_devkitc_procpu.conf) */
+&psram0 {
+	size = <DT_SIZE_M(8)>;
 };

@@ -28,12 +28,17 @@
  *   POST /api/access/kick     admin: {"id": "usbip:51234"}
  *   POST /api/access/key      admin: {"key": "<64 hex>"} (a new key)
  *
+ *   GET  /api/camera          the camera, its settings and their choices
+ *   POST /api/camera          {"resolution": "640x480", "quality": "high" | "default" | "low",
+ *                              "light": "on" | "off"}  (any subset, saved)
+ *   (the pictures are on their own port: camera.c)
+ *
  * Every POST of an action answers with the new /api/status document, errors
  * with {"error": "..."} and a 4xx/5xx status.  Each request needs the right
  * for what it does (access.c): status to read, control for power, reset,
- * boot and mode, console for the console and its settings; 403 when the
- * rules refuse it, 423 while another address holds the lease.  Admin
- * requests are signed (X-Bay-Auth, see access.c).
+ * boot, mode and the camera's settings, console for the console and its
+ * settings; 403 when the rules refuse it, 423 while another address holds
+ * the lease.  Admin requests are signed (X-Bay-Auth, see access.c).
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -218,7 +223,7 @@ static const struct json_obj_descr status_descr[] = {
 };
 
 /* Responses are built in the HTTP server thread, one at a time (/metrics too) */
-static char resp_buf[3072];
+static BAY_EXT_RAM char resp_buf[3072];
 
 /* X-Bay-Auth, kept from the first callback of a request */
 HWTR_WEB_AUTH_CAPTURE(bay_auth_header);
@@ -236,6 +241,59 @@ static void capture_auth(const struct http_request_ctx *req, char *out, size_t s
 		}
 	}
 }
+
+#if defined(CONFIG_BAY_CAMERA)
+/* The camera object: in /api/status, and in /api/camera with the choices */
+static int camera_json(char *buf, size_t size, bool choices)
+{
+	struct camera_status st;
+	size_t len;
+	int n;
+
+	camera_status(&st);
+	n = snprintf(buf, size,
+		     "{\"present\":%s,\"model\":\"%s\",\"port\":%u,\"resolution\":\"%s\","
+		     "\"quality\":\"%s\",\"light\":\"%s\",\"lit\":%s,\"clients\":%u,"
+		     "\"streams\":%u,\"slots\":%u,\"frames\":%u,\"errors\":%u,\"last_bytes\":%u,"
+		     "\"last_ms\":%u,\"fps\":%u.%u",
+		     st.present ? "true" : "false", st.model, st.port, st.resolution, st.quality,
+		     st.light ? "on" : "off", st.lit ? "true" : "false", st.clients, st.streams,
+		     CONFIG_BAY_CAMERA_CLIENTS, st.frames, st.errors, st.last_size, st.last_ms,
+		     st.fps_x10 / 10, st.fps_x10 % 10);
+	if (n < 0 || (size_t)n >= size) {
+		return -ENOMEM;
+	}
+	len = n;
+	if (choices) {
+		const char *name;
+
+		len += snprintf(buf + len, size - len, ",\"resolutions\":[");
+		for (int i = 0; (name = camera_resolution_name(i)) != NULL && len < size; i++) {
+			len += snprintf(buf + len, size - len, "%s\"%s\"", i ? "," : "", name);
+		}
+		if (len < size) {
+			len += snprintf(buf + len, size - len, "],\"qualities\":[");
+		}
+		for (int i = 0; (name = camera_quality_name(i)) != NULL && len < size; i++) {
+			len += snprintf(buf + len, size - len, "%s\"%s\"", i ? "," : "", name);
+		}
+		if (len < size) {
+			len += snprintf(buf + len, size - len, "]");
+		}
+	}
+	if (len + 1 >= size) {
+		return -ENOMEM;
+	}
+	buf[len++] = '}';
+	buf[len] = '\0';
+	return len;
+}
+
+static int camera_status_json(char *buf, size_t size)
+{
+	return camera_json(buf, size, false);
+}
+#endif
 
 /* ip: who asks (their rights, the lease from their side), 0 for /metrics */
 static void status_fill(struct status_doc *s, uint32_t ip)
@@ -318,6 +376,25 @@ static void status_fill(struct status_doc *s, uint32_t ip)
 	s->rack.rows_on = s->rack.hub ? hub.rows_on : 0;
 }
 
+/* An object written by fn, as "name", before the status document's last brace */
+static __maybe_unused void status_append(const char *name, int (*fn)(char *buf, size_t size))
+{
+	size_t start = strlen(resp_buf) - 1;
+	size_t len = start;
+	int n = -ENOMEM;
+
+	if (len + strlen(name) + sizeof(",\"\":}") < sizeof(resp_buf)) {
+		len += sprintf(resp_buf + len, ",\"%s\":", name);
+		n = fn(resp_buf + len, sizeof(resp_buf) - len - 1);
+	}
+	if (n >= 0) {
+		strcpy(resp_buf + len + n, "}");
+	} else {
+		LOG_WRN("status: no room for the %s object", name);
+		strcpy(resp_buf + start, "}");
+	}
+}
+
 static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 {
 	static struct status_doc s;
@@ -330,27 +407,15 @@ static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 		LOG_ERR("status encoding failed: %d", ret);
 		rsp->status = HTTP_500_INTERNAL_SERVER_ERROR;
 		strcpy(resp_buf, "{\"error\":\"encoding\"}");
-	}
+	} else {
+		/* Hand-written objects: the firmware (the update code's), the camera */
 #if defined(CONFIG_HWTR_UPDATE)
-	else {
-		/* The firmware object (hand-written by the update code) before the last brace */
-		size_t len = strlen(resp_buf) - 1;
-		int n = -ENOMEM;
-
-		if (len + sizeof(",\"firmware\":}") < sizeof(resp_buf)) {
-			strcpy(resp_buf + len, ",\"firmware\":");
-			len += strlen(",\"firmware\":");
-			n = hwtr_update_json(resp_buf + len, sizeof(resp_buf) - len - 1);
-		}
-		if (n >= 0) {
-			strcpy(resp_buf + len + n, "}");
-		} else {
-			LOG_WRN("status: no room for the firmware object");
-			resp_buf[len] = '\0';
-			strcpy(resp_buf + strlen(resp_buf), "}");
-		}
-	}
+		status_append("firmware", hwtr_update_json);
 #endif
+#if defined(CONFIG_BAY_CAMERA)
+		status_append("camera", camera_status_json);
+#endif
+	}
 
 	rsp->body = resp_buf;
 	rsp->body_len = strlen(resp_buf);
@@ -778,6 +843,99 @@ static struct http_resource_detail_dynamic aux_detail = {
 	},
 	.cb = aux_handler,
 };
+
+/* --- /api/camera --------------------------------------------------------- */
+
+#if defined(CONFIG_BAY_CAMERA)
+
+struct camera_req {
+	char *resolution;
+	char *quality;
+	char *light;
+};
+
+static const struct json_obj_descr camera_req_descr[] = {
+	JSON_OBJ_DESCR_PRIM(struct camera_req, resolution, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct camera_req, quality, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct camera_req, light, JSON_TOK_STRING),
+};
+
+static int camera_handler(struct http_client_ctx *client, enum http_transaction_status status,
+			  const struct http_request_ctx *req, struct http_response_ctx *rsp,
+			  void *user_data)
+{
+	static uint8_t body[128];
+	static size_t len;
+	static bool too_long;
+	struct camera_req creq = {0};
+	const char *err;
+	int fields;
+
+	ARG_UNUSED(user_data);
+
+	if (status == HTTP_SERVER_TRANSACTION_ABORTED ||
+	    status == HTTP_SERVER_TRANSACTION_COMPLETE) {
+		len = 0;
+		too_long = false;
+		return 0;
+	}
+
+	if (len + req->data_len > sizeof(body)) {
+		too_long = true;
+	} else {
+		memcpy(body + len, req->data, req->data_len);
+		len += req->data_len;
+	}
+
+	if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
+		return 0;
+	}
+
+	/* Its settings are the bay's, like the power: control (and the lease) */
+	if (refused(rsp, client->method == HTTP_POST ? ACL_CONTROL : ACL_STATUS,
+		    access_peer(client->fd))) {
+		return 0;
+	}
+
+	if (client->method == HTTP_POST) {
+		if (!camera_present()) {
+			respond_error(rsp, HTTP_404_NOT_FOUND, "no camera on this bay");
+			return 0;
+		}
+		if (too_long) {
+			respond_error(rsp, HTTP_413_PAYLOAD_TOO_LARGE, "body too large");
+			return 0;
+		}
+		fields = json_obj_parse(body, len, camera_req_descr, ARRAY_SIZE(camera_req_descr),
+					&creq);
+		if (fields < 0) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, "bad JSON");
+			return 0;
+		}
+		err = camera_configure((fields & BIT(0)) ? creq.resolution : NULL,
+				       (fields & BIT(1)) ? creq.quality : NULL,
+				       (fields & BIT(2)) ? creq.light : NULL);
+		if (err != NULL) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, err);
+			return 0;
+		}
+	}
+
+	respond_buf(rsp, camera_json(resp_buf, sizeof(resp_buf), true));
+
+	return 0;
+}
+
+static struct http_resource_detail_dynamic camera_detail = {
+	.common = {
+		.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+		.bitmask_of_supported_http_methods = BIT(HTTP_GET) | BIT(HTTP_POST),
+		.content_type = "application/json",
+	},
+	.cb = camera_handler,
+};
+
+#endif /* CONFIG_BAY_CAMERA */
 
 static struct http_resource_detail_dynamic status_detail = {
 	.common = {
@@ -1263,6 +1421,9 @@ HTTP_RESOURCE_DEFINE(access_kick_res, bay_http, "/api/access/kick", &access_kick
 HTTP_RESOURCE_DEFINE(access_key_res, bay_http, "/api/access/key", &access_key_detail);
 HTTP_RESOURCE_DEFINE(lease_res, bay_http, "/api/lease", &lease_detail);
 HTTP_RESOURCE_DEFINE(ticket_res, bay_http, "/api/console/ticket", &ticket_detail);
+#if defined(CONFIG_BAY_CAMERA)
+HTTP_RESOURCE_DEFINE(camera_res, bay_http, "/api/camera", &camera_detail);
+#endif
 
 #define CONSOLE_WS_RESOURCE(_slot, _)                                                              \
 	CONSOLE_WS(_slot, _);                                                                      \

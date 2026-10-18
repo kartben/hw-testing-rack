@@ -164,12 +164,13 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Telemetry | INA226 @ 0x40 through the Zephyr sensor API (`ti,ina226`, 50 mΩ, 50 µA/LSB, 16× averaging): bus mV, mA, mW in `bay power` / `bay status` |
 | Data path | reads PC_DET (IO13) and SVC (IO15); `bay mode classic` drives MUX_FORCE_PC (IO14), persisted |
 | SERVICE mode | stops the USB host and routes the internal PHY to the USB-Serial-JTAG (`CONFIG_BAY_SERVICE_PHY_HANDOVER`); restarts the host when SERVICE goes off |
-| AUX console | UART1 (IO47 TX / IO33 RX), interrupt driven, shared by the web console (WebSocket, xterm.js), an RFC 2217 server (port 4001) and raw TCP (port 4000); settings persisted per bay; BREAK; TX released while the DUT is off.  See [Serial console](#serial-console) |
-| AUX RESET/BOOT | open-drain pulses (IO34/IO48): `bay reset`, `bay boot`, the console's buttons, optionally RFC 2217 DTR/RTS (esptool) |
-| Status LED | WS2812B on IO12 through the RMT (`worldsemi,ws2812-pulse-io`), see below |
+| AUX console | UART1 (IO47 TX / IO21 RX), interrupt driven, shared by the web console (WebSocket, xterm.js), an RFC 2217 server (port 4001) and raw TCP (port 4000); settings persisted per bay; BREAK; TX released while the DUT is off.  See [Serial console](#serial-console) |
+| AUX RESET/BOOT | open-drain pulses (IO12/IO48): `bay reset`, `bay boot`, the console's buttons, optionally RFC 2217 DTR/RTS (esptool) |
+| Status LED | WS2812B on IO38 through the RMT (`worldsemi,ws2812-pulse-io`), see below |
 | Buttons | BOOT (IO0) once booted: short press confirms an access claim, held ≥ 1 s power-cycles the DUT, ≥ 10 s resets access control.  RESET is the ESP32's EN |
+| Camera | an Arducam Mega on J6 (SPI2, 4 MHz) and its light (LEDC PWM, 25 kHz), optional: snapshots and an MJPEG stream on TCP 8081, frames in PSRAM.  See [Camera](#camera) |
 | Access control | who may use which service, a CI reservation, an admin key confirmed by a BOOT press; Zephyr's packet filter for the TCP services, a check per HTTP request.  See [Access control](#access-control) |
-| Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO35 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
+| Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO42 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
 | Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS (`common/lib/net.c`, as the hub) |
 | Shell | `bay …` commands plus the stock `wifi`, `net` shells, on UART0 and telnet |
 | Web | Zephyr HTTP server on port 80: status page, JSON API (same actions as the shell), Prometheus `/metrics` through Zephyr's Prometheus library |
@@ -208,6 +209,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | TCP 23 | telnet shell (no login of its own: give the shell right to admin hosts only) |
 | TCP 4001 | AUX UART, RFC 2217, one client (`CONFIG_BAY_RFC2217_PORT`) |
 | TCP 4000 | AUX UART, raw bytes, one client (`CONFIG_BAY_AUX_TCP_PORT`) |
+| TCP 8081 | the camera: `/snapshot.jpg`, `/stream.mjpg`, up to 3 clients (`CONFIG_BAY_CAMERA_PORT`, `_CLIENTS`); 503 without a camera |
 | UDP 5353 | mDNS: `bay-<id>.local`; without an id, the rack position the hub gave (`bay-c3.local`); before that `bay<MAC>` |
 
 Which address may use which of them: [Access control](#access-control).
@@ -229,7 +231,7 @@ main actions.
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract |
+| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract; `camera` (camera builds): as `GET /api/camera` without the choices |
 | `POST /api/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}` |
 | `POST /api/reset` | `{"ms": 100}` (body optional) |
 | `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |
@@ -239,6 +241,8 @@ main actions.
 | `POST /api/aux/break` | `{"ms": 250}` (body optional) |
 | `POST /api/console/ticket` | a single-use ticket (10 s) for the next WebSocket, for an address with the console right |
 | `GET /console/ws/<n>?t=<ticket>` | WebSocket to the AUX UART, `n` < `CONFIG_BAY_CONSOLE_WEB_CLIENTS` (see below) |
+| `GET /api/camera` | the camera: `present` (false: no camera answered on J6), `model`, `port`, `resolution`, `quality`, `light` (the bay's setting), `lit`, `clients`, `streams`, `frames`, `errors`, `last_bytes`, `last_ms`, `fps`, and the `resolutions` and `qualities` to choose from |
+| `POST /api/camera` | any of `{"resolution": "640x480", "quality": "high" \| "default" \| "low", "light": "on" \| "off"}`, saved; control right; 404 without a camera |
 | `GET /metrics` | Prometheus: `bay_dut_vbus_volts`, `bay_dut_current_amperes`, `bay_dut_power_watts`, `bay_dut_power_on`, `bay_dut_fault`, `bay_dut_faults_total`, `bay_usb_devices`, `bay_usbip_sessions`, `bay_aux_{rx,tx}_bytes_total`, `bay_access_refused_total`, all labelled `bay="<id>"` |
 | `GET /api/access` | the caller's address and rights, the lease, the connections; signed: the rules and the refusal log too |
 | `POST /api/lease` | `{"ttl_s": 3600, "note": "twister job 8812"}` reserves or renews, `{"release": true}` ends it |
@@ -267,10 +271,45 @@ serves it on <http://localhost:8766> with a simulated node, console included
 (a fake Zephyr board that boots, logs in colour and runs a small shell;
 `/dev/fault` trips a fake over-current, `/dev/attach` toggles a fake USB/IP
 client; `/dev/image?version=0.6.0` is an image to try a firmware update
-with, `/dev/rollback` makes the next update roll back).  The screenshots
+with, `/dev/rollback` makes the next update roll back), and its camera on the
+next port (8767), cut from a render of a drawer (`/dev/camera` unplugs it).
+The screenshots
 come from that simulation:
 `python firmware/bay-node/web/screenshots.py` (Playwright and an installed
 Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
+
+### Camera
+
+![Camera card of bay B3: the live view of the board in the drawer, the light switch (auto, on, off), the camera's model, its picture settings, the last frame's size and time, one stream watching](../docs/img/web-ui-camera.png)
+
+Each bay may have its own camera: an Arducam Mega (3 or 5 MP, JPEG made in
+the camera) on a PH 8 lead to J6, and white LEDs beside it, switched by the
+node.  On its own port, so that a stream never holds the web server:
+
+| Request (TCP 8081) | |
+|---|---|
+| `GET /snapshot.jpg` | one JPEG, with its length |
+| `GET /stream.mjpg` | MJPEG (`multipart/x-mixed-replace`), at most 5 frames a second (`CONFIG_BAY_CAMERA_FPS`) |
+| `?light=on\|off\|auto` | for this client; `auto` is the bay's setting.  While the bay is reserved, only the lease holder's wish switches the light |
+
+```console
+$ curl -o b3.jpg 'http://bay-b3.local:8081/snapshot.jpg?light=on'
+$ ffplay http://bay-b3.local:8081/stream.mjpg
+```
+
+One thread (`src/camera.c`) owns the camera and sends each frame to every
+client, page and scripts alike.  The light comes on while frames are taken
+for someone who wants it, and the first frame waits 300 ms for the sensor's
+auto exposure.  Frames land in two 512 KB buffers in PSRAM, read whole
+from the camera's FIFO (no SPI DMA); a frame is cut at its JPEG end
+(`common/lib/jpeg.c`, host-tested), since the FIFO may run past it.  The
+upstream driver keeps capturing once started (its stream stop does not stop
+its work item, which spins while no buffer is queued): the node plugs the
+driver's work queue between frames and runs it at the lowest priority.
+Resolution (320×240 to 1920×1080), JPEG quality and the light's default
+are saved per bay.  Without a camera, its driver does not start: the port
+answers 503, `present` is false and the rest of the node runs as before.
+The hub shows which bays have one (rack bus STATUS byte 6).
 
 ## Access control
 
@@ -284,7 +323,7 @@ Each node decides by itself who may use its bay.  Out of the box it is
 **open**, as before: anyone on the network may do anything until the node
 is claimed and its rules are switched on.
 
-**Services.**  A rule gives an address (or a CIDR) some of five services:
+**Services.**  A rule gives an address (or a CIDR) some of six services:
 
 | Service | Covers |
 |---|---|
@@ -293,6 +332,7 @@ is claimed and its rules are switched on.
 | console | the web console, the raw (4000) and RFC 2217 (4001) ports, the AUX settings and BREAK |
 | usbip | USB/IP (3240) |
 | shell | the telnet shell (23), which can do everything: admin hosts only |
+| camera | the camera's pictures (8081); its settings are control's |
 
 Up to 8 sources per node, plus a row for everyone else (status only by
 default).  An address gets what every source it matches allows.
@@ -481,14 +521,22 @@ python3 firmware/bay-node/tests/console_sim/run.py --workspace <west workspace> 
 
 ## Pin map
 
-From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
+From `electronics/bay-node/design.py` (U3, ESP32-S3-WROOM-1-N8R8: 8 MB flash, 8 MB octal PSRAM on IO35–IO37;
+the WROOM-1 has no IO26/IO33/IO34); devicetree in
 [`boards/hwtr/bay_node/bay_node.dtsi`](boards/hwtr/bay_node/bay_node.dtsi) and
 [`bay_node-pinctrl.dtsi`](boards/hwtr/bay_node/bay_node-pinctrl.dtsi).
 
 | ESP32-S3 | Net | Use | Devicetree |
 |---|---|---|---|
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
-| IO12 | LED_DIN | WS2812B (33 Ω), RMT channel 0 | `status_led` |
+| IO1 | I2C_SCL | I²C0 | `&i2c0` |
+| IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
+| IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.8 LED_K (100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
+| IO8 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω, 10k pull-up) | `&spi2` `cs-gpios` |
+| IO9 | CAM_MISO | camera SPI2 MISO ← J6.6 (33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
+| IO10 | CAM_MOSI | camera SPI2 MOSI → J6.5 (33 Ω) | `&spi2` |
+| IO11 | CAM_SCK | camera SPI2 SCK → J6.3 (33 Ω), mode 0, 4 MHz | `&spi2` |
+| IO12 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
 | IO13 | PC_DET | front port VBUS via 10k/20k: laptop plugged | `usb_mux` `pc-detect-gpios` |
 | IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
 | IO15 | SVC | SERVICE slide switch | `usb_mux` `service-gpios` |
@@ -497,29 +545,28 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 | IO18 | CAN_TXD | TCAN1462V TXD | `&twai` |
 | IO19 | ESP_DN | USB D−, internal FS PHY → MUX_DUT / MUX_PC | `zephyr_uhc0: &usb_otg` |
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
-| IO33 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
-| IO34 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
-| IO35 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
-| IO37 | I2C_SCL | I²C0 | `&i2c0` |
-| IO38 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
+| IO21 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
+| IO38 | LED_DIN | WS2812B (33 Ω), RMT channel 0 (the DevKitC-1 v1.1's own RGB LED pin) | `status_led` |
 | IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up), not used yet | `ina226` `alert-gpios` |
 | IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up) | `dut_port` `fault-gpios` |
 | IO41 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware) | `dut_port` `enable-gpios` |
+| IO42 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
 | IO47 | AUX_TX | UART1 TX → AUX pin 3 (1k) | `&uart1` (`dut_port` `uart`) |
 | IO48 | AUX_BOOT_CTL | 2N7002 Q3 → AUX BOOT (open drain, 100k pull-down) | `dut_port` `boot-gpios` |
 | TXD0 (IO43) | U0TX | TP1, console + shell | `&uart0` |
 | RXD0 (IO44) | U0RX | TP2 | `&uart0` |
 | EN | EN | SW1 RESET button (10k/1µF) | — |
 
-Each signal sits on the module edge that faces where it goes on the board (v0.5): the right
-column feeds the DUT power block, the bottom-right pins the AUX connector, the bottom-left pins
-the mode logic and the LED, IO16–IO18 the rack bus block under the module (CAN transceiver,
-POS input) and IO35 the POS output towards J2 (docs/can.md).  The CAN protocol itself is not
-written yet: the devicetree only describes the pins.  Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad
-JTAG pins, free as GPIOs since the node debugs over USB-Serial-JTAG.  The DevKitC overlay keeps
-this map except I²C (IO8/IO9 there: the devkit's LED is on IO38 and its octal PSRAM takes
-IO35–IO37) and POS_OUT (IO21 there, for the same reason), moves the LED to the devkit's GPIO38
-and disables SPI2 (IO10–IO13).
+Each signal sits on the module edge that faces where it goes on the board: the right column feeds
+the DUT power block (I²C at its rear end) and POS_OUT runs to J2 (docs/can.md); the bottom row the
+AUX connector (right half), the mode logic and the camera's SPI (left half); the left column the
+rack bus block (CAN transceiver, POS input), SERVICE and the camera's CS and light.  IO4–IO6 are
+free.  The CAN protocol itself is not written yet: the devicetree only describes the pins.
+Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad JTAG pins, free as GPIOs since
+the node debugs over USB-Serial-JTAG.  The map is chosen so that an ESP32-S3-DevKitC-1 v1.1
+(N8R8, the same module) takes it as is: every pin is on its headers, none is the octal PSRAM's
+(IO35–IO37), and the status LED is the devkit's own RGB LED on IO38 (on a v1.0 devkit that LED is
+on IO48, AUX_BOOT_CTL here: harmless).
 
 `python3 firmware/tools/check_pinmap.py` checks this table and the board
 devicetree against U3 in `design.py`; CI ([`firmware.yml`](../.github/workflows/firmware.yml))
@@ -549,7 +596,7 @@ runs it and builds both targets with warnings as errors on every push.
   back at 115200 and 921600, also with the DUT "off"; 22 KB of system heap
   free before Wi-Fi connects, the console thread at 768 of 3072 bytes of
   stack with no client.  Not yet over the network.  To check on a DevKitC with a
-  USB-UART adapter on IO47/IO33: throughput at 921600 baud, the console
+  USB-UART adapter on IO47/IO21: throughput at 921600 baud, the console
   thread's stack (3 KB, unmeasured), BREAK and the TX release on power off
   with a scope, two browsers plus miniterm at once, esptool flashing an ESP32
   DUT through RFC 2217.

@@ -65,6 +65,10 @@ NODES = {
     ("C", 3): ("bay-c3", 210, "enumerated"),
 }
 
+# Bays with a camera (node ids: A1, A3, B3, C1), and the one someone is watching
+CAMERAS = {0x01, 0x03, 0x13, 0x21}
+CAMERAS_ACTIVE = {0x03}
+
 hub = {
     "hostname": "rack", "ip": "192.168.1.40", "version": "0.5.0",
     "charger": CHARGER_140W, "pref": "epr", "usb_only": False,
@@ -125,7 +129,9 @@ def nodes_of(row: str, t: float) -> list[dict]:
         ma = 0 if state == "off" else int(base * wobble)
         out.append({"id": nid, "pos": f"{row}{pos}", "name": "", "ip": f"192.168.1.{60 + nid}",
                     "mac": f"34:b7:da:56:{nid:02x}:{len(name):02x}",
-                    "state": "lost" if lost else state, "dut_ma": ma, "dut_mv": 5060 - ma // 12 if ma else 0,
+                    "state": "lost" if lost else state,
+                    "camera": "active" if nid in CAMERAS_ACTIVE else "ready" if nid in CAMERAS else "none",
+                    "dut_ma": ma, "dut_mv": 5060 - ma // 12 if ma else 0,
                     "seen_s": 9.0 if lost else round(random.uniform(0.1, 0.9), 1), "version": "0.5.0"})
         if lost:   # the row stops at a lost node: the ones after it can't get POS
             break

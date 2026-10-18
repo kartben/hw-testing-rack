@@ -284,7 +284,7 @@ ZTEST(rack_bus, test_frames)
 {
 	const uint8_t mac[6] = {1, 2, 3, 4, 5, 6};
 	struct rack_status st = {.flags = 0xA5, .counter = 7, .dut_mv = 5012, .dut_ma = 1499,
-				 .flags2 = 1};
+				 .flags2 = RACK_ST2_RESERVED | RACK_ST2_CAMERA};
 	struct rack_status st2;
 	struct rack_info info;
 	struct rack_cmd c ={.op = RACK_CMD_POWER, .seq = 9, .nargs = 3, .arg = {2, 0xE8, 0x03}};

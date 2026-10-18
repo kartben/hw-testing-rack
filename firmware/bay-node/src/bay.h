@@ -7,11 +7,24 @@
 #ifndef BAY_H_
 #define BAY_H_
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/kernel.h>
 
 #include <hwtr/acl.h>
+
+/*
+ * Large buffers that only the CPU touches (no DMA) go to the module's PSRAM
+ * when it has some: internal DRAM is what the node runs short of.  The
+ * section is zeroed at boot (esp_psram.c); flash operations lock the
+ * interrupts, so an ISR may use it too.
+ */
+#if defined(CONFIG_ESP_SPIRAM)
+#define BAY_EXT_RAM __attribute__((section(".ext_ram.bss.bay")))
+#else
+#define BAY_EXT_RAM
+#endif
 
 /* --- DUT power, fault, RESET/BOOT (dut.c) --------------------------------- */
 
@@ -177,10 +190,10 @@ int bay_id_set(const char *id);
 
 struct net_sockaddr;
 
-#define ACCESS_MAX_CONNS 8
+#define ACCESS_MAX_CONNS 12
 
 struct access_conn {
-	char id[12];       /* "raw", "rfc2217", "web<n>", "usbip:<port>", "shell:<port>" */
+	char id[12];       /* "raw", "rfc2217", "web<n>", "cam<n>", "usbip:<port>", "shell:<port>" */
 	const char *label; /* "RFC 2217", "USB/IP", ... */
 	uint32_t ip;
 	uint16_t port;
@@ -240,6 +253,69 @@ int access_json(char *buf, size_t size, uint32_t ip, bool admin);
 /* --- Web page, JSON API, /metrics (web.c) --------------------------------- */
 
 int web_init(void);
+
+/* --- Bay camera and its light (camera.c) ---------------------------------- */
+
+struct camera_status {
+	bool present;
+	const char *model;
+	uint16_t port;
+	const char *resolution; /* "640x480" */
+	const char *quality;    /* "high", "default", "low" */
+	bool light;          /* the bay's setting: lit while frames are taken */
+	bool lit;            /* the light right now */
+	uint8_t clients;     /* snapshots waiting and streams */
+	uint8_t streams;
+	uint32_t frames;
+	uint32_t errors;
+	uint32_t last_size; /* bytes */
+	uint32_t last_ms;   /* capture and send */
+	uint32_t fps_x10;   /* while streaming */
+};
+
+struct camera_client_info {
+	int slot;
+	bool stream;
+	uint32_t ip;
+	uint16_t port;
+	int64_t since; /* uptime, ms */
+};
+
+#if defined(CONFIG_BAY_CAMERA)
+/* -ENODEV without a camera (the port still answers, with 503) */
+int camera_init(void);
+bool camera_present(void);
+/* A client is watching or waiting for a snapshot */
+bool camera_active(void);
+void camera_status(struct camera_status *st);
+/* Any argument may be NULL: NULL or an error message; saved */
+const char *camera_configure(const char *resolution, const char *quality, const char *light);
+/* The choices, NULL past the last */
+const char *camera_resolution_name(int i);
+const char *camera_quality_name(int i);
+int camera_clients_get(struct camera_client_info *out, int max);
+int camera_client_kick(int slot);
+#else
+static inline bool camera_present(void)
+{
+	return false;
+}
+static inline bool camera_active(void)
+{
+	return false;
+}
+static inline int camera_clients_get(struct camera_client_info *out, int max)
+{
+	ARG_UNUSED(out);
+	ARG_UNUSED(max);
+	return 0;
+}
+static inline int camera_client_kick(int slot)
+{
+	ARG_UNUSED(slot);
+	return -ENOENT;
+}
+#endif
 
 /* --- Settings (main.c) ---------------------------------------------------- */
 

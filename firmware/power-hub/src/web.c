@@ -167,6 +167,17 @@ static const char *node_state(const struct rack_hub_node *n)
 	return (f & RACK_ST_USB_DEVICE) ? "enumerated" : "usbip";
 }
 
+/* The bay's camera, from its STATUS (nodes before the camera say nothing) */
+static const char *node_camera(const struct rack_hub_node *n)
+{
+	uint8_t f = n->status.flags2;
+
+	if (!n->have_status || !(f & RACK_ST2_CAMERA)) {
+		return "none";
+	}
+	return (f & RACK_ST2_CAMERA_ON) ? "active" : "ready";
+}
+
 static const char *pdo_type(enum ap33772s_pdo_type t)
 {
 	static const char *const names[] = {"none", "fixed", "pps", "avs"};
@@ -226,10 +237,11 @@ static void write_nodes(struct out *o, int row, uint32_t now)
 			continue;
 		}
 		put(o, "%s{\"id\":%u,\"pos\":\"%s\",\"name\":\"\",\"ip\":\"%u.%u.%u.%u\","
-		       "\"state\":\"%s\",\"dut_ma\":%u,\"dut_mv\":%u,\"seen_s\":%u,"
-		       "\"version\":\"%u.%u.%u\",\"mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\"}",
+		       "\"state\":\"%s\",\"camera\":\"%s\",\"dut_ma\":%u,\"dut_mv\":%u,"
+		       "\"seen_s\":%u,\"version\":\"%u.%u.%u\","
+		       "\"mac\":\"%02x:%02x:%02x:%02x:%02x:%02x\"}",
 		    first ? "" : ",", id, rack_node_name(id, name), n->info.ipv4[0], n->info.ipv4[1],
-		    n->info.ipv4[2], n->info.ipv4[3], node_state(n),
+		    n->info.ipv4[2], n->info.ipv4[3], node_state(n), node_camera(n),
 		    n->status.dut_ma == RACK_NO_READING ? 0 : n->status.dut_ma,
 		    n->status.dut_mv == RACK_NO_READING ? 0 : n->status.dut_mv,
 		    (now - n->seen_ms) / 1000, n->info.fw[0], n->info.fw[1],

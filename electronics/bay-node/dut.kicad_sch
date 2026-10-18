@@ -5,7 +5,7 @@
 	(uuid "a569d74c-9c07-57e9-a349-c34419c82b47")
 	(paper "A3")
 	(title_block
-		(title "Bay node — DUT power switch, monitor, AUX and camera power")
+		(title "Bay node — DUT power switch, monitor and AUX")
 		(rev "0.5")
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
@@ -13,164 +13,6 @@
 		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX")
 	)
 	(lib_symbols
-		(symbol "Connector_Generic:Conn_01x02"
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "J"
-				(at 0 2.54 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "Conn_01x02"
-				(at 0 -5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "connector"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Connector*:*_1x??_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "Conn_01x02_1_1"
-				(rectangle
-					(start -1.27 1.27)
-					(end 1.27 -3.81)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(rectangle
-					(start -1.27 0.127)
-					(end 0 -0.127)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 3.81)
-					(name "Pin_1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -2.54 0)
-					(length 3.81)
-					(name "Pin_2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Connector_Generic:Conn_01x06"
 			(pin_names
 				(offset 1.016)
@@ -584,175 +426,6 @@
 				(pin passive line
 					(at 0 -3.81 90)
 					(length 2.794)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "Device:Polyfuse_Small"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "F"
-				(at -1.905 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "Polyfuse_Small"
-				(at 1.905 0 90)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 1.27 -5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Resettable fuse, polymeric positive temperature coefficient, small symbol"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "resettable fuse PTC PPTC polyfuse polyswitch"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "*polyfuse* *PTC*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "Polyfuse_Small_0_1"
-				(polyline
-					(pts
-						(xy -1.016 1.27)
-						(xy -1.016 0.762)
-						(xy 1.016 -0.762)
-						(xy 1.016 -1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -0.508 1.27)
-					(end 0.508 -1.27)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54)
-						(xy 0 -2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "Polyfuse_Small_1_1"
-				(pin passive line
-					(at 0 2.54 270)
-					(length 0.635)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -2.54 90)
-					(length 0.635)
 					(name ""
 						(effects
 							(font
@@ -4365,7 +4038,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal"
+		(property "Footprint" "Connector_JST:JST_PH_B6B-PH-SM4-TB_1x06-1MP_P2.00mm_Vertical"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4383,7 +4056,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "JST PH 6-pin, side entry, SMD"
+		(property "Description" "JST PH 6-pin, vertical, SMD"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4392,7 +4065,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "S6B-PH-SM4-TB(LF)(SN)"
+		(property "MPN" "B6B-PH-SM4-TB(LF)(SN)"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4410,7 +4083,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C265405"
+		(property "LCSC" "C471518"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -5569,196 +5242,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:Polyfuse_Small")
-		(at 320.04 137.16 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "4b5d3c50-4368-5acb-ab4f-3fad8043671c")
-		(property "Reference" "F1"
-			(at 320.04 134.544 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "0.5A"
-			(at 320.04 139.776 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Fuse:Fuse_1206_3216Metric"
-			(at 320.04 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 320.04 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "PTC 0.5 A hold, 1206"
-			(at 320.04 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "SMD1206P050TF"
-			(at 320.04 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "RUILON"
-			(at 320.04 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C20799"
-			(at 320.04 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "210ed763-d70a-52a0-a8ff-a84a2600aa90")
-		)
-		(pin "2"
-			(uuid "50f64b78-33f5-5409-9a48-ac643743f5f4")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "F1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 350.52 137.16 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "a0c0455f-8bb4-5448-a9e1-1ebd534c4c95")
-		(property "Reference" "J6"
-			(at 353.84 135.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "CAM"
-			(at 354.365 138.43 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
-			(at 350.52 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 350.52 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "JST PH 2-pin, side entry, SMD, 2 A"
-			(at 350.52 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "S2B-PH-SM4-TB(LF)(SN)"
-			(at 350.52 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "JST"
-			(at 350.52 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C295747"
-			(at 350.52 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "a2196d94-b7ed-5cc2-9fdf-3322ad7212fb")
-		)
-		(pin "2"
-			(uuid "3677c7cc-91cd-5c74-89ce-911bc672f6fa")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "J6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Mechanical:MountingHole")
 		(at 309.88 185.42 0)
 		(unit 1)
@@ -6672,50 +6155,6 @@
 		)
 		(uuid "05de5d2a-6947-5b78-af9f-6f6a4a63fc33")
 	)
-	(wire
-		(pts
-			(xy 304.8 137.16)
-			(xy 317.5 137.16)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6d9b6ed0-e4dc-5ffa-8581-30e0411ac7fb")
-	)
-	(wire
-		(pts
-			(xy 322.58 137.16)
-			(xy 345.44 137.16)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3c8cef67-de3f-55b1-baeb-0e1890b4476c")
-	)
-	(wire
-		(pts
-			(xy 345.44 139.7)
-			(xy 340.36 139.7)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e0e05df4-4e8b-5a9f-9be2-7405008a44e8")
-	)
-	(wire
-		(pts
-			(xy 340.36 139.7)
-			(xy 340.36 144.78)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5c559911-d2bc-538f-9ec7-0cf4335081fd")
-	)
 	(junction
 		(at 55.88 73.66)
 		(diameter 0)
@@ -7337,138 +6776,6 @@
 		)
 		(uuid "5fa167a0-bbf4-5ab2-b635-a48a0d1d7533")
 	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 304.8 137.16 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "a54d736f-698b-5c6a-80ff-8069e9a06d99")
-		(property "Reference" "#PWR05019"
-			(at 304.8 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 304.8 133.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 304.8 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 304.8 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 304.8 137.16 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "cfcb70ac-bab7-5503-a73c-979705972951")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05019")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 340.36 144.78 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "cc41b74a-3251-507d-aee0-dd31634ef4da")
-		(property "Reference" "#PWR05020"
-			(at 340.36 144.78 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 340.36 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 340.36 144.78 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 340.36 144.78 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 340.36 144.78 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "46344356-a025-54dd-b403-73700902dda7")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/a569d74c-9c07-57e9-a349-c34419c82b47"
-					(reference "#PWR05020")
-					(unit 1)
-				)
-			)
-		)
-	)
 	(label "DUT_ILIM"
 		(at 81.28 81.28 0)
 		(fields_autoplaced yes)
@@ -7478,7 +6785,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "77bf4613-0e98-551b-afb3-e66f3e96f8d2")
+		(uuid "3183abfd-b011-526f-b42c-c66cb39cf5fb")
 	)
 	(label "DUT_5V_SW"
 		(at 130.81 73.66 0)
@@ -7489,7 +6796,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "83fd3020-f9c7-517f-a2e2-c7130b5948a5")
+		(uuid "0ab0687b-8cc5-5796-b9f8-ae70ab7f4dd1")
 	)
 	(label "SHUNT_P"
 		(at 168.91 81.28 0)
@@ -7500,7 +6807,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0759eee4-8cc0-57fc-9171-0924ea4e4d98")
+		(uuid "77bf4613-0e98-551b-afb3-e66f3e96f8d2")
 	)
 	(label "SHUNT_N"
 		(at 161.29 87.63 0)
@@ -7511,18 +6818,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "2ac66a12-41ee-5853-ab0a-61fac8ce1815")
-	)
-	(label "CAM_5V"
-		(at 331.47 137.16 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "16602ac2-aa09-599b-84d9-e79e37e162ec")
+		(uuid "83fd3020-f9c7-517f-a2e2-c7130b5948a5")
 	)
 	(rectangle
 		(start 15.24 30.48)
@@ -7573,30 +6869,6 @@
 		(uuid "a9f6f517-37da-5176-b4ac-351fc26b9fbe")
 	)
 	(rectangle
-		(start 294.64 121.92)
-		(end 406.4 157.48)
-		(stroke
-			(width 0.2)
-			(type dash)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "d03fb18e-7a88-54df-a960-9c0cdd3c94bc")
-	)
-	(text "Camera pod 5 V (always on, PTC protected, JST PH)"
-		(exclude_from_sim no)
-		(at 295.91 124.46 0)
-		(effects
-			(font
-				(size 1.8 1.8)
-				(bold yes)
-			)
-			(justify left bottom)
-		)
-		(uuid "107005c5-998e-570b-9937-3371a0a926e0")
-	)
-	(rectangle
 		(start 294.64 167.64)
 		(end 406.4 203.2)
 		(stroke
@@ -7606,7 +6878,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "c29411c1-3cf1-58b3-a342-b4c1f7c8a8ac")
+		(uuid "d03fb18e-7a88-54df-a960-9c0cdd3c94bc")
 	)
 	(text "Mounting (M3, matches the carrier standoffs)"
 		(exclude_from_sim no)
@@ -7618,7 +6890,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "befd8787-2ed1-5f58-972c-35fb7e38bac1")
+		(uuid "107005c5-998e-570b-9937-3371a0a926e0")
 	)
 	(text "I2C pull-ups"
 		(exclude_from_sim no)

@@ -16,6 +16,7 @@ static const char *const service_names[ACL_SERVICES] = {
 	[ACL_CONSOLE] = "console",
 	[ACL_USBIP] = "usbip",
 	[ACL_SHELL] = "shell",
+	[ACL_CAMERA] = "camera",
 };
 
 void acl_init(struct acl_state *s)

@@ -1,5 +1,9 @@
 # Bay node MCU: alternatives to the ESP32-S3
 
+**Update (2026-10-18):** the bay's camera (Arducam Mega SPI) moved the node to the
+ESP32-S3-WROOM-1-N8R8, for its 8 MB octal PSRAM ([electronics.md](electronics.md), "WROOM-1 and the
+longer board"); the power hub keeps the MINI-1-N8.  The comparison below is unchanged.
+
 **Decision (2026-10-16): v1 keeps the ESP32-S3-MINI-1-N8.** An Ai-Thinker
 module with a Bouffalo Lab BL616 is the most interesting candidate for a v2:
 it is cheaper to assemble at JLC and has a high-speed USB controller. But

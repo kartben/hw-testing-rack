@@ -82,7 +82,7 @@ static const pinctrl_soc_pin_t uart_pins[] = Z_PINCTRL_STATE_PINS_INIT(AUX_UART_
 
 /* --- UART: RX log, TX ring ----------------------------------------------- */
 
-static uint8_t rx_log[LOG_SIZE];
+static BAY_EXT_RAM uint8_t rx_log[LOG_SIZE];
 static atomic_t rx_head;     /* bytes received since boot (mod 2^32) */
 static atomic_t log_full;    /* rx_head went past LOG_SIZE once */
 static atomic_t tx_bytes;

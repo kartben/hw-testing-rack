@@ -36,6 +36,7 @@ enum acl_service {
 	ACL_CONSOLE, /* web console, raw AUX port, RFC 2217 */
 	ACL_USBIP,   /* USB/IP */
 	ACL_SHELL,   /* telnet shell */
+	ACL_CAMERA,  /* the bay camera: snapshots and the MJPEG stream */
 	ACL_SERVICES,
 };
 

@@ -59,6 +59,7 @@ electronics/
   bay-node/               design.py + generated KiCad project, fab/, docs/
   power-hub/              design.py + generated KiCad project, fab/, docs/
   data-port/              the drawer's USB-C port board: design.py + generated KiCad project, fab/, docs/
+  camera-pod/             the camera pod's board (lead, camera header, 3.3 V, LEDs): design.py + KiCad, fab/, docs/
   lib/                    custom symbol(s), cached JLC basic passives
 site/                     GitHub Pages: three.js viewer + BOM page (assets generated)
 bom/                      full rack BOM (CSV + summary)
@@ -77,6 +78,7 @@ python tools/build.py all                    # config → STLs → web viewer as
 tools/kicad.sh bay-node --route --fab        # schematic, PCB, autoroute, Gerbers/BOM/CPL, renders
 tools/kicad.sh power-hub --route --fab
 tools/kicad.sh data-port --route --fab
+tools/kicad.sh camera-pod --route --fab
 python tools/bom.py                          # full rack BOM
 python -m http.server -d site 8000           # open http://localhost:8000
 ```

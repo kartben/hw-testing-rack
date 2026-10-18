@@ -11,10 +11,24 @@
 #include <zephyr/dt-bindings/gpio/gpio.h>
 #include <zephyr/dt-bindings/i2c/i2c.h>
 #include <zephyr/dt-bindings/led/led.h>
+#include <zephyr/dt-bindings/pwm/pwm.h>
 
 / {
 	aliases {
 		led-strip = &status_led;
+	};
+
+	/*
+	 * The camera's light: a few white 5 V LEDs on the pod, switched low-side
+	 * on LED_K.  25 kHz: slow PWM bands a rolling shutter.
+	 */
+	camera_light: camera-light {
+		compatible = "pwm-leds";
+
+		camera_light_led: light {
+			label = "camera light";
+			pwms = <&ledc0 0 PWM_KHZ(25) PWM_POLARITY_NORMAL>;
+		};
 	};
 
 	dut_port: dut-port {
@@ -23,8 +37,8 @@
 		enable-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
 		/* IO40 DUT_FLT_N <- TPS2553 ~FAULT (10k pull-up) */
 		fault-gpios = <&gpio1 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-		/* IO34 AUX_RST_CTL / IO48 AUX_BOOT_CTL -> 2N7002 gates (100k pull-downs) */
-		reset-gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
+		/* IO12 AUX_RST_CTL / IO48 AUX_BOOT_CTL -> 2N7002 gates (100k pull-downs) */
+		reset-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
 		boot-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
 		power-monitor = <&ina226>;
 		uart = <&uart1>;
@@ -47,8 +61,8 @@
 		compatible = "hwtr,rack-bus";
 		/* IO16 POS_IN <- J1.6 through 10k and a BAT54S clamp, 100k pull-down */
 		pos-in-gpios = <&gpio0 16 GPIO_ACTIVE_HIGH>;
-		/* IO35 POS_OUT -> J2.1 (J2 is J1 mirrored) through 10k and a BAT54S clamp: low until the node has an address */
-		pos-out-gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+		/* IO42 POS_OUT -> J2.1 (J2 is J1 mirrored) through 10k and a BAT54S clamp: low until the node has an address */
+		pos-out-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
 		can = <&twai>;
 	};
 
@@ -117,4 +131,38 @@ zephyr_uhc0: &usb_otg {
 
 &wifi {
 	status = "okay";
+};
+
+&ledc0 {
+	pinctrl-0 = <&bay_ledc0_default>;
+	pinctrl-names = "default";
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	channel0@0 {
+		reg = <0x0>;
+		timer = <0>;
+	};
+};
+
+/*
+ * J6: the bay camera, an Arducam Mega on a ~50 cm lead: SPI mode 0 at 4 MHz
+ * (2 MHz if the lead misbehaves).  No DMA: the CPU copies into the frame
+ * buffer in PSRAM.  Optional: without a camera its driver fails to start
+ * and the node runs on, the API says "no camera".
+ */
+&spi2 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
+	pinctrl-0 = <&bay_spim2_default>;
+	pinctrl-names = "default";
+	cs-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+
+	camera: camera@0 {
+		compatible = "arducam,mega";
+		reg = <0>;
+		spi-max-frequency = <4000000>;
+	};
 };

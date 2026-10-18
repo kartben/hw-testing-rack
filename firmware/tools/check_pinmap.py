@@ -63,6 +63,11 @@ BOARDS = {
             "CAN_RXD": ("pinmux", "TWAI_RX"),
             "POS_IN": ("gpio", "pos-in-gpios"),
             "POS_OUT": ("gpio", "pos-out-gpios"),
+            "CAM_SCK": ("pinmux", "SPIM2_SCLK"),
+            "CAM_MOSI": ("pinmux", "SPIM2_MOSI"),
+            "CAM_MISO": ("pinmux", "SPIM2_MISO"),
+            "CAM_CS": ("gpio", "cs-gpios"),
+            "CAM_LED": ("pinmux", "LEDC_CH0"),
         },
         # Nets that also appear a second way
         "also": {"AUX_TX": [("gpio", "tx-gpios")]},  # dut-port: the TX pin as a GPIO

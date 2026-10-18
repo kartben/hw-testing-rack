@@ -18,7 +18,7 @@ domain: local          # bay hosts: bay-<id>.<domain> (mDNS); or give `host:` pe
 
 # Who may use the bays (firmware/README.md, "Access control"): `bayctl access push` writes these
 # rules to every node, signed with the rack's admin key from the BAYCTL_KEY environment variable
-# (never put the key in this file).  Services: status, control, console, usbip, shell, or all.
+# (never put the key in this file).  Services: status, control, console, usbip, shell, camera, or all.
 # A node holds 8 sources; an address gets what every source it matches allows, plus `everyone`.
 access:
   everyone: [status]                         # any other address: the page and /metrics, read-only

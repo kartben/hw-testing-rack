@@ -46,6 +46,13 @@ CAT = {
                    model=("ESP32-S3-MINI-1.step", (-7.7, -10.25, 0), (0, 0, 0)),
                    datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-s3-mini-1_mini-1u_datasheet_en.pdf",
                    description="ESP32-S3 module, 8 MB flash, PCB antenna, USB OTG (full speed)"),
+    # the bay node since the camera (Arducam Mega SPI): 8 MB octal PSRAM for the frames, the DevKitC-1-N8R8's
+    # module (the bench stand-in).  The PSRAM takes IO35–IO37; the WROOM-1 has no IO26/IO33/IO34.  KiCad's
+    # own model.  Rated −40…+65 °C (the R8 PSRAM)
+    "esp32s3wr8": Cat("RF_Module:ESP32-S3-WROOM-1", "bench:ESP32-S3-WROOM-1_NoEPVias", "ESP32-S3-WROOM-1-N8R8", "Espressif",
+                      "C2913201", 5.02, standard_only=True,
+                      datasheet="https://www.espressif.com/sites/default/files/documentation/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf",
+                      description="ESP32-S3 module, 8 MB flash, 8 MB octal PSRAM, PCB antenna, USB OTG (full speed)"),
     "buck": Cat("bench:LMR51635", "Package_TO_SOT_SMD:TSOT-23-6", "LMR51635YDDCR", "Texas Instruments",
                 "C45262770", 1.88, datasheet="https://www.ti.com/lit/ds/symlink/lmr51635.pdf",
                 alt="LMR51635YFDDCR (C44750836): same, forced PWM, no spread spectrum",
@@ -95,6 +102,8 @@ CAT = {
                  model=("easyeda/C431540.step", (0, 0.1, 0), (0, 0, 180))),
     "nfet": Cat("Transistor_FET:2N7002", "Package_TO_SOT_SMD:SOT-23", "2N7002", "CJ", "C8545", 0.02, basic=True,
                 description="N-MOSFET 60 V (open-drain AUX outputs)"),
+    "nfet_ll": Cat("Transistor_FET:AO3400A", "Package_TO_SOT_SMD:SOT-23", "AO3400A", "Alpha & Omega Semicon", "C20917",
+                   0.10, basic=True, description="N-MOSFET 30 V 5.7 A, 48 mΩ at 2.5 V (the camera light's low side)"),
     # connectors: JST PH (2 A) everywhere, JST VH (10 A) only where the whole rack's current comes in (hub input)
     "vh_h": Cat("Connector_Generic:Conn_01x02", "Connector_JST:JST_VH_S2P-VH_1x02_P3.96mm_Horizontal", "S2P-VH(LF)(SN)",
                 "JST", "C160355", 0.16, hand_solder=True, description="JST VH 2-pin, side entry, 10 A"),
@@ -117,6 +126,23 @@ CAT = {
     "ph5v": Cat("Connector_Generic:Conn_01x05", "Connector_JST:JST_PH_B5B-PH-SM4-TB_1x05-1MP_P2.00mm_Vertical",
                 "B5B-PH-SM4-TB(LF)(SN)", "JST", "C265085", 0.30, description="JST PH 5-pin, vertical, SMD",
                 model=("easyeda/C265085.step", (0, 0.55, 0), (0, 0, 180))),   # MP tabs on the MP pads; body + tails = the courtyard, y -4.25..3.25
+    "ph6v": Cat("Connector_Generic:Conn_01x06", "Connector_JST:JST_PH_B6B-PH-SM4-TB_1x06-1MP_P2.00mm_Vertical",
+                "B6B-PH-SM4-TB(LF)(SN)", "JST", "C471518", 0.43, description="JST PH 6-pin, vertical, SMD",
+                model=("easyeda/C471518.step", (-5.0, 0.71, 0), (0, 0, 0))),   # its STEP is not centred (x −3…13) and EasyEDA turns it 180°
+    # the camera pod's side of the camera lead, side entry (docs/electronics.md, Camera pod)
+    "ph8": Cat("Connector_Generic:Conn_01x08", "Connector_JST:JST_PH_S8B-PH-SM4-TB_1x08-1MP_P2.00mm_Horizontal",
+               "S8B-PH-SM4-TB(LF)(SN)", "JST", "C265121", 0.45, description="JST PH 8-pin, side entry, SMD",
+               model=("easyeda/C265121.step", (0, -2.9, 0), (0, 0, 0))),   # drawn like C265405 (S6B)
+    # the Arducam Mega's own cable plugs onto it (staggered SMD pins: JLC places it)
+    "hdr6_smd": Cat("Connector_Generic:Conn_01x06", "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical_SMD_Pin1Right",
+                    "HX PZ2.54-1x6P TP-YQ", "hanxia", "C41417363", 0.08, description="pin header 1 × 6, 2.54 mm, SMD"),
+    "led_w2835": Cat("Device:LED", "LED_SMD:LED_PLCC_2835", "XL-2835UWC-02", "XINGLIGHT", "C2843876", 0.012,
+                     description="LED white 6000–7500 K, 2835, 20–33 lm at 60 mA",
+                     model=("easyeda/C2843876.step", (0, 0, 0), (0, 0, 0))),
+    # the camera lead (docs/electronics.md): 5 V, GND, SPI with a GND between, the light's low side
+    "ph8v": Cat("Connector_Generic:Conn_01x08", "Connector_JST:JST_PH_B8B-PH-SM4-TB_1x08-1MP_P2.00mm_Vertical",
+                "B8B-PH-SM4-TB(LF)(SN)", "JST", "C495548", 0.57, description="JST PH 8-pin, vertical, SMD",
+                model=("easyeda/C495548.step", (0, 0.89, 0), (0, 0, 0))),
     "pptc500": Cat("Device:Polyfuse_Small", "Fuse:Fuse_1206_3216Metric", "SMD1206P050TF", "RUILON", "C20799", 0.08,
                    description="PTC 0.5 A hold, 1206"),
     "efuse": Cat("Power_Management:TPS26600PWP",
