@@ -1244,7 +1244,7 @@
 "qty": 3.8,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈3.4 kg estimated + 10 % waste, 125 parts",
+"notes": "≈3.5 kg estimated + 10 % waste, 125 parts",
 "ext_eur": 76.0
 },
 {
@@ -1605,8 +1605,8 @@
 {
 "part": "tray",
 "qty": 12,
-"grams_each": 79.2,
-"grams_total": 950.7,
+"grams_each": 79.5,
+"grams_total": 954.0,
 "stl": "mechanical/stl/tray.stl"
 }
 ],

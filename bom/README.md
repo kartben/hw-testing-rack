@@ -65,7 +65,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | plate_nucleo-64 | 2 | 34.9 | `mechanical/stl/plate_nucleo-64.stl` |
 | plate_rpi-pico2 | 1 | 29.6 | `mechanical/stl/plate_rpi-pico2.stl` |
 | plate_stm32f746g-disco | 1 | 39.4 | `mechanical/stl/plate_stm32f746g-disco.stl` |
-| tray | 12 | 79.2 | `mechanical/stl/tray.stl` |
+| tray | 12 | 79.5 | `mechanical/stl/tray.stl` |
 
 ## Line items
 

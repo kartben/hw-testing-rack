@@ -11,8 +11,8 @@
 // is pulled out.  Each side wall carries a runner that slides into the ladder groove from
 // the front; near the middle, a flex arm in the wall clicks a barb into the groove's window.
 // To remove a tray: pull the drawer out, press both arms inwards, slide the tray forwards.
-// Print: bottom down, PETG, 3 walls, 15 % infill, no supports (ledges sit on 45° chamfers or
-// bridge short gaps).
+// Print: bottom down, PETG, 3 walls, 15 % infill, no supports (each ledge sits on its side wall,
+// its inner edge on 45° gussets with short bridges between them).
 include <../lib/panels.scad>
 // fascia_cutouts(): lib/carrier.scad
 
@@ -112,7 +112,10 @@ module guide_left() {
     difference() {
         union() {
             translate([0, y0, LEDGE_Z - LEDGE_T]) cube([LEDGE_X, y1 - y0, LEDGE_T]);
-            for (y = concat([for (g = [y0 : GUSSET_STEP : y1 - GUSSET_T]) g], [y1 - GUSSET_T]))
+            // the side wall stops at CARRIER_WALL_H (the old deck's underside): raise it to the
+            // ledge, which then sits on the wall all along instead of on the gussets alone
+            translate([0, y0, CARRIER_WALL_H - EPS]) cube([WALL, y1 - y0, LEDGE_Z - LEDGE_T - CARRIER_WALL_H + 2 * EPS]);
+            for (y =concat([for (g = [y0 : GUSSET_STEP : y1 - GUSSET_T]) g], [y1 - GUSSET_T]))
                 if (len([for (f = free) if (y + GUSSET_T > f[0] && y < f[1]) 1]) == 0)
                     translate([0, y, LEDGE_Z - LEDGE_T]) rotate([90, 0, 0]) mirror([0, 0, 1])
                         linear_extrude(GUSSET_T) polygon([[WALL - EPS, 0], [LEDGE_X, 0], [WALL - EPS, -(LEDGE_X - WALL)]]);
@@ -166,7 +169,7 @@ module tray() {
             linear_extrude(0.7) square([52, 11], center = true);
         // 24 V jumper: through both side walls and their runners, under the ledge
         for (x = [-RUNNER_OUT - 1, CARRIER_W - WALL - EPS])
-            translate([x, PWR_NOTCH_Y - 4.5, JUMPER_Z0]) cube([WALL + RUNNER_OUT + 1 + 2 * EPS, 9, CARRIER_WALL_H - JUMPER_Z0]);
+            translate([x, PWR_NOTCH_Y - 4.5, JUMPER_Z0]) cube([WALL + RUNNER_OUT + 1 + 2 * EPS, 9, LEDGE_Z - LEDGE_T - JUMPER_Z0]);
         // camera 5 V cable to the pod below
         translate([CAM_CABLE_HOLE[0], CAM_CABLE_HOLE[1], -EPS]) rslot(10, 5, CARRIER_BOTTOM + 2);
         // rear service slot (row feed, top-row camera cables, airflow)
