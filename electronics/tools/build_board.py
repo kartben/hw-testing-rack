@@ -232,6 +232,9 @@ def export_fab(outdir: Path, name: str, b):
         w = csv.DictWriter(fo, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
+    # the project's own 3D models first: the renders below, the STEP and the GLB all need them
+    import pcbgen
+    print("3D: project models on", pcbgen.apply_models(pcb), "footprints")
     # documentation outputs
     docs = outdir / "docs"
     docs.mkdir(exist_ok=True)
@@ -252,6 +255,57 @@ def export_fab(outdir: Path, name: str, b):
     run(["kicad-cli", "pcb", "export", "glb", "--subst-models", "-f", "-o", fab / f"{name}.glb", pcb],
         check=False, capture_output=True)
     export_art(outdir, name)
+    export_3d_coverage(outdir, name)
+
+
+# footprints that have no body by nature: nothing to model
+NO_BODY = ("MountingHole:", "TestPoint:", "NetTie:", "Fiducial:", "Symbol:")
+MODEL_DIR = Path(os.environ.get("KICAD10_3DMODEL_DIR", "/usr/share/kicad/3dmodels"))
+
+
+def export_3d_coverage(outdir: Path, name: str) -> Path:
+    """Which placed footprints KiCad's STEP / GLB export gives a body, and which it can't:
+    build/<board>-3d.json, one entry per footprint: "model" (a STEP/IGES file it resolves, the
+    form the GLB export uses; a .wrl is replaced by the STEP of the same name, --subst-models),
+    "no-body" (holes, test pads, net ties) or "missing" (no model, or a model file that isn't in
+    KiCad's 3D library).  tools/pcb_glb.py adds stand-ins for the missing ones and fails on any
+    it has none for."""
+    import pcbnew
+    board = pcbnew.LoadBoard(str(outdir / f"{name}.kicad_pcb"))
+    env = {"KICAD10_3DMODEL_DIR": str(MODEL_DIR), "KICAD9_3DMODEL_DIR": str(MODEL_DIR),
+           "KICAD8_3DMODEL_DIR": str(MODEL_DIR), "KICAD7_3DMODEL_DIR": str(MODEL_DIR),
+           "KICAD6_3DMODEL_DIR": str(MODEL_DIR), "KIPRJMOD": str(outdir)}
+
+    def resolve(fn: str) -> Path | None:
+        for k, v in env.items():
+            fn = fn.replace("${" + k + "}", v)
+        p = Path(fn) if Path(fn).is_absolute() else outdir / fn
+        for cand in (p, p.with_suffix(".step"), p.with_suffix(".stp"), p.with_suffix(".STEP"), p.with_suffix(".igs")):
+            if cand.suffix.lower() in (".step", ".stp", ".igs", ".iges") and cand.exists():
+                return cand
+        return None
+
+    out = []
+    for fp in board.GetFootprints():
+        fpid = fp.GetFPIDAsString()
+        side = "bottom" if fp.IsFlipped() else "top"
+        models = [m for m in fp.Models() if m.m_Show]
+        hit = next((r for r in (resolve(m.m_Filename) for m in models) if r), None)
+        if fpid.startswith(NO_BODY) or fp.GetAttributes() & pcbnew.FP_BOARD_ONLY:
+            status = "no-body"
+        else:
+            status = "model" if hit else "missing"
+        out.append({"ref": fp.GetReference(), "footprint": fpid, "side": side, "status": status,
+                    "model": str(hit.relative_to(MODEL_DIR) if hit and MODEL_DIR in hit.parents else hit or
+                                 (models[0].m_Filename if models else ""))})
+    out.sort(key=lambda e: (e["status"], e["footprint"], e["ref"]))
+    dst = outdir / "build" / f"{name}-3d.json"
+    dst.parent.mkdir(exist_ok=True)
+    dst.write_text(json.dumps(out, indent=1) + "\n")
+    miss = [e for e in out if e["status"] == "missing"]
+    print(f"3D: {sum(e['status'] == 'model' for e in out)} with a model, {len(miss)} without "
+          f"({', '.join(sorted({e['footprint'] for e in miss})) or 'none'})")
+    return dst
 
 
 ART_LAYERS = ("F.Cu", "B.Cu", "F.Mask", "B.Mask", "F.SilkS", "B.SilkS")

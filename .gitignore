@@ -44,3 +44,6 @@ render/assets/
 config/lab.yaml
 rack-map.yaml
 rack-scripts/
+
+# LCSC / EasyEDA 3D models: fetched on demand by tools/fetch_pcb_models.py (not redistributed)
+electronics/lib/3dmodels/easyeda/

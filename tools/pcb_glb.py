@@ -152,7 +152,7 @@ def _stadium_y(w, h, y0, y1, z0):
 
 
 def _usb_c(n):
-    w, h, d = 8.94, 3.16, 7.3                       # HRO TYPE-C-31-M-12, opening at KiCad +y (local -y)
+    w, h, d = 8.94, 3.16, 7.3                       # HRO TYPE-C-31-M-12 / GCT USB4105, opening at KiCad +y (local -y)
     return [(_stadium_y(w, h, -d / 2, d / 2, 0), SILVER, 0.9),
             (_stadium_y(w - 0.9, h - 0.9, -d / 2 - 0.05, -d / 2 + 0.2, 0.45), BLACK, 0.0)]
 
@@ -190,6 +190,7 @@ def _side_led(n):                                     # Kingbright KPA-3010 (3 �
 STANDINS = [   # footprint name prefix → builder(pin count)
     ("RF_Module:ESP32-S2-MINI-1", _esp32_mini), ("RF_Module:ESP32-S3-MINI-1", _esp32_mini),
     ("Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12", _usb_c),
+    ("Connector_USB:USB_C_Receptacle_GCT_USB4105", _usb_c),     # same 8.94 × 3.16 shell
     ("Connector_JST:JST_PH_S", _ph_side),
     ("Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A", _button),
     ("Button_Switch_SMD:SW_SPDT_Shouhan_MSK12C02", _slide),
@@ -198,8 +199,23 @@ STANDINS = [   # footprint name prefix → builder(pin count)
 ]
 
 
-def standins(pcb: Path, top: float = 1.6) -> list:
-    """(mesh, colour, metallic) for every top-side footprint in STANDINS, in viewer coordinates."""
+def coverage(board: str) -> list[dict] | None:
+    """electronics/<board>/build/<board>-3d.json (written by `tools/kicad.sh <board> --fab`): per
+    footprint, "model" / "no-body" / "missing" in KiCad's 3D export."""
+    path = REPO / "electronics" / board / "build" / f"{board}-3d.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+def _ref(fp, sexp) -> str:
+    for p in sexp.find_all(fp, "property"):
+        if str(p[1]) == "Reference":
+            return str(p[2])
+    return ""
+
+
+def standins(pcb: Path, top: float = 1.6, only: set | None = None) -> list:
+    """(mesh, colour, metallic) for the top-side footprints in STANDINS, in viewer coordinates:
+    the ones in `only` (references whose KiCad model is missing), or every match without it."""
     import re
     sys.path.insert(0, str(REPO / "electronics" / "tools"))
     import sexp
@@ -211,6 +227,8 @@ def standins(pcb: Path, top: float = 1.6) -> list:
         layer = sexp.find(fp, "layer")
         if build is None or layer is None or layer[1] != "F.Cu":
             continue
+        if only is not None and _ref(fp, sexp) not in only:
+            continue
         at = sexp.find(fp, "at")
         x, y, rot = float(at[1]), float(at[2]), float(at[3]) if len(at) > 3 else 0.0
         pins = re.search(r"_1x(\d+)", name)
@@ -221,10 +239,33 @@ def standins(pcb: Path, top: float = 1.6) -> list:
     return out
 
 
-def add_standins(scene: trimesh.Scene, pcb: Path, top: float = 1.6) -> int:
+def check_coverage(board: str, strict: bool = False) -> set | None:
+    """The references KiCad's export left without a body and STANDINS covers; prints, loudly, any
+    it doesn't cover (and raises with `strict`).  None when the board has no coverage report yet."""
+    cov = coverage(board)
+    if cov is None:
+        print(f"warning: no 3D coverage report for {board} (tools/kicad.sh {board} --fab writes it): "
+              "stand-ins by footprint name only, unchecked")
+        return None
+    miss = [e for e in cov if e["status"] == "missing"]
+    covered = {e["ref"] for e in miss if e["side"] == "top" and any(e["footprint"].startswith(p) for p, _ in STANDINS)}
+    bare = [e for e in miss if e["ref"] not in covered]
+    print(f"{board} 3D: {sum(e['status'] == 'model' for e in cov)} KiCad models, {len(covered)} stand-ins, "
+          f"{sum(e['status'] == 'no-body' for e in cov)} without a body by nature, {len(bare)} MISSING")
+    if bare:
+        lines = "\n".join(f"    {e['ref']:6s} {e['footprint']}  ({e['model'] or 'no model'})" for e in bare)
+        msg = (f"\n!!! {board}: {len(bare)} placed part(s) have no 3D body in the viewer:\n{lines}\n"
+               "!!! add a stand-in to STANDINS in tools/pcb_glb.py (or a model to the footprint)\n")
+        if strict:
+            raise SystemExit(msg)
+        print(msg)
+    return covered
+
+
+def add_standins(scene: trimesh.Scene, pcb: Path, top: float = 1.6, only: set | None = None) -> int:
     """Add the stand-ins to a viewer scene, one mesh per colour (nodes "standin*")."""
     groups = defaultdict(list)
-    for m, col, metal in standins(pcb, top):
+    for m, col, metal in standins(pcb, top, only):
         groups[(col, metal)].append(m)
     for i, ((col, metal), ms) in enumerate(sorted(groups.items())):
         m = trimesh.util.concatenate(ms)
@@ -234,7 +275,8 @@ def add_standins(scene: trimesh.Scene, pcb: Path, top: float = 1.6) -> int:
     return sum(len(ms) for ms in groups.values())
 
 
-def convert(src: Path, dst: Path, art_path: Path | None = None, max_group_faces: int = 30000) -> dict:
+def convert(src: Path, dst: Path, art_path: Path | None = None, max_group_faces: int = 30000,
+            strict: bool = False) -> dict:
     scene = trimesh.load(src)
     board = src.stem
     art = json.loads(art_path.read_text()) if art_path and art_path.exists() else None
@@ -270,7 +312,8 @@ def convert(src: Path, dst: Path, art_path: Path | None = None, max_group_faces:
         out.add_geometry(m, node_name=f"part{i}", geom_name=f"part{i}")
         faces += len(m.faces)
     pcb = src.parents[1] / f"{board}.kicad_pcb"
-    n_standins = add_standins(out, pcb, top=max(b.bounds[1][2] for b in body)) if pcb.exists() and body else 0
+    only = check_coverage(board, strict)
+    n_standins = add_standins(out, pcb, top=max(b.bounds[1][2] for b in body), only=only) if pcb.exists() and body else 0
     dst.parent.mkdir(parents=True, exist_ok=True)
     out.export(dst)
     return {"textured": art is not None, "component_faces": faces, "dropped_layer_faces": dropped,
@@ -286,13 +329,28 @@ def restand(board: str) -> int:
         scene.delete_geometry(scene.graph[node][1])
     boards = [scene.geometry[scene.graph[n][1]] for n in scene.graph.nodes_geometry if n.startswith("board")]
     n = add_standins(scene, REPO / "electronics" / board / f"{board}.kicad_pcb",
-                     top=max(b.bounds[1][2] for b in boards) if boards else 1.6)
+                     top=max(b.bounds[1][2] for b in boards) if boards else 1.6, only=check_coverage(board))
     scene.export(path)
     return n
 
 
 def main(boards=("bay-node", "power-hub")):
-    if boards and boards[0] == "--standins":          # only refresh the stand-ins of the viewer GLBs
+    """  pcb_glb.py [--strict] [board ...]     KiCad fab GLBs → site/assets/pcb (+ stand-ins, 3D coverage)
+         pcb_glb.py --standins [board ...]      redo only the stand-ins of the viewer GLBs
+         pcb_glb.py --check [board ...]         the 3D coverage report alone; exit 1 if a part has no body"""
+    boards = list(boards)
+    strict = "--strict" in boards
+    boards = [b for b in boards if b != "--strict"] or ["bay-node", "power-hub"]
+    if boards[0] == "--check":
+        bad = 0
+        for b in boards[1:] or ("bay-node", "power-hub"):
+            try:
+                check_coverage(b, strict=True)
+            except SystemExit as e:
+                print(e)
+                bad += 1
+        raise SystemExit(1 if bad else 0)
+    if boards[0] == "--standins":          # only refresh the stand-ins of the viewer GLBs
         for b in boards[1:] or ("bay-node",):
             print(b, "stand-ins:", restand(b))
         return
@@ -304,9 +362,9 @@ def main(boards=("bay-node", "power-hub")):
         art = REPO / "electronics" / b / "build" / f"{b}-art.json"
         if not art.exists():
             print("warning:", art, "missing (tools/kicad.sh", b, "--fab writes it): untextured board")
-        info = convert(src, REPO / "site" / "assets" / "pcb" / f"{b}.glb", art)
+        info = convert(src, REPO / "site" / "assets" / "pcb" / f"{b}.glb", art, strict=strict)
         print(b, info)
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:] or ("bay-node", "power-hub"))
+    main(sys.argv[1:])

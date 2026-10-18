@@ -66,7 +66,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | plate_rpi-pico2 | 1 | 29.6 | `mechanical/stl/plate_rpi-pico2.stl` |
 | plate_stm32f746g-disco | 1 | 39.4 | `mechanical/stl/plate_stm32f746g-disco.stl` |
 | power_box_base | 1 | 138.1 | `mechanical/stl/power_box_base.stl` |
-| power_box_cradle_gst60a | 1 | 15.1 | `mechanical/stl/power_box_cradle_gst60a.stl` |
+| power_box_cradle_gst60a | 1 | – | `mechanical/stl/power_box_cradle_gst60a.stl` |
 | power_box_lid | 1 | 49.5 | `mechanical/stl/power_box_lid.stl` |
 | tray | 12 | 78.7 | `mechanical/stl/tray.stl` |
 
