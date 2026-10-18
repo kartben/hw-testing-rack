@@ -3,10 +3,10 @@
 //
 // - Front panel with a finger pull and a recess for 12 mm label tape.
 // - Board-plate pocket: plates drop in (two 180°-symmetric locating pins).
-// - Rear bay behind the port wall: the panel-mount USB-C DATA socket faces the
-//   board from one of two positions (left or right: whichever is farther from
-//   the board's USB, so the two plugs never meet), next to the AUX pigtail
-//   slot; the cables come up from the drag chain through the cable window.  The chain foot slides into the rear-open groove under the
+// - Rear bay behind the port wall: the DATA coupler (USB-C female-female) faces
+//   the board, next to the AUX pigtail slot; the drawer extension plugs into its
+//   rear with a right-angle plug, its cable straight down through the cable
+//   window to the drag chain's moving end.  The chain foot slides into the rear-open groove under the
 //   bottom and is locked by one PT 2.6 × 8 screw from inside the rear bay.
 // - Rear flange segments run under the guide lips (anti-tip); a magnet under
 //   the rear bay, over the tray's left ledge, gives a soft closed detent.
@@ -83,8 +83,9 @@ module drawer() {
             cylinder(d = 2.8, h = DRAWER_BOTTOM + 5);
             translate([0, 0, DRAWER_BOTTOM + 4 - 2]) cylinder(d = 5.4, h = 2 + EPS);
         }
-        // cable window in the rear-bay floor (big enough to pass a panel-mount connector)
-        translate([FOOT_HOLE[0] - 48, DRAWER_PORT_WALL_Y + 2, -EPS]) rbox([40, 18, DRAWER_BOTTOM + 2 * EPS], r = 3);
+        // cable window in the rear-bay floor, under the coupler's rear: the extension's right-angle
+        // plug passes it; 1 mm short of the foot's boss
+        translate([FOOT_HOLE[0] - 48, DRAWER_PORT_WALL_Y + 2, -EPS]) rbox([42.5, 18, DRAWER_BOTTOM + 2 * EPS], r = 3);
         // detent magnet from below
         translate([DETENT[0], DETENT[1], 0]) mirror([0, 0, 1]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
         // open floor: 3 × 3 windows between 6 mm ribs, solid side strips (they ride on the

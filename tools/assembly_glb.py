@@ -71,8 +71,8 @@ def plug_meshes(e: dict, geoms: dict) -> list:
         names += [(f"usbplug_{t}_adapter_mold", "plug"), (f"usbplug_{t}_adapter_metal", "silver")]
     else:
         names += [(f"usbplug_{t}_{'right' if e.get('style') == 'right' else 'straight'}", "plug")]
-    if e.get("socket") == "panel":            # the drawer's DATA port: the extension's female end on the port wall
-        names += [("usbplug_panel_mold", "plug"), ("usbplug_panel_metal", "silver")]
+    if e.get("socket") == "coupler":          # the drawer's DATA port: the coupler, its flange on the port wall
+        names += [("usbplug_coupler_mold", "plug"), ("usbplug_coupler_metal", "silver")]
     z = np.array(e["dir"], float)
     z /= np.linalg.norm(z)
     up = np.array(e.get("up", (0, 0, 1)), float)

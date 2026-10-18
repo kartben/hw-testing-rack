@@ -56,8 +56,9 @@ for _t, _d in USB_PLUGS.items():
     if "ATOP" in _d:
         for _piece in ("mold", "metal"):
             WEB_PARTS[f"usbplug_{_t}_adapter_{_piece}"] = ("parts/usb_plugs.scad", {**_d, "STYLE": "adapter", "PIECE": _piece})
-WEB_PARTS["usbplug_panel_mold"] = ("parts/usb_plugs.scad", {"STYLE": "panel", "PIECE": "mold"})
-WEB_PARTS["usbplug_panel_metal"] = ("parts/usb_plugs.scad", {"STYLE": "panel", "PIECE": "metal"})
+WEB_PARTS["usbplug_coupler_mold"] = ("parts/usb_plugs.scad", {"STYLE": "coupler", "PIECE": "mold"})
+WEB_PARTS["usbplug_coupler_metal"] = ("parts/usb_plugs.scad", {"STYLE": "coupler", "PIECE": "metal"})
+COUPLER_REAR = 11.0        # the DATA coupler's barrel behind its flange (lib/carrier.scad, parts/usb_plugs.scad)
 
 # Parts whose print orientation differs from their assembly orientation get an
 # "assembly" variant rendered with the print rotation undone.
@@ -253,6 +254,26 @@ def flat_cable(a, b, length, r=CABLE_BEND_R, step=2.5):
     return [[round(float(v), 2) for v in p] for p in pts], round(shortfall, 1)
 
 
+def ext_under_drawer(e, mouth, r=10.0, step=2.5):
+    """The drawer extension from its right-angle plug in the DATA coupler's rear (bent down) to the
+    drag chain's moving mouth, which faces forwards: down out of the plug, a bend of radius r forwards
+    just over the tray floor, a run forwards, a U-turn in front of the mouth (tilted: the mouth is to
+    the side and a little higher) and straight into it."""
+    p0, _ = plug_exit(e)
+    y, z = np.array([0.0, 1.0, 0.0]), np.array([0.0, 0.0, 1.0])
+    pts = [p0 - y * r + r * (y * math.cos(t) - z * math.sin(t)) for t in np.linspace(0, math.pi / 2, 8)]
+    low = pts[-1]
+    start = np.array([low[0], mouth[1] - 4.0, low[2]])
+    n = max(1, int((low[1] - start[1]) / step))
+    pts += [low + (start - low) * k / n for k in range(1, n + 1)]
+    end = np.array([mouth[0], start[1], mouth[2]])
+    half = (end - start) / 2
+    ru = float(np.linalg.norm(half))
+    pts += [start + half - half * math.cos(t) - y * ru * math.sin(t) for t in np.linspace(0, math.pi, 14)[1:]]
+    pts += [np.array(mouth, float)]
+    return [[round(float(c), 2) for c in p] for p in pts]
+
+
 def cable_free_length(cab, a, b):
     """A cable's length between its two strain reliefs: its length end to end less both plugs (a
     straight plug: shell, overmold and relief; a right-angle one: about its body's depth)."""
@@ -379,20 +400,20 @@ def build(rack) -> Path:
         add("cap_plate", (rack.unit_x(u), 0, 0), row=n_rows, layer="frameplates")
 
     port_wall_y = d["depth"] - d["rear_bay"]
-    data_ports = rack.data_port_x          # two DATA socket positions per drawer
-    port_z = d["bottom"] + 8.5            # lib/carrier.scad › PORT_Z
+    data_ports = rack.data_port_x          # the DATA coupler's position(s) per drawer
+    port_z = d["bottom"] + 13.5           # lib/carrier.scad › PORT_Z
     plate_x0 = d["wall"] + 0.3
     plate_y0 = d["front_thickness"] + 0.3
     plate_w = rack.drawer_w - 2 * d["wall"] - 0.6
     plate_d = port_wall_y - d["wall"] - d["front_thickness"] - 0.6
     fixed = raw["chain"]["fixed"]
+    chain_z = c["bottom"] + raw["chain"]["outer"][0] / 2 + 0.6     # the chain's mid-height
 
     def unit_hardware(i, u, bid, dy, open_frac):
         """Tray, drawer, chain and node for one bay."""
         x0 = rack.unit_x(u)
         add("tray", (x0, 0, 0), row=i, layer="trays", bay=bid)
         add("drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid, movable=True)
-        chain_z = c["bottom"] + raw["chain"]["outer"][0] / 2 + 0.6
         add("chain_anchor", (x0 + fixed[0], fixed[1], c["bottom"] + 3), row=i, layer="chain", bay=bid)
         add("chain_foot", (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, plenum), row=i,
             layer="chain", bay=bid, movable=True)
@@ -468,7 +489,15 @@ def build(rack) -> Path:
             btype = cables_cfg[ctype].get("b", "usb-c")
             style = cables_cfg[ctype].get("style", "right")
             end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 2.5, dz + port_z], "dir": [0, 1, 0],   # mouth on the flange's face
-                     "type": "usb-c", "style": "straight" if style == "straight" else "right", "socket": "panel"}
+                     "type": "usb-c", "style": "straight" if style == "straight" else "right", "socket": "coupler"}
+            # the drawer extension's end: a right-angle plug in the coupler's rear, bent down through the
+            # cable window; its cable turns forward under the drawer, U-turns in front of the drag
+            # chain's moving end and goes into its mouth (all of it moves with the drawer)
+            ext_b = {"at": [sx, dy + port_wall_y - d["wall"] + COUPLER_REAR, dz + port_z], "dir": [0, -1, 0],
+                     "up": [0, 0, -1], "type": "usb-c", "style": "right"}
+            mouth = np.array([x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z])
+            cable(ext_under_drawer(ext_b, mouth), row=i, kind="ext", bay=b.id, radius=1.6, ends=[ext_b],
+                  label="Drawer extension (runs through the drag chain)", movable=True)
             zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
             ux = o["usb_x"]
             if o["usb_side"]:

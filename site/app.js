@@ -342,8 +342,8 @@ function makePlug(e) {
   // a 90° adapter (its female facing up, the cable's straight plug standing on it), or a plug
   if (e.style === 'adapter') parts.push(plugMesh(`usbplug_${t}_adapter_mold`, PLUG_MAT.mold), plugMesh(`usbplug_${t}_adapter_metal`, PLUG_MAT.shell));
   else parts.push(plugMesh(`usbplug_${t}_${e.style === 'right' ? 'right' : 'straight'}`, PLUG_MAT.mold));
-  // the drawer's DATA port: the extension's female end, its flange on the port wall
-  if (e.socket === 'panel') parts.push(plugMesh('usbplug_panel_mold', PLUG_MAT.mold), plugMesh('usbplug_panel_metal', PLUG_MAT.screw));
+  // the drawer's DATA port: the coupler, its flange on the port wall
+  if (e.socket === 'coupler') parts.push(plugMesh('usbplug_coupler_mold', PLUG_MAT.mold), plugMesh('usbplug_coupler_metal', PLUG_MAT.screw));
   for (const m of parts) if (m) g.add(m);
   return g;
 }

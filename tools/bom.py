@@ -83,7 +83,7 @@ ROW_CABLE_URL = "https://www.aliexpress.com/item/1005008045292937.html"
 ROW_FEED_CM = [(30, 3.19), (60, 4.69), (80, 5.29)]      # rows A, B, C (≈ 0.25 / 0.45 / 0.6 m), then D...
 
 
-# DUT cables (DATA socket → board), per cable type of config/rack.yaml.  Listings found on 2026-10-18;
+# DUT cables (DATA port → board), per cable type of config/rack.yaml.  Listings found on 2026-10-18;
 # AliExpress then asked for a captcha, so variants and the data lines are to be checked on the page.
 # A right-angle micro-B or mini-B plug is not reversible, its "up" / "down" naming varies by seller and
 # few listings offer both: those boards take a 90° adapter (sold as up / down / left / right sets, keep
@@ -294,7 +294,7 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
          "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
         {"category": "Fasteners", "item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): "
-                                         "drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA socket",
+                                         "drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA coupler",
          "supplier": "AliExpress (bulk, e.g. HZYUEGOU)", "qty": 8 * n_bays, "unit_eur": 0.02,
          "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)"},
         {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
@@ -319,11 +319,18 @@ def hardware(rack) -> list[dict]:
          "qty": max(0, n_bays - chain_m), "unit_eur": 2.17,
          "notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing "
                   "is for the non-opening 7×7 type: check one on the open links before buying the lot"},
-        {"category": "Cables", "item": "USB-C male → panel-mount USB-C female extension, 30 cm: 25 mm flange, "
-                                      "holes 17 mm apart (drawer DATA port)",
-         "supplier": "QinMSY UC-138, AliExpress 1005009101248402 (30 cm)", "qty": n_bays, "unit_eur": 1.86,
-         "notes": "the seller's drawing of the same moulding: AliExpress 1005003419765205 (USB 3.1, second source); "
-                  "measure the flange and the body on arrival (lib/carrier.scad › DATA_FLANGE, DATA_BODY_CUT)"},
+        # the drawer's DATA port: a coupler screwed through the port wall, the extension plugged into its
+        # rear (a panel-mount female extension's body left no room to turn its cable before the rear wall)
+        {"category": "Cables", "item": "USB-C female ↔ female panel coupler, 2 screw holes (drawer DATA port): flange "
+                                      "≤ 25 × 9 mm, holes ≈ 17 mm apart, barrel ≤ 13 × 8 mm, ≤ 11 mm behind the flange",
+         "supplier": "AliExpress (USB-C female to female panel mount, screw holes)", "qty": n_bays, "unit_eur": 2.0,
+         "notes": "it must carry the data lines (not a charge-only coupler); measure flange, pitch and barrel on "
+                  "arrival (lib/carrier.scad › DATA_FLANGE, PORT_EARS, DATA_BODY_CUT, COUPLER_REAR)"},
+        {"category": "Cables", "item": "USB-C ↔ USB-C cable, 40 cm, one plug at 90° (up / down), USB 2.0 data "
+                                      "(drawer extension: node → drag chain → DATA coupler)",
+         "supplier": "AliExpress", "qty": n_bays, "unit_eur": 2.5,
+         "notes": "the 90° plug in the coupler's rear, bent down through the cable window; the route is ≈ 32 cm, "
+                  "so 30 cm is short; 50 cm works too (the spare widens the loop in front of the chain's moving end)"},
         # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up.  Bought in
         # lots of 5 from one AliExpress listing (checked 2026-10-18: its "Same direction" photo shows both
         # plugs on the same face, its "Reverse direction" the 1:1 type); 6 pins

@@ -43,7 +43,7 @@ constants it reads.)
 | Part | File | Notes |
 |---|---|---|
 | Tray | `tray.scad` | the plenum under the drawer: node standoffs, chain anchor and rails, fascia with the PC port / LED / SERVICE switch (the PC port is the USB-C stadium scaled up to 13.4 × 7.8 mm, so a plug's overmold passes: the node's receptacle sits 2.7 mm behind the fascia's face), camera inserts underneath; a notch in the left ledge over the node's RESET button (drawer pulled out, press it with a pin).  The drawer rides on two side ledges under C-channel lips; runners on both walls slide into the ladder grooves from the front, and a flex arm per wall clicks a barb into the groove's window (pull the drawer out, press both arms to remove the tray) |
-| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; open floor under the plate; rear bay with two DATA panel-socket positions (left/right, the socket goes in the one farther from the board's USB; the extension's female end goes through the port wall from the front, its 25 mm flange on the wall with 2 × PT 2.6×8 17 mm apart, so its mouth is flush) and the AUX slot, cable window and the foot groove |
+| Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; open floor under the plate; rear bay with the DATA port: a USB-C female ↔ female coupler through the port wall from the front, its flange on the wall with 2 × PT 2.6×8 17 mm apart (mouth flush), 13.5 mm above the drawer bottom so the extension's 90° plug in its rear and the cable's bend under the drawer clear the tray floor; the cable window under it, the AUX slot and the foot groove |
 | Chain foot / anchor | `chain_parts.scad` | take the chain's end pieces (tab with 2 holes 8 mm apart, PT 2.6×8 + washers).  The anchor is a block outside the fixed run, on two M3 inserts in the tray; the foot carries the moving end on a fin outside the moving run and slides into the drawer's rear-open groove, locked by one PT 2.6×8 from inside the rear bay.  A printable link (and its removable bar, so the cable can be laid in) is included if you'd rather not buy chain |
 | Board plates | `board_plate.scad` | one per form factor, generated from [`mechanical/boards/boards.yaml`](../mechanical/boards/boards.yaml) |
 | Bay label | `label.scad` | 12 × 100 mm blank for the drawer front's recess |
@@ -103,7 +103,7 @@ out ~10 mm underneath!).  The generator rotates the board so its debug USB
 faces the drawer's port wall.  `orient: side` turns it towards the right wall
 instead, the board 2.5 mm from the plate's left edge: for a board too long for
 a plug behind it (the F746G-DISCO), and for the small ones (Pico, ESP32
-DevKitC, UNO R4), whose cable from the right DATA socket is then straight at
+DevKitC, UNO R4), whose cable from the DATA port is then straight at
 both ends and lies flat ([cabling.md](cabling.md)).  Mounting styles:
 
 * `MODE="insert"` heat-set inserts (M3, M2.5 or M2 picked from the hole size);

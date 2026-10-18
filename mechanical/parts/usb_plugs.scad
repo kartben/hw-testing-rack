@@ -101,7 +101,31 @@ module panel_metal() {
     }
 }
 
+// the drawer's DATA coupler, USB-C female to female: the panel socket's 25 mm flange with its two
+// screws and front mouth, a short barrel behind (CREAR from the flange's back face) with a second
+// mouth facing the rear, where the drawer extension's right-angle plug goes
+CREAR = 11;
+module coupler_mold() {
+    difference() {
+        union() {
+            slab(25, 9, 4.4, 0, 2.5, 0.5, 0.4);
+            slab(12.2, 6.8, 1.6, 2.5 - 0.01, 2.5 + CREAR, 0.2, 0.6);
+        }
+        for (z = [-0.01, 2.5 + CREAR - 1.6]) translate([0, 0, z]) linear_extrude(1.61)
+            hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 3.3);
+        for (s = [-1, 1]) translate([s * 8.5, 0, -0.01]) cylinder(d = 3.2, h = 3);
+    }
+}
+module coupler_metal() {
+    panel_metal();
+    translate([0, 0, 2.5 + CREAR - 1.6]) linear_extrude(1.3) difference() {
+        hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 3.3);
+        hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 2.9);
+    }
+}
+
 if (STYLE == "panel") { if (PIECE == "mold") panel_mold(); else panel_metal(); }
+else if (STYLE == "coupler") { if (PIECE == "mold") coupler_mold(); else coupler_metal(); }
 else if (STYLE == "adapter") { if (PIECE == "mold") adapter_mold(); else adapter_metal(); }
 else if (PIECE == "shell") shell();
 else if (STYLE == "right") mold_right();

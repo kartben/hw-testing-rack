@@ -54,20 +54,22 @@ STOP_PIN_X = DRAWER_X0 - DRAWER_FLANGE[0] / 2 - 0.2; // PT 2.6 × 8 stop screw, 
 FLANGE_Y = [DRAWER_D - 26, DRAWER_D - 6];          // rear flange segment (drawer coords)
 STOP_Y = FLANGE_Y[0] - DRAWER_TRAVEL - 4.5;        // stop pin position (carrier coords)
 
-// port wall: two positions for the panel-mount USB-C DATA socket (it goes in the one farther
-// from the board's USB, so the two plugs never meet) and a slot for the optional AUX pigtail.
-// The socket is the female end of the reference extension (QinMSY UC-138, AliExpress
-// 1005009101248402; the seller's drawing of the same moulding, 1005003419765205): a 25 mm flange
-// with two holes 17 mm apart and the receptacle's mouth in its face, a 20 mm body behind.  The
-// flange goes on the wall's front face, so the mouth is flush and any plug seats; the body
-// passes through the wall into the rear bay.  Two PT 2.6 × 8 go through the flange's holes into
-// pilots in the wall, backed by pads behind it.
+// port wall: the DATA port, a USB-C female-to-female coupler screwed through it, and a slot for
+// the optional AUX pigtail.  The board's cable plugs into the coupler's front; the drawer
+// extension (a 40 cm C ↔ C, a right-angle plug at this end) plugs into its rear, bent down
+// through the cable window to the drag chain's moving end.  A panel-mount female extension (the
+// UC-138's 20 mm body and strain relief) left no room to turn its cable before the rear wall.
+// The flange goes on the wall's front face, so the mouth is flush and any plug seats; the barrel
+// passes through the wall.  Two PT 2.6 × 8 through the flange's holes into pilots in the wall,
+// backed by pads behind it.  Flange, barrel and pitch: the reference coupler's (measure yours).
 PORT_X = concat(DATA_PORT_X, [AUX_PORT_X]);        // from config/rack.yaml (drawer.data_ports, aux_port)
-PORT_Z = DRAWER_BOTTOM + 8.5;                      // the flange (≈ 9 mm tall) clears the board plate
+PORT_Z = DRAWER_BOTTOM + 13.5;                     // high enough for the extension's plug and its bend
+                                                   // under the drawer (tools/webscene.py mirrors it)
 PORT_EARS = 17;                                    // the flange's screw pitch
-DATA_FLANGE = [25, 9, 2.5];                        // width, height, thickness (from the photos: measure)
-DATA_BODY_CUT = [13.2, 8.2, 2];                    // the body passes: width, height, corner radius
-PORT_WALL_H = DRAWER_WALL_H + 4;                   // 4 mm taller than the side walls, above the cut
+DATA_FLANGE = [25, 9, 2.5];                        // width, height, thickness
+DATA_BODY_CUT = [13.2, 8.2, 2];                    // the barrel passes: width, height, corner radius
+COUPLER_REAR = 11;                                 // the barrel behind the flange's back face
+PORT_WALL_H = DRAWER_WALL_H + 8;                   // 8 mm taller than the side walls, above the flange
 module data_body_cut(h)         // centred on the socket axis, extruded along +Z
     linear_extrude(h) offset(r = DATA_BODY_CUT[2])
         square([DATA_BODY_CUT[0] - 2 * DATA_BODY_CUT[2], DATA_BODY_CUT[1] - 2 * DATA_BODY_CUT[2]], center = true);

@@ -59,11 +59,10 @@ right and floor plate; base brace into the free inserts of the shared ladder
 4. **Drawer**: magnets first, one under the drawer and one in the tray's left
    ledge: stack the pair, mark both outer faces, glue each magnet marked face
    down into its pocket with a drop of CA, and let it set before the drawer
-   goes in.  The panel-mount female goes into the DATA
-   port position **farther from the board's debug USB** (left or right; the
-   viewer's bay panel says which: *DATA socket*): body through the port wall
-   from the front, flange against the wall, 2 × PT 2.6×8 through the flange's
-   holes; slide the drawer
+   goes in.  The DATA coupler goes through the port wall from the front,
+   flange against the wall, 2 × PT 2.6×8 through the flange's holes; plug the
+   extension's 90° end into its rear from the rear bay, bent down through the
+   cable window; slide the drawer
    in from the front onto the tray's ledges (its rear flange under the guide
    lips), engage the foot in the rear groove and lock it with the M2.5 from
    inside the rear bay (PT 2.6×8); then the PT 2.6×8 stop screw through the left guide lip.
