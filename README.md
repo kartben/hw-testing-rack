@@ -58,6 +58,7 @@ electronics/
   tools/                  schematic-as-code (eda.py), PCB builder (pcbgen.py), catalogue, LCSC resolver
   bay-node/               design.py + generated KiCad project, fab/, docs/
   power-hub/              design.py + generated KiCad project, fab/, docs/
+  data-port/              the drawer's USB-C port board: design.py + generated KiCad project, fab/, docs/
   lib/                    custom symbol(s), cached JLC basic passives
 site/                     GitHub Pages: three.js viewer + BOM page (assets generated)
 bom/                      full rack BOM (CSV + summary)
@@ -75,6 +76,7 @@ Docker (for KiCad 10, Freerouting and — if not installed locally — OpenSCAD)
 python tools/build.py all                    # config → STLs → web viewer assets
 tools/kicad.sh bay-node --route --fab        # schematic, PCB, autoroute, Gerbers/BOM/CPL, renders
 tools/kicad.sh power-hub --route --fab
+tools/kicad.sh data-port --route --fab
 python tools/bom.py                          # full rack BOM
 python -m http.server -d site 8000           # open http://localhost:8000
 ```

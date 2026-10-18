@@ -58,6 +58,16 @@ JLC_QUOTE = {
         "pcba": {"setup": 25.75, "stencil": 8.27, "components": 52.32, "feeders": 57.00, "SMT": 2.00,
                  "X-ray": 13.28, "packaging": 0.52},
     },
+    # the drawer's DATA port board (v1.0, 2 layers, parts on one side) is NOT quoted either: Economic
+    # PCBA (setup $8, stencil $1.50, $3 per extended part type: the USB4105, the S5B-PH and the
+    # USBLC6), components at catalogue prices plus ≈ 3 % attrition, ≈ 30 joints a board.  The
+    # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
+    "data-port": {
+        "pcbs": 15, "assembled": 12, "service": "Economic", "total": 41.00, "estimate": True,
+        "spec": "2-layer 40×20 mm, lead-free HASL",
+        "pcb": {"board": 4.00},
+        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 17.90, "extended parts": 9.00, "SMT": 0.60},
+    },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
 # instead of ENIG (≈ $0–2 for 5 PCBs; the node keeps ENIG for the ESP32 module and USB-C); the hub's
@@ -70,11 +80,14 @@ JLC_FINISH = {}
 # capacitors, the 6-pin J1/J2), GCT USB4105 receptacles instead of the HRO ones and 2 × 100 nF on
 # the USBLC6s: +$2.38 of parts per board at catalogue prices; four new extended part types and one
 # gone (the HRO), ≈ $3 loading each.  Then the TCAN1462V (signal improvement) instead of the
-# TCAN1044AV: +$0.54 per board.
+# TCAN1044AV: +$0.54 per board.  Then J7, the DATA header (B5B-PH-SM4-TB): +$0.30 per board and
+# one more extended part type.
 JLC_SINCE_QUOTE = {
     "bay-node": [("rev 0.5 parts (rack bus, GCT USB-C)", "components", 38.10),
                  ("rev 0.5: 3 more extended part types", "feeders", 9.00),
-                 ("rev 0.5: TCAN1462V instead of the TCAN1044AV", "components", 8.64)],
+                 ("rev 0.5: TCAN1462V instead of the TCAN1044AV", "components", 8.64),
+                 ("rev 0.5: J7 DATA header", "components", 4.80),
+                 ("rev 0.5: J7, one more extended part type", "feeders", 3.00)],
 }
 
 
@@ -165,7 +178,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
     prices = _catalog_prices()
     n_nodes = rack.units * len(rack.rows)          # every carrier unit gets a node (double bays: 2nd is optional)
     rows, orders = [], {}
-    for name, need in (("bay-node", n_nodes), ("power-hub", 1)):
+    for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes)):
         q = JLC_QUOTE[name]
         assert abs(sum(q["pcb"].values()) + sum(q["pcba"].values()) - q["total"]) < 0.005, f"{name}: quote lines ≠ total"
         n = q["assembled"]
@@ -194,7 +207,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
                                        {r["mpn"] for r in mine if r["hand_solder"]})
         orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
                         "total": round(sum(pcb.values()) + sum(pcba.values()), 2)}
-        src = "estimate, not quoted (v0.5)" if q.get("estimate") else f"JLCPCB quote {JLC_QUOTE_DATE}"
+        src = "estimate, not quoted" if q.get("estimate") else f"JLCPCB quote {JLC_QUOTE_DATE}"
         pcb_src = src + (", adjusted" if name in JLC_FINISH else "")
         pcba_src = src + (", adjusted" if pcba != q["pcba"] else "")
         spec = q["spec"].replace("ENIG", JLC_FINISH[name][0]) if name in JLC_FINISH else q["spec"]
@@ -294,7 +307,7 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
          "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
         {"category": "Fasteners", "item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): "
-                                         "drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA coupler",
+                                         "drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board",
          "supplier": "AliExpress (bulk, e.g. HZYUEGOU)", "qty": 8 * n_bays, "unit_eur": 0.02,
          "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)"},
         {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
@@ -310,7 +323,7 @@ def hardware(rack) -> list[dict]:
         {"category": "Motion", "item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), "
                                       "≈ 180 mm per drawer with its two end pieces",
          "supplier": "Olimex DRAG-CHAIN-7X7", "qty": chain_m, "unit": "m", "unit_eur": 4.0,
-         "notes": "open the links to lay the extension in (its plug and panel socket do not pass a 7×7 channel); "
+         "notes": "open the links to lay the DATA lead in (its PH plugs, 12 mm wide, do not pass a 7×7 channel); "
                   "Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, "
                   "measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)"},
         {"category": "Motion", "item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers "
@@ -319,20 +332,18 @@ def hardware(rack) -> list[dict]:
          "qty": max(0, n_bays - chain_m), "unit_eur": 2.17,
          "notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing "
                   "is for the non-opening 7×7 type: check one on the open links before buying the lot"},
-        # the drawer's DATA port: a coupler screwed through the port wall, the extension plugged into its
-        # rear (a panel-mount female extension's body left no room to turn its cable before the rear wall)
-        {"category": "Cables", "item": "USB-C female ↔ female panel coupler, 2 screw holes (drawer DATA port): flange "
-                                      "≤ 25 × 9 mm, holes ≈ 17 mm apart, barrel ≤ 13 × 8 mm, ≤ 11 mm behind the flange",
-         "supplier": "AliExpress (USB-C female to female panel mount, screw holes)", "qty": n_bays, "unit_eur": 2.0,
-         "notes": "it must carry the data lines (not a charge-only coupler); measure flange, pitch and barrel on "
-                  "arrival (lib/carrier.scad › DATA_FLANGE, PORT_EARS, DATA_BODY_CUT, COUPLER_REAR)"},
-        {"category": "Cables", "item": "USB-C ↔ USB-C cable, 40 cm, one plug at 90° (up / down), USB 2.0 data "
-                                      "(drawer extension: node → drag chain → DATA coupler)",
-         "supplier": "AliExpress", "qty": n_bays, "unit_eur": 2.5,
-         "notes": "the 90° plug in the coupler's rear, bent down through the cable window.  The route is 34 cm "
-                  "plugs included (constant over the stroke), so 30 cm is short.  The ~6 cm spare goes in a wider "
-                  "bend between the node and the chain's fixed end (nothing moves there), never in front of the "
-                  "chain's moving end: 1.5 mm to the tray's front wall with the drawer fully out"},
+        # the drawer's DATA port: our own small board (electronics/data-port, in the Electronics lines)
+        # under a shelf of the port wall, on a 5-wire PH lead from the node's J7 through the drag chain:
+        # the rack's PH cable type (pin n ↔ pin 6−n), 5 pins so a 6-pin row cable cannot go in
+        {"category": "Cables", "item": "JST PH 5-pin lead, pin n ↔ pin 6−n (flat, no twist), 50 cm, lot of 5 "
+                                      "(DATA lead: node J7 → drag chain → DATA port board; VBUS, GND, D−, D+, GND)",
+         "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 5P, Length50CM",
+         "qty": math.ceil(n_bays / 5), "unit": "lot", "unit_eur": 4.2,
+         "notes": "price interpolated from the 6-pin lots, not read: check the 5P lengths on the listing (≥ 40 cm).  The route is 34 cm plugs "
+                  "included (constant over the stroke); the spare goes in a wider bend between the node and the "
+                  "chain's fixed end (nothing moves there), never in front of the chain's moving end.  On arrival: "
+                  "both plugs show the same face, pin 1 rings to pin 5; twist D−/D+ (pins 3-4) by hand.  Or crimp "
+                  "them: PHR-5 + 10 × SPH-002T-P0.5S, 24 AWG"},
         # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up.  Bought in
         # lots of 5 from one AliExpress listing (checked 2026-10-18: its "Same direction" photo shows both
         # plugs on the same face, its "Reverse direction" the 1:1 type); 6 pins
@@ -439,8 +450,9 @@ def main():
            "and import VAT.  The per-part lines below use catalogue prices; a *Components* line per board brings "
            "them up to the quoted components figure.  *Order* applies what changed since, not re-quoted: the "
            "through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The power hub v0.5 "
-           "(USB-C PD input, eFuses, rack controller; 4 layers) is an **estimate**, not a quote: re-quote it before "
-           "ordering, and check the AP33772S's sourcing (out of stock at LCSC on 2026-10-18).", "",
+           "(USB-C PD input, eFuses, rack controller; 4 layers) and the DATA port board are **estimates**, not "
+           "quotes: re-quote them before ordering, and check the AP33772S's sourcing (out of stock at LCSC on "
+           "2026-10-18).", "",
            "| Board | Order | Line | USD |", "|---|---|---|---:|"]
     for name, q in JLC_QUOTE.items():
         order = f"{q['pcbs']} PCBs ({q['spec']}), {q['assembled']} assembled, {q['service']} PCBA"

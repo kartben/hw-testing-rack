@@ -1,0 +1,94 @@
+(kicad_sch
+	(version 20250610)
+	(generator "hw-testing-rack-eda")
+	(generator_version "10.0")
+	(uuid "4a677053-8451-5b26-9400-50c098a33d8f")
+	(paper "A3")
+	(title_block
+		(title "DATA port — Overview")
+		(rev "1.0")
+		(company "hw-testing-rack")
+		(comment 1 "The drawer's USB-C port for the board under test, wired to the bay node (hw-testing-rack)")
+		(comment 2 "Generated from electronics/data-port/design.py — edit the Python, then regenerate")
+	)
+	(lib_symbols)
+	(sheet
+		(at 170.18 70)
+		(size 80 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.3)
+			(type solid)
+		)
+		(fill
+			(color 255 255 225 1)
+		)
+		(uuid "351729e2-850e-559f-aa34-46144b490769")
+		(property "Sheetname" "Port"
+			(at 170.18 69.85 0)
+			(effects
+				(font
+					(size 2 2)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "port.kicad_sch"
+			(at 170.18 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "data-port"
+				(path "/4a677053-8451-5b26-9400-50c098a33d8f"
+					(page "2")
+				)
+			)
+		)
+	)
+	(text "USB-C source, ESD, lead"
+		(exclude_from_sim no)
+		(at 172.72 77.47 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "7d2873bc-e3e7-5199-a211-a17212848b8a")
+	)
+	(text_box "DATA port v1.0 — USB-C source (Rp 22k on CC1/CC2), USBLC6 ESD, 5-pin JST PH lead to the bay node's J7.\nLead pinout here: 1 GND, 2 D+, 3 D−, 4 GND, 5 VBUS (the node's J7 mirrored: one 'Same direction' PH cable)."
+		(exclude_from_sim no)
+		(at 30 115.57 0)
+		(size 360 10.16)
+		(margins 2 2 2 2)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.6 1.6)
+			)
+			(justify left top)
+		)
+		(uuid "85af2203-4728-5665-abd3-fa982c1442df")
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

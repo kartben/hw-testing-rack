@@ -8,6 +8,8 @@ Functions
   * POS: token in on J1.6, out on J2.1 (J2 is J1 mirrored), each through 10k + a BAT54S clamp (survives VRACK on it).
   * DUT port (USB-C, source): DUT_5V through a TPS2553 current-limited switch
     (≈1.4 A) and a 50 mΩ shunt read by an INA226; D+/D- through ESD.
+  * DATA (JST PH 5, vertical): the same DUT port on a 5-wire lead to the drawer's DATA port board
+    (electronics/data-port: USB-C, Rp, ESD); in parallel with J4, one of the two in use.
   * Two USB 2.0 muxes:
       MUX_DUT: DUT ↔ ESP32-S3 USB-OTG (USB/IP mode, default)
                DUT ↔ front PC port      (classic mode: plug a laptop and the
@@ -245,7 +247,7 @@ def board() -> Board:
                "poly": [(x0, y - 0.7), (x1, y - 0.7), (x1, y + 0.7), (x0, y + 0.7)]}
               for n, nm, x0, x1, y in (("VRACK", "j1-bus", 5.8, 11.0, PWR_Y - 5), ("GND", "j1-gnd2", 5.8, 11.0, PWR_Y - 3),
                                        ("GND", "j1-gnd5", 5.8, 11.6, PWR_Y + 3),
-                                       ("VRACK", "j2-bus", 54.3, 61.0, PWR_Y - 5), ("GND", "j2-gnd2", 52.7, 58.2, PWR_Y + 3),
+                                       ("VRACK", "j2-bus", 54.3, 59.8, PWR_Y - 5), ("GND", "j2-gnd2", 52.7, 58.2, PWR_Y + 3),
                                        ("GND", "j2-gnd5", 52.7, 58.2, PWR_Y - 3))],
             # under the ESP32 module (Espressif's layout guide): its centre pads and GND pins on one
             # top-side island, stitched to In1 around the centre pads
@@ -264,7 +266,8 @@ def board() -> Board:
                  ("VRACK", 14.0, 58.1), ("VRACK", 16.0, 58.1),
                  *[(n, x, PWR_Y + dy) for n, dy in (("VRACK", -5), ("GND", -3), ("GND", 3)) for x in (10.05, 10.75)],
                  *[(n, x, PWR_Y + dy) for n, dy in (("GND", -3), ("GND", 3)) for x in (53.2, 53.9)],
-                 *[("VRACK", x, PWR_Y - 5) for x in (59.3, 60.1)],
+                 # J2.6 (VRACK): its vias right at the pad's end, as J1.1's, so no track passes between them
+                 *[("VRACK", x, PWR_Y - 5) for x in (58.55, 59.25)],
                  # buck output island down to the +5V area, LDO tab down to the +3V3 area
                  *[("+5V", x, y) for x, y in ((17.9, 31.2), (20.4, 31.2), (20.5, 35.0), (20.5, 37.2))],
                  *[("+3V3", x, y) for x, y in ((9.2, 16.8), (10.6, 16.8), (12.0, 16.8), (13.4, 16.8),
@@ -287,6 +290,7 @@ def board() -> Board:
             {"text": "ROW IN", "x": 5.2, "y": PWR_Y + 9.6, "size": 0.8},
             {"text": "ROW OUT", "x": 58.4, "y": PWR_Y - 10.4, "size": 0.8},
             {"text": "DUT", "x": 60.0, "y": 30.9, "size": 0.8},
+            {"text": "DATA", "x": 40.0, "y": 42.3, "size": 0.8},
             {"text": "AUX", "x": 61.0, "y": 49.6, "size": 0.8},
             {"text": "CAM", "x": 58.0, "y": 6.2, "size": 0.8},
             {"text": "RESET", "x": 7.5, "y": 15.4, "size": 0.8},
@@ -506,6 +510,17 @@ def board() -> Board:
     u.wire((112, 50), "R14.1")
     u.wire((114, 50), (114, 53), "R15.1")
     u.tag("DUT_5V", (112, 50), "left")
+
+    # the drawer's DATA port board (electronics/data-port) on a 5-wire PH lead: VBUS, GND, D−, D+, GND,
+    # the data port's own pinout mirrored (one 'Same direction' PH cable).  It taps the pair on the mux
+    # side of U8 (the port board has its own ESD at its receptacle), and DUT_5V after the switch and shunt
+    u.frame("DATA: the drawer's DATA port board on a 5-wire PH lead, in parallel with J4 (one of the two in use)",
+            106, 75, 160, 98)
+    part(u, "J7", "ph5v", {"1": "DUT_5V", "2": "GND", "3": "DUT_DN", "4": "DUT_DP", "5": "GND"}, "DATA",
+         pcb=P(40.0, 37.4, 0), sch=at(152, 86, fields=(1, -5)))
+    for pin, dy, net in (("1", -2, "DUT_5V"), ("2", -1, "GND"), ("3", 0, "DUT_DN"), ("4", 1, "DUT_DP"), ("5", 2, "GND")):
+        u.wire(f"J7.{pin}", (143, 86 + dy))
+        u.tag(net, (143, 86 + dy), "left")
 
     u.frame("Mode logic: MUX_SEL = PC_DET OR MUX_FORCE_PC; SERVICE switch", 6, 58, 84, 86)
     part(u, "U7", "or", {"1": "PC_DET", "2": "MUX_FORCE_PC", "3": "GND", "4": "MUX_SEL", "5": "+3V3"},

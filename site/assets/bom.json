@@ -327,6 +327,24 @@
 {
 "category": "Electronics",
 "group": "bay-node",
+"item": "DATA — JST PH 5-pin, vertical, SMD",
+"ref": "J7",
+"mpn": "B5B-PH-SM4-TB(LF)(SN)",
+"manufacturer": "JST",
+"supplier": "LCSC/JLCPCB",
+"part": "C265085",
+"qty": 16,
+"unit_eur": 0.276,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 16 boards",
+"unit": "pcs",
+"ext_eur": 4.42
+},
+{
+"category": "Electronics",
+"group": "bay-node",
 "item": "3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded",
 "ref": "L1",
 "mpn": "FXL0630-3R3-M",
@@ -863,10 +881,10 @@
 "item": "Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": 122.35,
-"notes": "setup $25.75, stencil $8.27, feeders $74.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 125.11,
+"notes": "setup $25.75, stencil $8.27, feeders $77.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components); rev 0.5: J7 DATA header (+$4.80 components); rev 0.5: J7, one more extended part type (+$3.00 feeders); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 122.35
+"ext_eur": 125.11
 },
 {
 "category": "Electronics",
@@ -875,7 +893,7 @@
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
 "unit_eur": -27.42,
-"notes": "quoted components $181.21 + $46.74 since (≈ €209.71) for 16 boards; catalogue unit prices give €237.13",
+"notes": "quoted components $181.21 + $51.54 since (≈ €214.13) for 16 boards; catalogue unit prices give €241.55",
 "unit": "pcs",
 "ext_eur": -27.42
 },
@@ -1873,7 +1891,7 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "Bare PCB power-hub (4-layer 76×140 mm, ENIG)",
-"supplier": "estimate, not quoted (v0.5)",
+"supplier": "estimate, not quoted",
 "qty": 5,
 "unit_eur": 10.0464,
 "notes": "engineering $25.00, ENIG $17.60, board $12.00 = $54.60 for 5 PCBs, 2 of them assembled",
@@ -1884,7 +1902,7 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging",
-"supplier": "estimate, not quoted (v0.5)",
+"supplier": "estimate, not quoted",
 "qty": 1,
 "unit_eur": 98.27,
 "notes": "setup $25.75, stencil $8.27, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52; Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
@@ -1895,12 +1913,135 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "Components power-hub: JLC quote minus the catalogue prices above",
-"supplier": "estimate, not quoted (v0.5)",
+"supplier": "estimate, not quoted",
 "qty": 1,
 "unit_eur": 0.0,
 "notes": "quoted components $52.32 (≈ €48.13) for 2 boards; catalogue unit prices give €48.13",
 "unit": "pcs",
 "ext_eur": 0.0
+},
+{
+"category": "Electronics",
+"group": "data-port",
+"item": "100n — Capacitor 100n 0603",
+"ref": "C1",
+"mpn": "CC0603KRX7R9BB104",
+"manufacturer": "YAGEO",
+"supplier": "LCSC/JLCPCB",
+"part": "C14663",
+"qty": 12,
+"unit_eur": 0.0124,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 12 boards",
+"unit": "pcs",
+"ext_eur": 0.15
+},
+{
+"category": "Electronics",
+"group": "data-port",
+"item": "DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",
+"ref": "J1",
+"mpn": "USB4105-GF-A-120",
+"manufacturer": "GCT",
+"supplier": "LCSC/JLCPCB",
+"part": "C5184243",
+"qty": 12,
+"unit_eur": 0.8372,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 12 boards",
+"unit": "pcs",
+"ext_eur": 10.05
+},
+{
+"category": "Electronics",
+"group": "data-port",
+"item": "LEAD — JST PH 5-pin, side entry, SMD",
+"ref": "J2",
+"mpn": "S5B-PH-SM4-TB(LF)(SN)",
+"manufacturer": "JST",
+"supplier": "LCSC/JLCPCB",
+"part": "C265104",
+"qty": 12,
+"unit_eur": 0.3128,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 12 boards",
+"unit": "pcs",
+"ext_eur": 3.75
+},
+{
+"category": "Electronics",
+"group": "data-port",
+"item": "22k — Resistor 22k 0603",
+"ref": "R1,R2",
+"mpn": "0603WAF2202T5E",
+"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+"supplier": "LCSC/JLCPCB",
+"part": "C31850",
+"qty": 24,
+"unit_eur": 0.0038,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "2 per board × 12 boards",
+"unit": "pcs",
+"ext_eur": 0.09
+},
+{
+"category": "Electronics",
+"group": "data-port",
+"item": "USBLC6-2SC6 — USB ESD protection",
+"ref": "U1",
+"mpn": "USBLC6-2SC6",
+"manufacturer": "STMicroelectronics",
+"supplier": "LCSC/JLCPCB",
+"part": "C7519",
+"qty": 12,
+"unit_eur": 0.1656,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 12 boards; alternative: C2687116 (UMW clone)",
+"unit": "pcs",
+"ext_eur": 1.99
+},
+{
+"category": "Electronics",
+"group": "data-port",
+"item": "Bare PCB data-port (2-layer 40×20 mm, lead-free HASL)",
+"supplier": "estimate, not quoted",
+"qty": 15,
+"unit_eur": 0.2453,
+"notes": "board $4.00 = $4.00 for 15 PCBs, 12 of them assembled",
+"unit": "pcs",
+"ext_eur": 3.68
+},
+{
+"category": "Electronics",
+"group": "data-port",
+"item": "Economic PCBA, 12 boards: setup, stencil, extended parts, SMT",
+"supplier": "estimate, not quoted",
+"qty": 1,
+"unit_eur": 17.57,
+"notes": "setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.60",
+"unit": "pcs",
+"ext_eur": 17.57
+},
+{
+"category": "Electronics",
+"group": "data-port",
+"item": "Components data-port: JLC quote minus the catalogue prices above",
+"supplier": "estimate, not quoted",
+"qty": 1,
+"unit_eur": 0.44,
+"notes": "quoted components $17.90 (≈ €16.47) for 12 boards; catalogue unit prices give €16.03",
+"unit": "pcs",
+"ext_eur": 0.44
 },
 {
 "category": "Printed parts",
@@ -1953,7 +2094,7 @@
 },
 {
 "category": "Fasteners",
-"item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA coupler",
+"item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board",
 "supplier": "AliExpress (bulk, e.g. HZYUEGOU)",
 "qty": 96,
 "unit_eur": 0.02,
@@ -1996,7 +2137,7 @@
 "qty": 3,
 "unit": "m",
 "unit_eur": 4.0,
-"notes": "open the links to lay the extension in (its plug and panel socket do not pass a 7×7 channel); Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)",
+"notes": "open the links to lay the DATA lead in (its PH plugs, 12 mm wide, do not pass a 7×7 channel); Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)",
 "ext_eur": 12.0
 },
 {
@@ -2011,23 +2152,13 @@
 },
 {
 "category": "Cables",
-"item": "USB-C female ↔ female panel coupler, 2 screw holes (drawer DATA port): flange ≤ 25 × 9 mm, holes ≈ 17 mm apart, barrel ≤ 13 × 8 mm, ≤ 11 mm behind the flange",
-"supplier": "AliExpress (USB-C female to female panel mount, screw holes)",
-"qty": 12,
-"unit_eur": 2.0,
-"notes": "it must carry the data lines (not a charge-only coupler); measure flange, pitch and barrel on arrival (lib/carrier.scad › DATA_FLANGE, PORT_EARS, DATA_BODY_CUT, COUPLER_REAR)",
-"unit": "pcs",
-"ext_eur": 24.0
-},
-{
-"category": "Cables",
-"item": "USB-C ↔ USB-C cable, 40 cm, one plug at 90° (up / down), USB 2.0 data (drawer extension: node → drag chain → DATA coupler)",
-"supplier": "AliExpress",
-"qty": 12,
-"unit_eur": 2.5,
-"notes": "the 90° plug in the coupler's rear, bent down through the cable window.  The route is 34 cm plugs included (constant over the stroke), so 30 cm is short.  The ~6 cm spare goes in a wider bend between the node and the chain's fixed end (nothing moves there), never in front of the chain's moving end: 1.5 mm to the tray's front wall with the drawer fully out",
-"unit": "pcs",
-"ext_eur": 30.0
+"item": "JST PH 5-pin lead, pin n ↔ pin 6−n (flat, no twist), 50 cm, lot of 5 (DATA lead: node J7 → drag chain → DATA port board; VBUS, GND, D−, D+, GND)",
+"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 5P, Length50CM",
+"qty": 3,
+"unit": "lot",
+"unit_eur": 4.2,
+"notes": "price interpolated from the 6-pin lots, not read: check the 5P lengths on the listing (≥ 40 cm).  The route is 34 cm plugs included (constant over the stroke); the spare goes in a wider bend between the node and the chain's fixed end (nothing moves there), never in front of the chain's moving end.  On arrival: both plugs show the same face, pin 1 rings to pin 5; twist D−/D+ (pins 3-4) by hand.  Or crimp them: PHR-5 + 10 × SPH-002T-P0.5S, 24 AWG",
+"ext_eur": 12.6
 },
 {
 "category": "Cables",
@@ -2188,15 +2319,15 @@
 }
 ],
 "by_category": {
-"Electronics": 582.8799999999999,
+"Electronics": 627.7799999999999,
 "Printed parts": 78.0,
 "Fasteners": 17.509999999999998,
 "Motion": 31.53,
-"Cables": 111.37,
+"Cables": 69.97,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 939.49,
+"total_eur": 942.99,
 "prints": [
 {
 "part": "bay_label",
@@ -2481,6 +2612,24 @@
 "X-ray": 13.28,
 "packaging": 0.52
 }
+},
+"data-port": {
+"pcbs": 15,
+"assembled": 12,
+"service": "Economic",
+"total": 41.0,
+"estimate": true,
+"spec": "2-layer 40×20 mm, lead-free HASL",
+"pcb": {
+"board": 4.0
+},
+"pcba": {
+"setup": 8.0,
+"stencil": 1.5,
+"components": 17.9,
+"extended parts": 9.0,
+"SMT": 0.6
+}
 }
 },
 "order": {
@@ -2493,8 +2642,8 @@
 "pcba": {
 "setup": 25.75,
 "stencil": 8.27,
-"components": 227.95,
-"feeders": 74.1,
+"components": 232.75,
+"feeders": 77.1,
 "SMT": 9.45,
 "manual assembly": 1.62,
 "X-ray": 13.28,
@@ -2504,9 +2653,11 @@
 "no through-hole part for JLC (hand soldering −$3.61)",
 "rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components)",
 "rev 0.5: 3 more extended part types (+$9.00 feeders)",
-"rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components)"
+"rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components)",
+"rev 0.5: J7 DATA header (+$4.80 components)",
+"rev 0.5: J7, one more extended part type (+$3.00 feeders)"
 ],
-"total": 419.84
+"total": 427.64
 },
 "power-hub": {
 "pcb": {
@@ -2525,6 +2676,20 @@
 },
 "changes": [],
 "total": 213.74
+},
+"data-port": {
+"pcb": {
+"board": 4.0
+},
+"pcba": {
+"setup": 8.0,
+"stencil": 1.5,
+"components": 17.9,
+"extended parts": 9.0,
+"SMT": 0.6
+},
+"changes": [],
+"total": 41.0
 }
 }
 }

@@ -166,6 +166,9 @@ JLC_CPL_FIX = {
     "C75176": ("SOT-23", 180, 0.0, 0.0),                                      # bay D5, hub D9 (PESD2CAN)
     "C7420333": ("SOT-23", 180, 0.0, 0.0),                                    # bay D6 D7, hub POS clamps (BAT54S)
     "C5184243": ("USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", 0, 0.0, -1.30),  # bay J3 J4, hub USB-C
+    # the DATA lead's 5-pin PH pair, fitted on 2026-10-18 the same way
+    "C265104": ("JST_PH_S5B-PH-SM4-TB_1x05-1MP_P2.00mm_Horizontal", 180, 0.0, 0.14),  # data port J2
+    "C265085": ("JST_PH_B5B-PH-SM4-TB_1x05-1MP_P2.00mm_Vertical", 180, 0.0, -0.62),   # bay J7
 }
 
 

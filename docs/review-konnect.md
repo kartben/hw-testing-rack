@@ -465,3 +465,25 @@ Konnect, on the saved files:
 | CAN pair, U6 → rows A / B / C / D | CAN_H 102 / 77 / 48 / 24 mm, CAN_L 97 / 68 / 43 / 18 mm (before: 99 / 72 / 51 / 22 and 106 / 82 / 56 / 27); H − L 4.2–8.3 mm (before 4.6–10.4); totals 115 / 118 mm (before 117 / 124) |
 | CAN pair coupling | 41 % of CAN_H within 1 mm of CAN_L on the same layer, median gap 1.45 mm (before: 41 %, 1.39 mm) |
 | 3D coverage (`tools/pcb_glb.py --check`) | 146 parts with a model, 0 stand-ins |
+
+## DATA port board and the node's J7 (2026-10-18)
+
+The drawer's USB-C coupler and its 90° extension become our own board, `electronics/data-port`
+(40 × 20 mm, 2 layers: USB4105 source with Rp 22k on CC1/CC2, USBLC6 at the receptacle, JST PH 5
+side entry), on a 5-wire PH lead from the node's new J7 (B5B-PH-SM4-TB, vertical) through the drag
+chain ([electronics.md](electronics.md#data-port-v10--2-layers-40--20-mm)).  J7 sits in parallel
+with J4 (one of the two in use).  Both boards were routed by Freerouting; on the node the first
+route ran POS_OUT between J2.6 and its two VRACK vias and cut that pad off its island, so the vias
+now sit at the pad's end, as J1.1's.  Konnect, on the saved files:
+
+| | data port | bay node |
+|---|---|---|
+| Pin nets (`get_component_nets`) | J2: GND, LEAD_DP, LEAD_DN, GND, VBUS; J1: CC1/CC2 on their own nets, SBU open, shell GND | J7: DUT_5V, GND, DUT_DN, DUT_DP, GND (J2's mirror: one "Same direction" lead) |
+| ERC | 0 errors, 0 warnings | 0 errors, 0 warnings |
+| DRC (zones refilled) | 0 errors, 0 warnings, 0 unconnected, parity 0 | 0 errors, 0 warnings, 0 unconnected, parity 0 |
+| JLC DFM (`audit_manufacturing`) | 0 findings, 8 parts on the top | as before: 4 parts on the bottom (test pads), R6 / TP2 0.73 mm apart (opposite sides) |
+| J7 branch | — | DUT_DP 15.9 mm, DUT_DN 17.5 mm on F.Cu over In1 from U8's mux side, no via; an open stub of that length when J4 is used with J7 empty |
+| 3D coverage (`tools/pcb_glb.py --check`) | 6 parts with a model, 0 stand-ins | 86 parts with a model, 0 stand-ins |
+
+JLC placement corrections for the two new PH parts were fitted the same way as the others
+(EasyEDA pads onto KiCad pads, pin by pin): C265104 180°, +0.14 mm y; C265085 180°, −0.62 mm y.

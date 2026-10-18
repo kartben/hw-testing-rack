@@ -1,6 +1,6 @@
 # Electronics
 
-Two boards, both **schematics as code**: `electronics/<board>/design.py`
+Three boards (the bay node, the power hub, the drawer's DATA port), all **schematics as code**: `electronics/<board>/design.py`
 describes parts (with MPN, manufacturer, LCSC number), the nets their pins
 connect to and PCB placement hints.  From that single description
 `electronics/tools/` writes a real hierarchical KiCad 10 project (one sheet
@@ -75,7 +75,8 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 > [can.md](can.md)), CAN transceiver and POS token added, GCT USB4105 receptacles, autorouted,
 > checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.5 —
 > USB-C PD input (AP33772S), 4 layers, rows off until the controller enables them, autorouted,
-> checked with Konnect, not yet ordered or quoted.**  On both boards ERC is clean and DRC reports
+> checked with Konnect, not yet ordered or quoted.  DATA port v1.0 — the drawer's USB-C port on a
+> 5-wire lead to the node's new J7, autorouted, not yet ordered or quoted.**  On all three boards ERC is clean and DRC reports
 > no copper errors, no unconnected items and full schematic parity.  The buck's hot loop, the
 > VRACK bus, the hub's input and VRACK pours, its Kelvin sense pair and the USB High-Speed pairs are placed or
 > drawn by hand in `design.py`; the rest is the router's draft: before
@@ -100,6 +101,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 2 × USB-C GCT USB4105-GF-A-120 | modes in [architecture.md](architecture.md); the classic-mode path (J3 → J4) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | JST PH 6, side entry, SMD (S6B-PH-SM4-TB): GND, 3V3 (10 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | |
+| DATA | J7, JST PH 5, vertical, SMD (B5B-PH-SM4-TB): 1 DUT_5V · 2 GND · 3 D− · 4 D+ · 5 GND, in parallel with the DUT receptacle J4 | the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--20-mm); **one of J4 / J7 at a time** (below) |
 | Camera | JST PH 2, SMD: 5 V via 0.5 A PTC | mouth 0.65 mm behind `pcb.bay_node.cam` in `config/rack.yaml`, to clear the M3 hole |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
@@ -137,6 +139,14 @@ until the PD contract is final, so a node sees one clean power-up.
 
 **USB-C roles:** the front PC port is a sink (5.1 k Rd on CC) whose VBUS is
 only sensed; the DUT port is a source (22 k Rp → "1.5 A") with switched VBUS.
+
+**J4 or J7, not both.**  J7 taps the DUT pair on the mux side of U8 (the port board has its own
+ESD) and DUT_5V after the switch and shunt.  Both in use at once breaks nothing: the TPS2553 still
+caps the sum at ≈ 1.4 A (the INA226 then reads both boards), and two devices on one pair just fail
+to enumerate.  But the unused one hangs on the pair as a stub: J4's ≈ 13 mm of track is harmless,
+a DATA lead left in J7 while a board runs on J4 is ≈ 40 cm of open cable (Full Speed works, High
+Speed likely not).  In the rack the lead stays in J7 and J4 is the bench port: unplug the lead
+from J7 to use J4.
 
 ## Power hub v0.5 — 4 layers, 76 × 140 mm
 
@@ -180,6 +190,24 @@ and the sequencing: [power.md](power.md).
 
 The schematic uses the generator's automatic layout (blocks with labelled stubs); it is not drawn
 like the bay node's yet.
+
+## DATA port v1.0 — 2 layers, 40 × 20 mm
+
+The drawer's USB-C port for the board under test (×1 per drawer): a small board screwed
+components down under a shelf of the drawer's port wall (2 × PT 2.6×8, Ø2.7 holes 34 mm apart,
+one each end), the receptacle's mouth out of the wall, a 5-wire JST PH lead from its rear edge to
+the node's J7 through the drag chain ([cabling.md](cabling.md)).  It replaces the USB-C coupler
+and the 90° extension.  Geometry in `config/rack.yaml` › `pcb.data_port`.
+
+| Block | Parts | Notes |
+|---|---|---|
+| USB-C | GCT USB4105-GF-A-120 (J1), front edge centre, its centre 1.63 mm below the component face | a source, as the node's DUT port: 22 k Rp on CC1 and CC2 ("1.5 A"); the shell to GND |
+| ESD | USBLC6-2SC6 (U1) flow-through, 100 nF on VBUS (C1) | right at the receptacle, where the plugs go in |
+| Lead | JST PH 5, side entry, SMD (S5B-PH-SM4-TB, J2), rear edge centre: 1 GND · 2 D+ · 3 D− · 4 GND · 5 VBUS | the node's J7 mirrored: the rack's one PH cable type (pin n ↔ pin 6−n) joins them; 5 pins, so a 6-pin row cable (VRACK) cannot go in |
+
+USB 2.0 only: High Speed PC ↔ board in classic mode, Full Speed to the node's ESP32 otherwise.
+Both sides are GND pours; routed by Freerouting like the other boards.  JLC: Economic PCBA (one
+side, no Standard-only part), ≈ $41 for 15 PCBs with 12 assembled (estimate in `tools/bom.py`).
 
 A review of both boards with the Konnect MCP server (findings, fixes, what is
 still open) is in [review-konnect.md](review-konnect.md).
@@ -330,7 +358,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C45262770 LMR51635 TSOT-23-6 | node U1 | 270° (same EasyEDA footprint as C7519) | to confirm |
 | C11355 FSUSB42 MSOP-10 | node U5 U6 | 270° | to confirm |
 | C49851 INA226 VSSOP-10 | node U10 | 270° | to confirm |
-| C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8 | 270° | to confirm |
+| C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8, data port U1 | 270° | to confirm |
 | C55266 TPS2553 SOT-23-6 | node U9 | 180° | to confirm |
 | C10096 74LVC1G32 SOT-23-5 | node U7 | 180° | to confirm |
 | C8545 2N7002 SOT-23 | node Q2 Q3 | 180° | to confirm |
@@ -342,7 +370,9 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C7399456 TCAN1462V SOIC-8 (alternates C3234993 TCAN1044AV, C3234095 TJA1462AT) | node U11, hub U6 | 270° | to confirm |
 | C75176 PESD2CAN SOT-23 | node D5, hub D9 | 180° | to confirm |
 | C7420333 BAT54S SOT-23 | node D6 D7, hub POS clamps | 180° | to confirm |
-| C5184243 GCT USB4105-GF-A-120 | node J3 J4, hub USB-C | −1.30 mm y | to confirm |
+| C5184243 GCT USB4105-GF-A-120 | node J3 J4, hub USB-C, data port J1 | −1.30 mm y | to confirm |
+| C265104 JST S5B-PH-SM4-TB | data port J2 | 180°, +0.14 mm y | to confirm |
+| C265085 JST B5B-PH-SM4-TB | node J7 | 180°, −0.62 mm y | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
 0805, 1206), the electrolytics (+ pad), the diodes and LEDs (cathode side),

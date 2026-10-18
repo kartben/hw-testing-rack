@@ -8,40 +8,46 @@ as it can be without ever being taut**.
 
 ```
 bay node (plenum)                                 drawer
- ┌──────────┐  40 cm USB-C ↔ USB-C, one 90° plug  ┌────────────────────────────────────┐
- │ DUT port ├──────┐                              │ [DATA]◀── short cable ──▶ board    │
- └──────────┘      │  ┌─ drag chain 7×7 R18 ─┐    │   ▲ coupler, 90° plug in its rear  │
+ ┌──────────┐  DATA lead: JST PH 5-pin, ~40 cm    ┌────────────────────────────────────┐
+ │ DATA J7  ├──────┐                              │ [DATA]◀── short cable ──▶ board    │
+ └──────────┘      │  ┌─ drag chain 7×7 R18 ─┐    │   ▲ port board under the shelf     │
                    └─▶│ fixed end   moving end├───┼─▶ up through the cable window      │
                       └──────────────────────┘    └────────────────────────────────────┘
 ```
 
-1. **Node → drawer: an off-the-shelf cable and a coupler.**  The drawer's
-   DATA port is a USB-C female ↔ female coupler screwed through its port wall
-   (flange on the front face, 2 × PT 2.6×8): the board's short cable plugs
-   into its front.  A 40 cm USB-C ↔ USB-C cable with one 90° plug plugs into
-   the node's DUT receptacle, runs ~3 cm in the plenum to the chain's fixed
-   end, through the drag chain, out of its moving end (forwards, then a
-   U-turn in front of it, between the chain's runs, low over the tray floor)
-   and up through the cable window into the coupler's rear, its 90° plug bent
-   down.  It never needs to be touched again.  (A panel-mount female
-   extension was the first idea: its 20 mm body and strain relief left no room
-   to turn the cable before the drawer's rear wall.)
+1. **Node → drawer: a small port board and a 5-wire lead.**  The drawer's
+   DATA port is our own 40 × 20 mm board ([electronics/data-port](../electronics/data-port/design.py)):
+   a USB-C receptacle (a source: Rp 22k on CC1/CC2, USBLC6 ESD at the
+   receptacle) screwed components down under a shelf of the port wall
+   (2 × PT 2.6×8, one each end), its mouth out of the wall: the board's short
+   cable plugs into it.  A JST PH 5-pin lead (VBUS, GND, D−, D+, GND) plugs
+   into the node's **DATA** header (J7, vertical, in parallel with the DUT
+   receptacle J4: one of the two in use), runs ~3 cm in the plenum to the
+   chain's fixed end, through the drag chain, out of its moving end
+   (forwards, then a U-turn in front of it, between the chain's runs, low
+   over the tray floor) and up through the cable window into the port
+   board's rear edge.  It never needs to be touched again.  It is the rack's
+   one PH cable type (pin n ↔ pin 6−n, both plugs the same face up: the
+   port board's pinout is J7's mirrored), with 5 pins so a 6-pin row cable
+   (VRACK, up to 28 V) cannot go in; twist D−/D+ (pins 3-4) by hand.  (A
+   USB-C coupler with a 90° extension came first: two off-the-shelf parts
+   whose sizes vary by seller, and a stiff cable to bend in the window.)
 2. **The drag chain lies flat in the plenum** and bends in the horizontal
    plane: Olimex DRAG-CHAIN-7X7, 7 × 7 mm inside, 13.5 × 10.2 mm outside,
    R18, ≈ 180 mm with its two end pieces.  Its fixed end is screwed to the
    tray's anchor, its moving end to the drawer foot.  Open the drawer 140 mm
-   and the U-bend rolls forward 70 mm: the cable never drags, kinks or snags.
-   **Lay the cable in, don't thread it:** its plugs do not pass a 7 × 7
-   channel.  Open the links (their bars snap off on both sides), lay the
-   cable in from the fixed end's mouth to the moving end's, with ~3 cm out of
-   the fixed end for the node and the 90° plug's end out of the moving end,
-   then snap the bars back.
+   and the U-bend rolls forward 70 mm: the lead never drags, kinks or snags.
+   **Lay the lead in, don't thread it:** its PH plugs (12 mm wide) do not
+   pass a 7 × 7 channel.  Open the links (their bars snap off on both
+   sides), lay the lead in from the fixed end's mouth to the moving end's,
+   with ~3 cm out of the fixed end for the node and the port board's end out
+   of the moving end, then snap the bars back.
 3. **Drawer → board: a short cable that belongs to the board.**  USB-C on
    the drawer side, whatever the board needs on the other (C, micro-B or
    mini-B).  Two layouts, set by the board's plate:
    * **a small board** (Pico, ESP32 DevKitC, UNO R4: `orient: side`) turns
      its USB towards the right wall: a plain **straight** 15–20 cm cable
-     leaves the DATA coupler forwards, bends once (≥ 10 mm radius) and
+     leaves the DATA port forwards, bends once (≥ 10 mm radius) and
      lies flat on the plate into the board's side;
    * **a long board** (Nucleo, nRF DK, FRDM) faces its USB to the port wall,
      17–23 mm away, too close for a straight plug: the cable leaves the

@@ -1,0 +1,15 @@
+(version 1)
+# Thermal reliefs on every pour (pcbgen.py).  On fine-pitch pads (ESP32 module, MSOP/SOT pins)
+# the neighbours leave room for one spoke only: one spoke is still a relief, and enough current
+# for a GND pin.
+(rule "one thermal spoke is enough"
+	(constraint min_resolved_spokes 1))
+
+(rule "parts overhanging the outline"
+	(layer "F.SilkS")
+	(condition "(A.memberOfFootprint('J*')) && B.Layer == 'Edge.Cuts'")
+	(constraint silk_clearance (min -10mm)))
+
+(rule "USB4105 J1: GND pads beside its own pegs"
+	(condition "A.memberOfFootprint('J1') && B.memberOfFootprint('J1')")
+	(constraint hole_clearance (min 0.19mm)))

@@ -126,7 +126,7 @@ cables:
                   length: 250, style: adapter }
   c-to-c-straight:       { label: "USB-C ↔ USB-C, straight, 15–20 cm", a: usb-c, b: usb-c,   length: 150, style: straight }
   c-to-micro-b-straight: { label: "USB-C ↔ micro-B, straight, 15–20 cm", a: usb-c, b: micro-b, length: 150, style: straight }
-  drawer-ext:   { label: "USB-C male → panel-mount USB-C female, 30 cm", length: 300 }
+  data-lead:    { label: "JST PH 5-pin DATA lead, pin n ↔ pin 6−n, 400–500 mm (node J7 → DATA port board)", length: 400 }
   row-jumper:   { label: "JST PH 6-pin row cable, 1:1, 24 AWG, 120 mm", length: 120 }
   row-feed:     { label: "JST PH 6-pin feed, 1:1, 24 AWG (VRACK, CAN, POS)", length: 600 }
 
@@ -154,3 +154,10 @@ pcb:
     front: { leds: [11, 23, 35, 47, 55.6, 61.6], usb: 70 }  # KiCad x: ON/FAULT pair centres (±3) for rows A-D, then PD (the AP33772S's status), CTL; USB-C
     rear: { pd: 62 }            # KiCad x on the rear edge: the USB-C PD input
     buttons: [[11.5, 10.0], [11.5, 16.5]]   # KiCad: SW1 RESET, SW2 BOOT (design.py), top-actuated, 1.5 mm tall: pin holes in the lid
+  data_port:                # the drawer's DATA port: a USB-C source on a small board under a shelf of the drawer's port wall
+    size: [40, 20]          # X × Y; KiCad y=0 is the REAR edge (the 5-pin PH lead to the node), y=20 the FRONT edge (USB-C mouth)
+    thickness: 1.6
+    layers: 2
+    holes: [[3.0, 10.0], [37.0, 10.0]]   # Ø2.7 (PT 2.6 × 8 into the shelf), 34 mm apart; mounted components down
+    usb: 20                 # KiCad x of the USB-C (GCT USB4105) on the front edge: its centre 1.63 mm below the board's component face
+    ph: 20                  # KiCad x of the JST PH 5-pin (side entry) on the rear edge

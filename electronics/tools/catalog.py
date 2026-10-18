@@ -110,6 +110,13 @@ CAT = {
                "S6B-PH-SM4-TB(LF)(SN)", "JST", "C265405", 0.39, description="JST PH 6-pin, side entry, SMD",
                # EasyEDA models (tools/fetch_pcb_models.py): placed by their pins and nails on KiCad's pads
                model=("easyeda/C265405.step", (0, -2.9, 0), (0, 0, 0))),
+    # the DATA lead (docs/cabling.md): VBUS, GND, D−, D+, GND; 5 pins, so a 6-pin row cable can't go in
+    "ph5": Cat("Connector_Generic:Conn_01x05", "Connector_JST:JST_PH_S5B-PH-SM4-TB_1x05-1MP_P2.00mm_Horizontal",
+               "S5B-PH-SM4-TB(LF)(SN)", "JST", "C265104", 0.34, description="JST PH 5-pin, side entry, SMD",
+               model=("easyeda/C265104.step", (0, 0, 0), (0, 0, 0))),   # its file is centred like C265405 after that one's -2.9
+    "ph5v": Cat("Connector_Generic:Conn_01x05", "Connector_JST:JST_PH_B5B-PH-SM4-TB_1x05-1MP_P2.00mm_Vertical",
+                "B5B-PH-SM4-TB(LF)(SN)", "JST", "C265085", 0.30, description="JST PH 5-pin, vertical, SMD",
+                model=("easyeda/C265085.step", (0, 0.55, 0), (0, 0, 180))),   # MP tabs on the MP pads; body + tails = the courtyard, y -4.25..3.25
     "pptc500": Cat("Device:Polyfuse_Small", "Fuse:Fuse_1206_3216Metric", "SMD1206P050TF", "RUILON", "C20799", 0.08,
                    description="PTC 0.5 A hold, 1206"),
     "efuse": Cat("Power_Management:TPS26600PWP",
@@ -164,6 +171,7 @@ CAT = {
                   "Diodes Incorporated", "C51118", 0.17, description="3.3 V 600 mA LDO, 250 mV dropout"),
     "testpad": Cat("Connector:TestPoint", "TestPoint:TestPoint_Pad_D1.5mm", "test pad", "-", "", 0.0),
     "hole": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_3.2mm_M3", "M3 mounting hole", "-", "", 0.0),
+    "hole25": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_2.7mm_M2.5", "M2.5 / PT 2.6 mounting hole", "-", "", 0.0),
 }
 
 HAND_SOLDER_LCSC = {c.lcsc for c in CAT.values() if c.hand_solder}
