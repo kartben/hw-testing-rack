@@ -65,8 +65,9 @@ class Config(unittest.TestCase):
             self.assertTrue(a1["connected"])
             self.assertEqual(a1["id"], "066DFF515251717867193542")
             self.assertTrue(a1["serial"].startswith("/dev/serial/by-id/"))
-            b2 = by["bay:B2"]                                           # esp32: the port is the probe id
-            self.assertEqual(b2["id"], b2["serial"])
+            b2 = by["bay:B2"]                                           # GIGA R1: dfu-util, AUX console
+            self.assertEqual(b2["runner"], "dfu-util")
+            self.assertIn("serial_pty", b2)
             b3 = by["bay:B3"]                                           # AUX console through serial_pty
             self.assertEqual(b3["serial_pty"], "python3 /opt/rack/tools/bayctl.py pty B3")
             self.assertNotIn("serial", b3)

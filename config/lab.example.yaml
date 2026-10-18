@@ -36,8 +36,7 @@ bays:
     id: "001050012345"                       # J-Link OB serial of the nRF52840 DK
     serial: /dev/serial/by-id/usb-SEGGER_J-Link_001050012345-if00
   B2:
-    serial: /dev/serial/by-id/usb-Silicon_Labs_CP2102N_USB_to_UART_Bridge_Controller_7a1c2b3d-if00-port0
-                                             # esp32 runner: the serial port is also the probe id
+    console: aux                             # GIGA R1: flashed by dfu-util over its USB, console on the AUX UART
   B3:
     console: aux                             # Pico 2: console on the AUX UART (TX/RX/GND wired)
     baud: 115200
