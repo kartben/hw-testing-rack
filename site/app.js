@@ -198,15 +198,19 @@ function makeBoard(b) {
   g.add(box(w, l, 1.6, pcbMat));
   const rnd = seeded(b.id + b.bay);
   const dark = new THREE.Color(b.color).getHSL({}).l > 0.5 ? MAT.blackPlastic : MAT.blackPlastic;
-  // a few ICs and passives, and header rows along the long edges
+  // a few ICs and passives clear of the USB edge, and header rows along the two edges either side
+  // of it (the rear edge carries the USB, or the right one for a board turned sideways)
   const n = Math.max(3, Math.round((w * l) / 1400));
   for (let i = 0; i < n; i++) {
     const cw = 4 + rnd() * Math.min(14, w * 0.3), cl = 4 + rnd() * Math.min(14, l * 0.25);
-    const cx = 3 + rnd() * Math.max(1, w - cw - 6), cy = 3 + rnd() * Math.max(1, l - cl - 14);
+    const cx = 3 + rnd() * Math.max(1, w - cw - (b.usb_side ? 14 : 6)), cy = 3 + rnd() * Math.max(1, l - cl - (b.usb_side ? 6 : 14));
     g.add(box(cw, cl, 1.0 + rnd() * 1.4, i % 3 ? dark : MAT.silver, cx, cy, 1.6));
   }
-  if (w > 24 && l > 40) {
-    for (const x of [1.2, w - 3.7]) g.add(box(2.5, l * 0.62, 8.5, MAT.blackPlastic, x, l * 0.18, 1.6));
+  if (b.usb_side ? l > 24 && w > 40 : w > 24 && l > 40) {
+    for (const e of b.usb_side ? [1.2, l - 3.7] : [1.2, w - 3.7]) {
+      if (b.usb_side) g.add(box(w * 0.62, 2.5, 8.5, MAT.blackPlastic, w * 0.18, e, 1.6));
+      else g.add(box(2.5, l * 0.62, 8.5, MAT.blackPlastic, e, l * 0.18, 1.6));
+    }
   }
   // debug USB on the rear edge (+Y) — or the right edge (+X) for boards turned sideways
   for (const [ux, type] of [[b.usb_x, b.usb_type], [b.usb2_x, 'usb-c']]) {

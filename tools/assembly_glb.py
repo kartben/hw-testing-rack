@@ -217,16 +217,19 @@ def board_meshes(b):
     out = [with_mat(trimesh.creation.box([w, l, 1.6], transform=translate([w / 2, l / 2, 0.8])),
                     mat(hex_rgba(b["color"]), 0.05, 0.5))]
     rng = np.random.default_rng(abs(hash(b["id"] + b["bay"])) % 2 ** 32)
+    side = b.get("usb_side")                  # the USB on the right edge instead of the rear one
     for i in range(max(3, int(w * l / 1400))):
         cw, cl = 4 + rng.random() * min(14, w * .3), 4 + rng.random() * min(14, l * .25)
-        cx, cy = 3 + rng.random() * max(1, w - cw - 6), 3 + rng.random() * max(1, l - cl - 14)
+        cx = 3 + rng.random() * max(1, w - cw - (14 if side else 6))
+        cy = 3 + rng.random() * max(1, l - cl - (6 if side else 14))
         h = 1 + rng.random() * 1.4
         out.append(with_mat(trimesh.creation.box([cw, cl, h], transform=translate([cx + cw / 2, cy + cl / 2, 1.6 + h / 2])),
                             mat("black" if i % 3 else "silver")))
-    if w > 24 and l > 40:
-        for x in (1.2, w - 3.7):
-            out.append(with_mat(trimesh.creation.box([2.5, l * .62, 8.5], transform=translate([x + 1.25, l * .5, 1.6 + 4.25])),
-                                mat("black")))
+    # header rows along the two edges either side of the USB edge
+    if (l > 24 and w > 40) if side else (w > 24 and l > 40):
+        for e in ((1.2, l - 3.7) if side else (1.2, w - 3.7)):
+            size, at = ([w * .62, 2.5, 8.5], [w * .5, e + 1.25]) if side else ([2.5, l * .62, 8.5], [e + 1.25, l * .5])
+            out.append(with_mat(trimesh.creation.box(size, transform=translate([*at, 1.6 + 4.25])), mat("black")))
     for ux in (b.get("usb_x"), b.get("usb2_x")):
         if ux is not None and b.get("usb_side"):
             out.append(with_mat(trimesh.creation.box([7.4, 9, 3.2], transform=translate([w - 2.9, ux, 1.6 + 1.6])),
