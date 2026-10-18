@@ -1,8 +1,11 @@
 """Bay node — one per bay: ESP32-S3 USB/IP host for the board under test (DUT).
 
 Functions
-  * 24 V bus in/out (JST PH, daisy-chained bay to bay), reverse-polarity
-    P-FET, TVS, LMR51635 synchronous buck to 5 V / 3.5 A, 3.3 V LDO for the logic.
+  * Row cable in/out (JST PH 6, daisy-chained bay to bay, docs/can.md): the row bus VRACK (20 V, or
+    28 V EPR, from the hub's USB-C PD supply), the rack's CAN pair and the POS addressing token.
+    Reverse-polarity P-FET, TVS, LMR51635 synchronous buck to 5 V / 3.5 A, 3.3 V LDO for the logic.
+  * CAN: TCAN1044AV on the ESP32-S3 TWAI, tapping the pair that runs J1 → J2 (no termination).
+  * POS: token in on J1.6, out on J2.6, each through 10k + a BAT54S clamp (survives VRACK on it).
   * DUT port (USB-C, source): DUT_5V through a TPS2553 current-limited switch
     (≈1.4 A) and a 50 mΩ shunt read by an INA226; D+/D- through ESD.
   * Two USB 2.0 muxes:
@@ -17,7 +20,7 @@ Functions
   * CAM (JST-PH 2): 5 V for the camera pod hanging under this carrier.
   * WS2812B status LED behind the fascia, RESET/BOOT buttons, UART test pads.
 
-Net names follow the power path: 24V_BUS (daisy chain) → Q1 → +24V → buck →
+Net names follow the power path: VRACK (daisy chain) → Q1 → VIN → buck →
 +5V → TPS2553 → DUT_5V_SW → 50 mΩ shunt → DUT_5V (the DUT's VBUS).  The
 INA226 itself runs from +3V3 and reads the drop across the shunt.
 
@@ -44,7 +47,7 @@ import rackcfg  # noqa: E402
 RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["bay_node"]
 W, H = CFG["size"]
-PWR_Y = CFG["pwr_y"]          # centre of the 24 V in/out connectors (left/right edges)
+PWR_Y = CFG["pwr_y"]          # centre of the row cable connectors J1/J2 (left/right edges)
 # JST PH side entry, SMD (S*B-PH-SM4-TB): footprint origin 4.9 mm in from the board edge, which puts the
 # mouth 0.5 mm inside it so the fitting tabs keep their copper-to-edge clearance; pins 7.75 mm in
 PH_EDGE = 4.9
@@ -95,21 +98,24 @@ def usb_hs_routes():
             vias.append((net, x, y, d, drill))
 
     # J3 (front PC port) → U4 (ESD, rot 270: D+ through pins 4/3 at x 31.05, D− through 6/1 at 32.95)
-    t("PC_CONN_DP", (31.75, 72.555), (31.75, 70.9), (31.05, 70.2), (31.05, 68.1375))        # → U4 pin 4
-    t("PC_CONN_DN", (32.25, 72.555), (32.25, 70.9), (32.95, 70.2), (32.95, 68.1375))        # → U4 pin 6
-    t("PC_CONN_DP", (32.75, 72.555), (32.75, 73.85), (31.75, 73.85), (31.75, 72.555))  # B6 → A6
-    t("PC_CONN_DN", (31.25, 72.555), (31.2, 71.35))                                     # B7 → A7
+    t("PC_CONN_DP", (31.75, 72.92), (31.75, 70.9), (31.05, 70.2), (31.05, 68.1375))        # → U4 pin 4
+    t("PC_CONN_DN", (32.25, 72.92), (32.25, 70.9), (32.95, 70.2), (32.95, 68.1375))        # → U4 pin 6
+    t("PC_CONN_DP", (32.75, 72.92), (32.75, 73.85), (31.75, 73.85), (31.75, 72.92))  # B6 → A6
+    t("PC_CONN_DN", (31.25, 72.92), (31.2, 71.35))                                     # B7 → A7
     t("PC_CONN_DN", (31.2, 71.35), (32.3, 71.25), layer="B.Cu")
     via("PC_CONN_DN", 31.2, 71.35)
     via("PC_CONN_DN", 32.3, 71.25)
-    # U4's VBUS pin: its via sits in the front +3V3 area of In2, so a B.Cu track takes it past the 24 V
+    # U4's VBUS pin: its via sits in the front +3V3 area of In2, so a B.Cu track takes it past the VRACK
     # strip to the +5V area; its GND pin gets a via between the spread pins
     t("+5V", (32.0, 68.1375), (32.0, 69.55), w=0.3)
     via("+5V", 32.0, 69.55)
-    t("+5V", (32.0, 69.55), (33.6, 69.55), (33.6, 58.9), layer="B.Cu", w=0.3)
-    via("+5V", 33.6, 58.9)
+    t("+5V", (32.0, 69.55), (33.6, 69.55), (33.6, 54.8), layer="B.Cu", w=0.3)
+    via("+5V", 33.6, 54.8)
     t("GND", (32.0, 65.8625), (32.0, 64.55), w=0.3)
     via("GND", 32.0, 64.55)
+    # C25 (100 nF on U4's VBUS, the ESD clamp rail): a via on the B.Cu +5V run, right of U4's pads
+    via("+5V", 33.6, 66.9)
+    t("+5V", (33.6, 66.9), (34.625, 66.9), w=0.3)
 
     # U4 pins 3/1 → north at x 31.05 / 31.45 → U5 (MUX_PC, rot 0) D+/D− (pins 3/4 at y 27.5/28.0, x 32.5)
     bumps = []
@@ -134,10 +140,10 @@ def usb_hs_routes():
     # DP through 3/4 at y 24.95) → J4 (DUT port) A7/A6
     t("DUT_DN", (46.6, 24.0), (47.7, 24.0), (48.65, 23.05), (50.16, 23.05))
     t("DUT_DP", (46.6, 24.5), (48.0, 24.5), (48.45, 24.95), (50.16, 24.95))
-    t("DUT_CONN_DN", (52.44, 23.05), (54.35, 23.05), (55.05, 23.75), (56.35, 23.75))
-    t("DUT_CONN_DP", (52.44, 24.95), (54.1, 24.95), (54.8, 24.25), (56.35, 24.25))
-    t("DUT_CONN_DP", (56.35, 23.25), (57.45, 23.25), (57.45, 24.25), (56.35, 24.25))    # B6 → A6
-    t("DUT_CONN_DN", (56.35, 24.75), (55.05, 24.78))                                    # B7 → A7
+    t("DUT_CONN_DN", (52.44, 23.05), (54.35, 23.05), (55.05, 23.75), (56.72, 23.75))
+    t("DUT_CONN_DP", (52.44, 24.95), (54.1, 24.95), (54.8, 24.25), (56.72, 24.25))
+    t("DUT_CONN_DP", (56.72, 23.25), (57.67, 23.25), (57.67, 24.25), (56.72, 24.25))    # B6 → A6
+    t("DUT_CONN_DN", (56.72, 24.75), (55.05, 24.78))                                    # B7 → A7
     t("DUT_CONN_DN", (55.05, 24.78), (54.95, 23.65), layer="B.Cu")
     via("DUT_CONN_DN", 55.05, 24.78)
     via("DUT_CONN_DN", 54.95, 23.65)
@@ -148,43 +154,45 @@ def usb_hs_routes():
     t("+5V", (52.44, 24.0), (53.6, 24.0))                                               # U8 VBUS
     via("+5V", 53.6, 24.0)
     # J4's CC1 pin sits below the pair: out to the west, down to R14
-    t("DUT_CC1", (56.35, 25.3), (54.95, 25.3), (54.3, 25.95), (54.3, 27.58), w=0.2)
+    t("DUT_CC1", (56.72, 25.3), (54.95, 25.3), (54.3, 25.95), (54.3, 27.58), w=0.2)
     # J4's two VBUS pads sit behind the pair: a via each, DUT_5V joins them on B.Cu; R14 up to the via
-    t("DUT_5V", (56.35, 26.45), (55.2, 26.45), w=0.6)
-    via("DUT_5V", 55.2, 26.45, 0.8, 0.4)
-    t("DUT_5V", (56.35, 21.55), (55.2, 21.55), w=0.6)
-    via("DUT_5V", 55.2, 21.55, 0.8, 0.4)
-    t("DUT_5V", (55.2, 26.45), (56.0, 25.65), (56.0, 22.35), (55.2, 21.55), layer="B.Cu", w=0.6)
-    t("DUT_5V", (54.3, 29.22), (55.2, 28.32), (55.2, 26.45), w=0.3)
+    t("DUT_5V", (56.72, 26.4), (55.2, 26.4), w=0.6)
+    via("DUT_5V", 55.2, 26.4, 0.8, 0.4)
+    t("DUT_5V", (56.72, 21.6), (55.2, 21.6), w=0.6)
+    via("DUT_5V", 55.2, 21.6, 0.8, 0.4)
+    t("DUT_5V", (55.2, 26.4), (56.0, 25.6), (56.0, 22.4), (55.2, 21.6), layer="B.Cu", w=0.6)
+    t("DUT_5V", (54.3, 29.22), (55.2, 28.32), (55.2, 26.4), w=0.3)
     return tracks, vias
 
 
 def board() -> Board:
-    b = Board("bay-node", "Bay node", "0.4",
+    b = Board("bay-node", "Bay node", "0.5",
               comments=["ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf",
                         "Generated from electronics/bay-node/design.py — edit the Python, then regenerate",
-                        "24 V in · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX UART/RST/BOOT"])
+                        "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX"])
     b.root_notes = [
         "Bay node — one per bay.  Sheets:",
-        "  Power: 24 V bus (JST PH daisy chain), reverse protection, LMR51635 buck to 5 V, AMS1117 3.3 V",
+        "  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51635 buck, AMS1117",
         "  MCU: ESP32-S3-MINI-1, reset/boot, status LED, UART pads",
         "  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)",
         "  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V",
+        "  Rack bus: TCAN1044AV CAN transceiver on the row pair, POS token in/out (docs/can.md)",
         "",
         "Mode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)",
         "                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX",
         "                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected",
         "GPIO firmware can also force classic mode (MUX_FORCE_PC).",
     ]
-    # the 24 V daisy chain on In2: J1 pin 1 → J2 pin 1 through both connectors' through-holes, with a
-    # bump under Q1 where two vias at the edge of its drain tab drop into it
-    bus = [(0.5, PWR_Y - 3.2), (13.0, PWR_Y - 3.2), (13.0, 57.4), (17.0, 57.4), (17.0, PWR_Y - 3.2),
-           (63.5, PWR_Y - 3.2), (63.5, PWR_Y + 2.6), (0.5, PWR_Y + 2.6)]
+    # the row bus on In2: J1 pin 1 (left edge, rear end of the 6-pin connector, y = PWR_Y - 5) to J2 pin 1
+    # (right edge, front end, y = PWR_Y + 5): a strip across the board above the connectors' other pins,
+    # then down the right edge under J2's housing.  3.8 mm wide (≈ 1.9 A in 0.5 oz for 10 °C)
+    bus = [(0.5, PWR_Y - 7.2), (63.5, PWR_Y - 7.2), (63.5, PWR_Y + 6.4), (58.2, PWR_Y + 6.4), (58.2, PWR_Y - 3.4),
+           (0.5, PWR_Y - 3.4)]
     hs_tracks, hs_vias = usb_hs_routes()
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
         # 4 layers: signals + GND / GND only / power only / signals + GND.  In1 is a solid GND plane;
-        # In2 carries power planes and nothing else (+3V3, +5V, the 24 V bus strip): no signal is
+        # In2 carries power planes and nothing else (+3V3, +5V, the VRACK bus strip): no signal is
         # routed on it.  Every GND and supply pin gets its own via to its plane before routing
         # ("fanout_nets"), so none depends on the outer GND pours, which stay as a bonus, tied to
         # In1 by stitching vias.  Every pour connects pads through thermal reliefs (pcbgen.py).
@@ -193,6 +201,12 @@ def board() -> Board:
         # the ESP32 module's LGA pads and the USB-C receptacles
         "stackup": "JLC04161H-7628", "finish": "ENIG",
         "edge_parts": ["J*", "U3"],
+        # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
+        "dru": "".join(f"""
+(rule "USB4105 {r}: GND pads beside its own pegs"
+	(condition "A.memberOfFootprint('{r}') && B.memberOfFootprint('{r}')")
+	(constraint hole_clearance (min 0.19mm)))
+""" for r in ("J3", "J4")),
         "defer_pours": False,
         # net: (plane, via Ø, drill, track width)
         "fanout_nets": {"GND": ("In1.Cu", 0.5, 0.3, 0.25), "+3V3": ("In2.Cu", 0.6, 0.3, 0.25),
@@ -206,33 +220,35 @@ def board() -> Board:
             {"layer": "B.Cu", "net": "GND"},
             # In2 areas with exact outlines that don't overlap (the router takes each outline as copper
             # of its net).  +3V3 under the module, the LDO and the logic around it (mux cluster, INA226);
-            # +5V from the buck to the LDO input, the DUT switch, the camera fuse and U8; the 24 V strip
+            # +5V from the buck to the LDO input, the DUT switch, the camera fuse and U8; the VRACK strip
             # between J1 and J2; +3V3 again under the front edge (LED, SERVICE switch)
             {"layer": "In2.Cu", "net": "+3V3", "priority": 1,
              "poly": [(0.4, 0.4), (51.85, 0.4), (51.85, 20.0), (47.85, 20.0), (47.85, 34.0), (22.0, 34.0),
                       (22.0, 24.0), (0.4, 24.0)]},
             {"layer": "In2.Cu", "net": "+5V", "priority": 1,
-             "poly": [(52.15, 0.4), (63.6, 0.4), (63.6, PWR_Y - 3.5), (17.3, PWR_Y - 3.5), (17.3, 57.1),
-                      (12.7, 57.1), (12.7, PWR_Y - 3.5), (0.4, PWR_Y - 3.5), (0.4, 24.3), (22.3, 24.3),
+             "poly": [(52.15, 0.4), (63.6, 0.4), (63.6, PWR_Y - 7.5), (0.4, PWR_Y - 7.5), (0.4, 24.3), (22.3, 24.3),
                       (22.3, 34.3), (48.15, 34.3), (48.15, 20.3), (52.15, 20.3)]},
             {"layer": "In2.Cu", "net": "+3V3", "priority": 1,
-             "poly": [(0.4, PWR_Y + 2.9), (63.6, PWR_Y + 2.9), (63.6, 79.6), (0.4, 79.6)]},
-            {"layer": "In2.Cu", "net": "24V_BUS", "priority": 3, "poly": bus},
+             "poly": [(0.4, PWR_Y - 3.1), (57.9, PWR_Y - 3.1), (57.9, PWR_Y + 6.7), (63.6, PWR_Y + 6.7), (63.6, 79.6),
+                      (0.4, 79.6)]},
+            {"layer": "In2.Cu", "net": "VRACK", "priority": 3, "poly": bus},
             # buck hot loop (TI SLUSF64B §8.4): top-side islands joining CIN, U1 and COUT
             {"layer": "F.Cu", "net": "GND", "connection": "solid", "name": "buck-gnd", "priority": 3,
              "poly": [(8.05, 34.5), (10.1, 34.5), (10.1, 36.2), (11.9, 36.2), (11.9, 40.3), (20.6, 40.3), (20.6, 44.4),
                       (8.05, 44.4)]},
             {"layer": "F.Cu", "net": "+5V", "connection": "solid", "name": "buck-5v", "priority": 3,
              "poly": [(12.8, 38.1), (17.3, 38.1), (17.3, 30.6), (21.0, 30.6), (21.0, 39.9), (12.8, 39.9)]},
-            {"layer": "F.Cu", "net": "+24V", "connection": "solid", "name": "buck-vin", "priority": 3,
+            {"layer": "F.Cu", "net": "VIN", "connection": "solid", "name": "buck-vin", "priority": 3,
              "poly": [(5.6, 34.5), (7.8, 34.5), (7.8, 42.7), (5.6, 42.7)]},
-            # J1/J2 (SMD): the whole row's 24 V and its return pass through these pins (up to the hub's
-            # 2.2 A eFuse limit), so each pin sits on a solid island with four vias to its plane
-            *[{"layer": "F.Cu", "net": n, "connection": "solid", "name": nm, "priority": 3, "poly": pl}
-              for n, nm, pl in (("24V_BUS", "j1-bus", [(5.8, 60.5), (11.3, 60.5), (11.3, 62.75), (5.8, 62.75)]),
-                                ("GND", "j1-gnd", [(5.8, 63.25), (11.3, 63.25), (11.3, 65.5), (5.8, 65.5)]),
-                                ("24V_BUS", "j2-bus", [(52.7, 63.25), (58.2, 63.25), (58.2, 65.5), (52.7, 65.5)]),
-                                ("GND", "j2-gnd", [(52.7, 60.5), (58.2, 60.5), (58.2, 62.75), (52.7, 62.75)]))],
+            # J1/J2 (6-pin SMD, docs/can.md): the whole row's supply and its return pass through pins 1 and
+            # 2/5 (up to the hub's 1.6 A eFuse limit), so each of them sits on a solid island with two vias
+            # to its plane.  Pins 3/4 (CAN) and 6 (POS) are ordinary signals.
+            *[{"layer": "F.Cu", "net": n, "connection": "solid", "name": nm, "priority": 3,
+               "poly": [(x0, y - 0.7), (x1, y - 0.7), (x1, y + 0.7), (x0, y + 0.7)]}
+              for n, nm, x0, x1, y in (("VRACK", "j1-bus", 5.8, 11.0, PWR_Y - 5), ("GND", "j1-gnd2", 5.8, 11.0, PWR_Y - 3),
+                                       ("GND", "j1-gnd5", 5.8, 11.6, PWR_Y + 3),
+                                       ("VRACK", "j2-bus", 54.3, 61.0, PWR_Y + 5), ("GND", "j2-gnd2", 52.7, 58.2, PWR_Y + 3),
+                                       ("GND", "j2-gnd5", 52.7, 58.2, PWR_Y - 3))],
             # under the ESP32 module (Espressif's layout guide): its centre pads and GND pins on one
             # top-side island, stitched to In1 around the centre pads
             {"layer": "F.Cu", "net": "GND", "name": "esp-gnd", "priority": 3,
@@ -247,20 +263,19 @@ def board() -> Board:
                  *[("GND", x, 8.6) for x in (28, 30, 32, 34, 36)],
                  *[("GND", x, y) for x in (28.6, 35.4) for y in (12.2, 14.2)],
                  ("GND", 30.35, 16.0), ("GND", 33.65, 16.0),
-                 ("24V_BUS", 14.0, 58.1), ("24V_BUS", 16.0, 58.1),
-                 *[(n, x, y) for n, ys in (("24V_BUS", (61.0, 61.9)), ("GND", (64.1, 64.9))) for y in ys
-                   for x in (10.0, 10.8)],
-                 *[(n, x, y) for n, ys in (("24V_BUS", (64.0, 64.9)), ("GND", (61.1, 61.9))) for y in ys
-                   for x in (53.2, 54.0)],
+                 ("VRACK", 14.0, 58.1), ("VRACK", 16.0, 58.1),
+                 *[(n, x, PWR_Y + dy) for n, dy in (("VRACK", -5), ("GND", -3), ("GND", 3)) for x in (10.05, 10.75)],
+                 *[(n, x, PWR_Y + dy) for n, dy in (("GND", -3), ("GND", 3)) for x in (53.2, 53.9)],
+                 *[("VRACK", x, PWR_Y + 5) for x in (59.3, 60.1)],
                  # buck output island down to the +5V area, LDO tab down to the +3V3 area
                  *[("+5V", x, y) for x, y in ((17.9, 31.2), (20.4, 31.2), (20.5, 35.0), (20.5, 37.2))],
                  *[("+3V3", x, y) for x, y in ((9.2, 16.8), (10.6, 16.8), (12.0, 16.8), (13.4, 16.8),
                                                (14.8, 16.8), (15.2, 18.4), (9.0, 19.8), (9.0, 21.5))],
-                 ("+3V3", 46.4, 33.0), ("+3V3", 46.4, 67.0),
+                 ("+3V3", 46.4, 33.0), ("+3V3", 46.4, PWR_Y - 1.5),
                  *hs_vias],
-        # the front +3V3 area of In2 (LED, SERVICE switch) is cut off by the 24 V strip: fed from the
+        # the front +3V3 area of In2 (LED, SERVICE switch) is cut off by the VRACK strip: fed from the
         # main +3V3 area by a B.Cu track
-        "tracks": [*hs_tracks, ("+3V3", "B.Cu", 0.4, [(46.4, 33.0), (46.4, 67.0)]),
+        "tracks": [*hs_tracks, ("+3V3", "B.Cu", 0.4, [(46.4, 33.0), (46.4, PWR_Y - 1.5)]),
                    # INA226 Vbus (pin 8, between the sense and GND pins) to C21's DUT_5V end
                    ("DUT_5V", "F.Cu", 0.25, [(49.85, 15.9), (51.0, 15.9), (51.78, 16.68), (51.78, 17.4)])],
         # ESP32 antenna: no copper on any layer under/around the antenna (module top 5 mm + edge)
@@ -268,11 +283,11 @@ def board() -> Board:
             {"name": "antenna", "poly": [(9.3, -0.1), (54.7, -0.1), (54.7, 5.4), (9.3, 5.4)]},
         ],
         "texts": [
-            {"text": "hw-testing-rack · bay node v0.4", "x": 42, "y": 51, "size": 0.8},
+            {"text": "hw-testing-rack · bay node v0.5", "x": 42, "y": 51, "size": 0.8},
             {"text": "PC", "x": 37.0, "y": 70.2, "size": 0.9},
             {"text": "SVC", "x": 50, "y": 73.6, "size": 0.8},
-            {"text": "24V IN", "x": 5.5, "y": PWR_Y - 5.0, "size": 0.8},
-            {"text": "24V OUT", "x": 58.0, "y": PWR_Y - 5.0, "size": 0.8},
+            {"text": "ROW IN", "x": 5.2, "y": PWR_Y + 9.6, "size": 0.8},
+            {"text": "ROW OUT", "x": 58.4, "y": PWR_Y - 10.4, "size": 0.8},
             {"text": "DUT", "x": 60.0, "y": 30.9, "size": 0.8},
             {"text": "AUX", "x": 61.0, "y": 49.6, "size": 0.8},
             {"text": "CAM", "x": 58.0, "y": 6.2, "size": 0.8},
@@ -282,50 +297,58 @@ def board() -> Board:
     }
 
     # ------------------------------------------------------------------ power
-    s = b.sheet("Power", "power.kicad_sch", "24 V input, 5 V buck, 3.3 V LDO")
-    s.frame("24 V bus in / out (daisy chain, JST PH) and input protection", 6, 6, 52, 27)
-    part(s, "J1", "ph2", {"1": "24V_BUS", "2": "GND"}, "24V IN", pcb=P(PH_EDGE, PWR_Y, 270),
-         sch=at(10, 12, mirror="y", fields="left"))
-    part(s, "J2", "ph2", {"1": "24V_BUS", "2": "GND"}, "24V OUT", pcb=P(W - PH_EDGE, PWR_Y, 90),
-         sch=at(10, 20, mirror="y", fields="left"))
-    s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "24V_BUS"}, in_bom=False, on_board=False, sch=at(21, 12, fields=(-3.8, -2.6)))
-    s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(16, 21, fields=(0.6, -2.6)))
-    s.part("#FLG03", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+24V"}, in_bom=False, on_board=False, sch=at(45, 12, fields=(-3.8, -2.6)))
+    s = b.sheet("Power", "power.kicad_sch", "VRACK input (20–28 V), 5 V buck, 3.3 V LDO")
+    s.frame("Row cable in / out (JST PH 6, daisy chain: bus, GND, CAN_H, CAN_L, GND, POS) and input protection",
+            6, 6, 52, 30)
+    # J1 on the left edge (pin 1 towards the rear), J2 on the right edge (pin 1 towards the front): with a 1:1
+    # cable J2 of one bay faces J1 of the next (docs/can.md).  CAN_H/CAN_L pass straight through, POS is cut
+    # here: J1.6 is this node's token input, J2.6 its output (Rack bus sheet)
+    for ref, val, y, rot, x, pos in (("J1", "ROW IN", 14, 270, PH_EDGE, "POS_IN_CONN"),
+                                     ("J2", "ROW OUT", 24, 90, W - PH_EDGE, "POS_OUT_CONN")):
+        part(s, ref, "ph6", {"1": "VRACK", "2": "GND", "3": "CAN_H", "4": "CAN_L", "5": "GND", "6": pos}, val,
+             pcb=P(x, PWR_Y, rot), sch=at(10, y, mirror="y", fields="left"))
+        for pin, dy in (("2", -1), ("5", 2)):
+            s.wire(f"{ref}.{pin}", (13, y + dy))
+            s.tag("GND", (13, y + dy), "right")
+        for pin, dy, net in (("3", 0, "CAN_H"), ("4", 1, "CAN_L"), ("6", 3, pos)):
+            s.wire(f"{ref}.{pin}", (13, y + dy))
+            s.tag(net, (13, y + dy), "right")
+    s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "VRACK"}, in_bom=False, on_board=False, sch=at(21, 12, fields=(-3.8, -2.6)))
+    s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(30, 24, fields=(0.6, -2.6)))
+    s.part("#FLG03", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "VIN"}, in_bom=False, on_board=False, sch=at(45, 12, fields=(-3.8, -2.6)))
     s.part("#FLG04", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False, sch=at(77, 46, fields=(-3.8, -2.6)))
-    part(s, "Q1", "pfet", {"G": "Q1_GATE", "D": "24V_BUS", "S": "+24V"}, pcb=P(15, 56, 90),
-         sch=at(24, 13, rot=90, fields=(-6.5, 3)))
-    part(s, "D1", "zener12", {"K": "+24V", "A": "Q1_GATE"}, pcb=P(15, 64.5, 180), sch=at(29, 16.5, rot=270))
+    part(s, "Q1", "pfet", {"G": "Q1_GATE", "D": "VRACK", "S": "VIN"}, pcb=P(15, 56, 90),
+         sch=at(24, 13, rot=90, fields=(3.5, -3.8)))
+    part(s, "D1", "zener12", {"K": "VIN", "A": "Q1_GATE"}, pcb=P(15, 64.5, 180), sch=at(29, 16.5, rot=270))
     R(s, "R1", "100k", "Q1_GATE", "GND", pcb=P(15, 67.3, 0), sch=at(24, 20.5))
-    part(s, "D2", "tvs33", {"K": "+24V", "A": "GND"}, pcb=P(22, 58, 90), sch=at(35, 16.5, rot=270))
-    part(s, "C1", "cap100u50", {"1": "+24V", "2": "GND"}, "100u/50V", pcb=P(6, 49, 90), sch=at(41, 16.5))
-    s.wire("J1.1", (16, 12), "Q1.D")
-    s.wire("J2.1", (16, 20), (16, 12))
-    s.wire("J1.2", (14, 13))
-    s.tag("GND", (14, 13), "down")
-    s.wire("J2.2", (16, 21))
-    s.tag("GND", (14, 21), "down")
+    part(s, "D2", "tvs33", {"K": "VIN", "A": "GND"}, pcb=P(22, 58, 90), sch=at(35, 16.5, rot=270))
+    part(s, "C1", "cap100u50", {"1": "VIN", "2": "GND"}, "100u/50V", pcb=P(6, 48.4, 90), sch=at(41, 16.5))
+    s.wire("J1.1", (19, 12), "Q1.D")
+    s.wire("J2.1", (19, 22), (19, 12))
+    s.wire("#FLG02.1", (30, 25))
+    s.tag("GND", (30, 25), "down")
     s.wire("Q1.G", "R1.1")
     s.wire((24, 18), "D1.A")
     s.wire((29, 12), "D1.K")
     s.wire((35, 12), "D2.K")
     s.wire((41, 12), "C1.1")
     s.wire("Q1.S", (48, 12))
-    s.tag("+24V", (48, 12), "up")
+    s.tag("VIN", (48, 12), "up")
 
     s.frame("5 V buck: LMR51635, synchronous, 1.1 MHz, 3.5 A (TI SLUSF64B typical application)", 6, 32, 84, 60)
-    s.tag("+24V", (12, 38), "up")
+    s.tag("VIN", (12, 38), "up")
     s.wire((12, 38), (35, 38), (35, 45), "U1.VIN")
-    C(s, "C2", "10u", "+24V", "GND", size="1206", pcb=P(8, 38.8, 0), sch=at(16, 41.5))
-    C(s, "C3", "10u", "+24V", "GND", size="1206", pcb=P(8, 41.4, 0), sch=at(20, 41.5))
-    C(s, "C4", "100n", "+24V", "GND", pcb=P(8, 36.6, 0), sch=at(24, 41.5))
+    C(s, "C2", "10u", "VIN", "GND", size="1206", pcb=P(8, 38.8, 0), sch=at(16, 41.5))
+    C(s, "C3", "10u", "VIN", "GND", size="1206", pcb=P(8, 41.4, 0), sch=at(20, 41.5))
+    C(s, "C4", "100n", "VIN", "GND", pcb=P(8, 36.6, 0), sch=at(24, 41.5))
     for c_, x in (("C2", 16), ("C3", 20), ("C4", 24)):
         s.wire((x, 38), f"{c_}.1")
-    R(s, "R2", "1M", "+24V", "BUCK_EN", pcb=P(4.78, 36.3, 90), sch=at(29, 41.5))
+    R(s, "R2", "1M", "VIN", "BUCK_EN", pcb=P(4.78, 36.3, 90), sch=at(29, 41.5))
     R(s, "R3", "100k", "BUCK_EN", "GND", pcb=P(4, 34.0, 180), sch=at(29, 48.5))
     s.wire((29, 38), "R2.1")
     s.wire("R2.2", "R3.1")
     s.wire((29, 44), (33, 44), (33, 47), "U1.EN")
-    part(s, "U1", "buck", {"VIN": "+24V", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
+    part(s, "U1", "buck", {"VIN": "VIN", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
                            "GND": "GND"}, pcb=P(8, 34, 0), sch=at(40, 46, fields=(-4, -4)))
     C(s, "C5", "100n", "BUCK_CB", "BUCK_SW", pcb=P(9.6, 31.5, 0), sch=at(51.5, 41, rot=90))
     s.wire("U1.CB", (46, 45), (46, 41), "C5.1")
@@ -359,6 +382,8 @@ def board() -> Board:
     s.note("Layout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island")
     s.note("  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.")
     s.note("Input: SUD50P06 P-FET (reverse polarity, Vgs clamped by the 12 V zener); SMBJ33A clamps hot-plug ringing below 54 V (U1: 63 V abs max).")
+    s.note("VRACK is 20 V, or 28 V (EPR), from the hub's USB-C PD supply: SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the buck runs")
+    s.note("  4.3–60 V and starts above 13.5 V, the P-FET and the zener clamp are rated 60 V / 12 V.  At 20 V a row draws more current: ≤ 1.6 A.")
 
     # ------------------------------------------------------------------ MCU
     m = b.sheet("MCU", "mcu.kicad_sch", "ESP32-S3 module")
@@ -395,6 +420,9 @@ def board() -> Board:
         "IO41": "DUT_EN", "IO40": "DUT_FLT_N", "IO39": "INA_ALERT_N", "IO38": "I2C_SDA", "IO37": "I2C_SCL",
         "IO48": "AUX_BOOT_CTL", "IO34": "AUX_RST_CTL", "IO33": "AUX_RX", "IO47": "AUX_TX",
         "IO12": "LED_DIN", "IO13": "PC_DET", "IO14": "MUX_FORCE_PC", "IO15": "SVC",
+        # bottom row, left of the USB pins → the rack bus block under the module (POS_OUT from the right
+        # column, towards J2)
+        "IO16": "POS_IN", "IO17": "CAN_RXD", "IO18": "CAN_TXD", "IO35": "POS_OUT",
         "TXD0": "U0TX", "RXD0": "U0RX",
     }, pcb=P(32, 10.5, 0), sch=at(80, 38, fields=(-14, -14)))
     C(m, "C13", "22u", "+3V3", "GND", size="1206", pcb=P(21, 9, 90), sch=at(96, 23.5))
@@ -414,13 +442,14 @@ def board() -> Board:
     m.tag("+3V3", (31, 52), "up")
     m.notes_at = (6, 70, 106)
     m.note("GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO38/37 I2C SDA/SCL · IO47/33 UART1 TX/RX (AUX) ·")
-    m.note("IO34 AUX_RST · IO48 AUX_BOOT · IO12 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG).")
+    m.note("IO34 AUX_RST · IO48 AUX_BOOT · IO12 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·")
+    m.note("IO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO35 POS_OUT.")
     m.note("Strapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY).")
 
     # ------------------------------------------------------------------ USB
     u = b.sheet("USB", "usb.kicad_sch", "USB ports and data-path muxes")
     u.frame("Front PC port: USB-C sink (Rd 5.1k on CC), VBUS only sensed", 6, 6, 56, 52)
-    part(u, "J3", "usbc", {"VBUS": "PC_VBUS", "GND": "GND", "CC1": "PC_CC1", "CC2": "PC_CC2", "D+": "PC_CONN_DP",
+    part(u, "J3", "usbc5a", {"VBUS": "PC_VBUS", "GND": "GND", "CC1": "PC_CC1", "CC2": "PC_CC2", "D+": "PC_CONN_DP",
                            "D-": "PC_CONN_DN", "SBU1": None, "SBU2": None, "SHIELD": "GND"}, "PC", pcb=P(32, 76.6, 0),
          sch=at(14, 28, fields=(-4, -9)))
     u.wire("J3.A7", (22, 27), (22, 28), "J3.B7")
@@ -431,6 +460,8 @@ def board() -> Board:
          pcb=P(32.0, 67.0, 270), sch=at(33, 28, mirror="y", fields=(1.5, 3.5)))
     u.wire((22, 28), "U4.6")
     u.wire((23, 29), "U4.4")
+    # the USBLC6 clamps to its VBUS pin: a local 100 nF keeps that rail stiff during a discharge
+    C(u, "C25", "100n", "+5V", "GND", pcb=P(35.4, 66.9, 0), sch=at(48, 30))
     R(u, "R11", "10k", "PC_VBUS", "PC_DET", pcb=P(27.0, 69.0, 90), sch=at(37.5, 22, rot=90))
     R(u, "R12", "20k", "PC_DET", "GND", pcb=P(27.0, 66.0, 90), sch=at(42, 23.5))
     u.wire("J3.VBUS", "R11.1")
@@ -459,7 +490,7 @@ def board() -> Board:
     u.tag("+3V3", (104, 16), "up")
 
     u.frame("DUT port: USB-C source (Rp 22k → 1.5 A); DUT_5V comes switched from the DUT power sheet", 106, 40, 160, 72)
-    part(u, "J4", "usbc", {"VBUS": "DUT_5V", "GND": "GND", "CC1": "DUT_CC1", "CC2": "DUT_CC2", "D+": "DUT_CONN_DP",
+    part(u, "J4", "usbc5a", {"VBUS": "DUT_5V", "GND": "GND", "CC1": "DUT_CC1", "CC2": "DUT_CC2", "D+": "DUT_CONN_DP",
                            "D-": "DUT_CONN_DN", "SBU1": None, "SBU2": None, "SHIELD": "GND"}, "DUT",
          pcb=P(60.4, CFG["right"]["dut"], 90), sch=at(150, 58, mirror="y", fields=(1, -9)))
     u.wire("J4.A7", (142, 57), (142, 58), "J4.B7")
@@ -468,6 +499,7 @@ def board() -> Board:
                           "2": "GND"}, pcb=P(51.3, 24.0, 0), sch=at(134, 58, fields=(1.5, 3.5)))
     u.wire("U8.6", (142, 58))
     u.wire("U8.4", (141, 59))
+    C(u, "C26", "100n", "+5V", "GND", pcb=P(51.6, 26.9, 0), sch=at(124, 64))       # U8's VBUS, via In2 +5V
     R(u, "R14", "22k", "DUT_5V", "DUT_CC1", pcb=P(54.3, 28.4, 90), sch=at(117.5, 50, rot=90))
     R(u, "R15", "22k", "DUT_5V", "DUT_CC2", pcb=P(54.2, 21.5, 270), sch=at(117.5, 53, rot=90))
     u.wire((112, 50), "R14.1")
@@ -591,6 +623,62 @@ def board() -> Board:
     d.note("  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads) and DUT_5V on Vbus.")
     d.note("AUX: TX/RX through 1k, VREF = +3V3 through 10 Ω (level hint),")
     d.note("  RESET/BOOT open-drain (2N7002, 100k gate pull-downs).")
+
+    # ------------------------------------------------------------------ rack bus: CAN + POS (docs/can.md)
+    k = b.sheet("Rack bus", "bus.kicad_sch", "Rack bus: CAN transceiver and POS addressing token")
+    k.frame("CAN: TCAN1044AV on the row pair (J1.3/4 ↔ J2.3/4, Power sheet); stub ≤ 20 mm, no termination", 6, 6, 70, 32)
+    # straddles the In2 VRACK strip: VCC (+5V) and the TXD/RXD pins on the rear side, VIO (+3V3), CANH/CANL and
+    # STB on the front side, right above the pair
+    part(k, "U11", "can_xcvr", {"TXD": "CAN_TXD", "VSS": "GND", "VDD": "+5V", "RXD": "CAN_RXD", "Vio": "+3V3",
+                                "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "GND"}, "TCAN1044AV",
+         pcb=P(27.5, PWR_Y - 5.0, 270), sch=at(36, 18, fields=(-4, -5.5)))
+    k.wire("U11.TXD", (24, 16))
+    k.tag("CAN_TXD", (24, 16), "left")
+    k.wire("U11.RXD", (24, 17))
+    k.tag("CAN_RXD", (24, 17), "left")
+    C(k, "C24", "100n", "+3V3", "GND", pcb=P(24.7, PWR_Y + 0.9, 0), sch=at(27, 23.5))
+    k.wire("U11.Vio", (27, 19), "C24.1")
+    k.tag("+3V3", (27, 19), "left")
+    k.wire("U11.STBY", (30, 20))
+    k.tag("GND", (30, 20), "down")
+    C(k, "C23", "100n", "+5V", "GND", pcb=P(24.0, PWR_Y - 10.4, 0), sch=at(46, 11.5))
+    k.wire("U11.VDD", (36, 10), "C23.1")
+    k.tag("+5V", (36, 10), "up")
+    k.wire("U11.CANH", (52, 17))
+    k.tag("CAN_H", (52, 17), "right")
+    k.wire("U11.CANL", (52, 19))
+    k.tag("CAN_L", (52, 19), "right")
+    part(k, "D5", "can_esd", {"1": "CAN_H", "2": "CAN_L", "3": "GND"}, "PESD2CAN", pcb=P(21.0, PWR_Y + 1.5, 0),
+         sch=at(62, 22))
+    k.text("STB low: always in normal mode (TXD dominant time-out guards the bus).", 8, 29, 1.27)
+
+    k.frame("POS token: in from J1.6, out to J2.6; 10k series + BAT54S clamp on each (VRACK on pin 6 costs ≈ 2.5 mA at 28 V)",
+            6, 36, 70, 66)
+    R(k, "R28", "10k", "POS_IN_CONN", "POS_IN", pcb=P(11.7, PWR_Y + 5.6, 0), sch=at(20, 42, rot=90))
+    k.wire((14, 42), "R28.1")
+    k.tag("POS_IN_CONN", (14, 42), "left")
+    k.wire("R28.2", (40, 42))
+    k.tag("POS_IN", (40, 42), "right")
+    part(k, "D6", "bat54s", {"A": "GND", "K": "+3V3", "COM": "POS_IN"}, pcb=P(15.4, PWR_Y + 7.4, 0),
+         sch=at(28, 46, rot=180))
+    k.wire("D6.COM", (28, 42))
+    R(k, "R29", "100k", "POS_IN", "GND", pcb=P(19.0, PWR_Y + 7.4, 90), sch=at(35, 44.5))
+    k.wire("R29.1", (35, 42))
+    R(k, "R30", "10k", "POS_OUT", "POS_OUT_CONN", pcb=P(51.8, PWR_Y - 5.0, 0), sch=at(30, 56, rot=90))
+    k.wire((14, 56), "R30.1")
+    k.tag("POS_OUT", (14, 56), "left")
+    k.wire("R30.2", (40, 56))
+    k.tag("POS_OUT_CONN", (40, 56), "right")
+    # the output clamp sits by the module (In2 +3V3 there); electrically anywhere on POS_OUT
+    part(k, "D7", "bat54s", {"A": "GND", "K": "+3V3", "COM": "POS_OUT"}, pcb=P(42.5, 13.0, 0),
+         sch=at(22, 60, rot=180))
+    k.wire("D7.COM", (22, 56))
+    k.notes_at = (6, 70, 64)
+    k.note("CAN (docs/can.md): one bus for the rack, a star from the hub; both terminations sit in the hub.")
+    k.note("  250 kbit/s (125 kbit/s fallback).  TCAN1044AV: VCC 5 V, VIO 3.3 V, bus pins ±58 V, passive unpowered.")
+    k.note("POS: active-high 3.3 V token.  From reset the node holds POS_OUT low; when POS_IN goes high and it has")
+    k.note("  no address yet, it answers with its MAC, takes (row, position) from the hub, then raises POS_OUT.")
+    k.note("  R29 keeps POS_IN low with no cable; the next node's 100k keeps POS_OUT low before firmware.")
     return b
 
 
@@ -598,7 +686,7 @@ NETCLASSES = [
     {"name": "Power", "clearance": 0.15, "track_width": 0.6, "via_diameter": 0.8, "via_drill": 0.4,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
-     "_patterns": ["*24V_BUS", "+24V", "+5V", "*DUT_5V_SW", "*DUT_5V", "*BUCK_SW", "*CAM_5V"]},
+     "_patterns": ["*VRACK", "*VIN", "+5V", "*DUT_5V_SW", "*DUT_5V", "*BUCK_SW", "*CAM_5V"]},
     {"name": "USB", "clearance": 0.15, "track_width": 0.2, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.25, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,

@@ -40,19 +40,19 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "100n — Capacitor 100n 0603",
-"ref": "C4,C5,C14,C16,C17,C18,C19,C20,C22",
+"ref": "C4,C5,C14,C16,C17,C18,C19,C20,C22,C23,C24,C25,C26",
 "mpn": "CC0603KRX7R9BB104",
 "manufacturer": "YAGEO",
 "supplier": "LCSC/JLCPCB",
 "part": "C14663",
-"qty": 144,
+"qty": 208,
 "unit_eur": 0.0124,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "9 per board × 16 boards",
+"notes": "13 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 1.79
+"ext_eur": 2.58
 },
 {
 "category": "Electronics",
@@ -165,6 +165,42 @@
 {
 "category": "Electronics",
 "group": "bay-node",
+"item": "PESD2CAN — CAN bus ESD protection, 24 V stand-off",
+"ref": "D5",
+"mpn": "PESD2CAN,215",
+"manufacturer": "Nexperia",
+"supplier": "LCSC/JLCPCB",
+"part": "C75176",
+"qty": 16,
+"unit_eur": 0.0718,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 16 boards",
+"unit": "pcs",
+"ext_eur": 1.15
+},
+{
+"category": "Electronics",
+"group": "bay-node",
+"item": "BAT54S — dual Schottky in series: clamps a line to GND and +3V3",
+"ref": "D6,D7",
+"mpn": "BAT54S",
+"manufacturer": "hongjiacheng",
+"supplier": "LCSC/JLCPCB",
+"part": "C7420333",
+"qty": 32,
+"unit_eur": 0.012,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "2 per board × 16 boards",
+"unit": "pcs",
+"ext_eur": 0.38
+},
+{
+"category": "Electronics",
+"group": "bay-node",
 "item": "0.5A — PTC 0.5 A hold, 1206",
 "ref": "F1",
 "mpn": "SMD1206P050TF",
@@ -183,74 +219,74 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "24V IN — JST PH 2-pin, side entry, SMD, 2 A",
+"item": "ROW IN — JST PH 6-pin, side entry, SMD",
 "ref": "J1",
-"mpn": "S2B-PH-SM4-TB(LF)(SN)",
+"mpn": "S6B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
-"part": "C295747",
+"part": "C265405",
 "qty": 16,
-"unit_eur": 0.2024,
+"unit_eur": 0.3588,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 3.24
+"ext_eur": 5.74
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "24V OUT — JST PH 2-pin, side entry, SMD, 2 A",
+"item": "ROW OUT — JST PH 6-pin, side entry, SMD",
 "ref": "J2",
-"mpn": "S2B-PH-SM4-TB(LF)(SN)",
+"mpn": "S6B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
-"part": "C295747",
+"part": "C265405",
 "qty": 16,
-"unit_eur": 0.2024,
+"unit_eur": 0.3588,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 3.24
+"ext_eur": 5.74
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "PC — USB-C receptacle, USB 2.0, 16 pins",
+"item": "PC — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",
 "ref": "J3",
-"mpn": "TYPE-C-31-M-12",
-"manufacturer": "Korean Hroparts",
+"mpn": "USB4105-GF-A-120",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C165948",
+"part": "C5184243",
 "qty": 16,
-"unit_eur": 0.1748,
+"unit_eur": 0.8372,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 2.8
+"ext_eur": 13.4
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "DUT — USB-C receptacle, USB 2.0, 16 pins",
+"item": "DUT — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",
 "ref": "J4",
-"mpn": "TYPE-C-31-M-12",
-"manufacturer": "Korean Hroparts",
+"mpn": "USB4105-GF-A-120",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C165948",
+"part": "C5184243",
 "qty": 16,
-"unit_eur": 0.1748,
+"unit_eur": 0.8372,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 2.8
+"ext_eur": 13.4
 },
 {
 "category": "Electronics",
@@ -346,19 +382,19 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "100k — Resistor 100k 0603",
-"ref": "R1,R3,R13,R17,R26,R27",
+"ref": "R1,R3,R13,R17,R26,R27,R29",
 "mpn": "0603WAF1003T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25803",
-"qty": 96,
+"qty": 112,
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "6 per board × 16 boards",
+"notes": "7 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.28
+"ext_eur": 0.32
 },
 {
 "category": "Electronics",
@@ -418,19 +454,19 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "10k — Resistor 10k 0603",
-"ref": "R6,R7,R11,R18,R20",
+"ref": "R6,R7,R11,R18,R20,R28,R30",
 "mpn": "0603WAF1002T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25804",
-"qty": 80,
+"qty": 112,
 "unit_eur": 0.0048,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "5 per board × 16 boards",
+"notes": "7 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.38
+"ext_eur": 0.54
 },
 {
 "category": "Electronics",
@@ -795,6 +831,24 @@
 {
 "category": "Electronics",
 "group": "bay-node",
+"item": "TCAN1044AV — CAN FD transceiver, VCC 5 V, VIO 1.8–5 V, bus pins ±58 V (MCP2562 pinout)",
+"ref": "U11",
+"mpn": "TCAN1044AVDRQ1",
+"manufacturer": "Texas Instruments",
+"supplier": "LCSC/JLCPCB",
+"part": "C3234993",
+"qty": 16,
+"unit_eur": 0.3956,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 16 boards",
+"unit": "pcs",
+"ext_eur": 6.33
+},
+{
+"category": "Electronics",
+"group": "bay-node",
 "item": "Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA)",
 "supplier": "JLCPCB quote 2026-10-16",
 "qty": 20,
@@ -809,21 +863,21 @@
 "item": "Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": 114.07,
-"notes": "setup $25.75, stencil $8.27, feeders $65.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 122.35,
+"notes": "setup $25.75, stencil $8.27, feeders $74.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 114.07
+"ext_eur": 122.35
 },
 {
 "category": "Electronics",
 "group": "bay-node",
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
-"supplier": "JLCPCB quote 2026-10-16",
+"supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": -27.42,
-"notes": "quoted components $181.21 (≈ €166.71) for 16 boards; catalogue unit prices give €194.13",
+"unit_eur": -27.41,
+"notes": "quoted components $181.21 + $38.10 since (≈ €201.77) for 16 boards; catalogue unit prices give €229.18",
 "unit": "pcs",
-"ext_eur": -27.42
+"ext_eur": -27.41
 },
 {
 "category": "Electronics",
@@ -1925,12 +1979,13 @@
 },
 {
 "category": "Cables",
-"item": "JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay through the ladder, 24 V)",
-"supplier": "pre-crimped (AliExpress) or DIY",
+"item": "JST PH 6-pin jumper, 1:1, 24 AWG, 120 mm, both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS)",
+"supplier": "pre-crimped PH 6-pin, \"same direction\" (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S",
 "qty": 9,
-"unit_eur": 0.3,
+"unit_eur": 0.6,
+"notes": "check pin 1 ↔ pin 1: vendors name the same/reverse types inconsistently (docs/can.md)",
 "unit": "pcs",
-"ext_eur": 2.7
+"ext_eur": 5.4
 },
 {
 "category": "Cables",
@@ -2009,15 +2064,15 @@
 }
 ],
 "by_category": {
-"Electronics": 530.6099999999999,
+"Electronics": 573.9499999999999,
 "Printed parts": 78.0,
 "Fasteners": 16.56,
 "Motion": 9.2,
-"Cables": 64.3,
+"Cables": 67.0,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 816.87,
+"total_eur": 862.91,
 "prints": [
 {
 "part": "bay_label",
@@ -2106,15 +2161,15 @@
 {
 "part": "ladder_a",
 "qty": 5,
-"grams_each": 50.1,
-"grams_total": 250.6,
+"grams_each": 49.6,
+"grams_total": 248.1,
 "stl": "mechanical/stl/ladder_a.stl"
 },
 {
 "part": "ladder_b",
 "qty": 5,
-"grams_each": 50.1,
-"grams_total": 250.6,
+"grams_each": 49.6,
+"grams_total": 248.1,
 "stl": "mechanical/stl/ladder_b.stl"
 },
 {
@@ -2127,8 +2182,8 @@
 {
 "part": "ladder_c",
 "qty": 5,
-"grams_each": 50.1,
-"grams_total": 250.6,
+"grams_each": 49.6,
+"grams_total": 248.1,
 "stl": "mechanical/stl/ladder_c.stl"
 },
 {
@@ -2232,8 +2287,8 @@
 {
 "part": "tray",
 "qty": 12,
-"grams_each": 79.2,
-"grams_total": 950.7,
+"grams_each": 78.7,
+"grams_total": 944.1,
 "stl": "mechanical/stl/tray.stl"
 }
 ],
@@ -2300,17 +2355,19 @@
 "pcba": {
 "setup": 25.75,
 "stencil": 8.27,
-"components": 181.21,
-"feeders": 65.1,
+"components": 219.31,
+"feeders": 74.1,
 "SMT": 9.45,
 "manual assembly": 1.62,
 "X-ray": 13.28,
 "packaging": 0.52
 },
 "changes": [
-"no through-hole part for JLC (hand soldering −$3.61)"
+"no through-hole part for JLC (hand soldering −$3.61)",
+"rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components)",
+"rev 0.5: 3 more extended part types (+$9.00 feeders)"
 ],
-"total": 364.1
+"total": 411.2
 },
 "power-hub": {
 "pcb": {

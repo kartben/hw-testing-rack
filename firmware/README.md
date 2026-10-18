@@ -444,10 +444,14 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 | IO13 | PC_DET | front port VBUS via 10k/20k: laptop plugged | `usb_mux` `pc-detect-gpios` |
 | IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
 | IO15 | SVC | SERVICE slide switch | `usb_mux` `service-gpios` |
+| IO16 | POS_IN | POS token from J1.6 (10k, BAT54S clamp, 100k pull-down) | `rack_bus` `pos-in-gpios` |
+| IO17 | CAN_RXD | TCAN1044AV RXD (rack CAN bus) | `&twai` |
+| IO18 | CAN_TXD | TCAN1044AV TXD | `&twai` |
 | IO19 | ESP_DN | USB D−, internal FS PHY → MUX_DUT / MUX_PC | `zephyr_uhc0: &usb_otg` |
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
 | IO33 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
 | IO34 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
+| IO35 | POS_OUT | POS token to J2.6 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
 | IO37 | I2C_SCL | I²C0 | `&i2c0` |
 | IO38 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
 | IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up), not used yet | `ina226` `alert-gpios` |
@@ -459,12 +463,15 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 | RXD0 (IO44) | U0RX | TP2 | `&uart0` |
 | EN | EN | SW1 RESET button (10k/1µF) | — |
 
-Each signal sits on the module edge that faces where it goes on the board (v0.4): the right
+Each signal sits on the module edge that faces where it goes on the board (v0.5): the right
 column feeds the DUT power block, the bottom-right pins the AUX connector, the bottom-left pins
-the mode logic and the LED.  Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad
+the mode logic and the LED, IO16–IO18 the rack bus block under the module (CAN transceiver,
+POS input) and IO35 the POS output towards J2 (docs/can.md).  The CAN protocol itself is not
+written yet: the devicetree only describes the pins.  Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad
 JTAG pins, free as GPIOs since the node debugs over USB-Serial-JTAG.  The DevKitC overlay keeps
 this map except I²C (IO8/IO9 there: the devkit's LED is on IO38 and its octal PSRAM takes
-IO35–IO37), moves the LED to the devkit's GPIO38 and disables SPI2 (IO10–IO13).
+IO35–IO37) and POS_OUT (IO21 there, for the same reason), moves the LED to the devkit's GPIO38
+and disables SPI2 (IO10–IO13).
 
 `python3 firmware/tools/check_pinmap.py` checks this table and the board
 devicetree against U3 in `design.py`; CI ([`firmware.yml`](../.github/workflows/firmware.yml))

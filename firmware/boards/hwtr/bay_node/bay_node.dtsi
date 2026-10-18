@@ -42,6 +42,16 @@
 		service-gpios = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
 	};
 
+	/* Rack bus (docs/can.md): CAN on the row cable, and the POS addressing token */
+	rack_bus: rack-bus {
+		compatible = "hwtr,rack-bus";
+		/* IO16 POS_IN <- J1.6 through 10k and a BAT54S clamp, 100k pull-down */
+		pos-in-gpios = <&gpio0 16 GPIO_ACTIVE_HIGH>;
+		/* IO35 POS_OUT -> J2.6 through 10k and a BAT54S clamp: low until the node has an address */
+		pos-out-gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+		can = <&twai>;
+	};
+
 	status_led: ws2812 {
 		compatible = "worldsemi,ws2812-pulse-io";
 		pulse-ios = <&rmt 0>;
@@ -84,6 +94,14 @@
 		/* IO39 INA_ALERT_N (10k pull-up), not used by the driver yet */
 		alert-gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
 	};
+};
+
+/* IO18/IO17: TWAI on the TCAN1044AV (U11, VIO 3.3 V, STB tied low on the board) */
+&twai {
+	status = "okay";
+	pinctrl-0 = <&bay_twai_default>;
+	pinctrl-names = "default";
+	bitrate = <250000>;
 };
 
 &rmt {

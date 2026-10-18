@@ -51,6 +51,10 @@ NET_TO_DT = {
     "AUX_RX": ("pinmux", "UART1_RX"),
     "U0TX": ("pinmux", "UART0_TX"),
     "U0RX": ("pinmux", "UART0_RX"),
+    "CAN_TXD": ("pinmux", "TWAI_TX"),
+    "CAN_RXD": ("pinmux", "TWAI_RX"),
+    "POS_IN": ("gpio", "pos-in-gpios"),
+    "POS_OUT": ("gpio", "pos-out-gpios"),
 }
 # Nets that also appear a second way (checked like NET_TO_DT).
 NET_ALSO_DT = {

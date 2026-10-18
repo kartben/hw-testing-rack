@@ -1,8 +1,9 @@
 # Rack bus (CAN)
 
 > **Status: decided.**  The power hub v0.5 (USB-C PD in, rack controller, CAN master) is
-> laid out and routed (`electronics/power-hub`); the bay node v0.5 (transceiver, POS) is
-> next.  The v0.4 nodes in `electronics/bay-node` still have 2-pin power connectors.
+> laid out and routed (`electronics/power-hub`); so is the bay node v0.5 (`electronics/bay-node`:
+> 6-pin J1/J2, TCAN1044AV + PESD2CAN on the pair, POS in and out).  The node firmware only
+> describes the pins so far.
 
 The row power cables (VRACK: 20 or 28 V, [power.md](power.md)) also carry a CAN bus and an addressing line, so the rack
 controller in the power box can find every node and tell it where it sits, without Wi-Fi
