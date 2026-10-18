@@ -1947,14 +1947,14 @@
 "manufacturer": "YAGEO",
 "supplier": "LCSC/JLCPCB",
 "part": "C14663",
-"qty": 12,
+"qty": 8,
 "unit_eur": 0.0124,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 12 boards",
+"notes": "1 per board × 8 boards",
 "unit": "pcs",
-"ext_eur": 0.15
+"ext_eur": 0.1
 },
 {
 "category": "Electronics",
@@ -1965,14 +1965,14 @@
 "manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
 "part": "C5184243",
-"qty": 12,
+"qty": 8,
 "unit_eur": 0.8372,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 12 boards",
+"notes": "1 per board × 8 boards",
 "unit": "pcs",
-"ext_eur": 10.05
+"ext_eur": 6.7
 },
 {
 "category": "Electronics",
@@ -1983,14 +1983,14 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C265104",
-"qty": 12,
+"qty": 8,
 "unit_eur": 0.3128,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 12 boards",
+"notes": "1 per board × 8 boards",
 "unit": "pcs",
-"ext_eur": 3.75
+"ext_eur": 2.5
 },
 {
 "category": "Electronics",
@@ -2001,14 +2001,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C31850",
-"qty": 24,
+"qty": 16,
 "unit_eur": 0.0038,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 12 boards",
+"notes": "2 per board × 8 boards",
 "unit": "pcs",
-"ext_eur": 0.09
+"ext_eur": 0.06
 },
 {
 "category": "Electronics",
@@ -2019,36 +2019,36 @@
 "manufacturer": "STMicroelectronics",
 "supplier": "LCSC/JLCPCB",
 "part": "C7519",
-"qty": 12,
+"qty": 8,
 "unit_eur": 0.1656,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 12 boards; alternative: C2687116 (UMW clone)",
+"notes": "1 per board × 8 boards; alternative: C2687116 (UMW clone)",
 "unit": "pcs",
-"ext_eur": 1.99
+"ext_eur": 1.32
 },
 {
 "category": "Electronics",
 "group": "data-port",
 "item": "Bare PCB data-port (2-layer 40×17 mm, lead-free HASL)",
 "supplier": "estimate, not quoted",
-"qty": 15,
-"unit_eur": 0.2453,
-"notes": "board $4.00 = $4.00 for 15 PCBs, 12 of them assembled",
+"qty": 10,
+"unit_eur": 0.276,
+"notes": "board $3.00 = $3.00 for 10 PCBs, 8 of them assembled",
 "unit": "pcs",
-"ext_eur": 3.68
+"ext_eur": 2.76
 },
 {
 "category": "Electronics",
 "group": "data-port",
-"item": "Economic PCBA, 12 boards: setup, stencil, extended parts, SMT",
+"item": "Economic PCBA, 8 boards: setup, stencil, extended parts, SMT",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 17.57,
-"notes": "setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.60",
+"unit_eur": 17.39,
+"notes": "setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.40",
 "unit": "pcs",
-"ext_eur": 17.57
+"ext_eur": 17.39
 },
 {
 "category": "Electronics",
@@ -2056,10 +2056,10 @@
 "item": "Components data-port: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 0.44,
-"notes": "quoted components $17.90 (≈ €16.47) for 12 boards; catalogue unit prices give €16.03",
+"unit_eur": 0.36,
+"notes": "quoted components $12.00 (≈ €11.04) for 8 boards; catalogue unit prices give €10.68",
 "unit": "pcs",
-"ext_eur": 0.44
+"ext_eur": 0.36
 },
 {
 "category": "Electronics",
@@ -2496,7 +2496,7 @@
 }
 ],
 "by_category": {
-"Electronics": 670.5500000000001,
+"Electronics": 664.0200000000001,
 "Printed parts": 58.0,
 "Fasteners": 14.47,
 "Motion": 21.02,
@@ -2504,7 +2504,7 @@
 "Power": 82.0,
 "Cameras": 68.0
 },
-"total_eur": 957.02,
+"total_eur": 950.49,
 "prints": [
 {
 "part": "bay_label",
@@ -2756,21 +2756,21 @@
 }
 },
 "data-port": {
-"pcbs": 15,
-"assembled": 12,
+"pcbs": 10,
+"assembled": 8,
 "service": "Economic",
-"total": 41.0,
+"total": 33.9,
 "estimate": true,
 "spec": "2-layer 40×17 mm, lead-free HASL",
 "pcb": {
-"board": 4.0
+"board": 3.0
 },
 "pcba": {
 "setup": 8.0,
 "stencil": 1.5,
-"components": 17.9,
+"components": 12.0,
 "extended parts": 9.0,
-"SMT": 0.6
+"SMT": 0.4
 }
 },
 "camera-pod": {
@@ -2842,17 +2842,17 @@
 },
 "data-port": {
 "pcb": {
-"board": 4.0
+"board": 3.0
 },
 "pcba": {
 "setup": 8.0,
 "stencil": 1.5,
-"components": 17.9,
+"components": 12.0,
 "extended parts": 9.0,
-"SMT": 0.6
+"SMT": 0.4
 },
 "changes": [],
-"total": 41.0
+"total": 33.9
 },
 "camera-pod": {
 "pcb": {

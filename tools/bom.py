@@ -63,10 +63,10 @@ JLC_QUOTE = {
     # USBLC6), components at catalogue prices plus ≈ 3 % attrition, ≈ 30 joints a board.  The
     # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
     "data-port": {
-        "pcbs": 15, "assembled": 12, "service": "Economic", "total": 41.00, "estimate": True,
+        "pcbs": 10, "assembled": 8, "service": "Economic", "total": 33.90, "estimate": True,
         "spec": "2-layer 40×17 mm, lead-free HASL",
-        "pcb": {"board": 4.00},
-        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 17.90, "extended parts": 9.00, "SMT": 0.60},
+        "pcb": {"board": 3.00},
+        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 12.00, "extended parts": 9.00, "SMT": 0.40},
     },
     # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS): an estimate built like
     # the DATA port's, Economic PCBA, $3 per extended part type (the S8B, the SMD header, the LED)

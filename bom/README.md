@@ -5,16 +5,16 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 671 |
+| Electronics | 664 |
 | Power | 82 |
 | Cameras | 68 |
 | Printed parts | 58 |
 | Cables | 43 |
 | Motion | 21 |
 | Fasteners | 14 |
-| **Total** | **957** |
+| **Total** | **950** |
 
-≈ **€120 per bay** all-in.
+≈ **€119 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -32,10 +32,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | | | PCBA: setup $25.75, stencil $8.27, components $52.32, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52 | 159.14 |
 | | | **Estimated total** | **213.74** |
 | | | Order (indicative): as quoted | 213.74 |
-| data-port | 15 PCBs (2-layer 40×17 mm, lead-free HASL), 12 assembled, Economic PCBA | PCB: board $4.00 | 4.00 |
-| | | PCBA: setup $8.00, stencil $1.50, components $17.90, extended parts $9.00, SMT $0.60 | 37.00 |
-| | | **Estimated total** | **41.00** |
-| | | Order (indicative): as quoted | 41.00 |
+| data-port | 10 PCBs (2-layer 40×17 mm, lead-free HASL), 8 assembled, Economic PCBA | PCB: board $3.00 | 3.00 |
+| | | PCBA: setup $8.00, stencil $1.50, components $12.00, extended parts $9.00, SMT $0.40 | 30.90 |
+| | | **Estimated total** | **33.90** |
+| | | Order (indicative): as quoted | 33.90 |
 | camera-pod | 5 PCBs (2-layer 40×27 mm, lead-free HASL), 2 assembled, Economic PCBA | PCB: board $2.00 | 2.00 |
 | | | PCBA: setup $8.00, stencil $1.50, components $2.05, extended parts $9.00, SMT $0.20 | 20.75 |
 | | | **Estimated total** | **22.75** |
@@ -188,14 +188,14 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | Bare PCB power-hub (4-layer 76×140 mm, ENIG) | 5  | 10.05 | 50.23 | estimate, not quoted |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 98.27 | 98.27 | estimate, not quoted |
 | Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 0.00 | 0.00 | estimate, not quoted |
-| Electronics | 100n — Capacitor 100n 0603 | 12  | 0.01 | 0.15 | LCSC/JLCPCB C14663 |
-| Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 12  | 0.84 | 10.05 | LCSC/JLCPCB C5184243 |
-| Electronics | LEAD — JST PH 5-pin, side entry, SMD | 12  | 0.31 | 3.75 | LCSC/JLCPCB C265104 |
-| Electronics | 22k — Resistor 22k 0603 | 24  | 0.00 | 0.09 | LCSC/JLCPCB C31850 |
-| Electronics | USBLC6-2SC6 — USB ESD protection | 12  | 0.17 | 1.99 | LCSC/JLCPCB C7519 |
-| Electronics | Bare PCB data-port (2-layer 40×17 mm, lead-free HASL) | 15  | 0.25 | 3.68 | estimate, not quoted |
-| Electronics | Economic PCBA, 12 boards: setup, stencil, extended parts, SMT | 1  | 17.57 | 17.57 | estimate, not quoted |
-| Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | 0.44 | 0.44 | estimate, not quoted |
+| Electronics | 100n — Capacitor 100n 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C14663 |
+| Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 8  | 0.84 | 6.70 | LCSC/JLCPCB C5184243 |
+| Electronics | LEAD — JST PH 5-pin, side entry, SMD | 8  | 0.31 | 2.50 | LCSC/JLCPCB C265104 |
+| Electronics | 22k — Resistor 22k 0603 | 16  | 0.00 | 0.06 | LCSC/JLCPCB C31850 |
+| Electronics | USBLC6-2SC6 — USB ESD protection | 8  | 0.17 | 1.32 | LCSC/JLCPCB C7519 |
+| Electronics | Bare PCB data-port (2-layer 40×17 mm, lead-free HASL) | 10  | 0.28 | 2.76 | estimate, not quoted |
+| Electronics | Economic PCBA, 8 boards: setup, stencil, extended parts, SMT | 1  | 17.39 | 17.39 | estimate, not quoted |
+| Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | 0.36 | 0.36 | estimate, not quoted |
 | Electronics | 10u — Capacitor 10u 0805 | 2  | 0.04 | 0.08 | LCSC/JLCPCB C15850 |
 | Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
 | Electronics | 100n — Capacitor 100n 0603 | 2  | 0.01 | 0.02 | LCSC/JLCPCB C14663 |

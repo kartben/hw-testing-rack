@@ -65,16 +65,21 @@ doesn't renegotiate in normal use.
 
 ## Budget
 
-| | per bay | 12 bays |
-|---|---|---|
-| node (ESP32-S3 with Wi-Fi on for USB/IP, LED, buck + LDO losses) | ≈ 0.7–1 W | ≈ 10 W |
-| typical dev board (Nucleo, nRF DK, FRDM, Pico, C6 …) | ≈ 0.2–0.7 W | ≈ 6 W |
-| big board (F746G-DISCO with its LCD, ESP32-S3 on Wi-Fi) | ≈ 1.5–2.5 W | — |
-| camera pod (XIAO streaming) | ≈ 1–1.5 W | 2 pods ≈ 2.5 W |
-| **realistic, whole rack** (a few big boards) | | **≈ 35–40 W** |
-| **worst case** (every DUT at its 1.5 A switch limit) | ≈ 11 W | ≈ 130 W |
+Two rows of four to start (2026-10-18), two of the bays with a camera:
 
-A 140 W charger covers even the worst case; a 100 W one covers normal use.
+| | per bay | 8 bays |
+|---|---|---|
+| node (ESP32-S3-WROOM-1 with Wi-Fi on for USB/IP, LED, buck + LDO losses) | ≈ 0.7–1 W | ≈ 7 W |
+| typical dev board (Nucleo, nRF DK, FRDM, Pico, C6 …) | ≈ 0.2–0.7 W | ≈ 4 W |
+| big board (F746G-DISCO with its LCD, ESP32-S3 on Wi-Fi) | ≈ 1.5–2.5 W | — |
+| camera (Arducam Mega streaming, from its 3.3 V on the pod board) | ≈ 0.6 W | 2 cameras ≈ 1.2 W |
+| its light (4 white LEDs, 128 mA from CAM_5V, while lit) | ≈ 0.65 W | 2 pods ≈ 1.3 W |
+| **realistic, whole rack** (a couple of big boards, lights on) | | **≈ 20–25 W** |
+| **worst case** (every DUT at its 1.5 A switch limit, cameras lit) | ≈ 11 W | ≈ 90 W |
+
+The camera and its light are fed by the bay's own node (CAM_5V, behind its 0.5 A PTC), so they
+count in that bay's row.  The 140 W charger covers even the worst case with room for a third
+row (≈ 130 W worst case for 12 bays); a 100 W one covers 8 bays' worst case.
 The hub knows both sides: the contract (the AP33772S) and each row's current
 (the eFuses' IMON).  When the negotiated power is below the worst case, it
 budgets: it limits or sheds rows instead of letting the charger trip.

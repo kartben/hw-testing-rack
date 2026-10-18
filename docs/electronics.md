@@ -237,7 +237,7 @@ and the 90° extension.  Geometry in `config/rack.yaml` › `pcb.data_port`.
 
 USB 2.0 only: High Speed PC ↔ board in classic mode, Full Speed to the node's ESP32 otherwise.
 Both sides are GND pours; routed by Freerouting like the other boards.  JLC: Economic PCBA (one
-side, no Standard-only part), ≈ $41 for 15 PCBs with 12 assembled (estimate in `tools/bom.py`).
+side, no Standard-only part), ≈ $34 for 10 PCBs with 8 assembled (estimate in `tools/bom.py`).
 
 A review of both boards with the Konnect MCP server (findings, fixes, what is
 still open) is in [review-konnect.md](review-konnect.md).
