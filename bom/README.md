@@ -8,11 +8,11 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Electronics | 664 |
 | Power | 82 |
 | Cameras | 68 |
-| Printed parts | 58 |
+| Printed parts | 56 |
 | Cables | 43 |
 | Motion | 21 |
 | Fasteners | 14 |
-| **Total** | **950** |
+| **Total** | **948** |
 
 ≈ **€119 per bay** all-in.
 
@@ -61,8 +61,8 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | ladder_base | 5 | 49.3 | `mechanical/stl/ladder_base.stl` |
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
 | plate_arduino-uno-r4 | 1 | 31.2 | `mechanical/stl/plate_arduino-uno-r4.stl` |
-| plate_esp32-s3-devkitc | 1 | 31.1 | `mechanical/stl/plate_esp32-s3-devkitc.stl` |
 | plate_frdm-mcxn947 | 1 | 36.9 | `mechanical/stl/plate_frdm-mcxn947.stl` |
+| plate_giga-r1-display | 1 | – | `mechanical/stl/plate_giga-r1-display.stl` |
 | plate_nrf52840-dk | 1 | 37.6 | `mechanical/stl/plate_nrf52840-dk.stl` |
 | plate_nrf54l15-dk | 1 | 37.6 | `mechanical/stl/plate_nrf54l15-dk.stl` |
 | plate_nucleo-144 | 1 | 37.5 | `mechanical/stl/plate_nucleo-144.stl` |
@@ -207,7 +207,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL) | 5  | 0.37 | 1.84 | estimate, not quoted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT | 1  | 17.20 | 17.20 | estimate, not quoted |
 | Electronics | Components camera-pod: JLC quote minus the catalogue prices above | 1  | 0.08 | 0.08 | estimate, not quoted |
-| Printed parts | PETG filament | 2.9 kg | 20.00 | 58.00 | any |
+| Printed parts | PETG filament | 2.8 kg | 20.00 | 56.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 116  | 0.03 | 3.48 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 64  | 0.02 | 1.28 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid) | 36  | 0.02 | 0.72 | AliExpress (bulk) |
@@ -222,10 +222,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Cables | JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 (bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest flat at the front of the plenum) | 2 lot | 2.85 | 5.70 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length20CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS) | 1 lot | 3.19 | 3.19 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length30CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 60 cm, lot of 5 (power box → first bay of row B: VRACK, CAN, POS) | 1 lot | 4.69 | 4.69 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length60CM |
-| Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, nRF54L15 DK) | 2  | 2.50 | 5.00 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
+| Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK) | 3  | 2.50 | 7.50 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
 | Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: UNO R4) | 1  | 2.00 | 2.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
 | Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK) | 3  | 1.00 | 3.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
-| Cables | USB-C ↔ micro-B, straight, 15–20 cm (DUT cable: ESP32-S3, PICO 2) | 2  | 2.50 | 5.00 | AliExpress 1005010391943574 (CableCreation USB-C → micro-B, 0.2 m, 480 Mbps) |
+| Cables | USB-C ↔ micro-B, straight, 15–20 cm (DUT cable: PICO 2) | 1  | 2.50 | 2.50 | AliExpress 1005010391943574 (CableCreation USB-C → micro-B, 0.2 m, 480 Mbps) |
 | Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 6  | 1.00 | 6.00 | AliExpress (DIY-018, "UP" and "DOWN") |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |

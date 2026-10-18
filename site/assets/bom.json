@@ -2243,11 +2243,11 @@
 "group": "filament",
 "item": "PETG filament",
 "supplier": "any",
-"qty": 2.9,
+"qty": 2.8,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈2.6 kg estimated + 10 % waste, 94 parts",
-"ext_eur": 58.0
+"notes": "≈2.5 kg estimated + 10 % waste, 94 parts",
+"ext_eur": 56.0
 },
 {
 "category": "Fasteners",
@@ -2387,13 +2387,13 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, nRF54L15 DK)",
+"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK)",
 "supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)",
-"qty": 2,
+"qty": 3,
 "unit_eur": 2.5,
 "notes": "both plugs bent across their wide face (up / down, not left / right); USB-C is reversible, so either bend works.  Check the listing says data, not charge only",
 "unit": "pcs",
-"ext_eur": 5.0
+"ext_eur": 7.5
 },
 {
 "category": "Cables",
@@ -2417,13 +2417,13 @@
 },
 {
 "category": "Cables",
-"item": "USB-C ↔ micro-B, straight, 15–20 cm (DUT cable: ESP32-S3, PICO 2)",
+"item": "USB-C ↔ micro-B, straight, 15–20 cm (DUT cable: PICO 2)",
 "supplier": "AliExpress 1005010391943574 (CableCreation USB-C → micro-B, 0.2 m, 480 Mbps)",
-"qty": 2,
+"qty": 1,
 "unit_eur": 2.5,
 "notes": "straight at both ends, lies flat with one bend (board turned to the side)",
 "unit": "pcs",
-"ext_eur": 5.0
+"ext_eur": 2.5
 },
 {
 "category": "Cables",
@@ -2497,14 +2497,14 @@
 ],
 "by_category": {
 "Electronics": 664.0200000000001,
-"Printed parts": 58.0,
+"Printed parts": 56.0,
 "Fasteners": 14.47,
 "Motion": 21.02,
 "Cables": 42.980000000000004,
 "Power": 82.0,
 "Cameras": 68.0
 },
-"total_eur": 950.49,
+"total_eur": 948.49,
 "prints": [
 {
 "part": "bay_label",
@@ -2619,18 +2619,18 @@
 "stl": "mechanical/stl/plate_arduino-uno-r4.stl"
 },
 {
-"part": "plate_esp32-s3-devkitc",
-"qty": 1,
-"grams_each": 31.1,
-"grams_total": 31.1,
-"stl": "mechanical/stl/plate_esp32-s3-devkitc.stl"
-},
-{
 "part": "plate_frdm-mcxn947",
 "qty": 1,
 "grams_each": 36.9,
 "grams_total": 36.9,
 "stl": "mechanical/stl/plate_frdm-mcxn947.stl"
+},
+{
+"part": "plate_giga-r1-display",
+"qty": 1,
+"grams_each": null,
+"grams_total": null,
+"stl": "mechanical/stl/plate_giga-r1-display.stl"
 },
 {
 "part": "plate_nrf52840-dk",
