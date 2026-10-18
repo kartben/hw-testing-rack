@@ -126,14 +126,17 @@ negotiation and the budget: [power.md](power.md).
 
 ![The power box under A1](img/power-box.jpg)
 
-*Lid off.  Left: from the rear, the charger's USB-C cable and the row outputs' cut-outs.  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
+*Lid off, labels inlaid in white.  Left: from the rear, the charger's USB-C cable (PD IN) and the row outputs' windows (A–D).  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
 
 | Part | File | Notes |
 |---|---|---|
-| Base | `power_box.scad` (`PART="base"`) | 84 × 148 × 33 mm, against the cell's left side. Under the floor are sockets that drop over the floor plate's insert bosses beneath it: it locates without screws, and an M3 through each socket screws it down if wanted. Lift it over the plate's front lip to put it in. **Left wall:** cut-outs for the hub's four 6-pin JST PH row outputs (A–D, engraved), reached from the rack's left side through the base ladder's window. **Front wall:** windows for the hub's ON / FAULT LEDs per row, PD and CTL, and the controller's console USB-C. **Rear wall:** the USB-C PD input (the charger's cable) and vents. Inside: four standoffs with M3 inserts for the hub, and four corner lugs with M3 inserts for the lid, hanging above the hub with 45° undersides |
-| Lid | `power_box.scad` (`PART="lid"`) | printed top face down. A rim locates it inside the walls, and 4 × M3×8 go into the corner lugs. Vents over the PD input and the buck, the name engraved in the top face |
+| Base | `power_box.scad` (`PART="base"`) | 84 × 148 × 33 mm, against the cell's left side. Under the floor are sockets that drop over the floor plate's insert bosses beneath it: it locates without screws, and an M3 through each socket screws it down if wanted. Lift it over the plate's front lip to put it in. **Left wall:** windows for the hub's four 6-pin JST PH row outputs, each with its row letter (A–D) above it, reached from the rack's left side through the base ladder's window. **Front wall:** holes for the hub's ON / FAULT LEDs per row (A–D under them), the PD LED (PD over it) and the controller's LED and console USB-C (CTL under them). **Rear wall:** the USB-C PD input (PD IN) and vents. Both USB-C openings take the plug's overmold (12.4 × 7 mm), as the receptacles sit 3.3 / 4.1 mm behind the walls' outer faces. Labels are engraved 0.8 mm deep, 5.25 mm capitals with 1.1 mm strokes. Inside: four standoffs (Ø8) with M3 inserts for the hub; nothing overhangs the hub, which drops straight in |
+| Lid | `power_box.scad` (`PART="lid"`) | printed top face down. A rim locates it inside the walls, and 4 × M3×6 go into the M3×12 male-female hex spacers that hold the hub down (their tops are flush with the walls). Vents over the PD input and the buck, the name engraved in the top face |
+| Label inlays (optional) | `power_box.scad` (`PART="labels"`, `"lid_labels"`) | exactly the engravings' volume: load each with its part as one object (two parts) and give it the second nozzle's filament. White letters flush in a black box read at a glance; engraved in one colour, the labels only show under grazing light |
 
-Both print without supports (PETG, 3 walls).  VRACK reaches the first node
+Both print without supports (PETG, 3 walls).  Print the base at 0.12–0.16 mm layers: its
+labels stand on vertical walls, where the layer height sets their vertical definition (a 5.25 mm
+capital is 33–44 layers instead of 26 at 0.2 mm).  VRACK reaches the first node
 of each row through one 6-pin JST PH feed ([cabling.md](cabling.md#row-power)); 6-pin
 jumpers carry it, and the CAN bus, from node to node through the windows in
 the tray walls and the shared ladder.

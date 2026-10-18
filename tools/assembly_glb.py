@@ -36,7 +36,8 @@ MATS = {
     "chainparts": ([1.0, 0.45, 0.12, 1], 0.0, 0.45),
     "cameras": ([0.16, 0.18, 0.21, 1], 0.0, 0.55),
     "psu": ([0.72, 0.74, 0.77, 1], 0.9, 0.3),
-    "powerbox": ([0.29, 0.32, 0.36, 1], 0.0, 0.55),
+    "powerbox": ([0.075, 0.08, 0.09, 1], 0.0, 0.55),
+    "powerlabels": ([0.93, 0.92, 0.89, 1], 0.0, 0.6),
     "silver": ([0.78, 0.8, 0.82, 1], 0.95, 0.25),
     "plug": ([0.11, 0.115, 0.13, 1], 0.0, 0.45),
     "black": ([0.07, 0.07, 0.08, 1], 0.0, 0.6),
@@ -124,6 +125,8 @@ def hex_rgba(h):
 
 
 def part_category(name):
+    if name.endswith("_labels"):
+        return "powerlabels"
     for prefix, cat in (("ladder_", "ladders"), ("brace_", "braces"), ("tray", "trays"), ("floor_plate", "frameplates"),
                         ("cap_plate", "frameplates"), ("drawer", "drawers"), ("chain_", "chainparts"),
                         ("plate_", "plates"), ("camera_", "cameras"), ("power_box_", "powerbox")):

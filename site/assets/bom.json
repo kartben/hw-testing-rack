@@ -1910,36 +1910,46 @@
 "qty": 3.9,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈3.5 kg estimated + 10 % waste, 127 parts",
+"notes": "≈3.5 kg estimated + 10 % waste, 129 parts",
 "ext_eur": 78.0
 },
 {
 "category": "Fasteners",
 "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
 "supplier": "AliExpress (bulk) / Ruthex",
-"qty": 168,
+"qty": 164,
 "unit_eur": 0.03,
-"notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub standoffs + 4 lid lugs",
+"notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub standoffs",
 "unit": "pcs",
-"ext_eur": 5.04
+"ext_eur": 4.92
 },
 {
 "category": "Fasteners",
-"item": "M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid, chain anchor",
+"item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",
 "supplier": "AliExpress (bulk)",
-"qty": 92,
+"qty": 88,
 "unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 1.84
+"ext_eur": 1.76
 },
 {
 "category": "Fasteners",
-"item": "M3×6 (node PCB, hub PCB)",
+"item": "M3×6 (node PCB, power box lid)",
 "supplier": "AliExpress (bulk)",
 "qty": 52,
 "unit_eur": 0.02,
 "unit": "pcs",
 "ext_eur": 1.04
+},
+{
+"category": "Fasteners",
+"item": "M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",
+"supplier": "AliExpress (bulk)",
+"qty": 4,
+"unit_eur": 0.1,
+"notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops",
+"unit": "pcs",
+"ext_eur": 0.4
 },
 {
 "category": "Fasteners",
@@ -2086,13 +2096,13 @@
 "by_category": {
 "Electronics": 582.8799999999999,
 "Printed parts": 78.0,
-"Fasteners": 17.04,
+"Fasteners": 17.24,
 "Motion": 22.4,
 "Cables": 67.0,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 885.52,
+"total_eur": 885.72,
 "prints": [
 {
 "part": "bay_label",
@@ -2293,16 +2303,30 @@
 {
 "part": "power_box_base",
 "qty": 1,
-"grams_each": 66.5,
-"grams_total": 66.5,
+"grams_each": 45.0,
+"grams_total": 45.0,
 "stl": "mechanical/stl/power_box_base.stl"
+},
+{
+"part": "power_box_labels",
+"qty": 1,
+"grams_each": 0.1,
+"grams_total": 0.1,
+"stl": "mechanical/stl/power_box_labels.stl"
 },
 {
 "part": "power_box_lid",
 "qty": 1,
-"grams_each": 21.2,
-"grams_total": 21.2,
+"grams_each": 20.7,
+"grams_total": 20.7,
 "stl": "mechanical/stl/power_box_lid.stl"
+},
+{
+"part": "power_box_lid_labels",
+"qty": 1,
+"grams_each": 0.2,
+"grams_total": 0.2,
+"stl": "mechanical/stl/power_box_lid_labels.stl"
 },
 {
 "part": "tray",
