@@ -203,6 +203,37 @@ CAMERA_LENS = (64.0, 84.0, round(CAMERA_RIG["plate"][2] + CAMERA_RIG["standoff"]
                                  + CAMERA_RIG["holder"][1] + CAMERA_RIG["optic"][2], 2))   # bay X, Y; drop below the ceiling
 
 
+# ------------------------------------------------------------------ boards: real models and screens
+def board_frame(bd: dict, pts):
+    """Points of a board's drawing (boards.yaml frame) → the frame the viewer draws it in, turned like
+    rackcfg.orient_board() turns the board (debug USB towards the drawer rear, or its right wall)."""
+    return rackcfg.orient_board({**bd, "holes": [list(p) for p in pts]})["holes"]
+
+
+def board_model(bid: str, bd: dict) -> dict | None:
+    """site/assets/boards/<id>.glb (the maker's model, normalised by tools/board_models.py and slimmed for the
+    web) and the matrix that turns it like the stand-in: three points of its frame mapped, z unchanged."""
+    if not (SITE_ASSETS / "boards" / f"{bid}.glb").exists():
+        return None
+    o, x, y = board_frame(bd, [(0, 0), (1, 0), (0, 1)])
+    ex, ey = np.subtract(x, o), np.subtract(y, o)
+    m = [[ex[0], ey[0], 0, o[0]], [ex[1], ey[1], 0, o[1]], [0, 0, 1, 0], [0, 0, 0, 1]]
+    return {"url": f"assets/boards/{bid}.glb", "matrix": [round(float(v), 6) for row in m for v in row],
+            "source": bd.get("model_source", "")}
+
+
+def board_screen(bd: dict) -> dict | None:
+    """A board's display (boards.yaml › screen: active area's bottom-left corner and size in the drawing, the
+    image's width along the drawing's X, its top towards +Y, the glass's height above the PCB's underside):
+    three corners in the viewer's frame, for a live LVGL texture."""
+    sc = bd.get("screen")
+    if not sc:
+        return None
+    (x, y), (w, h) = sc["at"], sc["size"]
+    bl, br, tl = board_frame(bd, [(x, y), (x + w, y), (x, y + h)])
+    return {"bl": bl, "br": br, "tl": tl, "z": sc["z"], "px": sc["px"], "demo": sc.get("demo", "music")}
+
+
 def plug_exit(end):
     """Where the cable leaves a plug's strain relief and which way: a straight plug out of its back,
     a right-angle one out of its top.  end = {at: receptacle face, dir: into it, up, type, style}."""
@@ -551,7 +582,9 @@ def build(rack) -> Path:
                                     "color": bd.get("color", "#1b5e20"), "usb_x": o["usb_x"],
                                     "usb_type": bd["usb"]["type"], "usb2_x": o.get("usb2_x"),
                                     "usb_side": o["usb_side"],
-                                    "verified": bd.get("verified", False), "movable": True})
+                                    "verified": bd.get("verified", False), "movable": True,
+                                    **({"model": mdl} if (mdl := board_model(info["board"], bd)) else {}),
+                                    **({"screen": scr} if (scr := board_screen(bd)) else {})})
             # DUT cable: drawer DATA port → board USB connector.  The DATA socket goes in the port
             # farther from the board's USB (the right one for a USB turned to the right wall), so
             # the two plugs never meet

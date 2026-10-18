@@ -10,6 +10,7 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeCameraRig, setRigLight, refreshRigShadows, CameraPreview } from './camera.js';
+import { startLvgl } from './screen.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -329,8 +330,50 @@ function makeBoard(b) {
     new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
   lbl.position.set(w / 2, Math.min(10, l * 0.2), 1.62);
   g.add(lbl);
+  if (b.screen) g.add(makeScreen(b.screen));
   g.position.set(...b.pos);
   return g;
+}
+
+// A board's display: glossy glass over a live LVGL screen (site/screen.js), which the camera sees too, with
+// the light boxes' reflection on it.  One LVGL runs for the rack, started with the first screen.
+let lvgl = null, lvglReady = null;
+const screenMat = new THREE.MeshPhysicalMaterial({ color: 0x050608, roughness: 0.12, metalness: 0, clearcoat: 1,
+  clearcoatRoughness: 0.04, emissive: 0xffffff, emissiveIntensity: 0 });
+function makeScreen(sc) {
+  const [bl, br, tl] = [sc.bl, sc.br, sc.tl].map(([x, y]) => new THREE.Vector3(x, y, sc.z));
+  const tr = br.clone().add(tl).sub(bl);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute([...bl.toArray(), ...br.toArray(), ...tr.toArray(), ...tl.toArray()], 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0, 1, 0, 1, 1, 0, 1], 2));
+  const n = new THREE.Vector3().subVectors(br, bl).cross(new THREE.Vector3().subVectors(tl, bl)).normalize();
+  geo.setIndex(n.z > 0 ? [0, 1, 2, 0, 2, 3] : [0, 2, 1, 0, 3, 2]);
+  geo.computeVertexNormals();
+  if (!lvgl) {
+    lvgl = startLvgl('assets/lvgl/lvgl-demo.wasm', sc.px[0], sc.px[1], sc.demo).then((l) => {
+      screenMat.emissiveMap = l.tex;
+      screenMat.emissiveIntensity = 1.4;
+      screenMat.needsUpdate = true;
+      lvglReady = l;
+      return l;
+    }).catch((e) => { console.warn('LVGL screen:', e); return null; });
+  }
+  const m = new THREE.Mesh(geo, screenMat);
+  m.userData.screen = true;
+  return m;
+}
+
+// The maker's 3D model, when site/assets/boards/ has one (tools/board_models.py): it replaces the stand-in.
+function loadBoardModel(g, b) {
+  new GLTFLoader().loadAsync(b.model.url).then((gltf) => {
+    const m = gltf.scene;
+    m.matrixAutoUpdate = false;
+    m.matrix.set(...b.model.matrix);
+    for (const c of [...g.children]) if (!c.userData.screen) g.remove(c);
+    m.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; o.userData.bay = b.bay; } });
+    g.add(m);
+    for (const rig of Object.values(rigs)) if (rig.level > 0) refreshRigShadows(rig);
+  }).catch((e) => console.warn('board model', b.id, e));
 }
 
 // ------------------------------------------------------------------ PCB stand-ins
@@ -572,7 +615,10 @@ function build(pcbGlb) {
     track(m, { layer: it.layer, bay: it.bay, row: it.row, movable: !!it.movable, zone: it.layer, space: it.space });
   }
   // dev boards
-  for (const b of DATA.boards) track(makeBoard(b), { layer: 'boards', bay: b.bay, row: b.row, movable: true, zone: 'boards', space: 'row' });
+  for (const b of DATA.boards) {
+    const g = track(makeBoard(b), { layer: 'boards', bay: b.bay, row: b.row, movable: true, zone: 'boards', space: 'row' });
+    if (b.model) loadBoardModel(g, b);
+  }
   // PCBs
   for (const p of DATA.pcbs) {
     const src = pcbGlb[p.board];
@@ -893,6 +939,7 @@ function tick(now) {
     }
     if (moving) applyTransforms();
   }
+  lvglReady?.step(now);
   for (const rig of Object.values(rigs)) {         // the lights fade in and out over ~150 ms
     const d = rig.target - rig.level;
     if (Math.abs(d) > 1e-3) setRigLight(rig, rig.level + Math.sign(d) * Math.min(Math.abs(d), 0.12));
