@@ -14,7 +14,7 @@
 	)
 	(lib_symbols)
 	(sheet
-		(at -11.43 70)
+		(at -58.42 70)
 		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -30,7 +30,7 @@
 		)
 		(uuid "6bdbf57d-f796-52cd-9884-75545352918b")
 		(property "Sheetname" "Power"
-			(at -11.43 69.85 0)
+			(at -58.42 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -39,7 +39,7 @@
 			)
 		)
 		(property "Sheetfile" "power.kicad_sch"
-			(at -11.43 101.6 0)
+			(at -58.42 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -57,7 +57,7 @@
 	)
 	(text "VRACK input (20–28 V), 5 V buck, 3.3"
 		(exclude_from_sim no)
-		(at -8.89 77.47 0)
+		(at -55.88 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -68,7 +68,7 @@
 	)
 	(text "V LDO"
 		(exclude_from_sim no)
-		(at -8.89 81.28 0)
+		(at -55.88 81.28 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -78,7 +78,7 @@
 		(uuid "6acf6617-540c-51c4-8886-bf6aab51d8ef")
 	)
 	(sheet
-		(at 82.55 70)
+		(at 35.56 70)
 		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -94,7 +94,7 @@
 		)
 		(uuid "342cf2d8-2555-5c90-a32c-abde03bd4d01")
 		(property "Sheetname" "MCU"
-			(at 82.55 69.85 0)
+			(at 35.56 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -103,7 +103,7 @@
 			)
 		)
 		(property "Sheetfile" "mcu.kicad_sch"
-			(at 82.55 101.6 0)
+			(at 35.56 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -121,7 +121,7 @@
 	)
 	(text "ESP32-S3 module"
 		(exclude_from_sim no)
-		(at 85.09 77.47 0)
+		(at 38.1 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -131,7 +131,7 @@
 		(uuid "d9bf817d-7472-5403-874f-f238c0cc52d6")
 	)
 	(sheet
-		(at 177.8 70)
+		(at 130.81 70)
 		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -147,7 +147,7 @@
 		)
 		(uuid "c87ef098-13d8-5d4c-814e-a4c6487f5259")
 		(property "Sheetname" "USB"
-			(at 177.8 69.85 0)
+			(at 130.81 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -156,7 +156,7 @@
 			)
 		)
 		(property "Sheetfile" "usb.kicad_sch"
-			(at 177.8 101.6 0)
+			(at 130.81 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -174,7 +174,7 @@
 	)
 	(text "USB ports and data-path muxes"
 		(exclude_from_sim no)
-		(at 180.34 77.47 0)
+		(at 133.35 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -184,7 +184,7 @@
 		(uuid "42806cd3-6376-555f-bb24-081dc0c93d3c")
 	)
 	(sheet
-		(at 271.78 70)
+		(at 224.79 70)
 		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -200,7 +200,7 @@
 		)
 		(uuid "a569d74c-9c07-57e9-a349-c34419c82b47")
 		(property "Sheetname" "DUT power & AUX"
-			(at 271.78 69.85 0)
+			(at 224.79 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -209,7 +209,7 @@
 			)
 		)
 		(property "Sheetfile" "dut.kicad_sch"
-			(at 271.78 101.6 0)
+			(at 224.79 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -225,9 +225,9 @@
 			)
 		)
 	)
-	(text "DUT power switch, monitor, AUX and"
+	(text "DUT power switch, monitor and AUX"
 		(exclude_from_sim no)
-		(at 274.32 77.47 0)
+		(at 227.33 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -236,19 +236,8 @@
 		)
 		(uuid "1bafdb06-e022-59a7-bdaf-3290432e76af")
 	)
-	(text "camera power"
-		(exclude_from_sim no)
-		(at 274.32 81.28 0)
-		(effects
-			(font
-				(size 1.8 1.8)
-			)
-			(justify left bottom)
-		)
-		(uuid "29b129ae-041c-5479-bcc0-8201edff0b7b")
-	)
 	(sheet
-		(at 367.03 70)
+		(at 320.04 70)
 		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -264,7 +253,7 @@
 		)
 		(uuid "c4300c69-5e67-5bcd-9e3d-2b0a1d811de1")
 		(property "Sheetname" "Rack bus"
-			(at 367.03 69.85 0)
+			(at 320.04 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -273,7 +262,7 @@
 			)
 		)
 		(property "Sheetfile" "bus.kicad_sch"
-			(at 367.03 101.6 0)
+			(at 320.04 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -291,7 +280,7 @@
 	)
 	(text "Rack bus: CAN transceiver and POS"
 		(exclude_from_sim no)
-		(at 369.57 77.47 0)
+		(at 322.58 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -302,7 +291,7 @@
 	)
 	(text "addressing token"
 		(exclude_from_sim no)
-		(at 369.57 81.28 0)
+		(at 322.58 81.28 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -311,10 +300,74 @@
 		)
 		(uuid "aec8dadc-45f7-5285-b628-8d98f687440b")
 	)
+	(sheet
+		(at 414.02 70)
+		(size 64 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.3)
+			(type solid)
+		)
+		(fill
+			(color 255 255 225 1)
+		)
+		(uuid "12078ac0-2350-591d-80c3-fc5243dd3b60")
+		(property "Sheetname" "Camera"
+			(at 414.02 69.85 0)
+			(effects
+				(font
+					(size 2 2)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "cam.kicad_sch"
+			(at 414.02 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f"
+					(page "7")
+				)
+			)
+		)
+	)
+	(text "Camera lead: Arducam Mega SPI and"
+		(exclude_from_sim no)
+		(at 416.56 77.47 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "2709ef92-1e02-50f9-a310-d770fbb92507")
+	)
+	(text "its LEDs"
+		(exclude_from_sim no)
+		(at 416.56 81.28 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "c6d3fdd8-d483-5e5e-992b-bd6d9df1198e")
+	)
 	(polyline
 		(pts
-			(xy -22.86 58.42)
-			(xy 434.34 58.42)
+			(xy -69.85 58.42)
+			(xy 482.6 58.42)
 		)
 		(stroke
 			(width 0.5)
@@ -327,7 +380,7 @@
 	)
 	(text "+3V3"
 		(exclude_from_sim no)
-		(at -25.4 58.42 0)
+		(at -72.39 58.42 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -339,8 +392,8 @@
 	)
 	(polyline
 		(pts
-			(xy -1.27 58.42)
-			(xy -1.27 69.85)
+			(xy -48.26 58.42)
+			(xy -48.26 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -352,7 +405,7 @@
 		(uuid "cac88250-4a42-51cd-8b3f-0d13c6e8f292")
 	)
 	(circle
-		(center -1.27 58.42)
+		(center -48.26 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -365,8 +418,8 @@
 	)
 	(polyline
 		(pts
-			(xy 92.71 58.42)
-			(xy 92.71 69.85)
+			(xy 45.72 58.42)
+			(xy 45.72 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -378,7 +431,7 @@
 		(uuid "b0f8a5e0-61d2-5bea-8d49-35f883f2fa22")
 	)
 	(circle
-		(center 92.71 58.42)
+		(center 45.72 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -391,8 +444,8 @@
 	)
 	(polyline
 		(pts
-			(xy 187.96 58.42)
-			(xy 187.96 69.85)
+			(xy 140.97 58.42)
+			(xy 140.97 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -404,7 +457,7 @@
 		(uuid "b8db4070-75d6-52e0-bc5c-c34037d6afb0")
 	)
 	(circle
-		(center 187.96 58.42)
+		(center 140.97 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -417,8 +470,8 @@
 	)
 	(polyline
 		(pts
-			(xy 281.94 58.42)
-			(xy 281.94 69.85)
+			(xy 234.95 58.42)
+			(xy 234.95 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -430,7 +483,7 @@
 		(uuid "028f8cd7-1d51-594e-9dc7-818c355fd182")
 	)
 	(circle
-		(center 281.94 58.42)
+		(center 234.95 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -443,8 +496,8 @@
 	)
 	(polyline
 		(pts
-			(xy 377.19 58.42)
-			(xy 377.19 69.85)
+			(xy 330.2 58.42)
+			(xy 330.2 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -456,7 +509,7 @@
 		(uuid "77f32af8-30f1-55f7-9a43-ab6ff6dfe551")
 	)
 	(circle
-		(center 377.19 58.42)
+		(center 330.2 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -469,8 +522,34 @@
 	)
 	(polyline
 		(pts
-			(xy -22.86 50.8)
-			(xy 434.34 50.8)
+			(xy 424.18 58.42)
+			(xy 424.18 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "6a6e5b60-6e6e-5bf6-9bab-088699243cbc")
+	)
+	(circle
+		(center 424.18 58.42)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "4ac33826-4a26-5ca2-82c5-d334a1fd3767")
+	)
+	(polyline
+		(pts
+			(xy -69.85 50.8)
+			(xy 482.6 50.8)
 		)
 		(stroke
 			(width 0.5)
@@ -483,7 +562,7 @@
 	)
 	(text "+5V"
 		(exclude_from_sim no)
-		(at -25.4 50.8 0)
+		(at -72.39 50.8 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -495,8 +574,8 @@
 	)
 	(polyline
 		(pts
-			(xy 6.35 50.8)
-			(xy 6.35 69.85)
+			(xy -40.64 50.8)
+			(xy -40.64 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -508,7 +587,7 @@
 		(uuid "124f9874-845e-5008-b713-371d04709af6")
 	)
 	(circle
-		(center 6.35 50.8)
+		(center -40.64 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -521,8 +600,8 @@
 	)
 	(polyline
 		(pts
-			(xy 195.58 50.8)
-			(xy 195.58 69.85)
+			(xy 148.59 50.8)
+			(xy 148.59 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -534,7 +613,7 @@
 		(uuid "c763c666-a8ae-56ca-af75-8212ec1ab096")
 	)
 	(circle
-		(center 195.58 50.8)
+		(center 148.59 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -547,8 +626,8 @@
 	)
 	(polyline
 		(pts
-			(xy 289.56 50.8)
-			(xy 289.56 69.85)
+			(xy 242.57 50.8)
+			(xy 242.57 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -560,7 +639,7 @@
 		(uuid "f3e6d3dc-c59a-5e1b-b1fa-bde74f55d1f1")
 	)
 	(circle
-		(center 289.56 50.8)
+		(center 242.57 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -573,8 +652,8 @@
 	)
 	(polyline
 		(pts
-			(xy 384.81 50.8)
-			(xy 384.81 69.85)
+			(xy 337.82 50.8)
+			(xy 337.82 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -586,7 +665,7 @@
 		(uuid "6a6ca49b-001c-5979-b9f4-fb7341345b87")
 	)
 	(circle
-		(center 384.81 50.8)
+		(center 337.82 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -599,10 +678,36 @@
 	)
 	(polyline
 		(pts
-			(xy 138.43 100.33)
+			(xy 431.8 50.8)
+			(xy 431.8 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "7e068118-c3b4-5dc7-817c-5141a3db29ea")
+	)
+	(circle
+		(center 431.8 50.8)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "0a9aea94-fbde-5558-930a-8754d8c5ba18")
+	)
+	(polyline
+		(pts
+			(xy 91.44 100.33)
+			(xy 91.44 110.49)
 			(xy 138.43 110.49)
-			(xy 185.42 110.49)
-			(xy 185.42 100.33)
+			(xy 138.43 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -615,7 +720,7 @@
 	)
 	(text "ESP_DN/DP, MUX_FORCE_PC, PC_DET, SVC"
 		(exclude_from_sim no)
-		(at 140.97 109.22 0)
+		(at 93.98 109.22 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -626,10 +731,10 @@
 	)
 	(polyline
 		(pts
-			(xy 226.06 100.33)
-			(xy 226.06 120.65)
-			(xy 279.4 120.65)
-			(xy 279.4 100.33)
+			(xy 179.07 100.33)
+			(xy 179.07 120.65)
+			(xy 232.41 120.65)
+			(xy 232.41 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -642,7 +747,7 @@
 	)
 	(text "DUT_5V"
 		(exclude_from_sim no)
-		(at 228.6 119.38 0)
+		(at 181.61 119.38 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -653,10 +758,10 @@
 	)
 	(polyline
 		(pts
-			(xy 130.81 100.33)
-			(xy 130.81 130.81)
-			(xy 287.02 130.81)
-			(xy 287.02 100.33)
+			(xy 83.82 100.33)
+			(xy 83.82 130.81)
+			(xy 240.03 130.81)
+			(xy 240.03 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -669,7 +774,7 @@
 	)
 	(text "AUX_BOOT_CTL, AUX_RST_CTL, AUX_RX/TX, DUT_EN, DUT_FLT_N, I2C_SCL/SDA, INA_ALERT_N"
 		(exclude_from_sim no)
-		(at 133.35 129.54 0)
+		(at 86.36 129.54 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -680,10 +785,10 @@
 	)
 	(polyline
 		(pts
-			(xy 123.19 100.33)
-			(xy 123.19 140.97)
-			(xy 374.65 140.97)
-			(xy 374.65 100.33)
+			(xy 76.2 100.33)
+			(xy 76.2 140.97)
+			(xy 327.66 140.97)
+			(xy 327.66 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -696,7 +801,7 @@
 	)
 	(text "CAN_RXD/TXD, POS_IN/OUT"
 		(exclude_from_sim no)
-		(at 125.73 139.7 0)
+		(at 78.74 139.7 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -707,10 +812,10 @@
 	)
 	(polyline
 		(pts
-			(xy 44.45 100.33)
-			(xy 44.45 151.13)
-			(xy 382.27 151.13)
-			(xy 382.27 100.33)
+			(xy -2.54 100.33)
+			(xy -2.54 151.13)
+			(xy 335.28 151.13)
+			(xy 335.28 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -723,7 +828,7 @@
 	)
 	(text "CAN_H/L, POS_IN_CONN, POS_OUT_CONN"
 		(exclude_from_sim no)
-		(at 46.99 149.86 0)
+		(at 0 149.86 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -732,10 +837,37 @@
 		)
 		(uuid "9815a35c-f71a-52c0-a298-6e835863a49b")
 	)
-	(text_box "Bay node — one per bay.  Sheets:\n  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51635 buck, AMS1117\n  MCU: ESP32-S3-MINI-1, reset/boot, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V\n  Rack bus: TCAN1462V CAN transceiver on the row pair, POS token in/out (docs/can.md)\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
+	(polyline
+		(pts
+			(xy 68.58 100.33)
+			(xy 68.58 161.29)
+			(xy 421.64 161.29)
+			(xy 421.64 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "91561c2c-48bc-5344-9a56-bc9749b901f1")
+	)
+	(text "CAM_CS/LED/SCK, CAM_MISO, CAM_MOSI"
 		(exclude_from_sim no)
-		(at 30 166.37 0)
-		(size 360 30.48)
+		(at 71.12 160.02 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "b6f69592-3032-5ab2-b262-75917bca5e51")
+	)
+	(text_box "Bay node — one per bay.  Sheets:\n  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51635 buck, AMS1117\n  MCU: ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM), reset/boot, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT\n  Camera: JST PH 8 to the bay's Arducam Mega (SPI2, 5 V through a PTC) and its LEDs (AO3400A low side)\n  Rack bus: TCAN1462V CAN transceiver on the row pair, POS token in/out (docs/can.md)\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
+		(exclude_from_sim no)
+		(at 30 176.53 0)
+		(size 360 33.02)
 		(margins 2 2 2 2)
 		(stroke
 			(width 0)

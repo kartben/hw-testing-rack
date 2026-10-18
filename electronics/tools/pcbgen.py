@@ -608,19 +608,43 @@ def drop_passthrough_vias(path: Path) -> int:
     if not uuids:
         return 0
     board = pcbnew.LoadBoard(str(path))
-    gone = []
+    gone, stubs = [], []
     for v in [t for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.m_Uuid.AsString() in uuids]:
         p = v.GetPosition()
         ends = [t.GetLayer() for t in board.GetTracks() if t.GetClass() != "PCB_VIA"
                 and t.GetNetCode() == v.GetNetCode() and p in (t.GetStart(), t.GetEnd())]
         if not v.IsLocked() and len(ends) >= 2 and len(set(ends)) == 1:
             gone.append(v)
+        elif not v.IsLocked() and len(ends) <= 1:
+            stubs.append(v)          # the end of a dead branch: the via and the branch go
     for v in gone:
         board.Remove(v)
-    if gone:
+    zoned = {z.GetNetCode() for z in board.Zones()}
+    pruned = 0
+    for v in stubs:
+        net = v.GetNetCode()
+        board.Remove(v)
+        if net in zoned:
+            continue                 # a free track end in a pour of its net is connected
+        while True:
+            tracks = [t for t in board.GetTracks() if t.GetClass() == "PCB_TRACK" and t.GetNetCode() == net]
+            vias = [t.GetPosition() for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.GetNetCode() == net]
+            pads = [p for p in board.GetPads() if p.GetNetCode() == net]
+
+            def joined(pt, me):
+                return (any(o is not me and pt in (o.GetStart(), o.GetEnd()) for o in tracks)
+                        or pt in vias or any(p.HitTest(pt) for p in pads))
+            free = [t for t in tracks if not t.IsLocked()
+                    and not (joined(t.GetStart(), t) and joined(t.GetEnd(), t))]
+            if not free:
+                break
+            for t in free:
+                board.Remove(t)
+            pruned += len(free)
+    if gone or stubs:
         pcbnew.SaveBoard(str(path), board)
-        print(f"vias: dropped {len(gone)} pass-through via(s)")
-    return len(gone)
+        print(f"vias: dropped {len(gone)} pass-through via(s), {len(stubs)} dead-end via(s) and {pruned} stub track(s)")
+    return len(gone) + len(stubs)
 
 
 def unconnected_pads(path: Path, net: str = "GND") -> list[tuple[float, float]]:

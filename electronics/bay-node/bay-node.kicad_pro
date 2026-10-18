@@ -409,6 +409,10 @@
     [
       "c4300c69-5e67-5bcd-9e3d-2b0a1d811de1",
       "Rack bus"
+    ],
+    [
+      "12078ac0-2350-591d-80c3-fc5243dd3b60",
+      "Camera"
     ]
   ],
   "text_variables": {

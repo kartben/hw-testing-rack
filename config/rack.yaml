@@ -133,16 +133,17 @@ cables:
 
 pcb:
   bay_node:
-    size: [64, 80]          # X × Y; KiCad y=0 is the REAR edge, y=80 the front edge
+    size: [64, 90]          # X × Y; KiCad y=0 is the REAR edge, y=90 the front edge (grown 10 mm at the rear for
+                            # the WROOM-1 module: every y below moved by 10, the board's front and holes stay put)
     thickness: 1.6
     layers: 4
     x0: 4                   # left edge, carrier X
     front_gap: 0.5          # PCB front edge → fascia inner face
-    holes: [[3.5, 3.5], [60.5, 3.5], [3.5, 76.5], [60.5, 76.5]]   # M3, KiCad coordinates
+    holes: [[3.5, 13.5], [60.5, 13.5], [3.5, 86.5], [60.5, 86.5]]   # M3, KiCad coordinates (the tray's standoffs unchanged)
     front: { pc_port: 32, led: 12, svc: 50 }        # KiCad X of the front-edge parts
-    pwr_y: 63               # KiCad Y of the 24 V in/out connectors (JST PH, left/right edges)
-    right: { dut: 24, aux: 40 }                     # KiCad Y of the right-edge connectors
-    cam: [64, 11]           # camera 5 V connector (JST-PH) mouth, right edge near the rear
+    pwr_y: 73               # KiCad Y of the row cable connectors (JST PH 6, left/right edges)
+    right: { dut: 34, aux: 50 }                     # KiCad Y of J4 (DUT USB-C, right edge) and J5 (AUX, vertical PH 6)
+    cam: [43, 67]           # J6, the camera lead (JST PH 8, vertical: plugged from above), its centre, KiCad
   power_hub:                # v0.5: USB-C PD in (AP33772S), eFuses, rack controller (ESP32-S3, CAN master)
     size: [76, 140]         # X × Y; KiCad y=0 is the REAR edge, y=140 the front edge (like the bay node)
     thickness: 1.6

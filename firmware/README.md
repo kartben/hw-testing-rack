@@ -481,14 +481,22 @@ python3 firmware/bay-node/tests/console_sim/run.py --workspace <west workspace> 
 
 ## Pin map
 
-From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
+From `electronics/bay-node/design.py` (U3, ESP32-S3-WROOM-1-N8R8: 8 MB flash, 8 MB octal PSRAM on IO35–IO37;
+the WROOM-1 has no IO26/IO33/IO34); devicetree in
 [`boards/hwtr/bay_node/bay_node.dtsi`](boards/hwtr/bay_node/bay_node.dtsi) and
 [`bay_node-pinctrl.dtsi`](boards/hwtr/bay_node/bay_node-pinctrl.dtsi).
 
 | ESP32-S3 | Net | Use | Devicetree |
 |---|---|---|---|
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
-| IO12 | LED_DIN | WS2812B (33 Ω), RMT channel 0 | `status_led` |
+| IO1 | I2C_SCL | I²C0 | `&i2c0` |
+| IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
+| IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.8 LED_K (100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | camera: to add |
+| IO8 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω, 10k pull-up) | camera: to add |
+| IO9 | CAM_MISO | camera SPI2 MISO ← J6.6 (33 Ω; R35 divider footprint if the Mega drives 5 V) | camera: to add |
+| IO10 | CAM_MOSI | camera SPI2 MOSI → J6.5 (33 Ω) | camera: to add |
+| IO11 | CAM_SCK | camera SPI2 SCK → J6.3 (33 Ω), mode 0, 4 MHz | camera: to add |
+| IO12 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
 | IO13 | PC_DET | front port VBUS via 10k/20k: laptop plugged | `usb_mux` `pc-detect-gpios` |
 | IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
 | IO15 | SVC | SERVICE slide switch | `usb_mux` `service-gpios` |
@@ -497,29 +505,28 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 | IO18 | CAN_TXD | TCAN1462V TXD | `&twai` |
 | IO19 | ESP_DN | USB D−, internal FS PHY → MUX_DUT / MUX_PC | `zephyr_uhc0: &usb_otg` |
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
-| IO33 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
-| IO34 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
-| IO35 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
-| IO37 | I2C_SCL | I²C0 | `&i2c0` |
-| IO38 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
+| IO21 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
+| IO38 | LED_DIN | WS2812B (33 Ω), RMT channel 0 (the DevKitC-1 v1.1's own RGB LED pin) | `status_led` |
 | IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up), not used yet | `ina226` `alert-gpios` |
 | IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up) | `dut_port` `fault-gpios` |
 | IO41 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware) | `dut_port` `enable-gpios` |
+| IO42 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
 | IO47 | AUX_TX | UART1 TX → AUX pin 3 (1k) | `&uart1` (`dut_port` `uart`) |
 | IO48 | AUX_BOOT_CTL | 2N7002 Q3 → AUX BOOT (open drain, 100k pull-down) | `dut_port` `boot-gpios` |
 | TXD0 (IO43) | U0TX | TP1, console + shell | `&uart0` |
 | RXD0 (IO44) | U0RX | TP2 | `&uart0` |
 | EN | EN | SW1 RESET button (10k/1µF) | — |
 
-Each signal sits on the module edge that faces where it goes on the board (v0.5): the right
-column feeds the DUT power block, the bottom-right pins the AUX connector, the bottom-left pins
-the mode logic and the LED, IO16–IO18 the rack bus block under the module (CAN transceiver,
-POS input) and IO35 the POS output towards J2 (docs/can.md).  The CAN protocol itself is not
-written yet: the devicetree only describes the pins.  Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad
-JTAG pins, free as GPIOs since the node debugs over USB-Serial-JTAG.  The DevKitC overlay keeps
-this map except I²C (IO8/IO9 there: the devkit's LED is on IO38 and its octal PSRAM takes
-IO35–IO37) and POS_OUT (IO21 there, for the same reason), moves the LED to the devkit's GPIO38
-and disables SPI2 (IO10–IO13).
+Each signal sits on the module edge that faces where it goes on the board: the right column feeds
+the DUT power block (I²C at its rear end) and POS_OUT runs to J2 (docs/can.md); the bottom row the
+AUX connector (right half), the mode logic and the camera's SPI (left half); the left column the
+rack bus block (CAN transceiver, POS input), SERVICE and the camera's CS and light.  IO4–IO6 are
+free.  The CAN protocol itself is not written yet: the devicetree only describes the pins.
+Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad JTAG pins, free as GPIOs since
+the node debugs over USB-Serial-JTAG.  The map is chosen so that an ESP32-S3-DevKitC-1 v1.1
+(N8R8, the same module) takes it as is: every pin is on its headers, none is the octal PSRAM's
+(IO35–IO37), and the status LED is the devkit's own RGB LED on IO38 (on a v1.0 devkit that LED is
+on IO48, AUX_BOOT_CTL here: harmless).
 
 `python3 firmware/tools/check_pinmap.py` checks this table and the board
 devicetree against U3 in `design.py`; CI ([`firmware.yml`](../.github/workflows/firmware.yml))

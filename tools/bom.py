@@ -87,7 +87,14 @@ JLC_SINCE_QUOTE = {
                  ("rev 0.5: 3 more extended part types", "feeders", 9.00),
                  ("rev 0.5: TCAN1462V instead of the TCAN1044AV", "components", 8.64),
                  ("rev 0.5: J7 DATA header", "components", 4.80),
-                 ("rev 0.5: J7, one more extended part type", "feeders", 3.00)],
+                 ("rev 0.5: J7, one more extended part type", "feeders", 3.00),
+                 # the camera: the WROOM-1-N8R8 (+$0.30), the PH 8 J6 (+$0.35) and the vertical PH 6 J5 (+$0.04)
+                 # take the N8's, the PH 2's and the side-entry PH 6's places; 2 × USBLC6, the AO3400A and
+                 # 8 passives (basic): ≈ +$1.18 per board.  The B6B is one more extended part type
+                 ("rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET)", "components", 18.91),
+                 ("rev 0.5: the vertical AUX connector, one more extended part type", "feeders", 3.00),
+                 # the WROOM-1 grew the board 10 mm at the rear: 64 × 90 mm, +12.5 % of the quoted area
+                 ("rev 0.5: the board 64 × 90 mm (quoted 64 × 80)", "board", 1.83)],
 }
 
 
@@ -117,6 +124,12 @@ DUT_CABLES = {
                         "notes": "straight at both ends; any short C ↔ C that states data (many short ones are "
                                  "charge-only)"},
 }
+
+
+# Cameras bought for a start (the user, 2026-10-18: "initialement je n'inclurai que 2 caméras"),
+# whatever the viewer's `cameras` list shows; every bay node keeps J6 and its circuit, so any bay
+# can take one later
+CAMERA_SETS = 2
 
 
 def _feed_lots(rack):
@@ -167,7 +180,8 @@ def jlc_order(name: str, ext: set, hand: set) -> tuple[dict, dict, list[str]]:
     if "hand soldering" in pcba:
         changes.append(f"no through-hole part for JLC (hand soldering −${pcba.pop('hand soldering'):.2f})")
     for what, line, usd in JLC_SINCE_QUOTE.get(name, []):
-        pcba[line] = round(pcba[line] + usd, 2)
+        fees = pcba if line in pcba else pcb           # a PCBA line, or one of the bare PCB's
+        fees[line] = round(fees[line] + usd, 2)
         changes.append(f"{what} (+${usd:.2f} {line})")
     return pcb, pcba, changes
 
@@ -209,7 +223,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
         orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
                         "total": round(sum(pcb.values()) + sum(pcba.values()), 2)}
         src = "estimate, not quoted" if q.get("estimate") else f"JLCPCB quote {JLC_QUOTE_DATE}"
-        pcb_src = src + (", adjusted" if name in JLC_FINISH else "")
+        pcb_src = src + (", adjusted" if name in JLC_FINISH or pcb != q["pcb"] else "")
         pcba_src = src + (", adjusted" if pcba != q["pcba"] else "")
         spec = q["spec"].replace("ENIG", JLC_FINISH[name][0]) if name in JLC_FINISH else q["spec"]
         rows.append({"category": "Electronics", "group": name, "item": f"Bare PCB {name} ({spec})",
@@ -395,14 +409,22 @@ def hardware(rack) -> list[dict]:
         {"category": "Power", "item": charger["cable"], "supplier": "any (check the 5 A / EPR e-marker)", "qty": 1,
          "unit_eur": 12.0, "notes": "above 3 A the charger only offers its full current through an e-marked 5 A cable"},
     ]
-    if cams:
+    if CAMERA_SETS:
+        cams = CAMERA_SETS
         rows += [
-            {"category": "Cameras", "item": "Seeed XIAO ESP32S3 Sense (camera pod)", "supplier": "Seeed",
-             "qty": cams, "unit_eur": 13.5},
-            {"category": "Cameras", "item": "OV2640 wide-angle (120–160°) 24-pin DVP module (check FPC fit)",
-             "supplier": "AliExpress", "qty": cams, "unit_eur": 4.0},
-            {"category": "Cameras", "item": "JST-PH 2-pin lead to the XIAO 5 V pads + M3×30 pivot screw",
-             "supplier": "any", "qty": cams, "unit_eur": 0.6},
+            # the bay's own node drives its camera (SPI) and light (docs/electronics.md, Camera)
+            {"category": "Cameras", "item": "Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm",
+             "supplier": "Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey", "qty": cams, "unit_eur": 28.25,
+             "notes": "on arrival: its header's order (VCC GND SCK MISO MOSI CS) and its MISO high level when fed 5 V "
+                      "(≤ 3.6 V, or change R33 and fit R35 on the node)"},
+            {"category": "Cameras", "item": "M12 lens, 1/4\", ≈ 120° diagonal (the stock 90° is too narrow for a "
+                                           "NUCLEO-144 / nRF DK)", "supplier": "AliExpress", "qty": cams, "unit_eur": 3.0},
+            {"category": "Cameras", "item": "White 5 V LED strip segment, 2–4 LEDs with their resistors (the pod's light, "
+                                           "≤ 150 mA)", "supplier": "AliExpress (5 V strip, cut to length)", "qty": cams,
+             "unit_eur": 0.5},
+            {"category": "Cameras", "item": "JST PH 8-pin lead, 50 cm, single-ended (node J6 → the pod: the Mega's "
+                                           "header + the LED strip)", "supplier": "AliExpress", "qty": cams,
+             "unit_eur": 1.0},
         ]
     return rows
 

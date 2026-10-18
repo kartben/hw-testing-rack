@@ -72,8 +72,8 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
    a short track to a GND via or to a spot where a small via fits.
 
 > **Status: bay node v0.5 — the row cable becomes 6-pin (VRACK 20 / 28 V, CAN, POS:
-> [can.md](can.md)), CAN transceiver and POS token added, GCT USB4105 receptacles, autorouted,
-> checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.5 —
+> [can.md](can.md)), CAN transceiver and POS token added, GCT USB4105 receptacles, the bay's camera on
+> J6 (Arducam Mega SPI + LEDs, PH 8) with the WROOM-1-N8R8 module (octal PSRAM; the board 10 mm longer at the rear), autorouted, checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.5 —
 > USB-C PD input (AP33772S), 4 layers, rows off until the controller enables them, autorouted,
 > checked with Konnect, not yet ordered or quoted.  DATA port v1.0 — the drawer's USB-C port on a
 > 5-wire lead to the node's new J7, autorouted, not yet ordered or quoted.**  On all three boards ERC is clean and DRC reports
@@ -84,7 +84,7 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 > fine — just don't re-run the generator over them (or move the routed board
 > aside first).
 
-## Bay node (×1 per unit) — 4 layers, 64 × 80 mm
+## Bay node (×1 per unit) — 4 layers, 64 × 90 mm
 
 Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF in
 `electronics/bay-node/docs/`.
@@ -96,13 +96,13 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | Protection | SUD50P06 P-FET + 12 V zener, SMBJ33A, 100 µF/50 V | reverse polarity, hot-plug clamp < 54 V |
 | 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 120k/22k → 5.16 V; EN 1M/100k: on above 13.5 V, off below 10.8 V |
 | 3.3 V | AMS1117-3.3 | logic only |
-| MCU | ESP32-S3-MINI-1-N8 | antenna at the rear edge, keep-out on all layers |
+| MCU | ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM for the camera's frames; the DevKitC-1-N8R8's module), C2913201 | antenna on the rear edge, keep-out on all layers (the footprint's own ±24 mm band); `bench:ESP32-S3-WROOM-1_NoEPVias` (no 0.2 mm vias in the exposed pad: a GND island stitched around it); rated −40…+65 °C |
 | DUT power | TPS2553 (RILIM 18k → 1.34–1.52 A), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N); default **on** (also without firmware), fault flag to GPIO |
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 2 × USB-C GCT USB4105-GF-A-120 | modes in [architecture.md](architecture.md); the classic-mode path (J3 → J4) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
-| AUX | JST PH 6, side entry, SMD (S6B-PH-SM4-TB): GND, 3V3 (10 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | |
+| AUX | J5, JST PH 6, vertical, SMD (B6B-PH-SM4-TB): GND, 3V3 (10 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | by the right edge, plugged from above like J6 and J7 |
 | DATA | J7, JST PH 5, vertical, SMD (B5B-PH-SM4-TB): 1 DUT_5V · 2 GND · 3 D− · 4 D+ · 5 GND, in parallel with the DUT receptacle J4 | the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm); **one of J4 / J7 at a time** (below) |
-| Camera | JST PH 2, SMD: 5 V via 0.5 A PTC | mouth 0.65 mm behind `pcb.bay_node.cam` in `config/rack.yaml`, to clear the M3 hole |
+| Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side, AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.5 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
 muxes, at 480 Mb/s if the DUT can.  Freerouting can't route differential pairs, so that chain (J3 →
@@ -122,11 +122,15 @@ each terminal, tied to it by net-tie pad groups, so the INA226 reads the resisto
 copper.
 
 **GPIO map** (v0.5: each signal leaves the module on the edge that faces where it goes): right
-column IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO38/IO37 I²C SDA/SCL (the DUT power block
-sits in the top-right corner); bottom right IO47/IO33 UART1 TX/RX · IO34 AUX_RST · IO48 AUX_BOOT;
-bottom left IO12 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC; IO16 POS_IN · IO17/IO18 CAN
-RX/TX (TWAI) · IO35 POS_OUT for the rack bus; IO19/IO20 USB; TXD0/RXD0 on test pads (bottom side).
-`firmware/README.md` has the full table, checked against the schematic by
+column IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/IO1 I²C SDA/SCL (the DUT power block
+sits in the rear-right corner) · IO42 POS_OUT towards J2 · IO38 LED; bottom row IO47/IO21 UART1
+TX/RX · IO12 AUX_RST · IO48 AUX_BOOT · IO13 PC_DET · IO14 MUX_FORCE_PC and the camera on SPI2
+through the GPIO matrix, IO11 SCK · IO10 MOSI · IO9 MISO; left column IO15 SVC · IO16 POS_IN ·
+IO17/IO18 CAN RX/TX (TWAI) · IO8 the camera's CS · IO7 its light; IO19/IO20 USB; TXD0/RXD0 on test
+pads (bottom side).  IO4–IO6 are free.  The WROOM-1's octal PSRAM takes IO35–IO37 and it has no
+IO26/IO33/IO34; IO3, IO45 and IO46 (strapping) stay unused.  The map is the one an
+ESP32-S3-DevKitC-1 v1.1 (N8R8, the same module) can take as is: every pin on its headers, the
+status LED on its own RGB LED's IO38, so the bench stand-in needs no remap.  `firmware/README.md` has the full table, checked against the schematic by
 `firmware/tools/check_pinmap.py`.
 
 **Row power VRACK, 20 or 28 V.** The hub negotiates 20 V, or 28 V (EPR), from a USB-C PD charger
@@ -139,6 +143,30 @@ until the PD contract is final, so a node sees one clean power-up.
 
 **USB-C roles:** the front PC port is a sink (5.1 k Rd on CC) whose VBUS is
 only sensed; the DUT port is a source (22 k Rp → "1.5 A") with switched VBUS.
+
+**Camera (J6).**  Each bay's camera, an Arducam Mega 3MP SPI (M12 version B0434, ≈ 120° lens) in
+the pod under the bay's ceiling, and its 2–4 white 5 V LEDs hang on one ≈ 50 cm PH 8 lead from the
+bay's own node.  SPI2 runs in mode 0 at 4 MHz (2 MHz fallback); the 33 Ω series resistors sit at
+J6, 45–55 mm of track from the module, i.e. at the source as far as the 50 cm lead is concerned;
+GND on pins 2 and 4 keeps a return next to SCK.  CS has a 10k pull-up (deselected before
+firmware); the light's AO3400A (5.7 A, 48 mΩ at 2.5 V gate; the 2N7002 is rated 115 mA with a 2.5 V threshold, short of
+the LEDs' 150 mA) is held off by its 100k gate pull-down, PWM ≥ 20 kHz (LEDC) or plain on/off, as
+slow PWM bands a rolling shutter.  CAM_5V stays behind the 0.5 A PTC: the camera ≈ 120 mA, the
+LEDs ≤ 150 mA.  **Open:** the Mega's MISO high level when fed 5 V; check the first unit (≤ 3.6 V).
+If it drives 5 V, R33 becomes 330 Ω and R35 (680 Ω, footprint fitted, not populated) goes on:
+3.37 V.  No edge had room for a side-entry PH 8 (≈ 21 mm), so J6 is vertical, right of the PC
+pair and under J7; the lead rises from it (mated height 8 mm, 14 mm to the drawer).
+
+**WROOM-1 and the longer board.**  The camera's frames want PSRAM: U3 is the ESP32-S3-WROOM-1-N8R8
+(8 MB flash, 8 MB octal PSRAM), the bench stand-in's own module, 18 × 25.5 mm instead of the
+MINI-1's 15.4 × 20.5.  The board grew 10 mm at the rear (64 × 90, the only side with room in the
+plenum): the whole layout moved 10 mm along KiCad's y, so the front edge, the four M3 holes (the
+tray's standoffs) and every part keep their place in the tray, and the module's top edge sits on
+the new rear edge with its antenna band (the rear 6 mm, ±24 mm around the module: no copper, no
+part).  The stock footprint's 0.2 mm vias in the exposed pad are below the boards' 0.3 mm minimum
+hole and wick the pad's solder: `bench:ESP32-S3-WROOM-1_NoEPVias` drops them, and the pad sits on a
+top-side GND island with eight vias to In1 around it.  AUX (J5) became a vertical PH 6 like J6 and
+J7.  The power hub keeps the MINI-1-N8.
 
 **J4 or J7, not both.**  J7 taps the DUT pair on the mux side of U8 (the port board has its own
 ESD) and DUT_5V after the switch and shunt.  Both in use at once breaks nothing: the TPS2553 still
@@ -301,7 +329,7 @@ hub: 5 A on VBUS), one extended type for another.  In all ≈ +$9 of loading fee
 $364.10 for v0.4.  Re-quote before ordering.
 
 * **Bay node: Standard PCBA.** JLC can only place the ESP32-S3-MINI-1 module
-  (C2913206) and the WS2812B-2020 LED with its Standard PCBA service, not
+  (C2913206; the node's WROOM-1-N8R8 since the camera, C2913201) and the WS2812B-2020 LED with its Standard PCBA service, not
   Economic, so the node pays Standard fees (setup $25.75, stencil $8.27, X-ray
   $13.28 in the quote above).  These parts are flagged `standard_only` in
   `electronics/tools/catalog.py`, which `tools/bom.py` reads.  The WS2812C-2020-V6
@@ -353,19 +381,23 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C173752 JST S2B-PH-K | node J1 J2 J6 | 180°, +1.00 mm x | was wrong in the preview; hand-soldered now, not in the CPL |
 | C6186 AMS1117 SOT-223 | node U2 | 180° | looked wrong in the preview; confirm the fix |
 | C165948 HRO TYPE-C-31-M-12 | node J3 J4 until v0.4 | −1.57 mm y | not on the boards since v0.5 |
-| C2913206 ESP32-S3-MINI-1 | node U3 | +2.55 mm y | to confirm |
+| C2913206 ESP32-S3-MINI-1 | hub U4 (node U3 until the camera) | +2.55 mm y | to confirm |
+| C2913201 ESP32-S3-WROOM-1-N8R8 | node U3 | +3.63 mm y | to confirm |
+| C471518 JST B6B-PH-SM4-TB | node J5 | 180°, −0.63 mm y | to confirm |
 | C431540 MSK12C02 | node SW3 | −0.25 mm y (lines up the pins; JLC's body outline then sits 0.25 mm off KiCad's) | to confirm |
 | C45262770 LMR51635 TSOT-23-6 | node U1 | 270° (same EasyEDA footprint as C7519) | to confirm |
 | C11355 FSUSB42 MSOP-10 | node U5 U6 | 270° | to confirm |
 | C49851 INA226 VSSOP-10 | node U10 | 270° | to confirm |
-| C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8, data port U1 | 270° | to confirm |
+| C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8 U12 U13, data port U1 | 270° | to confirm |
 | C55266 TPS2553 SOT-23-6 | node U9 | 180° | to confirm |
 | C10096 74LVC1G32 SOT-23-5 | node U7 | 180° | to confirm |
 | C8545 2N7002 SOT-23 | node Q2 Q3 | 180° | to confirm |
 | C7503186 SUD50P06 TO-252 | node Q1, hub Q1 | −1.89 mm x | to confirm |
 | C544399 TPS26600 HTSSOP-16 | hub U1–U5 | 270° | to confirm |
 | C160315 JST B2P-VH | hub J1 | +1.98 mm x | hand-soldered, not in the CPL |
-| C295747 JST S2B-PH-SM4-TB | node J6 | none (fit: +0.08 mm y, left alone) | to confirm |
+| C295747 JST S2B-PH-SM4-TB | node J6 until the camera | none (fit: +0.08 mm y, left alone) | not on the node since the camera |
+| C495548 JST B8B-PH-SM4-TB | node J6 | −0.63 mm y | to confirm |
+| C20917 AO3400A SOT-23 | node Q4 | 180° | to confirm |
 | C265405 JST S6B-PH-SM4-TB | node J1 J2 J5, hub row outputs | 180° | to confirm |
 | C7399456 TCAN1462V SOIC-8 (alternates C3234993 TCAN1044AV, C3234095 TJA1462AT) | node U11, hub U6 | 270° | to confirm |
 | C75176 PESD2CAN SOT-23 | node D5, hub D9 | 180° | to confirm |

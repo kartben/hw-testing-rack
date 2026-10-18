@@ -40,19 +40,19 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "100n — Capacitor 100n 0603",
-"ref": "C4,C5,C14,C16,C17,C18,C19,C20,C22,C23,C24,C25,C26",
+"ref": "C4,C5,C14,C16,C17,C18,C19,C20,C22,C23,C24,C25,C26,C27",
 "mpn": "CC0603KRX7R9BB104",
 "manufacturer": "YAGEO",
 "supplier": "LCSC/JLCPCB",
 "part": "C14663",
-"qty": 208,
+"qty": 224,
 "unit_eur": 0.0124,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "13 per board × 16 boards",
+"notes": "14 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 2.58
+"ext_eur": 2.78
 },
 {
 "category": "Electronics",
@@ -291,38 +291,38 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "AUX — JST PH 6-pin, side entry, SMD",
+"item": "AUX — JST PH 6-pin, vertical, SMD",
 "ref": "J5",
-"mpn": "S6B-PH-SM4-TB(LF)(SN)",
+"mpn": "B6B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
-"part": "C265405",
+"part": "C471518",
 "qty": 16,
-"unit_eur": 0.3588,
+"unit_eur": 0.3956,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 5.74
+"ext_eur": 6.33
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "CAM — JST PH 2-pin, side entry, SMD, 2 A",
+"item": "CAM — JST PH 8-pin, vertical, SMD",
 "ref": "J6",
-"mpn": "S2B-PH-SM4-TB(LF)(SN)",
+"mpn": "B8B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
-"part": "C295747",
+"part": "C495548",
 "qty": 16,
-"unit_eur": 0.2024,
+"unit_eur": 0.5244,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 3.24
+"ext_eur": 8.39
 },
 {
 "category": "Electronics",
@@ -399,20 +399,38 @@
 {
 "category": "Electronics",
 "group": "bay-node",
+"item": "AO3400A — N-MOSFET 30 V 5.7 A, 48 mΩ at 2.5 V (the camera light's low side)",
+"ref": "Q4",
+"mpn": "AO3400A",
+"manufacturer": "Alpha & Omega Semicon",
+"supplier": "LCSC/JLCPCB",
+"part": "C20917",
+"qty": 16,
+"unit_eur": 0.092,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 16 boards",
+"unit": "pcs",
+"ext_eur": 1.47
+},
+{
+"category": "Electronics",
+"group": "bay-node",
 "item": "100k — Resistor 100k 0603",
-"ref": "R1,R3,R13,R17,R26,R27,R29",
+"ref": "R1,R3,R13,R17,R26,R27,R29,R36",
 "mpn": "0603WAF1003T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25803",
-"qty": 112,
+"qty": 128,
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "7 per board × 16 boards",
+"notes": "8 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.32
+"ext_eur": 0.37
 },
 {
 "category": "Electronics",
@@ -472,37 +490,37 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "10k — Resistor 10k 0603",
-"ref": "R6,R7,R11,R18,R20,R28,R30",
+"ref": "R6,R7,R11,R18,R20,R28,R30,R37",
 "mpn": "0603WAF1002T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25804",
-"qty": 112,
+"qty": 128,
 "unit_eur": 0.0048,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "7 per board × 16 boards",
+"notes": "8 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.54
+"ext_eur": 0.61
 },
 {
 "category": "Electronics",
 "group": "bay-node",
 "item": "33 — Resistor 33 0603",
-"ref": "R8",
+"ref": "R8,R31,R32,R33,R34",
 "mpn": "0603WAF330JT5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C23140",
-"qty": 16,
+"qty": 80,
 "unit_eur": 0.0023,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "5 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.04
+"ext_eur": 0.18
 },
 {
 "category": "Electronics",
@@ -723,38 +741,38 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "ESP32-S3-MINI-1-N8 — ESP32-S3 module, 8 MB flash, PCB antenna, USB OTG (full speed)",
+"item": "ESP32-S3-WROOM-1-N8R8 — ESP32-S3 module, 8 MB flash, 8 MB octal PSRAM, PCB antenna, USB OTG (full speed)",
 "ref": "U3",
-"mpn": "ESP32-S3-MINI-1-N8",
+"mpn": "ESP32-S3-WROOM-1-N8R8",
 "manufacturer": "Espressif",
 "supplier": "LCSC/JLCPCB",
-"part": "C2913206",
+"part": "C2913201",
 "qty": 16,
-"unit_eur": 4.3424,
+"unit_eur": 4.6184,
 "basic": false,
 "standard_only": true,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 69.48
+"ext_eur": 73.89
 },
 {
 "category": "Electronics",
 "group": "bay-node",
 "item": "USBLC6-2SC6 — USB ESD protection",
-"ref": "U4,U8",
+"ref": "U4,U8,U12,U13",
 "mpn": "USBLC6-2SC6",
 "manufacturer": "STMicroelectronics",
 "supplier": "LCSC/JLCPCB",
 "part": "C7519",
-"qty": 32,
+"qty": 64,
 "unit_eur": 0.1656,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 16 boards; alternative: C2687116 (UMW clone)",
+"notes": "4 per board × 16 boards; alternative: C2687116 (UMW clone)",
 "unit": "pcs",
-"ext_eur": 5.3
+"ext_eur": 10.6
 },
 {
 "category": "Electronics",
@@ -868,12 +886,12 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA)",
-"supplier": "JLCPCB quote 2026-10-16",
+"supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 20,
-"unit_eur": 2.7094,
-"notes": "engineering $25.00, ENIG $19.30, board $14.60 = $58.90 for 20 PCBs, 16 of them assembled",
+"unit_eur": 2.7936,
+"notes": "engineering $25.00, ENIG $19.30, board $16.43 = $60.73 for 20 PCBs, 16 of them assembled",
 "unit": "pcs",
-"ext_eur": 54.19
+"ext_eur": 55.87
 },
 {
 "category": "Electronics",
@@ -881,10 +899,10 @@
 "item": "Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": 125.11,
-"notes": "setup $25.75, stencil $8.27, feeders $77.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components); rev 0.5: J7 DATA header (+$4.80 components); rev 0.5: J7, one more extended part type (+$3.00 feeders); Standard because ESP32-S3-MINI-1-N8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 127.87,
+"notes": "setup $25.75, stencil $8.27, feeders $80.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components); rev 0.5: J7 DATA header (+$4.80 components); rev 0.5: J7, one more extended part type (+$3.00 feeders); rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET) (+$18.91 components); rev 0.5: the vertical AUX connector, one more extended part type (+$3.00 feeders); rev 0.5: the board 64 × 90 mm (quoted 64 × 80) (+$1.83 board); Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 125.11
+"ext_eur": 127.87
 },
 {
 "category": "Electronics",
@@ -892,10 +910,10 @@
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": -27.42,
-"notes": "quoted components $181.21 + $51.54 since (≈ €214.13) for 16 boards; catalogue unit prices give €241.55",
+"unit_eur": -27.4,
+"notes": "quoted components $181.21 + $70.45 since (≈ €231.53) for 16 boards; catalogue unit prices give €258.93",
 "unit": "pcs",
-"ext_eur": -27.42
+"ext_eur": -27.4
 },
 {
 "category": "Electronics",
@@ -2282,42 +2300,52 @@
 },
 {
 "category": "Cameras",
-"item": "Seeed XIAO ESP32S3 Sense (camera pod)",
-"supplier": "Seeed",
+"item": "Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm",
+"supplier": "Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey",
 "qty": 2,
-"unit_eur": 13.5,
+"unit_eur": 28.25,
+"notes": "on arrival: its header's order (VCC GND SCK MISO MOSI CS) and its MISO high level when fed 5 V (≤ 3.6 V, or change R33 and fit R35 on the node)",
 "unit": "pcs",
-"ext_eur": 27.0
+"ext_eur": 56.5
 },
 {
 "category": "Cameras",
-"item": "OV2640 wide-angle (120–160°) 24-pin DVP module (check FPC fit)",
+"item": "M12 lens, 1/4\", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK)",
 "supplier": "AliExpress",
 "qty": 2,
-"unit_eur": 4.0,
+"unit_eur": 3.0,
 "unit": "pcs",
-"ext_eur": 8.0
+"ext_eur": 6.0
 },
 {
 "category": "Cameras",
-"item": "JST-PH 2-pin lead to the XIAO 5 V pads + M3×30 pivot screw",
-"supplier": "any",
+"item": "White 5 V LED strip segment, 2–4 LEDs with their resistors (the pod's light, ≤ 150 mA)",
+"supplier": "AliExpress (5 V strip, cut to length)",
 "qty": 2,
-"unit_eur": 0.6,
+"unit_eur": 0.5,
 "unit": "pcs",
-"ext_eur": 1.2
+"ext_eur": 1.0
+},
+{
+"category": "Cameras",
+"item": "JST PH 8-pin lead, 50 cm, single-ended (node J6 → the pod: the Mega's header + the LED strip)",
+"supplier": "AliExpress",
+"qty": 2,
+"unit_eur": 1.0,
+"unit": "pcs",
+"ext_eur": 2.0
 }
 ],
 "by_category": {
-"Electronics": 627.7799999999999,
+"Electronics": 649.6199999999999,
 "Printed parts": 78.0,
 "Fasteners": 17.509999999999998,
 "Motion": 31.53,
 "Cables": 61.47,
 "Power": 82.0,
-"Cameras": 36.2
+"Cameras": 65.5
 },
-"total_eur": 934.49,
+"total_eur": 985.63,
 "prints": [
 {
 "part": "bay_label",
@@ -2627,13 +2655,13 @@
 "pcb": {
 "engineering": 25.0,
 "ENIG": 19.3,
-"board": 14.6
+"board": 16.43
 },
 "pcba": {
 "setup": 25.75,
 "stencil": 8.27,
-"components": 232.75,
-"feeders": 77.1,
+"components": 251.66,
+"feeders": 80.1,
 "SMT": 9.45,
 "manual assembly": 1.62,
 "X-ray": 13.28,
@@ -2645,9 +2673,12 @@
 "rev 0.5: 3 more extended part types (+$9.00 feeders)",
 "rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components)",
 "rev 0.5: J7 DATA header (+$4.80 components)",
-"rev 0.5: J7, one more extended part type (+$3.00 feeders)"
+"rev 0.5: J7, one more extended part type (+$3.00 feeders)",
+"rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET) (+$18.91 components)",
+"rev 0.5: the vertical AUX connector, one more extended part type (+$3.00 feeders)",
+"rev 0.5: the board 64 × 90 mm (quoted 64 × 80) (+$1.83 board)"
 ],
-"total": 427.64
+"total": 451.38
 },
 "power-hub": {
 "pcb": {

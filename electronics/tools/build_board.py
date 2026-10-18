@@ -169,6 +169,11 @@ JLC_CPL_FIX = {
     # the DATA lead's 5-pin PH pair, fitted on 2026-10-18 the same way
     "C265104": ("JST_PH_S5B-PH-SM4-TB_1x05-1MP_P2.00mm_Horizontal", 180, 0.0, 0.14),  # data port J2
     "C265085": ("JST_PH_B5B-PH-SM4-TB_1x05-1MP_P2.00mm_Vertical", 180, 0.0, -0.62),   # bay J7
+    # the camera's parts, fitted the same way
+    "C2913201": ("ESP32-S3-WROOM-1_NoEPVias", 0, 0.0, 3.63),                         # bay U3 (WROOM-1-N8R8)
+    "C471518": ("JST_PH_B6B-PH-SM4-TB_1x06-1MP_P2.00mm_Vertical", 180, 0.0, -0.63),  # bay J5 (AUX)
+    "C495548": ("JST_PH_B8B-PH-SM4-TB_1x08-1MP_P2.00mm_Vertical", 0, 0.0, -0.63),    # bay J6
+    "C20917": ("SOT-23", 180, 0.0, 0.0),                                      # bay Q4 (AO3400A)
 }
 
 

@@ -494,3 +494,31 @@ PH at x 17.5 (on a 17 mm board its courtyard and the USB4105's overlap in depth,
 x), holes (3, 8.5) and (37.5, 4) over the drawer's cable window.  Re-routed (0 unrouted, 0
 violations); Konnect on the saved files: ERC 0, DRC 0 / 0 unconnected / parity 0 (zones refilled),
 JLC DFM 0 findings, 6 parts with a model.
+
+## Bay node: the bay's camera on J6, the WROOM-1-N8R8, 64 × 90 mm (2026-10-18)
+
+The user chose a camera per bay wired to the bay's own node: an Arducam Mega 3MP SPI (M12, ≈ 120°)
+and white LEDs on one PH 8 lead, and the ESP32-S3-WROOM-1-N8R8 for its 8 MB octal PSRAM
+([electronics.md](electronics.md#bay-node-1-per-unit--4-layers-64--90-mm), Camera, WROOM-1 and
+the longer board).  The board grew 10 mm at the rear (the whole layout moved with it, holes
+included); the module's top edge is the new rear edge.  Its octal PSRAM takes IO35–IO37 and the
+WROOM-1 has no IO26/IO33/IO34: AUX_RX, AUX_RST_CTL, POS_OUT and I²C moved, and the whole map is now
+the ESP32-S3-DevKitC-1 v1.1's.  J6 (B8B, vertical) sits right of the PC pair, under J7; J5 (AUX)
+became a vertical B6B.  The stock WROOM-1 footprint's 0.2 mm vias in the exposed pad (below the
+0.3 mm minimum hole) are dropped by a project footprint, the pad stitched to In1 around it.
+Re-routed (Freerouting); the session import now also removes a via left at the end of a dead
+branch and the branch (here IO12's: 1 via, 3 segments).  Konnect, on the saved files:
+
+| | bay node |
+|---|---|
+| U3 pin nets (`get_component_nets`) | as `design.py`: IO1/IO2 I²C, IO7–IO11 camera, IO12 AUX_RST, IO21 AUX_RX, IO38 LED, IO42 POS_OUT; IO4–IO6 and IO35–IO37 open |
+| J6 pin nets | CAM_5V, GND, CAM_SCK_C, GND, CAM_MOSI_C, CAM_MISO_C, CAM_CS_C, LED_K |
+| ERC | 0 errors, 0 warnings |
+| DRC (zones refilled) | 0 errors, 0 warnings, 0 unconnected, parity 0 |
+| JLC DFM | 4 parts on the bottom (test pads); the R6 / TP2 proximity is gone (R6 moved to the module's EN pin) |
+| Camera tracks, U3 → the 33 Ω row | SCK 45.7 mm, MOSI 44.9, MISO 53.9, CS 52.8; the light 82.5 mm |
+| 3D coverage | 97 parts with a model, 0 stand-ins |
+| `check_pinmap.py` | README rows match design.py; the moved and camera nets wait for the firmware's devicetree |
+
+JLC placement corrections, fitted as before: C2913201 (WROOM-1-N8R8) +3.63 mm y, C495548 (B8B)
+−0.63 mm y, C471518 (B6B) 180° −0.63 mm y, C20917 (AO3400A) 180°.
