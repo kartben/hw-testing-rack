@@ -264,15 +264,18 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress / igus E2 micro", "qty": round(0.17 * n_bays + 0.3, 1), "unit": "m", "unit_eur": 4.0},
         {"category": "Cables", "item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
          "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_bays, "unit_eur": 1.5},
-        {"category": "Cables", "item": "JST PH 6-pin jumper, 1:1, 24 AWG, 120 mm, both ends PHR-6 "
-                                      "(bay → bay through the ladder: row bus, CAN, POS)",
-         "supplier": "pre-crimped PH 6-pin, \"same direction\" (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S",
+        {"category": "Cables", "item": "JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 24 AWG, 120 mm, "
+                                      "both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS)",
+         "supplier": "pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often \"reverse\") "
+                     "or PHR-6 + 12 × SPH-002T-P0.5S",
          "qty": sum(cols - 1 for _ in rack.rows), "unit_eur": 0.6,
-         "notes": "check pin 1 ↔ pin 1: vendors name the same/reverse types inconsistently (docs/can.md)"},
-        {"category": "Cables", "item": "JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C "
-                                      "(power box → first bay of each row: VRACK, CAN, POS)",
-         "supplier": "pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S", "qty": n_rows, "unit_eur": 0.8,
-         "notes": "PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair (pins 3-4) by hand"},
+         "notes": "check: laid flat, both plugs show the same face, and pin 1 ↔ pin 6 (docs/can.md)"},
+        {"category": "Cables", "item": "JST PH 6-pin feed, the jumpers' type (pin n ↔ pin 7−n), 24 AWG, ≈ 0.25 / 0.45 / "
+                                      "0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS)",
+         "supplier": "pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often \"reverse\") "
+                     "or PHR-6 + 12 × SPH-002T-P0.5S", "qty": n_rows, "unit_eur": 0.8,
+         "notes": "check as the jumpers; PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair "
+                  "(pins 3-4) by hand"},
     ]
     cab = Counter(info["cable"] for info in pop.values())
     for k, n in sorted(cab.items()):

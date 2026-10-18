@@ -5,7 +5,7 @@ Functions
     28 V EPR, from the hub's USB-C PD supply), the rack's CAN pair and the POS addressing token.
     Reverse-polarity P-FET, TVS, LMR51635 synchronous buck to 5 V / 3.5 A, 3.3 V LDO for the logic.
   * CAN: TCAN1462V on the ESP32-S3 TWAI, tapping the pair that runs J1 → J2 (no termination).
-  * POS: token in on J1.6, out on J2.6, each through 10k + a BAT54S clamp (survives VRACK on it).
+  * POS: token in on J1.6, out on J2.1 (J2 is J1 mirrored), each through 10k + a BAT54S clamp (survives VRACK on it).
   * DUT port (USB-C, source): DUT_5V through a TPS2553 current-limited switch
     (≈1.4 A) and a 50 mΩ shunt read by an INA226; D+/D- through ESD.
   * Two USB 2.0 muxes:
@@ -183,11 +183,10 @@ def board() -> Board:
         "                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected",
         "GPIO firmware can also force classic mode (MUX_FORCE_PC).",
     ]
-    # the row bus on In2: J1 pin 1 (left edge, rear end of the 6-pin connector, y = PWR_Y - 5) to J2 pin 1
-    # (right edge, front end, y = PWR_Y + 5): a strip across the board above the connectors' other pins,
-    # then down the right edge under J2's housing.  3.8 mm wide (≈ 1.9 A in 0.5 oz for 10 °C)
-    bus = [(0.5, PWR_Y - 7.2), (63.5, PWR_Y - 7.2), (63.5, PWR_Y + 6.4), (58.2, PWR_Y + 6.4), (58.2, PWR_Y - 3.4),
-           (0.5, PWR_Y - 3.4)]
+    # the row bus on In2: J1 pin 1 (left edge, rear end of the 6-pin connector, y = PWR_Y - 5) straight
+    # across to J2 pin 6 (right edge, also its rear end: J2's pinout is J1's mirrored, docs/can.md), a
+    # strip above the connectors' other pins.  3.8 mm wide (≈ 1.9 A in 0.5 oz for 10 °C)
+    bus = [(0.5, PWR_Y - 7.2), (63.5, PWR_Y - 7.2), (63.5, PWR_Y - 3.4), (0.5, PWR_Y - 3.4)]
     hs_tracks, hs_vias = usb_hs_routes()
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
@@ -229,8 +228,7 @@ def board() -> Board:
              "poly": [(52.15, 0.4), (63.6, 0.4), (63.6, PWR_Y - 7.5), (0.4, PWR_Y - 7.5), (0.4, 24.3), (22.3, 24.3),
                       (22.3, 34.3), (48.15, 34.3), (48.15, 20.3), (52.15, 20.3)]},
             {"layer": "In2.Cu", "net": "+3V3", "priority": 1,
-             "poly": [(0.4, PWR_Y - 3.1), (57.9, PWR_Y - 3.1), (57.9, PWR_Y + 6.7), (63.6, PWR_Y + 6.7), (63.6, 79.6),
-                      (0.4, 79.6)]},
+             "poly": [(0.4, PWR_Y - 3.1), (63.6, PWR_Y - 3.1), (63.6, 79.6), (0.4, 79.6)]},
             {"layer": "In2.Cu", "net": "VRACK", "priority": 3, "poly": bus},
             # buck hot loop (TI SLUSF64B §8.4): top-side islands joining CIN, U1 and COUT
             {"layer": "F.Cu", "net": "GND", "connection": "solid", "name": "buck-gnd", "priority": 3,
@@ -240,14 +238,14 @@ def board() -> Board:
              "poly": [(12.8, 38.1), (17.3, 38.1), (17.3, 30.6), (21.0, 30.6), (21.0, 39.9), (12.8, 39.9)]},
             {"layer": "F.Cu", "net": "VIN", "connection": "solid", "name": "buck-vin", "priority": 3,
              "poly": [(5.6, 34.5), (7.8, 34.5), (7.8, 42.7), (5.6, 42.7)]},
-            # J1/J2 (6-pin SMD, docs/can.md): the whole row's supply and its return pass through pins 1 and
-            # 2/5 (up to the hub's 1.6 A eFuse limit), so each of them sits on a solid island with two vias
-            # to its plane.  Pins 3/4 (CAN) and 6 (POS) are ordinary signals.
+            # J1/J2 (6-pin SMD, docs/can.md): the whole row's supply and its return pass through J1.1 / J2.6
+            # and the GND pins 2/5 (up to the hub's 1.6 A eFuse limit), so each of them sits on a solid
+            # island with two vias to its plane.  CAN (3/4) and POS (J1.6, J2.1) are ordinary signals.
             *[{"layer": "F.Cu", "net": n, "connection": "solid", "name": nm, "priority": 3,
                "poly": [(x0, y - 0.7), (x1, y - 0.7), (x1, y + 0.7), (x0, y + 0.7)]}
               for n, nm, x0, x1, y in (("VRACK", "j1-bus", 5.8, 11.0, PWR_Y - 5), ("GND", "j1-gnd2", 5.8, 11.0, PWR_Y - 3),
                                        ("GND", "j1-gnd5", 5.8, 11.6, PWR_Y + 3),
-                                       ("VRACK", "j2-bus", 54.3, 61.0, PWR_Y + 5), ("GND", "j2-gnd2", 52.7, 58.2, PWR_Y + 3),
+                                       ("VRACK", "j2-bus", 54.3, 61.0, PWR_Y - 5), ("GND", "j2-gnd2", 52.7, 58.2, PWR_Y + 3),
                                        ("GND", "j2-gnd5", 52.7, 58.2, PWR_Y - 3))],
             # under the ESP32 module (Espressif's layout guide): its centre pads and GND pins on one
             # top-side island, stitched to In1 around the centre pads
@@ -266,7 +264,7 @@ def board() -> Board:
                  ("VRACK", 14.0, 58.1), ("VRACK", 16.0, 58.1),
                  *[(n, x, PWR_Y + dy) for n, dy in (("VRACK", -5), ("GND", -3), ("GND", 3)) for x in (10.05, 10.75)],
                  *[(n, x, PWR_Y + dy) for n, dy in (("GND", -3), ("GND", 3)) for x in (53.2, 53.9)],
-                 *[("VRACK", x, PWR_Y + 5) for x in (59.3, 60.1)],
+                 *[("VRACK", x, PWR_Y - 5) for x in (59.3, 60.1)],
                  # buck output island down to the +5V area, LDO tab down to the +3V3 area
                  *[("+5V", x, y) for x, y in ((17.9, 31.2), (20.4, 31.2), (20.5, 35.0), (20.5, 37.2))],
                  *[("+3V3", x, y) for x, y in ((9.2, 16.8), (10.6, 16.8), (12.0, 16.8), (13.4, 16.8),
@@ -300,19 +298,23 @@ def board() -> Board:
     s = b.sheet("Power", "power.kicad_sch", "VRACK input (20–28 V), 5 V buck, 3.3 V LDO")
     s.frame("Row cable in / out (JST PH 6, daisy chain: bus, GND, CAN_H, CAN_L, GND, POS) and input protection",
             6, 6, 52, 30)
-    # J1 on the left edge (pin 1 towards the rear), J2 on the right edge (pin 1 towards the front): with a 1:1
-    # cable J2 of one bay faces J1 of the next (docs/can.md).  CAN_H/CAN_L pass straight through, POS is cut
-    # here: J1.6 is this node's token input, J2.6 its output (Rack bus sheet)
-    for ref, val, y, rot, x, pos in (("J1", "ROW IN", 14, 270, PH_EDGE, "POS_IN_CONN"),
-                                     ("J2", "ROW OUT", 24, 90, W - PH_EDGE, "POS_OUT_CONN")):
-        part(s, ref, "ph6", {"1": "VRACK", "2": "GND", "3": "CAN_H", "4": "CAN_L", "5": "GND", "6": pos}, val,
-             pcb=P(x, PWR_Y, rot), sch=at(10, y, mirror="y", fields="left"))
+    # J1 on the left edge (pin 1 towards the rear), J2 on the right edge (the same footprint turned 180°:
+    # its pin 1 towards the front).  J2's pinout is J1's mirrored (J2.n = J1.(7-n)), so every net crosses
+    # the board straight and J2 of one bay meets J1 of the next through a flat cable with no twist: both
+    # plugs the same face up, wire 1 to pin 6 (docs/can.md).  CAN_H/CAN_L pass straight through, POS is
+    # cut here: J1.6 is this node's token input, J2.1 its output (Rack bus sheet)
+    for ref, val, y, rot, x, nets in (
+            ("J1", "ROW IN", 14, 270, PH_EDGE,
+             {"1": "VRACK", "2": "GND", "3": "CAN_H", "4": "CAN_L", "5": "GND", "6": "POS_IN_CONN"}),
+            ("J2", "ROW OUT", 24, 90, W - PH_EDGE,
+             {"1": "POS_OUT_CONN", "2": "GND", "3": "CAN_L", "4": "CAN_H", "5": "GND", "6": "VRACK"})):
+        part(s, ref, "ph6", nets, val, pcb=P(x, PWR_Y, rot), sch=at(10, y, mirror="y", fields="left"))
         for pin, dy in (("2", -1), ("5", 2)):
             s.wire(f"{ref}.{pin}", (13, y + dy))
             s.tag("GND", (13, y + dy), "right")
-        for pin, dy, net in (("3", 0, "CAN_H"), ("4", 1, "CAN_L"), ("6", 3, pos)):
+        for pin, dy in (("3", 0), ("4", 1), ("6", 3)) + ((("1", -2),) if ref == "J2" else ()):
             s.wire(f"{ref}.{pin}", (13, y + dy))
-            s.tag(net, (13, y + dy), "right")
+            s.tag(nets[pin], (13, y + dy), "right")
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "VRACK"}, in_bom=False, on_board=False, sch=at(21, 12, fields=(-3.8, -2.6)))
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(30, 24, fields=(0.6, -2.6)))
     s.part("#FLG03", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "VIN"}, in_bom=False, on_board=False, sch=at(45, 12, fields=(-3.8, -2.6)))
@@ -324,7 +326,6 @@ def board() -> Board:
     part(s, "D2", "tvs33", {"K": "VIN", "A": "GND"}, pcb=P(22, 58, 90), sch=at(35, 16.5, rot=270))
     part(s, "C1", "cap100u50", {"1": "VIN", "2": "GND"}, "100u/50V", pcb=P(6, 48.4, 90), sch=at(41, 16.5))
     s.wire("J1.1", (19, 12), "Q1.D")
-    s.wire("J2.1", (19, 22), (19, 12))
     s.wire("#FLG02.1", (30, 25))
     s.tag("GND", (30, 25), "down")
     s.wire("Q1.G", "R1.1")
@@ -626,7 +627,7 @@ def board() -> Board:
 
     # ------------------------------------------------------------------ rack bus: CAN + POS (docs/can.md)
     k = b.sheet("Rack bus", "bus.kicad_sch", "Rack bus: CAN transceiver and POS addressing token")
-    k.frame("CAN: TCAN1462V on the row pair (J1.3/4 ↔ J2.3/4, Power sheet); stub ≤ 20 mm, no termination", 6, 6, 70, 32)
+    k.frame("CAN: TCAN1462V on the row pair (J1.3/4 ↔ J2.4/3, Power sheet); stub ≤ 20 mm, no termination", 6, 6, 70, 32)
     # straddles the In2 VRACK strip: VCC (+5V) and the TXD/RXD pins on the rear side, VIO (+3V3), CANH/CANL and
     # STB on the front side, right above the pair
     part(k, "U11", "can_xcvr", {"TXD": "CAN_TXD", "VSS": "GND", "VDD": "+5V", "RXD": "CAN_RXD", "Vio": "+3V3",
@@ -652,7 +653,7 @@ def board() -> Board:
          sch=at(62, 22))
     k.text("STB low: always in normal mode (TXD dominant time-out guards the bus).", 8, 29, 1.27)
 
-    k.frame("POS token: in from J1.6, out to J2.6; 10k series + BAT54S clamp on each (VRACK on pin 6 costs ≈ 2.5 mA at 28 V)",
+    k.frame("POS token: in from J1.6, out to J2.1; 10k series + BAT54S clamp on each (VRACK on it costs ≈ 2.5 mA at 28 V)",
             6, 36, 70, 66)
     R(k, "R28", "10k", "POS_IN_CONN", "POS_IN", pcb=P(11.7, PWR_Y + 5.6, 0), sch=at(20, 42, rot=90))
     k.wire((14, 42), "R28.1")
@@ -664,7 +665,7 @@ def board() -> Board:
     k.wire("D6.COM", (28, 42))
     R(k, "R29", "100k", "POS_IN", "GND", pcb=P(19.0, PWR_Y + 7.4, 90), sch=at(35, 44.5))
     k.wire("R29.1", (35, 42))
-    R(k, "R30", "10k", "POS_OUT", "POS_OUT_CONN", pcb=P(51.8, PWR_Y - 5.0, 0), sch=at(30, 56, rot=90))
+    R(k, "R30", "10k", "POS_OUT", "POS_OUT_CONN", pcb=P(51.8, PWR_Y + 5.0, 0), sch=at(30, 56, rot=90))
     k.wire((14, 56), "R30.1")
     k.tag("POS_OUT", (14, 56), "left")
     k.wire("R30.2", (40, 56))

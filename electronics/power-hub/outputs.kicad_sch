@@ -4821,7 +4821,7 @@
 		)
 		(uuid "520fee74-0d11-5d4a-9b8b-97b0d4b5eb60")
 	)
-	(label "ROW_A"
+	(label "POS_A_CONN"
 		(at 281.94 43.18 180)
 		(fields_autoplaced yes)
 		(effects
@@ -4920,7 +4920,7 @@
 		)
 		(uuid "aa013759-c1a1-57ed-b720-443b9559172c")
 	)
-	(global_label "CAN_H"
+	(global_label "CAN_L"
 		(shape bidirectional)
 		(at 281.94 48.26 180)
 		(fields_autoplaced yes)
@@ -4953,7 +4953,7 @@
 		)
 		(uuid "ae0e356a-b66b-5c97-b545-f579b511769f")
 	)
-	(global_label "CAN_L"
+	(global_label "CAN_H"
 		(shape bidirectional)
 		(at 281.94 50.8 180)
 		(fields_autoplaced yes)
@@ -5063,7 +5063,7 @@
 		)
 		(uuid "ff5b3f71-da97-5c6d-bc29-9b653dfcbb94")
 	)
-	(label "POS_A_CONN"
+	(label "ROW_A"
 		(at 281.94 55.88 180)
 		(fields_autoplaced yes)
 		(effects
@@ -8456,7 +8456,7 @@
 		)
 		(uuid "45257288-5019-5f56-8e53-c2f1249e2021")
 	)
-	(label "ROW_B"
+	(label "POS_B_CONN"
 		(at 281.94 115.57 180)
 		(fields_autoplaced yes)
 		(effects
@@ -8555,7 +8555,7 @@
 		)
 		(uuid "ae9692d3-cf76-5d26-a7ca-3ff170eb2e80")
 	)
-	(global_label "CAN_H"
+	(global_label "CAN_L"
 		(shape bidirectional)
 		(at 281.94 120.65 180)
 		(fields_autoplaced yes)
@@ -8588,7 +8588,7 @@
 		)
 		(uuid "ea4ffb20-6970-5ec8-b51b-d4199e684576")
 	)
-	(global_label "CAN_L"
+	(global_label "CAN_H"
 		(shape bidirectional)
 		(at 281.94 123.19 180)
 		(fields_autoplaced yes)
@@ -8698,7 +8698,7 @@
 		)
 		(uuid "ab12491a-225b-51f8-8b72-49f6c45e80d3")
 	)
-	(label "POS_B_CONN"
+	(label "ROW_B"
 		(at 281.94 128.27 180)
 		(fields_autoplaced yes)
 		(effects
@@ -12091,7 +12091,7 @@
 		)
 		(uuid "96c607f3-09c9-5fdd-9d51-480acfe54d3d")
 	)
-	(label "ROW_C"
+	(label "POS_C_CONN"
 		(at 281.94 186.69 180)
 		(fields_autoplaced yes)
 		(effects
@@ -12190,7 +12190,7 @@
 		)
 		(uuid "d9d1a9d8-d7e2-5e62-928f-b2fb88a6fe95")
 	)
-	(global_label "CAN_H"
+	(global_label "CAN_L"
 		(shape bidirectional)
 		(at 281.94 191.77 180)
 		(fields_autoplaced yes)
@@ -12223,7 +12223,7 @@
 		)
 		(uuid "26957432-e833-542d-b776-0d0b26ed7cdf")
 	)
-	(global_label "CAN_L"
+	(global_label "CAN_H"
 		(shape bidirectional)
 		(at 281.94 194.31 180)
 		(fields_autoplaced yes)
@@ -12333,7 +12333,7 @@
 		)
 		(uuid "6bc27268-fadb-55e0-ac88-aa39cb2a26c5")
 	)
-	(label "POS_C_CONN"
+	(label "ROW_C"
 		(at 281.94 199.39 180)
 		(fields_autoplaced yes)
 		(effects
@@ -15726,7 +15726,7 @@
 		)
 		(uuid "fa0b9a2c-f348-5de8-8e0e-208eb7bbb36a")
 	)
-	(label "ROW_D"
+	(label "POS_D_CONN"
 		(at 281.94 257.81 180)
 		(fields_autoplaced yes)
 		(effects
@@ -15825,7 +15825,7 @@
 		)
 		(uuid "fd3dcc6f-079a-5f2f-92f2-e7f7f5ed5c9d")
 	)
-	(global_label "CAN_H"
+	(global_label "CAN_L"
 		(shape bidirectional)
 		(at 281.94 262.89 180)
 		(fields_autoplaced yes)
@@ -15858,7 +15858,7 @@
 		)
 		(uuid "67c0ac8f-9312-59c6-ab61-a67220b201be")
 	)
-	(global_label "CAN_L"
+	(global_label "CAN_H"
 		(shape bidirectional)
 		(at 281.94 265.43 180)
 		(fields_autoplaced yes)
@@ -15968,7 +15968,7 @@
 		)
 		(uuid "aa58d2bb-3d1d-596b-ab42-b09ef5225da5")
 	)
-	(label "POS_D_CONN"
+	(label "ROW_D"
 		(at 281.94 270.51 180)
 		(fields_autoplaced yes)
 		(effects

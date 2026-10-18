@@ -429,3 +429,39 @@ alternates for the same footprint: the TCAN1044AVDRQ1 (C3234993, no signal impro
 TJA1462AT/0Z (C3234095, signal improvement, bus pins −36 / +40 V instead of ±58 V).  The TCAN1462
 without the V (C22445414, in stock) does not fit: with no VIO pin its RXD swings to 5 V, too much for
 the ESP32-S3.
+
+## Bay node: J2 mirrored, the row cable flat (2026-10-18)
+
+J2 (ROW OUT) now carries J1's pinout mirrored (1 POS out · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), so
+the jumper between two nodes lies flat with no twist ([can.md](can.md#row-cable)).  Every net crosses the
+board straight: the VRACK strip on In2 runs from J1.1 to J2.6 at the same height, and R30 moved next to
+J2.1.  The node was re-routed (Freerouting).  Konnect, on the saved files:
+
+| | bay node |
+|---|---|
+| J1 / J2 pin nets (`get_component_nets`) | J1: VRACK, GND, CAN_H, CAN_L, GND, POS_IN_CONN; J2: POS_OUT_CONN, GND, CAN_L, CAN_H, GND, VRACK |
+| ERC | 0 errors, 0 warnings |
+| DRC | 0 errors, 0 warnings, 0 unconnected, schematic parity 0 |
+| CAN pair | J1 → J2: CAN_H 55 mm, CAN_L 59 mm; stubs to U11 3.7 / 8.2 mm, to D5 3.5 / 1.3 mm (≤ 20 mm asked) |
+| 3D coverage (`tools/pcb_glb.py --check`) | 85 parts with a model, 0 stand-ins |
+
+The hub's row outputs get the same OUT pinout (below), so the feeds are the same cable.
+
+## Power hub: row outputs with the OUT pinout (2026-10-18)
+
+The hub's row outputs (J2–J5) now carry the bay nodes' OUT pinout (1 POS · 2 GND · 3 CAN_L · 4 CAN_H ·
+5 GND · 6 VRACK), so every row cable, feed or jumper, is the same flat one ([can.md](can.md#row-cable)).
+Each row's 0.8 mm ROW track leaves its eFuse as before, stops short of the connector's rear pin (POS),
+drops to B.Cu beside the connector (three vias) and comes back up at pin 6, so the top side beside
+the pads stays free for the CAN pair; R10x (POS, 10k) sits behind pin 1.  The AP33772S's I2C routes
+of the first layout are now fixed in design.py (a re-route left SDA without a way out once).
+Konnect, on the saved files:
+
+| | power hub |
+|---|---|
+| Row output pin nets (`get_component_nets`, J4) | POS_C_CONN, GND, CAN_L, CAN_H, GND, ROW_C |
+| ERC | 0 errors, 0 warnings |
+| DRC | 0 errors, 0 unconnected, parity 0; the two warnings above (C8's silkscreen, U1's local library copy) |
+| CAN pair, U6 → rows A / B / C / D | CAN_H 102 / 77 / 48 / 24 mm, CAN_L 97 / 68 / 43 / 18 mm (before: 99 / 72 / 51 / 22 and 106 / 82 / 56 / 27); H − L 4.2–8.3 mm (before 4.6–10.4); totals 115 / 118 mm (before 117 / 124) |
+| CAN pair coupling | 41 % of CAN_H within 1 mm of CAN_L on the same layer, median gap 1.45 mm (before: 41 %, 1.39 mm) |
+| 3D coverage (`tools/pcb_glb.py --check`) | 146 parts with a model, 0 stand-ins |

@@ -3868,7 +3868,7 @@
 		)
 		(uuid "ba78abc3-26ee-5590-b5ae-78c3fece87f5")
 	)
-	(text "CAN: TCAN1462V on the row pair (J1.3/4 ↔ J2.3/4, Power sheet); stub ≤ 20 mm, no termination"
+	(text "CAN: TCAN1462V on the row pair (J1.3/4 ↔ J2.4/3, Power sheet); stub ≤ 20 mm, no termination"
 		(exclude_from_sim no)
 		(at 16.51 17.78 0)
 		(effects
@@ -3892,7 +3892,7 @@
 		)
 		(uuid "9785e712-3f34-5384-ae7f-8370c1b653ab")
 	)
-	(text "POS token: in from J1.6, out to J2.6; 10k series + BAT54S clamp on each (VRACK on pin 6 costs ≈ 2.5 mA at 28 V)"
+	(text "POS token: in from J1.6, out to J2.1; 10k series + BAT54S clamp on each (VRACK on it costs ≈ 2.5 mA at 28 V)"
 		(exclude_from_sim no)
 		(at 16.51 93.98 0)
 		(effects
