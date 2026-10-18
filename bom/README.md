@@ -10,11 +10,11 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Printed parts | 78 |
 | Cables | 67 |
 | Cameras | 36 |
+| Motion | 22 |
 | Fasteners | 17 |
-| Motion | 9 |
-| **Total** | **872** |
+| **Total** | **886** |
 
-≈ **€73 per bay** all-in.
+≈ **€74 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -45,8 +45,8 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | camera_pod_cradle | 2 | 2.4 | `mechanical/stl/camera_pod_cradle.stl` |
 | camera_pod_mount | 2 | 4.3 | `mechanical/stl/camera_pod_mount.stl` |
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
-| chain_anchor | 12 | 0.8 | `mechanical/stl/chain_anchor.stl` |
-| chain_foot | 12 | 1.3 | `mechanical/stl/chain_foot.stl` |
+| chain_anchor | 12 | 1.4 | `mechanical/stl/chain_anchor.stl` |
+| chain_foot | 12 | 1.4 | `mechanical/stl/chain_foot.stl` |
 | drawer | 12 | 44.5 | `mechanical/stl/drawer.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 49.6 | `mechanical/stl/ladder_a.stl` |
@@ -67,7 +67,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | plate_stm32f746g-disco | 1 | 39.4 | `mechanical/stl/plate_stm32f746g-disco.stl` |
 | power_box_base | 1 | 66.5 | `mechanical/stl/power_box_base.stl` |
 | power_box_lid | 1 | 21.2 | `mechanical/stl/power_box_lid.stl` |
-| tray | 12 | 78.9 | `mechanical/stl/tray.stl` |
+| tray | 12 | 79.5 | `mechanical/stl/tray.stl` |
 
 ## Line items
 
@@ -183,11 +183,13 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 0.00 | 0.00 | estimate, not quoted (v0.5) |
 | Printed parts | PETG filament | 3.9 kg | 20.00 | 78.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 168  | 0.03 | 5.04 | AliExpress (bulk) / Ruthex |
-| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid | 68  | 0.02 | 1.36 | AliExpress (bulk) |
-| Fasteners | M3×6 (node PCB, chain anchor, hub PCB) | 76  | 0.02 | 1.52 | AliExpress (bulk) |
-| Fasteners | M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends) | 72  | 0.02 | 1.44 | AliExpress (bulk) |
+| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid, chain anchor | 92  | 0.02 | 1.84 | AliExpress (bulk) |
+| Fasteners | M3×6 (node PCB, hub PCB) | 52  | 0.02 | 1.04 | AliExpress (bulk) |
+| Fasteners | M2.5×8 self-tapping (drawer stop, chain-foot lock, 4 for the chain's end pieces) | 72  | 0.02 | 1.44 | AliExpress (bulk) |
+| Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 48  | 0.01 | 0.48 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge) | 24  | 0.30 | 7.20 | supermagnete S-06-03-N |
-| Motion | Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer | 2.3 m | 4.00 | 9.20 | AliExpress / igus E2 micro |
+| Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 2.6 m | 4.00 | 10.40 | Olimex DRAG-CHAIN-7X7 |
+| Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer | 12  | 1.00 | 12.00 | AliExpress (generic) / Olimex if included |
 | Cables | USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port) | 12  | 1.50 | 18.00 | AliExpress (generic, USB 2.0 is enough) |
 | Cables | JST PH 6-pin jumper, 1:1, 24 AWG, 120 mm, both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS) | 9  | 0.60 | 5.40 | pre-crimped PH 6-pin, "same direction" (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S |
 | Cables | JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS) | 3  | 0.80 | 2.40 | pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S |

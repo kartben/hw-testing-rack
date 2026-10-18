@@ -30,6 +30,9 @@ HOLE_PITCH = 16;
 GUSSET_T = 2;                            // ribs under the ledges
 GUSSET_STEP = 24;
 CHAIN_X = [CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 3, CHAIN_MOVING_X + CHAIN_H / 2 + 3];   // chain sweep (x)
+// low rails keeping the two runs straight, [x, y0, y1]: the fixed one starts behind the anchor
+CHAIN_RAILS = [[CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 1.6, ANCHOR_Y0 + ANCHOR[1] + 1, CARRIER_D - 30],
+               [CHAIN_MOVING_X + CHAIN_H / 2 + 0.4, CHAIN_FIXED[1], CARRIER_D - 30]];
 
 // ------------------------------------------------------------------ shell (shared with the plates)
 // Left side wall with its runner, latch arm and barb (x <= WALL); `ly` = barb catch face.
@@ -85,8 +88,7 @@ module chain_slots_2d(keep) {
         for (x = [CHAIN_X[0] + 3 : 9 : CHAIN_X[1] - 5], y0 = [22 : 46 : CARRIER_D - 50])
             translate([x, y0]) square([5, 40]);
         for (k = keep) translate([k[0], k[1]]) circle(r = k[2] + 2.5);
-        for (x = [CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 1.6, CHAIN_MOVING_X + CHAIN_H / 2 + 0.4])   // chain rails
-            translate([x - 2, CHAIN_FIXED[1] - 2]) square([5.2, CARRIER_D - CHAIN_FIXED[1] - 26]);
+        for (r = CHAIN_RAILS) translate([r[0] - 2, r[1] - 2]) square([5.2, r[2] - r[1] + 4]);   // under the rails
     }
 }
 
@@ -94,7 +96,7 @@ module tray_bottom_2d() {
     keep = concat(
         [for (h = NODE_HOLES) concat(node_xy(h), [5])],
         [for (c = cam_inserts()) concat(c, [5])],
-        [[CHAIN_FIXED_RUN_X - 8, CHAIN_FIXED[1] - 8, 5], [CHAIN_FIXED_RUN_X + 8, CHAIN_FIXED[1] - 8, 5]],
+        [for (b = ANCHOR_BOSSES) concat(b, [5])],
         [concat(CAM_CABLE_HOLE, [7])]);
     difference() {
         square([CARRIER_W, CARRIER_D]);
@@ -147,11 +149,9 @@ module tray() {
                 cylinder(d = BOSS_D, h = CARRIER_BOTTOM + CARRIER_STANDOFF);
             // camera-pod insert bosses (inserts go in from below)
             for (c = cam_inserts()) translate([c[0], c[1], 0]) cylinder(d = 7.5, h = CARRIER_BOTTOM + 4);
-            // drag-chain fixed-end anchor (2 × M3 inserts) and the low rails keeping the runs straight
-            translate([CHAIN_FIXED_RUN_X, CHAIN_FIXED[1] - 8, 0])
-                for (dx = [-8, 8]) translate([dx, 0, 0]) cylinder(d = 7.5, h = CARRIER_BOTTOM + 3);
-            for (x = [CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 1.6, CHAIN_MOVING_X + CHAIN_H / 2 + 0.4])
-                translate([x, CHAIN_FIXED[1], 0]) cube([1.2, CARRIER_D - CHAIN_FIXED[1] - 30, CARRIER_BOTTOM + 3]);
+            // drag-chain anchor bosses (2 × M3 inserts, outside the fixed run) and the low rails
+            for (b = ANCHOR_BOSSES) translate(concat(b, [0])) cylinder(d = 7.5, h = ANCHOR_Z0);
+            for (r = CHAIN_RAILS) translate([r[0], r[1], 0]) cube([1.2, r[2] - r[1], CARRIER_BOTTOM + 3]);
             // detent magnet pad: the left ledge widened under the drawer's magnet, on a 45° gusset
             translate([0, DETENT_LEDGE[1] - DETENT_PAD[1] / 2, LEDGE_Z - LEDGE_T]) {
                 cube([DETENT_PAD[0], DETENT_PAD[1], LEDGE_T]);
@@ -161,8 +161,7 @@ module tray() {
         }
         for (h = NODE_HOLES) translate(concat(node_xy(h), [CARRIER_BOTTOM + CARRIER_STANDOFF])) insert_hole(INSERT_M3);
         for (c = cam_inserts()) translate([c[0], c[1], 0]) mirror([0, 0, 1]) insert_hole(INSERT_M3);
-        translate([CHAIN_FIXED_RUN_X, CHAIN_FIXED[1] - 8, CARRIER_BOTTOM + 3])
-            for (dx = [-8, 8]) translate([dx, 0, 0]) insert_hole(INSERT_M3);
+        for (b = ANCHOR_BOSSES) translate(concat(b, [ANCHOR_Z0])) insert_hole(INSERT_M3);
         fascia_cutouts();
         // bay label recess on the fascia, right of the controls
         translate([CARRIER_W - 34, 0.6 - EPS, CARRIER_WALL_H / 2]) rotate([90, 0, 0])

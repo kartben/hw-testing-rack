@@ -265,7 +265,7 @@ function makeHubStandIn() {
 function chainPath(ch, frac) {
   const t = ch.travel * frac;
   const [fx, fy] = ch.fixed;
-  const mx = ch.moving_x, my = ch.foot_y - t, b = ch.bend_y - t / 2, r = ch.radius;
+  const mx = ch.moving_x, my = ch.moving_y - t, b = ch.bend_y - t / 2, r = ch.radius;
   const cx = (fx + mx) / 2;
   const pts = [];
   const push = (x, y) => pts.push(new THREE.Vector3(ch.origin[0] + x, ch.origin[1] + y, ch.origin[2] + ch.z));
@@ -276,8 +276,11 @@ function chainPath(ch, frac) {
   return pts;
 }
 
-const LINK_PITCH = 9;
-const linkGeom = new THREE.BoxGeometry(LINK_PITCH * 0.94, 10, 11);   // along X; width (plan) Y; height Z
+const linkGeoms = {};      // one box per chain size: along X; plan width Y; height Z
+function linkGeom(ch) {
+  const k = `${ch.pitch}x${ch.height}x${ch.width}`;
+  return linkGeoms[k] ??= new THREE.BoxGeometry(ch.pitch * 0.94, ch.height, ch.width);
+}
 function layoutChain(inst, ch, frac) {
   const pts = chainPath(ch, frac);
   const seg = [];
@@ -285,7 +288,7 @@ function layoutChain(inst, ch, frac) {
   for (let i = 1; i < pts.length; i++) { const d = pts[i].distanceTo(pts[i - 1]); seg.push(d); total += d; }
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1);
   let idx = 0, acc = 0, k = 0;
-  for (let dist = LINK_PITCH / 2; dist < total && k < inst.count; dist += LINK_PITCH, k++) {
+  for (let dist = ch.pitch / 2; dist < total && k < inst.count; dist += ch.pitch, k++) {
     while (idx < seg.length - 1 && acc + seg[idx] < dist) { acc += seg[idx]; idx++; }
     const f = (dist - acc) / seg[idx];
     const p = pts[idx].clone().lerp(pts[idx + 1], f);
@@ -535,7 +538,7 @@ function build(pcbGlb) {
   }
   // chains
   for (const ch of DATA.chains) {
-    const inst = new THREE.InstancedMesh(linkGeom, MAT.chain, 40);
+    const inst = new THREE.InstancedMesh(linkGeom(ch), MAT.chain, 40);
     inst.castShadow = true;
     inst.userData.bay = ch.bay;
     drawerFrac[ch.bay] = ch.open;

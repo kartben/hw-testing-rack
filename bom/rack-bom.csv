@@ -109,11 +109,13 @@ Electronics,power-hub,"Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-
 Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,0.0,0.0,"estimate, not quoted (v0.5)",,,,,quoted components $52.32 (≈ €48.13) for 2 boards; catalogue unit prices give €48.13
 Printed parts,filament,PETG filament,3.9,kg,20.0,78.0,any,,,,,"≈3.5 kg estimated + 10 % waste, 127 parts"
 Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",168,pcs,0.03,5.04,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub standoffs + 4 lid lugs
-Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid",68,pcs,0.02,1.36,AliExpress (bulk),,,,,
-Fasteners,,"M3×6 (node PCB, chain anchor, hub PCB)",76,pcs,0.02,1.52,AliExpress (bulk),,,,,
-Fasteners,,"M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends)",72,pcs,0.02,1.44,AliExpress (bulk),,,,,
+Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid, chain anchor",92,pcs,0.02,1.84,AliExpress (bulk),,,,,
+Fasteners,,"M3×6 (node PCB, hub PCB)",52,pcs,0.02,1.04,AliExpress (bulk),,,,,
+Fasteners,,"M2.5×8 self-tapping (drawer stop, chain-foot lock, 4 for the chain's end pieces)",72,pcs,0.02,1.44,AliExpress (bulk),,,,,
+Fasteners,,"M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",48,pcs,0.01,0.48,AliExpress (bulk),,,,,
 Fasteners,,"Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",24,pcs,0.3,7.2,supermagnete S-06-03-N,,,,,
-Motion,,"Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",2.3,m,4.0,9.2,AliExpress / igus E2 micro,,,,,
+Motion,,"Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces",2.6,m,4.0,10.4,Olimex DRAG-CHAIN-7X7,,,,,"open the links to lay the extension in (its plug and panel socket do not pass a 7×7 channel); Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)"
+Motion,,"End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer",12,pcs,1.0,12.0,AliExpress (generic) / Olimex if included,,,,,a metre of chain usually comes with one pair only
 Cables,,"USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",12,pcs,1.5,18.0,"AliExpress (generic, USB 2.0 is enough)",,,,,
 Cables,,"JST PH 6-pin jumper, 1:1, 24 AWG, 120 mm, both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS)",9,pcs,0.6,5.4,"pre-crimped PH 6-pin, ""same direction"" (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S",,,,,check pin 1 ↔ pin 1: vendors name the same/reverse types inconsistently (docs/can.md)
 Cables,,"JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS)",3,pcs,0.8,2.4,pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S,,,,,"PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair (pins 3-4) by hand"

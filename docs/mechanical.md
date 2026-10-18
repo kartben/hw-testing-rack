@@ -44,7 +44,7 @@ constants it reads.)
 |---|---|---|
 | Tray | `tray.scad` | the plenum under the drawer: node standoffs, chain anchor and rails, fascia with the PC port / LED / SERVICE switch, camera inserts underneath.  The drawer rides on two side ledges under C-channel lips; runners on both walls slide into the ladder grooves from the front, and a flex arm per wall clicks a barb into the groove's window (pull the drawer out, press both arms to remove the tray) |
 | Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; open floor under the plate; rear bay with two DATA panel-socket positions (left/right, the socket goes in the one farther from the board's USB) and the AUX slot, cable window and the foot groove |
-| Chain foot / anchor | `chain_parts.scad` | the foot slides into the drawer's rear-open groove and is locked by one M2.5 from inside the rear bay; a printable 7×7 link is included if you'd rather not buy chain |
+| Chain foot / anchor | `chain_parts.scad` | take the chain's end pieces (tab with 2 holes 8 mm apart, M2.5 self-tapping + washers).  The anchor is a block outside the fixed run, on two M3 inserts in the tray; the foot carries the moving end on a fin outside the moving run and slides into the drawer's rear-open groove, locked by one M2.5 from inside the rear bay.  A printable link (and its removable bar, so the cable can be laid in) is included if you'd rather not buy chain |
 | Board plates | `board_plate.scad` | one per form factor, generated from [`mechanical/boards/boards.yaml`](../mechanical/boards/boards.yaml) |
 | Bay label | `label.scad` | 12 × 100 mm blank for the drawer front's recess |
 
@@ -58,6 +58,32 @@ stroke.  A pair of 6 × 3 mm magnets (one in the drawer, one in the left ledge,
 on a pad) holds it closed against the slope; pulled out, it rests on an M2.5
 stop screw through the left lip, the flange still under the lips.  Want
 smoother?  Print the trays in a POM-like "igus" filament.
+
+### Drag chain
+
+The reference is Olimex's DRAG-CHAIN-7X7 (€4/m): 7 × 7 mm inside, links
+that open on both sides, so the extension can be laid in (its plug and its
+panel socket would not pass through).  Olimex publishes only the inner size;
+the model takes the outer size (13.5 × 10.2 mm) and the end pieces (a tab
+with 2 holes 8 mm apart) from Electrokit's listing of the same generic chain
+(41017996).  The bend radius is not published anywhere: the model keeps
+R18.  **Measure the chain on arrival** and set `config/rack.yaml › chain`:
+`outer`, `radius`, `end_holes` and `end_length`, the rigid length of an end
+piece from its mouth to its pivot on the chain.
+
+The chain lies flat in the plenum, its side plates horizontal, so the end
+pieces' tabs stand vertical on the outer faces of the U: the fixed one
+against the anchor block, the moving one against the foot's fin (2 × M2.5×8
+and washers each).  The runs are 36 mm apart (2 × R), 13.5 mm tall from 3 mm
+above the tray floor, under the drawer with 6.5 mm to spare; low rails keep
+them straight.  An end piece cannot bend, so it must stay in a straight run
+over the whole stroke: the moving end with the drawer closed, the fixed end
+with it open.  That sets the moving end's mouth 26 mm in front of the bend
+(157 mm from the drawer front), and the U still clears the tray's rear wall
+by 1.9 mm.  `lib/carrier.scad` asserts all three, so a measured chain that
+does not fit stops the build instead of printing parts that clash.  Checked
+in Blender over the 140 mm stroke: the chain, the anchor, the foot, the
+drawer, the node and the DUT plug never overlap.
 
 ### Plates (form factors)
 

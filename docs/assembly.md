@@ -46,10 +46,13 @@ right and floor plate; base brace into the free inserts of the shared ladder
 ## 4. Inside each bay
 
 1. **Node** onto the tray standoffs (4 × M3×6).
-2. **Drag chain**: cut ≈ 160 mm (21 links of the common 7×7 R18); fixed end
-   to the `chain_anchor` (2 × M3×6 into the tray), moving end to the
-   `chain_foot`.  Lay the drawer extension cable in the chain (links snap
-   open), plug its male end into the node's DUT port.
+2. **Drag chain**: cut ≈ 180 mm including the two end pieces (Olimex
+   DRAG-CHAIN-7X7).  At the bench, screw the fixed end piece to the
+   `chain_anchor` and the moving one to the `chain_foot`'s fin, each with
+   2 × M2.5×8 and washers, tab against the part's flat face.  Open the links,
+   lay the drawer extension cable in ([cabling.md](cabling.md)) and close them.
+   Anchor onto the tray: 2 × M3×8 into its inserts; plug the cable's male end
+   into the node's DUT port.
 3. **Row power (VRACK)**: JST PH jumper to the neighbouring node, through the windows in
    both tray walls and the shared ladder; the row feed goes into the row's
    first bay.

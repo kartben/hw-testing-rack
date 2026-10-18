@@ -249,16 +249,25 @@ def hardware(rack) -> list[dict]:
          "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node "
                   "standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub "
                   "standoffs + 4 lid lugs"},
-        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid",
-         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 4, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor, hub PCB)", "supplier": "AliExpress (bulk)",
-         "qty": 6 * n_bays + 4, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends)",
+        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid, chain anchor",
+         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 4 + 2 * n_bays, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×6 (node PCB, hub PCB)", "supplier": "AliExpress (bulk)",
+         "qty": 4 * n_bays + 4, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M2.5×8 self-tapping (drawer stop, chain-foot lock, 4 for the chain's end pieces)",
          "supplier": "AliExpress (bulk)", "qty": 6 * n_bays, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
+         "supplier": "AliExpress (bulk)", "qty": 4 * n_bays, "unit_eur": 0.01},
         {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",
          "supplier": "supermagnete S-06-03-N", "qty": 2 * n_bays, "unit_eur": 0.30},
-        {"category": "Motion", "item": "Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",
-         "supplier": "AliExpress / igus E2 micro", "qty": round(0.17 * n_bays + 0.3, 1), "unit": "m", "unit_eur": 4.0},
+        {"category": "Motion", "item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), "
+                                      "≈ 180 mm per drawer with its two end pieces",
+         "supplier": "Olimex DRAG-CHAIN-7X7", "qty": round(0.19 * n_bays + 0.3, 1), "unit": "m", "unit_eur": 4.0,
+         "notes": "open the links to lay the extension in (its plug and panel socket do not pass a 7×7 channel); "
+                  "Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, "
+                  "measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)"},
+        {"category": "Motion", "item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer",
+         "supplier": "AliExpress (generic) / Olimex if included", "qty": n_bays, "unit_eur": 1.0,
+         "notes": "a metre of chain usually comes with one pair only"},
         {"category": "Cables", "item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
          "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_bays, "unit_eur": 1.5},
         {"category": "Cables", "item": "JST PH 6-pin jumper, 1:1, 24 AWG, 120 mm, both ends PHR-6 "

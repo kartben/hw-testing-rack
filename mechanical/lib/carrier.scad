@@ -62,6 +62,19 @@ CHAIN_W = CHAIN_OUTER[0];                          // vertical extent when lying
 CHAIN_H = CHAIN_OUTER[1];                          // horizontal extent (X) of one run
 CHAIN_Z = CARRIER_BOTTOM + CHAIN_W / 2 + 0.6;      // centre line height in the plenum
 CHAIN_FIXED_RUN_X = CHAIN_FIXED[0];
+// End pieces: a tab flush with the outer face of the U, two holes along the chain
+// (CHAIN_END_HOLES = [pitch, first hole from the mouth]).  The fixed end screws to the anchor,
+// a block outside the fixed run that sits on two M3 insert bosses; the moving end to the foot.
+ANCHOR = [8, 30];                                  // block X × Y
+ANCHOR_X1 = CHAIN_FIXED_RUN_X - CHAIN_H / 2;       // its inner face = the fixed run's outer face
+ANCHOR_Y0 = CHAIN_FIXED[1] - 6;
+ANCHOR_Z0 = CARRIER_BOTTOM + 3;                    // top of the insert bosses
+ANCHOR_BOSSES = [for (y = [ANCHOR_Y0 + 4, ANCHOR_Y0 + ANCHOR[1] - 4]) [ANCHOR_X1 - ANCHOR[0] / 2, y]];
+// the rigid end pieces stay in straight runs over the whole stroke, and the U clears the rear wall
+assert(CHAIN_BEND_Y - CHAIN_MOVING_Y >= CHAIN_END_LENGTH, "chain: the moving end piece reaches the bend (drawer closed)");
+assert(CHAIN_BEND_Y - DRAWER_TRAVEL / 2 - CHAIN_FIXED[1] >= CHAIN_END_LENGTH, "chain: the fixed end piece reaches the bend (drawer open)");
+assert(CHAIN_BEND_Y + CHAIN_R + CHAIN_H / 2 <= CARRIER_D - CARRIER_WALL - 1, "chain: the U bend reaches the tray's rear wall");
+function chain_end_holes(mouth_y) = [for (k = [0, 1]) mouth_y + CHAIN_END_HOLES[1] + k * CHAIN_END_HOLES[0]];
 DECK_SLOT = [CHAIN_MOVING_X, CHAIN_FOOT_Y - DRAWER_TRAVEL - 7, CHAIN_FOOT_Y + 7];  // x, y0, y1
 FOOT_HOLE = [CHAIN_MOVING_X - DRAWER_X0, CHAIN_FOOT_Y];                           // drawer coords
 

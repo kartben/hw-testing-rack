@@ -1925,30 +1925,39 @@
 },
 {
 "category": "Fasteners",
-"item": "M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid",
+"item": "M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid, chain anchor",
 "supplier": "AliExpress (bulk)",
-"qty": 68,
+"qty": 92,
 "unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 1.36
+"ext_eur": 1.84
 },
 {
 "category": "Fasteners",
-"item": "M3×6 (node PCB, chain anchor, hub PCB)",
+"item": "M3×6 (node PCB, hub PCB)",
 "supplier": "AliExpress (bulk)",
-"qty": 76,
+"qty": 52,
 "unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 1.52
+"ext_eur": 1.04
 },
 {
 "category": "Fasteners",
-"item": "M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends)",
+"item": "M2.5×8 self-tapping (drawer stop, chain-foot lock, 4 for the chain's end pieces)",
 "supplier": "AliExpress (bulk)",
 "qty": 72,
 "unit_eur": 0.02,
 "unit": "pcs",
 "ext_eur": 1.44
+},
+{
+"category": "Fasteners",
+"item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
+"supplier": "AliExpress (bulk)",
+"qty": 48,
+"unit_eur": 0.01,
+"unit": "pcs",
+"ext_eur": 0.48
 },
 {
 "category": "Fasteners",
@@ -1961,12 +1970,23 @@
 },
 {
 "category": "Motion",
-"item": "Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",
-"supplier": "AliExpress / igus E2 micro",
-"qty": 2.3,
+"item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces",
+"supplier": "Olimex DRAG-CHAIN-7X7",
+"qty": 2.6,
 "unit": "m",
 "unit_eur": 4.0,
-"ext_eur": 9.2
+"notes": "open the links to lay the extension in (its plug and panel socket do not pass a 7×7 channel); Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)",
+"ext_eur": 10.4
+},
+{
+"category": "Motion",
+"item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer",
+"supplier": "AliExpress (generic) / Olimex if included",
+"qty": 12,
+"unit_eur": 1.0,
+"notes": "a metre of chain usually comes with one pair only",
+"unit": "pcs",
+"ext_eur": 12.0
 },
 {
 "category": "Cables",
@@ -2066,13 +2086,13 @@
 "by_category": {
 "Electronics": 582.8799999999999,
 "Printed parts": 78.0,
-"Fasteners": 16.56,
-"Motion": 9.2,
+"Fasteners": 17.04,
+"Motion": 22.4,
 "Cables": 67.0,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 871.84,
+"total_eur": 885.52,
 "prints": [
 {
 "part": "bay_label",
@@ -2133,15 +2153,15 @@
 {
 "part": "chain_anchor",
 "qty": 12,
-"grams_each": 0.8,
-"grams_total": 9.5,
+"grams_each": 1.4,
+"grams_total": 16.9,
 "stl": "mechanical/stl/chain_anchor.stl"
 },
 {
 "part": "chain_foot",
 "qty": 12,
-"grams_each": 1.3,
-"grams_total": 15.5,
+"grams_each": 1.4,
+"grams_total": 17.0,
 "stl": "mechanical/stl/chain_foot.stl"
 },
 {
@@ -2287,8 +2307,8 @@
 {
 "part": "tray",
 "qty": 12,
-"grams_each": 78.9,
-"grams_total": 947.2,
+"grams_each": 79.5,
+"grams_total": 954.4,
 "stl": "mechanical/stl/tray.stl"
 }
 ],
