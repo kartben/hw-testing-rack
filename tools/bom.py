@@ -85,19 +85,17 @@ ROW_FEED_CM = [(30, 3.19), (60, 4.69), (80, 5.29)]      # rows A, B, C (≈ 0.25
 
 # DUT cables (DATA socket → board), per cable type of config/rack.yaml.  Listings found on 2026-10-18;
 # AliExpress then asked for a captcha, so variants and the data lines are to be checked on the page.
-# A right-angle micro-B or mini-B plug is not reversible and its "up" / "down" naming varies by seller:
-# buy one of each per board (the other is a spare) unless you have checked the board's socket.
+# A right-angle micro-B or mini-B plug is not reversible, its "up" / "down" naming varies by seller and
+# few listings offer both: those boards take a 90° adapter (sold as up / down / left / right sets, keep
+# the one whose female faces up) and a cable with a straight micro-B / mini-B plug.
 DUT_CABLES = {
     "c-to-c": {"supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)", "unit_eur": 2.5,
                "notes": "both plugs bent across their wide face (up / down, not left / right); USB-C is "
                         "reversible, so either bend works.  Check the listing says data, not charge only"},
-    "c-to-micro-b": {"supplier": "AliExpress (C 90° ↔ micro-B 90°, 10–15 cm: pick a listing with up AND down "
-                                 "micro-B variants)", "unit_eur": 2.0, "up_and_down": True,
-                     "notes": "one up + one down per board: the cable must leave the board's socket upwards; "
-                              "the USB-C end any up / down bend"},
-    "c-to-mini-b": {"supplier": "AliExpress 2251832791887129 (HOQO, C 90° ↔ mini-B 90°, 25 cm)", "unit_eur": 1.0,
-                    "up_and_down": True,
-                    "notes": "the F746G-DISCO's ST-LINK port (CN14) is mini-B; one up + one down mini-B variant"},
+    "c-to-micro-b": {"supplier": "AliExpress (USB-C 90° up / down ↔ micro-B straight, 20 cm, data)", "unit_eur": 2.0,
+                     "notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end any up / down bend"},
+    "c-to-mini-b": {"supplier": "AliExpress (USB-C 90° up / down ↔ mini-B straight, 25 cm, data)", "unit_eur": 2.5,
+                    "notes": "the F746G-DISCO's ST-LINK port (CN14) is mini-B; the plug stands on a mini-B 90° adapter"},
     "c-to-micro-b-straight": {"supplier": "AliExpress 1005010391943574 (CableCreation USB-C → micro-B, 0.2 m, "
                                           "480 Mbps)", "unit_eur": 2.5,
                               "notes": "straight at both ends, lies flat with one bend (board turned to the side)"},
@@ -350,10 +348,20 @@ def hardware(rack) -> list[dict]:
         src = DUT_CABLES.get(k, {"supplier": "AliExpress", "unit_eur": 3.0})
         boards = ", ".join(sorted({lib[info["board"]].get("short", info["board"])
                                    for info in pop.values() if info["cable"] == k}))
-        both = src.get("up_and_down", False)       # a right-angle micro-B / mini-B: which way it must bend
         rows.append({"category": "Cables", "item": f"{r['cables'][k]['label']} (DUT cable: {boards})",
-                     "supplier": src["supplier"], "qty": 2 * n if both else n, "unit_eur": src["unit_eur"],
+                     "supplier": src["supplier"], "qty": n, "unit_eur": src["unit_eur"],
                      "notes": src.get("notes", "")})
+    # 90° adapters for the micro-B / mini-B boards whose USB faces the port wall (cable style adapter)
+    ada = Counter(r["cables"][info["cable"]]["b"] for info in pop.values()
+                  if r["cables"][info["cable"]].get("style") == "adapter")
+    for t, n in sorted(ada.items()):
+        name = {"micro-b": "Micro-B", "mini-b": "Mini-B"}[t]
+        rows.append({"category": "Cables", "item": f"{name} 90° adapter, male → female, set of 4 (up, down, left, "
+                                                   f"right), one set per board",
+                     "supplier": f"AliExpress ({name} 90 degree adapter male to female, 4 pcs)", "qty": n,
+                     "unit": "set", "unit_eur": 2.0,
+                     "notes": "keep the one whose female faces up once plugged into the board (the cable's straight "
+                              "plug stands on it, its cable leaves upwards); the others are spares"})
     rows += [
         # the rack's supply: a USB PD charger outside it, into the power box's rear wall (the hub's
         # AP33772S sink asks for 28 V EPR, or 20 V), so no mains wiring anywhere in the rack

@@ -42,15 +42,19 @@ bay node (plenum)                              drawer
      leaves the right DATA socket forwards, bends once (≥ 10 mm radius) and
      lies flat on the plate into the board's side;
    * **a long board** (Nucleo, nRF DK, FRDM) faces its USB to the port wall,
-     17–23 mm away, too close for a straight plug: a 10–15 cm cable with
-     **right-angle plugs at both ends** makes a small arch over the board's
-     rear edge (straight up out of both plugs).  The F746G-DISCO, too long
-     for a plug behind it, turns its USB (mini-B) to the right wall: 20–25 cm.
-   A right-angle micro-B or mini-B is not reversible: its cable must leave
-   the board's socket upwards, and sellers name "up" and "down" either way,
-   so buy one of each per board unless you have checked.  The plate has two
-   hooks for the spare length.  Swapping boards = swapping plate + cable;
-   the bay doesn't care.
+     17–23 mm away, too close for a straight plug: the cable leaves the
+     socket through a **right-angle** USB-C and makes a small arch over the
+     board's rear edge.  At the board, a USB-C port takes a right-angle plug
+     too (a 15 cm C ↔ C bent at both ends); a micro-B or mini-B port takes a
+     **90° adapter** (male → female, its female facing up) with the cable's
+     straight plug standing on it (20 cm, 25 cm for the F746G-DISCO, whose
+     mini-B faces the right wall).  A right-angle micro-B / mini-B plug is
+     not reversible and sellers name "up" and "down" either way; the
+     adapters come in up / down / left / right sets, so keep whichever one
+     faces up.  The arch stays under ~105 mm above the row (a camera pod
+     hangs down to 120): loop any spare length flat on the plate's two hooks,
+     beside the board, not over it (the camera looks at it).
+   Swapping boards = swapping plate + cable; the bay doesn't care.
 
 **USB-C or micro-B in every bay?**  Yes — the bay's port is always USB-C and
 the short cable adapts.  The BOM lists one per board type

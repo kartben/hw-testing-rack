@@ -114,12 +114,16 @@ population:
   C4: { board: nucleo-64,        cable: c-to-micro-b, pc_cable: true } # "classic" mode: laptop on the front port
 
 cables:
-  # DUT cables (DATA socket → board): right-angle plugs at both ends for a board whose USB faces the
-  # port wall (an arch over its rear edge), straight ones for a small board turned to the side wall
-  # (orient: side, one flat bend).  `length` end to end.
-  c-to-c:       { label: "USB-C 90° ↔ USB-C 90°, 10–15 cm",     a: usb-c, b: usb-c,   length: 120 }
-  c-to-micro-b: { label: "USB-C 90° ↔ micro-B 90°, 10–15 cm",   a: usb-c, b: micro-b, length: 120 }
-  c-to-mini-b:  { label: "USB-C 90° ↔ mini-B 90°, 20–25 cm",    a: usb-c, b: mini-b,  length: 200 }
+  # DUT cables (DATA socket → board), `length` end to end.  A board whose USB faces the port wall: a
+  # right-angle USB-C at the socket and, at the board, a right-angle USB-C (style right) or, micro-B and
+  # mini-B not being reversible, a 90° adapter with the cable's straight plug standing on it (style
+  # adapter): an arch over the board's rear edge.  A small board turned to the side wall (orient: side):
+  # straight plugs at both ends, one flat bend (style straight).
+  c-to-c:       { label: "USB-C 90° ↔ USB-C 90°, 15 cm",        a: usb-c, b: usb-c,   length: 150 }
+  c-to-micro-b: { label: "USB-C 90° ↔ micro-B straight, 20 cm, on a micro-B 90° adapter", a: usb-c, b: micro-b,
+                  length: 200, style: adapter }
+  c-to-mini-b:  { label: "USB-C 90° ↔ mini-B straight, 25 cm, on a mini-B 90° adapter", a: usb-c, b: mini-b,
+                  length: 250, style: adapter }
   c-to-c-straight:       { label: "USB-C ↔ USB-C, straight, 15–20 cm", a: usb-c, b: usb-c,   length: 150, style: straight }
   c-to-micro-b-straight: { label: "USB-C ↔ micro-B, straight, 15–20 cm", a: usb-c, b: micro-b, length: 150, style: straight }
   drawer-ext:   { label: "USB-C male → panel-mount USB-C female, 30 cm", length: 300 }

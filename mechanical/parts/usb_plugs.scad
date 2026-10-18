@@ -55,6 +55,29 @@ module mold_right() {
     translate([0, TOP - 0.01, -D / 2]) rotate([-90, 0, 0]) relief(REL, RD[0], RD[1]);
 }
 
+// a 90° adapter (male into the board's socket, female facing up: a straight plug stands on it),
+// the micro-B / mini-B boards' fix for non-reversible right-angle cables: its body is AW wide, AD
+// deep along the axis, from H/2 under the axis to its female mouth ATOP above it
+AW = 11.5; AD = 8; ATOP = 11.5;
+module mouth(grow) {                          // the type's outline, seen from above (x wide, z thick)
+    rotate([90, 0, 0]) linear_extrude(7, center = true) offset(delta = grow)
+        if (SHELL == "pill") hull() for (dx = [-1, 1] * (SW - SH) / 2) translate([dx, 0]) circle(d = SH);
+        else polygon([[-SB / 2, -SH / 2], [SB / 2, -SH / 2], [SW / 2, SH * 0.1], [SW / 2, SH / 2], [-SW / 2, SH / 2], [-SW / 2, SH * 0.1]]);
+}
+module adapter_mold() {
+    hb = ATOP + H / 2;
+    difference() {
+        translate([0, ATOP - hb / 2, -AD / 2]) rotate([-90, 0, 0]) slab(AW, AD, 1.2, -hb / 2, hb / 2, 0.6, 0.6, 1);
+        translate([0, ATOP, -AD / 2]) mouth(0.3);
+    }
+}
+module adapter_metal() {                      // the female's shell, lining its mouth
+    translate([0, ATOP - 0.6, -AD / 2]) intersection() {
+        difference() { mouth(0.3); mouth(-0.1); }
+        translate([-10, -1.3, -10]) cube([20, 1.2, 20]);
+    }
+}
+
 // the panel-mount female end of the drawer extension: 25 mm flange with the receptacle's mouth,
 // two pan-head screws 17 mm apart in front, the 20 mm body and its strain relief behind (+z)
 module panel_mold() {
@@ -79,6 +102,7 @@ module panel_metal() {
 }
 
 if (STYLE == "panel") { if (PIECE == "mold") panel_mold(); else panel_metal(); }
+else if (STYLE == "adapter") { if (PIECE == "mold") adapter_mold(); else adapter_metal(); }
 else if (PIECE == "shell") shell();
 else if (STYLE == "right") mold_right();
 else mold_straight();

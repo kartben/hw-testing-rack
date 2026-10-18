@@ -2061,7 +2061,7 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ USB-C 90°, 10–15 cm (DUT cable: FRDM-MCXN947, nRF54L15 DK)",
+"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, nRF54L15 DK)",
 "supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)",
 "qty": 2,
 "unit_eur": 2.5,
@@ -2081,13 +2081,13 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ micro-B 90°, 10–15 cm (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK, nRF5340 DK)",
-"supplier": "AliExpress (C 90° ↔ micro-B 90°, 10–15 cm: pick a listing with up AND down micro-B variants)",
-"qty": 10,
+"item": "USB-C 90° ↔ micro-B straight, 20 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK, nRF5340 DK)",
+"supplier": "AliExpress (USB-C 90° up / down ↔ micro-B straight, 20 cm, data)",
+"qty": 5,
 "unit_eur": 2.0,
-"notes": "one up + one down per board: the cable must leave the board's socket upwards; the USB-C end any up / down bend",
+"notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end any up / down bend",
 "unit": "pcs",
-"ext_eur": 20.0
+"ext_eur": 10.0
 },
 {
 "category": "Cables",
@@ -2101,12 +2101,32 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ mini-B 90°, 20–25 cm (DUT cable: F746G-DISCO)",
-"supplier": "AliExpress 2251832791887129 (HOQO, C 90° ↔ mini-B 90°, 25 cm)",
-"qty": 2,
-"unit_eur": 1.0,
-"notes": "the F746G-DISCO's ST-LINK port (CN14) is mini-B; one up + one down mini-B variant",
+"item": "USB-C 90° ↔ mini-B straight, 25 cm, on a mini-B 90° adapter (DUT cable: F746G-DISCO)",
+"supplier": "AliExpress (USB-C 90° up / down ↔ mini-B straight, 25 cm, data)",
+"qty": 1,
+"unit_eur": 2.5,
+"notes": "the F746G-DISCO's ST-LINK port (CN14) is mini-B; the plug stands on a mini-B 90° adapter",
 "unit": "pcs",
+"ext_eur": 2.5
+},
+{
+"category": "Cables",
+"item": "Micro-B 90° adapter, male → female, set of 4 (up, down, left, right), one set per board",
+"supplier": "AliExpress (Micro-B 90 degree adapter male to female, 4 pcs)",
+"qty": 5,
+"unit": "set",
+"unit_eur": 2.0,
+"notes": "keep the one whose female faces up once plugged into the board (the cable's straight plug stands on it, its cable leaves upwards); the others are spares",
+"ext_eur": 10.0
+},
+{
+"category": "Cables",
+"item": "Mini-B 90° adapter, male → female, set of 4 (up, down, left, right), one set per board",
+"supplier": "AliExpress (Mini-B 90 degree adapter male to female, 4 pcs)",
+"qty": 1,
+"unit": "set",
+"unit_eur": 2.0,
+"notes": "keep the one whose female faces up once plugged into the board (the cable's straight plug stands on it, its cable leaves upwards); the others are spares",
 "ext_eur": 2.0
 },
 {
@@ -2162,11 +2182,11 @@
 "Printed parts": 78.0,
 "Fasteners": 17.509999999999998,
 "Motion": 31.53,
-"Cables": 77.19,
+"Cables": 79.69,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 905.31,
+"total_eur": 907.81,
 "prints": [
 {
 "part": "bay_label",
