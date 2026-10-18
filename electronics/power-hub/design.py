@@ -17,8 +17,9 @@ The rack controller is an ESP32-S3-MINI-1 (Wi-Fi, the CAN master) on a buck and 
 VBUS ahead of the switch, so it runs from the first 5 V of a contract (or from its own USB-C console
 port).  It drives the AP33772S over I2C, reads each row's FLT and IMON, drives each row's enable,
 and runs the rack's CAN bus and the POS addressing token (docs/can.md).  The row outputs are 6-pin
-JST PH: VRACK, GND, CAN_H, CAN_L, GND, POS.  The bus is a star: every port carries the same CAN
-pair, both terminations are here.
+JST PH with the bay nodes' OUT pinout (J1's mirrored): POS, GND, CAN_L, CAN_H, GND, VRACK, so
+every row cable is the same flat one (pin n to pin 7-n).  The bus is a star: every port carries
+the same CAN pair, both terminations are here.
 
 4 layers, 76 × 140 mm, the bay node's stackup and rules: In1 a solid GND plane, In2 power only
 (a VRACK area under the eFuse column and the input, +3V3 around it), signals on the outer layers,
@@ -98,9 +99,15 @@ def board() -> Board:
     tracks = []
     for k, ch in enumerate(ROWS):
         yc = ef_y(k)
-        # OUT (pins 15/16, x = EF_X + 2.9) → up over the eFuse → left to the connector's pin 1 (rear pad)
+        # OUT (pins 15/16, x = EF_X + 2.9) → up over the eFuse → left, short of the connector's rear pin
+        # (POS) → down on B.Cu beside the connector (three vias at each end) → its pin 6, the front pad.
+        # The row outputs have the bay nodes' OUT pinout (docs/can.md); the top side beside the
+        # connector stays free for the CAN pair.
+        yj = ROW_Y[k]
         tracks.append((f"ROW_{ch}", "F.Cu", 0.8, [(EF_X + 2.9, yc - 1.95), (EF_X + 4.6, yc - 1.95),
-                                                (EF_X + 4.6, yc - 4.5), (9.4, yc - 4.5)]))
+                                                (EF_X + 4.6, yj - 5.0), (13.2, yj - 5.0)]))
+        tracks.append((f"ROW_{ch}", "B.Cu", 0.8, [(15.4, yj - 5.0), (13.2, yj - 5.0), (13.2, yj + 5.0), (15.4, yj + 5.0)]))
+        tracks.append((f"ROW_{ch}", "F.Cu", 0.8, [(15.4, yj + 5.0), (9.4, yj + 5.0)]))
         # … a branch to the output capacitor C3x, and one to the ON LED's resistor R4x
         tracks.append((f"ROW_{ch}", "F.Cu", 0.8, [(EF_X + 4.6, yc - 2.6), (33.05, yc - 2.6)]))
         tracks.append((f"ROW_{ch}", "F.Cu", 0.4, [(EF_X + 4.6, yc - 4.5), (36.0, yc - 4.5)]))
@@ -111,10 +118,10 @@ def board() -> Board:
         # SHDN (pin 7) → left, down to its pull-down R7x, across to the series resistor R8x
         tracks.append((f"SHDN_{ch}", "F.Cu", 0.25, [(EF_X - 2.8625, yc + 1.625), (21.4, yc + 1.625),
                                                    (21.4, yc + 3.675), (19.825, yc + 3.675)]))
-    # PD input: CC straight down to vias (routed underneath to the AP33772S), the Kelvin sense pair
+    # PD input: CC1 straight down to a via (routed underneath to the AP33772S; CC2 leaves behind the
+    # receptacle, the router's way), the Kelvin sense pair
     # from the shunt's own sense pads, the NMOS gates tied around the common-source pour
     tracks += [
-        ("PD_CC2", "F.Cu", 0.2, [(PD_X - 1.75, 7.08), (PD_X - 1.75, 8.15)]),
         ("PD_CC1", "F.Cu", 0.2, [(PD_X + 1.25, 7.08), (PD_X + 1.25, 8.15)]),
         # Kelvin: R1's sense pads (2: VBUS side, 3: load side) straight to ISENP and VCC, a pad corner
         # each; VCC's own decoupling capacitor C4 sits on its trace
@@ -127,6 +134,26 @@ def board() -> Board:
         ("PD_GATE", "F.Cu", 0.3, [(57.405, 19.0), (57.405, 21.475)]),
         ("GND", "F.Cu", 0.25, [(PD_X + 3.2, 6.9), (PD_X + 4.2, 6.9)]),
         ("PD_VCC", "B.Cu", 0.8, [(55.8, 14.55), (55.8, 30.0), (56.7, 31.0), (56.7, 47.5)]),
+        # I2C from the AP33772S's crowded right side to the pull-ups and the ESP32: Freerouting's routes
+        # of v0.5's first layout, fixed here (the region is packed; left to the router, one of the two
+        # can end up without a way out)
+        ("PD_SDA", "F.Cu", 0.15, [(52.4625, 9.35), (52.5924, 9.2201), (53.394, 9.2201)]),
+        ("PD_SDA", "F.Cu", 0.25, [(53.394, 9.2201), (53.4741, 9.3002), (53.7, 9.3002)]),
+        ("PD_SDA", "B.Cu", 0.25, [(53.7, 9.3002), (52.8227, 8.4229), (43.8842, 8.4229), (42.7, 9.6071),
+                                   (39.0359, 13.2712), (38.2063, 13.2712)]),
+        ("PD_SDA", "F.Cu", 0.25, [(42.7, 9.6071), (42.8416, 9.4655)]),
+        ("PD_SDA", "F.Cu", 0.1874, [(42.8416, 9.4655), (42.3585, 8.9824), (42.3585, 8.9308)]),
+        ("PD_SDA", "F.Cu", 0.25, [(42.3585, 8.9308), (41.825, 8.3973), (41.825, 8.0)]),
+        ("PD_SDA", "F.Cu", 0.25, [(38.2063, 13.2712), (37.6787, 13.7988), (37.6787, 13.9), (37.0, 13.9)]),
+        ("PD_SCL", "F.Cu", 0.25, [(52.4625, 8.85), (52.8707, 8.85), (53.1869, 8.5338), (53.1869, 8.1028),
+                                   (52.7457, 7.6616)]),
+        ("PD_SCL", "B.Cu", 0.25, [(52.7457, 7.6616), (55.2461, 7.6616), (56.7093, 9.1248)]),
+        ("PD_SCL", "B.Cu", 0.1874, [(56.7093, 9.1248), (58.2407, 7.5934), (59.924, 7.5934)]),
+        ("PD_SCL", "B.Cu", 0.25, [(59.924, 7.5934), (60.4947, 7.5934), (60.8652, 7.9639), (60.8652, 8.3549),
+                                   (58.3451, 10.875), (43.7069, 10.875), (43.2006, 11.3813), (39.966, 14.6159),
+                                   (37.8651, 14.6159)]),
+        ("PD_SCL", "F.Cu", 0.25, [(43.2006, 11.3813), (43.2006, 10.9756), (41.825, 9.6)]),
+        ("PD_SCL", "F.Cu", 0.25, [(37.8651, 14.6159), (37.8128, 14.6159), (37.6787, 14.75), (37.0, 14.75)]),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 3.0, "passes": 60,
@@ -183,14 +210,20 @@ def board() -> Board:
             # eFuse IN islands down to In2 (VRACK); exposed pads: six tented GND vias each, to In1
             *[v for k in range(4) for v in (*[("VRACK", x, ef_y(k) - 2.0, 0.8, 0.4) for x in (19.4, 20.9, 22.4)],
                                             *[("GND", EF_X + dx, ef_y(k) + dy) for dx in (-0.9, 0.9) for dy in (-0.9, 0.0, 0.9)])],
+            # each row's output: F.Cu → B.Cu beside the connector → F.Cu at its pin 6
+            *[(f"ROW_{ch}", x, ROW_Y[k] + dy, 0.8, 0.4) for k, ch in enumerate(ROWS) for dy in (-5.0, 5.0)
+              for x in (13.2, 14.3, 15.4)],
             # Q2's drain pour down to In2 (VRACK)
             *[("VRACK", x, y, 0.8, 0.4) for x, y in ((64.4, 18.6), (64.4, 20.4), (64.4, 22.2), (64.4, 24.0),
                                                      (70.6, 18.0), (70.6, 19.8), (66.6, 22.0), (68.4, 22.0), (63.2, 16.0))],
             # the AP33772S's exposed pad: four tented GND vias
             *[("GND", 50.5 + dx, 9.6 + dy, 0.5, 0.3) for dx in (-0.6, 0.6) for dy in (-0.6, 0.6)],
-            # CC under the VBUS pour, on B.Cu
-            ("PD_CC2", PD_X - 1.75, 8.15, 0.5, 0.3), ("PD_CC1", PD_X + 1.25, 8.15, 0.5, 0.3),
+            # CC1 under the VBUS pour, on B.Cu
+            ("PD_CC1", PD_X + 1.25, 8.15, 0.5, 0.3),
             ("PD_VCC", 55.8, 14.55, 0.8, 0.4), ("PD_VCC", 56.7, 47.5, 0.8, 0.4),
+            # the fixed I2C routes' vias
+            *[("PD_SDA", x, y, 0.6, 0.3) for x, y in ((53.7, 9.3002), (42.7, 9.6071), (38.2063, 13.2712))],
+            *[("PD_SCL", x, y, 0.6, 0.3) for x, y in ((52.7457, 7.6616), (43.2006, 11.3813), (37.8651, 14.6159))],
         ],
         "tracks": tracks,
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
@@ -285,11 +318,12 @@ def board() -> Board:
         # ON: green LED on the row's own output
         R(o, f"R{40 + n}", "10k", f"ROW_{ch}", f"ON_{ch}", pcb=P(36.825, yc - 4.5, 0))
         part(o, f"D{10 + n}", "led_side_g", {"A": f"ON_{ch}", "K": "GND"}, "ON", pcb=P(LED_X[k] - 3.0, LED_Y, 180))
-        # the row cable: VRACK, GND, CAN_H, CAN_L, GND, POS (docs/can.md); POS through 10k + a clamp to
-        # GND / 3.3 V, so a reversed cable (VRACK on pin 6) costs ≈ 3 mA
-        part(o, f"J{1 + n}", "ph6", {"1": f"ROW_{ch}", "2": "GND", "3": "CAN_H", "4": "CAN_L", "5": "GND",
-                                    "6": f"POS_{ch}_CONN"}, f"ROW {ch}", pcb=P(PH_EDGE, yj, 270))
-        R(o, f"R{100 + n}", "10k", f"POS_{ch}", f"POS_{ch}_CONN", pcb=P(14.0, yj + 5.0, 0))
+        # the row cable, with the bay nodes' OUT pinout (J1's mirrored, docs/can.md): POS, GND, CAN_L,
+        # CAN_H, GND, VRACK, so the feed is the same flat cable as the node-to-node jumpers.  POS through
+        # 10k (behind pin 1) + a clamp to GND / 3.3 V, so VRACK on it from a wrong cable costs ≈ 3 mA
+        part(o, f"J{1 + n}", "ph6", {"1": f"POS_{ch}_CONN", "2": "GND", "3": "CAN_L", "4": "CAN_H", "5": "GND",
+                                    "6": f"ROW_{ch}"}, f"ROW {ch}", pcb=P(PH_EDGE, yj, 270))
+        R(o, f"R{100 + n}", "10k", f"POS_{ch}", f"POS_{ch}_CONN", pcb=P(11.0, yj - 7.2, 90))
         part(o, f"D{30 + n}", "bat54s", {"A": "GND", "K": "+3V3", "COM": f"POS_{ch}"}, pcb=P(16.6, yj + 7.6, 0))
     o.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).")
     o.note("t_dVdT = 8e3 · V_IN · C_dVdT → 22 nF ≈ 3.5 ms at 20 V, 4.9 ms at 28 V.")

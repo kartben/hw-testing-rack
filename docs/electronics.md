@@ -158,7 +158,7 @@ and the sequencing: [power.md](power.md).
 | Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
 | PD interface | SDA / SCL with 4.7 k pull-ups fed from a GPIO (I2C_PU), INT (a 5 V output) through 15 k / 27 k, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered AP33772S |
 | CAN | TCAN1462V, signal improvement (VCC 5 V, VIO 3.3 V, ±58 V bus pins), two split terminations 2 × 56 Ω + 4.7 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
-| POS | 4 GPIOs → 10 k → pin 6 of each row, BAT54S clamp to GND / 3.3 V | survives a reversed cable (VRACK on pin 6) |
+| POS | 4 GPIOs → 10 k → pin 1 of each row output (the outputs have the bay nodes' OUT pinout: 1 POS · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), BAT54S clamp to GND / 3.3 V | survives a wrong cable (VRACK on POS) |
 
 **Layout**, with the bay node's practices: JLC's 4-layer stackup (JLC04161H-7628), ENIG.
 

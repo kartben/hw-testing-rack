@@ -69,19 +69,17 @@ plugs into the power box's rear wall.
   CAN_L, GND, POS: [can.md](can.md)), plugged into the node's right (OUT) and
   the next node's left (IN) connectors through the 17 mm windows in both tray
   walls and the shared ladder, at the front of the plenum where the chain
-  never goes.  The OUT connector's pinout is the IN one's mirrored, so the
-  jumper lies **flat, with no twist**: pin n ↔ pin 7−n, both plugs showing the
-  same face when the cable lies on a table.  (The v0.4 nodes had 2-pin, 24 V-only
-  jumpers.)
-* **Power box to row:** one 6-pin JST PH feed per row, **1:1** (pin n ↔ pin n:
-  its plugs show opposite faces when laid flat, e.g. Pololu's double-ended
-  cables, black wire on pin 1 at both ends), ≈ 0.25 / 0.45 / 0.6 m for rows
-  A / B / C.  Each plugs into the power box's left wall, reached through the
-  left base ladder's window.  It runs forward along that ladder's outer face,
-  climbs the rack's left side tied to the ladders, and enters the first bay's
-  left window to its node's IN connector: out to the left and back in from the
-  left, it folds over once instead of twisting.  Give the CAN pair 2–3 twists
-  per 10 cm.
+  never goes.  Every OUT connector (the node's right one, the hub's row
+  outputs) has the IN pinout mirrored, so the jumper lies **flat, with no
+  twist**: pin n ↔ pin 7−n, both plugs showing the same face when the cable
+  lies on a table.  (The v0.4 nodes had 2-pin, 24 V-only jumpers.)
+* **Power box to row:** one 6-pin JST PH feed per row, **the same cable** as
+  the jumpers (pin n ↔ pin 7−n), ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C.
+  Each plugs into the power box's left wall, reached through the left base
+  ladder's window.  It runs forward along that ladder's outer face, climbs the
+  rack's left side tied to the ladders, and enters the first bay's left window
+  to its node's IN connector.  Out to the left and back in from the left, it
+  takes a half turn along the way.  Give the CAN pair 2–3 twists per 10 cm.
 * **A node on the bench:** it runs only from its row, never from USB.  To
   flash or try one on a desk, give its IN connector 15–30 V (J1.1 +, J1.2 /
   J1.5 GND; e.g. a 19–24 V laptop or lab supply: the buck starts above

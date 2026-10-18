@@ -270,11 +270,12 @@ def hardware(rack) -> list[dict]:
                      "or PHR-6 + 12 × SPH-002T-P0.5S",
          "qty": sum(cols - 1 for _ in rack.rows), "unit_eur": 0.6,
          "notes": "check: laid flat, both plugs show the same face, and pin 1 ↔ pin 6 (docs/can.md)"},
-        {"category": "Cables", "item": "JST PH 6-pin feed, 1:1 (pin n ↔ pin n), 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows "
-                                      "A / B / C (power box → first bay of each row: VRACK, CAN, POS)",
-         "supplier": "pre-crimped PH 6-pin double-ended, plugs on opposite faces (AliExpress; Pololu #5645 25 cm, "
-                     "#5647 63 cm) or PHR-6 + 12 × SPH-002T-P0.5S", "qty": n_rows, "unit_eur": 0.8,
-         "notes": "PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair (pins 3-4) by hand"},
+        {"category": "Cables", "item": "JST PH 6-pin feed, the jumpers' type (pin n ↔ pin 7−n), 24 AWG, ≈ 0.25 / 0.45 / "
+                                      "0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS)",
+         "supplier": "pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often \"reverse\") "
+                     "or PHR-6 + 12 × SPH-002T-P0.5S", "qty": n_rows, "unit_eur": 0.8,
+         "notes": "check as the jumpers; PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair "
+                  "(pins 3-4) by hand"},
     ]
     cab = Counter(info["cable"] for info in pop.values())
     for k, n in sorted(cab.items()):

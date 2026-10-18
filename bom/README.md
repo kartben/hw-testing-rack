@@ -193,7 +193,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Motion | Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer | 2.3 m | 4.00 | 9.20 | AliExpress / igus E2 micro |
 | Cables | USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port) | 12  | 1.50 | 18.00 | AliExpress (generic, USB 2.0 is enough) |
 | Cables | JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 24 AWG, 120 mm, both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS) | 9  | 0.60 | 5.40 | pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often "reverse") or PHR-6 + 12 × SPH-002T-P0.5S |
-| Cables | JST PH 6-pin feed, 1:1 (pin n ↔ pin n), 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS) | 3  | 0.80 | 2.40 | pre-crimped PH 6-pin double-ended, plugs on opposite faces (AliExpress; Pololu #5645 25 cm, #5647 63 cm) or PHR-6 + 12 × SPH-002T-P0.5S |
+| Cables | JST PH 6-pin feed, the jumpers' type (pin n ↔ pin 7−n), 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C (power box → first bay of each row: VRACK, CAN, POS) | 3  | 0.80 | 2.40 | pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often "reverse") or PHR-6 + 12 × SPH-002T-P0.5S |
 | Cables | USB-C ↔ USB-C, 10–15 cm (DUT cable, short / right-angle) | 4  | 4.50 | 18.00 | Adafruit / Delock / AliExpress |
 | Cables | USB-C ↔ micro-B, 10–15 cm (DUT cable, short / right-angle) | 8  | 2.90 | 23.20 | Adafruit / Delock / AliExpress |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |

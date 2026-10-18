@@ -445,4 +445,23 @@ J2.1.  The node was re-routed (Freerouting).  Konnect, on the saved files:
 | CAN pair | J1 → J2: CAN_H 55 mm, CAN_L 59 mm; stubs to U11 3.7 / 8.2 mm, to D5 3.5 / 1.3 mm (≤ 20 mm asked) |
 | 3D coverage (`tools/pcb_glb.py --check`) | 85 parts with a model, 0 stand-ins |
 
-The hub is unchanged: its row outputs keep J1's pinout, and the feeds stay 1:1.
+The hub's row outputs get the same OUT pinout (below), so the feeds are the same cable.
+
+## Power hub: row outputs with the OUT pinout (2026-10-18)
+
+The hub's row outputs (J2–J5) now carry the bay nodes' OUT pinout (1 POS · 2 GND · 3 CAN_L · 4 CAN_H ·
+5 GND · 6 VRACK), so every row cable, feed or jumper, is the same flat one ([can.md](can.md#row-cable)).
+Each row's 0.8 mm ROW track leaves its eFuse as before, stops short of the connector's rear pin (POS),
+drops to B.Cu beside the connector (three vias) and comes back up at pin 6, so the top side beside
+the pads stays free for the CAN pair; R10x (POS, 10k) sits behind pin 1.  The AP33772S's I2C routes
+of the first layout are now fixed in design.py (a re-route left SDA without a way out once).
+Konnect, on the saved files:
+
+| | power hub |
+|---|---|
+| Row output pin nets (`get_component_nets`, J4) | POS_C_CONN, GND, CAN_L, CAN_H, GND, ROW_C |
+| ERC | 0 errors, 0 warnings |
+| DRC | 0 errors, 0 unconnected, parity 0; the two warnings above (C8's silkscreen, U1's local library copy) |
+| CAN pair, U6 → rows A / B / C / D | CAN_H 102 / 77 / 48 / 24 mm, CAN_L 97 / 68 / 43 / 18 mm (before: 99 / 72 / 51 / 22 and 106 / 82 / 56 / 27); H − L 4.2–8.3 mm (before 4.6–10.4); totals 115 / 118 mm (before 117 / 124) |
+| CAN pair coupling | 41 % of CAN_H within 1 mm of CAN_L on the same layer, median gap 1.45 mm (before: 41 %, 1.39 mm) |
+| 3D coverage (`tools/pcb_glb.py --check`) | 146 parts with a model, 0 stand-ins |

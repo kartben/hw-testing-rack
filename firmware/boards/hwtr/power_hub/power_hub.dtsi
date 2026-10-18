@@ -39,7 +39,7 @@
 			enable-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
 			/* IO18 FLT_A <- ~FLT, open drain, 100k to 3.3 V */
 			fault-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
-			/* IO10 POS_A -> J2.6 through 10k and a BAT54S clamp */
+			/* IO10 POS_A -> J2.1 (row outputs: the nodes' OUT pinout) through 10k and a BAT54S clamp */
 			pos-gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
 			current-sense = <&imon_a>;
 		};
