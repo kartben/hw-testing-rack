@@ -8,9 +8,9 @@ are generated from one data file.
 
 | File | What |
 |---|---|
-| `notice.yaml` | the pages: their steps, each step's drawing, parts and hardware with quantities, the parts pages' lists, the cover, the row cable's connectors |
+| `notice.yaml` | the pages: their steps, each step's drawing, parts and hardware with quantities, the parts pages' lists, the cover, the row cable's connectors; the canvas's artboard titles and rows |
 | `notice.py` | the drawings: scenes (`STEPS`), thumbnails (`THUMBS`), hardware icons (`hw_shape`) |
-| `pages.py` | `notice.yaml` + the drawings' canvas addresses (`assets.json`) → the page files |
+| `pages.py` | `notice.yaml` + the drawings' canvas addresses (`assets.json`) → the page files and the canvas index (`canvas.json`) |
 | `run.py` | everything up to the drawings, then the list of drawings to upload |
 
 ## Regenerating
@@ -20,7 +20,7 @@ python tools/notice/run.py                 # every drawing → mechanical/build/
 python tools/notice/run.py a3 pin          # some of them
 ```
 
-A full run takes about 15 minutes (four FreeCAD processes); it ends with
+A full run takes about 20 minutes (four FreeCAD processes); it ends with
 `pages.py plan`: the drawings whose SVG is new or changed since it was
 uploaded (`assets.json` keeps each one's SHA-256).
 
@@ -35,13 +35,14 @@ line.  After `run.py`:
    `{"a3.svg": "/_blob/…", …}`, and run
    `python tools/notice/pages.py record that.json`.
 2. **Build** the pages: `python tools/notice/pages.py build`
-   → `mechanical/build/notice/canvas/project/*.dc.html`.
+   → `mechanical/build/notice/canvas/project/*.dc.html` and `canvas.json`.
 3. **Publish** them: read the canvas first (Artifact `read`, its
-   `project/*.dc.html`), then Artifact `publish` with `url` = the canvas,
-   `root` = `mechanical/build/notice/canvas`, `file_path` = its
-   `project/Main.dc.html`, `files` = the other pages by their `project/…`
-   paths.  The pages are generated: an edit made by hand on the canvas is
-   overwritten, so port it into `notice.yaml` or `pages.py` first
+   `project/*.dc.html` and `project/canvas.json`), then Artifact `publish`
+   with `url` = the canvas, `root` = `mechanical/build/notice/canvas`,
+   `file_path` = its `project/Main.dc.html`, `files` = the other pages by
+   their `project/…` paths, plus `project/canvas.json` when pages were added,
+   removed or retitled.  The pages are generated: an edit made by hand on the
+   canvas is overwritten, so port it into `notice.yaml` or `pages.py` first
    (`pages.py check <dir of the read copy>` shows the differences).
 4. Commit `assets.json`.
 
@@ -53,7 +54,7 @@ line.  After `run.py`:
   has them (the hexagon reliefs).  Volumes match the STLs to 0.1 %.
 * **Real fasteners.**  ISO 7045 pan-head Phillips screws and heat-set inserts
   from FreeCAD's Fasteners workbench, threads included.
-* **The bay node as the viewer has it.**  KiCad's STEP export of the board,
+* **The boards as the viewer has them** (the bay node, the power hub).  KiCad's STEP export of each board,
   its 3D models resolved from KiCad's library and `electronics/lib/3dmodels`
   (`${KIPRJMOD}`), in the `kicad/kicad:10.0-full` image.  Where
   `electronics/tools/build_board.py` has `export_3d_coverage`, the same run
@@ -61,7 +62,12 @@ line.  After `run.py`:
   for the parts it lists as missing (the stand-in table and dimensions of
   `tools/pcb_glb.py`, as exact solids), placed from the `.kicad_pcb`.  It
   logs any part left without a body.  Without the report: a stand-in for
-  every footprint the table knows.
+  every footprint the table knows.  Run `python tools/fetch_pcb_models.py`
+  first: the LCSC models the boards use are not in the repo.
+* **The power box** where `config/rack.yaml` › `power_box` puts it (under
+  A1), the hub on its standoffs; the charger, its USB-C cable and the row
+  feed are simple bodies (`notice.py`, `charger_shape`, `pd_cable_shape`,
+  `feed_shape`).
 * **The row cable from the board.**  `notice.yaml` › `row_cable` names the two
   connectors (node 0's out, node 1's in); their pin count and position come
   from the `.kicad_pcb`, for the step drawing and the icon.
@@ -80,5 +86,5 @@ tray's guide lip; fixed).
 
 Needs FreeCAD 1.x with the Fasteners workbench (`FREECADCMD=` if `freecadcmd`
 is not on the path), OpenSCAD, and Docker (or kicad-cli, without the coverage
-report) for the bay node.  Projections are cached in
+report) for the boards.  Projections are cached in
 `mechanical/build/notice/out/cache/`; `run.py` always recomputes them.

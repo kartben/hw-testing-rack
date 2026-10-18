@@ -5282,7 +5282,7 @@
 		)
 		(uuid "c89406e5-b610-5b4f-a436-fc9436500183")
 	)
-	(text "CAN: TCAN1044AV, star bus (all row ports in parallel), both terminations here"
+	(text "CAN: TCAN1462V, star bus (all row ports in parallel), both terminations here"
 		(exclude_from_sim no)
 		(at 20.32 320.04 0)
 		(effects
@@ -5292,7 +5292,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "390e519c-f5d2-5df6-b911-749f9f18f615")
+		(uuid "b17f5061-f168-52ab-917e-f5d4eec55619")
 	)
 	(text "Mounting (M3, on the power box's standoffs)"
 		(exclude_from_sim no)
@@ -14331,7 +14331,7 @@
 				)
 			)
 		)
-		(property "Value" "TCAN1044AV"
+		(property "Value" "TCAN1462V"
 			(at 66.04 358.14 0)
 			(effects
 				(font
@@ -14348,7 +14348,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tcan1044av-q1.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tcan1462-q1.pdf"
 			(at 66.04 346.71 0)
 			(effects
 				(font
@@ -14357,7 +14357,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAN FD transceiver, VCC 5 V, VIO 1.8–5 V, bus pins ±58 V (MCP2562 pinout)"
+		(property "Description" "CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout)"
 			(at 66.04 346.71 0)
 			(effects
 				(font
@@ -14366,7 +14366,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TCAN1044AVDRQ1"
+		(property "MPN" "TCAN1462VDRQ1"
 			(at 66.04 346.71 0)
 			(effects
 				(font
@@ -14384,7 +14384,16 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C3234993"
+		(property "LCSC" "C7399456"
+			(at 66.04 346.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternative" "LCSC stock was 0 on 2026-10-18.  Same pinout: TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V) or NXP TJA1462AT/0Z (C3234095, SIC, VIO 2.95–5.5 V, bus pins −36/+40 V)"
 			(at 66.04 346.71 0)
 			(effects
 				(font
@@ -17308,7 +17317,7 @@
 		)
 		(uuid "805d0f55-ab2f-545a-915a-9133d57a017e")
 	)
-	(text_box "GPIO: IO1/2/4/5 IMON A–D, IO6 VBUS_SENSE (ADC1) · IO7/8/9 CAN TX/RX/STB · IO10–13 POS A–D ·\n  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·\n  IO19/20 USB.  Strapping IO3/45/46 unused.\nTermination: two split 2 × 56 Ω + 4.7 nF (56 Ω in all) at the star centre; nodes carry none.\n+5V: buck (5.16 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;\n  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  TCAN1044AV wants 4.5–5.5 V: CAN runs once VRACK is up."
+	(text_box "GPIO: IO1/2/4/5 IMON A–D, IO6 VBUS_SENSE (ADC1) · IO7/8/9 CAN TX/RX/STB · IO10–13 POS A–D ·\n  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·\n  IO19/20 USB.  Strapping IO3/45/46 unused.\nTermination: two split 2 × 56 Ω + 4.7 nF (56 Ω in all) at the star centre; nodes carry none.\n+5V: buck (5.16 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;\n  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  TCAN1462V wants 4.5–5.5 V: CAN runs once VRACK is up."
 		(exclude_from_sim no)
 		(at 20.32 415.29 0)
 		(size 240.03 17.78)

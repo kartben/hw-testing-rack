@@ -148,11 +148,11 @@ def build(pcb_path, step, name, coverage=None):
         so.translate(V(0, D, 0))                  # STEP y = -KiCad y
         sols.append(so)
     used, bare, ph = [], [], []
-    for ref, name, x, y, rot, side in footprints(pcb):
-        builder = next((b for prefix, b in STANDINS if name.startswith(prefix)), None)
-        m = re.search(r"_1x(\d+)", name)
+    for ref, fp, x, y, rot, side in footprints(pcb):
+        builder = next((b for prefix, b in STANDINS if fp.startswith(prefix)), None)
+        m = re.search(r"_1x(\d+)", fp)
         pins = int(m.group(1)) if m else 0
-        if name.startswith("Connector_JST:JST_PH_S") and side == "top":
+        if fp.startswith("Connector_JST:JST_PH_S") and side == "top":
             a = math.radians(rot)                  # the opening: local -y, 5 mm from the origin
             ph.append({"ref": ref, "pins": pins, "mouth": [x + 5.0 * math.sin(a), D - y - 5.0 * math.cos(a), TOP + 4.75 / 2],
                        "out": [round(math.sin(a), 6), round(-math.cos(a), 6)]})
@@ -160,7 +160,7 @@ def build(pcb_path, step, name, coverage=None):
             continue
         if builder is None or side != "top":
             if only is not None:
-                bare.append(f"{ref} {name}")
+                bare.append(f"{ref} {fp}")
             continue
         sols.append(placed(builder(pins), x, y, rot, D))
         used.append(ref)

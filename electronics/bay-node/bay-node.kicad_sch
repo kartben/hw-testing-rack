@@ -732,7 +732,7 @@
 		)
 		(uuid "9815a35c-f71a-52c0-a298-6e835863a49b")
 	)
-	(text_box "Bay node — one per bay.  Sheets:\n  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51635 buck, AMS1117\n  MCU: ESP32-S3-MINI-1, reset/boot, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V\n  Rack bus: TCAN1044AV CAN transceiver on the row pair, POS token in/out (docs/can.md)\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
+	(text_box "Bay node — one per bay.  Sheets:\n  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51635 buck, AMS1117\n  MCU: ESP32-S3-MINI-1, reset/boot, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V\n  Rack bus: TCAN1462V CAN transceiver on the row pair, POS token in/out (docs/can.md)\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
 		(exclude_from_sim no)
 		(at 30 166.37 0)
 		(size 360 30.48)

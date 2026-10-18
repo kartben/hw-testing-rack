@@ -283,7 +283,9 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
     if hq:
         # full-resolution printed parts for the renders ($fn=64, not decimated like the viewer's)
         parts_glb = REPO / "render" / "parts-hq.glb"
-        if not parts_glb.exists():
+        stls = list((REPO / "mechanical" / "stl").glob("*.stl"))
+        if not parts_glb.exists() or any(s.stat().st_mtime > parts_glb.stat().st_mtime for s in stls):
+            # rebuilt when any STL is newer: a stale cache silently drops parts renamed since
             import sys
             sys.path.insert(0, str(REPO / "tools"))
             import rackcfg

@@ -73,7 +73,7 @@ def board() -> Board:
     b.root_notes = [
         "Power hub v0.5 — USB-C PD in (AP33772S, 20 V, 28 V EPR on request) → NMOS switch → VRACK → 4 × TPS26600 "
         "eFuse (1.6 A) → 6-pin JST PH rows A–D.",
-        "Rack controller: ESP32-S3-MINI-1 on VBUS (ahead of the switch), TCAN1044AV (CAN master, star bus, both "
+        "Rack controller: ESP32-S3-MINI-1 on VBUS (ahead of the switch), TCAN1462V (CAN master, star bus, both "
         "terminations here), POS token per row.",
         "Rows are OFF without firmware: SHDN is pulled low; the controller turns each row on once the PD contract is final.",
     ]
@@ -362,9 +362,9 @@ def board() -> Board:
                           "2": "GND"}, pcb=P(60.5, H - 12.5, 270))
     C(c, "C120", "1u", "USB_VBUS", "GND", pcb=P(60.5, H - 16.4, 0))
 
-    c.block("CAN: TCAN1044AV, star bus (all row ports in parallel), both terminations here")
+    c.block("CAN: TCAN1462V, star bus (all row ports in parallel), both terminations here")
     part(c, "U6", "can_xcvr", {"TXD": "CAN_TXD", "VSS": "GND", "VDD": "+5V", "RXD": "CAN_RXD", "Vio": "+3V3",
-                               "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "CAN_STB"}, "TCAN1044AV", pcb=P(14.0, 32.0, 0))
+                               "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "CAN_STB"}, "TCAN1462V", pcb=P(14.0, 32.0, 0))
     C(c, "C116", "100n", "+5V", "GND", pcb=P(8.6, 29.6, 0))
     C(c, "C117", "100n", "+3V3", "GND", pcb=P(8.6, 34.4, 0))
     R(c, "R214", "10k", "CAN_STB", "GND", pcb=P(20.0, 29.4, 0))
@@ -382,7 +382,7 @@ def board() -> Board:
     c.note("  IO19/20 USB.  Strapping IO3/45/46 unused.")
     c.note("Termination: two split 2 × 56 Ω + 4.7 nF (56 Ω in all) at the star centre; nodes carry none.")
     c.note("+5V: buck (5.16 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;")
-    c.note("  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  TCAN1044AV wants 4.5–5.5 V: CAN runs once VRACK is up.")
+    c.note("  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  TCAN1462V wants 4.5–5.5 V: CAN runs once VRACK is up.")
     return b
 
 

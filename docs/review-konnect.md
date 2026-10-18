@@ -409,3 +409,23 @@ What changed for routing, from the v0.4 → 4-layer attempt that left 18 connect
 Open, for a later revision:
 * The schematic uses the automatic block layout; it is not drawn like the bay node's.
 * Re-quote at JLCPCB (the cost is an estimate) and check the AP33772S's sourcing.
+
+## CAN transceiver → TCAN1462V (2026-10-18)
+
+Both boards swap the TCAN1044AV for the TCAN1462V: the same SOIC-8 pinout (TXD, GND, VCC, RXD, VIO,
+CANL, CANH, STB), plus signal improvement for the star bus ([can.md](can.md#bus)).  The footprint,
+placement and routing are unchanged: the regenerated PCBs carry every track and via of the previous
+ones, and only U6 / U11's value and fields differ.  Konnect, on the saved files:
+
+| | power hub (U6) | bay node (U11) |
+|---|---|---|
+| Pin nets (`get_component_nets`) | TXD CAN_TXD, VCC +5V, RXD CAN_RXD, VIO +3V3, CANL / CANH, STB CAN_STB (a GPIO) | the same, STB on GND (always on) |
+| ERC | 0 errors, 0 warnings | 0 errors, 0 warnings |
+| DRC | 0 errors, 0 unconnected, parity 0; the two warnings above | 0 errors, 0 warnings, 0 unconnected, parity 0 |
+| 3D coverage (`tools/pcb_glb.py --check`) | 146 parts with a model, 0 stand-ins | 85 parts with a model, 0 stand-ins |
+
+Sourcing: the TCAN1462VDRQ1 (C7399456) had no LCSC stock on 2026-10-18.  The board BOMs list two
+alternates for the same footprint: the TCAN1044AVDRQ1 (C3234993, no signal improvement) and NXP's
+TJA1462AT/0Z (C3234095, signal improvement, bus pins −36 / +40 V instead of ±58 V).  The TCAN1462
+without the V (C22445414, in stock) does not fit: with no VIO pin its RXD swings to 5 V, too much for
+the ESP32-S3.

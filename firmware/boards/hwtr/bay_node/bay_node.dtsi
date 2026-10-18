@@ -96,7 +96,7 @@
 	};
 };
 
-/* IO18/IO17: TWAI on the TCAN1044AV (U11, VIO 3.3 V, STB tied low on the board) */
+/* IO18/IO17: TWAI on the TCAN1462V (U11, VIO 3.3 V, STB tied low on the board) */
 &twai {
 	status = "okay";
 	pinctrl-0 = <&bay_twai_default>;

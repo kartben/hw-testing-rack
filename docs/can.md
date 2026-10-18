@@ -2,7 +2,7 @@
 
 > **Status: decided.**  The power hub v0.5 (USB-C PD in, rack controller, CAN master) is
 > laid out and routed (`electronics/power-hub`); so is the bay node v0.5 (`electronics/bay-node`:
-> 6-pin J1/J2, TCAN1044AV + PESD2CAN on the pair, POS in and out).  Both firmwares speak the
+> 6-pin J1/J2, TCAN1462V + PESD2CAN on the pair, POS in and out).  Both firmwares speak the
 > rack bus ([rack-protocol.md](rack-protocol.md)): the hub as the master
 > (`firmware/power-hub`), each node as a client (`firmware/bay-node/src/rack.c`); tested on a
 > simulated rack, not yet on hardware.
@@ -48,10 +48,36 @@ needed at a row's end.  At these lengths the lines are electrically short: the
 round trip on 1.5 m is ≈ 15 ns, against ~50 ns edges and a 4 µs bit at
 250 kbit/s (the default; 125 kbit/s as a fallback).
 
-Transceiver, on the hub and on every node: **TCAN1044AV** (LCSC C3234993),
-with VCC 5 V and VIO 3.3 V.  Its bus pins take ±58 V, and VRACK sits two
+Transceiver, on the hub and on every node: **TCAN1462V** (LCSC C7399456),
+with VCC 5 V and VIO 3.3 V: a CAN FD transceiver with **signal improvement**
+(SIC: CiA 601-4, now ISO 11898-2:2024 set C).  Its bus pins take ±58 V, and VRACK sits two
 pins away on the same connector.  It is passive when unpowered, so a row whose
-eFuse is off doesn't load the bus.  Each tap gets a PESD2CAN.
+eFuse is off doesn't load the bus.  Each tap gets a PESD2CAN.  Same SOIC-8 pinout
+as the TCAN1044AV (VIO on pin 5, STB on pin 8), its alternate in the BOM (no
+SIC, ±58 V), and as NXP's TJA1462AT (SIC, but bus pins −36 / +40 V only).
+
+**Why a star is fine here.**  ISO 11898-2 describes a line terminated at both
+ends.  A star is not that: its open branch ends reflect, and the bus rings
+after each edge.  What matters is that the ringing has died out by the sample
+point (87.5 % of the bit).  A branch here is ≤ 1.5 m, a round trip ≈ 15 ns;
+the sample point comes 3.5 µs after the edge at 250 kbit/s.  CiA's CANopen
+bit-timing table allows 11 m per stub and 55 m in all at 250 kbit/s; our four
+branches (≤ 1.5 m each, ≤ 6 m in all) would even pass its 1 Mbit/s limits
+(1.5 m, 7.5 m).
+
+Signal improvement is what makes star and hybrid networks work at CAN FD data
+rates (2–5 Mbit/s): after a dominant-to-recessive edge the transmitter keeps
+driving the recessive state at ≈ 100 Ω for up to 530 ns, instead of letting go
+(≈ 60 kΩ), so the reflections meet a matched end and die out.  At 250 kbit/s it is
+margin, and it leaves room for a CAN FD data phase later.  It acts only when
+the transmitting node has it: a node fitted with the TCAN1044AV still works,
+without that margin.  The termination does not change: 56 Ω at the centre is
+within the 50–65 Ω bus load the transceivers are specified for.
+
+Sources: TI TCAN1462-Q1 datasheet (SLLSFF2B, §8.1.1, §6.9 t<sub>SIC_TX_base</sub>,
+§9.2); TI white paper SLLA581A, *How Signal Improvement Capability Unlocks the
+Real Potential of CAN FD Transceivers* (§2, §3); CiA, *CANopen lower layers*
+(bit-timing table); NXP TJA1462 datasheet rev. 3.0.
 
 ## Addressing (POS)
 
