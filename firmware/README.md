@@ -107,14 +107,23 @@ directory on a short path (e.g. `C:\rack-ws`): `hal_espressif` and
 
 ## Flashing
 
+The node runs from its row: the hub must have the row on (on a desk: 9–30 V
+on J1).
+
 1. Slide the bay's **SERVICE** switch on and plug a laptop into the front
-   **PC** port.  The firmware stops its USB host and hands the ESP32-S3's
-   single USB PHY back to the USB-Serial-JTAG (LED yellow), which shows up
-   as a serial port (and a JTAG adapter for OpenOCD).
-2. `west flash` (esptool resets the chip into its ROM loader over USB).  On
-   a blank module, or if the firmware is wedged, hold **BOOT** and tap
-   **RESET** (reachable through the deck window) to force the ROM loader.
+   **PC** port, both on the fascia.  The firmware stops its USB host and
+   hands the ESP32-S3's single USB PHY back to the USB-Serial-JTAG (LED
+   yellow), which shows up as a serial port (and a JTAG adapter for
+   OpenOCD).  A blank module shows it at once.
+2. `west flash` (esptool resets the chip into its ROM loader over USB).  If
+   the firmware is wedged (it takes the PHY and never lets it go), pull the
+   drawer out, hold **BOOT** and tap **RESET**, or keep BOOT held while the
+   hub power-cycles the row from its page (the row's other bays restart too):
+   RESET sits partly under the drawer's left ledge, BOOT is clear.
 3. SERVICE off: the host controller restarts and the DUT is back on USB/IP.
+
+Both boards, recovery and the update plan (MCUboot, over Wi-Fi):
+[docs/firmware.md › Programming](../docs/firmware.md#programming).
 
 ## First boot
 
@@ -546,9 +555,10 @@ runs it and builds both targets with warnings as errors on every push.
   built, not run: check on a node that a refused host's `usbip attach`
   and `telnet` time out, that a kick ends a USB/IP session (shutdown of a
   socket that the USB/IP thread owns), and the BOOT presses.
+* **No OTA yet** (MCUboot, signed updates over Wi-Fi, then over the rack
+  bus): the plan is in [docs/firmware.md › Programming](../docs/firmware.md#programming).
 * **Not yet written:** DNS-SD advertisement of `_usbip._tcp`, `_http._tcp`
-  and `_rfc2217._tcp`, MCUboot + mcumgr OTA (the partition table already has
-  two 3.75 MB slots), the shell on the USB-Serial-JTAG in SERVICE mode,
+  and `_rfc2217._tcp`, the shell on the USB-Serial-JTAG in SERVICE mode,
   INA226 alert handling, RFC 2217 line/modem state notifications (the server
   answers polls with CTS/DSR/CD up).
 * **Zephyr's HTTP server** registers every WebSocket of a resource with that

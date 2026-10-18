@@ -41,9 +41,17 @@ west build -b power_hub/esp32s3/procpu hw-testing-rack/firmware/power-hub
 west flash        # over the console USB-C (J6): USB-Serial-JTAG, esptool auto-reset
 ```
 
-The console USB-C also powers the controller (not the rows), so the hub can
-be flashed and configured on a desk without a PD charger.  A module that ran
-other firmware: `west flash --erase` once (settings partition).
+The console USB-C is in the power box's front wall: it can be reached with
+the box closed, and it also powers the controller (not the rows), so the hub
+can be flashed and configured in place or on a desk without a PD charger.
+It goes straight to the ESP32's USB pins, and the hub never takes the PHY
+for anything else: esptool gets the ROM loader whatever the firmware does,
+no button needed.  BOOT and RESET (rear-left corner, top side) are a last
+resort with the lid off.  The row enables are held across the controller's
+resets, so a flash should leave the rack powered (to be checked on the
+first hub).  A module that ran other firmware: `west flash --erase` once
+(settings partition).  The update plan (MCUboot, over Wi-Fi):
+[docs/firmware.md › Programming](../../docs/firmware.md#programming).
 
 ## First boot
 

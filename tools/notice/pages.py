@@ -217,6 +217,8 @@ class Page:
         banner = "banner" in pg
         hw = pg["hardware"]
         cols = 3 if banner else 2
+        many = len(pg["parts"]) > 9                 # 4 smaller cards a row past 9 parts
+        pcols, ph = (4, 136 if banner else 150) if many else (3, 196 if banner else 214)
         cards = "".join(
             f'<div style="border: 2px solid #111111; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;{" gap: 8px;" if k == "jumper" else ""}">\n'
             f'<img src="{self.url(hw_icon(k))}" alt="{self.hw_name(k)}" style="width: 64px; height: 30px; object-fit: contain;">\n'
@@ -232,9 +234,9 @@ class Page:
             f"{{ img: {self.js(self.url('card_' + k))}, name: {self.js(SPEC['parts'][k])}, q: {self.js(self.q(n))} }}"
             for k, n in pg["parts"].items()) + "\n]\n}"
         return HEAD.format(title=pg["title"]) + f"""<div style="width: 794px; height: 1123px; box-sizing: border-box; padding: 56px 56px 40px; display: flex; flex-direction: column; gap: 22px; {FONT}">
-{top}<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+{top}<div style="display: grid; grid-template-columns: repeat({pcols}, minmax(0, 1fr)); gap: 14px;">
 <sc-for list="{{{{parts}}}}" as="p" hint-placeholder-count="{len(pg['parts'])}">
-<div style="border: 2px solid #111111; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; height: {196 if banner else 214}px; box-sizing: border-box;">
+<div style="border: 2px solid #111111; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px; height: {ph}px; box-sizing: border-box;">
 <div style="flex: 1 1 0; min-height: 0; display: flex; align-items: center; justify-content: center;">
 <img src="{{{{p.img}}}}" alt="{{{{p.name}}}}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
 </div>

@@ -46,12 +46,15 @@ PARTS = {
     "drawer_light": ("parts/drawer.scad", {}),
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {}, "lid();"),     # as assembled (it prints top face down)
+    "chain_anchor": ("parts/chain_parts.scad", {"PART": "anchor"}),
+    "chain_foot": ("parts/chain_parts.scad", {}, "include <{MECH}/lib/carrier.scad>\nfoot();"),   # as assembled
 }
 # heaviest first, dealt round-robin to the processes
-JOBS = ["done", "b5", "c_done", "b3", "b1", "a9", "c5", "b2", "a8", "c3", "c4", "b3n", "b4", "cover", "a7", "a6",
-        "a5", "a4", "a3", "a2", "a1", "c1", "c2", "pin", "pin_b", "hook"] \
-       + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch")] \
-       + [f"hw:{h}" for h in ("m3x8", "m3x6", "m25x8", "insert", "jumper", "usbc")]
+JOBS = ["done", "b5", "b5a", "c_done", "b3", "b1", "a9", "c5", "b2", "a8", "a9c", "c3", "c4", "b3n", "b4", "cover", "a7",
+        "a6", "a5", "a4", "a10s", "a3", "a2", "a1", "c1", "c2", "pin", "pin_b", "hook"] \
+       + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch",
+                                  "an", "ft", "dc", "xt")] \
+       + [f"hw:{h}" for h in ("m3x8", "m3x6", "m25x8", "m25x6", "insert", "jumper", "usbc")]
 
 
 def freecadcmd() -> str:
@@ -79,7 +82,7 @@ def csg() -> None:
         src = MECH / scad
         if call:                           # a module of the file, called by a wrapper next to the CSG
             src = BUILD / "csg" / f"_{name}.scad"
-            src.write_text(f"use <{(MECH / scad).as_posix()}>\n{call[0]}\n", encoding="utf-8")
+            src.write_text(f"use <{(MECH / scad).as_posix()}>\n{call[0].replace('{MECH}', MECH.as_posix())}\n", encoding="utf-8")
         subprocess.run(cmd + [str(src)], cwd=MECH, check=True, capture_output=True)
 
 
@@ -133,6 +136,10 @@ def main() -> None:
     import rackcfg
     rack = rackcfg.load()                  # the power box's placement (frame) and the hub's
     c["POWER_BOX"] = {**rack.power_box(), "hub_pcb": rack.raw["pcb"]["power_hub"]}
+    d, node = rack.drawer, rack.node                 # the drag chain, the DATA socket, the node's DUT port
+    c["CHAIN"] = {**rack.chain, "bottom": rack.carrier["bottom"]}
+    c["DATA"] = {"x": max(rack.data_port_x), "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 7, "wall": d["wall"]}
+    c["NODE_DUT"] = [node["size"][0] + 0.4, node["size"][1] - node["right"]["dut"], node["thickness"] + 1.6]
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     print("constants, CSG ...")
     csg()
