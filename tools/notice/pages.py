@@ -31,6 +31,11 @@ UPLOAD_MAX = 25                       # files per Artifact upload call
 
 
 # ------------------------------------------------------------------ the drawings a notice needs
+def hw_icon(k: str) -> str:
+    """The icon drawing of a hardware item: hw_<key>, or hw_<icon> when several share one."""
+    return "hw_" + SPEC["hardware"][k].get("icon", k)
+
+
 def drawings() -> list[str]:
     need = []
 
@@ -45,7 +50,7 @@ def drawings() -> list[str]:
             for k in pg["parts"]:
                 add(f"card_{k}")
             for k in pg["hardware"]:
-                add(f"hw_{k}")
+                add(hw_icon(k))
         elif kind in ("steps", "last"):
             for st in pg.get("steps", [pg.get("step")]):
                 add(st["drawing"])
@@ -53,7 +58,7 @@ def drawings() -> list[str]:
                 for k in st.get("parts", {}):
                     add(f"chip_{k}")
                 for k in list(st.get("hardware", {})) + list(st.get("cables", {})):
-                    add(f"hw_{k}")
+                    add(hw_icon(k))
             if kind == "last":
                 add(pg["finished"]["drawing"])
         elif kind == "done":
@@ -214,7 +219,7 @@ class Page:
         cols = 3 if banner else 2
         cards = "".join(
             f'<div style="border: 2px solid #111111; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;{" gap: 8px;" if k == "jumper" else ""}">\n'
-            f'<img src="{self.url("hw_" + k)}" alt="{self.hw_name(k)}" style="width: 64px; height: 30px; object-fit: contain;">\n'
+            f'<img src="{self.url(hw_icon(k))}" alt="{self.hw_name(k)}" style="width: 64px; height: 30px; object-fit: contain;">\n'
             f'<span style="font-size: 13px; color: #3a3a3a;">{self.hw_name(k)}</span>\n'
             f'<span style="font-size: 26px; font-weight: 800;">{self.q(n)}</span>\n</div>\n' for k, n in hw.items())
         top = ("""<div style="display: flex; gap: 18px; align-items: center; border: 3px solid #111111; border-radius: 12px; padding: 16px 20px;">
@@ -252,7 +257,7 @@ class Page:
         out = f"{{ n: {self.js(st['n'])}, img: {self.js(self.url(st['drawing']))}, alt: {self.js(st['alt'])},\n  parts: [{parts}]"
         for key, on in (("cables", with_cables), ("hardware", with_hw)):
             if on:
-                items = ", ".join(f"{{ t: {self.js(self.hw_label(k))}, q: {self.js(self.q(n))}, img: {self.js(self.url('hw_' + k))} }}"
+                items = ", ".join(f"{{ t: {self.js(self.hw_label(k))}, q: {self.js(self.q(n))}, img: {self.js(self.url(hw_icon(k)))} }}"
                                   for k, n in st.get(key, {}).items())
                 out += f", {'hw' if key == 'hardware' else 'cables'}: [{items}]"
         out += f", clic: {'true' if st.get('clic') else 'false'}"
@@ -292,7 +297,7 @@ class Page:
     def last(self, pg) -> str:
         st, fin = pg["step"], pg["finished"]
         chips = "".join(CHIP.format(img=self.url("chip_" + k), alt=SPEC["parts"][k], q=self.q(n)) for k, n in st.get("parts", {}).items()) \
-            + "".join(HWCHIP.format(img=self.url("hw_" + k), alt=self.hw_label(k), t=self.hw_label(k), q=self.q(n))
+            + "".join(HWCHIP.format(img=self.url(hw_icon(k)), alt=self.hw_label(k), t=self.hw_label(k), q=self.q(n))
                       for k, n in st.get("hardware", {}).items())
         return HEAD.format(title=pg["title"]) + f"""<div style="width: 794px; height: 1123px; box-sizing: border-box; padding: 48px 56px 40px; display: flex; flex-direction: column; gap: 18px; {FONT}">
 <section style="flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; gap: 6px;">
@@ -329,6 +334,22 @@ class Page:
 """ + TAIL.format(vals="{}")
 
 
+def index() -> dict:
+    """The canvas's project/canvas.json: one row of A4 artboards per title note, in page order."""
+    ix, rows = SPEC["index"], list(SPEC["index"]["rows"])
+    W, H, GAP, ROW = 794, 1123, 80, 1123 + 420
+    boards, count = {}, {r: 0 for r in rows}
+    for pg in SPEC["pages"]:
+        r = pg["board"]["row"]
+        boards[pg["file"]] = {"x": count[r] * (W + GAP), "y": rows.index(r) * ROW, "w": W, "h": H,
+                              "title": pg["board"]["title"], "print": "flow", "paper": "a4"}
+        count[r] += 1
+    notes = {r: {"x": 0, "y": rows.index(r) * ROW - 300, "text": t, "kind": "title1", "maxW": count[r] * (W + GAP) - GAP}
+             for r, t in ix["rows"].items()}
+    return {"v": 3, "createdOnFiles": ix["createdOnFiles"], "title": ix["title"], "launch": {"view": "canvas"},
+            "pages": [], "boards": boards, "order": [pg["file"] for pg in SPEC["pages"]], "notes": notes, "designSystems": []}
+
+
 def build(dst: Path) -> list[Path]:
     page, out = Page(load_assets()), []
     (dst / "project").mkdir(parents=True, exist_ok=True)
@@ -336,7 +357,8 @@ def build(dst: Path) -> list[Path]:
         p = dst / "project" / pg["file"]
         p.write_bytes(getattr(page, pg["kind"])(pg).encode("utf-8"))
         out.append(p)
-    print(f"{len(out)} pages in {dst / 'project'}")
+    (dst / "project" / "canvas.json").write_text(json.dumps(index(), ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"{len(out)} pages and canvas.json in {dst / 'project'}")
     return out
 
 

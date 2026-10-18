@@ -44,11 +44,14 @@ PARTS = {
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "drawer_light": ("parts/drawer.scad", {}),
+    "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
+    "power_box_lid": ("parts/power_box.scad", {}, "lid();"),     # as assembled (it prints top face down)
 }
 # heaviest first, dealt round-robin to the processes
-JOBS = ["done", "b5", "b3", "b1", "a9", "b2", "a8", "b3n", "b4", "cover", "a7", "a6", "a5", "a4", "a3", "a2", "a1",
-        "pin", "pin_b", "hook"] + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd")] \
-       + [f"hw:{h}" for h in ("m3x8", "m3x6", "m25x8", "insert", "jumper")]
+JOBS = ["done", "b5", "c_done", "b3", "b1", "a9", "c5", "b2", "a8", "c3", "c4", "b3n", "b4", "cover", "a7", "a6",
+        "a5", "a4", "a3", "a2", "a1", "c1", "c2", "pin", "pin_b", "hook"] \
+       + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch")] \
+       + [f"hw:{h}" for h in ("m3x8", "m3x6", "m25x8", "insert", "jumper", "usbc")]
 
 
 def freecadcmd() -> str:
@@ -69,14 +72,18 @@ def fc(script: str, **env) -> None:
 
 def csg() -> None:
     (BUILD / "csg").mkdir(parents=True, exist_ok=True)
-    for name, (scad, defines) in PARTS.items():
+    for name, (scad, defines, *call) in PARTS.items():
         cmd = openscad_cmd() + ["-o", str(BUILD / "csg" / f"{name}.csg")]
         for k, v in defines.items():
             cmd += ["-D", f'{k}="{v}"' if isinstance(v, str) else f"{k}={v}"]
-        subprocess.run(cmd + [str(MECH / scad)], cwd=MECH, check=True, capture_output=True)
+        src = MECH / scad
+        if call:                           # a module of the file, called by a wrapper next to the CSG
+            src = BUILD / "csg" / f"_{name}.scad"
+            src.write_text(f"use <{(MECH / scad).as_posix()}>\n{call[0]}\n", encoding="utf-8")
+        subprocess.run(cmd + [str(src)], cwd=MECH, check=True, capture_output=True)
 
 
-BOARDS = {"bay-node": "bay_node"}      # KiCad board -> its solid in <build>/parts (the power box will add "power-hub")
+BOARDS = {"bay-node": "bay_node", "power-hub": "hub"}      # KiCad board -> its solid in <build>/parts
 
 
 def node_step(NODE: str = "bay-node") -> None:
@@ -97,7 +104,7 @@ def node_step(NODE: str = "bay-node") -> None:
         script = " ".join(export)
         if coverage:
             script += (" && python3 -c 'import sys; from pathlib import Path; sys.path.insert(0, \"electronics/tools\"); "
-                       f"import build_board; build_board.export_3d_coverage(Path(\"electronics/{NODE}\"), \"{NODE}\")'")
+                       f"import build_board; build_board.export_3d_coverage(Path(\"/repo/electronics/{NODE}\"), \"{NODE}\")'")
         cmd = ["docker", "run", "--rm", "-e", "HOME=/tmp", "-e", "KICAD10_3DMODEL_DIR=/usr/share/kicad/3dmodels",
                "-v", f"{REPO}:/repo", "-w", "/repo", "kicad/kicad:10.0-full", "sh", "-c", script]
     elif cli:
@@ -123,6 +130,9 @@ def main() -> None:
     BUILD.mkdir(parents=True, exist_ok=True)
     c = panel_proto.constants(BUILD)
     c["ROW_CABLE"] = yaml.safe_load((HERE / "notice.yaml").read_text(encoding="utf-8"))["row_cable"]
+    import rackcfg
+    rack = rackcfg.load()                  # the power box's placement (frame) and the hub's
+    c["POWER_BOX"] = {**rack.power_box(), "hub_pcb": rack.raw["pcb"]["power_hub"]}
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     print("constants, CSG ...")
     csg()
