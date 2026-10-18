@@ -85,6 +85,8 @@ python -m http.server -d site 8000           # open http://localhost:8000
 
 For screenshots the viewer takes URL parameters: `?bay=B4&openbay=1&view=dut&hideui`
 pulls bay B4's drawer out and frames its DUT cable (DATA port to board), with no UI.
+`?bay=B2&view=camera&camlight=1&preview=B2` looks into a camera bay with its LEDs on and opens what
+its camera sees (an Arducam Mega with a ~120° lens: fisheye, noise, auto-exposure and JPEG, at 5 fps).
 
 Photoreal renders (Blender + Cycles) start from `render/assembly.glb`, baked
 from the same scene as the viewer by `python tools/assembly_glb.py --hq` (`--hq`:

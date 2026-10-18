@@ -9,6 +9,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
+import { makeCameraRig, setRigLight, refreshRigShadows, CameraPreview } from './camera.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -78,6 +79,10 @@ const MAT = {
   whitePlastic: std(0xeceae4, 0, 0.6),
   gold: std(0xd4a64a, 0.9, 0.3),
   inductor: std(0x2b2b2b, 0.2, 0.55),
+  megaPcb: std(0x16181d, 0.1, 0.4),                 // the Arducam Mega's black PCB
+  lensBody: std(0x101114, 0.3, 0.45),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0x05070c, roughness: 0.04, clearcoat: 1, iridescence: 0.6, iridescenceIOR: 1.6 }),
+  ledStrip: std(0xf3f1ea, 0, 0.5),
 };
 const CABLE_COLORS = {
   'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
@@ -133,6 +138,102 @@ function partMaterial(name) {
   if (name.endsWith('_labels')) return MAT.powerLabels;
   if (name.startsWith('power_box_')) return MAT.powerBox;
   return MAT.trays;
+}
+
+// ------------------------------------------------------------------ light inside the bays
+// Two things three.js cannot do on its own, patched into every standard material from the rack's geometry
+// (row origins, tilt, heights, bay depth, column pitch):
+// * occlusion: the room's light (environment + sky) reaches a bay only through its front and back, the tray
+//   above and the ladders either side keep most of it off the board.  In each row's frame, the share of the
+//   upper half-circle the ceiling leaves open, a little less near the ladders, less again in the plenum;
+// * walls: a camera's area lights cast no shadows and its spots only see 180 mm, so their light would go
+//   through the ladders into the next bays.  Each spot or area light only lights the bay it hangs in (and
+//   its drawer when pulled out), which is all the ladders and trays would let through anyway.
+function installBayLighting(R) {
+  const rows = R.rows.filter((r) => r.id !== 'cap');
+  const t = deg(rows[0].tilt);
+  const f = (v) => v.toFixed(3);
+  const arr = (vs) => `float[${vs.length}](${vs.map(f).join(', ')})`;
+  const chunk = `
+#if defined( STANDARD )
+const int SH_N = ${rows.length};
+const float SH_C = ${f(Math.cos(t))}, SH_S = ${f(Math.sin(t))}, SH_Y0 = ${f(rows[0].origin[1])};
+const float SH_Z[SH_N] = ${arr(rows.map((r) => r.origin[2]))};
+const float SH_H[SH_N] = ${arr(rows.map((r) => r.height))};
+const float SH_D = ${f(R.bay_depth)}, SH_W = ${f(R.width)}, SH_P = ${f(R.pitch)}, SH_T = ${f(R.panel)}, SH_PLENUM = ${f(R.plenum)};
+const float SH_TRAVEL = ${f(R.drawer_travel)};
+float shelfOcclusion(vec3 w) {
+  vec3 p = vec3(w.x, -w.z, w.y);                        // three.js world -> rack frame (Z up)
+  if (p.x < 0.0 || p.x > SH_W) return 1.0;
+  for (int i = 0; i < SH_N; i++) {
+    float dy = p.y - SH_Y0, dz = p.z - SH_Z[i];
+    float y = dy * SH_C + dz * SH_S, z = -dy * SH_S + dz * SH_C;
+    float h = SH_H[i] * SH_C, back = SH_H[i] * SH_S;    // the ceiling: the next tray, further back
+    if (z < 0.0 || z > h - 0.5 || y < 0.0 || y > SH_D + back) continue;
+    float open = 1.0 - (atan(h - z, back - y) - atan(h - z, back + SH_D - y)) / 3.14159265;
+    float u = mod(p.x, SH_P);
+    float lat = 0.72 + 0.28 * smoothstep(0.0, 45.0, min(u - SH_T, SH_P - u));
+    float ao = (0.08 + 0.92 * open * open * open) * lat;   // the ladders close the sides: open³, by eye
+    if (z < SH_PLENUM - 0.5 && y < SH_D) ao *= 0.55;   // the plenum, under the drawer
+    return ao;
+  }
+  return 1.0;
+}
+ivec2 bayCell(vec3 w) {                                 // (column, row) of the bay a point is in, or -1
+  vec3 p = vec3(w.x, -w.z, w.y);
+  if (p.x < 0.0 || p.x > SH_W) return ivec2(-1);
+  for (int i = 0; i < SH_N; i++) {
+    float dy = p.y - SH_Y0, dz = p.z - SH_Z[i];
+    float y = dy * SH_C + dz * SH_S, z = -dy * SH_S + dz * SH_C;
+    if (z < -2.0 || z > SH_H[i] * SH_C + 0.5 || y < -SH_TRAVEL - 40.0 || y > SH_D + SH_H[i] * SH_S) continue;
+    return ivec2(int(floor(p.x / SH_P)), i);
+  }
+  return ivec2(-1);
+}
+float bayMask(vec3 lightView) {                         // 1 when the fragment is in the light's own bay
+  vec3 lw = transpose(mat3(viewMatrix)) * (lightView - viewMatrix[3].xyz);
+  ivec2 a = bayCell(vShelfPos), b = bayCell(lw);
+  return (b.x >= 0 && a == b) ? 1.0 : 0.0;
+}
+#endif
+`;
+  THREE.ShaderChunk.common += `\n#if defined( STANDARD )\nvarying vec3 vShelfPos;\n#endif\n`;
+  THREE.ShaderChunk.project_vertex += `
+#if defined( STANDARD )
+{ vec4 sp = vec4( transformed, 1.0 );
+#ifdef USE_INSTANCING
+  sp = instanceMatrix * sp;
+#endif
+  vShelfPos = ( modelMatrix * sp ).xyz; }
+#endif
+`;
+  THREE.ShaderChunk.lights_pars_begin += chunk;
+  const begin = THREE.ShaderChunk.lights_fragment_begin;
+  const spotAt = 'getSpotLightInfo( spotLight, geometryPosition, directLight );';
+  const rectAt = 'rectAreaLight = rectAreaLights[ i ];';
+  if (begin.includes(spotAt) && begin.includes(rectAt)) {
+    THREE.ShaderChunk.lights_fragment_begin = begin
+      .replace(spotAt, `${spotAt}
+#if defined( STANDARD )
+directLight.color *= bayMask( spotLight.position );
+#endif`)
+      .replace(rectAt, `${rectAt}
+#if defined( STANDARD )
+rectAreaLight.color *= bayMask( rectAreaLight.position );
+#endif`);
+  } else console.warn('three.js lights chunk changed: camera lights are not kept to their bay');
+  THREE.ShaderChunk.lights_fragment_end = `
+#if defined( STANDARD )
+{ float shelfAO = shelfOcclusion( vShelfPos );
+#if defined( RE_IndirectDiffuse )
+  irradiance *= shelfAO; iblIrradiance *= shelfAO;
+#endif
+#if defined( RE_IndirectSpecular )
+  radiance *= shelfAO;
+#endif
+}
+#endif
+` + THREE.ShaderChunk.lights_fragment_end;
 }
 
 // ------------------------------------------------------------------ layers
@@ -414,6 +515,8 @@ const drawerTarget = {};
 const initialOpen = {};         // drawer state baked into rack.json positions
 const chainInstances = [];      // {inst, ch}
 let selectedBay = null;
+const rigs = {};               // bay id → its camera (site/camera.js)
+let preview = null, previewBay = null;
 const selectionBox = new THREE.Box3Helper(new THREE.Box3(), 0xff8a3d);
 selectionBox.visible = false;
 root.add(selectionBox);
@@ -424,6 +527,7 @@ async function load() {
     new GLTFLoader().loadAsync('assets/parts.glb'),
   ]);
   DATA = json;
+  installBayLighting(DATA.rack);
   LAYER.h = DATA.print?.layer ?? LAYER.h;
   gltf.scene.updateMatrixWorld(true);
   gltf.scene.traverse((o) => {
@@ -487,7 +591,6 @@ function build(pcbGlb) {
       lbl.position.set(bx.size[0] / 2, bx.size[1] / 2, bx.size[2] + 0.05);
       g.add(lbl);
     }
-    if (bx.kind === 'xiao') g.add(box(8, 8, 3, MAT.blackPlastic, bx.size[0] / 2 - 4, bx.size[1] / 2 - 4, -3));
     g.position.set(...bx.pos);
     track(g, { layer: bx.layer, bay: bx.bay || null, row: bx.row ?? null, zone: bx.layer, space: bx.space });
   }
@@ -497,6 +600,12 @@ function build(pcbGlb) {
       new THREE.MeshStandardMaterial({ color: l.color, emissive: l.color, emissiveIntensity: 2.2 }));
     m.position.set(l.pos[0], l.pos[1] + 0.6, l.pos[2]);
     track(m, { layer: l.layer ?? 'nodes', bay: l.bay ?? null, row: l.row ?? null, zone: 'led', space: l.space ?? 'row' });
+  }
+  // bay cameras: the pod under the ceiling, its light boxes, the lens the preview looks through
+  for (const c of DATA.cameras ?? []) {
+    const rig = makeCameraRig(c, MAT);
+    track(rig.group, { layer: 'cameras', bay: c.bay, row: c.row, zone: 'cameras', space: 'row' });
+    rigs[c.bay] = rig;
   }
   // chains
   for (const ch of DATA.chains) {
@@ -559,6 +668,7 @@ function applyTransforms() {
     }
   }
   for (const { inst, ch } of chainInstances) layoutChain(inst, ch, drawerFrac[ch.bay]);
+  for (const rig of Object.values(rigs)) if (rig.level > 0) refreshRigShadows(rig);
   updateSelectionBox();
 }
 
@@ -579,6 +689,11 @@ function buildUI() {
   $('explode').addEventListener('input', (e) => { explode = +e.target.value; applyTransforms(); });
   $('xray').addEventListener('change', (e) => setXray(e.target.checked));
   $('autorotate').addEventListener('change', (e) => { controls.autoRotate = e.target.checked; });
+  $('camLights').addEventListener('change', (e) => { for (const r of Object.values(rigs)) r.target = e.target.checked ? 1 : 0; syncCameraUI(); });
+  $('camPreview').addEventListener('click', () => openPreview(rigs[selectedBay] ? selectedBay : Object.keys(rigs)[0]));
+  $('cpClose').addEventListener('click', () => openPreview(null));
+  $('cpLight').addEventListener('click', () => { const r = rigs[previewBay]; if (r) { r.target = r.target > 0.5 ? 0 : 1; syncCameraUI(); } });
+  if (!Object.keys(rigs).length) $('camSection').hidden = true;
   document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
   $('infoClose').addEventListener('click', () => select(null));
   $('panelToggle').addEventListener('click', () => {
@@ -593,6 +708,9 @@ function buildUI() {
     select(params.get('bay'), !params.has('hideui'));
     if (params.has('openbay')) drawerFrac[params.get('bay')] = drawerTarget[params.get('bay')] = +params.get('openbay') || 1;
   }
+  if (params.has('camlight')) for (const r of Object.values(rigs)) { r.target = 1; setRigLight(r, 1); }
+  if (params.has('preview')) openPreview(params.get('preview') || Object.keys(rigs)[0]);
+  syncCameraUI();
   if (params.has('hideui')) document.querySelectorAll('.topbar,.panel,.hint,.info').forEach((e) => (e.style.display = 'none'));
 }
 
@@ -621,6 +739,12 @@ function setView(name, animate = true) {
     const bb = bayBounds(selectedBay || 'B2');
     target = bb.getCenter(new THREE.Vector3());
     eye = target.clone().add(new THREE.Vector3(0.42, -1, 0.62).normalize().multiplyScalar(720));
+  } else if (name === 'camera') {
+    // into the selected camera bay from the front, between its board and the pod (?view=camera&bay=B2)
+    const id = rigs[selectedBay] ? selectedBay : Object.keys(rigs)[0];
+    const lens = rigs[id].lens.getWorldPosition(new THREE.Vector3()).applyMatrix4(new THREE.Matrix4().copy(root.matrixWorld).invert());
+    target = bayBounds(id).getCenter(new THREE.Vector3()).lerp(lens, 0.45);
+    eye = target.clone().add(new THREE.Vector3(-0.32, -1, 0.1).normalize().multiplyScalar(330));
   } else if (name === 'dut') {
     // close-up on the selected bay's DUT cable, DATA socket to board (?view=dut&bay=B4&openbay=1)
     root.updateMatrixWorld(true);
@@ -675,7 +799,7 @@ function select(id, showPanel = true) {
   if (!id) { info.hidden = true; return; }
   const b = DATA.bays.find((x) => x.id === id);
   const tags = [];
-  if (b.camera) tags.push('<span class="tag ok">camera pod</span>');
+  if (b.camera) tags.push('<span class="tag ok">camera</span>');
   if (b.power_port) tags.push('<span class="tag ok">PWR port used</span>');
   if (b.classic) tags.push('<span class="tag ok">classic mode (laptop)</span>');
   if (b.board && !b.verified) tags.push('<span class="tag warn">board outline unverified</span>');
@@ -693,17 +817,45 @@ function select(id, showPanel = true) {
     <div class="actions">
       <button id="actDrawer">${drawerTarget[id] > 0.5 ? 'Close' : 'Open'} drawer</button>
       <button id="actFocus">Focus</button>
+      ${rigs[id] ? '<button id="actLight"></button><button id="actPreview">Camera preview</button>' : ''}
     </div>`;
   info.hidden = !showPanel;
   $('actDrawer').onclick = () => { drawerTarget[id] = drawerTarget[id] > 0.5 ? 0 : 1; select(id); };
   $('actFocus').onclick = () => setView('bay');
+  if (rigs[id]) {
+    $('actLight').onclick = () => { rigs[id].target = rigs[id].target > 0.5 ? 0 : 1; syncCameraUI(); };
+    $('actPreview').onclick = () => openPreview(id);
+  }
+  syncCameraUI();
+}
+
+// ------------------------------------------------------------------ cameras
+function openPreview(bay) {
+  previewBay = bay && rigs[bay] ? bay : null;
+  if (previewBay) {
+    preview ??= new CameraPreview(renderer, $('cpScreen'));
+    preview.setRig(rigs[previewBay]);
+    $('cpTitle').textContent = `${previewBay} · camera`;
+  }
+  $('campreview').hidden = !previewBay;
+  syncCameraUI();
+}
+
+function syncCameraUI() {
+  const all = Object.values(rigs);
+  $('camLights').checked = all.length > 0 && all.every((r) => r.target > 0.5);
+  $('camLights').indeterminate = all.some((r) => r.target > 0.5) && !$('camLights').checked;
+  const p = rigs[previewBay];
+  if (p) { $('cpLight').setAttribute('aria-pressed', String(p.target > 0.5)); $('cpLight').textContent = p.target > 0.5 ? 'Light on' : 'Light off'; }
+  const a = $('actLight');
+  if (a && rigs[selectedBay]) a.textContent = rigs[selectedBay].target > 0.5 ? 'Camera light off' : 'Camera light on';
 }
 
 // ------------------------------------------------------------------ ground + lights placement
 function placeEnvironment() {
   const R = DATA.rack;
   const c = toWorld(rackCenter());
-  sun.position.set(c.x + 900, c.y + 1800, c.z + 1100);
+  sun.position.set(c.x + 700, c.y + 2600, c.z + 500);      // high, like the room's ceiling lights: the trays shade the bays
   sun.target.position.copy(c);
   const s = sun.shadow.camera;
   s.left = -900; s.right = 900; s.top = 900; s.bottom = -900; s.near = 100; s.far = 5000;
@@ -741,10 +893,17 @@ function tick(now) {
     }
     if (moving) applyTransforms();
   }
+  for (const rig of Object.values(rigs)) {         // the lights fade in and out over ~150 ms
+    const d = rig.target - rig.level;
+    if (Math.abs(d) > 1e-3) setRigLight(rig, rig.level + Math.sign(d) * Math.min(Math.abs(d), 0.12));
+  }
   controls.update();
   renderer.render(scene, camera);
+  if (previewBay) preview.update(scene, now, [selectionBox]);
   labelRenderer.render(scene, camera);
 }
+
+if (params.has('debug')) window.__viewer = { renderer, scene, camera, controls, rigs, THREE, select, openPreview, preview: () => preview };
 
 load().then(() => { placeEnvironment(); requestAnimationFrame(tick); }).catch((err) => {
   console.error(err);

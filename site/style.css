@@ -85,8 +85,25 @@ input[type=checkbox] { accent-color: var(--accent); }
 .tag { font-size: 11.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); background: rgba(255,255,255,.04); }
 .tag.warn { border-color: rgba(255, 176, 46, .6); color: #ffcf7a; }
 .tag.ok { border-color: rgba(63, 182, 255, .6); color: #9bd9ff; }
-.info .actions { display: flex; gap: 8px; }
+.info .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .info .actions button { padding: 7px 12px; }
+
+/* The camera preview: the frame is read back from WebGL into the panel's own canvas (rows bottom-up: flipped). */
+#camSection .btn-row { grid-template-columns: 1fr; }
+.campreview {
+  position: fixed; z-index: 5; right: 280px; bottom: 16px; width: 384px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+  backdrop-filter: blur(10px); font-size: 12.5px; box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+}
+.campreview header { display: flex; align-items: center; gap: 8px; padding: 7px 7px 7px 12px; }
+.campreview header strong { flex: 1; font-size: 13px; font-weight: 600; }
+.campreview .rec { width: 8px; height: 8px; border-radius: 50%; background: #ff4d4f; animation: rec 1.6s ease-in-out infinite; }
+@keyframes rec { 50% { opacity: .3; } }
+.campreview header button { padding: 4px 10px; font-size: 12px; }
+.campreview header button[aria-pressed=true] { background: rgba(255, 214, 102, .16); border-color: #ffd666; color: #ffe7a3; }
+.campreview .close { width: 26px; height: 26px; padding: 0; font-size: 16px; line-height: 1; }
+.campreview .screen { display: block; width: 100%; aspect-ratio: 4 / 3; background: #000; transform: scaleY(-1); }
+.campreview footer { padding: 6px 12px; color: var(--muted); font-size: 11.5px; }
 
 .hint {
   position: fixed; z-index: 3; left: 50%; bottom: 14px; transform: translateX(-50%);
@@ -111,4 +128,8 @@ input[type=checkbox] { accent-color: var(--accent); }
   .panel.collapsed .panel-body { display: none; }
   .info { bottom: auto; top: 64px; }
   .hint { display: none; }
+  .campreview { left: 16px; right: 16px; width: auto; bottom: 70px; }
+}
+@media (min-width: 721px) and (max-width: 1100px) {
+  .campreview { right: 16px; width: 336px; }
 }

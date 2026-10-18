@@ -50,6 +50,11 @@
         <label class="check"><input type="checkbox" id="xray"> Inside view (hide ladders)</label>
         <label class="check"><input type="checkbox" id="autorotate"> Auto-rotate</label>
       </section>
+      <section id="camSection">
+        <h2>Cameras</h2>
+        <label class="check"><input type="checkbox" id="camLights"> Camera lights</label>
+        <div class="btn-row"><button id="camPreview">Camera preview</button></div>
+      </section>
       <section>
         <h2>Layers</h2>
         <div id="layers" class="layers"></div>
@@ -71,6 +76,17 @@
   <aside class="info" id="info" hidden>
     <button class="close" id="infoClose" aria-label="Close">×</button>
     <div id="infoBody"></div>
+  </aside>
+
+  <aside class="campreview" id="campreview" hidden aria-label="Camera preview">
+    <header>
+      <span class="rec" aria-hidden="true"></span>
+      <strong id="cpTitle">Camera</strong>
+      <button id="cpLight" aria-pressed="false">Light off</button>
+      <button class="close" id="cpClose" aria-label="Close preview">×</button>
+    </header>
+    <canvas class="screen" id="cpScreen" width="640" height="480"></canvas>
+    <footer>Arducam Mega 3MP · M12 ~120° · VGA JPEG · 5 fps</footer>
   </aside>
 
   <div class="hint" id="hint">Drag to orbit · scroll to zoom · click a bay</div>

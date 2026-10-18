@@ -183,6 +183,18 @@ CABLE_MIN_R = 10.0         # and the tightest it takes without kinking
 # the drawer slides.  A longer cable's spare length is looped flat on the plate's hooks instead.
 ARCH_TOP_MAX = 105.0
 
+# The bay camera (2026-10-18 hand-over): an Arducam Mega 3MP with a ~120° M12 lens on the bay's own node, its
+# lens over bay X 64, Y 84 (the one spot that frames every board in the population), 38 mm under the ceiling,
+# looking straight down; on each side a light box, 3 white LEDs behind a 1 mm white PETG diffuser.  The real pod
+# is the mechanics' (mechanical/parts/camera_pod.scad): move these numbers to config/rack.yaml with it.
+CAMERA_LENS = (64.0, 84.0, 38.0)        # bay X and Y (in its own row's frame), drop below the ceiling
+CAMERA_RIG = {
+    "plate": [70, 40, 3],                # the pod's plate under the ceiling, centred on the lens
+    "board": [33, 33, 1.6],              # the Mega's PCB, lens down
+    "fov": 120, "aspect": 4 / 3,         # diagonal field of view (fisheye), sensor aspect
+    "lights": [{"at": [s * 25.5, 0], "size": [14, 30], "gap": 8, "leds": 3, "diffuser": 1.0} for s in (-1, 1)],
+}
+
 
 def plug_exit(end):
     """Where the cable leaves a plug's strain relief and which way: a straight plug out of its back,
@@ -419,7 +431,7 @@ def build(rack) -> Path:
     pitch, T = rack.pitch, rack.panel_t
 
     items = {"instances": [], "frame": [], "cables": [], "chains": [], "boards": [], "pcbs": [], "boxes": [], "props": [],
-             "leds": []}
+             "leds": [], "cameras": []}
     bays = []
 
     def add(part, pos, rot=(0, 0, 0), space="row", row=None, **meta):
@@ -593,14 +605,15 @@ def build(rack) -> Path:
                 cable(catenary_cable(pc_a, (W + 30, -150), pc_b), space="frame", kind="pc", bay=b.id,
                       label="Laptop → front PC port (classic mode)", a="usb-c", b="usb-c", ends=[pc_a, pc_b],
                       radius=2.0)
-        # camera pod: on the ceiling = the bottom of the tray above (or the cap plate)
+        # camera: an Arducam Mega under the ceiling (the bottom of the tray above, or the cap plate), wired to
+        # this bay's own node; the viewer draws it, its light boxes and its preview (site/camera.js)
         if b.id in cams:
-            cm = raw["bay"]["camera_mount"]
-            add("camera_mount", (x0 + cm[0], cm[1], 0), row=i + 1, layer="cameras", bay=b.id)
-            add("camera_cradle", (x0 + cm[0], cm[1], -14 - 3), row=i + 1, layer="cameras", bay=b.id)
-            items["boxes"].append({"kind": "xiao", "layer": "cameras", "bay": b.id, "row": i + 1, "space": "row",
-                                   "pos": [x0 + cm[0] - 10.5, cm[1] - 8.9, -14 - 3 - 17], "size": [21, 17.8, 15],
-                                   "color": "#202a44"})
+            lx, ly, drop = CAMERA_LENS
+            up = rack.rows[i]["height"] * math.sin(math.radians(rack.tilt))    # the tray above sits further back
+            cm = raw["bay"]["camera_mount"]          # the ceiling's insert square: the pod's arm reaches it
+            items["cameras"].append({"bay": b.id, "row": i + 1, "space": "row", "layer": "cameras",
+                                     "lens": [round(x0 + lx, 2), round(ly - up, 2), -drop],
+                                     "mount": [round(cm[0] - lx, 2), round(cm[1] - (ly - up), 2), cm[2]], **CAMERA_RIG})
         meta["center"] = rack.to_frame(i, [x0 + rack.carrier_w / 2, BD / 2, plenum + 40])
         bays.append(meta)
 
