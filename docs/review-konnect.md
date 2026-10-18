@@ -429,3 +429,20 @@ alternates for the same footprint: the TCAN1044AVDRQ1 (C3234993, no signal impro
 TJA1462AT/0Z (C3234095, signal improvement, bus pins −36 / +40 V instead of ±58 V).  The TCAN1462
 without the V (C22445414, in stock) does not fit: with no VIO pin its RXD swings to 5 V, too much for
 the ESP32-S3.
+
+## Bay node: J2 mirrored, the row cable flat (2026-10-18)
+
+J2 (ROW OUT) now carries J1's pinout mirrored (1 POS out · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), so
+the jumper between two nodes lies flat with no twist ([can.md](can.md#row-cable)).  Every net crosses the
+board straight: the VRACK strip on In2 runs from J1.1 to J2.6 at the same height, and R30 moved next to
+J2.1.  The node was re-routed (Freerouting).  Konnect, on the saved files:
+
+| | bay node |
+|---|---|
+| J1 / J2 pin nets (`get_component_nets`) | J1: VRACK, GND, CAN_H, CAN_L, GND, POS_IN_CONN; J2: POS_OUT_CONN, GND, CAN_L, CAN_H, GND, VRACK |
+| ERC | 0 errors, 0 warnings |
+| DRC | 0 errors, 0 warnings, 0 unconnected, schematic parity 0 |
+| CAN pair | J1 → J2: CAN_H 55 mm, CAN_L 59 mm; stubs to U11 3.7 / 8.2 mm, to D5 3.5 / 1.3 mm (≤ 20 mm asked) |
+| 3D coverage (`tools/pcb_glb.py --check`) | 85 parts with a model, 0 stand-ins |
+
+The hub is unchanged: its row outputs keep J1's pinout, and the feeds stay 1:1.

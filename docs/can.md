@@ -17,22 +17,34 @@ turns them on, once the PD contract is final.
 
 JST PH 2.0 mm, **6 pins**, side entry: **S6B-PH-SM4-TB**, the part the node
 already uses for AUX.  On the node, J1 (IN) is on the left edge and J2 (OUT)
-on the right edge.  The hub's row outputs A–D are on its left edge, in the power box's left
-wall.  Cables are wired 1:1 (pin n ↔ pin n), 24 AWG.  A connector on a left
-edge has its pin 1 towards the rear, one on a right edge towards the front.  So
-between neighbouring nodes (J2 facing J1), the 1:1 cable's bundle makes a half
-twist, as today's 2-pin jumpers already do.  When buying pre-crimped cables,
-check "pin 1 ↔ pin 1": vendors name the "same" and "reverse" types
-inconsistently.
+on the right edge: the same footprint turned 180°, so J1's pin 1 is towards
+the rear and J2's towards the front.  The hub's row outputs A–D are on its
+left edge (pin 1 towards the rear), in the power box's left wall.
 
-| Pin | Net | |
-|---|---|---|
-| 1 | VRACK | row power, 20 or 28 V, ≤ 1.6 A (the hub's eFuse; PH contact 2 A) |
-| 2 | GND | |
-| 3 | CAN_H | through every node (J1.3 ↔ J2.3), tapped by its transceiver (stub ≤ 20 mm) |
-| 4 | CAN_L | likewise; pins 3 and 4 run side by side |
-| 5 | GND | |
-| 6 | POS | addressing token: J1.6 → node input, node output → J2.6 |
+**J2's pinout is J1's mirrored** (J2.n carries J1.(7−n)'s net).  Every net
+then crosses the node straight, and no cable has to twist:
+
+* **Jumper, node to node** (J2 facing the next node's J1): it lies flat, each
+  wire on its own side, so it joins **pin n ↔ pin 7−n**.  Laid flat on a
+  table, its two plugs show the **same face**.
+* **Feed, hub to a row's first node** (both connectors face left; the cable
+  loops out of the box, up the rack's side and back in): it folds over once,
+  so it joins **pin n ↔ pin n** (1:1).  Laid flat, its plugs show **opposite
+  faces**.
+
+Vendors name these "same" and "reverse" inconsistently: check the faces, and
+pin 1's continuity (to pin 6 on a jumper, to pin 1 on a feed).  The wrong
+cable burns nothing: VRACK lands on the POS pins (10k + BAT54S, ≈ 2.5 mA at
+28 V), CAN_H and CAN_L swap, and the next node simply stays off.
+
+| Pin | J1 (IN), hub row outputs | J2 (OUT) | |
+|---|---|---|---|
+| 1 | VRACK | POS out | VRACK: row power, 20 or 28 V, ≤ 1.6 A (the hub's eFuse; PH contact 2 A) |
+| 2 | GND | GND | |
+| 3 | CAN_H | CAN_L | the pair runs through every node (J1.3 ↔ J2.4, J1.4 ↔ J2.3), tapped by its transceiver (stub ≤ 20 mm) |
+| 4 | CAN_L | CAN_H | |
+| 5 | GND | GND | |
+| 6 | POS in | VRACK | POS: addressing token, into the node on J1.6, out of it on J2.1 |
 
 * Bay-to-bay jumpers: 120 mm.
 * Feeds from the power box: ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C.  Give
