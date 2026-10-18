@@ -194,6 +194,39 @@ def hull2d_pts(pts):
     return lo[:-1] + up[:-1]
 
 
+def mixed_hull(circles, pts, n=720):
+    """2D hull of circles (any radii) and points: the hull of the points and of each circle sampled
+    finely, then every run of samples from one circle replaced by its exact arc (a face in z = 0)."""
+    tag = {}
+    for p in pts:
+        tag.setdefault((round(p[0], 9), round(p[1], 9)), (-1, None))
+    for k, (c, r) in enumerate(circles):
+        for i in range(n):
+            a = 2 * math.pi * i / n
+            tag.setdefault((round(c[0] + r * math.cos(a), 9), round(c[1] + r * math.sin(a), 9)), (k, None))
+    h = hull2d_pts(list(tag))
+    t = [tag[p][0] for p in h]
+    s = next((i for i in range(len(h)) if t[i] != t[i - 1] or t[i] < 0), 0)   # start where a run starts
+    h, t = h[s:] + h[:s], t[s:] + t[:s]
+    runs = []
+    for p, k in zip(h, t):
+        if runs and k >= 0 and runs[-1][0] == k:
+            runs[-1][1].append(p)
+        else:
+            runs.append((k, [p]))
+    v = lambda p: V(p[0], p[1], 0)
+    edges = []
+    for i, (k, ps) in enumerate(runs):
+        if k >= 0 and len(ps) >= 3:
+            edges.append(Part.Arc(v(ps[0]), v(ps[len(ps) // 2]), v(ps[-1])).toShape())
+        elif len(ps) == 2:
+            edges.append(Part.LineSegment(v(ps[0]), v(ps[1])).toShape())
+        nxt = runs[(i + 1) % len(runs)][1][0]
+        if (v(ps[-1]) - v(nxt)).Length > 1e-9:
+            edges.append(Part.LineSegment(v(ps[-1]), v(nxt)).toShape())
+    return Part.Face(Part.Wire(Part.__sortEdges__(edges)))
+
+
 def rounded_hull(centres, r):
     """Exact 2D hull of equal circles: tangent segments + arcs (a face in z = 0)."""
     h = hull2d_pts(centres)
@@ -375,7 +408,7 @@ def ev(node):
                 return R(2, rounded_hull([c[1] for c in circ], circ[0][2]), prims)
             if pts and not circ:
                 return R(2, polygon_face(hull2d_pts([q[:2] for q in pts])), prims)
-            raise NotImplementedError("2D hull of mixed circles/points")
+            return R(2, mixed_hull([(c[1], c[2]) for c in circ], [q[:2] for q in pts]), prims)
         cyl = [p for p in prims if p[0] == "cyl"]
         pts = [q for p in prims if p[0] == "pts" for q in p[1]]
         if cyl and not pts:

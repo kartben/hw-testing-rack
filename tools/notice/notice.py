@@ -107,6 +107,8 @@ def fastener_z(kind, dia, length=None):
         bb = s.BoundBox
         if kind == "IUTHeatInsert":          # top face at z = 0, body below
             s.translate(V(-(bb.XMin + bb.XMax) / 2, -(bb.YMin + bb.YMax) / 2, -bb.ZMax))
+        elif kind == "ISO7089":              # washer: bottom face at z = 0, towards the head
+            s.translate(V(-(bb.XMin + bb.XMax) / 2, -(bb.YMin + bb.YMax) / 2, -bb.ZMin))
         _cache[key] = s
         log("fastener", kind, dia, length, "bb", s.BoundBox)
     return _cache[key]
@@ -171,39 +173,93 @@ def jumper_shape():
 
 # ------------------------------------------------------------------ drag chain, DATA socket (run.py: rackcfg chain, drawer)
 CH, DATA = C.get("CHAIN"), C.get("DATA")
+if CH:                                         # chain_parts.scad / lib/carrier.scad names
+    CHAIN_W, CHAIN_H = CH["outer"]             # across the side plates (vertical) x in the bend plane
+    CHAIN_Z = CH["bottom"] + CHAIN_W / 2 + 0.6
+    LINK_R, LINK_T = CHAIN_H / 2, (CHAIN_W - CH["inner"][1]) / 2
+    LINK_B = (CHAIN_H - CH["inner"][0]) / 2
+    LINK_MID0, POCKET = LINK_R + 0.3, 1.0
 
 
-def chain_shape(open_frac=0.0):
-    """The bought drag chain (7 x 7; links 10 across, 11 high, lying flat in the plenum) along its
-    centre line: from the anchor's tab, U bend, to the foot's tab (rackcfg chain_state).  Tray
-    coordinates."""
+def chain_path(open_frac=0.0):
+    """Centre line of the chain, fixed mouth -> U bend -> moving mouth (rackcfg chain_state), as
+    at(s) -> (x, y) and its length."""
     fx, fy = CH["fixed"]
     mx, r = CH["moving_x"], CH["radius"]
     t = C["DRAWER_TRAVEL"] * open_frac
-    my, b = CH["foot_y"] - t, CH["bend_y"] - t / 2
-    high, wide = CH["outer"]
-    z = CH["bottom"] + high / 2 + 0.6
+    my, b = CH["moving_y"] + C["DRAWER_Y0"] - t, CH["bend_y"] - t / 2
     cx = (fx + mx) / 2
-    y0, y1 = fy - 2, my + 10
-    l1, la, l2 = b - y0, math.pi * r, max(b - y1, 0)
+    l1, la, l2 = b - fy, math.pi * r, b - my
 
     def at(s):
         if s <= l1:
-            return fx, y0 + s, 0.0, 1.0
-        s -= l1
-        if s <= la:
-            a = math.pi - s / r
-            return cx + r * math.cos(a), b + r * math.sin(a), math.sin(a), -math.cos(a)
-        return mx, b - (s - la), 0.0, -1.0
-    links, s = [], 6.0
-    while s < l1 + la + l2 - 3:
-        x, y, tx, ty = at(s)
-        lk = Part.makeBox(11.2, wide, high, V(-5.6, -wide / 2, -high / 2))
-        lk.rotate(V(0, 0, 0), V(0, 0, 1), math.degrees(math.atan2(ty, tx)))
-        lk.translate(V(x, y, z))
-        links.append(lk)
-        s += 12.0
-    return Part.makeCompound(links)
+            return fx, fy + s
+        if s <= l1 + la:
+            a = math.pi - (s - l1) / r
+            return cx + r * math.cos(a), b + r * math.sin(a)
+        return mx, b - (s - l1 - la)
+    return at, l1 + la + l2
+
+
+def chain_links(open_frac=0.0):
+    """The links' placements (tray coordinates): pins along the centre line between the two end
+    pieces' pivots, each link from its pin towards the next one."""
+    at, L = chain_path(open_frac)
+    e = CH["end_length"]
+    n = max(1, round((L - 2 * e) / CH["pitch"]))
+    pins = [at(e + k * (L - 2 * e) / n) for k in range(n + 1)]
+    out = []
+    for (x0, y0), (x1, y1) in zip(pins, pins[1:]):
+        m = App.Matrix()
+        m.rotateZ(math.atan2(y1 - y0, x1 - x0))
+        m.move(V(x0, y0, CHAIN_Z - CHAIN_W / 2))
+        out.append(m)
+    return out
+
+
+def bar_placed(out=0.0):
+    """A link's removable bar (chain_parts.scad bar(), as printed) in its pockets on the link's +y
+    side (the U's outside), or `out` mm outside them."""
+    s = part("chain_bar").copy()
+    s.rotate(V(0, 0, 0), V(1, 0, 0), 90)
+    s.translate(V(LINK_MID0 + 0.1, LINK_R + out, LINK_T - POCKET))
+    return s
+
+
+def chain_shape(state="closed", open_frac=0.0):
+    """The bought chain's links (Olimex 7 x 7, links open on both sides; drawn as chain_parts.scad's
+    link at its size): "closed" with their bars, "open" without, "bars" the bars alone, pulled out."""
+    sols = []
+    for m in chain_links(open_frac):
+        if state in ("closed", "open"):
+            s = part("chain_link").copy()
+            s.transformShape(m)
+            sols.append(s)
+        if state in ("closed", "bars"):
+            s = bar_placed(0.0 if state == "closed" else 9.0)
+            s.transformShape(m)
+            sols.append(s)
+    return Part.makeCompound(sols)
+
+
+def chain_ends_shape(open_frac=0.0):
+    """The two end pieces: rigid U channels, mouth -> pivot along +y, their tab (the U's outer wall,
+    2 holes) against the anchor's inner face (fixed run, -x) and the foot's fin (moving run, +x)."""
+    fx, fy = CH["fixed"]
+    my = CH["moving_y"] + C["DRAWER_Y0"] - C["DRAWER_TRAVEL"] * open_frac
+    z0, e = CHAIN_Z - CHAIN_W / 2, CH["end_length"]
+    sols = []
+    for x, y in ((fx, fy), (CH["moving_x"], my)):
+        u = Part.makeBox(CHAIN_H, e, CHAIN_W, V(x - LINK_R, y, z0))
+        u = u.cut(Part.makeBox(CH["inner"][0], e + 2, CHAIN_W, V(x - CH["inner"][0] / 2, y - 1, z0 + LINK_T)))
+        for hy in end_holes(y):
+            u = u.cut(Part.makeCylinder(1.3, CHAIN_H + 2, V(x - LINK_R - 1, hy, CHAIN_Z), V(1, 0, 0)))
+        sols.append(u)
+    return Part.makeCompound(sols)
+
+
+def end_holes(mouth_y):
+    return [mouth_y + CH["end_holes"][1] + k * CH["end_holes"][0] for k in (0, 1)]
 
 
 def slot_y(w, h, y0, y1):
@@ -215,60 +271,101 @@ def slot_y(w, h, y0, y1):
     return s.removeSplitter()
 
 
+def rbox_y(w, h, r, y0, y1):
+    """A w x h box (x, z) from y0 to y1, centred on the y axis, its 4 edges along y rounded by r."""
+    b = Part.makeBox(w, y1 - y0, h, V(-w / 2, y0, -h / 2))
+    if r < 0.05:
+        return b
+    return b.makeFillet(r, [e for e in b.Edges if abs(e.Vertexes[0].Point.y - e.Vertexes[1].Point.y) > 1e-6])
+
+
 def data_socket_shape(stub=True):
-    """Panel-mount USB-C socket in the drawer's port wall, local to the port: y = the wall's rear
-    face, its receptacle through the wall, the flange and its two M3 ears behind, the body in the
-    rear bay; with `stub`, its cable going down through the rear bay's cable window."""
-    w = DATA["wall"]
-    shell = slot_y(9.0, 3.4, -w - 0.2, 1.0).cut(slot_y(8.2, 2.6, -w - 0.3, 0.5))
-    flange = Part.makeBox(34, 1.5, 9, V(-17, 1.0, -4.5))
-    for x in (-13, 13):
-        flange = flange.cut(Part.makeCylinder(1.6, 2, V(x, 0.8, 0), V(0, 1, 0)))
-    sols = [shell, flange, Part.makeBox(13, 11.5, 8, V(-6.5, 2.5, -4))]
-    sols += [Part.makeCylinder(2.75, 1.8, V(x, 2.5, 0), V(0, 1, 0)) for x in (-13, 13)]      # the ears' screws
+    """The extension's panel-mount female (QinMSY UC-138, mechanical/parts/usb_plugs.scad panel_mold
+    at its sizes), local to its port: y = 0 the port wall's front face, the rounded flange in front
+    of it (the receptacle's mouth, two holes 17 mm apart), the body through the wall into the rear
+    bay and its strain relief; with `stub`, its cable going down through the rear bay's window."""
+    fw, fh, ft = DATA["flange"]
+    flange = rbox_y(fw, fh, 4.4, -ft, 0).cut(slot_y(9.1, 3.3, -ft - 0.1, -ft + 1.6))
+    for x in (-DATA["ears"] / 2, DATA["ears"] / 2):
+        flange = flange.cut(Part.makeCylinder(1.6, ft + 0.2, V(x, -ft - 0.1, 0), V(0, 1, 0)))
+    body = rbox_y(12.2, 6.8, 1.6, 0, 20 - ft)
+    relief = Part.makeCone(2.7, 2.2, 7, V(0, 20 - ft, 0), V(0, 1, 0))
+    sols = [flange, body, relief]
     if stub:
-        sols.append(pipe([(0, 14, 0), (0, 17.5, -3), (0, 18, -10), (0, 18, -26)], 1.6))
+        y = 27 - ft
+        sols.append(pipe([(0, y, 0), (0, y + 3, -2), (0, y + 3.5, -9), (0, y + 3.5, -26)], 2.2))
     return Part.makeCompound(sols)
 
 
 def extension_shape():
-    """The USB-C extension on its own (the parts pages): socket, cable, plug."""
-    a, e = usbc_plug((62, -2, 0), (0, 1, 0))
+    """The USB-C extension on its own (the parts pages): panel socket, cable, plug."""
+    a, e = usbc_plug((70, -6, 0), (0, 1, 0))
+    y = 27 - DATA["flange"][2]
     return Part.makeCompound([data_socket_shape(stub=False)] + a
-                             + [pipe([(0, 14, 0), (0, 34, 0), (31, 48, 0), (62, 34, 0), tuple(e)], 1.6)])
+                             + [pipe([(0, y, 0), (0, y + 16, 0), (35, y + 32, 0), (70, y + 16, 0), tuple(e)], 2.2)])
 
 
-def ext_cable_shape():
-    """The extension's plug in the node's DUT port, its cable into the chain's fixed end (tray coordinates)."""
+def chain_cable_shape(open_frac=0.0):
+    """The extension: its plug in the node's DUT port, its cable into the chain's fixed mouth, along
+    the chain, out of the moving mouth forwards and curled back up over the end piece into the
+    drawer's rear-bay cable window (tray coordinates)."""
     m = V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"]) + V(*C["NODE_DUT"])
     a, e = usbc_plug(tuple(m), (1, 0, 0))
     fx, fy = CH["fixed"]
-    zc = CH["bottom"] + CH["outer"][0] / 2 + 0.6
-    return Part.makeCompound(a + [pipe([tuple(e), (e.x + 9, e.y, e.z + 1), (fx, fy - 26, zc + 3), (fx, fy - 6, zc)], 1.6)])
+    mx = CH["moving_x"]
+    at, L = chain_path(open_frac)
+    my = at(L)[1]
+    pts = [tuple(e), (e.x + 9, e.y, e.z + 1), (fx, fy - 22, CHAIN_Z + 2), (fx, fy - 8, CHAIN_Z)]
+    pts += [(x, y, CHAIN_Z) for x, y in (at(s) for s in [k * L / 24 for k in range(25)])]
+    pts += [(mx, my - 9, CHAIN_Z + 1.5), (mx - 3, my - 14, CHAIN_Z + 7), (mx - 7, my - 10, C["PLENUM"] - 1.5),
+            (mx - 10, my + 2, C["PLENUM"] + 1), (mx - 10, my + 14, C["PLENUM"] + 4)]
+    return Part.makeCompound(a + [pipe(pts, 2.1)])
+
+
+def x_screw(x, y, z, head):
+    """A fastener matrix with its head towards +x (head = 1) or -x (-1)."""
+    return M([[0, 0, head, x], [0, 1, 0, y], [-head, 0, 0, z]])
 
 
 def bay_chain_instances(inst, child, j, mt):
-    """Bay j's chain anchor (2 x M3 x 6 into the tray's inserts), drag chain, chain foot, the
-    extension's cable, its DATA socket (rides with the drawer) and the foot's lock screw."""
+    """Bay j: the chain anchor (2 x M3 x 8 into the tray's inserts), the chain, its end pieces
+    (2 x PT 2.6 x 8 and washers each, into the anchor and the foot's fin), the chain foot, the
+    extension's cable, its panel socket (rides with the drawer, 2 x PT 2.6 x 8) and the foot's lock."""
     if not CH:
         return
     fx, fy = CH["fixed"]
-    z0 = CH["bottom"] + 3                                  # the anchor bosses' top
-    inst[f"ca{j}"] = ("chain_anchor", mt.multiply(m_tr(fx, fy - 8, z0)))
+    mx, my = CH["moving_x"], CH["moving_y"] + C["DRAWER_Y0"]
+    z0 = CH["bottom"] + 3                                   # the anchor bosses' top
+    x1 = fx - LINK_R                                        # the anchor's inner face = the fixed run's outer face
+    inst[f"ca{j}"] = ("chain_anchor", mt.multiply(m_tr(fx, fy, z0)))
     child[f"ca{j}"] = []
-    for n, dx in enumerate((-8, 8)):
-        inst[f"i_ca{j}_{n}"] = ("insert", mt.multiply(m_tr(fx + dx, fy - 8, z0)))
+    for n, y in enumerate((fy - 6 + 4, fy - 6 + 30 - 4)):    # lib/carrier.scad ANCHOR_BOSSES
+        inst[f"i_ca{j}_{n}"] = ("insert", mt.multiply(m_tr(x1 - 4, y, z0)))
         child[f"tr{j}"].append((f"i_ca{j}_{n}", None, "follow"))
-        inst[f"s_ca{j}_{n}"] = ("m3x6", mt.multiply(m_tr(fx + dx, fy - 8, z0 + 3)))
+        inst[f"s_ca{j}_{n}"] = ("m3x8", mt.multiply(m_tr(x1 - 4, y, z0 + 3)))
         child[f"ca{j}"].append((f"s_ca{j}_{n}", NORMAL, "screw"))
     inst[f"ch{j}"] = ("chain", mt)
-    inst[f"cf{j}"] = ("chain_foot", mt.multiply(m_tr(CH["moving_x"], CH["foot_y"] + C["DRAWER_Y0"], C["PLENUM"])))
-    inst[f"xc{j}"] = ("ext_cable", mt)
+    inst[f"co{j}"] = ("chain_open", mt)
+    inst[f"cb{j}"] = ("chain_bars", mt)
+    inst[f"ce{j}"] = ("chain_ends", mt)
+    inst[f"cx{j}"] = ("chain_cable", mt)
+    inst[f"cf{j}"] = ("chain_foot", mt.multiply(m_tr(mx, my, C["PLENUM"])))
+    child[f"ce{j}"] = []
+    for side, (x, mouth, head) in (("a", (x1 + LINK_B, fy, 1)), ("f", (mx + LINK_R - LINK_B, my, -1))):
+        for n, y in enumerate(end_holes(mouth)):            # washer on the tab, the screw's head on it
+            inst[f"w_ce{j}{side}{n}"] = ("w25", mt.multiply(x_screw(x, y, CHAIN_Z, head)))
+            inst[f"s_ce{j}{side}{n}"] = ("pt26x8", mt.multiply(x_screw(x + head * 0.5, y, CHAIN_Z, head)))
+            child[f"ce{j}"] += [(f"w_ce{j}{side}{n}", None, "follow"), (f"s_ce{j}{side}{n}", None, "follow")]
     dmt = mt.multiply(m_tr(C["DRAWER_X0"], C["DRAWER_Y0"], C["PLENUM"]))   # drawer coordinates
-    inst[f"dt{j}"] = ("data_socket", dmt.multiply(m_tr(DATA["x"], DATA["wall_y"], DATA["z"])))
+    face = DATA["wall_y"] - DATA["wall"]                    # the port wall's front face
+    inst[f"dt{j}"] = ("data_socket", dmt.multiply(m_tr(DATA["x"], face, DATA["z"])))
     child[f"dr{j}"].append((f"dt{j}", None, "follow"))
-    # the foot lock: M2.5 x 8 from inside the rear bay (on its boss), down into the foot's tongue
-    inst[f"s_cf{j}"] = ("m25x8", dmt.multiply(m_tr(CH["moving_x"] - C["DRAWER_X0"], CH["foot_y"], C["DRAWER_BOTTOM"] + 4)))
+    for n, dx in enumerate((-DATA["ears"] / 2, DATA["ears"] / 2)):
+        inst[f"s_dt{j}_{n}"] = ("pt26x8", dmt.multiply(M([[1, 0, 0, DATA["x"] + dx], [0, 0, -1, face - DATA["flange"][2]],
+                                                            [0, 1, 0, DATA["z"]]])))
+        child[f"dr{j}"].append((f"s_dt{j}_{n}", None, "follow"))
+    # the foot lock: PT 2.6 x 8 from inside the rear bay (on its boss), down into the foot's tongue
+    inst[f"s_cf{j}"] = ("pt26x8", dmt.multiply(m_tr(mx - C["DRAWER_X0"], CH["foot_y"], C["DRAWER_BOTTOM"] + 4)))
     child[f"dr{j}"].append((f"s_cf{j}", NORMAL, "own"))
 
 
@@ -283,23 +380,41 @@ def pipe(points, r):
     c.interpolate([V(*p) for p in points])
     e = c.toShape()
     prof = Part.Wire(Part.makeCircle(r, e.valueAt(e.FirstParameter), e.tangentAt(e.FirstParameter)))
-    return Part.Wire(e).makePipeShell([prof], True, True)
+    try:
+        return Part.Wire(e).makePipeShell([prof], True, True)
+    except Part.OCCError:                     # a tight turn: sweep without the Frenet frame
+        return Part.Wire(e).makePipeShell([prof], True, False)
+
+
+UP = (C.get("USB_PLUGS") or {}).get("usb-c") or dict(SW=8.3, SH=2.5, SL=6.65, W=12.4, H=7.0, L=20, REL=8, RD=[5.4, 4.2])
 
 
 def usbc_plug(m, out):
-    """USB-C plug in a receptacle whose mouth is m, the cable leaving along `out` (unit, frame):
-    6.5 of metal shell inside, a 12 x 6.5 x 16 overmold outside.  Returns (solids, cable start)."""
+    """Straight USB-C plug (tools/webscene.py USB_PLUGS, as mechanical/parts/usb_plugs.scad draws it)
+    in a receptacle whose mouth is m, the cable leaving along `out` (unit, frame): the metal shell
+    inside, the rounded overmold and its strain relief outside.  Returns (solids, cable start)."""
     o = V(*out)
     up = V(0, 0, 1)
     side = o.cross(up)
-    shell = Part.makeBox(8.3, 6.5, 2.5, V(-4.15, -6.5, -1.25))
-    mold = Part.makeBox(12.0, 16.0, 6.5, V(-6.0, 0.0, -3.25))
+    p = UP
+    parts = [slot_y(p["SW"], p["SH"], -p["SL"], 0),                       # local y along `out`, x along `side`
+             rbox_y(p["W"], p["H"], min(p["H"] / 2 - 0.1, 3), 0, p["L"]),
+             Part.makeCone(p["RD"][0] / 2, p["RD"][1] / 2, p["REL"], V(0, p["L"], 0), V(0, 1, 0))]
     sols = []
-    for s in (shell, mold):                       # local y along `out`, x along `side`
+    for s in parts:
         s = s.copy()
         s.transformShape(App.Matrix(side.x, o.x, up.x, m[0], side.y, o.y, up.y, m[1], side.z, o.z, up.z, m[2], 0, 0, 0, 1))
         sols.append(s)
-    return sols, V(*m) + o * 16.0
+    return sols, V(*m) + o * (p["L"] + p["REL"])
+
+
+def spacer_shape():
+    """M3 male-female hex spacer, 12 mm (5.5 across flats) + a 6 mm stud: its seat (the hub's top) at z = 0."""
+    r = 3.2
+    hexw = Part.Face(Part.makePolygon([V(r * math.cos(math.radians(60 * k)), r * math.sin(math.radians(60 * k)), 0)
+                                       for k in range(7)]))
+    body = hexw.extrude(V(0, 0, 12)).cut(Part.makeCylinder(1.25, 5, V(0, 0, 7.01)))
+    return body.fuse(Part.makeCylinder(1.5, 6, V(0, 0, -6))).removeSplitter()
 
 
 def charger_shape():
@@ -364,19 +479,16 @@ def power_box_instances(inst, child):
     inst["pl"] = ("power_box_lid", m_tr(ox, oy, oz))
     inst["hb"] = ("hub", m_tr(hx, hy - hl, hz))     # board frame: front-left corner at the origin
     child["pb"], child["hb"], child["pl"] = [], [], []
-    for n, (kx, ky) in enumerate(hub["holes"]):    # inserts in the standoffs, M3 x 6 through the hub
+    for n, (kx, ky) in enumerate(hub["holes"]):    # inserts in the standoffs; hex spacers through the hub; the lid's M3 x 6 into them
         inst[f"i_pb_{n}"] = ("insert", m_tr(hx + kx, hy - ky, hz))
         child["pb"].append((f"i_pb_{n}", None, "follow"))
-        inst[f"s_hb_{n}"] = ("m3x6", m_tr(hx + kx, hy - ky, hz + hub["thickness"]))
-        child["hb"].append((f"s_hb_{n}", (0, 0, 1), "screw"))
-    lug = t + 4.0                                  # power_box.scad LUG_SCREWS: 8 mm lugs in the inner corners
-    for n, (x, y) in enumerate([(x, y) for x in (lug, W - lug) for y in (lug, D - lug)]):
-        inst[f"i_pl_{n}"] = ("insert", m_tr(ox + x, oy + y, oz + H - t))
-        child["pb"].append((f"i_pl_{n}", None, "follow"))
-        inst[f"s_pl_{n}"] = ("m3x8", m_tr(ox + x, oy + y, oz + H))
+        inst[f"sp_hb_{n}"] = ("spacer", m_tr(hx + kx, hy - ky, hz + hub["thickness"]))
+        child["hb"].append((f"sp_hb_{n}", (0, 0, 1), "screw"))
+        inst[f"s_pl_{n}"] = ("m3x6", m_tr(hx + kx, hy - ky, oz + H))
         child["pl"].append((f"s_pl_{n}", (0, 0, 1), "screw"))
     inst["charger"] = ("charger", m_tr(*charger_at()))
     inst["xt"] = ("extension", m_tr(0, 0, 0))         # the USB-C extension on its own, for the parts pages
+    inst["dcx"] = ("chain_full", m_tr(0, 0, 0))       # the chain with its end pieces, for the parts pages
     inst["pdc"] = ("pd_cable", m_tr(0, 0, 0))
     inst["feed"] = ("feed", m_tr(0, 0, 0))
 
@@ -392,6 +504,8 @@ NORMAL = (0.0, -math.sin(TILT), math.cos(TILT))     # tray normal (frame), the n
 FAST = {  # kind: (Fasteners type, diameter, length or None, screw length for the dashed axis)
     "m3x8": ("ISO7045", "M3", "8", 8), "m3x6": ("ISO7045", "M3", "6", 6), "m25x8": ("ISO7045", "M2.5", "8", 8),
     "m25x6": ("ISO7045", "M2.5", "6", 6),
+    "pt26x8": ("ISO7045", "M2.5", "8", 8),           # PT 2.6 x 8 thread-forming: drawn as an M2.5 x 8
+    "w25": ("ISO7089", "M2.5", None, 0),              # DIN 125 / ISO 7089 washer
     "insert": ("IUTHeatInsert", "M3", None, 0),
 }
 
@@ -463,14 +577,20 @@ def shape_of(iid):
         s = node_shape()
     elif name == "jumper":
         s = jumper_shape()
-    elif name == "chain":
-        s = chain_shape()
+    elif name in ("chain", "chain_open", "chain_bars"):
+        s = chain_shape({"chain": "closed", "chain_open": "open", "chain_bars": "bars"}[name])
+    elif name == "chain_full":
+        s = Part.makeCompound([chain_shape("closed"), chain_ends_shape()])
+    elif name == "chain_ends":
+        s = chain_ends_shape()
+    elif name == "chain_cable":
+        s = chain_cable_shape()
+    elif name == "spacer":
+        s = spacer_shape()
     elif name == "data_socket":
         s = data_socket_shape()
     elif name == "extension":
         s = extension_shape()
-    elif name == "ext_cable":
-        s = ext_cable_shape()
     elif name == "charger":
         s = charger_shape()
     elif name == "pd_cable":
@@ -533,7 +653,7 @@ def plus(*vs):
 
 # ------------------------------------------------------------------ steps
 ISO, REAR, ISO_R = (-0.95, -1.45, 0.95), (-0.9, 1.5, 0.85), (0.95, -1.45, 0.95)
-CHAIN0, CHAIN1 = ["ca0", "ch0", "cf0", "xc0"], ["ca1", "ch1", "cf1", "xc1"]    # anchor, chain, foot, extension cable
+CHAIN0, CHAIN1 = ["ca0", "ch0", "ce0", "cf0", "cx0"], ["ca1", "ch1", "ce1", "cf1", "cx1"]   # anchor, chain, end pieces, foot, extension
 BAY0 = ["lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "nd0", "ba0", "lc0", "lc1", "cp0"] + CHAIN0 + ["dr0"]
 BAY1 = ["lb2", "fp1", "bb1", "la2", "tr1", "nd1", "jumper", "ba1", "lc2", "cp1"] + CHAIN1 + ["dr1"]
 A = lambda *ids: list(ids)
@@ -553,12 +673,23 @@ STEPS = {
            "add": {"lc0": (0, 0, 55), "lc1": (0, 0, 55), "cp0": plus(u_(-150), (0, 0, 55))}, "clic": True},
     "a8": {"view": (0.5, -1.2, 1.6), "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "ba0", "lc0", "lc1", "cp0"),
            "add": {"nd0": n_(32)}, "screw_gap": 16, "frame": {"at": (98, 100, 125), "size": 320}},
-    "a9c": {"view": (0.5, -1.2, 1.6), "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "ba0", "nd0"),   # no cap: into the tray
-            "add": {"ca0": n_(22), "ch0": n_(22), "cf0": n_(22), "xc0": (0, 0, 0)}, "screw_gap": 16, "arrow_ids": ["ch0"],
-            "frame": {"at": tuple(m_row(0, T + CL).multVec(V(105, 140, 10))), "size": 340}},
-    "a10s": {"view": (0.75, 1.5, 1.25), "old": A("dr0"), "add": {"dt0": u_(40)}, "hide": ["s_dr0", "s_cf0"],
-             "frame": {"at": tuple(m_row(0, T + CL).multVec(V(C["DRAWER_X0"] + DATA["x"] - 20, C["DRAWER_Y0"] + DATA["wall_y"],
-                                                                  C["PLENUM"] + 10))), "size": 230}},
+    # at the bench: the end pieces onto the anchor and the foot's fin (PT 2.6 x 8 + washer, from inside the U)
+    "a9b": {"view": (-0.35, -0.9, 1.5), "old": [], "add": {"ca0": (0, 0, 0), "cf0": (0, 0, 0), "ch0": (0, 0, 0), "ce0": (0, 0, 0),
+            **{f"{k}_ce0{sd}{n}": ((g if sd == "a" else -g), 0, 0) for k, g in (("s", 12), ("w", 7)) for sd in "af" for n in (0, 1)}},
+            "hide": ["s_ca0_0", "s_ca0_1"], "arrows": False,
+            "frame": {"at": tuple(m_row(0, T + CL).multVec(V(115, 132, 8))), "size": 250}},
+    # open the links, lay the extension's cable in, close them
+    "a10o": {"view": (-1.1, -0.7, 0.75), "old": A("ca0", "cf0", "ce0", "co0"), "add": {"cb0": (0, 0, 0), "cx0": (0, 0, 0)},
+             "hide": ["s_ca0_0", "s_ca0_1"], "frame": {"at": tuple(m_row(0, T + CL).multVec(V(112, 135, 10))), "size": 270}},
+    # into the tray: the anchor's 2 x M3 x 8, the plug in the node
+    "a11t": {"view": (0.5, -1.2, 1.6), "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "ba0", "nd0"),   # no cap: into the tray
+             "add": {i: n_(22) for i in ("ca0", "ch0", "ce0", "cf0", "cx0")}, "screw_gap": 16, "arrow_ids": ["ch0"],
+             "frame": {"at": tuple(m_row(0, T + CL).multVec(V(105, 140, 10))), "size": 340}},
+    # the drawer's DATA socket: through the port wall from the front, 2 x PT 2.6 x 8
+    "a12s": {"view": (-0.35, -1.25, 1.0), "old": A("dr0"), "add": {"dt0": u_(-30), "s_dt0_0": u_(-48), "s_dt0_1": u_(-48)},
+             "hide": ["s_dr0", "s_cf0"],
+             "frame": {"at": tuple(m_row(0, T + CL).multVec(V(C["DRAWER_X0"] + DATA["x"] - 15, C["DRAWER_Y0"] + DATA["wall_y"] - 25,
+                                                                  C["PLENUM"] + DATA["z"]))), "size": 210}},
     "a9": {"view": ISO_R, "old": [i for i in BAY0 if i != "dr0"], "add": {"dr0": u_(-170)}, "slot": "single", "own_gap": 26},
     "b1": {"view": ISO_R, "old": BAY0, "add": {"lb2": (90, 0, 0), "fp1": (0, -120, 0)}, "clic": True},
     "b2": {"view": (0.9, 1.5, 0.85), "old": BAY0 + A("lb2", "fp1"), "add": {"bb1": (0, 80, 0)}, "screw_gap": 45, "detail": True},
@@ -580,16 +711,17 @@ if PB:                                  # the power box, under A1
     _bc = (_o[0] + _s[0] / 2, _o[1] + _s[1] / 2, _o[2] + _s[2] / 2)
     _top = (0.55, -1.0, 1.5)
     STEPS.update({
+        "c0": {"view": _top, "old": A("pb"), "add": {f"i_pb_{n}": (0, 0, 25) for n in range(4)}, "arrows": False},
         "c1": {"view": _top, "old": A("pb"), "add": {"hb": (0, 0, 45)}, "screw_gap": 18},
         "c2": {"view": _top, "old": A("pb", "hb"), "add": {"pl": (0, 0, 45)}, "screw_gap": 18},
         "c3": {"view": (-0.95, -1.45, 0.5), "old": BAY0, "add": {i: (0, -150, 30) for i in BOX}, "screw_gap": 0,
                "arrow_ids": ["pb"], "frame": {"at": (_bc[0] + 40, _bc[1] - 50, 70), "size": 380}},
         "c4": {"view": REAR, "old": BAY0 + BOX, "add": {"pdc": (0, 40, 0), "charger": (0, 40, 0)},
                "arrow_ids": ["pdc"], "frame": {"at": (_pd[0] + 10, PR + 85, 35), "size": 370}},
-        "c5": {"view": (-1.4, -0.8, 0.6), "old": BAY0 + BOX, "add": {"feed": (0, 0, 0)}, "slot": "single",
+        "c5": {"view": (-1.4, -0.8, 0.6), "old": BAY0 + BOX, "add": {"feed": (0, 0, 0)},
                "frame": {"at": (20, 110, 75), "size": 330}},
         "c_done": {"view": ISO, "old": [], "add": {i: (0, 0, 0) for i in BAY0 + BOX + ["feed"]},
-                   "slot": "cover_small"},
+                   "slot": "done"},
     })
 
 
@@ -908,6 +1040,12 @@ def hw_shape(n):
         pins = row_cable()[0]["pins"]
         sols = [plug(V(-1.9, 0, 0), (1, 0), pins), plug(V(35.9, 0, 0), (-1, 0), pins)]   # leads leave at x = 0 and 34
         return Part.makeCompound(sols + lead(V(0, 0, 0), V(34, 0, 0), pins, 7.0))
+    if n == "mag":                             # 6 x 3 disc magnet, on edge
+        return Part.makeCylinder(3, 3, V(0, 0, 0), V(1, 0, 0))
+    if n == "sp12":                            # hex spacer, axis along X, stud towards +X
+        s = spacer_shape()
+        s.rotate(V(0, 0, 0), V(0, 1, 0), -90)
+        return s
     if n == "usbc":                            # the charger's cable: two USB-C plugs, a thick sagging lead
         a, ea = usbc_plug((0, 0, 0), (1, 0, 0))
         b, eb = usbc_plug((76, 0, 0), (-1, 0, 0))
@@ -921,7 +1059,7 @@ def hw_shape(n):
 def job_hw(n):
     """Hardware icons (64 x 30 on the page, drawn at 2x): one fastener nearly side on, a little from its head side."""
     data = cached("hw_" + n) or project("hw_" + n, [(n, "add", hw_shape(n), False)], HW_VIEW.get(n, HW_VIEW["*"]))
-    cable = n in ("jumper", "usbc")
+    cable = n in ("jumper", "usbc", "sp12", "mag")
     render(f"hw_{n}", data, (128, 60), (1, 1.8 if cable else 1.15), pad=3, display=(64, 30),
            fixed_k=None if cable else 9.4)        # every fastener at the same scale (the M3 x 8 fills it)
 
@@ -931,7 +1069,7 @@ THUMBS = {
     "fp": ("fp0", ISO), "tr": ("tr0", ISO), "dr": ("dr0", ISO), "cp": ("cp0", ISO),
     "bb": ("bb0", (0, 1, 0.15)), "nd": ("nd0", ISO),
     "pb": ("pb", ISO), "pl": ("pl", ISO), "hb": ("hb", ISO), "ch": ("charger", ISO),
-    "an": ("ca0", ISO), "ft": ("cf0", ISO_R), "dc": ("ch0", (-0.4, -0.6, 1.4)), "xt": ("xt", (0.3, -0.8, 1.2)),
+    "an": ("ca0", ISO), "ft": ("cf0", ISO_R), "dc": ("dcx", (-0.2, -0.5, 1.5)), "xt": ("xt", (0.3, -0.8, 1.2)),
 }
 HW_VIEW = {"*": (-0.5, -1.0, 0.35), "jumper": (0.1, -1.0, 0.35), "usbc": (0.1, -1.0, 0.35)}
 

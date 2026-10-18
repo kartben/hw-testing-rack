@@ -48,13 +48,15 @@ PARTS = {
     "power_box_lid": ("parts/power_box.scad", {}, "lid();"),     # as assembled (it prints top face down)
     "chain_anchor": ("parts/chain_parts.scad", {"PART": "anchor"}),
     "chain_foot": ("parts/chain_parts.scad", {}, "include <{MECH}/lib/carrier.scad>\nfoot();"),   # as assembled
+    "chain_link": ("parts/chain_parts.scad", {}, "include <{MECH}/lib/carrier.scad>\nlink();"),   # lying as in the rack
+    "chain_bar": ("parts/chain_parts.scad", {"PART": "bar"}),
 }
 # heaviest first, dealt round-robin to the processes
-JOBS = ["done", "b5", "b5a", "c_done", "b3", "b1", "a9", "c5", "b2", "a8", "a9c", "c3", "c4", "b3n", "b4", "cover", "a7",
-        "a6", "a5", "a4", "a10s", "a3", "a2", "a1", "c1", "c2", "pin", "pin_b", "hook"] \
+JOBS = ["done", "b5", "b5a", "c_done", "b3", "b1", "a9", "c5", "b2", "a8", "a11t", "c3", "c4", "b3n", "b4", "cover",
+        "a7", "a6", "a5", "a4", "a12s", "a9b", "a10o", "a3", "a2", "a1", "c0", "c1", "c2", "pin", "pin_b", "hook"] \
        + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch",
                                   "an", "ft", "dc", "xt")] \
-       + [f"hw:{h}" for h in ("m3x8", "m3x6", "m25x8", "m25x6", "insert", "jumper", "usbc")]
+       + [f"hw:{h}" for h in ("m3x8", "m3x6", "pt26x8", "w25", "sp12", "mag", "insert", "jumper", "usbc")]
 
 
 def freecadcmd() -> str:
@@ -138,8 +140,11 @@ def main() -> None:
     c["POWER_BOX"] = {**rack.power_box(), "hub_pcb": rack.raw["pcb"]["power_hub"]}
     d, node = rack.drawer, rack.node                 # the drag chain, the DATA socket, the node's DUT port
     c["CHAIN"] = {**rack.chain, "bottom": rack.carrier["bottom"]}
-    c["DATA"] = {"x": max(rack.data_port_x), "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 7, "wall": d["wall"]}
+    c["DATA"] = {"x": max(rack.data_port_x), "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 8.5,   # lib/carrier.scad PORT_Z
+                 "wall": d["wall"], "flange": [25, 9, 2.5], "body": [13.2, 8.2], "ears": 17}   # DATA_FLANGE, DATA_BODY_CUT, PORT_EARS
     c["NODE_DUT"] = [node["size"][0] + 0.4, node["size"][1] - node["right"]["dut"], node["thickness"] + 1.6]
+    import webscene                                  # the USB plugs' sizes, as the viewer draws them
+    c["USB_PLUGS"] = getattr(webscene, "USB_PLUGS", None)
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     print("constants, CSG ...")
     csg()
