@@ -114,7 +114,7 @@ if (dot(vUpView, vUpView) > 0.01) {
   };
   return mat;
 }
-for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras']) printLook(MAT[k]);
+for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras', 'powerBox']) printLook(MAT[k]);
 
 function partMaterial(name) {
   if (name.startsWith('ladder_')) return MAT.ladders;
@@ -133,7 +133,7 @@ function partMaterial(name) {
 const LAYERS = [
   ['ladders', 'Ladders', true], ['braces', 'Rear braces', true], ['frameplates', 'Floor & cap plates', true],
   ['trays', 'Trays', true], ['drawers', 'Drawers', true], ['plates', 'Board plates', true], ['boards', 'Dev boards', true],
-  ['nodes', 'Bay nodes', true], ['chain', 'Drag chains', true], ['cables', 'USB cables', true], ['power', '24 V wiring', true],
+  ['nodes', 'Bay nodes', true], ['chain', 'Drag chains', true], ['cables', 'USB cables', true], ['power', 'Row cables', true],
   ['cameras', 'Cameras', true], ['labels', 'Bay labels', true],
   ['powerbox', 'Power box', true], ['powerlid', 'Power box lid', true],
 ];
@@ -235,8 +235,8 @@ function makeNodeStandIn() {
   kbox(g, 60.5, 20, 7.4, 8.9, 3.2, MAT.silver);                   // DUT port
   kbox(g, 60.5, 32, 7.4, 8.9, 3.2, MAT.silver);                   // PWR port
   kbox(g, 15.7, 34, 7, 6.6, 3, MAT.inductor);                     // buck inductor (FXL0630)
-  kbox(g, 3, 63, 7.6, 6, 4.8, MAT.whitePlastic);                  // 24 V in (JST PH)
-  kbox(g, 61, 63, 7.6, 6, 4.8, MAT.whitePlastic);                 // 24 V out (JST PH)
+  kbox(g, 3, 63, 7.6, 6, 4.8, MAT.whitePlastic);                  // row cable in (JST PH 6)
+  kbox(g, 61, 63, 7.6, 6, 4.8, MAT.whitePlastic);                 // row cable out (JST PH 6)
   kbox(g, 59, 45, 4.5, 6, 3, MAT.whitePlastic);                   // AUX SH
   kbox(g, 50, 3, 6, 4.5, 6, MAT.whitePlastic);                    // CAM PH
   kbox(g, 12, 78.5, 2, 2, 0.9, MAT.whitePlastic);                 // LED

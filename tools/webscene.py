@@ -430,7 +430,7 @@ def build(rack) -> Path:
         cable(pts, space="frame", kind="power-feed", color="#c62828", radius=1.4)
 
     # --- row cable: 6-pin jumpers between neighbouring nodes, through the shared ladder (docs/can.md) ----
-    # +24 V, GND, CAN_H, CAN_L, GND, POS; pin 1 towards the front on J2 (right edge), towards the rear on J1
+    # VRACK, GND, CAN_H, CAN_L, GND, POS; pin 1 towards the front on J2 (right edge), towards the rear on J1
     # (left edge), so the 1:1 cable makes a half twist
     for i, r in enumerate(rack.rows):
         zc = pcb_top + 5
@@ -438,10 +438,15 @@ def build(rack) -> Path:
         for u in range(rack.units - 1):
             xa = rack.unit_x(u) + node["x0"] + node["size"][0]
             xb = rack.unit_x(u + 1) + node["x0"]
+            centre = np.array(bezier((xa, vy, zc), (xa + 40, vy - 4, zc + 2), (xb - 40, vy - 4, zc + 2),
+                                     (xb, vy, zc), n=40))
+            t = np.linspace(0, 1, len(centre))
+            th = np.pi * (3 * t ** 2 - 2 * t ** 3)                # the half twist, rolled along the lead
             for k, col in enumerate(("#c62828", "#222222", "#f9a825", "#2e7d32", "#222222", "#eeeeee")):
-                ya, yb = vy - (5 - 2 * k), vy + (5 - 2 * k)      # JST PH, 2 mm pitch, 24 AWG
-                cable(bezier((xa, ya, zc), (xa + 40, ya - 4, zc + 2), (xb - 40, yb - 4, zc + 2),
-                             (xb, yb, zc)), row=i, kind="power-jumper", color=col, radius=0.7)
+                off = 5 - 2 * k                                   # JST PH, 2 mm pitch, 24 AWG
+                pts = centre + np.stack([0 * t, -off * np.cos(th), off * np.sin(th)], axis=1) * 0.75
+                pts[0, 1], pts[-1, 1] = vy - off, vy + off           # each wire leaves its own pin
+                cable(poly(*pts), row=i, kind="power-jumper", color=col, radius=0.7)
 
     # --- row transforms for the viewer -------------------------------------------------
     rows_out = []
