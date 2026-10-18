@@ -1,0 +1,51 @@
+/*
+ * Power hub pin multiplexing (ESP32-S3-MINI-1, U4).
+ *
+ * Source of truth: electronics/power-hub/design.py (U4 pin map).
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/pinctrl/esp32s3-pinctrl.h>
+
+&pinctrl {
+	/* TXD0/RXD0: test pads TP1/TP2 */
+	hub_uart0_default: hub_uart0_default {
+		group1 {
+			pinmux = <UART0_TX_GPIO43>;
+			output-high;
+		};
+
+		group2 {
+			pinmux = <UART0_RX_GPIO44>;
+			bias-pull-up;
+		};
+	};
+
+	/*
+	 * IO41 PD_SDA / IO40 PD_SCL: the AP33772S.  No internal pull-ups: the
+	 * 4.7k pull-ups hang off I2C_PU (IO42) so that a USB-powered controller
+	 * never back-feeds an unpowered AP33772S.
+	 */
+	hub_i2c0_default: hub_i2c0_default {
+		group1 {
+			pinmux = <I2C0_SDA_GPIO41>,
+				 <I2C0_SCL_GPIO40>;
+			drive-open-drain;
+			output-high;
+		};
+	};
+
+	/* IO7 CAN_TXD / IO8 CAN_RXD: TCAN1044AV U6, the rack bus master (docs/can.md) */
+	hub_twai_default: hub_twai_default {
+		group1 {
+			pinmux = <TWAI_TX_GPIO7>;
+			output-high;
+		};
+
+		group2 {
+			pinmux = <TWAI_RX_GPIO8>;
+			bias-pull-up;
+		};
+	};
+};

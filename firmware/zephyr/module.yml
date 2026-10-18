@@ -1,0 +1,11 @@
+# hw-testing-rack firmware as a Zephyr module: the boards (bay_node,
+# power_hub), the devicetree bindings, the AP33772S drivers and the code
+# both applications share (firmware/common).  Each application adds it
+# with ZEPHYR_EXTRA_MODULES, so it builds from any Zephyr workspace.
+name: hw-testing-rack
+build:
+  cmake: common
+  kconfig: common/Kconfig
+  settings:
+    board_root: .
+    dts_root: .

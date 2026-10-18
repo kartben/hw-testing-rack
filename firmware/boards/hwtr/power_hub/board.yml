@@ -1,0 +1,5 @@
+board:
+  name: power_hub
+  full_name: hw-testing-rack power hub
+  socs:
+  - name: esp32s3

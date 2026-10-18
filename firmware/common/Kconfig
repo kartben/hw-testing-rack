@@ -1,0 +1,61 @@
+# hw-testing-rack: drivers and libraries shared by the bay node and the power hub
+# SPDX-License-Identifier: Apache-2.0
+
+menu "hw-testing-rack"
+
+config MFD_AP33772S
+	bool "Diodes AP33772S USB PD 3.1 sink (MFD)"
+	default y
+	depends on DT_HAS_DIODES_AP33772S_ENABLED
+	depends on MFD
+	select I2C
+	help
+	  I2C access, status events and source capabilities of the AP33772S;
+	  its children are a regulator (the contract) and a sensor.
+
+config MFD_AP33772S_INIT_PRIORITY
+	int "AP33772S MFD init priority"
+	default 80
+	depends on MFD_AP33772S
+
+config REGULATOR_AP33772S
+	bool "Diodes AP33772S USB PD contract as a regulator"
+	default y
+	depends on DT_HAS_DIODES_AP33772S_REGULATOR_ENABLED
+	depends on REGULATOR
+	depends on MFD_AP33772S
+
+config REGULATOR_AP33772S_INIT_PRIORITY
+	int "AP33772S regulator init priority"
+	default 86
+	depends on REGULATOR_AP33772S
+
+config SENSOR_AP33772S
+	bool "Diodes AP33772S measurements (VOUT, current, temperature)"
+	default y
+	depends on DT_HAS_DIODES_AP33772S_SENSOR_ENABLED
+	depends on SENSOR
+	depends on MFD_AP33772S
+
+config HWTR_RACK_PROTO
+	bool "Rack bus protocol (docs/rack-protocol.md)"
+	help
+	  Frame encoding and decoding, shared by the hub and the nodes.
+
+config HWTR_RACK_HUB
+	bool "Rack bus: the hub's side (enumeration, node table)"
+	select HWTR_RACK_PROTO
+
+config HWTR_RACK_NODE
+	bool "Rack bus: a node's side (POS token, address, heartbeat)"
+	select HWTR_RACK_PROTO
+
+config HWTR_NET
+	bool "Wi-Fi station, hostname <prefix>-<id> and reconnection"
+	depends on WIFI && WIFI_CREDENTIALS && NET_HOSTNAME_ENABLE
+
+module = HWTR_RACK
+module-str = rack bus
+source "subsys/logging/Kconfig.template.log_config"
+
+endmenu

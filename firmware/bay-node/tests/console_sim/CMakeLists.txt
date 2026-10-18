@@ -9,9 +9,9 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 set(BAY ${CMAKE_CURRENT_SOURCE_DIR}/../..)
-# Same Kconfig options and devicetree bindings as the real application
+# Same Kconfig options, devicetree bindings and shared code as the real application
 set(KCONFIG_ROOT ${BAY}/Kconfig)
-list(APPEND DTS_ROOT ${BAY}/..)
+list(APPEND ZEPHYR_EXTRA_MODULES ${BAY}/..)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(bay_console_sim)
@@ -29,10 +29,7 @@ target_sources(app PRIVATE
 
 set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated)
 generate_inc_file_for_target(app ${BAY}/web/index.html ${gen_dir}/index.html.gz.inc --gzip)
-foreach(file xterm.mjs xterm.css addon-fit.mjs)
-  generate_inc_file_for_target(app ${BAY}/web/vendor/xterm/${file} ${gen_dir}/${file}.gz.inc --gzip)
-endforeach()
-generate_inc_file_for_target(app ${BAY}/web/vendor/xterm/LICENSE.txt
-  ${gen_dir}/xterm-LICENSE.txt.gz.inc --gzip)
+hwtr_web_assets(bay_http)
+hwtr_web_xterm(bay_http)
 
 zephyr_linker_sources(SECTIONS ${BAY}/web/sections-rom.ld)

@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Diodes AP33772S USB PD 3.1 EPR sink controller (I2C), as a multi-function
+  device: a "diodes,ap33772s-regulator" child for the contract and a
+  "diodes,ap33772s-sensor" child for VBUS, current and temperature.
+
+    ap33772s: ap33772s@52 {
+        compatible = "diodes,ap33772s";
+        reg = <0x52>;
+        int-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
+
+        pd_regulator: regulator {
+            compatible = "diodes,ap33772s-regulator";
+            regulator-max-microvolt = <28000000>;
+        };
+
+        pd_meter: meter {
+            compatible = "diodes,ap33772s-sensor";
+        };
+    };
+
+  The chip runs from VBUS: with zephyr,deferred-init, the application
+  initializes it once VBUS is present.
+
+compatible: "diodes,ap33772s"
+
+include: i2c-device.yaml
+
+properties:
+  int-gpios:
+    type: phandle-array
+    description: |
+      INT output (active high by default).  Without it the driver polls the
+      status register every poll-interval-ms.
+
+  poll-interval-ms:
+    type: int
+    default: 100
+    description: Status polling period without int-gpios.
+
+  epr-delay-ms:
+    type: int
+    default: 500
+    description: |
+      The chip enters EPR mode by itself after the first contract, with no
+      interrupt: the source capabilities are read again this long after a
+      new-PDO event.
+
+  tr25:
+    type: int
+    default: 10000
+    description: NTC resistance at 25 °C, ohms.
+
+  tr50:
+    type: int
+    default: 4161
+    description: NTC resistance at 50 °C, ohms.
+
+  tr75:
+    type: int
+    default: 1928
+    description: NTC resistance at 75 °C, ohms.
+
+  tr100:
+    type: int
+    default: 974
+    description: NTC resistance at 100 °C, ohms.

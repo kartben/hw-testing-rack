@@ -35,13 +35,11 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 WEB = Path(__file__).resolve().parent
-STATIC = {
-    "/": (WEB / "index.html", "text/html"),
-    "/xterm.mjs": (WEB / "vendor/xterm/xterm.mjs", "text/javascript"),
-    "/addon-fit.mjs": (WEB / "vendor/xterm/addon-fit.mjs", "text/javascript"),
-    "/xterm.css": (WEB / "vendor/xterm/xterm.css", "text/css"),
-    "/xterm-LICENSE.txt": (WEB / "vendor/xterm/LICENSE.txt", "text/plain"),
-}
+sys.path.insert(0, str(WEB.parents[1] / "common" / "web"))
+from devserver import COMMON_STATIC, XTERM_STATIC, ws_frame, ws_read  # noqa: E402
+
+# The page, and what firmware/common serves on the node too (/rack.css, xterm.js)
+STATIC = {"/": (WEB / "index.html", "text/html"), **COMMON_STATIC, **XTERM_STATIC}
 START = time.monotonic() - 3 * 3600 - 17 * 60
 WEB_SLOTS = 2
 LOG_WINDOW = 16384 - 512
@@ -461,34 +459,6 @@ class Access:
 
 
 access = Access()
-
-
-def ws_frame(opcode: int, payload: bytes) -> bytes:
-    n = len(payload)
-    head = bytes([0x80 | opcode])
-    if n < 126:
-        head += bytes([n])
-    elif n < 1 << 16:
-        head += bytes([126]) + n.to_bytes(2, "big")
-    else:
-        head += bytes([127]) + n.to_bytes(8, "big")
-    return head + payload
-
-
-def ws_read(rfile) -> tuple[int, bytes] | None:
-    head = rfile.read(2)
-    if len(head) < 2:
-        return None
-    opcode, n = head[0] & 0x0F, head[1] & 0x7F
-    if n == 126:
-        n = int.from_bytes(rfile.read(2), "big")
-    elif n == 127:
-        n = int.from_bytes(rfile.read(8), "big")
-    mask = rfile.read(4) if head[1] & 0x80 else b"\0\0\0\0"
-    data = bytearray(rfile.read(n))
-    for i in range(len(data)):
-        data[i] ^= mask[i % 4]
-    return opcode, bytes(data)
 
 
 def status(ip: int = 0) -> dict:
