@@ -12,9 +12,9 @@ columns or rows) and makes every one of them reachable over the network
   board stays powered and connected (a drag chain hidden under the floor
   carries the cable);
 * boards are screwed onto **form-factor plates** that drop into any drawer;
-* 24 V reaches every row from a **power box** under the first column: a
-  certified 24 V brick, an eFuse per row and the rack controller (CAN master),
-  see [power.md](power.md) and [can.md](can.md);
+* one **USB-C PD charger** powers the rack through a **power box** under the
+  first column: the hub negotiates 20 or 28 V, an eFuse per row, and the rack
+  controller (CAN master), see [power.md](power.md) and [can.md](can.md);
 * optional **camera pods** look down into selected bays.
 
 ![One bay, exploded: tray with the bay node and drag chain, drawer, board plate, board, camera pod](img/exploded.jpg)
@@ -102,11 +102,12 @@ laptop gets full high-speed.
 
 ## Power
 
-24 V from the power box under A1 (a certified GST60A24 brick inside, its C14
-inlet in the rear wall) → power hub (reverse protection, TVS, one 1.6 A
-TPS26600 eFuse per row) → one 6-pin JST PH feed per row (24 V, CAN, POS) →
+A USB PD 3.1 charger (140 W EPR recommended, 5 A e-marked cable) → the power hub
+in the power box under A1 (AP33772S sink: 20 V, or 28 V EPR on the controller's
+request; TVS, NMOS switch, one 1.6 A TPS26600 eFuse per row, off until the
+contract is final) → one 6-pin JST PH feed per row (VRACK, CAN, POS) →
 daisy-chained bay to bay through the ladders → each bay node's own 60 V LMR51635
-buck to 5 V.  Details and alternatives (internal mains supply, USB-C PD EPR,
+buck to 5 V.  Details and alternatives (a 24 V brick, internal mains supply,
 PoE++) are in [power.md](power.md); the rack bus is in [can.md](can.md).
 
 ## Software

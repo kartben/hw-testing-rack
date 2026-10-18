@@ -47,14 +47,15 @@ JLC_QUOTE = {
         "pcba": {"setup": 25.75, "stencil": 8.27, "components": 181.21, "feeders": 65.10, "SMT": 9.45,
                  "hand soldering": 3.61, "manual assembly": 1.62, "X-ray": 13.28, "packaging": 0.52},
     },
-    # v0.4 (eFuses + rack controller) is NOT quoted yet: an estimate built like the bay node's
-    # Standard quote (the ESP32 module needs Standard PCBA and X-ray), components at catalogue prices,
-    # $3 per extended part type (17, the hand-soldered JST VH included: jlc_order() takes it out)
+    # v0.5 (USB-C PD input, eFuses, rack controller; 4 layers) is NOT quoted yet: an estimate built
+    # like the bay node's Standard quote (the ESP32 module needs Standard PCBA and X-ray), its 4-layer
+    # engineering fee, components at catalogue prices, $3 per extended part type (19).  The
+    # AP33772SDKZ-13-FA02 was out of stock at LCSC on 2026-10-18: global sourcing would add to it.
     "power-hub": {
-        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 168.24, "estimate": True,
-        "spec": "2-layer 76×140 mm, ENIG",
-        "pcb": {"engineering": 4.00, "ENIG": 17.60, "board": 5.20},
-        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 41.42, "feeders": 51.00, "SMT": 1.20,
+        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 212.66, "estimate": True,
+        "spec": "4-layer 76×140 mm, ENIG",
+        "pcb": {"engineering": 25.00, "ENIG": 17.60, "board": 12.00},
+        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 51.24, "feeders": 57.00, "SMT": 2.00,
                  "X-ray": 13.28, "packaging": 0.52},
     },
 }
@@ -142,7 +143,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
                                        {r["mpn"] for r in mine if r["hand_solder"]})
         orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
                         "total": round(sum(pcb.values()) + sum(pcba.values()), 2)}
-        src = "estimate, not quoted (v0.4)" if q.get("estimate") else f"JLCPCB quote {JLC_QUOTE_DATE}"
+        src = "estimate, not quoted (v0.5)" if q.get("estimate") else f"JLCPCB quote {JLC_QUOTE_DATE}"
         pcb_src = src + (", adjusted" if name in JLC_FINISH else "")
         pcba_src = src + (", adjusted" if pcba != q["pcba"] else "")
         spec = q["spec"].replace("ENIG", JLC_FINISH[name][0]) if name in JLC_FINISH else q["spec"]
@@ -184,8 +185,8 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         "ladder_base": cols + 1, "ladder_cap": cols + 1, "floor_plate": cols, "cap_plate": cols, "brace_base": cols,
         "tray": n_bays, "drawer": n_bays, "chain_foot": n_bays, "chain_anchor": n_bays,
         "camera_pod_mount": cams, "camera_pod_cradle": cams, "bay_label": n_bays,
-        # the power box: base, lid and the cradle of the chosen brick
-        "power_box_base": 1, "power_box_lid": 1, f"power_box_cradle_{rack.raw['power_box']['brick']}": 1,
+        # the power box: base and lid
+        "power_box_base": 1, "power_box_lid": 1,
     })
     for row in rack.rows:
         counts[f"ladder_{row['id'].lower()}"] += cols + 1
@@ -223,14 +224,14 @@ def hardware(rack) -> list[dict]:
     pop = r.get("population", {})
     cams = len(r.get("cameras", []))
     braces = cols * (n_rows + 1)
-    brick = r["power_box"]["bricks"][r["power_box"]["brick"]]
+    charger = r["power_box"]["charger"]
     rows = [
         {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
          "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 6 * n_bays + 4 * cams + 8,
          "unit_eur": 0.03,
          "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node "
                   "standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub "
-                  "standoffs + 4 lid bosses"},
+                  "standoffs + 4 lid lugs"},
         {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid",
          "supplier": "AliExpress (bulk)", "qty": 4 * braces + 4, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor, hub PCB)", "supplier": "AliExpress (bulk)",
@@ -246,7 +247,7 @@ def hardware(rack) -> list[dict]:
         {"category": "Cables", "item": "JST PH 2-pin jumper, 24 AWG, 120 mm, both ends PHR-2 (bay → bay through the ladder, 24 V)",
          "supplier": "pre-crimped (AliExpress) or DIY", "qty": sum(cols - 1 for _ in rack.rows), "unit_eur": 0.3},
         {"category": "Cables", "item": "JST PH 6-pin feed, 1:1, 24 AWG, ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C "
-                                      "(power box → first bay of each row: 24 V, CAN, POS)",
+                                      "(power box → first bay of each row: VRACK, CAN, POS)",
          "supplier": "pre-crimped PH 6-pin (AliExpress) or PHR-6 + 12 × SPH-002T-P0.5S", "qty": n_rows, "unit_eur": 0.8,
          "notes": "PH: 2 A per contact, each row's eFuse limits it to 1.6 A; twist the CAN pair (pins 3-4) by hand"},
     ]
@@ -256,18 +257,15 @@ def hardware(rack) -> list[dict]:
         rows.append({"category": "Cables", "item": r["cables"][k]["label"] + " (DUT cable, short / right-angle)",
                      "supplier": "Adafruit / Delock / AliExpress", "qty": n, "unit_eur": price})
     rows += [
-        # the power box (mechanical/parts/power_box.scad): a certified brick inside, its C14 inlet in
-        # the rear wall, so no mains wiring anywhere in the rack
-        {"category": "Power", "item": f"{brick['part']} (24 V {brick['watts']} W desktop brick, IEC C14 inlet)",
-         "supplier": "RS 880-8414 / TME / Mouser", "qty": 1, "unit_eur": 24.0,
-         "notes": "the rack draws ≈ 20–30 W; the box takes a GST90A24 too (print its cradle)"},
-        {"category": "Power", "item": "IEC C13 mains cord, 1.5–2 m (the brick comes without one)", "supplier": "any",
-         "qty": 1, "unit_eur": 4.0},
-        {"category": "Power", "item": "JST VHR-2N + 2 × SVH-21T-P1.1 (18–22 AWG): the brick's DC cord, cut to ≈ 25 cm, "
-                                      "into the hub's 24 V input", "supplier": "LCSC", "qty": 1, "unit": "set",
-         "unit_eur": 0.5},
-        {"category": "Power", "item": "EVA foam pad 2 mm, ≈ 60 × 120 mm (the lid's ribs hold the brick through it) + a cable tie",
-         "supplier": "any", "qty": 1, "unit": "set", "unit_eur": 0.5},
+        # the rack's supply: a USB PD charger outside it, into the power box's rear wall (the hub's
+        # AP33772S sink asks for 28 V EPR, or 20 V), so no mains wiring anywhere in the rack
+        {"category": "Power", "item": charger["part"], "supplier": "Anker / UGREEN / Satechi (any PD 3.1 EPR)",
+         "qty": 1, "unit_eur": 70.0,
+         "notes": "dedicated to the rack: a multi-port charger may withdraw its 28 V / 5 A offer when something else "
+                  "is plugged in.  Realistic load ≈ 35–40 W, worst case ≈ 130 W; a 100 W (20 V × 5 A) charger "
+                  "covers normal use, the hub budgets rows against the contract"},
+        {"category": "Power", "item": charger["cable"], "supplier": "any (check the 5 A / EPR e-marker)", "qty": 1,
+         "unit_eur": 12.0, "notes": "above 3 A the charger only offers its full current through an e-marked 5 A cable"},
     ]
     if cams:
         rows += [
@@ -325,8 +323,9 @@ def main():
            f"Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without shipping ({JLC_SHIPPING}) "
            "and import VAT.  The per-part lines below use catalogue prices; a *Components* line per board brings "
            "them up to the quoted components figure.  *Order* applies what changed since, not re-quoted: the "
-           "through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The power hub v0.4 "
-           "(eFuses + rack controller) is an **estimate**, not a quote: re-quote it before ordering.", "",
+           "through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The power hub v0.5 "
+           "(USB-C PD input, eFuses, rack controller; 4 layers) is an **estimate**, not a quote: re-quote it before "
+           "ordering, and check the AP33772S's sourcing (out of stock at LCSC on 2026-10-18).", "",
            "| Board | Order | Line | USD |", "|---|---|---|---:|"]
     for name, q in JLC_QUOTE.items():
         order = f"{q['pcbs']} PCBs ({q['spec']}), {q['assembled']} assembled, {q['service']} PCBA"

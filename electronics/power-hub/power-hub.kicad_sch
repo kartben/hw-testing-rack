@@ -6,9 +6,9 @@
 	(paper "A3")
 	(title_block
 		(title "Power hub — Overview")
-		(rev "0.4")
+		(rev "0.5")
 		(company "hw-testing-rack")
-		(comment 1 "24 V distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack")
+		(comment 1 "USB-C PD distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack")
 		(comment 2 "Generated from electronics/power-hub/design.py — edit the Python, then regenerate")
 	)
 	(lib_symbols)
@@ -54,7 +54,7 @@
 			)
 		)
 	)
-	(text "24 V input and protection"
+	(text "USB-C PD input"
 		(exclude_from_sim no)
 		(at 52.07 77.47 0)
 		(effects
@@ -262,113 +262,36 @@
 	)
 	(polyline
 		(pts
-			(xy 38.1 50.8)
-			(xy 374.65 50.8)
+			(xy 121.92 100.33)
+			(xy 121.92 110.49)
+			(xy 177.8 110.49)
+			(xy 177.8 100.33)
 		)
 		(stroke
-			(width 0.5)
+			(width 0.3)
 			(type default)
 		)
 		(fill
 			(type none)
 		)
-		(uuid "50f144c8-d078-5d89-bd82-cb63215e85a1")
+		(uuid "44ac72dd-aac1-56fa-ace5-bfd71044a465")
 	)
-	(text "+24V"
+	(text "VRACK"
 		(exclude_from_sim no)
-		(at 35.56 50.8 0)
+		(at 123.19 109.22 0)
 		(effects
 			(font
-				(size 1.8 1.8)
-				(bold yes)
+				(size 1.4 1.4)
 			)
-			(justify right)
+			(justify left bottom)
 		)
-		(uuid "3e1196cf-7f39-5f75-b101-5c9b705305ea")
+		(uuid "6101439b-88c3-517f-ab7e-31089b135959")
 	)
 	(polyline
 		(pts
-			(xy 67.31 50.8)
-			(xy 67.31 69.85)
-		)
-		(stroke
-			(width 0.5)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "dea85714-8f33-58e3-8721-123eb7dabdfd")
-	)
-	(circle
-		(center 67.31 50.8)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "b7475f89-00c1-5b56-b1c5-90d68888d002")
-	)
-	(polyline
-		(pts
-			(xy 187.96 50.8)
-			(xy 187.96 69.85)
-		)
-		(stroke
-			(width 0.5)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "ef2bd69a-c05d-5df8-9906-f9df7e9dbcc4")
-	)
-	(circle
-		(center 187.96 50.8)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "edc74061-5a17-59f5-819e-55d582393bcd")
-	)
-	(polyline
-		(pts
-			(xy 308.61 50.8)
-			(xy 308.61 69.85)
-		)
-		(stroke
-			(width 0.5)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "8ce0de0c-4e4e-5f3e-80e1-b00c1c554219")
-	)
-	(circle
-		(center 308.61 50.8)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "7c3901c6-9150-5b0e-b938-043381ea261a")
-	)
-	(polyline
-		(pts
-			(xy 242.57 100.33)
-			(xy 242.57 113.03)
-			(xy 298.45 113.03)
+			(xy 234.95 100.33)
+			(xy 234.95 123.19)
+			(xy 298.45 123.19)
 			(xy 298.45 100.33)
 		)
 		(stroke
@@ -380,9 +303,9 @@
 		)
 		(uuid "4b8d32b0-253a-5620-8b37-ccc6f8d0f9d9")
 	)
-	(text "ADC_IMON_A/B/C/D, CAN_H/L, FLT_A/B/C/D,"
+	(text "ADC_IMON_A/B/C/D, CAN_H/L, FLT_A/B/C/D, POS_A/B/C/D,"
 		(exclude_from_sim no)
-		(at 243.84 109.22 0)
+		(at 236.22 119.38 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -391,9 +314,9 @@
 		)
 		(uuid "c5e5a1fa-0864-5dfb-9f59-524d9f1c056b")
 	)
-	(text "POS_A/B/C/D, ROW_OFF_A/B/C/D"
+	(text "ROW_EN_A/B/C/D, VRACK"
 		(exclude_from_sim no)
-		(at 243.84 111.76 0)
+		(at 236.22 121.92 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -404,9 +327,9 @@
 	)
 	(polyline
 		(pts
-			(xy 121.92 100.33)
-			(xy 121.92 123.19)
-			(xy 306.07 123.19)
+			(xy 114.3 100.33)
+			(xy 114.3 133.35)
+			(xy 306.07 133.35)
 			(xy 306.07 100.33)
 		)
 		(stroke
@@ -418,9 +341,9 @@
 		)
 		(uuid "fcce553e-c1a8-5204-b291-6928c0041789")
 	)
-	(text "VSENSE"
+	(text "I2C_PU, PD_INT/SCL/SDA/VCC, VBUS_SENSE, VRACK"
 		(exclude_from_sim no)
-		(at 123.19 121.92 0)
+		(at 115.57 132.08 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -429,9 +352,9 @@
 		)
 		(uuid "f047cd72-8093-5349-881b-317f1ec4702c")
 	)
-	(text_box "Power hub v0.4 — 24 V in (JST VH) → reverse protection + TVS → 4 × TPS26600 eFuse (1.6 A) → 6-pin JST PH rows A–D.\nRack controller: ESP32-S3-MINI-1, TCAN1044AV (CAN master, star bus, both terminations here), POS token per row.\nEvery row is on without firmware: a 1M/150k divider from 24 V holds SHDN high; the controller's NFET pulls it low."
+	(text_box "Power hub v0.5 — USB-C PD in (AP33772S, 20 V, 28 V EPR on request) → NMOS switch → VRACK → 4 × TPS26600 eFuse (1.6 A) → 6-pin JST PH rows A–D.\nRack controller: ESP32-S3-MINI-1 on VBUS (ahead of the switch), TCAN1044AV (CAN master, star bus, both terminations here), POS token per row.\nRows are OFF without firmware: SHDN is pulled low; the controller turns each row on once the PD contract is final."
 		(exclude_from_sim no)
-		(at 30 138.43 0)
+		(at 30 148.59 0)
 		(size 360 12.7)
 		(margins 2 2 2 2)
 		(stroke

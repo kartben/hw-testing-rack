@@ -80,7 +80,7 @@ const MAT = {
 };
 const CABLE_COLORS = {
   'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
-  power: 0xff5a5a, pc: 0x3fb6ff, ext: 0x7d8590, mains: 0x101114,
+  power: 0xff5a5a, pc: 0x3fb6ff, ext: 0x7d8590, 'usb-pd': 0x101114,
 };
 
 // Layer lines on the printed parts.  Each part mesh carries `printUp`, its build plate's normal
@@ -125,7 +125,6 @@ function partMaterial(name) {
   if (name.startsWith('chain_')) return MAT.chainParts;
   if (name.startsWith('plate_')) return MAT.plates;
   if (name.startsWith('camera_')) return MAT.cameras;
-  if (name === 'power_box_cradle') return MAT.drawers;
   if (name.startsWith('power_box_')) return MAT.powerBox;
   return MAT.trays;
 }
@@ -394,7 +393,7 @@ function makeCable(c) {
   const g = new THREE.Group();
   const pts = c.points.map(v3);
   const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
-  const jacket = std(cableColor(c), 0, c.kind.startsWith('power') || c.kind === 'mains' ? 0.6 : 0.45,
+  const jacket = std(cableColor(c), 0, c.kind.startsWith('power') || c.kind === 'usb-pd' ? 0.6 : 0.45,
     { envMapIntensity: 0.6 });
   const len = curve.getLength();
   g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(48, Math.round(len / 2)), c.radius || 1.5, 14, false), jacket));
@@ -517,7 +516,7 @@ function build(pcbGlb) {
     const g = new THREE.Group();
     const mat = bx.kind === 'psu' ? MAT.psu : std(new THREE.Color(bx.color), 0.1, 0.5);
     g.add(box(bx.size[0], bx.size[1], bx.size[2], mat));
-    if (bx.label) {           // the brick's label, along its length
+    if (bx.label) {           // a box's label, along its length
       const lbl = new THREE.Mesh(new THREE.PlaneGeometry(bx.size[1] * 0.7, bx.size[0] * 0.28), new THREE.MeshBasicMaterial({ map: textTexture(bx.label, { bg: '#2c5fa8', fg: '#fff', w: 512, h: 96, font: 'bold 44px Arial' }) }));
       lbl.rotation.z = Math.PI / 2;
       lbl.position.set(bx.size[0] / 2, bx.size[1] / 2, bx.size[2] + 0.05);
@@ -550,7 +549,7 @@ function build(pcbGlb) {
   }
   // cables
   for (const c of DATA.cables) {
-    const layer = ['power-jumper', 'power-feed', 'mains'].includes(c.kind) ? 'power' : 'cables';
+    const layer = ['power-jumper', 'power-feed', 'usb-pd'].includes(c.kind) ? 'power' : 'cables';
     track(makeCable(c), { layer, bay: c.bay || null, row: c.row ?? null, movable: !!c.movable, zone: c.kind, space: c.space });
   }
   for (const p of DATA.props ?? []) {

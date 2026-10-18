@@ -59,12 +59,16 @@ aluminium frame gave them **double-width bays** (two nodes, two drawers, so two
 DATA ports, each with its own switched, current-limited, metered VBUS); the
 panel frame has no double bay yet (see [mechanical.md](mechanical.md)).
 
-## 24 V
+## Row power
+
+The rack bus, **VRACK**, is 20 or 28 V: whatever the hub negotiated with the
+USB-C PD charger ([power.md](power.md)).  The charger's 5 A e-marked cable
+plugs into the power box's rear wall.
 
 * **Bay to bay:** JST PH jumpers, 24 AWG, 120 mm, plugged into the
   node's left (IN) and right (OUT) connectors through the windows in both tray
   walls and the shared ladder, at the front of the plenum where the chain
-  never goes.  They become 6-pin (24 V, CAN, POS: [can.md](can.md)) with the bay
+  never goes.  They become 6-pin (VRACK, CAN, POS: [can.md](can.md)) with the bay
   node v0.5; the v0.4 nodes have 2-pin ones.
 * **Power box to row:** one 6-pin JST PH feed per row, 1:1, ≈ 0.25 / 0.45 /
   0.6 m for rows A / B / C.  Each plugs into the power box's left wall, reached

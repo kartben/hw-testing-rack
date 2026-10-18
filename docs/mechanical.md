@@ -93,22 +93,22 @@ their own bay through the tray's rear service slot.
 
 The base cell under A1 is otherwise dead space: 154 mm between the floor
 plate's walls, ≈ 196 mm deep, ≈ 70 mm high at the front, rising with the 20°
-slope.  `power_box.scad` fills it with the rack's whole 24 V supply.  Placement
-and sizes: `config/rack.yaml` › `power_box`; why a brick, which one and the
-budget: [power.md](power.md).
+slope.  `power_box.scad` puts the power hub there, in a box against the
+cell's left side; the rack's supply is a USB-C PD charger outside the rack.
+Placement and sizes: `config/rack.yaml` › `power_box`; the charger, the
+negotiation and the budget: [power.md](power.md).
 
 ![The power box under A1](img/power-box.jpg)
 
-*Left: under A1, its row feeds climbing the rack's left side.  Right: lid off, the GST60A24 in its cradle and the power hub v0.4.*
+*Lid off.  Left: from the rear, the charger's USB-C cable and the row outputs' cut-outs.  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
 
 | Part | File | Notes |
 |---|---|---|
-| Base | `power_box.scad` (`PART="base"`) | 152 × 190 × 44 mm. Under the floor are four sockets that drop over four of the floor plate's insert bosses: it locates without screws, and an M3 through each socket screws it down if wanted. Lift it over the plate's front lip to put it in. **Left wall:** cut-outs for the hub's four 6-pin JST PH row outputs (A–D, engraved), reached from the rack's left side through the base ladder's window. **Front wall:** windows for the hub's ON / FAULT LEDs per row, 24 V and CTL, and the controller's USB-C. **Rear wall:** the brick's C14 window, with a 45° roof so it prints without a bridge. Inside: four standoffs with M3 inserts for the hub, the brick bay with rails, a cable-tie loop for the DC cord, and floor vents under the brick |
-| Lid | `power_box.scad` (`PART="lid"`) | printed top face down. A rim locates it inside the walls, and 4 × M3×8 go into inserts in the walls. Two ribs hold the brick down through a 2 mm foam pad, with vents above the brick |
-| Brick cradle | `power_box.scad` (`PART="cradle"`) → `power_box_cradle_gst60a` / `_gst90a` | the bay takes the largest brick in `power_box.bricks`; only the cradle is made for the chosen one, so changing bricks means printing another cradle. It holds the brick against the rear wall (C14 in the window), with a front notch for the DC cord |
+| Base | `power_box.scad` (`PART="base"`) | 84 × 148 × 33 mm, against the cell's left side. Under the floor are sockets that drop over the floor plate's insert bosses beneath it: it locates without screws, and an M3 through each socket screws it down if wanted. Lift it over the plate's front lip to put it in. **Left wall:** cut-outs for the hub's four 6-pin JST PH row outputs (A–D, engraved), reached from the rack's left side through the base ladder's window. **Front wall:** windows for the hub's ON / FAULT LEDs per row, PD and CTL, and the controller's console USB-C. **Rear wall:** the USB-C PD input (the charger's cable) and vents. Inside: four standoffs with M3 inserts for the hub, and four corner lugs with M3 inserts for the lid, hanging above the hub with 45° undersides |
+| Lid | `power_box.scad` (`PART="lid"`) | printed top face down. A rim locates it inside the walls, and 4 × M3×8 go into the corner lugs. Vents over the PD input and the buck, the name engraved in the top face |
 
-All three print without supports (PETG, 3 walls).  24 V reaches the first node
-of each row through one 6-pin JST PH feed ([cabling.md](cabling.md#24-v)); 6-pin
+Both print without supports (PETG, 3 walls).  VRACK reaches the first node
+of each row through one 6-pin JST PH feed ([cabling.md](cabling.md#row-power)); 6-pin
 jumpers carry it, and the CAN bus, from node to node through the windows in
 the tray walls and the shared ladder.
 

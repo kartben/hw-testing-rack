@@ -153,7 +153,7 @@
         "min_text_height": 0.8,
         "min_text_thickness": 0.08,
         "min_through_hole_diameter": 0.3,
-        "min_track_width": 0.125,
+        "min_track_width": 0.1,
         "min_via_annular_width": 0.1,
         "min_via_diameter": 0.45,
         "solder_mask_to_copper_clearance": 0.0,
@@ -326,7 +326,11 @@
     "netclass_patterns": [
       {
         "netclass": "Power",
-        "pattern": "*VIN_RAW"
+        "pattern": "*PD_VBUS"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "*PD_SRC"
       },
       {
         "netclass": "Power",
@@ -392,7 +396,7 @@
     ]
   ],
   "text_variables": {
-    "REV": "0.4"
+    "REV": "0.5"
   },
   "tuning_profiles": {
     "meta": {

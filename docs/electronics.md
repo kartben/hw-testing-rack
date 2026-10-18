@@ -72,11 +72,11 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
    a short track to a GND via or to a spot where a small via fits.
 
 > **Status: bay node v0.4 — re-placed for In2 power only (Fabio's second round), autorouted,
-> checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.4 —
-> new board for the power box (eFuses + rack controller + CAN), autorouted, checked with Konnect,
-> not yet ordered or quoted.**  ERC is clean and DRC reports no copper errors, no unconnected
-> items and full schematic parity (0 DRC warnings).  The buck's hot loop, the
-> 24 V bus, the hub's 24 V pours and the USB High-Speed pairs are placed or
+> checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.5 —
+> USB-C PD input (AP33772S), 4 layers, rows off until the controller enables them, autorouted,
+> checked with Konnect, not yet ordered or quoted.**  ERC is clean and DRC reports no copper
+> errors, no unconnected items and full schematic parity.  The buck's hot loop, the
+> 24 V bus, the hub's input and VRACK pours, its Kelvin sense pair and the USB High-Speed pairs are placed or
 > drawn by hand in `design.py`; the rest is the router's draft: before
 > ordering, look at it in KiCad and re-run DRC.  Hand edits to the PCB are
 > fine — just don't re-run the generator over them (or move the routed board
@@ -126,33 +126,45 @@ test pads (bottom side).
 **USB-C roles:** the front PC port is a sink (5.1 k Rd on CC) whose VBUS is
 only sensed; the DUT port is a source (22 k Rp → "1.5 A") with switched VBUS.
 
-## Power hub (×1) — 2 layers, 76 × 140 mm, v0.4
+## Power hub v0.5 — 4 layers, 76 × 140 mm
 
-It lives in the power box ([mechanical.md](mechanical.md#power-box)); its outline, holes, row
-connectors and front LEDs are set in `config/rack.yaml` › `pcb.power_hub`, and the box is drawn
-around them.  KiCad y = 0 is the rear edge (the module's antenna), y = 140 the front (LEDs, USB-C).
+One per rack.  It lives in the power box ([mechanical.md](mechanical.md#power-box)); its outline,
+holes, row connectors, front LEDs and rear PD input are set in `config/rack.yaml` ›
+`pcb.power_hub`, and the box is drawn around them.  KiCad y = 0 is the rear edge (the module's
+antenna, the USB-C PD input), y = 140 the front (LEDs, console USB-C).  Why USB-C PD, the charger
+and the sequencing: [power.md](power.md).
 
 | Block | Parts | Notes |
 |---|---|---|
-| 24 V in | JST VH side entry (J1, hand-soldered) → SUD50P06 P-FET + 12 V zener → SMCJ33A → 2 × 220 µF | the brick's DC cord, crimped; the whole rack's current (≤ 2.5 A with the GST60A24) |
-| Rows A–D | 4 × TPS26600 (1.6 A, 4 ms soft start, UV 15 V / OV 33 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md) |
-| Per row | ON (green) on the row's own 24 V; FAULT (red) from 3.3 V into the open-drain FLT; FLT also to the controller (100 k pull-up) | Kingbright KPA-3010 side-view LEDs in the box's front wall |
-| Row control | SHDN held high by 1 M / 150 k from 24 V (3.1 V: the datasheet's SHDN range is 0–4 V); a 2N7002 pulls it low | every row is on without firmware |
+| USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → 5 mΩ Kelvin shunt → back-to-back IRF7842 NMOS → VRACK, 100 µF / 50 V | the whole rack's current, ≤ 5 A |
+| PD sink | AP33772S: VSEL 39 k (asks for 20 V by itself), Rd 5.1 k on CC1/CC2, NTC 10 k by the switch, I²C + INT to the controller, its own LED in the front wall (PD) | the controller asks for 28 V EPR; the chip keeps the contract through controller resets |
+| Rows A–D | 4 × TPS26600 (1.6 A, ≈ 5 ms soft start, UV 15 V / OV 33 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md) |
+| Row control | SHDN pulled low by 100 k; the controller drives ROW_EN high through 10 k (3.0 V; the datasheet's SHDN range is 0–4 V) | **rows are off without firmware**; on once the contract is final, one after the other |
+| Per row | ON (green, from the row's own output through 10 k by the eFuse); FAULT (red) from 3.3 V into the open-drain FLT; FLT also to the controller (100 k pull-up) | Kingbright KPA-3010 side-view LEDs in the box's front wall |
 | Row current | IMON 18 k → 1.4 V/A, 1 k + 10 nF to the ESP32's ADC | |
-| Controller supply | LMR51635 24 → 5.16 V (the bay node's values and layout), B5819W diode OR with the USB-C's VBUS → +5V ≈ 4.8 V, AMS1117 → 3.3 V | the controller runs on USB alone for flashing |
-| Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB-C (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
+| Controller supply | LMR51635 from VBUS *ahead of* the switch (EN from ≈ 3.9 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from a contract's first 5 V; runs on the console USB alone for flashing |
+| Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
+| PD interface | SDA / SCL with 4.7 k pull-ups fed from a GPIO (I2C_PU), INT (a 5 V output) through 15 k / 27 k, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered AP33772S |
 | CAN | TCAN1044AV (VCC 5 V, VIO 3.3 V, ±58 V bus pins), two split terminations 2 × 56 Ω + 4.7 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
-| POS | 4 GPIOs → 10 k → pin 6 of each row, BAT54S clamp to GND / 3.3 V | survives a reversed cable (+24 V on pin 6) |
+| POS | 4 GPIOs → 10 k → pin 6 of each row, BAT54S clamp to GND / 3.3 V | survives a reversed cable (VRACK on pin 6) |
 
-The 24 V path is copper pours, not tracks:
-* `VIN_RAW` runs from J1 to Q1's drain tab.
-* Q1's source, the TVS and the bulk caps share a top-side `+24V` strip.
-* A bottom-side `+24V` trunk goes across the board and down the eFuse column.
-* Each eFuse gets a top island on its IN pins, with two vias into the trunk.
+**Layout**, with the bay node's practices: JLC's 4-layer stackup (JLC04161H-7628), ENIG.
 
-These pours are `exclusive`: tracks are kept out of their core.  Each row's output runs in a
-hand-drawn 0.8 mm track to its connector and output cap.  The 5 V buck's hot loop copies the bay
-node's.  Each eFuse's exposed pad has six tented GND vias to the bottom pour.
+* **In1** is a solid GND plane.  **In2** carries power only: VRACK under the input block, along a
+  band at y ≈ 39 and down the eFuse column; +3V3 everywhere else, in one piece wrapping around it.
+  +5V and the PD nets run on the outer layers.
+* Every GND and supply pin gets a via of its own to its plane before routing (fan-out).  The
+  eFuses' UVLO / OVP / MODE / RTN / GND pins go straight onto the exposed pad, which has six tented
+  GND vias.  The outer GND pours are stitched to In1.
+* The input's current runs in top-side pours, kept free of other tracks (`exclusive`): PD_VBUS
+  (connector → TVS → shunt), PD_VCC (shunt → Q1, and a 0.8 mm bottom track to the buck), the NMOS
+  common source, VRACK (Q2 → bulk capacitor → vias to In2).
+* **Kelvin:** the AP33772S's ISENP and VCC leave the shunt's own sense pads and run straight to the
+  chip's corner, a few millimetres; VCC's 1 µF sits on its trace.  The NMOS gates share one track
+  under both bodies.
+* Each eFuse has a top VRACK island on its IN pins and input capacitor, with three vias to In2.
+  Each row's output runs in a hand-drawn 0.8 mm track to its connector, its output capacitor and
+  its ON LED's resistor.  The SHDN pull-down and series resistor sit just below the eFuse.
 
 The schematic uses the generator's automatic layout (blocks with labelled stubs); it is not drawn
 like the bay node's yet.
@@ -178,13 +190,23 @@ where it didn't matter (e.g. 150k RT, 120k/22k FB).
 * `<board>-bom.csv` (detailed, one line per value: MPN, manufacturer, LCSC,
   alternatives);
 * `docs/<board>-schematic.pdf`, SVGs, top/bottom/iso renders;
-* `fab/<board>.step` and `fab/<board>.glb` (the web viewer uses the GLB).
+* `fab/<board>.step` and `fab/<board>.glb` (the web viewer uses the GLB);
+* `build/<board>-3d.json`: which placed parts the 3D export gives a body.
 
-The bay node has no through-hole part since v0.4: its JST PH connectors are the SMD
-S*B-PH-SM4-TB, placed by JLC in the same reflow pass.  The hub's through-hole connectors (JST VH
-input, JST PH outputs) are soldered by hand, from loose LCSC parts: `hand_solder=True` in
-`electronics/tools/catalog.py` keeps them out of the JLC BOM and CPL, and the detailed BOM flags
-them "hand-solder, buy loose (LCSC)" in its `Assembly` column.
+**3D models.**  Some parts have no model in KiCad's 3D library: the ESP32-S3 module, the JST PH SMD
+side-entry connectors, the side-view LEDs, the buttons.  A footprint whose model file is missing
+just vanishes from the STEP, the GLB and the renders, without an error.  So the catalog attaches a
+vendor model to each of them (`Cat.model`, files in `electronics/lib/3dmodels`, see its README):
+Espressif's own STEP for the module, kept in the repo, and LCSC / EasyEDA models for the rest,
+fetched by `python tools/fetch_pcb_models.py` into a git-ignored cache.  Run it before `--fab`.
+`python tools/pcb_glb.py --check` then lists any placed part still without a body and exits 1;
+the viewer conversion falls back to a stand-in of the part's real outline (or fails, `--strict`).
+
+The bay node has no through-hole part since v0.4, and the hub none since v0.5: their JST PH
+connectors are the SMD S*B-PH-SM4-TB, and the USB-C receptacles' shield tabs go through
+pin-in-paste, all placed by JLC in the same reflow pass.  A part marked `hand_solder=True` in
+`electronics/tools/catalog.py` would be kept out of the JLC BOM and CPL, and flagged
+"hand-solder, buy loose (LCSC)" in the detailed BOM's `Assembly` column.
 
 ## Assembly at JLCPCB
 
@@ -198,10 +220,12 @@ breakdown is in [`bom/README.md`](../bom/README.md), and `tools/bom.py`
 | bay node | 20 PCBs, 4-layer ENIG (JLC adds 5 mm edge rails for Standard PCBA), 16 assembled, Standard | $58.90 | $308.81, of which components $181.21 and feeders $65.10 | **$367.71** |
 | power hub v0.3 (replaced by v0.4) | 5 PCBs, 2-layer ENIG, 2 assembled, Economic | $25.70 | $48.43, of which components $17.56 and extended parts $15.45 | **$74.13** |
 
-**Power hub v0.4 is not quoted yet.**  It carries the ESP32-S3 module, so it needs Standard PCBA,
-X-ray and ENIG, like the bay node.  `tools/bom.py` carries an estimate built the same way: ≈ $168
-for 5 PCBs with 2 assembled.  That is $27 of PCB, $41 of components at catalogue prices, and $3 per
-extended part type (16, the hand-soldered JST VH aside).  Re-quote before ordering.
+**Power hub v0.5 is not quoted yet.**  It carries the ESP32-S3 module, so it needs Standard PCBA,
+X-ray and ENIG, like the bay node.  `tools/bom.py` carries an estimate built the same way: ≈ $213
+for 5 four-layer PCBs with 2 assembled.  That is ≈ $55 of PCB (the 4-layer engineering fee),
+$51 of components at catalogue prices, and $3 per extended part type (19).  The AP33772SDKZ-13-FA02
+was out of stock at LCSC on 2026-10-18: check JLC's global sourcing, or consign a reel.  Re-quote
+before ordering.
 
 Two changes were made after that quote and are not re-quoted (`JLC_FINISH`
 and `jlc_order()` in `tools/bom.py` apply them, indicatively):
@@ -240,9 +264,8 @@ ordering.
   swapping it in.  Every ESP32-S3/S2 module at JLC is Standard-only; the
   Economic-capable Ai-M62-32S (BL616) is evaluated, and kept for a v2, in
   [mcu-alternatives.md](mcu-alternatives.md).
-* **Power hub: Standard PCBA since v0.4** (the ESP32 module).  Its 220 µF bulk capacitors
-  still use C3358, the Economic-capable listing of RVT1H221M1010, and the node's 100 µF uses C3352
-  the same way.
+* **Power hub: Standard PCBA since v0.4** (the ESP32 module).  Its 100 µF bulk capacitor uses
+  C3352, the Economic-capable listing of RVT1H101M0810, like the node's.
 * **No Basic drop-ins.** Every extended part was checked against JLC's Basic
   library (October 2026): none has a Basic equivalent with the same ratings
   and footprint, so the extended-part loading fees stay (the node's $65.10 of

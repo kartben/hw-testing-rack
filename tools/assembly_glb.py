@@ -42,7 +42,7 @@ MATS = {
     "black": ([0.07, 0.07, 0.08, 1], 0.0, 0.6),
 }
 CABLE = {"c-to-c": [0.56, 0.36, 1.0, 1], "c-to-micro-b": [1.0, 0.69, 0.18, 1], "c-to-mini-b": [0.88, 0.54, 0.12, 1],
-         "pc": [0.25, 0.71, 1.0, 1], "ext": [0.49, 0.52, 0.56, 1], "mains": [0.06, 0.06, 0.07, 1]}
+         "pc": [0.25, 0.71, 1.0, 1], "ext": [0.49, 0.52, 0.56, 1], "usb-pd": [0.06, 0.06, 0.07, 1]}
 
 
 def srgb_to_linear(c):
@@ -126,8 +126,7 @@ def hex_rgba(h):
 def part_category(name):
     for prefix, cat in (("ladder_", "ladders"), ("brace_", "braces"), ("tray", "trays"), ("floor_plate", "frameplates"),
                         ("cap_plate", "frameplates"), ("drawer", "drawers"), ("chain_", "chainparts"),
-                        ("plate_", "plates"), ("camera_", "cameras"), ("power_box_cradle", "drawers"),
-                        ("power_box_", "powerbox")):
+                        ("plate_", "plates"), ("camera_", "cameras"), ("power_box_", "powerbox")):
         if name.startswith(prefix):
             return cat
     return "trays"

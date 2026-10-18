@@ -9,3 +9,11 @@
 	(layer "F.SilkS")
 	(condition "(A.memberOfFootprint('J*') || A.memberOfFootprint('U4') || A.memberOfFootprint('D1*') || A.memberOfFootprint('D2*') || A.memberOfFootprint('D3') || A.memberOfFootprint('D8')) && B.Layer == 'Edge.Cuts'")
 	(constraint silk_clearance (min -10mm)))
+
+(rule "USB4105 J1: GND pads beside its own pegs"
+	(condition "A.memberOfFootprint('J1') && B.memberOfFootprint('J1')")
+	(constraint hole_clearance (min 0.19mm)))
+
+(rule "USB4105 J6: GND pads beside its own pegs"
+	(condition "A.memberOfFootprint('J6') && B.memberOfFootprint('J6')")
+	(constraint hole_clearance (min 0.19mm)))

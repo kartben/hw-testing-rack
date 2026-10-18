@@ -354,3 +354,38 @@ Open, for a later revision:
   signals are slow (I/O, CAN at 250 kbit/s, USB full speed), but a hand placement of the signal
   bundle, or a 4-layer board, would keep it whole.
 * The schematic uses the automatic block layout; it is not drawn like the bay node's.
+
+## Power hub v0.5 (2026-10-18)
+
+The input becomes USB-C PD (AP33772S sink, back-to-back NMOS, 5 mΩ Kelvin shunt), the board goes
+to 4 layers, and the rows are off until the controller turns them on.  Konnect checked the saved
+files after Freerouting:
+
+| | power hub v0.5 |
+|---|---|
+| ERC (Konnect) | 0 errors, 0 warnings |
+| DRC (Konnect, zones refilled) | 0 errors, 0 unconnected, schematic parity 0; warnings below |
+| `audit_connections` | 2 findings, both expected (below) |
+| `audit_decoupling` | 1 finding, a false positive (below) |
+| JLCPCB DFM audit | 8 bottom-side footprints: the bare test pads, not in the BOM or CPL |
+| 3D coverage (`tools/pcb_glb.py --check`) | 146 parts with a model, 0 stand-ins, 0 without a body |
+
+| Finding | Reading |
+|---|---|
+| "I2C SDA / SCL on U1 have no pull-up" | They do: R13 / R14 (4.7k), fed from a GPIO (I2C_PU), so a controller running from its console USB alone never back-feeds an unpowered AP33772S through SDA / SCL (Diodes' EVB guide asks that the sink powers up first) |
+| "PWR_EN has no decoupling capacitor" | PWR_EN is the AP33772S's NMOS gate drive (a charge pump through R8), not a supply pin |
+| DRC: silkscreen clipped by the mask (C8's outline at C10) | Cosmetic: the fab clips silkscreen off pads |
+| DRC: U1 "does not match the library copy" | Only in a local KiCad run: its QFN-24 footprint differs between the local library and the Docker image's.  The build's own DRC (Docker) doesn't report it |
+
+What changed for routing, from the v0.4 → 4-layer attempt that left 18 connections:
+* In2 is split once: VRACK under the input, along a band at y ≈ 39 and down the eFuse column;
+  +3V3 everywhere else, in one piece around it (no pin is left over another net's area).
+* Each eFuse's SHDN leaves through a hand-drawn track to its pull-down and series resistor, just
+  below the eFuse; its GND pins go straight onto the exposed pad.
+* The ON LED's resistor sits by its eFuse: only the LED's milliamps go to the front.
+* PD_VCC reaches the buck in a hand-drawn 0.8 mm bottom track; the input's pours are exclusive.
+* The Kelvin pair, the NMOS gates and IFB's capacitor are drawn by hand.
+
+Open, for a later revision:
+* The schematic uses the automatic block layout; it is not drawn like the bay node's.
+* Re-quote at JLCPCB (the cost is an estimate) and check the AP33772S's sourcing.

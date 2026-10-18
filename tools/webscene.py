@@ -32,7 +32,6 @@ WEB_PARTS = {
     "plate_universal": ("parts/board_plate.scad", {"BOARD": "universal"}),
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {"PART": "lid"}),
-    "power_box_cradle": ("parts/power_box.scad", {"PART": "cradle"}),
 }
 
 # Parts whose print orientation differs from their assembly orientation get an
@@ -406,29 +405,19 @@ def build(rack) -> Path:
         meta["center"] = rack.to_frame(i, [x0 + rack.carrier_w / 2, BD / 2, plenum + 40])
         bays.append(meta)
 
-    # --- the power box under row A: brick, hub, status LEDs, mains cord, row feeds -------------
+    # --- the power box under row A: hub, status LEDs, the charger's USB-C cable, row feeds -----
     pb = rack.power_box()
     add("power_box_base", pb["origin"], space="frame", layer="powerbox")
     add("power_box_lid", pb["origin"], space="frame", layer="powerlid")
-    add("power_box_cradle", pb["cradle"], space="frame", layer="powerbox")
-    brick = pb["brick"]
-    items["boxes"].append({"kind": "brick", "layer": "powerbox", "space": "frame", "pos": brick["pos"],
-                           "size": brick["size"], "color": "#18191c",
-                           "label": brick["part"].replace("Mean Well ", "MEAN WELL  ").split("-")[0]})
     items["pcbs"].append({"board": "power-hub", "space": "frame", "pos": pb["hub"]})
-    lit = {"on": "#3ddc84", "24v": "#3ddc84", "ctl": "#4aa3ff"}
+    lit = {"on": "#3ddc84", "pd": "#3ddc84", "ctl": "#4aa3ff"}
     for led in pb["leds"]:
         if led["kind"] in lit and (led["row"] is None or led["row"] < n_rows):
             items["leds"].append({"space": "frame", "layer": "powerbox", "pos": led["pos"], "color": lit[led["kind"]]})
-    bp, bs = brick["pos"], brick["size"]
-    bc = [bp[0] + bs[0] / 2, bp[1], bp[2] + bs[2] / 2]                 # DC cord out of the brick's front end
-    c14 = pb["c14"]
-    cable(poly(c14, (c14[0], c14[1] + 45, c14[2]), (c14[0] + 5, c14[1] + 75, 3), (c14[0] + 40, c14[1] + 260, 3)),
-          space="frame", kind="mains", radius=3.0)
-    hub_w = raw["pcb"]["power_hub"]["size"][0]
-    vh = (pb["hub"][0] + hub_w - 3, pb["hub"][1] - 118, pb["hub"][2] + 6)   # the hub's 24 V input (JST VH)
-    cable(bezier(bc, (bc[0], bc[1] - 25, bc[2]), (vh[0] + 30, vh[1] + 5, vh[2] + 4), vh),
-          space="frame", kind="power-feed", color="#18191c", radius=2.2)
+    # the USB-C PD cable: out of the box's rear wall, down and back to the charger behind the rack
+    pd = pb["pd"]
+    cable(poly(pd, (pd[0], pd[1] + 30, pd[2]), (pd[0] + 5, pd[1] + 60, 3), (pd[0] + 30, pd[1] + 240, 3)),
+          space="frame", kind="usb-pd", radius=2.0)
     # row feeds: out of the box's left wall through the base ladder's window, forward along its
     # outer face, up the rack's left side, and in through each row's jumper window to the first node
     vy = rack.node_front_y + node["size"][1] - node["pwr_y"]
