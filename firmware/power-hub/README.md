@@ -68,7 +68,7 @@ uart:~$ hub status
 | Row control | `hub row <A–D> on\|off\|cycle [ms]`, the page's buttons, `POST /api/row`; on/off is saved |
 | Faults | each eFuse's FLT (current limit, over-temperature) as an event, a count and the page's red row; the PD sink's OVP/OCP/OTP/UVP as events |
 | Telemetry | contract, VBUS, input current and temperature from the AP33772S; VBUS from its own ADC divider; each row's current from IMON |
-| Rack bus | TWAI at 250 kbit/s on the TCAN1462V (STB through `can-transceiver-gpio`); enumeration over the POS tokens, the node table, commands to nodes with retries; the RACK frame every second |
+| Rack bus | TWAI at 250 kbit/s on the TCAN1462V (CAN SIC; STB through `can-transceiver-gpio`); enumeration over the POS tokens, the node table, commands to nodes with retries; the RACK frame every second |
 | Network | Wi-Fi station, DHCP, mDNS `rack-<id>.local` (firmware/common's `hwtr_net`, as the nodes) |
 | Web | Zephyr HTTP server on port 80: status page, JSON API, Prometheus `/metrics` |
 | CTL LED | on: contract, rows as wanted; slow blink: no PD charger or contract settling; double blink: rows shed; fast blink: a row in fault |
