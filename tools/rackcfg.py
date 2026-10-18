@@ -240,7 +240,7 @@ class Rack:
         """Geometry of the drag chain for a drawer pulled out by open_frac (0..1)."""
         c = self.chain
         t = self.drawer["travel"] * open_frac
-        m = c["foot_y"] - t
+        m = c["moving_y"] - t
         b = c["bend_y"] - t / 2
         return {"fixed": c["fixed"], "moving": [c["moving_x"], m], "bend_y": b, "radius": c["radius"]}
 
@@ -319,9 +319,13 @@ def scad_config(rack: Rack) -> str:
         "CHAIN_INNER": ch["inner"],
         "CHAIN_OUTER": ch["outer"],
         "CHAIN_R": ch["radius"],
+        "CHAIN_PITCH": ch["pitch"],
+        "CHAIN_END_HOLES": ch["end_holes"],
         "CHAIN_FIXED": ch["fixed"],
         "CHAIN_MOVING_X": ch["moving_x"],
         "CHAIN_FOOT_Y": ch["foot_y"],
+        "CHAIN_MOVING_Y": ch["moving_y"],
+        "CHAIN_END_LENGTH": ch["end_length"],
         "CHAIN_BEND_Y": ch["bend_y"],
         "NODE_SIZE": node["size"],
         "NODE_T": node["thickness"],

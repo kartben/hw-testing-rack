@@ -56,13 +56,22 @@ drawer:
   plate: 2.5             # board plate thickness
 
 chain:                   # drag chain lying flat in the plenum (bends in the XY plane)
+                         # reference: Olimex DRAG-CHAIN-7X7, links open on both sides.  Olimex gives
+                         # only the inner size; outer size and end holes are Electrokit's figures for
+                         # the same generic chain (art. 41017996).  Measure yours on arrival.
   inner: [7, 7]          # 7×7 mm, the common 3D-printer size
-  outer: [11, 10]        # link outer width (= vertical here) × height (= X here)
-  radius: 18             # bend radius to the chain centre line
-  fixed: [104, 90]       # fixed end, carrier XY
-  moving_x: 140          # X of the moving run / deck slot
-  foot_y: 172            # moving end, measured from the drawer front face
-  bend_y: 182            # bend apex (closed drawer)
+  outer: [13.5, 10.2]    # across the side plates (= vertical here) × in the bend plane (= X here)
+  radius: 18             # bend radius to the chain centre line: not published, measure it
+  pitch: 16              # link pitch of the printable link (parts/chain_parts.scad) and the viewer
+  end_holes: [8, 4]      # end pieces: 2 holes 8 mm apart on a tab flush with the outer face of the U,
+                         # the first one 4 mm from the mouth (M2.5 self-tapping + washer)
+  end_length: 26         # rigid end piece, mouth → its pivot on the chain: it must stay in a straight
+                         # run over the whole stroke (checked in lib/carrier.scad).  Measure it.
+  fixed: [100, 87]       # fixed end (the end piece's mouth), carrier XY
+  moving_x: 136          # X of the moving run (the drawer foot)
+  moving_y: 157          # moving end's mouth, measured from the drawer front face
+  foot_y: 172            # the foot's lock screw (in the drawer's rear bay), from the drawer front face
+  bend_y: 183            # centre of the U bend (closed drawer)
 
 rows:                     # bottom → top; each row is an independent module
   - id: A

@@ -1925,21 +1925,21 @@
 },
 {
 "category": "Fasteners",
-"item": "M3×8 pan head, Phillips (ISO 7045): rear braces",
+"item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",
 "supplier": "AliExpress (bulk)",
-"qty": 64,
+"qty": 88,
 "unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 1.28
+"ext_eur": 1.76
 },
 {
 "category": "Fasteners",
-"item": "M3×6 (node PCB, chain anchor, power box lid)",
+"item": "M3×6 (node PCB, power box lid)",
 "supplier": "AliExpress (bulk)",
-"qty": 76,
+"qty": 52,
 "unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 1.52
+"ext_eur": 1.04
 },
 {
 "category": "Fasteners",
@@ -1953,12 +1953,22 @@
 },
 {
 "category": "Fasteners",
-"item": "M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends)",
-"supplier": "AliExpress (bulk)",
-"qty": 72,
+"item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA socket",
+"supplier": "AliExpress (bulk, e.g. HZYUEGOU)",
+"qty": 96,
 "unit_eur": 0.02,
+"notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)",
 "unit": "pcs",
-"ext_eur": 1.44
+"ext_eur": 1.92
+},
+{
+"category": "Fasteners",
+"item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
+"supplier": "AliExpress (bulk)",
+"qty": 48,
+"unit_eur": 0.01,
+"unit": "pcs",
+"ext_eur": 0.48
 },
 {
 "category": "Fasteners",
@@ -1971,21 +1981,33 @@
 },
 {
 "category": "Motion",
-"item": "Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",
-"supplier": "AliExpress / igus E2 micro",
-"qty": 2.3,
+"item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces",
+"supplier": "Olimex DRAG-CHAIN-7X7",
+"qty": 2.6,
 "unit": "m",
 "unit_eur": 4.0,
-"ext_eur": 9.2
+"notes": "open the links to lay the extension in (its plug and panel socket do not pass a 7×7 channel); Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)",
+"ext_eur": 10.4
+},
+{
+"category": "Motion",
+"item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer",
+"supplier": "AliExpress (generic) / Olimex if included",
+"qty": 12,
+"unit_eur": 1.0,
+"notes": "a metre of chain usually comes with one pair only",
+"unit": "pcs",
+"ext_eur": 12.0
 },
 {
 "category": "Cables",
-"item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
-"supplier": "AliExpress (generic, USB 2.0 is enough)",
+"item": "USB-C male → panel-mount USB-C female extension, 30 cm: 25 mm flange, holes 17 mm apart (drawer DATA port)",
+"supplier": "QinMSY UC-138, AliExpress 1005009101248402 (30 cm)",
 "qty": 12,
-"unit_eur": 1.5,
+"unit_eur": 1.86,
+"notes": "the seller's drawing of the same moulding: AliExpress 1005003419765205 (USB 3.1, second source); measure the flange and the body on arrival (lib/carrier.scad › DATA_FLANGE, DATA_BODY_CUT)",
 "unit": "pcs",
-"ext_eur": 18.0
+"ext_eur": 22.32
 },
 {
 "category": "Cables",
@@ -2076,13 +2098,13 @@
 "by_category": {
 "Electronics": 582.8799999999999,
 "Printed parts": 78.0,
-"Fasteners": 16.76,
-"Motion": 9.2,
-"Cables": 67.0,
+"Fasteners": 17.72,
+"Motion": 22.4,
+"Cables": 71.32,
 "Power": 82.0,
 "Cameras": 36.2
 },
-"total_eur": 872.04,
+"total_eur": 890.52,
 "prints": [
 {
 "part": "bay_label",
@@ -2143,22 +2165,22 @@
 {
 "part": "chain_anchor",
 "qty": 12,
-"grams_each": 0.8,
-"grams_total": 9.5,
+"grams_each": 1.4,
+"grams_total": 16.9,
 "stl": "mechanical/stl/chain_anchor.stl"
 },
 {
 "part": "chain_foot",
 "qty": 12,
-"grams_each": 1.3,
-"grams_total": 15.5,
+"grams_each": 1.4,
+"grams_total": 17.0,
 "stl": "mechanical/stl/chain_foot.stl"
 },
 {
 "part": "drawer",
 "qty": 12,
-"grams_each": 44.5,
-"grams_total": 534.4,
+"grams_each": 46.0,
+"grams_total": 551.5,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
@@ -2206,78 +2228,78 @@
 {
 "part": "plate_arduino-uno-r4",
 "qty": 1,
-"grams_each": 31.2,
-"grams_total": 31.2,
+"grams_each": 31.3,
+"grams_total": 31.3,
 "stl": "mechanical/stl/plate_arduino-uno-r4.stl"
 },
 {
 "part": "plate_esp32-c6-devkitc",
 "qty": 1,
-"grams_each": 31.9,
-"grams_total": 31.9,
+"grams_each": 31.5,
+"grams_total": 31.5,
 "stl": "mechanical/stl/plate_esp32-c6-devkitc.stl"
 },
 {
 "part": "plate_esp32-s3-devkitc",
 "qty": 1,
-"grams_each": 32.3,
-"grams_total": 32.3,
+"grams_each": 31.8,
+"grams_total": 31.8,
 "stl": "mechanical/stl/plate_esp32-s3-devkitc.stl"
 },
 {
 "part": "plate_frdm-mcxn947",
 "qty": 1,
-"grams_each": 37.4,
-"grams_total": 37.4,
+"grams_each": 36.9,
+"grams_total": 36.9,
 "stl": "mechanical/stl/plate_frdm-mcxn947.stl"
 },
 {
 "part": "plate_nrf52840-dk",
 "qty": 1,
-"grams_each": 38.1,
-"grams_total": 38.1,
+"grams_each": 37.6,
+"grams_total": 37.6,
 "stl": "mechanical/stl/plate_nrf52840-dk.stl"
 },
 {
 "part": "plate_nrf5340-dk",
 "qty": 1,
-"grams_each": 38.1,
-"grams_total": 38.1,
+"grams_each": 37.6,
+"grams_total": 37.6,
 "stl": "mechanical/stl/plate_nrf5340-dk.stl"
 },
 {
 "part": "plate_nrf54l15-dk",
 "qty": 1,
-"grams_each": 38.1,
-"grams_total": 38.1,
+"grams_each": 37.6,
+"grams_total": 37.6,
 "stl": "mechanical/stl/plate_nrf54l15-dk.stl"
 },
 {
 "part": "plate_nucleo-144",
 "qty": 1,
-"grams_each": 38.0,
-"grams_total": 38.0,
+"grams_each": 37.5,
+"grams_total": 37.5,
 "stl": "mechanical/stl/plate_nucleo-144.stl"
 },
 {
 "part": "plate_nucleo-64",
 "qty": 2,
-"grams_each": 34.9,
-"grams_total": 69.8,
+"grams_each": 34.4,
+"grams_total": 68.8,
 "stl": "mechanical/stl/plate_nucleo-64.stl"
 },
 {
 "part": "plate_rpi-pico2",
 "qty": 1,
-"grams_each": 29.6,
-"grams_total": 29.6,
+"grams_each": 29.1,
+"grams_total": 29.1,
 "stl": "mechanical/stl/plate_rpi-pico2.stl"
 },
 {
 "part": "plate_stm32f746g-disco",
 "qty": 1,
-"grams_each": 39.4,
-"grams_total": 39.4,
+"grams_each": 38.9,
+"grams_total": 38.9,
 "stl": "mechanical/stl/plate_stm32f746g-disco.stl"
 },
 {
@@ -2311,8 +2333,8 @@
 {
 "part": "tray",
 "qty": 12,
-"grams_each": 78.7,
-"grams_total": 944.1,
+"grams_each": 79.4,
+"grams_total": 953.0,
 "stl": "mechanical/stl/tray.stl"
 }
 ],

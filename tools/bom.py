@@ -249,21 +249,35 @@ def hardware(rack) -> list[dict]:
          "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node "
                   "standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub "
                   "standoffs"},
-        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces",
-         "supplier": "AliExpress (bulk)", "qty": 4 * braces, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor, power box lid)", "supplier": "AliExpress (bulk)",
-         "qty": 6 * n_bays + 4, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",
+         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_bays, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×6 (node PCB, power box lid)", "supplier": "AliExpress (bulk)",
+         "qty": 4 * n_bays + 4, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",
          "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
          "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
-        {"category": "Fasteners", "item": "M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends)",
-         "supplier": "AliExpress (bulk)", "qty": 6 * n_bays, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): "
+                                         "drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA socket",
+         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)", "qty": 8 * n_bays, "unit_eur": 0.02,
+         "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)"},
+        {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
+         "supplier": "AliExpress (bulk)", "qty": 4 * n_bays, "unit_eur": 0.01},
         {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",
          "supplier": "supermagnete S-06-03-N", "qty": 2 * n_bays, "unit_eur": 0.30},
-        {"category": "Motion", "item": "Drag chain 7×7 mm, R18, plastic, cut to ≈ 160 mm per drawer",
-         "supplier": "AliExpress / igus E2 micro", "qty": round(0.17 * n_bays + 0.3, 1), "unit": "m", "unit_eur": 4.0},
-        {"category": "Cables", "item": "USB-C male → USB-C female panel-mount extension, 30 cm, M3 ears (drawer DATA port)",
-         "supplier": "AliExpress (generic, USB 2.0 is enough)", "qty": n_bays, "unit_eur": 1.5},
+        {"category": "Motion", "item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), "
+                                      "≈ 180 mm per drawer with its two end pieces",
+         "supplier": "Olimex DRAG-CHAIN-7X7", "qty": round(0.19 * n_bays + 0.3, 1), "unit": "m", "unit_eur": 4.0,
+         "notes": "open the links to lay the extension in (its plug and panel socket do not pass a 7×7 channel); "
+                  "Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, "
+                  "measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)"},
+        {"category": "Motion", "item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), one pair per drawer",
+         "supplier": "AliExpress (generic) / Olimex if included", "qty": n_bays, "unit_eur": 1.0,
+         "notes": "a metre of chain usually comes with one pair only"},
+        {"category": "Cables", "item": "USB-C male → panel-mount USB-C female extension, 30 cm: 25 mm flange, "
+                                      "holes 17 mm apart (drawer DATA port)",
+         "supplier": "QinMSY UC-138, AliExpress 1005009101248402 (30 cm)", "qty": n_bays, "unit_eur": 1.86,
+         "notes": "the seller's drawing of the same moulding: AliExpress 1005003419765205 (USB 3.1, second source); "
+                  "measure the flange and the body on arrival (lib/carrier.scad › DATA_FLANGE, DATA_BODY_CUT)"},
         {"category": "Cables", "item": "JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 24 AWG, 120 mm, "
                                       "both ends PHR-6 (bay → bay through the ladder: row bus, CAN, POS)",
          "supplier": "pre-crimped PH 6-pin double-ended, plugs on the same face (AliExpress, often \"reverse\") "

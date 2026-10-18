@@ -185,7 +185,7 @@ def tube(points, radius, sides=10):
 def chain_path(ch, frac):
     t = ch["travel"] * frac
     fx, fy = ch["fixed"]
-    mx, my = ch["moving_x"], ch["foot_y"] - t
+    mx, my = ch["moving_x"], ch["moving_y"] - t
     b, r = ch["bend_y"] - t / 2, ch["radius"]
     cx = (fx + mx) / 2
     pts = [(fx, y) for y in np.arange(fy, b, 3)]
@@ -376,14 +376,14 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
                                       transform=translate([0, 0.6, 0]) @ rot_xyz([90, 0, 0]))
         add(with_mat(m, em), f"led:{led.get('bay', 'power')}",
             place(led.get("space", "row"), led.get("row"), translate(led["pos"])), led.get("bay"))
-    link = trimesh.creation.box([8.4, 10, 11])
     for ch in scene_json["chains"]:
+        link = trimesh.creation.box([ch["pitch"] * 0.94, ch["height"], ch["width"]])
         frac = 1.0 if ch["bay"] in open_bays else (ch["open"] if open_frac is None else open_frac)
         pts = chain_path(ch, frac)
         seg = np.linalg.norm(np.diff(pts, axis=0), axis=1)
         cum = np.concatenate([[0], np.cumsum(seg)])
         links = []
-        for d in np.arange(4.5, cum[-1], 9):
+        for d in np.arange(ch["pitch"] / 2, cum[-1], ch["pitch"]):
             i = min(np.searchsorted(cum, d) - 1, len(seg) - 1)
             t = (d - cum[i]) / max(seg[i], 1e-9)
             pos = pts[i] + t * (pts[i + 1] - pts[i])

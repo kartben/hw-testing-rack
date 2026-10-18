@@ -46,19 +46,24 @@ right and floor plate; base brace into the free inserts of the shared ladder
 ## 4. Inside each bay
 
 1. **Node** onto the tray standoffs (4 × M3×6).
-2. **Drag chain**: cut ≈ 160 mm (21 links of the common 7×7 R18); fixed end
-   to the `chain_anchor` (2 × M3×6 into the tray), moving end to the
-   `chain_foot`.  Lay the drawer extension cable in the chain (links snap
-   open), plug its male end into the node's DUT port.
+2. **Drag chain**: cut ≈ 180 mm including the two end pieces (Olimex
+   DRAG-CHAIN-7X7).  At the bench, screw the fixed end piece to the
+   `chain_anchor` and the moving one to the `chain_foot`'s fin, each with
+   2 × PT 2.6×8 and washers, tab against the part's flat face.  Open the links,
+   lay the drawer extension cable in ([cabling.md](cabling.md)) and close them.
+   Anchor onto the tray: 2 × M3×8 into its inserts; plug the cable's male end
+   into the node's DUT port.
 3. **Row power (VRACK)**: JST PH jumper to the neighbouring node, through the windows in
    both tray walls and the shared ladder; the row feed goes into the row's
    first bay.
-4. **Drawer**: magnet underneath; screw the panel-mount female into the DATA
+4. **Drawer**: magnet underneath; the panel-mount female goes into the DATA
    port position **farther from the board's debug USB** (left or right; the
-   viewer's bay panel says which: *DATA socket*), M3 ears; slide the drawer
+   viewer's bay panel says which: *DATA socket*): body through the port wall
+   from the front, flange against the wall, 2 × PT 2.6×8 through the flange's
+   holes; slide the drawer
    in from the front onto the tray's ledges (its rear flange under the guide
    lips), engage the foot in the rear groove and lock it with the M2.5 from
-   inside the rear bay; then the M2.5×8 stop screw through the left guide lip.
+   inside the rear bay (PT 2.6×8); then the PT 2.6×8 stop screw through the left guide lip.
 5. **Plate + board + short cable**, printed `bay_label` (or 12 mm tape) in the
    front recess.
 

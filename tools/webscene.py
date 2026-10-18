@@ -286,11 +286,11 @@ def build(rack) -> Path:
 
     port_wall_y = d["depth"] - d["rear_bay"]
     data_ports = rack.data_port_x          # two DATA socket positions per drawer
-    port_z = d["bottom"] + 7
+    port_z = d["bottom"] + 8.5            # lib/carrier.scad › PORT_Z
     plate_x0 = d["wall"] + 0.3
     plate_y0 = d["front_thickness"] + 0.3
     plate_w = rack.drawer_w - 2 * d["wall"] - 0.6
-    plate_d = port_wall_y - d["front_thickness"] - 0.6
+    plate_d = port_wall_y - d["wall"] - d["front_thickness"] - 0.6
     fixed = raw["chain"]["fixed"]
 
     def unit_hardware(i, u, bid, dy, open_frac):
@@ -298,15 +298,16 @@ def build(rack) -> Path:
         x0 = rack.unit_x(u)
         add("tray", (x0, 0, 0), row=i, layer="trays", bay=bid)
         add("drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid, movable=True)
-        add("chain_anchor", (x0 + fixed[0], fixed[1] - 8, c["bottom"] + 3), row=i, layer="chain", bay=bid)
-        add("chain_foot", (x0 + raw["chain"]["moving_x"], raw["chain"]["foot_y"] + dy, plenum), row=i,
+        chain_z = c["bottom"] + raw["chain"]["outer"][0] / 2 + 0.6
+        add("chain_anchor", (x0 + fixed[0], fixed[1], c["bottom"] + 3), row=i, layer="chain", bay=bid)
+        add("chain_foot", (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, plenum), row=i,
             layer="chain", bay=bid, movable=True)
         items["chains"].append({"bay": bid, "row": i, "origin": [x0, 0, 0], "open": open_frac,
                                 "fixed": fixed, "moving_x": raw["chain"]["moving_x"],
-                                "foot_y": raw["chain"]["foot_y"], "bend_y": raw["chain"]["bend_y"],
-                                "radius": raw["chain"]["radius"], "travel": d["travel"],
-                                "z": c["bottom"] + raw["chain"]["outer"][0] / 2 + 0.6,
-                                "width": raw["chain"]["outer"][0], "height": raw["chain"]["outer"][1]})
+                                "moving_y": raw["chain"]["moving_y"], "bend_y": raw["chain"]["bend_y"],
+                                "radius": raw["chain"]["radius"], "travel": d["travel"], "z": chain_z,
+                                "width": raw["chain"]["outer"][0], "height": raw["chain"]["outer"][1],
+                                "pitch": raw["chain"]["pitch"]})
         info_ = pop.get(bid, {})
         led = "#2f7bff" if info_.get("pc_cable") else ("#ffb300" if info_.get("open") else "#19e07a")
         items["leds"].append({"bay": bid, "row": i, "space": "row", "color": led,
@@ -320,7 +321,7 @@ def build(rack) -> Path:
                         rack.node_front_y + node["size"][1] - node["right"]["dut"], pcb_top + 1.6],
                  "dir": [-1, 0, 0], "type": "usb-c", "style": "straight"}
         pa, ta = plug_exit(ext_a)
-        end = (x0 + fixed[0], fixed[1] - 4, 8.6)
+        end = (x0 + fixed[0], fixed[1] - 4, chain_z)
         cable(bezier(pa, pa + ta * 16, (end[0], end[1] - 22, end[2]), end), row=i, kind="ext", bay=bid,
               radius=1.6, ends=[ext_a], label="Drawer extension (runs through the drag chain)")
         return x0, plenum
@@ -368,7 +369,7 @@ def build(rack) -> Path:
             # the board's own connector (micro-B, USB-C…) at the other end, an arch in between
             ctype = info["cable"]
             btype = cables_cfg[ctype].get("b", "usb-c")
-            end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 1.5, dz + port_z], "dir": [0, 1, 0],
+            end_a = {"at": [sx, dy + port_wall_y - d["wall"] - 2.5, dz + port_z], "dir": [0, 1, 0],   # mouth on the flange's face
                      "type": "usb-c", "style": "right", "socket": "panel"}
             zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
             ux = o["usb_x"]

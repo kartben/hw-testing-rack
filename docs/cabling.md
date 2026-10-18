@@ -16,17 +16,24 @@ bay node (plenum)                              drawer
 ```
 
 1. **Node → drawer: one off-the-shelf extension.**  A 30 cm USB-C male →
-   panel-mount USB-C female (M3 ears) plugs into the node's DUT receptacle,
+   panel-mount USB-C female (25 mm flange, screw holes 17 mm apart) plugs into the node's DUT receptacle,
    runs ~6 cm in the plenum to the chain's fixed end, through the drag chain,
-   up beside the drawer foot, and is screwed into the
-   drawer's rear port wall — in the left or the right DATA position, whichever
+   out of its moving end (forwards, then curling back over the end piece,
+   beside the drawer foot) and up through the rear bay's cable window, and is
+   screwed into the drawer's rear port wall — in the left or the right DATA position, whichever
    is farther from the board's USB, so the two plugs never meet.  It never
    needs to be touched again (unless a board with its USB on the other side
    moves in: two M3 screws).
 2. **The drag chain lies flat in the plenum** and bends in the horizontal
-   plane (7 × 7 mm, R18, ≈ 160 mm).  Its fixed end is screwed to the tray,
-   its moving end to the drawer foot.  Open the drawer 140 mm and the
-   U-bend rolls forward 70 mm: the cable never drags, kinks or snags.
+   plane: Olimex DRAG-CHAIN-7X7, 7 × 7 mm inside, 13.5 × 10.2 mm outside,
+   R18, ≈ 180 mm with its two end pieces.  Its fixed end is screwed to the
+   tray's anchor, its moving end to the drawer foot.  Open the drawer 140 mm
+   and the U-bend rolls forward 70 mm: the cable never drags, kinks or snags.
+   **Lay the cable in, don't thread it:** neither the extension's plug nor its
+   panel-mount socket (with its flange) passes a 7 × 7 channel.  Open the
+   links (their bars snap off on both sides), lay the cable in from the fixed
+   end's mouth to the moving end's, with ~6 cm out of the fixed end for the
+   node and the socket end out of the moving end, then snap the bars back.
 3. **Drawer → board: a short cable that belongs to the board.**  10–15 cm,
    USB-C on the drawer side, whatever the board needs on the other: C,
    micro-B or mini-B, right-angle at both ends: with the socket on the
