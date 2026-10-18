@@ -80,13 +80,10 @@ rows:                     # bottom → top; each row is an independent module
   - id: B
     height: 165
     layout: [1, 1, 1, 1]
-  - id: C
-    height: 165
-    layout: [1, 1, 1, 1]
+  # a third row (C) is one more entry like these: the hub has 4 row outputs (2 rows to start, 2026-10-18)
 
 cameras:                  # bays that get a camera pod on their ceiling (the tray above, or the cap plate)
   - B2
-  - C3
 
 power_box:                # mechanical/parts/power_box.scad: the power hub's enclosure, in a base cell under row A
   column: 0               # base cell (under row A) it sits in: its floor sockets take the floor plate's bosses
@@ -106,12 +103,8 @@ population:
   A4: { board: nrf54l15-dk,      cable: c-to-c }
   B1: { board: frdm-mcxn947,     cable: c-to-c }
   B2: { board: esp32-s3-devkitc, cable: c-to-micro-b-straight }
-  B3: { board: rpi-pico2,        cable: c-to-micro-b-straight }
-  B4: { board: arduino-uno-r4,   cable: c-to-c-straight }
-  C1: { board: stm32f746g-disco, cable: c-to-mini-b }      # USB on the side: the long way round
-  C2: { board: nrf5340-dk,       cable: c-to-micro-b, open: true }    # drawer shown pulled out
-  C3: { board: esp32-c6-devkitc, cable: c-to-c-straight }
-  C4: { board: nucleo-64,        cable: c-to-micro-b, pc_cable: true } # "classic" mode: laptop on the front port
+  B3: { board: rpi-pico2,        cable: c-to-micro-b-straight, open: true }    # drawer shown pulled out
+  B4: { board: arduino-uno-r4,   cable: c-to-c-straight, pc_cable: true }      # "classic" mode: laptop on the front port
 
 cables:
   # DUT cables (DATA socket → board), `length` end to end.  A board whose USB faces the port wall: a

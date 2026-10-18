@@ -50,15 +50,15 @@ class Config(unittest.TestCase):
         self.assertEqual(b["A3"].platform, "nrf52840dk/nrf52840")      # from boards.yaml
         self.assertEqual(b["A3"].runner, "nrfutil")
         self.assertEqual(b["B3"].console, "aux")
-        self.assertFalse(b["C4"].ci)
-        self.assertEqual(b["C3"].host, "bay-c3.local")
-        self.assertEqual(b["C3"].url, "http://bay-c3.local")
+        self.assertFalse(b["B4"].ci)
+        self.assertEqual(b["B3"].host, "bay-b3.local")
+        self.assertEqual(b["B3"].url, "http://bay-b3.local")
 
     def test_hwmap(self):
         with tempfile.TemporaryDirectory() as tmp:
             entries, warnings = bayctl.hwmap(self.bays, Path(tmp), "python3", "/opt/rack/tools/bayctl.py", None)
             by = {e["fixtures"][0]: e for e in entries}
-            self.assertNotIn("bay:C4", by)                              # ci: false
+            self.assertNotIn("bay:B4", by)                              # ci: false
             self.assertNotIn("bay:A2", by)                              # no platform: left out, with a warning
             self.assertTrue(any("bays.A2.platform" in w for w in warnings))
             a1 = by["bay:A1"]
@@ -72,7 +72,7 @@ class Config(unittest.TestCase):
             self.assertNotIn("serial", b3)
             a4 = by["bay:A4"]                                           # no console path yet
             self.assertFalse(a4["connected"])
-            self.assertTrue(any("A4" in w and "nrfutil" in w for w in warnings))   # A4 and C2: two nrfutil, no id
+            self.assertFalse(any("without a probe id" in w for w in warnings))   # one nrfutil bay without an id: no clash
             pre = Path(a1["pre_script"]).read_text()
             self.assertIn("prepare A1", pre)
             self.assertTrue(pre.startswith("#!/bin/sh"))

@@ -19,7 +19,7 @@ columns or rows) and makes every one of them reachable over the network
 
 ![One bay, exploded: tray with the bay node and drag chain, drawer, board plate, board, camera pod](img/exploded.jpg)
 
-*One bay (C3), bottom to top: the tray with the bay-node PCB and the drag chain, the drawer, the form-factor plate, the board (ESP32-C6-DevKitC), and the camera pod hanging from the ceiling above.*
+*One bay (B2), bottom to top: the tray with the bay-node PCB and the drag chain, the drawer, the board plate, the board, and the camera pod hanging from the ceiling above.*
 
 ## Rows, bays and columns
 
@@ -30,7 +30,7 @@ row, stacked on base ladders and topped by cap strips; each bay's **tray**
 slides into the grooves of its two ladders; an X **brace** behind every bay and
 row keeps the grid square.  Rows are tilted 20° by default and stacked
 `rows[].height` apart; the column pitch is 165.8 mm.  The default build is
-three rows of four bays.
+two rows of four bays (a third row is one more `rows` entry; the power hub has four row outputs).
 
 Changing the config regenerates everything that depends on it: the OpenSCAD
 constants, the web scene, the BOM and the PCB outlines/connector positions.

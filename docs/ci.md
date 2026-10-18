@@ -71,7 +71,7 @@ RX, GND) to the bay's AUX connector.
 
 ```console
 $ python tools/bayctl.py hwmap -o rack-map.yaml
-wrote rack-map.yaml (12 bays) and pre-scripts in rack-scripts
+wrote rack-map.yaml (8 bays) and pre-scripts in rack-scripts
 $ west twister --device-testing --hardware-map rack-map.yaml \
       -p nrf52840dk/nrf52840 -p frdm_mcxn947/mcxn947/cpu0 -T samples/hello_world
 ```
@@ -186,7 +186,7 @@ before acquiring the places.
 $ python tools/bayctl.py power B3 cycle --ms 2000
 $ python tools/bayctl.py reset B3
 $ python tools/bayctl.py boot B3          # ROM bootloader: BOOT held across a RESET pulse
-$ python tools/bayctl.py mode C4 classic  # hand the DUT to the laptop on the front port
+$ python tools/bayctl.py mode B4 classic  # hand the DUT to the laptop on the front port
 $ python tools/bayctl.py status B3
 ```
 

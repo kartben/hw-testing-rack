@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Paint the laptop screen for the photo renders: a terminal running a Zephyr session on the board
-that sits in the bay the laptop is wired to (bay C4, classic mode).
+that sits in the bay the laptop is wired to (bay B4, classic mode).
 
     python render/screen_terminal.py            # → render/assets/laptop-screen.png
 
@@ -76,7 +76,7 @@ def main():
     d.rectangle([x0, y0 + 30, x1, y0 + 52], fill=(36, 38, 48))
     for i, c in enumerate(((237, 106, 94), (245, 191, 79), (98, 197, 84))):
         d.ellipse([x0 + 22 + 34 * i, y0 + 16, x0 + 42 + 34 * i, y0 + 36], fill=c)
-    d.text(((x0 + x1) / 2, y0 + 26), "tio /dev/ttyACM0 \u2014 bay C4 \u2014 NUCLEO-F411RE", font=font(24), fill=DIM,
+    d.text(((x0 + x1) / 2, y0 + 26), "tio /dev/ttyACM0 \u2014 bay B4 \u2014 UNO R4 WIFI", font=font(24), fill=DIM,
            anchor="mm")
     f, fb = font(31), font(31, bold=True)
     lh = 37

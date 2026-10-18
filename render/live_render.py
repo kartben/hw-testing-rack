@@ -51,7 +51,7 @@ elif name == "rear":
 elif name == "top":
     aim((1.2, -1.0, 2.1), centre, 48)
 elif name == "drawer":
-    c = bay_center(SHOT.split(":")[1] if ":" in SHOT else "C2")
+    c = bay_center(SHOT.split(":")[1] if ":" in SHOT else "B3")
     aim(c + Vector((0.30, -0.55, 0.30)), c + Vector((0.0, -0.10, -0.03)), 50)
 elif name == "exploded":
     # frame whatever the scene holds (e.g. one bay from assembly_glb.py --explode-bay)

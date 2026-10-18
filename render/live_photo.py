@@ -10,7 +10,7 @@ from live_scene.py stays as it is.  Materials are replaced by object category:
 PETG with 0.2 mm layer lines (along each part's print Z) and shading-rounded
 edges for every printed part (the whole frame is printed); lacquered solder
 mask on the PCBs.  The set is a small office: oak desk
-against a plaster wall, a laptop wired to bay C4's front port by a hanging
+against a plaster wall, a laptop wired to bay B4's front port by a hanging
 USB-C cable, lit only through a window (sun + sky, with a light portal).
 The GLB comes from `tools/assembly_glb.py --hq --with-pc-cable --open-bays B3 --out render/assembly-photo.glb`; the scanned
 textures from `tools/fetch_render_assets.py` and the laptop screen from `render/screen_terminal.py`
@@ -328,7 +328,7 @@ def screen_material():
 
 
 def laptop(coll, c=(1.14, -0.17), deg=-14.0):
-    """Space-grey laptop facing the viewer, lid open ~110°; its left port takes the C4 cable."""
+    """Space-grey laptop facing the viewer, lid open ~110°; its left port takes the B4 cable."""
     from mathutils import Matrix
     gray = simple("photo-laptop-alu", (0.36, 0.37, 0.39), rough=0.32, metal=1.0)
     rz = math.radians(deg)
@@ -637,7 +637,7 @@ def shot(name, out, samples, res):
     if name == "desk":
         aim(cam, (-0.40, -2.15, 0.50), (0.50, 0.05, 0.30), 58, 2.8, focus=(0.30, 0.0, 0.33))
     elif name == "drawer":
-        c = bay_center("C2")
+        c = bay_center("B3")
         aim(cam, c + Vector((0.30, -0.62, 0.28)), c + Vector((-0.02, -0.12, -0.03)), 50, 4.0,
             focus=c + Vector((0.0, -0.16, -0.02)))
     elif name == "boards":

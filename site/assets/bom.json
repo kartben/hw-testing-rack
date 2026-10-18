@@ -2048,39 +2048,39 @@
 "group": "filament",
 "item": "PETG filament",
 "supplier": "any",
-"qty": 3.9,
+"qty": 2.9,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈3.5 kg estimated + 10 % waste, 129 parts",
-"ext_eur": 78.0
+"notes": "≈2.6 kg estimated + 10 % waste, 94 parts",
+"ext_eur": 58.0
 },
 {
 "category": "Fasteners",
 "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
 "supplier": "AliExpress (bulk) / Ruthex",
-"qty": 164,
+"qty": 116,
 "unit_eur": 0.03,
 "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub standoffs",
 "unit": "pcs",
-"ext_eur": 4.92
+"ext_eur": 3.48
 },
 {
 "category": "Fasteners",
 "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",
 "supplier": "AliExpress (bulk)",
-"qty": 88,
+"qty": 64,
 "unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 1.76
+"ext_eur": 1.28
 },
 {
 "category": "Fasteners",
 "item": "M3×6 (node PCB, power box lid)",
 "supplier": "AliExpress (bulk)",
-"qty": 52,
+"qty": 36,
 "unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 1.04
+"ext_eur": 0.72
 },
 {
 "category": "Fasteners",
@@ -2096,20 +2096,20 @@
 "category": "Fasteners",
 "item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board",
 "supplier": "AliExpress (bulk, e.g. HZYUEGOU)",
-"qty": 96,
+"qty": 64,
 "unit_eur": 0.02,
 "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)",
 "unit": "pcs",
-"ext_eur": 1.92
+"ext_eur": 1.28
 },
 {
 "category": "Fasteners",
 "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
 "supplier": "AliExpress (bulk)",
-"qty": 48,
+"qty": 32,
 "unit_eur": 0.01,
 "unit": "pcs",
-"ext_eur": 0.48
+"ext_eur": 0.32
 },
 {
 "category": "Fasteners",
@@ -2134,31 +2134,31 @@
 "category": "Motion",
 "item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces",
 "supplier": "Olimex DRAG-CHAIN-7X7",
-"qty": 3,
+"qty": 2,
 "unit": "m",
 "unit_eur": 4.0,
 "notes": "open the links to lay the DATA lead in (its PH plugs, 12 mm wide, do not pass a 7×7 channel); Olimex publishes only the inner size: outer size and end holes from Electrokit 41017996, measure the bend radius and the end pieces on arrival (config/rack.yaml › chain)",
-"ext_eur": 12.0
+"ext_eur": 8.0
 },
 {
 "category": "Motion",
 "item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain",
 "supplier": "AliExpress 1005003181041939, \"7x7mm\" (or one more metre of chain per pair)",
-"qty": 9,
+"qty": 6,
 "unit_eur": 2.17,
 "notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing is for the non-opening 7×7 type: check one on the open links before buying the lot",
 "unit": "pcs",
-"ext_eur": 19.53
+"ext_eur": 13.02
 },
 {
 "category": "Cables",
 "item": "JST PH 5-pin lead, pin n ↔ pin 6−n (flat, no twist), 50 cm, lot of 5 (DATA lead: node J7 → drag chain → DATA port board; VBUS, GND, D−, D+, GND)",
 "supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 5P, Length50CM",
-"qty": 3,
+"qty": 2,
 "unit": "lot",
 "unit_eur": 4.2,
 "notes": "price interpolated from the 6-pin lots, not read: check the 5P lengths on the listing (≥ 40 cm).  The route is ≈ 38 cm plugs included (constant over the stroke); the spare goes in a wider bend between the node and the chain's fixed end (nothing moves there), never in front of the chain's moving end.  On arrival: both plugs show the same face, pin 1 rings to pin 5; twist D−/D+ (pins 3-4) by hand.  Or crimp them: PHR-5 + 10 × SPH-002T-P0.5S, 24 AWG",
-"ext_eur": 12.6
+"ext_eur": 8.4
 },
 {
 "category": "Cables",
@@ -2167,7 +2167,7 @@
 "qty": 2,
 "unit": "lot",
 "unit_eur": 2.85,
-"notes": "9 needed; on arrival: both plugs show the same face, pin 1 rings to pin 6.  Or crimp them: PHR-6 + 12 × SPH-002T-P0.5S, 24 AWG",
+"notes": "6 needed; on arrival: both plugs show the same face, pin 1 rings to pin 6.  Or crimp them: PHR-6 + 12 × SPH-002T-P0.5S, 24 AWG",
 "ext_eur": 5.7
 },
 {
@@ -2192,16 +2192,6 @@
 },
 {
 "category": "Cables",
-"item": "JST PH 6-pin feed, the jumpers' type, 80 cm, lot of 5 (power box → first bay of row C: VRACK, CAN, POS)",
-"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 6P, Length80CM",
-"qty": 1,
-"unit": "lot",
-"unit_eur": 5.29,
-"notes": "checked as the jumpers; the listing doesn't give the gauge (26 AWG is usual): fine for a row's ≈ 0.4 A, warm at the eFuse's 1.6 A limit; twist the CAN pair (pins 3-4) by hand",
-"ext_eur": 5.29
-},
-{
-"category": "Cables",
 "item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, nRF54L15 DK)",
 "supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)",
 "qty": 2,
@@ -2212,23 +2202,23 @@
 },
 {
 "category": "Cables",
-"item": "USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: ESP32-C6, UNO R4)",
+"item": "USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: UNO R4)",
 "supplier": "AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps)",
-"qty": 2,
+"qty": 1,
 "unit_eur": 2.0,
 "notes": "straight at both ends; any short C ↔ C that states data (many short ones are charge-only)",
 "unit": "pcs",
-"ext_eur": 4.0
+"ext_eur": 2.0
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK, nRF5340 DK)",
+"item": "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK)",
 "supplier": "AliExpress 2251832791887129 (HOQO, \"to Micro Male\", 25 cm)",
-"qty": 5,
+"qty": 3,
 "unit_eur": 1.0,
 "notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end any up / down bend",
 "unit": "pcs",
-"ext_eur": 5.0
+"ext_eur": 3.0
 },
 {
 "category": "Cables",
@@ -2242,23 +2232,13 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ mini-B straight, 25 cm (DUT cable: F746G-DISCO)",
-"supplier": "AliExpress 2251832791887129 (HOQO, \"to Mini Male\", 25 cm)",
-"qty": 1,
-"unit_eur": 1.0,
-"notes": "the F746G-DISCO's ST-LINK port (CN14) is mini-B, facing the side wall with 49 mm to it: the straight mini-B plug fits, no adapter",
-"unit": "pcs",
-"ext_eur": 1.0
-},
-{
-"category": "Cables",
 "item": "Micro-B 90° adapter, male → female, up and down, one of each per board",
 "supplier": "AliExpress (DIY-018, \"UP\" and \"DOWN\")",
-"qty": 10,
+"qty": 6,
 "unit_eur": 1.0,
 "notes": "keep the one whose female faces up once plugged into the board (the cable's straight plug stands on it, its cable leaves upwards); the other is a spare",
 "unit": "pcs",
-"ext_eur": 10.0
+"ext_eur": 6.0
 },
 {
 "category": "Power",
@@ -2284,46 +2264,46 @@
 "category": "Cameras",
 "item": "Seeed XIAO ESP32S3 Sense (camera pod)",
 "supplier": "Seeed",
-"qty": 2,
+"qty": 1,
 "unit_eur": 13.5,
 "unit": "pcs",
-"ext_eur": 27.0
+"ext_eur": 13.5
 },
 {
 "category": "Cameras",
 "item": "OV2640 wide-angle (120–160°) 24-pin DVP module (check FPC fit)",
 "supplier": "AliExpress",
-"qty": 2,
+"qty": 1,
 "unit_eur": 4.0,
 "unit": "pcs",
-"ext_eur": 8.0
+"ext_eur": 4.0
 },
 {
 "category": "Cameras",
 "item": "JST-PH 2-pin lead to the XIAO 5 V pads + M3×30 pivot screw",
 "supplier": "any",
-"qty": 2,
+"qty": 1,
 "unit_eur": 0.6,
 "unit": "pcs",
-"ext_eur": 1.2
+"ext_eur": 0.6
 }
 ],
 "by_category": {
 "Electronics": 627.7799999999999,
-"Printed parts": 78.0,
-"Fasteners": 17.509999999999998,
-"Motion": 31.53,
-"Cables": 61.47,
+"Printed parts": 58.0,
+"Fasteners": 14.47,
+"Motion": 21.02,
+"Cables": 42.980000000000004,
 "Power": 82.0,
-"Cameras": 36.2
+"Cameras": 18.1
 },
-"total_eur": 934.49,
+"total_eur": 864.35,
 "prints": [
 {
 "part": "bay_label",
-"qty": 12,
+"qty": 8,
 "grams_each": 0.8,
-"grams_total": 10.1,
+"grams_total": 6.7,
 "stl": "mechanical/stl/bay_label.stl"
 },
 {
@@ -2348,24 +2328,17 @@
 "stl": "mechanical/stl/brace_base.stl"
 },
 {
-"part": "brace_c",
-"qty": 4,
-"grams_each": 6.6,
-"grams_total": 26.2,
-"stl": "mechanical/stl/brace_c.stl"
-},
-{
 "part": "camera_pod_cradle",
-"qty": 2,
+"qty": 1,
 "grams_each": 2.4,
-"grams_total": 4.9,
+"grams_total": 2.4,
 "stl": "mechanical/stl/camera_pod_cradle.stl"
 },
 {
 "part": "camera_pod_mount",
-"qty": 2,
+"qty": 1,
 "grams_each": 4.3,
-"grams_total": 8.5,
+"grams_total": 4.3,
 "stl": "mechanical/stl/camera_pod_mount.stl"
 },
 {
@@ -2377,23 +2350,23 @@
 },
 {
 "part": "chain_anchor",
-"qty": 12,
+"qty": 8,
 "grams_each": 1.4,
-"grams_total": 16.9,
+"grams_total": 11.3,
 "stl": "mechanical/stl/chain_anchor.stl"
 },
 {
 "part": "chain_foot",
-"qty": 12,
+"qty": 8,
 "grams_each": 1.4,
-"grams_total": 17.0,
+"grams_total": 11.4,
 "stl": "mechanical/stl/chain_foot.stl"
 },
 {
 "part": "drawer",
-"qty": 12,
+"qty": 8,
 "grams_each": 44.0,
-"grams_total": 528.4,
+"grams_total": 352.3,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
@@ -2425,13 +2398,6 @@
 "stl": "mechanical/stl/ladder_base.stl"
 },
 {
-"part": "ladder_c",
-"qty": 5,
-"grams_each": 49.6,
-"grams_total": 248.1,
-"stl": "mechanical/stl/ladder_c.stl"
-},
-{
 "part": "ladder_cap",
 "qty": 5,
 "grams_each": 15.4,
@@ -2444,13 +2410,6 @@
 "grams_each": 31.2,
 "grams_total": 31.2,
 "stl": "mechanical/stl/plate_arduino-uno-r4.stl"
-},
-{
-"part": "plate_esp32-c6-devkitc",
-"qty": 1,
-"grams_each": 30.8,
-"grams_total": 30.8,
-"stl": "mechanical/stl/plate_esp32-c6-devkitc.stl"
 },
 {
 "part": "plate_esp32-s3-devkitc",
@@ -2474,13 +2433,6 @@
 "stl": "mechanical/stl/plate_nrf52840-dk.stl"
 },
 {
-"part": "plate_nrf5340-dk",
-"qty": 1,
-"grams_each": 37.6,
-"grams_total": 37.6,
-"stl": "mechanical/stl/plate_nrf5340-dk.stl"
-},
-{
 "part": "plate_nrf54l15-dk",
 "qty": 1,
 "grams_each": 37.6,
@@ -2496,9 +2448,9 @@
 },
 {
 "part": "plate_nucleo-64",
-"qty": 2,
+"qty": 1,
 "grams_each": 34.4,
-"grams_total": 68.8,
+"grams_total": 34.4,
 "stl": "mechanical/stl/plate_nucleo-64.stl"
 },
 {
@@ -2507,13 +2459,6 @@
 "grams_each": 28.4,
 "grams_total": 28.4,
 "stl": "mechanical/stl/plate_rpi-pico2.stl"
-},
-{
-"part": "plate_stm32f746g-disco",
-"qty": 1,
-"grams_each": 38.2,
-"grams_total": 38.2,
-"stl": "mechanical/stl/plate_stm32f746g-disco.stl"
 },
 {
 "part": "power_box_base",
@@ -2545,14 +2490,14 @@
 },
 {
 "part": "tray",
-"qty": 12,
+"qty": 8,
 "grams_each": 79.4,
-"grams_total": 953.0,
+"grams_total": 635.4,
 "stl": "mechanical/stl/tray.stl"
 }
 ],
-"bays": 12,
-"rows_n": 3,
+"bays": 8,
+"rows_n": 2,
 "jlc_quote": {
 "date": "2026-10-16",
 "currency": "USD",

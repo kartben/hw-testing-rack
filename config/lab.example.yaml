@@ -43,12 +43,11 @@ bays:
     baud: 115200
   B4:
     platform: "arduino_uno_r4@wifi"
-  C4:
     ci: false                                # this bay is for a laptop (classic mode): not in CI
     access:                                  # added to the rack's rules for this bay only
       sources:
         lab-desk: {cidr: 192.168.1.66, allow: [all]}
-  # C1:
+  # A1:
   #   host: 192.168.1.71                     # no mDNS on this network
   #   runner: jlink                          # override the board's default runner
   #   product: "STM32 STLink"                # twister product string, when openocd needs it

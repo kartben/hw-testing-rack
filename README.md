@@ -93,9 +93,9 @@ already have open — GPU and all — through the Blender MCP add-on's socket:
 ```bash
 python tools/blender_live.py exec render/live_scene.py                    # (re)build the scene
 python tools/blender_live.py exec render/live_render.py hero              # → docs/img/hero.jpg
-python tools/blender_live.py exec render/live_render.py drawer:C2 docs/img/drawer.jpg
+python tools/blender_live.py exec render/live_render.py drawer:B3 docs/img/drawer.jpg
 
-python tools/assembly_glb.py --hq --explode-bay C3 --out render/bay-exploded.glb   # one bay, layers apart
+python tools/assembly_glb.py --hq --explode-bay B2 --out render/bay-exploded.glb   # one bay, layers apart
 python tools/blender_live.py exec render/live_scene.py render/bay-exploded.glb
 python tools/blender_live.py exec render/live_render.py exploded
 ```
@@ -103,7 +103,7 @@ python tools/blender_live.py exec render/live_render.py exploded
 The photo shots (`docs/img/photo-*.jpg`) use their own scene: a small office
 lit through a window, PETG with 0.2 mm layer lines and
 rounded edges, scanned oak and plaster (CC0 textures from Poly Haven), a laptop
-showing a Zephyr shell, wired to bay C4 by a USB-C cable that hangs as a real
+showing a Zephyr shell, wired to bay B4 by a USB-C cable that hangs as a real
 one would (a catenary), depth of field and lens effects:
 
 ```bash

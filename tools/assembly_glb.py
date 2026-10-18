@@ -7,7 +7,7 @@ Same scene as the web viewer, flattened for offline tools: Blender renders
 script can restyle them.  Units: metres, Y-up (glTF convention).
 
     python tools/assembly_glb.py [--open 0.0] [--explode 0]
-    python tools/assembly_glb.py --explode-bay C3 --out render/bay-exploded.glb   # one bay, laid flat, layers apart
+    python tools/assembly_glb.py --explode-bay B2 --out render/bay-exploded.glb   # one bay, laid flat, layers apart
 """
 
 from __future__ import annotations

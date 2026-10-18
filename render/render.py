@@ -29,7 +29,7 @@ def args():
     ap.add_argument("--out", default=None)
     ap.add_argument("--samples", type=int, default=128)
     ap.add_argument("--res", default="1920x1200")
-    ap.add_argument("--bay", default="C2")
+    ap.add_argument("--bay", default="B3")
     return ap.parse_args(argv)
 
 

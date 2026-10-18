@@ -27,7 +27,7 @@ Rows are stacked with `rows[].height` of vertical pitch and tilted by
 `frame.tilt` (20°, a stadium: every board, LED and label faces you).  The
 default 4 × 3 rack is 671 × 225 × 664 mm.
 
-![Side view: the 20° stadium rows, bay C2 pulled out](img/side.jpg)
+![Side view: the 20° stadium rows, bay B3 pulled out](img/side.jpg)
 
 `python tools/panel_frame_fea.py` models the grid from the front (ladder
 sections from the meshes, runner play as a dead band, tension-only braces with
@@ -38,7 +38,7 @@ constants it reads.)
 
 ## Bay
 
-![Bay C2's drawer pulled out, still wired through its drag chain](img/drawer.jpg)
+![Bay B3's drawer pulled out, still wired through its drag chain](img/drawer.jpg)
 
 | Part | File | Notes |
 |---|---|---|
