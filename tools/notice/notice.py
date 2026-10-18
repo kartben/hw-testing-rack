@@ -124,20 +124,49 @@ def node_shape():
     return b
 
 
-def jumper_shape():
-    """24 V jumper, tray-0 carrier coordinates: two JST PH plugs and a two-wire lead with a little sag."""
-    y, z = C["NODE_FRONT_Y"] + C["NODE_SIZE"][1] - 63.0, C["NODE_Z"] + 4.0
-    xa = C["NODE_X0"] + 59.0                    # node 0, J2 (right edge, opening towards +x)
-    xb = P + C["NODE_X0"] - 2.1                 # node 1, J1 (left edge, opening towards -x)
-    sols = [Part.makeBox(7.0, 4.2, 2.65, V(xa, y - 2.1, z - 1.3)),
-            Part.makeBox(7.1, 4.2, 2.65, V(xb, y - 2.1, z - 1.3))]
-    a, b = V(xa + 7.0, y, z), V(xb, y, z)
-    for dy in (-0.65, 0.65):
-        e = Part.Arc(a + V(0, dy, 0), (a + b) * 0.5 + V(0, dy, -3.0), b + V(0, dy, 0)).toShape()
-        t = e.tangentAt(e.FirstParameter)
-        prof = Part.Wire(Part.makeCircle(0.6, e.valueAt(e.FirstParameter), t))
+def row_cable():
+    """The row cable's two connectors (notice.yaml row_cable: node 0's `from`, node 1's `to`) from
+    node.py's parts/node.json: {"pins", "mouth" (node coordinates), "out" (unit, xy)} each; the
+    v0.4 node's 2-pin J2 / J1 without it."""
+    p = os.path.join(PARTS, "node.json")
+    ph = {c["ref"]: c for c in json.load(open(p))["ph"]} if os.path.exists(p) else {}
+    rc = C.get("ROW_CABLE", {"from": "J2", "to": "J1"})
+    d = C["NODE_SIZE"][1]
+    a = ph.get(rc["from"], {"pins": 2, "mouth": [64.1, d - 63.0, 3.975], "out": [1, 0]})
+    b = ph.get(rc["to"], {"pins": 2, "mouth": [-0.1, d - 63.0, 3.975], "out": [-1, 0]})
+    return a, b
+
+
+def plug(m, out, n):
+    """JST PH housing on a lead of n wires: 7 long (5.1 of it in the connector), 2(n-1)+2.2 wide."""
+    w = 2.0 * (n - 1) + 2.2
+    s = Part.makeBox(7.0, w, 2.65, V(-5.1, -w / 2, -1.325))
+    s.rotate(V(0, 0, 0), V(0, 0, 1), math.degrees(math.atan2(out[1], out[0])))
+    s.translate(m)
+    return s
+
+
+def lead(a, b, n, sag):
+    """n wires (1.3 apart) from a to b, sagging by `sag` at the middle."""
+    across = (b - a).cross(V(0, 0, 1))
+    across.normalize()
+    sols = []
+    for i in range(n):
+        o = across * (1.3 * (i - (n - 1) / 2))
+        e = Part.Arc(a + o, (a + b) * 0.5 + o + V(0, 0, -sag), b + o).toShape()
+        prof = Part.Wire(Part.makeCircle(0.6, e.valueAt(e.FirstParameter), e.tangentAt(e.FirstParameter)))
         sols.append(Part.Wire(e).makePipeShell([prof], True, True))
-    return Part.makeCompound(sols)
+    return sols
+
+
+def jumper_shape():
+    """Row cable between node 0 and node 1, tray-0 carrier coordinates: two JST PH plugs and the lead."""
+    ca, cb = row_cable()
+    o0 = V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"])
+    ma, mb = o0 + V(*ca["mouth"]), o0 + V(P, 0, 0) + V(*cb["mouth"])
+    oa, ob = V(ca["out"][0], ca["out"][1], 0), V(cb["out"][0], cb["out"][1], 0)
+    sols = [plug(ma, ca["out"], ca["pins"]), plug(mb, cb["out"], cb["pins"])]
+    return Part.makeCompound(sols + lead(ma + oa * 1.9, mb + ob * 1.9, ca["pins"], 3.0))
 
 
 def R_to(axis):
@@ -616,13 +645,10 @@ def job_thumb(n):
 
 
 def hw_shape(n):
-    if n == "jumper":                          # a short jumper for the chip: two plugs, a sagging pair of wires
-        sols = [Part.makeBox(7.0, 4.2, 2.65, V(-7.0, -2.1, -1.3)), Part.makeBox(7.0, 4.2, 2.65, V(34.0, -2.1, -1.3))]
-        for dy in (-0.65, 0.65):
-            e = Part.Arc(V(0, dy, 0), V(17, dy, -7), V(34, dy, 0)).toShape()
-            prof = Part.Wire(Part.makeCircle(0.6, e.valueAt(e.FirstParameter), e.tangentAt(e.FirstParameter)))
-            sols.append(Part.Wire(e).makePipeShell([prof], True, True))
-        return Part.makeCompound(sols)
+    if n == "jumper":                          # a short row cable for the chip: two plugs, a sagging lead
+        pins = row_cable()[0]["pins"]
+        sols = [plug(V(-1.9, 0, 0), (1, 0), pins), plug(V(35.9, 0, 0), (-1, 0), pins)]   # leads leave at x = 0 and 34
+        return Part.makeCompound(sols + lead(V(0, 0, 0), V(34, 0, 0), pins, 7.0))
     kind, dia, length, _ = FAST[n]
     s = fastener_z(kind, dia, length).copy()
     s.rotate(V(0, 0, 0), V(0, 1, 0), -90)      # axis along X, head towards -X
