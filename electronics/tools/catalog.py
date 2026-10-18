@@ -85,11 +85,14 @@ CAT = {
                     0.12, description="50 mΩ 1 % 1 W current shunt"),
     "rgb": Cat("LED:WS2812B-2020", "LED_SMD:LED_WS2812B-2020_PLCC4_2.0x2.0mm", "WS2812B-2020-V6", "Worldsemi",
                "C52917434", 0.09, standard_only=True, description="addressable RGB LED, 3.3–5.3 V",
-               alt="WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping"),
+               alt="WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping",
+               model=("WS2812B-2020.step", (0, 0, 0), (0, 0, 0))),     # tools/make_step_models.py
     "button": Cat("Switch:SW_Push", "Button_Switch_SMD:SW_Push_1P1T_XKB_TS-1187A", "TS-1187A-B-A-B", "XKB", "C318884",
-                  0.02, basic=True, description="tactile switch 5.1 × 5.1 mm"),
+                  0.02, basic=True, description="tactile switch 5.1 × 5.1 mm",
+                  model=("easyeda/C318884.step", (0, 0, 0), (0, 0, 0))),
     "slide": Cat("Switch:SW_SPDT", "Button_Switch_SMD:SW_SPDT_Shouhan_MSK12C02", "MSK12C02", "SHOU HAN", "C431540", 0.06,
-                 description="SPDT slide switch, side actuated"),
+                 description="SPDT slide switch, side actuated",
+                 model=("easyeda/C431540.step", (0, 0.1, 0), (0, 0, 180))),
     "nfet": Cat("Transistor_FET:2N7002", "Package_TO_SOT_SMD:SOT-23", "2N7002", "CJ", "C8545", 0.02, basic=True,
                 description="N-MOSFET 60 V (open-drain AUX outputs)"),
     # connectors: JST PH (2 A) everywhere, JST VH (10 A) only where the whole rack's current comes in (hub input)
@@ -99,11 +102,14 @@ CAT = {
                 "JST", "C160315", 0.06, hand_solder=True, description="JST VH 2-pin, top entry, 10 A"),
     # bay node: surface-mount PH (JLC places them in the same reflow pass: no through-hole or hand soldering)
     "ph2": Cat("Connector_Generic:Conn_01x02", "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal",
-               "S2B-PH-SM4-TB(LF)(SN)", "JST", "C295747", 0.22, description="JST PH 2-pin, side entry, SMD, 2 A"),
+               "S2B-PH-SM4-TB(LF)(SN)", "JST", "C295747", 0.22, description="JST PH 2-pin, side entry, SMD, 2 A",
+               model=("easyeda/C295747.step", (1.0, -2.9, 0), (0, 0, 0))),
     "ph2v": Cat("Connector_Generic:Conn_01x02", "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical",
                 "B2B-PH-K-S(LF)(SN)", "JST", "C131337", 0.04, hand_solder=True, description="JST PH 2-pin, top entry, 2 A"),
     "ph6": Cat("Connector_Generic:Conn_01x06", "Connector_JST:JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal",
-               "S6B-PH-SM4-TB(LF)(SN)", "JST", "C265405", 0.39, description="JST PH 6-pin, side entry, SMD"),
+               "S6B-PH-SM4-TB(LF)(SN)", "JST", "C265405", 0.39, description="JST PH 6-pin, side entry, SMD",
+               # EasyEDA models (tools/fetch_pcb_models.py): placed by their pins and nails on KiCad's pads
+               model=("easyeda/C265405.step", (0, -2.9, 0), (0, 0, 0))),
     "pptc500": Cat("Device:Polyfuse_Small", "Fuse:Fuse_1206_3216Metric", "SMD1206P050TF", "RUILON", "C20799", 0.08,
                    description="PTC 0.5 A hold, 1206"),
     "efuse": Cat("Power_Management:TPS26600PWP",
@@ -121,9 +127,11 @@ CAT = {
     "can_esd": Cat("Power_Protection:NUP2105L", "Package_TO_SOT_SMD:SOT-23", "PESD2CAN,215", "Nexperia", "C75176",
                    0.078, description="CAN bus ESD protection, 24 V stand-off"),
     "led_side_g": Cat("Device:LED", "LED_SMD:LED_Kingbright_KPA-3010_3x2x1mm", "KPA-3010CGCK", "Kingbright", "C598310",
-                      0.24, description="green LED, side view 3 × 2 × 1 mm"),
+                      0.24, description="green LED, side view 3 × 2 × 1 mm",
+                      model=("easyeda/C598310.step", (0, -0.5, 0), (-90, 0, 0))),     # the model lies on its back
     "led_side_r": Cat("Device:LED", "LED_SMD:LED_Kingbright_KPA-3010_3x2x1mm", "KPA-3010SURCK", "Kingbright",
-                      "C4555382", 0.18, description="red LED, side view 3 × 2 × 1 mm"),
+                      "C4555382", 0.18, description="red LED, side view 3 × 2 × 1 mm",
+                      model=("easyeda/C598310.step", (0, -0.5, 0), (-90, 0, 0))),     # the green one's: same package
     "schottky": Cat("Device:D_Schottky", "Diode_SMD:D_SOD-123", "B5819W SL", "Changjing", "C8598", 0.03, basic=True,
                     description="40 V 1 A Schottky"),
     "bat54s": Cat("Diode:BAT54S", "Package_TO_SOT_SMD:SOT-23", "BAT54S", "hongjiacheng", "C7420333", 0.013,

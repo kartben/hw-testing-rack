@@ -145,7 +145,7 @@ def jlc_bom_rows(rows):
 JLC_CPL_FIX = {
     "C173752": ("JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal", 180, 1.0, 0.0),    # bay J1 J2 J6 (seen; hand-soldered)
     "C6186": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                            # bay U2 (seen)
-    "C165948": ("USB_C_Receptacle_HRO_TYPE-C-31-M-12", 0, 0.0, -1.57),        # bay J3 J4
+    "C165948": ("USB_C_Receptacle_HRO_TYPE-C-31-M-12", 0, 0.0, -1.57),        # bay J3 J4 until v0.4
     "C2913206": ("ESP32-S2-MINI-1", 0, 0.0, 2.55),                            # bay U3
     "C431540": ("SW_SPDT_Shouhan_MSK12C02", 0, 0.0, -0.25),                   # bay SW3
     "C45262770": ("TSOT-23-6", 270, 0.0, 0.0),                                # bay U1 (LMR51635; FXL0630 L1 needs none)
@@ -158,6 +158,12 @@ JLC_CPL_FIX = {
     "C7503186": ("TO-252-2", 0, -1.89, 0.0),                                  # bay Q1, hub Q1
     "C544399": ("HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.66x2.46mm", 270, 0.0, 0.0),  # hub U1–U5
     "C160315": ("JST_VH_B2P-VH_1x02_P3.96mm_Vertical", 0, 1.98, 0.0),         # hub J1 (hand-soldered)
+    # rack bus parts, fitted on 2026-10-18 the same way
+    "C265405": ("JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal", 180, 0.0, 0.0),  # bay J1 J2 J5, hub row outputs
+    "C3234993": ("SOIC-8_3.9x4.9mm_P1.27mm", 270, 0.0, 0.0),                  # bay U11, hub U6 (TCAN1044AV)
+    "C75176": ("SOT-23", 180, 0.0, 0.0),                                      # bay D5, hub D9 (PESD2CAN)
+    "C7420333": ("SOT-23", 180, 0.0, 0.0),                                    # bay D6 D7, hub POS clamps (BAT54S)
+    "C5184243": ("USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", 0, 0.0, -1.30),  # bay J3 J4, hub USB-C
 }
 
 
@@ -226,6 +232,9 @@ def export_fab(outdir: Path, name: str, b):
         w = csv.DictWriter(fo, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
+    # the project's own 3D models first: the renders below, the STEP and the GLB all need them
+    import pcbgen
+    print("3D: project models on", pcbgen.apply_models(pcb), "footprints")
     # documentation outputs
     docs = outdir / "docs"
     docs.mkdir(exist_ok=True)
@@ -239,8 +248,6 @@ def export_fab(outdir: Path, name: str, b):
     run(["kicad-cli", "pcb", "render", "--rotate", "-40,0,35", "--zoom", "0.85", "--width", "1600", "--height",
          "1200", "--quality", "high", "--background", "transparent", "-o", docs / f"{name}-iso.png", pcb],
         check=False, capture_output=True)
-    import pcbgen
-    print("3D: project models on", pcbgen.apply_models(pcb), "footprints")
     run(["kicad-cli", "pcb", "export", "step", "--subst-models", "-f", "-o", fab / f"{name}.step", pcb], check=False,
         capture_output=True)
     # board body + component models only: the layer art goes to the viewer as a texture
