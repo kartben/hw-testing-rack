@@ -146,6 +146,22 @@ int aux_clients_get(struct aux_client_info *out, int max);
 /* Close a client (from another thread: the console thread does it) */
 int aux_client_kick(int id);
 
+/* --- Rack bus: CAN client, POS token (rack.c) ----------------------------- */
+
+#include <hwtr/rack_proto.h>
+
+int bay_rack_init(void);
+/* Node id from the hub (row x 16 + position), 0 until it gave one */
+uint8_t bay_rack_id(void);
+/* "C3", "" until the hub gave a position */
+const char *bay_rack_position(void);
+/* The hub's last RACK frame; false when none came for 3 s */
+bool bay_rack_hub(struct rack_hub_state *st);
+/* The IP address changed: INFO goes out at the next tick */
+void bay_rack_info_changed(void);
+/* The hub asked this node to show itself: the LED blinks */
+bool bay_rack_identifying(void);
+
 /* --- Network, identity (net.c) -------------------------------------------- */
 
 #define BAY_ID_MAX_LEN 15

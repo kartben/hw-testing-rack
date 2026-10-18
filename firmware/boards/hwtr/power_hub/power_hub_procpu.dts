@@ -1,0 +1,85 @@
+/*
+ * hw-testing-rack power hub v0.5: ESP32-S3-MINI-1-N8 (8 MB flash, no PSRAM),
+ * the rack controller: USB-C PD sink, four eFused rows, the rack bus master.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/dts-v1/;
+
+#include <espressif/esp32s3/esp32s3.dtsi>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+#include <espressif/partitions_0x0_default_8M.dtsi>
+#include "power_hub-pinctrl.dtsi"
+#include "power_hub.dtsi"
+
+/ {
+	model = "hw-testing-rack power hub PROCPU";
+	compatible = "espressif,esp32s3";
+
+	aliases {
+		watchdog0 = &wdt0;
+		uart-0 = &uart0;
+		sw0 = &boot_button;
+	};
+
+	chosen {
+		zephyr,sram = &sram1;
+		/* The console USB-C (J6), native USB: logs, shell, flashing */
+		zephyr,console = &usb_serial;
+		zephyr,shell-uart = &usb_serial;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &slot0_partition;
+	};
+
+	buttons {
+		compatible = "gpio-keys";
+
+		/* SW2 on IO0: strapping pin, free to read once the hub has booted */
+		boot_button: button_0 {
+			gpios = <&gpio0 0 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "BOOT";
+			zephyr,code = <INPUT_KEY_0>;
+		};
+	};
+};
+
+&flash0 {
+	reg = <0x0 DT_SIZE_M(8)>;
+	ranges = <0x0 0x0 DT_SIZE_M(8)>;
+};
+
+&usb_serial {
+	status = "okay";
+};
+
+/* TXD0/RXD0 test pads (TP1/TP2) */
+&uart0 {
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-0 = <&hub_uart0_default>;
+	pinctrl-names = "default";
+};
+
+&wdt0 {
+	status = "okay";
+};
+
+&trng0 {
+	status = "okay";
+};
+
+&timer0 {
+	status = "disabled";
+};
+
+&timer1 {
+	status = "disabled";
+};
+
+&timer2 {
+	status = "disabled";
+};
+
+&timer3 {
+	status = "disabled";
+};

@@ -1,0 +1,227 @@
+/*
+ * Power hub peripherals: USB-C PD sink, row eFuses, rack bus.
+ *
+ * Source of truth: electronics/power-hub/design.py (U4).  Keep the pin
+ * table in firmware/power-hub/README.md in sync with this file
+ * (firmware/tools/check_pinmap.py checks both).
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/i2c/i2c.h>
+#include <zephyr/dt-bindings/adc/adc.h>
+
+/ {
+	aliases {
+		led0 = &ctl_led;
+	};
+
+	power_hub: power-hub {
+		compatible = "hwtr,power-hub";
+		/* IO42 I2C_PU: the AP33772S's I2C pull-ups, on once VBUS is up */
+		i2c-pullup-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+		pd = <&pd_regulator>;
+		pd-meter = <&pd_meter>;
+		vbus-sense = <&vbus_sense>;
+		can = <&twai>;
+	};
+
+	/* Rows A-D: TPS26600 eFuses, POS tokens (docs/can.md) */
+	rack_rows: rack-rows {
+		compatible = "hwtr,rack-rows";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		/* IO14 ROW_EN_A -> SHDN through 10k (100k pull-down: off without firmware) */
+		row_a: row@0 {
+			reg = <0>;
+			enable-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
+			/* IO18 FLT_A <- ~FLT, open drain, 100k to 3.3 V */
+			fault-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
+			/* IO10 POS_A -> J2.6 through 10k and a BAT54S clamp */
+			pos-gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+			current-sense = <&imon_a>;
+		};
+
+		row_b: row@1 {
+			reg = <1>;
+			enable-gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
+			fault-gpios = <&gpio0 21 GPIO_ACTIVE_LOW>;
+			pos-gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
+			current-sense = <&imon_b>;
+		};
+
+		row_c: row@2 {
+			reg = <2>;
+			enable-gpios = <&gpio0 16 GPIO_ACTIVE_HIGH>;
+			fault-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
+			pos-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+			current-sense = <&imon_c>;
+		};
+
+		row_d: row@3 {
+			reg = <3>;
+			enable-gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>;
+			fault-gpios = <&gpio1 1 GPIO_ACTIVE_LOW>;
+			pos-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+			current-sense = <&imon_d>;
+		};
+	};
+
+	/*
+	 * IMON: the TPS26600 sources 78 uA/A into 18k (1.404 V/A), through
+	 * 1k + 10 nF to the ADC: a 1.404 ohm "shunt" with unity gain.
+	 */
+	imon_a: imon-a {
+		compatible = "current-sense-amplifier";
+		io-channels = <&adc0 0>;
+		sense-resistor-milli-ohms = <1404>;
+	};
+
+	imon_b: imon-b {
+		compatible = "current-sense-amplifier";
+		io-channels = <&adc0 1>;
+		sense-resistor-milli-ohms = <1404>;
+	};
+
+	imon_c: imon-c {
+		compatible = "current-sense-amplifier";
+		io-channels = <&adc0 3>;
+		sense-resistor-milli-ohms = <1404>;
+	};
+
+	imon_d: imon-d {
+		compatible = "current-sense-amplifier";
+		io-channels = <&adc0 4>;
+		sense-resistor-milli-ohms = <1404>;
+	};
+
+	/* IO6 VBUS_SENSE: VBUS through 100k/10k (2.5 V at 28 V) */
+	vbus_sense: vbus-sense {
+		compatible = "voltage-divider";
+		io-channels = <&adc0 5>;
+		output-ohms = <10000>;
+		full-ohms = <110000>;
+	};
+
+	/* IO9 CAN_STB: TCAN1462V standby (10k pull-down: normal mode) */
+	can_phy: can-phy {
+		compatible = "can-transceiver-gpio";
+		standby-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
+		max-bitrate = <5000000>;
+		#phy-cells = <0>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		/* IO35 CTL_LED: the controller's green LED on the front wall (330R) */
+		ctl_led: led_0 {
+			gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
+			label = "CTL";
+		};
+	};
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&gpio1 {
+	status = "okay";
+};
+
+/* ADC1 channel n is IO(n + 1); 12 dB for IMON (2.2 V at the 1.6 A limit) and VBUS_SENSE */
+&adc0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	channel@0 {
+		reg = <0>;
+		zephyr,gain = "ADC_GAIN_1_4";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+
+	channel@1 {
+		reg = <1>;
+		zephyr,gain = "ADC_GAIN_1_4";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+
+	channel@3 {
+		reg = <3>;
+		zephyr,gain = "ADC_GAIN_1_4";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+
+	channel@4 {
+		reg = <4>;
+		zephyr,gain = "ADC_GAIN_1_4";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+
+	channel@5 {
+		reg = <5>;
+		zephyr,gain = "ADC_GAIN_1_4";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+	pinctrl-0 = <&hub_i2c0_default>;
+	pinctrl-names = "default";
+
+	/*
+	 * U1, the USB PD 3.1 sink.  Powered from VBUS: initialized by the
+	 * application once VBUS is up and I2C_PU is on.
+	 */
+	ap33772s: ap33772s@52 {
+		compatible = "diodes,ap33772s";
+		reg = <0x52>;
+		zephyr,deferred-init;
+		/* IO39 PD_INT <- INT (5 V push-pull through 15k/27k) */
+		int-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
+
+		/* The contract: never above 28 V (the nodes' TVS, the eFuses' 33 V OVP) */
+		pd_regulator: regulator {
+			compatible = "diodes,ap33772s-regulator";
+			zephyr,deferred-init;
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <28000000>;
+			regulator-max-microamp = <5000000>;
+		};
+
+		/* VBUS, input current (5 mOhm Kelvin shunt R1), NTC TH1 by the switch */
+		pd_meter: meter {
+			compatible = "diodes,ap33772s-sensor";
+			zephyr,deferred-init;
+		};
+	};
+};
+
+/* IO7/IO8: TWAI, the rack bus at 250 kbit/s */
+&twai {
+	status = "okay";
+	pinctrl-0 = <&hub_twai_default>;
+	pinctrl-names = "default";
+	bitrate = <250000>;
+	phys = <&can_phy>;
+};
+
+&wifi {
+	status = "okay";
+};

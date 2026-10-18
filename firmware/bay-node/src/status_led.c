@@ -1,6 +1,7 @@
 /*
  * WS2812B status LED behind the fascia.
  *
+ *   white/blue, fast  identify: the hub's page asked "which one is it?"
  *   white, blinking   access claim pending: press BOOT to confirm
  *   red, blinking     DUT VBUS fault (current limit), or switched off by it
  *   yellow            SERVICE: front port -> node (flash / debug the node)
@@ -56,6 +57,10 @@ static struct led_rgb pick(void)
 	bool blink_fast = (tick & 1U) != 0U;
 	bool blink_slow = (tick & 4U) != 0U;
 
+	/* "Which one is it?" from the hub's page */
+	if (bay_rack_identifying()) {
+		return blink_fast ? white : blue;
+	}
 	/* Which node wants the BOOT press */
 	if (access_claim_pending()) {
 		return blink_fast ? white : off;

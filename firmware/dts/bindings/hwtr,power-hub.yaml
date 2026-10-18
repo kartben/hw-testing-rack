@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  The hw-testing-rack power hub (rack controller): what its firmware needs
+  to know besides the rows (hwtr,rack-rows).
+
+    power_hub: power-hub {
+        compatible = "hwtr,power-hub";
+        i2c-pullup-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
+        pd = <&pd_regulator>;
+        pd-meter = <&pd_meter>;
+        vbus-sense = <&vbus_sense>;
+        can = <&twai>;
+    };
+
+compatible: "hwtr,power-hub"
+
+properties:
+  i2c-pullup-gpios:
+    type: phandle-array
+    description: |
+      Powers the PD sink's I2C pull-ups.  The firmware turns it on once VBUS
+      is up (the sink runs from VBUS), so that a controller powered from its
+      console USB port never back-feeds the unpowered sink.
+
+  pd:
+    type: phandle
+    required: true
+    description: The USB PD sink's regulator (the contract).
+
+  pd-meter:
+    type: phandle
+    description: Sensor for VBUS, the input current and the sink's temperature.
+
+  vbus-sense:
+    type: phandle
+    description: Voltage divider on VBUS (ADC), read before the sink answers.
+
+  can:
+    type: phandle
+    required: true
+    description: The CAN controller of the rack bus.

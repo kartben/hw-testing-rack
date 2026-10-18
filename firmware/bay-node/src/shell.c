@@ -70,6 +70,24 @@ static void print_aux(const struct shell *sh)
 		    aux_loopback_get() ? ", loopback (test)" : "");
 }
 
+static void print_rack(const struct shell *sh)
+{
+	struct rack_hub_state hub;
+
+	if (bay_rack_id() == 0) {
+		shell_print(sh, "rack:      no position (not enumerated by the hub)");
+		return;
+	}
+	if (bay_rack_hub(&hub)) {
+		shell_print(sh, "rack:      %s (node 0x%02x), hub: %u.%u V%s, rows on 0x%x",
+			    bay_rack_position(), bay_rack_id(), hub.mv / 1000, hub.mv % 1000 / 100,
+			    (hub.flags & RACK_HUB_EPR) ? " EPR" : "", hub.rows_on);
+	} else {
+		shell_print(sh, "rack:      %s (node 0x%02x), hub silent", bay_rack_position(),
+			    bay_rack_id());
+	}
+}
+
 static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 {
 	ARG_UNUSED(argc);
@@ -78,6 +96,7 @@ static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 	shell_print(sh, "bay id:    %s (%s.local)", bay_id()[0] ? bay_id() : "(unset)",
 		    net_hostname_get());
 	shell_print(sh, "network:   %s", bay_net_connected() ? bay_net_addr() : "down");
+	print_rack(sh);
 	shell_print(sh, "data path: %s (SERVICE %s, PC %s, classic %s)",
 		    bay_data_path_str(usb_mux_path()), usb_mux_service() ? "on" : "off",
 		    usb_mux_pc_detected() ? "plugged" : "absent",

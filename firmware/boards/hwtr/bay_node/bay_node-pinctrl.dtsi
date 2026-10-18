@@ -46,7 +46,7 @@
 		};
 	};
 
-	/* IO18 CAN_TXD / IO17 CAN_RXD: TCAN1044AV U11 on the rack bus (docs/can.md) */
+	/* IO18 CAN_TXD / IO17 CAN_RXD: TCAN1462V U11 on the rack bus (docs/can.md) */
 	bay_twai_default: bay_twai_default {
 		group1 {
 			pinmux = <TWAI_TX_GPIO18>;

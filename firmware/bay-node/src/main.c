@@ -183,6 +183,12 @@ int main(void)
 		LOG_ERR("network init failed: %d", ret);
 	}
 
+	/* After the network: the MAC address names the node on the rack bus */
+	ret = bay_rack_init();
+	if (ret != 0 && ret != -ENOTSUP) {
+		LOG_ERR("rack bus init failed: %d", ret);
+	}
+
 	ret = web_init();
 	if (ret != 0) {
 		LOG_ERR("web server init failed: %d", ret);

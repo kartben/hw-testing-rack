@@ -1,0 +1,67 @@
+# SPDX-License-Identifier: Apache-2.0
+
+mainmenu "hw-testing-rack power hub"
+
+menu "Power hub"
+
+config HUB_PD_EPR
+	bool "Ask for 28 V EPR when the charger offers it"
+	default y
+	help
+	  The AP33772S negotiates 20 V by itself (VSEL); the firmware then
+	  asks for the charger's 28 V EPR fixed PDO when there is one.  Never
+	  above 28 V: the board's regulator node caps every request.  The
+	  choice can be changed at run time (shell, web page) and is saved.
+
+config HUB_VBUS_MIN_MV
+	int "VBUS above which the PD sink is powered and talked to (mV)"
+	default 4500
+
+config HUB_CONTRACT_SETTLE_MS
+	int "A contract must hold this long before rows are turned on (ms)"
+	default 500
+
+config HUB_ROW_STAGGER_MS
+	int "Delay between two rows turned on one after the other (ms)"
+	default 300
+
+config HUB_ROW_BOOT_MS
+	int "Wait after a row comes on before enumerating its nodes (ms)"
+	default 2000
+	help
+	  The nodes boot from the row's VRACK; the enumeration waits for
+	  them.  A node that boots later asks by itself.
+
+config HUB_ROW_CYCLE_MS
+	int "Default off time of a row power cycle (ms)"
+	default 2000
+
+config HUB_SHED_PERCENT
+	int "Shed a row when the rows draw more than this share of the contract (%)"
+	default 90
+	range 50 100
+
+config HUB_SHED_HOLD_MS
+	int "Over the budget this long before a row is shed (ms)"
+	default 1000
+
+config HUB_RESTORE_HOLD_S
+	int "Contract stable and room to spare this long before a shed row comes back (s)"
+	default 10
+
+config HUB_EVENTS
+	int "Events kept for the web page and the shell"
+	default 32
+
+config HUB_HTTP_PORT
+	int "TCP port of the web page, JSON API and /metrics"
+	default 80
+	range 1 65535
+
+module = HUB
+module-str = power hub
+source "subsys/logging/Kconfig.template.log_config"
+
+endmenu
+
+source "Kconfig.zephyr"

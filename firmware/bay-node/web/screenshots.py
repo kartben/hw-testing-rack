@@ -9,63 +9,41 @@ installed Chrome (--channel msedge for Edge, or --channel chromium after
 for the sparkline (and of the fake board's log for the console), then
 shoots each state, access control last (web-ui-access*.png): the node
 claimed with a key made up for the run, rules, a CI job holding the bay.
+The browser and server plumbing is firmware/common/web/shots.py.
 """
 
 from __future__ import annotations
 
 import argparse
 import os
-import threading
+import sys
 import time
 import urllib.request
 from pathlib import Path
 
-from playwright.sync_api import sync_playwright
+WEB = Path(__file__).resolve().parent
+sys.path.insert(0, str(WEB.parents[1] / "common" / "web"))
 
-import dev_server
-
-OUT = Path(__file__).resolve().parents[3] / "docs" / "img"
-DESKTOP = {"width": 1100, "height": 400}
-POLL_S = 2.5   # the page polls /api/status every 2 s
+import dev_server  # noqa: E402
+from shots import DESKTOP, DOCS_IMG, POLL_S, Shots  # noqa: E402
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--channel", default="chrome", help="browser: chrome, msedge or chromium")
     ap.add_argument("--warmup", type=float, default=60, help="seconds of samples before shooting")
-    ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument("--out", type=Path, default=DOCS_IMG)
     args = ap.parse_args()
 
     # This machine plays the admin's laptop of the examples
     dev_server.PEER_OVERRIDE["127.0.0.1"] = "192.168.1.23"
-    server = dev_server.serve(0)
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    base = f"http://127.0.0.1:{server.server_address[1]}"
-    args.out.mkdir(parents=True, exist_ok=True)
 
-    def poke(path: str) -> None:
-        urllib.request.urlopen(base + path).read()
-        time.sleep(POLL_S)
-
-    with sync_playwright() as pw:
-        browser = pw.chromium.launch(channel=args.channel)
-
-        def open_page(scheme: str, viewport: dict):
-            ctx = browser.new_context(color_scheme=scheme, viewport=viewport,
-                                      device_scale_factor=2)
-            page = ctx.new_page()
-            page.goto(base + "/")
-            return page
-
-        dark = open_page("dark", DESKTOP)
-        light = open_page("light", DESKTOP)
+    with Shots(dev_server.serve(0), args.out, args.channel) as s:
+        poke, shoot, base = s.poke, s.shoot, s.base
+        dark = s.page("dark", DESKTOP)
+        light = s.page("light", DESKTOP)
         print(f"collecting {args.warmup:.0f} s of samples...")
         time.sleep(args.warmup)
-
-        def shoot(page, name: str, what: str = ".wrap") -> None:
-            path = args.out / f"{name}.png"
-            page.locator(what).screenshot(path=path, animations="disabled")
-            print(f"wrote {path}")
 
         # Use the board's shell from the web console
         dark.click(".term")
@@ -102,13 +80,7 @@ def main() -> None:
         time.sleep(3 * POLL_S)
 
         def shoot_top(page, name: str) -> None:
-            page.evaluate("scrollTo(0, 0)")     # boxes are relative to the viewport
-            head, cards = page.locator("header").bounding_box(), page.locator(".cards").bounding_box()
-            path = args.out / f"{name}.png"
-            page.screenshot(path=path, animations="disabled", full_page=True, clip={
-                "x": cards["x"] - 4, "y": head["y"] - 4, "width": cards["width"] + 8,
-                "height": cards["y"] + cards["height"] - head["y"] + 8})
-            print(f"wrote {path}")
+            s.shoot_span(page, name, "header", ".cards")
 
         shoot_top(dark, "web-ui-access")
         dark.set_viewport_size({"width": DESKTOP["width"], "height": 760})
@@ -123,8 +95,6 @@ def main() -> None:
         time.sleep(3 * POLL_S)
         shoot_top(light, "web-ui-access-readonly")
 
-        browser.close()
-    server.shutdown()
 
 
 if __name__ == "__main__":

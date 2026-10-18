@@ -7,7 +7,7 @@ on:
 
 jobs:
   pinmap:
-    name: Pin map (design.py ↔ README ↔ devicetree)
+    name: Pin maps (design.py ↔ README ↔ devicetree, bay node and power hub)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -53,6 +53,13 @@ jobs:
           - name: console_sim
             board: native_sim/native/64
             app: firmware/bay-node/tests/console_sim
+          - name: power_hub
+            board: power_hub/esp32s3/procpu
+            app: firmware/power-hub
+          # The rack bus protocol on a simulated rack (hub + nodes), run below
+          - name: rack_bus
+            board: native_sim/native/64
+            app: firmware/common/tests/rack_bus
     steps:
       # West workspace = $GITHUB_WORKSPACE, this repository checked out as its
       # manifest repository (manifest self.path: hw-testing-rack).
@@ -92,6 +99,12 @@ jobs:
         run: >
           sudo python3 hw-testing-rack/firmware/bay-node/tests/console_sim/test_access.py
           --exe build/zephyr/zephyr.exe
+
+      - name: Rack bus protocol on native_sim
+        if: matrix.name == 'rack_bus'
+        run: |
+          build/zephyr/zephyr.exe | tee rack_bus.log
+          grep -q "PROJECT EXECUTION SUCCESSFUL" rack_bus.log
 
       - uses: actions/upload-artifact@v4
         with:

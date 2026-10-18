@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  The power hub's row outputs (docs/power.md, docs/can.md): one child per
+  row, A = reg 0.  Each row has an eFuse with an enable, an open-drain fault
+  flag and a current monitor, and drives the row's POS addressing token.
+
+    rack_rows: rack-rows {
+        compatible = "hwtr,rack-rows";
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        row_a: row@0 {
+            reg = <0>;
+            enable-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
+            fault-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
+            pos-gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+            current-sense = <&imon_a>;
+        };
+    };
+
+compatible: "hwtr,rack-rows"
+
+properties:
+  "#address-cells":
+    type: int
+    const: 1
+    required: true
+
+  "#size-cells":
+    type: int
+    const: 0
+    required: true
+
+child-binding:
+  description: "A row: its eFuse and its POS token."
+
+  properties:
+    reg:
+      type: int
+      required: true
+      description: Row index, 0 = A.
+
+    enable-gpios:
+      type: phandle-array
+      required: true
+      description: |
+        The eFuse's enable (SHDN).  The board pulls it to "off": a row stays
+        off until the firmware turns it on.  The firmware holds the level
+        across its own resets.
+
+    fault-gpios:
+      type: phandle-array
+      required: true
+      description: The eFuse's fault flag (current limit, over-temperature).
+
+    pos-gpios:
+      type: phandle-array
+      required: true
+      description: The row's POS token, raised to enumerate its nodes.
+
+    current-sense:
+      type: phandle
+      description: Sensor on the eFuse's current monitor (current-sense-amplifier).
