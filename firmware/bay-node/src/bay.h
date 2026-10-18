@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <zephyr/kernel.h>
 
-#include "acl.h"
+#include <hwtr/acl.h>
 
 /* --- DUT power, fault, RESET/BOOT (dut.c) --------------------------------- */
 
@@ -173,7 +173,7 @@ const char *bay_net_addr(void);
 const char *bay_id(void);
 int bay_id_set(const char *id);
 
-/* --- Access control (access.c, rules in acl.c) ------------------------------ */
+/* --- Access control (access.c; rules in common/lib/acl.c, admin key in common/lib/admin.c) */
 
 struct net_sockaddr;
 

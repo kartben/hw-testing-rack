@@ -340,7 +340,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
 <div id="toast" popover="manual"></div>
 
 <script type="module">
-import { $, api, fix, plural, uptime } from "/rack.mjs";
+import { $, api, fix, plural, uptime, storedKey, storeKey, signed, claimKey } from "/rack.mjs";
 
 const samples = [];
 let host = location.hostname;
@@ -483,78 +483,10 @@ async function copy(id) {
 
 /* --- Access control ----------------------------------------------------- */
 
-/*
- * SHA-256 and HMAC for signed admin requests: crypto.subtle only exists in
- * secure contexts, and http://bay-b3.local is not one.
- */
-const SHA_K = Uint32Array.from({ length: 64 }, (_, i) => {
-  const primes = [];
-  for (let n = 2; primes.length < 64; n++) if (primes.every((p) => n % p)) primes.push(n);
-  return (Math.cbrt(primes[i]) % 1) * 2 ** 32;
-});
-const SHA_H = Uint32Array.from([2, 3, 5, 7, 11, 13, 17, 19], (p) => (Math.sqrt(p) % 1) * 2 ** 32);
-
-function sha256(bytes) {
-  const n = ((bytes.length + 72) >> 6) << 6;
-  const m = new Uint8Array(n);
-  m.set(bytes);
-  m[bytes.length] = 0x80;
-  const dv = new DataView(m.buffer);
-  dv.setUint32(n - 8, Math.floor(bytes.length / 2 ** 29));
-  dv.setUint32(n - 4, bytes.length * 8);
-  const H = SHA_H.slice(), W = new Uint32Array(64);
-  const rotr = (x, r) => (x >>> r) | (x << (32 - r));
-  for (let off = 0; off < n; off += 64) {
-    for (let i = 0; i < 16; i++) W[i] = dv.getUint32(off + 4 * i);
-    for (let i = 16; i < 64; i++) {
-      const a = W[i - 15], b = W[i - 2];
-      W[i] = W[i - 16] + (rotr(a, 7) ^ rotr(a, 18) ^ (a >>> 3)) + W[i - 7] + (rotr(b, 17) ^ rotr(b, 19) ^ (b >>> 10));
-    }
-    let [a, b, c, d, e, f, g, h] = H;
-    for (let i = 0; i < 64; i++) {
-      const t1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + SHA_K[i] + W[i]) >>> 0;
-      const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
-      [h, g, f, e, d, c, b, a] = [g, f, e, (d + t1) >>> 0, c, b, a, (t1 + t2) >>> 0];
-    }
-    [a, b, c, d, e, f, g, h].forEach((v, i) => (H[i] += v));
-  }
-  const out = new Uint8Array(32);
-  H.forEach((v, i) => new DataView(out.buffer).setUint32(4 * i, v));
-  return out;
-}
-
-function hmac(key, msg) {
-  const block = new Uint8Array(64);
-  block.set(key.length > 64 ? sha256(key) : key);
-  const pad = (x) => {
-    const b = block.map((v) => v ^ x);
-    return (data) => { const all = new Uint8Array(64 + data.length); all.set(b); all.set(data, 64); return all; };
-  };
-  return sha256(pad(0x5c)(sha256(pad(0x36)(msg))));
-}
-
-const hex = (bytes) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-const unhex = (text) => Uint8Array.from(text.match(/../g) ?? [], (h) => parseInt(h, 16));
 const SERVICES = ["status", "control", "console", "usbip", "shell"];
 const SVC_LABEL = { status: "status", control: "control", console: "console", usbip: "USB/IP", shell: "shell" };
 
 const acc = { doc: null, admin: false, rules: null, saved: null };
-
-function storedKey() {
-  try { return localStorage.getItem("bay-admin-key") ?? ""; } catch { return ""; }
-}
-
-function storeKey(key) {
-  try { key ? localStorage.setItem("bay-admin-key", key) : localStorage.removeItem("bay-admin-key"); } catch { /* private window */ }
-}
-
-/* An admin request: X-Bay-Auth = <nonce>:<HMAC(key, nonce \n method \n path \n body)> */
-async function signed(path, body, key = storedKey()) {
-  const { nonce } = await api("/api/access/nonce");
-  const text = body === undefined ? "" : JSON.stringify(body);
-  const mac = hmac(unhex(key), enc.encode(`${nonce}\n${body === undefined ? "GET" : "POST"}\n${path}\n${text}`));
-  return api(path, body === undefined ? undefined : text, { "X-Bay-Auth": `${nonce}:${hex(mac)}` });
-}
 
 const ago = (s) => s < 90 ? `${s} s` : s < 5400 ? `${Math.round(s / 60)} min` : `${Math.round(s / 3600)} h`;
 const can = (a, svc) => a.allow.includes(svc);
@@ -681,35 +613,28 @@ async function claimFlow(ev) {
   const key = $("claim-key").value.trim();
   showError("claim-err");
   if (key && !/^[0-9a-fA-F]{64}$/.test(key)) return showError("claim-err", new Error("the key is 64 hex digits"));
-  let start;
   try {
-    start = await api("/api/access/claim", key ? { key } : {});
+    const newKey = await claimKey(key, {
+      started() {
+        $("claim-start").hidden = true;
+        $("claim-wait").hidden = false;
+        $("claim-go").hidden = true;
+      },
+      waiting(s) {
+        $("claim-count").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+      },
+      open: () => $("dlg-claim").open,
+    });
+    if (!newKey) return;
+    acc.admin = true;
+    $("claim-wait").hidden = true;
+    $("claim-done").hidden = false;
+    $("claim-new-key").textContent = newKey;
+    toast("Claimed: you are admin");
+    return pollNow();
   } catch (e) {
+    $("claim-wait").hidden = true;
     return showError("claim-err", e);
-  }
-  $("claim-start").hidden = true;
-  $("claim-wait").hidden = false;
-  $("claim-go").hidden = true;
-  const dlg = $("dlg-claim");
-  while (dlg.open) {
-    let r;
-    try {
-      r = await api("/api/access/claim", { ticket: start.ticket });
-    } catch (e) {
-      $("claim-wait").hidden = true;
-      return showError("claim-err", e);
-    }
-    if (r.state === "done") {
-      storeKey(r.key);
-      acc.admin = true;
-      $("claim-wait").hidden = true;
-      $("claim-done").hidden = false;
-      $("claim-new-key").textContent = r.key;
-      toast("Claimed: you are admin");
-      return pollNow();
-    }
-    $("claim-count").textContent = `${Math.floor(r.remaining_s / 60)}:${String(r.remaining_s % 60).padStart(2, "0")}`;
-    await new Promise((ok) => setTimeout(ok, 1000));
   }
 }
 

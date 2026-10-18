@@ -22,7 +22,6 @@ target_sources(app PRIVATE
   ${BAY}/src/aux_console.c
   ${BAY}/src/rfc2217.c
   ${BAY}/src/web.c
-  ${BAY}/src/acl.c
   ${BAY}/src/access.c
   ${BAY}/src/shell.c
 )

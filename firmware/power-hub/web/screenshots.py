@@ -6,8 +6,9 @@
 Runs dev_server.py in-process (a simulated hub: 140 W EPR charger, nine
 bays in three rows), opens the page in the installed Chrome (--channel
 msedge for Edge), lets it collect samples for the input sparkline, then
-shoots: the rack in dark and light, the charger renegotiating down to
-30 W with a row shed, an eFuse fault and a silent node.
+shoots: the claim dialog, then as the admin the rack in dark and light, the
+charger renegotiating down to 30 W with a row shed, an eFuse fault and a
+silent node.
 """
 
 from __future__ import annotations
@@ -34,7 +35,23 @@ def main() -> None:
     args = ap.parse_args()
 
     with Shots(dev_server.serve(0), args.out, args.channel) as s:
+        # The claim: an unclaimed hub, its dialog waiting for a press on BOOT
+        claim = s.page("dark", {"width": 1100, "height": 700})
+        time.sleep(POLL_S)
+        claim.click("#access-pill")
+        claim.wait_for_selector("#dlg-claim[open]")
+        claim.click("#claim-go")
+        claim.wait_for_selector("#claim-wait:not([hidden])")
+        time.sleep(1.2)
+        s.shoot(claim, "hub-ui-claim", "#dlg-claim")
+        s.poke("/dev/boot", wait=2)
+        key = claim.inner_text("#claim-new-key")
+
+        # The rest as the admin
         dark, light = s.page("dark", TALL), s.page("light", TALL)
+        for page in (dark, light):
+            page.evaluate(f"localStorage.setItem('bay-admin-key', '{key}')")
+            page.reload()
         print(f"collecting {args.warmup:.0f} s of samples...")
         time.sleep(args.warmup)
 

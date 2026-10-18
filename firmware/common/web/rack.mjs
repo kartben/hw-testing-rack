@@ -100,3 +100,95 @@ export function poll(fn, ms, onError) {
   run();
   return run;
 }
+
+/* --- Admin requests: the bay nodes and the hub sign them the same way ------------ */
+
+/*
+ * SHA-256 and HMAC for signed admin requests: crypto.subtle only exists in
+ * secure contexts, and http://bay-b3.local or http://rack.local is not one.
+ */
+const SHA_K = Uint32Array.from({ length: 64 }, (_, i) => {
+  const primes = [];
+  for (let n = 2; primes.length < 64; n++) if (primes.every((p) => n % p)) primes.push(n);
+  return (Math.cbrt(primes[i]) % 1) * 2 ** 32;
+});
+const SHA_H = Uint32Array.from([2, 3, 5, 7, 11, 13, 17, 19], (p) => (Math.sqrt(p) % 1) * 2 ** 32);
+
+export function sha256(bytes) {
+  const n = ((bytes.length + 72) >> 6) << 6;
+  const m = new Uint8Array(n);
+  m.set(bytes);
+  m[bytes.length] = 0x80;
+  const dv = new DataView(m.buffer);
+  dv.setUint32(n - 8, Math.floor(bytes.length / 2 ** 29));
+  dv.setUint32(n - 4, bytes.length * 8);
+  const H = SHA_H.slice(), W = new Uint32Array(64);
+  const rotr = (x, r) => (x >>> r) | (x << (32 - r));
+  for (let off = 0; off < n; off += 64) {
+    for (let i = 0; i < 16; i++) W[i] = dv.getUint32(off + 4 * i);
+    for (let i = 16; i < 64; i++) {
+      const a = W[i - 15], b = W[i - 2];
+      W[i] = W[i - 16] + (rotr(a, 7) ^ rotr(a, 18) ^ (a >>> 3)) + W[i - 7] + (rotr(b, 17) ^ rotr(b, 19) ^ (b >>> 10));
+    }
+    let [a, b, c, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) {
+      const t1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + SHA_K[i] + W[i]) >>> 0;
+      const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
+      [h, g, f, e, d, c, b, a] = [g, f, e, (d + t1) >>> 0, c, b, a, (t1 + t2) >>> 0];
+    }
+    [a, b, c, d, e, f, g, h].forEach((v, i) => (H[i] += v));
+  }
+  const out = new Uint8Array(32);
+  H.forEach((v, i) => new DataView(out.buffer).setUint32(4 * i, v));
+  return out;
+}
+
+export function hmac(key, msg) {
+  const block = new Uint8Array(64);
+  block.set(key.length > 64 ? sha256(key) : key);
+  const pad = (x) => {
+    const b = block.map((v) => v ^ x);
+    return (data) => { const all = new Uint8Array(64 + data.length); all.set(b); all.set(data, 64); return all; };
+  };
+  return sha256(pad(0x5c)(sha256(pad(0x36)(msg))));
+}
+
+export const hex = (bytes) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+export const unhex = (text) => Uint8Array.from(text.match(/../g) ?? [], (h) => parseInt(h, 16));
+/* The admin key of this page's device (localStorage is per origin: one per device) */
+export function storedKey() {
+  try { return localStorage.getItem("bay-admin-key") ?? ""; } catch { return ""; }
+}
+
+export function storeKey(key) {
+  try { key ? localStorage.setItem("bay-admin-key", key) : localStorage.removeItem("bay-admin-key"); } catch { /* private window */ }
+}
+
+/* An admin request: X-Bay-Auth = <nonce>:<HMAC(key, nonce \n method \n path \n body)> */
+export async function signed(path, body, key = storedKey()) {
+  const { nonce } = await api("/api/access/nonce");
+  const text = body === undefined ? "" : JSON.stringify(body);
+  const mac = hmac(unhex(key), new TextEncoder().encode(`${nonce}\n${body === undefined ? "GET" : "POST"}\n${path}\n${text}`));
+  return api(path, body === undefined ? undefined : text, { "X-Bay-Auth": `${nonce}:${hex(mac)}` });
+}
+
+/*
+ * Claim the device: POST /api/access/claim (with the rack's key, or none for
+ * a new one), then poll until someone presses its BOOT button.  Returns the
+ * key (also stored), or "" if the dialog was closed meanwhile.
+ * ui: started(), waiting(remaining_s), open() -> still waiting?
+ */
+export async function claimKey(key, ui) {
+  const start = await api("/api/access/claim", key ? { key } : {});
+  ui.started?.();
+  while (ui.open()) {
+    const r = await api("/api/access/claim", { ticket: start.ticket });
+    if (r.state === "done") {
+      storeKey(r.key);
+      return r.key;
+    }
+    ui.waiting?.(r.remaining_s);
+    await new Promise((ok) => setTimeout(ok, 1000));
+  }
+  return "";
+}

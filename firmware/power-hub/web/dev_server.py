@@ -11,6 +11,10 @@ currents.  Test hooks:
     /dev/fault?row=C      row C's eFuse trips (current limit), /dev/fault?row=C&off=1 clears it
     /dev/lose?node=0x22   a node stops sending STATUS
     /dev/usb              the controller runs from its console USB-C only (no PD charger)
+    /dev/boot             a short press on BOOT: confirms a pending claim
+
+The page's actions are admin requests signed with the hub's key, as on the
+hub (common/web/devserver.py's Admin): claim it from the page, then /dev/boot.
 """
 
 from __future__ import annotations
@@ -25,7 +29,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "common" / "web"))
-from devserver import PageHandler  # noqa: E402
+from devserver import Admin, PageHandler  # noqa: E402
 
 WEB = Path(__file__).resolve().parent
 START = time.monotonic() - 2 * 86400 - 5 * 3600
@@ -64,6 +68,7 @@ hub = {
     "can": {"tx": 1520331, "rx": 4870112, "errors": 0, "bus_off": 0},
 }
 events: list[tuple[float, str, str]] = []
+admin = Admin()
 lock = threading.Lock()
 
 
@@ -147,6 +152,7 @@ def status() -> dict:
     found = sum(len(r["nodes"]) for r in rows)
     return {
         "hostname": hub["hostname"], "ip": hub["ip"], "version": hub["version"],
+        "access": {"claimed": admin.key is not None, "claim_pending": admin.claim_pending()},
         "uptime_s": int(t - START),
         "pd": {
             "state": "usb" if not c else "epr" if c["epr"] else "spr",
@@ -228,19 +234,33 @@ class Handler(PageHandler):
             elif path == "/dev/usb":
                 hub["usb_only"] = not hub["usb_only"]
                 self.json(200, status())
+            elif path == "/api/access/nonce":
+                self.json(200, {"nonce": admin.nonce()})
+            elif path == "/dev/boot":
+                self.json(200, {"claimed": admin.press_boot()})
             else:
                 self.json(404, {"error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
         import json
         path = urlsplit(self.path).path
+        raw = self.body()
         try:
-            body = json.loads(self.body() or b"{}")
+            body = json.loads(raw or b"{}")
         except ValueError:
             self.json(400, {"error": "bad JSON"})
             return
         with lock:
-            if path == "/api/row":
+            if path == "/api/access/claim":
+                self.json(*admin.claim(self.client_address[0], body))
+                return
+            if not admin.check(self.headers.get("X-Bay-Auth", ""), "POST", path, raw):
+                self.json(403, {"error": "admin only: unlock with the hub's admin key" if admin.key
+                                else "admin only: claim the hub first (its BOOT button)"})
+                return
+            if path == "/api/access/check":
+                self.json(200, status())
+            elif path == "/api/row":
                 row, action = str(body.get("row", "")).upper(), body.get("action")
                 if row not in ROWS or action not in ("on", "off", "cycle"):
                     self.json(400, {"error": "row A-D, action on|off|cycle"})

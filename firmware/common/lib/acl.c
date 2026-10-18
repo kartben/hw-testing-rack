@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "acl.h"
+#include <hwtr/acl.h>
 
 static const char *const service_names[ACL_SERVICES] = {
 	[ACL_STATUS] = "status",

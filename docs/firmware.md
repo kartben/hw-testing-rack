@@ -56,7 +56,7 @@ Wi-Fi, the web pages' CSS, helpers and tooling.
 | AUX console | written, host-tested | UART1 (IO47/IO33) shared by a web console in the status page (xterm.js over a WebSocket, 16 KB replayed to late clients), an RFC 2217 server on port 4001 (pyserial, labgrid, esptool) and raw TCP on port 4000; baud/format/Enter/echo saved per bay; BREAK; TX released while the DUT is off |
 | AUX RESET/BOOT | written | pulses on IO34/IO48 (`bay reset`, `bay boot`, console buttons), optionally RFC 2217 DTR/RTS like an ESP auto-reset circuit |
 | Status LED | written | WS2812B on IO13 (RMT): fault / service / classic / power off / no network / USB/IP idle / enumerated / attached |
-| Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS |
+| Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS; without an id, the rack position from the hub (`bay-c3.local`) |
 | Rack bus | written, tested on a simulated rack | CAN (IO18/IO17) + POS (IO16 in, IO35 out): position from the hub (`C3` = node 0x23), STATUS every second, INFO, ALERT on DUT faults, the hub's commands (refused while the bay is reserved); [rack-protocol.md](rack-protocol.md) |
 | Access control | written, tested on native_sim | per node: which address may use status, control, console, USB/IP, shell (Zephyr packet filter for TCP, a check per HTTP request); a CI reservation (lease); kicks and a refusal log; admin key claimed with a press on BOOT, admin requests signed (HMAC).  See [`firmware/README.md`](../firmware/README.md#access-control) |
 | Control interface | written | `bay …` shell on the UART test pads and over telnet; status page, serial console and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`, `/api/aux`) |
@@ -84,7 +84,8 @@ node's real console code, Zephyr's shell sample as the DUT); details in
 | Shedding | written | from the measured row currents (IMON): above 90 % of the contract for 1 s the next row in the shed order goes off, back when the contract has room again |
 | Faults | written | each eFuse's FLT and the PD sink's protections as events |
 | Rack bus master | written, tested on a simulated rack | enumeration over the POS tokens, the node table, commands with retries, the RACK frame every second |
-| Web, shell | written | status page (PD offers, rows and their bays, rack bus, events), JSON API, `/metrics`, `hub …` shell on the console USB-C and telnet |
+| Web, shell | written | status page (PD offers, rows and their bays, rack bus, events), JSON API, `/metrics`, `hub …` shell on the console USB-C (no telnet) |
+| Access | written | reading is open; the page's actions (rows, contract, enumeration, node commands) are admin requests signed with the hub's key, claimed with a press on its BOOT button (`firmware/common/lib/admin.c`, as the bay nodes) |
 
 ![The hub's status page (simulated hub): the PD contract and the charger's offers, the rack bus, rows A–D with their bays](img/hub-ui-dark.png)
 

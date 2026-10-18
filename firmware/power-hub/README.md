@@ -47,8 +47,8 @@ other firmware: `west flash --erase` once (settings partition).
 
 ## First boot
 
-The shell runs on the console USB-C (115200, any terminal) and, once the hub
-is on the network, over telnet (port 23).
+The shell runs on the console USB-C (115200, any terminal) only: no telnet,
+since it switches rows and has no login of its own.
 
 ```console
 uart:~$ wifi cred add -s MyLab -k 1 -p secret      # stored in flash (settings)
@@ -71,7 +71,8 @@ uart:~$ hub status
 | Rack bus | TWAI at 250 kbit/s on the TCAN1462V (CAN SIC; STB through `can-transceiver-gpio`); enumeration over the POS tokens, the node table, commands to nodes with retries; the RACK frame every second |
 | Network | Wi-Fi station, DHCP, mDNS `rack-<id>.local` (firmware/common's `hwtr_net`, as the nodes) |
 | Web | Zephyr HTTP server on port 80: status page, JSON API, Prometheus `/metrics` |
-| CTL LED | on: contract, rows as wanted; slow blink: no PD charger or contract settling; double blink: rows shed; fast blink: a row in fault |
+| Access | reading is open; switching rows, the contract choice, the enumeration and the node commands are admin requests, signed with the hub's admin key, claimed with a press on BOOT (see [Access](#access)) |
+| CTL LED | on: contract, rows as wanted; slow blink: no PD charger or contract settling; double blink: rows shed; fast blink: a row in fault; flicker: a claim waits for BOOT |
 
 ## Rack bus
 
@@ -102,6 +103,9 @@ the native_sim test drives), wrapped by `src/bus.c`:
 | `hub events` | recent events |
 | `hub shed [DCBA]` | show or set the shed order (saved) |
 | `hub id [id]` | show or set the rack id, hostname `rack-<id>.local` (saved) |
+| `hub access` | admin key set or not, a claim pending |
+| `hub access claim` | confirm a pending claim, like a short press on BOOT |
+| `hub access reset` | forget the admin key (the hub can be claimed again), like holding BOOT 10 s |
 
 ## Web page and API
 
@@ -127,6 +131,9 @@ bootloader; power-cycle the board; open the bay's own page).
 | `POST /api/pd` | `{"pref": "epr" \| "20v"}` |
 | `POST /api/enumerate` | `{}` |
 | `POST /api/node` | `{"id": 35, "action": "identify" \| "reset" \| "bootloader" \| "power-on" \| "power-off" \| "power-cycle" \| "reboot"}` |
+| `GET /api/access/nonce` | a single-use nonce for an admin request |
+| `POST /api/access/claim` | `{}` or `{"key": "<64 hex>"}` (the rack's key), then `{"ticket": "…"}` until someone presses BOOT: `{"state": "done", "key": …}` |
+| `POST /api/access/check` | signed, `{}`: 200 with the right key, else 403 |
 | `GET /metrics` | `hub_contract_volts`, `hub_contract_amps`, `hub_input_amps`, `hub_sink_celsius`, `hub_row_on{row}`, `hub_row_amps{row}`, `hub_row_faults_total{row}`, `hub_nodes`, `hub_nodes_lost`, CAN counters |
 
 To work on the page without a hub:
@@ -137,8 +144,31 @@ python firmware/power-hub/web/screenshots.py       # docs/img/hub-ui-*.png (Play
 ```
 
 The simulated hub has the same endpoints, a 140 W EPR charger and nine
-bays; `/dev/drop` makes the charger renegotiate down to 30 W (row C shed),
+bays, unclaimed (claim it from the page, then `/dev/boot` presses BOOT);
+`/dev/drop` makes the charger renegotiate down to 30 W (row C shed),
 `/dev/fault?row=C` trips an eFuse, `/dev/lose?node=0x22` silences a node.
+
+## Access
+
+Anyone on the network can read the page, `/api/status`, `/api/events` and
+`/metrics`.  Everything that acts (`/api/row`, `/api/pd`, `/api/enumerate`,
+`/api/node`) is an admin request: `X-Bay-Auth: <nonce>:<HMAC-SHA256(key,
+nonce \n method \n path \n body)>` with a single-use nonce, as on the bay
+nodes (`firmware/common/lib/admin.c`; the page's `rack.mjs` signs).  The key
+crosses the network once, when the hub is claimed:
+
+1. the page (or `POST /api/access/claim`) asks; the CTL LED flickers;
+2. someone presses the hub's **BOOT** button, or types `hub access claim`
+   on its console USB-C, within 60 s: nobody claims the hub from the
+   network alone;
+3. the browser gets the key and keeps it.  The claim may bring the rack's
+   key along, so the hub and the bays share one.
+
+![Claiming the hub: the dialog waits for a press on its BOOT button](../../docs/img/hub-ui-claim.png)
+
+Another browser unlocks the page with the key (the page checks it with
+`/api/access/check`); the header's pill says *admin*, *read-only · unlock*
+or *unclaimed · claim*.  Lost key: hold BOOT 10 s, or `hub access reset`.
 
 ## AP33772S drivers
 
@@ -213,7 +243,5 @@ devicetree against U4 in `design.py`, as it does for the bay node.
   currents; a row whose bays suddenly draw their 1.5 A each trips the
   charger before the hub reacts (1 s).  A static budget (bays × worst case)
   would be safer but sheds rows a 100 W charger could carry.
-* **No access control** on the hub's page yet (the bay nodes have theirs):
-  anyone on the network can switch a row off.
 * Node hostnames: INFO carries the IPv4 address, not the name; the page
   shows addresses.

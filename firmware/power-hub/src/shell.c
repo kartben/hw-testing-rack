@@ -11,6 +11,7 @@
 #include <zephyr/net/hostname.h>
 #include <zephyr/shell/shell.h>
 
+#include <hwtr/admin.h>
 #include <hwtr/net.h>
 
 #include "hub.h"
@@ -252,6 +253,36 @@ static int cmd_shed(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
+/* The shell is on the console USB-C only (no telnet): it is physical access */
+static int cmd_access(const struct shell *sh, size_t argc, char **argv)
+{
+	int ret;
+
+	if (argc == 1) {
+		shell_print(sh, "admin key: %s%s", hwtr_admin_claimed() ? "set" : "none (unclaimed)",
+			    hwtr_admin_claim_pending() ? ", a claim waits for BOOT" : "");
+		return 0;
+	}
+	if (strcmp(argv[1], "claim") == 0) {
+		ret = hwtr_admin_claim_confirm();
+		if (ret == -ENOENT) {
+			shell_error(sh, "no pending claim (start one from the web page)");
+		} else if (ret == 0) {
+			hub_event(HUB_EV_PD, "claimed: admin key set (local shell)");
+			shell_print(sh, "claimed");
+		}
+		return ret;
+	}
+	if (strcmp(argv[1], "reset") == 0) {
+		ret = hwtr_admin_forget();
+		hub_event(HUB_EV_FAULT, "admin key forgotten (local shell)");
+		shell_print(sh, "admin key forgotten: the hub can be claimed again");
+		return ret;
+	}
+	shell_error(sh, "usage: hub access [claim|reset]");
+	return -EINVAL;
+}
+
 static int cmd_id(const struct shell *sh, size_t argc, char **argv)
 {
 	int ret;
@@ -285,6 +316,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_hub,
 		      cmd_shed, 1, 1),
 	SHELL_CMD_ARG(id, NULL, "Rack id, sets the hostname rack-<id>: [<id>] (persistent)",
 		      cmd_id, 1, 1),
+	SHELL_CMD_ARG(access, NULL, "Admin key: [claim] confirms a claim, [reset] forgets the key",
+		      cmd_access, 1, 1),
 	SHELL_SUBCMD_SET_END
 );
 

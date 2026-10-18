@@ -54,6 +54,22 @@ config HWTR_NET
 	bool "Wi-Fi station, hostname <prefix>-<id> and reconnection"
 	depends on WIFI && WIFI_CREDENTIALS && NET_HOSTNAME_ENABLE
 
+config HWTR_ACL
+	bool "Access rules, lease, SHA-256 and HMAC (plain C)"
+
+config HWTR_ADMIN
+	bool "Admin key: claim by a button press, signed requests"
+	select HWTR_ACL
+	help
+	  The device's admin key, its first claim confirmed by physical
+	  presence (a button press or the local shell), and the check of
+	  admin requests signed with it (X-Bay-Auth: nonce and HMAC-SHA256).
+
+config HWTR_ADMIN_CLAIM_S
+	int "Time to press the button after a claim request (s)"
+	default 60
+	depends on HWTR_ADMIN
+
 module = HWTR_RACK
 module-str = rack bus
 source "subsys/logging/Kconfig.template.log_config"

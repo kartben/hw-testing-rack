@@ -1,4 +1,4 @@
-"""Host test of the bay node's access rules (src/acl.c): rules, lease, kicks, log, HMAC.
+"""Host test of the access rules (firmware/common/lib/acl.c): rules, lease, kicks, log, HMAC.
 
     python firmware/bay-node/tests/acl/test_acl.py      # CC=gcc by default
 
@@ -20,7 +20,7 @@ import unittest
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SRC = HERE.parents[1] / "src"
+COMMON = HERE.parents[2] / "common"
 
 STATUS, CONTROL, CONSOLE, USBIP, SHELL = range(5)
 ALL = 0x1F
@@ -35,8 +35,8 @@ def bit(*services: int) -> int:
 def build(outdir: Path) -> ctypes.CDLL:
     lib = outdir / ("acl_shim.dll" if os.name == "nt" else "libacl_shim.so")
     cc = os.environ.get("CC", "gcc")
-    subprocess.run([cc, "-shared", "-fPIC", "-O1", "-Wall", "-Wextra", "-Werror", "-I", str(SRC),
-                    str(HERE / "shim.c"), str(SRC / "acl.c"), "-o", str(lib)], check=True)
+    subprocess.run([cc, "-shared", "-fPIC", "-O1", "-Wall", "-Wextra", "-Werror", "-I", str(COMMON / "include"),
+                    str(HERE / "shim.c"), str(COMMON / "lib" / "acl.c"), "-o", str(lib)], check=True)
     dll = ctypes.CDLL(str(lib))
     s, i, ll, u, sz = ctypes.c_char_p, ctypes.c_int, ctypes.c_longlong, ctypes.c_uint, ctypes.c_size_t
     sigs = {

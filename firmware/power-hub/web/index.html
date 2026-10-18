@@ -77,6 +77,14 @@ button.bay {
   & button:hover, & a:hover { background: var(--soft); }
   & .danger { color: var(--fault); }
 }
+.pill.access {
+  --c: var(--idle);
+  font: inherit; font-size: 0.85rem; font-weight: 550; border: 0; cursor: pointer; padding: 4px 12px;
+  color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent);
+  &[data-access=admin] { --c: var(--ok); }
+  &[data-access=unclaimed] { --c: var(--service); }
+}
+body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
 .log-kind { font-size: 0.72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; color: var(--c, var(--muted)); }
 @media (max-width: 720px) {
   .shelf { grid-template-columns: 1fr auto; & .bays-cell { grid-column: 1 / -1; grid-row: 2; } }
@@ -93,6 +101,7 @@ button.bay {
         <div class="sub" id="where">connecting…</div>
       </div>
     </div>
+    <button class="pill access" id="access-pill" hidden></button>
     <span class="pill" id="state">offline</span>
   </header>
 
@@ -112,7 +121,7 @@ button.bay {
         </svg>
         <div class="pdos" id="pdos" aria-label="What the charger offers"></div>
         <div class="actions">
-          <div class="seg" role="radiogroup" aria-label="Contract to ask for">
+          <div class="seg" role="radiogroup" aria-label="Contract to ask for" data-admin-only>
             <label><input type="radio" name="pref" value="epr">28 V EPR when offered</label>
             <label><input type="radio" name="pref" value="20v">20 V</label>
           </div>
@@ -133,7 +142,7 @@ button.bay {
           <dt>Firmware</dt><dd id="fw">–</dd>
         </dl>
         <div class="actions">
-          <button id="btn-enum">Re-enumerate</button>
+          <button id="btn-enum" data-admin-only>Re-enumerate</button>
         </div>
       </section>
     </div>
@@ -161,6 +170,44 @@ button.bay {
   <form method="dialog"><button value="cancel">Cancel</button><button value="ok" class="primary">OK</button></form>
 </dialog>
 <div id="toast" popover="manual"></div>
+<dialog id="dlg-claim" class="small-dlg">
+  <form id="claim-form">
+    <h3>Claim this hub</h3>
+    <div id="claim-start">
+      <p>Switching rows and sending commands to the bays is for the hub's admin.  Claiming the hub gives this browser its admin key, after a press on the hub's <b>BOOT</b> button: nobody can claim it from the network alone.</p>
+      <label for="claim-key">The rack's admin key (optional, to use the same key as the bays)</label>
+      <input id="claim-key" class="key" autocomplete="off" spellcheck="false" placeholder="64 hex digits, or leave empty for a new key">
+    </div>
+    <div id="claim-wait" hidden>
+      <p>Press the hub's <b>BOOT</b> button once, briefly: its CTL LED flickers.</p>
+      <div class="count" id="claim-count">1:00</div>
+      <p class="hint">Or type <code>hub access claim</code> on its console USB-C.</p>
+    </div>
+    <div id="claim-done" hidden>
+      <p><b>Claimed.</b>  This browser keeps the admin key.  Keep a copy: the bays can use the same one.</p>
+      <div class="cmd"><code id="claim-new-key"></code><button type="button" data-copy="claim-new-key">Copy</button></div>
+    </div>
+    <p class="err" id="claim-err"></p>
+    <div class="btns">
+      <button type="button" data-close>Close</button>
+      <button type="submit" class="primary" id="claim-go">Claim</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="dlg-unlock" class="small-dlg">
+  <form id="unlock-form">
+    <h3>Unlock as admin</h3>
+    <p>Paste the hub's admin key (from when you claimed it, or the rack's key if it was claimed with that one).  It stays in this browser; requests are signed with it, the key itself is not sent.</p>
+    <label for="unlock-key">Admin key</label>
+    <input id="unlock-key" class="key" type="password" autocomplete="off" spellcheck="false" required pattern="[0-9a-fA-F]{64}">
+    <p class="hint">Lost it?  <code>hub access reset</code> on the hub's console USB-C, or hold its BOOT button for 10 s.</p>
+    <p class="err" id="unlock-err"></p>
+    <div class="btns">
+      <button type="button" data-close>Cancel</button>
+      <button type="submit" class="primary">Unlock</button>
+    </div>
+  </form>
+</dialog>
 <div id="node-menu" popover>
   <header><b id="nm-pos"></b><small id="nm-meta"></small></header>
   <button data-node-act="identify">Identify: blink its LED</button>
@@ -174,7 +221,7 @@ button.bay {
   <li class="shelf">
     <div class="head"><span class="letter"></span><span class="st"></span><span class="amps"></span></div>
     <div class="bays-cell"><ul class="bays"></ul></div>
-    <div class="acts">
+    <div class="acts" data-admin-only>
       <button data-row-act="cycle">Cycle</button>
       <button data-row-act="toggle"></button>
     </div>
@@ -182,7 +229,8 @@ button.bay {
 </template>
 
 <script type="module">
-import { $, api, fix, plural, uptime, ago, Spark, toast, confirmed, poll } from "/rack.mjs";
+import { $, api, fix, plural, uptime, ago, Spark, toast, confirmed, poll, copyButtons, storedKey, storeKey,
+  signed, claimKey } from "/rack.mjs";
 
 const pdSpark = new Spark($("pd-spark"), { floor: 5000 });
 const NODE_LABEL = { attached: "USB/IP attached", enumerated: "device ready", usbip: "no device",
@@ -299,11 +347,124 @@ function render(s) {
   $("where").textContent = [`${s.hostname}.local`, s.ip, `${s.can.nodes} bays`].join(" · ");
   const bad = s.rows.filter((r) => r.fault).map((r) => r.name);
   $("fault-text").textContent = bad.length ? `Row ${bad.join(", ")}: eFuse in current limit (1.6 A)` : "";
+  renderAccess(s.access);
   renderPd(s.pd);
   renderRows(s);
   renderBus(s);
   $("uptime").textContent = `Up ${uptime(s.uptime_s)}`;
 }
+
+/* --- Admin: the page's actions are signed with the hub's admin key ----------- */
+
+let access = { claimed: false };
+
+function renderAccess(a) {
+  access = a ?? access;
+  const pill = $("access-pill"), admin = !!storedKey();
+  document.body.toggleAttribute("data-admin", admin);
+  pill.hidden = false;
+  pill.dataset.access = admin ? "admin" : access.claimed ? "locked" : "unclaimed";
+  pill.textContent = admin ? "admin" : access.claimed ? "read-only · unlock" : "unclaimed · claim";
+  pill.title = admin ? "Forget the admin key in this browser" : "";
+}
+
+function showError(id, e) {
+  $(id).textContent = e ? e.message : "";
+}
+
+/* Claim or unlock first; resolves once the dialog is closed */
+function askAdmin(why) {
+  const dlg = access.claimed ? $("dlg-unlock") : $("dlg-claim");
+  if (access.claimed) {
+    $("unlock-key").value = "";
+    showError("unlock-err", why ? new Error(why) : null);
+  } else {
+    $("claim-start").hidden = false;
+    $("claim-wait").hidden = true;
+    $("claim-done").hidden = true;
+    $("claim-go").hidden = false;
+    $("claim-key").value = "";
+    showError("claim-err", why ? new Error(why) : null);
+  }
+  dlg.showModal();
+  return new Promise((ok) => dlg.addEventListener("close", ok, { once: true }));
+}
+
+/* An action of the page: signed, or after a claim / unlock */
+async function admin(path, body) {
+  if (!storedKey()) {
+    await askAdmin();
+    if (!storedKey()) throw Object.assign(new Error("admin only"), { quiet: true });
+  }
+  try {
+    return await signed(path, body);
+  } catch (e) {
+    if (e.status === 403) {
+      storeKey("");
+      renderAccess();
+      askAdmin(e.message);
+    }
+    throw e;
+  }
+}
+
+$("claim-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const key = $("claim-key").value.trim();
+  showError("claim-err");
+  if (key && !/^[0-9a-fA-F]{64}$/.test(key)) return showError("claim-err", new Error("the key is 64 hex digits"));
+  try {
+    const newKey = await claimKey(key, {
+      started() {
+        $("claim-start").hidden = true;
+        $("claim-wait").hidden = false;
+        $("claim-go").hidden = true;
+      },
+      waiting(s) {
+        $("claim-count").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+      },
+      open: () => $("dlg-claim").open,
+    });
+    if (!newKey) return;
+    $("claim-wait").hidden = true;
+    $("claim-done").hidden = false;
+    $("claim-new-key").textContent = newKey;
+    access.claimed = true;
+    renderAccess();
+    toast("Claimed: you are admin");
+  } catch (e) {
+    $("claim-wait").hidden = true;
+    showError("claim-err", e);
+  }
+});
+
+$("unlock-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const key = $("unlock-key").value.trim().toLowerCase();
+  try {
+    await signed("/api/access/check", {}, key);
+    storeKey(key);
+    renderAccess();
+    $("dlg-unlock").close();
+    toast("Unlocked: you are admin");
+  } catch (e) {
+    showError("unlock-err", e.status === 403 ? new Error("that is not this hub's admin key") : e);
+  }
+});
+
+$("access-pill").addEventListener("click", async () => {
+  if (!storedKey()) return askAdmin();
+  if (await confirmed("Forget the admin key in this browser?  The page becomes read-only.")) {
+    storeKey("");
+    renderAccess();
+  }
+});
+
+document.addEventListener("click", (ev) => {
+  const btn = ev.target.closest("[data-close]");
+  if (btn) btn.closest("dialog").close();
+});
+copyButtons();
 
 async function renderEvents() {
   const ev = await api("/api/events");
@@ -339,11 +500,11 @@ $("node-menu").addEventListener("click", async (ev) => {
   $("node-menu").hidePopover();
   if (action === "power-cycle" && !await confirmed(`Power-cycle the board in bay ${pos}?`)) return;
   try {
-    await api("/api/node", { id: menuNode.id, action });
+    await admin("/api/node", { id: menuNode.id, action });
     toast(`${pos}: ${action} sent`);
     setTimeout(renderEvents, 800);
   } catch (e) {
-    toast(e.message);
+    if (!e.quiet) toast(e.message);
   }
 });
 
@@ -357,11 +518,11 @@ $("rack").addEventListener("click", async (ev) => {
     `${action === "cycle" ? "Power-cycle" : "Switch off"} row ${row}? Its ${plural(r.nodes.length, "bay")} and their boards lose power.`)) return;
   btn.disabled = true;
   try {
-    render(await api("/api/row", { row, action }));
+    render(await admin("/api/row", { row, action }));
     toast(`Row ${row}: ${action}`);
     renderEvents();
   } catch (e) {
-    toast(e.message);
+    if (!e.quiet) toast(e.message);
   } finally {
     btn.disabled = false;
   }
@@ -369,17 +530,22 @@ $("rack").addEventListener("click", async (ev) => {
 
 document.querySelectorAll("input[name=pref]").forEach((el) => el.addEventListener("change", async () => {
   try {
-    render(await api("/api/pd", { pref: el.value }));
+    render(await admin("/api/pd", { pref: el.value }));
     renderEvents();
   } catch (e) {
-    toast(e.message);
+    if (!e.quiet) toast(e.message);
+    render(last);
   }
 }));
 
 $("btn-enum").addEventListener("click", async () => {
-  render(await api("/api/enumerate", {}));
-  toast("Rack bus enumerated");
-  renderEvents();
+  try {
+    render(await admin("/api/enumerate", {}));
+    toast("Rack bus enumerated");
+    renderEvents();
+  } catch (e) {
+    if (!e.quiet) toast(e.message);
+  }
 });
 
 poll(async () => render(await api("/api/status")), 2000, () => {

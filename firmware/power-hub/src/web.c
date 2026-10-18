@@ -10,6 +10,14 @@
  *   POST /api/node         {"id": 35, "action": "identify" | "reset" | "bootloader" |
  *                           "power-on" | "power-off" | "power-cycle" | "reboot"}
  *   GET  /metrics          Prometheus text format
+ *   GET  /api/access/nonce single-use nonce for an admin request
+ *   POST /api/access/claim {} | {"key": "<hex>"}, then {"ticket": "<hex>"} until claimed
+ *   POST /api/access/check {}: 200 if signed with the admin key, else 403
+ *
+ * Reading is open; every POST but the claim is an admin request, signed with
+ * the hub's admin key (X-Bay-Auth, firmware/common/lib/admin.c), as on the
+ * bay nodes.  The first key comes from a claim confirmed with a press on the
+ * hub's BOOT button.
  *
  * The JSON is written by hand: nested arrays of rows and nodes.
  *
@@ -19,15 +27,18 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
 #include <zephyr/kernel.h>
 #include <zephyr/data/json.h>
 #include <zephyr/net/hostname.h>
 #include <zephyr/net/http/server.h>
 #include <zephyr/net/http/service.h>
+#include <zephyr/net/socket.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/app_version.h>
 
+#include <hwtr/admin.h>
 #include <hwtr/net.h>
 #include <hwtr/web.h>
 
@@ -37,6 +48,35 @@ LOG_MODULE_REGISTER(web, CONFIG_HUB_LOG_LEVEL);
 
 /* Responses are built in the HTTP server thread, one at a time */
 static char resp_buf[6144];
+
+/* X-Bay-Auth, kept from the first callback of a request */
+HTTP_SERVER_REGISTER_HEADER_CAPTURE(hub_auth_header, "X-Bay-Auth");
+
+static void capture_auth(const struct http_request_ctx *req, char *out, size_t size)
+{
+	if (req->headers_status == HTTP_HEADER_STATUS_NONE) {
+		return;
+	}
+	out[0] = '\0';
+	for (size_t i = 0; i < req->header_count; i++) {
+		if (strcasecmp(req->headers[i].name, "X-Bay-Auth") == 0) {
+			strncpy(out, req->headers[i].value, size - 1);
+			out[size - 1] = '\0';
+		}
+	}
+}
+
+static uint32_t peer_ip(int fd)
+{
+	struct net_sockaddr_in sa = {0};
+	net_socklen_t len = sizeof(sa);
+
+	if (zsock_getpeername(fd, (struct net_sockaddr *)&sa, &len) < 0 ||
+	    sa.sin_family != NET_AF_INET) {
+		return 0;
+	}
+	return net_ntohl(sa.sin_addr.s_addr);
+}
 
 /* --- A tiny JSON / text writer ---------------------------------------------- */
 
@@ -208,8 +248,10 @@ static void respond_status(struct http_response_ctx *rsp)
 	pd_status(&pd);
 	bus_status(&bus);
 
-	put(&o, "{\"hostname\":\"%s\",\"ip\":\"%s\",\"version\":\"%s\",\"uptime_s\":%u,",
-	    net_hostname_get(), hwtr_net_addr(), APP_VERSION_STRING, (uint32_t)(now / 1000));
+	put(&o, "{\"hostname\":\"%s\",\"ip\":\"%s\",\"version\":\"%s\",\"uptime_s\":%u,"
+		"\"access\":{\"claimed\":%s,\"claim_pending\":%s},",
+	    net_hostname_get(), hwtr_net_addr(), APP_VERSION_STRING, (uint32_t)(now / 1000),
+	    hwtr_admin_claimed() ? "true" : "false", hwtr_admin_claim_pending() ? "true" : "false");
 	write_pd(&o, &pd);
 
 	put(&o, ",\"rows\":[");
@@ -311,6 +353,7 @@ enum api_action {
 	API_PD,
 	API_ENUMERATE,
 	API_NODE,
+	API_CHECK,
 };
 
 struct api_req {
@@ -394,6 +437,14 @@ static const char *do_node(const struct api_req *r, int fields)
 	return "unknown action";
 }
 
+static const char *const api_paths[] = {
+	[API_ROW] = "/api/row",
+	[API_PD] = "/api/pd",
+	[API_ENUMERATE] = "/api/enumerate",
+	[API_NODE] = "/api/node",
+	[API_CHECK] = "/api/access/check",
+};
+
 static int api_handler(struct http_client_ctx *client, enum http_transaction_status status,
 		       const struct http_request_ctx *req, struct http_response_ctx *rsp,
 		       void *user_data)
@@ -401,6 +452,7 @@ static int api_handler(struct http_client_ctx *client, enum http_transaction_sta
 	static uint8_t body[128];
 	static size_t len;
 	static bool too_long;
+	static char auth[96];
 	struct api_req areq = {0};
 	enum api_action what = (enum api_action)POINTER_TO_INT(user_data);
 	const char *err = NULL;
@@ -412,9 +464,11 @@ static int api_handler(struct http_client_ctx *client, enum http_transaction_sta
 	    status == HTTP_SERVER_TRANSACTION_COMPLETE) {
 		len = 0;
 		too_long = false;
+		auth[0] = '\0';
 		return 0;
 	}
 
+	capture_auth(req, auth, sizeof(auth));
 	if (len + req->data_len > sizeof(body)) {
 		too_long = true;
 	} else {
@@ -426,6 +480,13 @@ static int api_handler(struct http_client_ctx *client, enum http_transaction_sta
 	}
 	if (too_long) {
 		respond_error(rsp, HTTP_413_PAYLOAD_TOO_LARGE, "body too large");
+		return 0;
+	}
+	/* Before parsing: json_obj_parse() rewrites the body in place */
+	if (!hwtr_admin_check(auth, "POST", api_paths[what], body, len)) {
+		respond_error(rsp, HTTP_403_FORBIDDEN,
+			      hwtr_admin_claimed() ? "admin only: unlock with the hub's admin key"
+						   : "admin only: claim the hub first (its BOOT button)");
 		return 0;
 	}
 	if (len > 0) {
@@ -454,6 +515,9 @@ static int api_handler(struct http_client_ctx *client, enum http_transaction_sta
 	case API_NODE:
 		err = do_node(&areq, fields);
 		break;
+	case API_CHECK:
+		/* The signature was the point */
+		break;
 	}
 
 	if (err != NULL) {
@@ -480,6 +544,7 @@ static struct http_resource_detail_dynamic row_detail = API_RESOURCE(API_ROW);
 static struct http_resource_detail_dynamic pd_detail = API_RESOURCE(API_PD);
 static struct http_resource_detail_dynamic enumerate_detail = API_RESOURCE(API_ENUMERATE);
 static struct http_resource_detail_dynamic node_detail = API_RESOURCE(API_NODE);
+static struct http_resource_detail_dynamic check_detail = API_RESOURCE(API_CHECK);
 
 static struct http_resource_detail_dynamic status_detail = {
 	.common = {
@@ -497,6 +562,130 @@ static struct http_resource_detail_dynamic events_detail = {
 		.content_type = "application/json",
 	},
 	.cb = events_handler,
+};
+
+/* --- /api/access/nonce, /api/access/claim ----------------------------------------- */
+
+static int nonce_handler(struct http_client_ctx *client, enum http_transaction_status status,
+			 const struct http_request_ctx *req, struct http_response_ctx *rsp,
+			 void *user_data)
+{
+	struct out o = {resp_buf, sizeof(resp_buf)};
+	char hex[HWTR_ADMIN_NONCE_HEX];
+
+	ARG_UNUSED(client);
+	ARG_UNUSED(req);
+	ARG_UNUSED(user_data);
+
+	if (status == HTTP_SERVER_REQUEST_DATA_FINAL) {
+		(void)hwtr_admin_nonce(hex);
+		put(&o, "{\"nonce\":\"%s\"}", hex);
+		respond(rsp, &o);
+	}
+	return 0;
+}
+
+struct claim_req {
+	char *key;
+	char *ticket;
+};
+
+static const struct json_obj_descr claim_descr[] = {
+	JSON_OBJ_DESCR_PRIM(struct claim_req, key, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct claim_req, ticket, JSON_TOK_STRING),
+};
+
+static void respond_claim(struct http_response_ctx *rsp, uint32_t ip, const struct claim_req *r,
+			  int fields)
+{
+	struct out o = {resp_buf, sizeof(resp_buf)};
+	uint8_t offered[ACL_KEY_LEN];
+	char hex[HWTR_ADMIN_KEY_HEX];
+	int remaining = 0;
+	int ret;
+
+	if (fields & BIT(1)) {
+		ret = hwtr_admin_claim_poll(ip, r->ticket, hex, &remaining);
+		if (ret == -EINPROGRESS) {
+			put(&o, "{\"state\":\"pending\",\"remaining_s\":%d}", remaining);
+		} else if (ret == 0) {
+			put(&o, "{\"state\":\"done\",\"key\":\"%s\"}", hex);
+		} else {
+			respond_error(rsp, HTTP_404_NOT_FOUND,
+				      ret == -ETIMEDOUT ? "nobody pressed BOOT in time"
+							: "no such claim from this address");
+			return;
+		}
+		respond(rsp, &o);
+		return;
+	}
+
+	if ((fields & BIT(0)) && acl_hex_decode(r->key, offered, sizeof(offered)) != 0) {
+		respond_error(rsp, HTTP_400_BAD_REQUEST, "key: 64 hex digits");
+		return;
+	}
+	ret = hwtr_admin_claim_start(ip, (fields & BIT(0)) ? offered : NULL, hex);
+	if (ret == -EALREADY) {
+		respond_error(rsp, HTTP_409_CONFLICT,
+			      "already claimed: unlock with the admin key, or reset the hub");
+		return;
+	}
+	put(&o, "{\"state\":\"pending\",\"ticket\":\"%s\",\"remaining_s\":%d}", hex,
+	    CONFIG_HWTR_ADMIN_CLAIM_S);
+	respond(rsp, &o);
+}
+
+static int claim_handler(struct http_client_ctx *client, enum http_transaction_status status,
+			 const struct http_request_ctx *req, struct http_response_ctx *rsp,
+			 void *user_data)
+{
+	static uint8_t body[160];
+	static size_t len;
+	struct claim_req r = {0};
+	int fields = 0;
+
+	ARG_UNUSED(user_data);
+
+	if (status == HTTP_SERVER_TRANSACTION_ABORTED ||
+	    status == HTTP_SERVER_TRANSACTION_COMPLETE) {
+		len = 0;
+		return 0;
+	}
+	if (len + req->data_len <= sizeof(body)) {
+		memcpy(body + len, req->data, req->data_len);
+		len += req->data_len;
+	}
+	if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
+		return 0;
+	}
+	if (len > 0) {
+		fields = json_obj_parse(body, len, claim_descr, ARRAY_SIZE(claim_descr), &r);
+		if (fields < 0) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, "bad JSON");
+			return 0;
+		}
+	}
+	respond_claim(rsp, peer_ip(client->fd), &r, fields);
+
+	return 0;
+}
+
+static struct http_resource_detail_dynamic nonce_detail = {
+	.common = {
+		.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+		.bitmask_of_supported_http_methods = BIT(HTTP_GET),
+		.content_type = "application/json",
+	},
+	.cb = nonce_handler,
+};
+
+static struct http_resource_detail_dynamic claim_detail = {
+	.common = {
+		.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+		.bitmask_of_supported_http_methods = BIT(HTTP_POST),
+		.content_type = "application/json",
+	},
+	.cb = claim_handler,
 };
 
 /* --- /metrics ----------------------------------------------------------------- */
@@ -598,6 +787,9 @@ HTTP_RESOURCE_DEFINE(pd_res, hub_http, "/api/pd", &pd_detail);
 HTTP_RESOURCE_DEFINE(enumerate_res, hub_http, "/api/enumerate", &enumerate_detail);
 HTTP_RESOURCE_DEFINE(node_res, hub_http, "/api/node", &node_detail);
 HTTP_RESOURCE_DEFINE(metrics_res, hub_http, "/metrics", &metrics_detail);
+HTTP_RESOURCE_DEFINE(nonce_res, hub_http, "/api/access/nonce", &nonce_detail);
+HTTP_RESOURCE_DEFINE(claim_res, hub_http, "/api/access/claim", &claim_detail);
+HTTP_RESOURCE_DEFINE(check_res, hub_http, "/api/access/check", &check_detail);
 
 int web_init(void)
 {

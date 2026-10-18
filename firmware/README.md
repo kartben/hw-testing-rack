@@ -176,7 +176,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | `bay aux break [ms]` | hold the DUT's RX line low (default 250 ms) |
 | `bay aux send <text>` | send a line to the DUT (with the console's Enter) |
 | `bay aux loopback [on\|off]` | test without a DUT: the UART loops its TX back to its RX (ESP32) |
-| `bay id [id]` | show or set the bay id (persistent), hostname `bay-<id>.local` |
+| `bay id [id]` | show or set the bay id (persistent), hostname `bay-<id>.local`; without one, the rack position (`bay-c3.local`) |
 | `bay access` | access control: admin key, rules, lease, connections, refusals |
 | `bay access claim` | confirm a pending claim, like a short press on BOOT (not over telnet) |
 | `bay access on` / `off` | apply the rules / let every address use everything (`off`: not over telnet) |
@@ -192,7 +192,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | TCP 23 | telnet shell (no login of its own: give the shell right to admin hosts only) |
 | TCP 4001 | AUX UART, RFC 2217, one client (`CONFIG_BAY_RFC2217_PORT`) |
 | TCP 4000 | AUX UART, raw bytes, one client (`CONFIG_BAY_AUX_TCP_PORT`) |
-| UDP 5353 | mDNS: `bay-<id>.local` (default `bay<MAC>` until an id is set) |
+| UDP 5353 | mDNS: `bay-<id>.local`; without an id, the rack position the hub gave (`bay-c3.local`); before that `bay<MAC>` |
 
 Which address may use which of them: [Access control](#access-control).
 Until a node is claimed it is open, as it always was.
@@ -326,11 +326,13 @@ Refused TCP connections are dropped, not reset: `usbip attach` from a
 refused host waits for its timeout.
 
 **Code.**  The rules, the lease, the refusal log and HMAC-SHA256 are plain
-C without Zephyr ([`src/acl.c`](bay-node/src/acl.c)), tested on the host
-against Python's `hashlib`/`hmac`; [`src/access.c`](bay-node/src/access.c)
-applies them (packet filter, settings `access/rules` and `access/key`,
-claim, kicks, connections).  A rack controller pushing rules over CAN would
-reuse `acl.c` and replace the claim with the bus.
+C without Zephyr ([`common/lib/acl.c`](common/lib/acl.c)), tested on the
+host against Python's `hashlib`/`hmac`; the admin key, its nonces, the
+signature check and the claim are [`common/lib/admin.c`](common/lib/admin.c),
+shared with the power hub (whose page signs its actions the same way, with
+the same `rack.mjs` code); [`src/access.c`](bay-node/src/access.c) applies
+them (packet filter, settings `access/rules` and `access/key`, kicks,
+connections).  One key can serve the whole rack: a claim may bring it.
 
 ```bash
 python firmware/bay-node/tests/acl/test_acl.py                       # CC=gcc by default

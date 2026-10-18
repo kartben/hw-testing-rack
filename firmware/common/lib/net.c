@@ -28,6 +28,7 @@ LOG_MODULE_REGISTER(hwtr_net, CONFIG_HWTR_RACK_LOG_LEVEL);
 
 static const char *prefix = "";
 static char id[HWTR_ID_MAX_LEN + 1];
+static char fallback[HWTR_ID_MAX_LEN + 1];
 static char addr_str[NET_IPV4_ADDR_LEN];
 static atomic_t has_addr;
 static atomic_t wifi_up;
@@ -140,13 +141,14 @@ static struct k_thread net_thread_data;
 static void hostname_apply(void)
 {
 	char name[16 + HWTR_ID_MAX_LEN];
+	const char *use = id[0] != '\0' ? id : fallback;
 	size_t i;
 
-	if (id[0] == '\0') {
+	if (use[0] == '\0') {
 		return;
 	}
 
-	snprintf(name, sizeof(name), "%s-%s", prefix, id);
+	snprintf(name, sizeof(name), "%s-%s", prefix, use);
 	for (i = 0; name[i] != '\0'; i++) {
 		name[i] = tolower((unsigned char)name[i]);
 	}
@@ -212,6 +214,23 @@ int hwtr_net_id_set(const char *new_id)
 
 	strcpy(id, new_id);
 	hostname_apply();
+
+	return 0;
+}
+
+int hwtr_net_fallback_id(const char *name)
+{
+	if (strlen(name) == 0 || strlen(name) > HWTR_ID_MAX_LEN) {
+		return -EINVAL;
+	}
+	if (strcmp(name, fallback) == 0) {
+		return 0;
+	}
+	strcpy(fallback, name);
+	if (id[0] == '\0') {
+		hostname_apply();
+		LOG_INF("hostname %s.local (rack position)", net_hostname_get());
+	}
 
 	return 0;
 }

@@ -31,6 +31,11 @@ const char *hwtr_net_addr(void);
 const char *hwtr_net_id(void);
 /* 1-15 letters, digits and '-'; sets the hostname (the caller stores it) */
 int hwtr_net_id_set(const char *id);
+/*
+ * The name to use while no id is set (a bay's rack position, "c3"): the
+ * hostname becomes <prefix>-<name>, not stored; an id set by hand wins.
+ */
+int hwtr_net_fallback_id(const char *name);
 /* The interface's MAC address (6 bytes); 0 if there is one */
 int hwtr_net_mac(uint8_t mac[6]);
 

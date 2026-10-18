@@ -10,6 +10,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -87,6 +88,8 @@ static void set_pos_out(void *ctx, bool high)
 
 static void on_address(void *ctx, uint8_t id)
 {
+	char lower[sizeof(position)];
+
 	ARG_UNUSED(ctx);
 
 	node_id = id;
@@ -97,6 +100,12 @@ static void on_address(void *ctx, uint8_t id)
 	}
 	rack_node_name(id, position);
 	LOG_INF("rack position %s (node 0x%02x)", position, id);
+
+	/* Without a bay id the node is named after its place: bay-c3.local */
+	for (size_t i = 0; i < sizeof(lower); i++) {
+		lower[i] = (char)tolower((unsigned char)position[i]);
+	}
+	(void)hwtr_net_fallback_id(lower);
 }
 
 static void fill_status(void *ctx, struct rack_status *st)

@@ -2,13 +2,17 @@
 
 Each page has a dev_server.py that simulates its board and serves its page
 with the same endpoints and JSON as the firmware; this module has what they
-share: the common static files, JSON and file responses, and a minimal
-WebSocket (RFC 6455) framing.
+share: the common static files, JSON and file responses, a minimal
+WebSocket (RFC 6455) framing, and the admin key's claim and signatures.
 """
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 import json
+import os
+import time
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 
@@ -85,3 +89,65 @@ class PageHandler(BaseHTTPRequestHandler):
 
     def log_message(self, fmt: str, *args) -> None:
         pass
+
+
+class Admin:
+    """The admin key of a simulated device, as firmware/common/lib/admin.c.
+
+    Claim: claim(ip, {}) or claim(ip, {"key": hex}), then claim(ip, {"ticket": t})
+    until press_boot(); admin requests carry X-Bay-Auth = nonce:HMAC.
+    """
+
+    CLAIM_S = 60
+
+    def __init__(self) -> None:
+        self.key: bytes | None = None
+        self.nonces: dict[str, float] = {}
+        self.pending: dict | None = None
+
+    def nonce(self) -> str:
+        value = os.urandom(8).hex()
+        self.nonces[value] = time.monotonic() + 60
+        return value
+
+    def check(self, auth: str, method: str, path: str, body: bytes) -> bool:
+        if self.key is None or ":" not in auth:
+            return False
+        nonce, mac = auth.split(":", 1)
+        if self.nonces.pop(nonce, 0) < time.monotonic():
+            return False
+        msg = f"{nonce}\n{method}\n{path}\n".encode() + body
+        return hmac.compare_digest(mac, hmac.new(self.key, msg, hashlib.sha256).hexdigest())
+
+    def claim(self, ip: str, body: dict) -> tuple[int, dict]:
+        now = time.monotonic()
+        if "ticket" in body:
+            c = self.pending
+            if not c or c["ip"] != ip or c["ticket"] != body["ticket"]:
+                return 404, {"error": "no such claim from this address"}
+            if now >= c["until"]:
+                self.pending = None
+                return 404, {"error": "nobody pressed BOOT in time"}
+            if not c["done"]:
+                return 200, {"state": "pending", "remaining_s": int(c["until"] - now + 0.999)}
+            self.pending = None
+            return 200, {"state": "done", "key": c["key"].hex()}
+        if self.key is not None:
+            return 409, {"error": "already claimed: unlock with the admin key, or reset"}
+        offered = body.get("key")
+        if offered is not None and (len(offered) != 64 or any(ch not in "0123456789abcdefABCDEF" for ch in offered)):
+            return 400, {"error": "key: 64 hex digits"}
+        self.pending = {"ip": ip, "ticket": os.urandom(8).hex(), "until": now + self.CLAIM_S, "done": False,
+                        "key": bytes.fromhex(offered) if offered else None}
+        return 200, {"state": "pending", "ticket": self.pending["ticket"], "remaining_s": self.CLAIM_S}
+
+    def claim_pending(self) -> bool:
+        return bool(self.pending) and not self.pending["done"] and time.monotonic() < self.pending["until"]
+
+    def press_boot(self) -> bool:
+        """A short press on BOOT: confirms a pending claim."""
+        if not self.claim_pending():
+            return False
+        self.key = self.pending["key"] or os.urandom(32)
+        self.pending.update(done=True, key=self.key, until=time.monotonic() + self.CLAIM_S)
+        return True

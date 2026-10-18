@@ -21,7 +21,6 @@ target_sources(app PRIVATE
   src/net.c
   src/shell.c
   src/web.c
-  src/acl.c
   src/access.c
   src/rack.c
 )

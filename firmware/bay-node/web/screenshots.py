@@ -80,7 +80,7 @@ def main() -> None:
         time.sleep(3 * POLL_S)
 
         def shoot_top(page, name: str) -> None:
-            s.shoot_span(page, name, "header", ".cards")
+            s.shoot_span(page, name, ".wrap > header", ".cards")
 
         shoot_top(dark, "web-ui-access")
         dark.set_viewport_size({"width": DESKTOP["width"], "height": 760})

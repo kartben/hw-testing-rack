@@ -13,16 +13,18 @@
 #include <zephyr/kernel.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/led.h>
+#include <zephyr/input/input.h>
 #include <zephyr/settings/settings.h>
 #include <zephyr/logging/log.h>
 
+#include <hwtr/admin.h>
 #include <hwtr/net.h>
 
 #include "hub.h"
 
 LOG_MODULE_REGISTER(hub, CONFIG_HUB_LOG_LEVEL);
 
-/* --- Settings: "hub/id", "hub/epr", "hub/rows", "hub/shed" ------------------- */
+/* --- Settings: "hub/id", "hub/epr", "hub/rows", "hub/shed", "hub/key" -------- */
 
 static char stored_id[HWTR_ID_MAX_LEN + 1];
 static bool stored_epr = IS_ENABLED(CONFIG_HUB_PD_EPR);
@@ -58,6 +60,18 @@ static int hub_settings_set(const char *key, size_t len, settings_read_cb read_c
 		n = read_cb(cb_arg, stored_shed, HUB_ROWS);
 		return n < 0 ? (int)n : 0;
 	}
+	if (settings_name_steq(key, "key", NULL)) {
+		uint8_t k[ACL_KEY_LEN];
+
+		if (len != sizeof(k)) {
+			return 0;
+		}
+		n = read_cb(cb_arg, k, sizeof(k));
+		if (n == sizeof(k)) {
+			hwtr_admin_load(k);
+		}
+		return n < 0 ? (int)n : 0;
+	}
 
 	return -ENOENT;
 }
@@ -84,6 +98,61 @@ int hub_settings_save_shed(const char *order)
 	return settings_save_one("hub/shed", order, HUB_ROWS);
 }
 
+/* The admin key (firmware/common/lib/admin.c), or NULL to forget it */
+static int save_key(const uint8_t *k)
+{
+	return k != NULL ? settings_save_one("hub/key", k, ACL_KEY_LEN) : settings_delete("hub/key");
+}
+
+/* --- BOOT button: a short press confirms a claim, 10 s forgets the key -------- */
+
+#define RESET_HOLD_MS 10000
+
+static void boot_handler(struct k_work *work)
+{
+	ARG_UNUSED(work);
+
+	if (hwtr_admin_claim_confirm() == 0) {
+		hub_event(HUB_EV_PD, "claimed: admin key set (BOOT pressed)");
+	}
+}
+
+static void reset_handler(struct k_work *work)
+{
+	ARG_UNUSED(work);
+
+	(void)hwtr_admin_forget();
+	hub_event(HUB_EV_FAULT, "admin key forgotten (BOOT held 10 s): the hub can be claimed again");
+}
+
+static K_WORK_DEFINE(boot_work, boot_handler);
+static K_WORK_DEFINE(reset_work, reset_handler);
+
+static void button_cb(struct input_event *evt, void *user_data)
+{
+	static int64_t pressed_at;
+	int64_t held;
+
+	ARG_UNUSED(user_data);
+
+	if (evt->type != INPUT_EV_KEY || evt->code != INPUT_KEY_0) {
+		return;
+	}
+	if (evt->value != 0) {
+		pressed_at = k_uptime_get();
+		return;
+	}
+	held = k_uptime_get() - pressed_at;
+	k_work_submit(held >= RESET_HOLD_MS ? &reset_work : &boot_work);
+}
+
+INPUT_CALLBACK_DEFINE(NULL, button_cb, NULL);
+
+static const struct hwtr_admin_cfg admin_cfg = {
+	.save = save_key,
+	.how_to_confirm = "press the hub's BOOT button (short) or run \"hub access claim\"",
+};
+
 /* --- CTL LED -------------------------------------------------------------- */
 
 static const struct led_dt_spec ctl = LED_DT_SPEC_GET(DT_NODELABEL(ctl_led));
@@ -93,14 +162,18 @@ static const struct led_dt_spec ctl = LED_DT_SPEC_GET(DT_NODELABEL(ctl_led));
  * slow blink         no PD charger (console USB only), or contract not final yet
  * double blink       rows shed for lack of power
  * fast blink         a row in fault
+ * flicker            a claim waits for a press on BOOT
  */
 static bool led_level(uint32_t tick)
 {
 	struct hub_pd_status pd;
 
 	pd_status(&pd);
-	if (rows_fault_mask() != 0) {
+	if (hwtr_admin_claim_pending()) {
 		return tick & 1;
+	}
+	if (rows_fault_mask() != 0) {
+		return tick & 2;
 	}
 	if (rows_shed_mask() != 0 && pd.final) {
 		return (tick % 8) == 0 || (tick % 8) == 2;
@@ -117,6 +190,8 @@ int main(void)
 	int ret;
 
 	LOG_INF("hw-testing-rack power hub");
+
+	hwtr_admin_init(&admin_cfg);
 
 	ret = settings_subsys_init();
 	if (ret == 0) {
