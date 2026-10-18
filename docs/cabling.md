@@ -77,5 +77,9 @@ plugs into the power box's rear wall.
   outer face, climbs the rack's left side tied to the ladders, and enters the
   first bay's left window to its node's IN connector.  Give the CAN pair 2–3
   twists per 10 cm.
+* **A node on the bench:** it runs only from its row, never from USB.  To
+  flash or try one on a desk, give its IN connector 15–30 V (J1.1 +, J1.2 /
+  J1.5 GND; e.g. a 19–24 V laptop or lab supply: the buck starts above
+  13.5 V); the PC port then reaches the ESP32.
 * **Cameras:** a JST-PH lead from the node above, down through the hole in
   the tray's bottom to the pod.

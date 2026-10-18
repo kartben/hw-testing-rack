@@ -107,8 +107,8 @@ directory on a short path (e.g. `C:\rack-ws`): `hal_espressif` and
 
 ## Flashing
 
-The node runs from its row: the hub must have the row on (on a desk: 9–30 V
-on J1).
+The node runs from its row: the hub must have the row on (on a desk: 15–30 V
+on J1, pin 1 +: the buck starts above 13.5 V).
 
 1. Slide the bay's **SERVICE** switch on and plug a laptop into the front
    **PC** port, both on the fascia.  The firmware stops its USB host and

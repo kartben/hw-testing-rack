@@ -115,7 +115,7 @@ esptool --chip esp32s3 -p /dev/ttyACM0 -b 921600 write-flash 0x0 build/zephyr/ze
 
 The node runs from its row (VRACK), never from the USB port: its row must be
 on (the hub turns rows on by itself; `hub row <A–D> on` otherwise).  On a
-desk, feed 9–30 V on J1 (VRACK, GND).
+desk, feed 15–30 V on J1 (pin 1 +, pins 2 / 5 GND): the buck starts above 13.5 V.
 
 | | How | Bay closed? |
 |---|---|---|
