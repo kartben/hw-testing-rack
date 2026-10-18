@@ -47,7 +47,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 12 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 12 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 12 | 44.5 | `mechanical/stl/drawer.stl` |
+| drawer | 12 | 44.3 | `mechanical/stl/drawer.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 49.6 | `mechanical/stl/ladder_a.stl` |
 | ladder_b | 5 | 49.6 | `mechanical/stl/ladder_b.stl` |
@@ -69,7 +69,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 20.7 | `mechanical/stl/power_box_lid.stl` |
 | power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |
-| tray | 12 | 79.5 | `mechanical/stl/tray.stl` |
+| tray | 12 | 79.4 | `mechanical/stl/tray.stl` |
 
 ## Line items
 

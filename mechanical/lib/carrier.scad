@@ -12,11 +12,21 @@ function node_xy(k) = [NODE_X0 + k[0], NODE_FRONT_Y + (NODE_SIZE[1] - k[1])];
 NODE_REAR_Y = NODE_FRONT_Y + NODE_SIZE[1];
 PWR_NOTCH_Y = node_xy([0, NODE_PWR_Y])[1];        // row cable (JST PH 6) between neighbouring nodes
 
-// front wall of the tray: PC/classic USB-C port, status LED window, SERVICE switch
+// Opening for a USB-C plug's overmold (USB-IF reference: up to 12.35 × 6.5 mm) with clearance:
+// width, height, corner radius.  A receptacle that sits behind a wall's outer face needs it, not
+// a shell-sized cut, or the overmold stops on the wall before the plug seats.
+USBC_PLUG_CUT = [12.8, 7.2, 2];
+module usbc_plug_cut(h)         // centred on the plug axis, extruded along +Z
+    linear_extrude(h) offset(r = USBC_PLUG_CUT[2])
+        square([USBC_PLUG_CUT[0] - 2 * USBC_PLUG_CUT[2], USBC_PLUG_CUT[1] - 2 * USBC_PLUG_CUT[2]], center = true);
+
+// front wall of the tray: PC/classic USB-C port, status LED window, SERVICE switch.  The node's
+// USB-C receptacle (J3, GCT USB4105) has its face 0.275 mm proud of the PCB edge, i.e. 2.7 mm
+// behind the fascia's outer face: the plug's overmold has to enter the fascia.
 module fascia_cutouts() {
     // [kicad_x, width, height, z above PCB top]
     cuts = [
-        [NODE_FRONT[0], 9.6, 3.8, 1.6, "usbc"],    // PC / classic USB-C
+        [NODE_FRONT[0], USBC_PLUG_CUT[0], USBC_PLUG_CUT[1], 1.6, "usbc"],    // PC / classic USB-C
         [NODE_FRONT[1], 3.2, 3.2, 0.7, "round"],   // status LED window
         [NODE_FRONT[2], 7.4, 3.0, 1.4, "rect"],    // SERVICE switch
     ];
@@ -24,8 +34,7 @@ module fascia_cutouts() {
         x = NODE_X0 + c[0];
         z = NODE_PCB_TOP + c[3];
         translate([x, -EPS, z]) rotate([-90, 0, 0]) {
-            if (c[4] == "usbc") hull() for (dx = [-(c[1] - c[2]) / 2, (c[1] - c[2]) / 2])
-                translate([dx, 0, 0]) cylinder(d = c[2], h = CARRIER_FASCIA + 2);
+            if (c[4] == "usbc") usbc_plug_cut(CARRIER_FASCIA + 2);
             else if (c[4] == "round") cylinder(d = c[1], h = CARRIER_FASCIA + 2);
             else translate([-c[1] / 2, -c[2] / 2, 0]) cube([c[1], c[2], CARRIER_FASCIA + 2]);
         }

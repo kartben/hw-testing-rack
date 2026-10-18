@@ -40,8 +40,11 @@ module port_wall() {
     y = DRAWER_PORT_WALL_Y;
     difference() {
         translate([0, y - DRAWER_WALL, 0]) cube([DRAWER_W, DRAWER_WALL + 1, DRAWER_WALL_H]);
+        // DATA sockets: open to the plug's overmold, so the plug seats whether the panel-mount
+        // socket sits behind the 3 mm wall (ears on the rear face) or passes through it
         for (x = PORT_X) translate([x, y - DRAWER_WALL - EPS, PORT_Z]) rotate([-90, 0, 0]) {
-            hull() for (dx = [-3.0, 3.0]) translate([dx, 0, 0]) cylinder(d = 3.6, h = DRAWER_WALL + 2);
+            if (x == AUX_PORT_X) hull() for (dx = [-3.0, 3.0]) translate([dx, 0, 0]) cylinder(d = 3.6, h = DRAWER_WALL + 2);
+            else usbc_plug_cut(DRAWER_WALL + 2);
             for (dx = [-PORT_EARS / 2, PORT_EARS / 2]) translate([dx, 0, 0]) cylinder(d = 3.2, h = DRAWER_WALL + 2);
         }
     }

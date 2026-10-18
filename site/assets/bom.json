@@ -2177,8 +2177,8 @@
 {
 "part": "drawer",
 "qty": 12,
-"grams_each": 44.5,
-"grams_total": 534.4,
+"grams_each": 44.3,
+"grams_total": 531.5,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
@@ -2331,8 +2331,8 @@
 {
 "part": "tray",
 "qty": 12,
-"grams_each": 79.5,
-"grams_total": 954.4,
+"grams_each": 79.4,
+"grams_total": 953.3,
 "stl": "mechanical/stl/tray.stl"
 }
 ],
