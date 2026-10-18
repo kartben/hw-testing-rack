@@ -5,16 +5,16 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 574 |
+| Electronics | 583 |
 | Power | 82 |
 | Printed parts | 78 |
 | Cables | 67 |
 | Cameras | 36 |
 | Fasteners | 17 |
 | Motion | 9 |
-| **Total** | **863** |
+| **Total** | **872** |
 
-≈ **€72 per bay** all-in.
+≈ **€73 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -27,11 +27,11 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | bay-node | 20 PCBs (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA), 16 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $19.30, board $14.60 | 58.90 |
 | | | PCBA: setup $25.75, stencil $8.27, components $181.21, feeders $65.10, SMT $9.45, hand soldering $3.61, manual assembly $1.62, X-ray $13.28, packaging $0.52 | 308.81 |
 | | | **Quoted total** | **367.71** |
-| | | Order (indicative): no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders) | 411.20 |
+| | | Order (indicative): no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components) | 419.84 |
 | power-hub | 5 PCBs (4-layer 76×140 mm, ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $17.60, board $12.00 | 54.60 |
-| | | PCBA: setup $25.75, stencil $8.27, components $51.24, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52 | 158.06 |
-| | | **Estimated total** | **212.66** |
-| | | Order (indicative): as quoted | 212.66 |
+| | | PCBA: setup $25.75, stencil $8.27, components $52.32, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52 | 159.14 |
+| | | **Estimated total** | **213.74** |
+| | | Order (indicative): as quoted | 213.74 |
 
 ## Printed parts
 
@@ -119,10 +119,10 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | SN74LVC1G32DBVR — single 2-input OR | 16  | 0.06 | 1.03 | LCSC/JLCPCB C10096 |
 | Electronics | TPS2553DBVR — adjustable current-limited power switch | 16  | 0.50 | 7.95 | LCSC/JLCPCB C55266 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 16  | 0.69 | 11.04 | LCSC/JLCPCB C49851 |
-| Electronics | TCAN1044AV — CAN FD transceiver, VCC 5 V, VIO 1.8–5 V, bus pins ±58 V (MCP2562 pinout) | 16  | 0.40 | 6.33 | LCSC/JLCPCB C3234993 |
+| Electronics | TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout) | 16  | 0.89 | 14.28 | LCSC/JLCPCB C7399456 |
 | Electronics | Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA) | 20  | 2.71 | 54.19 | JLCPCB quote 2026-10-16 |
 | Electronics | Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging | 1  | 122.35 | 122.35 | JLCPCB quote 2026-10-16, adjusted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -27.41 | -27.41 | JLCPCB quote 2026-10-16, adjusted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -27.42 | -27.42 | JLCPCB quote 2026-10-16, adjusted |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 20  | 0.01 | 0.25 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C15849 |
@@ -176,7 +176,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | AP2112K-3.3TRG1 — 3.3 V 600 mA LDO, 250 mV dropout | 2  | 0.16 | 0.31 | LCSC/JLCPCB C51118 |
 | Electronics | ESP32-S3-MINI-1-N8 — ESP32-S3 module, 8 MB flash, PCB antenna, USB OTG (full speed) | 2  | 4.34 | 8.68 | LCSC/JLCPCB C2913206 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 2  | 0.17 | 0.33 | LCSC/JLCPCB C7519 |
-| Electronics | TCAN1044AV — CAN FD transceiver, VCC 5 V, VIO 1.8–5 V, bus pins ±58 V (MCP2562 pinout) | 2  | 0.40 | 0.79 | LCSC/JLCPCB C3234993 |
+| Electronics | TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout) | 2  | 0.89 | 1.78 | LCSC/JLCPCB C7399456 |
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 8  | 1.42 | 11.33 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×140 mm, ENIG) | 5  | 10.05 | 50.23 | estimate, not quoted (v0.5) |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 98.27 | 98.27 | estimate, not quoted (v0.5) |

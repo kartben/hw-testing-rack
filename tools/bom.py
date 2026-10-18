@@ -52,10 +52,10 @@ JLC_QUOTE = {
     # engineering fee, components at catalogue prices, $3 per extended part type (19).  The
     # AP33772SDKZ-13-FA02 was out of stock at LCSC on 2026-10-18: global sourcing would add to it.
     "power-hub": {
-        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 212.66, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 213.74, "estimate": True,
         "spec": "4-layer 76×140 mm, ENIG",
         "pcb": {"engineering": 25.00, "ENIG": 17.60, "board": 12.00},
-        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 51.24, "feeders": 57.00, "SMT": 2.00,
+        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 52.32, "feeders": 57.00, "SMT": 2.00,
                  "X-ray": 13.28, "packaging": 0.52},
     },
 }
@@ -69,10 +69,12 @@ JLC_FINISH = {}
 # quoted order).  Bay node rev 0.5: the rack bus (TCAN1044AV, PESD2CAN, 2 × BAT54S, 3 resistors, 2
 # capacitors, the 6-pin J1/J2), GCT USB4105 receptacles instead of the HRO ones and 2 × 100 nF on
 # the USBLC6s: +$2.38 of parts per board at catalogue prices; four new extended part types and one
-# gone (the HRO), ≈ $3 loading each.
+# gone (the HRO), ≈ $3 loading each.  Then the TCAN1462V (signal improvement) instead of the
+# TCAN1044AV: +$0.54 per board.
 JLC_SINCE_QUOTE = {
     "bay-node": [("rev 0.5 parts (rack bus, GCT USB-C)", "components", 38.10),
-                 ("rev 0.5: 3 more extended part types", "feeders", 9.00)],
+                 ("rev 0.5: 3 more extended part types", "feeders", 9.00),
+                 ("rev 0.5: TCAN1462V instead of the TCAN1044AV", "components", 8.64)],
 }
 
 
@@ -149,7 +151,8 @@ def electronics(rack) -> tuple[list[dict], dict]:
                          "part": r.get("LCSC", "") or lcsc, "qty": int(r["Qty"]) * n,
                          "unit_eur": round(usd * USD_EUR, 4), "basic": basic, "standard_only": std_only,
                          "hand_solder": hand,
-                         "notes": f"{r['Qty']} per board × {n} boards" + ("; hand-solder, buy loose (LCSC)" if hand else "")})
+                         "notes": f"{r['Qty']} per board × {n} boards" + ("; hand-solder, buy loose (LCSC)" if hand else "")
+                                  + (f"; alternative: {r['Alternative']}" if r.get("Alternative") else "")})
         rows += mine
         pcb, pcba, changes = jlc_order(name, {r["mpn"] for r in mine if not r["basic"]},
                                        {r["mpn"] for r in mine if r["hand_solder"]})

@@ -45,4 +45,4 @@ U6,1,MUX_DUT,MSOP-10_3x3mm_P0.5mm,FSUSB42MUX,onsemi,C11355,USB 2.0 HS 2:1 switch
 U7,1,SN74LVC1G32DBVR,SOT-23-5,SN74LVC1G32DBVR,Texas Instruments,C10096,single 2-input OR,,,
 U9,1,TPS2553DBVR,SOT-23-6,TPS2553DBVR,Texas Instruments,C55266,adjustable current-limited power switch,,,
 U10,1,INA226AIDGSR,TSSOP-10_3x3mm_P0.5mm,INA226AIDGSR,Texas Instruments,C49851,"36 V current/voltage/power monitor, I2C",,,
-U11,1,TCAN1044AV,SOIC-8_3.9x4.9mm_P1.27mm,TCAN1044AVDRQ1,Texas Instruments,C3234993,"CAN FD transceiver, VCC 5 V, VIO 1.8–5 V, bus pins ±58 V (MCP2562 pinout)",,,
+U11,1,TCAN1462V,SOIC-8_3.9x4.9mm_P1.27mm,TCAN1462VDRQ1,Texas Instruments,C7399456,"CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout)",,"LCSC stock was 0 on 2026-10-18.  Same pinout: TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V) or NXP TJA1462AT/0Z (C3234095, SIC, VIO 2.95–5.5 V, bus pins −36/+40 V)",

@@ -160,7 +160,9 @@ JLC_CPL_FIX = {
     "C160315": ("JST_VH_B2P-VH_1x02_P3.96mm_Vertical", 0, 1.98, 0.0),         # hub J1 (hand-soldered)
     # rack bus parts, fitted on 2026-10-18 the same way
     "C265405": ("JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal", 180, 0.0, 0.0),  # bay J1 J2 J5, hub row outputs
-    "C3234993": ("SOIC-8_3.9x4.9mm_P1.27mm", 270, 0.0, 0.0),                  # bay U11, hub U6 (TCAN1044AV)
+    "C7399456": ("SOIC-8_3.9x4.9mm_P1.27mm", 270, 0.0, 0.0),                  # bay U11, hub U6 (TCAN1462V)
+    "C3234993": ("SOIC-8_3.9x4.9mm_P1.27mm", 270, 0.0, 0.0),                  # its alternates, same SOIC-8: TCAN1044AV
+    "C3234095": ("SOIC-8_3.9x4.9mm_P1.27mm", 270, 0.0, 0.0),                  # and TJA1462AT
     "C75176": ("SOT-23", 180, 0.0, 0.0),                                      # bay D5, hub D9 (PESD2CAN)
     "C7420333": ("SOT-23", 180, 0.0, 0.0),                                    # bay D6 D7, hub POS clamps (BAT54S)
     "C5184243": ("USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", 0, 0.0, -1.30),  # bay J3 J4, hub USB-C

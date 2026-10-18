@@ -4,7 +4,7 @@ Functions
   * Row cable in/out (JST PH 6, daisy-chained bay to bay, docs/can.md): the row bus VRACK (20 V, or
     28 V EPR, from the hub's USB-C PD supply), the rack's CAN pair and the POS addressing token.
     Reverse-polarity P-FET, TVS, LMR51635 synchronous buck to 5 V / 3.5 A, 3.3 V LDO for the logic.
-  * CAN: TCAN1044AV on the ESP32-S3 TWAI, tapping the pair that runs J1 → J2 (no termination).
+  * CAN: TCAN1462V on the ESP32-S3 TWAI, tapping the pair that runs J1 → J2 (no termination).
   * POS: token in on J1.6, out on J2.6, each through 10k + a BAT54S clamp (survives VRACK on it).
   * DUT port (USB-C, source): DUT_5V through a TPS2553 current-limited switch
     (≈1.4 A) and a 50 mΩ shunt read by an INA226; D+/D- through ESD.
@@ -176,7 +176,7 @@ def board() -> Board:
         "  MCU: ESP32-S3-MINI-1, reset/boot, status LED, UART pads",
         "  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)",
         "  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V",
-        "  Rack bus: TCAN1044AV CAN transceiver on the row pair, POS token in/out (docs/can.md)",
+        "  Rack bus: TCAN1462V CAN transceiver on the row pair, POS token in/out (docs/can.md)",
         "",
         "Mode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)",
         "                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX",
@@ -626,11 +626,11 @@ def board() -> Board:
 
     # ------------------------------------------------------------------ rack bus: CAN + POS (docs/can.md)
     k = b.sheet("Rack bus", "bus.kicad_sch", "Rack bus: CAN transceiver and POS addressing token")
-    k.frame("CAN: TCAN1044AV on the row pair (J1.3/4 ↔ J2.3/4, Power sheet); stub ≤ 20 mm, no termination", 6, 6, 70, 32)
+    k.frame("CAN: TCAN1462V on the row pair (J1.3/4 ↔ J2.3/4, Power sheet); stub ≤ 20 mm, no termination", 6, 6, 70, 32)
     # straddles the In2 VRACK strip: VCC (+5V) and the TXD/RXD pins on the rear side, VIO (+3V3), CANH/CANL and
     # STB on the front side, right above the pair
     part(k, "U11", "can_xcvr", {"TXD": "CAN_TXD", "VSS": "GND", "VDD": "+5V", "RXD": "CAN_RXD", "Vio": "+3V3",
-                                "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "GND"}, "TCAN1044AV",
+                                "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "GND"}, "TCAN1462V",
          pcb=P(27.5, PWR_Y - 5.0, 270), sch=at(36, 18, fields=(-4, -5.5)))
     k.wire("U11.TXD", (24, 16))
     k.tag("CAN_TXD", (24, 16), "left")
@@ -675,7 +675,7 @@ def board() -> Board:
     k.wire("D7.COM", (22, 56))
     k.notes_at = (6, 70, 64)
     k.note("CAN (docs/can.md): one bus for the rack, a star from the hub; both terminations sit in the hub.")
-    k.note("  250 kbit/s (125 kbit/s fallback).  TCAN1044AV: VCC 5 V, VIO 3.3 V, bus pins ±58 V, passive unpowered.")
+    k.note("  250 kbit/s (125 kbit/s fallback).  TCAN1462V (SIC): VCC 5 V, VIO 3.3 V, bus pins ±58 V, passive unpowered.")
     k.note("POS: active-high 3.3 V token.  From reset the node holds POS_OUT low; when POS_IN goes high and it has")
     k.note("  no address yet, it answers with its MAC, takes (row, position) from the hub, then raises POS_OUT.")
     k.note("  R29 keeps POS_IN low with no cable; the next node's 100k keeps POS_OUT low before firmware.")

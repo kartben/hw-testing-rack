@@ -445,8 +445,8 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 | IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
 | IO15 | SVC | SERVICE slide switch | `usb_mux` `service-gpios` |
 | IO16 | POS_IN | POS token from J1.6 (10k, BAT54S clamp, 100k pull-down) | `rack_bus` `pos-in-gpios` |
-| IO17 | CAN_RXD | TCAN1044AV RXD (rack CAN bus) | `&twai` |
-| IO18 | CAN_TXD | TCAN1044AV TXD | `&twai` |
+| IO17 | CAN_RXD | TCAN1462V RXD (rack CAN bus) | `&twai` |
+| IO18 | CAN_TXD | TCAN1462V TXD | `&twai` |
 | IO19 | ESP_DN | USB D−, internal FS PHY → MUX_DUT / MUX_PC | `zephyr_uhc0: &usb_otg` |
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
 | IO33 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
