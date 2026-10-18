@@ -19,7 +19,7 @@ the row's first node.  Box and lid: [mechanical.md](mechanical.md#power-box).
 
 ![The power box, lid off: the hub v0.5, the charger's USB-C cable at the rear, the status LEDs at the front](img/power-box.jpg)
 
-*Left: from the rear, the charger's USB-C cable and the row outputs' cut-outs.  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
+*Lid off, labels inlaid in white.  Left: from the rear, the charger's USB-C cable (PD IN) and the row outputs' windows (A–D).  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
 
 ## The charger
 

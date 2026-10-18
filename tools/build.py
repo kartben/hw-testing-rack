@@ -91,6 +91,8 @@ def part_jobs(rack) -> list[tuple[str, str, dict]]:
         ("bay_label", "parts/label.scad", {}),
         ("power_box_base", "parts/power_box.scad", {"PART": "base"}),
         ("power_box_lid", "parts/power_box.scad", {"PART": "lid"}),
+        ("power_box_labels", "parts/power_box.scad", {"PART": "labels"}),
+        ("power_box_lid_labels", "parts/power_box.scad", {"PART": "lid_labels"}),
     ]
     for k, row in enumerate(rack.rows):      # one ladder and one brace per row (their heights differ)
         jobs.append((f"ladder_{row['id'].lower()}", "parts/ladder.scad", {"PART": "row", "ROW": k}))

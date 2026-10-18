@@ -202,8 +202,8 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         "ladder_base": cols + 1, "ladder_cap": cols + 1, "floor_plate": cols, "cap_plate": cols, "brace_base": cols,
         "tray": n_bays, "drawer": n_bays, "chain_foot": n_bays, "chain_anchor": n_bays,
         "camera_pod_mount": cams, "camera_pod_cradle": cams, "bay_label": n_bays,
-        # the power box: base and lid
-        "power_box_base": 1, "power_box_lid": 1,
+        # the power box: base and lid, and their optional label inlays (a second, light filament)
+        "power_box_base": 1, "power_box_lid": 1, "power_box_labels": 1, "power_box_lid_labels": 1,
     })
     for row in rack.rows:
         counts[f"ladder_{row['id'].lower()}"] += cols + 1
@@ -244,15 +244,18 @@ def hardware(rack) -> list[dict]:
     charger = r["power_box"]["charger"]
     rows = [
         {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
-         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 6 * n_bays + 4 * cams + 8,
+         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 6 * n_bays + 4 * cams + 4,
          "unit_eur": 0.03,
          "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node "
                   "standoffs + 2 chain anchor; 4 under the ceiling of every camera bay; power box: 4 hub "
-                  "standoffs + 4 lid lugs"},
-        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, power box lid",
-         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 4, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor, hub PCB)", "supplier": "AliExpress (bulk)",
+                  "standoffs"},
+        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces",
+         "supplier": "AliExpress (bulk)", "qty": 4 * braces, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×6 (node PCB, chain anchor, power box lid)", "supplier": "AliExpress (bulk)",
          "qty": 6 * n_bays + 4, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",
+         "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
+         "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
         {"category": "Fasteners", "item": "M2.5×8 self-tapping (drawer stop, chain-foot lock) + M2.5×6 (chain ends)",
          "supplier": "AliExpress (bulk)", "qty": 6 * n_bays, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm (drawer detent: one in the drawer, one in the tray ledge)",
