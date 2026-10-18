@@ -54,6 +54,8 @@
 #include <zephyr/net/prometheus/gauge.h>
 #include <zephyr/logging/log.h>
 
+#include <hwtr/web.h>
+
 #include "bay.h"
 
 LOG_MODULE_REGISTER(web, CONFIG_BAY_LOG_LEVEL);
@@ -111,6 +113,16 @@ struct status_access {
 	struct status_lease lease;
 };
 
+/* Rack bus: the position the hub gave, its contract */
+struct status_rack {
+	int32_t node;    /* row x 16 + position, 0: none */
+	const char *pos; /* "C3" */
+	bool hub;        /* the hub's RACK frame is coming */
+	int32_t hub_mv;
+	bool hub_epr;
+	int32_t rows_on;
+};
+
 struct status_doc {
 	const char *id;
 	const char *hostname;
@@ -125,6 +137,7 @@ struct status_doc {
 	struct status_dut dut;
 	struct status_aux aux;
 	struct status_access access;
+	struct status_rack rack;
 	/* Storage for the strings above */
 	char you_buf[ACL_IP_STR_LEN];
 	char holder_buf[ACL_IP_STR_LEN];
@@ -177,6 +190,15 @@ static const struct json_obj_descr status_access_descr[] = {
 	JSON_OBJ_DESCR_OBJECT(struct status_access, lease, status_lease_descr),
 };
 
+static const struct json_obj_descr status_rack_descr[] = {
+	JSON_OBJ_DESCR_PRIM(struct status_rack, node, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct status_rack, pos, JSON_TOK_STRING),
+	JSON_OBJ_DESCR_PRIM(struct status_rack, hub, JSON_TOK_TRUE),
+	JSON_OBJ_DESCR_PRIM(struct status_rack, hub_mv, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct status_rack, hub_epr, JSON_TOK_TRUE),
+	JSON_OBJ_DESCR_PRIM(struct status_rack, rows_on, JSON_TOK_NUMBER),
+};
+
 static const struct json_obj_descr status_descr[] = {
 	JSON_OBJ_DESCR_PRIM(struct status_doc, id, JSON_TOK_STRING),
 	JSON_OBJ_DESCR_PRIM(struct status_doc, hostname, JSON_TOK_STRING),
@@ -191,6 +213,7 @@ static const struct json_obj_descr status_descr[] = {
 	JSON_OBJ_DESCR_OBJECT(struct status_doc, dut, status_dut_descr),
 	JSON_OBJ_DESCR_OBJECT(struct status_doc, aux, status_aux_descr),
 	JSON_OBJ_DESCR_OBJECT(struct status_doc, access, status_access_descr),
+	JSON_OBJ_DESCR_OBJECT(struct status_doc, rack, status_rack_descr),
 };
 
 /* Responses are built in the HTTP server thread, one at a time (/metrics too) */
@@ -217,6 +240,7 @@ static void capture_auth(const struct http_request_ctx *req, char *out, size_t s
 static void status_fill(struct status_doc *s, uint32_t ip)
 {
 	struct dut_power_reading r = {0};
+	struct rack_hub_state hub = {0};
 	struct aux_config cfg;
 	struct aux_stats st;
 	int devices = usb_host_device_count();
@@ -284,6 +308,13 @@ static void status_fill(struct status_doc *s, uint32_t ip)
 	} else {
 		s->access.lease = (struct status_lease){.holder = "", .note = ""};
 	}
+
+	s->rack.node = bay_rack_id();
+	s->rack.pos = bay_rack_position();
+	s->rack.hub = bay_rack_hub(&hub);
+	s->rack.hub_mv = s->rack.hub ? hub.mv : 0;
+	s->rack.hub_epr = s->rack.hub && (hub.flags & RACK_HUB_EPR);
+	s->rack.rows_on = s->rack.hub ? hub.rows_on : 0;
 }
 
 static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
@@ -1130,50 +1161,16 @@ static struct http_resource_detail_dynamic metrics_detail = {
 	.cb = metrics_handler,
 };
 
-/* --- Static files: the page and xterm.js, gzipped into the image ----------- */
+/* --- Static files: the page, gzipped into the image ----------------------- */
+
+/* /rack.css, /rack.mjs and xterm.js are firmware/common's (hwtr_web_* in CMakeLists.txt) */
 
 static const uint8_t index_html_gz[] = {
 #include "index.html.gz.inc"
 };
 
-static const uint8_t xterm_mjs_gz[] = {
-#include "xterm.mjs.gz.inc"
-};
-
-static const uint8_t xterm_css_gz[] = {
-#include "xterm.css.gz.inc"
-};
-
-static const uint8_t addon_fit_mjs_gz[] = {
-#include "addon-fit.mjs.gz.inc"
-};
-
-static const uint8_t xterm_license_gz[] = {
-#include "xterm-LICENSE.txt.gz.inc"
-};
-
-#define STATIC_DETAIL(_data, _type)                                                                \
-	{                                                                                          \
-		.common = {                                                                        \
-			.type = HTTP_RESOURCE_TYPE_STATIC,                                         \
-			.bitmask_of_supported_http_methods = BIT(HTTP_GET),                        \
-			.content_encoding = "gzip",                                                \
-			.content_type = _type,                                                     \
-		},                                                                                 \
-		.static_data = _data,                                                              \
-		.static_data_len = sizeof(_data),                                                  \
-	}
-
 static struct http_resource_detail_static index_detail =
-	STATIC_DETAIL(index_html_gz, "text/html");
-static struct http_resource_detail_static xterm_mjs_detail =
-	STATIC_DETAIL(xterm_mjs_gz, "text/javascript");
-static struct http_resource_detail_static xterm_css_detail =
-	STATIC_DETAIL(xterm_css_gz, "text/css");
-static struct http_resource_detail_static addon_fit_mjs_detail =
-	STATIC_DETAIL(addon_fit_mjs_gz, "text/javascript");
-static struct http_resource_detail_static xterm_license_detail =
-	STATIC_DETAIL(xterm_license_gz, "text/plain");
+	HWTR_WEB_STATIC_GZ(index_html_gz, "text/html");
 
 /* --- /console/ws/<slot>: one WebSocket resource (and buffer) per console --- */
 
@@ -1245,10 +1242,6 @@ HTTP_RESOURCE_DEFINE(access_kick_res, bay_http, "/api/access/kick", &access_kick
 HTTP_RESOURCE_DEFINE(access_key_res, bay_http, "/api/access/key", &access_key_detail);
 HTTP_RESOURCE_DEFINE(lease_res, bay_http, "/api/lease", &lease_detail);
 HTTP_RESOURCE_DEFINE(ticket_res, bay_http, "/api/console/ticket", &ticket_detail);
-HTTP_RESOURCE_DEFINE(xterm_mjs_res, bay_http, "/xterm.mjs", &xterm_mjs_detail);
-HTTP_RESOURCE_DEFINE(xterm_css_res, bay_http, "/xterm.css", &xterm_css_detail);
-HTTP_RESOURCE_DEFINE(addon_fit_mjs_res, bay_http, "/addon-fit.mjs", &addon_fit_mjs_detail);
-HTTP_RESOURCE_DEFINE(xterm_license_res, bay_http, "/xterm-LICENSE.txt", &xterm_license_detail);
 
 #define CONSOLE_WS_RESOURCE(_slot, _)                                                              \
 	CONSOLE_WS(_slot, _);                                                                      \

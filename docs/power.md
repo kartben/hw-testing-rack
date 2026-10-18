@@ -1,103 +1,143 @@
 # Power
 
-**Goal:** "something I can just plug in."  The aluminium frame had a closed
-base for a fanless mains supply; the printed **panel frame** has none (its base
-ladders only carry the floor plates), so the power path moves to a separate
-**power box**, not designed yet.  The leading option: a certified 24 V desktop
-brick (Mean Well GST160A24, 160 W, enough for three rows) into a printed box that
-only ever sees 24 V: the hub with its eFuse per row, and later the rack
-controller (an ESP32-S3 and the CAN bus to the nodes, still a design
-discussion).  One feed per row goes from the box to the row's first node.  The
-internal mains supply below stays a variant (it needs a closed mains
-enclosure again).
+**Goal:** "something I can just plug in."  The rack runs from **one USB-C PD
+charger**, outside the rack, on one cable: no mains anywhere in the printed
+parts.  The cable plugs into the **power box**, a printed box in the base cell
+under A1 that holds the **power hub v0.5**:
+
+* a **USB PD 3.1 sink** (Diodes AP33772S) that asks the charger for 20 V, or
+  for 28 V EPR when it offers it, and switches the rack bus (VRACK) on once the
+  contract is in place;
+* an **eFuse per row** (TPS26600, 1.6 A), off until the controller turns it on;
+* the **rack controller** (an ESP32-S3, CAN master; see [can.md](can.md) and
+  [electronics.md](electronics.md#power-hub-v05--4-layers-76--140-mm)).  The box is
+  drawn around its outline and connector positions in `config/rack.yaml` ›
+  `pcb.power_hub`.
+
+One 6-pin JST PH feed per row (VRACK, CAN, POS) runs from the box's left wall to
+the row's first node.  Box and lid: [mechanical.md](mechanical.md#power-box).
+
+![The power box, lid off: the hub v0.5, the charger's USB-C cable at the rear, the status LEDs at the front](img/power-box.jpg)
+
+*Left: from the rear, the charger's USB-C cable and the row outputs' cut-outs.  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
+
+## The charger
+
+| | |
+|---|---|
+| **Recommended** | a **dedicated, single-port USB PD 3.1 EPR charger, 140 W** (28 V × 5 A) |
+| **Cable** | USB-C to USB-C, **5 A e-marked** (EPR, 240 W rated), 1–2 m.  Above 3 A a charger only offers its full current through an e-marked 5 A cable |
+| **Also works** | a 100 W charger (20 V × 5 A): normal use, with power budgeting.  A 65 W one (20 V × 3.25 A): a light rack |
+| **Avoid** | sharing the charger: a multi-port charger can withdraw its 28 V / 5 A offer when another device is plugged in, and renegotiate the rack down |
+
+The hub never accepts 36 V or 48 V (EPR goes up to 48 V): the bay nodes' TVS
+stands off 33 V and the eFuses cut out at 33 V.  20 V and 28 V are both fine,
+the nodes start above 13.5 V.
+
+## Negotiation and sequencing
+
+1. **Plug-in.**  VBUS comes up at 5 V; the AP33772S negotiates on its own and,
+   with its VSEL resistor, asks for **20 V**.  It turns its back-to-back NMOS
+   switch on once the contract is in place: VRACK follows VBUS.
+2. **Controller.**  The ESP32-S3 runs from VBUS *ahead of* the switch (a buck
+   on from ≈ 4 V, a low-dropout LDO): it is alive from the first 5 V.  It reads
+   the charger's offers over I²C and asks for **28 V EPR** when the charger and
+   the cable offer it, otherwise it keeps 20 V.
+3. **Rows.**  Every row's eFuse is **off** until the contract is final (each
+   eFuse's SHDN is pulled low).  The controller then turns the rows on one
+   after the other, so each bay node sees one clean power-up instead of
+   5 → 20 → 28 V steps.
+4. **Contract drops** (a renegotiation, a hard reset, a multi-port charger
+   reallocating power): the AP33772S interrupts the controller, which **sheds
+   rows in priority order** and turns them back on once the contract is
+   stable again.
+
+The AP33772S keeps the contract, and the EPR keep-alive, by itself: an ESP32
+reboot does not drop the rack's power.  The firmware holds the row enables
+across a controller reset (GPIO hold).
+
+**Ride-through.**  The 100 µF bulk capacitor is there for millisecond load
+steps.  A PD hard reset takes VBUS to 0 V for ≈ 1 s; riding through even
+250 ms at 60 W, between 20 V and the nodes' 13.5 V, would need ≈ 0.14 F
+(supercapacitors, and the PD spec limits what a sink may present before its
+switch).  **The rack restarts in that case**; a dedicated single-port charger
+doesn't renegotiate in normal use.
 
 ## Budget
 
 | | per bay | 12 bays |
 |---|---|---|
-| DUT (TPS2553 limit 1.34–1.52 A @ 5 V) | ≤ 7.6 W | — |
-| node (ESP32-S3 Wi-Fi peaks, LED, buck/LDO losses) | ≈ 1.5–2 W | — |
-| **worst case** (every board at its current limit) | ≈ 11 W at 24 V | ≈ 132 W |
-| **realistic** (dev boards idle/running firmware) | 2–4 W | 30–45 W |
+| node (ESP32-S3 with Wi-Fi on for USB/IP, LED, buck + LDO losses) | ≈ 0.7–1 W | ≈ 10 W |
+| typical dev board (Nucleo, nRF DK, FRDM, Pico, C6 …) | ≈ 0.2–0.7 W | ≈ 6 W |
+| big board (F746G-DISCO with its LCD, ESP32-S3 on Wi-Fi) | ≈ 1.5–2.5 W | — |
+| camera pod (XIAO streaming) | ≈ 1–1.5 W | 2 pods ≈ 2.5 W |
+| **realistic, whole rack** (a few big boards) | | **≈ 35–40 W** |
+| **worst case** (every DUT at its 1.5 A switch limit) | ≈ 11 W | ≈ 130 W |
 
-Per row: worst case ≈ 1.9 A at 24 V, realistic ≈ 0.5 A.  Each row has its own
-eFuse, set to **1.6 A**: rows are wired with JST PH (2 A per contact), so the
-limit protects the connectors and the 24 AWG jumpers.  Four DUTs at their own
-1.5 A limit at the same time would trip it (it retries on its own).
+A 140 W charger covers even the worst case; a 100 W one covers normal use.
+The hub knows both sides: the contract (the AP33772S) and each row's current
+(the eFuses' IMON).  When the negotiated power is below the worst case, it
+budgets: it limits or sheds rows instead of letting the charger trip.
+
+Each row has its own eFuse, set to **1.6 A**: rows are wired with JST PH (2 A
+per contact), so the limit protects the connectors and the 24 AWG cables.  A
+shorted row sits at its limit while the others carry on.
 
 ## Options compared
 
 | Architecture | Cords | Max power | Cost | Verdict |
 |---|---|---|---|---|
-| Internal AC-DC (UHP-200-24) + C14 inlet | 1 standard C13 cord | 201 W | ≈ €80–95 power path | variant: needs a mains enclosure |
-| **External 24 V brick (GST160A24 / GST220A24)** | brick + cord | 160 / 220 W | ≈ €70–95 | **leading option**, no mains in the rack |
-| USB-C PD 3.1 EPR (28 V / 5 A) | 1 laptop charger | 140 W | ≈ €5 sink parts + charger + 5 A e-marked cable | 1–3 rows, or whole rack with power budgeting |
+| **USB-C PD 3.1 EPR (28 V / 5 A), AP33772S sink on the hub** | 1 charger + 5 A cable | 140 W | ≈ €5 of sink parts + ≈ €80 charger and cable | **chosen (hub v0.5)**: nothing to wire, telemetry over I²C |
+| Certified 24 V brick inside the power box (GST60A24 / GST90A24) | 1 C13 cord | 60 / 90 W | ≈ €30 | hub v0.4: a bigger box, a cut and crimped DC cord |
+| Internal AC-DC (UHP-200-24) + C14 inlet | 1 C13 cord | 201 W | ≈ €80–95 | needs a mains enclosure: DIY mains wiring, PE, fusing |
 | PoE++ per row (802.3bt) | 4 Ethernet + PoE++ switch | 51–71 W per row | ≈ €100 modules + switch | not worth it with Wi-Fi nodes |
 
-### Why the Mean Well UHP-200-24
+### Why the AP33772S
 
-* **PFC** (PF ≥ 0.94): EN 61000-3-2 harmonic limits apply above 75 W; Mean Well
-  itself excludes the cheaper LRS-200 for that case.
-* **Universal input, no 115/230 V selector** (a wrong LRS switch position kills it).
-* **Fanless at full load up to 50 °C**, 94 % efficient, slim (194 × 55 × 26 mm).
-* ≈ €48–54 at TME/RS/Mouser.
+* **Negotiates on its own** (20 V from a resistor at power-up) and keeps the
+  contract through controller resets.
+* **I²C to the controller:** the charger's offers (PDOs), the contract, the
+  bus voltage and current (its own 5 mΩ shunt), the temperature (an NTC by the
+  switch), and OVP / OCP / UVP / OTP with an interrupt.
+* **Drives the NMOS switch itself** (a charge pump on PWR_EN), 28 V EPR.
+* **Zephyr:** an AP33772S driver is under review upstream
+  ([zephyr#114554](https://github.com/zephyrproject-rtos/zephyr/pull/114554),
+  sensor API).  The hub firmware carries it until it lands, preferably reshaped
+  as an MFD (a regulator child for the contract, a sensor child for V/I/T).
 
-### Bus voltage: 24 V
+Sourcing: the AP33772SDKZ-13-FA02 (standard firmware, VSEL) was out of stock at
+LCSC on 2026-10-18 (C50341643): check JLC global sourcing, or consign a reel,
+before ordering.  The Hynetek HUSB238A (in stock) is the fallback, if its
+register map can be had.
 
-At 24 V a row draws ≤ 1.9 A and three rows ≤ 5.7 A: the hub input is a
-JST VH (10 A) on 16 AWG, the rows JST PH (2 A, eFuse-limited to 1.6 A) on
-24 AWG, and every bay's 24→5 V buck runs at ~21 % duty.  One connector family
-for everything inside the shelf (PH), VH only where the whole rack's current
-comes in, no screw terminals.
-12 V would double the currents and exclude 28 V PD; 48 V would need 100 V
-converters.  The bay nodes accept **9–30 V** with 60 V-rated silicon, so the
-same boards also run from 20 V / 28 V USB-PD or 24 V PoE modules.
+### Bus voltage: VRACK, 20 or 28 V
+
+At 28 V a row draws ≤ 1.6 A (its eFuse limit) and the whole rack ≤ 5 A (the
+contract).  The input is a 5 A USB-C receptacle (GCT USB4105) on wide pours,
+the rows JST PH (2 A) on 24 AWG.  The bay nodes accept **9–30 V** with 60 V
+silicon (their buck starts at 13.5 V), so the same boards run from a 24 V brick
+too.
 
 ## Protection chain
 
 ```
-mains → DD11 inlet (2-pole switch, T3.15 A) → UHP-200-24 → hub:
-  JST VH → SUD50P06 P-FET (reverse polarity) → SMCJ33A TVS → 2 × 220 µF
-  → 5 × TPS26600 eFuse (1.6 A limit, 4 ms soft start, UV 15 V / OV 33 V, auto-retry)
-  → JST PH → row daisy chain → each bay node:
+USB PD 3.1 charger → 5 A e-marked cable → hub (in the power box):
+  USB4105 (5 A) → SMAJ30A TVS → 5 mΩ shunt (Kelvin, the AP33772S reads it)
+  → AP33772S: contract, then back-to-back IRF7842 NMOS switch (OVP / OCP / UVP / OTP) → VRACK, 100 µF
+  → 4 × TPS26600 eFuse (rows A–D, 1.6 A limit, ≈ 5 ms soft start, UV 15 V / OV 33 V, auto-retry, off until enabled)
+  → 6-pin JST PH → each bay node:
      SUD50P06 P-FET → SMBJ33A TVS → 100 µF → LMR51635 (60 V, on above 13.5 V) → 5 V
      → TPS2553 → 50 mΩ shunt (INA226) → DUT
 ```
 
-* Hot-plugging a bay node into a live 24 V bus rings up to ~2× the bus on
-  ceramic caps: the bay buck is a **60 V** LMR51635 (not a 36 V part) and the
-  TVS clamps below 54 V; the electrolytic damps the ringing.
+* Hot-plugging a bay node into a live bus rings up to ~2× the bus on ceramic
+  caps: the bay buck is a **60 V** LMR51635 and its TVS clamps below 54 V; the
+  electrolytic damps the ringing.
 * The hub eFuses soft-start each row, so plugging a row never browns out the
   others, and a shorted bay only trips its own row.
+* The AP33772S's switch blocks both ways (back-to-back NMOS): VRACK's
+  capacitance never back-feeds VBUS during a hard reset.
 
-## Safety (DIY mains, internal-supply variant only)
-
-* **Protective earth:** inlet PE → PSU FG terminal (green/yellow ≥ 1.0 mm²)
-  and any exposed metal of the box.  Check ≤ 0.1 Ω PE-to-metal.
-* French/Schuko plugs are reversible: the inlet's **2-pole switch** matters.
-* Fuse: **T3.15 A H** (ceramic, high breaking capacity).  UHP inrush is 80 A cold.
-* The mains compartment closes with screws only, with a cover over the PSU's
-  AC terminals and the inlet tabs.  Use V-0 PETG/ASA/PC — never PLA — around
-  mains parts.  Route mains and 24 V wiring apart and tie them down.
-* A personal build is not "placed on the market"; selling kits or units means
-  CE (LVD, EMC, RoHS, EN 62368-1, EN 61000-3-2) on the finished product.
-
-The external brick avoids all of this: a Mean Well GST160A24-R7B (160 W,
-Power-DIN plug) into a Kycon KPJX-PM-4S panel jack on the power box, wired to
-the hub input.  Nothing above 24 V then enters the rack.
-
-## Mini BOM — internal-supply variant
-
-| Item | Part | Source | € |
-|---|---|---|---:|
-| PSU | Mean Well UHP-200-24 | TME / RS / Mouser | 48–54 |
-| Inlet | Schurter DD11.0111.1111 (C14, 2-pole switch, fuse) | Mouser / Farnell | 8–12 |
-| Fuses | Schurter 0001.2509 T3.15 A H × 2 | Mouser | 1.6 |
-| Cord | C13 → Schuko/FR, 1.0 mm² | any | 5 |
-| Wiring | H05V-K 1.0 mm² + 4.8 mm insulated receptacles + ferrules | any | 8 |
-| DC | 1.5 mm² PSU → hub; 0.75 mm² row feeds | any | 4 |
-| Hub | see `electronics/power-hub` (5 × TPS26600, SMCJ33A, …); JLC quote 2026-10-16: $74.13 for 5 PCBs, 2 assembled, ≈ $49.51 in lead-free HASL with the connectors hand-soldered; shipping and VAT extra | JLCPCB | ≈ 46 |
-
-Sources: Mean Well LRS-150/LRS-200/RSP-200/UHP-200/GST160A datasheets,
-Schurter DD11 datasheet, TI TPS2660 / LMR51635 (SLUSF64B) datasheets, ADI AN-88
-(hot-plug ringing), TME/RS/Mouser listings (Oct 2026).
+Sources: Diodes AP33772S datasheet (DS46176 rev. 10-2) and EVB user guide
+(rev. 2.0), USB PD 3.1 specification, TI TPS2660 / LMR51635 (SLUSF64B)
+datasheets, ADI AN-88 (hot-plug ringing), LCSC listings (Oct 2026).

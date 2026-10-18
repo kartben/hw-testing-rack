@@ -7,7 +7,7 @@
 // One ladder per column boundary and per row; trays on both sides share it.  A row ladder
 // runs from the bottom plane of its row's trays to the bottom plane of the next row's: front
 // post, rear post, a bottom band along the slope (grooves on both faces for the tray runners,
-// latch windows, the 24 V jumper hole), a top band (slots for the next ladder's hooks) and a
+// latch windows, the row cable hole), a top band (slots for the next ladder's hooks) and a
 // brace.  Stacking: the lower ladder's top edge carries a ridge, the upper one's bottom edge
 // the matching notch and two snap hooks in its own plane; the hooks face opposite ways, which
 // also locates the ladders along the slope.  Release a hook by pushing its barb through the

@@ -1,0 +1,15 @@
+identifier: power_hub/esp32s3/procpu
+name: hw-testing-rack power hub (PROCPU)
+type: mcu
+arch: xtensa
+toolchain:
+  - zephyr
+supported:
+  - adc
+  - can
+  - gpio
+  - i2c
+  - uart
+  - watchdog
+  - entropy
+  - netif:wifi

@@ -326,4 +326,106 @@ findings that are all known false positives, plus one optional improvement:
 | +3V3 / +5V "no bulk" or "no decoupling" on the USB and DUT sheets | Checked sheet by sheet: the bulk caps sit on the Power and MCU sheets (C7–C9 3 × 22 µF on +5V, C12 and C13 22 µF on +3V3). |
 | R6 / TP2 0.73 mm apart, parts on both sides | Opposite sides; the bottom-side parts are bare-copper test pads, not assembled. |
 | No test point on +24V / +5V / +3V3 | Info only.  TP4 is +3V3; the others can be probed on C1, C7. |
-| U4 / U8 VBUS (+5V) without a local 100 nF | Optional: they reach the +5V plane through a via, and the buck's output caps are far away. A 100 nF next to each USBLC6 would lower the clamp rail's impedance during ESD. Not added yet. |
+| U4 / U8 VBUS (+5V) without a local 100 nF | Optional: they reach the +5V plane through a via, and the buck's output caps are far away. A 100 nF next to each USBLC6 would lower the clamp rail's impedance during ESD. Added in v0.5 (C25, C26). |
+
+## Bay node v0.5 (2026-10-18)
+
+The row cable becomes 6-pin (VRACK 20 / 28 V, CAN, POS, [can.md](can.md)) and a Rack bus sheet adds the
+TCAN1044AV, its PESD2CAN and the POS in/out clamps.  Konnect checked the saved files after
+Freerouting:
+
+| | bay node v0.5 |
+|---|---|
+| ERC (Konnect) | 0 errors, 0 warnings |
+| DRC (Konnect) | 0 errors, 0 warnings, 0 unconnected, schematic parity 0 |
+| `audit_connections`, `check_bom_health` | 0 findings |
+| Copper on In1 / In2 | no track on either (checked in the saved board with pcbnew) |
+| CAN pair | J1 → J2 straight through: CAN_H 52 mm, CAN_L 60 mm; stub to U11 1.8 / 2.3 mm, to D5 11 / 2.3 mm (≤ 20 mm asked) |
+| Pin nets | U11 1 TXD · 2 GND · 3 +5V · 4 RXD · 5 +3V3 (VIO) · 6 CAN_L · 7 CAN_H · 8 GND (STB); D5 1 CAN_H · 2 CAN_L · 3 GND; D6 / D7 1 GND · 2 +3V3 · 3 the POS line |
+| `run_design_review` | "NOT READY", from the same per-sheet false positives as v0.4 (above), plus +3V3 / +5V "no bulk" on the new Rack bus sheet: the bulk caps are on the Power and MCU sheets |
+
+v0.4's open point is fixed: C25 and C26 (100 nF) sit on U4's and U8's VBUS pins.  A POS line driven high into a
+node whose 3.3 V is off would feed its rail through the two 10k and D6 (≈ 0.15 mA); every node of a row
+shares the row's VRACK, so this only happens if a neighbour's own regulator is dead.
+
+## Power hub v0.4 (2026-10-18)
+
+This is a new board for the power box: 4 eFused rows on 6-pin PH, and the rack controller (ESP32-S3,
+TCAN1044AV CAN master).  Konnect checked the saved files after Freerouting:
+
+| | power hub v0.4 |
+|---|---|
+| ERC (Konnect) | 0 errors, 0 warnings |
+| DRC (Konnect, zones refilled) | 0 errors, 0 warnings, 0 unconnected, schematic parity 0 |
+| `audit_connections` | 0 findings |
+| `audit_decoupling` | VBUS on the USBLC6 had no capacitor: **fixed** (C120, 1 µF; USB caps VBUS at 10 µF) |
+| JLCPCB DFM audit | 1 note: 7 bottom-side footprints.  They are bare test pads, not in the BOM or CPL, so no bottom-side assembly |
+| `run_design_review` | "NOT READY", driven by per-sheet false positives (below) |
+
+| Finding | Reading |
+|---|---|
+| +3V3 "no decoupling" on the Outputs sheet | The rail's caps sit on the Controller sheet (C113 22 µF, C114 / C117 100 nF, C112 22 µF at the LDO); the Outputs sheet only has the FLT pull-ups and LED resistors on it |
+| +24V "no bulk" on the Outputs sheet | C1 / C2 (2 × 220 µF) are on the Input sheet |
+| VBUS "no bulk (≥ 10 µF)" | On purpose: a USB device may present at most 10 µF on VBUS |
+| No test point on +24V / +5V / +3V3 / VBUS | TP5 (+5V), TP6 (+24V) and TP4 (+3V3) were added on the bottom side |
+
+Open, for a later revision:
+* The bottom GND pour is cut into pieces by the signals that run from the rows to the module.  The
+  signals are slow (I/O, CAN at 250 kbit/s, USB full speed), but a hand placement of the signal
+  bundle, or a 4-layer board, would keep it whole.
+* The schematic uses the automatic block layout; it is not drawn like the bay node's.
+
+## Power hub v0.5 (2026-10-18)
+
+The input becomes USB-C PD (AP33772S sink, back-to-back NMOS, 5 mΩ Kelvin shunt), the board goes
+to 4 layers, and the rows are off until the controller turns them on.  Konnect checked the saved
+files after Freerouting:
+
+| | power hub v0.5 |
+|---|---|
+| ERC (Konnect) | 0 errors, 0 warnings |
+| DRC (Konnect, zones refilled) | 0 errors, 0 unconnected, schematic parity 0; warnings below |
+| `audit_connections` | 2 findings, both expected (below) |
+| `audit_decoupling` | 1 finding, a false positive (below) |
+| JLCPCB DFM audit | 8 bottom-side footprints: the bare test pads, not in the BOM or CPL |
+| 3D coverage (`tools/pcb_glb.py --check`) | 146 parts with a model, 0 stand-ins, 0 without a body |
+
+| Finding | Reading |
+|---|---|
+| "I2C SDA / SCL on U1 have no pull-up" | They do: R13 / R14 (4.7k), fed from a GPIO (I2C_PU), so a controller running from its console USB alone never back-feeds an unpowered AP33772S through SDA / SCL (Diodes' EVB guide asks that the sink powers up first) |
+| "PWR_EN has no decoupling capacitor" | PWR_EN is the AP33772S's NMOS gate drive (a charge pump through R8), not a supply pin |
+| DRC: silkscreen clipped by the mask (C8's outline at C10) | Cosmetic: the fab clips silkscreen off pads |
+| DRC: U1 "does not match the library copy" | Only in a local KiCad run: its QFN-24 footprint differs between the local library and the Docker image's.  The build's own DRC (Docker) doesn't report it |
+
+What changed for routing, from the v0.4 → 4-layer attempt that left 18 connections:
+* In2 is split once: VRACK under the input, along a band at y ≈ 39 and down the eFuse column;
+  +3V3 everywhere else, in one piece around it (no pin is left over another net's area).
+* Each eFuse's SHDN leaves through a hand-drawn track to its pull-down and series resistor, just
+  below the eFuse; its GND pins go straight onto the exposed pad.
+* The ON LED's resistor sits by its eFuse: only the LED's milliamps go to the front.
+* PD_VCC reaches the buck in a hand-drawn 0.8 mm bottom track; the input's pours are exclusive.
+* The Kelvin pair, the NMOS gates and IFB's capacitor are drawn by hand.
+
+Open, for a later revision:
+* The schematic uses the automatic block layout; it is not drawn like the bay node's.
+* Re-quote at JLCPCB (the cost is an estimate) and check the AP33772S's sourcing.
+
+## CAN transceiver → TCAN1462V (2026-10-18)
+
+Both boards swap the TCAN1044AV for the TCAN1462V: the same SOIC-8 pinout (TXD, GND, VCC, RXD, VIO,
+CANL, CANH, STB), plus signal improvement for the star bus ([can.md](can.md#bus)).  The footprint,
+placement and routing are unchanged: the regenerated PCBs carry every track and via of the previous
+ones, and only U6 / U11's value and fields differ.  Konnect, on the saved files:
+
+| | power hub (U6) | bay node (U11) |
+|---|---|---|
+| Pin nets (`get_component_nets`) | TXD CAN_TXD, VCC +5V, RXD CAN_RXD, VIO +3V3, CANL / CANH, STB CAN_STB (a GPIO) | the same, STB on GND (always on) |
+| ERC | 0 errors, 0 warnings | 0 errors, 0 warnings |
+| DRC | 0 errors, 0 unconnected, parity 0; the two warnings above | 0 errors, 0 warnings, 0 unconnected, parity 0 |
+| 3D coverage (`tools/pcb_glb.py --check`) | 146 parts with a model, 0 stand-ins | 85 parts with a model, 0 stand-ins |
+
+Sourcing: the TCAN1462VDRQ1 (C7399456) had no LCSC stock on 2026-10-18.  The board BOMs list two
+alternates for the same footprint: the TCAN1044AVDRQ1 (C3234993, no signal improvement) and NXP's
+TJA1462AT/0Z (C3234095, signal improvement, bus pins −36 / +40 V instead of ±58 V).  The TCAN1462
+without the V (C22445414, in stock) does not fit: with no VIO pin its RXD swings to 5 V, too much for
+the ESP32-S3.

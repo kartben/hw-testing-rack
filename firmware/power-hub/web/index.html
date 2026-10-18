@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Rack</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='2' y='2' width='12' height='12' rx='3' fill='%2316a34a'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/rack.css">
+<style>
+:root { --pd: #0ea5e9; --shed: var(--service); --lost: #a1a1aa; }
+.pdos { display: flex; flex-wrap: wrap; gap: 6px;
+  & span { font-size: 0.8rem; font-weight: 550; line-height: 1; font-variant-numeric: tabular-nums; padding: 5px 9px; border-radius: 7px; border: 1px solid var(--line);
+           color: var(--muted); background: var(--soft); }
+  & .epr { border-style: dashed; }
+  & .sel { color: var(--card); background: var(--pd); border: 1px solid var(--pd); font-weight: 650; }
+  & .no { text-decoration: line-through; opacity: 0.6; }
+}
+.budget { display: grid; gap: 6px;
+  & .bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--soft);
+           border: 1px solid var(--line); }
+  & .bar i { display: block; height: 100%; background: color-mix(in srgb, var(--pd) calc(100% - var(--k) * 22%), var(--card)); }
+  & .bar i + i { border-left: 2px solid var(--card); }
+  & .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.82rem; color: var(--muted); }
+}
+.rack { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.shelf {
+  --c: var(--ok);
+  display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 14px; align-items: center;
+  padding: 10px 12px 10px 14px; border-radius: 12px; border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--c) 4%, var(--card));
+  &[data-state=off] { --c: var(--idle); background: var(--soft); }
+  &[data-state=shed] { --c: var(--shed); }
+  &[data-state=fault] { --c: var(--fault); border-color: color-mix(in srgb, var(--fault) 45%, transparent); }
+  &[data-state=cycling] { --c: var(--pd); }
+  &[data-state=waiting] { --c: var(--idle); }
+  & .head { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center; }
+  & .letter { grid-row: span 2; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+              font-weight: 700; font-size: 1.05rem; color: var(--c);
+              background: color-mix(in srgb, var(--c) 14%, transparent); }
+  & .st { font-weight: 600; font-size: 0.88rem; color: var(--c); }
+  & .amps { font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  & .acts { display: flex; gap: 6px; }
+  & .acts button { padding: 5px 11px; font-size: 0.85rem; }
+}
+.bays { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px;
+  & .empty { color: var(--muted); font-size: 0.88rem; padding: 6px 0; }
+}
+button.bay {
+  --c: var(--idle);
+  display: grid; grid-template-columns: auto 1fr; gap: 0 8px; min-width: 132px; padding: 7px 10px 7px 8px;
+  border-radius: 10px; color: inherit; border: 1px solid var(--line); background: var(--card);
+  font-weight: 400; text-align: left; transition: border-color 0.15s, transform 0.15s;
+  &:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--line)); transform: translateY(-1px); }
+  & .dot { grid-row: span 2; align-self: center; width: 9px; height: 9px; border-radius: 50%; background: var(--c);
+           box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
+  & .pos { font-weight: 650; font-size: 0.9rem; }
+  & .pos small { font: 500 0.72rem var(--mono); color: var(--muted); margin-left: 4px; }
+  & .what { font-size: 0.78rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  &[data-state=attached] { --c: var(--attached); }
+  &[data-state=enumerated], &[data-state=usbip] { --c: var(--usbip); }
+  &[data-state=classic] { --c: var(--classic); }
+  &[data-state=service] { --c: var(--service); }
+  &[data-state=fault] { --c: var(--fault); }
+  &[data-state=lost], &[data-state=failed], &[data-state=incompatible] { --c: var(--lost); border-style: dashed;
+    & .pos { color: var(--muted); } }
+}
+#node-menu {
+  margin: 0; inset: auto; position: fixed; min-width: 220px; padding: 6px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text);
+  box-shadow: 0 12px 36px #0004;
+  & header { display: block; padding: 6px 10px 8px; margin: 0 0 4px; border-bottom: 1px solid var(--line); }
+  & header b { font-size: 1rem; }
+  & header small { display: block; color: var(--muted); font: 0.75rem var(--mono); }
+  & button, & a { display: block; width: 100%; text-align: left; padding: 7px 10px; border: 0; border-radius: 8px;
+                  background: none; font: inherit; font-weight: 500; color: inherit; text-decoration: none; cursor: pointer; }
+  & button:hover, & a:hover { background: var(--soft); }
+  & .danger { color: var(--fault); }
+}
+.pill.access {
+  --c: var(--idle);
+  font: inherit; font-size: 0.85rem; font-weight: 550; border: 0; cursor: pointer; padding: 4px 12px;
+  color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent);
+  &[data-access=admin] { --c: var(--ok); }
+  &[data-access=unclaimed] { --c: var(--service); }
+}
+body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
+.log-kind { font-size: 0.72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; color: var(--c, var(--muted)); }
+@media (max-width: 720px) {
+  .shelf { grid-template-columns: 1fr auto; & .bays-cell { grid-column: 1 / -1; grid-row: 2; } }
+}
+</style>
+</head>
+<body data-state="offline">
+<div class="wrap">
+  <header>
+    <div class="title">
+      <span class="led" aria-hidden="true"></span>
+      <div>
+        <h1 id="name">Rack</h1>
+        <div class="sub" id="where">connecting…</div>
+      </div>
+    </div>
+    <button class="pill access" id="access-pill" hidden></button>
+    <span class="pill" id="state">offline</span>
+  </header>
+
+  <div class="banner" role="alert"><span id="fault-text"></span></div>
+
+  <main>
+    <div class="cards">
+      <section class="card">
+        <h2>USB-C PD <span id="contract">—</span></h2>
+        <div class="readings">
+          <div class="reading"><b id="v">–</b><small>volts</small></div>
+          <div class="reading"><b id="a">–</b><small>amps</small></div>
+          <div class="reading"><b id="w">–</b><small>watts</small></div>
+        </div>
+        <svg class="spark" id="pd-spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-label="Input power, last two minutes">
+          <polygon points=""/><polyline points=""/>
+        </svg>
+        <div class="pdos" id="pdos" aria-label="What the charger offers"></div>
+        <div class="actions">
+          <div class="seg" role="radiogroup" aria-label="Contract to ask for" data-admin-only>
+            <label><input type="radio" name="pref" value="epr">28 V EPR when offered</label>
+            <label><input type="radio" name="pref" value="20v">20 V</label>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Rack bus <span id="bus">—</span></h2>
+        <div class="readings">
+          <div class="reading"><b id="n-nodes">–</b><small>nodes</small></div>
+          <div class="reading"><b id="n-fps">–</b><small>frames / s</small></div>
+          <div class="reading"><b id="n-err">–</b><small>errors</small></div>
+        </div>
+        <dl>
+          <dt>Bus</dt><dd id="can-state">–</dd>
+          <dt>Enumerated</dt><dd id="enum">–</dd>
+          <dt>Temperature</dt><dd id="temp">–</dd>
+          <dt>Firmware</dt><dd id="fw">–</dd>
+        </dl>
+        <div class="actions">
+          <button id="btn-enum" data-admin-only>Re-enumerate</button>
+        </div>
+      </section>
+    </div>
+
+    <section class="card rows">
+      <h2>Rows <span id="rows-meta">—</span></h2>
+      <div class="budget">
+        <div class="bar" id="budget-bar"></div>
+        <div class="legend" id="budget-legend"></div>
+      </div>
+      <ol class="rack" id="rack"></ol>
+    </section>
+
+    <section class="card">
+      <h2>Events</h2>
+      <table class="log"><tbody id="events"></tbody></table>
+    </section>
+  </main>
+
+  <footer><span id="uptime"></span><a href="/api/status">/api/status</a><a href="/metrics">/metrics</a></footer>
+</div>
+
+<dialog id="confirm">
+  <p></p>
+  <form method="dialog"><button value="cancel">Cancel</button><button value="ok" class="primary">OK</button></form>
+</dialog>
+<div id="toast" popover="manual"></div>
+<dialog id="dlg-claim" class="small-dlg">
+  <form id="claim-form">
+    <h3>Claim this hub</h3>
+    <div id="claim-start">
+      <p>Switching rows and sending commands to the bays is for the hub's admin.  Claiming the hub gives this browser its admin key, after a press on the hub's <b>BOOT</b> button: nobody can claim it from the network alone.</p>
+      <label for="claim-key">The rack's admin key (optional, to use the same key as the bays)</label>
+      <input id="claim-key" class="key" autocomplete="off" spellcheck="false" placeholder="64 hex digits, or leave empty for a new key">
+    </div>
+    <div id="claim-wait" hidden>
+      <p>Press the hub's <b>BOOT</b> button once, briefly: its CTL LED flickers.</p>
+      <div class="count" id="claim-count">1:00</div>
+      <p class="hint">Or type <code>hub access claim</code> on its console USB-C.</p>
+    </div>
+    <div id="claim-done" hidden>
+      <p><b>Claimed.</b>  This browser keeps the admin key.  Keep a copy: the bays can use the same one.</p>
+      <div class="cmd"><code id="claim-new-key"></code><button type="button" data-copy="claim-new-key">Copy</button></div>
+    </div>
+    <p class="err" id="claim-err"></p>
+    <div class="btns">
+      <button type="button" data-close>Close</button>
+      <button type="submit" class="primary" id="claim-go">Claim</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="dlg-unlock" class="small-dlg">
+  <form id="unlock-form">
+    <h3>Unlock as admin</h3>
+    <p>Paste the hub's admin key (from when you claimed it, or the rack's key if it was claimed with that one).  It stays in this browser; requests are signed with it, the key itself is not sent.</p>
+    <label for="unlock-key">Admin key</label>
+    <input id="unlock-key" class="key" type="password" autocomplete="off" spellcheck="false" required pattern="[0-9a-fA-F]{64}">
+    <p class="hint">Lost it?  <code>hub access reset</code> on the hub's console USB-C, or hold its BOOT button for 10 s.</p>
+    <p class="err" id="unlock-err"></p>
+    <div class="btns">
+      <button type="button" data-close>Cancel</button>
+      <button type="submit" class="primary">Unlock</button>
+    </div>
+  </form>
+</dialog>
+<div id="node-menu" popover>
+  <header><b id="nm-pos"></b><small id="nm-meta"></small></header>
+  <button data-node-act="identify">Identify: blink its LED</button>
+  <button data-node-act="reset">Reset the board</button>
+  <button data-node-act="bootloader">Board into its bootloader</button>
+  <button data-node-act="power-cycle" class="danger">Power-cycle the board</button>
+  <a id="nm-open" target="_blank" rel="noopener">Open the bay's page ↗</a>
+</div>
+
+<template id="t-row">
+  <li class="shelf">
+    <div class="head"><span class="letter"></span><span class="st"></span><span class="amps"></span></div>
+    <div class="bays-cell"><ul class="bays"></ul></div>
+    <div class="acts" data-admin-only>
+      <button data-row-act="cycle">Cycle</button>
+      <button data-row-act="toggle"></button>
+    </div>
+  </li>
+</template>
+
+<script type="module">
+import { $, api, fix, plural, uptime, ago, Spark, toast, confirmed, poll, copyButtons, storedKey, storeKey,
+  signed, claimKey } from "/rack.mjs";
+
+const pdSpark = new Spark($("pd-spark"), { floor: 5000 });
+const NODE_LABEL = { attached: "USB/IP attached", enumerated: "device ready", usbip: "no device",
+  classic: "classic", service: "service", off: "DUT off", fault: "DUT fault", lost: "no answer",
+  failed: "no address", incompatible: "newer protocol" };
+const ROW_LABEL = { on: "on", off: "off", shed: "shed", fault: "fault", cycling: "cycling", waiting: "waiting" };
+const KIND_COLOR = { pd: "var(--pd)", row: "var(--ok)", fault: "var(--fault)", can: "var(--usbip)", node: "var(--muted)" };
+let last = null;
+
+function hubState(s) {
+  if (s.rows.some((r) => r.fault)) return ["fault", "--fault", "row fault"];
+  if (!s.pd.contract) return ["usb", "--idle", "no PD charger"];
+  if (s.rows.some((r) => r.state === "shed")) return ["shed", "--service", "rows shed"];
+  if (!s.pd.final) return ["settling", "--pd", "contract settling"];
+  const c = s.pd.contract;
+  return ["ok", c.epr ? "--ok" : "--pd", `${c.mv / 1000} V${c.epr ? " EPR" : ""}`];
+}
+
+function pdoText(p) {
+  const v = p.type === "fixed" ? `${p.mv / 1000} V` : `${p.mv_min / 1000}–${p.mv / 1000} V`;
+  return `${p.type === "fixed" ? "" : p.type.toUpperCase() + " "}${v} ${p.ma / 1000} A`;
+}
+
+function renderPd(pd) {
+  const c = pd.contract;
+  $("contract").textContent = c ? `${c.mv / 1000} V · ${c.ma / 1000} A${c.epr ? " · EPR" : ""}` : "no contract";
+  $("v").textContent = c ? fix(pd.vbus_mv, 2) : "–";
+  $("a").textContent = c ? fix(pd.ibus_ma, 2) : "–";
+  const mw = c ? pd.vbus_mv * pd.ibus_ma / 1000 : 0;
+  $("w").textContent = c ? (mw / 1000).toFixed(1) : "–";
+  pdSpark.push(mw);
+  $("pdos").replaceChildren(...pd.pdos.map((p) => {
+    const el = document.createElement("span");
+    el.textContent = pdoText(p);
+    el.className = [p.epr && "epr", p.selected && "sel", p.refused && "no"].filter(Boolean).join(" ");
+    el.title = p.refused ? `Not used: ${p.refused}` : p.epr ? "EPR" : "SPR";
+    return el;
+  }));
+  document.querySelector(`input[name=pref][value="${pd.pref}"]`).checked = true;
+  $("temp").textContent = c ? `${pd.temp_c} °C at the switch` : "–";
+}
+
+function bayTile(n) {
+  const a = document.createElement("button");
+  a.className = "bay";
+  a.dataset.state = n.state;
+  a.dataset.id = n.id;
+  a.title = `${[n.name, n.ip].filter(Boolean).join(" · ")} · node 0x${n.id.toString(16).padStart(2, "0")} · ${n.mac ?? ""}`;
+  const ma = n.state === "lost" ? `${Math.round(n.seen_s)} s silent` : n.dut_ma ? `${fix(n.dut_ma, 2)} A` : "";
+  a.innerHTML = `<span class="dot"></span><span class="pos">${n.pos}<small>${n.name || n.ip}</small></span>
+    <span class="what">${NODE_LABEL[n.state]}${ma ? ` · ${ma}` : ""}</span>`;
+  return a;
+}
+
+function renderRows(s) {
+  const rack = $("rack");
+  s.rows.forEach((r, i) => {
+    let li = rack.children[i];
+    if (!li) {
+      li = $("t-row").content.firstElementChild.cloneNode(true);
+      li.dataset.row = r.name;
+      rack.append(li);
+    }
+    li.dataset.state = r.state;
+    li.querySelector(".letter").textContent = r.name;
+    li.querySelector(".st").textContent = ROW_LABEL[r.state];
+    li.querySelector(".amps").textContent = r.on ? `${fix(r.ma, 2)} A · ${(r.mw / 1000).toFixed(1)} W` : "VRACK off";
+    const bays = li.querySelector(".bays");
+    if (r.nodes.length) {
+      bays.replaceChildren(...r.nodes.map((n) => { const x = document.createElement("li"); x.append(bayTile(n)); return x; }));
+    } else {
+      bays.innerHTML = `<li class="empty">${r.on ? "no node answered" : r.state === "shed" ? "off: not enough power" : "row off"}</li>`;
+    }
+    const toggle = li.querySelector("[data-row-act=toggle]");
+    toggle.textContent = r.on || r.state === "fault" ? "Off" : "On";
+    toggle.classList.toggle("danger", r.on);
+    li.querySelector("[data-row-act=cycle]").disabled = !r.on;
+  });
+
+  const used = s.budget.used_mw, max = s.budget.contract_mw;
+  $("rows-meta").textContent = max ? `${(used / 1000).toFixed(1)} W of ${max / 1000} W` : "no PD contract";
+  $("budget-bar").replaceChildren(...s.rows.filter((r) => r.mw).map((r) => {
+    const i = document.createElement("i");
+    i.style.setProperty("--k", "ABCD".indexOf(r.name));
+    i.style.width = `${(100 * r.mw / Math.max(max, 1)).toFixed(2)}%`;
+    i.title = `Row ${r.name}: ${(r.mw / 1000).toFixed(1)} W`;
+    return i;
+  }));
+  $("budget-legend").innerHTML = s.rows.map((r) =>
+    `<span>${r.name} ${r.on ? `${(r.mw / 1000).toFixed(1)} W` : ROW_LABEL[r.state]}</span>`).join("")
+    + (max ? `<span>${((max - used) / 1000).toFixed(0)} W spare</span>` : "");
+}
+
+function renderBus(s) {
+  const c = s.can;
+  $("bus").textContent = `CAN ${c.bitrate / 1000} kbit/s`;
+  $("n-nodes").textContent = c.nodes;
+  $("n-fps").textContent = c.rx_fps;
+  $("n-err").textContent = c.errors;
+  $("can-state").textContent = c.state + (c.bus_off ? ` · ${plural(c.bus_off, "bus-off")}` : "");
+  $("enum").textContent = c.enumerating ? "enumerating…"
+    : `${c.enumerated_s < 0 ? "never" : ago(c.enumerated_s)}${c.lost ? ` · ${c.lost} lost` : ""}`;
+  $("fw").textContent = s.version;
+}
+
+function render(s) {
+  last = s;
+  const [state, color, label] = hubState(s);
+  document.body.dataset.state = state;
+  document.documentElement.style.setProperty("--state", `var(${color})`);
+  $("state").textContent = label;
+  $("name").textContent = "Rack";
+  document.title = `Rack · ${label}`;
+  $("where").textContent = [`${s.hostname}.local`, s.ip, `${s.can.nodes} bays`].join(" · ");
+  const bad = s.rows.filter((r) => r.fault).map((r) => r.name);
+  $("fault-text").textContent = bad.length ? `Row ${bad.join(", ")}: eFuse in current limit (1.6 A)` : "";
+  renderAccess(s.access);
+  renderPd(s.pd);
+  renderRows(s);
+  renderBus(s);
+  $("uptime").textContent = `Up ${uptime(s.uptime_s)}`;
+}
+
+/* --- Admin: the page's actions are signed with the hub's admin key ----------- */
+
+let access = { claimed: false };
+
+function renderAccess(a) {
+  access = a ?? access;
+  const pill = $("access-pill"), admin = !!storedKey();
+  document.body.toggleAttribute("data-admin", admin);
+  pill.hidden = false;
+  pill.dataset.access = admin ? "admin" : access.claimed ? "locked" : "unclaimed";
+  pill.textContent = admin ? "admin" : access.claimed ? "read-only · unlock" : "unclaimed · claim";
+  pill.title = admin ? "Forget the admin key in this browser" : "";
+}
+
+function showError(id, e) {
+  $(id).textContent = e ? e.message : "";
+}
+
+/* Claim or unlock first; resolves once the dialog is closed */
+function askAdmin(why) {
+  const dlg = access.claimed ? $("dlg-unlock") : $("dlg-claim");
+  if (access.claimed) {
+    $("unlock-key").value = "";
+    showError("unlock-err", why ? new Error(why) : null);
+  } else {
+    $("claim-start").hidden = false;
+    $("claim-wait").hidden = true;
+    $("claim-done").hidden = true;
+    $("claim-go").hidden = false;
+    $("claim-key").value = "";
+    showError("claim-err", why ? new Error(why) : null);
+  }
+  dlg.showModal();
+  return new Promise((ok) => dlg.addEventListener("close", ok, { once: true }));
+}
+
+/* An action of the page: signed, or after a claim / unlock */
+async function admin(path, body) {
+  if (!storedKey()) {
+    await askAdmin();
+    if (!storedKey()) throw Object.assign(new Error("admin only"), { quiet: true });
+  }
+  try {
+    return await signed(path, body);
+  } catch (e) {
+    if (e.status === 403) {
+      storeKey("");
+      renderAccess();
+      askAdmin(e.message);
+    }
+    throw e;
+  }
+}
+
+$("claim-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const key = $("claim-key").value.trim();
+  showError("claim-err");
+  if (key && !/^[0-9a-fA-F]{64}$/.test(key)) return showError("claim-err", new Error("the key is 64 hex digits"));
+  try {
+    const newKey = await claimKey(key, {
+      started() {
+        $("claim-start").hidden = true;
+        $("claim-wait").hidden = false;
+        $("claim-go").hidden = true;
+      },
+      waiting(s) {
+        $("claim-count").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+      },
+      open: () => $("dlg-claim").open,
+    });
+    if (!newKey) return;
+    $("claim-wait").hidden = true;
+    $("claim-done").hidden = false;
+    $("claim-new-key").textContent = newKey;
+    access.claimed = true;
+    renderAccess();
+    toast("Claimed: you are admin");
+  } catch (e) {
+    $("claim-wait").hidden = true;
+    showError("claim-err", e);
+  }
+});
+
+$("unlock-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const key = $("unlock-key").value.trim().toLowerCase();
+  try {
+    await signed("/api/access/check", {}, key);
+    storeKey(key);
+    renderAccess();
+    $("dlg-unlock").close();
+    toast("Unlocked: you are admin");
+  } catch (e) {
+    showError("unlock-err", e.status === 403 ? new Error("that is not this hub's admin key") : e);
+  }
+});
+
+$("access-pill").addEventListener("click", async () => {
+  if (!storedKey()) return askAdmin();
+  if (await confirmed("Forget the admin key in this browser?  The page becomes read-only.")) {
+    storeKey("");
+    renderAccess();
+  }
+});
+
+document.addEventListener("click", (ev) => {
+  const btn = ev.target.closest("[data-close]");
+  if (btn) btn.closest("dialog").close();
+});
+copyButtons();
+
+async function renderEvents() {
+  const ev = await api("/api/events");
+  $("events").innerHTML = ev.slice(0, 8).map((e) => {
+    const t = new Date(Date.now() - e.age_s * 1000);
+    const when = Date.now() - t < 86400e3 ? t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      : t.toLocaleDateString([], { month: "short", day: "numeric" });
+    return `<tr><td>${when}</td><td><span class="log-kind" style="--c:${KIND_COLOR[e.kind]}">${e.kind}</span></td><td>${e.text}</td></tr>`;
+  }).join("");
+}
+
+let menuNode = null;
+
+$("rack").addEventListener("click", (ev) => {
+  const tile = ev.target.closest("button.bay");
+  if (!tile) return;
+  menuNode = last.rows.flatMap((r) => r.nodes).find((n) => n.id === Number(tile.dataset.id));
+  if (!menuNode) return;
+  $("nm-pos").textContent = `Bay ${menuNode.pos}`;
+  $("nm-meta").textContent = `node 0x${menuNode.id.toString(16).padStart(2, "0")} · ${menuNode.ip} · ${menuNode.mac ?? ""}`;
+  $("nm-open").href = `http://${menuNode.ip}/`;
+  const menu = $("node-menu");
+  const box = tile.getBoundingClientRect();
+  menu.style.left = `${Math.min(box.left, innerWidth - 240)}px`;
+  menu.style.top = `${box.bottom + 6}px`;
+  menu.showPopover();
+});
+
+$("node-menu").addEventListener("click", async (ev) => {
+  const btn = ev.target.closest("[data-node-act]");
+  if (!btn || !menuNode) return;
+  const action = btn.dataset.nodeAct, pos = menuNode.pos;
+  $("node-menu").hidePopover();
+  if (action === "power-cycle" && !await confirmed(`Power-cycle the board in bay ${pos}?`)) return;
+  try {
+    await admin("/api/node", { id: menuNode.id, action });
+    toast(`${pos}: ${action} sent`);
+    setTimeout(renderEvents, 800);
+  } catch (e) {
+    if (!e.quiet) toast(e.message);
+  }
+});
+
+$("rack").addEventListener("click", async (ev) => {
+  const btn = ev.target.closest("[data-row-act]");
+  if (!btn) return;
+  const row = btn.closest(".shelf").dataset.row;
+  const r = last.rows.find((x) => x.name === row);
+  const action = btn.dataset.rowAct === "cycle" ? "cycle" : r.on || r.fault ? "off" : "on";
+  if (action !== "on" && !await confirmed(
+    `${action === "cycle" ? "Power-cycle" : "Switch off"} row ${row}? Its ${plural(r.nodes.length, "bay")} and their boards lose power.`)) return;
+  btn.disabled = true;
+  try {
+    render(await admin("/api/row", { row, action }));
+    toast(`Row ${row}: ${action}`);
+    renderEvents();
+  } catch (e) {
+    if (!e.quiet) toast(e.message);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.querySelectorAll("input[name=pref]").forEach((el) => el.addEventListener("change", async () => {
+  try {
+    render(await admin("/api/pd", { pref: el.value }));
+    renderEvents();
+  } catch (e) {
+    if (!e.quiet) toast(e.message);
+    render(last);
+  }
+}));
+
+$("btn-enum").addEventListener("click", async () => {
+  try {
+    render(await admin("/api/enumerate", {}));
+    toast("Rack bus enumerated");
+    renderEvents();
+  } catch (e) {
+    if (!e.quiet) toast(e.message);
+  }
+});
+
+poll(async () => render(await api("/api/status")), 2000, () => {
+  document.body.dataset.state = "offline";
+  $("state").textContent = "offline";
+  $("where").textContent = "hub unreachable, retrying…";
+});
+poll(renderEvents, 5000);
+</script>
+</body>
+</html>

@@ -89,20 +89,33 @@ centre (it dodges the node and the chain in the plenum above), so aim with the
 `CAM`, PTC-protected); top-row pods hang under the cap plate and take 5 V from
 their own bay through the tray's rear service slot.
 
-## Power
+## Power box
 
-There is no base enclosure any more: the base ladders only carry the floor
-plates.  The power path (24 V supply, the hub with an eFuse per row, and later
-the rack controller) goes into a separate power box, not designed yet: see
-[power.md](power.md).  24 V reaches the first node of each row; JST PH
-jumpers carry it from node to node through the windows in the tray walls and
-the shared ladder.
+The base cell under A1 is otherwise dead space: 154 mm between the floor
+plate's walls, ≈ 196 mm deep, ≈ 70 mm high at the front, rising with the 20°
+slope.  `power_box.scad` puts the power hub there, in a box against the
+cell's left side; the rack's supply is a USB-C PD charger outside the rack.
+Placement and sizes: `config/rack.yaml` › `power_box`; the charger, the
+negotiation and the budget: [power.md](power.md).
+
+![The power box under A1](img/power-box.jpg)
+
+*Lid off.  Left: from the rear, the charger's USB-C cable and the row outputs' cut-outs.  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
+
+| Part | File | Notes |
+|---|---|---|
+| Base | `power_box.scad` (`PART="base"`) | 84 × 148 × 33 mm, against the cell's left side. Under the floor are sockets that drop over the floor plate's insert bosses beneath it: it locates without screws, and an M3 through each socket screws it down if wanted. Lift it over the plate's front lip to put it in. **Left wall:** cut-outs for the hub's four 6-pin JST PH row outputs (A–D, engraved), reached from the rack's left side through the base ladder's window. **Front wall:** windows for the hub's ON / FAULT LEDs per row, PD and CTL, and the controller's console USB-C. **Rear wall:** the USB-C PD input (the charger's cable) and vents. Inside: four standoffs with M3 inserts for the hub, and four corner lugs with M3 inserts for the lid, hanging above the hub with 45° undersides |
+| Lid | `power_box.scad` (`PART="lid"`) | printed top face down. A rim locates it inside the walls, and 4 × M3×8 go into the corner lugs. Vents over the PD input and the buck, the name engraved in the top face |
+
+Both print without supports (PETG, 3 walls).  VRACK reaches the first node
+of each row through one 6-pin JST PH feed ([cabling.md](cabling.md#row-power)); 6-pin
+jumpers carry it, and the CAN bus, from node to node through the windows in
+the tray walls and the shared ladder.
 
 ## Not designed yet
 
 * Double-width bays for i.MX-class EVKs (the aluminium frame had them): a
   324 mm tray and drawer, no ladder in between.
-* The power box.
 * Rows taller than 165 mm: a 185 mm row makes a 261 mm ladder (an H2D-class bed).
 
 ## Checks

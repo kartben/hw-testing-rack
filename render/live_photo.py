@@ -32,7 +32,7 @@ LAYER_MM = 0.2
 
 # printed parts; their layers stack along the part's thinnest local axis (ladders, braces and
 # plates print flat, drawers and trays floor-down)
-PRINTED = {"ladders", "braces", "frameplates", "trays", "drawers", "chainparts", "plates", "cameras", "labels"}
+PRINTED = {"ladders", "braces", "frameplates", "trays", "drawers", "chainparts", "plates", "cameras", "labels", "powerbox"}
 
 
 def layer_axis(ob):

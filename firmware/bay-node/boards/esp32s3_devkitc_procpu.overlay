@@ -45,6 +45,11 @@
 	pinctrl-0 = <&devkitc_i2c0>;
 };
 
+/* POS_OUT is IO35 on the node, taken by the devkit's octal PSRAM: IO21 here */
+&rack_bus {
+	pos-out-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
+};
+
 /* SPI2's default pins (IO10-IO13) collide with the bay node map (IO12/IO13) */
 &spi2 {
 	status = "disabled";

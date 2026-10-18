@@ -6,9 +6,9 @@
 	(paper "A3")
 	(title_block
 		(title "Power hub — Overview")
-		(rev "0.3")
+		(rev "0.5")
 		(company "hw-testing-rack")
-		(comment 1 "24 V distribution for the hw-testing-rack shelf: 5 eFused outputs")
+		(comment 1 "USB-C PD distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack")
 		(comment 2 "Generated from electronics/power-hub/design.py — edit the Python, then regenerate")
 	)
 	(lib_symbols)
@@ -54,7 +54,7 @@
 			)
 		)
 	)
-	(text "24 V input and protection"
+	(text "USB-C PD input"
 		(exclude_from_sim no)
 		(at 52.07 77.47 0)
 		(effects
@@ -107,7 +107,7 @@
 			)
 		)
 	)
-	(text "Five eFused row outputs"
+	(text "Four eFused row outputs (6-pin JST PH)"
 		(exclude_from_sim no)
 		(at 172.72 77.47 0)
 		(effects
@@ -133,8 +133,8 @@
 		(fill
 			(color 255 255 225 1)
 		)
-		(uuid "d0da990f-9cf4-5ffc-a5d9-1d420e201b0d")
-		(property "Sheetname" "Control"
+		(uuid "6cd80512-eb70-557f-aea9-b51fb400ef92")
+		(property "Sheetname" "Controller"
 			(at 290.83 69.85 0)
 			(effects
 				(font
@@ -143,7 +143,7 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "control.kicad_sch"
+		(property "Sheetfile" "controller.kicad_sch"
 			(at 290.83 101.6 0)
 			(effects
 				(font
@@ -160,7 +160,7 @@
 			)
 		)
 	)
-	(text "Supervisor header and mounting"
+	(text "Rack controller: supplies, ESP32-S3, USB-C,"
 		(exclude_from_sim no)
 		(at 293.37 77.47 0)
 		(effects
@@ -169,7 +169,18 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "1807ae6b-e56f-59dc-94f9-45c21a26f9b8")
+		(uuid "75e7cd6b-4e1b-5432-96b8-0588a2b622fe")
+	)
+	(text "CAN"
+		(exclude_from_sim no)
+		(at 293.37 81.28 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "7229567c-c17b-58fc-b901-50baf31c5d6e")
 	)
 	(polyline
 		(pts
@@ -183,9 +194,9 @@
 		(fill
 			(type none)
 		)
-		(uuid "50f144c8-d078-5d89-bd82-cb63215e85a1")
+		(uuid "d43a39b6-b826-5666-ae74-29063b5e02cf")
 	)
-	(text "+24V"
+	(text "+3V3"
 		(exclude_from_sim no)
 		(at 35.56 58.42 0)
 		(effects
@@ -195,33 +206,7 @@
 			)
 			(justify right)
 		)
-		(uuid "3e1196cf-7f39-5f75-b101-5c9b705305ea")
-	)
-	(polyline
-		(pts
-			(xy 59.69 58.42)
-			(xy 59.69 69.85)
-		)
-		(stroke
-			(width 0.5)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "dea85714-8f33-58e3-8721-123eb7dabdfd")
-	)
-	(circle
-		(center 59.69 58.42)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "b7475f89-00c1-5b56-b1c5-90d68888d002")
+		(uuid "c21ae696-4678-5a9d-b5fa-64f41813485f")
 	)
 	(polyline
 		(pts
@@ -235,7 +220,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "ef2bd69a-c05d-5df8-9906-f9df7e9dbcc4")
+		(uuid "12d72494-3bdd-5375-a588-a9b00d289770")
 	)
 	(circle
 		(center 180.34 58.42)
@@ -247,13 +232,66 @@
 		(fill
 			(type outline)
 		)
-		(uuid "edc74061-5a17-59f5-819e-55d582393bcd")
+		(uuid "973cad12-2d0d-562b-9ea9-fe41985183c3")
 	)
 	(polyline
 		(pts
-			(xy 242.57 100.33)
-			(xy 242.57 113.03)
-			(xy 298.45 113.03)
+			(xy 300.99 58.42)
+			(xy 300.99 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "ed22bf85-bd9b-5b70-a96e-90c6bc749360")
+	)
+	(circle
+		(center 300.99 58.42)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "25a78e3e-b1e7-5ff5-9a67-e72a66c3edbf")
+	)
+	(polyline
+		(pts
+			(xy 121.92 100.33)
+			(xy 121.92 110.49)
+			(xy 177.8 110.49)
+			(xy 177.8 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "44ac72dd-aac1-56fa-ace5-bfd71044a465")
+	)
+	(text "VRACK"
+		(exclude_from_sim no)
+		(at 123.19 109.22 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "6101439b-88c3-517f-ab7e-31089b135959")
+	)
+	(polyline
+		(pts
+			(xy 234.95 100.33)
+			(xy 234.95 123.19)
+			(xy 298.45 123.19)
 			(xy 298.45 100.33)
 		)
 		(stroke
@@ -263,33 +301,60 @@
 		(fill
 			(type none)
 		)
-		(uuid "6125a36e-446f-5824-a31d-6be5dfb564d5")
+		(uuid "4b8d32b0-253a-5620-8b37-ccc6f8d0f9d9")
 	)
-	(text "FLT_A/AUX/B/C/D, IMON_A/AUX/B/C/D,"
+	(text "ADC_IMON_A/B/C/D, CAN_H/L, FLT_A/B/C/D, POS_A/B/C/D,"
 		(exclude_from_sim no)
-		(at 243.84 109.22 0)
+		(at 236.22 119.38 0)
 		(effects
 			(font
 				(size 1.4 1.4)
 			)
 			(justify left bottom)
 		)
-		(uuid "9a0cf6db-569b-55ef-b867-b654dcdfd0e7")
+		(uuid "c5e5a1fa-0864-5dfb-9f59-524d9f1c056b")
 	)
-	(text "SHDN_A/AUX/B/C/D"
+	(text "ROW_EN_A/B/C/D, VRACK"
 		(exclude_from_sim no)
-		(at 243.84 111.76 0)
+		(at 236.22 121.92 0)
 		(effects
 			(font
 				(size 1.4 1.4)
 			)
 			(justify left bottom)
 		)
-		(uuid "42f086dd-cac4-55ff-bc47-ee86f796b392")
+		(uuid "5d1b81fb-14c5-54f5-a760-a471387d0d30")
 	)
-	(text_box "Power hub — 24 V in (JST VH) → reverse protection + TVS → 5 × TPS26600 eFuse (1.6 A) → JST PH outputs.\nOutputs: rows A, B, C, D (one feed per row, daisy-chained bay to bay) and AUX.\nRTN is tied to GND: reverse polarity is handled by Q1, so the eFuses' own reverse blocking is not needed."
+	(polyline
+		(pts
+			(xy 114.3 100.33)
+			(xy 114.3 133.35)
+			(xy 306.07 133.35)
+			(xy 306.07 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "fcce553e-c1a8-5204-b291-6928c0041789")
+	)
+	(text "I2C_PU, PD_INT/SCL/SDA/VCC, VBUS_SENSE, VRACK"
 		(exclude_from_sim no)
-		(at 30 128.27 0)
+		(at 115.57 132.08 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "f047cd72-8093-5349-881b-317f1ec4702c")
+	)
+	(text_box "Power hub v0.5 — USB-C PD in (AP33772S, 20 V, 28 V EPR on request) → NMOS switch → VRACK → 4 × TPS26600 eFuse (1.6 A) → 6-pin JST PH rows A–D.\nRack controller: ESP32-S3-MINI-1 on VBUS (ahead of the switch), TCAN1462V (CAN master, star bus, both terminations here), POS token per row.\nRows are OFF without firmware: SHDN is pulled low; the controller turns each row on once the PD contract is final."
+		(exclude_from_sim no)
+		(at 30 148.59 0)
 		(size 360 12.7)
 		(margins 2 2 2 2)
 		(stroke

@@ -124,20 +124,157 @@ def node_shape():
     return b
 
 
-def jumper_shape():
-    """24 V jumper, tray-0 carrier coordinates: two JST PH plugs and a two-wire lead with a little sag."""
-    y, z = C["NODE_FRONT_Y"] + C["NODE_SIZE"][1] - 63.0, C["NODE_Z"] + 4.0
-    xa = C["NODE_X0"] + 59.0                    # node 0, J2 (right edge, opening towards +x)
-    xb = P + C["NODE_X0"] - 2.1                 # node 1, J1 (left edge, opening towards -x)
-    sols = [Part.makeBox(7.0, 4.2, 2.65, V(xa, y - 2.1, z - 1.3)),
-            Part.makeBox(7.1, 4.2, 2.65, V(xb, y - 2.1, z - 1.3))]
-    a, b = V(xa + 7.0, y, z), V(xb, y, z)
-    for dy in (-0.65, 0.65):
-        e = Part.Arc(a + V(0, dy, 0), (a + b) * 0.5 + V(0, dy, -3.0), b + V(0, dy, 0)).toShape()
-        t = e.tangentAt(e.FirstParameter)
-        prof = Part.Wire(Part.makeCircle(0.6, e.valueAt(e.FirstParameter), t))
+def row_cable():
+    """The row cable's two connectors (notice.yaml row_cable: node 0's `from`, node 1's `to`) from
+    node.py's parts/node.json: {"pins", "mouth" (node coordinates), "out" (unit, xy)} each; the
+    v0.4 node's 2-pin J2 / J1 without it."""
+    p = os.path.join(PARTS, "node.json")
+    ph = {c["ref"]: c for c in json.load(open(p))["ph"]} if os.path.exists(p) else {}
+    rc = C.get("ROW_CABLE", {"from": "J2", "to": "J1"})
+    d = C["NODE_SIZE"][1]
+    a = ph.get(rc["from"], {"pins": 2, "mouth": [64.1, d - 63.0, 3.975], "out": [1, 0]})
+    b = ph.get(rc["to"], {"pins": 2, "mouth": [-0.1, d - 63.0, 3.975], "out": [-1, 0]})
+    return a, b
+
+
+def plug(m, out, n):
+    """JST PH housing on a lead of n wires: 7 long (5.1 of it in the connector), 2(n-1)+2.2 wide."""
+    w = 2.0 * (n - 1) + 2.2
+    s = Part.makeBox(7.0, w, 2.65, V(-5.1, -w / 2, -1.325))
+    s.rotate(V(0, 0, 0), V(0, 0, 1), math.degrees(math.atan2(out[1], out[0])))
+    s.translate(m)
+    return s
+
+
+def lead(a, b, n, sag):
+    """n wires (1.3 apart) from a to b, sagging by `sag` at the middle."""
+    across = (b - a).cross(V(0, 0, 1))
+    across.normalize()
+    sols = []
+    for i in range(n):
+        o = across * (1.3 * (i - (n - 1) / 2))
+        e = Part.Arc(a + o, (a + b) * 0.5 + o + V(0, 0, -sag), b + o).toShape()
+        prof = Part.Wire(Part.makeCircle(0.6, e.valueAt(e.FirstParameter), e.tangentAt(e.FirstParameter)))
         sols.append(Part.Wire(e).makePipeShell([prof], True, True))
-    return Part.makeCompound(sols)
+    return sols
+
+
+def jumper_shape():
+    """Row cable between node 0 and node 1, tray-0 carrier coordinates: two JST PH plugs and the lead."""
+    ca, cb = row_cable()
+    o0 = V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"])
+    ma, mb = o0 + V(*ca["mouth"]), o0 + V(P, 0, 0) + V(*cb["mouth"])
+    oa, ob = V(ca["out"][0], ca["out"][1], 0), V(cb["out"][0], cb["out"][1], 0)
+    sols = [plug(ma, ca["out"], ca["pins"]), plug(mb, cb["out"], cb["pins"])]
+    return Part.makeCompound(sols + lead(ma + oa * 1.9, mb + ob * 1.9, ca["pins"], 3.0))
+
+
+# ------------------------------------------------------------------ the power box (run.py: rackcfg power_box())
+PB = C.get("POWER_BOX")
+CHARGER = (66.0, 66.0, 30.0)                  # a 140 W PD 3.1 charger, lying on the desk behind the rack
+
+
+def pipe(points, r):
+    """A round cable through `points` (frame), as a smooth spline."""
+    c = Part.BSplineCurve()
+    c.interpolate([V(*p) for p in points])
+    e = c.toShape()
+    prof = Part.Wire(Part.makeCircle(r, e.valueAt(e.FirstParameter), e.tangentAt(e.FirstParameter)))
+    return Part.Wire(e).makePipeShell([prof], True, True)
+
+
+def usbc_plug(m, out):
+    """USB-C plug in a receptacle whose mouth is m, the cable leaving along `out` (unit, frame):
+    6.5 of metal shell inside, a 12 x 6.5 x 16 overmold outside.  Returns (solids, cable start)."""
+    o = V(*out)
+    up = V(0, 0, 1)
+    side = o.cross(up)
+    shell = Part.makeBox(8.3, 6.5, 2.5, V(-4.15, -6.5, -1.25))
+    mold = Part.makeBox(12.0, 16.0, 6.5, V(-6.0, 0.0, -3.25))
+    sols = []
+    for s in (shell, mold):                       # local y along `out`, x along `side`
+        s = s.copy()
+        s.transformShape(App.Matrix(side.x, o.x, up.x, m[0], side.y, o.y, up.y, m[1], side.z, o.z, up.z, m[2], 0, 0, 0, 1))
+        sols.append(s)
+    return sols, V(*m) + o * 16.0
+
+
+def charger_shape():
+    """The charger, its USB-C port on the face towards the rack (-y)."""
+    w, d, h = CHARGER
+    b = Part.makeBox(w, d, h)
+    b = b.makeFillet(5.0, b.Edges)
+    return b.cut(Part.makeBox(9.0, 6.0, 3.4, V(w / 2 - 4.5, -0.1, h / 2 - 1.7)))
+
+
+def charger_at():
+    """Front-left-bottom corner of the charger: on the desk, behind the rack, right of the box's port."""
+    x, y, z = PB["pd"]
+    return V(x - CHARGER[0] / 2 + 25.0, C["PR"] + 120.0, 0.0)
+
+
+def pd_cable_shape():
+    """The charger's USB-C cable: into the box's rear port, out of the back to the charger."""
+    x, y, z = PB["pd"]
+    a, ea = usbc_plug((x, y, z), (0, 1, 0))
+    ch = charger_at()
+    port = (ch.x + CHARGER[0] / 2, ch.y, CHARGER[2] / 2)
+    b, eb = usbc_plug(port, (0, -1, 0))
+    mid = [(x, C["PR"] + 30.0, z), (x + 8.0, C["PR"] + 70.0, 8.0)]
+    return Part.makeCompound(a + b + [pipe([tuple(ea)] + mid + [tuple(eb)], 2.0)])
+
+
+def feed_shape(row=0):
+    """A row feed: from the hub's row connector out through the left base ladder's window,
+    forward and up the rack's outer face, in through the row's jumper window to the first node's
+    J1 (notice.yaml row_cable `to`).  JST PH plugs at both ends."""
+    hub = json.load(open(os.path.join(PARTS, "hub.json")))
+    hx, hy, hz = PB["hub"]
+    hl = PB["hub_pcb"]["size"][1]
+    k = PB["hub_pcb"]["rows"][row]                 # KiCad y of the row's connector
+    c = min(hub["ph"], key=lambda e: abs((hl - e["mouth"][1]) - k))
+    ma = V(hx + c["mouth"][0], hy - hl + c["mouth"][1], hz + c["mouth"][2])
+    _, cb = row_cable()
+    mt = m_row(row, T + CL)
+    o0 = V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"])
+    plug_b = plug(o0 + V(*cb["mouth"]), cb["out"], cb["pins"])
+    plug_b.transformShape(mt)
+    mb = mt.multVec(o0 + V(*cb["mouth"]) + V(cb["out"][0], cb["out"][1], 0) * 1.9)
+    lane = -4.0
+    a = ma + V(-1.9, 0, 0)
+    pts = [a, (a.x - 4, a.y, a.z), (lane, a.y, a.z), (lane, a.y - 10, a.z + 6), (lane, mb.y, mb.z - 25),
+           (lane, mb.y, mb.z - 6), (lane + 4, mb.y, mb.z), mb]
+    return Part.makeCompound([plug(ma, c["out"], c["pins"]), plug_b,
+                              pipe([tuple(p) if not isinstance(p, tuple) else p for p in pts], 1.4)])
+
+
+def power_box_instances(inst, child):
+    if not PB:
+        return
+    hub = PB["hub_pcb"]
+    ox, oy, oz = PB["origin"]
+    W, D, H = PB["size"]
+    t = PB["wall"]
+    hx, hy, hz = PB["hub"]
+    hl = hub["size"][1]
+    inst["pb"] = ("power_box_base", m_tr(ox, oy, oz))
+    inst["pl"] = ("power_box_lid", m_tr(ox, oy, oz))
+    inst["hb"] = ("hub", m_tr(hx, hy - hl, hz))     # board frame: front-left corner at the origin
+    child["pb"], child["hb"], child["pl"] = [], [], []
+    for n, (kx, ky) in enumerate(hub["holes"]):    # inserts in the standoffs, M3 x 6 through the hub
+        inst[f"i_pb_{n}"] = ("insert", m_tr(hx + kx, hy - ky, hz))
+        child["pb"].append((f"i_pb_{n}", None, "follow"))
+        inst[f"s_hb_{n}"] = ("m3x6", m_tr(hx + kx, hy - ky, hz + hub["thickness"]))
+        child["hb"].append((f"s_hb_{n}", (0, 0, 1), "screw"))
+    lug = t + 4.0                                  # power_box.scad LUG_SCREWS: 8 mm lugs in the inner corners
+    for n, (x, y) in enumerate([(x, y) for x in (lug, W - lug) for y in (lug, D - lug)]):
+        inst[f"i_pl_{n}"] = ("insert", m_tr(ox + x, oy + y, oz + H - t))
+        child["pb"].append((f"i_pl_{n}", None, "follow"))
+        inst[f"s_pl_{n}"] = ("m3x8", m_tr(ox + x, oy + y, oz + H))
+        child["pl"].append((f"s_pl_{n}", (0, 0, 1), "screw"))
+    inst["charger"] = ("charger", m_tr(*charger_at()))
+    inst["pdc"] = ("pd_cable", m_tr(0, 0, 0))
+    inst["feed"] = ("feed", m_tr(0, 0, 0))
 
 
 def R_to(axis):
@@ -204,6 +341,7 @@ def instances():
                 inst[sid] = ("m3x8", m_tr(x, PR + BT, zz).multiply(R_to("y")))
                 child[bid].append((sid, (0, 1, 0), "screw"))
     inst["jumper"] = ("jumper", m_row(0, T + CL))
+    power_box_instances(inst, child)
     return inst, child
 
 
@@ -219,6 +357,12 @@ def shape_of(iid):
         s = node_shape()
     elif name == "jumper":
         s = jumper_shape()
+    elif name == "charger":
+        s = charger_shape()
+    elif name == "pd_cable":
+        s = pd_cable_shape()
+    elif name == "feed":
+        s = feed_shape()
     else:
         s = part(name)
     s = s.copy()
@@ -305,6 +449,23 @@ STEPS = {
            "add": {"ba1": (0, 80, 0), "lc2": (0, 0, 55), "cp1": plus(u_(-150), (0, 0, 55)), "dr1": u_(-170)}, "screw_gap": 45, "clic": True},
     "done": {"view": ISO_R, "old": [], "add": {i: (0, 0, 0) for i in BAY0 + BAY1}, "slot": "done"},
 }
+if PB:                                  # the power box, under A1
+    BOX = ["pb", "hb", "pl"]
+    _o, _s, _pd = PB["origin"], PB["size"], PB["pd"]
+    _bc = (_o[0] + _s[0] / 2, _o[1] + _s[1] / 2, _o[2] + _s[2] / 2)
+    _top = (0.55, -1.0, 1.5)
+    STEPS.update({
+        "c1": {"view": _top, "old": A("pb"), "add": {"hb": (0, 0, 45)}, "screw_gap": 18},
+        "c2": {"view": _top, "old": A("pb", "hb"), "add": {"pl": (0, 0, 45)}, "screw_gap": 18},
+        "c3": {"view": (-0.95, -1.45, 0.5), "old": BAY0, "add": {i: (0, -150, 30) for i in BOX}, "screw_gap": 0,
+               "arrow_ids": ["pb"], "frame": {"at": (_bc[0] + 40, _bc[1] - 50, 70), "size": 380}},
+        "c4": {"view": REAR, "old": BAY0 + BOX, "add": {"pdc": (0, 40, 0), "charger": (0, 40, 0)},
+               "arrow_ids": ["pdc"], "frame": {"at": (_pd[0] + 10, PR + 85, 35), "size": 370}},
+        "c5": {"view": (-1.4, -0.8, 0.6), "old": BAY0 + BOX, "add": {"feed": (0, 0, 0)}, "slot": "single",
+               "frame": {"at": (20, 110, 75), "size": 330}},
+        "c_done": {"view": ISO, "old": [], "add": {i: (0, 0, 0) for i in BAY0 + BOX + ["feed"]},
+                   "slot": "cover_small"},
+    })
 
 
 
@@ -373,6 +534,8 @@ def step_scene(step):
     if step.get("arrows", True):
         shp = {i: s for i, _, s, _ in items}
         for iid, o in step["add"].items():
+            if "arrow_ids" in step and iid not in step["arrow_ids"]:
+                continue
             L = math.sqrt(sum(x * x for x in o))
             if L < 1:
                 continue
@@ -616,13 +779,14 @@ def job_thumb(n):
 
 
 def hw_shape(n):
-    if n == "jumper":                          # a short jumper for the chip: two plugs, a sagging pair of wires
-        sols = [Part.makeBox(7.0, 4.2, 2.65, V(-7.0, -2.1, -1.3)), Part.makeBox(7.0, 4.2, 2.65, V(34.0, -2.1, -1.3))]
-        for dy in (-0.65, 0.65):
-            e = Part.Arc(V(0, dy, 0), V(17, dy, -7), V(34, dy, 0)).toShape()
-            prof = Part.Wire(Part.makeCircle(0.6, e.valueAt(e.FirstParameter), e.tangentAt(e.FirstParameter)))
-            sols.append(Part.Wire(e).makePipeShell([prof], True, True))
-        return Part.makeCompound(sols)
+    if n == "jumper":                          # a short row cable for the chip: two plugs, a sagging lead
+        pins = row_cable()[0]["pins"]
+        sols = [plug(V(-1.9, 0, 0), (1, 0), pins), plug(V(35.9, 0, 0), (-1, 0), pins)]   # leads leave at x = 0 and 34
+        return Part.makeCompound(sols + lead(V(0, 0, 0), V(34, 0, 0), pins, 7.0))
+    if n == "usbc":                            # the charger's cable: two USB-C plugs, a thick sagging lead
+        a, ea = usbc_plug((0, 0, 0), (1, 0, 0))
+        b, eb = usbc_plug((76, 0, 0), (-1, 0, 0))
+        return Part.makeCompound(a + b + [pipe([tuple(ea), (38, 0, -9), tuple(eb)], 2.0)])
     kind, dia, length, _ = FAST[n]
     s = fastener_z(kind, dia, length).copy()
     s.rotate(V(0, 0, 0), V(0, 1, 0), -90)      # axis along X, head towards -X
@@ -632,16 +796,18 @@ def hw_shape(n):
 def job_hw(n):
     """Hardware icons (64 x 30 on the page, drawn at 2x): one fastener nearly side on, a little from its head side."""
     data = cached("hw_" + n) or project("hw_" + n, [(n, "add", hw_shape(n), False)], HW_VIEW.get(n, HW_VIEW["*"]))
-    render(f"hw_{n}", data, (128, 60), (1, 1.15 if n != "jumper" else 1.8), pad=3, display=(64, 30),
-           fixed_k=None if n == "jumper" else 9.4)        # every fastener at the same scale (the M3 x 8 fills it)
+    cable = n in ("jumper", "usbc")
+    render(f"hw_{n}", data, (128, 60), (1, 1.8 if cable else 1.15), pad=3, display=(64, 30),
+           fixed_k=None if cable else 9.4)        # every fastener at the same scale (the M3 x 8 fills it)
 
 
 THUMBS = {
     "lb": ("lb0", (-1.4, -0.6, 0.5)), "la": ("la0", (-1.4, -0.6, 0.5)), "lc": ("lc0", (-1.4, -0.6, 0.5)),
     "fp": ("fp0", ISO), "tr": ("tr0", ISO), "dr": ("dr0", ISO), "cp": ("cp0", ISO),
     "bb": ("bb0", (0, 1, 0.15)), "nd": ("nd0", ISO),
+    "pb": ("pb", ISO), "pl": ("pl", ISO), "hb": ("hb", ISO), "ch": ("charger", ISO),
 }
-HW_VIEW = {"*": (-0.5, -1.0, 0.35), "jumper": (0.1, -1.0, 0.35)}
+HW_VIEW = {"*": (-0.5, -1.0, 0.35), "jumper": (0.1, -1.0, 0.35), "usbc": (0.1, -1.0, 0.35)}
 
 if __name__ in ("__main__", "notice") and os.environ.get("NOTICE"):
     for n in os.environ["NOTICE"].split(","):

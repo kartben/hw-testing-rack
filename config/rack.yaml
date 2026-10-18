@@ -79,6 +79,15 @@ cameras:                  # bays that get a camera pod on their ceiling (the tra
   - B2
   - C3
 
+power_box:                # mechanical/parts/power_box.scad: the power hub's enclosure, in a base cell under row A
+  column: 0               # base cell (under row A) it sits in: its floor sockets take the floor plate's bosses
+  x: 3                    # its left outer face from the cell's left (the row cables leave through the ladder window)
+  size: [84, 148, 35]     # outer W × D × H: the hub (76 × 140) and its tallest part (the 100 µF bulk capacitor)
+  wall: 2.4
+  charger:                # outside the rack, on the USB-C PD input in the box's rear wall
+    part: "USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port"
+    cable: "USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m"
+
 # Example population used by the docs, the BOM roll-up and the 3D viewer.
 # board ids refer to mechanical/boards/boards.yaml; cable ids to cables below.
 population:
@@ -100,8 +109,8 @@ cables:
   c-to-micro-b: { label: "USB-C ↔ micro-B, 10–15 cm",      a: usb-c, b: micro-b, length: 120 }
   c-to-mini-b:  { label: "USB-C ↔ mini-B, 15–25 cm",       a: usb-c, b: mini-b,  length: 150 }
   drawer-ext:   { label: "USB-C male → panel-mount USB-C female, 30 cm", length: 300 }
-  row-jumper:   { label: "JST PH 2-pin jumper, 24 AWG, 120 mm", length: 120 }
-  row-feed:     { label: "JST PH 2-pin feed, 24 AWG",            length: 1000 }
+  row-jumper:   { label: "JST PH 6-pin row cable, 1:1, 24 AWG, 120 mm", length: 120 }
+  row-feed:     { label: "JST PH 6-pin feed, 1:1, 24 AWG (VRACK, CAN, POS)", length: 600 }
 
 pcb:
   bay_node:
@@ -115,8 +124,14 @@ pcb:
     pwr_y: 63               # KiCad Y of the 24 V in/out connectors (JST PH, left/right edges)
     right: { dut: 24, aux: 40 }                     # KiCad Y of the right-edge connectors
     cam: [64, 11]           # camera 5 V connector (JST-PH) mouth, right edge near the rear
-  power_hub:
-    size: [120, 70]
+  power_hub:                # v0.5: USB-C PD in (AP33772S), eFuses, rack controller (ESP32-S3, CAN master)
+    size: [76, 140]         # X × Y; KiCad y=0 is the REAR edge, y=140 the front edge (like the bay node)
     thickness: 1.6
-    layers: 2
-    holes: [[4, 4], [116, 4], [4, 66], [116, 66]]
+    layers: 4               # as the bay node: In1 solid GND, In2 power only, signals outside
+    holes: [[3.5, 3.5], [72, 4], [4, 127.2], [72, 127.2]]   # M3, KiCad coordinates (the front pair clears the LEDs and USB-C)
+    x0: 3.6                 # left edge, box X (the row connectors' mouths reach into the left wall)
+    front_gap: 1.2          # PCB front edge -> box front wall inner face
+    z: 19.0                 # PCB bottom above the box bottom: the row connectors clear the base ladder's window sill
+    rows: [115, 92, 69, 46] # KiCad y of the row A, B, C, D connectors (6-pin JST PH, side entry, left edge)
+    front: { leds: [11, 23, 35, 47, 55.6, 61.6], usb: 70 }  # KiCad x: ON/FAULT pair centres (±3) for rows A-D, then PD (the AP33772S's status), CTL; USB-C
+    rear: { pd: 62 }            # KiCad x on the rear edge: the USB-C PD input

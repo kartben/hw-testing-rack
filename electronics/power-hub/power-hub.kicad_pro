@@ -152,8 +152,8 @@
         "min_silk_clearance": 0.0,
         "min_text_height": 0.8,
         "min_text_thickness": 0.08,
-        "min_through_hole_diameter": 0.25,
-        "min_track_width": 0.125,
+        "min_through_hole_diameter": 0.3,
+        "min_track_width": 0.1,
         "min_via_annular_width": 0.1,
         "min_via_diameter": 0.45,
         "solder_mask_to_copper_clearance": 0.0,
@@ -295,10 +295,26 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 1,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 1.5,
+        "track_width": 0.8,
         "tuning_profile": "",
         "via_diameter": 1.0,
         "via_drill": 0.5,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.15,
+        "diff_pair_gap": 0.15,
+        "diff_pair_width": 0.25,
+        "line_style": 0,
+        "name": "USB",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.2,
+        "tuning_profile": "",
+        "via_diameter": 0.6,
+        "via_drill": 0.3,
         "wire_width": 6
       }
     ],
@@ -310,11 +326,31 @@
     "netclass_patterns": [
       {
         "netclass": "Power",
-        "pattern": "*VIN_RAW"
+        "pattern": "*PD_VBUS"
       },
       {
         "netclass": "Power",
-        "pattern": "*ROW_*"
+        "pattern": "*PD_SRC"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "*ROW_?"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "*+5V_BUCK"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "*BUCK_SW"
+      },
+      {
+        "netclass": "USB",
+        "pattern": "*_DP"
+      },
+      {
+        "netclass": "USB",
+        "pattern": "*_DN"
       }
     ]
   },
@@ -355,12 +391,12 @@
       "Outputs"
     ],
     [
-      "d0da990f-9cf4-5ffc-a5d9-1d420e201b0d",
-      "Control"
+      "6cd80512-eb70-557f-aea9-b51fb400ef92",
+      "Controller"
     ]
   ],
   "text_variables": {
-    "REV": "0.3"
+    "REV": "0.5"
   },
   "tuning_profiles": {
     "meta": {

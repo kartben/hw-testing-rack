@@ -59,13 +59,23 @@ aluminium frame gave them **double-width bays** (two nodes, two drawers, so two
 DATA ports, each with its own switched, current-limited, metered VBUS); the
 panel frame has no double bay yet (see [mechanical.md](mechanical.md)).
 
-## 24 V
+## Row power
 
-* **Bay to bay:** JST PH 2-pin jumpers, 24 AWG, 120 mm, plugged into the
-  node's left (IN) and right (OUT) connectors through the windows in both tray
-  walls and the shared ladder, at the front of the plenum where the chain
-  never goes.
-* **Power box to row:** one JST PH feed per row, ≈ 1 m, into the first bay's
-  left window.  (The power box is not designed yet: see [power.md](power.md).)
+The rack bus, **VRACK**, is 20 or 28 V: whatever the hub negotiated with the
+USB-C PD charger ([power.md](power.md)).  The charger's 5 A e-marked cable
+plugs into the power box's rear wall.
+
+* **Bay to bay:** 6-pin JST PH jumpers, 1:1, 24 AWG, 120 mm (VRACK, GND,
+  CAN_H, CAN_L, GND, POS: [can.md](can.md)), plugged into the node's left (IN)
+  and right (OUT) connectors through the 17 mm windows in both tray walls and
+  the shared ladder, at the front of the plenum where the chain never goes.
+  The bundle makes a half twist between two nodes; buy "pin 1 ↔ pin 1" cables.
+  (The v0.4 nodes had 2-pin, 24 V-only jumpers.)
+* **Power box to row:** one 6-pin JST PH feed per row, 1:1, ≈ 0.25 / 0.45 /
+  0.6 m for rows A / B / C.  Each plugs into the power box's left wall, reached
+  through the left base ladder's window.  It runs forward along that ladder's
+  outer face, climbs the rack's left side tied to the ladders, and enters the
+  first bay's left window to its node's IN connector.  Give the CAN pair 2–3
+  twists per 10 cm.
 * **Cameras:** a JST-PH lead from the node above, down through the hole in
   the tray's bottom to the pod.

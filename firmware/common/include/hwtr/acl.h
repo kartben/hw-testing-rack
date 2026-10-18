@@ -3,8 +3,10 @@
  * (lease), short blocks after a kick, the log of refused connections, and the
  * HMAC-SHA256 that signs admin requests.
  *
- * Plain C, no Zephyr: access.c feeds it the addresses seen by the packet
- * filter, the sockets and the web server, tests/acl builds it on the host.
+ * Plain C, no Zephyr: the bay node's access.c feeds it the addresses seen by
+ * the packet filter, the sockets and the web server, bay-node/tests/acl builds
+ * it on the host.  Its SHA-256 and HMAC also sign the hub's admin requests
+ * (hwtr/admin.h).
  * A rack controller pushing rules over CAN would reuse it as is.
  *
  * Addresses are IPv4 in host byte order (192.168.1.23 is 0xc0a80117), times

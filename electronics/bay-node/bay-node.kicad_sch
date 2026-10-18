@@ -6,15 +6,15 @@
 	(paper "A3")
 	(title_block
 		(title "Bay node — Overview")
-		(rev "0.4")
+		(rev "0.5")
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
-		(comment 3 "24 V in · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX UART/RST/BOOT")
+		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX")
 	)
 	(lib_symbols)
 	(sheet
-		(at 36.83 70)
+		(at -11.43 70)
 		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -30,7 +30,7 @@
 		)
 		(uuid "6bdbf57d-f796-52cd-9884-75545352918b")
 		(property "Sheetname" "Power"
-			(at 36.83 69.85 0)
+			(at -11.43 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -39,7 +39,7 @@
 			)
 		)
 		(property "Sheetfile" "power.kicad_sch"
-			(at 36.83 101.6 0)
+			(at -11.43 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -55,9 +55,9 @@
 			)
 		)
 	)
-	(text "24 V input, 5 V buck, 3.3 V LDO"
+	(text "VRACK input (20–28 V), 5 V buck, 3.3"
 		(exclude_from_sim no)
-		(at 39.37 77.47 0)
+		(at -8.89 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -66,8 +66,19 @@
 		)
 		(uuid "f8fb0e46-de19-5e4f-9177-56a290e17170")
 	)
+	(text "V LDO"
+		(exclude_from_sim no)
+		(at -8.89 81.28 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "6acf6617-540c-51c4-8886-bf6aab51d8ef")
+	)
 	(sheet
-		(at 130.81 70)
+		(at 82.55 70)
 		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -83,7 +94,7 @@
 		)
 		(uuid "342cf2d8-2555-5c90-a32c-abde03bd4d01")
 		(property "Sheetname" "MCU"
-			(at 130.81 69.85 0)
+			(at 82.55 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -92,7 +103,7 @@
 			)
 		)
 		(property "Sheetfile" "mcu.kicad_sch"
-			(at 130.81 101.6 0)
+			(at 82.55 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -110,7 +121,7 @@
 	)
 	(text "ESP32-S3 module"
 		(exclude_from_sim no)
-		(at 133.35 77.47 0)
+		(at 85.09 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -120,7 +131,7 @@
 		(uuid "d9bf817d-7472-5403-874f-f238c0cc52d6")
 	)
 	(sheet
-		(at 226.06 70)
+		(at 177.8 70)
 		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -136,7 +147,7 @@
 		)
 		(uuid "c87ef098-13d8-5d4c-814e-a4c6487f5259")
 		(property "Sheetname" "USB"
-			(at 226.06 69.85 0)
+			(at 177.8 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -145,7 +156,7 @@
 			)
 		)
 		(property "Sheetfile" "usb.kicad_sch"
-			(at 226.06 101.6 0)
+			(at 177.8 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -163,7 +174,7 @@
 	)
 	(text "USB ports and data-path muxes"
 		(exclude_from_sim no)
-		(at 228.6 77.47 0)
+		(at 180.34 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -173,7 +184,7 @@
 		(uuid "42806cd3-6376-555f-bb24-081dc0c93d3c")
 	)
 	(sheet
-		(at 320.04 70)
+		(at 271.78 70)
 		(size 64 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -189,7 +200,7 @@
 		)
 		(uuid "a569d74c-9c07-57e9-a349-c34419c82b47")
 		(property "Sheetname" "DUT power & AUX"
-			(at 320.04 69.85 0)
+			(at 271.78 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -198,7 +209,7 @@
 			)
 		)
 		(property "Sheetfile" "dut.kicad_sch"
-			(at 320.04 101.6 0)
+			(at 271.78 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -216,7 +227,7 @@
 	)
 	(text "DUT power switch, monitor, AUX and"
 		(exclude_from_sim no)
-		(at 322.58 77.47 0)
+		(at 274.32 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -227,7 +238,7 @@
 	)
 	(text "camera power"
 		(exclude_from_sim no)
-		(at 322.58 81.28 0)
+		(at 274.32 81.28 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -236,10 +247,74 @@
 		)
 		(uuid "29b129ae-041c-5479-bcc0-8201edff0b7b")
 	)
+	(sheet
+		(at 367.03 70)
+		(size 64 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.3)
+			(type solid)
+		)
+		(fill
+			(color 255 255 225 1)
+		)
+		(uuid "c4300c69-5e67-5bcd-9e3d-2b0a1d811de1")
+		(property "Sheetname" "Rack bus"
+			(at 367.03 69.85 0)
+			(effects
+				(font
+					(size 2 2)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "bus.kicad_sch"
+			(at 367.03 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f"
+					(page "6")
+				)
+			)
+		)
+	)
+	(text "Rack bus: CAN transceiver and POS"
+		(exclude_from_sim no)
+		(at 369.57 77.47 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "f0746c89-78c2-5b3b-ae01-b77e038c03f0")
+	)
+	(text "addressing token"
+		(exclude_from_sim no)
+		(at 369.57 81.28 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "aec8dadc-45f7-5285-b628-8d98f687440b")
+	)
 	(polyline
 		(pts
-			(xy 25.4 58.42)
-			(xy 388.62 58.42)
+			(xy -22.86 58.42)
+			(xy 434.34 58.42)
 		)
 		(stroke
 			(width 0.5)
@@ -252,7 +327,7 @@
 	)
 	(text "+3V3"
 		(exclude_from_sim no)
-		(at 22.86 58.42 0)
+		(at -25.4 58.42 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -264,8 +339,8 @@
 	)
 	(polyline
 		(pts
-			(xy 46.99 58.42)
-			(xy 46.99 69.85)
+			(xy -1.27 58.42)
+			(xy -1.27 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -277,7 +352,7 @@
 		(uuid "cac88250-4a42-51cd-8b3f-0d13c6e8f292")
 	)
 	(circle
-		(center 46.99 58.42)
+		(center -1.27 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -290,8 +365,8 @@
 	)
 	(polyline
 		(pts
-			(xy 140.97 58.42)
-			(xy 140.97 69.85)
+			(xy 92.71 58.42)
+			(xy 92.71 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -303,7 +378,7 @@
 		(uuid "b0f8a5e0-61d2-5bea-8d49-35f883f2fa22")
 	)
 	(circle
-		(center 140.97 58.42)
+		(center 92.71 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -316,8 +391,8 @@
 	)
 	(polyline
 		(pts
-			(xy 236.22 58.42)
-			(xy 236.22 69.85)
+			(xy 187.96 58.42)
+			(xy 187.96 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -329,7 +404,7 @@
 		(uuid "b8db4070-75d6-52e0-bc5c-c34037d6afb0")
 	)
 	(circle
-		(center 236.22 58.42)
+		(center 187.96 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -342,8 +417,8 @@
 	)
 	(polyline
 		(pts
-			(xy 330.2 58.42)
-			(xy 330.2 69.85)
+			(xy 281.94 58.42)
+			(xy 281.94 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -355,7 +430,7 @@
 		(uuid "028f8cd7-1d51-594e-9dc7-818c355fd182")
 	)
 	(circle
-		(center 330.2 58.42)
+		(center 281.94 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -368,8 +443,34 @@
 	)
 	(polyline
 		(pts
-			(xy 25.4 50.8)
-			(xy 388.62 50.8)
+			(xy 377.19 58.42)
+			(xy 377.19 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "77f32af8-30f1-55f7-9a43-ab6ff6dfe551")
+	)
+	(circle
+		(center 377.19 58.42)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "83c461c2-c9cf-5b58-be38-076c1dd50102")
+	)
+	(polyline
+		(pts
+			(xy -22.86 50.8)
+			(xy 434.34 50.8)
 		)
 		(stroke
 			(width 0.5)
@@ -382,7 +483,7 @@
 	)
 	(text "+5V"
 		(exclude_from_sim no)
-		(at 22.86 50.8 0)
+		(at -25.4 50.8 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -394,8 +495,8 @@
 	)
 	(polyline
 		(pts
-			(xy 54.61 50.8)
-			(xy 54.61 69.85)
+			(xy 6.35 50.8)
+			(xy 6.35 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -407,7 +508,7 @@
 		(uuid "124f9874-845e-5008-b713-371d04709af6")
 	)
 	(circle
-		(center 54.61 50.8)
+		(center 6.35 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -420,8 +521,8 @@
 	)
 	(polyline
 		(pts
-			(xy 243.84 50.8)
-			(xy 243.84 69.85)
+			(xy 195.58 50.8)
+			(xy 195.58 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -433,7 +534,7 @@
 		(uuid "c763c666-a8ae-56ca-af75-8212ec1ab096")
 	)
 	(circle
-		(center 243.84 50.8)
+		(center 195.58 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -446,8 +547,8 @@
 	)
 	(polyline
 		(pts
-			(xy 337.82 50.8)
-			(xy 337.82 69.85)
+			(xy 289.56 50.8)
+			(xy 289.56 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -459,7 +560,7 @@
 		(uuid "f3e6d3dc-c59a-5e1b-b1fa-bde74f55d1f1")
 	)
 	(circle
-		(center 337.82 50.8)
+		(center 289.56 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -472,10 +573,36 @@
 	)
 	(polyline
 		(pts
-			(xy 186.69 100.33)
-			(xy 186.69 110.49)
-			(xy 233.68 110.49)
-			(xy 233.68 100.33)
+			(xy 384.81 50.8)
+			(xy 384.81 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "6a6ca49b-001c-5979-b9f4-fb7341345b87")
+	)
+	(circle
+		(center 384.81 50.8)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "9456e248-e8ab-5052-988c-995cedf3f902")
+	)
+	(polyline
+		(pts
+			(xy 138.43 100.33)
+			(xy 138.43 110.49)
+			(xy 185.42 110.49)
+			(xy 185.42 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -488,7 +615,7 @@
 	)
 	(text "ESP_DN/DP, MUX_FORCE_PC, PC_DET, SVC"
 		(exclude_from_sim no)
-		(at 189.23 109.22 0)
+		(at 140.97 109.22 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -499,10 +626,10 @@
 	)
 	(polyline
 		(pts
-			(xy 274.32 100.33)
-			(xy 274.32 120.65)
-			(xy 327.66 120.65)
-			(xy 327.66 100.33)
+			(xy 226.06 100.33)
+			(xy 226.06 120.65)
+			(xy 279.4 120.65)
+			(xy 279.4 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -515,7 +642,7 @@
 	)
 	(text "DUT_5V"
 		(exclude_from_sim no)
-		(at 276.86 119.38 0)
+		(at 228.6 119.38 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -526,10 +653,10 @@
 	)
 	(polyline
 		(pts
-			(xy 179.07 100.33)
-			(xy 179.07 130.81)
-			(xy 335.28 130.81)
-			(xy 335.28 100.33)
+			(xy 130.81 100.33)
+			(xy 130.81 130.81)
+			(xy 287.02 130.81)
+			(xy 287.02 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -542,7 +669,7 @@
 	)
 	(text "AUX_BOOT_CTL, AUX_RST_CTL, AUX_RX/TX, DUT_EN, DUT_FLT_N, I2C_SCL/SDA, INA_ALERT_N"
 		(exclude_from_sim no)
-		(at 181.61 129.54 0)
+		(at 133.35 129.54 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -551,10 +678,64 @@
 		)
 		(uuid "6f69dc48-6ed5-5c76-93a7-d6be14dadd4e")
 	)
-	(text_box "Bay node — one per bay.  Sheets:\n  Power: 24 V bus (JST PH daisy chain), reverse protection, LMR51635 buck to 5 V, AMS1117 3.3 V\n  MCU: ESP32-S3-MINI-1, reset/boot, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
+	(polyline
+		(pts
+			(xy 123.19 100.33)
+			(xy 123.19 140.97)
+			(xy 374.65 140.97)
+			(xy 374.65 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "1f3073a3-214b-5839-bd6c-4e70c60ca944")
+	)
+	(text "CAN_RXD/TXD, POS_IN/OUT"
 		(exclude_from_sim no)
-		(at 30 146.05 0)
-		(size 360 27.94)
+		(at 125.73 139.7 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "05002f52-6e34-57b6-98bc-fb509332fc7f")
+	)
+	(polyline
+		(pts
+			(xy 44.45 100.33)
+			(xy 44.45 151.13)
+			(xy 382.27 151.13)
+			(xy 382.27 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "5ba9da26-8162-5c93-a05d-790e09e9ccc1")
+	)
+	(text "CAN_H/L, POS_IN_CONN, POS_OUT_CONN"
+		(exclude_from_sim no)
+		(at 46.99 149.86 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "9815a35c-f71a-52c0-a298-6e835863a49b")
+	)
+	(text_box "Bay node — one per bay.  Sheets:\n  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51635 buck, AMS1117\n  MCU: ESP32-S3-MINI-1, reset/boot, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT, camera 5 V\n  Rack bus: TCAN1462V CAN transceiver on the row pair, POS token in/out (docs/can.md)\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
+		(exclude_from_sim no)
+		(at 30 166.37 0)
+		(size 360 30.48)
 		(margins 2 2 2 2)
 		(stroke
 			(width 0)

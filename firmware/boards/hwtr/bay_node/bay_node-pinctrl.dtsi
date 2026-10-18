@@ -46,6 +46,19 @@
 		};
 	};
 
+	/* IO18 CAN_TXD / IO17 CAN_RXD: TCAN1462V U11 on the rack bus (docs/can.md) */
+	bay_twai_default: bay_twai_default {
+		group1 {
+			pinmux = <TWAI_TX_GPIO18>;
+			output-high;
+		};
+
+		group2 {
+			pinmux = <TWAI_RX_GPIO17>;
+			bias-pull-up;
+		};
+	};
+
 	/* IO12 LED_DIN: WS2812B status LED (33R series) */
 	bay_led_default: bay_led_default {
 		group1 {

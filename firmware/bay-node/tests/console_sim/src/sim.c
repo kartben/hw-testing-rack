@@ -218,3 +218,31 @@ int main(void)
 
 	return 0;
 }
+
+/* --- Rack bus: not on native_sim (no row cable) ------------------------------ */
+
+uint8_t bay_rack_id(void)
+{
+	return 0x23;
+}
+
+const char *bay_rack_position(void)
+{
+	return "C3";
+}
+
+bool bay_rack_hub(struct rack_hub_state *st)
+{
+	*st = (struct rack_hub_state){.flags = RACK_HUB_CONTRACT | RACK_HUB_EPR, .mv = 28000,
+				      .ma = 5000, .rows_on = 0x7};
+	return true;
+}
+
+void bay_rack_info_changed(void)
+{
+}
+
+bool bay_rack_identifying(void)
+{
+	return false;
+}

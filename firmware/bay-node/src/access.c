@@ -1,6 +1,8 @@
 /*
  * Access control: who may use the bay's services, the CI reservation, the
- * admin key.  The rules themselves are in acl.c; this file applies them.
+ * admin key.  The rules themselves are in firmware/common/lib/acl.c, the
+ * admin key, claim and signatures in firmware/common/lib/admin.c (shared
+ * with the power hub); this file applies them.
  *
  *   - TCP to USB/IP, the telnet shell and the AUX ports: Zephyr's packet
  *     filter (local-in hook) drops what the rules refuse, so even servers
@@ -41,29 +43,20 @@
 #define HAS_STACK_SERVERS 1
 #endif
 
+#include <hwtr/admin.h>
+
 #include "bay.h"
 
 LOG_MODULE_REGISTER(access, CONFIG_BAY_LOG_LEVEL);
 
 #define CLAIM_MS     (CONFIG_BAY_ACCESS_CLAIM_S * MSEC_PER_SEC)
 #define KICK_MS      (CONFIG_BAY_ACCESS_KICK_S * MSEC_PER_SEC)
-#define NONCE_LEN    8
-#define NONCE_MS     60000
-#define NONCES       8
 #define TICKET_LEN   8
 #define TICKET_MS    10000
 #define TICKETS      2
 
 static struct k_spinlock lock;
 static struct acl_state st;
-static uint8_t key[ACL_KEY_LEN];
-static bool have_key;
-
-static struct {
-	uint8_t value[NONCE_LEN];
-	int64_t until;
-} nonces[NONCES];
-static unsigned int nonce_next;
 
 static struct {
 	uint8_t value[TICKET_LEN];
@@ -72,16 +65,6 @@ static struct {
 } tickets[TICKETS];
 static unsigned int ticket_next;
 
-static struct {
-	bool pending;
-	bool done;
-	bool offered; /* the claimer brought its own key (one key for the rack) */
-	uint8_t ticket[TICKET_LEN];
-	uint32_t ip;
-	int64_t until;
-	uint8_t key[ACL_KEY_LEN];
-} claim;
-static K_MUTEX_DEFINE(claim_lock);
 
 static int64_t now_ms(void)
 {
@@ -118,11 +101,15 @@ static int access_settings_set(const char *name, size_t len, settings_read_cb re
 	}
 
 	if (settings_name_steq(name, "key", NULL)) {
+		uint8_t key[ACL_KEY_LEN];
+
 		if (len != sizeof(key)) {
 			return 0;
 		}
 		n = read_cb(cb_arg, key, sizeof(key));
-		have_key = n == sizeof(key);
+		if (n == sizeof(key)) {
+			hwtr_admin_load(key);
+		}
 		return n < 0 ? (int)n : 0;
 	}
 
@@ -136,10 +123,11 @@ static int save_rules(const struct acl_rules *r)
 	return settings_save_one("access/rules", r, sizeof(*r));
 }
 
-static int save_key(void)
+/* hwtr_admin's storage: the key, or NULL to forget it */
+static int save_key(const uint8_t *key)
 {
-	return have_key ? settings_save_one("access/key", key, sizeof(key))
-			: settings_delete("access/key");
+	return key != NULL ? settings_save_one("access/key", key, ACL_KEY_LEN)
+			   : settings_delete("access/key");
 }
 
 /* --- Checks ---------------------------------------------------------------------- */
@@ -209,7 +197,7 @@ bool access_enabled(void)
 
 bool access_claimed(void)
 {
-	return have_key;
+	return hwtr_admin_claimed();
 }
 
 uint32_t access_refused_total(void)
@@ -304,170 +292,42 @@ static NPF_RULE(drop_refused, NET_DROP, tcp_refused);
 
 #endif /* CONFIG_NET_PKT_FILTER_LOCAL_IN_HOOK */
 
-/* --- Admin key, nonces, signatures ---------------------------------------------- */
+/* --- Admin key, nonces, signatures, claim: firmware/common/lib/admin.c ----------- */
 
 int access_nonce(char *out)
 {
-	uint8_t v[NONCE_LEN];
-	k_spinlock_key_t k;
-
-	random_fill(v, sizeof(v));
-
-	k = k_spin_lock(&lock);
-	memcpy(nonces[nonce_next].value, v, sizeof(v));
-	nonces[nonce_next].until = now_ms() + NONCE_MS;
-	nonce_next = (nonce_next + 1) % NONCES;
-	k_spin_unlock(&lock, k);
-
-	acl_hex_encode(v, sizeof(v), out);
-
-	return 0;
-}
-
-/* A live nonce is used up by this call, whatever the signature says */
-static bool nonce_take(const uint8_t *v)
-{
-	k_spinlock_key_t k = k_spin_lock(&lock);
-	bool found = false;
-
-	for (int i = 0; i < NONCES; i++) {
-		if (nonces[i].until > now_ms() && memcmp(nonces[i].value, v, NONCE_LEN) == 0) {
-			nonces[i].until = 0;
-			found = true;
-			break;
-		}
-	}
-	k_spin_unlock(&lock, k);
-
-	return found;
+	return hwtr_admin_nonce(out);
 }
 
 bool access_admin(const char *auth, const char *method, const char *path, const uint8_t *body,
 		  size_t len)
 {
-	char nonce_hex[2 * NONCE_LEN + 1];
-	uint8_t nonce[NONCE_LEN];
-	uint8_t mac[ACL_MAC_LEN];
-	uint8_t want[ACL_MAC_LEN];
-	struct acl_hmac h;
-
-	/* "<16 hex>:<64 hex>" */
-	if (!have_key || auth == NULL || strlen(auth) != 2 * NONCE_LEN + 1 + 2 * ACL_MAC_LEN ||
-	    auth[2 * NONCE_LEN] != ':') {
-		return false;
-	}
-	memcpy(nonce_hex, auth, 2 * NONCE_LEN);
-	nonce_hex[2 * NONCE_LEN] = '\0';
-	if (acl_hex_decode(nonce_hex, nonce, sizeof(nonce)) != 0 ||
-	    acl_hex_decode(&auth[2 * NONCE_LEN + 1], mac, sizeof(mac)) != 0 ||
-	    !nonce_take(nonce)) {
-		return false;
-	}
-
-	acl_hmac_init(&h, key, sizeof(key));
-	acl_hmac_update(&h, nonce_hex, strlen(nonce_hex));
-	acl_hmac_update(&h, "\n", 1);
-	acl_hmac_update(&h, method, strlen(method));
-	acl_hmac_update(&h, "\n", 1);
-	acl_hmac_update(&h, path, strlen(path));
-	acl_hmac_update(&h, "\n", 1);
-	acl_hmac_update(&h, body, len);
-	acl_hmac_final(&h, want);
-
-	return acl_equal(mac, want, sizeof(mac));
+	return hwtr_admin_check(auth, method, path, body, len);
 }
 
 int access_set_key(const uint8_t *new_key)
 {
-	memcpy(key, new_key, sizeof(key));
-	have_key = true;
-
-	return save_key();
+	return hwtr_admin_set_key(new_key);
 }
-
-/* --- Claim: the first admin key, by physical presence ----------------------------- */
 
 int access_claim_start(uint32_t ip, const uint8_t *offered, char *ticket_hex)
 {
-	if (have_key) {
-		return -EALREADY;
-	}
-
-	k_mutex_lock(&claim_lock, K_FOREVER);
-	memset(&claim, 0, sizeof(claim));
-	random_fill(claim.ticket, sizeof(claim.ticket));
-	claim.pending = true;
-	claim.ip = ip;
-	claim.until = now_ms() + CLAIM_MS;
-	if (offered != NULL) {
-		memcpy(claim.key, offered, sizeof(claim.key));
-		claim.offered = true;
-	}
-	acl_hex_encode(claim.ticket, sizeof(claim.ticket), ticket_hex);
-	k_mutex_unlock(&claim_lock);
-
-	LOG_WRN("claim requested: press BOOT (short) or run \"bay access claim\" within %d s",
-		CONFIG_BAY_ACCESS_CLAIM_S);
-
-	return 0;
+	return hwtr_admin_claim_start(ip, offered, ticket_hex);
 }
 
 bool access_claim_pending(void)
 {
-	return claim.pending && now_ms() < claim.until;
+	return hwtr_admin_claim_pending();
 }
 
 int access_claim_confirm(void)
 {
-	int ret;
-
-	k_mutex_lock(&claim_lock, K_FOREVER);
-	if (!access_claim_pending()) {
-		k_mutex_unlock(&claim_lock);
-		return -ENOENT;
-	}
-	if (!claim.offered) {
-		random_fill(claim.key, sizeof(claim.key));
-	}
-
-	ret = access_set_key(claim.key);
-	claim.pending = false;
-	claim.done = true;
-	/* The claimer has this long to collect the key */
-	claim.until = now_ms() + CLAIM_MS;
-	k_mutex_unlock(&claim_lock);
-
-	LOG_WRN("claimed: admin key set");
-
-	return ret;
+	return hwtr_admin_claim_confirm();
 }
 
 int access_claim_poll(uint32_t ip, const char *ticket_hex, char *key_hex, int *remaining_s)
 {
-	uint8_t ticket[TICKET_LEN];
-	int ret = 0;
-
-	if (acl_hex_decode(ticket_hex, ticket, sizeof(ticket)) != 0) {
-		return -ENOENT;
-	}
-
-	k_mutex_lock(&claim_lock, K_FOREVER);
-	if ((!claim.pending && !claim.done) || claim.ip != ip ||
-	    !acl_equal(ticket, claim.ticket, sizeof(ticket))) {
-		ret = -ENOENT;
-	} else if (now_ms() >= claim.until) {
-		memset(&claim, 0, sizeof(claim));
-		ret = -ETIMEDOUT;
-	} else if (claim.pending) {
-		*remaining_s = (int)((claim.until - now_ms() + 999) / 1000);
-		ret = -EINPROGRESS;
-	} else {
-		acl_hex_encode(claim.key, sizeof(claim.key), key_hex);
-		memset(&claim, 0, sizeof(claim));
-	}
-	k_mutex_unlock(&claim_lock);
-
-	return ret;
+	return hwtr_admin_claim_poll(ip, ticket_hex, key_hex, remaining_s);
 }
 
 /* --- Rules ------------------------------------------------------------------------ */
@@ -519,13 +379,7 @@ int access_reset(void)
 	memset(st.blocks, 0, sizeof(st.blocks));
 	k_spin_unlock(&lock, k);
 
-	memset(key, 0, sizeof(key));
-	have_key = false;
-	k_mutex_lock(&claim_lock, K_FOREVER);
-	memset(&claim, 0, sizeof(claim));
-	k_mutex_unlock(&claim_lock);
-
-	ret = save_key();
+	ret = hwtr_admin_forget();
 	if (ret == 0) {
 		ret = save_rules(&st.rules);
 	}
@@ -894,7 +748,7 @@ int access_json(char *buf, size_t size, uint32_t ip, bool admin)
 	acl_format_ip(ip, a);
 	jw_add(&w, "{\"enabled\":%s,\"claimed\":%s,\"admin\":%s,\"you\":\"%s\",\"source\":\"%s\","
 		   "\"allow\":",
-	       rules.enabled ? "true" : "false", have_key ? "true" : "false",
+	       rules.enabled ? "true" : "false", hwtr_admin_claimed() ? "true" : "false",
 	       admin ? "true" : "false", a, src >= 0 ? rules.src[src].name : "");
 	jw_services(&w, access_allowed(ip));
 
@@ -1063,6 +917,14 @@ const char *access_rules_parse(char *body, size_t len, struct acl_rules *out)
 
 int access_init(void)
 {
+	static const struct hwtr_admin_cfg admin = {
+		.claim_ms = CLAIM_MS,
+		.save = save_key,
+		.how_to_confirm = "press BOOT (short) or run \"bay access claim\"",
+	};
+
+	hwtr_admin_init(&admin);
+
 	/* acl_init() before settings_load() would wipe what it loaded: only fill the gaps */
 	if (st.rules.version != ACL_RULES_VERSION) {
 		struct acl_state fresh;
@@ -1076,7 +938,7 @@ int access_init(void)
 	npf_append_local_in_recv_rule(&npf_default_ok);
 #endif
 
-	LOG_INF("access: %s, %s, %u source(s)", have_key ? "claimed" : "not claimed",
+	LOG_INF("access: %s, %s, %u source(s)", hwtr_admin_claimed() ? "claimed" : "not claimed",
 		st.rules.enabled ? "rules on" : "rules off", st.rules.count);
 
 	return 0;

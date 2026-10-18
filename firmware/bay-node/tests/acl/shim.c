@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "acl.h"
+#include <hwtr/acl.h>
 
 #if defined(_WIN32)
 #define EXPORT __declspec(dllexport)

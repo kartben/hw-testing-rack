@@ -167,9 +167,9 @@ module tray() {
         // bay label recess on the fascia, right of the controls
         translate([CARRIER_W - 34, 0.6 - EPS, CARRIER_WALL_H / 2]) rotate([90, 0, 0])
             linear_extrude(0.7) square([52, 11], center = true);
-        // 24 V jumper: through both side walls and their runners, under the ledge
+        // row cable: through both side walls and their runners, under the ledge
         for (x = [-RUNNER_OUT - 1, CARRIER_W - WALL - EPS])
-            translate([x, PWR_NOTCH_Y - 4.5, JUMPER_Z0]) cube([WALL + RUNNER_OUT + 1 + 2 * EPS, 9, LEDGE_Z - LEDGE_T - JUMPER_Z0]);
+            translate([x, JUMPER_Y[0], JUMPER_Z0]) cube([WALL + RUNNER_OUT + 1 + 2 * EPS, JUMPER_W, LEDGE_Z - LEDGE_T - JUMPER_Z0]);
         // camera 5 V cable to the pod below
         translate([CAM_CABLE_HOLE[0], CAM_CABLE_HOLE[1], -EPS]) rslot(10, 5, CARRIER_BOTTOM + 2);
         // rear service slot (row feed, top-row camera cables, airflow)

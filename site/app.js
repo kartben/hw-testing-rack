@@ -69,6 +69,7 @@ const MAT = {
   chainParts: std(0xff8a3d, 0, 0.45),
   cameras: std(0x2a2e35, 0, 0.55),
   psu: std(0xb9bdc3, 0.85, 0.32),
+  powerBox: std(0x4b525d, 0, 0.55),
   pcb: std(0x10151c, 0.1, 0.42),
   pcbGreen: std(0x0f3d23, 0.1, 0.42),
   silver: std(0xc9ccd1, 0.9, 0.28),
@@ -79,7 +80,7 @@ const MAT = {
 };
 const CABLE_COLORS = {
   'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
-  power: 0xff5a5a, pc: 0x3fb6ff, ext: 0x7d8590, mains: 0x101114,
+  power: 0xff5a5a, pc: 0x3fb6ff, ext: 0x7d8590, 'usb-pd': 0x101114,
 };
 
 // Layer lines on the printed parts.  Each part mesh carries `printUp`, its build plate's normal
@@ -113,7 +114,7 @@ if (dot(vUpView, vUpView) > 0.01) {
   };
   return mat;
 }
-for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras']) printLook(MAT[k]);
+for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras', 'powerBox']) printLook(MAT[k]);
 
 function partMaterial(name) {
   if (name.startsWith('ladder_')) return MAT.ladders;
@@ -124,6 +125,7 @@ function partMaterial(name) {
   if (name.startsWith('chain_')) return MAT.chainParts;
   if (name.startsWith('plate_')) return MAT.plates;
   if (name.startsWith('camera_')) return MAT.cameras;
+  if (name.startsWith('power_box_')) return MAT.powerBox;
   return MAT.trays;
 }
 
@@ -131,8 +133,9 @@ function partMaterial(name) {
 const LAYERS = [
   ['ladders', 'Ladders', true], ['braces', 'Rear braces', true], ['frameplates', 'Floor & cap plates', true],
   ['trays', 'Trays', true], ['drawers', 'Drawers', true], ['plates', 'Board plates', true], ['boards', 'Dev boards', true],
-  ['nodes', 'Bay nodes', true], ['chain', 'Drag chains', true], ['cables', 'USB cables', true], ['power', '24 V wiring', true],
+  ['nodes', 'Bay nodes', true], ['chain', 'Drag chains', true], ['cables', 'USB cables', true], ['power', 'Row cables', true],
   ['cameras', 'Cameras', true], ['labels', 'Bay labels', true],
+  ['powerbox', 'Power box', true], ['powerlid', 'Power box lid', true],
 ];
 const layerOn = Object.fromEntries(LAYERS.map(([k, , on]) => [k, on]));
 const rowGroups = [];             // one group per (tilted) row, the cap level included
@@ -232,8 +235,8 @@ function makeNodeStandIn() {
   kbox(g, 60.5, 20, 7.4, 8.9, 3.2, MAT.silver);                   // DUT port
   kbox(g, 60.5, 32, 7.4, 8.9, 3.2, MAT.silver);                   // PWR port
   kbox(g, 15.7, 34, 7, 6.6, 3, MAT.inductor);                     // buck inductor (FXL0630)
-  kbox(g, 3, 63, 7.6, 6, 4.8, MAT.whitePlastic);                  // 24 V in (JST PH)
-  kbox(g, 61, 63, 7.6, 6, 4.8, MAT.whitePlastic);                 // 24 V out (JST PH)
+  kbox(g, 3, 63, 7.6, 6, 4.8, MAT.whitePlastic);                  // row cable in (JST PH 6)
+  kbox(g, 61, 63, 7.6, 6, 4.8, MAT.whitePlastic);                 // row cable out (JST PH 6)
   kbox(g, 59, 45, 4.5, 6, 3, MAT.whitePlastic);                   // AUX SH
   kbox(g, 50, 3, 6, 4.5, 6, MAT.whitePlastic);                    // CAM PH
   kbox(g, 12, 78.5, 2, 2, 0.9, MAT.whitePlastic);                 // LED
@@ -242,15 +245,19 @@ function makeNodeStandIn() {
 }
 
 function makeHubStandIn() {
+  // hub v0.4 (76 × 140, KiCad y = 0 at the rear), used until its GLB exists: row outputs on the left
+  // edge, LEDs and USB-C at the front, the rack controller's ESP32-S3 module at the rear
   const g = new THREE.Group();
-  g.add(box(120, 70, 1.6, MAT.pcb, 0, -70, 0));
-  kbox(g, 5.6, 37, 9.8, 8.5, 11, MAT.whitePlastic);               // 24 V input (JST VH)
-  for (let i = 0; i < 5; i++) {
-    kbox(g, 40 + i * 16, 6.5, 6, 4.5, 6, MAT.whitePlastic);       // row outputs (JST PH)
-    kbox(g, 40 + i * 16, 30, 6.4, 5.2, 1.2, MAT.blackPlastic);    // eFuse
+  g.add(box(76, 140, 1.6, MAT.pcb, 0, -140, 0));
+  for (const y of [115, 92, 69, 46]) {
+    kbox(g, 2.4, y, 7.6, 15.9, 5.5, MAT.whitePlastic);             // row outputs (6-pin JST PH, side entry)
+    kbox(g, 26, y - 0.5, 4.4, 5, 1.2, MAT.blackPlastic);           // eFuse
   }
-  kbox(g, 14.5, 12, 10, 10, 10.5, MAT.silver);                    // 220 µF bulk caps
-  kbox(g, 27.5, 12, 10, 10, 10.5, MAT.silver);
+  kbox(g, 69.2, 116, 13.9, 9, 10, MAT.whitePlastic);               // 24 V input (JST VH, side entry)
+  kbox(g, 68.5, 86, 10, 10, 10.5, MAT.silver);                    // bulk caps
+  kbox(g, 68.5, 74, 10, 10, 10.5, MAT.silver);
+  kbox(g, 30, 10.5, 15.4, 20.5, 2.4, MAT.silver);                  // ESP32-S3-MINI-1
+  kbox(g, 70, 136.6, 8.9, 7.4, 3.2, MAT.silver);                   // USB-C
   return g;
 }
 
@@ -386,7 +393,7 @@ function makeCable(c) {
   const g = new THREE.Group();
   const pts = c.points.map(v3);
   const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
-  const jacket = std(cableColor(c), 0, c.kind.startsWith('power') || c.kind === 'mains' ? 0.6 : 0.45,
+  const jacket = std(cableColor(c), 0, c.kind.startsWith('power') || c.kind === 'usb-pd' ? 0.6 : 0.45,
     { envMapIntensity: 0.6 });
   const len = curve.getLength();
   g.add(new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(48, Math.round(len / 2)), c.radius || 1.5, 14, false), jacket));
@@ -509,8 +516,9 @@ function build(pcbGlb) {
     const g = new THREE.Group();
     const mat = bx.kind === 'psu' ? MAT.psu : std(new THREE.Color(bx.color), 0.1, 0.5);
     g.add(box(bx.size[0], bx.size[1], bx.size[2], mat));
-    if (bx.kind === 'psu') {
-      const lbl = new THREE.Mesh(new THREE.PlaneGeometry(90, 14), new THREE.MeshBasicMaterial({ map: textTexture('MEAN WELL  UHP-200-24', { bg: '#2c5fa8', fg: '#fff', w: 512, h: 80, font: 'bold 40px Arial' }) }));
+    if (bx.label) {           // a box's label, along its length
+      const lbl = new THREE.Mesh(new THREE.PlaneGeometry(bx.size[1] * 0.7, bx.size[0] * 0.28), new THREE.MeshBasicMaterial({ map: textTexture(bx.label, { bg: '#2c5fa8', fg: '#fff', w: 512, h: 96, font: 'bold 44px Arial' }) }));
+      lbl.rotation.z = Math.PI / 2;
       lbl.position.set(bx.size[0] / 2, bx.size[1] / 2, bx.size[2] + 0.05);
       g.add(lbl);
     }
@@ -523,7 +531,7 @@ function build(pcbGlb) {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 1.2, 16),
       new THREE.MeshStandardMaterial({ color: l.color, emissive: l.color, emissiveIntensity: 2.2 }));
     m.position.set(l.pos[0], l.pos[1] + 0.6, l.pos[2]);
-    track(m, { layer: 'nodes', bay: l.bay, row: l.row, zone: 'led', space: 'row' });
+    track(m, { layer: l.layer ?? 'nodes', bay: l.bay ?? null, row: l.row ?? null, zone: 'led', space: l.space ?? 'row' });
   }
   // chains
   for (const ch of DATA.chains) {
@@ -541,7 +549,7 @@ function build(pcbGlb) {
   }
   // cables
   for (const c of DATA.cables) {
-    const layer = ['power-jumper', 'power-feed', 'mains'].includes(c.kind) ? 'power' : 'cables';
+    const layer = ['power-jumper', 'power-feed', 'usb-pd'].includes(c.kind) ? 'power' : 'cables';
     track(makeCable(c), { layer, bay: c.bay || null, row: c.row ?? null, movable: !!c.movable, zone: c.kind, space: c.space });
   }
   for (const p of DATA.props ?? []) {

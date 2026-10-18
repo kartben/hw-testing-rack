@@ -6,113 +6,10 @@
 <meta name="color-scheme" content="light dark">
 <title>Bay node</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='6' fill='%233b82f6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/rack.css">
 <link rel="stylesheet" href="/xterm.css">
 <style>
-:root {
-  color-scheme: light dark;
-  --bg: light-dark(#f4f5f7, #0d0f13);
-  --card: light-dark(#ffffff, #161920);
-  --text: light-dark(#15171c, #e6e8ec);
-  --muted: light-dark(#646b78, #9299a6);
-  --line: light-dark(#e2e5ea, #262a33);
-  --soft: light-dark(#f0f2f5, #1d2129);
-  --term-bg: light-dark(#fafbfc, #0b0d11);
-  --usbip: #3b82f6;
-  --attached: #16a34a;
-  --classic: #c026d3;
-  --service: #f59e0b;
-  --fault: #ef4444;
-  --idle: #8a919e;
-  --lease: #7c3aed;
-  --ok: #16a34a;
-  --state: var(--idle);
-  --radius: 14px;
-  --mono: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
-  font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); }
-.wrap { max-width: 1040px; margin-inline: auto; padding: 24px 16px 40px; }
-header {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 20px;
-  & h1 { margin: 0; font-size: 1.6rem; font-weight: 650; letter-spacing: -0.01em; }
-  & .sub { color: var(--muted); font-size: 0.9rem; }
-  & .title { display: flex; align-items: center; gap: 12px; flex: 1 1 auto; min-width: 0; }
-}
-.led {
-  width: 14px; height: 14px; border-radius: 50%; flex: none; background: var(--state);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--state) 18%, transparent),
-              0 0 14px color-mix(in srgb, var(--state) 60%, transparent);
-  transition: background 0.3s, box-shadow 0.3s;
-}
-body[data-state=fault] .led { animation: blink 0.8s steps(2, jump-none) infinite; }
-@keyframes blink { 50% { opacity: 0.25; } }
-.pill {
-  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px;
-  font-size: 0.85rem; font-weight: 550; color: var(--state);
-  background: color-mix(in srgb, var(--state) 12%, transparent);
-}
-.banner {
-  display: none; align-items: center; gap: 12px; margin-bottom: 16px; padding: 12px 16px;
-  border-radius: var(--radius); color: var(--fault);
-  background: color-mix(in srgb, var(--fault) 10%, var(--card));
-  border: 1px solid color-mix(in srgb, var(--fault) 35%, transparent);
-  & span { flex: 1; }
-}
-body[data-state=fault] .banner { display: flex; }
-main { display: grid; gap: 16px; }
-.cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
-.card {
-  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
-  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0;
-  & h2 { margin: 0; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
-         letter-spacing: 0.06em; color: var(--muted); display: flex; justify-content: space-between;
-         gap: 12px; }
-  & h2 span { text-transform: none; letter-spacing: 0; font-weight: 500; }
-}
-.readings { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.reading {
-  & b { display: block; font-size: 1.75rem; font-weight: 600; font-variant-numeric: tabular-nums;
-        letter-spacing: -0.02em; }
-  & small { color: var(--muted); font-size: 0.8rem; }
-}
-.spark { width: 100%; height: 44px; display: block; color: var(--usbip);
-  & polyline { fill: none; stroke: currentColor; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
-  & polygon { fill: color-mix(in srgb, currentColor 14%, transparent); }
-}
-dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 16px;
-  & dt { color: var(--muted); }
-  & dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
-}
-.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
-button {
-  font: inherit; font-weight: 550; padding: 8px 14px; border-radius: 10px; cursor: pointer;
-  border: 1px solid var(--line); background: var(--soft); color: var(--text);
-  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
-  &:hover { border-color: color-mix(in srgb, var(--text) 25%, var(--line)); }
-  &:disabled { opacity: 0.5; cursor: progress; }
-  &.primary { background: var(--text); color: var(--card); border-color: transparent; }
-  &.danger { color: var(--fault); }
-  &[aria-pressed=true] { background: color-mix(in srgb, var(--usbip) 16%, var(--soft));
-                         border-color: color-mix(in srgb, var(--usbip) 45%, transparent); }
-  &:focus-visible { outline: 2px solid var(--usbip); outline-offset: 2px; }
-}
-.seg {
-  display: inline-grid; grid-auto-flow: column; padding: 3px; gap: 3px; border-radius: 12px;
-  background: var(--soft); border: 1px solid var(--line); width: fit-content;
-  & label { padding: 6px 14px; border-radius: 9px; cursor: pointer; font-weight: 550; color: var(--muted); }
-  & label:has(:checked) { background: var(--card); color: var(--text); box-shadow: 0 1px 3px #0002; }
-  & input { position: absolute; opacity: 0; pointer-events: none; }
-  & label:has(:focus-visible) { outline: 2px solid var(--usbip); }
-}
-.cmd {
-  display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: 10px;
-  background: var(--soft); border: 1px solid var(--line); min-width: 0;
-  & code { flex: 1; min-width: 0; font: 0.82rem/1.4 var(--mono);
-           overflow-x: auto; scrollbar-width: none; white-space: nowrap; user-select: all;
-           mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
-  & button { padding: 4px 10px; font-size: 0.8rem; }
-}
+/* The bay page's own components; the shared ones are in /rack.css */
 /* Console */
 .toolbar {
   display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
@@ -150,28 +47,16 @@ button {
 /* Access */
 .pill.access { color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent);
   & svg { width: 13px; height: 13px; } }
-.notice, .ro-banner {
-  display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; font-size: 0.88rem;
-  background: color-mix(in srgb, var(--c, var(--service)) 10%, var(--card));
-  border: 1px solid color-mix(in srgb, var(--c, var(--service)) 35%, transparent);
-  & span { flex: 1; min-width: 0; }
-  & svg { width: 16px; height: 16px; flex: none; color: var(--c, var(--service)); }
-}
-.ro-banner { --c: var(--idle); margin-bottom: 16px; padding: 12px 16px; border-radius: var(--radius); font-size: 0.92rem; }
-.ro-banner[hidden], .notice[hidden], .lease[hidden] { display: none; }
 .who { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.9rem;
   & code { font: 0.85rem var(--mono); }
   & .src { color: var(--muted); }
 }
-.tag { font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 999px;
-  background: color-mix(in srgb, var(--ok) 14%, transparent); color: var(--ok); }
 .lease { border-radius: 10px; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
   background: color-mix(in srgb, var(--lease) 9%, var(--card)); border: 1px solid color-mix(in srgb, var(--lease) 30%, transparent);
   & div { flex: 1; min-width: 0; font-size: 0.88rem; }
   & b { color: var(--lease); font-weight: 600; }
   & small { color: var(--muted); display: block; overflow-wrap: anywhere; }
 }
-button.small { padding: 3px 10px; font-size: 0.8rem; border-radius: 8px; }
 .conns { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.88rem;
   & li { display: grid; grid-template-columns: 82px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
   & .svc { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
@@ -180,30 +65,6 @@ button.small { padding: 3px 10px; font-size: 0.8rem; border-radius: 8px; }
   & .none { color: var(--muted); display: block; }
 }
 .refused-line { font-size: 0.85rem; color: var(--muted); & b { color: var(--fault); font-weight: 600; } }
-dialog.wide { max-width: min(860px, calc(100vw - 32px)); width: 100%; padding: 0;
-  & header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0; padding: 16px 20px; border-bottom: 1px solid var(--line); }
-  & header h3 { margin: 0; font-size: 1.05rem; flex: 1; }
-  & .body { padding: 16px 20px 20px; display: grid; gap: 14px; }
-  & h4 { margin: 4px 0 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-}
-dialog.small-dlg { max-width: 420px; width: calc(100vw - 32px);
-  & h3 { margin: 0 0 8px; font-size: 1.05rem; }
-  & p { margin: 0 0 12px; font-size: 0.92rem; }
-  & label { display: block; font-size: 0.85rem; color: var(--muted); margin: 10px 0 4px; }
-  & input, & select { font: inherit; width: 100%; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--soft); color: var(--text); }
-  & input.key { font: 0.82rem var(--mono); }
-  & .btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-  & .count { font: 600 2.2rem/1 var(--mono); text-align: center; margin: 12px 0; }
-  & .err { color: var(--fault); font-size: 0.85rem; margin: 8px 0 0; }
-  & .err:empty { display: none; }
-}
-.switch { display: inline-flex; align-items: center; gap: 8px; font-weight: 550; font-size: 0.9rem; cursor: pointer;
-  & input { appearance: none; width: 36px; height: 20px; border-radius: 999px; background: var(--line); position: relative; margin: 0; cursor: pointer; transition: background 0.15s; }
-  & input::after { content: ""; position: absolute; width: 16px; height: 16px; top: 2px; left: 2px; border-radius: 50%; background: #fff; transition: left 0.15s; }
-  & input:checked { background: var(--ok); }
-  & input:checked::after { left: 18px; }
-  & input:focus-visible { outline: 2px solid var(--usbip); outline-offset: 2px; }
-}
 .tablewrap { overflow-x: auto; }
 table.matrix { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-width: 660px;
   & th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; text-align: center; padding: 6px 6px; }
@@ -219,28 +80,6 @@ table.matrix { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-wi
 }
 button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 1.5px solid var(--line); background: transparent; color: transparent; font-size: 0.85rem; line-height: 1;
   &[aria-pressed=true] { background: var(--ok); border-color: var(--ok); color: #fff; }
-}
-table.log { width: 100%; border-collapse: collapse; font-size: 0.86rem;
-  & td { padding: 6px 8px; border-top: 1px solid var(--line); }
-  & td:first-child { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  & code { font: 0.82rem var(--mono); }
-  & .why { color: var(--fault); font-size: 0.8rem; }
-}
-.hint { color: var(--muted); font-size: 0.84rem; margin: 0; }
-.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; & .grow { flex: 1; } }
-footer { margin-top: 20px; color: var(--muted); font-size: 0.85rem; display: flex; gap: 16px; flex-wrap: wrap;
-  & a { color: inherit; }
-}
-dialog {
-  border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
-  padding: 20px; max-width: 360px;
-  &::backdrop { background: #0006; backdrop-filter: blur(2px); }
-  & p { margin: 0 0 16px; }
-  & form { display: flex; gap: 8px; justify-content: flex-end; }
-}
-#toast {
-  inset: auto 16px 16px auto; margin: 0; border: 1px solid var(--line); border-radius: 10px;
-  background: var(--text); color: var(--card); padding: 10px 14px; font-weight: 500;
 }
 @media (max-width: 600px) { .term { height: 360px; } .toolbar .group.end { margin-left: 0; } }
 </style>
@@ -501,7 +340,8 @@ dialog {
 <div id="toast" popover="manual"></div>
 
 <script type="module">
-const $ = (id) => document.getElementById(id);
+import { $, api, fix, plural, uptime, storedKey, storeKey, signed, claimKey } from "/rack.mjs";
+
 const samples = [];
 let host = location.hostname;
 let status = null;
@@ -511,19 +351,6 @@ const LABEL = {
   fault: "fault", service: "service", classic: "classic", off: "power off",
   attached: "attached", enumerated: "device ready", usbip: "no device", offline: "offline",
 };
-
-/* GET without a body, POST with one; errors carry the HTTP status and the node's reply */
-async function api(path, body, headers = {}) {
-  const text = typeof body === "string" ? body : body === undefined ? undefined : JSON.stringify(body);
-  const init = text === undefined ? { headers } : {
-    method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: text,
-  };
-  const res = await fetch(path, { ...init, signal: AbortSignal.timeout(text ? 10000 : 4000) });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw Object.assign(new Error(data.error ?? `${res.status} ${res.statusText}`),
-    { status: res.status, data });
-  return data;
-}
 
 function stateOf(s) {
   if (s.dut.fault || s.dut.latched) return "fault";
@@ -541,14 +368,6 @@ function setState(state) {
   document.body.dataset.state = state;
   document.documentElement.style.setProperty("--state", `var(${COLOR[state]})`);
   $("state").textContent = LABEL[state];
-}
-
-const fix = (v, d) => (v / 1000).toFixed(d);
-const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
-
-function uptime(s) {
-  const d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24, m = Math.floor(s / 60) % 60;
-  return d ? `${d} d ${h} h` : h ? `${h} h ${m} min` : `${m} min`;
 }
 
 function spark(ma) {
@@ -664,78 +483,10 @@ async function copy(id) {
 
 /* --- Access control ----------------------------------------------------- */
 
-/*
- * SHA-256 and HMAC for signed admin requests: crypto.subtle only exists in
- * secure contexts, and http://bay-b3.local is not one.
- */
-const SHA_K = Uint32Array.from({ length: 64 }, (_, i) => {
-  const primes = [];
-  for (let n = 2; primes.length < 64; n++) if (primes.every((p) => n % p)) primes.push(n);
-  return (Math.cbrt(primes[i]) % 1) * 2 ** 32;
-});
-const SHA_H = Uint32Array.from([2, 3, 5, 7, 11, 13, 17, 19], (p) => (Math.sqrt(p) % 1) * 2 ** 32);
-
-function sha256(bytes) {
-  const n = ((bytes.length + 72) >> 6) << 6;
-  const m = new Uint8Array(n);
-  m.set(bytes);
-  m[bytes.length] = 0x80;
-  const dv = new DataView(m.buffer);
-  dv.setUint32(n - 8, Math.floor(bytes.length / 2 ** 29));
-  dv.setUint32(n - 4, bytes.length * 8);
-  const H = SHA_H.slice(), W = new Uint32Array(64);
-  const rotr = (x, r) => (x >>> r) | (x << (32 - r));
-  for (let off = 0; off < n; off += 64) {
-    for (let i = 0; i < 16; i++) W[i] = dv.getUint32(off + 4 * i);
-    for (let i = 16; i < 64; i++) {
-      const a = W[i - 15], b = W[i - 2];
-      W[i] = W[i - 16] + (rotr(a, 7) ^ rotr(a, 18) ^ (a >>> 3)) + W[i - 7] + (rotr(b, 17) ^ rotr(b, 19) ^ (b >>> 10));
-    }
-    let [a, b, c, d, e, f, g, h] = H;
-    for (let i = 0; i < 64; i++) {
-      const t1 = (h + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + ((e & f) ^ (~e & g)) + SHA_K[i] + W[i]) >>> 0;
-      const t2 = ((rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) >>> 0;
-      [h, g, f, e, d, c, b, a] = [g, f, e, (d + t1) >>> 0, c, b, a, (t1 + t2) >>> 0];
-    }
-    [a, b, c, d, e, f, g, h].forEach((v, i) => (H[i] += v));
-  }
-  const out = new Uint8Array(32);
-  H.forEach((v, i) => new DataView(out.buffer).setUint32(4 * i, v));
-  return out;
-}
-
-function hmac(key, msg) {
-  const block = new Uint8Array(64);
-  block.set(key.length > 64 ? sha256(key) : key);
-  const pad = (x) => {
-    const b = block.map((v) => v ^ x);
-    return (data) => { const all = new Uint8Array(64 + data.length); all.set(b); all.set(data, 64); return all; };
-  };
-  return sha256(pad(0x5c)(sha256(pad(0x36)(msg))));
-}
-
-const hex = (bytes) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
-const unhex = (text) => Uint8Array.from(text.match(/../g) ?? [], (h) => parseInt(h, 16));
 const SERVICES = ["status", "control", "console", "usbip", "shell"];
 const SVC_LABEL = { status: "status", control: "control", console: "console", usbip: "USB/IP", shell: "shell" };
 
 const acc = { doc: null, admin: false, rules: null, saved: null };
-
-function storedKey() {
-  try { return localStorage.getItem("bay-admin-key") ?? ""; } catch { return ""; }
-}
-
-function storeKey(key) {
-  try { key ? localStorage.setItem("bay-admin-key", key) : localStorage.removeItem("bay-admin-key"); } catch { /* private window */ }
-}
-
-/* An admin request: X-Bay-Auth = <nonce>:<HMAC(key, nonce \n method \n path \n body)> */
-async function signed(path, body, key = storedKey()) {
-  const { nonce } = await api("/api/access/nonce");
-  const text = body === undefined ? "" : JSON.stringify(body);
-  const mac = hmac(unhex(key), enc.encode(`${nonce}\n${body === undefined ? "GET" : "POST"}\n${path}\n${text}`));
-  return api(path, body === undefined ? undefined : text, { "X-Bay-Auth": `${nonce}:${hex(mac)}` });
-}
 
 const ago = (s) => s < 90 ? `${s} s` : s < 5400 ? `${Math.round(s / 60)} min` : `${Math.round(s / 3600)} h`;
 const can = (a, svc) => a.allow.includes(svc);
@@ -862,35 +613,28 @@ async function claimFlow(ev) {
   const key = $("claim-key").value.trim();
   showError("claim-err");
   if (key && !/^[0-9a-fA-F]{64}$/.test(key)) return showError("claim-err", new Error("the key is 64 hex digits"));
-  let start;
   try {
-    start = await api("/api/access/claim", key ? { key } : {});
+    const newKey = await claimKey(key, {
+      started() {
+        $("claim-start").hidden = true;
+        $("claim-wait").hidden = false;
+        $("claim-go").hidden = true;
+      },
+      waiting(s) {
+        $("claim-count").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+      },
+      open: () => $("dlg-claim").open,
+    });
+    if (!newKey) return;
+    acc.admin = true;
+    $("claim-wait").hidden = true;
+    $("claim-done").hidden = false;
+    $("claim-new-key").textContent = newKey;
+    toast("Claimed: you are admin");
+    return pollNow();
   } catch (e) {
+    $("claim-wait").hidden = true;
     return showError("claim-err", e);
-  }
-  $("claim-start").hidden = true;
-  $("claim-wait").hidden = false;
-  $("claim-go").hidden = true;
-  const dlg = $("dlg-claim");
-  while (dlg.open) {
-    let r;
-    try {
-      r = await api("/api/access/claim", { ticket: start.ticket });
-    } catch (e) {
-      $("claim-wait").hidden = true;
-      return showError("claim-err", e);
-    }
-    if (r.state === "done") {
-      storeKey(r.key);
-      acc.admin = true;
-      $("claim-wait").hidden = true;
-      $("claim-done").hidden = false;
-      $("claim-new-key").textContent = r.key;
-      toast("Claimed: you are admin");
-      return pollNow();
-    }
-    $("claim-count").textContent = `${Math.floor(r.remaining_s / 60)}:${String(r.remaining_s % 60).padStart(2, "0")}`;
-    await new Promise((ok) => setTimeout(ok, 1000));
   }
 }
 

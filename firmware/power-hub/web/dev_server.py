@@ -1,0 +1,317 @@
+"""Serve the power hub web page with a simulated hub, to work on the UI without one.
+
+    python firmware/power-hub/web/dev_server.py [port]      # then open http://localhost:8767
+
+Same endpoints and JSON as src/web.c.  The "hub" is a dict the POSTs change:
+a 140 W EPR charger, four rows of bay nodes on the rack bus (CAN), their
+currents.  Test hooks:
+
+    /dev/drop             the charger renegotiates down to 20 V / 1.5 A (30 W): row C shed
+    /dev/restore          back to the 140 W charger
+    /dev/fault?row=C      row C's eFuse trips (current limit), /dev/fault?row=C&off=1 clears it
+    /dev/lose?node=0x22   a node stops sending STATUS
+    /dev/usb              the controller runs from its console USB-C only (no PD charger)
+    /dev/boot             a short press on BOOT: confirms a pending claim
+
+The page's actions are admin requests signed with the hub's key, as on the
+hub (common/web/devserver.py's Admin): claim it from the page, then /dev/boot.
+"""
+
+from __future__ import annotations
+
+import math
+import random
+import sys
+import threading
+import time
+from http.server import ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "common" / "web"))
+from devserver import Admin, PageHandler  # noqa: E402
+
+WEB = Path(__file__).resolve().parent
+START = time.monotonic() - 2 * 86400 - 5 * 3600
+ROWS = "ABCD"
+
+# What a 140 W EPR charger offers (SPR then EPR PDOs)
+CHARGER_140W = [
+    {"type": "fixed", "mv": 5000, "ma": 3000}, {"type": "fixed", "mv": 9000, "ma": 3000},
+    {"type": "fixed", "mv": 15000, "ma": 3000}, {"type": "fixed", "mv": 20000, "ma": 5000},
+    {"type": "pps", "mv_min": 3300, "mv": 21000, "ma": 5000},
+    {"type": "fixed", "mv": 28000, "ma": 5000, "epr": True},
+    {"type": "avs", "mv_min": 15000, "mv": 28000, "ma": 5000, "epr": True},
+]
+# A multi-port charger sharing its power: 30 W left for the rack
+CHARGER_30W = [
+    {"type": "fixed", "mv": 5000, "ma": 3000}, {"type": "fixed", "mv": 9000, "ma": 3000},
+    {"type": "fixed", "mv": 15000, "ma": 2000}, {"type": "fixed", "mv": 20000, "ma": 1500},
+]
+
+# Nodes: (row, position) -> hostname, base DUT current, state
+NODES = {
+    ("A", 1): ("bay-a1", 180, "attached"), ("A", 2): ("bay-a2", 95, "usbip"),
+    ("A", 3): ("bay-a3", 420, "attached"),
+    ("B", 1): ("bay-b1", 60, "classic"), ("B", 2): ("bay-b2", 0, "off"),
+    ("B", 3): ("bay-b3", 140, "enumerated"),
+    ("C", 1): ("bay-c1", 310, "attached"), ("C", 2): ("bay-c2", 75, "service"),
+    ("C", 3): ("bay-c3", 210, "enumerated"),
+}
+
+hub = {
+    "hostname": "rack", "ip": "192.168.1.40", "version": "0.5.0",
+    "charger": CHARGER_140W, "pref": "epr", "usb_only": False,
+    "rows": {r: {"on": r != "D", "fault": False, "shed": False, "cycling": 0.0} for r in ROWS},
+    "lost": set(),
+    "enumerated_at": time.monotonic() - 754,
+    "can": {"tx": 1520331, "rx": 4870112, "errors": 0, "bus_off": 0},
+}
+events: list[tuple[float, str, str]] = []
+admin = Admin()
+lock = threading.Lock()
+
+
+def event(kind: str, text: str) -> None:
+    events.append((time.time(), kind, text))
+    del events[:-50]
+
+
+def node_id(row: str, pos: int) -> int:
+    return ROWS.index(row) * 16 + pos
+
+
+def contract() -> dict | None:
+    if hub["usb_only"]:
+        return None
+    pdos = hub["charger"]
+    epr = [p for p in pdos if p["type"] == "fixed" and p.get("epr") and p["mv"] == 28000]
+    if epr and hub["pref"] == "epr":
+        return {"mv": 28000, "ma": epr[0]["ma"], "epr": True, "pdo": pdos.index(epr[0]) + 1}
+    best = [p for p in pdos if p["type"] == "fixed" and p["mv"] == 20000]
+    return {"mv": 20000, "ma": best[0]["ma"], "epr": False, "pdo": pdos.index(best[0]) + 1}
+
+
+def pdo_list(c: dict | None) -> list[dict]:
+    out = []
+    for i, p in enumerate(hub["charger"], start=1):
+        q = dict(p, index=i)
+        if c and i == c["pdo"]:
+            q["selected"] = True
+        elif p["mv"] > 28000:
+            q["refused"] = "above 28 V"
+        out.append(q)
+    return out
+
+
+def nodes_of(row: str, t: float) -> list[dict]:
+    r = hub["rows"][row]
+    if not r["on"] or r["shed"]:
+        return []
+    out = []
+    for (rr, pos), (name, base, state) in sorted(NODES.items()):
+        if rr != row:
+            continue
+        nid = node_id(row, pos)
+        lost = nid in hub["lost"]
+        wobble = 1 + 0.08 * math.sin(t / 7 + nid) + random.uniform(-0.02, 0.02)
+        ma = 0 if state == "off" else int(base * wobble)
+        out.append({"id": nid, "pos": f"{row}{pos}", "name": "", "ip": f"192.168.1.{60 + nid}",
+                    "mac": f"34:b7:da:56:{nid:02x}:{len(name):02x}",
+                    "state": "lost" if lost else state, "dut_ma": ma, "dut_mv": 5060 - ma // 12 if ma else 0,
+                    "seen_s": 9.0 if lost else round(random.uniform(0.1, 0.9), 1), "version": "0.5.0"})
+        if lost:   # the row stops at a lost node: the ones after it can't get POS
+            break
+    return out
+
+
+def row_current(row: str, nodes: list[dict]) -> int:
+    """Row current at VRACK: each node ≈ 0.85 W plus its DUT's 5 V, through an ≈ 88 % buck."""
+    c = contract()
+    if not nodes or not c:
+        return 0
+    mw = sum(850 + n["dut_ma"] * 5.06 / 0.88 for n in nodes)
+    return int(mw / c["mv"] * 1000)
+
+
+def status() -> dict:
+    t = time.monotonic()
+    c = contract()
+    rows, total_ma = [], 0
+    for row in ROWS:
+        r = hub["rows"][row]
+        nodes = nodes_of(row, t)
+        ma = row_current(row, nodes)
+        total_ma += ma
+        state = ("fault" if r["fault"] else "shed" if r["shed"] else
+                 "cycling" if r["cycling"] > t else "on" if r["on"] else "off")
+        rows.append({"name": row, "state": state, "on": r["on"] and not r["shed"], "fault": r["fault"],
+                     "wanted": r["on"], "faults": int(r["fault"]),
+                     "ma": ma, "mw": ma * (c["mv"] if c else 0) // 1000, "nodes": nodes})
+    vbus = (c["mv"] - total_ma * 12 // 1000) if c else 0
+    found = sum(len(r["nodes"]) for r in rows)
+    return {
+        "hostname": hub["hostname"], "ip": hub["ip"], "version": hub["version"],
+        "access": {"claimed": admin.key is not None, "claim_pending": admin.claim_pending()},
+        "uptime_s": int(t - START),
+        "pd": {
+            "state": "usb" if not c else "epr" if c["epr"] else "spr",
+            "contract": c, "pref": hub["pref"], "final": c is not None,
+            "vbus_mv": vbus, "ibus_ma": total_ma + (95 if c else 0), "temp_c": 37 + total_ma // 900,
+            "pdos": pdo_list(c), "max_mw": max((p["mv"] * p["ma"] // 1000 for p in hub["charger"]), default=0),
+        },
+        "rows": rows,
+        "budget": {"contract_mw": c["mv"] * c["ma"] // 1000 if c else 0,
+                   "used_mw": sum(r["mw"] for r in rows), "shed_order": "DCBA"},
+        "can": {"state": "error-active", "bitrate": 250000, "nodes": found, "lost": len(hub["lost"]),
+                "rx_fps": found + found // 10, "errors": hub["can"]["errors"], "bus_off": hub["can"]["bus_off"],
+                "enumerating": False, "enumerated_s": round(t - hub["enumerated_at"]),
+                "enumerations": 3},
+    }
+
+
+def events_doc() -> list[dict]:
+    now = time.time()
+    return [{"age_s": int(now - ts), "kind": k, "text": x} for ts, k, x in reversed(events)]
+
+
+def enumerate_rack(why: str) -> None:
+    hub["enumerated_at"] = time.monotonic()
+    found = sum(len(nodes_of(r, time.monotonic())) for r in ROWS)
+    event("can", f"enumeration ({why}): {found} nodes")
+
+
+def cycle(row: str, ms: int) -> None:
+    r = hub["rows"][row]
+    r["cycling"] = time.monotonic() + ms / 1000 + 2.5
+    event("row", f"row {row} power cycle ({ms} ms off)")
+    def back() -> None:
+        time.sleep(ms / 1000 + 2.5)
+        with lock:
+            enumerate_rack(f"row {row} back on")
+    threading.Thread(target=back, daemon=True).start()
+
+
+class Handler(PageHandler):
+    STATIC = {"/": (WEB / "index.html", "text/html")}
+
+    def do_GET(self) -> None:  # noqa: N802
+        url = urlsplit(self.path)
+        path, q = url.path, {k: v[0] for k, v in parse_qs(url.query).items()}
+        if self.static(path):
+            return
+        with lock:
+            if path == "/api/status":
+                self.json(200, status())
+            elif path == "/api/events":
+                self.json(200, events_doc())
+            elif path == "/dev/drop":
+                hub["charger"] = CHARGER_30W
+                hub["rows"]["C"]["shed"] = hub["rows"]["C"]["on"]
+                event("pd", "contract: 20.0 V / 1.50 A (30 W)")
+                event("row", "row C shed: the rows draw 1.39 A, 90% of the 1.50 A contract")
+                self.json(200, status())
+            elif path == "/dev/restore":
+                hub["charger"] = CHARGER_140W
+                for r in hub["rows"].values():
+                    r["shed"] = False
+                event("pd", "contract: 28.0 V / 5.00 A EPR (140 W)")
+                event("row", "row C back: the contract has room for it again")
+                enumerate_rack("rows back")
+                self.json(200, status())
+            elif path == "/dev/fault":
+                row = q.get("row", "C").upper()
+                hub["rows"][row]["fault"] = not q.get("off")
+                if hub["rows"][row]["fault"]:
+                    event("fault", f"row {row}: eFuse in current limit (1.6 A)")
+                self.json(200, status())
+            elif path == "/dev/lose":
+                nid = int(q.get("node", "0x22"), 0)
+                hub["lost"] ^= {nid}
+                if nid in hub["lost"]:
+                    event("can", f"node {ROWS[nid >> 4]}{nid & 15} (0x{nid:02x}) lost: no STATUS for 3.5 s")
+                self.json(200, status())
+            elif path == "/dev/usb":
+                hub["usb_only"] = not hub["usb_only"]
+                self.json(200, status())
+            elif path == "/api/access/nonce":
+                self.json(200, {"nonce": admin.nonce()})
+            elif path == "/dev/boot":
+                self.json(200, {"claimed": admin.press_boot()})
+            else:
+                self.json(404, {"error": "not found"})
+
+    def do_POST(self) -> None:  # noqa: N802
+        import json
+        path = urlsplit(self.path).path
+        raw = self.body()
+        try:
+            body = json.loads(raw or b"{}")
+        except ValueError:
+            self.json(400, {"error": "bad JSON"})
+            return
+        with lock:
+            if path == "/api/access/claim":
+                self.json(*admin.claim(self.client_address[0], body))
+                return
+            if not admin.check(self.headers.get("X-Bay-Auth", ""), "POST", path, raw):
+                self.json(403, {"error": "admin only: unlock with the hub's admin key" if admin.key
+                                else "admin only: claim the hub first (its BOOT button)"})
+                return
+            if path == "/api/access/check":
+                self.json(200, status())
+            elif path == "/api/row":
+                row, action = str(body.get("row", "")).upper(), body.get("action")
+                if row not in ROWS or action not in ("on", "off", "cycle"):
+                    self.json(400, {"error": "row A-D, action on|off|cycle"})
+                    return
+                r = hub["rows"][row]
+                if action == "cycle":
+                    cycle(row, int(body.get("ms", 1000)))
+                else:
+                    r["on"], r["fault"] = action == "on", False
+                    event("row", f"row {row} {action}")
+                    if r["on"]:
+                        enumerate_rack(f"row {row} on")
+                self.json(200, status())
+            elif path == "/api/pd":
+                if body.get("pref") not in ("epr", "20v"):
+                    self.json(400, {"error": "pref must be epr or 20v"})
+                    return
+                hub["pref"] = body["pref"]
+                c = contract()
+                event("pd", f"contract: {c['mv'] // 1000} V / {c['ma'] / 1000:g} A" + (" EPR" if c["epr"] else ""))
+                self.json(200, status())
+            elif path == "/api/enumerate":
+                enumerate_rack("requested")
+                self.json(200, status())
+            elif path == "/api/node":
+                nid, action = int(body.get("id", 0)), body.get("action")
+                if action not in ("identify", "reset", "bootloader", "power-cycle", "power-on", "power-off", "reboot"):
+                    self.json(400, {"error": "action identify|reset|bootloader|power-*|reboot"})
+                    return
+                event("node", f"node 0x{nid:02x}: {action}")
+                self.json(200, {"result": "done"})
+            else:
+                self.json(404, {"error": "not found"})
+
+
+def serve(port: int = 8767) -> ThreadingHTTPServer:
+    if not events:
+        now = time.time()
+        for dt, kind, text in ((-2 * 86400 - 5 * 3600, "pd", "contract: 20 V / 5 A (VSEL, at power-up)"),
+                               (-2 * 86400 - 5 * 3600 + 1, "pd", "charger offers 28 V EPR: asked for it"),
+                               (-2 * 86400 - 5 * 3600 + 2, "pd", "contract: 28 V / 5 A EPR (140 W)"),
+                               (-2 * 86400 - 5 * 3600 + 3, "row", "rows A, B, C on (staggered, 300 ms)"),
+                               (-3 * 3600, "fault", "row B: eFuse in current limit for 40 ms"),
+                               (-754, "can", "enumeration (node 0x21 rebooted): 9 nodes")):
+            events.append((now + dt, kind, text))
+    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    server.daemon_threads = True
+    return server
+
+
+if __name__ == "__main__":
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8767
+    print(f"power hub mock on http://localhost:{port}")
+    serve(port).serve_forever()

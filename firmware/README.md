@@ -1,4 +1,16 @@
-# Bay node firmware (Zephyr)
+# Firmware (Zephyr)
+
+Two applications, both on an ESP32-S3, share this tree:
+
+| | |
+|---|---|
+| **Bay node** (this page) | one per bay: the board under test over USB/IP, its 5 V, its console |
+| **[Power hub](power-hub/README.md)** | one per rack: USB-C PD in, rows A–D, the rack bus (CAN) master |
+
+They speak the rack bus protocol ([docs/rack-protocol.md](../docs/rack-protocol.md))
+and share [`common/`](common/): the protocol, the AP33772S drivers, Wi-Fi and
+hostname, the web pages' CSS and helpers, xterm.js, the development server
+and the screenshot tooling.
 
 Firmware for the ESP32-S3 on each [bay node](../electronics/bay-node/design.py):
 it exports the board under test (DUT) over the network with Zephyr's
@@ -13,13 +25,22 @@ to its console and RESET/BOOT lines.  It dogfoods Zephyr's new USB host stack
 ```
 firmware/
   west.yml                       west manifest (Zephyr main + hal_espressif + crypto)
+  zephyr/module.yml              firmware/ as a Zephyr module: boards, bindings, common/
   boards/hwtr/bay_node/          board definition: bay_node/esp32s3/procpu
-  dts/bindings/                  hwtr,dut-port and hwtr,usb-mux bindings
-  bay-node/                      the application
+  boards/hwtr/power_hub/         board definition: power_hub/esp32s3/procpu
+  dts/bindings/                  hwtr,* bindings (dut-port, usb-mux, rack-bus, rack-rows,
+                                 power-hub) and diodes,ap33772s (MFD, regulator, sensor)
+  common/                        shared by both applications
+    include/hwtr/, lib/          rack bus protocol (frames, hub and node state machines), Wi-Fi
+    drivers/                     AP33772S USB PD sink: MFD, regulator, sensor (out of tree)
+    web/                         rack.css, rack.mjs, vendor/xterm (xterm.js 6.0.0, MIT),
+                                 devserver.py, shots.py
+    tests/rack_bus/              the rack bus on a simulated rack (ztest, native_sim)
+  power-hub/                     the power hub application (its own README)
+  bay-node/                      the bay node application
     boards/esp32s3_devkitc_procpu.overlay   stand-in: same pin map on a DevKitC-1
     boards/m5stack_stamps3_procpu.*         bench node on a StampS3: console + network, no USB host
     web/index.html               status page and serial console (embedded gzipped)
-    web/vendor/xterm/            xterm.js 6.0.0 + fit addon (MIT), served from flash
     web/dev_server.py            the page against a simulated node, to work on the UI
     tests/rfc2217/               host test of the RFC 2217 server against pyserial
     tests/console_sim/           the console, web server and RFC 2217 code on native_sim, with a Zephyr DUT
@@ -39,12 +60,14 @@ west packages pip --install             # esptool & co. for the ESP32 build
 west build -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node
 ```
 
-The application adds `firmware/` to `BOARD_ROOT` and `DTS_ROOT` itself, so it
-also builds from any existing Zephyr workspace at a recent `main` (with
-`hal_espressif` blobs fetched):
+`firmware/` is a Zephyr module (`zephyr/module.yml`: the boards, the
+bindings, `common/`) that each application adds itself
+(`ZEPHYR_EXTRA_MODULES`), so both also build from any existing Zephyr
+workspace at a recent `main` (with `hal_espressif` blobs fetched):
 
 ```bash
 west build -b bay_node/esp32s3/procpu path/to/hw-testing-rack/firmware/bay-node
+west build -b power_hub/esp32s3/procpu path/to/hw-testing-rack/firmware/power-hub
 ```
 
 No bay node yet?  An ESP32-S3-DevKitC-1 with the same GPIO map stands in
@@ -84,14 +107,23 @@ directory on a short path (e.g. `C:\rack-ws`): `hal_espressif` and
 
 ## Flashing
 
+The node runs from its row: the hub must have the row on (on a desk: 9–30 V
+on J1).
+
 1. Slide the bay's **SERVICE** switch on and plug a laptop into the front
-   **PC** port.  The firmware stops its USB host and hands the ESP32-S3's
-   single USB PHY back to the USB-Serial-JTAG (LED yellow), which shows up
-   as a serial port (and a JTAG adapter for OpenOCD).
-2. `west flash` (esptool resets the chip into its ROM loader over USB).  On
-   a blank module, or if the firmware is wedged, hold **BOOT** and tap
-   **RESET** (reachable through the deck window) to force the ROM loader.
+   **PC** port, both on the fascia.  The firmware stops its USB host and
+   hands the ESP32-S3's single USB PHY back to the USB-Serial-JTAG (LED
+   yellow), which shows up as a serial port (and a JTAG adapter for
+   OpenOCD).  A blank module shows it at once.
+2. `west flash` (esptool resets the chip into its ROM loader over USB).  If
+   the firmware is wedged (it takes the PHY and never lets it go), pull the
+   drawer out, hold **BOOT** and tap **RESET**, or keep BOOT held while the
+   hub power-cycles the row from its page (the row's other bays restart too):
+   RESET sits partly under the drawer's left ledge, BOOT is clear.
 3. SERVICE off: the host controller restarts and the DUT is back on USB/IP.
+
+Both boards, recovery and the update plan (MCUboot, over Wi-Fi):
+[docs/firmware.md › Programming](../docs/firmware.md#programming).
 
 ## First boot
 
@@ -130,7 +162,8 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Status LED | WS2812B on IO12 through the RMT (`worldsemi,ws2812-pulse-io`), see below |
 | Buttons | BOOT (IO0) once booted: short press confirms an access claim, held ≥ 1 s power-cycles the DUT, ≥ 10 s resets access control.  RESET is the ESP32's EN |
 | Access control | who may use which service, a CI reservation, an admin key confirmed by a BOOT press; Zephyr's packet filter for the TCP services, a check per HTTP request.  See [Access control](#access-control) |
-| Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS |
+| Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO35 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
+| Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS (`common/lib/net.c`, as the hub) |
 | Shell | `bay …` commands plus the stock `wifi`, `net` shells, on UART0 and telnet |
 | Web | Zephyr HTTP server on port 80: status page, JSON API (same actions as the shell), Prometheus `/metrics` through Zephyr's Prometheus library |
 
@@ -138,7 +171,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 
 | Command | Effect |
 |---|---|
-| `bay status` | id/hostname, IP, data path, USB host (devices, USB/IP sessions), power and V/I/P, fault count, AUX stats |
+| `bay status` | id/hostname, IP, rack position, data path, USB host (devices, USB/IP sessions), power and V/I/P, fault count, AUX stats |
 | `bay power` | DUT VBUS state and V/I/P |
 | `bay power on` / `off` | switch DUT VBUS (`on` also clears a latched fault) |
 | `bay power cycle [ms]` | off, wait (default 1000 ms), on |
@@ -152,7 +185,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | `bay aux break [ms]` | hold the DUT's RX line low (default 250 ms) |
 | `bay aux send <text>` | send a line to the DUT (with the console's Enter) |
 | `bay aux loopback [on\|off]` | test without a DUT: the UART loops its TX back to its RX (ESP32) |
-| `bay id [id]` | show or set the bay id (persistent), hostname `bay-<id>.local` |
+| `bay id [id]` | show or set the bay id (persistent), hostname `bay-<id>.local`; without one, the rack position (`bay-c3.local`) |
 | `bay access` | access control: admin key, rules, lease, connections, refusals |
 | `bay access claim` | confirm a pending claim, like a short press on BOOT (not over telnet) |
 | `bay access on` / `off` | apply the rules / let every address use everything (`off`: not over telnet) |
@@ -168,7 +201,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | TCP 23 | telnet shell (no login of its own: give the shell right to admin hosts only) |
 | TCP 4001 | AUX UART, RFC 2217, one client (`CONFIG_BAY_RFC2217_PORT`) |
 | TCP 4000 | AUX UART, raw bytes, one client (`CONFIG_BAY_AUX_TCP_PORT`) |
-| UDP 5353 | mDNS: `bay-<id>.local` (default `bay<MAC>` until an id is set) |
+| UDP 5353 | mDNS: `bay-<id>.local`; without an id, the rack position the hub gave (`bay-c3.local`); before that `bay<MAC>` |
 
 Which address may use which of them: [Access control](#access-control).
 Until a node is claimed it is open, as it always was.
@@ -189,7 +222,7 @@ main actions.
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | everything `bay status` shows, as JSON |
+| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract |
 | `POST /api/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}` |
 | `POST /api/reset` | `{"ms": 100}` (body optional) |
 | `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |
@@ -302,11 +335,13 @@ Refused TCP connections are dropped, not reset: `usbip attach` from a
 refused host waits for its timeout.
 
 **Code.**  The rules, the lease, the refusal log and HMAC-SHA256 are plain
-C without Zephyr ([`src/acl.c`](bay-node/src/acl.c)), tested on the host
-against Python's `hashlib`/`hmac`; [`src/access.c`](bay-node/src/access.c)
-applies them (packet filter, settings `access/rules` and `access/key`,
-claim, kicks, connections).  A rack controller pushing rules over CAN would
-reuse `acl.c` and replace the claim with the bus.
+C without Zephyr ([`common/lib/acl.c`](common/lib/acl.c)), tested on the
+host against Python's `hashlib`/`hmac`; the admin key, its nonces, the
+signature check and the claim are [`common/lib/admin.c`](common/lib/admin.c),
+shared with the power hub (whose page signs its actions the same way, with
+the same `rack.mjs` code); [`src/access.c`](bay-node/src/access.c) applies
+them (packet filter, settings `access/rules` and `access/key`, kicks,
+connections).  One key can serve the whole rack: a claim may bring it.
 
 ```bash
 python firmware/bay-node/tests/acl/test_acl.py                       # CC=gcc by default
@@ -421,6 +456,7 @@ python3 firmware/bay-node/tests/console_sim/run.py --workspace <west workspace> 
 | Colour | Meaning |
 |---|---|
 | off | no firmware / booting |
+| white / blue, fast | identify: the hub's page asked "which one is it?" |
 | white, blinking | access claim pending: press BOOT briefly to confirm |
 | red, blinking | DUT VBUS in current limit, or switched off by a fault |
 | yellow | SERVICE: front port → node |
@@ -444,10 +480,14 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 | IO13 | PC_DET | front port VBUS via 10k/20k: laptop plugged | `usb_mux` `pc-detect-gpios` |
 | IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
 | IO15 | SVC | SERVICE slide switch | `usb_mux` `service-gpios` |
+| IO16 | POS_IN | POS token from J1.6 (10k, BAT54S clamp, 100k pull-down) | `rack_bus` `pos-in-gpios` |
+| IO17 | CAN_RXD | TCAN1462V RXD (rack CAN bus) | `&twai` |
+| IO18 | CAN_TXD | TCAN1462V TXD | `&twai` |
 | IO19 | ESP_DN | USB D−, internal FS PHY → MUX_DUT / MUX_PC | `zephyr_uhc0: &usb_otg` |
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
 | IO33 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
 | IO34 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
+| IO35 | POS_OUT | POS token to J2.6 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
 | IO37 | I2C_SCL | I²C0 | `&i2c0` |
 | IO38 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
 | IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up), not used yet | `ina226` `alert-gpios` |
@@ -459,12 +499,15 @@ From `electronics/bay-node/design.py` (U3, ESP32-S3-MINI-1-N8); devicetree in
 | RXD0 (IO44) | U0RX | TP2 | `&uart0` |
 | EN | EN | SW1 RESET button (10k/1µF) | — |
 
-Each signal sits on the module edge that faces where it goes on the board (v0.4): the right
+Each signal sits on the module edge that faces where it goes on the board (v0.5): the right
 column feeds the DUT power block, the bottom-right pins the AUX connector, the bottom-left pins
-the mode logic and the LED.  Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad
+the mode logic and the LED, IO16–IO18 the rack bus block under the module (CAN transceiver,
+POS input) and IO35 the POS output towards J2 (docs/can.md).  The CAN protocol itself is not
+written yet: the devicetree only describes the pins.  Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad
 JTAG pins, free as GPIOs since the node debugs over USB-Serial-JTAG.  The DevKitC overlay keeps
 this map except I²C (IO8/IO9 there: the devkit's LED is on IO38 and its octal PSRAM takes
-IO35–IO37), moves the LED to the devkit's GPIO38 and disables SPI2 (IO10–IO13).
+IO35–IO37) and POS_OUT (IO21 there, for the same reason), moves the LED to the devkit's GPIO38
+and disables SPI2 (IO10–IO13).
 
 `python3 firmware/tools/check_pinmap.py` checks this table and the board
 devicetree against U3 in `design.py`; CI ([`firmware.yml`](../.github/workflows/firmware.yml))
@@ -472,6 +515,10 @@ runs it and builds both targets with warnings as errors on every push.
 
 ## Open items
 
+* **Rack bus not on hardware.**  The node's and the hub's protocol code
+  passes the simulated rack (`common/tests/rack_bus`: enumeration, reboots,
+  dead and lost nodes, retries); the TWAI, the TCAN1462V and the POS chain
+  over real row cables are untested.
 * **Hardware bring-up not done.**  Nothing here has run on a bay node yet:
   the board definition, the INA226 calibration, the LED timing and the
   SERVICE-mode PHY handover (stop host → route the PHY to USB-Serial-JTAG →
@@ -508,9 +555,10 @@ runs it and builds both targets with warnings as errors on every push.
   built, not run: check on a node that a refused host's `usbip attach`
   and `telnet` time out, that a kick ends a USB/IP session (shutdown of a
   socket that the USB/IP thread owns), and the BOOT presses.
+* **No OTA yet** (MCUboot, signed updates over Wi-Fi, then over the rack
+  bus): the plan is in [docs/firmware.md › Programming](../docs/firmware.md#programming).
 * **Not yet written:** DNS-SD advertisement of `_usbip._tcp`, `_http._tcp`
-  and `_rfc2217._tcp`, MCUboot + mcumgr OTA (the partition table already has
-  two 3.75 MB slots), the shell on the USB-Serial-JTAG in SERVICE mode,
+  and `_rfc2217._tcp`, the shell on the USB-Serial-JTAG in SERVICE mode,
   INA226 alert handling, RFC 2217 line/modem state notifications (the server
   answers polls with CTS/DSR/CD up).
 * **Zephyr's HTTP server** registers every WebSocket of a resource with that

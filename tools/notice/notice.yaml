@@ -1,0 +1,199 @@
+# The assembly notice: its pages, their steps and what each step takes, in one place.
+#
+# Drawings are notice.py's: a step's `drawing` and `detail` are STEPS names; part chips and cards
+# are THUMBS (chip_<key>, card_<key>); hardware icons are hw_<key>.  pages.py turns this file and
+# the uploaded drawings' addresses (assets.json) into the canvas's page files.  See README.md.
+
+canvas: https://claude.ai/artifact/4E2UyPydficBXMAkRwtYsr
+index:                 # the canvas's project/canvas.json: its title, and a row of artboards per title note
+  title: Bay assembly
+  createdOnFiles: {v: 1, at: "2026-10-17T17:20:00Z"}
+  rows: {titleA: "1 · One bay", titleB: "2 · Add a bay", titleC: "3 · Power box"}
+name: TESTBÅS
+credit: hw-testing-rack
+
+# The cable between two neighbouring nodes (step B-5): node 0's `from` connector to node 1's `to`,
+# references in the bay node's .kicad_pcb.  The pin count comes from the footprint.
+row_cable: {from: J2, to: J1}
+
+parts:                 # thumbnail key (notice.py THUMBS): name on the pages
+  lb: Base ladder
+  la: Row ladder
+  lc: Cap strip
+  fp: Floor plate
+  tr: Tray
+  dr: Drawer
+  cp: Cap plate
+  bb: Brace
+  nd: Bay node
+  pb: Power box
+  pl: Lid
+  hb: Power hub
+  ch: USB-C charger
+
+hardware:              # icon key (notice.py hw_shape): name on the parts pages, label on the step chips
+  insert: {name: M3 insert}
+  m3x8: {name: M3 × 8}
+  m3x6: {name: M3 × 6}
+  m25x8: {name: M2.5 × 8}
+  jumper: {name: Row cable, label: Row cable}          # 6-pin JST PH, node to node
+  usbc: {name: "USB-C cable, 5 A", label: USB-C 5 A}    # e-marked, the charger's
+  feed: {name: Row feed, label: Row feed, icon: jumper}  # 6-pin JST PH, box to a row's first node
+
+pages:
+  - file: Main.dc.html
+    board: {title: "Cover", row: titleA}
+    kind: cover
+    title: TESTBÅS, cover
+    drawing: cover
+    alt: Assembled bay
+    people: 1
+    tools: PH1 · insert iron
+
+  - file: A-pieces.dc.html
+    board: {title: "One bay: parts", row: titleA}
+    kind: parts
+    title: One bay, parts
+    page: 2
+    footer: "{name}"
+    parts: {lb: 2, la: 2, lc: 2, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1}
+    hardware: {insert: 22, m3x8: 8, m3x6: 4, m25x8: 1}       # 4 per ladder (lb, la), 6 in the tray (node 4, chain anchor 2)
+    note: "First, heat-set the inserts: 4 per ladder (rear edge), 6 in the tray."
+
+  - file: A-01.dc.html
+    board: {title: "One bay: 1–2", row: titleA}
+    kind: steps
+    title: One bay, steps 1–2
+    page: 3
+    footer: "{name}"
+    steps:
+      - {n: 1, drawing: a1, alt: "Two base ladders, upright", parts: {lb: 2}}
+      - {n: 2, drawing: a2, alt: "Floor plate slides into the bottom grooves", parts: {fp: 1}, clic: true}
+
+  - file: A-02.dc.html
+    board: {title: "One bay: 3–4", row: titleA}
+    kind: steps
+    title: One bay, steps 3–4
+    page: 4
+    footer: "{name}"
+    steps:
+      - {n: 3, drawing: a3, alt: "Rear view: base brace screwed to both ladders", parts: {bb: 1}, hardware: {m3x8: 4}, detail: pin}
+      - {n: 4, drawing: a4, alt: "Row ladders snap onto the base ladders", parts: {la: 2}, clic: true, detail: hook}
+
+  - file: A-03.dc.html
+    board: {title: "One bay: 5–6", row: titleA}
+    kind: steps
+    title: One bay, steps 5–6
+    page: 5
+    footer: "{name}"
+    steps:
+      - {n: 5, drawing: a5, alt: "Tray slides into the row ladder grooves", parts: {tr: 1}, clic: true}
+      - {n: 6, drawing: a6, alt: "Rear view: row brace screwed to both ladders", parts: {bb: 1}, hardware: {m3x8: 4}}
+
+  - file: A-04.dc.html
+    board: {title: "One bay: 7–8", row: titleA}
+    kind: steps
+    title: One bay, steps 7–8
+    page: 6
+    footer: "{name}"
+    steps:
+      - {n: 7, drawing: a7, alt: "Cap strips on top, cap plate slides in", parts: {lc: 2, cp: 1}, clic: true}
+      - {n: 8, drawing: a8, alt: "Bay node screwed to the tray standoffs", parts: {nd: 1}, hardware: {m3x6: 4}}
+
+  - file: A-05.dc.html
+    board: {title: "One bay: 9", row: titleA}
+    kind: last
+    title: One bay, step 9
+    page: 7
+    footer: "{name}"
+    step: {n: 9, drawing: a9, alt: "Drawer slides in; the M2.5 screw in the left lip is its stop", parts: {dr: 1}, hardware: {m25x8: 1}}
+    finished: {drawing: cover_small, alt: Finished bay}
+
+  - file: B-pieces.dc.html
+    board: {title: "Next bay: parts", row: titleB}
+    kind: parts
+    title: Next bay, parts
+    page: 8
+    footer: "{name} · next bay"
+    banner: "The middle ladder is shared. Heat-set the new inserts first."
+    parts: {lb: 1, la: 1, lc: 1, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1}
+    hardware: {jumper: 1, insert: 14, m3x8: 8, m3x6: 4, m25x8: 1}   # the new lb and la, the tray
+
+  - file: B-01.dc.html
+    board: {title: "Next bay: 1–2", row: titleB}
+    kind: steps
+    title: Next bay, steps 1–2
+    page: 9
+    footer: "{name} · next bay"
+    steps:
+      - {n: 1, drawing: b1, alt: "Base ladder on the right, floor plate slides in", parts: {lb: 1, fp: 1}, clic: true}
+      - {n: 2, drawing: b2, alt: "Rear view: base brace into the free inserts of the shared ladder", parts: {bb: 1}, hardware: {m3x8: 4}, detail: pin_b}
+
+  - file: B-02.dc.html
+    board: {title: "Next bay: 3–4", row: titleB}
+    kind: steps
+    title: Next bay, steps 3–4
+    page: 10
+    footer: "{name} · next bay"
+    steps:
+      - {n: 3, drawing: b3, alt: "Row ladder on the new base, second tray slides in", parts: {la: 1, tr: 1}, clic: true}
+      - {n: 4, drawing: b3n, alt: "Second bay node screwed to its tray", parts: {nd: 1}, hardware: {m3x6: 4}}
+
+  - file: B-03.dc.html
+    board: {title: "Next bay: 5–6", row: titleB}
+    kind: steps
+    title: Next bay, steps 5–6
+    page: 11
+    footer: "{name} · next bay"
+    steps:
+      - {n: 5, drawing: b4, alt: "Top view: row cable between the two bay nodes", cables: {jumper: 1}}
+      - {n: 6, drawing: b5, alt: "Brace, cap strip, cap plate and drawer of the second bay", parts: {bb: 1, lc: 1, cp: 1, dr: 1}, hardware: {m3x8: 4, m25x8: 1}, clic: true}
+
+  - file: B-04.dc.html
+    board: {title: "Next bay: done", row: titleB}
+    kind: done
+    title: Next bay, done
+    page: 12
+    footer: "{name} · next bay"
+    drawing: done
+    alt: Two bays sharing the middle ladder
+    note: "Another bay: steps 1–6. Another row: row ladders instead of cap strips, then steps 5–9."
+
+  - file: C-pieces.dc.html
+    board: {title: "Power box: parts", row: titleC}
+    kind: parts
+    title: Power box, parts
+    page: 13
+    footer: "{name} · power"
+    parts: {pb: 1, pl: 1, hb: 1, ch: 1}
+    hardware: {insert: 8, m3x6: 4, m3x8: 4, usbc: 1, feed: 3}       # feeds: one per row (A, B, C)
+    note: "First, heat-set the inserts: 4 in the hub standoffs, 4 in the lid lugs."
+
+  - file: C-01.dc.html
+    board: {title: "Power box: 1–2", row: titleC}
+    kind: steps
+    title: Power box, steps 1–2
+    page: 14
+    footer: "{name} · power"
+    steps:
+      - {n: 1, drawing: c1, alt: "Power hub screwed onto its four standoffs", parts: {hb: 1}, hardware: {m3x6: 4}}
+      - {n: 2, drawing: c2, alt: "Lid on, four screws into the corner lugs", parts: {pl: 1}, hardware: {m3x8: 4}}
+
+  - file: C-02.dc.html
+    board: {title: "Power box: 3–4", row: titleC}
+    kind: steps
+    title: Power box, steps 3–4
+    page: 15
+    footer: "{name} · power"
+    steps:
+      - {n: 3, drawing: c3, alt: "Box under A1: over the floor plate's front lip, its sockets drop over the bosses", parts: {pb: 1}}
+      - {n: 4, drawing: c4, alt: "Rear view: the charger's USB-C cable into the box's rear port", parts: {ch: 1}, cables: {usbc: 1}}
+
+  - file: C-03.dc.html
+    board: {title: "Power box: 5", row: titleC}
+    kind: last
+    title: Power box, step 5
+    page: 16
+    footer: "{name} · power"
+    step: {n: 5, drawing: c5, alt: "Row feed: from the box's left side up to the row's first node; one per row", hardware: {feed: 3}}
+    finished: {drawing: c_done, alt: Bay with its power box}

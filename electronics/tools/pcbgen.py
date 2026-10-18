@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pcbnew
 
-from catalog import HAND_SOLDER_LCSC
+from catalog import HAND_SOLDER_LCSC, MODELS
 from eda import Board, Part, REPO
 
 FP_DIR = Path(os.environ.get("KICAD_FOOTPRINT_DIR", "/usr/share/kicad/footprints"))
@@ -168,6 +168,7 @@ class PcbBuilder:
         dru = DRU
         if self.b.pcb.get("edge_parts"):
             dru += DRU_EDGE.format(cond=" || ".join(f"A.memberOfFootprint('{r}')" for r in self.b.pcb["edge_parts"]))
+        dru += self.b.pcb.get("dru", "")           # the board's own rules (design.py)
         (self.outdir / f"{self.b.name}.kicad_dru").write_text(dru, encoding="utf-8")
         tb = bd.GetTitleBlock()
         tb.SetTitle(self.b.title)
@@ -203,6 +204,7 @@ class PcbBuilder:
                     f.SetVisible(False)
                     f.SetLayer(pcbnew.F_Fab)
             fp.Value().SetVisible(False)
+            set_model(fp, p.fields.get("MPN", ""))
             attrs = fp.GetAttributes()
             if not p.in_bom:
                 attrs |= pcbnew.FP_EXCLUDE_FROM_BOM
@@ -454,6 +456,44 @@ class PcbBuilder:
         write_stackup(self.path, self.b.pcb)
         write_via_rules(self.path.with_suffix(".kicad_pro"))
         return self.path
+
+
+# the project's own 3D models (electronics/lib/3dmodels), relative to each board's project folder
+MODEL_PATH = "${KIPRJMOD}/../lib/3dmodels/"
+
+
+def set_model(fp, mpn: str) -> bool:
+    """Give a footprint the 3D model catalog.MODELS lists for its part (vendor models KiCad's
+    library lacks, kept in the repo), in place of the footprint's own.  The path is relative to the
+    board's project, so it resolves on any machine and in CI."""
+    if mpn not in MODELS:
+        return False
+    file, offset, rot = MODELS[mpn]
+    m = pcbnew.FP_3DMODEL()
+    m.m_Filename = MODEL_PATH + file
+    m.m_Offset = pcbnew.VECTOR3D(*offset)
+    m.m_Rotation = pcbnew.VECTOR3D(*rot)
+    m.m_Scale = pcbnew.VECTOR3D(1, 1, 1)
+    models = fp.Models()
+    models.clear()
+    models.push_back(m)
+    return True
+
+
+def _field(fp, name: str) -> str:
+    for f in fp.GetFields():
+        if f.GetName() == name:
+            return f.GetText()
+    return ""
+
+
+def apply_models(path: Path) -> int:
+    """set_model() on every footprint of a saved board (for boards placed before a model was added)."""
+    board = pcbnew.LoadBoard(str(path))
+    n = sum(set_model(fp, _field(fp, "MPN")) for fp in board.GetFootprints())
+    if n:
+        pcbnew.SaveBoard(str(path), board)
+    return n
 
 
 def write_via_rules(pro: Path):

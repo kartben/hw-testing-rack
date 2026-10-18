@@ -325,6 +325,8 @@ def ev(node):
             s = Part.makeLoft([w1, w2], True, True)
         pts = [(x, y, z0) for x, y in reg_polygon(fn, r1)] + [(x, y, z0 + h) for x, y in reg_polygon(fn, r2)]
         return R(3, s, [("pts", pts)])
+    if name == "text":                    # engraved labels: too fine for the notice's line art
+        return None
     if name == "linear_extrude":
         r = ev(("group", {}, [], kids))
         if r is None:
