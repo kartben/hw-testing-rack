@@ -179,6 +179,45 @@ def settle(pts, za, zb, run=15.0):
             for q, s in zip(pts, d)]
 
 
+RIBBON_PITCH, RIBBON_R = 1.25, 0.6          # a flat lead's wires, side by side (24-26 AWG); 2.0 apart at a PH plug
+
+
+def resample(pts, n):
+    """n + 1 points evenly spaced along a polyline."""
+    pts = [V(*q) for q in pts]
+    d = [0.0]
+    for a, b in zip(pts, pts[1:]):
+        d.append(d[-1] + (b - a).Length)
+    out, j = [], 0
+    for i in range(n + 1):
+        s = d[-1] * i / n
+        while j < len(d) - 2 and d[j + 1] < s:
+            j += 1
+        t = 0.0 if d[j + 1] == d[j] else (s - d[j]) / (d[j + 1] - d[j])
+        out.append(pts[j] + (pts[j + 1] - pts[j]) * t)
+    return out
+
+
+def ribbon(centre, k, fan=6.0):
+    """k wires of a flat lead lying on its side along `centre` (points, its middle): side by side
+    (RIBBON_PITCH apart, across the path in plan), fanning out to the PH pitch (2.0) over the last
+    `fan` mm at each end.  Returns the wires' points."""
+    c = resample(centre, max(10, int(sum((V(*b) - V(*a)).Length for a, b in zip(centre, centre[1:])) / 4.0)))   # every 4 mm: light splines
+    L = sum((b - a).Length for a, b in zip(c, c[1:]))
+    wires, run = [[] for _ in range(k)], 0.0
+    for i, q in enumerate(c):
+        t = c[min(i + 1, len(c) - 1)] - c[max(i - 1, 0)]
+        side = V(-t.y, t.x, 0)
+        side = side * (1 / side.Length) if side.Length > 1e-9 else V(0, 1, 0)
+        if i:
+            run += (q - c[i - 1]).Length
+        f = max(0.0, 1 - min(run, L - run) / fan)                      # 1 at a plug, 0 past the fan
+        pitch = RIBBON_PITCH + (2.0 - RIBBON_PITCH) * f
+        for j in range(k):
+            wires[j].append(tuple(q + side * (pitch * (j - (k - 1) / 2))))
+    return wires
+
+
 def tie(x, wires, r, anchor_y=6.5):
     """A cable tie through the tray's tie anchor at x (tray.scad tie_anchor: a 4 x 7 block, a tunnel
     along y under its top), round the wires lying on it: its band (2.4 wide, 0.8 thick) and its head."""
@@ -203,11 +242,13 @@ def jumper_shape():
     js = CABLES.get("jumper")
     if not js:
         return Part.makeCompound(sols + lead(ma + oa * 1.9, mb + ob * 1.9, ca["pins"], 3.0))
-    wires = [settle(w, ma.z, mb.z) for w in js["wires"]]
-    r = min(js["radius"], 0.5)               # drawn thinner: the bunched wires (0.85 apart) then do not run into each other
-    sols += [pipe(w, r) for w in wires]
+    n = 80                                   # the viewer's six wires' middle, a flat ribbon along it
+    mids = [resample(w, n) for w in js["wires"]]
+    centre = [tuple(sum((m[i] for m in mids), V(0, 0, 0)) * (1 / len(mids))) for i in range(n + 1)]
+    wires = ribbon(settle(centre, ma.z, mb.z), len(js["wires"]))
+    sols += [pipe(w, RIBBON_R) for w in wires]
     for tx, ty in js["ties"]:
-        sols += tie(tx, wires, r, ty)
+        sols += tie(tx, wires, RIBBON_R, ty)
     return Part.makeCompound(sols)
 
 
@@ -423,10 +464,18 @@ def j7_top():
     return V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"]) + V(*j7["mouth"])
 
 
+def flat_lead(n, length, bulge):
+    """A flat lead of n wires on its own (the legends): a PH plug at each end, the lead lying flat
+    between them in a gentle curve (`bulge` mm off the straight line, in plan)."""
+    centre = [(length * u, bulge * math.sin(math.pi * u) ** 2, 0.0) for u in [i / 48 for i in range(49)]]   # leaves each plug straight
+    sols = [plug(V(-1.9, 0, 0), (1, 0), n), plug(V(length + 1.9, 0, 0), (-1, 0), n)]
+    return Part.makeCompound(sols + [pipe(w, RIBBON_R) for w in ribbon(centre, n)])
+
+
 def lead_alone_shape():
-    """The DATA lead on its own (the parts pages): two PH 5 plugs, a sagging flat lead."""
-    return Part.makeCompound([plug(V(-1.9, 0, 0), (1, 0), 5), plug(V(91.9, 0, 0), (-1, 0), 5)]
-                             + lead(V(0, 0, 0), V(90, 0, 0), 5, 22.0))
+    """The DATA lead on its own (the parts pages): two PH plugs (as many pins as J7), a flat lead."""
+    node = json.load(open(os.path.join(PARTS, "node.json")))
+    return flat_lead(next(c for c in node["ph"] if c["ref"] == "J7")["pins"], 90.0, 12.0)
 
 
 def x_screw(x, y, z, head):
@@ -497,7 +546,7 @@ def pipe(points, r):
         for q in points[1:]:
             if (V(*q) - pts[-1]).Length > 0.8:
                 pts.append(V(*q))
-        c.approximate(Points=pts, DegMax=5, Tolerance=0.2)
+        c.approximate(Points=pts, DegMax=3, Tolerance=0.3)
     else:
         c.interpolate([V(*p) for p in points])
     e = c.toShape()
@@ -1037,8 +1086,8 @@ def fit(scr, arr2, W, H, pad, keepout):
 
 KEYS = {("old", False): "old", ("old", True): "old_f", ("add", False): "add", ("add", True): "add_f",
         ("old", "c"): "old_c", ("add", "c"): "add_c"}
-CABLE_KINDS = {"jumper", "data_lead", "data_lead_free", "data_lead_stub", "feed", "pd_cable"}
-CABLE_K = 1.3                                  # a cable's stroke, relative to a part's
+CABLE_KINDS = {"data_lead", "data_lead_free", "data_lead_stub", "feed", "pd_cable"}   # round cables (flat leads: as parts)
+CABLE_K = 1.15                                 # a round cable's stroke, relative to a part's
 CACHE = os.path.join(OUT, "cache")
 
 
@@ -1210,15 +1259,14 @@ def job_thumb(n):
     if data is None:
         s = shape_of(iid)
         data = project("thumb_" + n, [(iid, "add", s, False)], view)
-    render(f"chip_{n}", data, (144, 108), (1, 2.2), pad=4, display=(72, 54))
-    render(f"card_{n}", data, (380, 312), (1, 2.6), pad=6, display=(190, 156))
+    flat = n in FLAT_THUMBS                    # a flat lead: a lighter line, or its wires run together
+    render(f"chip_{n}", data, (144, 108), (1, 1.2 if flat else 2.2), pad=4, display=(72, 54))
+    render(f"card_{n}", data, (380, 312), (1, 1.9 if flat else 2.6), pad=6, display=(190, 156))
 
 
 def hw_shape(n):
-    if n == "jumper":                          # a short row cable for the chip: two plugs, a sagging lead
-        pins = row_cable()[0]["pins"]
-        sols = [plug(V(-1.9, 0, 0), (1, 0), pins), plug(V(35.9, 0, 0), (-1, 0), pins)]   # leads leave at x = 0 and 34
-        return Part.makeCompound(sols + lead(V(0, 0, 0), V(34, 0, 0), pins, 7.0))
+    if n == "jumper":                          # a short row cable for the chip: two plugs, a flat lead
+        return flat_lead(row_cable()[0]["pins"], 34.0, 5.0)
     if n == "mag":                             # 6 x 3 disc magnet, on edge
         return Part.makeCylinder(3, 3, V(0, 0, 0), V(1, 0, 0))
     if n == "sp12":                            # hex spacer, axis along X, stud towards +X
@@ -1248,9 +1296,10 @@ THUMBS = {
     "fp": ("fp0", ISO), "tr": ("tr0", ISO), "dr": ("dr0", ISO), "cp": ("cp0", ISO),
     "bb": ("bb0", (0, 1, 0.15)), "nd": ("nd0", ISO),
     "pb": ("pb", ISO), "pl": ("pl", ISO), "hb": ("hb", ISO), "ch": ("charger", ISO),
-    "an": ("ca0", ISO), "ft": ("cf0", ISO_R), "dc": ("dcx", (-0.2, -0.5, 1.5)), "xt": ("xtl", (0.1, -1.0, 0.6)), "dp": ("dpx", ISO),
+    "an": ("ca0", ISO), "ft": ("cf0", ISO_R), "dc": ("dcx", (-0.2, -0.5, 1.5)), "xt": ("xtl", (0.1, -0.55, 1.0)), "dp": ("dpx", ISO),
 }
-HW_VIEW = {"*": (-0.5, -1.0, 0.35), "jumper": (0.1, -1.0, 0.35), "usbc": (0.1, -1.0, 0.35)}
+FLAT_THUMBS = {"xt"}                            # thumbnails of flat leads (job_thumb)
+HW_VIEW = {"*": (-0.5, -1.0, 0.35), "jumper": (0.1, -0.55, 1.0), "usbc": (0.1, -1.0, 0.35)}   # a flat lead: from above
 
 if __name__ in ("__main__", "notice") and os.environ.get("NOTICE"):
     for n in os.environ["NOTICE"].split(","):
