@@ -120,11 +120,13 @@ ladder's window, run them up the left side and into each row's first node.
 
 At the bench: the pod board on its two standoffs behind the sleeve, LEDs
 down, against the baffle, and the diffuser under it (2 × PT 2.6×14 up through
-its posts and the board); the XH → Dupont cable into the Mega's side and onto
-J2 by name.  Pod under the ceiling, 4 × M3×6 into the camera inserts (the tray
-above, or the cap plate), the bay's drawer pulled out (a closed drawer and its
-DUT cable leave no room for the hand); push the Mega's case up into the sleeve until the
-lips click, lens down, its XH on the open side.  The lead
+its posts and the board).  Pod under the ceiling, 4 × M3×6 into the camera
+inserts (the tray above, or the cap plate), the bay's drawer pulled out (a
+closed drawer and its DUT cable leave no room for the hand).  Then the XH →
+Dupont cable onto J2 by name and into the Mega's side (only now: the XH plug
+sits right under the front-left screw), and push the Mega's case up into the
+sleeve until the lips click, lens down, the XH and its plug up through the
+open side.  The lead
 ([cabling.md](cabling.md)) into the bay's own node (J6), back through the
 plenum and the tray's rear slot, straight up behind the tray, forwards under
 the ceiling (a cable tie every ~5 cm) and into the board's J1, only once the

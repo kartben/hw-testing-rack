@@ -31,6 +31,9 @@ MEGA_CASE = [34, 34, 12];               // the case: x × y × height, its back 
 MEGA_HOLDER = [14, 6];                  // the M12 holder under the case: square, height (PLACEHOLDER)
 MEGA_OPTIC = [14, 9.5];                 // the ~120° lens: Ø, length out of the holder
 MEGA_XH = [15, 6, 7];                   // its white XH 6-pin on the case's right side: along y, out, height (PLACEHOLDER)
+// the sleeve's window on the XH's side, open from the case's face: the XH and its plug slide up through it as the
+// case goes in; 3 mm wider than the XH each side and 1 mm over its top (width along y, height over the case's face)
+XH_WIN = [MEGA_XH[0] + 6, (MEGA_CASE[2] + MEGA_XH[2]) / 2 + 1];
 FIT = 0.3;                              // the sleeve's clearance round the case, per side
 SW = 1.6;                               // the sleeve's walls
 LIP = 0.8;                              // its snap lips under the case, front and rear
@@ -74,8 +77,8 @@ module pod() {
                         cube([16, LIP, 1.2]);
                 }
                 translate([-s[0] / 2 + SW, -s[1] / 2 + SW, CASE_Z - EPS]) cube([s[0] - 2 * SW, s[1] - 2 * SW, MEGA_CASE[2] + EPS]);
-                // the XH's side: open from the case's face up to 3 mm under the plate
-                translate([s[0] / 2 - SW - EPS, -MEGA_XH[0] / 2 - 2, CASE_Z - EPS]) cube([SW + 2 * EPS, MEGA_XH[0] + 4, MEGA_CASE[2] - 3]);
+                // the XH's side (XH_WIN)
+                translate([s[0] / 2 - SW - EPS, -XH_WIN[0] / 2, CASE_Z - EPS]) cube([SW + 2 * EPS, XH_WIN[0], XH_WIN[1] + EPS]);
             }
             for (h = POD_PCB_HOLES) translate([board(h)[0], board(h)[1], PCB_Z]) cylinder(d = 6, h = POD_GAP + EPS);
         }

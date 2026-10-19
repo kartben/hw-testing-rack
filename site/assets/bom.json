@@ -2806,6 +2806,15 @@
 },
 {
 "category": "Cables",
+"item": "Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie anchors at its front right (docs/cabling.md)",
+"supplier": "AliExpress (bulk)",
+"qty": 12,
+"unit_eur": 0.02,
+"unit": "pcs",
+"ext_eur": 0.24
+},
+{
+"category": "Cables",
 "item": "JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS)",
 "supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 6P, Length30CM",
 "qty": 1,
@@ -2938,11 +2947,11 @@
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
-"Cables": 49.08,
+"Cables": 49.32,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 938.14,
+"total_eur": 938.38,
 "prints": [
 {
 "part": "bay_label",
@@ -2983,7 +2992,7 @@
 "part": "camera_pod",
 "qty": 2,
 "grams_each": 12.1,
-"grams_total": 24.3,
+"grams_total": 24.2,
 "stl": "mechanical/stl/camera_pod.stl"
 },
 {
@@ -3193,7 +3202,7 @@
 "part": "tray",
 "qty": 8,
 "grams_each": 78.1,
-"grams_total": 624.4,
+"grams_total": 624.5,
 "stl": "mechanical/stl/tray.stl"
 }
 ],

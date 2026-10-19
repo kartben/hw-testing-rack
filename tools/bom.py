@@ -431,6 +431,9 @@ def hardware(rack) -> list[dict]:
          "qty": math.ceil(sum(cols - 1 for _ in rack.rows) / 5), "unit": "lot", "unit_eur": 2.85,
          "notes": f"{sum(cols - 1 for _ in rack.rows)} needed; on arrival: both plugs show the same face, pin 1 rings "
                   "to pin 6.  Or crimp them: PHR-6 + 12 × SPH-002T-P0.5S, 24 AWG"},
+        {"category": "Cables", "item": "Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie "
+                                      "anchors at its front right (docs/cabling.md)",
+         "supplier": "AliExpress (bulk)", "qty": 2 * sum(cols - 1 for _ in rack.rows), "unit_eur": 0.02},
         *[{"category": "Cables", "item": f"JST PH 6-pin feed, the jumpers' type, {cm} cm, lot of 5 (power box → first "
                                          f"bay of row {', '.join(rows_)}: VRACK, CAN, POS)",
            "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 6P, Length{cm}CM",
