@@ -24,6 +24,8 @@ class Bay:
 
 # ---- the boards under test in a bay (config/rack.yaml › population) ------------------------------------
 MAX_SLOTS = 4           # a DATA ×4 board in the drawer: four DUTs on one bay node (docs/multi-dut-node.md)
+ROLES = ("analyzer",)   # a sub-slot's board that is no board under test: gusmanb's logic analyzer on a Pico 2
+                        # (config/rack.yaml › analyzer, docs/multi-dut-node.md › "A logic analyzer in a sub-slot")
 PLATE_KINDS = ("pegs", "boards")   # a bay's plate: "pegs" (default), the one honeycomb plate for every board,
                             # the boards held by clip-in pegs (tools/plate_layout.py); "boards", a converted bay's
                             # own plate with each board's standoffs or fences at its `at` (board_plate.scad › BAY)
@@ -46,6 +48,7 @@ class Slot:
     cable: str | None = None  # config/rack.yaml › cables id
     at: list | None = None    # its front-left corner on the bay's plate (mm, turned like the board), or packed
     orient: str | None = None # a converted bay's board: USB to the port wall ("rear", the default) or "side"
+    role: str | None = None   # None: a board under test; "analyzer": the bay's logic analyzer (ROLES)
 
 
 def dut_slots(bay_id: str, entry: dict | None) -> list[Slot]:
@@ -73,10 +76,15 @@ def dut_slots(bay_id: str, entry: dict | None) -> list[Slot]:
             orient = it.get("orient")
             if orient not in (None, "rear", "side"):
                 raise ValueError(f"{bay_id}.{n}: orient {orient!r}: rear or side")
+            role = it.get("role")
+            if role not in (None, *ROLES):
+                raise ValueError(f"{bay_id}.{n}: role {role!r}: {', '.join(ROLES)} (or none: a board under test)")
             out[n] = Slot(f"{bay_id}.{n}", bay_id, n, it["board"], it.get("cable"),
-                          [float(v) for v in at] if at else None, orient)
+                          [float(v) for v in at] if at else None, orient, role)
         return [out[n] for n in sorted(out)]
     if e.get("board"):
+        if e.get("role"):
+            raise ValueError(f"{bay_id}: `role` is a sub-slot's (`boards:`): an analyzer watches its neighbours")
         return [Slot(bay_id, bay_id, None, e["board"], e.get("cable"))]
     return []
 

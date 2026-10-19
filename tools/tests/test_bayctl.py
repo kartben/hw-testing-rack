@@ -67,6 +67,22 @@ class Config(unittest.TestCase):
         self.assertEqual(b["B3.1"].platform, "xiao_esp32c3")           # the lab file, per sub-slot
         self.assertEqual(b["B3.2"].platform, "rpi_pico2/rp2350a/m33_0")
         self.assertFalse(b["B3.4"].ci)
+        b33 = b["B3.3"]                                                 # the bay's logic analyzer (`role:`)
+        self.assertEqual((b33.role, b33.ci, b33.platform, b33.runner), ("analyzer", False, None, None))
+        self.assertTrue(b33.serial.startswith("/dev/serial/by-id/usb-Dr._Gusman_LogicAnalyzer_"))
+        self.assertEqual([x.id for x in bayctl.dut_targets(b, "B3")], ["B3.1", "B3.2", "B3.4"])
+        self.assertEqual(len(bayctl.dut_targets(b, "B3", analyzers=True)), 4)   # its power is the bay's
+        self.assertEqual([x.id for x in bayctl.dut_targets(b, "B3.3")], ["B3.3"])  # named, it is there
+
+    def test_example_analyzer(self):
+        la = bayctl.analyzer_info()                                     # config/rack.yaml › analyzer
+        self.assertEqual(la["app"], "6.0.0.1")
+        fw = la["firmware"]["rpi-pico2"]
+        self.assertEqual((fw["release"], fw["asset"]), ("v6.0.0.0", "logic-analyzer-firmware_v6.0.0_BOARD_PICO_2.zip"))
+        self.assertEqual(bayctl.analyzer_state({"vid": "1209", "pid": "3020"}, la), "LogicAnalyzer")
+        self.assertEqual(bayctl.analyzer_state({"vid": "0x2E8A", "pid": "0x000F"}, la), "BOOTSEL")
+        self.assertIn("not the analyzer's firmware", bayctl.analyzer_state({"vid": "2fe3", "pid": "0004"}, la))
+        self.assertEqual(bayctl.analyzer_state(None, la), "no USB device")
 
     def test_hwmap(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -86,9 +102,9 @@ class Config(unittest.TestCase):
             self.assertNotIn("serial", b2)
             a4 = by["bay:A4"]                                           # no console path yet
             self.assertFalse(a4["connected"])
-            clashes = [w for w in warnings if "without a probe id" in w]
-            self.assertEqual(len(clashes), 1)                           # one nrfutil bay without an id: no clash,
-            self.assertIn("B3.2, B3.3 use uf2", clashes[0])             # but two Pico 2 on uf2
+            self.assertNotIn("bay:B3.3", by)                            # the analyzer: no test target
+            self.assertFalse(any("B3.3" in w for w in warnings))
+            self.assertEqual([w for w in warnings if "without a probe id" in w], [])   # one board per runner
             pre = Path(a1["pre_script"]).read_text()
             self.assertIn("prepare A1", pre)
             self.assertTrue(pre.startswith("#!/bin/sh"))
@@ -187,8 +203,9 @@ class ConvertedConfig(unittest.TestCase):
                        "B3.2": {"serial": "/dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D-if00"},
                        "B3.4": {"ci": False}})
         with tempfile.TemporaryDirectory() as tmp:
-            entries, _ = bayctl.hwmap(b, Path(tmp), "python3", "/opt/rack/tools/bayctl.py", None)
+            entries, warnings = bayctl.hwmap(b, Path(tmp), "python3", "/opt/rack/tools/bayctl.py", None)
             by = {e["fixtures"][0]: e for e in entries}
+            self.assertIn("bays B3.2, B3.3 use uf2 without a probe id", " | ".join(warnings))   # two Pico 2
             b32 = by["bay:B3.2"]                                        # one entry per board
             self.assertEqual(b32["fixtures"][:2], ["bay:B3.2", "node:B3"])
             self.assertEqual(b32["serial"], "/dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D-if00")
@@ -203,6 +220,21 @@ class ConvertedConfig(unittest.TestCase):
         self.assertEqual(t["drivers"]["ExternalPowerDriver"]["cmd_cycle"], "python3 bayctl.py power B3.2 cycle")
         pdu = bayctl.export_pdudaemon(b, "python3", "bayctl.py")
         self.assertEqual(pdu["_ports"][8], "B3.2")                      # a port per board under test
+
+    def test_analyzer(self):
+        b = self.load({"B3.3": {"role": "analyzer", "ci": True, "serial": "/dev/ttyACM9"}})   # your own rack
+        self.assertEqual(b["B3.3"].role, "analyzer")
+        self.assertIsNone(b["B3.3"].platform)                           # no Zephyr target from boards.yaml
+        with tempfile.TemporaryDirectory() as tmp:
+            entries, _ = bayctl.hwmap(b, Path(tmp), "python3", "bayctl.py", None)
+            self.assertNotIn("bay:B3.3", [e["fixtures"][0] for e in entries])   # whatever its `ci`
+        self.assertIn("B3.3", bayctl.export_pdudaemon(b, "python3", "bayctl.py")["_ports"].values())   # its power
+        for bad, msg in [({"B3.3": {"role": "scope"}}, "role 'scope'"), ({"A1": {"role": "analyzer"}}, "sub-slot's")]:
+            with self.assertRaisesRegex(bayctl.BayError, msg):
+                self.load(bad)
+        only = {f"B3.{n}": {"role": "analyzer"} for n in (1, 2, 3, 4)}
+        with self.assertRaisesRegex(bayctl.BayError, "only its analyzer"):
+            bayctl.dut_targets(self.load(only), "B3")
 
 
 class AccessConfig(unittest.TestCase):
@@ -273,7 +305,9 @@ class Slots(unittest.TestCase):
         sl = rackcfg.dut_slots("C1", {"boards": [{"board": "xiao"},
                                                  {"board": "rpi-pico2", "slot": 4, "at": [1, 2], "orient": "side"}]})
         self.assertEqual([(s.id, s.slot, s.board) for s in sl], [("C1.1", 1, "xiao"), ("C1.4", 4, "rpi-pico2")])
-        self.assertEqual((sl[1].at, sl[1].orient), ([1.0, 2.0], "side"))
+        self.assertEqual((sl[1].at, sl[1].orient, sl[1].role), ([1.0, 2.0], "side", None))
+        self.assertEqual(rackcfg.dut_slots("C1", {"boards": [{"board": "rpi-pico2", "role": "analyzer"}]})[0].role,
+                         "analyzer")
         self.assertEqual(rackcfg.split_slot("b3.2"), ("B3", 2))
         self.assertEqual(rackcfg.split_slot("B3"), ("B3", None))
         with self.assertRaises(ValueError):
@@ -287,7 +321,9 @@ class Slots(unittest.TestCase):
                            ({"boards": [{"board": "xiao", "slot": 5}]}, "ports are 1 to 4"),
                            ({"boards": [{"cable": "c-to-c"}]}, "no `board`"),
                            ({"boards": [{"board": "xiao", "at": [1]}]}, "`at`"),
-                           ({"boards": [{"board": "xiao", "orient": "left"}]}, "rear or side")]:
+                           ({"boards": [{"board": "xiao", "orient": "left"}]}, "rear or side"),
+                           ({"boards": [{"board": "xiao", "role": "scope"}]}, "role 'scope'"),
+                           ({"board": "rpi-pico2", "role": "analyzer"}, "sub-slot's")]:
             with self.assertRaisesRegex(ValueError, msg, msg=entry):
                 rackcfg.dut_slots("C1", entry)
 
@@ -478,6 +514,17 @@ class MultiNodeApi(unittest.TestCase):
         self.assertIsNone(bayctl.control(b, "reset", {"ms": 20})["usb"])       # it re-enumerates...
         self.assertTrue(bayctl.wait_for(lambda: bayctl.port_doc(b)["usb"] is not None, 5))
         self.assertEqual(bayctl.port_busid(bayctl.port_doc(b)), "1-1.4")      # ...under the same busid
+
+    def test_boot_power_cycle(self):
+        b = self.bays["B3.3"]
+        self.assertIsNone(bayctl.control(b, "boot", {"power_cycle": True})["usb"])   # BOOT across a power cycle
+        self.assertTrue(bayctl.wait_for(lambda: bayctl.port_doc(b)["usb"] is not None, 5))
+        self.assertIn("B3.3", self.cli("boot", "B3.3", "--power-cycle"))
+        r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(self.lab),
+                            "--rack", str(self.rack), "boot", "A1", "--power-cycle"],
+                           capture_output=True, text=True, timeout=30)
+        self.assertNotEqual(r.returncode, 0)                            # a bay's one DUT: its AUX RESET
+        self.assertIn("sub-slot's", r.stderr)
 
     def test_lease(self):
         b1, b2 = self.bays["B3.1"], self.bays["B3.2"]

@@ -2625,6 +2625,26 @@
 "ext_eur": 6.0
 },
 {
+"category": "Analyzer",
+"item": "Raspberry Pi Pico 2 (RP2350), the logic analyzer in B3.3",
+"supplier": "Raspberry Pi approved reseller (Kubii, The Pi Hut, Pimoroni)",
+"qty": 1,
+"unit_eur": 5.5,
+"notes": "an RP2350 A4 (marked on the chip): A2 has erratum E9 (an input released from high can stay at ≈ 2.1 V).  gusmanb's LogicAnalyzer UF2, pinned in config/rack.yaml › analyzer",
+"unit": "pcs",
+"ext_eur": 5.5
+},
+{
+"category": "Analyzer",
+"item": "Dupont jumper wires, female–female, 10 cm, a 40-wire strip",
+"supplier": "AliExpress",
+"qty": 1,
+"unit_eur": 1.5,
+"notes": "its channels to the neighbours' pins, a GND beside each group; one wire, its far end cut, soldered to the Pico 2's BOOTSEL pad (TP6) for the port's BOOT pin",
+"unit": "pcs",
+"ext_eur": 1.5
+},
+{
 "category": "Power",
 "item": "USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port",
 "supplier": "Anker / UGREEN / Satechi (any PD 3.1 EPR)",
@@ -2689,10 +2709,11 @@
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
 "Cables": 49.32,
+"Analyzer": 7.0,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 958.84,
+"total_eur": 965.84,
 "prints": [
 {
 "part": "bay_label",

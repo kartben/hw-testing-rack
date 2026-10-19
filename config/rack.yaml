@@ -135,9 +135,22 @@ population:
     boards:                  # straight 15 cm cables, each at rest in a gentle arch (tools/webscene.py › rod_cable)
       - { board: xiao,      cable: c-to-c-straight,       at: [8.7, 30.0] }     # over 14.5-15.5 cm: the boards forward,
       - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [41.7, 16.0] }    # 33 mm apart for the pegs between
-      - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [74.7, 16.0] }    # them (tools/plate_layout.py moves
-      - { board: xiao,      cable: c-to-c-straight,       at: [107.7, 30.0] }   # each a few mm to its stops)
+      - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [74.7, 16.0],     # them (tools/plate_layout.py moves
+          role: analyzer }                                                      # each a few mm to its stops)
+      - { board: xiao,      cable: c-to-c-straight,       at: [107.7, 30.0] }   # B3.3: the bay's logic analyzer (below)
   B4: { board: arduino-uno-r4,   cable: c-to-c-straight, pc_cable: true }      # "classic" mode: laptop on the front port
+
+# A sub-slot's board with `role: analyzer` (one Pico 2, until the DATA ×4 v2's RP2354B; decided 2026-10-19): gusmanb's
+# LogicAnalyzer, stock, its channels on Dupont jumpers to the neighbours' pins (docs/multi-dut-node.md › "A logic
+# analyzer in a sub-slot").  bayctl keeps it out of the twister map; the BOM adds the Pico 2 and the jumpers.
+analyzer:
+  project: https://github.com/gusmanb/logicanalyzer        # GPL-3.0: point at the exact tag, the UF2 is not redistributed
+  app: "6.0.0.1"          # the desktop app, release v6.0.0.1 (logicanalyzer_6.0.0.1-<os>.zip): sigrok decoders included
+  firmware:               # by board: the release that carries it, its asset (a zip holding the UF2) and size in bytes
+    rpi-pico2: { release: v6.0.0.0, asset: logic-analyzer-firmware_v6.0.0_BOARD_PICO_2.zip, size: 32325 }
+                          # 6.0.0.1 changed only the apps.  Not the _Turbo build (a 400 MHz overclock, 200 MS/s).
+                          # Its sha256 goes here once downloaded (GitHub gives no digest for assets of that age)
+  usb: "1209:3020"        # what it enumerates as: one CDC ACM port, "Dr. Gusman" "LogicAnalyzer"; the app finds it by this
 
 cables:
   # DUT cables (DATA socket → board), `length` end to end.  A board whose USB faces the port wall: a

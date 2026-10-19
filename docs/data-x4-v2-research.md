@@ -312,7 +312,8 @@ The four recommendations, as asked:
 4. DUT side: Dupont jumpers pin by pin to start; adapter boards per DUT model later, for the models that
    keep coming back.
 
-Meanwhile, a Pico 2 with the gusmanb UF2 in one of B3's sub-slots ("The zero-change option" above).
+Meanwhile, a Pico 2 with the gusmanb UF2 in one of B3's sub-slots ("The zero-change option" above):
+B3.3, set up in [multi-dut-node.md](multi-dut-node.md#a-logic-analyzer-in-a-sub-slot).
 
 Still open: an analog output (DAC) path for driving a pin with a waveform. The digital path cannot carry
 one: the LSF0108s are level shifters with 10 k pull-ups, and the RP2354B has no DAC.

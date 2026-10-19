@@ -116,7 +116,7 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
 |---|---|
 | `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 3, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.3"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` |
 | `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}`; 409 when the bay's budget has no room for it ([Power budget](#power-budget)) |
-| `POST /api/ports/<n>/reset`, `/boot` | as today, for one port |
+| `POST /api/ports/<n>/reset`, `/boot` | as today, for one port; `/boot` with `{"power_cycle": true}`: BOOT held across a power cycle of the port instead of a RESET pulse (a board whose RESET is not wired: [the analyzer](#a-logic-analyzer-in-a-sub-slot)) |
 | `GET /api/status` | adds `ports` (the same objects, shorter) |
 | `/api/power`, `/api/reset`, `/api/boot` | unchanged on a one-port node; on a multi-port node they need `"port": n` (409 without) |
 | `/metrics` | the DUT metrics labelled `port="A1.2"` |
@@ -154,7 +154,8 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
   runs `usbip attach -r bay-a1.local -b 1-1.3`; a new `--follow` re-attaches
   after a reset.  `bayctl power A1.2 cycle`, `bayctl reset A1.2`; a bare
   `A1` still means the whole bay.
-- `bayctl hwmap` and the labgrid / twister exports: one target per sub-slot.
+- `bayctl hwmap` and the labgrid / twister exports: one target per sub-slot
+  (the twister map leaves [the analyzer](#a-logic-analyzer-in-a-sub-slot) out).
 
 Done on the tools side (2026-10-19), against the simulated node: a bay's
 `boards:` in `config/rack.yaml` (`tools/rackcfg.py` › `dut_slots`,
@@ -164,6 +165,106 @@ Done on the tools side (2026-10-19), against the simulated node: a bay's
 `plate_bay_<id>.stl`, checked clear of the RESET/BOOT pin holes), `bayctl ports`, per-port power, reset,
 leases and `attach --follow`, and `firmware/bay-node/web/dev_server.py
 --ports 4` serving this API.  The firmware itself: nothing yet.
+
+## A logic analyzer in a sub-slot
+
+> Decided 2026-10-19 ([data-x4-v2-research.md](data-x4-v2-research.md), "Decided"): until the
+> DATA ×4 v2's RP2354B, one of B3's Pico 2, **B3.3**, runs gusmanb's LogicAnalyzer, stock.  No
+> firmware of ours; ≈ €7 with its jumpers (BOM, "Analyzer").
+
+**Config.**
+
+- `config/rack.yaml`: `role: analyzer` on B3.3's entry, and `analyzer:` pins the release.  The firmware
+  is release v6.0.0.0's `logic-analyzer-firmware_v6.0.0_BOARD_PICO_2.zip`, a zip holding the UF2
+  (6.0.0.1 changed only the apps).  Not the `_Turbo` build: an overclock.  The desktop app is 6.0.0.1,
+  sigrok decoders included.
+- `config/lab.yaml`: its serial path, or `role: analyzer` for your own rack's sub-slot.
+- `bayctl list` shows it as `analyzer: gusmanb 6.0.0.1`.  With `--probe` it also says what the port
+  holds: LogicAnalyzer, BOOTSEL or another device.
+- `bayctl hwmap` leaves it out.  A whole bay's reset, boot, attach and detach pass it by; the whole
+  bay's power does not.
+- It enumerates as `1209:3020` "Dr. Gusman LogicAnalyzer": one CDC ACM port.
+
+**Wiring**, with Dupont jumpers:
+
+- The Pico 2 gets male headers, pins up, so it still lies on its pegs.
+- Channels: GP2–GP22 then GP26–GP28 are CH1–CH24.  In 8- and 16-channel mode the capture takes
+  the first ones (CH1–8, CH1–16), so the signals that matter go on GP2–GP9 first.
+- Put a GND jumper beside each group, to the board it watches.
+- Complex and fast triggers need **GP0 jumpered to GP1** (trigger out to trigger in; gusmanb's own
+  boards wire it).  GP0 is an output: keep it off the neighbours.
+- For BOOTSEL: a wire soldered to the Pico 2's **TP6** (BOOTSEL, on its underside) goes to the port's
+  BOOT pin, plus GND.  This is the port's 1 × 3 header, fitted for this port.  RESET is not needed.
+
+**Flash and reflash.**
+
+1. A blank Pico 2 comes up in BOOTSEL by itself: `2e8a:000f`, a drive plus PICOBOOT.  Otherwise
+   run `bayctl boot B3.3 --power-cycle`: the node holds BOOT, cycles the port's power, then
+   releases BOOT.  `bayctl list --probe` then says BOOTSEL.
+2. On a Linux host, run `bayctl attach B3.3 --show`.  Then `picotool load -x` the UF2 from the
+   pinned zip, or copy it onto the RP2350 drive.
+3. It reboots into the analyzer under the same busid: `bayctl attach B3.3` again.
+
+**Use it from a PC.**
+
+- Linux: `bayctl lease B3.3 --for 2h`, then `bayctl attach B3.3 --show` (vhci-hcd, root).  It
+  appears as `/dev/serial/by-id/usb-Dr._Gusman_LogicAnalyzer_<serial>-if00`.  gusmanb's app finds it
+  by its USB id.
+- Windows: usbip-win2, `usbip attach -r bay-b3.local -b <busid>` (`bayctl ports B3` gives the busid).
+  Untested.
+- One client at a time: the node refuses a second import.
+- Captures are buffered on the Pico 2, so nothing moves on USB while it samples.  Then the samples
+  cross the bay's 12 Mbit/s USB and the Wi-Fi: a full 393 KB capture takes seconds (to measure).
+
+**Limits.**
+
+- It takes a sub-slot: three boards under test in B3, not four.
+- Wiring is by hand: a jumper per signal.  It reaches only the pins a board breaks out, not the
+  buses on the DATA ×4.
+- 3.3 V logic, no level shifting: a 1.8 V board's highs sit below the Pico 2's input threshold
+  (≈ 2 V).  5 V signals go on GP2–GP22 only, and only while the Pico 2 is powered (the RP2350's
+  5 V-tolerant pads); GP26–GP28 are ADC pins and are not 5 V-tolerant.
+- No series resistor and no ESD protection between its pins and the board's.  A loose jumper on a
+  supply pin hurts both boards.
+- Buy an RP2350 **A4**: on A2, erratum E9 can hold an input that was driven high at ≈ 2.1 V once
+  released, so a floating line reads high.  Without gusmanb's front end, its Pico 2 notes on input
+  glitches apply.
+- Sampling: 100 MS/s at most; 393 k samples on 8 channels, 196 k on 16, 98 k on 24.  10 cm jumpers
+  are fine for UART, I²C and SPI up to a few MHz.
+
+**USB host channels**, the node side (checked in the code, not on hardware):
+
+- B3 holds the hub and four CDC ACM devices.  Opened over USB/IP, each device keeps two IN
+  endpoints pending (notification, bulk IN), and the hub's status IN is one more: 9 transfers for
+  the S3's 8 channels.
+- Upstream, one of them waits for good.  With `uhc-dwc2-channels.patch` (["What Zephyr
+  needs"](#what-zephyr-needs-upstream)):
+  - an interrupt IN holds a channel only for its poll;
+  - a bulk IN holds one while it waits, and gives it up on a NAK when another transfer waits.
+  So at most four bulk INs are held, and the polls, control and OUT transfers share the rest.
+- While the analyzer streams a capture, its bulk IN never NAKs: it keeps its channel and most of the
+  12 Mbit/s.  The consoles slow down but keep theirs.
+- Endpoint slots: the hub ≈ 2, plus ≤ 5 per device, ≈ 22 of 32.  A BOOTSEL trip takes the lowest
+  free address, usually its own, and SET_ADDRESS frees the old slots.
+- `CONFIG_USBH_USB_DEVICE_MAX=8` covers the hub plus four.
+- So the patch is enough on paper.  No bench now.
+
+**Bring-up**, also in [the spike's step 8](../firmware/spikes/usb-hub/README.md):
+
+1. Three consoles and the app attached: a full 8-channel capture downloads, timed.  A command to a
+   quiet board during the download answers.  The app does not time out over Wi-Fi.
+2. 20 BOOTSEL round trips of the analyzer (`boot --power-cycle`, `picotool load -x`), the consoles
+   open: no "No channel data slot", the other boards keep answering.
+3. BOOT on TP6 through the port's 1k enters BOOTSEL.  The pegs clear the header strips.
+4. The chip is an A4.  The zip's sha256 goes into `config/rack.yaml` › `analyzer`.
+
+**Next, not started** (v2's RP2354B reuses all of it):
+
+1. The simulated analyzer and `/api/la/…` in `dev_server.py`: the contract.
+2. `bayctl capture`, against it: `.sr` and sigrok-cli decoding, the decoders' CI oracle.
+3. The web UI's "Analyzer" card: a canvas viewer and JS decoders.
+4. The node's USB host class and gusmanb client, written from a protocol description (no GPL code
+   copied).  A mode switch between that client and the USB/IP export.
 
 ## Resources
 

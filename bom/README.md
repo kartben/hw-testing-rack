@@ -12,9 +12,10 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Cables | 49 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **959** |
+| Analyzer | 7 |
+| **Total** | **966** |
 
-≈ **€120 per bay** all-in.
+≈ **€121 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -308,6 +309,8 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK) | 3  | 1.00 | 3.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
 | Cables | USB-C ↔ micro-B, straight, 15 cm (DUT cable: PICO 2) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data) |
 | Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 6  | 1.00 | 6.00 | AliExpress (DIY-018, "UP" and "DOWN") |
+| Analyzer | Raspberry Pi Pico 2 (RP2350), the logic analyzer in B3.3 | 1  | 5.50 | 5.50 | Raspberry Pi approved reseller (Kubii, The Pi Hut, Pimoroni) |
+| Analyzer | Dupont jumper wires, female–female, 10 cm, a 40-wire strip | 1  | 1.50 | 1.50 | AliExpress |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |
 | Cameras | Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm | 2  | 28.25 | 56.50 | Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey |

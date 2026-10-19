@@ -46,8 +46,9 @@ bays:
     serial: /dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_34:85:18:9A:3C:10-if00
   B3.2:
     serial: /dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D3A71B0C4E8D5-if00   # Pico 2, cdc-acm-console snippet
-  B3.3:
-    serial: /dev/serial/by-id/usb-ZEPHYR_USB-DEV_4C81E2D07A93F615-if00
+  B3.3:                                      # the bay's logic analyzer: config/rack.yaml gives it `role: analyzer`
+    # role: analyzer                         # (your own rack says it here): not in CI, no Zephyr target
+    serial: /dev/serial/by-id/usb-Dr._Gusman_LogicAnalyzer_4C81E2D07A93F615-if00   # gusmanb's firmware, 1209:3020
   B3.4:
     platform: xiao_ble
     runner: uf2

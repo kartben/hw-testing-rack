@@ -114,7 +114,12 @@ prints `network up: usbip list -r <address>`.
      (back to its application), the other consoles open.  Each trip is two
      new devices with their own endpoints: without the patch each trip leaks
      4–6 slots, until "No channel data slot" a few trips later.  The
-     Pico comes back every time, the other boards keep answering.
+     Pico comes back every time, the other boards keep answering;
+   - with the B3 analyzer as one of the four (a Pico 2 on gusmanb's UF2,
+     [docs/multi-dut-node.md](../../../docs/multi-dut-node.md#a-logic-analyzer-in-a-sub-slot)):
+     gusmanb's app attached and three consoles open, a full 8-channel
+     capture (393 KB) downloads; time it, and type in a quiet console
+     meanwhile: it answers.
    With `CONFIG_UHC_DRIVER_LOG_LEVEL_DBG=y` the log shows the channels given
    back ("Park ep …").
 

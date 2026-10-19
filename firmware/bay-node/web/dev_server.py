@@ -163,6 +163,10 @@ def port_act(pt: dict, what: str, body: dict) -> str | None:
         if not pt["on"] or action == "cycle" or not was_on:
             pt["client"] = None           # the board left the bus: its USB/IP session ends
             pt["up_at"] = time.monotonic() + UP_S
+    elif what == "boot" and body.get("power_cycle"):
+        time.sleep(1.0)                   # BOOT held across a power cycle of the port: the board comes up in its ROM
+        pt["on"], pt["latched"], pt["client"] = True, False, None
+        pt["up_at"] = time.monotonic() + UP_S
     else:
         time.sleep(0.3 if what == "boot" else min(int(body.get("ms", 100)), 500) / 1000)
         if pt["on"]:

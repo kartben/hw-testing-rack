@@ -774,6 +774,22 @@ def hardware(rack) -> list[dict]:
                      "qty": 2 * n, "unit_eur": 1.0,
                      "notes": "keep the one whose female faces up once plugged into the board (the cable's straight "
                               "plug stands on it, its cable leaves upwards); the other is a spare"})
+    # a sub-slot's logic analyzer (population › boards › role: analyzer): rack equipment, unlike the boards
+    # under test; gusmanb's firmware on it, its channels on Dupont jumpers (docs/multi-dut-node.md)
+    analyzers = [d for b in rack.bays() for d in rack.duts(b.id) if d.role == "analyzer"]
+    if analyzers:
+        where = ", ".join(d.id for d in analyzers)
+        rows += [
+            {"category": "Analyzer", "item": f"Raspberry Pi Pico 2 (RP2350), the logic analyzer in {where}",
+             "supplier": "Raspberry Pi approved reseller (Kubii, The Pi Hut, Pimoroni)", "qty": len(analyzers),
+             "unit_eur": 5.5,
+             "notes": "an RP2350 A4 (marked on the chip): A2 has erratum E9 (an input released from high can stay "
+                      "at ≈ 2.1 V).  gusmanb's LogicAnalyzer UF2, pinned in config/rack.yaml › analyzer"},
+            {"category": "Analyzer", "item": "Dupont jumper wires, female–female, 10 cm, a 40-wire strip",
+             "supplier": "AliExpress", "qty": len(analyzers), "unit_eur": 1.5,
+             "notes": "its channels to the neighbours' pins, a GND beside each group; one wire, its far end cut, "
+                      "soldered to the Pico 2's BOOTSEL pad (TP6) for the port's BOOT pin"},
+        ]
     rows += [
         # the rack's supply: a USB PD charger outside it, into the power box's rear wall (the hub's
         # AP33772S sink asks for 28 V EPR, or 20 V), so no mains wiring anywhere in the rack
