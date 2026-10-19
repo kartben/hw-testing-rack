@@ -62,16 +62,26 @@ module snap_standoff(hole_d, h) {
     }
 }
 
+USB_KEEP = 7;                         // half the width a fence leaves free on the USB edge: a right-angle plug
+                                      // (12.4) or a 90° adapter (11.5) and its receptacle, and a margin
+
 module fences(rec, o) {
     size = rec[2]; h = rec[7]; c = 0.3;
-    for (sx = [0, 1], sy = [0, 1]) {
-        px = o[0] + sx * size[0] + (sx ? c : -c);
-        py = o[1] + sy * size[1] + (sy ? c : -c);
-        translate([px, py, PLATE_T]) mirror([sx, 0, 0]) mirror([0, sy, 0]) translate([-2, -2, 0])
-            difference() {
-                cube([9, 9, h + 2.4]);
-                translate([2, 2, h]) cube([9, 9, 10]);
-            }
+    difference() {
+        for (sx = [0, 1], sy = [0, 1]) {
+            px = o[0] + sx * size[0] + (sx ? c : -c);
+            py = o[1] + sy * size[1] + (sy ? c : -c);
+            translate([px, py, PLATE_T]) mirror([sx, 0, 0]) mirror([0, sy, 0]) translate([-2, -2, 0])
+                difference() {
+                    cube([9, 9, h + 2.4]);
+                    translate([2, 2, h]) cube([9, 9, 10]);
+                }
+        }
+        // the USB plug's way in: no fence wall beyond the USB edge across the plug's width (on a small
+        // board such as the XIAO the corner fences reached the receptacle and the plug's body; SolidCraft
+        // interference check, 2026-10-19).  The ledges under the board stay.
+        if (usb_side(rec)) translate([o[0] + size[0], o[1] + rec[5] - USB_KEEP, 0]) cube([10, 2 * USB_KEEP, 50]);
+        else translate([o[0] + rec[5] - USB_KEEP, o[1] + size[1], 0]) cube([2 * USB_KEEP, 10, 50]);
     }
     // support pads
     for (fx = [0.2, 0.8], fy = [0.2, 0.8])
