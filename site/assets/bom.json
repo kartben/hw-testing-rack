@@ -3280,8 +3280,14 @@
 "per_board": 34.45,
 "total": 100.62,
 "after_obvious": 100.62,
-"after_decisions": 100.62,
-"levers": []
+"after_decisions": 81.92,
+"levers": [
+{
+"lever": "board at most 100 mm long: no engineering fee, the 4-layer offer ($13.20 for 5 instead of $31.90); the 4 USB-C at the drawer's 18 mm pitch and the side-entry PH 8 need 108 mm, so a vertical PH 8 or a moved J1, a new route and the tray's bosses moved: better in the DATA ×4 v2",
+"usd": 18.7,
+"kind": "decision"
+}
+]
 }
 ],
 "fees": {

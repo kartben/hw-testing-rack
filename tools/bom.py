@@ -161,6 +161,11 @@ JLC_LEVERS = {
     "bay-node": [
         ("9 assembled instead of 10 (8 bays and 1 spare)", 21.08, "decision"),
     ],
+    "data-port-x4": [
+        ("board at most 100 mm long: no engineering fee, the 4-layer offer ($13.20 for 5 instead of $31.90); "
+         "the 4 USB-C at the drawer's 18 mm pitch and the side-entry PH 8 need 108 mm, so a vertical PH 8 or a "
+         "moved J1, a new route and the tray's bosses moved: better in the DATA ×4 v2", 18.70, "decision"),
+    ],
 }
 
 # Bare PCB price by quantity (USD, lead-free HASL, JLC's default build), from the jlcpcb.com calculator on

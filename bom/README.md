@@ -55,9 +55,9 @@ What each order pays once, whatever the number of boards, against what grows wit
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 37 (19) | 56.61 | 128.24 | 84.53 | **212.77** | 205.77 | 171.49 |
 | data-port | Economic | 7 / 8 | 5 (3) | 9.21 | 25.22 | 13.30 | **38.52** | 38.52 | 38.52 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.25 | **26.37** | 26.37 | 26.37 |
-| data-port-x4 | Economic | 1 / 2 | 22 (8) | 24.56 | 66.17 | 34.45 | **100.62** | 100.62 | 100.62 |
+| data-port-x4 | Economic | 1 / 2 | 22 (8) | 24.56 | 66.17 | 34.45 | **100.62** | 100.62 | 81.92 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **735.05** | **728.05** | **672.69** |
+| **All** | | | | | | | **735.05** | **728.05** | **653.99** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -67,6 +67,7 @@ Levers (*obvious*: an engineering choice the board's owner applies; *decision*: 
 | power-hub | 3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare | 7.00 | obvious |
 | power-hub | rows C and D not fitted (DNP, footprints kept): the rack has 2 rows | 9.68 | decision |
 | power-hub | board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new power box, room for 2 rows only | 24.60 | decision |
+| data-port-x4 | board at most 100 mm long: no engineering fee, the 4-layer offer ($13.20 for 5 instead of $31.90); the 4 USB-C at the drawer's 18 mm pitch and the side-entry PH 8 need 108 mm, so a vertical PH 8 or a moved J1, a new route and the tray's bosses moved: better in the DATA ×4 v2 | 18.70 | decision |
 
 ### At volume
 
