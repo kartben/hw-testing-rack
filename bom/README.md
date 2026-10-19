@@ -5,16 +5,16 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 566 |
+| Electronics | 578 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 58 |
 | Cables | 52 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **856** |
+| **Total** | **868** |
 
-≈ **€107 per bay** all-in.
+≈ **€109 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -29,9 +29,9 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | | | **Estimated total** | **343.85** |
 | | | Order (indicative): as quoted | 343.85 |
 | power-hub | 5 PCBs (4-layer 76×140 mm, ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $17.60, board $12.00 | 54.60 |
-| | | PCBA: setup $25.75, stencil $8.27, components $52.32, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52 | 159.14 |
-| | | **Estimated total** | **213.74** |
-| | | Order (indicative): as quoted | 213.74 |
+| | | PCBA: setup $25.75, stencil $8.27, components $52.32, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52, global sourcing $13.30 | 172.44 |
+| | | **Estimated total** | **227.04** |
+| | | Order (indicative): as quoted | 227.04 |
 | data-port | 10 PCBs (2-layer 40×17 mm, lead-free HASL), 8 assembled, Economic PCBA | PCB: board $3.00 | 3.00 |
 | | | PCBA: setup $8.00, stencil $1.50, components $12.90, extended parts $9.00, SMT $0.40 | 31.80 |
 | | | **Estimated total** | **34.80** |
@@ -54,9 +54,10 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 7 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 7 | 44.0 | `mechanical/stl/drawer.stl` |
+| drawer | 6 | 44.0 | `mechanical/stl/drawer.stl` |
 | drawer_block | 1 | 14.5 | `mechanical/stl/drawer_block.stl` |
-| drawer_sled | 1 | 30.6 | `mechanical/stl/drawer_sled.stl` |
+| drawer_sled | 1 | 29.9 | `mechanical/stl/drawer_sled.stl` |
+| drawer_x4 | 1 | 43.0 | `mechanical/stl/drawer_x4.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 49.6 | `mechanical/stl/ladder_a.stl` |
 | ladder_b | 5 | 49.6 | `mechanical/stl/ladder_b.stl` |
@@ -180,7 +181,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Electronics | RESET — tactile switch 5.1 × 5.1 mm | 2  | 0.02 | 0.04 | LCSC/JLCPCB C318884 |
 | Electronics | BOOT — tactile switch 5.1 × 5.1 mm | 2  | 0.02 | 0.04 | LCSC/JLCPCB C318884 |
 | Electronics | 10k NTC — NTC 10 kΩ B3380, 0603 (the AP33772S's default curve) | 2  | 0.05 | 0.09 | LCSC/JLCPCB C13564 |
-| Electronics | AP33772SDKZ-13-FA02 — USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive, V/I/T telemetry | 2  | 1.69 | 3.39 | LCSC/JLCPCB C50341643 |
+| Electronics | AP33772SDKZ-13-FA01 — USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive, V/I/T telemetry | 2  | 2.09 | 4.18 | LCSC/JLCPCB C24374260 |
 | Electronics | LMR51635YDDCR — 4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum | 2  | 1.73 | 3.46 | LCSC/JLCPCB C45262770 |
 | Electronics | AP2112K-3.3TRG1 — 3.3 V 600 mA LDO, 250 mV dropout | 2  | 0.16 | 0.31 | LCSC/JLCPCB C51118 |
 | Electronics | ESP32-S3-MINI-1-N8 — ESP32-S3 module, 8 MB flash, PCB antenna, USB OTG (full speed) | 2  | 4.34 | 8.68 | LCSC/JLCPCB C2913206 |
@@ -188,8 +189,8 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Electronics | TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout) | 2  | 0.89 | 1.78 | LCSC/JLCPCB C7399456 |
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 8  | 1.42 | 11.33 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×140 mm, ENIG) | 5  | 10.05 | 50.23 | estimate, not quoted |
-| Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 98.27 | 98.27 | estimate, not quoted |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 0.00 | 0.00 | estimate, not quoted |
+| Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, global sourcing | 1  | 110.51 | 110.51 | estimate, not quoted |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | -0.79 | -0.79 | estimate, not quoted |
 | Electronics | 100n — Capacitor 100n 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C14663 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 8  | 0.84 | 6.70 | LCSC/JLCPCB C5184243 |
 | Electronics | LEAD — JST PH 8-pin, side entry, SMD | 8  | 0.41 | 3.31 | LCSC/JLCPCB C265121 |

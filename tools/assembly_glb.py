@@ -97,7 +97,7 @@ def hex_rgba(h):
 
 
 def part_category(name):
-    if name.endswith("_labels") or name == "dataport_ph":
+    if name.endswith("_labels") or name.startswith("dataport_ph"):
         return "powerlabels"
     if name == "mega_camera":
         return "black"
@@ -105,8 +105,8 @@ def part_category(name):
         return "powerlabels"
     if name == "podpcb":
         return "pcbgreen"
-    if name in ("dataport_pcb", "dataport_usb"):
-        return {"dataport_pcb": "pcbgreen", "dataport_usb": "silver"}[name]
+    if name.startswith(("dataport_pcb", "dataport_usb")):       # the DATA board, and the DATA ×4 one (…_x4)
+        return "pcbgreen" if name.startswith("dataport_pcb") else "silver"
     for prefix, cat in (("ladder_", "ladders"), ("brace_", "braces"), ("tray", "trays"), ("floor_plate", "frameplates"),
                         ("cap_plate", "frameplates"), ("drawer", "drawers"), ("chain_", "chainparts"),
                         ("plate_", "plates"), ("camera_", "cameras"), ("power_box_", "powerbox")):
@@ -199,7 +199,8 @@ def real_board(b):
         M = translate([0, w, 0]) @ rot_xyz([0, 0, -90])
     elif edge == "right":
         M = translate([l, 0, 0]) @ rot_xyz([0, 0, 90])
-    if spec.get("orient") == "side":                  # rear edge → right edge (rackcfg.orient_board)
+    if b.get("usb_side", spec.get("orient") == "side"):   # rear edge → right edge (rackcfg.orient_board); a
+        # converted bay's board faces the port wall whatever its library orient (the scene's usb_side says)
         top_w = w if edge in ("top", "bottom") else l
         M = translate([0, top_w, 0]) @ rot_xyz([0, 0, -90]) @ M
     s = trimesh.load(f, force="scene")

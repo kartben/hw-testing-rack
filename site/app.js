@@ -124,9 +124,9 @@ if (dot(vUpView, vUpView) > 0.01) {
 for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras', 'powerBox', 'powerLabels']) printLook(MAT[k]);
 
 function partMaterial(name) {
-  if (name === 'dataport_pcb') return MAT.pcbGreen;
-  if (name === 'dataport_usb') return MAT.psu;
-  if (name === 'dataport_ph') return MAT.powerLabels;
+  if (name.startsWith('dataport_pcb')) return MAT.pcbGreen;    // the DATA board, and the DATA ×4 one (…_x4)
+  if (name.startsWith('dataport_usb')) return MAT.psu;
+  if (name.startsWith('dataport_ph')) return MAT.powerLabels;
   if (name.startsWith('ladder_')) return MAT.ladders;
   if (name.startsWith('brace_')) return MAT.braces;
   if (name === 'tray') return MAT.trays;
@@ -858,12 +858,14 @@ function select(id, showPanel = true) {
     <p class="sub">Row ${b.row} · column ${b.col}</p>
     <div class="tags">${tags.join('')}</div>
     <dl>
-      <dt>Board</dt><dd>${b.board ?? '<em>empty — universal plate</em>'}</dd>
+      <dt>Board</dt><dd>${b.slots
+        ? b.slots.map((s) => `${s.id} · ${s.board} <span class="sub">(port ${s.port}, ${s.usb})</span>`).join('<br>')
+        : (b.board ?? '<em>empty — universal plate</em>')}</dd>
       ${credit ? `<dt>3D model</dt><dd>${credit}</dd>` : ''}
       <dt>Debug USB</dt><dd>${b.usb ?? '—'}</dd>
-      <dt>Cable</dt><dd>${b.cable ?? '—'}</dd>
+      <dt>Cable</dt><dd>${b.slots ? [...new Set(b.slots.map((s) => s.cable))].join('<br>') : (b.cable ?? '—')}</dd>
       <dt>DATA socket</dt><dd>${b.data_port ? b.data_port.join(' + ') + ' position' : '—'}</dd>
-      <dt>USB/IP</dt><dd>ESP32-S3 node · <code>usbip attach -r bay-${b.id.toLowerCase()}.local -b 1-1</code></dd>
+      <dt>USB/IP</dt><dd>ESP32-S3 node · <code>usbip attach -r bay-${b.id.toLowerCase()}.local -b ${b.slots ? '1-1.n' : '1-1'}</code>${b.slots ? ' <span class="sub">(n = the port)</span>' : ''}</dd>
     </dl>
     <div class="actions">
       <button id="actDrawer">${drawerTarget[id] > 0.5 ? 'Close' : 'Open'} drawer</button>

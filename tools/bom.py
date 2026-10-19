@@ -289,8 +289,11 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         counts[f"brace_{row['id'].lower()}"] += cols
     for bay in rack.bays():
         duts = rack.duts(bay.id)
-        if rack.is_multi(bay.id):           # a converted bay: one plate for its boards
+        if rack.is_multi(bay.id):           # a converted bay: one plate for its boards, a DATA ×4 drawer / block
             counts[f"plate_bay_{bay.id.lower()}"] += 1
+            part = "drawer" if rack.mount(bay.id) == "drawer" else "drawer_block"
+            counts[part] -= 1
+            counts[f"{part}_x4"] += 1
         else:
             counts[f"plate_{duts[0].board}" if duts else "plate_universal"] += 1
     stl_dir = REPO / "mechanical" / "stl"

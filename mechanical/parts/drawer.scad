@@ -1,7 +1,8 @@
 // Bay drawer (one per bay) — drawer coordinates: origin at the front-left
 // corner of the drawer body, z = 0 on the tray's ledges.
 //
-//   -D 'PART="drawer"'  the drawer (default)
+//   -D 'PART="drawer"'  the drawer (default); -D PORTS=4: a converted bay's (`boards:`), four USB-C for a
+//                       DATA ×4 board (placeholder geometry until pcb.data_port_x4), no AUX slot
 //   -D 'PART="sled"'    a sled bay's plate: the drawer cut 1 mm in front of its port wall, no chain foot,
 //                       no magnet; two flange segments at its rear (lock screws in a fixed bay)
 //   -D 'PART="block"'   a sled bay's port block: the drawer's rear bay on its own, locked into the tray by
@@ -23,7 +24,7 @@
 include <../lib/carrier.scad>
 
 PART = "drawer";
-PORTS = 1;                                     // the port block's DATA ports: 1, or 4 for a DATA ×4 board
+PORTS = 1;                                     // the drawer's or the port block's DATA ports: 1, or 4 (DATA ×4)
 
 // the magnet sits right inside the left wall, its boss within the drawer's footprint (a boss
 // sticking out of the wall would hit the tray's guide lip on the last 10 mm before closing)
@@ -64,7 +65,9 @@ module port_wall(ports = 1) {
             for (s = [-1, 1]) translate([s * (w / 2 - r), 0, r]) rotate([-90, 0, 0]) cylinder(r = r, h = t + 2 * EPS);
             translate([-w / 2, 0, r]) cube([w, t + 2 * EPS, DRAWER_WALL_H]);
         }
-        translate([AUX_PORT_X, y - t - EPS, PORT_Z]) rotate([-90, 0, 0])
+        // the AUX pigtail's slot: a DATA ×4 wall has none (it would cut into the middle U's; each board's
+        // RESET/BOOT pigtail goes up through its own port's U)
+        if (ports == 1) translate([AUX_PORT_X, y - t - EPS, PORT_Z]) rotate([-90, 0, 0])
             hull() for (dx = [-3.0, 3.0]) translate([dx, 0, 0]) cylinder(d = 3.6, h = t + 2 * EPS);
     }
 }
@@ -95,8 +98,8 @@ module drawer(rear = true, foot = true, ports = 1) {
                     for (h = DATA_PCB_HOLES) translate([each data_hole(h), 0]) cylinder(d = 6, h = DATA_PCB_Z);
                     for (s = [[1, 23], [37, 39]]) translate([DATA_PCB_X0 + s[0], DATA_PCB_Y0 - EPS, 0]) cube([s[1] - s[0], 2, DATA_PCB_Z]);
                 } else for (h = X4_HOLES) translate([h[0], h[1], 0]) cylinder(d = 6, h = DATA_PCB_Z);
-                // zip-tie anchor for the AUX pigtail in the rear bay
-                for (x = [AUX_PORT_X]) translate([x - 5, DRAWER_D - 12, DRAWER_BOTTOM]) difference() {
+                // zip-tie anchor for the AUX pigtail in the rear bay (not with a DATA ×4 board: it sits there)
+                if (ports == 1) for (x = [AUX_PORT_X]) translate([x - 5, DRAWER_D - 12, DRAWER_BOTTOM]) difference() {
                     cube([10, 4, 6]);
                     translate([-EPS, 1, 2]) cube([10 + 2 * EPS, 2, 2.4]);
                 }
@@ -117,9 +120,10 @@ module drawer(rear = true, foot = true, ports = 1) {
             for (h = ports == 1 ? [for (h = DATA_PCB_HOLES) data_hole(h)] : X4_HOLES)
                 translate([h[0], h[1], DATA_PCB_Z - 7]) cylinder(d = 2.1, h = 7 + EPS);
             // cable window in the rear-bay floor behind the DATA board, up to 1 mm off the rear wall: the
-            // lead comes up through it into the board's PH from the rear; 1 mm short of the foot's boss
+            // lead comes up through it into the board's PH from the rear; 1 mm short of the foot's boss.
+            // DATA ×4: from its PH (centre) to past drawer x 103, where the lead drops inside the chain's U
             wy = DATA_PCB_Y0 + DATA_PCB_SIZE[1] + 1;
-            wx = ports == 1 ? FOOT_HOLE[0] - 48 : DRAWER_W / 2 - 30;
+            wx = ports == 1 ? FOOT_HOLE[0] - 48 : DRAWER_W / 2 - 24;
             translate([wx, wy, -EPS]) rbox([ports == 1 ? 42.5 : 60, DRAWER_D - DRAWER_WALL - 1 - wy, DRAWER_BOTTOM + 2 * EPS], r = 3);
         }
         // pin holes over the node's RESET and BOOT
@@ -165,4 +169,4 @@ module lock_holes(y) for (x = [-DRAWER_FLANGE[0] / 2, DRAWER_W + DRAWER_FLANGE[0
 
 if (PART == "sled") sled();
 else if (PART == "block") block(PORTS);
-else drawer();
+else drawer(ports = PORTS);

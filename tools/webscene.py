@@ -25,6 +25,8 @@ WEB_PARTS = {
     "drawer": ("parts/drawer.scad", {}),
     "drawer_sled": ("parts/drawer.scad", {"PART": "sled"}),
     "drawer_block": ("parts/drawer.scad", {"PART": "block"}),
+    "drawer_x4": ("parts/drawer.scad", {"PORTS": 4}),                         # a converted bay's (`boards:`)
+    "drawer_block_x4": ("parts/drawer.scad", {"PART": "block", "PORTS": 4}),
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "chain_foot": ("parts/chain_parts.scad", {"PART": "foot"}),
@@ -68,12 +70,27 @@ NODE_J7 = (58.4, 50.65, 8.0)
 NODE_J6_H = 8.0     # J6 (camera, JST PH 8 vertical, at config/rack.yaml › pcb.bay_node.cam): mated height
 
 
+# A converted bay's DATA ×4 board, placeholder until config/rack.yaml › pcb.data_port_x4 (the data-x4-board
+# session): 72 × 17, centred on the drawer, its four USB-C on the port wall at drawer.scad › port_xs(4) (16 mm
+# pitch), the PH 8 of its lead at the rear centre, two holes over X4_HOLES' bosses
+X4 = {"w": 72.0, "d": 17.0, "pitch": 16.0, "holes": [[3.0, 8.5], [69.0, 8.5]], "ph": 36.0}
+
+
+def x4_port_x(rack, n: int) -> float:
+    """Drawer x of the DATA ×4 port n (1-4): drawer.scad › port_xs(4)."""
+    return rack.drawer_w / 2 + (n - 2.5) * X4["pitch"]
+
+
 def dataport_parts(rack) -> dict:
-    """The DATA port board's stand-in (parts/usb_plugs.scad), sized from config/rack.yaml › pcb.data_port."""
+    """The DATA port board's stand-in (parts/usb_plugs.scad), sized from config/rack.yaml › pcb.data_port, and
+    the DATA ×4 one (X4; its USB-C at x 0, placed once per port)."""
     dp = rack.raw["pcb"]["data_port"]
     defs = {"STYLE": "dataport", "BW": dp["size"][0], "BD": dp["size"][1], "BT": dp["thickness"],
             "HOLES": dp["holes"], "USBX": dp["usb"], "PHX": dp["ph"]}
-    return {f"dataport_{k}": ("parts/usb_plugs.scad", {**defs, "PIECE": k}, None) for k in ("pcb", "usb", "ph")}
+    out = {f"dataport_{k}": ("parts/usb_plugs.scad", {**defs, "PIECE": k}, None) for k in ("pcb", "usb", "ph")}
+    x4 = {**defs, "BW": X4["w"], "BD": X4["d"], "HOLES": X4["holes"], "USBX": 0, "PHX": X4["ph"]}
+    out.update({f"dataport_{k}_x4": ("parts/usb_plugs.scad", {**x4, "PIECE": k}, None) for k in ("pcb", "usb", "ph")})
+    return out
 
 # Parts whose print orientation differs from their assembly orientation get an
 # "assembly" variant rendered with the print rotation undone.
@@ -158,9 +175,11 @@ def build_parts_glb(rack, boards: dict, hq: bool = False) -> dict:
     parts = {n: (s, d, None) for n, (s, d) in WEB_PARTS.items()}
     parts.update(panel_parts(rack))
     parts.update(dataport_parts(rack))
-    used = sorted({p["board"] for p in rack.raw.get("population", {}).values()})
+    used = sorted({sl.board for b in rack.bays() if not rack.is_multi(b.id) for sl in rack.duts(b.id)})
     for bid in used:
         parts[f"plate_{bid}"] = ("parts/board_plate.scad", {"BOARD": bid}, None)
+    for bay_id in rack.multi_bays():           # a converted bay: one plate for its boards
+        parts[f"plate_bay_{bay_id.lower()}"] = ("parts/board_plate.scad", {"BAY": bay_id}, None)
     fn, sub = (64, "hq") if hq else (28, "web")
     with cf.ThreadPoolExecutor(max_workers=8) as ex:
         futs = {ex.submit(render_web_stl, n, s, d, fn, sub, w): n for n, (s, d, w) in parts.items()}
@@ -575,13 +594,15 @@ def build(rack) -> Path:
     fixed = raw["chain"]["fixed"]
     chain_z = c["bottom"] + raw["chain"]["outer"][0] / 2 + 0.6     # the chain's mid-height
 
-    def unit_hardware(i, u, bid, dy, open_frac, drawer=True):
+    def unit_hardware(i, u, bid, dy, open_frac, drawer=True, x4=False):
         """Tray, node and either the drawer and its chain, or a sled bay's sled and port block (no chain; the
-        viewer doesn't slide them: the DUT cable is unplugged first)."""
+        viewer doesn't slide them: the DUT cable is unplugged first).  x4: a converted bay's (`boards:`) drawer
+        or port block, with a DATA ×4 board."""
         x0 = rack.unit_x(u)
         add("tray", (x0, 0, 0), row=i, layer="trays", bay=bid)
         if drawer:
-            add("drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid, movable=True)
+            add("drawer_x4" if x4 else "drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid,
+                movable=True)
             add("chain_anchor", (x0 + fixed[0], fixed[1], c["bottom"] + 3), row=i, layer="chain", bay=bid)
             add("chain_foot", (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, plenum), row=i,
                 layer="chain", bay=bid, movable=True)
@@ -592,7 +613,7 @@ def build(rack) -> Path:
                                     "width": raw["chain"]["outer"][0], "height": raw["chain"]["outer"][1],
                                     "pitch": raw["chain"]["pitch"]})
         else:
-            for part in ("drawer_sled", "drawer_block"):
+            for part in ("drawer_sled", "drawer_block_x4" if x4 else "drawer_block"):
                 add(part, (x0 + rack.drawer_x0, 0, plenum), row=i, layer="drawers", bay=bid)
         info_ = pop.get(bid, {})
         led = "#2f7bff" if info_.get("pc_cable") else ("#ffb300" if info_.get("open") else "#19e07a")
@@ -605,12 +626,23 @@ def build(rack) -> Path:
         # out of the node's J7, across the node under the drawer into the drag chain's fixed end; out of
         # its moving end, a U-turn, up through the drawer's cable window into the board's PH from the rear
         dxw_ = x0 + rack.drawer_x0
-        for k in ("pcb", "usb", "ph"):
-            add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
-                movable=drawer)
+        if x4:                       # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
+            bx4 = dxw_ + rack.drawer_w / 2 - X4["w"] / 2
+            for k in ("pcb", "ph"):
+                add(f"dataport_{k}_x4", (bx4, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
+                    movable=drawer)
+            for n in range(1, 5):
+                add("dataport_usb_x4", (dxw_ + x4_port_x(rack, n), dy + dp_y0, plenum + dp_z), row=i,
+                    layer="drawers", bay=bid, movable=drawer)
+            ph_xy = (bx4 + X4["ph"], dy + dp_y0 + X4["d"])
+        else:
+            for k in ("pcb", "usb", "ph"):
+                add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
+                    movable=drawer)
+            ph_xy = (dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1])
         j7 = {"at": [x0 + node["x0"] + NODE_J7[0], rack.node_front_y + node["size"][1] - NODE_J7[1],
                      pcb_top + NODE_J7[2] - 6.0], "dir": [0, 0, -1], "up": [0, 1, 0], "type": "ph8"}
-        ph = {"at": [dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1], plenum + dp_z + dp["thickness"] + 2.8],
+        ph = {"at": [ph_xy[0], ph_xy[1], plenum + dp_z + dp["thickness"] + 2.8],
               "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph8"}
         if not drawer:
             cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 4.0, plenum - 3.0), row=i, kind="ext",
@@ -627,18 +659,82 @@ def build(rack) -> Path:
               label="DATA lead (JST PH 8, through the drag chain)", movable=True)
         return x0, plenum
 
+    def dut_board(i, bay, slot, board_id, bd, o, bx, by, dz, dy, drawer, ctype, sx):
+        """A board on its plate (front-left corner bx, by; o: rackcfg.orient_board) and its short DUT cable from
+        the DATA socket at drawer x sx: USB-C into the panel-mount socket on the drawer's port wall, the board's
+        own connector (micro-B, USB-C…) at the other end.  A board's USB facing the port wall: right-angle plugs
+        (`right`), or for a micro-B / mini-B board a 90° adapter with a straight plug standing on it (`adapter`),
+        and an arch in between; a small board turned to the side wall (orient: side): straight plugs
+        (`straight`) and one flat bend."""
+        bz = dz + d["bottom"] + d["plate"] + bd.get("standoff", 6)
+        items["boards"].append({"bay": bay, **({"slot": slot} if slot else {}), "row": i, "id": board_id,
+                                "name": bd["name"], "label": bd.get("short", ""),
+                                "pos": [round(bx, 2), round(by, 2), round(bz, 2)],
+                                "size": [o["w"], o["l"], 1.6], "height": bd.get("height", 10),
+                                "color": bd.get("color", "#1b5e20"), "usb_x": o["usb_x"],
+                                "usb_type": bd["usb"]["type"], "usb2_x": o.get("usb2_x"),
+                                "usb_side": o["usb_side"],
+                                "verified": bd.get("verified", False), "movable": drawer,
+                                **({"model": mdl} if (mdl := board_model(board_id, bd)) else {}),
+                                **({"screen": scr} if (scr := board_screen(bd)) else {})})
+        btype = cables_cfg[ctype].get("b", "usb-c")
+        style = cables_cfg[ctype].get("style", "right")
+        end_a = {"at": [sx, dy + dp_y0 - 0.28, dz + port_z], "dir": [0, 1, 0],   # the DATA board's USB-C, 0.28 proud of its edge
+                 "type": "usb-c", "style": "straight" if style == "straight" else "right"}
+        b_style = "straight" if style == "side" else style
+        zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
+        ux = o["usb_x"]
+        if o["usb_side"]:
+            end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": b_style}
+        else:
+            end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": b_style}
+        ends = [end_a, end_b]
+        if style == "adapter":       # the cable's own plug: straight, down into the adapter's female
+            p = USB_PLUGS[btype]
+            bd_ = np.array(end_b["dir"], float)
+            mouth = np.array(end_b["at"]) - bd_ * p["AD"] / 2 + np.array([0, 0, p["ATOP"]])
+            end_b = {"at": [round(float(c), 2) for c in mouth], "dir": [0, 0, -1], "up": end_b["dir"],
+                     "type": btype, "style": "straight"}
+            ends.append(end_b)
+        free = cable_free_length(cables_cfg[ctype], end_a, end_b)
+        route = {"straight": flat_cable, "side": side_arch_cable}.get(style, arch_cable)
+        pts, short = route(end_a, end_b, free)
+        if short:
+            print(f"warning: {slot or bay}: the {ctype} cable is {short:.0f} mm too short "
+                  f"from the DATA socket to the board")
+        cable(pts, row=i, kind="dut", bay=bay, type=ctype, label=cables_cfg[ctype]["label"], a="usb-c", b=btype,
+              ends=ends, radius=1.9, movable=drawer)
+
     for b in rack.bays():
         i = b.row
         info = pop.get(b.id, {})
         drawer = rack.mount(b.id) == "drawer"
         open_frac = 1.0 if info.get("open") and drawer else 0.0
         dy = -d["travel"] * open_frac
-        x0, dz = unit_hardware(i, b.unit, b.id, dy, open_frac, drawer)
+        x0, dz = unit_hardware(i, b.unit, b.id, dy, open_frac, drawer, rack.is_multi(b.id))
         dxw = x0 + rack.drawer_x0
         meta = {"id": b.id, "row": rack.rows[i]["id"], "row_index": i, "col": b.index + 1, "span": 1,
                 "camera": b.id in cams, "unit_x": x0,
                 "label_pos": [x0 + rack.carrier_w / 2, -3, plenum + d["front_height"] + 6]}
-        if info:
+        if info and rack.is_multi(b.id):
+            # a converted bay: one plate (board_plate.scad › BAY), its boards where rackcfg.bay_layout puts them,
+            # each on its own DATA ×4 port
+            add(f"plate_bay_{b.id.lower()}", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i,
+                layer="plates", bay=b.id, movable=drawer)
+            slots = []
+            for e in rack.bay_layout(b.id, boards):
+                # the board as turned on this plate: to the port wall unless its entry says `orient: side`
+                sl, o = e["slot"], e["o"]
+                bd = {**boards[e["board"]], "orient": sl.orient or "rear"}
+                dut_board(i, b.id, sl.id, e["board"], bd, o, dxw + plate_x0 + e["at"][0], dy + plate_y0 + e["at"][1],
+                          dz, dy, drawer, sl.cable, dxw + x4_port_x(rack, sl.slot))
+                slots.append({"id": sl.id, "port": sl.slot, "board": bd["name"], "board_id": e["board"],
+                              "cable": cables_cfg[sl.cable]["label"], "usb": bd["usb"]["type"],
+                              "verified": bd.get("verified", False)})
+            meta.update({"board": f"{len(slots)} boards on a DATA ×4", "slots": slots, "data_port": ["×4"],
+                         "open": bool(info.get("open")) and drawer, "mount": rack.mount(b.id),
+                         "verified": all(sl_["verified"] for sl_ in slots)})
+        elif info:
             bd = boards[info["board"]]
             o = rackcfg.orient_board(bd)
             cab = cables_cfg[info["cable"]]
@@ -651,58 +747,14 @@ def build(rack) -> Path:
                 rear_gap = max(3, min(26, plate_d - o["l"] - 4))
                 bx = dxw + plate_x0 + (plate_w - o["w"]) / 2
                 by = dy + plate_y0 + plate_d - rear_gap - o["l"]
-            bz = dz + d["bottom"] + d["plate"] + bd.get("standoff", 6)
-            items["boards"].append({"bay": b.id, "row": i, "id": info["board"], "name": bd["name"],
-                                    "label": bd.get("short", ""), "pos": [round(bx, 2), round(by, 2), round(bz, 2)],
-                                    "size": [o["w"], o["l"], 1.6], "height": bd.get("height", 10),
-                                    "color": bd.get("color", "#1b5e20"), "usb_x": o["usb_x"],
-                                    "usb_type": bd["usb"]["type"], "usb2_x": o.get("usb2_x"),
-                                    "usb_side": o["usb_side"],
-                                    "verified": bd.get("verified", False), "movable": drawer,
-                                    **({"model": mdl} if (mdl := board_model(info["board"], bd)) else {}),
-                                    **({"screen": scr} if (scr := board_screen(bd)) else {})})
-            # DUT cable: drawer DATA port → board USB connector.  The DATA socket goes in the port
-            # farther from the board's USB (the right one for a USB turned to the right wall), so
-            # the two plugs never meet
+            # the DATA socket goes in the port farther from the board's USB (the right one for a USB turned to
+            # the right wall), so the two plugs never meet
             if o["usb_side"]:
                 sx = dxw + max(data_ports)
             else:
                 sx = max((dxw + px for px in data_ports), key=lambda x: abs(x - (bx + o["usb_x"])))
             meta["data_port"] = ["left" if sx - dxw < rack.drawer_w / 2 else "right"]
-            # short cable: USB-C into the panel-mount socket on the drawer's rear wall, the board's own
-            # connector (micro-B, USB-C…) at the other end.  A board's USB facing the port wall:
-            # right-angle plugs (`right`), or for a micro-B / mini-B board a 90° adapter with a
-            # straight plug standing on it (`adapter`), and an arch in between; a small board turned
-            # to the side wall (orient: side): straight plugs (`straight`) and one flat bend
-            ctype = info["cable"]
-            btype = cables_cfg[ctype].get("b", "usb-c")
-            style = cables_cfg[ctype].get("style", "right")
-            end_a = {"at": [sx, dy + dp_y0 - 0.28, dz + port_z], "dir": [0, 1, 0],   # the DATA board's USB-C, 0.28 proud of its edge
-                     "type": "usb-c", "style": "straight" if style == "straight" else "right"}
-            b_style = "straight" if style == "side" else style
-            zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
-            ux = o["usb_x"]
-            if o["usb_side"]:
-                end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": b_style}
-            else:
-                end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": b_style}
-            ends = [end_a, end_b]
-            if style == "adapter":       # the cable's own plug: straight, down into the adapter's female
-                p = USB_PLUGS[btype]
-                bd_ = np.array(end_b["dir"], float)
-                mouth = np.array(end_b["at"]) - bd_ * p["AD"] / 2 + np.array([0, 0, p["ATOP"]])
-                end_b = {"at": [round(float(c), 2) for c in mouth], "dir": [0, 0, -1], "up": end_b["dir"],
-                         "type": btype, "style": "straight"}
-                ends.append(end_b)
-            free = cable_free_length(cables_cfg[ctype], end_a, end_b)
-            route = {"straight": flat_cable, "side": side_arch_cable}.get(style, arch_cable)
-            pts, short = route(end_a, end_b, free)
-            if short:
-                print(f"warning: bay {b.id}: the {ctype} cable is {short:.0f} mm too short "
-                      f"from the DATA socket to the board")
-            cable(pts, row=i, kind="dut", bay=b.id, type=ctype,
-                  label=cables_cfg[ctype]["label"], a="usb-c", b=btype, ends=ends, radius=1.9,
-                  movable=drawer)
+            dut_board(i, b.id, None, info["board"], bd, o, bx, by, dz, dy, drawer, info["cable"], sx)
             meta.update({"board": bd["name"], "board_id": info["board"], "cable": cab["label"],
                          "usb": bd["usb"]["type"], "classic": bool(info.get("pc_cable")), "open": bool(info.get("open")) and drawer, "mount": rack.mount(b.id),
                          "verified": bd.get("verified", False)})
