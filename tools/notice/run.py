@@ -169,6 +169,34 @@ def remote_drawings(names: list[str]) -> None:
         t.extractall(BUILD, filter="data")
 
 
+def viewer_cables(rack) -> dict:
+    """The viewer's centre-lines (site/assets/rack.json, from tools/webscene.py) of the cables the notice
+    draws, in bay A1's carrier coordinates: the row cable from A1's node to A2's (its six wires, and its
+    two tie anchors), and A1's DATA lead (node J7 to the chain's fixed mouth; the moving mouth to the DATA
+    board).  {} without the scene."""
+    import json
+    p = REPO / "site" / "assets" / "rack.json"
+    if not p.exists():
+        return {}
+    import webscene
+    cab = [c for c in json.loads(p.read_text(encoding="utf-8"))["cables"] if c.get("space") == "row" and c.get("row") == 0]
+    x0, x1 = rack.unit_x(0), rack.unit_x(1)
+
+    def local(pts):
+        return [[round(q[0] - x0, 3), q[1], q[2]] for q in pts]
+    wires = [c for c in cab if c.get("kind") == "power-jumper" and x0 <= c["points"][0][0] < x1]
+    lead = [c for c in cab if c.get("kind") == "ext" and c.get("bay") == "A1" and "drag chain" in c.get("label", "")]
+    out = {}
+    if wires:
+        out["jumper"] = {"wires": [local(c["points"]) for c in wires], "radius": wires[0].get("radius", 0.7),
+                         "ties": [list(t) for t in getattr(webscene, "JUMPER_TIES", [])]}
+    if len(lead) == 2:
+        fixed, moving = sorted(lead, key=lambda c: bool(c.get("movable")))
+        out["data_lead"] = {"to_chain": local(fixed["points"]), "to_board": local(moving["points"]),
+                            "radius": fixed.get("radius", 1.2)}
+    return out
+
+
 def outputs(name: str) -> list[str]:
     """The drawings a job writes (out/<name>.svg)."""
     kind, _, k = name.rpartition(":")
@@ -202,6 +230,7 @@ def main() -> None:
     c["NODE_HOLES"] = node["holes"]                 # M3, KiCad coordinates (y from the rear edge)
     import webscene                                  # the USB plugs' sizes, as the viewer draws them
     c["USB_PLUGS"] = getattr(webscene, "USB_PLUGS", None)
+    c["CABLES"] = viewer_cables(rack)                # the viewer's cable routes, so that both agree
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     print("constants, CSG ...")
     csg()

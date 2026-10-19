@@ -140,9 +140,12 @@ def row_cable():
 
 
 def plug(m, out, n):
-    """JST PH housing on a lead of n wires: 7 long (5.1 of it in the connector), 2(n-1)+2.2 wide."""
+    """JST PHR-n housing in a side-entry header whose mouth is m, its lead leaving along `out` (xy): the
+    part in the header (5.1 deep, 2(n-1)+2.2 wide), the grip outside it (1.9 long, a little bigger all
+    round) and the wires' ends at its back, one per pin."""
     w = 2.0 * (n - 1) + 2.2
-    s = Part.makeBox(7.0, w, 2.65, V(-5.1, -w / 2, -1.325))
+    s = Part.makeBox(5.1, w, 2.65, V(-5.1, -w / 2, -1.325)).fuse(Part.makeBox(1.9, w + 0.6, 3.4, V(0, -w / 2 - 0.3, -1.7)))
+    s = Part.makeCompound([s] + [Part.makeCylinder(0.45, 1.4, V(1.9, 2.0 * (k - (n - 1) / 2), 0), V(1, 0, 0)) for k in range(n)])
     s.rotate(V(0, 0, 0), V(0, 0, 1), math.degrees(math.atan2(out[1], out[0])))
     s.translate(m)
     return s
@@ -161,14 +164,59 @@ def lead(a, b, n, sag):
     return sols
 
 
+CABLES = C.get("CABLES") or {}           # the viewer's cable routes (run.py viewer_cables), tray-0 coordinates
+
+
+def settle(pts, za, zb, run=15.0):
+    """A viewer centre-line with its ends brought to the plugs' heights (za, zb), blended in over `run` mm
+    (the viewer leaves a plug a little higher than its back)."""
+    pts = [V(*q) for q in pts]
+    d = [0.0]
+    for a, b in zip(pts, pts[1:]):
+        d.append(d[-1] + (b - a).Length)
+    L = d[-1]
+    return [(q.x, q.y, q.z + (za - pts[0].z) * max(0.0, 1 - s / run) + (zb - pts[-1].z) * max(0.0, 1 - (L - s) / run))
+            for q, s in zip(pts, d)]
+
+
+def tie(x, wires, r, anchor_y=6.5):
+    """A cable tie through the tray's tie anchor at x (tray.scad tie_anchor: a 4 x 7 block, a tunnel
+    along y under its top), round the wires lying on it: its band (2.4 wide, 0.8 thick) and its head."""
+    near = [q for w in wires for q in w if abs(q[0] - x) < 3]
+    y0, y1 = anchor_y - 3.5 - 0.4, anchor_y + 3.5 + 0.4                 # out of the anchor's ends
+    z0 = C["CHAIN"]["bottom"] + 1.5                                      # in the tunnel
+    z1 = max(q[2] for q in near) + r + 0.1 if near else z0 + 7
+    band = Part.makeBox(2.4, y1 - y0 + 1.6, z1 - z0 + 0.8, V(x - 1.2, y0 - 0.8, z0)).cut(
+        Part.makeBox(2.6, y1 - y0, z1 - z0 - 0.8, V(x - 1.3, y0, z0 + 0.8)))
+    return [band, Part.makeBox(3.0, 3.2, 3.0, V(x - 1.5, y1 - 0.2, z1 - 2.0))]
+
+
 def jumper_shape():
-    """Row cable between node 0 and node 1, tray-0 carrier coordinates: two JST PH plugs and the lead."""
+    """Row cable between node 0's J2 and node 1's J1 (tray-0 carrier coordinates): two PH plugs, and its
+    six wires along the viewer's route (CABLES: across the tray's front, over its two tie anchors, a tie on
+    each); without the route, a sagging flat lead."""
     ca, cb = row_cable()
     o0 = V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"])
     ma, mb = o0 + V(*ca["mouth"]), o0 + V(P, 0, 0) + V(*cb["mouth"])
     oa, ob = V(ca["out"][0], ca["out"][1], 0), V(cb["out"][0], cb["out"][1], 0)
     sols = [plug(ma, ca["out"], ca["pins"]), plug(mb, cb["out"], cb["pins"])]
-    return Part.makeCompound(sols + lead(ma + oa * 1.9, mb + ob * 1.9, ca["pins"], 3.0))
+    js = CABLES.get("jumper")
+    if not js:
+        return Part.makeCompound(sols + lead(ma + oa * 1.9, mb + ob * 1.9, ca["pins"], 3.0))
+    wires = [settle(w, ma.z, mb.z) for w in js["wires"]]
+    r = min(js["radius"], 0.5)               # drawn thinner: the bunched wires (0.85 apart) then do not run into each other
+    sols += [pipe(w, r) for w in wires]
+    for tx, ty in js["ties"]:
+        sols += tie(tx, wires, r, ty)
+    return Part.makeCompound(sols)
+
+
+def row_mouths():
+    """Tray-0 coordinates of the row cable's plugs' backs (J2 of node 0, J1 of node 1) and their outward directions."""
+    ca, cb = row_cable()
+    o0 = V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"])
+    oa, ob = V(ca["out"][0], ca["out"][1], 0), V(cb["out"][0], cb["out"][1], 0)
+    return [(o0 + V(*ca["mouth"]) + oa * 1.9, oa), (o0 + V(P, 0, 0) + V(*cb["mouth"]) + ob * 1.9, ob)]
 
 
 # ------------------------------------------------------------------ drag chain, DATA socket (run.py: rackcfg chain, drawer)
@@ -244,10 +292,11 @@ def chain_shape(state="closed", open_frac=0.0):
 
 def chain_ends_shape(open_frac=0.0):
     """The two end pieces: rigid U channels, mouth -> pivot along +y, their tab (the U's outer wall,
-    2 holes) against the anchor's inner face (fixed run, -x) and the foot's fin (moving run, +x)."""
+    2 holes) against the anchor's inner face (fixed run, -x) and the foot's fin (moving run, +x).
+    Each stops where its first link's round end begins (the real ones interleave at the pivot)."""
     fx, fy = CH["fixed"]
     my = CH["moving_y"] + C["DRAWER_Y0"] - C["DRAWER_TRAVEL"] * open_frac
-    z0, e = CHAIN_Z - CHAIN_W / 2, CH["end_length"]
+    z0, e = CHAIN_Z - CHAIN_W / 2, CH["end_length"] - LINK_R - 0.8
     sols = []
     for x, y in ((fx, fy), (CH["moving_x"], my)):
         u = Part.makeBox(CHAIN_H, e, CHAIN_W, V(x - LINK_R, y, z0))
@@ -280,9 +329,11 @@ def rbox_y(w, h, r, y0, y1):
 
 
 def plug_up(m, n, rot=0.0):
-    """JST PH housing pushed down into a vertical header whose mouth is m (its lead leaves upwards)."""
+    """JST PHR-n housing pushed down into a vertical header whose mouth is m: the part in the header,
+    the grip above it and the wires' ends on top (its lead leaves upwards)."""
     w = 2.0 * (n - 1) + 2.2
-    s = Part.makeBox(w, 4.2, 7.0, V(-w / 2, -2.1, -5.1))
+    s = Part.makeBox(w, 4.2, 5.1, V(-w / 2, -2.1, -5.1)).fuse(Part.makeBox(w + 0.6, 4.8, 1.9, V(-w / 2 - 0.3, -2.4, 0)))
+    s = Part.makeCompound([s] + [Part.makeCylinder(0.45, 1.4, V(2.0 * (k - (n - 1) / 2), 0, 1.9)) for k in range(n)])
     s.rotate(V(0, 0, 0), V(0, 0, 1), rot)
     s.translate(m)
     return s
@@ -325,18 +376,51 @@ def _data_lead_shape(part="full"):
     tail = [(mx, my - 9, CHAIN_Z + 1.5), (mx - 3, my - 14, CHAIN_Z + 7), (mx - 12, my + 6, C["PLENUM"] - 3),
             (end.x + 1.5, end.y + 4, C["PLENUM"] - 1), (end.x, end.y + 5, C["PLENUM"] + 4), (end.x, end.y + 3, end.z - 3),
             tuple(end)]
+    dl, r = CABLES.get("data_lead"), 1.8
+    if dl:                                   # the viewer's route: J7 -> fixed mouth; moving mouth -> the board
+        r = dl["radius"]
+        to_board = [tuple(q) for q in reversed(dl["to_board"])]   # from the moving mouth
+        tail = to_board[1:]
     if part == "stub":
+        if dl:                               # its last 30 mm, up through the window
+            keep, run = [to_board[-1]], 0.0
+            for a, b in zip(reversed(to_board[:-1]), reversed(to_board[1:])):
+                run += (V(*a) - V(*b)).Length
+                keep.insert(0, a)
+                if run > 30:
+                    break
+            return Part.makeCompound([plug(pm, pout, pn), pipe(keep, r)])
         return Part.makeCompound([plug(pm, pout, pn), pipe([(end.x + 1.5, end.y + 4, C["PLENUM"] - 9)] + tail[4:], 1.8)])
-    pts = [tuple(m7 + V(0, 0, 1.9)), tuple(m7 + V(0, 0, 9)), (fx, fy - 22, CHAIN_Z + 4), (fx, fy - 8, CHAIN_Z)]
+    if dl:
+        pts = [tuple(q) for q in dl["to_chain"]][:-1]
+    else:
+        pts = [tuple(m7 + V(0, 0, 1.9)), tuple(m7 + V(0, 0, 9)), (fx, fy - 22, CHAIN_Z + 4), (fx, fy - 8, CHAIN_Z)]
     pts += [(x, y, CHAIN_Z) for x, y in (at(s) for s in [k * L / 24 for k in range(25)])]
     sols = [plug_up(m7, j7["pins"], j7.get("rot", 0.0))]
+    if dl:                                   # three sweeps, joined inside the end pieces: J7 -> the fixed mouth,
+        inside = [(x, y, CHAIN_Z) for x, y in (at(s) for s in [k * L / 24 for k in range(25)])]   # the chain,
+        lead = [[tuple(q) for q in dl["to_chain"]], inside]                                     # out of it
+        if part == "free":
+            lead[1] = inside + [(mx, my - 7, CHAIN_Z), (mx, my - 13.1, CHAIN_Z)]
+            sols.append(plug(V(mx, my - 15, CHAIN_Z), (0, 1), pn))
+        else:
+            lead.append(to_board)
+            sols.append(plug(pm, pout, pn))
+        return Part.makeCompound(sols + [pipe(q, r) for q in lead])
     if part == "free":
         pts += [(mx, my - 7, CHAIN_Z), (mx, my - 13.1, CHAIN_Z)]           # straight on out of the mouth
         sols.append(plug(V(mx, my - 15, CHAIN_Z), (0, 1), pn))
     else:
         pts += tail
         sols.append(plug(pm, pout, pn))
-    return Part.makeCompound(sols + [pipe(pts, 1.8)])
+    return Part.makeCompound(sols + [pipe(pts, r)])
+
+
+def j7_top():
+    """Tray coordinates of the node's J7 (the DATA header, vertical) mouth."""
+    node = json.load(open(os.path.join(PARTS, "node.json")))
+    j7 = next(c for c in node["ph"] if c["ref"] == "J7")
+    return V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"]) + V(*j7["mouth"])
 
 
 def lead_alone_shape():
@@ -408,7 +492,14 @@ def pipe(points, r):
     end and fused (tangent joints: the projection draws no line there).  A swept solid's BoundBox
     is loose (its poles): see tight_center."""
     c = Part.BSplineCurve()
-    c.interpolate([V(*p) for p in points])
+    if len(points) > 16:                      # a dense route (the viewer's, every 2 mm): a smooth spline near it,
+        pts = [V(*points[0])]                 # its points 0.8 mm apart at least (two at a joint would whip it)
+        for q in points[1:]:
+            if (V(*q) - pts[-1]).Length > 0.8:
+                pts.append(V(*q))
+        c.approximate(Points=pts, DegMax=5, Tolerance=0.2)
+    else:
+        c.interpolate([V(*p) for p in points])
     e = c.toShape()
     if PIPE_PLAIN:                            # SolidCraft intersects swept splines too slowly: plain tubes
         return Part.makeCompound(tube(e, r))
@@ -747,6 +838,7 @@ STEPS = {
     # into the tray: the anchor's 2 x M3 x 8, the plug in the node
     "a11t": {"view": (0.5, -1.2, 1.6), "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "ba0", "nd0"),   # no cap: into the tray
              "add": {i: n_(22) for i in ("ca0", "ch0", "ce0", "cf0", "cxf0")}, "screw_gap": 16, "arrow_ids": ["ch0"],
+             "arrows_at": [("cxf0", tuple(j7_top()), None, 0, (-9, 0, 0))],   # the lead's plug down into J7
              "frame": {"at": tuple(m_row(0, T + CL).multVec(V(105, 140, 10))), "size": 340}},
     # the drawer's DATA socket: through the port wall from the front, 2 x PT 2.6 x 8
     # the drawer's DATA board: on its bosses, 2 x PT 2.6 x 8 from above; the lead up through the window into its PH
@@ -762,7 +854,8 @@ STEPS = {
     "b3": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1"), "add": {"la2": (0, 0, 70), "tr1": u_(-150)}, "clic": True},
     "b3n": {"view": (0.5, -1.2, 1.6), "old": BAY0 + A("lb2", "fp1", "bb1", "la2", "tr1"), "add": {"nd1": n_(40)}, "screw_gap": 16, "frame": {"at": (205, 95, 125), "size": 300}},
     "b4": {"view": (0.15, -0.55, 1.9), "old": [i for i in BAY0 if i not in ("cp0", "lc0", "lc1", "dr0")] + A("lb2", "fp1", "bb1", "la2", "tr1", "nd1"),
-           "add": {"jumper": (0, 0, 0)}, "frame": {"at": (126, 62, 100), "size": 300}},
+           "add": {"jumper": (0, 0, 0)}, "frame": {"at": (126, 62, 100), "size": 300},
+           "arrows_at": [("jumper", tuple(row_mouths()[0][0]), tuple(row_mouths()[0][1]), 12, (0, 9, 0))]},   # J2's plug home (J1's is behind the ladder)
     "b5a": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1", "la2", "tr1", "nd1", "jumper"),
             "add": {"ba1": (0, 80, 0), "lc2": (0, 0, 55), "cp1": plus(u_(-150), (0, 0, 55))}, "screw_gap": 45, "clic": True},
     "b5": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1", "la2", "tr1", "nd1", "jumper", "ba1", "lc2", "cp1"),
@@ -848,7 +941,7 @@ def tight_center(s):
 def step_scene(step):
     """Items (id, old|add, shape, is_fastener), dashed screw axes and motion arrows of a step."""
     old, add = expand(step)
-    fast = lambda iid: INST[iid][0] in FAST
+    fast = lambda iid: True if INST[iid][0] in FAST else ("c" if INST[iid][0] in CABLE_KINDS else False)
     items = [(iid, "old", shape_of(iid), fast(iid)) for iid in old]
     for iid, o in add.items():
         s = shape_of(iid)
@@ -874,6 +967,16 @@ def step_scene(step):
             Ls = min(L * 0.9, 130)
             s0 = c - dv * (Ls * 0.5)
             arrows.append((s0, s0 + dv * Ls))
+    for iid, p, d, L, *side in step.get("arrows_at", ()):   # a plug's push: from out along d (its own approach
+        m = INST[iid][1]                                       # without one) to p, `side` beside it (tray)
+        seat = m.multVec(V(*p) + V(*(side[0] if side else (0, 0, 0)))) + V(*add.get(iid, (0, 0, 0)))
+        if d is None:
+            o = V(*add[iid])
+            arrows.append((seat, seat - o * 0.8))
+        else:
+            dv = m.multVec(V(*d)) - m.multVec(V(0, 0, 0))
+            dv.normalize()
+            arrows.append((seat + dv * L, seat + dv * 2.5))
     return items, axes, arrows
 
 
@@ -932,7 +1035,10 @@ def fit(scr, arr2, W, H, pad, keepout):
     return (k0,) + centred(k0)
 
 
-KEYS = {("old", False): "old", ("old", True): "old_f", ("add", False): "add", ("add", True): "add_f"}
+KEYS = {("old", False): "old", ("old", True): "old_f", ("add", False): "add", ("add", True): "add_f",
+        ("old", "c"): "old_c", ("add", "c"): "add_c"}
+CABLE_KINDS = {"jumper", "data_lead", "data_lead_free", "data_lead_stub", "feed", "pd_cable"}
+CABLE_K = 1.3                                  # a cable's stroke, relative to a part's
 CACHE = os.path.join(OUT, "cache")
 
 
@@ -1033,13 +1139,14 @@ def render(name, data, slot, widths, fast_k=0.5, pad=8, keepout=(), display=None
         return "".join(out)
 
     wo, wn = widths
-    style = {"old": ("#a3a3a0", wo), "old_f": ("#a3a3a0", wo * fast_k), "add": ("#111", wn), "add_f": ("#111", wn * fast_k)}
+    style = {"old": ("#a3a3a0", wo), "old_f": ("#a3a3a0", wo * fast_k), "add": ("#111", wn), "add_f": ("#111", wn * fast_k),
+             "old_c": ("#a3a3a0", wo * CABLE_K), "add_c": ("#111", wn * CABLE_K)}
     DW, DH = display or slot
     svg = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{DW}" height="{DH}">']
     if fade:                                               # a cropped view: its lines fade out towards the edges
         svg.append(f'<defs><filter id="b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter>'
                    f'<mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="{W}" height="{H}"><rect x="34" y="34" width="{W - 68}" height="{H - 68}" fill="#fff" filter="url(#b)"/></mask></defs><g mask="url(#m)">')
-    for key in ("old", "old_f", "add", "add_f"):
+    for key in ("old", "old_f", "old_c", "add", "add_f", "add_c"):
         if scr.get(key):
             col, w = style[key]
             svg.append(f'<path d="{path(scr[key])}" fill="none" stroke="{col}" stroke-width="{w:.2f}" stroke-linecap="round" stroke-linejoin="round"/>')
