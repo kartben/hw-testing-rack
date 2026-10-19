@@ -315,9 +315,10 @@ def board() -> Board:
         # SHDN: off by default (100k to GND); the controller drives ROW_EN high, through 10k, to turn it on
         R(o, f"R{70 + n}", "100k", f"SHDN_{ch}", "GND", pcb=P(21.4, yc + 4.5, 270))
         R(o, f"R{80 + n}", "10k", f"ROW_EN_{ch}", f"SHDN_{ch}", pcb=P(19.0, yc + 3.675, 0))
-        # FLT: open drain, pulled up to 3.3 V for the controller; red LED from 3.3 V
+        # FLT: open drain, pulled up to 3.3 V for the controller; red LED from 3.3 V (1k: ≈ 1.4 mA, every
+        # front LED on the board's 1k, one part type for all)
         R(o, f"R{90 + n}", "100k", "+3V3", f"FLT_{ch}", pcb=P(34.0, yc - 0.6, 0))
-        R(o, f"R{50 + n}", "680", "+3V3", f"FLTLED_{ch}", pcb=P(LED_X[k] + 3.0, H - 5.0, 90))
+        R(o, f"R{50 + n}", "1k", "+3V3", f"FLTLED_{ch}", pcb=P(LED_X[k] + 3.0, H - 5.0, 90))
         part(o, f"D{20 + n}", "led_side_r", {"A": f"FLTLED_{ch}", "K": f"FLT_{ch}"}, "FAULT",
              pcb=P(LED_X[k] + 3.0, LED_Y, 180))
         # ON: green LED on the row's own output
@@ -364,7 +365,8 @@ def board() -> Board:
     c.part("#FLG07", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False)
     c.part("#FLG08", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "USB_VBUS"}, in_bom=False, on_board=False)
     part(c, "U3", "ldo_lp", {"VIN": "+5V", "EN": "+5V", "GND": "GND", "VOUT": "+3V3"}, pcb=P(66.0, 61.0, 0))
-    C(c, "C111", "10u", "+5V", "GND", size="0805", pcb=P(62.4, 61.0, 90))
+    # the LDO's input cap (AP2112K: ≥ 1 µF); the buck's 3 × 22 µF sit just before D4.  The eFuses' 1 µF 0805
+    C(c, "C111", "1u", "+5V", "GND", size="0805", pcb=P(62.4, 61.0, 90))
     C(c, "C112", "22u", "+3V3", "GND", size="1206", pcb=P(69.8, 61.0, 90))
 
     c.block("ESP32-S3-MINI-1 (antenna at the board's rear edge: no copper under it, either layer)")
@@ -386,7 +388,7 @@ def board() -> Board:
     part(c, "SW2", "button", {"1": "BOOT", "2": "GND"}, "BOOT", pcb=P(11.5, 16.5, 0))
     R(c, "R210", "10k", "+3V3", "BOOT", pcb=P(17.0, 16.5, 90))
     part(c, "D8", "led_side_g", {"A": "CTL_LED_A", "K": "GND"}, "CTL", pcb=P(LED_X[5], LED_Y, 180))
-    R(c, "R211", "330", "CTL_LED", "CTL_LED_A", pcb=P(LED_X[5], H - 5.0, 90))
+    R(c, "R211", "1k", "CTL_LED", "CTL_LED_A", pcb=P(LED_X[5], H - 5.0, 90))
     for i, (net, xy, side) in enumerate((("U0TX", (30.0, 16.5), "bottom"), ("U0RX", (32.6, 16.5), "bottom"),
                                          ("GND", (30.0, 19.1), "bottom"), ("+3V3", (32.6, 19.1), "bottom"),
                                          ("+5V", (70.0, 66.0), "bottom"), ("VRACK", (66.0, 20.0), "bottom"),
@@ -412,7 +414,7 @@ def board() -> Board:
     for i, (r1, r2, cc, mid, y) in enumerate((("R215", "R216", "C118", "CAN_TERM1", 36.0), ("R217", "R218", "C119", "CAN_TERM2", 38.6))):
         R(c, r1, "56", "CAN_H", mid, pcb=P(19.0, y, 0))
         R(c, r2, "56", mid, "CAN_L", pcb=P(22.4, y, 0))
-        C(c, cc, "4.7n", mid, "GND", pcb=P(25.6, y, 0))
+        C(c, cc, "10n", mid, "GND", pcb=P(25.6, y, 0))      # split cap: the IMON filters' 10n, one type
     part(c, "D9", "can_esd", {"1": "CAN_H", "2": "CAN_L", "3": "GND"}, pcb=P(14.5, 37.5, 0))
 
     c.block("Mounting (M3, on the power box's standoffs)")

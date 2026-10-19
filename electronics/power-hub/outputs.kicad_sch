@@ -4094,7 +4094,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "680"
+		(property "Value" "1k"
 			(at 219.71 46.99 0)
 			(effects
 				(font
@@ -4121,7 +4121,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 680 0603"
+		(property "Description" "Resistor 1k 0603"
 			(at 217.17 49.53 0)
 			(effects
 				(font
@@ -4130,7 +4130,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23228"
+		(property "LCSC" "C21190"
 			(at 217.17 49.53 0)
 			(effects
 				(font
@@ -4139,7 +4139,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF6800T5E"
+		(property "MPN" "0603WAF1001T5E"
 			(at 217.17 49.53 0)
 			(effects
 				(font
@@ -7729,7 +7729,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "680"
+		(property "Value" "1k"
 			(at 219.71 118.11 0)
 			(effects
 				(font
@@ -7756,7 +7756,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 680 0603"
+		(property "Description" "Resistor 1k 0603"
 			(at 217.17 120.65 0)
 			(effects
 				(font
@@ -7765,7 +7765,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23228"
+		(property "LCSC" "C21190"
 			(at 217.17 120.65 0)
 			(effects
 				(font
@@ -7774,7 +7774,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF6800T5E"
+		(property "MPN" "0603WAF1001T5E"
 			(at 217.17 120.65 0)
 			(effects
 				(font
@@ -11364,7 +11364,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "680"
+		(property "Value" "1k"
 			(at 219.71 190.5 0)
 			(effects
 				(font
@@ -11391,7 +11391,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 680 0603"
+		(property "Description" "Resistor 1k 0603"
 			(at 217.17 193.04 0)
 			(effects
 				(font
@@ -11400,7 +11400,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23228"
+		(property "LCSC" "C21190"
 			(at 217.17 193.04 0)
 			(effects
 				(font
@@ -11409,7 +11409,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF6800T5E"
+		(property "MPN" "0603WAF1001T5E"
 			(at 217.17 193.04 0)
 			(effects
 				(font
@@ -14999,7 +14999,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "680"
+		(property "Value" "1k"
 			(at 219.71 261.62 0)
 			(effects
 				(font
@@ -15026,7 +15026,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 680 0603"
+		(property "Description" "Resistor 1k 0603"
 			(at 217.17 264.16 0)
 			(effects
 				(font
@@ -15035,7 +15035,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23228"
+		(property "LCSC" "C21190"
 			(at 217.17 264.16 0)
 			(effects
 				(font
@@ -15044,7 +15044,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF6800T5E"
+		(property "MPN" "0603WAF1001T5E"
 			(at 217.17 264.16 0)
 			(effects
 				(font

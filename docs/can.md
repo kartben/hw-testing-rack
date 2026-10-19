@@ -60,7 +60,7 @@ swap, and the next node simply stays off.
 A **star**: the hub's transceiver is the centre and every row port carries the
 same CAN_H / CAN_L.  Each row is one branch of ≤ ~1.5 m (feed + three
 jumpers); an unused port is left open.  Both terminations (split, 2 × 56 Ω +
-4.7 nF each, 56 Ω in all, JLC basic parts) sit in the hub.  The nodes have none, and no plug is
+10 nF each, 56 Ω in all, JLC basic parts) sit in the hub.  The nodes have none, and no plug is
 needed at a row's end.  At these lengths the lines are electrically short: the
 round trip on 1.5 m is ≈ 15 ns, against ~50 ns edges and a 4 µs bit at
 250 kbit/s (the default; 125 kbit/s as a fallback).

@@ -8493,7 +8493,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10u"
+		(property "Value" "1u"
 			(at 184.15 102.87 0)
 			(effects
 				(font
@@ -8520,7 +8520,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 10u 0805"
+		(property "Description" "Capacitor 1u 0805"
 			(at 180.34 105.41 0)
 			(effects
 				(font
@@ -8529,7 +8529,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C15850"
+		(property "LCSC" "C28323"
 			(at 180.34 105.41 0)
 			(effects
 				(font
@@ -8538,7 +8538,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL21A106KAYNNNE"
+		(property "MPN" "CL21B105KBFNNNE"
 			(at 180.34 105.41 0)
 			(effects
 				(font
@@ -11878,7 +11878,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "330"
+		(property "Value" "1k"
 			(at 187.96 171.45 0)
 			(effects
 				(font
@@ -11905,7 +11905,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 330 0603"
+		(property "Description" "Resistor 1k 0603"
 			(at 185.42 173.99 0)
 			(effects
 				(font
@@ -11914,7 +11914,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23138"
+		(property "LCSC" "C21190"
 			(at 185.42 173.99 0)
 			(effects
 				(font
@@ -11923,7 +11923,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF3300T5E"
+		(property "MPN" "0603WAF1001T5E"
 			(at 185.42 173.99 0)
 			(effects
 				(font
@@ -15621,7 +15621,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7n"
+		(property "Value" "10n"
 			(at 97.79 363.22 0)
 			(effects
 				(font
@@ -15648,7 +15648,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 4.7n 0603"
+		(property "Description" "Capacitor 10n 0603"
 			(at 93.98 365.76 0)
 			(effects
 				(font
@@ -15657,7 +15657,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C53987"
+		(property "LCSC" "C57112"
 			(at 93.98 365.76 0)
 			(effects
 				(font
@@ -15666,7 +15666,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603B472K500NT"
+		(property "MPN" "0603B103K500NT"
 			(at 93.98 365.76 0)
 			(effects
 				(font
@@ -16011,7 +16011,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7n"
+		(property "Value" "10n"
 			(at 107.95 363.22 0)
 			(effects
 				(font
@@ -16038,7 +16038,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 4.7n 0603"
+		(property "Description" "Capacitor 10n 0603"
 			(at 104.14 365.76 0)
 			(effects
 				(font
@@ -16047,7 +16047,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C53987"
+		(property "LCSC" "C57112"
 			(at 104.14 365.76 0)
 			(effects
 				(font
@@ -16056,7 +16056,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603B472K500NT"
+		(property "MPN" "0603B103K500NT"
 			(at 104.14 365.76 0)
 			(effects
 				(font

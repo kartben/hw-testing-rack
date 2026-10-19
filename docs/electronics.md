@@ -231,7 +231,7 @@ and the sequencing: [power.md](power.md).
 | Controller supply | LMR51635 from VBUS *ahead of* the switch (EN 39k/18k: from ≈ 3.9 V; FB 100k/18k: 5.24 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from a contract's first 5 V; runs on the console USB alone for flashing |
 | Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
 | PD interface | SDA / SCL with 5.1 k pull-ups fed from a GPIO (I2C_PU), INT (a 5 V output) through 10 k / 18 k, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered AP33772S |
-| CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 4.7 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
+| CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 10 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
 | POS | 4 GPIOs → 10 k → pin 1 of each row output (the outputs have the bay nodes' OUT pinout: 1 POS · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), BAT54S clamp to GND / 3.3 V | survives a wrong cable (VRACK on POS) |
 
 **Layout**, with the bay node's practices: JLC's 4-layer stackup (JLC04161H-7628), ENIG for now (the
@@ -422,15 +422,36 @@ The user found that dear.  What JLC charges for, checked on its calculator (2026
   4-layer offer applies: $8 instead of $25 + $7.50.
 - **ENIG costs $18.00, lead-free HASL $5.30.**
 
-Two savings are applied since, as adjustments to the quote (≈ $221):
+Two savings are applied since, as adjustments to the quote (≈ $214):
 - **Lead-free HASL, as the node.**  It was ENIG for the MINI-1's LGA pads; JLC X-rays the module
   either way.  −$12.70.
-- **Six resistor values merged** onto values the board already has, so six fewer part types at
-  $1.55 each in Standard PCBA's feeders.  −$9.30.
+- **Ten values merged** onto values the board already has (no footprint moved), so ten fewer part
+  types at $1.55 each in Standard PCBA's feeders: 48 → 38.  −$15.50.
   - FB 100k/18k: 5.24 V, as the node; ≈ 4.9 V after D4 for the TJA1462AT.
   - EN 39k/18k: on at 3.9 V, off below 3.1 V.
   - PD INT divider 10k/18k: 3.2 V.
   - I²C pull-ups 5.1k.
+  - Every front LED on 1k (1.2–1.4 mA).
+  - CAN split caps 10 nF (the IMON filters' value).
+  - The LDO's input cap 1 µF 0805 (the eFuses' part; the buck's 3 × 22 µF sit just before D4).
+
+**Why 38 part types.**  The hub does five jobs, and each brings its own parts.  The four eFuse
+rows add no type: they repeat the same nine.  Many values are set by a datasheet equation (eFuse
+current limit and IMON, the AP33772S's VSEL, gate and VOUT resistors, the buck's FB).
+
+| Block | Its own types |
+|---|---|
+| PD input and VRACK switch | 8: AP33772S, 2 × IRF7842, 5 mΩ shunt, NTC, SMAJ30A, 100 µF, 6.2k, 200 Ω |
+| 4 eFuse rows | 6: TPS26600, S6B, red LED, BAT54S, 22 nF, 7.5k ILIM |
+| 5 V buck, 3.3 V LDO | 5: LMR51635, inductor, AP2112K, 2 × B5819W, 22 µF |
+| ESP32 and USB console | 3: ESP32-S3-MINI-1, USBLC6, 2 buttons |
+| CAN | 3: TJA1462AT, PESD2CAN, 56 Ω |
+| shared | 13: 100n, 10n, 1 µF 0603, 1 µF 0805, 10 µF 1206, green LED, USB4105, 1k, 100k, 10k, 5.1k, 39k, 18k |
+
+**Two rows instead of four** would remove no type, only parts: per board two TPS26600, two S6B, four
+LEDs, two BAT54S and their passives (36 parts), ≈ $5 a board, ≈ $10 for two.  It matters only if
+the board then shrinks under 100 mm (the PCB from $37.80 to $13.20), which means a new layout and
+power box, and no third row.
 
 The routing did not move.  JLC assembles at least 2 boards in Standard PCBA, so one hub plus a spare
 is the minimum.  The MINI-1, like every ESP32 module JLC stocks, is "Standard PCBA only"; the

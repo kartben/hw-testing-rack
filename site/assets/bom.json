@@ -937,19 +937,19 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "1u — Capacitor 1u 0805",
-"ref": "C11,C12,C13,C14,C31,C32,C33,C34",
+"ref": "C11,C12,C13,C14,C31,C32,C33,C34,C111",
 "mpn": "CL21B105KBFNNNE",
 "manufacturer": "Samsung Electro-Mechanics",
 "supplier": "LCSC/JLCPCB",
 "part": "C28323",
-"qty": 16,
+"qty": 18,
 "unit_eur": 0.0268,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "8 per board × 2 boards",
+"notes": "9 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.43
+"ext_eur": 0.48
 },
 {
 "category": "Electronics",
@@ -973,19 +973,19 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "10n — Capacitor 10n 0603",
-"ref": "C61,C62,C63,C64",
+"ref": "C61,C62,C63,C64,C118,C119",
 "mpn": "0603B103K500NT",
 "manufacturer": "FH (Guangdong Fenghua Advanced Tech)",
 "supplier": "LCSC/JLCPCB",
 "part": "C57112",
-"qty": 8,
+"qty": 12,
 "unit_eur": 0.0094,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "4 per board × 2 boards",
+"notes": "6 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.08
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -1004,42 +1004,6 @@
 "notes": "5 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 1.14
-},
-{
-"category": "Electronics",
-"group": "power-hub",
-"item": "10u — Capacitor 10u 0805",
-"ref": "C111",
-"mpn": "CL21A106KAYNNNE",
-"manufacturer": "Samsung Electro-Mechanics",
-"supplier": "LCSC/JLCPCB",
-"part": "C15850",
-"qty": 2,
-"unit_eur": 0.0403,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "1 per board × 2 boards",
-"unit": "pcs",
-"ext_eur": 0.08
-},
-{
-"category": "Electronics",
-"group": "power-hub",
-"item": "4.7n — Capacitor 4.7n 0603",
-"ref": "C118,C119",
-"mpn": "0603B472K500NT",
-"manufacturer": "FH (Guangdong Fenghua Advanced Tech)",
-"supplier": "LCSC/JLCPCB",
-"part": "C53987",
-"qty": 4,
-"unit_eur": 0.0053,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "2 per board × 2 boards",
-"unit": "pcs",
-"ext_eur": 0.02
 },
 {
 "category": "Electronics",
@@ -1351,19 +1315,19 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "1k — Resistor 1k 0603",
-"ref": "R2,R61,R62,R63,R64",
+"ref": "R2,R51,R52,R53,R54,R61,R62,R63,R64,R211",
 "mpn": "0603WAF1001T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C21190",
-"qty": 10,
+"qty": 20,
 "unit_eur": 0.0017,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "5 per board × 2 boards",
+"notes": "10 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.02
+"ext_eur": 0.03
 },
 {
 "category": "Electronics",
@@ -1508,42 +1472,6 @@
 "notes": "4 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.01
-},
-{
-"category": "Electronics",
-"group": "power-hub",
-"item": "680 — Resistor 680 0603",
-"ref": "R51,R52,R53,R54",
-"mpn": "0603WAF6800T5E",
-"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-"supplier": "LCSC/JLCPCB",
-"part": "C23228",
-"qty": 8,
-"unit_eur": 0.0019,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "4 per board × 2 boards",
-"unit": "pcs",
-"ext_eur": 0.02
-},
-{
-"category": "Electronics",
-"group": "power-hub",
-"item": "330 — Resistor 330 0603",
-"ref": "R211",
-"mpn": "0603WAF3300T5E",
-"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-"supplier": "LCSC/JLCPCB",
-"part": "C23138",
-"qty": 2,
-"unit_eur": 0.0018,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "1 per board × 2 boards",
-"unit": "pcs",
-"ext_eur": 0.0
 },
 {
 "category": "Electronics",
@@ -1760,10 +1688,10 @@
 "item": "Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.)",
 "supplier": "JLCPCB quote 2026-10-19, adjusted",
 "qty": 1,
-"unit_eur": 114.84,
-"notes": "setup $25.75, stencil $8.27, feeders $63.55, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; 6 part types fewer (resistor values merged) (−$9.30 feeders); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
+"unit_eur": 109.14,
+"notes": "setup $25.75, stencil $8.27, feeders $57.35, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; 10 part types fewer (values merged) (−$15.50 feeders); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 114.84
+"ext_eur": 109.14
 },
 {
 "category": "Electronics",
@@ -1771,10 +1699,10 @@
 "item": "Components power-hub: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-19, adjusted",
 "qty": 1,
-"unit_eur": 4.26,
-"notes": "quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €49.00",
+"unit_eur": 4.29,
+"notes": "quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €48.97",
 "unit": "pcs",
-"ext_eur": 4.26
+"ext_eur": 4.29
 },
 {
 "category": "Electronics",
@@ -2835,7 +2763,7 @@
 }
 ],
 "by_category": {
-"Electronics": 628.5599999999998,
+"Electronics": 622.86,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2843,7 +2771,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 918.14,
+"total_eur": 912.44,
 "prints": [
 {
 "part": "bay_label",
@@ -3234,7 +3162,7 @@
 "setup": 25.75,
 "stencil": 8.27,
 "components": 57.89,
-"feeders": 63.55,
+"feeders": 57.35,
 "SMT": 3.3,
 "X-ray": 3.3,
 "packaging": 0.5,
@@ -3243,9 +3171,9 @@
 },
 "changes": [
 "lead-free HASL ≈ $5.30 instead of ENIG $18.00",
-"6 part types fewer (resistor values merged) (−$9.30 feeders)"
+"10 part types fewer (values merged) (−$15.50 feeders)"
 ],
-"total": 220.52
+"total": 214.32
 },
 "data-port": {
 "pcb": {

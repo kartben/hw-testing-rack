@@ -121,10 +121,11 @@ JLC_FINISH = {"power-hub": ("lead-free HASL", 5.30)}
 # one more extended part type.
 # (The bay node's rev 0.5 changes against the 2026-10-16 quote lived here until its estimate of
 # 2026-10-19 above, which prices the board as it is.)
-# Power hub, after its quote of 2026-10-19: six resistor values merged onto values the board already
-# has (FB 100k/18k as the node, EN 39k/18k, INT divider 10k/18k, I²C pull-ups 5.1k), so six part types
-# fewer at the quote's $1.55 a type in Standard PCBA feeders (47 → 41 placed types).
-JLC_SINCE_QUOTE = {"power-hub": [("6 part types fewer (resistor values merged)", "feeders", -9.30)]}
+# Power hub, after its quote of 2026-10-19: ten values merged onto values the board already has, no
+# footprint moved: FB 100k/18k as the node, EN 39k/18k, INT divider 10k/18k, I²C pull-ups 5.1k, every
+# front LED on 1k, the CAN split caps on the IMON filters' 10n, the LDO input on the eFuses' 1u 0805.  Ten
+# part types fewer at the quote's $1.55 a type in Standard PCBA feeders (47 → 37 placed types).
+JLC_SINCE_QUOTE = {"power-hub": [("10 part types fewer (values merged)", "feeders", -15.50)]}
 
 
 # the row cables' listing (docs/can.md: one type for feeds and jumpers)

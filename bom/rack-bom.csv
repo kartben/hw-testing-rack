@@ -52,12 +52,10 @@ Electronics,power-hub,10u — Capacitor 10u 1206,8,pcs,0.2504,2.0,LCSC/JLCPCB,C1
 Electronics,power-hub,100n — Capacitor 100n 0603,20,pcs,0.0124,0.25,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C2,C3,C6,C7,C10,C106,C107,C114,C116,C117",10 per board × 2 boards
 Electronics,power-hub,1u — Capacitor 1u 0603,8,pcs,0.013,0.1,LCSC/JLCPCB,C15849,CL10A105KB8NNNC,Samsung Electro-Mechanics,"C4,C5,C115,C120",4 per board × 2 boards
 Electronics,power-hub,100u/50V — 100 µF 50 V aluminium electrolytic,2,pcs,0.0635,0.13,LCSC/JLCPCB,C3352,RVT1H101M0810,Honor Elec,C8,1 per board × 2 boards
-Electronics,power-hub,1u — Capacitor 1u 0805,16,pcs,0.0268,0.43,LCSC/JLCPCB,C28323,CL21B105KBFNNNE,Samsung Electro-Mechanics,"C11,C12,C13,C14,C31,C32,C33,C34",8 per board × 2 boards
+Electronics,power-hub,1u — Capacitor 1u 0805,18,pcs,0.0268,0.48,LCSC/JLCPCB,C28323,CL21B105KBFNNNE,Samsung Electro-Mechanics,"C11,C12,C13,C14,C31,C32,C33,C34,C111",9 per board × 2 boards
 Electronics,power-hub,22n — Capacitor 22n 0603,8,pcs,0.0069,0.06,LCSC/JLCPCB,C21122,CL10B223KB8NNNC,Samsung Electro-Mechanics,"C21,C22,C23,C24",4 per board × 2 boards
-Electronics,power-hub,10n — Capacitor 10n 0603,8,pcs,0.0094,0.08,LCSC/JLCPCB,C57112,0603B103K500NT,FH (Guangdong Fenghua Advanced Tech),"C61,C62,C63,C64",4 per board × 2 boards
+Electronics,power-hub,10n — Capacitor 10n 0603,12,pcs,0.0094,0.11,LCSC/JLCPCB,C57112,0603B103K500NT,FH (Guangdong Fenghua Advanced Tech),"C61,C62,C63,C64,C118,C119",6 per board × 2 boards
 Electronics,power-hub,22u — Capacitor 22u 1206,10,pcs,0.1138,1.14,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,"C108,C109,C110,C112,C113",5 per board × 2 boards
-Electronics,power-hub,10u — Capacitor 10u 0805,2,pcs,0.0403,0.08,LCSC/JLCPCB,C15850,CL21A106KAYNNNE,Samsung Electro-Mechanics,C111,1 per board × 2 boards
-Electronics,power-hub,4.7n — Capacitor 4.7n 0603,4,pcs,0.0053,0.02,LCSC/JLCPCB,C53987,0603B472K500NT,FH (Guangdong Fenghua Advanced Tech),"C118,C119",2 per board × 2 boards
 Electronics,power-hub,"SMAJ30A — TVS 30 V stand-off, 400 W (unidirectional): above a 28 V EPR contract",2,pcs,0.0405,0.08,LCSC/JLCPCB,C113965,SMAJ30A,MDD,D1,1 per board × 2 boards
 Electronics,power-hub,"PD — green LED, side view 3 × 2 × 1 mm",2,pcs,0.2208,0.44,LCSC/JLCPCB,C598310,KPA-3010CGCK,Kingbright,D3,1 per board × 2 boards
 Electronics,power-hub,B5819W SL — 40 V 1 A Schottky,4,pcs,0.0276,0.11,LCSC/JLCPCB,C8598,B5819W SL,Changjing,"D4,D5",2 per board × 2 boards
@@ -75,7 +73,7 @@ Electronics,power-hub,"USB — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",
 Electronics,power-hub,"3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded",2,pcs,0.1012,0.2,LCSC/JLCPCB,C167219,FXL0630-3R3-M,cjiang,L1,1 per board × 2 boards
 Electronics,power-hub,"IRF7842TRPBF — N-MOSFET 40 V 18 A 5 mΩ, SO-8 (Si4162DY symbol: same S-S-S-G-D-D-D-D pinout)",4,pcs,0.7728,3.09,LCSC/JLCPCB,C495809,IRF7842TRPBF,Infineon,"Q1,Q2",2 per board × 2 boards
 Electronics,power-hub,5m — 5 mΩ 1 % 1 W current shunt,2,pcs,0.0506,0.1,LCSC/JLCPCB,C2988648,HoLLR1206-1W-5mR-1%,Milliohm,R1,1 per board × 2 boards
-Electronics,power-hub,1k — Resistor 1k 0603,10,pcs,0.0017,0.02,LCSC/JLCPCB,C21190,0603WAF1001T5E,UNI-ROYAL(Uniroyal Elec),"R2,R61,R62,R63,R64",5 per board × 2 boards
+Electronics,power-hub,1k — Resistor 1k 0603,20,pcs,0.0017,0.03,LCSC/JLCPCB,C21190,0603WAF1001T5E,UNI-ROYAL(Uniroyal Elec),"R2,R51,R52,R53,R54,R61,R62,R63,R64,R211",10 per board × 2 boards
 Electronics,power-hub,100k — Resistor 100k 0603,20,pcs,0.0029,0.06,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),"R3,R71,R72,R73,R74,R91,R92,R93,R94,R207",10 per board × 2 boards
 Electronics,power-hub,10k — Resistor 10k 0603,34,pcs,0.0048,0.16,LCSC/JLCPCB,C25804,0603WAF1002T5E,UNI-ROYAL(Uniroyal Elec),"R4,R11,R41,R42,R43,R44,R81,R82,R83,R84,R101,R102,R103,R104,R209,R210,R214",17 per board × 2 boards
 Electronics,power-hub,5.1k — Resistor 5.1k 0603,12,pcs,0.0014,0.02,LCSC/JLCPCB,C23186,0603WAF5101T5E,UNI-ROYAL(Uniroyal Elec),"R5,R6,R13,R14,R212,R213",6 per board × 2 boards
@@ -84,8 +82,6 @@ Electronics,power-hub,6.2k — Resistor 6.2k 0603,2,pcs,0.0021,0.0,LCSC/JLCPCB,C
 Electronics,power-hub,200 — Resistor 200 0603,2,pcs,0.0036,0.01,LCSC/JLCPCB,C8218,0603WAF2000T5E,UNI-ROYAL(Uniroyal Elec),R9,1 per board × 2 boards
 Electronics,power-hub,18k — Resistor 18k 0603,14,pcs,0.0037,0.05,LCSC/JLCPCB,C25810,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),"R12,R31,R32,R33,R34,R206,R208",7 per board × 2 boards
 Electronics,power-hub,7.5k — Resistor 7.5k 0603,8,pcs,0.0017,0.01,LCSC/JLCPCB,C23234,0603WAF7501T5E,UNI-ROYAL(Uniroyal Elec),"R21,R22,R23,R24",4 per board × 2 boards
-Electronics,power-hub,680 — Resistor 680 0603,8,pcs,0.0019,0.02,LCSC/JLCPCB,C23228,0603WAF6800T5E,UNI-ROYAL(Uniroyal Elec),"R51,R52,R53,R54",4 per board × 2 boards
-Electronics,power-hub,330 — Resistor 330 0603,2,pcs,0.0018,0.0,LCSC/JLCPCB,C23138,0603WAF3300T5E,UNI-ROYAL(Uniroyal Elec),R211,1 per board × 2 boards
 Electronics,power-hub,56 — Resistor 56 0603,8,pcs,0.0024,0.02,LCSC/JLCPCB,C25196,0603WAF560JT5E,UNI-ROYAL(Uniroyal Elec),"R215,R216,R217,R218",4 per board × 2 boards
 Electronics,power-hub,RESET — tactile switch 5.1 × 5.1 mm,2,pcs,0.0184,0.04,LCSC/JLCPCB,C318884,TS-1187A-B-A-B,XKB,SW1,1 per board × 2 boards
 Electronics,power-hub,BOOT — tactile switch 5.1 × 5.1 mm,2,pcs,0.0184,0.04,LCSC/JLCPCB,C318884,TS-1187A-B-A-B,XKB,SW2,1 per board × 2 boards
@@ -98,8 +94,8 @@ Electronics,power-hub,USBLC6-2SC6 — USB ESD protection,2,pcs,0.1656,0.33,LCSC/
 Electronics,power-hub,"TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout)",2,pcs,0.9292,1.86,LCSC/JLCPCB,C3234095,TJA1462AT/0Z,NXP Semiconductors,U6,"1 per board × 2 boards; alternative: Same pinout: TI TCAN1462VDRQ1 (C7399456, SIC, bus pins ±58 V; LCSC stock 0 on 2026-10-18 and 19) or TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V)"
 Electronics,power-hub,TPS26600PWPR — 4.2–60 V 2.23 A eFuse,8,pcs,1.4168,11.33,LCSC/JLCPCB,C544399,TPS26600PWPR,Texas Instruments,"U11,U12,U13,U14",4 per board × 2 boards
 Electronics,power-hub,"Bare PCB power-hub (4-layer 76×140 mm (86×140 with JLC's rails), lead-free HASL)",5,pcs,6.9552,34.78,"JLCPCB quote 2026-10-19, adjusted",,,,,"engineering $25.00, lead-free HASL $5.30, board $7.50 = $37.80 for 5 PCBs, 2 of them assembled; lead-free HASL ≈ $5.30 instead of ENIG $18.00"
-Electronics,power-hub,"Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.)",1,pcs,114.84,114.84,"JLCPCB quote 2026-10-19, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $63.55, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; 6 part types fewer (resistor values merged) (−$9.30 feeders); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA"
-Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,4.26,4.26,"JLCPCB quote 2026-10-19, adjusted",,,,,quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €49.00
+Electronics,power-hub,"Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.)",1,pcs,109.14,109.14,"JLCPCB quote 2026-10-19, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $57.35, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; 10 part types fewer (values merged) (−$15.50 feeders); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA"
+Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,4.29,4.29,"JLCPCB quote 2026-10-19, adjusted",,,,,quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €48.97
 Electronics,data-port,100n — Capacitor 100n 0603,8,pcs,0.0124,0.1,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,C1,1 per board × 8 boards
 Electronics,data-port,"DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",8,pcs,0.8372,6.7,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J1,1 per board × 8 boards
 Electronics,data-port,"LEAD — JST PH 8-pin, side entry, SMD",8,pcs,0.414,3.31,LCSC/JLCPCB,C265121,S8B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 8 boards
