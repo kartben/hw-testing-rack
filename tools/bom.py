@@ -84,17 +84,17 @@ JLC_QUOTE = {
     # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
     # One per node but the converted bays' (a DATA ×4 instead): the eighth is a spare.
     "data-port": {
-        "pcbs": 10, "assembled": 8, "spares": 1, "service": "Economic", "total": 35.22, "estimate": True,
+        "pcbs": 10, "assembled": 8, "spares": 1, "service": "Economic", "total": 38.52, "estimate": True,
         "spec": "2-layer 40×17 mm, lead-free HASL",
-        "pcb": {"board": 3.00},
+        "pcb": {"board": 6.30},                 # jlcpcb.com calculator, 2026-10-19 (JLC_PCB_PRICE)
         "pcba": {"setup": 8.18, "stencil": 1.53, "components": 12.90, "extended parts": 9.21, "SMT": 0.40},
     },
     # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS): an estimate built like
     # the DATA port's, Economic PCBA, $3.07 per extended part type (the S8B, the SMD header, the LED)
     "camera-pod": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 23.17, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 26.37, "estimate": True,
         "spec": "2-layer 40×27 mm, lead-free HASL",
-        "pcb": {"board": 2.00},
+        "pcb": {"board": 5.20},                 # jlcpcb.com calculator, 2026-10-19 (JLC_PCB_PRICE)
         "pcba": {"setup": 8.18, "stencil": 1.53, "components": 2.05, "extended parts": 9.21, "SMT": 0.20},
     },
     # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), one per
@@ -163,6 +163,23 @@ JLC_LEVERS = {
          "AP2112K's: the AMS1117's 1 V would brown out on a sagging lead) (owner, in progress)", 3.07, "obvious"),
     ],
 }
+
+# Bare PCB price by quantity (USD, lead-free HASL, JLC's default build), from the jlcpcb.com calculator on
+# 2026-10-19.  JLC sells 5, 10, 15, 20, 25, 30, 50, 75, 100… PCBs; in between, interpolated.  The $8 / $4
+# offers stop at 10 PCBs, and every size above 100 mm long pays a $25 engineering fee whatever the quantity.
+JLC_PCB_PRICE = {
+    "bay-node": {5: 13.20, 10: 19.30, 50: 72.80, 100: 108.00},         # 4-layer 74 × 90 mm
+    "power-hub": {5: 37.80, 10: 45.50, 50: 107.30, 100: 170.80},       # 4-layer 86 × 140 mm with JLC's rails
+    "data-port-x4": {5: 31.90, 10: 33.50, 50: 47.80, 100: 62.80},      # 4-layer 108 × 24 mm
+    "data-port": {5: 5.20, 10: 6.30, 50: 17.10, 100: 20.90},           # 2-layer 40 × 17 mm
+    "camera-pod": {5: 5.20, 10: 6.40, 50: 18.80, 100: 24.20},          # 2-layer 40 × 27 mm
+}
+JLC_PCB_QTY = (5, 10, 15, 20, 25, 30, 50, 75, 100, 125, 150, 200)
+# X-ray per board with a leadless part (module pad, QFN): by the number of boards assembled
+JLC_XRAY = ((10, 1.64), (50, 0.82), (200, 0.49), (500, 0.33))
+JLC_XRAY_BOARDS = {"bay-node", "power-hub", "data-port-x4"}
+VOLUME_QTY = (2, 5, 10, 50, 100)            # boards assembled
+VOLUME_RACKS = (1, 5, 10)                   # racks built at once, one order
 
 
 # the row cables' listing (docs/can.md: one type for feeds and jumpers)
@@ -400,6 +417,74 @@ def jlc_cost_md(cost: list[dict]) -> list[str]:
     return md
 
 
+def pcb_price(name: str, n: int) -> tuple[int, float]:
+    """(PCBs bought, USD) for n boards: JLC's next quantity, priced from JLC_PCB_PRICE (interpolated)."""
+    q = next(x for x in JLC_PCB_QTY if x >= max(n, 5))
+    pts = sorted(JLC_PCB_PRICE[name].items())
+    for (q0, p0), (q1, p1) in zip(pts, pts[1:]):
+        if q <= q1:
+            return q, round(p0 + (p1 - p0) * (q - q0) / (q1 - q0), 2)
+    (q0, p0), (q1, p1) = pts[-2], pts[-1]                # beyond 100: the last slope
+    return q, round(p1 + (p1 - p0) * (q - q1) / (q1 - q0), 2)
+
+
+def xray(n: int) -> float:
+    return next(usd for top, usd in JLC_XRAY if n <= top)
+
+
+def volume(orders: dict) -> dict:
+    """The order of n boards of each design, from its quote: the PCBA fees paid once (setup, stencil,
+    part types, packaging), plus per board its parts and joints (held at today's prices: bom.py has no
+    LCSC price breaks) and X-ray, plus the bare PCBs at JLC's price for that quantity."""
+    def order(name: str, n: int) -> float:
+        q, o = JLC_QUOTE[name], orders[name]
+        pcba, k = o["pcba"], q["assembled"]
+        once = sum(v for key, v in pcba.items() if key not in PER_BOARD and "sourcing" not in key)
+        parts = (pcba["components"] + pcba.get("SMT", 0)) / k
+        sourcing = sum(v for key, v in pcba.items() if "sourcing" in key)
+        if sourcing:                                    # Global Sourcing: ≈ $3 once, the rest per part bought
+            once += 3.0
+            parts += (sourcing - 3.0) / q["pcbs"]
+        n = max(n, 2)                                   # JLC assembles at least 2
+        return once + n * (parts + (xray(n) if name in JLC_XRAY_BOARDS else 0)) + pcb_price(name, n)[1]
+
+    unit = {name: {n: round(order(name, n) / n, 2) for n in VOLUME_QTY} for name in orders}
+    floor = {}
+    for name in orders:                             # what a board costs once the fees per order are spread thin
+        q, o = JLC_QUOTE[name], orders[name]
+        parts = (o["pcba"]["components"] + o["pcba"].get("SMT", 0)) / q["assembled"]
+        parts += sum((v - 3.0) / q["pcbs"] for key, v in o["pcba"].items() if "sourcing" in key)
+        floor[name] = round(parts + (xray(500) if name in JLC_XRAY_BOARDS else 0)
+                            + JLC_PCB_PRICE[name][100] / 100, 2)
+    racks = {}
+    for r in VOLUME_RACKS:
+        lines = {name: round(order(name, o["need"] * r), 2) for name, o in orders.items()}
+        racks[r] = {"boards": lines, "shipping": JLC_SHIPPING_USD,
+                    "per_rack": round((sum(lines.values()) + JLC_SHIPPING_USD) / r, 2)}
+    return {"unit": unit, "floor": floor, "racks": racks}
+
+
+def volume_md(vol: dict, orders: dict) -> list[str]:
+    md = ["### At volume", "",
+          "Unit cost (USD) of a board for n assembled in one order: the fees per order spread over n, parts held "
+          "at today's prices (bom.py has no LCSC price breaks: passives get cheaper by the hundred, the ICs "
+          "barely), X-ray per board by JLC's tiers, the bare PCBs at JLC's price for that quantity "
+          "(`JLC_PCB_PRICE`, measured on the calculator).  *Floor*: parts, joints, X-ray and PCB per board, once "
+          "the fees per order no longer count.", "",
+          "| Board | " + " | ".join(f"{n}" for n in VOLUME_QTY) + " | Floor |",
+          "|---|" + "---:|" * (len(VOLUME_QTY) + 1)]
+    for name, u in vol["unit"].items():
+        md.append(f"| {name} | " + " | ".join(f"{u[n]:.2f}" for n in VOLUME_QTY) + f" | {vol['floor'][name]:.2f} |")
+    need = ", ".join(f"{o['need']} {name}" for name, o in orders.items())
+    md += ["", f"One rack ({need}) when building several in one order, one shipment "
+           f"(${JLC_SHIPPING_USD:.0f}, held: it grows with the weight):", "",
+           "| Racks | " + " | ".join(orders) + " | Per rack |", "|---|" + "---:|" * (len(orders) + 1)]
+    for r, v in vol["racks"].items():
+        md.append(f"| {r} | " + " | ".join(f"{v['boards'][name] / r:.2f}" for name in orders)
+                  + f" | **{v['per_rack']:.2f}** |")
+    return md
+
+
 def printed(rack) -> tuple[list[dict], list[dict]]:
     """Printed parts with counts per assembly and filament estimate from the STL volume."""
     import trimesh
@@ -616,6 +701,7 @@ def main():
     rack = rackcfg.load()
     elec, orders = electronics(rack)
     cost = jlc_cost(orders)
+    vol = volume(orders)
     prt, prints = printed(rack)
     hw = hardware(rack)
     rows = elec + prt + hw
@@ -638,7 +724,7 @@ def main():
     data = {"rows": rows, "by_category": dict(by_cat), "total_eur": round(total, 2),
             "prints": prints, "bays": n_bays, "rows_n": len(rack.rows),
             "jlc_quote": {"date": JLC_QUOTE_DATE, "currency": "USD", "shipping": JLC_SHIPPING, "boards": JLC_QUOTE,
-                          "order": orders, "cost": cost, "fees": JLC_FEES}}
+                          "order": orders, "cost": cost, "fees": JLC_FEES, "volume": vol}}
     (REPO / "site" / "assets").mkdir(parents=True, exist_ok=True)
     (REPO / "site" / "assets" / "bom.json").write_text(json.dumps(data, ensure_ascii=False, indent=0), encoding="utf-8")
 
@@ -674,7 +760,7 @@ def main():
         if name in orders:
             o = orders[name]
             md.append(f"| | | Order (indicative): {'; '.join(o['changes']) or 'as quoted'} | {o['total']:.2f} |")
-    md += [""] + jlc_cost_md(cost)
+    md += [""] + jlc_cost_md(cost) + [""] + volume_md(vol, orders)
     md += ["", "## Printed parts", "", "| Part | Qty | g each (est.) | STL |", "|---|---:|---:|---|"]
     md += [f"| {p['part']} | {p['qty']} | {p['grams_each'] or '–'} | `{p['stl']}` |" for p in prints]
     md += ["", "## Line items", "", "| Category | Item | Qty | Unit € | Total € | Source |", "|---|---|---:|---:|---:|---|"]
