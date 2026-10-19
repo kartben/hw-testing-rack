@@ -72,7 +72,7 @@ uart:~$ hub status
 
 | Feature | Implementation |
 |---|---|
-| PD contract | the AP33772S negotiates 20 V by itself (VSEL); once VBUS is up the firmware powers its I²C pull-ups (I2C_PU), initializes the drivers and asks for the charger's **28 V EPR** fixed PDO when there is one (`hub pd epr\|20v`, saved).  Never above 28 V: the regulator node's `regulator-max-microvolt` refuses it |
+| PD contract | the AP33772S starts on the charger's 5 V (the FA02 then asks for 20 V by itself, through VSEL); once VBUS is up the firmware powers its I²C pull-ups (I2C_PU), initializes the drivers and asks for the charger's **28 V EPR** fixed PDO when there is one, 20 V otherwise (`hub pd epr\|20v`, saved).  Never above 28 V: the regulator node's `regulator-max-microvolt` refuses it.  A contract under 15 V (`CONFIG_HUB_ROWS_MIN_MV`) never powers the rows, and the sink's switch stays open below it (`vselmin-microvolt`) |
 | Sequencing | rows stay off until the contract has held for 500 ms, then come on one after the other (300 ms apart); the rack bus is enumerated 2 s after the last one, when the nodes have booted |
 | Controller reset | the row enables are held (ESP32-S3 pad hold, RTC domain): a hub reboot or a firmware update does not power-cycle the rack; the rows found on are enumerated again |
 | Shedding | from what the rows really draw (eFuse IMON): above 90 % of the contract current for 1 s, the next row in the shed order (default D, C, B, A) goes off; it comes back once the contract has room for it again for 10 s.  No contract at all: every row off, back with the next one |

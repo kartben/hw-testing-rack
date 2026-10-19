@@ -8,8 +8,9 @@ config HUB_PD_EPR
 	bool "Ask for 28 V EPR when the charger offers it"
 	default y
 	help
-	  The AP33772S negotiates 20 V by itself (VSEL); the firmware then
-	  asks for the charger's 28 V EPR fixed PDO when there is one.  Never
+	  The firmware asks for 20 V, then for the charger's 28 V EPR fixed
+	  PDO when there is one (the AP33772S FA02 asks for 20 V by itself,
+	  through VSEL; the FA01 starts at 5 V).  Never
 	  above 28 V: the board's regulator node caps every request.  The
 	  choice can be changed at run time (shell, web page) and is saved.
 
@@ -20,6 +21,17 @@ config HUB_VBUS_MIN_MV
 config HUB_CONTRACT_SETTLE_MS
 	int "A contract must hold this long before rows are turned on (ms)"
 	default 500
+
+config HUB_ROWS_MIN_MV
+	int "Contracts below this never power the rows (mV)"
+	default 15000
+	help
+	  Every source starts at 5 V, and a sink without VSEL (AP33772S
+	  FA01) stays there until the firmware asks for more: such a
+	  contract never counts as final, the rows stay off (their eFuses
+	  are locked out below 15 V anyway) and come on once the contract is
+	  up.  The board's vselmin-microvolt keeps the sink's switch open
+	  below the same voltage.
 
 config HUB_ROW_STAGGER_MS
 	int "Delay between two rows turned on one after the other (ms)"

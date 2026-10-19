@@ -1,13 +1,16 @@
 /*
  * USB-C PD input (docs/power.md › Negotiation and sequencing).
  *
- * The AP33772S runs from VBUS and negotiates 20 V by itself (VSEL).  The
- * controller watches VBUS on its ADC; once VBUS is up it powers the sink's
- * I2C pull-ups (I2C_PU), initializes the drivers (zephyr,deferred-init) and
- * asks for 28 V EPR when the charger and the cable offer it.  A contract
- * that holds for CONFIG_HUB_CONTRACT_SETTLE_MS is "final": rows.c then
- * turns the rows on.  New source capabilities (a multi-port charger
- * reallocating power) re-run the policy; rows.c sheds what no longer fits.
+ * The AP33772S runs from VBUS and starts on the source's 5 V contract
+ * (the FA02 then asks for 20 V by itself, through VSEL; the FA01 waits).
+ * The controller watches VBUS on its ADC; once VBUS is up it powers the
+ * sink's I2C pull-ups (I2C_PU), initializes the drivers
+ * (zephyr,deferred-init) and asks for 28 V EPR when the charger and the
+ * cable offer it, 20 V otherwise.  A contract of CONFIG_HUB_ROWS_MIN_MV or
+ * more that holds for CONFIG_HUB_CONTRACT_SETTLE_MS is "final": rows.c then
+ * turns the rows on; a lower one never is.  New source capabilities (a
+ * multi-port charger reallocating power) re-run the policy; rows.c sheds
+ * what no longer fits.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -97,9 +100,10 @@ static void read_contract(void)
 		st.selected = mv == 0 ? 0 : fixed_pdo(&st, mv, mv > SPR_MV);
 		k_mutex_unlock(&lock);
 		if (mv != 0) {
-			hub_event(HUB_EV_PD, "contract: %u.%u V / %u.%02u A%s (%u W)", mv / 1000,
+			hub_event(HUB_EV_PD, "contract: %u.%u V / %u.%02u A%s (%u W)%s", mv / 1000,
 				  mv % 1000 / 100, ma / 1000, ma % 1000 / 10,
-				  mv > SPR_MV ? " EPR" : "", mv * ma / 1000000);
+				  mv > SPR_MV ? " EPR" : "", mv * ma / 1000000,
+				  mv < CONFIG_HUB_ROWS_MIN_MV ? ", too low for the rows" : "");
 		}
 		/* Not final yet: rows.c keeps what is on, sheds if it no longer fits */
 		rows_contract(false, mv, ma);
@@ -138,7 +142,7 @@ static void policy_handler(struct k_work *work)
 		hub_event(HUB_EV_PD, "28 V EPR offered but refused (%d): staying at 20 V", ret);
 	}
 
-	/* The VSEL default, asked again so that leaving EPR (by choice) works too */
+	/* 20 V: from the sink's start (5 V), or leaving EPR by choice */
 	ret = regulator_set_voltage(reg, SPR_MV * 1000, SPR_MV * 1000);
 	if (ret != 0) {
 		LOG_WRN("20 V request failed (%d): keeping the sink's own contract", ret);
@@ -293,7 +297,7 @@ static void poll_handler(struct k_work *work)
 	}
 
 	k_mutex_lock(&lock, K_FOREVER);
-	if (!st.final && st.contract_mv != 0 &&
+	if (!st.final && st.contract_mv >= CONFIG_HUB_ROWS_MIN_MV &&
 	    k_uptime_get() - contract_since >= CONFIG_HUB_CONTRACT_SETTLE_MS) {
 		st.final = true;
 		final_now = true;

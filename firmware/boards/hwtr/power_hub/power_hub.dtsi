@@ -195,6 +195,11 @@
 		zephyr,deferred-init;
 		/* IO39 PD_INT <- INT (5 V push-pull through 15k/27k) */
 		int-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
+		/*
+		 * The switch stays open below 15 V (CONFIG_HUB_ROWS_MIN_MV): a
+		 * sink without VSEL (FA01) starts on the source's 5 V contract
+		 */
+		vselmin-microvolt = <15000000>;
 
 		/* The contract: never above 28 V (the nodes' TVS, the eFuses' 33 V OVP) */
 		pd_regulator: regulator {

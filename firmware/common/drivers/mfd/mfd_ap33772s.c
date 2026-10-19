@@ -41,6 +41,8 @@ struct mfd_ap33772s_config {
 	uint16_t poll_interval_ms;
 	uint16_t epr_delay_ms;
 	uint16_t tr[4];
+	/* VSELMIN register value (200 mV/LSB), 0: the chip's default */
+	uint8_t vselmin;
 };
 
 struct mfd_ap33772s_data {
@@ -172,6 +174,13 @@ int mfd_ap33772s_configure(const struct device *dev)
 	ret = mfd_ap33772s_reg_write(dev, AP33772S_REG_MASK, ALL_EVENTS);
 	if (ret != 0) {
 		return ret;
+	}
+
+	if (config->vselmin != 0) {
+		ret = mfd_ap33772s_reg_write(dev, AP33772S_REG_VSELMIN, config->vselmin);
+		if (ret != 0) {
+			return ret;
+		}
 	}
 
 	/* Clear what happened before, read the offers */
@@ -370,7 +379,10 @@ static int mfd_ap33772s_init(const struct device *dev)
 		.epr_delay_ms = DT_INST_PROP(inst, epr_delay_ms),                                  \
 		.tr = {DT_INST_PROP(inst, tr25), DT_INST_PROP(inst, tr50),                         \
 		       DT_INST_PROP(inst, tr75), DT_INST_PROP(inst, tr100)},                       \
+		.vselmin = DT_INST_PROP_OR(inst, vselmin_microvolt, 0) / 200000,                   \
 	};                                                                                         \
+	BUILD_ASSERT(DT_INST_PROP_OR(inst, vselmin_microvolt, 0) / 200000 <= UINT8_MAX,            \
+		     "vselmin-microvolt above the register's range");                              \
 	static struct mfd_ap33772s_data mfd_ap33772s_data_##inst;                                  \
 	DEVICE_DT_INST_DEFINE(inst, mfd_ap33772s_init, NULL, &mfd_ap33772s_data_##inst,            \
 			      &mfd_ap33772s_config_##inst, POST_KERNEL,                            \

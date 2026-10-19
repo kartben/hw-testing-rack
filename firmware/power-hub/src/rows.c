@@ -2,8 +2,9 @@
  * Rows A-D: TPS26600 eFuses (enable, fault, current monitor), sequencing
  * and shedding (docs/power.md).
  *
- *  - Rows stay off until the PD contract is final, then come on one after
- *    the other (CONFIG_HUB_ROW_STAGGER_MS), and the rack bus is enumerated
+ *  - Rows stay off until the PD contract is final (CONFIG_HUB_ROWS_MIN_MV
+ *    or more), then come on one after the other
+ *    (CONFIG_HUB_ROW_STAGGER_MS), and the rack bus is enumerated
  *    once the nodes have booted (CONFIG_HUB_ROW_BOOT_MS).
  *  - The enables are held across a controller reset (pad hold): a reboot of
  *    the hub does not power-cycle the rack.
@@ -351,14 +352,15 @@ static void sample_handler(struct k_work *work)
 
 void rows_contract(bool final, uint32_t mv, uint32_t ma)
 {
-	bool lost = mv == 0;
+	/* No contract, or one too low for the rows (a sink back at 5 V) */
+	bool lost = mv < CONFIG_HUB_ROWS_MIN_MV;
 	bool start = false;
 
 	k_mutex_lock(&lock, K_FOREVER);
 	contract_mv = mv;
 	contract_ma = ma;
 	if (lost) {
-		/* No VRACK without a contract: everything off, back with the next one */
+		/* No usable VRACK: everything off, back with the next final contract */
 		contract_final = false;
 		for (int r = 0; r < HUB_ROWS; r++) {
 			if (rows[r].state == HUB_ROW_ON || rows[r].state == HUB_ROW_CYCLING) {

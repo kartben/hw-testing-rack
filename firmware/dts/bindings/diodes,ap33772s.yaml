@@ -47,6 +47,15 @@ properties:
       interrupt: the source capabilities are read again this long after a
       new-PDO event.
 
+  vselmin-microvolt:
+    type: int
+    description: |
+      Lowest contract voltage at which the chip closes its output switch
+      (VSELMIN, 200 mV steps), written whenever the chip starts.  Without
+      it the chip keeps its default: the VSEL resistor's voltage, or 5 V on
+      a part without VSEL (FA01), which closes the switch on the 5 V
+      contract every source starts with.
+
   tr25:
     type: int
     default: 10000
