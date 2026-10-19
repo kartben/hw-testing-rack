@@ -12,6 +12,7 @@ function node_xy(k) = [NODE_X0 + k[0], NODE_FRONT_Y + (NODE_SIZE[1] - k[1])];
 NODE_REAR_Y = NODE_FRONT_Y + NODE_SIZE[1];
 PWR_NOTCH_Y = node_xy([0, NODE_PWR_Y])[1];        // row cable (JST PH 6) between neighbouring nodes
 NODE_RESET = [7.5, 21.5];                          // SW1 RESET, TS-1187A (KiCad, electronics/bay-node/design.py)
+NODE_BOOT = [15.5, 21.5];                          // SW2 BOOT, beside it
 
 // Opening for a USB-C plug's overmold: the USB-C stadium, scaled up.  The USB-IF reference
 // overmold is at most 12.35 × 6.5 mm; this one also passes squarer overmolds (corner radius
@@ -52,6 +53,14 @@ GUIDE_LIP_T = 2.0;
 GUIDE_WALL_T = DRAWER_X0 - DRAWER_FLANGE[0] - 0.5;  // solid wall of the C-channel (inner face 0.5 from the flange)
 STOP_PIN_X = DRAWER_X0 - DRAWER_FLANGE[0] / 2 - 0.2; // PT 2.6 × 8 stop screw, in the flange path
 FLANGE_Y = [DRAWER_D - 26, DRAWER_D - 6];          // rear flange segment (drawer coords)
+// A bay holds a drawer, or a sled and a port block (config/rack.yaml › population › mount): the drawer
+// cut 1 mm in front of its port wall.  The sled (its front) slides on the same ledges with no chain;
+// the block (its rear bay, the DATA port) is locked by two PT 2.6 × 8 through the guide lips into the
+// ledges, at BLOCK_LOCK_Y; a fixed bay's sled takes two more at SLED_LOCK_Y.
+SPLIT = DRAWER_D - DRAWER_REAR_BAY - DRAWER_WALL - 1;   // a sled's rear edge (drawer coords)
+SLED_FLANGE_Y = [SPLIT - 24, SPLIT - 4];
+BLOCK_LOCK_Y = (FLANGE_Y[0] + FLANGE_Y[1]) / 2;
+SLED_LOCK_Y = (SLED_FLANGE_Y[0] + SLED_FLANGE_Y[1]) / 2;
 STOP_Y = FLANGE_Y[0] - DRAWER_TRAVEL - 4.5;        // stop pin position (carrier coords)
 
 // port wall: the DATA port and a slot for the optional AUX pigtail.  The DATA port is our own small

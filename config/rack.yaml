@@ -97,11 +97,14 @@ power_box:                # mechanical/parts/power_box.scad: the power hub's enc
     cable: "USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m"
 
 # Example population used by the docs, the BOM roll-up and the 3D viewer.
-# board ids refer to mechanical/boards/boards.yaml; cable ids to cables below.
+# board ids refer to mechanical/boards/boards.yaml; cable ids to cables below.  `mount`, per bay, the same
+# tray for all: drawer (default: on a drag chain, the board stays plugged while it slides out), sled (the
+# drawer's front alone, no chain: unplug the DUT cable, then pull; the DATA port stays behind in a port
+# block) or fixed (a sled screwed in place).  Any bay converts either way.
 population:
   A1: { board: nucleo-64,        cable: c-to-micro-b }
   A2: { board: nucleo-144,       cable: c-to-micro-b }
-  A3: { board: nrf52840-dk,      cable: c-to-micro-b }
+  A3: { board: nrf52840-dk,      cable: c-to-micro-b, mount: sled }                # a sled bay: no drag chain
   A4: { board: nrf54l15-dk,      cable: c-to-c }
   B1: { board: frdm-mcxn947,     cable: c-to-c }
   B2: { board: giga-r1-display,  cable: c-to-c }                   # the camera bay: a live LVGL screen (2026-10-18)

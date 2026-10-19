@@ -10,7 +10,9 @@ columns or rows) and makes every one of them reachable over the network
   (Zephyr's `usbip` host service);
 * each bay is a **drawer** that slides out 140 mm along the slope while the
   board stays powered and connected (a drag chain hidden under the floor
-  carries the cable);
+  carries the cable), or, per bay and on the same tray, a **sled** without a
+  chain (unplug, then pull; its DATA port stays behind) or the same sled
+  screwed **fixed**;
 * boards are screwed onto **form-factor plates** that drop into any drawer;
 * one **USB-C PD charger** powers the rack through a **power box** under the
   first column: the hub negotiates 20 or 28 V, an eFuse per row, and the rack

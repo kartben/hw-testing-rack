@@ -27,7 +27,10 @@ bay node (plenum)                                 drawer
    chain's fixed end, through the drag chain, out of its moving end
    (forwards, then a U-turn in front of it, between the chain's runs, low
    over the tray floor) and up through the cable window into the port
-   board's rear edge.  It never needs to be touched again.  It is the rack's
+   board's rear edge.  It never needs to be touched again.  (A sled or fixed
+   bay has no chain: the lead runs from J7 back along the plenum, right of
+   the node, under the sled, and up through the port block's window into its
+   PH, its slack coiled in the plenum.)  It is the rack's
    camera's PH 8 lead type (pin n ↔ pin 9−n, both plugs the same face up: the
    port board's pinout is J7's mirrored), with 8 pins so a 6-pin row cable
    (VRACK, up to 28 V) cannot go in; twist D−/D+ (pins 3-4) by hand.  (A

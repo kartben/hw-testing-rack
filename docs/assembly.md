@@ -71,6 +71,15 @@ right and floor plate; base brace into the free inserts of the shared ladder
 5. **Plate + board + short cable**, printed `bay_label` (or 12 mm tape) in the
    front recess.
 
+A **sled or fixed bay** (`mount: sled` / `fixed`) skips steps 2 and 4: no chain,
+anchor (nor its two inserts), foot or magnets.  The DATA board goes into the
+`drawer_block` as into a drawer's rear bay; a 30 cm DATA lead from J7 runs back
+along the plenum and up through the block's window into its PH.  Slide the
+block in onto the ledges to the rear (its flanges under the guide lips) and lock
+it: 2 × PT 2.6×8 down through the guide lips and its flanges into the ledges,
+at the holes level with them.  Then the `drawer_sled`, and the stop screw; for a
+fixed bay, 2 × PT 2.6×8 more through the lips into the sled's flanges.
+
 To take a tray out: pull the drawer out, press both latch arms inwards, slide
 the tray forwards.
 

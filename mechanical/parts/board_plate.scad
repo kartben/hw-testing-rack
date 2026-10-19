@@ -34,6 +34,9 @@ module plate_body() {
         for (p = plate_pins()) translate([p[0], p[1], -EPS]) cylinder(d = 4.2, h = PLATE_T + 1);
         // finger holes to lift the plate out
         for (x = [12, PLATE_W - 12]) translate([x, PLATE_D / 2, -EPS]) rslot(14, 9, PLATE_T + 1);
+        // pin holes over the node's RESET and BOOT, as in the drawer's floor
+        for (k = [NODE_RESET, NODE_BOOT]) translate(concat(node_xy(k) - [DRAWER_X0 + PLATE_X0, PLATE_Y0], [-EPS]))
+            cylinder(d = 3.2, h = PLATE_T + 1);
     }
 }
 

@@ -23,6 +23,8 @@ WEB_PARTS = {
     # name: (scad, defines)
     "tray": ("parts/tray.scad", {"PART": "tray"}),
     "drawer": ("parts/drawer.scad", {}),
+    "drawer_sled": ("parts/drawer.scad", {"PART": "sled"}),
+    "drawer_block": ("parts/drawer.scad", {"PART": "block"}),
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "chain_foot": ("parts/chain_parts.scad", {"PART": "foot"}),
@@ -422,6 +424,18 @@ def camera_lead(j6, x0, node_right, row_h, tilt, lens, mount, depth, cp):
     return rnd(rounded_path(pts, 6.0)), end, rnd(rounded_path(mega, 5.0))
 
 
+def data_lead_short(j7, ph, x_run, top):
+    """A sled bay's DATA lead (no drag chain): up out of the node's J7 to the plenum's top (under the sled),
+    over to x_run right of the node (clear of the module's antenna at its rear edge), back along it, over to
+    the port block's window and up through it into the DATA board's PH from the rear."""
+    p0, _ = plug_exit(j7)
+    q, _ = plug_exit(ph)
+    yb = q[1] + 2.0
+    pts = [p0, (p0[0], p0[1], top), (x_run, p0[1] + 12, top), (x_run, yb - 12, top), (q[0], yb, top),
+           (q[0], yb, q[2]), q]
+    return rounded_path(pts, 5.0)
+
+
 def cable_free_length(cab, a, b):
     """A cable's length between its two strain reliefs: its length end to end less both plugs (a
     straight plug: shell, overmold and relief; a right-angle one: about its body's depth)."""
@@ -561,20 +575,25 @@ def build(rack) -> Path:
     fixed = raw["chain"]["fixed"]
     chain_z = c["bottom"] + raw["chain"]["outer"][0] / 2 + 0.6     # the chain's mid-height
 
-    def unit_hardware(i, u, bid, dy, open_frac):
-        """Tray, drawer, chain and node for one bay."""
+    def unit_hardware(i, u, bid, dy, open_frac, drawer=True):
+        """Tray, node and either the drawer and its chain, or a sled bay's sled and port block (no chain; the
+        viewer doesn't slide them: the DUT cable is unplugged first)."""
         x0 = rack.unit_x(u)
         add("tray", (x0, 0, 0), row=i, layer="trays", bay=bid)
-        add("drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid, movable=True)
-        add("chain_anchor", (x0 + fixed[0], fixed[1], c["bottom"] + 3), row=i, layer="chain", bay=bid)
-        add("chain_foot", (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, plenum), row=i,
-            layer="chain", bay=bid, movable=True)
-        items["chains"].append({"bay": bid, "row": i, "origin": [x0, 0, 0], "open": open_frac,
-                                "fixed": fixed, "moving_x": raw["chain"]["moving_x"],
-                                "moving_y": raw["chain"]["moving_y"], "bend_y": raw["chain"]["bend_y"],
-                                "radius": raw["chain"]["radius"], "travel": d["travel"], "z": chain_z,
-                                "width": raw["chain"]["outer"][0], "height": raw["chain"]["outer"][1],
-                                "pitch": raw["chain"]["pitch"]})
+        if drawer:
+            add("drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid, movable=True)
+            add("chain_anchor", (x0 + fixed[0], fixed[1], c["bottom"] + 3), row=i, layer="chain", bay=bid)
+            add("chain_foot", (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, plenum), row=i,
+                layer="chain", bay=bid, movable=True)
+            items["chains"].append({"bay": bid, "row": i, "origin": [x0, 0, 0], "open": open_frac,
+                                    "fixed": fixed, "moving_x": raw["chain"]["moving_x"],
+                                    "moving_y": raw["chain"]["moving_y"], "bend_y": raw["chain"]["bend_y"],
+                                    "radius": raw["chain"]["radius"], "travel": d["travel"], "z": chain_z,
+                                    "width": raw["chain"]["outer"][0], "height": raw["chain"]["outer"][1],
+                                    "pitch": raw["chain"]["pitch"]})
+        else:
+            for part in ("drawer_sled", "drawer_block"):
+                add(part, (x0 + rack.drawer_x0, 0, plenum), row=i, layer="drawers", bay=bid)
         info_ = pop.get(bid, {})
         led = "#2f7bff" if info_.get("pc_cable") else ("#ffb300" if info_.get("open") else "#19e07a")
         items["leds"].append({"bay": bid, "row": i, "space": "row", "color": led,
@@ -588,16 +607,20 @@ def build(rack) -> Path:
         dxw_ = x0 + rack.drawer_x0
         for k in ("pcb", "usb", "ph"):
             add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
-                movable=True)
+                movable=drawer)
         j7 = {"at": [x0 + node["x0"] + NODE_J7[0], rack.node_front_y + node["size"][1] - NODE_J7[1],
                      pcb_top + NODE_J7[2] - 6.0], "dir": [0, 0, -1], "up": [0, 1, 0], "type": "ph8"}
+        ph = {"at": [dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1], plenum + dp_z + dp["thickness"] + 2.8],
+              "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph8"}
+        if not drawer:
+            cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 4.0, plenum - 3.0), row=i, kind="ext",
+                  bay=bid, radius=1.2, ends=[j7, ph], label="DATA lead (JST PH 8, node J7 → the port block)")
+            return x0, plenum
         p0, _ = plug_exit(j7)
         top = plenum - 2.0                                 # under the drawer
         cable(rounded_path([p0, (p0[0], p0[1], top), (x0 + fixed[0], fixed[1] - 21, top),
                             (x0 + fixed[0], fixed[1] - 11, chain_z), (x0 + fixed[0], fixed[1], chain_z)], 6.0),
               row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 8, through the drag chain)")
-        ph = {"at": [dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1], plenum + dp_z + dp["thickness"] + 2.8],
-              "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph8"}
         mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
         x_run = max(ph["at"][0], x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0)   # 6 mm off the fixed run
         cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run), row=i, kind="ext", bay=bid, radius=1.2, ends=[ph],
@@ -607,9 +630,10 @@ def build(rack) -> Path:
     for b in rack.bays():
         i = b.row
         info = pop.get(b.id, {})
-        open_frac = 1.0 if info.get("open") else 0.0
+        drawer = rack.mount(b.id) == "drawer"
+        open_frac = 1.0 if info.get("open") and drawer else 0.0
         dy = -d["travel"] * open_frac
-        x0, dz = unit_hardware(i, b.unit, b.id, dy, open_frac)
+        x0, dz = unit_hardware(i, b.unit, b.id, dy, open_frac, drawer)
         dxw = x0 + rack.drawer_x0
         meta = {"id": b.id, "row": rack.rows[i]["id"], "row_index": i, "col": b.index + 1, "span": 1,
                 "camera": b.id in cams, "unit_x": x0,
@@ -619,7 +643,7 @@ def build(rack) -> Path:
             o = rackcfg.orient_board(bd)
             cab = cables_cfg[info["cable"]]
             add(f"plate_{info['board']}", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i,
-                layer="plates", bay=b.id, movable=True)
+                layer="plates", bay=b.id, movable=drawer)
             if o["usb_side"]:            # same placement as board_plate.scad
                 bx = dxw + plate_x0 + 2.5    # board_plate.scad › SIDE_X
                 by = dy + plate_y0 + (plate_d - o["l"]) / 2
@@ -634,7 +658,7 @@ def build(rack) -> Path:
                                     "color": bd.get("color", "#1b5e20"), "usb_x": o["usb_x"],
                                     "usb_type": bd["usb"]["type"], "usb2_x": o.get("usb2_x"),
                                     "usb_side": o["usb_side"],
-                                    "verified": bd.get("verified", False), "movable": True,
+                                    "verified": bd.get("verified", False), "movable": drawer,
                                     **({"model": mdl} if (mdl := board_model(info["board"], bd)) else {}),
                                     **({"screen": scr} if (scr := board_screen(bd)) else {})})
             # DUT cable: drawer DATA port → board USB connector.  The DATA socket goes in the port
@@ -678,9 +702,9 @@ def build(rack) -> Path:
                       f"from the DATA socket to the board")
             cable(pts, row=i, kind="dut", bay=b.id, type=ctype,
                   label=cables_cfg[ctype]["label"], a="usb-c", b=btype, ends=ends, radius=1.9,
-                  movable=True)
+                  movable=drawer)
             meta.update({"board": bd["name"], "board_id": info["board"], "cable": cab["label"],
-                         "usb": bd["usb"]["type"], "classic": bool(info.get("pc_cable")), "open": bool(info.get("open")),
+                         "usb": bd["usb"]["type"], "classic": bool(info.get("pc_cable")), "open": bool(info.get("open")) and drawer, "mount": rack.mount(b.id),
                          "verified": bd.get("verified", False)})
             if info.get("pc_cable"):
                 fx = x0 + node["x0"] + node["front"]["pc_port"]

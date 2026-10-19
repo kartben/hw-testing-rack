@@ -10,9 +10,9 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Cameras | 64 |
 | Printed parts | 58 |
 | Cables | 44 |
-| Motion | 21 |
+| Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **850** |
+| **Total** | **848** |
 
 ≈ **€106 per bay** all-in.
 
@@ -52,9 +52,11 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | camera_diffuser | 2 | 0.6 | `mechanical/stl/camera_diffuser.stl` |
 | camera_pod | 2 | 12.1 | `mechanical/stl/camera_pod.stl` |
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
-| chain_anchor | 8 | 1.4 | `mechanical/stl/chain_anchor.stl` |
-| chain_foot | 8 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 8 | 44.0 | `mechanical/stl/drawer.stl` |
+| chain_anchor | 7 | 1.4 | `mechanical/stl/chain_anchor.stl` |
+| chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
+| drawer | 7 | 44.0 | `mechanical/stl/drawer.stl` |
+| drawer_block | 1 | 14.5 | `mechanical/stl/drawer_block.stl` |
+| drawer_sled | 1 | 30.6 | `mechanical/stl/drawer_sled.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 49.6 | `mechanical/stl/ladder_a.stl` |
 | ladder_b | 5 | 49.6 | `mechanical/stl/ladder_b.stl` |
@@ -72,7 +74,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 20.8 | `mechanical/stl/power_box_lid.stl` |
 | power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |
-| tray | 8 | 79.0 | `mechanical/stl/tray.stl` |
+| tray | 8 | 78.9 | `mechanical/stl/tray.stl` |
 
 ## Line items
 
@@ -208,16 +210,16 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT | 1  | 17.20 | 17.20 | estimate, not quoted |
 | Electronics | Components camera-pod: JLC quote minus the catalogue prices above | 1  | 0.08 | 0.08 | estimate, not quoted |
 | Printed parts | PETG filament | 2.9 kg | 20.00 | 58.00 | any |
-| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 144  | 0.03 | 4.32 | AliExpress (bulk) / Ruthex |
-| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 64  | 0.02 | 1.28 | AliExpress (bulk) |
+| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 142  | 0.03 | 4.26 | AliExpress (bulk) / Ruthex |
+| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 62  | 0.02 | 1.24 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid, camera pods) | 44  | 0.02 | 0.88 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
-| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board | 64  | 0.02 | 1.28 | AliExpress (bulk, e.g. HZYUEGOU) |
-| Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 32  | 0.01 | 0.32 | AliExpress (bulk) |
+| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: stop, 2 port-block locks, 2 DATA (and 2 sled locks if fixed) | 61  | 0.02 | 1.22 | AliExpress (bulk, e.g. HZYUEGOU) |
+| Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 28  | 0.01 | 0.28 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge) | 1 lot | 3.99 | 3.99 | AliExpress 1005010074888189, "6x3mm-50 pièces" |
 | Fasteners | Cyanoacrylate glue, gel (detent magnets) | 1  | 3.00 | 3.00 | any |
 | Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 2 m | 4.00 | 8.00 | Olimex DRAG-CHAIN-7X7 |
-| Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain | 6  | 2.17 | 13.02 | AliExpress 1005003181041939, "7x7mm" (or one more metre of chain per pair) |
+| Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain | 5  | 2.17 | 10.85 | AliExpress 1005003181041939, "7x7mm" (or one more metre of chain per pair) |
 | Cables | JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (DATA leads: node J7 → drag chain → DATA port board; camera leads: node J6 → pod J1) | 2 lot | 4.50 | 9.00 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P, Length50CM |
 | Cables | JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 (bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest flat at the front of the plenum) | 2 lot | 2.85 | 5.70 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length20CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS) | 1 lot | 3.19 | 3.19 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length30CM |

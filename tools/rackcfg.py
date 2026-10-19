@@ -126,6 +126,16 @@ class Rack:
                 yield Bay(f"{r['id']}{k + 1}", i, u, span, k)
                 u += span
 
+    MOUNTS = ("drawer", "sled", "fixed")
+
+    def mount(self, bay_id: str) -> str:
+        """How a bay holds its board (population › mount): a drawer on a drag chain (the default), or a sled
+        (the drawer's front, no chain) with a port block locked behind it, its own sled locked too if fixed."""
+        m = self.raw.get("population", {}).get(bay_id, {}).get("mount", "drawer")
+        if m not in self.MOUNTS:
+            raise ValueError(f"{bay_id}: mount {m!r}, not one of {self.MOUNTS}")
+        return m
+
     def bay_ids(self):  # (row, index, id) for older callers
         for b in self.bays():
             yield b.row, b.index, b.id

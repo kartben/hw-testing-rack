@@ -2246,27 +2246,27 @@
 "qty": 2.9,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈2.6 kg estimated + 10 % waste, 96 parts",
+"notes": "≈2.6 kg estimated + 10 % waste, 95 parts",
 "ext_eur": 58.0
 },
 {
 "category": "Fasteners",
 "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
 "supplier": "AliExpress (bulk) / Ruthex",
-"qty": 144,
+"qty": 142,
 "unit_eur": 0.03,
-"notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor; 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs",
+"notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs",
 "unit": "pcs",
-"ext_eur": 4.32
+"ext_eur": 4.26
 },
 {
 "category": "Fasteners",
 "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",
 "supplier": "AliExpress (bulk)",
-"qty": 64,
+"qty": 62,
 "unit_eur": 0.02,
 "unit": "pcs",
-"ext_eur": 1.28
+"ext_eur": 1.24
 },
 {
 "category": "Fasteners",
@@ -2289,22 +2289,22 @@
 },
 {
 "category": "Fasteners",
-"item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board",
+"item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: stop, 2 port-block locks, 2 DATA (and 2 sled locks if fixed)",
 "supplier": "AliExpress (bulk, e.g. HZYUEGOU)",
-"qty": 64,
+"qty": 61,
 "unit_eur": 0.02,
 "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)",
 "unit": "pcs",
-"ext_eur": 1.28
+"ext_eur": 1.22
 },
 {
 "category": "Fasteners",
 "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
 "supplier": "AliExpress (bulk)",
-"qty": 32,
+"qty": 28,
 "unit_eur": 0.01,
 "unit": "pcs",
-"ext_eur": 0.32
+"ext_eur": 0.28
 },
 {
 "category": "Fasteners",
@@ -2339,11 +2339,11 @@
 "category": "Motion",
 "item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain",
 "supplier": "AliExpress 1005003181041939, \"7x7mm\" (or one more metre of chain per pair)",
-"qty": 6,
+"qty": 5,
 "unit_eur": 2.17,
 "notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing is for the non-opening 7×7 type: check one on the open links before buying the lot",
 "unit": "pcs",
-"ext_eur": 13.02
+"ext_eur": 10.85
 },
 {
 "category": "Cables",
@@ -2352,7 +2352,7 @@
 "qty": 2,
 "unit": "lot",
 "unit_eur": 4.5,
-"notes": "8 DATA + 2 camera leads; price interpolated from the 6-pin lots, not read: check the 8P lengths on the listing (45–50 cm).  The DATA route is ≈ 38 cm plugs included (constant over the stroke); the spare goes in a wider bend between the node and the chain's fixed end (nothing moves there), never in front of the chain's moving end.  On arrival: both plugs show the same face, pin 1 rings to pin 8; twist D−/D+ (pins 3-4 at the node) by hand.  Or crimp them: PHR-8 + 16 × SPH-002T-P0.5S, 24 AWG",
+"notes": "8 DATA + 2 camera leads; price interpolated from the 6-pin lots, not read: check the 8P lengths on the listing (45–50 cm).  The DATA route is ≈ 38 cm plugs included (constant over the stroke); the spare goes in a wider bend between the node and the chain's fixed end (nothing moves there), never in front of the chain's moving end.  A sled bay's route is ≈ 22 cm (no chain): the slack coiled in the plenum.  On arrival: both plugs show the same face, pin 1 rings to pin 8; twist D−/D+ (pins 3-4 at the node) by hand.  Or crimp them: PHR-8 + 16 × SPH-002T-P0.5S, 24 AWG",
 "ext_eur": 9.0
 },
 {
@@ -2497,13 +2497,13 @@
 "by_category": {
 "Electronics": 565.92,
 "Printed parts": 58.0,
-"Fasteners": 15.47,
-"Motion": 21.02,
+"Fasteners": 15.27,
+"Motion": 18.85,
 "Cables": 43.58,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 850.09,
+"total_eur": 847.72,
 "prints": [
 {
 "part": "bay_label",
@@ -2556,24 +2556,38 @@
 },
 {
 "part": "chain_anchor",
-"qty": 8,
+"qty": 7,
 "grams_each": 1.4,
-"grams_total": 11.3,
+"grams_total": 9.9,
 "stl": "mechanical/stl/chain_anchor.stl"
 },
 {
 "part": "chain_foot",
-"qty": 8,
+"qty": 7,
 "grams_each": 1.4,
-"grams_total": 11.4,
+"grams_total": 9.9,
 "stl": "mechanical/stl/chain_foot.stl"
 },
 {
 "part": "drawer",
-"qty": 8,
+"qty": 7,
 "grams_each": 44.0,
-"grams_total": 352.1,
+"grams_total": 308.0,
 "stl": "mechanical/stl/drawer.stl"
+},
+{
+"part": "drawer_block",
+"qty": 1,
+"grams_each": 14.5,
+"grams_total": 14.5,
+"stl": "mechanical/stl/drawer_block.stl"
+},
+{
+"part": "drawer_sled",
+"qty": 1,
+"grams_each": 30.6,
+"grams_total": 30.6,
+"stl": "mechanical/stl/drawer_sled.stl"
 },
 {
 "part": "floor_plate",
@@ -2697,8 +2711,8 @@
 {
 "part": "tray",
 "qty": 8,
-"grams_each": 79.0,
-"grams_total": 631.8,
+"grams_each": 78.9,
+"grams_total": 631.4,
 "stl": "mechanical/stl/tray.stl"
 }
 ],

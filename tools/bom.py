@@ -138,6 +138,12 @@ DUT_CABLES = {
 CAMERA_SETS = 2
 
 
+def bay_mounts(rack) -> tuple[int, int]:
+    """(drawer bays, sled bays): a fixed bay is a sled bay screwed down (config/rack.yaml › population › mount)."""
+    ms = [rack.mount(b.id) for b in rack.bays()]
+    return ms.count("drawer"), len(ms) - ms.count("drawer")
+
+
 def _feed_lots(rack):
     """(length cm, EUR per lot of 5, [row ids]) for the feeds: row k gets ROW_FEED_CM[k] (the last one beyond)."""
     lots = {}
@@ -266,11 +272,13 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
     n_bays = sum(1 for _ in rack.bays())
     cols, n_rows = rack.units, len(rack.rows)
     cams = CAMERA_SETS                      # pods printed (config cameras: the bays shown with one)
+    n_drawer, n_sled = bay_mounts(rack)
     counts = Counter({
         # the panel frame: a ladder per column boundary and level, a floor plate, a cap plate and
         # an X brace per column and level
         "ladder_base": cols + 1, "ladder_cap": cols + 1, "floor_plate": cols, "cap_plate": cols, "brace_base": cols,
-        "tray": n_bays, "drawer": n_bays, "chain_foot": n_bays, "chain_anchor": n_bays,
+        "tray": n_bays, "drawer": n_drawer, "chain_foot": n_drawer, "chain_anchor": n_drawer,
+        "drawer_sled": n_sled, "drawer_block": n_sled,
         "camera_pod": cams, "camera_diffuser": cams, "bay_label": n_bays,
         # the power box: base and lid, and their optional label inlays (a second, light filament)
         "power_box_base": 1, "power_box_lid": 1, "power_box_labels": 1, "power_box_lid_labels": 1,
@@ -311,31 +319,34 @@ def hardware(rack) -> list[dict]:
     pop = r.get("population", {})
     cams = CAMERA_SETS                      # camera pods bought, wherever they go
     braces = cols * (n_rows + 1)
-    chain_m = math.ceil(0.19 * n_bays + 0.3)      # sold by the metre, one pair of end pieces with each
+    n_drawer, n_sled = bay_mounts(rack)     # sled bays: no chain, foot, anchor or magnets
+    n_fixed = sum(1 for b in rack.bays() if rack.mount(b.id) == "fixed")
+    chain_m = math.ceil(0.19 * n_drawer + 0.3) if n_drawer else 0   # sold by the metre, one pair of end pieces with each
     charger = r["power_box"]["charger"]
     rows = [
         {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
-         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 6 * n_bays + 4 * n_bays + 4,
+         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 4 * n_bays + 2 * n_drawer + 4 * n_bays + 4,
          "unit_eur": 0.03,
          "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node "
-                  "standoffs + 2 chain anchor; 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub "
+                  "standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub "
                   "standoffs"},
         {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",
-         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_bays, "unit_eur": 0.02},
+         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_drawer, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "M3×6 (node PCB, power box lid, camera pods)", "supplier": "AliExpress (bulk)",
          "qty": 4 * n_bays + 4 + 4 * cams, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",
          "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
          "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
         {"category": "Fasteners", "item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): "
-                                         "drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board",
-         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)", "qty": 8 * n_bays, "unit_eur": 0.02,
+                                         "drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board; "
+                                         "a sled bay: stop, 2 port-block locks, 2 DATA (and 2 sled locks if fixed)",
+         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)", "qty": 8 * n_drawer + 5 * n_sled + 2 * n_fixed, "unit_eur": 0.02,
          "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)"},
         {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
-         "supplier": "AliExpress (bulk)", "qty": 4 * n_bays, "unit_eur": 0.01},
+         "supplier": "AliExpress (bulk)", "qty": 4 * n_drawer, "unit_eur": 0.01},
         {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the "
                                          "drawer, one in the tray ledge)",
-         "supplier": "AliExpress 1005010074888189, \"6x3mm-50 pièces\"", "qty": math.ceil(2 * n_bays / 50),
+         "supplier": "AliExpress 1005010074888189, \"6x3mm-50 pièces\"", "qty": math.ceil(2 * n_drawer / 50),
          "unit": "lot", "unit_eur": 3.99,
          "notes": "glued (a drop of CA in the slip-fit pocket): the other magnet pulls each one out of its pocket's "
                   "mouth.  Polarity: stack the pair, mark both outer faces; marked faces into the pockets"},
@@ -350,7 +361,7 @@ def hardware(rack) -> list[dict]:
         {"category": "Motion", "item": "End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers "
                                       "beyond one pair per metre of chain",
          "supplier": "AliExpress 1005003181041939, \"7x7mm\" (or one more metre of chain per pair)",
-         "qty": max(0, n_bays - chain_m), "unit_eur": 2.17,
+         "qty": max(0, n_drawer - chain_m), "unit_eur": 2.17,
          "notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing "
                   "is for the non-opening 7×7 type: check one on the open links before buying the lot"},
         # the drawer's DATA port: our own small board (electronics/data-port, in the Electronics lines)
@@ -365,7 +376,8 @@ def hardware(rack) -> list[dict]:
          "notes": f"{n_bays} DATA + {CAMERA_SETS} camera leads; price interpolated from the 6-pin lots, not read: "
                   "check the 8P lengths on the listing (45–50 cm).  The DATA route is ≈ 38 cm plugs included "
                   "(constant over the stroke); the spare goes in a wider bend between the node and the chain's fixed "
-                  "end (nothing moves there), never in front of the chain's moving end.  On arrival: both plugs show "
+                  "end (nothing moves there), never in front of the chain's moving end.  A sled bay's route is "
+                  "≈ 22 cm (no chain): the slack coiled in the plenum.  On arrival: both plugs show "
                   "the same face, pin 1 rings to pin 8; twist D−/D+ (pins 3-4 at the node) by hand.  Or crimp them: "
                   "PHR-8 + 16 × SPH-002T-P0.5S, 24 AWG"},
         # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up.  Bought in

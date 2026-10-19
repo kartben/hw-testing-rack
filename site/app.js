@@ -131,7 +131,7 @@ function partMaterial(name) {
   if (name.startsWith('brace_')) return MAT.braces;
   if (name === 'tray') return MAT.trays;
   if (name === 'floor_plate' || name === 'cap_plate') return MAT.framePlates;
-  if (name === 'drawer') return MAT.drawers;
+  if (name.startsWith('drawer')) return MAT.drawers;      // a drawer, or a sled bay's sled and port block
   if (name.startsWith('chain_')) return MAT.chainParts;
   if (name.startsWith('plate_')) return MAT.plates;
   if (name === 'camera_diffuser' || name === 'podpcb_parts') return MAT.powerLabels;
