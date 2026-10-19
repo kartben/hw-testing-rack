@@ -160,10 +160,28 @@ USB PD 3.1 charger → 5 A e-marked cable → hub (in the power box):
   on VBUS is the hub's own ≈ 150 µF (the 100 µF bulk, the buck's and the
   eFuses' inputs) and the controller, as with the AP33772S's switch on; only at
   plug-in, before the 9 V contract, does the charger now see it too.
+* **The 150 µF at plug-in stays** (decided 2026-10-20).  USB PD expects about
+  10 µF on a sink at attach; the AP33772S hub connected the same bulk at its
+  first 5 V contract.  At 5 V it is ≈ 0.75 mC, which a charger's current limit
+  charges in well under a millisecond.  And the 100 µF electrolytic (C8) is
+  what holds VBUS down when the eFuses cut a load: the ceramics alone keep only
+  ≈ 15 µF at 28 V (DC bias), and the charger cable's ≈ 1 µH would ring VBUS
+  ≈ 1.3 V up at a 5 A cut, toward the CH224A's 32 V; with C8, ≈ 0.5 V and
+  damped.  Bring-up checks it on two or three chargers (assembly.md); a charger
+  that refuses it gets C8 left off.
 * A short on VRACK itself, ahead of the eFuses, is the charger's to catch
   (every PD source has its own OCP).  Above 28 V: the eFuses cut out at 33 V,
   and the CH224A resets above 32 V; its supply's RC rides through a surge's
   fast edge, but the SMAJ30A only starts at 33.3 V.
+* **No clamp on the CH224A's supply.**  A zener there would have to stay off
+  up to 29.4 V (28 V + 5 %) and hold under 32 V: no stocked zener fits that
+  window, and behind 56 Ω it would carry tens of milliamps, watts, before the
+  SMAJ30A takes over at 33.3 V.  A PD charger regulates VBUS to ±5 % and has
+  its own OVP; the RC and C8 take fast edges and load dumps off.  What is left,
+  a faulty charger holding VBUS between 32 and 33.3 V, costs U1 (a $0.43
+  ESSOP-10, replaceable by hand).  For more margin the firmware can ask for
+  20 V whenever the charger's 20 V offer covers the budget (5 A: 100 W, the
+  worst case of 8 bays): the pins then sit 11 V under their rating.
 
 Sources: WCH CH224 datasheet (v2.1), USB PD 3.1 specification, TI TPS2660 / LMR51635 (SLUSF64B)
 datasheets, ADI AN-88 (hot-plug ringing), LCSC listings (Oct 2026).

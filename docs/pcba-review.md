@@ -230,7 +230,8 @@ audit re-run on both boards (below).  The data port and the camera pod went to t
 Main's hub has had the CH224A instead of the AP33772S since these fixes were drawn (no input
 switch): H1 and H8 fell away with Q1/Q2 (D2 with them; the C495809 correction stays in the table),
 H4 with the AP33772S's sourcing, H5 became the CH224A's 32 V pins (its supply through 56 Ω + 1 µF);
-H6 grows to ≈ 150 µF at plug-in.  The other fixes are on the board.
+H6 grows to ≈ 150 µF at plug-in: kept on purpose, and no clamp added on the CH224A's supply
+(power.md › Protection chain gives why; both on the bring-up list).  The other fixes are on the board.
 
 **Bay node**
 
