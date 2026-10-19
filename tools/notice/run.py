@@ -161,9 +161,9 @@ def remote_drawings(names: list[str]) -> None:
                 t.add(f, f"build/parts/{f.name}")
     subprocess.run(on_remote(f"rm -rf {d}/run && mkdir -p {d}/run/build/out && tar -xzf - -C {d}/run"),
                    input=buf.getvalue(), check=True)
-    subprocess.run(on_remote(f"cd {d}/run && NOTICE_BUILD=$PWD/build REPROJECT=1 python3 jobs.py ../env/bin/freecadcmd "
+    subprocess.run(on_remote(f"cd {d}/run && NOTICE_BUILD=$PWD/build REPROJECT=1 ../env/bin/python jobs.py ../env/bin/freecadcmd "
                              + ",".join(names)), check=True)
-    back = subprocess.run(on_remote(f"tar -czf - -C {d}/run/build out && rm -rf {d}/run"), capture_output=True, check=True)
+    back = subprocess.run(on_remote(f"COPYFILE_DISABLE=1 tar -czf - -C {d}/run/build out && rm -rf {d}/run"), capture_output=True, check=True)
     with tarfile.open(fileobj=io.BytesIO(back.stdout), mode="r:gz") as t:
         t.extractall(BUILD, filter="data")
 

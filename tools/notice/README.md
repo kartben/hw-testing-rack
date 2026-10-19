@@ -28,30 +28,34 @@ uploaded (`assets.json` keeps each one's SHA-256).
 ### The drawings on another machine
 
 With `NOTICE_REMOTE` set, `run.py` prepares the solids here (OpenSCAD,
-KiCad), draws on a Linux box over ssh and brings the SVGs back:
+KiCad), draws on another machine over ssh (Linux or macOS) and brings the
+SVGs back:
 
 ```bash
-NOTICE_REMOTE="ssh -o BatchMode=yes box" python tools/notice/run.py
+NOTICE_REMOTE="ssh -o BatchMode=yes mac" python tools/notice/run.py
 NOTICE_REMOTE="ssh -o BatchMode=yes jump ssh -o BatchMode=yes box" python tools/notice/run.py   # through a jump host
 ```
 
-The box needs, in `~/claude-scratch/notice` (`NOTICE_REMOTE_DIR`), a
-conda-forge FreeCAD with the Fasteners workbench in its `Mod` (≈ 3.7 GB):
+The machine needs, in `~/claude-scratch/notice` (`NOTICE_REMOTE_DIR`), a
+conda-forge FreeCAD with the Fasteners workbench in its `Mod` (≈ 3–4 GB;
+`osx-arm64` for an Apple-silicon Mac, `linux-64` for a PC):
 
 ```bash
 cd ~/claude-scratch/notice
-curl -fsSL https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj bin/micromamba
+curl -fsSL https://micro.mamba.pm/api/micromamba/osx-arm64/latest | tar -xj bin/micromamba
 MAMBA_ROOT_PREFIX=$PWD/mamba bin/micromamba create -y -p $PWD/env -c conda-forge --override-channels \
   freecad=1.1.3 python=3.12 shapely numpy scipy pyyaml && rm -rf mamba/pkgs
 git clone https://github.com/shaise/FreeCAD_FastenersWB.git env/Mod/fasteners
 ```
 
 `jobs.py` runs the drawings there, one FreeCAD process each, as many at
-once as the box's memory holds: a whole-rack drawing peaks at ≈ 5.5 GB, a
-parts card at ≈ 1 GB; it keeps each drawing's measured peak in
-`peaks.json` beside `env/` for the next run.  On a 16-core, 14 GB box the
-memory sets the pace (two or three whole-rack drawings at a time): ≈ 35
-minutes, about as long as the four local processes, but this PC stays free.
+once as the machine's free memory holds: a whole-rack drawing peaks at
+≈ 5 GB, a parts card at ≈ 1 GB; it keeps each drawing's measured peak in
+`peaks.json` beside `env/` for the next run.  Memory sets the pace: on a
+14 GB Linux box a full run took ≈ 35 minutes, about as long as four local
+processes, but this PC stays free.  The machine's FreeCAD (OpenCASCADE
+7.9.3, arm64 or x86) rounds a little differently from the Windows build,
+so the first run there changes most SVGs by a few bytes.
 
 ### Publishing (Claude, with the Artifact tool)
 
