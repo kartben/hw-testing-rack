@@ -383,6 +383,15 @@
   "stock": 814273,
   "basic": true
  },
+ "R:6.8k:0603": {
+  "lcsc": "C23212",
+  "mpn": "0603WAF6801T5E",
+  "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+  "description": "100mW 6.8kΩ 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
+  "price": 0.0023,
+  "stock": 1440029,
+  "basic": true
+ },
  "R:680:0603": {
   "lcsc": "C23228",
   "mpn": "0603WAF6800T5E",

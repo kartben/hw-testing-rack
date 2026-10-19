@@ -41,6 +41,7 @@ WANTED = [
     # power hub v0.5 (USB-C PD)
     ("R", "6.2k", "0603", ""), ("R", "200", "0603", ""), ("R", "39k", "0603", ""), ("R", "27k", "0603", ""),
     ("R", "47k", "0603", ""),
+    ("R", "6.8k", "0603", ""),         # the CH224A's CFG1 (9 V at plug-in), WCH's table 5-1
     # DATA ×4 (USB-C Rp 56k, the hub's 12k bias and 33 pF crystal loads)
     ("R", "56k", "0603", ""), ("R", "12k", "0603", ""), ("C", "33p", "0603", "50V"),
 ]

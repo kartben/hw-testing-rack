@@ -189,7 +189,7 @@ pcb:
     right: { data: 30.0 }   # KiCad Y of J7's centre (DATA, PH 8 side entry on the right edge, pin 1 at the front)
     aux: [69.1, 50.6]       # J5 (AUX, PH 6 side entry on the right edge, pin 1 at the front), its centre, KiCad
     cam: [59.0, 17.2]       # J6, the camera lead (JST PH 8, vertical: plugged from above, at the rear right), its centre, KiCad
-  power_hub:                # v0.5: USB-C PD in (AP33772S), eFuses, rack controller (ESP32-S3, CAN master)
+  power_hub:                # v0.5: USB-C PD in (CH224A), eFuses, rack controller (ESP32-S3, CAN master)
     size: [76, 140]         # X × Y; KiCad y=0 is the REAR edge, y=140 the front edge (like the bay node)
     thickness: 1.6
     layers: 4               # as the bay node: In1 solid GND, In2 power only, signals outside
@@ -198,7 +198,7 @@ pcb:
     front_gap: 1.2          # PCB front edge -> box front wall inner face
     z: 19.0                 # PCB bottom above the box bottom: the row connectors clear the base ladder's window sill
     rows: [115, 92, 69, 46] # KiCad y of the row A, B, C, D connectors (6-pin JST PH, side entry, left edge)
-    front: { leds: [11, 23, 35, 47, 55.6, 61.6], usb: 70 }  # KiCad x: ON/FAULT pair centres (±3) for rows A-D, then PD (the AP33772S's status), CTL; USB-C
+    front: { leds: [11, 23, 35, 47, 55.6, 61.6], usb: 70 }  # KiCad x: ON/FAULT pair centres (±3) for rows A-D, then PD (the CH224A's PG), CTL; USB-C
     rear: { pd: 62 }            # KiCad x on the rear edge: the USB-C PD input
     buttons: [[11.5, 10.0], [11.5, 16.5]]   # KiCad: SW1 RESET, SW2 BOOT (design.py), top-actuated, 1.5 mm tall: pin holes in the lid
   data_port:                # the drawer's DATA port: a USB-C source on a small board on the drawer's rear-bay floor

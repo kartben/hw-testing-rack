@@ -180,16 +180,20 @@ CAT = {
                   description="dual Schottky in series: clamps a line to GND and +3V3"),
     "hdr2x8": Cat("Connector_Generic:Conn_02x08_Odd_Even", "Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical",
                   "2x8 pin header 2.54 mm", "generic", "", 0.10, description="control header (DNP by default)"),
-    # power hub v0.5: USB-C PD input (AP33772S sink, back-to-back NMOS switch, Kelvin shunt)
-    # the FA01: the FA02 (VSEL: 20 V by itself) is out of stock everywhere until ≈ 14/12/2026.  Same die,
-    # package, pinout and I2C map; pins 7 (GPIO) and 11 (VSEL) are NC on it, so it takes the charger's 5 V
-    # first and waits for the controller (the hub keeps R7 on pin 11: an FA02 drops in later)
-    "pd_sink": Cat("bench:AP33772S", "Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.7x2.7mm", "AP33772SDKZ-13-FA01",
-                   "Diodes Incorporated", "C24374260", 2.27,
-                   datasheet="https://www.diodes.com/assets/Datasheets/AP33772S.pdf",
-                   alt="LCSC/JLC stock 0 on 2026-10-19: JLC Global Sourcing from DigiKey (365 in stock, €2.09 @1, "
-                       "€1.54 @10); the FA02 drops in from ≈ 14/12/2026",
-                   description="USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive, V/I/T telemetry"),
+    # power hub v0.5: USB-C PD input.  The CH224A (WCH) since 2026-10-19: the AP33772S had no stock anywhere
+    # (Global Sourcing only).  PD 3.2 sink, EPR 28 V, I2C at 0x22 (status, request, the source's PDOs);
+    # KiCad's CH224K symbol and footprint (the CH224A has its pinout, WCH; its pin 1 is VHV, rated 32 V).
+    # The CH224Q (C46061833) is the same die in a 2 x 2 mm DFN-10 at 0.4 mm pitch
+    "pd_sink": Cat("Interface_USB:CH224K", "Package_SO:SSOP-10-1EP_3.9x4.9mm_P1mm_EP2.1x3.3mm", "CH224A",
+                   "WCH", "C42459160", 0.43,
+                   datasheet="https://www.wch.cn/downloads/CH224DS1_PDF.html",
+                   alt="CH224Q (C46061833, DFN-10-EP 2x2, same die); the AP33772SDKZ-13-FA01 (C24374260, "
+                       "another board)",
+                   description="USB PD 3.2 sink controller (EPR 28 V, PPS/AVS), I2C, power-good output"),
+    "pd_sink_ap33772s": Cat("bench:AP33772S", "Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.7x2.7mm",
+                            "AP33772SDKZ-13-FA01", "Diodes Incorporated", "C24374260", 2.27,
+                            datasheet="https://www.diodes.com/assets/Datasheets/AP33772S.pdf",
+                            description="USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive"),
     "usbc5a": Cat("Connector:USB_C_Receptacle_USB2.0_16P",
                   "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", "USB4105-GF-A-120", "GCT",
                   "C5184243", 0.91, description="USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS"),

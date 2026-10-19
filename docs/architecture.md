@@ -106,8 +106,8 @@ laptop gets full high-speed.
 ## Power
 
 A USB PD 3.1 charger (140 W EPR recommended, 5 A e-marked cable) → the power hub
-in the power box under A1 (AP33772S sink: 20 V, or 28 V EPR on the controller's
-request; TVS, NMOS switch, one 1.6 A TPS26600 eFuse per row, off until the
+in the power box under A1 (CH224A sink: 20 V, or 28 V EPR on the controller's
+request; TVS, no input switch, one 1.6 A TPS26600 eFuse per row, off until the
 contract is final) → one 6-pin JST PH feed per row (VRACK, CAN, POS) →
 daisy-chained bay to bay through the ladders → each bay node's own 60 V LMR51635
 buck to 5 V.  Details and alternatives (a 24 V brick, internal mains supply,

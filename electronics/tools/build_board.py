@@ -152,6 +152,7 @@ JLC_CPL_FIX = {
     "C11355": ("MSOP-10_3x3mm_P0.5mm", 270, 0.0, 0.0),                        # bay U5 U6
     "C49851": ("TSSOP-10_3x3mm_P0.5mm", 270, 0.0, 0.0),                       # bay U10
     "C7519": ("SOT-23-6", 270, 0.0, 0.0),                                     # bay U4 U8
+    "C42459160": ("SSOP-10-1EP_3.9x4.9mm_P1mm_EP2.1x3.3mm", 270, 0.0, 0.0),   # hub U1 (CH224A), fitted pad by pad
     "C55266": ("SOT-23-6", 180, 0.0, 0.0),                                    # bay U9 until the TPS2553D
     "C521201": ("SOT-23-6", 270, 0.0, 0.0),                                   # bay U9 (TPS2553D: drawn as C7519, not C55266)
     "C10096": ("SOT-23-5", 180, 0.0, 0.0),                                    # bay U7

@@ -1,10 +1,11 @@
 """Power hub v0.5 — one per rack, in the power box under A1 (mechanical/parts/power_box.scad).
 
 USB-C PD in, from a dedicated USB PD 3.1 charger (140 W EPR recommended) on a 5 A e-marked cable.
-An AP33772S sink controller (the FA01: the charger's 5 V first) negotiates the PD contract: the rack
-controller asks it for 28 V EPR when the charger offers it, 20 V otherwise; the chip keeps the
-contract, and the EPR keep-alive, through ESP32 reboots.  Its back-to-back NMOS switch connects VBUS to the rack bus
-(VRACK, 20 or 28 V) once a contract is in place; a 5 mΩ Kelvin shunt gives it the input current.
+A CH224A sink controller (WCH, PD 3.2) negotiates the PD contract: 9 V at plug-in (its CFG1
+resistor), then the rack controller asks it over I2C for 28 V EPR when the charger offers it, 20 V
+otherwise; the chip keeps the contract, and the EPR keep-alive, through ESP32 reboots.  VBUS is the
+rack bus (VRACK, 20 or 28 V): no input switch, the four eFuses are the switches (UV 15 V, off until
+the controller has a contract, reverse current blocked).
 VRACK fans out to four rows (A–D), each with its own TPS26600 eFuse:
   * current limit ≈ 1.6 A (RILIM 7.5k): it protects the JST PH (2 A) row cable;
   * slow start (dVdT 22 nF ≈ 5 ms at 28 V);
@@ -14,8 +15,8 @@ VRACK fans out to four rows (A–D), each with its own TPS26600 eFuse:
   * ON (green, on the row's own output) and FAULT (red, from the open-drain FLT) side-view LEDs in
     the box's front wall.
 The rack controller is an ESP32-S3-MINI-1 (Wi-Fi, the CAN master) on a buck and an LDO fed from
-VBUS ahead of the switch, so it runs from the first 5 V of a contract (or from its own USB-C console
-port).  It drives the AP33772S over I2C, reads each row's FLT and IMON, drives each row's enable,
+VBUS, so it runs from the first 5 V of a contract (or from its own USB-C console port).  It drives
+the CH224A over I2C, reads each row's FLT and IMON, drives each row's enable,
 and runs the rack's CAN bus and the POS addressing token (docs/can.md).  The row outputs are 6-pin
 JST PH with the bay nodes' OUT pinout (J1's mirrored): POS, GND, CAN_L, CAN_H, GND, VRACK, so
 every row cable is the same flat one (pin n to pin 7-n).  The bus is a star: every port carries
@@ -72,9 +73,9 @@ def board() -> Board:
               comments=["USB-C PD distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack",
                         "Generated from electronics/power-hub/design.py — edit the Python, then regenerate"])
     b.root_notes = [
-        "Power hub v0.5 — USB-C PD in (AP33772S: 20 V or 28 V EPR, as the controller asks) → NMOS switch → VRACK → 4 × TPS26600 "
+        "Power hub v0.5 — USB-C PD in (CH224A: 9 V, then 20 V or 28 V EPR as the controller asks) = VRACK → 4 × TPS26600 "
         "eFuse (1.6 A) → 6-pin JST PH rows A–D.",
-        "Rack controller: ESP32-S3-MINI-1 on VBUS (ahead of the switch), TJA1462AT (CAN master, star bus, both "
+        "Rack controller: ESP32-S3-MINI-1 on VBUS, TJA1462AT (CAN master, star bus, both "
         "terminations here), POS token per row.",
         "Rows are OFF without firmware: SHDN is pulled low; the controller turns each row on once the PD contract is final.",
     ]
@@ -85,10 +86,10 @@ def board() -> Board:
     # each as copper of its net.
     in2 = [
         {"layer": "In2.Cu", "net": "VRACK", "priority": 1,
-         "poly": [(16.2, 36.5), (45.6, 36.5), (45.6, 13.6), (75.6, 13.6), (75.6, 41.5), (24.6, 41.5),
+         "poly": [(16.2, 36.5), (45.6, 36.5), (45.6, 0.4), (75.6, 0.4), (75.6, 41.5), (24.6, 41.5),
                   (24.6, 117.0), (16.2, 117.0)]},
         {"layer": "In2.Cu", "net": "+3V3", "priority": 1,
-         "poly": [(0.4, 0.4), (75.6, 0.4), (75.6, 13.2), (45.2, 13.2), (45.2, 36.1), (15.8, 36.1), (15.8, 117.4),
+         "poly": [(0.4, 0.4), (45.2, 0.4), (45.2, 36.1), (15.8, 36.1), (15.8, 117.4),
                   (25.0, 117.4), (25.0, 41.9), (75.6, 41.9), (75.6, 139.6), (0.4, 139.6)]},
     ]
     # per eFuse: a top-side VRACK island on its IN pins and the input capacitor, three vias to In2
@@ -118,42 +119,12 @@ def board() -> Board:
         # SHDN (pin 7) → left, down to its pull-down R7x, across to the series resistor R8x
         tracks.append((f"SHDN_{ch}", "F.Cu", 0.25, [(EF_X - 2.8625, yc + 1.625), (21.4, yc + 1.625),
                                                    (21.4, yc + 3.675), (19.825, yc + 3.675)]))
-    # PD input: CC1 straight down to a via (routed underneath to the AP33772S; CC2 leaves behind the
-    # receptacle, the router's way), the Kelvin sense pair
-    # from the shunt's own sense pads, the NMOS gates tied around the common-source pour
+    # PD input: CC1 straight down to a via (routed underneath to the CH224A; CC2 leaves behind the
+    # receptacle, the router's way); VBUS reaches the buck in a 0.8 mm bottom track from the input block
     tracks += [
         ("PD_CC1", "F.Cu", 0.2, [(PD_X + 1.25, 7.08), (PD_X + 1.25, 8.15)]),
-        # Kelvin: R1's sense pads (2: VBUS side, 3: load side) straight to ISENP and VCC, a pad corner
-        # each; VCC's own decoupling capacitor C4 sits on its trace
-        ("PD_ISENP", "F.Cu", 0.15, [(55.8, 10.9), (52.475, 10.85)]),
-        ("PD_VCCS", "F.Cu", 0.15, [(55.8, 12.1), (54.5, 12.1), (53.6, 12.825), (51.75, 12.825), (51.75, 11.575)]),
-        # IFB's filter capacitor C7, right beside the pin (the left side of the chip is crowded)
-        ("PD_IFB", "F.Cu", 0.15, [(48.525, 9.35), (47.55, 9.35), (47.0, 9.025)]),
-        # gates: from R8 under both NMOS bodies, a stub down to each gate pin
-        ("PD_GATE", "F.Cu", 0.3, [(51.4, 16.825), (51.4, 19.0), (62.905, 19.0), (62.905, 21.475)]),
-        ("PD_GATE", "F.Cu", 0.3, [(57.405, 19.0), (57.405, 21.475)]),
         ("GND", "F.Cu", 0.25, [(PD_X + 3.2, 6.9), (PD_X + 4.2, 6.9)]),
-        ("PD_VCC", "B.Cu", 0.8, [(55.8, 14.55), (55.8, 30.0), (56.7, 31.0), (56.7, 47.5)]),
-        # I2C from the AP33772S's crowded right side to the pull-ups and the ESP32: Freerouting's routes
-        # of v0.5's first layout, fixed here (the region is packed; left to the router, one of the two
-        # can end up without a way out)
-        ("PD_SDA", "F.Cu", 0.15, [(52.4625, 9.35), (52.5924, 9.2201), (53.394, 9.2201)]),
-        ("PD_SDA", "F.Cu", 0.25, [(53.394, 9.2201), (53.4741, 9.3002), (53.7, 9.3002)]),
-        ("PD_SDA", "B.Cu", 0.25, [(53.7, 9.3002), (52.8227, 8.4229), (43.8842, 8.4229), (42.7, 9.6071),
-                                   (39.0359, 13.2712), (38.2063, 13.2712)]),
-        ("PD_SDA", "F.Cu", 0.25, [(42.7, 9.6071), (42.8416, 9.4655)]),
-        ("PD_SDA", "F.Cu", 0.1874, [(42.8416, 9.4655), (42.3585, 8.9824), (42.3585, 8.9308)]),
-        ("PD_SDA", "F.Cu", 0.25, [(42.3585, 8.9308), (41.825, 8.3973), (41.825, 8.0)]),
-        ("PD_SDA", "F.Cu", 0.25, [(38.2063, 13.2712), (37.6787, 13.7988), (37.6787, 13.9), (37.0, 13.9)]),
-        ("PD_SCL", "F.Cu", 0.25, [(52.4625, 8.85), (52.8707, 8.85), (53.1869, 8.5338), (53.1869, 8.1028),
-                                   (52.7457, 7.6616)]),
-        ("PD_SCL", "B.Cu", 0.25, [(52.7457, 7.6616), (55.2461, 7.6616), (56.7093, 9.1248)]),
-        ("PD_SCL", "B.Cu", 0.1874, [(56.7093, 9.1248), (58.2407, 7.5934), (59.924, 7.5934)]),
-        ("PD_SCL", "B.Cu", 0.25, [(59.924, 7.5934), (60.4947, 7.5934), (60.8652, 7.9639), (60.8652, 8.3549),
-                                   (58.3451, 10.875), (43.7069, 10.875), (43.2006, 11.3813), (39.966, 14.6159),
-                                   (37.8651, 14.6159)]),
-        ("PD_SCL", "F.Cu", 0.25, [(43.2006, 11.3813), (43.2006, 10.9756), (41.825, 9.6)]),
-        ("PD_SCL", "F.Cu", 0.25, [(37.8651, 14.6159), (37.8128, 14.6159), (37.6787, 14.75), (37.0, 14.75)]),
+        ("VRACK", "B.Cu", 0.8, [(55.8, 14.55), (55.8, 30.0), (56.7, 31.0), (56.7, 47.5)]),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 3.0, "passes": 60,
@@ -179,21 +150,11 @@ def board() -> Board:
             {"layer": "F.Cu", "net": "GND"},
             {"layer": "B.Cu", "net": "GND"},
             *in2,
-            # PD input, on top where the current flows: VBUS (connector → TVS → shunt), the shunt's
-            # load side (→ Q1's drain, the controller's buck), the common source, VRACK (Q2's drain,
-            # the bulk capacitor, vias down to In2)
-            {"layer": "F.Cu", "net": "PD_VBUS", "name": "pd-vbus", "priority": 3, "defer": False, "connection": "solid",
-             "exclusive": 0.6, "poly": [(54.6, 7.6), (58.3, 7.6), (58.3, 6.6), (59.95, 6.6), (59.95, 8.8), (63.65, 8.8),
-                                        (63.65, 6.6), (68.2, 6.6), (68.2, 10.6), (54.6, 10.6)]},
-            {"layer": "F.Cu", "net": "PD_VCC", "name": "pd-vcc", "priority": 3, "defer": False, "connection": "solid",
-             "exclusive": 0.6, "poly": [(54.6, 12.4), (57.0, 12.4), (57.0, 15.3), (57.9, 15.3), (57.9, 17.7), (53.2, 17.7),
-                                        (53.2, 15.3), (54.6, 15.3)]},
-            {"layer": "F.Cu", "net": "PD_SRC", "name": "pd-src", "priority": 3, "defer": False, "connection": "solid",
-             "exclusive": 0.6, "poly": [(53.2, 20.3), (56.8, 20.3), (56.8, 22.9), (58.0, 22.9), (58.0, 20.3), (62.2, 20.3),
-                                        (62.2, 25.2), (53.2, 25.2)]},
-            {"layer": "F.Cu", "net": "VRACK", "name": "vrack-out", "priority": 3, "defer": False, "connection": "solid",
-             "exclusive": 0.6, "poly": [(58.6, 15.2), (65.6, 15.2), (65.6, 16.3), (72.0, 16.3), (72.0, 26.0), (63.6, 26.0),
-                                        (63.6, 18.1), (58.6, 18.1)]},
+            # PD input, on top where the current flows: VBUS = VRACK from the connector's pads, the TVS and
+            # the input capacitors, vias down to In2 (VRACK under the whole input block)
+            {"layer": "F.Cu", "net": "VRACK", "name": "pd-vbus", "priority": 3, "defer": False, "connection": "solid",
+             "exclusive": 0.6, "poly": [(56.0, 7.6), (58.3, 7.6), (58.3, 6.6), (59.95, 6.6), (59.95, 8.8), (63.65, 8.8),
+                                        (63.65, 6.6), (68.2, 6.6), (68.2, 10.6), (56.0, 10.6)]},
             *in_islands,
             # buck hot loop (as the bay node, TI SLUSF64B §8.4)
             {"layer": "F.Cu", "net": "GND", "connection": "solid", "name": "buck-gnd", "priority": 3,
@@ -202,7 +163,7 @@ def board() -> Board:
             {"layer": "F.Cu", "net": "+5V_BUCK", "connection": "solid", "name": "buck-5v", "priority": 3,
              "poly": [(62.8, 16.1 + BY), (67.3, 16.1 + BY), (67.3, 8.6 + BY), (71.0, 8.6 + BY), (71.0, 17.9 + BY),
                       (62.8, 17.9 + BY)]},
-            {"layer": "F.Cu", "net": "PD_VCC", "connection": "solid", "name": "buck-vin", "priority": 3,
+            {"layer": "F.Cu", "net": "VRACK", "connection": "solid", "name": "buck-vin", "priority": 3,
              "poly": [(55.6, 12.5 + BY), (57.8, 12.5 + BY), (57.8, 20.7 + BY), (55.6, 20.7 + BY)]},
         ],
         "vias": [
@@ -214,17 +175,11 @@ def board() -> Board:
             # each row's output: F.Cu → B.Cu beside the connector → F.Cu at its pin 6
             *[(f"ROW_{ch}", x, ROW_Y[k] + dy, 0.8, 0.4) for k, ch in enumerate(ROWS) for dy in (-5.0, 5.0)
               for x in (13.2, 14.3, 15.4)],
-            # Q2's drain pour down to In2 (VRACK)
-            *[("VRACK", x, y, 0.8, 0.4) for x, y in ((64.4, 18.6), (64.4, 20.4), (64.4, 22.2), (64.4, 24.0),
-                                                     (70.6, 18.0), (70.6, 19.8), (66.6, 22.0), (68.4, 22.0), (63.2, 16.0))],
-            # the AP33772S's exposed pad: four tented GND vias
-            *[("GND", 50.5 + dx, 9.6 + dy, 0.5, 0.3) for dx in (-0.6, 0.6) for dy in (-0.6, 0.6)],
+            # the input pour down to In2 (VRACK), beside the connector's left VBUS pads
+            *[("VRACK", 57.0, y, 0.8, 0.4) for y in (8.2, 9.8)],
             # CC1 under the VBUS pour, on B.Cu
             ("PD_CC1", PD_X + 1.25, 8.15, 0.5, 0.3),
-            ("PD_VCC", 55.8, 14.55, 0.8, 0.4), ("PD_VCC", 56.7, 47.5, 0.8, 0.4),
-            # the fixed I2C routes' vias
-            *[("PD_SDA", x, y, 0.6, 0.3) for x, y in ((53.7, 9.3002), (42.7, 9.6071), (38.2063, 13.2712))],
-            *[("PD_SCL", x, y, 0.6, 0.3) for x, y in ((52.7457, 7.6616), (43.2006, 11.3813), (37.8651, 14.6159))],
+            ("VRACK", 55.8, 14.55, 0.8, 0.4), ("VRACK", 56.7, 47.5, 0.8, 0.4),
         ],
         "tracks": tracks,
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
@@ -237,62 +192,51 @@ def board() -> Board:
 
     # ------------------------------------------------------------------ input
     s = b.sheet("Input", "input.kicad_sch", "USB-C PD input")
-    s.block("USB-C PD input (5 A receptacle, CC to the sink controller), TVS, 5 mΩ Kelvin shunt")
-    part(s, "J1", "usbc5a", {"VBUS": "PD_VBUS", "GND": "GND", "CC1": "PD_CC1", "CC2": "PD_CC2", "SHIELD": "GND"},
+    s.block("USB-C PD input (5 A receptacle, CC to the sink controller), TVS; VBUS is VRACK (no input switch)")
+    part(s, "J1", "usbc5a", {"VBUS": "VRACK", "GND": "GND", "CC1": "PD_CC1", "CC2": "PD_CC2", "SHIELD": "GND"},
          "PD IN", pcb=P(PD_X, 3.4, 180))
-    for i, net in enumerate(("PD_VBUS", "PD_VCC", "PD_VCCS", "VRACK", "GND"), start=1):
+    for i, net in enumerate(("VRACK", "PD_VHV", "GND"), start=1):
         s.part(f"#FLG0{i}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": net}, in_bom=False, on_board=False)
-    part(s, "D1", "tvs30", {"K": "PD_VBUS", "A": "GND"}, pcb=P(67.4, 12.6, 270))
-    C(s, "C1", "10u", "PD_VBUS", "GND", size="1206", pcb=P(61.0, 11.4, 270))
-    C(s, "C2", "100n", "PD_VBUS", "GND", pcb=P(63.0, 11.2, 270))
-    # current pads 1/4, sense pads 2/3 (net-tied to 1/4 inside the footprint)
-    part(s, "R1", "shunt5m", {"1": "PD_VBUS", "2": "PD_ISENP", "3": "PD_VCCS", "4": "PD_VCC"}, "5m",
-         pcb=P(55.8, 11.5, 270))
+    part(s, "D1", "tvs30", {"K": "VRACK", "A": "GND"}, pcb=P(67.4, 12.6, 270))
+    C(s, "C1", "10u", "VRACK", "GND", size="1206", pcb=P(61.0, 11.4, 270))
+    C(s, "C2", "100n", "VRACK", "GND", pcb=P(63.0, 11.2, 270))
 
-    s.block("AP33772S USB PD 3.1 sink (FA01): the charger's 5 V first, then 20 V / 28 V EPR as the controller asks over I2C;")
-    s.block("drives the NMOS pair")
-    part(s, "U1", "pd_sink", {"VCC": "PD_VCCS", "ISENP": "PD_ISENP", "PWR_EN": "PD_PWREN", "VOUT": "PD_VOUT",
-                              "CC1": "PD_CC1", "CC2": "PD_CC2", "VSEL": "PD_VSEL", "OTP": "PD_OTP", "IFB": "PD_IFB",
-                              "V5V": "PD_V5V", "V18": "PD_V18", "SDA": "PD_SDA", "SCL": "PD_SCL", "INT": "PD_INT5",
-                              "LED": "PD_LED", "GND": "GND"}, pcb=P(50.5, 9.6, 180))
-    C(s, "C4", "1u", "PD_VCCS", "GND", pcb=P(53.6, 13.6, 270))
-    C(s, "C5", "1u", "PD_V5V", "GND", pcb=P(48.4, 14.0, 270))
-    C(s, "C6", "100n", "PD_V18", "GND", pcb=P(44.4, 7.0, 180))
-    C(s, "C7", "100n", "PD_IFB", "GND", pcb=P(47.0, 8.25, 90))
-    R(s, "R5", "5.1k", "PD_CC1", "GND", pcb=P(46.0, 11.8, 180))
-    R(s, "R6", "5.1k", "PD_CC2", "GND", pcb=P(46.0, 13.4, 180))
-    # VSEL on an FA02 (20 V by itself); an NC pin on the FA01 fitted now: kept, so an FA02 drops in
-    R(s, "R7", "39k", "PD_VSEL", "GND", pcb=P(44.4, 8.6, 180))
-    part(s, "TH1", "ntc10k", {"1": "PD_OTP", "2": "GND"}, "10k NTC", pcb=P(60.4, 26.8, 0))
-    R(s, "R8", "6.2k", "PD_PWREN", "PD_GATE", pcb=P(51.4, 16.0, 270))
-    R(s, "R9", "200", "PD_VOUT", "VRACK", pcb=P(49.9, 14.0, 270))
-    # both rot 90 (drains up, sources and gate down), side by side: common source along the bottom
-    part(s, "Q1", "nfet_pwr", {"D": "PD_VCC", "S": "PD_SRC", "G": "PD_GATE"}, pcb=P(55.5, 19.0, 90))
-    part(s, "Q2", "nfet_pwr", {"D": "VRACK", "S": "PD_SRC", "G": "PD_GATE"}, pcb=P(61.0, 19.0, 90))
+    s.block("CH224A USB PD 3.2 sink: 9 V at plug-in (CFG1 6.8k), then 20 V / 28 V EPR as the controller asks over I2C")
+    # KiCad's CH224K symbol: the CH224A has its pinout (WCH), pin 1 (VDD there) is VHV, rated 32 V.  CC1/CC2 carry
+    # its own Rd (no resistors); DP/DM (BC 1.2 / QC) are left open: PD only
+    part(s, "U1", "pd_sink", {"VDD": "PD_VHV", "VBUS": "PD_VHV", "CC1": "PD_CC1", "CC2": "PD_CC2",
+                              "CFG1": "PD_CFG1", "CFG2": "PD_SCL", "CFG3": "PD_SDA", "DP": None, "DM": None,
+                              "PG": "PD_INT", "GND": "GND"}, pcb=P(50.0, 11.0, 0))
+    # VHV and VBUS (tied, as WCH asks) through 56 Ω + 1 µF 50 V: the pins are rated 32 V, a few volts over a
+    # 28 V contract, and the SMAJ30A starts at 33.3 V; the RC takes the fast edges off (ICC ≤ 12 mA: ≤ 0.7 V)
+    R(s, "R5", "56", "VRACK", "PD_VHV", pcb=P(53.6, 7.3, 180))
+    C(s, "C4", "1u", "PD_VHV", "GND", size="0805", pcb=P(47.6, 7.0, 0))
+    # CFG1 to GND: the single-resistor mode, which also turns I2C on; 6.8k asks for 9 V at plug-in, below the
+    # eFuses' 15 V UV, until the controller asks for more
+    R(s, "R6", "6.8k", "PD_CFG1", "GND", pcb=P(54.6, 13.8, 270))
     part(s, "C8", "cap100u50", {"1": "VRACK", "2": "GND"}, "100u/50V", pcb=P(70.0, 28.0, 270))
     C(s, "C9", "10u", "VRACK", "GND", size="1206", pcb=P(73.3, 19.6, 0))
     C(s, "C10", "100n", "VRACK", "GND", pcb=P(73.0, 22.2, 0))
     s.block("I2C to the controller, VBUS sense")
-    # INT is a 5 V push-pull output: divided down for the ESP32 (10k/18k: 3.2 V; values the board already has)
-    R(s, "R11", "10k", "PD_INT5", "PD_INT", pcb=P(41.0, 11.2, 0))
-    R(s, "R12", "18k", "PD_INT", "GND", pcb=P(41.0, 12.8, 0))
-    # pull-ups from a GPIO (I2C_PU): on only once VBUS is up, so a USB-powered controller never
-    # back-feeds an unpowered AP33772S through SDA/SCL (Diodes' EVB guide: the sink powers up first)
+    # PG: open drain, low once the contract is in place; IO39 (the net keeps its name PD_INT for the
+    # firmware's pin map) and the front LED both hang on it
+    R(s, "R11", "10k", "+3V3", "PD_INT", pcb=P(41.0, 11.2, 0))
+    # pull-ups from a GPIO (I2C_PU): on only once VBUS is up, so a USB-powered controller never back-feeds an
+    # unpowered CH224A through SDA/SCL (they also have the chip's own 10k pull-ups)
     R(s, "R13", "5.1k", "I2C_PU", "PD_SDA", pcb=P(41.0, 8.0, 0))
     R(s, "R14", "5.1k", "I2C_PU", "PD_SCL", pcb=P(41.0, 9.6, 0))
-    R(s, "R3", "100k", "PD_VBUS", "VBUS_SENSE", pcb=P(64.6, 11.4, 270))
+    R(s, "R3", "100k", "VRACK", "VBUS_SENSE", pcb=P(64.6, 11.4, 270))
     R(s, "R4", "10k", "VBUS_SENSE", "GND", pcb=P(19.0, 20.4, 0))
     C(s, "C3", "100n", "VBUS_SENSE", "GND", pcb=P(19.0, 22.0, 0))
-    s.block("PD status (front LED), driven by the AP33772S: breathing = contract and VRACK on, steady = the charger")
-    s.block("can't give what the controller asked for, flicker = fault (OVP, OCP, UVP, OTP)")
-    R(s, "R2", "1k", "PD_LED", "PD_LED_A", pcb=P(LED_X[4], H - 5.0, 90))
-    part(s, "D3", "led_side_g", {"A": "PD_LED_A", "K": "GND"}, "PD", pcb=P(LED_X[4], LED_Y, 180))
-    s.note("U1 is the FA01 (the FA02 was out of stock): it takes the charger's 5 V and waits; the controller sets VSELMIN to")
-    s.note("  15 V (the switch opens below it) and asks for 20 V or 28 V EPR.  Rows stay locked out below 15 V (eFuse UV).")
-    s.note("R7 39 kΩ: VSEL on an FA02 (20 V by itself at power-up), NC on the FA01; kept so that an FA02 drops in.")
-    s.note("The chip turns the NMOS pair on once a contract is in place and VREQ ≥ VSELMIN, and off on OVP/OCP/UVP/OTP.")
+    s.block("PD status (front LED): on while the CH224A reports power good (PG low)")
+    R(s, "R2", "1k", "+3V3", "PD_LED_A", pcb=P(LED_X[4], H - 5.0, 90))
+    part(s, "D3", "led_side_g", {"A": "PD_LED_A", "K": "PD_INT"}, "PD", pcb=P(LED_X[4], LED_Y, 180))
+    s.note("U1 is the CH224A (WCH, PD 3.2): CFG1 6.8k asks for 9 V at plug-in and turns its I2C on (0x22); the")
+    s.note("  controller reads the source's PDOs (0x60-0x8F) and writes 0x0A: 5 = 28 V EPR when offered, else 4 = 20 V.")
+    s.note("No input switch: VBUS is VRACK.  The eFuses (UV 15 V, off until enabled, reverse current blocked) are the")
+    s.note("  switches; the controller turns the rows on once 0x09 says PD (and EPR) and VBUS_SENSE reads the voltage.")
     s.note("SMAJ30A: 30 V stand-off, above a 28 V EPR contract; the eFuses (60 V) and the TPS26600 OVP (33 V) follow.")
-    s.note("R1 5 mΩ: ISENP and VCC leave from its own sense pads (Kelvin), the AP33772S reads the input current.")
+    s.note("R5/C4: the CH224A's VHV/VBUS pins are rated 32 V; the RC filters the fast edges the TVS can't reach.")
     s.note("VBUS_SENSE: 100k/10k from VBUS → 2.5 V at 28 V for the ESP32's ADC; also tells the firmware when to enable I2C_PU.")
 
     # ------------------------------------------------------------------ outputs
@@ -342,14 +286,14 @@ def board() -> Board:
     # ------------------------------------------------------------------ controller
     c = b.sheet("Controller", "controller.kicad_sch", "Rack controller: supplies, ESP32-S3, USB-C, CAN")
     c.block("5 V buck: LMR51635, as the bay node (TI SLUSF64B table 8-2), from VBUS ahead of the switch")
-    part(c, "U2", "buck", {"VIN": "PD_VCC", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
+    part(c, "U2", "buck", {"VIN": "VRACK", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
                            "GND": "GND"}, pcb=P(58.00, 12.0 + BY, 0))
-    C(c, "C104", "10u", "PD_VCC", "GND", size="1206", pcb=P(58.00, 16.8 + BY, 0))
-    C(c, "C105", "10u", "PD_VCC", "GND", size="1206", pcb=P(58.00, 19.4 + BY, 0))
-    C(c, "C106", "100n", "PD_VCC", "GND", pcb=P(58.00, 14.6 + BY, 0))
+    C(c, "C104", "10u", "VRACK", "GND", size="1206", pcb=P(58.00, 16.8 + BY, 0))
+    C(c, "C105", "10u", "VRACK", "GND", size="1206", pcb=P(58.00, 19.4 + BY, 0))
+    C(c, "C106", "100n", "VRACK", "GND", pcb=P(58.00, 14.6 + BY, 0))
     # EN: on from ≈ 3.9 V (off below ≈ 3.1 V), so the controller runs on a contract's first 5 V; 39k/18k,
     # values the board already has (one part type less in JLC's feeders)
-    R(c, "R205", "39k", "PD_VCC", "BUCK_EN", pcb=P(54.78, 14.3 + BY, 90))
+    R(c, "R205", "39k", "VRACK", "BUCK_EN", pcb=P(54.78, 14.3 + BY, 90))
     R(c, "R206", "18k", "BUCK_EN", "GND", pcb=P(54.00, 12.0 + BY, 180))
     C(c, "C107", "100n", "BUCK_CB", "BUCK_SW", pcb=P(59.60, 9.5 + BY, 0))
     part(c, "L1", "buck_l", {"1": "BUCK_SW", "2": "+5V_BUCK"}, "3.3u", pcb=P(65.70, 12.0 + BY, 0))
@@ -392,7 +336,7 @@ def board() -> Board:
     for i, (net, xy, side) in enumerate((("U0TX", (30.0, 16.5), "bottom"), ("U0RX", (32.6, 16.5), "bottom"),
                                          ("GND", (30.0, 19.1), "bottom"), ("+3V3", (32.6, 19.1), "bottom"),
                                          ("+5V", (70.0, 66.0), "bottom"), ("VRACK", (66.0, 20.0), "bottom"),
-                                         ("GND", (70.0, 30.0), "bottom"), ("PD_VCC", (55.5, 14.0), "bottom"))):
+                                         ("GND", (70.0, 30.0), "bottom"))):
         part(c, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(*xy, 0, side), in_bom=False)
 
     c.block("USB-C: the controller's console / firmware (native USB), and its 5 V without a PD charger")
@@ -434,8 +378,8 @@ NETCLASSES = [
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
      # VRACK carries its current in pours and In2 (see b.pcb["zones"]); its tracks only feed LEDs and sense
-     # PD_VCC reaches the buck in a hand-drawn 0.8 mm track: the router only adds thin sense / EN taps
-     "_patterns": ["*PD_VBUS", "*PD_SRC", "*ROW_?", "*+5V_BUCK", "*BUCK_SW"]},
+     # VRACK reaches the buck in a hand-drawn 0.8 mm track: the router only adds thin sense / EN taps
+     "_patterns": ["*ROW_?", "*+5V_BUCK", "*BUCK_SW"]},
     {"name": "USB", "clearance": 0.15, "track_width": 0.2, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.25, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,

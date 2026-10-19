@@ -135,10 +135,16 @@ JLC_FINISH = {"power-hub": ("lead-free HASL", 5.30)}
 # footprint moved: FB 100k/18k as the node, EN 39k/18k, INT divider 10k/18k, I²C pull-ups 5.1k, every
 # front LED on 1k, the IMON filters and the CAN split caps on the dVdT caps' 22n, the LDO input on the
 # eFuses' 1u 0805.  Eleven part types fewer at the quote's $1.55 a type in Standard PCBA feeders (47 → 36
-# placed types).
+# placed types).  Then 3 AP33772S through Global Sourcing (2 boards, a spare) instead of 5: 2 × $3.41.
+# Then the WCH CH224A (C42459160, in stock at LCSC) instead of the AP33772S, and no input switch: no Global
+# Sourcing for U1 at all; out the 2 × IRF7842, the 5 mΩ shunt, the NTC, the 6.2k, 200 Ω and the AP33772S's
+# passives, in the CH224A (2 × $0.43), its 56 Ω and 6.8k: −$2.79 of parts for the 2 boards at LCSC's prices,
+# and 36 → 33 placed types (the CH224A loads like any LCSC part).
 JLC_SINCE_QUOTE = {"power-hub": [("11 part types fewer (values merged)", "feeders", -17.05),
-                                  # 3 AP33772S through Global Sourcing (2 boards, a spare) instead of 5: 2 × $3.41
-                                  ("3 AP33772S bought instead of 5", "U1 global sourcing (est.)", -6.82)]}
+                                 ("3 AP33772S bought instead of 5", "U1 global sourcing (est.)", -6.82),
+                                 ("CH224A from LCSC instead of the AP33772S", "U1 global sourcing (est.)", -13.22),
+                                 ("no input switch (CH224A, its parts in, the switch's out)", "components", -2.79),
+                                 ("3 part types fewer (CH224A)", "feeders", -4.65)]}
 
 # JLC's fees, from its help page "PCB Assembly Cost" (updated 2026-09-09) and the jlcpcb.com
 # calculator (2026-10-19, 4-layer, 5 PCBs): what a board's part types and size cost per order
@@ -316,6 +322,8 @@ def jlc_order(name: str, ext: set, hand: set) -> tuple[dict, dict, list[str]]:
     for what, line, usd in JLC_SINCE_QUOTE.get(name, []):
         fees = pcba if line in pcba else pcb           # a PCBA line, or one of the bare PCB's
         fees[line] = round(fees[line] + usd, 2)
+        if not fees[line]:
+            del fees[line]                             # a line the change took off entirely
         changes.append(f"{what} ({'+' if usd >= 0 else '−'}${abs(usd):.2f} {line})")
     return pcb, pcba, changes
 
@@ -790,7 +798,7 @@ def hardware(rack) -> list[dict]:
         ]
     rows += [
         # the rack's supply: a USB PD charger outside it, into the power box's rear wall (the hub's
-        # AP33772S sink asks for 28 V EPR, or 20 V), so no mains wiring anywhere in the rack
+        # CH224A sink asks for 28 V EPR, or 20 V), so no mains wiring anywhere in the rack
         {"category": "Power", "item": charger["part"], "supplier": "Anker / UGREEN / Satechi (any PD 3.1 EPR)",
          "qty": 1, "unit_eur": 70.0,
          "notes": "dedicated to the rack: a multi-port charger may withdraw its 28 V / 5 A offer when something else "
@@ -870,15 +878,15 @@ def main():
            "`electronics/<board>/fab/` · interactive table: the viewer's BOM page.", "",
            "## JLCPCB orders (estimates)", "",
            f"USD, without the one shipment ({JLC_SHIPPING}, a line of its own) and import VAT.  The power hub is a real quote (jlcpcb.com, "
-           "2026-10-19, from the fab files; its AP33772S, out of stock, is a Global Sourcing estimate on top).  "
+           "2026-10-19, from the fab files, with the AP33772S then: out of stock, a Global Sourcing estimate on top; the "
+           "CH224A since, from LCSC).  "
            "Every other board is an **estimate** built from JLC's fees and catalogue prices: the node's last real "
            f"quote ({JLC_QUOTE_DATE}: 20 PCBs ENIG, 16 assembled, $367.71) priced it before rev 0.5.  The "
            "bay node is the order the user chose on 2026-10-19: 10 PCBs, lead-free HASL, 10 assembled (8 bays, "
            "2 spares).  The per-part lines below use catalogue prices; a *Components* line per board brings them "
            "up to the estimated components figure.  *Order* applies what changed since: the through-hole "
            "connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  Re-quote before ordering (the "
-           "full PCBA quote needs the user's JLC sign-in), and check the AP33772S's sourcing (out of stock at LCSC "
-           "on 2026-10-18).", "",
+           "full PCBA quote needs the user's JLC sign-in).", "",
            "| Board | Order | Line | USD |", "|---|---|---|---:|"]
     for name, q in JLC_QUOTE.items():
         order = f"{q['pcbs']} PCBs ({q['spec']}), {q['assembled']} assembled, {q['service']} PCBA"

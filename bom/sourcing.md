@@ -3,7 +3,18 @@
 A snapshot for the first order of the 8-bay rack, to read beside [`README.md`](README.md) (generated).  Stock and
 prices change: check them again on the day of the order.
 
-## AP33772S (power hub U1)
+## CH224A (power hub U1, since 2026-10-19)
+
+| Part | LCSC / JLC | Price (LCSC) | Notes |
+|---|---|---|---|
+| WCH **CH224A** (ESSOP-10, C42459160: the BOM's part) | **12 739** | $0.43 | 1 mm pitch, pin-compatible with the CH224K |
+| WCH CH224Q (DFN-10 2 × 2, C46061833) | 11 650 | $0.45 | same chip and I2C map, a smaller leadless package |
+| Hynetek HUSB238A-BB001-QN16R (QFN-16 3 × 3, C24833806) | 2 919 | $0.64 | gate driver; EPR registers not in the public datasheet |
+
+The CH224A replaced the AP33772S below: LCSC had none, and JLC would have bought it through Global Sourcing
+(≈ $20 for 5).  It drives no switch: the hub's VBUS is VRACK, and the eFuses keep the rows off.
+
+## AP33772S (power hub U1 until 2026-10-19)
 
 | Part | LCSC / JLC | DigiKey FR | Others |
 |---|---|---|---|
@@ -19,7 +30,7 @@ the contract.  To get it onto the JLC boards: JLC Global Sourcing, or consigned 
 Chosen (2026-10-19, the user): the FA01, through JLC Global Sourcing from DigiKey (5 parts).  The hub firmware sets
 VSELMIN to 15 V and asks for the contract; R7 stays fitted, so an FA02 drops in once it is back.
 
-If neither variant can be had, the hub needs a new design.  These EPR sinks with I2C are in stock at LCSC:
+If neither variant can be had, the hub needs a new design (done: the CH224A above).  These EPR sinks with I2C are in stock at LCSC:
 WCH CH224A / CH224Q (C42459160 / C46061833: 28 V, no switch driver, no V/I telemetry) and Hynetek HUSB238A-BB001
 (C24833806: 28 V, gate driver, EPR registers not in the public datasheet).  ST's STUSB4500 (C2678061) stops at 20 V,
 which covers 8 bays ([docs/power.md](../docs/power.md)).

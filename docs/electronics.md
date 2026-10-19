@@ -74,8 +74,8 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 > **Status: bay node v0.5 — the row cable becomes 6-pin (VRACK 20 / 28 V, CAN, POS:
 > [can.md](can.md)), CAN transceiver and POS token added, GCT USB4105 receptacles, the bay's camera on
 > J6 (Arducam Mega SPI + LEDs, PH 8) with the WROOM-1-N8R8 module (octal PSRAM; the board 10 mm longer at the rear), autorouted, checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.5 —
-> USB-C PD input (AP33772S), 4 layers, rows off until the controller enables them, autorouted,
-> checked with Konnect, not yet ordered or quoted.  Camera pod v1.0 — lead, the camera's header and 3.3 V, the
+> USB-C PD input (CH224A, no input switch), 4 layers, rows off until the controller enables them, autorouted,
+> checked with Konnect, quoted (2026-10-19, with the AP33772S before), not yet ordered.  Camera pod v1.0 — lead, the camera's header and 3.3 V, the
 > light, autorouted, not yet ordered or quoted.  DATA port v1.0 — the drawer's USB-C port on a
 > 8-wire lead to the node's J7, autorouted, not yet ordered or quoted.  DATA ×4 v1.0 — a converted bay's
 > drawer board (hub, four switched and measured USB-C), autorouted, checked with Konnect, not yet ordered
@@ -222,15 +222,15 @@ and the sequencing: [power.md](power.md).
 
 | Block | Parts | Notes |
 |---|---|---|
-| USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → 5 mΩ Kelvin shunt → back-to-back IRF7842 NMOS → VRACK, 100 µF / 50 V | the whole rack's current, ≤ 5 A.  The FETs stay 40 V (checked 2026-10-19): the AP33772S drives the gate at most 4 V above VCC (PWR_EN − VCC ≤ 4 V), so the FET needs a low R<sub>DS(on)</sub> at 4.5 V (IRF7842: 5.9 mΩ max, V<sub>GS(th)</sub> ≤ 2.25 V); Diodes' own EVB uses 30 V DMN3009SFG; the 60 V SO-8 parts in stock are ≥ 28 mΩ at 4.5 V (DMT6016LSS), the good one (DMT6009LSS) has none.  Q1 sees more than 40 V only with the switch open, VRACK discharged and a surge driving > ≈ 4 A into the SMAJ30A (48 V at 8.3 A): not a USB-C event (contracts above 5 V start once the switch is on), and the IRF7842 is avalanche-rated (50 mJ, 14 A) |
-| PD sink | AP33772S FA01 (the charger's 5 V first; R7 39 k, an FA02's VSEL, stays fitted), Rd 5.1 k on CC1/CC2, NTC 10 k by the switch, I²C + INT to the controller, its own LED in the front wall (PD) | the controller sets VSELMIN to 15 V and asks for 28 V EPR (else 20 V); rows stay locked out below 15 V; the chip keeps the contract through controller resets |
+| USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → VRACK, 100 µF / 50 V; no input switch | the whole rack's current, ≤ 5 A, in top pours.  VBUS is VRACK: the eFuses keep the rows off until the contract is final and block reverse current, so nothing switches the input (the AP33772S version had a 5 mΩ shunt and back-to-back IRF7842 NMOS here) |
+| PD sink | WCH CH224A (ESSOP-10): 9 V at plug-in (CFG1 6.8 k, the one-resistor mode, I²C on), its own Rd on CC1/CC2, supply (VHV and VBUS tied) through 56 Ω + 1 µF 50 V, I²C + PG to the controller, its own LED in the front wall (PD) | the controller asks for 28 V EPR (else 20 V) over I²C; rows stay locked out below 15 V; the chip keeps the contract through controller resets.  Its pins are rated 32 V: the RC takes surges' fast edges off |
 | Rows A–D | 4 × TPS26600 (1.6 A, ≈ 5 ms soft start, UV 15 V / OV 33 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md) |
 | Row control | SHDN pulled low by 100 k; the controller drives ROW_EN high through 10 k (3.0 V; the datasheet's SHDN range is 0–4 V) | **rows are off without firmware**; on once the contract is final, one after the other |
 | Per row | ON (green, from the row's own output through 10 k by the eFuse); FAULT (red) from 3.3 V into the open-drain FLT; FLT also to the controller (100 k pull-up) | Kingbright KPA-3010 side-view LEDs in the box's front wall |
 | Row current | IMON 18 k → 1.4 V/A, 1 k + 10 nF to the ESP32's ADC | |
-| Controller supply | LMR51635 from VBUS *ahead of* the switch (EN 39k/18k: from ≈ 3.9 V; FB 100k/18k: 5.24 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from a contract's first 5 V; runs on the console USB alone for flashing |
+| Controller supply | LMR51635 from VRACK (EN 39k/18k: from ≈ 3.9 V; FB 100k/18k: 5.24 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from the charger's first 5 V; runs on the console USB alone for flashing |
 | Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
-| PD interface | SDA / SCL with 5.1 k pull-ups fed from a GPIO (I2C_PU), INT (a 5 V output) through 10 k / 18 k, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered AP33772S |
+| PD interface | SDA / SCL (the CH224A's CFG3 / CFG2) with 5.1 k pull-ups fed from a GPIO (I2C_PU), PG (open drain, low once the contract is in place) with a 10 k pull-up to 3.3 V on the net PD_INT, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered CH224A |
 | CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 22 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
 | POS | 4 GPIOs → 10 k → pin 1 of each row output (the outputs have the bay nodes' OUT pinout: 1 POS · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), BAT54S clamp to GND / 3.3 V | survives a wrong cable (VRACK on POS) |
 
@@ -243,12 +243,11 @@ node went to lead-free HASL on 2026-10-19).
 * Every GND and supply pin gets a via of its own to its plane before routing (fan-out).  The
   eFuses' UVLO / OVP / MODE / RTN / GND pins go straight onto the exposed pad, which has six tented
   GND vias.  The outer GND pours are stitched to In1.
-* The input's current runs in top-side pours, kept free of other tracks (`exclusive`): PD_VBUS
-  (connector → TVS → shunt), PD_VCC (shunt → Q1, and a 0.8 mm bottom track to the buck), the NMOS
-  common source, VRACK (Q2 → bulk capacitor → vias to In2).
-* **Kelvin:** the AP33772S's ISENP and VCC leave the shunt's own sense pads and run straight to the
-  chip's corner, a few millimetres; VCC's 1 µF sits on its trace.  The NMOS gates share one track
-  under both bodies.
+* The input's current runs in a top-side VRACK pour, kept free of other tracks (`exclusive`):
+  connector → TVS → input capacitors → vias to In2, which carries VRACK under the whole input
+  block; a 0.8 mm bottom track feeds the buck.
+* The CH224A sits beside the connector: CC1 / CC2 a few millimetres, its supply's RC and CFG1
+  resistor at its pins.
 * Each eFuse has a top VRACK island on its IN pins and input capacitor, with three vias to In2.
   Each row's output runs in a hand-drawn 0.8 mm track to its connector, its output capacitor and
   its ON LED's resistor.  The SHDN pull-down and series resistor sit just below the eFuse.
@@ -436,18 +435,26 @@ Two savings are applied since, as adjustments to the quote (≈ $213):
   - The IMON filters and the CAN split caps on 22 nF (the eFuses' dVdT value).
   - The LDO's input cap 1 µF 0805 (the eFuses' part; the buck's 3 × 22 µF sit just before D4).
 
-**Why 37 part types.**  The hub does five jobs, and each brings its own parts.  The four eFuse
+**The CH224A instead of the AP33772S: ≈ $185.**  The AP33772S had no LCSC stock; the CH224A
+(C42459160, 12 739 in stock, $0.43) is a plain LCSC part, and it needs no input switch:
+- No Global Sourcing for U1: the quote's $20.04 for 5, $13.22 for the 3 the order bought
+  since.  −$13.22.
+- Out the 2 × IRF7842, the 5 mΩ shunt, the NTC and their passives; in the CH224A, its 56 Ω and
+  its 6.8k.  −$2.79 of parts for the 2 boards.
+- Three placed part types fewer (36 → 33, the CH224A included).  −$4.65.
+
+**Why 33 part types.**  The hub does five jobs, and each brings its own parts.  The four eFuse
 rows add no type: they repeat the same nine.  Many values are set by a datasheet equation (eFuse
-current limit and IMON, the AP33772S's VSEL, gate and VOUT resistors, the buck's FB).
+current limit and IMON, the CH224A's CFG1, the buck's FB).
 
 | Block | Its own types |
 |---|---|
-| PD input and VRACK switch | 8: AP33772S, 2 × IRF7842, 5 mΩ shunt, NTC, SMAJ30A, 100 µF, 6.2k, 200 Ω |
+| PD input | 4: CH224A, 6.8k (CFG1), SMAJ30A, 100 µF (the AP33772S version had 8: the switch, shunt and NTC) |
 | 4 eFuse rows | 5: TPS26600, S6B, red LED, BAT54S, 7.5k ILIM |
-| 5 V buck, 3.3 V LDO | 5: LMR51635, inductor, AP2112K, 2 × B5819W, 22 µF |
-| ESP32 and USB console | 3: ESP32-S3-MINI-1, USBLC6, 2 buttons |
-| CAN | 3: TJA1462AT, PESD2CAN, 56 Ω |
-| shared | 13: 100n, 22n, 1 µF 0603, 1 µF 0805, 10 µF 1206, green LED, USB4105, 1k, 100k, 10k, 5.1k, 39k, 18k |
+| 5 V buck, 3.3 V LDO | 6: LMR51635, inductor, AP2112K, 2 × B5819W, 22 µF, 39k |
+| ESP32 and USB console | 4: ESP32-S3-MINI-1, USBLC6, 2 buttons, 1 µF 0603 |
+| CAN | 2: TJA1462AT, PESD2CAN |
+| shared | 12: 100n, 22n, 1 µF 0805, 10 µF 1206, green LED, USB4105, 1k, 100k, 10k, 5.1k, 56 Ω, 18k |
 
 **Two rows instead of four** would remove no type, only parts: per board two TPS26600, two S6B, four
 LEDs, two BAT54S and their passives (36 parts), ≈ $5 a board, ≈ $10 for two.  It matters only if

@@ -326,14 +326,6 @@
     "netclass_patterns": [
       {
         "netclass": "Power",
-        "pattern": "*PD_VBUS"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "*PD_SRC"
-      },
-      {
-        "netclass": "Power",
         "pattern": "*ROW_?"
       },
       {
