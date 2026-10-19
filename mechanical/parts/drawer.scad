@@ -137,14 +137,14 @@ module drawer(rear = true, foot = true, ports = 1) {
     }
 }
 
-// a sled: the drawer's front, a low rear rail, flange segments under the guide lips at its rear
+// a sled: the drawer's front, flange segments under the guide lips at its rear.  Its floor ends open: the board
+// plate runs to the port wall (y PLATE_D), over the sled's rear edge, so no rail can cross it there
 module sled() difference() {
     union() {
         intersection() {
             drawer(rear = false, foot = false);
             translate([-50, -50, -10]) cube([DRAWER_W + 100, SPLIT + 50, 100]);
         }
-        translate([0, SPLIT - DRAWER_WALL, 0]) cube([DRAWER_W, DRAWER_WALL, 6]);
         for (x = [-DRAWER_FLANGE[0], DRAWER_W]) translate([x, SLED_FLANGE_Y[0], 0])
             cube([DRAWER_FLANGE[0] + EPS, SLED_FLANGE_Y[1] - SLED_FLANGE_Y[0], DRAWER_FLANGE[1]]);
     }

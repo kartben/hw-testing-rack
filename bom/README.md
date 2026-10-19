@@ -56,7 +56,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
 | drawer | 7 | 44.0 | `mechanical/stl/drawer.stl` |
 | drawer_block | 1 | 14.5 | `mechanical/stl/drawer_block.stl` |
-| drawer_sled | 1 | 30.6 | `mechanical/stl/drawer_sled.stl` |
+| drawer_sled | 1 | 29.9 | `mechanical/stl/drawer_sled.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 49.6 | `mechanical/stl/ladder_a.stl` |
 | ladder_b | 5 | 49.6 | `mechanical/stl/ladder_b.stl` |
