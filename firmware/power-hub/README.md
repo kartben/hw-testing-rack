@@ -263,7 +263,7 @@ and [`power_hub-pinctrl.dtsi`](../boards/hwtr/power_hub/power_hub-pinctrl.dtsi).
 | IO39 | PD_INT | AP33772S INT (5 V through 15k/27k) | `ap33772s` `int-gpios` |
 | IO40 | PD_SCL | I²C0 SCL to the AP33772S | `&i2c0` |
 | IO41 | PD_SDA | I²C0 SDA | `&i2c0` |
-| IO42 | I2C_PU | the AP33772S's 4.7k pull-ups, on once VBUS is up | `power_hub` `i2c-pullup-gpios` |
+| IO42 | I2C_PU | the AP33772S's 5.1k pull-ups, on once VBUS is up | `power_hub` `i2c-pullup-gpios` |
 | IO47 | FLT_C | row C ~FLT | `row_c` `fault-gpios` |
 | TXD0 (IO43) | U0TX | test pad TP1 | `&uart0` |
 | RXD0 (IO44) | U0RX | test pad TP2 | `&uart0` |

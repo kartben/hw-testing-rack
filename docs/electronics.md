@@ -97,14 +97,14 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | Row cable in/out | 2 × JST PH 6, side entry, SMD (S6B-PH-SM4-TB).  J1 (IN): 1 VRACK · 2 GND · 3 CAN_H · 4 CAN_L · 5 GND · 6 POS in; J2 (OUT) mirrored: 1 POS out · 3 CAN_L · 4 CAN_H · 6 VRACK ([can.md](can.md)) | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it; each power pin on a solid island with vias to its plane; every net runs straight across (J1.1 → J2.6, J1.3/4 → J2.4/3): the jumper between nodes lies flat, no twist |
 | Rack bus | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 100k pull-down; POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a wrong cable (VRACK on a POS pin) costs ≈ 2.5 mA at 28 V |
 | Protection | SUD50P06 P-FET + 12 V zener, SMBJ33A, 100 µF/50 V | reverse polarity, hot-plug clamp < 54 V |
-| 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 100k/18k → 5.24 V (≈ 4.75 V still at the DATA board at 1.4 A, below); EN 1M/100k: on above 13.5 V, off below 10.8 V |
+| 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 100k/18k → 5.24 V (≈ 4.75 V still at the DATA board at 1.4 A, below); EN 100k/10k: on above 13.5 V, off below 10.8 V |
 | 3.3 V | AMS1117-3.3 | logic only |
 | MCU | ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM for the camera's frames; the DevKitC-1-N8R8's module), C2913201 | antenna on the rear edge, keep-out on all layers (the footprint's own ±24 mm band); `bench:ESP32-S3-WROOM-1_NoEPVias` (no 0.2 mm vias in the exposed pad: a GND island stitched around it); rated −40…+65 °C |
 | DUT power | TPS2553 (RILIM 18k → 1.34–1.52 A), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N), Vbus tied to Vin− at its pins (DUT_5V at the shunt's load end); default **on** (also without firmware), fault flag to GPIO |
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
-| AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (10 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
-| DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DUT_5V · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 4.7k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm), which leaves 6–8 open, or a [DATA ×4 board](#data-4-v10--4-layers-108--24-mm); `pcb.bay_node.right.data` is its centre (KiCad y) |
+| AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (33 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
+| DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DUT_5V · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 5.1k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm), which leaves 6–8 open, or a [DATA ×4 board](#data-4-v10--4-layers-108--24-mm); `pcb.bay_node.right.data` is its centre (KiCad y) |
 | Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side, AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.5 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); at the rear right, its lead straight back, its parts in a block west of it; `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
@@ -140,7 +140,7 @@ status LED on its own RGB LED's IO38, so the bench stand-in needs no remap.  `fi
 **Row power VRACK, 20 or 28 V.** The hub negotiates 20 V, or 28 V (EPR), from a USB-C PD charger
 and passes it to the rows as VRACK (pin 1 of the row cable; the node's net `VRACK`, then `VIN`
 after the reverse-polarity P-FET).  The input stage takes both: the SMBJ33A stands off 33 V
-(28 V + 5 % = 29.4 V), the LMR51635 runs from 4.3 to 60 V and its EN divider (1M/100k) starts it
+(28 V + 5 % = 29.4 V), the LMR51635 runs from 4.3 to 60 V and its EN divider (100k/10k) starts it
 above 13.5 V, and the P-FET and its 12 V gate zener are rated 60 V.  At 20 V a row draws more
 current for the same load; the hub's eFuse still caps it at 1.6 A.  The hub keeps every row off
 until the PD contract is final, so a node sees one clean power-up.
@@ -195,7 +195,7 @@ carries the node's I²C and an interrupt, for a DATA ×4 board in the drawer (it
 devices, an INT back to IO4); the single DATA port board leaves those three pins open, and both use
 the camera's lead type (PH 8, "Same direction").  Pin 1 is 5 V for the far board's ports: one PH
 contact (2 A) carries the TPS2553's ≈ 1.4 A limit; two GND pins frame the pair, a third one sits
-next to SDA.  The I²C bus then reaches ≈ 50 cm of lead: 100 kHz with the node's 4.7k pull-ups
+next to SDA.  The I²C bus then reaches ≈ 50 cm of lead: 100 kHz with the node's 5.1k pull-ups
 (≈ 100 pF), the far board adds no strong pull-ups and keeps its addresses off the INA226's 0x40.
 INT is open drain, active low: 10k pull-up beside the module, 1k in series at J7.  U8 clamps D±
 right behind J7; no room was left for an ESD array on the I²C and INT pins: the far board protects
@@ -231,7 +231,7 @@ and the sequencing: [power.md](power.md).
 | Controller supply | LMR51635 from VBUS *ahead of* the switch (EN 39k/18k: from ≈ 3.9 V; FB 100k/18k: 5.24 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from a contract's first 5 V; runs on the console USB alone for flashing |
 | Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
 | PD interface | SDA / SCL with 5.1 k pull-ups fed from a GPIO (I2C_PU), INT (a 5 V output) through 10 k / 18 k, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered AP33772S |
-| CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 10 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
+| CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 22 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
 | POS | 4 GPIOs → 10 k → pin 1 of each row output (the outputs have the bay nodes' OUT pinout: 1 POS · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), BAT54S clamp to GND / 3.3 V | survives a wrong cable (VRACK on POS) |
 
 **Layout**, with the bay node's practices: JLC's 4-layer stackup (JLC04161H-7628), ENIG for now (the
@@ -386,12 +386,13 @@ bay node's estimate of 2026-10-19 (below) replaced it there:
 
 **Bay node order: 10 PCBs, lead-free HASL, 10 assembled** (the user, 2026-10-19: 8 bays and 2
 spares).  Not re-quoted yet (the full PCBA quote needs the user's JLC sign-in): `tools/bom.py`
-carries an estimate from JLC's current fees, ≈ **$328**.  PCB $19.50 (10 × 74 × 90 mm 4-layer HASL,
+carries an estimate from JLC's current fees, ≈ **$323**.  PCB $19.50 (10 × 74 × 90 mm 4-layer HASL,
 $19.30 read live, the same as at 64 × 90: JLC's offer covers up to 100 × 100 mm; + the 5 mm rails
-Standard PCBA may add; no engineering fee up to 10 PCBs).  PCBA $309:
-setup $25.56, stencil $8.21, $1.53 per unique part type (42: $64.26), SMT $5.90 (369 joints a
+Standard PCBA may add; no engineering fee up to 10 PCBs).  PCBA $303:
+setup $25.56, stencil $8.21, $1.53 per unique part type (38: $58.14; four values merged onto values
+the board has: EN 100k/10k, PC_DET 10k/18k, I²C 5.1k, AUX VREF 33 Ω), SMT $5.90 (369 joints a
 board), X-ray $16.40 ($1.64 a board, mandatory for the WROOM-1), packaging $0.52, components ≈
-$188 (catalogue × 1.12).  The 74 × 90 re-layout took ≈ $15 off (J4, its Rp pair, two part types).  ENIG would add ≈ $12.60.  JLC's page also lists a Standard handling fee
+$189 (catalogue × 1.12).  The 74 × 90 re-layout took ≈ $15 off (J4, its Rp pair, two part types).  ENIG would add ≈ $12.60.  JLC's page also lists a Standard handling fee
 (≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm at the real quote.
 
 **Power hub v0.5: quoted on 2026-10-19, $222.48 without its AP33772S.**  On jlcpcb.com, from main's
@@ -422,31 +423,31 @@ The user found that dear.  What JLC charges for, checked on its calculator (2026
   4-layer offer applies: $8 instead of $25 + $7.50.
 - **ENIG costs $18.00, lead-free HASL $5.30.**
 
-Two savings are applied since, as adjustments to the quote (≈ $214):
+Two savings are applied since, as adjustments to the quote (≈ $213):
 - **Lead-free HASL, as the node.**  It was ENIG for the MINI-1's LGA pads; JLC X-rays the module
   either way.  −$12.70.
-- **Ten values merged** onto values the board already has (no footprint moved), so ten fewer part
-  types at $1.55 each in Standard PCBA's feeders: 48 → 38.  −$15.50.
+- **Eleven values merged** onto values the board already has (no footprint moved), so eleven fewer
+  part types at $1.55 each in Standard PCBA's feeders: 48 → 37.  −$17.05.
   - FB 100k/18k: 5.24 V, as the node; ≈ 4.9 V after D4 for the TJA1462AT.
   - EN 39k/18k: on at 3.9 V, off below 3.1 V.
   - PD INT divider 10k/18k: 3.2 V.
   - I²C pull-ups 5.1k.
   - Every front LED on 1k (1.2–1.4 mA).
-  - CAN split caps 10 nF (the IMON filters' value).
+  - The IMON filters and the CAN split caps on 22 nF (the eFuses' dVdT value).
   - The LDO's input cap 1 µF 0805 (the eFuses' part; the buck's 3 × 22 µF sit just before D4).
 
-**Why 38 part types.**  The hub does five jobs, and each brings its own parts.  The four eFuse
+**Why 37 part types.**  The hub does five jobs, and each brings its own parts.  The four eFuse
 rows add no type: they repeat the same nine.  Many values are set by a datasheet equation (eFuse
 current limit and IMON, the AP33772S's VSEL, gate and VOUT resistors, the buck's FB).
 
 | Block | Its own types |
 |---|---|
 | PD input and VRACK switch | 8: AP33772S, 2 × IRF7842, 5 mΩ shunt, NTC, SMAJ30A, 100 µF, 6.2k, 200 Ω |
-| 4 eFuse rows | 6: TPS26600, S6B, red LED, BAT54S, 22 nF, 7.5k ILIM |
+| 4 eFuse rows | 5: TPS26600, S6B, red LED, BAT54S, 7.5k ILIM |
 | 5 V buck, 3.3 V LDO | 5: LMR51635, inductor, AP2112K, 2 × B5819W, 22 µF |
 | ESP32 and USB console | 3: ESP32-S3-MINI-1, USBLC6, 2 buttons |
 | CAN | 3: TJA1462AT, PESD2CAN, 56 Ω |
-| shared | 13: 100n, 10n, 1 µF 0603, 1 µF 0805, 10 µF 1206, green LED, USB4105, 1k, 100k, 10k, 5.1k, 39k, 18k |
+| shared | 13: 100n, 22n, 1 µF 0603, 1 µF 0805, 10 µF 1206, green LED, USB4105, 1k, 100k, 10k, 5.1k, 39k, 18k |
 
 **Two rows instead of four** would remove no type, only parts: per board two TPS26600, two S6B, four
 LEDs, two BAT54S and their passives (36 parts), ≈ $5 a board, ≈ $10 for two.  It matters only if

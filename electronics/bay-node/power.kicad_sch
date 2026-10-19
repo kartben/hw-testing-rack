@@ -4040,8 +4040,8 @@
 				)
 			)
 		)
-		(property "Value" "1M"
-			(at 76.726 106.68 0)
+		(property "Value" "100k"
+			(at 77.776 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4066,7 +4066,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 1M 0603"
+		(property "Description" "Resistor 100k 0603"
 			(at 73.66 105.41 0)
 			(effects
 				(font
@@ -4075,7 +4075,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C22935"
+		(property "LCSC" "C25803"
 			(at 73.66 105.41 0)
 			(effects
 				(font
@@ -4084,7 +4084,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF1004T5E"
+		(property "MPN" "0603WAF1003T5E"
 			(at 73.66 105.41 0)
 			(effects
 				(font
@@ -4135,8 +4135,8 @@
 				)
 			)
 		)
-		(property "Value" "100k"
-			(at 77.776 124.46 0)
+		(property "Value" "10k"
+			(at 77.251 124.46 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4161,7 +4161,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 100k 0603"
+		(property "Description" "Resistor 10k 0603"
 			(at 73.66 123.19 0)
 			(effects
 				(font
@@ -4170,7 +4170,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25803"
+		(property "LCSC" "C25804"
 			(at 73.66 123.19 0)
 			(effects
 				(font
@@ -4179,7 +4179,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF1003T5E"
+		(property "MPN" "0603WAF1002T5E"
 			(at 73.66 123.19 0)
 			(effects
 				(font
@@ -7420,7 +7420,7 @@
 		)
 		(uuid "49c92759-f989-5add-a87e-f01e10797d7a")
 	)
-	(text_box "LMR51635YDDCR: 1.1 MHz, PFM at light load with spread spectrum.  Values from TI SLUSF64B table 8-2 (5 V, 1.1 MHz):\n  L 3.3 µH (FXL0630, 9.5 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.\nFB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V: ≈ 4.75 V still reaches the DATA board at 1.4 A over 50 cm\n  of PH lead (switch, shunt, one PH pin each way); everything on +5V takes it (TJA1462AT ≤ 5.5 V).\nEN 1M/100k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node\n  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.\nLayout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island\n  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.\nInput: SUD50P06 P-FET (reverse polarity, Vgs clamped by the 12 V zener); SMBJ33A clamps hot-plug ringing below 54 V (U1: 63 V abs max).\nVRACK is 20 V, or 28 V (EPR), from the hub's USB-C PD supply: SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the buck runs\n  4.3–60 V and starts above 13.5 V, the P-FET and the zener clamp are rated 60 V / 12 V.  At 20 V a row draws more current: ≤ 1.6 A."
+	(text_box "LMR51635YDDCR: 1.1 MHz, PFM at light load with spread spectrum.  Values from TI SLUSF64B table 8-2 (5 V, 1.1 MHz):\n  L 3.3 µH (FXL0630, 9.5 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.\nFB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V: ≈ 4.75 V still reaches the DATA board at 1.4 A over 50 cm\n  of PH lead (switch, shunt, one PH pin each way); everything on +5V takes it (TJA1462AT ≤ 5.5 V).\nEN 100k/10k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node\n  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.\nLayout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island\n  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.\nInput: SUD50P06 P-FET (reverse polarity, Vgs clamped by the 12 V zener); SMBJ33A clamps hot-plug ringing below 54 V (U1: 63 V abs max).\nVRACK is 20 V, or 28 V (EPR), from the hub's USB-C PD supply: SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the buck runs\n  4.3–60 V and starts above 13.5 V, the P-FET and the zener clamp are rated 60 V / 12 V.  At 20 V a row draws more current: ≤ 1.6 A."
 		(exclude_from_sim no)
 		(at 15.24 162.56 0)
 		(size 279.4 29.21)

@@ -15621,7 +15621,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10n"
+		(property "Value" "22n"
 			(at 97.79 363.22 0)
 			(effects
 				(font
@@ -15648,7 +15648,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 10n 0603"
+		(property "Description" "Capacitor 22n 0603"
 			(at 93.98 365.76 0)
 			(effects
 				(font
@@ -15657,7 +15657,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C57112"
+		(property "LCSC" "C21122"
 			(at 93.98 365.76 0)
 			(effects
 				(font
@@ -15666,7 +15666,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603B103K500NT"
+		(property "MPN" "CL10B223KB8NNNC"
 			(at 93.98 365.76 0)
 			(effects
 				(font
@@ -15675,7 +15675,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "FH (Guangdong Fenghua Advanced Tech)"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 93.98 365.76 0)
 			(effects
 				(font
@@ -16011,7 +16011,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10n"
+		(property "Value" "22n"
 			(at 107.95 363.22 0)
 			(effects
 				(font
@@ -16038,7 +16038,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 10n 0603"
+		(property "Description" "Capacitor 22n 0603"
 			(at 104.14 365.76 0)
 			(effects
 				(font
@@ -16047,7 +16047,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C57112"
+		(property "LCSC" "C21122"
 			(at 104.14 365.76 0)
 			(effects
 				(font
@@ -16056,7 +16056,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603B103K500NT"
+		(property "MPN" "CL10B223KB8NNNC"
 			(at 104.14 365.76 0)
 			(effects
 				(font
@@ -16065,7 +16065,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "FH (Guangdong Fenghua Advanced Tech)"
+		(property "Manufacturer" "Samsung Electro-Mechanics"
 			(at 104.14 365.76 0)
 			(effects
 				(font

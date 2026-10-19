@@ -347,8 +347,9 @@ def board() -> Board:
     C(s, "C4", "100n", "VIN", "GND", pcb=P(8, 46.6, 0), sch=at(24, 41.5))
     for c_, x in (("C2", 16), ("C3", 20), ("C4", 24)):
         s.wire((x, 38), f"{c_}.1")
-    R(s, "R2", "1M", "VIN", "BUCK_EN", pcb=P(4.78, 46.3, 90), sch=at(29, 41.5))
-    R(s, "R3", "100k", "BUCK_EN", "GND", pcb=P(4, 44.0, 180), sch=at(29, 48.5))
+    # EN 100k/10k: on above 13.5 V, off below 10.8 V (values the board already has; 0.25 mA at 28 V)
+    R(s, "R2", "100k", "VIN", "BUCK_EN", pcb=P(4.78, 46.3, 90), sch=at(29, 41.5))
+    R(s, "R3", "10k", "BUCK_EN", "GND", pcb=P(4, 44.0, 180), sch=at(29, 48.5))
     s.wire((29, 38), "R2.1")
     s.wire("R2.2", "R3.1")
     s.wire((29, 44), (33, 44), (33, 47), "U1.EN")
@@ -382,7 +383,7 @@ def board() -> Board:
     s.note("  L 3.3 µH (FXL0630, 9.5 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.")
     s.note("FB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V: ≈ 4.75 V still reaches the DATA board at 1.4 A over 50 cm")
     s.note("  of PH lead (switch, shunt, one PH pin each way); everything on +5V takes it (TJA1462AT ≤ 5.5 V).")
-    s.note("EN 1M/100k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node")
+    s.note("EN 100k/10k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node")
     s.note("  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.")
     s.note("Layout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island")
     s.note("  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.")
@@ -476,7 +477,7 @@ def board() -> Board:
     # the USBLC6 clamps to its VBUS pin: a local 100 nF keeps that rail stiff during a discharge
     C(u, "C25", "100n", "+5V", "GND", pcb=P(35.4, 76.9, 0), sch=at(48, 30))
     R(u, "R11", "10k", "PC_VBUS", "PC_DET", pcb=P(27.0, 79.0, 90), sch=at(37.5, 22, rot=90))
-    R(u, "R12", "20k", "PC_DET", "GND", pcb=P(27.0, 76.0, 90), sch=at(42, 23.5))
+    R(u, "R12", "18k", "PC_DET", "GND", pcb=P(27.0, 76.0, 90), sch=at(42, 23.5))     # 5 V → 3.2 V
     u.wire("J3.VBUS", "R11.1")
     u.wire("R11.2", (46, 22))
     u.tag("PC_DET", (46, 22), "right")
@@ -511,7 +512,7 @@ def board() -> Board:
     C(u, "C26", "100n", "+5V", "GND", pcb=P(51.6, 36.9, 0), sch=at(124, 64))       # U8's VBUS, via In2 +5V
 
     # the drawer's DATA board on an 8-wire PH lead (the camera's lead type, 'Same direction'): VBUS, GND,
-    # D−, D+, GND as before, then the node's I²C (the INA226's bus, 4.7k pull-ups on this board) and an
+    # D−, D+, GND as before, then the node's I²C (the INA226's bus, 5.1k pull-ups on this board) and an
     # open-drain, active-low INT (10k pull-up here, 1k in series at the connector).  The single DATA port
     # board leaves pins 6–8 open; a later DATA ×4 board uses them (its I²C devices must keep off 0x40).
     # Side entry on the right edge (like J2: pin 1 towards the front), its mouth towards the drag chain's fixed
@@ -593,7 +594,7 @@ def board() -> Board:
     d.text("I2C pull-ups", 103, 16.2, 1.27, True)
     d.tag("+3V3", (100, 18), "up")
     d.wire((100, 18), (116, 18), net="+3V3")
-    for ref, val, x, net, xy in (("R21", "4.7k", 100, "I2C_SDA", (42.8, 29.3)), ("R22", "4.7k", 108, "I2C_SCL", (44.4, 29.3)),
+    for ref, val, x, net, xy in (("R21", "5.1k", 100, "I2C_SDA", (42.8, 29.3)), ("R22", "5.1k", 108, "I2C_SCL", (44.4, 29.3)),
                                  ("R20", "10k", 116, "INA_ALERT_N", (41.2, 29.3))):
         R(d, ref, val, "+3V3", net, pcb=P(*xy, 90), sch=at(x, 20.5))
         d.wire((x, 18), f"{ref}.1")
@@ -608,7 +609,7 @@ def board() -> Board:
                           "6": "AUX_BOOT_N"}, "AUX", pcb=P(EDGE_X, CFG["aux"][1], 90),
          sch=at(106, 64, fields=(1, -5)))
     ax = EDGE_X - 7.6                  # the column, between the DUT power block and J5's pads
-    R(d, "R23", "10", "+3V3", "AUX_VREF", pcb=P(45.2, 39.4, 0), sch=at(90.5, 54, rot=90))
+    R(d, "R23", "33", "+3V3", "AUX_VREF", pcb=P(45.2, 39.4, 0), sch=at(90.5, 54, rot=90))
     R(d, "R24", "1k", "AUX_TX", "AUX_TX_R", pcb=P(ax, 43.6, 0), sch=at(90.5, 58, rot=90))
     R(d, "R25", "1k", "AUX_RX", "AUX_RX_R", pcb=P(ax, 45.4, 0), sch=at(90.5, 62, rot=90))
     d.wire("J5.2", (98, 63), (98, 54), "R23.2")
@@ -638,7 +639,7 @@ def board() -> Board:
     d.note("  even with no firmware; ~FAULT flags current limit / over-temperature.")
     d.note("INA226 (I2C 0x40) runs from +3V3: it measures the drop across")
     d.note("  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DUT_5V at the shunt.")
-    d.note("AUX: TX/RX through 1k, VREF = +3V3 through 10 Ω (level hint),")
+    d.note("AUX: TX/RX through 1k, VREF = +3V3 through 33 Ω (level hint),")
     d.note("  RESET/BOOT open-drain (2N7002, 100k gate pull-downs).")
 
     # ------------------------------------------------------------------ rack bus: CAN + POS (docs/can.md)

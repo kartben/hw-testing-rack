@@ -5,16 +5,16 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 623 |
+| Electronics | 616 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 60 |
 | Cables | 49 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **912** |
+| **Total** | **906** |
 
-≈ **€114 per bay** all-in.
+≈ **€113 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -25,13 +25,13 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  The power hub is a rea
 | Board | Order | Line | USD |
 |---|---|---|---:|
 | bay-node | 10 PCBs (4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA), 10 assembled, Standard PCBA | PCB: board $19.50 | 19.50 |
-| | | PCBA: setup $25.56, stencil $8.21, components $188.05, feeders $64.26, SMT $5.90, X-ray $16.40, packaging $0.52 | 308.90 |
-| | | **Estimated total** | **328.40** |
-| | | Order (indicative): as quoted | 328.40 |
+| | | PCBA: setup $25.56, stencil $8.21, components $188.54, feeders $58.14, SMT $5.90, X-ray $16.40, packaging $0.52 | 303.27 |
+| | | **Estimated total** | **322.77** |
+| | | Order (indicative): as quoted | 322.77 |
 | power-hub | 5 PCBs (4-layer 76×140 mm (86×140 with JLC's rails), ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $18.00, board $7.50 | 50.50 |
 | | | PCBA: setup $25.75, stencil $8.27, components $57.89, feeders $72.85, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04 | 192.02 |
 | | | **Quoted total** | **242.52** |
-| | | Order (indicative): lead-free HASL ≈ $5.30 instead of ENIG $18.00; 10 part types fewer (values merged) (−$15.50 feeders) | 214.32 |
+| | | Order (indicative): lead-free HASL ≈ $5.30 instead of ENIG $18.00; 11 part types fewer (values merged) (−$17.05 feeders) | 212.77 |
 | data-port | 10 PCBs (2-layer 40×17 mm, lead-free HASL), 8 assembled, Economic PCBA | PCB: board $3.00 | 3.00 |
 | | | PCBA: setup $8.00, stencil $1.50, components $12.90, extended parts $9.00, SMT $0.40 | 31.80 |
 | | | **Estimated total** | **34.80** |
@@ -113,15 +113,11 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  The power hub is a rea
 | Electronics | 2N7002 — N-MOSFET 60 V (open-drain AUX outputs) | 20  | 0.02 | 0.37 | LCSC/JLCPCB C8545 |
 | Electronics | AO3400A — N-MOSFET 30 V 5.7 A, 48 mΩ at 2.5 V (the camera light's low side) | 10  | 0.09 | 0.92 | LCSC/JLCPCB C20917 |
 | Electronics | 100k — Resistor 100k 0603 | 90  | 0.00 | 0.26 | LCSC/JLCPCB C25803 |
-| Electronics | 1M — Resistor 1M 0603 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C22935 |
-| Electronics | 18k — Resistor 18k 0603 | 20  | 0.00 | 0.07 | LCSC/JLCPCB C25810 |
-| Electronics | 10k — Resistor 10k 0603 | 90  | 0.00 | 0.43 | LCSC/JLCPCB C25804 |
-| Electronics | 33 — Resistor 33 0603 | 50  | 0.00 | 0.11 | LCSC/JLCPCB C23140 |
-| Electronics | 5.1k — Resistor 5.1k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C23186 |
-| Electronics | 20k — Resistor 20k 0603 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C4184 |
+| Electronics | 10k — Resistor 10k 0603 | 100  | 0.00 | 0.48 | LCSC/JLCPCB C25804 |
+| Electronics | 18k — Resistor 18k 0603 | 30  | 0.00 | 0.11 | LCSC/JLCPCB C25810 |
+| Electronics | 33 — Resistor 33 0603 | 60  | 0.00 | 0.14 | LCSC/JLCPCB C23140 |
+| Electronics | 5.1k — Resistor 5.1k 0603 | 40  | 0.00 | 0.06 | LCSC/JLCPCB C23186 |
 | Electronics | 50m — 50 mΩ 1 % 1 W current shunt | 10  | 0.11 | 1.10 | LCSC/JLCPCB C601102 |
-| Electronics | 4.7k — Resistor 4.7k 0603 | 20  | 0.00 | 0.05 | LCSC/JLCPCB C23162 |
-| Electronics | 10 — Resistor 10 0603 | 10  | 0.00 | 0.03 | LCSC/JLCPCB C22859 |
 | Electronics | 1k — Resistor 1k 0603 | 30  | 0.00 | 0.05 | LCSC/JLCPCB C21190 |
 | Electronics | RESET — tactile switch 5.1 × 5.1 mm | 10  | 0.02 | 0.18 | LCSC/JLCPCB C318884 |
 | Electronics | BOOT — tactile switch 5.1 × 5.1 mm | 10  | 0.02 | 0.18 | LCSC/JLCPCB C318884 |
@@ -137,15 +133,14 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  The power hub is a rea
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 10  | 0.69 | 6.90 | LCSC/JLCPCB C49851 |
 | Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 10  | 0.93 | 9.29 | LCSC/JLCPCB C3234095 |
 | Electronics | Bare PCB bay-node (4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA) | 10  | 1.79 | 17.94 | estimate, not quoted |
-| Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 111.18 | 111.18 | estimate, not quoted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | 18.17 | 18.17 | estimate, not quoted |
+| Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 105.55 | 105.55 | estimate, not quoted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | 18.59 | 18.59 | estimate, not quoted |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 20  | 0.01 | 0.25 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C15849 |
 | Electronics | 100u/50V — 100 µF 50 V aluminium electrolytic | 2  | 0.06 | 0.13 | LCSC/JLCPCB C3352 |
 | Electronics | 1u — Capacitor 1u 0805 | 18  | 0.03 | 0.48 | LCSC/JLCPCB C28323 |
-| Electronics | 22n — Capacitor 22n 0603 | 8  | 0.01 | 0.06 | LCSC/JLCPCB C21122 |
-| Electronics | 10n — Capacitor 10n 0603 | 12  | 0.01 | 0.11 | LCSC/JLCPCB C57112 |
+| Electronics | 22n — Capacitor 22n 0603 | 20  | 0.01 | 0.14 | LCSC/JLCPCB C21122 |
 | Electronics | 22u — Capacitor 22u 1206 | 10  | 0.11 | 1.14 | LCSC/JLCPCB C12891 |
 | Electronics | SMAJ30A — TVS 30 V stand-off, 400 W (unidirectional): above a 28 V EPR contract | 2  | 0.04 | 0.08 | LCSC/JLCPCB C113965 |
 | Electronics | PD — green LED, side view 3 × 2 × 1 mm | 2  | 0.22 | 0.44 | LCSC/JLCPCB C598310 |
@@ -185,8 +180,8 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  The power hub is a rea
 | Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 2  | 0.93 | 1.86 | LCSC/JLCPCB C3234095 |
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 8  | 1.42 | 11.33 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×140 mm (86×140 with JLC's rails), lead-free HASL) | 5  | 6.96 | 34.78 | JLCPCB quote 2026-10-19, adjusted |
-| Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.) | 1  | 109.14 | 109.14 | JLCPCB quote 2026-10-19, adjusted |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.29 | 4.29 | JLCPCB quote 2026-10-19, adjusted |
+| Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.) | 1  | 107.71 | 107.71 | JLCPCB quote 2026-10-19, adjusted |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.32 | 4.32 | JLCPCB quote 2026-10-19, adjusted |
 | Electronics | 100n — Capacitor 100n 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C14663 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 8  | 0.84 | 6.70 | LCSC/JLCPCB C5184243 |
 | Electronics | LEAD — JST PH 8-pin, side entry, SMD | 8  | 0.41 | 3.31 | LCSC/JLCPCB C265121 |

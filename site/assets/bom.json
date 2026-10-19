@@ -400,7 +400,7 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "100k — Resistor 100k 0603",
-"ref": "R1,R3,R4,R13,R17,R26,R27,R29,R36",
+"ref": "R1,R2,R4,R13,R17,R26,R27,R29,R36",
 "mpn": "0603WAF1003T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
@@ -417,110 +417,74 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "1M — Resistor 1M 0603",
-"ref": "R2",
-"mpn": "0603WAF1004T5E",
+"item": "10k — Resistor 10k 0603",
+"ref": "R3,R6,R7,R11,R18,R20,R28,R30,R37,R38",
+"mpn": "0603WAF1002T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C22935",
-"qty": 10,
-"unit_eur": 0.0019,
+"part": "C25804",
+"qty": 100,
+"unit_eur": 0.0048,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 10 boards",
+"notes": "10 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.02
+"ext_eur": 0.48
 },
 {
 "category": "Electronics",
 "group": "bay-node",
 "item": "18k — Resistor 18k 0603",
-"ref": "R5,R16",
+"ref": "R5,R12,R16",
 "mpn": "0603WAF1802T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25810",
-"qty": 20,
+"qty": 30,
 "unit_eur": 0.0037,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 10 boards",
-"unit": "pcs",
-"ext_eur": 0.07
-},
-{
-"category": "Electronics",
-"group": "bay-node",
-"item": "10k — Resistor 10k 0603",
-"ref": "R6,R7,R11,R18,R20,R28,R30,R37,R38",
-"mpn": "0603WAF1002T5E",
-"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-"supplier": "LCSC/JLCPCB",
-"part": "C25804",
-"qty": 90,
-"unit_eur": 0.0048,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "9 per board × 10 boards",
-"unit": "pcs",
-"ext_eur": 0.43
-},
-{
-"category": "Electronics",
-"group": "bay-node",
-"item": "33 — Resistor 33 0603",
-"ref": "R8,R31,R32,R33,R34",
-"mpn": "0603WAF330JT5E",
-"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-"supplier": "LCSC/JLCPCB",
-"part": "C23140",
-"qty": 50,
-"unit_eur": 0.0023,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "5 per board × 10 boards",
+"notes": "3 per board × 10 boards",
 "unit": "pcs",
 "ext_eur": 0.11
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "5.1k — Resistor 5.1k 0603",
-"ref": "R9,R10",
-"mpn": "0603WAF5101T5E",
+"item": "33 — Resistor 33 0603",
+"ref": "R8,R23,R31,R32,R33,R34",
+"mpn": "0603WAF330JT5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C23186",
-"qty": 20,
-"unit_eur": 0.0014,
+"part": "C23140",
+"qty": 60,
+"unit_eur": 0.0023,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 10 boards",
+"notes": "6 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.03
+"ext_eur": 0.14
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "20k — Resistor 20k 0603",
-"ref": "R12",
-"mpn": "0603WAF2002T5E",
+"item": "5.1k — Resistor 5.1k 0603",
+"ref": "R9,R10,R21,R22",
+"mpn": "0603WAF5101T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C4184",
-"qty": 10,
-"unit_eur": 0.002,
+"part": "C23186",
+"qty": 40,
+"unit_eur": 0.0014,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 10 boards",
+"notes": "4 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.02
+"ext_eur": 0.06
 },
 {
 "category": "Electronics",
@@ -539,42 +503,6 @@
 "notes": "1 per board × 10 boards",
 "unit": "pcs",
 "ext_eur": 1.1
-},
-{
-"category": "Electronics",
-"group": "bay-node",
-"item": "4.7k — Resistor 4.7k 0603",
-"ref": "R21,R22",
-"mpn": "0603WAF4701T5E",
-"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-"supplier": "LCSC/JLCPCB",
-"part": "C23162",
-"qty": 20,
-"unit_eur": 0.0026,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "2 per board × 10 boards",
-"unit": "pcs",
-"ext_eur": 0.05
-},
-{
-"category": "Electronics",
-"group": "bay-node",
-"item": "10 — Resistor 10 0603",
-"ref": "R23",
-"mpn": "0603WAF100JT5E",
-"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-"supplier": "LCSC/JLCPCB",
-"part": "C22859",
-"qty": 10,
-"unit_eur": 0.0029,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "1 per board × 10 boards",
-"unit": "pcs",
-"ext_eur": 0.03
 },
 {
 "category": "Electronics",
@@ -845,10 +773,10 @@
 "item": "Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 111.18,
-"notes": "setup $25.56, stencil $8.21, feeders $64.26, SMT $5.90, X-ray $16.40, packaging $0.52; Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 105.55,
+"notes": "setup $25.56, stencil $8.21, feeders $58.14, SMT $5.90, X-ray $16.40, packaging $0.52; Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 111.18
+"ext_eur": 105.55
 },
 {
 "category": "Electronics",
@@ -856,10 +784,10 @@
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 18.17,
-"notes": "quoted components $188.05 (≈ €173.01) for 10 boards; catalogue unit prices give €154.84",
+"unit_eur": 18.59,
+"notes": "quoted components $188.54 (≈ €173.46) for 10 boards; catalogue unit prices give €154.87",
 "unit": "pcs",
-"ext_eur": 18.17
+"ext_eur": 18.59
 },
 {
 "category": "Electronics",
@@ -955,37 +883,19 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "22n — Capacitor 22n 0603",
-"ref": "C21,C22,C23,C24",
+"ref": "C21,C22,C23,C24,C61,C62,C63,C64,C118,C119",
 "mpn": "CL10B223KB8NNNC",
 "manufacturer": "Samsung Electro-Mechanics",
 "supplier": "LCSC/JLCPCB",
 "part": "C21122",
-"qty": 8,
+"qty": 20,
 "unit_eur": 0.0069,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "4 per board × 2 boards",
+"notes": "10 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.06
-},
-{
-"category": "Electronics",
-"group": "power-hub",
-"item": "10n — Capacitor 10n 0603",
-"ref": "C61,C62,C63,C64,C118,C119",
-"mpn": "0603B103K500NT",
-"manufacturer": "FH (Guangdong Fenghua Advanced Tech)",
-"supplier": "LCSC/JLCPCB",
-"part": "C57112",
-"qty": 12,
-"unit_eur": 0.0094,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "6 per board × 2 boards",
-"unit": "pcs",
-"ext_eur": 0.11
+"ext_eur": 0.14
 },
 {
 "category": "Electronics",
@@ -1688,10 +1598,10 @@
 "item": "Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.)",
 "supplier": "JLCPCB quote 2026-10-19, adjusted",
 "qty": 1,
-"unit_eur": 109.14,
-"notes": "setup $25.75, stencil $8.27, feeders $57.35, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; 10 part types fewer (values merged) (−$15.50 feeders); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
+"unit_eur": 107.71,
+"notes": "setup $25.75, stencil $8.27, feeders $55.80, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; 11 part types fewer (values merged) (−$17.05 feeders); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 109.14
+"ext_eur": 107.71
 },
 {
 "category": "Electronics",
@@ -1699,10 +1609,10 @@
 "item": "Components power-hub: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-19, adjusted",
 "qty": 1,
-"unit_eur": 4.29,
-"notes": "quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €48.97",
+"unit_eur": 4.32,
+"notes": "quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €48.94",
 "unit": "pcs",
-"ext_eur": 4.29
+"ext_eur": 4.32
 },
 {
 "category": "Electronics",
@@ -2763,7 +2673,7 @@
 }
 ],
 "by_category": {
-"Electronics": 622.86,
+"Electronics": 616.2499999999998,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2771,7 +2681,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 912.44,
+"total_eur": 905.83,
 "prints": [
 {
 "part": "bay_label",
@@ -3038,7 +2948,7 @@
 "assembled": 10,
 "spares": 2,
 "service": "Standard",
-"total": 328.4,
+"total": 322.77,
 "estimate": true,
 "spec": "4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA",
 "pcb": {
@@ -3047,8 +2957,8 @@
 "pcba": {
 "setup": 25.56,
 "stencil": 8.21,
-"components": 188.05,
-"feeders": 64.26,
+"components": 188.54,
+"feeders": 58.14,
 "SMT": 5.9,
 "X-ray": 16.4,
 "packaging": 0.52
@@ -3143,14 +3053,14 @@
 "pcba": {
 "setup": 25.56,
 "stencil": 8.21,
-"components": 188.05,
-"feeders": 64.26,
+"components": 188.54,
+"feeders": 58.14,
 "SMT": 5.9,
 "X-ray": 16.4,
 "packaging": 0.52
 },
 "changes": [],
-"total": 328.4
+"total": 322.77
 },
 "power-hub": {
 "pcb": {
@@ -3162,7 +3072,7 @@
 "setup": 25.75,
 "stencil": 8.27,
 "components": 57.89,
-"feeders": 57.35,
+"feeders": 55.8,
 "SMT": 3.3,
 "X-ray": 3.3,
 "packaging": 0.5,
@@ -3171,9 +3081,9 @@
 },
 "changes": [
 "lead-free HASL ≈ $5.30 instead of ENIG $18.00",
-"10 part types fewer (values merged) (−$15.50 feeders)"
+"11 part types fewer (values merged) (−$17.05 feeders)"
 ],
-"total": 214.32
+"total": 212.77
 },
 "data-port": {
 "pcb": {

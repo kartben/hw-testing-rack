@@ -4025,7 +4025,7 @@
 				)
 			)
 		)
-		(property "Value" "20k"
+		(property "Value" "18k"
 			(at 110.271 60.96 0)
 			(effects
 				(font
@@ -4051,7 +4051,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 20k 0603"
+		(property "Description" "Resistor 18k 0603"
 			(at 106.68 59.69 0)
 			(effects
 				(font
@@ -4060,7 +4060,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C4184"
+		(property "LCSC" "C25810"
 			(at 106.68 59.69 0)
 			(effects
 				(font
@@ -4069,7 +4069,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF2002T5E"
+		(property "MPN" "0603WAF1802T5E"
 			(at 106.68 59.69 0)
 			(effects
 				(font

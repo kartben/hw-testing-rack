@@ -311,7 +311,7 @@ def board() -> Board:
         C(o, f"C{20 + n}", "22n", f"DVDT_{ch}", "GND", pcb=P(34.0, yc + 2.6, 0))
         R(o, f"R{30 + n}", "18k", f"IMON_{ch}", "GND", pcb=P(34.0, yc + 4.2, 0))
         R(o, f"R{60 + n}", "1k", f"IMON_{ch}", f"ADC_IMON_{ch}", pcb=P(37.4, yc + 4.2, 0))
-        C(o, f"C{60 + n}", "10n", f"ADC_IMON_{ch}", "GND", pcb=P(40.4, yc + 4.2, 0))
+        C(o, f"C{60 + n}", "22n", f"ADC_IMON_{ch}", "GND", pcb=P(40.4, yc + 4.2, 0))
         # SHDN: off by default (100k to GND); the controller drives ROW_EN high, through 10k, to turn it on
         R(o, f"R{70 + n}", "100k", f"SHDN_{ch}", "GND", pcb=P(21.4, yc + 4.5, 270))
         R(o, f"R{80 + n}", "10k", f"ROW_EN_{ch}", f"SHDN_{ch}", pcb=P(19.0, yc + 3.675, 0))
@@ -414,7 +414,7 @@ def board() -> Board:
     for i, (r1, r2, cc, mid, y) in enumerate((("R215", "R216", "C118", "CAN_TERM1", 36.0), ("R217", "R218", "C119", "CAN_TERM2", 38.6))):
         R(c, r1, "56", "CAN_H", mid, pcb=P(19.0, y, 0))
         R(c, r2, "56", mid, "CAN_L", pcb=P(22.4, y, 0))
-        C(c, cc, "10n", mid, "GND", pcb=P(25.6, y, 0))      # split cap: the IMON filters' 10n, one type
+        C(c, cc, "22n", mid, "GND", pcb=P(25.6, y, 0))      # split cap: the eFuses' 22n (dVdT, IMON filter), one type
     part(c, "D9", "can_esd", {"1": "CAN_H", "2": "CAN_L", "3": "GND"}, pcb=P(14.5, 37.5, 0))
 
     c.block("Mounting (M3, on the power box's standoffs)")

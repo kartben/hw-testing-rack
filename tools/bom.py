@@ -46,15 +46,16 @@ JLC_QUOTE = {
     # quote of 2026-10-16 (20 PCBs ENIG, 16 assembled, $367.71) priced the board before rev 0.5 and the
     # full PCBA quote needs the user's sign-in.  Built from JLC's fees (help page of 2026-09-09) and the
     # live bare-PCB price of 2026-10-19: 74 × 90 mm 4-layer lead-free HASL $19.30 for 10 (as at 64 × 90: JLC's
-    # offer covers up to 100 × 100 mm) + $0.20 for the 5 mm rails Standard PCBA may add; setup $25.56, stencil $8.21, $1.53 per unique part type (42, basic
-    # or extended alike; J4 and its 22k Rp went with the 74 × 90 re-layout), SMT $0.0016 a joint (369 a board), X-ray $1.64 a board (the WROOM-1, mandatory),
+    # offer covers up to 100 × 100 mm) + $0.20 for the 5 mm rails Standard PCBA may add; setup $25.56, stencil $8.21, $1.53 per unique part type (38, basic
+    # or extended alike; J4 and its 22k Rp went with the 74 × 90 re-layout, then four values were merged onto
+    # values the board has: EN 100k/10k, PC_DET 10k/18k, I²C 5.1k, AUX VREF 33 Ω), SMT $0.0016 a joint (369 a board), X-ray $1.64 a board (the WROOM-1, mandatory),
     # packaging $0.52; components at catalogue prices × 1.12 (JLC's prices and attrition).  The page
     # also lists a Standard handling fee (≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm.
     "bay-node": {
-        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 328.40, "estimate": True,
+        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 322.77, "estimate": True,
         "spec": "4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA",
         "pcb": {"board": 19.50},
-        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 188.05, "feeders": 64.26, "SMT": 5.90,
+        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 188.54, "feeders": 58.14, "SMT": 5.90,
                  "X-ray": 16.40, "packaging": 0.52},
     },
     # v0.5, quoted on jlcpcb.com on 2026-10-19 (the user's account), from main's fab files: the gerbers,
@@ -121,11 +122,12 @@ JLC_FINISH = {"power-hub": ("lead-free HASL", 5.30)}
 # one more extended part type.
 # (The bay node's rev 0.5 changes against the 2026-10-16 quote lived here until its estimate of
 # 2026-10-19 above, which prices the board as it is.)
-# Power hub, after its quote of 2026-10-19: ten values merged onto values the board already has, no
+# Power hub, after its quote of 2026-10-19: eleven values merged onto values the board already has, no
 # footprint moved: FB 100k/18k as the node, EN 39k/18k, INT divider 10k/18k, I²C pull-ups 5.1k, every
-# front LED on 1k, the CAN split caps on the IMON filters' 10n, the LDO input on the eFuses' 1u 0805.  Ten
-# part types fewer at the quote's $1.55 a type in Standard PCBA feeders (47 → 37 placed types).
-JLC_SINCE_QUOTE = {"power-hub": [("10 part types fewer (values merged)", "feeders", -15.50)]}
+# front LED on 1k, the IMON filters and the CAN split caps on the dVdT caps' 22n, the LDO input on the
+# eFuses' 1u 0805.  Eleven part types fewer at the quote's $1.55 a type in Standard PCBA feeders (47 → 36
+# placed types).
+JLC_SINCE_QUOTE = {"power-hub": [("11 part types fewer (values merged)", "feeders", -17.05)]}
 
 
 # the row cables' listing (docs/can.md: one type for feeds and jumpers)

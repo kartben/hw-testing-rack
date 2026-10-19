@@ -3734,7 +3734,7 @@
 				)
 			)
 		)
-		(property "Value" "4.7k"
+		(property "Value" "5.1k"
 			(at 258.116 53.34 0)
 			(effects
 				(font
@@ -3760,7 +3760,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 4.7k 0603"
+		(property "Description" "Resistor 5.1k 0603"
 			(at 254 52.07 0)
 			(effects
 				(font
@@ -3769,7 +3769,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23162"
+		(property "LCSC" "C23186"
 			(at 254 52.07 0)
 			(effects
 				(font
@@ -3778,7 +3778,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF4701T5E"
+		(property "MPN" "0603WAF5101T5E"
 			(at 254 52.07 0)
 			(effects
 				(font
@@ -3829,7 +3829,7 @@
 				)
 			)
 		)
-		(property "Value" "4.7k"
+		(property "Value" "5.1k"
 			(at 278.436 53.34 0)
 			(effects
 				(font
@@ -3855,7 +3855,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 4.7k 0603"
+		(property "Description" "Resistor 5.1k 0603"
 			(at 274.32 52.07 0)
 			(effects
 				(font
@@ -3864,7 +3864,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23162"
+		(property "LCSC" "C23186"
 			(at 274.32 52.07 0)
 			(effects
 				(font
@@ -3873,7 +3873,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF4701T5E"
+		(property "MPN" "0603WAF5101T5E"
 			(at 274.32 52.07 0)
 			(effects
 				(font
@@ -4203,7 +4203,7 @@
 				)
 			)
 		)
-		(property "Value" "10"
+		(property "Value" "33"
 			(at 229.87 139.776 90)
 			(effects
 				(font
@@ -4229,7 +4229,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 10 0603"
+		(property "Description" "Resistor 33 0603"
 			(at 229.87 137.16 0)
 			(effects
 				(font
@@ -4238,7 +4238,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C22859"
+		(property "LCSC" "C23140"
 			(at 229.87 137.16 0)
 			(effects
 				(font
@@ -4247,7 +4247,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF100JT5E"
+		(property "MPN" "0603WAF330JT5E"
 			(at 229.87 137.16 0)
 			(effects
 				(font
@@ -6893,7 +6893,7 @@
 		)
 		(uuid "57ee726b-5e11-530c-bf29-d684624a5ddd")
 	)
-	(text_box "TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on\n  even with no firmware; ~FAULT flags current limit / over-temperature.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DUT_5V at the shunt.\nAUX: TX/RX through 1k, VREF = +3V3 through 10 Ω (level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
+	(text_box "TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on\n  even with no firmware; ~FAULT flags current limit / over-temperature.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DUT_5V at the shunt.\nAUX: TX/RX through 1k, VREF = +3V3 through 33 Ω (level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
 		(exclude_from_sim no)
 		(at 15.24 132.08 0)
 		(size 152.4 17.78)
