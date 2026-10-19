@@ -1,0 +1,15 @@
+/*
+ * ESP32-S3-DevKitC-1: the OTG controller as the USB host, on the devkit's
+ * "USB" connector (IO19/IO20).  That connector does not source VBUS: the hub
+ * must be self-powered (README.md).  The console is the "UART" connector.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+zephyr_uhc0: &usb_otg {
+	status = "okay";
+};
+
+&wifi {
+	status = "okay";
+};
