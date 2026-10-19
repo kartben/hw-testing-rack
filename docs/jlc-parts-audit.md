@@ -100,6 +100,9 @@ Checked and rejected:
 - **Regulators** (AMS1117, AP2112K, XC6206): none proposed. The DATA ×4's USB2514B draws ≈ 0.16 A on
   3.3 V, and the XC6206's SOT-23 can't shed ≈ 0.31 W.
 - **IRF7842 second source**: the VBsemi clone (C5438941) has 30 in stock.
+- **Hub Q1 / Q2 at 60 V**: the AP33772S drives the gate at most 4 V above VCC. The 60 V SO-8 parts in
+  stock are ≥ 28 mΩ at 4.5 V, against the IRF7842's 5.9 mΩ (docs/electronics.md). They stay at 40 V.
+- **Node C11 10u 0805 → 1206**: the larger footprint overlaps U2 and its neighbours.
 - **From the external review**:
   - removing the C1 bulk cap;
   - TJA1462 → SIT1044 / TJA1051, which have no signal improvement for the star bus;
