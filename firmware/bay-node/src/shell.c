@@ -460,6 +460,64 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_access,
 	SHELL_SUBCMD_SET_END
 );
 
+#if defined(CONFIG_BAY_CAMERA)
+static int cmd_camera(const struct shell *sh, size_t argc, char **argv)
+{
+	struct camera_status st;
+	const char *name;
+	char value[16];
+
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	camera_status(&st);
+	if (!st.present) {
+		shell_print(sh, "no camera");
+		return 0;
+	}
+	shell_print(sh, "%s on tcp/%u: %u client(s), %u frame(s), %u error(s), light %s",
+		    st.model, st.port, st.clients, st.frames, st.errors, st.lit ? "on" : "off");
+	for (int i = 0; camera_setting(i, &name, value, sizeof(value)); i++) {
+		shell_print(sh, "  %-14s %s", name, value);
+	}
+	return 0;
+}
+
+static int cmd_camera_set(const struct shell *sh, size_t argc, char **argv)
+{
+	const char *err = camera_configure((const char *const *)&argv[1],
+					   (const char *const *)&argv[2], 1, false);
+
+	ARG_UNUSED(argc);
+
+	if (err != NULL) {
+		shell_error(sh, "%s", err);
+		return -EINVAL;
+	}
+	return cmd_camera(sh, 1, argv);
+}
+
+static int cmd_camera_reset(const struct shell *sh, size_t argc, char **argv)
+{
+	ARG_UNUSED(argc);
+
+	(void)camera_configure(NULL, NULL, 0, true);
+	return cmd_camera(sh, 1, argv);
+}
+
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_camera,
+	SHELL_CMD_ARG(set, NULL,
+		      "<name> <value>: exposure auto|manual|0-30000, gain auto|manual|0-1023, "
+		      "white_balance auto|sunny|office|cloudy|home, brightness -4..4, "
+		      "contrast/saturation -3..3, sharpness auto|1-8, rotation 0|90|180|270, "
+		      "resolution, quality, light (saved)",
+		      cmd_camera_set, 3, 0),
+	SHELL_CMD_ARG(reset, NULL, "Image settings back to automatic, rotation kept (saved)",
+		      cmd_camera_reset, 1, 0),
+	SHELL_SUBCMD_SET_END
+);
+#endif
+
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 	SHELL_CMD_ARG(status, NULL, "Mode, network, power, USB host and AUX state", cmd_status,
 		      1, 0),
@@ -473,6 +531,10 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 		      "AUX UART: [<baudrate> [8N1]] (persistent) | break [ms] | send <text> | "
 		      "loopback [on|off] (test)",
 		      cmd_aux, 1, 2),
+#if defined(CONFIG_BAY_CAMERA)
+	SHELL_CMD_ARG(camera, &sub_camera, "The bay camera: its state and settings", cmd_camera,
+		      1, 0),
+#endif
 	SHELL_CMD_ARG(access, &sub_access, "Access control: rules, lease, admin key",
 		      cmd_access_status, 1, 0),
 	SHELL_CMD_ARG(id, NULL, "Bay id, sets the hostname bay-<id>: [<id>] (persistent)", cmd_id,

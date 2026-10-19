@@ -32,11 +32,19 @@
  * exposure; off when nobody watches.  While the bay is reserved, only the
  * lease holder switches it on.
  *
+ * Settings, saved per bay ("cam/cfg"): the picture (resolution, JPEG
+ * quality, the light) and what the Mega's own image processor takes:
+ * exposure and gain (auto or manual), white balance (auto or a preset),
+ * brightness, contrast, saturation, sharpness (3 MP).  They reach the
+ * camera between two frames.  The rotation is the page's: the Mega neither
+ * mirrors nor rotates.  No focus: the 3 MP Mega's M12 lens is set by hand.
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <zephyr/kernel.h>
@@ -85,28 +93,75 @@ static const struct {
 };
 /* The Mega's JPEG quality levels, in its order */
 static const char *const qualities[] = {"high", "default", "low"};
+/* Its white balance modes, in its order: 0 is the automatic one */
+static const char *const white_balances[] = {"auto", "sunny", "office", "cloudy", "home"};
+
+/* The driver's ranges; the manual exposure is in the sensor's own unit */
+#define EXPOSURE_MAX   30000
+#define GAIN_MAX       1023
+#define BRIGHTNESS_MAX 4
+#define LEVEL_MAX      3 /* contrast, saturation */
+#define SHARPNESS_MAX  8
 
 /* --- Settings: "cam/cfg" -------------------------------------------------------- */
 
+/*
+ * Version 2 adds the image settings to the picture's; a version 1 record
+ * (the first 4 bytes: resolution, quality, light) keeps those, the image
+ * settings start automatic.
+ */
+#define CFG_VERSION 2
+#define CFG_V1_SIZE 4
+
 struct cam_cfg {
-	uint8_t res;     /* index in resolutions[] */
-	uint8_t quality; /* index in qualities[] */
-	uint8_t light;   /* 1: lit unless a client says otherwise */
-	uint8_t pad;
+	uint8_t version;
+	uint8_t res;           /* index in resolutions[] */
+	uint8_t quality;       /* index in qualities[] */
+	uint8_t light;         /* 1: lit unless a client says otherwise */
+	uint8_t exposure_auto;
+	uint8_t gain_auto;
+	uint8_t white_balance; /* index in white_balances[] */
+	uint8_t sharpness;     /* 0 auto, 1..SHARPNESS_MAX */
+	int8_t brightness;     /* -BRIGHTNESS_MAX..BRIGHTNESS_MAX */
+	int8_t contrast;       /* -LEVEL_MAX..LEVEL_MAX */
+	int8_t saturation;
+	uint8_t rotation;      /* quarter turns clockwise, on the page */
+	uint16_t exposure;     /* the manual values, kept while automatic */
+	uint16_t gain;
 };
 
-static struct cam_cfg cfg = {.res = 1, .quality = 1, .light = 1};
+/* The image settings' defaults: automatic (manual values to tune on the bench) */
+#define IMAGE_DEFAULTS .exposure_auto = 1, .gain_auto = 1, .exposure = 1000, .gain = 64
+
+static struct cam_cfg cfg = {.version = CFG_VERSION, .res = 1, .quality = 1, .light = 1,
+			     IMAGE_DEFAULTS};
+
+static bool cfg_valid(const struct cam_cfg *c)
+{
+	return c->version == CFG_VERSION && c->res < ARRAY_SIZE(resolutions) &&
+	       c->quality < ARRAY_SIZE(qualities) &&
+	       c->white_balance < ARRAY_SIZE(white_balances) && c->sharpness <= SHARPNESS_MAX &&
+	       IN_RANGE(c->brightness, -BRIGHTNESS_MAX, BRIGHTNESS_MAX) &&
+	       IN_RANGE(c->contrast, -LEVEL_MAX, LEVEL_MAX) &&
+	       IN_RANGE(c->saturation, -LEVEL_MAX, LEVEL_MAX) && c->rotation < 4 &&
+	       c->exposure <= EXPOSURE_MAX && c->gain <= GAIN_MAX;
+}
 
 static int cam_settings_set(const char *key, size_t len, settings_read_cb read_cb, void *cb_arg)
 {
 	struct cam_cfg c;
+	uint8_t v1[CFG_V1_SIZE];
 
-	if (!settings_name_steq(key, "cfg", NULL) || len != sizeof(c)) {
+	if (!settings_name_steq(key, "cfg", NULL)) {
 		return 0;
 	}
-	if (read_cb(cb_arg, &c, sizeof(c)) == sizeof(c) && c.res < ARRAY_SIZE(resolutions) &&
-	    c.quality < ARRAY_SIZE(qualities)) {
+	if (len == sizeof(c) && read_cb(cb_arg, &c, sizeof(c)) == sizeof(c) && cfg_valid(&c)) {
 		cfg = c;
+	} else if (len == sizeof(v1) && read_cb(cb_arg, v1, sizeof(v1)) == sizeof(v1) &&
+		   v1[0] < ARRAY_SIZE(resolutions) && v1[1] < ARRAY_SIZE(qualities)) {
+		cfg.res = v1[0];
+		cfg.quality = v1[1];
+		cfg.light = v1[2] != 0;
 	}
 	return 0;
 }
@@ -131,6 +186,8 @@ static K_MUTEX_DEFINE(lock); /* cfg, the counters, clients[] for the readers */
 static bool present;
 static const char *model = "";
 static bool fmt_dirty = true;
+static bool ctl_dirty = true;
+static bool has_sharpness;
 static bool capturing;
 static bool lit;
 static uint32_t frames, errors, last_size, last_ms;
@@ -197,6 +254,59 @@ static int apply_format(void)
 	return ret;
 }
 
+/* The Mega's level registers: 0 the default, then +1, -1, +2, -2... */
+static int32_t level_code(int level)
+{
+	return level > 0 ? 2 * level - 1 : -2 * level;
+}
+
+/*
+ * The image settings, between two frames (the driver's work queue is
+ * plugged).  Unchanged values cost nothing: the control framework skips
+ * them.  The manual exposure and gain only while they are manual.
+ */
+static void apply_controls(void)
+{
+	static bool written[10];
+	struct cam_cfg c;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	c = cfg;
+	ctl_dirty = false;
+	k_mutex_unlock(&lock);
+
+	const struct {
+		uint32_t id;
+		int32_t val;
+		bool use;
+	} set[ARRAY_SIZE(written)] = {
+		/* In this driver 1 is automatic (Zephyr's enum says 0) */
+		{VIDEO_CID_EXPOSURE_AUTO, c.exposure_auto, true},
+		{VIDEO_CID_EXPOSURE, c.exposure, !c.exposure_auto},
+		{VIDEO_CID_AUTOGAIN, c.gain_auto, true},
+		{VIDEO_CID_GAIN, c.gain, !c.gain_auto},
+		{VIDEO_CID_AUTO_WHITE_BALANCE, c.white_balance == 0, true},
+		/* A mode, not kelvins: the index in white_balances[] */
+		{VIDEO_CID_WHITE_BALANCE_TEMPERATURE, c.white_balance, true},
+		{VIDEO_CID_BRIGHTNESS, level_code(c.brightness), true},
+		{VIDEO_CID_CONTRAST, level_code(c.contrast), true},
+		{VIDEO_CID_SATURATION, level_code(c.saturation), true},
+		{VIDEO_CID_SHARPNESS, c.sharpness, has_sharpness},
+	};
+
+	for (int i = 0; i < ARRAY_SIZE(set); i++) {
+		int ret;
+
+		if (!set[i].use) {
+			continue;
+		}
+		ret = set_ctrl_written(set[i].id, set[i].val, &written[i]);
+		if (ret != 0) {
+			LOG_WRN("control 0x%x = %d: %d", set[i].id, set[i].val, ret);
+		}
+	}
+}
+
 /* Every finished piece back to the driver (an ISR: k_fifo only) */
 static void recycle(struct k_timer *timer)
 {
@@ -217,6 +327,9 @@ static void capture_on(void)
 	}
 	if (fmt_dirty) {
 		(void)apply_format();
+	}
+	if (ctl_dirty) {
+		apply_controls();
 	}
 	(void)video_stream_start(cam, VIDEO_BUF_TYPE_OUTPUT);
 	(void)k_work_queue_unplug(&ac_work_q);
@@ -744,6 +857,9 @@ int camera_init(void)
 		}
 		model = max_w >= 2592 ? "Arducam Mega 5MP"
 			: max_w >= 2048 ? "Arducam Mega 3MP" : "Arducam Mega";
+		/* The 3 MP has a sharpness setting, the 5 MP an autofocus instead */
+		has_sharpness = video_get_ctrl(cam, &(struct video_control){
+						.id = VIDEO_CID_SHARPNESS}) == 0;
 
 		for (int i = 0; i < NBUF; i++) {
 			struct video_buffer *b = video_buffer_aligned_alloc(
@@ -798,6 +914,7 @@ void camera_status(struct camera_status *st)
 	st->resolution = resolutions[cfg.res].name;
 	st->quality = qualities[cfg.quality];
 	st->light = cfg.light != 0;
+	st->rotation = cfg.rotation * 90;
 	st->lit = lit;
 	st->clients = 0;
 	st->streams = 0;
@@ -813,50 +930,158 @@ void camera_status(struct camera_status *st)
 	k_mutex_unlock(&lock);
 }
 
-const char *camera_configure(const char *resolution, const char *quality, const char *light)
+/* --- Settings by name: /api/camera and "bay camera" --------------------------------- */
+
+static int index_of(const char *s, const char *const *names, int count)
 {
-	struct cam_cfg c;
-	int ret;
+	for (int i = 0; i < count; i++) {
+		if (strcmp(s, names[i]) == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
 
-	k_mutex_lock(&lock, K_FOREVER);
-	c = cfg;
-	k_mutex_unlock(&lock);
+/* A whole decimal number in [min, max] */
+static bool parse_int(const char *s, long min, long max, long *out)
+{
+	char *end;
+	long v = strtol(s, &end, 10);
 
-	if (resolution != NULL) {
-		int i;
+	if (end == s || *end != '\0' || v < min || v > max) {
+		return false;
+	}
+	*out = v;
+	return true;
+}
 
+/* "auto", "manual" (the kept value) or a value, which means manual */
+static const char *set_auto_value(const char *value, uint8_t *autom, uint16_t *val, long max,
+				  const char *err)
+{
+	long v;
+
+	if (strcmp(value, "auto") == 0) {
+		*autom = 1;
+	} else if (strcmp(value, "manual") == 0) {
+		*autom = 0;
+	} else if (parse_int(value, 0, max, &v)) {
+		*autom = 0;
+		*val = v;
+	} else {
+		return err;
+	}
+	return NULL;
+}
+
+static const char *set_one(struct cam_cfg *c, const char *name, const char *value)
+{
+	long v;
+	int i;
+
+	if (strcmp(name, "resolution") == 0) {
 		for (i = 0; i < ARRAY_SIZE(resolutions); i++) {
-			if (strcmp(resolution, resolutions[i].name) == 0) {
+			if (strcmp(value, resolutions[i].name) == 0) {
 				break;
 			}
 		}
 		if (i == ARRAY_SIZE(resolutions)) {
 			return "resolution: 320x240, 640x480, 1280x720, 1600x1200 or 1920x1080";
 		}
-		c.res = i;
-	}
-	if (quality != NULL) {
-		int i;
-
-		for (i = 0; i < ARRAY_SIZE(qualities); i++) {
-			if (strcmp(quality, qualities[i]) == 0) {
-				break;
-			}
-		}
-		if (i == ARRAY_SIZE(qualities)) {
+		c->res = i;
+	} else if (strcmp(name, "quality") == 0) {
+		i = index_of(value, qualities, ARRAY_SIZE(qualities));
+		if (i < 0) {
 			return "quality: high, default or low";
 		}
-		c.quality = i;
-	}
-	if (light != NULL) {
-		if (strcmp(light, "on") != 0 && strcmp(light, "off") != 0) {
+		c->quality = i;
+	} else if (strcmp(name, "light") == 0) {
+		if (strcmp(value, "on") != 0 && strcmp(value, "off") != 0) {
 			return "light: on or off";
 		}
-		c.light = strcmp(light, "on") == 0;
+		c->light = strcmp(value, "on") == 0;
+	} else if (strcmp(name, "exposure") == 0) {
+		return set_auto_value(value, &c->exposure_auto, &c->exposure, EXPOSURE_MAX,
+				      "exposure: auto, manual or 0-30000");
+	} else if (strcmp(name, "exposure_value") == 0) {
+		if (!parse_int(value, 0, EXPOSURE_MAX, &v)) {
+			return "exposure_value: 0-30000";
+		}
+		c->exposure = v;
+	} else if (strcmp(name, "gain") == 0) {
+		return set_auto_value(value, &c->gain_auto, &c->gain, GAIN_MAX,
+				      "gain: auto, manual or 0-1023");
+	} else if (strcmp(name, "gain_value") == 0) {
+		if (!parse_int(value, 0, GAIN_MAX, &v)) {
+			return "gain_value: 0-1023";
+		}
+		c->gain = v;
+	} else if (strcmp(name, "white_balance") == 0) {
+		i = index_of(value, white_balances, ARRAY_SIZE(white_balances));
+		if (i < 0) {
+			return "white_balance: auto, sunny, office, cloudy or home";
+		}
+		c->white_balance = i;
+	} else if (strcmp(name, "brightness") == 0) {
+		if (!parse_int(value, -BRIGHTNESS_MAX, BRIGHTNESS_MAX, &v)) {
+			return "brightness: -4 to 4";
+		}
+		c->brightness = v;
+	} else if (strcmp(name, "contrast") == 0 || strcmp(name, "saturation") == 0) {
+		if (!parse_int(value, -LEVEL_MAX, LEVEL_MAX, &v)) {
+			return name[0] == 'c' ? "contrast: -3 to 3" : "saturation: -3 to 3";
+		}
+		*(name[0] == 'c' ? &c->contrast : &c->saturation) = v;
+	} else if (strcmp(name, "sharpness") == 0) {
+		if (present && !has_sharpness) {
+			return "sharpness: not on this camera";
+		}
+		if (strcmp(value, "auto") == 0) {
+			c->sharpness = 0;
+		} else if (parse_int(value, 1, SHARPNESS_MAX, &v)) {
+			c->sharpness = v;
+		} else {
+			return "sharpness: auto or 1-8";
+		}
+	} else if (strcmp(name, "rotation") == 0) {
+		if (!parse_int(value, 0, 270, &v) || v % 90 != 0) {
+			return "rotation: 0, 90, 180 or 270";
+		}
+		c->rotation = v / 90;
+	} else {
+		return "unknown setting (resolution, quality, light, exposure, exposure_value, "
+		       "gain, gain_value, white_balance, brightness, contrast, saturation, "
+		       "sharpness, rotation)";
+	}
+	return NULL;
+}
+
+const char *camera_configure(const char *const *names, const char *const *values, int n,
+			     bool reset)
+{
+	struct cam_cfg c;
+	const char *err = NULL;
+	int ret;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	c = cfg;
+	k_mutex_unlock(&lock);
+
+	if (reset) {
+		/* The image settings, not the picture's nor the mounting's (rotation) */
+		c = (struct cam_cfg){.version = CFG_VERSION, .res = c.res, .quality = c.quality,
+				     .light = c.light, .rotation = c.rotation, IMAGE_DEFAULTS};
+	}
+	for (int i = 0; i < n && err == NULL; i++) {
+		err = set_one(&c, names[i], values[i]);
+	}
+	if (err != NULL) {
+		return err; /* nothing changed */
 	}
 
 	k_mutex_lock(&lock, K_FOREVER);
 	fmt_dirty |= c.res != cfg.res || c.quality != cfg.quality;
+	ctl_dirty |= memcmp(&c, &cfg, sizeof(c)) != 0;
 	cfg = c;
 	k_mutex_unlock(&lock);
 
@@ -867,14 +1092,103 @@ const char *camera_configure(const char *resolution, const char *quality, const 
 	return NULL;
 }
 
-const char *camera_resolution_name(int i)
+bool camera_setting(int i, const char **name, char *value, size_t size)
 {
-	return i >= 0 && i < ARRAY_SIZE(resolutions) ? resolutions[i].name : NULL;
+	static const char *const names[] = {
+		"resolution", "quality", "light", "exposure", "exposure_value", "gain",
+		"gain_value", "white_balance", "brightness", "contrast", "saturation", "sharpness",
+		"rotation",
+	};
+	struct cam_cfg c;
+
+	if (i < 0 || i >= ARRAY_SIZE(names)) {
+		return false;
+	}
+	k_mutex_lock(&lock, K_FOREVER);
+	c = cfg;
+	k_mutex_unlock(&lock);
+
+	*name = names[i];
+	switch (i) {
+	case 0:
+		snprintf(value, size, "%s", resolutions[c.res].name);
+		break;
+	case 1:
+		snprintf(value, size, "%s", qualities[c.quality]);
+		break;
+	case 2:
+		snprintf(value, size, "%s", c.light ? "on" : "off");
+		break;
+	case 3:
+		snprintf(value, size, "%s", c.exposure_auto ? "auto" : "manual");
+		break;
+	case 4:
+		snprintf(value, size, "%u", c.exposure);
+		break;
+	case 5:
+		snprintf(value, size, "%s", c.gain_auto ? "auto" : "manual");
+		break;
+	case 6:
+		snprintf(value, size, "%u", c.gain);
+		break;
+	case 7:
+		snprintf(value, size, "%s", white_balances[c.white_balance]);
+		break;
+	case 8:
+		snprintf(value, size, "%d", c.brightness);
+		break;
+	case 9:
+		snprintf(value, size, "%d", c.contrast);
+		break;
+	case 10:
+		snprintf(value, size, "%d", c.saturation);
+		break;
+	case 11:
+		if (present && !has_sharpness) {
+			snprintf(value, size, "none");
+		} else if (c.sharpness == 0) {
+			snprintf(value, size, "auto");
+		} else {
+			snprintf(value, size, "%u", c.sharpness);
+		}
+		break;
+	default:
+		snprintf(value, size, "%u", c.rotation * 90U);
+		break;
+	}
+	return true;
 }
 
-const char *camera_quality_name(int i)
+int camera_choices_json(char *buf, size_t size)
 {
-	return i >= 0 && i < ARRAY_SIZE(qualities) ? qualities[i] : NULL;
+	size_t len = 0;
+	int n;
+
+	len += snprintf(buf + len, size - len, "{\"resolutions\":[");
+	for (int i = 0; i < ARRAY_SIZE(resolutions) && len < size; i++) {
+		len += snprintf(buf + len, size - len, "%s\"%s\"", i ? "," : "",
+				resolutions[i].name);
+	}
+	if (len < size) {
+		len += snprintf(buf + len, size - len, "],\"qualities\":[\"high\",\"default\","
+				"\"low\"],\"white_balances\":[");
+	}
+	for (int i = 0; i < ARRAY_SIZE(white_balances) && len < size; i++) {
+		len += snprintf(buf + len, size - len, "%s\"%s\"", i ? "," : "", white_balances[i]);
+	}
+	if (len >= size) {
+		return -ENOMEM;
+	}
+	n = snprintf(buf + len, size - len,
+		     "],\"exposure_value\":[0,%d],\"gain_value\":[0,%d],\"brightness\":[%d,%d],"
+		     "\"contrast\":[%d,%d],\"saturation\":[%d,%d],\"sharpness\":%s,"
+		     "\"rotation\":[0,90,180,270]}",
+		     EXPOSURE_MAX, GAIN_MAX, -BRIGHTNESS_MAX, BRIGHTNESS_MAX, -LEVEL_MAX, LEVEL_MAX,
+		     -LEVEL_MAX, LEVEL_MAX, present && !has_sharpness ? "null" : "[1,8]");
+	if (n < 0 || len + n >= size) {
+		return -ENOMEM;
+	}
+	return len + n;
 }
 
 int camera_clients_get(struct camera_client_info *out, int max)

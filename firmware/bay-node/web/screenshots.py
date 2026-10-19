@@ -57,6 +57,17 @@ def main() -> None:
         time.sleep(3 * POLL_S)
         shoot(dark, "web-ui-camera", "#cam-card")
 
+        # Its settings, tuned a little (a cloudy-day white balance, brighter), then back to auto
+        dev_server.camera.configure({"white_balance": "cloudy", "brightness": 1, "saturation": -1})
+        dark.set_viewport_size({"width": DESKTOP["width"], "height": 1000})   # the whole popover
+        dark.click("#cam-fmt")
+        dark.wait_for_selector("#cam-settings:popover-open")
+        time.sleep(1.5)
+        shoot(dark, "web-ui-camera-settings", "#cam-settings")
+        dark.click("#cam-settings [data-camset=reset]")
+        dark.keyboard.press("Escape")
+        dark.set_viewport_size(DESKTOP)
+
         poke("/dev/attach")             # a USB/IP client is attached: green
         shoot(dark, "web-ui-dark")
         dark.click("#cam-live")         # stopped: the next shots list no camera client

@@ -194,6 +194,9 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | `bay aux send <text>` | send a line to the DUT (with the console's Enter) |
 | `bay aux loopback [on\|off]` | test without a DUT: the UART loops its TX back to its RX (ESP32) |
 | `bay id [id]` | show or set the bay id (persistent), hostname `bay-<id>.local`; without one, the rack position (`bay-c3.local`) |
+| `bay camera` | the camera: model, clients, frames, and its settings |
+| `bay camera set <name> <value>` | one setting, saved: `exposure auto` or `1200`, `white_balance cloudy`, `brightness -1`, … ([Camera](#camera)) |
+| `bay camera reset` | the image settings back to automatic (resolution, quality, light, rotation kept) |
 | `bay access` | access control: admin key, rules, lease, connections, refusals |
 | `bay access claim` | confirm a pending claim, like a short press on BOOT (not over telnet) |
 | `bay access on` / `off` | apply the rules / let every address use everything (`off`: not over telnet) |
@@ -231,7 +234,7 @@ main actions.
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract; `camera` (camera builds): as `GET /api/camera` without the choices |
+| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract; `camera` (camera builds): `GET /api/camera` without the settings and choices |
 | `POST /api/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}` |
 | `POST /api/reset` | `{"ms": 100}` (body optional) |
 | `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |
@@ -241,8 +244,8 @@ main actions.
 | `POST /api/aux/break` | `{"ms": 250}` (body optional) |
 | `POST /api/console/ticket` | a single-use ticket (10 s) for the next WebSocket, for an address with the console right |
 | `GET /console/ws/<n>?t=<ticket>` | WebSocket to the AUX UART, `n` < `CONFIG_BAY_CONSOLE_WEB_CLIENTS` (see below) |
-| `GET /api/camera` | the camera: `present` (false: no camera answered on J6), `model`, `port`, `resolution`, `quality`, `light` (the bay's setting), `lit`, `clients`, `streams`, `frames`, `errors`, `last_bytes`, `last_ms`, `fps`, and the `resolutions` and `qualities` to choose from |
-| `POST /api/camera` | any of `{"resolution": "640x480", "quality": "high" \| "default" \| "low", "light": "on" \| "off"}`, saved; control right; 404 without a camera |
+| `GET /api/camera` | the camera: `present` (false: no camera answered on J6), `model`, `port`, `resolution`, `quality`, `light` (the bay's setting), `rotation`, `lit`, `clients`, `streams`, `frames`, `errors`, `last_bytes`, `last_ms`, `fps`; its `settings` and the `choices` (lists and ranges) |
+| `POST /api/camera` | any of the settings ([Camera](#camera)), e.g. `{"exposure": 1200, "white_balance": "cloudy", "brightness": -1}`, and `"reset": true` (image settings back to automatic first); all or nothing, saved; control right; 404 without a camera |
 | `GET /metrics` | Prometheus: `bay_dut_vbus_volts`, `bay_dut_current_amperes`, `bay_dut_power_watts`, `bay_dut_power_on`, `bay_dut_fault`, `bay_dut_faults_total`, `bay_usb_devices`, `bay_usbip_sessions`, `bay_aux_{rx,tx}_bytes_total`, `bay_access_refused_total`, all labelled `bay="<id>"` |
 | `GET /api/access` | the caller's address and rights, the lease, the connections; signed: the rules and the refusal log too |
 | `POST /api/lease` | `{"ttl_s": 3600, "note": "twister job 8812"}` reserves or renews, `{"release": true}` ends it |
@@ -306,17 +309,42 @@ from the camera's FIFO (no SPI DMA); a frame is cut at its JPEG end
 upstream driver keeps capturing once started (its stream stop does not stop
 its work item, which spins while no buffer is queued): the node plugs the
 driver's work queue between frames and runs it at the lowest priority.
-Resolution (320×240 to 1920×1080), JPEG quality and the light's default
-are saved per bay.  Without a camera, its driver does not start: the port
+Without a camera, its driver does not start: the port
 answers 503, `present` is false and the rest of the node runs as before.
 The hub shows which bays have one (rack bus STATUS byte 6).
+
+**Settings**, saved per bay and applied between two frames (the page's
+picture button, `POST /api/camera`, `bay camera set`):
+
+<img src="../docs/img/web-ui-camera-settings.png" width="440" alt="The camera settings of bay B3: resolution, JPEG quality, rotation, the light, then the image: white balance cloudy, exposure and gain automatic, brightness +1, contrast 0, saturation -1, sharpness automatic, and a Reset image to auto button">
+
+| Setting | Values | |
+|---|---|---|
+| `resolution` | `320x240`, `640x480`, `1280x720`, `1600x1200`, `1920x1080` | |
+| `quality` | `high`, `default`, `low` | JPEG compression |
+| `light` | `on`, `off` | what `?light=auto` means |
+| `rotation` | `0`, `90`, `180`, `270` | the page turns the picture (the camera's JPEGs are as taken) |
+| `exposure` | `auto`, `manual`, or a value 0–30000 (manual) | the manual value in `exposure_value`, kept while automatic; the sensor's own unit, to calibrate on the bench |
+| `gain` | `auto`, `manual`, or 0–1023 (manual) | `gain_value` likewise |
+| `white_balance` | `auto`, `sunny`, `office`, `cloudy`, `home` | presets of the camera |
+| `brightness` | −4 … 4 | 0 is the camera's default |
+| `contrast`, `saturation` | −3 … 3 | |
+| `sharpness` | `auto`, 1–8 | 3 MP Mega only (`none` on a 5 MP) |
+
+They go through the Zephyr video controls of `arducam,mega`.  Two of the
+driver's quirks are handled here: for it 1 means automatic exposure (Zephyr's
+enum says 0), and the control framework skips a value equal to the one it
+has cached, a cache that starts without the camera being written, so each
+control is first written through another value.  Not offered: colour
+effects, exposure compensation (the driver's is broken: every value ends as
+the default), mirroring (not in the driver: use `rotation`), focus (below).
 
 **Focusing the lens.**  The 3 MP Mega's M12 lens has no autofocus: it is
 focused once, by hand, at the real distance (lens tip to board ≈ 75–80 mm).
 
 1. Pod mounted, drawer in, a board on the plate (or a printed target:
    small text, a ruler) at its working height.
-2. Bay page › Camera: resolution 1600 × 1200 (gear button), light on,
+2. Bay page › Camera: resolution 1600 × 1200 (the Picture button), light on,
    **Live view**.  Each frame takes about half a second at 4 MHz.
 3. Loosen the lock nut on the lens barrel and turn the lens in small steps,
    waiting a frame each time, until the silkscreen text is sharpest.  Take a

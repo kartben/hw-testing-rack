@@ -263,6 +263,7 @@ struct camera_status {
 	const char *resolution; /* "640x480" */
 	const char *quality;    /* "high", "default", "low" */
 	bool light;          /* the bay's setting: lit while frames are taken */
+	uint16_t rotation;   /* degrees clockwise, for the page */
 	bool lit;            /* the light right now */
 	uint8_t clients;     /* snapshots waiting and streams */
 	uint8_t streams;
@@ -288,11 +289,19 @@ bool camera_present(void);
 /* A client is watching or waiting for a snapshot */
 bool camera_active(void);
 void camera_status(struct camera_status *st);
-/* Any argument may be NULL: NULL or an error message; saved */
-const char *camera_configure(const char *resolution, const char *quality, const char *light);
-/* The choices, NULL past the last */
-const char *camera_resolution_name(int i);
-const char *camera_quality_name(int i);
+/*
+ * Settings by name ("exposure" = "auto", "manual" or a value...), all or
+ * none: NULL, or the first error and nothing changed.  reset: the image
+ * settings back to automatic first (not the resolution, quality, light,
+ * rotation).
+ * Saved; they reach the camera between two frames.
+ */
+const char *camera_configure(const char *const *names, const char *const *values, int n,
+			     bool reset);
+/* Setting i: its name and its value as text; false past the last */
+bool camera_setting(int i, const char **name, char *value, size_t size);
+/* {"resolutions": [...], ..., "brightness": [-4, 4], ...}: what may be set */
+int camera_choices_json(char *buf, size_t size);
 int camera_clients_get(struct camera_client_info *out, int max);
 int camera_client_kick(int slot);
 #else

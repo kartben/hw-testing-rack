@@ -29,8 +29,9 @@
  *   POST /api/access/key      admin: {"key": "<64 hex>"} (a new key)
  *
  *   GET  /api/camera          the camera, its settings and their choices
- *   POST /api/camera          {"resolution": "640x480", "quality": "high" | "default" | "low",
- *                              "light": "on" | "off"}  (any subset, saved)
+ *   POST /api/camera          {"resolution": "640x480", "exposure": "auto" | 1200,
+ *                              "brightness": -1, "reset": true, ...}  (any subset, saved;
+ *                              the names: camera.c, camera_configure())
  *   (the pictures are on their own port: camera.c)
  *
  * Every POST of an action answers with the new /api/status document, errors
@@ -243,42 +244,66 @@ static void capture_auth(const struct http_request_ctx *req, char *out, size_t s
 }
 
 #if defined(CONFIG_BAY_CAMERA)
-/* The camera object: in /api/status, and in /api/camera with the choices */
-static int camera_json(char *buf, size_t size, bool choices)
+/* A setting's value in JSON: numbers as they are, words quoted */
+static bool is_number(const char *s)
+{
+	if (*s == '-') {
+		s++;
+	}
+	if (*s == '\0') {
+		return false;
+	}
+	for (; *s != '\0'; s++) {
+		if (*s < '0' || *s > '9') {
+			return false;
+		}
+	}
+	return true;
+}
+
+/*
+ * The camera object: in /api/status; in /api/camera with its settings and
+ * what they may be set to
+ */
+static int camera_json(char *buf, size_t size, bool full)
 {
 	struct camera_status st;
+	const char *name;
+	char value[16];
 	size_t len;
 	int n;
 
 	camera_status(&st);
 	n = snprintf(buf, size,
 		     "{\"present\":%s,\"model\":\"%s\",\"port\":%u,\"resolution\":\"%s\","
-		     "\"quality\":\"%s\",\"light\":\"%s\",\"lit\":%s,\"clients\":%u,"
-		     "\"streams\":%u,\"slots\":%u,\"frames\":%u,\"errors\":%u,\"last_bytes\":%u,"
-		     "\"last_ms\":%u,\"fps\":%u.%u",
+		     "\"quality\":\"%s\",\"light\":\"%s\",\"rotation\":%u,\"lit\":%s,"
+		     "\"clients\":%u,\"streams\":%u,\"slots\":%u,\"frames\":%u,\"errors\":%u,"
+		     "\"last_bytes\":%u,\"last_ms\":%u,\"fps\":%u.%u",
 		     st.present ? "true" : "false", st.model, st.port, st.resolution, st.quality,
-		     st.light ? "on" : "off", st.lit ? "true" : "false", st.clients, st.streams,
-		     CONFIG_BAY_CAMERA_CLIENTS, st.frames, st.errors, st.last_size, st.last_ms,
-		     st.fps_x10 / 10, st.fps_x10 % 10);
+		     st.light ? "on" : "off", st.rotation, st.lit ? "true" : "false", st.clients,
+		     st.streams, CONFIG_BAY_CAMERA_CLIENTS, st.frames, st.errors, st.last_size,
+		     st.last_ms, st.fps_x10 / 10, st.fps_x10 % 10);
 	if (n < 0 || (size_t)n >= size) {
 		return -ENOMEM;
 	}
 	len = n;
-	if (choices) {
-		const char *name;
+	if (full) {
+		len += snprintf(buf + len, size - len, ",\"settings\":{");
+		for (int i = 0; camera_setting(i, &name, value, sizeof(value)) && len < size; i++) {
+			const char *q = is_number(value) ? "" : "\"";
 
-		len += snprintf(buf + len, size - len, ",\"resolutions\":[");
-		for (int i = 0; (name = camera_resolution_name(i)) != NULL && len < size; i++) {
-			len += snprintf(buf + len, size - len, "%s\"%s\"", i ? "," : "", name);
+			len += snprintf(buf + len, size - len, "%s\"%s\":%s%s%s", i ? "," : "",
+					name, q, value, q);
 		}
 		if (len < size) {
-			len += snprintf(buf + len, size - len, "],\"qualities\":[");
-		}
-		for (int i = 0; (name = camera_quality_name(i)) != NULL && len < size; i++) {
-			len += snprintf(buf + len, size - len, "%s\"%s\"", i ? "," : "", name);
+			len += snprintf(buf + len, size - len, "},\"choices\":");
 		}
 		if (len < size) {
-			len += snprintf(buf + len, size - len, "]");
+			n = camera_choices_json(buf + len, size - len);
+			if (n < 0) {
+				return n;
+			}
+			len += n;
 		}
 	}
 	if (len + 1 >= size) {
@@ -848,28 +873,103 @@ static struct http_resource_detail_dynamic aux_detail = {
 
 #if defined(CONFIG_BAY_CAMERA)
 
-struct camera_req {
-	char *resolution;
-	char *quality;
-	char *light;
-};
+#define CAMERA_FIELDS_MAX 16
 
-static const struct json_obj_descr camera_req_descr[] = {
-	JSON_OBJ_DESCR_PRIM(struct camera_req, resolution, JSON_TOK_STRING),
-	JSON_OBJ_DESCR_PRIM(struct camera_req, quality, JSON_TOK_STRING),
-	JSON_OBJ_DESCR_PRIM(struct camera_req, light, JSON_TOK_STRING),
-};
+static char *skip_space(char *p, char *end)
+{
+	while (p < end && (*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n')) {
+		p++;
+	}
+	return p;
+}
+
+/*
+ * A flat object, {"name": "text" | number | true | false, ...}, the value's
+ * type free (the settings take "auto" or a number): the pairs as strings,
+ * cut in place (body has room for a NUL past end).  No escapes.
+ */
+static int flat_json(char *p, char *end, char **names, char **values, int max)
+{
+	int n = 0;
+
+	p = skip_space(p, end);
+	if (p == end || *p++ != '{') {
+		return -EINVAL;
+	}
+	p = skip_space(p, end);
+	if (p < end && *p == '}') {
+		return 0;
+	}
+	for (;;) {
+		char delim;
+
+		if (n == max || p == end || *p != '"') {
+			return -EINVAL;
+		}
+		names[n] = ++p;
+		while (p < end && *p != '"' && *p != '\\') {
+			p++;
+		}
+		if (p == end || *p != '"') {
+			return -EINVAL;
+		}
+		*p++ = '\0';
+		p = skip_space(p, end);
+		if (p == end || *p++ != ':') {
+			return -EINVAL;
+		}
+		p = skip_space(p, end);
+		if (p < end && *p == '"') {
+			values[n] = ++p;
+			while (p < end && *p != '"' && *p != '\\') {
+				p++;
+			}
+			if (p == end || *p != '"') {
+				return -EINVAL;
+			}
+			*p++ = '\0';
+			p = skip_space(p, end);
+			delim = p < end ? *p++ : '\0';
+		} else {
+			values[n] = p;
+			while (p < end && (*p == '-' || (*p >= '0' && *p <= '9') ||
+					   (*p >= 'a' && *p <= 'z'))) {
+				p++;
+			}
+			if (p == values[n]) {
+				return -EINVAL;
+			}
+			delim = p < end ? *p : '\0';
+			*p = '\0';
+			p = skip_space(p + 1, end);
+			if (delim == ' ' || delim == '\t' || delim == '\r' || delim == '\n') {
+				delim = p < end ? *p++ : '\0';
+			}
+		}
+		n++;
+		if (delim == '}') {
+			return n;
+		}
+		if (delim != ',') {
+			return -EINVAL;
+		}
+		p = skip_space(p, end);
+	}
+}
 
 static int camera_handler(struct http_client_ctx *client, enum http_transaction_status status,
 			  const struct http_request_ctx *req, struct http_response_ctx *rsp,
 			  void *user_data)
 {
-	static uint8_t body[128];
+	static char body[256];
 	static size_t len;
 	static bool too_long;
-	struct camera_req creq = {0};
+	char *names[CAMERA_FIELDS_MAX];
+	char *values[CAMERA_FIELDS_MAX];
+	bool reset = false;
 	const char *err;
-	int fields;
+	int n;
+	int m = 0;
 
 	ARG_UNUSED(user_data);
 
@@ -880,7 +980,8 @@ static int camera_handler(struct http_client_ctx *client, enum http_transaction_
 		return 0;
 	}
 
-	if (len + req->data_len > sizeof(body)) {
+	/* One byte kept for the NUL that ends the last value */
+	if (len + req->data_len > sizeof(body) - 1) {
 		too_long = true;
 	} else {
 		memcpy(body + len, req->data, req->data_len);
@@ -906,15 +1007,23 @@ static int camera_handler(struct http_client_ctx *client, enum http_transaction_
 			respond_error(rsp, HTTP_413_PAYLOAD_TOO_LARGE, "body too large");
 			return 0;
 		}
-		fields = json_obj_parse(body, len, camera_req_descr, ARRAY_SIZE(camera_req_descr),
-					&creq);
-		if (fields < 0) {
-			respond_error(rsp, HTTP_400_BAD_REQUEST, "bad JSON");
+		n = flat_json(body, body + len, names, values, ARRAY_SIZE(names));
+		if (n < 0) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST,
+				      "bad JSON: a flat object of strings and numbers");
 			return 0;
 		}
-		err = camera_configure((fields & BIT(0)) ? creq.resolution : NULL,
-				       (fields & BIT(1)) ? creq.quality : NULL,
-				       (fields & BIT(2)) ? creq.light : NULL);
+		/* "reset": true, the image settings back to automatic first */
+		for (int i = 0; i < n; i++) {
+			if (strcmp(names[i], "reset") == 0) {
+				reset = strcmp(values[i], "true") == 0;
+			} else {
+				names[m] = names[i];
+				values[m++] = values[i];
+			}
+		}
+		err = camera_configure((const char *const *)names, (const char *const *)values, m,
+				       reset);
 		if (err != NULL) {
 			respond_error(rsp, HTTP_400_BAD_REQUEST, err);
 			return 0;

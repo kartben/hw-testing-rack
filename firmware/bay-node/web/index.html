@@ -44,14 +44,33 @@
   & .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; }
   & small { grid-column: 1 / -1; color: var(--muted); }
 }
+#cam-settings {
+  width: min(440px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto;
+  & h4 { grid-column: 1 / -1; margin: 8px 0 0; font-size: 0.75rem; font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  & .row { align-items: center; }
+  & .row select { width: auto; flex: none; }
+  & input[type=range] { flex: 1; min-width: 0; accent-color: var(--usbip); }
+  & input[type=range]:disabled { opacity: 0.4; }
+  & output { min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  & [hidden] { display: none; }
+}
 /* Camera */
 .cam-body { display: grid; grid-template-columns: minmax(0, 640px) minmax(240px, 1fr); gap: 16px 24px; align-items: start; }
 .cam-view {
   position: relative; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden;
   background: var(--soft); border: 1px dashed color-mix(in srgb, var(--text) 18%, var(--line));
   &[data-showing] { background: #0b0d11; border-style: solid; }
+  container-type: size;
   & img { width: 100%; height: 100%; object-fit: contain; display: block; }
   & img:not([src]) { visibility: hidden; }
+  /* The bay's rotation: the picture turns, the view takes its shape */
+  &[data-rot="180"] img { transform: rotate(180deg); }
+  &[data-rot="90"] img, &[data-rot="270"] img {
+    position: absolute; left: 50%; top: 50%; width: 100cqh; height: 100cqw;
+    transform: translate(-50%, -50%) rotate(var(--turn)); }
+  &[data-rot="90"] { --turn: 90deg; }
+  &[data-rot="270"] { --turn: 270deg; }
   & .idle { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center;
             gap: 12px; padding: 16px; color: var(--muted); font-size: 0.88rem; text-align: center; }
   &[data-showing] .idle { display: none; }
@@ -305,11 +324,40 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
     <select id="c-quality" name="quality">
       <option value="high">High</option><option value="default">Default</option><option value="low">Low (smaller)</option>
     </select>
+    <label for="c-rot">Rotation</label>
+    <select id="c-rot" name="rotation">
+      <option value="0">None</option><option value="90">90° clockwise</option><option value="180">180°</option><option value="270">90° counter-clockwise</option>
+    </select>
     <label class="check"><input type="checkbox" name="light"> Light on while pictures are taken ("Auto")</label>
-    <small>Saved on the node for this bay, for everyone watching.  While the bay is reserved, only its holder switches the light.</small>
+    <h4>Image</h4>
+    <label for="c-wb">White balance</label>
+    <select id="c-wb" name="white_balance">
+      <option value="auto">Auto</option><option value="sunny">Sunny</option><option value="office">Office</option><option value="cloudy">Cloudy</option><option value="home">Home</option>
+    </select>
+    <label for="c-exp">Exposure</label>
+    <div class="row">
+      <select id="c-exp" name="exposure"><option value="auto">Auto</option><option value="manual">Manual</option></select>
+      <input type="range" name="exposure_value" min="0" max="30000" step="10" aria-label="Manual exposure"><output></output>
+    </div>
+    <label for="c-gain">Gain</label>
+    <div class="row">
+      <select id="c-gain" name="gain"><option value="auto">Auto</option><option value="manual">Manual</option></select>
+      <input type="range" name="gain_value" min="0" max="1023" aria-label="Manual gain"><output></output>
+    </div>
+    <label for="c-bright">Brightness</label>
+    <div class="row"><input id="c-bright" type="range" name="brightness" min="-4" max="4"><output></output></div>
+    <label for="c-contrast">Contrast</label>
+    <div class="row"><input id="c-contrast" type="range" name="contrast" min="-3" max="3"><output></output></div>
+    <label for="c-sat">Saturation</label>
+    <div class="row"><input id="c-sat" type="range" name="saturation" min="-3" max="3"><output></output></div>
+    <label for="c-sharp" data-sharp>Sharpness</label>
+    <select id="c-sharp" name="sharpness" data-sharp>
+      <option value="auto">Auto</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
+    </select>
+    <small>Applied at once, between two frames, for everyone watching, and saved for this bay.  The rotation turns the picture on this page only.  While the bay is reserved, only its holder switches the light.</small>
     <div class="form-actions">
-      <button type="button" popovertarget="cam-settings" popovertargetaction="hide">Cancel</button>
-      <button type="submit" class="primary">Apply</button>
+      <button type="button" data-camset="reset" title="White balance, exposure, gain, levels back to automatic">Reset image to auto</button>
+      <button type="button" class="primary" popovertarget="cam-settings" popovertargetaction="hide">Done</button>
     </div>
   </form>
 </div>
@@ -1175,7 +1223,7 @@ async function startConsole() {
 
 /* --- Camera: its pictures come from its own port (src/camera.c) --------- */
 
-const cam = { live: false, shown: false, resume: false, choices: null };
+const cam = { live: false, shown: false, resume: false };
 const camLight = () => document.querySelector("input[name=cam-light]:checked").value;
 const camUrl = (what) => `http://${location.hostname}:${status.camera.port}/${what}?light=${camLight()}`;
 
@@ -1192,7 +1240,10 @@ function renderCamera(s) {
     .filter(Boolean).join(" · ");
   $("cam-model").textContent = c.model;
   $("cam-fmt").textContent = `${c.resolution.replace("x", " × ")} · ${c.quality}`;
-  $("cam-view").style.aspectRatio = c.resolution.replace("x", " / ");
+  const [w, h] = c.resolution.split("x");
+  const turned = c.rotation === 90 || c.rotation === 270;
+  $("cam-view").style.aspectRatio = turned ? `${h} / ${w}` : `${w} / ${h}`;
+  $("cam-view").dataset.rot = c.rotation ?? 0;
   $("cam-fmt").disabled = s.access && !can(s.access, "control");
   $("cam-last").textContent = c.frames ? `${Math.max(1, Math.round(c.last_bytes / 1024))} KB · ${c.last_ms} ms` : "none yet";
   $("cam-viewers").textContent = [c.streams && plural(c.streams, "stream"), snaps && plural(snaps, "snapshot")]
@@ -1229,33 +1280,51 @@ function camStop() {
   $("cam-open").hidden = true;
 }
 
-async function fillCamSettings() {
-  const c = status?.camera;
-  if (!c) return;
-  try {
-    cam.choices ??= await api("/api/camera");
-  } catch { /* the current resolution at least */ }
-  const form = $("cam-form");
-  form.resolution.replaceChildren(...(cam.choices?.resolutions ?? [c.resolution]).map((r) =>
-    new Option(r.replace("x", " × "), r)));
-  form.resolution.value = c.resolution;
-  form.quality.value = c.quality;
-  form.light.checked = c.light === "on";
+/* The settings from GET /api/camera (or a POST's answer) into the form */
+function camFill(doc) {
+  const form = $("cam-form"), s = doc.settings, ch = doc.choices;
+  form.resolution.replaceChildren(...ch.resolutions.map((r) => new Option(r.replace("x", " × "), r)));
+  for (const [name, value] of Object.entries(s)) {
+    const el = form.elements[name];
+    if (!el) continue;
+    if (el.type === "checkbox") el.checked = value === "on";
+    else el.value = value;
+  }
+  form.exposure_value.disabled = s.exposure === "auto";
+  form.gain_value.disabled = s.gain === "auto";
+  form.querySelectorAll("[data-sharp]").forEach((el) => (el.hidden = ch.sharpness === null));
+  form.querySelectorAll("output").forEach((o) => (o.value = o.previousElementSibling.value));
 }
 
-async function saveCamSettings(ev) {
-  ev.preventDefault();
-  const form = ev.target;
+async function fillCamSettings() {
   try {
-    await api("/api/camera", { resolution: form.resolution.value, quality: form.quality.value,
-      light: form.light.checked ? "on" : "off" });
-    $("cam-settings").hidePopover();
-    toast("Camera settings saved");
+    camFill(await api("/api/camera"));
+  } catch (e) {
+    toast(`Camera settings: ${e.message}`);
+  }
+}
+
+/* One setting at a time, as it changes: the node applies it at the next frame */
+async function camSet(body) {
+  try {
+    camFill(await api("/api/camera", body));
     poll();
   } catch (e) {
     toast(`Failed: ${e.message}`);
+    fillCamSettings();
   }
 }
+
+$("cam-form").addEventListener("input", (ev) => {
+  if (ev.target.type === "range") ev.target.nextElementSibling.value = ev.target.value;
+});
+
+$("cam-form").addEventListener("change", (ev) => {
+  const el = ev.target;
+  const value = el.type === "checkbox" ? (el.checked ? "on" : "off")
+    : el.type === "range" || el.name === "rotation" ? Number(el.value) : el.value;
+  camSet({ [el.name]: value });
+});
 
 $("cam-img").addEventListener("error", () => {
   if (!cam.shown) return;
@@ -1272,6 +1341,7 @@ document.addEventListener("click", async (ev) => {
   if (btn.dataset.acc) return accessAction(btn);
   if (btn.dataset.cam === "live") return cam.live ? camStop() : camShow(true);
   if (btn.dataset.cam === "snap") return camShow(false);
+  if (btn.dataset.camset === "reset") return camSet({ reset: true });
 
   switch (btn.dataset.con) {
     case "break":
@@ -1312,7 +1382,7 @@ document.addEventListener("change", (ev) => {
 $("con-settings").addEventListener("toggle", (ev) => ev.newState === "open" && fillSettings());
 $("con-form").addEventListener("submit", saveSettings);
 $("cam-settings").addEventListener("toggle", (ev) => ev.newState === "open" && fillCamSettings());
-$("cam-form").addEventListener("submit", saveCamSettings);
+$("cam-form").addEventListener("submit", (ev) => ev.preventDefault());
 document.addEventListener("visibilitychange", () => {
   /* A hidden tab gives its camera slot back */
   if (document.hidden && cam.live) {

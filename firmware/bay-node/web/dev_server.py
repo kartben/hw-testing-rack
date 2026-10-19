@@ -482,6 +482,78 @@ firmware = Firmware("0.5.0", "bay-node/bay_node")
 
 CAM_RESOLUTIONS = ["320x240", "640x480", "1280x720", "1600x1200", "1920x1080"]
 CAM_QUALITIES = {"high": 90, "default": 75, "low": 50}
+# White balance presets as a colour cast (red, green, blue gains)
+CAM_WB = {"auto": (1, 1, 1), "sunny": (1.06, 1.0, 0.92), "office": (0.96, 1.03, 1.05),
+          "cloudy": (1.1, 1.0, 0.86), "home": (1.16, 1.0, 0.8)}
+CAM_IMAGE_DEFAULTS = {"exposure": "auto", "exposure_value": 1000, "gain": "auto", "gain_value": 64,
+                      "white_balance": "auto", "brightness": 0, "contrast": 0, "saturation": 0,
+                      "sharpness": "auto"}
+CAM_CHOICES = {"resolutions": CAM_RESOLUTIONS, "qualities": list(CAM_QUALITIES),
+               "white_balances": list(CAM_WB), "exposure_value": [0, 30000], "gain_value": [0, 1023],
+               "brightness": [-4, 4], "contrast": [-3, 3], "saturation": [-3, 3], "sharpness": [1, 8],
+               "rotation": [0, 90, 180, 270]}
+
+
+def cam_int(value, lo: int, hi: int) -> int | None:
+    """Like parse_int() in camera.c: a whole number in [lo, hi], given as a number or text."""
+    try:
+        v = int(str(value), 10)
+    except ValueError:
+        return None
+    return v if lo <= v <= hi else None
+
+
+def cam_set_one(c: dict, name: str, value) -> str | None:
+    """set_one() in camera.c: one setting by name into c, or the error."""
+    v = str(value)
+    if name == "resolution":
+        if v not in CAM_RESOLUTIONS:
+            return "resolution: 320x240, 640x480, 1280x720, 1600x1200 or 1920x1080"
+        c[name] = v
+    elif name == "quality":
+        if v not in CAM_QUALITIES:
+            return "quality: high, default or low"
+        c[name] = v
+    elif name == "light":
+        if v not in ("on", "off"):
+            return "light: on or off"
+        c[name] = v
+    elif name in ("exposure", "gain"):
+        hi = 30000 if name == "exposure" else 1023
+        if v in ("auto", "manual"):
+            c[name] = v
+        elif (n := cam_int(v, 0, hi)) is not None:
+            c[name], c[name + "_value"] = "manual", n
+        else:
+            return f"{name}: auto, manual or 0-{hi}"
+    elif name in ("exposure_value", "gain_value"):
+        hi = 30000 if name == "exposure_value" else 1023
+        if (n := cam_int(v, 0, hi)) is None:
+            return f"{name}: 0-{hi}"
+        c[name] = n
+    elif name == "white_balance":
+        if v not in CAM_WB:
+            return "white_balance: auto, sunny, office, cloudy or home"
+        c[name] = v
+    elif name in ("brightness", "contrast", "saturation"):
+        lim = 4 if name == "brightness" else 3
+        if (n := cam_int(v, -lim, lim)) is None:
+            return f"{name}: -{lim} to {lim}"
+        c[name] = n
+    elif name == "sharpness":
+        if v == "auto":
+            c[name] = "auto"
+        elif (n := cam_int(v, 1, 8)) is not None:
+            c[name] = n
+        else:
+            return "sharpness: auto or 1-8"
+    elif name == "rotation":
+        if (n := cam_int(v, 0, 270)) is None or n % 90:
+            return "rotation: 0, 90, 180 or 270"
+        c[name] = n
+    else:
+        return "unknown setting"
+    return None
 CAM_SLOTS = 3
 CAM_FPS = 5
 CAM_SETTLE_S = 0.3
@@ -496,7 +568,8 @@ class Camera:
         self.lock = threading.Lock()
         self.present = True
         self.port = 0
-        self.cfg = {"resolution": "640x480", "quality": "default", "light": "on"}
+        self.cfg = {"resolution": "640x480", "quality": "default", "light": "on", "rotation": 0,
+                    **CAM_IMAGE_DEFAULTS}
         self.clients: dict[int, dict] = {}   # slot -> stream, ip, port, since, light, kicked
         self.frames = self.errors = self.last_bytes = self.last_ms = 0
         self.stamps: list[float] = []
@@ -508,30 +581,35 @@ class Camera:
         return any((c["light"] or self.cfg["light"]) == "on" for c in self.clients.values()
                    if holder is None or c["ip"] == holder)
 
-    def doc(self, choices: bool = False) -> dict:
+    def doc(self, full: bool = False) -> dict:
+        """The camera object of /api/status; with full, GET /api/camera's."""
         with self.lock:
             streams = sum(c["stream"] for c in self.clients.values())
             now = time.monotonic()
             recent = [t for t in self.stamps if now - t < 5]
+            cfg = dict(self.cfg)
             d = {"present": self.present, "model": "Arducam Mega 3MP" if self.present else "",
-                 "port": self.port, **self.cfg, "lit": bool(self.clients) and self.lit(),
+                 "port": self.port, "resolution": cfg["resolution"], "quality": cfg["quality"],
+                 "light": cfg["light"], "rotation": cfg["rotation"],
+                 "lit": bool(self.clients) and self.lit(),
                  "clients": len(self.clients), "streams": streams, "slots": CAM_SLOTS,
                  "frames": self.frames, "errors": self.errors, "last_bytes": self.last_bytes,
                  "last_ms": self.last_ms, "fps": round(len(recent) / 5, 1) if streams else 0}
-        if choices:
-            d.update(resolutions=CAM_RESOLUTIONS, qualities=list(CAM_QUALITIES))
+        if full:
+            d.update(settings=cfg, choices=CAM_CHOICES)
         return d
 
     def configure(self, body: dict) -> str | None:
-        new = {**self.cfg, **{k: v for k, v in body.items() if k in self.cfg}}
-        if new["resolution"] not in CAM_RESOLUTIONS:
-            return "resolution: 320x240, 640x480, 1280x720, 1600x1200 or 1920x1080"
-        if new["quality"] not in CAM_QUALITIES:
-            return "quality: high, default or low"
-        if new["light"] not in ("on", "off"):
-            return "light: on or off"
+        """camera_configure(): all or nothing; "reset": true, the image settings to auto first."""
         with self.lock:
-            self.cfg = new
+            c = dict(self.cfg)
+        if body.get("reset") is True:
+            c.update(CAM_IMAGE_DEFAULTS)
+        for name, value in body.items():
+            if name != "reset" and (err := cam_set_one(c, name, value)) is not None:
+                return err
+        with self.lock:
+            self.cfg = c
         return None
 
     def frame(self) -> bytes:
@@ -551,8 +629,22 @@ class Camera:
             img = self.scene.crop((x - cw // 2, y - ch // 2, x + cw // 2, y + ch // 2)).resize((w, h))
             with self.lock:
                 lit = self.lit()
-            if not lit:
-                img = ImageEnhance.Brightness(img).enhance(0.45)
+                c = dict(self.cfg)
+            # What the Mega's image processor would do, roughly
+            light = 1.0 if lit else 0.45
+            if c["exposure"] == "manual":
+                light *= min(3.0, max(0.05, c["exposure_value"] / 1000))
+            if c["gain"] == "manual":
+                light *= min(3.0, max(0.2, (c["gain_value"] / 64) ** 0.5))
+            img = ImageEnhance.Brightness(img).enhance(light * (1 + 0.12 * c["brightness"]))
+            img = ImageEnhance.Contrast(img).enhance(1 + 0.2 * c["contrast"])
+            img = ImageEnhance.Color(img).enhance(max(0.0, 1 + 0.3 * c["saturation"]))
+            if c["sharpness"] != "auto":
+                img = ImageEnhance.Sharpness(img).enhance(0.25 * c["sharpness"])
+            if c["white_balance"] != "auto":
+                gains = CAM_WB[c["white_balance"]]
+                img = Image.merge("RGB", [band.point(lambda v, g=g: min(255, int(v * g)))
+                                          for band, g in zip(img.split(), gains)])
             draw = ImageDraw.Draw(img)
             size = max(11, h // 30)
             draw.text((size // 2, h - size * 3 // 2), time.strftime("%H:%M:%S"),
@@ -766,7 +858,7 @@ class Handler(BaseHTTPRequestHandler):
             self.json(200, firmware.doc())
         elif path == "/api/camera":
             if not self.refused("status"):
-                self.json(200, camera.doc(choices=True))
+                self.json(200, camera.doc(full=True))
         elif path == "/dev/camera":
             camera.present = not camera.present
             self.json(200, camera.doc())
@@ -873,7 +965,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json(404, {"error": "no camera on this bay"})
             if (err := camera.configure(body)) is not None:
                 return self.json(400, {"error": err})
-            return self.json(200, camera.doc(choices=True))
+            return self.json(200, camera.doc(full=True))
         if self.refused("console" if path in ("/api/aux", "/api/aux/break") else "control"):
             return
         dut = node["dut"]

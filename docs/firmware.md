@@ -61,7 +61,7 @@ Wi-Fi, the web pages' CSS, helpers and tooling.
 | Access control | written, tested on native_sim | per node: which address may use status, control, console, USB/IP, shell, camera (Zephyr packet filter for TCP, a check per HTTP request); a CI reservation (lease); kicks and a refusal log; admin key claimed with a press on BOOT, admin requests signed (HMAC).  See [`firmware/README.md`](../firmware/README.md#access-control) |
 | Control interface | written | `bay …` shell on the UART test pads and over telnet; status page, serial console and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`, `/api/aux`) |
 | Updates | written, tested on native_sim, not on hardware | over Wi-Fi: MCUboot (sysbuild), signed images sent with the admin key, a test boot, the new firmware confirms itself once Wi-Fi and the rack bus are back, else MCUboot goes back; the page, `bayctl update`.  [Programming › Over the network](#over-the-network); USB through the front port in SERVICE mode |
-| Camera | written, simulated, not on hardware | optional Arducam Mega on J6 (`arducam,mega` on SPI2, 4 MHz) and its light (`pwm-leds` on LEDC, 25 kHz): snapshots and an MJPEG stream on TCP 8081 for every client at once, frames in PSRAM cut at their JPEG end, the light only while someone watches; settings per bay; its own access right; STATUS tells the hub.  [`firmware/README.md`](../firmware/README.md#camera) |
+| Camera | written, simulated, not on hardware | optional Arducam Mega on J6 (`arducam,mega` on SPI2, 4 MHz) and its light (`pwm-leds` on LEDC, 25 kHz): snapshots and an MJPEG stream on TCP 8081 for every client at once, frames in PSRAM cut at their JPEG end, the light only while someone watches; per-bay settings (resolution, quality, exposure and gain auto or manual, white balance, brightness, contrast, saturation, sharpness, display rotation) applied between frames; its own access right; STATUS tells the hub.  [`firmware/README.md`](../firmware/README.md#camera) |
 
 ![The node's status page (simulated node): live V/I/P, power and reset actions, USB/IP state](img/web-ui-dark.png)
 
@@ -208,7 +208,7 @@ from 64 KB to 48 KB the bay was at 96.6 % (12.7 KB free).  The camera
 costs DRAM too (its thread, the driver's fixed 4 KB work-queue stack, four
 more sockets), paid back by moving CPU-only buffers to the PSRAM (the
 16 KB AUX log, the 3 KB HTTP response buffer; `BAY_EXT_RAM` in `bay.h`):
-96.8 % (12.0 KB free) on the bay node, 96.9 % on the DevKitC; the frames
+96.8 % (11.8 KB free) on the bay node, 96.9 % on the DevKitC; the frames
 take 1 MB of the 1.5 MB PSRAM heap.  Next lever if the node runs short:
 `CONFIG_ESP32_WIFI_NET_ALLOC_SPIRAM` puts the network's buffers and TCP
 connections (≈ 30 KB) in PSRAM, to be measured against USB/IP throughput
