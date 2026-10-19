@@ -292,7 +292,7 @@ lead from the node's J7; its four USB-C sit behind the port wall's U's at drawer
 | Ports ×4 | TPS2553DBVR-1 (47k: 0.50–0.62 A; limits for 7.5 ms, then latches off until EN toggles) → 100 mΩ Kelvin shunt → VBUS; INA226 across the shunt; GCT USB4105 with Rp 56k on each CC ("default USB power"); USBLC6 in flow-through | `+5V` → `PORTn_5V_SW` → `PORTn_VBUS`; INA226 at 0x41 / 0x43 / 0x44 / 0x45 for ports 1–4 (the node's own is 0x40) |
 | Expanders | two TCA6408A in the rear row, each between the two ports it drives: U2 (0x20) ports 1–2, U6 (0x21) ports 3–4.  Left port of a pair: P0 RESET, P1 BOOT, P2 EN, P3 FAULT_N; right port: P4 EN, P5 FAULT_N, P6 BOOT, P7 RESET | only SDA, SCL and INT cross the board; the pins come up as inputs: the EN pull-ups power every port without firmware, RESET/BOOT float; both INT wired-OR with the four INA226 ALERTs to the node's IO4 |
 | RESET / BOOT | per port the expander pin, open drain emulated (output register 0, the pin switched between input and output low), through 1k to a 1 × 3 2.54 mm header (GND, RESET_N, BOOT_N) | Dupont jumpers to the board's own pins; the header is not fitted (decision of 2026-10-19: decided later, soldered by hand), the 1k are |
-| 3.3 V | XC6206P332MR (U3, a JLC basic part: no feeder fee) | ≈ 0.25 V dropout at 0.1 A, 200 mA for ≈ 0.1 A of logic: the hub, the expanders and the INA226s keep running down to ≈ 3.6 V in while the ports sag, so the firmware still sees the bay and sheds a port |
+| 3.3 V | AP2112K-3.3 (U3) on top-side copper (VIN, EN and GND islands with vias to the planes) | ≈ 50 mV dropout: the hub, the expanders and the INA226s keep running down to ≈ 3.4 V in while the ports sag, so the firmware still sees the bay and sheds a port.  Keep a 600 mA part with thermal shutdown here: the hub draws up to 155 mA at high speed with four ports busy (84 mA at full speed), ≈ 0.31 W in the LDO from 5.24 V, above what a 200 mA SOT-23 LDO such as the basic XC6206 is rated for (tried and reverted, 2026-10-19) |
 
 **Stackup and pairs.**  JLC04161H-7628: F.Cu signals · In1 solid GND · In2 power only (+5V, with a
 +3V3 area under the ports' rear rows, the expanders, each INA226 and the hub) · B.Cu signals.  The five USB pairs
@@ -312,7 +312,7 @@ measurements); the firmware admits a port only within the budget and sheds one w
 INA226 alerts ([multi-dut-node.md](multi-dut-node.md)).  No batteries on the boards of a converted bay:
 a LiPo charging takes more than a port's 0.5 A.
 
-JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $101 for 5 PCBs with 2 assembled
+JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $104 for 5 PCBs with 2 assembled
 (estimate in `tools/bom.py`).
 
 v2 (32 switchable pins on 8 buses, an RP2354B co-processor, two assembly variants): research in
@@ -571,8 +571,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C265121 JST S8B-PH-SM4-TB | node J7, camera pod J1, data port J2, DATA ×4 J1 | none (fit: −0.03 mm y) | to confirm |
 | C16251 USB2514B QFN-36 | DATA ×4 U1 | 270° | to confirm |
 | C111738 TPS2553DBVR-1 SOT-23-6 | DATA ×4 U101–U401 | 270° (EasyEDA draws it as C7519, not as C55266) | to confirm |
-| C51118 AP2112K-3.3 SOT-23-5 | hub U3 | 270° | to confirm |
-| C5446 XC6206P332MR-G SOT-23-3 | DATA ×4 U3 | 180° | to confirm |
+| C51118 AP2112K-3.3 SOT-23-5 | hub U3, DATA ×4 U3 | 270° | to confirm |
 | C181499 TCA6408ARGTR QFN-16 | DATA ×4 U2 U6 | 270° | to confirm |
 | C2843876 XL-2835UWC-02 | camera pod D1–D4 | +0.24 mm x | to confirm |
 | C41417363 HX PZ2.54-1x6P TP-YQ | camera pod J2 | 270° | to confirm |

@@ -99,16 +99,17 @@ JLC_QUOTE = {
     },
     # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), one per
     # converted bay: an estimate built like the DATA port's, $3.07 per extended part type (the USB2514B, its
-    # crystal, the TPS2553-1, the INA226, the TCA6408A, the USBLC6, the USB4105, the S8B: 8; the XC6206 LDO is
-    # a basic part), components at catalogue prices plus ≈ 3 % attrition, ≈ 390 joints a board, an X-ray of
+    # crystal, the TPS2553-1, the INA226, the TCA6408A, the AP2112K, the USBLC6, the USB4105, the S8B: 9; the
+    # AP2112K stays: the hub burns up to ≈ 0.31 W in it at high speed, above a basic SOT-23 LDO's rating, see
+    # docs/electronics.md), components at catalogue prices plus ≈ 3 % attrition, ≈ 390 joints a board, an X-ray of
     # each assembled board (the QFN hub and expanders, $1.64 each).  The bare PCB from the jlcpcb.com
     # calculator (2026-10-19, 5 PCBs): longer than 100 mm, so JLC's $25 engineering fee, + lead-free HASL
     # $5.10 + board and deburring $1.80.  The RESET/BOOT headers are not fitted.
     "data-port-x4": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 100.62, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 103.76, "estimate": True,
         "spec": "4-layer 108×24 mm, JLC04161H-7628, lead-free HASL",
         "pcb": {"engineering": 25.00, "lead-free HASL": 5.10, "board": 1.80},
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 29.86, "extended parts": 24.56, "SMT": 1.31,
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 29.92, "extended parts": 27.63, "SMT": 1.32,
                  "X-ray": 3.28},
     },
 }

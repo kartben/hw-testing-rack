@@ -222,11 +222,6 @@ CAT = {
                 description="pin header 1 × 3, 2.54 mm, through-hole"),
     "shunt100m": Cat("Device:R_Shunt", "bench:R_1206_3216Metric_Kelvin", "1206W4F100LT5E", "UNI-ROYAL(Uniroyal Elec)",
                      "C25334", 0.0096, basic=True, description="100 mΩ 1 % 0.25 W, as a current shunt"),
-    # a basic-part 3.3 V LDO in SOT-23 (DATA ×4 U3): the AP2112K's dropout at a small load, 200 mA
-    "ldo_xc6206": Cat("Regulator_Linear:XC6206PxxxMR", "Package_TO_SOT_SMD:SOT-23-3", "XC6206P332MR-G",
-                      "Torex Semicon", "C5446", 0.1442, basic=True,
-                      datasheet="https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Torex-Semicon-XC6206P332MR-G_C5446.pdf",
-                      description="3.3 V 200 mA LDO, ≈ 0.25 V dropout at 100 mA, 6 V max in"),
     "ldo_lp": Cat("Regulator_Linear:AP2112K-3.3", "Package_TO_SOT_SMD:SOT-23-5", "AP2112K-3.3TRG1",
                   "Diodes Incorporated", "C51118", 0.17, description="3.3 V 600 mA LDO, 250 mV dropout"),
     "testpad": Cat("Connector:TestPoint", "TestPoint:TestPoint_Pad_D1.5mm", "test pad", "-", "", 0.0),
