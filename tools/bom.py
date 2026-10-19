@@ -40,6 +40,10 @@ PETG_EUR_PER_KG = 20.0
 # (DHL ≈ $27–40) and import VAT.  Indicative: JLC's prices move, re-quote before ordering.
 JLC_QUOTE_DATE = "2026-10-16"
 JLC_SHIPPING = "DHL ≈ $27–40"
+# Every board goes in one JLC cart (the user, 2026-10-19: "je commanderai tout à la fois"): one
+# shipment for the lot, the middle of JLC's DHL range.  It is the only cost the designs share in one
+# order: setup, stencil and part-type fees stay per design.
+JLC_SHIPPING_USD = 34.00
 JLC_QUOTE = {
     # The order the user chose on 2026-10-19 ("10 en HASL"): 10 PCBs, lead-free HASL, all 10 assembled
     # (8 bays and 2 spares; JLC adds its $25 engineering fee only above 10 PCBs).  NOT re-quoted: the
@@ -75,34 +79,34 @@ JLC_QUOTE = {
                  "X-ray": 3.30, "packaging": 0.50, "special components": 0.12, "U1 global sourcing (est.)": 20.04},
     },
     # the drawer's DATA port board (v1.0, 2 layers, parts on one side) is NOT quoted either: Economic
-    # PCBA (setup $8, stencil $1.50, $3 per extended part type: the USB4105, the S8B-PH and the
+    # PCBA (setup $8.18, stencil $1.53, $3.07 per extended part type: the USB4105, the S8B-PH and the
     # USBLC6), components at catalogue prices plus ≈ 3 % attrition, ≈ 30 joints a board.  The
     # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
     # One per node but the converted bays' (a DATA ×4 instead): the eighth is a spare.
     "data-port": {
-        "pcbs": 10, "assembled": 8, "spares": 1, "service": "Economic", "total": 34.80, "estimate": True,
+        "pcbs": 10, "assembled": 8, "spares": 1, "service": "Economic", "total": 35.22, "estimate": True,
         "spec": "2-layer 40×17 mm, lead-free HASL",
         "pcb": {"board": 3.00},
-        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 12.90, "extended parts": 9.00, "SMT": 0.40},
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 12.90, "extended parts": 9.21, "SMT": 0.40},
     },
     # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS): an estimate built like
-    # the DATA port's, Economic PCBA, $3 per extended part type (the S8B, the SMD header, the LED)
+    # the DATA port's, Economic PCBA, $3.07 per extended part type (the S8B, the SMD header, the LED)
     "camera-pod": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 22.75, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 23.17, "estimate": True,
         "spec": "2-layer 40×27 mm, lead-free HASL",
         "pcb": {"board": 2.00},
-        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 2.05, "extended parts": 9.00, "SMT": 0.20},
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 2.05, "extended parts": 9.21, "SMT": 0.20},
     },
     # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), one per
-    # converted bay: an estimate built like the DATA port's, $3 per extended part type (the USB2514B, its
+    # converted bay: an estimate built like the DATA port's, $3.07 per extended part type (the USB2514B, its
     # crystal, the TPS2553-1, the INA226, the TCA6408A, the AP2112K, the USBLC6, the USB4105, the S8B: 9),
     # components at catalogue prices plus ≈ 3 % attrition, ≈ 390 joints a board.  The bare PCB scaled from the
     # bay node's live 4-layer price (64 × 90 mm, $19.30 for 10).  The RESET/BOOT headers are not fitted.
     "data-port-x4": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 76.74, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 77.58, "estimate": True,
         "spec": "4-layer 108×24 mm, JLC04161H-7628, lead-free HASL",
         "pcb": {"board": 9.00},
-        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 29.92, "extended parts": 27.00, "SMT": 1.32},
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 29.92, "extended parts": 27.63, "SMT": 1.32},
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
@@ -128,6 +132,41 @@ JLC_FINISH = {"power-hub": ("lead-free HASL", 5.30)}
 # eFuses' 1u 0805.  Eleven part types fewer at the quote's $1.55 a type in Standard PCBA feeders (47 → 36
 # placed types).
 JLC_SINCE_QUOTE = {"power-hub": [("11 part types fewer (values merged)", "feeders", -17.05)]}
+
+# JLC's fees, from its help page "PCB Assembly Cost" (updated 2026-09-09) and the jlcpcb.com
+# calculator (2026-10-19, 4-layer, 5 PCBs): what a board's part types and size cost per order
+JLC_FEES = {
+    "Standard": {"setup": 25.56, "stencil": 8.21, "per type": 1.53, "types": "every unique part type"},
+    "Economic": {"setup": 8.18, "stencil": 1.53, "per type": 3.07, "types": "extended part types only"},
+    "panel": 8.21,              # PCBA of a panel holding more than one design
+    "x-ray": 1.64,              # per assembled board with a leadless part (module pad, QFN, LGA), 1-10 boards
+    "pcb 4-layer 100x100": 8.00,        # 5 PCBs at JLC's offer: no engineering fee
+    "pcb 4-layer 76x140": 31.60,        # $25 engineering fee + $6.60 board above 100 × 100 mm
+    "enig over lf-hasl": 12.40,         # 5 PCBs, 100 × 100 mm: ENIG $17.70, lead-free HASL $5.30
+}
+
+# What each order could still save (USD per order, against JLC_QUOTE), kept by the JLC-cost owner.
+# "obvious": engineering choices without a trade-off for the user (the board's owner applies them);
+# "decision": a trade-off for the user.  A lever applied in a board leaves this list for its quote.
+JLC_LEVERS = {
+    "power-hub": [
+        ("IMON filter (10n) and CAN split (10n) → 22n, as the dVdT caps: one type fewer (owner, in progress)",
+         1.53, "obvious"),
+        ("3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare", 7.00, "obvious"),
+        ("rows C and D not fitted (DNP, footprints kept): the rack has 2 rows", 9.68, "decision"),
+        ("board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new "
+         "power box, room for 2 rows only", 24.60, "decision"),
+    ],
+    "bay-node": [
+        ("4 values merged: 10 Ω → 33 Ω, 4.7k → 5.1k, 20k → 18k, buck EN 1M / 100k → 100k / 10k "
+         "(owner, in progress)", 6.12, "obvious"),
+        ("9 assembled instead of 10 (8 bays and 1 spare)", 21.04, "decision"),
+    ],
+    "data-port-x4": [
+        ("AP2112K-3.3 → XC6206P332MR, a basic part in the same SOT-23 spot (0.25 V dropout at 0.1 A, as the "
+         "AP2112K's: the AMS1117's 1 V would brown out on a sagging lead) (owner, in progress)", 3.07, "obvious"),
+    ],
+}
 
 
 # the row cables' listing (docs/can.md: one type for feeds and jumpers)
@@ -262,8 +301,11 @@ def electronics(rack) -> tuple[list[dict], dict]:
         rows += mine
         pcb, pcba, changes = jlc_order(name, {r["mpn"] for r in mine if not r["basic"]},
                                        {r["mpn"] for r in mine if r["hand_solder"]})
+        jlc = {r["part"]: r["basic"] for r in mine if r["part"] and not r["hand_solder"]}   # JLC's part types
         orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
-                        "total": round(sum(pcb.values()) + sum(pcba.values()), 2)}
+                        "total": round(sum(pcb.values()) + sum(pcba.values()), 2),
+                        "need": need, "types": len(jlc), "extended": sum(1 for b in jlc.values() if not b),
+                        "standard_only": sorted({r["mpn"] for r in mine if r.get("standard_only")})}
         src = "estimate, not quoted" if q.get("estimate") else f"JLCPCB quote {q.get('date', JLC_QUOTE_DATE)}"
         pcb_src = src + (", adjusted" if name in JLC_FINISH or pcb != q["pcb"] else "")
         pcba_src = src + (", adjusted" if pcba != q["pcba"] else "")
@@ -292,7 +334,74 @@ def electronics(rack) -> tuple[list[dict], dict]:
                               + (f" + ${pcba['components'] - q['pcba']['components']:.2f} since"
                                  if pcba["components"] != q["pcba"]["components"] else "")
                               + f" (≈ €{quoted_eur:.2f}) for {n} boards; catalogue unit prices give €{parts_eur:.2f}"})
+    rows.append({"category": "Electronics", "group": "jlc", "item": "JLCPCB shipping: every board in one cart",
+                 "supplier": "JLCPCB", "qty": 1, "unit_eur": round(JLC_SHIPPING_USD * USD_EUR, 2),
+                 "notes": f"{JLC_SHIPPING} for the whole order (one shipment); import VAT extra"})
     return rows, orders
+
+
+PER_BOARD = ("components", "SMT", "X-ray")      # PCBA lines that grow with the boards assembled (and Global Sourcing)
+
+
+def jlc_cost(orders: dict) -> list[dict]:
+    """Per board: what its order spends once (PCB, setup, stencil, part types…) against per board
+    assembled (parts, joints, X-ray), what its part types cost at today's fees, and the order after
+    the obvious levers and after the user's decisions (JLC_LEVERS)."""
+    out = []
+    for name, o in orders.items():
+        q = JLC_QUOTE[name]
+        fees = JLC_FEES[q["service"]]
+        per_board = sum(v for k, v in o["pcba"].items() if k in PER_BOARD or "sourcing" in k)
+        levers = JLC_LEVERS.get(name, [])
+        obvious = sum(usd for _, usd, kind in levers if kind == "obvious")
+        decided = sum(usd for _, usd, kind in levers if kind == "decision")
+        n_fee = o["types"] if q["service"] == "Standard" else o["extended"]
+        out.append({"board": name, "service": q["service"], "standard_only": o["standard_only"],
+                    "need": o["need"], "assembled": q["assembled"], "pcbs": q["pcbs"],
+                    "types": o["types"], "extended": o["extended"],
+                    "type_fee": round(n_fee * fees["per type"], 2),
+                    "once": round(o["total"] - per_board, 2), "per_board": round(per_board, 2),
+                    "total": o["total"], "after_obvious": round(o["total"] - obvious, 2),
+                    "after_decisions": round(o["total"] - obvious - decided, 2),
+                    "levers": [{"lever": t, "usd": usd, "kind": kind} for t, usd, kind in levers]})
+    return out
+
+
+def jlc_cost_md(cost: list[dict]) -> list[str]:
+    std, eco = JLC_FEES["Standard"], JLC_FEES["Economic"]
+    md = ["## JLC cost", "",
+          "What each order pays once, whatever the number of boards, against what grows with the boards "
+          "assembled (USD, the orders above).  JLC's fees (help page of 2026-09-09): **Standard** PCBA "
+          f"${std['setup']:.2f} setup + ${std['stencil']:.2f} stencil + ${std['per type']:.2f} per unique part type, "
+          f"basic or extended; **Economic** PCBA ${eco['setup']:.2f} + ${eco['stencil']:.2f} + ${eco['per type']:.2f} per "
+          f"*extended* type (basic types are free); X-ray ${JLC_FEES['x-ray']:.2f} per board with a leadless part.  A "
+          "board takes Standard when one of its parts is Standard-only (every ESP32-S3 module, the WS2812B-2020).  "
+          f"A 4-layer board within 100 × 100 mm costs ${JLC_FEES['pcb 4-layer 100x100']:.2f} for 5 PCBs; above, "
+          f"${JLC_FEES['pcb 4-layer 76x140']:.2f} at 76 × 140 mm, a $25 engineering fee included.  ENIG adds "
+          f"${JLC_FEES['enig over lf-hasl']:.2f} over lead-free HASL.  A panel of different designs pays "
+          f"${JLC_FEES['panel']:.2f} more at PCBA and a fee at PCB.  "
+          "Every board goes in one cart: one shipment for the lot "
+          f"(${JLC_SHIPPING_USD:.0f}), the only cost the designs share.  With one cart, a DATA port + camera pod "
+          "panel would save at most ≈ $6: one setup, one stencil, the S8B's feeder and one bare-PCB line "
+          "(≈ $15) less the $8.21 panel fee, before JLC's different-design fee at PCB; not worth a panel that "
+          "must carry 7 ports for 2 pods.", "",
+          "| Board | PCBA | Needed / assembled | Part types (extended) | Type fees | Once per order | With the boards | Today "
+          "| After obvious levers | After decisions |",
+          "|---|---|---|---|---:|---:|---:|---:|---:|---:|"]
+    for c in cost:
+        why = f" ({', '.join(c['standard_only'])})" if c["service"] == "Standard" and c["standard_only"] else ""
+        md.append(f"| {c['board']} | {c['service']}{why} | {c['need']} / {c['assembled']} | "
+                  f"{c['types']} ({c['extended']}) | {c['type_fee']:.2f} | {c['once']:.2f} | {c['per_board']:.2f} | "
+                  f"**{c['total']:.2f}** | {c['after_obvious']:.2f} | {c['after_decisions']:.2f} |")
+    t = {k: sum(c[k] for c in cost) + JLC_SHIPPING_USD for k in ("total", "after_obvious", "after_decisions")}
+    md.append(f"| shipping | one cart, DHL | | | | {JLC_SHIPPING_USD:.2f} | | {JLC_SHIPPING_USD:.2f} | "
+              f"{JLC_SHIPPING_USD:.2f} | {JLC_SHIPPING_USD:.2f} |")
+    md.append(f"| **All** | | | | | | | **{t['total']:.2f}** | **{t['after_obvious']:.2f}** | "
+              f"**{t['after_decisions']:.2f}** |")
+    md += ["", "Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):", "",
+           "| Board | Lever | USD | Kind |", "|---|---|---:|---|"]
+    md += [f"| {c['board']} | {lv['lever']} | {lv['usd']:.2f} | {lv['kind']} |" for c in cost for lv in c["levers"]]
+    return md
 
 
 def printed(rack) -> tuple[list[dict], list[dict]]:
@@ -510,6 +619,7 @@ def hardware(rack) -> list[dict]:
 def main():
     rack = rackcfg.load()
     elec, orders = electronics(rack)
+    cost = jlc_cost(orders)
     prt, prints = printed(rack)
     hw = hardware(rack)
     rows = elec + prt + hw
@@ -532,7 +642,7 @@ def main():
     data = {"rows": rows, "by_category": dict(by_cat), "total_eur": round(total, 2),
             "prints": prints, "bays": n_bays, "rows_n": len(rack.rows),
             "jlc_quote": {"date": JLC_QUOTE_DATE, "currency": "USD", "shipping": JLC_SHIPPING, "boards": JLC_QUOTE,
-                          "order": orders}}
+                          "order": orders, "cost": cost, "fees": JLC_FEES}}
     (REPO / "site" / "assets").mkdir(parents=True, exist_ok=True)
     (REPO / "site" / "assets" / "bom.json").write_text(json.dumps(data, ensure_ascii=False, indent=0), encoding="utf-8")
 
@@ -541,14 +651,15 @@ def main():
           f"Configuration: **{n_bays} bays** ({rack.units} columns × {len(rack.rows)} rows) in the panel frame. "
           "Prices are indicative (EUR excl. VAT, small quantities, October 2026); re-quote before ordering. "
           f"The boards follow a real JLCPCB quote of {JLC_QUOTE_DATE}, adjusted for the changes since (below, "
-          f"converted at $1 = €{USD_EUR:.2f}); shipping ({JLC_SHIPPING}) and import VAT are extra.", "",
+          f"converted at $1 = €{USD_EUR:.2f}); every board goes in one cart, so one shipment ({JLC_SHIPPING}, "
+          f"${JLC_SHIPPING_USD:.0f} counted); import VAT is extra.", "",
           "| Category | Cost (€) |", "|---|---:|"]
     md += [f"| {k} | {v:,.0f} |" for k, v in sorted(by_cat.items(), key=lambda kv: -kv[1])]
     md += [f"| **Total** | **{total:,.0f}** |", "", f"≈ **€{total / n_bays:,.0f} per bay** all-in.", "",
            "Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: "
            "`electronics/<board>/fab/` · interactive table: the viewer's BOM page.", "",
            "## JLCPCB orders (estimates)", "",
-           f"USD, without shipping ({JLC_SHIPPING}) and import VAT.  The power hub is a real quote (jlcpcb.com, "
+           f"USD, without the one shipment ({JLC_SHIPPING}, a line of its own) and import VAT.  The power hub is a real quote (jlcpcb.com, "
            "2026-10-19, from the fab files; its AP33772S, out of stock, is a Global Sourcing estimate on top).  "
            "Every other board is an **estimate** built from JLC's fees and catalogue prices: the node's last real "
            f"quote ({JLC_QUOTE_DATE}: 20 PCBs ENIG, 16 assembled, $367.71) priced it before rev 0.5.  The "
@@ -567,6 +678,7 @@ def main():
         if name in orders:
             o = orders[name]
             md.append(f"| | | Order (indicative): {'; '.join(o['changes']) or 'as quoted'} | {o['total']:.2f} |")
+    md += [""] + jlc_cost_md(cost)
     md += ["", "## Printed parts", "", "| Part | Qty | g each (est.) | STL |", "|---|---:|---:|---|"]
     md += [f"| {p['part']} | {p['qty']} | {p['grams_each'] or '–'} | `{p['stl']}` |" for p in prints]
     md += ["", "## Line items", "", "| Category | Item | Qty | Unit € | Total € | Source |", "|---|---|---:|---:|---:|---|"]

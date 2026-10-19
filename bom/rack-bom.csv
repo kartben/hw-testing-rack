@@ -97,7 +97,7 @@ Electronics,data-port,"LEAD — JST PH 8-pin, side entry, SMD",8,pcs,0.414,3.31,
 Electronics,data-port,22k — Resistor 22k 0603,16,pcs,0.0038,0.06,LCSC/JLCPCB,C31850,0603WAF2202T5E,UNI-ROYAL(Uniroyal Elec),"R1,R2",2 per board × 8 boards
 Electronics,data-port,USBLC6-2SC6 — USB ESD protection,8,pcs,0.1656,1.32,LCSC/JLCPCB,C7519,USBLC6-2SC6,STMicroelectronics,U1,1 per board × 8 boards; alternative: C2687116 (UMW clone)
 Electronics,data-port,"Bare PCB data-port (2-layer 40×17 mm, lead-free HASL)",10,pcs,0.276,2.76,"estimate, not quoted",,,,,"board $3.00 = $3.00 for 10 PCBs, 8 of them assembled"
-Electronics,data-port,"Economic PCBA, 8 boards: setup, stencil, extended parts, SMT",1,pcs,17.39,17.39,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.40"
+Electronics,data-port,"Economic PCBA, 8 boards: setup, stencil, extended parts, SMT",1,pcs,17.77,17.77,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $9.21, SMT $0.40"
 Electronics,data-port,Components data-port: JLC quote minus the catalogue prices above,1,pcs,0.38,0.38,"estimate, not quoted",,,,,quoted components $12.90 (≈ €11.87) for 8 boards; catalogue unit prices give €11.49
 Electronics,camera-pod,10u — Capacitor 10u 0805,2,pcs,0.0403,0.08,LCSC/JLCPCB,C15850,CL21A106KAYNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
 Electronics,camera-pod,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C2,1 per board × 2 boards
@@ -108,7 +108,7 @@ Electronics,camera-pod,"MEGA — pin header 1 × 6, 2.54 mm, SMD",2,pcs,0.0736,0
 Electronics,camera-pod,56 — Resistor 56 0603,8,pcs,0.0024,0.02,LCSC/JLCPCB,C25196,0603WAF560JT5E,UNI-ROYAL(Uniroyal Elec),"R1,R2,R3,R4",4 per board × 2 boards
 Electronics,camera-pod,AMS1117-3.3 — 3.3 V 1 A LDO,2,pcs,0.1932,0.39,LCSC/JLCPCB,C6186,AMS1117-3.3,AMS,U1,1 per board × 2 boards
 Electronics,camera-pod,"Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL)",5,pcs,0.368,1.84,"estimate, not quoted",,,,,"board $2.00 = $2.00 for 5 PCBs, 2 of them assembled"
-Electronics,camera-pod,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,17.2,17.2,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.20"
+Electronics,camera-pod,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,17.59,17.59,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $9.21, SMT $0.20"
 Electronics,camera-pod,Components camera-pod: JLC quote minus the catalogue prices above,1,pcs,0.08,0.08,"estimate, not quoted",,,,,quoted components $2.05 (≈ €1.89) for 2 boards; catalogue unit prices give €1.81
 Electronics,data-port-x4,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
 Electronics,data-port-x4,1u — Capacitor 1u 0603,12,pcs,0.013,0.16,LCSC/JLCPCB,C15849,CL10A105KB8NNNC,Samsung Electro-Mechanics,"C2,C13,C101,C201,C301,C401",6 per board × 2 boards
@@ -136,8 +136,9 @@ Electronics,data-port-x4,"TPS2553DBVR-1 — adjustable current-limited power swi
 Electronics,data-port-x4,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",8,pcs,0.69,5.52,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,"U102,U202,U302,U402",4 per board × 2 boards
 Electronics,data-port-x4,"X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225",2,pcs,0.0874,0.17,LCSC/JLCPCB,C15643,X322524MSB4SI,YXC Crystal Oscillators,Y1,1 per board × 2 boards
 Electronics,data-port-x4,"Bare PCB data-port-x4 (4-layer 108×24 mm, JLC04161H-7628, lead-free HASL)",5,pcs,1.656,8.28,"estimate, not quoted",,,,,"board $9.00 = $9.00 for 5 PCBs, 2 of them assembled"
-Electronics,data-port-x4,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,34.79,34.79,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $27.00, SMT $1.32"
+Electronics,data-port-x4,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,35.57,35.57,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $27.63, SMT $1.32"
 Electronics,data-port-x4,Components data-port-x4: JLC quote minus the catalogue prices above,1,pcs,0.82,0.82,"estimate, not quoted",,,,,quoted components $29.92 (≈ €27.53) for 2 boards; catalogue unit prices give €26.71
+Electronics,jlc,JLCPCB shipping: every board in one cart,1,pcs,31.28,31.28,JLCPCB,,,,,DHL ≈ $27–40 for the whole order (one shipment); import VAT extra
 Printed parts,filament,PETG filament,3.0,kg,20.0,60.0,any,,,,,"≈2.7 kg estimated + 10 % waste, 166 parts"
 Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",142,pcs,0.03,4.26,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs
 Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",62,pcs,0.02,1.24,AliExpress (bulk),,,,,
