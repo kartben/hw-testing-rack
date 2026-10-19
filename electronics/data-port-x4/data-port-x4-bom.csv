@@ -23,7 +23,7 @@ R1,1,12k,R_0603_1608Metric,0603WAF1202T5E,UNI-ROYAL(Uniroyal Elec),C22790,Resist
 "R107,R108,R207,R208,R307,R308,R407,R408",8,1k,R_0603_1608Metric,0603WAF1001T5E,UNI-ROYAL(Uniroyal Elec),C21190,Resistor 1k 0603,,,
 U1,1,USB2514B-AEZC-TR,QFN-36-1EP_6x6mm_P0.5mm_EP3.7x3.7mm,USB2514B-AEZC-TR,Microchip Tech,C16251,"USB 2.0 hub, 4 ports, one transaction translator per port (MTT)",,,
 "U2,U6",2,TCA6408ARGTR,QFN-16-1EP_3x3mm_P0.5mm_EP1.675x1.675mm,TCA6408ARGTR,Texas Instruments,C181499,"8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT",,,
-U3,1,AP2112K-3.3TRG1,SOT-23-5,AP2112K-3.3TRG1,Diodes Incorporated,C51118,"3.3 V 600 mA LDO, 250 mV dropout",,,
+U3,1,XC6206P332MR-G,SOT-23-3,XC6206P332MR-G,Torex Semicon,C5446,"3.3 V 200 mA LDO, ≈ 0.25 V dropout at 100 mA, 6 V max in",,,
 "U4,U5,U103,U203,U303,U403",6,USBLC6-2SC6,SOT-23-6,USBLC6-2SC6,STMicroelectronics,C7519,USB ESD protection,,C2687116 (UMW clone),
 "U101,U201,U301,U401",4,TPS2553DBVR-1,SOT-23-6,TPS2553DBVR-1,Texas Instruments,C111738,"adjustable current-limited power switch, latch-off after 7.5 ms in limit",,,
 "U102,U202,U302,U402",4,INA226AIDGSR,TSSOP-10_3x3mm_P0.5mm,INA226AIDGSR,Texas Instruments,C49851,"36 V current/voltage/power monitor, I2C",,,

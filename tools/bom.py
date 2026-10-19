@@ -99,14 +99,15 @@ JLC_QUOTE = {
     },
     # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), one per
     # converted bay: an estimate built like the DATA port's, $3.07 per extended part type (the USB2514B, its
-    # crystal, the TPS2553-1, the INA226, the TCA6408A, the AP2112K, the USBLC6, the USB4105, the S8B: 9),
+    # crystal, the TPS2553-1, the INA226, the TCA6408A, the USBLC6, the USB4105, the S8B: 8; the XC6206 LDO is
+    # a basic part),
     # components at catalogue prices plus ≈ 3 % attrition, ≈ 390 joints a board.  The bare PCB scaled from the
     # bay node's live 4-layer price (64 × 90 mm, $19.30 for 10).  The RESET/BOOT headers are not fitted.
     "data-port-x4": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 77.58, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 74.44, "estimate": True,
         "spec": "4-layer 108×24 mm, JLC04161H-7628, lead-free HASL",
         "pcb": {"board": 9.00},
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 29.92, "extended parts": 27.63, "SMT": 1.32},
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 29.86, "extended parts": 24.56, "SMT": 1.31},
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
@@ -157,10 +158,6 @@ JLC_LEVERS = {
     ],
     "bay-node": [
         ("9 assembled instead of 10 (8 bays and 1 spare)", 21.08, "decision"),
-    ],
-    "data-port-x4": [
-        ("AP2112K-3.3 → XC6206P332MR, a basic part in the same SOT-23 spot (0.25 V dropout at 0.1 A, as the "
-         "AP2112K's: the AMS1117's 1 V would brown out on a sagging lead) (owner, in progress)", 3.07, "obvious"),
     ],
 }
 

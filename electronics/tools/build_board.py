@@ -181,7 +181,8 @@ JLC_CPL_FIX = {
     # fit as they are; the RESET/BOOT headers are hand-soldered)
     "C16251": ("QFN-36-1EP_6x6mm_P0.5mm_EP3.7x3.7mm", 270, 0.0, 0.0),        # x4 U1 (USB2514B)
     "C111738": ("SOT-23-6", 270, 0.0, 0.0),                                  # x4 U101–U401 (TPS2553-1: drawn as C7519, not C55266)
-    "C51118": ("SOT-23-5", 270, 0.0, 0.0),                                   # x4 U3 (AP2112K-3.3)
+    "C51118": ("SOT-23-5", 270, 0.0, 0.0),                                   # hub U3 (AP2112K-3.3)
+    "C5446": ("SOT-23-3", 180, 0.0, 0.0),                                    # x4 U3 (XC6206P332MR-G)
     "C181499": ("QFN-16-1EP_3x3mm_P0.5mm_EP1.675x1.675mm", 270, 0.0, 0.0),   # x4 U2 U6 (TCA6408A)
 }
 

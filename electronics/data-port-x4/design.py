@@ -19,8 +19,9 @@ A1.1–A1.4 (left to right, seen from the front).
   between input and output), through 1k to a 1 × 3 2.54 mm header (GND, RESET_N, BOOT_N) for Dupont
   jumpers to the board's own pins.  The header is not fitted (the user's choice, 2026-10-19: decided
   later); the 1k are.
-* U3, an AP2112K-3.3 (≈ 50 mV dropout at 0.1 A): the hub, the expanders and the INA226s keep running
-  down to ≈ 3.4 V in, so the firmware still sees a sagging bay and can shed a port.
+* U3, an XC6206P332MR (a JLC basic part; ≈ 0.25 V dropout at 0.1 A, 200 mA for the ≈ 0.1 A of logic):
+  the hub, the expanders and the INA226s keep running down to ≈ 3.6 V in, so the firmware still sees a
+  sagging bay and can shed a port.
 * The lead's SDA, SCL and INT pass through USBLC6s (the node has no ESD on them): LEAD_* on the lead's
   side, SDA/SCL/INT on the board's.
 
@@ -367,7 +368,7 @@ def board() -> Board:
                         "Generated from electronics/data-port-x4/design.py — edit the Python, then regenerate"])
     b.root_notes = [
         "DATA ×4 v1.0 — USB2514B hub, four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1 switch, an INA226",
-        "  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an AP2112K 3.3 V; the PH 8 lead from the bay node's J7.",
+        "  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an XC6206 3.3 V; the PH 8 lead from the bay node's J7.",
         "Lead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V",
         "  (the node's J7 mirrored: one 'Same direction' PH 8 cable).",
         "I²C: TCA6408A 0x20 (ports 1–2) / 0x21 (ports 3–4), INA226 0x41 / 0x43 / 0x44 / 0x45 (A1.1–A1.4); the",
@@ -390,16 +391,15 @@ def board() -> Board:
          pcb=P(97.8, 19.4, 0), sch=at(44, 40, rot=180))
     C(s, "C1", "22u", "+5V", "GND", size="1206", pcb=P(95.6, 22.7, 0), sch=at(24, 48))
 
-    s.frame("3.3 V for the hub, the expanders and the INA226s (AP2112K, ≈ 50 mV dropout at 0.1 A)", 6, 60, 70, 86)
+    s.frame("3.3 V for the hub, the expanders and the INA226s (XC6206, ≈ 0.25 V dropout at 0.1 A)", 6, 60, 70, 86)
     s.tag("+5V", (24, 66), "up")
-    s.wire((24, 66), (24, 69), "U3.VIN")
-    part(s, "U3", "ldo_lp", {"VIN": "+5V", "EN": "+5V", "GND": "GND", "NC": None, "VOUT": "+3V3"},
-         pcb=P(88.8, 19.4, 0), sch=at(34, 70, fields=(-3, -4)))
+    s.wire((24, 66), (24, 69), "U3.VI")
+    part(s, "U3", "ldo_xc6206", {"VI": "+5V", "GND": "GND", "VO": "+3V3"},
+         pcb=P(88.8, 19.4, 0), sch=at(34, 69, fields=(-3, -4)))
     C(s, "C2", "1u", "+5V", "GND", pcb=P(87.9, 22.8, 0), sch=at(20, 72))
     s.wire("C2.1", (20, 69), (24, 69))
-    s.wire("U3.EN", (28, 70), (28, 69))
     C(s, "C3", "4.7u", "+3V3", "GND", size="0805", pcb=P(91.4, 22.8, 0), sch=at(44, 72))
-    s.wire("U3.VOUT", (44, 69), "C3.1")
+    s.wire("U3.VO", (44, 69), "C3.1")
     s.wire((44, 69), (50, 69), net="+3V3")
     s.tag("+3V3", (50, 69), "up")
 

@@ -2701,7 +2701,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Regulator_Linear:AP2112K-3.3"
+		(symbol "Regulator_Linear:XC6206PxxxMR"
 			(pin_names
 				(offset 0.254)
 			)
@@ -2711,7 +2711,17 @@
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
 			(property "Reference" "U"
-				(at -5.08 5.715 0)
+				(at -3.81 3.175 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "XC6206PxxxMR"
+				(at 0 3.175 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -2721,40 +2731,19 @@
 					(justify left)
 				)
 			)
-			(property "Value" "AP2112K-3.3"
+			(property "Footprint" "Package_TO_SOT_SMD:SOT-23-3"
 				(at 0 5.715 0)
 				(show_name no)
 				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left)
-				)
-			)
-			(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
-				(at 0 8.255 0)
-				(show_name no)
-				(do_not_autoplace no)
 				(hide yes)
 				(effects
 					(font
 						(size 1.27 1.27)
+						(italic yes)
 					)
 				)
 			)
-			(property "Datasheet" "https://www.diodes.com/assets/Datasheets/AP2112.pdf"
-				(at 0 2.54 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "600mA low dropout linear regulator, with enable pin, 3.8V-6V input voltage range, 3.3V fixed positive output, SOT-23-5"
+			(property "Datasheet" "https://www.torexsemi.com/file/xc6206/XC6206.pdf"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2765,7 +2754,7 @@
 					)
 				)
 			)
-			(property "ki_keywords" "linear regulator ldo fixed positive"
+			(property "Description" "Positive 60-250mA Low Dropout Regulator, Fixed Output, SOT-23"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2776,7 +2765,7 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "SOT?23?5*"
+			(property "ki_keywords" "Torex LDO Voltage Regulator Fixed Positive"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2787,9 +2776,20 @@
 					)
 				)
 			)
-			(symbol "AP2112K-3.3_0_1"
+			(property "ki_fp_filters" "SOT?23?3*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "XC6206PxxxMR_0_1"
 				(rectangle
-					(start -5.08 4.445)
+					(start -5.08 1.905)
 					(end 5.08 -5.08)
 					(stroke
 						(width 0.254)
@@ -2800,11 +2800,11 @@
 					)
 				)
 			)
-			(symbol "AP2112K-3.3_1_1"
+			(symbol "XC6206PxxxMR_1_1"
 				(pin power_in line
-					(at -7.62 2.54 0)
+					(at 0 -7.62 90)
 					(length 2.54)
-					(name "VIN"
+					(name "GND"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2819,10 +2819,10 @@
 						)
 					)
 				)
-				(pin power_in line
-					(at 0 -7.62 90)
+				(pin power_out line
+					(at 7.62 0 180)
 					(length 2.54)
-					(name "GND"
+					(name "VO"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2837,10 +2837,10 @@
 						)
 					)
 				)
-				(pin input line
+				(pin power_in line
 					(at -7.62 0 0)
 					(length 2.54)
-					(name "EN"
+					(name "VI"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2848,43 +2848,6 @@
 						)
 					)
 					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin no_connect line
-					(at 5.08 0 180)
-					(length 2.54)
-					(hide yes)
-					(name "NC"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin power_out line
-					(at 7.62 2.54 180)
-					(length 2.54)
-					(name "VOUT"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "5"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -5036,8 +4999,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Regulator_Linear:AP2112K-3.3")
-		(at 86.36 177.8 0)
+		(lib_id "Regulator_Linear:XC6206PxxxMR")
+		(at 86.36 175.26 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5046,32 +5009,23 @@
 		(fields_autoplaced yes)
 		(uuid "711c4742-57cc-52d9-a6b1-7fd0d2ec1327")
 		(property "Reference" "U3"
-			(at 79.79 167.64 0)
+			(at 79.79 165.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "AP2112K-3.3TRG1"
-			(at 86.615 170.18 0)
+		(property "Value" "XC6206P332MR-G"
+			(at 86.09 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
-			(at 86.36 177.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 86.36 177.8 0)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-3"
+			(at 86.36 175.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5079,8 +5033,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "3.3 V 600 mA LDO, 250 mV dropout"
-			(at 86.36 177.8 0)
+		(property "Datasheet" "https://www.lcsc.com/datasheet/lcsc_datasheet_2304140030_Torex-Semicon-XC6206P332MR-G_C5446.pdf"
+			(at 86.36 175.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5088,8 +5042,8 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "AP2112K-3.3TRG1"
-			(at 86.36 177.8 0)
+		(property "Description" "3.3 V 200 mA LDO, ≈ 0.25 V dropout at 100 mA, 6 V max in"
+			(at 86.36 175.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5097,8 +5051,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Diodes Incorporated"
-			(at 86.36 177.8 0)
+		(property "MPN" "XC6206P332MR-G"
+			(at 86.36 175.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5106,8 +5060,17 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C51118"
-			(at 86.36 177.8 0)
+		(property "Manufacturer" "Torex Semicon"
+			(at 86.36 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C5446"
+			(at 86.36 175.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5124,12 +5087,6 @@
 		(pin "3"
 			(uuid "ab5a0608-2b9b-5491-a2dc-f27f26bbb415")
 		)
-		(pin "4"
-			(uuid "eefd88e0-34b9-5f83-8dbe-c3b17a98158a")
-		)
-		(pin "5"
-			(uuid "2fd01595-c1e7-5ec9-a9b7-e585dc6cac23")
-		)
 		(instances
 			(project "data-port-x4"
 				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/5317ddbc-6eaf-528d-8064-6ad358d0599a"
@@ -5141,27 +5098,27 @@
 	)
 	(wire
 		(pts
+			(xy 86.36 182.88)
 			(xy 86.36 185.42)
-			(xy 86.36 187.96)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "b6f43607-473b-5963-b9f5-3187671694b4")
+		(uuid "b8529f4a-056c-5417-b4c6-25769f2620db")
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 86.36 187.96 0)
+		(at 86.36 185.42 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "c14e1779-5b58-56bd-91fd-79ded3f10fd5")
+		(uuid "ec0d5e04-b17b-58df-a348-04b8f255134a")
 		(property "Reference" "#PWR02012"
-			(at 86.36 187.96 0)
+			(at 86.36 185.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5170,7 +5127,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 86.36 191.77 0)
+			(at 86.36 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5178,7 +5135,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 86.36 187.96 0)
+			(at 86.36 185.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5187,7 +5144,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 86.36 187.96 0)
+			(at 86.36 185.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5196,7 +5153,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 86.36 187.96 0)
+			(at 86.36 185.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5205,7 +5162,7 @@
 			)
 		)
 		(pin "1"
-			(uuid "8819cc28-e50c-5a7f-89f5-c332e46a7892")
+			(uuid "2c4e04fc-2bf1-5fe8-bd58-a6eb20cbbfa5")
 		)
 		(instances
 			(project "data-port-x4"
@@ -12456,28 +12413,6 @@
 	)
 	(wire
 		(pts
-			(xy 78.74 177.8)
-			(xy 71.12 177.8)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "181a6292-31cb-5cd1-83f0-fb4389c9e6f0")
-	)
-	(wire
-		(pts
-			(xy 71.12 177.8)
-			(xy 71.12 175.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "10def6ec-cf1c-56f4-a54b-5c6851bd93d8")
-	)
-	(wire
-		(pts
 			(xy 93.98 175.26)
 			(xy 111.76 175.26)
 		)
@@ -12485,7 +12420,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "b9b2b101-4cda-5da0-9582-bb26aee61fef")
+		(uuid "181a6292-31cb-5cd1-83f0-fb4389c9e6f0")
 	)
 	(wire
 		(pts
@@ -12496,7 +12431,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "28a18fbc-d040-57e0-97f6-ac3cee313254")
+		(uuid "10def6ec-cf1c-56f4-a54b-5c6851bd93d8")
 	)
 	(wire
 		(pts
@@ -12507,7 +12442,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "90dabdc5-32d1-5d3b-98a0-b38e48096885")
+		(uuid "b9b2b101-4cda-5da0-9582-bb26aee61fef")
 	)
 	(wire
 		(pts
@@ -12518,7 +12453,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "09221e8e-59fa-5d21-99ad-55224392dbb5")
+		(uuid "28a18fbc-d040-57e0-97f6-ac3cee313254")
 	)
 	(wire
 		(pts
@@ -12529,7 +12464,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "866ae268-bd86-53fe-9b09-a0b664e23876")
+		(uuid "90dabdc5-32d1-5d3b-98a0-b38e48096885")
 	)
 	(wire
 		(pts
@@ -12540,7 +12475,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "8a479129-853a-559b-8216-6449f5d296b5")
+		(uuid "09221e8e-59fa-5d21-99ad-55224392dbb5")
 	)
 	(wire
 		(pts
@@ -12551,7 +12486,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "17d2a456-6a14-5e19-8098-52564dfba96b")
+		(uuid "866ae268-bd86-53fe-9b09-a0b664e23876")
 	)
 	(wire
 		(pts
@@ -12562,7 +12497,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "2d809dc3-4658-5af9-ac47-0dfd92948ad4")
+		(uuid "8a479129-853a-559b-8216-6449f5d296b5")
 	)
 	(wire
 		(pts
@@ -12573,7 +12508,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "69c42f82-0698-5556-abcc-42f146f8ab02")
+		(uuid "17d2a456-6a14-5e19-8098-52564dfba96b")
 	)
 	(wire
 		(pts
@@ -12584,7 +12519,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "ca618abf-b192-5970-a842-d0ef9010817b")
+		(uuid "2d809dc3-4658-5af9-ac47-0dfd92948ad4")
 	)
 	(wire
 		(pts
@@ -12595,7 +12530,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "2682d828-3665-516f-b366-0745255c7f88")
+		(uuid "69c42f82-0698-5556-abcc-42f146f8ab02")
 	)
 	(wire
 		(pts
@@ -12606,7 +12541,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "67bf4a3a-dbad-50ee-8402-5ea5f29e7526")
+		(uuid "ca618abf-b192-5970-a842-d0ef9010817b")
 	)
 	(wire
 		(pts
@@ -12617,7 +12552,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "5463098a-6de4-5bee-9d0a-bb754fa5aed4")
+		(uuid "2682d828-3665-516f-b366-0745255c7f88")
 	)
 	(wire
 		(pts
@@ -12628,7 +12563,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "c292067a-3b76-595e-a1ea-816165c7795b")
+		(uuid "67bf4a3a-dbad-50ee-8402-5ea5f29e7526")
 	)
 	(wire
 		(pts
@@ -12639,7 +12574,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "91de317b-ec22-5446-be68-076bd50e7f57")
+		(uuid "5463098a-6de4-5bee-9d0a-bb754fa5aed4")
 	)
 	(wire
 		(pts
@@ -12650,7 +12585,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "aadd37e9-a689-54a8-b0e5-7625f67ac466")
+		(uuid "c292067a-3b76-595e-a1ea-816165c7795b")
 	)
 	(wire
 		(pts
@@ -12661,7 +12596,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "d94bd1ae-91e1-5a0c-856a-7457744437fe")
+		(uuid "91de317b-ec22-5446-be68-076bd50e7f57")
 	)
 	(wire
 		(pts
@@ -12672,7 +12607,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "9e238143-bb8a-5ad4-9c53-8b7f5ba63bc0")
+		(uuid "aadd37e9-a689-54a8-b0e5-7625f67ac466")
 	)
 	(junction
 		(at 60.96 175.26)
@@ -12681,58 +12616,52 @@
 		(uuid "83069cb7-be11-5e39-b820-1e1444289eb6")
 	)
 	(junction
-		(at 71.12 175.26)
+		(at 111.76 175.26)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b8c63b26-3693-5608-b278-764cfed42fe6")
 	)
 	(junction
-		(at 111.76 175.26)
+		(at 260.35 129.54)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "cf11a88d-6b7c-543c-94e7-19fa2eabc843")
 	)
 	(junction
-		(at 260.35 129.54)
+		(at 279.4 134.62)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "80f63159-32d5-53d6-87ee-cb21be520613")
 	)
 	(junction
-		(at 279.4 134.62)
+		(at 322.58 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b759bfb3-c2e4-5d71-9859-035ff9bcbf02")
 	)
 	(junction
-		(at 322.58 81.28)
+		(at 325.12 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "832fd1fe-b45f-52d8-9f6e-bfa1ff102177")
 	)
 	(junction
-		(at 325.12 81.28)
+		(at 327.66 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b3f6cb52-f53d-5ecd-a540-0315603528e3")
 	)
 	(junction
-		(at 327.66 81.28)
+		(at 330.2 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "9017896a-e0a4-5724-ab8a-2161f4bc3434")
 	)
 	(junction
-		(at 330.2 81.28)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "5c2b6a42-9269-5ce3-841e-c58cf5e8b587")
-	)
-	(junction
 		(at 335.28 81.28)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "b5ad086a-de2a-5c5d-bdb4-b568b09fc68d")
+		(uuid "5c2b6a42-9269-5ce3-841e-c58cf5e8b587")
 	)
 	(symbol
 		(lib_id "power:+5V")
@@ -13012,7 +12941,7 @@
 		)
 		(uuid "cb971ebc-9c9f-5a0a-9243-6947054f6208")
 	)
-	(text "3.3 V for the hub, the expanders and the INA226s (AP2112K, ≈ 50 mV dropout at 0.1 A)"
+	(text "3.3 V for the hub, the expanders and the INA226s (XC6206, ≈ 0.25 V dropout at 0.1 A)"
 		(exclude_from_sim no)
 		(at 16.51 154.94 0)
 		(effects
