@@ -5,28 +5,37 @@ from the node's J7 brings 5 V, USB and the node's I²C; four USB-C on the port w
 A1.1–A1.4 (left to right, seen from the front).
 
 * U1, a USB2514B hub (multi-TT: one transaction translator per port), on its straps: no EEPROM, no
-  SMBus, off the I²C bus.  Hub port n is USB-C n (busid 1-1.n).  24 MHz crystal.  The upstream pair
+  SMBus, off the I²C bus; every strap pin (CFG_SEL0/1, NON_REM0/1) pulled down by 100k.  Hub port n is
+  USB-C n (busid 1-1.n).  24 MHz crystal, hand-routed beside the hub with no via.  The upstream pair
   is the node's ESP32-S3 (full speed) or, in classic mode, the laptop on the node's front port.
 * Per port, the power chain +5V → PORTn_5V_SW → PORTn_VBUS: a TPS2553-1 switch (≈ 0.50–0.62 A,
-  R_ILIM 47k; it limits for 7.5 ms, then latches off until EN toggles), a 100 mΩ shunt read by an
+  R_ILIM 47k right beside its ILIM pin; it limits for 7.5 ms, then latches off until EN toggles), a
+  100 mΩ shunt read by an
   INA226 (the node's own chip, I²C 0x41/0x43/0x44/0x45), a USB-C source with Rp 56k on each CC
-  ("default USB power"), USBLC6 ESD in flow-through.  The switch's FAULT goes to the expander (the hub's
-  OCS_N stay on their internal pull-ups).
+  ("default USB power"), USBLC6 ESD in flow-through with 100 nF on its VBUS pin.  The switch's FAULT
+  goes to the expander (the hub's OCS_N stay on their internal pull-ups).  PORTn_5V_SW and PORTn_VBUS
+  are 0.4 mm tracks (netclass Port); the INA226 reads VBUS on the shunt's load-side sense pad.
 * Two TCA6408A expanders in the rear row, each between the two ports it drives, so that only SDA, SCL
   and INT cross the board: U2 (0x20) ports 1–2, U6 (0x21) ports 3–4; per port EN, FAULT_N, RESET, BOOT.
-  Their pins come up as inputs: the EN pull-ups switch every port on before (and without) any firmware.
+  Their pins come up as inputs and each EN is pulled down: every port stays off until the firmware
+  switches it on within the bay's budget (four ports at 0.50–0.62 A would trip the node's 1.34–1.52 A
+  switch; the owner's decision, 2026-10-19).
 * RESET and BOOT per port: open drain emulated by the expander (output register 0, the pin switched
   between input and output), through 1k to a 1 × 3 2.54 mm header (GND, RESET_N, BOOT_N) for Dupont
   jumpers to the board's own pins.  The header is not fitted (the user's choice, 2026-10-19: decided
-  later); the 1k are.
+  later); the 1k are.  A 100k pull-up on each line keeps the expander's input high with nothing
+  plugged in (the TCA6408A has no pull-ups and no interrupt mask: a floating input would raise INT).
 * U3, an AP2112K-3.3 (≈ 50 mV dropout at 0.1 A): the hub, the expanders and the INA226s keep running
   down to ≈ 3.4 V in, so the firmware still sees a sagging bay and can shed a port.  Not a smaller LDO:
   the hub alone draws up to 155 mA at high speed with four ports busy (USB2514B tables 6-4/6-5; 84 mA at
   full speed), ≈ 0.31 W in the regulator from 5.24 V: more than a 200 mA SOT-23 part like the XC6206 is
   rated for, and the AP2112K (600 mA) shuts down on overheating.  Its VIN, EN and GND pins sit on
   top-side islands with their own vias to the planes, to spread that heat.
-* The lead's SDA, SCL and INT pass through USBLC6s (the node has no ESD on them): LEAD_* on the lead's
-  side, SDA/SCL/INT on the board's.
+* The lead's SDA, SCL and INT pass through USBLC6s (the node has no ESD on them; their VBUS pin open),
+  then through three 2N7002s, gate on this board's +3V3 (NXP AN10441's shifter, 3.3 V both sides):
+  BUS_* on the lead's side (the node's pull-ups), SDA/SCL/INT on the board's (4.7k, 4.7k, 10k here).
+  With DUT_5V off the FETs open, so the node's pull-ups cannot feed this board's dead +3V3 through the
+  INA226 and TCA6408A clamps, and the node's own INA226 bus stays free.
 
 4 layers, JLC04161H-7628: F.Cu signals and the hand-drawn USB pairs · In1 solid GND · In2 power only
 (+5V, a +3V3 area under the hub, the expanders, the ports' rear rows and each INA226) · B.Cu signals
@@ -108,17 +117,21 @@ def port(b: Board, n: int):
          sch=at(30, 22, fields=(-4, -4)))
     C(s, f"C{k + 1}", "1u", "+5V", "GND", pcb=P(cx - 7.5, 7.85, 0), sch=at(15, 24))
     s.wire(f"C{k + 1}.1", (15, 21), (20, 21))
-    R(s, f"R{k + 1}", "47k", p + "ILIM", "GND", pcb=P(cx + 1.5, 7.85, 0), sch=at(22, 28))
+    # R_ILIM (0402) standing between the switch and the shunt, its pad 1 level with ILIM (TI: as close to
+    # the pin as possible), its GND pad on a via of its own (local_routes)
+    R(s, f"R{k + 1}", "47k", p + "ILIM", "GND", size="0402", pcb=P(cx - 3.66, 10.96, 270), sch=at(22, 28))
     s.wire(f"{sw}.ILIM", (22, 24), f"R{k + 1}.1")
-    R(s, f"R{k + 2}", "10k", "+3V3", p + "EN", pcb=P(cx - 4.5, 7.85, 0), sch=at(14, 36))
+    R(s, f"R{k + 2}", "10k", p + "EN", "GND", pcb=P(cx - 4.5, 7.85, 0), sch=at(14, 36))
     R(s, f"R{k + 3}", "10k", "+3V3", p + "FLT_N", pcb=P(cx - 1.5, 7.85, 0), sch=at(40, 36))
     # Kelvin shunt: pins 1/4 carry the port's current, 2/3 are sense pads at the resistor's own ends
     part(s, sh, "shunt100m", {"1": p + "5V_SW", "4": p + "VBUS", "2": p + "SNS_P", "3": p + "SNS_N"},
-         "100m", pcb=P(cx - 1.3, 10.45, 0), sch=at(46, 23))
+         "100m", pcb=P(cx - 0.85, 10.45, 0), sch=at(46, 23))
     s.wire(f"{sw}.OUT", f"{sh}.1")
     a1, a0 = INA_ADDR[n - 1]
+    # VBUS read on the load-side sense pad (the same node as PORTn_VBUS): the 0.4 mm Port tracks stay off
+    # the INA226's 0.5 mm pitch, its Vbus pin joins Vin− next to it
     part(s, ina, "ina226", {"VS": "+3V3", "GND": "GND", "A1": a1, "A0": a0, "SDA": "SDA", "SCL": "SCL",
-                            "~{Alert}": "INT", "Vin+": p + "SNS_P", "Vin-": p + "SNS_N", "Vbus": p + "VBUS"},
+                            "~{Alert}": "INT", "Vin+": p + "SNS_P", "Vin-": p + "SNS_N", "Vbus": p + "SNS_N"},
          pcb=P(cx + 4.9, 10.45, 180), sch=at(66, 24, fields=(-9, -7)))
     s.wire(f"{sh}.2", (52, 22), (52, 25), f"{ina}.Vin+")
     s.wire(f"{sh}.3", (50, 24), (50, 26), f"{ina}.Vin-")
@@ -135,8 +148,9 @@ def port(b: Board, n: int):
                             "SHIELD": "GND"}, f"PORT{n}", pcb=P(cx, USB_Y, 0), sch=at(50, 76, fields=(-8, -11)))
     s.wire(f"{usb}.A7", f"{usb}.B7")
     s.wire(f"{usb}.A6", f"{usb}.B6")
-    R(s, f"R{k + 4}", "56k", p + "VBUS", p + "CC1", pcb=P(cx - 6.6, ESD_Y, 90), sch=at(62, 64.5))
-    R(s, f"R{k + 5}", "56k", p + "VBUS", p + "CC2", pcb=P(cx + 3.4, 13.9, 0), sch=at(66, 64.5))
+    # VBUS pads towards the 0.4 mm feed, CC pads towards their own pins (local_routes draws both)
+    R(s, f"R{k + 4}", "56k", p + "VBUS", p + "CC1", pcb=P(cx - 6.6, ESD_Y, 270), sch=at(62, 64.5))
+    R(s, f"R{k + 5}", "56k", p + "VBUS", p + "CC2", pcb=P(cx + 3.4, 13.9, 180), sch=at(66, 64.5))
     s.wire(f"{usb}.CC1", (62, 72), f"R{k + 4}.2")
     s.wire(f"{usb}.CC2", (66, 73), f"R{k + 5}.2")
     # pins 1/3 face the receptacle, 6/4 the hub: each line enters one pin and leaves by the other
@@ -144,6 +158,7 @@ def port(b: Board, n: int):
                          "2": "GND"}, pcb=P(cx + ESD_DX, ESD_Y, 0), sch=at(84, 76))
     s.wire(f"{usb}.B7", f"{esd}.1")
     s.wire(f"{usb}.A6", f"{esd}.3")
+    C(s, f"C{k + 4}", "100n", "+5V", "GND", pcb=P(cx + ESD_DX + 1.6, 22.6, 0), sch=at(98, 62))
 
     s.frame(f"RESET / BOOT {n}: through 1k to a 1 × 3 2.54 mm header (not fitted)", 112, 10, 162, 56)
     # header pins left to right: GND, RESET_N, BOOT_N (mirrored on the right port of a pair); each 1k
@@ -159,6 +174,12 @@ def port(b: Board, n: int):
          pcb=P(hx, HDR_Y, 90 if left else 270), dnp=True, sch=at(152, 31, fields=(-1, -4)))
     s.wire(f"R{k + 7}.2", (146, 30), (146, 31), f"J{k + 2}.2")
     s.wire(f"R{k + 8}.2", (148, 38), (148, 32), f"J{k + 2}.3")
+    # 100k pull-ups (0402, the only size that fits): RESET's on the expander side, outside its 1k; BOOT's on
+    # the header side, standing in the gap between the two 1k (local_routes links both)
+    R(s, f"R{k + 9}", "100k", "+3V3", p + "RST_IO", size="0402",
+      pcb=P(hx - d * 0.72, RES_Y, 0 if left else 180), sch=at(124, 44, rot=90))
+    R(s, f"R{k + 10}", "100k", "+3V3", p + "BOOT_N", size="0402", pcb=P(hx + d * 3.81, RES_Y, 90),
+      sch=at(140, 48))
     s.notes_at = (112, 62, 50)
     s.note(f"Port {n} = sub-slot A1.{n} (the bay's position,")
     s.note(f"  then the port), hub port {n}, busid 1-1.{n}.")
@@ -169,9 +190,10 @@ def port(b: Board, n: int):
     s.note("ILIM 47k: 0.50–0.62 A (TI's IOS equations).")
     s.note("  The -1 limits for 7.5 ms, then latches off")
     s.note("  until EN toggles; FAULT_N flags it.")
-    s.note("EN pulled up: the port is on with no firmware.")
+    s.note("EN pulled down: the port is off until the")
+    s.note("  firmware enables it within the bay's budget.")
     s.note("RESET/BOOT: output register 0; the pin as an")
-    s.note("  output pulls low, as an input it floats.")
+    s.note("  output pulls low, as an input the 100k holds it high.")
     s.note("Pigtail: 1 GND, 2 RESET_N, 3 BOOT_N (Dupont")
     s.note("  female jumpers to the board's own pins).")
 
@@ -324,8 +346,10 @@ def usb_routes():
 
 def local_routes():
     """The few short links Freerouting tangles: per left port of a pair, its header pins to their 1k and
-    the expander's RESET (under the header, through B.Cu) and BOOT lines (EN and FAULT are routed); the
-    hub's VDDA33 pin 29, boxed in by the upstream pair's vias, to its decoupling cap and a via of its own."""
+    the expander's RESET (under the header, through B.Cu) and BOOT lines (EN and FAULT are routed), and
+    per port the RESET/BOOT pull-ups; round the hub, its right-side straps, VDDA33 pin 29 (boxed in by the
+    upstream pair's vias) to its decoupling cap and a via of its own, the crystal with PLLFILT and RBIAS,
+    and its bottom row's +3V3 and GND."""
     tracks, vias = [], []
 
     def t(net, *pts, layer="F.Cu", w=0.25):
@@ -357,10 +381,77 @@ def local_routes():
     t("CFG_SEL0", rp(24), (83.85, rp(24)[1]), (83.85, 20.4), (83.4, 20.85), w=0.2)
     t("+3V3", rp(23), (83.15, rp(23)[1]), (83.3, 16.75))
     via("+3V3", 83.3, 16.75)
+    # NON_REM1 (pin 22) shares CFG_SEL0's 100k (R3): 0.15 mm inside the pin row, between the pins' inner
+    # ends and the exposed pad, out by the corner between pins 19 and 18, into R3's pad beside CFG_SEL0
+    t("CFG_SEL0", rp(22), (81.7875, rp(22)[1]), (81.7875, 18.7875), (83.4, 20.4), (83.4, 20.9), w=0.15)
     # hub pin 29 (VDDA33, top side) → over pin 28 → a via → C9's pad 1
     t("+3V3", (HX + 1.5, HY - 2.9375), (HX + 1.5, 13.15), (HX + 1.75, 12.9), (82.45, 12.9), (82.6, 13.05))
     via("+3V3", 82.6, 13.05)
     t("+3V3", (82.6, 13.05), (82.6, 12.275))
+    # NON_REM0 (pin 28) east under that link into its 100k (R5); pin 27 (VBUS_DET, +3V3) to a via below it
+    t("NON_REM0", (HX + 2.0, HY - 2.9375), (HX + 2.0, 13.9), (83.7, 13.9), (84.1, 13.5), (84.1, 12.9), w=0.15)
+    t("+3V3", rp(27), (83.2, rp(27)[1]), (83.3, 14.5))
+    via("+3V3", 83.3, 14.5)
+    # the crystal: XI (pin 33) and XO (pin 32) north side by side, no via; XI west between R1's GND pad and
+    # Y1's GND pad 2 into Y1.1, then on to C4; XO east round pad 2 into Y1.3, a stub to C5.  PLLFILT (pin
+    # 34) down beside XI and between R1's pads to C6, RBIAS (pin 35) straight into R1.
+    t("XI", (HX - 0.5, HY - 2.9375), (79.1, 10.3), (78.6, 9.8), (77.35, 9.8), (76.9, 9.35), w=0.15)
+    t("XI", (76.9, 8.85), (75.12, 8.85), (74.9, 9.07))
+    t("XO", (HX, HY - 2.9375), (79.6, 10.5), (80.25, 9.85), (80.25, 9.225), (80.25, 7.6), (79.8, 7.15),
+      (79.1, 7.15), w=0.2)
+    t("XO", (80.25, 9.225), (81.4, 9.225), w=0.2)
+    t("PLLFILT", (HX - 1.0, HY - 2.9375), (78.6, 13.0), (78.75, 12.85), (78.75, 11.6), (78.6, 11.45),
+      (77.0, 11.45), (76.5, 11.95), w=0.2)
+    t("RBIAS", (HX - 1.5, HY - 2.9375), (78.1, 12.6), w=0.2)
+    # GND: R1, C6 and C8's rear pads along one track to a via; Y1's pads 2 and 4 under its body to another
+    t("GND", (78.0, 10.65), (76.5, 10.65), (75.71, 10.65), (75.0, 10.65))
+    t("GND", (75.71, 10.65), (75.71, 9.97))
+    via("GND", 75.71, 9.97)
+    t("GND", (79.1, 8.85), (76.9, 7.15), (75.77, 6.68))
+    via("GND", 75.77, 6.68)
+    # the bottom row: pin 15 (VDD33) and C12 on one via inside the (shallow) +3V3 tab; the GND pads of C11,
+    # C7, C12 and C10 on a bus along the front edge to a via at each end: no via in the +5V neck below the tab
+    t("+3V3", (HX + 0.5, HY + 2.9375), (80.1, 20.3), (80.2, 20.43), w=0.3)
+    for x in (77.0, 80.2, 81.8):                                    # C11, C12, C10
+        t("+3V3", (x, 21.225), (x, 20.43), w=0.3)
+        via("+3V3", x, 20.43)
+    row = [77.0, 78.6, 80.2, 81.8]
+    t("GND", (75.9, 23.35), *[(x, 23.35) for x in row], (82.95, 23.35), w=0.3)
+    for x in row:
+        t("GND", (x, 22.775), (x, 23.35), w=0.3)
+    via("GND", 75.9, 23.35)
+    via("GND", 82.95, 23.35)
+    # per port: the RESET pull-up onto its 1k's expander end, the BOOT pull-up's rear pad onto its 1k's
+    # header end
+    for n in range(1, 5):
+        p, hx, d = f"PORT{n}_", HDR_X[n - 1], 1 if n % 2 else -1
+        if n % 2 == 0:                  # the right port's header pins straight down to their 1k too
+            t(p + "RST_N", (hx - 2.54, HDR_Y), (hx - 2.54, RES_Y))
+            t(p + "BOOT_N", (hx - 5.08, HDR_Y), (hx - 5.08, RES_Y))
+        t(p + "RST_IO", (hx - d * 0.21, RES_Y), (hx + d * 0.89, RES_Y), w=0.2)
+        t(p + "BOOT_N", (hx + d * 3.81, RES_Y - 0.51), (hx + d * 5.08, RES_Y - 0.51), (hx + d * 5.08, RES_Y),
+          w=0.2)
+    # per port, VBUS at 0.4 mm from the shunt's load end (pin 4): east under the INA226 to the CC2 Rp's
+    # VBUS pad and down into A9/B4 from the east, west under the shunt to the 22 µF and down into A4/B9;
+    # a thin branch to the CC1 Rp.  CC2 drops straight into B5 inside the VBUS run, CC1 leaves A5 south
+    # under the receptacle (between its pegs and shell tabs) to its Rp: no via on either CC line.
+    pr = USB_Y - 3.68                                                # the receptacles' pad row
+    for n in range(1, 5):
+        p, cx = f"PORT{n}_", CFG["usb"][n - 1]
+        sh = (cx + 0.61, 10.45)                                      # shunt pin 4
+        # the switch's OUT (pin 6) east over R_ILIM into the shunt's pin 1; ILIM (pin 5) straight into
+        # R_ILIM, its GND end down to a via
+        t(p + "5V_SW", (cx - 5.0625, 9.5), (cx - 2.55, 9.5), (cx - 2.31, 9.74), w=0.4)
+        t(p + "ILIM", (cx - 5.0625, 10.45), (cx - 3.66, 10.45))
+        t("GND", (cx - 3.66, 11.47), (cx - 3.38, 11.75), (cx - 3.0, 11.75))     # above the B.Cu lanes
+        via("GND", cx - 3.0, 11.75)
+        t(p + "VBUS", sh, (cx + 0.61, 11.82), (cx + 1.39, 12.6), (cx + 4.225, 12.6), (cx + 4.225, 14.6),
+          (cx + 2.4, 16.425), (cx + 2.4, pr), w=0.4)
+        t(p + "VBUS", (cx + 0.61, 11.82), (cx - 2.16, 11.82), (cx - 4.24, 13.9), (cx - 4.35, 13.9),
+          (cx - 4.35, 14.97), (cx - 3.68, 14.97), (cx - 2.4, 16.25), (cx - 2.4, pr), w=0.4)
+        t(p + "VBUS", (cx - 4.35, 14.97), (cx - 5.17, 14.97), (cx - 5.17, 17.2), (cx - 6.6, 18.63), w=0.3)
+        t(p + "CC2", (cx + 2.575, 13.9), (cx + 2.575, 14.4), (cx + 1.75, 15.225), (cx + 1.75, pr))
+        t(p + "CC1", (cx - 1.25, pr), (cx - 1.25, 19.6), (cx - 5.9, 19.6), (cx - 6.6, 20.3))
     return tracks, vias
 
 
@@ -390,12 +481,14 @@ def board() -> Board:
          sch=at(14, 30, mirror="y", fields=(-2, -6)))
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False, sch=at(24, 14))
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(30, 14))
-    # pins 6/4 face the lead, 1/3 the board: each line enters one pin and leaves by the other
-    part(s, "U4", "esd", {"6": "LEAD_SDA", "1": "SDA", "4": "LEAD_SCL", "3": "SCL", "5": "+3V3", "2": "GND"},
+    # pins 6/4 face the lead, 1/3 the board: each line enters one pin and leaves by the other.  VBUS (pin 5)
+    # open: tied to this board's rails it would let the node's pull-ups feed them with DUT_5V off (ST allows
+    # it open; the diodes then clamp through the part's own zener)
+    part(s, "U4", "esd", {"6": "LEAD_SDA", "1": "BUS_SDA", "4": "LEAD_SCL", "3": "BUS_SCL", "5": None, "2": "GND"},
          pcb=P(93.6, 19.4, 0), sch=at(44, 24, rot=180))
     s.wire("J1.2", (30, 28), (30, 23), "U4.4")
     s.wire("J1.3", (32, 29), (32, 24), "U4.6")
-    part(s, "U5", "esd", {"6": "LEAD_INT", "1": "INT", "4": None, "3": None, "5": "+3V3", "2": "GND"},
+    part(s, "U5", "esd", {"6": "LEAD_INT", "1": "BUS_INT", "4": None, "3": None, "5": None, "2": "GND"},
          pcb=P(97.8, 19.4, 0), sch=at(44, 40, rot=180))
     C(s, "C1", "22u", "+5V", "GND", size="1206", pcb=P(95.6, 22.7, 0), sch=at(24, 48))
 
@@ -418,7 +511,8 @@ def board() -> Board:
            "TEST": "GND", "VBUS_DET": "+3V3", "RESET_N": "HUB_RST_N", "XTALIN/CLKIN": "XI", "XTALOUT": "XO",
            "RBIAS": "RBIAS", "CRFILT": "CRFILT", "PLLFILT": "PLLFILT",
            "SCL/SMBCLK/CFG_SEL0": "CFG_SEL0", "HS_IND/CFG_SEL1": "CFG_SEL1",
-           "SDA/SMBDATA/NON_REM1": None, "SUSP_IND/LOCAL_PWR/NON_REM0": None}
+           # NON_REM1 on CFG_SEL0's pull-down: both straps 0, and in this mode both pins stay unused inputs
+           "SDA/SMBDATA/NON_REM1": "CFG_SEL0", "SUSP_IND/LOCAL_PWR/NON_REM0": "NON_REM0"}
     for n in range(1, 5):
         hub[f"USBDM_DN{n}/PRT_DIS_M{n}"] = f"PORT{n}_DN"
         hub[f"USBDP_DN{n}/PRT_DIS_P{n}"] = f"PORT{n}_DP"
@@ -443,6 +537,8 @@ def board() -> Board:
             ("R", "R4", "100k", "CFG_SEL1", (85.0, 22.0), 270), ("C", "C13", "1u", "HUB_RST_N", (85.6, 12.0), 90))):
         (R if kind == "R" else C)(s, ref, val, net, "GND", pcb=P(*xy, rot), sch=at(84 + 8 * i, 80))
     R(s, "R2", "10k", "+3V3", "HUB_RST_N", pcb=P(85.6, 15.3, 90), sch=at(132, 80))
+    # NON_REM0 (SUSP_IND after reset, an output): its own 100k, not shared with CFG_SEL1 (HS_IND, an output too)
+    R(s, "R5", "100k", "NON_REM0", "GND", pcb=P(84.1, 11.8, 90), sch=at(140, 80))
     for i, (ref, (x, y, rot)) in enumerate((("C8", (75.0, 11.45, 90)), ("C9", (82.6, 11.45, 90)),
                                             ("C10", (81.8, 22.0, 270)), ("C11", (77.0, 22.0, 270)),
                                             ("C12", (80.2, 22.0, 270)))):
@@ -460,12 +556,25 @@ def board() -> Board:
     s.frame("Mounting: PT 2.6 × 8 into the drawer's floor bosses", 172, 76, 228, 92)
     for i, (x, y) in enumerate(CFG["holes"]):
         part(s, f"H{i + 1}", "hole25", {}, "PT2.6", pcb=P(x, y, 0), in_bom=False, sch=at(180 + 12 * i, 85))
+    # the lead's bus (BUS_*, the node's pull-ups) and this board's (SDA/SCL/INT, pulled up here): a 2N7002
+    # per line, gate on +3V3 (NXP AN10441).  Either side pulling low turns the FET on (the body diode starts
+    # it from the lead's side); with this board unpowered it stays off.  In the rear row's free corner.
+    s.frame("I²C isolation: open with DUT_5V off, so the node's pull-ups cannot feed this board", 172, 96, 228, 150)
+    for i, (q, r, line, val) in enumerate((("Q1", "R6", "SDA", "4.7k"), ("Q2", "R7", "SCL", "4.7k"),
+                                           ("Q3", "R8", "INT", "10k"))):
+        x = 69.55 + 3.45 * i
+        part(s, q, "nfet", {"G": "+3V3", "S": line, "D": "BUS_" + line}, pcb=P(x, 2.6, 90),
+             sch=at(190, 108 + 14 * i))
+        R(s, r, val, "+3V3", line, size="0402", pcb=P(x, 5.5, 0), sch=at(210, 106 + 14 * i))
     s.notes_at = (6, 104, 160)
-    s.note("Hub on its straps: CFG_SEL[1:0] = 00 (100k to GND), NON_REM[1:0] = 00 (the pins' own pull-downs):")
-    s.note("  self-powered, one TT per port; OCS_N left on their pull-ups (the expander reads each FAULT).")
-    s.note("  PRTPWR unused: the switches follow the expander, not the hub.  VBUS_DET on 3.3 V (host always attached).")
-    s.note("Expander pins are inputs at power-up: the EN pull-ups power every port, RESET/BOOT float.")
-    s.note("INT (J1.1 → the node's IO4): both expanders' INT and the four INA226 ALERTs, open drain, wired-OR.")
+    s.note("Hub on its straps: CFG_SEL[1:0] = 00 and NON_REM[1:0] = 00, every strap pin on a 100k to GND (NON_REM1")
+    s.note("  shares CFG_SEL0's): self-powered, one TT per port; OCS_N left on their pull-ups (the expander reads")
+    s.note("  each FAULT).  PRTPWR unused: the switches follow the expander.  VBUS_DET on 3.3 V (host always attached).")
+    s.note("Expander pins are inputs at power-up: EN pulled down (every port off until the firmware enables it within")
+    s.note("  the bay's budget), RESET/BOOT pulled up (released).")
+    s.note("INT (J1.1 → the node's IO4): both expanders' INT and the four INA226 ALERTs, open drain, wired-OR, through Q3.")
+    s.note("I²C and INT: the node's pull-ups on BUS_*, 4.7k / 4.7k / 10k here; with DUT_5V off the chips here lose their")
+    s.note("  registers: the firmware sets them up again after each DUT_5V on, and leaves 0x20/0x21/0x41–0x45 alone while off.")
     s.note("Lead: the node's J7 mirrored, one 'Same direction' PH 8 cable.  The upstream pair has no ESD here: the")
     s.note("  lead stays plugged inside the drawer, the node protects its own end.")
     for n in range(1, 5):
@@ -475,11 +584,15 @@ def board() -> Board:
     loc_tracks, loc_vias = local_routes()
     outline = [(0, 0, 1.5), (NX, 0, 1.0), (NX, NH, 0.5), (W, NH, 0.5), (W, H, 1.5), (0, H, 1.5)]
     # In2: +5V everywhere but a +3V3 area under the ports' rear rows, the expanders and the hub, with a tab
-    # under each INA226 (its VS and address straps), 0.6 mm short of the B.Cu pairs' lane at y 12.4, and
-    # one under the hub's bottom row of capacitors; +5V passes beneath it and right of it
+    # under each INA226 (its VS and address straps), 0.6 mm short of the B.Cu pairs' lane at y 12.4, and a
+    # shallow one under the hub's bottom row of capacitors (their +3V3 vias); +5V passes beneath it, a 2.5 mm
+    # neck with no via (b.pcb["keepouts"] "in2-5v-neck"), and right of it.  Two notches give the B.Cu pairs
+    # one reference all along: the upstream pair's run west and down to the hub, PORT1's start by its vias.
     tabs = [(CFG["usb"][n] + 1.2, min(CFG["usb"][n] + 9.4, 75.3)) for n in range(4)]
-    v33 = [(0.4, 0.4), (NX - 0.4, 0.4), (NX - 0.4, 19.5), (82.6, 19.5), (82.6, 21.6), (76.2, 21.6), (76.2, 19.5),
-           (75.3, 19.5)]
+    slant = lambda y: 75.3 - (75.3 - tabs[-1][1]) * (19.5 - y) / (19.5 - 9.2)   # the area's west edge
+    v33 = [(0.4, 0.4), (NX - 0.4, 0.4), (NX - 0.4, 9.9), (79.9, 9.9), (79.9, 12.6), (NX - 0.4, 12.6),
+           (NX - 0.4, 19.5), (82.6, 19.5), (82.6, 20.9), (76.2, 20.9), (76.2, 19.5), (75.3, 19.5),
+           (round(slant(14.4), 3), 14.4), (76.1, 14.4), (76.1, 12.05), (round(slant(12.05), 3), 12.05)]
     for x0, x1 in reversed(tabs):
         v33 += [(x1, 9.2), (x1, 11.8), (x0, 11.8), (x0, 9.2)]
     v33 += [(0.4, 9.2)]
@@ -515,9 +628,10 @@ def board() -> Board:
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, NX, 0.35), (NX - 0.35, 0, NX, NH), (NX, NH - 0.35, W, NH), (W - 0.35, NH, W, H),
                          (0, H - 0.35, W, H), (0, 0, 0.35, H)))] + [
-            # under the hub's caps the +5V plane's only link between its two halves is a 1.9 mm neck below
-            # the +3V3 tab: no via there (a router's via beside the caps' GND vias cut it in two)
-            {"name": "in2-5v-neck", "poly": [(76.2, 21.75), (82.6, 21.75), (82.6, 22.6), (76.2, 22.6)],
+            # under the hub's caps the +5V plane's only link between its two halves (all the ports' current)
+            # is the neck below the +3V3 tab: no via in it, down to the edge band (the caps' GND pads take a
+            # bus to vias beyond it, local_routes)
+            {"name": "in2-5v-neck", "poly": [(76.2, 21.1), (82.6, 21.1), (82.6, 23.65), (76.2, 23.65)],
              "vias_only": True}],
         "tracks": usb_tracks + loc_tracks,
         "vias": usb_vias + loc_vias + LDO_VIAS,
@@ -543,7 +657,7 @@ NETCLASSES = [
     {"name": "Port", "clearance": 0.15, "track_width": 0.4, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,
-     "_patterns": ["PORT?_5V_SW", "PORT?_VBUS"]},
+     "_patterns": ["*PORT?_5V_SW", "*PORT?_VBUS"]},
     {"name": "USB", "clearance": 0.15, "track_width": 0.25, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.25, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 3,

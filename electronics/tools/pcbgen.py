@@ -631,8 +631,24 @@ def import_session(b: Board, outdir: Path) -> Path:
             print(f"plane {name}: {n} of {len(spots)} pads tied to {layer}")
             pcbnew.SaveBoard(str(path), board)
     drop_passthrough_vias(path)
+    drop_pad_dots(path)
     print("imported", ses)
     return path
+
+
+def drop_pad_dots(path: Path):
+    """Freerouting leaves a dot on some pads it reached: a track a few µm long, at its net's width, inside
+    a pad of its own net.  Remove them (a board of its own: SWIG loses its types after a Remove)."""
+    board = pcbnew.LoadBoard(str(path))
+    pads = [(p.GetNetCode(), p) for fp in board.GetFootprints() for p in fp.Pads()]
+    dots = [t for t in board.GetTracks() if t.GetClass() == "PCB_TRACK" and t.GetLength() < MM(0.01)
+            and any(n == t.GetNetCode() and p.IsOnLayer(t.GetLayer()) and p.HitTest(t.GetStart())
+                    and p.HitTest(t.GetEnd()) for n, p in pads)]
+    for t in dots:
+        board.Remove(t)
+    if dots:
+        pcbnew.SaveBoard(str(path), board)
+        print(f"dropped {len(dots)} dots Freerouting left on pads")
 
 
 def drop_passthrough_vias(path: Path) -> int:

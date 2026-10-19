@@ -293,24 +293,31 @@ lead from the node's J7; its four USB-C sit behind the port wall's U's at drawer
 
 | Block | Parts | Notes |
 |---|---|---|
-| Lead | JST PH 8, side entry (S8B-PH-SM4-TB, J1) on the front edge of a 22 × 7 mm rear-right notch, 17 mm from the port wall like the DATA port's: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V | the node's J7 mirrored ("Same direction" lead); SDA, SCL and INT pass through two USBLC6 (U4, U5; `LEAD_*` on the lead's side): the node has no ESD on them |
-| Hub | USB2514B (U1) on its straps (CFG_SEL 00, NON_REM 00), 24 MHz crystal, 12k RBIAS, RC reset | multi-TT, self-powered, off the I²C bus; hub port n is USB-C n (busid `1-1.n`); PRTPWR and OCS_N unused: the switches follow the expanders |
-| Ports ×4 | TPS2553DBVR-1 (47k: 0.50–0.62 A; limits for 7.5 ms, then latches off until EN toggles) → 100 mΩ Kelvin shunt → VBUS; INA226 across the shunt; GCT USB4105 with Rp 56k on each CC ("default USB power"); USBLC6 in flow-through | `+5V` → `PORTn_5V_SW` → `PORTn_VBUS`; INA226 at 0x41 / 0x43 / 0x44 / 0x45 for ports 1–4 (the node's own is 0x40) |
-| Expanders | two TCA6408A in the rear row, each between the two ports it drives: U2 (0x20) ports 1–2, U6 (0x21) ports 3–4.  Left port of a pair: P0 RESET, P1 BOOT, P2 EN, P3 FAULT_N; right port: P4 EN, P5 FAULT_N, P6 BOOT, P7 RESET | only SDA, SCL and INT cross the board; the pins come up as inputs: the EN pull-ups power every port without firmware, RESET/BOOT float; both INT wired-OR with the four INA226 ALERTs to the node's IO4 |
-| RESET / BOOT | per port the expander pin, open drain emulated (output register 0, the pin switched between input and output low), through 1k to a 1 × 3 2.54 mm header (GND, RESET_N, BOOT_N) | Dupont jumpers to the board's own pins; the header is not fitted (decision of 2026-10-19: decided later, soldered by hand), the 1k are |
+| Lead | JST PH 8, side entry (S8B-PH-SM4-TB, J1) on the front edge of a 22 × 7 mm rear-right notch, 17 mm from the port wall like the DATA port's: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V | the node's J7 mirrored ("Same direction" lead); SDA, SCL and INT pass through two USBLC6 (U4, U5, VBUS pin open; `LEAD_*` on the lead's side): the node has no ESD on them |
+| I²C isolation | three 2N7002 (Q1–Q3), gate on +3V3, one per line (NXP AN10441's shifter, 3.3 V on both sides); 4.7k / 4.7k / 10k pull-ups on this board's side, the node's on the lead's (`BUS_*`) | with DUT_5V off the FETs open: the node's pull-ups cannot feed the dead +3V3 through the INA226 and TCA6408A clamps (INA226: VS + 0.3 V at most), and the node's own INA226 keeps its bus.  The firmware sets the expanders and INA226s up again after each DUT_5V on and leaves them alone while it is off |
+| Hub | USB2514B (U1) on its straps (CFG_SEL 00, NON_REM 00: every strap pin on a 100k to GND, NON_REM1 sharing CFG_SEL0's), 24 MHz crystal hand-routed with no via (XI 6 mm, XO 7.7 mm), 12k RBIAS, RC reset | multi-TT, self-powered, off the I²C bus; hub port n is USB-C n (busid `1-1.n`); PRTPWR and OCS_N unused: the switches follow the expanders |
+| Ports ×4 | TPS2553DBVR-1 (47k: 0.50–0.62 A; limits for 7.5 ms, then latches off until EN toggles) → 100 mΩ Kelvin shunt → VBUS; INA226 across the shunt; GCT USB4105 with Rp 56k on each CC ("default USB power"); USBLC6 in flow-through | `+5V` → `PORTn_5V_SW` → `PORTn_VBUS`, 0.4 mm tracks (netclass Port); INA226 at 0x41 / 0x43 / 0x44 / 0x45 for ports 1–4 (the node's own is 0x40), its Vbus on the shunt's load-side sense pad; 100 nF at each USBLC6's VBUS pin |
+| Expanders | two TCA6408A in the rear row, each between the two ports it drives: U2 (0x20) ports 1–2, U6 (0x21) ports 3–4.  Left port of a pair: P0 RESET, P1 BOOT, P2 EN, P3 FAULT_N; right port: P4 EN, P5 FAULT_N, P6 BOOT, P7 RESET | only SDA, SCL and INT cross the board; the pins come up as inputs: **every port off until the firmware enables it** (EN pulled down by 10k, the owner's decision of 2026-10-19: four ports at 0.50–0.62 A would trip the node's 1.34–1.52 A switch), RESET/BOOT held released; both INT wired-OR with the four INA226 ALERTs to the node's IO4.  KiCad's VQFN-16 footprint with TI's 1.45 mm exposed pad (RGT0016A) |
+| RESET / BOOT | per port the expander pin, open drain emulated (output register 0, the pin switched between input and output low), through 1k to a 1 × 3 2.54 mm header (GND, RESET_N, BOOT_N) | Dupont jumpers to the board's own pins; the header is not fitted (decision of 2026-10-19: decided later, soldered by hand), the 1k are.  100k pull-ups (0402) hold each expander input high with nothing plugged in: the TCA6408A has no pull-ups and no interrupt mask, a floating input would raise INT |
 | 3.3 V | AP2112K-3.3 (U3) on top-side copper (VIN, EN and GND islands with vias to the planes) | ≈ 50 mV dropout: the hub, the expanders and the INA226s keep running down to ≈ 3.4 V in while the ports sag, so the firmware still sees the bay and sheds a port.  Keep a 600 mA part with thermal shutdown here: the hub draws up to 155 mA at high speed with four ports busy (84 mA at full speed), ≈ 0.31 W in the LDO from 5.24 V, above what a 200 mA SOT-23 LDO such as the basic XC6206 is rated for (tried and reverted, 2026-10-19) |
 
 **Stackup and pairs.**  JLC04161H-7628: F.Cu signals · In1 solid GND · In2 power only (+5V, with a
-+3V3 area under the ports' rear rows, the expanders, each INA226 and the hub) · B.Cu signals.  The five USB pairs
++3V3 area under the ports' rear rows, the expanders, each INA226 and the hub) · B.Cu signals.  All the
+ports' current crosses In2 under the hub's bottom row, a 2.5 mm +5V neck below a shallow +3V3 tab with no
+via in it (the row's GND pads take an F.Cu bus to a via at each end).  The five USB pairs
 are drawn in `design.py` (`usb_routes()`), 0.25 mm tracks with a 0.15 mm gap (≈ 90 Ω, as the bay
 node's): ports 1–3 leave the hub through vias and run on B.Cu over the In2 plane behind the
 receptacles, down beside each ESD; port 4, next to the hub, stays on F.Cu.  Each USBLC6 passes both
 lines through (connector side and hub side are separate nets); its connector side runs under the
 receptacle into A7 / A6, B6 joins A6 by a loop behind the pad row and B7 joins the D− line through
-B.Cu.  The upstream pair goes J1 → B.Cu round the hub's east side → its top pins with no crossover.  A few short links
-are drawn too, where Freerouting left one open run after run: each left port's RESET and BOOT lines
-(RESET under its header through B.Cu), and the hub's right side (RESET_N up to R2 and C13, the CFG
-straps down to R3 / R4, VDD33 to a via).  Freerouting does the rest (on the Mac, ≈ 15 s a pass).
+B.Cu.  The upstream pair goes J1 → B.Cu round the hub's east side → its top pins with no crossover.  The
+B.Cu pairs keep one reference plane end to end: In2's +3V3 area has a notch under the upstream pair's run
+to the hub and another under PORT1's start, so all of them run over +5V.  A few short links are drawn too,
+where Freerouting left one open run after run or took a detour: each left port's RESET and BOOT lines
+(RESET under its header through B.Cu), every port's RESET/BOOT pull-ups, the hub's right side (RESET_N up
+to R2 and C13, the CFG and NON_REM straps down to R3 / R4 / R5, VDD33 and VBUS_DET to vias), the crystal
+with PLLFILT and RBIAS, and the bottom row's +3V3 and GND.  Freerouting does the rest (on the Mac, ≈ 15 s a
+pass).
 
 **Power.**  The four ports share the node's DUT_5V (≈ 1.4 A, its TPS2553); the board's logic takes
 ≈ 0.1 A of it.  Four small boards draw 0.3–0.8 A in all (typical figures from datasheets and
@@ -341,6 +348,16 @@ the bay), 2 × PT 2.6 into the printed pod.  Geometry in `config/rack.yaml` › 
 
 Both sides are GND pours; routed by Freerouting.  JLC: Economic PCBA, ≈ $23 for 5 PCBs with 2
 assembled (estimate in `tools/bom.py`).
+
+## Bring-up measurements
+
+What the PCBA review ([pcba-review.md](pcba-review.md)) left to the bench, per board, on the first ones built.
+
+| Board | What | How | Expect |
+|---|---|---|---|
+| DATA ×4 | VBUS at each USB-C against the total load (X11) | a resistor or an electronic load on a USB-C breakout per port, 0.25 A steps up to the admission limit (1.25 A in all); a meter at the receptacle, against the port's INA226 | ≥ 4.75 V up to ≈ 1 A in all; ≈ 4.54 V at the node's 1.34 A limit (estimate).  Lower: raise the node's +5V, or lower the admission limit |
+| DATA ×4 | Ports off at power-up (X3) | DUT_5V on, no firmware command: each `PORTn_VBUS` | 0 V until the firmware enables the port |
+| DATA ×4 | No back-feed with DUT_5V off (X2) | node running, DUT_5V off: the board's +3V3; an I²C scan from the node | +3V3 under 0.1 V; the node's INA226 (0x40) still answers, 0x20/0x21/0x41–0x45 don't |
 
 ## Sourcing
 

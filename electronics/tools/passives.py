@@ -45,6 +45,8 @@ WANTED = [
     ("R", "6.8k", "0603", ""),         # the CH224A's CFG1 (9 V at plug-in), WCH's table 5-1
     # DATA ×4 (USB-C Rp 56k, the hub's 12k bias and 33 pF crystal loads)
     ("R", "56k", "0603", ""), ("R", "12k", "0603", ""), ("C", "33p", "0603", "50V"),
+    # DATA ×4 RESET/BOOT pull-ups and I²C isolation pull-ups (0402: the rear row's gaps)
+    ("R", "100k", "0402", ""), ("R", "4.7k", "0402", ""), ("R", "10k", "0402", ""), ("R", "47k", "0402", ""),
 ]
 
 UNITS_C = {"p": "pF", "n": "nF", "u": "uF"}

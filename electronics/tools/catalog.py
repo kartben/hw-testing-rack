@@ -217,13 +217,11 @@ CAT = {
     "vbus_sw_latch": Cat("bench:TPS2553DBV", "Package_TO_SOT_SMD:SOT-23-6", "TPS2553DBVR-1", "Texas Instruments",
                          "C111738", 0.29, datasheet="https://www.ti.com/lit/ds/symlink/tps2553-1.pdf",
                          description="adjustable current-limited power switch, latch-off after 7.5 ms in limit"),
-    "tca6408": Cat("Interface_Expansion:TCA6408ARGT", "Package_DFN_QFN:QFN-16-1EP_3x3mm_P0.5mm_EP1.675x1.675mm",
+    # TI's RGT0016A land pattern: a 1.45 mm exposed pad (KiCad's QFN 1.675 mm one is Melexis' drawing)
+    "tca6408": Cat("Interface_Expansion:TCA6408ARGT", "Package_DFN_QFN:VQFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm",
                    "TCA6408ARGTR", "Texas Instruments", "C181499", 0.88,
                    datasheet="https://www.ti.com/lit/ds/symlink/tca6408a.pdf",
-                   description="8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT",
-                   # KiCad ships no model for this exact footprint: its 1.7 mm-pad sibling
-                   model=("${KICAD10_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/QFN-16-1EP_3x3mm_P0.5mm_EP1.7x1.7mm.step",
-                          (0, 0, 0), (0, 0, 0))),
+                   description="8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT"),
     # a DUT's RESET/BOOT pigtail: Dupont female jumpers straight onto it (fitted by hand when wanted)
     "hdr3": Cat("Connector_Generic:Conn_01x03", "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",
                 "2.54-1*3PPin", "BOOMELE(Boom Precision Elec)", "C49257", 0.03, hand_solder=True,

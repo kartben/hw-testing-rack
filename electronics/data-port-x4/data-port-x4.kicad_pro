@@ -346,11 +346,11 @@
       },
       {
         "netclass": "Port",
-        "pattern": "PORT?_5V_SW"
+        "pattern": "*PORT?_5V_SW"
       },
       {
         "netclass": "Port",
-        "pattern": "PORT?_VBUS"
+        "pattern": "*PORT?_VBUS"
       },
       {
         "netclass": "USB",

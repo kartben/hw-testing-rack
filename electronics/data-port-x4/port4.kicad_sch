@@ -3231,7 +3231,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 55.88 71.12 0)
 			(effects
 				(font
@@ -3249,7 +3249,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 47k 0603"
+		(property "Description" "Resistor 47k 0402"
 			(at 55.88 71.12 0)
 			(effects
 				(font
@@ -3258,7 +3258,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25819"
+		(property "LCSC" "C25792"
 			(at 55.88 71.12 0)
 			(effects
 				(font
@@ -3267,7 +3267,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF4702T5E"
+		(property "MPN" "0402WGF4702TCE"
 			(at 55.88 71.12 0)
 			(effects
 				(font
@@ -3483,69 +3483,25 @@
 		)
 		(uuid "7fd4d93e-e722-50a7-806c-7fbfda6d4432")
 	)
-	(symbol
-		(lib_id "power:+3V3")
-		(at 35.56 85.09 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(global_label "PORT4_EN"
+		(shape bidirectional)
+		(at 35.56 85.09 90)
 		(fields_autoplaced yes)
-		(uuid "d96bf9e7-2108-5b8b-a5ae-d583d61a5a60")
-		(property "Reference" "#PWR06004"
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "665102be-b5ed-5752-a7bb-96ce6b8dc124")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 35.56 85.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 				(hide yes)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 35.56 81.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 35.56 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 35.56 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 35.56 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "0738bdd9-bf76-5893-b596-7f9dfc83ccf2")
-		)
-		(instances
-			(project "data-port-x4"
-				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
-					(reference "#PWR06004")
-					(unit 1)
-				)
 			)
 		)
 	)
@@ -3560,25 +3516,69 @@
 		)
 		(uuid "7e2624e9-f128-50d0-a0ed-59c231ec8561")
 	)
-	(global_label "PORT4_EN"
-		(shape bidirectional)
-		(at 35.56 97.79 270)
+	(symbol
+		(lib_id "power:GND")
+		(at 35.56 97.79 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "3dc9ed2b-afca-5ec9-8a5f-0ccb1217ca7f")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+		(uuid "e2eda5c0-cd46-5f12-a672-adfd8fa8cf19")
+		(property "Reference" "#PWR06004"
 			(at 35.56 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
 				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 35.56 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 35.56 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 35.56 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4ddac0b1-27c4-5f99-9e28-904eaf82733d")
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
+					(reference "#PWR06004")
+					(unit 1)
+				)
 			)
 		)
 	)
@@ -4425,7 +4425,7 @@
 		)
 		(uuid "57685bd3-30b6-59bc-bb2d-ec0df751d864")
 	)
-	(label "PORT4_VBUS"
+	(label "PORT4_SNS_N"
 		(at 154.94 53.34 180)
 		(fields_autoplaced yes)
 		(effects
@@ -5752,6 +5752,255 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C")
+		(at 248.92 157.48 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "91e23652-c67b-5742-a888-501d9ac87f26")
+		(property "Reference" "C404"
+			(at 254.052 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100n"
+			(at 254.052 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 248.92 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 248.92 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Capacitor 100n 0603"
+			(at 248.92 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 248.92 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CC0603KRX7R9BB104"
+			(at 248.92 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "YAGEO"
+			(at 248.92 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "35ccd07d-7678-5412-830c-391e2021a7a2")
+		)
+		(pin "2"
+			(uuid "7088666b-406b-5c64-ac54-7c364a82341d")
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
+					(reference "C404")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 248.92 153.67)
+			(xy 248.92 151.13)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2c25b3dd-91e5-5ebd-9aed-16b464e2fefb")
+	)
+	(symbol
+		(lib_id "power:+5V")
+		(at 248.92 151.13 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f440a738-de6e-5baa-9a59-977a0fb031a0")
+		(property "Reference" "#PWR06017"
+			(at 248.92 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+5V"
+			(at 248.92 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 248.92 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 248.92 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 248.92 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "900d1ef9-e9af-5bcf-af97-a6cf48657d53")
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
+					(reference "#PWR06017")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 248.92 161.29)
+			(xy 248.92 163.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "40f32c05-844c-55d1-8116-45d7a88b9508")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 248.92 163.83 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b0a8821e-a0db-5852-b1cd-5e97c3e234f4")
+		(property "Reference" "#PWR06018"
+			(at 248.92 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 248.92 167.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 248.92 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 248.92 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 248.92 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "960b0d23-98a2-53f8-bffc-bdcb0897a4bc")
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
+					(reference "#PWR06018")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 335.28 76.2 90)
 		(unit 1)
@@ -6060,7 +6309,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cb7ff4e1-a351-5bd2-a933-0ad6f7a12387")
-		(property "Reference" "#PWR06017"
+		(property "Reference" "#PWR06019"
 			(at 378.46 76.2 0)
 			(effects
 				(font
@@ -6110,11 +6359,410 @@
 		(instances
 			(project "data-port-x4"
 				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
-					(reference "#PWR06017")
+					(reference "#PWR06019")
 					(unit 1)
 				)
 			)
 		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 314.96 111.76 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "306e54b1-539c-5177-9fd6-b75d87c710a3")
+		(property "Reference" "R409"
+			(at 314.96 109.144 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 314.96 114.376 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 314.96 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 314.96 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor 100k 0402"
+			(at 314.96 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25741"
+			(at 314.96 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0402WGF1003TCE"
+			(at 314.96 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 314.96 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "eb8e768f-1eeb-58d4-9a10-10d5691797cd")
+		)
+		(pin "2"
+			(uuid "11452e73-1317-5972-9b16-a20cca909b5f")
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
+					(reference "R409")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 311.15 111.76)
+			(xy 308.61 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3da1fecd-4c0b-523a-bca6-32ee08a53f9e")
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 308.61 111.76 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ce8a5bd3-ad72-545a-8184-ba3be8405e48")
+		(property "Reference" "#PWR06020"
+			(at 308.61 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 302.29 111.76 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 308.61 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 308.61 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 308.61 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0b201a0f-a56b-5c5f-a97f-20c66c886255")
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
+					(reference "#PWR06020")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 318.77 111.76)
+			(xy 321.31 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cd99d080-354d-5d12-b3c6-30ace8dd1ce3")
+	)
+	(global_label "PORT4_RST_IO"
+		(shape bidirectional)
+		(at 321.31 111.76 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "87fb4d0c-cbf3-5f11-8347-9b16c64d25de")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 321.31 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 355.6 121.92 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "bcbeca5b-68ed-5315-81e6-a0c2389dff99")
+		(property "Reference" "R410"
+			(at 359.716 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 359.716 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 355.6 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 355.6 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor 100k 0402"
+			(at 355.6 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25741"
+			(at 355.6 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0402WGF1003TCE"
+			(at 355.6 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 355.6 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4cb161b8-4dfa-5a99-bbf6-faa36f750cad")
+		)
+		(pin "2"
+			(uuid "fed65a42-599f-5561-91ea-dd5e30480219")
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
+					(reference "R410")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 355.6 118.11)
+			(xy 355.6 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5795ac4b-d092-53c5-b63e-100c4c24b097")
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 355.6 115.57 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "220c1d12-31c1-5b37-ba7d-e1ba823f69bd")
+		(property "Reference" "#PWR06021"
+			(at 355.6 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "+3V3"
+			(at 355.6 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 355.6 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 355.6 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 355.6 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "56715813-93c6-5dff-b95d-168ef570b2c5")
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
+					(reference "#PWR06021")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 355.6 125.73)
+			(xy 355.6 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "97d89982-08d3-5898-9921-12d2800b039a")
+	)
+	(label "PORT4_BOOT_N"
+		(at 355.6 128.27 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "25674300-13fa-56cb-b0bc-45b0bcb5b0fd")
 	)
 	(wire
 		(pts
@@ -6502,7 +7150,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "deda683b-fda8-5306-9b3c-74a6f07cb759")
-		(property "Reference" "#PWR06018"
+		(property "Reference" "#PWR06022"
 			(at 50.8 45.72 0)
 			(effects
 				(font
@@ -6552,7 +7200,7 @@
 		(instances
 			(project "data-port-x4"
 				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/1322461c-0213-589c-8e70-a0caa3b282c5"
-					(reference "#PWR06018")
+					(reference "#PWR06022")
 					(unit 1)
 				)
 			)
@@ -6795,10 +7443,10 @@
 		)
 		(uuid "a1e992a4-7b37-514a-92c2-f2a96588b9cc")
 	)
-	(text_box "Port 4 = sub-slot A1.4 (the bay's position,\n  then the port), hub port 4, busid 1-1.4.\nINA226 at 0x45; expander U6 (0x21):\n  P4 EN, P5 FLT_N, P6 BOOT, P7 RST.\nILIM 47k: 0.50–0.62 A (TI's IOS equations).\n  The -1 limits for 7.5 ms, then latches off\n  until EN toggles; FAULT_N flags it.\nEN pulled up: the port is on with no firmware.\nRESET/BOOT: output register 0; the pin as an\n  output pulls low, as an input it floats.\nPigtail: 1 GND, 2 RESET_N, 3 BOOT_N (Dupont\n  female jumpers to the board's own pins)."
+	(text_box "Port 4 = sub-slot A1.4 (the bay's position,\n  then the port), hub port 4, busid 1-1.4.\nINA226 at 0x45; expander U6 (0x21):\n  P4 EN, P5 FLT_N, P6 BOOT, P7 RST.\nILIM 47k: 0.50–0.62 A (TI's IOS equations).\n  The -1 limits for 7.5 ms, then latches off\n  until EN toggles; FAULT_N flags it.\nEN pulled down: the port is off until the\n  firmware enables it within the bay's budget.\nRESET/BOOT: output register 0; the pin as an\n  output pulls low, as an input the 100k holds it high.\nPigtail: 1 GND, 2 RESET_N, 3 BOOT_N (Dupont\n  female jumpers to the board's own pins)."
 		(exclude_from_sim no)
 		(at 284.48 157.48 0)
-		(size 127 31.75)
+		(size 127 33.02)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

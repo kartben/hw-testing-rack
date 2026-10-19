@@ -1954,19 +1954,19 @@
 "category": "Electronics",
 "group": "data-port-x4",
 "item": "100n — Capacitor 100n 0603",
-"ref": "C6,C7,C8,C9,C10,C11,C12,C14,C15,C103,C203,C303,C403",
+"ref": "C6,C7,C8,C9,C10,C11,C12,C14,C15,C103,C104,C203,C204,C303,C304,C403,C404",
 "mpn": "CC0603KRX7R9BB104",
 "manufacturer": "YAGEO",
 "supplier": "LCSC/JLCPCB",
 "part": "C14663",
-"qty": 26,
+"qty": 34,
 "unit_eur": 0.0124,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "13 per board × 2 boards",
+"notes": "17 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.32
+"ext_eur": 0.42
 },
 {
 "category": "Electronics",
@@ -2079,6 +2079,24 @@
 {
 "category": "Electronics",
 "group": "data-port-x4",
+"item": "2N7002 — N-MOSFET 60 V (open-drain AUX outputs)",
+"ref": "Q1,Q2,Q3",
+"mpn": "2N7002",
+"manufacturer": "CJ",
+"supplier": "LCSC/JLCPCB",
+"part": "C8545",
+"qty": 6,
+"unit_eur": 0.0184,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "3 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.11
+},
+{
+"category": "Electronics",
+"group": "data-port-x4",
 "item": "12k — Resistor 12k 0603",
 "ref": "R1",
 "mpn": "0603WAF1202T5E",
@@ -2116,13 +2134,31 @@
 "category": "Electronics",
 "group": "data-port-x4",
 "item": "100k — Resistor 100k 0603",
-"ref": "R3,R4",
+"ref": "R3,R4,R5",
 "mpn": "0603WAF1003T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25803",
-"qty": 4,
+"qty": 6,
 "unit_eur": 0.0029,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "3 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.02
+},
+{
+"category": "Electronics",
+"group": "data-port-x4",
+"item": "4.7k — Resistor 4.7k 0402",
+"ref": "R6,R7",
+"mpn": "0402WGF4701TCE",
+"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+"supplier": "LCSC/JLCPCB",
+"part": "C25900",
+"qty": 4,
+"unit_eur": 0.0019,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
@@ -2133,20 +2169,38 @@
 {
 "category": "Electronics",
 "group": "data-port-x4",
-"item": "47k — Resistor 47k 0603",
-"ref": "R101,R201,R301,R401",
-"mpn": "0603WAF4702T5E",
+"item": "10k — Resistor 10k 0402",
+"ref": "R8",
+"mpn": "0402WGF1002TCE",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C25819",
+"part": "C25744",
+"qty": 2,
+"unit_eur": 0.0014,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.0
+},
+{
+"category": "Electronics",
+"group": "data-port-x4",
+"item": "47k — Resistor 47k 0402",
+"ref": "R101,R201,R301,R401",
+"mpn": "0402WGF4702TCE",
+"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+"supplier": "LCSC/JLCPCB",
+"part": "C25792",
 "qty": 8,
-"unit_eur": 0.0032,
+"unit_eur": 0.0018,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
 "notes": "4 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.03
+"ext_eur": 0.01
 },
 {
 "category": "Electronics",
@@ -2201,6 +2255,24 @@
 "notes": "8 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.03
+},
+{
+"category": "Electronics",
+"group": "data-port-x4",
+"item": "100k — Resistor 100k 0402",
+"ref": "R109,R110,R209,R210,R309,R310,R409,R410",
+"mpn": "0402WGF1003TCE",
+"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+"supplier": "LCSC/JLCPCB",
+"part": "C25741",
+"qty": 16,
+"unit_eur": 0.0014,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "8 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 0.02
 },
 {
 "category": "Electronics",
@@ -2345,10 +2417,10 @@
 "item": "Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 38.58,
-"notes": "setup $8.18, stencil $1.53, extended parts $27.63, SMT $1.32, X-ray $3.28",
+"unit_eur": 38.72,
+"notes": "setup $8.18, stencil $1.53, extended parts $27.63, SMT $1.47, X-ray $3.28",
 "unit": "pcs",
-"ext_eur": 38.58
+"ext_eur": 38.72
 },
 {
 "category": "Electronics",
@@ -2356,10 +2428,10 @@
 "item": "Components data-port-x4: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 0.82,
-"notes": "quoted components $29.92 (≈ €27.53) for 2 boards; catalogue unit prices give €26.71",
+"unit_eur": 0.83,
+"notes": "quoted components $30.18 (≈ €27.77) for 2 boards; catalogue unit prices give €26.94",
 "unit": "pcs",
-"ext_eur": 0.82
+"ext_eur": 0.83
 },
 {
 "category": "Electronics",
@@ -2678,7 +2750,7 @@
 }
 ],
 "by_category": {
-"Electronics": 653.2899999999997,
+"Electronics": 653.6699999999996,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2687,7 +2759,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 949.87,
+"total_eur": 950.25,
 "prints": [
 {
 "part": "bay_label",
@@ -3030,7 +3102,7 @@
 "pcbs": 5,
 "assembled": 2,
 "service": "Economic",
-"total": 103.76,
+"total": 104.17,
 "estimate": true,
 "spec": "4-layer 108×24 mm, JLC04161H-7628, lead-free HASL",
 "pcb": {
@@ -3041,9 +3113,9 @@
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
-"components": 29.92,
+"components": 30.18,
 "extended parts": 27.63,
-"SMT": 1.32,
+"SMT": 1.47,
 "X-ray": 3.28
 }
 }
@@ -3152,15 +3224,15 @@
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
-"components": 29.92,
+"components": 30.18,
 "extended parts": 27.63,
-"SMT": 1.32,
+"SMT": 1.47,
 "X-ray": 3.28
 },
 "changes": [],
-"total": 103.76,
+"total": 104.17,
 "need": 1,
-"types": 22,
+"types": 26,
 "extended": 9,
 "standard_only": []
 }
@@ -3315,14 +3387,14 @@
 "need": 1,
 "assembled": 2,
 "pcbs": 5,
-"types": 22,
+"types": 26,
 "extended": 9,
 "type_fee": 27.63,
 "once": 69.24,
-"per_board": 34.52,
-"total": 103.76,
-"after_obvious": 103.76,
-"after_decisions": 76.88,
+"per_board": 34.93,
+"total": 104.17,
+"after_obvious": 104.17,
+"after_decisions": 77.29,
 "levers": [
 {
 "lever": "board at most 100 mm long: no engineering fee, the 4-layer offer ($13.20 for 5 instead of $31.90); the 4 USB-C at the drawer's 18 mm pitch and the side-entry PH 8 need 108 mm, so a vertical PH 8 or a moved J1, a new route and the tray's bosses moved: better in the DATA ×4 v2",
@@ -3397,11 +3469,11 @@
 "100": 1.32
 },
 "data-port-x4": {
-"2": 51.88,
-"5": 29.41,
-"10": 21.24,
-"50": 13.05,
-"100": 11.66
+"2": 52.08,
+"5": 29.6,
+"10": 21.42,
+"50": 13.21,
+"100": 11.82
 }
 },
 "floor": {
@@ -3409,7 +3481,7 @@
 "power-hub": 22.17,
 "data-port": 1.26,
 "camera-pod": 1.13,
-"data-port-x4": 11.29
+"data-port-x4": 11.44
 },
 "racks": {
 "1": {
@@ -3418,10 +3490,10 @@
 "power-hub": 185.51,
 "data-port": 36.86,
 "camera-pod": 26.37,
-"data-port-x4": 103.76
+"data-port-x4": 104.17
 },
 "shipping": 34.0,
-"per_rack": 684.29
+"per_rack": 684.7
 },
 "5": {
 "boards": {
@@ -3429,10 +3501,10 @@
 "power-hub": 268.24,
 "data-port": 79.31,
 "camera-pod": 35.68,
-"data-port-x4": 147.07
+"data-port-x4": 148.02
 },
 "shipping": 34.0,
-"per_rack": 290.15
+"per_rack": 290.34
 },
 "10": {
 "boards": {
@@ -3440,10 +3512,10 @@
 "power-hub": 393.41,
 "data-port": 121.55,
 "camera-pod": 49.13,
-"data-port-x4": 212.44
+"data-port-x4": 214.22
 },
 "shipping": 34.0,
-"per_rack": 237.96
+"per_rack": 238.14
 }
 }
 }

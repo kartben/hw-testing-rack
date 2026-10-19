@@ -194,7 +194,7 @@ JLC_CPL_FIX = {
     # the same pad "+" (and the left one "−") in its silkscreen: both match KiCad's pads 2 = A, 1 = K
     "C598310": ("LED_Kingbright_KPA-3010_3x2x1mm", 0, 0.0, 0.825),           # hub D3 D8 D11–D14 (green)
     "C4555382": ("LED_Kingbright_KPA-3010_3x2x1mm", 0, 0.0, 0.825),          # hub D21–D24 (red)
-    "C181499": ("QFN-16-1EP_3x3mm_P0.5mm_EP1.675x1.675mm", 270, 0.0, 0.0),   # x4 U2 U6 (TCA6408A)
+    "C181499": ("VQFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm", 270, 0.0, 0.0),    # x4 U2 U6 (TCA6408A)
 }
 
 

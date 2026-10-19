@@ -40,9 +40,15 @@ dut_port1: dut-port-1 {
 /* dut-port-2: EN 4, FAULT 5, BOOT 6, RESET 7 on ports_io0; ports 3 and 4 the same on ports_io1 */
 ```
 
-The expanders' pins come up as inputs: pull-ups on DATA ×4 keep the
+The expanders' pins come up as inputs.  On DATA ×4 each EN is pulled down
+(the owner's decision after the PCBA review, 2026-10-19): four ports at
+0.50–0.62 A each would trip the node's 1.34–1.52 A switch, so every port
+stays off until the firmware switches it on within the bay's budget
+([Power budget](#power-budget)).  That is the one exception to the
 binding's rule that a board is powered before (and without) any firmware.
-RESET and BOOT go straight to the board's pins through 1k: Zephyr's driver
+RESET and BOOT are held released by 100k pull-ups (the TCA6408A has none,
+and a floating input would raise INT); they go straight to the board's
+pins through 1k: Zephyr's driver
 refuses `GPIO_OPEN_DRAIN`, so the dut-port code asserts a line by
 configuring it as an output low and releases it by configuring it as an
 input.
@@ -106,9 +112,16 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
   port; the hub resets with the bay's power or a USB bus reset).  RESET and
   BOOT reach a 1 × 3 header per port through 1k, the header not fitted on
   the first boards: until then those lines do nothing.
-- **Open:** with every port pulled on at power-up (above), four boards
-  booting together can exceed the budget before the firmware runs; either
-  the ports come up off, or the budget allows for that inrush.
+- **Ports come up off** (EN pulled down): the firmware switches them on one
+  by one through the admission rule, so four boards booting together never
+  meet the node's limit before the firmware runs.
+- **DUT_5V off.**  The board's I²C and INT reach the node through three
+  2N7002s, gate on the board's +3V3: with DUT_5V off they open, the node's
+  pull-ups cannot feed the dead board through its chips' clamps, and the
+  node's own INA226 (0x40) keeps its bus.  The expanders and the four INA226
+  lose their registers with DUT_5V: the firmware leaves 0x20, 0x21 and
+  0x41–0x45 alone while it is off, and sets them up again after each
+  DUT_5V on (every port then off again).
 
 ## REST API
 
