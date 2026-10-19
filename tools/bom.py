@@ -81,14 +81,14 @@ JLC_QUOTE = {
     },
     # the drawer's DATA port board (v1.0, 2 layers, parts on one side) is NOT quoted either: Economic
     # PCBA (setup $8.18, stencil $1.53, $3.07 per extended part type: the USB4105, the S8B-PH and the
-    # USBLC6), components at catalogue prices plus ≈ 3 % attrition, ≈ 30 joints a board.  The
+    # USBLC6), components at catalogue prices plus ≈ 3 % attrition, ≈ 32 joints a board.  The
     # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
     # One per node but the converted bays' (a DATA ×4 instead): the eighth is a spare.
     "data-port": {
-        "pcbs": 10, "assembled": 8, "spares": 1, "service": "Economic", "total": 38.52, "estimate": True,
+        "pcbs": 10, "assembled": 8, "spares": 1, "service": "Economic", "total": 38.87, "estimate": True,
         "spec": "2-layer 40×17 mm, lead-free HASL",
         "pcb": {"board": 6.30},                 # jlcpcb.com calculator, 2026-10-19 (JLC_PCB_PRICE)
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 12.90, "extended parts": 9.21, "SMT": 0.40},
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 13.21, "extended parts": 9.21, "SMT": 0.44},
     },
     # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS): an estimate built like
     # the DATA port's, Economic PCBA, $3.07 per extended part type (the S8B, the SMD header, the LED)

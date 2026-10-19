@@ -2202,7 +2202,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "USB-C receptacle (source): Rp 22k on each CC, the shell to GND"
+	(text "USB-C receptacle (source): Rp 56k on each CC, the shell to GND, 10 µF on VBUS"
 		(exclude_from_sim no)
 		(at 20.32 30.48 0)
 		(effects
@@ -2212,7 +2212,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "95fb44a5-580d-5c2f-9fea-5019dd3d3502")
+		(uuid "4465dab3-47b0-560a-8d6a-c86f753df8c4")
 	)
 	(text "ESD on the pair, at the receptacle"
 		(exclude_from_sim no)
@@ -2713,7 +2713,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22k"
+		(property "Value" "56k"
 			(at 63.5 45.72 0)
 			(effects
 				(font
@@ -2740,7 +2740,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 22k 0603"
+		(property "Description" "Resistor 56k 0603"
 			(at 60.96 48.26 0)
 			(effects
 				(font
@@ -2749,7 +2749,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C31850"
+		(property "LCSC" "C23206"
 			(at 60.96 48.26 0)
 			(effects
 				(font
@@ -2758,7 +2758,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF2202T5E"
+		(property "MPN" "0603WAF5602T5E"
 			(at 60.96 48.26 0)
 			(effects
 				(font
@@ -2832,7 +2832,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22k"
+		(property "Value" "56k"
 			(at 73.66 45.72 0)
 			(effects
 				(font
@@ -2859,7 +2859,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 22k 0603"
+		(property "Description" "Resistor 56k 0603"
 			(at 71.12 48.26 0)
 			(effects
 				(font
@@ -2868,7 +2868,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C31850"
+		(property "LCSC" "C23206"
 			(at 71.12 48.26 0)
 			(effects
 				(font
@@ -2877,7 +2877,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF2202T5E"
+		(property "MPN" "0603WAF5602T5E"
 			(at 71.12 48.26 0)
 			(effects
 				(font
@@ -2931,6 +2931,180 @@
 			(justify right bottom)
 		)
 		(uuid "623b1d75-b638-5ce6-b847-0472d394b78c")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 81.28 48.26 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b5867574-b7fe-5720-9dc2-247260e58ebf")
+		(property "Reference" "C2"
+			(at 85.09 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 85.09 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 81.28 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 81.28 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Capacitor 10u 0805"
+			(at 81.28 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C15850"
+			(at 81.28 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CL21A106KAYNNNE"
+			(at 81.28 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 81.28 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6d39cd17-cf9b-5dd0-b953-7b8aab5c4472")
+		)
+		(pin "2"
+			(uuid "bd737e4e-c51d-515f-af33-5bb8c8b989df")
+		)
+		(instances
+			(project "data-port"
+				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
+					(reference "C2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 81.28 52.07)
+			(xy 81.28 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9ed72386-c787-5573-aeb9-f29d05512102")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 81.28 54.61 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ce61e291-dbc4-5acd-ba2e-eed06d885296")
+		(property "Reference" "#PWR02003"
+			(at 81.28 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 81.28 58.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 81.28 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 81.28 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 81.28 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c93a0f0e-f203-5ae1-a3cd-e0b94b043fbd")
+		)
+		(instances
+			(project "data-port"
+				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
+					(reference "#PWR02003")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Power_Protection:USBLC6-2SC6")
@@ -3091,7 +3265,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "76cc3a2a-8bb9-5d77-8695-1e0c0e2c7c67")
-		(property "Reference" "#PWR02003"
+		(property "Reference" "#PWR02004"
 			(at 41.91 134.62 0)
 			(effects
 				(font
@@ -3141,7 +3315,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02003")
+					(reference "#PWR02004")
 					(unit 1)
 				)
 			)
@@ -3375,7 +3549,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "77740cce-b950-58d0-8a2a-a971bd089cb4")
-		(property "Reference" "#PWR02004"
+		(property "Reference" "#PWR02005"
 			(at 71.12 129.54 0)
 			(effects
 				(font
@@ -3425,7 +3599,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02004")
+					(reference "#PWR02005")
 					(unit 1)
 				)
 			)
@@ -3579,7 +3753,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "88977f7b-5454-581a-96c9-c2682c9d5bc1")
-		(property "Reference" "#PWR02005"
+		(property "Reference" "#PWR02006"
 			(at 34.29 170.18 0)
 			(effects
 				(font
@@ -3629,7 +3803,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02005")
+					(reference "#PWR02006")
 					(unit 1)
 				)
 			)
@@ -3700,7 +3874,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "70330d9f-32a3-5c4f-8d0e-048517a0f8ad")
-		(property "Reference" "#PWR02006"
+		(property "Reference" "#PWR02007"
 			(at 34.29 177.8 0)
 			(effects
 				(font
@@ -3750,7 +3924,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02006")
+					(reference "#PWR02007")
 					(unit 1)
 				)
 			)
@@ -3957,7 +4131,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0ed7e63b-774b-53bc-b909-011712c4a181")
-		(property "Reference" "#PWR02007"
+		(property "Reference" "#PWR02008"
 			(at 80.01 166.37 0)
 			(effects
 				(font
@@ -4007,7 +4181,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02007")
+					(reference "#PWR02008")
 					(unit 1)
 				)
 			)
@@ -4199,11 +4373,28 @@
 		)
 		(uuid "68db163a-e671-5ab2-a142-eddb6ffdfdd5")
 	)
+	(wire
+		(pts
+			(xy 71.12 44.45)
+			(xy 81.28 44.45)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bfc6f6b6-cef9-5571-ab16-14060ef92858")
+	)
 	(junction
 		(at 60.96 44.45)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d86cd2d5-4728-5bb2-8cbf-ca66d52ab02b")
+	)
+	(junction
+		(at 71.12 44.45)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "3357a0de-ecda-5dab-8b30-b8ffa9c37381")
 	)
 	(label "VBUS"
 		(at 49.53 44.45 0)
@@ -4216,7 +4407,7 @@
 		)
 		(uuid "53ec2af3-5eb5-5200-aac2-1fc101cc49ba")
 	)
-	(text_box "Rp 22k to VBUS on CC1 and CC2: a USB-C source advertising 1.5 A, as the bay node's own DUT port;\n  VBUS comes from the node's TPS2553 switch (DUT_5V), so the node turns the board under test on and off.\nThe lead's pinout is the node's J7 mirrored: a 'Same direction' PH 8 cable (pin n to pin 9−n) joins them;\n  pins 1–3 (the node's INT and I²C) stay open here."
+	(text_box "Rp 56k to VBUS on CC1 and CC2: 'default USB power', as on the DATA ×4; not 22k (1.5 A): the node's\n  TPS2553D switch (DUT_5V) limits at 1.34–1.52 A.  The node turns the board under test on and off.\nThe lead's pinout is the node's J7 mirrored: a 'Same direction' PH 8 cable (pin n to pin 9−n) joins them;\n  pins 1–3 (the node's INT and I²C) stay open here."
 		(exclude_from_sim no)
 		(at 20.32 198.12 0)
 		(size 240.03 13.97)

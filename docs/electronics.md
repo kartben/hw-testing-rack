@@ -272,12 +272,15 @@ and the 90° extension.  Geometry in `config/rack.yaml` › `pcb.data_port`.
 
 | Block | Parts | Notes |
 |---|---|---|
-| USB-C | GCT USB4105-GF-A-120 (J1) on the front edge at x 30.5, the board's right edge 9.5 mm from it (clear of the chain foot's lock screw); its centre 1.63 mm below the component face, 3.23 mm below the back face | a source, as the node's DUT port: 22 k Rp on CC1 and CC2 ("1.5 A"); the shell to GND |
+| USB-C | GCT USB4105-GF-A-120 (J1) on the front edge at x 30.5, the board's right edge 9.5 mm from it (clear of the chain foot's lock screw); its centre 1.63 mm below the component face, 3.23 mm below the back face | a source: 56k Rp on CC1 and CC2 ("default USB power", as on the DATA ×4: the node's switch limits at 1.34–1.52 A, short of the 1.5 A that 22k would advertise); 10 µF on VBUS (C2) behind it; the shell to GND.  Its mouth stands 0.28 mm past the board edge, inside the port wall's U (checked in SolidCraft on B-rep: 2.2 mm clear each side, and a USB-C plug overmold of the spec's largest size, 12.35 × 6.5 mm, clears the U by 0.2 mm) |
 | ESD | USBLC6-2SC6 (U1) flow-through, 100 nF on VBUS (C1): D+ through pins 1/6, D− through 3/4: J2's 5 / 6 swapped with J7's 3 / 4 (D+ on J7.3, so the node's pair runs straight), and U1's channels with them, so every pad keeps the copper it had | right at the receptacle, where the plugs go in |
 | Lead | JST PH 8, side entry, SMD (S8B-PH-SM4-TB, J2), rear edge at x 14.4 (its courtyard clear of the USB4105's on a 17 mm deep board): 1–3 open (the node's INT and I²C) · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VBUS | the node's J7 mirrored: a "Same direction" PH 8 lead (pin n ↔ pin 9−n), the camera's type, joins them; 8 pins, so a 6-pin row cable (VRACK) cannot go in |
 
 USB 2.0 only: High Speed PC ↔ board in classic mode, Full Speed to the node's ESP32 otherwise.
-Both sides are GND pours; routed by Freerouting like the other boards.  JLC: Economic PCBA (one
+VBUS is drawn in `design.py` (`vbus_tracks()`, netclass Power): 0.8 mm F.Cu from J2.8 under the PH's
+housing to J1's two VBUS pad pairs, necked to 0.5 mm at the pad row, ≈ 15 mΩ (the routed 0.25 mm
+was ≈ 0.13 Ω, 0.18 V lost at the node's 1.4 A); thin tracks feed the Rp, C1 and the ESD's VBUS pin.
+Both sides are GND pours; Freerouting does the rest like on the other boards.  JLC: Economic PCBA (one
 side, no Standard-only part), ≈ $34 for 10 PCBs with 8 assembled (estimate in `tools/bom.py`).
 
 A review of both boards with the Konnect MCP server (findings, fixes, what is
@@ -358,6 +361,7 @@ What the PCBA review ([pcba-review.md](pcba-review.md)) left to the bench, per b
 | DATA ×4 | VBUS at each USB-C against the total load (X11) | a resistor or an electronic load on a USB-C breakout per port, 0.25 A steps up to the admission limit (1.25 A in all); a meter at the receptacle, against the port's INA226 | ≥ 4.75 V up to ≈ 1 A in all; ≈ 4.54 V at the node's 1.34 A limit (estimate).  Lower: raise the node's +5V, or lower the admission limit |
 | DATA ×4 | Ports off at power-up (X3) | DUT_5V on, no firmware command: each `PORTn_VBUS` | 0 V until the firmware enables the port |
 | DATA ×4 | No back-feed with DUT_5V off (X2) | node running, DUT_5V off: the board's +3V3; an I²C scan from the node | +3V3 under 0.1 V; the node's INA226 (0x40) still answers, 0x20/0x21/0x41–0x45 don't |
+| DATA port | VBUS at the receptacle at the node's limit (D1) | a 1.3 A load on a USB-C breakout; a meter at J1 and at J2.8 | under 30 mV between them (≈ 15 mΩ of copper) |
 
 ## Sourcing
 

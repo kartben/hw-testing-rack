@@ -1599,6 +1599,24 @@
 {
 "category": "Electronics",
 "group": "data-port",
+"item": "10u — Capacitor 10u 0805",
+"ref": "C2",
+"mpn": "CL21A106KAYNNNE",
+"manufacturer": "Samsung Electro-Mechanics",
+"supplier": "LCSC/JLCPCB",
+"part": "C15850",
+"qty": 8,
+"unit_eur": 0.0403,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 8 boards",
+"unit": "pcs",
+"ext_eur": 0.32
+},
+{
+"category": "Electronics",
+"group": "data-port",
 "item": "DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",
 "ref": "J1",
 "mpn": "USB4105-GF-A-120",
@@ -1635,20 +1653,20 @@
 {
 "category": "Electronics",
 "group": "data-port",
-"item": "22k — Resistor 22k 0603",
+"item": "56k — Resistor 56k 0603",
 "ref": "R1,R2",
-"mpn": "0603WAF2202T5E",
+"mpn": "0603WAF5602T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C31850",
+"part": "C23206",
 "qty": 16,
-"unit_eur": 0.0038,
+"unit_eur": 0.0025,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
 "notes": "2 per board × 8 boards",
 "unit": "pcs",
-"ext_eur": 0.06
+"ext_eur": 0.04
 },
 {
 "category": "Electronics",
@@ -1685,10 +1703,10 @@
 "item": "Economic PCBA, 8 boards: setup, stencil, extended parts, SMT",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 17.77,
-"notes": "setup $8.18, stencil $1.53, extended parts $9.21, SMT $0.40",
+"unit_eur": 17.81,
+"notes": "setup $8.18, stencil $1.53, extended parts $9.21, SMT $0.44",
 "unit": "pcs",
-"ext_eur": 17.77
+"ext_eur": 17.81
 },
 {
 "category": "Electronics",
@@ -1696,10 +1714,10 @@
 "item": "Components data-port: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 0.38,
-"notes": "quoted components $12.90 (≈ €11.87) for 8 boards; catalogue unit prices give €11.49",
+"unit_eur": 0.36,
+"notes": "quoted components $13.21 (≈ €12.15) for 8 boards; catalogue unit prices give €11.79",
 "unit": "pcs",
-"ext_eur": 0.38
+"ext_eur": 0.36
 },
 {
 "category": "Electronics",
@@ -2750,7 +2768,7 @@
 }
 ],
 "by_category": {
-"Electronics": 653.6699999999996,
+"Electronics": 653.9899999999997,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2759,7 +2777,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 950.25,
+"total_eur": 950.57,
 "prints": [
 {
 "part": "bay_label",
@@ -3066,7 +3084,7 @@
 "assembled": 8,
 "spares": 1,
 "service": "Economic",
-"total": 38.52,
+"total": 38.87,
 "estimate": true,
 "spec": "2-layer 40×17 mm, lead-free HASL",
 "pcb": {
@@ -3075,9 +3093,9 @@
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
-"components": 12.9,
+"components": 13.21,
 "extended parts": 9.21,
-"SMT": 0.4
+"SMT": 0.44
 }
 },
 "camera-pod": {
@@ -3186,14 +3204,14 @@
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
-"components": 12.9,
+"components": 13.21,
 "extended parts": 9.21,
-"SMT": 0.4
+"SMT": 0.44
 },
 "changes": [],
-"total": 38.52,
+"total": 38.87,
 "need": 7,
-"types": 5,
+"types": 6,
 "extended": 3,
 "standard_only": []
 },
@@ -3331,14 +3349,14 @@
 "need": 7,
 "assembled": 8,
 "pcbs": 10,
-"types": 5,
+"types": 6,
 "extended": 3,
 "type_fee": 9.21,
 "once": 25.22,
-"per_board": 13.3,
-"total": 38.52,
-"after_obvious": 38.52,
-"after_decisions": 28.47,
+"per_board": 13.65,
+"total": 38.87,
+"after_obvious": 38.87,
+"after_decisions": 28.82,
 "levers": [
 {
 "lever": "USB-C J1: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check",
@@ -3455,11 +3473,11 @@
 "100": 23.03
 },
 "data-port": {
-"2": 13.72,
-"5": 6.49,
-"10": 3.9,
-"50": 1.92,
-"100": 1.44
+"2": 13.77,
+"5": 6.53,
+"10": 3.93,
+"50": 1.95,
+"100": 1.47
 },
 "camera-pod": {
 "2": 13.19,
@@ -3479,7 +3497,7 @@
 "floor": {
 "bay-node": 16.68,
 "power-hub": 22.17,
-"data-port": 1.26,
+"data-port": 1.28,
 "camera-pod": 1.13,
 "data-port-x4": 11.44
 },
@@ -3488,34 +3506,34 @@
 "boards": {
 "bay-node": 297.79,
 "power-hub": 185.51,
-"data-port": 36.86,
+"data-port": 37.16,
 "camera-pod": 26.37,
 "data-port-x4": 104.17
 },
 "shipping": 34.0,
-"per_rack": 684.7
+"per_rack": 685.0
 },
 "5": {
 "boards": {
 "bay-node": 886.44,
 "power-hub": 268.24,
-"data-port": 79.31,
+"data-port": 80.48,
 "camera-pod": 35.68,
 "data-port-x4": 148.02
 },
 "shipping": 34.0,
-"per_rack": 290.34
+"per_rack": 290.57
 },
 "10": {
 "boards": {
 "bay-node": 1569.09,
 "power-hub": 393.41,
-"data-port": 121.55,
+"data-port": 123.83,
 "camera-pod": 49.13,
 "data-port-x4": 214.22
 },
 "shipping": 34.0,
-"per_rack": 238.14
+"per_rack": 238.37
 }
 }
 }

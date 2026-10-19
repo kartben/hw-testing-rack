@@ -1,6 +1,7 @@
 Designator,Qty,Value,Footprint,MPN,Manufacturer,LCSC,Description,DNP,Alternative,Assembly
 C1,1,100n,C_0603_1608Metric,CC0603KRX7R9BB104,YAGEO,C14663,Capacitor 100n 0603,,,
+C2,1,10u,C_0805_2012Metric,CL21A106KAYNNNE,Samsung Electro-Mechanics,C15850,Capacitor 10u 0805,,,
 J1,1,DATA,USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal,USB4105-GF-A-120,GCT,C5184243,"USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",,,
 J2,1,LEAD,JST_PH_S8B-PH-SM4-TB_1x08-1MP_P2.00mm_Horizontal,S8B-PH-SM4-TB(LF)(SN),JST,C265121,"JST PH 8-pin, side entry, SMD",,,
-"R1,R2",2,22k,R_0603_1608Metric,0603WAF2202T5E,UNI-ROYAL(Uniroyal Elec),C31850,Resistor 22k 0603,,,
+"R1,R2",2,56k,R_0603_1608Metric,0603WAF5602T5E,UNI-ROYAL(Uniroyal Elec),C23206,Resistor 56k 0603,,,
 U1,1,USBLC6-2SC6,SOT-23-6,USBLC6-2SC6,STMicroelectronics,C7519,USB ESD protection,,C2687116 (UMW clone),

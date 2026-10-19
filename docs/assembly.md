@@ -58,8 +58,11 @@ later, take its tray out first.
 2. **Drag chain**: cut ≈ 180 mm including the two end pieces (Olimex
    DRAG-CHAIN-7X7).  At the bench, screw the fixed end piece to the
    `chain_anchor` and the moving one to the `chain_foot`'s fin, each with
-   2 × PT 2.6×8 and washers, tab against the part's flat face.  Open the links,
-   lay the DATA lead in ([cabling.md](cabling.md)) and close them.
+   2 × PT 2.6×8 and washers, tab against the part's flat face.  Check the
+   DATA lead with a meter first: pin n to pin 9−n on all 8 ("Same direction";
+   a 1:1 lead puts the node's SCL on GND; the camera's PH 8 lead the same, its
+   MOSI and CS).  Open the links, lay the lead in ([cabling.md](cabling.md))
+   and close them.
    Anchor onto the tray: 2 × M3×8 into its inserts; plug the lead into the
    node's DATA header (J7, on its right edge).
 3. **Row power (VRACK)**: JST PH jumper to the neighbouring node, through the windows in
