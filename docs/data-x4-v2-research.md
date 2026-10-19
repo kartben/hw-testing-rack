@@ -17,7 +17,7 @@ only adds to it.
 | Matrix supply | ±5 V: TPS60400 (C9839) makes −5 V | halves the CH446Q's R_on (120 Ω typ. at +5 V); this is what makes I²C at 400 kHz work |
 | Levels | 1 × LSF0108 per port (VQFN-20 2.5 × 4.5, C130008): A side = the DUT's VREF, B side = the 3.3 V matrix, Vref_B biased from PORTn_VBUS through 200 k (a switched-off port isolates its pins), 10 k B-side pull-ups | passive FET: I²C, push-pull and the SWDIO turnaround pass without direction control.  **Not TXS010x**: their one-shots retrigger and oscillate behind series R and a switch, and their pull-ups add up on a shared bus |
 | Protection | 100 Ω in series (not 330 Ω) and TPD4E05U06 (C138714) at the header, on every pin | 330 Ω + R_on breaks I²C's V_OL (≈ 1 V with 2.2 k); 100 Ω still bounds two outputs fighting to ≈ 10 mA (15 mA per switch) |
-| Node-owned control (I²C) | port power and control stay on v1's 2 × TCA6408A (EN, FAULT, RESET, BOOT); a TCA9534A (C206010, 0x38) drives the CH446Qs (DAT, CK, RST shared, one STB per chip), the co-processor's RUN and QSPI_SS (BOOTSEL) and a mark line | wires and DUT power survive any co-processor reboot (watchdog, crash, MCUboot swap, BOOTSEL resets its pads and would cut all four ports); a crosspoint is ≈ 17 I²C writes, no readback: the node keeps a shadow table and opens before closing; CH446Q RST pulled so the matrix is all-open at power-up |
+| Node-owned control (I²C) | port power and control stay on v1's 2 × TCA6408A (EN, FAULT, RESET, BOOT); a TCA9534A (C206010, 0x38) drives the CH446Qs (DAT, CK, RST shared, one STB per chip), the co-processor's RUN and QSPI_SS (BOOTSEL) and a mark line | wires and DUT power survive any co-processor reboot (watchdog, crash, image swap, BOOTSEL resets its pads and would cut all four ports); a crosspoint is ≈ 17 I²C writes, no readback: the node keeps a shadow table and opens before closing; CH446Q RST pulled so the matrix is all-open at power-up |
 | Co-processor | RP2354B (RP2350 with 48 GPIO and 2 MB flash in the package, QFN-80 10 × 10, C39843328, $1.53) wired like a Pico 2 (12 MHz, GPIO0→1 link, LED GPIO25); buses on GPIO2–9 (CH1–8), RESET taps on GPIO10–13, the mark on GPIO14, bus pull-up enables on GPIO30–37 (pulled down: off), VREF dividers on ADC GPIO40–43, rails on GPIO44–47 | the same board runs either firmware (next section); every bus pin can be a hardware UART TX or RX, I²C SDA or SCL, PWM A or B |
 | Data path | USB2517I (7 ports, QFN-64 9 × 9, C478081, $4.51) instead of the USB2514B: 4 DUTs, the co-processor, 2 spare | the PH 8 lead has no spare wire; buffered captures: 384 KB ≈ 0.4 s over FS USB + ≈ 0.8 s over Wi-Fi (Zephyr ESP32-S3 TCP ≈ 4 Mbit/s).  The ESP32-S3 has 8 host channels for the whole drawer: one multiplexed bulk interface on the co-processor, not 4 CDC ports, and the node never leaves an IN transfer pending on it; see "USB host channels" below: Zephyr's DWC2 driver needs channel sharing, for v1 already |
 | UI | the node owns the API (`POST /api/la/captures`, `GET …/{id}`, `GET …/{id}/data`, a WebSocket for state; captures kept in the 8 MB PSRAM); the node's page gets "Wires", "Analyzer" and "Co-processor" cards: a canvas viewer and JS decoders (UART, I²C, SPI, then SWD), `.sr` and VCD export, per-bus roles, console tabs | ≈ 30 KB, served from flash, the rack's style, works on a phone; Surfer is 14.9 MB of WASM and has no decoders; no public WASM libsigrokdecode |
@@ -28,6 +28,13 @@ Expected speeds pin → bus → pin (Elmore estimate, to be measured): CH446Q ±
 wire relies on the LSF's pull-ups for the top of the edge: ≈ 1–2 MHz.
 
 ## The co-processor's firmware: stock or ours
+
+**Settled by [coproc-firmware-research.md](coproc-firmware-research.md) (2026-10-19), which supersedes
+this section where they differ:** (c) staged.  The stock gusmanb analyzer on day one; our Zephyr firmware
+only when consoles or emulated devices are wanted, and **without its own analyzer** (≈ 2.9 k lines,
+≈ 4.5 weeks, node side included); the node switches images by reflashing through the ROM's PICOBOOT
+(BOOTSEL held through the TCA9534A, ≈ 3 s); no MCUboot.  The table below is the first pass's view of a
+full firmware with its own analyzer, option (b) there.
 
 | | Stock gusmanb LogicAnalyzer UF2 | Our Zephyr firmware |
 |---|---|---|
@@ -43,8 +50,9 @@ wire relies on the LSF's pull-ups for the top of the edge: ≈ 1–2 MHz.
 | Upkeep | a one-maintainer project whose protocol follows its app | a 4th firmware in the repo; 1–3 days per Zephyr bump (RP2350 support still moving: one core only, polled PIO UART, board targets renamed in Sep 2026) |
 
 Proposed: the co-processor hardware in the full variant, wired for both; the stock UF2 on day one (wires
-and analyzer work without firmware of our own), then our Zephyr firmware in steps: consoles and pull-ups,
-the SUMP analyzer, emulation.
+and analyzer work without firmware of our own), then our Zephyr firmware only when consoles or emulated
+devices are wanted, swapped in and out by PICOBOOT; our own analyzer only to capture a bus while emulating
+on it, or if gusmanb stalls (coproc-firmware-research.md, option (b)).
 
 Comparison points:
 
@@ -169,7 +177,7 @@ RST pulled up until the node configures.  LCSC C109471 $1.59, 1,744 in stock, Ec
 
 ### Off-the-shelf analyzer firmware
 
-gusmanb LogicAnalyzer 6.0 (Sept 2025, GPL-3.0) supports the Pico 2; its README gives ≈ 380 k samples
+gusmanb LogicAnalyzer 6.0 (latest release 6.0.0.1, 2025-02-09, GPL-3.0) supports the Pico 2; its README gives ≈ 380 k samples
 on the RP2350 as the author's projection; CH1–8 must be the first channels in 8-channel mode (as
 wired).  Its desktop app (Windows, Linux, macOS) runs all the sigrok protocol decoders since 6.0.  So
 on day one the co-processor can be exported over USB/IP like a DUT and used from a PC with that app,
@@ -203,7 +211,8 @@ until the design is quoted.
 
 1. Order v1 now for B3 (recommended: yes)?
 2. The co-processor: our Zephyr firmware, or the stock analyzer only (recommended: stock on day one, ours
-   in steps, consoles first)?
+   without its own analyzer only when consoles or emulated devices are wanted; see
+   coproc-firmware-research.md)?
 3. Which bays get the full variant (recommended: B3 full, the bays that only need power and reset base)?
 4. DUT side: Dupont jumpers pin by pin (recommended to start), or a small adapter board per DUT model on a
    2 × 6 ribbon?
