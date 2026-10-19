@@ -107,7 +107,14 @@ prints `network up: usbip list -r <address>`.
      open: it enumerates again within a couple of seconds, `usbip attach`
      works, its console comes back;
    - 10 re-plugs in a row, then `spike devs`: all four there, no "No channel
-     data slot" and no stall in the node's log.
+     data slot" and no stall in the node's log;
+   - the endpoint slots (32) across re-enumerations, as the DATA ×4 v2
+     co-processor's image swaps will do it: a Pico, attached over USB/IP,
+     20 times `picotool reboot -u -f` (to BOOTSEL) then `picotool reboot`
+     (back to its application), the other consoles open.  Each trip is two
+     new devices with their own endpoints: without the patch each trip leaks
+     4–6 slots, until "No channel data slot" a few trips later.  The
+     Pico comes back every time, the other boards keep answering.
    With `CONFIG_UHC_DRIVER_LOG_LEVEL_DBG=y` the log shows the channels given
    back ("Park ep …").
 
