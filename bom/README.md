@@ -70,7 +70,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | plate_nucleo-144 | 1 | 37.5 | `mechanical/stl/plate_nucleo-144.stl` |
 | plate_nucleo-64 | 1 | 34.4 | `mechanical/stl/plate_nucleo-64.stl` |
 | plate_rpi-pico2 | 1 | 28.4 | `mechanical/stl/plate_rpi-pico2.stl` |
-| power_box_base | 1 | 45.0 | `mechanical/stl/power_box_base.stl` |
+| power_box_base | 1 | 44.9 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 20.8 | `mechanical/stl/power_box_lid.stl` |
 | power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |

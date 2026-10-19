@@ -2683,8 +2683,8 @@
 {
 "part": "power_box_base",
 "qty": 1,
-"grams_each": 45.0,
-"grams_total": 45.0,
+"grams_each": 44.9,
+"grams_total": 44.9,
 "stl": "mechanical/stl/power_box_base.stl"
 },
 {
