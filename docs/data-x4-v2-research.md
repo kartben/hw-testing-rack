@@ -199,6 +199,63 @@ fit a reduced matrix: 4 pins per port on 8 buses, one chip per port (≈ $5 with
 bus on 4 chips); the user asked for the maximum.  The CH446X has only 5 Y lines: 8 buses take 4 chips.
 The CH448F (dual 8:1 mux, $0.47) joins one input at a time: a probe selector, not wires.  No mix.
 
+### An analyzer without the matrix, single-sided? (user question, 2026-10-19)
+
+A middle variant: base + the RP2354 analyzer tapping the port pins directly through the LSF0108s (P1–P4
+of each port = CH1–16, 16-bit mode, ≈ 196 k samples; 24 channels at most with gusmanb), no matrix, all
+parts on the top side so that JLC Economic can build it.
+
+- **It does not fit.**  Searching the concept placement (`layout.py`'s courtyards, holes and notch, 0.3 mm
+  from the edges), the largest free rectangle on the top side is 5.0 × 13.1 mm; the RP2354A alone needs
+  7.6 × 7.6, its block with the 12 MHz crystal, 3.3 µH and decoupling ≈ 11 × 10, the RP2354B's ≈ 14 × 13.
+  The top is 1,104 mm² free out of 2,696, all of it in pockets between the port columns (18 mm pitch, set
+  by the USB-C) and the routing needs them.  Room for the block means ≈ 108 × 33–35 mm; the rear bay
+  stops at 27.
+- **The parts are not the obstacle**: RP2354B (C39843328) and RP2354A (C41378174), the 12 MHz crystal
+  (C9002, Basic), USB2517I, LSF0108, TPD4E05U06, TCA9534A (C206010) are all Economic-eligible; Economic
+  assembles one side only.
+- So the middle variant is the full PCB without the matrix: still two sides, JLC Standard.  ≈ $27 of
+  parts per board (base ≈ $18 + RP2354B block $1.9 + TCA9534A $1.4 + translators, ESD and arrays
+  $5.3), ≈ $185 for 2 prototypes (≈ $205 with the 10 % margin), against ≈ $31 / $195 ($215) for the
+  full: the double-sided fixed cost dominates.  And the analyzer would need fixed taps (CH1–16 on
+  P1–P4) instead of the buses: different copper, or 16 more traces on the full board.  Lost against
+  the full: every virtual wire, any-pin probing through the buses, routed consoles and emulated devices.
+  **Not recommended.**
+- **The zero-change option**: a Pico 2 with the stock gusmanb UF2 in one sub-slot, Dupont jumpers from
+  its GP2–GP22/26–28 to the neighbour's pins.  ≈ $5, works with v1 today: it enumerates on the hub like
+  any DUT, the node exports it over USB/IP to a PC running gusmanb's app (sigrok decoders included),
+  and the sub-slot's BOOT wire on its BOOTSEL test point plus port power let the node reflash it.  Not
+  "built in": it takes one of the four sub-slots, the wiring is by hand per test, there is no level
+  translation (1.8 V boards misread at 3.3 V thresholds), no series resistor or ESD, and it cannot
+  reach the buses.  **Recommended now**, on B3 with v1: it exercises the node's gusmanb client, the web
+  UI and the USB host channel fix before v2, and the same client then drives v2's on-board RP2354B.
+
+### CAN through the matrix? (user question, 2026-10-19)
+
+- **CAN_H / CAN_L: no.**  The CH446Q itself passes VEE..VDD, but the path to a pin goes through the
+  LSF0108, which clamps to the port's VREF (≤ 3.6 V): a dominant CAN_H at ≈ 3.5 V is clipped, and the
+  10 k B-side pull-ups to 3.3 V load both lines.
+- **Logic-level CAN (the MCUs' TX/RX, no transceivers): only with open-drain TX.**  CAN is a wired-AND
+  bus and every controller must read its own bits back.  Push-pull TX pins on one bus fight (≈ 9 mA
+  through 2 × 100 Ω and the matrix, level undefined); the classic fix, a diode per TX, is not in the matrix.  If each
+  DUT sets its CAN TX open-drain (pinctrl `drive-open-drain`, e.g. STM32, ESP32 TWAI through its GPIO
+  matrix), TX and RX of every node go on one bus, pulled up by the LSF's 10 k and the switchable 2.2 k:
+  500 kbit/s works, 1 Mbit/s is marginal (τ ≈ 150–250 ns), a CAN FD data phase does not.  Two pins
+  per DUT, at least two nodes (ACK).
+- **The analyzer**: put a TX or RX (or a transceiver's RXD) on a bus and decode with sigrok's `can`
+  decoder (gusmanb's app, `bayctl capture --decode can`); CAN_H/CAN_L themselves are differential and
+  not readable.
+- **A dedicated CAN pair** for DUTs with their own transceivers: CAN_H and CAN_L shared by the four
+  ports, bypassing the translators, two 120 Ω terminations on jumpers (DUT boards often carry their
+  own), a PESD2CAN TVS (C2687131, $0.04).  ≈ $0.2 of parts plus hand-soldered headers, as in v1.
+  Space: four 1 × 2 headers do not fit the rear row (2.8 mm between the 2 × 6 headers), and a 2 × 4
+  bay header (10.7 × 5.6 mm) does not fit the current placement either (largest free rectangle 5 × 13 mm):
+  it would take P7/P8 of each 2 × 6 header by assembly option (0 Ω instead of the LSF, 8 matrix pins
+  fewer) or a re-layout of the right block.  The boards that sit in sub-slots (XIAO, Pico 2) carry no
+  transceiver, and RP2040/RP2350 and nRF52/54 have no CAN controller at all.  **Not recommended**: the
+  open-drain trick covers logic-level CAN between ESP32 or STM32 boards for free; boards with real
+  CAN transceivers sit in single bays with their own cabling.
+
 ### Limits to state in the UI and the docs
 
 - **5 V logic boards cannot be wired**: the LSF0108's A side stops at 4.5 V and the buses are 3.3 V.
