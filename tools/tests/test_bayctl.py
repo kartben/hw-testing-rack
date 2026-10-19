@@ -520,6 +520,8 @@ class MultiNodeApi(unittest.TestCase):
         self.assertIsNone(bayctl.control(b, "boot", {"power_cycle": True})["usb"])   # BOOT across a power cycle
         self.assertTrue(bayctl.wait_for(lambda: bayctl.port_doc(b)["usb"] is not None, 5))
         self.assertIn("B3.3", self.cli("boot", "B3.3", "--power-cycle"))
+        # leave the shared node as found: the next test lists B3.3's busid (a slow CI runner got there first)
+        self.assertTrue(bayctl.wait_for(lambda: bayctl.port_doc(b)["usb"] is not None, 5))
         r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(self.lab),
                             "--rack", str(self.rack), "boot", "A1", "--power-cycle"],
                            capture_output=True, text=True, timeout=30)
