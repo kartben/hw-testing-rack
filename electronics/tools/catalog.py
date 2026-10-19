@@ -81,8 +81,12 @@ CAT = {
                "C7519", 0.18, alt="C2687116 (UMW clone)", description="USB ESD protection"),
     "usbc": Cat("Connector:USB_C_Receptacle_USB2.0_16P", "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12",
                 "TYPE-C-31-M-12", "Korean Hroparts", "C165948", 0.19, description="USB-C receptacle, USB 2.0, 16 pins"),
-    "vbus_sw": Cat("bench:TPS2553DBV", "Package_TO_SOT_SMD:SOT-23-6", "TPS2553DBVR", "Texas Instruments", "C55266", 0.54,
-                   datasheet="https://www.ti.com/lit/ds/symlink/tps2553.pdf",
+    # the TPS2553D (2016): the TPS2553's pinout (IN GND EN FAULT ILIM OUT, EN active high) and its I_LIM equations
+    # (18k: 1.34-1.52 A), 85 mΩ, constant current then thermal cycling, plus reverse-voltage protection; a third
+    # of the price.  It has no latch-off -1 version: the DATA ×4 keeps the TPS2553DBVR-1
+    "vbus_sw": Cat("bench:TPS2553DBV", "Package_TO_SOT_SMD:SOT-23-6", "TPS2553DDBVR", "Texas Instruments", "C521201", 0.19,
+                   datasheet="https://www.ti.com/lit/ds/symlink/tps2553d.pdf",
+                   alt="TPS2553DBVR (C55266, the original, same pinout and I_LIM equations)",
                    description="adjustable current-limited power switch"),
     "ina226": Cat("Sensor_Energy:INA226", "Package_SO:TSSOP-10_3x3mm_P0.5mm", "INA226AIDGSR", "Texas Instruments",
                   "C49851", 0.75, datasheet="https://www.ti.com/lit/ds/symlink/ina226.pdf",

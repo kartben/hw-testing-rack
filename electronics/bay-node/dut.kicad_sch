@@ -2272,8 +2272,8 @@
 				)
 			)
 		)
-		(property "Value" "TPS2553DBVR"
-			(at 97.215 68.58 0)
+		(property "Value" "TPS2553DDBVR"
+			(at 97.74 68.58 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2289,7 +2289,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tps2553.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tps2553d.pdf"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -2307,7 +2307,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TPS2553DBVR"
+		(property "MPN" "TPS2553DDBVR"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -2325,7 +2325,16 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C55266"
+		(property "LCSC" "C521201"
+			(at 101.6 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternative" "TPS2553DBVR (C55266, the original, same pinout and I_LIM equations)"
 			(at 101.6 76.2 0)
 			(effects
 				(font

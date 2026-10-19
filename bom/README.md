@@ -5,14 +5,14 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 679 |
+| Electronics | 676 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 60 |
 | Cables | 49 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **969** |
+| **Total** | **965** |
 
 ≈ **€121 per bay** all-in.
 
@@ -25,9 +25,9 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | Board | Order | Line | USD |
 |---|---|---|---:|
 | bay-node | 10 PCBs (4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA), 10 assembled, Standard PCBA | PCB: board $19.50 | 19.50 |
-| | | PCBA: setup $25.56, stencil $8.21, components $188.54, feeders $58.14, SMT $5.90, X-ray $16.40, packaging $0.52 | 303.27 |
-| | | **Estimated total** | **322.77** |
-| | | Order (indicative): as quoted | 322.77 |
+| | | PCBA: setup $25.56, stencil $8.21, components $184.62, feeders $58.14, SMT $5.90, X-ray $16.40, packaging $0.52 | 299.35 |
+| | | **Estimated total** | **318.85** |
+| | | Order (indicative): as quoted | 318.85 |
 | power-hub | 5 PCBs (4-layer 76×140 mm (86×140 with JLC's rails), ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $18.00, board $7.50 | 50.50 |
 | | | PCBA: setup $25.75, stencil $8.27, components $57.89, feeders $72.85, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04 | 192.02 |
 | | | **Quoted total** | **242.52** |
@@ -51,13 +51,13 @@ What each order pays once, whatever the number of boards, against what grows wit
 
 | Board | PCBA | Needed / assembled | Part types (extended) | Type fees | Once per order | With the boards | Today | After obvious levers | After decisions |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
-| bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 38 (23) | 58.14 | 111.93 | 210.84 | **322.77** | 322.77 | 274.66 |
+| bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 38 (23) | 58.14 | 111.93 | 206.92 | **318.85** | 318.85 | 273.38 |
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 37 (19) | 56.61 | 128.24 | 84.53 | **212.77** | 205.77 | 167.11 |
 | data-port | Economic | 7 / 8 | 5 (3) | 9.21 | 25.22 | 13.30 | **38.52** | 38.52 | 28.47 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.25 | **26.37** | 26.37 | 25.58 |
 | data-port-x4 | Economic | 1 / 2 | 22 (9) | 27.63 | 69.24 | 34.52 | **103.76** | 103.76 | 76.88 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **738.19** | **731.19** | **606.70** |
+| **All** | | | | | | | **734.27** | **727.27** | **605.42** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -67,7 +67,6 @@ Levers (*obvious*: an engineering choice the board's owner applies; *decision*: 
 | bay-node | USB-C J3: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check | 5.37 | decision |
 | bay-node | JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check (5 a board) | 13.98 | decision |
 | bay-node | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board) | 5.04 | decision |
-| bay-node | TPS2553DDBVR (C521201) instead of the TPS2553DBVR: equivalence under check by the owner | 2.64 | decision |
 | power-hub | 3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare | 7.00 | obvious |
 | power-hub | rows C and D not fitted (DNP, footprints kept): the rack has 2 rows | 9.68 | decision |
 | power-hub | board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new power box, room for 2 rows only | 24.60 | decision |
@@ -89,7 +88,7 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 
 | Board | 2 | 5 | 10 | 50 | 100 | Floor |
 |---|---:|---:|---:|---:|---:|---:|
-| bay-node | 76.49 | 44.52 | 32.26 | 21.14 | 17.88 | 16.96 |
+| bay-node | 76.05 | 44.08 | 31.87 | 20.80 | 17.57 | 16.65 |
 | power-hub | 101.26 | 59.48 | 44.62 | 30.38 | 27.33 | 26.40 |
 | data-port | 13.72 | 6.49 | 3.90 | 1.92 | 1.44 | 1.26 |
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
@@ -99,9 +98,9 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 298.89 | 202.53 | 36.86 | 26.37 | 103.76 | **702.41** |
-| 5 | 179.07 | 59.48 | 15.86 | 7.14 | 29.41 | **297.76** |
-| 10 | 159.41 | 44.62 | 12.15 | 4.91 | 21.24 | **245.74** |
+| 1 | 295.37 | 202.53 | 36.86 | 26.37 | 103.76 | **698.89** |
+| 5 | 176.27 | 59.48 | 15.86 | 7.14 | 29.41 | **294.96** |
+| 10 | 156.69 | 44.62 | 12.15 | 4.91 | 21.24 | **243.03** |
 
 ## Printed parts
 
@@ -187,12 +186,12 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | Electronics | MUX_PC — USB 2.0 HS 2:1 switch | 10  | 0.29 | 2.85 | LCSC/JLCPCB C11355 |
 | Electronics | MUX_DUT — USB 2.0 HS 2:1 switch | 10  | 0.29 | 2.85 | LCSC/JLCPCB C11355 |
 | Electronics | SN74LVC1G32DBVR — single 2-input OR | 10  | 0.06 | 0.64 | LCSC/JLCPCB C10096 |
-| Electronics | TPS2553DBVR — adjustable current-limited power switch | 10  | 0.50 | 4.97 | LCSC/JLCPCB C55266 |
+| Electronics | TPS2553DDBVR — adjustable current-limited power switch | 10  | 0.17 | 1.75 | LCSC/JLCPCB C521201 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 10  | 0.69 | 6.90 | LCSC/JLCPCB C49851 |
 | Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 10  | 0.93 | 9.29 | LCSC/JLCPCB C3234095 |
 | Electronics | Bare PCB bay-node (4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA) | 10  | 1.79 | 17.94 | estimate, not quoted |
 | Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 105.55 | 105.55 | estimate, not quoted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | 18.59 | 18.59 | estimate, not quoted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | 18.20 | 18.20 | estimate, not quoted |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 20  | 0.01 | 0.25 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C15849 |

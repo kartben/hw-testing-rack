@@ -705,20 +705,20 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "TPS2553DBVR — adjustable current-limited power switch",
+"item": "TPS2553DDBVR — adjustable current-limited power switch",
 "ref": "U9",
-"mpn": "TPS2553DBVR",
+"mpn": "TPS2553DDBVR",
 "manufacturer": "Texas Instruments",
 "supplier": "LCSC/JLCPCB",
-"part": "C55266",
+"part": "C521201",
 "qty": 10,
-"unit_eur": 0.4968,
+"unit_eur": 0.1748,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 10 boards",
+"notes": "1 per board × 10 boards; alternative: TPS2553DBVR (C55266, the original, same pinout and I_LIM equations)",
 "unit": "pcs",
-"ext_eur": 4.97
+"ext_eur": 1.75
 },
 {
 "category": "Electronics",
@@ -784,10 +784,10 @@
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 18.59,
-"notes": "quoted components $188.54 (≈ €173.46) for 10 boards; catalogue unit prices give €154.87",
+"unit_eur": 18.2,
+"notes": "quoted components $184.62 (≈ €169.85) for 10 boards; catalogue unit prices give €151.65",
 "unit": "pcs",
-"ext_eur": 18.59
+"ext_eur": 18.2
 },
 {
 "category": "Electronics",
@@ -2684,7 +2684,7 @@
 }
 ],
 "by_category": {
-"Electronics": 679.1399999999999,
+"Electronics": 675.53,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2692,7 +2692,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 968.72,
+"total_eur": 965.11,
 "prints": [
 {
 "part": "bay_label",
@@ -2959,7 +2959,7 @@
 "assembled": 10,
 "spares": 2,
 "service": "Standard",
-"total": 322.77,
+"total": 318.85,
 "estimate": true,
 "spec": "4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA",
 "pcb": {
@@ -2968,7 +2968,7 @@
 "pcba": {
 "setup": 25.56,
 "stencil": 8.21,
-"components": 188.54,
+"components": 184.62,
 "feeders": 58.14,
 "SMT": 5.9,
 "X-ray": 16.4,
@@ -3067,14 +3067,14 @@
 "pcba": {
 "setup": 25.56,
 "stencil": 8.21,
-"components": 188.54,
+"components": 184.62,
 "feeders": 58.14,
 "SMT": 5.9,
 "X-ray": 16.4,
 "packaging": 0.52
 },
 "changes": [],
-"total": 322.77,
+"total": 318.85,
 "need": 8,
 "types": 38,
 "extended": 23,
@@ -3185,10 +3185,10 @@
 "extended": 23,
 "type_fee": 58.14,
 "once": 111.93,
-"per_board": 210.84,
-"total": 322.77,
-"after_obvious": 322.77,
-"after_decisions": 274.66,
+"per_board": 206.92,
+"total": 318.85,
+"after_obvious": 318.85,
+"after_decisions": 273.38,
 "levers": [
 {
 "lever": "9 assembled instead of 10 (8 bays and 1 spare)",
@@ -3208,11 +3208,6 @@
 {
 "lever": "USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board)",
 "usd": 5.04,
-"kind": "decision"
-},
-{
-"lever": "TPS2553DDBVR (C521201) instead of the TPS2553DBVR: equivalence under check by the owner",
-"usd": 2.64,
 "kind": "decision"
 }
 ]
@@ -3384,11 +3379,11 @@
 "volume": {
 "unit": {
 "bay-node": {
-"2": 76.49,
-"5": 44.52,
-"10": 32.26,
-"50": 21.14,
-"100": 17.88
+"2": 76.05,
+"5": 44.08,
+"10": 31.87,
+"50": 20.8,
+"100": 17.57
 },
 "power-hub": {
 "2": 101.26,
@@ -3420,7 +3415,7 @@
 }
 },
 "floor": {
-"bay-node": 16.96,
+"bay-node": 16.65,
 "power-hub": 26.4,
 "data-port": 1.26,
 "camera-pod": 1.13,
@@ -3429,36 +3424,36 @@
 "racks": {
 "1": {
 "boards": {
-"bay-node": 298.89,
+"bay-node": 295.37,
 "power-hub": 202.53,
 "data-port": 36.86,
 "camera-pod": 26.37,
 "data-port-x4": 103.76
 },
 "shipping": 34.0,
-"per_rack": 702.41
+"per_rack": 698.89
 },
 "5": {
 "boards": {
-"bay-node": 895.36,
+"bay-node": 881.35,
 "power-hub": 297.39,
 "data-port": 79.31,
 "camera-pod": 35.68,
 "data-port-x4": 147.07
 },
 "shipping": 34.0,
-"per_rack": 297.76
+"per_rack": 294.96
 },
 "10": {
 "boards": {
-"bay-node": 1594.08,
+"bay-node": 1566.9,
 "power-hub": 446.23,
 "data-port": 121.55,
 "camera-pod": 49.13,
 "data-port-x4": 212.44
 },
 "shipping": 34.0,
-"per_rack": 245.74
+"per_rack": 243.03
 }
 }
 }

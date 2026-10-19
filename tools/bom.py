@@ -56,10 +56,10 @@ JLC_QUOTE = {
     # packaging $0.52; components at catalogue prices × 1.12 (JLC's prices and attrition).  The page
     # also lists a Standard handling fee (≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm.
     "bay-node": {
-        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 322.77, "estimate": True,
+        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 318.85, "estimate": True,
         "spec": "4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA",
         "pcb": {"board": 19.50},
-        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 188.54, "feeders": 58.14, "SMT": 5.90,
+        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 184.62, "feeders": 58.14, "SMT": 5.90,
                  "X-ray": 16.40, "packaging": 0.52},
     },
     # v0.5, quoted on jlcpcb.com on 2026-10-19 (the user's account), from main's fab files: the gerbers,
@@ -173,8 +173,6 @@ JLC_LEVERS = {
          "footprint geometry to check (5 a board)", 13.98, "decision"),
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board)", 5.04, "decision"),
-        ("TPS2553DDBVR (C521201) instead of the TPS2553DBVR: equivalence under check by the "
-         "owner", 2.64, "decision"),
     ],
     "data-port-x4": [
         ("board at most 100 mm long: no engineering fee, the 4-layer offer ($13.20 for 5 instead of $31.90); "

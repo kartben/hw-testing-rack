@@ -100,7 +100,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 100k/18k → 5.24 V (≈ 4.75 V still at the DATA board at 1.4 A, below); EN 100k/10k: on above 13.5 V, off below 10.8 V |
 | 3.3 V | AMS1117-3.3 | logic only |
 | MCU | ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM for the camera's frames; the DevKitC-1-N8R8's module), C2913201 | antenna on the rear edge, keep-out on all layers (the footprint's own ±24 mm band); `bench:ESP32-S3-WROOM-1_NoEPVias` (no 0.2 mm vias in the exposed pad: a GND island stitched around it); rated −40…+65 °C |
-| DUT power | TPS2553 (RILIM 18k → 1.34–1.52 A), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N), Vbus tied to Vin− at its pins (DUT_5V at the shunt's load end); default **on** (also without firmware), fault flag to GPIO |
+| DUT power | TPS2553D (RILIM 18k → 1.34–1.52 A; the TPS2553's pinout and I_LIM equations, plus reverse-voltage protection, at a third of the price), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N), Vbus tied to Vin− at its pins (DUT_5V at the shunt's load end); default **on** (also without firmware), fault flag to GPIO |
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (33 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
@@ -222,7 +222,7 @@ and the sequencing: [power.md](power.md).
 
 | Block | Parts | Notes |
 |---|---|---|
-| USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → 5 mΩ Kelvin shunt → back-to-back IRF7842 NMOS → VRACK, 100 µF / 50 V | the whole rack's current, ≤ 5 A |
+| USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → 5 mΩ Kelvin shunt → back-to-back IRF7842 NMOS → VRACK, 100 µF / 50 V | the whole rack's current, ≤ 5 A.  The FETs stay 40 V (checked 2026-10-19): the AP33772S drives the gate at most 4 V above VCC (PWR_EN − VCC ≤ 4 V), so the FET needs a low R<sub>DS(on)</sub> at 4.5 V (IRF7842: 5.9 mΩ max, V<sub>GS(th)</sub> ≤ 2.25 V); Diodes' own EVB uses 30 V DMN3009SFG; the 60 V SO-8 parts in stock are ≥ 28 mΩ at 4.5 V (DMT6016LSS), the good one (DMT6009LSS) has none.  Q1 sees more than 40 V only with the switch open, VRACK discharged and a surge driving > ≈ 4 A into the SMAJ30A (48 V at 8.3 A): not a USB-C event (contracts above 5 V start once the switch is on), and the IRF7842 is avalanche-rated (50 mJ, 14 A) |
 | PD sink | AP33772S FA01 (the charger's 5 V first; R7 39 k, an FA02's VSEL, stays fitted), Rd 5.1 k on CC1/CC2, NTC 10 k by the switch, I²C + INT to the controller, its own LED in the front wall (PD) | the controller sets VSELMIN to 15 V and asks for 28 V EPR (else 20 V); rows stay locked out below 15 V; the chip keeps the contract through controller resets |
 | Rows A–D | 4 × TPS26600 (1.6 A, ≈ 5 ms soft start, UV 15 V / OV 33 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md) |
 | Row control | SHDN pulled low by 100 k; the controller drives ROW_EN high through 10 k (3.0 V; the datasheet's SHDN range is 0–4 V) | **rows are off without firmware**; on once the contract is final, one after the other |
@@ -386,13 +386,13 @@ bay node's estimate of 2026-10-19 (below) replaced it there:
 
 **Bay node order: 10 PCBs, lead-free HASL, 10 assembled** (the user, 2026-10-19: 8 bays and 2
 spares).  Not re-quoted yet (the full PCBA quote needs the user's JLC sign-in): `tools/bom.py`
-carries an estimate from JLC's current fees, ≈ **$323**.  PCB $19.50 (10 × 74 × 90 mm 4-layer HASL,
+carries an estimate from JLC's current fees, ≈ **$319**.  PCB $19.50 (10 × 74 × 90 mm 4-layer HASL,
 $19.30 read live, the same as at 64 × 90: JLC's offer covers up to 100 × 100 mm; + the 5 mm rails
-Standard PCBA may add; no engineering fee up to 10 PCBs).  PCBA $303:
+Standard PCBA may add; no engineering fee up to 10 PCBs).  PCBA $299:
 setup $25.56, stencil $8.21, $1.53 per unique part type (38: $58.14; four values merged onto values
 the board has: EN 100k/10k, PC_DET 10k/18k, I²C 5.1k, AUX VREF 33 Ω), SMT $5.90 (369 joints a
 board), X-ray $16.40 ($1.64 a board, mandatory for the WROOM-1), packaging $0.52, components ≈
-$189 (catalogue × 1.12).  The 74 × 90 re-layout took ≈ $15 off (J4, its Rp pair, two part types).  ENIG would add ≈ $12.60.  JLC's page also lists a Standard handling fee
+$185 (catalogue × 1.12; the TPS2553D saves ≈ $0.35 a board).  The 74 × 90 re-layout took ≈ $15 off (J4, its Rp pair, two part types).  ENIG would add ≈ $12.60.  JLC's page also lists a Standard handling fee
 (≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm at the real quote.
 
 **Power hub v0.5: quoted on 2026-10-19, $222.48 without its AP33772S.**  On jlcpcb.com, from main's
@@ -552,7 +552,8 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C11355 FSUSB42 MSOP-10 | node U5 U6 | 270° | to confirm |
 | C49851 INA226 VSSOP-10 | node U10, DATA ×4 U102–U402 | 270° | to confirm |
 | C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8 U12 U13, data port U1, DATA ×4 U4 U5 U103–U403 | 270° | to confirm |
-| C55266 TPS2553 SOT-23-6 | node U9 | 180° | to confirm |
+| C55266 TPS2553 SOT-23-6 | node U9 until the TPS2553D | 180° | not on the node any more |
+| C521201 TPS2553D SOT-23-6 | node U9 | 270° (EasyEDA draws it as C7519, not as C55266) | to confirm |
 | C10096 74LVC1G32 SOT-23-5 | node U7 | 180° | to confirm |
 | C8545 2N7002 SOT-23 | node Q2 Q3 | 180° | to confirm |
 | C7503186 SUD50P06 TO-252 | node Q1, hub Q1 | −1.89 mm x | to confirm |

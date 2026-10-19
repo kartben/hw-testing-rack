@@ -372,6 +372,7 @@ def board() -> Board:
 
     s.frame("3.3 V logic supply", 88, 32, 116, 50)
     part(s, "U2", "ldo", {"VI": "+5V", "VO": "+3V3", "GND": "GND"}, pcb=P(12, 33, 90), sch=at(102, 42, fields=(-3, -3.5)))
+    # the LDO's input; a 1206 (C2/C3's 10 µF, one part type less) overlaps U2 and its neighbours here
     C(s, "C11", "10u", "+5V", "GND", size="0805", pcb=P(17.4, 36.15, 0), sch=at(95, 43.5))
     C(s, "C12", "22u", "+3V3", "GND", size="1206", pcb=P(18.0, 30.6, 0), sch=at(109, 43.5))
     s.tag("+5V", (92, 42), "up")
