@@ -73,8 +73,9 @@ right and floor plate; base brace into the free inserts of the shared ladder
 
 A **sled or fixed bay** (`mount: sled` / `fixed`) skips steps 2 and 4: no chain,
 anchor (nor its two inserts), foot or magnets.  The DATA board goes into the
-`drawer_block` as into a drawer's rear bay; a 30 cm DATA lead from J7 runs back
-along the plenum and up through the block's window into its PH.  Slide the
+`drawer_block` as into a drawer's rear bay; the DATA lead (the same 50 cm PH 8)
+runs from J7 back along the plenum and up through the block's window into its
+PH, its slack coiled in the plenum.  Slide the
 block in onto the ledges to the rear (its flanges under the guide lips) and lock
 it: 2 × PT 2.6×8 down through the guide lips and its flanges into the ledges,
 at the holes level with them.  Then the `drawer_sled`, and the stop screw; for a
