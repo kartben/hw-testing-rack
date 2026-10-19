@@ -157,9 +157,10 @@ def board() -> Board:
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 3.0, "passes": 60,
-        # the bay node's build: JLC's standard 4-layer stackup, ENIG for the module's LGA pads
+        # the bay node's build: JLC's standard 4-layer stackup and lead-free HASL.  ENIG until 2026-10-19, for
+        # the module's LGA pads; HASL saves ≈ $12.70 on 5 boards, and JLC X-rays the module either way
         "inner": [("In1.GND", "power"), ("In2.PWR", "power")],
-        "stackup": "JLC04161H-7628", "finish": "ENIG",
+        "stackup": "JLC04161H-7628", "finish": "HASL",
         "edge_parts": ["J*", "U4", "D1*", "D2*", "D3", "D8"],
         "defer_pours": False,
         # net: (plane, via Ø, drill, track width); pins over another net's area are routed instead
@@ -272,13 +273,13 @@ def board() -> Board:
     C(s, "C9", "10u", "VRACK", "GND", size="1206", pcb=P(73.3, 19.6, 0))
     C(s, "C10", "100n", "VRACK", "GND", pcb=P(73.0, 22.2, 0))
     s.block("I2C to the controller, VBUS sense")
-    # INT is a 5 V push-pull output: divided down for the ESP32
-    R(s, "R11", "15k", "PD_INT5", "PD_INT", pcb=P(41.0, 11.2, 0))
-    R(s, "R12", "27k", "PD_INT", "GND", pcb=P(41.0, 12.8, 0))
+    # INT is a 5 V push-pull output: divided down for the ESP32 (10k/18k: 3.2 V; values the board already has)
+    R(s, "R11", "10k", "PD_INT5", "PD_INT", pcb=P(41.0, 11.2, 0))
+    R(s, "R12", "18k", "PD_INT", "GND", pcb=P(41.0, 12.8, 0))
     # pull-ups from a GPIO (I2C_PU): on only once VBUS is up, so a USB-powered controller never
     # back-feeds an unpowered AP33772S through SDA/SCL (Diodes' EVB guide: the sink powers up first)
-    R(s, "R13", "4.7k", "I2C_PU", "PD_SDA", pcb=P(41.0, 8.0, 0))
-    R(s, "R14", "4.7k", "I2C_PU", "PD_SCL", pcb=P(41.0, 9.6, 0))
+    R(s, "R13", "5.1k", "I2C_PU", "PD_SDA", pcb=P(41.0, 8.0, 0))
+    R(s, "R14", "5.1k", "I2C_PU", "PD_SCL", pcb=P(41.0, 9.6, 0))
     R(s, "R3", "100k", "PD_VBUS", "VBUS_SENSE", pcb=P(64.6, 11.4, 270))
     R(s, "R4", "10k", "VBUS_SENSE", "GND", pcb=P(19.0, 20.4, 0))
     C(s, "C3", "100n", "VBUS_SENSE", "GND", pcb=P(19.0, 22.0, 0))
@@ -345,15 +346,17 @@ def board() -> Board:
     C(c, "C104", "10u", "PD_VCC", "GND", size="1206", pcb=P(58.00, 16.8 + BY, 0))
     C(c, "C105", "10u", "PD_VCC", "GND", size="1206", pcb=P(58.00, 19.4 + BY, 0))
     C(c, "C106", "100n", "PD_VCC", "GND", pcb=P(58.00, 14.6 + BY, 0))
-    # EN: on from ≈ 3.9 V, so the controller runs on a contract's first 5 V
-    R(c, "R205", "100k", "PD_VCC", "BUCK_EN", pcb=P(54.78, 14.3 + BY, 90))
-    R(c, "R206", "47k", "BUCK_EN", "GND", pcb=P(54.00, 12.0 + BY, 180))
+    # EN: on from ≈ 3.9 V (off below ≈ 3.1 V), so the controller runs on a contract's first 5 V; 39k/18k,
+    # values the board already has (one part type less in JLC's feeders)
+    R(c, "R205", "39k", "PD_VCC", "BUCK_EN", pcb=P(54.78, 14.3 + BY, 90))
+    R(c, "R206", "18k", "BUCK_EN", "GND", pcb=P(54.00, 12.0 + BY, 180))
     C(c, "C107", "100n", "BUCK_CB", "BUCK_SW", pcb=P(59.60, 9.5 + BY, 0))
     part(c, "L1", "buck_l", {"1": "BUCK_SW", "2": "+5V_BUCK"}, "3.3u", pcb=P(65.70, 12.0 + BY, 0))
     for i in range(3):
         C(c, f"C{108 + i}", "22u", "+5V_BUCK", "GND", size="1206", pcb=P(64.0 + 2.5 * i, 18.5 + BY, 270))
-    R(c, "R207", "120k", "+5V_BUCK", "BUCK_FB", pcb=P(54.00, 8.6 + BY, 0))
-    R(c, "R208", "22k", "BUCK_FB", "GND", pcb=P(54.00, 10.2 + BY, 180))
+    # FB 100k/18k: 0.8 V × (1 + 100/18) = 5.24 V, as the bay node; ≈ 4.9 V after D4 for the TJA1462AT (4.5–5.5 V)
+    R(c, "R207", "100k", "+5V_BUCK", "BUCK_FB", pcb=P(54.00, 8.6 + BY, 0))
+    R(c, "R208", "18k", "BUCK_FB", "GND", pcb=P(54.00, 10.2 + BY, 180))
     c.part("#FLG06", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V_BUCK"}, in_bom=False, on_board=False)
     c.block("5 V for the controller: the buck or the console USB-C (diode OR), 3.3 V low-dropout LDO")
     part(c, "D4", "schottky", {"A": "+5V_BUCK", "K": "+5V"}, pcb=P(73.2, 13.0 + BY, 90))
@@ -419,7 +422,7 @@ def board() -> Board:
     c.note("  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·")
     c.note("  IO19/20 USB.  Strapping IO3/45/46 unused.")
     c.note("Termination: two split 2 × 56 Ω + 4.7 nF (56 Ω in all) at the star centre; nodes carry none.")
-    c.note("+5V: buck (5.16 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;")
+    c.note("+5V: buck (5.24 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;")
     c.note("  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  The TJA1462AT wants 4.5–5.5 V: CAN runs once VRACK is up.")
     return b
 

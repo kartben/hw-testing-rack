@@ -105,11 +105,13 @@ JLC_QUOTE = {
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
-# instead of ENIG (≈ $0–2 for 5 PCBs; the hub v0.5 keeps ENIG for now); the hub's
+# instead of ENIG, as the node (2026-10-19: $5.30 on JLC's calculator for 5 × 86 × 140 mm 4-layer, against
+# the quote's $18.00 ENIG; nothing on the hub needs ENIG: 0.5 mm QFN and the MINI-1's pads are assembled
+# on HASL like the node's WROOM-1, INA226 and FSUSB42); the hub's
 # through-hole connectors soldered by hand (catalog hand_solder), bought loose from LCSC, so their
 # extended part types no longer need loading; and no JLC hand-soldering fee on either board (the
 # node's JST PH are SMD since rev 0.4, JLC places them).
-JLC_FINISH = {}
+JLC_FINISH = {"power-hub": ("lead-free HASL", 5.30)}
 # Parts added to a board after its quote (indicative, not re-quoted): (what, PCBA line, USD for the
 # quoted order).  Bay node rev 0.5: the rack bus (TCAN1044AV, PESD2CAN, 2 × BAT54S, 3 resistors, 2
 # capacitors, the 6-pin J1/J2), GCT USB4105 receptacles instead of the HRO ones and 2 × 100 nF on
@@ -119,7 +121,10 @@ JLC_FINISH = {}
 # one more extended part type.
 # (The bay node's rev 0.5 changes against the 2026-10-16 quote lived here until its estimate of
 # 2026-10-19 above, which prices the board as it is.)
-JLC_SINCE_QUOTE = {}
+# Power hub, after its quote of 2026-10-19: six resistor values merged onto values the board already
+# has (FB 100k/18k as the node, EN 39k/18k, INT divider 10k/18k, I²C pull-ups 5.1k), so six part types
+# fewer at the quote's $1.55 a type in Standard PCBA feeders (47 → 41 placed types).
+JLC_SINCE_QUOTE = {"power-hub": [("6 part types fewer (resistor values merged)", "feeders", -9.30)]}
 
 
 # the row cables' listing (docs/can.md: one type for feeds and jumpers)
@@ -214,7 +219,7 @@ def jlc_order(name: str, ext: set, hand: set) -> tuple[dict, dict, list[str]]:
     for what, line, usd in JLC_SINCE_QUOTE.get(name, []):
         fees = pcba if line in pcba else pcb           # a PCBA line, or one of the bare PCB's
         fees[line] = round(fees[line] + usd, 2)
-        changes.append(f"{what} (+${usd:.2f} {line})")
+        changes.append(f"{what} ({'+' if usd >= 0 else '−'}${abs(usd):.2f} {line})")
     return pcb, pcba, changes
 
 

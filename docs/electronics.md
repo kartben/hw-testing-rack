@@ -34,8 +34,8 @@ to the LDO input, the DUT switch, the camera fuse and the DUT-side ESD part; the
 between J1 and J2; +3V3 again under the front edge, fed by a B.Cu track) · B.Cu signals + GND
 pour.  No signal is routed on In2.  The board declares JLCPCB's standard
 JLC04161H-7628 build (0.21 mm prepreg between F.Cu and In1, 1.065 mm core, 0.5 oz
-inner copper) and lead-free HASL (since 2026-10-19; ENIG before); the hub v0.5 the same build
-in ENIG (`stackup` / `finish` in `design.py`, written into the board by `pcbgen.py`).  Before routing,
+inner copper) and lead-free HASL (since 2026-10-19; ENIG before); the hub v0.5 the same build,
+lead-free HASL too since its quote (`stackup` / `finish` in `design.py`, written into the board by `pcbgen.py`).  Before routing,
 every GND and supply pin gets a short track to a via of its own on its plane (`fanout_nets` in
 `design.py`, `fanout_pads()` in `pcbgen.py`), locked so Freerouting keeps it: no pin depends on
 the outer GND pours, which stay as a bonus, stitched to In1.  **No drill under 0.3 mm**: JLCPCB's
@@ -228,9 +228,9 @@ and the sequencing: [power.md](power.md).
 | Row control | SHDN pulled low by 100 k; the controller drives ROW_EN high through 10 k (3.0 V; the datasheet's SHDN range is 0–4 V) | **rows are off without firmware**; on once the contract is final, one after the other |
 | Per row | ON (green, from the row's own output through 10 k by the eFuse); FAULT (red) from 3.3 V into the open-drain FLT; FLT also to the controller (100 k pull-up) | Kingbright KPA-3010 side-view LEDs in the box's front wall |
 | Row current | IMON 18 k → 1.4 V/A, 1 k + 10 nF to the ESP32's ADC | |
-| Controller supply | LMR51635 from VBUS *ahead of* the switch (EN from ≈ 3.9 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from a contract's first 5 V; runs on the console USB alone for flashing |
+| Controller supply | LMR51635 from VBUS *ahead of* the switch (EN 39k/18k: from ≈ 3.9 V; FB 100k/18k: 5.24 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from a contract's first 5 V; runs on the console USB alone for flashing |
 | Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
-| PD interface | SDA / SCL with 4.7 k pull-ups fed from a GPIO (I2C_PU), INT (a 5 V output) through 15 k / 27 k, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered AP33772S |
+| PD interface | SDA / SCL with 5.1 k pull-ups fed from a GPIO (I2C_PU), INT (a 5 V output) through 10 k / 18 k, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered AP33772S |
 | CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 4.7 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
 | POS | 4 GPIOs → 10 k → pin 1 of each row output (the outputs have the bay nodes' OUT pinout: 1 POS · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), BAT54S clamp to GND / 3.3 V | survives a wrong cable (VRACK on POS) |
 
@@ -415,6 +415,26 @@ Two parts were out of stock that day:
 
 `tools/bom.py` carries the quote plus that U1 line, ≈ $243.  The estimate before was ≈ $227: X-ray
 cost less than estimated, feeders more.
+
+The user found that dear.  What JLC charges for, checked on its calculator (2026-10-19, 5 boards,
+4 layers):
+- **The $25 engineering fee comes from the length.**  At 86 × 100 mm (the rails included) JLC's
+  4-layer offer applies: $8 instead of $25 + $7.50.
+- **ENIG costs $18.00, lead-free HASL $5.30.**
+
+Two savings are applied since, as adjustments to the quote (≈ $221):
+- **Lead-free HASL, as the node.**  It was ENIG for the MINI-1's LGA pads; JLC X-rays the module
+  either way.  −$12.70.
+- **Six resistor values merged** onto values the board already has, so six fewer part types at
+  $1.55 each in Standard PCBA's feeders.  −$9.30.
+  - FB 100k/18k: 5.24 V, as the node; ≈ 4.9 V after D4 for the TJA1462AT.
+  - EN 39k/18k: on at 3.9 V, off below 3.1 V.
+  - PD INT divider 10k/18k: 3.2 V.
+  - I²C pull-ups 5.1k.
+
+The routing did not move.  JLC assembles at least 2 boards in Standard PCBA, so one hub plus a spare
+is the minimum.  The MINI-1, like every ESP32 module JLC stocks, is "Standard PCBA only"; the
+controller needs Wi-Fi (status page, API, updates).
 
 Two changes were made after that quote and are not re-quoted (`JLC_FINISH`
 and `jlc_order()` in `tools/bom.py` apply them, indicatively):

@@ -6040,7 +6040,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "39k"
 			(at 33.02 45.72 0)
 			(effects
 				(font
@@ -6067,7 +6067,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 100k 0603"
+		(property "Description" "Resistor 39k 0603"
 			(at 30.48 48.26 0)
 			(effects
 				(font
@@ -6076,7 +6076,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25803"
+		(property "LCSC" "C23153"
 			(at 30.48 48.26 0)
 			(effects
 				(font
@@ -6085,7 +6085,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF1003T5E"
+		(property "MPN" "0603WAF3902T5E"
 			(at 30.48 48.26 0)
 			(effects
 				(font
@@ -6159,7 +6159,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "47k"
+		(property "Value" "18k"
 			(at 73.66 50.8 0)
 			(effects
 				(font
@@ -6186,7 +6186,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 47k 0603"
+		(property "Description" "Resistor 18k 0603"
 			(at 71.12 53.34 0)
 			(effects
 				(font
@@ -6195,7 +6195,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25819"
+		(property "LCSC" "C25810"
 			(at 71.12 53.34 0)
 			(effects
 				(font
@@ -6204,7 +6204,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF4702T5E"
+		(property "MPN" "0603WAF1802T5E"
 			(at 71.12 53.34 0)
 			(effects
 				(font
@@ -7093,7 +7093,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "120k"
+		(property "Value" "100k"
 			(at 133.35 50.8 0)
 			(effects
 				(font
@@ -7120,7 +7120,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 120k 0603"
+		(property "Description" "Resistor 100k 0603"
 			(at 130.81 53.34 0)
 			(effects
 				(font
@@ -7129,7 +7129,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25808"
+		(property "LCSC" "C25803"
 			(at 130.81 53.34 0)
 			(effects
 				(font
@@ -7138,7 +7138,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF1203T5E"
+		(property "MPN" "0603WAF1003T5E"
 			(at 130.81 53.34 0)
 			(effects
 				(font
@@ -7190,7 +7190,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22k"
+		(property "Value" "18k"
 			(at 143.51 50.8 0)
 			(effects
 				(font
@@ -7217,7 +7217,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 22k 0603"
+		(property "Description" "Resistor 18k 0603"
 			(at 140.97 53.34 0)
 			(effects
 				(font
@@ -7226,7 +7226,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C31850"
+		(property "LCSC" "C25810"
 			(at 140.97 53.34 0)
 			(effects
 				(font
@@ -7235,7 +7235,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF2202T5E"
+		(property "MPN" "0603WAF1802T5E"
 			(at 140.97 53.34 0)
 			(effects
 				(font
@@ -17317,7 +17317,7 @@
 		)
 		(uuid "805d0f55-ab2f-545a-915a-9133d57a017e")
 	)
-	(text_box "GPIO: IO1/2/4/5 IMON A–D, IO6 VBUS_SENSE (ADC1) · IO7/8/9 CAN TX/RX/STB · IO10–13 POS A–D ·\n  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·\n  IO19/20 USB.  Strapping IO3/45/46 unused.\nTermination: two split 2 × 56 Ω + 4.7 nF (56 Ω in all) at the star centre; nodes carry none.\n+5V: buck (5.16 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;\n  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  The TJA1462AT wants 4.5–5.5 V: CAN runs once VRACK is up."
+	(text_box "GPIO: IO1/2/4/5 IMON A–D, IO6 VBUS_SENSE (ADC1) · IO7/8/9 CAN TX/RX/STB · IO10–13 POS A–D ·\n  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·\n  IO19/20 USB.  Strapping IO3/45/46 unused.\nTermination: two split 2 × 56 Ω + 4.7 nF (56 Ω in all) at the star centre; nodes carry none.\n+5V: buck (5.24 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;\n  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  The TJA1462AT wants 4.5–5.5 V: CAN runs once VRACK is up."
 		(exclude_from_sim no)
 		(at 20.32 415.29 0)
 		(size 240.03 17.78)

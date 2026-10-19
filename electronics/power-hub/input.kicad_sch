@@ -7923,7 +7923,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "15k"
+		(property "Value" "10k"
 			(at 180.34 128.27 0)
 			(effects
 				(font
@@ -7950,7 +7950,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 15k 0603"
+		(property "Description" "Resistor 10k 0603"
 			(at 177.8 130.81 0)
 			(effects
 				(font
@@ -7959,7 +7959,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C22809"
+		(property "LCSC" "C25804"
 			(at 177.8 130.81 0)
 			(effects
 				(font
@@ -7968,7 +7968,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF1502T5E"
+		(property "MPN" "0603WAF1002T5E"
 			(at 177.8 130.81 0)
 			(effects
 				(font
@@ -8020,7 +8020,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "27k"
+		(property "Value" "18k"
 			(at 180.34 140.97 0)
 			(effects
 				(font
@@ -8047,7 +8047,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 27k 0603"
+		(property "Description" "Resistor 18k 0603"
 			(at 177.8 143.51 0)
 			(effects
 				(font
@@ -8056,7 +8056,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C22967"
+		(property "LCSC" "C25810"
 			(at 177.8 143.51 0)
 			(effects
 				(font
@@ -8065,7 +8065,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF2702T5E"
+		(property "MPN" "0603WAF1802T5E"
 			(at 177.8 143.51 0)
 			(effects
 				(font
@@ -8194,7 +8194,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7k"
+		(property "Value" "5.1k"
 			(at 200.66 123.19 0)
 			(effects
 				(font
@@ -8221,7 +8221,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 4.7k 0603"
+		(property "Description" "Resistor 5.1k 0603"
 			(at 198.12 125.73 0)
 			(effects
 				(font
@@ -8230,7 +8230,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23162"
+		(property "LCSC" "C23186"
 			(at 198.12 125.73 0)
 			(effects
 				(font
@@ -8239,7 +8239,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF4701T5E"
+		(property "MPN" "0603WAF5101T5E"
 			(at 198.12 125.73 0)
 			(effects
 				(font
@@ -8324,7 +8324,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "4.7k"
+		(property "Value" "5.1k"
 			(at 190.5 125.73 0)
 			(effects
 				(font
@@ -8351,7 +8351,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 4.7k 0603"
+		(property "Description" "Resistor 5.1k 0603"
 			(at 187.96 128.27 0)
 			(effects
 				(font
@@ -8360,7 +8360,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23162"
+		(property "LCSC" "C23186"
 			(at 187.96 128.27 0)
 			(effects
 				(font
@@ -8369,7 +8369,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF4701T5E"
+		(property "MPN" "0603WAF5101T5E"
 			(at 187.96 128.27 0)
 			(effects
 				(font

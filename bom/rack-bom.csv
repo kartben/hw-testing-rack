@@ -76,21 +76,15 @@ Electronics,power-hub,"3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded",2
 Electronics,power-hub,"IRF7842TRPBF — N-MOSFET 40 V 18 A 5 mΩ, SO-8 (Si4162DY symbol: same S-S-S-G-D-D-D-D pinout)",4,pcs,0.7728,3.09,LCSC/JLCPCB,C495809,IRF7842TRPBF,Infineon,"Q1,Q2",2 per board × 2 boards
 Electronics,power-hub,5m — 5 mΩ 1 % 1 W current shunt,2,pcs,0.0506,0.1,LCSC/JLCPCB,C2988648,HoLLR1206-1W-5mR-1%,Milliohm,R1,1 per board × 2 boards
 Electronics,power-hub,1k — Resistor 1k 0603,10,pcs,0.0017,0.02,LCSC/JLCPCB,C21190,0603WAF1001T5E,UNI-ROYAL(Uniroyal Elec),"R2,R61,R62,R63,R64",5 per board × 2 boards
-Electronics,power-hub,100k — Resistor 100k 0603,20,pcs,0.0029,0.06,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),"R3,R71,R72,R73,R74,R91,R92,R93,R94,R205",10 per board × 2 boards
-Electronics,power-hub,10k — Resistor 10k 0603,32,pcs,0.0048,0.15,LCSC/JLCPCB,C25804,0603WAF1002T5E,UNI-ROYAL(Uniroyal Elec),"R4,R41,R42,R43,R44,R81,R82,R83,R84,R101,R102,R103,R104,R209,R210,R214",16 per board × 2 boards
-Electronics,power-hub,5.1k — Resistor 5.1k 0603,8,pcs,0.0014,0.01,LCSC/JLCPCB,C23186,0603WAF5101T5E,UNI-ROYAL(Uniroyal Elec),"R5,R6,R212,R213",4 per board × 2 boards
-Electronics,power-hub,39k — Resistor 39k 0603,2,pcs,0.0021,0.0,LCSC/JLCPCB,C23153,0603WAF3902T5E,UNI-ROYAL(Uniroyal Elec),R7,1 per board × 2 boards
+Electronics,power-hub,100k — Resistor 100k 0603,20,pcs,0.0029,0.06,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),"R3,R71,R72,R73,R74,R91,R92,R93,R94,R207",10 per board × 2 boards
+Electronics,power-hub,10k — Resistor 10k 0603,34,pcs,0.0048,0.16,LCSC/JLCPCB,C25804,0603WAF1002T5E,UNI-ROYAL(Uniroyal Elec),"R4,R11,R41,R42,R43,R44,R81,R82,R83,R84,R101,R102,R103,R104,R209,R210,R214",17 per board × 2 boards
+Electronics,power-hub,5.1k — Resistor 5.1k 0603,12,pcs,0.0014,0.02,LCSC/JLCPCB,C23186,0603WAF5101T5E,UNI-ROYAL(Uniroyal Elec),"R5,R6,R13,R14,R212,R213",6 per board × 2 boards
+Electronics,power-hub,39k — Resistor 39k 0603,4,pcs,0.0021,0.01,LCSC/JLCPCB,C23153,0603WAF3902T5E,UNI-ROYAL(Uniroyal Elec),"R7,R205",2 per board × 2 boards
 Electronics,power-hub,6.2k — Resistor 6.2k 0603,2,pcs,0.0021,0.0,LCSC/JLCPCB,C4260,0603WAF6201T5E,UNI-ROYAL(Uniroyal Elec),R8,1 per board × 2 boards
 Electronics,power-hub,200 — Resistor 200 0603,2,pcs,0.0036,0.01,LCSC/JLCPCB,C8218,0603WAF2000T5E,UNI-ROYAL(Uniroyal Elec),R9,1 per board × 2 boards
-Electronics,power-hub,15k — Resistor 15k 0603,2,pcs,0.0027,0.01,LCSC/JLCPCB,C22809,0603WAF1502T5E,UNI-ROYAL(Uniroyal Elec),R11,1 per board × 2 boards
-Electronics,power-hub,27k — Resistor 27k 0603,2,pcs,0.0043,0.01,LCSC/JLCPCB,C22967,0603WAF2702T5E,UNI-ROYAL(Uniroyal Elec),R12,1 per board × 2 boards
-Electronics,power-hub,4.7k — Resistor 4.7k 0603,4,pcs,0.0026,0.01,LCSC/JLCPCB,C23162,0603WAF4701T5E,UNI-ROYAL(Uniroyal Elec),"R13,R14",2 per board × 2 boards
+Electronics,power-hub,18k — Resistor 18k 0603,14,pcs,0.0037,0.05,LCSC/JLCPCB,C25810,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),"R12,R31,R32,R33,R34,R206,R208",7 per board × 2 boards
 Electronics,power-hub,7.5k — Resistor 7.5k 0603,8,pcs,0.0017,0.01,LCSC/JLCPCB,C23234,0603WAF7501T5E,UNI-ROYAL(Uniroyal Elec),"R21,R22,R23,R24",4 per board × 2 boards
-Electronics,power-hub,18k — Resistor 18k 0603,8,pcs,0.0037,0.03,LCSC/JLCPCB,C25810,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),"R31,R32,R33,R34",4 per board × 2 boards
 Electronics,power-hub,680 — Resistor 680 0603,8,pcs,0.0019,0.02,LCSC/JLCPCB,C23228,0603WAF6800T5E,UNI-ROYAL(Uniroyal Elec),"R51,R52,R53,R54",4 per board × 2 boards
-Electronics,power-hub,47k — Resistor 47k 0603,2,pcs,0.0032,0.01,LCSC/JLCPCB,C25819,0603WAF4702T5E,UNI-ROYAL(Uniroyal Elec),R206,1 per board × 2 boards
-Electronics,power-hub,120k — Resistor 120k 0603,2,pcs,0.0014,0.0,LCSC/JLCPCB,C25808,0603WAF1203T5E,UNI-ROYAL(Uniroyal Elec),R207,1 per board × 2 boards
-Electronics,power-hub,22k — Resistor 22k 0603,2,pcs,0.0038,0.01,LCSC/JLCPCB,C31850,0603WAF2202T5E,UNI-ROYAL(Uniroyal Elec),R208,1 per board × 2 boards
 Electronics,power-hub,330 — Resistor 330 0603,2,pcs,0.0018,0.0,LCSC/JLCPCB,C23138,0603WAF3300T5E,UNI-ROYAL(Uniroyal Elec),R211,1 per board × 2 boards
 Electronics,power-hub,56 — Resistor 56 0603,8,pcs,0.0024,0.02,LCSC/JLCPCB,C25196,0603WAF560JT5E,UNI-ROYAL(Uniroyal Elec),"R215,R216,R217,R218",4 per board × 2 boards
 Electronics,power-hub,RESET — tactile switch 5.1 × 5.1 mm,2,pcs,0.0184,0.04,LCSC/JLCPCB,C318884,TS-1187A-B-A-B,XKB,SW1,1 per board × 2 boards
@@ -103,9 +97,9 @@ Electronics,power-hub,"ESP32-S3-MINI-1-N8 — ESP32-S3 module, 8 MB flash, PCB a
 Electronics,power-hub,USBLC6-2SC6 — USB ESD protection,2,pcs,0.1656,0.33,LCSC/JLCPCB,C7519,USBLC6-2SC6,STMicroelectronics,U5,1 per board × 2 boards; alternative: C2687116 (UMW clone)
 Electronics,power-hub,"TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout)",2,pcs,0.9292,1.86,LCSC/JLCPCB,C3234095,TJA1462AT/0Z,NXP Semiconductors,U6,"1 per board × 2 boards; alternative: Same pinout: TI TCAN1462VDRQ1 (C7399456, SIC, bus pins ±58 V; LCSC stock 0 on 2026-10-18 and 19) or TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V)"
 Electronics,power-hub,TPS26600PWPR — 4.2–60 V 2.23 A eFuse,8,pcs,1.4168,11.33,LCSC/JLCPCB,C544399,TPS26600PWPR,Texas Instruments,"U11,U12,U13,U14",4 per board × 2 boards
-Electronics,power-hub,"Bare PCB power-hub (4-layer 76×140 mm (86×140 with JLC's rails), ENIG)",5,pcs,9.292,46.46,JLCPCB quote 2026-10-19,,,,,"engineering $25.00, ENIG $18.00, board $7.50 = $50.50 for 5 PCBs, 2 of them assembled"
-Electronics,power-hub,"Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.)",1,pcs,123.4,123.4,JLCPCB quote 2026-10-19,,,,,"setup $25.75, stencil $8.27, feeders $72.85, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA"
-Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,4.26,4.26,JLCPCB quote 2026-10-19,,,,,quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €49.00
+Electronics,power-hub,"Bare PCB power-hub (4-layer 76×140 mm (86×140 with JLC's rails), lead-free HASL)",5,pcs,6.9552,34.78,"JLCPCB quote 2026-10-19, adjusted",,,,,"engineering $25.00, lead-free HASL $5.30, board $7.50 = $37.80 for 5 PCBs, 2 of them assembled; lead-free HASL ≈ $5.30 instead of ENIG $18.00"
+Electronics,power-hub,"Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.)",1,pcs,114.84,114.84,"JLCPCB quote 2026-10-19, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $63.55, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; 6 part types fewer (resistor values merged) (−$9.30 feeders); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA"
+Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,4.26,4.26,"JLCPCB quote 2026-10-19, adjusted",,,,,quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €49.00
 Electronics,data-port,100n — Capacitor 100n 0603,8,pcs,0.0124,0.1,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,C1,1 per board × 8 boards
 Electronics,data-port,"DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",8,pcs,0.8372,6.7,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J1,1 per board × 8 boards
 Electronics,data-port,"LEAD — JST PH 8-pin, side entry, SMD",8,pcs,0.414,3.31,LCSC/JLCPCB,C265121,S8B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 8 boards
