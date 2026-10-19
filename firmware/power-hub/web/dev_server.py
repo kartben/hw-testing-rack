@@ -334,9 +334,13 @@ class Handler(PageHandler):
 def serve(port: int = 8767) -> ThreadingHTTPServer:
     if not events:
         now = time.time()
-        for dt, kind, text in ((-2 * 86400 - 5 * 3600, "pd", "contract: 20 V / 5 A (VSEL, at power-up)"),
-                               (-2 * 86400 - 5 * 3600 + 1, "pd", "charger offers 28 V EPR: asked for it"),
-                               (-2 * 86400 - 5 * 3600 + 2, "pd", "contract: 28 V / 5 A EPR (140 W)"),
+        # Power-up with the AP33772S FA01: the sink starts on the charger's 5 V
+        # (VSELMIN 15 V keeps its switch open, the rows wait), then pd.c asks
+        # for 28 V EPR (20 V without it); the texts are pd.c's
+        for dt, kind, text in ((-2 * 86400 - 5 * 3600, "pd", "VBUS 5.0 V: PD sink up"),
+                               (-2 * 86400 - 5 * 3600 + 1, "pd",
+                                "contract: 5.0 V / 3.00 A (15 W), too low for the rows"),
+                               (-2 * 86400 - 5 * 3600 + 2, "pd", "contract: 28.0 V / 5.00 A EPR (140 W)"),
                                (-2 * 86400 - 5 * 3600 + 3, "row", "rows A, B, C on (staggered, 300 ms)"),
                                (-3 * 3600, "fault", "row B: eFuse in current limit for 40 ms"),
                                (-754, "can", "enumeration (node 0x21 rebooted): 9 nodes")):
