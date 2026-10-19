@@ -90,7 +90,7 @@
    [
     "C7503186",
     1,
-    "SUD50P06-15"
+    "SUD50P06-15(UMW)"
    ],
    [
     "C8545",
@@ -119,12 +119,12 @@
    ],
    [
     "C23140",
-    6,
+    5,
     "33"
    ],
    [
     "C23186",
-    4,
+    2,
     "5.1k"
    ],
    [
@@ -133,9 +133,19 @@
     "50m"
    ],
    [
+    "C4190",
+    2,
+    "2.2k"
+   ],
+   [
     "C21190",
-    3,
+    4,
     "1k"
+   ],
+   [
+    "C23178",
+    1,
+    "470k"
    ],
    [
     "C318884",
@@ -241,7 +251,7 @@
    ],
    [
     "C8598",
-    2,
+    6,
     "B5819W SL"
    ],
    [
@@ -281,12 +291,12 @@
    ],
    [
     "C25803",
-    10,
+    6,
     "100k"
    ],
    [
     "C25804",
-    17,
+    21,
     "10k"
    ],
    [
@@ -956,7 +966,7 @@
    "category": "Interface",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 13177
+   "lcsc_stock": 13147
   },
   "C1663": {
    "mfr": "CL10C330JB8NNNC",
@@ -1180,7 +1190,7 @@
    "category": "Transistors/Thyristors",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 483940
+   "lcsc_stock": 483935
   },
   "C21122": {
    "mfr": "CL10B223KB8NNNC",
@@ -1256,6 +1266,22 @@
      "qFrom": 1,
      "qTo": null,
      "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
+  "C23178": {
+   "mfr": "0603WAF4703T5E",
+   "package": "0603",
+   "stock": 1259979,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.003
     }
    ],
    "category": "Resistors",
@@ -1846,6 +1872,22 @@
    ],
    "category": "Connectors",
    "manufacturer": "hanxia",
+   "source": "local-db (snapshot stock)"
+  },
+  "C4190": {
+   "mfr": "0603WAF2201T5E",
+   "package": "0603",
+   "stock": 6543363,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock)"
   },
   "C42459160": {
