@@ -19,6 +19,21 @@ config HUB_VBUS_MIN_MV
 	int "VBUS above which the PD sink is powered and talked to (mV)"
 	default 4500
 
+config HUB_PD_ADAPTIVE
+	bool "Start at 20 V, move to 28 V EPR once a row draws more"
+	help
+	  Off (the default): 28 V EPR when the charger offers it, else 20 V.
+	  On: 20 V first, then 28 V EPR (a PD transition: VRACK does not
+	  drop) once any row's IMON reaches CONFIG_HUB_PD_ADAPTIVE_MA; back
+	  to 20 V only when VBUS goes.  Meant for a hub whose CH224A sees
+	  close to its 32 V rating on VHV at 28 V (bring-up).
+
+config HUB_PD_ADAPTIVE_MA
+	int "Row current that moves an adaptive hub to 28 V EPR (mA)"
+	default 1200
+	help
+	  Used with HUB_PD_ADAPTIVE.  The eFuses limit a row at 1.6 A.
+
 config HUB_PD_REQUEST_MS
 	int "VBUS must reach a requested voltage within this long (ms)"
 	default 3000

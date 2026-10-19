@@ -72,7 +72,7 @@ uart:~$ hub status
 
 | Feature | Implementation |
 |---|---|
-| PD contract | the CH224A asks for 9 V at plug-in by itself (CFG1 6.8k); once VBUS is up the firmware powers its I²C pull-ups (I2C_PU), initializes the driver as soon as the chip answers and asks for **28 V EPR** when the charger offers it (PDO 1's EPR Mode Capable bit; tried when the chip shows no offers), 20 V otherwise (`hub pd epr\|20v`, saved).  The chip cannot report the contract: a request counts once it says PD, PG is low and VBUS_SENSE reads the voltage; 28 V that VBUS does not follow within 3 s (`CONFIG_HUB_PD_REQUEST_MS`) falls back to 20 V.  Never above 28 V: the node's `regulator-max-microvolt` refuses it.  A contract under 15 V (`CONFIG_HUB_ROWS_MIN_MV`) never powers the rows; there is no input switch, VBUS is VRACK.  PG going high (a renegotiation) makes the contract provisional, and runs the policy again when it comes back |
+| PD contract | the CH224A asks for 9 V at plug-in by itself (CFG1 6.8k); once VBUS is up the firmware powers its I²C pull-ups (I2C_PU), initializes the driver as soon as the chip answers and asks for **28 V EPR** when the charger offers it (PDO 1's EPR Mode Capable bit; tried when the chip shows no offers), 20 V otherwise (`hub pd epr\|20v`, saved); `CONFIG_HUB_PD_ADAPTIVE` (off) starts at 20 V instead and moves to 28 V EPR, without a drop, once a row draws 1.2 A.  The chip cannot report the contract: a request counts once it says PD, PG is low and VBUS_SENSE reads the voltage within 5 %; 28 V that VBUS does not follow within 3 s (`CONFIG_HUB_PD_REQUEST_MS`) falls back to 20 V.  Never above 28 V: the node's `regulator-max-microvolt` refuses it.  A contract under 15 V (`CONFIG_HUB_ROWS_MIN_MV`) never powers the rows; there is no input switch, VBUS is VRACK.  PG high for 20 ms (a renegotiation, a hard reset) sheds every row, except during a request of ours; they come back, staggered, with the next final contract, and the policy runs again |
 | Sequencing | rows stay off until the contract has held for 500 ms, then come on one after the other (300 ms apart); the rack bus is enumerated 2 s after the last one, when the nodes have booted |
 | Controller reset | the row enables are held (ESP32-S3 pad hold, RTC domain): a hub reboot or a firmware update does not power-cycle the rack; the rows found on are enumerated again |
 | Shedding | from what the rows really draw (eFuse IMON): above 90 % of the contract current for 1 s, the next row in the shed order (default D, C, B, A) goes off; it comes back once the contract has room for it again for 10 s.  No contract at all: every row off, back with the next one |
@@ -265,7 +265,7 @@ and [`power_hub-pinctrl.dtsi`](../boards/hwtr/power_hub/power_hub-pinctrl.dtsi).
 | IO39 | PD_INT | CH224A PG (open drain, 10k pull-up, low once the contract is in place; also the front PD LED) | `pd_sink` `pg-gpios` |
 | IO40 | PD_SCL | I²C0 SCL to the CH224A (its CFG2) | `&i2c0` |
 | IO41 | PD_SDA | I²C0 SDA (its CFG3) | `&i2c0` |
-| IO42 | I2C_PU | the CH224A's 5.1k pull-ups, on once VBUS is up | `power_hub` `i2c-pullup-gpios` |
+| IO42 | I2C_PU | the CH224A's 5.1k pull-ups: driven high once VBUS is up, an input (floating) otherwise | `power_hub` `i2c-pullup-gpios` |
 | IO47 | FLT_C | row C ~FLT | `row_c` `fault-gpios` |
 | TXD0 (IO43) | U0TX | test pad TP1 | `&uart0` |
 | RXD0 (IO44) | U0RX | test pad TP2 | `&uart0` |

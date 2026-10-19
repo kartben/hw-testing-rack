@@ -6,17 +6,20 @@
  * controller watches VBUS on its ADC; once VBUS is up it powers the sink's
  * I2C pull-ups (I2C_PU), initializes the driver (zephyr,deferred-init) as
  * soon as the chip answers, and asks for 28 V EPR when the charger offers it,
- * 20 V otherwise.
+ * 20 V otherwise.  CONFIG_HUB_PD_ADAPTIVE starts at 20 V instead, and moves
+ * to 28 V EPR (a PD transition: VRACK does not drop) once a row draws
+ * CONFIG_HUB_PD_ADAPTIVE_MA.
  *
  * The chip cannot report the voltage in place: a request counts once the
- * chip says PD, PG is low and VBUS_SENSE reads the voltage asked for.  A
- * 28 V request that VBUS does not follow within CONFIG_HUB_PD_REQUEST_MS
- * falls back to 20 V.  A contract of CONFIG_HUB_ROWS_MIN_MV or more that
- * holds for CONFIG_HUB_CONTRACT_SETTLE_MS is "final": rows.c then turns the
- * rows on; a lower one never is.  PG going high (a renegotiation, a hard
- * reset) makes the contract provisional: rows.c sheds what no longer fits,
- * and turns every row off once VBUS falls under CONFIG_HUB_ROWS_MIN_MV.  PG
- * coming back runs the policy again (the charger may offer something else).
+ * chip says PD, PG is low and VBUS_SENSE reads the voltage asked for, within
+ * 5 %.  A 28 V request that VBUS does not follow within
+ * CONFIG_HUB_PD_REQUEST_MS falls back to 20 V.  A contract of
+ * CONFIG_HUB_ROWS_MIN_MV or more that holds, VBUS too, for
+ * CONFIG_HUB_CONTRACT_SETTLE_MS is "final": rows.c then turns the rows on; a
+ * lower one never is.  PG going high (a renegotiation, a hard reset) sheds
+ * every row, except while a request of ours is on its way; they come back,
+ * staggered, with the next final contract, and the policy runs again (the
+ * charger may offer something else).
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -44,6 +47,8 @@ LOG_MODULE_REGISTER(pd, CONFIG_HUB_LOG_LEVEL);
 #define SINK_EVERY  4 /* polls: the sink's status and current once a second */
 #define EPR_MV      28000
 #define SPR_MV      20000
+#define VBUS_TOL    5  /* %: VBUS_SENSE's 1 % divider and the calibrated ADC */
+#define PG_SHED_MS  20 /* PG high this long sheds the rows: a glitch does not */
 
 static const struct gpio_dt_spec i2c_pu = GPIO_DT_SPEC_GET(HUB_NODE, i2c_pullup_gpios);
 static const struct device *const reg = DEVICE_DT_GET(REG_NODE);
@@ -56,6 +61,7 @@ static bool drivers_up;
 static int64_t contract_since;
 static int64_t asked_at;  /* uptime of the last request, 0 none pending */
 static bool spr_failed;   /* 20 V asked and not reached: said once */
+static bool epr_needed;   /* CONFIG_HUB_PD_ADAPTIVE: a row drew enough for 28 V */
 static uint32_t polls;
 
 K_THREAD_STACK_DEFINE(pd_stack, 3072);
@@ -64,8 +70,10 @@ static struct k_work_q pd_q;
 static void policy_handler(struct k_work *work);
 static void poll_handler(struct k_work *work);
 static void pg_handler(struct k_work *work);
+static void shed_handler(struct k_work *work);
 static K_WORK_DEFINE(policy_work, policy_handler);
 static K_WORK_DEFINE(pg_work, pg_handler);
+static K_WORK_DELAYABLE_DEFINE(shed_work, shed_handler);
 static K_WORK_DELAYABLE_DEFINE(poll_work, poll_handler);
 
 static const char *state_str(enum hub_pd_state s)
@@ -86,10 +94,16 @@ static int fixed_pdo(const struct hub_pd_status *s, uint32_t mv)
 	return 0;
 }
 
-/* VBUS_SENSE within the divider's and the ADC's tolerance of mv */
+/* VBUS_SENSE within VBUS_TOL of mv */
 static bool vbus_at(uint32_t vbus_mv, uint32_t mv)
 {
-	return abs((int32_t)vbus_mv - (int32_t)mv) <= (int32_t)(mv * 8 / 100);
+	return abs((int32_t)vbus_mv - (int32_t)mv) <= (int32_t)(mv * VBUS_TOL / 100);
+}
+
+/* I2C_PU: drives the sink's pull-ups when on; off, it floats (an input), not low */
+static void pullups(bool on)
+{
+	(void)gpio_pin_configure_dt(&i2c_pu, on ? GPIO_OUTPUT_ACTIVE : GPIO_INPUT);
 }
 
 /* Ask for mv (lock held) */
@@ -129,9 +143,15 @@ static void policy_handler(struct k_work *work)
 		memset(st.pdos, 0, sizeof(st.pdos));
 		st.npdos = 0;
 	}
+	/*
+	 * EPR PDOs only show once in EPR mode: an SPR message tells by PDO 1's
+	 * EPR Mode Capable bit.  No offers shown: 28 V is tried, and checked.
+	 */
 	epr_offered = st.npdos == 0 || (st.pdos[0].raw & CH224A_PDO1_EPR_CAPABLE) != 0U ||
 		      fixed_pdo(&st, EPR_MV) != 0;
-	want = st.epr_pref && epr_offered && !st.epr_refused ? EPR_MV : SPR_MV;
+	/* The policy: 28 V EPR when offered, else 20 V; adaptive, 20 V until a row needs more */
+	want = st.epr_pref && epr_offered && !st.epr_refused &&
+	       (!IS_ENABLED(CONFIG_HUB_PD_ADAPTIVE) || epr_needed) ? EPR_MV : SPR_MV;
 	/* The same request already on its way: let it finish */
 	ret = want == st.asked_mv && asked_at != 0 ? -EINPROGRESS : ask(want);
 	k_mutex_unlock(&lock);
@@ -178,12 +198,56 @@ static void pg_handler(struct k_work *work)
 
 	if (good) {
 		LOG_INF("PG: contract in place");
+		(void)k_work_cancel_delayable(&shed_work);
 		if (!ours) {
 			/* After a renegotiation: the charger may offer something else */
 			k_work_submit_to_queue(&pd_q, &policy_work);
 		}
 	} else if (!ours) {
-		hub_event(HUB_EV_PD, "contract lost (PG): the charger renegotiates");
+		k_work_reschedule_for_queue(&pd_q, &shed_work, K_MSEC(PG_SHED_MS));
+	} else {
+		LOG_INF("PG high during our request");
+	}
+}
+
+/* PG stayed high: the contract is gone, every row off until the next final one */
+static void shed_handler(struct k_work *work)
+{
+	ARG_UNUSED(work);
+
+	if (regulator_ch224a_power_good(reg) != 0) {
+		return;
+	}
+	hub_event(HUB_EV_PD, "contract lost (PG high): rows off until it is back");
+	rows_contract(false, 0, 0);
+}
+
+/*
+ * CONFIG_HUB_PD_ADAPTIVE: on 20 V, a row that draws CONFIG_HUB_PD_ADAPTIVE_MA
+ * moves the hub to 28 V EPR, until VBUS goes.
+ */
+static void adapt(void)
+{
+	struct hub_row_status rs;
+	bool on_20v;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	on_20v = st.epr_pref && !st.epr_refused && !epr_needed && st.final &&
+		 st.contract_mv == SPR_MV;
+	k_mutex_unlock(&lock);
+	if (!on_20v) {
+		return;
+	}
+
+	for (int r = 0; r < HUB_ROWS; r++) {
+		rows_status(r, &rs);
+		if (rs.ma >= CONFIG_HUB_PD_ADAPTIVE_MA) {
+			epr_needed = true;
+			hub_event(HUB_EV_PD, "row %c draws %d.%02d A: asking for 28 V EPR", 'A' + r,
+				  rs.ma / 1000, rs.ma % 1000 / 10);
+			k_work_submit_to_queue(&pd_q, &policy_work);
+			return;
+		}
 	}
 }
 
@@ -244,7 +308,9 @@ static void read_sink(void)
 
 static void vbus_lost(void)
 {
-	(void)gpio_pin_set_dt(&i2c_pu, 0);
+	pullups(false);
+	(void)k_work_cancel_delayable(&shed_work);
+	epr_needed = false;
 	k_mutex_lock(&lock, K_FOREVER);
 	st.state = HUB_PD_NONE;
 	st.final = false;
@@ -292,6 +358,7 @@ static void check_contract(uint32_t mv)
 			contract_since = now;
 			changed = true;
 		} else if (!st.final && expect >= CONFIG_HUB_ROWS_MIN_MV &&
+			   mv >= CONFIG_HUB_ROWS_MIN_MV &&
 			   now - contract_since >= CONFIG_HUB_CONTRACT_SETTLE_MS) {
 			st.final = true;
 			final_now = true;
@@ -364,7 +431,7 @@ static void poll_handler(struct k_work *work)
 
 	if (state == HUB_PD_NONE) {
 		/* The sink is powered: pull-ups on, give it a moment */
-		(void)gpio_pin_set_dt(&i2c_pu, 1);
+		pullups(true);
 		k_mutex_lock(&lock, K_FOREVER);
 		st.state = HUB_PD_STARTING;
 		k_mutex_unlock(&lock);
@@ -397,6 +464,9 @@ static void poll_handler(struct k_work *work)
 	}
 
 	check_contract(mv);
+	if (IS_ENABLED(CONFIG_HUB_PD_ADAPTIVE)) {
+		adapt();
+	}
 
 again:
 	k_work_schedule_for_queue(&pd_q, &poll_work, K_MSEC(POLL_MS));
@@ -409,8 +479,8 @@ int pd_init(bool epr)
 	if (!gpio_is_ready_dt(&i2c_pu) || !device_is_ready(vbus) || !device_is_ready(bus)) {
 		return -ENODEV;
 	}
-	/* Pull-ups off until VBUS is seen */
-	ret = gpio_pin_configure_dt(&i2c_pu, GPIO_OUTPUT_INACTIVE);
+	/* Pull-ups off (floating) until VBUS is seen */
+	ret = gpio_pin_configure_dt(&i2c_pu, GPIO_INPUT);
 	if (ret != 0) {
 		return ret;
 	}
@@ -439,6 +509,7 @@ int pd_set_epr(bool epr)
 	st.epr_pref = epr;
 	st.epr_refused = false;
 	k_mutex_unlock(&lock);
+	epr_needed = false;
 
 	hub_event(HUB_EV_PD, "contract preference: %s", epr ? "28 V EPR when offered" : "20 V");
 	if (drivers_up) {
