@@ -26,5 +26,5 @@ BOARD_DB = [
 // plate coords (front-left corner, y to the port wall), each turned USB to the port wall unless `orient: side`.
 // [bay, plate kind, [[slot, [x, y], board record as in BOARD_DB], ...]]
 BAY_PLATES = [
-  ["B3", "boards", [[1, [16.2, 115.6], ["xiao", "XIAO", [21, 17.8], 3.2, [], 10.5, "usb-c", 6, true, 4, "#202a44", true, false]], [2, [44.2, 82.4], ["rpi-pico2", "PICO 2", [21, 51], 2.1, [[4.8, 2], [16.2, 2], [4.8, 49], [16.2, 49]], 10.5, "micro-b", 9, false, 4, "#1e7b34", true, false]], [3, [72.2, 82.4], ["rpi-pico2", "PICO 2", [21, 51], 2.1, [[4.8, 2], [16.2, 2], [4.8, 49], [16.2, 49]], 10.5, "micro-b", 9, false, 4, "#1e7b34", true, false]], [4, [100.2, 115.6], ["xiao", "XIAO", [21, 17.8], 3.2, [], 10.5, "usb-c", 6, true, 4, "#202a44", true, false]]]]
+  ["B3", "boards", [[1, [14, 107.6], ["xiao", "XIAO", [21, 17.8], 3.2, [], 10.5, "usb-c", 6, true, 4, "#202a44", true, false]], [2, [30, 30], ["rpi-pico2", "PICO 2", [21, 51], 2.1, [[4.8, 2], [16.2, 2], [4.8, 49], [16.2, 49]], 10.5, "micro-b", 9, false, 4, "#1e7b34", true, false]], [3, [86.4, 30], ["rpi-pico2", "PICO 2", [21, 51], 2.1, [[4.8, 2], [16.2, 2], [4.8, 49], [16.2, 49]], 10.5, "micro-b", 9, false, 4, "#1e7b34", true, false]], [4, [102.4, 107.6], ["xiao", "XIAO", [21, 17.8], 3.2, [], 10.5, "usb-c", 6, true, 4, "#202a44", true, false]]]]
 ];

@@ -64,7 +64,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | ladder_base | 5 | 49.3 | `mechanical/stl/ladder_base.stl` |
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
 | plate_arduino-uno-r4 | 1 | 31.2 | `mechanical/stl/plate_arduino-uno-r4.stl` |
-| plate_bay_b3 | 1 | 36.3 | `mechanical/stl/plate_bay_b3.stl` |
+| plate_bay_b3 | 1 | 37.0 | `mechanical/stl/plate_bay_b3.stl` |
 | plate_frdm-mcxn947 | 1 | 36.9 | `mechanical/stl/plate_frdm-mcxn947.stl` |
 | plate_giga-r1-display | 1 | 36.6 | `mechanical/stl/plate_giga-r1-display.stl` |
 | plate_nrf52840-dk | 1 | 37.6 | `mechanical/stl/plate_nrf52840-dk.stl` |

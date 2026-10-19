@@ -259,8 +259,10 @@ class AccessConfig(unittest.TestCase):
 class Slots(unittest.TestCase):
     """config/rack.yaml › population: a bay's one board, or a converted bay's boards on one plate."""
 
-    EXAMPLE = [("xiao", (16.2, 115.6)), ("rpi-pico2", (44.2, 82.4)), ("rpi-pico2", (72.2, 82.4)),
-               ("xiao", (100.2, 115.6))]
+    PACKED = [("xiao", (16.2, 115.6)), ("rpi-pico2", (44.2, 82.4)), ("rpi-pico2", (72.2, 82.4)),
+              ("xiao", (100.2, 115.6))]
+    EXAMPLE = [("xiao", (14.0, 107.6)), ("rpi-pico2", (30.0, 30.0)), ("rpi-pico2", (86.4, 30.0)),
+               ("xiao", (102.4, 107.6))]
 
     def test_one_board(self):
         self.assertEqual(rackcfg.dut_slots("A1", {"board": "nucleo-64", "cable": "c-to-micro-b"}),
@@ -305,7 +307,7 @@ class Slots(unittest.TestCase):
         boards = [{"board": b} for b, _ in CONVERTED]
         rack.raw["population"]["B3"] = {"boards": boards}
         self.assertEqual(rack.multi_bays(), ["B3"])
-        self.assertEqual(rack.bay_boards("B3"), self.EXAMPLE)              # packed in a row, centred
+        self.assertEqual(rack.bay_boards("B3"), self.PACKED)               # packed in a row, centred
         self.assertEqual(rack.check_bay_plate("B3"), [])
         o = rack.bay_layout("B3")[1]["o"]                                # the Pico 2 turned USB to the port wall
         self.assertEqual((o["w"], o["l"], o["usb_side"]), (21.0, 51.0, False))

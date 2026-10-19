@@ -115,11 +115,11 @@ population:
   B2: { board: giga-r1-display,  cable: c-to-c }                   # the camera bay: a live LVGL screen (2026-10-18)
   B3:                                                              # converted: B3.1–B3.4 on a DATA ×4 board
     open: true                                                     # drawer shown pulled out
-    boards:
-      - { board: xiao,      cable: c-to-c,       at: [16.2, 115.6] }
-      - { board: rpi-pico2, cable: c-to-micro-b, at: [44.2, 82.4] }
-      - { board: rpi-pico2, cable: c-to-micro-b, at: [72.2, 82.4] }
-      - { board: xiao,      cable: c-to-c,       at: [100.2, 115.6] }
+    boards:                  # the XIAO at the rear corners, the Pico 2 in front 35 mm apart: their cables run
+      - { board: xiao,      cable: c-to-c,       at: [14.0, 107.6] }    # straight back between the XIAO
+      - { board: rpi-pico2, cable: c-to-micro-b, at: [30.0, 30.0] }
+      - { board: rpi-pico2, cable: c-to-micro-b, at: [86.4, 30.0] }
+      - { board: xiao,      cable: c-to-c,       at: [102.4, 107.6] }
   B4: { board: arduino-uno-r4,   cable: c-to-c-straight, pc_cable: true }      # "classic" mode: laptop on the front port
 
 cables:
