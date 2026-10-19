@@ -187,6 +187,8 @@ it (measured in the spike).
 | hub class | a public API for port power and status, and port events for the application | the spike uses the stack's private requests |
 | `uhc_dwc2.c` | low-speed devices behind a full-speed hub (`HCCHAR.LSPDDEV`) | only if a low-speed DUT is wanted |
 | `uhc_dwc2.c` | #120848, #120961, #121688 (data toggles, bulk retries; seen behind a hub on the P4) | to land first |
+| `uhc_dwc2.c` | channel sharing: a pending IN keeps one of the S3's 8 channels (bulk IN retried on NAK by the core, interrupt IN claimed between polls), and control/OUT transfers queue behind them; the hub's status IN + 2 per open CDC console = 9 with 4 consoles open | must have for 4 DUTs; bench: 4 consoles open, a command to a quiet board, a re-plug ([data-x4-v2-research.md](data-x4-v2-research.md), "USB host channels") |
+| `uhc_dwc2.c` | per-endpoint state (32 `ch_data` slots) freed when a device behind the hub goes; today only a root-port reset clears it, so slots leak and a re-enumerated board can inherit stale toggles | same |
 
 ## Open
 
