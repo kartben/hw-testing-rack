@@ -162,6 +162,43 @@ RST pulled up until the node configures.  LCSC C109471 $1.59, 1,744 in stock, Ec
 (SG Micro, an MT8816 second source): 0 in stock, $10.9.  The speed estimates above hold: I²C at
 400 kHz with 2.2 k gives V_OL ≈ 0.6 V at the far board (limit 0.99 V at 3.3 V).
 
+### Matrix alternatives: CH449F, CH446X (user question, 2026-10-19)
+
+The user asked about WCH's CH449F and CH446X.  Datasheets: CH449DS1 v1.1 (2022-05-23, wch.cn file 350),
+CH446DS1.  Prices are the user's LCSC figures at 10 pieces; stock from the JLC parts library the same day.
+
+| | CH446Q × 2 (kept) | CH449F × 8 (same 32 × 8) | CH446X × 4 |
+|---|---|---|---|
+| Part | 8 × 16 crosspoint, LQFP-44 10 × 10 | two independent 4 × 4 matrices (32 switches), QFN-24 4 × 4 | 5 × 24 crosspoint, LQFP-44 10 × 10 |
+| Topology for 32 pins × 8 buses | one chip per two ports, Y lines joined = the 8 buses | one chip per half-port: 4 pins, each tied to A_nX and A_nY; X → buses A–D, Y → E–H | 5 Y lines per chip: two chips per 16 pins for 8 buses (2 Y spare) |
+| Cost | 2 × $1.35 + TPS60400 ≈ $3.2 | 8 × $1.07 + an I²C mux ≈ $9.4 | 4 × $1.50 + TPS60400 ≈ $6.5 |
+| Bottom-side area (courtyards) | ≈ 335 mm² | ≈ 225 mm² | ≈ 650 mm² |
+| Bus connections to route | 16 (each bus on 2 chips) | 64 (each bus under all 8 chips) | 16, and every pin to 2 chips |
+| R_on | ≈ 55–65 Ω at ±5 V (interpolated); 120 / 185 Ω at +5 V only | at VDD 5 V: 4 / 7 Ω at 0 V, 6 / 10 Ω at 2 V, 10 / 15 Ω at 3.4 V (typ / max) | as CH446Q |
+| C per switch pin | 10–25 pF | on 10–15 pF, off 7–10 pF | as CH446Q |
+| Supply, signals | VDD − VEE 4–13.2 V; ±5 V here (−5 V from the TPS60400); signals VEE..VDD | single 2.1–5.5 V, CMOS rail to rail: 5 V here, **no −5 V**; signals −0.3..VDD + 0.3 V | as CH446Q |
+| Current per switch / in all | 15 mA / 100 mA | **6.5 mA / 30 mA** | 15 mA / 100 mA |
+| Control | serial DAT + CK shared, one STB per chip, no address (the node's TCA9534A, 17 writes per crosspoint); state at power-up unspecified, RST held | I²C-like, write only, one ADDR pin: **2 chips per bus** (0x19–0x1B, 0x29–0x2B; free on the node's bus); 8 chips need a TCA9548A mux; one write sets a whole 4 × 4; power-on and low-voltage reset open everything | as CH446Q |
+| JLC (2026-10-19) | C109471, 1,744 in stock, Extended, Economic | C54973457, 377 in stock (≈ 47 boards), Extended, Economic | C3018882, 42 in stock, Extended |
+
+The user's summary is half right: ≈ 5 Ω is typical at 0 V, but the 28 Ω is the CH449F's maximum at
+**VDD = 3.3 V** with a 2 V signal (typical 20 Ω).  At VDD = 5 V it stays ≤ 15 Ω over our 0–3.4 V.
+
+Speed, with the same Elmore assumptions as above: the CH449F's low R_on is undone at the board level.
+Every bus carries 8 switch pins (56–80 pF, against 20–50 pF for two CH446Q Y pins), and the 6.5 mA
+limit wants ≈ 220 Ω instead of 100 Ω in series (two 3.3 V outputs fighting through 100 Ω and the
+matrix push ≈ 11 mA).  Rise ≈ 65–80 ns with 220 Ω (≈ 40 ns with 100 Ω, beyond the switch's rating in
+a fight) against ≈ 45–60 ns for the CH446Q; SPI/SWD ≈ 5 MHz either way; I²C 400 kHz V_OL ≈ 0.7 V at
+the far board (0.6 V with the CH446Q, limit 0.99 V): no gain.  The CH446X has the CH446Q's figures
+with fewer buses per chip.
+
+**Kept: the CH446Q × 2.**  The CH449F wins on R_on, a single 5 V supply, its power-on reset and its
+size, but for the same 32 × 8 it takes 8 chips plus an I²C mux, ≈ 3 × the cost, 4 × the bus
+connections on our two routing layers, 377 in stock and a 6.5 mA switch, for no speed gain.  It would
+fit a reduced matrix: 4 pins per port on 8 buses, one chip per port (≈ $5 with the mux, no −5 V, each
+bus on 4 chips); the user asked for the maximum.  The CH446X has only 5 Y lines: 8 buses take 4 chips.
+The CH448F (dual 8:1 mux, $0.47) joins one input at a time: a probe selector, not wires.  No mix.
+
 ### Limits to state in the UI and the docs
 
 - **5 V logic boards cannot be wired**: the LSF0108's A side stops at 4.5 V and the buses are 3.3 V.
