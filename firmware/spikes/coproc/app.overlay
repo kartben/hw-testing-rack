@@ -1,0 +1,100 @@
+/*
+ * DATA ×4 v2 co-processor spike on a Pico 2 (README.md).  Pins follow the
+ * v2 research: the eight buses are GPIO2-9 (CH1-8).
+ *
+ *   GPIO2-9   sampled by the PIO capture (all eight)
+ *   GPIO4/5   I2C0 target: an emulated TMP103 at 0x70 (CH3/CH4)
+ *   GPIO6/7   I2C1 target: an emulated 256-byte EEPROM at 0x50 (CH5/CH6)
+ *   GPIO8/9   UART1, bridged to the "con1" CDC-ACM port (CH7/CH8)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	chosen {
+		zephyr,shell-uart = &cdc_acm_shell;
+	};
+
+	/* A DUT console: UART1 <-> USB, line coding passed through */
+	uart-bridge-con1 {
+		compatible = "zephyr,uart-bridge";
+		peers = <&cdc_acm_con1 &uart1>;
+	};
+};
+
+&zephyr_udc0 {
+	cdc_acm_shell: cdc_acm_shell {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "coproc shell";
+	};
+
+	cdc_acm_con1: cdc_acm_con1 {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "coproc con1";
+	};
+
+	/* con2/con3: for PIO UARTs, which have no interrupt API yet (README.md) */
+	cdc_acm_con2: cdc_acm_con2 {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "coproc con2";
+	};
+
+	cdc_acm_con3: cdc_acm_con3 {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "coproc con3";
+	};
+};
+
+&pinctrl {
+	uart1_bus: uart1_bus {
+		group1 {
+			pinmux = <UART1_TX_P8>;
+		};
+
+		group2 {
+			pinmux = <UART1_RX_P9>;
+			input-enable;
+		};
+	};
+};
+
+&uart1 {
+	current-speed = <115200>;
+	pinctrl-0 = <&uart1_bus>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+/* The board's defaults already put I2C0 on GPIO4/5 and I2C1 on GPIO6/7 */
+&i2c0 {
+	tmp103_emul: tmp103@70 {
+		compatible = "zephyr,i2c-target-tmp103";
+		reg = <0x70>;
+		sensor = <&die_temp>;
+	};
+};
+
+&i2c1 {
+	eeprom_emul: eeprom@50 {
+		compatible = "zephyr,i2c-target-eeprom";
+		reg = <0x50>;
+		size = <256>;
+	};
+};
+
+&adc {
+	status = "okay";
+};
+
+&die_temp {
+	status = "okay";
+};
+
+/* Own labels: the pico-sdk headers define pio0 (and friends) as macros */
+coproc_pio: &pio0 {
+	status = "okay";
+};
+
+coproc_dma: &dma {
+	status = "okay";
+};

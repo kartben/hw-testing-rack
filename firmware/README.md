@@ -38,6 +38,7 @@ firmware/
     tests/usbip/                 the patched USB/IP service on native_sim's virtual USB bus,
                                  a device unplugged mid-session (test_usbip.py)
   spikes/usb-hub/                bench app: a hub and several DUTs behind an ESP32-S3
+  spikes/coproc/                 build-only: the DATA ×4 v2 co-processor's jobs on a Pico 2 (RP2350)
   power-hub/                     the power hub application (its own README)
   bay-node/                      the bay node application
     boards/esp32s3_devkitc_procpu.overlay   stand-in: same pin map on a DevKitC-1

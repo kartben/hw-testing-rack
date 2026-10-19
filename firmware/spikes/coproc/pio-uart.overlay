@@ -1,0 +1,41 @@
+/*
+ * con2 on a PIO UART (TX GPIO2, RX GPIO3: CH1/CH2), bridged like con1.
+ * Needs Zephyr PR #118562 (interrupt-driven PIO UART): without it the
+ * driver only polls and the bridge never sees a byte (README.md).
+ *
+ *   west build ... -- -DEXTRA_DTC_OVERLAY_FILE=pio-uart.overlay
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	uart-bridge-con2 {
+		compatible = "zephyr,uart-bridge";
+		peers = <&cdc_acm_con2 &pio1_uart0>;
+	};
+};
+
+&pinctrl {
+	pio1_uart0_bus: pio1_uart0_bus {
+		rx_pins {
+			pinmux = <PIO1_P3>;
+			input-enable;
+		};
+
+		tx_pins {
+			pinmux = <PIO1_P2>;
+		};
+	};
+};
+
+&pio1 {
+	status = "okay";
+
+	pio1_uart0: uart0 {
+		compatible = "raspberrypi,pico-uart-pio";
+		current-speed = <115200>;
+		pinctrl-0 = <&pio1_uart0_bus>;
+		pinctrl-names = "default";
+		status = "okay";
+	};
+};

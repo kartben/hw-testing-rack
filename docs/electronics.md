@@ -316,7 +316,8 @@ JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $77 for 5 PCBs w
 (estimate in `tools/bom.py`).
 
 v2 (32 switchable pins on 8 buses, an RP2354B co-processor, two assembly variants): research in
-[data-x4-v2-research.md](data-x4-v2-research.md).
+[data-x4-v2-research.md](data-x4-v2-research.md); the co-processor's firmware in
+[coproc-firmware-research.md](coproc-firmware-research.md).
 
 ## Camera pod v1.0 — 2 layers, 40 × 27 mm
 
