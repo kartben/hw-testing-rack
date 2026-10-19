@@ -28,7 +28,8 @@ SC = os.environ.get("SOLIDCRAFT") or next(iter(sorted(glob.glob(os.path.expandva
     r"%LOCALAPPDATA%\Programs\SolidCraft-*\solidcraft-cli.exe")))), "solidcraft-cli")
 MIN_VOLUME = 0.05                       # mm³: below it, contact
 STEP_TIMEOUT = 600                      # s per SolidCraft run: past it, the step is reported as not checked
-LEADS = ("data_lead", "data_lead_free", "data_lead_stub", "jumper", "feed", "pd_cable")
+LEADS = ("data_lead", "data_lead_free", "data_lead_stub", "jumper", "feed", "pd_cable",
+         "dut_cable0", "dut_cable1", "camera_lead", "camera_xh")       # their plugs in their receptacles
 
 
 def base(body: str) -> str:

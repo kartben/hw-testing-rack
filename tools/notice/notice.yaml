@@ -3,12 +3,15 @@
 # Drawings are notice.py's: a step's `drawing` and `detail` are STEPS names; part chips and cards
 # are THUMBS (chip_<key>, card_<key>); hardware icons are hw_<key>.  pages.py turns this file and
 # the uploaded drawings' addresses (assets.json) into the canvas's page files.  See README.md.
+#
+# The order is docs/assembly.md's: the frame (§2), each tray fitted at the bench (§4: node, chain,
+# drawer, plate) and slid in, the row jumper (§4.3), the power box (§5), a camera (§6).
 
 canvas: https://claude.ai/artifact/4E2UyPydficBXMAkRwtYsr
 index:                 # the canvas's project/canvas.json: its title, and a row of artboards per title note
   title: Bay assembly
   createdOnFiles: {v: 1, at: "2026-10-17T17:20:00Z"}
-  rows: {titleA: "1 · One bay", titleB: "2 · Add a bay", titleC: "3 · Power box"}
+  rows: {titleA: "1 · One bay", titleB: "2 · Add a bay", titleC: "3 · Power box", titleD: "4 · Camera (optional)"}
 name: TESTBÅS
 credit: hw-testing-rack
 
@@ -29,21 +32,34 @@ parts:                 # thumbnail key (notice.py THUMBS): name on the pages
   an: Chain anchor
   ft: Chain foot
   dc: Drag chain
-  xt: DATA lead (JST PH 5)
+  xt: DATA lead (JST PH 8)
   dp: DATA port board
+  hx: Board plate
+  ps: Stop
+  pc: Cam on its base
+  po: Bobbin
+  pp: Pin
   pb: Power box
   pl: Lid
   hb: Power hub
   ch: USB-C charger
+  kp: Camera pod
+  kd: Diffuser
+  kb: Pod board
+  km: Arducam Mega
+  kl: Camera lead (JST PH 8)
 
 hardware:              # icon key (notice.py hw_shape): name on the parts pages, label on the step chips
   insert: {name: M3 insert}
   m3x8: {name: M3 × 8}
   m3x6: {name: M3 × 6}
   pt26x8: {name: PT 2.6 × 8}                           # thread-forming for plastics (or M2.5 × 8 self-tapping)
+  pt23x8: {name: PT 2.3 × 8}                           # self-tapping, head ≤ Ø 4.5: the guide lips' screws
+  pt26x14: {name: PT 2.6 × 14}                         # the camera pod's board and diffuser
   w25: {name: M2.5 washer}
   sp12: {name: M3 × 12 hex spacer, label: Spacer M3 × 12}   # male-female
   mag: {name: Magnet 6 × 3}                            # the drawer's detent: one in the drawer, one in the tray ledge
+  tie: {name: Cable tie 2.5 × 100, label: Cable tie}
   jumper: {name: 6-pin jumper, label: 6-pin jumper}    # JST PH, plugs on the same face, pin n to pin 7-n (bom/rack-bom.csv)
   usbc: {name: "USB-C cable, 5 A", label: USB-C 5 A}    # e-marked, the charger's
   feed: {name: 6-pin feed, label: 6-pin feed, icon: jumper}  # the jumpers' type: box to a row's first node
@@ -56,19 +72,20 @@ pages:
     drawing: cover
     alt: Assembled bay
     people: 1
-    tools: PH1 · insert iron
+    tools: PH1, magnetic, shaft ≤ Ø 5 · insert iron
 
-  # counts per bay from bom/rack-bom.csv: inserts 4 per ladder + 6 in the tray; M3x8 4 per brace + 2 for the
-  # chain anchor; M3x6 the node; PT 2.6x8: 4 chain ends, 2 DATA board, foot lock, drawer stop; 4 washers
+  # counts per bay from bom/rack-bom.csv: inserts 4 per ladder, 6 in the tray, 4 under the cap plate (a camera's
+  # mount); M3x8 4 per brace + 2 for the chain anchor; M3x6 the node; PT 2.6x8: 4 chain ends, 2 DATA board, the
+  # foot lock; PT 2.3x8 the stop; 4 washers.  The plate's pegs: python tools/plate_layout.py A1 (a NUCLEO-64)
   - file: A-pieces.dc.html
     board: {title: "One bay: parts", row: titleA}
     kind: parts
     title: One bay, parts
     page: 2
     footer: "{name}"
-    parts: {lb: 2, la: 2, lc: 2, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1}
-    hardware: {insert: 22, m3x8: 10, m3x6: 4, pt26x8: 8, w25: 4, mag: 2}
-    note: "First, heat-set the inserts: 4 per ladder (rear edge), 6 in the tray. Glue the 2 magnets (drawer, tray ledge) with CA: they must attract. Drag chain: ≈ 180 mm with its two end pieces (or print chain_parts.scad, link + bar)."
+    parts: {lb: 2, la: 2, lc: 2, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1, hx: 1, ps: 3, pc: 3, po: 1}
+    hardware: {insert: 26, m3x8: 10, m3x6: 4, pt26x8: 7, pt23x8: 1, w25: 4, mag: 2}
+    note: "First, heat-set the inserts: 4 per ladder (rear edge), 6 in the tray, 4 under the cap plate. Glue the 2 magnets (drawer, tray ledge) with CA: they must attract. Drag chain: ≈ 180 mm with its two end pieces. Pegs: python tools/plate_layout.py &lt;bay&gt;."
 
   - file: A-01.dc.html
     board: {title: "One bay: 1–2", row: titleA}
@@ -97,8 +114,8 @@ pages:
     page: 5
     footer: "{name}"
     steps:
-      - {n: 5, drawing: a5, alt: "Tray slides into the row ladder grooves", parts: {tr: 1}, clic: true}
-      - {n: 6, drawing: a6, alt: "Rear view: row brace screwed to both ladders", parts: {bb: 1}, hardware: {m3x8: 4}}
+      - {n: 5, drawing: t1, alt: "At the bench: the node onto the tray's standoffs; its two left screws through the guide's holes, on the magnetic bit", parts: {tr: 1, nd: 1}, hardware: {m3x6: 4}}
+      - {n: 6, drawing: a9b, alt: "The chain's end pieces onto the anchor and the foot's fin, a washer under each screw", parts: {dc: 1, an: 1, ft: 1}, hardware: {pt26x8: 4, w25: 4}}
 
   - file: A-04.dc.html
     board: {title: "One bay: 7–8", row: titleA}
@@ -107,8 +124,8 @@ pages:
     page: 6
     footer: "{name}"
     steps:
-      - {n: 7, drawing: a7, alt: "Cap strips on top, cap plate slides in", parts: {lc: 2, cp: 1}, clic: true}
-      - {n: 8, drawing: a8, alt: "Bay node screwed to the tray standoffs", parts: {nd: 1}, hardware: {m3x6: 4}}
+      - {n: 7, drawing: a10o, alt: "Open the links, lay the DATA lead in, close them", parts: {xt: 1}}
+      - {n: 8, drawing: t2, alt: "Anchor into the tray's inserts, the chain along it; the lead's plug into the node's J7 (DATA)", hardware: {m3x8: 2}}
 
   - file: A-05.dc.html
     board: {title: "One bay: 9–10", row: titleA}
@@ -117,8 +134,8 @@ pages:
     page: 7
     footer: "{name}"
     steps:
-      - {n: 9, drawing: a9b, alt: "At the bench: the chain's end pieces onto the anchor and the foot's fin, a washer under each screw", parts: {dc: 1, an: 1, ft: 1}, hardware: {pt26x8: 4, w25: 4}}
-      - {n: 10, drawing: a10o, alt: "Open the links, lay the DATA lead in, close them", parts: {xt: 1}}
+      - {n: 9, drawing: a12s, alt: "Drawer: the DATA board on its two bosses, components up, its USB-C behind the port wall's U, 2 screws from above; the lead into its PH from the rear, down through the cable window", parts: {dp: 1}, hardware: {pt26x8: 2}}
+      - {n: 10, drawing: t3, alt: "Drawer onto the tray's ledges, its groove over the chain foot: lock the foot from the rear bay, then the stop screw down through the left lip", parts: {dr: 1}, hardware: {pt26x8: 1, pt23x8: 1}}
 
   - file: A-06.dc.html
     board: {title: "One bay: 11–12", row: titleA}
@@ -127,33 +144,54 @@ pages:
     page: 8
     footer: "{name}"
     steps:
-      - {n: 11, drawing: a11t, alt: "Anchor into the tray's inserts; the DATA lead's plug into the node's J7 (DATA), its spare length in a bend before the chain", hardware: {m3x8: 2}}
-      - {n: 12, drawing: a12s, alt: "Drawer: the DATA board on its two bosses, components up, its USB-C behind the port wall's U, 2 screws from above; the lead into its PH from the rear, down through the cable window", parts: {dp: 1}, hardware: {pt26x8: 2}}
+      - {n: 11, drawing: p1, alt: "Plate: clip the stops, the cams on their bases (open) and the bobbin into the holes the layout names (rim numbers), each stop's arrow towards the board", parts: {hx: 1, ps: 3, pc: 3, po: 1}, detail: clip}
+      - {n: 12, drawing: p2, alt: "Board against the stops; turn each cam clockwise until it bites"}
 
   - file: A-07.dc.html
-    board: {title: "One bay: 13", row: titleA}
-    kind: last
-    title: One bay, step 13
+    board: {title: "One bay: 13–14", row: titleA}
+    kind: steps
+    title: One bay, steps 13–14
     page: 9
     footer: "{name}"
-    step: {n: 13, drawing: a9, alt: "Drawer slides in, its groove over the chain foot: lock it from the rear bay, then the stop screw in the left lip", parts: {dr: 1}, hardware: {pt26x8: 2}}
+    steps:
+      - {n: 13, drawing: p3, alt: "Plate into the drawer, over its two pins"}
+      - {n: 14, drawing: p4, alt: "The board's cable: right-angle USB-C into the DATA board, the micro-B on its adapter into the board, the spare length round the bobbin. Bay label in the front recess."}
+
+  - file: A-08.dc.html
+    board: {title: "One bay: 15–16", row: titleA}
+    kind: steps
+    title: One bay, steps 15–16
+    page: 10
+    footer: "{name}"
+    steps:
+      - {n: 15, drawing: t4, alt: "The fitted tray slides into the row ladder grooves until the barbs click", clic: true}
+      - {n: 16, drawing: a6, alt: "Rear view: row brace screwed to both ladders", parts: {bb: 1}, hardware: {m3x8: 4}}
+
+  - file: A-09.dc.html
+    board: {title: "One bay: 17", row: titleA}
+    kind: last
+    title: One bay, step 17
+    page: 11
+    footer: "{name}"
+    step: {n: 17, drawing: a7, alt: "Cap strips on top, cap plate slides in", parts: {lc: 2, cp: 1}, clic: true}
     finished: {drawing: cover_small, alt: Finished bay}
 
+  # the next bay's plate: python tools/plate_layout.py A2 (a NUCLEO-144: a pin through its hole, 2 cams)
   - file: B-pieces.dc.html
     board: {title: "Next bay: parts", row: titleB}
     kind: parts
     title: Next bay, parts
-    page: 10
+    page: 12
     footer: "{name} · next bay"
     banner: "The middle ladder is shared. Heat-set the new inserts and glue the magnets (CA, attracting) first."
-    parts: {lb: 1, la: 1, lc: 1, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1}
-    hardware: {jumper: 1, insert: 14, m3x8: 10, m3x6: 4, pt26x8: 8, w25: 4, mag: 2}   # the new lb and la, the tray
+    parts: {lb: 1, la: 1, lc: 1, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1, hx: 1, pp: 1, pc: 2, po: 1}
+    hardware: {jumper: 1, tie: 2, insert: 18, m3x8: 10, m3x6: 4, pt26x8: 7, pt23x8: 1, w25: 4, mag: 2}   # the new lb and la, the tray, the cap plate
 
   - file: B-01.dc.html
     board: {title: "Next bay: 1–2", row: titleB}
     kind: steps
     title: Next bay, steps 1–2
-    page: 11
+    page: 13
     footer: "{name} · next bay"
     steps:
       - {n: 1, drawing: b1, alt: "Base ladder on the right, floor plate slides in", parts: {lb: 1, fp: 1}, clic: true}
@@ -163,47 +201,38 @@ pages:
     board: {title: "Next bay: 3–4", row: titleB}
     kind: steps
     title: Next bay, steps 3–4
-    page: 12
+    page: 14
     footer: "{name} · next bay"
     steps:
-      - {n: 3, drawing: b3, alt: "Row ladder on the new base, second tray slides in", parts: {la: 1, tr: 1}, clic: true}
-      - {n: 4, drawing: b3n, alt: "Second bay node screwed to its tray", parts: {nd: 1}, hardware: {m3x6: 4}}
+      - {n: 3, drawing: b3r, alt: "Row ladder onto the new base ladder", parts: {la: 1}, clic: true}
+      - {n: 4, drawing: b3t, alt: "Its tray, fitted at the bench as steps 5–14 (its plate's own layout), slides in", parts: {tr: 1, nd: 1, dc: 1, dr: 1, hx: 1}, hardware: {m3x6: 4, m3x8: 2, pt26x8: 7, pt23x8: 1, w25: 4}, clic: true}
 
   - file: B-03.dc.html
     board: {title: "Next bay: 5–6", row: titleB}
     kind: steps
     title: Next bay, steps 5–6
-    page: 13
+    page: 15
     footer: "{name} · next bay"
     steps:
-      - {n: 5, drawing: b4, alt: "Top view: the 6-pin jumper between the two bay nodes, lying flat", cables: {jumper: 1}}
+      - {n: 5, drawing: b4, alt: "Drawers out. Top view: the 6-pin jumper between the two nodes, along the tray's front, a tie through each anchor", cables: {jumper: 1}, hardware: {tie: 2}}
       - {n: 6, drawing: b5a, alt: "Brace, cap strip and cap plate of the second bay", parts: {bb: 1, lc: 1, cp: 1}, hardware: {m3x8: 4}, clic: true}
 
   - file: B-04.dc.html
-    board: {title: "Next bay: 7", row: titleB}
-    kind: steps
-    title: Next bay, step 7
-    page: 14
-    footer: "{name} · next bay"
-    steps:
-      - {n: 7, drawing: b5, alt: "Chain, DATA board and drawer of the second bay, as steps 9–13", parts: {dc: 1, an: 1, ft: 1, xt: 1, dp: 1, dr: 1}, hardware: {m3x8: 2, pt26x8: 8, w25: 4}}
-
-  - file: B-05.dc.html
     board: {title: "Next bay: done", row: titleB}
     kind: done
     title: Next bay, done
-    page: 15
+    page: 16
     footer: "{name} · next bay"
     drawing: done
     alt: Two bays sharing the middle ladder
-    note: "Another bay: steps 1–7. Another row: row ladders instead of cap strips, then steps 5–13."
+    note: "Another bay: steps 1–6. Another row: row ladders instead of cap strips, then trays as steps 5–16."
 
   # bom/rack-bom.csv: 4 inserts (hub standoffs), 4 hex spacers, 4 x M3x6 for the lid, one feed per row (A, B)
   - file: C-pieces.dc.html
     board: {title: "Power box: parts", row: titleC}
     kind: parts
     title: Power box, parts
-    page: 16
+    page: 17
     footer: "{name} · power"
     parts: {pb: 1, pl: 1, hb: 1, ch: 1}
     hardware: {insert: 4, sp12: 4, m3x6: 4, usbc: 1, feed: 2}
@@ -212,7 +241,7 @@ pages:
     board: {title: "Power box: 1–2", row: titleC}
     kind: steps
     title: Power box, steps 1–2
-    page: 17
+    page: 18
     footer: "{name} · power"
     steps:
       - {n: 1, drawing: c0, alt: "Box empty: the 4 inserts into the hub standoffs, the iron from above", hardware: {insert: 4}}
@@ -222,7 +251,7 @@ pages:
     board: {title: "Power box: 3–4", row: titleC}
     kind: steps
     title: Power box, steps 3–4
-    page: 18
+    page: 19
     footer: "{name} · power"
     steps:
       - {n: 3, drawing: c2, alt: "Lid on, its rim inside the walls; 4 screws into the spacers", parts: {pl: 1}, hardware: {m3x6: 4}}
@@ -232,7 +261,7 @@ pages:
     board: {title: "Power box: 5–6", row: titleC}
     kind: steps
     title: Power box, steps 5–6
-    page: 19
+    page: 20
     footer: "{name} · power"
     steps:
       - {n: 5, drawing: c4, alt: "Rear view: the charger's USB-C cable into the box's rear port", parts: {ch: 1}, cables: {usbc: 1}}
@@ -242,8 +271,38 @@ pages:
     board: {title: "Power box: done", row: titleC}
     kind: done
     title: Power box, done
-    page: 20
+    page: 21
     footer: "{name} · power"
     drawing: c_done
     alt: Bay with its power box
     note: "Power up: the PD LED breathes, then each row's ON LED lights."
+
+  # bom/rack-bom.csv: the pod hardware (2 x PT 2.6x14, ties), 4 x M3x6 into the bay's ceiling inserts
+  - file: D-pieces.dc.html
+    board: {title: "Camera: parts", row: titleD}
+    kind: parts
+    title: Camera, parts
+    page: 22
+    footer: "{name} · camera"
+    parts: {kp: 1, kd: 1, kb: 1, km: 1, kl: 1}
+    hardware: {m3x6: 4, pt26x14: 2, tie: 4}
+    note: "Any bay takes a camera: its ceiling has the 4 inserts. Fit the 120° M12 lens in the Mega first; its XH → Dupont cable goes with it."
+
+  - file: D-01.dc.html
+    board: {title: "Camera: 1–2", row: titleD}
+    kind: steps
+    title: Camera, steps 1–2
+    page: 23
+    footer: "{name} · camera"
+    steps:
+      - {n: 1, drawing: k1, alt: "At the bench: the pod board behind the sleeve, LEDs down, the diffuser under it; 2 screws up through its posts and the board", parts: {kp: 1, kb: 1, kd: 1}, hardware: {pt26x14: 2}}
+      - {n: 2, drawing: k2, alt: "Drawer out. The pod under the ceiling, 4 screws into the inserts; the Mega up into the sleeve until the lips click, lens down, its XH cable onto J2 by name", parts: {km: 1}, hardware: {m3x6: 4}, clic: true}
+
+  - file: D-02.dc.html
+    board: {title: "Camera: 3", row: titleD}
+    kind: steps
+    title: Camera, step 3
+    page: 24
+    footer: "{name} · camera"
+    steps:
+      - {n: 3, drawing: k3, alt: "Drawer out. The lead from the node's J6, back through the plenum and the tray's rear slot, up behind the tray, forwards under the ceiling into the pod's J1, a tie every ~5 cm", parts: {kl: 1}, hardware: {tie: 4}}

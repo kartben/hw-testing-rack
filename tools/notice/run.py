@@ -64,13 +64,39 @@ PARTS = {
     "chain_foot": ("parts/chain_parts.scad", {}, "include <{MECH}/lib/carrier.scad>\nfoot();"),   # as assembled
     "chain_link": ("parts/chain_parts.scad", {}, "include <{MECH}/lib/carrier.scad>\nlink();"),   # lying as in the rack
     "chain_bar": ("parts/chain_parts.scad", {"PART": "bar"}),
+    "plate": ("parts/board_plate.scad", {}),                      # the honeycomb board plate and its pegs
+    "peg_stop_h12": ("parts/pegs.scad", {"PART": "stop", "H": 12}),
+    "peg_base_h12": ("parts/pegs.scad", {"PART": "base", "H": 12}),
+    "peg_cam": ("parts/pegs.scad", {"PART": "cam"}),
+    "peg_bobbin": ("parts/pegs.scad", {"PART": "bobbin"}),
+    "camera_pod": ("parts/camera_pod.scad", {}, "include <{MECH}/lib/carrier.scad>\npod();"),   # as assembled
+    "camera_diffuser": ("parts/camera_pod.scad", {"PART": "diffuser"}),
+    "mega_camera": ("parts/camera_pod.scad", {"PART": "mega"}),
+    "podpcb": ("parts/camera_pod.scad", {"PART": "podpcb"}),
+    "podpcb_parts": ("parts/camera_pod.scad", {"PART": "podpcb_parts"}),
 }
+USB_PIECES = {"right": ("right", "mold"), "straight": ("straight", "mold"), "adapter": ("adapter", "mold"),
+              "adapter_metal": ("adapter", "metal")}      # a DUT cable's ends: mold (+ the shell), or the 90° adapter
+
+
+def usb_parts() -> dict:
+    """The USB plugs of the DUT cables, as the viewer draws them (tools/webscene.py USB_PLUGS, usb_plugs.scad)."""
+    import webscene
+    out = {}
+    for t, d in webscene.USB_PLUGS.items():
+        out[f"usbplug_{t}_shell"] = ("parts/usb_plugs.scad", {**d, "PIECE": "shell"})
+        for k, (style, piece) in USB_PIECES.items():
+            if style != "adapter" or "ATOP" in d:
+                out[f"usbplug_{t}_{k}"] = ("parts/usb_plugs.scad", {**d, "STYLE": style, "PIECE": piece})
+    return out
 # heaviest first, dealt round-robin to the processes
-JOBS = ["done", "b5", "b5a", "c_done", "b3", "b1", "a9", "c5", "b2", "a8", "a11t", "c3", "c4", "b3n", "b4", "cover",
-        "a7", "a6", "a5", "a4", "a12s", "a9b", "a10o", "a3", "a2", "a1", "c0", "c1", "c2", "pin", "pin_b", "hook"] \
+JOBS = ["done", "b3t", "b5a", "c_done", "t3", "p3", "t4", "b1", "c5", "b2", "t2", "c3", "c4", "b4", "cover", "a7", "a6",
+        "k3", "p4", "t1", "a4", "k2", "a12s", "a9b", "a10o", "p2", "p1", "k1", "b3r", "a3", "a2", "a1", "c0", "c1", "c2",
+        "pin", "pin_b", "hook", "clip"] \
        + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch",
-                                  "an", "ft", "dc", "xt", "dp")] \
-       + [f"hw:{h}" for h in ("m3x8", "m3x6", "pt26x8", "w25", "sp12", "mag", "insert", "jumper", "usbc")]
+                                  "an", "ft", "dc", "xt", "dp", "hx", "ps", "pc", "po", "pp", "kp", "kd", "kb", "km", "kl")] \
+       + [f"hw:{h}" for h in ("m3x8", "m3x6", "pt26x8", "pt23x8", "pt26x14", "w25", "sp12", "mag", "insert", "jumper",
+                              "usbc", "tie")]
 
 
 def freecadcmd() -> str:
@@ -94,7 +120,7 @@ def csg() -> None:
     for name, (scad, defines, *call) in PARTS.items():
         cmd = openscad_cmd() + ["-o", str(BUILD / "csg" / f"{name}.csg")]
         for k, v in defines.items():
-            cmd += ["-D", f'{k}="{v}"' if isinstance(v, str) else f"{k}={v}"]
+            cmd += ["-D", f'{k}="{v}"' if isinstance(v, str) else f"{k}={list(v) if isinstance(v, (list, tuple)) else v}"]
         src = MECH / scad
         if call:                           # a module of the file, called by a wrapper next to the CSG
             src = BUILD / "csg" / f"_{name}.scad"
@@ -197,6 +223,77 @@ def viewer_cables(rack) -> dict:
     return out
 
 
+def viewer_bays(rack) -> dict:
+    """What the viewer puts in the notice's two bays and their ceiling (site/assets/rack.json), each in its own
+    bay's carrier coordinates: A1's and A2's honeycomb plate, its pegs, the board on it and its DUT cable
+    (the board's model: mechanical/boards/boards.yaml); and a camera bay's pod (the viewer's is B2's: moved
+    to A1, the same place under its ceiling), its lead from the node's J6 and the Mega's XH cable."""
+    import json
+    p = REPO / "site" / "assets" / "rack.json"
+    if not p.exists():
+        return {}
+    scene = json.loads(p.read_text(encoding="utf-8"))
+    boards = rackcfg_boards()
+    out = {"plates": {}, "camera": {}}
+    for j, bay in enumerate(("A1", "A2")):
+        x0 = rack.unit_x(j)
+
+        def local(q, x0=x0):
+            return [round(q[0] - x0, 3), q[1], q[2]]
+        inst = [i for i in scene["instances"] if i.get("bay") == bay and i.get("layer") == "plates" and i.get("row") == 0]
+        board = next((b for b in scene["boards"] if b.get("bay") == bay), None)
+        dut = next((c for c in scene["cables"] if c.get("bay") == bay and c.get("kind") == "dut"), None)
+        if not inst or not board or not dut:
+            continue
+        out["plates"][str(j)] = {
+            "parts": [(i["part"], local(i["pos"]), i["rot"][2]) for i in inst],
+            "board": {**{k: board[k] for k in ("id", "size", "height", "usb_x", "usb_type", "usb_side")},
+                      "pos": local(board["pos"]), "spec": boards.get(board["id"], {})},
+            "dut": {"points": [local(q) for q in dut["points"]], "radius": dut.get("radius", 1.9),
+                    "ends": [{**e, "at": local(e["at"])} for e in dut["ends"]]}}
+    cam = next((c for c in scene.get("cameras", [])), None)
+    if cam:
+        bay = cam["bay"]
+        u = next(int(b["col"]) - 1 for b in scene["bays"] if b["id"] == bay)
+        xb = rack.unit_x(u)
+
+        def local(q):
+            return [round(q[0] - xb, 3), q[1], q[2]]
+        out["camera"] = {
+            "parts": [(i["part"], local(i["pos"])) for i in scene["instances"] if i.get("bay") == bay and i.get("layer") == "cameras"],
+            "lead": next(({"points": [local(q) for q in c["points"]], "radius": c.get("radius", 1.5),
+                           "ends": [{**e, "at": local(e["at"])} for e in c.get("ends", [])]}
+                          for c in scene["cables"] if c.get("bay") == bay and "Camera lead" in c.get("label", "")), None),
+            "xh": next(({"points": [local(q) for q in c["points"]], "radius": c.get("radius", 1.0)}
+                        for c in scene["cables"] if c.get("bay") == bay and "XH" in c.get("label", "")), None),
+            "mount": rack.raw["bay"]["camera_mount"]}
+    return out
+
+
+def rackcfg_boards() -> dict:
+    import rackcfg
+    return rackcfg.load_boards()
+
+
+def pod_screws() -> dict:
+    """The camera pod's two PT 2.6 x 14 (up through the diffuser's posts and the pod board), in the pod's frame:
+    OpenSCAD's own numbers (parts/camera_pod.scad)."""
+    probe, echo = BUILD / "csg" / "_pod_probe.scad", BUILD / "csg" / "_pod_probe.echo"
+    probe.write_text(f'include <{(MECH / "parts" / "camera_pod.scad").as_posix()}>\n'
+                     'echo(POD=[for (h = POD_PCB_HOLES) [board(h)[0], board(h)[1]]], UNDER=DIFF_Z - DIFF_T, FACE=FACE_Z, '
+                     'INSERTS=[for (c = cam_inserts()) c - CAM_CENTER]);\n', encoding="utf-8")
+    echo.unlink(missing_ok=True)
+    subprocess.run(openscad_cmd() + ["-D", 'PART="none"', "-o", str(echo), str(probe)], cwd=MECH, capture_output=True)
+    import re
+    m = re.search(r"POD = (\[.*?\]\]), UNDER = ([-\d.e]+), FACE = ([-\d.e]+), INSERTS = (\[.*?\]\])",
+                  echo.read_text(errors="replace") if echo.exists() else "")
+    if not m:
+        return {}
+    import json
+    return {"holes": json.loads(m.group(1)), "under": float(m.group(2)), "face": float(m.group(3)),
+            "inserts": json.loads(m.group(4))}
+
+
 def outputs(name: str) -> list[str]:
     """The drawings a job writes (out/<name>.svg)."""
     kind, _, k = name.rpartition(":")
@@ -231,9 +328,19 @@ def main() -> None:
     import webscene                                  # the USB plugs' sizes, as the viewer draws them
     c["USB_PLUGS"] = getattr(webscene, "USB_PLUGS", None)
     c["CABLES"] = viewer_cables(rack)                # the viewer's cable routes, so that both agree
+    c["BAYS"] = viewer_bays(rack)                    # the plates, their boards and DUT cables; the camera pod
+    import plate_layout                              # and every other peg the plates use (a board's pin)
+    pegs = plate_layout.peg_parts(rackcfg_boards())
+    for pl in c["BAYS"].get("plates", {}).values():
+        for name, _, _ in pl["parts"]:
+            if name in pegs and name not in PARTS:
+                PARTS[name] = ("parts/pegs.scad", pegs[name])
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     print("constants, CSG ...")
+    PARTS.update(usb_parts())
     csg()
+    c["POD_SCREWS"] = pod_screws()
+    (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     conv = BUILD / "parts" / "convert_log.txt"
     conv.unlink(missing_ok=True)
     fc("csg2part.py", CSG2PART=",".join(PARTS))

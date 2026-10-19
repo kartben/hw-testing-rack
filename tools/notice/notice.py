@@ -46,6 +46,16 @@ def m_ladder(x0):           # profile x = frame Y, profile y = frame Z, extruded
     return M([[0, 0, 1, x0], [1, 0, 0, 0], [0, 1, 0, 0]])
 
 
+def m_rotz(deg):
+    a = math.radians(deg)
+    c, s = math.cos(a), math.sin(a)
+    return M([[c, -s, 0, 0], [s, c, 0, 0], [0, 0, 1, 0]])
+
+
+FLIP = M([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0]])   # a fastener pointing up (its head below)
+POD_PLATE_T = 3.0                                          # camera_pod.scad PLATE_T
+
+
 def m_row(k, x0):
     c, s = math.cos(TILT), math.sin(TILT)
     return M([[1, 0, 0, x0], [0, c, -s, C["ROW_Y0"]], [0, s, c, C["ROW_Z"][k]]])
@@ -181,6 +191,10 @@ def settle(pts, za, zb, run=15.0):
 
 RIBBON_PITCH, RIBBON_R = 1.25, 0.6          # a flat lead's wires, side by side (24-26 AWG); 2.0 apart at a PH plug
 RIBBON_DRAWN = 1.5                          # drawn a little apart, each wire a line (wire_lines); the checks keep 1.25
+
+
+def polyline_length(pts):
+    return sum((V(*b) - V(*a)).Length for a, b in zip(pts, pts[1:]))
 
 
 def resample(pts, n):
@@ -514,7 +528,7 @@ def _data_lead_shape(part="full"):
     else:
         pts = [tuple(m7 + V(0, 0, 1.9)), tuple(m7 + V(0, 0, 9)), (fx, fy - 22, CHAIN_Z + 4), (fx, fy - 8, CHAIN_Z)]
     pts += [(x, y, CHAIN_Z) for x, y in (at(s) for s in [k * L / 24 for k in range(25)])]
-    sols = [plug_up(m7, j7["pins"], j7.get("rot", 0.0))]
+    sols = [plug_up(m7, j7["pins"], j7.get("rot", 0.0)) if j7.get("up") else plug(m7, j7["out"], j7["pins"])]
     if dl:                                   # three sweeps, joined inside the end pieces: J7 -> the fixed mouth,
         inside = [(x, y, CHAIN_Z) for x, y in (at(s) for s in [k * L / 24 for k in range(25)])]   # the chain,
         lead = [[tuple(q) for q in dl["to_chain"]], inside]                                     # out of it
@@ -534,8 +548,102 @@ def _data_lead_shape(part="full"):
     return Part.makeCompound(sols + [pipe(pts, r)])
 
 
+BAYS = C.get("BAYS") or {}               # the viewer's plates, boards, DUT cables and camera pod (run.py viewer_bays)
+POD = C.get("POD_SCREWS") or {}          # the pod's two diffuser screws and four inserts (camera_pod.scad's numbers)
+USB_END = {"right": ("right", "shell"), "straight": ("straight", "shell"), "adapter": ("adapter", "adapter_metal")}
+
+
+def place_end(e):
+    """A placement for a cable end as the viewer gives it: z into the receptacle (dir), y its up, at its mouth."""
+    z = V(*e["dir"])
+    z.normalize()
+    y = V(*e.get("up", (0, 0, 1)))
+    y = y - z * y.dot(z)
+    y.normalize()
+    x = y.cross(z)
+    a = e["at"]
+    return M([[x.x, y.x, z.x, a[0]], [x.y, y.y, z.y, a[1]], [x.z, y.z, z.z, a[2]]])
+
+
+def dut_cable_shape(j):
+    """Bay j's DUT cable as the viewer lays it (its route at its true length) and its plugs (usb_plugs.scad,
+    the viewer's: a right-angle USB-C into the DATA board, the board's end, a micro-B on its 90° adapter)."""
+    d = BAYS["plates"][str(j)]["dut"]
+    sols = [pipe([tuple(q) for q in d["points"]], d["radius"])]
+    for e in d["ends"]:
+        m = place_end(e)
+        for piece in USB_END[e.get("style", "straight")]:
+            q = part(f"usbplug_{e['type']}_{piece}").copy()
+            q.transformShape(m)
+            sols.append(q)
+    return Part.makeCompound(sols)
+
+
+def dut_board_shape(j):
+    """Bay j's board, drawn plain (no vendor model at hand): its PCB with its mounting holes, its USB receptacle
+    on the rear edge, a 2-row header under each keep-out and a chip in the middle (mechanical/boards/boards.yaml;
+    its place on the plate: the viewer's).  Board coordinates: front-left corner, PCB bottom at z 0."""
+    b = BAYS["plates"][str(j)]["board"]
+    w, l = b["size"][:2]
+    spec = b.get("spec") or {}
+    pcb = Part.makeBox(w, l, 1.6)
+    if spec.get("usb", {}).get("edge", "top") == "top" and spec.get("size", [w, l])[:2] == [w, l]:   # not turned
+        for hx, hy in spec.get("holes", []):
+            pcb = pcb.cut(Part.makeCylinder(spec.get("hole_d", 3.2) / 2, 2.0, V(hx, hy, -0.2)))
+    sols = [pcb]
+    ux = b.get("usb_x") or w / 2
+    uw = {"micro-b": 7.5, "usb-c": 9.0, "mini-b": 7.7}.get(b.get("usb_type"), 8.0)
+    sols.append(Part.makeBox(uw, 5.5, 2.8, V(ux - uw / 2, l - 5.0, 1.6)))
+    for side, a, c in spec.get("pegs", {}).get("keepout", []):
+        if side in ("left", "right"):
+            sols.append(Part.makeBox(5.1, c - a, 8.5, V(1.0 if side == "left" else w - 6.1, a, 1.6)))
+        else:
+            sols.append(Part.makeBox(c - a, 5.1, 8.5, V(a, 1.0 if side in ("bottom", "front") else l - 6.1, 1.6)))
+    sols.append(Part.makeBox(10, 10, 1.4, V(w / 2 - 5, l * 0.45 - 5, 1.6)))
+    return Part.makeCompound(sols)
+
+
+def screwdriver_shape():
+    """A slim screwdriver with a magnetic PH bit (its shaft Ø 5 passes the tray's guide holes): tip at the
+    origin, along +z."""
+    handle = Part.makeCylinder(12, 80, V(0, 0, 73.5))
+    handle = handle.makeFillet(3.0, handle.Edges)
+    return Part.makeCompound([Part.makeCone(0.5, 2.5, 3.5), Part.makeCylinder(2.5, 70, V(0, 0, 3.5)), handle])
+
+
+def camera_lead_shape():
+    """The camera lead (PH 8) on the viewer's route, moved from its camera bay to this one: the node's J6
+    (vertical) back through the plenum, up behind the tray, forwards under the ceiling into the pod board's J1."""
+    c = BAYS["camera"]["lead"]
+    route = [tuple(q) for q in resample(c["points"], max(8, int(polyline_length(c["points"]) / 4.0)))]   # every 4 mm: its
+    node = json.load(open(os.path.join(PARTS, "node.json")))                                           # tight curl over J6 eased
+    j6 = next(x for x in node["ph"] if x["ref"] == "J6")
+    o0 = V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"])
+    e = c["ends"][-1]
+    return Part.makeCompound([pipe(route, c["radius"]),
+                              plug_up(o0 + V(*j6["mouth"]), j6["pins"], j6.get("rot", 0.0)),
+                              plug(V(*e["at"]), (-e["dir"][0], -e["dir"][1]), 8)])
+
+
+def camera_xh_shape():
+    c = BAYS["camera"]["xh"]
+    return pipe([tuple(q) for q in resample(c["points"], max(8, int(polyline_length(c["points"]) / 4.0)))], c["radius"])
+
+
+def peg_cam_set():
+    """A cam on its base (the parts pages)."""
+    a = part("peg_base_h12").copy()
+    b = part("peg_cam").copy()
+    b.translate(V(0, 0, 11))
+    return Part.makeCompound([a, b])
+
+
+def pod_board_set():
+    return Part.makeCompound([part("podpcb"), part("podpcb_parts")])
+
+
 def j7_top():
-    """Tray coordinates of the node's J7 (the DATA header, vertical) mouth."""
+    """Tray coordinates of the node's J7 (the DATA header, side entry on its right edge) mouth."""
     node = json.load(open(os.path.join(PARTS, "node.json")))
     j7 = next(c for c in node["ph"] if c["ref"] == "J7")
     return V(C["NODE_X0"], C["NODE_FRONT_Y"], C["NODE_Z"]) + V(*j7["mouth"])
@@ -792,6 +900,8 @@ NORMAL = (0.0, -math.sin(TILT), math.cos(TILT))     # tray normal (frame), the n
 FAST = {  # kind: (Fasteners type, diameter, length or None, screw length for the dashed axis)
     "m3x8": ("ISO7045", "M3", "8", 8), "m3x6": ("ISO7045", "M3", "6", 6), "m25x8": ("ISO7045", "M2.5", "8", 8),
     "m25x6": ("ISO7045", "M2.5", "6", 6),
+    "pt23x8": ("ISO7045", "M2", "8", 8),               # PT 2.3 x 8 (the guide lips' screws): drawn as an M2 x 8
+    "pt26x14": ("ISO7045", "M2.5", "14", 14),          # PT 2.6 x 14 (the camera pod's diffuser)
     "pt26x8": ("ISO7045", "M2.5", "8", 8),           # PT 2.6 x 8 thread-forming: drawn as an M2.5 x 8
     "w25": ("ISO7089", "M2.5", None, 0),              # DIN 125 / ISO 7089 washer
     "insert": ("IUTHeatInsert", "M3", None, 0),
@@ -838,9 +948,25 @@ def instances():
             inst[sid] = ("m3x6", mt.multiply(m_tr(x, y, C["NODE_Z"] + 1.6)))
             child[f"nd{j}"].append((sid, NORMAL, "screw"))
         # drawer end stop: M2.5 x 8 through the left guide lip, put in once the drawer is in
-        inst[f"s_dr{j}"] = ("m25x8", mt.multiply(m_tr(C["DRAWER_X0"] - 3 / 2 - 0.2, (196 - 26) - C["DRAWER_TRAVEL"] - 4.5, 28.5)))
+        inst[f"s_dr{j}"] = ("pt23x8", mt.multiply(m_tr(C["STOP_PIN_X"], C["STOP_Y"], 28.5)))   # lib/carrier.scad's stop
         child[f"dr{j}"] = [(f"s_dr{j}", NORMAL, "own")]
         bay_chain_instances(inst, child, j, mt)
+        pl = BAYS.get("plates", {}).get(str(j))
+        if pl:                                   # the drawer's plate, its pegs, board and DUT cable: they follow it
+            for k, (name, pos, rot) in enumerate(pl["parts"]):
+                iid = f"pl{j}" if name == "plate" else f"pg{j}_{k}"
+                m = mt.multiply(m_tr(*pos))
+                if rot:
+                    m = m.multiply(m_rotz(rot))
+                inst[iid] = (name, m)
+                child[f"dr{j}"].append((iid, None, "follow"))
+                if name == "peg_cam":            # the same cam open (turned 90° back, anticlockwise): the plate's
+                    inst[iid + "o"] = (name, m.multiply(m_rotz(90)))   # first step, before the board
+            inst[f"db{j}"] = (f"dut_board{j}", mt.multiply(m_tr(*pl["board"]["pos"])))
+            inst[f"du{j}"] = (f"dut_cable{j}", mt)
+            child[f"dr{j}"] += [(f"db{j}", None, "follow"), (f"du{j}", None, "follow")]
+        if j == 0:                               # the screwdriver on the node's front-left screw (through its guide hole)
+            inst["sd0"] = ("screwdriver", inst["s_nd0_2"][1].multiply(m_tr(0, 0, 2.6)))
         for bid, k in ((f"bb{j}", -1), (f"ba{j}", 0)):      # brace screws, into the rear-edge inserts
             z = brace_z(k)
             xl, xr = j * P + T / 2, (j + 1) * P + T / 2
@@ -850,6 +976,23 @@ def instances():
                 inst[sid] = ("m3x8", m_tr(x, PR + BT, zz).multiply(R_to("y")))
                 child[bid].append((sid, (0, 1, 0), "screw"))
     inst["jumper"] = ("jumper", m_row(0, T + CL))
+    cam = BAYS.get("camera")
+    if cam:                                      # bay 0's camera: the pod under its ceiling (the cap plate), its lead
+        mc = m_row(1, T + CL)
+        cx, cy = cam["mount"][0], cam["mount"][1]
+        for name, pos in cam["parts"]:
+            inst["k_" + name] = (name, mc.multiply(m_tr(*pos)))
+        for n, (dx, dy) in enumerate(POD.get("inserts", [])):          # into the ceiling, and the pod's 4 x M3 x 6
+            inst[f"i_k{n}"] = ("insert", mc.multiply(m_tr(cx + dx, cy + dy, 0)).multiply(FLIP))
+            inst[f"s_k{n}"] = ("m3x6", mc.multiply(m_tr(cx + dx, cy + dy, -POD_PLATE_T)).multiply(FLIP))
+        for n, (hx, hy) in enumerate(POD.get("holes", [])):            # up through the diffuser's posts and the board
+            inst[f"s_kd{n}"] = ("pt26x14", mc.multiply(m_tr(cx + hx, cy + hy, POD["under"])).multiply(FLIP))
+        inst["kl0"] = ("camera_lead", m_row(0, T + CL))
+        if cam.get("xh"):
+            inst["kx0"] = ("camera_xh", m_row(0, T + CL))
+    inst["pcx"] = ("peg_cam_set", m_tr(0, 0, 0))   # thumbnails: a cam on its base, the pod board with its parts
+    inst["kbx"] = ("pod_board_set", m_tr(0, 0, 0))
+    inst["klx"] = ("lead_alone", m_tr(0, 0, 0))
     power_box_instances(inst, child)
     return inst, child
 
@@ -884,6 +1027,20 @@ def shape_of(iid):
         s = charger_shape()
     elif name == "pd_cable":
         s = pd_cable_shape()
+    elif name.startswith("dut_board"):
+        s = dut_board_shape(int(name[-1]))
+    elif name.startswith("dut_cable"):
+        s = dut_cable_shape(int(name[-1]))
+    elif name == "screwdriver":
+        s = screwdriver_shape()
+    elif name == "camera_lead":
+        s = camera_lead_shape()
+    elif name == "camera_xh":
+        s = camera_xh_shape()
+    elif name == "peg_cam_set":
+        s = peg_cam_set()
+    elif name == "pod_board_set":
+        s = pod_board_set()
     elif name == "feed":
         s = feed_shape()
     else:
@@ -918,7 +1075,7 @@ def expand(step):
         for cid, d, mode in CHILD.get(pid, []):
             if cid in add or cid in old:
                 continue
-            if mode == "follow" or not moving:
+            if mode == "follow" or not moving or step.get("fitted"):
                 add[cid] = o
             elif mode == "screw":
                 add[cid] = tuple(o[i] + d[i] * gap for i in range(3))
@@ -941,6 +1098,11 @@ def plus(*vs):
 
 
 # ------------------------------------------------------------------ steps
+# a bay's board plate (hex-plate.md): the plate, its pegs, the board and its DUT cable, all riding with the drawer
+PEGS = {j: [i for i in INST if i.startswith(f"pg{j}_") and not i.endswith("o")] for j in range(2)}
+CAMS = {j: [i for i in PEGS[j] if INST[i][0] == "peg_cam"] for j in range(2)}
+OPEN = {j: [i + "o" for i in CAMS[j]] for j in range(2)}                 # the cams before the board: open
+PLATE = {j: [i for i in [f"pl{j}"] + PEGS[j] + [f"db{j}", f"du{j}"] if i in INST] for j in range(2)}
 ISO, REAR, ISO_R = (-0.95, -1.45, 0.95), (-0.9, 1.5, 0.85), (0.95, -1.45, 0.95)
 CHAIN0, CHAIN1 = ["ca0", "ch0", "ce0", "cf0", "cx0"], ["ca1", "ch1", "ce1", "cf1", "cx1"]   # anchor, chain, end pieces, foot, extension
 BAY0 = ["lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "nd0", "ba0", "lc0", "lc1", "cp0"] + CHAIN0 + ["dr0"]
@@ -956,12 +1118,9 @@ STEPS = {
     "a4": {"view": ISO, "old": A("lb0", "lb1", "fp0", "bb0"), "add": {"la0": (0, 0, 70), "la1": (0, 0, 70)}, "clic": True, "detail": True},
     "hook": {"view": (-1, -0.35, 0.3), "old": A("lb0"), "add": {"la0": (0, 0, 13)},
              "focus": {"at": (0, 25 + 45 * math.cos(TILT), 80 + 45 * math.sin(TILT) + 5), "size": 40}, "arrows": False},
-    "a5": {"view": ISO, "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1"), "add": {"tr0": u_(-150)}, "clic": True},
-    "a6": {"view": REAR, "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0"), "add": {"ba0": (0, 80, 0)}, "screw_gap": 45},
-    "a7": {"view": ISO, "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "ba0"),
-           "add": {"lc0": (0, 0, 55), "lc1": (0, 0, 55), "cp0": plus(u_(-150), (0, 0, 55))}, "clic": True},
-    "a8": {"view": (0.5, -1.2, 1.6), "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "ba0", "lc0", "lc1", "cp0"),
-           "add": {"nd0": n_(32)}, "screw_gap": 16, "frame": {"at": (98, 100, 125), "size": 320}},
+    "a6": {"view": REAR, "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "nd0", "dr0", *CHAIN0), "add": {"ba0": (0, 80, 0)}, "screw_gap": 45},
+    "a7": {"view": ISO, "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "nd0", "dr0", *CHAIN0, "ba0"),
+           "add": {"lc0": (0, 0, 55), "lc1": (0, 0, 55), "cp0": plus(u_(-150), (0, 0, 55))}, "clic": True, "slot": "single"},
     # at the bench: the end pieces onto the anchor and the foot's fin (PT 2.6 x 8 + washer, from inside the U)
     "a9b": {"view": (-0.35, -0.9, 1.5), "old": [], "add": {"ca0": (0, 0, 0), "cf0": (0, 0, 0), "ch0": (0, 0, 0), "ce0": (0, 0, 0),
             **{f"{k}_ce0{sd}{n}": ((g if sd == "a" else -g), 0, 0) for k, g in (("s", 12), ("w", 7)) for sd in "af" for n in (0, 1)}},
@@ -970,33 +1129,72 @@ STEPS = {
     # open the links, lay the extension's cable in, close them
     "a10o": {"view": (-1.1, -0.7, 0.75), "old": A("ca0", "cf0", "ce0", "co0"), "add": {"cb0": (0, 0, 0), "cxf0": (0, 0, 0)},
              "hide": ["s_ca0_0", "s_ca0_1"], "frame": {"at": tuple(m_row(0, T + CL).multVec(V(112, 135, 10))), "size": 270}},
-    # into the tray: the anchor's 2 x M3 x 8, the plug in the node
-    "a11t": {"view": (0.5, -1.2, 1.6), "old": A("lb0", "lb1", "fp0", "bb0", "la0", "la1", "tr0", "ba0", "nd0"),   # no cap: into the tray
-             "add": {i: n_(22) for i in ("ca0", "ch0", "ce0", "cf0", "cxf0")}, "screw_gap": 16, "arrow_ids": ["ch0"],
-             "arrows_at": [("cxf0", tuple(j7_top()), None, 0, (-9, 0, 0))],   # the lead's plug down into J7
-             "frame": {"at": tuple(m_row(0, T + CL).multVec(V(105, 140, 10))), "size": 340}},
-    # the drawer's DATA socket: through the port wall from the front, 2 x PT 2.6 x 8
     # the drawer's DATA board: on its bosses, 2 x PT 2.6 x 8 from above; the lead up through the window into its PH
     "a12s": {"view": (0.35, 1.1, 1.5), "old": A("dr0"), "add": {"dp0": n_(25), "s_dp0_0": n_(42), "s_dp0_1": n_(42), "dls0": (0, 0, 0)},
-             "hide": ["s_dr0", "s_cf0"], "screw_gap": 0,
+             "hide": ["s_dr0", "s_cf0", *PLATE[0]], "screw_gap": 0,
              "frame": {"at": tuple(m_row(0, T + CL).multVec(V(C["DRAWER_X0"] + DATA["x"] - 12, C["DRAWER_Y0"] + DATA["wall_y"] + 10,
                                                                   C["PLENUM"] + DATA["pcb_z"] + 12))), "size": 200}},
-    "a9": {"view": ISO_R, "old": [i for i in BAY0 if i != "dr0"], "add": {"dr0": u_(-170)}, "slot": "single", "own_gap": 26},
     "b1": {"view": ISO_R, "old": BAY0, "add": {"lb2": (90, 0, 0), "fp1": (0, -120, 0)}, "clic": True},
     "b2": {"view": (0.9, 1.5, 0.85), "old": BAY0 + A("lb2", "fp1"), "add": {"bb1": (0, 80, 0)}, "screw_gap": 45, "detail": True},
     "pin_b": {"view": (0.45, 1.2, 0.5), "old": A("lb1", "bb0"), "add": {"bb1": (0, 12, 0)}, "screw_gap": 16,
               "focus": {"at": (P + T / 2, PR + 14, 39), "size": 44}, "arrows": False},
-    "b3": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1"), "add": {"la2": (0, 0, 70), "tr1": u_(-150)}, "clic": True},
-    "b3n": {"view": (0.5, -1.2, 1.6), "old": BAY0 + A("lb2", "fp1", "bb1", "la2", "tr1"), "add": {"nd1": n_(40)}, "screw_gap": 16, "frame": {"at": (205, 95, 125), "size": 300}},
-    "b4": {"view": (0.15, -0.55, 1.9), "old": [i for i in BAY0 if i not in ("cp0", "lc0", "lc1", "dr0")] + A("lb2", "fp1", "bb1", "la2", "tr1", "nd1"),
+    "b4": {"view": (0.15, -0.55, 1.9), "old": [i for i in BAY0 if i not in ("cp0", "lc0", "lc1", "dr0")] + A("lb2", "fp1", "bb1", "la2", "tr1", "nd1", *CHAIN1),
            "add": {"jumper": (0, 0, 0)}, "frame": {"at": (126, 62, 100), "size": 300},
            "arrows_at": [("jumper", tuple(row_mouths()[0][0]), tuple(row_mouths()[0][1]), 12, (0, 9, 0))]},   # J2's plug home (J1's is behind the ladder)
-    "b5a": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1", "la2", "tr1", "nd1", "jumper"),
+    "b5a": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1", "la2", "tr1", "nd1", "dr1", *CHAIN1, "jumper"),
             "add": {"ba1": (0, 80, 0), "lc2": (0, 0, 55), "cp1": plus(u_(-150), (0, 0, 55))}, "screw_gap": 45, "clic": True},
-    "b5": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1", "la2", "tr1", "nd1", "jumper", "ba1", "lc2", "cp1"),
-           "add": {"dr1": u_(-170), **{i: (0, 0, 0) for i in CHAIN1}}, "slot": "single", "own_gap": 26},
     "done": {"view": ISO_R, "old": [], "add": {i: (0, 0, 0) for i in BAY0 + BAY1}, "slot": "done"},
 }
+
+# ------------------------------------------------------------------ docs/assembly.md §4: each tray fitted at the bench
+FRAME0 = ["lb0", "lb1", "fp0", "bb0", "la0", "la1"]
+TRAY0, TRAY1 = ["tr0", "nd0", "dr0"] + CHAIN0, ["tr1", "nd1", "dr1"] + CHAIN1   # with their children: the fitted trays
+POD0 = [i for i in INST if i.startswith("k_")]
+
+
+def at_tray(x, y, z):
+    return tuple(m_row(0, T + CL).multVec(V(x, y, z)))
+
+
+STEPS.update({
+    # 5: the node onto the tray: its left screws through the left guide's holes, on a slim magnetic PH bit
+    "t1": {"view": (0.5, -1.2, 1.6), "old": A("tr0"), "add": {"nd0": n_(32), "sd0": n_(48)}, "screw_gap": 16,
+           "arrow_ids": ["nd0"], "frame": {"at": at_tray(48, 52, 30), "size": 270}},
+    # 8: the anchor into the tray's inserts, the chain on its rails, the lead into J7
+    "t2": {"view": (0.5, -1.2, 1.6), "old": A("tr0", "nd0"), "add": {i: n_(22) for i in ("ca0", "ch0", "ce0", "cf0", "cxf0")},
+           "screw_gap": 16, "arrow_ids": ["ch0"], "frame": {"at": at_tray(100, 120, 10), "size": 300},
+           "arrows_at": [("cxf0", tuple(j7_top() + V(1.9, 0, 0)), (1, 0, 0), 12, (0, 0, 7))]},   # the lead's plug into J7, from the right
+    # 10: the drawer onto the tray's ledges, its groove over the foot: the foot's lock, the stop screw
+    "t3": {"view": ISO_R, "old": A("tr0", "nd0") + CHAIN0, "add": {"dr0": u_(-170)}, "hide": PLATE[0], "own_gap": 26},
+    # 11-14: the board plate (hex-plate.md): the pegs, the board and its cams, the plate into the drawer, the cable
+    "p1": {"view": (0.35, -1.0, 1.4), "old": A("pl0"), "add": {i: n_(16) for i in [i for i in PEGS[0] if i not in CAMS[0]] + OPEN[0]},
+           "arrow_ids": PEGS[0][:2], "detail": True},
+    "clip": {"view": (-1.0, -0.25, 0.25), "old": A("pl0"), "add": {PEGS[0][0]: (0, 0, 0)} if PEGS[0] else {},
+             "cut": {"at": tuple(seat_point(PEGS[0][0])) if PEGS[0] else (0, 0, 0), "size": 24},
+             "focus": {"at": tuple(seat_point(PEGS[0][0]) + V(*n_(-1))) if PEGS[0] else (0, 0, 0), "size": 16}, "arrows": False},
+    "p2": {"view": (0.35, -1.0, 1.4), "old": A("pl0") + [i for i in PEGS[0] if i not in CAMS[0]],
+           "add": {"db0": n_(30), **{i: (0, 0, 0) for i in CAMS[0]}}, "arrow_ids": ["db0"]},
+    "p3": {"view": ISO_R, "old": TRAY0, "add": {i: n_(45) for i in PLATE[0] if i != "du0"}, "hide": ["du0"],
+           "arrow_ids": ["pl0"]},
+    "p4": {"view": (0.35, -1.1, 1.5), "old": TRAY0, "add": {"du0": n_(12)}, "frame": {"at": at_tray(90, 170, 65), "size": 230}},
+    # 15: the fitted tray into the frame, its barbs into the ladder windows
+    "t4": {"view": ISO, "old": FRAME0, "add": {i: u_(-150) for i in TRAY0}, "clic": True, "arrow_ids": ["tr0"],
+           "fitted": True, "dim": PLATE[0]},
+    # the next bay: its row ladder, then its fitted tray
+    "b3r": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1"), "add": {"la2": (0, 0, 70)}, "clic": True},
+    "b3t": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1", "la2"), "add": {i: u_(-150) for i in TRAY1}, "clic": True,
+            "arrow_ids": ["tr1"], "fitted": True, "dim": PLATE[1]},
+    # the camera (docs/assembly.md §6): the pod at the bench, under the ceiling, its lead
+    "k1": {"view": (-0.6, -1.2, -0.8), "old": [], "add": {"k_camera_pod": (0, 0, 0), "k_podpcb": n_(-14), "k_podpcb_parts": n_(-14),
+           "k_camera_diffuser": n_(-28), "s_kd0": n_(-46), "s_kd1": n_(-46)}, "arrows": False},
+    "k2": {"view": (-0.6, -1.3, -0.7), "old": A("la0", "la1", "lc0", "lc1", "cp0", "tr0") + [f"i_k{n}" for n in range(4)],
+           "add": {**{i: n_(-30) for i in POD0 if i != "k_mega_camera"}, "s_kd0": n_(-30), "s_kd1": n_(-30),
+                   "k_mega_camera": n_(-62), **{i: n_(-62) for i in ("kx0",) if i in INST}, **{f"s_k{n}": n_(-48) for n in range(4)}},
+           "arrow_ids": ["k_camera_pod", "k_mega_camera"]},
+    "k3": {"view": (-1.6, 0.25, -0.12),         # from the left, a little below the ceiling, the drawer out
+           "old": [i for i in BAY0 if i != "dr0"] + POD0 + ["s_kd0", "s_kd1"] + [f"s_k{n}" for n in range(4)] + [i for i in ("kx0",) if i in INST],
+           "add": {"kl0": (0, 0, 0)}, "arrows": False, "slot": "done", "frame": {"at": at_tray(80, 145, 80), "size": 250}},
+})
 if PB:                                  # the power box, under A1
     BOX = ["pb", "hb", "pl"]
     _o, _s, _pd = PB["origin"], PB["size"], PB["pd"]
@@ -1015,6 +1213,10 @@ if PB:                                  # the power box, under A1
         "c_done": {"view": ISO, "old": [], "add": {i: (0, 0, 0) for i in BAY0 + BOX + ["feed"]},
                    "slot": "done"},
     })
+ORDER = ["cover", "a1", "a2", "a3", "pin", "a4", "hook", "t1", "a9b", "a10o", "t2", "a12s", "t3", "p1", "clip", "p2", "p3", "p4",
+         "t4", "a6", "a7", "b1", "b2", "pin_b", "b3r", "b3t", "b4", "b5a", "done", "c0", "c1", "c2", "c3", "c4", "c5", "c_done",
+         "k1", "k2", "k3"]                       # notice.yaml's: check.py finds each screw's first step in it
+STEPS = {**{k: STEPS[k] for k in ORDER if k in STEPS}, **{k: v for k, v in STEPS.items() if k not in ORDER}}
 
 
 
@@ -1078,19 +1280,25 @@ def step_scene(step):
     old, add = expand(step)
     fast = lambda iid: True if INST[iid][0] in FAST else ("c" if INST[iid][0] in CABLE_KINDS else False)
     items = [(iid, "old", shape_of(iid), fast(iid)) for iid in old]
+    cut = step.get("cut")                    # a section: every part kept in a box on the +x side of `at`
+    if cut:
+        L, a = cut["size"], V(*cut["at"])
+        region = Part.makeBox(L / 2, L, L, V(a.x, a.y - L / 2, a.z - L / 2))
     items += [(iid + "~w", "old", w, "w") for iid in old for w in [wires_of(iid)] if w is not None]
     for iid, o in add.items():
         s = shape_of(iid)
         s.translate(V(*o))
-        items.append((iid, "add", s, fast(iid)))
+        items.append((iid, "old" if iid in step.get("dim", ()) else "add", s, fast(iid)))
         w = wires_of(iid)
         if w is not None:                    # its flat lead's wires: lines, on their own layer
             w.translate(V(*o))
             items.append((iid + "~w", "add", w, "w"))
+    if cut:
+        items = [(i, k, sh.common(region), f) for i, k, sh, f in items]
     axes = []                               # from the screw tip (approach position) into its hole
     for iid, o in add.items():
         L = FAST.get(INST[iid][0], (0, 0, 0, 0))[3]
-        if L and math.sqrt(sum(x * x for x in o)) > 1:
+        if L and math.sqrt(sum(x * x for x in o)) > 1 and not step.get("fitted"):   # a fitted tray's: already in
             seat, ax = seat_point(iid), seat_axis(iid)
             axes.append(Part.makeLine(seat + V(*o) - ax * (L + 0.2), seat - ax * (L - 2.5)))
     arrows = []                             # from the approach position towards the seat
@@ -1178,7 +1386,8 @@ def fit(scr, arr2, W, H, pad, keepout):
 KEYS = {("old", False): "old", ("old", True): "old_f", ("add", False): "add", ("add", True): "add_f",
         ("old", "c"): "old_c", ("add", "c"): "add_c", ("old", "w"): "old_w", ("add", "w"): "add_w"}
 WIRE_K = 1.2                                   # a flat lead's wire, drawn as one line: its stroke, relative to a part's
-CABLE_KINDS = {"data_lead", "data_lead_free", "data_lead_stub", "feed", "pd_cable"}   # round cables (flat leads: as parts)
+CABLE_KINDS = {"data_lead", "data_lead_free", "data_lead_stub", "feed", "pd_cable",   # round cables (flat leads: as parts)
+               "camera_lead", "camera_xh", "dut_cable0", "dut_cable1"}
 CABLE_K = 1.15                                 # a round cable's stroke, relative to a part's
 CACHE = os.path.join(OUT, "cache")
 
@@ -1366,6 +1575,9 @@ def job_thumb(n):
 def hw_shape(n):
     if n == "jumper":                          # a short row cable for the chip: two plugs (its wires: hw_wires)
         return flat_lead(row_cable()[0]["pins"], 34.0, 5.0)[0]
+    if n == "tie":                             # a cable tie, closed round nothing: its loop and its head
+        ring = Part.makeCylinder(6.0, 2.5).cut(Part.makeCylinder(5.2, 2.7, V(0, 0, -0.1)))
+        return ring.fuse(Part.makeBox(3.6, 4.0, 2.5, V(5.0, -2.0, 0)))
     if n == "mag":                             # 6 x 3 disc magnet, on edge
         return Part.makeCylinder(3, 3, V(0, 0, 0), V(1, 0, 0))
     if n == "sp12":                            # hex spacer, axis along X, stud towards +X
@@ -1396,7 +1608,7 @@ def job_hw(n):
         if w is not None:
             items.append((n + "~w", "add", w, "w"))
         data = project("hw_" + n, items, HW_VIEW.get(n, HW_VIEW["*"]))
-    cable = n in ("jumper", "usbc", "sp12", "mag")
+    cable = n in ("jumper", "usbc", "sp12", "mag", "tie")
     render(f"hw_{n}", data, (128, 60), (1, 1.8 if cable else 1.15), pad=3, display=(64, 30),
            fixed_k=None if cable else 9.4, wire_k=1.0)        # every fastener at the same scale (the M3 x 8 fills it)
 
@@ -1407,8 +1619,12 @@ THUMBS = {
     "bb": ("bb0", (0, 1, 0.15)), "nd": ("nd0", ISO),
     "pb": ("pb", ISO), "pl": ("pl", ISO), "hb": ("hb", ISO), "ch": ("charger", ISO),
     "an": ("ca0", ISO), "ft": ("cf0", ISO_R), "dc": ("dcx", (-0.2, -0.5, 1.5)), "xt": ("xtl", (0.1, -0.55, 1.0)), "dp": ("dpx", ISO),
+    "hx": ("pl0", ISO), "ps": ("pg0_1", (-0.9, -1.2, 0.8)), "pc": ("pcx", (-0.9, -1.2, 0.8)), "po": ("pg0_10", (-0.9, -1.2, 0.8)),
+    "pp": ("pg1_1", (-0.9, -1.2, 0.8)),
+    "kp": ("k_camera_pod", (-0.9, -1.2, -0.9)), "kd": ("k_camera_diffuser", (-0.9, -1.2, -0.9)), "kb": ("kbx", (-0.9, -1.2, -0.9)),
+    "km": ("k_mega_camera", (-0.9, -1.2, -0.9)), "kl": ("klx", (0.1, -0.55, 1.0)),
 }
-FLAT_THUMBS = {"xt"}                            # thumbnails of flat leads (job_thumb)
+FLAT_THUMBS = {"xt", "kl"}                            # thumbnails of flat leads (job_thumb)
 HW_VIEW = {"*": (-0.5, -1.0, 0.35), "jumper": (0.1, -0.55, 1.0), "usbc": (0.1, -1.0, 0.35)}   # a flat lead: from above
 
 if __name__ in ("__main__", "notice") and os.environ.get("NOTICE"):

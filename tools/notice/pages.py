@@ -217,8 +217,8 @@ class Page:
         banner = "banner" in pg
         hw = pg["hardware"]
         cols = 3 if banner else 2
-        many = len(pg["parts"]) > 9                 # 4 smaller cards a row past 9 parts
-        pcols, ph = (4, 136 if banner else 150) if many else (3, 196 if banner else 214)
+        n = len(pg["parts"])                      # smaller cards past 9 parts: 4 a row, 5 past 16
+        pcols, ph = (5, 124 if banner else 132) if n > 16 else (4, 136 if banner else 150) if n > 9 else (3, 196 if banner else 214)
         cards = "".join(
             f'<div style="border: 2px solid #111111; border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;{" gap: 8px;" if k == "jumper" else ""}">\n'
             f'<img src="{self.url(hw_icon(k))}" alt="{self.hw_name(k)}" style="width: 64px; height: 30px; object-fit: contain;">\n'
@@ -310,7 +310,7 @@ class Page:
 </div>
 <div style="flex: 1 1 0; min-height: 0; position: relative;">
 <img src="{self.url(st['drawing'])}" alt="{st['alt']}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
-</div>
+{CLIC.splitlines()[1] + chr(10) if st.get("clic") else ""}</div>
 </section>
 <div style="height: 300px; display: flex; gap: 24px; align-items: center; border-top: 2px solid #111111; padding-top: 18px;">
 <div style="flex: 1 1 0; height: 100%; display: flex; align-items: center; justify-content: center;">

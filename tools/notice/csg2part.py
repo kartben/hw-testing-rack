@@ -372,6 +372,17 @@ def ev(node):
         if a.get("center"):
             s.translate(V(0, 0, -h / 2))
         return R(3, refine(s))
+    if name == "rotate_extrude":           # the profile's x is the radius, its y the height, about z
+        r = ev(("group", {}, [], kids))
+        if r is None:
+            return None
+        ang = a.get("angle", 360) or 360
+        sols = []
+        for f in r.shape.Faces:
+            f = f.copy()
+            f.rotate(V(0, 0, 0), V(1, 0, 0), 90)
+            sols.append(f.revolve(V(0, 0, 0), V(0, 0, 1), ang))
+        return R(3, refine(fuse_all(sols)))
     if name == "offset":
         r = ev(("group", {}, [], kids))
         if r is None:

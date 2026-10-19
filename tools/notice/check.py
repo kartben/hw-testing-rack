@@ -58,6 +58,8 @@ def export(name, driven):
 
     for iid in ids:
         kind = N.INST[iid][0]
+        if kind == "screwdriver":                            # the drawings' prop, not a part
+            continue
         put(iid, plain(iid) if kind in N.FAST else N.shape_of(iid))
         info["bodies"][iid] = kind
         if kind in N.FAST:
@@ -66,7 +68,8 @@ def export(name, driven):
             head = bb.ZMax
             info["fasteners"][iid] = {"kind": kind, "seat": list(seat), "axis": list(ax),
                                       "depth": max(N.FAST[kind][3], -bb.ZMin), "head": head}
-            if N.FAST[kind][3] and iid in add and iid not in driven and step.get("slot") not in ("cover", "done"):
+            if (N.FAST[kind][3] and iid in add and iid not in driven and step.get("slot") not in ("cover", "done")
+                    and not step.get("fitted")):             # a tray fitted at the bench: driven there
                 t = Part.makeCylinder(TOOL_D / 2, TOOL_L, seat + ax * (head + 0.3), ax)
                 put("tool_" + iid, t)                        # a screw driven in this step
                 info["tools"]["tool_" + iid] = iid
