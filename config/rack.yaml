@@ -177,6 +177,17 @@ pcb:
     usb: 30.5               # KiCad x of the USB-C (GCT USB4105) on the front edge: the right edge ≤ 9.5 mm right of it (the
                             # chain foot's lock screw); its centre 1.63 mm above the component face (3.23 above the underside)
     ph: 14.4                # KiCad x of the JST PH 8-pin (side entry) on the rear edge: its courtyard clear of the USB4105's (x ≤ 14.5)
+  data_port_x4:             # a converted bay's (population › boards:) DATA ×4: a USB hub and four USB-C sources, in the drawer's
+                            # rear bay (the data-x4-board proposal, 2026-10-19; drawer.scad PORTS=4 and the viewer follow it)
+    size: [108, 24]         # X × Y; KiCad y=0 is the REAR edge, y=24 the FRONT edge (the USB-C mouths, against the port wall)
+    x0: 15                  # drawer x of its left edge (KiCad x = drawer x − 15): drawer x 15–123, y 166–190
+    thickness: 1.6
+    layers: 4
+    holes: [[3.5, 3.5], [42, 3.5], [80.5, 3.5], [104.5, 19.5]]   # Ø2.7, PT 2.6 × 8 from above into the floor bosses
+    usb: [11, 29, 47, 65]   # KiCad x of the four USB-C (USB4105), ports 1–4 left to right: drawer x 26, 44, 62, 80 (18 mm pitch)
+    notch: [86, 0, 22, 7]   # x, y, w, d: the rear-right corner cut away, for the PH plug and its lead
+    ph: 97                  # KiCad x of the JST PH 8-pin (S8B-PH-SM4-TB) on the notch's front edge (y = 7), its mouth to the
+                            # rear: the lead goes down through the drawer's cable window right behind it, as the DATA board's
   camera_pod:               # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6

@@ -70,28 +70,26 @@ NODE_J7 = (58.4, 50.65, 8.0)
 NODE_J6_H = 8.0     # J6 (camera, JST PH 8 vertical, at config/rack.yaml › pcb.bay_node.cam): mated height
 
 
-# A converted bay's DATA ×4 board, placeholder until config/rack.yaml › pcb.data_port_x4 (the data-x4-board
-# session): 72 × 17, centred on the drawer, its four USB-C on the port wall at drawer.scad › port_xs(4) (16 mm
-# pitch), the PH 8 of its lead at the rear centre, two holes over X4_HOLES' bosses
 # the row cable's tie anchors in the tray (tray.scad › JUMPER_TIES: carrier x, y of their centre)
 JUMPER_TIES = [(118.0, 6.5), (150.0, 6.5)]
 
-X4 = {"w": 72.0, "d": 17.0, "pitch": 16.0, "holes": [[3.0, 8.5], [69.0, 8.5]], "ph": 36.0}
-
 
 def x4_port_x(rack, n: int) -> float:
-    """Drawer x of the DATA ×4 port n (1-4): drawer.scad › port_xs(4)."""
-    return rack.drawer_w / 2 + (n - 2.5) * X4["pitch"]
+    """Drawer x of the DATA ×4 port n (1-4): config/rack.yaml › pcb.data_port_x4 (drawer.scad › port_xs(4))."""
+    x4 = rack.raw["pcb"]["data_port_x4"]
+    return x4["x0"] + x4["usb"][n - 1]
 
 
 def dataport_parts(rack) -> dict:
     """The DATA port board's stand-in (parts/usb_plugs.scad), sized from config/rack.yaml › pcb.data_port, and
-    the DATA ×4 one (X4; its USB-C at x 0, placed once per port)."""
+    the DATA ×4 one (pcb.data_port_x4; its USB-C at x 0, placed once per port)."""
     dp = rack.raw["pcb"]["data_port"]
     defs = {"STYLE": "dataport", "BW": dp["size"][0], "BD": dp["size"][1], "BT": dp["thickness"],
             "HOLES": dp["holes"], "USBX": dp["usb"], "PHX": dp["ph"]}
     out = {f"dataport_{k}": ("parts/usb_plugs.scad", {**defs, "PIECE": k}, None) for k in ("pcb", "usb", "ph")}
-    x4 = {**defs, "BW": X4["w"], "BD": X4["d"], "HOLES": X4["holes"], "USBX": 0, "PHX": X4["ph"]}
+    q = rack.raw["pcb"]["data_port_x4"]
+    x4 = {**defs, "BW": q["size"][0], "BD": q["size"][1], "BT": q["thickness"], "HOLES": q["holes"], "USBX": 0,
+          "PHX": q["ph"], "PHY": q["notch"][1] + q["notch"][3], "NOTCH": q["notch"]}
     out.update({f"dataport_{k}_x4": ("parts/usb_plugs.scad", {**x4, "PIECE": k}, None) for k in ("pcb", "usb", "ph")})
     return out
 
@@ -372,6 +370,7 @@ def s_cable(a, b, length, step=2.5):
 def rounded_path(pts, r, step=2.0):
     """A polyline with its corners rounded (a quadratic curve within r of each corner): a flexible lead."""
     pts = [np.array(p, float) for p in pts]
+    pts = [p for k, p in enumerate(pts) if k == 0 or np.linalg.norm(p - pts[k - 1]) > 1e-6]   # no repeated corner
     out = [pts[0]]
     for k in range(1, len(pts) - 1):
         a, b, c = pts[k - 1], pts[k], pts[k + 1]
@@ -654,14 +653,15 @@ def build(rack) -> Path:
         # its moving end, a U-turn, up through the drawer's cable window into the board's PH from the rear
         dxw_ = x0 + rack.drawer_x0
         if x4:                       # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
-            bx4 = dxw_ + rack.drawer_w / 2 - X4["w"] / 2
+            q = raw["pcb"]["data_port_x4"]
+            bx4 = dxw_ + q["x0"]
             for k in ("pcb", "ph"):
                 add(f"dataport_{k}_x4", (bx4, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
                     movable=drawer)
             for n in range(1, 5):
                 add("dataport_usb_x4", (dxw_ + x4_port_x(rack, n), dy + dp_y0, plenum + dp_z), row=i,
                     layer="drawers", bay=bid, movable=drawer)
-            ph_xy = (bx4 + X4["ph"], dy + dp_y0 + X4["d"])
+            ph_xy = (bx4 + q["ph"], dy + dp_y0 + q["size"][1] - q["notch"][1] - q["notch"][3])
         else:
             for k in ("pcb", "usb", "ph"):
                 add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,

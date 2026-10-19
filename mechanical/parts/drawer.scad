@@ -48,9 +48,9 @@ module front_panel() {
 }
 
 function data_hole(h) = [DATA_PCB_X0 + h[0], DATA_PCB_Y0 + DATA_PCB_SIZE[1] - h[1]];   // KiCad → drawer xy
-// the DATA ports along the port wall: today's board, or four at a 16 mm pitch (right-angle plugs are 12.4 wide)
-function port_xs(n) = n == 1 ? [DATA_PORT_X[0]] : [for (k = [0 : n - 1]) DRAWER_W / 2 + (k - (n - 1) / 2) * 16];
-X4_HOLES = [[DRAWER_W / 2 - 33, DATA_PCB_Y0 + 8.5], [DRAWER_W / 2 + 33, DATA_PCB_Y0 + 8.5]];   // DATA ×4: placeholder
+// the DATA ports along the port wall: today's board, or a DATA ×4's four (config/rack.yaml › pcb.data_port_x4)
+function port_xs(n) = n == 1 ? [DATA_PORT_X[0]] : [for (u = DATA_X4_USB) DATA_X4_X0 + u];
+X4_HOLES = [for (h = DATA_X4_HOLES) [DATA_X4_X0 + h[0], DATA_PCB_Y0 + DATA_X4_SIZE[1] - h[1]]];   // drawer xy
 function pin_spots() = [for (k = [NODE_RESET, NODE_BOOT]) node_xy(k) - [DRAWER_X0, 0]];   // the node's buttons, drawer xy
 
 module port_wall(ports = 1) {
@@ -121,10 +121,10 @@ module drawer(rear = true, foot = true, ports = 1) {
                 translate([h[0], h[1], DATA_PCB_Z - 7]) cylinder(d = 2.1, h = 7 + EPS);
             // cable window in the rear-bay floor behind the DATA board, up to 1 mm off the rear wall: the
             // lead comes up through it into the board's PH from the rear; 1 mm short of the foot's boss.
-            // DATA ×4: from its PH (centre) to past drawer x 103, where the lead drops inside the chain's U
+            // DATA ×4: under its rear-right notch, from 1.5 mm right of its third boss: the PH right above
             wy = DATA_PCB_Y0 + DATA_PCB_SIZE[1] + 1;
-            wx = ports == 1 ? FOOT_HOLE[0] - 48 : DRAWER_W / 2 - 24;
-            translate([wx, wy, -EPS]) rbox([ports == 1 ? 42.5 : 60, DRAWER_D - DRAWER_WALL - 1 - wy, DRAWER_BOTTOM + 2 * EPS], r = 3);
+            wx = ports == 1 ? FOOT_HOLE[0] - 48 : X4_HOLES[2][0] + 4.5;
+            translate([wx, wy, -EPS]) rbox([FOOT_HOLE[0] - 5.5 - wx, DRAWER_D - DRAWER_WALL - 1 - wy, DRAWER_BOTTOM + 2 * EPS], r = 3);
         }
         // pin holes over the node's RESET and BOOT
         for (p = pin_spots()) translate([p[0], p[1], -EPS]) cylinder(d = 3.2, h = DRAWER_BOTTOM + 2 * EPS);
