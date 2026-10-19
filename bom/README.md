@@ -75,7 +75,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 20.8 | `mechanical/stl/power_box_lid.stl` |
 | power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |
-| tray | 8 | 78.4 | `mechanical/stl/tray.stl` |
+| tray | 8 | 78.3 | `mechanical/stl/tray.stl` |
 
 ## Line items
 

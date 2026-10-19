@@ -52,7 +52,9 @@ reaches the guide lips' screws (the stop screw, a sled bay's locks): they sit
 5 mm from the side ladder and 2.6 mm from the drawer's wall.  To convert a bay
 later, take its tray out first.
 
-1. **Node** onto the tray standoffs (4 × M3×6).
+1. **Node** onto the tray standoffs (4 × M3×6).  Its two left screws sit under
+   the left guide: feed each one through the guide's hole above it on a
+   magnetic PH bit (shaft Ø ≤ 5 mm) and drive it there, the drawer still out.
 2. **Drag chain**: cut ≈ 180 mm including the two end pieces (Olimex
    DRAG-CHAIN-7X7).  At the bench, screw the fixed end piece to the
    `chain_anchor` and the moving one to the `chain_foot`'s fin, each with

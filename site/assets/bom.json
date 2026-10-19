@@ -2728,8 +2728,8 @@
 {
 "part": "tray",
 "qty": 8,
-"grams_each": 78.4,
-"grams_total": 627.6,
+"grams_each": 78.3,
+"grams_total": 626.5,
 "stl": "mechanical/stl/tray.stl"
 }
 ],

@@ -39,6 +39,12 @@ module tie_anchor() translate([-TIE[0] / 2, -TIE[1] / 2, CARRIER_BOTTOM - EPS]) 
     cube([TIE[0], TIE[1], TIE[2] + EPS]);
     translate([0.8, -1, 1.2]) cube([TIE[0] - 1.6, TIE[1] + 2, 2.2]);
 }
+// the node's left M3 screws sit under the left ledge and lip: a hole through both over each passes the
+// screw (pan head Ø5.6) and a Ø5 screwdriver shaft, tray at the bench and drawer out.  Countersunk under the
+// lip and on the ledge, so the drawer's rear flange can't catch an edge; at the ledge's front end it opens
+// forwards and inwards (no thin finger left)
+NODE_ACCESS_D = 6.4;
+NODE_ACCESS = [for (h = NODE_HOLES) if (node_xy(h)[0] < LEDGE_X + NODE_ACCESS_D / 2) node_xy(h)];
 // low rails keeping the two runs straight, [x, y0, y1]: the fixed one starts behind the anchor
 CHAIN_RAILS = [[CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 1.6, ANCHOR_Y0 + ANCHOR[1] + 1, CARRIER_D - 30],
                [CHAIN_MOVING_X + CHAIN_H / 2 + 0.4, CHAIN_FIXED[1], CARRIER_D - 30]];
@@ -119,7 +125,8 @@ module tray_bottom_2d() {
 module guide_left() {
     y0 = GUIDE_Y0;
     y1 = CARRIER_D - 2;
-    free = [[JUMPER_Y[0] - 1, JUMPER_Y[1] + 1], [LATCH_Y[0] - 2, LATCH_Y[0] + LATCH_ARM + 1], [LATCH_Y[1] - 2, LATCH_Y[1] + LATCH_ARM + 1]];
+    free = concat([[JUMPER_Y[0] - 1, JUMPER_Y[1] + 1], [LATCH_Y[0] - 2, LATCH_Y[0] + LATCH_ARM + 1], [LATCH_Y[1] - 2, LATCH_Y[1] + LATCH_ARM + 1]],
+                  [for (p = NODE_ACCESS) [p[1] - NODE_ACCESS_D / 2 - 1, p[1] + NODE_ACCESS_D / 2 + 1]]);
     difference() {
         union() {
             translate([0, y0, LEDGE_Z - LEDGE_T]) cube([LEDGE_X, y1 - y0, LEDGE_T]);
@@ -191,6 +198,15 @@ module tray() {
         // the node's RESET button sits under the left ledge's inner edge: a notch over its plunger lets a
         // pin reach it from above, drawer pulled out; the drawer still rests on 1.5 mm of ledge there
         translate(concat(node_xy(NODE_RESET), [LEDGE_Z - LEDGE_T - 1])) cylinder(r = LEDGE_X - node_xy(NODE_RESET)[0] + 1.5, h = LEDGE_T + 2);
+        // screwdriver access to the node's left screws (NODE_ACCESS)
+        for (p = NODE_ACCESS) translate([p[0], p[1], 0]) {
+            r = NODE_ACCESS_D / 2;
+            translate([0, 0, LEDGE_Z - LEDGE_T - 1]) cylinder(d = NODE_ACCESS_D, h = GUIDE_TOP - LEDGE_Z + LEDGE_T + 2);
+            translate([0, 0, LEDGE_Z - 0.6]) cylinder(d1 = NODE_ACCESS_D, d2 = NODE_ACCESS_D + 1.2 + 2 * EPS, h = 0.6 + EPS);
+            translate([0, 0, LEDGE_Z + GUIDE_LIP_Z - EPS]) cylinder(d1 = NODE_ACCESS_D + 2, d2 = NODE_ACCESS_D, h = 1);
+            if (p[1] - r < GUIDE_Y0 + 2)
+                translate([-r, GUIDE_Y0 - 1 - p[1], LEDGE_Z - LEDGE_T - 1]) cube([LEDGE_X + 1 - p[0] + r, p[1] - GUIDE_Y0 + 1, GUIDE_TOP - LEDGE_Z + LEDGE_T + 2]);
+        }
         // closed-position detent magnet, flush with the left ledge (the pad below gives it its depth)
         translate([DETENT_LEDGE[0], DETENT_LEDGE[1], LEDGE_Z]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
     }
