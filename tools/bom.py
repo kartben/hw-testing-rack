@@ -59,14 +59,14 @@ JLC_QUOTE = {
                  "X-ray": 13.28, "packaging": 0.52},
     },
     # the drawer's DATA port board (v1.0, 2 layers, parts on one side) is NOT quoted either: Economic
-    # PCBA (setup $8, stencil $1.50, $3 per extended part type: the USB4105, the S5B-PH and the
+    # PCBA (setup $8, stencil $1.50, $3 per extended part type: the USB4105, the S8B-PH and the
     # USBLC6), components at catalogue prices plus ≈ 3 % attrition, ≈ 30 joints a board.  The
     # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
     "data-port": {
-        "pcbs": 10, "assembled": 8, "service": "Economic", "total": 33.90, "estimate": True,
+        "pcbs": 10, "assembled": 8, "service": "Economic", "total": 34.80, "estimate": True,
         "spec": "2-layer 40×17 mm, lead-free HASL",
         "pcb": {"board": 3.00},
-        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 12.00, "extended parts": 9.00, "SMT": 0.40},
+        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 12.90, "extended parts": 9.00, "SMT": 0.40},
     },
     # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS): an estimate built like
     # the DATA port's, Economic PCBA, $3 per extended part type (the S8B, the SMD header, the LED)
@@ -94,8 +94,9 @@ JLC_SINCE_QUOTE = {
     "bay-node": [("rev 0.5 parts (rack bus, GCT USB-C)", "components", 38.10),
                  ("rev 0.5: 3 more extended part types", "feeders", 9.00),
                  ("rev 0.5: TCAN1462V instead of the TCAN1044AV", "components", 8.64),
-                 ("rev 0.5: J7 DATA header", "components", 4.80),
-                 ("rev 0.5: J7, one more extended part type", "feeders", 3.00),
+                 # J7 is a PH 8 like J6 since the density decisions (I²C and INT for a DATA ×4 board): no type of
+                 # its own; R38/R41 are values the board already has
+                 ("rev 0.5: J7 DATA header (PH 8, J6's type)", "components", 9.12),
                  # the camera: the WROOM-1-N8R8 (+$0.30), the PH 8 J6 (+$0.35) and the vertical PH 6 J5 (+$0.04)
                  # take the N8's, the PH 2's and the side-entry PH 6's places; 2 × USBLC6, the AO3400A and
                  # 8 passives (basic): ≈ +$1.18 per board.  The B6B is one more extended part type
@@ -356,17 +357,20 @@ def hardware(rack) -> list[dict]:
          "notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing "
                   "is for the non-opening 7×7 type: check one on the open links before buying the lot"},
         # the drawer's DATA port: our own small board (electronics/data-port, in the Electronics lines)
-        # on the rear-bay floor, on a 5-wire PH lead from the node's J7 through the drag chain:
-        # the rack's PH cable type (pin n ↔ pin 6−n), 5 pins so a 6-pin row cable cannot go in
-        {"category": "Cables", "item": "JST PH 5-pin lead, pin n ↔ pin 6−n (flat, no twist), 50 cm, lot of 5 "
-                                      "(DATA lead: node J7 → drag chain → DATA port board; VBUS, GND, D−, D+, GND)",
-         "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 5P, Length50CM",
-         "qty": math.ceil(n_bays / 5), "unit": "lot", "unit_eur": 4.2,
-         "notes": "price interpolated from the 6-pin lots, not read: check the 5P lengths on the listing (≥ 40 cm).  The route is ≈ 38 cm plugs "
-                  "included (constant over the stroke); the spare goes in a wider bend between the node and the "
-                  "chain's fixed end (nothing moves there), never in front of the chain's moving end.  On arrival: "
-                  "both plugs show the same face, pin 1 rings to pin 5; twist D−/D+ (pins 3-4) by hand.  Or crimp "
-                  "them: PHR-5 + 10 × SPH-002T-P0.5S, 24 AWG"},
+        # on the rear-bay floor, on an 8-wire PH lead from the node's J7 through the drag chain (USB, the
+        # node's I²C and INT for a later DATA ×4 board): the camera's lead too, one type for both
+        # (pin n ↔ pin 9−n); 8 pins, so a 6-pin row cable cannot go in
+        {"category": "Cables", "item": "JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 "
+                                      "(DATA leads: node J7 → drag chain → DATA port board; camera leads: node J6 → "
+                                      "pod J1)",
+         "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 8P, Length50CM",
+         "qty": math.ceil((n_bays + CAMERA_SETS) / 5), "unit": "lot", "unit_eur": 4.5,
+         "notes": f"{n_bays} DATA + {CAMERA_SETS} camera leads; price interpolated from the 6-pin lots, not read: "
+                  "check the 8P lengths on the listing (45–50 cm).  The DATA route is ≈ 38 cm plugs included "
+                  "(constant over the stroke); the spare goes in a wider bend between the node and the chain's fixed "
+                  "end (nothing moves there), never in front of the chain's moving end.  On arrival: both plugs show "
+                  "the same face, pin 1 rings to pin 8; twist D−/D+ (pins 3-4 at the node) by hand.  Or crimp them: "
+                  "PHR-8 + 16 × SPH-002T-P0.5S, 24 AWG"},
         # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up.  Bought in
         # lots of 5 from one AliExpress listing (checked 2026-10-18: its "Same direction" photo shows both
         # plugs on the same face, its "Reverse direction" the 1:1 type); 6 pins
@@ -429,12 +433,7 @@ def hardware(rack) -> list[dict]:
                                            "NUCLEO-144 / nRF DK)", "supplier": "AliExpress", "qty": cams, "unit_eur": 3.0},
             # the pod board (electronics/camera-pod, in the Electronics lines) carries the light and the
             # Mega's 3.3 V: nothing to crimp or solder
-            {"category": "Cameras", "item": "JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 "
-                                           "(camera lead: node J6 → pod J1)",
-             "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 8P, Length50CM",
-             "qty": math.ceil(cams / 5), "unit": "lot", "unit_eur": 4.5,
-             "notes": f"{cams} needed; price interpolated from the 6-pin lots, not read: check the 8P lengths "
-                      "(45–50 cm).  On arrival: both plugs show the same face, pin 1 rings to pin 8"},
+            # (the camera lead, node J6 → pod J1, is the DATA lead's type: in the Cables lines)
             {"category": "Cameras", "item": "Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm "
                                            "(the Mega → pod J2, VCC GND SCK MISO MOSI CS in order)",
              "supplier": "AliExpress", "qty": cams, "unit_eur": 0.5,

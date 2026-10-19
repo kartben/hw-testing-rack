@@ -735,7 +735,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector_Generic:Conn_01x05"
+		(symbol "Connector_Generic:Conn_01x08"
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -746,7 +746,7 @@
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
 			(property "Reference" "J"
-				(at 0 7.62 0)
+				(at 0 10.16 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -755,8 +755,8 @@
 					)
 				)
 			)
-			(property "Value" "Conn_01x05"
-				(at 0 -7.62 0)
+			(property "Value" "Conn_01x08"
+				(at 0 -12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -787,7 +787,7 @@
 					)
 				)
 			)
-			(property "Description" "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(property "Description" "Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -820,16 +820,27 @@
 					)
 				)
 			)
-			(symbol "Conn_01x05_1_1"
+			(symbol "Conn_01x08_1_1"
 				(rectangle
-					(start -1.27 6.35)
-					(end 1.27 -6.35)
+					(start -1.27 8.89)
+					(end 1.27 -11.43)
 					(stroke
 						(width 0.254)
 						(type default)
 					)
 					(fill
 						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 7.747)
+					(end 0 7.493)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
 					)
 				)
 				(rectangle
@@ -887,8 +898,30 @@
 						(type none)
 					)
 				)
+				(rectangle
+					(start -1.27 -7.493)
+					(end 0 -7.747)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -10.033)
+					(end 0 -10.287)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
 				(pin passive line
-					(at -5.08 5.08 0)
+					(at -5.08 7.62 0)
 					(length 3.81)
 					(name "Pin_1"
 						(effects
@@ -906,7 +939,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 2.54 0)
+					(at -5.08 5.08 0)
 					(length 3.81)
 					(name "Pin_2"
 						(effects
@@ -924,7 +957,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 0 0)
+					(at -5.08 2.54 0)
 					(length 3.81)
 					(name "Pin_3"
 						(effects
@@ -942,7 +975,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 -2.54 0)
+					(at -5.08 0 0)
 					(length 3.81)
 					(name "Pin_4"
 						(effects
@@ -960,7 +993,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 -5.08 0)
+					(at -5.08 -2.54 0)
 					(length 3.81)
 					(name "Pin_5"
 						(effects
@@ -970,6 +1003,60 @@
 						)
 					)
 					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -5.08 0)
+					(length 3.81)
+					(name "Pin_6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -7.62 0)
+					(length 3.81)
+					(name "Pin_7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "7"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -10.16 0)
+					(length 3.81)
+					(name "Pin_8"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "8"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2139,7 +2226,7 @@
 		)
 		(uuid "a0d2c1b2-745b-5a56-9b08-a34a68d8659b")
 	)
-	(text "Lead to the bay node's DATA header (J7): 1 GND, 2 D+, 3 D−, 4 GND, 5 VBUS"
+	(text "Lead to the bay node's DATA header (J7): 4 GND, 5 D+, 6 D−, 7 GND, 8 VBUS; 1–3 (INT, I²C) open"
 		(exclude_from_sim no)
 		(at 20.32 149.86 0)
 		(effects
@@ -2149,7 +2236,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "233a650e-f2e4-580d-ad40-67de65ff2a3d")
+		(uuid "1876968a-ffff-5528-9fcd-8b14af3c1f6a")
 	)
 	(symbol
 		(lib_id "Connector:USB_C_Receptacle_USB2.0_16P")
@@ -3345,8 +3432,8 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x05")
-		(at 41.91 167.64 0)
+		(lib_id "Connector_Generic:Conn_01x08")
+		(at 41.91 170.18 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -3372,8 +3459,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_PH_S5B-PH-SM4-TB_1x05-1MP_P2.00mm_Horizontal"
-			(at 41.91 167.64 0)
+		(property "Footprint" "Connector_JST:JST_PH_S8B-PH-SM4-TB_1x08-1MP_P2.00mm_Horizontal"
+			(at 41.91 170.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3382,7 +3469,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 41.91 167.64 0)
+			(at 41.91 170.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3390,8 +3477,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "JST PH 5-pin, side entry, SMD"
-			(at 41.91 167.64 0)
+		(property "Description" "JST PH 8-pin, side entry, SMD"
+			(at 41.91 170.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3399,8 +3486,8 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "S5B-PH-SM4-TB(LF)(SN)"
-			(at 41.91 167.64 0)
+		(property "MPN" "S8B-PH-SM4-TB(LF)(SN)"
+			(at 41.91 170.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3409,7 +3496,7 @@
 			)
 		)
 		(property "Manufacturer" "JST"
-			(at 41.91 167.64 0)
+			(at 41.91 170.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3417,8 +3504,8 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C265104"
-			(at 41.91 167.64 0)
+		(property "LCSC" "C265121"
+			(at 41.91 170.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3441,6 +3528,15 @@
 		(pin "5"
 			(uuid "eac0d5af-8555-54d9-ba25-9f7a4f346106")
 		)
+		(pin "6"
+			(uuid "ae16b517-4ff9-5c0a-83fd-4819ec2772ea")
+		)
+		(pin "7"
+			(uuid "4de9b2f1-c028-5083-85f3-938214510a7a")
+		)
+		(pin "8"
+			(uuid "2a48c3e5-e787-5b8f-9003-d01f8f0423af")
+		)
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
@@ -3450,126 +3546,17 @@
 			)
 		)
 	)
-	(wire
-		(pts
-			(xy 36.83 162.56)
-			(xy 34.29 162.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8f3787a9-7cdb-5b6f-a384-6c7faf44bb7f")
+	(no_connect
+		(at 36.83 162.56)
+		(uuid "620cf7b7-0f8e-5b7d-9837-415b4e32ffe4")
 	)
-	(symbol
-		(lib_id "power:GND")
-		(at 34.29 162.56 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "32874953-670c-5ab5-a759-08f5a4a200e3")
-		(property "Reference" "#PWR02005"
-			(at 34.29 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 28.5 162.56 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 34.29 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 34.29 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 34.29 162.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "6ded4870-ad0e-5b89-b240-a0447767f6b0")
-		)
-		(instances
-			(project "data-port"
-				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02005")
-					(unit 1)
-				)
-			)
-		)
+	(no_connect
+		(at 36.83 165.1)
+		(uuid "1270a0a5-9549-5a6e-9cae-4d7b7dfe52c5")
 	)
-	(wire
-		(pts
-			(xy 36.83 165.1)
-			(xy 34.29 165.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "916d6866-b2c8-5b46-9afe-ab0cd7a5bde7")
-	)
-	(label "LEAD_DP"
-		(at 34.29 165.1 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "ab005f75-c369-586d-a69f-f097fee5aee9")
-	)
-	(wire
-		(pts
-			(xy 36.83 167.64)
-			(xy 34.29 167.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "117c1ef4-3204-5b4e-80bf-636eead07df4")
-	)
-	(label "LEAD_DN"
-		(at 34.29 167.64 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "485b5672-8557-5bd6-92b2-339a957daaa0")
+	(no_connect
+		(at 36.83 167.64)
+		(uuid "baba4501-f517-5585-8ab5-54d6bcc765a1")
 	)
 	(wire
 		(pts
@@ -3592,7 +3579,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "88977f7b-5454-581a-96c9-c2682c9d5bc1")
-		(property "Reference" "#PWR02006"
+		(property "Reference" "#PWR02005"
 			(at 34.29 170.18 0)
 			(effects
 				(font
@@ -3642,7 +3629,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02006")
+					(reference "#PWR02005")
 					(unit 1)
 				)
 			)
@@ -3659,7 +3646,7 @@
 		)
 		(uuid "c01ac319-4dd2-5104-8213-985d93f2e996")
 	)
-	(label "VBUS"
+	(label "LEAD_DP"
 		(at 34.29 172.72 180)
 		(fields_autoplaced yes)
 		(effects
@@ -3669,6 +3656,127 @@
 			(justify right bottom)
 		)
 		(uuid "311bd5b4-0015-5d47-ad71-c179f5ad9aaf")
+	)
+	(wire
+		(pts
+			(xy 36.83 175.26)
+			(xy 34.29 175.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8b0efd01-235f-5f22-9dda-37bd7ff2347e")
+	)
+	(label "LEAD_DN"
+		(at 34.29 175.26 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0444aef7-321a-5516-b177-d40b8fd7a80f")
+	)
+	(wire
+		(pts
+			(xy 36.83 177.8)
+			(xy 34.29 177.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c8aa7df3-d572-5f94-8399-d66640cd07e1")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 34.29 177.8 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "70330d9f-32a3-5c4f-8d0e-048517a0f8ad")
+		(property "Reference" "#PWR02006"
+			(at 34.29 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 28.5 177.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 34.29 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 34.29 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 34.29 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3641c4b1-b9cc-5c29-80e0-74a5934fce3a")
+		)
+		(instances
+			(project "data-port"
+				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
+					(reference "#PWR02006")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 36.83 180.34)
+			(xy 34.29 180.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9702b27a-9933-5785-add8-bd3f64500002")
+	)
+	(label "VBUS"
+		(at 34.29 180.34 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "21a2ed47-c66e-5e7a-b985-52454cd236b8")
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
@@ -4108,10 +4216,10 @@
 		)
 		(uuid "53ec2af3-5eb5-5200-aac2-1fc101cc49ba")
 	)
-	(text_box "Rp 22k to VBUS on CC1 and CC2: a USB-C source advertising 1.5 A, as the bay node's own DUT port;\n  VBUS comes from the node's TPS2553 switch (DUT_5V), so the node turns the board under test on and off.\nThe lead's pinout is the node's J7 mirrored: a 'Same direction' PH cable (pin n to pin 6−n) joins them."
+	(text_box "Rp 22k to VBUS on CC1 and CC2: a USB-C source advertising 1.5 A, as the bay node's own DUT port;\n  VBUS comes from the node's TPS2553 switch (DUT_5V), so the node turns the board under test on and off.\nThe lead's pinout is the node's J7 mirrored: a 'Same direction' PH 8 cable (pin n to pin 9−n) joins them;\n  pins 1–3 (the node's INT and I²C) stay open here."
 		(exclude_from_sim no)
-		(at 20.32 190.5 0)
-		(size 240.03 11.43)
+		(at 20.32 198.12 0)
+		(size 240.03 13.97)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

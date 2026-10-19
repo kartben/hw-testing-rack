@@ -73,6 +73,8 @@ BOARDS = {
         "also": {"AUX_TX": [("gpio", "tx-gpios")]},  # dut-port: the TX pin as a GPIO
         # Nets on fixed-function pins: nothing to check in the devicetree
         "fixed": {"ESP_DN", "ESP_DP"},  # IO19/IO20, the internal USB PHY (&usb_otg)
+        # Nets wired on the board that no devicetree node uses yet (README says so): skipped
+        "reserved": {"DATA_INT"},  # IO4, J7.8: the INT of a later DATA ×4 board
     },
     "power_hub": {
         "design": "electronics/power-hub/design.py",
@@ -225,7 +227,7 @@ def check(board: str, spec: dict) -> tuple[list[str], int]:
             errors.append(f"{where}: IO{n} ({net}) is not connected on {spec['ref']} in design.py")
 
     for n, net in sorted(design.items()):
-        if net in spec["fixed"]:
+        if net in spec["fixed"] or net in spec.get("reserved", ()):
             continue
         if net not in spec["nets"]:
             errors.append(f"{board} devicetree: no rule for net {net!r} (IO{n}), add it to BOARDS")

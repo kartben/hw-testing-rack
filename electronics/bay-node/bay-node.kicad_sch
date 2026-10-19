@@ -705,8 +705,8 @@
 	(polyline
 		(pts
 			(xy 91.44 100.33)
-			(xy 91.44 110.49)
-			(xy 138.43 110.49)
+			(xy 91.44 113.03)
+			(xy 138.43 113.03)
 			(xy 138.43 100.33)
 		)
 		(stroke
@@ -718,7 +718,7 @@
 		)
 		(uuid "c6829a7b-2315-5f70-b4aa-e6258ce3401d")
 	)
-	(text "ESP_DN/DP, MUX_FORCE_PC, PC_DET, SVC"
+	(text "DATA_INT, ESP_DN/DP, I2C_SCL/SDA,"
 		(exclude_from_sim no)
 		(at 93.98 109.22 0)
 		(effects
@@ -729,11 +729,22 @@
 		)
 		(uuid "365a5790-c67b-5d5c-bb49-72ea4ac0a6d9")
 	)
+	(text "MUX_FORCE_PC, PC_DET, SVC"
+		(exclude_from_sim no)
+		(at 93.98 111.76 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "2b43cf55-c7c3-5ad3-a533-55b4ca87145e")
+	)
 	(polyline
 		(pts
 			(xy 179.07 100.33)
-			(xy 179.07 120.65)
-			(xy 232.41 120.65)
+			(xy 179.07 123.19)
+			(xy 232.41 123.19)
 			(xy 232.41 100.33)
 		)
 		(stroke
@@ -745,9 +756,9 @@
 		)
 		(uuid "2516458d-20d9-5223-8a0c-7ccc2fbc0da1")
 	)
-	(text "DUT_5V"
+	(text "DUT_5V, I2C_SCL/SDA"
 		(exclude_from_sim no)
-		(at 181.61 119.38 0)
+		(at 181.61 121.92 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -759,8 +770,8 @@
 	(polyline
 		(pts
 			(xy 83.82 100.33)
-			(xy 83.82 130.81)
-			(xy 240.03 130.81)
+			(xy 83.82 133.35)
+			(xy 240.03 133.35)
 			(xy 240.03 100.33)
 		)
 		(stroke
@@ -774,7 +785,7 @@
 	)
 	(text "AUX_BOOT_CTL, AUX_RST_CTL, AUX_RX/TX, DUT_EN, DUT_FLT_N, I2C_SCL/SDA, INA_ALERT_N"
 		(exclude_from_sim no)
-		(at 86.36 129.54 0)
+		(at 86.36 132.08 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -786,8 +797,8 @@
 	(polyline
 		(pts
 			(xy 76.2 100.33)
-			(xy 76.2 140.97)
-			(xy 327.66 140.97)
+			(xy 76.2 143.51)
+			(xy 327.66 143.51)
 			(xy 327.66 100.33)
 		)
 		(stroke
@@ -801,7 +812,7 @@
 	)
 	(text "CAN_RXD/TXD, POS_IN/OUT"
 		(exclude_from_sim no)
-		(at 78.74 139.7 0)
+		(at 78.74 142.24 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -813,8 +824,8 @@
 	(polyline
 		(pts
 			(xy -2.54 100.33)
-			(xy -2.54 151.13)
-			(xy 335.28 151.13)
+			(xy -2.54 153.67)
+			(xy 335.28 153.67)
 			(xy 335.28 100.33)
 		)
 		(stroke
@@ -828,7 +839,7 @@
 	)
 	(text "CAN_H/L, POS_IN_CONN, POS_OUT_CONN"
 		(exclude_from_sim no)
-		(at 0 149.86 0)
+		(at 0 152.4 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -840,8 +851,8 @@
 	(polyline
 		(pts
 			(xy 68.58 100.33)
-			(xy 68.58 161.29)
-			(xy 421.64 161.29)
+			(xy 68.58 163.83)
+			(xy 421.64 163.83)
 			(xy 421.64 100.33)
 		)
 		(stroke
@@ -855,7 +866,7 @@
 	)
 	(text "CAM_CS/LED/SCK, CAM_MISO, CAM_MOSI"
 		(exclude_from_sim no)
-		(at 71.12 160.02 0)
+		(at 71.12 162.56 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -866,7 +877,7 @@
 	)
 	(text_box "Bay node — one per bay.  Sheets:\n  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51635 buck, AMS1117\n  MCU: ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM), reset/boot, status LED, UART pads\n  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT\n  Camera: JST PH 8 to the bay's Arducam Mega (SPI2, 5 V through a PTC) and its LEDs (AO3400A low side)\n  Rack bus: TCAN1462V CAN transceiver on the row pair, POS token in/out (docs/can.md)\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
 		(exclude_from_sim no)
-		(at 30 176.53 0)
+		(at 30 179.07 0)
 		(size 360 33.02)
 		(margins 2 2 2 2)
 		(stroke

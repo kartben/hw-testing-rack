@@ -8,8 +8,9 @@ Functions
   * POS: token in on J1.6, out on J2.1 (J2 is J1 mirrored), each through 10k + a BAT54S clamp (survives VRACK on it).
   * DUT port (USB-C, source): DUT_5V through a TPS2553 current-limited switch
     (≈1.4 A) and a 50 mΩ shunt read by an INA226; D+/D- through ESD.
-  * DATA (JST PH 5, vertical): the same DUT port on a 5-wire lead to the drawer's DATA port board
-    (electronics/data-port: USB-C, Rp, ESD); in parallel with J4, one of the two in use.
+  * DATA (JST PH 8, vertical, right edge): the same DUT port, the node's I²C and an INT line on an
+    8-wire lead to the drawer's DATA port board (electronics/data-port: USB-C, Rp, ESD; it leaves the
+    I²C and INT pins open) or, later, a DATA ×4 board; in parallel with J4, one of the two in use.
   * Two USB 2.0 muxes:
       MUX_DUT: DUT ↔ ESP32-S3 USB-OTG (USB/IP mode, default)
                DUT ↔ front PC port      (classic mode: plug a laptop and the
@@ -88,6 +89,7 @@ def usb_hs_routes():
     pass each line through the part (connector-side and protected-side pins are separate nets); their
     GND and VBUS pins get a via between the spread tracks.  On each USB-C receptacle the A-side pins
     (A6/A7) are the through path; B6 joins A6 by a loop around the pad row, B7 joins A7 through B.Cu.
+    J7 (the DATA lead) branches off J4's pads, from behind, on B.Cu under J4.
     With USB_HS_PAIRS off, the pairs are left to Freerouting (full speed).  Returns (tracks, vias)."""
     tracks, vias = [], []
 
@@ -152,6 +154,20 @@ def usb_hs_routes():
     t("DUT_CONN_DN", (55.05, 34.78), (54.95, 33.65), layer="B.Cu")
     via("DUT_CONN_DN", 55.05, 34.78)
     via("DUT_CONN_DN", 54.95, 33.65)
+    # J7 (DATA, rot 270: D− pin 3 at y 47.65, D+ pin 4 at 49.65) joins J4's pads from behind: out of the
+    # pads' east ends to vias under J7's housing, a pair on B.Cu north under J4 (between its rear shell
+    # tabs), up again beside B7 (D−) and the B6 → A6 loop (D+).  ≈ 27 mm each from J7 to the through path
+    t("DUT_CONN_DN", (57.9, 47.65), (61.1, 47.65))
+    via("DUT_CONN_DN", 61.1, 47.65)
+    t("DUT_CONN_DN", (61.1, 47.65), (59.0, 45.55), (59.0, 35.5), (58.45, 34.95), (58.0, 34.95), layer="B.Cu")
+    via("DUT_CONN_DN", 58.0, 34.95)
+    t("DUT_CONN_DN", (58.0, 34.95), (57.8, 34.75), (56.72, 34.75))
+    t("DUT_CONN_DP", (57.9, 49.65), (61.1, 49.65))
+    via("DUT_CONN_DP", 61.1, 49.65)
+    t("DUT_CONN_DP", (61.1, 49.65), (61.75, 49.0), (61.75, 46.75), (59.4, 44.4), (59.4, 34.6), (58.55, 33.75),
+      (58.3, 33.75), layer="B.Cu")
+    via("DUT_CONN_DP", 58.3, 33.75)
+    t("DUT_CONN_DP", (58.3, 33.75), (57.67, 33.75))
     t("GND", (46.6, 33.5), (47.35, 33.5), (47.85, 33.0))                                # U6 pin 5
     via("GND", 47.85, 33.0)
     t("GND", (50.16, 34.0), (49.0, 34.0))                                               # U8 GND
@@ -291,10 +307,10 @@ def board() -> Board:
             {"text": "PC", "x": 37.0, "y": 80.2, "size": 0.9},
             {"text": "SVC", "x": 50, "y": 83.6, "size": 0.8},
             {"text": "ROW IN", "x": 5.2, "y": PWR_Y + 9.6, "size": 0.8},
-            {"text": "ROW OUT", "x": 58.4, "y": PWR_Y - 10.4, "size": 0.8},
-            {"text": "DUT", "x": 60.0, "y": 40.9, "size": 0.8},
-            {"text": "DATA", "x": 40.0, "y": 41.8, "size": 0.8},
-            {"text": "AUX", "x": 61.0, "y": 59.6, "size": 0.8},
+            {"text": "ROW OUT", "x": 58.4, "y": PWR_Y - 9.5, "size": 0.8},
+            {"text": "DUT", "x": 60.0, "y": 27.8, "size": 0.8},
+            {"text": "DATA", "x": 58.4, "y": 62.1, "size": 0.8},
+            {"text": "AUX", "x": 38.0, "y": 42.6, "size": 0.8},
             {"text": "CAM", "x": 43.0, "y": 79.2, "size": 0.8},
             {"text": "RESET", "x": 7.5, "y": 25.4, "size": 0.8},
             {"text": "BOOT", "x": 15.5, "y": 25.4, "size": 0.8},
@@ -436,7 +452,7 @@ def board() -> Board:
         "IO11": "CAM_SCK", "IO10": "CAM_MOSI", "IO9": "CAM_MISO",
         # left column -> the rack bus block (CAN, POS_IN), SERVICE, the camera's CS and light
         "IO15": "SVC", "IO16": "POS_IN", "IO17": "CAN_RXD", "IO18": "CAN_TXD",
-        "IO8": "CAM_CS", "IO7": "CAM_LED",
+        "IO8": "CAM_CS", "IO7": "CAM_LED", "IO4": "DATA_INT",
         "TXD0": "U0TX", "RXD0": "U0RX",
     }, pcb=P(32, 12.75, 0), sch=at(80, 38, fields=(-14, -14)))
     # 3V3 (pin 2) and EN (pin 3) sit at the left column's rear end
@@ -457,7 +473,8 @@ def board() -> Board:
     m.note("GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/1 I2C SDA/SCL · IO47/21 UART1 TX/RX (AUX) ·")
     m.note("IO12 AUX_RST · IO48 AUX_BOOT · IO38 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·")
     m.note("IO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO42 POS_OUT · camera SPI2: IO11 SCK · IO10 MOSI · IO9 MISO · IO8 CS ·")
-    m.note("IO7 light.  Free: IO4–IO6.  IO35–IO37 are the octal PSRAM's; the WROOM-1 has no IO26/IO33/IO34.")
+    m.note("IO7 light · IO4 DATA_INT (J7.8, open drain, active low).  Free: IO5, IO6.  IO35–IO37 are the octal PSRAM's;")
+    m.note("the WROOM-1 has no IO26/IO33/IO34.  The I²C bus (IO1/IO2) also goes out on J7.6/7 to the drawer's DATA board.")
     m.note("The map is the ESP32-S3-DevKitC-1 v1.1's (N8R8) as is: the bench stand-in needs no remap.")
     m.note("Strapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY).")
 
@@ -521,16 +538,25 @@ def board() -> Board:
     u.wire((114, 50), (114, 53), "R15.1")
     u.tag("DUT_5V", (112, 50), "left")
 
-    # the drawer's DATA port board (electronics/data-port) on a 5-wire PH lead: VBUS, GND, D−, D+, GND,
-    # the data port's own pinout mirrored (one 'Same direction' PH cable).  It taps the pair on the mux
-    # side of U8 (the port board has its own ESD at its receptacle), and DUT_5V after the switch and shunt
-    u.frame("DATA: the drawer's DATA port board on a 5-wire PH lead, in parallel with J4 (one of the two in use)",
-            106, 75, 160, 98)
-    part(u, "J7", "ph5v", {"1": "DUT_5V", "2": "GND", "3": "DUT_DN", "4": "DUT_DP", "5": "GND"}, "DATA",
-         pcb=P(40.0, 47.4, 0), sch=at(152, 86, fields=(1, -5)))
-    for pin, dy, net in (("1", -2, "DUT_5V"), ("2", -1, "GND"), ("3", 0, "DUT_DN"), ("4", 1, "DUT_DP"), ("5", 2, "GND")):
+    # the drawer's DATA board on an 8-wire PH lead (the camera's lead type, 'Same direction'): VBUS, GND,
+    # D−, D+, GND as before, then the node's I²C (the INA226's bus, 4.7k pull-ups on this board) and an
+    # open-drain, active-low INT (10k pull-up here, 1k in series at the connector).  The single DATA port
+    # board leaves pins 6–8 open; a later DATA ×4 board uses them (its I²C devices must keep off 0x40).
+    # Vertical by the right edge (J5's old slot), its USB pins at the rear end, next to J4: it taps the pair
+    # on J4's side of U8 (DUT_CONN_*, so U8's flow-through ESD covers both ports; the branch is drawn in
+    # usb_hs_routes, under J4), DUT_5V after the shunt.
+    u.frame("DATA: the drawer's DATA board on an 8-wire PH lead (USB, I²C, INT), in parallel with J4 (one in use)",
+            106, 75, 160, 100)
+    part(u, "J7", "ph8v", {"1": "DUT_5V", "2": "GND", "3": "DUT_CONN_DN", "4": "DUT_CONN_DP", "5": "GND", "6": "I2C_SDA",
+                           "7": "I2C_SCL", "8": "DATA_INT_C"}, "DATA",
+         pcb=P(58.4, CFG["right"]["data"], 270), sch=at(152, 86, fields=(1, -7)))
+    for pin, dy, net in (("1", -3, "DUT_5V"), ("2", -2, "GND"), ("3", -1, "DUT_CONN_DN"), ("4", 0, "DUT_CONN_DP"),
+                         ("5", 1, "GND"), ("6", 2, "I2C_SDA"), ("7", 3, "I2C_SCL"), ("8", 4, "DATA_INT_C")):
         u.wire(f"J7.{pin}", (143, 86 + dy))
         u.tag(net, (143, 86 + dy), "left")
+    R(u, "R41", "1k", "DATA_INT", "DATA_INT_C", pcb=P(53.2, 59.7, 90), sch=at(124, 92, rot=90))
+    # the INT pull-up beside the module (over In2 +3V3; J7 sits over +5V)
+    R(u, "R38", "10k", "DATA_INT", "+3V3", pcb=P(20.9, 16.9, 90), sch=at(116, 95))
 
     u.frame("Mode logic: MUX_SEL = PC_DET OR MUX_FORCE_PC; SERVICE switch", 6, 58, 84, 86)
     part(u, "U7", "or", {"1": "PC_DET", "2": "MUX_FORCE_PC", "3": "GND", "4": "MUX_SEL", "5": "+3V3"},
@@ -603,22 +629,23 @@ def board() -> Board:
 
     d.frame("AUX: UART + open-drain RESET / BOOT towards the DUT (JST PH 6)", 68, 48, 112, 86)
     # JST PH like every other connector here (SH is 1 mm pitch: fiddly to crimp and to plug blind);
-    # vertical by the right edge, plugged from above like J6 and J7, pins 1 → 6 from y aux + 5 to aux − 5
+    # vertical, plugged from above like J6 and J7, in the middle of the board (J7 took its slot on the right
+    # edge), pins 1 → 6 along x; its transistors and resistors in a column on its right
     part(d, "J5", "ph6v", {"1": "GND", "2": "AUX_VREF", "3": "AUX_TX_R", "4": "AUX_RX_R", "5": "AUX_RST_N",
-                           "6": "AUX_BOOT_N"}, "AUX", pcb=P(59.4, CFG["right"]["aux"], 90),
+                           "6": "AUX_BOOT_N"}, "AUX", pcb=P(CFG["aux"][0], CFG["aux"][1], 0),
          sch=at(106, 64, fields=(1, -5)))
     R(d, "R23", "10", "+3V3", "AUX_VREF", pcb=P(44.0, 41.8, 0), sch=at(90.5, 54, rot=90))
-    R(d, "R24", "1k", "AUX_TX", "AUX_TX_R", pcb=P(52.45, 52.6, 0), sch=at(90.5, 58, rot=90))
-    R(d, "R25", "1k", "AUX_RX", "AUX_RX_R", pcb=P(52.45, 50.8, 0), sch=at(90.5, 62, rot=90))
+    R(d, "R24", "1k", "AUX_TX", "AUX_TX_R", pcb=P(52.65, 52.15, 0), sch=at(90.5, 58, rot=90))
+    R(d, "R25", "1k", "AUX_RX", "AUX_RX_R", pcb=P(52.65, 53.95, 0), sch=at(90.5, 62, rot=90))
     d.wire("J5.2", (98, 63), (98, 54), "R23.2")
     d.wire("R23.1", (87, 54), (87, 52))
     d.tag("+3V3", (87, 52), "up")
     d.wire("J5.3", (97, 64), (97, 58), "R24.2")
     d.wire("J5.4", (96, 65), (96, 62), "R25.2")
-    part(d, "Q2", "nfet", {"G": "AUX_RST_CTL", "S": "GND", "D": "AUX_RST_N"}, pcb=P(52.0, 48.0, 0), sch=at(86, 69))
-    part(d, "Q3", "nfet", {"G": "AUX_BOOT_CTL", "S": "GND", "D": "AUX_BOOT_N"}, pcb=P(52.0, 44.4, 0), sch=at(86, 79))
-    R(d, "R26", "100k", "AUX_RST_CTL", "GND", pcb=P(48.9, 49.6, 270), sch=at(81, 70.5))
-    R(d, "R27", "100k", "AUX_BOOT_CTL", "GND", pcb=P(48.9, 45.2, 270), sch=at(81, 80.5))
+    part(d, "Q2", "nfet", {"G": "AUX_RST_CTL", "S": "GND", "D": "AUX_RST_N"}, pcb=P(52.65, 47.55, 90), sch=at(86, 69))
+    part(d, "Q3", "nfet", {"G": "AUX_BOOT_CTL", "S": "GND", "D": "AUX_BOOT_N"}, pcb=P(52.65, 41.95, 90), sch=at(86, 79))
+    R(d, "R26", "100k", "AUX_RST_CTL", "GND", pcb=P(52.65, 50.35, 0), sch=at(81, 70.5))
+    R(d, "R27", "100k", "AUX_BOOT_CTL", "GND", pcb=P(52.65, 44.75, 0), sch=at(81, 80.5))
     d.wire("J5.5", (87, 66), "Q2.D")
     d.wire("Q2.G", (78, 69))
     d.tag("AUX_RST_CTL", (78, 69), "left")

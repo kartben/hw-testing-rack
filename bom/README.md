@@ -5,14 +5,14 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 664 |
+| Electronics | 666 |
 | Power | 82 |
-| Cameras | 69 |
+| Cameras | 64 |
 | Printed parts | 58 |
-| Cables | 43 |
+| Cables | 44 |
 | Motion | 21 |
 | Fasteners | 15 |
-| **Total** | **952** |
+| **Total** | **950** |
 
 ≈ **€119 per bay** all-in.
 
@@ -27,15 +27,15 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | bay-node | 20 PCBs (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA), 16 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $19.30, board $14.60 | 58.90 |
 | | | PCBA: setup $25.75, stencil $8.27, components $181.21, feeders $65.10, SMT $9.45, hand soldering $3.61, manual assembly $1.62, X-ray $13.28, packaging $0.52 | 308.81 |
 | | | **Quoted total** | **367.71** |
-| | | Order (indicative): no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components); rev 0.5: J7 DATA header (+$4.80 components); rev 0.5: J7, one more extended part type (+$3.00 feeders); rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET) (+$18.91 components); rev 0.5: the vertical AUX connector, one more extended part type (+$3.00 feeders); rev 0.5: the board 64 × 90 mm (quoted 64 × 80) (+$1.83 board) | 451.38 |
+| | | Order (indicative): no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components); rev 0.5: J7 DATA header (PH 8, J6's type) (+$9.12 components); rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET) (+$18.91 components); rev 0.5: the vertical AUX connector, one more extended part type (+$3.00 feeders); rev 0.5: the board 64 × 90 mm (quoted 64 × 80) (+$1.83 board) | 452.70 |
 | power-hub | 5 PCBs (4-layer 76×140 mm, ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $17.60, board $12.00 | 54.60 |
 | | | PCBA: setup $25.75, stencil $8.27, components $52.32, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52 | 159.14 |
 | | | **Estimated total** | **213.74** |
 | | | Order (indicative): as quoted | 213.74 |
 | data-port | 10 PCBs (2-layer 40×17 mm, lead-free HASL), 8 assembled, Economic PCBA | PCB: board $3.00 | 3.00 |
-| | | PCBA: setup $8.00, stencil $1.50, components $12.00, extended parts $9.00, SMT $0.40 | 30.90 |
-| | | **Estimated total** | **33.90** |
-| | | Order (indicative): as quoted | 33.90 |
+| | | PCBA: setup $8.00, stencil $1.50, components $12.90, extended parts $9.00, SMT $0.40 | 31.80 |
+| | | **Estimated total** | **34.80** |
+| | | Order (indicative): as quoted | 34.80 |
 | camera-pod | 5 PCBs (2-layer 40×27 mm, lead-free HASL), 2 assembled, Economic PCBA | PCB: board $2.00 | 2.00 |
 | | | PCBA: setup $8.00, stencil $1.50, components $2.05, extended parts $9.00, SMT $0.20 | 20.75 |
 | | | **Estimated total** | **22.75** |
@@ -96,7 +96,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | DUT — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 16  | 0.84 | 13.40 | LCSC/JLCPCB C5184243 |
 | Electronics | AUX — JST PH 6-pin, vertical, SMD | 16  | 0.40 | 6.33 | LCSC/JLCPCB C471518 |
 | Electronics | CAM — JST PH 8-pin, vertical, SMD | 16  | 0.52 | 8.39 | LCSC/JLCPCB C495548 |
-| Electronics | DATA — JST PH 5-pin, vertical, SMD | 16  | 0.28 | 4.42 | LCSC/JLCPCB C265085 |
+| Electronics | DATA — JST PH 8-pin, vertical, SMD | 16  | 0.52 | 8.39 | LCSC/JLCPCB C495548 |
 | Electronics | 3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded | 16  | 0.10 | 1.62 | LCSC/JLCPCB C167219 |
 | Electronics | SUD50P06-15 — P-MOSFET 60 V, reverse-polarity protection | 16  | 0.33 | 5.30 | LCSC/JLCPCB C7503186 |
 | Electronics | 2N7002 — N-MOSFET 60 V (open-drain AUX outputs) | 32  | 0.02 | 0.59 | LCSC/JLCPCB C8545 |
@@ -105,7 +105,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | 1M — Resistor 1M 0603 | 16  | 0.00 | 0.03 | LCSC/JLCPCB C22935 |
 | Electronics | 120k — Resistor 120k 0603 | 16  | 0.00 | 0.02 | LCSC/JLCPCB C25808 |
 | Electronics | 22k — Resistor 22k 0603 | 48  | 0.00 | 0.18 | LCSC/JLCPCB C31850 |
-| Electronics | 10k — Resistor 10k 0603 | 128  | 0.00 | 0.61 | LCSC/JLCPCB C25804 |
+| Electronics | 10k — Resistor 10k 0603 | 144  | 0.00 | 0.69 | LCSC/JLCPCB C25804 |
 | Electronics | 33 — Resistor 33 0603 | 80  | 0.00 | 0.18 | LCSC/JLCPCB C23140 |
 | Electronics | 5.1k — Resistor 5.1k 0603 | 32  | 0.00 | 0.04 | LCSC/JLCPCB C23186 |
 | Electronics | 20k — Resistor 20k 0603 | 16  | 0.00 | 0.03 | LCSC/JLCPCB C4184 |
@@ -113,7 +113,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | 50m — 50 mΩ 1 % 1 W current shunt | 16  | 0.11 | 1.77 | LCSC/JLCPCB C601102 |
 | Electronics | 4.7k — Resistor 4.7k 0603 | 32  | 0.00 | 0.08 | LCSC/JLCPCB C23162 |
 | Electronics | 10 — Resistor 10 0603 | 16  | 0.00 | 0.05 | LCSC/JLCPCB C22859 |
-| Electronics | 1k — Resistor 1k 0603 | 32  | 0.00 | 0.05 | LCSC/JLCPCB C21190 |
+| Electronics | 1k — Resistor 1k 0603 | 48  | 0.00 | 0.08 | LCSC/JLCPCB C21190 |
 | Electronics | RESET — tactile switch 5.1 × 5.1 mm | 16  | 0.02 | 0.29 | LCSC/JLCPCB C318884 |
 | Electronics | BOOT — tactile switch 5.1 × 5.1 mm | 16  | 0.02 | 0.29 | LCSC/JLCPCB C318884 |
 | Electronics | SERVICE — SPDT slide switch, side actuated | 16  | 0.06 | 0.88 | LCSC/JLCPCB C431540 |
@@ -128,8 +128,8 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 16  | 0.69 | 11.04 | LCSC/JLCPCB C49851 |
 | Electronics | TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout) | 16  | 0.89 | 14.28 | LCSC/JLCPCB C7399456 |
 | Electronics | Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA) | 20  | 2.79 | 55.87 | JLCPCB quote 2026-10-16, adjusted |
-| Electronics | Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging | 1  | 127.87 | 127.87 | JLCPCB quote 2026-10-16, adjusted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -27.40 | -27.40 | JLCPCB quote 2026-10-16, adjusted |
+| Electronics | Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging | 1  | 125.11 | 125.11 | JLCPCB quote 2026-10-16, adjusted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -27.51 | -27.51 | JLCPCB quote 2026-10-16, adjusted |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 20  | 0.01 | 0.25 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C15849 |
@@ -190,12 +190,12 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 0.00 | 0.00 | estimate, not quoted |
 | Electronics | 100n — Capacitor 100n 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C14663 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 8  | 0.84 | 6.70 | LCSC/JLCPCB C5184243 |
-| Electronics | LEAD — JST PH 5-pin, side entry, SMD | 8  | 0.31 | 2.50 | LCSC/JLCPCB C265104 |
+| Electronics | LEAD — JST PH 8-pin, side entry, SMD | 8  | 0.41 | 3.31 | LCSC/JLCPCB C265121 |
 | Electronics | 22k — Resistor 22k 0603 | 16  | 0.00 | 0.06 | LCSC/JLCPCB C31850 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 8  | 0.17 | 1.32 | LCSC/JLCPCB C7519 |
 | Electronics | Bare PCB data-port (2-layer 40×17 mm, lead-free HASL) | 10  | 0.28 | 2.76 | estimate, not quoted |
 | Electronics | Economic PCBA, 8 boards: setup, stencil, extended parts, SMT | 1  | 17.39 | 17.39 | estimate, not quoted |
-| Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | 0.36 | 0.36 | estimate, not quoted |
+| Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | 0.38 | 0.38 | estimate, not quoted |
 | Electronics | 10u — Capacitor 10u 0805 | 2  | 0.04 | 0.08 | LCSC/JLCPCB C15850 |
 | Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
 | Electronics | 100n — Capacitor 100n 0603 | 2  | 0.01 | 0.02 | LCSC/JLCPCB C14663 |
@@ -218,7 +218,7 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Fasteners | Cyanoacrylate glue, gel (detent magnets) | 1  | 3.00 | 3.00 | any |
 | Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 2 m | 4.00 | 8.00 | Olimex DRAG-CHAIN-7X7 |
 | Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain | 6  | 2.17 | 13.02 | AliExpress 1005003181041939, "7x7mm" (or one more metre of chain per pair) |
-| Cables | JST PH 5-pin lead, pin n ↔ pin 6−n (flat, no twist), 50 cm, lot of 5 (DATA lead: node J7 → drag chain → DATA port board; VBUS, GND, D−, D+, GND) | 2 lot | 4.20 | 8.40 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 5P, Length50CM |
+| Cables | JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (DATA leads: node J7 → drag chain → DATA port board; camera leads: node J6 → pod J1) | 2 lot | 4.50 | 9.00 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P, Length50CM |
 | Cables | JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 (bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest flat at the front of the plenum) | 2 lot | 2.85 | 5.70 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length20CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS) | 1 lot | 3.19 | 3.19 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length30CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 60 cm, lot of 5 (power box → first bay of row B: VRACK, CAN, POS) | 1 lot | 4.69 | 4.69 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length60CM |
@@ -231,6 +231,5 @@ Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without s
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |
 | Cameras | Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm | 2  | 28.25 | 56.50 | Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey |
 | Cameras | M12 lens, 1/4", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK) | 2  | 3.00 | 6.00 | AliExpress |
-| Cameras | JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (camera lead: node J6 → pod J1) | 1 lot | 4.50 | 4.50 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P, Length50CM |
 | Cameras | Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order) | 2  | 0.50 | 1.00 | AliExpress |
 | Cameras | Pod hardware: 2 × PT 2.6×14 (the pod board, through the diffuser's posts), cable ties 2.5 × 100 (the lead: 1 at the tray's rear slot, 3 under the ceiling) | 2 set | 0.30 | 0.60 | AliExpress (bulk) |

@@ -327,20 +327,20 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "DATA — JST PH 5-pin, vertical, SMD",
+"item": "DATA — JST PH 8-pin, vertical, SMD",
 "ref": "J7",
-"mpn": "B5B-PH-SM4-TB(LF)(SN)",
+"mpn": "B8B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
-"part": "C265085",
+"part": "C495548",
 "qty": 16,
-"unit_eur": 0.276,
+"unit_eur": 0.5244,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 4.42
+"ext_eur": 8.39
 },
 {
 "category": "Electronics",
@@ -490,19 +490,19 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "10k — Resistor 10k 0603",
-"ref": "R6,R7,R11,R18,R20,R28,R30,R37",
+"ref": "R6,R7,R11,R18,R20,R28,R30,R37,R38",
 "mpn": "0603WAF1002T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25804",
-"qty": 128,
+"qty": 144,
 "unit_eur": 0.0048,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "8 per board × 16 boards",
+"notes": "9 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.61
+"ext_eur": 0.69
 },
 {
 "category": "Electronics",
@@ -634,19 +634,19 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "1k — Resistor 1k 0603",
-"ref": "R24,R25",
+"ref": "R24,R25,R41",
 "mpn": "0603WAF1001T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C21190",
-"qty": 32,
+"qty": 48,
 "unit_eur": 0.0017,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 16 boards",
+"notes": "3 per board × 16 boards",
 "unit": "pcs",
-"ext_eur": 0.05
+"ext_eur": 0.08
 },
 {
 "category": "Electronics",
@@ -899,10 +899,10 @@
 "item": "Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": 127.87,
-"notes": "setup $25.75, stencil $8.27, feeders $80.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components); rev 0.5: J7 DATA header (+$4.80 components); rev 0.5: J7, one more extended part type (+$3.00 feeders); rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET) (+$18.91 components); rev 0.5: the vertical AUX connector, one more extended part type (+$3.00 feeders); rev 0.5: the board 64 × 90 mm (quoted 64 × 80) (+$1.83 board); Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 125.11,
+"notes": "setup $25.75, stencil $8.27, feeders $77.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components); rev 0.5: J7 DATA header (PH 8, J6's type) (+$9.12 components); rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET) (+$18.91 components); rev 0.5: the vertical AUX connector, one more extended part type (+$3.00 feeders); rev 0.5: the board 64 × 90 mm (quoted 64 × 80) (+$1.83 board); Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 127.87
+"ext_eur": 125.11
 },
 {
 "category": "Electronics",
@@ -910,10 +910,10 @@
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-16, adjusted",
 "qty": 1,
-"unit_eur": -27.4,
-"notes": "quoted components $181.21 + $70.45 since (≈ €231.53) for 16 boards; catalogue unit prices give €258.93",
+"unit_eur": -27.51,
+"notes": "quoted components $181.21 + $74.77 since (≈ €235.50) for 16 boards; catalogue unit prices give €263.01",
 "unit": "pcs",
-"ext_eur": -27.4
+"ext_eur": -27.51
 },
 {
 "category": "Electronics",
@@ -1977,20 +1977,20 @@
 {
 "category": "Electronics",
 "group": "data-port",
-"item": "LEAD — JST PH 5-pin, side entry, SMD",
+"item": "LEAD — JST PH 8-pin, side entry, SMD",
 "ref": "J2",
-"mpn": "S5B-PH-SM4-TB(LF)(SN)",
+"mpn": "S8B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
-"part": "C265104",
+"part": "C265121",
 "qty": 8,
-"unit_eur": 0.3128,
+"unit_eur": 0.414,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 8 boards",
 "unit": "pcs",
-"ext_eur": 2.5
+"ext_eur": 3.31
 },
 {
 "category": "Electronics",
@@ -2056,10 +2056,10 @@
 "item": "Components data-port: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 0.36,
-"notes": "quoted components $12.00 (≈ €11.04) for 8 boards; catalogue unit prices give €10.68",
+"unit_eur": 0.38,
+"notes": "quoted components $12.90 (≈ €11.87) for 8 boards; catalogue unit prices give €11.49",
 "unit": "pcs",
-"ext_eur": 0.36
+"ext_eur": 0.38
 },
 {
 "category": "Electronics",
@@ -2347,13 +2347,13 @@
 },
 {
 "category": "Cables",
-"item": "JST PH 5-pin lead, pin n ↔ pin 6−n (flat, no twist), 50 cm, lot of 5 (DATA lead: node J7 → drag chain → DATA port board; VBUS, GND, D−, D+, GND)",
-"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 5P, Length50CM",
+"item": "JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (DATA leads: node J7 → drag chain → DATA port board; camera leads: node J6 → pod J1)",
+"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 8P, Length50CM",
 "qty": 2,
 "unit": "lot",
-"unit_eur": 4.2,
-"notes": "price interpolated from the 6-pin lots, not read: check the 5P lengths on the listing (≥ 40 cm).  The route is ≈ 38 cm plugs included (constant over the stroke); the spare goes in a wider bend between the node and the chain's fixed end (nothing moves there), never in front of the chain's moving end.  On arrival: both plugs show the same face, pin 1 rings to pin 5; twist D−/D+ (pins 3-4) by hand.  Or crimp them: PHR-5 + 10 × SPH-002T-P0.5S, 24 AWG",
-"ext_eur": 8.4
+"unit_eur": 4.5,
+"notes": "8 DATA + 2 camera leads; price interpolated from the 6-pin lots, not read: check the 8P lengths on the listing (45–50 cm).  The DATA route is ≈ 38 cm plugs included (constant over the stroke); the spare goes in a wider bend between the node and the chain's fixed end (nothing moves there), never in front of the chain's moving end.  On arrival: both plugs show the same face, pin 1 rings to pin 8; twist D−/D+ (pins 3-4 at the node) by hand.  Or crimp them: PHR-8 + 16 × SPH-002T-P0.5S, 24 AWG",
+"ext_eur": 9.0
 },
 {
 "category": "Cables",
@@ -2476,16 +2476,6 @@
 },
 {
 "category": "Cameras",
-"item": "JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (camera lead: node J6 → pod J1)",
-"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 8P, Length50CM",
-"qty": 1,
-"unit": "lot",
-"unit_eur": 4.5,
-"notes": "2 needed; price interpolated from the 6-pin lots, not read: check the 8P lengths (45–50 cm).  On arrival: both plugs show the same face, pin 1 rings to pin 8",
-"ext_eur": 4.5
-},
-{
-"category": "Cameras",
 "item": "Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order)",
 "supplier": "AliExpress",
 "qty": 2,
@@ -2505,15 +2495,15 @@
 }
 ],
 "by_category": {
-"Electronics": 664.0200000000001,
+"Electronics": 666.06,
 "Printed parts": 58.0,
 "Fasteners": 15.47,
 "Motion": 21.02,
-"Cables": 42.980000000000004,
+"Cables": 43.58,
 "Power": 82.0,
-"Cameras": 68.6
+"Cameras": 64.1
 },
-"total_eur": 952.09,
+"total_eur": 950.23,
 "prints": [
 {
 "part": "bay_label",
@@ -2768,7 +2758,7 @@
 "pcbs": 10,
 "assembled": 8,
 "service": "Economic",
-"total": 33.9,
+"total": 34.8,
 "estimate": true,
 "spec": "2-layer 40×17 mm, lead-free HASL",
 "pcb": {
@@ -2777,7 +2767,7 @@
 "pcba": {
 "setup": 8.0,
 "stencil": 1.5,
-"components": 12.0,
+"components": 12.9,
 "extended parts": 9.0,
 "SMT": 0.4
 }
@@ -2811,8 +2801,8 @@
 "pcba": {
 "setup": 25.75,
 "stencil": 8.27,
-"components": 251.66,
-"feeders": 80.1,
+"components": 255.98,
+"feeders": 77.1,
 "SMT": 9.45,
 "manual assembly": 1.62,
 "X-ray": 13.28,
@@ -2823,13 +2813,12 @@
 "rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components)",
 "rev 0.5: 3 more extended part types (+$9.00 feeders)",
 "rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components)",
-"rev 0.5: J7 DATA header (+$4.80 components)",
-"rev 0.5: J7, one more extended part type (+$3.00 feeders)",
+"rev 0.5: J7 DATA header (PH 8, J6's type) (+$9.12 components)",
 "rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET) (+$18.91 components)",
 "rev 0.5: the vertical AUX connector, one more extended part type (+$3.00 feeders)",
 "rev 0.5: the board 64 × 90 mm (quoted 64 × 80) (+$1.83 board)"
 ],
-"total": 451.38
+"total": 452.7
 },
 "power-hub": {
 "pcb": {
@@ -2856,12 +2845,12 @@
 "pcba": {
 "setup": 8.0,
 "stencil": 1.5,
-"components": 12.0,
+"components": 12.9,
 "extended parts": 9.0,
 "SMT": 0.4
 },
 "changes": [],
-"total": 33.9
+"total": 34.8
 },
 "camera-pod": {
 "pcb": {

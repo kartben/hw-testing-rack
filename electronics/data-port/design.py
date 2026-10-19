@@ -1,16 +1,17 @@
 """DATA port v1.0 — the drawer's USB-C port for the board under test.
 
 A small board screwed, components up, to the floor of the drawer's rear bay: a USB-C
-receptacle whose mouth looks through the port wall towards the board's plate, a 5-wire JST PH lead
+receptacle whose mouth looks through the port wall towards the board's plate, an 8-wire JST PH lead
 to the bay node's DATA header (J7) through the drag chain.  It replaces the USB-C coupler and
 the 90° extension cable.
 
 * USB-C source: CC1 and CC2 each pulled up to VBUS through 22k (Rp, 1.5 A at 5 V), as the
   node's own DUT port; VBUS is the node's DUT_5V (TPS2553 switch, INA226 shunt).
 * USBLC6 ESD on D+/D− right at the receptacle, where the plugs go in.
-* The lead: VBUS, GND, D−, D+, GND (the pair between two grounds).  Its pinout here is the node
+* The lead: VBUS, GND, D−, D+, GND (the pair between two grounds), then the node's I²C and INT,
+  which this board leaves open (a later DATA ×4 board uses them).  Its pinout here is the node
   header's mirrored, so the lead is the rack's one PH cable type ("Same direction": pin n to
-  pin 6−n); 5 pins, so a 6-pin row cable cannot go in.
+  pin 9−n), the camera's 8-wire lead; 8 pins, so a 6-pin row cable cannot go in.
 * USB 2.0 only: HS (480 Mb/s) PC ↔ board in classic mode, FS to the node's ESP32 otherwise.
 
 2 layers, 40 × 17 mm, both sides GND pours (config/rack.yaml › pcb.data_port, set with the
@@ -50,8 +51,9 @@ def board() -> Board:
               comments=["The drawer's USB-C port for the board under test, wired to the bay node (hw-testing-rack)",
                         "Generated from electronics/data-port/design.py — edit the Python, then regenerate"])
     b.root_notes = [
-        "DATA port v1.0 — USB-C source (Rp 22k on CC1/CC2), USBLC6 ESD, 5-pin JST PH lead to the bay node's J7.",
-        "Lead pinout here: 1 GND, 2 D+, 3 D−, 4 GND, 5 VBUS (the node's J7 mirrored: one 'Same direction' PH cable).",
+        "DATA port v1.0 — USB-C source (Rp 22k on CC1/CC2), USBLC6 ESD, 8-pin JST PH lead to the bay node's J7.",
+        "Lead pinout here: 1 INT, 2 SCL, 3 SDA (all three open), 4 GND, 5 D+, 6 D−, 7 GND, 8 VBUS",
+        "  (the node's J7 mirrored: one 'Same direction' PH 8 cable).",
     ]
     s = b.sheet("Port", "port.kicad_sch", "USB-C source, ESD, lead")
     s.block("USB-C receptacle (source): Rp 22k on each CC, the shell to GND")
@@ -64,8 +66,9 @@ def board() -> Board:
     part(s, "U1", "esd", {"6": "CONN_DN", "1": "LEAD_DN", "4": "CONN_DP", "3": "LEAD_DP", "5": "VBUS", "2": "GND"},
          pcb=P(CFG["ph"] + 2.0, H - 3.5, 90))
     C(s, "C1", "100n", "VBUS", "GND", pcb=P(CFG["ph"] - 2.5, H - 3.5, 90))
-    s.block("Lead to the bay node's DATA header (J7): 1 GND, 2 D+, 3 D−, 4 GND, 5 VBUS")
-    part(s, "J2", "ph5", {"1": "GND", "2": "LEAD_DP", "3": "LEAD_DN", "4": "GND", "5": "VBUS"}, "LEAD",
+    s.block("Lead to the bay node's DATA header (J7): 4 GND, 5 D+, 6 D−, 7 GND, 8 VBUS; 1–3 (INT, I²C) open")
+    part(s, "J2", "ph8", {"1": None, "2": None, "3": None, "4": "GND", "5": "LEAD_DP", "6": "LEAD_DN", "7": "GND",
+                          "8": "VBUS"}, "LEAD",
          pcb=P(CFG["ph"], PH_EDGE, 180))
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "VBUS"}, in_bom=False, on_board=False)
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False)
@@ -73,7 +76,8 @@ def board() -> Board:
         part(s, f"H{i + 1}", "hole25", {}, "PT2.6", pcb=P(x, y, 0), in_bom=False)
     s.note("Rp 22k to VBUS on CC1 and CC2: a USB-C source advertising 1.5 A, as the bay node's own DUT port;")
     s.note("  VBUS comes from the node's TPS2553 switch (DUT_5V), so the node turns the board under test on and off.")
-    s.note("The lead's pinout is the node's J7 mirrored: a 'Same direction' PH cable (pin n to pin 6−n) joins them.")
+    s.note("The lead's pinout is the node's J7 mirrored: a 'Same direction' PH 8 cable (pin n to pin 9−n) joins them;")
+    s.note("  pins 1–3 (the node's INT and I²C) stay open here.")
 
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 1.5, "passes": 40,
@@ -93,7 +97,9 @@ def board() -> Board:
 """,
         "texts": [
             {"text": "DATA v1.0", "x": 7.0, "y": H - 3.0, "size": 0.8},
-            {"text": "VBUS GND D− D+ GND", "x": CFG["ph"], "y": 10.6, "size": 0.8},
+            # one label per pin, under it (rot 180: pin n at x = ph + 9 − 2n); 1–3 (INT, I²C) open
+            *({"text": s, "x": CFG["ph"] + 9 - 2 * n, "y": 10.6, "size": 0.8}
+              for n, s in ((8, "5V"), (7, "G"), (6, "D−"), (5, "D+"), (4, "G"), (3, "·"), (2, "·"), (1, "·"))),
         ],
     }
     return b

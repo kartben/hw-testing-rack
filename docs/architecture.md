@@ -54,7 +54,7 @@ constants, the web scene, the BOM and the PCB outlines/connector positions.
   closed-position magnet.
 * **Drawer** (printed): front panel with label recess and finger pull, plate
   pocket, rear bay with the DATA port (our small board screwed to the floor,
-  its USB-C behind a U in the port wall, the 5-wire PH lead from the node
+  its USB-C behind a U in the port wall, the 8-wire PH lead from the node
   plugged into its rear) and the cable window; a
   foot under the rear carries the chain's moving end.
 * **Plate** (printed, per board form factor): heat-set-insert or snap-pin

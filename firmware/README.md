@@ -571,8 +571,9 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 | ESP32-S3 | Net | Use | Devicetree |
 |---|---|---|---|
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
-| IO1 | I2C_SCL | I²C0 | `&i2c0` |
-| IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups) | `&i2c0`, `ina226` |
+| IO1 | I2C_SCL | I²C0; also out on J7.7 to the drawer's DATA board | `&i2c0` |
+| IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (4.7k pull-ups); also out on J7.6 to the drawer's DATA board (its devices keep off 0x40) | `&i2c0`, `ina226` |
+| IO4 | DATA_INT | DATA board interrupt ← J7.8 (1k series, 10k pull-up; open drain, active low), for a later DATA ×4 board | — (no driver yet) |
 | IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.8 LED_K (100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
 | IO8 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω, 10k pull-up) | `&spi2` `cs-gpios` |
 | IO9 | CAM_MISO | camera SPI2 MISO ← J6.6 (33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
@@ -602,8 +603,8 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 Each signal sits on the module edge that faces where it goes on the board: the right column feeds
 the DUT power block (I²C at its rear end) and POS_OUT runs to J2 (docs/can.md); the bottom row the
 AUX connector (right half), the mode logic and the camera's SPI (left half); the left column the
-rack bus block (CAN transceiver, POS input), SERVICE and the camera's CS and light.  IO4–IO6 are
-free.  The CAN protocol itself is not written yet: the devicetree only describes the pins.
+rack bus block (CAN transceiver, POS input), SERVICE, the camera's CS and light and the DATA
+board's INT (IO4).  IO5 and IO6 are free.  The CAN protocol itself is not written yet: the devicetree only describes the pins.
 Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad JTAG pins, free as GPIOs since
 the node debugs over USB-Serial-JTAG.  The map is chosen so that an ESP32-S3-DevKitC-1 v1.1
 (N8R8, the same module) takes it as is: every pin is on its headers, none is the octal PSRAM's

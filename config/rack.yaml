@@ -122,7 +122,7 @@ cables:
                   length: 250, style: side }       # the F746G-DISCO: its USB faces the side wall, 49 mm away
   c-to-c-straight:       { label: "USB-C ↔ USB-C, straight, 15–20 cm", a: usb-c, b: usb-c,   length: 150, style: straight }
   c-to-micro-b-straight: { label: "USB-C ↔ micro-B, straight, 15–20 cm", a: usb-c, b: micro-b, length: 150, style: straight }
-  data-lead:    { label: "JST PH 5-pin DATA lead, pin n ↔ pin 6−n, 400–500 mm (node J7 → DATA port board)", length: 400 }
+  data-lead:    { label: "JST PH 8-pin DATA lead, pin n ↔ pin 9−n, 400–500 mm (node J7 → DATA port board)", length: 400 }
   row-jumper:   { label: "JST PH 6-pin row cable, 1:1, 24 AWG, 120 mm", length: 120 }
   row-feed:     { label: "JST PH 6-pin feed, 1:1, 24 AWG (VRACK, CAN, POS)", length: 600 }
 
@@ -137,7 +137,8 @@ pcb:
     holes: [[3.5, 13.5], [60.5, 13.5], [3.5, 86.5], [60.5, 86.5]]   # M3, KiCad coordinates (the tray's standoffs unchanged)
     front: { pc_port: 32, led: 12, svc: 50 }        # KiCad X of the front-edge parts
     pwr_y: 73               # KiCad Y of the row cable connectors (JST PH 6, left/right edges)
-    right: { dut: 34, aux: 50 }                     # KiCad Y of J4 (DUT USB-C, right edge) and J5 (AUX, vertical PH 6)
+    right: { dut: 34, data: 50.65 }                 # KiCad Y of J4 (DUT USB-C) and of J7's centre (DATA, vertical PH 8), right edge
+    aux: [41.8, 47.8]       # J5 (AUX, vertical PH 6, its row along x): its centre, KiCad
     cam: [43, 67]           # J6, the camera lead (JST PH 8, vertical: plugged from above), its centre, KiCad
   power_hub:                # v0.5: USB-C PD in (AP33772S), eFuses, rack controller (ESP32-S3, CAN master)
     size: [76, 140]         # X × Y; KiCad y=0 is the REAR edge, y=140 the front edge (like the bay node)
@@ -152,14 +153,14 @@ pcb:
     rear: { pd: 62 }            # KiCad x on the rear edge: the USB-C PD input
     buttons: [[11.5, 10.0], [11.5, 16.5]]   # KiCad: SW1 RESET, SW2 BOOT (design.py), top-actuated, 1.5 mm tall: pin holes in the lid
   data_port:                # the drawer's DATA port: a USB-C source on a small board on the drawer's rear-bay floor
-    size: [40, 17]          # X × Y; KiCad y=0 is the REAR edge (the 5-pin PH lead to the node), y=17 the FRONT edge (USB-C mouth)
+    size: [40, 17]          # X × Y; KiCad y=0 is the REAR edge (the 8-pin PH lead to the node), y=17 the FRONT edge (USB-C mouth)
                             # ≤ 17 deep: the PH plug and the wires' turn down fit in the drawer's 30 mm rear bay
     thickness: 1.6
     layers: 2
-    holes: [[3.0, 8.5], [37.5, 4.0]]     # Ø2.7, PT 2.6 × 8 from above into the drawer's floor bosses; mounted components up
+    holes: [[2.6, 13.5], [37.5, 4.0]]    # Ø2.7, PT 2.6 × 8 from above into the drawer's floor bosses (the left one clear of the PH 8)
     usb: 30.5               # KiCad x of the USB-C (GCT USB4105) on the front edge: the right edge ≤ 9.5 mm right of it (the
                             # chain foot's lock screw); its centre 1.63 mm above the component face (3.23 above the underside)
-    ph: 17.5                # KiCad x of the JST PH 5-pin (side entry) on the rear edge: its courtyard clear of the USB4105's (x ≤ 17.6)
+    ph: 14.4                # KiCad x of the JST PH 8-pin (side entry) on the rear edge: its courtyard clear of the USB4105's (x ≤ 14.5)
   camera_pod:               # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6

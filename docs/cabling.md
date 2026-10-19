@@ -8,27 +8,28 @@ as it can be without ever being taut**.
 
 ```
 bay node (plenum)                                 drawer
- ┌──────────┐  DATA lead: JST PH 5-pin, ~40 cm    ┌────────────────────────────────────┐
+ ┌──────────┐  DATA lead: JST PH 8-pin, ~40 cm    ┌────────────────────────────────────┐
  │ DATA J7  ├──────┐                              │ [DATA]◀── short cable ──▶ board    │
  └──────────┘      │  ┌─ drag chain 7×7 R18 ─┐    │   ▲ port board on the drawer floor │
                    └─▶│ fixed end   moving end├───┼─▶ up through the cable window      │
                       └──────────────────────┘    └────────────────────────────────────┘
 ```
 
-1. **Node → drawer: a small port board and a 5-wire lead.**  The drawer's
+1. **Node → drawer: a small port board and an 8-wire lead.**  The drawer's
    DATA port is our own 40 × 17 mm board ([electronics/data-port](../electronics/data-port/design.py)):
    a USB-C receptacle (a source: Rp 22k on CC1/CC2, USBLC6 ESD at the
    receptacle) screwed components up to the floor behind the port wall
    (2 × PT 2.6×8, one each end), its mouth behind a U in the wall: the
-   board's short cable plugs into it.  A JST PH 5-pin lead (VBUS, GND, D−, D+, GND) plugs
+   board's short cable plugs into it.  A JST PH 8-pin lead (VBUS, GND, D−, D+, GND, then
+   the node's I²C and INT, which the port board leaves open, for a later DATA ×4 board) plugs
    into the node's **DATA** header (J7, vertical, in parallel with the DUT
    receptacle J4: one of the two in use), runs ~3 cm in the plenum to the
    chain's fixed end, through the drag chain, out of its moving end
    (forwards, then a U-turn in front of it, between the chain's runs, low
    over the tray floor) and up through the cable window into the port
    board's rear edge.  It never needs to be touched again.  It is the rack's
-   one PH cable type (pin n ↔ pin 6−n, both plugs the same face up: the
-   port board's pinout is J7's mirrored), with 5 pins so a 6-pin row cable
+   camera's PH 8 lead type (pin n ↔ pin 9−n, both plugs the same face up: the
+   port board's pinout is J7's mirrored), with 8 pins so a 6-pin row cable
    (VRACK, up to 28 V) cannot go in; twist D−/D+ (pins 3-4) by hand.  (A
    USB-C coupler with a 90° extension came first: two off-the-shelf parts
    whose sizes vary by seller, and a stiff cable to bend in the window.)

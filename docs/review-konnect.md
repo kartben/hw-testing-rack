@@ -544,3 +544,29 @@ the cathode line now runs between.  Konnect, on the saved files:
 
 JLC placement corrections, fitted as before: C2843876 (LED) +0.24 mm x, C41417363 (header) 270°;
 C265121 (S8B) needs none.
+
+## The DATA lead on 8 wires: node J7 and the data port's J2 (2026-10-19)
+
+Density decisions: the DATA lead becomes the camera's PH 8 type ("Same direction") and also carries
+the node's I²C and an INT for a later DATA ×4 board ([electronics.md](electronics.md), J7, the
+DATA lead).  On the node J7 is a vertical B8B (J6's part) by the right edge, in J5's old slot, and
+J5 (AUX) is a horizontal B6B in the middle; INT goes to IO4 (10k pull-up beside the module, 1k at
+J7).  The data port's J2 becomes an S8B with pins 1–3 open, its PH at x 14.4 and its left hole at
+(2.6, 13.5).  The first node route left D+ unconnected: the AUX parts, R14 and U8's caps leave no
+room on F.Cu between J7 and U8's mux side.  J7 now taps the pair at J4's own pads (`DUT_CONN_*`,
+so U8's ESD covers both ports), and `usb_hs_routes()` draws that branch: a B.Cu pair under J4
+between its rear shell tabs, vias beside B7 and on the B6 → A6 loop.  Konnect, on the saved files:
+
+| | data port | bay node |
+|---|---|---|
+| Pin nets (`get_component_nets`) | J2: open, open, open, GND, LEAD_DP, LEAD_DN, GND, VBUS | J7: DUT_5V, GND, DUT_CONN_DN, DUT_CONN_DP, GND, I2C_SDA, I2C_SCL, DATA_INT_C (J2's mirror) |
+| ERC | 0 errors, 0 warnings | 0 errors, 0 warnings |
+| DRC (zones refilled) | 0 errors, 0 warnings, 0 unconnected, parity 0 | 0 errors, 0 warnings, 0 unconnected, parity 0 |
+| JLC DFM (`audit_manufacturing`) | 0 findings, 8 parts on the top | 4 parts on the bottom (test pads), as before |
+| J7 branch | — | D+ 21.5 mm, D− 18.7 mm + 2 vias, from J4's pads; an open stub of that length when J4 is used with J7 empty (15.9 / 17.5 mm from U8 before) |
+| I²C / INT to J7 | — | SDA 68.7 mm, SCL 73.0 mm across the board (100 kHz); DATA_INT 76 mm, mostly B.Cu |
+| 3D coverage | 6 parts with a model, 0 stand-ins | 99 parts with a model, 0 stand-ins |
+| `check_pinmap.py` | — | 28 U3 GPIOs match; DATA_INT (IO4) is reserved, no devicetree user yet |
+
+No new part type on either board (B8B and S8B were already in the rack's BOM); the node loses the
+B5B, the data port the S5B.

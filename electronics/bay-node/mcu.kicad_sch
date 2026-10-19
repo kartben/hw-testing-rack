@@ -3557,9 +3557,38 @@
 		)
 		(uuid "689d3243-af50-5b4a-a427-a129af4877e8")
 	)
-	(no_connect
-		(at 187.96 88.9)
-		(uuid "7eb4910e-8c9a-5841-bf28-a598b086ba5f")
+	(wire
+		(pts
+			(xy 187.96 88.9)
+			(xy 185.42 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d0f7884e-a9eb-5c0a-a12b-9d6546caea83")
+	)
+	(global_label "DATA_INT"
+		(shape bidirectional)
+		(at 185.42 88.9 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "3169c6dd-a51f-5aa6-a1b7-c0828c9beb97")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 185.42 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
 	)
 	(no_connect
 		(at 187.96 91.44)
@@ -5836,10 +5865,10 @@
 		)
 		(uuid "f4ec8d2a-1eb9-56d3-b800-af50c495c063")
 	)
-	(text_box "GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/1 I2C SDA/SCL · IO47/21 UART1 TX/RX (AUX) ·\nIO12 AUX_RST · IO48 AUX_BOOT · IO38 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·\nIO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO42 POS_OUT · camera SPI2: IO11 SCK · IO10 MOSI · IO9 MISO · IO8 CS ·\nIO7 light.  Free: IO4–IO6.  IO35–IO37 are the octal PSRAM's; the WROOM-1 has no IO26/IO33/IO34.\nThe map is the ESP32-S3-DevKitC-1 v1.1's (N8R8) as is: the bench stand-in needs no remap.\nStrapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY)."
+	(text_box "GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/1 I2C SDA/SCL · IO47/21 UART1 TX/RX (AUX) ·\nIO12 AUX_RST · IO48 AUX_BOOT · IO38 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·\nIO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO42 POS_OUT · camera SPI2: IO11 SCK · IO10 MOSI · IO9 MISO · IO8 CS ·\nIO7 light · IO4 DATA_INT (J7.8, open drain, active low).  Free: IO5, IO6.  IO35–IO37 are the octal PSRAM's;\nthe WROOM-1 has no IO26/IO33/IO34.  The I²C bus (IO1/IO2) also goes out on J7.6/7 to the drawer's DATA board.\nThe map is the ESP32-S3-DevKitC-1 v1.1's (N8R8) as is: the bench stand-in needs no remap.\nStrapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY)."
 		(exclude_from_sim no)
 		(at 15.24 177.8 0)
-		(size 269.24 17.78)
+		(size 269.24 20.32)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)
