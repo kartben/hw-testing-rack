@@ -35,6 +35,9 @@ firmware/
     web/                         rack.css, rack.mjs, vendor/xterm (xterm.js 6.0.0, MIT),
                                  devserver.py, shots.py
     tests/rack_bus/              the rack bus on a simulated rack (ztest, native_sim)
+    tests/usbip/                 the patched USB/IP service on native_sim's virtual USB bus,
+                                 a device unplugged mid-session (test_usbip.py)
+  spikes/usb-hub/                bench app: a hub and several DUTs behind an ESP32-S3
   power-hub/                     the power hub application (its own README)
   bay-node/                      the bay node application
     boards/esp32s3_devkitc_procpu.overlay   stand-in: same pin map on a DevKitC-1
@@ -54,6 +57,7 @@ A dedicated workspace, with this repository as the manifest repository:
 west init -m https://github.com/kartben/hw-testing-rack --mf firmware/west.yml rack-ws
 cd rack-ws
 west update
+west patch apply                        # Zephyr patches, until upstream (zephyr/patches.yml)
 west blobs fetch hal_espressif          # Wi-Fi binary blobs
 west packages pip --install             # esptool & co. for the ESP32 build
 west build --sysbuild -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node
@@ -158,7 +162,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 
 | Feature | Implementation |
 |---|---|
-| USB/IP export of the DUT | `CONFIG_USBIP` on `zephyr_uhc0` (= `&usb_otg`, DWC2 host, ESP32-S3 FS quirk); TCP 3240; one device, bus id `1-<address>` (normally `1-1`) |
+| USB/IP export of the DUT | `CONFIG_USBIP` on `zephyr_uhc0` (= `&usb_otg`, DWC2 host, ESP32-S3 FS quirk), with the rack's patch (`zephyr/patches.yml`); TCP 3240; bus id by port: `1-1` (`1-1.<n>` behind a hub) |
 | DUT power | TPS2553 EN on IO41, kept **on** at boot (the board pulls it up); `bay power on/off/cycle` |
 | Over-current | TPS2553 ~FAULT on IO40 (interrupt): logged and counted; after `CONFIG_BAY_DUT_FAULT_OFF_MS` (1 s) in current limit VBUS is switched off and the fault latched until `bay power on` |
 | Telemetry | INA226 @ 0x40 through the Zephyr sensor API (`ti,ina226`, 50 mΩ, 50 µA/LSB, 16× averaging): bus mV, mA, mW in `bay power` / `bay status` |
@@ -647,9 +651,12 @@ runs it and builds both targets with warnings as errors on every push.
   interrupt IN; interrupt OUT, isochronous and split transactions (hubs) are
   not implemented yet.  Probes with an interrupt OUT endpoint, UAC/UVC
   devices and DUTs behind an on-board hub won't work over USB/IP.
-* **USB/IP service** is experimental upstream: one device per controller,
-  fixed bus id `1-<address>`, no access control of its own (the node's
-  packet filter applies the access rules in front of it).
+* **USB/IP service** is experimental upstream.  The rack patches it
+  (`zephyr/patches.yml`, until Zephyr has it): bus ids by port, no hubs on
+  offer, a DUT that resets or goes ends its session cleanly (tested on
+  native_sim, `firmware/common/tests/usbip`, not yet on a node).  No access
+  control of its own (the node's packet filter applies the access rules in
+  front of it).
 * **Access control: tested off the board only.**  The rules engine passes
   its host test; claim, signed requests, rules, tickets, kicks and leases
   passed on native_sim and against `dev_server.py`.  The packet-filter path

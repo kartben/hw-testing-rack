@@ -2,7 +2,10 @@
 # this repository is the manifest repository, Zephyr is an ordinary project).
 #
 #   west init -m https://github.com/kartben/hw-testing-rack --mf firmware/west.yml rack-ws
-#   cd rack-ws && west update && west blobs fetch hal_espressif
+#   cd rack-ws && west update && west patch apply && west blobs fetch hal_espressif
+#
+# `west patch apply` applies the Zephyr patches the rack carries until Zephyr
+# has them (zephyr/patches.yml).
 #
 # Zephyr is pinned to a main-branch commit that has the DWC2 host controller
 # driver with the ESP32-S3 quirk and the USB/IP host service.  Bump it on

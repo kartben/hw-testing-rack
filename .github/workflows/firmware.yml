@@ -80,6 +80,11 @@ jobs:
           - name: update
             board: native_sim/native/64
             app: firmware/common/tests/update
+          # The patched USB/IP service (zephyr/patches.yml) on the virtual USB
+          # bus, a device unplugged mid-session, run below
+          - name: usbip
+            board: native_sim/native/64
+            app: firmware/common/tests/usbip
     steps:
       # West workspace = $GITHUB_WORKSPACE, this repository checked out as its
       # manifest repository (manifest self.path: hw-testing-rack).
@@ -87,14 +92,15 @@ jobs:
         with:
           path: hw-testing-rack
 
-      # Zephyr and its modules only change with the revisions in west.yml.
+      # Zephyr and its modules only change with the revisions in west.yml (and
+      # the patches applied to them, zephyr/patches.yml).
       - name: Cache west projects
         uses: actions/cache@v4
         with:
           path: |
             zephyr
             modules
-          key: west-${{ hashFiles('hw-testing-rack/firmware/west.yml') }}
+          key: west-${{ hashFiles('hw-testing-rack/firmware/west.yml', 'hw-testing-rack/zephyr/patches.yml') }}
 
       # west init -l / west update, west packages pip, Zephyr SDK (version from
       # zephyr/SDK_VERSION), with the SDK, pip and ccache cached.
@@ -104,6 +110,10 @@ jobs:
           manifest-file-name: firmware/west.yml
           toolchains: xtensa-espressif_esp32s3_zephyr-elf
           ccache-cache-key: ${{ matrix.name }}
+
+      # The Zephyr patches the rack carries (zephyr/patches.yml)
+      - name: Patches
+        run: west patch apply
 
       - name: Wi-Fi blobs
         run: west blobs fetch hal_espressif
@@ -120,6 +130,10 @@ jobs:
         run: >
           sudo python3 hw-testing-rack/firmware/bay-node/tests/console_sim/test_access.py
           --exe build/zephyr/zephyr.exe
+
+      - name: USB/IP on native_sim
+        if: matrix.name == 'usbip'
+        run: python3 hw-testing-rack/firmware/common/tests/usbip/test_usbip.py --exe build/zephyr/zephyr.exe
 
       - name: Rack bus protocol / firmware updates on native_sim
         if: matrix.name == 'rack_bus' || matrix.name == 'update'

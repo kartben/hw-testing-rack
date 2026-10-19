@@ -1,7 +1,8 @@
 /*
  * USB hub spike: several DUTs behind one hub, exported over USB/IP by an
  * ESP32-S3 (README.md).  The host stack, its hub class and the USB/IP
- * service are Zephyr's, unchanged; this adds a look at what they see and
+ * service are Zephyr's, the last with the rack's patches (zephyr/patches.yml:
+ * bus IDs by port, device removal); this adds a look at what they see and
  * the hub's per-port power, on the shell:
  *
  *   spike devs                     devices: address, busid, hub port, speed, VID:PID
@@ -12,6 +13,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -69,9 +71,26 @@ static struct usb_device *find_hub(void)
 	return NULL;
 }
 
+/* The USB/IP bus ID, as the patched usbip.c names it: by the port */
+static void busid(const struct usb_device *udev, char *buf, size_t len)
+{
+	uint8_t ports[5];
+	size_t n = 0;
+	int pos;
+
+	for (; udev->hub != NULL && n < ARRAY_SIZE(ports); udev = udev->hub) {
+		ports[n++] = udev->hub_port;
+	}
+	pos = snprintf(buf, len, "1-1");
+	while (n > 0 && pos > 0 && (size_t)pos < len) {
+		pos += snprintf(buf + pos, len - pos, ".%u", ports[--n]);
+	}
+}
+
 static int cmd_devs(const struct shell *sh, size_t argc, char **argv)
 {
 	struct usb_device *udev;
+	char id[24];
 	int n = 0;
 
 	ARG_UNUSED(argc);
@@ -79,9 +98,10 @@ static int cmd_devs(const struct shell *sh, size_t argc, char **argv)
 
 	k_mutex_lock(&host()->mutex, K_FOREVER);
 	SYS_DLIST_FOR_EACH_CONTAINER(&host()->udevs, udev, node) {
-		/* USB/IP names a device "1-<address>" (usbip.c), whatever its port */
-		shell_print(sh, "addr %3u  busid 1-%-3u  %s port %u, level %u  %-4s  %04x:%04x  class %02x%s",
-			    udev->addr, udev->addr, udev->hub ? "hub" : "root",
+		busid(udev, id, sizeof(id));
+		shell_print(sh, "addr %3u  busid %-8s  %s port %u, level %u  %-4s  %04x:%04x  class %02x%s",
+			    udev->addr, udev->dev_desc.bDeviceClass == HUB_CLASS ? "-" : id,
+			    udev->hub ? "hub" : "root",
 			    udev->hub ? udev->hub_port : 0, udev->level, speed_str(udev->speed),
 			    udev->dev_desc.idVendor, udev->dev_desc.idProduct,
 			    udev->dev_desc.bDeviceClass,

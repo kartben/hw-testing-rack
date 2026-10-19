@@ -55,7 +55,7 @@ a fallback (the spike checks which hubs really switch).
   host gave at enumeration: it changes when a board re-enumerates, and two
   boards that reset together can swap.  The node names it by where it is
   plugged instead, as Linux does: `1-1.<hub port>` (root port 1, then the hub's
-  port), so `A1.2` is always the same busid.
+  port), so `A1.2` is always the same busid.  A one-board node keeps `1-1`.
 - **The hub is hidden** from `usbip list`; only the boards are exported.
 - **A board that disconnects** ends its USB/IP session (the client sees a
   detach); when it comes back, it is listed again under the same busid, and
@@ -63,7 +63,12 @@ a fallback (the spike checks which hubs really switch).
 - **Sessions.**  `CONFIG_USBIP_DEVICES_COUNT=4`: one thread and a 2 KB stack
   each.
 
-These need changes in Zephyr's `subsys/usb/host/usbip.c` (below).
+The busid, the hidden hub and the session that ends with its board are
+done: a patch to Zephyr's `subsys/usb/host/usbip.c` that the workspace
+applies (`west patch apply`, [`zephyr/patches.yml`](../zephyr/patches.yml)),
+tested on native_sim with Zephyr's virtual USB bus
+([`firmware/common/tests/usbip`](../firmware/common/tests/usbip/test_usbip.py)),
+not yet on a node or behind a real hub.
 
 ## Per-port state
 
@@ -140,10 +145,11 @@ it (measured in the spike).
 
 | Where | What | |
 |---|---|---|
-| `usbip.c` | busid by port path (`1-1.3`), not by address | needed for stable names |
-| `usbip.c` | hubs left out of the device list | small |
-| `usbip.c` | a session ends when its device disconnects (today it keeps a pointer to the freed device) | needed: a board reset must not break the node |
+| `usbip.c` | busid by port path (`1-1.3`), not by address | in `zephyr/patches.yml`, not proposed upstream yet |
+| `usbip.c` | hubs left out of the device list | same patch |
+| `usbip.c` | a session ends when its device disconnects (upstream keeps a pointer to the freed device) | same patch |
 | `usbip.c` | an import policy callback (busid, client address) | for per-port leases |
+| host core | a device's removal that waits for its cancelled transfers before freeing it (`usbh_device_disconnect()` frees at once; the controller cancels in its own thread) | a narrow window, for every class, not only USB/IP |
 | hub class | a public API for port power and status, and port events for the application | the spike uses the stack's private requests |
 | `uhc_dwc2.c` | low-speed devices behind a full-speed hub (`HCCHAR.LSPDDEV`) | only if a low-speed DUT is wanted |
 | `uhc_dwc2.c` | #120848, #120961, #121688 (data toggles, bulk retries; seen behind a hub on the P4) | to land first |

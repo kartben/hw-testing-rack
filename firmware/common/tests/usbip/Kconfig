@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The virtual bus runs on the system clock (as tests/subsys/usb/host)
+config SYS_CLOCK_TICKS_PER_SEC
+	default 1000000 if BOARD_NATIVE_SIM
+
+# The device: Zephyr's USB sample helper (VID, PID, strings)
+source "samples/subsys/usb/common/Kconfig.sample_usbd"
+
+source "Kconfig.zephyr"

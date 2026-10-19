@@ -1,0 +1,28 @@
+# Patches to the Zephyr pinned in firmware/west.yml, until Zephyr has them.
+# After `west update`, in the workspace:
+#
+#   west patch apply
+#
+# (`west patch list` shows them, `west patch reverse` takes them out.)  Each
+# one is a Zephyr commit made with `git format-patch`; after regenerating
+# one, update its sha256sum (`sha256sum zephyr/patches/<path>`).  Patch files
+# are kept byte for byte (.gitattributes: -text).  Patches that touch the
+# same lines go in one file: `west patch apply` checks each one alone to
+# tell whether it is applied already.
+
+patches:
+  # USB/IP: a device that goes ends its session instead of leaving it on
+  # freed memory, hubs are not on offer, bus IDs by port ("1-1", "1-1.3"
+  # behind port 3 of a hub), stable across re-enumeration
+  # (docs/multi-dut-node.md)
+  - path: zephyr/usbip-removal-and-busid.patch
+    sha256sum: 06e00098c1474b8a6694af3bdb1b035facb8287429873305c06975d0de270d16
+    module: zephyr
+    author: Benjamin Cabé
+    email: benjamin@zephyrproject.org
+    date: 2026-10-19
+    upstreamable: true
+    comments: |
+      Upstream, as two commits: "usb: host: usbip: bind exported devices as
+      host class instances" and "usb: host: usbip: name devices by their
+      port".

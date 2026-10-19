@@ -8,7 +8,9 @@ stack sees.  The design it feeds is [docs/multi-dut-node.md](../../../docs/multi
 
 Zephyr as pinned in [`firmware/west.yml`](../../west.yml) (3f7ae83); its USB
 host files (`usbh_hub.c`, `usbip.c`, `usbh_device.c`, `uhc_dwc2.c`) are the same
-as on main at a915b2f (2026-10-16).
+as on main at a915b2f (2026-10-16).  `usbip.c` gets the rack's patch
+(`west patch apply`, [`zephyr/patches.yml`](../../../zephyr/patches.yml)): the
+three USB/IP rows below marked *patched*.
 
 ## What the code says, before the bench
 
@@ -16,9 +18,9 @@ as on main at a915b2f (2026-10-16).
 |---|---|---|
 | Enumeration behind a hub | `CONFIG_USBH_HUB_CLASS` (NXP, 2025-26): ports powered at start, connect / disconnect / reset handled, devices get `hub`, `hub_port`, `level` | The S3's OTG is full speed only: the hub runs at full speed and full-speed DUTs need no split transactions (DWC2's split support is WIP, #120876, and only matters for a high-speed root such as the P4). **Low-speed DUTs behind the hub will not work**: DWC2 never sets `HCCHAR.LSPDDEV` (`TODO: Support Hubs`) |
 | Several devices over USB/IP | `CONFIG_USBIP_DEVICES_COUNT` sessions, one thread and a 2 KB stack each; transfers queue when the 8 host channels are busy | 12 Mbit/s shared by all DUTs; RAM: the bay node has 12 KB of DRAM left |
-| busid | `1-<address>`, the address the host gave at enumeration (lowest free one) | **Not stable**: a DUT that re-enumerates usually gets its address back, but two that reset together can swap |
-| The hub in `usbip list` | Every device is listed, the hub too (class 09) | Attaching it would be a mistake: hide it |
-| A DUT that resets while attached | USB/IP is not told: its session keeps a pointer to the freed device | **To watch**: errors on the client, or worse; a re-export needs a new `usbip attach` |
+| busid | Upstream: `1-<address>`, the address the host gave at enumeration (lowest free one), so two DUTs that reset together can swap.  *Patched*: by port, `1-1.<hub port>` | **To check**: the same busid after a reset, for each port |
+| The hub in `usbip list` | Upstream: every device, the hub too (class 09).  *Patched*: only devices a USB/IP context is bound to, never a hub | **To check**: no hub in the list |
+| A DUT that resets while attached | Upstream: USB/IP is not told, its session keeps a pointer to the freed device.  *Patched*: the session ends, its transfers are cancelled (native_sim: `firmware/common/tests/usbip`) | **To watch**: the client sees a detach; `usbip attach` again works |
 | Per-port power | `SetPortFeature` / `ClearPortFeature(PORT_POWER)` exist (`usbh_req_set/clear_hcfs_port_power`), used once at start to power all ports; not public API | Works only on hubs that really switch each port (most cheap hubs do not) |
 | Your DWC2 fixes | #120848 (bulk toggle from the controller), #120961 (rewind bulk transfers, seen behind a GL850G), #121688 (toggles on SET_CONFIGURATION / ClearFeature(HALT)): open | Expected to matter behind a hub (re-enumerating DUTs, bulk retries); the spike runs without them first, then with them |
 
