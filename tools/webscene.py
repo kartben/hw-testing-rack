@@ -73,7 +73,7 @@ NODE_J6_H = 8.0     # J6 (camera, JST PH 8 vertical, at config/rack.yaml › pcb
 
 
 # the row cable's tie anchors in the tray (tray.scad › JUMPER_TIES: carrier x, y of their centre)
-JUMPER_TIES = [(118.0, 6.5), (150.0, 6.5)]
+JUMPER_TIES = [(118.0, 7.25), (150.0, 7.25)]
 
 
 def x4_port_x(rack, n: int) -> float:
@@ -568,10 +568,10 @@ def camera_view(x0, lens, cp):
                         "leds": leds, "led_z": round(POD_LED_Z - 0.1, 2)}]}
 
 
-def camera_lead(j6, x0, node_right, row_h, tilt, lens, mount, depth, cp):
+def camera_lead(j6, x0, row_h, tilt, lens, mount, depth, cp):
     """The camera's PH-8 lead (double-ended), in the bay's row coordinates: up out of the node's J6
-    (vertical), over to the right of the node (under the DATA lead, which runs higher), back along the
-    plenum and out of the tray's rear slot (x 20-80), straight up behind the tray's rear wall (square to
+    (vertical, at its rear right, between the antenna keep-out and the DATA / AUX plugs), straight back
+    along the plenum and out of the tray's rear slot (x 20-80), straight up behind the tray's rear wall (square to
     the row, in the gap behind the drawer: the brace's plane leans back, following it would cost ≈ 6 cm),
     forwards under the ceiling (row i+1's origin is row_h higher, so at y + row_h·sin(tilt),
     z = row_h·cos(tilt) here) between the node and the chain above,
@@ -585,7 +585,7 @@ def camera_lead(j6, x0, node_right, row_h, tilt, lens, mount, depth, cp):
     b0 = (lx - (cp["leds"][0] + cp["leds"][-1]) / 2, ly + POD_SLEEVE_Y / 2 + 0.5)    # the board's KiCad origin
     board = lambda kx, ky, z: pod((b0[0] + kx, b0[1] + ky, z))
     p0, d = plug_exit(j6)
-    xs, top = min(node_right + 8.0, x0 + 78.0), up_z - 2.0
+    xs, top = min(p0[0], x0 + 78.0), up_z - 2.0
     zr = 12.0                                         # along the plenum floor, through the rear slot
     yc = depth + 2.5                                  # the climb, just behind the tray's rear wall
     j1 = board(cp["size"][0], cp["lead"], POD_FACE_Z - 2.8)
@@ -605,13 +605,13 @@ def camera_lead(j6, x0, node_right, row_h, tilt, lens, mount, depth, cp):
 
 
 def data_lead_short(j7, ph, x_run, top):
-    """A sled bay's DATA lead (no drag chain): up out of the node's J7 to the plenum's top (under the sled),
-    over to x_run right of the node (clear of the module's antenna at its rear edge), back along it, over to
-    the port block's window and up through it into the DATA board's PH from the rear."""
-    p0, _ = plug_exit(j7)
+    """A sled bay's DATA lead (no drag chain): out of the node's J7 (side entry, right edge), rising to the
+    plenum's top (under the sled) at x_run, right of the node, back along it, over to the port block's
+    window and up through it into the DATA board's PH from the rear."""
+    p0, d = plug_exit(j7)
     q, _ = plug_exit(ph)
     yb = q[1] + 2.0
-    pts = [p0, (p0[0], p0[1], top), (x_run, p0[1] + 12, top), (x_run, yb - 12, top), (q[0], yb, top),
+    pts = [p0, p0 + d * 5.0, (x_run, p0[1] + 12, top), (x_run, yb - 12, top), (q[0], yb, top),
            (q[0], yb, q[2]), q]
     return rounded_path(pts, 5.0)
 
@@ -807,13 +807,12 @@ def build(rack) -> Path:
         ph = {"at": [ph_xy[0], ph_xy[1], plenum + dp_z + dp["thickness"] + 2.8],
               "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph8"}
         if not drawer:
-            cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 4.0, plenum - 3.0), row=i, kind="ext",
+            cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 12.0, plenum - 3.0), row=i, kind="ext",
                   bay=bid, radius=1.2, ends=[j7, ph], label="DATA lead (JST PH 8, node J7 → the port block)")
             return x0, plenum
-        p0, _ = plug_exit(j7)
-        top = plenum - 2.0                                 # under the drawer
-        cable(rounded_path([p0, (p0[0], p0[1], top), (x0 + fixed[0], fixed[1] - 21, top),
-                            (x0 + fixed[0], fixed[1] - 11, chain_z), (x0 + fixed[0], fixed[1], chain_z)], 6.0),
+        p0, d7 = plug_exit(j7)                             # out of the side-entry J7, straight to the chain's fixed end
+        cable(rounded_path([p0, p0 + d7 * 6.0, (x0 + fixed[0], fixed[1] - 13, chain_z),
+                            (x0 + fixed[0], fixed[1], chain_z)], 6.0),
               row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 8, through the drag chain)")
         mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
         x_run = max(ph["at"][0], x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0)   # 6 mm off the fixed run
@@ -1005,7 +1004,7 @@ def build(rack) -> Path:
                                      **camera_view(x0, raw["bay"]["camera_lens"], raw["pcb"]["camera_pod"])})
             j6 = {"at": [x0 + node["x0"] + node["cam"][0], rack.node_front_y + node["size"][1] - node["cam"][1],
                          pcb_top + NODE_J6_H - 6.0], "dir": [0, 0, -1], "up": [1, 0, 0], "type": "ph8"}
-            lead, pod_end, mega = camera_lead(j6, x0, x0 + node["x0"] + node["size"][0], rack.rows[i]["height"],
+            lead, pod_end, mega = camera_lead(j6, x0, rack.rows[i]["height"],
                                               rack.tilt, raw["bay"]["camera_lens"], cm, BD, raw["pcb"]["camera_pod"])
             cable(lead, row=i, kind="ext", bay=b.id, radius=1.5, ends=[j6, pod_end],
                   label="Camera lead (JST PH 8, node J6 → the pod board's J1)")

@@ -31,9 +31,11 @@ GUSSET_T = 2;                            // ribs under the ledges
 GUSSET_STEP = 24;
 CHAIN_X = [CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 3, CHAIN_MOVING_X + CHAIN_H / 2 + 3];   // chain sweep (x)
 // the row cable's tie anchors (x, y of their centre): it runs at y ≤ 9 from x 112 to the right wall, the
-// chain foot reaching y 12 at x 133-145 with the drawer out; a cable tie round it through each one's tunnel
-JUMPER_TIES = [[118, 6.5], [CARRIER_W - 8, 6.5]];
-TIE = [4, 7, 5];                          // an anchor: x, y, height above the floor; its tunnel along y
+// chain foot reaching y 12 at x 133-145 with the drawer out; a cable tie round it through each one's tunnel,
+// its strap passing between the anchor's front face and the fascia (TIE_STRAP)
+TIE = [4, 5.5, 5];                        // an anchor: x, y, height above the floor; its tunnel along y
+TIE_STRAP = 2;
+JUMPER_TIES = [for (x = [118, CARRIER_W - 8]) [x, CARRIER_FASCIA + TIE_STRAP + TIE[1] / 2]];   // y 7.25
 
 module tie_anchor() translate([-TIE[0] / 2, -TIE[1] / 2, CARRIER_BOTTOM - EPS]) difference() {
     cube([TIE[0], TIE[1], TIE[2] + EPS]);
