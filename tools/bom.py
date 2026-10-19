@@ -40,12 +40,21 @@ PETG_EUR_PER_KG = 20.0
 JLC_QUOTE_DATE = "2026-10-16"
 JLC_SHIPPING = "DHL ≈ $27–40"
 JLC_QUOTE = {
+    # The order the user chose on 2026-10-19 ("10 en HASL"): 10 PCBs, lead-free HASL, all 10 assembled
+    # (8 bays and 2 spares; JLC adds its $25 engineering fee only above 10 PCBs).  NOT re-quoted: the
+    # quote of 2026-10-16 (20 PCBs ENIG, 16 assembled, $367.71) priced the board before rev 0.5 and the
+    # full PCBA quote needs the user's sign-in.  Built from JLC's fees (help page of 2026-09-09) and the
+    # live bare-PCB price of 2026-10-19: 64 × 90 mm 4-layer HASL $19.30 for 10, + $0.20 for the 5 mm rails
+    # Standard PCBA adds (74 × 90); setup $25.56, stencil $8.21, $1.53 per unique part type (44, basic
+    # or extended alike), SMT $0.0016 a joint (389 a board), X-ray $1.64 a board (the WROOM-1, mandatory),
+    # packaging $0.52; components at catalogue prices × 1.12 (JLC's prices and attrition).  The page
+    # also lists a Standard handling fee (≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm.
     "bay-node": {
-        "pcbs": 20, "assembled": 16, "service": "Standard", "total": 367.71,
-        "spec": "4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA",
-        "pcb": {"engineering": 25.00, "ENIG": 19.30, "board": 14.60},
-        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 181.21, "feeders": 65.10, "SMT": 9.45,
-                 "hand soldering": 3.61, "manual assembly": 1.62, "X-ray": 13.28, "packaging": 0.52},
+        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 343.85, "estimate": True,
+        "spec": "4-layer 64×90 mm, lead-free HASL, 5 mm edge rails added by JLC for Standard PCBA",
+        "pcb": {"board": 19.50},
+        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 200.12, "feeders": 67.32, "SMT": 6.22,
+                 "X-ray": 16.40, "packaging": 0.52},
     },
     # v0.5 (USB-C PD input, eFuses, rack controller; 4 layers) is NOT quoted yet: an estimate built
     # like the bay node's Standard quote (the ESP32 module needs Standard PCBA and X-ray), its 4-layer
@@ -78,7 +87,7 @@ JLC_QUOTE = {
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
-# instead of ENIG (≈ $0–2 for 5 PCBs; the node keeps ENIG for the ESP32 module and USB-C); the hub's
+# instead of ENIG (≈ $0–2 for 5 PCBs; the hub v0.5 keeps ENIG for now); the hub's
 # through-hole connectors soldered by hand (catalog hand_solder), bought loose from LCSC, so their
 # extended part types no longer need loading; and no JLC hand-soldering fee on either board (the
 # node's JST PH are SMD since rev 0.4, JLC places them).
@@ -90,21 +99,9 @@ JLC_FINISH = {}
 # gone (the HRO), ≈ $3 loading each.  Then the TCAN1462V (signal improvement) instead of the
 # TCAN1044AV: +$0.54 per board.  Then J7, the DATA header (B5B-PH-SM4-TB): +$0.30 per board and
 # one more extended part type.
-JLC_SINCE_QUOTE = {
-    "bay-node": [("rev 0.5 parts (rack bus, GCT USB-C)", "components", 38.10),
-                 ("rev 0.5: 3 more extended part types", "feeders", 9.00),
-                 ("rev 0.5: TCAN1462V instead of the TCAN1044AV", "components", 8.64),
-                 # J7 is a PH 8 like J6 since the density decisions (I²C and INT for a DATA ×4 board): no type of
-                 # its own; R38/R41 are values the board already has
-                 ("rev 0.5: J7 DATA header (PH 8, J6's type)", "components", 9.12),
-                 # the camera: the WROOM-1-N8R8 (+$0.30), the PH 8 J6 (+$0.35) and the vertical PH 6 J5 (+$0.04)
-                 # take the N8's, the PH 2's and the side-entry PH 6's places; 2 × USBLC6, the AO3400A and
-                 # 8 passives (basic): ≈ +$1.18 per board.  The B6B is one more extended part type
-                 ("rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET)", "components", 18.91),
-                 ("rev 0.5: the vertical AUX connector, one more extended part type", "feeders", 3.00),
-                 # the WROOM-1 grew the board 10 mm at the rear: 64 × 90 mm, +12.5 % of the quoted area
-                 ("rev 0.5: the board 64 × 90 mm (quoted 64 × 80)", "board", 1.83)],
-}
+# (The bay node's rev 0.5 changes against the 2026-10-16 quote lived here until its estimate of
+# 2026-10-19 above, which prices the board as it is.)
+JLC_SINCE_QUOTE = {}
 
 
 # the row cables' listing (docs/can.md: one type for feeds and jumpers)
@@ -206,7 +203,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
         q = JLC_QUOTE[name]
         assert abs(sum(q["pcb"].values()) + sum(q["pcba"].values()) - q["total"]) < 0.005, f"{name}: quote lines ≠ total"
         n = q["assembled"]
-        if n < need or n > max(need, 2):           # JLC assembles at least 2 boards
+        if n < need or n > max(need + q.get("spares", 0), 2):     # JLC assembles at least 2 boards
             print(f"warning: the JLC quote assembles {n} × {name} but the configuration needs {need}: re-quote")
         path = REPO / "electronics" / name / f"{name}-bom.csv"
         if not path.exists():
@@ -487,14 +484,16 @@ def main():
     md += [f"| **Total** | **{total:,.0f}** |", "", f"≈ **€{total / n_bays:,.0f} per bay** all-in.", "",
            "Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: "
            "`electronics/<board>/fab/` · interactive table: the viewer's BOM page.", "",
-           f"## JLCPCB quote ({JLC_QUOTE_DATE})", "",
-           f"Taken on jlcpcb.com from the files in `electronics/<board>/fab/`; USD, without shipping ({JLC_SHIPPING}) "
-           "and import VAT.  The per-part lines below use catalogue prices; a *Components* line per board brings "
-           "them up to the quoted components figure.  *Order* applies what changed since, not re-quoted: the "
-           "through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The power hub v0.5 "
-           "(USB-C PD input, eFuses, rack controller; 4 layers), the DATA port and the camera pod boards are **estimates**, not "
-           "quotes: re-quote them before ordering, and check the AP33772S's sourcing (out of stock at LCSC on "
-           "2026-10-18).", "",
+           "## JLCPCB orders (estimates)", "",
+           f"USD, without shipping ({JLC_SHIPPING}) and import VAT.  Every board is an **estimate** built from JLC's "
+           "fees and catalogue prices, not a quote: the last real quote (jlcpcb.com, "
+           f"{JLC_QUOTE_DATE}: bay node, 20 PCBs ENIG, 16 assembled, $367.71) priced the node before rev 0.5.  The "
+           "bay node is the order the user chose on 2026-10-19: 10 PCBs, lead-free HASL, 10 assembled (8 bays, "
+           "2 spares).  The per-part lines below use catalogue prices; a *Components* line per board brings them "
+           "up to the estimated components figure.  *Order* applies what changed since: the through-hole "
+           "connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  Re-quote before ordering (the "
+           "full PCBA quote needs the user's JLC sign-in), and check the AP33772S's sourcing (out of stock at LCSC "
+           "on 2026-10-18).", "",
            "| Board | Order | Line | USD |", "|---|---|---|---:|"]
     for name, q in JLC_QUOTE.items():
         order = f"{q['pcbs']} PCBs ({q['spec']}), {q['assembled']} assembled, {q['service']} PCBA"

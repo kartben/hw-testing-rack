@@ -34,8 +34,8 @@ to the LDO input, the DUT switch, the camera fuse and the DUT-side ESD part; the
 between J1 and J2; +3V3 again under the front edge, fed by a B.Cu track) · B.Cu signals + GND
 pour.  No signal is routed on In2.  The board declares JLCPCB's standard
 JLC04161H-7628 build (0.21 mm prepreg between F.Cu and In1, 1.065 mm core, 0.5 oz
-inner copper) and ENIG; the hub declares 2 layers, 1.6 mm, lead-free HASL
-(`stackup` / `finish` in `design.py`, written into the board by `pcbgen.py`).  Before routing,
+inner copper) and lead-free HASL (since 2026-10-19; ENIG before); the hub v0.5 the same build
+in ENIG (`stackup` / `finish` in `design.py`, written into the board by `pcbgen.py`).  Before routing,
 every GND and supply pin gets a short track to a via of its own on its plane (`fanout_nets` in
 `design.py`, `fanout_pads()` in `pcbgen.py`), locked so Freerouting keeps it: no pin depends on
 the outer GND pours, which stay as a bonus, stitched to In1.  **No drill under 0.3 mm**: JLCPCB's
@@ -219,7 +219,8 @@ and the sequencing: [power.md](power.md).
 | CAN | TCAN1462V, signal improvement (VCC 5 V, VIO 3.3 V, ±58 V bus pins), two split terminations 2 × 56 Ω + 4.7 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
 | POS | 4 GPIOs → 10 k → pin 1 of each row output (the outputs have the bay nodes' OUT pinout: 1 POS · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), BAT54S clamp to GND / 3.3 V | survives a wrong cable (VRACK on POS) |
 
-**Layout**, with the bay node's practices: JLC's 4-layer stackup (JLC04161H-7628), ENIG.
+**Layout**, with the bay node's practices: JLC's 4-layer stackup (JLC04161H-7628), ENIG for now (the
+node went to lead-free HASL on 2026-10-19).
 
 * **In1** is a solid GND plane.  **In2** carries power only: VRACK under the input block, along a
   band at y ≈ 39 and down the eFuse column; +3V3 everywhere else, in one piece wrapping around it.
@@ -318,16 +319,25 @@ pin-in-paste, all placed by JLC in the same reflow pass.  A part marked `hand_so
 
 Real quote taken on jlcpcb.com on 2026-10-16 from the `fab/` files (USD,
 indicative; shipping, DHL ≈ $27–40, and import VAT come on top).  The full
-breakdown is in [`bom/README.md`](../bom/README.md), and `tools/bom.py`
-(`JLC_QUOTE`) carries the same figures:
+breakdown was in [`bom/README.md`](../bom/README.md) and `tools/bom.py` (`JLC_QUOTE`) until the
+bay node's estimate of 2026-10-19 (below) replaced it there:
 
 | Board | Order | PCB | PCBA | Total |
 |---|---|---:|---:|---:|
 | bay node | 20 PCBs, 4-layer ENIG (JLC adds 5 mm edge rails for Standard PCBA), 16 assembled, Standard | $58.90 | $308.81, of which components $181.21 and feeders $65.10 | **$367.71** |
 | power hub v0.3 (replaced by v0.4) | 5 PCBs, 2-layer ENIG, 2 assembled, Economic | $25.70 | $48.43, of which components $17.56 and extended parts $15.45 | **$74.13** |
 
+**Bay node order: 10 PCBs, lead-free HASL, 10 assembled** (the user, 2026-10-19: 8 bays and 2
+spares).  Not re-quoted yet (the full PCBA quote needs the user's JLC sign-in): `tools/bom.py`
+carries an estimate from JLC's current fees, ≈ **$344**.  PCB $19.50 (10 × 64 × 90 mm 4-layer HASL,
+read live, + the 5 mm rails Standard PCBA adds; no engineering fee up to 10 PCBs).  PCBA $324:
+setup $25.56, stencil $8.21, $1.53 per unique part type (44: $67.32), SMT $6.22 (389 joints a
+board), X-ray $16.40 ($1.64 a board, mandatory for the WROOM-1), packaging $0.52, components ≈
+$200 (catalogue × 1.12).  ENIG would add ≈ $12.60.  JLC's page also lists a Standard handling fee
+(≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm at the real quote.
+
 **Power hub v0.5 is not quoted yet.**  It carries the ESP32-S3 module, so it needs Standard PCBA,
-X-ray and ENIG, like the bay node.  `tools/bom.py` carries an estimate built the same way: ≈ $213
+X-ray, like the bay node, and ENIG for now.  `tools/bom.py` carries an estimate built the same way: ≈ $213
 for 5 four-layer PCBs with 2 assembled.  That is ≈ $55 of PCB (the 4-layer engineering fee),
 $52 of components at catalogue prices, and $3 per extended part type (19).  The AP33772SDKZ-13-FA02
 was out of stock at LCSC on 2026-10-18: check JLC's global sourcing, or consign a reel.  Re-quote

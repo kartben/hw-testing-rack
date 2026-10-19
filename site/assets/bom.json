@@ -9,14 +9,14 @@
 "manufacturer": "Honor Elec",
 "supplier": "LCSC/JLCPCB",
 "part": "C3352",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0635,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 1.02
+"ext_eur": 0.64
 },
 {
 "category": "Electronics",
@@ -27,14 +27,14 @@
 "manufacturer": "Samsung Electro-Mechanics",
 "supplier": "LCSC/JLCPCB",
 "part": "C13585",
-"qty": 32,
+"qty": 20,
 "unit_eur": 0.2504,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 16 boards",
+"notes": "2 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 8.01
+"ext_eur": 5.01
 },
 {
 "category": "Electronics",
@@ -45,14 +45,14 @@
 "manufacturer": "YAGEO",
 "supplier": "LCSC/JLCPCB",
 "part": "C14663",
-"qty": 224,
+"qty": 140,
 "unit_eur": 0.0124,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "14 per board × 16 boards",
+"notes": "14 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 2.78
+"ext_eur": 1.74
 },
 {
 "category": "Electronics",
@@ -63,14 +63,14 @@
 "manufacturer": "Samsung Electro-Mechanics",
 "supplier": "LCSC/JLCPCB",
 "part": "C12891",
-"qty": 96,
+"qty": 60,
 "unit_eur": 0.1138,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "6 per board × 16 boards",
+"notes": "6 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 10.92
+"ext_eur": 6.83
 },
 {
 "category": "Electronics",
@@ -81,14 +81,14 @@
 "manufacturer": "Samsung Electro-Mechanics",
 "supplier": "LCSC/JLCPCB",
 "part": "C15850",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0403,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.64
+"ext_eur": 0.4
 },
 {
 "category": "Electronics",
@@ -99,14 +99,14 @@
 "manufacturer": "Samsung Electro-Mechanics",
 "supplier": "LCSC/JLCPCB",
 "part": "C15849",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.013,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.21
+"ext_eur": 0.13
 },
 {
 "category": "Electronics",
@@ -117,14 +117,14 @@
 "manufacturer": "CJ",
 "supplier": "LCSC/JLCPCB",
 "part": "C43491",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0184,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.29
+"ext_eur": 0.18
 },
 {
 "category": "Electronics",
@@ -135,14 +135,14 @@
 "manufacturer": "Brightking",
 "supplier": "LCSC/JLCPCB",
 "part": "C78419",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0644,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 1.03
+"ext_eur": 0.64
 },
 {
 "category": "Electronics",
@@ -153,14 +153,14 @@
 "manufacturer": "Worldsemi",
 "supplier": "LCSC/JLCPCB",
 "part": "C52917434",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0828,
 "basic": false,
 "standard_only": true,
 "hand_solder": false,
-"notes": "1 per board × 16 boards; alternative: WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping",
+"notes": "1 per board × 10 boards; alternative: WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping",
 "unit": "pcs",
-"ext_eur": 1.32
+"ext_eur": 0.83
 },
 {
 "category": "Electronics",
@@ -171,14 +171,14 @@
 "manufacturer": "Nexperia",
 "supplier": "LCSC/JLCPCB",
 "part": "C75176",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0718,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 1.15
+"ext_eur": 0.72
 },
 {
 "category": "Electronics",
@@ -189,14 +189,14 @@
 "manufacturer": "hongjiacheng",
 "supplier": "LCSC/JLCPCB",
 "part": "C7420333",
-"qty": 32,
+"qty": 20,
 "unit_eur": 0.012,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 16 boards",
+"notes": "2 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.38
+"ext_eur": 0.24
 },
 {
 "category": "Electronics",
@@ -207,14 +207,14 @@
 "manufacturer": "RUILON",
 "supplier": "LCSC/JLCPCB",
 "part": "C20799",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0736,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 1.18
+"ext_eur": 0.74
 },
 {
 "category": "Electronics",
@@ -225,14 +225,14 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C265405",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.3588,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 5.74
+"ext_eur": 3.59
 },
 {
 "category": "Electronics",
@@ -243,14 +243,14 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C265405",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.3588,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 5.74
+"ext_eur": 3.59
 },
 {
 "category": "Electronics",
@@ -261,14 +261,14 @@
 "manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
 "part": "C5184243",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.8372,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 13.4
+"ext_eur": 8.37
 },
 {
 "category": "Electronics",
@@ -279,14 +279,14 @@
 "manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
 "part": "C5184243",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.8372,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 13.4
+"ext_eur": 8.37
 },
 {
 "category": "Electronics",
@@ -297,14 +297,14 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C471518",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.3956,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 6.33
+"ext_eur": 3.96
 },
 {
 "category": "Electronics",
@@ -315,14 +315,14 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C495548",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.5244,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 8.39
+"ext_eur": 5.24
 },
 {
 "category": "Electronics",
@@ -333,14 +333,14 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C495548",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.5244,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 8.39
+"ext_eur": 5.24
 },
 {
 "category": "Electronics",
@@ -351,14 +351,14 @@
 "manufacturer": "cjiang",
 "supplier": "LCSC/JLCPCB",
 "part": "C167219",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.1012,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 1.62
+"ext_eur": 1.01
 },
 {
 "category": "Electronics",
@@ -369,14 +369,14 @@
 "manufacturer": "UMW / Vishay",
 "supplier": "LCSC/JLCPCB",
 "part": "C7503186",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.3312,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards; alternative: C7472883 (TECH PUBLIC), C141584 (Vishay)",
+"notes": "1 per board × 10 boards; alternative: C7472883 (TECH PUBLIC), C141584 (Vishay)",
 "unit": "pcs",
-"ext_eur": 5.3
+"ext_eur": 3.31
 },
 {
 "category": "Electronics",
@@ -387,14 +387,14 @@
 "manufacturer": "CJ",
 "supplier": "LCSC/JLCPCB",
 "part": "C8545",
-"qty": 32,
+"qty": 20,
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 16 boards",
+"notes": "2 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.59
+"ext_eur": 0.37
 },
 {
 "category": "Electronics",
@@ -405,14 +405,14 @@
 "manufacturer": "Alpha & Omega Semicon",
 "supplier": "LCSC/JLCPCB",
 "part": "C20917",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.092,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 1.47
+"ext_eur": 0.92
 },
 {
 "category": "Electronics",
@@ -423,14 +423,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25803",
-"qty": 128,
+"qty": 80,
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "8 per board × 16 boards",
+"notes": "8 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.37
+"ext_eur": 0.23
 },
 {
 "category": "Electronics",
@@ -441,14 +441,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C22935",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0019,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.03
+"ext_eur": 0.02
 },
 {
 "category": "Electronics",
@@ -459,14 +459,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25808",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0014,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.02
+"ext_eur": 0.01
 },
 {
 "category": "Electronics",
@@ -477,14 +477,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C31850",
-"qty": 48,
+"qty": 30,
 "unit_eur": 0.0038,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "3 per board × 16 boards",
+"notes": "3 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.18
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -495,14 +495,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25804",
-"qty": 144,
+"qty": 90,
 "unit_eur": 0.0048,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "9 per board × 16 boards",
+"notes": "9 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.69
+"ext_eur": 0.43
 },
 {
 "category": "Electronics",
@@ -513,14 +513,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C23140",
-"qty": 80,
+"qty": 50,
 "unit_eur": 0.0023,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "5 per board × 16 boards",
+"notes": "5 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.18
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -531,14 +531,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C23186",
-"qty": 32,
+"qty": 20,
 "unit_eur": 0.0014,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 16 boards",
+"notes": "2 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.04
+"ext_eur": 0.03
 },
 {
 "category": "Electronics",
@@ -549,14 +549,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C4184",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.002,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.03
+"ext_eur": 0.02
 },
 {
 "category": "Electronics",
@@ -567,14 +567,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25810",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0037,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.06
+"ext_eur": 0.04
 },
 {
 "category": "Electronics",
@@ -585,14 +585,14 @@
 "manufacturer": "Milliohm",
 "supplier": "LCSC/JLCPCB",
 "part": "C601102",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.1104,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 1.77
+"ext_eur": 1.1
 },
 {
 "category": "Electronics",
@@ -603,14 +603,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C23162",
-"qty": 32,
+"qty": 20,
 "unit_eur": 0.0026,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 16 boards",
+"notes": "2 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.08
+"ext_eur": 0.05
 },
 {
 "category": "Electronics",
@@ -621,14 +621,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C22859",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.05
+"ext_eur": 0.03
 },
 {
 "category": "Electronics",
@@ -639,14 +639,14 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C21190",
-"qty": 48,
+"qty": 30,
 "unit_eur": 0.0017,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "3 per board × 16 boards",
+"notes": "3 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.08
+"ext_eur": 0.05
 },
 {
 "category": "Electronics",
@@ -657,14 +657,14 @@
 "manufacturer": "XKB",
 "supplier": "LCSC/JLCPCB",
 "part": "C318884",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.29
+"ext_eur": 0.18
 },
 {
 "category": "Electronics",
@@ -675,14 +675,14 @@
 "manufacturer": "XKB",
 "supplier": "LCSC/JLCPCB",
 "part": "C318884",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0184,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.29
+"ext_eur": 0.18
 },
 {
 "category": "Electronics",
@@ -693,14 +693,14 @@
 "manufacturer": "SHOU HAN",
 "supplier": "LCSC/JLCPCB",
 "part": "C431540",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0552,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.88
+"ext_eur": 0.55
 },
 {
 "category": "Electronics",
@@ -711,14 +711,14 @@
 "manufacturer": "Texas Instruments",
 "supplier": "LCSC/JLCPCB",
 "part": "C45262770",
-"qty": 16,
+"qty": 10,
 "unit_eur": 1.7296,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards; alternative: LMR51635YFDDCR (C44750836): same, forced PWM, no spread spectrum",
+"notes": "1 per board × 10 boards; alternative: LMR51635YFDDCR (C44750836): same, forced PWM, no spread spectrum",
 "unit": "pcs",
-"ext_eur": 27.67
+"ext_eur": 17.3
 },
 {
 "category": "Electronics",
@@ -729,14 +729,14 @@
 "manufacturer": "AMS",
 "supplier": "LCSC/JLCPCB",
 "part": "C6186",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.1932,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 3.09
+"ext_eur": 1.93
 },
 {
 "category": "Electronics",
@@ -747,14 +747,14 @@
 "manufacturer": "Espressif",
 "supplier": "LCSC/JLCPCB",
 "part": "C2913201",
-"qty": 16,
+"qty": 10,
 "unit_eur": 4.6184,
 "basic": false,
 "standard_only": true,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 73.89
+"ext_eur": 46.18
 },
 {
 "category": "Electronics",
@@ -765,14 +765,14 @@
 "manufacturer": "STMicroelectronics",
 "supplier": "LCSC/JLCPCB",
 "part": "C7519",
-"qty": 64,
+"qty": 40,
 "unit_eur": 0.1656,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "4 per board × 16 boards; alternative: C2687116 (UMW clone)",
+"notes": "4 per board × 10 boards; alternative: C2687116 (UMW clone)",
 "unit": "pcs",
-"ext_eur": 10.6
+"ext_eur": 6.62
 },
 {
 "category": "Electronics",
@@ -783,14 +783,14 @@
 "manufacturer": "onsemi",
 "supplier": "LCSC/JLCPCB",
 "part": "C11355",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.2852,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 4.56
+"ext_eur": 2.85
 },
 {
 "category": "Electronics",
@@ -801,14 +801,14 @@
 "manufacturer": "onsemi",
 "supplier": "LCSC/JLCPCB",
 "part": "C11355",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.2852,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 4.56
+"ext_eur": 2.85
 },
 {
 "category": "Electronics",
@@ -819,14 +819,14 @@
 "manufacturer": "Texas Instruments",
 "supplier": "LCSC/JLCPCB",
 "part": "C10096",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.0644,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 1.03
+"ext_eur": 0.64
 },
 {
 "category": "Electronics",
@@ -837,14 +837,14 @@
 "manufacturer": "Texas Instruments",
 "supplier": "LCSC/JLCPCB",
 "part": "C55266",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.4968,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 7.95
+"ext_eur": 4.97
 },
 {
 "category": "Electronics",
@@ -855,14 +855,14 @@
 "manufacturer": "Texas Instruments",
 "supplier": "LCSC/JLCPCB",
 "part": "C49851",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.69,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards",
+"notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 11.04
+"ext_eur": 6.9
 },
 {
 "category": "Electronics",
@@ -873,47 +873,47 @@
 "manufacturer": "Texas Instruments",
 "supplier": "LCSC/JLCPCB",
 "part": "C7399456",
-"qty": 16,
+"qty": 10,
 "unit_eur": 0.8924,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 16 boards; alternative: LCSC stock was 0 on 2026-10-18.  Same pinout: TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V) or NXP TJA1462AT/0Z (C3234095, SIC, VIO 2.95–5.5 V, bus pins −36/+40 V)",
+"notes": "1 per board × 10 boards; alternative: LCSC stock was 0 on 2026-10-18.  Same pinout: TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V) or NXP TJA1462AT/0Z (C3234095, SIC, VIO 2.95–5.5 V, bus pins −36/+40 V)",
 "unit": "pcs",
-"ext_eur": 14.28
+"ext_eur": 8.92
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "Bare PCB bay-node (4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA)",
-"supplier": "JLCPCB quote 2026-10-16, adjusted",
-"qty": 20,
-"unit_eur": 2.7936,
-"notes": "engineering $25.00, ENIG $19.30, board $16.43 = $60.73 for 20 PCBs, 16 of them assembled",
+"item": "Bare PCB bay-node (4-layer 64×90 mm, lead-free HASL, 5 mm edge rails added by JLC for Standard PCBA)",
+"supplier": "estimate, not quoted",
+"qty": 10,
+"unit_eur": 1.794,
+"notes": "board $19.50 = $19.50 for 10 PCBs, 10 of them assembled",
 "unit": "pcs",
-"ext_eur": 55.87
+"ext_eur": 17.94
 },
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "Standard PCBA, 16 boards: setup, stencil, feeders, SMT, manual assembly, X-ray, packaging",
-"supplier": "JLCPCB quote 2026-10-16, adjusted",
+"item": "Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging",
+"supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 125.11,
-"notes": "setup $25.75, stencil $8.27, feeders $77.10, SMT $9.45, manual assembly $1.62, X-ray $13.28, packaging $0.52; no through-hole part for JLC (hand soldering −$3.61); rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components); rev 0.5: 3 more extended part types (+$9.00 feeders); rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components); rev 0.5: J7 DATA header (PH 8, J6's type) (+$9.12 components); rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET) (+$18.91 components); rev 0.5: the vertical AUX connector, one more extended part type (+$3.00 feeders); rev 0.5: the board 64 × 90 mm (quoted 64 × 80) (+$1.83 board); Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 114.29,
+"notes": "setup $25.56, stencil $8.21, feeders $67.32, SMT $6.22, X-ray $16.40, packaging $0.52; Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 125.11
+"ext_eur": 114.29
 },
 {
 "category": "Electronics",
 "group": "bay-node",
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
-"supplier": "JLCPCB quote 2026-10-16, adjusted",
+"supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": -27.51,
-"notes": "quoted components $181.21 + $74.77 since (≈ €235.50) for 16 boards; catalogue unit prices give €263.01",
+"unit_eur": 19.74,
+"notes": "quoted components $200.12 (≈ €184.11) for 10 boards; catalogue unit prices give €164.37",
 "unit": "pcs",
-"ext_eur": -27.51
+"ext_eur": 19.74
 },
 {
 "category": "Electronics",
@@ -2495,7 +2495,7 @@
 }
 ],
 "by_category": {
-"Electronics": 666.06,
+"Electronics": 565.92,
 "Printed parts": 58.0,
 "Fasteners": 15.47,
 "Motion": 21.02,
@@ -2503,7 +2503,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 950.23,
+"total_eur": 850.09,
 "prints": [
 {
 "part": "bay_label",
@@ -2710,25 +2710,23 @@
 "shipping": "DHL ≈ $27–40",
 "boards": {
 "bay-node": {
-"pcbs": 20,
-"assembled": 16,
+"pcbs": 10,
+"assembled": 10,
+"spares": 2,
 "service": "Standard",
-"total": 367.71,
-"spec": "4-layer 64×80 mm, ENIG, 5 mm edge rails added by JLC for Standard PCBA",
+"total": 343.85,
+"estimate": true,
+"spec": "4-layer 64×90 mm, lead-free HASL, 5 mm edge rails added by JLC for Standard PCBA",
 "pcb": {
-"engineering": 25.0,
-"ENIG": 19.3,
-"board": 14.6
+"board": 19.5
 },
 "pcba": {
-"setup": 25.75,
-"stencil": 8.27,
-"components": 181.21,
-"feeders": 65.1,
-"SMT": 9.45,
-"hand soldering": 3.61,
-"manual assembly": 1.62,
-"X-ray": 13.28,
+"setup": 25.56,
+"stencil": 8.21,
+"components": 200.12,
+"feeders": 67.32,
+"SMT": 6.22,
+"X-ray": 16.4,
 "packaging": 0.52
 }
 },
@@ -2794,31 +2792,19 @@
 "order": {
 "bay-node": {
 "pcb": {
-"engineering": 25.0,
-"ENIG": 19.3,
-"board": 16.43
+"board": 19.5
 },
 "pcba": {
-"setup": 25.75,
-"stencil": 8.27,
-"components": 255.98,
-"feeders": 77.1,
-"SMT": 9.45,
-"manual assembly": 1.62,
-"X-ray": 13.28,
+"setup": 25.56,
+"stencil": 8.21,
+"components": 200.12,
+"feeders": 67.32,
+"SMT": 6.22,
+"X-ray": 16.4,
 "packaging": 0.52
 },
-"changes": [
-"no through-hole part for JLC (hand soldering −$3.61)",
-"rev 0.5 parts (rack bus, GCT USB-C) (+$38.10 components)",
-"rev 0.5: 3 more extended part types (+$9.00 feeders)",
-"rev 0.5: TCAN1462V instead of the TCAN1044AV (+$8.64 components)",
-"rev 0.5: J7 DATA header (PH 8, J6's type) (+$9.12 components)",
-"rev 0.5: camera (WROOM-1-N8R8, PH 8 J6, vertical AUX, ESD, light FET) (+$18.91 components)",
-"rev 0.5: the vertical AUX connector, one more extended part type (+$3.00 feeders)",
-"rev 0.5: the board 64 × 90 mm (quoted 64 × 80) (+$1.83 board)"
-],
-"total": 452.7
+"changes": [],
+"total": 343.85
 },
 "power-hub": {
 "pcb": {

@@ -218,9 +218,10 @@ def board() -> Board:
         # ("fanout_nets"), so none depends on the outer GND pours, which stay as a bonus, tied to
         # In1 by stitching vias.  Every pour connects pads through thermal reliefs (pcbgen.py).
         "inner": [("In1.GND", "power"), ("In2.PWR", "power")],
-        # JLC's standard 4-layer build (In1 sits 0.21 mm under F.Cu, In2 0.21 mm over B.Cu), ENIG for
-        # the ESP32 module's LGA pads and the USB-C receptacles
-        "stackup": "JLC04161H-7628", "finish": "ENIG",
+        # JLC's standard 4-layer build (In1 sits 0.21 mm under F.Cu, In2 0.21 mm over B.Cu), lead-free
+        # HASL (the user, 2026-10-19: 10 boards in HASL, $12.60 less than ENIG; no BGA, the finest pitch
+        # is 0.5 mm; HASL may dome a little under the WROOM-1's exposed pad)
+        "stackup": "JLC04161H-7628", "finish": "HASL",
         "edge_parts": ["J*", "U3"],
         # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
         "dru": "".join(f"""
