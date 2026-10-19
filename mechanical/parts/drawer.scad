@@ -51,6 +51,9 @@ function data_hole(h) = [DATA_PCB_X0 + h[0], DATA_PCB_Y0 + DATA_PCB_SIZE[1] - h[
 // the DATA ports along the port wall: today's board, or a DATA ×4's four (config/rack.yaml › pcb.data_port_x4)
 function port_xs(n) = n == 1 ? [DATA_PORT_X[0]] : [for (u = DATA_X4_USB) DATA_X4_X0 + u];
 X4_HOLES = [for (h = DATA_X4_HOLES) [DATA_X4_X0 + h[0], DATA_PCB_Y0 + DATA_X4_SIZE[1] - h[1]]];   // drawer xy
+// the ledges under its front edge (KiCad x from, to): between the USB4105s' pegs, 7 mm either side of each axis
+X4_LEDGES = [for (k = [0 : len(DATA_X4_USB)])
+    [k == 0 ? 1 : DATA_X4_USB[k - 1] + 7, k == len(DATA_X4_USB) ? DATA_X4_SIZE[0] - 1 : DATA_X4_USB[k] - 7]];
 function pin_spots() = [for (k = [NODE_RESET, NODE_BOOT]) node_xy(k) - [DRAWER_X0, 0]];   // the node's buttons, drawer xy
 
 module port_wall(ports = 1) {
@@ -97,7 +100,10 @@ module drawer(rear = true, foot = true, ports = 1) {
                 if (ports == 1) {
                     for (h = DATA_PCB_HOLES) translate([each data_hole(h), 0]) cylinder(d = 6, h = DATA_PCB_Z);
                     for (s = [[1, 23], [37, 39]]) translate([DATA_PCB_X0 + s[0], DATA_PCB_Y0 - EPS, 0]) cube([s[1] - s[0], 2, DATA_PCB_Z]);
-                } else for (h = X4_HOLES) translate([h[0], h[1], 0]) cylinder(d = 6, h = DATA_PCB_Z);
+                } else {
+                    for (h = X4_HOLES) translate([h[0], h[1], 0]) cylinder(d = 6, h = DATA_PCB_Z);
+                    for (s = X4_LEDGES) translate([DATA_X4_X0 + s[0], DATA_PCB_Y0 - EPS, 0]) cube([s[1] - s[0], 2, DATA_PCB_Z]);
+                }
                 // zip-tie anchor for the AUX pigtail in the rear bay (not with a DATA ×4 board: it sits there)
                 if (ports == 1) for (x = [AUX_PORT_X]) translate([x - 5, DRAWER_D - 12, DRAWER_BOTTOM]) difference() {
                     cube([10, 4, 6]);
