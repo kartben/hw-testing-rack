@@ -79,11 +79,11 @@ board's owner, and the trade-off ones need the user.
 | Lever | Boards | Saves (10 racks) | Kind | Check done / to do |
 |---|---|---:|---|---|
 | **USB-C where 5 A at 48 V isn't needed**: USB4105 ($0.52 at 100) → HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V, $0.15 at 100; 331k stock, the node's part before v0.5) | node J3, hub J6 (console), DATA port J1, DATA ×4 J101–J401 (20 a rack) | ≈ $95 | decision | Each port draws ≤ 1.5 A (5 A rating) at ≤ 5.25 V (20 V rating). The hub's PD input J1 keeps the GCT for the 48 V that 28 V EPR needs. Needs new footprints, a re-route (the node's USB HS pair) and a mechanical check; it also moves 19 of the 21 per rack off a part LCSC holds none of |
-| **JST PH SMD second source**: S6B / S8B / B8B-PH-SM4-TB ($0.25–0.42) → PH 2.0 SMD clones ≈ $0.04–0.07 (e.g. SHOU HAN 2.0-xP WT / LT, WAFER-PH2.0-6PWB C3029444) | node (5), hub (4), DATA ports, DATA ×4, pods (54 a rack) | ≈ $133 | decision | Same 2 A rating; mates with PHR housings. Check the footprint geometry against each clone's drawing. Genuine JST holds up better on cables that are re-plugged |
+| **JST PH SMD second source**: S6B / S8B / B8B-PH-SM4-TB ($0.25–0.42) → PH 2.0 SMD clones ≈ $0.04–0.07 (e.g. SHOU HAN 2.0-xP WT / LT, WAFER-PH2.0-6PWB C3029444), or CJT's A2001WR-S-6P C225237 / A2001WR-S-8P C225239 / A2001WV-S-8P C225232 (vertical) at $0.16–0.20 @ 100 (phosphor bronze, LCP, −40…105 °C) | node (5), hub (4), DATA ports, DATA ×4, pods (54 a rack) | ≈ $133 no-name, ≈ $70 CJT | decision (open) | Same 2 A rating; mates with PHR housings. Check the footprint geometry against each clone's drawing. Genuine JST holds up better on cables that are re-plugged |
 | **USBLC6-2SC6 second source**: ST C7519 ($0.12–0.18) → UMW C2687116 ($0.042 at 100) or TECH PUBLIC C2827654 ($0.036) | node (4), hub, DATA ports, DATA ×4 (6) (46 a rack) | ≈ $38 | decision | Same SOT-23-6 and pinout, so pins 1 / 6 and 3 / 4 still join inside and the flow-through layout holds. Check the clamp voltage and capacitance against ST's (0.35 pF line-to-line on the UMW) |
 | **TPS2553DDBVR** (C521201, $0.146 at 100) instead of the TPS2553DBVR ($0.38) | node U9 | ≈ $19 | decision | Same SOT-23-6 family. The electronics session is checking the equivalence (fault behaviour, ILIM curve) |
 | **DATA ×4 USB hub**: USB2514B ($1.54) + 24 MHz crystal (extended) → CH334R (C4154405, QSOP-16, $0.32 at 100, I²C) or FE1.1s (C9359, $0.40) + 12 MHz crystal C9002 (basic) | DATA ×4 | ≈ $12, plus $3.07 per order (one extended type fewer) | owner (v2) | Per-port power stays on the TPS2553s and the TCA6408A. Check MTT, the USB-IF strapping and the 3.3 V load (CH334 85 mA, same as the USB2514B's budget) |
-| **PD sink**: AP33772S (Global Sourcing, stock 0) → CH224Q (C46061833, 11.7k stock, $0.27 at 100; PD 3.2, EPR 28 V, I²C) | hub | ≈ $25 with the added INA226 (before a gate driver), plus the Global Sourcing fee and the out-of-stock risk | decision (hub v2) | The CH224Q measures no current and drives no NMOS gate. The hub would need a gate driver or load switch for VRACK and an INA226 on the 5 mΩ shunt (+$0.6), and a new PD driver in the firmware |
+| **PD sink**: AP33772S (Global Sourcing, stock 0) → CH224Q (C46061833, 11.7k stock, $0.27 at 100; PD 3.2, EPR 28 V, I²C), CH224A (C42459160) or HUSB238A-BB001-QN16R (C24833806, Hynetek, PD 3.x EPR to 28 / 48 V, $0.40 at 100, 2.9k stock); the HUSB238 (non-A) and the CH224K stop at 20–25 V | hub | ≈ $25 with the added INA226 (before a gate driver), plus the Global Sourcing fee and the out-of-stock risk | decision (hub v2) | The CH224Q measures no current and drives no NMOS gate. The hub would need a gate driver or load switch for VRACK and an INA226 on the 5 mΩ shunt (+$0.6), and a new PD driver in the firmware |
 | **Hub rows C and D not fitted** (already in `JLC_LEVERS`) | hub | ≈ $35 | decision | 2 × TPS26600, 2 × S6B, 4 LEDs and their passives per hub |
 
 An external BOM review (2026-10-19) was checked against the catalog by the orchestrator. Most of its LCSC codes were wrong, and its fee premise doesn't hold on Standard PCBA (every unique type is charged). Its valid levers (the HRO USB-C, the PH clones, the USBLC6 second source, the TPS2553D) are in the table above.
@@ -91,8 +91,9 @@ An external BOM review (2026-10-19) was checked against the catalog by the orche
 Checked and rejected:
 - **ESP32-S3-MINI-1-N4R2** costs more than the N8 at 100 ($3.66 against $3.36). The node's
   WROOM-1-N8R8 stays for the camera's octal PSRAM.
-- **TCAN1044AV instead of the TJA1462** saves ≈ $0.35 a board, but loses signal improvement on the
-  star bus (docs/can.md). Keep.
+- **Cheaper CAN transceivers without signal improvement**: TCAN1044AV (C3234993), TJA1051T/3 (C38695,
+  $0.39), SIT1042AT/3 (C5382545, $0.31), SIT1044T/3 (C2922538, $0.28). Each saves $0.35–0.45 a board but
+  loses signal improvement on the star bus (docs/can.md). The TJA1462 stays.
 - **TPS26600, INA226, TCA6408A**: no drop-in in JLC's catalog. find_alternatives returned none; a
   cheaper part means a new footprint for cents.
 - **LMR51635**: already cheap for a 60 V, 3.5 A synchronous buck. The input needs ≥ 40 V (VRACK 28 V,
@@ -103,9 +104,14 @@ Checked and rejected:
 - **From the external review**:
   - removing the C1 bulk cap;
   - TJA1462 → SIT1044 / TJA1051, which have no signal improvement for the star bus;
-  - LMR51635 → TPS54302 / LMR51410, below the TVS clamp;
+  - LMR51635 → TPS54302 (C311983, 28 V max) / LMR51410 (C32347484, 42 V max), both below the TVS clamp;
+    a 3.3 µH SWPA4020S3R3MT (C83424, Isat 3.2 A) for the FXL0630 has too little margin, and the
+    FXL0630-4R7-M (C167220) is extended too;
   - TPS26600 → TPS2595x / TPS25921, ≤ 24 V parts;
-  - INA226 and FSUSB42 clones: none verified, and the CH442E needs a 4–5.5 V supply;
+  - INA226 and FSUSB42 clones: none verified (the catalog has no UMW / HXY INA226 and no UMW TPS2553),
+    and the CH442E needs a 4–5.5 V supply;
   - merging the hub's resistor values further: they set functions;
-  - C7519, BAT54S and BZT52C12 as basic parts: no basic version exists;
+  - C7519, BAT54S and BZT52C12 as basic parts: no basic version exists. The basic BAV99 (C2500) is
+    silicon, and Standard PCBA charges every type alike anyway. The 1 µF 50 V X7R 0603 (C5199872) is
+    extended;
   - ESP32-S3 N8R8 → N8: saves $0.23 at 100, and loses the camera's PSRAM.

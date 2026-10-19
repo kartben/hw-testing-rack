@@ -160,8 +160,8 @@ JLC_LEVERS = {
          "power box, room for 2 rows only", 24.60, "decision"),
         ("USB-C J6 (the console; the PD input J1 stays GCT for 48 V): HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) "
          "instead of the GCT USB4105: a new footprint, re-route, mechanical check", 1.47, "decision"),
-        ("JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: "
-         "footprint geometry to check (4 a board)", 2.66, "decision"),
+        ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
+         "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check (4 a board)", 2.66, "decision"),
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's "
          "C7519", 0.25, "decision"),
     ],
@@ -169,8 +169,8 @@ JLC_LEVERS = {
         ("9 assembled instead of 10 (8 bays and 1 spare)", 21.08, "decision"),
         ("USB-C J3: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, "
          "re-route, mechanical check", 5.37, "decision"),
-        ("JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: "
-         "footprint geometry to check (5 a board)", 13.98, "decision"),
+        ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
+         "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check (5 a board)", 13.98, "decision"),
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board)", 5.04, "decision"),
     ],
@@ -180,22 +180,22 @@ JLC_LEVERS = {
          "moved J1, a new route and the tray's bosses moved: better in the DATA ×4 v2", 18.70, "decision"),
         ("USB-C J101–J401: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new "
          "footprint, re-route, mechanical check", 5.88, "decision"),
-        ("JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: "
-         "footprint geometry to check", 0.79, "decision"),
+        ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
+         "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check", 0.79, "decision"),
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (6 a "
          "board)", 1.51, "decision"),
     ],
     "data-port": [
         ("USB-C J1: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, "
          "re-route, mechanical check", 5.88, "decision"),
-        ("JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: "
-         "footprint geometry to check", 3.16, "decision"),
+        ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
+         "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check", 3.16, "decision"),
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's "
          "C7519", 1.01, "decision"),
     ],
     "camera-pod": [
-        ("JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: "
-         "footprint geometry to check", 0.79, "decision"),
+        ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
+         "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check", 0.79, "decision"),
     ],
 }
 

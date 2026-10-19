@@ -3201,7 +3201,7 @@
 "kind": "decision"
 },
 {
-"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check (5 a board)",
+"lever": "JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check (5 a board)",
 "usd": 13.98,
 "kind": "decision"
 },
@@ -3251,7 +3251,7 @@
 "kind": "decision"
 },
 {
-"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check (4 a board)",
+"lever": "JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check (4 a board)",
 "usd": 2.66,
 "kind": "decision"
 },
@@ -3284,7 +3284,7 @@
 "kind": "decision"
 },
 {
-"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check",
+"lever": "JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check",
 "usd": 3.16,
 "kind": "decision"
 },
@@ -3312,7 +3312,7 @@
 "after_decisions": 25.58,
 "levers": [
 {
-"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check",
+"lever": "JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check",
 "usd": 0.79,
 "kind": "decision"
 }
@@ -3345,7 +3345,7 @@
 "kind": "decision"
 },
 {
-"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check",
+"lever": "JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check",
 "usd": 0.79,
 "kind": "decision"
 },
