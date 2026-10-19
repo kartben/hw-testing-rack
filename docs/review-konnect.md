@@ -499,7 +499,7 @@ JLC DFM 0 findings, 6 parts with a model.
 
 The user chose a camera per bay wired to the bay's own node: an Arducam Mega 3MP SPI (M12, ≈ 120°)
 and white LEDs on one PH 8 lead, and the ESP32-S3-WROOM-1-N8R8 for its 8 MB octal PSRAM
-([electronics.md](electronics.md#bay-node-1-per-unit--4-layers-64--90-mm), Camera, WROOM-1 and
+([electronics.md](electronics.md#bay-node-1-per-unit--4-layers-74--90-mm), Camera, WROOM-1 and
 the longer board).  The board grew 10 mm at the rear (the whole layout moved with it, holes
 included); the module's top edge is the new rear edge.  Its octal PSRAM takes IO35–IO37 and the
 WROOM-1 has no IO26/IO33/IO34: AUX_RX, AUX_RST_CTL, POS_OUT and I²C moved, and the whole map is now
@@ -570,3 +570,57 @@ between its rear shell tabs, vias beside B7 and on the B6 → A6 loop.  Konnect,
 
 No new part type on either board (B8B and S8B were already in the rack's BOM); the node loses the
 B5B, the data port the S5B.
+
+## Third round: bay node 74 × 90, the DUT on the DATA lead (2026-10-19)
+
+The node grew 10 mm on the right, so that the leads that leave it to the right start from one place:
+AUX and DATA go to the drag chain, CAM to the rear slot.  The user then dropped the DUT receptacle J4
+([electronics.md](electronics.md#bay-node-1-per-unit--4-layers-74--90-mm)).
+- **Right edge.**  J7 (DATA, S8B) and J5 (AUX, S6B) are side entry, facing the chain, pin 1 to the
+  front.  J2 (ROW OUT) is on the new edge too, and the right holes are at x 70.5.
+- **J6 (CAM)** is vertical at the rear right, its lead straight back, 3 mm east of the antenna
+  keep-out.
+- **The DUT pair.**  U8 (USBLC6) is the last part before J7, and the hand-drawn High-Speed chain now
+  ends on J7's pads.  The DUT power block took J4's place.
+- **Unchanged.**  The front half and the left holes did not move: the tray drills a Ø6.4 access hole
+  over each left screw instead (c05b24f).
+- **+5V at 5.24 V** (FB 100k/18k, both basic, already in the BOM), for ≈ 4.75 V at the DATA board at
+  1.4 A.
+- **INA226 Vbus on Vin−.**  Vbus now ties to Vin− at the pins (8 and 9), so it reads DUT_5V at the
+  shunt's load-side Kelvin pad.  Before, it came from a long DUT_5V track that the router failed to
+  finish.
+
+Fabio's rules, checked again on the saved files:
+
+| Rule | 74 × 90 |
+|---|---|
+| In1 GND only, In2 power only, no track on either | In1: one GND plane.  In2: +3V3, +5V and VRACK planes.  Tracks only on F.Cu (851) and B.Cu (179) |
+| Thermal reliefs | Every plane and pour, except the buck's hot-loop islands on F.Cu.  Those are solid by design, both ends of each part on copper, as in v0.5 |
+| Clear power net names | +5V, +3V3, VIN, VRACK, DUT_5V_SW → DUT_5V, CAM_5V |
+| USBLC6 in flow-through | U4, U8, U12, U13: connector side and protected side are separate nets (`*_CONN_*`, `*_C`) |
+| HS pairs hand-drawn, length-matched | J3 → J7 drawn in `usb_hs_routes()`.  The DUT end matches exactly: DUT_CONN_DN 18.6 mm = DUT_CONN_DP 15.4 mm + 2 vias.  The PC side is unchanged (PC_DP's bumps make up PCPATH_DN's two vias) |
+| PH, not SH | Every lead connector is a PH: J1 / J2 / J5 S6B, J7 S8B, J6 B8B |
+
+| | bay node |
+|---|---|
+| Pin nets (`get_component_nets`) | J7: DUT_5V, GND, DUT_CONN_DN, DUT_CONN_DP, GND, I2C_SDA, I2C_SCL, DATA_INT_C; J5: GND, AUX_VREF, AUX_TX_R, AUX_RX_R, AUX_RST_N, AUX_BOOT_N; U10 Vbus / Vin−: SHUNT_N |
+| ERC | 0 errors, 0 warnings |
+| DRC (zones refilled) | 0 errors, 0 warnings, 0 unconnected, parity 0 |
+| `validate_for_manufacturing` (JLC) | READY, 104 footprints |
+| JLC DFM | 4 parts on the bottom (test pads), as before |
+| Tracks | DUT_5V 18.2 mm at 0.6 mm (0.45 at the pads).  Camera: U3 → 33 Ω 29–48 mm, 33 Ω → J6 15–23 mm.  AUX: J5 → its resistors and FETs 5–12 mm |
+| 3D coverage | 96 parts with a model (J4, R14 and R15 gone), 0 stand-ins |
+| `check_pinmap.py` | 28 U3 GPIOs match (the map did not change) |
+| SolidCraft, the node in the tray | No overlap with the tray, the closed drawer or the chain.  The J5 / J7 plugs (mated) are ≥ 7 mm from the tray.  The J6 lead is ≈ 2 mm under the drawer |
+
+**Parts.**  The node loses the B6B (J5 is an S6B, the row cable's type), J4's USB4105 line (J3 keeps
+it), 120k and 22k.  It gains the S8B (the data port's type).  42 part types where it had 44.  The JLC
+estimate for 10 assembled boards drops from ≈ $344 to ≈ $328.
+
+**JLC placement.**  The S8B and S6B take their existing corrections (none, and 180°); J7 and J5 are
+at 90° on the board.
+
+**Open: J7's D± order.**  U8 puts D− to the north, and J7's side entry puts D+ there, so D+ crosses
+under D− on B.Cu (two vias, four bumps on DN).  Swapping J7's pins 3 / 4 makes the pair straight.
+The data port then swaps J2's 5 / 6 and U1's channels, so it stays straight too.  The user's call.
+

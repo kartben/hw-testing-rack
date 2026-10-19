@@ -273,38 +273,20 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "DUT — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",
-"ref": "J4",
-"mpn": "USB4105-GF-A-120",
-"manufacturer": "GCT",
-"supplier": "LCSC/JLCPCB",
-"part": "C5184243",
-"qty": 10,
-"unit_eur": 0.8372,
-"basic": false,
-"standard_only": false,
-"hand_solder": false,
-"notes": "1 per board × 10 boards",
-"unit": "pcs",
-"ext_eur": 8.37
-},
-{
-"category": "Electronics",
-"group": "bay-node",
-"item": "AUX — JST PH 6-pin, vertical, SMD",
+"item": "AUX — JST PH 6-pin, side entry, SMD",
 "ref": "J5",
-"mpn": "B6B-PH-SM4-TB(LF)(SN)",
+"mpn": "S6B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
-"part": "C471518",
+"part": "C265405",
 "qty": 10,
-"unit_eur": 0.3956,
+"unit_eur": 0.3588,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 3.96
+"ext_eur": 3.59
 },
 {
 "category": "Electronics",
@@ -327,20 +309,20 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "DATA — JST PH 8-pin, vertical, SMD",
+"item": "DATA — JST PH 8-pin, side entry, SMD",
 "ref": "J7",
-"mpn": "B8B-PH-SM4-TB(LF)(SN)",
+"mpn": "S8B-PH-SM4-TB(LF)(SN)",
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
-"part": "C495548",
+"part": "C265121",
 "qty": 10,
-"unit_eur": 0.5244,
+"unit_eur": 0.414,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 5.24
+"ext_eur": 4.14
 },
 {
 "category": "Electronics",
@@ -418,19 +400,19 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "100k — Resistor 100k 0603",
-"ref": "R1,R3,R13,R17,R26,R27,R29,R36",
+"ref": "R1,R3,R4,R13,R17,R26,R27,R29,R36",
 "mpn": "0603WAF1003T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25803",
-"qty": 80,
+"qty": 90,
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "8 per board × 10 boards",
+"notes": "9 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.23
+"ext_eur": 0.26
 },
 {
 "category": "Electronics",
@@ -453,38 +435,20 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "120k — Resistor 120k 0603",
-"ref": "R4",
-"mpn": "0603WAF1203T5E",
+"item": "18k — Resistor 18k 0603",
+"ref": "R5,R16",
+"mpn": "0603WAF1802T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C25808",
-"qty": 10,
-"unit_eur": 0.0014,
+"part": "C25810",
+"qty": 20,
+"unit_eur": 0.0037,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 10 boards",
+"notes": "2 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.01
-},
-{
-"category": "Electronics",
-"group": "bay-node",
-"item": "22k — Resistor 22k 0603",
-"ref": "R5,R14,R15",
-"mpn": "0603WAF2202T5E",
-"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-"supplier": "LCSC/JLCPCB",
-"part": "C31850",
-"qty": 30,
-"unit_eur": 0.0038,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "3 per board × 10 boards",
-"unit": "pcs",
-"ext_eur": 0.11
+"ext_eur": 0.07
 },
 {
 "category": "Electronics",
@@ -557,24 +521,6 @@
 "notes": "1 per board × 10 boards",
 "unit": "pcs",
 "ext_eur": 0.02
-},
-{
-"category": "Electronics",
-"group": "bay-node",
-"item": "18k — Resistor 18k 0603",
-"ref": "R16",
-"mpn": "0603WAF1802T5E",
-"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-"supplier": "LCSC/JLCPCB",
-"part": "C25810",
-"qty": 10,
-"unit_eur": 0.0037,
-"basic": true,
-"standard_only": false,
-"hand_solder": false,
-"notes": "1 per board × 10 boards",
-"unit": "pcs",
-"ext_eur": 0.04
 },
 {
 "category": "Electronics",
@@ -885,7 +831,7 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "Bare PCB bay-node (4-layer 64×90 mm, lead-free HASL, 5 mm edge rails added by JLC for Standard PCBA)",
+"item": "Bare PCB bay-node (4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA)",
 "supplier": "estimate, not quoted",
 "qty": 10,
 "unit_eur": 1.794,
@@ -899,10 +845,10 @@
 "item": "Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 114.29,
-"notes": "setup $25.56, stencil $8.21, feeders $67.32, SMT $6.22, X-ray $16.40, packaging $0.52; Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 111.18,
+"notes": "setup $25.56, stencil $8.21, feeders $64.26, SMT $5.90, X-ray $16.40, packaging $0.52; Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 114.29
+"ext_eur": 111.18
 },
 {
 "category": "Electronics",
@@ -910,10 +856,10 @@
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 19.74,
-"notes": "quoted components $200.12 (≈ €184.11) for 10 boards; catalogue unit prices give €164.37",
+"unit_eur": 18.54,
+"notes": "quoted components $188.05 (≈ €173.01) for 10 boards; catalogue unit prices give €154.47",
 "unit": "pcs",
-"ext_eur": 19.74
+"ext_eur": 18.54
 },
 {
 "category": "Electronics",
@@ -2505,7 +2451,7 @@
 }
 ],
 "by_category": {
-"Electronics": 578.1600000000001,
+"Electronics": 563.9499999999999,
 "Printed parts": 58.0,
 "Fasteners": 15.27,
 "Motion": 18.85,
@@ -2513,7 +2459,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 865.46,
+"total_eur": 851.25,
 "prints": [
 {
 "part": "bay_label",
@@ -2728,8 +2674,8 @@
 {
 "part": "tray",
 "qty": 8,
-"grams_each": 78.3,
-"grams_total": 626.5,
+"grams_each": 78.1,
+"grams_total": 624.7,
 "stl": "mechanical/stl/tray.stl"
 }
 ],
@@ -2745,18 +2691,18 @@
 "assembled": 10,
 "spares": 2,
 "service": "Standard",
-"total": 343.85,
+"total": 328.4,
 "estimate": true,
-"spec": "4-layer 64×90 mm, lead-free HASL, 5 mm edge rails added by JLC for Standard PCBA",
+"spec": "4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA",
 "pcb": {
 "board": 19.5
 },
 "pcba": {
 "setup": 25.56,
 "stencil": 8.21,
-"components": 200.12,
-"feeders": 67.32,
-"SMT": 6.22,
+"components": 188.05,
+"feeders": 64.26,
+"SMT": 5.9,
 "X-ray": 16.4,
 "packaging": 0.52
 }
@@ -2829,14 +2775,14 @@
 "pcba": {
 "setup": 25.56,
 "stencil": 8.21,
-"components": 200.12,
-"feeders": 67.32,
-"SMT": 6.22,
+"components": 188.05,
+"feeders": 64.26,
+"SMT": 5.9,
 "X-ray": 16.4,
 "packaging": 0.52
 },
 "changes": [],
-"total": 343.85
+"total": 328.4
 },
 "power-hub": {
 "pcb": {

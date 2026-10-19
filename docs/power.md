@@ -90,6 +90,16 @@ Each row has its own eFuse, set to **1.6 A**: rows are wired with JST PH (2 A
 per contact), so the limit protects the connectors and the 24 AWG cables.  A
 shorted row sits at its limit while the others carry on.
 
+**No batteries on rack DUTs.**  Each bay's DUT side is limited to ≈ 1.4 A (the
+node's TPS2553), and a DATA ×4 board's ports to 0.5 A each.  Four small boards
+without batteries take 0.3–0.8 A between them, with millisecond radio peaks of
+0.27–0.4 A each; a board charging its LiPo takes 0.6–1.2 A on its own (a Wio
+Terminal on its battery chassis ≈ 1.0–1.2 A, a XIAO ESP32-C3 with a cell
+≈ 0.73 A), and a LiPo charging unattended in a closed drawer is a fire risk.
+Take the battery off (or out of the chassis) before a board goes into the rack.
+The node's +5V is set to 5.24 V (FB 100k/18k), so ≈ 4.75 V still reaches the
+DATA board at 1.4 A through the switch, the shunt and ≈ 50 cm of PH lead.
+
 ## Options compared
 
 | Architecture | Cords | Max power | Cost | Verdict |

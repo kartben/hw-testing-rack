@@ -59,9 +59,9 @@ later, take its tray out first.
    DRAG-CHAIN-7X7).  At the bench, screw the fixed end piece to the
    `chain_anchor` and the moving one to the `chain_foot`'s fin, each with
    2 × PT 2.6×8 and washers, tab against the part's flat face.  Open the links,
-   lay the drawer extension cable in ([cabling.md](cabling.md)) and close them.
-   Anchor onto the tray: 2 × M3×8 into its inserts; plug the cable's male end
-   into the node's DUT port.
+   lay the DATA lead in ([cabling.md](cabling.md)) and close them.
+   Anchor onto the tray: 2 × M3×8 into its inserts; plug the lead into the
+   node's DATA header (J7, on its right edge).
 3. **Row power (VRACK)**: JST PH jumper to the neighbouring node, through the windows in
    both tray walls and the shared ladder; along the tray's front, tied to the
    two anchors at its front right (a cable tie through each one's tunnel),

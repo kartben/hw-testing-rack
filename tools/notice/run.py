@@ -198,7 +198,7 @@ def main() -> None:
     dp = rack.raw["pcb"]["data_port"]               # the DATA port board on the rear-bay floor (lib/carrier.scad DATA_PCB_*)
     c["DATA"] = {"x": rack.data_port_x[0], "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 8.5,   # PORT_Z
                  "wall": d["wall"], "pcb": dp, "pcb_z": d["bottom"] + 8.5 - 1.63 - dp["thickness"]}
-    c["NODE_DUT"] = [node["size"][0] + 0.4, node["size"][1] - node["right"]["dut"], node["thickness"] + 1.6]
+    c["NODE_DATA"] = [node["size"][0] + 0.4, node["size"][1] - node["right"]["data"], node["thickness"] + 1.6]
     c["NODE_HOLES"] = node["holes"]                 # M3, KiCad coordinates (y from the rear edge)
     import webscene                                  # the USB plugs' sizes, as the viewer draws them
     c["USB_PLUGS"] = getattr(webscene, "USB_PLUGS", None)

@@ -515,7 +515,7 @@ def scad_config(rack: Rack) -> str:
         "NODE_PCB_TOP": rack.pcb_top,
         "NODE_FRONT": [node["front"]["pc_port"], node["front"]["led"], node["front"]["svc"]],
         "NODE_PWR_Y": node["pwr_y"],
-        "NODE_RIGHT": [node["right"]["dut"], node["right"]["data"]],
+        "NODE_DATA_Y": node["right"]["data"],
         "NODE_AUX": node["aux"],
         "NODE_CAM": node["cam"],
         "DATA_PCB_SIZE": r["pcb"]["data_port"]["size"],

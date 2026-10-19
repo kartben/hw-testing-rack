@@ -5,16 +5,16 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 578 |
+| Electronics | 564 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 58 |
 | Cables | 49 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **865** |
+| **Total** | **851** |
 
-≈ **€108 per bay** all-in.
+≈ **€106 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -24,10 +24,10 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 
 | Board | Order | Line | USD |
 |---|---|---|---:|
-| bay-node | 10 PCBs (4-layer 64×90 mm, lead-free HASL, 5 mm edge rails added by JLC for Standard PCBA), 10 assembled, Standard PCBA | PCB: board $19.50 | 19.50 |
-| | | PCBA: setup $25.56, stencil $8.21, components $200.12, feeders $67.32, SMT $6.22, X-ray $16.40, packaging $0.52 | 324.35 |
-| | | **Estimated total** | **343.85** |
-| | | Order (indicative): as quoted | 343.85 |
+| bay-node | 10 PCBs (4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA), 10 assembled, Standard PCBA | PCB: board $19.50 | 19.50 |
+| | | PCBA: setup $25.56, stencil $8.21, components $188.05, feeders $64.26, SMT $5.90, X-ray $16.40, packaging $0.52 | 308.90 |
+| | | **Estimated total** | **328.40** |
+| | | Order (indicative): as quoted | 328.40 |
 | power-hub | 5 PCBs (4-layer 76×140 mm, ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $17.60, board $12.00 | 54.60 |
 | | | PCBA: setup $25.75, stencil $8.27, components $52.32, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52, global sourcing $13.30 | 172.44 |
 | | | **Estimated total** | **227.04** |
@@ -75,7 +75,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 20.8 | `mechanical/stl/power_box_lid.stl` |
 | power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |
-| tray | 8 | 78.3 | `mechanical/stl/tray.stl` |
+| tray | 8 | 78.1 | `mechanical/stl/tray.stl` |
 
 ## Line items
 
@@ -96,23 +96,20 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Electronics | ROW IN — JST PH 6-pin, side entry, SMD | 10  | 0.36 | 3.59 | LCSC/JLCPCB C265405 |
 | Electronics | ROW OUT — JST PH 6-pin, side entry, SMD | 10  | 0.36 | 3.59 | LCSC/JLCPCB C265405 |
 | Electronics | PC — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 10  | 0.84 | 8.37 | LCSC/JLCPCB C5184243 |
-| Electronics | DUT — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 10  | 0.84 | 8.37 | LCSC/JLCPCB C5184243 |
-| Electronics | AUX — JST PH 6-pin, vertical, SMD | 10  | 0.40 | 3.96 | LCSC/JLCPCB C471518 |
+| Electronics | AUX — JST PH 6-pin, side entry, SMD | 10  | 0.36 | 3.59 | LCSC/JLCPCB C265405 |
 | Electronics | CAM — JST PH 8-pin, vertical, SMD | 10  | 0.52 | 5.24 | LCSC/JLCPCB C495548 |
-| Electronics | DATA — JST PH 8-pin, vertical, SMD | 10  | 0.52 | 5.24 | LCSC/JLCPCB C495548 |
+| Electronics | DATA — JST PH 8-pin, side entry, SMD | 10  | 0.41 | 4.14 | LCSC/JLCPCB C265121 |
 | Electronics | 3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded | 10  | 0.10 | 1.01 | LCSC/JLCPCB C167219 |
 | Electronics | SUD50P06-15 — P-MOSFET 60 V, reverse-polarity protection | 10  | 0.33 | 3.31 | LCSC/JLCPCB C7503186 |
 | Electronics | 2N7002 — N-MOSFET 60 V (open-drain AUX outputs) | 20  | 0.02 | 0.37 | LCSC/JLCPCB C8545 |
 | Electronics | AO3400A — N-MOSFET 30 V 5.7 A, 48 mΩ at 2.5 V (the camera light's low side) | 10  | 0.09 | 0.92 | LCSC/JLCPCB C20917 |
-| Electronics | 100k — Resistor 100k 0603 | 80  | 0.00 | 0.23 | LCSC/JLCPCB C25803 |
+| Electronics | 100k — Resistor 100k 0603 | 90  | 0.00 | 0.26 | LCSC/JLCPCB C25803 |
 | Electronics | 1M — Resistor 1M 0603 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C22935 |
-| Electronics | 120k — Resistor 120k 0603 | 10  | 0.00 | 0.01 | LCSC/JLCPCB C25808 |
-| Electronics | 22k — Resistor 22k 0603 | 30  | 0.00 | 0.11 | LCSC/JLCPCB C31850 |
+| Electronics | 18k — Resistor 18k 0603 | 20  | 0.00 | 0.07 | LCSC/JLCPCB C25810 |
 | Electronics | 10k — Resistor 10k 0603 | 90  | 0.00 | 0.43 | LCSC/JLCPCB C25804 |
 | Electronics | 33 — Resistor 33 0603 | 50  | 0.00 | 0.11 | LCSC/JLCPCB C23140 |
 | Electronics | 5.1k — Resistor 5.1k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C23186 |
 | Electronics | 20k — Resistor 20k 0603 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C4184 |
-| Electronics | 18k — Resistor 18k 0603 | 10  | 0.00 | 0.04 | LCSC/JLCPCB C25810 |
 | Electronics | 50m — 50 mΩ 1 % 1 W current shunt | 10  | 0.11 | 1.10 | LCSC/JLCPCB C601102 |
 | Electronics | 4.7k — Resistor 4.7k 0603 | 20  | 0.00 | 0.05 | LCSC/JLCPCB C23162 |
 | Electronics | 10 — Resistor 10 0603 | 10  | 0.00 | 0.03 | LCSC/JLCPCB C22859 |
@@ -130,9 +127,9 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Electronics | TPS2553DBVR — adjustable current-limited power switch | 10  | 0.50 | 4.97 | LCSC/JLCPCB C55266 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 10  | 0.69 | 6.90 | LCSC/JLCPCB C49851 |
 | Electronics | TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout) | 10  | 0.89 | 8.92 | LCSC/JLCPCB C7399456 |
-| Electronics | Bare PCB bay-node (4-layer 64×90 mm, lead-free HASL, 5 mm edge rails added by JLC for Standard PCBA) | 10  | 1.79 | 17.94 | estimate, not quoted |
-| Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 114.29 | 114.29 | estimate, not quoted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | 19.74 | 19.74 | estimate, not quoted |
+| Electronics | Bare PCB bay-node (4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA) | 10  | 1.79 | 17.94 | estimate, not quoted |
+| Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 111.18 | 111.18 | estimate, not quoted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | 18.54 | 18.54 | estimate, not quoted |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 20  | 0.01 | 0.25 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C15849 |

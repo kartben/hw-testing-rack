@@ -3533,27 +3533,16 @@
 		)
 		(uuid "89960842-c5e8-5a7d-8f4f-20f4ab3ca4da")
 	)
-	(global_label "DUT_5V"
-		(shape bidirectional)
+	(label "SHUNT_N"
 		(at 175.26 71.12 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right)
+			(justify right bottom)
 		)
-		(uuid "be48b8c6-235f-5790-8e9f-0f079fa858a9")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 175.26 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
+		(uuid "793866f6-b0ae-5118-ac92-5c5c12ddb1bf")
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -4038,7 +4027,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_PH_B6B-PH-SM4-TB_1x06-1MP_P2.00mm_Vertical"
+		(property "Footprint" "Connector_JST:JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4056,7 +4045,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "JST PH 6-pin, vertical, SMD"
+		(property "Description" "JST PH 6-pin, side entry, SMD"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4065,7 +4054,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "B6B-PH-SM4-TB(LF)(SN)"
+		(property "MPN" "S6B-PH-SM4-TB(LF)(SN)"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -4083,7 +4072,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C471518"
+		(property "LCSC" "C265405"
 			(at 269.24 162.56 0)
 			(effects
 				(font
@@ -6832,7 +6821,7 @@
 		)
 		(uuid "3e141f3f-32d9-5688-a4ae-b2211f27f0f4")
 	)
-	(text "DUT power path: +5V → TPS2553 switch → 50 mΩ shunt → DUT_5V (DUT port VBUS), INA226 across the shunt"
+	(text "DUT power path: +5V → TPS2553 switch → 50 mΩ shunt → DUT_5V (J7.1), INA226 across the shunt"
 		(exclude_from_sim no)
 		(at 16.51 33.02 0)
 		(effects
@@ -6904,7 +6893,7 @@
 		)
 		(uuid "57ee726b-5e11-530c-bf29-d684624a5ddd")
 	)
-	(text_box "TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on\n  even with no firmware; ~FAULT flags current limit / over-temperature.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads) and DUT_5V on Vbus.\nAUX: TX/RX through 1k, VREF = +3V3 through 10 Ω (level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
+	(text_box "TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on\n  even with no firmware; ~FAULT flags current limit / over-temperature.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DUT_5V at the shunt.\nAUX: TX/RX through 1k, VREF = +3V3 through 10 Ω (level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
 		(exclude_from_sim no)
 		(at 15.24 132.08 0)
 		(size 152.4 17.78)

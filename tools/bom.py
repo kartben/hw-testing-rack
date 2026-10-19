@@ -44,16 +44,16 @@ JLC_QUOTE = {
     # (8 bays and 2 spares; JLC adds its $25 engineering fee only above 10 PCBs).  NOT re-quoted: the
     # quote of 2026-10-16 (20 PCBs ENIG, 16 assembled, $367.71) priced the board before rev 0.5 and the
     # full PCBA quote needs the user's sign-in.  Built from JLC's fees (help page of 2026-09-09) and the
-    # live bare-PCB price of 2026-10-19: 64 × 90 mm 4-layer HASL $19.30 for 10, + $0.20 for the 5 mm rails
-    # Standard PCBA adds (74 × 90); setup $25.56, stencil $8.21, $1.53 per unique part type (44, basic
-    # or extended alike), SMT $0.0016 a joint (389 a board), X-ray $1.64 a board (the WROOM-1, mandatory),
+    # live bare-PCB price of 2026-10-19: 74 × 90 mm 4-layer lead-free HASL $19.30 for 10 (as at 64 × 90: JLC's
+    # offer covers up to 100 × 100 mm) + $0.20 for the 5 mm rails Standard PCBA may add; setup $25.56, stencil $8.21, $1.53 per unique part type (42, basic
+    # or extended alike; J4 and its 22k Rp went with the 74 × 90 re-layout), SMT $0.0016 a joint (369 a board), X-ray $1.64 a board (the WROOM-1, mandatory),
     # packaging $0.52; components at catalogue prices × 1.12 (JLC's prices and attrition).  The page
     # also lists a Standard handling fee (≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm.
     "bay-node": {
-        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 343.85, "estimate": True,
-        "spec": "4-layer 64×90 mm, lead-free HASL, 5 mm edge rails added by JLC for Standard PCBA",
+        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 328.40, "estimate": True,
+        "spec": "4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA",
         "pcb": {"board": 19.50},
-        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 200.12, "feeders": 67.32, "SMT": 6.22,
+        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 188.05, "feeders": 64.26, "SMT": 5.90,
                  "X-ray": 16.40, "packaging": 0.52},
     },
     # v0.5 (USB-C PD input, eFuses, rack controller; 4 layers) is NOT quoted yet: an estimate built
