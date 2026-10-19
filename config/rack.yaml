@@ -161,18 +161,20 @@ cables:
 
 pcb:
   bay_node:
-    size: [64, 90]          # X × Y; KiCad y=0 is the REAR edge, y=90 the front edge (grown 10 mm at the rear for
-                            # the WROOM-1 module: every y below moved by 10, the board's front and holes stay put)
+    size: [74, 90]          # X × Y; KiCad y=0 is the REAR edge, y=90 the front edge (grown 10 mm at the rear for
+                            # the WROOM-1 module: every y below moved by 10, the board's front and holes stay put;
+                            # then 10 mm wider on the right, 2026-10-19, for AUX / CAM / DATA in one row there)
     thickness: 1.6
     layers: 4
     x0: 4                   # left edge, carrier X
     front_gap: 0.5          # PCB front edge → fascia inner face
-    holes: [[3.5, 13.5], [60.5, 13.5], [3.5, 86.5], [60.5, 86.5]]   # M3, KiCad coordinates (the tray's standoffs unchanged)
+    holes: [[3.5, 13.5], [70.5, 13.5], [3.5, 86.5], [70.5, 86.5]]   # M3, KiCad coordinates (the right pair moved with the edge;
+                            # the left pair sits under the tray's ledge: a Ø6.4 access hole through it over each)
     front: { pc_port: 32, led: 12, svc: 50 }        # KiCad X of the front-edge parts
     pwr_y: 73               # KiCad Y of the row cable connectors (JST PH 6, left/right edges)
-    right: { dut: 34, data: 50.65 }                 # KiCad Y of J4 (DUT USB-C) and of J7's centre (DATA, vertical PH 8), right edge
-    aux: [41.8, 47.8]       # J5 (AUX, vertical PH 6, its row along x): its centre, KiCad
-    cam: [43, 67]           # J6, the camera lead (JST PH 8, vertical: plugged from above), its centre, KiCad
+    right: { data: 30.0 }   # KiCad Y of J7's centre (DATA, PH 8 side entry on the right edge, pin 1 at the front)
+    aux: [69.1, 50.6]       # J5 (AUX, PH 6 side entry on the right edge, pin 1 at the front), its centre, KiCad
+    cam: [59.0, 17.2]       # J6, the camera lead (JST PH 8, vertical: plugged from above, at the rear right), its centre, KiCad
   power_hub:                # v0.5: USB-C PD in (AP33772S), eFuses, rack controller (ESP32-S3, CAN master)
     size: [76, 140]         # X × Y; KiCad y=0 is the REAR edge, y=140 the front edge (like the bay node)
     thickness: 1.6
@@ -200,7 +202,8 @@ pcb:
     x0: 15                  # drawer x of its left edge (KiCad x = drawer x − 15): drawer x 15–123, y 166–190
     thickness: 1.6
     layers: 4
-    holes: [[3.5, 3.5], [42, 3.5], [80.5, 3.5], [104.5, 19.5]]   # Ø2.7, PT 2.6 × 8 from above into the floor bosses
+    holes: [[3.2, 3.5], [38.7, 3.5], [81.4, 3.3], [104.4, 20.6]]   # Ø2.7, PT 2.6 × 8 from above into the floor bosses; between
+                            # the ports' rear rows (DATA ×4 layout)
     usb: [11, 29, 47, 65]   # KiCad x of the four USB-C (USB4105), ports 1–4 left to right: drawer x 26, 44, 62, 80 (18 mm pitch)
     notch: [86, 0, 22, 7]   # x, y, w, d: the rear-right corner cut away, for the PH plug and its lead
     ph: 97                  # KiCad x of the JST PH 8-pin (S8B-PH-SM4-TB) on the notch's front edge (y = 7), its mouth to the

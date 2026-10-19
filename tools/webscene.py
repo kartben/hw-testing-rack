@@ -66,8 +66,9 @@ for _t, _d in USB_PLUGS.items():
             WEB_PARTS[f"usbplug_{_t}_adapter_{_piece}"] = ("parts/usb_plugs.scad", {**_d, "STYLE": "adapter", "PIECE": _piece})
 WEB_PARTS["ph5_plug"] = ("parts/usb_plugs.scad", {"STYLE": "ph5"})
 WEB_PARTS["ph8_plug"] = ("parts/usb_plugs.scad", {"STYLE": "ph8"})
-# the node's J7 (DATA, JST PH 8 vertical): KiCad (58.4, 50.65) on the 64 × 90 board (electronics/bay-node); mated 8 mm tall
-NODE_J7 = (58.4, 50.65, 8.0)
+# the node's J7 (DATA, JST PH 8 side entry on the right edge, at config/rack.yaml › pcb.bay_node.right.data): the
+# plug goes in from +x, its mouth at the board's edge, 2.8 mm over the top (as on the port board)
+NODE_J7_Z = 2.8
 NODE_J6_H = 8.0     # J6 (camera, JST PH 8 vertical, at config/rack.yaml › pcb.bay_node.cam): mated height
 
 
@@ -671,8 +672,8 @@ def build(rack) -> Path:
                 add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
                     movable=drawer)
             ph_xy = (dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1])
-        j7 = {"at": [x0 + node["x0"] + NODE_J7[0], rack.node_front_y + node["size"][1] - NODE_J7[1],
-                     pcb_top + NODE_J7[2] - 6.0], "dir": [0, 0, -1], "up": [0, 1, 0], "type": "ph8"}
+        j7 = {"at": [x0 + node["x0"] + node["size"][0], rack.node_front_y + node["size"][1] - node["right"]["data"],
+                     pcb_top + NODE_J7_Z], "dir": [-1, 0, 0], "up": [0, 0, 1], "type": "ph8"}
         ph = {"at": [ph_xy[0], ph_xy[1], plenum + dp_z + dp["thickness"] + 2.8],
               "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph8"}
         if not drawer:

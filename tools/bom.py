@@ -45,16 +45,16 @@ JLC_QUOTE = {
     # (8 bays and 2 spares; JLC adds its $25 engineering fee only above 10 PCBs).  NOT re-quoted: the
     # quote of 2026-10-16 (20 PCBs ENIG, 16 assembled, $367.71) priced the board before rev 0.5 and the
     # full PCBA quote needs the user's sign-in.  Built from JLC's fees (help page of 2026-09-09) and the
-    # live bare-PCB price of 2026-10-19: 64 × 90 mm 4-layer HASL $19.30 for 10, + $0.20 for the 5 mm rails
-    # Standard PCBA adds (74 × 90); setup $25.56, stencil $8.21, $1.53 per unique part type (44, basic
-    # or extended alike), SMT $0.0016 a joint (389 a board), X-ray $1.64 a board (the WROOM-1, mandatory),
+    # live bare-PCB price of 2026-10-19: 74 × 90 mm 4-layer lead-free HASL $19.30 for 10 (as at 64 × 90: JLC's
+    # offer covers up to 100 × 100 mm) + $0.20 for the 5 mm rails Standard PCBA may add; setup $25.56, stencil $8.21, $1.53 per unique part type (42, basic
+    # or extended alike; J4 and its 22k Rp went with the 74 × 90 re-layout), SMT $0.0016 a joint (369 a board), X-ray $1.64 a board (the WROOM-1, mandatory),
     # packaging $0.52; components at catalogue prices × 1.12 (JLC's prices and attrition).  The page
     # also lists a Standard handling fee (≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm.
     "bay-node": {
-        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 343.85, "estimate": True,
-        "spec": "4-layer 64×90 mm, lead-free HASL, 5 mm edge rails added by JLC for Standard PCBA",
+        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 328.40, "estimate": True,
+        "spec": "4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA",
         "pcb": {"board": 19.50},
-        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 200.12, "feeders": 67.32, "SMT": 6.22,
+        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 188.05, "feeders": 64.26, "SMT": 5.90,
                  "X-ray": 16.40, "packaging": 0.52},
     },
     # v0.5 (USB-C PD input, eFuses, rack controller; 4 layers) is NOT quoted yet: an estimate built
@@ -74,8 +74,9 @@ JLC_QUOTE = {
     # PCBA (setup $8, stencil $1.50, $3 per extended part type: the USB4105, the S8B-PH and the
     # USBLC6), components at catalogue prices plus ≈ 3 % attrition, ≈ 30 joints a board.  The
     # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
+    # One per node but the converted bays' (a DATA ×4 instead): the eighth is a spare.
     "data-port": {
-        "pcbs": 10, "assembled": 8, "service": "Economic", "total": 34.80, "estimate": True,
+        "pcbs": 10, "assembled": 8, "spares": 1, "service": "Economic", "total": 34.80, "estimate": True,
         "spec": "2-layer 40×17 mm, lead-free HASL",
         "pcb": {"board": 3.00},
         "pcba": {"setup": 8.00, "stencil": 1.50, "components": 12.90, "extended parts": 9.00, "SMT": 0.40},
@@ -87,6 +88,17 @@ JLC_QUOTE = {
         "spec": "2-layer 40×27 mm, lead-free HASL",
         "pcb": {"board": 2.00},
         "pcba": {"setup": 8.00, "stencil": 1.50, "components": 2.05, "extended parts": 9.00, "SMT": 0.20},
+    },
+    # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), one per
+    # converted bay: an estimate built like the DATA port's, $3 per extended part type (the USB2514B, its
+    # crystal, the TPS2553-1, the INA226, the TCA6408A, the AP2112K, the USBLC6, the USB4105, the S8B: 9),
+    # components at catalogue prices plus ≈ 3 % attrition, ≈ 390 joints a board.  The bare PCB scaled from the
+    # bay node's live 4-layer price (64 × 90 mm, $19.30 for 10).  The RESET/BOOT headers are not fitted.
+    "data-port-x4": {
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 76.74, "estimate": True,
+        "spec": "4-layer 108×24 mm, JLC04161H-7628, lead-free HASL",
+        "pcb": {"board": 9.00},
+        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 29.92, "extended parts": 27.00, "SMT": 1.32},
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
@@ -208,8 +220,10 @@ def electronics(rack) -> tuple[list[dict], dict]:
     components figure.  Also returns the adjusted order per board."""
     prices = _catalog_prices()
     n_nodes = rack.units * len(rack.rows)          # every carrier unit gets a node (double bays: 2nd is optional)
+    n_x4 = sum(1 for b in rack.bays() if rack.is_multi(b.id))     # converted bays: a DATA ×4, no DATA port
     rows, orders = [], {}
-    for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes), ("camera-pod", CAMERA_SETS)):
+    for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes - n_x4),
+                       ("camera-pod", CAMERA_SETS), ("data-port-x4", n_x4)):
         q = JLC_QUOTE[name]
         assert abs(sum(q["pcb"].values()) + sum(q["pcba"].values()) - q["total"]) < 0.005, f"{name}: quote lines ≠ total"
         n = q["assembled"]
@@ -353,8 +367,10 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
          "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
         {"category": "Fasteners", "item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): "
-                                         "foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA",
-         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)", "qty": 7 * n_drawer + 2 * n_sled, "unit_eur": 0.02,
+                                         "foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA; "
+                                         "a DATA ×4: 2 more",
+         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)",
+         "qty": 7 * n_drawer + 2 * n_sled + 2 * sum(1 for b in rack.bays() if rack.is_multi(b.id)), "unit_eur": 0.02,
          "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)"},
         {"category": "Fasteners", "item": "PT 2.3×8 pan head, self-tapping (M2.3×8 \"ST\", head ≤ Ø4.5): the guide lips' "
                                          "screws: a drawer bay's stop; a sled bay's stop and 2 port-block locks (and 2 sled "

@@ -177,6 +177,12 @@ JLC_CPL_FIX = {
     "C41417363": ("PinHeader_1x06_P2.54mm_Vertical_SMD_Pin1Right", 270, 0.0, 0.0),  # pod J2
     "C495548": ("JST_PH_B8B-PH-SM4-TB_1x08-1MP_P2.00mm_Vertical", 0, 0.0, -0.63),    # bay J6
     "C20917": ("SOT-23", 180, 0.0, 0.0),                                      # bay Q4 (AO3400A)
+    # the DATA ×4's parts, fitted on 2026-10-19 the same way (the crystal C15643 and the shunt C25334
+    # fit as they are; the RESET/BOOT headers are hand-soldered)
+    "C16251": ("QFN-36-1EP_6x6mm_P0.5mm_EP3.7x3.7mm", 270, 0.0, 0.0),        # x4 U1 (USB2514B)
+    "C111738": ("SOT-23-6", 270, 0.0, 0.0),                                  # x4 U101–U401 (TPS2553-1: drawn as C7519, not C55266)
+    "C51118": ("SOT-23-5", 270, 0.0, 0.0),                                   # x4 U3 (AP2112K-3.3)
+    "C181499": ("QFN-16-1EP_3x3mm_P0.5mm_EP1.675x1.675mm", 270, 0.0, 0.0),   # x4 U2 U6 (TCA6408A)
 }
 
 

@@ -231,8 +231,9 @@ class PcbBuilder:
                 if num in nets:
                     pad.SetNet(self.net(self.b.pcb_net_name(nets[num])))
                 elif num in pins:
-                    # KiCad names every unconnected symbol pin's net like this
-                    pad.SetNet(self.net(f"unconnected-({p.ref}-{pins[num].name}-Pad{num})"))
+                    # KiCad names every unconnected symbol pin's net like this ('/' in a pin name escaped)
+                    name = pins[num].name.replace("/", "{slash}")
+                    pad.SetNet(self.net(f"unconnected-({p.ref}-{name}-Pad{num})"))
             # references live on the fab layer: the silkscreen stays readable on a dense board
             ref = fp.Reference()
             ref.SetLayer(pcbnew.B_Fab if hint.get("side") == "bottom" else pcbnew.F_Fab)
@@ -266,11 +267,46 @@ class PcbBuilder:
             s.SetLayer(pcbnew.Edge_Cuts); s.SetWidth(MM(0.1))
             bd.Add(s)
 
+        if self.b.pcb.get("outline"):
+            self.outline_poly(self.b.pcb["outline"], line)
+            return
         line(r, 0, w - r, 0); line(w, r, w, h - r); line(w - r, h, r, h); line(0, h - r, 0, r)
         arc(w - r, r, w - r, 0, w, r)
         arc(w - r, h - r, w, h - r, w - r, h)
         arc(r, h - r, r, h, 0, h - r)
         arc(r, r, 0, r, r, 0)
+
+    def outline_poly(self, pts, line):
+        """b.pcb["outline"]: [(x, y, r), ...] the board's corners in order, each rounded with radius r
+        (0: sharp).  Edges may run at any angle; a concave corner (a notch's inner corner) takes the
+        fillet the fab's router bit leaves anyway (≥ 0.5 mm)."""
+        bd = self.board
+        n = len(pts)
+
+        def unit(dx, dy):
+            d = math.hypot(dx, dy)
+            return dx / d, dy / d
+
+        ends = []          # per corner: where its fillet starts and ends
+        for i, (x, y, r) in enumerate(pts):
+            px, py, _ = pts[i - 1]
+            nx, ny, _ = pts[(i + 1) % n]
+            d1 = unit(x - px, y - py)
+            d2 = unit(nx - x, ny - y)
+            a = (x - r * d1[0], y - r * d1[1])
+            b = (x + r * d2[0], y + r * d2[1])
+            ends.append((a, b))
+            if r > 0:
+                c = (a[0] + r * d2[0], a[1] + r * d2[1])
+                mx, my = unit(a[0] + b[0] - 2 * c[0], a[1] + b[1] - 2 * c[1])
+                s = pcbnew.PCB_SHAPE(bd)
+                s.SetShape(pcbnew.SHAPE_T_ARC)
+                s.SetArcGeometry(V(*a), V(c[0] + r * mx, c[1] + r * my), V(*b))
+                s.SetLayer(pcbnew.Edge_Cuts); s.SetWidth(MM(0.1))
+                bd.Add(s)
+        for i in range(n):
+            (_, b), (a, _) = ends[i], ends[(i + 1) % n]
+            line(b[0], b[1], a[0], a[1])
 
     # -------------------------------------------------------------- zones
     def zone(self, layer, net: str | None, poly, priority=0, keepout=False, name="", layers=None, tracks_only=False,
@@ -335,6 +371,8 @@ class PcbBuilder:
         own via to the plane, instead of trusting a pour that KiCad may later fill in pieces."""
         m = 0.4
         full = [(m, m), (self.w - m, m), (self.w - m, self.h - m), (m, self.h - m)]
+        if self.b.pcb.get("outline"):
+            full = inset_poly([(x, y) for x, y, _ in self.b.pcb["outline"]], m)[0]
         late = self.deferred_layers()
         have = {(pcbnew.LayerName(z.GetLayer()) if hasattr(pcbnew, "LayerName") else self.board.GetStandardLayerName(z.GetLayer()),
                  z.GetNetname()) for z in self.board.Zones() if not z.GetIsRuleArea()}
@@ -470,7 +508,7 @@ def set_model(fp, mpn: str) -> bool:
         return False
     file, offset, rot = MODELS[mpn]
     m = pcbnew.FP_3DMODEL()
-    m.m_Filename = MODEL_PATH + file
+    m.m_Filename = file if file.startswith("${") else MODEL_PATH + file      # or one of KiCad's own
     m.m_Offset = pcbnew.VECTOR3D(*offset)
     m.m_Rotation = pcbnew.VECTOR3D(*rot)
     m.m_Scale = pcbnew.VECTOR3D(1, 1, 1)

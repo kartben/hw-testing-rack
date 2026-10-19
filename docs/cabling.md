@@ -22,8 +22,8 @@ bay node (plenum)                                 drawer
    (2 × PT 2.6×8, one each end), its mouth behind a U in the wall: the
    board's short cable plugs into it.  A JST PH 8-pin lead (VBUS, GND, D−, D+, GND, then
    the node's I²C and INT, which the port board leaves open, for a later DATA ×4 board) plugs
-   into the node's **DATA** header (J7, vertical, in parallel with the DUT
-   receptacle J4: one of the two in use), runs ~3 cm in the plenum to the
+   into the node's **DATA** header (J7, side entry on the node's right edge,
+   facing the chain; the node's only DUT port), runs ~3 cm in the plenum to the
    chain's fixed end, through the drag chain, out of its moving end
    (forwards, then a U-turn in front of it, between the chain's runs, low
    over the tray floor) and up through the cable window into the port
@@ -122,9 +122,9 @@ plugs into the power box's rear wall.
   13.5 V); the PC port then reaches the ESP32.
 * **Cameras:** the bay's own node drives its camera (SPI) and light: a
   ready-made 50 cm JST-PH 8 lead, "Same direction" (≈ 45 cm routed between
-  the plugs), up out of J6 (vertical, on the node; pins: CAM_5V, GND, SCK, GND,
-  MOSI, MISO, CS, LED_K), over to the right of the node under the DATA lead,
-  back along the plenum at x ≈ 76, out of the tray's rear slot (a cable tie),
+  the plugs), up out of J6 (vertical, at the node's rear right; pins: CAM_5V,
+  GND, SCK, GND, MOSI, MISO, CS, LED_K), straight back along the plenum, out
+  of the tray's rear slot (a cable tie),
   straight up behind the tray's rear wall, forwards under the ceiling (cable
   ties through the ceiling's windows, right of the node above), down behind
   the pod and into the pod board's J1 from its right.  The board carries the

@@ -15,7 +15,7 @@
 |---|---|---|
 | USB | the DUT on the S3's OTG port, or the front PC port (classic mode) | a hub on the OTG port, 4 DUTs behind it; classic mode: the laptop sees the hub and the 4 DUTs at high speed |
 | Power | TPS2553 + INA226 on the node | one switch and one current sense per port on DATA ×4 (≈ 0.5 A each), reached over I²C on J7 (PH-8: I²C, an interrupt) |
-| RESET / BOOT | two node GPIOs | per port, through an I²C expander on DATA ×4 (TCA6424A) |
+| RESET / BOOT | two node GPIOs | per port, through an I²C expander on DATA ×4 (two TCA6408A) |
 | Console | the AUX UART | the boards' own USB (CDC): no AUX per sub-slot |
 
 A node without DATA ×4 stays a one-port node: everything below keeps
@@ -25,27 +25,33 @@ working with N = 1, and today's API keeps its meaning.
 it sits; no `uart`.  The board's wiring stays data, not code:
 
 ```dts
-/* ports_io: the TCA6424A on DATA ×4; port n uses lines 4(n−1)+0..3 */
+/* ports_io0 / ports_io1: the two TCA6408A on DATA ×4 (0x20: ports 1–2, 0x21: ports 3–4), register-
+ * compatible with the TCA9538 (ti,tca9538, ngpios = 8) */
 dut_port1: dut-port-1 {
 	compatible = "hwtr,dut-port";
 	sub-slot = <1>;                 /* A1.1 */
-	hub-port = <3>;                 /* the hub's downstream port wired to it */
-	enable-gpios = <&ports_io 0 GPIO_ACTIVE_HIGH>;
-	fault-gpios = <&ports_io 1 GPIO_ACTIVE_LOW>;
-	reset-gpios = <&ports_io 2 GPIO_ACTIVE_HIGH>;
-	boot-gpios = <&ports_io 3 GPIO_ACTIVE_HIGH>;
+	hub-port = <1>;                 /* the hub's downstream port wired to it (n on DATA ×4) */
+	enable-gpios = <&ports_io0 2 GPIO_ACTIVE_HIGH>;
+	fault-gpios = <&ports_io0 3 GPIO_ACTIVE_LOW>;
+	reset-gpios = <&ports_io0 0 GPIO_ACTIVE_LOW>;   /* open drain, emulated (below) */
+	boot-gpios = <&ports_io0 1 GPIO_ACTIVE_LOW>;
 	power-monitor = <&port1_sense>;
 };
-/* dut-port-2..4 */
+/* dut-port-2: EN 4, FAULT 5, BOOT 6, RESET 7 on ports_io0; ports 3 and 4 the same on ports_io1 */
 ```
 
-The expander's pins come up as inputs: pull-ups on DATA ×4 keep the
+The expanders' pins come up as inputs: pull-ups on DATA ×4 keep the
 binding's rule that a board is powered before (and without) any firmware.
+RESET and BOOT go straight to the board's pins through 1k: Zephyr's driver
+refuses `GPIO_OPEN_DRAIN`, so the dut-port code asserts a line by
+configuring it as an output low and releases it by configuring it as an
+input.
 
 Power goes through the board's switches (current limit, fault, measured),
 not the hub's own port power: it does not depend on the USB link, and works
-for a board that hangs its USB.  The hub's `SetPortFeature(PORT_POWER)` stays
-a fallback (the spike checks which hubs really switch).
+for a board that hangs its USB.  On DATA ×4 the hub's PRTPWR pins are not
+wired: `SetPortFeature(PORT_POWER)` does nothing there (on a bench hub it stays
+a fallback; the spike checks which hubs really switch).
 
 ## Names and USB/IP
 
@@ -80,8 +86,8 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
 
 ## Power budget
 
-> A proposal of the DATA ×4 board's design, pending the user's validation:
-> nothing to implement until the board is validated.
+> The DATA ×4 board as designed (v1.0, `electronics/data-port-x4`,
+> [electronics.md](electronics.md#data-4-v10--4-layers-108--24-mm)), not built yet.
 
 - **Per port**, a TPS2553-1: limit ≈ 0.48–0.58 A, 7.5 ms deglitch, then
   latched off until EN toggles.  The firmware reports the port's fault and
@@ -94,9 +100,12 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
   1.25 A; otherwise 409.
 - **Shedding.**  The node's INA226 (0x40) alerts at ≈ 1.3 A: within ≈ 10 ms
   the firmware turns off the last port switched on (or the one drawing the
-  most) through the expander, well before the 1 s cut of the whole bay.
-- **Expander** (TCA6424A, 0x22): port n on lines 4(n−1)+0..3 = EN,
-  FAULT_N, RESET, BOOT; line 16 the hub's reset; 17–19 the UART option.
+  most) through its expander, well before the 1 s cut of the whole bay.
+- **Expanders** (two TCA6408A, 0x20 for ports 1–2 and 0x21 for ports
+  3–4): EN, FAULT_N, RESET and BOOT per port, nothing else (no UART per
+  port; the hub resets with the bay's power or a USB bus reset).  RESET and
+  BOOT reach a 1 × 3 header per port through 1k, the header not fitted on
+  the first boards: until then those lines do nothing.
 - **Open:** with every port pulled on at power-up (above), four boards
   booting together can exceed the budget before the firmware runs; either
   the ports come up off, or the budget allows for that inrush.
@@ -181,10 +190,9 @@ it (measured in the spike).
 
 ## Open
 
-- Which hub chip on DATA ×4: high speed upstream for the laptop mode,
-  full speed behind the node.  One configurable over I²C (USB2514B-class,
-  with per-port power pins) would let the node set it up on the same bus.
+- ~~Which hub chip on DATA ×4~~: a USB2514B (one transaction translator per
+  port) on its straps, off the I²C bus (2026-10-19).
 - One node failing takes four boards: the hub page should say so.
-- The AUX UART: a multiplexer on DATA ×4, or none (decision 1: USB-native
-  boards only).
+- ~~The AUX UART~~: none on DATA ×4 (2026-10-19); the node's own AUX can
+  still go to one of the four boards by hand.
 - The camera sees four boards on one plate (decision 7, open).
