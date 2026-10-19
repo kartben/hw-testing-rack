@@ -1,6 +1,6 @@
 # Electronics
 
-Four boards (the bay node, the power hub, the drawer's DATA port, the camera pod), all **schematics as code**: `electronics/<board>/design.py`
+Five boards (the bay node, the power hub, the drawer's DATA port or a converted bay's DATA ×4, the camera pod), all **schematics as code**: `electronics/<board>/design.py`
 describes parts (with MPN, manufacturer, LCSC number), the nets their pins
 connect to and PCB placement hints.  From that single description
 `electronics/tools/` writes a real hierarchical KiCad 10 project (one sheet
@@ -77,7 +77,9 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 > USB-C PD input (AP33772S), 4 layers, rows off until the controller enables them, autorouted,
 > checked with Konnect, not yet ordered or quoted.  Camera pod v1.0 — lead, the camera's header and 3.3 V, the
 > light, autorouted, not yet ordered or quoted.  DATA port v1.0 — the drawer's USB-C port on a
-> 8-wire lead to the node's J7, autorouted, not yet ordered or quoted.**  On all three boards ERC is clean and DRC reports
+> 8-wire lead to the node's J7, autorouted, not yet ordered or quoted.  DATA ×4 v1.0 — a converted bay's
+> drawer board (hub, four switched and measured USB-C), autorouted, checked with Konnect, not yet ordered
+> or quoted.**  On every board ERC is clean and DRC reports
 > no copper errors, no unconnected items and full schematic parity.  The buck's hot loop, the
 > VRACK bus, the hub's input and VRACK pours, its Kelvin sense pair and the USB High-Speed pairs are placed or
 > drawn by hand in `design.py`; the rest is the router's draft: before
@@ -102,7 +104,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (10 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
-| DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DUT_5V · 2 GND · 3 D− · 4 D+ · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 4.7k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm), which leaves 6–8 open, or a later DATA ×4 board; `pcb.bay_node.right.data` is its centre (KiCad y) |
+| DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DUT_5V · 2 GND · 3 D− · 4 D+ · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 4.7k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm), which leaves 6–8 open, or a [DATA ×4 board](#data-4-v10--4-layers-108--24-mm); `pcb.bay_node.right.data` is its centre (KiCad y) |
 | Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side, AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.5 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); at the rear right, its lead straight back, its parts in a block west of it; `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
@@ -189,7 +191,7 @@ hole through the ledge over each (screw and screwdriver go through, drawer out);
 those holes follow `pcb.bay_node.holes`.
 
 **J7, the DATA lead (8 wires).**  Since the density decisions (2026-10-19) the DATA lead also
-carries the node's I²C and an interrupt, for a later DATA ×4 board in the drawer (its own I²C
+carries the node's I²C and an interrupt, for a DATA ×4 board in the drawer (its own I²C
 devices, an INT back to IO4); the single DATA port board leaves those three pins open, and both use
 the camera's lead type (PH 8, "Same direction").  Pin 1 is 5 V for the far board's ports: one PH
 contact (2 A) carries the TPS2553's ≈ 1.4 A limit; two GND pins frame the pair, a third one sits
@@ -274,6 +276,44 @@ side, no Standard-only part), ≈ $34 for 10 PCBs with 8 assembled (estimate in 
 
 A review of both boards with the Konnect MCP server (findings, fixes, what is
 still open) is in [review-konnect.md](review-konnect.md).
+
+## DATA ×4 v1.0 — 4 layers, 108 × 24 mm
+
+A converted bay's drawer board (×1 per converted bay, `population › boards:` in `config/rack.yaml`): one
+bay node serves up to four small USB boards, sub-slots `<bay>.1`–`.4` ([multi-dut-node.md](multi-dut-node.md)).
+It replaces the DATA port on the drawer's rear-bay floor (4 × PT 2.6×8 from above), on the same PH 8
+lead from the node's J7; its four USB-C sit behind the port wall's U's at drawer x 26 / 44 / 62 / 80
+(18 mm apart, `.1` on the left).  Geometry in `config/rack.yaml` › `pcb.data_port_x4`.
+
+| Block | Parts | Notes |
+|---|---|---|
+| Lead | JST PH 8, side entry (S8B-PH-SM4-TB, J1) on the front edge of a 22 × 7 mm rear-right notch, 17 mm from the port wall like the DATA port's: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D+ · 6 D− · 7 GND · 8 +5V | the node's J7 mirrored ("Same direction" lead); SDA, SCL and INT pass through two USBLC6 (U4, U5; `LEAD_*` on the lead's side): the node has no ESD on them |
+| Hub | USB2514B (U1) on its straps (CFG_SEL 00, NON_REM 00), 24 MHz crystal, 12k RBIAS, RC reset | multi-TT, self-powered, off the I²C bus; hub port n is USB-C n (busid `1-1.n`); PRTPWR and OCS_N unused: the switches follow the expanders |
+| Ports ×4 | TPS2553DBVR-1 (47k: 0.50–0.62 A; limits for 7.5 ms, then latches off until EN toggles) → 100 mΩ Kelvin shunt → VBUS; INA226 across the shunt; GCT USB4105 with Rp 56k on each CC ("default USB power"); USBLC6 in flow-through | `+5V` → `PORTn_5V_SW` → `PORTn_VBUS`; INA226 at 0x41 / 0x43 / 0x44 / 0x45 for ports 1–4 (the node's own is 0x40) |
+| Expanders | two TCA6408A in the rear row, each between the two ports it drives: U2 (0x20) ports 1–2, U6 (0x21) ports 3–4.  Left port of a pair: P0 RESET, P1 BOOT, P2 EN, P3 FAULT_N; right port: P4 EN, P5 FAULT_N, P6 BOOT, P7 RESET | only SDA, SCL and INT cross the board; the pins come up as inputs: the EN pull-ups power every port without firmware, RESET/BOOT float; both INT wired-OR with the four INA226 ALERTs to the node's IO4 |
+| RESET / BOOT | per port the expander pin, open drain emulated (output register 0, the pin switched between input and output low), through 1k to a 1 × 3 2.54 mm header (GND, RESET_N, BOOT_N) | Dupont jumpers to the board's own pins; the header is not fitted (decision of 2026-10-19: decided later, soldered by hand), the 1k are |
+| 3.3 V | AP2112K-3.3 (U3) | ≈ 50 mV dropout: the hub, the expanders and the INA226s keep running down to ≈ 3.4 V in while the ports sag, so the firmware still sees the bay and sheds a port |
+
+**Stackup and pairs.**  JLC04161H-7628: F.Cu signals · In1 solid GND · In2 power only (+5V, with a
++3V3 area under the ports' rear rows, the expanders, each INA226 and the hub) · B.Cu signals.  The five USB pairs
+are drawn in `design.py` (`usb_routes()`), 0.25 mm tracks with a 0.15 mm gap (≈ 90 Ω, as the bay
+node's): ports 1–3 leave the hub through vias and run on B.Cu over the In2 plane behind the
+receptacles, down beside each ESD; port 4, next to the hub, stays on F.Cu.  Each USBLC6 passes both
+lines through (connector side and hub side are separate nets); its connector side runs under the
+receptacle into A7 / A6, B6 joins A6 by a loop behind the pad row and B7 joins the D− line through
+B.Cu.  The upstream pair goes J1 → B.Cu → the hub's top pins with no crossover.  A few short links
+are drawn too, where Freerouting left one open run after run: each left port's RESET and BOOT lines
+(RESET under its header through B.Cu), and the hub's right side (RESET_N up to R2 and C13, the CFG
+straps down to R3 / R4, VDD33 to a via).  Freerouting does the rest (on the Mac, ≈ 15 s a pass).
+
+**Power.**  The four ports share the node's DUT_5V (≈ 1.4 A, its TPS2553); the board's logic takes
+≈ 0.1 A of it.  Four small boards draw 0.3–0.8 A in all (typical figures from datasheets and
+measurements); the firmware admits a port only within the budget and sheds one when the node's own
+INA226 alerts ([multi-dut-node.md](multi-dut-node.md)).  No batteries on the boards of a converted bay:
+a LiPo charging takes more than a port's 0.5 A.
+
+JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $77 for 5 PCBs with 2 assembled
+(estimate in `tools/bom.py`).
 
 ## Camera pod v1.0 — 2 layers, 40 × 27 mm
 
@@ -450,8 +490,8 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C431540 MSK12C02 | node SW3 | −0.25 mm y (lines up the pins; JLC's body outline then sits 0.25 mm off KiCad's) | to confirm |
 | C45262770 LMR51635 TSOT-23-6 | node U1 | 270° (same EasyEDA footprint as C7519) | to confirm |
 | C11355 FSUSB42 MSOP-10 | node U5 U6 | 270° | to confirm |
-| C49851 INA226 VSSOP-10 | node U10 | 270° | to confirm |
-| C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8 U12 U13, data port U1 | 270° | to confirm |
+| C49851 INA226 VSSOP-10 | node U10, DATA ×4 U102–U402 | 270° | to confirm |
+| C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8 U12 U13, data port U1, DATA ×4 U4 U5 U103–U403 | 270° | to confirm |
 | C55266 TPS2553 SOT-23-6 | node U9 | 180° | to confirm |
 | C10096 74LVC1G32 SOT-23-5 | node U7 | 180° | to confirm |
 | C8545 2N7002 SOT-23 | node Q2 Q3 | 180° | to confirm |
@@ -465,16 +505,20 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C7399456 TCAN1462V SOIC-8 (alternates C3234993 TCAN1044AV, C3234095 TJA1462AT) | node U11, hub U6 | 270° | to confirm |
 | C75176 PESD2CAN SOT-23 | node D5, hub D9 | 180° | to confirm |
 | C7420333 BAT54S SOT-23 | node D6 D7, hub POS clamps | 180° | to confirm |
-| C5184243 GCT USB4105-GF-A-120 | node J3 (J4 too until the 74 × 90 re-layout), hub USB-C, data port J1 | −1.30 mm y | to confirm |
+| C5184243 GCT USB4105-GF-A-120 | node J3 (J4 too until the 74 × 90 re-layout), hub USB-C, data port J1, DATA ×4 J101–J401 | −1.30 mm y | to confirm |
 | C265104 JST S5B-PH-SM4-TB | data port J2 until the 8-wire DATA lead | 180°, +0.14 mm y | not on the data port any more |
 | C265085 JST B5B-PH-SM4-TB | node J7 until the 8-wire DATA lead | 180°, −0.62 mm y | not on the node any more |
-| C265121 JST S8B-PH-SM4-TB | node J7, camera pod J1, data port J2 | none (fit: −0.03 mm y) | to confirm |
+| C265121 JST S8B-PH-SM4-TB | node J7, camera pod J1, data port J2, DATA ×4 J1 | none (fit: −0.03 mm y) | to confirm |
+| C16251 USB2514B QFN-36 | DATA ×4 U1 | 270° | to confirm |
+| C111738 TPS2553DBVR-1 SOT-23-6 | DATA ×4 U101–U401 | 270° (EasyEDA draws it as C7519, not as C55266) | to confirm |
+| C51118 AP2112K-3.3 SOT-23-5 | DATA ×4 U3 | 270° | to confirm |
+| C181499 TCA6408ARGTR QFN-16 | DATA ×4 U2 U6 | 270° | to confirm |
 | C2843876 XL-2835UWC-02 | camera pod D1–D4 | +0.24 mm x | to confirm |
 | C41417363 HX PZ2.54-1x6P TP-YQ | camera pod J2 | 270° | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
 0805, 1206), the electrolytics (+ pad), the diodes and LEDs (cathode side),
-the WS2812B-2020, the FXL0630 inductor (C167219) and the TS-1187A buttons.  The green
+the WS2812B-2020, the FXL0630 inductor (C167219), the TS-1187A buttons and the 3225 crystal (C15643).  The green
 LED C2297 numbers its pads the other way round (pad 2 is the cathode), but
 its cathode sits where KiCad's pad 1 is at 0°: don't "fix" it from the pad
 numbers.

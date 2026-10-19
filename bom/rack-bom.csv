@@ -125,12 +125,40 @@ Electronics,camera-pod,AMS1117-3.3 — 3.3 V 1 A LDO,2,pcs,0.1932,0.39,LCSC/JLCP
 Electronics,camera-pod,"Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL)",5,pcs,0.368,1.84,"estimate, not quoted",,,,,"board $2.00 = $2.00 for 5 PCBs, 2 of them assembled"
 Electronics,camera-pod,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,17.2,17.2,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.20"
 Electronics,camera-pod,Components camera-pod: JLC quote minus the catalogue prices above,1,pcs,0.08,0.08,"estimate, not quoted",,,,,quoted components $2.05 (≈ €1.89) for 2 boards; catalogue unit prices give €1.81
+Electronics,data-port-x4,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
+Electronics,data-port-x4,1u — Capacitor 1u 0603,12,pcs,0.013,0.16,LCSC/JLCPCB,C15849,CL10A105KB8NNNC,Samsung Electro-Mechanics,"C2,C13,C101,C201,C301,C401",6 per board × 2 boards
+Electronics,data-port-x4,4.7u — Capacitor 4.7u 0805,2,pcs,0.0318,0.06,LCSC/JLCPCB,C1779,CL21A475KAQNNNE,Samsung Electro-Mechanics,C3,1 per board × 2 boards
+Electronics,data-port-x4,33p — Capacitor 33p 0603,4,pcs,0.0083,0.03,LCSC/JLCPCB,C1663,CL10C330JB8NNNC,Samsung Electro-Mechanics,"C4,C5",2 per board × 2 boards
+Electronics,data-port-x4,100n — Capacitor 100n 0603,26,pcs,0.0124,0.32,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C6,C7,C8,C9,C10,C11,C12,C14,C15,C103,C203,C303,C403",13 per board × 2 boards
+Electronics,data-port-x4,22u — Capacitor 22u 0805,8,pcs,0.1785,1.43,LCSC/JLCPCB,C45783,CL21A226MAQNNNE,Samsung Electro-Mechanics,"C102,C202,C302,C402",4 per board × 2 boards
+Electronics,data-port-x4,"LEAD — JST PH 8-pin, side entry, SMD",2,pcs,0.414,0.83,LCSC/JLCPCB,C265121,S8B-PH-SM4-TB(LF)(SN),JST,J1,1 per board × 2 boards
+Electronics,data-port-x4,"PORT1 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",2,pcs,0.8372,1.67,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J101,1 per board × 2 boards
+Electronics,data-port-x4,"PORT2 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",2,pcs,0.8372,1.67,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J201,1 per board × 2 boards
+Electronics,data-port-x4,"PORT3 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",2,pcs,0.8372,1.67,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J301,1 per board × 2 boards
+Electronics,data-port-x4,"PORT4 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",2,pcs,0.8372,1.67,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J401,1 per board × 2 boards
+Electronics,data-port-x4,12k — Resistor 12k 0603,2,pcs,0.0029,0.01,LCSC/JLCPCB,C22790,0603WAF1202T5E,UNI-ROYAL(Uniroyal Elec),R1,1 per board × 2 boards
+Electronics,data-port-x4,10k — Resistor 10k 0603,18,pcs,0.0048,0.09,LCSC/JLCPCB,C25804,0603WAF1002T5E,UNI-ROYAL(Uniroyal Elec),"R2,R102,R103,R202,R203,R302,R303,R402,R403",9 per board × 2 boards
+Electronics,data-port-x4,100k — Resistor 100k 0603,4,pcs,0.0029,0.01,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),"R3,R4",2 per board × 2 boards
+Electronics,data-port-x4,47k — Resistor 47k 0603,8,pcs,0.0032,0.03,LCSC/JLCPCB,C25819,0603WAF4702T5E,UNI-ROYAL(Uniroyal Elec),"R101,R201,R301,R401",4 per board × 2 boards
+Electronics,data-port-x4,56k — Resistor 56k 0603,16,pcs,0.0025,0.04,LCSC/JLCPCB,C23206,0603WAF5602T5E,UNI-ROYAL(Uniroyal Elec),"R104,R105,R204,R205,R304,R305,R404,R405",8 per board × 2 boards
+Electronics,data-port-x4,"100m — 100 mΩ 1 % 0.25 W, as a current shunt",8,pcs,0.0088,0.07,LCSC/JLCPCB,C25334,1206W4F100LT5E,UNI-ROYAL(Uniroyal Elec),"R106,R206,R306,R406",4 per board × 2 boards
+Electronics,data-port-x4,1k — Resistor 1k 0603,16,pcs,0.0017,0.03,LCSC/JLCPCB,C21190,0603WAF1001T5E,UNI-ROYAL(Uniroyal Elec),"R107,R108,R207,R208,R307,R308,R407,R408",8 per board × 2 boards
+Electronics,data-port-x4,"USB2514B-AEZC-TR — USB 2.0 hub, 4 ports, one transaction translator per port (MTT)",2,pcs,1.6652,3.33,LCSC/JLCPCB,C16251,USB2514B-AEZC-TR,Microchip Tech,U1,1 per board × 2 boards
+Electronics,data-port-x4,"TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT",4,pcs,0.8096,3.24,LCSC/JLCPCB,C181499,TCA6408ARGTR,Texas Instruments,"U2,U6",2 per board × 2 boards
+Electronics,data-port-x4,"AP2112K-3.3TRG1 — 3.3 V 600 mA LDO, 250 mV dropout",2,pcs,0.1564,0.31,LCSC/JLCPCB,C51118,AP2112K-3.3TRG1,Diodes Incorporated,U3,1 per board × 2 boards
+Electronics,data-port-x4,USBLC6-2SC6 — USB ESD protection,12,pcs,0.1656,1.99,LCSC/JLCPCB,C7519,USBLC6-2SC6,STMicroelectronics,"U4,U5,U103,U203,U303,U403",6 per board × 2 boards; alternative: C2687116 (UMW clone)
+Electronics,data-port-x4,"TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit",8,pcs,0.2668,2.13,LCSC/JLCPCB,C111738,TPS2553DBVR-1,Texas Instruments,"U101,U201,U301,U401",4 per board × 2 boards
+Electronics,data-port-x4,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",8,pcs,0.69,5.52,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,"U102,U202,U302,U402",4 per board × 2 boards
+Electronics,data-port-x4,"X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225",2,pcs,0.0874,0.17,LCSC/JLCPCB,C15643,X322524MSB4SI,YXC Crystal Oscillators,Y1,1 per board × 2 boards
+Electronics,data-port-x4,"Bare PCB data-port-x4 (4-layer 108×24 mm, JLC04161H-7628, lead-free HASL)",5,pcs,1.656,8.28,"estimate, not quoted",,,,,"board $9.00 = $9.00 for 5 PCBs, 2 of them assembled"
+Electronics,data-port-x4,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,34.79,34.79,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $27.00, SMT $1.32"
+Electronics,data-port-x4,Components data-port-x4: JLC quote minus the catalogue prices above,1,pcs,0.82,0.82,"estimate, not quoted",,,,,quoted components $29.92 (≈ €27.53) for 2 boards; catalogue unit prices give €26.71
 Printed parts,filament,PETG filament,2.9,kg,20.0,58.0,any,,,,,"≈2.6 kg estimated + 10 % waste, 95 parts"
 Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",142,pcs,0.03,4.26,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs
 Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",62,pcs,0.02,1.24,AliExpress (bulk),,,,,
 Fasteners,,"M3×6 (node PCB, power box lid, camera pods)",44,pcs,0.02,0.88,AliExpress (bulk),,,,,
 Fasteners,,"M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",4,pcs,0.1,0.4,AliExpress (bulk),,,,,power box: through the hub's holes into the standoff inserts; the lid screws into their tops
-Fasteners,,"PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA",51,pcs,0.02,1.02,"AliExpress (bulk, e.g. HZYUEGOU)",,,,,every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)
+Fasteners,,"PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA; a DATA ×4: 2 more",53,pcs,0.02,1.06,"AliExpress (bulk, e.g. HZYUEGOU)",,,,,every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)
 Fasteners,,"PT 2.3×8 pan head, self-tapping (M2.3×8 ""ST"", head ≤ Ø4.5): the guide lips' screws: a drawer bay's stop; a sled bay's stop and 2 port-block locks (and 2 sled locks if fixed)",10,pcs,0.02,0.2,"AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100)",,,,,"pilots Ø1.9 in the ledges, Ø2.6 in the lips; a Ø5 PT 2.6 head would rub the drawer's wall (lib/carrier.scad › LIP_SCREW, checked in SolidCraft)"
 Fasteners,,"M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",28,pcs,0.01,0.28,AliExpress (bulk),,,,,
 Fasteners,,"Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge)",1,lot,3.99,3.99,"AliExpress 1005010074888189, ""6x3mm-50 pièces""",,,,,"glued (a drop of CA in the slip-fit pocket): the other magnet pulls each one out of its pocket's mouth.  Polarity: stack the pair, mark both outer faces; marked faces into the pockets"

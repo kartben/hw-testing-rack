@@ -73,8 +73,9 @@ JLC_QUOTE = {
     # PCBA (setup $8, stencil $1.50, $3 per extended part type: the USB4105, the S8B-PH and the
     # USBLC6), components at catalogue prices plus ≈ 3 % attrition, ≈ 30 joints a board.  The
     # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
+    # One per node but the converted bays' (a DATA ×4 instead): the eighth is a spare.
     "data-port": {
-        "pcbs": 10, "assembled": 8, "service": "Economic", "total": 34.80, "estimate": True,
+        "pcbs": 10, "assembled": 8, "spares": 1, "service": "Economic", "total": 34.80, "estimate": True,
         "spec": "2-layer 40×17 mm, lead-free HASL",
         "pcb": {"board": 3.00},
         "pcba": {"setup": 8.00, "stencil": 1.50, "components": 12.90, "extended parts": 9.00, "SMT": 0.40},
@@ -86,6 +87,17 @@ JLC_QUOTE = {
         "spec": "2-layer 40×27 mm, lead-free HASL",
         "pcb": {"board": 2.00},
         "pcba": {"setup": 8.00, "stencil": 1.50, "components": 2.05, "extended parts": 9.00, "SMT": 0.20},
+    },
+    # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), one per
+    # converted bay: an estimate built like the DATA port's, $3 per extended part type (the USB2514B, its
+    # crystal, the TPS2553-1, the INA226, the TCA6408A, the AP2112K, the USBLC6, the USB4105, the S8B: 9),
+    # components at catalogue prices plus ≈ 3 % attrition, ≈ 390 joints a board.  The bare PCB scaled from the
+    # bay node's live 4-layer price (64 × 90 mm, $19.30 for 10).  The RESET/BOOT headers are not fitted.
+    "data-port-x4": {
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 76.74, "estimate": True,
+        "spec": "4-layer 108×24 mm, JLC04161H-7628, lead-free HASL",
+        "pcb": {"board": 9.00},
+        "pcba": {"setup": 8.00, "stencil": 1.50, "components": 29.92, "extended parts": 27.00, "SMT": 1.32},
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
@@ -207,8 +219,10 @@ def electronics(rack) -> tuple[list[dict], dict]:
     components figure.  Also returns the adjusted order per board."""
     prices = _catalog_prices()
     n_nodes = rack.units * len(rack.rows)          # every carrier unit gets a node (double bays: 2nd is optional)
+    n_x4 = sum(1 for b in rack.bays() if rack.is_multi(b.id))     # converted bays: a DATA ×4, no DATA port
     rows, orders = [], {}
-    for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes), ("camera-pod", CAMERA_SETS)):
+    for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes - n_x4),
+                       ("camera-pod", CAMERA_SETS), ("data-port-x4", n_x4)):
         q = JLC_QUOTE[name]
         assert abs(sum(q["pcb"].values()) + sum(q["pcba"].values()) - q["total"]) < 0.005, f"{name}: quote lines ≠ total"
         n = q["assembled"]
@@ -345,8 +359,10 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
          "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
         {"category": "Fasteners", "item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): "
-                                         "foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA",
-         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)", "qty": 7 * n_drawer + 2 * n_sled, "unit_eur": 0.02,
+                                         "foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA; "
+                                         "a DATA ×4: 2 more",
+         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)",
+         "qty": 7 * n_drawer + 2 * n_sled + 2 * sum(1 for b in rack.bays() if rack.is_multi(b.id)), "unit_eur": 0.02,
          "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)"},
         {"category": "Fasteners", "item": "PT 2.3×8 pan head, self-tapping (M2.3×8 \"ST\", head ≤ Ø4.5): the guide lips' "
                                          "screws: a drawer bay's stop; a sled bay's stop and 2 port-block locks (and 2 sled "

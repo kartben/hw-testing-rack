@@ -5,16 +5,16 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 564 |
+| Electronics | 635 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 58 |
 | Cables | 49 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **851** |
+| **Total** | **922** |
 
-≈ **€106 per bay** all-in.
+≈ **€115 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -40,6 +40,10 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | | | PCBA: setup $8.00, stencil $1.50, components $2.05, extended parts $9.00, SMT $0.20 | 20.75 |
 | | | **Estimated total** | **22.75** |
 | | | Order (indicative): as quoted | 22.75 |
+| data-port-x4 | 5 PCBs (4-layer 108×24 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: board $9.00 | 9.00 |
+| | | PCBA: setup $8.00, stencil $1.50, components $29.92, extended parts $27.00, SMT $1.32 | 67.74 |
+| | | **Estimated total** | **76.74** |
+| | | Order (indicative): as quoted | 76.74 |
 
 ## Printed parts
 
@@ -207,12 +211,40 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Electronics | Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL) | 5  | 0.37 | 1.84 | estimate, not quoted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT | 1  | 17.20 | 17.20 | estimate, not quoted |
 | Electronics | Components camera-pod: JLC quote minus the catalogue prices above | 1  | 0.08 | 0.08 | estimate, not quoted |
+| Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
+| Electronics | 1u — Capacitor 1u 0603 | 12  | 0.01 | 0.16 | LCSC/JLCPCB C15849 |
+| Electronics | 4.7u — Capacitor 4.7u 0805 | 2  | 0.03 | 0.06 | LCSC/JLCPCB C1779 |
+| Electronics | 33p — Capacitor 33p 0603 | 4  | 0.01 | 0.03 | LCSC/JLCPCB C1663 |
+| Electronics | 100n — Capacitor 100n 0603 | 26  | 0.01 | 0.32 | LCSC/JLCPCB C14663 |
+| Electronics | 22u — Capacitor 22u 0805 | 8  | 0.18 | 1.43 | LCSC/JLCPCB C45783 |
+| Electronics | LEAD — JST PH 8-pin, side entry, SMD | 2  | 0.41 | 0.83 | LCSC/JLCPCB C265121 |
+| Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 2  | 0.84 | 1.67 | LCSC/JLCPCB C5184243 |
+| Electronics | PORT2 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 2  | 0.84 | 1.67 | LCSC/JLCPCB C5184243 |
+| Electronics | PORT3 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 2  | 0.84 | 1.67 | LCSC/JLCPCB C5184243 |
+| Electronics | PORT4 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 2  | 0.84 | 1.67 | LCSC/JLCPCB C5184243 |
+| Electronics | 12k — Resistor 12k 0603 | 2  | 0.00 | 0.01 | LCSC/JLCPCB C22790 |
+| Electronics | 10k — Resistor 10k 0603 | 18  | 0.00 | 0.09 | LCSC/JLCPCB C25804 |
+| Electronics | 100k — Resistor 100k 0603 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C25803 |
+| Electronics | 47k — Resistor 47k 0603 | 8  | 0.00 | 0.03 | LCSC/JLCPCB C25819 |
+| Electronics | 56k — Resistor 56k 0603 | 16  | 0.00 | 0.04 | LCSC/JLCPCB C23206 |
+| Electronics | 100m — 100 mΩ 1 % 0.25 W, as a current shunt | 8  | 0.01 | 0.07 | LCSC/JLCPCB C25334 |
+| Electronics | 1k — Resistor 1k 0603 | 16  | 0.00 | 0.03 | LCSC/JLCPCB C21190 |
+| Electronics | USB2514B-AEZC-TR — USB 2.0 hub, 4 ports, one transaction translator per port (MTT) | 2  | 1.67 | 3.33 | LCSC/JLCPCB C16251 |
+| Electronics | TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT | 4  | 0.81 | 3.24 | LCSC/JLCPCB C181499 |
+| Electronics | AP2112K-3.3TRG1 — 3.3 V 600 mA LDO, 250 mV dropout | 2  | 0.16 | 0.31 | LCSC/JLCPCB C51118 |
+| Electronics | USBLC6-2SC6 — USB ESD protection | 12  | 0.17 | 1.99 | LCSC/JLCPCB C7519 |
+| Electronics | TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit | 8  | 0.27 | 2.13 | LCSC/JLCPCB C111738 |
+| Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 8  | 0.69 | 5.52 | LCSC/JLCPCB C49851 |
+| Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
+| Electronics | Bare PCB data-port-x4 (4-layer 108×24 mm, JLC04161H-7628, lead-free HASL) | 5  | 1.66 | 8.28 | estimate, not quoted |
+| Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT | 1  | 34.79 | 34.79 | estimate, not quoted |
+| Electronics | Components data-port-x4: JLC quote minus the catalogue prices above | 1  | 0.82 | 0.82 | estimate, not quoted |
 | Printed parts | PETG filament | 2.9 kg | 20.00 | 58.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 142  | 0.03 | 4.26 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 62  | 0.02 | 1.24 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid, camera pods) | 44  | 0.02 | 0.88 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
-| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA | 51  | 0.02 | 1.02 | AliExpress (bulk, e.g. HZYUEGOU) |
+| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA; a DATA ×4: 2 more | 53  | 0.02 | 1.06 | AliExpress (bulk, e.g. HZYUEGOU) |
 | Fasteners | PT 2.3×8 pan head, self-tapping (M2.3×8 "ST", head ≤ Ø4.5): the guide lips' screws: a drawer bay's stop; a sled bay's stop and 2 port-block locks (and 2 sled locks if fixed) | 10  | 0.02 | 0.20 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 28  | 0.01 | 0.28 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge) | 1 lot | 3.99 | 3.99 | AliExpress 1005010074888189, "6x3mm-50 pièces" |
