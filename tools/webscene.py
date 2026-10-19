@@ -61,8 +61,8 @@ for _t, _d in USB_PLUGS.items():
             WEB_PARTS[f"usbplug_{_t}_adapter_{_piece}"] = ("parts/usb_plugs.scad", {**_d, "STYLE": "adapter", "PIECE": _piece})
 WEB_PARTS["ph5_plug"] = ("parts/usb_plugs.scad", {"STYLE": "ph5"})
 WEB_PARTS["ph8_plug"] = ("parts/usb_plugs.scad", {"STYLE": "ph8"})
-# the node's J7 (DATA, JST PH 5 vertical): KiCad (40, 47.4) on the 64 × 90 board (electronics/bay-node); mated 8 mm tall
-NODE_J7 = (40.0, 47.4, 8.0)
+# the node's J7 (DATA, JST PH 8 vertical): KiCad (58.4, 50.65) on the 64 × 90 board (electronics/bay-node); mated 8 mm tall
+NODE_J7 = (58.4, 50.65, 8.0)
 NODE_J6_H = 8.0     # J6 (camera, JST PH 8 vertical, at config/rack.yaml › pcb.bay_node.cam): mated height
 
 
@@ -590,18 +590,18 @@ def build(rack) -> Path:
             add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
                 movable=True)
         j7 = {"at": [x0 + node["x0"] + NODE_J7[0], rack.node_front_y + node["size"][1] - NODE_J7[1],
-                     pcb_top + NODE_J7[2] - 6.0], "dir": [0, 0, -1], "up": [0, 1, 0], "type": "ph5"}
+                     pcb_top + NODE_J7[2] - 6.0], "dir": [0, 0, -1], "up": [0, 1, 0], "type": "ph8"}
         p0, _ = plug_exit(j7)
         top = plenum - 2.0                                 # under the drawer
         cable(rounded_path([p0, (p0[0], p0[1], top), (x0 + fixed[0], fixed[1] - 21, top),
                             (x0 + fixed[0], fixed[1] - 11, chain_z), (x0 + fixed[0], fixed[1], chain_z)], 6.0),
-              row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 5, through the drag chain)")
+              row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 8, through the drag chain)")
         ph = {"at": [dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1], plenum + dp_z + dp["thickness"] + 2.8],
-              "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph5"}
+              "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph8"}
         mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
         x_run = max(ph["at"][0], x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0)   # 6 mm off the fixed run
         cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run), row=i, kind="ext", bay=bid, radius=1.2, ends=[ph],
-              label="DATA lead (JST PH 5, through the drag chain)", movable=True)
+              label="DATA lead (JST PH 8, through the drag chain)", movable=True)
         return x0, plenum
 
     for b in rack.bays():
