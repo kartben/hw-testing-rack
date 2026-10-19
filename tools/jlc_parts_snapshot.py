@@ -27,10 +27,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 BOARDS = ("bay-node", "power-hub", "data-port-x4", "data-port", "camera-pod")
 OUT = REPO / "electronics" / "lib" / "jlc_parts.json"
+# the wrapper sits in the server's checkout (it uses the server's node_modules); default: node on PATH and
+# the checkout in ~/.local/mcp/jlcpcb-skill-mcp
 JLC_CALL = os.environ.get(
     "JLC_CALL",
-    "C:/Users/kartb/.local/node-v22.23.3-win-x64/node.exe --no-warnings "
-    "C:/Users/kartb/.local/mcp/jlcpcb-skill-mcp/jlc-call.mjs")
+    "node --no-warnings " + (Path.home() / ".local/mcp/jlcpcb-skill-mcp/jlc-call.mjs").as_posix())
 
 
 def call(tool: str, args: dict) -> dict:
