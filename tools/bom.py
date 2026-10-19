@@ -141,10 +141,17 @@ JLC_FINISH = {"power-hub": ("lead-free HASL", 5.30)}
 # passives, in the CH224A (2 × $0.43), its 56 Ω and 6.8k: −$2.79 of parts for the 2 boards at LCSC's prices,
 # and 36 → 33 placed types (the CH224A loads like any LCSC part).
 JLC_SINCE_QUOTE = {"power-hub": [("11 part types fewer (values merged)", "feeders", -17.05),
-                                 ("3 AP33772S bought instead of 5", "U1 global sourcing (est.)", -6.82),
-                                 ("CH224A from LCSC instead of the AP33772S", "U1 global sourcing (est.)", -13.22),
-                                 ("no input switch (CH224A, its parts in, the switch's out)", "components", -2.79),
-                                 ("3 part types fewer (CH224A)", "feeders", -4.65)]}
+                                  # 3 AP33772S through Global Sourcing (2 boards, a spare) instead of 5: 2 × $3.41
+                                  ("3 AP33772S bought instead of 5", "U1 global sourcing (est.)", -6.82),
+                                  ("CH224A from LCSC instead of the AP33772S", "U1 global sourcing (est.)", -13.22),
+                                  ("no input switch (CH224A, its parts in, the switch's out)", "components", -2.79),
+                                  ("3 part types fewer (CH224A)", "feeders", -4.65),
+                                  # the PCBA review's fixes (2026-10-20) that apply with the CH224A: a B5819W at
+                                  # each row output (the board's type, 4 a board); the gate clamp went with the switch
+                                  ("PCBA review: 4 × B5819W a board", "components", 0.24)],
+                   # the bay node, after its estimate: 2.2k I2C pull-ups (N2) and a 470k POS pull-down (N3),
+                   # two part types more at Standard PCBA's $1.53 (R23 1k and R39 100k are values it has)
+                   "bay-node": [("PCBA review: 2.2k and 470k, two part types more", "feeders", 3.06)]}
 
 # JLC's fees, from its help page "PCB Assembly Cost" (updated 2026-09-09) and the jlcpcb.com
 # calculator (2026-10-19, 4-layer, 5 PCBs): what a board's part types and size cost per order

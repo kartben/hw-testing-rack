@@ -2806,8 +2806,8 @@
 				)
 			)
 		)
-		(property "Value" "SUD50P06-15"
-			(at 75.625 25.908 90)
+		(property "Value" "SUD50P06-15(UMW)"
+			(at 78.25 25.908 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2841,7 +2841,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "SUD50P06-15"
+		(property "MPN" "SUD50P06-15(UMW)"
 			(at 60.96 33.02 0)
 			(effects
 				(font
@@ -2850,7 +2850,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "UMW / Vishay"
+		(property "Manufacturer" "UMW"
 			(at 60.96 33.02 0)
 			(effects
 				(font

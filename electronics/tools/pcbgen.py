@@ -225,8 +225,9 @@ class PcbBuilder:
             hand = p.fields.get("LCSC") in HAND_SOLDER_LCSC
             for pad in fp.Pads():
                 num = pad.GetNumber()
-                if hand:
-                    # soldered by hand: thermal reliefs even on the solid power pours
+                if hand or hint.get("relief"):
+                    # soldered by hand, or a small part with one pad on a solid power pour (`relief` in its
+                    # placement): thermal reliefs on every pad, so both ends heat alike and it doesn't tombstone
                     pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_THERMAL)
                 if num in nets:
                     pad.SetNet(self.net(self.b.pcb_net_name(nets[num])))

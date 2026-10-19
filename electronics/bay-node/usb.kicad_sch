@@ -7366,6 +7366,211 @@
 			)
 		)
 	)
+	(symbol
+		(lib_id "Device:R")
+		(at 198.12 203.2 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "83329d82-7479-5760-aafd-ea5856794af3")
+		(property "Reference" "R39"
+			(at 201.711 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 202.236 204.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 198.12 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 198.12 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor 100k 0603"
+			(at 198.12 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25803"
+			(at 198.12 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0603WAF1003T5E"
+			(at 198.12 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 198.12 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "17e20a1e-8a97-59c0-a474-bf3ef5f36e97")
+		)
+		(pin "2"
+			(uuid "c10a8b20-7c0c-5762-94a0-778a501308bf")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
+					(reference "R39")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 198.12 199.39)
+			(xy 198.12 196.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "84ad5851-71e7-5e4a-8227-d1b6685f55ab")
+	)
+	(global_label "SVC"
+		(shape bidirectional)
+		(at 198.12 196.85 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0988b192-47cc-5645-8fc8-001541b00c8f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 198.12 196.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 198.12 207.01)
+			(xy 198.12 209.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1711d55a-3e01-5e59-a689-6016b337e129")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 198.12 209.55 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "80d8a638-d771-5db6-aa80-62cbde46e3ca")
+		(property "Reference" "#PWR04021"
+			(at 198.12 209.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 198.12 213.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 198.12 209.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 198.12 209.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 198.12 209.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "739cd859-ff5c-5b7a-9b48-0ea4adcf9b60")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
+					(reference "#PWR04021")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(wire
 		(pts
 			(xy 50.8 68.58)
@@ -7831,7 +8036,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c7c8cf22-254f-516f-967e-2064b1311409")
-		(property "Reference" "#PWR04021"
+		(property "Reference" "#PWR04022"
 			(at 71.12 121.92 0)
 			(effects
 				(font
@@ -7881,7 +8086,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04021")
+					(reference "#PWR04022")
 					(unit 1)
 				)
 			)
@@ -7897,7 +8102,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9e3a0ee2-7cee-5bfa-acf4-39afe3eed8a2")
-		(property "Reference" "#PWR04022"
+		(property "Reference" "#PWR04023"
 			(at 193.04 40.64 0)
 			(effects
 				(font
@@ -7947,7 +8152,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04022")
+					(reference "#PWR04023")
 					(unit 1)
 				)
 			)
@@ -7974,7 +8179,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e0752315-caed-5be1-b1a7-a0a4d74ff76a")
-		(property "Reference" "#PWR04023"
+		(property "Reference" "#PWR04024"
 			(at 264.16 40.64 0)
 			(effects
 				(font
@@ -8024,7 +8229,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04023")
+					(reference "#PWR04024")
 					(unit 1)
 				)
 			)
@@ -8062,7 +8267,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1a58b479-3984-5fe5-9a53-4a610d070a11")
-		(property "Reference" "#PWR04024"
+		(property "Reference" "#PWR04025"
 			(at 363.22 213.36 0)
 			(effects
 				(font
@@ -8112,7 +8317,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04024")
+					(reference "#PWR04025")
 					(unit 1)
 				)
 			)
@@ -8150,7 +8355,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2da2b315-1364-5b79-bb70-e5210e9bb90a")
-		(property "Reference" "#PWR04025"
+		(property "Reference" "#PWR04026"
 			(at 363.22 220.98 0)
 			(effects
 				(font
@@ -8200,7 +8405,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04025")
+					(reference "#PWR04026")
 					(unit 1)
 				)
 			)
@@ -8271,7 +8476,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "174bb1c0-4950-5088-8d66-39d06348a3f5")
-		(property "Reference" "#PWR04026"
+		(property "Reference" "#PWR04027"
 			(at 101.6 167.64 0)
 			(effects
 				(font
@@ -8321,7 +8526,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04026")
+					(reference "#PWR04027")
 					(unit 1)
 				)
 			)
@@ -8370,7 +8575,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "095d0555-28d3-5057-b85b-9282a3be6a71")
-		(property "Reference" "#PWR04027"
+		(property "Reference" "#PWR04028"
 			(at 167.64 180.34 0)
 			(effects
 				(font
@@ -8420,7 +8625,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04027")
+					(reference "#PWR04028")
 					(unit 1)
 				)
 			)
@@ -8436,7 +8641,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c03c35ad-a052-5729-a2d0-861ce29d81c4")
-		(property "Reference" "#PWR04028"
+		(property "Reference" "#PWR04029"
 			(at 167.64 195.58 0)
 			(effects
 				(font
@@ -8486,7 +8691,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04028")
+					(reference "#PWR04029")
 					(unit 1)
 				)
 			)

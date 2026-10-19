@@ -64,8 +64,8 @@ DX = W - 64                  # the board grew 10 mm on the right (2026-10-19): w
 USB_HS_PAIRS = True
 
 
-def P(x, y, rot=0, side="top"):
-    return {"x": x, "y": y, "rot": rot, "side": side}
+def P(x, y, rot=0, side="top", **kw):
+    return {"x": x, "y": y, "rot": rot, "side": side, **kw}
 
 
 def at(x, y, rot=0, mirror="", fields=None):
@@ -259,6 +259,11 @@ def board() -> Board:
             # C12, vias down to the +3V3 area on In2; exclusive, as the buck's (a track once cut C12 off it)
             {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 3, "exclusive": 0.5,
              "poly": [(8.4, 26.0), (17.2, 26.0), (17.2, 32.2), (8.4, 32.2)]},
+            # the DUT switch's input (up to its ≈ 1.5 A limit): U9.IN and C20 on a top-side island, three vias
+            # down to In2's +5V (one 0.3 mm via and a 0.4 mm track before: pcba-review N4)
+            {"layer": "F.Cu", "net": "+5V", "name": "dutsw-in", "priority": 3,
+             "poly": [(51.9, 37.75), (53.4, 37.75), (53.4, 39.3), (54.9, 39.3), (54.9, 40.6), (53.55, 40.6),
+                      (53.55, 41.45), (52.55, 41.45), (52.55, 39.6), (51.9, 39.6)]},
         ],
         "vias": [("GND", 11.0, 46.9), ("GND", 11.0, 49.4), ("GND", 11.2, 53.4), ("GND", 13.0, 53.6),
                  ("GND", 15.25, 53.6), ("GND", 17.75, 53.6), ("GND", 20.0, 53.6),
@@ -274,6 +279,7 @@ def board() -> Board:
                  *[("+3V3", x, y) for x, y in ((9.2, 26.8), (10.6, 26.8), (12.0, 26.8), (13.4, 26.8),
                                                (14.8, 26.8), (15.2, 28.4), (9.0, 29.8), (9.0, 31.5))],
                  ("+3V3", 41.5, 43.0), ("+3V3", 41.5, PWR_Y - 1.5),
+                 *[("+5V", x, y) for x, y in ((53.0, 39.85), (54.0, 39.95), (54.6, 39.95))],        # U9's input island
                  *hs_vias],
         # the front +3V3 area of In2 (LED, SERVICE switch) is cut off by the VRACK strip: fed from the
         # main +3V3 area by a B.Cu track
@@ -374,7 +380,7 @@ def board() -> Board:
     part(s, "U2", "ldo", {"VI": "+5V", "VO": "+3V3", "GND": "GND"}, pcb=P(12, 33, 90), sch=at(102, 42, fields=(-3, -3.5)))
     # the LDO's input; a 1206 (C2/C3's 10 µF, one part type less) overlaps U2 and its neighbours here
     C(s, "C11", "10u", "+5V", "GND", size="0805", pcb=P(17.4, 36.15, 0), sch=at(95, 43.5))
-    C(s, "C12", "22u", "+3V3", "GND", size="1206", pcb=P(18.0, 30.6, 0), sch=at(109, 43.5))
+    C(s, "C12", "22u", "+3V3", "GND", size="1206", pcb=P(18.0, 30.6, 0, relief=True), sch=at(109, 43.5))
     s.tag("+5V", (92, 42), "up")
     s.wire((92, 42), "U2.VI")
     s.wire("U2.VO", (112, 42))
@@ -513,7 +519,7 @@ def board() -> Board:
     C(u, "C26", "100n", "+5V", "GND", pcb=P(51.6, 36.9, 0), sch=at(124, 64))       # U8's VBUS, via In2 +5V
 
     # the drawer's DATA board on an 8-wire PH lead (the camera's lead type, 'Same direction'): VBUS, GND,
-    # D−, D+, GND as before, then the node's I²C (the INA226's bus, 5.1k pull-ups on this board) and an
+    # D−, D+, GND as before, then the node's I²C (the INA226's bus, 2.2k pull-ups on this board) and an
     # open-drain, active-low INT (10k pull-up here, 1k in series at the connector).  The single DATA port
     # board leaves pins 6–8 open; a later DATA ×4 board uses them (its I²C devices must keep off 0x40).
     # Side entry on the right edge (like J2: pin 1 towards the front), its mouth towards the drag chain's fixed
@@ -548,6 +554,8 @@ def board() -> Board:
     u.tag("+3V3", (66, 71), "up")
     u.wire("SW3.3", (66, 75), (66, 77))
     u.tag("GND", (66, 77), "down")
+    # SW3 is SVC's only driver: 100k holds it low (normal mode) while the slider travels between its contacts
+    R(u, "R39", "100k", "SVC", "GND", pcb=P(54.5, 83.0, 0), sch=at(78, 80))
     u.notes_at = (6, 90, 100)
     u.note("SVC=1 routes the PC port to the ESP32 (flash / console / JTAG) and disables MUX_DUT (~OE high).")
     u.note("MUX_SEL = PC_DET OR MUX_FORCE_PC: a laptop on the front port takes the DUT over automatically.")
@@ -560,7 +568,7 @@ def board() -> Board:
     d.wire((18, 29), "U9.IN")
     # the switch, its resistors, the shunt and the DUT_5V cap between U8 and J5, by J7.1; R17 / R18 over the
     # In2 +3V3 area west of them, the INA226 by the module (its sense pair runs ≈ 18 mm, Kelvin)
-    C(d, "C20", "100n", "+5V", "GND", pcb=P(49.4, 42.0, 90), sch=at(22, 30.5))
+    C(d, "C20", "100n", "+5V", "GND", pcb=P(53.35, 38.5, 0), sch=at(22, 30.5))     # at U9.IN, on its island
     part(d, "U9", "vbus_sw", {"IN": "+5V", "GND": "GND", "EN": "DUT_EN", "~{FAULT}": "DUT_FLT_N", "ILIM": "DUT_ILIM",
                               "OUT": "DUT_5V_SW"}, pcb=P(52.0, 42.0, 270), sch=at(40, 30, fields=(-4, -4)))
     R(d, "R16", "18k", "DUT_ILIM", "GND", pcb=P(52.0, 46.0, 0), sch=at(31, 33.5))
@@ -595,7 +603,9 @@ def board() -> Board:
     d.text("I2C pull-ups", 103, 16.2, 1.27, True)
     d.tag("+3V3", (100, 18), "up")
     d.wire((100, 18), (116, 18), net="+3V3")
-    for ref, val, x, net, xy in (("R21", "5.1k", 100, "I2C_SDA", (42.8, 29.3)), ("R22", "5.1k", 108, "I2C_SCL", (44.4, 29.3)),
+    # 2.2k: the bus runs ≈ 50 cm out to a DATA ×4 board (≈ 100–150 pF): ≈ 0.2 µs rise time at 400 kHz, 1.5 mA
+    # (5.1k gave 0.35–0.5 µs: pcba-review N2)
+    for ref, val, x, net, xy in (("R21", "2.2k", 100, "I2C_SDA", (42.8, 29.3)), ("R22", "2.2k", 108, "I2C_SCL", (44.4, 29.3)),
                                  ("R20", "10k", 116, "INA_ALERT_N", (41.2, 29.3))):
         R(d, ref, val, "+3V3", net, pcb=P(*xy, 90), sch=at(x, 20.5))
         d.wire((x, 18), f"{ref}.1")
@@ -610,7 +620,9 @@ def board() -> Board:
                           "6": "AUX_BOOT_N"}, "AUX", pcb=P(EDGE_X, CFG["aux"][1], 90),
          sch=at(106, 64, fields=(1, -5)))
     ax = EDGE_X - 7.6                  # the column, between the DUT power block and J5's pads
-    R(d, "R23", "33", "+3V3", "AUX_VREF", pcb=P(45.2, 39.4, 0), sch=at(90.5, 54, rot=90))
+    # AUX_VREF is a reference for the DUT's levels, not a supply: 1k (33 Ω until pcba-review N7: a short on the
+    # lead was 0.33 W in an 0603, and a DUT's 3.3 V back-powered through it with DUT_5V off)
+    R(d, "R23", "1k", "+3V3", "AUX_VREF", pcb=P(45.2, 39.4, 0), sch=at(90.5, 54, rot=90))
     R(d, "R24", "1k", "AUX_TX", "AUX_TX_R", pcb=P(ax, 43.6, 0), sch=at(90.5, 58, rot=90))
     R(d, "R25", "1k", "AUX_RX", "AUX_RX_R", pcb=P(ax, 45.4, 0), sch=at(90.5, 62, rot=90))
     d.wire("J5.2", (98, 63), (98, 54), "R23.2")
@@ -681,7 +693,9 @@ def board() -> Board:
     part(k, "D6", "bat54s", {"A": "GND", "K": "+3V3", "COM": "POS_IN"}, pcb=P(15.4, PWR_Y + 7.4, 0),
          sch=at(28, 46, rot=180))
     k.wire("D6.COM", (28, 42))
-    R(k, "R29", "100k", "POS_IN", "GND", pcb=P(19.0, PWR_Y + 7.4, 90), sch=at(35, 44.5))
+    # 470k: driven through the hub's (or the previous node's) 10k and R28, POS_IN reaches 3.17 V (2.75 V with
+    # 100k, against the ESP32-S3's 2.475 V VIH: pcba-review N3); undriven, the BAT54S leakage stays below VIL
+    R(k, "R29", "470k", "POS_IN", "GND", pcb=P(19.0, PWR_Y + 7.4, 90), sch=at(35, 44.5))
     k.wire("R29.1", (35, 42))
     R(k, "R30", "10k", "POS_OUT", "POS_OUT_CONN", pcb=P(51.8 + DX, PWR_Y + 5.0, 0), sch=at(30, 56, rot=90))
     k.wire((14, 56), "R30.1")
@@ -738,8 +752,8 @@ def board() -> Board:
     R(c, "R36", "100k", "CAM_LED", "GND", pcb=P(cx - 6.0, cy + 11.2, 0), sch=at(70, 54))
     c.notes_at = (6, 64, 114)
     c.note("Lead pinout: 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K (the LEDs' cathode side).")
-    c.note("SPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO36 SCK, IO21 MOSI, IO42 MISO, IO11 CS (10k")
-    c.note("  pull-up: deselected before firmware), IO10 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).")
+    c.note("SPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k")
+    c.note("  pull-up: deselected before firmware), IO7 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).")
     c.note("CAM_5V through F1 (0.5 A PTC): the camera ≈ 120 mA + the LEDs ≤ 150 mA.  USBLC6s on the lead side of the 33 Ω.")
     c.note("The camera pod board runs the Mega from 3.3 V (its own AMS1117): MISO is 3.3 V and R35 stays unpopulated.")
     c.note("  For a camera fed 5 V that drives MISO at 5 V instead: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V.")

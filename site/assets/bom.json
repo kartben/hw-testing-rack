@@ -345,10 +345,10 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "SUD50P06-15 — P-MOSFET 60 V, reverse-polarity protection",
+"item": "SUD50P06-15(UMW) — P-MOSFET 60 V, reverse-polarity protection",
 "ref": "Q1",
-"mpn": "SUD50P06-15",
-"manufacturer": "UMW / Vishay",
+"mpn": "SUD50P06-15(UMW)",
+"manufacturer": "UMW",
 "supplier": "LCSC/JLCPCB",
 "part": "C7503186",
 "qty": 10,
@@ -400,7 +400,7 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "100k — Resistor 100k 0603",
-"ref": "R1,R2,R4,R13,R17,R26,R27,R29,R36",
+"ref": "R1,R2,R4,R13,R17,R26,R27,R36,R39",
 "mpn": "0603WAF1003T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
@@ -454,44 +454,44 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "33 — Resistor 33 0603",
-"ref": "R8,R23,R31,R32,R33,R34",
+"ref": "R8,R31,R32,R33,R34",
 "mpn": "0603WAF330JT5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C23140",
-"qty": 60,
+"qty": 50,
 "unit_eur": 0.0023,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "6 per board × 10 boards",
+"notes": "5 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.14
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
 "group": "bay-node",
 "item": "5.1k — Resistor 5.1k 0603",
-"ref": "R9,R10,R21,R22",
+"ref": "R9,R10",
 "mpn": "0603WAF5101T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C23186",
-"qty": 40,
+"qty": 20,
 "unit_eur": 0.0014,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "4 per board × 10 boards",
+"notes": "2 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.06
+"ext_eur": 0.03
 },
 {
 "category": "Electronics",
 "group": "bay-node",
 "item": "50m — 50 mΩ 1 % 1 W current shunt",
 "ref": "R19",
-"mpn": "HoLR1206-1W-50mR-1%",
+"mpn": "HoLR1206-1W-50mR-1%-75ppm",
 "manufacturer": "Milliohm",
 "supplier": "LCSC/JLCPCB",
 "part": "C601102",
@@ -507,20 +507,56 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "1k — Resistor 1k 0603",
-"ref": "R24,R25,R41",
-"mpn": "0603WAF1001T5E",
+"item": "2.2k — Resistor 2.2k 0603",
+"ref": "R21,R22",
+"mpn": "0603WAF2201T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C21190",
-"qty": 30,
+"part": "C4190",
+"qty": 20,
 "unit_eur": 0.0017,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "3 per board × 10 boards",
+"notes": "2 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.05
+"ext_eur": 0.03
+},
+{
+"category": "Electronics",
+"group": "bay-node",
+"item": "1k — Resistor 1k 0603",
+"ref": "R23,R24,R25,R41",
+"mpn": "0603WAF1001T5E",
+"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+"supplier": "LCSC/JLCPCB",
+"part": "C21190",
+"qty": 40,
+"unit_eur": 0.0017,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "4 per board × 10 boards",
+"unit": "pcs",
+"ext_eur": 0.07
+},
+{
+"category": "Electronics",
+"group": "bay-node",
+"item": "470k — Resistor 470k 0603",
+"ref": "R29",
+"mpn": "0603WAF4703T5E",
+"manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+"supplier": "LCSC/JLCPCB",
+"part": "C23178",
+"qty": 10,
+"unit_eur": 0.0028,
+"basic": true,
+"standard_only": false,
+"hand_solder": false,
+"notes": "1 per board × 10 boards",
+"unit": "pcs",
+"ext_eur": 0.03
 },
 {
 "category": "Electronics",
@@ -771,23 +807,23 @@
 "category": "Electronics",
 "group": "bay-node",
 "item": "Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging",
-"supplier": "estimate, not quoted",
+"supplier": "estimate, not quoted, adjusted",
 "qty": 1,
-"unit_eur": 105.55,
-"notes": "setup $25.56, stencil $8.21, feeders $58.14, SMT $5.90, X-ray $16.40, packaging $0.52; Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
+"unit_eur": 108.37,
+"notes": "setup $25.56, stencil $8.21, feeders $61.20, SMT $5.90, X-ray $16.40, packaging $0.52; PCBA review: 2.2k and 470k, two part types more (+$3.06 feeders); Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 105.55
+"ext_eur": 108.37
 },
 {
 "category": "Electronics",
 "group": "bay-node",
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
-"supplier": "estimate, not quoted",
+"supplier": "estimate, not quoted, adjusted",
 "qty": 1,
-"unit_eur": 18.2,
-"notes": "quoted components $184.62 (≈ €169.85) for 10 boards; catalogue unit prices give €151.65",
+"unit_eur": 18.18,
+"notes": "quoted components $184.62 (≈ €169.85) for 10 boards; catalogue unit prices give €151.67",
 "unit": "pcs",
-"ext_eur": 18.2
+"ext_eur": 18.18
 },
 {
 "category": "Electronics",
@@ -955,19 +991,19 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "B5819W SL — 40 V 1 A Schottky",
-"ref": "D4,D5",
+"ref": "D4,D5,D41,D42,D43,D44",
 "mpn": "B5819W SL",
 "manufacturer": "Changjing",
 "supplier": "LCSC/JLCPCB",
 "part": "C8598",
-"qty": 4,
+"qty": 12,
 "unit_eur": 0.0276,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 2 boards",
+"notes": "6 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.11
+"ext_eur": 0.33
 },
 {
 "category": "Electronics",
@@ -1207,37 +1243,37 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "100k — Resistor 100k 0603",
-"ref": "R3,R71,R72,R73,R74,R91,R92,R93,R94,R207",
+"ref": "R3,R91,R92,R93,R94,R207",
 "mpn": "0603WAF1003T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25803",
-"qty": 20,
+"qty": 12,
 "unit_eur": 0.0029,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "10 per board × 2 boards",
+"notes": "6 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.06
+"ext_eur": 0.03
 },
 {
 "category": "Electronics",
 "group": "power-hub",
 "item": "10k — Resistor 10k 0603",
-"ref": "R4,R11,R41,R42,R43,R44,R81,R82,R83,R84,R101,R102,R103,R104,R209,R210,R214",
+"ref": "R4,R11,R41,R42,R43,R44,R71,R72,R73,R74,R81,R82,R83,R84,R101,R102,R103,R104,R209,R210,R214",
 "mpn": "0603WAF1002T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C25804",
-"qty": 34,
+"qty": 42,
 "unit_eur": 0.0048,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "17 per board × 2 boards",
+"notes": "21 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.16
+"ext_eur": 0.2
 },
 {
 "category": "Electronics",
@@ -1527,7 +1563,7 @@
 "supplier": "JLCPCB quote 2026-10-19, adjusted",
 "qty": 1,
 "unit_eur": 85.0,
-"notes": "setup $25.75, stencil $8.27, feeders $51.15, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12; 11 part types fewer (values merged) (−$17.05 feeders); 3 AP33772S bought instead of 5 (−$6.82 U1 global sourcing (est.)); CH224A from LCSC instead of the AP33772S (−$13.22 U1 global sourcing (est.)); no input switch (CH224A, its parts in, the switch's out) (−$2.79 components); 3 part types fewer (CH224A) (−$4.65 feeders); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
+"notes": "setup $25.75, stencil $8.27, feeders $51.15, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12; 11 part types fewer (values merged) (−$17.05 feeders); 3 AP33772S bought instead of 5 (−$6.82 U1 global sourcing (est.)); CH224A from LCSC instead of the AP33772S (−$13.22 U1 global sourcing (est.)); no input switch (CH224A, its parts in, the switch's out) (−$2.79 components); 3 part types fewer (CH224A) (−$4.65 feeders); PCBA review: 4 × B5819W a board (+$0.24 components); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
 "unit": "pcs",
 "ext_eur": 85.0
 },
@@ -1537,10 +1573,10 @@
 "item": "Components power-hub: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-19, adjusted",
 "qty": 1,
-"unit_eur": 8.5,
-"notes": "quoted components $57.89 + $-2.79 since (≈ €50.69) for 2 boards; catalogue unit prices give €42.19",
+"unit_eur": 8.49,
+"notes": "quoted components $57.89 + $-2.55 since (≈ €50.91) for 2 boards; catalogue unit prices give €42.42",
 "unit": "pcs",
-"ext_eur": 8.5
+"ext_eur": 8.49
 },
 {
 "category": "Electronics",
@@ -2642,7 +2678,7 @@
 }
 ],
 "by_category": {
-"Electronics": 650.2499999999998,
+"Electronics": 653.2899999999997,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2651,7 +2687,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 946.83,
+"total_eur": 949.87,
 "prints": [
 {
 "part": "bay_label",
@@ -3021,15 +3057,17 @@
 "setup": 25.56,
 "stencil": 8.21,
 "components": 184.62,
-"feeders": 58.14,
+"feeders": 61.2,
 "SMT": 5.9,
 "X-ray": 16.4,
 "packaging": 0.52
 },
-"changes": [],
-"total": 318.85,
+"changes": [
+"PCBA review: 2.2k and 470k, two part types more (+$3.06 feeders)"
+],
+"total": 321.91,
 "need": 8,
-"types": 38,
+"types": 40,
 "extended": 23,
 "standard_only": [
 "ESP32-S3-WROOM-1-N8R8",
@@ -3045,7 +3083,7 @@
 "pcba": {
 "setup": 25.75,
 "stencil": 8.27,
-"components": 55.1,
+"components": 55.34,
 "feeders": 51.15,
 "SMT": 3.3,
 "X-ray": 3.3,
@@ -3058,9 +3096,10 @@
 "3 AP33772S bought instead of 5 (−$6.82 U1 global sourcing (est.))",
 "CH224A from LCSC instead of the AP33772S (−$13.22 U1 global sourcing (est.))",
 "no input switch (CH224A, its parts in, the switch's out) (−$2.79 components)",
-"3 part types fewer (CH224A) (−$4.65 feeders)"
+"3 part types fewer (CH224A) (−$4.65 feeders)",
+"PCBA review: 4 × B5819W a board (+$0.24 components)"
 ],
-"total": 185.29,
+"total": 185.53,
 "need": 1,
 "types": 33,
 "extended": 16,
@@ -3137,14 +3176,14 @@
 "need": 8,
 "assembled": 10,
 "pcbs": 10,
-"types": 38,
+"types": 40,
 "extended": 23,
-"type_fee": 58.14,
-"once": 111.93,
+"type_fee": 61.2,
+"once": 114.99,
 "per_board": 206.92,
-"total": 318.85,
-"after_obvious": 318.85,
-"after_decisions": 273.38,
+"total": 321.91,
+"after_obvious": 321.91,
+"after_decisions": 276.44,
 "levers": [
 {
 "lever": "9 assembled instead of 10 (8 bays and 1 spare)",
@@ -3181,10 +3220,10 @@
 "extended": 16,
 "type_fee": 50.49,
 "once": 123.59,
-"per_board": 61.7,
-"total": 185.29,
-"after_obvious": 185.29,
-"after_decisions": 146.63,
+"per_board": 61.94,
+"total": 185.53,
+"after_obvious": 185.53,
+"after_decisions": 146.87,
 "levers": [
 {
 "lever": "rows C and D not fitted (DNP, footprints kept): the rack has 2 rows",
@@ -3330,18 +3369,18 @@
 "volume": {
 "unit": {
 "bay-node": {
-"2": 75.97,
-"5": 44.0,
-"10": 31.87,
-"50": 20.79,
-"100": 17.6
+"2": 77.5,
+"5": 44.61,
+"10": 32.17,
+"50": 20.85,
+"100": 17.63
 },
 "power-hub": {
-"2": 92.63,
-"5": 53.53,
-"10": 39.22,
-"50": 25.99,
-"100": 22.96
+"2": 92.75,
+"5": 53.64,
+"10": 39.32,
+"50": 26.07,
+"100": 23.04
 },
 "data-port": {
 "2": 13.72,
@@ -3367,7 +3406,7 @@
 },
 "floor": {
 "bay-node": 16.68,
-"power-hub": 22.1,
+"power-hub": 22.18,
 "data-port": 1.26,
 "camera-pod": 1.13,
 "data-port-x4": 11.29
@@ -3375,36 +3414,36 @@
 "racks": {
 "1": {
 "boards": {
-"bay-node": 294.74,
-"power-hub": 185.27,
+"bay-node": 297.8,
+"power-hub": 185.51,
 "data-port": 36.86,
 "camera-pod": 26.37,
 "data-port-x4": 103.76
 },
 "shipping": 34.0,
-"per_rack": 681.0
+"per_rack": 684.3
 },
 "5": {
 "boards": {
-"bay-node": 883.36,
-"power-hub": 267.64,
+"bay-node": 886.42,
+"power-hub": 268.2,
 "data-port": 79.31,
 "camera-pod": 35.68,
 "data-port-x4": 147.07
 },
 "shipping": 34.0,
-"per_rack": 289.41
+"per_rack": 290.14
 },
 "10": {
 "boards": {
-"bay-node": 1565.98,
-"power-hub": 392.18,
+"bay-node": 1569.04,
+"power-hub": 393.18,
 "data-port": 121.55,
 "camera-pod": 49.13,
 "data-port-x4": 212.44
 },
 "shipping": 34.0,
-"per_rack": 237.53
+"per_rack": 237.93
 }
 }
 }

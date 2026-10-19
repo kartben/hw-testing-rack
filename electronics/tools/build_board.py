@@ -147,7 +147,10 @@ JLC_CPL_FIX = {
     "C6186": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                            # bay U2 (seen)
     "C165948": ("USB_C_Receptacle_HRO_TYPE-C-31-M-12", 0, 0.0, -1.57),        # bay J3 J4 until v0.4
     "C2913206": ("ESP32-S2-MINI-1", 0, 0.0, 2.55),                            # bay U3
-    "C431540": ("SW_SPDT_Shouhan_MSK12C02", 0, 0.0, -0.25),                   # bay SW3
+    # bay SW3: on its pegs.  KiCad's footprint is Shouhan's land pattern (pads 1.95 mm from the peg holes);
+    # JLC's has its pegs 0.55 mm from its origin and its pads drawn 0.13 mm further out.  The pegs go into
+    # the 0.85 mm holes, so they set the point (pcba-review N1, 2026-10-19; −0.25 until then, from the pads)
+    "C431540": ("SW_SPDT_Shouhan_MSK12C02", 0, 0.0, -0.55),
     "C45262770": ("TSOT-23-6", 270, 0.0, 0.0),                                # bay U1 (LMR51635; FXL0630 L1 needs none)
     "C11355": ("MSOP-10_3x3mm_P0.5mm", 270, 0.0, 0.0),                        # bay U5 U6
     "C49851": ("TSSOP-10_3x3mm_P0.5mm", 270, 0.0, 0.0),                       # bay U10
@@ -158,6 +161,8 @@ JLC_CPL_FIX = {
     "C10096": ("SOT-23-5", 180, 0.0, 0.0),                                    # bay U7
     "C8545": ("SOT-23", 180, 0.0, 0.0),                                       # bay Q2 Q3
     "C7503186": ("TO-252-2", 0, -1.89, 0.0),                                  # bay Q1, hub Q1
+    # hub Q1 Q2 (IRF7842): JLC's SOIC-8 drawn as C3234095's (pin 1 bottom-left, rows horizontal)
+    "C495809": ("SOIC-8_3.9x4.9mm_P1.27mm", 270, 0.0, 0.0),
     "C544399": ("HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.66x2.46mm", 270, 0.0, 0.0),  # hub U1–U5
     "C160315": ("JST_VH_B2P-VH_1x02_P3.96mm_Vertical", 0, 1.98, 0.0),         # hub J1 (hand-soldered)
     # rack bus parts, fitted on 2026-10-18 the same way
@@ -184,6 +189,11 @@ JLC_CPL_FIX = {
     "C16251": ("QFN-36-1EP_6x6mm_P0.5mm_EP3.7x3.7mm", 270, 0.0, 0.0),        # x4 U1 (USB2514B)
     "C111738": ("SOT-23-6", 270, 0.0, 0.0),                                  # x4 U101–U401 (TPS2553-1: drawn as C7519, not C55266)
     "C51118": ("SOT-23-5", 270, 0.0, 0.0),                                   # hub U3, x4 U3 (AP2112K-3.3)
+    # the hub's side-view LEDs, from pcba-review H2 (2026-10-19): JLC's KPA-3010 origin is the pads' centre,
+    # KiCad's the body's.  Polarity: JLC's green (C598310) names its right pad A, its red (C4555382) marks
+    # the same pad "+" (and the left one "−") in its silkscreen: both match KiCad's pads 2 = A, 1 = K
+    "C598310": ("LED_Kingbright_KPA-3010_3x2x1mm", 0, 0.0, 0.825),           # hub D3 D8 D11–D14 (green)
+    "C4555382": ("LED_Kingbright_KPA-3010_3x2x1mm", 0, 0.0, 0.825),          # hub D21–D24 (red)
     "C181499": ("QFN-16-1EP_3x3mm_P0.5mm_EP1.675x1.675mm", 270, 0.0, 0.0),   # x4 U2 U6 (TCA6408A)
 }
 

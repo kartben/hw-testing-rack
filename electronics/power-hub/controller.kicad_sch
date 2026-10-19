@@ -13845,7 +13845,7 @@
 		)
 		(uuid "ecee6047-8f45-5e48-a4ee-f5e508bf607b")
 	)
-	(label "USB_DN"
+	(label "USB_DP"
 		(at 113.03 248.92 180)
 		(fields_autoplaced yes)
 		(effects
@@ -13944,7 +13944,7 @@
 		)
 		(uuid "7294639a-f286-5491-ab34-094ad2a14c21")
 	)
-	(label "USB_DP"
+	(label "USB_DN"
 		(at 113.03 251.46 180)
 		(fields_autoplaced yes)
 		(effects
@@ -13966,7 +13966,7 @@
 		)
 		(uuid "62d9d390-837e-5903-9289-8c16a1c183f8")
 	)
-	(label "USB_CONN_DP"
+	(label "USB_CONN_DN"
 		(at 128.27 251.46 0)
 		(fields_autoplaced yes)
 		(effects
@@ -14010,7 +14010,7 @@
 		)
 		(uuid "fc363682-3b3c-5bcb-8d17-411a42f7d5ee")
 	)
-	(label "USB_CONN_DN"
+	(label "USB_CONN_DP"
 		(at 128.27 248.92 0)
 		(fields_autoplaced yes)
 		(effects
@@ -17199,7 +17199,7 @@
 		)
 		(uuid "805d0f55-ab2f-545a-915a-9133d57a017e")
 	)
-	(text_box "GPIO: IO1/2/4/5 IMON A–D, IO6 VBUS_SENSE (ADC1) · IO7/8/9 CAN TX/RX/STB · IO10–13 POS A–D ·\n  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·\n  IO19/20 USB.  Strapping IO3/45/46 unused.\nTermination: two split 2 × 56 Ω + 4.7 nF (56 Ω in all) at the star centre; nodes carry none.\n+5V: buck (5.24 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;\n  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  The TJA1462AT wants 4.5–5.5 V: CAN runs once VRACK is up."
+	(text_box "GPIO: IO1/2/4/5 IMON A–D, IO6 VBUS_SENSE (ADC1) · IO7/8/9 CAN TX/RX/STB · IO10–13 POS A–D ·\n  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·\n  IO19/20 USB.  Strapping IO3/45/46 unused.\nTermination: two split 2 × 56 Ω + 22 nF (56 Ω in all) at the star centre; nodes carry none.\n+5V: buck (5.24 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;\n  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  The TJA1462AT wants 4.5–5.5 V: CAN runs once VRACK is up."
 		(exclude_from_sim no)
 		(at 20.32 386.08 0)
 		(size 240.03 17.78)

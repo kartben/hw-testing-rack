@@ -95,7 +95,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | Block | Parts | Notes |
 |---|---|---|
 | Row cable in/out | 2 × JST PH 6, side entry, SMD (S6B-PH-SM4-TB).  J1 (IN): 1 VRACK · 2 GND · 3 CAN_H · 4 CAN_L · 5 GND · 6 POS in; J2 (OUT) mirrored: 1 POS out · 3 CAN_L · 4 CAN_H · 6 VRACK ([can.md](can.md)) | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it; each power pin on a solid island with vias to its plane; every net runs straight across (J1.1 → J2.6, J1.3/4 → J2.4/3): the jumper between nodes lies flat, no twist |
-| Rack bus | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 100k pull-down; POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a wrong cable (VRACK on a POS pin) costs ≈ 2.5 mA at 28 V |
+| Rack bus | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 470k pull-down (100k until the PCBA review: 2.75 V high); POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a wrong cable (VRACK on a POS pin) costs ≈ 2.5 mA at 28 V |
 | Protection | SUD50P06 P-FET + 12 V zener, SMBJ33A, 100 µF/50 V | reverse polarity, hot-plug clamp < 54 V |
 | 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 100k/18k → 5.24 V (≈ 4.75 V still at the DATA board at 1.4 A, below); EN 100k/10k: on above 13.5 V, off below 10.8 V |
 | 3.3 V | AMS1117-3.3 | logic only |
@@ -103,7 +103,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | DUT power | TPS2553D (RILIM 18k → 1.34–1.52 A; the TPS2553's pinout and I_LIM equations, plus reverse-voltage protection, at a third of the price), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N), Vbus tied to Vin− at its pins (DUT_5V at the shunt's load end); default **on** (also without firmware), fault flag to GPIO |
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
-| AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (33 Ω), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
+| AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (1k: a reference for the DUT's levels, not a supply), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
 | DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DUT_5V · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 5.1k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm), which leaves 6–8 open, or a [DATA ×4 board](#data-4-v10--4-layers-108--24-mm); `pcb.bay_node.right.data` is its centre (KiCad y) |
 | Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side, AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.5 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); at the rear right, its lead straight back, its parts in a block west of it; `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
 
@@ -195,8 +195,9 @@ carries the node's I²C and an interrupt, for a DATA ×4 board in the drawer (it
 devices, an INT back to IO4); the single DATA port board leaves those three pins open, and both use
 the camera's lead type (PH 8, "Same direction").  Pin 1 is 5 V for the far board's ports: one PH
 contact (2 A) carries the TPS2553's ≈ 1.4 A limit; two GND pins frame the pair, a third one sits
-next to SDA.  The I²C bus then reaches ≈ 50 cm of lead: 100 kHz with the node's 5.1k pull-ups
-(≈ 100 pF), the far board adds no strong pull-ups and keeps its addresses off the INA226's 0x40.
+next to SDA.  The I²C bus then reaches ≈ 50 cm of lead: 400 kHz with the node's 2.2k pull-ups
+(≈ 100–150 pF: ≈ 0.2 µs rise time; 5.1k until pcba-review N2), the far board adds no strong pull-ups and
+keeps its addresses off the INA226's 0x40.
 INT is open drain, active low: 10k pull-up beside the module, 1k in series at J7.  U8 clamps D±
 right behind J7; no room was left for an ESD array on the I²C and INT pins: the far board protects
 its lines where they meet the outside.  J7 is a side-entry S8B on the right edge, pin 1 at the
@@ -225,9 +226,9 @@ and the sequencing: [power.md](power.md).
 | USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → VRACK, 100 µF / 50 V; no input switch | the whole rack's current, ≤ 5 A, in top pours.  VBUS is VRACK: the eFuses keep the rows off until the contract is final and block reverse current, so nothing switches the input (the AP33772S version had a 5 mΩ shunt and back-to-back IRF7842 NMOS here) |
 | PD sink | WCH CH224A (ESSOP-10): 9 V at plug-in (CFG1 6.8 k, the one-resistor mode, I²C on), its own Rd on CC1/CC2, supply (VHV and VBUS tied) through 56 Ω + 1 µF 50 V, I²C + PG to the controller, its own LED in the front wall (PD) | the controller asks for 28 V EPR (else 20 V) over I²C; rows stay locked out below 15 V; the chip keeps the contract through controller resets.  Its pins are rated 32 V: the RC takes surges' fast edges off |
 | Rows A–D | 4 × TPS26600 (1.6 A, ≈ 5 ms soft start, UV 15 V / OV 33 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md) |
-| Row control | SHDN pulled low by 100 k; the controller drives ROW_EN high through 10 k (3.0 V; the datasheet's SHDN range is 0–4 V) | **rows are off without firmware**; on once the contract is final, one after the other |
-| Per row | ON (green, from the row's own output through 10 k by the eFuse); FAULT (red) from 3.3 V into the open-drain FLT; FLT also to the controller (100 k pull-up) | Kingbright KPA-3010 side-view LEDs in the box's front wall |
-| Row current | IMON 18 k → 1.4 V/A, 1 k + 10 nF to the ESP32's ADC | |
+| Row control | SHDN pulled low by 10 k (the pin sources up to 10 µA: 0.1 V, under its 0.55 V threshold; 100 k gave 1 V, enough to turn a row on without firmware); the controller drives ROW_EN high through 10 k (1.65 V) | **rows are off without firmware**; on once the contract is final, one after the other |
+| Per row | ON (green, from the row's own output through 10 k by the eFuse); FAULT (red) from the row's ROW_EN into the open-drain FLT, so it lights only for a fault on an enabled row (the TPS26600 also pulls FLT low while a row is off or starting); FLT also to the controller (100 k pull-up); a B5819W from GND to the output at the connector, for the cable's kick when the eFuse cuts a short | Kingbright KPA-3010 side-view LEDs in the box's front wall |
+| Row current | IMON 18 k → 1.4 V/A, 1 k + 22 nF to the ESP32's ADC | |
 | Controller supply | LMR51635 from VRACK (EN 39k/18k: from ≈ 3.9 V; FB 100k/18k: 5.24 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from the charger's first 5 V; runs on the console USB alone for flashing |
 | Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
 | PD interface | SDA / SCL (the CH224A's CFG3 / CFG2) with 5.1 k pull-ups fed from a GPIO (I2C_PU), PG (open drain, low once the contract is in place) with a 10 k pull-up to 3.3 V on the net PD_INT, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered CH224A |
@@ -238,7 +239,8 @@ and the sequencing: [power.md](power.md).
 node went to lead-free HASL on 2026-10-19).
 
 * **In1** is a solid GND plane.  **In2** carries power only: VRACK under the input block, along a
-  band at y ≈ 39 and down the eFuse column; +3V3 everywhere else, in one piece wrapping around it.
+  band 8 mm wide at y ≈ 37.5 (5 mm until the PCBA review) and down the eFuse column; +3V3 everywhere
+  else, in one piece wrapping around it.
   +5V and the PD nets run on the outer layers.
 * Every GND and supply pin gets a via of its own to its plane before routing (fan-out).  The
   eFuses' UVLO / OVP / MODE / RTN / GND pins go straight onto the exposed pad, which has six tented
@@ -248,6 +250,11 @@ node went to lead-free HASL on 2026-10-19).
   block; a 0.8 mm bottom track feeds the buck.
 * The CH224A sits beside the connector: CC1 / CC2 a few millimetres, its supply's RC and CFG1
   resistor at its pins.
+* The console's USB pair runs hand-drawn on F.Cu, over In1, from the module to U5: 0.25 mm tracks
+  0.2 mm apart, straight down the free column at x ≈ 45 (it crossed In2's split on B.Cu before).
+  EN's 1 µF sits at the module's pin 45, beside the antenna keep-out.
+* Small parts with one pad on a solid pour (C2, C10, R3, C11–C14) get thermal reliefs on both pads
+  (`relief` in their placement), so they don't tombstone.
 * Each eFuse has a top VRACK island on its IN pins and input capacitor, with three vias to In2.
   Each row's output runs in a hand-drawn 0.8 mm track to its connector, its output capacitor and
   its ON LED's resistor.  The SHDN pull-down and series resistor sit just below the eFuse.
@@ -451,10 +458,10 @@ current limit and IMON, the CH224A's CFG1, the buck's FB).
 |---|---|
 | PD input | 4: CH224A, 6.8k (CFG1), SMAJ30A, 100 µF (the AP33772S version had 8: the switch, shunt and NTC) |
 | 4 eFuse rows | 5: TPS26600, S6B, red LED, BAT54S, 7.5k ILIM |
-| 5 V buck, 3.3 V LDO | 6: LMR51635, inductor, AP2112K, 2 × B5819W, 22 µF, 39k |
+| 5 V buck, 3.3 V LDO | 5: LMR51635, inductor, AP2112K, 22 µF, 39k |
 | ESP32 and USB console | 4: ESP32-S3-MINI-1, USBLC6, 2 buttons, 1 µF 0603 |
 | CAN | 2: TJA1462AT, PESD2CAN |
-| shared | 12: 100n, 22n, 1 µF 0805, 10 µF 1206, green LED, USB4105, 1k, 100k, 10k, 5.1k, 56 Ω, 18k |
+| shared | 13: 100n, 22n, 1 µF 0805, 10 µF 1206, green LED, USB4105, B5819W (the buck's OR and, since the PCBA review, each row's output), 1k, 100k, 10k, 5.1k, 56 Ω, 18k |
 
 **Two rows instead of four** would remove no type, only parts: per board two TPS26600, two S6B, four
 LEDs, two BAT54S and their passives (36 parts), ≈ $5 a board, ≈ $10 for two.  It matters only if
@@ -554,7 +561,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C2913206 ESP32-S3-MINI-1 | hub U4 (node U3 until the camera) | +2.55 mm y | to confirm |
 | C2913201 ESP32-S3-WROOM-1-N8R8 | node U3 | +3.63 mm y | to confirm |
 | C471518 JST B6B-PH-SM4-TB | node J5 until the 74 × 90 re-layout | 180°, −0.63 mm y | not on the node any more |
-| C431540 MSK12C02 | node SW3 | −0.25 mm y (lines up the pins; JLC's body outline then sits 0.25 mm off KiCad's) | to confirm |
+| C431540 MSK12C02 | node SW3 | −0.55 mm y (on its pegs: KiCad's footprint is Shouhan's land pattern, JLC's draws its pads 0.13 mm further out; −0.25 mm until the PCBA review left the pegs 0.30 mm off their 0.85 mm holes) | to confirm, drills shown |
 | C45262770 LMR51635 TSOT-23-6 | node U1 | 270° (same EasyEDA footprint as C7519) | to confirm |
 | C11355 FSUSB42 MSOP-10 | node U5 U6 | 270° | to confirm |
 | C49851 INA226 VSSOP-10 | node U10, DATA ×4 U102–U402 | 270° | to confirm |
@@ -564,6 +571,8 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C10096 74LVC1G32 SOT-23-5 | node U7 | 180° | to confirm |
 | C8545 2N7002 SOT-23 | node Q2 Q3 | 180° | to confirm |
 | C7503186 SUD50P06 TO-252 | node Q1, hub Q1 | −1.89 mm x | to confirm |
+| C495809 IRF7842 SOIC-8 | hub Q1 Q2 until the CH224A | 270° (drawn as C3234095) | not on the hub any more |
+| C598310 KPA-3010CGCK / C4555382 KPA-3010SURCK | hub D3 D8 D11–D14 / D21–D24 | +0.825 mm y (JLC's origin is the pads' centre); polarity: the green's right pad is A, the red's is marked "+" | from the PCBA review; to confirm |
 | C544399 TPS26600 HTSSOP-16 | hub U1–U5 | 270° | to confirm |
 | C160315 JST B2P-VH | hub J1 | +1.98 mm x | hand-soldered, not in the CPL |
 | C295747 JST S2B-PH-SM4-TB | node J6 until the camera | none (fit: +0.08 mm y, left alone) | not on the node since the camera |

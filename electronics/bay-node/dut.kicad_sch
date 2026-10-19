@@ -3016,7 +3016,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "HoLR1206-1W-50mR-1%"
+		(property "MPN" "HoLR1206-1W-50mR-1%-75ppm"
 			(at 157.48 85.09 0)
 			(effects
 				(font
@@ -3743,7 +3743,7 @@
 				)
 			)
 		)
-		(property "Value" "5.1k"
+		(property "Value" "2.2k"
 			(at 258.116 53.34 0)
 			(effects
 				(font
@@ -3769,7 +3769,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 5.1k 0603"
+		(property "Description" "Resistor 2.2k 0603"
 			(at 254 52.07 0)
 			(effects
 				(font
@@ -3778,7 +3778,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23186"
+		(property "LCSC" "C4190"
 			(at 254 52.07 0)
 			(effects
 				(font
@@ -3787,7 +3787,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF5101T5E"
+		(property "MPN" "0603WAF2201T5E"
 			(at 254 52.07 0)
 			(effects
 				(font
@@ -3838,7 +3838,7 @@
 				)
 			)
 		)
-		(property "Value" "5.1k"
+		(property "Value" "2.2k"
 			(at 278.436 53.34 0)
 			(effects
 				(font
@@ -3864,7 +3864,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 5.1k 0603"
+		(property "Description" "Resistor 2.2k 0603"
 			(at 274.32 52.07 0)
 			(effects
 				(font
@@ -3873,7 +3873,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23186"
+		(property "LCSC" "C4190"
 			(at 274.32 52.07 0)
 			(effects
 				(font
@@ -3882,7 +3882,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF5101T5E"
+		(property "MPN" "0603WAF2201T5E"
 			(at 274.32 52.07 0)
 			(effects
 				(font
@@ -4212,7 +4212,7 @@
 				)
 			)
 		)
-		(property "Value" "33"
+		(property "Value" "1k"
 			(at 229.87 139.776 90)
 			(effects
 				(font
@@ -4238,7 +4238,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 33 0603"
+		(property "Description" "Resistor 1k 0603"
 			(at 229.87 137.16 0)
 			(effects
 				(font
@@ -4247,7 +4247,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23140"
+		(property "LCSC" "C21190"
 			(at 229.87 137.16 0)
 			(effects
 				(font
@@ -4256,7 +4256,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF330JT5E"
+		(property "MPN" "0603WAF1001T5E"
 			(at 229.87 137.16 0)
 			(effects
 				(font

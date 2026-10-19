@@ -69,7 +69,14 @@ Transceiver, on the hub and on every node: NXP's **TJA1462AT** (LCSC C3234095),
 with VCC 5 V and VIO 3.3 V: a CAN FD transceiver with **signal improvement**
 (SIC: CiA 601-4, now ISO 11898-2:2024 set C).  Its bus pins take −36 / +40 V; VRACK (28 V)
 sits two pins away on the same connector.  It is passive when unpowered, so a row whose
-eFuse is off doesn't load the bus.  Each tap gets a PESD2CAN.  TI's TCAN1462V (C7399456,
+eFuse is off doesn't load the bus.  Each tap gets a PESD2CAN (24 V stand-off, 26.2 V minimum
+breakdown).  A lead miswired with VRACK on CAN makes every tap's PESD2CAN conduct and fail short:
+the bus stops until they're replaced, and the transceivers survive (the TVSs clamp under their
++40 V, the eFuse holds the row to 1.6 A).  Kept on purpose (PCBA review H7, 2026-10-20): LCSC's
+CAN TVSs stop at 27 V stand-off (PESD2CANFD27, 28 V breakdown), none stays off at a 28 V contract's
+29.4 V and still clamps under +40 V; the row leads are flat, keyed, and GND (pin 5) separates VRACK
+(pin 6) from CAN (pins 3/4).  The real fix is ±58 V transceivers (the TCAN1462V, once stocked) with
+a ≥ 33 V TVS.  TI's TCAN1462V (C7399456,
 SIC, bus pins ±58 V) was the first choice; LCSC had none on 2026-10-18 and 19, so both
 boards switched (the user, 2026-10-19).  It stays an alternate, with the TCAN1044AV (no SIC,
 ±58 V): the same SOIC-8 pinout, VIO on pin 5, STB on pin 8.

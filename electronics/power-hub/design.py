@@ -60,8 +60,25 @@ EF_X = 26.0                         # eFuse centre (rot 0: IN on the left, OUT o
 BY = 34.0                           # the buck block, moved down from the rear right (v0.4) by this much
 
 
-def P(x, y, rot=0, side="top"):
-    return {"x": x, "y": y, "rot": rot, "side": side}
+def P(x, y, rot=0, side="top", **kw):
+    return {"x": x, "y": y, "rot": rot, "side": side, **kw}
+
+
+def offset(path, d):
+    """A polyline offset by d towards (−uy, ux) of its direction u (KiCad axes: heading +y, that is −x),
+    mitred at the corners: one wire of a pair drawn around its centreline."""
+    def seg(i):
+        (x0, y0), (x1, y1) = path[i], path[i + 1]
+        n = ((x1 - x0) ** 2 + (y1 - y0) ** 2) ** 0.5
+        return (x1 - x0) / n, (y1 - y0) / n
+    out = []
+    for i, (x, y) in enumerate(path):
+        u0 = seg(max(i - 1, 0))
+        u1 = seg(min(i, len(path) - 2))
+        nx, ny = -(u0[1] + u1[1]), u0[0] + u1[0]          # bisector of the two left normals
+        k = d / (nx * -u1[1] + ny * u1[0])                 # mitre length along it
+        out.append((round(x + nx * k, 4), round(y + ny * k, 4)))
+    return out
 
 
 def ef_y(k):
@@ -81,15 +98,17 @@ def board() -> Board:
     ]
 
     # ------------------------------------------------------------------ PCB
-    # In2 (power only): VRACK under the input, along the band at y ≈ 39 and down the eFuse column;
+    # In2 (power only): VRACK under the input, along the band at y ≈ 37.5 (8 mm wide: up to 5 A towards
+    # the four rows; 5 mm before pcba-review H12) and down the eFuse column;
     # +3V3 everywhere else, one piece wrapping around it.  Outlines don't overlap: the router takes
     # each as copper of its net.
     in2 = [
         {"layer": "In2.Cu", "net": "VRACK", "priority": 1,
-         "poly": [(16.2, 36.5), (45.6, 36.5), (45.6, 0.4), (75.6, 0.4), (75.6, 41.5), (24.6, 41.5),
-                  (24.6, 117.0), (16.2, 117.0)]},
+         "poly": [(16.2, 36.5), (19.0, 36.5), (19.0, 33.5), (45.6, 33.5), (45.6, 0.4), (75.6, 0.4), (75.6, 41.5),
+                  (24.6, 41.5), (24.6, 117.0), (16.2, 117.0)]},
         {"layer": "In2.Cu", "net": "+3V3", "priority": 1,
-         "poly": [(0.4, 0.4), (45.2, 0.4), (45.2, 36.1), (15.8, 36.1), (15.8, 117.4),
+         "poly": [(0.4, 0.4), (45.2, 0.4), (45.2, 33.1), (18.6, 33.1), (18.6, 36.1),
+                  (15.8, 36.1), (15.8, 117.4),
                   (25.0, 117.4), (25.0, 41.9), (75.6, 41.9), (75.6, 139.6), (0.4, 139.6)]},
     ]
     # per eFuse: a top-side VRACK island on its IN pins and the input capacitor, three vias to In2
@@ -125,6 +144,18 @@ def board() -> Board:
         ("PD_CC1", "F.Cu", 0.2, [(PD_X + 1.25, 7.08), (PD_X + 1.25, 8.15)]),
         ("GND", "F.Cu", 0.25, [(PD_X + 3.2, 6.9), (PD_X + 4.2, 6.9)]),
         ("VRACK", "B.Cu", 0.8, [(55.8, 14.55), (55.8, 30.0), (56.7, 31.0), (56.7, 47.5)]),
+    ]
+    # the console's USB pair (full speed), U4 pins 23/24 → U5: coupled on F.Cu over In1's GND (0.25 mm,
+    # 0.2 mm apart), straight down the free column at x ≈ 45 between the eFuse parts and the buck, into
+    # U5's protected side (D− on pin 3, D+ on pin 1: the pair's order, no crossing)
+    usb = [(30.425, 21.1), (30.425, 22.0), (45.425, 37.0), (45.425, 108.0), (60.5, 123.075), (60.5, 124.0)]
+    tracks += [
+        ("USB_DN", "F.Cu", 0.25, [(30.0, 20.05), (30.0, 20.9), *offset(usb, 0.225), (59.55, 124.725), (59.55, 126.36)]),
+        ("USB_DP", "F.Cu", 0.25, [(30.85, 20.05), (30.85, 20.9), *offset(usb, -0.225), (61.45, 124.725), (61.45, 126.36)]),
+        # U5's GND pin (2) between them: its via straight out, between the two wires
+        ("GND", "F.Cu", 0.25, [(60.5, 126.36), (60.5, 124.95)]),
+        # EN's RC at the module's pin 45 (pcba-review H13): C115 beside it, below the module's antenna keep-out
+        ("EN", "F.Cu", 0.25, [(37.0, 7.1), (38.275, 7.1), (39.225, 6.15)]),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 3.0, "passes": 60,
@@ -179,6 +210,7 @@ def board() -> Board:
             *[("VRACK", 57.0, y, 0.8, 0.4) for y in (8.2, 9.8)],
             # CC1 under the VBUS pour, on B.Cu
             ("PD_CC1", PD_X + 1.25, 8.15, 0.5, 0.3),
+            ("GND", 60.5, 124.95, 0.5, 0.3),            # U5's GND pin, between the USB pair's wires
             ("VRACK", 55.8, 14.55, 0.8, 0.4), ("VRACK", 56.7, 47.5, 0.8, 0.4),
         ],
         "tracks": tracks,
@@ -186,7 +218,7 @@ def board() -> Board:
         "keepouts": [{"name": "antenna", "poly": [(21.3, -0.1), (38.7, -0.1), (38.7, 5.6), (21.3, 5.6)]}],
         "texts": [
             {"text": "hw-testing-rack · power hub v0.5", "x": 46, "y": 80, "size": 1.0},
-            *[{"text": ch, "x": 12.5, "y": ROW_Y[k] + 7.6, "size": 1.2} for k, ch in enumerate(ROWS)],
+            *[{"text": ch, "x": 13.8, "y": ROW_Y[k] + 8.3, "size": 1.2} for k, ch in enumerate(ROWS)],
         ],
     }
 
@@ -199,7 +231,7 @@ def board() -> Board:
         s.part(f"#FLG0{i}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": net}, in_bom=False, on_board=False)
     part(s, "D1", "tvs30", {"K": "VRACK", "A": "GND"}, pcb=P(67.4, 12.6, 270))
     C(s, "C1", "10u", "VRACK", "GND", size="1206", pcb=P(61.0, 11.4, 270))
-    C(s, "C2", "100n", "VRACK", "GND", pcb=P(63.0, 11.2, 270))
+    C(s, "C2", "100n", "VRACK", "GND", pcb=P(63.0, 11.2, 270, relief=True))
 
     s.block("CH224A USB PD 3.2 sink: 9 V at plug-in (CFG1 6.8k), then 20 V / 28 V EPR as the controller asks over I2C")
     # KiCad's CH224K symbol: the CH224A has its pinout (WCH), pin 1 (VDD there) is VHV, rated 32 V.  CC1/CC2 carry
@@ -216,7 +248,7 @@ def board() -> Board:
     R(s, "R6", "6.8k", "PD_CFG1", "GND", pcb=P(54.6, 13.8, 270))
     part(s, "C8", "cap100u50", {"1": "VRACK", "2": "GND"}, "100u/50V", pcb=P(70.0, 28.0, 270))
     C(s, "C9", "10u", "VRACK", "GND", size="1206", pcb=P(73.3, 19.6, 0))
-    C(s, "C10", "100n", "VRACK", "GND", pcb=P(73.0, 22.2, 0))
+    C(s, "C10", "100n", "VRACK", "GND", pcb=P(73.0, 22.2, 0, relief=True))
     s.block("I2C to the controller, VBUS sense")
     # PG: open drain, low once the contract is in place; IO39 (the net keeps its name PD_INT for the
     # firmware's pin map) and the front LED both hang on it
@@ -225,7 +257,7 @@ def board() -> Board:
     # unpowered CH224A through SDA/SCL (they also have the chip's own 10k pull-ups)
     R(s, "R13", "5.1k", "I2C_PU", "PD_SDA", pcb=P(41.0, 8.0, 0))
     R(s, "R14", "5.1k", "I2C_PU", "PD_SCL", pcb=P(41.0, 9.6, 0))
-    R(s, "R3", "100k", "VRACK", "VBUS_SENSE", pcb=P(64.6, 11.4, 270))
+    R(s, "R3", "100k", "VRACK", "VBUS_SENSE", pcb=P(64.6, 11.4, 270, relief=True))
     R(s, "R4", "10k", "VBUS_SENSE", "GND", pcb=P(19.0, 20.4, 0))
     C(s, "C3", "100n", "VBUS_SENSE", "GND", pcb=P(19.0, 22.0, 0))
     s.block("PD status (front LED): on while the CH224A reports power good (PG low)")
@@ -240,7 +272,7 @@ def board() -> Board:
     s.note("VBUS_SENSE: 100k/10k from VBUS → 2.5 V at 28 V for the ESP32's ADC; also tells the firmware when to enable I2C_PU.")
 
     # ------------------------------------------------------------------ outputs
-    o = b.sheet("Outputs", "outputs.kicad_sch", "Four eFused row outputs (6-pin JST PH)")
+    o = b.sheet("Outputs", "outputs.kicad_sch", "Four eFused row outputs (6-pin JST PH)", paper="A2")
     for k, ch in enumerate(ROWS):
         n = k + 1
         yc, yj = ef_y(k), ROW_Y[k]
@@ -249,20 +281,23 @@ def board() -> Board:
                                         "MODE": "GND", "~{SHDN}": f"SHDN_{ch}", "ILIM": f"ILIM_{ch}",
                                         "dVdT": f"DVDT_{ch}", "IMON": f"IMON_{ch}", "~{FLT}": f"FLT_{ch}",
                                         "OUT": f"ROW_{ch}"}, pcb=P(EF_X, yc, 0))
-        C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(16.9, yc - 2.0, 180))
+        C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(16.9, yc - 2.0, 180, relief=True))
         C(o, f"C{30 + n}", "1u", f"ROW_{ch}", "GND", size="0805", pcb=P(34.0, yc - 2.6, 0))
         R(o, f"R{20 + n}", "7.5k", f"ILIM_{ch}", "GND", pcb=P(34.0, yc + 1.0, 0))
         C(o, f"C{20 + n}", "22n", f"DVDT_{ch}", "GND", pcb=P(34.0, yc + 2.6, 0))
         R(o, f"R{30 + n}", "18k", f"IMON_{ch}", "GND", pcb=P(34.0, yc + 4.2, 0))
         R(o, f"R{60 + n}", "1k", f"IMON_{ch}", f"ADC_IMON_{ch}", pcb=P(37.4, yc + 4.2, 0))
         C(o, f"C{60 + n}", "22n", f"ADC_IMON_{ch}", "GND", pcb=P(40.4, yc + 4.2, 0))
-        # SHDN: off by default (100k to GND); the controller drives ROW_EN high, through 10k, to turn it on
-        R(o, f"R{70 + n}", "100k", f"SHDN_{ch}", "GND", pcb=P(21.4, yc + 4.5, 270))
+        # SHDN: off by default (10k to GND: the pin sources up to 10 µA, 0.1 V, under the 0.55 V threshold;
+        # 100k gave 1 V, on without firmware: pcba-review H3); the controller drives ROW_EN high, through 10k
+        # (1.65 V), to turn it on
+        R(o, f"R{70 + n}", "10k", f"SHDN_{ch}", "GND", pcb=P(21.4, yc + 4.5, 270))
         R(o, f"R{80 + n}", "10k", f"ROW_EN_{ch}", f"SHDN_{ch}", pcb=P(19.0, yc + 3.675, 0))
-        # FLT: open drain, pulled up to 3.3 V for the controller; red LED from 3.3 V (1k: ≈ 1.4 mA, every
-        # front LED on the board's 1k, one part type for all)
+        # FLT: open drain, pulled up to 3.3 V for the controller.  The red LED (1k: ≈ 1.4 mA, every front LED
+        # on the board's 1k) hangs from the row's own ROW_EN: the TPS26600 also pulls FLT low while the row
+        # is off or starting (§9.3.5.3), so from 3.3 V all four would light whenever the rows are off
         R(o, f"R{90 + n}", "100k", "+3V3", f"FLT_{ch}", pcb=P(34.0, yc - 0.6, 0))
-        R(o, f"R{50 + n}", "1k", "+3V3", f"FLTLED_{ch}", pcb=P(LED_X[k] + 3.0, H - 5.0, 90))
+        R(o, f"R{50 + n}", "1k", f"ROW_EN_{ch}", f"FLTLED_{ch}", pcb=P(LED_X[k] + 3.0, H - 5.0, 90))
         part(o, f"D{20 + n}", "led_side_r", {"A": f"FLTLED_{ch}", "K": f"FLT_{ch}"}, "FAULT",
              pcb=P(LED_X[k] + 3.0, LED_Y, 180))
         # ON: green LED on the row's own output
@@ -274,13 +309,18 @@ def board() -> Board:
         part(o, f"J{1 + n}", "ph6", {"1": f"POS_{ch}_CONN", "2": "GND", "3": "CAN_L", "4": "CAN_H", "5": "GND",
                                     "6": f"ROW_{ch}"}, f"ROW {ch}", pcb=P(PH_EDGE, yj, 270))
         R(o, f"R{100 + n}", "10k", f"POS_{ch}", f"POS_{ch}_CONN", pcb=P(11.0, yj - 7.2, 90))
+        # the row cable's inductive kick when the eFuse cuts a short: a Schottky to GND at the connector, its
+        # cathode on the output track (TPS2660 §12.1; OUT ≥ −0.3 V)
+        part(o, f"D{40 + n}", "schottky", {"A": "GND", "K": f"ROW_{ch}"}, pcb=P(11.5, yj + 6.635, 270))
         part(o, f"D{30 + n}", "bat54s", {"A": "GND", "K": "+3V3", "COM": f"POS_{ch}"}, pcb=P(16.6, yj + 7.6, 0))
     o.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).")
     o.note("t_dVdT = 8e3 · V_IN · C_dVdT → 22 nF ≈ 3.5 ms at 20 V, 4.9 ms at 28 V.")
-    o.note("IMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 10 nF to the ESP32's ADC.")
-    o.note("SHDN: 100k to GND (row off), ROW_EN through 10k → 3.0 V (the datasheet's SHDN range is 0–4 V).")
+    o.note("IMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 22 nF to the ESP32's ADC.")
+    o.note("SHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (on above 0.94 V).")
     o.note("The firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.")
-    o.note("FLT: open drain, 100k to 3.3 V for the controller; the red LED (680 Ω) lights while it is low.")
+    o.note("FLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for")
+    o.note("  a fault on an enabled row (FLT is also low while a row is off or starting).")
+    o.note("D41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.")
     o.note("UVLO / OVP / MODE to GND: internal 15 V / 33 V thresholds, current-limit mode, auto-retry.")
 
     # ------------------------------------------------------------------ controller
@@ -328,7 +368,7 @@ def board() -> Board:
     C(c, "C114", "100n", "+3V3", "GND", pcb=P(19.8, 14.6, 90))
     part(c, "SW1", "button", {"1": "EN", "2": "GND"}, "RESET", pcb=P(11.5, 10.0, 0))
     R(c, "R209", "10k", "+3V3", "EN", pcb=P(17.0, 9.5, 90))
-    C(c, "C115", "1u", "EN", "GND", pcb=P(17.0, 13.0, 90))
+    C(c, "C115", "1u", "EN", "GND", pcb=P(40.0, 6.15, 0))           # at EN (pin 45); R209 by the RESET button
     part(c, "SW2", "button", {"1": "BOOT", "2": "GND"}, "BOOT", pcb=P(11.5, 16.5, 0))
     R(c, "R210", "10k", "+3V3", "BOOT", pcb=P(17.0, 16.5, 90))
     part(c, "D8", "led_side_g", {"A": "CTL_LED_A", "K": "GND"}, "CTL", pcb=P(LED_X[5], LED_Y, 180))
@@ -345,9 +385,10 @@ def board() -> Board:
          "USB", pcb=P(USB_X, H - 3.4, 0))
     R(c, "R212", "5.1k", "USB_CC1", "GND", pcb=P(64.0, H - 10.2, 90))
     R(c, "R213", "5.1k", "USB_CC2", "GND", pcb=P(65.6, H - 10.2, 90))
-    part(c, "U5", "esd", {"6": "USB_CONN_DN", "1": "USB_DN", "4": "USB_CONN_DP", "3": "USB_DP", "5": "USB_VBUS",
+    # flow-through, D+ on the 1–6 channel and D− on 3–4: the hand-routed pair arrives in that order
+    part(c, "U5", "esd", {"6": "USB_CONN_DP", "1": "USB_DP", "4": "USB_CONN_DN", "3": "USB_DN", "5": "USB_VBUS",
                           "2": "GND"}, pcb=P(60.5, H - 12.5, 270))
-    C(c, "C120", "1u", "USB_VBUS", "GND", pcb=P(60.5, H - 16.4, 0))
+    C(c, "C120", "1u", "USB_VBUS", "GND", pcb=P(63.6, H - 13.4, 90))
 
     c.block("CAN: TJA1462AT, star bus (all row ports in parallel), both terminations here")
     part(c, "U6", "can_xcvr", {"TXD": "CAN_TXD", "VSS": "GND", "VDD": "+5V", "RXD": "CAN_RXD", "Vio": "+3V3",
@@ -367,7 +408,7 @@ def board() -> Board:
     c.note("GPIO: IO1/2/4/5 IMON A–D, IO6 VBUS_SENSE (ADC1) · IO7/8/9 CAN TX/RX/STB · IO10–13 POS A–D ·")
     c.note("  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·")
     c.note("  IO19/20 USB.  Strapping IO3/45/46 unused.")
-    c.note("Termination: two split 2 × 56 Ω + 4.7 nF (56 Ω in all) at the star centre; nodes carry none.")
+    c.note("Termination: two split 2 × 56 Ω + 22 nF (56 Ω in all) at the star centre; nodes carry none.")
     c.note("+5V: buck (5.24 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;")
     c.note("  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  The TJA1462AT wants 4.5–5.5 V: CAN runs once VRACK is up.")
     return b

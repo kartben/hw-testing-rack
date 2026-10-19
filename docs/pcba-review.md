@@ -204,6 +204,50 @@ right end to end.
 | P2 | C2, U1 | minor | AMS1117 output on a 22 µF MLCC; the datasheet asks for tantalum | Look for ringing at bring-up | Électronique |
 | P3 | CAM_5V | info | Only a PTC, no switch, and the Mega has no reset pin: a hung camera needs a rack power cycle | A switch on CAM_5V in a later node | user |
 
+## What the hub and node owners did (2026-10-20)
+
+Applied on main's hub v0.5 (AP33772S) and bay node v0.5, re-routed; ERC and DRC clean, the CPL
+audit re-run on both boards (below).  The data port and the camera pod went to their owner.
+
+**Power hub**
+
+| ID | Done | Why |
+|---|---|---|
+| H1 | `JLC_CPL_FIX` C495809: 270° | JLC's SOIC-8 as C3234095's |
+| H2 | `JLC_CPL_FIX` C598310 and C4555382: +0.825 mm y | JLC's origin is the pads' centre.  Polarity proven from JLC's own footprints: the green names its right pad A, the red marks the same pad "+" and the left one "−"; KiCad's pad 2 (A) sits there |
+| H3 | R71–R74 10k | 0.1 V at the pin's 10 µA, under the 0.55 V threshold; ROW_EN through 10k gives 1.65 V, above 0.94 V |
+| H4–H6 | answered with the PD controller choice (the CH224A variant's comparison) | |
+| H7 | kept the PESD2CAN, documented in can.md | No CAN TVS at LCSC stays off at 29.4 V and clamps under the TJA1462AT's +40 V; a miswired lead costs the TVSs, not the transceivers |
+| H8 | D2 BZT52C12 gate → common source | At turn-off from a contract the source sits at VBUS while PWR_EN pulls the gates low: −28 V against ±20 V.  One part type more |
+| H9 | hardware: each red LED fed from its row's ROW_EN; firmware: FLT read only with ROW_EN high, after the soft start | the LEDs no longer show "fault" for rows that are simply off |
+| H10 | D41–D44 B5819W, GND → each row output, at the connector | the board's own Schottky type |
+| H11 | bring-up measurement (docs/assembly.md) | the module's pins already have their own vias to In1/In2 |
+| H12 | In2 VRACK band 8 mm wide (was 5 mm) | room above it, nothing else needed In2 there |
+| H13 | USB pair hand-routed on F.Cu over In1, 0.25 / 0.2 mm, U5's channels swapped to its order; C115 at EN (pin 45) | CC1/CC2: left as routed: BMC at 300 kbit/s, a cable's CC runs metres |
+| H14 | C2, C10, R3, C11–C14: thermal reliefs on both pads (`relief`) | |
+| H15 | notes corrected (22 nF, 1k, 22 nF), the outputs sheet on A2 | |
+
+Main's hub has had the CH224A instead of the AP33772S since these fixes were drawn (no input
+switch): H1 and H8 fell away with Q1/Q2 (D2 with them; the C495809 correction stays in the table),
+H4 with the AP33772S's sourcing, H5 became the CH224A's 32 V pins (its supply through 56 Ω + 1 µF);
+H6 grows to ≈ 150 µF at plug-in.  The other fixes are on the board.
+
+**Bay node**
+
+| ID | Done | Why |
+|---|---|---|
+| N1 | `JLC_CPL_FIX` C431540: −0.55 mm y | KiCad's footprint is Shouhan's land pattern (pads 1.95 mm from the peg holes); JLC's draws its pads 0.13 mm further out.  The pegs set the point |
+| N2 | R21/R22 2.2k | ≈ 0.2 µs rise time at 400 kHz with a DATA ×4 on the lead.  One part type more |
+| N3 | R29 470k | POS_IN 3.17 V high; one part type more |
+| N4 | U9's input on a +5V top island, three vias to In2, C20 at the pins | |
+| N5, N9 | bring-up measurements | |
+| N6 | review-konnect.md corrected: U12/U13 are a clamp beside the line, not flow-through | fine at 4 MHz |
+| N7 | R23 1k | a reference, not a supply |
+| N8 | R39 100k SVC → GND | |
+| N10 | C12: reliefs on both pads | |
+| N11 | catalog: SUD50P06-15(UMW) by UMW, HoLR1206-1W-50mR-1%-75ppm | |
+| N12 | the camera note: IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS, IO7 light | |
+
 ## What the suite caught that Konnect and kicad-cli didn't
 
 kicad-cli passes all five boards clean here.  So did the earlier Konnect runs recorded in
