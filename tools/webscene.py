@@ -372,6 +372,136 @@ def s_cable(a, b, length, step=2.5):
     return [[round(float(v), 2) for v in p] for p in pts], round(shortfall, 1)
 
 
+CABLE_R = 1.9              # a thin USB cable's radius (as the viewer draws it)
+CABLE_SAG = 60.0           # (EI / w)^⅓: the length over which its own weight bends a thin USB cable as much as
+                           # its stiffness resists (EI ≈ 3·10⁻⁵ N·m², w ≈ 0.15 N/m)
+ROD_STEP = 3.0             # the rod's segment length, mm
+
+
+def _segment_gaps(a0, a1, b0, b1):
+    """Distances between every segment a0[i]→a1[i] and every b0[j]→b1[j] (closest points, clamped)."""
+    d1, d2 = (a1 - a0)[:, None, :], (b1 - b0)[None, :, :]
+    r = a0[:, None, :] - b0[None, :, :]
+    a, e = np.sum(d1 * d1, axis=2), np.sum(d2 * d2, axis=2)
+    b, c, f = np.sum(d1 * d2, axis=2), np.sum(d1 * r, axis=2), np.sum(d2 * r, axis=2)
+    den = a * e - b * b
+    s = np.where(den > 1e-12, np.clip((b * f - c * e) / np.maximum(den, 1e-12), 0.0, 1.0), 0.0)
+    t = (b * s + f) / np.maximum(e, 1e-12)
+    s = np.where(t < 0, np.clip(-c / np.maximum(a, 1e-12), 0.0, 1.0), np.where(t > 1, np.clip((b - c) / np.maximum(a, 1e-12), 0.0, 1.0), s))
+    t = np.clip(t, 0.0, 1.0)
+    return np.linalg.norm(r + d1 * s[..., None] - d2 * t[..., None], axis=2)
+
+
+def _resample(pts, n):
+    """n + 1 points evenly spaced along a polyline."""
+    pts = np.asarray(pts, float)
+    run = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(pts, axis=0), axis=1))])
+    s = np.linspace(0.0, run[-1], n + 1)
+    return np.array([np.interp(s, run, pts[:, k]) for k in range(3)]).T
+
+
+def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoid=(), outward=None):
+    """A cable as it really lies between two plugs: a rod exactly `length` long (the free length between the
+    strain reliefs), leaving each relief along its plug's axis, in the shape of least energy (bending, with
+    its own weight: an elastica), above floor_z, under ceil_z, out of `boxes` ((lo, hi) corners: boards,
+    walls), off itself and the cables in `avoid` (their points), and nowhere tighter than CABLE_MIN_R.  Its spare
+    length starts out bowed away from `outward` (an x, y: the bay's middle), so neighbours bulge apart.  SLSQP (scipy) on the segments' directions: the length
+    is exact by construction.  `guess`: a path to start from (another route's points).  Returns (points,
+    shortfall, note): shortfall > 0 when the plugs are too far apart for the cable, or no shape reaching both
+    was found (the guess is returned then); note says what is wrong with a shape that was found (a cable too
+    long for its gap bends tighter than CABLE_MIN_R, or one that touches a board), "" when nothing is."""
+    from scipy.optimize import minimize
+    pa, da = plug_exit(a)
+    pb, db = plug_exit(b)
+    ta, tb = da / np.linalg.norm(da), -db / np.linalg.norm(db)
+    n = int(np.clip(round(length / ROD_STEP), 12, 72))
+    h = length / n
+    reach = float(np.linalg.norm(pb - pa))
+    start = np.array(guess if guess is not None else [pa, pb], float)
+    if reach > length - h:
+        return [[round(float(v), 2) for v in p] for p in start], round(reach - length + h, 1), ""
+    # the start: the guess, bowed sideways and up until it is as long as the cable
+    path = _resample(start, n)
+    chord = pb - pa
+    side = np.cross(chord, [0.0, 0.0, 1.0])
+    side = side / (np.linalg.norm(side) or 1.0)
+    if outward is not None and np.dot(side[:2], (pa + pb)[:2] / 2 - np.asarray(outward, float)[:2]) < 0:
+        side = -side
+    bow = (side + np.array([0.0, 0.0, 0.6])) / np.linalg.norm(side + np.array([0.0, 0.0, 0.6]))
+    bump = np.sin(np.linspace(0.0, math.pi, n + 1))[:, None] * bow
+    lo, hi = 0.0, length
+
+    def plen(amp):
+        q = path + bump * amp
+        return float(np.sum(np.linalg.norm(np.diff(q, axis=0), axis=1)))
+    if plen(0.0) < length:
+        for _ in range(50):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if plen(mid) < length else (lo, mid)
+        path = path + bump * lo
+    t0 = np.diff(path, axis=0)
+    t0 /= np.linalg.norm(t0, axis=1)[:, None]
+    x0 = np.concatenate([np.arctan2(t0[1:-1, 1], t0[1:-1, 0]), np.arcsin(np.clip(t0[1:-1, 2], -1, 1))])
+    m = n - 2
+    gap = CABLE_R + 0.2              # a resting cable touches what holds it: 0.2 mm so that the checks see contact
+    boxes = [(np.asarray(lo_, float) - gap, np.asarray(hi_, float) + gap) for lo_, hi_ in boxes]
+
+    def tangents(x):
+        th, ph = x[:m], x[m:]
+        mid = np.stack([np.cos(ph) * np.cos(th), np.cos(ph) * np.sin(th), np.sin(ph)], axis=1)
+        return np.vstack([ta, mid, tb])
+
+    def nodes(t):
+        return pa + h * np.vstack([np.zeros(3), np.cumsum(t, axis=0)])
+
+    def inside(p):
+        depth = np.zeros(len(p))
+        for blo, bhi in boxes:
+            d = np.minimum(p - blo, bhi - p).min(axis=1)
+            depth = np.maximum(depth, d)
+        return depth
+
+    far = np.triu(np.ones((n, n), bool), k=max(3, int(math.ceil(2 * CABLE_R / h)) + 2))
+    others = [np.asarray(q, float) for q in avoid if len(q) > 1]
+
+    def contact(p):
+        """How far the cable runs into itself and into the other cables: segment to segment, 2 radii apart."""
+        a0, a1 = p[:-1], p[1:]
+        pen = float(np.sum(np.clip(2 * CABLE_R - _segment_gaps(a0, a1, a0, a1)[far], 0.0, None) ** 2))
+        for q in others:
+            gaps = _segment_gaps(a0[1:-1], a1[1:-1], q[:-1], q[1:])
+            pen += float(np.sum(np.clip(2 * CABLE_R - gaps, 0.0, None) ** 2))
+        return pen
+
+    def energy(x):
+        t = tangents(x)
+        p = nodes(t)
+        bend = float(np.sum(np.diff(t, axis=0) ** 2)) / h
+        weight = h * float(np.sum(p[1:-1, 2] - p[0, 2])) / CABLE_SAG ** 3
+        return bend + weight + 200.0 * (float(np.sum(inside(p[1:-1]) ** 2)) + contact(p))
+
+    cons = [{"type": "eq", "fun": lambda x: nodes(tangents(x))[-1] - pb},
+            {"type": "ineq", "fun": lambda x: nodes(tangents(x))[1:-1, 2] - (floor_z + gap)},
+            {"type": "ineq", "fun": lambda x: (ceil_z - CABLE_R) - nodes(tangents(x))[1:-1, 2]},
+            {"type": "ineq", "fun": lambda x: (h / CABLE_MIN_R) ** 2 - np.sum(np.diff(tangents(x), axis=0) ** 2, axis=1)}]
+    res = minimize(energy, x0, method="SLSQP", constraints=cons, options={"maxiter": 400, "ftol": 1e-7})
+    t = tangents(res.x)
+    p = nodes(t)
+    miss = float(np.linalg.norm(p[-1] - pb))
+    if miss > 0.5:                                         # no shape found that reaches: the start, flagged
+        return [[round(float(v), 2) for v in q] for q in start], round(miss, 1), "no rest shape found"
+    p[-1] = pb
+    notes = []
+    turn = np.linalg.norm(np.diff(t, axis=0), axis=1)
+    if turn.size and h / max(float(turn.max()), 1e-9) < CABLE_MIN_R - 0.5:
+        notes.append(f"too long for the gap: it bends to R {h / float(turn.max()):.0f} mm")
+    if float(inside(p[1:-1]).max(initial=0.0)) > 0.5:
+        notes.append("it touches a board or a wall")
+    if contact(p) > 0.01:
+        notes.append("it runs into itself or another cable")
+    return [[round(float(v), 2) for v in q] for q in p], 0.0, "; ".join(notes)
+
+
 def rounded_path(pts, r, step=2.0):
     """A polyline with its corners rounded (a quadratic curve within r of each corner): a flexible lead."""
     pts = [np.array(p, float) for p in pts]
@@ -691,7 +821,13 @@ def build(rack) -> Path:
               label="DATA lead (JST PH 8, through the drag chain)", movable=True)
         return x0, plenum
 
-    def dut_board(i, bay, slot, board_id, bd, o, bx, by, dz, dy, drawer, ctype, sx):
+    def board_box(bd, o, bx, by, dz):
+        """What a board fills, for its cables to keep out of: from the plate up to its tallest part."""
+        top = dz + d["bottom"] + d["plate"] + bd.get("standoff", 6) + 1.6 + bd.get("height", 10)
+        return (bx, by, dz + d["bottom"] + d["plate"]), (bx + o["w"], by + o["l"], top)
+
+    def dut_board(i, bay, slot, board_id, bd, o, bx, by, dz, dy, drawer, ctype, sx, others=(), drawn=None, mid=None,
+                  dxw=None):
         """A board on its plate (front-left corner bx, by; o: rackcfg.orient_board) and its short DUT cable from
         the DATA socket at drawer x sx: USB-C into the panel-mount socket on the drawer's port wall, the board's
         own connector (micro-B, USB-C…) at the other end.  A board's USB facing the port wall: right-angle plugs
@@ -733,10 +869,29 @@ def build(rack) -> Path:
         route = {"straight": flat_cable, "side": side_arch_cable}.get(style, arch_cable)
         if style == "straight" and np.dot(end_a["dir"], end_b["dir"]) < -0.9:
             route = s_cable              # the board's USB faces the port wall: the plugs face each other
-        pts, short = route(end_a, end_b, free)
+        guess, short0 = route(end_a, end_b, free)
+        # the cable as it lies, its whole length: on the plate, under the camera pod, out of the boards and the
+        # port wall (rod_cable); the routes above only give it a start
+        floor_z = dz + d["bottom"] + d["plate"]
+        wall = ((sx - 200, dy + port_wall_y - d["wall"], dz), (sx + 200, dy + port_wall_y + 1, dz + d["wall_height"]))
+        boxes = [board_box(bd, o, bx, by, dz), *others, wall]
+        if dxw is not None:          # the drawer's side walls and front panel, as high as the cable may rise: it stays in
+            top = ARCH_TOP_MAX + 10  # the drawer, which slides in its tray
+            boxes += [((dxw - 30, dy, dz), (dxw + d["wall"], dy + port_wall_y, top)),
+                      ((dxw + rack.drawer_w - d["wall"], dy, dz), (dxw + rack.drawer_w + 30, dy + port_wall_y, top)),
+                      ((dxw - 30, dy - 30, dz), (dxw + rack.drawer_w + 30, dy + d["front_thickness"], top))]
+        pts, short, note = rod_cable(end_a, end_b, free, floor_z, ARCH_TOP_MAX, boxes, guess=guess,
+                                     avoid=drawn or (), outward=mid)
+        if short and not short0:
+            print(f"warning: {slot or bay}: no rest shape found for the {ctype} cable: drawn along its route")
+            pts, short = guess, short0
+        if note:
+            print(f"warning: {slot or bay}: the {ctype} cable: {note}")
         if short:
             print(f"warning: {slot or bay}: the {ctype} cable is {short:.0f} mm too short "
                   f"from the DATA socket to the board")
+        if drawn is not None:            # the bay's next cables keep off this one
+            drawn.append(pts)
         cable(pts, row=i, kind="dut", bay=bay, type=ctype, label=cables_cfg[ctype]["label"], a="usb-c", b=btype,
               ends=ends, radius=1.9, movable=drawer)
 
@@ -774,13 +929,22 @@ def build(rack) -> Path:
                 add(f"plate_bay_{b.id.lower()}", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i,
                     layer="plates", bay=b.id, movable=drawer)
             slots = []
+            # each board where the peg layout (or rackcfg.bay_layout) puts it, in drawer-frame coordinates
+            boards_at = []
             for e in rack.bay_layout(b.id, boards):
-                e = {**e, "at": placed.get(e["slot"].id, e["at"])}
+                at = placed.get(e["slot"].id, e["at"])
+                boards_at.append(({**e, "at": at}, dxw + plate_x0 + at[0], dy + plate_y0 + at[1]))
+            drawn = []
+            # the middle of the bay's cables (between its ports and its boards' USB): each spare length bows away from it
+            mid_x = sum(dxw + x4_port_x(rack, e["slot"].slot) + ex + e["o"]["usb_x"]
+                        for e, ex, _ in boards_at) / (2 * len(boards_at))
+            for e, ex, ey in boards_at:
                 # the board as turned on this plate: to the port wall unless its entry says `orient: side`
                 sl, o = e["slot"], e["o"]
                 bd = {**boards[e["board"]], "orient": sl.orient or "rear"}
-                dut_board(i, b.id, sl.id, e["board"], bd, o, dxw + plate_x0 + e["at"][0], dy + plate_y0 + e["at"][1],
-                          dz, dy, drawer, sl.cable, dxw + x4_port_x(rack, sl.slot))
+                others = [board_box(boards[f["board"]], f["o"], fx, fy, dz) for f, fx, fy in boards_at if f is not e]
+                dut_board(i, b.id, sl.id, e["board"], bd, o, ex, ey, dz, dy, drawer, sl.cable,
+                          dxw + x4_port_x(rack, sl.slot), others, drawn, (mid_x, dy), dxw)
                 slots.append({"id": sl.id, "port": sl.slot, "board": bd["name"], "board_id": e["board"],
                               "cable": cables_cfg[sl.cable]["label"], "usb": bd["usb"]["type"],
                               "verified": bd.get("verified", False)})
@@ -810,7 +974,8 @@ def build(rack) -> Path:
             else:
                 sx = max((dxw + px for px in data_ports), key=lambda x: abs(x - (bx + o["usb_x"])))
             meta["data_port"] = ["left" if sx - dxw < rack.drawer_w / 2 else "right"]
-            dut_board(i, b.id, None, info["board"], bd, o, bx, by, dz, dy, drawer, info["cable"], sx)
+            dut_board(i, b.id, None, info["board"], bd, o, bx, by, dz, dy, drawer, info["cable"], sx,
+                      mid=(dxw + rack.drawer_w / 2, dy), dxw=dxw)
             meta.update({"board": bd["name"], "board_id": info["board"], "cable": cab["label"],
                          "usb": bd["usb"]["type"], "classic": bool(info.get("pc_cable")), "open": bool(info.get("open")) and drawer, "mount": rack.mount(b.id),
                          "verified": bd.get("verified", False)})

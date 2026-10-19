@@ -138,10 +138,11 @@ DUT_CABLES = {
     "c-to-mini-b": {"supplier": "AliExpress 2251832791887129 (HOQO, \"to Mini Male\", 25 cm)", "unit_eur": 1.0,
                     "notes": "the F746G-DISCO's ST-LINK port (CN14) is mini-B, facing the side wall with 49 mm to it: "
                              "the straight mini-B plug fits, no adapter"},
-    "c-to-micro-b-straight": {"supplier": "AliExpress (USB-C ↔ micro-B, straight, 10 cm, USB 2.0 data)",
+    "c-to-micro-b-straight": {"supplier": "AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data)",
                               "unit_eur": 2.0,
-                              "notes": "straight at both ends, an S on the plate (a converted bay's Pico 2); listing "
-                                       "still to pick: check it says data and 10 cm plugs included"},
+                              "notes": "straight at both ends, a loop over the plate (a converted bay's Pico 2): "
+                                       "15 cm takes a seller's ±5 mm, 10 cm would have to be within 3; listing still "
+                                       "to pick, check it says data"},
     "c-to-c-straight": {"supplier": "AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps)", "unit_eur": 2.0,
                         "notes": "straight at both ends; any short C ↔ C that states data (many short ones are "
                                  "charge-only)"},

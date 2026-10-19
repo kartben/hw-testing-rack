@@ -261,8 +261,8 @@ class Slots(unittest.TestCase):
 
     PACKED = [("xiao", (16.2, 115.6)), ("rpi-pico2", (44.2, 82.4)), ("rpi-pico2", (72.2, 82.4)),
               ("xiao", (100.2, 115.6))]
-    EXAMPLE = [("xiao", (16.6, 52.4)), ("rpi-pico2", (44.2, 34.0)), ("rpi-pico2", (72.2, 34.0)),
-               ("xiao", (99.8, 52.4))]
+    EXAMPLE = [("xiao", (8.7, 30.0)), ("rpi-pico2", (41.7, 16.0)), ("rpi-pico2", (74.7, 16.0)),
+               ("xiao", (107.7, 30.0))]
 
     def test_one_board(self):
         self.assertEqual(rackcfg.dut_slots("A1", {"board": "nucleo-64", "cable": "c-to-micro-b"}),
@@ -295,7 +295,8 @@ class Slots(unittest.TestCase):
         rack = rackcfg.load()                                           # config/rack.yaml's B3
         self.assertEqual(rack.multi_bays(), ["B3"])
         self.assertEqual(rack.bay_boards("B3"), self.EXAMPLE)
-        self.assertEqual(rack.check_bay_plate("B3"), [])
+        # B3 is on the honeycomb plate: its pegs are tools/plate_layout.py's to check (test_plate_layout)
+        self.assertEqual(rack.plate_kind("B3"), "pegs")
 
     def test_plate(self):
         rack = rackcfg.load()

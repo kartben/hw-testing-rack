@@ -132,11 +132,11 @@ population:
                                                                    # the shield hides the GIGA's edges: its own fenced plate
   B3:                                                              # converted: B3.1–B3.4 on a DATA ×4 board
     open: true                                                     # drawer shown pulled out
-    boards:                  # straight cables, an S on the plate: the Pico 2 in the middle, 6 mm off their ports'
-      - { board: xiao,      cable: c-to-c-straight,       at: [16.6, 52.4] }    # axes; the XIAO either side,
-      - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [44.2, 34.0] }    # in front of the finger slots
-      - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [72.2, 34.0] }
-      - { board: xiao,      cable: c-to-c-straight,       at: [99.8, 52.4] }
+    boards:                  # straight 15 cm cables, each at rest in a gentle arch (tools/webscene.py › rod_cable)
+      - { board: xiao,      cable: c-to-c-straight,       at: [8.7, 30.0] }     # over 14.5-15.5 cm: the boards forward,
+      - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [41.7, 16.0] }    # 33 mm apart for the pegs between
+      - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [74.7, 16.0] }    # them (tools/plate_layout.py moves
+      - { board: xiao,      cable: c-to-c-straight,       at: [107.7, 30.0] }   # each a few mm to its stops)
   B4: { board: arduino-uno-r4,   cable: c-to-c-straight, pc_cable: true }      # "classic" mode: laptop on the front port
 
 cables:
@@ -154,7 +154,7 @@ cables:
   c-to-mini-b:  { label: "USB-C 90° ↔ mini-B straight, 25 cm", a: usb-c, b: mini-b,
                   length: 250, style: side }       # the F746G-DISCO: its USB faces the side wall, 49 mm away
   c-to-c-straight:       { label: "USB-C ↔ USB-C, straight, 15–20 cm", a: usb-c, b: usb-c,   length: 150, style: straight }
-  c-to-micro-b-straight: { label: "USB-C ↔ micro-B, straight, 10 cm", a: usb-c, b: micro-b, length: 100, style: straight }
+  c-to-micro-b-straight: { label: "USB-C ↔ micro-B, straight, 15 cm", a: usb-c, b: micro-b, length: 150, style: straight }
   data-lead:    { label: "JST PH 8-pin DATA lead, pin n ↔ pin 9−n, 400–500 mm (node J7 → DATA port board)", length: 400 }
   row-jumper:   { label: "JST PH 6-pin row cable, 1:1, 24 AWG, 120 mm", length: 120 }
   row-feed:     { label: "JST PH 6-pin feed, 1:1, 24 AWG (VRACK, CAN, POS)", length: 600 }

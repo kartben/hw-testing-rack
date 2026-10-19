@@ -263,7 +263,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK) | 3  | 2.50 | 7.50 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
 | Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: UNO R4, XIAO) | 3  | 2.00 | 6.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
 | Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK) | 3  | 1.00 | 3.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
-| Cables | USB-C ↔ micro-B, straight, 10 cm (DUT cable: PICO 2) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ micro-B, straight, 10 cm, USB 2.0 data) |
+| Cables | USB-C ↔ micro-B, straight, 15 cm (DUT cable: PICO 2) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data) |
 | Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 6  | 1.00 | 6.00 | AliExpress (DIY-018, "UP" and "DOWN") |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |

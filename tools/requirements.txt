@@ -1,5 +1,6 @@
 pyyaml>=6
 numpy>=1.26
+scipy>=1.11           # webscene.py: the DUT cables' rest shapes (rod_cable, SLSQP)
 trimesh>=4.4
 fast-simplification>=0.1   # optional: decimates big meshes for the web viewer
 shapely>=2.0          # assembly_glb.py: extrusion profiles
