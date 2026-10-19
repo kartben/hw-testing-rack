@@ -61,8 +61,10 @@ later, take its tray out first.
    Anchor onto the tray: 2 × M3×8 into its inserts; plug the cable's male end
    into the node's DUT port.
 3. **Row power (VRACK)**: JST PH jumper to the neighbouring node, through the windows in
-   both tray walls and the shared ladder; the row feed goes into the row's
-   first bay.
+   both tray walls and the shared ladder; along the tray's front, tied to the
+   two anchors at its front right (a cable tie through each one's tunnel),
+   clear of the chain foot's reach ([cabling.md](cabling.md)); the row feed
+   goes into the row's first bay.
 4. **Drawer**: magnets first, one under the drawer and one in the tray's left
    ledge: stack the pair, mark both outer faces, glue each magnet marked face
    down into its pocket with a drop of CA, and let it set before the drawer

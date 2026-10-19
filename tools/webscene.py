@@ -73,6 +73,9 @@ NODE_J6_H = 8.0     # J6 (camera, JST PH 8 vertical, at config/rack.yaml › pcb
 # A converted bay's DATA ×4 board, placeholder until config/rack.yaml › pcb.data_port_x4 (the data-x4-board
 # session): 72 × 17, centred on the drawer, its four USB-C on the port wall at drawer.scad › port_xs(4) (16 mm
 # pitch), the PH 8 of its lead at the rear centre, two holes over X4_HOLES' bosses
+# the row cable's tie anchors in the tray (tray.scad › JUMPER_TIES: carrier x, y of their centre)
+JUMPER_TIES = [(118.0, 6.5), (150.0, 6.5)]
+
 X4 = {"w": 72.0, "d": 17.0, "pitch": 16.0, "holes": [[3.0, 8.5], [69.0, 8.5]], "ph": 36.0}
 
 
@@ -847,17 +850,26 @@ def build(rack) -> Path:
 
     # --- row cable: 6-pin jumpers between neighbouring nodes, through the shared ladder (docs/can.md) ----
     # VRACK, GND, CAN_H, CAN_L, GND, POS (J1's pins 1-6, pin 1 towards the rear); J2 (right edge) carries
-    # them mirrored, so each wire keeps its side: a flat lead, no twist
+    # them mirrored, so each wire keeps its side: a flat lead, no twist.  From J2 it heads for the tray's
+    # front right, crosses that side in front of the chain foot's reach (the drawer out brings the foot to
+    # y 12) through the two tie anchors (tray.scad › JUMPER_TIES), at y ≤ 9, and turns back up to the next
+    # node's J1 inside the ladder (panels.scad › JUMPER_Y)
+    ties_x = [t[0] for t in JUMPER_TIES]
     for i, r in enumerate(rack.rows):
         zc = pcb_top + 5
+        zf = c["bottom"] + 5 + 1.2                          # on the anchors
         vy = rack.node_front_y + node["size"][1] - node["pwr_y"]
         for u in range(rack.units - 1):
-            xa = rack.unit_x(u) + node["x0"] + node["size"][0]
-            xb = rack.unit_x(u + 1) + node["x0"]
+            x0u, x0n = rack.unit_x(u), rack.unit_x(u + 1)
+            xa = x0u + node["x0"] + node["size"][0]
+            xb = x0n + node["x0"]
             for k, col in enumerate(("#c62828", "#222222", "#f9a825", "#2e7d32", "#222222", "#eeeeee")):
                 y = vy + 5 - 2 * k                                # JST PH, 2 mm pitch, 24 AWG
-                cable(bezier((xa, y, zc), (xa + 40, y - 4, zc + 2), (xb - 40, y - 4, zc + 2), (xb, y, zc)),
-                      row=i, kind="power-jumper", color=col, radius=0.7)
+                yf = 4.4 + 0.85 * (5 - k)                         # bunched at the front: 4.4–8.65
+                zk = zf + (0.7 if k % 2 else 0.0)
+                pts = [(xa, y, zc), (xa + 12, y, zc), (x0u + ties_x[0] - 14, yf, zk), (x0u + ties_x[1], yf, zk),
+                       (x0n - 4, yf, zk), (x0n - 4, y, zc), (xb, y, zc)]
+                cable(rounded_path(pts, 5.0), row=i, kind="power-jumper", color=col, radius=0.7)
 
     # --- row transforms for the viewer -------------------------------------------------
     rows_out = []

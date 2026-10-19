@@ -100,9 +100,12 @@ plugs into the power box's rear wall.
 
 * **Bay to bay:** 6-pin JST PH jumpers, 24 AWG, 120 mm (VRACK, GND, CAN_H,
   CAN_L, GND, POS: [can.md](can.md)), plugged into the node's right (OUT) and
-  the next node's left (IN) connectors through the 17 mm windows in both tray
-  walls and the shared ladder, at the front of the plenum where the chain
-  never goes.  Every OUT connector (the node's right one, the hub's row
+  the next node's left (IN) connectors through the windows in both tray walls
+  and the shared ladder (from the plugs forward to the fascia).  From the
+  node's OUT it heads for the tray's front right and crosses that side at
+  y ≤ 9 mm, tied to the two anchors on the floor there: a drawer pulled out
+  brings its chain foot to 12 mm from the front, right where the jumper used
+  to run.  It turns back up to the next node's IN inside the ladder.  Every OUT connector (the node's right one, the hub's row
   outputs) has the IN pinout mirrored, so the jumper lies **flat, with no
   twist**: pin n ↔ pin 7−n, both plugs showing the same face when the cable
   lies on a table.  (The v0.4 nodes had 2-pin, 24 V-only jumpers.)

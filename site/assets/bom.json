@@ -2616,15 +2616,15 @@
 {
 "part": "ladder_a",
 "qty": 5,
-"grams_each": 49.6,
-"grams_total": 248.1,
+"grams_each": 48.9,
+"grams_total": 244.4,
 "stl": "mechanical/stl/ladder_a.stl"
 },
 {
 "part": "ladder_b",
 "qty": 5,
-"grams_each": 49.6,
-"grams_total": 248.1,
+"grams_each": 48.9,
+"grams_total": 244.4,
 "stl": "mechanical/stl/ladder_b.stl"
 },
 {
@@ -2728,8 +2728,8 @@
 {
 "part": "tray",
 "qty": 8,
-"grams_each": 78.9,
-"grams_total": 631.3,
+"grams_each": 78.4,
+"grams_total": 627.6,
 "stl": "mechanical/stl/tray.stl"
 }
 ],

@@ -71,9 +71,13 @@ function brace_z(k) = k < 0
     : let (b = line_z(k, 0, PR), h = ROW_HEIGHTS[min(k, len(ROW_HEIGHTS) - 1)]) [b + 28, b + 46, b + h - 47, b + h - 29];
 
 // row cable between neighbouring nodes (6-pin JST PH, PHR-6 plug housing about 14 x 4.5 mm,
-// docs/can.md): passes through the tray walls and the ladder
+// docs/can.md): passes through the tray walls and the ladder.  The window runs from J1/J2's plug
+// (JUMPER_W round PWR_NOTCH_Y: the left neighbour's J1 plug sits in it) forward to the fascia: a drawer
+// pulled out brings its chain foot to y 12 at the right, so the cable crosses the tray's right side in
+// front of it, at y ≤ 9, held by two tie anchors (tray.scad › JUMPER_TIES), and turns back up to J1
+// inside the ladder.  SolidCraft, 2026-10-19: the foot and the chain's end landed on it at y 12-26.
 JUMPER_W = 17;
-JUMPER_Y = [PWR_NOTCH_Y - JUMPER_W / 2, PWR_NOTCH_Y + JUMPER_W / 2];
+JUMPER_Y = [CARRIER_FASCIA + 1, PWR_NOTCH_Y + JUMPER_W / 2 + 1];
 JUMPER_Z0 = CARRIER_BOTTOM + CARRIER_STANDOFF;
 
 ROW_Z0 = FRAME_BASE_H;                   // frame Z of row A's front-bottom edge

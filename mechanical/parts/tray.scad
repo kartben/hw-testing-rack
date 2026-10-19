@@ -30,6 +30,15 @@ HOLE_PITCH = 16;
 GUSSET_T = 2;                            // ribs under the ledges
 GUSSET_STEP = 24;
 CHAIN_X = [CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 3, CHAIN_MOVING_X + CHAIN_H / 2 + 3];   // chain sweep (x)
+// the row cable's tie anchors (x, y of their centre): it runs at y ≤ 9 from x 112 to the right wall, the
+// chain foot reaching y 12 at x 133-145 with the drawer out; a cable tie round it through each one's tunnel
+JUMPER_TIES = [[118, 6.5], [CARRIER_W - 8, 6.5]];
+TIE = [4, 7, 5];                          // an anchor: x, y, height above the floor; its tunnel along y
+
+module tie_anchor() translate([-TIE[0] / 2, -TIE[1] / 2, CARRIER_BOTTOM - EPS]) difference() {
+    cube([TIE[0], TIE[1], TIE[2] + EPS]);
+    translate([0.8, -1, 1.2]) cube([TIE[0] - 1.6, TIE[1] + 2, 2.2]);
+}
 // low rails keeping the two runs straight, [x, y0, y1]: the fixed one starts behind the anchor
 CHAIN_RAILS = [[CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 1.6, ANCHOR_Y0 + ANCHOR[1] + 1, CARRIER_D - 30],
                [CHAIN_MOVING_X + CHAIN_H / 2 + 0.4, CHAIN_FIXED[1], CARRIER_D - 30]];
@@ -96,7 +105,8 @@ module tray_bottom_2d() {
     keep = concat(
         [for (h = NODE_HOLES) concat(node_xy(h), [5])],
         [for (c = cam_inserts()) concat(c, [5])],
-        [for (b = ANCHOR_BOSSES) concat(b, [5])]);
+        [for (b = ANCHOR_BOSSES) concat(b, [5])],
+        [for (t = JUMPER_TIES) concat(t, [6])]);
     difference() {
         square([CARRIER_W, CARRIER_D]);
         relief_2d(CARRIER_D, keep, skip_x = CHAIN_X);
@@ -154,6 +164,8 @@ module tray() {
                 cylinder(d = BOSS_D, h = CARRIER_BOTTOM + CARRIER_STANDOFF);
             // camera-pod insert bosses (inserts go in from below)
             for (c = cam_inserts()) translate([c[0], c[1], 0]) cylinder(d = 7.5, h = CARRIER_BOTTOM + 4);
+            // the row cable's two tie anchors, in front of the chain foot's reach (panels.scad › JUMPER_Y)
+            for (t = JUMPER_TIES) translate([t[0], t[1], 0]) tie_anchor();
             // drag-chain anchor bosses (2 × M3 inserts, outside the fixed run) and the low rails
             for (b = ANCHOR_BOSSES) translate(concat(b, [0])) cylinder(d = 7.5, h = ANCHOR_Z0);
             for (r = CHAIN_RAILS) translate([r[0], r[1], 0]) cube([1.2, r[2] - r[1], CARRIER_BOTTOM + 3]);
@@ -173,7 +185,7 @@ module tray() {
             linear_extrude(0.7) square([52, 11], center = true);
         // row cable: through both side walls and their runners, under the ledge
         for (x = [-RUNNER_OUT - 1, CARRIER_W - WALL - EPS])
-            translate([x, JUMPER_Y[0], JUMPER_Z0]) cube([WALL + RUNNER_OUT + 1 + 2 * EPS, JUMPER_W, LEDGE_Z - LEDGE_T - JUMPER_Z0]);
+            translate([x, JUMPER_Y[0], JUMPER_Z0]) cube([WALL + RUNNER_OUT + 1 + 2 * EPS, JUMPER_Y[1] - JUMPER_Y[0], LEDGE_Z - LEDGE_T - JUMPER_Z0]);
         // rear service slot (row feed, the camera lead, airflow)
         translate([20, CARRIER_D - WALL - EPS, CARRIER_BOTTOM + 2]) cube([60, WALL + 2 * EPS, CARRIER_WALL_H - 5]);
         // the node's RESET button sits under the left ledge's inner edge: a notch over its plunger lets a
