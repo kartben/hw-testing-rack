@@ -64,9 +64,9 @@ bay node (plenum)                                 drawer
      not reversible and sellers name "up" and "down" either way; the
      adapters come in up / down / left / right sets, so keep whichever one
      faces up.  The arch stays under ~105 mm above the row (a camera pod
-     hangs down to 120): loop any spare length flat on the plate's two hooks,
+     hangs down to 120): loop any spare length round the plate's bobbin,
      beside the board, not over it (the camera looks at it).
-   Swapping boards = swapping plate + cable; the bay doesn't care.
+   Swapping boards = moving a few pegs and swapping the cable; the bay doesn't care.
 
 **USB-C or micro-B in every bay?**  Yes — the bay's port is always USB-C and
 the short cable adapts.  The BOM lists one per board type

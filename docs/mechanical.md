@@ -46,7 +46,7 @@ constants it reads.)
 | Drawer | `drawer.scad` | 142 × 196 mm; front panel with label recess (printed `bay_label`, or 12 mm tape) and finger pull; plate pocket with two 180°-symmetric pins; open floor under the plate; rear bay with the DATA port: our board (electronics/data-port) components up on two floor bosses, 2 × PT 2.6×8 from above, its front edge against the port wall (a ledge under it either side of the USB-C's pegs); its USB-C, 8.5 mm above the drawer bottom and 1.7 mm behind the wall's front face, in a U cut down through the wall's top (the USB-C plug cut's 13.4 mm, open upwards): a straight plug's overmold or a right-angle plug's body goes in until the plug seats.  The board stops left of the chain foot's lock screw (driven from above).  The cable window behind it, up to the rear wall, the AUX slot and the foot groove.  Pin holes over the node's RESET and BOOT, as in every plate: press them with the drawer in  `-D PORTS=4` (`drawer_x4`, and `drawer_block_x4` for a sled bay): a converted bay's (`population` › `boards:`), a DATA ×4 board (`pcb.data_port_x4`, the data-x4-board proposal: 108 × 24 mm, four USB-C at an 18 mm pitch from drawer x 26, the PH 8 lead in its rear-right notch): its four U-cuts and floor bosses, no AUX slot (each board's RESET/BOOT pigtail goes up through its own port's U), the cable window under the notch, the lead dropping through it right behind its plug |
 | Sled / port block | `drawer.scad` (`PART="sled"`, `"block"`) | a bay without a drag chain (`population` › `mount: sled` or `fixed`, same tray): the drawer cut 1 mm in front of its port wall.  The **sled** (its front and two flange segments at its rear; its floor ends open under the plate) slides on the same ledges, the stop screw limiting it (≈ 110 mm); unplug the DUT cable, then pull it.  The **port block** (the drawer's rear bay: port wall, DATA board, cable window) stays behind it, locked by 2 × PT 2.3×8 through the guide lips and its flanges into the ledges; its DATA lead comes straight from J7 (≈ 22 cm).  A **fixed** bay is a sled bay with 2 × PT 2.3×8 more through the sled's flanges.  `-D PORTS=4` gives a block with four USB-C at a 16 mm pitch for a DATA ×4 board (placeholder: no board yet).  No chain, foot, anchor or magnets: ≈ €2–3.5 and the chain steps saved per bay; back to a drawer at any time |
 | Chain foot / anchor | `chain_parts.scad` | take the chain's end pieces (tab with 2 holes 8 mm apart, PT 2.6×8 + washers).  The anchor is a block outside the fixed run, on two M3 inserts in the tray; the foot carries the moving end on a fin outside the moving run and slides into the drawer's rear-open groove, locked by one PT 2.6×8 from inside the rear bay.  A printable link (and its removable bar, so the cable can be laid in) is included if you'd rather not buy chain |
-| Board plates | `board_plate.scad` | one per form factor, generated from [`mechanical/boards/boards.yaml`](../mechanical/boards/boards.yaml) |
+| Board plate and pegs | `board_plate.scad`, `pegs.scad` | one honeycomb plate for every board, 5 mm thick, and the clip-in pegs that hold the boards on it (stops, cams on their bases, pins, a cable bobbin), placed by `tools/plate_layout.py`: [below](#the-board-plate-and-its-pegs) |
 | Bay label | `label.scad` | 12 × 100 mm blank for the drawer front's recess |
 
 ![One bay pulled apart: tray with the node and the drag chain, drawer, board plate, board, camera pod](img/exploded.jpg)
@@ -96,26 +96,79 @@ does not fit stops the build instead of printing parts that clash.  Checked
 in Blender over the 140 mm stroke: the chain, the anchor, the foot, the
 drawer, the node and the DUT plug never overlap.
 
-### Plates (form factors)
+### The board plate and its pegs
 
-`boards.yaml` holds each board's outline, holes (in the vendor drawing's
-coordinates), debug-USB edge and standoff height (Nucleo morpho pins stick
-out ~10 mm underneath!).  The generator rotates the board so its debug USB
-faces the drawer's port wall.  `orient: side` turns it towards the right wall
-instead, the board 2.5 mm from the plate's left edge: for a board too long for
-a plug behind it (the F746G-DISCO), and for the small ones (Pico, ESP32
-DevKitC, UNO R4), whose cable from the DATA port is then straight at
-both ends and lies flat ([cabling.md](cabling.md)).  Mounting styles:
+![Four small boards on one honeycomb plate (B3), and an UNO R4 against the drawer's wall (B4)](img/plate-pegs.jpg)
 
-* `MODE="insert"` heat-set inserts (M3, M2.5 or M2 picked from the hole size);
-* `MODE="snap"` split snap pins — push the board on, pinch to release;
-* hole-less boards (or ones not measured yet: `verified: false`) get corner
-  fences + support pads;
-* `plate_universal` has M3 slots on a 12 mm grid for anything else.
+One plate for every board: 137.4 × 159.4 mm (the drawer's inside), 5 mm thick,
+a honeycomb of 197 hexagonal holes, 10 mm apart in rows along X (7.2 mm across
+flats), odd rows numbered on both rims (row 1 at the front) so that a layout
+reads "row 7, 4th hole" (`config/rack.yaml` › `plate_grid`).  Clip-in pegs hold
+the boards on it, anywhere: no more plate per board.
 
-Verified outlines today: UNO R4, NUCLEO-64, NUCLEO-144, Pico/Pico 2,
-ESP32-S3/C6-DevKitC, XIAO, micro:bit.  Nordic DKs, FRDM, Discovery and i.MX
-EVKs use fences until someone measures them — PRs welcome.
+**The clip stays inside the plate.**  A hole widens by 0.4 mm per side over
+its bottom 1.4 mm, with a 45° ledge between the two; a peg's hexagonal plug
+(0.1 mm clearance per side) has three spring skins, openGrid-style: each a
+cantilever along one flat, freed by a slot, so that it bends in the print
+plane and not across the layers.  Their 0.3 mm nubs go 0.2 mm past the waist
+on the way in and snap under the ledge; there they rest unloaded, so a peg
+does not loosen however often it moves.  Nothing comes out under the plate:
+the drawer's floor, its magnet and the drag chain never see a peg.  The hex
+keeps a peg from turning.
+
+**The pegs** (`pegs.scad`; heights are the boards' standoffs, `boards.yaml` ›
+`standoff`, one STL per height in use):
+
+| Peg | STL | What it does |
+|---|---|---|
+| Stop | `peg_stop_h<H>` | an eccentric post: its ledge carries the PCB's edge, its neck (Ø 4.6) touches the edge, a 45° lip above it holds the edge down.  The post sits 3.55 mm off the plug's axis, so the 6 turns of the hex are 6 places in each hole: the layout gives the turn (the arrow on the flange points to the post).  The stops place a board |
+| Cam on its base | `peg_base_h<H>` + `peg_cam` | the base's split pin carries a cam with a spiral band (3 mm of travel), undercut 20°: turned clockwise it pushes the board onto its stops and presses the PCB's top edge down; turned on, it falls open.  Self-locking: the spiral rises less than friction holds.  The cams clamp a board |
+| Pin | `peg_pin_d<hole>_h<H>` | an eccentric pin through one of the board's mounting holes (Ø hole − 0.3), on a pad as wide as the hole's copper ring: for a board whose long edges are lined with headers (the Pico 2), with cams on the other edges |
+| Bobbin | `peg_bobbin` | the DUT cable's spare length loops round it, under its 45° cap |
+
+**Where they go: `tools/plate_layout.py`.**  A board is held the way a fixture
+holds a part: per axis a datum edge (stops, or the drawer's wall) and a cam
+edge opposite, whichever way round fits; `boards.yaml` › `pegs` › `keepout`
+lists the edge spans no peg may touch (a header or a connector at the edge,
+pins under it), and the debug USB's plug is kept clear by itself.  The tool
+starts from the board's usual place (centred, its USB towards the port wall;
+a converted bay's `at`) and moves it by a few mm until its stops touch it
+exactly and its cams reach it within their travel; nothing may touch another
+board, another peg, a plug's way or a keep-out.  A board up to 6.4 mm high
+may lean on the drawer's side wall instead of stops (the UNO R4, whose
+straight cable needs the room on its right), any board on the front panel.
+
+```bash
+python tools/plate_layout.py B3          # the pegs of a bay: row, hole, turn, edge
+```
+
+The viewer shows every peg in its hole, turned as the layout says (cams in
+orange); the BOM counts them.  To mount a board: clip the stops and the cam
+bases in, cams open; put the board in, against the stops; turn each cam
+clockwise until it bites.  To take it out, turn the cams on until they fall
+open.
+
+**Not every board yet.**  The ESP32-S3/C6-DevKitC (headers along both long
+edges, both USB on a short one, no holes) and the i.MX EVKs (wider than the
+plate leaves room for pegs) get no layout: a bay with one of them says
+`plate: boards` and keeps the former plates below.  The GIGA R1 + display
+stack (B2) does too, the shield hiding the GIGA's edges.
+
+**The former plates** (`board_plate.scad` with `BOARD=` or a converted bay's
+`BAY=`, `population` › `plate: boards`): the board's own plate, heat-set
+inserts (`MODE="insert"`), split snap pins (`MODE="snap"`) or, for hole-less
+or unverified boards, corner fences and support pads.
+
+**Printing.**  The plate flat, 2–3 walls, no support (its holes' ledges are 45°);
+≈ 75 g of PETG (its 2.8 mm webs print solid).  The pegs upright, flange down; the cams
+flange down.  Every overhang is 45° or less but the pegs' 1 mm flange rims.
+
+**Checked in SolidCraft** (STEP from the SCAD through `tools/notice/csg2part.py`):
+B3's four boards, B4's UNO R4 and A1's NUCLEO-64 on the real plate with every
+peg of their layouts, and the PCBs with their mounting holes.
+* No interference anywhere.
+* Every stop, cam and pin touches its PCB (0.000 mm).
+* Every plug sits in its hole, its flange on the plate.
 
 ## Cameras
 

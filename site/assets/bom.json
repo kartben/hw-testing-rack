@@ -2243,11 +2243,11 @@
 "group": "filament",
 "item": "PETG filament",
 "supplier": "any",
-"qty": 2.9,
+"qty": 3.0,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈2.6 kg estimated + 10 % waste, 95 parts",
-"ext_eur": 58.0
+"notes": "≈2.7 kg estimated + 10 % waste, 166 parts",
+"ext_eur": 60.0
 },
 {
 "category": "Fasteners",
@@ -2506,14 +2506,14 @@
 ],
 "by_category": {
 "Electronics": 578.1600000000001,
-"Printed parts": 58.0,
+"Printed parts": 60.0,
 "Fasteners": 15.27,
 "Motion": 18.85,
 "Cables": 49.08,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 865.46,
+"total_eur": 867.46,
 "prints": [
 {
 "part": "bay_label",
@@ -2642,60 +2642,95 @@
 "stl": "mechanical/stl/ladder_cap.stl"
 },
 {
-"part": "plate_arduino-uno-r4",
-"qty": 1,
-"grams_each": 31.2,
-"grams_total": 31.2,
-"stl": "mechanical/stl/plate_arduino-uno-r4.stl"
+"part": "peg_base_h10",
+"qty": 11,
+"grams_each": 0.5,
+"grams_total": 5.1,
+"stl": "mechanical/stl/peg_base_h10.stl"
 },
 {
-"part": "plate_bay_b3",
-"qty": 1,
-"grams_each": 36.8,
-"grams_total": 36.8,
-"stl": "mechanical/stl/plate_bay_b3.stl"
+"part": "peg_base_h12",
+"qty": 5,
+"grams_each": 0.5,
+"grams_total": 2.6,
+"stl": "mechanical/stl/peg_base_h12.stl"
 },
 {
-"part": "plate_frdm-mcxn947",
+"part": "peg_base_h6",
+"qty": 4,
+"grams_each": 0.3,
+"grams_total": 1.3,
+"stl": "mechanical/stl/peg_base_h6.stl"
+},
+{
+"part": "peg_base_h9",
+"qty": 2,
+"grams_each": 0.4,
+"grams_total": 0.9,
+"stl": "mechanical/stl/peg_base_h9.stl"
+},
+{
+"part": "peg_bobbin",
+"qty": 6,
+"grams_each": 0.9,
+"grams_total": 5.6,
+"stl": "mechanical/stl/peg_bobbin.stl"
+},
+{
+"part": "peg_cam",
+"qty": 22,
+"grams_each": 0.2,
+"grams_total": 4.2,
+"stl": "mechanical/stl/peg_cam.stl"
+},
+{
+"part": "peg_pin_d21_h9",
+"qty": 2,
+"grams_each": 0.3,
+"grams_total": 0.7,
+"stl": "mechanical/stl/peg_pin_d21_h9.stl"
+},
+{
+"part": "peg_pin_d32_h12",
 "qty": 1,
-"grams_each": 36.9,
-"grams_total": 36.9,
-"stl": "mechanical/stl/plate_frdm-mcxn947.stl"
+"grams_each": 0.5,
+"grams_total": 0.5,
+"stl": "mechanical/stl/peg_pin_d32_h12.stl"
+},
+{
+"part": "peg_stop_h10",
+"qty": 10,
+"grams_each": 0.5,
+"grams_total": 5.2,
+"stl": "mechanical/stl/peg_stop_h10.stl"
+},
+{
+"part": "peg_stop_h12",
+"qty": 3,
+"grams_each": 0.6,
+"grams_total": 1.7,
+"stl": "mechanical/stl/peg_stop_h12.stl"
+},
+{
+"part": "peg_stop_h6",
+"qty": 5,
+"grams_each": 0.4,
+"grams_total": 2.0,
+"stl": "mechanical/stl/peg_stop_h6.stl"
+},
+{
+"part": "plate",
+"qty": 7,
+"grams_each": 42.0,
+"grams_total": 294.3,
+"stl": "mechanical/stl/plate.stl"
 },
 {
 "part": "plate_giga-r1-display",
 "qty": 1,
-"grams_each": 36.6,
-"grams_total": 36.6,
+"grams_each": 71.0,
+"grams_total": 71.0,
 "stl": "mechanical/stl/plate_giga-r1-display.stl"
-},
-{
-"part": "plate_nrf52840-dk",
-"qty": 1,
-"grams_each": 37.6,
-"grams_total": 37.6,
-"stl": "mechanical/stl/plate_nrf52840-dk.stl"
-},
-{
-"part": "plate_nrf54l15-dk",
-"qty": 1,
-"grams_each": 37.6,
-"grams_total": 37.6,
-"stl": "mechanical/stl/plate_nrf54l15-dk.stl"
-},
-{
-"part": "plate_nucleo-144",
-"qty": 1,
-"grams_each": 37.5,
-"grams_total": 37.5,
-"stl": "mechanical/stl/plate_nucleo-144.stl"
-},
-{
-"part": "plate_nucleo-64",
-"qty": 1,
-"grams_each": 34.4,
-"grams_total": 34.4,
-"stl": "mechanical/stl/plate_nucleo-64.stl"
 },
 {
 "part": "power_box_base",

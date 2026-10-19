@@ -22,6 +22,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+import plate_layout  # noqa: E402
 import rackcfg  # noqa: E402
 
 REPO = rackcfg.REPO
@@ -47,6 +48,8 @@ def boards_scad(boards: dict, rack=None) -> str:
     rows = [rackcfg.scad_value(board_record(bid, b, rackcfg.orient_board(b))) for bid, b in boards.items()]
     plates = []
     for bay_id in rack.multi_bays() if rack else []:
+        if rack.plate_kind(bay_id) != "boards":         # the honeycomb plate: nothing per bay to generate
+            continue
         problems = rack.check_bay_plate(bay_id, boards)
         if problems:
             raise SystemExit(f"config/rack.yaml › population › {bay_id}: " + "; ".join(problems))
@@ -107,7 +110,7 @@ def part_jobs(rack) -> list[tuple[str, str, dict]]:
         ("chain_anchor", "parts/chain_parts.scad", {"PART": "anchor"}),
         ("chain_link", "parts/chain_parts.scad", {"PART": "link"}),
         ("chain_bar", "parts/chain_parts.scad", {"PART": "bar"}),
-        ("plate_universal", "parts/board_plate.scad", {"BOARD": "universal"}),
+        ("plate", "parts/board_plate.scad", {}),                                # the honeycomb plate
         ("camera_pod", "parts/camera_pod.scad", {"PART": "pod"}),
         ("camera_diffuser", "parts/camera_pod.scad", {"PART": "diffuser"}),
         ("bay_label", "parts/label.scad", {}),
@@ -119,10 +122,15 @@ def part_jobs(rack) -> list[tuple[str, str, dict]]:
     for k, row in enumerate(rack.rows):      # one ladder and one brace per row (their heights differ)
         jobs.append((f"ladder_{row['id'].lower()}", "parts/ladder.scad", {"PART": "row", "ROW": k}))
         jobs.append((f"brace_{row['id'].lower()}", "parts/brace.scad", {"ROW": k}))
-    for bid in sorted(rackcfg.load_boards()):
-        jobs.append((f"plate_{bid}", "parts/board_plate.scad", {"BOARD": bid}))
-    for bay_id in rack.multi_bays():        # a converted bay: one plate for its boards
-        jobs.append((f"plate_bay_{bay_id.lower()}", "parts/board_plate.scad", {"BAY": bay_id}))
+    for name, defines in plate_layout.peg_parts(rackcfg.load_boards()).items():     # its pegs
+        jobs.append((name, "parts/pegs.scad", defines))
+    for bay in rack.bays():                 # a bay that asks for the former plates (`plate: boards`)
+        if rack.duts(bay.id) and rack.plate_kind(bay.id) == "boards":
+            if rack.is_multi(bay.id):
+                jobs.append((f"plate_bay_{bay.id.lower()}", "parts/board_plate.scad", {"BAY": bay.id}))
+            else:
+                bid = rack.duts(bay.id)[0].board
+                jobs.append((f"plate_{bid}", "parts/board_plate.scad", {"BOARD": bid}))
     return [j for j in jobs if (MECH / j[1]).exists()]
 
 

@@ -25,6 +25,4 @@ BOARD_DB = [
 // A converted bay's shared plate (config/rack.yaml › population › boards): its boards at their `at`, in
 // plate coords (front-left corner, y to the port wall), each turned USB to the port wall unless `orient: side`.
 // [bay, plate kind, [[slot, [x, y], board record as in BOARD_DB], ...]]
-BAY_PLATES = [
-  ["B3", "boards", [[1, [16.6, 52.4], ["xiao", "XIAO", [21, 17.8], 3.2, [], 10.5, "usb-c", 6, true, 4, "#202a44", true, false]], [2, [44.2, 34], ["rpi-pico2", "PICO 2", [21, 51], 2.1, [[4.8, 2], [16.2, 2], [4.8, 49], [16.2, 49]], 10.5, "micro-b", 9, false, 4, "#1e7b34", true, false]], [3, [72.2, 34], ["rpi-pico2", "PICO 2", [21, 51], 2.1, [[4.8, 2], [16.2, 2], [4.8, 49], [16.2, 49]], 10.5, "micro-b", 9, false, 4, "#1e7b34", true, false]], [4, [99.8, 52.4], ["xiao", "XIAO", [21, 17.8], 3.2, [], 10.5, "usb-c", 6, true, 4, "#202a44", true, false]]]]
-];
+BAY_PLATES = [];

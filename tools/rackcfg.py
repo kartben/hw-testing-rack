@@ -24,8 +24,9 @@ class Bay:
 
 # ---- the boards under test in a bay (config/rack.yaml › population) ------------------------------------
 MAX_SLOTS = 4           # a DATA ×4 board in the drawer: four DUTs on one bay node (docs/multi-dut-node.md)
-PLATE_KINDS = ("boards",)   # a converted bay's plate: each board's standoffs or fences at its `at` (a hex peg
-                            # plate would be another kind: the boards then sit on pegs, no per-board plate)
+PLATE_KINDS = ("pegs", "boards")   # a bay's plate: "pegs" (default), the one honeycomb plate for every board,
+                            # the boards held by clip-in pegs (tools/plate_layout.py); "boards", a converted bay's
+                            # own plate with each board's standoffs or fences at its `at` (board_plate.scad › BAY)
 NODE_BUTTONS = ((7.5, 21.5), (15.5, 21.5))   # the node's RESET and BOOT (KiCad), lib/carrier.scad NODE_RESET, NODE_BOOT
 BUTTON_HOLE_R = 1.6     # the plate's pin holes over them (Ø3.2)
 BUTTON_CLEAR = 3.0      # a board's footprint stays this far from those holes: a pin must reach the buttons
@@ -213,8 +214,9 @@ class Rack:
         return "boards" in (self.raw.get("population", {}).get(bay_id) or {})
 
     def plate_kind(self, bay_id: str) -> str:
-        """A converted bay's plate (population › plate): "boards", the only one made so far."""
-        k = (self.raw.get("population", {}).get(bay_id) or {}).get("plate", "boards")
+        """A bay's plate (population › plate): "pegs", the honeycomb plate and its pegs (every bay unless it says
+        otherwise), or "boards", a converted bay's own plate with its boards' standoffs or fences."""
+        k = (self.raw.get("population", {}).get(bay_id) or {}).get("plate", "pegs")
         if k not in PLATE_KINDS:
             raise ValueError(f"{bay_id}: plate {k!r}, not one of {PLATE_KINDS}")
         return k
@@ -249,6 +251,42 @@ class Rack:
                 ("finger slot", (12 - 7, d / 2 - 4.5, 12 + 7, d / 2 + 4.5)),
                 ("finger slot", (w - 12 - 7, d / 2 - 4.5, w - 12 + 7, d / 2 + 4.5)),
                 ("label", (w / 2 - 25, 2, w / 2 + 25, 12))]
+
+    @property
+    def plate_grid(self) -> dict:
+        """config/rack.yaml › plate_grid, with the row pitch."""
+        g = dict(self.raw["plate_grid"])
+        g["row"] = g["pitch"] * math.sqrt(3) / 2
+        return g
+
+    def plate_holes(self) -> list[tuple[int, int, float, float]]:
+        """The honeycomb's holes, (row, col, x, y) in plate coords: rows along X from the front (row 1), the
+        long rows (odd) one hole longer than the short ones, each row centred; none within `margin` of the
+        plate's edge, the locating pins, the finger slots or the RESET/BOOT pin holes (lib/hexgrid.scad
+        reads them from generated/config.scad, tools/plate_layout.py from here)."""
+        g = self.plate_grid
+        w, d = self.plate_size
+        p, af, u, m = g["pitch"], g["hole"], g["undercut"], g["margin"]
+        half_x = af / 2 + u                      # the undercut hex: flats facing ±X, corners ±Y
+        half_y = (af + 2 * u) / math.sqrt(3)
+        n_rows = int((d - 2 * (m + half_y)) / g["row"] + 1e-9) + 1
+        y0 = (d - (n_rows - 1) * g["row"]) / 2
+        n_long = int((w - 2 * (m + half_x)) / p + 1e-9) + 1
+        slots = [(x, d / 2) for x in (12.0, w - 12.0)]            # finger slots: 14 × 9 along X (plate_keepouts)
+        out = []
+        for j in range(n_rows):
+            n = n_long if j % 2 else n_long - 1
+            y = y0 + j * g["row"]
+            for i in range(n):
+                x = w / 2 + p * (i - (n - 1) / 2)
+                if any(math.hypot(x - px, y - py) < 2.1 + half_y + m for px, py in ((10, 10), (w - 10, d - 10))):
+                    continue
+                if any(math.hypot(max(abs(x - sx) - 2.5, 0), y - sy) < 4.5 + half_y + m for sx, sy in slots):
+                    continue
+                if any(math.hypot(x - bx, y - by) < BUTTON_HOLE_R + half_y + m for bx, by in self.plate_buttons()):
+                    continue
+                out.append((j + 1, i + 1, round(x, 3), round(y, 3)))
+        return out
 
     def bay_layout(self, bay_id: str, boards: dict | None = None) -> list[dict]:
         """A converted bay's boards on its plate, in port order: {slot, board, at: (x, y), o} with o the board
@@ -496,6 +534,14 @@ def scad_config(rack: Rack) -> str:
         "DATA_PORT_X": [round(x, 3) for x in rack.data_port_x],
         "AUX_PORT_X": round(rack.aux_port_x, 3),
         "PLATE_T": d["plate"],
+        "HEX_PITCH": rack.plate_grid["pitch"],
+        "HEX_AF": rack.plate_grid["hole"],
+        "HEX_U": rack.plate_grid["undercut"],
+        "HEX_CLEAR": rack.plate_grid["clear"],
+        "HEX_HOLES": [[x, y] for _, _, x, y in rack.plate_holes()],
+        "HEX_ROWS": sorted({(r, y) for r, _, _, y in rack.plate_holes()}),
+        "PEG_STOP": [rack.plate_grid["stop"][k] for k in ("offset", "angle", "neck", "ledge", "lip")],
+        "PEG_CAM": [rack.plate_grid["cam"][k] for k in ("r0", "r1", "arc", "under")],
         "CHAIN_INNER": ch["inner"],
         "CHAIN_OUTER": ch["outer"],
         "CHAIN_R": ch["radius"],

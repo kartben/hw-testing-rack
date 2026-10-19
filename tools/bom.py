@@ -26,6 +26,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+import plate_layout  # noqa: E402
 import rackcfg  # noqa: E402
 
 REPO = rackcfg.REPO
@@ -290,13 +291,20 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         counts[f"brace_{row['id'].lower()}"] += cols
     for bay in rack.bays():
         duts = rack.duts(bay.id)
-        if rack.is_multi(bay.id):           # a converted bay: one plate for its boards, a DATA ×4 drawer / block
-            counts[f"plate_bay_{bay.id.lower()}"] += 1
+        if rack.is_multi(bay.id):           # a converted bay: a DATA ×4 drawer / block
             part = "drawer" if rack.mount(bay.id) == "drawer" else "drawer_block"
             counts[part] -= 1
             counts[f"{part}_x4"] += 1
+        if not duts or rack.plate_kind(bay.id) == "pegs":
+            counts["plate"] += 1            # the honeycomb plate, and the pegs that hold its boards
+            if duts:
+                for peg in plate_layout.layout_bay(rack, bay.id).pegs:
+                    for name, _ in peg.parts:
+                        counts[name] += 1
+        elif rack.is_multi(bay.id):         # `plate: boards`: the former plates
+            counts[f"plate_bay_{bay.id.lower()}"] += 1
         else:
-            counts[f"plate_{duts[0].board}" if duts else "plate_universal"] += 1
+            counts[f"plate_{duts[0].board}"] += 1
     stl_dir = REPO / "mechanical" / "stl"
     rows, prints = [], []
     total_g = 0.0

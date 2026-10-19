@@ -14,8 +14,8 @@ the latest CI run).
   `ladder_b`, `ladder_c`: their heights differ) and a `ladder_cap`.
 * Per column: `floor_plate`, `cap_plate`, one brace per level (`brace_base`,
   `brace_a` …).
-* Per bay: `tray`, `drawer`, `chain_foot`, `chain_anchor`, one board plate,
-  `bay_label`.
+* Per bay: `tray`, `drawer`, `chain_foot`, `chain_anchor`, the board `plate`
+  and the pegs its boards need (`python tools/plate_layout.py <bay>`), `bay_label`.
 
 Heat-set inserts (M3 × 5.7) while the parts are on the bench: 4 in the rear
 edge of every base and row ladder (the braces screw into them), 4 in each

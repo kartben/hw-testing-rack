@@ -1,23 +1,28 @@
-// Board plate — the swappable "form-factor" plate a dev board is screwed to.
+// Board plate — the plate in a drawer that the dev boards sit on.
 //
-//   openscad -D 'BOARD="nucleo-144"' -o plate_nucleo-144.stl parts/board_plate.scad
-//   openscad -D 'BOARD="universal"'  -o plate_universal.stl  parts/board_plate.scad
-//   openscad -D 'BOARD="nucleo-64"' -D 'MODE="snap"' ...   (tool-less snap pins)
-//   openscad -D 'BAY="B3"' -o plate_bay_b3.stl parts/board_plate.scad   (a converted bay: its boards, one plate)
+//   openscad -o plate.stl parts/board_plate.scad                         the honeycomb plate (every bay)
+//   openscad -D 'BAY="B3"' -o plate_bay_b3.stl parts/board_plate.scad   a converted bay's own plate (`plate: boards`)
+//   openscad -D 'BOARD="nucleo-144"' -o plate_nucleo-144.stl parts/board_plate.scad   (the former per-board plates)
 //
-// Plates drop into any drawer (two 180°-symmetric locating pins), so a board
-// can move between bays without touching a screw.  The board is placed with
-// its debug USB facing the drawer's rear port wall; boards too long for a plug
-// behind them (usb_side) turn it to the right wall instead and sit to the left.
-// The short cable loops under the two cable hooks.
+// The honeycomb plate (default): one plate for every board.  Clip-in pegs (parts/pegs.scad) snap into its
+// hexagonal holes anywhere: eccentric stops place a board, small cams clamp it, pins go through mounting
+// holes; tools/plate_layout.py says which hole and which turn for each board, the viewer shows them.
+// The clip stays inside the plate's 5 mm (lib/hexgrid.scad): nothing comes out underneath.  Odd rows are
+// numbered on both rims (row 1 at the front) so a layout reads "row 7, 4th hole".
+// Plates drop into any drawer (two 180°-symmetric locating pins), so a board can move between bays.
+//
+// The former plates, kept for a converted bay that asks for its own (`plate: boards`) and for anyone who
+// prefers screws: the board placed with its debug USB facing the drawer's rear port wall (boards too long
+// for a plug behind them, usb_side, turn it to the right wall and sit to the left), on
 //   MODE = "insert": heat-set inserts (M3, or M2/M2.5 for small boards)
 //   MODE = "snap"  : split snap pins, push the board on, pinch to release
 // Hole-less or not-yet-measured boards (fence = true) get corner fences.
-// Print: flat, PETG/PLA, 2–3 walls; ~15 min per plate.
+// Print: flat, PETG, 2–3 walls, no support (the holes' 45° ledges print as they are).
 include <../lib/carrier.scad>
+include <../lib/hexgrid.scad>
 include <../generated/boards.scad>
 
-BOARD = "universal";
+BOARD = "";                           // a former per-board plate ("universal": M3 slots)
 BAY = "";                             // a converted bay's shared plate (generated/boards.scad › BAY_PLATES)
 MODE = "insert";
 REAR_GAP_MAX = 26;                    // room for the USB plug + cable bend behind the board
@@ -184,5 +189,26 @@ module bay_plate(id) {
     }
 }
 
+// ---- the honeycomb plate
+module row_numbers() {
+    for (r = HEX_ROWS) if (r[0] % 2 == 1)
+        for (x = [5.2, PLATE_W - 5.2]) {
+            spot = [x, r[1]];
+            clear = [for (q = concat(plate_pins(), button_holes(), [[12, PLATE_D / 2], [PLATE_W - 12, PLATE_D / 2]]))
+                     if (norm(spot - q) < 9.5) 1];
+            if (len(clear) == 0) translate([x, r[1], PLATE_T - 0.5]) label_text(str(r[0]), size = 3.4, depth = 0.5 + EPS);
+        }
+}
+
+module hex_plate() {
+    difference() {
+        plate_body();
+        for (h = HEX_HOLES) translate([h[0], h[1], 0]) hex_hole();
+        row_numbers();
+    }
+}
+
 if (BAY != "") bay_plate(BAY);
-else if (BOARD == "universal") universal_plate(); else board_plate(BOARD);
+else if (BOARD == "universal") universal_plate();
+else if (BOARD != "") board_plate(BOARD);
+else hex_plate();

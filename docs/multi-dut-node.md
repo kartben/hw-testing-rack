@@ -149,9 +149,10 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
 
 Done on the tools side (2026-10-19), against the simulated node: a bay's
 `boards:` in `config/rack.yaml` (`tools/rackcfg.py` › `dut_slots`,
-`bay_boards`), one shared plate per converted bay (`board_plate.scad`
-`BAY="<id>"`, `plate_bay_<id>.stl`, laid out from each board's `at` and checked
-clear of the RESET/BOOT pin holes), `bayctl ports`, per-port power, reset,
+`bay_boards`), the boards on the bay's honeycomb plate (its pegs placed by
+`tools/plate_layout.py` from each board's `at`, [mechanical.md](mechanical.md#the-board-plate-and-its-pegs);
+`plate: boards` for the former shared plate, `board_plate.scad` `BAY="<id>"`,
+`plate_bay_<id>.stl`, checked clear of the RESET/BOOT pin holes), `bayctl ports`, per-port power, reset,
 leases and `attach --follow`, and `firmware/bay-node/web/dev_server.py
 --ports 4` serving this API.  The firmware itself: nothing yet.
 

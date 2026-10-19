@@ -18,6 +18,9 @@
 # orient: side = turn the debug USB towards the drawer's right wall; the board then sits to the
 #                left of its plate.  For a board too long for a plug behind it, and for a small
 #                one: its cable is then straight at both ends and lies flat (docs/cabling.md)
+# pegs         = the honeycomb plate's pegs (tools/plate_layout.py): `keepout`, [edge, from, to] in the drawing
+#                frame (edge and positions as usb counts them), spans of the outline no peg may touch: a header
+#                or a connector at the edge, pins under it.  The debug USB's plug is kept out by itself.
 # zephyr       = CI defaults for tools/bayctl.py (twister hardware map): `platform` is the target
 #                as twister names it (the board YAML's `identifier`), `runner` the west runner,
 #                `console` usb (the debugger's VCOM, default) or aux (the bay's AUX UART).
@@ -32,6 +35,7 @@ boards:
     hole_d: 3.2
     usb: { edge: left, pos: 41.0, type: usb-c }
     orient: side            # small: a straight cable, flat, from the right DATA socket
+    pegs: { keepout: [[left, 2, 16], [top, 17, 66], [bottom, 26, 66], [right, 30, 48]] }   # jack; headers; ICSP, Qwiic
     standoff: 6
     height: 11
     color: "#00878f"
@@ -74,6 +78,7 @@ boards:
     holes: [[10.87, 54.61], [59.13, 53.34], [43.89, 2.54]]
     hole_d: 3.2
     usb: { edge: top, pos: 47.0, type: micro-b }    # MB1136 = mini-B, MB1367 = micro-AB
+    pegs: { keepout: [[left, 4, 60], [right, 4, 60]] }        # the morpho headers' pins under the long edges
     standoff: 12
     height: 12
     color: "#f2f2f2"
@@ -89,6 +94,7 @@ boards:
     holes: [[10.87, 105.41], [59.13, 104.14], [43.89, 53.34], [12.14, 29.21], [57.86, 29.21]]
     hole_d: 3.2
     usb: { edge: top, pos: 49.0, type: micro-b }    # MB1404 (H5) uses USB-C
+    pegs: { keepout: [[left, 15, 112], [right, 15, 112]] }    # the morpho headers' pins under the long edges
     standoff: 12
     height: 14
     color: "#f2f2f2"
@@ -105,6 +111,7 @@ boards:
     hole_d: 2.1
     usb: { edge: top, pos: 10.5, type: micro-b }
     orient: side            # small: a straight cable, flat, from the right DATA socket
+    pegs: { keepout: [[left, 0, 51], [right, 0, 51]] }        # headers along both long edges: a pin through a hole
     standoff: 9
     height: 4
     color: "#1e7b34"
@@ -121,6 +128,7 @@ boards:
     fence: true
     usb: { edge: bottom, pos: 12.7, type: micro-b }  # two micro-B (UART + USB-OTG)
     orient: side            # small: a straight cable, flat, from the right DATA socket
+    pegs: { keepout: [[left, 0, 62.74], [right, 0, 62.74], [bottom, 0, 25.4]] }   # headers; both USB ports
     standoff: 10            # header pins underneath
     height: 8
     color: "#151515"
@@ -136,6 +144,7 @@ boards:
     fence: true
     usb: { edge: bottom, pos: 12.7, type: usb-c }    # two USB-C
     orient: side            # small: a straight cable, flat, from the right DATA socket
+    pegs: { keepout: [[left, 0, 51.8], [right, 0, 51.8], [bottom, 0, 25.4]] }     # headers; both USB ports
     standoff: 10
     height: 8
     color: "#151515"
@@ -165,6 +174,7 @@ boards:
     holes: []
     fence: true
     usb: { edge: top, pos: 25.8, type: micro-b }
+    pegs: { keepout: [[bottom, 0, 51.6]] }                    # the edge connector
     standoff: 6
     height: 6
     color: "#111111"

@@ -55,7 +55,19 @@ drawer:
   aux_port: 0.50             # slot for the optional AUX (JST-SH) pigtail
   flange: [3.0, 3.0]     # runner flange (width, height) captured by the guides
   magnet: [6, 3]         # closed-position detent magnet Ø × t (one in drawer, one in deck)
-  plate: 2.5             # board plate thickness
+  plate: 5.0             # board plate thickness: the pegs' clip sits inside it (plate_grid)
+
+plate_grid:              # the board plate: one honeycomb for every board, and clip-in pegs that hold them
+                         # (mechanical/lib/hexgrid.scad, parts/pegs.scad; tools/plate_layout.py places them)
+  pitch: 10.0            # hex centre to centre; rows along X, one every pitch·√3/2 (8.66)
+  hole: 7.2              # a hole's waist across flats
+  undercut: 0.4          # wider by this per side over the bottom 1.4 mm; the pegs' nubs catch its 45° ledge
+  margin: 1.8            # least plastic between a hole (its undercut) and the plate's edge, a pin or a slot
+  clear: 0.1             # a peg's plug in its hole, per side
+  stop: { offset: 3.55, angle: 15, neck: 4.6, ledge: 7.0, lip: 7.6 }   # eccentric lip stop: its post's offset
+                         # from the plug's axis, at `angle` from a flat: 6 turns, 6 positions; neck, ledge, lip Ø
+  cam: { r0: 3.0, r1: 6.75, arc: 270, under: 20 }   # the cam's spiral band (radius r0 → r1 over arc°), its
+                         # 20° undercut presses the PCB's top edge down; the stops place, the cams clamp
 
 chain:                   # drag chain lying flat in the plenum (bends in the XY plane)
                          # reference: Olimex DRAG-CHAIN-7X7, links open on both sides.  Olimex gives
@@ -106,13 +118,18 @@ power_box:                # mechanical/parts/power_box.scad: the power hub's enc
 # one plate (plate_bay_<id>, `plate: boards`): each board's front-left corner `at` [x, y] in plate coords
 # (front-left origin, y to the port wall; without it they are packed in a row), turned USB to the port wall
 # (`orient: side` to turn it to the right wall).  tools/rackcfg.py checks the layout.
+# Every bay's plate is the honeycomb plate (`plate: pegs`, the default): its boards held by clip-in pegs, placed by
+# tools/plate_layout.py from the board's usual place (a converted bay's: its `at`), moved a few mm to fit the
+# grid.  `plate: boards` asks for the former kind instead: the board's own plate (plate_<board>), or a converted
+# bay's (plate_bay_<id>), standoffs or corner fences at each `at`.
 population:
   A1: { board: nucleo-64,        cable: c-to-micro-b }
   A2: { board: nucleo-144,       cable: c-to-micro-b }
   A3: { board: nrf52840-dk,      cable: c-to-micro-b, mount: sled }                # a sled bay: no drag chain
   A4: { board: nrf54l15-dk,      cable: c-to-c }
   B1: { board: frdm-mcxn947,     cable: c-to-c }
-  B2: { board: giga-r1-display,  cable: c-to-c }                   # the camera bay: a live LVGL screen (2026-10-18)
+  B2: { board: giga-r1-display,  cable: c-to-c, plate: boards }   # the camera bay: a live LVGL screen (2026-10-18);
+                                                                   # the shield hides the GIGA's edges: its own fenced plate
   B3:                                                              # converted: B3.1–B3.4 on a DATA ×4 board
     open: true                                                     # drawer shown pulled out
     boards:                  # straight cables, an S on the plate: the Pico 2 in the middle, 6 mm off their ports'

@@ -8,11 +8,11 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Electronics | 578 |
 | Power | 82 |
 | Cameras | 64 |
-| Printed parts | 58 |
+| Printed parts | 60 |
 | Cables | 49 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **865** |
+| **Total** | **867** |
 
 ≈ **€108 per bay** all-in.
 
@@ -63,14 +63,19 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | ladder_b | 5 | 48.9 | `mechanical/stl/ladder_b.stl` |
 | ladder_base | 5 | 49.3 | `mechanical/stl/ladder_base.stl` |
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
-| plate_arduino-uno-r4 | 1 | 31.2 | `mechanical/stl/plate_arduino-uno-r4.stl` |
-| plate_bay_b3 | 1 | 36.8 | `mechanical/stl/plate_bay_b3.stl` |
-| plate_frdm-mcxn947 | 1 | 36.9 | `mechanical/stl/plate_frdm-mcxn947.stl` |
-| plate_giga-r1-display | 1 | 36.6 | `mechanical/stl/plate_giga-r1-display.stl` |
-| plate_nrf52840-dk | 1 | 37.6 | `mechanical/stl/plate_nrf52840-dk.stl` |
-| plate_nrf54l15-dk | 1 | 37.6 | `mechanical/stl/plate_nrf54l15-dk.stl` |
-| plate_nucleo-144 | 1 | 37.5 | `mechanical/stl/plate_nucleo-144.stl` |
-| plate_nucleo-64 | 1 | 34.4 | `mechanical/stl/plate_nucleo-64.stl` |
+| peg_base_h10 | 11 | 0.5 | `mechanical/stl/peg_base_h10.stl` |
+| peg_base_h12 | 5 | 0.5 | `mechanical/stl/peg_base_h12.stl` |
+| peg_base_h6 | 4 | 0.3 | `mechanical/stl/peg_base_h6.stl` |
+| peg_base_h9 | 2 | 0.4 | `mechanical/stl/peg_base_h9.stl` |
+| peg_bobbin | 6 | 0.9 | `mechanical/stl/peg_bobbin.stl` |
+| peg_cam | 22 | 0.2 | `mechanical/stl/peg_cam.stl` |
+| peg_pin_d21_h9 | 2 | 0.3 | `mechanical/stl/peg_pin_d21_h9.stl` |
+| peg_pin_d32_h12 | 1 | 0.5 | `mechanical/stl/peg_pin_d32_h12.stl` |
+| peg_stop_h10 | 10 | 0.5 | `mechanical/stl/peg_stop_h10.stl` |
+| peg_stop_h12 | 3 | 0.6 | `mechanical/stl/peg_stop_h12.stl` |
+| peg_stop_h6 | 5 | 0.4 | `mechanical/stl/peg_stop_h6.stl` |
+| plate | 7 | 42.0 | `mechanical/stl/plate.stl` |
+| plate_giga-r1-display | 1 | 71.0 | `mechanical/stl/plate_giga-r1-display.stl` |
 | power_box_base | 1 | 44.9 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 20.8 | `mechanical/stl/power_box_lid.stl` |
@@ -210,7 +215,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Electronics | Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL) | 5  | 0.37 | 1.84 | estimate, not quoted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT | 1  | 17.20 | 17.20 | estimate, not quoted |
 | Electronics | Components camera-pod: JLC quote minus the catalogue prices above | 1  | 0.08 | 0.08 | estimate, not quoted |
-| Printed parts | PETG filament | 2.9 kg | 20.00 | 58.00 | any |
+| Printed parts | PETG filament | 3.0 kg | 20.00 | 60.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 142  | 0.03 | 4.26 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 62  | 0.02 | 1.24 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid, camera pods) | 44  | 0.02 | 0.88 | AliExpress (bulk) |

@@ -128,7 +128,7 @@ Electronics,camera-pod,AMS1117-3.3 — 3.3 V 1 A LDO,2,pcs,0.1932,0.39,LCSC/JLCP
 Electronics,camera-pod,"Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL)",5,pcs,0.368,1.84,"estimate, not quoted",,,,,"board $2.00 = $2.00 for 5 PCBs, 2 of them assembled"
 Electronics,camera-pod,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,17.2,17.2,"estimate, not quoted",,,,,"setup $8.00, stencil $1.50, extended parts $9.00, SMT $0.20"
 Electronics,camera-pod,Components camera-pod: JLC quote minus the catalogue prices above,1,pcs,0.08,0.08,"estimate, not quoted",,,,,quoted components $2.05 (≈ €1.89) for 2 boards; catalogue unit prices give €1.81
-Printed parts,filament,PETG filament,2.9,kg,20.0,58.0,any,,,,,"≈2.6 kg estimated + 10 % waste, 95 parts"
+Printed parts,filament,PETG filament,3.0,kg,20.0,60.0,any,,,,,"≈2.7 kg estimated + 10 % waste, 166 parts"
 Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",142,pcs,0.03,4.26,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs
 Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",62,pcs,0.02,1.24,AliExpress (bulk),,,,,
 Fasteners,,"M3×6 (node PCB, power box lid, camera pods)",44,pcs,0.02,0.88,AliExpress (bulk),,,,,

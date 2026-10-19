@@ -334,6 +334,9 @@ class Slots(unittest.TestCase):
                          "stale: run python tools/build.py config")
         rack = rackcfg.load()
         rack.raw["population"]["B3"] = {"boards": [{"board": b} for b, _ in CONVERTED]}
+        self.assertIn("BAY_PLATES = [];", build.boards_scad(rackcfg.load_boards(), rack))   # the honeycomb plate
+        self.assertNotIn(("plate_bay_b3", "parts/board_plate.scad", {"BAY": "B3"}), build.part_jobs(rack))
+        rack.raw["population"]["B3"]["plate"] = "boards"                                  # its own plate
         self.assertIn('["B3", "boards", [[1, [16.2, 115.6], ["xiao", "XIAO", [21, 17.8]',
                       build.boards_scad(rackcfg.load_boards(), rack))
         self.assertIn(("plate_bay_b3", "parts/board_plate.scad", {"BAY": "B3"}), build.part_jobs(rack))

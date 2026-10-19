@@ -67,6 +67,8 @@ const MAT = {
   framePlates: std(0x31363f, 0, 0.6),
   drawers: std(0xe3e6ea, 0, 0.48),
   plates: std(0x2f6fde, 0, 0.45),
+  pegs: std(0xeceae4, 0, 0.5),                       // the plate's stops, pins, bases, bobbin
+  cams: std(0xff8a3d, 0, 0.45),                      // the cams: the part you turn
   chain: std(0x15171b, 0.1, 0.5),
   chainParts: std(0xff8a3d, 0, 0.45),
   cameras: std(0x2a2e35, 0, 0.55),
@@ -121,7 +123,7 @@ if (dot(vUpView, vUpView) > 0.01) {
   };
   return mat;
 }
-for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'chainParts', 'cameras', 'powerBox', 'powerLabels']) printLook(MAT[k]);
+for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'pegs', 'cams', 'chainParts', 'cameras', 'powerBox', 'powerLabels']) printLook(MAT[k]);
 
 function partMaterial(name) {
   if (name.startsWith('dataport_pcb')) return MAT.pcbGreen;    // the DATA board, and the DATA ×4 one (…_x4)
@@ -133,7 +135,9 @@ function partMaterial(name) {
   if (name === 'floor_plate' || name === 'cap_plate') return MAT.framePlates;
   if (name.startsWith('drawer')) return MAT.drawers;      // a drawer, or a sled bay's sled and port block
   if (name.startsWith('chain_')) return MAT.chainParts;
-  if (name.startsWith('plate_')) return MAT.plates;
+  if (name === 'plate' || name.startsWith('plate_')) return MAT.plates;
+  if (name === 'peg_cam') return MAT.cams;
+  if (name.startsWith('peg_')) return MAT.pegs;
   if (name === 'camera_diffuser' || name === 'podpcb_parts') return MAT.powerLabels;
   if (name.startsWith('camera_')) return MAT.cameras;
   if (name === 'mega_camera') return MAT.blackPlastic;
@@ -860,11 +864,12 @@ function select(id, showPanel = true) {
     <dl>
       <dt>Board</dt><dd>${b.slots
         ? b.slots.map((s) => `${s.id} · ${s.board} <span class="sub">(port ${s.port}, ${s.usb})</span>`).join('<br>')
-        : (b.board ?? '<em>empty — universal plate</em>')}</dd>
+        : (b.board ?? '<em>empty — honeycomb plate</em>')}</dd>
       ${credit ? `<dt>3D model</dt><dd>${credit}</dd>` : ''}
       <dt>Debug USB</dt><dd>${b.usb ?? '—'}</dd>
       <dt>Cable</dt><dd>${b.slots ? [...new Set(b.slots.map((s) => s.cable))].join('<br>') : (b.cable ?? '—')}</dd>
       <dt>DATA socket</dt><dd>${b.data_port ? b.data_port.join(' + ') + ' position' : '—'}</dd>
+      ${b.pegs ? `<dt>Plate</dt><dd>honeycomb, ${b.pegs.count} pegs <span class="sub">(python tools/plate_layout.py ${b.id})</span>${b.pegs.notes.map((n) => `<br><span class="sub">${n}</span>`).join('')}</dd>` : ''}
       <dt>USB/IP</dt><dd>ESP32-S3 node · <code>usbip attach -r bay-${b.id.toLowerCase()}.local -b ${b.slots ? '1-1.n' : '1-1'}</code>${b.slots ? ' <span class="sub">(n = the port)</span>' : ''}</dd>
     </dl>
     <div class="actions">

@@ -16,6 +16,7 @@ from pathlib import Path
 import numpy as np
 import trimesh
 
+import plate_layout
 import rackcfg
 from build import BUILD, MECH, REPO, SITE_ASSETS, openscad_cmd
 
@@ -36,7 +37,7 @@ WEB_PARTS = {
     "mega_camera": ("parts/camera_pod.scad", {"PART": "mega"}),
     "podpcb": ("parts/camera_pod.scad", {"PART": "podpcb"}),
     "podpcb_parts": ("parts/camera_pod.scad", {"PART": "podpcb_parts"}),
-    "plate_universal": ("parts/board_plate.scad", {"BOARD": "universal"}),
+    "plate": ("parts/board_plate.scad", {}),                                 # the honeycomb plate
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {"PART": "lid"}),
     "power_box_labels": ("parts/power_box.scad", {"PART": "labels"}),
@@ -176,11 +177,14 @@ def build_parts_glb(rack, boards: dict, hq: bool = False) -> dict:
     parts = {n: (s, d, None) for n, (s, d) in WEB_PARTS.items()}
     parts.update(panel_parts(rack))
     parts.update(dataport_parts(rack))
-    used = sorted({sl.board for b in rack.bays() if not rack.is_multi(b.id) for sl in rack.duts(b.id)})
-    for bid in used:
-        parts[f"plate_{bid}"] = ("parts/board_plate.scad", {"BOARD": bid}, None)
-    for bay_id in rack.multi_bays():           # a converted bay: one plate for its boards
-        parts[f"plate_bay_{bay_id.lower()}"] = ("parts/board_plate.scad", {"BAY": bay_id}, None)
+    for name, defines in plate_layout.peg_parts(boards).items():     # the honeycomb plate's pegs
+        parts[name] = ("parts/pegs.scad", defines, None)
+    for b in rack.bays():                      # a bay that keeps the former plates (`plate: boards`)
+        if rack.duts(b.id) and rack.plate_kind(b.id) == "boards":
+            if rack.is_multi(b.id):
+                parts[f"plate_bay_{b.id.lower()}"] = ("parts/board_plate.scad", {"BAY": b.id}, None)
+            else:
+                parts[f"plate_{rack.duts(b.id)[0].board}"] = ("parts/board_plate.scad", {"BOARD": rack.duts(b.id)[0].board}, None)
     fn, sub = (64, "hq") if hq else (28, "web")
     with cf.ThreadPoolExecutor(max_workers=8) as ex:
         futs = {ex.submit(render_web_stl, n, s, d, fn, sub, w): n for n, (s, d, w) in parts.items()}
@@ -746,13 +750,31 @@ def build(rack) -> Path:
         meta = {"id": b.id, "row": rack.rows[i]["id"], "row_index": i, "col": b.index + 1, "span": 1,
                 "camera": b.id in cams, "unit_x": x0,
                 "label_pos": [x0 + rack.carrier_w / 2, -3, plenum + d["front_height"] + 6]}
+        pegs_plate = bool(info) and rack.plate_kind(b.id) == "pegs"
+        placed = {}
+        if pegs_plate:
+            # the honeycomb plate, its pegs (tools/plate_layout.py: stops, cams, pins, the cable's bobbin) and its
+            # boards where that layout puts them
+            lay = plate_layout.layout_bay(rack, b.id, boards)
+            top = dz + d["bottom"] + d["plate"]
+            add("plate", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i, layer="plates", bay=b.id,
+                movable=drawer)
+            for peg in lay.pegs:
+                for name, rot in peg.parts:
+                    z = top + (peg.h - 1.0 if name == "peg_cam" else 0.0)
+                    add(name, (dxw + plate_x0 + peg.x, dy + plate_y0 + peg.y, z), rot=(0, 0, round(rot, 1)), row=i,
+                        layer="plates", bay=b.id, movable=drawer)
+            placed = {pb.slot: pb.at for pb in lay.boards}
+            meta["pegs"] = {"count": len(lay.pegs), "notes": lay.notes}
         if info and rack.is_multi(b.id):
-            # a converted bay: one plate (board_plate.scad › BAY), its boards where rackcfg.bay_layout puts them,
-            # each on its own DATA ×4 port
-            add(f"plate_bay_{b.id.lower()}", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i,
-                layer="plates", bay=b.id, movable=drawer)
+            # a converted bay: one plate (the honeycomb one, or board_plate.scad › BAY), its boards where the peg
+            # layout (or rackcfg.bay_layout) puts them, each on its own DATA ×4 port
+            if not pegs_plate:
+                add(f"plate_bay_{b.id.lower()}", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i,
+                    layer="plates", bay=b.id, movable=drawer)
             slots = []
             for e in rack.bay_layout(b.id, boards):
+                e = {**e, "at": placed.get(e["slot"].id, e["at"])}
                 # the board as turned on this plate: to the port wall unless its entry says `orient: side`
                 sl, o = e["slot"], e["o"]
                 bd = {**boards[e["board"]], "orient": sl.orient or "rear"}
@@ -768,15 +790,18 @@ def build(rack) -> Path:
             bd = boards[info["board"]]
             o = rackcfg.orient_board(bd)
             cab = cables_cfg[info["cable"]]
-            add(f"plate_{info['board']}", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i,
-                layer="plates", bay=b.id, movable=drawer)
-            if o["usb_side"]:            # same placement as board_plate.scad
-                bx = dxw + plate_x0 + 2.5    # board_plate.scad › SIDE_X
-                by = dy + plate_y0 + (plate_d - o["l"]) / 2
-            else:
-                rear_gap = max(3, min(26, plate_d - o["l"] - 4))
-                bx = dxw + plate_x0 + (plate_w - o["w"]) / 2
-                by = dy + plate_y0 + plate_d - rear_gap - o["l"]
+            if pegs_plate:               # where the peg layout puts it
+                bx, by = dxw + plate_x0 + placed[b.id][0], dy + plate_y0 + placed[b.id][1]
+            else:                        # its own plate (`plate: boards`), placed as board_plate.scad places it
+                add(f"plate_{info['board']}", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i,
+                    layer="plates", bay=b.id, movable=drawer)
+                if o["usb_side"]:
+                    bx = dxw + plate_x0 + 2.5    # board_plate.scad › SIDE_X
+                    by = dy + plate_y0 + (plate_d - o["l"]) / 2
+                else:
+                    rear_gap = max(3, min(26, plate_d - o["l"] - 4))
+                    bx = dxw + plate_x0 + (plate_w - o["w"]) / 2
+                    by = dy + plate_y0 + plate_d - rear_gap - o["l"]
             # the DATA socket goes in the port farther from the board's USB (the right one for a USB turned to
             # the right wall), so the two plugs never meet
             if o["usb_side"]:

@@ -22,9 +22,10 @@ ESP32-S3 in each bay.**
 * **Drawers that stay connected** — each bay is a drawer sliding 140 mm along
   the slope; a drag chain hidden in the floor carries the cable, so you can
   pull a board out to probe it while it keeps running.
-* **Swappable form-factor plates** — boards screw (or snap) onto a plate
-  generated from a small board library (UNO, Nucleo-64/144, Pico, ESP32
-  DevKitC, nRF DKs, FRDM, …) that drops into any drawer.
+* **One plate for every board** — a honeycomb plate in each drawer; clip-in
+  pegs (stops, cams, pins) hold any board on it, placed by a tool from a small
+  board library (UNO, Nucleo-64/144, Pico, nRF DKs, FRDM, …): up to four small
+  boards on one plate.
 * **One ESP32-S3 per bay** — switches the board's 5 V (current-limited,
   default on), measures V/I (INA226), drives UART/RESET/BOOT lines, and
   exports the board's USB with Zephyr's USB/IP host service.  Plug a laptop

@@ -105,11 +105,15 @@ def part_category(name):
         return "powerlabels"
     if name == "podpcb":
         return "pcbgreen"
+    if name == "peg_cam":                                    # the honeycomb plate's cams (orange: you turn them)
+        return "chainparts"
+    if name.startswith("peg_"):                              # its stops, pins, cam bases, bobbin (white PETG)
+        return "powerlabels"
     if name.startswith(("dataport_pcb", "dataport_usb")):       # the DATA board, and the DATA ×4 one (…_x4)
         return "pcbgreen" if name.startswith("dataport_pcb") else "silver"
     for prefix, cat in (("ladder_", "ladders"), ("brace_", "braces"), ("tray", "trays"), ("floor_plate", "frameplates"),
                         ("cap_plate", "frameplates"), ("drawer", "drawers"), ("chain_", "chainparts"),
-                        ("plate_", "plates"), ("camera_", "cameras"), ("power_box_", "powerbox")):
+                        ("plate", "plates"), ("camera_", "cameras"), ("power_box_", "powerbox")):
         if name.startswith(prefix):
             return cat
     return "trays"
