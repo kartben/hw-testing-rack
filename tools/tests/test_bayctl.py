@@ -60,6 +60,14 @@ class Config(unittest.TestCase):
         self.assertEqual(b["B2"].host, "bay-b2.local")
         self.assertEqual(b["B2"].url, "http://bay-b2.local")
 
+    def test_example_bay(self):
+        b = self.bays                                                   # config/rack.yaml's B3: four boards
+        self.assertNotIn("B3", b)
+        self.assertEqual([k for k in b if k.startswith("B3")], ["B3.1", "B3.2", "B3.3", "B3.4"])
+        self.assertEqual(b["B3.1"].platform, "xiao_esp32c3")           # the lab file, per sub-slot
+        self.assertEqual(b["B3.2"].platform, "rpi_pico2/rp2350a/m33_0")
+        self.assertFalse(b["B3.4"].ci)
+
     def test_hwmap(self):
         with tempfile.TemporaryDirectory() as tmp:
             entries, warnings = bayctl.hwmap(self.bays, Path(tmp), "python3", "/opt/rack/tools/bayctl.py", None)
@@ -78,7 +86,9 @@ class Config(unittest.TestCase):
             self.assertNotIn("serial", b2)
             a4 = by["bay:A4"]                                           # no console path yet
             self.assertFalse(a4["connected"])
-            self.assertFalse(any("without a probe id" in w for w in warnings))   # one nrfutil bay without an id: no clash
+            clashes = [w for w in warnings if "without a probe id" in w]
+            self.assertEqual(len(clashes), 1)                           # one nrfutil bay without an id: no clash,
+            self.assertIn("B3.2, B3.3 use uf2", clashes[0])             # but two Pico 2 on uf2
             pre = Path(a1["pre_script"]).read_text()
             self.assertIn("prepare A1", pre)
             self.assertTrue(pre.startswith("#!/bin/sh"))
@@ -278,6 +288,12 @@ class Slots(unittest.TestCase):
                            ({"boards": [{"board": "xiao", "orient": "left"}]}, "rear or side")]:
             with self.assertRaisesRegex(ValueError, msg, msg=entry):
                 rackcfg.dut_slots("C1", entry)
+
+    def test_example_plate(self):
+        rack = rackcfg.load()                                           # config/rack.yaml's B3
+        self.assertEqual(rack.multi_bays(), ["B3"])
+        self.assertEqual(rack.bay_boards("B3"), self.EXAMPLE)
+        self.assertEqual(rack.check_bay_plate("B3"), [])
 
     def test_plate(self):
         rack = rackcfg.load()

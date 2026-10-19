@@ -1782,20 +1782,20 @@
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "AP33772SDKZ-13-FA01 — USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive, V/I/T telemetry",
+"item": "AP33772SDKZ-13-FA02 — USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive, V/I/T telemetry",
 "ref": "U1",
-"mpn": "AP33772SDKZ-13-FA01",
+"mpn": "AP33772SDKZ-13-FA02",
 "manufacturer": "Diodes Incorporated",
 "supplier": "LCSC/JLCPCB",
-"part": "C24374260",
+"part": "C50341643",
 "qty": 2,
-"unit_eur": 2.0884,
+"unit_eur": 1.6928,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 2 boards; alternative: LCSC/JLC stock 0 on 2026-10-19: JLC Global Sourcing from DigiKey (365 in stock, €2.09 @1, €1.54 @10); the FA02 drops in from ≈ 14/12/2026",
+"notes": "1 per board × 2 boards; alternative: LCSC stock was 0 on 2026-10-18: JLC global sourcing (DigiKey/Mouser) or a consigned reel",
 "unit": "pcs",
-"ext_eur": 4.18
+"ext_eur": 3.39
 },
 {
 "category": "Electronics",
@@ -1919,13 +1919,13 @@
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, global sourcing",
+"item": "Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 110.51,
-"notes": "setup $25.75, stencil $8.27, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52, global sourcing $13.30; Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
+"unit_eur": 98.27,
+"notes": "setup $25.75, stencil $8.27, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52; Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 110.51
+"ext_eur": 98.27
 },
 {
 "category": "Electronics",
@@ -1933,10 +1933,10 @@
 "item": "Components power-hub: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": -0.79,
-"notes": "quoted components $52.32 (≈ €48.13) for 2 boards; catalogue unit prices give €48.92",
+"unit_eur": 0.0,
+"notes": "quoted components $52.32 (≈ €48.13) for 2 boards; catalogue unit prices give €48.13",
 "unit": "pcs",
-"ext_eur": -0.79
+"ext_eur": 0.0
 },
 {
 "category": "Electronics",
@@ -2387,13 +2387,13 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK)",
+"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, XIAO, nRF54L15 DK)",
 "supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)",
-"qty": 3,
+"qty": 5,
 "unit_eur": 2.5,
 "notes": "both plugs bent across their wide face (up / down, not left / right); USB-C is reversible, so either bend works.  Check the listing says data, not charge only",
 "unit": "pcs",
-"ext_eur": 7.5
+"ext_eur": 12.5
 },
 {
 "category": "Cables",
@@ -2407,33 +2407,23 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK)",
+"item": "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, PICO 2, nRF52840 DK)",
 "supplier": "AliExpress 2251832791887129 (HOQO, \"to Micro Male\", 25 cm)",
-"qty": 3,
+"qty": 5,
 "unit_eur": 1.0,
 "notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end any up / down bend",
 "unit": "pcs",
-"ext_eur": 3.0
-},
-{
-"category": "Cables",
-"item": "USB-C ↔ micro-B, straight, 15–20 cm (DUT cable: PICO 2)",
-"supplier": "AliExpress 1005010391943574 (CableCreation USB-C → micro-B, 0.2 m, 480 Mbps)",
-"qty": 1,
-"unit_eur": 2.5,
-"notes": "straight at both ends, lies flat with one bend (board turned to the side)",
-"unit": "pcs",
-"ext_eur": 2.5
+"ext_eur": 5.0
 },
 {
 "category": "Cables",
 "item": "Micro-B 90° adapter, male → female, up and down, one of each per board",
 "supplier": "AliExpress (DIY-018, \"UP\" and \"DOWN\")",
-"qty": 6,
+"qty": 10,
 "unit_eur": 1.0,
 "notes": "keep the one whose female faces up once plugged into the board (the cable's straight plug stands on it, its cable leaves upwards); the other is a spare",
 "unit": "pcs",
-"ext_eur": 6.0
+"ext_eur": 10.0
 },
 {
 "category": "Power",
@@ -2495,15 +2485,15 @@
 }
 ],
 "by_category": {
-"Electronics": 578.1600000000001,
+"Electronics": 565.92,
 "Printed parts": 58.0,
 "Fasteners": 15.27,
 "Motion": 18.85,
-"Cables": 43.58,
+"Cables": 52.08,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 859.96,
+"total_eur": 856.22,
 "prints": [
 {
 "part": "bay_label",
@@ -2585,8 +2575,8 @@
 {
 "part": "drawer_sled",
 "qty": 1,
-"grams_each": 29.9,
-"grams_total": 29.9,
+"grams_each": 30.6,
+"grams_total": 30.6,
 "stl": "mechanical/stl/drawer_sled.stl"
 },
 {
@@ -2632,6 +2622,13 @@
 "stl": "mechanical/stl/plate_arduino-uno-r4.stl"
 },
 {
+"part": "plate_bay_b3",
+"qty": 1,
+"grams_each": 36.3,
+"grams_total": 36.3,
+"stl": "mechanical/stl/plate_bay_b3.stl"
+},
+{
 "part": "plate_frdm-mcxn947",
 "qty": 1,
 "grams_each": 36.9,
@@ -2672,13 +2669,6 @@
 "grams_each": 34.4,
 "grams_total": 34.4,
 "stl": "mechanical/stl/plate_nucleo-64.stl"
-},
-{
-"part": "plate_rpi-pico2",
-"qty": 1,
-"grams_each": 28.4,
-"grams_total": 28.4,
-"stl": "mechanical/stl/plate_rpi-pico2.stl"
 },
 {
 "part": "power_box_base",
@@ -2748,7 +2738,7 @@
 "pcbs": 5,
 "assembled": 2,
 "service": "Standard",
-"total": 227.04,
+"total": 213.74,
 "estimate": true,
 "spec": "4-layer 76×140 mm, ENIG",
 "pcb": {
@@ -2763,8 +2753,7 @@
 "feeders": 57.0,
 "SMT": 2.0,
 "X-ray": 13.28,
-"packaging": 0.52,
-"global sourcing": 13.3
+"packaging": 0.52
 }
 },
 "data-port": {
@@ -2834,11 +2823,10 @@
 "feeders": 57.0,
 "SMT": 2.0,
 "X-ray": 13.28,
-"packaging": 0.52,
-"global sourcing": 13.3
+"packaging": 0.52
 },
 "changes": [],
-"total": 227.04
+"total": 213.74
 },
 "data-port": {
 "pcb": {

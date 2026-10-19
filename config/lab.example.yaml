@@ -37,9 +37,21 @@ bays:
     serial: /dev/serial/by-id/usb-SEGGER_J-Link_001050012345-if00
   B2:
     console: aux                             # GIGA R1: flashed by dfu-util over its USB, console on the AUX UART
-  B3:
-    console: aux                             # Pico 2: console on the AUX UART (TX/RX/GND wired)
-    baud: 115200
+  # B3 holds four boards on a DATA ×4 board (config/rack.yaml `boards:`): name each by its sub-slot.  A
+  # sub-slot's console is the board's own USB (no AUX UART); a bare `B3:` entry keeps the node's host and
+  # ports, which its sub-slots inherit.
+  B3.1:
+    platform: xiao_esp32c3                   # XIAO is a family: say which one
+    runner: esp32                            # picks the board by its serial port
+    serial: /dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_34:85:18:9A:3C:10-if00
+  B3.2:
+    serial: /dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D3A71B0C4E8D5-if00   # Pico 2, cdc-acm-console snippet
+  B3.3:
+    serial: /dev/serial/by-id/usb-ZEPHYR_USB-DEV_4C81E2D07A93F615-if00
+  B3.4:
+    platform: xiao_ble
+    runner: uf2
+    ci: false                                # kept for a person at the bench
   B4:
     platform: "arduino_uno_r4@wifi"
     ci: false                                # this bay is for a laptop (classic mode): not in CI
