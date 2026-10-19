@@ -28,3 +28,23 @@ patches:
       maintainer's open PR 104189 (transfer allocation, cleanup when a
       submission fails): drop them when it lands.  Not proposed upstream
       (the user's call, 2026-10-19).
+
+  # DWC2 host (the ESP32-S3's 8 channels): an interrupt IN endpoint gives its
+  # channel back between polls, a bulk IN that NAKs gives it to transfers
+  # waiting for one, the endpoint state is kept by device address and freed
+  # when a device takes the address over (docs/multi-dut-node.md, USB host
+  # channels; docs/data-x4-v2-research.md, second pass)
+  - path: zephyr/uhc-dwc2-channels.patch
+    sha256sum: 56263134acc2d2e26e12849a4d9f7115064050c5a72c9bff9368a8c94e4dbb99
+    module: zephyr
+    author: Benjamin Cabé
+    email: benjamin@zephyrproject.org
+    date: 2026-10-19
+    upstreamable: true
+    comments: |
+      Eight commits.  The first five are the user's open PRs, as they are:
+      120961 (which carries 120848) and 121688; drop each with its PR when
+      it lands.  The last three are new, built on them: endpoint state by
+      address, interrupt IN parked between polls, bulk IN parked on NAK
+      while transfers wait.  Not tested on hardware; not proposed upstream
+      (the user's call).

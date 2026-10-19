@@ -1,0 +1,1146 @@
+From 482a7f0fcfad867be4c225b60f4be9c1f0b979a2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Tue, 8 Sep 2026 14:48:44 +0200
+Subject: [PATCH 1/8] drivers: usb: uhc_dwc2: take the bulk data toggle from
+ the controller
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The next PID was computed from the bytes transferred, which misses the
+zero length packet ending a transfer of a multiple of the maximum packet
+size. Following transfers then start on the wrong toggle, and the
+controller acknowledges and discards their first packet as a repeat.
+Read the PID back from HCTSIZ instead.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5
+(cherry picked from commit 1e7efcef396dbbdd585871f8a06a8ce553d54c6a)
+---
+ drivers/usb/uhc/uhc_dwc2.c | 34 ++++++++++++++++++----------------
+ 1 file changed, 18 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index 92f23d7436c..34f79b5ccd5 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -200,18 +200,6 @@ static inline uint32_t calc_packet_count(const uint32_t size, const uint16_t mps
+ 	}
+ }
+ 
+-static inline uint8_t calc_next_pid(const uint8_t pid, const uint32_t pkt_cnt)
+-{
+-	/* If amount of packets are even - do not toggle */
+-	if ((pkt_cnt & BIT(0)) == 0) {
+-		return pid;
+-	}
+-
+-	return (pid == USB_DWC2_HCTSIZ_PID_DATA0) ?
+-		USB_DWC2_HCTSIZ_PID_DATA1 :
+-		USB_DWC2_HCTSIZ_PID_DATA0;
+-}
+-
+ static inline bool periodic_frame_overrun(uint16_t current_frame, uint16_t scheduled_frame)
+ {
+ 	uint16_t delta;
+@@ -1311,11 +1299,27 @@ static int ch_configure(const struct device *const dev, struct uhc_dwc2_channel
+ 	return 0;
+ }
+ 
++/*
++ * The core writes the PID of the next packet back to HCTSIZ when a channel
++ * halts, zero length packets included. Control transfers derive their PID
++ * from the stage instead.
++ */
++static void ch_save_toggle(struct uhc_dwc2_channel *const ch)
++{
++	uint32_t hctsiz;
++
++	if (ch->xfer->type == USB_EP_TYPE_CONTROL) {
++		return;
++	}
++
++	hctsiz = sys_read32((mem_addr_t)&ch->regs->hctsiz);
++	ch->data->next_pid = usb_dwc2_get_hctsiz_pid(hctsiz);
++}
++
+ static void ch_complete_data(const struct device *dev, struct uhc_dwc2_channel *const ch)
+ {
+ 	struct uhc_transfer *const xfer = ch->xfer;
+ 	uint32_t actual_len = ch->length;
+-	uint32_t pkt_cnt;
+ 	uint32_t hctsiz;
+ 	uint32_t remaining;
+ 
+@@ -1330,9 +1334,7 @@ static void ch_complete_data(const struct device *dev, struct uhc_dwc2_channel *
+ 		net_buf_add(xfer->buf, actual_len);
+ 	}
+ 
+-	/* Precalculate next pid based on the packets actually transferred */
+-	pkt_cnt = calc_packet_count(actual_len, xfer->mps);
+-	ch->data->next_pid = calc_next_pid(ch->data->next_pid, pkt_cnt);
++	ch_save_toggle(ch);
+ 
+ 	LOG_DBG("Data on channel%u, prog=%u, act=%u, len=%u, mps=%u, next_pid=%u",
+ 		ch->index, ch->length, actual_len, xfer->buf->len,
+
+From 36deadcd70d2bb9ff2a300bc0cb328f8e7316822 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Tue, 8 Sep 2026 14:31:27 +0200
+Subject: [PATCH 2/8] drivers: usb: uhc_dwc2: rewind bulk transfers instead of
+ restarting them
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A bulk transfer retried after a transaction error restarted from the
+start of its buffer with the toggle it was queued with, although the
+device may already have accepted some of its packets. Those packets were
+then sent or received twice, or the retry was dropped as a repeat.
+
+Resume from the first packet the device has not acknowledged, with the
+toggle the core reports: PKTCNT counts only completed packets, and every
+packet but the last is maximum sized. Request the rewind for IN errors
+too, and keep the toggle when a transfer is given up on.
+
+Not reached by the traffic this was tested with, and HCDMA cannot
+confirm it as the DMA engine rounds its address up to a word.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5
+(cherry picked from commit 21b476034d1a4d0cc9ed221697c3c7d097fb0d87)
+---
+ drivers/usb/uhc/uhc_dwc2.c | 50 ++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index 34f79b5ccd5..fdc36853d33 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -919,6 +919,7 @@ static uint32_t ch_handle_in_bulk_control(const struct device *dev,
+ 				LOG_DBG("IN channel%d error, HCINT 0x%08x, retry %u",
+ 					ch->index, hcint, ch->error_count);
+ 				ch_events |= BIT(UHC_DWC2_CHANNEL_DO_REINIT);
++				ch_events |= BIT(UHC_DWC2_CHANNEL_DO_REWIND);
+ 			}
+ 		} else {
+ 			/* The channel halted without reporting a reason. Fail the
+@@ -1341,6 +1342,51 @@ static void ch_complete_data(const struct device *dev, struct uhc_dwc2_channel *
+ 		xfer->mps, ch->data->next_pid);
+ }
+ 
++/*
++ * Restart a halted bulk transfer where the wire left off instead of from the
++ * beginning. PKTCNT is only decremented for packets that completed their
++ * transaction, and every packet but the last one of a transfer is maximum
++ * sized, so it gives the amount of data the device has already seen.
++ */
++static void ch_rewind_bulk(struct uhc_dwc2_channel *const ch)
++{
++	struct uhc_transfer *const xfer = ch->xfer;
++	uint32_t pkt_cnt;
++	uint32_t remaining;
++	uint32_t xfered;
++
++	if (xfer->type != USB_EP_TYPE_BULK) {
++		return;
++	}
++
++	pkt_cnt = calc_packet_count(ch->length, xfer->mps);
++	remaining = usb_dwc2_get_hctsiz_pktcnt(sys_read32((mem_addr_t)&ch->regs->hctsiz));
++
++	ch_save_toggle(ch);
++
++	if (remaining > pkt_cnt) {
++		LOG_ERR("Channel%u PKTCNT %u above programmed %u",
++			ch->index, remaining, pkt_cnt);
++		return;
++	}
++
++	xfered = MIN((pkt_cnt - remaining) * xfer->mps, ch->length);
++	if (xfered == 0U) {
++		return;
++	}
++
++	LOG_DBG("Rewind channel%u, xfered=%u of %u, next_pid=%u",
++		ch->index, xfered, ch->length, ch->data->next_pid);
++
++	if (USB_EP_DIR_IS_IN(xfer->ep)) {
++		/* Keep what was received and resume into the tailroom */
++		sys_cache_data_invd_range(net_buf_tail(xfer->buf), xfered);
++		net_buf_add(xfer->buf, xfered);
++	} else {
++		net_buf_pull(xfer->buf, xfered);
++	}
++}
++
+ static void ch_complete(const struct device *dev, struct uhc_dwc2_channel *const ch)
+ {
+ 	struct uhc_transfer *const xfer = ch->xfer;
+@@ -2123,6 +2169,7 @@ static void ch_handle_events(const struct device *dev, struct uhc_dwc2_channel *
+ 			err = -ECONNRESET;
+ 		} else if (events & BIT(UHC_DWC2_CHANNEL_EVENT_ERROR)) {
+ 			err = -EIO;
++			ch_save_toggle(ch);
+ 		} else if (events & BIT(UHC_DWC2_CHANNEL_EVENT_STALL)) {
+ 			err = -EPIPE;
+ 		} else if (events & BIT(UHC_DWC2_CHANNEL_EVENT_CPLT)) {
+@@ -2138,8 +2185,7 @@ static void ch_handle_events(const struct device *dev, struct uhc_dwc2_channel *
+ 	} else {
+ 		/* Reinit/rewind transfer */
+ 		if (events & BIT(UHC_DWC2_CHANNEL_DO_REWIND)) {
+-			/* TODO: Implement rewind xfer */
+-			LOG_WRN("DO_REWIND not implemented yet");
++			ch_rewind_bulk(ch);
+ 		}
+ 
+ 		if (events & BIT(UHC_DWC2_CHANNEL_DO_REINIT)) {
+
+From 373a13dd04522be6e999a0ec94d110d515ec9e33 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Thu, 1 Oct 2026 11:57:44 +0200
+Subject: [PATCH 3/8] drivers: usb: uhc_dwc2: resume a bulk IN transfer after a
+ toggle error
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A device that repeats a packet whose ACK it missed makes the core
+acknowledge and drop it, then halt the channel with DTGERR. A bulk IN
+channel took that for a halt without a reason and failed the transfer.
+Resume it from what has been received, with the toggle the core now
+expects. Seen behind a GL850G hub on an ESP32-P4.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+(cherry picked from commit bb402406367c915a59965c11b3ff18f103eeb141)
+---
+ drivers/usb/uhc/uhc_dwc2.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index fdc36853d33..af5e6f53ac3 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -921,6 +921,12 @@ static uint32_t ch_handle_in_bulk_control(const struct device *dev,
+ 				ch_events |= BIT(UHC_DWC2_CHANNEL_DO_REINIT);
+ 				ch_events |= BIT(UHC_DWC2_CHANNEL_DO_REWIND);
+ 			}
++		} else if ((hcint & USB_DWC2_HCINT_DTGERR) && ch->xfer->type == USB_EP_TYPE_BULK) {
++			/* The core acknowledged and dropped a repeated packet */
++			ch->error_count = 0U;
++			LOG_DBG("IN channel%d toggle error, HCINT 0x%08x", ch->index, hcint);
++			ch_events |= BIT(UHC_DWC2_CHANNEL_DO_REINIT);
++			ch_events |= BIT(UHC_DWC2_CHANNEL_DO_REWIND);
+ 		} else {
+ 			/* The channel halted without reporting a reason. Fail the
+ 			 * transfer instead of leaving the caller waiting.
+
+From 7410e5e4758a02d6fae6d35d88eda8fcc0cb4a58 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Tue, 29 Sep 2026 15:42:36 +0200
+Subject: [PATCH 4/8] drivers: usb: uhc_dwc2: reset the data toggles on a
+ configuration
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A device returns all its endpoints to DATA0 when it is configured, but
+the toggles the driver tracks per device and endpoint were only dropped
+on a root port reset. A device behind a hub that reuses the struct
+usb_device of one that was removed, as a phone re-enumerating in
+accessory mode does, then starts with the old device's toggles.
+
+Drop the endpoint state of a device when a standard SET_CONFIGURATION
+request to it completes. Tested with an Android phone switching to
+accessory mode behind a USB hub on an ESP32-P4 board.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+(cherry picked from commit b34343fdc64372160f24d618e9436ab61adcc574)
+---
+ drivers/usb/uhc/uhc_dwc2.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index af5e6f53ac3..75a1aa2ef4e 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -1393,8 +1393,25 @@ static void ch_rewind_bulk(struct uhc_dwc2_channel *const ch)
+ 	}
+ }
+ 
++/*
++ * A device returns every endpoint to DATA0 when it is configured, so the state
++ * kept for its endpoints goes with it. This also covers a device that reuses
++ * the struct usb_device of one that was removed.
++ */
++static void ch_data_drop_device(struct uhc_dwc2_data *const priv, struct usb_device *const udev)
++{
++	for (uint8_t idx = 0; idx < ARRAY_SIZE(priv->ch_data); idx++) {
++		struct uhc_dwc2_channel_data *data = &priv->ch_data[idx];
++
++		if (data->udev == udev && USB_EP_GET_IDX(data->ep) != 0U) {
++			*data = (struct uhc_dwc2_channel_data) {0};
++		}
++	}
++}
++
+ static void ch_complete(const struct device *dev, struct uhc_dwc2_channel *const ch)
+ {
++	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
+ 	struct uhc_transfer *const xfer = ch->xfer;
+ 	const struct usb_setup_packet *setup;
+ 
+@@ -1405,6 +1422,10 @@ static void ch_complete(const struct device *dev, struct uhc_dwc2_channel *const
+ 		if (setup->bRequest == USB_SREQ_SET_ADDRESS) {
+ 			k_msleep(SET_ADDR_DELAY_MS);
+ 		}
++		if (setup->bRequest == USB_SREQ_SET_CONFIGURATION &&
++		    setup->RequestType.type == USB_REQTYPE_TYPE_STANDARD) {
++			ch_data_drop_device(priv, xfer->udev);
++		}
+ 		break;
+ 	case USB_EP_TYPE_BULK:
+ 	case USB_EP_TYPE_INTERRUPT:
+
+From 98b74b25ec83b44ff7b8aa8402b59c151ed2b438 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Fri, 9 Oct 2026 12:26:16 +0200
+Subject: [PATCH 5/8] drivers: usb: uhc_dwc2: reset the data toggle when a halt
+ is cleared
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A ClearFeature(ENDPOINT_HALT) request returns the endpoint's data toggle
+to DATA0, whether it was halted or not (USB 2.0, 9.4.5), but the driver
+kept the toggle it tracked for the endpoint. The next transaction then
+used the wrong toggle and its data was discarded as a retransmission.
+
+Drop the state kept for the endpoint when a standard ClearFeature
+(ENDPOINT_HALT) request to it completes.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+(cherry picked from commit e276b6a1b7f8f80f540cc18b0e8dde2fb126e8ea)
+---
+ drivers/usb/uhc/uhc_dwc2.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index 75a1aa2ef4e..47c85c63344 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -1409,6 +1409,23 @@ static void ch_data_drop_device(struct uhc_dwc2_data *const priv, struct usb_dev
+ 	}
+ }
+ 
++/* Clearing a halt returns that endpoint to DATA0, halted or not (USB 2.0, 9.4.5) */
++static void ch_data_drop_ep(struct uhc_dwc2_data *const priv, struct usb_device *const udev,
++			    const uint8_t ep)
++{
++	if (USB_EP_GET_IDX(ep) == 0U) {
++		return;
++	}
++
++	for (uint8_t idx = 0; idx < ARRAY_SIZE(priv->ch_data); idx++) {
++		struct uhc_dwc2_channel_data *data = &priv->ch_data[idx];
++
++		if (data->udev == udev && data->ep == ep) {
++			*data = (struct uhc_dwc2_channel_data) {0};
++		}
++	}
++}
++
+ static void ch_complete(const struct device *dev, struct uhc_dwc2_channel *const ch)
+ {
+ 	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
+@@ -1426,6 +1443,12 @@ static void ch_complete(const struct device *dev, struct uhc_dwc2_channel *const
+ 		    setup->RequestType.type == USB_REQTYPE_TYPE_STANDARD) {
+ 			ch_data_drop_device(priv, xfer->udev);
+ 		}
++		if (setup->bRequest == USB_SREQ_CLEAR_FEATURE &&
++		    setup->RequestType.type == USB_REQTYPE_TYPE_STANDARD &&
++		    setup->RequestType.recipient == USB_REQTYPE_RECIPIENT_ENDPOINT &&
++		    sys_le16_to_cpu(setup->wValue) == USB_SFS_ENDPOINT_HALT) {
++			ch_data_drop_ep(priv, xfer->udev, (uint8_t)sys_le16_to_cpu(setup->wIndex));
++		}
+ 		break;
+ 	case USB_EP_TYPE_BULK:
+ 	case USB_EP_TYPE_INTERRUPT:
+
+From bbe2baa89caa0f2b7b1e4470587648e3f6c1a905 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 19 Oct 2026 19:13:42 +0200
+Subject: [PATCH 6/8] drivers: usb: uhc_dwc2: keep the endpoint state by device
+ address
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The state of an endpoint (data toggle, interrupt schedule) was kept by
+struct usb_device pointer and freed only on a root port reset. Behind a
+hub, devices go without the controller knowing: their slots leak until
+"No channel data slot", and a device allocated at the same pointer
+inherits the toggles of the one that was removed.
+
+Keep the state by device address instead, and drop the state found at an
+address when SET_ADDRESS gives it to a device: the slots of a removed
+device are freed at the latest when its address is reused. A slot in use
+by a channel only gets its toggle reset. Look the slot up before taking a
+channel, so that a missing slot no longer leaves the channel busy.
+
+Assisted-by: Claude:opus-5.5
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+---
+ drivers/usb/uhc/uhc_dwc2.c | 91 ++++++++++++++++++++++++++++----------
+ 1 file changed, 68 insertions(+), 23 deletions(-)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index 47c85c63344..fca3a4e4904 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -99,8 +99,10 @@ enum uhc_dwc2_channel_event {
+ 
+ /* TODO: rename to pipe_data and expand with udev or to move one level higher */
+ struct uhc_dwc2_channel_data {
+-	/* Device this endpoint state belongs to */
+-	struct usb_device *udev;
++	/* The slot holds the state of an endpoint */
++	bool used;
++	/* Address of the device this endpoint state belongs to */
++	uint8_t addr;
+ 	/* Endpoint address this state belongs to */
+ 	uint8_t ep;
+ 	/* PID value, used for the next data stage transfer */
+@@ -160,20 +162,26 @@ struct usb_dwc2_reg *uhc_dwc2_get_base(const struct device *dev)
+ 	return (struct usb_dwc2_reg *)DEVICE_MMIO_NAMED_GET(dev, core);
+ }
+ 
++/*
++ * The state of an endpoint is kept by device address: the address is unique
++ * on the bus while the device is there, and a device that is gone leaves its
++ * state at an address that the next device given that address takes over
++ * (see ch_complete()). A struct usb_device can be reused for another device.
++ */
+ static struct uhc_dwc2_channel_data *ch_data_get(struct uhc_dwc2_data *priv,
+-						 struct usb_device *udev,
+-						 uint8_t ep)
++						 const uint8_t addr,
++						 const uint8_t ep)
+ {
+ 	struct uhc_dwc2_channel_data *ch_data = NULL;
+ 
+ 	for (uint8_t idx = 0; idx < ARRAY_SIZE(priv->ch_data); idx++) {
+ 		struct uhc_dwc2_channel_data *data = &priv->ch_data[idx];
+ 
+-		if (data->udev == udev && data->ep == ep) {
++		if (data->used && data->addr == addr && data->ep == ep) {
+ 			return data;
+ 		}
+ 
+-		if (data->udev == NULL && ch_data == NULL) {
++		if (!data->used && ch_data == NULL) {
+ 			ch_data = data;
+ 		}
+ 	}
+@@ -183,7 +191,8 @@ static struct uhc_dwc2_channel_data *ch_data_get(struct uhc_dwc2_data *priv,
+ 	}
+ 
+ 	*ch_data = (struct uhc_dwc2_channel_data) {
+-		.udev = udev,
++		.used = true,
++		.addr = addr,
+ 		.ep = ep,
+ 		.next_pid = USB_DWC2_HCTSIZ_PID_DATA0,
+ 	};
+@@ -1205,6 +1214,7 @@ static int ch_claim(const struct device *const dev,
+ 		    struct uhc_dwc2_channel **const ch_p)
+ {
+ 	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
++	struct uhc_dwc2_channel_data *data;
+ 	struct uhc_dwc2_channel *ch = NULL;
+ 
+ 	/* A non-NULL xfer marks the channel as busy. Scan all channels:
+@@ -1234,6 +1244,12 @@ static int ch_claim(const struct device *const dev,
+ 		return -EBUSY;
+ 	}
+ 
++	data = ch_data_get(priv, xfer->udev->addr, xfer->ep);
++	if (data == NULL) {
++		LOG_ERR("No channel data slot for addr %u ep 0x%02x", xfer->udev->addr, xfer->ep);
++		return -ENOMEM;
++	}
++
+ 	LOG_DBG("Claimed channel%d for ep 0x%02x, xfer=%p, channel=%p",
+ 		ch->index, xfer->ep, (void *)xfer, (void *)ch);
+ 
+@@ -1242,12 +1258,7 @@ static int ch_claim(const struct device *const dev,
+ 
+ 	/* Save channel characteristics of the underlying channel */
+ 	ch->xfer = xfer;
+-	ch->data = ch_data_get(priv, xfer->udev, xfer->ep);
+-
+-	if (ch->data == NULL) {
+-		LOG_ERR("No channel data slot for addr %u ep 0x%02x", xfer->udev->addr, xfer->ep);
+-		return -ENOMEM;
+-	}
++	ch->data = data;
+ 
+ 	ch->data->scheduled_frame = 0;
+ 	ch->data->periodic_started = false;
+@@ -1393,24 +1404,40 @@ static void ch_rewind_bulk(struct uhc_dwc2_channel *const ch)
+ 	}
+ }
+ 
++/*
++ * Forget the state of an endpoint: back to DATA0 and no schedule. A slot that a
++ * channel is using keeps its place, the others are free again.
++ */
++static void ch_data_forget(struct uhc_dwc2_data *const priv,
++			   struct uhc_dwc2_channel_data *const data)
++{
++	for (uint32_t idx = 0; idx < priv->numhstchnl; idx++) {
++		if (priv->ch[idx].data == data) {
++			data->next_pid = USB_DWC2_HCTSIZ_PID_DATA0;
++			return;
++		}
++	}
++
++	*data = (struct uhc_dwc2_channel_data) {0};
++}
++
+ /*
+  * A device returns every endpoint to DATA0 when it is configured, so the state
+- * kept for its endpoints goes with it. This also covers a device that reuses
+- * the struct usb_device of one that was removed.
++ * kept for its endpoints goes with it.
+  */
+-static void ch_data_drop_device(struct uhc_dwc2_data *const priv, struct usb_device *const udev)
++static void ch_data_drop_device(struct uhc_dwc2_data *const priv, const uint8_t addr)
+ {
+ 	for (uint8_t idx = 0; idx < ARRAY_SIZE(priv->ch_data); idx++) {
+ 		struct uhc_dwc2_channel_data *data = &priv->ch_data[idx];
+ 
+-		if (data->udev == udev && USB_EP_GET_IDX(data->ep) != 0U) {
+-			*data = (struct uhc_dwc2_channel_data) {0};
++		if (data->used && data->addr == addr && USB_EP_GET_IDX(data->ep) != 0U) {
++			ch_data_forget(priv, data);
+ 		}
+ 	}
+ }
+ 
+ /* Clearing a halt returns that endpoint to DATA0, halted or not (USB 2.0, 9.4.5) */
+-static void ch_data_drop_ep(struct uhc_dwc2_data *const priv, struct usb_device *const udev,
++static void ch_data_drop_ep(struct uhc_dwc2_data *const priv, const uint8_t addr,
+ 			    const uint8_t ep)
+ {
+ 	if (USB_EP_GET_IDX(ep) == 0U) {
+@@ -1420,8 +1447,24 @@ static void ch_data_drop_ep(struct uhc_dwc2_data *const priv, struct usb_device
+ 	for (uint8_t idx = 0; idx < ARRAY_SIZE(priv->ch_data); idx++) {
+ 		struct uhc_dwc2_channel_data *data = &priv->ch_data[idx];
+ 
+-		if (data->udev == udev && data->ep == ep) {
+-			*data = (struct uhc_dwc2_channel_data) {0};
++		if (data->used && data->addr == addr && data->ep == ep) {
++			ch_data_forget(priv, data);
++		}
++	}
++}
++
++/*
++ * A device given an address takes over whatever state a device that had it
++ * before left there: a device behind a hub goes without the controller knowing,
++ * and its slots are freed here at the latest.
++ */
++static void ch_data_drop_address(struct uhc_dwc2_data *const priv, const uint8_t addr)
++{
++	for (uint8_t idx = 0; idx < ARRAY_SIZE(priv->ch_data); idx++) {
++		struct uhc_dwc2_channel_data *data = &priv->ch_data[idx];
++
++		if (data->used && data->addr == addr) {
++			ch_data_forget(priv, data);
+ 		}
+ 	}
+ }
+@@ -1438,16 +1481,18 @@ static void ch_complete(const struct device *dev, struct uhc_dwc2_channel *const
+ 		setup = (const struct usb_setup_packet *)xfer->setup_pkt;
+ 		if (setup->bRequest == USB_SREQ_SET_ADDRESS) {
+ 			k_msleep(SET_ADDR_DELAY_MS);
++			ch_data_drop_address(priv, (uint8_t)sys_le16_to_cpu(setup->wValue));
+ 		}
+ 		if (setup->bRequest == USB_SREQ_SET_CONFIGURATION &&
+ 		    setup->RequestType.type == USB_REQTYPE_TYPE_STANDARD) {
+-			ch_data_drop_device(priv, xfer->udev);
++			ch_data_drop_device(priv, xfer->udev->addr);
+ 		}
+ 		if (setup->bRequest == USB_SREQ_CLEAR_FEATURE &&
+ 		    setup->RequestType.type == USB_REQTYPE_TYPE_STANDARD &&
+ 		    setup->RequestType.recipient == USB_REQTYPE_RECIPIENT_ENDPOINT &&
+ 		    sys_le16_to_cpu(setup->wValue) == USB_SFS_ENDPOINT_HALT) {
+-			ch_data_drop_ep(priv, xfer->udev, (uint8_t)sys_le16_to_cpu(setup->wIndex));
++			ch_data_drop_ep(priv, xfer->udev->addr,
++					(uint8_t)sys_le16_to_cpu(setup->wIndex));
+ 		}
+ 		break;
+ 	case USB_EP_TYPE_BULK:
+
+From aa95e1a740db3546e8d2105867279f46c9c34f7e Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 19 Oct 2026 19:13:42 +0200
+Subject: [PATCH 7/8] drivers: usb: uhc_dwc2: give the channel back between
+ interrupt IN polls
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+An interrupt IN transfer kept its channel while the endpoint NAKed,
+waiting for its next interval. A hub's status endpoint and the
+notification endpoint of every CDC ACM function are always pending: with
+a hub and four such devices behind it, they hold most of the controller's
+channels (8 on the ESP32-S3) without moving any data, and control and OUT
+transfers wait for one of them to complete.
+
+When the endpoint NAKs, park the transfer: give the channel back, leave
+the transfer queued with its schedule kept in the endpoint state, and
+take a channel again one frame before the next poll. A later transfer of
+the same endpoint waits behind the parked one, and the endpoint's
+transfers move to the end of the queue, behind those of the other
+endpoints. A parked transfer that is cancelled is returned at once.
+
+Assisted-by: Claude:opus-5.5
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+---
+ drivers/usb/uhc/uhc_dwc2.c | 185 +++++++++++++++++++++++++++++++++----
+ 1 file changed, 166 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index fca3a4e4904..da959fcadeb 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -113,6 +113,8 @@ struct uhc_dwc2_channel_data {
+ 	bool periodic_started;
+ 	/* Periodic transfer has been scheduled and waiting for the SOF */
+ 	bool periodic_scheduled;
++	/* Transfer of the endpoint queued without a channel, see ch_park() */
++	struct uhc_transfer *parked;
+ };
+ 
+ struct uhc_dwc2_channel {
+@@ -168,21 +170,35 @@ struct usb_dwc2_reg *uhc_dwc2_get_base(const struct device *dev)
+  * state at an address that the next device given that address takes over
+  * (see ch_complete()). A struct usb_device can be reused for another device.
+  */
+-static struct uhc_dwc2_channel_data *ch_data_get(struct uhc_dwc2_data *priv,
+-						 const uint8_t addr,
+-						 const uint8_t ep)
++static struct uhc_dwc2_channel_data *ch_data_find(struct uhc_dwc2_data *priv,
++						  const uint8_t addr,
++						  const uint8_t ep)
+ {
+-	struct uhc_dwc2_channel_data *ch_data = NULL;
+-
+ 	for (uint8_t idx = 0; idx < ARRAY_SIZE(priv->ch_data); idx++) {
+ 		struct uhc_dwc2_channel_data *data = &priv->ch_data[idx];
+ 
+ 		if (data->used && data->addr == addr && data->ep == ep) {
+ 			return data;
+ 		}
++	}
++
++	return NULL;
++}
+ 
+-		if (!data->used && ch_data == NULL) {
+-			ch_data = data;
++static struct uhc_dwc2_channel_data *ch_data_get(struct uhc_dwc2_data *priv,
++						 const uint8_t addr,
++						 const uint8_t ep)
++{
++	struct uhc_dwc2_channel_data *ch_data = ch_data_find(priv, addr, ep);
++
++	if (ch_data != NULL) {
++		return ch_data;
++	}
++
++	for (uint8_t idx = 0; idx < ARRAY_SIZE(priv->ch_data); idx++) {
++		if (!priv->ch_data[idx].used) {
++			ch_data = &priv->ch_data[idx];
++			break;
+ 		}
+ 	}
+ 
+@@ -1250,6 +1266,12 @@ static int ch_claim(const struct device *const dev,
+ 		return -ENOMEM;
+ 	}
+ 
++	if (data->parked != NULL && data->parked != xfer) {
++		LOG_DBG("Endpoint 0x%02x on addr %u has a parked transfer",
++			xfer->ep, xfer->udev->addr);
++		return -EBUSY;
++	}
++
+ 	LOG_DBG("Claimed channel%d for ep 0x%02x, xfer=%p, channel=%p",
+ 		ch->index, xfer->ep, (void *)xfer, (void *)ch);
+ 
+@@ -1260,9 +1282,14 @@ static int ch_claim(const struct device *const dev,
+ 	ch->xfer = xfer;
+ 	ch->data = data;
+ 
+-	ch->data->scheduled_frame = 0;
+-	ch->data->periodic_started = false;
+-	ch->data->periodic_scheduled = false;
++	if (data->parked == xfer) {
++		/* Back from ch_park(), the endpoint keeps its schedule */
++		data->parked = NULL;
++	} else {
++		data->scheduled_frame = 0;
++		data->periodic_started = false;
++		data->periodic_scheduled = false;
++	}
+ 
+ 	priv->free_chs--;
+ 
+@@ -1406,18 +1433,25 @@ static void ch_rewind_bulk(struct uhc_dwc2_channel *const ch)
+ 
+ /*
+  * Forget the state of an endpoint: back to DATA0 and no schedule. A slot that a
+- * channel is using keeps its place, the others are free again.
++ * channel or a parked transfer is using keeps its place, the others are free
++ * again.
+  */
+ static void ch_data_forget(struct uhc_dwc2_data *const priv,
+ 			   struct uhc_dwc2_channel_data *const data)
+ {
++	bool in_use = data->parked != NULL;
++
+ 	for (uint32_t idx = 0; idx < priv->numhstchnl; idx++) {
+ 		if (priv->ch[idx].data == data) {
+-			data->next_pid = USB_DWC2_HCTSIZ_PID_DATA0;
+-			return;
++			in_use = true;
+ 		}
+ 	}
+ 
++	if (in_use) {
++		data->next_pid = USB_DWC2_HCTSIZ_PID_DATA0;
++		return;
++	}
++
+ 	*data = (struct uhc_dwc2_channel_data) {0};
+ }
+ 
+@@ -1505,7 +1539,8 @@ static void ch_complete(const struct device *dev, struct uhc_dwc2_channel *const
+ 	}
+ }
+ 
+-static void ch_release(const struct device *dev, struct uhc_dwc2_channel *const ch)
++/* Give the channel back, the state of its endpoint stays as it is */
++static void ch_free(const struct device *dev, struct uhc_dwc2_channel *const ch)
+ {
+ 	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
+ 	struct usb_dwc2_reg *const base = uhc_dwc2_get_base(dev);
+@@ -1514,10 +1549,6 @@ static void ch_release(const struct device *dev, struct uhc_dwc2_channel *const
+ 
+ 	/* Release channel */
+ 	ch->xfer = NULL;
+-
+-	ch->data->scheduled_frame = 0;
+-	ch->data->periodic_started = false;
+-	ch->data->periodic_scheduled = false;
+ 	ch->data = NULL;
+ 
+ 	ch->halt_cancel = false;
+@@ -1526,6 +1557,65 @@ static void ch_release(const struct device *dev, struct uhc_dwc2_channel *const
+ 	LOG_DBG("Released channel%d", ch->index);
+ }
+ 
++static void ch_release(const struct device *dev, struct uhc_dwc2_channel *const ch)
++{
++	ch->data->scheduled_frame = 0;
++	ch->data->periodic_started = false;
++	ch->data->periodic_scheduled = false;
++
++	ch_free(dev, ch);
++}
++
++/*
++ * Give the channel back while the endpoint has nothing to send. The transfer
++ * stays queued, and the state of its endpoint keeps it first in line for the
++ * endpoint and on schedule (see ch_claim()). The endpoint's transfers move to
++ * the end of the queue, behind those of the other endpoints.
++ */
++static void ch_park(const struct device *dev, struct uhc_dwc2_channel *const ch)
++{
++	struct uhc_data *const data = dev->data;
++	struct uhc_transfer *const xfer = ch->xfer;
++	const uint8_t addr = xfer->udev->addr;
++	const uint8_t ep = xfer->ep;
++	struct uhc_transfer *tmp, *next;
++	sys_dlist_t moved;
++
++	LOG_DBG("Park ep 0x%02x on addr %u, channel%d", ep, addr, ch->index);
++
++	ch->data->parked = xfer;
++	ch_free(dev, ch);
++
++	sys_dlist_init(&moved);
++	SYS_DLIST_FOR_EACH_CONTAINER_SAFE(&data->ctrl_xfers, tmp, next, node) {
++		if (tmp->udev->addr == addr && tmp->ep == ep) {
++			sys_dlist_remove(&tmp->node);
++			sys_dlist_append(&moved, &tmp->node);
++		}
++	}
++
++	SYS_DLIST_FOR_EACH_CONTAINER_SAFE(&moved, tmp, next, node) {
++		sys_dlist_remove(&tmp->node);
++		sys_dlist_append(&data->ctrl_xfers, &tmp->node);
++	}
++}
++
++/* A transfer cancelled while parked: the next one of the endpoint starts afresh */
++static void ch_data_unpark(struct uhc_dwc2_data *const priv,
++			   const struct uhc_transfer *const xfer)
++{
++	for (uint8_t idx = 0; idx < ARRAY_SIZE(priv->ch_data); idx++) {
++		struct uhc_dwc2_channel_data *data = &priv->ch_data[idx];
++
++		if (data->used && data->parked == xfer) {
++			data->parked = NULL;
++			data->scheduled_frame = 0;
++			data->periodic_started = false;
++			data->periodic_scheduled = false;
++		}
++	}
++}
++
+ /*
+  * Initiate halting an enabled channel to cancel its transfer.
+  *
+@@ -1692,6 +1782,22 @@ static void ch_schedule_interrupt(const struct device *dev,
+ 	}
+ }
+ 
++/*
++ * A parked interrupt transfer is polled at its scheduled frame, or at the next
++ * frame if that one has passed.
++ */
++static void ch_resume_interrupt(const struct device *dev,
++				struct uhc_dwc2_channel *const ch)
++{
++	struct usb_dwc2_reg *const base = uhc_dwc2_get_base(dev);
++	uint16_t frame = usb_dwc2_get_hfnum_frnum(sys_read32((mem_addr_t)&base->hfnum));
++
++	ch->data->periodic_scheduled = false;
++	if (periodic_frame_overrun(frame, ch->data->scheduled_frame)) {
++		ch->data->scheduled_frame = (frame + 1U) & PERIODIC_FRAME_MASK;
++	}
++}
++
+ static void ch_start_interrupt(const struct device *dev,
+ 			       struct uhc_dwc2_channel *const ch)
+ {
+@@ -2107,7 +2213,11 @@ static int submit_xfer(const struct device *const dev, struct uhc_transfer *cons
+ 		ch_start_bulk(dev, ch);
+ 		break;
+ 	case USB_EP_TYPE_INTERRUPT:
+-		ch_schedule_interrupt(dev, ch);
++		if (ch->data->periodic_started) {
++			ch_resume_interrupt(dev, ch);
++		} else {
++			ch_schedule_interrupt(dev, ch);
++		}
+ 		ch_start_interrupt(dev, ch);
+ 		break;
+ 	default:
+@@ -2119,6 +2229,32 @@ static int submit_xfer(const struct device *const dev, struct uhc_transfer *cons
+ 	return ret;
+ }
+ 
++/*
++ * Whether a transfer can be started now: an interrupt transfer parked by
++ * ch_park() only one frame ahead of its next poll.
++ */
++static bool xfer_is_due(const struct device *const dev, const struct uhc_transfer *const xfer)
++{
++	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
++	struct usb_dwc2_reg *const base = uhc_dwc2_get_base(dev);
++	struct uhc_dwc2_channel_data *data;
++	uint16_t next_frame;
++
++	if (xfer->type != USB_EP_TYPE_INTERRUPT) {
++		return true;
++	}
++
++	data = ch_data_find(priv, xfer->udev->addr, xfer->ep);
++	if (data == NULL || data->parked != xfer) {
++		return true;
++	}
++
++	next_frame = (usb_dwc2_get_hfnum_frnum(sys_read32((mem_addr_t)&base->hfnum)) + 1U) &
++		     PERIODIC_FRAME_MASK;
++
++	return periodic_frame_overrun(next_frame, data->scheduled_frame);
++}
++
+ static bool xfer_is_active(struct uhc_dwc2_data *const priv,
+ 			   const struct uhc_transfer *const xfer)
+ {
+@@ -2153,6 +2289,11 @@ static void submit_pending(const struct device *const dev)
+ 			continue;
+ 		}
+ 
++		/* A parked interrupt transfer waits for its next poll */
++		if (!xfer_is_due(dev, xfer)) {
++			continue;
++		}
++
+ 		ret = submit_xfer(dev, xfer);
+ 		if (ret == -EBUSY) {
+ 			/* Endpoint busy, retry on next completion */
+@@ -2288,7 +2429,9 @@ static void ch_handle_events(const struct device *dev, struct uhc_dwc2_channel *
+ 		}
+ 
+ 		if (events & BIT(UHC_DWC2_CHANNEL_DO_WAIT_SOF)) {
++			/* Nothing to read: no channel until the next poll */
+ 			ch_schedule_interrupt(dev, ch);
++			ch_park(dev, ch);
+ 		}
+ 	}
+ }
+@@ -2449,6 +2592,10 @@ static void dequeue_cancelled(const struct device *dev)
+ 			continue;
+ 		}
+ 
++		if (ch == NULL) {
++			ch_data_unpark(priv, xfer);
++		}
++
+ 		/* Return pending or already-stopped transfer */
+ 		uhc_xfer_return(dev, xfer, -ECONNRESET);
+ 	}
+
+From 2f0b8712dc47ae21375d32b30d6cdceedb75d085 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 19 Oct 2026 19:13:43 +0200
+Subject: [PATCH 8/8] drivers: usb: uhc_dwc2: give a NAKing bulk IN channel to
+ waiting transfers
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The core retries a bulk IN transaction the device NAKs, so a bulk IN
+transfer keeps its channel until data arrives. A host reading the
+console of a quiet CDC ACM device holds a channel per device that way,
+and with more such endpoints than channels the transfers queued behind
+them, control transfers included, wait until one of the devices sends
+something.
+
+When transfers wait for a channel, unmask NAK on the bulk IN channels.
+On the next NAK, halt the channel and park the transfer: keep what was
+received and the data toggle, give the channel back and resume the
+transfer later, behind the transfers of the other endpoints. A NAK that
+comes when nothing waits any more only masks NAK again.
+
+Assisted-by: Claude:opus-5.5
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+---
+ drivers/usb/uhc/uhc_dwc2.c | 90 +++++++++++++++++++++++++++++++++++---
+ 1 file changed, 84 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index da959fcadeb..bdd398c3e0e 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -65,6 +65,8 @@ enum uhc_dwc2_channel_event {
+ 	UHC_DWC2_CHANNEL_DO_REWIND,
+ 	/* The channel is periodic, active and wait for scheduling. Channel is now halted */
+ 	UHC_DWC2_CHANNEL_DO_WAIT_SOF,
++	/* Need to give the channel to a waiting transfer. Channel is now halted */
++	UHC_DWC2_CHANNEL_DO_PARK,
+ 	/* The transfer was cancelled. Channel is now halted */
+ 	UHC_DWC2_CHANNEL_EVENT_CANCELLED,
+ };
+@@ -124,6 +126,8 @@ struct uhc_dwc2_channel {
+ 	uint8_t error_count;
+ 	/* Set while a halt was initiated to cancel the transfer. */
+ 	bool halt_cancel;
++	/* Set while a halt was initiated to give the channel to a waiting transfer */
++	bool halt_park;
+ 	/* Used to save pending completion bits, while waiting channel to be halted. */
+ 	uint32_t hcint_cplt_pending;
+ 	/* Cached pointer to channel registers */
+@@ -153,6 +157,8 @@ struct uhc_dwc2_data {
+ 	uint32_t numhstchnl;
+ 	/* Number of channels currently not claimed */
+ 	uint32_t free_chs;
++	/* Transfers wait for a channel, see submit_pending() */
++	atomic_t waiting;
+ 	/* Root port does the debounce of connection/disconnection */
+ 	bool debouncing;
+ 	/* Root port has an attached device */
+@@ -915,6 +921,7 @@ static uint32_t ch_handle_in_bulk_control(const struct device *dev,
+ 					  struct uhc_dwc2_channel *const ch,
+ 					  uint32_t hcint)
+ {
++	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
+ 	uint32_t ch_events = 0;
+ 
+ 	if (hcint & USB_DWC2_HCINT_CHHLTD) {
+@@ -952,6 +959,9 @@ static uint32_t ch_handle_in_bulk_control(const struct device *dev,
+ 			LOG_DBG("IN channel%d toggle error, HCINT 0x%08x", ch->index, hcint);
+ 			ch_events |= BIT(UHC_DWC2_CHANNEL_DO_REINIT);
+ 			ch_events |= BIT(UHC_DWC2_CHANNEL_DO_REWIND);
++		} else if (ch->halt_park) {
++			/* Halted on a NAK, the channel goes to a waiting transfer */
++			ch_events |= BIT(UHC_DWC2_CHANNEL_DO_PARK);
+ 		} else {
+ 			/* The channel halted without reporting a reason. Fail the
+ 			 * transfer instead of leaving the caller waiting.
+@@ -960,6 +970,18 @@ static uint32_t ch_handle_in_bulk_control(const struct device *dev,
+ 			ch_events |= BIT(UHC_DWC2_CHANNEL_DO_RELEASE);
+ 			ch_events |= BIT(UHC_DWC2_CHANNEL_EVENT_ERROR);
+ 		}
++	} else if ((hcint & USB_DWC2_HCINT_NAK) && ch->xfer->type == USB_EP_TYPE_BULK) {
++		/*
++		 * NAK is unmasked while transfers wait for a channel (see
++		 * submit_pending()): if they still do, halt the channel and give
++		 * it to one of them. The core retries a NAKed bulk IN by itself.
++		 */
++		sys_clear_bits((mem_addr_t)&ch->regs->hcintmsk, USB_DWC2_HCINT_NAK);
++		if (atomic_get(&priv->waiting) && !ch->halt_park) {
++			ch->halt_park = true;
++			sys_set_bits((mem_addr_t)&ch->regs->hcchar,
++				     USB_DWC2_HCCHAR_CHENA | USB_DWC2_HCCHAR_CHDIS);
++		}
+ 	} else if (hcint & (USB_DWC2_HCINT_ACK | USB_DWC2_HCINT_NAK | USB_DWC2_HCINT_DTGERR)) {
+ 		ch->error_count = 0;
+ 		/* TODO: Mask ACK, NAK, DTGERR */
+@@ -1314,7 +1336,8 @@ static int ch_configure(const struct device *const dev, struct uhc_dwc2_channel
+ 	/* Enable channel interrupt in the core */
+ 	sys_set_bits((mem_addr_t)&base->haintmsk, BIT(ch->index));
+ 
+-	hcintmsk = sys_read32((mem_addr_t)&ch->regs->hcintmsk);
++	/* Nothing an earlier transfer unmasked (NAK) carries over */
++	hcintmsk = 0U;
+ 
+ 	/* Enable transfer complete and channel halted interrupts */
+ 	hcintmsk |= USB_DWC2_HCINT_XFERCOMPL;
+@@ -1552,6 +1575,7 @@ static void ch_free(const struct device *dev, struct uhc_dwc2_channel *const ch)
+ 	ch->data = NULL;
+ 
+ 	ch->halt_cancel = false;
++	ch->halt_park = false;
+ 	priv->free_chs++;
+ 
+ 	LOG_DBG("Released channel%d", ch->index);
+@@ -1872,6 +1896,7 @@ static void ch_reinit(const struct device *dev,
+ 
+ 	/* Clear old channel interrupts before re-enabling. */
+ 	sys_write32(0xFFFFFFFFU, (mem_addr_t)&ch->regs->hcint);
++	ch->halt_park = false;
+ 
+ 	/* TODO: check, if it might be a good this to do anything before the re-init */
+ 
+@@ -2255,6 +2280,45 @@ static bool xfer_is_due(const struct device *const dev, const struct uhc_transfe
+ 	return periodic_frame_overrun(next_frame, data->scheduled_frame);
+ }
+ 
++/* Whether another transfer of the endpoint is on a channel or parked */
++static bool ep_is_busy(struct uhc_dwc2_data *const priv, const struct uhc_transfer *const xfer)
++{
++	struct uhc_dwc2_channel_data *data = ch_data_find(priv, xfer->udev->addr, xfer->ep);
++
++	if (data != NULL && data->parked != NULL && data->parked != xfer) {
++		return true;
++	}
++
++	for (uint32_t idx = 0; idx < priv->numhstchnl; idx++) {
++		const struct uhc_transfer *const active = priv->ch[idx].xfer;
++
++		if (active != NULL && active->udev->addr == xfer->udev->addr &&
++		    active->ep == xfer->ep) {
++			return true;
++		}
++	}
++
++	return false;
++}
++
++/*
++ * Transfers wait for a channel: a bulk IN endpoint that NAKs, a device with
++ * nothing to send, gives its channel back (see ch_handle_in_bulk_control()).
++ */
++static void ch_unmask_nak(const struct device *const dev)
++{
++	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
++
++	for (uint32_t idx = 0; idx < priv->numhstchnl; idx++) {
++		struct uhc_dwc2_channel *const ch = &priv->ch[idx];
++
++		if (ch->xfer != NULL && ch->xfer->type == USB_EP_TYPE_BULK &&
++		    USB_EP_DIR_IS_IN(ch->xfer->ep) && !ch->halt_cancel && !ch->halt_park) {
++			sys_set_bits((mem_addr_t)&ch->regs->hcintmsk, USB_DWC2_HCINT_NAK);
++		}
++	}
++}
++
+ static bool xfer_is_active(struct uhc_dwc2_data *const priv,
+ 			   const struct uhc_transfer *const xfer)
+ {
+@@ -2276,14 +2340,10 @@ static void submit_pending(const struct device *const dev)
+ 	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
+ 	struct uhc_data *const data = dev->data;
+ 	struct uhc_transfer *xfer, *tmp;
++	bool waiting = false;
+ 	int ret;
+ 
+ 	SYS_DLIST_FOR_EACH_CONTAINER_SAFE(&data->ctrl_xfers, xfer, tmp, node) {
+-		/* No channel can be claimed, stop walking the queue */
+-		if (priv->free_chs == 0) {
+-			break;
+-		}
+-
+ 		/* Skip transfers already assigned to a channel */
+ 		if (xfer_is_active(priv, xfer)) {
+ 			continue;
+@@ -2294,6 +2354,15 @@ static void submit_pending(const struct device *const dev)
+ 			continue;
+ 		}
+ 
++		/* No channel can be claimed: does this transfer wait for one? */
++		if (priv->free_chs == 0) {
++			if (xfer->err != -ECONNRESET && !ep_is_busy(priv, xfer)) {
++				waiting = true;
++				break;
++			}
++			continue;
++		}
++
+ 		ret = submit_xfer(dev, xfer);
+ 		if (ret == -EBUSY) {
+ 			/* Endpoint busy, retry on next completion */
+@@ -2306,6 +2375,11 @@ static void submit_pending(const struct device *const dev)
+ 			uhc_xfer_return(dev, xfer, ret);
+ 		}
+ 	}
++
++	(void)atomic_set(&priv->waiting, waiting);
++	if (waiting) {
++		ch_unmask_nak(dev);
++	}
+ }
+ 
+ static void port_handle_events(const struct device *dev, uint32_t event_mask)
+@@ -2418,6 +2492,10 @@ static void ch_handle_events(const struct device *dev, struct uhc_dwc2_channel *
+ 		ch_release(dev, ch);
+ 
+ 		uhc_xfer_return(dev, xfer, err);
++	} else if (events & BIT(UHC_DWC2_CHANNEL_DO_PARK)) {
++		/* Keep what was received and the toggle, the transfer resumes later */
++		ch_rewind_bulk(ch);
++		ch_park(dev, ch);
+ 	} else {
+ 		/* Reinit/rewind transfer */
+ 		if (events & BIT(UHC_DWC2_CHANNEL_DO_REWIND)) {

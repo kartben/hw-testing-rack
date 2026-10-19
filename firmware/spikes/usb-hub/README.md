@@ -22,7 +22,8 @@ three USB/IP rows below marked *patched*.
 | The hub in `usbip list` | Upstream: every device, the hub too (class 09).  *Patched*: only devices a USB/IP context is bound to, never a hub | **To check**: no hub in the list |
 | A DUT that resets while attached | Upstream: USB/IP is not told, its session keeps a pointer to the freed device.  *Patched*: the session ends, its transfers are cancelled (native_sim: `firmware/common/tests/usbip`) | **To watch**: the client sees a detach; `usbip attach` again works |
 | Per-port power | `SetPortFeature` / `ClearPortFeature(PORT_POWER)` exist (`usbh_req_set/clear_hcfs_port_power`), used once at start to power all ports; not public API | Works only on hubs that really switch each port (most cheap hubs do not) |
-| Your DWC2 fixes | #120848 (bulk toggle from the controller), #120961 (rewind bulk transfers, seen behind a GL850G), #121688 (toggles on SET_CONFIGURATION / ClearFeature(HALT)): open | Expected to matter behind a hub (re-enumerating DUTs, bulk retries); the spike runs without them first, then with them |
+| Your DWC2 fixes | #120848 (bulk toggle from the controller), #120961 (rewind bulk transfers, seen behind a GL850G), #121688 (toggles on SET_CONFIGURATION / ClearFeature(HALT)): open.  *Patched*: carried in `zephyr/patches.yml` (`uhc-dwc2-channels.patch`) | Expected to matter behind a hub (re-enumerating DUTs, bulk retries) |
+| Host channels | Upstream: a pending IN transfer keeps one of the 8 channels, a bulk IN while the device NAKs, an interrupt IN between polls; control and OUT transfers queue behind them.  The hub's status IN and two per open CDC console: 9 with 4 consoles open.  The endpoint state (32 slots) is freed only by a root port reset.  *Patched* (same file): an interrupt IN gives its channel back between polls, a NAKing bulk IN gives it to waiting transfers, the endpoint state is kept by address and freed when a device takes the address over | **To check**: step 8, untested so far |
 
 ## The spike
 
@@ -92,8 +93,23 @@ prints `network up: usbip list -r <address>`.
    their busids swap?  Re-attach and check you got the board you meant.
 6. **Endurance.**  4 consoles streaming for 30 minutes; `kernel stacks` on the
    node before and after; Wi-Fi drops; errors in the log.
-7. **Optional, with your DWC2 PRs** (#120848, #120961, #121688) applied to the
-   workspace: repeat 4 and 5.
+7. **Optional, without the DWC2 patch**, to compare: take
+   `uhc-dwc2-channels.patch` out of `zephyr/patches.yml` locally, `west patch
+   reverse && west patch apply`, rebuild, repeat 4, 5 and 8.
+8. **Host channels.**  The DUTs quiet (nothing printing), a console open on
+   each of the 4 (`picocom /dev/ttyACM0` … `ttyACM3` on the PC):
+   - type a command in each console in turn: each answers at once (without
+     the patch, one console does not open, or a command to a quiet board
+     waits until another board prints);
+   - change one console's line settings (`stty -F /dev/ttyACM1 9600`, a
+     SET_LINE_CODING): no delay;
+   - unplug and plug one DUT (or `spike port <n> cycle`), the other consoles
+     open: it enumerates again within a couple of seconds, `usbip attach`
+     works, its console comes back;
+   - 10 re-plugs in a row, then `spike devs`: all four there, no "No channel
+     data slot" and no stall in the node's log.
+   With `CONFIG_UHC_DRIVER_LOG_LEVEL_DBG=y` the log shows the channels given
+   back ("Park ep …").
 
-Bring back: the console logs, the times of 4, what 5 did, and `spike hub`'s
-line for the hub used.
+Bring back: the console logs, the times of 4, what 5 and 8 did, and `spike
+hub`'s line for the hub used.
