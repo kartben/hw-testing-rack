@@ -315,7 +315,7 @@ a LiPo charging takes more than a port's 0.5 A.
 JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $77 for 5 PCBs with 2 assembled
 (estimate in `tools/bom.py`).
 
-v2 (32 switchable pins on 8 buses and a logic analyzer on the same board): research in
+v2 (32 switchable pins on 8 buses, an RP2354B co-processor, two assembly variants): research in
 [data-x4-v2-research.md](data-x4-v2-research.md).
 
 ## Camera pod v1.0 — 2 layers, 40 × 27 mm
