@@ -84,12 +84,12 @@ Levers (*obvious*: an engineering choice the board's owner applies; *decision*: 
 
 ### At volume
 
-Unit cost (USD) of a board for n assembled in one order: the fees per order spread over n; the parts at JLC's price breaks for that quantity (the quoted components scaled by [`jlc-parts.md`](jlc-parts.md)'s prices, catalog of 2026-10-19); X-ray per board by JLC's tiers; the bare PCBs at JLC's price for that quantity (`JLC_PCB_PRICE`, measured on the calculator).  *Floor*: parts at the 100-board breaks, joints, X-ray and PCB per board, once the fees per order no longer count.
+Unit cost (USD) of a board for n assembled in one order: the fees per order spread over n; the parts at JLC's price breaks for that quantity (the quoted components scaled by [`jlc-parts.md`](jlc-parts.md)'s prices, catalog of 2026-10-20); X-ray per board by JLC's tiers; the bare PCBs at JLC's price for that quantity (`JLC_PCB_PRICE`, measured on the calculator).  *Floor*: parts at the 100-board breaks, joints, X-ray and PCB per board, once the fees per order no longer count.
 
 | Board | 2 | 5 | 10 | 50 | 100 | Floor |
 |---|---:|---:|---:|---:|---:|---:|
 | bay-node | 75.97 | 44.00 | 31.87 | 20.79 | 17.60 | 16.68 |
-| power-hub | 92.63 | 53.26 | 39.29 | 25.84 | 22.93 | 22.07 |
+| power-hub | 92.63 | 53.53 | 39.22 | 25.99 | 22.96 | 22.10 |
 | data-port | 13.72 | 6.49 | 3.90 | 1.92 | 1.44 | 1.26 |
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
 | data-port-x4 | 51.88 | 29.41 | 21.24 | 13.05 | 11.66 | 11.29 |
@@ -99,8 +99,8 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
 | 1 | 294.74 | 185.27 | 36.86 | 26.37 | 103.76 | **681.00** |
-| 5 | 176.67 | 53.26 | 15.86 | 7.14 | 29.41 | **289.14** |
-| 10 | 156.60 | 39.29 | 12.15 | 4.91 | 21.24 | **237.60** |
+| 5 | 176.67 | 53.53 | 15.86 | 7.14 | 29.41 | **289.41** |
+| 10 | 156.60 | 39.22 | 12.15 | 4.91 | 21.24 | **237.53** |
 
 ## Printed parts
 

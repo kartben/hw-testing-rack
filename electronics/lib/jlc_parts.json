@@ -1,5 +1,5 @@
 {
- "date": "2026-10-19",
+ "date": "2026-10-20",
  "boards": {
   "bay-node": [
    [
@@ -201,23 +201,18 @@
    ],
    [
     "C14663",
-    10,
+    8,
     "100n"
    ],
    [
-    "C15849",
-    4,
+    "C28323",
+    10,
     "1u"
    ],
    [
     "C3352",
     1,
     "100u/50V"
-   ],
-   [
-    "C28323",
-    9,
-    "1u"
    ],
    [
     "C21122",
@@ -228,6 +223,11 @@
     "C12891",
     5,
     "22u"
+   ],
+   [
+    "C15849",
+    2,
+    "1u"
    ],
    [
     "C113965",
@@ -275,16 +275,6 @@
     "3.3u"
    ],
    [
-    "C495809",
-    2,
-    "IRF7842TRPBF"
-   ],
-   [
-    "C2988648",
-    1,
-    "5m"
-   ],
-   [
     "C21190",
     10,
     "1k"
@@ -300,29 +290,19 @@
     "10k"
    ],
    [
+    "C25196",
+    5,
+    "56"
+   ],
+   [
+    "C23212",
+    1,
+    "6.8k"
+   ],
+   [
     "C23186",
-    6,
+    4,
     "5.1k"
-   ],
-   [
-    "C23153",
-    2,
-    "39k"
-   ],
-   [
-    "C4260",
-    1,
-    "6.2k"
-   ],
-   [
-    "C8218",
-    1,
-    "200"
-   ],
-   [
-    "C25810",
-    7,
-    "18k"
    ],
    [
     "C23234",
@@ -330,9 +310,14 @@
     "7.5k"
    ],
    [
-    "C25196",
-    4,
-    "56"
+    "C25810",
+    6,
+    "18k"
+   ],
+   [
+    "C23153",
+    1,
+    "39k"
    ],
    [
     "C318884",
@@ -340,14 +325,9 @@
     "TS-1187A-B-A-B"
    ],
    [
-    "C13564",
+    "C42459160",
     1,
-    "10k NTC"
-   ],
-   [
-    "C24374260",
-    1,
-    "AP33772SDKZ-13-FA01"
+    "CH224A"
    ],
    [
     "C45262770",
@@ -771,47 +751,6 @@
    "manufacturer": "Samsung Electro-Mechanics",
    "source": "local-db (snapshot stock)"
   },
-  "C13564": {
-   "mfr": "NCP18XH103F03RB",
-   "package": "0603",
-   "stock": 160072,
-   "tier": "extended",
-   "priceBreaks": [
-    {
-     "qFrom": 1,
-     "qTo": 99,
-     "price": 0.051
-    },
-    {
-     "qFrom": 100,
-     "qTo": 299,
-     "price": 0.043
-    },
-    {
-     "qFrom": 300,
-     "qTo": 999,
-     "price": 0.039
-    },
-    {
-     "qFrom": 1000,
-     "qTo": 3999,
-     "price": 0.035
-    },
-    {
-     "qFrom": 4000,
-     "qTo": 7999,
-     "price": 0.033
-    },
-    {
-     "qFrom": 8000,
-     "qTo": null,
-     "price": 0.032
-    }
-   ],
-   "category": "Sensors",
-   "manufacturer": "Murata Electronics",
-   "source": "local-db (snapshot stock)"
-  },
   "C13585": {
    "mfr": "CL31A106KBHNNNE",
    "package": "1206",
@@ -1199,7 +1138,7 @@
    "category": "Circuit Protection",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 15110
+   "lcsc_stock": 15100
   },
   "C20917": {
    "mfr": "AO3400A",
@@ -1241,7 +1180,7 @@
    "category": "Transistors/Thyristors",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 487030
+   "lcsc_stock": 483940
   },
   "C21122": {
    "mfr": "CL10B223KB8NNNC",
@@ -1355,6 +1294,22 @@
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock)"
   },
+  "C23212": {
+   "mfr": "0603WAF6801T5E",
+   "package": "0603",
+   "stock": 1476764,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
   "C23234": {
    "mfr": "0603WAF7501T5E",
    "package": "0603",
@@ -1369,47 +1324,6 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
-  },
-  "C24374260": {
-   "mfr": "AP33772SDKZ-13-FA01",
-   "package": "QFN-24(4X4)",
-   "stock": 0,
-   "tier": "extended",
-   "priceBreaks": [
-    {
-     "qFrom": 1,
-     "qTo": 9,
-     "price": 3.823
-    },
-    {
-     "qFrom": 10,
-     "qTo": 29,
-     "price": 3.259
-    },
-    {
-     "qFrom": 30,
-     "qTo": 99,
-     "price": 2.925
-    },
-    {
-     "qFrom": 100,
-     "qTo": 499,
-     "price": 2.585
-    },
-    {
-     "qFrom": 500,
-     "qTo": 999,
-     "price": 2.429
-    },
-    {
-     "qFrom": 1000,
-     "qTo": null,
-     "price": 2.36
-    }
-   ],
-   "category": "Interface",
-   "manufacturer": "Diodes Incorporated",
    "source": "local-db (snapshot stock)"
   },
   "C25196": {
@@ -1757,47 +1671,6 @@
    "manufacturer": "Espressif Systems",
    "source": "local-db (snapshot stock)"
   },
-  "C2988648": {
-   "mfr": "HoLLR1206-1W-5mR-1%",
-   "package": "1206",
-   "stock": 83941,
-   "tier": "extended",
-   "priceBreaks": [
-    {
-     "qFrom": 1,
-     "qTo": 99,
-     "price": 0.055
-    },
-    {
-     "qFrom": 100,
-     "qTo": 299,
-     "price": 0.047
-    },
-    {
-     "qFrom": 300,
-     "qTo": 999,
-     "price": 0.043
-    },
-    {
-     "qFrom": 1000,
-     "qTo": 4999,
-     "price": 0.04
-    },
-    {
-     "qFrom": 5000,
-     "qTo": 9999,
-     "price": 0.028
-    },
-    {
-     "qFrom": 10000,
-     "qTo": null,
-     "price": 0.027
-    }
-   ],
-   "category": "Resistors",
-   "manufacturer": "Milliohm",
-   "source": "local-db (snapshot stock)"
-  },
   "C31850": {
    "mfr": "0603WAF2202T5E",
    "package": "0603",
@@ -1817,18 +1690,18 @@
   "C318884": {
    "mfr": "TS-1187A-B-A-B",
    "package": "SMD-4P,5.1x5.1mm",
-   "stock": 296522,
+   "stock": 291773,
    "tier": "basic",
    "priceBreaks": [
     {
-     "qFrom": 20,
+     "qFrom": 1,
      "qTo": 199,
-     "price": 0.0207
+     "price": 0.021
     },
     {
      "qFrom": 200,
      "qTo": 599,
-     "price": 0.0161
+     "price": 0.016
     },
     {
      "qFrom": 600,
@@ -1838,23 +1711,17 @@
     {
      "qFrom": 4000,
      "qTo": 7999,
-     "price": 0.0122
+     "price": 0.012
     },
     {
      "qFrom": 8000,
-     "qTo": 19999,
-     "price": 0.0116
-    },
-    {
-     "qFrom": 20000,
      "qTo": null,
-     "price": 0.0111
+     "price": 0.011
     }
    ],
    "category": "Switches",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 0
+   "manufacturer": "XKB Connection",
+   "source": "local-db (snapshot stock)"
   },
   "C3234095": {
    "mfr": "TJA1462AT/0Z",
@@ -1981,20 +1848,45 @@
    "manufacturer": "hanxia",
    "source": "local-db (snapshot stock)"
   },
-  "C4260": {
-   "mfr": "0603WAF6201T5E",
-   "package": "0603",
-   "stock": 813858,
-   "tier": "basic",
+  "C42459160": {
+   "mfr": "CH224A",
+   "package": "ESSOP-10",
+   "stock": 12997,
+   "tier": "extended",
    "priceBreaks": [
     {
      "qFrom": 1,
+     "qTo": 9,
+     "price": 0.431
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 0.338
+    },
+    {
+     "qFrom": 30,
+     "qTo": 99,
+     "price": 0.299
+    },
+    {
+     "qFrom": 100,
+     "qTo": 499,
+     "price": 0.248
+    },
+    {
+     "qFrom": 500,
+     "qTo": 999,
+     "price": 0.227
+    },
+    {
+     "qFrom": 1000,
      "qTo": null,
-     "price": 0.002
+     "price": 0.214
     }
    ],
-   "category": "Resistors",
-   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "category": "Power Management (PMIC)",
+   "manufacturer": "WCH(Jiangsu Qin Heng)",
    "source": "local-db (snapshot stock)"
   },
   "C431540": {
@@ -2037,7 +1929,7 @@
    "category": "Switches",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 189010
+   "lcsc_stock": 188990
   },
   "C43491": {
    "mfr": "BZT52C12",
@@ -2247,48 +2139,6 @@
    "source": "live; prices from LCSC's product page (live)",
    "lcsc_stock": 6764
   },
-  "C495809": {
-   "mfr": "IRF7842TRPBF",
-   "package": "SO-8",
-   "stock": 7613,
-   "tier": "extended",
-   "priceBreaks": [
-    {
-     "qFrom": 1,
-     "qTo": 9,
-     "price": 0.8442
-    },
-    {
-     "qFrom": 10,
-     "qTo": 29,
-     "price": 0.675
-    },
-    {
-     "qFrom": 30,
-     "qTo": 99,
-     "price": 0.5896
-    },
-    {
-     "qFrom": 100,
-     "qTo": 499,
-     "price": 0.5059
-    },
-    {
-     "qFrom": 500,
-     "qTo": 999,
-     "price": 0.455
-    },
-    {
-     "qFrom": 1000,
-     "qTo": null,
-     "price": 0.4287
-    }
-   ],
-   "category": "Transistors/Thyristors",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 7613
-  },
   "C49851": {
    "mfr": "INA226AIDGSR",
    "package": "VSOP-10",
@@ -2329,7 +2179,7 @@
    "category": "Amplifiers/Comparators",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 35139
+   "lcsc_stock": 35134
   },
   "C51118": {
    "mfr": "AP2112K-3.3TRG1",
@@ -2527,7 +2377,7 @@
    "category": "Circuit Protection",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 5593
+   "lcsc_stock": 5591
   },
   "C598310": {
    "mfr": "KPA-3010CGCK",
@@ -2693,7 +2543,7 @@
    "category": "Diodes",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 867500
+   "lcsc_stock": 867450
   },
   "C7503186": {
    "mfr": "SUD50P06-15(UMW)",
@@ -2735,7 +2585,7 @@
    "category": "Transistors/Thyristors",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 54430
+   "lcsc_stock": 54410
   },
   "C75176": {
    "mfr": "PESD2CAN,215",
@@ -2777,7 +2627,7 @@
    "category": "Circuit Protection",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 33355
+   "lcsc_stock": 33340
   },
   "C7519": {
    "mfr": "USBLC6-2SC6",
@@ -2819,7 +2669,7 @@
    "category": "Circuit Protection",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 39870
+   "lcsc_stock": 39625
   },
   "C78419": {
    "mfr": "SMBJ33A",
@@ -2861,23 +2711,7 @@
    "category": "Circuit Protection",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 16640
-  },
-  "C8218": {
-   "mfr": "0603WAF2000T5E",
-   "package": "0603",
-   "stock": 2272432,
-   "tier": "basic",
-   "priceBreaks": [
-    {
-     "qFrom": 1,
-     "qTo": null,
-     "price": 0.004
-    }
-   ],
-   "category": "Resistors",
-   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "lcsc_stock": 16630
   },
   "C8545": {
    "mfr": "2N7002",
@@ -2919,7 +2753,7 @@
    "category": "Transistors/Thyristors",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 1923550
+   "lcsc_stock": 1919050
   },
   "C8598": {
    "mfr": "B5819W SL",
@@ -2961,7 +2795,7 @@
    "category": "Diodes",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 105580
+   "lcsc_stock": 102800
   }
  }
 }
