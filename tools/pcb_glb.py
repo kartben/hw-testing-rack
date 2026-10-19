@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -35,6 +36,7 @@ SUPERSAMPLE = 2         # painted at 2× then downsampled (anti-aliasing)
 MASK = (30, 94, 54)             # green solder mask over bare laminate
 MASK_CU = (56, 130, 74)         # mask over copper
 FINISH = (212, 170, 86)         # ENIG pads (mask openings over copper)
+FINISHES = {"ENIG": FINISH, "HASL": (198, 198, 192)}   # the board's copper_finish (design.py "finish")
 LAMINATE = (176, 160, 112)      # mask opening without copper
 SILK = (238, 238, 232)
 HOLE = (22, 22, 22)
@@ -81,7 +83,7 @@ def paint(art: dict, side: str) -> Image.Image:
     img = np.empty((size[1], size[0], 3), np.uint8)
     img[:] = MASK
     img[cu] = MASK_CU
-    img[opening & cu] = FINISH
+    img[opening & cu] = FINISHES.get(art.get("finish"), FINISH)
     img[opening & ~cu] = LAMINATE
     img[silk & ~opening] = SILK
     out = Image.fromarray(img)
@@ -280,6 +282,10 @@ def convert(src: Path, dst: Path, art_path: Path | None = None, max_group_faces:
     scene = trimesh.load(src)
     board = src.stem
     art = json.loads(art_path.read_text()) if art_path and art_path.exists() else None
+    pcb = REPO / "electronics" / board / f"{board}.kicad_pcb"
+    if art is not None and pcb.exists():
+        m = re.search(r'\(copper_finish "([^"]+)"\)', pcb.read_text(encoding="utf-8"))
+        art["finish"] = m.group(1) if m else None
     body, groups, dropped = [], defaultdict(list), 0
     for node in scene.graph.nodes_geometry:
         tf, gname = scene.graph[node]
