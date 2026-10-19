@@ -47,3 +47,6 @@ rack-scripts/
 
 # LCSC / EasyEDA 3D models: fetched on demand by tools/fetch_pcb_models.py (not redistributed)
 electronics/lib/3dmodels/easyeda/
+
+# Local PCBA review records (pcba-design-skills); the summary is docs/pcba-review.md
+.pcba-workflow/
