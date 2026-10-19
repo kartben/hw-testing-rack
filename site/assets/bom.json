@@ -2370,21 +2370,21 @@
 "item": "Bare PCB data-port-x4 (4-layer 108×24 mm, JLC04161H-7628, lead-free HASL)",
 "supplier": "estimate, not quoted",
 "qty": 5,
-"unit_eur": 1.656,
-"notes": "board $9.00 = $9.00 for 5 PCBs, 2 of them assembled",
+"unit_eur": 5.8696,
+"notes": "engineering $25.00, lead-free HASL $5.10, board $1.80 = $31.90 for 5 PCBs, 2 of them assembled",
 "unit": "pcs",
-"ext_eur": 8.28
+"ext_eur": 29.35
 },
 {
 "category": "Electronics",
 "group": "data-port-x4",
-"item": "Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",
+"item": "Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 32.73,
-"notes": "setup $8.18, stencil $1.53, extended parts $24.56, SMT $1.31",
+"unit_eur": 35.75,
+"notes": "setup $8.18, stencil $1.53, extended parts $24.56, SMT $1.31, X-ray $3.28",
 "unit": "pcs",
-"ext_eur": 32.73
+"ext_eur": 35.75
 },
 {
 "category": "Electronics",
@@ -2684,7 +2684,7 @@
 }
 ],
 "by_category": {
-"Electronics": 652.1599999999997,
+"Electronics": 676.2499999999998,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2692,7 +2692,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 941.74,
+"total_eur": 965.83,
 "prints": [
 {
 "part": "bay_label",
@@ -3041,18 +3041,21 @@
 "pcbs": 5,
 "assembled": 2,
 "service": "Economic",
-"total": 74.44,
+"total": 100.62,
 "estimate": true,
 "spec": "4-layer 108×24 mm, JLC04161H-7628, lead-free HASL",
 "pcb": {
-"board": 9.0
+"engineering": 25.0,
+"lead-free HASL": 5.1,
+"board": 1.8
 },
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
 "components": 29.86,
 "extended parts": 24.56,
-"SMT": 1.31
+"SMT": 1.31,
+"X-ray": 3.28
 }
 }
 },
@@ -3147,17 +3150,20 @@
 },
 "data-port-x4": {
 "pcb": {
-"board": 9.0
+"engineering": 25.0,
+"lead-free HASL": 5.1,
+"board": 1.8
 },
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
 "components": 29.86,
 "extended parts": 24.56,
-"SMT": 1.31
+"SMT": 1.31,
+"X-ray": 3.28
 },
 "changes": [],
-"total": 74.44,
+"total": 100.62,
 "need": 1,
 "types": 22,
 "extended": 8,
@@ -3270,11 +3276,11 @@
 "types": 22,
 "extended": 8,
 "type_fee": 24.56,
-"once": 43.27,
-"per_board": 31.17,
-"total": 74.44,
-"after_obvious": 74.44,
-"after_decisions": 74.44,
+"once": 66.17,
+"per_board": 34.45,
+"total": 100.62,
+"after_obvious": 100.62,
+"after_decisions": 100.62,
 "levers": []
 }
 ],

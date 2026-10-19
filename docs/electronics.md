@@ -312,7 +312,7 @@ measurements); the firmware admits a port only within the budget and sheds one w
 INA226 alerts ([multi-dut-node.md](multi-dut-node.md)).  No batteries on the boards of a converted bay:
 a LiPo charging takes more than a port's 0.5 A.
 
-JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $74 for 5 PCBs with 2 assembled
+JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $101 for 5 PCBs with 2 assembled
 (estimate in `tools/bom.py`).
 
 v2 (32 switchable pins on 8 buses, an RP2354B co-processor, two assembly variants): research in
