@@ -46,6 +46,12 @@ right and floor plate; base brace into the free inserts of the shared ladder
 
 ## 4. Inside each bay
 
+Fit each bay's tray at the bench, out of the frame (steps 1, 2, 4 and 5), then
+slide it into its place and do step 3.  Once the tray is in, no screwdriver
+reaches the guide lips' screws (the stop screw, a sled bay's locks): they sit
+5 mm from the side ladder and 2.6 mm from the drawer's wall.  To convert a bay
+later, take its tray out first.
+
 1. **Node** onto the tray standoffs (4 × M3×6).
 2. **Drag chain**: cut ≈ 180 mm including the two end pieces (Olimex
    DRAG-CHAIN-7X7).  At the bench, screw the fixed end piece to the
@@ -67,7 +73,7 @@ right and floor plate; base brace into the free inserts of the shared ladder
    slide the drawer
    in from the front onto the tray's ledges (its rear flange under the guide
    lips), engage the foot in the rear groove and lock it with the M2.5 from
-   inside the rear bay (PT 2.6×8); then the PT 2.6×8 stop screw through the left guide lip.
+   inside the rear bay (PT 2.6×8); then the stop screw (PT 2.3×8) through the left guide lip.
 5. **Plate + board + short cable**, printed `bay_label` (or 12 mm tape) in the
    front recess.
 
@@ -77,9 +83,9 @@ anchor (nor its two inserts), foot or magnets.  The DATA board goes into the
 runs from J7 back along the plenum and up through the block's window into its
 PH, its slack coiled in the plenum.  Slide the
 block in onto the ledges to the rear (its flanges under the guide lips) and lock
-it: 2 × PT 2.6×8 down through the guide lips and its flanges into the ledges,
+it: 2 × PT 2.3×8 down through the guide lips and its flanges into the ledges,
 at the holes level with them.  Then the `drawer_sled`, and the stop screw; for a
-fixed bay, 2 × PT 2.6×8 more through the lips into the sled's flanges.
+fixed bay, 2 × PT 2.3×8 more through the lips into the sled's flanges.
 
 To take a tray out: pull the drawer out, press both latch arms inwards, slide
 the tray forwards.
@@ -112,11 +118,13 @@ At the bench: the pod board on its two standoffs behind the sleeve, LEDs
 down, against the baffle, and the diffuser under it (2 × PT 2.6×14 up through
 its posts and the board); the XH → Dupont cable into the Mega's side and onto
 J2 by name.  Pod under the ceiling, 4 × M3×6 into the camera inserts (the tray
-above, or the cap plate); push the Mega's case up into the sleeve until the
+above, or the cap plate), the bay's drawer pulled out (a closed drawer and its
+DUT cable leave no room for the hand); push the Mega's case up into the sleeve until the
 lips click, lens down, its XH on the open side.  The lead
 ([cabling.md](cabling.md)) into the bay's own node (J6), back through the
 plenum and the tray's rear slot, straight up behind the tray, forwards under
-the ceiling (a cable tie every ~5 cm) and into the board's J1.
+the ceiling (a cable tie every ~5 cm) and into the board's J1, only once the
+pod is screwed: its plug covers the rear-left screw.
 
 ## 7. Bring-up
 

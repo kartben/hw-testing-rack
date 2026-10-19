@@ -344,10 +344,16 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
          "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
         {"category": "Fasteners", "item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): "
-                                         "drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board; "
-                                         "a sled bay: stop, 2 port-block locks, 2 DATA (and 2 sled locks if fixed)",
-         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)", "qty": 8 * n_drawer + 5 * n_sled + 2 * n_fixed, "unit_eur": 0.02,
+                                         "foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA",
+         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)", "qty": 7 * n_drawer + 2 * n_sled, "unit_eur": 0.02,
          "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)"},
+        {"category": "Fasteners", "item": "PT 2.3×8 pan head, self-tapping (M2.3×8 \"ST\", head ≤ Ø4.5): the guide lips' "
+                                         "screws: a drawer bay's stop; a sled bay's stop and 2 port-block locks (and 2 sled "
+                                         "locks if fixed)",
+         "supplier": "AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100)",
+         "qty": n_drawer + 3 * n_sled + 2 * n_fixed, "unit_eur": 0.02,
+         "notes": "pilots Ø1.9 in the ledges, Ø2.6 in the lips; a Ø5 PT 2.6 head would rub the drawer's wall "
+                  "(lib/carrier.scad › LIP_SCREW, checked in SolidCraft)"},
         {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
          "supplier": "AliExpress (bulk)", "qty": 4 * n_drawer, "unit_eur": 0.01},
         {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the "

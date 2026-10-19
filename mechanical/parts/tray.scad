@@ -128,14 +128,14 @@ module guide_left() {
             cube([DRAWER_X0, EPS, 1.4]);
             translate([0, 6, 0]) cube([DRAWER_X0, EPS, EPS]);
         }
-        // drawer end stop: a PT 2.6 × 8 screw through the lip, biting into the ledge
-        translate([STOP_PIN_X, STOP_Y, LEDGE_Z - LEDGE_T - 1]) cylinder(d = 2.1, h = 10);
-        translate([STOP_PIN_X, STOP_Y, LEDGE_Z + GUIDE_LIP_Z - 1]) cylinder(d = 2.8, h = GUIDE_LIP_T + 2);
-        // a sled bay's lock screws, the same way: its port block's flanges, and a fixed bay's sled (in a
-        // drawer bay the first pair locks the drawer shut, for carrying the rack)
-        for (y = [BLOCK_LOCK_Y, SLED_LOCK_Y]) {
-            translate([STOP_PIN_X, y, LEDGE_Z - LEDGE_T - 1]) cylinder(d = 2.1, h = 10);
-            translate([STOP_PIN_X, y, LEDGE_Z + GUIDE_LIP_Z - 1]) cylinder(d = 2.8, h = GUIDE_LIP_T + 2);
+        // drawer end stop: a PT 2.3 × 8 screw (LIP_SCREW) through the lip, biting into the ledge; and a
+        // sled bay's lock screws, the same way: its port block's flanges, and a fixed bay's sled (in a drawer
+        // bay the first pair locks the drawer shut, for carrying the rack).  Round each shank, between the
+        // ledge and the lip, the guide wall is relieved (its face is 0.15 mm inside the shank's reach)
+        for (y = [STOP_Y, BLOCK_LOCK_Y, SLED_LOCK_Y]) {
+            translate([STOP_PIN_X, y, LEDGE_Z - LEDGE_T - 1]) cylinder(d = LIP_SCREW[2], h = 10);
+            translate([STOP_PIN_X, y, LEDGE_Z + GUIDE_LIP_Z - 1]) cylinder(d = LIP_SCREW[3], h = GUIDE_LIP_T + 2);
+            translate([STOP_PIN_X, y, LEDGE_Z - EPS]) cylinder(d = LIP_SCREW[0] + 0.8, h = GUIDE_LIP_Z + 2 * EPS);
         }
     }
 }

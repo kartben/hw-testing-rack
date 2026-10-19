@@ -215,7 +215,8 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 62  | 0.02 | 1.24 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid, camera pods) | 44  | 0.02 | 0.88 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
-| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): drawer stop, foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: stop, 2 port-block locks, 2 DATA (and 2 sled locks if fixed) | 61  | 0.02 | 1.22 | AliExpress (bulk, e.g. HZYUEGOU) |
+| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA | 51  | 0.02 | 1.02 | AliExpress (bulk, e.g. HZYUEGOU) |
+| Fasteners | PT 2.3×8 pan head, self-tapping (M2.3×8 "ST", head ≤ Ø4.5): the guide lips' screws: a drawer bay's stop; a sled bay's stop and 2 port-block locks (and 2 sled locks if fixed) | 10  | 0.02 | 0.20 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 28  | 0.01 | 0.28 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge) | 1 lot | 3.99 | 3.99 | AliExpress 1005010074888189, "6x3mm-50 pièces" |
 | Fasteners | Cyanoacrylate glue, gel (detent magnets) | 1  | 3.00 | 3.00 | any |

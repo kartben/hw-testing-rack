@@ -51,11 +51,17 @@ GUIDE_Y0 = DRAWER_FRONT_T + 1;
 GUIDE_LIP_Z = DRAWER_FLANGE[1] + 0.4;              // lip underside above the ledge
 GUIDE_LIP_T = 2.0;
 GUIDE_WALL_T = DRAWER_X0 - DRAWER_FLANGE[0] - 0.5;  // solid wall of the C-channel (inner face 0.5 from the flange)
-STOP_PIN_X = DRAWER_X0 - DRAWER_FLANGE[0] / 2 - 0.2; // PT 2.6 × 8 stop screw, in the flange path
+// The guide lips' screws (the drawer's end stop, a sled bay's locks): PT 2.3 × 8 pan head (or M2.3 × 8
+// self-tapping), [shank, the largest head, pilot, the lip's clearance hole].  Its axis keeps a Ø4.5 head
+// 0.35 mm off the drawer's (sled's, block's) wall, the shank 1.6 mm into the flange path; the guide wall
+// is relieved round the shank (tray.scad).  SolidCraft, 2026-10-19: a PT 2.6's Ø5 head at the old x 6.3
+// overlapped the wall by 0.8 mm.
+LIP_SCREW = [2.3, 4.5, 1.9, 2.6];
+STOP_PIN_X = DRAWER_X0 - LIP_SCREW[1] / 2 - 0.35;  // 5.4
 FLANGE_Y = [DRAWER_D - 26, DRAWER_D - 6];          // rear flange segment (drawer coords)
 // A bay holds a drawer, or a sled and a port block (config/rack.yaml › population › mount): the drawer
 // cut 1 mm in front of its port wall.  The sled (its front) slides on the same ledges with no chain;
-// the block (its rear bay, the DATA port) is locked by two PT 2.6 × 8 through the guide lips into the
+// the block (its rear bay, the DATA port) is locked by two PT 2.3 × 8 through the guide lips into the
 // ledges, at BLOCK_LOCK_Y; a fixed bay's sled takes two more at SLED_LOCK_Y.
 SPLIT = DRAWER_D - DRAWER_REAR_BAY - DRAWER_WALL - 1;   // a sled's rear edge (drawer coords)
 SLED_FLANGE_Y = [SPLIT - 24, SPLIT - 4];

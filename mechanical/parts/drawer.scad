@@ -6,7 +6,7 @@
 //   -D 'PART="sled"'    a sled bay's plate: the drawer cut 1 mm in front of its port wall, no chain foot,
 //                       no magnet; two flange segments at its rear (lock screws in a fixed bay)
 //   -D 'PART="block"'   a sled bay's port block: the drawer's rear bay on its own, locked into the tray by
-//                       two PT 2.6 × 8 through the guide lips; -D PORTS=4: four USB-C (DATA ×4, placeholder)
+//                       two PT 2.3 × 8 through the guide lips; -D PORTS=4: four USB-C (DATA ×4, placeholder)
 //
 // - Front panel with a finger pull and a recess for 12 mm label tape.
 // - Board-plate pocket: plates drop in (two 180°-symmetric locating pins).
@@ -164,8 +164,9 @@ module block(ports = 1) difference() {
     lock_holes(BLOCK_LOCK_Y);
 }
 
-module lock_holes(y) for (x = [-DRAWER_FLANGE[0] / 2, DRAWER_W + DRAWER_FLANGE[0] / 2])
-    translate([x, y, -EPS]) cylinder(d = 2.8, h = DRAWER_FLANGE[1] + 2 * EPS);
+// under the tray's lip screws (STOP_PIN_X, mirrored on the right): open at the flange's outer edge
+module lock_holes(y) for (x = [STOP_PIN_X - DRAWER_X0, DRAWER_W - (STOP_PIN_X - DRAWER_X0)])
+    translate([x, y, -EPS]) cylinder(d = LIP_SCREW[3], h = DRAWER_FLANGE[1] + 2 * EPS);
 
 if (PART == "sled") sled();
 else if (PART == "block") block(PORTS);
