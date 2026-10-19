@@ -66,8 +66,14 @@ LED_HOLE = 2.6;
 LED_Z = 0.8;                        // side-view LED centre above the PCB top
 // USB-C openings sized for the plug's overmold (USB-IF reference: up to 12.35 × 6.5 mm), not the
 // shell: the receptacles sit 3–4 mm behind the walls' outer faces, deeper than a plug reaches
-// past its overmold.  Width, height, centre above the PCB top.
-USB_CUT = [12.4, 7.0, 1.6];
+// past its overmold.  0.6 / 0.4 mm over that size: a printed hole comes out ≈ 0.2–0.3 mm small,
+// and the PD input's 5 A EPR cables tend to the largest overmolds.  Width, height, centre above
+// the PCB top.
+USB_CUT = [13.0, 7.4, 1.6];
+// the CTL LED's hole, 0.35 mm towards the row LEDs: ≈ 1 mm of wall (two 0.45 mm lines) between it
+// and the wider console USB-C opening, where 0.66 mm could be dropped by the slicer; still in
+// front of the side-view LED's 3 mm face
+CTL_LED_SHIFT = -0.35;
 USB_BOTTOM = HUB_TOP + USB_CUT[2] - USB_CUT[1] / 2;
 TEXT = [5.5, 0.8];                  // labels: size (cap height 5.25 mm, strokes 1.1 mm), engraving depth
 assert(abs(HB - HUB_TOP - SPACER[0]) < 0.01, "the spacers must reach the lid: HB - HUB_TOP = spacer length");
@@ -163,7 +169,7 @@ module front_wall_cuts() {
     // status LEDs: ON / FAULT per row, then PD (the AP33772S's own LED) and CTL (the controller's)
     for (i = [0 : len(HUB_LEDS) - 1]) {
         x = HUB_X0 + HUB_LEDS[i];
-        for (dx = i < 4 ? [-LED_PAIR / 2, LED_PAIR / 2] : [0])
+        for (dx = i < 4 ? [-LED_PAIR / 2, LED_PAIR / 2] : [i == len(HUB_LEDS) - 1 ? CTL_LED_SHIFT : 0])
             translate([x + dx, -EPS, HUB_TOP + LED_Z]) rotate([-90, 0, 0]) cylinder(d = LED_HOLE, h = T + 2 * EPS);
     }
     // the controller's console USB-C, next to its LED
