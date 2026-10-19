@@ -5,16 +5,16 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 676 |
+| Electronics | 669 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 60 |
 | Cables | 49 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **965** |
+| **Total** | **959** |
 
-≈ **€121 per bay** all-in.
+≈ **€120 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -31,7 +31,7 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | power-hub | 5 PCBs (4-layer 76×140 mm (86×140 with JLC's rails), ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $18.00, board $7.50 | 50.50 |
 | | | PCBA: setup $25.75, stencil $8.27, components $57.89, feeders $72.85, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04 | 192.02 |
 | | | **Quoted total** | **242.52** |
-| | | Order (indicative): lead-free HASL ≈ $5.30 instead of ENIG $18.00; 11 part types fewer (values merged) (−$17.05 feeders) | 212.77 |
+| | | Order (indicative): lead-free HASL ≈ $5.30 instead of ENIG $18.00; 11 part types fewer (values merged) (−$17.05 feeders); 3 AP33772S bought instead of 5 (−$6.82 U1 global sourcing (est.)) | 205.95 |
 | data-port | 10 PCBs (2-layer 40×17 mm, lead-free HASL), 8 assembled, Economic PCBA | PCB: board $6.30 | 6.30 |
 | | | PCBA: setup $8.18, stencil $1.53, components $12.90, extended parts $9.21, SMT $0.40 | 32.22 |
 | | | **Estimated total** | **38.52** |
@@ -52,12 +52,12 @@ What each order pays once, whatever the number of boards, against what grows wit
 | Board | PCBA | Needed / assembled | Part types (extended) | Type fees | Once per order | With the boards | Today | After obvious levers | After decisions |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
 | bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 38 (23) | 58.14 | 111.93 | 206.92 | **318.85** | 318.85 | 273.38 |
-| power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 37 (19) | 56.61 | 128.24 | 84.53 | **212.77** | 205.77 | 167.11 |
+| power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 37 (19) | 56.61 | 128.24 | 77.71 | **205.95** | 205.95 | 167.29 |
 | data-port | Economic | 7 / 8 | 5 (3) | 9.21 | 25.22 | 13.30 | **38.52** | 38.52 | 28.47 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.25 | **26.37** | 26.37 | 25.58 |
 | data-port-x4 | Economic | 1 / 2 | 22 (9) | 27.63 | 69.24 | 34.52 | **103.76** | 103.76 | 76.88 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **734.27** | **727.27** | **605.42** |
+| **All** | | | | | | | **727.45** | **727.45** | **605.60** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -67,7 +67,6 @@ Levers (*obvious*: an engineering choice the board's owner applies; *decision*: 
 | bay-node | USB-C J3: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check | 5.37 | decision |
 | bay-node | JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check (5 a board) | 13.98 | decision |
 | bay-node | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board) | 5.04 | decision |
-| power-hub | 3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare | 7.00 | obvious |
 | power-hub | rows C and D not fitted (DNP, footprints kept): the rack has 2 rows | 9.68 | decision |
 | power-hub | board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new power box, room for 2 rows only | 24.60 | decision |
 | power-hub | USB-C J6 (the console; the PD input J1 stays GCT for 48 V): HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check | 1.47 | decision |
@@ -98,7 +97,7 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 294.74 | 202.53 | 36.86 | 26.37 | 103.76 | **698.26** |
+| 1 | 294.74 | 202.52 | 36.86 | 26.37 | 103.76 | **698.25** |
 | 5 | 176.67 | 59.48 | 15.86 | 7.14 | 29.41 | **295.36** |
 | 10 | 156.60 | 44.62 | 12.15 | 4.91 | 21.24 | **242.93** |
 
@@ -237,7 +236,7 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 2  | 0.93 | 1.86 | LCSC/JLCPCB C3234095 |
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 8  | 1.42 | 11.33 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×140 mm (86×140 with JLC's rails), lead-free HASL) | 5  | 6.96 | 34.78 | JLCPCB quote 2026-10-19, adjusted |
-| Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.) | 1  | 107.71 | 107.71 | JLCPCB quote 2026-10-19, adjusted |
+| Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.) | 1  | 101.44 | 101.44 | JLCPCB quote 2026-10-19, adjusted |
 | Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.32 | 4.32 | JLCPCB quote 2026-10-19, adjusted |
 | Electronics | 100n — Capacitor 100n 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C14663 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 8  | 0.84 | 6.70 | LCSC/JLCPCB C5184243 |

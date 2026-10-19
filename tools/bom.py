@@ -77,6 +77,7 @@ JLC_QUOTE = {
         "pcb": {"engineering": 25.00, "ENIG": 18.00, "board": 7.50},
         "pcba": {"setup": 25.75, "stencil": 8.27, "components": 57.89, "feeders": 72.85, "SMT": 3.30,
                  "X-ray": 3.30, "packaging": 0.50, "special components": 0.12, "U1 global sourcing (est.)": 20.04},
+        "gs_parts": 3,          # AP33772S bought through Global Sourcing since JLC_SINCE_QUOTE (5 in the quote)
     },
     # the drawer's DATA port board (v1.0, 2 layers, parts on one side) is NOT quoted either: Economic
     # PCBA (setup $8.18, stencil $1.53, $3.07 per extended part type: the USB4105, the S8B-PH and the
@@ -135,7 +136,9 @@ JLC_FINISH = {"power-hub": ("lead-free HASL", 5.30)}
 # front LED on 1k, the IMON filters and the CAN split caps on the dVdT caps' 22n, the LDO input on the
 # eFuses' 1u 0805.  Eleven part types fewer at the quote's $1.55 a type in Standard PCBA feeders (47 → 36
 # placed types).
-JLC_SINCE_QUOTE = {"power-hub": [("11 part types fewer (values merged)", "feeders", -17.05)]}
+JLC_SINCE_QUOTE = {"power-hub": [("11 part types fewer (values merged)", "feeders", -17.05),
+                                  # 3 AP33772S through Global Sourcing (2 boards, a spare) instead of 5: 2 × $3.41
+                                  ("3 AP33772S bought instead of 5", "U1 global sourcing (est.)", -6.82)]}
 
 # JLC's fees, from its help page "PCB Assembly Cost" (updated 2026-09-09) and the jlcpcb.com
 # calculator (2026-10-19, 4-layer, 5 PCBs): what a board's part types and size cost per order
@@ -154,7 +157,6 @@ JLC_FEES = {
 # "decision": a trade-off for the user.  A lever applied in a board leaves this list for its quote.
 JLC_LEVERS = {
     "power-hub": [
-        ("3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare", 7.00, "obvious"),
         ("rows C and D not fitted (DNP, footprints kept): the rack has 2 rows", 9.68, "decision"),
         ("board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new "
          "power box, room for 2 rows only", 24.60, "decision"),
@@ -510,7 +512,7 @@ def volume(orders: dict) -> dict:
         sourcing = sum(v for key, v in pcba.items() if "sourcing" in key)
         once = 3.0 if sourcing else 0.0                 # Global Sourcing: ≈ $3 once, the rest per part bought
         if sourcing:
-            parts += (sourcing - 3.0) / q["pcbs"]
+            parts += (sourcing - 3.0) / q.get("gs_parts", q["pcbs"])
         return parts + (xray(n) if name in JLC_XRAY_BOARDS else 0), once
 
     def order(name: str, n: int) -> float:

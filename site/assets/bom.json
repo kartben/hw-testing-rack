@@ -1598,10 +1598,10 @@
 "item": "Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.)",
 "supplier": "JLCPCB quote 2026-10-19, adjusted",
 "qty": 1,
-"unit_eur": 107.71,
-"notes": "setup $25.75, stencil $8.27, feeders $55.80, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; 11 part types fewer (values merged) (−$17.05 feeders); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
+"unit_eur": 101.44,
+"notes": "setup $25.75, stencil $8.27, feeders $55.80, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $13.22; 11 part types fewer (values merged) (−$17.05 feeders); 3 AP33772S bought instead of 5 (−$6.82 U1 global sourcing (est.)); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 107.71
+"ext_eur": 101.44
 },
 {
 "category": "Electronics",
@@ -2684,7 +2684,7 @@
 }
 ],
 "by_category": {
-"Electronics": 675.53,
+"Electronics": 669.26,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2692,7 +2692,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 965.11,
+"total_eur": 958.84,
 "prints": [
 {
 "part": "bay_label",
@@ -2998,7 +2998,8 @@
 "packaging": 0.5,
 "special components": 0.12,
 "U1 global sourcing (est.)": 20.04
-}
+},
+"gs_parts": 3
 },
 "data-port": {
 "pcbs": 10,
@@ -3098,13 +3099,14 @@
 "X-ray": 3.3,
 "packaging": 0.5,
 "special components": 0.12,
-"U1 global sourcing (est.)": 20.04
+"U1 global sourcing (est.)": 13.22
 },
 "changes": [
 "lead-free HASL ≈ $5.30 instead of ENIG $18.00",
-"11 part types fewer (values merged) (−$17.05 feeders)"
+"11 part types fewer (values merged) (−$17.05 feeders)",
+"3 AP33772S bought instead of 5 (−$6.82 U1 global sourcing (est.))"
 ],
-"total": 212.77,
+"total": 205.95,
 "need": 1,
 "types": 37,
 "extended": 19,
@@ -3225,16 +3227,11 @@
 "extended": 19,
 "type_fee": 56.61,
 "once": 128.24,
-"per_board": 84.53,
-"total": 212.77,
-"after_obvious": 205.77,
-"after_decisions": 167.11,
+"per_board": 77.71,
+"total": 205.95,
+"after_obvious": 205.95,
+"after_decisions": 167.29,
 "levers": [
-{
-"lever": "3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare",
-"usd": 7.0,
-"kind": "obvious"
-},
 {
 "lever": "rows C and D not fitted (DNP, footprints kept): the rack has 2 rows",
 "usd": 9.68,
@@ -3425,18 +3422,18 @@
 "1": {
 "boards": {
 "bay-node": 294.74,
-"power-hub": 202.53,
+"power-hub": 202.52,
 "data-port": 36.86,
 "camera-pod": 26.37,
 "data-port-x4": 103.76
 },
 "shipping": 34.0,
-"per_rack": 698.26
+"per_rack": 698.25
 },
 "5": {
 "boards": {
 "bay-node": 883.36,
-"power-hub": 297.39,
+"power-hub": 297.38,
 "data-port": 79.31,
 "camera-pod": 35.68,
 "data-port-x4": 147.07
@@ -3447,7 +3444,7 @@
 "10": {
 "boards": {
 "bay-node": 1565.97,
-"power-hub": 446.23,
+"power-hub": 446.22,
 "data-port": 121.55,
 "camera-pod": 49.13,
 "data-port-x4": 212.44
