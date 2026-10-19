@@ -120,3 +120,38 @@ Checked and rejected:
     silicon, and Standard PCBA charges every type alike anyway. The 1 µF 50 V X7R 0603 (C5199872) is
     extended;
   - ESP32-S3 N8R8 → N8: saves $0.23 at 100, and loses the camera's PSRAM.
+
+## Promotions (checked 2026-10-20)
+
+JLC's public coupon center and help pages, read without an account. The user claims and applies coupons
+at checkout. None is counted in the cost totals above.
+
+**Rules.**
+- Each coupon is used once, and only one coupon applies to an order. Every board in the cart is its
+  own order, so the five boards can take up to five coupons. JLC's checkout decides how they combine.
+- "JLCONE" coupons need the order placed from the JLCONE desktop app. The calculator also shows "Order
+  on JLCONE Desktop: save $1–$20 per order", without a breakdown.
+- EasyEDA coupons ($10 PCB, $10 PCBA) are for designs made in EasyEDA. Ours are KiCad's, so they don't
+  apply.
+
+| Coupon | Off our cart | Conditions | Valid |
+|---|---:|---|---|
+| JLCONE 4-Layer PCB | $5 | a 4-layer PCB order above $5, through JLCONE | until 2035-03-23 (durable) |
+| PCBA Special Offer | $9 | a PCBA order above $1, excluding freight | until 2026-10-30 |
+| PCBA Special Offer | $6 | a PCBA order above $1, excluding freight | until 2026-10-30 |
+| JLCONE PCBA | $20 | a PCBA order above $100 (the node or the hub), through JLCONE | 30 days after claiming |
+| JLCONE PCB | $5 | a PCB order above $2, through JLCONE | 30 days after claiming |
+| Social follow | $5 | follow JLC's channels and send the account ID through JLC's form ([sales-promotion](https://jlcpcb.com/sales-promotion)) | while the page offers it |
+
+Up to ≈ $45 if all five stack, one per board. Programs:
+- **Brand Advocate Program** (help center, 2026-08-26): free or discounted prototyping, coupons and
+  payments for builders who publish their work on YouTube, Instagram, TikTok or X. Free to apply. The
+  amount is JLC's decision.
+- **Free PCBs for university teams**: not our case.
+- **No program for open-source projects as such** was found. The 2024 "free 6-layer PCBs" creator
+  sponsorship seems to have given way to the Brand Advocate Program.
+
+**Seasonal.** Black Friday 2025 ran from November 18 to December 8, with "$650 in coupons" across JLC's
+four brands (PCB, 3D printing, CNC, mechatronics) and flash coupons; the PCBA coupon amounts were not
+published. A 2026 edition is likely but not announced.
+
