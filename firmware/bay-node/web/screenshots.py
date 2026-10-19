@@ -37,6 +37,8 @@ def main() -> None:
 
     # This machine plays the admin's laptop of the examples
     dev_server.PEER_OVERRIDE["127.0.0.1"] = "192.168.1.23"
+    # The node is B2's, the bay its camera frames show (camera/, the GIGA R1)
+    dev_server.node.update(id="b2", hostname="bay-b2", ip="192.168.1.78")
 
     with Shots(dev_server.serve(0), args.out, args.channel) as s:
         poke, shoot, base = s.poke, s.shoot, s.base

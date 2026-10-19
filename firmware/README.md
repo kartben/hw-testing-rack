@@ -231,7 +231,7 @@ xterm.js for the console, below).  It follows the browser's light/dark
 theme, polls `/api/status` every 2 s while visible, and offers the shell's
 main actions.
 
-![Status page of bay B3, dark theme: VBUS on with live V/I/P and a current sparkline, a USB/IP client attached](../docs/img/web-ui-dark.png)
+![Status page of bay B2, dark theme: VBUS on with live V/I/P and a current sparkline, a USB/IP client attached](../docs/img/web-ui-dark.png)
 
 | ![Status page, light theme: the DUT is enumerated and ready to be attached](../docs/img/web-ui-light.png) | ![Status page after an over-current trip: red banner with a Power on button, VBUS off](../docs/img/web-ui-fault.png) |
 |---|---|
@@ -290,7 +290,7 @@ installed Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
 
 ### Camera
 
-![Camera card of bay B3: the live view (simulated: bay B2's GIGA R1 and its screen, as the 3D viewer renders them), the light switch (auto, on, off), the camera's model, its picture settings, the last frame's size and time, one stream watching](../docs/img/web-ui-camera.png)
+![Camera card of bay B2: the live view of its GIGA R1 and the board's screen (simulated: as the 3D viewer renders them), the light switch (auto, on, off), the camera's model, its picture settings, the last frame's size and time, one stream watching](../docs/img/web-ui-camera.png)
 
 Each bay may have its own camera: an Arducam Mega (3 or 5 MP, JPEG made in
 the camera) on a PH 8 lead to J6, and white LEDs beside it, switched by the
@@ -323,7 +323,7 @@ The hub shows which bays have one (rack bus STATUS byte 6).
 **Settings**, saved per bay and applied between two frames (the page's
 picture button, `POST /api/camera`, `bay camera set`):
 
-<img src="../docs/img/web-ui-camera-settings.png" width="440" alt="The camera settings of bay B3: resolution, JPEG quality, rotation, the light, then the image: white balance cloudy, exposure and gain automatic, brightness +1, contrast 0, saturation -1, sharpness automatic, and a Reset image to auto button">
+<img src="../docs/img/web-ui-camera-settings.png" width="440" alt="The camera settings of bay B2: resolution, JPEG quality, rotation, the light, then the image: white balance cloudy, exposure and gain automatic, brightness +1, contrast 0, saturation -1, sharpness automatic, and a Reset image to auto button">
 
 | Setting | Values | |
 |---|---|---|
@@ -362,7 +362,7 @@ focused once, by hand, at the real distance (lens tip to board ≈ 75–80 mm).
 
 ## Access control
 
-![Access card of bay B3 seen by its admin while a CI job holds the bay: the lease with its note and time left, the job's USB/IP and RFC 2217 connections with Kick buttons, the count of refused attempts](../docs/img/web-ui-access.png)
+![Access card of bay B2 seen by its admin while a CI job holds the bay: the lease with its note and time left, the job's USB/IP and RFC 2217 connections with Kick buttons, the count of refused attempts](../docs/img/web-ui-access.png)
 
 | ![Manage access dialog: sources ben-laptop (everything), ci-runners 192.168.1.40/30 (status, control, console, USB/IP) and prometheus (status), everyone else status only, and the refused connections](../docs/img/web-ui-access-rules.png) | ![The same bay from 192.168.1.77, light theme: read-only banner, power buttons greyed out, Unlock button](../docs/img/web-ui-access-readonly.png) |
 |---|---|
