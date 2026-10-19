@@ -178,9 +178,9 @@
     "SN74LVC1G32DBVR"
    ],
    [
-    "C55266",
+    "C521201",
     1,
-    "TPS2553DBVR"
+    "TPS2553DDBVR"
    ],
    [
     "C49851",
@@ -2404,6 +2404,48 @@
    "source": "live; prices from LCSC's product page (live)",
    "lcsc_stock": 0
   },
+  "C521201": {
+   "mfr": "TPS2553DDBVR",
+   "package": "SOT-23-6",
+   "stock": 11036,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 5,
+     "qTo": 49,
+     "price": 0.1878
+    },
+    {
+     "qFrom": 50,
+     "qTo": 149,
+     "price": 0.1463
+    },
+    {
+     "qFrom": 150,
+     "qTo": 499,
+     "price": 0.1286
+    },
+    {
+     "qFrom": 500,
+     "qTo": 2999,
+     "price": 0.1064
+    },
+    {
+     "qFrom": 3000,
+     "qTo": 5999,
+     "price": 0.0965
+    },
+    {
+     "qFrom": 6000,
+     "qTo": null,
+     "price": 0.0906
+    }
+   ],
+   "category": "Power Management (PMIC)",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 10015
+  },
   "C52917434": {
    "mfr": "WS2812B-2020-V6",
    "package": "SMD2020-4P",
@@ -2486,48 +2528,6 @@
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
    "lcsc_stock": 5593
-  },
-  "C55266": {
-   "mfr": "TPS2553DBVR",
-   "package": "SOT-23-6",
-   "stock": 53286,
-   "tier": "extended",
-   "priceBreaks": [
-    {
-     "qFrom": 1,
-     "qTo": 9,
-     "price": 0.5455
-    },
-    {
-     "qFrom": 10,
-     "qTo": 29,
-     "price": 0.4515
-    },
-    {
-     "qFrom": 30,
-     "qTo": 99,
-     "price": 0.384
-    },
-    {
-     "qFrom": 100,
-     "qTo": 499,
-     "price": 0.3296
-    },
-    {
-     "qFrom": 500,
-     "qTo": 999,
-     "price": 0.3131
-    },
-    {
-     "qFrom": 1000,
-     "qTo": null,
-     "price": 0.3016
-    }
-   ],
-   "category": "Power Management (PMIC)",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 51203
   },
   "C598310": {
    "mfr": "KPA-3010CGCK",
