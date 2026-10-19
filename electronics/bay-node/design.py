@@ -39,7 +39,6 @@ edge, y = 80 the FRONT (fascia) edge; see config/rack.yaml → pcb.bay_node.
 from __future__ import annotations
 
 import sys
-import math
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -146,34 +145,16 @@ def usb_hs_routes():
     via("GND", 36.7, 35.35)
 
     # U6 D−/D+ (pins 4/3 at y 34.0/34.5, x 46.6) → U8 (ESD, rot 0: DN through pins 1/6 at y 33.05,
-    # DP through 3/4 at y 34.95) → J7 (DATA, PH 8 side entry on the right edge, rot 90: D− pin 3 at y c + 3,
-    # D+ pin 4 at c + 1, pads x 64.5–68).  J7's D+ lies north of its D−, U8's south of it: DP crosses under
-    # DN on B.Cu (two vias), and four bumps on DN make up the vias and the detour (lengths matched)
+    # DP through 3/4 at y 34.95) → J7 (DATA, PH 8 side entry on the right edge, rot 90: D− pin 4 at y c + 1,
+    # D+ pin 3 at c + 3, pads x 64.5–68).  D− lies north on both: a straight pair, one 45° step each past
+    # U8's VBUS via (lengths within 0.05 mm)
     t("DUT_DN", (46.6, 34.0), (47.7, 34.0), (48.65, 33.05), (50.16, 33.05))
     t("DUT_DP", (46.6, 34.5), (48.0, 34.5), (48.45, 34.95), (50.16, 34.95))
     c = CFG["right"]["data"]
     jx = EDGE_X - 3.9                                   # into J7's pads (x 64.5–68)
-    dp = [(52.44, 34.95), (54.9, 34.95)]
-    dp_b = [(54.9, 34.95), (54.9 + (34.95 - (c + 1)), c + 1), (61.5, c + 1)]
-    dp_f = [(61.5, c + 1), (jx, c + 1)]
-
-    def length(pts):
-        return sum(math.dist(p, q) for p, q in zip(pts, pts[1:]))
-
-    dp_len = length(dp) + length(dp_b) + length(dp_f) + 2 * 1.6     # vias counted as the 1.6 mm they cross
-    base = [(52.44, 33.05), (64.2, 33.05), (jx, c + 3)]
-    extra = (dp_len - length(base)) / 4                 # per bump: 2·√(0.2² + h²) − 0.4
-    h = math.sqrt(((extra + 0.4) / 2) ** 2 - 0.04)
-    dn = [(52.44, 33.05)]
-    for x in (56.0, 57.6, 59.2, 60.8):
-        dn += [(x, 33.05), (x + 0.2, 33.05 + h), (x + 0.7, 33.05 + h), (x + 0.9, 33.05)]
-    dn += [(64.2, 33.05), (jx, c + 3)]
-    t("DUT_CONN_DN", *dn)
-    t("DUT_CONN_DP", *dp)
-    via("DUT_CONN_DP", *dp[-1])
-    t("DUT_CONN_DP", *dp_b, layer="B.Cu")
-    via("DUT_CONN_DP", *dp_f[0])
-    t("DUT_CONN_DP", *dp_f)
+    x1 = 56.0
+    t("DUT_CONN_DN", (52.44, 33.05), (x1, 33.05), (x1 + 33.05 - (c + 1), c + 1), (jx, c + 1))
+    t("DUT_CONN_DP", (52.44, 34.95), (x1, 34.95), (x1 + 34.95 - (c + 3), c + 3), (jx, c + 3))
     t("GND", (46.6, 33.5), (47.35, 33.5), (47.85, 33.0))                                # U6 pin 5
     via("GND", 47.85, 33.0)
     t("GND", (50.16, 34.0), (49.0, 34.0))                                               # U8 GND
@@ -250,11 +231,13 @@ def board() -> Board:
             {"layer": "In2.Cu", "net": "+3V3", "priority": 1,
              "poly": [(0.4, PWR_Y - 3.1), (W - 0.4, PWR_Y - 3.1), (W - 0.4, 89.6), (0.4, 89.6)]},
             {"layer": "In2.Cu", "net": "VRACK", "priority": 3, "poly": bus},
-            # buck hot loop (TI SLUSF64B §8.4): top-side islands joining CIN, U1 and COUT
-            {"layer": "F.Cu", "net": "GND", "connection": "solid", "name": "buck-gnd", "priority": 3,
+            # buck hot loop (TI SLUSF64B §8.4): top-side islands joining CIN, U1 and COUT.  GND and
+            # +5V are exclusive (other nets' tracks stay out of their cores: Freerouting once cut buck-5v in two
+            # between C8 and C9); the narrow VIN island is not, its feed from C1 comes in along its edge
+            {"layer": "F.Cu", "net": "GND", "connection": "solid", "name": "buck-gnd", "priority": 3, "exclusive": 0.5,
              "poly": [(8.05, 44.5), (10.1, 44.5), (10.1, 46.2), (11.9, 46.2), (11.9, 50.3), (20.6, 50.3), (20.6, 54.4),
                       (8.05, 54.4)]},
-            {"layer": "F.Cu", "net": "+5V", "connection": "solid", "name": "buck-5v", "priority": 3,
+            {"layer": "F.Cu", "net": "+5V", "connection": "solid", "name": "buck-5v", "priority": 3, "exclusive": 0.5,
              "poly": [(12.8, 48.1), (17.3, 48.1), (17.3, 40.6), (21.0, 40.6), (21.0, 49.9), (12.8, 49.9)]},
             {"layer": "F.Cu", "net": "VIN", "connection": "solid", "name": "buck-vin", "priority": 3,
              "poly": [(5.6, 44.5), (7.8, 44.5), (7.8, 52.7), (5.6, 52.7)]},
@@ -273,8 +256,8 @@ def board() -> Board:
             {"layer": "F.Cu", "net": "GND", "name": "esp-gnd", "priority": 3,
              "poly": [(27.3, 12.0), (33.7, 12.0), (33.7, 18.4), (27.3, 18.4)]},
             # AMS1117 tab: up to ~0.7 W at Wi-Fi peaks (1.7 V × 0.4 A); top-side copper on the tab and
-            # C12, vias down to the +3V3 area on In2
-            {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 3,
+            # C12, vias down to the +3V3 area on In2; exclusive, as the buck's (a track once cut C12 off it)
+            {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 3, "exclusive": 0.5,
              "poly": [(8.4, 26.0), (17.2, 26.0), (17.2, 32.2), (8.4, 32.2)]},
         ],
         "vias": [("GND", 11.0, 46.9), ("GND", 11.0, 49.4), ("GND", 11.2, 53.4), ("GND", 13.0, 53.6),
@@ -534,10 +517,10 @@ def board() -> Board:
     # Side entry on the right edge (like J2: pin 1 towards the front), its mouth towards the drag chain's fixed
     # end; the pair from U8 is drawn in usb_hs_routes.  DUT_5V comes after the shunt.
     u.frame("DATA: the DUT's USB, I²C and INT on an 8-wire PH lead to the drawer's DATA board", 106, 75, 160, 100)
-    part(u, "J7", "ph8", {"1": "DUT_5V", "2": "GND", "3": "DUT_CONN_DN", "4": "DUT_CONN_DP", "5": "GND", "6": "I2C_SDA",
+    part(u, "J7", "ph8", {"1": "DUT_5V", "2": "GND", "3": "DUT_CONN_DP", "4": "DUT_CONN_DN", "5": "GND", "6": "I2C_SDA",
                            "7": "I2C_SCL", "8": "DATA_INT_C"}, "DATA",
          pcb=P(EDGE_X, CFG["right"]["data"], 90), sch=at(152, 86, fields=(1, -7)))
-    for pin, dy, net in (("1", -3, "DUT_5V"), ("2", -2, "GND"), ("3", -1, "DUT_CONN_DN"), ("4", 0, "DUT_CONN_DP"),
+    for pin, dy, net in (("1", -3, "DUT_5V"), ("2", -2, "GND"), ("3", -1, "DUT_CONN_DP"), ("4", 0, "DUT_CONN_DN"),
                          ("5", 1, "GND"), ("6", 2, "I2C_SDA"), ("7", 3, "I2C_SCL"), ("8", 4, "DATA_INT_C")):
         u.wire(f"J7.{pin}", (143, 86 + dy))
         u.tag(net, (143, 86 + dy), "left")

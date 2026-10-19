@@ -65,7 +65,7 @@
 		)
 		(uuid "7d2873bc-e3e7-5199-a211-a17212848b8a")
 	)
-	(text_box "DATA port v1.0 — USB-C source (Rp 22k on CC1/CC2), USBLC6 ESD, 8-pin JST PH lead to the bay node's J7.\nLead pinout here: 1 INT, 2 SCL, 3 SDA (all three open), 4 GND, 5 D+, 6 D−, 7 GND, 8 VBUS\n  (the node's J7 mirrored: one 'Same direction' PH 8 cable)."
+	(text_box "DATA port v1.0 — USB-C source (Rp 22k on CC1/CC2), USBLC6 ESD, 8-pin JST PH lead to the bay node's J7.\nLead pinout here: 1 INT, 2 SCL, 3 SDA (all three open), 4 GND, 5 D−, 6 D+, 7 GND, 8 VBUS\n  (the node's J7 mirrored: one 'Same direction' PH 8 cable)."
 		(exclude_from_sim no)
 		(at 30 115.57 0)
 		(size 360 12.7)

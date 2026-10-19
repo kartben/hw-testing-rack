@@ -8118,7 +8118,7 @@
 			)
 		)
 	)
-	(label "DUT_CONN_DN"
+	(label "DUT_CONN_DP"
 		(at 363.22 215.9 180)
 		(fields_autoplaced yes)
 		(effects
@@ -8129,7 +8129,7 @@
 		)
 		(uuid "a8d39822-cfbb-513f-a9ce-0ebac83319d3")
 	)
-	(label "DUT_CONN_DP"
+	(label "DUT_CONN_DN"
 		(at 363.22 218.44 180)
 		(fields_autoplaced yes)
 		(effects

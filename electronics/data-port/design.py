@@ -8,7 +8,7 @@ the 90° extension cable.
 * USB-C source: CC1 and CC2 each pulled up to VBUS through 22k (Rp, 1.5 A at 5 V), as the
   node's own DUT port; VBUS is the node's DUT_5V (TPS2553 switch, INA226 shunt).
 * USBLC6 ESD on D+/D− right at the receptacle, where the plugs go in.
-* The lead: VBUS, GND, D−, D+, GND (the pair between two grounds), then the node's I²C and INT,
+* The lead: VBUS, GND, D+, D−, GND (the pair between two grounds), then the node's I²C and INT,
   which this board leaves open (a later DATA ×4 board uses them).  Its pinout here is the node
   header's mirrored, so the lead is the rack's one PH cable type ("Same direction": pin n to
   pin 9−n), the camera's 8-wire lead; 8 pins, so a 6-pin row cable cannot go in.
@@ -52,7 +52,7 @@ def board() -> Board:
                         "Generated from electronics/data-port/design.py — edit the Python, then regenerate"])
     b.root_notes = [
         "DATA port v1.0 — USB-C source (Rp 22k on CC1/CC2), USBLC6 ESD, 8-pin JST PH lead to the bay node's J7.",
-        "Lead pinout here: 1 INT, 2 SCL, 3 SDA (all three open), 4 GND, 5 D+, 6 D−, 7 GND, 8 VBUS",
+        "Lead pinout here: 1 INT, 2 SCL, 3 SDA (all three open), 4 GND, 5 D−, 6 D+, 7 GND, 8 VBUS",
         "  (the node's J7 mirrored: one 'Same direction' PH 8 cable).",
     ]
     s = b.sheet("Port", "port.kicad_sch", "USB-C source, ESD, lead")
@@ -63,11 +63,12 @@ def board() -> Board:
     R(s, "R1", "22k", "VBUS", "CC1", pcb=P(CFG["usb"] - 7.0, H - 4.5, 90))
     R(s, "R2", "22k", "VBUS", "CC2", pcb=P(CFG["usb"] + 7.0, H - 4.5, 90))
     s.block("ESD on the pair, at the receptacle")
-    part(s, "U1", "esd", {"6": "CONN_DN", "1": "LEAD_DN", "4": "CONN_DP", "3": "LEAD_DP", "5": "VBUS", "2": "GND"},
+    # D+ through 1/6, D− through 3/4: J2 has D+ west of D− (x 11.4 / 13.4), so the lead side runs straight
+    part(s, "U1", "esd", {"6": "CONN_DP", "1": "LEAD_DP", "4": "CONN_DN", "3": "LEAD_DN", "5": "VBUS", "2": "GND"},
          pcb=P(CFG["ph"] + 2.0, H - 3.5, 90))
     C(s, "C1", "100n", "VBUS", "GND", pcb=P(CFG["ph"] - 2.5, H - 3.5, 90))
-    s.block("Lead to the bay node's DATA header (J7): 4 GND, 5 D+, 6 D−, 7 GND, 8 VBUS; 1–3 (INT, I²C) open")
-    part(s, "J2", "ph8", {"1": None, "2": None, "3": None, "4": "GND", "5": "LEAD_DP", "6": "LEAD_DN", "7": "GND",
+    s.block("Lead to the bay node's DATA header (J7): 4 GND, 5 D−, 6 D+, 7 GND, 8 VBUS; 1–3 (INT, I²C) open")
+    part(s, "J2", "ph8", {"1": None, "2": None, "3": None, "4": "GND", "5": "LEAD_DN", "6": "LEAD_DP", "7": "GND",
                           "8": "VBUS"}, "LEAD",
          pcb=P(CFG["ph"], PH_EDGE, 180))
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "VBUS"}, in_bom=False, on_board=False)
@@ -99,7 +100,7 @@ def board() -> Board:
             {"text": "DATA v1.0", "x": 7.0, "y": H - 3.0, "size": 0.8},
             # one label per pin, under it (rot 180: pin n at x = ph + 9 − 2n); 1–3 (INT, I²C) open
             *({"text": s, "x": CFG["ph"] + 9 - 2 * n, "y": 10.6, "size": 0.8}
-              for n, s in ((8, "5V"), (7, "G"), (6, "D−"), (5, "D+"), (4, "G"), (3, "·"), (2, "·"), (1, "·"))),
+              for n, s in ((8, "5V"), (7, "G"), (6, "D+"), (5, "D−"), (4, "G"), (3, "·"), (2, "·"), (1, "·"))),
         ],
     }
     return b

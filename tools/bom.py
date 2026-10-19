@@ -415,7 +415,7 @@ def hardware(rack) -> list[dict]:
                   "(constant over the stroke); the spare goes in a wider bend between the node and the chain's fixed "
                   "end (nothing moves there), never in front of the chain's moving end.  A sled bay's route is "
                   "≈ 22 cm (no chain): the slack coiled in the plenum.  On arrival: both plugs show "
-                  "the same face, pin 1 rings to pin 8; twist D−/D+ (pins 3-4 at the node) by hand.  Or crimp them: "
+                  "the same face, pin 1 rings to pin 8; twist D+/D− (pins 3-4 at the node) by hand.  Or crimp them: "
                   "PHR-8 + 16 × SPH-002T-P0.5S, 24 AWG"},
         # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up.  Bought in
         # lots of 5 from one AliExpress listing (checked 2026-10-18: its "Same direction" photo shows both

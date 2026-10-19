@@ -581,7 +581,10 @@ AUX and DATA go to the drag chain, CAM to the rear slot.  The user then dropped 
 - **J6 (CAM)** is vertical at the rear right, its lead straight back, 3 mm east of the antenna
   keep-out.
 - **The DUT pair.**  U8 (USBLC6) is the last part before J7, and the hand-drawn High-Speed chain now
-  ends on J7's pads.  The DUT power block took J4's place.
+  ends on J7's pads.  J7 takes D+ on pin 3 and D− on pin 4, so that D− lies north on U8 and J7 both:
+  the pair runs straight, no via.  The user chose that over a B.Cu crossover with two vias.  The data
+  port's J2 5 / 6 and U1's channels swap with it, and its copper stays as it was.  The DUT power block
+  took J4's place.
 - **Unchanged.**  The front half and the left holes did not move: the tray drills a Ø6.4 access hole
   over each left screw instead (c05b24f).
 - **+5V at 5.24 V** (FB 100k/18k, both basic, already in the BOM), for ≈ 4.75 V at the DATA board at
@@ -589,6 +592,10 @@ AUX and DATA go to the drag chain, CAM to the rear slot.  The user then dropped 
 - **INA226 Vbus on Vin−.**  Vbus now ties to Vin− at the pins (8 and 9), so it reads DUT_5V at the
   shunt's load-side Kelvin pad.  Before, it came from a long DUT_5V track that the router failed to
   finish.
+- **Exclusive pours.**  The buck's GND and +5V islands and the LDO tab are now `exclusive` (0.5 mm), as
+  on the hub.  Freerouting does not see a pour as an obstacle: it had cut buck-5v between C8 and C9,
+  then C12 off the LDO tab.  The narrow VIN island is not exclusive: its feed from C1 runs along its
+  edge.
 
 Fabio's rules, checked again on the saved files:
 
@@ -598,15 +605,15 @@ Fabio's rules, checked again on the saved files:
 | Thermal reliefs | Every plane and pour, except the buck's hot-loop islands on F.Cu.  Those are solid by design, both ends of each part on copper, as in v0.5 |
 | Clear power net names | +5V, +3V3, VIN, VRACK, DUT_5V_SW → DUT_5V, CAM_5V |
 | USBLC6 in flow-through | U4, U8, U12, U13: connector side and protected side are separate nets (`*_CONN_*`, `*_C`) |
-| HS pairs hand-drawn, length-matched | J3 → J7 drawn in `usb_hs_routes()`.  The DUT end matches exactly: DUT_CONN_DN 18.6 mm = DUT_CONN_DP 15.4 mm + 2 vias.  The PC side is unchanged (PC_DP's bumps make up PCPATH_DN's two vias) |
+| HS pairs hand-drawn, length-matched | J3 → J7 drawn in `usb_hs_routes()` and matched to ≈ 0.3 mm (≈ 2 ps, vias as 1.6 mm).  The DUT end is straight: DUT_CONN_DP 14.6 mm, DUT_CONN_DN 14.7 mm, no via.  The PC side is unchanged (PC_DP's bumps make up PCPATH_DN's two vias) |
 | PH, not SH | Every lead connector is a PH: J1 / J2 / J5 S6B, J7 S8B, J6 B8B |
 
 | | bay node |
 |---|---|
-| Pin nets (`get_component_nets`) | J7: DUT_5V, GND, DUT_CONN_DN, DUT_CONN_DP, GND, I2C_SDA, I2C_SCL, DATA_INT_C; J5: GND, AUX_VREF, AUX_TX_R, AUX_RX_R, AUX_RST_N, AUX_BOOT_N; U10 Vbus / Vin−: SHUNT_N |
-| ERC | 0 errors, 0 warnings |
-| DRC (zones refilled) | 0 errors, 0 warnings, 0 unconnected, parity 0 |
-| `validate_for_manufacturing` (JLC) | READY, 104 footprints |
+| Pin nets (`get_component_nets`) | J7: DUT_5V, GND, DUT_CONN_DP, DUT_CONN_DN, GND, I2C_SDA, I2C_SCL, DATA_INT_C; data port J2: 5 LEAD_DN, 6 LEAD_DP, U1: 1/6 D+, 3/4 D−; J5: GND, AUX_VREF, AUX_TX_R, AUX_RX_R, AUX_RST_N, AUX_BOOT_N; U10 Vbus / Vin−: SHUNT_N |
+| ERC | 0 errors, 0 warnings (data port too) |
+| DRC (zones refilled) | 0 errors, 0 warnings, 0 unconnected, parity 0 (data port too) |
+| `validate_for_manufacturing` (JLC) | READY, 104 footprints; data port READY |
 | JLC DFM | 4 parts on the bottom (test pads), as before |
 | Tracks | DUT_5V 18.2 mm at 0.6 mm (0.45 at the pads).  Camera: U3 → 33 Ω 29–48 mm, 33 Ω → J6 15–23 mm.  AUX: J5 → its resistors and FETs 5–12 mm |
 | 3D coverage | 96 parts with a model (J4, R14 and R15 gone), 0 stand-ins |
@@ -619,8 +626,4 @@ estimate for 10 assembled boards drops from ≈ $344 to ≈ $328.
 
 **JLC placement.**  The S8B and S6B take their existing corrections (none, and 180°); J7 and J5 are
 at 90° on the board.
-
-**Open: J7's D± order.**  U8 puts D− to the north, and J7's side entry puts D+ there, so D+ crosses
-under D− on B.Cu (two vias, four bumps on DN).  Swapping J7's pins 3 / 4 makes the pair straight.
-The data port then swaps J2's 5 / 6 and U1's channels, so it stays straight too.  The user's call.
 

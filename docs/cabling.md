@@ -20,7 +20,7 @@ bay node (plenum)                                 drawer
    a USB-C receptacle (a source: Rp 22k on CC1/CC2, USBLC6 ESD at the
    receptacle) screwed components up to the floor behind the port wall
    (2 × PT 2.6×8, one each end), its mouth behind a U in the wall: the
-   board's short cable plugs into it.  A JST PH 8-pin lead (VBUS, GND, D−, D+, GND, then
+   board's short cable plugs into it.  A JST PH 8-pin lead (VBUS, GND, D+, D−, GND, then
    the node's I²C and INT, which the port board leaves open, for a later DATA ×4 board) plugs
    into the node's **DATA** header (J7, side entry on the node's right edge,
    facing the chain; the node's only DUT port), runs ~3 cm in the plenum to the
@@ -33,7 +33,7 @@ bay node (plenum)                                 drawer
    PH, its slack coiled in the plenum.)  It is the rack's
    camera's PH 8 lead type (pin n ↔ pin 9−n, both plugs the same face up: the
    port board's pinout is J7's mirrored), with 8 pins so a 6-pin row cable
-   (VRACK, up to 28 V) cannot go in; twist D−/D+ (pins 3-4) by hand.  (A
+   (VRACK, up to 28 V) cannot go in; twist D+/D− (pins 3-4) by hand.  (A
    USB-C coupler with a 90° extension came first: two off-the-shelf parts
    whose sizes vary by seller, and a stiff cable to bend in the window.)
 2. **The drag chain lies flat in the plenum** and bends in the horizontal
