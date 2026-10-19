@@ -71,23 +71,23 @@ Levers (*obvious*: an engineering choice the board's owner applies; *decision*: 
 
 ### At volume
 
-Unit cost (USD) of a board for n assembled in one order: the fees per order spread over n, parts held at today's prices (bom.py has no LCSC price breaks: passives get cheaper by the hundred, the ICs barely), X-ray per board by JLC's tiers, the bare PCBs at JLC's price for that quantity (`JLC_PCB_PRICE`, measured on the calculator).  *Floor*: parts, joints, X-ray and PCB per board, once the fees per order no longer count.
+Unit cost (USD) of a board for n assembled in one order: the fees per order spread over n; the parts at JLC's price breaks for that quantity (the quoted components scaled by [`jlc-parts.md`](jlc-parts.md)'s prices, catalog of 2026-10-19); X-ray per board by JLC's tiers; the bare PCBs at JLC's price for that quantity (`JLC_PCB_PRICE`, measured on the calculator).  *Floor*: parts at the 100-board breaks, joints, X-ray and PCB per board, once the fees per order no longer count.
 
 | Board | 2 | 5 | 10 | 50 | 100 | Floor |
 |---|---:|---:|---:|---:|---:|---:|
-| bay-node | 73.90 | 42.21 | 32.26 | 23.57 | 21.94 | 20.85 |
-| power-hub | 101.26 | 61.89 | 49.54 | 38.84 | 37.14 | 36.04 |
-| data-port | 13.72 | 6.49 | 4.18 | 2.38 | 2.06 | 1.87 |
-| camera-pod | 13.19 | 5.95 | 3.66 | 1.88 | 1.56 | 1.37 |
-| data-port-x4 | 51.88 | 31.11 | 24.34 | 18.14 | 17.11 | 16.58 |
+| bay-node | 76.49 | 44.52 | 32.26 | 21.14 | 17.88 | 16.96 |
+| power-hub | 101.26 | 59.48 | 44.62 | 30.38 | 27.33 | 26.40 |
+| data-port | 13.72 | 6.49 | 3.90 | 1.92 | 1.44 | 1.26 |
+| camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
+| data-port-x4 | 51.88 | 29.41 | 21.24 | 13.05 | 11.66 | 11.29 |
 
 One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 280.40 | 202.53 | 36.86 | 26.37 | 103.76 | **683.92** |
-| 5 | 195.16 | 61.89 | 18.84 | 7.31 | 31.11 | **321.11** |
-| 10 | 179.52 | 49.54 | 15.43 | 5.09 | 24.34 | **277.32** |
+| 1 | 298.89 | 202.53 | 36.86 | 26.37 | 103.76 | **702.41** |
+| 5 | 179.07 | 59.48 | 15.86 | 7.14 | 29.41 | **297.76** |
+| 10 | 159.41 | 44.62 | 12.15 | 4.91 | 21.24 | **245.74** |
 
 ## Printed parts
 

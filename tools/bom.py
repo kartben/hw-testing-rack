@@ -185,6 +185,9 @@ JLC_XRAY = ((10, 1.64), (50, 0.82), (200, 0.49), (500, 0.33))
 JLC_XRAY_BOARDS = {"bay-node", "power-hub", "data-port-x4"}
 VOLUME_QTY = (2, 5, 10, 50, 100)            # boards assembled
 VOLUME_RACKS = (1, 5, 10)                   # racks built at once, one order
+# JLC's catalog for the boards' parts: tier, stock and price breaks (tools/jlc_parts_snapshot.py)
+JLC_PARTS_FILE = REPO / "electronics" / "lib" / "jlc_parts.json"
+JLC_PARTS = json.loads(JLC_PARTS_FILE.read_text(encoding="utf-8")) if JLC_PARTS_FILE.exists() else {}
 
 
 # the row cables' listing (docs/can.md: one type for feeds and jumpers)
@@ -437,30 +440,60 @@ def xray(n: int) -> float:
     return next(usd for top, usd in JLC_XRAY if n <= top)
 
 
+def part_price(lcsc: str, qty: int) -> float | None:
+    """Unit price at the break `qty` reaches (below the first break: the first, with its MOQ)."""
+    breaks = (JLC_PARTS.get("parts", {}).get(lcsc) or {}).get("priceBreaks") or []
+    for b in breaks:
+        if b["qFrom"] <= qty and (b["qTo"] is None or qty <= b["qTo"]):
+            return b["price"]
+    return breaks[0]["price"] if breaks else None
+
+
+def parts_scale(name: str, n: int) -> float:
+    """How the parts of n boards cost against the quoted order's, at JLC's price breaks: the quote's
+    components figure (JLC's markup and attrition included) scales by this ratio.  Parts JLC holds no
+    stock of (Global Sourcing) and parts without prices keep today's price."""
+    rows = JLC_PARTS.get("boards", {}).get(name)
+    if not rows:
+        return 1.0
+    k = JLC_QUOTE[name]["assembled"]
+    now = then = 0.0
+    for lcsc, q, _ in rows:
+        if not (JLC_PARTS["parts"].get(lcsc) or {}).get("stock"):
+            continue
+        p0, p1 = part_price(lcsc, q * k), part_price(lcsc, q * n)
+        if p0 is None or p1 is None:
+            continue
+        now, then = now + q * p0, then + q * p1
+    return then / now if now else 1.0
+
+
 def volume(orders: dict) -> dict:
     """The order of n boards of each design, from its quote: the PCBA fees paid once (setup, stencil,
-    part types, packaging), plus per board its parts and joints (held at today's prices: bom.py has no
-    LCSC price breaks) and X-ray, plus the bare PCBs at JLC's price for that quantity."""
-    def order(name: str, n: int) -> float:
+    part types, packaging), plus per board its parts (the quote's, scaled to JLC's price breaks at that
+    quantity, parts_scale) and joints and X-ray, plus the bare PCBs at JLC's price for that quantity."""
+    def per_board(name: str, n: int) -> tuple[float, float]:
+        """(USD per board for parts, joints and X-ray; USD paid once on top) for n boards."""
         q, o = JLC_QUOTE[name], orders[name]
         pcba, k = o["pcba"], q["assembled"]
-        once = sum(v for key, v in pcba.items() if key not in PER_BOARD and "sourcing" not in key)
-        parts = (pcba["components"] + pcba.get("SMT", 0)) / k
+        parts = pcba["components"] / k * parts_scale(name, n) + pcba.get("SMT", 0) / k
         sourcing = sum(v for key, v in pcba.items() if "sourcing" in key)
-        if sourcing:                                    # Global Sourcing: ≈ $3 once, the rest per part bought
-            once += 3.0
+        once = 3.0 if sourcing else 0.0                 # Global Sourcing: ≈ $3 once, the rest per part bought
+        if sourcing:
             parts += (sourcing - 3.0) / q["pcbs"]
+        return parts + (xray(n) if name in JLC_XRAY_BOARDS else 0), once
+
+    def order(name: str, n: int) -> float:
+        pcba = orders[name]["pcba"]
+        once = sum(v for key, v in pcba.items() if key not in PER_BOARD and "sourcing" not in key)
         n = max(n, 2)                                   # JLC assembles at least 2
-        return once + n * (parts + (xray(n) if name in JLC_XRAY_BOARDS else 0)) + pcb_price(name, n)[1]
+        each, extra = per_board(name, n)
+        return once + extra + n * each + pcb_price(name, n)[1]
 
     unit = {name: {n: round(order(name, n) / n, 2) for n in VOLUME_QTY} for name in orders}
-    floor = {}
-    for name in orders:                             # what a board costs once the fees per order are spread thin
-        q, o = JLC_QUOTE[name], orders[name]
-        parts = (o["pcba"]["components"] + o["pcba"].get("SMT", 0)) / q["assembled"]
-        parts += sum((v - 3.0) / q["pcbs"] for key, v in o["pcba"].items() if "sourcing" in key)
-        floor[name] = round(parts + (xray(500) if name in JLC_XRAY_BOARDS else 0)
-                            + JLC_PCB_PRICE[name][100] / 100, 2)
+    # what a board costs once the fees per order are spread thin: its parts at the 100-board breaks,
+    # joints, X-ray and PCB per board
+    floor = {name: round(per_board(name, 100)[0] + JLC_PCB_PRICE[name][100] / 100, 2) for name in orders}
     racks = {}
     for r in VOLUME_RACKS:
         lines = {name: round(order(name, o["need"] * r), 2) for name, o in orders.items()}
@@ -471,11 +504,12 @@ def volume(orders: dict) -> dict:
 
 def volume_md(vol: dict, orders: dict) -> list[str]:
     md = ["### At volume", "",
-          "Unit cost (USD) of a board for n assembled in one order: the fees per order spread over n, parts held "
-          "at today's prices (bom.py has no LCSC price breaks: passives get cheaper by the hundred, the ICs "
-          "barely), X-ray per board by JLC's tiers, the bare PCBs at JLC's price for that quantity "
-          "(`JLC_PCB_PRICE`, measured on the calculator).  *Floor*: parts, joints, X-ray and PCB per board, once "
-          "the fees per order no longer count.", "",
+          "Unit cost (USD) of a board for n assembled in one order: the fees per order spread over n; the "
+          "parts at JLC's price breaks for that quantity (the quoted components scaled by "
+          f"[`jlc-parts.md`](jlc-parts.md)'s prices, catalog of {JLC_PARTS.get('date', '?')}); X-ray per board "
+          "by JLC's tiers; the bare PCBs at JLC's price for that quantity (`JLC_PCB_PRICE`, measured on the "
+          "calculator).  *Floor*: parts at the 100-board breaks, joints, X-ray and PCB per board, once the "
+          "fees per order no longer count.", "",
           "| Board | " + " | ".join(f"{n}" for n in VOLUME_QTY) + " | Floor |",
           "|---|" + "---:|" * (len(VOLUME_QTY) + 1)]
     for name, u in vol["unit"].items():
@@ -487,6 +521,49 @@ def volume_md(vol: dict, orders: dict) -> list[str]:
     for r, v in vol["racks"].items():
         md.append(f"| {r} | " + " | ".join(f"{v['boards'][name] / r:.2f}" for name in orders)
                   + f" | **{v['per_rack']:.2f}** |")
+    return md
+
+
+
+PER_RACK = {"bay-node": 8, "power-hub": 1, "data-port": 7, "camera-pod": 2, "data-port-x4": 1}
+
+
+def jlc_parts_md() -> list[str]:
+    """Per board and line: tier, JLC stock against 10 racks' need, unit price at the break 1 / 5 / 10
+    racks reach (one order per design and per rack count; JLC assembles at least 2 boards)."""
+    if not JLC_PARTS:
+        return []
+    boards = {name: {r: max(2, PER_RACK[name] * r) for r in VOLUME_RACKS} for name in JLC_PARTS["boards"]}
+    need10 = defaultdict(int)
+    for name, rows in JLC_PARTS["boards"].items():
+        for lcsc, q, _ in rows:
+            need10[lcsc] += q * boards[name][10]
+    md = ["# JLC parts: tier, stock and price at volume", "",
+          f"Generated by `python tools/bom.py` from `electronics/lib/jlc_parts.json` (JLC's catalog of "
+          f"{JLC_PARTS['date']}, `tools/jlc_parts_snapshot.py`; prices LCSC's where the catalog has none).  "
+          "Per rack: " + ", ".join(f"{n} {b}" for b, n in PER_RACK.items()) + "; JLC assembles at least 2 boards.  "
+          "*Stock*: JLC's assembly stock against 10 racks' need of that part on every board (×: times over).  "
+          "*Unit $*: at the break 1 / 5 / 10 racks reach.  *Tier*: the local catalog tells basic from extended "
+          "only; a preferred-extended part may hide in *extended* (tier to confirm on JLC's site).", ""]
+    for name, rows in JLC_PARTS["boards"].items():
+        b = boards[name]
+        total = {r: sum(q * (part_price(lcsc, q * b[r]) or 0) for lcsc, q, _ in rows) for r in VOLUME_RACKS}
+        md += [f"## {name}", "",
+               f"Parts per board at 1 / 5 / 10 racks ({b[1]} / {b[5]} / {b[10]} boards): "
+               + " / ".join(f"${total[r]:.2f}" for r in VOLUME_RACKS) + ".", "",
+               "| LCSC | Part | Qty | Tier | Stock (× 10 racks) | Unit $ 1 / 5 / 10 racks | Line $ at 10 |",
+               "|---|---|---:|---|---:|---|---:|"]
+        lines = []
+        for lcsc, q, comment in rows:
+            p = JLC_PARTS["parts"].get(lcsc) or {}
+            pr = [part_price(lcsc, q * b[r]) for r in VOLUME_RACKS]
+            stock = p.get("stock") or 0
+            ratio = stock / need10[lcsc] if need10[lcsc] else 0
+            risk = " **⚠**" if ratio < 5 else ""
+            lines.append((q * (pr[2] or 0), f"| {lcsc} | {str(p.get('mfr') or comment)[:28]} | {q} | {p.get('tier', '?')} | "
+                          f"{stock:,} ({ratio:,.0f}×){risk} | "
+                          + " / ".join("–" if x is None else f"{x:.3f}" for x in pr) + f" | {q * (pr[2] or 0):.2f} |"))
+        md += [row for _, row in sorted(lines, reverse=True)] + [""]
     return md
 
 
@@ -774,6 +851,8 @@ def main():
         md.append(f"| {r['category']} | {r['item']} | {r['qty']} {'' if r['unit'] == 'pcs' else r['unit']} | "
                   f"{float(r.get('unit_eur') or 0):.2f} | {r['ext_eur']:.2f} | {src} |")
     (out / "README.md").write_text("\n".join(md) + "\n", encoding="utf-8")
+    if JLC_PARTS:
+        (out / "jlc-parts.md").write_text("\n".join(jlc_parts_md()) + "\n", encoding="utf-8")
     print(f"BOM: {len(rows)} lines, total ~ EUR {total:,.0f} (EUR {total / n_bays:,.0f}/bay)")
     for k, v in sorted(by_cat.items(), key=lambda kv: -kv[1]):
         print(f"  {k:15s} EUR {v:8.0f}")
