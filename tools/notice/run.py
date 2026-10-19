@@ -91,7 +91,7 @@ def usb_parts() -> dict:
     return out
 # heaviest first, dealt round-robin to the processes
 JOBS = ["done", "b3t", "b5a", "c_done", "t3", "p3", "t4", "b1", "c5", "b2", "t2", "c3", "c4", "b4", "cover", "a7", "a6",
-        "k3", "p4", "t1", "a4", "k2", "a12s", "a9b", "a10o", "p2", "p1", "k1", "b3r", "a3", "a2", "a1", "c0", "c1", "c2",
+        "k3", "p4", "t1", "a4", "k2", "k2m", "a12s", "a9b", "a10o", "p2", "p1", "k1", "b3r", "a3", "a2", "a1", "c0", "c1", "c2",
         "pin", "pin_b", "hook", "clip"] \
        + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch",
                                   "an", "ft", "dc", "xt", "dp", "hx", "ps", "pc", "po", "pp", "kp", "kd", "kb", "km", "kl")] \

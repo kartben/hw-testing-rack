@@ -258,10 +258,11 @@ def ribbon(centre, k, fan=6.0, guides=()):
 
 
 def tie(x, wires, r, anchor_y=6.5):
-    """A cable tie through the tray's tie anchor at x (tray.scad tie_anchor: a 4 x 7 block, a tunnel
-    along y under its top), round the wires lying on it: its band (2.4 wide, 0.8 thick) and its head."""
+    """A cable tie through the tray's tie anchor at x (tray.scad tie_anchor: a TIE 4.6 x 5.5 block, a
+    3 x 2.2 tunnel along y under its top), round the wires lying on it: its band (2.4 wide, 0.8 thick)
+    and its head."""
     near = [q for w in wires for q in w if abs(q[0] - x) < 3]
-    y0, y1 = anchor_y - 3.5 - 0.4, anchor_y + 3.5 + 0.4                 # out of the anchor's ends
+    y0, y1 = anchor_y - 2.75 - 0.4, anchor_y + 2.75 + 0.4               # out of the anchor's ends
     z0 = C["CHAIN"]["bottom"] + 1.5                                      # in the tunnel
     z1 = max(q[2] for q in near) + r + 0.1 if near else z0 + 7
     band = Part.makeBox(2.4, y1 - y0 + 1.6, z1 - z0 + 0.8, V(x - 1.2, y0 - 0.8, z0)).cut(
@@ -1187,13 +1188,23 @@ STEPS.update({
     # the camera (docs/assembly.md §6): the pod at the bench, under the ceiling, its lead
     "k1": {"view": (-0.6, -1.2, -0.8), "old": [], "add": {"k_camera_pod": (0, 0, 0), "k_podpcb": n_(-14), "k_podpcb_parts": n_(-14),
            "k_camera_diffuser": n_(-28), "s_kd0": n_(-46), "s_kd1": n_(-46)}, "arrows": False},
+    # the pod under the ceiling first (the drawer out), then the XH onto J2 and into the Mega, the Mega up into the
+    # sleeve: the XH's mated plug sits under the pod's front-left screw (docs/assembly.md §6)
     "k2": {"view": (-0.6, -1.3, -0.7), "old": A("la0", "la1", "lc0", "lc1", "cp0", "tr0") + [f"i_k{n}" for n in range(4)],
            "add": {**{i: n_(-30) for i in POD0 if i != "k_mega_camera"}, "s_kd0": n_(-30), "s_kd1": n_(-30),
-                   "k_mega_camera": n_(-62), **{i: n_(-62) for i in ("kx0",) if i in INST}, **{f"s_k{n}": n_(-48) for n in range(4)}},
-           "arrow_ids": ["k_camera_pod", "k_mega_camera"]},
-    "k3": {"view": (-1.6, 0.25, -0.12),         # from the left, a little below the ceiling, the drawer out
-           "old": [i for i in BAY0 if i != "dr0"] + POD0 + ["s_kd0", "s_kd1"] + [f"s_k{n}" for n in range(4)] + [i for i in ("kx0",) if i in INST],
-           "add": {"kl0": (0, 0, 0)}, "arrows": False, "slot": "done", "frame": {"at": at_tray(80, 145, 80), "size": 250}},
+                   **{f"s_k{n}": n_(-48) for n in range(4)}},
+           "arrow_ids": ["k_camera_pod"]},
+    "k2m": {"view": (-0.6, -1.3, -0.7), "old": A("la0", "la1", "lc0", "lc1", "cp0", "tr0") + [f"i_k{n}" for n in range(4)]
+            + [i for i in POD0 if i != "k_mega_camera"] + ["s_kd0", "s_kd1"] + [f"s_k{n}" for n in range(4)],
+            "add": {"k_mega_camera": n_(-40), **{i: n_(-40) for i in ("kx0",) if i in INST}},
+            "arrow_ids": ["k_mega_camera"], "clic": True,
+            "frame": {"at": tuple(shape_of("k_mega_camera").BoundBox.Center + V(*n_(-30))) if "k_mega_camera" in INST else (0, 0, 0),
+                      "size": 150}},                 # on the Mega, half way up
+    # from the left, a little below the ceiling, the drawer out; the near ladders left out: the lead in full
+    "k3": {"view": (-1.6, 0.25, -0.12),
+           "old": [i for i in BAY0 if i not in ("dr0", "lb0", "la0", "lc0")] + POD0 + ["s_kd0", "s_kd1"] + [f"s_k{n}" for n in range(4)]
+           + [i for i in ("kx0",) if i in INST],
+           "add": {"kl0": (0, 0, 0)}, "arrows": False, "frame": {"at": at_tray(80, 140, 92), "size": 265}},
 })
 if PB:                                  # the power box, under A1
     BOX = ["pb", "hb", "pl"]
@@ -1215,7 +1226,7 @@ if PB:                                  # the power box, under A1
     })
 ORDER = ["cover", "a1", "a2", "a3", "pin", "a4", "hook", "t1", "a9b", "a10o", "t2", "a12s", "t3", "p1", "clip", "p2", "p3", "p4",
          "t4", "a6", "a7", "b1", "b2", "pin_b", "b3r", "b3t", "b4", "b5a", "done", "c0", "c1", "c2", "c3", "c4", "c5", "c_done",
-         "k1", "k2", "k3"]                       # notice.yaml's: check.py finds each screw's first step in it
+         "k1", "k2", "k2m", "k3"]                # notice.yaml's: check.py finds each screw's first step in it
 STEPS = {**{k: STEPS[k] for k in ORDER if k in STEPS}, **{k: v for k, v in STEPS.items() if k not in ORDER}}
 
 

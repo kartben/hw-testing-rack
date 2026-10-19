@@ -296,13 +296,14 @@ pages:
     footer: "{name} · camera"
     steps:
       - {n: 1, drawing: k1, alt: "At the bench: the pod board behind the sleeve, LEDs down, the diffuser under it; 2 screws up through its posts and the board", parts: {kp: 1, kb: 1, kd: 1}, hardware: {pt26x14: 2}}
-      - {n: 2, drawing: k2, alt: "Drawer out. The pod under the ceiling, 4 screws into the inserts; the Mega up into the sleeve until the lips click, lens down, its XH cable onto J2 by name", parts: {km: 1}, hardware: {m3x6: 4}, clic: true}
+      - {n: 2, drawing: k2, alt: "Drawer out. The pod under the ceiling, 4 screws into the inserts", hardware: {m3x6: 4}}
 
   - file: D-02.dc.html
-    board: {title: "Camera: 3", row: titleD}
+    board: {title: "Camera: 3–4", row: titleD}
     kind: steps
-    title: Camera, step 3
+    title: Camera, steps 3–4
     page: 24
     footer: "{name} · camera"
     steps:
-      - {n: 3, drawing: k3, alt: "Drawer out. The lead from the node's J6, back through the plenum and the tray's rear slot, up behind the tray, forwards under the ceiling into the pod's J1, a tie every ~5 cm", parts: {kl: 1}, hardware: {tie: 4}}
+      - {n: 3, drawing: k2m, alt: "The XH cable onto J2 by name and into the Mega's side; the Mega up into the sleeve until the lips click, lens down, the XH up through the open side", parts: {km: 1}, clic: true}
+      - {n: 4, drawing: k3, alt: "Drawer out. The lead from the node's J6, back through the plenum and the tray's rear slot, up behind the tray, forwards under the ceiling into the pod's J1, a tie every ~5 cm", parts: {kl: 1}, hardware: {tie: 4}}
