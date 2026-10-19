@@ -185,7 +185,8 @@ pcb:
     x0: 15                  # drawer x of its left edge (KiCad x = drawer x − 15): drawer x 15–123, y 166–190
     thickness: 1.6
     layers: 4
-    holes: [[3.5, 3.5], [42, 3.5], [80.5, 3.5], [104.5, 19.5]]   # Ø2.7, PT 2.6 × 8 from above into the floor bosses
+    holes: [[3.2, 3.5], [38.7, 3.5], [81.4, 3.3], [104.4, 20.6]]   # Ø2.7, PT 2.6 × 8 from above into the floor bosses; between
+                            # the ports' rear rows (DATA ×4 layout)
     usb: [11, 29, 47, 65]   # KiCad x of the four USB-C (USB4105), ports 1–4 left to right: drawer x 26, 44, 62, 80 (18 mm pitch)
     notch: [86, 0, 22, 7]   # x, y, w, d: the rear-right corner cut away, for the PH plug and its lead
     ph: 97                  # KiCad x of the JST PH 8-pin (S8B-PH-SM4-TB) on the notch's front edge (y = 7), its mouth to the
