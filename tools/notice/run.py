@@ -3,6 +3,7 @@
 
     python tools/notice/run.py                  # every drawing
     python tools/notice/run.py a3 pin hw:m3x8   # some of them (names: notice.py STEPS, thumb:<part>, hw:<fastener>)
+    python tools/notice/run.py --prep           # steps 1-3 only: the solids, for check.py
 
 1. the panel frame's constants (OpenSCAD probe, tools/panel_proto.py) -> <build>/constants.json;
 2. the printed parts of one bay -> OpenSCAD CSG -> exact solids (csg2part.py, in freecadcmd);
@@ -184,7 +185,8 @@ def main() -> None:
     import time
     import yaml
     t0 = time.time()
-    names = sys.argv[1:] or JOBS
+    prep = "--prep" in sys.argv
+    names = [a for a in sys.argv[1:] if a != "--prep"] or JOBS
     BUILD.mkdir(parents=True, exist_ok=True)
     c = panel_proto.constants(BUILD)
     c["ROW_CABLE"] = yaml.safe_load((HERE / "notice.yaml").read_text(encoding="utf-8"))["row_cable"]
@@ -203,10 +205,20 @@ def main() -> None:
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     print("constants, CSG ...")
     csg()
+    conv = BUILD / "parts" / "convert_log.txt"
+    conv.unlink(missing_ok=True)
     fc("csg2part.py", CSG2PART=",".join(PARTS))
+    done = dict(line.split(": ")[:2] for line in conv.read_text(encoding="utf-8", errors="replace").splitlines()
+                if line.split(": ")[0] in PARTS and ": " in line) if conv.exists() else {}
+    bad = [p for p in PARTS if not done.get(p, "").startswith("ok")]
+    if bad:                                # its old solid would be drawn: stop
+        sys.exit(f"csg2part failed on {' '.join(bad)} (see {conv})")
     for b in BOARDS:
         print(b, "...")
         node_step(b)
+    if prep:
+        print(f"{time.time() - t0:.0f} s: solids in {BUILD / 'parts'}")
+        return
     print("drawings:", " ".join(names))
     (BUILD / "out" / "notice_log.txt").unlink(missing_ok=True)     # this run's failures only
     before = {o: mtime(o) for n in names for o in outputs(n)}

@@ -400,6 +400,9 @@ PB = C.get("POWER_BOX")
 CHARGER = (66.0, 66.0, 30.0)                  # a 140 W PD 3.1 charger, lying on the desk behind the rack
 
 
+PIPE_PLAIN = False                             # check.py: True, cables as cylinders and balls (no sweeps, no fuse)
+
+
 def pipe(points, r):
     """A round cable through `points` (frame), as a smooth spline: one sweep, or a few swept end to
     end and fused (tangent joints: the projection draws no line there).  A swept solid's BoundBox
@@ -407,6 +410,8 @@ def pipe(points, r):
     c = Part.BSplineCurve()
     c.interpolate([V(*p) for p in points])
     e = c.toShape()
+    if PIPE_PLAIN:                            # SolidCraft intersects swept splines too slowly: plain tubes
+        return Part.makeCompound(tube(e, r))
 
     def sweep(cu):                            # a sweep can fail quietly: check its volume
         se = cu.toShape()
@@ -431,10 +436,15 @@ def pipe(points, r):
             return pieces[0].multiFuse(pieces[1:]) if k > 1 else pieces[0]
     # last resort: short cylinders fused with a ball at every joint (creases on the inner side of
     # each joint: a corrugated look)
+    sols = tube(e, r)
+    return sols[0].multiFuse(sols[1:])
+
+
+def tube(e, r):
+    """A cable along the edge e as short cylinders and a ball at every joint."""
     pts = e.discretize(Distance=4.0)
     sols = [Part.makeCylinder(r, (b - a).Length, a, b - a) for a, b in zip(pts, pts[1:]) if (b - a).Length > 1e-6]
-    sols += [Part.makeSphere(r, p) for p in pts[1:-1]]
-    return sols[0].multiFuse(sols[1:])
+    return sols + [Part.makeSphere(r, p) for p in pts[1:-1]]
 
 
 UP = (C.get("USB_PLUGS") or {}).get("usb-c") or dict(SW=8.3, SH=2.5, SL=6.65, W=12.4, H=7.0, L=20, REL=8, RD=[5.4, 4.2])

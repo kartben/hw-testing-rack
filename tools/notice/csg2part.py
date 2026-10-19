@@ -429,6 +429,25 @@ def ev(node):
             return R(3, s, prims)
         if pts and not cyl:
             return R(3, hull3d_pts(pts), prims)
+        if cyl and pts:
+            # parallel equal cylinders + boxes spanning the same length along their axis (a U / slot cut):
+            # the 2D mixed hull across the axis, extruded (from the tray session's SolidCraft check)
+            ax = V(*cyl[0][2]) - V(*cyl[0][1])
+            hgt = ax.Length
+            ax.normalize()
+            o = V(*cyl[0][1])
+            ok = all(abs(c[3] - cyl[0][3]) < 1e-6 and abs(c[4] - c[3]) < 1e-6 for c in cyl)
+            ok = ok and all(((V(*c[2]) - V(*c[1])) - ax * hgt).Length < 1e-6 and abs((V(*c[1]) - o).dot(ax)) < 1e-6 for c in cyl)
+            ok = ok and all(-1e-6 <= (V(*q) - o).dot(ax) <= hgt + 1e-6 for q in pts)
+            if ok:
+                ux = V(1, 0, 0) if abs(ax.x) < 0.9 else V(0, 1, 0)
+                ux = (ux - ax * ux.dot(ax)).normalize()
+                uy = ax.cross(ux)
+                loc = [((V(*c[1]) - o).dot(ux), (V(*c[1]) - o).dot(uy)) for c in cyl]
+                q2 = [((V(*q) - o).dot(ux), (V(*q) - o).dot(uy)) for q in pts]
+                s = mixed_hull([(c, cyl[0][3]) for c in loc], q2).extrude(V(0, 0, hgt))
+                s.transformShape(App.Matrix(ux.x, uy.x, ax.x, o.x, ux.y, uy.y, ax.y, o.y, ux.z, uy.z, ax.z, o.z, 0, 0, 0, 1))
+                return R(3, s, prims)
         raise NotImplementedError("3D hull of mixed cylinders/boxes")
     raise NotImplementedError(name)
 
