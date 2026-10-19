@@ -301,12 +301,18 @@ stand.  The power hub's real Standard quote (2ab88eb) came ≈ 7 % over its esti
 ≈ $227), extended-part feeders ($72.85) its largest assembly line: allow ≈ +10 % on the full variant
 until the design is quoted.
 
-## Open, for the user
+## Decided (user, 2026-10-19)
 
-1. Order v1 now for B3 (recommended: yes)?
-2. The co-processor: our Zephyr firmware, or the stock analyzer only (recommended: stock on day one, ours
-   without its own analyzer only when consoles or emulated devices are wanted; see
-   coproc-firmware-research.md)?
-3. Which bays get the full variant (recommended: B3 full, the bays that only need power and reset base)?
-4. DUT side: Dupont jumpers pin by pin (recommended to start), or a small adapter board per DUT model on a
-   2 × 6 ribbon?
+The four recommendations, as asked:
+
+1. v1 is ordered now for B3.
+2. The co-processor runs the stock gusmanb analyzer on day one; our Zephyr firmware (without its own
+   analyzer) comes only when consoles, emulated devices or driven pins are wanted (coproc-firmware-research.md).
+3. B3 gets the full variant; bays that only need power and reset get the base.
+4. DUT side: Dupont jumpers pin by pin to start; adapter boards per DUT model later, for the models that
+   keep coming back.
+
+Meanwhile, a Pico 2 with the gusmanb UF2 in one of B3's sub-slots ("The zero-change option" above).
+
+Still open: an analog output (DAC) path for driving a pin with a waveform. The digital path cannot carry
+one: the LSF0108s are level shifters with 10 k pull-ups, and the RP2354B has no DAC.
