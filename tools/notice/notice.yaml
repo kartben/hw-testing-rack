@@ -134,7 +134,7 @@ pages:
     page: 7
     footer: "{name}"
     steps:
-      - {n: 9, drawing: a12s, alt: "Drawer: the DATA board on its two bosses, components up, its USB-C behind the port wall's U, 2 screws from above; the lead into its PH from the rear, down through the cable window", parts: {dp: 1}, hardware: {pt26x8: 2}}
+      - {n: 9, drawing: a12s, alt: "Drawer: the DATA board on its two bosses, components up, its USB-C behind the port wall's fourth U; 2 screws from above. The lead up the cable window at the rear right, along the rear wall into its PH", parts: {dp: 1}, hardware: {pt26x8: 2}}
       - {n: 10, drawing: t3, alt: "Drawer onto the tray's ledges, its groove over the chain foot: lock the foot from the rear bay, then the stop screw down through the left lip", parts: {dr: 1}, hardware: {pt26x8: 1, pt23x8: 1}}
 
   - file: A-06.dc.html
