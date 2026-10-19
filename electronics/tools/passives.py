@@ -47,6 +47,8 @@ WANTED = [
     ("R", "56k", "0603", ""), ("R", "12k", "0603", ""), ("C", "33p", "0603", "50V"),
     # DATA ×4 RESET/BOOT pull-ups and I²C isolation pull-ups (0402: the rear row's gaps)
     ("R", "100k", "0402", ""), ("R", "4.7k", "0402", ""), ("R", "10k", "0402", ""), ("R", "47k", "0402", ""),
+    # camera pod LEDs (100 Ω 0805: ≤ 66 mW at 26 mA)
+    ("R", "100", "0805", ""),
 ]
 
 UNITS_C = {"p": "pF", "n": "nF", "u": "uF"}

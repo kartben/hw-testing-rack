@@ -93,10 +93,10 @@ JLC_QUOTE = {
     # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS): an estimate built like
     # the DATA port's, Economic PCBA, $3.07 per extended part type (the S8B, the SMD header, the LED)
     "camera-pod": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 26.37, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 26.38, "estimate": True,
         "spec": "2-layer 40×27 mm, lead-free HASL",
         "pcb": {"board": 5.20},                 # jlcpcb.com calculator, 2026-10-19 (JLC_PCB_PRICE)
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 2.05, "extended parts": 9.21, "SMT": 0.20},
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 2.06, "extended parts": 9.21, "SMT": 0.20},
     },
     # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), one per
     # converted bay: an estimate built like the DATA port's, $3.07 per extended part type (the USB2514B, its

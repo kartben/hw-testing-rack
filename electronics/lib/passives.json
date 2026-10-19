@@ -136,6 +136,15 @@
   "basic": true
  },
  "R:10.2k:0603": null,
+ "R:100:0805": {
+  "lcsc": "C17408",
+  "mpn": "0805W8F1000T5E",
+  "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+  "description": "100Ω 125mW 150V Thick Film Resistor ±1% ±100ppm/℃ 0805 Chip Resistor - Surface Mount ROHS",
+  "price": 0.0042,
+  "stock": 8584182,
+  "basic": true
+ },
  "R:100k:0402": {
   "lcsc": "C25741",
   "mpn": "0402WGF1003TCE",

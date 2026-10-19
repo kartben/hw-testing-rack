@@ -1788,7 +1788,7 @@
 		)
 		(uuid "590223df-5759-59e2-8b5d-095ab1cbab05")
 	)
-	(text "Light: four white LEDs, 56 Ω each from CAM_5V, cathodes to LED_K (the node's low side)"
+	(text "Light: four white LEDs, 100 Ω each from CAM_5V, cathodes to LED_K (the node's low side)"
 		(exclude_from_sim no)
 		(at 20.32 133.35 0)
 		(effects
@@ -1798,7 +1798,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "8dca9038-2348-5bb0-ad82-a1600b983189")
+		(uuid "cf2a4eb3-05be-5be5-9311-8ac71bfb3acc")
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x08")
@@ -3851,7 +3851,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "56"
+		(property "Value" "100"
 			(at 93.98 62.23 0)
 			(effects
 				(font
@@ -3860,7 +3860,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 91.44 64.77 0)
 			(effects
 				(font
@@ -3878,7 +3878,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 56 0603"
+		(property "Description" "Resistor 100 0805"
 			(at 91.44 64.77 0)
 			(effects
 				(font
@@ -3887,7 +3887,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25196"
+		(property "LCSC" "C17408"
 			(at 91.44 64.77 0)
 			(effects
 				(font
@@ -3896,7 +3896,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF560JT5E"
+		(property "MPN" "0805W8F1000T5E"
 			(at 91.44 64.77 0)
 			(effects
 				(font
@@ -4109,7 +4109,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "56"
+		(property "Value" "100"
 			(at 83.82 62.23 0)
 			(effects
 				(font
@@ -4118,7 +4118,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 81.28 64.77 0)
 			(effects
 				(font
@@ -4136,7 +4136,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 56 0603"
+		(property "Description" "Resistor 100 0805"
 			(at 81.28 64.77 0)
 			(effects
 				(font
@@ -4145,7 +4145,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25196"
+		(property "LCSC" "C17408"
 			(at 81.28 64.77 0)
 			(effects
 				(font
@@ -4154,7 +4154,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF560JT5E"
+		(property "MPN" "0805W8F1000T5E"
 			(at 81.28 64.77 0)
 			(effects
 				(font
@@ -4367,7 +4367,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "56"
+		(property "Value" "100"
 			(at 73.66 62.23 0)
 			(effects
 				(font
@@ -4376,7 +4376,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 71.12 64.77 0)
 			(effects
 				(font
@@ -4394,7 +4394,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 56 0603"
+		(property "Description" "Resistor 100 0805"
 			(at 71.12 64.77 0)
 			(effects
 				(font
@@ -4403,7 +4403,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25196"
+		(property "LCSC" "C17408"
 			(at 71.12 64.77 0)
 			(effects
 				(font
@@ -4412,7 +4412,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF560JT5E"
+		(property "MPN" "0805W8F1000T5E"
 			(at 71.12 64.77 0)
 			(effects
 				(font
@@ -4625,7 +4625,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "56"
+		(property "Value" "100"
 			(at 63.5 62.23 0)
 			(effects
 				(font
@@ -4634,7 +4634,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
 			(at 60.96 64.77 0)
 			(effects
 				(font
@@ -4652,7 +4652,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 56 0603"
+		(property "Description" "Resistor 100 0805"
 			(at 60.96 64.77 0)
 			(effects
 				(font
@@ -4661,7 +4661,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25196"
+		(property "LCSC" "C17408"
 			(at 60.96 64.77 0)
 			(effects
 				(font
@@ -4670,7 +4670,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF560JT5E"
+		(property "MPN" "0805W8F1000T5E"
 			(at 60.96 64.77 0)
 			(effects
 				(font
@@ -4984,10 +4984,10 @@
 		)
 		(uuid "e57d6fd5-8266-54d4-b592-bf5d3abca2d0")
 	)
-	(text_box "J1 is the bay node's J6 mirrored: a 'Same direction' PH 8 lead (pin n to pin 9−n) joins them.\nJ2 follows the Mega's own pin order; the names are on the silkscreen, its cable plugs on by name.\nThe Mega from 3.3 V (U1, ≈ 0.2 W at 120 mA): its MISO is 3.3 V.  LEDs ≈ 32 mA each (Vf ≈ 3.2 V), 128 mA,\n  off unless the node's AO3400A pulls LED_K low (PWM ≥ 20 kHz or on/off).  CAM_5V: the node's 0.5 A PTC."
+	(text_box "J1 is the bay node's J6 mirrored: a 'Same direction' PH 8 lead (pin n to pin 9−n) joins them.\nJ2 follows the Mega's own pin order; the names are on the silkscreen, its cable plugs on by name.\nThe Mega from 3.3 V (U1, ≈ 0.2 W at 120 mA): its MISO is 3.3 V.  LEDs 18–26 mA each (100 Ω 0805, ≤ 66 mW),\n  ≤ 102 mA for the four, off unless the node's AO3400A pulls LED_K low (PWM ≥ 20 kHz or on/off).\nCAM_5V: the node's 0.5 A PTC, no switch: a hung camera (the Mega has no reset pin) needs a power cycle."
 		(exclude_from_sim no)
 		(at 20.32 165.1 0)
-		(size 240.03 13.97)
+		(size 240.03 16.51)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

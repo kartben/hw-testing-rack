@@ -104,11 +104,11 @@ Electronics,camera-pod,100n — Capacitor 100n 0603,2,pcs,0.0124,0.02,LCSC/JLCPC
 Electronics,camera-pod,"XL-2835UWC-02 — LED white 6000–7500 K, 2835, 20–33 lm at 60 mA",8,pcs,0.011,0.09,LCSC/JLCPCB,C2843876,XL-2835UWC-02,XINGLIGHT,"D1,D2,D3,D4",4 per board × 2 boards
 Electronics,camera-pod,"LEAD — JST PH 8-pin, side entry, SMD",2,pcs,0.414,0.83,LCSC/JLCPCB,C265121,S8B-PH-SM4-TB(LF)(SN),JST,J1,1 per board × 2 boards
 Electronics,camera-pod,"MEGA — pin header 1 × 6, 2.54 mm, SMD",2,pcs,0.0736,0.15,LCSC/JLCPCB,C41417363,HX PZ2.54-1x6P TP-YQ,hanxia,J2,1 per board × 2 boards
-Electronics,camera-pod,56 — Resistor 56 0603,8,pcs,0.0024,0.02,LCSC/JLCPCB,C25196,0603WAF560JT5E,UNI-ROYAL(Uniroyal Elec),"R1,R2,R3,R4",4 per board × 2 boards
+Electronics,camera-pod,100 — Resistor 100 0805,8,pcs,0.0039,0.03,LCSC/JLCPCB,C17408,0805W8F1000T5E,UNI-ROYAL(Uniroyal Elec),"R1,R2,R3,R4",4 per board × 2 boards
 Electronics,camera-pod,AMS1117-3.3 — 3.3 V 1 A LDO,2,pcs,0.1932,0.39,LCSC/JLCPCB,C6186,AMS1117-3.3,AMS,U1,1 per board × 2 boards
 Electronics,camera-pod,"Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL)",5,pcs,0.9568,4.78,"estimate, not quoted",,,,,"board $5.20 = $5.20 for 5 PCBs, 2 of them assembled"
 Electronics,camera-pod,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,17.59,17.59,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $9.21, SMT $0.20"
-Electronics,camera-pod,Components camera-pod: JLC quote minus the catalogue prices above,1,pcs,0.08,0.08,"estimate, not quoted",,,,,quoted components $2.05 (≈ €1.89) for 2 boards; catalogue unit prices give €1.81
+Electronics,camera-pod,Components camera-pod: JLC quote minus the catalogue prices above,1,pcs,0.08,0.08,"estimate, not quoted",,,,,quoted components $2.06 (≈ €1.90) for 2 boards; catalogue unit prices give €1.82
 Electronics,data-port-x4,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
 Electronics,data-port-x4,1u — Capacitor 1u 0603,12,pcs,0.013,0.16,LCSC/JLCPCB,C15849,CL10A105KB8NNNC,Samsung Electro-Mechanics,"C2,C13,C101,C201,C301,C401",6 per board × 2 boards
 Electronics,data-port-x4,4.7u — Capacitor 4.7u 0805,2,pcs,0.0318,0.06,LCSC/JLCPCB,C1779,CL21A475KAQNNNE,Samsung Electro-Mechanics,C3,1 per board × 2 boards

@@ -38,9 +38,9 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | **Estimated total** | **38.87** |
 | | | Order (indicative): as quoted | 38.87 |
 | camera-pod | 5 PCBs (2-layer 40×27 mm, lead-free HASL), 2 assembled, Economic PCBA | PCB: board $5.20 | 5.20 |
-| | | PCBA: setup $8.18, stencil $1.53, components $2.05, extended parts $9.21, SMT $0.20 | 21.17 |
-| | | **Estimated total** | **26.37** |
-| | | Order (indicative): as quoted | 26.37 |
+| | | PCBA: setup $8.18, stencil $1.53, components $2.06, extended parts $9.21, SMT $0.20 | 21.18 |
+| | | **Estimated total** | **26.38** |
+| | | Order (indicative): as quoted | 26.38 |
 | data-port-x4 | 5 PCBs (4-layer 108×24 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: engineering $25.00, lead-free HASL $5.10, board $1.80 | 31.90 |
 | | | PCBA: setup $8.18, stencil $1.53, components $30.18, extended parts $27.63, SMT $1.47, X-ray $3.28 | 72.27 |
 | | | **Estimated total** | **104.17** |
@@ -55,10 +55,10 @@ What each order pays once, whatever the number of boards, against what grows wit
 | bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 40 (23) | 61.20 | 114.99 | 206.92 | **321.91** | 321.91 | 276.44 |
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (16) | 50.49 | 123.59 | 61.94 | **185.53** | 185.53 | 146.87 |
 | data-port | Economic | 7 / 8 | 6 (3) | 9.21 | 25.22 | 13.65 | **38.87** | 38.87 | 28.82 |
-| camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.25 | **26.37** | 26.37 | 25.58 |
+| camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.26 | **26.38** | 26.38 | 25.59 |
 | data-port-x4 | Economic | 1 / 2 | 26 (9) | 27.63 | 69.24 | 34.93 | **104.17** | 104.17 | 77.29 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **710.85** | **710.85** | **589.00** |
+| **All** | | | | | | | **710.86** | **710.86** | **589.01** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -98,9 +98,9 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 297.79 | 185.51 | 37.16 | 26.37 | 104.17 | **685.00** |
-| 5 | 177.29 | 53.65 | 16.10 | 7.14 | 29.60 | **290.57** |
-| 10 | 156.91 | 39.34 | 12.38 | 4.91 | 21.42 | **238.37** |
+| 1 | 297.79 | 185.51 | 37.16 | 26.38 | 104.17 | **685.01** |
+| 5 | 177.29 | 53.65 | 16.10 | 7.14 | 29.60 | **290.58** |
+| 10 | 156.91 | 39.34 | 12.38 | 4.92 | 21.42 | **238.38** |
 
 ## Printed parts
 
@@ -251,7 +251,7 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | Electronics | XL-2835UWC-02 — LED white 6000–7500 K, 2835, 20–33 lm at 60 mA | 8  | 0.01 | 0.09 | LCSC/JLCPCB C2843876 |
 | Electronics | LEAD — JST PH 8-pin, side entry, SMD | 2  | 0.41 | 0.83 | LCSC/JLCPCB C265121 |
 | Electronics | MEGA — pin header 1 × 6, 2.54 mm, SMD | 2  | 0.07 | 0.15 | LCSC/JLCPCB C41417363 |
-| Electronics | 56 — Resistor 56 0603 | 8  | 0.00 | 0.02 | LCSC/JLCPCB C25196 |
+| Electronics | 100 — Resistor 100 0805 | 8  | 0.00 | 0.03 | LCSC/JLCPCB C17408 |
 | Electronics | AMS1117-3.3 — 3.3 V 1 A LDO | 2  | 0.19 | 0.39 | LCSC/JLCPCB C6186 |
 | Electronics | Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL) | 5  | 0.96 | 4.78 | estimate, not quoted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT | 1  | 17.59 | 17.59 | estimate, not quoted |

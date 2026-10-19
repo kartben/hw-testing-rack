@@ -347,10 +347,14 @@ the bay), 2 × PT 2.6 into the printed pod.  Geometry in `config/rack.yaml` › 
 | Lead | J1, JST PH 8, side entry, SMD (S8B-PH-SM4-TB), mouth out of the right edge: 1 LED_K · 2 CS · 3 MISO · 4 MOSI · 5 GND · 6 SCK · 7 GND · 8 CAM_5V | the node's J6 mirrored: a ready-made "Same direction" PH 8 lead (pin n ↔ pin 9−n) |
 | Camera | J2, 1 × 6 pin header, 2.54 mm, SMD (staggered pins), in the Mega's own order VCC · GND · SCK · MISO · MOSI · CS, the names on the silkscreen | an XH 2.54 6-pin → Dupont cable from the Mega's side connector (its own, if it ends in Dupont sockets), plugged on by name |
 | 3.3 V | AMS1117-3.3 (U1) from CAM_5V, 10 µF in, 22 µF + 100 nF out | the Mega at 3.3 V (≈ 0.2 W in U1 at 120 mA): MISO at 3.3 V, the node's R35 stays unpopulated |
-| Light | 4 × XL-2835UWC-02 (white, 2835, 20–33 lm at 60 mA), each from CAM_5V through 56 Ω to LED_K | ≈ 32 mA each (Vf ≈ 3.2 V), 128 mA; along the edge next to the camera, beside the lens, not around it; the node's AO3400A pulls LED_K low; a thin PETG diffuser 5–10 mm in front, in the pod |
+| Light | 4 × XL-2835UWC-02 (white, 2835, 20–33 lm at 60 mA), each from CAM_5V through 100 Ω 0805 to LED_K | 18–26 mA each over the LEDs' Vf spread and CAM_5V 5.0–5.2 V, ≤ 66 mW in a 125 mW resistor, ≤ 102 mA for the four, inside the node's camera budget (the PCBA review's P1: 56 Ω 0603 gave 36–44 mA, up to 108 mW in 100 mW).  About a third less light than the 32 mA first planned, ≈ 0.6 EV that the Mega's auto-exposure takes.  Along the edge next to the camera, beside the lens, not around it; the node's AO3400A pulls LED_K low; a thin PETG diffuser 5–10 mm in front, in the pod |
 
 Both sides are GND pours; routed by Freerouting.  JLC: Economic PCBA, ≈ $23 for 5 PCBs with 2
 assembled (estimate in `tools/bom.py`).
+
+For a later bay node: CAM_5V has only the PTC, no switch, and the Mega has no reset pin, so a hung
+camera needs a power cycle of the whole bay (the review's P3).  A load switch on CAM_5V from a free
+GPIO (IO5 or IO6) would let the firmware restart the camera alone.
 
 ## Bring-up measurements
 
@@ -362,6 +366,8 @@ What the PCBA review ([pcba-review.md](pcba-review.md)) left to the bench, per b
 | DATA ×4 | Ports off at power-up (X3) | DUT_5V on, no firmware command: each `PORTn_VBUS` | 0 V until the firmware enables the port |
 | DATA ×4 | No back-feed with DUT_5V off (X2) | node running, DUT_5V off: the board's +3V3; an I²C scan from the node | +3V3 under 0.1 V; the node's INA226 (0x40) still answers, 0x20/0x21/0x41–0x45 don't |
 | DATA port | VBUS at the receptacle at the node's limit (D1) | a 1.3 A load on a USB-C breakout; a meter at J1 and at J2.8 | under 30 mV between them (≈ 15 mΩ of copper) |
+| Camera pod | 3.3 V stability (P2): the AMS1117 on a 22 µF MLCC where its datasheet asks for tantalum | scope on C2, 20 MHz limit, at power-up, with the camera streaming and the LEDs switching | no sustained ringing, 3.3 V ± 3 %.  Ringing: a tantalum for C2, or 1 Ω in series with it |
+| Camera pod | LED current (P1) | the voltage across one 100 Ω, LEDs on | 1.8–2.6 V (18–26 mA) |
 
 ## Sourcing
 

@@ -1830,20 +1830,20 @@
 {
 "category": "Electronics",
 "group": "camera-pod",
-"item": "56 — Resistor 56 0603",
+"item": "100 — Resistor 100 0805",
 "ref": "R1,R2,R3,R4",
-"mpn": "0603WAF560JT5E",
+"mpn": "0805W8F1000T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C25196",
+"part": "C17408",
 "qty": 8,
-"unit_eur": 0.0024,
+"unit_eur": 0.0039,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
 "notes": "4 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.02
+"ext_eur": 0.03
 },
 {
 "category": "Electronics",
@@ -1892,7 +1892,7 @@
 "supplier": "estimate, not quoted",
 "qty": 1,
 "unit_eur": 0.08,
-"notes": "quoted components $2.05 (≈ €1.89) for 2 boards; catalogue unit prices give €1.81",
+"notes": "quoted components $2.06 (≈ €1.90) for 2 boards; catalogue unit prices give €1.82",
 "unit": "pcs",
 "ext_eur": 0.08
 },
@@ -2768,7 +2768,7 @@
 }
 ],
 "by_category": {
-"Electronics": 653.9899999999997,
+"Electronics": 653.9999999999997,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2777,7 +2777,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 950.57,
+"total_eur": 950.58,
 "prints": [
 {
 "part": "bay_label",
@@ -3102,7 +3102,7 @@
 "pcbs": 5,
 "assembled": 2,
 "service": "Economic",
-"total": 26.37,
+"total": 26.38,
 "estimate": true,
 "spec": "2-layer 40×27 mm, lead-free HASL",
 "pcb": {
@@ -3111,7 +3111,7 @@
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
-"components": 2.05,
+"components": 2.06,
 "extended parts": 9.21,
 "SMT": 0.2
 }
@@ -3222,12 +3222,12 @@
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
-"components": 2.05,
+"components": 2.06,
 "extended parts": 9.21,
 "SMT": 0.2
 },
 "changes": [],
-"total": 26.37,
+"total": 26.38,
 "need": 2,
 "types": 8,
 "extended": 3,
@@ -3386,10 +3386,10 @@
 "extended": 3,
 "type_fee": 9.21,
 "once": 24.12,
-"per_board": 2.25,
-"total": 26.37,
-"after_obvious": 26.37,
-"after_decisions": 25.58,
+"per_board": 2.26,
+"total": 26.38,
+"after_obvious": 26.38,
+"after_decisions": 25.59,
 "levers": [
 {
 "lever": "JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check",
@@ -3507,33 +3507,33 @@
 "bay-node": 297.79,
 "power-hub": 185.51,
 "data-port": 37.16,
-"camera-pod": 26.37,
+"camera-pod": 26.38,
 "data-port-x4": 104.17
 },
 "shipping": 34.0,
-"per_rack": 685.0
+"per_rack": 685.01
 },
 "5": {
 "boards": {
 "bay-node": 886.44,
 "power-hub": 268.24,
 "data-port": 80.48,
-"camera-pod": 35.68,
+"camera-pod": 35.72,
 "data-port-x4": 148.02
 },
 "shipping": 34.0,
-"per_rack": 290.57
+"per_rack": 290.58
 },
 "10": {
 "boards": {
 "bay-node": 1569.09,
 "power-hub": 393.41,
 "data-port": 123.83,
-"camera-pod": 49.13,
+"camera-pod": 49.22,
 "data-port-x4": 214.22
 },
 "shipping": 34.0,
-"per_rack": 238.37
+"per_rack": 238.38
 }
 }
 }
