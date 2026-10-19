@@ -287,7 +287,7 @@ lead from the node's J7; its four USB-C sit behind the port wall's U's at drawer
 
 | Block | Parts | Notes |
 |---|---|---|
-| Lead | JST PH 8, side entry (S8B-PH-SM4-TB, J1) on the front edge of a 22 × 7 mm rear-right notch, 17 mm from the port wall like the DATA port's: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D+ · 6 D− · 7 GND · 8 +5V | the node's J7 mirrored ("Same direction" lead); SDA, SCL and INT pass through two USBLC6 (U4, U5; `LEAD_*` on the lead's side): the node has no ESD on them |
+| Lead | JST PH 8, side entry (S8B-PH-SM4-TB, J1) on the front edge of a 22 × 7 mm rear-right notch, 17 mm from the port wall like the DATA port's: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V | the node's J7 mirrored ("Same direction" lead); SDA, SCL and INT pass through two USBLC6 (U4, U5; `LEAD_*` on the lead's side): the node has no ESD on them |
 | Hub | USB2514B (U1) on its straps (CFG_SEL 00, NON_REM 00), 24 MHz crystal, 12k RBIAS, RC reset | multi-TT, self-powered, off the I²C bus; hub port n is USB-C n (busid `1-1.n`); PRTPWR and OCS_N unused: the switches follow the expanders |
 | Ports ×4 | TPS2553DBVR-1 (47k: 0.50–0.62 A; limits for 7.5 ms, then latches off until EN toggles) → 100 mΩ Kelvin shunt → VBUS; INA226 across the shunt; GCT USB4105 with Rp 56k on each CC ("default USB power"); USBLC6 in flow-through | `+5V` → `PORTn_5V_SW` → `PORTn_VBUS`; INA226 at 0x41 / 0x43 / 0x44 / 0x45 for ports 1–4 (the node's own is 0x40) |
 | Expanders | two TCA6408A in the rear row, each between the two ports it drives: U2 (0x20) ports 1–2, U6 (0x21) ports 3–4.  Left port of a pair: P0 RESET, P1 BOOT, P2 EN, P3 FAULT_N; right port: P4 EN, P5 FAULT_N, P6 BOOT, P7 RESET | only SDA, SCL and INT cross the board; the pins come up as inputs: the EN pull-ups power every port without firmware, RESET/BOOT float; both INT wired-OR with the four INA226 ALERTs to the node's IO4 |
@@ -301,7 +301,7 @@ node's): ports 1–3 leave the hub through vias and run on B.Cu over the In2 pla
 receptacles, down beside each ESD; port 4, next to the hub, stays on F.Cu.  Each USBLC6 passes both
 lines through (connector side and hub side are separate nets); its connector side runs under the
 receptacle into A7 / A6, B6 joins A6 by a loop behind the pad row and B7 joins the D− line through
-B.Cu.  The upstream pair goes J1 → B.Cu → the hub's top pins with no crossover.  A few short links
+B.Cu.  The upstream pair goes J1 → B.Cu round the hub's east side → its top pins with no crossover.  A few short links
 are drawn too, where Freerouting left one open run after run: each left port's RESET and BOOT lines
 (RESET under its header through B.Cu), and the hub's right side (RESET_N up to R2 and C13, the CFG
 straps down to R3 / R4, VDD33 to a via).  Freerouting does the rest (on the Mac, ≈ 15 s a pass).

@@ -3644,7 +3644,7 @@
 		)
 		(uuid "56d23860-4ee4-5337-85ff-0d5a91dd6d47")
 	)
-	(label "UP_DP"
+	(label "UP_DN"
 		(at 43.18 78.74 0)
 		(fields_autoplaced yes)
 		(effects
@@ -3666,7 +3666,7 @@
 		)
 		(uuid "57af3451-9222-58fa-8f83-c4b7c75c6dd4")
 	)
-	(label "UP_DN"
+	(label "UP_DP"
 		(at 43.18 81.28 0)
 		(fields_autoplaced yes)
 		(effects

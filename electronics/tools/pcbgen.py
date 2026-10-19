@@ -310,7 +310,7 @@ class PcbBuilder:
 
     # -------------------------------------------------------------- zones
     def zone(self, layer, net: str | None, poly, priority=0, keepout=False, name="", layers=None, tracks_only=False,
-             connection="thermal"):
+             connection="thermal", vias_only=False):
         z = pcbnew.ZONE(self.board)
         z.SetLayer(layer)
         if net:
@@ -325,10 +325,11 @@ class PcbBuilder:
         if keepout:
             z.SetIsRuleArea(True)
             # tracks_only: keep the router's tracks out but let vias and the GND pour in
-            # (exported to the DSN as a wire_keepout)
-            z.SetDoNotAllowTracks(True)
+            # (exported to the DSN as a wire_keepout); vias_only: keep vias out, tracks and pours in
+            # (a via_keepout: e.g. a plane's narrow neck that a row of vias would cut)
+            z.SetDoNotAllowTracks(not vias_only)
             z.SetDoNotAllowVias(not tracks_only)
-            z.SetDoNotAllowZoneFills(not tracks_only)
+            z.SetDoNotAllowZoneFills(not (tracks_only or vias_only))
             z.SetDoNotAllowPads(False)
             z.SetDoNotAllowFootprints(False)
             ls = pcbnew.LSET()
@@ -397,7 +398,8 @@ class PcbBuilder:
             for ko in self.b.pcb.get("keepouts", []):
                 layers = [getattr(pcbnew, n.replace(".", "_")) for n in ko["layers"]] if "layers" in ko else None
                 self.zone(pcbnew.F_Cu, None, ko["poly"], keepout=True, name=ko.get("name", "keepout"),
-                          layers=layers, tracks_only=ko.get("tracks_only", False))
+                          layers=layers, tracks_only=ko.get("tracks_only", False),
+                          vias_only=ko.get("vias_only", False))
             for ref, num in self.b.pcb.get("fanout", []):
                 _, _, poly = fanout_geometry(self.board, ref, num)
                 self.zone(pcbnew.F_Cu, None, poly, keepout=True, name=f"fanout:{ref}.{num}")

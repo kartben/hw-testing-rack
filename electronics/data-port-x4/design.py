@@ -179,8 +179,8 @@ def port(b: Board, n: int):
 # ESD → vias → the ESD's hub-side pins; port 4 sits next to the hub and stays on F.Cu.  Each ESD passes
 # both lines through (pins 6 → 1, 4 → 3); its connector side runs under the receptacle into A7 (D−)
 # and A6 (D+) from the front; B6 joins A6 by a loop behind the pad row, B7 joins the D− line through
-# B.Cu.  The upstream pair goes J1 → B.Cu → the hub's top pins without a crossover.  Near the pins the
-# tracks neck down to 0.2 mm.
+# B.Cu.  The upstream pair goes J1 → B.Cu round the hub's east side → its top pins without a crossover.
+# Near the pins the tracks neck down to 0.2 mm.
 PAIR_W, PAIR_S = 0.25, 0.2          # track width, half the centre spacing (0.4 mm: 0.15 mm gap)
 NECK = 0.2
 SMALL = (0.5, 0.3)
@@ -294,24 +294,26 @@ def usb_routes():
     t("+3V3", hub_pin(5), (75.6, HY), w=NECK)
     via("+3V3", 75.6, HY)
 
-    # upstream: J1 pins 6 (D−, x 94) / 5 (D+, x 96) → vias in front of J1 → B.Cu north, west, south →
-    # vias → the hub's top pins 30 (D−) / 31 (D+).  Two left turns: D− stays west going north, east
-    # going south.
+    # upstream: J1 pins 5 (D−, x 96) / 6 (D+, x 94), the node's J7 pins 4 / 3 mirrored → two vias in
+    # front of J1, D+ north of D− → B.Cu west, north (x 87, clear of In2's +3V3 edge at 85.6), west,
+    # south → vias → the hub's top pins 30 (D−) / 31 (D+).  Every turn keeps D+ on the pair's right:
+    # west of D− going south, as the hub wants, with no crossover.
     ph = CFG["ph"]
-    jm, jp = (ph - 3, NH + PH_EDGE + 2.85), (ph - 1, NH + PH_EDGE + 2.85)    # pad centres
-    t("UP_DN", jm, (jm[0], 17.25))
-    t("UP_DP", jp, (jp[0], 17.25))
-    via("UP_DN", jm[0], 17.25)
-    via("UP_DP", jp[0], 17.25)
+    jp, jm = (ph - 3, NH + PH_EDGE + 2.85), (ph - 1, NH + PH_EDGE + 2.85)    # pad centres: pins 6 / 5
+    vp, vm = (ph - 2.7, 16.95), (ph - 2.7, 17.65)
+    t("UP_DP", jp, (jp[0], 16.65), vp)
+    t("UP_DN", jm, (jm[0], 17.25), (jm[0] - 0.4, vm[1]), vm)
+    via("UP_DP", *vp)
+    via("UP_DN", *vm)
     um, up = (HX + 1.0, HY - 2.9375), (HX + 0.5, HY - 2.9375)              # hub pins 30 / 31
     hm, hp = (81.2, 12.35), (80.3, 12.35)
     t("UP_DN", um, (um[0], 12.95), hm, w=NECK)
     t("UP_DP", up, (up[0], 12.55), hp, w=NECK)
     via("UP_DN", *hm)
     via("UP_DP", *hp)
-    centre = [(ph - 2, 16.4), (ph - 2, 10.9), (80.75, 10.9), (80.75, 11.9)]
+    centre = [(ph - 3.2, 17.3), (87.0, 17.3), (87.0, 10.9), (80.75, 10.9), (80.75, 11.9)]
     pair("UP_DN", "UP_DP", centre, "B.Cu", k=0.5,
-         head={"UP_DN": [(jm[0], 17.25)], "UP_DP": [(jp[0], 17.25)]},
+         head={"UP_DN": [vm], "UP_DP": [vp]},
          tail={"UP_DN": [(81.2, 12.15), hm], "UP_DP": [(80.3, 12.15), hp]})
     return tracks, vias
 
@@ -366,7 +368,7 @@ def board() -> Board:
     b.root_notes = [
         "DATA ×4 v1.0 — USB2514B hub, four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1 switch, an INA226",
         "  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an AP2112K 3.3 V; the PH 8 lead from the bay node's J7.",
-        "Lead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D+ · 6 D− · 7 GND · 8 +5V",
+        "Lead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V",
         "  (the node's J7 mirrored: one 'Same direction' PH 8 cable).",
         "I²C: TCA6408A 0x20 (ports 1–2) / 0x21 (ports 3–4), INA226 0x41 / 0x43 / 0x44 / 0x45 (A1.1–A1.4); the",
         "  node's INA226 stays alone at 0x40.",
@@ -374,7 +376,7 @@ def board() -> Board:
     s = b.sheet("Hub", "hub.kicad_sch", "Lead, hub, expanders, 3.3 V")
     s.paper = "A2"
     s.frame("Lead from the bay node's J7 (JST PH 8, side entry): SDA, SCL and INT through USBLC6s", 6, 10, 70, 56)
-    part(s, "J1", "ph8", {"1": "LEAD_INT", "2": "LEAD_SCL", "3": "LEAD_SDA", "4": "GND", "5": "UP_DP", "6": "UP_DN",
+    part(s, "J1", "ph8", {"1": "LEAD_INT", "2": "LEAD_SCL", "3": "LEAD_SDA", "4": "GND", "5": "UP_DN", "6": "UP_DP",
                           "7": "GND", "8": "+5V"}, "LEAD", pcb=P(CFG["ph"], NH + PH_EDGE, 180),
          sch=at(14, 30, mirror="y", fields=(-2, -6)))
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False, sch=at(24, 14))
@@ -467,7 +469,7 @@ def board() -> Board:
     # under each INA226 (its VS and address straps), 0.6 mm short of the B.Cu pairs' lane at y 12.4, and
     # one under the hub's bottom row of capacitors; +5V passes beneath it and right of it
     tabs = [(CFG["usb"][n] + 1.2, min(CFG["usb"][n] + 9.4, 75.3)) for n in range(4)]
-    v33 = [(0.4, 0.4), (NX - 0.4, 0.4), (NX - 0.4, 19.5), (82.6, 19.5), (82.6, 21.9), (76.2, 21.9), (76.2, 19.5),
+    v33 = [(0.4, 0.4), (NX - 0.4, 0.4), (NX - 0.4, 19.5), (82.6, 19.5), (82.6, 21.6), (76.2, 21.6), (76.2, 19.5),
            (75.3, 19.5)]
     for x0, x1 in reversed(tabs):
         v33 += [(x1, 9.2), (x1, 11.8), (x0, 11.8), (x0, 9.2)]
@@ -494,7 +496,11 @@ def board() -> Board:
         "keepouts": [{"name": f"edge{i}", "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, NX, 0.35), (NX - 0.35, 0, NX, NH), (NX, NH - 0.35, W, NH), (W - 0.35, NH, W, H),
-                         (0, H - 0.35, W, H), (0, 0, 0.35, H)))],
+                         (0, H - 0.35, W, H), (0, 0, 0.35, H)))] + [
+            # under the hub's caps the +5V plane's only link between its two halves is a 1.9 mm neck below
+            # the +3V3 tab: no via there (a router's via beside the caps' GND vias cut it in two)
+            {"name": "in2-5v-neck", "poly": [(76.2, 21.75), (82.6, 21.75), (82.6, 22.6), (76.2, 22.6)],
+             "vias_only": True}],
         "tracks": usb_tracks + loc_tracks,
         "vias": usb_vias + loc_vias,
         # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
