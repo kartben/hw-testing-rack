@@ -51,21 +51,19 @@ What each order pays once, whatever the number of boards, against what grows wit
 
 | Board | PCBA | Needed / assembled | Part types (extended) | Type fees | Once per order | With the boards | Today | After obvious levers | After decisions |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
-| bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 38 (23) | 58.14 | 111.93 | 210.84 | **322.77** | 316.65 | 295.61 |
-| power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 37 (19) | 56.61 | 128.24 | 84.53 | **212.77** | 204.24 | 169.96 |
+| bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 38 (23) | 58.14 | 111.93 | 210.84 | **322.77** | 322.77 | 301.69 |
+| power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 37 (19) | 56.61 | 128.24 | 84.53 | **212.77** | 205.77 | 171.49 |
 | data-port | Economic | 7 / 8 | 5 (3) | 9.21 | 21.92 | 13.30 | **35.22** | 35.22 | 35.22 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 20.92 | 2.25 | **23.17** | 23.17 | 23.17 |
 | data-port-x4 | Economic | 1 / 2 | 22 (9) | 27.63 | 46.34 | 31.24 | **77.58** | 74.51 | 74.51 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **705.51** | **687.79** | **632.47** |
+| **All** | | | | | | | **705.51** | **695.44** | **640.08** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
 | Board | Lever | USD | Kind |
 |---|---|---:|---|
-| bay-node | 4 values merged: 10 Ω → 33 Ω, 4.7k → 5.1k, 20k → 18k, buck EN 1M / 100k → 100k / 10k (owner, in progress) | 6.12 | obvious |
-| bay-node | 9 assembled instead of 10 (8 bays and 1 spare) | 21.04 | decision |
-| power-hub | IMON filter (10n) and CAN split (10n) → 22n, as the dVdT caps: one type fewer (owner, in progress) | 1.53 | obvious |
+| bay-node | 9 assembled instead of 10 (8 bays and 1 spare) | 21.08 | decision |
 | power-hub | 3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare | 7.00 | obvious |
 | power-hub | rows C and D not fitted (DNP, footprints kept): the rack has 2 rows | 9.68 | decision |
 | power-hub | board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new power box, room for 2 rows only | 24.60 | decision |

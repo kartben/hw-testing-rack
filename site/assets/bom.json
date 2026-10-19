@@ -3181,17 +3181,12 @@
 "once": 111.93,
 "per_board": 210.84,
 "total": 322.77,
-"after_obvious": 316.65,
-"after_decisions": 295.61,
+"after_obvious": 322.77,
+"after_decisions": 301.69,
 "levers": [
 {
-"lever": "4 values merged: 10 Ω → 33 Ω, 4.7k → 5.1k, 20k → 18k, buck EN 1M / 100k → 100k / 10k (owner, in progress)",
-"usd": 6.12,
-"kind": "obvious"
-},
-{
 "lever": "9 assembled instead of 10 (8 bays and 1 spare)",
-"usd": 21.04,
+"usd": 21.08,
 "kind": "decision"
 }
 ]
@@ -3211,14 +3206,9 @@
 "once": 128.24,
 "per_board": 84.53,
 "total": 212.77,
-"after_obvious": 204.24,
-"after_decisions": 169.96,
+"after_obvious": 205.77,
+"after_decisions": 171.49,
 "levers": [
-{
-"lever": "IMON filter (10n) and CAN split (10n) → 22n, as the dVdT caps: one type fewer (owner, in progress)",
-"usd": 1.53,
-"kind": "obvious"
-},
 {
 "lever": "3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare",
 "usd": 7.0,

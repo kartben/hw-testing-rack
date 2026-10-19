@@ -150,17 +150,13 @@ JLC_FEES = {
 # "decision": a trade-off for the user.  A lever applied in a board leaves this list for its quote.
 JLC_LEVERS = {
     "power-hub": [
-        ("IMON filter (10n) and CAN split (10n) → 22n, as the dVdT caps: one type fewer (owner, in progress)",
-         1.53, "obvious"),
         ("3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare", 7.00, "obvious"),
         ("rows C and D not fitted (DNP, footprints kept): the rack has 2 rows", 9.68, "decision"),
         ("board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new "
          "power box, room for 2 rows only", 24.60, "decision"),
     ],
     "bay-node": [
-        ("4 values merged: 10 Ω → 33 Ω, 4.7k → 5.1k, 20k → 18k, buck EN 1M / 100k → 100k / 10k "
-         "(owner, in progress)", 6.12, "obvious"),
-        ("9 assembled instead of 10 (8 bays and 1 spare)", 21.04, "decision"),
+        ("9 assembled instead of 10 (8 bays and 1 spare)", 21.08, "decision"),
     ],
     "data-port-x4": [
         ("AP2112K-3.3 → XC6206P332MR, a basic part in the same SOT-23 spot (0.25 V dropout at 0.1 A, as the "
