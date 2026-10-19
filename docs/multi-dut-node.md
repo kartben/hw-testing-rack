@@ -15,7 +15,7 @@
 |---|---|---|
 | USB | the DUT on the S3's OTG port, or the front PC port (classic mode) | a hub on the OTG port, 4 DUTs behind it; classic mode: the laptop sees the hub and the 4 DUTs at high speed |
 | Power | TPS2553 + INA226 on the node | one switch and one current sense per port on DATA ×4 (≈ 0.5 A each), reached over I²C on J7 (PH-8: I²C, an interrupt) |
-| RESET / BOOT | two node GPIOs | per port, through an I²C expander on DATA ×4 |
+| RESET / BOOT | two node GPIOs | per port, through an I²C expander on DATA ×4 (TCA6424A) |
 | Console | the AUX UART | the boards' own USB (CDC): no AUX per sub-slot |
 
 A node without DATA ×4 stays a one-port node: everything below keeps
@@ -25,6 +25,7 @@ working with N = 1, and today's API keeps its meaning.
 it sits; no `uart`.  The board's wiring stays data, not code:
 
 ```dts
+/* ports_io: the TCA6424A on DATA ×4; port n uses lines 4(n−1)+0..3 */
 dut_port1: dut-port-1 {
 	compatible = "hwtr,dut-port";
 	sub-slot = <1>;                 /* A1.1 */
@@ -77,12 +78,35 @@ latched fault, its current (V, mA, mW), RESET and BOOT pulses, its USB
 device (VID:PID, product, serial, busid) and the USB/IP client attached.
 `dut.c` becomes a table of ports; port 1 of a one-port node is today's DUT.
 
+## Power budget
+
+> A proposal of the DATA ×4 board's design, pending the user's validation:
+> nothing to implement until the board is validated.
+
+- **Per port**, a TPS2553-1: limit ≈ 0.48–0.58 A, 7.5 ms deglitch, then
+  latched off until EN toggles.  The firmware reports the port's fault and
+  toggles EN on the next `on`.
+- **The node's own TPS2553** (≈ 1.34–1.52 A) feeds the four ports through
+  J7, and the node cuts DUT_5V after 1 s in current limit
+  (`CONFIG_BAY_DUT_FAULT_OFF_MS`): the whole bay goes.
+- **Admission.**  A port is switched on only if the sum of the four ports'
+  INA226 (0x41, 0x43, 0x44, 0x45) plus a ≈ 0.25 A reserve stays at or under
+  1.25 A; otherwise 409.
+- **Shedding.**  The node's INA226 (0x40) alerts at ≈ 1.3 A: within ≈ 10 ms
+  the firmware turns off the last port switched on (or the one drawing the
+  most) through the expander, well before the 1 s cut of the whole bay.
+- **Expander** (TCA6424A, 0x22): port n on lines 4(n−1)+0..3 = EN,
+  FAULT_N, RESET, BOOT; line 16 the hub's reset; 17–19 the UART option.
+- **Open:** with every port pulled on at power-up (above), four boards
+  booting together can exceed the budget before the firmware runs; either
+  the ports come up off, or the budget allows for that inrush.
+
 ## REST API
 
 | Endpoint | |
 |---|---|
 | `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 3, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.3"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` |
-| `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}` |
+| `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}`; 409 when the bay's budget has no room for it ([Power budget](#power-budget)) |
 | `POST /api/ports/<n>/reset`, `/boot` | as today, for one port |
 | `GET /api/status` | adds `ports` (the same objects, shorter) |
 | `/api/power`, `/api/reset`, `/api/boot` | unchanged on a one-port node; on a multi-port node they need `"port": n` (409 without) |
