@@ -24,6 +24,20 @@ WCH CH224A / CH224Q (C42459160 / C46061833: 28 V, no switch driver, no V/I telem
 (C24833806: 28 V, gate driver, EPR registers not in the public datasheet).  ST's STUSB4500 (C2678061) stops at 20 V,
 which covers 8 bays ([docs/power.md](../docs/power.md)).
 
+## TCAN1462V (hub U6, node U11)
+
+At the hub's JLC quote (2026-10-19) the TCAN1462VDRQ1 (C7399456) had no stock at LCSC (0, as on 2026-10-18).
+JLC asks for another part.  Both alternates in the catalogue keep the SOIC-8 footprint and pinout (VIO on
+pin 5, STB on pin 8), so nothing is re-routed:
+
+| Part | LCSC stock | Price | Against the TCAN1462V |
+|---|---|---|---|
+| NXP TJA1462AT/0Z (C3234095) | 10 500 | $0.83 (10+) | keeps signal improvement; bus pins −36 / +40 V instead of ±58 V (VRACK, 28 V, sits two pins away) |
+| TI TCAN1044AVDRQ1 (C3234993) | 23 540 | $0.43 | ±58 V; no signal improvement (the star bus at 250 kbit/s works without it) |
+
+The hub quote used the TJA1462AT/0Z.  The boards' BOMs still name the TCAN1462V: swap before ordering if
+it is still out of stock.
+
 ## Camera lens
 
 The Mega 3MP has a 1/4" sensor, and its stock 2.8 mm lens gives 90° diagonally (75° × 56°).  The worst board needs

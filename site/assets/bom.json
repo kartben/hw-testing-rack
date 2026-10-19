@@ -1854,35 +1854,35 @@
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "Bare PCB power-hub (4-layer 76×140 mm, ENIG)",
-"supplier": "estimate, not quoted",
+"item": "Bare PCB power-hub (4-layer 76×140 mm (86×140 with JLC's rails), ENIG)",
+"supplier": "JLCPCB quote 2026-10-19",
 "qty": 5,
-"unit_eur": 10.0464,
-"notes": "engineering $25.00, ENIG $17.60, board $12.00 = $54.60 for 5 PCBs, 2 of them assembled",
+"unit_eur": 9.292,
+"notes": "engineering $25.00, ENIG $18.00, board $7.50 = $50.50 for 5 PCBs, 2 of them assembled",
 "unit": "pcs",
-"ext_eur": 50.23
+"ext_eur": 46.46
 },
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, global sourcing",
-"supplier": "estimate, not quoted",
+"item": "Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.)",
+"supplier": "JLCPCB quote 2026-10-19",
 "qty": 1,
-"unit_eur": 110.51,
-"notes": "setup $25.75, stencil $8.27, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52, global sourcing $13.30; Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
+"unit_eur": 123.4,
+"notes": "setup $25.75, stencil $8.27, feeders $72.85, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04; Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA",
 "unit": "pcs",
-"ext_eur": 110.51
+"ext_eur": 123.4
 },
 {
 "category": "Electronics",
 "group": "power-hub",
 "item": "Components power-hub: JLC quote minus the catalogue prices above",
-"supplier": "estimate, not quoted",
+"supplier": "JLCPCB quote 2026-10-19",
 "qty": 1,
-"unit_eur": -0.79,
-"notes": "quoted components $52.32 (≈ €48.13) for 2 boards; catalogue unit prices give €48.92",
+"unit_eur": 4.34,
+"notes": "quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €48.92",
 "unit": "pcs",
-"ext_eur": -0.79
+"ext_eur": 4.34
 },
 {
 "category": "Electronics",
@@ -2934,7 +2934,7 @@
 }
 ],
 "by_category": {
-"Electronics": 634.5499999999996,
+"Electronics": 648.7999999999997,
 "Printed parts": 60.0,
 "Fasteners": 15.309999999999999,
 "Motion": 18.85,
@@ -2942,7 +2942,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 923.89,
+"total_eur": 938.14,
 "prints": [
 {
 "part": "bay_label",
@@ -3229,23 +3229,25 @@
 "pcbs": 5,
 "assembled": 2,
 "service": "Standard",
-"total": 227.04,
-"estimate": true,
-"spec": "4-layer 76×140 mm, ENIG",
+"total": 242.52,
+"date": "2026-10-19",
+"from_fab": true,
+"spec": "4-layer 76×140 mm (86×140 with JLC's rails), ENIG",
 "pcb": {
 "engineering": 25.0,
-"ENIG": 17.6,
-"board": 12.0
+"ENIG": 18.0,
+"board": 7.5
 },
 "pcba": {
 "setup": 25.75,
 "stencil": 8.27,
-"components": 52.32,
-"feeders": 57.0,
-"SMT": 2.0,
-"X-ray": 13.28,
-"packaging": 0.52,
-"global sourcing": 13.3
+"components": 57.89,
+"feeders": 72.85,
+"SMT": 3.3,
+"X-ray": 3.3,
+"packaging": 0.5,
+"special components": 0.12,
+"U1 global sourcing (est.)": 20.04
 }
 },
 "data-port": {
@@ -3324,21 +3326,22 @@
 "power-hub": {
 "pcb": {
 "engineering": 25.0,
-"ENIG": 17.6,
-"board": 12.0
+"ENIG": 18.0,
+"board": 7.5
 },
 "pcba": {
 "setup": 25.75,
 "stencil": 8.27,
-"components": 52.32,
-"feeders": 57.0,
-"SMT": 2.0,
-"X-ray": 13.28,
-"packaging": 0.52,
-"global sourcing": 13.3
+"components": 57.89,
+"feeders": 72.85,
+"SMT": 3.3,
+"X-ray": 3.3,
+"packaging": 0.5,
+"special components": 0.12,
+"U1 global sourcing (est.)": 20.04
 },
 "changes": [],
-"total": 227.04
+"total": 242.52
 },
 "data-port": {
 "pcb": {

@@ -57,18 +57,20 @@ JLC_QUOTE = {
         "pcba": {"setup": 25.56, "stencil": 8.21, "components": 188.05, "feeders": 64.26, "SMT": 5.90,
                  "X-ray": 16.40, "packaging": 0.52},
     },
-    # v0.5 (USB-C PD input, eFuses, rack controller; 4 layers) is NOT quoted yet: an estimate built
-    # like the bay node's Standard quote (the ESP32 module needs Standard PCBA and X-ray), its 4-layer
-    # engineering fee, components at catalogue prices, $3 per extended part type (19).  The AP33772S is
-    # the FA01 (the FA02 is out of stock until ≈ 14/12/2026), bought by JLC Global Sourcing from DigiKey:
-    # 5 at €2.09 (2 boards and spares) with JLC's markup, reported ≈ 50 % (no official figure found), ≈ $17,
-    # less the 2 × $1.84 already in the components line; and ≈ 2 weeks for the parts to clear into JLC.
+    # v0.5, quoted on jlcpcb.com on 2026-10-19 (the user's account), from main's fab files: the gerbers,
+    # the JLC BOM and CPL, which leave the hand-soldered connectors out (`from_fab`: no further cut for
+    # them).  5 PCBs 4-layer ENIG (JLC adds two 5 mm rails for Standard PCBA: 86 × 140 mm), 2 assembled,
+    # Standard, X-ray.  JLC flags the USB4105 (J1, J6) as hard to process ($0.03 a piece).  Two parts were
+    # out of stock: the TCAN1462V (U6), quoted as its documented alternate TJA1462AT/0Z (C3234095, same
+    # SOIC-8 pinout, signal improvement), and the AP33772S FA01 (U1, LCSC 0), left out of the quote.  U1
+    # comes through JLC Global Sourcing from DigiKey (estimate): 5 at €2.09 with JLC's reported ≈ 50 %
+    # markup ≈ $17.04, plus its loading fee ≈ $3, and ≈ 2 weeks for the parts to clear into JLC.
     "power-hub": {
-        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 227.04, "estimate": True,
-        "spec": "4-layer 76×140 mm, ENIG",
-        "pcb": {"engineering": 25.00, "ENIG": 17.60, "board": 12.00},
-        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 52.32, "feeders": 57.00, "SMT": 2.00,
-                 "X-ray": 13.28, "packaging": 0.52, "global sourcing": 13.30},
+        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 242.52, "date": "2026-10-19", "from_fab": True,
+        "spec": "4-layer 76×140 mm (86×140 with JLC's rails), ENIG",
+        "pcb": {"engineering": 25.00, "ENIG": 18.00, "board": 7.50},
+        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 57.89, "feeders": 72.85, "SMT": 3.30,
+                 "X-ray": 3.30, "packaging": 0.50, "special components": 0.12, "U1 global sourcing (est.)": 20.04},
     },
     # the drawer's DATA port board (v1.0, 2 layers, parts on one side) is NOT quoted either: Economic
     # PCBA (setup $8, stencil $1.50, $3 per extended part type: the USB4105, the S8B-PH and the
@@ -199,7 +201,7 @@ def jlc_order(name: str, ext: set, hand: set) -> tuple[dict, dict, list[str]]:
         finish, usd = JLC_FINISH[name]
         changes.append(f"{finish} ≈ ${usd:.2f} instead of ENIG ${pcb['ENIG']:.2f}")
         pcb = {(finish if k == "ENIG" else k): (usd if k == "ENIG" else v) for k, v in pcb.items()}
-    if hand:
+    if hand and not q.get("from_fab"):            # a quote from the fab files already leaves them out
         fee = "feeders" if "feeders" in pcba else "extended parts"
         cut = round(pcba[fee] * len(hand & ext) / len(ext), 2)
         pcba[fee] = round(pcba[fee] - cut, 2)
@@ -253,7 +255,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
                                        {r["mpn"] for r in mine if r["hand_solder"]})
         orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
                         "total": round(sum(pcb.values()) + sum(pcba.values()), 2)}
-        src = "estimate, not quoted" if q.get("estimate") else f"JLCPCB quote {JLC_QUOTE_DATE}"
+        src = "estimate, not quoted" if q.get("estimate") else f"JLCPCB quote {q.get('date', JLC_QUOTE_DATE)}"
         pcb_src = src + (", adjusted" if name in JLC_FINISH or pcb != q["pcb"] else "")
         pcba_src = src + (", adjusted" if pcba != q["pcba"] else "")
         spec = q["spec"].replace("ENIG", JLC_FINISH[name][0]) if name in JLC_FINISH else q["spec"]
@@ -534,9 +536,10 @@ def main():
            "Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: "
            "`electronics/<board>/fab/` · interactive table: the viewer's BOM page.", "",
            "## JLCPCB orders (estimates)", "",
-           f"USD, without shipping ({JLC_SHIPPING}) and import VAT.  Every board is an **estimate** built from JLC's "
-           "fees and catalogue prices, not a quote: the last real quote (jlcpcb.com, "
-           f"{JLC_QUOTE_DATE}: bay node, 20 PCBs ENIG, 16 assembled, $367.71) priced the node before rev 0.5.  The "
+           f"USD, without shipping ({JLC_SHIPPING}) and import VAT.  The power hub is a real quote (jlcpcb.com, "
+           "2026-10-19, from the fab files; its AP33772S, out of stock, is a Global Sourcing estimate on top).  "
+           "Every other board is an **estimate** built from JLC's fees and catalogue prices: the node's last real "
+           f"quote ({JLC_QUOTE_DATE}: 20 PCBs ENIG, 16 assembled, $367.71) priced it before rev 0.5.  The "
            "bay node is the order the user chose on 2026-10-19: 10 PCBs, lead-free HASL, 10 assembled (8 bays, "
            "2 spares).  The per-part lines below use catalogue prices; a *Components* line per board brings them "
            "up to the estimated components figure.  *Order* applies what changed since: the through-hole "

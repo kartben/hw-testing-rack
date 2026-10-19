@@ -390,13 +390,26 @@ board), X-ray $16.40 ($1.64 a board, mandatory for the WROOM-1), packaging $0.52
 $188 (catalogue × 1.12).  The 74 × 90 re-layout took ≈ $15 off (J4, its Rp pair, two part types).  ENIG would add ≈ $12.60.  JLC's page also lists a Standard handling fee
 (≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm at the real quote.
 
-**Power hub v0.5 is not quoted yet.**  It carries the ESP32-S3 module, so it needs Standard PCBA,
-X-ray, like the bay node, and ENIG for now.  `tools/bom.py` carries an estimate built the same way: ≈ $213
-for 5 four-layer PCBs with 2 assembled.  That is ≈ $55 of PCB (the 4-layer engineering fee),
-$52 of components at catalogue prices, and $3 per extended part type (19), now ≈ $227 with the
-AP33772S.  The FA02 is out of stock until ≈ 14/12/2026: the hub takes the FA01, bought through JLC
-Global Sourcing from DigiKey (5 parts with JLC's reported ≈ 50 % markup, ≈ $13 over the catalogue
-line, and ≈ 2 weeks for them to clear into JLC).  Re-quote before ordering.
+**Power hub v0.5: quoted on 2026-10-19, $222.48 without its AP33772S.**  On jlcpcb.com, from main's
+fab files (gerbers, the JLC BOM and CPL): 5 PCBs, 4-layer, ENIG, 2 assembled, Standard PCBA.  It carries the
+ESP32-S3 module, so it needs Standard PCBA, with X-ray, like the bay node.
+- PCB $50.50: engineering fee $25, ENIG $18, board $7.50.  JLC adds two 5 mm rails for Standard PCBA,
+  so the board is 86 × 140 mm.
+- PCBA $171.98: setup $25.75, stencil $8.27, components $57.89 (47 lines), feeders $72.85, SMT $3.30,
+  X-ray $3.30, packaging $0.50.  JLC charges $0.12 for the USB4105s (J1, J6), which it flags as hard to
+  process.
+- Shipping: ≈ $23.48 by DHL.
+
+Two parts were out of stock that day:
+- **TCAN1462V (U6), LCSC C7399456.**  Quoted as its documented alternate, NXP's TJA1462AT/0Z
+  (C3234095, 10 500 in stock): same SOIC-8 pinout, signal improvement kept, bus pins −36 / +40 V
+  instead of ±58 V.  The bay node's U11 is the same part.
+- **AP33772S FA01 (U1).**  LCSC has 0 (the FA02 is out until ≈ 14/12/2026), so it was left out of the
+  quote.  It comes through JLC Global Sourcing from DigiKey: 5 parts with JLC's reported ≈ 50 % markup,
+  ≈ $17, plus its ≈ $3 loading fee, and ≈ 2 weeks for them to clear into JLC.
+
+`tools/bom.py` carries the quote plus that U1 line, ≈ $243.  The estimate before was ≈ $227: X-ray
+cost less than estimated, feeders more.
 
 Two changes were made after that quote and are not re-quoted (`JLC_FINISH`
 and `jlc_order()` in `tools/bom.py` apply them, indicatively):

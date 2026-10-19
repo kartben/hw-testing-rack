@@ -5,22 +5,22 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 635 |
+| Electronics | 649 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 60 |
 | Cables | 49 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **924** |
+| **Total** | **938** |
 
-≈ **€115 per bay** all-in.
+≈ **€117 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
 ## JLCPCB orders (estimates)
 
-USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **estimate** built from JLC's fees and catalogue prices, not a quote: the last real quote (jlcpcb.com, 2026-10-16: bay node, 20 PCBs ENIG, 16 assembled, $367.71) priced the node before rev 0.5.  The bay node is the order the user chose on 2026-10-19: 10 PCBs, lead-free HASL, 10 assembled (8 bays, 2 spares).  The per-part lines below use catalogue prices; a *Components* line per board brings them up to the estimated components figure.  *Order* applies what changed since: the through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  Re-quote before ordering (the full PCBA quote needs the user's JLC sign-in), and check the AP33772S's sourcing (out of stock at LCSC on 2026-10-18).
+USD, without shipping (DHL ≈ $27–40) and import VAT.  The power hub is a real quote (jlcpcb.com, 2026-10-19, from the fab files; its AP33772S, out of stock, is a Global Sourcing estimate on top).  Every other board is an **estimate** built from JLC's fees and catalogue prices: the node's last real quote (2026-10-16: 20 PCBs ENIG, 16 assembled, $367.71) priced it before rev 0.5.  The bay node is the order the user chose on 2026-10-19: 10 PCBs, lead-free HASL, 10 assembled (8 bays, 2 spares).  The per-part lines below use catalogue prices; a *Components* line per board brings them up to the estimated components figure.  *Order* applies what changed since: the through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  Re-quote before ordering (the full PCBA quote needs the user's JLC sign-in), and check the AP33772S's sourcing (out of stock at LCSC on 2026-10-18).
 
 | Board | Order | Line | USD |
 |---|---|---|---:|
@@ -28,10 +28,10 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | | | PCBA: setup $25.56, stencil $8.21, components $188.05, feeders $64.26, SMT $5.90, X-ray $16.40, packaging $0.52 | 308.90 |
 | | | **Estimated total** | **328.40** |
 | | | Order (indicative): as quoted | 328.40 |
-| power-hub | 5 PCBs (4-layer 76×140 mm, ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $17.60, board $12.00 | 54.60 |
-| | | PCBA: setup $25.75, stencil $8.27, components $52.32, feeders $57.00, SMT $2.00, X-ray $13.28, packaging $0.52, global sourcing $13.30 | 172.44 |
-| | | **Estimated total** | **227.04** |
-| | | Order (indicative): as quoted | 227.04 |
+| power-hub | 5 PCBs (4-layer 76×140 mm (86×140 with JLC's rails), ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $18.00, board $7.50 | 50.50 |
+| | | PCBA: setup $25.75, stencil $8.27, components $57.89, feeders $72.85, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04 | 192.02 |
+| | | **Quoted total** | **242.52** |
+| | | Order (indicative): as quoted | 242.52 |
 | data-port | 10 PCBs (2-layer 40×17 mm, lead-free HASL), 8 assembled, Economic PCBA | PCB: board $3.00 | 3.00 |
 | | | PCBA: setup $8.00, stencil $1.50, components $12.90, extended parts $9.00, SMT $0.40 | 31.80 |
 | | | **Estimated total** | **34.80** |
@@ -194,9 +194,9 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Electronics | USBLC6-2SC6 — USB ESD protection | 2  | 0.17 | 0.33 | LCSC/JLCPCB C7519 |
 | Electronics | TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout) | 2  | 0.89 | 1.78 | LCSC/JLCPCB C7399456 |
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 8  | 1.42 | 11.33 | LCSC/JLCPCB C544399 |
-| Electronics | Bare PCB power-hub (4-layer 76×140 mm, ENIG) | 5  | 10.05 | 50.23 | estimate, not quoted |
-| Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, global sourcing | 1  | 110.51 | 110.51 | estimate, not quoted |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | -0.79 | -0.79 | estimate, not quoted |
+| Electronics | Bare PCB power-hub (4-layer 76×140 mm (86×140 with JLC's rails), ENIG) | 5  | 9.29 | 46.46 | JLCPCB quote 2026-10-19 |
+| Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.) | 1  | 123.40 | 123.40 | JLCPCB quote 2026-10-19 |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.34 | 4.34 | JLCPCB quote 2026-10-19 |
 | Electronics | 100n — Capacitor 100n 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C14663 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 8  | 0.84 | 6.70 | LCSC/JLCPCB C5184243 |
 | Electronics | LEAD — JST PH 8-pin, side entry, SMD | 8  | 0.41 | 3.31 | LCSC/JLCPCB C265121 |
