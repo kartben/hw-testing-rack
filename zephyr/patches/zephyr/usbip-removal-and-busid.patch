@@ -1,44 +1,262 @@
-From 7585c2a919054f771600f94b1015cf4574e7e31c Mon Sep 17 00:00:00 2001
+From 8f131d6c68f42263e7a9ba772dcecf4ec28dcc8b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
-Date: Mon, 19 Oct 2026 10:05:42 +0200
-Subject: [PATCH] usb: host: usbip: survive device removal, name devices by
- their port
+Date: Mon, 19 Oct 2026 13:28:24 +0200
+Subject: [PATCH 1/7] usb: usbip: check the result of the UHC transfer
+ allocation
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-The USB/IP service kept a pointer to the device it exported and was not
-told when the device went away: a device that resets or is unplugged
-during a session left the session thread and the transfer callbacks on
-freed memory. Its bus ID was "1-<address>", and the address changes when
-a device enumerates again: behind a hub, two devices that reset at the
-same time can swap their bus IDs.
-
-Each export context is now a host class instance. The stack binds it to
-a device when it configures the device, and calls its removal handler
-when the device goes: the handler cancels the transfers in flight and
-ends the session, whose client sees the connection close. The device
-list offers the devices so bound, which leaves out hubs, taken by the
-hub class, and devices that failed to configure. The submit path holds
-the context lock until the transfer is queued and cleans up when it
-fails, a session that ends cancels what it left in flight, and the
-completions of an earlier session are dropped.
-
-A device is named by its place on the bus, as Linux does: "1-1" on the
-root port, "1-1.3" on port 3 of a hub there, and so on. A device on the
-root port keeps the bus ID it usually had.
-
-(hw-testing-rack: the two upstream-ready commits squashed into one patch,
-so that `west patch apply` can tell it is already applied.)
+The transfer allocation is retried a few times, but if it still fails,
+the transfer pointer is dereferenced anyway. Return -ENOMEM instead.
 
 Assisted-by: Claude:opus-5.5
 Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
 ---
- subsys/usb/host/usbip.c | 451 +++++++++++++++++++++++++++++-----------
- 1 file changed, 324 insertions(+), 127 deletions(-)
+ subsys/usb/host/usbip.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 4fe6f2ab1..2e337750a 100644
+index 4fe6f2ab1..c52381d13 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -231,6 +231,11 @@ static int usbip_submit_req(struct usbip_cmd_node *const cmd_nd, const uint8_t e
+ 		}
+ 	} while (xfer == NULL && retry--);
+ 
++	if (xfer == NULL) {
++		LOG_ERR("Failed to allocate transfer");
++		return -ENOMEM;
++	}
++
+ 	if (setup != NULL) {
+ 		memcpy(xfer->setup_pkt, setup, sizeof(struct usb_setup_packet));
+ 		LOG_HEXDUMP_DBG(xfer->setup_pkt, 8U, "setup");
+
+From 5193f10114050bed7cf6c3888c272ff2707546b3 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 19 Oct 2026 13:28:25 +0200
+Subject: [PATCH 2/7] usb: usbip: clean up if request submission fails
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+If the request submission fails, the command node remains in the list
+and neither the node nor the buffer is released. Remove the node from
+the list, free the slab and the buffer. buf may be NULL, check it in the
+slab allocation failure path too.
+
+The completion callback removes nodes from the list with interrupts
+locked, append to the list with interrupts locked as well.
+
+Assisted-by: Claude:opus-5.5
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+---
+ subsys/usb/host/usbip.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index c52381d13..af4201c58 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -270,6 +270,7 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
+ 	struct usb_setup_packet setup = {0};
+ 	struct usbip_cmd_node *cmd_nd;
+ 	struct net_buf *buf = NULL;
++	unsigned int key;
+ 	uint8_t ep;
+ 	int ret;
+ 
+@@ -323,18 +324,31 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
+ 
+ 	if (k_mem_slab_alloc(&usbip_slab, (void **)&cmd_nd, K_MSEC(1000)) != 0) {
+ 		LOG_ERR("Failed to allocate slab");
+-		net_buf_unref(buf);
++		if (buf != NULL) {
++			net_buf_unref(buf);
++		}
++
+ 		return -ENOMEM;
+ 	}
+ 
+ 	/* Make a copy of the command and add it to the backlog */
+ 	memcpy(&cmd_nd->cmd, cmd, sizeof(struct usbip_command));
+ 	cmd_nd->ctx = dev_ctx;
++	key = irq_lock();
+ 	sys_dlist_append(&dev_ctx->dlist, &cmd_nd->node);
++	irq_unlock(key);
+ 
+ 	ret = usbip_submit_req(cmd_nd, ep, &setup, buf);
+ 	if (ret != 0) {
+ 		LOG_ERR("Failed to submit request %d", ret);
++		key = irq_lock();
++		sys_dlist_remove(&cmd_nd->node);
++		irq_unlock(key);
++		k_mem_slab_free(&usbip_slab, (void *)cmd_nd);
++		if (buf != NULL) {
++			net_buf_unref(buf);
++		}
++
+ 		return ret;
+ 	}
+ 
+
+From 22f572b7229aaff22329620b5337cc3a36f64888 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 19 Oct 2026 13:28:25 +0200
+Subject: [PATCH 3/7] usb: usbip: dequeue pending transfers when the connection
+ is closed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When the client closes the connection, transfers it submitted may still
+be pending, for example an interrupt IN transfer that the device does
+not answer. Such a transfer remains queued until the device completes
+it, and only then is dropped. Dequeue all pending transfers of the
+device context when the connection is closed.
+
+Assisted-by: Claude:opus-5.5
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+---
+ subsys/usb/host/usbip.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index af4201c58..42d32e1e8 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -424,6 +424,19 @@ static int usbip_handle_cmd(struct usbip_dev_ctx *const dev_ctx)
+ 	return ret;
+ }
+ 
++/* Pending transfers are completed with -ECONNRESET */
++static void usbip_dequeue_all(struct usbip_dev_ctx *const dev_ctx)
++{
++	struct usbip_cmd_node *cmd_nd;
++	unsigned int key;
++
++	key = irq_lock();
++	SYS_DLIST_FOR_EACH_CONTAINER(&dev_ctx->dlist, cmd_nd, node) {
++		(void)usbh_xfer_dequeue(dev_ctx->udev, cmd_nd->xfer);
++	}
++	irq_unlock(key);
++}
++
+ static void usbip_thread_cmd(void *const a, void *const b, void *const c)
+ {
+ 	struct usbip_dev_ctx *dev_ctx = a;
+@@ -436,6 +449,7 @@ static void usbip_thread_cmd(void *const a, void *const b, void *const c)
+ 		ret = usbip_handle_cmd(dev_ctx);
+ 
+ 		if (ret) {
++			usbip_dequeue_all(dev_ctx);
+ 			zsock_close(dev_ctx->connfd);
+ 			LOG_INF("CMD connection closed, errno %d", ret);
+ 			k_event_set_masked(&dev_ctx->event, 0, USBIP_EXPORTED);
+
+From 7cf5720f469fccafc9b7db8800cdd2a478b19114 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 19 Oct 2026 13:28:26 +0200
+Subject: [PATCH 4/7] usb: usbip: drop completions of a previous connection
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A transfer may complete after its connection has been closed and the
+device has been imported again. The completion callback only checks
+whether the device is exported, and would send USBIP_RET_SUBMIT to the
+new client. Count the imports and drop completions that belong to an
+earlier one.
+
+Assisted-by: Claude:opus-5.5
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+---
+ subsys/usb/host/usbip.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index 42d32e1e8..a2988b4dc 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -47,6 +47,8 @@ struct usbip_dev_ctx {
+ 	sys_dlist_t dlist;
+ 	int connfd;
+ 	uint32_t devid;
++	/* Incremented on each import, to drop completions of an earlier one */
++	uint32_t session;
+ };
+ 
+ /* Context of the exported bus (not really used yet) */
+@@ -64,6 +66,7 @@ struct usbip_cmd_node {
+ 	struct usbip_command cmd;
+ 	struct usbip_dev_ctx *ctx;
+ 	struct uhc_transfer *xfer;
++	uint32_t session;
+ };
+ 
+ K_MEM_SLAB_DEFINE_TYPE(usbip_slab, struct usbip_cmd_node,
+@@ -154,7 +157,8 @@ static int usbip_req_cb(struct usb_device *const udev, struct uhc_transfer *cons
+ 		goto usbip_req_cb_error;
+ 	}
+ 
+-	if (!k_event_wait(&dev_ctx->event, USBIP_EXPORTED, false, K_NO_WAIT)) {
++	if (!k_event_wait(&dev_ctx->event, USBIP_EXPORTED, false, K_NO_WAIT) ||
++	    cmd_nd->session != dev_ctx->session) {
+ 		LOG_WRN("Connection closed, drop completed seqnum %u", cmd->hdr.seqnum);
+ 		goto usbip_req_cb_error;
+ 	}
+@@ -334,6 +338,7 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
+ 	/* Make a copy of the command and add it to the backlog */
+ 	memcpy(&cmd_nd->cmd, cmd, sizeof(struct usbip_command));
+ 	cmd_nd->ctx = dev_ctx;
++	cmd_nd->session = dev_ctx->session;
+ 	key = irq_lock();
+ 	sys_dlist_append(&dev_ctx->dlist, &cmd_nd->node);
+ 	irq_unlock(key);
+@@ -643,6 +648,7 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
+ 	}
+ 
+ 	dev_ctx->connfd = connfd;
++	dev_ctx->session++;
+ 	k_event_post(&dev_ctx->event, USBIP_EXPORTED);
+ 	LOG_INF("USB device %s exported", busid);
+ 
+
+From 7f47cee31f2f000c8066948731d2859decbdbdc2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 19 Oct 2026 13:28:27 +0200
+Subject: [PATCH 5/7] usb: usbip: bind exported devices as host class instances
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The USB/IP server looks up a device in the host support's device list
+when a client imports it, and is not notified when the device is
+disconnected. The device list also offers hubs, and a device that is
+already exported can be imported again.
+
+Make each device context a host class instance. The host support binds
+it to a device when the device is configured, and calls its removal
+handler when the device is disconnected, which clears the device pointer
+with the context lock held. The submit path holds the lock until the
+transfer is queued, and transfers are dequeued through the controller,
+as the device may be gone. Only devices bound to a context are listed
+and can be imported, hubs are left to the hub class, and an exported
+device cannot be imported again.
+
+The device list entry is filled with the lock held and sent without it,
+so that a client that does not read cannot block the removal of a
+device.
+
+Assisted-by: Claude:opus-5.5
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+---
+ subsys/usb/host/usbip.c | 329 ++++++++++++++++++++++++++--------------
+ 1 file changed, 212 insertions(+), 117 deletions(-)
+
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index a2988b4dc..9a6bdcd48 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -10,9 +10,11 @@
@@ -53,59 +271,38 @@ index 4fe6f2ab1..2e337750a 100644
  #include <usbh_device.h>
  #include <usbh_ch9.h>
  #include <usbip.h>
-@@ -35,18 +37,35 @@ K_THREAD_STACK_ARRAY_DEFINE(dev_thread_stacks, CONFIG_USBIP_DEVICES_COUNT,
+@@ -35,13 +37,19 @@ K_THREAD_STACK_ARRAY_DEFINE(dev_thread_stacks, CONFIG_USBIP_DEVICES_COUNT,
  
  static struct k_thread usbip_thread;
  
 -#define USBIP_DEFAULT_PATH	"/sys/bus/usb/devices/usb1/1-"
 +#define USBIP_DEFAULT_PATH	"/sys/bus/usb/devices/usb1/"
-+
-+/* Hubs between the root port and a device, at most (USB 2.0, 4.1.1) */
-+#define USBIP_HUB_TIERS_MAX	5
  
  #define USBIP_EXPORTED		BIT(0)
-+/* The exported device was removed, the session is over */
-+#define USBIP_REMOVED		BIT(1)
-+
-+/* How often a session waiting for a command checks that its device is there */
-+#define USBIP_IDLE_CHECK_MS	250
  
 -/* Context of the exported device */
 +/*
-+ * Context of a device that can be exported. Each one is a host class
-+ * instance: the stack binds it to a device when the device is configured and
-+ * tells it when the device is removed.
++ * Context of the exported device. It is a host class instance, the host
++ * support binds it to a device when the device is configured.
 + */
  struct usbip_dev_ctx {
-+	/* The device bound to this context, or NULL */
++	/* Device bound to this context, NULL if there is none */
  	struct usb_device *udev;
 +	/* Protects udev against the removal of the device */
 +	struct k_mutex lock;
  	struct k_thread thread;
  	struct k_event event;
  	sys_dlist_t dlist;
- 	int connfd;
- 	uint32_t devid;
-+	/* Counts the imports, to tell the completions of an earlier session */
-+	uint32_t session;
- };
- 
- /* Context of the exported bus (not really used yet) */
-@@ -64,11 +83,47 @@ struct usbip_cmd_node {
- 	struct usbip_command cmd;
- 	struct usbip_dev_ctx *ctx;
- 	struct uhc_transfer *xfer;
-+	uint32_t session;
- };
- 
+@@ -72,6 +80,23 @@ struct usbip_cmd_node {
  K_MEM_SLAB_DEFINE_TYPE(usbip_slab, struct usbip_cmd_node,
  		       CONFIG_USBIP_SUBMIT_BACKLOG_COUNT);
  
 +static int usbip_class_init(struct usbh_class_data *const c_data);
-+static int usbip_class_probe(struct usbh_class_data *const c_data,
-+			     struct usb_device *const udev, const uint8_t iface);
++static int usbip_class_probe(struct usbh_class_data *const c_data, struct usb_device *const udev,
++			     const uint8_t iface);
 +static int usbip_class_removed(struct usbh_class_data *const c_data);
 +
++/* The host support leaves a class without the init handler in error state */
 +static struct usbh_class_api usbip_class_api = {
 +	.init = usbip_class_init,
 +	.probe = usbip_class_probe,
@@ -117,40 +314,10 @@ index 4fe6f2ab1..2e337750a 100644
 +
 +LISTIFY(CONFIG_USBIP_DEVICES_COUNT, USBIP_CLASS_DEFINE, ())
 +
-+/* The controller, for the transfers of a device that may be gone */
-+static const struct device *usbip_uhc(void)
-+{
-+	return usbip_uhs_ctx.dev;
-+}
-+
-+/* Cancel the transfers a session has in flight: they complete with -ECONNRESET */
-+static void usbip_dequeue_all(struct usbip_dev_ctx *const dev_ctx)
-+{
-+	struct usbip_cmd_node *cmd_nd;
-+	unsigned int key;
-+
-+	key = irq_lock();
-+	SYS_DLIST_FOR_EACH_CONTAINER(&dev_ctx->dlist, cmd_nd, node) {
-+		(void)uhc_ep_dequeue(usbip_uhc(), cmd_nd->xfer);
-+	}
-+	irq_unlock(key);
-+}
-+
  static ALWAYS_INLINE int usbip_send(int sock, const void *const buf, const size_t len)
  {
  	return zsock_send_all(sock, buf, len, 0, K_FOREVER, NULL);
-@@ -154,7 +209,9 @@ static int usbip_req_cb(struct usb_device *const udev, struct uhc_transfer *cons
- 		goto usbip_req_cb_error;
- 	}
- 
--	if (!k_event_wait(&dev_ctx->event, USBIP_EXPORTED, false, K_NO_WAIT)) {
-+	/* The session is over, or another one has started, or the device is gone */
-+	if (k_event_test(&dev_ctx->event, USBIP_EXPORTED | USBIP_REMOVED) != USBIP_EXPORTED ||
-+	    cmd_nd->session != dev_ctx->session) {
- 		LOG_WRN("Connection closed, drop completed seqnum %u", cmd->hdr.seqnum);
- 		goto usbip_req_cb_error;
- 	}
-@@ -173,7 +230,7 @@ static int usbip_req_cb(struct usb_device *const udev, struct uhc_transfer *cons
+@@ -177,7 +202,7 @@ static int usbip_req_cb(struct usb_device *const udev, struct uhc_transfer *cons
  
  
  	if (USB_EP_GET_IDX(xfer->ep) == 0U) {
@@ -159,50 +326,36 @@ index 4fe6f2ab1..2e337750a 100644
  	}
  
  	err = usbip_send(dev_ctx->connfd, &ret, sizeof(ret));
-@@ -231,6 +288,10 @@ static int usbip_submit_req(struct usbip_cmd_node *const cmd_nd, const uint8_t e
- 		}
- 	} while (xfer == NULL && retry--);
- 
-+	if (xfer == NULL) {
-+		return -ENOMEM;
-+	}
-+
- 	if (setup != NULL) {
- 		memcpy(xfer->setup_pkt, setup, sizeof(struct usb_setup_packet));
- 		LOG_HEXDUMP_DBG(xfer->setup_pkt, 8U, "setup");
-@@ -265,6 +326,7 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
- 	struct usb_setup_packet setup = {0};
- 	struct usbip_cmd_node *cmd_nd;
- 	struct net_buf *buf = NULL;
-+	unsigned int key;
- 	uint8_t ep;
- 	int ret;
- 
-@@ -278,7 +340,7 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
+@@ -288,7 +313,7 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
  	ep = cmd->hdr.ep;
  	if (cmd->submit.length != 0) {
  		if (USB_EP_GET_IDX(ep) == 0U) {
 -			buf = usbh_xfer_buf_alloc(dev_ctx->udev, cmd->submit.length);
-+			buf = uhc_xfer_buf_alloc(usbip_uhc(), cmd->submit.length);
++			buf = uhc_xfer_buf_alloc(usbip_uhs_ctx.dev, cmd->submit.length);
  		} else {
  			buf = net_buf_alloc_len(&usbip_pool, cmd->submit.length, K_NO_WAIT);
  		}
-@@ -325,11 +387,35 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
- 	/* Make a copy of the command and add it to the backlog */
+@@ -339,16 +364,29 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
  	memcpy(&cmd_nd->cmd, cmd, sizeof(struct usbip_command));
  	cmd_nd->ctx = dev_ctx;
+ 	cmd_nd->session = dev_ctx->session;
+-	key = irq_lock();
 -	sys_dlist_append(&dev_ctx->dlist, &cmd_nd->node);
-+	cmd_nd->session = dev_ctx->session;
-+
-+	/* The device stays until the transfer is queued: its removal cancels it then */
+-	irq_unlock(key);
+ 
+-	ret = usbip_submit_req(cmd_nd, ep, &setup, buf);
+-	if (ret != 0) {
+-		LOG_ERR("Failed to submit request %d", ret);
++	/* The device cannot be removed until the transfer is queued */
 +	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
 +
-+	if (dev_ctx->udev == NULL || k_event_test(&dev_ctx->event, USBIP_REMOVED)) {
++	if (dev_ctx->udev == NULL) {
 +		ret = -ENODEV;
 +	} else {
-+		key = irq_lock();
+ 		key = irq_lock();
+-		sys_dlist_remove(&cmd_nd->node);
 +		sys_dlist_append(&dev_ctx->dlist, &cmd_nd->node);
-+		irq_unlock(key);
+ 		irq_unlock(key);
 +
 +		ret = usbip_submit_req(cmd_nd, ep, &setup, buf);
 +		if (ret != 0) {
@@ -213,106 +366,101 @@ index 4fe6f2ab1..2e337750a 100644
 +	}
 +
 +	k_mutex_unlock(&dev_ctx->lock);
- 
--	ret = usbip_submit_req(cmd_nd, ep, &setup, buf);
- 	if (ret != 0) {
- 		LOG_ERR("Failed to submit request %d", ret);
-+		k_mem_slab_free(&usbip_slab, (void *)cmd_nd);
-+		if (buf != NULL) {
-+			net_buf_unref(buf);
-+		}
 +
- 		return ret;
- 	}
- 
-@@ -369,7 +455,7 @@ static int usbip_handle_unlink(struct usbip_dev_ctx *const dev_ctx,
++	if (ret != 0) {
++		LOG_ERR("Failed to submit request %d", ret);
+ 		k_mem_slab_free(&usbip_slab, (void *)cmd_nd);
+ 		if (buf != NULL) {
+ 			net_buf_unref(buf);
+@@ -393,7 +431,7 @@ static int usbip_handle_unlink(struct usbip_dev_ctx *const dev_ctx,
  	SYS_DLIST_FOR_EACH_CONTAINER(&dev_ctx->dlist, cmd_nd, node) {
  		if (cmd_nd->cmd.hdr.seqnum == cmd->unlink.seqnum) {
  			rsp.unlink.status = net_htonl(-ECONNRESET);
 -			usbh_xfer_dequeue(dev_ctx->udev, cmd_nd->xfer);
-+			(void)uhc_ep_dequeue(usbip_uhc(), cmd_nd->xfer);
++			(void)uhc_ep_dequeue(usbip_uhs_ctx.dev, cmd_nd->xfer);
  			break;
  		}
  	}
-@@ -380,9 +466,30 @@ static int usbip_handle_unlink(struct usbip_dev_ctx *const dev_ctx,
+@@ -437,7 +475,7 @@ static void usbip_dequeue_all(struct usbip_dev_ctx *const dev_ctx)
  
- static int usbip_handle_cmd(struct usbip_dev_ctx *const dev_ctx)
- {
-+	struct zsock_pollfd pfd = {
-+		.fd = dev_ctx->connfd,
-+		.events = ZSOCK_POLLIN,
-+	};
- 	struct usbip_command cmd;
- 	int ret;
- 
-+	/*
-+	 * Wait for the next command, and end the session once its device is
-+	 * gone: the removal shuts the socket down for reading, which wakes
-+	 * this up, and where the socket does not support that, the next
-+	 * check does.
-+	 */
-+	do {
-+		if (k_event_test(&dev_ctx->event, USBIP_REMOVED)) {
-+			return -ENODEV;
-+		}
-+
-+		ret = zsock_poll(&pfd, 1, USBIP_IDLE_CHECK_MS);
-+		if (ret < 0) {
-+			return -errno;
-+		}
-+	} while (ret == 0);
-+
- 	ret = zsock_recv(dev_ctx->connfd, &cmd.hdr, sizeof(cmd.hdr), ZSOCK_MSG_WAITALL);
- 	if (ret <= 0) {
- 		return ret == 0 ? -ENOTCONN : -errno;
-@@ -405,6 +512,21 @@ static int usbip_handle_cmd(struct usbip_dev_ctx *const dev_ctx)
- 	return ret;
+ 	key = irq_lock();
+ 	SYS_DLIST_FOR_EACH_CONTAINER(&dev_ctx->dlist, cmd_nd, node) {
+-		(void)usbh_xfer_dequeue(dev_ctx->udev, cmd_nd->xfer);
++		(void)uhc_ep_dequeue(usbip_uhs_ctx.dev, cmd_nd->xfer);
+ 	}
+ 	irq_unlock(key);
  }
- 
-+static void usbip_session_end(struct usbip_dev_ctx *const dev_ctx)
-+{
-+	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
-+
-+	/* What the client left in flight; if the device is gone, that is done */
-+	if (!k_event_test(&dev_ctx->event, USBIP_REMOVED)) {
-+		usbip_dequeue_all(dev_ctx);
-+	}
-+
-+	zsock_close(dev_ctx->connfd);
-+	k_event_clear(&dev_ctx->event, USBIP_EXPORTED);
-+
-+	k_mutex_unlock(&dev_ctx->lock);
-+}
-+
- static void usbip_thread_cmd(void *const a, void *const b, void *const c)
- {
- 	struct usbip_dev_ctx *dev_ctx = a;
-@@ -417,152 +539,213 @@ static void usbip_thread_cmd(void *const a, void *const b, void *const c)
- 		ret = usbip_handle_cmd(dev_ctx);
- 
- 		if (ret) {
--			zsock_close(dev_ctx->connfd);
-+			usbip_session_end(dev_ctx);
- 			LOG_INF("CMD connection closed, errno %d", ret);
--			k_event_set_masked(&dev_ctx->event, 0, USBIP_EXPORTED);
- 		}
+@@ -462,31 +500,82 @@ static void usbip_thread_cmd(void *const a, void *const b, void *const c)
  	}
  }
  
 -static int handle_devlist_device(struct usb_device *const udev,
 -				 const uint32_t busnum, int connfd)
-+/* A class without an init handler is left in error: usbip_init() did the work */
 +static int usbip_class_init(struct usbh_class_data *const c_data)
- {
--	struct usb_device_descriptor *d_desc = &udev->dev_desc;
--	struct usb_cfg_descriptor *c_desc = udev->cfg_desc;
--	static struct usbip_devlist_data devlist;
--	const uint32_t devnum = udev->addr;
++{
 +	ARG_UNUSED(c_data);
++
++	return 0;
++}
++
++static int usbip_class_probe(struct usbh_class_data *const c_data, struct usb_device *const udev,
++			     const uint8_t iface)
+ {
++	struct usbip_dev_ctx *const dev_ctx = c_data->priv;
++
++	/* Only whole devices, hubs are left to the hub class */
++	if (iface != USBH_CLASS_IFNUM_DEVICE || udev->dev_desc.bDeviceClass == USB_HUB_CLASS_CODE) {
++		return -ENOTSUP;
++	}
++
++	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
++	dev_ctx->udev = udev;
++	k_mutex_unlock(&dev_ctx->lock);
++
++	LOG_INF("USB device %u can be exported", udev->addr);
++
++	return 0;
++}
++
++static int usbip_class_removed(struct usbh_class_data *const c_data)
++{
++	struct usbip_dev_ctx *const dev_ctx = c_data->priv;
++
++	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
++	dev_ctx->udev = NULL;
++	k_mutex_unlock(&dev_ctx->lock);
++
++	LOG_INF("USB device %u removed", c_data->udev->addr);
++
++	return 0;
++}
++
++static void usbip_busid(const struct usb_device *const udev, const uint32_t busnum,
++			char *const busid, const size_t len)
++{
++	snprintf(busid, len, "%u-%u", busnum, udev->addr);
++}
++
++/* Device list entry, filled with the context lock held and sent without it */
++static struct {
++	struct usbip_devlist_data dev;
++	struct usbip_devlist_iface_data ifaces[UHC_INTERFACES_MAX];
++	uint8_t num_ifaces;
++} usbip_entry;
++
++static void usbip_fill_entry(struct usb_device *const udev, const uint32_t busnum)
++{
++	struct usbip_devlist_data *const devlist = &usbip_entry.dev;
+ 	struct usb_device_descriptor *d_desc = &udev->dev_desc;
+ 	struct usb_cfg_descriptor *c_desc = udev->cfg_desc;
+-	static struct usbip_devlist_data devlist;
+ 	const uint32_t devnum = udev->addr;
  
 -	devlist.busnum = net_htonl(busnum);
 -	devlist.devnum = net_htonl(devnum);
--
++	devlist->busnum = net_htonl(busnum);
++	devlist->devnum = net_htonl(devnum);
+ 
 -	devlist.speed = net_htonl(udev->speed);
 -	devlist.idVendor = net_htons(d_desc->idVendor);
 -	devlist.idProduct = net_htons(d_desc->idProduct);
@@ -320,154 +468,6 @@ index 4fe6f2ab1..2e337750a 100644
 -	devlist.bDeviceClass = d_desc->bDeviceClass;
 -	devlist.bDeviceSubClass = d_desc->bDeviceSubClass;
 -	devlist.bDeviceProtocol = d_desc->bDeviceProtocol;
--
--	devlist.bConfigurationValue = c_desc->bConfigurationValue;
--	devlist.bNumConfigurations = d_desc->bNumConfigurations;
--	devlist.bNumInterfaces = c_desc->bNumInterfaces;
--
--	snprintf(devlist.path, sizeof(devlist.path), USBIP_DEFAULT_PATH "%d", devnum);
--	snprintf(devlist.busid, sizeof(devlist.busid), "1-%d", devnum);
--
--	LOG_INF("bLength\t\t\t%u", c_desc->bLength);
--	LOG_INF("bDescriptorType\t\t%u", c_desc->bDescriptorType);
--	LOG_INF("wTotalLength\t\t%u", c_desc->wTotalLength);
--	LOG_INF("bNumInterfaces\t\t%u", c_desc->bNumInterfaces);
--	LOG_INF("bConfigurationValue\t%u", c_desc->bConfigurationValue);
--	LOG_INF("iConfiguration\t\t%u", c_desc->iConfiguration);
--	LOG_INF("bmAttributes\t\t%02x", c_desc->bmAttributes);
--	LOG_INF("bMaxPower\t\t%u mA", c_desc->bMaxPower * 2);
--
--	return usbip_send(connfd, &devlist, sizeof(devlist));
-+	return 0;
- }
- 
--static int handle_devlist_device_iface(struct usb_device *const udev, int connfd)
-+static int usbip_class_probe(struct usbh_class_data *const c_data,
-+			     struct usb_device *const udev, const uint8_t iface)
- {
--	struct usb_cfg_descriptor *c_desc = udev->cfg_desc;
--	static struct usbip_devlist_iface_data iface;
--	int err;
-+	struct usbip_dev_ctx *const dev_ctx = c_data->priv;
- 
--	LOG_INF("Handle OP_REQ_DEVLIST, bNumInterfaces %u wTotalLength %u",
--		c_desc->bNumInterfaces, c_desc->wTotalLength);
-+	/* Whole devices only, and no hubs: the hub class takes those */
-+	if (iface != USBH_CLASS_IFNUM_DEVICE ||
-+	    udev->dev_desc.bDeviceClass == USB_HUB_CLASS_CODE) {
-+		return -ENOTSUP;
-+	}
- 
--	for (unsigned int i = 0; i < c_desc->bNumInterfaces; i++) {
--		struct usb_if_descriptor *if_d = (void *)udev->ifaces[i].dhp;
-+	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
-+	dev_ctx->udev = udev;
-+	k_mutex_unlock(&dev_ctx->lock);
- 
--		LOG_DBG("bInterfaceNumber %u", if_d->bInterfaceNumber);
-+	LOG_INF("USB device %u can be exported", udev->addr);
- 
--		iface.bInterfaceClass = if_d->bInterfaceClass;
--		iface.bInterfaceSubClass = if_d->bInterfaceSubClass;
--		iface.bInterfaceProtocol = if_d->bInterfaceProtocol;
--		iface.padding = 0U;
-+	return 0;
-+}
- 
--		err = usbip_send(connfd, &iface, sizeof(iface));
--		if (err != 0) {
--			LOG_ERR("Failed to send interface info %d", err);
--			return err;
--		}
-+static int usbip_class_removed(struct usbh_class_data *const c_data)
-+{
-+	struct usbip_dev_ctx *const dev_ctx = c_data->priv;
-+
-+	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
-+
-+	if (k_event_test(&dev_ctx->event, USBIP_EXPORTED)) {
-+		/* The session ends: reading wakes its thread up with an end of file */
-+		usbip_dequeue_all(dev_ctx);
-+		k_event_post(&dev_ctx->event, USBIP_REMOVED);
-+		(void)zsock_shutdown(dev_ctx->connfd, ZSOCK_SHUT_RD);
- 	}
- 
-+	LOG_INF("USB device %u removed", c_data->udev->addr);
-+	dev_ctx->udev = NULL;
-+
-+	k_mutex_unlock(&dev_ctx->lock);
-+
- 	return 0;
- }
- 
--static int usbip_handle_devlist(struct usbip_bus_ctx *const bus_ctx, int connfd)
-+/*
-+ * The device's place on the bus names it, as on Linux: "1-1" on the root
-+ * port, "1-1.3" on port 3 of a hub there, "1-1.3.2" one hub further. Unlike
-+ * its address, it stays the same when the device enumerates again.
-+ */
-+static void usbip_busid(const struct usb_device *udev, const uint32_t busnum,
-+			char *const busid, const size_t len)
- {
--	struct usbip_devlist_header rep_hdr = {
--		.version = net_htons(USBIP_VERSION),
--		.code = net_htons(USBIP_OP_REP_DEVLIST),
--		.status = 0,
--		.ndev = net_htonl(1),
--	};
--	struct usb_device *udev;
--	uint32_t ndev = 0;
--	int err;
-+	uint8_t ports[USBIP_HUB_TIERS_MAX];
-+	size_t n = 0;
-+	int pos;
- 
--	SYS_DLIST_FOR_EACH_CONTAINER(&bus_ctx->uhs_ctx->udevs, udev, node) {
--		ndev++;
-+	for (; udev->hub != NULL && n < ARRAY_SIZE(ports); udev = udev->hub) {
-+		ports[n++] = udev->hub_port;
- 	}
- 
--	rep_hdr.ndev = net_htonl(ndev);
--	/* Send reply header with the number of USB devices  */
--	err = usbip_send(connfd, &rep_hdr, sizeof(rep_hdr));
--	if (err != 0) {
--		return err;
-+	pos = snprintf(busid, len, "%u-1", busnum);
-+	while (n > 0 && pos > 0 && (size_t)pos < len) {
-+		pos += snprintf(busid + pos, len - pos, ".%u", ports[--n]);
- 	}
-+}
- 
--	/* Send device info for each USB devices */
--	SYS_DLIST_FOR_EACH_CONTAINER(&bus_ctx->uhs_ctx->udevs, udev, node) {
--		err = handle_devlist_device(udev, bus_ctx->busnum, connfd);
--		if (err) {
--			return err;
--		}
-+/* A device list entry: taken under the context lock, sent after */
-+static struct {
-+	struct usbip_devlist_data dev;
-+	struct usbip_devlist_iface_data ifaces[UHC_INTERFACES_MAX];
-+	uint8_t num_ifaces;
-+} usbip_entry;
- 
--		err = handle_devlist_device_iface(udev, connfd);
--		if (err) {
--			return err;
--		}
--	}
-+static void usbip_fill_entry(struct usb_device *const udev, const uint32_t busnum)
-+{
-+	struct usbip_devlist_data *const devlist = &usbip_entry.dev;
-+	struct usb_device_descriptor *d_desc = &udev->dev_desc;
-+	struct usb_cfg_descriptor *c_desc = udev->cfg_desc;
-+	const uint32_t devnum = udev->addr;
- 
--	return 0;
-+	devlist->busnum = net_htonl(busnum);
-+	devlist->devnum = net_htonl(devnum);
-+
 +	devlist->speed = net_htonl(udev->speed);
 +	devlist->idVendor = net_htons(d_desc->idVendor);
 +	devlist->idProduct = net_htons(d_desc->idProduct);
@@ -475,18 +475,32 @@ index 4fe6f2ab1..2e337750a 100644
 +	devlist->bDeviceClass = d_desc->bDeviceClass;
 +	devlist->bDeviceSubClass = d_desc->bDeviceSubClass;
 +	devlist->bDeviceProtocol = d_desc->bDeviceProtocol;
-+
+ 
+-	devlist.bConfigurationValue = c_desc->bConfigurationValue;
+-	devlist.bNumConfigurations = d_desc->bNumConfigurations;
+-	devlist.bNumInterfaces = c_desc->bNumInterfaces;
 +	devlist->bConfigurationValue = c_desc->bConfigurationValue;
 +	devlist->bNumConfigurations = d_desc->bNumConfigurations;
 +	devlist->bNumInterfaces = c_desc->bNumInterfaces;
-+
+ 
+-	snprintf(devlist.path, sizeof(devlist.path), USBIP_DEFAULT_PATH "%d", devnum);
+-	snprintf(devlist.busid, sizeof(devlist.busid), "1-%d", devnum);
 +	usbip_busid(udev, busnum, devlist->busid, sizeof(devlist->busid));
 +	snprintf(devlist->path, sizeof(devlist->path), USBIP_DEFAULT_PATH "%s", devlist->busid);
-+
+ 
+ 	LOG_INF("bLength\t\t\t%u", c_desc->bLength);
+ 	LOG_INF("bDescriptorType\t\t%u", c_desc->bDescriptorType);
+@@ -497,36 +586,61 @@ static int handle_devlist_device(struct usb_device *const udev,
+ 	LOG_INF("bmAttributes\t\t%02x", c_desc->bmAttributes);
+ 	LOG_INF("bMaxPower\t\t%u mA", c_desc->bMaxPower * 2);
+ 
+-	return usbip_send(connfd, &devlist, sizeof(devlist));
 +	usbip_entry.num_ifaces = MIN(c_desc->bNumInterfaces, UHC_INTERFACES_MAX);
 +	for (unsigned int i = 0; i < usbip_entry.num_ifaces; i++) {
 +		struct usb_if_descriptor *if_d = (void *)udev->ifaces[i].dhp;
 +		struct usbip_devlist_iface_data *const iface = &usbip_entry.ifaces[i];
++
++		LOG_DBG("bInterfaceNumber %u", if_d->bInterfaceNumber);
 +
 +		iface->bInterfaceClass = if_d->bInterfaceClass;
 +		iface->bInterfaceSubClass = if_d->bInterfaceSubClass;
@@ -495,102 +509,148 @@ index 4fe6f2ab1..2e337750a 100644
 +	}
  }
  
--static struct usb_device *get_device_by_busid(struct usbip_bus_ctx *const bus_ctx,
--					      const char busid[static 32])
+-static int handle_devlist_device_iface(struct usb_device *const udev, int connfd)
 +/*
-+ * Take the entry of the device bound to a context. Unless busid is NULL, only
-+ * if the device has that bus ID and is not exported.
++ * Fill the entry of the device bound to the context, if there is one. If busid
++ * is not NULL, only if the device has this bus ID and is not exported.
 + */
 +static bool usbip_take_entry(struct usbip_dev_ctx *const dev_ctx, const uint32_t busnum,
 +			     const char *const busid)
  {
--	struct usb_device *udev;
+-	struct usb_cfg_descriptor *c_desc = udev->cfg_desc;
+-	static struct usbip_devlist_iface_data iface;
+-	int err;
 +	bool found = false;
- 	char my_busid[32];
++	char my_busid[32];
  
--	LOG_HEXDUMP_DBG(busid, sizeof(my_busid), "import busid");
--
--	SYS_DLIST_FOR_EACH_CONTAINER(&bus_ctx->uhs_ctx->udevs, udev, node) {
--		snprintf(my_busid, sizeof(my_busid), "1-%d", udev->addr);
+-	LOG_INF("Handle OP_REQ_DEVLIST, bNumInterfaces %u wTotalLength %u",
+-		c_desc->bNumInterfaces, c_desc->wTotalLength);
 +	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
  
--		LOG_HEXDUMP_DBG(my_busid, sizeof(my_busid), "my busid");
--		if (!strncmp(busid, my_busid, sizeof(my_busid))) {
--			return udev;
+-	for (unsigned int i = 0; i < c_desc->bNumInterfaces; i++) {
+-		struct usb_if_descriptor *if_d = (void *)udev->ifaces[i].dhp;
 +	if (dev_ctx->udev != NULL) {
 +		if (busid == NULL) {
 +			found = true;
 +		} else if (!k_event_test(&dev_ctx->event, USBIP_EXPORTED)) {
 +			usbip_busid(dev_ctx->udev, busnum, my_busid, sizeof(my_busid));
 +			found = strncmp(busid, my_busid, sizeof(my_busid)) == 0;
- 		}
- 	}
++		}
++	}
  
--	return NULL;
+-		LOG_DBG("bInterfaceNumber %u", if_d->bInterfaceNumber);
 +	if (found) {
 +		usbip_fill_entry(dev_ctx->udev, busnum);
 +	}
-+
-+	k_mutex_unlock(&dev_ctx->lock);
-+
-+	return found;
- }
  
--static struct usbip_dev_ctx *get_free_dev_ctx(struct usbip_bus_ctx *const bus_ctx)
+-		iface.bInterfaceClass = if_d->bInterfaceClass;
+-		iface.bInterfaceSubClass = if_d->bInterfaceSubClass;
+-		iface.bInterfaceProtocol = if_d->bInterfaceProtocol;
+-		iface.padding = 0U;
++	k_mutex_unlock(&dev_ctx->lock);
+ 
+-		err = usbip_send(connfd, &iface, sizeof(iface));
+-		if (err != 0) {
+-			LOG_ERR("Failed to send interface info %d", err);
+-			return err;
+-		}
++	return found;
++}
++
 +static int usbip_send_entry(int connfd, const bool ifaces)
- {
++{
 +	int err;
 +
 +	err = usbip_send(connfd, &usbip_entry.dev, sizeof(usbip_entry.dev));
 +	if (err != 0 || !ifaces) {
 +		return err;
-+	}
-+
+ 	}
+ 
+-	return 0;
 +	return usbip_send(connfd, usbip_entry.ifaces,
 +			  usbip_entry.num_ifaces * sizeof(usbip_entry.ifaces[0]));
-+}
-+
-+static int usbip_handle_devlist(struct usbip_bus_ctx *const bus_ctx, int connfd)
-+{
-+	struct usbip_devlist_header rep_hdr = {
-+		.version = net_htons(USBIP_VERSION),
-+		.code = net_htons(USBIP_OP_REP_DEVLIST),
-+		.status = 0,
-+	};
-+	uint32_t ndev = 0;
-+	int err;
-+
-+	/* The devices bound to a context: no hubs, nothing a context could not take */
- 	for (unsigned int i = 0; i < CONFIG_USBIP_DEVICES_COUNT; i++) {
- 		struct usbip_dev_ctx *const dev_ctx = &bus_ctx->devs[i];
+ }
  
--		if (k_event_wait(&dev_ctx->event, USBIP_EXPORTED, false, K_NO_WAIT)) {
+ static int usbip_handle_devlist(struct usbip_bus_ctx *const bus_ctx, int connfd)
+@@ -535,14 +649,18 @@ static int usbip_handle_devlist(struct usbip_bus_ctx *const bus_ctx, int connfd)
+ 		.version = net_htons(USBIP_VERSION),
+ 		.code = net_htons(USBIP_OP_REP_DEVLIST),
+ 		.status = 0,
+-		.ndev = net_htonl(1),
+ 	};
+-	struct usb_device *udev;
+ 	uint32_t ndev = 0;
+ 	int err;
+ 
+-	SYS_DLIST_FOR_EACH_CONTAINER(&bus_ctx->uhs_ctx->udevs, udev, node) {
+-		ndev++;
++	for (unsigned int i = 0; i < CONFIG_USBIP_DEVICES_COUNT; i++) {
++		struct usbip_dev_ctx *const dev_ctx = &bus_ctx->devs[i];
++
 +		k_mutex_lock(&dev_ctx->lock, K_FOREVER);
 +		if (dev_ctx->udev != NULL) {
 +			ndev++;
 +		}
 +		k_mutex_unlock(&dev_ctx->lock);
-+	}
-+
-+	rep_hdr.ndev = net_htonl(ndev);
-+	/* Send reply header with the number of USB devices  */
-+	err = usbip_send(connfd, &rep_hdr, sizeof(rep_hdr));
-+	if (err != 0) {
-+		return err;
-+	}
-+
-+	/* A device removed meanwhile leaves the list short, the client reports an error */
+ 	}
+ 
+ 	rep_hdr.ndev = net_htonl(ndev);
+@@ -552,55 +670,21 @@ static int usbip_handle_devlist(struct usbip_bus_ctx *const bus_ctx, int connfd)
+ 		return err;
+ 	}
+ 
+-	/* Send device info for each USB devices */
+-	SYS_DLIST_FOR_EACH_CONTAINER(&bus_ctx->uhs_ctx->udevs, udev, node) {
+-		err = handle_devlist_device(udev, bus_ctx->busnum, connfd);
+-		if (err) {
+-			return err;
++	/* A device removed in the meantime leaves the list short */
 +	for (unsigned int i = 0; i < CONFIG_USBIP_DEVICES_COUNT && ndev > 0; i++) {
 +		if (!usbip_take_entry(&bus_ctx->devs[i], bus_ctx->busnum, NULL)) {
- 			continue;
++			continue;
  		}
  
--		return &bus_ctx->devs[i];
+-		err = handle_devlist_device_iface(udev, connfd);
+-		if (err) {
 +		err = usbip_send_entry(connfd, true);
 +		if (err != 0) {
-+			return err;
-+		}
-+
+ 			return err;
+ 		}
+-	}
+-
+-	return 0;
+-}
+-
+-static struct usb_device *get_device_by_busid(struct usbip_bus_ctx *const bus_ctx,
+-					      const char busid[static 32])
+-{
+-	struct usb_device *udev;
+-	char my_busid[32];
+-
+-	LOG_HEXDUMP_DBG(busid, sizeof(my_busid), "import busid");
+-
+-	SYS_DLIST_FOR_EACH_CONTAINER(&bus_ctx->uhs_ctx->udevs, udev, node) {
+-		snprintf(my_busid, sizeof(my_busid), "1-%d", udev->addr);
+-
+-		LOG_HEXDUMP_DBG(my_busid, sizeof(my_busid), "my busid");
+-		if (!strncmp(busid, my_busid, sizeof(my_busid))) {
+-			return udev;
+-		}
+-	}
+-
+-	return NULL;
+-}
+-
+-static struct usbip_dev_ctx *get_free_dev_ctx(struct usbip_bus_ctx *const bus_ctx)
+-{
+-	for (unsigned int i = 0; i < CONFIG_USBIP_DEVICES_COUNT; i++) {
+-		struct usbip_dev_ctx *const dev_ctx = &bus_ctx->devs[i];
+-
+-		if (k_event_wait(&dev_ctx->event, USBIP_EXPORTED, false, K_NO_WAIT)) {
+-			continue;
+-		}
+ 
+-		return &bus_ctx->devs[i];
 +		ndev--;
  	}
  
@@ -599,7 +659,7 @@ index 4fe6f2ab1..2e337750a 100644
  }
  
  static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
-@@ -572,8 +755,8 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
+@@ -610,8 +694,8 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
  		.code = net_htons(USBIP_OP_REP_IMPORT),
  		.status = 0,
  	};
@@ -610,7 +670,7 @@ index 4fe6f2ab1..2e337750a 100644
  	int ret;
  
  	ret = zsock_recv(connfd, &busid, sizeof(busid), ZSOCK_MSG_WAITALL);
-@@ -581,17 +764,18 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
+@@ -619,17 +703,18 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
  		return ret == 0 ? -ENOTCONN : -errno;
  	}
  
@@ -638,7 +698,7 @@ index 4fe6f2ab1..2e337750a 100644
  	}
  
  	ret = usbip_send(connfd, &rep_hdr, sizeof(rep_hdr));
-@@ -599,18 +783,23 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
+@@ -637,19 +722,21 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
  		return ret;
  	}
  
@@ -655,22 +715,20 @@ index 4fe6f2ab1..2e337750a 100644
  		return ret;
  	}
  
-+	/* If the device was removed since, its first transfer ends the session */
 +	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
  	dev_ctx->connfd = connfd;
-+	dev_ctx->session++;
-+	k_event_clear(&dev_ctx->event, USBIP_REMOVED);
+ 	dev_ctx->session++;
  	k_event_post(&dev_ctx->event, USBIP_EXPORTED);
 +	k_mutex_unlock(&dev_ctx->lock);
 +
  	LOG_INF("USB device %s exported", busid);
  
  	return 0;
-@@ -715,6 +904,20 @@ static int usbip_init(void)
+@@ -754,6 +841,20 @@ static int usbip_init(void)
  	struct usbip_bus_ctx *const bus_ctx = &default_bus_ctx;
  	int err;
  
-+	/* The contexts are host classes: ready before the host binds them */
++	/* The contexts are class instances, ready before the host support */
 +	for (int i = 0; i < CONFIG_USBIP_DEVICES_COUNT; i++) {
 +		struct usbip_dev_ctx *ctx = &bus_ctx->devs[i];
 +
@@ -687,7 +745,7 @@ index 4fe6f2ab1..2e337750a 100644
  	err = usbh_init(&usbip_uhs_ctx);
  	if (err) {
  		LOG_ERR("Failed to initialize host support");
-@@ -734,16 +937,10 @@ static int usbip_init(void)
+@@ -773,16 +874,10 @@ static int usbip_init(void)
  	}
  
  	LOG_INF("Host controller enabled");
@@ -704,3 +762,214 @@ index 4fe6f2ab1..2e337750a 100644
  		k_thread_create(&ctx->thread, dev_thread_stacks[i],
  				K_THREAD_STACK_SIZEOF(dev_thread_stacks[i]),
  				usbip_thread_cmd, ctx, NULL, NULL,
+
+From d7fe49eea3e2d1ef42e7c0ce8f7b60829c95e8f8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 19 Oct 2026 13:28:28 +0200
+Subject: [PATCH 6/7] usb: usbip: close the connection when the exported device
+ is removed
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When the exported device is disconnected, the client is not notified
+and the connection remains open. Dequeue the pending transfers and shut
+down the socket for reading, which wakes up the thread waiting for the
+next command, so that it closes the connection. The offloaded sockets of
+native_sim do not support shutdown, the thread therefore also checks
+for the removal every 250 ms while waiting.
+
+Assisted-by: Claude:opus-5.5
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+---
+ subsys/usb/host/usbip.c | 57 +++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 52 insertions(+), 5 deletions(-)
+
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index 9a6bdcd48..5896ba542 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -40,6 +40,11 @@ static struct k_thread usbip_thread;
+ #define USBIP_DEFAULT_PATH	"/sys/bus/usb/devices/usb1/"
+ 
+ #define USBIP_EXPORTED		BIT(0)
++/* The exported device has been removed */
++#define USBIP_REMOVED		BIT(1)
++
++/* How often a connection waiting for a command checks for the device removal */
++#define USBIP_IDLE_CHECK_MS	250
+ 
+ /*
+  * Context of the exported device. It is a host class instance, the host
+@@ -182,7 +187,7 @@ static int usbip_req_cb(struct usb_device *const udev, struct uhc_transfer *cons
+ 		goto usbip_req_cb_error;
+ 	}
+ 
+-	if (!k_event_wait(&dev_ctx->event, USBIP_EXPORTED, false, K_NO_WAIT) ||
++	if (k_event_test(&dev_ctx->event, USBIP_EXPORTED | USBIP_REMOVED) != USBIP_EXPORTED ||
+ 	    cmd_nd->session != dev_ctx->session) {
+ 		LOG_WRN("Connection closed, drop completed seqnum %u", cmd->hdr.seqnum);
+ 		goto usbip_req_cb_error;
+@@ -368,7 +373,7 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
+ 	/* The device cannot be removed until the transfer is queued */
+ 	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
+ 
+-	if (dev_ctx->udev == NULL) {
++	if (dev_ctx->udev == NULL || k_event_test(&dev_ctx->event, USBIP_REMOVED)) {
+ 		ret = -ENODEV;
+ 	} else {
+ 		key = irq_lock();
+@@ -442,9 +447,29 @@ static int usbip_handle_unlink(struct usbip_dev_ctx *const dev_ctx,
+ 
+ static int usbip_handle_cmd(struct usbip_dev_ctx *const dev_ctx)
+ {
++	struct zsock_pollfd pfd = {
++		.fd = dev_ctx->connfd,
++		.events = ZSOCK_POLLIN,
++	};
+ 	struct usbip_command cmd;
+ 	int ret;
+ 
++	/*
++	 * Wait for the next command. The removal of the device shuts the
++	 * socket down for reading, which ends the wait. Not all sockets
++	 * support it, check for the removal periodically as well.
++	 */
++	do {
++		if (k_event_test(&dev_ctx->event, USBIP_REMOVED)) {
++			return -ENODEV;
++		}
++
++		ret = zsock_poll(&pfd, 1, USBIP_IDLE_CHECK_MS);
++		if (ret < 0) {
++			return -errno;
++		}
++	} while (ret == 0);
++
+ 	ret = zsock_recv(dev_ctx->connfd, &cmd.hdr, sizeof(cmd.hdr), ZSOCK_MSG_WAITALL);
+ 	if (ret <= 0) {
+ 		return ret == 0 ? -ENOTCONN : -errno;
+@@ -480,6 +505,21 @@ static void usbip_dequeue_all(struct usbip_dev_ctx *const dev_ctx)
+ 	irq_unlock(key);
+ }
+ 
++static void usbip_close(struct usbip_dev_ctx *const dev_ctx)
++{
++	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
++
++	/* On removal, the pending transfers have already been dequeued */
++	if (!k_event_test(&dev_ctx->event, USBIP_REMOVED)) {
++		usbip_dequeue_all(dev_ctx);
++	}
++
++	zsock_close(dev_ctx->connfd);
++	k_event_clear(&dev_ctx->event, USBIP_EXPORTED);
++
++	k_mutex_unlock(&dev_ctx->lock);
++}
++
+ static void usbip_thread_cmd(void *const a, void *const b, void *const c)
+ {
+ 	struct usbip_dev_ctx *dev_ctx = a;
+@@ -492,10 +532,8 @@ static void usbip_thread_cmd(void *const a, void *const b, void *const c)
+ 		ret = usbip_handle_cmd(dev_ctx);
+ 
+ 		if (ret) {
+-			usbip_dequeue_all(dev_ctx);
+-			zsock_close(dev_ctx->connfd);
++			usbip_close(dev_ctx);
+ 			LOG_INF("CMD connection closed, errno %d", ret);
+-			k_event_set_masked(&dev_ctx->event, 0, USBIP_EXPORTED);
+ 		}
+ 	}
+ }
+@@ -531,6 +569,14 @@ static int usbip_class_removed(struct usbh_class_data *const c_data)
+ 	struct usbip_dev_ctx *const dev_ctx = c_data->priv;
+ 
+ 	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
++
++	if (k_event_test(&dev_ctx->event, USBIP_EXPORTED)) {
++		/* Reading from the socket returns end of file, the connection is closed */
++		usbip_dequeue_all(dev_ctx);
++		k_event_post(&dev_ctx->event, USBIP_REMOVED);
++		(void)zsock_shutdown(dev_ctx->connfd, ZSOCK_SHUT_RD);
++	}
++
+ 	dev_ctx->udev = NULL;
+ 	k_mutex_unlock(&dev_ctx->lock);
+ 
+@@ -734,6 +780,7 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
+ 	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
+ 	dev_ctx->connfd = connfd;
+ 	dev_ctx->session++;
++	k_event_clear(&dev_ctx->event, USBIP_REMOVED);
+ 	k_event_post(&dev_ctx->event, USBIP_EXPORTED);
+ 	k_mutex_unlock(&dev_ctx->lock);
+ 
+
+From aa2418d4f108d71340635c9aec2b483cf2e2fae8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 19 Oct 2026 13:28:28 +0200
+Subject: [PATCH 7/7] usb: usbip: name devices by their port
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The bus ID is "1-<address>", and the address changes when a device is
+enumerated again. Behind a hub, two devices that reset at the same time
+can swap their bus IDs, and a client that attaches again gets the other
+device.
+
+Name a device by its place on the bus, as Linux does: "1-1" on the root
+port, "1-1.3" on port 3 of a hub there, and so on. A device on the root
+port keeps the bus ID it usually had.
+
+Assisted-by: Claude:opus-5.5
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+---
+ subsys/usb/host/usbip.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index 5896ba542..87570d545 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -39,6 +39,9 @@ static struct k_thread usbip_thread;
+ 
+ #define USBIP_DEFAULT_PATH	"/sys/bus/usb/devices/usb1/"
+ 
++/* Hubs between the root port and a device, at most (USB 2.0, 4.1.1) */
++#define USBIP_HUB_TIERS_MAX	5
++
+ #define USBIP_EXPORTED		BIT(0)
+ /* The exported device has been removed */
+ #define USBIP_REMOVED		BIT(1)
+@@ -585,10 +588,27 @@ static int usbip_class_removed(struct usbh_class_data *const c_data)
+ 	return 0;
+ }
+ 
++/*
++ * Name the device by its place on the bus, as Linux does: "1-1" on the root
++ * port, "1-1.3" on port 3 of a hub there, "1-1.3.2" one hub further. Unlike
++ * the address, it does not change when the device is enumerated again.
++ */
+ static void usbip_busid(const struct usb_device *const udev, const uint32_t busnum,
+ 			char *const busid, const size_t len)
+ {
+-	snprintf(busid, len, "%u-%u", busnum, udev->addr);
++	const struct usb_device *dev = udev;
++	uint8_t ports[USBIP_HUB_TIERS_MAX];
++	size_t n = 0;
++	int pos;
++
++	for (; dev->hub != NULL && n < ARRAY_SIZE(ports); dev = dev->hub) {
++		ports[n++] = dev->hub_port;
++	}
++
++	pos = snprintf(busid, len, "%u-1", busnum);
++	while (n > 0 && pos > 0 && (size_t)pos < len) {
++		pos += snprintf(busid + pos, len - pos, ".%u", ports[--n]);
++	}
+ }
+ 
+ /* Device list entry, filled with the context lock held and sent without it */
