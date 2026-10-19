@@ -2,10 +2,8 @@
 
 zephyr_include_directories(include)
 
-# AP33772S USB PD sink (out of tree until it is upstream)
-add_subdirectory_ifdef(CONFIG_MFD_AP33772S drivers/mfd)
-add_subdirectory_ifdef(CONFIG_REGULATOR_AP33772S drivers/regulator)
-add_subdirectory_ifdef(CONFIG_SENSOR_AP33772S drivers/sensor/ap33772s)
+# CH224A USB PD sink, as a regulator (out of tree)
+add_subdirectory_ifdef(CONFIG_REGULATOR_CH224A drivers/regulator)
 
 # Rack bus protocol (docs/rack-protocol.md): frames, hub and node state
 # machines; Wi-Fi station and hostname; access rules, the admin key;

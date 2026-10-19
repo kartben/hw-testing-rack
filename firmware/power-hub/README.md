@@ -15,7 +15,7 @@ USB-C PD charger, switches and meters the four rows, and runs the rack bus
 
 ```
 firmware/power-hub/
-  src/pd.c          USB-C PD: VBUS sense, the AP33772S, 28 V EPR when offered
+  src/pd.c          USB-C PD: VBUS sense, the CH224A, 28 V EPR when offered
   src/rows.c        rows A–D: eFuse enables (held across resets), FLT, IMON, sequencing, shedding
   src/bus.c         rack bus master: TWAI, POS tokens, enumeration (common/lib/rack_hub.c)
   src/web.c         status page, JSON API, /metrics
@@ -28,7 +28,7 @@ firmware/power-hub/
 
 Shared with the bay node, in [`firmware/common`](../common/): the rack bus
 protocol ([`docs/rack-protocol.md`](../../docs/rack-protocol.md)), the
-AP33772S drivers, Wi-Fi and hostname, the web pages' CSS and helpers, the
+CH224A driver, Wi-Fi and hostname, the web pages' CSS and helpers, the
 development server and screenshot tooling.
 
 ## Building and flashing
@@ -72,13 +72,13 @@ uart:~$ hub status
 
 | Feature | Implementation |
 |---|---|
-| PD contract | the AP33772S starts on the charger's 5 V (the FA02 then asks for 20 V by itself, through VSEL); once VBUS is up the firmware powers its I²C pull-ups (I2C_PU), initializes the drivers and asks for the charger's **28 V EPR** fixed PDO when there is one, 20 V otherwise (`hub pd epr\|20v`, saved).  Never above 28 V: the regulator node's `regulator-max-microvolt` refuses it.  A contract under 15 V (`CONFIG_HUB_ROWS_MIN_MV`) never powers the rows, and the sink's switch stays open below it (`vselmin-microvolt`) |
+| PD contract | the CH224A asks for 9 V at plug-in by itself (CFG1 6.8k); once VBUS is up the firmware powers its I²C pull-ups (I2C_PU), initializes the driver as soon as the chip answers and asks for **28 V EPR** when the charger offers it (PDO 1's EPR Mode Capable bit; tried when the chip shows no offers), 20 V otherwise (`hub pd epr\|20v`, saved).  The chip cannot report the contract: a request counts once it says PD, PG is low and VBUS_SENSE reads the voltage; 28 V that VBUS does not follow within 3 s (`CONFIG_HUB_PD_REQUEST_MS`) falls back to 20 V.  Never above 28 V: the node's `regulator-max-microvolt` refuses it.  A contract under 15 V (`CONFIG_HUB_ROWS_MIN_MV`) never powers the rows; there is no input switch, VBUS is VRACK.  PG going high (a renegotiation) makes the contract provisional, and runs the policy again when it comes back |
 | Sequencing | rows stay off until the contract has held for 500 ms, then come on one after the other (300 ms apart); the rack bus is enumerated 2 s after the last one, when the nodes have booted |
 | Controller reset | the row enables are held (ESP32-S3 pad hold, RTC domain): a hub reboot or a firmware update does not power-cycle the rack; the rows found on are enumerated again |
 | Shedding | from what the rows really draw (eFuse IMON): above 90 % of the contract current for 1 s, the next row in the shed order (default D, C, B, A) goes off; it comes back once the contract has room for it again for 10 s.  No contract at all: every row off, back with the next one |
 | Row control | `hub row <A–D> on\|off\|cycle [ms]`, the page's buttons, `POST /api/row`; on/off is saved |
-| Faults | each eFuse's FLT (current limit, over-temperature) as an event, a count and the page's red row, counted only while the row is on and 10 ms past its soft start (the TPS2660 also asserts FLT in shutdown and start-up); the PD sink's OVP/OCP/OTP/UVP as events |
-| Telemetry | contract, VBUS, input current and temperature from the AP33772S; VBUS from its own ADC divider; each row's current from IMON |
+| Faults | each eFuse's FLT (current limit, over-temperature) as an event, a count and the page's red row, counted only while the row is on and 10 ms past its soft start (the TPS2660 also asserts FLT in shutdown and start-up); a contract lost (PG) as an event |
+| Telemetry | the contract, the granted current, the protocol and PG from the CH224A (it measures nothing); VBUS from the controller's ADC divider; each row's current from IMON |
 | Rack bus | TWAI at 250 kbit/s on the TJA1462AT (CAN SIC; STB through `can-transceiver-gpio`); enumeration over the POS tokens, the node table, commands to nodes with retries; the RACK frame every second |
 | Network | Wi-Fi station, DHCP, mDNS `rack-<id>.local` (firmware/common's `hwtr_net`, as the nodes) |
 | Web | Zephyr HTTP server on port 80: status page, JSON API, Prometheus `/metrics` |
@@ -138,7 +138,7 @@ that have a camera, red while someone watches (STATUS byte 6).
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | `pd` (state, contract, VBUS, input current, temperature, the charger's PDOs), `rows` (state, current, nodes with position, IP, DUT state and current, `camera`: `none`, `ready` or `active`), `budget`, `can` |
+| `GET /api/status` | `pd` (state, contract, VBUS, the rows' current, the voltage asked for, the granted current, PG, the charger's PDOs), `rows` (state, current, nodes with position, IP, DUT state and current, `camera`: `none`, `ready` or `active`), `budget`, `can` |
 | `GET /api/events` | recent events, newest first (`age_s`, `kind`, `text`) |
 | `POST /api/row` | `{"row": "B", "action": "on" \| "off" \| "cycle", "ms": 2000}` |
 | `POST /api/pd` | `{"pref": "epr" \| "20v"}` |
@@ -150,7 +150,7 @@ that have a camera, red while someone watches (STATUS byte 6).
 | `GET /api/update` | the firmware: `version`, image `id`, `test_key`, `trial` (on trial: what it waits for, time left), `last` update (`confirmed`, `rolled back`); also `firmware` in `/api/status` |
 | `POST /api/update/begin` | signed, `{"size": N, "sha256": "<64 hex>"}`: `{"ticket": …}` |
 | `POST /api/update?ticket=…` | the image (`zephyr.signed.bin`), streamed into slot 1; `{"state": "rebooting", "version": …}`, then a test boot |
-| `GET /metrics` | `hub_contract_volts`, `hub_contract_amps`, `hub_input_amps`, `hub_sink_celsius`, `hub_row_on{row}`, `hub_row_amps{row}`, `hub_row_faults_total{row}`, `hub_nodes`, `hub_nodes_lost`, CAN counters |
+| `GET /metrics` | `hub_contract_volts`, `hub_contract_amps`, `hub_vbus_volts`, `hub_row_on{row}`, `hub_row_amps{row}`, `hub_row_faults_total{row}`, `hub_nodes`, `hub_nodes_lost`, CAN counters |
 
 To work on the page without a hub:
 
@@ -208,26 +208,28 @@ and what is still to be checked on hardware:
 |---|---|
 | On trial: back after the restart, waiting for the rack bus | Rolled back: the new firmware did not confirm itself |
 
-## AP33772S drivers
+## CH224A driver
 
-Out of tree in [`firmware/common/drivers`](../common/drivers/) until they
-are upstream, written to Zephyr's driver conventions from the sensor driver
-proposed in [zephyr#114554](https://github.com/zephyrproject-rtos/zephyr/pull/114554),
-reshaped as a multi-function device:
+Out of tree in [`firmware/common/drivers/regulator`](../common/drivers/regulator/): the
+CH224A has one function, the contract, so it is a regulator (`wch,ch224a`, on the I²C
+bus), not a multi-function device.  Register map from the WCH CH224 datasheet (manual
+1, v2.1, 5.2.3); Zephyr has no CH224 driver.
 
-| Node | Driver | API |
-|---|---|---|
-| `diodes,ap33772s` | `mfd_ap33772s.c` | register access, the status register and INT, the source capabilities decoded (`mfd_ap33772s_get_pdos`), event callbacks |
-| `diodes,ap33772s-regulator` | `regulator_ap33772s.c` | the contract: `list_voltage` = the fixed PDOs, `set_voltage` requests one (or a PPS/AVS voltage), the current limit is the operating current, `enable`/`disable` drive the output switch, `get_error_flags`, `set_callback` (VOLTAGE_DETECTED / REMOVED) |
-| `diodes,ap33772s-sensor` | `ap33772s_sensor.c` | VOUT, current, temperature |
+| API | What the chip gives |
+|---|---|
+| `list_voltage` | 5, 9, 12, 15, 20, 28 V: the voltage register's values |
+| `set_voltage` | the lowest of those in the range (register 0x0A), else a PPS or AVS voltage in 100 mV steps (0x53, 0x51/0x52) inside a range the charger offers |
+| `get_voltage` | the voltage asked for (`startup-microvolt` until then, the CFG1 resistor's), while the status says PD; 5 V otherwise.  The chip cannot report the contract |
+| `get_current_limit` | the current the charger grants (0x50, 50 mA steps), with PD only |
+| `set_callback` | PG (`pg-gpios`): `REGULATOR_VOLTAGE_DETECTED` / `REMOVED` |
+| no `enable`/`disable` | the chip has no switch |
+| `regulator_ch224a_get_status()` | the protocol in place (0x09: BC, QC2, QC3, PD, EPR) |
+| `regulator_ch224a_power_good()` | PG |
+| `regulator_ch224a_get_pdos()` | the charger's offers (0x60–0x8F): the whole (EPR_)Source_Capabilities message, decoded; the datasheet promises the SPR one only from chargers under 100 W |
 
-The open review points of #114554 are addressed: the PDOs and the request
-are (de)serialized with explicit little-endian shifts, the NTC table is
-written as 16-bit values, I²C errors are returned instead of being masked by
-a timeout, polling and INT start once the chip is configured, and a PPS/AVS
-request is clamped into the PDO's range.  The chip runs from VBUS, so its
-nodes carry `zephyr,deferred-init` and `pd.c` initializes them once VBUS is
-up.
+The chip runs from VBUS: its node carries `zephyr,deferred-init`, and `pd.c`
+initializes it once VBUS is up and the chip answers (a deferred init that fails
+cannot be run again).
 
 ## Pin map
 
@@ -260,10 +262,10 @@ and [`power_hub-pinctrl.dtsi`](../boards/hwtr/power_hub/power_hub-pinctrl.dtsi).
 | IO21 | FLT_B | row B ~FLT | `row_b` `fault-gpios` |
 | IO33 | FLT_D | row D ~FLT | `row_d` `fault-gpios` |
 | IO35 | CTL_LED | the controller's green LED (330 Ω) | `ctl_led` |
-| IO39 | PD_INT | AP33772S INT (5 V through 15k/27k) | `ap33772s` `int-gpios` |
-| IO40 | PD_SCL | I²C0 SCL to the AP33772S | `&i2c0` |
-| IO41 | PD_SDA | I²C0 SDA | `&i2c0` |
-| IO42 | I2C_PU | the AP33772S's 5.1k pull-ups, on once VBUS is up | `power_hub` `i2c-pullup-gpios` |
+| IO39 | PD_INT | CH224A PG (open drain, 10k pull-up, low once the contract is in place; also the front PD LED) | `pd_sink` `pg-gpios` |
+| IO40 | PD_SCL | I²C0 SCL to the CH224A (its CFG2) | `&i2c0` |
+| IO41 | PD_SDA | I²C0 SDA (its CFG3) | `&i2c0` |
+| IO42 | I2C_PU | the CH224A's 5.1k pull-ups, on once VBUS is up | `power_hub` `i2c-pullup-gpios` |
 | IO47 | FLT_C | row C ~FLT | `row_c` `fault-gpios` |
 | TXD0 (IO43) | U0TX | test pad TP1 | `&uart0` |
 | RXD0 (IO44) | U0RX | test pad TP2 | `&uart0` |
@@ -274,9 +276,14 @@ devicetree against U4 in `design.py`, as it does for the bay node.
 
 ## Open items
 
-* **Hardware bring-up not done.**  The AP33772S drivers are compile-tested
-  only (register map from the datasheet and #114554); the pad hold across a
-  reset, the IMON calibration and the shedding thresholds need a hub.
+* **Hardware bring-up not done.**  The CH224A driver is compile-tested only
+  (register map from the datasheet).  To check on the first hub: the
+  SRCCAP layout at 0x60 (message header, then the PDOs; for EPR an extended
+  header first, as two community drivers read it), whether PG goes high
+  while the chip moves from 9 to 28 V, how long the 28 V EPR entry takes
+  (`CONFIG_HUB_PD_REQUEST_MS`), and what the chip asks for after a hard
+  reset.  Also the pad hold across a reset, the IMON calibration and the
+  shedding thresholds.
 * **Budget from the worst case.**  Shedding follows the measured row
   currents; a row whose bays suddenly draw their 1.5 A each trips the
   charger before the hub reacts (1 s).  A static budget (bays × worst case)

@@ -178,9 +178,9 @@ static const char *node_camera(const struct rack_hub_node *n)
 	return (f & RACK_ST2_CAMERA_ON) ? "active" : "ready";
 }
 
-static const char *pdo_type(enum ap33772s_pdo_type t)
+static const char *pdo_type(enum ch224a_pdo_type t)
 {
-	static const char *const names[] = {"none", "fixed", "pps", "avs"};
+	static const char *const names[] = {"none", "fixed", "pps", "avs", "other"};
 
 	return names[t];
 }
@@ -199,18 +199,25 @@ static void write_pd(struct out *o, const struct hub_pd_status *pd)
 	} else {
 		put(o, "\"contract\":null,");
 	}
-	put(o, "\"vbus_mv\":%u,\"ibus_ma\":%u,\"meter_mv\":%u,\"temp_c\":%d,\"faults\":%u,\"pdos\":[",
-	    pd->vbus_mv, pd->meter_ma, pd->meter_mv, pd->temp_c, pd->faults);
-	for (int i = 0; i < AP33772S_PDO_COUNT; i++) {
-		const struct ap33772s_pdo *p = &pd->pdos[i];
+	/* The sink measures nothing: VBUS from the ADC, the current from the rows' IMON */
+	put(o, "\"vbus_mv\":%u,\"rows_ma\":%d,\"asked_mv\":%u,\"granted_ma\":%u,\"pg\":%s,"
+	    "\"epr_refused\":%s,\"pdos\":[",
+	    pd->vbus_mv, rows_total_ma(), pd->asked_mv, pd->granted_ma,
+	    pd->power_good ? "true" : "false", pd->epr_refused ? "true" : "false");
+	for (int i = 0; i < CH224A_PDO_COUNT; i++) {
+		const struct ch224a_pdo *p = &pd->pdos[i];
 
-		if (p->type == AP33772S_PDO_NONE) {
+		if (p->type == CH224A_PDO_NONE || p->type == CH224A_PDO_OTHER) {
 			continue;
 		}
-		max_mw = MAX(max_mw, p->max_mv * p->max_ma / 1000);
+		max_mw = MAX(max_mw, p->type == CH224A_PDO_AVS ? p->pdp_w * 1000U
+							       : p->max_mv * p->max_ma / 1000);
 		put(o, "%s{\"index\":%d,\"type\":\"%s\",\"mv\":%u,\"mv_min\":%u,\"ma\":%u,\"epr\":%s",
 		    first ? "" : ",", i + 1, pdo_type(p->type), p->max_mv, p->min_mv, p->max_ma,
 		    p->epr ? "true" : "false");
+		if (p->type == CH224A_PDO_AVS) {
+			put(o, ",\"w\":%u", p->pdp_w);
+		}
 		if (i + 1 == pd->selected) {
 			put(o, ",\"selected\":true");
 		} else if (p->max_mv > 28000) {
@@ -741,11 +748,9 @@ static int metrics_handler(struct http_client_ctx *client, enum http_transaction
 		"hub_contract_volts %u.%03u\n", pd.contract_mv / 1000, pd.contract_mv % 1000);
 	put(&o, "# HELP hub_contract_amps USB PD contract current\n# TYPE hub_contract_amps gauge\n"
 		"hub_contract_amps %u.%03u\n", pd.contract_ma / 1000, pd.contract_ma % 1000);
-	put(&o, "# HELP hub_input_amps Input current (the sink's shunt)\n"
-		"# TYPE hub_input_amps gauge\nhub_input_amps %u.%03u\n", pd.meter_ma / 1000,
-	    pd.meter_ma % 1000);
-	put(&o, "# HELP hub_sink_celsius PD sink temperature (NTC)\n"
-		"# TYPE hub_sink_celsius gauge\nhub_sink_celsius %d\n", pd.temp_c);
+	put(&o, "# HELP hub_vbus_volts VBUS (VRACK) on the controller's ADC\n"
+		"# TYPE hub_vbus_volts gauge\nhub_vbus_volts %u.%03u\n", pd.vbus_mv / 1000,
+	    pd.vbus_mv % 1000);
 	put(&o, "# HELP hub_row_on Row switched on\n# TYPE hub_row_on gauge\n");
 	for (int r = 0; r < HUB_ROWS; r++) {
 		struct hub_row_status st;

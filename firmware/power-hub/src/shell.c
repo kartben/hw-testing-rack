@@ -48,14 +48,17 @@ static void print_pd(const struct shell *sh)
 
 	pd_status(&pd);
 	if (pd.contract_mv != 0) {
-		shell_print(sh, "PD:        %u.%u V / %u.%02u A %s (PDO %d)%s, VBUS %u mV, %d °C",
+		shell_print(sh, "PD:        %u.%u V / %u.%02u A %s (PDO %d)%s, VBUS %u mV",
 			    pd.contract_mv / 1000, pd.contract_mv % 1000 / 100, pd.contract_ma / 1000,
 			    pd.contract_ma % 1000 / 10, pd_state_str(pd.state), pd.selected,
-			    pd.final ? "" : ", settling", pd.vbus_mv, pd.temp_c);
+			    pd.final ? "" : ", settling", pd.vbus_mv);
 	} else {
 		shell_print(sh, "PD:        %s, VBUS %u mV", pd_state_str(pd.state), pd.vbus_mv);
 	}
-	shell_print(sh, "           asks for %s", pd.epr_pref ? "28 V EPR when offered" : "20 V");
+	shell_print(sh, "           sink: status 0x%02x, PG %s, asked %u mV, granted %u mA",
+		    pd.protocol, pd.power_good ? "low (good)" : "high", pd.asked_mv, pd.granted_ma);
+	shell_print(sh, "           asks for %s%s", pd.epr_pref ? "28 V EPR when offered" : "20 V",
+		    pd.epr_refused ? " (28 V refused: 20 V)" : "");
 }
 
 static void print_rows(const struct shell *sh)
@@ -131,14 +134,20 @@ static int cmd_pd(const struct shell *sh, size_t argc, char **argv)
 
 	print_pd(sh);
 	pd_status(&pd);
-	for (int i = 0; i < AP33772S_PDO_COUNT; i++) {
-		const struct ap33772s_pdo *p = &pd.pdos[i];
-		static const char *const types[] = {"", "fixed", "PPS", "AVS"};
+	if (pd.npdos == 0 && pd.state != HUB_PD_NONE) {
+		shell_print(sh, "  the sink shows no offers");
+	}
+	for (int i = 0; i < CH224A_PDO_COUNT; i++) {
+		const struct ch224a_pdo *p = &pd.pdos[i];
+		static const char *const types[] = {"", "fixed", "PPS", "AVS", "other"};
 
-		if (p->type == AP33772S_PDO_NONE) {
+		if (p->type == CH224A_PDO_NONE || p->type == CH224A_PDO_OTHER) {
 			continue;
 		}
-		if (p->type == AP33772S_PDO_FIXED) {
+		if (p->type == CH224A_PDO_AVS) {
+			shell_print(sh, "    PDO %2d EPR AVS %u-%u mV, %u W", i + 1, p->min_mv,
+				    p->max_mv, p->pdp_w);
+		} else if (p->type == CH224A_PDO_FIXED) {
 			shell_print(sh, "  %c PDO %2d %s %s %u mV, %u mA", i + 1 == pd.selected ? '*' : ' ',
 				    i + 1, p->epr ? "EPR" : "SPR", types[p->type], p->max_mv, p->max_ma);
 		} else {

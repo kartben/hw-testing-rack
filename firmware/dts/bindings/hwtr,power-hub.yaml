@@ -7,8 +7,7 @@ description: |
     power_hub: power-hub {
         compatible = "hwtr,power-hub";
         i2c-pullup-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
-        pd = <&pd_regulator>;
-        pd-meter = <&pd_meter>;
+        pd = <&pd_sink>;
         vbus-sense = <&vbus_sense>;
         can = <&twai>;
     };
@@ -26,11 +25,7 @@ properties:
   pd:
     type: phandle
     required: true
-    description: The USB PD sink's regulator (the contract).
-
-  pd-meter:
-    type: phandle
-    description: Sensor for VBUS, the input current and the sink's temperature.
+    description: The USB PD sink, as a regulator (the contract), a wch,ch224a.
 
   vbus-sense:
     type: phandle

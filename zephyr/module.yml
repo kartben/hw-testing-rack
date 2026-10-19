@@ -1,5 +1,5 @@
 # hw-testing-rack as a Zephyr module: the boards (bay_node, power_hub), the
-# devicetree bindings, the AP33772S drivers and the code both applications
+# devicetree bindings, the CH224A driver and the code both applications
 # share, all under firmware/.  In the workspace made from firmware/west.yml
 # west finds it by itself (this repository is the manifest repository), so
 # sysbuild finds the boards and the signing key option too; each

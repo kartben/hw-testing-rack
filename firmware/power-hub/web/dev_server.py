@@ -41,18 +41,19 @@ WEB = Path(__file__).resolve().parent
 START = time.monotonic() - 2 * 86400 - 5 * 3600
 ROWS = "ABCD"
 
-# What a 140 W EPR charger offers (SPR then EPR PDOs)
+# What a 140 W EPR charger offers, as the CH224A shows it in EPR mode: positions 1-7 SPR
+# (the unused ones empty), 8 and on EPR
 CHARGER_140W = [
-    {"type": "fixed", "mv": 5000, "ma": 3000}, {"type": "fixed", "mv": 9000, "ma": 3000},
-    {"type": "fixed", "mv": 15000, "ma": 3000}, {"type": "fixed", "mv": 20000, "ma": 5000},
-    {"type": "pps", "mv_min": 3300, "mv": 21000, "ma": 5000},
-    {"type": "fixed", "mv": 28000, "ma": 5000, "epr": True},
-    {"type": "avs", "mv_min": 15000, "mv": 28000, "ma": 5000, "epr": True},
+    {"index": 1, "type": "fixed", "mv": 5000, "ma": 3000}, {"index": 2, "type": "fixed", "mv": 9000, "ma": 3000},
+    {"index": 3, "type": "fixed", "mv": 15000, "ma": 3000}, {"index": 4, "type": "fixed", "mv": 20000, "ma": 5000},
+    {"index": 5, "type": "pps", "mv_min": 3300, "mv": 21000, "ma": 5000},
+    {"index": 8, "type": "fixed", "mv": 28000, "ma": 5000, "epr": True},
+    {"index": 9, "type": "avs", "mv_min": 15000, "mv": 28000, "ma": 0, "w": 140, "epr": True},
 ]
 # A multi-port charger sharing its power: 30 W left for the rack
 CHARGER_30W = [
-    {"type": "fixed", "mv": 5000, "ma": 3000}, {"type": "fixed", "mv": 9000, "ma": 3000},
-    {"type": "fixed", "mv": 15000, "ma": 2000}, {"type": "fixed", "mv": 20000, "ma": 1500},
+    {"index": 1, "type": "fixed", "mv": 5000, "ma": 3000}, {"index": 2, "type": "fixed", "mv": 9000, "ma": 3000},
+    {"index": 3, "type": "fixed", "mv": 15000, "ma": 2000}, {"index": 4, "type": "fixed", "mv": 20000, "ma": 1500},
 ]
 
 # Nodes: (row, position) -> hostname, base DUT current, state
@@ -98,16 +99,16 @@ def contract() -> dict | None:
     pdos = hub["charger"]
     epr = [p for p in pdos if p["type"] == "fixed" and p.get("epr") and p["mv"] == 28000]
     if epr and hub["pref"] == "epr":
-        return {"mv": 28000, "ma": epr[0]["ma"], "epr": True, "pdo": pdos.index(epr[0]) + 1}
+        return {"mv": 28000, "ma": epr[0]["ma"], "epr": True, "pdo": epr[0]["index"]}
     best = [p for p in pdos if p["type"] == "fixed" and p["mv"] == 20000]
-    return {"mv": 20000, "ma": best[0]["ma"], "epr": False, "pdo": pdos.index(best[0]) + 1}
+    return {"mv": 20000, "ma": best[0]["ma"], "epr": False, "pdo": best[0]["index"]}
 
 
 def pdo_list(c: dict | None) -> list[dict]:
     out = []
-    for i, p in enumerate(hub["charger"], start=1):
-        q = dict(p, index=i)
-        if c and i == c["pdo"]:
+    for p in hub["charger"]:
+        q = dict(p)
+        if c and p["index"] == c["pdo"]:
             q["selected"] = True
         elif p["mv"] > 28000:
             q["refused"] = "above 28 V"
@@ -170,8 +171,11 @@ def status() -> dict:
         "pd": {
             "state": "usb" if not c else "epr" if c["epr"] else "spr",
             "contract": c, "pref": hub["pref"], "final": c is not None,
-            "vbus_mv": vbus, "ibus_ma": total_ma + (95 if c else 0), "temp_c": 37 + total_ma // 900,
-            "pdos": pdo_list(c), "max_mw": max((p["mv"] * p["ma"] // 1000 for p in hub["charger"]), default=0),
+            # The CH224A measures nothing: VBUS from the ADC, the current from the rows' IMON
+            "vbus_mv": vbus, "rows_ma": total_ma, "asked_mv": c["mv"] if c else 0,
+            "granted_ma": c["ma"] if c else 0, "pg": c is not None, "epr_refused": False,
+            "pdos": pdo_list(c),
+            "max_mw": max((p.get("w", 0) * 1000 or p["mv"] * p["ma"] // 1000 for p in hub["charger"]), default=0),
         },
         "rows": rows,
         "budget": {"contract_mw": c["mv"] * c["ma"] // 1000 if c else 0,
@@ -334,13 +338,13 @@ class Handler(PageHandler):
 def serve(port: int = 8767) -> ThreadingHTTPServer:
     if not events:
         now = time.time()
-        # Power-up with the AP33772S FA01: the sink starts on the charger's 5 V
-        # (VSELMIN 15 V keeps its switch open, the rows wait), then pd.c asks
-        # for 28 V EPR (20 V without it); the texts are pd.c's
-        for dt, kind, text in ((-2 * 86400 - 5 * 3600, "pd", "VBUS 5.0 V: PD sink up"),
+        # Power-up with the CH224A: it asks for 9 V by itself (CFG1), the rows wait
+        # (their eFuses lock out below 15 V), then pd.c asks for 28 V EPR (20 V
+        # without it); the texts are pd.c's
+        for dt, kind, text in ((-2 * 86400 - 5 * 3600, "pd", "VBUS 9.0 V: PD sink up"),
                                (-2 * 86400 - 5 * 3600 + 1, "pd",
-                                "contract: 5.0 V / 3.00 A (15 W), too low for the rows"),
-                               (-2 * 86400 - 5 * 3600 + 2, "pd", "contract: 28.0 V / 5.00 A EPR (140 W)"),
+                                "contract: 9 V / 3.00 A (27 W), too low for the rows"),
+                               (-2 * 86400 - 5 * 3600 + 3, "pd", "contract: 28 V / 5.00 A EPR (140 W)"),
                                (-2 * 86400 - 5 * 3600 + 3, "row", "rows A, B, C on (staggered, 300 ms)"),
                                (-3 * 3600, "fault", "row B: eFuse in current limit for 40 ms"),
                                (-754, "can", "enumeration (node 0x21 rebooted): 9 nodes")):

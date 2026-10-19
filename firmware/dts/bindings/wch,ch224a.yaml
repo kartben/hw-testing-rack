@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  WCH CH224A USB PD 3.2 sink controller (I2C, in the one-resistor mode), as
+  a regulator: the USB PD contract.  set_voltage asks for 5, 9, 12, 15, 20
+  or 28 V (list_voltage), or a PPS / AVS voltage in a range the charger
+  offers; get_voltage is the voltage asked for while the chip reports PD
+  (5 V otherwise); the current limit is the current the charger grants.
+  Callbacks follow PG: REGULATOR_VOLTAGE_DETECTED once a contract is in
+  place, REGULATOR_VOLTAGE_REMOVED when it is lost.  No enable/disable:
+  the chip has no switch.
+
+    pd_sink: ch224a@22 {
+        compatible = "wch,ch224a";
+        reg = <0x22>;
+        pg-gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
+        startup-microvolt = <9000000>;
+        regulator-min-microvolt = <5000000>;
+        regulator-max-microvolt = <28000000>;
+    };
+
+  The chip runs from VBUS: with zephyr,deferred-init, the application
+  initializes it once VBUS is present.
+
+compatible: "wch,ch224a"
+
+include:
+  - i2c-device.yaml
+  - name: regulator.yaml
+    property-allowlist:
+      - regulator-min-microvolt
+      - regulator-max-microvolt
+
+properties:
+  pg-gpios:
+    type: phandle-array
+    description: |
+      PG, open drain, low once a contract is in place: GPIO_ACTIVE_LOW.
+
+  startup-microvolt:
+    type: int
+    required: true
+    description: |
+      What the CFG1 resistor asks for at plug-in (6.8k 9 V, 24k 12 V, 56k
+      15 V, 120k 20 V, 210k 28 V): the voltage asked for until the first
+      set_voltage, and again once the chip has been off.

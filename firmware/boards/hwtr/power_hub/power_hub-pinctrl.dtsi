@@ -23,9 +23,9 @@
 	};
 
 	/*
-	 * IO41 PD_SDA / IO40 PD_SCL: the AP33772S.  No internal pull-ups: the
-	 * 4.7k pull-ups hang off I2C_PU (IO42) so that a USB-powered controller
-	 * never back-feeds an unpowered AP33772S.
+	 * IO41 PD_SDA / IO40 PD_SCL: the CH224A (CFG3 / CFG2).  No internal
+	 * pull-ups: the 5.1k pull-ups hang off I2C_PU (IO42) so that a
+	 * USB-powered controller never back-feeds an unpowered CH224A.
 	 */
 	hub_i2c0_default: hub_i2c0_default {
 		group1 {

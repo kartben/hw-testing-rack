@@ -8,15 +8,26 @@ config HUB_PD_EPR
 	bool "Ask for 28 V EPR when the charger offers it"
 	default y
 	help
-	  The firmware asks for 20 V, then for the charger's 28 V EPR fixed
-	  PDO when there is one (the AP33772S FA02 asks for 20 V by itself,
-	  through VSEL; the FA01 starts at 5 V).  Never
-	  above 28 V: the board's regulator node caps every request.  The
-	  choice can be changed at run time (shell, web page) and is saved.
+	  The CH224A asks for 9 V at plug-in (its CFG1 resistor); the
+	  firmware then asks for 28 V EPR when the charger offers it (PDO 1's
+	  EPR Mode Capable bit, or tried when the sink shows no offers), and
+	  for 20 V otherwise or when VBUS does not follow.  Never above 28 V:
+	  the board's regulator node caps every request.  The choice can be
+	  changed at run time (shell, web page) and is saved.
 
 config HUB_VBUS_MIN_MV
 	int "VBUS above which the PD sink is powered and talked to (mV)"
 	default 4500
+
+config HUB_PD_REQUEST_MS
+	int "VBUS must reach a requested voltage within this long (ms)"
+	default 3000
+	help
+	  The CH224A cannot report the contract: a request counts once the
+	  sink says PD, PG is low and VBUS_SENSE reads the voltage asked for.
+	  A 28 V request that VBUS does not follow in time falls back to
+	  20 V; a 20 V one is reported, and the rows stay off below
+	  CONFIG_HUB_ROWS_MIN_MV.
 
 config HUB_CONTRACT_SETTLE_MS
 	int "A contract must hold this long before rows are turned on (ms)"
@@ -26,12 +37,10 @@ config HUB_ROWS_MIN_MV
 	int "Contracts below this never power the rows (mV)"
 	default 15000
 	help
-	  Every source starts at 5 V, and a sink without VSEL (AP33772S
-	  FA01) stays there until the firmware asks for more: such a
-	  contract never counts as final, the rows stay off (their eFuses
-	  are locked out below 15 V anyway) and come on once the contract is
-	  up.  The board's vselmin-microvolt keeps the sink's switch open
-	  below the same voltage.
+	  The CH224A starts at 9 V (CFG1), and stays there until the firmware
+	  asks for more: such a contract never counts as final, the rows stay
+	  off (their eFuses are locked out below 15 V anyway) and come on
+	  once the contract is up.  There is no input switch: VBUS is VRACK.
 
 config HUB_ROW_STAGGER_MS
 	int "Delay between two rows turned on one after the other (ms)"

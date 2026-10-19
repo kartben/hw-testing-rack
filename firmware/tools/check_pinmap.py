@@ -92,7 +92,7 @@ BOARDS = {
             **{f"ROW_EN_{r}": ("gpio", "enable-gpios", f"row_{r.lower()}") for r in "ABCD"},
             **{f"FLT_{r}": ("gpio", "fault-gpios", f"row_{r.lower()}") for r in "ABCD"},
             "CTL_LED": ("gpio", "gpios", "ctl_led"),
-            "PD_INT": ("gpio", "int-gpios", "ap33772s"),
+            "PD_INT": ("gpio", "pg-gpios", "pd_sink"),
             "PD_SCL": ("pinmux", "I2C0_SCL"),
             "PD_SDA": ("pinmux", "I2C0_SDA"),
             "I2C_PU": ("gpio", "i2c-pullup-gpios", "power_hub"),

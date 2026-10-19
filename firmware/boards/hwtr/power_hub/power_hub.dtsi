@@ -19,10 +19,9 @@
 
 	power_hub: power-hub {
 		compatible = "hwtr,power-hub";
-		/* IO42 I2C_PU: the AP33772S's I2C pull-ups, on once VBUS is up */
+		/* IO42 I2C_PU: the CH224A's I2C pull-ups, on once VBUS is up */
 		i2c-pullup-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;
-		pd = <&pd_regulator>;
-		pd-meter = <&pd_meter>;
+		pd = <&pd_sink>;
 		vbus-sense = <&vbus_sense>;
 		can = <&twai>;
 	};
@@ -186,35 +185,21 @@
 	pinctrl-names = "default";
 
 	/*
-	 * U1, the USB PD 3.1 sink.  Powered from VBUS: initialized by the
-	 * application once VBUS is up and I2C_PU is on.
+	 * U1, the USB PD 3.2 sink (CH224A, one-resistor mode: I2C on).  Powered
+	 * from VBUS: initialized by the application once VBUS is up, I2C_PU is
+	 * on and the chip answers.
 	 */
-	ap33772s: ap33772s@52 {
-		compatible = "diodes,ap33772s";
-		reg = <0x52>;
+	pd_sink: ch224a@22 {
+		compatible = "wch,ch224a";
+		reg = <0x22>;
 		zephyr,deferred-init;
-		/* IO39 PD_INT <- INT (5 V push-pull through 15k/27k) */
-		int-gpios = <&gpio1 7 GPIO_ACTIVE_HIGH>;
-		/*
-		 * The switch stays open below 15 V (CONFIG_HUB_ROWS_MIN_MV): a
-		 * sink without VSEL (FA01) starts on the source's 5 V contract
-		 */
-		vselmin-microvolt = <15000000>;
-
-		/* The contract: never above 28 V (the nodes' TVS, the eFuses' 33 V OVP) */
-		pd_regulator: regulator {
-			compatible = "diodes,ap33772s-regulator";
-			zephyr,deferred-init;
-			regulator-min-microvolt = <5000000>;
-			regulator-max-microvolt = <28000000>;
-			regulator-max-microamp = <5000000>;
-		};
-
-		/* VBUS, input current (5 mOhm Kelvin shunt R1), NTC TH1 by the switch */
-		pd_meter: meter {
-			compatible = "diodes,ap33772s-sensor";
-			zephyr,deferred-init;
-		};
+		/* IO39 PD_INT <- PG (open drain, 10k to 3.3 V, low once the contract is in place) */
+		pg-gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
+		/* CFG1 6.8k: 9 V at plug-in */
+		startup-microvolt = <9000000>;
+		/* Never above 28 V (the nodes' TVS, the eFuses' 33 V OVP) */
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <28000000>;
 	};
 };
 

@@ -115,10 +115,10 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
         <h2>USB-C PD <span id="contract">—</span></h2>
         <div class="readings">
           <div class="reading"><b id="v">–</b><small>volts</small></div>
-          <div class="reading"><b id="a">–</b><small>amps</small></div>
-          <div class="reading"><b id="w">–</b><small>watts</small></div>
+          <div class="reading"><b id="a">–</b><small>amps, rows</small></div>
+          <div class="reading"><b id="w">–</b><small>watts, rows</small></div>
         </div>
-        <svg class="spark" id="pd-spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-label="Input power, last two minutes">
+        <svg class="spark" id="pd-spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-label="The rows' power, last two minutes">
           <polygon points=""/><polyline points=""/>
         </svg>
         <div class="pdos" id="pdos" aria-label="What the charger offers"></div>
@@ -140,7 +140,7 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
         <dl>
           <dt>Bus</dt><dd id="can-state">–</dd>
           <dt>Enumerated</dt><dd id="enum">–</dd>
-          <dt>Temperature</dt><dd id="temp">–</dd>
+          <dt>PD sink</dt><dd id="sink">–</dd>
           <dt>Firmware</dt><dd id="fw">–</dd>
         </dl>
         <div class="actions">
@@ -256,15 +256,16 @@ function hubState(s) {
 
 function pdoText(p) {
   const v = p.type === "fixed" ? `${p.mv / 1000} V` : `${p.mv_min / 1000}–${p.mv / 1000} V`;
-  return `${p.type === "fixed" ? "" : p.type.toUpperCase() + " "}${v} ${p.ma / 1000} A`;
+  const what = p.type === "avs" ? `${p.w} W` : `${p.ma / 1000} A`;
+  return `${p.type === "fixed" ? "" : p.type.toUpperCase() + " "}${v} ${what}`;
 }
 
 function renderPd(pd) {
   const c = pd.contract;
   $("contract").textContent = c ? `${c.mv / 1000} V · ${c.ma / 1000} A${c.epr ? " · EPR" : ""}` : "no contract";
   $("v").textContent = c ? fix(pd.vbus_mv, 2) : "–";
-  $("a").textContent = c ? fix(pd.ibus_ma, 2) : "–";
-  const mw = c ? pd.vbus_mv * pd.ibus_ma / 1000 : 0;
+  $("a").textContent = c ? fix(pd.rows_ma, 2) : "–";
+  const mw = c ? pd.vbus_mv * pd.rows_ma / 1000 : 0;
   $("w").textContent = c ? (mw / 1000).toFixed(1) : "–";
   pdSpark.push(mw);
   $("pdos").replaceChildren(...pd.pdos.map((p) => {
@@ -275,7 +276,9 @@ function renderPd(pd) {
     return el;
   }));
   document.querySelector(`input[name=pref][value="${pd.pref}"]`).checked = true;
-  $("temp").textContent = c ? `${pd.temp_c} °C at the switch` : "–";
+  $("sink").textContent = pd.state === "usb" ? "–" :
+    `asked ${pd.asked_mv ? pd.asked_mv / 1000 + " V" : "9 V (CFG1)"} · PG ${pd.pg ? "good" : "high"}` +
+    (pd.epr_refused ? " · 28 V refused" : "");
 }
 
 /* STATUS byte 6 of the bay (docs/rack-protocol.md); its camera serves on 8081 */

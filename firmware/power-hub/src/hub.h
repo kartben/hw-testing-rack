@@ -12,7 +12,7 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/can.h>
-#include <zephyr/drivers/mfd/ap33772s.h>
+#include <zephyr/drivers/regulator/ch224a.h>
 
 #include <hwtr/rack_hub.h>
 
@@ -52,17 +52,18 @@ enum hub_pd_state {
 struct hub_pd_status {
 	enum hub_pd_state state;
 	bool epr_pref;
+	bool epr_refused;    /* 28 V asked, VBUS did not follow: 20 V until the charger changes */
 	bool final;          /* contract stable: rows may be on */
+	bool power_good;     /* the sink's PG */
+	uint8_t protocol;    /* the sink's status (CH224A_STATUS_*) */
 	uint32_t vbus_mv;    /* VBUS_SENSE (ADC) */
-	uint32_t contract_mv;
+	uint32_t asked_mv;   /* the voltage asked for, 0 none yet (the sink's own 9 V) */
+	uint32_t granted_ma; /* the current the charger grants (the sink) */
+	uint32_t contract_mv; /* asked for and reached */
 	uint32_t contract_ma;
 	int selected;        /* PDO number, 0 none */
-	uint32_t meter_mv;   /* the sink's own measurements */
-	uint32_t meter_ma;
-	int temp_c;
-	uint8_t faults;      /* BIT(enum mfd_ap33772s_event) seen since boot */
-	int npdos;
-	struct ap33772s_pdo pdos[AP33772S_PDO_COUNT];
+	int npdos;           /* 0: the sink shows no offers */
+	struct ch224a_pdo pdos[CH224A_PDO_COUNT];
 };
 
 int pd_init(bool epr);

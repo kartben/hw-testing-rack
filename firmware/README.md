@@ -8,7 +8,7 @@ Two applications, both on an ESP32-S3, share this tree:
 | **[Power hub](power-hub/README.md)** | one per rack: USB-C PD in, rows A–D, the rack bus (CAN) master |
 
 They speak the rack bus protocol ([docs/rack-protocol.md](../docs/rack-protocol.md))
-and share [`common/`](common/): the protocol, the AP33772S drivers, Wi-Fi and
+and share [`common/`](common/): the protocol, the CH224A driver, Wi-Fi and
 hostname, the web pages' CSS and helpers, xterm.js, the development server
 and the screenshot tooling.
 
@@ -28,10 +28,10 @@ firmware/
   boards/hwtr/bay_node/          board definition: bay_node/esp32s3/procpu
   boards/hwtr/power_hub/         board definition: power_hub/esp32s3/procpu
   dts/bindings/                  hwtr,* bindings (dut-port, usb-mux, rack-bus, rack-rows,
-                                 power-hub) and diodes,ap33772s (MFD, regulator, sensor)
+                                 power-hub) and wch,ch224a (the hub's PD sink, a regulator)
   common/                        shared by both applications
     include/hwtr/, lib/          rack bus protocol (frames, hub and node state machines), Wi-Fi
-    drivers/                     AP33772S USB PD sink: MFD, regulator, sensor (out of tree)
+    drivers/                     CH224A USB PD sink as a regulator (out of tree)
     web/                         rack.css, rack.mjs, vendor/xterm (xterm.js 6.0.0, MIT),
                                  devserver.py, shots.py
     tests/rack_bus/              the rack bus on a simulated rack (ztest, native_sim)

@@ -6,7 +6,7 @@ dogfooding rig for Zephyr's new USB host stack.  The firmware lives in
 ([`firmware/README.md`](../firmware/README.md): build, flashing, shell, pin
 map), the power hub ([`firmware/power-hub/README.md`](../firmware/power-hub/README.md)),
 and what they share ([`firmware/common`](../firmware/common/)): the rack bus
-protocol ([rack-protocol.md](rack-protocol.md)), the AP33772S drivers,
+protocol ([rack-protocol.md](rack-protocol.md)), the CH224A driver,
 Wi-Fi, the web pages' CSS, helpers and tooling.
 
 > **Status:** both boards and applications build against Zephyr main
@@ -38,7 +38,7 @@ Wi-Fi, the web pages' CSS, helpers and tooling.
 | Stand-in | `esp32s3_devkitc/esp32s3/procpu` + `firmware/bay-node/boards/esp32s3_devkitc_procpu.overlay` (same GPIO map) |
 | Bench node | `m5stack_stamps3/esp32s3/procpu` + `firmware/bay-node/boards/m5stack_stamps3_procpu.*`: serial console, network and web page on a StampS3, no USB host (its USB-C is the node's console) |
 | Application | `firmware/bay-node/` |
-| Power hub | `power_hub/esp32s3/procpu` in `firmware/boards/hwtr/power_hub/`, application `firmware/power-hub/`, bindings `hwtr,power-hub`, `hwtr,rack-rows`, `diodes,ap33772s` (+ `-regulator`, `-sensor`) |
+| Power hub | `power_hub/esp32s3/procpu` in `firmware/boards/hwtr/power_hub/`, application `firmware/power-hub/`, bindings `hwtr,power-hub`, `hwtr,rack-rows`, `wch,ch224a` |
 | Shared | `zephyr/module.yml` at the repository's root makes it a Zephyr module (the boards, bindings and `firmware/common/`): west finds it in the workspace made from `firmware/west.yml` (sysbuild too), and each application adds it for other workspaces |
 | Host side | [`tools/bayctl.py`](../tools/bayctl.py): power, reset, USB/IP, consoles, twister hardware map, labgrid / PDUDaemon configs ([ci.md](ci.md)) |
 | Build | `west build --sysbuild -b bay_node/esp32s3/procpu hw-testing-rack/firmware/bay-node` in a workspace made from `firmware/west.yml` (MCUboot, then the application signed for it) |
@@ -80,10 +80,10 @@ node's real console code, Zephyr's shell sample as the DUT); details in
 
 | Feature | Status | How |
 |---|---|---|
-| USB-C PD | written, compile-tested | VBUS on the ADC, I²C pull-ups on once VBUS is up, the AP33772S drivers initialized then (`zephyr,deferred-init`); asks for 28 V EPR when offered, else 20 V; never above 28 V (`regulator-max-microvolt`) |
+| USB-C PD | written, compile-tested | the CH224A asks for 9 V by itself; VBUS on the ADC, I²C pull-ups on once VBUS is up, the CH224A driver initialized once the chip answers (`zephyr,deferred-init`); asks for 28 V EPR when offered, else 20 V, and checks VBUS reaches it (28 V falls back to 20 V); never above 28 V (`regulator-max-microvolt`) |
 | Rows | written | eFuse enables held across a controller reset (pad hold); off until the contract has held 500 ms, then staggered (300 ms); `hub row <A–D> on\|off\|cycle`, the page, `POST /api/row` |
 | Shedding | written | from the measured row currents (IMON): above 90 % of the contract for 1 s the next row in the shed order goes off, back when the contract has room again |
-| Faults | written | each eFuse's FLT and the PD sink's protections as events |
+| Faults | written | each eFuse's FLT while its row is on, past the soft start; a contract lost (PG) as an event |
 | Rack bus master | written, tested on a simulated rack | enumeration over the POS tokens, the node table, commands with retries, the RACK frame every second |
 | Web, shell | written | status page (PD offers, rows and their bays, rack bus, events), JSON API, `/metrics`, `hub …` shell on the console USB-C (no telnet) |
 | Access | written | reading is open; the page's actions (rows, contract, enumeration, node commands) are admin requests signed with the hub's key, claimed with a press on its BOOT button (`firmware/common/lib/admin.c`, as the bay nodes) |

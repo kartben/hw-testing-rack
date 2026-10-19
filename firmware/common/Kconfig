@@ -3,39 +3,20 @@
 
 menu "hw-testing-rack"
 
-config MFD_AP33772S
-	bool "Diodes AP33772S USB PD 3.1 sink (MFD)"
+config REGULATOR_CH224A
+	bool "WCH CH224A USB PD contract as a regulator"
 	default y
-	depends on DT_HAS_DIODES_AP33772S_ENABLED
-	depends on MFD
+	depends on DT_HAS_WCH_CH224A_ENABLED
+	depends on REGULATOR
 	select I2C
 	help
-	  I2C access, status events and source capabilities of the AP33772S;
-	  its children are a regulator (the contract) and a sensor.
+	  The voltage request, the protocol status, PG and the charger's
+	  offers of a CH224A sink (I2C, one-resistor mode).
 
-config MFD_AP33772S_INIT_PRIORITY
-	int "AP33772S MFD init priority"
-	default 80
-	depends on MFD_AP33772S
-
-config REGULATOR_AP33772S
-	bool "Diodes AP33772S USB PD contract as a regulator"
-	default y
-	depends on DT_HAS_DIODES_AP33772S_REGULATOR_ENABLED
-	depends on REGULATOR
-	depends on MFD_AP33772S
-
-config REGULATOR_AP33772S_INIT_PRIORITY
-	int "AP33772S regulator init priority"
+config REGULATOR_CH224A_INIT_PRIORITY
+	int "CH224A regulator init priority"
 	default 86
-	depends on REGULATOR_AP33772S
-
-config SENSOR_AP33772S
-	bool "Diodes AP33772S measurements (VOUT, current, temperature)"
-	default y
-	depends on DT_HAS_DIODES_AP33772S_SENSOR_ENABLED
-	depends on SENSOR
-	depends on MFD_AP33772S
+	depends on REGULATOR_CH224A
 
 config HWTR_RACK_PROTO
 	bool "Rack bus protocol (docs/rack-protocol.md)"
