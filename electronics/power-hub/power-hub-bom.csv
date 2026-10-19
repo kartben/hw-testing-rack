@@ -47,7 +47,7 @@ R211,1,330,R_0603_1608Metric,0603WAF3300T5E,UNI-ROYAL(Uniroyal Elec),C23138,Resi
 SW1,1,RESET,SW_Push_1P1T_XKB_TS-1187A,TS-1187A-B-A-B,XKB,C318884,tactile switch 5.1 × 5.1 mm,,,
 SW2,1,BOOT,SW_Push_1P1T_XKB_TS-1187A,TS-1187A-B-A-B,XKB,C318884,tactile switch 5.1 × 5.1 mm,,,
 TH1,1,10k NTC,R_0603_1608Metric,NCP18XH103F03RB,Murata,C13564,"NTC 10 kΩ B3380, 0603 (the AP33772S's default curve)",,,
-U1,1,AP33772SDKZ-13-FA02,QFN-24-1EP_4x4mm_P0.5mm_EP2.7x2.7mm,AP33772SDKZ-13-FA02,Diodes Incorporated,C50341643,"USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive, V/I/T telemetry",,LCSC stock was 0 on 2026-10-18: JLC global sourcing (DigiKey/Mouser) or a consigned reel,
+U1,1,AP33772SDKZ-13-FA01,QFN-24-1EP_4x4mm_P0.5mm_EP2.7x2.7mm,AP33772SDKZ-13-FA01,Diodes Incorporated,C24374260,"USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive, V/I/T telemetry",,"LCSC/JLC stock 0 on 2026-10-19: JLC Global Sourcing from DigiKey (365 in stock, €2.09 @1, €1.54 @10); the FA02 drops in from ≈ 14/12/2026",
 U2,1,LMR51635YDDCR,TSOT-23-6,LMR51635YDDCR,Texas Instruments,C45262770,"4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum",,"LMR51635YFDDCR (C44750836): same, forced PWM, no spread spectrum",
 U3,1,AP2112K-3.3TRG1,SOT-23-5,AP2112K-3.3TRG1,Diodes Incorporated,C51118,"3.3 V 600 mA LDO, 250 mV dropout",,,
 U4,1,ESP32-S3-MINI-1-N8,ESP32-S2-MINI-1,ESP32-S3-MINI-1-N8,Espressif,C2913206,"ESP32-S3 module, 8 MB flash, PCB antenna, USB OTG (full speed)",,,

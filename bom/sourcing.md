@@ -7,14 +7,17 @@ prices change: check them again on the day of the order.
 
 | Part | LCSC / JLC | DigiKey FR | Others |
 |---|---|---|---|
-| AP33772SDKZ-13-**FA02** (VSEL firmware, the BOM's part, C50341643) | 0 | 0, 2 689 due 14/12/2026, factory lead 32 weeks | Avnet 0, not listed at Farnell |
-| AP33772SDKZ-13-**FA01** (first firmware, C24374260) | 0 | **365 in stock**, €2.09 (1), €1.54 (10) HT | |
+| AP33772SDKZ-13-**FA02** (VSEL firmware, the BOM's part until 2026-10-19, C50341643) | 0 | 0, 2 689 due 14/12/2026, factory lead 32 weeks | Avnet 0, not listed at Farnell |
+| AP33772SDKZ-13-**FA01** (first firmware, C24374260: the BOM's part since 2026-10-19) | 0 | **365 in stock**, €2.09 (1), €1.54 (10) HT | |
 
 Same die, package (W-QFN4040-24), pinout and I2C register map.  FA02 adds VSEL (pin 11), GPIO (pin 7) and Data
 Role Swap.  On FA01 both pins are NC (datasheet DS46176 Rev. 5-2), so R7 (VSEL, 39 k) does nothing there.
 Without VSEL, FA01 first asks for 5 V (VSELMIN defaults to 5 V: VRACK = 5 V, the row eFuses stay off), and the
 controller asks for 20 V or 28 V over I2C.  FA01 fits the v0.5 hub as drawn, but the firmware then has to request
 the contract.  To get it onto the JLC boards: JLC Global Sourcing, or consigned parts.
+
+Chosen (2026-10-19, the user): the FA01, through JLC Global Sourcing from DigiKey (5 parts).  The hub firmware sets
+VSELMIN to 15 V and asks for the contract; R7 stays fitted, so an FA02 drops in once it is back.
 
 If neither variant can be had, the hub needs a new design.  These EPR sinks with I2C are in stock at LCSC:
 WCH CH224A / CH224Q (C42459160 / C46061833: 28 V, no switch driver, no V/I telemetry) and Hynetek HUSB238A-BB001

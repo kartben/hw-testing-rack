@@ -208,7 +208,7 @@ and the sequencing: [power.md](power.md).
 | Block | Parts | Notes |
 |---|---|---|
 | USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → 5 mΩ Kelvin shunt → back-to-back IRF7842 NMOS → VRACK, 100 µF / 50 V | the whole rack's current, ≤ 5 A |
-| PD sink | AP33772S: VSEL 39 k (asks for 20 V by itself), Rd 5.1 k on CC1/CC2, NTC 10 k by the switch, I²C + INT to the controller, its own LED in the front wall (PD) | the controller asks for 28 V EPR; the chip keeps the contract through controller resets |
+| PD sink | AP33772S FA01 (the charger's 5 V first; R7 39 k, an FA02's VSEL, stays fitted), Rd 5.1 k on CC1/CC2, NTC 10 k by the switch, I²C + INT to the controller, its own LED in the front wall (PD) | the controller sets VSELMIN to 15 V and asks for 28 V EPR (else 20 V); rows stay locked out below 15 V; the chip keeps the contract through controller resets |
 | Rows A–D | 4 × TPS26600 (1.6 A, ≈ 5 ms soft start, UV 15 V / OV 33 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md) |
 | Row control | SHDN pulled low by 100 k; the controller drives ROW_EN high through 10 k (3.0 V; the datasheet's SHDN range is 0–4 V) | **rows are off without firmware**; on once the contract is final, one after the other |
 | Per row | ON (green, from the row's own output through 10 k by the eFuse); FAULT (red) from 3.3 V into the open-drain FLT; FLT also to the controller (100 k pull-up) | Kingbright KPA-3010 side-view LEDs in the box's front wall |
@@ -339,9 +339,10 @@ $200 (catalogue × 1.12).  ENIG would add ≈ $12.60.  JLC's page also lists a S
 **Power hub v0.5 is not quoted yet.**  It carries the ESP32-S3 module, so it needs Standard PCBA,
 X-ray, like the bay node, and ENIG for now.  `tools/bom.py` carries an estimate built the same way: ≈ $213
 for 5 four-layer PCBs with 2 assembled.  That is ≈ $55 of PCB (the 4-layer engineering fee),
-$52 of components at catalogue prices, and $3 per extended part type (19).  The AP33772SDKZ-13-FA02
-was out of stock at LCSC on 2026-10-18: check JLC's global sourcing, or consign a reel.  Re-quote
-before ordering.
+$52 of components at catalogue prices, and $3 per extended part type (19), now ≈ $227 with the
+AP33772S.  The FA02 is out of stock until ≈ 14/12/2026: the hub takes the FA01, bought through JLC
+Global Sourcing from DigiKey (5 parts with JLC's reported ≈ 50 % markup, ≈ $13 over the catalogue
+line, and ≈ 2 weeks for them to clear into JLC).  Re-quote before ordering.
 
 Two changes were made after that quote and are not re-quoted (`JLC_FINISH`
 and `jlc_order()` in `tools/bom.py` apply them, indicatively):

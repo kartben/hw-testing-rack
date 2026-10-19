@@ -1,9 +1,9 @@
 """Power hub v0.5 — one per rack, in the power box under A1 (mechanical/parts/power_box.scad).
 
 USB-C PD in, from a dedicated USB PD 3.1 charger (140 W EPR recommended) on a 5 A e-marked cable.
-An AP33772S sink controller negotiates on its own (VSEL: 20 V at power-up), the rack controller
-then asks for 28 V EPR when the charger offers it; the chip keeps the contract, and the EPR
-keep-alive, through ESP32 reboots.  Its back-to-back NMOS switch connects VBUS to the rack bus
+An AP33772S sink controller (the FA01: the charger's 5 V first) negotiates the PD contract: the rack
+controller asks it for 28 V EPR when the charger offers it, 20 V otherwise; the chip keeps the
+contract, and the EPR keep-alive, through ESP32 reboots.  Its back-to-back NMOS switch connects VBUS to the rack bus
 (VRACK, 20 or 28 V) once a contract is in place; a 5 mΩ Kelvin shunt gives it the input current.
 VRACK fans out to four rows (A–D), each with its own TPS26600 eFuse:
   * current limit ≈ 1.6 A (RILIM 7.5k): it protects the JST PH (2 A) row cable;
@@ -72,7 +72,7 @@ def board() -> Board:
               comments=["USB-C PD distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack",
                         "Generated from electronics/power-hub/design.py — edit the Python, then regenerate"])
     b.root_notes = [
-        "Power hub v0.5 — USB-C PD in (AP33772S, 20 V, 28 V EPR on request) → NMOS switch → VRACK → 4 × TPS26600 "
+        "Power hub v0.5 — USB-C PD in (AP33772S: 20 V or 28 V EPR, as the controller asks) → NMOS switch → VRACK → 4 × TPS26600 "
         "eFuse (1.6 A) → 6-pin JST PH rows A–D.",
         "Rack controller: ESP32-S3-MINI-1 on VBUS (ahead of the switch), TCAN1462V (CAN master, star bus, both "
         "terminations here), POS token per row.",
@@ -248,7 +248,8 @@ def board() -> Board:
     part(s, "R1", "shunt5m", {"1": "PD_VBUS", "2": "PD_ISENP", "3": "PD_VCCS", "4": "PD_VCC"}, "5m",
          pcb=P(55.8, 11.5, 270))
 
-    s.block("AP33772S USB PD 3.1 sink: 20 V at power-up (VSEL), 28 V EPR on request over I2C; drives the NMOS pair")
+    s.block("AP33772S USB PD 3.1 sink (FA01): the charger's 5 V first, then 20 V / 28 V EPR as the controller asks over I2C;")
+    s.block("drives the NMOS pair")
     part(s, "U1", "pd_sink", {"VCC": "PD_VCCS", "ISENP": "PD_ISENP", "PWR_EN": "PD_PWREN", "VOUT": "PD_VOUT",
                               "CC1": "PD_CC1", "CC2": "PD_CC2", "VSEL": "PD_VSEL", "OTP": "PD_OTP", "IFB": "PD_IFB",
                               "V5V": "PD_V5V", "V18": "PD_V18", "SDA": "PD_SDA", "SCL": "PD_SCL", "INT": "PD_INT5",
@@ -259,6 +260,7 @@ def board() -> Board:
     C(s, "C7", "100n", "PD_IFB", "GND", pcb=P(47.0, 8.25, 90))
     R(s, "R5", "5.1k", "PD_CC1", "GND", pcb=P(46.0, 11.8, 180))
     R(s, "R6", "5.1k", "PD_CC2", "GND", pcb=P(46.0, 13.4, 180))
+    # VSEL on an FA02 (20 V by itself); an NC pin on the FA01 fitted now: kept, so an FA02 drops in
     R(s, "R7", "39k", "PD_VSEL", "GND", pcb=P(44.4, 8.6, 180))
     part(s, "TH1", "ntc10k", {"1": "PD_OTP", "2": "GND"}, "10k NTC", pcb=P(60.4, 26.8, 0))
     R(s, "R8", "6.2k", "PD_PWREN", "PD_GATE", pcb=P(51.4, 16.0, 270))
@@ -281,10 +283,12 @@ def board() -> Board:
     R(s, "R4", "10k", "VBUS_SENSE", "GND", pcb=P(19.0, 20.4, 0))
     C(s, "C3", "100n", "VBUS_SENSE", "GND", pcb=P(19.0, 22.0, 0))
     s.block("PD status (front LED), driven by the AP33772S: breathing = contract and VRACK on, steady = the charger")
-    s.block("can't give what VSEL / the controller asked for, flicker = fault (OVP, OCP, UVP, OTP)")
+    s.block("can't give what the controller asked for, flicker = fault (OVP, OCP, UVP, OTP)")
     R(s, "R2", "1k", "PD_LED", "PD_LED_A", pcb=P(LED_X[4], H - 5.0, 90))
     part(s, "D3", "led_side_g", {"A": "PD_LED_A", "K": "GND"}, "PD", pcb=P(LED_X[4], LED_Y, 180))
-    s.note("VSEL 39 kΩ: the AP33772S asks for 20 V by itself at power-up; the controller may then ask for 28 V EPR.")
+    s.note("U1 is the FA01 (the FA02 was out of stock): it takes the charger's 5 V and waits; the controller sets VSELMIN to")
+    s.note("  15 V (the switch opens below it) and asks for 20 V or 28 V EPR.  Rows stay locked out below 15 V (eFuse UV).")
+    s.note("R7 39 kΩ: VSEL on an FA02 (20 V by itself at power-up), NC on the FA01; kept so that an FA02 drops in.")
     s.note("The chip turns the NMOS pair on once a contract is in place and VREQ ≥ VSELMIN, and off on OVP/OCP/UVP/OTP.")
     s.note("SMAJ30A: 30 V stand-off, above a 28 V EPR contract; the eFuses (60 V) and the TPS26600 OVP (33 V) follow.")
     s.note("R1 5 mΩ: ISENP and VCC leave from its own sense pads (Kelvin), the AP33772S reads the input current.")

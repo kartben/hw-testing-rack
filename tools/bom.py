@@ -58,14 +58,16 @@ JLC_QUOTE = {
     },
     # v0.5 (USB-C PD input, eFuses, rack controller; 4 layers) is NOT quoted yet: an estimate built
     # like the bay node's Standard quote (the ESP32 module needs Standard PCBA and X-ray), its 4-layer
-    # engineering fee, components at catalogue prices, $3 per extended part type (19).  The
-    # AP33772SDKZ-13-FA02 was out of stock at LCSC on 2026-10-18: global sourcing would add to it.
+    # engineering fee, components at catalogue prices, $3 per extended part type (19).  The AP33772S is
+    # the FA01 (the FA02 is out of stock until ≈ 14/12/2026), bought by JLC Global Sourcing from DigiKey:
+    # 5 at €2.09 (2 boards and spares) with JLC's markup, reported ≈ 50 % (no official figure found), ≈ $17,
+    # less the 2 × $1.84 already in the components line; and ≈ 2 weeks for the parts to clear into JLC.
     "power-hub": {
-        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 213.74, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 227.04, "estimate": True,
         "spec": "4-layer 76×140 mm, ENIG",
         "pcb": {"engineering": 25.00, "ENIG": 17.60, "board": 12.00},
         "pcba": {"setup": 25.75, "stencil": 8.27, "components": 52.32, "feeders": 57.00, "SMT": 2.00,
-                 "X-ray": 13.28, "packaging": 0.52},
+                 "X-ray": 13.28, "packaging": 0.52, "global sourcing": 13.30},
     },
     # the drawer's DATA port board (v1.0, 2 layers, parts on one side) is NOT quoted either: Economic
     # PCBA (setup $8, stencil $1.50, $3 per extended part type: the USB4105, the S8B-PH and the

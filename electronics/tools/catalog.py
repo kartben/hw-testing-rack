@@ -176,10 +176,14 @@ CAT = {
     "hdr2x8": Cat("Connector_Generic:Conn_02x08_Odd_Even", "Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical",
                   "2x8 pin header 2.54 mm", "generic", "", 0.10, description="control header (DNP by default)"),
     # power hub v0.5: USB-C PD input (AP33772S sink, back-to-back NMOS switch, Kelvin shunt)
-    "pd_sink": Cat("bench:AP33772S", "Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.7x2.7mm", "AP33772SDKZ-13-FA02",
-                   "Diodes Incorporated", "C50341643", 1.84,
+    # the FA01: the FA02 (VSEL: 20 V by itself) is out of stock everywhere until ≈ 14/12/2026.  Same die,
+    # package, pinout and I2C map; pins 7 (GPIO) and 11 (VSEL) are NC on it, so it takes the charger's 5 V
+    # first and waits for the controller (the hub keeps R7 on pin 11: an FA02 drops in later)
+    "pd_sink": Cat("bench:AP33772S", "Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.7x2.7mm", "AP33772SDKZ-13-FA01",
+                   "Diodes Incorporated", "C24374260", 2.27,
                    datasheet="https://www.diodes.com/assets/Datasheets/AP33772S.pdf",
-                   alt="LCSC stock was 0 on 2026-10-18: JLC global sourcing (DigiKey/Mouser) or a consigned reel",
+                   alt="LCSC/JLC stock 0 on 2026-10-19: JLC Global Sourcing from DigiKey (365 in stock, €2.09 @1, "
+                       "€1.54 @10); the FA02 drops in from ≈ 14/12/2026",
                    description="USB PD 3.1 sink controller (EPR 28 V), I2C, VBUS NMOS gate drive, V/I/T telemetry"),
     "usbc5a": Cat("Connector:USB_C_Receptacle_USB2.0_16P",
                   "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", "USB4105-GF-A-120", "GCT",

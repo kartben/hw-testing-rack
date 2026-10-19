@@ -36,13 +36,15 @@ the nodes start above 13.5 V.
 
 ## Negotiation and sequencing
 
-1. **Plug-in.**  VBUS comes up at 5 V; the AP33772S negotiates on its own and,
-   with its VSEL resistor, asks for **20 V**.  It turns its back-to-back NMOS
-   switch on once the contract is in place: VRACK follows VBUS.
+1. **Plug-in.**  VBUS comes up at 5 V.  The AP33772S (the FA01, without VSEL)
+   takes the charger's default **5 V** contract and turns its back-to-back NMOS
+   switch on: VRACK is 5 V, and every row stays locked out (the eFuses' UV
+   lockout is 15 V).  A blank or crashed controller leaves the rack there, safe.
 2. **Controller.**  The ESP32-S3 runs from VBUS *ahead of* the switch (a buck
    on from ≈ 4 V, a low-dropout LDO): it is alive from the first 5 V.  It reads
-   the charger's offers over I²C and asks for **28 V EPR** when the charger and
-   the cable offer it, otherwise it keeps 20 V.
+   the charger's offers over I²C, sets the sink's VSELMIN to 15 V (the switch
+   opens below it) and asks for **28 V EPR** when the charger and the cable
+   offer it, otherwise for **20 V**.  Contracts under 15 V never power the rows.
 3. **Rows.**  Every row's eFuse is **off** until the contract is final (each
    eFuse's SHDN is pulled low).  The controller then turns the rows on one
    after the other, so each bay node sees one clean power-up instead of
@@ -110,10 +112,13 @@ shorted row sits at its limit while the others carry on.
   sensor API).  The hub firmware carries it until it lands, preferably reshaped
   as an MFD (a regulator child for the contract, a sensor child for V/I/T).
 
-Sourcing: the AP33772SDKZ-13-FA02 (standard firmware, VSEL) was out of stock at
-LCSC on 2026-10-18 (C50341643): check JLC global sourcing, or consign a reel,
-before ordering.  The Hynetek HUSB238A (in stock) is the fallback, if its
-register map can be had.
+Sourcing (2026-10-19): the AP33772SDKZ-13-FA02 (VSEL: 20 V by itself) is out of
+stock everywhere until ≈ 14/12/2026 (32 weeks from the factory).  The hub takes the
+**FA01**: same die, package, pinout and I²C map, pins 7 and 11 NC, so it starts at
+5 V and the controller asks for more (step 1).  JLC buys it through Global Sourcing
+from DigiKey (365 in stock, LCSC C24374260 at 0); re-check the day of the order.
+R7 (the FA02's VSEL resistor) stays on the board: an FA02 drops in later.  If the
+FA01 goes too: WCH CH224A/Q or the Hynetek HUSB238A, both a hub respin.
 
 ### Bus voltage: VRACK, 20 or 28 V
 

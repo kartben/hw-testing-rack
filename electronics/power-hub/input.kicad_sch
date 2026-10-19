@@ -3292,7 +3292,7 @@
 		)
 		(uuid "ba5614ea-2898-569d-a2e3-69f7d25f2ed5")
 	)
-	(text "AP33772S USB PD 3.1 sink: 20 V at power-up (VSEL), 28 V EPR on request over I2C; drives the NMOS pair"
+	(text "drives the NMOS pair"
 		(exclude_from_sim no)
 		(at 20.32 100.33 0)
 		(effects
@@ -3302,7 +3302,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "0c7e4a6d-8cc6-5986-b4d5-94b6c06338bd")
+		(uuid "393cdd14-1782-5cd9-90ad-ca43a2ed4994")
 	)
 	(text "I2C to the controller, VBUS sense"
 		(exclude_from_sim no)
@@ -3316,7 +3316,7 @@
 		)
 		(uuid "3b2a1d2f-37d5-5ce2-95b1-1952c431b741")
 	)
-	(text "can't give what VSEL / the controller asked for, flicker = fault (OVP, OCP, UVP, OTP)"
+	(text "can't give what the controller asked for, flicker = fault (OVP, OCP, UVP, OTP)"
 		(exclude_from_sim no)
 		(at 20.32 220.98 0)
 		(effects
@@ -3326,7 +3326,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "3cdce301-b965-5a2c-aaed-c6899839f5c0")
+		(uuid "13b79eb5-5e9f-5b71-aa26-30a7d8261265")
 	)
 	(symbol
 		(lib_id "Connector:USB_C_Receptacle_USB2.0_16P")
@@ -4981,7 +4981,7 @@
 				)
 			)
 		)
-		(property "Value" "AP33772SDKZ-13-FA02"
+		(property "Value" "AP33772SDKZ-13-FA01"
 			(at 138.43 153.67 0)
 			(effects
 				(font
@@ -5016,7 +5016,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "AP33772SDKZ-13-FA02"
+		(property "MPN" "AP33772SDKZ-13-FA01"
 			(at 138.43 129.54 0)
 			(effects
 				(font
@@ -5034,7 +5034,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C50341643"
+		(property "LCSC" "C24374260"
 			(at 138.43 129.54 0)
 			(effects
 				(font
@@ -5043,7 +5043,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternative" "LCSC stock was 0 on 2026-10-18: JLC global sourcing (DigiKey/Mouser) or a consigned reel"
+		(property "Alternative" "LCSC/JLC stock 0 on 2026-10-19: JLC Global Sourcing from DigiKey (365 in stock, €2.09 @1, €1.54 @10); the FA02 drops in from ≈ 14/12/2026"
 			(at 138.43 129.54 0)
 			(effects
 				(font
@@ -9728,10 +9728,10 @@
 		)
 		(uuid "d15c43db-2f57-59ca-8afa-f4572457d0af")
 	)
-	(text_box "VSEL 39 kΩ: the AP33772S asks for 20 V by itself at power-up; the controller may then ask for 28 V EPR.\nThe chip turns the NMOS pair on once a contract is in place and VREQ ≥ VSELMIN, and off on OVP/OCP/UVP/OTP.\nSMAJ30A: 30 V stand-off, above a 28 V EPR contract; the eFuses (60 V) and the TPS26600 OVP (33 V) follow.\nR1 5 mΩ: ISENP and VCC leave from its own sense pads (Kelvin), the AP33772S reads the input current.\nVBUS_SENSE: 100k/10k from VBUS → 2.5 V at 28 V for the ESP32's ADC; also tells the firmware when to enable I2C_PU."
+	(text_box "U1 is the FA01 (the FA02 was out of stock): it takes the charger's 5 V and waits; the controller sets VSELMIN to\n  15 V (the switch opens below it) and asks for 20 V or 28 V EPR.  Rows stay locked out below 15 V (eFuse UV).\nR7 39 kΩ: VSEL on an FA02 (20 V by itself at power-up), NC on the FA01; kept so that an FA02 drops in.\nThe chip turns the NMOS pair on once a contract is in place and VREQ ≥ VSELMIN, and off on OVP/OCP/UVP/OTP.\nSMAJ30A: 30 V stand-off, above a 28 V EPR contract; the eFuses (60 V) and the TPS26600 OVP (33 V) follow.\nR1 5 mΩ: ISENP and VCC leave from its own sense pads (Kelvin), the AP33772S reads the input current.\nVBUS_SENSE: 100k/10k from VBUS → 2.5 V at 28 V for the ESP32's ADC; also tells the firmware when to enable I2C_PU."
 		(exclude_from_sim no)
 		(at 20.32 252.73 0)
-		(size 240.03 16.51)
+		(size 240.03 20.32)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)
