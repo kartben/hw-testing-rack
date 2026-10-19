@@ -2397,43 +2397,53 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, XIAO, nRF54L15 DK)",
+"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK)",
 "supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)",
-"qty": 5,
+"qty": 3,
 "unit_eur": 2.5,
 "notes": "both plugs bent across their wide face (up / down, not left / right); USB-C is reversible, so either bend works.  Check the listing says data, not charge only",
 "unit": "pcs",
-"ext_eur": 12.5
+"ext_eur": 7.5
 },
 {
 "category": "Cables",
-"item": "USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: UNO R4)",
+"item": "USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: UNO R4, XIAO)",
 "supplier": "AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps)",
-"qty": 1,
+"qty": 3,
 "unit_eur": 2.0,
 "notes": "straight at both ends; any short C ↔ C that states data (many short ones are charge-only)",
 "unit": "pcs",
-"ext_eur": 2.0
+"ext_eur": 6.0
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, PICO 2, nRF52840 DK)",
+"item": "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK)",
 "supplier": "AliExpress 2251832791887129 (HOQO, \"to Micro Male\", 25 cm)",
-"qty": 5,
+"qty": 3,
 "unit_eur": 1.0,
 "notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end any up / down bend",
 "unit": "pcs",
-"ext_eur": 5.0
+"ext_eur": 3.0
+},
+{
+"category": "Cables",
+"item": "USB-C ↔ micro-B, straight, 10 cm (DUT cable: PICO 2)",
+"supplier": "AliExpress (USB-C ↔ micro-B, straight, 10 cm, USB 2.0 data)",
+"qty": 2,
+"unit_eur": 2.0,
+"notes": "straight at both ends, an S on the plate (a converted bay's Pico 2); listing still to pick: check it says data and 10 cm plugs included",
+"unit": "pcs",
+"ext_eur": 4.0
 },
 {
 "category": "Cables",
 "item": "Micro-B 90° adapter, male → female, up and down, one of each per board",
 "supplier": "AliExpress (DIY-018, \"UP\" and \"DOWN\")",
-"qty": 10,
+"qty": 6,
 "unit_eur": 1.0,
 "notes": "keep the one whose female faces up once plugged into the board (the cable's straight plug stands on it, its cable leaves upwards); the other is a spare",
 "unit": "pcs",
-"ext_eur": 10.0
+"ext_eur": 6.0
 },
 {
 "category": "Power",
@@ -2499,11 +2509,11 @@
 "Printed parts": 58.0,
 "Fasteners": 15.27,
 "Motion": 18.85,
-"Cables": 52.08,
+"Cables": 49.08,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 868.46,
+"total_eur": 865.46,
 "prints": [
 {
 "part": "bay_label",
@@ -2641,8 +2651,8 @@
 {
 "part": "plate_bay_b3",
 "qty": 1,
-"grams_each": 37.0,
-"grams_total": 37.0,
+"grams_each": 36.8,
+"grams_total": 36.8,
 "stl": "mechanical/stl/plate_bay_b3.stl"
 },
 {

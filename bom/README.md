@@ -9,12 +9,12 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 58 |
-| Cables | 52 |
+| Cables | 49 |
 | Motion | 19 |
 | Fasteners | 15 |
-| **Total** | **868** |
+| **Total** | **865** |
 
-≈ **€109 per bay** all-in.
+≈ **€108 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -64,7 +64,7 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | ladder_base | 5 | 49.3 | `mechanical/stl/ladder_base.stl` |
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
 | plate_arduino-uno-r4 | 1 | 31.2 | `mechanical/stl/plate_arduino-uno-r4.stl` |
-| plate_bay_b3 | 1 | 37.0 | `mechanical/stl/plate_bay_b3.stl` |
+| plate_bay_b3 | 1 | 36.8 | `mechanical/stl/plate_bay_b3.stl` |
 | plate_frdm-mcxn947 | 1 | 36.9 | `mechanical/stl/plate_frdm-mcxn947.stl` |
 | plate_giga-r1-display | 1 | 36.6 | `mechanical/stl/plate_giga-r1-display.stl` |
 | plate_nrf52840-dk | 1 | 37.6 | `mechanical/stl/plate_nrf52840-dk.stl` |
@@ -226,10 +226,11 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  Every board is an **es
 | Cables | JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 (bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest flat at the front of the plenum) | 2 lot | 2.85 | 5.70 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length20CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS) | 1 lot | 3.19 | 3.19 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length30CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 60 cm, lot of 5 (power box → first bay of row B: VRACK, CAN, POS) | 1 lot | 4.69 | 4.69 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length60CM |
-| Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, XIAO, nRF54L15 DK) | 5  | 2.50 | 12.50 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
-| Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: UNO R4) | 1  | 2.00 | 2.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
-| Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, PICO 2, nRF52840 DK) | 5  | 1.00 | 5.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
-| Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 10  | 1.00 | 10.00 | AliExpress (DIY-018, "UP" and "DOWN") |
+| Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK) | 3  | 2.50 | 7.50 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
+| Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: UNO R4, XIAO) | 3  | 2.00 | 6.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
+| Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK) | 3  | 1.00 | 3.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
+| Cables | USB-C ↔ micro-B, straight, 10 cm (DUT cable: PICO 2) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ micro-B, straight, 10 cm, USB 2.0 data) |
+| Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 6  | 1.00 | 6.00 | AliExpress (DIY-018, "UP" and "DOWN") |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |
 | Cameras | Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm | 2  | 28.25 | 56.50 | Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey |

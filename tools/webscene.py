@@ -342,6 +342,30 @@ def flat_cable(a, b, length, r=CABLE_BEND_R, step=2.5):
     return [[round(float(v), 2) for v in p] for p in pts], round(shortfall, 1)
 
 
+def s_cable(a, b, length, step=2.5):
+    """A short cable between two straight plugs facing each other (the DATA socket's, pointing to the rear,
+    and a board's USB facing the port wall with room for a straight plug): out of each strain relief in its
+    own direction, an S in plan between them (a cubic, its two control points half the gap out), sloping
+    from one plug's height to the other's.  The spare length lies on the plate (not drawn).  Returns
+    (points, shortfall) like arch_cable; a bend tighter than CABLE_MIN_R counts as too short."""
+    pa, da = plug_exit(a)
+    pb, db = plug_exit(b)
+    gap = abs(float(np.dot(pb - pa, da)))
+    c = [pa, pa + da * gap / 2, pb + db * gap / 2, pb]
+    n = max(8, int(np.linalg.norm(pb - pa) / step))
+    t = np.linspace(0.0, 1.0, n + 1)[:, None]
+    plan = (1 - t) ** 3 * c[0] + 3 * (1 - t) ** 2 * t * c[1] + 3 * (1 - t) * t ** 2 * c[2] + t ** 3 * c[3]
+    d1 = 3 * ((1 - t) ** 2 * (c[1] - c[0]) + 2 * (1 - t) * t * (c[2] - c[1]) + t ** 2 * (c[3] - c[2]))
+    d2 = 6 * ((1 - t) * (c[2] - 2 * c[1] + c[0]) + t * (c[3] - 2 * c[2] + c[1]))
+    bend = np.abs(d1[:, 0] * d2[:, 1] - d1[:, 1] * d2[:, 0])
+    r_min = float(np.min(np.linalg.norm(d1[:, :2], axis=1) ** 3 / np.maximum(bend, 1e-9)))
+    run = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(plan[:, :2], axis=0), axis=1))])
+    total = float(run[-1])
+    pts = [np.array([p[0], p[1], pa[2] + (pb[2] - pa[2]) * s / total]) for p, s in zip(plan, run)]
+    shortfall = max(0.0, total - length) + max(0.0, CABLE_MIN_R - r_min) * 2
+    return [[round(float(v), 2) for v in p] for p in pts], round(shortfall, 1)
+
+
 def rounded_path(pts, r, step=2.0):
     """A polyline with its corners rounded (a quadratic curve within r of each corner): a flexible lead."""
     pts = [np.array(p, float) for p in pts]
@@ -665,7 +689,8 @@ def build(rack) -> Path:
         own connector (micro-B, USB-C…) at the other end.  A board's USB facing the port wall: right-angle plugs
         (`right`), or for a micro-B / mini-B board a 90° adapter with a straight plug standing on it (`adapter`),
         and an arch in between; a small board turned to the side wall (orient: side): straight plugs
-        (`straight`) and one flat bend."""
+        (`straight`) and one flat bend; a board facing the port wall from far enough (a converted bay's):
+        straight plugs too, facing each other, and an S on the plate."""
         bz = dz + d["bottom"] + d["plate"] + bd.get("standoff", 6)
         items["boards"].append({"bay": bay, **({"slot": slot} if slot else {}), "row": i, "id": board_id,
                                 "name": bd["name"], "label": bd.get("short", ""),
@@ -698,6 +723,8 @@ def build(rack) -> Path:
             ends.append(end_b)
         free = cable_free_length(cables_cfg[ctype], end_a, end_b)
         route = {"straight": flat_cable, "side": side_arch_cable}.get(style, arch_cable)
+        if style == "straight" and np.dot(end_a["dir"], end_b["dir"]) < -0.9:
+            route = s_cable              # the board's USB faces the port wall: the plugs face each other
         pts, short = route(end_a, end_b, free)
         if short:
             print(f"warning: {slot or bay}: the {ctype} cable is {short:.0f} mm too short "

@@ -261,8 +261,8 @@ class Slots(unittest.TestCase):
 
     PACKED = [("xiao", (16.2, 115.6)), ("rpi-pico2", (44.2, 82.4)), ("rpi-pico2", (72.2, 82.4)),
               ("xiao", (100.2, 115.6))]
-    EXAMPLE = [("xiao", (14.0, 107.6)), ("rpi-pico2", (30.0, 30.0)), ("rpi-pico2", (86.4, 30.0)),
-               ("xiao", (102.4, 107.6))]
+    EXAMPLE = [("xiao", (16.6, 52.4)), ("rpi-pico2", (44.2, 34.0)), ("rpi-pico2", (72.2, 34.0)),
+               ("xiao", (99.8, 52.4))]
 
     def test_one_board(self):
         self.assertEqual(rackcfg.dut_slots("A1", {"board": "nucleo-64", "cable": "c-to-micro-b"}),
