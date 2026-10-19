@@ -268,7 +268,6 @@ def electronics(rack) -> tuple[list[dict], dict]:
 def printed(rack) -> tuple[list[dict], list[dict]]:
     """Printed parts with counts per assembly and filament estimate from the STL volume."""
     import trimesh
-    pop = rack.raw.get("population", {})
     n_bays = sum(1 for _ in rack.bays())
     cols, n_rows = rack.units, len(rack.rows)
     cams = CAMERA_SETS                      # pods printed (config cameras: the bays shown with one)
@@ -287,8 +286,11 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         counts[f"ladder_{row['id'].lower()}"] += cols + 1
         counts[f"brace_{row['id'].lower()}"] += cols
     for bay in rack.bays():
-        info = pop.get(bay.id)
-        counts[f"plate_{info['board']}" if info else "plate_universal"] += 1
+        duts = rack.duts(bay.id)
+        if rack.is_multi(bay.id):           # a converted bay: one plate for its boards
+            counts[f"plate_bay_{bay.id.lower()}"] += 1
+        else:
+            counts[f"plate_{duts[0].board}" if duts else "plate_universal"] += 1
     stl_dir = REPO / "mechanical" / "stl"
     rows, prints = [], []
     total_g = 0.0
@@ -316,7 +318,6 @@ def hardware(rack) -> list[dict]:
     n_rows = len(rack.rows)
     cols = rack.units
     n_bays = sum(1 for _ in rack.bays())
-    pop = r.get("population", {})
     cams = CAMERA_SETS                      # camera pods bought, wherever they go
     braces = cols * (n_rows + 1)
     n_drawer, n_sled = bay_mounts(rack)     # sled bays: no chain, foot, anchor or magnets
@@ -398,19 +399,18 @@ def hardware(rack) -> list[dict]:
                     "≈ 0.4 A, warm at the eFuse's 1.6 A limit; twist the CAN pair (pins 3-4) by hand"}
           for cm, price, rows_ in _feed_lots(rack)],
     ]
-    cab = Counter(info["cable"] for info in pop.values())
+    duts = [d for b in rack.bays() for d in rack.duts(b.id) if d.cable]   # one cable per board under test
+    cab = Counter(d.cable for d in duts)
     lib = rackcfg.load_boards()
     for k, n in sorted(cab.items()):
         src = DUT_CABLES.get(k, {"supplier": "AliExpress", "unit_eur": 3.0})
-        boards = ", ".join(sorted({lib[info["board"]].get("short", info["board"])
-                                   for info in pop.values() if info["cable"] == k}))
+        boards = ", ".join(sorted({lib[d.board].get("short", d.board) for d in duts if d.cable == k}))
         rows.append({"category": "Cables", "item": f"{r['cables'][k]['label']} (DUT cable: {boards})",
                      "supplier": src["supplier"], "qty": n, "unit_eur": src["unit_eur"],
                      "notes": src.get("notes", "")})
     # 90° adapters for the micro-B / mini-B boards whose USB faces the port wall (cable style adapter): one
     # bent up and one bent down per board, the socket's orientation deciding which one serves
-    ada = Counter(r["cables"][info["cable"]]["b"] for info in pop.values()
-                  if r["cables"][info["cable"]].get("style") == "adapter")
+    ada = Counter(r["cables"][d.cable]["b"] for d in duts if r["cables"][d.cable].get("style") == "adapter")
     for t, n in sorted(ada.items()):
         name = {"micro-b": "Micro-B", "mini-b": "Mini-B"}[t]
         rows.append({"category": "Cables", "item": f"{name} 90° adapter, male → female, up and down, one of each "

@@ -1,6 +1,6 @@
 """Serve the bay node web page with a simulated node, to work on the UI without one.
 
-    python firmware/bay-node/web/dev_server.py [port]      # then open http://localhost:8766
+    python firmware/bay-node/web/dev_server.py [port] [--ports 4]    # then open http://localhost:8766
 
 Same endpoints and JSON as src/web.c, the web console's WebSockets
 (/console/ws/<n>) and access control included, and the camera's port
@@ -8,10 +8,12 @@ Same endpoints and JSON as src/web.c, the web console's WebSockets
 a render of a drawer (Pillow draws them at the set resolution, with the
 light and the time; without it, the render as it is).  The "node" is a dict the
 POSTs change; its DUT is a fake Zephyr board that boots, logs in colour and
-runs a tiny shell on the console.  Test hooks:
+runs a tiny shell on the console.  With --ports 4 it is a bay with a DATA ×4
+board (docs/multi-dut-node.md): four boards, sub-slots B3.1 to B3.4, served by
+/api/ports and /api/ports/<n>/{power,reset,boot}, leased one by one.  Test hooks:
 
-    /dev/fault            trip a fake over-current
-    /dev/attach           toggle a fake USB/IP client (192.168.1.41)
+    /dev/fault[?port=n]   trip a fake over-current (the DUT, or port n)
+    /dev/attach[?port=n]  toggle a fake USB/IP client (192.168.1.41; on port n's board)
     /dev/rfc2217          toggle a fake RFC 2217 client (192.168.1.41)
     /dev/boot             a short press on BOOT: confirms a pending claim
     /dev/peer?ip=a.b.c.d  requests from this machine look like they come from
@@ -66,6 +68,105 @@ def dut_current_ma(t: float) -> int:
     """A board idling at ~90 mA with a radio burst every 8 s."""
     burst = 42 if t % 8 < 1.6 else 0
     return 90 + burst + int(6 * math.sin(t / 3)) + random.randint(-3, 3)
+
+
+# --- Ports: a bay with a DATA ×4 board (--ports 4) ---------------------------
+
+PORTS = 1           # the boards the node serves; 1: today's one DUT (node["dut"])
+ports: list[dict] = []
+UP_S = 0.8          # a board's USB enumeration after power on or reset
+
+
+def set_ports(n: int) -> None:
+    """Port n sits on the hub's port n + 1, so its busid is 1-1.<n + 1> (the doc's A1.2 -> 1-1.3)."""
+    global PORTS
+    PORTS = n
+    ports[:] = [{"port": i, "hub_port": i + 1, "on": True, "latched": False, "faults": 0, "up_at": 0.0,
+                 "client": None, "lease": None,
+                 "usb": {"vid": "2fe3", "pid": "0004", "product": "USB-DEV", "serial": f"{0x5EC0A1 + i:08X}"}}
+                for i in range(1, n + 1)] if n > 1 else []
+
+
+def multi() -> bool:
+    return PORTS > 1
+
+
+def slot_name(n: int) -> str:
+    return f"{node['id'].upper()}.{n}" if multi() else node["id"].upper()
+
+
+def port_lease_active(pt: dict) -> bool:
+    return pt["lease"] is not None and time.monotonic() < pt["lease"]["until"]
+
+
+def port_reserved(pt: dict, ip: int) -> bool:
+    return port_lease_active(pt) and pt["lease"]["holder"] != ip
+
+
+def lease_doc(lease: dict | None, ip: int, now: float) -> dict | None:
+    if lease is None or now >= lease["until"]:
+        return None
+    return {"holder": ip_str(lease["holder"]), "note": lease["note"],
+            "remaining_s": math.ceil(lease["until"] - now), "yours": lease["holder"] == ip}
+
+
+def port_doc(pt: dict, ip: int = 0) -> dict:
+    """One object of GET /api/ports."""
+    now = time.monotonic()
+    ma = dut_current_ma(now + 2.1 * pt["port"]) if pt["on"] else 0
+    mv = 5080 - ma // 10 if pt["on"] else 0
+    usb = {**pt["usb"], "busid": f"1-1.{pt['hub_port']}"} if pt["on"] and now >= pt["up_at"] else None
+    return {"slot": slot_name(pt["port"]), "port": pt["port"], "hub_port": pt["hub_port"],
+            "power": {"on": pt["on"], "mv": mv, "ma": ma, "mw": ma * mv // 1000, "faults": pt["faults"]},
+            "fault": pt["latched"], "usb": usb,
+            "usbip": {"client": ip_str(pt["client"])} if pt["client"] and usb else None,
+            "lease": lease_doc(pt["lease"], ip, now)}
+
+
+def one_port_doc(s: dict) -> dict:
+    """A one-port node's DUT as port 1 (no hub: busid 1-1)."""
+    dut, lease = s["dut"], s["access"]["lease"]
+    client = next((c for c in access.fake if c["service"] == "usbip"), None)
+    usb = ({"vid": "2fe3", "pid": "0004", "product": "USB-DEV", "serial": "005EC0A1", "busid": "1-1"}
+           if dut["on"] and s["usb"]["devices"] else None)
+    return {"slot": slot_name(1), "port": 1, "hub_port": None,
+            "power": {k: dut[k] for k in ("on", "mv", "ma", "mw", "faults")}, "fault": dut["latched"],
+            "usb": usb, "usbip": {"client": ip_str(client["peer"])} if client and usb else None,
+            "lease": lease if lease["remaining_s"] else None}
+
+
+def short_port(d: dict) -> dict:
+    """The same object, shorter: /api/status's `ports`."""
+    return {"slot": d["slot"], "port": d["port"], "power": {"on": d["power"]["on"], "ma": d["power"]["ma"]},
+            "fault": d["fault"], "usb": {"busid": d["usb"]["busid"]} if d["usb"] else None,
+            "usbip": d["usbip"], "lease": d["lease"]}
+
+
+def ports_doc(ip: int = 0) -> list[dict]:
+    return [port_doc(pt, ip) for pt in ports] if multi() else [one_port_doc(status(ip))]
+
+
+def port_act(pt: dict, what: str, body: dict) -> str | None:
+    """Power, reset or boot one port, as the node's dut.c does for its one DUT; an error, or None."""
+    if what == "power":
+        action = body.get("action")
+        if action not in ("on", "off", "cycle"):
+            return "action must be on, off or cycle"
+        if action == "cycle":
+            time.sleep(min(int(body.get("ms", 1000)), 2000) / 1000)
+        was_on = pt["on"]
+        pt["on"] = action != "off"
+        if pt["on"]:
+            pt["latched"] = False
+        if not pt["on"] or action == "cycle" or not was_on:
+            pt["client"] = None           # the board left the bus: its USB/IP session ends
+            pt["up_at"] = time.monotonic() + UP_S
+    else:
+        time.sleep(0.3 if what == "boot" else min(int(body.get("ms", 100)), 500) / 1000)
+        if pt["on"]:
+            pt["client"] = None           # a reset re-enumerates the board, under the same busid
+            pt["up_at"] = time.monotonic() + UP_S
+    return None
 
 
 # --- The fake DUT console ---------------------------------------------------
@@ -742,13 +843,23 @@ def status(ip: int = 0) -> dict:
     mv = (5080 - ma // 10) if dut["on"] else 0
     dut.update(ma=ma, mv=mv, mw=ma * mv // 1000)
     node["path"] = "classic" if node["force_classic"] else "usbip"
+    docs = [port_doc(pt, ip) for pt in ports]
+    if docs:                            # the node's totals: the sum of the currents, flags ORed
+        dut.update(on=any(d["power"]["on"] for d in docs), latched=any(d["fault"] for d in docs),
+                   faults=sum(d["power"]["faults"] for d in docs), ma=sum(d["power"]["ma"] for d in docs),
+                   mv=max(d["power"]["mv"] for d in docs), mw=sum(d["power"]["mw"] for d in docs))
+        node["usb"]["devices"] = sum(d["usb"] is not None for d in docs)
+        node["usb"]["sessions"] = (sum(d["usbip"] is not None for d in docs)
+                                   + sum(c["service"] == "usbip" for c in access.fake))
     fmt = f"{aux['data_bits']}{aux['parity'][0].upper()}{aux['stop_bits']}"
-    return {**node, "uptime_s": int(time.monotonic() - START),
+    s = {**node, "uptime_s": int(time.monotonic() - START),
             "aux": {"baud": aux["baud"], "format": fmt, "port": 4000, "rfc2217_port": 4001,
                     "web_clients": len(console.clients),
                     "rfc2217": any(c["id"] == "rfc2217" for c in access.fake), "raw": False,
                     "rx": len(console.log), "tx": console.tx, "dropped": 0},
             "access": access.summary(ip), "firmware": firmware.doc(), "camera": camera.doc()}
+    s["ports"] = [short_port(d) for d in docs or [one_port_doc(s)]]
+    return s
 
 
 def aux_doc() -> dict:
@@ -760,22 +871,27 @@ def aux_doc() -> dict:
 def metrics() -> str:
     s = status()
     dut, usb, a = s["dut"], s["usb"], s["aux"]
+    bay = f'bay="{s["id"]}"'
+    # The DUT metrics: the one DUT's, or each port's, labelled port="B3.2"
+    duts = ([(f'{bay},port="{d["slot"]}"', d["power"], d["fault"]) for d in ports_doc()] if multi()
+            else [(bay, dut, dut["fault"] or dut["latched"])])
     rows = [
-        ("bay_dut_vbus_volts", "gauge", dut["mv"] / 1000),
-        ("bay_dut_current_amperes", "gauge", dut["ma"] / 1000),
-        ("bay_dut_power_watts", "gauge", dut["mw"] / 1000),
-        ("bay_dut_power_on", "gauge", int(dut["on"])),
-        ("bay_dut_fault", "gauge", int(dut["fault"] or dut["latched"])),
-        ("bay_dut_faults_total", "counter", dut["faults"]),
-        ("bay_usb_devices", "gauge", usb["devices"]),
-        ("bay_usbip_sessions", "gauge", usb["sessions"]),
-        ("bay_aux_rx_bytes_total", "counter", a["rx"]),
-        ("bay_aux_tx_bytes_total", "counter", a["tx"]),
-        ("bay_access_refused_total", "counter", access.refused_total),
+        ("bay_dut_vbus_volts", "gauge", [(lb, pw["mv"] / 1000) for lb, pw, _ in duts]),
+        ("bay_dut_current_amperes", "gauge", [(lb, pw["ma"] / 1000) for lb, pw, _ in duts]),
+        ("bay_dut_power_watts", "gauge", [(lb, pw["mw"] / 1000) for lb, pw, _ in duts]),
+        ("bay_dut_power_on", "gauge", [(lb, int(pw["on"])) for lb, pw, _ in duts]),
+        ("bay_dut_fault", "gauge", [(lb, int(f)) for lb, _, f in duts]),
+        ("bay_dut_faults_total", "counter", [(lb, pw["faults"]) for lb, pw, _ in duts]),
+        ("bay_usb_devices", "gauge", [(bay, usb["devices"])]),
+        ("bay_usbip_sessions", "gauge", [(bay, usb["sessions"])]),
+        ("bay_aux_rx_bytes_total", "counter", [(bay, a["rx"])]),
+        ("bay_aux_tx_bytes_total", "counter", [(bay, a["tx"])]),
+        ("bay_access_refused_total", "counter", [(bay, access.refused_total)]),
     ]
     out = []
-    for name, kind, value in rows:
-        out += [f"# TYPE {name} {kind}", f'{name}{{bay="{s["id"]}"}} {value:f}']
+    for name, kind, values in rows:
+        out.append(f"# TYPE {name} {kind}")
+        out += [f"{name}{{{lb}}} {value:f}" for lb, value in values]
     return "\n".join(out) + "\n"
 
 
@@ -839,6 +955,9 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/status":
             if not self.refused("status"):
                 self.json(200, status(self.peer()))
+        elif path == "/api/ports":
+            if not self.refused("status"):
+                self.json(200, ports_doc(self.peer()))
         elif path == "/api/aux":
             if not self.refused("status"):
                 self.json(200, aux_doc())
@@ -868,6 +987,15 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/dev/image":
             self.send(200, make_image(query.get("version", ["0.6.0"])[0],
                                       query.get("id", [firmware.image_id])[0]), "application/octet-stream")
+        elif path in ("/dev/fault", "/dev/attach") and "port" in query and multi():
+            pt = next((x for x in ports if str(x["port"]) == query["port"][0]), None)
+            if pt is None:
+                return self.json(404, {"error": f"no port {query['port'][0]} (1..{PORTS})"})
+            if path == "/dev/fault":
+                pt.update(on=False, latched=True, faults=pt["faults"] + 1, client=None)
+            else:
+                pt["client"] = None if pt["client"] else ip_int("192.168.1.41")
+            self.json(200, port_doc(pt))
         elif path == "/dev/fault":
             node["dut"].update(on=False, latched=True, faults=node["dut"]["faults"] + 1)
             self.json(200, status())
@@ -968,6 +1096,14 @@ class Handler(BaseHTTPRequestHandler):
             return self.json(200, camera.doc(full=True))
         if self.refused("console" if path in ("/api/aux", "/api/aux/break") else "control"):
             return
+        m = re.fullmatch(r"/api/ports/(\d+)/(power|reset|boot)", path)
+        if m:
+            return self.port_post(int(m[1]), m[2], body, port_reply=True)
+        if multi() and path in ("/api/power", "/api/reset", "/api/boot"):
+            if "port" not in body:
+                return self.json(409, {"error": f"this node serves {PORTS} boards: say which "
+                                                f"(\"port\": 1..{PORTS}, or /api/ports/<n>{path[4:]})"})
+            return self.port_post(body["port"], path[5:], body, port_reply=False)
         dut = node["dut"]
         if self.path == "/api/power":
             action = body.get("action")
@@ -1012,6 +1148,58 @@ class Handler(BaseHTTPRequestHandler):
             return self.json(404, {"error": "not found"})
         self.json(200, status(self.peer()))
 
+    def port_post(self, n, what: str, body: dict, port_reply: bool) -> None:
+        """POST /api/ports/<n>/<what>, or /api/<what> with "port": n: the port's object, or the status."""
+        pt = next((x for x in ports if x["port"] == n), None) if multi() else None
+        if pt is None:
+            return self.json(404, {"error": f"no port {n} on this node" + (f" (1..{PORTS})" if multi() else "")})
+        ip = self.peer()
+        if port_reserved(pt, ip):
+            lease = pt["lease"]
+            note = f" ({lease['note']})" if lease["note"] else ""
+            left = math.ceil((lease["until"] - time.monotonic()) / 60)
+            return self.json(423, {"error": f"{slot_name(n)} reserved by {ip_str(lease['holder'])}{note}, "
+                                            f"{left} min left", "reason": "reserved", "service": "control",
+                                   "you": ip_str(ip)})
+        if (err := port_act(pt, what, body)) is not None:
+            return self.json(400, {"error": err})
+        self.json(200, port_doc(pt, ip) if port_reply else status(ip))
+
+    def port_lease(self, ip: int, admin: bool, body: dict) -> bool:
+        """A lease on sub-slots, {"ttl_s": 3600, "ports": ["B3.2"]}, or its release; True once answered with an error."""
+        names = body["ports"]
+        if not multi():
+            self.json(400, {"error": "this node serves one board: lease the bay (no \"ports\")"})
+            return True
+        by_name = {slot_name(pt["port"]): pt for pt in ports}
+        if not isinstance(names, list) or not names or any(str(x).upper() not in by_name for x in names):
+            self.json(400, {"error": f"ports: a list of {', '.join(by_name)}"})
+            return True
+        chosen = [by_name[str(x).upper()] for x in names]
+        with access.lock:
+            if body.get("release"):
+                if not admin and any(port_lease_active(pt) and pt["lease"]["holder"] != ip for pt in chosen):
+                    self.json(403, {"error": "only its holder or an admin may release it"})
+                    return True
+                for pt in chosen:
+                    pt["lease"] = None
+                return False
+            ttl = int(body.get("ttl_s", LEASE_DEFAULT_S))
+            if not 10 <= ttl <= 86400:
+                self.json(400, {"error": "ttl_s must be 10..86400"})
+                return True
+            taken = next((pt for pt in chosen if port_reserved(pt, ip)), None)
+            if taken is not None:
+                self.json(423, {"error": f"{slot_name(taken['port'])} reserved by "
+                                         f"{ip_str(taken['lease']['holder'])}", "reason": "reserved"})
+                return True
+            for pt in chosen:
+                pt["lease"] = {"holder": ip, "until": time.monotonic() + ttl,
+                               "note": clean_note(str(body.get("note", "")))}
+                if pt["client"] not in (None, ip):
+                    pt["client"] = None   # its USB/IP import belongs to the holder now
+        return False
+
     def access_post(self, path: str, raw: bytes, body: dict) -> None:
         ip = self.peer()
         auth = self.headers.get("X-Bay-Auth", "")
@@ -1043,6 +1231,11 @@ class Handler(BaseHTTPRequestHandler):
             with access.lock:
                 access.tickets[ticket] = (ip, time.monotonic() + 10)
             return self.json(200, {"ticket": ticket})
+        elif path == "/api/lease" and "ports" in body:
+            if not body.get("release") and self.refused("control"):
+                return
+            if self.port_lease(ip, admin, body):
+                return
         elif path == "/api/lease":
             if body.get("release"):
                 with access.lock:
@@ -1052,11 +1245,18 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 if self.refused("control"):
                     return
+                taken = next((pt for pt in ports if port_reserved(pt, ip)), None)
+                if taken is not None:
+                    return self.json(423, {"error": f"{slot_name(taken['port'])} reserved by "
+                                                    f"{ip_str(taken['lease']['holder'])}", "reason": "reserved"})
                 if (err := access.take(ip, int(body.get("ttl_s", LEASE_DEFAULT_S)), str(body.get("note", "")))):
                     return self.json(400, {"error": err})
         else:
             return self.json(404, {"error": "not found"})
-        self.json(200, access.doc(ip, admin))
+        d = access.doc(ip, admin)
+        if path == "/api/lease" and multi():
+            d["ports"] = [short_port(port_doc(pt, ip)) for pt in ports]
+        self.json(200, d)
 
     def claim(self, ip: int, body: dict) -> None:
         now = time.monotonic()
@@ -1106,6 +1306,13 @@ def serve(port: int = 8766) -> ThreadingHTTPServer:
 
 
 if __name__ == "__main__":
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8766
-    print(f"bay node mock on http://localhost:{port} (camera on port {port + 1})")
-    serve(port).serve_forever()
+    import argparse
+    ap = argparse.ArgumentParser(description="The bay node's web page and API, on a simulated node.")
+    ap.add_argument("port", type=int, nargs="?", default=8766)
+    ap.add_argument("--ports", type=int, default=1, choices=range(1, 5),
+                    help="boards the node serves: 4 for a bay with a DATA ×4 board (docs/multi-dut-node.md)")
+    a = ap.parse_args()
+    set_ports(a.ports)
+    print(f"bay node mock on http://localhost:{a.port} (camera on port {a.port + 1})"
+          + (f", {a.ports} ports" if a.ports > 1 else ""))
+    serve(a.port).serve_forever()

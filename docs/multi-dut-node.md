@@ -1,6 +1,7 @@
 # One node, four boards: the firmware side
 
-> **Status: design only, nothing implemented.**  Density epic, decision 3
+> **Status: design only in the firmware; the tools and the node's simulator
+> follow it (see Tools).**  Density epic, decision 3
 > (2026-10-19): one node serves up to four small USB-native boards through a
 > hub on a "DATA ×4" board in the drawer, sub-slots A1.1–A1.4.  What the
 > firmware needs, and what Zephyr lacks for it.  The bench spike that checks
@@ -116,6 +117,14 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
   after a reset.  `bayctl power A1.2 cycle`, `bayctl reset A1.2`; a bare
   `A1` still means the whole bay.
 - `bayctl hwmap` and the labgrid / twister exports: one target per sub-slot.
+
+Done on the tools side (2026-10-19), against the simulated node: a bay's
+`boards:` in `config/rack.yaml` (`tools/rackcfg.py` › `dut_slots`,
+`bay_boards`), one shared plate per converted bay (`board_plate.scad`
+`BAY="<id>"`, `plate_bay_<id>.stl`, laid out from each board's `at` and checked
+clear of the RESET/BOOT pin holes), `bayctl ports`, per-port power, reset,
+leases and `attach --follow`, and `firmware/bay-node/web/dev_server.py
+--ports 4` serving this API.  The firmware itself: nothing yet.
 
 ## Resources
 

@@ -101,6 +101,11 @@ power_box:                # mechanical/parts/power_box.scad: the power hub's enc
 # tray for all: drawer (default: on a drag chain, the board stays plugged while it slides out), sled (the
 # drawer's front alone, no chain: unplug the DUT cable, then pull; the DATA port stays behind in a port
 # block) or fixed (a sled screwed in place).  Any bay converts either way.
+# A bay with a DATA ×4 board in its drawer holds up to four boards (docs/multi-dut-node.md): `boards:`
+# instead of `board:`, sub-slots <bay>.1–.4 by DATA ×4 port (`slot:`, else the entry's rank).  They share
+# one plate (plate_bay_<id>, `plate: boards`): each board's front-left corner `at` [x, y] in plate coords
+# (front-left origin, y to the port wall; without it they are packed in a row), turned USB to the port wall
+# (`orient: side` to turn it to the right wall).  tools/rackcfg.py checks the layout.
 population:
   A1: { board: nucleo-64,        cable: c-to-micro-b }
   A2: { board: nucleo-144,       cable: c-to-micro-b }

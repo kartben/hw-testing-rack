@@ -21,3 +21,8 @@ BOARD_DB = [
   ["mimxrt1060-evkb", "RT1060-EVKB", [130, 108], 3.2, [], 30, "micro-b", 10, true, 16, "#141414", false, false],
   ["mimxrt1170-evkb", "RT1170-EVKB", [165, 127], 3.2, [], 30, "micro-b", 12, true, 16, "#141414", false, false]
 ];
+
+// A converted bay's shared plate (config/rack.yaml › population › boards): its boards at their `at`, in
+// plate coords (front-left corner, y to the port wall), each turned USB to the port wall unless `orient: side`.
+// [bay, plate kind, [[slot, [x, y], board record as in BOARD_DB], ...]]
+BAY_PLATES = [];

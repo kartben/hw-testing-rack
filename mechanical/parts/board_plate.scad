@@ -3,6 +3,7 @@
 //   openscad -D 'BOARD="nucleo-144"' -o plate_nucleo-144.stl parts/board_plate.scad
 //   openscad -D 'BOARD="universal"'  -o plate_universal.stl  parts/board_plate.scad
 //   openscad -D 'BOARD="nucleo-64"' -D 'MODE="snap"' ...   (tool-less snap pins)
+//   openscad -D 'BAY="B3"' -o plate_bay_b3.stl parts/board_plate.scad   (a converted bay: its boards, one plate)
 //
 // Plates drop into any drawer (two 180°-symmetric locating pins), so a board
 // can move between bays without touching a screw.  The board is placed with
@@ -17,6 +18,7 @@ include <../lib/carrier.scad>
 include <../generated/boards.scad>
 
 BOARD = "universal";
+BAY = "";                             // a converted bay's shared plate (generated/boards.scad › BAY_PLATES)
 MODE = "insert";
 REAR_GAP_MAX = 26;                    // room for the USB plug + cable bend behind the board
 SIDE_X = 2.5;                         // a usb_side board's gap to the plate's left edge (tools/webscene.py)
@@ -35,7 +37,7 @@ module plate_body() {
         // finger holes to lift the plate out
         for (x = [12, PLATE_W - 12]) translate([x, PLATE_D / 2, -EPS]) rslot(14, 9, PLATE_T + 1);
         // pin holes over the node's RESET and BOOT, as in the drawer's floor
-        for (k = [NODE_RESET, NODE_BOOT]) translate(concat(node_xy(k) - [DRAWER_X0 + PLATE_X0, PLATE_Y0], [-EPS]))
+        for (q = button_holes()) translate(concat(q, [-EPS]))
             cylinder(d = 3.2, h = PLATE_T + 1);
     }
 }
@@ -132,4 +134,45 @@ module board_plate(id) {
     }
 }
 
-if (BOARD == "universal") universal_plate(); else board_plate(BOARD);
+// A converted bay (config/rack.yaml › population › boards, a DATA ×4 board behind the port wall): its
+// boards on one plate, each at its `at` on its own standoffs or fences, its port number engraved in
+// front of it.  No cable hooks: each cable runs back to its own socket.  tools/rackcfg.py checks the
+// layout (check_bay_plate): on the plate, apart, clear of the pins, finger slots and RESET/BOOT holes.
+function bay_rec(id) = BAY_PLATES[search([id], BAY_PLATES, 1, 0)[0]];
+function button_holes() = [for (k = [NODE_RESET, NODE_BOOT]) node_xy(k) - [DRAWER_X0 + PLATE_X0, PLATE_Y0]];
+
+module bay_lightening(places) {
+    keep = concat(plate_pins(), button_holes(), [[12, PLATE_D / 2], [PLATE_W - 12, PLATE_D / 2]]);
+    for (x = [14 : 13 : PLATE_W - 14], y = [12 : 11.3 : PLATE_D - 14]) {
+        xx = x + ((round(y / 11.3) % 2) ? 6.5 : 0);
+        over = [for (b = places) let(o = b[1], size = b[2][2])
+            if (xx > o[0] - 8 && xx < o[0] + size[0] + 8 && y > o[1] - 11 && y < o[1] + size[1] + 8) 1];
+        near = [for (q = keep) if (norm([xx, y] - q) < 12) 1];
+        label = abs(xx - PLATE_W / 2) < 30 && y < 20;
+        if (len(over) == 0 && len(near) == 0 && !label && xx < PLATE_W - 10)
+            translate([xx, y, -EPS]) cylinder(d = 10, h = PLATE_T + 2 * EPS, $fn = 6);
+    }
+}
+
+module bay_plate(id) {
+    bay = bay_rec(id);
+    assert(bay != undef, str("no converted bay ", id, " in BAY_PLATES: tools/build.py config"));
+    assert(bay[1] == "boards", str("plate kind ", bay[1], ": not made yet"));
+    places = bay[2];                  // [slot, [x, y], board record]
+    difference() {
+        union() {
+            plate_body();
+            for (b = places) let(rec = b[2], o = b[1])
+                if (rec[8] || len(rec[4]) == 0) fences(rec, o);
+                else for (h = rec[4]) translate([o[0] + h[0], o[1] + h[1], PLATE_T])
+                    if (MODE == "snap") snap_standoff(rec[3], rec[7]); else insert_standoff(rec[3], rec[7]);
+        }
+        bay_lightening(places);
+        translate([PLATE_W / 2, 7, PLATE_T - 0.5]) label_text(id, size = 4.5, depth = 0.5 + EPS);
+        for (b = places) translate([b[1][0] + b[2][2][0] / 2, b[1][1] - 6, PLATE_T - 0.5])
+            label_text(str(b[0]), size = 4, depth = 0.5 + EPS);
+    }
+}
+
+if (BAY != "") bay_plate(BAY);
+else if (BOARD == "universal") universal_plate(); else board_plate(BOARD);

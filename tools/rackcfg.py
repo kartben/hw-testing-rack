@@ -22,6 +22,74 @@ class Bay:
     index: int        # position within the row (0-based)
 
 
+# ---- the boards under test in a bay (config/rack.yaml › population) ------------------------------------
+MAX_SLOTS = 4           # a DATA ×4 board in the drawer: four DUTs on one bay node (docs/multi-dut-node.md)
+PLATE_KINDS = ("boards",)   # a converted bay's plate: each board's standoffs or fences at its `at` (a hex peg
+                            # plate would be another kind: the boards then sit on pegs, no per-board plate)
+NODE_BUTTONS = ((7.5, 21.5), (15.5, 21.5))   # the node's RESET and BOOT (KiCad), lib/carrier.scad NODE_RESET, NODE_BOOT
+BUTTON_HOLE_R = 1.6     # the plate's pin holes over them (Ø3.2)
+BUTTON_CLEAR = 3.0      # a board's footprint stays this far from those holes: a pin must reach the buttons
+BOARD_PAD = 2.5         # a board's footprint beyond its outline: fences (2.3), standoffs over edge holes
+BOARD_GAP = 7.0         # packing: between two boards' outlines
+REAR_GAP_MAX = 26.0     # board_plate.scad: room for the USB plug and the cable's bend behind a board
+
+
+@dataclass
+class Slot:
+    """One board under test.  A bay with one board (`board:`, today's form) is one Slot named like the bay;
+    a converted bay (`boards:`) has up to four, named <bay>.<n>, n the DATA ×4 port it is plugged into."""
+    id: str                   # "A1", or "A1.2"
+    bay: str                  # "A1"
+    slot: int | None          # the DATA ×4 port (1-4); None: a one-board bay
+    board: str                # boards.yaml id
+    cable: str | None = None  # config/rack.yaml › cables id
+    at: list | None = None    # its front-left corner on the bay's plate (mm, turned like the board), or packed
+    orient: str | None = None # a converted bay's board: USB to the port wall ("rear", the default) or "side"
+
+
+def dut_slots(bay_id: str, entry: dict | None) -> list[Slot]:
+    """The boards a population entry puts in a bay, in port order; [] for an empty bay.  ValueError when the
+    entry mixes `board` and `boards`, has more than four boards, or reuses or overflows a port."""
+    e = entry or {}
+    if "boards" in e:
+        if e.get("board"):
+            raise ValueError(f"{bay_id}: `board` and `boards` both set: one or the other")
+        items = e.get("boards") or []
+        if not 1 <= len(items) <= MAX_SLOTS:
+            raise ValueError(f"{bay_id}: `boards` holds 1 to {MAX_SLOTS} boards, not {len(items)}")
+        out = {}
+        for k, it in enumerate(items, 1):
+            n = int((it or {}).get("slot", k))
+            if not 1 <= n <= MAX_SLOTS:
+                raise ValueError(f"{bay_id}: slot {n}: DATA ×4 ports are 1 to {MAX_SLOTS}")
+            if n in out:
+                raise ValueError(f"{bay_id}: two boards on slot {n}")
+            if not (it or {}).get("board"):
+                raise ValueError(f"{bay_id}.{n}: no `board`")
+            at = it.get("at")
+            if at is not None and (not isinstance(at, (list, tuple)) or len(at) != 2):
+                raise ValueError(f"{bay_id}.{n}: `at` is [x, y] on the plate (mm)")
+            orient = it.get("orient")
+            if orient not in (None, "rear", "side"):
+                raise ValueError(f"{bay_id}.{n}: orient {orient!r}: rear or side")
+            out[n] = Slot(f"{bay_id}.{n}", bay_id, n, it["board"], it.get("cable"),
+                          [float(v) for v in at] if at else None, orient)
+        return [out[n] for n in sorted(out)]
+    if e.get("board"):
+        return [Slot(bay_id, bay_id, None, e["board"], e.get("cable"))]
+    return []
+
+
+def split_slot(name: str) -> tuple[str, int | None]:
+    """"B3.2" -> ("B3", 2); "B3" -> ("B3", None)."""
+    bay, dot, n = name.upper().partition(".")
+    if not dot:
+        return bay, None
+    if not n.isdigit():
+        raise ValueError(f"{name}: a sub-slot is <bay>.<1-{MAX_SLOTS}>")
+    return bay, int(n)
+
+
 @dataclass
 class Rack:
     raw: dict
@@ -135,6 +203,107 @@ class Rack:
         if m not in self.MOUNTS:
             raise ValueError(f"{bay_id}: mount {m!r}, not one of {self.MOUNTS}")
         return m
+
+    def duts(self, bay_id: str) -> list[Slot]:
+        """The boards under test in a bay (see dut_slots)."""
+        return dut_slots(bay_id, self.raw.get("population", {}).get(bay_id))
+
+    def is_multi(self, bay_id: str) -> bool:
+        """A converted bay: its drawer holds a DATA ×4 board and up to four boards (`boards:`)."""
+        return "boards" in (self.raw.get("population", {}).get(bay_id) or {})
+
+    def plate_kind(self, bay_id: str) -> str:
+        """A converted bay's plate (population › plate): "boards", the only one made so far."""
+        k = (self.raw.get("population", {}).get(bay_id) or {}).get("plate", "boards")
+        if k not in PLATE_KINDS:
+            raise ValueError(f"{bay_id}: plate {k!r}, not one of {PLATE_KINDS}")
+        return k
+
+    # ---- the board plate (lib/carrier.scad: plate coords, origin at its front-left, y to the port wall) --
+    @property
+    def plate_origin(self) -> tuple[float, float]:
+        """The plate's front-left corner in drawer coords (PLATE_X0, PLATE_Y0)."""
+        d = self.drawer
+        return d["wall"] + 0.3, d["front_thickness"] + 0.3
+
+    @property
+    def plate_size(self) -> tuple[float, float]:
+        """PLATE_W × PLATE_D: the drawer's inside, from its front panel up to the port wall."""
+        d = self.drawer
+        return (self.drawer_w - 2 * d["wall"] - 0.6,
+                d["depth"] - d["rear_bay"] - d["wall"] - d["front_thickness"] - 0.6)
+
+    def plate_buttons(self) -> list[tuple[float, float]]:
+        """The pin holes over the node's RESET and BOOT, in plate coords (board_plate.scad › plate_body)."""
+        px, py = self.plate_origin
+        n = self.node
+        return [(self.node_x0 + kx - self.drawer_x0 - px, self.node_front_y + n["size"][1] - ky - py)
+                for kx, ky in NODE_BUTTONS]
+
+    def plate_keepouts(self) -> list[tuple[str, tuple[float, float, float, float]]]:
+        """What a board may not cover, as (name, (x0, y0, x1, y1)) in plate coords: the locating pins, the
+        finger slots and the label (board_plate.scad › plate_body).  The RESET/BOOT holes: plate_buttons."""
+        w, d = self.plate_size
+        return [("locating pin", (10 - 2.1, 10 - 2.1, 10 + 2.1, 10 + 2.1)),
+                ("locating pin", (w - 10 - 2.1, d - 10 - 2.1, w - 10 + 2.1, d - 10 + 2.1)),
+                ("finger slot", (12 - 7, d / 2 - 4.5, 12 + 7, d / 2 + 4.5)),
+                ("finger slot", (w - 12 - 7, d / 2 - 4.5, w - 12 + 7, d / 2 + 4.5)),
+                ("label", (w / 2 - 25, 2, w / 2 + 25, 12))]
+
+    def bay_layout(self, bay_id: str, boards: dict | None = None) -> list[dict]:
+        """A converted bay's boards on its plate, in port order: {slot, board, at: (x, y), o} with o the board
+        turned as on the plate (orient_board: w, l, holes, usb_x, usb_side).  Boards without `at` are packed
+        left to right, centred, BOARD_GAP apart, their rear edges REAR_GAP_MAX from the port wall."""
+        lib = boards if boards is not None else load_boards()
+        out = []
+        for sl in self.duts(bay_id):
+            if sl.board not in lib:
+                raise ValueError(f"{sl.id}: no board {sl.board!r} in mechanical/boards/boards.yaml")
+            out.append({"slot": sl, "board": sl.board, "at": tuple(sl.at) if sl.at else None,
+                        "o": orient_board({**lib[sl.board], "orient": sl.orient or "rear"})})
+        loose = [e for e in out if e["at"] is None]
+        if loose:
+            w, d = self.plate_size
+            x = (w - sum(e["o"]["w"] for e in loose) - BOARD_GAP * (len(loose) - 1)) / 2
+            for e in loose:
+                e["at"] = (round(x, 3), round(d - REAR_GAP_MAX - e["o"]["l"], 3))
+                x += e["o"]["w"] + BOARD_GAP
+        return out
+
+    def bay_boards(self, bay_id: str, boards: dict | None = None) -> list[tuple[str, tuple[float, float]]]:
+        """[(board id, (x, y))]: each board's front-left corner on the bay's plate, in port order, turned USB to
+        the port wall unless `orient: side` (bay_layout has the turned outlines)."""
+        return [(e["board"], e["at"]) for e in self.bay_layout(bay_id, boards)]
+
+    def check_bay_plate(self, bay_id: str, boards: dict | None = None) -> list[str]:
+        """What is wrong with a converted bay's layout: a board off the plate, over another, a pin, a finger slot
+        or the label, or within BUTTON_CLEAR of the RESET/BOOT pin holes.  [] when it can be printed."""
+        w, d = self.plate_size
+        boxes = []
+        for e in self.bay_layout(bay_id, boards):
+            x, y = e["at"]
+            o = e["o"]
+            boxes.append((e["slot"].id, (x - BOARD_PAD, y - BOARD_PAD, x + o["w"] + BOARD_PAD, y + o["l"] + BOARD_PAD)))
+        problems = []
+        for name, (x0, y0, x1, y1) in boxes:
+            if x0 < 0 or y0 < 0 or x1 > w or y1 > d:
+                problems.append(f"{name}: off the plate ({w:g} × {d:g} mm)")
+            for what, (a0, b0, a1, b1) in self.plate_keepouts():
+                if x0 < a1 and a0 < x1 and y0 < b1 and b0 < y1:
+                    problems.append(f"{name}: over the plate's {what}")
+            for bx, by in self.plate_buttons():
+                gap = math.hypot(max(x0 - bx, 0, bx - x1), max(y0 - by, 0, by - y1)) - BUTTON_HOLE_R
+                if gap < BUTTON_CLEAR:
+                    problems.append(f"{name}: {gap:.1f} mm from a RESET/BOOT pin hole (keep {BUTTON_CLEAR:g})")
+        for i, (n1, (x0, y0, x1, y1)) in enumerate(boxes):
+            for n2, (a0, b0, a1, b1) in boxes[i + 1:]:
+                if x0 < a1 and a0 < x1 and y0 < b1 and b0 < y1:
+                    problems.append(f"{n1} and {n2} overlap")
+        return problems
+
+    def multi_bays(self) -> list[str]:
+        """The converted bays, in rack order."""
+        return [b.id for b in self.bays() if self.is_multi(b.id)]
 
     def bay_ids(self):  # (row, index, id) for older callers
         for b in self.bays():

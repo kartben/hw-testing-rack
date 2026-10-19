@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """bayctl — drive the rack's bays from a CI host or a laptop.
 
-    python tools/bayctl.py list [--probe]               bays, their board, Zephyr target, runner, host
+    python tools/bayctl.py list [--probe]               boards under test, their Zephyr target, runner, host
     python tools/bayctl.py status B3                    the node's /api/status
+    python tools/bayctl.py ports B3                     the node's ports: board, power, USB device, busid, client
     python tools/bayctl.py power B3 on|off|cycle [--ms 2000]
     python tools/bayctl.py reset B3 [--ms 100]          pulse the DUT's RESET line (AUX)
     python tools/bayctl.py boot B3                      DUT into its ROM bootloader (AUX BOOT + RESET)
     python tools/bayctl.py mode B3 usbip|classic
-    python tools/bayctl.py attach B3 [--show]           Linux: usbip attach, list the new /dev/serial/by-id
+    python tools/bayctl.py attach B3 [--show] [--follow]   Linux: usbip attach, list the new /dev/serial/by-id
     python tools/bayctl.py detach B3
     python tools/bayctl.py prepare B3 [--power-cycle] [--lease 30m]   what a test runner needs before flashing
     python tools/bayctl.py pty B3                       stdin/stdout <-> the AUX UART (twister serial_pty)
@@ -24,8 +25,12 @@
     python tools/bayctl.py update IMAGE --all           every bay node the hub lists, one after the other
     python tools/bayctl.py update IMAGE --hub           the power hub itself (lab.yaml `hub:`, or rack.local)
 
+A bay with a DATA ×4 board holds up to four boards, sub-slots B3.1 to B3.4 (docs/multi-dut-node.md):
+name one (`power B3.2 cycle`, `attach B3.2 --follow`, `prepare B3.2`, `lease B3.2`) or the whole bay
+(`power B3 off`: every port).  The node's own commands (status, mode, access, update) take either.
+
 Where the data comes from:
-  * config/rack.yaml `population`: which board family sits in which bay;
+  * config/rack.yaml `population`: which board family sits in which bay, or `boards:` per sub-slot;
   * mechanical/boards/boards.yaml `zephyr:`: each family's Zephyr target, west runner and console;
   * config/lab.yaml (per installation, git-ignored; see config/lab.example.yaml): probe serial
     numbers, console device paths, bay hosts and any override.
@@ -55,10 +60,12 @@ import threading
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 
 import yaml
+
+import rackcfg
 
 REPO = Path(__file__).resolve().parents[1]
 RACK_YAML = REPO / "config" / "rack.yaml"
@@ -93,6 +100,13 @@ class Bay:
     choices: list[str] = field(default_factory=list)   # possible targets of a board family
     note: str = ""
     product: str | None = None      # twister `product` (openocd picks the probe by it: "STM32 STLink", ...)
+    node: str = ""                  # a sub-slot's bay ("B3" for B3.2): the node that serves it
+    slot: int | None = None         # a sub-slot's DATA ×4 port; None: the bay's one board
+    multi: bool = False             # the node serves several boards (port-addressed control, /api/ports)
+
+    @property
+    def node_id(self) -> str:
+        return self.node or self.id
 
     @property
     def url(self) -> str:
@@ -105,44 +119,77 @@ def _yaml(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8")) or {}
 
 
+NODE_KEYS = ("host", "http_port", "aux_port", "rfc2217_port")     # lab keys a bay's sub-slots share
+
+
+def _bay_key(bid: str):
+    bay, n = rackcfg.split_slot(bid)
+    return bay[0], int(bay[1:]) if bay[1:].isdigit() else 0, n or 0
+
+
 def load_bays(rack_yaml: Path = RACK_YAML, boards_yaml: Path = BOARDS_YAML,
               lab_yaml: Path | None = None) -> dict[str, Bay]:
-    """Every populated bay, defaults from the board library, overrides from the lab file."""
+    """Every board under test (a bay's one board, or each sub-slot of a converted bay), defaults from the
+    board library, overrides from the lab file (a sub-slot's under its own id, B3.2; the node's under B3)."""
     rack = _yaml(rack_yaml)
     boards = _yaml(boards_yaml).get("boards", {})
     lab = _yaml(lab_yaml if lab_yaml is not None else LAB_YAML)
     domain = lab.get("domain", "local")
     lab_bays = {str(k).upper(): v or {} for k, v in (lab.get("bays") or {}).items()}
     population = {str(k).upper(): v or {} for k, v in (rack.get("population") or {}).items()}
+    try:
+        lab_nodes = {rackcfg.split_slot(k)[0] for k in lab_bays}
+    except ValueError as e:
+        raise BayError(f"config/lab.yaml: {e}") from None
     out: dict[str, Bay] = {}
-    for bid in sorted(set(population) | set(lab_bays), key=lambda s: (s[0], int(s[1:]) if s[1:].isdigit() else 0)):
-        pop, over = population.get(bid, {}), lab_bays.get(bid, {})
-        family = over.get("board", pop.get("board"))
-        if not family:
-            raise BayError(f"bay {bid}: no board (config/rack.yaml population or lab bays.{bid}.board)")
-        info = boards.get(family, {})
-        z = info.get("zephyr") or {}
-        bay = Bay(
-            id=bid, board=family, name=info.get("name", family),
-            platform=over.get("platform", z.get("platform")),
-            runner=over.get("runner", z.get("runner")),
-            probe_id=str(over["id"]) if over.get("id") is not None else None,
-            console=over.get("console", z.get("console", "usb")),
-            serial=over.get("serial"),
-            baud=int(over.get("baud", z.get("baud", 115200))),
-            host=over.get("host", f"bay-{bid.lower()}.{domain}"),
-            http_port=int(over.get("http_port", lab.get("http_port", 80))),
-            aux_port=int(over.get("aux_port", lab.get("aux_port", 4000))),
-            rfc2217_port=int(over.get("rfc2217_port", lab.get("rfc2217_port", 4001))),
-            fixtures=list(over.get("fixtures", [])),
-            ci=bool(over.get("ci", True)),
-            choices=list(z.get("choices", [])),
-            note=z.get("note", ""),
-            product=over.get("product", z.get("product")),
-        )
-        if bay.console not in ("usb", "aux"):
-            raise BayError(f"bay {bid}: console must be usb or aux, not {bay.console!r}")
-        out[bid] = bay
+    for bid in sorted(set(population) | lab_nodes, key=_bay_key):
+        pop, node_over = population.get(bid, {}), lab_bays.get(bid, {})
+        try:
+            slots = rackcfg.dut_slots(bid, pop)
+        except ValueError as e:
+            raise BayError(f"config/rack.yaml population: {e}") from None
+        multi = "boards" in pop
+        if not slots:
+            if not node_over.get("board"):
+                raise BayError(f"bay {bid}: no board (config/rack.yaml population or lab bays.{bid}.board)")
+            slots = [rackcfg.Slot(bid, bid, None, node_over["board"])]
+        known = {sl.id for sl in slots}
+        for k in lab_bays:
+            if rackcfg.split_slot(k)[0] == bid and k != bid and k not in known:
+                raise BayError(f"config/lab.yaml bays.{k}: bay {bid} has no such sub-slot "
+                               f"({', '.join(sorted(known)) if multi else 'it holds one board'})")
+        for sl in slots:
+            if sl.slot is None:
+                over = node_over
+            else:
+                over = {**{k: v for k, v in node_over.items() if k in NODE_KEYS}, **lab_bays.get(sl.id, {})}
+            family = over.get("board", sl.board)
+            info = boards.get(family, {})
+            z = info.get("zephyr") or {}
+            bay = Bay(
+                id=sl.id, board=family, name=info.get("name", family),
+                platform=over.get("platform", z.get("platform")),
+                runner=over.get("runner", z.get("runner")),
+                probe_id=str(over["id"]) if over.get("id") is not None else None,
+                console=over.get("console", "usb" if sl.slot else z.get("console", "usb")),
+                serial=over.get("serial"),
+                baud=int(over.get("baud", z.get("baud", 115200))),
+                host=over.get("host", f"bay-{bid.lower()}.{domain}"),
+                http_port=int(over.get("http_port", lab.get("http_port", 80))),
+                aux_port=int(over.get("aux_port", lab.get("aux_port", 4000))),
+                rfc2217_port=int(over.get("rfc2217_port", lab.get("rfc2217_port", 4001))),
+                fixtures=list(over.get("fixtures", [])),
+                ci=bool(over.get("ci", True)),
+                choices=list(z.get("choices", [])),
+                note=z.get("note", ""),
+                product=over.get("product", z.get("product")),
+                node=bid if sl.slot else "", slot=sl.slot, multi=multi,
+            )
+            if bay.console not in ("usb", "aux"):
+                raise BayError(f"bay {sl.id}: console must be usb or aux, not {bay.console!r}")
+            if sl.slot and bay.console == "aux":
+                raise BayError(f"bay {sl.id}: a sub-slot has no AUX UART: its console is the board's own USB")
+            out[sl.id] = bay
     return out
 
 
@@ -229,10 +276,35 @@ def duration(text: str) -> int:
 
 
 def get_bay(bays: dict[str, Bay], bid: str) -> Bay:
+    """One board under test: a bay's one board ("A1") or a sub-slot ("B3.2")."""
     b = bays.get(bid.upper())
     if b is None:
+        subs = [x.id for x in bays.values() if x.node == bid.upper()]
+        if subs:
+            raise BayError(f"bay {bid.upper()} holds several boards: say which ({', '.join(subs)})")
         raise BayError(f"unknown bay {bid!r} (known: {', '.join(bays)})")
     return b
+
+
+def dut_targets(bays: dict[str, Bay], name: str) -> list[Bay]:
+    """The boards a name covers: a sub-slot, a one-board bay, or every sub-slot of a converted bay."""
+    subs = [x for x in bays.values() if x.node == name.upper()]
+    return subs or [get_bay(bays, name)]
+
+
+def node_bay(bays: dict[str, Bay], name: str) -> Bay:
+    """The node of a bay or of a sub-slot, as a Bay for api() (its id is the bay's)."""
+    first = dut_targets(bays, rackcfg.split_slot(name)[0])[0]
+    return replace(first, id=first.node_id, node="", slot=None)
+
+
+def nodes_of(bays: dict[str, Bay], names: list[str]) -> list[Bay]:
+    """Each node once, in rack order: for the node's own commands (access, update)."""
+    seen: dict[str, Bay] = {}
+    for n in names or [b.id for b in bays.values()]:
+        nb = node_bay(bays, n)
+        seen.setdefault(nb.id, nb)
+    return list(seen.values())
 
 
 # ------------------------------------------------------------------------- node API
@@ -267,6 +339,36 @@ def wait_for(cond, timeout: float, step: float = 0.5) -> bool:
         if time.monotonic() >= end:
             return False
         time.sleep(step)
+
+
+# ------------------------------------------------------------------------- a node's ports
+
+def node_ports(bay: Bay) -> list[dict]:
+    """GET /api/ports: one object per port, `slot`, `port`, `hub_port`, `power`, `fault`, `usb`, `usbip`,
+    `lease` (docs/multi-dut-node.md); a one-port node lists its DUT as port 1."""
+    doc = api(bay, "/api/ports")
+    return doc if isinstance(doc, list) else doc.get("ports", [])
+
+
+def port_doc(bay: Bay) -> dict:
+    """A sub-slot's port, from its node's /api/ports."""
+    for port in node_ports(bay):
+        if port.get("port") == bay.slot:
+            return port
+    raise BayError(f"{bay.id}: the node has no port {bay.slot} (is its DATA ×4 board connected?)")
+
+
+def port_busid(port: dict) -> str:
+    """The busid USB/IP exports a port's board under: the node's, else its place on the hub (1-1.<hub port>)."""
+    usb = port.get("usb") or {}
+    return usb.get("busid") or (f"1-1.{port['hub_port']}" if port.get("hub_port") else "1-1")
+
+
+def control(bay: Bay, what: str, body: dict) -> dict:
+    """POST power / reset / boot: a sub-slot's port, or the node's one DUT."""
+    if bay.slot:
+        return api(bay, f"/api/ports/{bay.slot}/{what}", body)
+    return api(bay, f"/api/{what}", body)
 
 
 # ------------------------------------------------------------------------- USB/IP (Linux)
@@ -321,8 +423,10 @@ def _same_host(a: str, b: str) -> bool:
         return False
 
 
-def imported_ports(bay: Bay) -> list[str]:
-    return [p for p, h, _ in parse_usbip_port(_run([*_usbip_cmd(), "port"], check=False)) if _same_host(h, bay.host)]
+def imported_ports(bay: Bay, busid: str | None = None) -> list[str]:
+    """This host's usbip ports imported from the bay's node (only that busid's, if given)."""
+    return [p for p, h, b in parse_usbip_port(_run([*_usbip_cmd(), "port"], check=False))
+            if _same_host(h, bay.host) and busid in (None, b)]
 
 
 def serial_ids() -> set[str]:
@@ -330,14 +434,23 @@ def serial_ids() -> set[str]:
 
 
 def attach(bay: Bay, wait: float = 10.0) -> list[str]:
-    """Attach the bay's exported DUT device; returns the /dev/serial/by-id entries that appeared."""
-    if imported_ports(bay):
-        return []
+    """Attach the board's exported device (a sub-slot's: its port's busid, from /api/ports); returns the
+    /dev/serial/by-id entries that appeared."""
+    if bay.slot:
+        busid = port_busid(port_doc(bay))
+        if imported_ports(bay, busid):
+            return []
+        exported = [b for b, _ in parse_usbip_list(_run([*_usbip_cmd(), "list", "-r", bay.host]))]
+        if busid not in exported:
+            raise BayError(f"{bay.id}: {busid} is not exported (is the board powered and enumerated?)")
+    else:
+        if imported_ports(bay):
+            return []
+        devices = parse_usbip_list(_run([*_usbip_cmd(), "list", "-r", bay.host]))
+        if not devices:
+            raise BayError(f"{bay.id}: the node exports no USB device (is the DUT powered and enumerated?)")
+        busid = devices[0][0]
     before = serial_ids()
-    devices = parse_usbip_list(_run([*_usbip_cmd(), "list", "-r", bay.host]))
-    if not devices:
-        raise BayError(f"{bay.id}: the node exports no USB device (is the DUT powered and enumerated?)")
-    busid = devices[0][0]
     _run([*_usbip_cmd(), "attach", "-r", bay.host, "-b", busid])
     wait_for(lambda: bool(serial_ids() - before), wait)
     time.sleep(1.0)                 # composite probes bring their interfaces up one by one
@@ -345,10 +458,28 @@ def attach(bay: Bay, wait: float = 10.0) -> list[str]:
 
 
 def detach(bay: Bay) -> int:
-    ports = imported_ports(bay)
+    """Detach what this host imported from the board (a sub-slot: only its busid)."""
+    ports = imported_ports(bay, port_busid(port_doc(bay)) if bay.slot else None)
     for p in ports:
         _run([*_usbip_cmd(), "detach", "-p", p])
     return len(ports)
+
+
+def follow(targets: list[Bay], step: float = 2.0, say=print, stop: threading.Event | None = None) -> None:
+    """Keep boards attached: a reset or a power cycle ends their USB/IP session, and each comes back under
+    the same busid (docs/multi-dut-node.md); attach it again then.  Until Ctrl-C, or `stop`."""
+    while stop is None or not stop.is_set():
+        for b in targets:
+            try:
+                new = attach(b)
+            except BayError:
+                continue                    # not back yet
+            if new:
+                say(f"{b.id}: attached, {', '.join(new)}")
+        if stop is not None:
+            stop.wait(step)
+        else:
+            time.sleep(step)
 
 
 # ------------------------------------------------------------------------- consoles
@@ -387,12 +518,26 @@ def pty_bridge(bay: Bay) -> None:
 # ------------------------------------------------------------------------- access control
 
 def lease(bay: Bay, seconds: int, note: str = "") -> dict:
-    """Reserve (or renew) the bay for this host; BayError (423) while another host holds it."""
-    return api(bay, "/api/lease", {"ttl_s": seconds, "note": note})
+    """Reserve (or renew) the bay, or one sub-slot, for this host; BayError (423) while another host holds it."""
+    body = {"ttl_s": seconds, "note": note}
+    if bay.slot:
+        body["ports"] = [bay.id]
+    return api(bay, "/api/lease", body)
 
 
 def release(bay: Bay, force: bool = False) -> dict:
-    return api(bay, "/api/lease", {"release": True}, key=admin_key() if force else None)
+    body = {"release": True}
+    if bay.slot:
+        body["ports"] = [bay.id]
+    return api(bay, "/api/lease", body, key=admin_key() if force else None)
+
+
+def lease_left(bay: Bay, doc: dict) -> int:
+    """Seconds left on the bay's lease, or on the sub-slot's."""
+    if bay.slot:
+        return next(((p.get("lease") or {}).get("remaining_s", 0) for p in doc.get("ports", [])
+                     if p.get("slot") == bay.id), 0)
+    return (doc.get("lease") or {}).get("remaining_s", 0)
 
 
 def access_push(bay: Bay, rules: dict, key: bytes) -> str:
@@ -550,9 +695,9 @@ def update_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
         if not targets:
             raise BayError("the hub lists no bay node")
     else:
-        targets = [get_bay(bays, b) for b in a.bays]
-        if not targets:
+        if not a.bays:
             raise BayError("which bays? (or --all, or --hub)")
+        targets = nodes_of(bays, a.bays)
     print(f"{info['id']} {info['version']}: {', '.join(t.id for t in targets)}")
     done, skipped = [], []
     for dev in targets:
@@ -617,7 +762,8 @@ def hwmap(bays: dict[str, Bay], scripts_dir: Path, python: str, bayctl: str, lab
         except BayError as e:
             warnings.append(str(e))
             continue
-        pre = scripts_dir / f"bay-{bay.id.lower()}-pre.sh"
+        tag = bay.id.lower().replace(".", "-")
+        pre = scripts_dir / f"bay-{tag}-pre.sh"
         pre.write_text(
             "#!/bin/sh\n"
             f"# Generated by tools/bayctl.py hwmap: bay {bay.id} ({bay.name}) before each test.\n"
@@ -627,7 +773,7 @@ def hwmap(bays: dict[str, Bay], scripts_dir: Path, python: str, bayctl: str, lab
             encoding="utf-8", newline="\n")
         scripts = [pre]
         if lease_for:
-            post = scripts_dir / f"bay-{bay.id.lower()}-post.sh"
+            post = scripts_dir / f"bay-{tag}-post.sh"
             post.write_text(
                 "#!/bin/sh\n"
                 f"# Generated by tools/bayctl.py hwmap: bay {bay.id} after each test.\n"
@@ -663,7 +809,7 @@ def hwmap(bays: dict[str, Bay], scripts_dir: Path, python: str, bayctl: str, lab
         if lease_for:
             e["post_script"] = str(scripts[1])
         e["script_param"] = {"pre_script_timeout": 90}
-        e["fixtures"] = [f"bay:{bay.id}", *bay.fixtures]
+        e["fixtures"] = [f"bay:{bay.id}", *([f"node:{bay.node}"] if bay.slot else []), *bay.fixtures]
         if bay.note:
             warnings.append(f"bay {bay.id}: {bay.note}")
         entries.append(e)
@@ -678,21 +824,19 @@ def export_labgrid(bays: dict[str, Bay], python: str, bayctl: str) -> dict:
     targets = {}
     for bay in bays.values():
         run = f"{python} {bayctl}"
-        res = {"NetworkSerialPort": {"host": bay.host, "port": bay.rfc2217_port, "speed": bay.baud,
-                                     "protocol": "rfc2217"}}
-        targets[f"bay-{bay.id.lower()}"] = {
-            "resources": res,
-            "drivers": {
-                "ExternalPowerDriver": {"cmd_on": f"{run} power {bay.id} on", "cmd_off": f"{run} power {bay.id} off",
-                                        "cmd_cycle": f"{run} power {bay.id} cycle"},
-                "SerialDriver": {},
-            },
-        }
+        drivers = {"ExternalPowerDriver": {"cmd_on": f"{run} power {bay.id} on", "cmd_off": f"{run} power {bay.id} off",
+                                           "cmd_cycle": f"{run} power {bay.id} cycle"}}
+        res = {}
+        if not bay.slot:                # a sub-slot has no AUX UART: its console is its own USB, once attached
+            res = {"NetworkSerialPort": {"host": bay.host, "port": bay.rfc2217_port, "speed": bay.baud,
+                                         "protocol": "rfc2217"}}
+            drivers["SerialDriver"] = {}
+        targets[f"bay-{bay.id.lower().replace('.', '-')}"] = {"resources": res, "drivers": drivers}
     return {"targets": targets}
 
 
 def export_pdudaemon(bays: dict[str, Bay], python: str, bayctl: str) -> dict:
-    """One PDU, one port per bay (1-based, in bay order): LAVA addresses the DUT as (pdu, port)."""
+    """One PDU, one port per board under test (1-based, in rack order): LAVA addresses a DUT as (pdu, port)."""
     run = f"{python} {bayctl}"
     return {
         "daemon": {"hostname": "0.0.0.0", "port": 16421, "listener": "http", "logging_level": "INFO"},
@@ -713,6 +857,19 @@ def _print_status(s: dict) -> None:
           f"USB devices {usb.get('devices', 0)}, USB/IP sessions {usb.get('sessions', 0)}")
 
 
+def _print_port(p: dict) -> None:
+    pw, usb, client = p.get("power") or {}, p.get("usb"), p.get("usbip")
+    state = "FAULT" if p.get("fault") else ("on" if pw.get("on") else "off")
+    dev = (f"{usb.get('vid', '?')}:{usb.get('pid', '?')} {usb.get('product', '')}  busid {port_busid(p)}"
+           if usb else "no USB device")
+    print(f"{p.get('slot', '?'):6} port {p.get('port')}  VBUS {state} {pw.get('ma', 0)} mA  {dev}"
+          + (f"  USB/IP {client.get('client')}" if client else ""))
+
+
+def _print_control(bay: Bay, r: dict) -> None:
+    (_print_port if bay.slot else _print_status)(r)
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="bayctl", description=__doc__.split("\n")[0],
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -724,6 +881,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("list")
     p.add_argument("--probe", action="store_true", help="also query every node")
     sub.add_parser("status").add_argument("bay")
+    sub.add_parser("ports").add_argument("bay")
     p = sub.add_parser("power")
     p.add_argument("bay")
     p.add_argument("action", choices=["on", "off", "cycle"])
@@ -741,6 +899,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("attach")
     p.add_argument("bay")
     p.add_argument("--show", action="store_true", help="print the serial devices that appeared")
+    p.add_argument("--follow", action="store_true", help="stay, and attach again after each reset (Ctrl-C to stop)")
     sub.add_parser("detach").add_argument("bay")
     p = sub.add_parser("prepare")
     p.add_argument("bay")
@@ -787,43 +946,64 @@ def main(argv: list[str] | None = None) -> int:
         bays = load_bays(a.rack, a.boards, a.lab)
         bayctl = str(Path(__file__).resolve())
         if a.cmd == "list":
+            ports: dict[str, dict] = {}
             for b in bays.values():
-                line = (f"{b.id:4} {b.board:18} {b.platform or '(set platform)':34} {b.runner or '-':20} "
+                line = (f"{b.id:5} {b.board:18} {b.platform or '(set platform)':34} {b.runner or '-':20} "
                         f"{b.console:3}  {b.host}" + ("" if b.ci else "  [not in CI]"))
                 if a.probe:
                     try:
-                        s = api(b, "/api/status", timeout=3)
-                        dut = s.get("dut", {})
-                        line += f"  VBUS {'on' if dut.get('on') else 'off'} {dut.get('ma', 0)} mA"
+                        if b.slot:
+                            if b.node not in ports:
+                                ports[b.node] = {x.get("port"): x for x in node_ports(b)}
+                            pw = (ports[b.node].get(b.slot) or {}).get("power") or {}
+                            line += f"  VBUS {'on' if pw.get('on') else 'off'} {pw.get('ma', 0)} mA"
+                        else:
+                            dut = api(b, "/api/status", timeout=3).get("dut", {})
+                            line += f"  VBUS {'on' if dut.get('on') else 'off'} {dut.get('ma', 0)} mA"
                     except BayError:
                         line += "  unreachable"
                 print(line)
         elif a.cmd == "status":
-            _print_status(api(get_bay(bays, a.bay), "/api/status"))
+            node = node_bay(bays, a.bay)
+            _print_status(api(node, "/api/status"))
+            if node.multi:
+                for port in node_ports(node):
+                    _print_port(port)
+        elif a.cmd == "ports":
+            for port in node_ports(node_bay(bays, a.bay)):
+                _print_port(port)
         elif a.cmd in ("power", "power-port"):
             if a.cmd == "power-port":
                 order = list(bays.values())
                 if not 1 <= a.port <= len(order):
-                    raise BayError(f"port {a.port}: the rack has {len(order)} bays")
-                bay = order[a.port - 1]
+                    raise BayError(f"port {a.port}: the rack has {len(order)} boards under test")
+                targets = [order[a.port - 1]]
             else:
-                bay = get_bay(bays, a.bay)
+                targets = dut_targets(bays, a.bay)
             body = {"action": a.action}
             if a.action == "cycle":
                 body["ms"] = getattr(a, "ms", 1000)
-            _print_status(api(bay, "/api/power", body))
-        elif a.cmd == "reset":
-            _print_status(api(get_bay(bays, a.bay), "/api/reset", {"ms": a.ms}))
-        elif a.cmd == "boot":
-            _print_status(api(get_bay(bays, a.bay), "/api/boot", {}))
+            for bay in targets:
+                _print_control(bay, control(bay, "power", body))
+        elif a.cmd in ("reset", "boot"):
+            for bay in dut_targets(bays, a.bay):
+                _print_control(bay, control(bay, a.cmd, {"ms": a.ms} if a.cmd == "reset" else {}))
         elif a.cmd == "mode":
-            _print_status(api(get_bay(bays, a.bay), "/api/mode", {"mode": a.mode}))
+            _print_status(api(node_bay(bays, a.bay), "/api/mode", {"mode": a.mode}))
         elif a.cmd == "attach":
-            new = attach(get_bay(bays, a.bay))
-            if a.show:
-                print("\n".join(new) if new else "no new /dev/serial/by-id entry (already attached, or no tty)")
+            targets = dut_targets(bays, a.bay)
+            for bay in targets:
+                new = attach(bay)
+                if a.show:
+                    print(f"{bay.id}: " + (", ".join(new) if new else
+                                            "no new /dev/serial/by-id entry (already attached, or no tty)"))
+            if a.follow:
+                try:
+                    follow(targets)
+                except KeyboardInterrupt:
+                    pass
         elif a.cmd == "detach":
-            print(f"detached {detach(get_bay(bays, a.bay))} device(s)")
+            print(f"detached {sum(detach(bay) for bay in dut_targets(bays, a.bay))} device(s)")
         elif a.cmd == "prepare":
             bay = get_bay(bays, a.bay)
             if a.lease:
@@ -831,18 +1011,31 @@ def main(argv: list[str] | None = None) -> int:
             s = api(bay, "/api/status")
             if s.get("path") != "usbip":
                 api(bay, "/api/mode", {"mode": "usbip"})
-            if a.power_cycle:
-                detach(bay)
-                s = api(bay, "/api/power", {"action": "cycle", "ms": 1000})
-            elif not s.get("dut", {}).get("on") or s.get("dut", {}).get("latched"):
-                s = api(bay, "/api/power", {"action": "on"})
-            if not wait_for(lambda: api(bay, "/api/status").get("usb", {}).get("devices", 0) > 0, a.timeout):
+            if bay.slot:
+                port = port_doc(bay)
+                if a.power_cycle:
+                    detach(bay)
+                    control(bay, "power", {"action": "cycle", "ms": 1000})
+                elif not (port.get("power") or {}).get("on") or port.get("fault"):
+                    control(bay, "power", {"action": "on"})
+                enumerated = lambda: bool(port_doc(bay).get("usb"))          # noqa: E731
+            else:
+                if a.power_cycle:
+                    detach(bay)
+                    s = api(bay, "/api/power", {"action": "cycle", "ms": 1000})
+                elif not s.get("dut", {}).get("on") or s.get("dut", {}).get("latched"):
+                    s = api(bay, "/api/power", {"action": "on"})
+                enumerated = lambda: api(bay, "/api/status").get("usb", {}).get("devices", 0) > 0   # noqa: E731
+            if not wait_for(enumerated, a.timeout):
                 raise BayError(f"{bay.id}: no USB device enumerated on the DUT port after {a.timeout:.0f} s")
             attach(bay)
             if bay.console == "usb" and bay.serial and not wait_for(lambda: Path(bay.serial).exists(), a.timeout):
                 raise BayError(f"{bay.id}: {bay.serial} did not appear")
         elif a.cmd == "pty":
-            pty_bridge(get_bay(bays, a.bay))
+            bay = get_bay(bays, a.bay)
+            if bay.slot:
+                raise BayError(f"{bay.id}: a sub-slot has no AUX UART: its console is the board's own USB")
+            pty_bridge(bay)
         elif a.cmd == "hwmap":
             scripts = a.scripts or a.out.resolve().parent / "rack-scripts"
             lab = a.lab.resolve() if a.lab.exists() else None
@@ -851,7 +1044,7 @@ def main(argv: list[str] | None = None) -> int:
                              + yaml.safe_dump(entries, sort_keys=False), encoding="utf-8")
             for w in warnings:
                 print("warning:", w, file=sys.stderr)
-            print(f"wrote {a.out} ({len(entries)} bays) and pre-scripts in {scripts}")
+            print(f"wrote {a.out} ({len(entries)} boards) and pre-scripts in {scripts}")
         elif a.cmd == "export":
             doc = (export_labgrid if a.what == "labgrid" else export_pdudaemon)(bays, a.python, bayctl)
             if a.what == "pdudaemon":
@@ -861,11 +1054,13 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(yaml.safe_dump(doc, sort_keys=False), end="")
         elif a.cmd == "lease":
-            d = lease(get_bay(bays, a.bay), duration(a.ttl), a.note)
-            print(f"{a.bay.upper()} reserved for {d['you']}, {d['lease']['remaining_s']} s")
+            bay = bays.get(a.bay.upper()) or node_bay(bays, a.bay)
+            d = lease(bay, duration(a.ttl), a.note)
+            print(f"{bay.id} reserved for {d['you']}, {lease_left(bay, d)} s")
         elif a.cmd == "release":
-            release(get_bay(bays, a.bay), a.force)
-            print(f"{a.bay.upper()} released")
+            bay = bays.get(a.bay.upper()) or node_bay(bays, a.bay)
+            release(bay, a.force)
+            print(f"{bay.id} released")
         elif a.cmd == "access":
             return access_cli(a, bays)
         elif a.cmd == "update":
@@ -882,21 +1077,21 @@ def access_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
         return 0
     if a.access_cmd == "show":
         key = admin_key() if os.environ.get("BAYCTL_KEY") else None
-        _print_access(api(get_bay(bays, a.bay), "/api/access", key=key))
+        _print_access(api(node_bay(bays, a.bay), "/api/access", key=key))
         return 0
     if a.access_cmd == "kick":
-        api(get_bay(bays, a.bay), "/api/access/kick", {"id": a.id}, key=admin_key())
+        api(node_bay(bays, a.bay), "/api/access/kick", {"id": a.id}, key=admin_key())
         print(f"{a.bay.upper()}: kicked {a.id}")
         return 0
     key = admin_key()
     if a.access_cmd == "claim":
-        for bid in a.bays:
-            access_claim(get_bay(bays, bid), key)
-            print(f"{bid.upper()}: claimed")
+        for node in nodes_of(bays, a.bays):
+            access_claim(node, key)
+            print(f"{node.id}: claimed")
         return 0
     # push
     failed = 0
-    for bay in [get_bay(bays, b) for b in a.bays] or list(bays.values()):
+    for bay in nodes_of(bays, a.bays):
         rules = access_rules(a.lab, bay.id)
         if rules is None:
             raise BayError(f"no `access:` section in {a.lab} (see config/lab.example.yaml)")
