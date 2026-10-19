@@ -62,7 +62,8 @@ JLC_QUOTE = {
     # them).  5 PCBs 4-layer ENIG (JLC adds two 5 mm rails for Standard PCBA: 86 × 140 mm), 2 assembled,
     # Standard, X-ray.  JLC flags the USB4105 (J1, J6) as hard to process ($0.03 a piece).  Two parts were
     # out of stock: the TCAN1462V (U6), quoted as its documented alternate TJA1462AT/0Z (C3234095, same
-    # SOIC-8 pinout, signal improvement), and the AP33772S FA01 (U1, LCSC 0), left out of the quote.  U1
+    # SOIC-8 pinout, signal improvement; both boards take it since), and the AP33772S FA01 (U1, LCSC 0),
+    # left out of the quote.  U1
     # comes through JLC Global Sourcing from DigiKey (estimate): 5 at €2.09 with JLC's reported ≈ 50 %
     # markup ≈ $17.04, plus its loading fee ≈ $3, and ≈ 2 weeks for the parts to clear into JLC.
     "power-hub": {

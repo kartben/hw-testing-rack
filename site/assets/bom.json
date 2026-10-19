@@ -813,20 +813,20 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout)",
+"item": "TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout)",
 "ref": "U11",
-"mpn": "TCAN1462VDRQ1",
-"manufacturer": "Texas Instruments",
+"mpn": "TJA1462AT/0Z",
+"manufacturer": "NXP Semiconductors",
 "supplier": "LCSC/JLCPCB",
-"part": "C7399456",
+"part": "C3234095",
 "qty": 10,
-"unit_eur": 0.8924,
+"unit_eur": 0.9292,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 10 boards; alternative: LCSC stock was 0 on 2026-10-18.  Same pinout: TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V) or NXP TJA1462AT/0Z (C3234095, SIC, VIO 2.95–5.5 V, bus pins −36/+40 V)",
+"notes": "1 per board × 10 boards; alternative: Same pinout: TI TCAN1462VDRQ1 (C7399456, SIC, bus pins ±58 V; LCSC stock 0 on 2026-10-18 and 19) or TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V)",
 "unit": "pcs",
-"ext_eur": 8.92
+"ext_eur": 9.29
 },
 {
 "category": "Electronics",
@@ -856,10 +856,10 @@
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 18.54,
-"notes": "quoted components $188.05 (≈ €173.01) for 10 boards; catalogue unit prices give €154.47",
+"unit_eur": 18.17,
+"notes": "quoted components $188.05 (≈ €173.01) for 10 boards; catalogue unit prices give €154.84",
 "unit": "pcs",
-"ext_eur": 18.54
+"ext_eur": 18.17
 },
 {
 "category": "Electronics",
@@ -1818,20 +1818,20 @@
 {
 "category": "Electronics",
 "group": "power-hub",
-"item": "TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout)",
+"item": "TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout)",
 "ref": "U6",
-"mpn": "TCAN1462VDRQ1",
-"manufacturer": "Texas Instruments",
+"mpn": "TJA1462AT/0Z",
+"manufacturer": "NXP Semiconductors",
 "supplier": "LCSC/JLCPCB",
-"part": "C7399456",
+"part": "C3234095",
 "qty": 2,
-"unit_eur": 0.8924,
+"unit_eur": 0.9292,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 2 boards; alternative: LCSC stock was 0 on 2026-10-18.  Same pinout: TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V) or NXP TJA1462AT/0Z (C3234095, SIC, VIO 2.95–5.5 V, bus pins −36/+40 V)",
+"notes": "1 per board × 2 boards; alternative: Same pinout: TI TCAN1462VDRQ1 (C7399456, SIC, bus pins ±58 V; LCSC stock 0 on 2026-10-18 and 19) or TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V)",
 "unit": "pcs",
-"ext_eur": 1.78
+"ext_eur": 1.86
 },
 {
 "category": "Electronics",
@@ -1879,10 +1879,10 @@
 "item": "Components power-hub: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-19",
 "qty": 1,
-"unit_eur": 4.34,
-"notes": "quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €48.92",
+"unit_eur": 4.26,
+"notes": "quoted components $57.89 (≈ €53.26) for 2 boards; catalogue unit prices give €49.00",
 "unit": "pcs",
-"ext_eur": 4.34
+"ext_eur": 4.26
 },
 {
 "category": "Electronics",

@@ -588,8 +588,8 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 | IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
 | IO15 | SVC | SERVICE slide switch | `usb_mux` `service-gpios` |
 | IO16 | POS_IN | POS token from J1.6 (10k, BAT54S clamp, 100k pull-down) | `rack_bus` `pos-in-gpios` |
-| IO17 | CAN_RXD | TCAN1462V RXD (rack CAN bus) | `&twai` |
-| IO18 | CAN_TXD | TCAN1462V TXD | `&twai` |
+| IO17 | CAN_RXD | TJA1462AT RXD (rack CAN bus) | `&twai` |
+| IO18 | CAN_TXD | TJA1462AT TXD | `&twai` |
 | IO19 | ESP_DN | USB D−, internal FS PHY → MUX_DUT / MUX_PC | `zephyr_uhc0: &usb_otg` |
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
 | IO21 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
@@ -623,7 +623,7 @@ runs it and builds both targets with warnings as errors on every push.
 
 * **Rack bus not on hardware.**  The node's and the hub's protocol code
   passes the simulated rack (`common/tests/rack_bus`: enumeration, reboots,
-  dead and lost nodes, retries); the TWAI, the TCAN1462V and the POS chain
+  dead and lost nodes, retries); the TWAI, the TJA1462AT and the POS chain
   over real row cables are untested.
 * **Hardware bring-up not done.**  Nothing here has run on a bay node yet:
   the board definition, the INA226 calibration, the LED timing and the

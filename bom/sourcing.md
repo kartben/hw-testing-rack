@@ -35,8 +35,15 @@ pin 5, STB on pin 8), so nothing is re-routed:
 | NXP TJA1462AT/0Z (C3234095) | 10 500 | $0.83 (10+) | keeps signal improvement; bus pins −36 / +40 V instead of ±58 V (VRACK, 28 V, sits two pins away) |
 | TI TCAN1044AVDRQ1 (C3234993) | 23 540 | $0.43 | ±58 V; no signal improvement (the star bus at 250 kbit/s works without it) |
 
-The hub quote used the TJA1462AT/0Z.  The boards' BOMs still name the TCAN1462V: swap before ordering if
-it is still out of stock.
+The hub quote used the TJA1462AT/0Z, and both boards take it since (hub U6, node U11; the user, 2026-10-19).
+The TCAN1462V stays the alternate.
+
+## USB4105 (node J3, hub J1 / J6, data port J1)
+
+LCSC has stock (3 685 on 2026-10-19), but JLC flags the GCT USB4105-GF-A-120 (C5184243) as hard to process
+(its four shell stakes are through-hole).  It adds $0.03 a piece, and its BOM page leaves the line unticked
+(quantity 0).  **Tick it again at every order**, or the board comes without its USB-C.  The part stays: it is
+rated 5 A (the hub's PD input carries up to 5 A at 28 V), and the stakes hold it against plug forces.
 
 ## Camera lens
 

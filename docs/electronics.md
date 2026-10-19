@@ -95,7 +95,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | Block | Parts | Notes |
 |---|---|---|
 | Row cable in/out | 2 × JST PH 6, side entry, SMD (S6B-PH-SM4-TB).  J1 (IN): 1 VRACK · 2 GND · 3 CAN_H · 4 CAN_L · 5 GND · 6 POS in; J2 (OUT) mirrored: 1 POS out · 3 CAN_L · 4 CAN_H · 6 VRACK ([can.md](can.md)) | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it; each power pin on a solid island with vias to its plane; every net runs straight across (J1.1 → J2.6, J1.3/4 → J2.4/3): the jumper between nodes lies flat, no twist |
-| Rack bus | TCAN1462V, signal improvement (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 100k pull-down; POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a wrong cable (VRACK on a POS pin) costs ≈ 2.5 mA at 28 V |
+| Rack bus | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 100k pull-down; POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a wrong cable (VRACK on a POS pin) costs ≈ 2.5 mA at 28 V |
 | Protection | SUD50P06 P-FET + 12 V zener, SMBJ33A, 100 µF/50 V | reverse polarity, hot-plug clamp < 54 V |
 | 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 100k/18k → 5.24 V (≈ 4.75 V still at the DATA board at 1.4 A, below); EN 1M/100k: on above 13.5 V, off below 10.8 V |
 | 3.3 V | AMS1117-3.3 | logic only |
@@ -231,7 +231,7 @@ and the sequencing: [power.md](power.md).
 | Controller supply | LMR51635 from VBUS *ahead of* the switch (EN from ≈ 3.9 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from a contract's first 5 V; runs on the console USB alone for flashing |
 | Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
 | PD interface | SDA / SCL with 4.7 k pull-ups fed from a GPIO (I2C_PU), INT (a 5 V output) through 15 k / 27 k, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered AP33772S |
-| CAN | TCAN1462V, signal improvement (VCC 5 V, VIO 3.3 V, ±58 V bus pins), two split terminations 2 × 56 Ω + 4.7 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
+| CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 4.7 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
 | POS | 4 GPIOs → 10 k → pin 1 of each row output (the outputs have the bay nodes' OUT pinout: 1 POS · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), BAT54S clamp to GND / 3.3 V | survives a wrong cable (VRACK on POS) |
 
 **Layout**, with the bay node's practices: JLC's 4-layer stackup (JLC04161H-7628), ENIG for now (the
@@ -403,7 +403,8 @@ ESP32-S3 module, so it needs Standard PCBA, with X-ray, like the bay node.
 Two parts were out of stock that day:
 - **TCAN1462V (U6), LCSC C7399456.**  Quoted as its documented alternate, NXP's TJA1462AT/0Z
   (C3234095, 10 500 in stock): same SOIC-8 pinout, signal improvement kept, bus pins −36 / +40 V
-  instead of ±58 V.  The bay node's U11 is the same part.
+  instead of ±58 V.  Both boards take it since (hub U6, node U11; the user, 2026-10-19), and the
+  TCAN1462V stays an alternate.
 - **AP33772S FA01 (U1).**  LCSC has 0 (the FA02 is out until ≈ 14/12/2026), so it was left out of the
   quote.  It comes through JLC Global Sourcing from DigiKey: 5 parts with JLC's reported ≈ 50 % markup,
   ≈ $17, plus its ≈ $3 loading fee, and ≈ 2 weeks for them to clear into JLC.
@@ -437,7 +438,7 @@ footprint.  Rev 0.4 puts the node's JST PH connectors back in JLC's hands, as SM
 extended part types (C295747, C265405, ≈ $3 loading fee each per order), ≈ +$0.86 of parts per
 board over the through-hole ones, and nothing left to solder by hand on the node.  Rev 0.5 (the rack
 bus) turns J1/J2 into the 6-pin S6B (C265405, already the AUX connector: no new type) and adds three
-extended part types, the CAN transceiver (TCAN1462V, C7399456; alternate TCAN1044AV, C3234993), the PESD2CAN (C75176) and the BAT54S (C7420333).
+extended part types, the CAN transceiver (TCAN1462V, C7399456, then the TJA1462AT, C3234095, when it ran out; alternate TCAN1044AV, C3234993), the PESD2CAN (C75176) and the BAT54S (C7420333).
 Its USB-C receptacles become the GCT USB4105-GF-A-120 (C5184243, the part the user chose for the
 hub: 5 A on VBUS), one extended type for another.  In all ≈ +$9 of loading fees per order and
 ≈ +$2.38 of parts per board, $1.44 of it for the two GCT receptacles.  `JLC_SINCE_QUOTE` in
@@ -515,7 +516,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C495548 JST B8B-PH-SM4-TB | node J6 | −0.63 mm y | to confirm |
 | C20917 AO3400A SOT-23 | node Q4 | 180° | to confirm |
 | C265405 JST S6B-PH-SM4-TB | node J1 J2 J5, hub row outputs | 180° | to confirm |
-| C7399456 TCAN1462V SOIC-8 (alternates C3234993 TCAN1044AV, C3234095 TJA1462AT) | node U11, hub U6 | 270° | to confirm |
+| C3234095 TJA1462AT/0Z SOIC-8 (alternates C7399456 TCAN1462V, C3234993 TCAN1044AV) | node U11, hub U6 | 270° | to confirm |
 | C75176 PESD2CAN SOT-23 | node D5, hub D9 | 180° | to confirm |
 | C7420333 BAT54S SOT-23 | node D6 D7, hub POS clamps | 180° | to confirm |
 | C5184243 GCT USB4105-GF-A-120 | node J3 (J4 too until the 74 × 90 re-layout), hub USB-C, data port J1, DATA ×4 J101–J401 | −1.30 mm y | to confirm |

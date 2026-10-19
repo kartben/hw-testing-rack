@@ -352,7 +352,7 @@
 		)
 		(uuid "f047cd72-8093-5349-881b-317f1ec4702c")
 	)
-	(text_box "Power hub v0.5 — USB-C PD in (AP33772S: 20 V or 28 V EPR, as the controller asks) → NMOS switch → VRACK → 4 × TPS26600 eFuse (1.6 A) → 6-pin JST PH rows A–D.\nRack controller: ESP32-S3-MINI-1 on VBUS (ahead of the switch), TCAN1462V (CAN master, star bus, both terminations here), POS token per row.\nRows are OFF without firmware: SHDN is pulled low; the controller turns each row on once the PD contract is final."
+	(text_box "Power hub v0.5 — USB-C PD in (AP33772S: 20 V or 28 V EPR, as the controller asks) → NMOS switch → VRACK → 4 × TPS26600 eFuse (1.6 A) → 6-pin JST PH rows A–D.\nRack controller: ESP32-S3-MINI-1 on VBUS (ahead of the switch), TJA1462AT (CAN master, star bus, both terminations here), POS token per row.\nRows are OFF without firmware: SHDN is pulled low; the controller turns each row on once the PD contract is final."
 		(exclude_from_sim no)
 		(at 30 148.59 0)
 		(size 360 12.7)

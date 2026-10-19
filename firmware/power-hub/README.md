@@ -79,7 +79,7 @@ uart:~$ hub status
 | Row control | `hub row <A–D> on\|off\|cycle [ms]`, the page's buttons, `POST /api/row`; on/off is saved |
 | Faults | each eFuse's FLT (current limit, over-temperature) as an event, a count and the page's red row; the PD sink's OVP/OCP/OTP/UVP as events |
 | Telemetry | contract, VBUS, input current and temperature from the AP33772S; VBUS from its own ADC divider; each row's current from IMON |
-| Rack bus | TWAI at 250 kbit/s on the TCAN1462V (CAN SIC; STB through `can-transceiver-gpio`); enumeration over the POS tokens, the node table, commands to nodes with retries; the RACK frame every second |
+| Rack bus | TWAI at 250 kbit/s on the TJA1462AT (CAN SIC; STB through `can-transceiver-gpio`); enumeration over the POS tokens, the node table, commands to nodes with retries; the RACK frame every second |
 | Network | Wi-Fi station, DHCP, mDNS `rack-<id>.local` (firmware/common's `hwtr_net`, as the nodes) |
 | Web | Zephyr HTTP server on port 80: status page, JSON API, Prometheus `/metrics` |
 | Access | reading is open; switching rows, the contract choice, the enumeration and the node commands are admin requests, signed with the hub's admin key, claimed with a press on BOOT (see [Access](#access)) |
@@ -243,9 +243,9 @@ and [`power_hub-pinctrl.dtsi`](../boards/hwtr/power_hub/power_hub-pinctrl.dtsi).
 | IO4 | ADC_IMON_C | row C IMON, ADC1 ch 3 | `imon_c` |
 | IO5 | ADC_IMON_D | row D IMON, ADC1 ch 4 | `imon_d` |
 | IO6 | VBUS_SENSE | VBUS through 100k/10k, ADC1 ch 5 | `vbus_sense` |
-| IO7 | CAN_TXD | TCAN1462V TXD | `&twai` |
-| IO8 | CAN_RXD | TCAN1462V RXD | `&twai` |
-| IO9 | CAN_STB | TCAN1462V standby (10k pull-down) | `can_phy` `standby-gpios` |
+| IO7 | CAN_TXD | TJA1462AT TXD | `&twai` |
+| IO8 | CAN_RXD | TJA1462AT RXD | `&twai` |
+| IO9 | CAN_STB | TJA1462AT standby (10k pull-down) | `can_phy` `standby-gpios` |
 | IO10 | POS_A | row A POS token (10k, BAT54S clamp) | `row_a` `pos-gpios` |
 | IO11 | POS_B | row B POS | `row_b` `pos-gpios` |
 | IO12 | POS_C | row C POS | `row_c` `pos-gpios` |

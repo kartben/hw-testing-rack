@@ -36,7 +36,7 @@
 		};
 	};
 
-	/* IO7 CAN_TXD / IO8 CAN_RXD: TCAN1462V U6, the rack bus master (docs/can.md) */
+	/* IO7 CAN_TXD / IO8 CAN_RXD: TJA1462AT U6, the rack bus master (docs/can.md) */
 	hub_twai_default: hub_twai_default {
 		group1 {
 			pinmux = <TWAI_TX_GPIO7>;

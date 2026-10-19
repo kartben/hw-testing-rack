@@ -2,7 +2,7 @@
 
 > **Status: decided.**  The power hub v0.5 (USB-C PD in, rack controller, CAN master) is
 > laid out and routed (`electronics/power-hub`); so is the bay node v0.5 (`electronics/bay-node`:
-> 6-pin J1/J2, TCAN1462V + PESD2CAN on the pair, POS in and out).  Both firmwares speak the
+> 6-pin J1/J2, TJA1462AT + PESD2CAN on the pair, POS in and out).  Both firmwares speak the
 > rack bus ([rack-protocol.md](rack-protocol.md)): the hub as the master
 > (`firmware/power-hub`), each node as a client (`firmware/bay-node/src/rack.c`); tested on a
 > simulated rack, not yet on hardware.
@@ -65,13 +65,14 @@ needed at a row's end.  At these lengths the lines are electrically short: the
 round trip on 1.5 m is ≈ 15 ns, against ~50 ns edges and a 4 µs bit at
 250 kbit/s (the default; 125 kbit/s as a fallback).
 
-Transceiver, on the hub and on every node: **TCAN1462V** (LCSC C7399456),
+Transceiver, on the hub and on every node: NXP's **TJA1462AT** (LCSC C3234095),
 with VCC 5 V and VIO 3.3 V: a CAN FD transceiver with **signal improvement**
-(SIC: CiA 601-4, now ISO 11898-2:2024 set C).  Its bus pins take ±58 V, and VRACK sits two
-pins away on the same connector.  It is passive when unpowered, so a row whose
-eFuse is off doesn't load the bus.  Each tap gets a PESD2CAN.  Same SOIC-8 pinout
-as the TCAN1044AV (VIO on pin 5, STB on pin 8), its alternate in the BOM (no
-SIC, ±58 V), and as NXP's TJA1462AT (SIC, but bus pins −36 / +40 V only).
+(SIC: CiA 601-4, now ISO 11898-2:2024 set C).  Its bus pins take −36 / +40 V; VRACK (28 V)
+sits two pins away on the same connector.  It is passive when unpowered, so a row whose
+eFuse is off doesn't load the bus.  Each tap gets a PESD2CAN.  TI's TCAN1462V (C7399456,
+SIC, bus pins ±58 V) was the first choice; LCSC had none on 2026-10-18 and 19, so both
+boards switched (the user, 2026-10-19).  It stays an alternate, with the TCAN1044AV (no SIC,
+±58 V): the same SOIC-8 pinout, VIO on pin 5, STB on pin 8.
 
 **Why a star is fine here.**  ISO 11898-2 describes a line terminated at both
 ends.  A star is not that: its open branch ends reflect, and the bus rings

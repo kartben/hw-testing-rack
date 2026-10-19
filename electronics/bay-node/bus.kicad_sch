@@ -1644,7 +1644,7 @@
 				)
 			)
 		)
-		(property "Value" "TCAN1462V"
+		(property "Value" "TJA1462AT"
 			(at 86.005 34.29 0)
 			(effects
 				(font
@@ -1661,7 +1661,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tcan1462-q1.pdf"
+		(property "Datasheet" "https://www.nxp.com/docs/en/data-sheet/TJA1462.pdf"
 			(at 91.44 45.72 0)
 			(effects
 				(font
@@ -1670,7 +1670,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout)"
+		(property "Description" "CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout)"
 			(at 91.44 45.72 0)
 			(effects
 				(font
@@ -1679,7 +1679,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TCAN1462VDRQ1"
+		(property "MPN" "TJA1462AT/0Z"
 			(at 91.44 45.72 0)
 			(effects
 				(font
@@ -1688,7 +1688,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Texas Instruments"
+		(property "Manufacturer" "NXP Semiconductors"
 			(at 91.44 45.72 0)
 			(effects
 				(font
@@ -1697,7 +1697,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C7399456"
+		(property "LCSC" "C3234095"
 			(at 91.44 45.72 0)
 			(effects
 				(font
@@ -1706,7 +1706,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternative" "LCSC stock was 0 on 2026-10-18.  Same pinout: TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V) or NXP TJA1462AT/0Z (C3234095, SIC, VIO 2.95–5.5 V, bus pins −36/+40 V)"
+		(property "Alternative" "Same pinout: TI TCAN1462VDRQ1 (C7399456, SIC, bus pins ±58 V; LCSC stock 0 on 2026-10-18 and 19) or TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V)"
 			(at 91.44 45.72 0)
 			(effects
 				(font
@@ -3868,7 +3868,7 @@
 		)
 		(uuid "ba78abc3-26ee-5590-b5ae-78c3fece87f5")
 	)
-	(text "CAN: TCAN1462V on the row pair (J1.3/4 ↔ J2.4/3, Power sheet); stub ≤ 20 mm, no termination"
+	(text "CAN: TJA1462AT on the row pair (J1.3/4 ↔ J2.4/3, Power sheet); stub ≤ 20 mm, no termination"
 		(exclude_from_sim no)
 		(at 16.51 17.78 0)
 		(effects
@@ -3915,7 +3915,7 @@
 		)
 		(uuid "50e6a58d-6ff1-591d-9e53-029c23abe990")
 	)
-	(text_box "CAN (docs/can.md): one bus for the rack, a star from the hub; both terminations sit in the hub.\n  250 kbit/s (125 kbit/s fallback).  TCAN1462V (SIC): VCC 5 V, VIO 3.3 V, bus pins ±58 V, passive unpowered.\nPOS: active-high 3.3 V token.  From reset the node holds POS_OUT low; when POS_IN goes high and it has\n  no address yet, it answers with its MAC, takes (row, position) from the hub, then raises POS_OUT.\n  R29 keeps POS_IN low with no cable; the next node's 100k keeps POS_OUT low before firmware."
+	(text_box "CAN (docs/can.md): one bus for the rack, a star from the hub; both terminations sit in the hub.\n  250 kbit/s (125 kbit/s fallback).  TJA1462AT (SIC): VCC 5 V, VIO 3.3 V, bus pins −36/+40 V, passive unpowered.\nPOS: active-high 3.3 V token.  From reset the node holds POS_OUT low; when POS_IN goes high and it has\n  no address yet, it answers with its MAC, takes (row, position) from the hub, then raises POS_OUT.\n  R29 keeps POS_IN low with no cable; the next node's 100k keeps POS_OUT low before firmware."
 		(exclude_from_sim no)
 		(at 15.24 177.8 0)
 		(size 162.56 16.51)

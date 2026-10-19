@@ -135,10 +135,10 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  The power hub is a rea
 | Electronics | SN74LVC1G32DBVR — single 2-input OR | 10  | 0.06 | 0.64 | LCSC/JLCPCB C10096 |
 | Electronics | TPS2553DBVR — adjustable current-limited power switch | 10  | 0.50 | 4.97 | LCSC/JLCPCB C55266 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 10  | 0.69 | 6.90 | LCSC/JLCPCB C49851 |
-| Electronics | TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout) | 10  | 0.89 | 8.92 | LCSC/JLCPCB C7399456 |
+| Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 10  | 0.93 | 9.29 | LCSC/JLCPCB C3234095 |
 | Electronics | Bare PCB bay-node (4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA) | 10  | 1.79 | 17.94 | estimate, not quoted |
 | Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, X-ray, packaging | 1  | 111.18 | 111.18 | estimate, not quoted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | 18.54 | 18.54 | estimate, not quoted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | 18.17 | 18.17 | estimate, not quoted |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 20  | 0.01 | 0.25 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C15849 |
@@ -192,11 +192,11 @@ USD, without shipping (DHL ≈ $27–40) and import VAT.  The power hub is a rea
 | Electronics | AP2112K-3.3TRG1 — 3.3 V 600 mA LDO, 250 mV dropout | 2  | 0.16 | 0.31 | LCSC/JLCPCB C51118 |
 | Electronics | ESP32-S3-MINI-1-N8 — ESP32-S3 module, 8 MB flash, PCB antenna, USB OTG (full speed) | 2  | 4.34 | 8.68 | LCSC/JLCPCB C2913206 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 2  | 0.17 | 0.33 | LCSC/JLCPCB C7519 |
-| Electronics | TCAN1462V — CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout) | 2  | 0.89 | 1.78 | LCSC/JLCPCB C7399456 |
+| Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 2  | 0.93 | 1.86 | LCSC/JLCPCB C3234095 |
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 8  | 1.42 | 11.33 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×140 mm (86×140 with JLC's rails), ENIG) | 5  | 9.29 | 46.46 | JLCPCB quote 2026-10-19 |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components, U1 global sourcing (est.) | 1  | 123.40 | 123.40 | JLCPCB quote 2026-10-19 |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.34 | 4.34 | JLCPCB quote 2026-10-19 |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.26 | 4.26 | JLCPCB quote 2026-10-19 |
 | Electronics | 100n — Capacitor 100n 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C14663 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 8  | 0.84 | 6.70 | LCSC/JLCPCB C5184243 |
 | Electronics | LEAD — JST PH 8-pin, side entry, SMD | 8  | 0.41 | 3.31 | LCSC/JLCPCB C265121 |

@@ -154,13 +154,14 @@ CAT = {
     "led_r": Cat("Device:LED", "LED_SMD:LED_0805_2012Metric", "NCD0805R1", "NationStar", "C84256", 0.01, basic=True,
                  description="red LED 0805"),
     # power hub v0.4: rack controller and CAN
-    # TCAN1462V since 2026-10-18: signal improvement (CiA 601-4 / ISO 11898-2:2024 set C) for the star
-    # bus; same SOIC-8 pinout as the TCAN1044AV (VIO on pin 5, STB on pin 8), which stays the alternate
-    "can_xcvr": Cat("Interface_CAN_LIN:MCP2562-E-SN", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", "TCAN1462VDRQ1",
-                    "Texas Instruments", "C7399456", 0.97, datasheet="https://www.ti.com/lit/ds/symlink/tcan1462-q1.pdf",
-                    alt="LCSC stock was 0 on 2026-10-18.  Same pinout: TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V) "
-                        "or NXP TJA1462AT/0Z (C3234095, SIC, VIO 2.95–5.5 V, bus pins −36/+40 V)",
-                    description="CAN FD SIC transceiver, VCC 5 V, VIO 1.7–5.5 V, bus pins ±58 V (MCP2562 pinout)"),
+    # NXP TJA1462AT since 2026-10-19 (the TCAN1462V, chosen on 2026-10-18, had no LCSC stock): signal
+    # improvement (CiA 601-4 / ISO 11898-2:2024 set C) for the star bus; the SOIC-8 pinout of the TCAN1462V
+    # and the TCAN1044AV (VIO on pin 5, STB on pin 8), which stay the alternates
+    "can_xcvr": Cat("Interface_CAN_LIN:MCP2562-E-SN", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", "TJA1462AT/0Z",
+                    "NXP Semiconductors", "C3234095", 1.01, datasheet="https://www.nxp.com/docs/en/data-sheet/TJA1462.pdf",
+                    alt="Same pinout: TI TCAN1462VDRQ1 (C7399456, SIC, bus pins ±58 V; LCSC stock 0 on 2026-10-18 "
+                        "and 19) or TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V)",
+                    description="CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout)"),
     "can_esd": Cat("Power_Protection:NUP2105L", "Package_TO_SOT_SMD:SOT-23", "PESD2CAN,215", "Nexperia", "C75176",
                    0.078, description="CAN bus ESD protection, 24 V stand-off"),
     "led_side_g": Cat("Device:LED", "LED_SMD:LED_Kingbright_KPA-3010_3x2x1mm", "KPA-3010CGCK", "Kingbright", "C598310",

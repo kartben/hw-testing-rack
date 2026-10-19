@@ -105,7 +105,7 @@
 		full-ohms = <110000>;
 	};
 
-	/* IO9 CAN_STB: TCAN1462V standby (10k pull-down: normal mode) */
+	/* IO9 CAN_STB: TJA1462AT standby (10k pull-down: normal mode) */
 	can_phy: can-phy {
 		compatible = "can-transceiver-gpio";
 		standby-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
