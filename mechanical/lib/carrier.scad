@@ -69,14 +69,13 @@ BLOCK_LOCK_Y = (FLANGE_Y[0] + FLANGE_Y[1]) / 2;
 SLED_LOCK_Y = (SLED_FLANGE_Y[0] + SLED_FLANGE_Y[1]) / 2;
 STOP_Y = FLANGE_Y[0] - DRAWER_TRAVEL - 4.5;        // stop pin position (carrier coords)
 
-// port wall: the DATA port and a slot for the optional AUX pigtail.  The DATA port is our own small
-// board (electronics/data-port, config/rack.yaml › pcb.data_port): a USB-C source on its front edge,
-// a side-entry JST PH 5 on its rear edge for the lead from the node's J7 through the drag chain.
+// port wall: four U's, the DATA ×4's ports (config/rack.yaml › pcb.data_port_x4).  The single DATA port is
+// our own small board (electronics/data-port, config/rack.yaml › pcb.data_port): a USB-C source on its front
+// edge, on the fourth U, a side-entry JST PH 8 on its rear edge for the lead from the node's J7.
 // Components up on two bosses of the rear-bay floor, 2 × PT 2.6 × 8 from above, its front edge against
 // the port wall's back face: the receptacle sits 1.7 mm behind the wall's front face, in the USB-C plug
 // cut carried up through the wall's top (a U): a straight plug's overmold or a right-angle plug's body
 // (19 mm tall, the wall's top only 5 mm over the axis) goes in until the plug seats.
-PORT_X = concat(DATA_PORT_X, [AUX_PORT_X]);        // from config/rack.yaml (drawer.data_ports, aux_port)
 PORT_Z = DRAWER_BOTTOM + 8.5;                      // the USB-C mouth's centre (tools/webscene.py mirrors it)
 DATA_PCB_Z = PORT_Z - 1.63 - DATA_PCB_T;           // the board's underside (the USB4105's mouth 1.63 over its top): the bosses' top
 DATA_PCB_X0 = DATA_PORT_X[0] - DATA_PCB_USB;       // drawer x of the board's left edge (KiCad x = 0)

@@ -50,9 +50,9 @@ drawer:
   front_height: 30       # front panel height above the deck
   front_thickness: 4
   rear_bay: 30           # enclosed strip at the back: the DATA port board + cable entry
-  data_ports: [0.80]     # the DATA port's USB-C mouth on the port wall (× drawer width): its board on the
-                         # rear-bay floor, left of the chain foot's lock screw
-  aux_port: 0.50             # slot for the optional AUX (JST-SH) pigtail
+                         # one drawer for both DATA boards (2026-10-19): the port wall has the DATA ×4's four U's
+                         # (pcb.data_port_x4.usb); a single DATA board's USB-C sits on the fourth, and the
+                         # optional AUX pigtail goes through a free one
   flange: [3.0, 3.0]     # runner flange (width, height) captured by the guides
   magnet: [6, 3]         # closed-position detent magnet Ø × t (one in drawer, one in deck)
   plate: 5.0             # board plate thickness: the pegs' clip sits inside it (plate_grid)
@@ -138,7 +138,7 @@ population:
       - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [74.7, 16.0],     # them (tools/plate_layout.py moves
           role: analyzer }                                                      # each a few mm to its stops)
       - { board: xiao,      cable: c-to-c-straight,       at: [107.7, 30.0] }   # B3.3: the bay's logic analyzer (below)
-  B4: { board: arduino-uno-r4,   cable: c-to-c-straight, pc_cable: true }      # "classic" mode: laptop on the front port
+  B4: { board: arduino-uno-r4,   cable: c-to-c-straight-20, pc_cable: true }      # "classic" mode: laptop on the front port
 
 # A sub-slot's board with `role: analyzer` (one Pico 2, until the DATA ×4 v2's RP2354B; decided 2026-10-19): gusmanb's
 # LogicAnalyzer, stock, its channels on Dupont jumpers to the neighbours' pins (docs/multi-dut-node.md › "A logic
@@ -167,6 +167,7 @@ cables:
   c-to-mini-b:  { label: "USB-C 90° ↔ mini-B straight, 25 cm", a: usb-c, b: mini-b,
                   length: 250, style: side }       # the F746G-DISCO: its USB faces the side wall, 49 mm away
   c-to-c-straight:       { label: "USB-C ↔ USB-C, straight, 15–20 cm", a: usb-c, b: usb-c,   length: 150, style: straight }
+  c-to-c-straight-20:    { label: "USB-C ↔ USB-C, straight, 20 cm", a: usb-c, b: usb-c,      length: 200, style: straight }
   c-to-micro-b-straight: { label: "USB-C ↔ micro-B, straight, 15 cm", a: usb-c, b: micro-b, length: 150, style: straight }
   data-lead:    { label: "JST PH 8-pin DATA lead, pin n ↔ pin 9−n, 400–500 mm (node J7 → DATA port board)", length: 400 }
   row-jumper:   { label: "JST PH 6-pin row cable, 1:1, 24 AWG, 120 mm", length: 120 }
@@ -210,7 +211,7 @@ pcb:
                             # chain foot's lock screw); its centre 1.63 mm above the component face (3.23 above the underside)
     ph: 14.4                # KiCad x of the JST PH 8-pin (side entry) on the rear edge: its courtyard clear of the USB4105's (x ≤ 14.5)
   data_port_x4:             # a converted bay's (population › boards:) DATA ×4: a USB hub and four USB-C sources, in the drawer's
-                            # rear bay (the data-x4-board proposal, 2026-10-19; drawer.scad PORTS=4 and the viewer follow it)
+                            # rear bay (the data-x4-board proposal, 2026-10-19; drawer.scad and the viewer follow it)
     size: [108, 24]         # X × Y; KiCad y=0 is the REAR edge, y=24 the FRONT edge (the USB-C mouths, against the port wall)
     x0: 15                  # drawer x of its left edge (KiCad x = drawer x − 15): drawer x 15–123, y 166–190
     thickness: 1.6

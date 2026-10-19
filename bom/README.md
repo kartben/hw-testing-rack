@@ -115,10 +115,9 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 7 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 6 | 44.0 | `mechanical/stl/drawer.stl` |
-| drawer_block | 1 | 14.5 | `mechanical/stl/drawer_block.stl` |
+| drawer | 7 | 44.2 | `mechanical/stl/drawer.stl` |
+| drawer_block | 1 | 14.7 | `mechanical/stl/drawer_block.stl` |
 | drawer_sled | 1 | 29.9 | `mechanical/stl/drawer_sled.stl` |
-| drawer_x4 | 1 | 44.1 | `mechanical/stl/drawer_x4.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 48.9 | `mechanical/stl/ladder_a.stl` |
 | ladder_b | 5 | 48.9 | `mechanical/stl/ladder_b.stl` |
@@ -305,7 +304,8 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | Cables | JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS) | 1 lot | 3.19 | 3.19 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length30CM |
 | Cables | JST PH 6-pin feed, the jumpers' type, 60 cm, lot of 5 (power box → first bay of row B: VRACK, CAN, POS) | 1 lot | 4.69 | 4.69 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 6P, Length60CM |
 | Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK) | 3  | 2.50 | 7.50 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
-| Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: UNO R4, XIAO) | 3  | 2.00 | 6.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
+| Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: XIAO) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
+| Cables | USB-C ↔ USB-C, straight, 20 cm (DUT cable: UNO R4) | 1  | 2.00 | 2.00 | AliExpress (USB-C ↔ USB-C, straight, 20 cm, USB 2.0 data) |
 | Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK) | 3  | 1.00 | 3.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
 | Cables | USB-C ↔ micro-B, straight, 15 cm (DUT cable: PICO 2) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data) |
 | Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 6  | 1.00 | 6.00 | AliExpress (DIY-018, "UP" and "DOWN") |

@@ -246,6 +246,8 @@ DUT_CABLES = {
                               "notes": "straight at both ends, a loop over the plate (a converted bay's Pico 2): "
                                        "15 cm takes a seller's ±5 mm, 10 cm would have to be within 3; listing still "
                                        "to pick, check it says data"},
+    "c-to-c-straight-20": {"supplier": "AliExpress (USB-C ↔ USB-C, straight, 20 cm, USB 2.0 data)", "unit_eur": 2.0,
+                           "notes": "straight at both ends; any short C ↔ C that states data"},
     "c-to-c-straight": {"supplier": "AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps)", "unit_eur": 2.0,
                         "notes": "straight at both ends; any short C ↔ C that states data (many short ones are "
                                  "charge-only)"},
@@ -621,10 +623,6 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         counts[f"brace_{row['id'].lower()}"] += cols
     for bay in rack.bays():
         duts = rack.duts(bay.id)
-        if rack.is_multi(bay.id):           # a converted bay: a DATA ×4 drawer / block
-            part = "drawer" if rack.mount(bay.id) == "drawer" else "drawer_block"
-            counts[part] -= 1
-            counts[f"{part}_x4"] += 1
         if not duts or rack.plate_kind(bay.id) == "pegs":
             counts["plate"] += 1            # the honeycomb plate, and the pegs that hold its boards
             if duts:

@@ -450,12 +450,10 @@ class Rack:
 
     @property
     def data_port_x(self) -> list[float]:
-        """X of the two DATA socket positions on the drawer's port wall (drawer coords)."""
-        return [self.drawer_w * f for f in self.drawer["data_ports"]]
-
-    @property
-    def aux_port_x(self) -> float:
-        return self.drawer_w * self.drawer["aux_port"]
+        """X of the single DATA board's socket on the drawer's port wall (drawer coords): the DATA ×4's fourth
+        port, so one drawer takes either board."""
+        x4 = self.raw["pcb"]["data_port_x4"]
+        return [x4["x0"] + x4["usb"][-1]]
 
     @property
     def drawer_x0(self) -> float:
@@ -540,7 +538,6 @@ def scad_config(rack: Rack) -> str:
         "DRAWER_FLANGE": d["flange"],
         "DRAWER_MAGNET": d["magnet"],
         "DATA_PORT_X": [round(x, 3) for x in rack.data_port_x],
-        "AUX_PORT_X": round(rack.aux_port_x, 3),
         "PLATE_T": d["plate"],
         "HEX_PITCH": rack.plate_grid["pitch"],
         "HEX_AF": rack.plate_grid["hole"],

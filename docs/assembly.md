@@ -70,11 +70,14 @@ later, take its tray out first.
 4. **Drawer**: magnets first, one under the drawer and one in the tray's left
    ledge: stack the pair, mark both outer faces, glue each magnet marked face
    down into its pocket with a drop of CA, and let it set before the drawer
-   goes in.  The DATA port board goes on the two bosses in the rear bay,
-   components up, its USB-C edge against the port wall (the receptacle
-   behind the wall's U), 2 × PT 2.6×8 from above; plug the DATA lead into
-   its PH from the rear, the wires down through the cable window behind it;
-   slide the drawer
+   goes in.  The rear bay takes either DATA board, components up, its USB-C
+   edge against the port wall (each receptacle behind a U), PT 2.6×8 from
+   above: the DATA port board on its two Ø5 bosses, its USB-C behind the
+   fourth U (the rightmost), or a DATA ×4 on its four Ø6 bosses.  The DATA
+   lead comes up through the cable window at the rear right: straight into
+   a DATA ×4's PH, right above it, or along the rear wall into the DATA
+   port board's PH from the rear.  To convert a bay, swap the board; the
+   drawer stays.  Slide the drawer
    in from the front onto the tray's ledges (its rear flange under the guide
    lips), engage the foot in the rear groove and lock it with the M2.5 from
    inside the rear bay (PT 2.6×8); then the stop screw (PT 2.3×8) through the left guide lip.

@@ -2586,13 +2586,23 @@
 },
 {
 "category": "Cables",
-"item": "USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: UNO R4, XIAO)",
+"item": "USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: XIAO)",
 "supplier": "AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps)",
-"qty": 3,
+"qty": 2,
 "unit_eur": 2.0,
 "notes": "straight at both ends; any short C ↔ C that states data (many short ones are charge-only)",
 "unit": "pcs",
-"ext_eur": 6.0
+"ext_eur": 4.0
+},
+{
+"category": "Cables",
+"item": "USB-C ↔ USB-C, straight, 20 cm (DUT cable: UNO R4)",
+"supplier": "AliExpress (USB-C ↔ USB-C, straight, 20 cm, USB 2.0 data)",
+"qty": 1,
+"unit_eur": 2.0,
+"notes": "straight at both ends; any short C ↔ C that states data",
+"unit": "pcs",
+"ext_eur": 2.0
 },
 {
 "category": "Cables",
@@ -2780,16 +2790,16 @@
 },
 {
 "part": "drawer",
-"qty": 6,
-"grams_each": 44.0,
-"grams_total": 264.0,
+"qty": 7,
+"grams_each": 44.2,
+"grams_total": 309.4,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
 "part": "drawer_block",
 "qty": 1,
-"grams_each": 14.5,
-"grams_total": 14.5,
+"grams_each": 14.7,
+"grams_total": 14.7,
 "stl": "mechanical/stl/drawer_block.stl"
 },
 {
@@ -2798,13 +2808,6 @@
 "grams_each": 29.9,
 "grams_total": 29.9,
 "stl": "mechanical/stl/drawer_sled.stl"
-},
-{
-"part": "drawer_x4",
-"qty": 1,
-"grams_each": 44.1,
-"grams_total": 44.1,
-"stl": "mechanical/stl/drawer_x4.stl"
 },
 {
 "part": "floor_plate",

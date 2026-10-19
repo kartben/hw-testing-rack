@@ -26,8 +26,6 @@ WEB_PARTS = {
     "drawer": ("parts/drawer.scad", {}),
     "drawer_sled": ("parts/drawer.scad", {"PART": "sled"}),
     "drawer_block": ("parts/drawer.scad", {"PART": "block"}),
-    "drawer_x4": ("parts/drawer.scad", {"PORTS": 4}),                         # a converted bay's (`boards:`)
-    "drawer_block_x4": ("parts/drawer.scad", {"PART": "block", "PORTS": 4}),
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "chain_foot": ("parts/chain_parts.scad", {"PART": "foot"}),
@@ -604,15 +602,16 @@ def camera_lead(j6, x0, row_h, tilt, lens, mount, depth, cp):
     return rnd(rounded_path(pts, 6.0)), end, rnd(rounded_path(mega, 5.0))
 
 
-def data_lead_short(j7, ph, x_run, top):
+def data_lead_short(j7, ph, x_run, top, x_up):
     """A sled bay's DATA lead (no drag chain): out of the node's J7 (side entry, right edge), rising to the
     plenum's top (under the sled) at x_run, right of the node, back along it, over to the port block's
-    window and up through it into the DATA board's PH from the rear."""
+    window and up through it at x_up, then along the rear wall into the DATA board's PH from the rear (the
+    DATA ×4's PH is right over the window: no run)."""
     p0, d = plug_exit(j7)
     q, _ = plug_exit(ph)
     yb = q[1] + 2.0
-    pts = [p0, p0 + d * 5.0, (x_run, p0[1] + 12, top), (x_run, yb - 12, top), (q[0], yb, top),
-           (q[0], yb, q[2]), q]
+    pts = [p0, p0 + d * 5.0, (x_run, p0[1] + 12, top), (x_run, yb - 12, top), (x_up, yb, top),
+           (x_up, yb, q[2]), (q[0], yb, q[2]), q]
     return rounded_path(pts, 5.0)
 
 
@@ -757,12 +756,12 @@ def build(rack) -> Path:
 
     def unit_hardware(i, u, bid, dy, open_frac, drawer=True, x4=False):
         """Tray, node and either the drawer and its chain, or a sled bay's sled and port block (no chain; the
-        viewer doesn't slide them: the DUT cable is unplugged first).  x4: a converted bay's (`boards:`) drawer
-        or port block, with a DATA ×4 board."""
+        viewer doesn't slide them: the DUT cable is unplugged first).  x4: a converted bay's (`boards:`) DATA ×4
+        board, in the same drawer or port block as the single DATA board."""
         x0 = rack.unit_x(u)
         add("tray", (x0, 0, 0), row=i, layer="trays", bay=bid)
         if drawer:
-            add("drawer_x4" if x4 else "drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid,
+            add("drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid,
                 movable=True)
             add("chain_anchor", (x0 + fixed[0], fixed[1], c["bottom"] + 3), row=i, layer="chain", bay=bid)
             add("chain_foot", (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, plenum), row=i,
@@ -774,7 +773,7 @@ def build(rack) -> Path:
                                     "width": raw["chain"]["outer"][0], "height": raw["chain"]["outer"][1],
                                     "pitch": raw["chain"]["pitch"]})
         else:
-            for part in ("drawer_sled", "drawer_block_x4" if x4 else "drawer_block"):
+            for part in ("drawer_sled", "drawer_block"):
                 add(part, (x0 + rack.drawer_x0, 0, plenum), row=i, layer="drawers", bay=bid)
         info_ = pop.get(bid, {})
         led = "#2f7bff" if info_.get("pc_cable") else ("#ffb300" if info_.get("open") else "#19e07a")
@@ -783,10 +782,13 @@ def build(rack) -> Path:
         items["pcbs"].append({"board": "bay-node", "bay": bid, "row": i, "space": "row",
                               "pos": [x0 + node["x0"], rack.node_front_y + node["size"][1], c["bottom"] + c["standoff"]],
                               "size": [node["size"][0], node["size"][1], node["thickness"]]})
-        # the DATA port board on its floor bosses in the drawer (components up) and its 5-wire PH lead: up
-        # out of the node's J7, across the node under the drawer into the drag chain's fixed end; out of
-        # its moving end, a U-turn, up through the drawer's cable window into the board's PH from the rear
+        # the DATA port board (or the DATA ×4) on its floor bosses in the drawer (components up) and its PH 8
+        # lead: out of the node's J7 into the drag chain's fixed end; out of its moving end, a U-turn, up
+        # through the drawer's one cable window (under the DATA ×4's PH, at the rear right) and into the
+        # board's PH from the rear: the single board's along the rear wall
         dxw_ = x0 + rack.drawer_x0
+        q4 = raw["pcb"]["data_port_x4"]
+        x_win = dxw_ + q4["x0"] + q4["holes"][2][0] + 4.5 + 4.0      # 4 mm inside the window (drawer.scad › wx)
         if x4:                       # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
             q = raw["pcb"]["data_port_x4"]
             bx4 = dxw_ + q["x0"]
@@ -807,7 +809,8 @@ def build(rack) -> Path:
         ph = {"at": [ph_xy[0], ph_xy[1], plenum + dp_z + dp["thickness"] + 2.8],
               "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph8"}
         if not drawer:
-            cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 12.0, plenum - 3.0), row=i, kind="ext",
+            cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 12.0, plenum - 3.0,
+                                  max(ph["at"][0], x_win)), row=i, kind="ext",
                   bay=bid, radius=1.2, ends=[j7, ph], label="DATA lead (JST PH 8, node J7 → the port block)")
             return x0, plenum
         p0, d7 = plug_exit(j7)                             # out of the side-entry J7, straight to the chain's fixed end
@@ -815,7 +818,7 @@ def build(rack) -> Path:
                             (x0 + fixed[0], fixed[1], chain_z)], 6.0),
               row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 8, through the drag chain)")
         mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
-        x_run = max(ph["at"][0], x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0)   # 6 mm off the fixed run
+        x_run = max(ph["at"][0], x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0, x_win)   # 6 mm off the fixed run
         cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run), row=i, kind="ext", bay=bid, radius=1.2, ends=[ph],
               label="DATA lead (JST PH 8, through the drag chain)", movable=True)
         return x0, plenum
