@@ -51,23 +51,37 @@ What each order pays once, whatever the number of boards, against what grows wit
 
 | Board | PCBA | Needed / assembled | Part types (extended) | Type fees | Once per order | With the boards | Today | After obvious levers | After decisions |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
-| bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 38 (23) | 58.14 | 111.93 | 210.84 | **322.77** | 322.77 | 301.69 |
-| power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 37 (19) | 56.61 | 128.24 | 84.53 | **212.77** | 205.77 | 171.49 |
-| data-port | Economic | 7 / 8 | 5 (3) | 9.21 | 25.22 | 13.30 | **38.52** | 38.52 | 38.52 |
-| camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.25 | **26.37** | 26.37 | 26.37 |
-| data-port-x4 | Economic | 1 / 2 | 22 (9) | 27.63 | 69.24 | 34.52 | **103.76** | 103.76 | 85.06 |
+| bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 38 (23) | 58.14 | 111.93 | 210.84 | **322.77** | 322.77 | 274.66 |
+| power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 37 (19) | 56.61 | 128.24 | 84.53 | **212.77** | 205.77 | 167.11 |
+| data-port | Economic | 7 / 8 | 5 (3) | 9.21 | 25.22 | 13.30 | **38.52** | 38.52 | 28.47 |
+| camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.25 | **26.37** | 26.37 | 25.58 |
+| data-port-x4 | Economic | 1 / 2 | 22 (9) | 27.63 | 69.24 | 34.52 | **103.76** | 103.76 | 76.88 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **738.19** | **731.19** | **657.13** |
+| **All** | | | | | | | **738.19** | **731.19** | **606.70** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
 | Board | Lever | USD | Kind |
 |---|---|---:|---|
 | bay-node | 9 assembled instead of 10 (8 bays and 1 spare) | 21.08 | decision |
+| bay-node | USB-C J3: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check | 5.37 | decision |
+| bay-node | JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check (5 a board) | 13.98 | decision |
+| bay-node | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board) | 5.04 | decision |
+| bay-node | TPS2553DDBVR (C521201) instead of the TPS2553DBVR: equivalence under check by the owner | 2.64 | decision |
 | power-hub | 3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare | 7.00 | obvious |
 | power-hub | rows C and D not fitted (DNP, footprints kept): the rack has 2 rows | 9.68 | decision |
 | power-hub | board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new power box, room for 2 rows only | 24.60 | decision |
+| power-hub | USB-C J6 (the console; the PD input J1 stays GCT for 48 V): HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check | 1.47 | decision |
+| power-hub | JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check (4 a board) | 2.66 | decision |
+| power-hub | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 | 0.25 | decision |
+| data-port | USB-C J1: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check | 5.88 | decision |
+| data-port | JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check | 3.16 | decision |
+| data-port | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 | 1.01 | decision |
+| camera-pod | JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check | 0.79 | decision |
 | data-port-x4 | board at most 100 mm long: no engineering fee, the 4-layer offer ($13.20 for 5 instead of $31.90); the 4 USB-C at the drawer's 18 mm pitch and the side-entry PH 8 need 108 mm, so a vertical PH 8 or a moved J1, a new route and the tray's bosses moved: better in the DATA ×4 v2 | 18.70 | decision |
+| data-port-x4 | USB-C J101–J401: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check | 5.88 | decision |
+| data-port-x4 | JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check | 0.79 | decision |
+| data-port-x4 | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (6 a board) | 1.51 | decision |
 
 ### At volume
 

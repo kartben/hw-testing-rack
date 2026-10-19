@@ -3188,11 +3188,31 @@
 "per_board": 210.84,
 "total": 322.77,
 "after_obvious": 322.77,
-"after_decisions": 301.69,
+"after_decisions": 274.66,
 "levers": [
 {
 "lever": "9 assembled instead of 10 (8 bays and 1 spare)",
 "usd": 21.08,
+"kind": "decision"
+},
+{
+"lever": "USB-C J3: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check",
+"usd": 5.37,
+"kind": "decision"
+},
+{
+"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check (5 a board)",
+"usd": 13.98,
+"kind": "decision"
+},
+{
+"lever": "USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board)",
+"usd": 5.04,
+"kind": "decision"
+},
+{
+"lever": "TPS2553DDBVR (C521201) instead of the TPS2553DBVR: equivalence under check by the owner",
+"usd": 2.64,
 "kind": "decision"
 }
 ]
@@ -3213,7 +3233,7 @@
 "per_board": 84.53,
 "total": 212.77,
 "after_obvious": 205.77,
-"after_decisions": 171.49,
+"after_decisions": 167.11,
 "levers": [
 {
 "lever": "3 AP33772S (FA01) through Global Sourcing instead of 5: the 2 boards and a spare",
@@ -3228,6 +3248,21 @@
 {
 "lever": "board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new power box, room for 2 rows only",
 "usd": 24.6,
+"kind": "decision"
+},
+{
+"lever": "USB-C J6 (the console; the PD input J1 stays GCT for 48 V): HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check",
+"usd": 1.47,
+"kind": "decision"
+},
+{
+"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check (4 a board)",
+"usd": 2.66,
+"kind": "decision"
+},
+{
+"lever": "USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519",
+"usd": 0.25,
 "kind": "decision"
 }
 ]
@@ -3246,8 +3281,24 @@
 "per_board": 13.3,
 "total": 38.52,
 "after_obvious": 38.52,
-"after_decisions": 38.52,
-"levers": []
+"after_decisions": 28.47,
+"levers": [
+{
+"lever": "USB-C J1: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check",
+"usd": 5.88,
+"kind": "decision"
+},
+{
+"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check",
+"usd": 3.16,
+"kind": "decision"
+},
+{
+"lever": "USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519",
+"usd": 1.01,
+"kind": "decision"
+}
+]
 },
 {
 "board": "camera-pod",
@@ -3263,8 +3314,14 @@
 "per_board": 2.25,
 "total": 26.37,
 "after_obvious": 26.37,
-"after_decisions": 26.37,
-"levers": []
+"after_decisions": 25.58,
+"levers": [
+{
+"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check",
+"usd": 0.79,
+"kind": "decision"
+}
+]
 },
 {
 "board": "data-port-x4",
@@ -3280,11 +3337,26 @@
 "per_board": 34.52,
 "total": 103.76,
 "after_obvious": 103.76,
-"after_decisions": 85.06,
+"after_decisions": 76.88,
 "levers": [
 {
 "lever": "board at most 100 mm long: no engineering fee, the 4-layer offer ($13.20 for 5 instead of $31.90); the 4 USB-C at the drawer's 18 mm pitch and the side-entry PH 8 need 108 mm, so a vertical PH 8 or a moved J1, a new route and the tray's bosses moved: better in the DATA ×4 v2",
 "usd": 18.7,
+"kind": "decision"
+},
+{
+"lever": "USB-C J101–J401: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check",
+"usd": 5.88,
+"kind": "decision"
+},
+{
+"lever": "JST PH SMD clones (≈ $0.06, e.g. SHOU HAN 2.0-xP WT / LT) instead of JST's S*B / B8B-PH-SM4-TB: footprint geometry to check",
+"usd": 0.79,
+"kind": "decision"
+},
+{
+"lever": "USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (6 a board)",
+"usd": 1.51,
 "kind": "decision"
 }
 ]
