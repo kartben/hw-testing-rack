@@ -77,7 +77,7 @@ uart:~$ hub status
 | Controller reset | the row enables are held (ESP32-S3 pad hold, RTC domain): a hub reboot or a firmware update does not power-cycle the rack; the rows found on are enumerated again |
 | Shedding | from what the rows really draw (eFuse IMON): above 90 % of the contract current for 1 s, the next row in the shed order (default D, C, B, A) goes off; it comes back once the contract has room for it again for 10 s.  No contract at all: every row off, back with the next one |
 | Row control | `hub row <A–D> on\|off\|cycle [ms]`, the page's buttons, `POST /api/row`; on/off is saved |
-| Faults | each eFuse's FLT (current limit, over-temperature) as an event, a count and the page's red row; the PD sink's OVP/OCP/OTP/UVP as events |
+| Faults | each eFuse's FLT (current limit, over-temperature) as an event, a count and the page's red row, counted only while the row is on and 10 ms past its soft start (the TPS2660 also asserts FLT in shutdown and start-up); the PD sink's OVP/OCP/OTP/UVP as events |
 | Telemetry | contract, VBUS, input current and temperature from the AP33772S; VBUS from its own ADC divider; each row's current from IMON |
 | Rack bus | TWAI at 250 kbit/s on the TJA1462AT (CAN SIC; STB through `can-transceiver-gpio`); enumeration over the POS tokens, the node table, commands to nodes with retries; the RACK frame every second |
 | Network | Wi-Fi station, DHCP, mDNS `rack-<id>.local` (firmware/common's `hwtr_net`, as the nodes) |

@@ -44,6 +44,15 @@ config HUB_ROW_BOOT_MS
 	  The nodes boot from the row's VRACK; the enumeration waits for
 	  them.  A node that boots later asks by itself.
 
+config HUB_ROW_FLT_BLANK_MS
+	int "A row's FLT is ignored this long after the row is turned on (ms)"
+	default 10
+	help
+	  The TPS2660 asserts FLT in shutdown and during its soft start
+	  (about 5 ms at 28 V): FLT counts only while the row is on and this
+	  long after it was turned on.  The red LEDs are fed from ROW_EN, so
+	  an off row shows none either.
+
 config HUB_ROW_CYCLE_MS
 	int "Default off time of a row power cycle (ms)"
 	default 2000

@@ -12,6 +12,9 @@
  *    CONFIG_HUB_SHED_PERCENT of the contract for CONFIG_HUB_SHED_HOLD_MS,
  *    the next row in the shed order goes off; it comes back once the
  *    contract has room for it again.  No contract at all: every row off.
+ *  - FLT counts only while the row is on and past its soft start
+ *    (CONFIG_HUB_ROW_FLT_BLANK_MS): the TPS2660 also asserts it in
+ *    shutdown and while it starts (datasheet 9.3.5.3).
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -62,6 +65,7 @@ struct row {
 	uint32_t faults;
 	int32_t ma;
 	int32_t last_on_ma; /* what it drew before it was shed */
+	int64_t flt_from;   /* uptime from which FLT means a fault (on, soft start over) */
 	struct gpio_callback flt_cb;
 	struct k_work_delayable cycle_work;
 };
@@ -81,7 +85,7 @@ static void stagger_handler(struct k_work *work);
 static void fault_handler(struct k_work *work);
 static K_WORK_DELAYABLE_DEFINE(sample_work, sample_handler);
 static K_WORK_DELAYABLE_DEFINE(stagger_work, stagger_handler);
-static K_WORK_DEFINE(fault_work, fault_handler);
+static K_WORK_DELAYABLE_DEFINE(fault_work, fault_handler);
 
 const char *rows_state_str(enum hub_row_state state)
 {
@@ -170,6 +174,7 @@ static void row_off(int row, enum hub_row_state why)
 	enable_write(row, false);
 	(void)gpio_pin_set_dt(&cfg[row].pos, 0);
 	rows[row].state = why;
+	rows[row].fault = false; /* FLT is asserted in shutdown: not a fault */
 	if (was_on) {
 		bus_row_off(row);
 	}
@@ -179,6 +184,7 @@ static void row_on(int row)
 {
 	enable_write(row, true);
 	rows[row].state = HUB_ROW_ON;
+	rows[row].flt_from = k_uptime_get() + CONFIG_HUB_ROW_FLT_BLANK_MS;
 	over_since = 0;
 }
 
@@ -207,6 +213,8 @@ static void stagger_handler(struct k_work *work)
 		return;
 	}
 	hub_event(HUB_EV_ROW, "row %c on", 'A' + next);
+	/* Its FLT, once the soft start is over */
+	k_work_schedule(&fault_work, K_MSEC(CONFIG_HUB_ROW_FLT_BLANK_MS + 1));
 	/* More to come, or enumerate once they have booted */
 	k_work_reschedule(&stagger_work, K_MSEC(CONFIG_HUB_ROW_STAGGER_MS));
 	bus_enumerate(CONFIG_HUB_ROW_BOOT_MS);
@@ -216,15 +224,25 @@ static void stagger_handler(struct k_work *work)
 
 static void fault_handler(struct k_work *work)
 {
+	int64_t now = k_uptime_get();
+	int64_t next = 0; /* the earliest end of a soft start still running */
+
 	ARG_UNUSED(work);
 
 	for (int r = 0; r < HUB_ROWS; r++) {
-		bool now = gpio_pin_get_dt(&cfg[r].flt) > 0;
+		bool flt = gpio_pin_get_dt(&cfg[r].flt) > 0;
 		bool rising;
 
 		k_mutex_lock(&lock, K_FOREVER);
-		rising = now && !rows[r].fault;
-		rows[r].fault = now;
+		/* The TPS2660 asserts FLT in shutdown and while it starts */
+		if (rows[r].state != HUB_ROW_ON) {
+			flt = false;
+		} else if (now < rows[r].flt_from) {
+			flt = false;
+			next = next == 0 ? rows[r].flt_from : MIN(next, rows[r].flt_from);
+		}
+		rising = flt && !rows[r].fault;
+		rows[r].fault = flt;
 		if (rising) {
 			rows[r].faults++;
 		}
@@ -235,6 +253,11 @@ static void fault_handler(struct k_work *work)
 				  'A' + r);
 		}
 	}
+
+	if (next != 0) {
+		/* Look again once that row's soft start is over */
+		k_work_schedule(&fault_work, K_MSEC(next - now + 1));
+	}
 }
 
 static void flt_isr(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins)
@@ -243,7 +266,7 @@ static void flt_isr(const struct device *port, struct gpio_callback *cb, gpio_po
 	ARG_UNUSED(cb);
 	ARG_UNUSED(pins);
 
-	k_work_submit(&fault_work);
+	k_work_reschedule(&fault_work, K_NO_WAIT);
 }
 
 /* --- IMON and the budget ------------------------------------------------------ */
@@ -595,7 +618,7 @@ int rows_init(uint8_t wanted_rows, const char *order)
 		hub_event(HUB_EV_ROW, "rows kept on across the controller reset: 0x%x", kept);
 	}
 
-	k_work_submit(&fault_work);
+	k_work_reschedule(&fault_work, K_NO_WAIT);
 	k_work_schedule(&sample_work, K_MSEC(SAMPLE_MS));
 
 	return 0;
