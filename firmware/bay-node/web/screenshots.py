@@ -1,6 +1,6 @@
 """Render the screenshots of the bay node web page used in the docs.
 
-    pip install playwright
+    pip install playwright pillow
     python firmware/bay-node/web/screenshots.py            # -> docs/img/web-ui-*.png
 
 Runs dev_server.py in-process (simulated node), opens the page in the
@@ -52,10 +52,10 @@ def main() -> None:
         time.sleep(1)
         shoot(dark, "web-ui-console", ".console")
 
-        # The camera's live view (the simulated camera: a render of the drawer)
+        # The camera's live view (the simulated camera: B2 in the viewer, grab_camera.py)
         dark.click("#cam-live")
         time.sleep(3 * POLL_S)
-        shoot(dark, "web-ui-camera", "#cam-card")
+        shoot(dark, "web-ui-camera", "#cam-card", palette=True)
 
         # Its settings, tuned a little (a cloudy-day white balance, brighter), then back to auto
         dev_server.camera.configure({"white_balance": "cloudy", "brightness": 1, "saturation": -1})
@@ -66,10 +66,11 @@ def main() -> None:
         shoot(dark, "web-ui-camera-settings", "#cam-settings")
         dark.click("#cam-settings [data-camset=reset]")
         dark.keyboard.press("Escape")
+        dark.evaluate("document.activeElement.blur()")   # no focus ring left on the picture pill
         dark.set_viewport_size(DESKTOP)
 
         poke("/dev/attach")             # a USB/IP client is attached: green
-        shoot(dark, "web-ui-dark")
+        shoot(dark, "web-ui-dark", palette=True)
         dark.click("#cam-live")         # stopped: the next shots list no camera client
         time.sleep(5)                   # the Access card polls every 4 s
         poke("/dev/attach")             # detached again: device ready, blue

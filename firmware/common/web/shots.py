@@ -55,9 +55,17 @@ class Shots:
         urllib.request.urlopen(self.base + path, data=body).read()
         time.sleep(wait)
 
-    def shoot(self, page, name: str, what: str = ".wrap") -> Path:
+    def shoot(self, page, name: str, what: str = ".wrap", palette: bool = False) -> Path:
+        """palette: 256 colours, dithered (Pillow), for a shot with a camera frame in it, whose
+        noise would make a PNG of several MB."""
         path = self.out / f"{name}.png"
         page.locator(what).screenshot(path=path, animations="disabled")
+        if palette:
+            from PIL import Image
+
+            Image.open(path).convert("RGB").quantize(
+                256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG
+            ).save(path, optimize=True)
         print(f"wrote {path}")
         return path
 

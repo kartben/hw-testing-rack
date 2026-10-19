@@ -44,6 +44,7 @@ firmware/
     boards/m5stack_stamps3_procpu.*         bench node on a StampS3: console + network, no USB host
     web/index.html               status page and serial console (embedded gzipped)
     web/dev_server.py            the page against a simulated node, to work on the UI
+    web/camera/, grab_camera.py  its camera's frames, grabbed from the 3D viewer (site/)
     tests/rfc2217/               host test of the RFC 2217 server against pyserial
     tests/console_sim/           the console, web server and RFC 2217 code on native_sim, with a Zephyr DUT
     wifi.conf.example            build-time Wi-Fi credentials (copy to wifi.conf)
@@ -279,15 +280,17 @@ serves it on <http://localhost:8766> with a simulated node, console included
 `/dev/fault` trips a fake over-current, `/dev/attach` toggles a fake USB/IP
 client; `/dev/image?version=0.6.0` is an image to try a firmware update
 with, `/dev/rollback` makes the next update roll back), and its camera on the
-next port (8767), cut from a render of a drawer (`/dev/camera` unplugs it).
-The screenshots
-come from that simulation:
-`python firmware/bay-node/web/screenshots.py` (Playwright and an installed
-Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
+next port (8767): bay B2's camera as the [3D viewer](https://kartben.github.io/hw-testing-rack/?bay=B2&view=camera&camlight=1&preview=B2)
+renders it, lens, noise and JPEG included, the GIGA's screen playing, the
+light on or off (`/dev/camera` unplugs it);
+`python firmware/bay-node/web/grab_camera.py` grabs those frames again from `site/`.
+The screenshots come from that simulation:
+`python firmware/bay-node/web/screenshots.py` (Playwright, Pillow and an
+installed Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
 
 ### Camera
 
-![Camera card of bay B3: the live view of the board in the drawer, the light switch (auto, on, off), the camera's model, its picture settings, the last frame's size and time, one stream watching](../docs/img/web-ui-camera.png)
+![Camera card of bay B3: the live view (simulated: bay B2's GIGA R1 and its screen, as the 3D viewer renders them), the light switch (auto, on, off), the camera's model, its picture settings, the last frame's size and time, one stream watching](../docs/img/web-ui-camera.png)
 
 Each bay may have its own camera: an Arducam Mega (3 or 5 MP, JPEG made in
 the camera) on a PH 8 lead to J6, and white LEDs beside it, switched by the

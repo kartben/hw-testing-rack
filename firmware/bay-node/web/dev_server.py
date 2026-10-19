@@ -4,9 +4,11 @@
 
 Same endpoints and JSON as src/web.c, the web console's WebSockets
 (/console/ws/<n>) and access control included, and the camera's port
-(src/camera.c) on the next port: /snapshot.jpg and /stream.mjpg, cut from
-a render of a drawer (Pillow draws them at the set resolution, with the
-light and the time; without it, the render as it is).  The "node" is a dict the
+(src/camera.c) on the next port: /snapshot.jpg and /stream.mjpg, B2's camera
+as the viewer (site/) renders it, the GIGA's screen playing, the light on or
+off (frames in camera/, grabbed by grab_camera.py; Pillow brings them to the
+other resolutions and applies the image settings, without it they go as
+grabbed).  The "node" is a dict the
 POSTs change; its DUT is a fake Zephyr board that boots, logs in colour and
 runs a tiny shell on the console.  With --ports 4 it is a bay with a DATA ×4
 board (docs/multi-dut-node.md): four boards, sub-slots B3.1 to B3.4, served by
@@ -658,8 +660,54 @@ def cam_set_one(c: dict, name: str, value) -> str | None:
 CAM_SLOTS = 3
 CAM_FPS = 5
 CAM_SETTLE_S = 0.3
-CAM_SCENE = WEB.parents[2] / "docs" / "img" / "photo-drawer.jpg"
-CAM_CENTRE = (840, 650)   # the board in the pulled-out drawer
+# B2's camera as the viewer (site/) renders it, grabbed by grab_camera.py at these
+# resolutions, frames 300 ms apart (the GIGA's screen plays), the light on and off
+CAM_FRAMES = WEB / "camera"
+CAM_GRABBED = ((640, 480), (1600, 1200))
+CAM_FRAME_S = 0.3
+
+
+def cam_frames() -> dict[tuple[int, int, str], list[bytes]]:
+    """The grabbed frames: {(width, height, "on" or "off"): [JPEG, ...]}."""
+    frames: dict[tuple[int, int, str], list[bytes]] = {}
+    for path in sorted(CAM_FRAMES.glob("b2-*.jpg")):
+        if m := re.fullmatch(r"b2-(\d+)x(\d+)-(on|off)-\d+\.jpg", path.name):
+            frames.setdefault((int(m[1]), int(m[2]), m[3]), []).append(path.read_bytes())
+    return frames
+
+
+def cam_process(data: bytes, w: int, h: int, c: dict) -> bytes:
+    """What the Mega's image processor would do to a grabbed frame, roughly (needs Pillow):
+    the resolution (16:9 cut from the middle of the 4:3 frame), a manual exposure or gain,
+    the image settings, the JPEG quality."""
+    from io import BytesIO
+
+    from PIL import Image, ImageEnhance
+
+    img = Image.open(BytesIO(data)).convert("RGB")
+    if w * 3 != h * 4:
+        ch = img.width * h // w
+        top = (img.height - ch) // 2
+        img = img.crop((0, top, img.width, top + ch))
+    if img.size != (w, h):
+        img = img.resize((w, h), Image.LANCZOS)
+    level = 1.0
+    if c["exposure"] == "manual":
+        level *= min(3.0, max(0.05, c["exposure_value"] / 1000))
+    if c["gain"] == "manual":
+        level *= min(3.0, max(0.2, (c["gain_value"] / 64) ** 0.5))
+    img = ImageEnhance.Brightness(img).enhance(level * (1 + 0.12 * c["brightness"]))
+    img = ImageEnhance.Contrast(img).enhance(1 + 0.2 * c["contrast"])
+    img = ImageEnhance.Color(img).enhance(max(0.0, 1 + 0.3 * c["saturation"]))
+    if c["sharpness"] != "auto":
+        img = ImageEnhance.Sharpness(img).enhance(0.25 * c["sharpness"])
+    if c["white_balance"] != "auto":
+        gains = CAM_WB[c["white_balance"]]
+        img = Image.merge("RGB", [band.point(lambda v, g=g: min(255, int(v * g)))
+                                  for band, g in zip(img.split(), gains)])
+    out = BytesIO()
+    img.save(out, "JPEG", quality=CAM_QUALITIES[c["quality"]])
+    return out.getvalue()
 
 
 class Camera:
@@ -674,7 +722,7 @@ class Camera:
         self.clients: dict[int, dict] = {}   # slot -> stream, ip, port, since, light, kicked
         self.frames = self.errors = self.last_bytes = self.last_ms = 0
         self.stamps: list[float] = []
-        self.scene = None
+        self.grabbed: dict[tuple[int, int, str], list[bytes]] | None = None
 
     def lit(self) -> bool:
         """Like want_light(): during a lease only the holder's wish counts."""
@@ -714,45 +762,26 @@ class Camera:
         return None
 
     def frame(self) -> bytes:
-        """A JPEG at the set resolution and quality, darker without the light."""
+        """A JPEG at the set resolution and quality: a grabbed frame, the light on or off, the
+        next one every CAM_FRAME_S.  Pillow brings it to the other resolutions and applies the
+        image settings; without it, the frame goes as grabbed."""
         t0 = time.monotonic()
-        try:
-            from PIL import Image, ImageDraw, ImageEnhance, ImageFont
-        except ImportError:
-            data = CAM_SCENE.read_bytes()
-        else:
-            if self.scene is None:
-                self.scene = Image.open(CAM_SCENE).convert("RGB")
-            w, h = map(int, self.cfg["resolution"].split("x"))
-            ch = 540 if w * 3 == h * 4 else 450
-            cw = ch * w // h
-            x, y = CAM_CENTRE
-            img = self.scene.crop((x - cw // 2, y - ch // 2, x + cw // 2, y + ch // 2)).resize((w, h))
-            with self.lock:
-                lit = self.lit()
-                c = dict(self.cfg)
-            # What the Mega's image processor would do, roughly
-            light = 1.0 if lit else 0.45
-            if c["exposure"] == "manual":
-                light *= min(3.0, max(0.05, c["exposure_value"] / 1000))
-            if c["gain"] == "manual":
-                light *= min(3.0, max(0.2, (c["gain_value"] / 64) ** 0.5))
-            img = ImageEnhance.Brightness(img).enhance(light * (1 + 0.12 * c["brightness"]))
-            img = ImageEnhance.Contrast(img).enhance(1 + 0.2 * c["contrast"])
-            img = ImageEnhance.Color(img).enhance(max(0.0, 1 + 0.3 * c["saturation"]))
-            if c["sharpness"] != "auto":
-                img = ImageEnhance.Sharpness(img).enhance(0.25 * c["sharpness"])
-            if c["white_balance"] != "auto":
-                gains = CAM_WB[c["white_balance"]]
-                img = Image.merge("RGB", [band.point(lambda v, g=g: min(255, int(v * g)))
-                                          for band, g in zip(img.split(), gains)])
-            draw = ImageDraw.Draw(img)
-            size = max(11, h // 30)
-            draw.text((size // 2, h - size * 3 // 2), time.strftime("%H:%M:%S"),
-                      fill=(255, 255, 255), font=ImageFont.load_default(size))
-            out = __import__("io").BytesIO()
-            img.save(out, "JPEG", quality=CAM_QUALITIES[self.cfg["quality"]])
-            data = out.getvalue()
+        with self.lock:
+            if self.grabbed is None:
+                self.grabbed = cam_frames()
+            lit = self.lit()
+            c = dict(self.cfg)
+        w, h = map(int, c["resolution"].split("x"))
+        # the grab at this resolution, or the smallest one at least as wide
+        gw, gh = next(((gw, gh) for gw, gh in CAM_GRABBED if gw >= w), CAM_GRABBED[-1])
+        shots = self.grabbed[(gw, gh, "on" if lit else "off")]
+        data = shots[int(t0 / CAM_FRAME_S) % len(shots)]
+        if (gw, gh) != (w, h) or c["quality"] != "default" or any(
+                c[k] != v for k, v in CAM_IMAGE_DEFAULTS.items()):
+            try:
+                data = cam_process(data, w, h, c)
+            except ImportError:
+                pass
         with self.lock:
             self.frames += 1
             self.last_bytes = len(data)
