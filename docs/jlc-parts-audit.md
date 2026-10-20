@@ -39,12 +39,15 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 297.81 | 185.51 | 35.45 | 26.38 | 237.21 | **816.36** |
-| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 73.76 | **332.52** |
-| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 56.90 | **272.77** |
+| 1 | 297.81 | 160.91 | 35.45 | 26.38 | 229.91 | **784.46** |
+| 5 | 177.35 | 48.73 | 13.81 | 7.15 | 72.14 | **325.98** |
+| 10 | 156.97 | 36.73 | 11.23 | 4.92 | 55.86 | **269.12** |
+
+The hub is 76 × 100 mm since 2026-10-20 (3cb4152): inside JLC's 100 × 100 offer, no $25 engineering
+fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors (cc3ba32).
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.69, hub
-$22.18, the v2 panel $37.30 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
+$21.78, the v2 panel $37.03 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (1590b7a) took another ≈ $4 off its
 floor.
 
@@ -312,6 +315,10 @@ OK), for quotes only: no cart, no order, no address, no coupon. JLC is bom.py's 
 | v2: panel ×1 (JLC: 2); AISLER, 2 logic boards | 211.52 | 451.63 | 2.1× | 857.61 | 4.1× |
 | **Boards** | **713.06** | **1,519.14** | **2.1×** | **3,702.06** | **5.2×** |
 | Shipping to France | 31.28 (DHL) | not quoted | | not quoted | |
+
+All three hub prices are for the hub at 76 × 140 mm. At 76 × 100 (3cb4152), JLC's hub is $160.91
+(€148.04) and the rack's boards €690. The other two lose only their bare-PCB share; the ratios
+barely move.
 
 **Landed in France.** The EURL recovers VAT either way. JLC and NextPCB ship from China: DHL bills the
 20 % import VAT plus a clearance fee of roughly €15–20 (JLC's DDP option collects the VAT at checkout

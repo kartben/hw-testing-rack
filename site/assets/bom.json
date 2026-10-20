@@ -4467,7 +4467,7 @@
 "panel": 8.21,
 "x-ray": 1.64,
 "pcb 4-layer 100x100": 8.0,
-"pcb 4-layer 76x140": 31.6,
+"pcb engineering above 100x100": 25.0,
 "enig over lf-hasl": 12.4
 },
 "volume": {

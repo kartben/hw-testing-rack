@@ -213,7 +213,7 @@ JLC_FEES = {
     "panel": 8.21,              # PCBA of a panel holding more than one design
     "x-ray": 1.64,              # per assembled board with a leadless part (module pad, QFN, LGA), 1-10 boards
     "pcb 4-layer 100x100": 8.00,        # 5 PCBs at JLC's offer: no engineering fee
-    "pcb 4-layer 76x140": 31.60,        # $25 engineering fee + $6.60 board above 100 × 100 mm
+    "pcb engineering above 100x100": 25.00,     # per order, on any board or panel above 100 × 100 mm
     "enig over lf-hasl": 12.40,         # 5 PCBs, 100 × 100 mm: ENIG $17.70, lead-free HASL $5.30
 }
 
@@ -534,6 +534,7 @@ def jlc_cost(orders: dict) -> list[dict]:
 
 def jlc_cost_md(cost: list[dict]) -> list[str]:
     std, eco = JLC_FEES["Standard"], JLC_FEES["Economic"]
+    v2_pcb = JLC_QUOTE["data-port-x4-v2-panel"]["pcb"]   # the order above 100 × 100 mm
     md = ["## JLC cost", "",
           "What each order pays once, whatever the number of boards, against what grows with the boards "
           "assembled (USD, the orders above).  JLC's fees (help page of 2026-09-09): **Standard** PCBA "
@@ -541,8 +542,10 @@ def jlc_cost_md(cost: list[dict]) -> list[str]:
           f"basic or extended; **Economic** PCBA ${eco['setup']:.2f} + ${eco['stencil']:.2f} + ${eco['per type']:.2f} per "
           f"*extended* type (basic and preferred-extended types are free); X-ray ${JLC_FEES['x-ray']:.2f} per board with a leadless part.  A "
           "board takes Standard when one of its parts is Standard-only (every ESP32-S3 module, the WS2812B-2020).  "
-          f"A 4-layer board within 100 × 100 mm costs ${JLC_FEES['pcb 4-layer 100x100']:.2f} for 5 PCBs; above, "
-          f"${JLC_FEES['pcb 4-layer 76x140']:.2f} at 76 × 140 mm, a $25 engineering fee included.  ENIG adds "
+          f"A 4-layer board within 100 × 100 mm costs ${JLC_FEES['pcb 4-layer 100x100']:.2f} for 5 PCBs; above "
+          f"100 × 100 mm, a ${JLC_FEES['pcb engineering above 100x100']:.0f} engineering fee comes on top: the v2 "
+          f"order panel (100 × 142 mm) pays ${v2_pcb['engineering']:.2f} + ${v2_pcb['board']:.2f} "
+          f"for 5, before its finish.  ENIG adds "
           f"${JLC_FEES['enig over lf-hasl']:.2f} over lead-free HASL.  A panel of different designs pays "
           f"${JLC_FEES['panel']:.2f} more at PCBA and a fee at PCB.  "
           "Every board goes in one cart: one shipment for the lot "
