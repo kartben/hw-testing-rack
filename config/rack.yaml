@@ -244,7 +244,7 @@ pcb:
                             # on 8 buses and the RP2354B analyzer (DATA-4x-logic); the same PCB with the logic left off is
                             # the base DATA-4x of the other converted bays (the user, 2026-10-20: v1 is not ordered for the
                             # proto).  A bay with `x4: v2` shows it in the viewer and the BOM prices its logic variant
-                            # (tools/bom.py); the BOM's other converted bays still take v1 there.
+                            # (tools/bom.py); the BOM gives the other converted bays its base.
                             # It STANDS at the back of the drawer's rear bay (docs/data-x4-v2-layout-options.md, option B),
                             # held by its printed cradle (parts/x4_cradle.scad).  KiCad x = board x = drawer x − x0, KiCad
                             # y = top_z − drawer z (y = 0 its top edge).  Its front face (F.Cu, every part JLC places:

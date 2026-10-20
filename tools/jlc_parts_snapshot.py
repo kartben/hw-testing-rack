@@ -25,7 +25,9 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-BOARDS = ("bay-node", "power-hub", "data-port-x4", "data-port-x4-v2", "data-port", "camera-pod")
+BOARDS = ("bay-node", "power-hub", "data-port-x4", "data-port-x4-v2", "data-port-x4-v2-base", "data-port", "camera-pod")
+# an assembly variant's files sit in its PCB's folder, under its own name (electronics/tools/build_board.py)
+VARIANT_OF = {"data-port-x4-v2-base": "data-port-x4-v2"}
 OUT = REPO / "electronics" / "lib" / "jlc_parts.json"
 # the wrapper sits in the server's checkout (it uses the server's node_modules); default: node on PATH and
 # the checkout in ~/.local/mcp/jlcpcb-skill-mcp
@@ -64,7 +66,8 @@ def bom_lines() -> dict[str, list[tuple[str, int, str]]]:
     """board → [(LCSC, quantity per board, comment)] from its JLC BOM."""
     out = {}
     for b in BOARDS:
-        rows = csv.DictReader((REPO / "electronics" / b / "fab" / f"{b}-bom-jlcpcb.csv").open(encoding="utf-8"))
+        rows = csv.DictReader((REPO / "electronics" / VARIANT_OF.get(b, b) / "fab" / f"{b}-bom-jlcpcb.csv")
+                              .open(encoding="utf-8"))
         out[b] = [(r["LCSC Part #"], len([d for d in r["Designator"].split(",") if d.strip()]), r["Comment"])
                   for r in rows if r["LCSC Part #"]]
     return out

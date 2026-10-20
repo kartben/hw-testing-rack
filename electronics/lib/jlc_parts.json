@@ -709,6 +709,128 @@
     "ABM8-272-T3"
    ]
   ],
+  "data-port-x4-v2-base": [
+   [
+    "C12891",
+    1,
+    "22u"
+   ],
+   [
+    "C45783",
+    6,
+    "22u"
+   ],
+   [
+    "C1562",
+    2,
+    "33p"
+   ],
+   [
+    "C52923",
+    7,
+    "1u"
+   ],
+   [
+    "C1525",
+    19,
+    "100n"
+   ],
+   [
+    "C2689964",
+    4,
+    "TYPE-C-31-D-06"
+   ],
+   [
+    "C8545",
+    3,
+    "2N7002"
+   ],
+   [
+    "C25752",
+    1,
+    "12k"
+   ],
+   [
+    "C25744",
+    14,
+    "10k"
+   ],
+   [
+    "C25900",
+    2,
+    "4.7k"
+   ],
+   [
+    "C25792",
+    4,
+    "47k"
+   ],
+   [
+    "C23206",
+    8,
+    "56k"
+   ],
+   [
+    "C25334",
+    4,
+    "100m"
+   ],
+   [
+    "C11702",
+    8,
+    "1k"
+   ],
+   [
+    "C25741",
+    8,
+    "100k"
+   ],
+   [
+    "C25725",
+    3,
+    "10k"
+   ],
+   [
+    "C478081",
+    1,
+    "USB2517I-JZX"
+   ],
+   [
+    "C181499",
+    2,
+    "TCA6408ARGTR"
+   ],
+   [
+    "C150716",
+    1,
+    "AP2114H-3.3TRG1"
+   ],
+   [
+    "C138714",
+    1,
+    "TPD4E05U06DQAR"
+   ],
+   [
+    "C111738",
+    4,
+    "TPS2553DBVR-1"
+   ],
+   [
+    "C49851",
+    4,
+    "INA226AIDGSR"
+   ],
+   [
+    "C7519",
+    4,
+    "USBLC6-2SC6"
+   ],
+   [
+    "C15643",
+    1,
+    "X322524MSB4SI"
+   ]
+  ],
   "data-port": [
    [
     "C14663",
@@ -794,32 +916,32 @@
     {
      "qFrom": 10,
      "qTo": 99,
-     "price": 0.0719
+     "price": 0.0712
     },
     {
      "qFrom": 100,
      "qTo": 299,
-     "price": 0.0572
+     "price": 0.0566
     },
     {
      "qFrom": 300,
      "qTo": 2999,
-     "price": 0.0499
+     "price": 0.0494
     },
     {
      "qFrom": 3000,
      "qTo": 5999,
-     "price": 0.0403
+     "price": 0.0398
     },
     {
      "qFrom": 6000,
      "qTo": 8999,
-     "price": 0.0358
+     "price": 0.0355
     },
     {
      "qFrom": 9000,
      "qTo": null,
-     "price": 0.0336
+     "price": 0.0333
     }
    ],
    "category": "Logic",
@@ -920,7 +1042,7 @@
    "category": "Power Management (PMIC)",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 2565
+   "lcsc_stock": 2555
   },
   "C11355": {
    "mfr": "FSUSB42MUX",
@@ -1201,6 +1323,48 @@
    "category": "Capacitors",
    "manufacturer": "YAGEO",
    "source": "local-db (snapshot stock)"
+  },
+  "C150716": {
+   "mfr": "AP2114H-3.3TRG1",
+   "package": "SOT-223",
+   "stock": 6216,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 5,
+     "qTo": 49,
+     "price": 0.2319
+    },
+    {
+     "qFrom": 50,
+     "qTo": 149,
+     "price": 0.1844
+    },
+    {
+     "qFrom": 150,
+     "qTo": 499,
+     "price": 0.1641
+    },
+    {
+     "qFrom": 500,
+     "qTo": 2499,
+     "price": 0.1387
+    },
+    {
+     "qFrom": 2500,
+     "qTo": 3999,
+     "price": 0.1274
+    },
+    {
+     "qFrom": 4000,
+     "qTo": null,
+     "price": 0.1206
+    }
+   ],
+   "category": "Power Management (PMIC)",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 6215
   },
   "C1525": {
    "mfr": "CL05B104KO5NNNC",
@@ -1810,7 +1974,7 @@
    "category": "Optoelectronics",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 1673700
+   "lcsc_stock": 1673650
   },
   "C23140": {
    "mfr": "0603WAF330JT5E",
@@ -2496,7 +2660,7 @@
    "category": "IoT/Communication Modules",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 2991
+   "lcsc_stock": 2986
   },
   "C318884": {
    "mfr": "TS-1187A-B-A-B",
@@ -2580,7 +2744,7 @@
    "category": "Interface",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 10686
+   "lcsc_stock": 10685
   },
   "C3352": {
    "mfr": "RVT1H101M0810",
@@ -2664,7 +2828,7 @@
    "category": "Global Sourcing Parts",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 1894
+   "lcsc_stock": 1889
   },
   "C41417363": {
    "mfr": "HX PZ2.54-1x6P TP-YQ",
@@ -2804,7 +2968,7 @@
    "category": null,
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 12485
+   "lcsc_stock": 12490
   },
   "C431540": {
    "mfr": "MSK12C02",
@@ -3155,7 +3319,7 @@
    "category": "Amplifiers/Comparators",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 33379
+   "lcsc_stock": 32705
   },
   "C51118": {
    "mfr": "AP2112K-3.3TRG1",
@@ -3313,7 +3477,7 @@
    "category": null,
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 850895
+   "lcsc_stock": 850815
   },
   "C52923": {
    "mfr": "CL05A105KA5NQNC",
@@ -3496,7 +3660,7 @@
    "category": "Power Management (PMIC)",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 577530
+   "lcsc_stock": 577400
   },
   "C7420333": {
    "mfr": "BAT54S",
@@ -3538,7 +3702,7 @@
    "category": "Diodes",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 861550
+   "lcsc_stock": 861600
   },
   "C7503186": {
    "mfr": "SUD50P06-15(UMW)",
@@ -3780,7 +3944,7 @@
    "category": "Diodes",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 100620
+   "lcsc_stock": 100580
   },
   "C9839": {
    "mfr": "TPS60400DBVR",
@@ -3822,48 +3986,6 @@
    "category": "Power Management (PMIC)",
    "manufacturer": "Texas Instruments",
    "source": "local-db (snapshot stock)"
-  },
-  "C150716": {
-   "mfr": "AP2114H-3.3TRG1",
-   "package": "SOT-223",
-   "stock": 6216,
-   "tier": "extended",
-   "priceBreaks": [
-    {
-     "qFrom": 5,
-     "qTo": 49,
-     "price": 0.2319
-    },
-    {
-     "qFrom": 50,
-     "qTo": 149,
-     "price": 0.1844
-    },
-    {
-     "qFrom": 150,
-     "qTo": 499,
-     "price": 0.1641
-    },
-    {
-     "qFrom": 500,
-     "qTo": 2499,
-     "price": 0.1387
-    },
-    {
-     "qFrom": 2500,
-     "qTo": 3999,
-     "price": 0.1274
-    },
-    {
-     "qFrom": 4000,
-     "qTo": null,
-     "price": 0.1206
-    }
-   ],
-   "category": "Power Management (PMIC)",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 6215
   }
  }
 }

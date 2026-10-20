@@ -109,38 +109,6 @@ Electronics,camera-pod,AMS1117-3.3 — 3.3 V 1 A LDO,2,pcs,0.1932,0.39,LCSC/JLCP
 Electronics,camera-pod,"Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL)",5,pcs,0.9568,4.78,"estimate, not quoted",,,,,"board $5.20 = $5.20 for 5 PCBs, 2 of them assembled"
 Electronics,camera-pod,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT",1,pcs,17.59,17.59,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $9.21, SMT $0.20"
 Electronics,camera-pod,Components camera-pod: JLC quote minus the catalogue prices above,1,pcs,0.08,0.08,"estimate, not quoted",,,,,quoted components $2.06 (≈ €1.90) for 2 boards; catalogue unit prices give €1.82
-Electronics,data-port-x4,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
-Electronics,data-port-x4,1u — Capacitor 1u 0603,12,pcs,0.013,0.16,LCSC/JLCPCB,C15849,CL10A105KB8NNNC,Samsung Electro-Mechanics,"C2,C13,C101,C201,C301,C401",6 per board × 2 boards
-Electronics,data-port-x4,4.7u — Capacitor 4.7u 0805,2,pcs,0.0318,0.06,LCSC/JLCPCB,C1779,CL21A475KAQNNNE,Samsung Electro-Mechanics,C3,1 per board × 2 boards
-Electronics,data-port-x4,33p — Capacitor 33p 0603,4,pcs,0.0083,0.03,LCSC/JLCPCB,C1663,CL10C330JB8NNNC,Samsung Electro-Mechanics,"C4,C5",2 per board × 2 boards
-Electronics,data-port-x4,100n — Capacitor 100n 0603,34,pcs,0.0124,0.42,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C6,C7,C8,C9,C10,C11,C12,C14,C15,C103,C104,C203,C204,C303,C304,C403,C404",17 per board × 2 boards
-Electronics,data-port-x4,22u — Capacitor 22u 0805,8,pcs,0.1785,1.43,LCSC/JLCPCB,C45783,CL21A226MAQNNNE,Samsung Electro-Mechanics,"C102,C202,C302,C402",4 per board × 2 boards
-Electronics,data-port-x4,"LEAD — JST PH 8-pin, side entry, SMD",2,pcs,0.414,0.83,LCSC/JLCPCB,C265121,S8B-PH-SM4-TB(LF)(SN),JST,J1,1 per board × 2 boards
-Electronics,data-port-x4,"PORT1 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",2,pcs,0.8372,1.67,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J101,1 per board × 2 boards
-Electronics,data-port-x4,"PORT2 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",2,pcs,0.8372,1.67,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J201,1 per board × 2 boards
-Electronics,data-port-x4,"PORT3 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",2,pcs,0.8372,1.67,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J301,1 per board × 2 boards
-Electronics,data-port-x4,"PORT4 — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",2,pcs,0.8372,1.67,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J401,1 per board × 2 boards
-Electronics,data-port-x4,2N7002 — N-MOSFET 60 V (open-drain AUX outputs),6,pcs,0.0184,0.11,LCSC/JLCPCB,C8545,2N7002,CJ,"Q1,Q2,Q3",3 per board × 2 boards
-Electronics,data-port-x4,12k — Resistor 12k 0603,2,pcs,0.0029,0.01,LCSC/JLCPCB,C22790,0603WAF1202T5E,UNI-ROYAL(Uniroyal Elec),R1,1 per board × 2 boards
-Electronics,data-port-x4,10k — Resistor 10k 0603,18,pcs,0.0048,0.09,LCSC/JLCPCB,C25804,0603WAF1002T5E,UNI-ROYAL(Uniroyal Elec),"R2,R102,R103,R202,R203,R302,R303,R402,R403",9 per board × 2 boards
-Electronics,data-port-x4,100k — Resistor 100k 0603,6,pcs,0.0029,0.02,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),"R3,R4,R5",3 per board × 2 boards
-Electronics,data-port-x4,4.7k — Resistor 4.7k 0402,4,pcs,0.0019,0.01,LCSC/JLCPCB,C25900,0402WGF4701TCE,UNI-ROYAL(Uniroyal Elec),"R6,R7",2 per board × 2 boards
-Electronics,data-port-x4,10k — Resistor 10k 0402,2,pcs,0.0014,0.0,LCSC/JLCPCB,C25744,0402WGF1002TCE,UNI-ROYAL(Uniroyal Elec),R8,1 per board × 2 boards
-Electronics,data-port-x4,47k — Resistor 47k 0402,8,pcs,0.0018,0.01,LCSC/JLCPCB,C25792,0402WGF4702TCE,UNI-ROYAL(Uniroyal Elec),"R101,R201,R301,R401",4 per board × 2 boards
-Electronics,data-port-x4,56k — Resistor 56k 0603,16,pcs,0.0025,0.04,LCSC/JLCPCB,C23206,0603WAF5602T5E,UNI-ROYAL(Uniroyal Elec),"R104,R105,R204,R205,R304,R305,R404,R405",8 per board × 2 boards
-Electronics,data-port-x4,"100m — 100 mΩ 1 % 0.25 W, as a current shunt",8,pcs,0.0088,0.07,LCSC/JLCPCB,C25334,1206W4F100LT5E,UNI-ROYAL(Uniroyal Elec),"R106,R206,R306,R406",4 per board × 2 boards
-Electronics,data-port-x4,1k — Resistor 1k 0603,16,pcs,0.0017,0.03,LCSC/JLCPCB,C21190,0603WAF1001T5E,UNI-ROYAL(Uniroyal Elec),"R107,R108,R207,R208,R307,R308,R407,R408",8 per board × 2 boards
-Electronics,data-port-x4,100k — Resistor 100k 0402,16,pcs,0.0014,0.02,LCSC/JLCPCB,C25741,0402WGF1003TCE,UNI-ROYAL(Uniroyal Elec),"R109,R110,R209,R210,R309,R310,R409,R410",8 per board × 2 boards
-Electronics,data-port-x4,"USB2514B-AEZC-TR — USB 2.0 hub, 4 ports, one transaction translator per port (MTT)",2,pcs,1.6652,3.33,LCSC/JLCPCB,C16251,USB2514B-AEZC-TR,Microchip Tech,U1,1 per board × 2 boards
-Electronics,data-port-x4,"TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT",4,pcs,0.8096,3.24,LCSC/JLCPCB,C181499,TCA6408ARGTR,Texas Instruments,"U2,U6",2 per board × 2 boards
-Electronics,data-port-x4,"AP2112K-3.3TRG1 — 3.3 V 600 mA LDO, 250 mV dropout",2,pcs,0.1564,0.31,LCSC/JLCPCB,C51118,AP2112K-3.3TRG1,Diodes Incorporated,U3,1 per board × 2 boards
-Electronics,data-port-x4,USBLC6-2SC6 — USB ESD protection,12,pcs,0.1656,1.99,LCSC/JLCPCB,C7519,USBLC6-2SC6,STMicroelectronics,"U4,U5,U103,U203,U303,U403",6 per board × 2 boards; alternative: C2687116 (UMW clone)
-Electronics,data-port-x4,"TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit",8,pcs,0.2668,2.13,LCSC/JLCPCB,C111738,TPS2553DBVR-1,Texas Instruments,"U101,U201,U301,U401",4 per board × 2 boards
-Electronics,data-port-x4,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",8,pcs,0.69,5.52,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,"U102,U202,U302,U402",4 per board × 2 boards
-Electronics,data-port-x4,"X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225",2,pcs,0.0874,0.17,LCSC/JLCPCB,C15643,X322524MSB4SI,YXC Crystal Oscillators,Y1,1 per board × 2 boards
-Electronics,data-port-x4,"Bare PCB data-port-x4 (4-layer 100×37 mm, JLC04161H-7628, lead-free HASL)",5,pcs,2.4104,12.05,"estimate, not quoted",,,,,"special offer $8.00, lead-free HASL $5.10 = $13.10 for 5 PCBs, 2 of them assembled"
-Electronics,data-port-x4,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray",1,pcs,38.72,38.72,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $27.63, SMT $1.47, X-ray $3.28"
-Electronics,data-port-x4,Components data-port-x4: JLC quote minus the catalogue prices above,1,pcs,0.83,0.83,"estimate, not quoted",,,,,quoted components $30.18 (≈ €27.77) for 2 boards; catalogue unit prices give €26.94
 Electronics,data-port-x4-v2,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
 Electronics,data-port-x4-v2,22u — Capacitor 22u 0805,12,pcs,0.1785,2.14,LCSC/JLCPCB,C45783,CL21A226MAQNNNE,Samsung Electro-Mechanics,"C2,C3,C102,C202,C302,C402",6 per board × 2 boards
 Electronics,data-port-x4-v2,33p — Capacitor 33p 0402,4,pcs,0.0029,0.01,LCSC/JLCPCB,C1562,0402CG330J500NT,FH (Guangdong Fenghua Advanced Tech),"C4,C5",2 per board × 2 boards
@@ -191,8 +159,43 @@ Electronics,data-port-x4-v2,"LSF0108RKSR — 8-bit passive FET level translator,
 Electronics,data-port-x4-v2,"X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225",2,pcs,0.0874,0.17,LCSC/JLCPCB,C15643,X322524MSB4SI,YXC Crystal Oscillators,Y1,1 per board × 2 boards
 Electronics,data-port-x4-v2,"ABM8-272-T3 — 12 MHz crystal, 10 pF load, 50 Ω ESR, ±30 ppm, 3225",2,pcs,0.598,1.2,LCSC/JLCPCB,C20625731,ABM8-272-T3,Abracon LLC,Y2,1 per board × 2 boards
 Electronics,data-port-x4-v2,"Bare PCB data-port-x4-v2 (4-layer 100×70 mm, JLC04161H-7628, ENIG)",5,pcs,4.6736,23.37,"estimate, not quoted",,,,,"special offer $8.00, ENIG $17.40 = $25.40 for 5 PCBs, 2 of them assembled"
-Electronics,data-port-x4-v2,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray, L1 minimum purchase (32)",1,pcs,80.68,80.68,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $61.40, SMT $3.77, X-ray $3.28, L1 minimum purchase (32) $9.54"
-Electronics,data-port-x4-v2,Components data-port-x4-v2: JLC quote minus the catalogue prices above,1,pcs,5.04,5.04,"estimate, not quoted",,,,,quoted components $61.85 (≈ €56.90) for 2 boards; catalogue unit prices give €51.86
+Electronics,data-port-x4-v2,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray, L1 minimum purchase (32)",1,pcs,83.51,83.51,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $64.47, SMT $3.77, X-ray $3.28, L1 minimum purchase (32) $9.54"
+Electronics,data-port-x4-v2,Components data-port-x4-v2: JLC quote minus the catalogue prices above,1,pcs,5.75,5.75,"estimate, not quoted",,,,,quoted components $62.62 (≈ €57.61) for 2 boards; catalogue unit prices give €51.86
+Electronics,data-port-x4-v2-base,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,22u — Capacitor 22u 0805,12,pcs,0.1785,2.14,LCSC/JLCPCB,C45783,CL21A226MAQNNNE,Samsung Electro-Mechanics,"C2,C3,C102,C202,C302,C402",6 per board × 2 boards
+Electronics,data-port-x4-v2-base,33p — Capacitor 33p 0402,4,pcs,0.0029,0.01,LCSC/JLCPCB,C1562,0402CG330J500NT,FH (Guangdong Fenghua Advanced Tech),"C4,C5",2 per board × 2 boards
+Electronics,data-port-x4-v2-base,1u — Capacitor 1u 0402,14,pcs,0.0063,0.09,LCSC/JLCPCB,C52923,CL05A105KA5NQNC,Samsung Electro-Mechanics,"C6,C7,C8,C101,C201,C301,C401",7 per board × 2 boards
+Electronics,data-port-x4-v2-base,100n — Capacitor 100n 0402,38,pcs,0.0051,0.19,LCSC/JLCPCB,C1525,CL05B104KO5NNNC,Samsung Electro-Mechanics,"C9,C10,C11,C12,C13,C14,C15,C16,C17,C18,C19,C103,C104,C203,C204,C303,C304,C403,C404",19 per board × 2 boards
+Electronics,data-port-x4-v2-base,"LEAD — JST PH 8-pin, vertical, through-hole",2,pcs,0.0791,0.16,"LCSC (hand-solder, buy loose)",C157974,B8B-PH-K-S(LF)(SN),JST,J1,"1 per board × 2 boards; hand-solder, buy loose (LCSC)"
+Electronics,data-port-x4-v2-base,"PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",2,pcs,0.2576,0.52,LCSC/JLCPCB,C2689964,TYPE-C-31-D-06,HRO,J101,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,"PINS1 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",2,pcs,0.0856,0.17,"LCSC (hand-solder, buy loose)",C32713279,HX PZ2.54-2x6P ZZ,hanxia,J102,"1 per board × 2 boards; hand-solder, buy loose (LCSC)"
+Electronics,data-port-x4-v2-base,"PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",2,pcs,0.2576,0.52,LCSC/JLCPCB,C2689964,TYPE-C-31-D-06,HRO,J201,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,"PINS2 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",2,pcs,0.0856,0.17,"LCSC (hand-solder, buy loose)",C32713279,HX PZ2.54-2x6P ZZ,hanxia,J202,"1 per board × 2 boards; hand-solder, buy loose (LCSC)"
+Electronics,data-port-x4-v2-base,"PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",2,pcs,0.2576,0.52,LCSC/JLCPCB,C2689964,TYPE-C-31-D-06,HRO,J301,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,"PINS3 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",2,pcs,0.0856,0.17,"LCSC (hand-solder, buy loose)",C32713279,HX PZ2.54-2x6P ZZ,hanxia,J302,"1 per board × 2 boards; hand-solder, buy loose (LCSC)"
+Electronics,data-port-x4-v2-base,"PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",2,pcs,0.2576,0.52,LCSC/JLCPCB,C2689964,TYPE-C-31-D-06,HRO,J401,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,"PINS4 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",2,pcs,0.0856,0.17,"LCSC (hand-solder, buy loose)",C32713279,HX PZ2.54-2x6P ZZ,hanxia,J402,"1 per board × 2 boards; hand-solder, buy loose (LCSC)"
+Electronics,data-port-x4-v2-base,2N7002 — N-MOSFET 60 V (open-drain AUX outputs),6,pcs,0.0184,0.11,LCSC/JLCPCB,C8545,2N7002,CJ,"Q1,Q2,Q3",3 per board × 2 boards
+Electronics,data-port-x4-v2-base,12k — Resistor 12k 0402,2,pcs,0.0017,0.0,LCSC/JLCPCB,C25752,0402WGF1202TCE,UNI-ROYAL(Uniroyal Elec),R1,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,10k — Resistor 10k 0402,28,pcs,0.0014,0.04,LCSC/JLCPCB,C25744,0402WGF1002TCE,UNI-ROYAL(Uniroyal Elec),"R2,R3,R4,R5,R8,R9,R102,R103,R202,R203,R302,R303,R402,R403",14 per board × 2 boards
+Electronics,data-port-x4-v2-base,4.7k — Resistor 4.7k 0402,4,pcs,0.0019,0.01,LCSC/JLCPCB,C25900,0402WGF4701TCE,UNI-ROYAL(Uniroyal Elec),"R6,R7",2 per board × 2 boards
+Electronics,data-port-x4-v2-base,47k — Resistor 47k 0402,8,pcs,0.0018,0.01,LCSC/JLCPCB,C25792,0402WGF4702TCE,UNI-ROYAL(Uniroyal Elec),"R101,R201,R301,R401",4 per board × 2 boards
+Electronics,data-port-x4-v2-base,56k — Resistor 56k 0603,16,pcs,0.0025,0.04,LCSC/JLCPCB,C23206,0603WAF5602T5E,UNI-ROYAL(Uniroyal Elec),"R104,R105,R204,R205,R304,R305,R404,R405",8 per board × 2 boards
+Electronics,data-port-x4-v2-base,"100m — 100 mΩ 1 % 0.25 W, as a current shunt",8,pcs,0.0088,0.07,LCSC/JLCPCB,C25334,1206W4F100LT5E,UNI-ROYAL(Uniroyal Elec),"R106,R206,R306,R406",4 per board × 2 boards
+Electronics,data-port-x4-v2-base,1k — Resistor 1k 0402,16,pcs,0.0012,0.02,LCSC/JLCPCB,C11702,0402WGF1001TCE,UNI-ROYAL(Uniroyal Elec),"R107,R108,R207,R208,R307,R308,R407,R408",8 per board × 2 boards
+Electronics,data-port-x4-v2-base,100k — Resistor 100k 0402,16,pcs,0.0014,0.02,LCSC/JLCPCB,C25741,0402WGF1003TCE,UNI-ROYAL(Uniroyal Elec),"R109,R110,R209,R210,R309,R310,R409,R410",8 per board × 2 boards
+Electronics,data-port-x4-v2-base,"10k — 4 × resistor array 0402, 5 %",6,pcs,0.0,0.0,LCSC/JLCPCB,C25725,4D02WGJ0103TCE,UNI-ROYAL(Uniroyal Elec),"RN1,RN2,RN3",3 per board × 2 boards
+Electronics,data-port-x4-v2-base,"USB2517I-JZX — USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial",2,pcs,4.1492,8.3,LCSC/JLCPCB,C478081,USB2517I-JZX,Microchip Tech,U1,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,"TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT",4,pcs,0.8096,3.24,LCSC/JLCPCB,C181499,TCA6408ARGTR,Texas Instruments,"U2,U6",2 per board × 2 boards
+Electronics,data-port-x4-v2-base,"AP2114H-3.3TRG1 — 3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223",2,pcs,0.2116,0.42,LCSC/JLCPCB,C150716,AP2114H-3.3TRG1,Diodes Incorporated,U3,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,"TPD4E05U06DQAR — 4-channel ESD, 0.5 pF, 5.5 V stand-off, flow-through (pins 6, 7, 9, 10 route through)",2,pcs,0.0764,0.15,LCSC/JLCPCB,C138714,TPD4E05U06DQAR,Texas Instruments,U4,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,"TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit",8,pcs,0.2668,2.13,LCSC/JLCPCB,C111738,TPS2553DBVR-1,Texas Instruments,"U101,U201,U301,U401",4 per board × 2 boards
+Electronics,data-port-x4-v2-base,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",8,pcs,0.69,5.52,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,"U102,U202,U302,U402",4 per board × 2 boards
+Electronics,data-port-x4-v2-base,USBLC6-2SC6 — USB ESD protection,8,pcs,0.1656,1.32,LCSC/JLCPCB,C7519,USBLC6-2SC6,STMicroelectronics,"U103,U203,U303,U403",4 per board × 2 boards; alternative: C2687116 (UMW clone)
+Electronics,data-port-x4-v2-base,"X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225",2,pcs,0.0874,0.17,LCSC/JLCPCB,C15643,X322524MSB4SI,YXC Crystal Oscillators,Y1,1 per board × 2 boards
+Electronics,data-port-x4-v2-base,"Bare PCB data-port-x4-v2-base (4-layer 100×70 mm, JLC04161H-7628, lead-free HASL)",5,pcs,2.4288,12.14,"estimate, not quoted",,,,,"special offer $8.00, lead-free HASL $5.20 = $13.20 for 5 PCBs, 2 of them assembled"
+Electronics,data-port-x4-v2-base,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray",1,pcs,41.8,41.8,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $30.70, SMT $1.74, X-ray $3.28"
+Electronics,data-port-x4-v2-base,Components data-port-x4-v2-base: JLC quote minus the catalogue prices above,1,pcs,2.4,2.4,"estimate, not quoted",,,,,quoted components $32.12 (≈ €29.55) for 2 boards; catalogue unit prices give €27.15
 Electronics,jlc,JLCPCB shipping: every board in one cart,1,pcs,31.28,31.28,JLCPCB,,,,,DHL ≈ $27–40 for the whole order (one shipment); import VAT extra
 Printed parts,filament,PETG filament,3.0,kg,20.0,60.0,any,,,,,"≈2.7 kg estimated + 10 % waste, 166 parts"
 Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",142,pcs,0.03,4.26,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs
