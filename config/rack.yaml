@@ -240,12 +240,14 @@ pcb:
                             # viewer (the concept placement's stand-in); its BOM and the JLC order keep v1
     size: [108, 27]         # X × Y, KiCad y=0 the rear edge (3 mm deeper than v1 at the rear: the front edge, the USB-Cs
     notch: [86, 0, 22, 10]  # and the PH 8 stay where v1 has them)
-    holes: [[2.6, 16.5], [40.4, 16.6], [77.0, 3.0], [104.4, 23.6]]
-    header: { x: [11, 29, 47, 65], odd_y: 5.67, even_y: 3.13, cols: 6,
+    holes: [[3.2, 6.5], [38.7, 6.5], [81.4, 6.3], [104.4, 23.6]]   # v1's, 3 mm deeper: the drawer's same bosses
+    header: { x: [11, 29, 47, 65], odd_y: 15.12, even_y: 12.58, cols: 6,
               names: [GND, VREF, P1, P2, P3, P4, P5, P6, P7, P8, RESET, BOOT] }
-                            # per port a 2 × 6 2.54 THT header centred on its USB-C's x, pin 1 at x − 6.35: column k (from
-                            # the left) holds pins 2k−1 on the front row (odd_y) and 2k on the rear one: GND/VREF, P1/P2 …
-                            # P7/P8, RESET/BOOT (the v2 design session's layout, 2026-10-20, provisional)
+                            # per port a 2 × 6 2.54 SMD header (hand-soldered) in the middle band, centred on its USB-C's x
+                            # and on y 13.85, pin 1 at x − 6.35: column k (from the left) holds pins 2k−1 on the front row
+                            # (odd_y) and 2k on the rear one: GND/VREF, P1/P2 … P7/P8, RESET/BOOT; the power parts in the
+                            # rear row (the v2 design session's 6-layer layout, 2026-10-20).  The pins, 1.27 off the
+                            # centre: the footprint's pads lie further out, at ± 2.525 (y 16.375 / 11.325)
   camera_pod:               # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6
