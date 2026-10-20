@@ -41,10 +41,10 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | PCBA: setup $8.18, stencil $1.53, components $2.06, extended parts $9.21, SMT $0.20 | 21.18 |
 | | | **Estimated total** | **26.38** |
 | | | Order (indicative): as quoted | 26.38 |
-| data-port-x4 | 5 PCBs (4-layer 100×28 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: special offer $8.00, lead-free HASL $5.10, deburring $0.10 | 13.20 |
+| data-port-x4 | 5 PCBs (4-layer 100×37 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: special offer $8.00, lead-free HASL $5.10 | 13.10 |
 | | | PCBA: setup $8.18, stencil $1.53, components $30.18, extended parts $27.63, SMT $1.47, X-ray $3.28 | 72.27 |
-| | | **Estimated total** | **85.47** |
-| | | Order (indicative): as quoted | 85.47 |
+| | | **Estimated total** | **85.37** |
+| | | Order (indicative): as quoted | 85.37 |
 
 ## JLC cost
 
@@ -56,9 +56,9 @@ What each order pays once, whatever the number of boards, against what grows wit
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (16) | 50.49 | 123.59 | 61.94 | **185.53** | 185.53 | 146.87 |
 | data-port | Economic | 6 / 7 | 6 (3) | 9.21 | 25.22 | 11.94 | **37.16** | 37.16 | 27.11 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.26 | **26.38** | 26.38 | 25.59 |
-| data-port-x4 | Economic | 2 / 2 | 26 (9) | 27.63 | 50.54 | 34.93 | **85.47** | 85.47 | 77.29 |
+| data-port-x4 | Economic | 2 / 2 | 26 (9) | 27.63 | 50.44 | 34.93 | **85.37** | 85.37 | 77.19 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **690.45** | **690.45** | **587.30** |
+| **All** | | | | | | | **690.35** | **690.35** | **587.20** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -91,15 +91,15 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | power-hub | 92.75 | 53.65 | 39.34 | 26.07 | 23.03 | 22.17 |
 | data-port | 13.77 | 6.53 | 3.94 | 1.96 | 1.49 | 1.30 |
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
-| data-port-x4 | 42.73 | 25.88 | 20.04 | 13.28 | 11.88 | 11.51 |
+| data-port-x4 | 42.68 | 25.86 | 20.02 | 13.37 | 11.97 | 11.59 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 2 data-port-x4) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 297.79 | 185.51 | 35.45 | 26.38 | 85.47 | **664.60** |
-| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 40.07 | **298.77** |
-| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 32.64 | **248.44** |
+| 1 | 297.79 | 185.51 | 35.45 | 26.38 | 85.37 | **664.50** |
+| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 40.03 | **298.73** |
+| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 32.75 | **248.54** |
 
 ## Printed parts
 
@@ -284,7 +284,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 2 data-port-x4) wh
 | Electronics | TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit | 8  | 0.27 | 2.13 | LCSC/JLCPCB C111738 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 8  | 0.69 | 5.52 | LCSC/JLCPCB C49851 |
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
-| Electronics | Bare PCB data-port-x4 (4-layer 100×28 mm, JLC04161H-7628, lead-free HASL) | 5  | 2.43 | 12.14 | estimate, not quoted |
+| Electronics | Bare PCB data-port-x4 (4-layer 100×37 mm, JLC04161H-7628, lead-free HASL) | 5  | 2.41 | 12.05 | estimate, not quoted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray | 1  | 38.72 | 38.72 | estimate, not quoted |
 | Electronics | Components data-port-x4: JLC quote minus the catalogue prices above | 1  | 0.83 | 0.83 | estimate, not quoted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |

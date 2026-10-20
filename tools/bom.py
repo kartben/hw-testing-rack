@@ -105,13 +105,13 @@ JLC_QUOTE = {
     # crystal, the TPS2553-1, the INA226, the TCA6408A, the AP2112K, the USBLC6, the USB4105, the S8B: 9; the
     # AP2112K stays: the hub burns up to ≈ 0.31 W in it at high speed, above a basic SOT-23 LDO's rating, see
     # docs/electronics.md), components at catalogue prices plus ≈ 3 % attrition, ≈ 430 joints a board, an X-ray of
-    # each assembled board (the QFN hub and expanders, $1.64 each).  The bare PCB: 100 × 28 mm since
-    # 2026-10-20, so JLC's 4-layer offer with no engineering fee (jlcpcb.com calculator, 2026-10-20: $8.00 +
-    # lead-free HASL $5.10 + deburring $0.10); 108 × 24 cost $31.90 with the $25 fee.  The RESET/BOOT headers are not fitted.
+    # each assembled board (the QFN hub and expanders, $1.64 each).  The bare PCB: 100 mm long since 2026-10-20
+    # (100 × 37), so JLC's 4-layer offer with no engineering fee (jlcpcb.com calculator, 2026-10-20: $8.00 +
+    # lead-free HASL $5.10, no deburring at 37 mm wide); 108 × 24 cost $31.90 with the $25 fee.  The RESET/BOOT headers are not fitted.
     "data-port-x4": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 85.47, "estimate": True,
-        "spec": "4-layer 100×28 mm, JLC04161H-7628, lead-free HASL",
-        "pcb": {"special offer": 8.00, "lead-free HASL": 5.10, "deburring": 0.10},
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 85.37, "estimate": True,
+        "spec": "4-layer 100×37 mm, JLC04161H-7628, lead-free HASL",
+        "pcb": {"special offer": 8.00, "lead-free HASL": 5.10},
         "pcba": {"setup": 8.18, "stencil": 1.53, "components": 30.18, "extended parts": 27.63, "SMT": 1.47,
                  "X-ray": 3.28},
     },
@@ -219,7 +219,7 @@ JLC_LEVERS = {
 JLC_PCB_PRICE = {
     "bay-node": {5: 13.20, 10: 19.30, 50: 72.80, 100: 108.00},         # 4-layer 74 × 90 mm
     "power-hub": {5: 37.80, 10: 45.50, 50: 107.30, 100: 170.80},       # 4-layer 86 × 140 mm with JLC's rails
-    "data-port-x4": {5: 13.20, 10: 19.40, 50: 49.10, 100: 65.20},      # 4-layer 100 × 28 mm (2026-10-20): the
+    "data-port-x4": {5: 13.10, 10: 19.20, 50: 53.80, 100: 73.40},      # 4-layer 100 × 37 mm (2026-10-20): the
                                                                         # $25 fee is back above 10 PCBs
     "data-port": {5: 5.20, 10: 6.30, 50: 17.10, 100: 20.90},           # 2-layer 40 × 17 mm
     "camera-pod": {5: 5.20, 10: 6.40, 50: 18.80, 100: 24.20},          # 2-layer 40 × 27 mm

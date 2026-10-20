@@ -138,7 +138,7 @@ Electronics,data-port-x4,USBLC6-2SC6 — USB ESD protection,12,pcs,0.1656,1.99,L
 Electronics,data-port-x4,"TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit",8,pcs,0.2668,2.13,LCSC/JLCPCB,C111738,TPS2553DBVR-1,Texas Instruments,"U101,U201,U301,U401",4 per board × 2 boards
 Electronics,data-port-x4,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",8,pcs,0.69,5.52,LCSC/JLCPCB,C49851,INA226AIDGSR,Texas Instruments,"U102,U202,U302,U402",4 per board × 2 boards
 Electronics,data-port-x4,"X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225",2,pcs,0.0874,0.17,LCSC/JLCPCB,C15643,X322524MSB4SI,YXC Crystal Oscillators,Y1,1 per board × 2 boards
-Electronics,data-port-x4,"Bare PCB data-port-x4 (4-layer 100×28 mm, JLC04161H-7628, lead-free HASL)",5,pcs,2.4288,12.14,"estimate, not quoted",,,,,"special offer $8.00, lead-free HASL $5.10, deburring $0.10 = $13.20 for 5 PCBs, 2 of them assembled"
+Electronics,data-port-x4,"Bare PCB data-port-x4 (4-layer 100×37 mm, JLC04161H-7628, lead-free HASL)",5,pcs,2.4104,12.05,"estimate, not quoted",,,,,"special offer $8.00, lead-free HASL $5.10 = $13.10 for 5 PCBs, 2 of them assembled"
 Electronics,data-port-x4,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray",1,pcs,38.72,38.72,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $27.63, SMT $1.47, X-ray $3.28"
 Electronics,data-port-x4,Components data-port-x4: JLC quote minus the catalogue prices above,1,pcs,0.83,0.83,"estimate, not quoted",,,,,quoted components $30.18 (≈ €27.77) for 2 boards; catalogue unit prices give €26.94
 Electronics,jlc,JLCPCB shipping: every board in one cart,1,pcs,31.28,31.28,JLCPCB,,,,,DHL ≈ $27–40 for the whole order (one shipment); import VAT extra

@@ -112,7 +112,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (1k: a reference for the DUT's levels, not a supply), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
-| DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DUT_5V · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 5.1k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm), which leaves 6–8 open, or a [DATA ×4 board](#data-4-v10--4-layers-108--24-mm); `pcb.bay_node.right.data` is its centre (KiCad y) |
+| DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DUT_5V · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 5.1k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm), which leaves 6–8 open, or a [DATA ×4 board](#data-4-v10--4-layers-100--37-mm); `pcb.bay_node.right.data` is its centre (KiCad y) |
 | Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side, AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.5 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); at the rear right, its lead straight back, its parts in a block west of it; `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
@@ -296,20 +296,21 @@ side, no Standard-only part), ≈ $34 for 10 PCBs with 8 assembled (estimate in 
 A review of both boards with the Konnect MCP server (findings, fixes, what is
 still open) is in [review-konnect.md](review-konnect.md).
 
-## DATA ×4 v1.0 — 4 layers, 100 × 28 mm
+## DATA ×4 v1.0 — 4 layers, 100 × 37 mm
 
 A converted bay's drawer board (×1 per converted bay, `population › boards:` in `config/rack.yaml`): one
 bay node serves up to four small USB boards, sub-slots `<bay>.1`–`.4` ([multi-dut-node.md](multi-dut-node.md)).
-It replaces the DATA port on the drawer's rear-bay floor (4 × PT 2.6×8 from above), on the same PH 8
+It replaces the DATA port on the drawer's rear-bay floor (3 × PT 2.6×8 from above), on the same PH 8
 lead from the node's J7; its four USB-C sit behind the port wall's U's at drawer x 26 / 44 / 62 / 80
 (18 mm apart, `.1` on the left).  100 mm long since 2026-10-20, for JLC's 4-layer offer (JLC adds a $25
-engineering fee above 100 mm): it was 108 × 24 with a rear notch for the lead; now it is 4 mm deeper
-towards the rear, the lead on its right edge.  Geometry in `config/rack.yaml` › `pcb.data_port_x4`; the holes
-are the drawer's one set of DATA ×4 bosses, the v2's too.
+engineering fee above 100 mm): it was 108 × 24 with a rear notch for the lead; now it is 13 mm deeper
+towards the rear (as deep as the v2), the lead at the rear end of its right edge and the LDO behind it.  Geometry in
+`config/rack.yaml` › `pcb.data_port_x4`; its three holes stand where they were, on the drawer's DATA ×4
+bosses (the v2's first three); no fourth (v2's own lands outside it).
 
 | Block | Parts | Notes |
 |---|---|---|
-| Lead | JST PH 8, side entry (S8B-PH-SM4-TB, J1) on the right edge, its mouth out of it (drawer x 115), pin 1 at the front: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V; the plug drops its wires into the drawer's cable window beside the board | the node's J7 mirrored ("Same direction" lead); SDA, SCL and INT pass through two USBLC6 (U4, U5, VBUS pin open; `LEAD_*` on the lead's side): the node has no ESD on them |
+| Lead | JST PH 8, side entry (S8B-PH-SM4-TB, J1) at the rear end of the right edge, its mouth out of it (drawer x 115), pin 1 at the front (drawer y 176): 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V; the plug (drawer y 174–192) drops its wires into the drawer's side window beside the board, clear of the chain foot's boss | the node's J7 mirrored ("Same direction" lead); SDA, SCL and INT pass through two USBLC6 (U4, U5, VBUS pin open; `LEAD_*` on the lead's side): the node has no ESD on them |
 | I²C isolation | three 2N7002 (Q1–Q3), gate on +3V3, one per line (NXP AN10441's shifter, 3.3 V on both sides); 4.7k / 4.7k / 10k pull-ups on this board's side, the node's on the lead's (`BUS_*`) | with DUT_5V off the FETs open: the node's pull-ups cannot feed the dead +3V3 through the INA226 and TCA6408A clamps (INA226: VS + 0.3 V at most), and the node's own INA226 keeps its bus.  The firmware sets the expanders and INA226s up again after each DUT_5V on and leaves them alone while it is off |
 | Hub | USB2514B (U1) on its straps (CFG_SEL 00, NON_REM 00: every strap pin on a 100k to GND, NON_REM1 sharing CFG_SEL0's), 24 MHz crystal hand-routed with no via (XI 6 mm, XO 7.7 mm), 12k RBIAS, RC reset | multi-TT, self-powered, off the I²C bus; hub port n is USB-C n (busid `1-1.n`); PRTPWR and OCS_N unused: the switches follow the expanders |
 | Ports ×4 | TPS2553DBVR-1 (47k: 0.50–0.62 A; limits for 7.5 ms, then latches off until EN toggles) → 100 mΩ Kelvin shunt → VBUS; INA226 across the shunt; GCT USB4105 with Rp 56k on each CC ("default USB power"); USBLC6 in flow-through | `+5V` → `PORTn_5V_SW` → `PORTn_VBUS`, 0.4 mm tracks (netclass Port); INA226 at 0x41 / 0x43 / 0x44 / 0x45 for ports 1–4 (the node's own is 0x40), its Vbus on the shunt's load-side sense pad; 100 nF at each USBLC6's VBUS pin |
@@ -326,9 +327,9 @@ node's): ports 1–3 leave the hub through vias and run on B.Cu over the In2 pla
 receptacles, down beside each ESD; port 4, next to the hub, stays on F.Cu.  Each USBLC6 passes both
 lines through (connector side and hub side are separate nets); its connector side runs under the
 receptacle into A7 / A6, B6 joins A6 by a loop behind the pad row and B7 joins the D− line through
-B.Cu.  The upstream pair goes from J1's pins 6 / 5 through two vias just inside its pads, straight west on
-B.Cu and down into the hub's top pins with no crossover: ≈ 15 mm (≈ 25 mm round the hub's east side on the
-108 mm board).  The
+B.Cu.  The upstream pair goes from J1's pins 6 / 5 through two vias just inside its pads, west on
+B.Cu, 45° south-west past the lead's ESDs (the +3V3 area's edge follows it on In2), west and down into the
+hub's top pins with no crossover: ≈ 15 mm (≈ 25 mm round the hub's east side on the 108 mm board).  The
 B.Cu pairs keep one reference plane end to end: In2's +3V3 area has a notch under the upstream pair's run
 to the hub and another under PORT1's start, so all of them run over +5V.  A few short links are drawn too,
 where Freerouting left one open run after run or took a detour: each left port's RESET and BOOT lines

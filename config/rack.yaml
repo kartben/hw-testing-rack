@@ -225,18 +225,19 @@ pcb:
     ph: 14.4                # KiCad x of the JST PH 8-pin (side entry) on the rear edge: its courtyard clear of the USB4105's (x ≤ 14.5)
   data_port_x4:             # a converted bay's (population › boards:) DATA ×4: a USB hub and four USB-C sources, in the drawer's
                             # rear bay (the data-x4-board proposal, 2026-10-19; drawer.scad and the viewer follow it)
-    size: [100, 28]         # X × Y; KiCad y=0 is the REAR edge, y=28 the FRONT edge (the USB-C mouths, against the port wall).
-                            # 100 mm long since 2026-10-20 (JLC's 4-layer offer, no engineering fee): 4 mm deeper, to the rear
+    size: [100, 37]         # X × Y; KiCad y=0 is the REAR edge, y=37 the FRONT edge (the USB-C mouths, against the port wall).
+                            # 100 mm long since 2026-10-20 (JLC's 4-layer offer, no engineering fee): 13 mm deeper, to the rear,
+                            # as deep as the v2
     x0: 15                  # drawer x of its left edge (KiCad x = drawer x − 15): drawer x 15–115
     thickness: 1.6
     layers: 4
-    holes: [[3.2, 7.5], [38.7, 7.5], [81.4, 7.3], [96.8, 3.5]]   # Ø2.7, PT 2.6 × 8 from above into the floor bosses; H1–H3
-                            # where they were on the 24 mm board, H4 in the rear-right corner; the DATA ×4 v2 uses the same four
+    holes: [[3.2, 16.5], [38.7, 16.5], [81.4, 16.3]]   # Ø2.7, PT 2.6 × 8 from above into the floor bosses: where they were
+                            # on the 24 mm board, the drawer's DATA ×4 bosses (the v2's first three)
     usb: [11, 29, 47, 65]   # KiCad x of the four USB-C (USB4105), ports 1–4 left to right: drawer x 26, 44, 62, 80 (18 mm pitch)
-    lead: [95.1, 17.4]      # J1, the JST PH 8 (S8B-PH-SM4-TB, side entry) on the RIGHT edge: its footprint centre (KiCad), its
-                            # mouth +x at x 100 (drawer x 115), pin 1 (INT) at the front (y 24.4), pin 8 (+5V) at the rear (y 10.4);
-                            # the lead's plug sticks out to drawer x ≈ 121 and drops into the cable window beside the board
-    aux: { y: 6.9, pin1: [8.5, 30.0, 44.5, 66.0], step: [2.54, -2.54, 2.54, -2.54], names: [GND, RESET, BOOT] }
+    lead: [95.1, 20.0]      # J1, the JST PH 8 (S8B-PH-SM4-TB, side entry) at the rear end of the RIGHT edge: its footprint centre
+                            # (KiCad), its mouth +x at x 100 (drawer x 115), pin 1 (INT) at y 27 (drawer y 176), pin 8 (+5V) at
+                            # y 13 (drawer 190); the plug (drawer y 174–192) drops its wires into the side window beside the board
+    aux: { y: 15.9, pin1: [8.5, 30.0, 44.5, 66.0], step: [2.54, -2.54, 2.54, -2.54], names: [GND, RESET, BOOT] }
                             # J102–J402: per port a 1 × 3 2.54 header (GND, RESET_N, BOOT_N) along x, pin 1 at pin1[n] (KiCad),
                             # the right port of a pair mirrored; not fitted by JLC, soldered by hand for Dupont jumpers
   data_port_x4_v2:          # PLANNED (docs/data-x4-v2-research.md): not designed yet.  A bay with `x4: v2` shows it in the
