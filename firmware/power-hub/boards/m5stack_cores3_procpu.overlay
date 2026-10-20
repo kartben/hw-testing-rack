@@ -1,0 +1,142 @@
+/*
+ * M5Stack CoreS3 as a bench stand-in for the power hub: the CH224A's
+ * negotiation on a breakout (USB-C PD charger -> breakout -> its VBUS out),
+ * its PG, VBUS on the ADC, the contract policy, one row (A) as logic levels,
+ * Wi-Fi, the web page and the shell.  docs/cores3-bench.md has the bench
+ * plan.  The CoreS3 itself runs from its USB-C (the PC: console, flashing).
+ *
+ *   Grove A (red)  G2 SDA, G1 SCL: the CH224A breakout (its CFG3 = SDA,
+ *                  CFG2 = SCL; CFG1 6.8k to GND: 9 V at plug-in and I2C on)
+ *                  and GND; the CH224A runs from the breakout's own VBUS
+ *   Grove B (black) G8 PD_INT <- PG (open drain; the internal pull-up here),
+ *                  G9 VBUS_SENSE <- the breakout's VBUS through 100k / 10k
+ *                  (2.5 V at 28 V).  Never VBUS straight on a pin.
+ *   Grove C (blue) G17 CAN TX, G18 CAN RX: a 3.3 V CAN transceiver module
+ *                  (SN65HVD230) to reach a node; without one the bus only
+ *                  counts errors
+ *   M-Bus          G5 ROW_EN_A, G6 FLT_A (pulled up: no fault), G7 POS_A,
+ *                  G10 I2C_PU (nothing on it: the breakout has its own
+ *                  pull-ups, or the CH224A's), G43 CTL LED (an LED and 330R
+ *                  to GND if you want to see it).  Rows B-D are not wired.
+ *
+ * The CoreS3's internal bus (I2C0: AXP2101, AW9523B, touch) keeps its pins;
+ * the hub's bus moves to Grove port A.  The console is the board's
+ * USB-Serial-JTAG (its USB-C), so UART0 and UART1 are off.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "../../boards/hwtr/power_hub/power_hub-pinctrl.dtsi"
+#include "../../boards/hwtr/power_hub/power_hub.dtsi"
+
+&pinctrl {
+	cores3_twai: cores3_twai {
+		group1 {
+			pinmux = <TWAI_TX_GPIO17>;
+			output-high;
+		};
+
+		group2 {
+			pinmux = <TWAI_RX_GPIO18>;
+			bias-pull-up;
+		};
+	};
+};
+
+&power_hub {
+	i2c-pullup-gpios = <&gpio0 10 GPIO_ACTIVE_HIGH>;
+};
+
+/* Row A on the M-Bus pins, as logic levels; B-D not wired (rows.c leaves them off) */
+&row_a {
+	enable-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+	fault-gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	pos-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+	/delete-property/ current-sense;
+};
+
+&row_b {
+	status = "disabled";
+};
+
+&row_c {
+	status = "disabled";
+};
+
+&row_d {
+	status = "disabled";
+};
+
+&imon_a {
+	status = "disabled";
+};
+
+&imon_b {
+	status = "disabled";
+};
+
+&imon_c {
+	status = "disabled";
+};
+
+&imon_d {
+	status = "disabled";
+};
+
+/* VBUS_SENSE on G9: ADC1 channel 8, 12 dB */
+&vbus_sense {
+	io-channels = <&adc0 8>;
+};
+
+&adc0 {
+	channel@8 {
+		reg = <8>;
+		zephyr,gain = "ADC_GAIN_1_4";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+};
+
+/* The CoreS3's internal bus keeps its pins (G12 SDA, G11 SCL) */
+&i2c0 {
+	pinctrl-0 = <&i2c0_default>;
+};
+
+/* The CH224A moves to Grove port A, PG on G8 */
+/delete-node/ &pd_sink;
+
+&i2c1 {
+	pd_sink: ch224a@22 {
+		compatible = "wch,ch224a";
+		reg = <0x22>;
+		zephyr,deferred-init;
+		pg-gpios = <&gpio0 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+		startup-microvolt = <9000000>;
+		regulator-min-microvolt = <5000000>;
+		regulator-max-microvolt = <28000000>;
+	};
+};
+
+/* CAN on Grove port C, no standby line */
+&twai {
+	pinctrl-0 = <&cores3_twai>;
+	/delete-property/ phys;
+};
+
+&can_phy {
+	status = "disabled";
+};
+
+&ctl_led {
+	gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;
+};
+
+/* The console is the USB-Serial-JTAG; G17/G18 are CAN's, G43 the LED's */
+&uart0 {
+	status = "disabled";
+};
+
+&uart1 {
+	status = "disabled";
+};

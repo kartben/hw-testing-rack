@@ -1,0 +1,120 @@
+/*
+ * M5Stack CoreS3 as a bench stand-in for the bay node: the USB host and
+ * USB/IP to a real DUT on the CoreS3's own USB-C, Wi-Fi, the web page, the
+ * shell (over telnet once the host has the PHY), the AUX console, and the
+ * node's INA226 or a DATA x4 on Grove port A.  docs/cores3-bench.md has the
+ * bench plan.
+ *
+ *   USB-C          the DUT, through a USB-C OTG cable or adapter.  Its VBUS
+ *                  comes from the CoreS3's battery boost (BOOST_EN, AW9523B
+ *                  P1.7, on at boot) through USB_OTG_EN (AW9523B P0.5): that
+ *                  pin is the DUT's power switch here (`bay power on|off`).
+ *                  The USB-C is also the CoreS3's only USB-Serial-JTAG: the
+ *                  host takes it at boot (to flash again, hold RESET 3 s for
+ *                  the ROM's download mode, or use SERVICE below).
+ *   Grove A (red)  G2 SDA, G1 SCL: an INA226 breakout at 0x40 (the DUT's
+ *                  V/I), or a DATA x4's lead
+ *   Grove B (black) G8 RESET, G9 BOOT: open drain, active low, straight to an
+ *                  ESP32 DUT's EN and IO0
+ *   Grove C (blue) G17 AUX TX -> DUT RX, G18 AUX RX <- DUT TX
+ *   M-Bus          G5 MUX_FORCE_PC (unused), G6 PC_DET and G7 SERVICE
+ *                  (pulled down; SERVICE to 3.3 V gives the USB-C back to the
+ *                  USB-Serial-JTAG, without reflashing), G10 DUT_FLT_N
+ *                  (pulled up: no fault)
+ *
+ * The CoreS3's internal bus (I2C0: AXP2101, AW9523B, touch) keeps its pins;
+ * the node's bus moves to Grove port A.  Its camera is a GC0308 on DVP, not
+ * the node's Arducam Mega: off.  No WS2812 and no CAN transceiver: the
+ * status LED and the rack bus are off.  PSRAM: 8 MB, quad (GPIO35-37 are
+ * the display's SPI, so not octal).
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "../../boards/hwtr/bay_node/bay_node-pinctrl.dtsi"
+#include "../../boards/hwtr/bay_node/bay_node.dtsi"
+
+/* A DATA x4 on Grove port A */
+#define DATA_X4_I2C i2c1
+#include "../data-x4.dtsi"
+
+/* USB_OTG_EN is the DUT's power switch (dut_port below), not a regulator */
+/delete-node/ &usb_otg_reg;
+
+/* The battery boost feeds the 5 V bus, and through USB_OTG_EN the DUT */
+&bus_5v {
+	regulator-boot-on;
+};
+
+&dut_port {
+	enable-gpios = <&aw9523b_gpio 5 GPIO_ACTIVE_HIGH>;
+	fault-gpios = <&gpio0 10 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	reset-gpios = <&gpio0 8 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
+	boot-gpios = <&gpio0 9 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
+	tx-gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>;
+};
+
+&usb_mux {
+	force-pc-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+	pc-detect-gpios = <&gpio0 6 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+	service-gpios = <&gpio0 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+};
+
+/* AUX UART on Grove port C: the board's own UART1 pins (G17 TX, G18 RX) */
+&uart1 {
+	pinctrl-0 = <&uart1_default>;
+};
+
+/* The CoreS3's internal bus keeps its pins (G12 SDA, G11 SCL) and its 100 kHz */
+&i2c0 {
+	pinctrl-0 = <&i2c0_default>;
+};
+
+/* The node's INA226 moves to Grove port A, without its alert line */
+/delete-node/ &ina226;
+
+&i2c1 {
+	ina226: ina226@40 {
+		compatible = "ti,ina226";
+		reg = <0x40>;
+		current-lsb-microamps = <50>;
+		rshunt-micro-ohms = <50000>;
+		avg-count = <16>;
+	};
+};
+
+/* The display and the SD card keep the CoreS3's SPI2; the node's camera is off */
+&spi2 {
+	pinctrl-0 = <&spim2_default>;
+	cs-gpios = <&gpio0 3 GPIO_ACTIVE_LOW>, <&gpio0 4 GPIO_ACTIVE_LOW>;
+};
+
+&camera {
+	status = "disabled";
+};
+
+&camera_light {
+	status = "disabled";
+};
+
+&ledc0 {
+	status = "disabled";
+};
+
+/* No WS2812 */
+&status_led {
+	status = "disabled";
+};
+
+&rmt {
+	status = "disabled";
+};
+
+/* No CAN transceiver on a CoreS3: the rack bus is off */
+&rack_bus {
+	status = "disabled";
+};
+
+&twai {
+	status = "disabled";
+};

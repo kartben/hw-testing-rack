@@ -15,6 +15,11 @@
 
 #include <zephyr/dt-bindings/gpio/gpio.h>
 
+/* The node's I2C bus; a stand-in defines DATA_X4_I2C first (the CoreS3: i2c1, Grove port A) */
+#ifndef DATA_X4_I2C
+#define DATA_X4_I2C i2c0
+#endif
+
 / {
 	dut_port1: dut-port-1 {
 		compatible = "hwtr,dut-port";
@@ -65,7 +70,7 @@
 
 };
 
-&i2c0 {
+&DATA_X4_I2C {
 	/*
 	 * The DATA x4's chips, through the DATA lead and the board's isolation
 	 * FETs, powered from DUT_5V: src/ports.c drives them, never the drivers

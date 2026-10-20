@@ -59,6 +59,12 @@ struct row_cfg {
 
 static const struct row_cfg cfg[HUB_ROWS] = {DT_FOREACH_CHILD_STATUS_OKAY(ROWS_NODE, ROW_CFG)};
 
+/* A row the board wires (a bench stand-in may have only some: the others are disabled) */
+static bool wired(int row)
+{
+	return cfg[row].en.port != NULL;
+}
+
 struct row {
 	enum hub_row_state state;
 	bool fault;
@@ -157,6 +163,10 @@ static void enable_write(int row, bool on)
 {
 	int n = pad(&cfg[row].en);
 
+	if (!wired(row)) {
+		return;
+	}
+
 	pad_hold(n, false);
 	(void)gpio_pin_set_dt(&cfg[row].en, on);
 	pad_hold(n, true);
@@ -172,7 +182,9 @@ static void row_off(int row, enum hub_row_state why)
 		rows[row].last_on_ma = rows[row].ma;
 	}
 	enable_write(row, false);
-	(void)gpio_pin_set_dt(&cfg[row].pos, 0);
+	if (wired(row)) {
+		(void)gpio_pin_set_dt(&cfg[row].pos, 0);
+	}
 	rows[row].state = why;
 	rows[row].fault = false; /* FLT is asserted in shutdown: not a fault */
 	if (was_on) {
@@ -198,7 +210,7 @@ static void stagger_handler(struct k_work *work)
 	k_mutex_lock(&lock, K_FOREVER);
 	if (contract_final) {
 		for (int r = 0; r < HUB_ROWS; r++) {
-			if (rows[r].state == HUB_ROW_WAITING) {
+			if (wired(r) && rows[r].state == HUB_ROW_WAITING) {
 				next = r;
 				break;
 			}
@@ -230,7 +242,7 @@ static void fault_handler(struct k_work *work)
 	ARG_UNUSED(work);
 
 	for (int r = 0; r < HUB_ROWS; r++) {
-		bool flt = gpio_pin_get_dt(&cfg[r].flt) > 0;
+		bool flt = wired(r) && gpio_pin_get_dt(&cfg[r].flt) > 0;
 		bool rising;
 
 		k_mutex_lock(&lock, K_FOREVER);
@@ -393,7 +405,7 @@ void rows_contract(bool final, uint32_t mv, uint32_t ma)
 	} else if (final && !contract_final) {
 		contract_final = true;
 		for (int r = 0; r < HUB_ROWS; r++) {
-			if ((wanted & BIT(r)) &&
+			if (wired(r) && (wanted & BIT(r)) &&
 			    (rows[r].state == HUB_ROW_SHED || rows[r].state == HUB_ROW_WAITING)) {
 				rows[r].state = HUB_ROW_WAITING;
 				start = true;
@@ -415,6 +427,9 @@ int rows_set(int row, bool on)
 
 	if (row < 0 || row >= HUB_ROWS) {
 		return -EINVAL;
+	}
+	if (!wired(row)) {
+		return -ENODEV;
 	}
 
 	k_mutex_lock(&lock, K_FOREVER);
@@ -559,7 +574,9 @@ int32_t rows_total_ma(void)
 
 void rows_pos(int row, bool high)
 {
-	(void)gpio_pin_set_dt(&cfg[row].pos, high && rows[row].state == HUB_ROW_ON);
+	if (wired(row)) {
+		(void)gpio_pin_set_dt(&cfg[row].pos, high && rows[row].state == HUB_ROW_ON);
+	}
 }
 
 /* --- Init -------------------------------------------------------------------- */
@@ -579,6 +596,12 @@ int rows_init(uint8_t wanted_rows, const char *order)
 		int n = pad(&c->en);
 		/* Held across a controller reset: keep the row as it is */
 		bool on = pad_held(n) && pad_level(n) != 0;
+
+		if (!wired(r)) {
+			rows[r].state = HUB_ROW_OFF;
+			k_work_init_delayable(&rows[r].cycle_work, cycle_handler);
+			continue;
+		}
 
 		if (!gpio_is_ready_dt(&c->en) || !gpio_is_ready_dt(&c->flt) ||
 		    !gpio_is_ready_dt(&c->pos)) {

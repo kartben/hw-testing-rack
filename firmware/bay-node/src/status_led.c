@@ -26,7 +26,8 @@
 
 LOG_MODULE_REGISTER(status_led, CONFIG_BAY_LOG_LEVEL);
 
-static const struct device *const strip = DEVICE_DT_GET(DT_ALIAS(led_strip));
+/* A board without one (the CoreS3 stand-in) runs without */
+static const struct device *const strip = DEVICE_DT_GET_OR_NULL(DT_ALIAS(led_strip));
 
 #define RGB(_r, _g, _b) ((struct led_rgb){.r = (_r), .g = (_g), .b = (_b)})
 
@@ -96,6 +97,9 @@ static struct led_rgb pick(void)
 
 int status_led_init(void)
 {
+	if (strip == NULL) {
+		return 0;
+	}
 	if (!device_is_ready(strip)) {
 		LOG_WRN("status LED not ready");
 		return -ENODEV;

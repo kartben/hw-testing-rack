@@ -45,6 +45,7 @@ firmware/
     i2c-400k.overlay             the I²C bus at 400 kHz, to try at bring-up (100 kHz by default)
     app.overlay, data-x4.dtsi    a DATA ×4 on the DATA lead (the application's, not the board's: MCUboot)
     boards/m5stack_stamps3_procpu.*         bench node on a StampS3: console + network, no USB host
+    boards/m5stack_cores3_procpu.*          bench node on a CoreS3: USB host and USB/IP on its USB-C ([docs/cores3-bench.md](../docs/cores3-bench.md))
     web/index.html               status page and serial console (embedded gzipped)
     web/dev_server.py            the page against a simulated node, to work on the UI
     web/camera/, grab_camera.py  its camera's frames, grabbed from the 3D viewer (site/)
