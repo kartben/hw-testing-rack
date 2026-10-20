@@ -10,11 +10,12 @@
 // - Front panel with a finger pull and a recess for 12 mm label tape.
 // - Board-plate pocket: plates drop in (two 180°-symmetric locating pins).
 // - Rear bay behind the port wall, one for both DATA boards (a bay converts by changing the board, not the
-//   drawer): four U's in the wall, the DATA ×4's ports.  The DATA ×4 on its four floor bosses; or the single
-//   DATA port board on two more, its USB-C behind the fourth U, the optional AUX pigtail through a free one.
-//   Either board's PH 8 lead comes up through the cable window at the rear right, from the drag chain's
-//   moving end: a rear strip (a DATA ×4 v2's notch; the single board's lead, then along the rear wall to its
-//   PH) and a side strip beside a DATA ×4 v1's right edge, under its J1.  The chain foot slides
+//   drawer): four U's in the wall, the DATA ×4's ports.  A DATA ×4 v1 on three floor bosses; a DATA ×4 v2,
+//   standing, in its cradle (parts/x4_cradle.scad) on the same three; or the single DATA port board on two
+//   more, its USB-C behind the fourth U, the optional AUX pigtail through a free one.  Every board's PH 8 lead
+//   comes up through the cable window at the rear right, from the drag chain's moving end: a rear strip (the
+//   single board's lead, then along the rear wall to its PH; a v2's, over its cradle) and a side strip beside
+//   a v1's right edge, under its J1.  The chain foot slides
 //   into the rear-open groove under the bottom and is locked by one PT 2.6 × 8 screw from inside the rear bay.
 // - Rear flange segments run under the guide lips (anti-tip); a magnet under
 //   the rear bay, over the tray's left ledge, gives a soft closed detent.
@@ -51,10 +52,9 @@ function data_hole(h) = [DATA_PCB_X0 + h[0], DATA_PCB_Y0 + DATA_PCB_SIZE[1] - h[
 // the DATA ports along the port wall: the DATA ×4's four (config/rack.yaml › pcb.data_port_x4)
 PORT_XS = [for (u = DATA_X4_USB) DATA_X4_X0 + u];
 assert(abs(DATA_PORT_X[0] - PORT_XS[3]) < 0.01, "the single DATA board's USB-C sits on the fourth port");
-// the DATA ×4's bosses: v1's first three holes, which v2 shares, and v2's own fourth at the front right.  v1's
-// fourth hole stays unused: it lands under v2's hub, where no boss can stand (v1 rests on three and the ledges)
+// the DATA ×4's bosses: v1's first three holes, which the v2's cradle shares.  v1 rests on them and the front
+// ledges; a fourth hole, if v1 has one, stays unused
 X4_HOLES = [for (i = [0 : 2]) let (h = DATA_X4_HOLES[i]) [DATA_X4_X0 + h[0], DATA_PCB_Y0 + DATA_X4_SIZE[1] - h[1]]];
-V2_H4 = [DATA_X4_X0 + 104.4, DATA_PCB_Y0 + 3.4];   // DATA ×4 v2 (108 × 37, the v2 session, 2026-10-20), drawer xy
 // the single board's two holes: their bosses stand under the DATA ×4's bare underside, Ø5 to keep 0.8 mm
 // from its second USB-C's shell leg
 ONE_HOLES = [for (h = DATA_PCB_HOLES) data_hole(h)];
@@ -101,7 +101,7 @@ module drawer(rear = true, foot = true) {
                 // the boards' bosses, and ledges under their front edge between the USB4105s' pegs (the
                 // undersides are bare but for them): the single board's USB-C lands where the DATA ×4's fourth
                 // does, so the same ledges carry it
-                for (h = concat(X4_HOLES, [V2_H4])) translate([h[0], h[1], 0]) cylinder(d = 6, h = DATA_PCB_Z);
+                for (h = X4_HOLES) translate([h[0], h[1], 0]) cylinder(d = 6, h = DATA_PCB_Z);
                 for (h = ONE_HOLES) translate([h[0], h[1], 0]) cylinder(d = 5, h = DATA_PCB_Z);
                 for (s = X4_LEDGES) translate([DATA_X4_X0 + s[0], DATA_PCB_Y0 - EPS, 0]) cube([s[1] - s[0], 2, DATA_PCB_Z]);
             }
@@ -118,16 +118,16 @@ module drawer(rear = true, foot = true) {
         }
         if (rear) {
             // pilots for the boards' PT 2.6 × 8, from above
-            for (h = concat(X4_HOLES, [V2_H4], ONE_HOLES))
+            for (h = concat(X4_HOLES, ONE_HOLES))
                 translate([h[0], h[1], DATA_PCB_Z - 7]) cylinder(d = 2.1, h = 7 + EPS);
             // cable window in the rear-bay floor, up to 1 mm off the rear wall and 1 mm short of the foot's boss:
-            // a rear strip from 1.5 mm right of the third boss (under a v2's notch, its J1 right above; the single
-            // board's lead comes up there too and runs left along the rear wall to its PH), and a side strip 1 mm
-            // right of a v1's right edge, from 1 mm behind v2's front-right boss (v1's J1 plug is right above)
+            // a rear strip from 1.5 mm right of the third boss (the single board's lead comes up there and runs
+            // left along the rear wall to its PH; a v2's drops behind its cradle), and a side strip 1 mm right of
+            // a v1's right edge, from 2 mm behind the front ledges (v1's J1 plug is right above)
             wy = DATA_PCB_Y0 + DATA_PCB_SIZE[1] + 1;
             wx = X4_HOLES[2][0] + 4.5;
             sx = DATA_X4_X0 + DATA_X4_SIZE[0] + 1;
-            sy = V2_H4[1] + 3 + 1;
+            sy = DATA_PCB_Y0 + 4;
             we = FOOT_HOLE[0] - 5.5;
             wr = DRAWER_D - DRAWER_WALL - 1;
             assert(sx < we - 4, "the DATA ×4 is too long for a side strip beside it");

@@ -104,6 +104,7 @@ def part_jobs(rack) -> list[tuple[str, str, dict]]:
         ("drawer", "parts/drawer.scad", {}),
         ("drawer_sled", "parts/drawer.scad", {"PART": "sled"}),
         ("drawer_block", "parts/drawer.scad", {"PART": "block"}),
+        ("x4_cradle", "parts/x4_cradle.scad", {}),                               # the standing DATA ×4 v2's
         ("chain_foot", "parts/chain_parts.scad", {"PART": "foot"}),
         ("chain_anchor", "parts/chain_parts.scad", {"PART": "anchor"}),
         ("chain_link", "parts/chain_parts.scad", {"PART": "link"}),

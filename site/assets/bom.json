@@ -2855,15 +2855,15 @@
 {
 "part": "drawer",
 "qty": 7,
-"grams_each": 46.9,
-"grams_total": 328.3,
+"grams_each": 46.8,
+"grams_total": 327.4,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
 "part": "drawer_block",
 "qty": 1,
-"grams_each": 17.5,
-"grams_total": 17.5,
+"grams_each": 17.4,
+"grams_total": 17.4,
 "stl": "mechanical/stl/drawer_block.stl"
 },
 {
