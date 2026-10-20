@@ -22,12 +22,12 @@ JST PH with the bay nodes' OUT pinout (J1's mirrored): POS, GND, CAN_L, CAN_H, G
 every row cable is the same flat one (pin n to pin 7-n).  The bus is a star: every port carries
 the same CAN pair, both terminations are here.
 
-4 layers, 76 × 140 mm, the bay node's stackup and rules: In1 a solid GND plane, In2 power only
+4 layers, 76 × 100 mm, the bay node's stackup and rules: In1 a solid GND plane, In2 power only
 (a VRACK area under the eFuse column and the input, +3V3 around it), signals on the outer layers,
 a via of its own to its plane for every GND and supply pin, GND pours stitched to In1
 (config/rack.yaml › pcb.power_hub: outline, holes, connector and LED positions, which the box is
 drawn around).  KiCad coordinates: y = 0 is the REAR edge (the ESP32's antenna, the PD input),
-y = 140 the FRONT edge (LEDs, console USB-C); the row connectors sit on the left edge.
+y = 100 the FRONT edge (LEDs, console USB-C); the four row connectors sit on the left edge, 17.5 mm apart.
 
 Schematic: automatic layout (blocks), not drawn yet.
 """

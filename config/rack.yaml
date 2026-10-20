@@ -102,7 +102,7 @@ cameras:                  # bays that get a camera pod on their ceiling (the tra
 power_box:                # mechanical/parts/power_box.scad: the power hub's enclosure, in a base cell under row A
   column: 0               # base cell (under row A) it sits in: its floor sockets take the floor plate's bosses
   x: 3                    # its left outer face from the cell's left (the row cables leave through the ladder window)
-  size: [84, 148, 35]     # outer W × D × H: the hub (76 × 140) and its tallest part (the 100 µF bulk capacitor)
+  size: [84, 108, 35]     # outer W × D × H: the hub (76 × 100) and its tallest part (the 100 µF bulk capacitor)
   wall: 2.4
   charger:                # outside the rack, on the USB-C PD input in the box's rear wall
     part: "USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port"
@@ -215,7 +215,7 @@ pcb:
     x0: 3.6                 # left edge, box X (the row connectors' mouths reach into the left wall)
     front_gap: 1.2          # PCB front edge -> box front wall inner face
     z: 19.0                 # PCB bottom above the box bottom: the row connectors clear the base ladder's window sill
-    rows: [81, 63.5, 46, 28.5] # KiCad y of the row A, B, C, D connectors (6-pin JST PH, side entry, left edge)
+    rows: [81, 63.5, 46, 28.5] # KiCad y of the row A, B, C, D connectors (6-pin JST PH, side entry, left edge, 17.5 mm apart)
     front: { leds: [11, 23, 35, 47, 55.6, 61.6], usb: 70 }  # KiCad x: ON/FAULT pair centres (±3) for rows A-D, then PD (the CH224A's PG), CTL; USB-C
     rear: { pd: 62 }            # KiCad x on the rear edge: the USB-C PD input
     buttons: [[11.5, 10.0], [11.5, 16.5]]   # KiCad: SW1 RESET, SW2 BOOT (design.py), top-actuated, 1.5 mm tall: pin holes in the lid

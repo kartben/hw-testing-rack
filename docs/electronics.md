@@ -221,13 +221,15 @@ of open cable for a board on J4).  With J4 gone, J7 is the pair's only end: one 
 and the ESD where the lead leaves the board.  A node on the bench, out of its rack, takes a DATA
 lead and a port board like a bay.
 
-## Power hub v0.5 — 4 layers, 76 × 140 mm
+## Power hub v0.5 — 4 layers, 76 × 100 mm
 
 One per rack.  It lives in the power box ([mechanical.md](mechanical.md#power-box)); its outline,
 holes, row connectors, front LEDs and rear PD input are set in `config/rack.yaml` ›
 `pcb.power_hub`, and the box is drawn around them.  KiCad y = 0 is the rear edge (the module's
-antenna, the USB-C PD input), y = 140 the front (LEDs, console USB-C).  Why USB-C PD, the charger
-and the sequencing: [power.md](power.md).
+antenna, the USB-C PD input), y = 100 the front (LEDs, console USB-C).  Why USB-C PD, the charger
+and the sequencing: [power.md](power.md).  It was 76 × 140 until 2026-10-20: at 100 mm (86 × 100
+with JLC's rails) it gets JLC's 4-layer offer, without the $25 engineering fee
+([power-distribution-review.md](power-distribution-review.md), option B1).
 
 | Block | Parts | Notes |
 |---|---|---|
@@ -246,9 +248,13 @@ and the sequencing: [power.md](power.md).
 **Layout**, with the bay node's practices: JLC's 4-layer stackup (JLC04161H-7628), ENIG for now (the
 node went to lead-free HASL on 2026-10-19).
 
+* The four rows sit 17.5 mm apart down the left edge (rows A–D at y 81 / 63.5 / 46 / 28.5), each
+  eFuse cluster beside its connector.  The input block and its bulk capacitor (C8) are at the rear
+  right, beside the module; the buck under them, then the LDO and the CAN block down the right column.
+  The front screws are at (4, 93.5) and (72, 86), clear of the LEDs and the console USB-C.
 * **In1** is a solid GND plane.  **In2** carries power only: VRACK under the input block, along a
-  band 8 mm wide at y ≈ 37.5 (5 mm until the PCBA review) and down the eFuse column; +3V3 everywhere
-  else, in one piece wrapping around it.
+  band 8 mm wide right under the module (y 21.6–29.6, with a notch where row D's FLT pull-up takes
+  +3V3) and down the eFuse column (x 16–25); +3V3 everywhere else, in one piece wrapping around it.
   +5V and the PD nets run on the outer layers.
 * Every GND and supply pin gets a via of its own to its plane before routing (fan-out).  The
   eFuses' UVLO / OVP / MODE / RTN / GND pins go straight onto the exposed pad, which has six tented
@@ -259,7 +265,8 @@ node went to lead-free HASL on 2026-10-19).
 * The CH224A sits beside the connector: CC1 / CC2 a few millimetres, its supply's RC and CFG1
   resistor at its pins.
 * The console's USB pair runs hand-drawn on F.Cu, over In1, from the module to U5: 0.25 mm tracks
-  0.2 mm apart, straight down the free column at x ≈ 45 (it crossed In2's split on B.Cu before).
+  0.2 mm apart, east just under the module, then down the free column at x ≈ 45 (87 mm each, no
+  via; it crossed In2's split on B.Cu before).
   EN's 1 µF sits at the module's pin 45, beside the antenna keep-out.
 * Power pads connect solid (`power_nets`): J1's GND and VBUS pins, the row connectors' GND pins,
   the eFuses' IN and GND pins and exposed pads, the buck, the LDO's GND, C8 and D1.  Decoupling
@@ -657,7 +664,7 @@ $185 (catalogue × 1.12; the TPS2553D saves ≈ $0.35 a board).  The 74 × 90 re
 fab files (gerbers, the JLC BOM and CPL): 5 PCBs, 4-layer, ENIG, 2 assembled, Standard PCBA.  It carries the
 ESP32-S3 module, so it needs Standard PCBA, with X-ray, like the bay node.
 - PCB $50.50: engineering fee $25, ENIG $18, board $7.50.  JLC adds two 5 mm rails for Standard PCBA,
-  so the board is 86 × 140 mm.
+  so the board was 86 × 140 mm (76 × 140 then).
 - PCBA $171.98: setup $25.75, stencil $8.27, components $57.89 (47 lines), feeders $72.85, SMT $3.30,
   X-ray $3.30, packaging $0.50.  JLC charges $0.12 for the USB4105s (J1, J6), which it flags as hard to
   process.
@@ -702,6 +709,10 @@ Two savings are applied since, as adjustments to the quote (≈ $213):
   its 6.8k.  −$2.79 of parts for the 2 boards.
 - Three placed part types fewer (36 → 33, the CH224A included).  −$4.65.
 
+**76 × 100 mm instead of 76 × 140: ≈ $161** (2026-10-20, the same parts).  86 × 100 with the rails,
+so JLC's 4-layer offer: $8.00 for the 5 boards and lead-free HASL $5.20, no $25 engineering fee
+(jlcpcb.com calculator).  −$24.60.  Above 10 PCBs the fee comes back (`JLC_PCB_PRICE`).
+
 **Why 33 part types.**  The hub does five jobs, and each brings its own parts.  The four eFuse
 rows add no type: they repeat the same nine.  Many values are set by a datasheet equation (eFuse
 current limit and IMON, the CH224A's CFG1, the buck's FB).
@@ -716,9 +727,8 @@ current limit and IMON, the CH224A's CFG1, the buck's FB).
 | shared | 13: 100n, 22n, 1 µF 0805, 10 µF 1206, green LED, USB4105, B5819W (the buck's OR and, since the PCBA review, each row's output), 1k, 100k, 10k, 5.1k, 56 Ω, 18k |
 
 **Two rows instead of four** would remove no type, only parts: per board two TPS26600, two S6B, four
-LEDs, two BAT54S and their passives (36 parts), ≈ $5 a board, ≈ $10 for two.  It matters only if
-the board then shrinks under 100 mm (the PCB from $37.80 to $13.20), which means a new layout and
-power box, and no third row.
+LEDs, two BAT54S and their passives (36 parts), ≈ $5 a board, ≈ $10 for two.  The board no longer
+needs it to fit in 100 mm: the four rows fit at 17.5 mm.
 
 The routing did not move.  JLC assembles at least 2 boards in Standard PCBA, so one hub plus a spare
 is the minimum.  The MINI-1, like every ESP32 module JLC stocks, is "Standard PCBA only"; the

@@ -70,10 +70,11 @@ JLC_QUOTE = {
     # SOIC-8 pinout, signal improvement; both boards take it since), and the AP33772S FA01 (U1, LCSC 0),
     # left out of the quote.  U1
     # comes through JLC Global Sourcing from DigiKey (estimate): 5 at €2.09 with JLC's reported ≈ 50 %
-    # markup ≈ $17.04, plus its loading fee ≈ $3, and ≈ 2 weeks for the parts to clear into JLC.
+    # markup ≈ $17.04, plus its loading fee ≈ $3, and ≈ 2 weeks for the parts to clear into JLC.  The board
+    # is 76 × 100 since 2026-10-20 (JLC_SINCE_QUOTE): the spec below is the board's, the lines the quote's.
     "power-hub": {
         "pcbs": 5, "assembled": 2, "service": "Standard", "total": 242.52, "date": "2026-10-19", "from_fab": True,
-        "spec": "4-layer 76×140 mm (86×140 with JLC's rails), ENIG",
+        "spec": "4-layer 76×100 mm (86×100 with JLC's rails), ENIG",
         "pcb": {"engineering": 25.00, "ENIG": 18.00, "board": 7.50},
         "pcba": {"setup": 25.75, "stencil": 8.27, "components": 57.89, "feeders": 72.85, "SMT": 3.30,
                  "X-ray": 3.30, "packaging": 0.50, "special components": 0.12, "U1 global sourcing (est.)": 20.04},
@@ -162,13 +163,13 @@ JLC_QUOTE = {
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
-# instead of ENIG, as the node (2026-10-19: $5.30 on JLC's calculator for 5 × 86 × 140 mm 4-layer, against
-# the quote's $18.00 ENIG; nothing on the hub needs ENIG: 0.5 mm QFN and the MINI-1's pads are assembled
+# instead of ENIG, as the node (2026-10-20: $5.20 on JLC's calculator for 5 × 86 × 100 mm 4-layer, $5.30 at
+# 86 × 140, against the quote's $18.00 ENIG; nothing on the hub needs ENIG: 0.5 mm QFN and the MINI-1's pads are assembled
 # on HASL like the node's WROOM-1, INA226 and FSUSB42); the hub's
 # through-hole connectors soldered by hand (catalog hand_solder), bought loose from LCSC, so their
 # extended part types no longer need loading; and no JLC hand-soldering fee on either board (the
 # node's JST PH are SMD since rev 0.4, JLC places them).
-JLC_FINISH = {"power-hub": ("lead-free HASL", 5.30)}
+JLC_FINISH = {"power-hub": ("lead-free HASL", 5.20)}
 # Parts added to a board after its quote (indicative, not re-quoted): (what, PCBA line, USD for the
 # quoted order).  Bay node rev 0.5: the rack bus (TCAN1044AV, PESD2CAN, 2 × BAT54S, 3 resistors, 2
 # capacitors, the 6-pin J1/J2), GCT USB4105 receptacles instead of the HRO ones and 2 × 100 nF on
@@ -186,8 +187,12 @@ JLC_FINISH = {"power-hub": ("lead-free HASL", 5.30)}
 # Then the WCH CH224A (C42459160, in stock at LCSC) instead of the AP33772S, and no input switch: no Global
 # Sourcing for U1 at all; out the 2 × IRF7842, the 5 mΩ shunt, the NTC, the 6.2k, 200 Ω and the AP33772S's
 # passives, in the CH224A (2 × $0.43), its 56 Ω and 6.8k: −$2.79 of parts for the 2 boards at LCSC's prices,
-# and 36 → 33 placed types (the CH224A loads like any LCSC part).
-JLC_SINCE_QUOTE = {"power-hub": [("11 part types fewer (values merged)", "feeders", -17.05),
+# and 36 → 33 placed types (the CH224A loads like any LCSC part).  Then the board at 76 × 100 (2026-10-20, option
+# B1 of docs/power-distribution-review.md): 86 × 100 with the rails, so JLC's 4-layer offer ($8.00 for 5) and no
+# $25 engineering fee (jlcpcb.com calculator, 2026-10-20); the parts don't change.
+JLC_SINCE_QUOTE = {"power-hub": [("76 × 100 mm: JLC's 4-layer offer, no engineering fee", "engineering", -25.00),
+                                  ("76 × 100 mm: the offer's $8.00 for the 5 boards", "board", 0.50),
+                                  ("11 part types fewer (values merged)", "feeders", -17.05),
                                   # 3 AP33772S through Global Sourcing (2 boards, a spare) instead of 5: 2 × $3.41
                                   ("3 AP33772S bought instead of 5", "U1 global sourcing (est.)", -6.82),
                                   ("CH224A from LCSC instead of the AP33772S", "U1 global sourcing (est.)", -13.22),
@@ -218,8 +223,6 @@ JLC_FEES = {
 JLC_LEVERS = {
     "power-hub": [
         ("rows C and D not fitted (DNP, footprints kept): the rack has 2 rows", 9.68, "decision"),
-        ("board at most 100 mm long: no engineering fee, the 4-layer offer; a new placement and route, a new "
-         "power box, room for 2 rows only", 24.60, "decision"),
         ("USB-C J6 (the console; the PD input J1 stays GCT for 48 V): HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) "
          "instead of the GCT USB4105: a new footprint, re-route, mechanical check", 1.47, "decision"),
         ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
@@ -275,7 +278,8 @@ JLC_LEVERS = {
 # offers stop at 10 PCBs, and every size above 100 mm long pays a $25 engineering fee whatever the quantity.
 JLC_PCB_PRICE = {
     "bay-node": {5: 13.20, 10: 19.30, 50: 72.80, 100: 108.00},         # 4-layer 74 × 90 mm
-    "power-hub": {5: 37.80, 10: 45.50, 50: 107.30, 100: 170.80},       # 4-layer 86 × 140 mm with JLC's rails
+    "power-hub": {5: 13.20, 10: 19.40, 50: 85.20, 100: 130.70},        # 4-layer 86 × 100 mm with JLC's rails
+                                                                        # (2026-10-20): the $25 fee above 10 PCBs
     "data-port-x4": {5: 13.10, 10: 19.20, 50: 53.80, 100: 73.40},      # 4-layer 100 × 37 mm (2026-10-20): the
                                                                         # $25 fee is back above 10 PCBs
     "data-port-x4-v2": {5: 25.40, 10: 32.20, 50: 92.90, 100: 136.20},  # 4-layer 100 × 70 mm, ENIG (2026-10-20)

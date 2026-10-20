@@ -1,8 +1,11 @@
-# Power distribution review: the row wiring, and a hub ≤ 100 mm (2026-10-20)
+# Power distribution review: the row wiring, and the hub in 100 mm (2026-10-20)
 
-A study, no board change yet.  The user's question: can the power hub fit in 100 mm, maybe with
-other connectors, and do the row cables carry enough current?  VRACK is 20 V or 28 V (the
-CH224A's contract), not 24 V.
+The user's question: can the power hub fit in 100 mm, maybe with other connectors, and do the row
+cables carry enough current?  VRACK is 20 V or 28 V (the CH224A's contract), not 24 V.
+
+**Decided on 2026-10-20: option B1.**  The user adopted it after its routing trial: the hub is
+76 × 100 mm with its four rows, the power box 84 × 108 ([the result](#result-b1-routed)).  The row
+wiring keeps its boards; fix 1 (AWG 24 leads) stands.
 
 ## A. The row wiring
 
@@ -84,7 +87,7 @@ if a row ever has to carry four heavy bays at 20 V.
 
 ## B. The hub in ≤ 100 mm
 
-Today it is 76 × 140 mm, 86 × 140 with JLC's rails, so the $25 engineering fee applies.  At
+It was 76 × 140 mm, 86 × 140 with JLC's rails, so the $25 engineering fee applied.  At
 86 × 100 with rails it gets JLC's 4-layer offer: −$24.60 an order (`JLC_LEVERS`).  What has to fit:
 - the CH224A input on the GCT USB4105;
 - the eFuse rows, the CAN and the MINI-1 with its antenna band (its courtyard wing spans ±22.7 mm
@@ -115,3 +118,22 @@ With the PH 8 rows of fix 2, B1 no longer fits (4 × 21 mm); B2 and B3 (B8B vert
 not 16 (≈ 175 W).  B2 keeps today's row layout.  Keeping a 4th output means B1 or B3.  Then
 re-place, re-route and re-check the hub (ERC/DRC, the CPL audit, Fabio's rules, the power pads),
 and Mechanics shortens the power box.
+
+### Result: B1, routed
+
+The routing trial closed, so the 4th output stays at no cost:
+- **Placement:** the rows at y 28.5–81 (17.5 mm apart), the buck 12 mm higher than at 140 mm, the LDO
+  under it, the CAN block in the right column, C8 and its decoupling beside the input.  The front
+  screws at (4, 93.5) and (72, 86).
+- **In2:** the VRACK band runs right under the module, with a notch where row D's FLT pull-up takes
+  +3V3; each VRACK pour is one piece.
+- **USB pair:** east under the module, then down the free column: 87 mm each, F.Cu over In1, no via.
+- **Checks:** ERC 0, DRC 0, unconnected 0, parity 0; no inner track; the CPL audit agrees with JLC's
+  footprints on 139 of 139 parts.
+- **The power box:** 84 × 108 × 35 mm.  SolidCraft, the hub's STEP against the box rebuilt as solids:
+  no overlap.  The row connectors are 1.55 mm from the left wall, centred in their 16 mm windows.  The
+  LEDs are 1.5 mm from the front wall, the console USB-C 2.06 mm, the module 2.25 mm from the rear wall,
+  C8 2.0 mm under the lid.  The buttons are 1.0 mm under their guide tubes.  The front-left spacer is
+  1.3 mm from row A's connector.
+- **JLC:** 86 × 100 with the rails gets the 4-layer offer.  5 PCBs cost $13.20 instead of $37.80
+  (`tools/bom.py`): −$24.60 an order.
