@@ -57,7 +57,7 @@ PD_X = CFG["rear"]["pd"]            # the USB-C PD input on the rear edge
 PH_EDGE = 4.9                       # JST PH side entry: footprint origin from the board edge (as the bay node)
 LED_Y = H - 1.25                    # side-view LED, lens at the front edge (rot 180)
 EF_X = 26.0                         # eFuse centre (rot 0: IN on the left, OUT on the right, both at the top)
-BY = 34.0                           # the buck block, moved down from the rear right (v0.4) by this much
+BY = 22.0                           # the buck block, moved down from the rear right (v0.4) by this much
 
 
 def P(x, y, rot=0, side="top", **kw):
@@ -104,12 +104,13 @@ def board() -> Board:
     # each as copper of its net.
     in2 = [
         {"layer": "In2.Cu", "net": "VRACK", "priority": 1,
-         "poly": [(16.2, 36.5), (19.0, 36.5), (19.0, 33.5), (45.6, 33.5), (45.6, 0.4), (75.6, 0.4), (75.6, 41.5),
-                  (24.6, 41.5), (24.6, 117.0), (16.2, 117.0)]},
+         # a notch over row D's FLT pull-up (R94): its +3V3 pin gets the +3V3 area under it
+         "poly": [(16.2, 21.6), (45.6, 21.6), (45.6, 0.4), (75.6, 0.4), (75.6, 29.6), (35.5, 29.6), (35.5, 26.2),
+                  (31.5, 26.2), (31.5, 29.6), (24.6, 29.6), (24.6, 84.0), (16.2, 84.0)]},
         {"layer": "In2.Cu", "net": "+3V3", "priority": 1,
-         "poly": [(0.4, 0.4), (45.2, 0.4), (45.2, 33.1), (18.6, 33.1), (18.6, 36.1),
-                  (15.8, 36.1), (15.8, 117.4),
-                  (25.0, 117.4), (25.0, 41.9), (75.6, 41.9), (75.6, 139.6), (0.4, 139.6)]},
+         "poly": [(0.4, 0.4), (45.2, 0.4), (45.2, 21.2), (15.8, 21.2), (15.8, 84.4),
+                  (25.0, 84.4), (25.0, 30.0), (31.1, 30.0), (31.1, 25.8), (35.9, 25.8), (35.9, 30.0), (75.6, 30.0),
+                  (75.6, H - 0.4), (0.4, H - 0.4)]},
     ]
     # per eFuse: a top-side VRACK island on its IN pins and the input capacitor, three vias to In2
     in_islands = [{"layer": "F.Cu", "net": "VRACK", "name": f"vrack-in-{ch}", "priority": 2, "exclusive": 0.4,
@@ -143,17 +144,18 @@ def board() -> Board:
     tracks += [
         ("PD_CC1", "F.Cu", 0.2, [(PD_X + 1.25, 7.08), (PD_X + 1.25, 8.15)]),
         ("GND", "F.Cu", 0.25, [(PD_X + 3.2, 6.9), (PD_X + 4.2, 6.9)]),
-        ("VRACK", "B.Cu", 0.8, [(55.8, 14.55), (55.8, 30.0), (56.7, 31.0), (56.7, 47.5)]),
+        ("VRACK", "B.Cu", 0.8, [(55.8, 14.55), (55.8, 30.0), (56.7, 31.0), (56.7, 13.5 + BY)]),
     ]
     # the console's USB pair (full speed), U4 pins 23/24 → U5: coupled on F.Cu over In1's GND (0.25 mm,
     # 0.2 mm apart), straight down the free column at x ≈ 45 between the eFuse parts and the buck, into
     # U5's protected side (D− on pin 3, D+ on pin 1: the pair's order, no crossing)
-    usb = [(30.425, 21.1), (30.425, 22.0), (45.425, 37.0), (45.425, 108.0), (60.5, 123.075), (60.5, 124.0)]
+    usb = [(30.425, 21.1), (30.425, 21.4), (31.125, 22.1), (44.725, 22.1), (45.425, 22.8), (45.425, H - 32.0),
+           (60.5, H - 16.925), (60.5, H - 16.0)]
     tracks += [
-        ("USB_DN", "F.Cu", 0.25, [(30.0, 20.05), (30.0, 20.9), *offset(usb, 0.225), (59.55, 124.725), (59.55, 126.36)]),
-        ("USB_DP", "F.Cu", 0.25, [(30.85, 20.05), (30.85, 20.9), *offset(usb, -0.225), (61.45, 124.725), (61.45, 126.36)]),
+        ("USB_DN", "F.Cu", 0.25, [(30.0, 20.05), (30.0, 20.9), *offset(usb, 0.225), (59.55, H - 15.275), (59.55, H - 13.64)]),
+        ("USB_DP", "F.Cu", 0.25, [(30.85, 20.05), (30.85, 20.9), *offset(usb, -0.225), (61.45, H - 15.275), (61.45, H - 13.64)]),
         # U5's GND pin (2) between them: its via straight out, between the two wires
-        ("GND", "F.Cu", 0.25, [(60.5, 126.36), (60.5, 124.95)]),
+        ("GND", "F.Cu", 0.25, [(60.5, H - 13.64), (60.5, H - 15.05)]),
         # EN's RC at the module's pin 45 (pcba-review H13): C115 beside it, below the module's antenna keep-out
         ("EN", "F.Cu", 0.25, [(37.0, 7.1), (38.275, 7.1), (39.225, 6.15)]),
     ]
@@ -213,14 +215,14 @@ def board() -> Board:
             *[("VRACK", 57.0, y, 0.8, 0.4) for y in (8.2, 9.8)],
             # CC1 under the VBUS pour, on B.Cu
             ("PD_CC1", PD_X + 1.25, 8.15, 0.5, 0.3),
-            ("GND", 60.5, 124.95, 0.5, 0.3),            # U5's GND pin, between the USB pair's wires
-            ("VRACK", 55.8, 14.55, 0.8, 0.4), ("VRACK", 56.7, 47.5, 0.8, 0.4),
+            ("GND", 60.5, H - 15.05, 0.5, 0.3),         # U5's GND pin, between the USB pair's wires
+            ("VRACK", 55.8, 14.55, 0.8, 0.4), ("VRACK", 56.7, 13.5 + BY, 0.8, 0.4),
         ],
         "tracks": tracks,
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
         "keepouts": [{"name": "antenna", "poly": [(21.3, -0.1), (38.7, -0.1), (38.7, 5.6), (21.3, 5.6)]}],
         "texts": [
-            {"text": "hw-testing-rack · power hub v0.5", "x": 46, "y": 80, "size": 1.0},
+            {"text": "hw-testing-rack · power hub v0.5", "x": 58, "y": 74, "size": 1.0},
             *[{"text": ch, "x": 13.8, "y": ROW_Y[k] + 8.3, "size": 1.2} for k, ch in enumerate(ROWS)],
         ],
     }
@@ -249,9 +251,9 @@ def board() -> Board:
     # CFG1 to GND: the single-resistor mode, which also turns I2C on; 6.8k asks for 9 V at plug-in, below the
     # eFuses' 15 V UV, until the controller asks for more
     R(s, "R6", "6.8k", "PD_CFG1", "GND", pcb=P(54.6, 13.8, 270))
-    part(s, "C8", "cap100u50", {"1": "VRACK", "2": "GND"}, "100u/50V", pcb=P(70.0, 28.0, 270))
-    C(s, "C9", "10u", "VRACK", "GND", size="1206", pcb=P(73.3, 19.6, 0))
-    C(s, "C10", "100n", "VRACK", "GND", pcb=P(73.0, 22.2, 0))
+    part(s, "C8", "cap100u50", {"1": "VRACK", "2": "GND"}, "100u/50V", pcb=P(70.0, 23.0, 270))
+    C(s, "C9", "10u", "VRACK", "GND", size="1206", pcb=P(62.5, 18.5, 0))
+    C(s, "C10", "100n", "VRACK", "GND", pcb=P(62.5, 20.8, 0))
     s.block("I2C to the controller, VBUS sense")
     # PG: open drain, low once the contract is in place; IO39 (the net keeps its name PD_INT for the
     # firmware's pin map) and the front LED both hang on it
@@ -311,7 +313,7 @@ def board() -> Board:
         # 10k (behind pin 1) + a clamp to GND / 3.3 V, so VRACK on it from a wrong cable costs ≈ 3 mA
         part(o, f"J{1 + n}", "ph6", {"1": f"POS_{ch}_CONN", "2": "GND", "3": "CAN_L", "4": "CAN_H", "5": "GND",
                                     "6": f"ROW_{ch}"}, f"ROW {ch}", pcb=P(PH_EDGE, yj, 270))
-        R(o, f"R{100 + n}", "10k", f"POS_{ch}", f"POS_{ch}_CONN", pcb=P(11.0, yj - 7.2, 90))
+        R(o, f"R{100 + n}", "10k", f"POS_{ch}", f"POS_{ch}_CONN", pcb=P(11.0, yj - 6.9, 90))
         # the row cable's inductive kick when the eFuse cuts a short: a Schottky to GND at the connector, its
         # cathode on the output track (TPS2660 §12.1; OUT ≥ −0.3 V)
         part(o, f"D{40 + n}", "schottky", {"A": "GND", "K": f"ROW_{ch}"}, pcb=P(11.5, yj + 6.635, 270))
@@ -348,13 +350,13 @@ def board() -> Board:
     c.part("#FLG06", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V_BUCK"}, in_bom=False, on_board=False)
     c.block("5 V for the controller: the buck or the console USB-C (diode OR), 3.3 V low-dropout LDO")
     part(c, "D4", "schottky", {"A": "+5V_BUCK", "K": "+5V"}, pcb=P(73.2, 13.0 + BY, 90))
-    part(c, "D5", "schottky", {"A": "USB_VBUS", "K": "+5V"}, pcb=P(56.0, 130.5, 180))
+    part(c, "D5", "schottky", {"A": "USB_VBUS", "K": "+5V"}, pcb=P(56.0, H - 9.5, 180))
     c.part("#FLG07", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False)
     c.part("#FLG08", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "USB_VBUS"}, in_bom=False, on_board=False)
-    part(c, "U3", "ldo_lp", {"VIN": "+5V", "EN": "+5V", "GND": "GND", "VOUT": "+3V3"}, pcb=P(66.0, 61.0, 0))
+    part(c, "U3", "ldo_lp", {"VIN": "+5V", "EN": "+5V", "GND": "GND", "VOUT": "+3V3"}, pcb=P(66.0, 49.0, 0))
     # the LDO's input cap (AP2112K: ≥ 1 µF); the buck's 3 × 22 µF sit just before D4.  The eFuses' 1 µF 0805
-    C(c, "C111", "1u", "+5V", "GND", size="0805", pcb=P(62.4, 61.0, 90))
-    C(c, "C112", "22u", "+3V3", "GND", size="1206", pcb=P(69.8, 61.0, 90))
+    C(c, "C111", "1u", "+5V", "GND", size="0805", pcb=P(62.4, 49.0, 90))
+    C(c, "C112", "22u", "+3V3", "GND", size="1206", pcb=P(69.8, 49.0, 90))
 
     c.block("ESP32-S3-MINI-1 (antenna at the board's rear edge: no copper under it, either layer)")
     part(c, "U4", "esp32s3", {
@@ -378,7 +380,7 @@ def board() -> Board:
     R(c, "R211", "1k", "CTL_LED", "CTL_LED_A", pcb=P(LED_X[5], H - 5.0, 90))
     for i, (net, xy, side) in enumerate((("U0TX", (30.0, 16.5), "bottom"), ("U0RX", (32.6, 16.5), "bottom"),
                                          ("GND", (30.0, 19.1), "bottom"), ("+3V3", (32.6, 19.1), "bottom"),
-                                         ("+5V", (70.0, 66.0), "bottom"), ("VRACK", (66.0, 20.0), "bottom"),
+                                         ("+5V", (70.0, 54.0), "bottom"), ("VRACK", (66.0, 20.0), "bottom"),
                                          ("GND", (70.0, 30.0), "bottom"))):
         part(c, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(*xy, 0, side), in_bom=False)
 
@@ -395,15 +397,15 @@ def board() -> Board:
 
     c.block("CAN: TJA1462AT, star bus (all row ports in parallel), both terminations here")
     part(c, "U6", "can_xcvr", {"TXD": "CAN_TXD", "VSS": "GND", "VDD": "+5V", "RXD": "CAN_RXD", "Vio": "+3V3",
-                               "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "CAN_STB"}, "TJA1462AT", pcb=P(14.0, 32.0, 0))
-    C(c, "C116", "100n", "+5V", "GND", pcb=P(8.6, 29.6, 0))
-    C(c, "C117", "100n", "+3V3", "GND", pcb=P(8.6, 34.4, 0))
-    R(c, "R214", "10k", "CAN_STB", "GND", pcb=P(20.0, 29.4, 0))
-    for i, (r1, r2, cc, mid, y) in enumerate((("R215", "R216", "C118", "CAN_TERM1", 36.0), ("R217", "R218", "C119", "CAN_TERM2", 38.6))):
-        R(c, r1, "56", "CAN_H", mid, pcb=P(19.0, y, 0))
-        R(c, r2, "56", mid, "CAN_L", pcb=P(22.4, y, 0))
-        C(c, cc, "22n", mid, "GND", pcb=P(25.6, y, 0))      # split cap: the eFuses' 22n (dVdT, IMON filter), one type
-    part(c, "D9", "can_esd", {"1": "CAN_H", "2": "CAN_L", "3": "GND"}, pcb=P(14.5, 37.5, 0))
+                               "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "CAN_STB"}, "TJA1462AT", pcb=P(56.0, 60.0, 0))
+    C(c, "C116", "100n", "+5V", "GND", pcb=P(50.6, 57.6, 0))
+    C(c, "C117", "100n", "+3V3", "GND", pcb=P(50.6, 62.4, 0))
+    R(c, "R214", "10k", "CAN_STB", "GND", pcb=P(62.0, 57.4, 0))
+    for i, (r1, r2, cc, mid, y) in enumerate((("R215", "R216", "C118", "CAN_TERM1", 64.0), ("R217", "R218", "C119", "CAN_TERM2", 66.6))):
+        R(c, r1, "56", "CAN_H", mid, pcb=P(61.0, y, 0))
+        R(c, r2, "56", mid, "CAN_L", pcb=P(64.4, y, 0))
+        C(c, cc, "22n", mid, "GND", pcb=P(67.6, y, 0))      # split cap: the eFuses' 22n (dVdT, IMON filter), one type
+    part(c, "D9", "can_esd", {"1": "CAN_H", "2": "CAN_L", "3": "GND"}, pcb=P(55.5, 66.0, 0))
 
     c.block("Mounting (M3, on the power box's standoffs)")
     for i, (x, y) in enumerate(CFG["holes"]):
