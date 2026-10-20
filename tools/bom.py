@@ -266,6 +266,10 @@ JLC_PCB_PRICE = {
                                                                         # $25 fee is back above 10 PCBs
     "data-port-x4-v2": {5: 25.40, 10: 32.20, 50: 92.90, 100: 136.20},  # 4-layer 100 × 70 mm, ENIG (2026-10-20)
     "data-port-x4-v2-base": {5: 13.20, 10: 19.40, 50: 74.90, 100: 111.90},  # the same PCB, lead-free HASL
+    # the order panel (electronics/data-port-x4-v2/fab/*-panel-*): a logic and a base on one 100 × 142 mm panel,
+    # 4-layer ENIG, mouse bites, one design: no panel fee (2026-10-20, every quantity JLC sells)
+    "data-port-x4-v2-panel": {5: 52.00, 10: 62.50, 15: 72.80, 20: 83.30, 25: 93.60, 30: 104.10, 50: 145.60,
+                              75: 187.00, 100: 233.50, 125: 280.10, 150: 326.90, 200: 421.15},
     "data-port": {5: 5.20, 10: 6.30, 50: 17.10, 100: 20.90},           # 2-layer 40 × 17 mm
     "camera-pod": {5: 5.20, 10: 6.40, 50: 18.80, 100: 24.20},          # 2-layer 40 × 27 mm
 }
@@ -566,32 +570,107 @@ def parts_scale(name: str, n: int) -> float:
     return then / now if now else 1.0
 
 
-def volume(orders: dict) -> dict:
-    """The order of n boards of each design, from its quote: the PCBA fees paid once (setup, stencil,
-    part types, packaging), plus per board its parts (the quote's, scaled to JLC's price breaks at that
-    quantity, parts_scale) and joints and X-ray, plus the bare PCBs at JLC's price for that quantity."""
-    def per_board(name: str, n: int) -> tuple[float, float]:
-        """(USD per board for parts, joints and X-ray; USD paid once on top) for n boards."""
-        q, o = JLC_QUOTE[name], orders[name]
-        pcba, k = o["pcba"], q["assembled"]
-        parts = pcba["components"] / k * parts_scale(name, n) + pcba.get("SMT", 0) / k
-        sourcing = sum(v for key, v in pcba.items() if "sourcing" in key)
-        once = 3.0 if sourcing else 0.0                 # Global Sourcing: ≈ $3 once, the rest per part bought
-        if sourcing:
-            parts += (sourcing - 3.0) / q.get("gs_parts", q["pcbs"])
-        return parts + (xray(n) if name in JLC_XRAY_BOARDS else 0), once
+JLC_PARTS_MARKUP = 1.12                     # JLC's part prices and attrition against the catalogue's (the node's quote)
+# parts JLC sells by a minimum quantity: what the boards don't use is bought once per order (board → LCSC,
+# minimum, the PCBA line it lands on)
+JLC_MIN_BUY = {"data-port-x4-v2": [("C42411119", 32, "L1 minimum purchase (32)")]}
+# an order panel: one PCB carrying one board of each design, one PCBA order (panel_order)
+PANELS = {"data-port-x4-v2-panel": ("data-port-x4-v2", "data-port-x4-v2-base")}
 
+
+def _per_board_qty(name: str, lcsc: str) -> int:
+    return sum(q for l, q, _ in JLC_PARTS.get("boards", {}).get(name, []) if l == lcsc)
+
+
+def _min_buy(lcsc: str, moq: int, used: int) -> float:
+    """USD for the parts of a minimum purchase the boards don't use."""
+    return round(max(0, moq - used) * (part_price(lcsc, used) or 0.0) * JLC_PARTS_MARKUP, 2)
+
+
+def order_cost(name: str, n: int, orders: dict) -> dict:
+    """One JLC order of n boards of one design (JLC assembles at least 2), from its quote as adjusted
+    (`orders`, electronics()): the PCBA lines paid once (setup, stencil, part types, packaging, a
+    minimum purchase's spares, Global Sourcing's $3), per board its parts (the quote's, scaled to JLC's
+    price breaks at that quantity, parts_scale), joints, X-ray and Global Sourcing, and the bare PCBs
+    at JLC's price for that quantity (the engineering fee is in it)."""
+    q, pcba = JLC_QUOTE[name], orders[name]["pcba"]
+    k, m = q["assembled"], max(n, 2)
+    once = {key: v for key, v in pcba.items() if key not in PER_BOARD and "sourcing" not in key}
+    for lcsc, moq, line in JLC_MIN_BUY.get(name, []):
+        once[line] = _min_buy(lcsc, moq, _per_board_qty(name, lcsc) * m)
+    sourcing = sum(v for key, v in pcba.items() if "sourcing" in key)
+    if sourcing:
+        once["Global Sourcing"] = 3.0                   # ≈ $3 once, the rest per part bought
+    each = {"parts": pcba["components"] / k * parts_scale(name, m), "joints": pcba.get("SMT", 0) / k,
+            "x-ray": xray(m) if name in JLC_XRAY_BOARDS else 0.0}
+    if sourcing:
+        each["sourcing"] = (sourcing - 3.0) / q.get("gs_parts", q["pcbs"])
+    pcbs, pcb = pcb_price(name, m)
+    total = sum(once.values()) + m * sum(each.values()) + pcb
+    return {"board": name, "boards": n, "assembled": m, "pcbs": pcbs, "pcb": pcb,
+            "once": round(sum(once.values()), 2), "once_lines": {key: round(v, 2) for key, v in once.items()},
+            "per_board": {key: round(v, 4) for key, v in each.items()}, "total": round(total, 2)}
+
+
+def panel_order(n: int, orders: dict, panel: str = "data-port-x4-v2-panel") -> dict:
+    """One JLC order of n order panels (PANELS: one board of each design per panel, n of each; JLC
+    assembles at least 2 panels): one setup and stencil, the part types loaded once (the first
+    board's: the second's are a subset), the parts of both boards bought together at the breaks they
+    reach, each board's joints and X-ray (at the tier of all the boards assembled), the bare panels."""
+    first, second = PANELS[panel]
+    m = max(n, 2)
+    lines = {line for b in (first, second) for _, _, line in JLC_MIN_BUY.get(b, [])}
+    once = {key: v for key, v in orders[first]["pcba"].items() if key not in PER_BOARD and key not in lines}
+    qty = Counter()
+    for name in (first, second):
+        for lcsc, q, _ in JLC_PARTS.get("boards", {}).get(name, []):
+            qty[lcsc] += q * m
+    for name in (first, second):
+        for lcsc, moq, line in JLC_MIN_BUY.get(name, []):
+            once[line] = _min_buy(lcsc, moq, qty[lcsc])
+    parts = JLC_PARTS_MARKUP * sum(v * (part_price(lcsc, v) or 0.0) for lcsc, v in qty.items())
+    joints = sum(orders[b]["pcba"].get("SMT", 0) / JLC_QUOTE[b]["assembled"] for b in (first, second)) * m
+    xr = xray(2 * m) * 2 * m
+    pcbs, pcb = pcb_price(panel, m)
+    total = sum(once.values()) + parts + joints + xr + pcb
+    return {"board": panel, "boards": n, "assembled": m, "pcbs": pcbs, "pcb": pcb,
+            "once": round(sum(once.values()), 2), "once_lines": {key: round(v, 2) for key, v in once.items()},
+            "parts": round(parts, 2), "joints": round(joints, 2), "x-ray": round(xr, 2), "total": round(total, 2)}
+
+
+CALC_N = tuple(range(1, 101)) + (150, 200)
+
+
+def calculator(orders: dict) -> dict:
+    """The order total of every orderable board and order panel for n = CALC_N boards or panels
+    (site/assets/bom.json › calculator, the BOM page's quantity calculator), without shipping.
+    `design`: the orders made on the same PCB, so the page can warn when a panel and single orders of
+    its boards are mixed."""
+    out = {name: [order_cost(name, n, orders) for n in CALC_N] for name in orders}
+    out.update({panel: [panel_order(n, orders, panel) for n in CALC_N] for panel, boards in PANELS.items()
+                if all(b in orders for b in boards)})
+    design = defaultdict(list)
+    for name in out:
+        design[VARIANT_OF.get(name, PANELS.get(name, (name,))[0])].append(name)
+    return {"currency": "USD", "usd_eur": USD_EUR, "shipping_usd": JLC_SHIPPING_USD, "n": list(CALC_N),
+            "min_assembled": 2,
+            "orders": {name: {"total": [o["total"] for o in os], "pcbs": [o["pcbs"] for o in os]}
+                       for name, os in out.items()},
+            "panels": {panel: list(boards) for panel, boards in PANELS.items() if panel in out},
+            "design": {d: names for d, names in design.items() if len(names) > 1}}
+
+
+def volume(orders: dict) -> dict:
+    """The order of n boards of each design (order_cost) at VOLUME_QTY, the floor per board, and the
+    rack's orders at VOLUME_RACKS."""
     def order(name: str, n: int) -> float:
-        pcba = orders[name]["pcba"]
-        once = sum(v for key, v in pcba.items() if key not in PER_BOARD and "sourcing" not in key)
-        n = max(n, 2)                                   # JLC assembles at least 2
-        each, extra = per_board(name, n)
-        return once + extra + n * each + pcb_price(name, n)[1]
+        return order_cost(name, n, orders)["total"]
 
     unit = {name: {n: round(order(name, n) / n, 2) for n in VOLUME_QTY} for name in orders}
     # what a board costs once the fees per order are spread thin: its parts at the 100-board breaks,
     # joints, X-ray and PCB per board
-    floor = {name: round(per_board(name, 100)[0] + JLC_PCB_PRICE[name][100] / 100, 2) for name in orders}
+    floor = {name: round(sum(order_cost(name, 100, orders)["per_board"].values())
+                         + JLC_PCB_PRICE[name][100] / 100, 2) for name in orders}
     racks = {}
     for r in VOLUME_RACKS:
         lines = {name: round(order(name, o["need"] * r), 2) for name, o in orders.items()}
@@ -928,7 +1007,8 @@ def main():
     data = {"rows": rows, "by_category": dict(by_cat), "total_eur": round(total, 2),
             "prints": prints, "bays": n_bays, "rows_n": len(rack.rows),
             "jlc_quote": {"date": JLC_QUOTE_DATE, "currency": "USD", "shipping": JLC_SHIPPING, "boards": JLC_QUOTE,
-                          "order": orders, "cost": cost, "fees": JLC_FEES, "volume": vol}}
+                          "order": orders, "cost": cost, "fees": JLC_FEES, "volume": vol},
+            "calculator": calculator(orders)}
     (REPO / "site" / "assets").mkdir(parents=True, exist_ok=True)
     (REPO / "site" / "assets" / "bom.json").write_text(json.dumps(data, ensure_ascii=False, indent=0), encoding="utf-8")
 

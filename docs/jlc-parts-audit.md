@@ -34,8 +34,8 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | DATA ×4 v2 ×1 | v2 base ×1 | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|---:|
 | 1 | 297.81 | 185.51 | 35.45 | 26.38 | 178.79 | 90.75 | **848.69** |
-| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 54.27 | 28.34 | **341.37** |
-| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 41.51 | 22.37 | **279.75** |
+| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 54.08 | 28.34 | **341.18** |
+| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 41.26 | 22.37 | **279.50** |
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.69, hub
 $22.18, DATA ×4 v2 $25.01, its base $13.61, DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave

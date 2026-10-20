@@ -100,7 +100,7 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | power-hub | 92.75 | 53.65 | 39.34 | 26.07 | 23.04 | 22.18 |
 | data-port | 13.77 | 6.53 | 3.94 | 1.96 | 1.49 | 1.30 |
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
-| data-port-x4-v2 | 89.39 | 54.27 | 41.51 | 28.58 | 25.85 | 25.01 |
+| data-port-x4-v2 | 89.39 | 54.08 | 41.26 | 28.39 | 25.75 | 25.01 |
 | data-port-x4-v2-base | 45.38 | 28.34 | 22.37 | 15.27 | 14.02 | 13.61 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2, 1 data-port-x4-v2-base) when building several in one order, one shipment ($34, held: it grows with the weight):
@@ -108,8 +108,8 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2,
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4-v2 | data-port-x4-v2-base | Per rack |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | 297.81 | 185.51 | 35.45 | 26.38 | 178.79 | 90.75 | **848.69** |
-| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 54.27 | 28.34 | **341.37** |
-| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 41.51 | 22.37 | **279.75** |
+| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 54.08 | 28.34 | **341.18** |
+| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 41.26 | 22.37 | **279.50** |
 
 ## Printed parts
 
