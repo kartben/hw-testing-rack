@@ -618,7 +618,7 @@ async function load() {
   });
   // PCB GLBs exported from KiCad (optional; the v2's meshopt-compressed: tools/pcb_glb.py)
   const pcbGlb = {};
-  for (const name of ['bay-node', 'power-hub', 'data-port-x4-v2']) {
+  for (const name of ['bay-node', 'power-hub', 'data-port-x4-v2', 'data-port-x4-v2-base']) {
     try {
       const g = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(`assets/pcb/${name}.glb`);
       pcbGlb[name] = g.scene;

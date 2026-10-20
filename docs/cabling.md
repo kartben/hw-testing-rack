@@ -90,12 +90,14 @@ up the drawer's cable window and through one of the port wall's free U's
 (the DATA port board uses only the fourth), then flying leads to the board.
 
 **Dupont jumpers in a converted bay.**  The DATA ×4's headers (v1: a 1 × 3
-GND, RESET, BOOT per port, pins up; the planned v2, standing at the back of the
-drawer: a 2 × 6 GND, VREF, P1–P8, RESET, BOOT on its front face, pins forward)
-take female–female Dupont jumpers to the board's own pins, its pin headers
-soldered pins up.  Wire only what the board needs: no GND wire (the
-USB cable carries it), RESET and BOOT where the board breaks them out (B1: the
-Pico 2's RUN), and on v2 the VREF its level shifter needs beside the signals
+GND, RESET, BOOT per port, pins up; the v2, standing at the back of the
+drawer: a 2 × 6 GND, VREF, P1–P8, RESET, BOOT on its front face, pins forward,
+of which the base DATA-4x carries only GND, RESET and BOOT: its pin chain is not
+fitted) take female–female Dupont jumpers to the board's own pins, its pin
+headers soldered pins up.  Wire only what the board needs: no GND wire (the
+USB cable carries it), RESET and BOOT where the board breaks them out (B1, on a
+base: the Pico 2's RUN), and on DATA-4x-logic the VREF its level shifter needs
+beside the signals
 (B3: a UART between B3.1 and B3.2).  Tear a board's wires off the strip
 together and peel only their ends, 2 cm or so (more where the pins spread): a
 small ribbon over the port wall (off v2, straight forwards over it), 20 cm

@@ -326,29 +326,77 @@ def convert(src: Path, dst: Path, art_path: Path | None = None, max_group_faces:
             "standins": n_standins, "bytes": dst.stat().st_size}
 
 
-def convert_bodies(src: Path, board: str) -> dict:
+def footprint_boxes(pcb: Path) -> list[tuple[str, bool, float, float, float, float]]:
+    """Every footprint's pads' extent on the board: (reference, on the front (F.Cu), x0, y0, x1, y1), KiCad mm."""
+    sys.path.insert(0, str(REPO / "electronics" / "tools"))
+    import sexp
+    out = []
+    for fp in sexp.find_all(sexp.loads(pcb.read_text(encoding="utf-8")), "footprint"):
+        at, layer = sexp.find(fp, "at"), sexp.find(fp, "layer")
+        x, y, rot = float(at[1]), float(at[2]), float(at[3]) if len(at) > 3 else 0.0
+        c, s_ = np.cos(np.radians(rot)), np.sin(np.radians(rot))
+        pts = []
+        for pad in sexp.find_all(fp, "pad"):
+            pa, size = sexp.find(pad, "at"), sexp.find(pad, "size")
+            px, py, w, h = float(pa[1]), float(pa[2]), float(size[1]), float(size[2])
+            r = max(w, h) / 2                       # each pad as a square round its centre: rotation-proof
+            # KiCad turns a footprint counter-clockwise on screen, y down: (px, py) → (px c + py s, −px s + py c)
+            qx, qy = x + px * c + py * s_, y - px * s_ + py * c
+            pts += [(qx - r, qy - r), (qx + r, qy + r)]
+        if pts:
+            a = np.array(pts)
+            out.append((_ref(fp, sexp), str(layer[1]) == "F.Cu", *a.min(axis=0), *a.max(axis=0)))
+    return out
+
+
+def convert_bodies(src: Path, board: str, hide: set | None = None, name: str | None = None) -> dict:
     """A board's GLB converted from its STEP rather than KiCad's own GLB export: every body, the PCB one of them,
     no copper or silkscreen meshes (the standing DATA ×4 v2's, from its session).  To the viewer's axes, then
     board_models' treatment: one material per colour, nothing decimated (decimation tears CAD meshes).  Written
-    plain to render/assets/pcb (the renders read it) and meshopt-compressed to site/assets/pcb (the viewer)."""
+    plain to render/assets/pcb (the renders read it) and meshopt-compressed to site/assets/pcb (the viewer), as
+    `name` (default the board's).  hide: the references an assembly variant leaves off: a body goes with the
+    smallest footprint whose pads (0.6 mm round) hold its middle, on its side of the board; the board's own
+    faces (anything over 30 mm) stay."""
     import board_models
     scene = trimesh.load(src, force="scene")
-    meshes = []
+    boxes = footprint_boxes(REPO / "electronics" / board / f"{board}.kicad_pcb") if hide else []
+    meshes, hidden = [], set()
     for node in scene.graph.nodes_geometry:
         tf, gname = scene.graph[node]
         g = scene.geometry[gname]
         if isinstance(g, trimesh.Trimesh) and len(g.faces):
             m = g.copy()
             m.apply_transform(AXES @ tf)
+            if boxes and max(m.extents) < 30.0:
+                cx, cy, cz = (m.bounds[0] + m.bounds[1]) / 2            # viewer axes: y = -KiCad y, z off the face
+                hold = [b for b in boxes if b[1] == (cz > 0.8) and b[2] - 0.6 <= cx <= b[4] + 0.6
+                        and b[3] - 0.6 <= -cy <= b[5] + 0.6]
+                ref = min(hold, key=lambda b: (b[4] - b[2]) * (b[5] - b[3]))[0] if hold else None
+                if ref in hide:
+                    hidden.add(ref)
+                    continue
             meshes += board_models._by_material(m)
-    out, n = board_models.by_material(meshes, board)
-    plain = REPO / "render" / "assets" / "pcb" / f"{board}.glb"
+    name = name or board
+    out, n = board_models.by_material(meshes, name)
+    plain = REPO / "render" / "assets" / "pcb" / f"{name}.glb"
     plain.parent.mkdir(parents=True, exist_ok=True)
     out.export(plain)
-    dst = REPO / "site" / "assets" / "pcb" / f"{board}.glb"
+    dst = REPO / "site" / "assets" / "pcb" / f"{name}.glb"
     packed = board_models.write_web(out, dst)
-    return {"faces": int(sum(len(g.faces) for g in out.geometry.values())), "materials": n, "packed": packed,
+    info = {"faces": int(sum(len(g.faces) for g in out.geometry.values())), "materials": n, "packed": packed,
             "bytes": dst.stat().st_size}
+    if hide:
+        info.update(hidden=len(hidden), unseen=sorted(hide - hidden))       # left-off parts with no body found
+    return info
+
+
+def variant_dnp(board: str, variant: str) -> set:
+    """The references an assembly variant leaves off: in the board's fab CPL, not in the variant's."""
+    import csv
+    fab = REPO / "electronics" / board / "fab"
+    refs = [{r["Designator"] for r in csv.DictReader(open(f, encoding="utf-8"))}
+            for f in (fab / f"{board}-cpl-jlcpcb.csv", fab / f"{board}-{variant}-cpl-jlcpcb.csv")]
+    return refs[0] - refs[1]
 
 
 def restand(board: str) -> int:
@@ -366,6 +414,7 @@ def restand(board: str) -> int:
 
 
 FROM_STEP = ("data-port-x4-v2",)     # boards whose fab GLB is their STEP's (every body: convert_bodies)
+VARIANTS = {"data-port-x4-v2": ("base",)}   # and their assembly variants, each its own model: <board>-<variant>.glb
 
 
 def main(boards=("bay-node", "power-hub", "data-port-x4-v2")):
@@ -396,6 +445,8 @@ def main(boards=("bay-node", "power-hub", "data-port-x4-v2")):
             continue
         if b in FROM_STEP:
             print(b, convert_bodies(src, b))
+            for v in VARIANTS.get(b, ()):
+                print(f"{b}-{v}", convert_bodies(src, b, hide=variant_dnp(b, v), name=f"{b}-{v}"))
             continue
         art = REPO / "electronics" / b / "build" / f"{b}-art.json"
         if not art.exists():

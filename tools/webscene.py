@@ -1160,7 +1160,7 @@ def build(rack) -> Path:
         vx0, y_face, _ = x4v2_frame(dy, dz)
         return [((dxw + vx0 + x, y_face - HEADER["BASE"], dz + z), n) for x, z, n in x4v2_header_pins(raw, port)]
 
-    def unit_hardware(i, u, bid, dy, open_frac, drawer=True, x4=False, v2=False):
+    def unit_hardware(i, u, bid, dy, open_frac, drawer=True, x4=False, v2=False, variant="v2"):
         """Tray, node and either the drawer and its chain, or a sled bay's sled and port block (no chain; the
         viewer doesn't slide them: the DUT cable is unplugged first).  x4: a converted bay's (`boards:`) DATA ×4
         board, in the same drawer or port block as the single DATA board; v2: the planned v2 (`x4: v2`) instead
@@ -1211,10 +1211,11 @@ def build(rack) -> Path:
             bx, t, (bw, bh) = dxw_ + vx0, v["thickness"], v["size"]
             mv = {"layer": "drawers", "bay": bid, "row": i, "space": "row", "movable": drawer}
             add("x4_cradle", (dxw_, dy, plenum), row=i, layer="drawers", bay=bid, movable=drawer)
-            if (SITE_ASSETS / "pcb" / "data-port-x4-v2.glb").exists():
+            model = "data-port-x4-v2" + ("-base" if variant == "base" else "")    # its assembly: the base's lacks
+            if (SITE_ASSETS / "pcb" / f"{model}.glb").exists():                     # the logic (tools/pcb_glb.py)
                 # the routed board, every body (tools/pcb_glb.py: x right, -KiCad y, its front face up), stood up:
                 # KiCad y down from its top edge, its front face towards the port wall
-                items["pcbs"].append({"board": "data-port-x4-v2", "pos": [round(bx, 3), round(y_face + t, 3),
+                items["pcbs"].append({"board": model, "pos": [round(bx, 3), round(y_face + t, 3),
                                                                            round(plenum + v["top_z"], 3)],
                                       "rot": [90, 0, 0], **mv})
             else:                    # its stand-in: board, receptacles, headers, the study's parts, LEDs, J1
@@ -1380,7 +1381,7 @@ def build(rack) -> Path:
         cable(pts, row=i, kind="dut", bay=bay, type=ctype, label=cables_cfg[ctype]["label"], a="usb-c", b=btype,
               ends=ends, radius=1.9, movable=drawer)
 
-    def route_jumpers(i, bid, spec, boards_at, dut_pins, dy, dz, dxw, drawer, drawn, v2):
+    def route_jumpers(i, bid, spec, boards_at, dut_pins, dy, dz, dxw, drawer, drawn, v2, base=False):
         """A converted bay's Dupont jumpers (population › jumpers: per board, {DATA ×4 header pin: board pin}),
         female–female, 20 cm (30 where that does not reach: JUMPER_LENGTHS), from the board's port's header to
         its pin header (dut_pins: slot → (the pins' plastic top, [(x, y, name)])), each housing pushed down on its
@@ -1404,6 +1405,9 @@ def build(rack) -> Path:
             for hp, dpin in pinmap.items():
                 if hp not in hdr:
                     raise ValueError(f"{sid} jumpers: the DATA ×4 header has no pin {hp} ({', '.join(hdr)})")
+                if base and hp not in ("GND", "RESET", "BOOT"):
+                    raise ValueError(f"{sid} jumpers: {hp} is dead on the base DATA-4x (its pin chain is not fitted): "
+                                     "GND, RESET and BOOT only")
                 (ax, ay, az), adir, aup = hdr[hp]
                 cands = [(x, y) for x, y, n in pins if n == str(dpin)]
                 if not cands:
@@ -1501,7 +1505,9 @@ def build(rack) -> Path:
         drawer = rack.mount(b.id) == "drawer"
         open_frac = 1.0 if info.get("open") and drawer else 0.0
         dy = -d["travel"] * open_frac
-        x0, dz = unit_hardware(i, b.unit, b.id, dy, open_frac, drawer, rack.is_multi(b.id), info.get("x4") == "v2")
+        # x4: a converted bay's DATA ×4: v1 lying (none), or the standing board, as DATA-4x-logic (v2) or DATA-4x (base)
+        x0, dz = unit_hardware(i, b.unit, b.id, dy, open_frac, drawer, rack.is_multi(b.id),
+                               info.get("x4") in ("v2", "base"), info.get("x4") or "v2")
         dxw = x0 + rack.drawer_x0
         meta = {"id": b.id, "row": rack.rows[i]["id"], "row_index": i, "col": b.index + 1, "span": 1,
                 "camera": b.id in cams, "unit_x": x0,
@@ -1549,7 +1555,7 @@ def build(rack) -> Path:
                               "cable": cables_cfg[sl.cable]["label"], "usb": bd["usb"]["type"],
                               "verified": bd.get("verified", False)})
             # the boards' pin headers (soldered pins up), then the Dupont jumpers from the DATA ×4's headers
-            v2 = info.get("x4") == "v2"
+            v2 = info.get("x4") in ("v2", "base")
             dut_pins = {}
             for e, ex, ey in boards_at:
                 sl = e["slot"]
@@ -1563,7 +1569,7 @@ def build(rack) -> Path:
                 items["headers"].append({"bay": b.id, "row": i, "space": "row", "movable": drawer, "z": round(bz, 3),
                                          "pins": [[round(x, 3), round(y, 3)] for x, y in pts], "board": sl.id})
             jumpers_drawn[b.id] = route_jumpers(i, b.id, info.get("jumpers"), boards_at, dut_pins, dy, dz, dxw,
-                                                drawer, drawn, v2)
+                                                drawer, drawn, v2, base=info.get("x4") == "base")
             meta["jumpers"] = len(jumpers_drawn[b.id])
             meta.update({"board": f"{len(slots)} boards on a DATA ×4", "slots": slots, "data_port": ["×4"],
                          "open": bool(info.get("open")) and drawer, "mount": rack.mount(b.id),
