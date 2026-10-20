@@ -30,12 +30,12 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | DATA ×4 ×2 | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 297.79 | 185.51 | 35.45 | 26.38 | 85.47 | **664.60** |
-| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 40.07 | **298.77** |
-| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 32.64 | **248.44** |
+| 1 | 297.79 | 185.51 | 35.45 | 26.38 | 85.37 | **664.50** |
+| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 40.03 | **298.73** |
+| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 32.75 | **248.54** |
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.68, hub
-$22.17, DATA ×4 $11.51, DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
+$22.17, DATA ×4 $11.59, DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (1590b7a) took another ≈ $4 off its
 floor.
 
@@ -84,7 +84,7 @@ board's owner, and the trade-off ones need the user.
 | **JST PH SMD second source**: S6B / S8B / B8B-PH-SM4-TB ($0.25–0.42) → PH 2.0 SMD clones ≈ $0.04–0.07 (e.g. SHOU HAN 2.0-xP WT / LT, WAFER-PH2.0-6PWB C3029444), or CJT's A2001WR-S-6P C225237 / A2001WR-S-8P C225239 / A2001WV-S-8P C225232 (vertical) at $0.16–0.20 @ 100 (phosphor bronze, LCP, −40…105 °C) | node (5), hub (4), DATA ports, DATA ×4, pods (54 a rack) | ≈ $133 no-name, ≈ $70 CJT | decision (open) | Same 2 A rating; mates with PHR housings. Check the footprint geometry against each clone's drawing. Genuine JST holds up better on cables that are re-plugged |
 | **USBLC6-2SC6 second source**: ST C7519 ($0.12–0.18) → UMW C2687116 ($0.042 at 100) or TECH PUBLIC C2827654 ($0.036) | node (4), hub, DATA ports, DATA ×4 (6) (51 a rack) | ≈ $42 | decision | Same SOT-23-6 and pinout, so pins 1 / 6 and 3 / 4 still join inside and the flow-through layout holds. Check the clamp voltage and capacitance against ST's (0.35 pF line-to-line on the UMW) |
 | **DATA ×4 USB hub**: USB2514B ($1.54) + 24 MHz crystal (extended) → CH334R (C4154405, QSOP-16, $0.32 at 100, I²C) or FE1.1s (C9359, $0.40) + 12 MHz crystal C9002 (basic) | DATA ×4 | ≈ $24, plus $3.07 per order (one extended type fewer) | owner (v2) | Per-port power stays on the TPS2553s and the TCA6408A. Check MTT, the USB-IF strapping and the 3.3 V load (CH334 85 mA, same as the USB2514B's budget) |
-| **DATA ×4 at most 100 mm long**: 108 × 24 → 100 × 28 mm | DATA ×4 | the 5-board order went from $104.17 to $85.47 (bare PCB $31.90 → $13.20, JLC's 4-layer offer) | **applied** (2b84f26) | The offer stops at 10 PCBs: above that JLC's $25 engineering fee is back, so at 50 and 100 PCBs the board costs $49.10 and $65.20, $1–2 more than at 108 × 24 (calculator, 2026-10-20). Up to 100 × 37 costs the same at 5 and 10 PCBs ($13.10 / $19.20, no deburring line) |
+| **DATA ×4 at most 100 mm long**: 108 × 24 → 100 × 37 mm | DATA ×4 | the 5-board order went from $104.17 to $85.37 (bare PCB $31.90 → $13.10, JLC's 4-layer offer; no deburring line at 37 mm) | **applied** (2b84f26, a860935) | The offer stops at 10 PCBs: above that JLC's $25 engineering fee is back, so at 50 and 100 PCBs the board costs $53.80 and $73.40, $6–11 more than at 108 × 24 (calculator, 2026-10-20) |
 | **PD sink**: AP33772S (Global Sourcing, stock 0) → CH224A | hub | the hub order went from $205.95 to $185.29 | **applied** (1590b7a) | No input switch any more. The CH224Q (C46061833) and the HUSB238A-BB001-QN16R (C24833806, PD 3.x EPR to 28 / 48 V, $0.40 at 100) remain as second sources; the HUSB238 (non-A) and the CH224K stop at 20–25 V |
 | **Hub rows C and D not fitted** (already in `JLC_LEVERS`) | hub | ≈ $35 | decision | 2 × TPS26600, 2 × S6B, 4 LEDs and their passives per hub |
 
