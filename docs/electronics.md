@@ -427,6 +427,31 @@ places on lead-free HASL. If the base is ordered on its own, HASL saves $12.
 The logic's core-regulator inductor (L1, Abracon AOTA-B201610S3R3-101-T, C42411119) had 3 in JLC's stock
 that day: JLC Global Sourcing, as `catalog.py` notes.
 
+**Order panel** (the orchestrator's call, 2026-10-20).  One 1 × 2 mouse-bite panel, ENIG, Economic: $240
+for the rack's 2 + 2, against $270 as two orders.
+- **Layout.**  100 × 142 mm.  The logic board stays as drawn; the base is turned 180° above it, top edge
+  to top edge, 2 mm apart.  The bottom edges, which carry the T-head notches and sit on the cradle's base,
+  and the 5.5 mm slot ends stay milled.
+- **Tabs.**  Two, on the top-edge joint, at x 9 and 91: each is the other's mirror, so they meet.  These are
+  the only spots both top edges leave bare, between the cradle's ends and the parts and routes across the
+  top: the SWD pads, the crystal, CP_RUN and the bus tracks.
+  - Each tab is 6 mm wide, with seven 0.6 mm holes at a 1 mm pitch (0.4 mm between holes) on each side,
+    0.2 mm into the edge: 28 holes, within JLC's guide (5–8 a set, 0.35–0.4 mm apart).
+  - The guide also asks for a set every 50–60 mm; these are 82 mm apart.  Break the joint gently, or cut
+    the tabs.
+  - No copper within 1.2 mm of the edge there (`b.pcb["keepouts"]` "tab0", "tab1").  The nearest copper
+    is 2.19 mm from a hole (a GND via), the nearest part 2.34 mm (C17).
+  - The silkscreen "DATA ×4 v2.0" moved off the left tab, to x 17.
+- **Files:** `fab/data-port-x4-v2-panel-gerbers.zip`, `-panel-bom-jlcpcb.csv` (41 lines) and
+  `-panel-cpl-jlcpcb.csv`.
+  - The CPL has 316 parts: 204 on the logic board (`<ref>_L`), 112 on the base (`<ref>_B`).
+  - The base's 92 logic parts are DNP; their pads stay.
+- **Checks.**  DRC: 0 errors, 0 unconnected, the boards' 4 silkscreen warnings twice.  All 418 models
+  resolve.  Each half matches its variant's BOM and CPL.  Each copy's zone fills equal the board's.
+
+Rebuild it after any change to the board: `tools/kicad.sh data-port-x4-v2 --fab`, then
+`tools/panel.sh data-port-x4-v2`.
+
 | Block | Parts | Notes |
 |---|---|---|
 | Lead | J1 on the rear face (pin 1 INT at the top … pin 8 +5V at the bottom); SDA, SCL and INT through a TPD4E05U06 (U4, right beside pins 1–3), then a 2N7002 each (Q1–Q3, gate on +3V3) with 4.7k / 4.7k / 10k pull-ups on this side (R6–R8) | One ESD part where v1 has two USBLC6.  The FETs work as v1's (PCBA review X2): with DUT_5V off they open, so the node's pull-ups cannot feed this board's dead +3V3 through the chips' clamps.  They sit in the right-hand column under J1; its +5V pin lands on a +5V tab of the power plane |

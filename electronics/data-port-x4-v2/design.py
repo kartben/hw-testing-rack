@@ -97,6 +97,11 @@ PWR_Y = 48.4                        # each port's power cluster (switch, shunt, 
 # U3, the 3.3 V LDO (SOT-223, turned 90°: its tab up over the +3V3 area, its pins down over +5V), in the
 # left-hand column across the power plane's split
 LDO = (9.7, 55.7)
+# The order's panel (electronics/tools/panelize.py, tools/panel.sh): this board as drawn (DATA-4x-logic) and,
+# turned 180°, the base (DATA-4x), top edge to top edge 2 mm apart, so the bottom edges and the slot ends stay
+# milled.  Two mouse-bite tabs join them where both top edges are bare: at x 9 and 91 (each the other's mirror,
+# so they meet), clear of the cradle's 5.5 mm ends; no copper within 1.2 mm of the edge there
+TABS, TAB_W = (9.0, 91.0), 6.0
 J1_ROT = 270                        # J1 on the rear face: its pins run down (+y) from pin 1
 
 
@@ -764,11 +769,16 @@ def board() -> Board:
         "keepouts": [{"name": f"edge{i}", "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, W, 0.35), (W - 0.35, 0, W, H), (0, H - 0.35, W, H), (0, 0, 0.35, H),
-                         *((x0 - 0.35, top - 0.35, x1 + 0.35, H) for x0, x1, top in NOTCHES)))],
+                         *((x0 - 0.35, top - 0.35, x1 + 0.35, H) for x0, x1, top in NOTCHES)))] + [
+            # the panel's mouse bites (0.6 mm holes, 0.2 mm into the edge): copper at least 0.7 mm from them
+            {"name": f"tab{i}", "poly": [(x - TAB_W / 2 - 0.5, 0), (x + TAB_W / 2 + 0.5, 0), (x + TAB_W / 2 + 0.5, 1.2),
+                                         (x - TAB_W / 2 - 0.5, 1.2)]} for i, x in enumerate(TABS)],
+        "panel": {"gap": 2.0, "tabs": TABS, "tab_width": TAB_W, "bite": {"drill": 0.6, "pitch": 1.0, "offset": 0.2},
+                  "boards": [{"tag": "L", "variant": None, "rot": 0}, {"tag": "B", "variant": "base", "rot": 180}]},
         # the base DATA-4x: this PCB with the logic left off (module docstring)
         "variants": {"base": {"dnp": logic_only(b)}},
         "texts": [
-            {"text": "DATA ×4 v2.0", "x": 8.0, "y": 2.0, "size": 1.0},
+            {"text": "DATA ×4 v2.0", "x": 17.3, "y": 2.0, "size": 0.8},     # off the panel's tab at x 9
             *({"text": str(n), "x": CFG["usb"][n - 1] - 6.6, "y": USB_Y + 4.6, "size": 1.0} for n in range(1, 5)),
             # each header's pin names in two lines under it (the ESD sits right over it), stacked as its rows:
             # the even (upper) row's names over the odd (lower) row's
