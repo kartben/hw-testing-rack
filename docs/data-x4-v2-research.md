@@ -350,3 +350,9 @@ B3.3, set up in [multi-dut-node.md](multi-dut-node.md#a-logic-analyzer-in-a-sub-
    - Placement: the parts in blocks around the pins they use (electronics.md › DATA ×4 v2).
    - Layers: 4 ("si on peut repasser à 4 couches ce serait top").  Every signal routes at 4 layers on the
      standing board, as at 6.
+5. **The base DATA-4x is this board with the logic left off** ("pour la data 4x on attend la version
+   verticale"; the user had suggested it: "la 4x classique pourrait être la même que la logique mais
+   simplement avec des dnp").  v1 is not ordered for the proto.  The "two assembly variants, one PCB" plan
+   above comes back, on one face: same Gerbers, a BOM and a CPL per assembly (`b.pcb["variants"]`,
+   electronics.md › DATA ×4 v2, with its price).  Both fit in 100 × 100 at 4 layers, so a smaller
+   dedicated board would save nothing on the PCB, and DNP parts cost neither placement nor part-type fees.

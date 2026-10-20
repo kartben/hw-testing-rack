@@ -1608,10 +1608,10 @@
 		)
 		(uuid "8c0c8468-cdc1-5a11-bd29-da2b51a70874")
 	)
-	(text_box "DATA ×4 v2.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226\n  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an AP2112K 3.3 V; the PH 8 lead from the node's J7.\nPins: 32 on two CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 5, a TCA9534A for\n  the matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled;\n  v1 stays the other bays' board.\nLead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V (the node's J7 mirrored).\nI²C: TCA6408A 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45, TCA9534A 0x38; the node's INA226 0x40."
+	(text_box "DATA ×4 v2.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226\n  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an AP2114H 3.3 V; the PH 8 lead from the node's J7.\nPins: 32 on two CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 5, a TCA9534A for\n  the matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled;\n  v1 stays the other bays' board.\nLead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V (the node's J7 mirrored).\nI²C: TCA6408A 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45, TCA9534A 0x38; the node's INA226 0x40.\nAssembled as DATA-4x-logic (as drawn) or DATA-4x (BOM/CPL '-base': the matrix, the co-processor and the\n  ports' pin chains not fitted)."
 		(exclude_from_sim no)
 		(at 30 267.97 0)
-		(size 534 21.59)
+		(size 534 25.4)
 		(margins 2 2 2 2)
 		(stroke
 			(width 0)

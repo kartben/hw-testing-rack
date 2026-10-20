@@ -4,8 +4,8 @@ docs/data-x4-v2-research.md is the why; electronics.md › "DATA ×4 v2" the wha
 data-port-x4) stays the board of the other converted bays (decided 2026-10-20).  v2 keeps everything v1
 does and adds:
 
-* per port, 8 pins P1–P8 and the board's VREF on a 2 × 6 SMD header, soldered by hand (GND, VREF,
-  P1–P8, RESET_N, BOOT_N): each pin through TPD4E05U06 ESD and 100 Ω to an LSF0108 (A side = the DUT's VREF, B side =
+* per port, 8 pins P1–P8 and the board's VREF on a 2 × 6 through-hole header, soldered by hand (GND,
+  VREF, P1–P8, RESET_N, BOOT_N): each pin through TPD4E05U06 ESD and 100 Ω to an LSF0108 (A side = the DUT's VREF, B side =
   3.3 V; Vref_B and EN biased from the port's VBUS through 200k, so a port that is off isolates its
   pins, and a VREF left unconnected is pulled to GND by the ADC divider: nothing passes);
 * two CH446Q 8 × 16 crosspoints at ±5 V (TPS60400 for −5 V), each taking two ports' 16 pins on X; their
@@ -26,12 +26,21 @@ lines; the hub's strap pins all pulled; 100 nF at each USBLC6 VBUS pin; netclass
 
 The board STANDS in the drawer's rear bay, behind the port wall (the layout study's option B, decided
 2026-10-20; config/rack.yaml › pcb.data_port_x4_v2): 100 × 70 mm, held at both ends by a printed cradle
-(its slots take each end's 4 mm), its bottom edge on the drawer floor.  KiCad x = drawer x − 4, y = 72.5 − z
+(its slots take each end's 5.5 mm, two T-heads come through notches in its bottom edge), its bottom edge on
+the drawer floor.  KiCad x = drawer x − 4, y = 72.5 − z
 (y = 0 the top edge).  Every part JLC places sits on the front face (F.Cu, towards the port wall): JLC's
 Economic assembly, one side.  The lead's PH 8 (J1) stands on the rear face, soldered by hand.  Bands, top
 to bottom: the co-processor in the middle with its pull-ups, the matrix expander and the two crosspoints
-either side; the hub in the right-hand column; per port its pin chain (LSF0108, 100 Ω, ESD) above its
+either side; the hub in the top-right corner; per port its pin chain (LSF0108, 100 Ω, ESD) above its
 header; the headers; per port its power cluster; the vertical USB-C with their ESD and CC resistors.
+
+One PCB, two assemblies (b.pcb["variants"], build_board writes each one's BOM and CPL): as drawn, DATA-4x-logic;
+"base", DATA-4x, the converted bays' board (the user, 2026-10-20: v1 is not ordered, the base board is this one
+with the logic left off).  The base leaves unfitted the matrix sheet (crosspoints, −5 V, TCA9534A, FB1), the
+co-processor sheet and each port's pin chain (TPD4E05U06, 100 Ω, LSF0108, its VREF parts): what stays is v1's
+board, the hub, the four ports with their switch, INA226, ESD and CC, the expanders with RESET/BOOT, the
+lead's isolation and ESD, the 3.3 V.  No base signal runs through a logic part: the header's GND, RESET and
+BOOT stay live, its P pins and VREF end on empty pads, hub port 5 ends on R23/R24's empty pads.
 4 layers, JLC04161H-7628: F · In1 GND · In2 +3V3 above, +5V below · B (B.Cu free for the routing).  6 layers
 (pcb.layers, X4V2_LAYERS=6: F · GND · sig · sig · power · B) also routes, for a comparison.
 """
@@ -81,9 +90,13 @@ PWR_SPLIT = 55.7
 CHIP = [(30.0, 18.8), (68.0, 18.8)]  # the crosspoints, between their two ports, above the pin chains
 CP = (47.0, 12.9)                   # the co-processor, top centre, turned 180°: its buses at the south-east corner
 HX, HY = 87.5, 15.0                 # the hub, top-right corner, turned 90°: its DN pins face down, to the ports
+MX_EXP = (14.0, 7.0)                # the matrix expander (TCA9534A), top-left corner, turned 90°
 # the pin chain's rows: TPD4E05U06 × 2 under the header's pins, the 100 Ω arrays, the LSF0108 (A side down)
 TPD_Y, RN_Y, LSF_Y = 36.4, 34.2, 29.6
 PWR_Y = 48.4                        # each port's power cluster (switch, shunt, INA226): its frame's top
+# U3, the 3.3 V LDO (SOT-223, turned 90°: its tab up over the +3V3 area, its pins down over +5V), in the
+# left-hand column across the power plane's split
+LDO = (9.7, 55.7)
 J1_ROT = 270                        # J1 on the rear face: its pins run down (+y) from pin 1
 
 
@@ -310,22 +323,25 @@ def hub_sheet(b: Board):
     # the lead's I²C and INT: one 4-line TVS array right of J1's pins 1–3 (front face)
     part(s, "U4", "tpd4e05", {"D1+": "LEAD_SDA", "D1-": "LEAD_SCL", "D2+": "LEAD_INT", "D2-": None, "GND": "GND"},
          pcb=P(92.9, 33.5, 0), sch=at(48, 30, fields=(-3, -6)))
-    # one part per value where the size allows (JLC bills each part type): 22 µF 0805 as the ports' VBUS, 1 µF
-    # and 4.7 µF in 0402 (the LDOs want ≥ 1 µF: 4.7 µF 0402 keeps ≈ 2 µF at 3.3 V)
-    C(s, "C1", "22u", "+5V", "GND", size="0805", pcb=P(92.6, 47.6, 90), sch=at(64, 30))
+    # one part per value where the size allows (JLC bills each part type): 22 µF 0805 as the ports' VBUS (and
+    # the 3.3 V LDO's), 1 µF and 4.7 µF in 0402; J1's 22 µF in 1206 as v1, more of it left at 5 V
+    C(s, "C1", "22u", "+5V", "GND", size="1206", pcb=P(92.6, 47.8, 90), sch=at(64, 30))
 
-    s.frame("3.3 V for the hub, the expanders and the INA226s (AP2112K)", 6, 56, 70, 86)
+    s.frame("3.3 V for the hub, the expanders and the INA226s (AP2114H, SOT-223 on copper)", 6, 56, 70, 86)
     s.tag("+5V", (24, 66), "up")
-    s.wire((24, 66), (24, 69), "U3.VIN")
-    # in the left-hand column, on the split between the power plane's two areas: VIN (pin 1) over +5V, VOUT
-    # (pin 5) over +3V3
-    part(s, "U3", "ldo_lp", {"VIN": "+5V", "EN": "+5V", "GND": "GND", "NC": None, "VOUT": "+3V3"},
-         pcb=P(9.0, PWR_SPLIT + 0.8, 0), sch=at(34, 70, fields=(-3, -4)))
-    C(s, "C2", "1u", "+5V", "GND", size="0402", pcb=P(9.0, PWR_SPLIT + 3.6, 0), sch=at(20, 72))
+    s.wire((24, 66), (24, 69), "U3.VI")
+    # The USB2517I draws 330 mA with four High-Speed ports busy (its datasheet, all supplies, typical; 420 mA
+    # with seven): ≈ 0.35 A in all, 0.6–0.7 W in the LDO from 5.0–5.24 V, twice v1's (its USB2514B: 155 mA).
+    # Too much for v1's AP2112K in SOT-23-5, so an AP2114H: the same low dropout (≈ 0.16 V at 0.35 A: the hub
+    # keeps running while the ports sag the +5V, as v1 wants), 1 A, in SOT-223, its tab on a top-side +3V3
+    # island with six vias into the +3V3 plane (128 °C/W bare; on the island and the plane ≈ 60–70 °C/W:
+    # ≈ 45 °C over the drawer's air).  Its VIN pin on a +5V island with two vias
+    part(s, "U3", "ldo_1a", {"VI": "+5V", "VO": "+3V3", "GND": "GND"}, pcb=P(*LDO, 90),
+         sch=at(34, 69, fields=(-3, -4)))
+    C(s, "C2", "22u", "+5V", "GND", size="0805", pcb=P(LDO[0] + 2.9, LDO[1] + 6.9, 270), sch=at(20, 72))
     s.wire("C2.1", (20, 69), (24, 69))
-    s.wire("U3.EN", (28, 70), (28, 69))
-    C(s, "C3", "4.7u", "+3V3", "GND", size="0402", pcb=P(9.0, PWR_SPLIT - 2.0, 0), sch=at(44, 72))
-    s.wire("U3.VOUT", (44, 69), "C3.1")
+    C(s, "C3", "22u", "+3V3", "GND", size="0805", pcb=P(LDO[0], LDO[1] - 6.3, 90), sch=at(44, 72))
+    s.wire("U3.VO", (44, 69), "C3.1")
     s.wire((44, 69), (50, 69), net="+3V3")
     s.tag("+3V3", (50, 69), "up")
 
@@ -461,7 +477,7 @@ def matrix_sheet(b: Board):
     # The matrix's +5V: the crosspoints' VDD, the −5 V inverter and the co-processor's LDO (≈ 110 mA) behind a
     # 600 Ω ferrite, off the ports' switching and the charge pump's 250 kHz.  In the left-hand column under the
     # power plane's split: its +5V end over the +5V area; +5V_MX is routed up to the loads (Supply)
-    part(s, "FB1", "fb600", {"1": "+5V", "2": "+5V_MX"}, pcb=P(9.0, 62.0, 270), sch=at(124, 18))
+    part(s, "FB1", "fb600", {"1": "+5V", "2": "+5V_MX"}, pcb=P(8.6, 63.4, 270), sch=at(124, 18))
     s.wire("FB1.1", ("FB1.1", -3, 0))
     s.tag("+5V", ("FB1.1", -3, 0), "left")
     s.wire("FB1.2", ("FB1.2", 3, 0))
@@ -481,7 +497,7 @@ def matrix_sheet(b: Board):
     part(s, "U10", "tca9534", {"VDD": "+3V3", "GND": "GND", "A0": "GND", "A1": "GND", "A2": "GND", "SCL": "SCL",
                                "SDA": "SDA", "~{INT}": None, "P0": "MX_DAT", "P1": "MX_CK", "P2": "MX_STB1",
                                "P3": "MX_STB2", "P4": "MX_RST", "P5": "CP_RUN", "P6": "CP_BOOT_N", "P7": "MARK"},
-         pcb=P(14.0, 7.0, 90), sch=at(160, 84, fields=(-10, -8)))
+         pcb=P(*MX_EXP, 90), sch=at(160, 84, fields=(-10, -8)))
     rail_v(s, "GND", ["U10.A0", "U10.A1", "U10.A2"], -2, "down")
     C(s, "C29", "100n", "+3V3", "GND", size="0402", pcb=P(10.0, 7.0, 90), sch=at(140, 74))
     # RST held high (all switches open) until the node writes the expander; TCA9534A pins are inputs at reset
@@ -626,6 +642,17 @@ def coproc_sheet(b: Board):
 
 
 # ---------------------------------------------------------------------------------------------- board
+def logic_only(b: Board) -> list[str]:
+    """The parts the base DATA-4x leaves off: the matrix and co-processor sheets whole, and per port its pin
+    chain (the two TPD4E05U06, the 100 Ω arrays, the LSF0108, its Vref_B 200k and 100 nF, the VREF divider)."""
+    refs = [p.ref for p in b.parts.values() if p.sheet and p.sheet.name in ("Matrix", "Co-processor")]
+    for n in range(1, 5):
+        k = 100 * n
+        refs += [f"U{k + 5}", f"U{k + 6}", f"RN{k + 1}", f"RN{k + 2}", f"U{k + 7}", f"R{k + 11}", f"C{k + 5}",
+                 f"R{k + 12}", f"R{k + 13}"]
+    return sorted(r for r in refs if r in b.parts and b.parts[r].in_bom and not r.startswith("#"))
+
+
 def board() -> Board:
     b = Board("data-port-x4-v2", "DATA ×4 v2", "2.0",
               comments=["A converted bay's drawer board: four USB-C behind a hub, 32 switchable pins on 8 buses, "
@@ -634,12 +661,14 @@ def board() -> Board:
     b.root_paper, b.root_buses = "A2", True
     b.root_notes = [
         "DATA ×4 v2.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226",
-        "  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an AP2112K 3.3 V; the PH 8 lead from the node's J7.",
+        "  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an AP2114H 3.3 V; the PH 8 lead from the node's J7.",
         "Pins: 32 on two CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 5, a TCA9534A for",
         "  the matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled;",
         "  v1 stays the other bays' board.",
         "Lead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V (the node's J7 mirrored).",
         "I²C: TCA6408A 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45, TCA9534A 0x38; the node's INA226 0x40.",
+        "Assembled as DATA-4x-logic (as drawn) or DATA-4x (BOM/CPL '-base': the matrix, the co-processor and the",
+        "  ports' pin chains not fitted).",
     ]
     hub_sheet(b)
     for n in range(1, 5):
@@ -674,6 +703,19 @@ def board() -> Board:
         via = (c1[0] + 0.5, PWR_SPLIT + 1.1)                   # right of the shunt's VBUS pad, left of the INA226
         hand_tracks.append(("+5V", "F.Cu", 0.6, [pin_in, c1, (via[0], c1[1] + 0.5), via]))
         hand_vias.append(("+5V", *via, 0.6, 0.3))
+    # U3's islands' vias: six from the tab's +3V3 island into the +3V3 plane, either side of the tab; two from
+    # the VIN island into the +5V plane, between the VIN pin and C2
+    lx, ly = LDO
+    hand_vias += [("+3V3", x, y, 0.5, 0.3) for x in (lx - 3.05, lx + 3.05) for y in (ly - 5.1, ly - 3.5, ly - 1.9)]
+    hand_vias += [("+5V", lx + dx, ly + 4.8, 0.6, 0.3) for dx in (1.9, 3.15)]
+    # CP_RUN, from the matrix expander's P5 (pin 10, top left) to the co-processor's RUN pull-up R25, along the
+    # top edge on B.Cu under the SWD pads (Freerouting left it open)
+    rx, ry = MX_EXP[0] + 2.5 * 0.65, MX_EXP[1] - 2.8625                # U10 pin 10, turned 90°
+    r25 = (CP[0] - 3.8 + 0.51, 5.4)                                     # R25's CP_RUN pad
+    hand_tracks += [("CP_RUN", "F.Cu", 0.127, [(rx, ry), (rx, 2.4)]),
+                    ("CP_RUN", "B.Cu", 0.127, [(rx, 2.4), (rx + 0.65, 1.75), (r25[0], 1.75)]),
+                    ("CP_RUN", "F.Cu", 0.127, [(r25[0], 1.75), r25])]
+    hand_vias += [("CP_RUN", rx, 2.4, 0.5, 0.3), ("CP_RUN", r25[0], 1.75, 0.5, 0.3)]
     # the RP2354B's VREG_PGND (pin 62, between VREG_AVDD and VREG_LX on its south face) inwards onto its
     # exposed GND pad, under the package
     ux, uy = CP
@@ -707,6 +749,14 @@ def board() -> Board:
             {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "poly": IN_3V3},
             {"layer": pwr, "net": "+5V", "name": "pwr-5v", "poly": IN_5V},
             {"layer": pwr, "net": "+3V3_CP", "name": "pwr-3v3cp", "defer": True, "priority": 1, "poly": ISLAND},
+            # U3 (AP2114H, ≈ 0.65 W): top-side copper on its tab with C3's +3V3 pad, and on VIN with C2's +5V
+            # pad, each with its vias to its plane; exclusive, so the router keeps its tracks off them
+            {"layer": "F.Cu", "net": "+3V3", "name": "ldo-vout", "priority": 3, "exclusive": 0.3,
+             "poly": [(LDO[0] - 3.6, LDO[1] - 5.8), (LDO[0] + 3.6, LDO[1] - 5.8), (LDO[0] + 3.6, LDO[1] - 1.3),
+                      (LDO[0] - 3.6, LDO[1] - 1.3)]},
+            {"layer": "F.Cu", "net": "+5V", "name": "ldo-vin", "priority": 3, "exclusive": 0.3,
+             "poly": [(LDO[0] + 1.3, LDO[1] + 2.0), (LDO[0] + 3.75, LDO[1] + 2.0), (LDO[0] + 3.75, LDO[1] + 6.5),
+                      (LDO[0] + 1.3, LDO[1] + 6.5)]},
             {"layer": "F.Cu", "net": "GND"},
             {"layer": "B.Cu", "net": "GND"},
         ],
@@ -715,6 +765,8 @@ def board() -> Board:
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, W, 0.35), (W - 0.35, 0, W, H), (0, H - 0.35, W, H), (0, 0, 0.35, H),
                          *((x0 - 0.35, top - 0.35, x1 + 0.35, H) for x0, x1, top in NOTCHES)))],
+        # the base DATA-4x: this PCB with the logic left off (module docstring)
+        "variants": {"base": {"dnp": logic_only(b)}},
         "texts": [
             {"text": "DATA ×4 v2.0", "x": 8.0, "y": 2.0, "size": 1.0},
             *({"text": str(n), "x": CFG["usb"][n - 1] - 6.6, "y": USB_Y + 4.6, "size": 1.0} for n in range(1, 5)),
@@ -738,8 +790,10 @@ NETCLASSES = [
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 5,
      "_patterns": ["*+3V3_CP", "*+1V1", "-5V", "+5V_MX"]},
-    # +5V: the plane carries the ports' current; its routed stretches feed the few loads above the split
-    {"name": "Power", "clearance": 0.15, "track_width": 0.4, "via_diameter": 0.6, "via_drill": 0.3,
+    # +5V: the plane carries the ports' current; its routed stretches feed the few loads above the split, at v1's
+    # 0.6 mm.  The ports' 5V_SW and VBUS stay at 0.3 mm: the vertical USB-C's VBUS pads are 0.3 mm wide at a
+    # 0.5 mm pitch, so a wider track can't reach them, and at the 0.62 A limit 15 mm of it drops ≈ 15 mV
+    {"name": "Power", "clearance": 0.15, "track_width": 0.6, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
      "_patterns": ["+5V"]},

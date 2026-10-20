@@ -241,8 +241,10 @@ pcb:
                             # J102–J402: per port a 1 × 3 2.54 header (GND, RESET_N, BOOT_N) along x, pin 1 at pin1[n] (KiCad),
                             # the right port of a pair mirrored; not fitted by JLC, soldered by hand for Dupont jumpers
   data_port_x4_v2:          # DATA ×4 v2 (electronics/data-port-x4-v2, docs/data-x4-v2-research.md): v1 plus 32 switchable pins
-                            # on 8 buses and the RP2354B analyzer, for the analyzer bays only (v1 stays the base board).  A
-                            # bay with `x4: v2` shows it in the viewer and the BOM prices it (tools/bom.py, its logic variant).
+                            # on 8 buses and the RP2354B analyzer (DATA-4x-logic); the same PCB with the logic left off is
+                            # the base DATA-4x of the other converted bays (the user, 2026-10-20: v1 is not ordered for the
+                            # proto).  A bay with `x4: v2` shows it in the viewer and the BOM prices its logic variant
+                            # (tools/bom.py); the BOM's other converted bays still take v1 there.
                             # It STANDS at the back of the drawer's rear bay (docs/data-x4-v2-layout-options.md, option B),
                             # held by its printed cradle (parts/x4_cradle.scad).  KiCad x = board x = drawer x − x0, KiCad
                             # y = top_z − drawer z (y = 0 its top edge).  Its front face (F.Cu, every part JLC places:

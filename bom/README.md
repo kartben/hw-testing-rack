@@ -61,7 +61,7 @@ What each order pays once, whatever the number of boards, against what grows wit
 | data-port | Economic | 6 / 7 | 6 (3) | 9.21 | 25.22 | 11.94 | **37.16** | 37.16 | 27.11 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.26 | **26.38** | 26.38 | 25.59 |
 | data-port-x4 | Economic | 1 / 2 | 26 (9) | 27.63 | 50.44 | 34.93 | **85.37** | 85.37 | 77.19 |
-| data-port-x4-v2 | Economic | 1 / 2 | 39 (20) | 61.40 | 106.05 | 68.90 | **174.95** | 174.95 | 154.67 |
+| data-port-x4-v2 | Economic | 1 / 2 | 41 (21) | 64.47 | 106.05 | 68.90 | **174.95** | 174.95 | 154.67 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
 | **All** | | | | | | | **865.30** | **865.30** | **741.87** |
 
@@ -100,15 +100,15 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | data-port | 13.77 | 6.53 | 3.94 | 1.96 | 1.49 | 1.30 |
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
 | data-port-x4 | 42.68 | 25.86 | 20.03 | 13.38 | 11.97 | 11.60 |
-| data-port-x4-v2 | 87.48 | 53.27 | 40.82 | 28.20 | 25.56 | 24.76 |
+| data-port-x4-v2 | 87.48 | 53.30 | 40.88 | 28.25 | 25.56 | 24.75 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4, 1 data-port-x4-v2) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | data-port-x4-v2 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | 1 | 297.81 | 185.51 | 35.45 | 26.38 | 85.37 | 174.95 | **839.47** |
-| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 25.86 | 53.27 | **337.89** |
-| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 20.03 | 40.82 | **276.72** |
+| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 25.86 | 53.30 | **337.92** |
+| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 20.03 | 40.88 | **276.78** |
 
 ## Printed parts
 
@@ -296,11 +296,12 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4, 1 
 | Electronics | Bare PCB data-port-x4 (4-layer 100×37 mm, JLC04161H-7628, lead-free HASL) | 5  | 2.41 | 12.05 | estimate, not quoted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray | 1  | 38.72 | 38.72 | estimate, not quoted |
 | Electronics | Components data-port-x4: JLC quote minus the catalogue prices above | 1  | 0.83 | 0.83 | estimate, not quoted |
-| Electronics | 22u — Capacitor 22u 0805 | 10  | 0.18 | 1.78 | LCSC/JLCPCB C45783 |
-| Electronics | 1u — Capacitor 1u 0402 | 28  | 0.01 | 0.18 | LCSC/JLCPCB C52923 |
-| Electronics | 4.7u — Capacitor 4.7u 0402 | 10  | 0.01 | 0.10 | LCSC/JLCPCB C23733 |
+| Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
+| Electronics | 22u — Capacitor 22u 0805 | 12  | 0.18 | 2.14 | LCSC/JLCPCB C45783 |
 | Electronics | 33p — Capacitor 33p 0402 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C1562 |
+| Electronics | 1u — Capacitor 1u 0402 | 26  | 0.01 | 0.16 | LCSC/JLCPCB C52923 |
 | Electronics | 100n — Capacitor 100n 0402 | 82  | 0.01 | 0.42 | LCSC/JLCPCB C1525 |
+| Electronics | 4.7u — Capacitor 4.7u 0402 | 8  | 0.01 | 0.08 | LCSC/JLCPCB C23733 |
 | Electronics | 15p — Capacitor 15p 0402 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C1548 |
 | Electronics | KT-0805G — green LED 0805 | 2  | 0.02 | 0.04 | LCSC/JLCPCB C2297 |
 | Electronics | GZ2012D601TF — ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805 | 2  | 0.02 | 0.04 | LCSC/JLCPCB C1017 |
@@ -331,12 +332,13 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4, 1 
 | Electronics | 100 — 4 × resistor array 0402, 5 % | 16  | 0.00 | 0.00 | LCSC/JLCPCB C48442 |
 | Electronics | USB2517I-JZX — USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial | 2  | 4.15 | 8.30 | LCSC/JLCPCB C478081 |
 | Electronics | TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT | 4  | 0.81 | 3.24 | LCSC/JLCPCB C181499 |
-| Electronics | AP2112K-3.3TRG1 — 3.3 V 600 mA LDO, 250 mV dropout | 4  | 0.16 | 0.63 | LCSC/JLCPCB C51118 |
+| Electronics | AP2114H-3.3TRG1 — 3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223 | 2  | 0.21 | 0.42 | LCSC/JLCPCB C150716 |
 | Electronics | TPD4E05U06DQAR — 4-channel ESD, 0.5 pF, 5.5 V stand-off, flow-through (pins 6, 7, 9, 10 route through) | 18  | 0.08 | 1.38 | LCSC/JLCPCB C138714 |
 | Electronics | CH446Q — 8 × 16 analog crosspoint switch, 45–65 Ω at 12 V span, serial or parallel addressing | 4  | 1.46 | 5.85 | LCSC/JLCPCB C109471 |
 | Electronics | TPS60400DBVR — charge pump voltage inverter, 60 mA | 2  | 0.73 | 1.45 | LCSC/JLCPCB C9839 |
 | Electronics | TCA9534APWR — 8-bit I2C I/O expander, push-pull outputs, A version (0x38–0x3F) | 2  | 1.25 | 2.50 | LCSC/JLCPCB C206010 |
 | Electronics | RP2354B — RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO) | 2  | 1.40 | 2.80 | LCSC/JLCPCB C39843328 |
+| Electronics | AP2112K-3.3TRG1 — 3.3 V 600 mA LDO, 250 mV dropout | 2  | 0.16 | 0.31 | LCSC/JLCPCB C51118 |
 | Electronics | TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit | 8  | 0.27 | 2.13 | LCSC/JLCPCB C111738 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 8  | 0.69 | 5.52 | LCSC/JLCPCB C49851 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 8  | 0.17 | 1.32 | LCSC/JLCPCB C7519 |
@@ -345,7 +347,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4, 1 
 | Electronics | ABM8-272-T3 — 12 MHz crystal, 10 pF load, 50 Ω ESR, ±30 ppm, 3225 | 2  | 0.60 | 1.20 | LCSC/JLCPCB C20625731 |
 | Electronics | Bare PCB data-port-x4-v2 (4-layer 100×70 mm, JLC04161H-7628, ENIG) | 5  | 4.67 | 23.37 | estimate, not quoted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray, L1 minimum purchase (32) | 1  | 80.68 | 80.68 | estimate, not quoted |
-| Electronics | Components data-port-x4-v2: JLC quote minus the catalogue prices above | 1  | 5.69 | 5.69 | estimate, not quoted |
+| Electronics | Components data-port-x4-v2: JLC quote minus the catalogue prices above | 1  | 5.04 | 5.04 | estimate, not quoted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.0 kg | 20.00 | 60.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 142  | 0.03 | 4.26 | AliExpress (bulk) / Ruthex |

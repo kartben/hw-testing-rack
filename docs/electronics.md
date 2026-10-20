@@ -357,8 +357,10 @@ JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $85 for 5 PCBs w
 
 v1 plus virtual wires and a logic analyzer: 32 switchable pins on 8 buses and an RP2354B
 co-processor (the why in [data-x4-v2-research.md](data-x4-v2-research.md), its firmware in
-[coproc-firmware-research.md](coproc-firmware-research.md)).  For the analyzer bays only, bay B3
-first; v1 stays the board of the other converted bays (decided 2026-10-20).
+[coproc-firmware-research.md](coproc-firmware-research.md)).  One PCB, two assemblies: DATA-4x-logic
+for the analyzer bays (B3 first), and the base DATA-4x for the other converted bays, the same board with
+the logic left off (the user, 2026-10-20: "pour la data 4x on attend la version verticale"; v1 is not
+ordered for the proto).
 
 **It stands.**  The board stands behind the port wall instead of lying in the drawer's rear bay
 ([data-x4-v2-layout-options.md](data-x4-v2-layout-options.md), option B, decided 2026-10-20).  Geometry
@@ -378,12 +380,60 @@ in `config/rack.yaml` › `pcb.data_port_x4_v2`.
   JST B8B-PH-K-S (C157974) at x 90, its pins in a vertical row (z 41 → 27): the lead comes up from the
   cable window beside the board's right end and plugs in from the rear.
 
+**Two assemblies.**  `design.py` declares a variant, `b.pcb["variants"]["base"]`.  `build_board.py` then
+writes a BOM and a CPL for each assembly of the same PCB, from the same Gerbers:
+- **DATA-4x-logic**, everything fitted: `fab/data-port-x4-v2-bom-jlcpcb.csv`, `…-cpl-jlcpcb.csv`.
+- **DATA-4x**, the base: `fab/data-port-x4-v2-base-bom-jlcpcb.csv`, `…-base-cpl-jlcpcb.csv`, and the
+  detailed `data-port-x4-v2-base-bom.csv`, where the unfitted parts carry DNP.  92 parts stay off:
+  - the matrix sheet whole: both CH446Q, the TPS60400 and its capacitors, the TCA9534A, FB1;
+  - the co-processor sheet whole: the RP2354B, its LDO, crystal, core regulator, USB 27 Ω, LED, bus
+    pull-ups and dividers;
+  - each port's pin chain: both TPD4E05U06, the 100 Ω arrays, the LSF0108, its Vref_B 200k and 100 nF,
+    and the VREF divider.
+
+What stays is v1's board, checked against v1's list of functions and review fixes (the DATA ×4
+session's review, 2026-10-20):
+- the hub;
+- the four ports, each with its switch (off by default), R_ILIM, INA226, USBLC6, CC resistors and VBUS
+  bulk capacitor;
+- the two expanders with RESET/BOOT through 1k and their 100k pull-ups;
+- the lead's ESD and its I²C isolation (2N7002 ×3 with 4.7k / 4.7k / 10k);
+- the 3.3 V LDO.
+
+No base signal passes through a logic part, so the base needs no 0 Ω or solder jumper:
+- The header's GND, RESET and BOOT stay live. Its P pins and VREF end on empty pads.
+- Hub port 5 ends on R23/R24's empty pads: the host sees a 7-port hub with ports 1–4 in use, as with the
+  logic version, whose ports 6–7 are empty too. Strapping 5–7 off (PRT_DIS pull-ups) would take six more
+  resistors and gains nothing.
+- +5V_MX, −5 V and +3V3_CP have no source and no load.
+- The bus nets float, with nothing on them.
+
+ENIG is there for the RP2354B's 0.4 mm QFN-80. The base's finest pitch is the hub's 0.5 mm, which v1
+places on lead-free HASL. If the base is ordered on its own, HASL saves $12.
+
+**Price** (indicative, from JLC's catalogue and calculator on 2026-10-20; no shipping):
+- Bare PCB: 100 × 70 mm, 4 layers, within JLC's ≤ 100 × 100 offer.
+- Economic PCBA, one face: setup $8.18, stencil $1.53, $3.07 per extended part type, $0.0016 a joint.
+- Parts at JLC's price breaks × 1.12.
+- X-ray $1.64 a board for the QFNs, packaging $0.50.
+- J1 and the four headers come loose from LCSC: $2.29 for 5 boards, $4.59 for 10.
+
+| Assembly | Part types (extended) | Joints / board | 5 boards | 10 boards |
+|---|---|---|---|---|
+| DATA-4x (base), ENIG | 24 (10) | 511 | $154 ($30.9 each) | $237 ($23.7 each) |
+| DATA-4x (base), lead-free HASL | 24 (10) | 511 | $142 ($28.4 each) | $224 ($22.4 each) |
+| DATA-4x-logic, ENIG | 41 (21) | 1,109 | $262 ($52.4 each) | $405 ($40.5 each) |
+
+The logic's core-regulator inductor (L1, Abracon AOTA-B201610S3R3-101-T, C42411119) had 3 in JLC's stock
+that day: JLC Global Sourcing, as `catalog.py` notes.
+
 | Block | Parts | Notes |
 |---|---|---|
 | Lead | J1 on the rear face (pin 1 INT at the top … pin 8 +5V at the bottom); SDA, SCL and INT through a TPD4E05U06 (U4, right beside pins 1–3), then a 2N7002 each (Q1–Q3, gate on +3V3) with 4.7k / 4.7k / 10k pull-ups on this side (R6–R8) | One ESD part where v1 has two USBLC6.  The FETs work as v1's (PCBA review X2): with DUT_5V off they open, so the node's pull-ups cannot feed this board's dead +3V3 through the chips' clamps.  They sit in the right-hand column under J1; its +5V pin lands on a +5V tab of the power plane |
 | Hub | USB2517I (U1) on its default straps (CFG_SEL 000: no SMBus; NON_REM, GANG_EN, BOOST, PRT_SWP pulled down), 24 MHz crystal, RBIAS 12k | 7 ports: 1–4 the USB-C (busid `1-1.n` as v1), 5 the co-processor, 6–7 unused.  Top-right corner, right over J1, turned so the downstream pins face down towards the ports; its crystal below its west face.  The straps sit in two rows over its north face (RN1, RN2, R3–R5, R9), plus RN3 at its south-east corner |
 | Ports ×4 | As v1; EN pulled down (a port stays off until the node switches it on), R_ILIM right beside the switch's ILIM pin, the INA226's Vbus on the shunt's load-side sense pad, 100 nF at each USBLC6's VBUS pin | PCBA review X3, X4, X9.  Each port's power cluster sits between its header and its receptacle.  The USBLC6 is right of the receptacle, the CC resistors left of it |
 | Expanders | As v1 (U2 0x20, U6 0x21); 100k pull-ups on the RESET/BOOT expander lines | X6: they float with nothing plugged in.  Each pair's expander sits between its two power clusters |
+| 3.3 V | AP2114H-3.3 (U3, C150716, SOT-223) from +5V, 22 µF in and out (C2, C3) | It takes the hub, the expanders and the INA226s.  The USB2517I draws 330 mA with four High-Speed ports busy (its datasheet, all supplies, typical; 420 mA with seven), against the USB2514B's 155 mA on v1.  That is ≈ 0.6–0.7 W in the LDO from 5.0–5.24 V, too much for v1's AP2112K in SOT-23-5.  The AP2114H keeps v1's low dropout (≈ 0.16 V at 0.35 A), so the hub keeps running while the ports sag the +5V.  It is rated 1 A with thermal shutdown at 160 °C, 128 °C/W bare.  Its tab sits on a top-side +3V3 island with six vias into the +3V3 plane, its VIN on a +5V island with two vias: ≈ 60–70 °C/W, about 45 °C over the drawer's air.  Left-hand column, across the power plane's split.  The AMS1117 (basic) would save $3.07 but drops 1.1 V |
 | Headers ×4 | 2 × 6 2.54 mm through-hole (J102–J402), read as two rows: upper VREF · P1 · P2 · P3 · P4 · BOOT, lower GND · P5 · P6 · P7 · P8 · RESET | Soldered by hand, not by JLC (hanxia HX PZ2.54-2x6P ZZ, C32713279): out of the JLC BOM and CPL.  Through-hole, easier to solder than the SMD version (the user, 2026-10-20).  The rear face carries only J1, so the tails (1.5 mm) are free.  Centred at the port's x and z 30.5, pins forward over the plate.  The odd pins are on the lower row, the even on the upper.  The names are on the silkscreen under each header, in two lines stacked like the rows (VREF, GND, BOOT, RST spelt out).  RESET/BOOT go through 1k as v1, their resistors in a column right of the header.  Strain-relieve the jumpers (tie them down) rather than letting them pull on the header |
 | Pins ×4 | 2 × TPD4E05U06 in flow-through, 100 Ω per pin (4 × 0402 arrays), LSF0108 (U107–U407) | A side = the DUT's VREF, B side = 3.3 V.  Vref_B and EN come from the port's VBUS through 200k.  VREF / 2 goes to the co-processor's ADC (100k / 100k), which also holds an unconnected VREF at 0 V.  So a port that is off, or has no VREF, passes nothing |
 | Matrix | 2 × CH446Q at ±5 V (U7: ports 1–2, U8: ports 3–4; their Y0–Y7 joined = buses D C B A E F G H), TPS60400 for −5 V (U9), TCA9534A at 0x38 (U10); their +5V (+5V_MX) through a 600 Ω ferrite (FB1, GZ2012D601TF) | The ferrite keeps the ports' switching and the charge pump's 250 kHz apart.  It carries the crosspoints, the inverter and the co-processor's LDO, about 110 mA (33 mV).  TCA9534A: P0 DAT · P1 CK · P2 STB U7 · P3 STB U8 · P4 RST (pulled up: every switch open until the node writes it) · P5 co-processor RUN · P6 BOOTSEL · P7 mark.  Each bus is pulled up to 3.3 V by 10k (RN8, RN9), the B-side pull-up of whatever pins it joins |
@@ -439,6 +489,12 @@ Dense rules at JLC's multilayer floor:
 - 0.1 mm clearance (JLC: 0.09);
 - 0.5 / 0.3 mm vias;
 - 0.2 mm from a via hole to a track (JLC's minimum).
+
+Power tracks:
+- The routed +5V stretches are 0.6 mm, as v1.
+- The ports' 5V_SW and VBUS are 0.3 mm (v1: 0.4).  The vertical USB-C's VBUS pads are 0.3 mm wide at a
+  0.5 mm pitch, so a wider track can't reach them without necking down.  At the switch's 0.62 A limit,
+  15 mm of 0.3 mm outer copper drops ≈ 15 mV.
 
 The USB pairs are left to the router: the hub's host is the node's ESP32-S3, full speed only, so every
 link runs at 12 Mbit/s.  ENIG, flat for the RP2354B's 0.4 mm QFN-80.

@@ -504,19 +504,14 @@
   ],
   "data-port-x4-v2": [
    [
-    "C45783",
-    5,
+    "C12891",
+    1,
     "22u"
    ],
    [
-    "C52923",
-    14,
-    "1u"
-   ],
-   [
-    "C23733",
-    5,
-    "4.7u"
+    "C45783",
+    6,
+    "22u"
    ],
    [
     "C1562",
@@ -524,9 +519,19 @@
     "33p"
    ],
    [
+    "C52923",
+    13,
+    "1u"
+   ],
+   [
     "C1525",
     41,
     "100n"
+   ],
+   [
+    "C23733",
+    4,
+    "4.7u"
    ],
    [
     "C1548",
@@ -639,9 +644,9 @@
     "TCA6408ARGTR"
    ],
    [
-    "C51118",
-    2,
-    "AP2112K-3.3TRG1"
+    "C150716",
+    1,
+    "AP2114H-3.3TRG1"
    ],
    [
     "C138714",
@@ -667,6 +672,11 @@
     "C39843328",
     1,
     "RP2354B"
+   ],
+   [
+    "C51118",
+    1,
+    "AP2112K-3.3TRG1"
    ],
    [
     "C111738",
@@ -3812,6 +3822,48 @@
    "category": "Power Management (PMIC)",
    "manufacturer": "Texas Instruments",
    "source": "local-db (snapshot stock)"
+  },
+  "C150716": {
+   "mfr": "AP2114H-3.3TRG1",
+   "package": "SOT-223",
+   "stock": 6216,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 5,
+     "qTo": 49,
+     "price": 0.2319
+    },
+    {
+     "qFrom": 50,
+     "qTo": 149,
+     "price": 0.1844
+    },
+    {
+     "qFrom": 150,
+     "qTo": 499,
+     "price": 0.1641
+    },
+    {
+     "qFrom": 500,
+     "qTo": 2499,
+     "price": 0.1387
+    },
+    {
+     "qFrom": 2500,
+     "qTo": 3999,
+     "price": 0.1274
+    },
+    {
+     "qFrom": 4000,
+     "qTo": null,
+     "price": 0.1206
+    }
+   ],
+   "category": "Power Management (PMIC)",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 6215
   }
  }
 }
