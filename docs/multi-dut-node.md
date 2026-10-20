@@ -1,7 +1,9 @@
 # One node, four boards: the firmware side
 
-> **Status: design only in the firmware; the tools and the node's simulator
-> follow it (see Tools).**  Density epic, decision 3
+> **Status: the minimal firmware is written (`firmware/bay-node/src/ports.c`,
+> tested on native_sim against an emulated board), not run on a DATA ×4 yet;
+> the tools and the node's simulator follow it (see Tools and "In the
+> firmware").**  Density epic, decision 3
 > (2026-10-19): one node serves up to four small USB-native boards through a
 > hub on a "DATA ×4" board in the drawer, sub-slots A1.1–A1.4.  What the
 > firmware needs, and what Zephyr lacks for it.  The bench spike that checks
@@ -88,7 +90,8 @@ not yet on a node or behind a real hub.
 Each sub-slot gets what the single DUT has today: power on / off / cycle, a
 latched fault, its current (V, mA, mW), RESET and BOOT pulses, its USB
 device (VID:PID, product, serial, busid) and the USB/IP client attached.
-`dut.c` becomes a table of ports; port 1 of a one-port node is today's DUT.
+`dut.c` stays the bay's DUT_5V; `ports.c` adds the DATA ×4's ports, and a
+one-port node answers `/api/ports` with its one DUT as port 1.
 
 ## Power budget
 
@@ -134,7 +137,7 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
 
 | Endpoint | |
 |---|---|
-| `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 3, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.3"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` |
+| `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 2, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.2"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` (hub port n is USB-C n) |
 | `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}`; 409 when the bay's budget has no room for it ([Power budget](#power-budget)) |
 | `POST /api/ports/<n>/reset`, `/boot` | as today, for one port; `/boot` with `{"power_cycle": true}`: BOOT held across a power cycle of the port instead of a RESET pulse (a board whose RESET is not wired: [the analyzer](#a-logic-analyzer-in-a-sub-slot)) |
 | `GET /api/status` | adds `ports` (the same objects, shorter) |
@@ -171,7 +174,7 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
 - `config/lab.yaml` names boards by sub-slot (`bays: {A1.2: {platform:
   xiao_esp32c3}}`); `config/rack.yaml` says which bays hold a DATA ×4.
 - `bayctl attach A1.2` asks `bay-a1.local/api/ports` for port 2's busid and
-  runs `usbip attach -r bay-a1.local -b 1-1.3`; a new `--follow` re-attaches
+  runs `usbip attach -r bay-a1.local -b 1-1.2`; a new `--follow` re-attaches
   after a reset.  `bayctl power A1.2 cycle`, `bayctl reset A1.2`; a bare
   `A1` still means the whole bay.
 - `bayctl hwmap` and the labgrid / twister exports: one target per sub-slot
@@ -186,8 +189,37 @@ Done on the tools side (2026-10-19), against the simulated node: a bay's
 leases and `attach --follow`, and `firmware/bay-node/web/dev_server.py
 --ports 4` serving this API: its ports come up off and are admitted one by
 one, a power on (or `boot --power-cycle`) gets 409 when the other ports
-leave no room, and `/dev/draw?port=n&ma=…` makes a board draw more.  The
-firmware itself: nothing yet.
+leave no room, and `/dev/draw?port=n&ma=…` makes a board draw more.
+
+### In the firmware
+
+Done (minimal version, `src/ports.c`, 2026-10-20):
+
+- The DATA ×4 in `bay_node.dtsi` (`dut_port1`–`4` on `ports_io0`/`1`,
+  `port1`–`4_sense`).  The board is probed after each DUT_5V on: no answer
+  at 0x20, a one-port node.  One image serves both.
+- The chips are driven over I²C with shadow registers, not through the GPIO
+  and sensor drivers, whose cached state would not match a chip that has just
+  been powered up (their nodes are `zephyr,deferred-init`, never
+  initialized).
+- DUT_5V: every EN low before it goes off, no I²C while it is off, the set-up
+  above after it is on.  A board that stops answering (three polls) turns its
+  ports off and is probed again every 2 s.
+- Ports come up off and are switched on one by one (300 ms apart) through the
+  admission rule; a port's current is its INA226's shunt voltage over the
+  100 mΩ shunt (no calibration needed).
+- ~FAULT polled every 100 ms: the port is marked latched and its EN goes low;
+  `on` again restarts the TPS2553-1.
+- `GET /api/ports`, `POST /api/ports/<n>/power|reset|boot` (boot takes
+  `power_cycle`), `"port": n` on `/api/power|reset|boot` (409 without on a
+  DATA ×4 node), `ports` in `/api/status`, `bay port` in the shell.
+- `firmware/bay-node/tests/ports`: the start one port at a time, the
+  admission, a latched fault, a DUT_5V cycle with no I²C while off, RESET and
+  BOOT, a board that goes and comes back.
+
+Not yet: shedding on the node's INA226 alert, leases per port, the USB/IP
+client per port, `/metrics` by port, the CAN PORTS frame, the product
+string of a port's USB device.
 
 ## A logic analyzer in a sub-slot
 

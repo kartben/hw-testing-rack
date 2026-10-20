@@ -34,14 +34,20 @@ static struct gpio_callback flt_cb;
 
 static void power_write(bool on)
 {
-	/* No AUX TX into an unpowered board: release the pin before cutting VBUS */
+	/*
+	 * No AUX TX into an unpowered board: release the pin before cutting
+	 * VBUS.  A DATA x4 turns its ports off while its chips still answer, and
+	 * is set up again once VBUS is back.
+	 */
 	if (!on) {
 		aux_dut_power(false);
+		ports_dut_power(false);
 	}
 	gpio_pin_set_dt(&en, on);
 	power_on = on;
 	if (on) {
 		aux_dut_power(true);
+		ports_dut_power(true);
 	}
 }
 

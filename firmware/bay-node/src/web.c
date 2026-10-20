@@ -6,6 +6,12 @@
  *   POST /api/power    {"action": "on" | "off" | "cycle", "ms": 1000}
  *   POST /api/reset    {"ms": 100}
  *   POST /api/boot     {}                 DUT into its bootloader
+ *   GET  /api/ports    the boards: a DATA x4's four ports, or the one DUT as port 1
+ *   POST /api/ports/<n>/power, /reset, /boot   one port, as above; boot takes
+ *                      {"power_cycle": true}: BOOT held across a power cycle
+ *                      of the port.  409 when the bay's budget has no room.
+ *                      On a DATA x4 node /api/power, /reset and /boot need
+ *                      "port": n (409 without).
  *   POST /api/mode     {"mode": "usbip" | "classic"}
  *   GET  /metrics      Prometheus exposition format
  *
@@ -420,6 +426,103 @@ static __maybe_unused void status_append(const char *name, int (*fn)(char *buf, 
 	}
 }
 
+/* A port's name: the bay's position (or id) and the port, "C3.2" */
+static void slot_name(int port, char *buf, size_t size)
+{
+	const char *pos = bay_rack_position();
+	int n = snprintf(buf, size, "%s", pos[0] != '\0' ? pos : bay_id());
+
+	for (int i = 0; i < n && buf[i] != '\0'; i++) {
+		if (buf[i] >= 'a' && buf[i] <= 'z') {
+			buf[i] -= 'a' - 'A';
+		}
+	}
+	if (port > 0 && n >= 0 && (size_t)n < size) {
+		snprintf(buf + n, size - n, ".%d", port);
+	}
+}
+
+/*
+ * One object of GET /api/ports (full) or of /api/status's ports (short):
+ * a DATA x4 port, or the one DUT as port 1 (no hub: busid 1-1)
+ */
+static int port_json(char *buf, size_t size, int port, bool full)
+{
+	struct port_info pi;
+	char name[24], usb[64] = "null";
+	struct dut_power_reading r = {0};
+
+	if (port > 0) {
+		if (ports_info(port, &pi) != 0) {
+			return -ENOENT;
+		}
+	} else {
+		pi = (struct port_info){.slot = 1, .on = dut_power_get(),
+					.latched = dut_fault_latched() || dut_fault_active(),
+					.faults = dut_fault_count(), .usb = usb_host_device_count() > 0};
+		if (dut_power_read(&r) == 0) {
+			pi.mv = r.bus_mv;
+			pi.ma = r.current_ma;
+			pi.mw = r.power_mw;
+		}
+	}
+	slot_name(port, name, sizeof(name));
+	if (pi.usb && full && port > 0) {
+		snprintf(usb, sizeof(usb), "{\"vid\":\"%04x\",\"pid\":\"%04x\",\"busid\":\"1-1.%u\"}",
+			 pi.vid, pi.pid, pi.hub_port);
+	} else if (pi.usb) {
+		snprintf(usb, sizeof(usb), "{\"busid\":\"1-1%s%.0u\"}", port > 0 ? "." : "",
+			 port > 0 ? pi.hub_port : 0);
+	}
+
+	if (!full) {
+		return snprintf(buf, size,
+				"{\"slot\":\"%s\",\"port\":%u,\"power\":{\"on\":%s,\"ma\":%d},"
+				"\"fault\":%s,\"usb\":%s,\"usbip\":null,\"lease\":null}",
+				name, pi.slot, pi.on ? "true" : "false", pi.ma,
+				pi.latched ? "true" : "false", usb);
+	}
+	return snprintf(buf, size,
+			"{\"slot\":\"%s\",\"port\":%u,\"hub_port\":%s%.0u,"
+			"\"power\":{\"on\":%s,\"mv\":%d,\"ma\":%d,\"mw\":%d,\"faults\":%u},"
+			"\"fault\":%s,\"usb\":%s,\"usbip\":null,\"lease\":null}",
+			name, pi.slot, port > 0 ? "" : "null", port > 0 ? pi.hub_port : 0,
+			pi.on ? "true" : "false", pi.mv, pi.ma, pi.mw, pi.faults,
+			pi.latched ? "true" : "false", usb);
+}
+
+/* The ports as a JSON array: a DATA x4's, or the one DUT's */
+static int ports_json_array(char *buf, size_t size, bool full)
+{
+	int count = ports_count();
+	size_t len = 1;
+	int n;
+
+	if (size < 3) {
+		return -ENOMEM;
+	}
+	buf[0] = '[';
+	for (int i = 0; i < MAX(count, 1); i++) {
+		if (i > 0) {
+			buf[len++] = ',';
+		}
+		n = port_json(buf + len, size - len, count > 0 ? i + 1 : 0, full);
+		if (n < 0 || (size_t)n >= size - len - 1) {
+			return -ENOMEM;
+		}
+		len += n;
+	}
+	buf[len++] = ']';
+	buf[len] = '\0';
+
+	return len;
+}
+
+static int ports_status_json(char *buf, size_t size)
+{
+	return ports_json_array(buf, size, false);
+}
+
 static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 {
 	static struct status_doc s;
@@ -440,6 +543,7 @@ static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 #if defined(CONFIG_BAY_CAMERA)
 		status_append("camera", camera_status_json);
 #endif
+		status_append("ports", ports_status_json);
 	}
 
 	rsp->body = resp_buf;
@@ -545,25 +649,118 @@ struct action_req {
 	char *action;
 	char *mode;
 	int32_t ms;
+	int32_t port;
+	bool power_cycle;
 };
 
 static const struct json_obj_descr action_descr[] = {
 	JSON_OBJ_DESCR_PRIM(struct action_req, action, JSON_TOK_STRING),
 	JSON_OBJ_DESCR_PRIM(struct action_req, mode, JSON_TOK_STRING),
 	JSON_OBJ_DESCR_PRIM(struct action_req, ms, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct action_req, port, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct action_req, power_cycle, JSON_TOK_TRUE),
 };
 
 #define ACTION_FIELD_ACTION BIT(0)
 #define ACTION_FIELD_MODE   BIT(1)
 #define ACTION_FIELD_MS     BIT(2)
+#define ACTION_FIELD_PORT   BIT(3)
+#define ACTION_FIELD_PC     BIT(4)
 
-static const char *do_action(enum api_action what, const struct action_req *req, int fields)
+/* user_data of a /api/ports/<n>/<what> resource: the action, the port above */
+#define PORT_ACTION(what, port) ((what) | ((port) << 8))
+
+static char action_err[128];
+
+/* A DATA x4 port's power, reset or boot; NULL, or an error and its status */
+static const char *do_port_action(enum api_action what, int port, const struct action_req *req,
+				  int fields, enum http_status *code)
+{
+	int32_t others = 0;
+	uint32_t ms;
+	int ret;
+
+	switch (what) {
+	case API_POWER:
+		if (!(fields & ACTION_FIELD_ACTION)) {
+			return "action must be on, off or cycle";
+		}
+		if (strcmp(req->action, "on") == 0) {
+			ret = ports_power(port, true, &others);
+		} else if (strcmp(req->action, "off") == 0) {
+			ret = ports_power(port, false, NULL);
+		} else if (strcmp(req->action, "cycle") == 0) {
+			ms = (fields & ACTION_FIELD_MS) ? req->ms : CONFIG_BAY_POWER_CYCLE_MS;
+			ret = ports_power_cycle(port, K_MSEC(ms), &others);
+		} else {
+			return "action must be on, off or cycle";
+		}
+		break;
+	case API_RESET:
+		ms = (fields & ACTION_FIELD_MS) ? req->ms : CONFIG_BAY_RESET_PULSE_MS;
+		ret = ports_reset_pulse(port, K_MSEC(ms));
+		break;
+	case API_BOOT:
+		ret = ports_boot(port, (fields & ACTION_FIELD_PC) && req->power_cycle, &others);
+		break;
+	default:
+		return "not a port's action";
+	}
+
+	switch (ret) {
+	case 0:
+		return NULL;
+	case -EBUSY:
+		*code = HTTP_409_CONFLICT;
+		snprintf(action_err, sizeof(action_err),
+			 "no room in the bay's budget: the other ports draw %d mA, %d mA kept for a "
+			 "start, %d mA in all", others, CONFIG_BAY_PORTS_RESERVE_MA,
+			 CONFIG_BAY_PORTS_BUDGET_MA);
+		return action_err;
+	case -EAGAIN:
+		*code = HTTP_503_SERVICE_UNAVAILABLE;
+		return "the DATA board is not set up (DUT_5V off?)";
+	case -ENOTSUP:
+		return "this port has no such line";
+	case -ENOENT:
+	case -ENODEV:
+		*code = HTTP_404_NOT_FOUND;
+		snprintf(action_err, sizeof(action_err), "no port %d on this node", port);
+		return action_err;
+	default:
+		*code = HTTP_500_INTERNAL_SERVER_ERROR;
+		return "action failed";
+	}
+}
+
+static const char *do_action(enum api_action what, int port, const struct action_req *req,
+			     int fields, enum http_status *code)
 {
 	uint32_t ms;
 	int ret;
 
 	if ((fields & ACTION_FIELD_MS) && (req->ms <= 0 || req->ms > MAX_ACTION_MS)) {
 		return "ms must be 1..10000";
+	}
+
+	/* A DATA x4 node: power, reset and boot are a port's */
+	if (port == 0 && (fields & ACTION_FIELD_PORT)) {
+		port = req->port;
+	}
+	if (what == API_POWER || what == API_RESET || what == API_BOOT) {
+		if (port > 0) {
+			return do_port_action(what, port, req, fields, code);
+		}
+		if (ports_count() > 0) {
+			*code = HTTP_409_CONFLICT;
+			snprintf(action_err, sizeof(action_err),
+				 "this node serves %d boards: say which (\"port\": 1..%d, or "
+				 "/api/ports/<n>/...)", ports_count(), ports_count());
+			return action_err;
+		}
+		if ((fields & ACTION_FIELD_PC) && req->power_cycle) {
+			return "power_cycle is a DATA x4 port's";
+		}
 	}
 
 	switch (what) {
@@ -625,10 +822,13 @@ static int action_handler(struct http_client_ctx *client, enum http_transaction_
 	static size_t len;
 	static bool too_long;
 	struct action_req areq = {0};
-	enum api_action what = (enum api_action)POINTER_TO_INT(user_data);
+	enum api_action what = (enum api_action)(POINTER_TO_INT(user_data) & 0xFF);
+	int port = POINTER_TO_INT(user_data) >> 8;
+	enum http_status code = HTTP_400_BAD_REQUEST;
 	const char *err;
 	int fields = 0;
 	uint32_t ip;
+	int n;
 
 	if (status == HTTP_SERVER_TRANSACTION_ABORTED ||
 	    status == HTTP_SERVER_TRANSACTION_COMPLETE) {
@@ -667,12 +867,18 @@ static int action_handler(struct http_client_ctx *client, enum http_transaction_
 		}
 	}
 
-	err = do_action(what, &areq, fields);
+	err = do_action(what, port, &areq, fields, &code);
 	if (err != NULL) {
-		respond_error(rsp, HTTP_400_BAD_REQUEST, err);
+		respond_error(rsp, code, err);
 		return 0;
 	}
 
+	/* /api/ports/<n>/...: the port's object; otherwise the status document */
+	if (port > 0) {
+		n = port_json(resp_buf, sizeof(resp_buf), port, true);
+		respond_buf(rsp, n < (int)sizeof(resp_buf) ? n : -ENOMEM);
+		return 0;
+	}
 	respond_status(rsp, ip);
 
 	return 0;
@@ -694,6 +900,32 @@ static struct http_resource_detail_dynamic reset_detail = ACTION_RESOURCE(API_RE
 static struct http_resource_detail_dynamic boot_detail = ACTION_RESOURCE(API_BOOT);
 static struct http_resource_detail_dynamic mode_detail = ACTION_RESOURCE(API_MODE);
 static struct http_resource_detail_dynamic break_detail = ACTION_RESOURCE(API_BREAK);
+
+/* --- GET /api/ports ------------------------------------------------------- */
+
+static int ports_handler(struct http_client_ctx *client, enum http_transaction_status status,
+			 const struct http_request_ctx *req, struct http_response_ctx *rsp,
+			 void *user_data)
+{
+	ARG_UNUSED(req);
+	ARG_UNUSED(user_data);
+
+	if (status == HTTP_SERVER_REQUEST_DATA_FINAL &&
+	    !refused(rsp, ACL_STATUS, access_peer(client->fd))) {
+		respond_buf(rsp, ports_json_array(resp_buf, sizeof(resp_buf), true));
+	}
+
+	return 0;
+}
+
+static struct http_resource_detail_dynamic ports_detail = {
+	.common = {
+		.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+		.bitmask_of_supported_http_methods = BIT(HTTP_GET),
+		.content_type = "application/json",
+	},
+	.cb = ports_handler,
+};
 
 /* --- /api/aux ------------------------------------------------------------ */
 
@@ -1519,6 +1751,7 @@ HTTP_RESOURCE_DEFINE(power_res, bay_http, "/api/power", &power_detail);
 HTTP_RESOURCE_DEFINE(reset_res, bay_http, "/api/reset", &reset_detail);
 HTTP_RESOURCE_DEFINE(boot_res, bay_http, "/api/boot", &boot_detail);
 HTTP_RESOURCE_DEFINE(mode_res, bay_http, "/api/mode", &mode_detail);
+HTTP_RESOURCE_DEFINE(ports_res, bay_http, "/api/ports", &ports_detail);
 HTTP_RESOURCE_DEFINE(metrics_res, bay_http, "/metrics", &metrics_detail);
 HTTP_RESOURCE_DEFINE(aux_res, bay_http, "/api/aux", &aux_detail);
 HTTP_RESOURCE_DEFINE(break_res, bay_http, "/api/aux/break", &break_detail);
@@ -1540,6 +1773,11 @@ HTTP_RESOURCE_DEFINE(camera_res, bay_http, "/api/camera", &camera_detail);
 			     &console_ws_detail_##_slot)
 
 LISTIFY(CONFIG_BAY_CONSOLE_WEB_CLIENTS, CONSOLE_WS_RESOURCE, (;));
+
+/* /api/ports/<n>/power, /reset, /boot: n = 1..4, a DATA x4's ports */
+#define PORT_RESOURCES(_i, _)                                                                      	static struct http_resource_detail_dynamic port_power_detail_##_i =                        		ACTION_RESOURCE(PORT_ACTION(API_POWER, _i + 1));                                   	static struct http_resource_detail_dynamic port_reset_detail_##_i =                        		ACTION_RESOURCE(PORT_ACTION(API_RESET, _i + 1));                                   	static struct http_resource_detail_dynamic port_boot_detail_##_i =                         		ACTION_RESOURCE(PORT_ACTION(API_BOOT, _i + 1));                                    	HTTP_RESOURCE_DEFINE(port_power_res_##_i, bay_http,                                        			     "/api/ports/" STRINGIFY(UTIL_INC(_i)) "/power",                       			     &port_power_detail_##_i);                                             	HTTP_RESOURCE_DEFINE(port_reset_res_##_i, bay_http,                                        			     "/api/ports/" STRINGIFY(UTIL_INC(_i)) "/reset",                       			     &port_reset_detail_##_i);                                             	HTTP_RESOURCE_DEFINE(port_boot_res_##_i, bay_http,                                         			     "/api/ports/" STRINGIFY(UTIL_INC(_i)) "/boot", &port_boot_detail_##_i)
+
+LISTIFY(4, PORT_RESOURCES, (;));
 
 int web_init(void)
 {

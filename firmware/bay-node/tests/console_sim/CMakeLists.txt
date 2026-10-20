@@ -24,6 +24,7 @@ target_sources(app PRIVATE
   ${BAY}/src/web.c
   ${BAY}/src/access.c
   ${BAY}/src/shell.c
+  ${BAY}/src/ports.c
 )
 
 set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated)

@@ -1,0 +1,106 @@
+/*
+ * A DATA x4 board on native_sim's emulated I2C bus, as the bay node's
+ * devicetree describes it (firmware/boards/hwtr/bay_node/bay_node.dtsi).
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	dut_port1: dut-port-1 {
+		compatible = "hwtr,dut-port";
+		sub-slot = <1>;
+		hub-port = <1>;
+		enable-gpios = <&ports_io0 2 GPIO_ACTIVE_HIGH>;
+		fault-gpios = <&ports_io0 3 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&ports_io0 0 GPIO_ACTIVE_LOW>;
+		boot-gpios = <&ports_io0 1 GPIO_ACTIVE_LOW>;
+		power-monitor = <&port1_sense>;
+	};
+
+	dut_port2: dut-port-2 {
+		compatible = "hwtr,dut-port";
+		sub-slot = <2>;
+		hub-port = <2>;
+		enable-gpios = <&ports_io0 4 GPIO_ACTIVE_HIGH>;
+		fault-gpios = <&ports_io0 5 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&ports_io0 7 GPIO_ACTIVE_LOW>;
+		boot-gpios = <&ports_io0 6 GPIO_ACTIVE_LOW>;
+		power-monitor = <&port2_sense>;
+	};
+
+	dut_port3: dut-port-3 {
+		compatible = "hwtr,dut-port";
+		sub-slot = <3>;
+		hub-port = <3>;
+		enable-gpios = <&ports_io1 2 GPIO_ACTIVE_HIGH>;
+		fault-gpios = <&ports_io1 3 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&ports_io1 0 GPIO_ACTIVE_LOW>;
+		boot-gpios = <&ports_io1 1 GPIO_ACTIVE_LOW>;
+		power-monitor = <&port3_sense>;
+	};
+
+	dut_port4: dut-port-4 {
+		compatible = "hwtr,dut-port";
+		sub-slot = <4>;
+		hub-port = <4>;
+		enable-gpios = <&ports_io1 4 GPIO_ACTIVE_HIGH>;
+		fault-gpios = <&ports_io1 5 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&ports_io1 7 GPIO_ACTIVE_LOW>;
+		boot-gpios = <&ports_io1 6 GPIO_ACTIVE_LOW>;
+		power-monitor = <&port4_sense>;
+	};
+};
+
+&i2c0 {
+	ports_io0: gpio@20 {
+		compatible = "ti,tca9538";
+		reg = <0x20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		ngpios = <8>;
+		zephyr,deferred-init;
+	};
+
+	ports_io1: gpio@21 {
+		compatible = "ti,tca9538";
+		reg = <0x21>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		ngpios = <8>;
+		zephyr,deferred-init;
+	};
+
+	port1_sense: ina226@41 {
+		compatible = "ti,ina226";
+		reg = <0x41>;
+		current-lsb-microamps = <25>;
+		rshunt-micro-ohms = <100000>;
+		zephyr,deferred-init;
+	};
+
+	port2_sense: ina226@43 {
+		compatible = "ti,ina226";
+		reg = <0x43>;
+		current-lsb-microamps = <25>;
+		rshunt-micro-ohms = <100000>;
+		zephyr,deferred-init;
+	};
+
+	port3_sense: ina226@44 {
+		compatible = "ti,ina226";
+		reg = <0x44>;
+		current-lsb-microamps = <25>;
+		rshunt-micro-ohms = <100000>;
+		zephyr,deferred-init;
+	};
+
+	port4_sense: ina226@45 {
+		compatible = "ti,ina226";
+		reg = <0x45>;
+		current-lsb-microamps = <25>;
+		rshunt-micro-ohms = <100000>;
+		zephyr,deferred-init;
+	};
+};

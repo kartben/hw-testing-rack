@@ -187,6 +187,64 @@ static int cmd_boot(const struct shell *sh, size_t argc, char **argv)
 	return -EINVAL;
 }
 
+/* "bay port": the DATA x4's ports, or one of them */
+static int cmd_port(const struct shell *sh, size_t argc, char **argv)
+{
+	struct port_info pi;
+	uint32_t ms = CONFIG_BAY_POWER_CYCLE_MS;
+	int32_t others = 0;
+	char *end;
+	long n;
+	int ret;
+
+	if (argc == 1) {
+		if (ports_count() == 0) {
+			shell_print(sh, "no DATA x4 answering: a one-port node");
+			return 0;
+		}
+		for (int i = 1; i <= ports_count(); i++) {
+			if (ports_info(i, &pi) != 0) {
+				continue;
+			}
+			shell_print(sh, "port %u: %s%s%s, %d mV %d mA, %u faults, %s", pi.slot,
+				    pi.on ? "on" : "off", pi.latched ? " (fault)" : "",
+				    pi.wanted ? "" : " (off by hand)", pi.mv, pi.ma, pi.faults,
+				    pi.usb ? "a USB device" : "no USB device");
+		}
+		return 0;
+	}
+
+	n = strtol(argv[1], &end, 10);
+	if (*end != '\0' || argc < 3) {
+		shell_error(sh, "usage: bay port [<n> on|off|cycle [ms]|reset|boot [cycle]]");
+		return -EINVAL;
+	}
+	if (strcmp(argv[2], "on") == 0) {
+		ret = ports_power(n, true, &others);
+	} else if (strcmp(argv[2], "off") == 0) {
+		ret = ports_power(n, false, NULL);
+	} else if (strcmp(argv[2], "cycle") == 0) {
+		if (argc > 3 && parse_ms(sh, argv[3], &ms) != 0) {
+			return -EINVAL;
+		}
+		ret = ports_power_cycle(n, K_MSEC(ms), &others);
+	} else if (strcmp(argv[2], "reset") == 0) {
+		ret = ports_reset_pulse(n, K_MSEC(CONFIG_BAY_RESET_PULSE_MS));
+	} else if (strcmp(argv[2], "boot") == 0) {
+		ret = ports_boot(n, argc > 3 && strcmp(argv[3], "cycle") == 0, &others);
+	} else {
+		shell_error(sh, "usage: bay port [<n> on|off|cycle [ms]|reset|boot [cycle]]");
+		return -EINVAL;
+	}
+	if (ret == -EBUSY) {
+		shell_error(sh, "no room in the budget: the other ports draw %d mA", others);
+	} else if (ret != 0) {
+		shell_error(sh, "port %ld: %d", n, ret);
+	}
+
+	return ret;
+}
+
 static int cmd_mode(const struct shell *sh, size_t argc, char **argv)
 {
 	if (argc > 1) {
@@ -527,6 +585,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 	SHELL_CMD_ARG(boot, NULL, "Reset into the DUT's bootloader, or BOOT line [hold|release]",
 		      cmd_boot, 1, 1),
 	SHELL_CMD_ARG(mode, NULL, "USB data path: [usbip|classic] (persistent)", cmd_mode, 1, 1),
+	SHELL_CMD_ARG(port, NULL,
+		      "DATA x4 ports: no argument = their state; <n> on|off|cycle [ms]|reset|boot [cycle]",
+		      cmd_port, 1, 3),
 	SHELL_CMD_ARG(aux, NULL,
 		      "AUX UART: [<baudrate> [8N1]] (persistent) | break [ms] | send <text> | "
 		      "loopback [on|off] (test)",

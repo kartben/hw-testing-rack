@@ -13,6 +13,7 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/usb/uhc.h>
 #include <zephyr/usb/usbh.h>
+#include <zephyr/sys/byteorder.h>
 #include <zephyr/net/net_context.h>
 #include <zephyr/net/net_ip.h>
 #include <zephyr/logging/log.h>
@@ -69,6 +70,32 @@ int usb_host_device_count(void)
 	k_mutex_unlock(&ctx->mutex);
 
 	return n;
+}
+
+int usb_host_port_device(uint8_t hub_port, uint16_t *vid, uint16_t *pid)
+{
+	struct usbh_context *ctx = host_ctx();
+	struct usb_device *udev;
+	int ret = -ENODEV;
+
+	if (ctx == NULL || !uhc_is_initialized(ctx->dev)) {
+		return -ENODEV;
+	}
+	if (k_mutex_lock(&ctx->mutex, K_MSEC(20)) != 0) {
+		return -EBUSY;
+	}
+	/* Behind the hub on the root port: its hub is a root device */
+	SYS_DLIST_FOR_EACH_CONTAINER(&ctx->udevs, udev, node) {
+		if (udev->hub != NULL && udev->hub->hub == NULL && udev->hub_port == hub_port) {
+			*vid = sys_le16_to_cpu(udev->dev_desc.idVendor);
+			*pid = sys_le16_to_cpu(udev->dev_desc.idProduct);
+			ret = 0;
+			break;
+		}
+	}
+	k_mutex_unlock(&ctx->mutex);
+
+	return ret;
 }
 
 static void count_usbip_session(struct net_context *context, void *user_data)
@@ -206,6 +233,14 @@ int usb_host_release_phy(void)
 int usb_host_claim_phy(void)
 {
 	return -ENOTSUP;
+}
+
+int usb_host_port_device(uint8_t hub_port, uint16_t *vid, uint16_t *pid)
+{
+	ARG_UNUSED(hub_port);
+	ARG_UNUSED(vid);
+	ARG_UNUSED(pid);
+	return -ENODEV;
 }
 
 #endif /* CONFIG_USBIP */

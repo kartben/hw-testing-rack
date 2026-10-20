@@ -86,12 +86,12 @@ STAGGER_S = 0.3     # the ports' start, one after the other
 
 
 def set_ports(n: int) -> None:
-    """Port n sits on the hub's port n + 1, so its busid is 1-1.<n + 1> (the doc's A1.2 -> 1-1.3).
+    """Port n is the hub's port n (DATA x4: USB-C n), so its busid is 1-1.<n> (A1.2 -> 1-1.2).
     DATA x4's ports come up off (EN pulled down): the firmware switches them on one by one, each
     through the admission rule."""
     global PORTS
     PORTS = n
-    ports[:] = [{"port": i, "hub_port": i + 1, "on": False, "latched": False, "faults": 0, "up_at": 0.0,
+    ports[:] = [{"port": i, "hub_port": i, "on": False, "latched": False, "faults": 0, "up_at": 0.0,
                  "client": None, "lease": None, "draw": 0,
                  "usb": {"vid": "2fe3", "pid": "0004", "product": "USB-DEV", "serial": f"{0x5EC0A1 + i:08X}"}}
                 for i in range(1, n + 1)] if n > 1 else []

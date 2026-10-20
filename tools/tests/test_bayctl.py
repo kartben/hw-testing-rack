@@ -492,7 +492,7 @@ class MultiNodeApi(unittest.TestCase):
     def test_ports(self):
         ports = bayctl.node_ports(self.node)
         self.assertEqual([p["slot"] for p in ports], ["B3.1", "B3.2", "B3.3", "B3.4"])
-        self.assertEqual(bayctl.port_busid(bayctl.port_doc(self.bays["B3.2"])), "1-1.3")   # docs/multi-dut-node.md
+        self.assertEqual(bayctl.port_busid(bayctl.port_doc(self.bays["B3.2"])), "1-1.2")   # hub port n = USB-C n
         self.assertEqual(len(bayctl.api(self.node, "/api/status")["ports"]), 4)
         metrics = urllib.request.urlopen(f"http://127.0.0.1:{self.port}/metrics").read().decode()
         self.assertIn('bay_dut_power_on{bay="b3",port="B3.2"}', metrics)
@@ -513,7 +513,7 @@ class MultiNodeApi(unittest.TestCase):
         self.assertTrue(bayctl.wait_for(lambda: bayctl.port_doc(b)["usb"] is not None, 5))
         self.assertIsNone(bayctl.control(b, "reset", {"ms": 20})["usb"])       # it re-enumerates...
         self.assertTrue(bayctl.wait_for(lambda: bayctl.port_doc(b)["usb"] is not None, 5))
-        self.assertEqual(bayctl.port_busid(bayctl.port_doc(b)), "1-1.4")      # ...under the same busid
+        self.assertEqual(bayctl.port_busid(bayctl.port_doc(b)), "1-1.3")      # ...under the same busid
 
     def test_admission(self):
         """DATA x4's ports come up off; the node switches them on within the bay's budget, and so does a
@@ -560,9 +560,9 @@ class MultiNodeApi(unittest.TestCase):
         self.assertEqual(bayctl.lease_left(b2, bayctl.release(b2)), 0)
 
     def test_attach_detach(self):
-        listing = "".join(f"        1-1.{h}: Zephyr : USB-DEV (2fe3:0004)\n" for h in (2, 3, 4, 5))
-        imported = ("Port 00: <Port in Use> at Full Speed(12Mbps)\n       3-1 -> usbip://127.0.0.1:3240/1-1.2\n"
-                    "Port 01: <Port in Use> at Full Speed(12Mbps)\n       3-2 -> usbip://127.0.0.1:3240/1-1.3\n")
+        listing = "".join(f"        1-1.{h}: Zephyr : USB-DEV (2fe3:0004)\n" for h in (1, 2, 3, 4))
+        imported = ("Port 00: <Port in Use> at Full Speed(12Mbps)\n       3-1 -> usbip://127.0.0.1:3240/1-1.1\n"
+                    "Port 01: <Port in Use> at Full Speed(12Mbps)\n       3-2 -> usbip://127.0.0.1:3240/1-1.2\n")
         calls, state = [], {"port": ""}
 
         def run(cmd, check=True):
@@ -573,7 +573,7 @@ class MultiNodeApi(unittest.TestCase):
         with mock.patch.object(bayctl, "_run", run), mock.patch.object(bayctl, "serial_ids", lambda: next(ids)), \
                 mock.patch.object(bayctl.time, "sleep"):
             self.assertEqual(bayctl.attach(self.bays["B3.2"]), [str(bayctl.SERIAL_BY_ID / "usb-ZEPHYR_USB-DEV_9F2D-if00")])
-            self.assertEqual(calls[-1][-5:], ["attach", "-r", "127.0.0.1", "-b", "1-1.3"])
+            self.assertEqual(calls[-1][-5:], ["attach", "-r", "127.0.0.1", "-b", "1-1.2"])
             state["port"] = imported
             self.assertEqual(bayctl.attach(self.bays["B3.2"]), [])            # already attached
             calls.clear()
@@ -596,7 +596,7 @@ class MultiNodeApi(unittest.TestCase):
 
     def test_cli(self):
         out = self.cli("ports", "b3")
-        for busid in ("1-1.2", "1-1.3", "1-1.4", "1-1.5"):
+        for busid in ("1-1.1", "1-1.2", "1-1.3", "1-1.4"):
             self.assertIn(f"busid {busid}", out)
         self.cli("power", "B3", "off")                                          # the whole bay: every board
         self.assertFalse(any(p["power"]["on"] for p in bayctl.node_ports(self.node)))

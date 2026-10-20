@@ -50,6 +50,41 @@ int dut_boot_set(bool asserted);
 int dut_enter_bootloader(void);
 int dut_power_read(struct dut_power_reading *r);
 
+/* --- DATA x4 ports (ports.c) ---------------------------------------------- */
+
+struct port_info {
+	uint8_t slot;     /* DATA x4 port, 1-4: sub-slot <bay>.<slot> */
+	uint8_t hub_port; /* busid 1-1.<hub_port> */
+	bool on;
+	bool wanted;      /* to be on after each DUT_5V on */
+	bool latched;     /* off after a fault, until switched on again */
+	bool meter;       /* mv, ma, mw read */
+	bool usb;         /* a device on its hub port: vid, pid */
+	uint32_t faults;
+	int32_t mv;
+	int32_t ma;
+	int32_t mw;
+	uint16_t vid;
+	uint16_t pid;
+};
+
+int ports_init(void);
+/* Ports of the DATA x4 that answered, 0 without one (a one-port node) */
+int ports_count(void);
+/* slot 1..4; -ENOENT no such port, -ENODEV no board */
+int ports_info(int slot, struct port_info *pi);
+/*
+ * -EBUSY: the budget has no room (others: what the other ports draw, mA, may
+ * be NULL); -EAGAIN: the board is not set up (DUT_5V off)
+ */
+int ports_power(int slot, bool on, int32_t *others);
+int ports_power_cycle(int slot, k_timeout_t off_time, int32_t *others);
+int ports_reset_pulse(int slot, k_timeout_t width);
+/* BOOT held across a RESET pulse, or across a power cycle of the port */
+int ports_boot(int slot, bool power_cycle, int32_t *others);
+/* dut.c: DUT_5V about to go off (false), or just on (true) */
+void ports_dut_power(bool on);
+
 /* --- USB data path (usb_mux.c) -------------------------------------------- */
 
 enum bay_data_path {
@@ -72,6 +107,8 @@ const char *bay_data_path_str(enum bay_data_path path);
 int usb_host_device_count(void);
 /* Open TCP sessions on the USB/IP port (an attached client keeps one) */
 int usb_host_usbip_sessions(void);
+/* The device on the hub's downstream port n (a DATA x4 port): 0, or -ENODEV */
+int usb_host_port_device(uint8_t hub_port, uint16_t *vid, uint16_t *pid);
 bool usb_host_running(void);
 /* SERVICE mode: stop the host and route the PHY to USB-Serial-JTAG */
 int usb_host_release_phy(void);

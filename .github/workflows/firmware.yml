@@ -80,6 +80,10 @@ jobs:
           - name: update
             board: native_sim/native/64
             app: firmware/common/tests/update
+          # The DATA x4 ports (src/ports.c) against an emulated board, run below
+          - name: ports
+            board: native_sim/native/64
+            app: firmware/bay-node/tests/ports
           # The patched USB/IP service (zephyr/patches.yml) on the virtual USB
           # bus, a device unplugged mid-session, run below
           - name: usbip
@@ -135,8 +139,8 @@ jobs:
         if: matrix.name == 'usbip'
         run: python3 hw-testing-rack/firmware/common/tests/usbip/test_usbip.py --exe build/zephyr/zephyr.exe
 
-      - name: Rack bus protocol / firmware updates on native_sim
-        if: matrix.name == 'rack_bus' || matrix.name == 'update'
+      - name: Rack bus protocol / firmware updates / DATA x4 ports on native_sim
+        if: matrix.name == 'rack_bus' || matrix.name == 'update' || matrix.name == 'ports'
         run: |
           build/zephyr/zephyr.exe | tee test.log
           grep -q "PROJECT EXECUTION SUCCESSFUL" test.log

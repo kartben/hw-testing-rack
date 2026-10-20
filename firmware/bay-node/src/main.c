@@ -211,6 +211,12 @@ int main(void)
 		LOG_ERR("DUT control init failed: %d", ret);
 	}
 
+	/* A DATA x4 in the drawer: its ports, once DUT_5V has settled */
+	ret = ports_init();
+	if (ret != 0) {
+		LOG_ERR("DATA x4 ports init failed: %d", ret);
+	}
+
 	ret = usb_mux_init(stored_force_pc);
 	if (ret != 0) {
 		LOG_ERR("USB mux init failed: %d", ret);

@@ -24,6 +24,38 @@ config BAY_BOOTLOADER_HOLD_MS
 	int "How long BOOT stays asserted after the RESET pulse (ms)"
 	default 200
 
+config BAY_PORTS_BUDGET_MA
+	int "DATA x4: the four ports' draw may not pass this (mA)"
+	default 1250
+	help
+	  The node's TPS2553 feeds the four ports through DUT_5V and limits at
+	  1.34-1.52 A.  A port goes on only if the others' draw plus
+	  BAY_PORTS_RESERVE_MA stays within this (docs/multi-dut-node.md,
+	  Power budget).
+
+config BAY_PORTS_RESERVE_MA
+	int "DATA x4: kept for a port's start (mA)"
+	default 250
+
+config BAY_PORTS_STAGGER_MS
+	int "DATA x4: between two ports switched on one after the other (ms)"
+	default 300
+
+config BAY_PORTS_SETTLE_MS
+	int "DATA x4: after DUT_5V on, before the board's chips are set up (ms)"
+	default 5
+
+config BAY_PORTS_POLL_MS
+	int "DATA x4: how often the ports' ~FAULT lines are read (ms)"
+	default 100
+
+config BAY_PORTS_ON_AT_BOOT
+	bool "DATA x4: every port on at boot and after each DUT_5V on"
+	default y
+	help
+	  Off: the ports stay off until switched on.  A port switched off by
+	  hand stays off either way.
+
 config BAY_AUX_TCP_PORT
 	int "TCP port of the AUX UART as raw bytes (one client), 0 to disable"
 	default 4000
