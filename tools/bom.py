@@ -232,10 +232,13 @@ JLC_LEVERS = {
          "board)", 1.01, "decision"),
     ],
     "data-port-x4-v2-base": [
-        ("one order with the logic variant: a 1 × 2 panel of the same PCB (100 × 140, ENIG, $51.90 for 5 "
-         "panels, no panel fee), a logic and a base on each, one CPL; one setup and stencil, each type loaded "
-         "once ($240.18 for 2 + 2 against $269.54): the base in ENIG, mouse bites on the edges the cradle "
-         "holds, as many bases as logics", 29.36, "decision"),
+        ("one order with the logic variant: a 1 × 2 panel of the same PCB, a logic and a base on each, one CPL, "
+         "in one Economic order: 100 × 142 with a 2 mm mouse-bite gap (ENIG, $52.00 for 5 panels, no panel fee), "
+         "one setup and stencil, each type loaded once ($240.28 for 2 + 2 against $269.54).  The tabs join along "
+         "the 100 mm edges, away from the ends (0.5 mm between the board and the cradle's uprights), their nubs "
+         "sanded flush; the base goes ENIG; as many bases as logics.  A V-cut joint takes Standard PCBA (Economic "
+         "panels have mouse bites only), 5 mm rails (100 × 150) and ≥ 0.4 mm of copper clearance along both "
+         "100 mm edges (the board keeps 0.3): $263.70", 29.26, "decision"),
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board)", 1.01, "decision"),
     ],
