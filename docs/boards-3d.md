@@ -8,8 +8,9 @@ downloads the ones that need no login into `render/assets/` (git-ignored), and
 
 The viewer uses a maker's model only where its licence lets the repository publish it
 (`model: { web: true }` in `boards.yaml`): `board_models.py` then also writes a lighter copy to
-`site/assets/boards/<board-id>.glb` (the PCBs whole, tiny parts dropped, small ones as boxes,
-the rest decimated, one colour per part), which the viewer draws instead of the stand-in.
+`site/assets/boards/<board-id>.glb` (the PCBs whole, every layer of them, small boards' too:
+decimation tears a board; tiny parts dropped, small ones as boxes, the rest decimated, one colour
+per part), which the viewer draws instead of the stand-in.
 Today: the **GIGA R1 WiFi + GIGA Display Shield** in B2, the camera bay, and the **Pico 2** and **XIAO**
 boards of the converted bays.  Their 2.54 mm pin headers (soldered pins up, for the Dupont jumpers:
 `headers:` in `boards.yaml`) are drawn by the viewer on top of the model.  A board's `screen:`

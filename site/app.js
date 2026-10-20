@@ -86,10 +86,12 @@ const MAT = {
   lensBody: std(0x101114, 0.3, 0.45),
   glass: new THREE.MeshPhysicalMaterial({ color: 0x05070c, roughness: 0.04, clearcoat: 1, iridescence: 0.6, iridescenceIOR: 1.6 }),
 };
+// every USB cable black, as bought (the info panel names each one's type)
+const USB_BLACK = 0x17181b;
 const CABLE_COLORS = {
-  'c-to-c': 0x8f5cff, 'c-to-micro-b': 0xffb02e, 'c-to-mini-b': 0xe08a1e,
-  'c-to-c-straight': 0x8f5cff, 'c-to-micro-b-straight': 0xffb02e,
-  power: 0xff5a5a, pc: 0x3fb6ff, ext: 0x7d8590, 'usb-pd': 0x101114,
+  'c-to-c': USB_BLACK, 'c-to-micro-b': USB_BLACK, 'c-to-mini-b': USB_BLACK,
+  'c-to-c-straight': USB_BLACK, 'c-to-micro-b-straight': USB_BLACK,
+  power: USB_BLACK, pc: USB_BLACK, ext: USB_BLACK, 'usb-pd': 0x101114,
 };
 
 // Layer lines on the printed parts.  Each part mesh carries `printUp`, its build plate's normal
@@ -465,7 +467,7 @@ function layoutChain(inst, ch, frac) {
 // ------------------------------------------------------------------ cables
 function cableColor(c) {
   if (c.color) return new THREE.Color(c.color);
-  if (c.kind === 'dut') return new THREE.Color(CABLE_COLORS[c.type] ?? 0x8f5cff);
+  if (c.kind === 'dut') return new THREE.Color(CABLE_COLORS[c.type] ?? USB_BLACK);
   return new THREE.Color(CABLE_COLORS[c.kind] ?? 0x888888);
 }
 // USB plugs and the drawer's panel-mount socket: meshes from parts.glb, drawn by

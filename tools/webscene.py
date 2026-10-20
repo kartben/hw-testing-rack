@@ -8,7 +8,6 @@ Units: millimetres, Z up (the viewer converts to three.js' Y-up).
 
 from __future__ import annotations
 
-import itertools
 import json
 import math
 import subprocess
@@ -73,9 +72,10 @@ NODE_J6_H = 8.0     # J6 (camera, JST PH 8 vertical, at config/rack.yaml › pcb
 # Dupont jumper wires, female–female, on 2.54 mm pin headers soldered pins up (boards.yaml › headers, the DATA
 # ×4's): the housing (W square, L long, a slight shoulder at its back), the crimp's insulation barrel out of it
 # (CRIMP), then a 26 AWG wire R in radius, its (EI / w)^⅓ SAG (stiff for its weight: jumpers stand in loops) and
-# its tightest bend MIN_R.  site/app.js draws the housing and crimp from these.  A header: a BASE high plastic
+# its tightest bend MIN_R; the wire runs straight on out of the crimp for LEAD before it bends (the barrel and
+# the insulation it grips).  site/app.js draws the housing and crimp from these.  A header: a BASE high plastic
 # strip, its pins PIN above it (a housing's mouth rests on the strip) and TAIL below the board.
-DUPONT = dict(W=2.5, L=14.0, SHOULDER=1.6, CRIMP=1.8, R=0.65, SAG=80.0, MIN_R=4.0, STEP=5.0)
+DUPONT = dict(W=2.5, L=14.0, SHOULDER=1.6, CRIMP=1.8, R=0.65, SAG=80.0, MIN_R=4.0, STEP=5.0, LEAD=5.0)
 HEADER = dict(BASE=2.5, PIN=6.0, TAIL=3.0, PITCH=2.54)
 # the usual rainbow, used for meaning: GND black, VREF red, RESET brown, BOOT green, the signals by bus
 DUPONT_COLOURS = {"black": "#1d1d1f", "brown": "#6e4127", "red": "#c62828", "orange": "#ef6c00",
@@ -469,22 +469,23 @@ def _resample(pts, n):
 
 
 def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoid=(), outward=None,
-              r=CABLE_R, sag=CABLE_SAG, min_r=CABLE_MIN_R, step=None):
+              r=CABLE_R, sag=CABLE_SAG, min_r=CABLE_MIN_R, step=None, push=200.0):
     """A cable as it really lies between two plugs: a rod exactly `length` long (the free length between the
     strain reliefs), leaving each relief along its plug's axis, in the shape of least energy (bending, with
     its own weight: an elastica), above floor_z, under ceil_z, out of `boxes` ((lo, hi) corners: boards,
     walls), off itself and the cables in `avoid` (their points, or (points, radius) for a cable thinner or thicker
     than this one), and nowhere tighter than min_r.  r, sag, min_r: the cable's radius, its (EI / w)^⅓ and its
     tightest bend (a thin USB cable's by default; a Dupont wire's: DUPONT); step, the segments' length
-    (ROD_STEP by default; a jumper's 5 mm: the shape barely changes, the solve is 8 times faster).  Its spare
+    (ROD_STEP by default; a jumper's 5 mm: the shape barely changes, the solve is 8 times faster); push, how hard
+    it is kept off boxes and other cables (a penalty's weight: a ribbon's free wire ends need more).  Its spare
     length starts out bowed away from `outward` (an x, y: the bay's middle), so neighbours bulge apart.  SLSQP (scipy) on the segments' directions: the length
     is exact by construction.  `guess`: a path to start from (another route's points).  Returns (points,
     shortfall, note): shortfall > 0 when the plugs are too far apart for the cable, or no shape reaching both
     was found (the guess is returned then); note says what is wrong with a shape that was found (a cable too
     long for its gap bends tighter than min_r, or one that touches a board), "" when nothing is."""
     from scipy.optimize import minimize
-    pa, da = plug_exit(a)
-    pb, db = plug_exit(b)
+    pa, da = a if isinstance(a, tuple) else plug_exit(a)     # or (point, direction out of the end) for either end
+    pb, db = b if isinstance(b, tuple) else plug_exit(b)
     ta, tb = da / np.linalg.norm(da), -db / np.linalg.norm(db)
     n = int(np.clip(round(length / (step or ROD_STEP)), 12, 72))
     h = length / n
@@ -554,7 +555,7 @@ def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoi
         p = nodes(t)
         bend = float(np.sum(np.diff(t, axis=0) ** 2)) / h
         weight = h * float(np.sum(p[1:-1, 2] - p[0, 2])) / sag ** 3
-        return bend + weight + 200.0 * (float(np.sum(inside(p[1:-1]) ** 2)) + contact(p))
+        return bend + weight + push * (float(np.sum(inside(p[1:-1]) ** 2)) + contact(p))
 
     cons = [{"type": "eq", "fun": lambda x: nodes(tangents(x))[-1] - pb},
             {"type": "ineq", "fun": lambda x: nodes(tangents(x))[1:-1, 2] - (floor_z + gap)},
@@ -739,130 +740,288 @@ def bezier(p0, p1, p2, p3, n=24):
     return [[round(float(c), 2) for c in p] for p in pts]
 
 
-def ribbon_wires(centre, a_exits, b_exits, pitch, length, order=None):
-    """A Dupont ribbon (wires torn off a strip together) from its routed centreline: its wires bonded side by side
-    in the middle, `pitch` apart, in the strip's order (`order`: per wire its place across the strip; default the
-    order the A end's housings stand in), the ribbon lying flat (its width carried along by parallel transport
-    from the spread of the A end's housings) and turned the side round that suits its pins at both ends, each
-    wire peeling off near either end to its own housing: a cubic out of the crimp along its axis into its place
-    in the ribbon, the peel longer the farther that end's pins spread.  A strip's wires are all as long: each is
-    `length` (crimp to crimp), its peels' handles stretched (it bulges, its pins close) or shortened (taut, its
-    pins far) to make it so, and torn further off the strip when it must to reach.
-    a_exits, b_exits: per wire (exit point, direction out of the crimp), in the wires' order.  Returns ([points]
-    per wire, how much longer than `length` the longest wire is at its tautest: > 0 when the centreline must be
-    shorter for it to reach, the most slack a wire has beyond natural peels (handles 1.6 ×): > 0 when the
-    centreline should be longer, the strip arching higher rather than that wire looping)."""
-    c = np.asarray(centre, float)
-    n = len(a_exits)
-    if n == 1:
-        return [c.round(2).tolist()], 0.0, 0.0
-    s_ = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(c, axis=0), axis=1))])
-    t = np.gradient(c, axis=0)
-    t /= np.linalg.norm(t, axis=1)[:, None]
-    pa = np.array([q for q, _ in a_exits], float)
-    pb = np.array([q for q, _ in b_exits], float)
-    spread = pa - pa.mean(axis=0)
-    w = spread[int(np.argmax(np.linalg.norm(spread, axis=1)))]
-    w = w - np.dot(w, t[0]) * t[0]
-    if np.linalg.norm(w) < 1e-6:
-        w = np.cross(t[0], [0.0, 0.0, 1.0])
-    ws = [w / np.linalg.norm(w)]
-    for k in range(1, len(c)):                       # parallel transport: the ribbon does not twist on its own
-        v = ws[-1] - np.dot(ws[-1], t[k]) * t[k]
-        ws.append(v / (np.linalg.norm(v) or 1.0))
-    ws = np.array(ws)
-    rank = np.argsort(np.argsort(spread @ ws[0] if order is None else np.asarray(order, float)))
-    r = rank - (n - 1) / 2
-    if r @ (spread @ ws[0]) < 0:                     # the strip's side round that lies its wires towards their pins
-        ws = -ws
-    sb = pb - pb.mean(axis=0)                        # and it twists on its way to lie so at the B end too
-    wb = sb[int(np.argmax(np.linalg.norm(sb, axis=1)))]
-    wb = wb - np.dot(wb, t[-1]) * t[-1]
-    if np.linalg.norm(wb) > 1e-6:
-        wb = wb / np.linalg.norm(wb) * (1.0 if r @ (sb @ wb) >= 0 else -1.0)
-        turn = math.atan2(float(np.dot(t[-1], np.cross(ws[-1], wb))), float(np.dot(ws[-1], wb)))
-        phi = (turn * s_ / s_[-1])[:, None]
-        ws = ws * np.cos(phi) + np.cross(t, ws) * np.sin(phi)
-    peel = [float(np.clip(1.3 * np.linalg.norm(q - q.mean(axis=0), axis=1).max() + 18.0, 18.0, 0.4 * s_[-1]))
-            for q in (pa, pb)]
-    ia = int(np.searchsorted(s_, peel[0]))
-    ib = int(np.searchsorted(s_, s_[-1] - peel[1])) - 1
-    if ib <= ia:
-        ia = ib = len(c) // 2
-    def plateau(v, f):
-        """0 at a peel's ends, 1 over its middle: smoothsteps over its first and last fraction f."""
-        s = lambda x: np.clip(x, 0.0, 1.0) ** 2 * (3 - 2 * np.clip(x, 0.0, 1.0))   # noqa: E731
-        return s(v / f) * s((1 - v) / f)
+RIBBON_BOND = 0.5      # how much of its outer wires' stretching a strip's web carries (0: loose wires, 1: one solid)
+RIBBON_TWIST = 0.8     # its twisting stiffness over its bending out of its plane's (round wires: GJ ≈ 0.8 EI)
 
-    def peel(p0, d0, p1, d1, h, lift):
-        """A peel from p0 (leaving along d0) to p1 (arriving along d1): a cubic, its handles h × a third of its
-        chord, lifted by `lift` (a vector) over its middle, the lift reached within 8 mm of either end."""
-        g = float(np.linalg.norm(p1 - p0))
-        m = max(8, int(g / 2))
-        v = np.linspace(0, 1, m)[:, None]
-        q = np.array(bezier(p0, p0 + d0 * h * g / 3, p1 - d1 * h * g / 3, p1, m))
-        return q + plateau(v, min(0.3, 8.0 / max(g, 1.0))) * lift
 
-    def build(k, lift_a, lift_b, h, xa=0, xb=0):
-        """Wire k, lifted out of the ribbon's plane by lift_a / lift_b over either peel's middle, its peels'
-        handles h × a third of their chord, torn xa / xb centreline points further off the strip at either end."""
-        i0, i1 = ia + xa, ib - xb
-        mid = c[i0:i1 + 1] + ws[i0:i1 + 1] * (rank[k] - (n - 1) / 2) * pitch
-        (a0, da), (b0, db) = a_exits[k], b_exits[k]
-        a0, b0, da, db = (np.asarray(v, float) for v in (a0, b0, da, db))
-        head = peel(a0, da, mid[0], t[i0], h, np.cross(t[i0], ws[i0]) * lift_a)
-        tail = peel(mid[-1], t[i1], b0, -db, h, np.cross(t[i1], ws[i1]) * lift_b)
-        return np.vstack([head[:-1], mid, tail[1:]])
+def ribbon_ends(exits, order):
+    """A ribbon's two ends: per end the direction across its wires (square to the plugs' axis), the one along which
+    the housings stand most clearly in the strip's order (the least gap between neighbours in the strip the
+    most), as the strip is laid onto its pins, and the wires' ranks across the strip (`order`: per wire its
+    place in the strip it was torn from).  exits: per end, per wire (point, direction out of the crimp)."""
+    n = len(order)
+    rank = np.argsort(np.argsort(np.asarray(order, float)))
+    seq = np.argsort(rank)                          # the wires in the strip's order
+    ws = []
+    for e in (0, 1):
+        q = np.array([p for p, _ in exits[e]], float)
+        d = np.asarray(exits[e][0][1], float)
+        d = d / np.linalg.norm(d)
+        e1 = np.cross(d, [1.0, 0.0, 0.0] if abs(d[0]) < 0.9 else [0.0, 1.0, 0.0])
+        e1 /= np.linalg.norm(e1)
+        e2 = np.cross(d, e1)
+        best = None
+        for th in np.radians(np.arange(0.0, 360.0, 2.0)):
+            w = math.cos(th) * e1 + math.sin(th) * e2
+            score = float(np.min(np.diff((q @ w)[seq]))) if n > 1 else 0.0
+            if best is None or score > best[0] + 1e-9:
+                best = (score, w)
+        ws.append(best[1])
+    return ws[0], ws[1], rank
 
-    def arc(p):
-        return float(np.linalg.norm(np.diff(p, axis=0), axis=1).sum())
 
-    made = {}
-    off = np.linalg.norm(pa - pa.mean(axis=0), axis=1), np.linalg.norm(pb - pb.mean(axis=0), axis=1)
+def ribbon_rod(a, b, length, wa, wb, n, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoid=(), step=None):
+    """A strip of n Dupont wires bonded side by side as it lies between its two ends (a, b: the plugs' middles):
+    a Kirchhoff rod exactly `length` long carrying its material frame, its width (the direction across the
+    wires) leaving a along wa and arriving at b along wb (unit, square to the plugs' axis), its centreline
+    straight out of each end along the plugs' axis for its first and last segment (the wires' lead out of their
+    housings).  Soft to bend out of its plane (the n wires' own stiffness), 1 + ⅔·(n² − 1) times stiffer within
+    it at RIBBON_BOND ½ (its outer wires would have to stretch, its inner ones to shorten: Σ A·y² against
+    n·I), RIBBON_TWIST to twist; its own weight (as one wire's per wire: DUPONT's sag); above floor_z, under
+    ceil_z, out of `boxes`, off itself and the cables in `avoid`, nowhere tighter than DUPONT's MIN_R.  SLSQP on
+    its segments' directions and frame angles.  Returns (nodes, the segments' tangents, the segments' widths,
+    shortfall, note) as rod_cable; the guess, its frame turned evenly from wa to wb, when no shape reaches."""
+    from scipy.optimize import minimize
+    pa, da = plug_exit(a)
+    pb, db = plug_exit(b)
+    ta, tb = da / np.linalg.norm(da), -db / np.linalg.norm(db)
+    r = DUPONT["R"] * n
+    stiff = 1.0 + RIBBON_BOND * 4.0 / 3.0 * (n * n - 1)
+    N = int(np.clip(round(length / (step or DUPONT["STEP"])), 12, 72))
+    h = length / N
+    m = N - 2
+    ref_v = np.cross(pb - pa, [0.0, 0.0, 1.0])
+    ref_v = ref_v / np.linalg.norm(ref_v) if np.linalg.norm(ref_v) > 1e-6 else np.array([1.0, 0.0, 0.0])
 
-    def wire(k, lift_a, lift_b):
-        """Wire k at its length.  One that cannot reach its pin with natural peels (handles 0.4 × or more) is torn
-        further off the strip at the end where its pin lies farther off the ribbon, as far as it needs; then its
-        handles' scale by bisection: up to a loose bulge (3.5) when its pins are close, down to taut (0.2) when
-        even torn off to the middle it barely reaches."""
-        key = (k, lift_a, lift_b)
-        if key not in made:
-            far_b = off[1][k] > off[0][k]
-            for x in range(max(0, ib - ia - 2) + 1):
-                xs = (0, x) if far_b else (x, 0)
-                if arc(build(k, lift_a, lift_b, 0.4, *xs)) <= length:
+    def frames(t, psi):
+        u = ref_v - (t @ ref_v)[:, None] * t
+        u /= np.linalg.norm(u, axis=1)[:, None]
+        return u, np.cos(psi)[:, None] * u + np.sin(psi)[:, None] * np.cross(t, u)
+
+    def ref_twist(t, u):
+        """The reference frame's own turn about the rod at each joint (against parallel transport)."""
+        t0_, t1_ = t[:-1], t[1:]
+        c = 1.0 + np.sum(t0_ * t1_, axis=1)
+        q = u[:-1] - (np.sum(u[:-1] * t1_, axis=1) / c)[:, None] * (t0_ + t1_)
+        return np.arctan2(np.sum(np.cross(q, u[1:]) * t1_, axis=1), np.sum(q * u[1:], axis=1))
+
+    def angle(w, t):
+        u, _ = frames(t[None], np.zeros(1))
+        w = np.asarray(w, float) - np.dot(w, t) * t
+        return math.atan2(float(np.dot(w, np.cross(t, u[0]))), float(np.dot(w, u[0])))
+
+    def plain(path):
+        """A path's segments' directions and its frame turned evenly from wa to wb: the start, and the fallback."""
+        t = np.diff(path, axis=0)
+        t /= np.linalg.norm(t, axis=1)[:, None]
+        t[0], t[-1] = ta, tb
+        u, _ = frames(t, np.zeros(len(t)))
+        ref = np.concatenate([[0.0], np.cumsum(ref_twist(t, u))])
+        p0, p1 = angle(wa, ta), angle(wb, tb)
+        p1 -= 2 * math.pi * round((p1 - p0 + ref[-1]) / (2 * math.pi))     # the least twist end to end
+        psi = p0 + np.linspace(0.0, 1.0, len(t)) * (p1 - p0 + ref[-1]) - ref
+        return t, psi, p0, p1
+
+    reach = float(np.linalg.norm(pb - pa))
+    start = _resample(np.array(guess if guess is not None else [pa, pb], float), N)
+    if reach > length - h:
+        t, psi, _, _ = plain(start)
+        return start, t, frames(t, psi)[1], round(reach - length + h, 1), ""
+    path = start                       # the start: the guess, bowed sideways and up until it is as long as the rod
+    side = np.cross(pb - pa, [0.0, 0.0, 1.0])
+    side = side / (np.linalg.norm(side) or 1.0)
+    bow = (side + np.array([0.0, 0.0, 0.6])) / np.linalg.norm(side + np.array([0.0, 0.0, 0.6]))
+    bump = np.sin(np.linspace(0.0, math.pi, N + 1))[:, None] * bow
+    lo, hi = 0.0, length
+
+    def plen(amp):
+        return float(np.sum(np.linalg.norm(np.diff(path + bump * amp, axis=0), axis=1)))
+    if plen(0.0) < length:
+        for _ in range(50):
+            mid = (lo + hi) / 2
+            lo, hi = (mid, hi) if plen(mid) < length else (lo, mid)
+        path = path + bump * lo
+    t0, psi_0, psi_a, psi_b = plain(path)
+    x0 = np.concatenate([np.arctan2(t0[1:-1, 1], t0[1:-1, 0]), np.arcsin(np.clip(t0[1:-1, 2], -1, 1)), psi_0[1:-1]])
+    gap = r + 0.2
+    boxes = [(np.asarray(lo_, float) - gap, np.asarray(hi_, float) + gap) for lo_, hi_ in boxes]
+    box_lo = np.array([b_[0] for b_ in boxes], float).reshape(-1, 3)
+    box_hi = np.array([b_[1] for b_ in boxes], float).reshape(-1, 3)
+
+    def tangents(x):
+        th, ph = x[:m], x[m:2 * m]
+        mid = np.stack([np.cos(ph) * np.cos(th), np.cos(ph) * np.sin(th), np.sin(ph)], axis=1)
+        return np.vstack([ta, mid, tb])
+
+    def nodes(t):
+        return pa + h * np.vstack([np.zeros(3), np.cumsum(t, axis=0)])
+
+    def inside(p):
+        if not len(box_lo):
+            return np.zeros(len(p))
+        d = np.minimum(p[:, None, :] - box_lo[None], box_hi[None] - p[:, None, :]).min(axis=2)
+        return np.maximum(d.max(axis=1), 0.0)
+
+    far = np.triu(np.ones((N, N), bool), k=max(3, int(math.ceil(2 * r / h)) + 2))
+    others = [(np.asarray(q[0], float), float(q[1])) if isinstance(q, tuple) else (np.asarray(q, float), CABLE_R)
+              for q in avoid]
+    others = [(q, rq) for q, rq in others if len(q) > 1]
+
+    def contact(p):
+        a0, a1 = p[:-1], p[1:]
+        pen = float(np.sum(np.clip(2 * r - _segment_gaps(a0, a1, a0, a1)[far], 0.0, None) ** 2))
+        for q, rq in others:
+            pen += float(np.sum(np.clip(r + rq - _segment_gaps(a0[1:-1], a1[1:-1], q[:-1], q[1:]), 0.0, None) ** 2))
+        return pen
+
+    def energy(x):
+        t = tangents(x)
+        p = nodes(t)
+        psi = np.concatenate([[psi_a], x[2 * m:], [psi_b]])
+        u, m1 = frames(t, psi)
+        m2 = np.cross(t, m1)
+        t0_, t1_ = t[:-1], t[1:]
+        kb = 2.0 * np.cross(t0_, t1_) / (1.0 + np.sum(t0_ * t1_, axis=1))[:, None]   # curvature binormal
+        w1, w2 = m1[:-1] + m1[1:], m2[:-1] + m2[1:]
+        k1 = np.sum(kb * w1, axis=1) / np.linalg.norm(w1, axis=1)                     # out of its plane
+        k2 = np.sum(kb * w2, axis=1) / np.linalg.norm(w2, axis=1)                     # within it
+        tw = np.diff(psi) + ref_twist(t, u)
+        bend = (float(np.sum(k1 ** 2)) + stiff * float(np.sum(k2 ** 2)) + RIBBON_TWIST * float(np.sum(tw ** 2))) / h
+        weight = h * float(np.sum(p[1:-1, 2] - p[0, 2])) / DUPONT["SAG"] ** 3
+        return bend + weight + 200.0 * (float(np.sum(inside(p[1:-1]) ** 2)) + contact(p))
+
+    min_r = DUPONT["MIN_R"]
+    cons = [{"type": "eq", "fun": lambda x: nodes(tangents(x))[-1] - pb},
+            {"type": "ineq", "fun": lambda x: nodes(tangents(x))[1:-1, 2] - (floor_z + gap)},
+            {"type": "ineq", "fun": lambda x: (ceil_z - r) - nodes(tangents(x))[1:-1, 2]},
+            {"type": "ineq", "fun": lambda x: (h / min_r) ** 2 - np.sum(np.diff(tangents(x), axis=0) ** 2, axis=1)}]
+    res = minimize(energy, x0, method="SLSQP", constraints=cons, options={"maxiter": 500, "ftol": 1e-7})
+    t = tangents(res.x)
+    p = nodes(t)
+    miss = float(np.linalg.norm(p[-1] - pb))
+    if miss > 0.5:
+        t, psi, _, _ = plain(start)
+        return start, t, frames(t, psi)[1], round(miss, 1), "no rest shape found"
+    p[-1] = pb
+    w = frames(t, np.concatenate([[psi_a], res.x[2 * m:], [psi_b]]))[1]
+    notes = []
+    if float(inside(p[1:-1]).max(initial=0.0)) > 0.5:
+        notes.append("it touches a board or a wall")
+    if contact(p) > 0.01:
+        notes.append("it runs into itself or another cable")
+    return p, t, w, 0.0, "; ".join(notes)
+
+
+def ribbon_curve(p, t, w, sub=5):
+    """A ribbon rod's centreline (ribbon_rod's nodes, segment tangents and widths) sampled `sub` times a segment:
+    a cubic Hermite between the nodes (through each node along its two segments' mean, straight along the
+    first and the last: the leads), its width carried along (square to it) and its normal.  Returns (points,
+    tangents, widths, normals, arc length)."""
+    p, t, w = (np.asarray(v, float) for v in (p, t, w))
+    T = np.vstack([t[0], t[0], t[1:-2] + t[2:-1], t[-1], t[-1]])
+    W = np.vstack([w[0], w[0], w[1:-2] + w[2:-1], w[-1], w[-1]])
+    T /= np.linalg.norm(T, axis=1)[:, None]
+    s = np.linspace(0.0, 1.0, sub + 1)[:-1][None, :, None]
+    L = np.linalg.norm(np.diff(p, axis=0), axis=1)[:, None, None]
+    p0, p1, T0, T1 = p[:-1, None], p[1:, None], T[:-1, None] * L, T[1:, None] * L
+    q = (2 * s ** 3 - 3 * s ** 2 + 1) * p0 + (s ** 3 - 2 * s ** 2 + s) * T0 + (3 * s ** 2 - 2 * s ** 3) * p1 + (s ** 3 - s ** 2) * T1
+    dq = (6 * s ** 2 - 6 * s) * p0 + (3 * s ** 2 - 4 * s + 1) * T0 + (6 * s - 6 * s ** 2) * p1 + (3 * s ** 2 - 2 * s) * T1
+    wq = (1 - s) * W[:-1, None] + s * W[1:, None]
+    q, dq, wq = (np.vstack([v.reshape(-1, 3), last]) for v, last in ((q, p[-1]), (dq, t[-1]), (wq, W[-1])))
+    dq /= np.linalg.norm(dq, axis=1)[:, None]
+    wq -= np.sum(wq * dq, axis=1)[:, None] * dq
+    wq /= np.linalg.norm(wq, axis=1)[:, None]
+    arc = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(q, axis=0), axis=1))])
+    return q, dq, wq, np.cross(dq, wq), arc
+
+
+def ribbon_plan(curve, exits, rank, pitch):
+    """Where a ribbon's wires part (ribbon_curve: its centreline; exits: per end, per wire (point, direction out
+    of the crimp); rank: the wires' places across the strip, `pitch` apart).  The strip stays whole up to a
+    cross-section 15 mm past the housings' leads, or twice the housings' spread there when they spread wider;
+    past it each wire's free end is the same length for every wire (torn together, they were cut together): what
+    the one with the farthest to go needs, with 8 % to spare for a gentle curve.  Returns the plan ribbon_wires
+    draws from, with "total": a wire's length as planned, crimp to crimp (the caller lengthens or shortens the
+    ribbon until it is the jumper's)."""
+    q, T, W, Nn, u = curve
+    n = len(rank)
+    U = float(u[-1])
+    lead = DUPONT["LEAD"]
+    b = (np.asarray(rank, float) - (n - 1) / 2) * pitch
+    cut = []
+    for e in (0, 1):
+        pts = np.array([p for p, _ in exits[e]], float)
+        spread = float(np.max(np.linalg.norm(pts - pts.mean(axis=0), axis=1)))
+        whole = lead + max(15.0, 2.0 * spread)
+        cut.append(int(np.searchsorted(u, whole)) if e == 0 else int(np.searchsorted(u, U - whole)))
+    i0, i1 = cut
+    if i1 - i0 < 4:
+        i0 = i1 = len(u) // 2
+    bonded = [q[i0:i1 + 1] + W[i0:i1 + 1] * b[k] for k in range(n)]
+    ends = []
+    for e, i in ((0, i0), (1, i1)):
+        starts = [np.asarray(p, float) + np.asarray(d, float) / np.linalg.norm(d) * lead for p, d in exits[e]]
+        joins = [bonded[k][0 if e == 0 else -1] for k in range(n)]
+        free = 1.08 * max(float(np.linalg.norm(joins[k] - starts[k])) for k in range(n)) + 0.5
+        # the free end reaches its place in the ribbon running along it (into it from the A end, out of it to B)
+        ends.append({"starts": starts, "joins": joins, "into": -T[i] if e == 0 else T[i], "free": free,
+                     "normal": Nn[i]})
+    run = [float(np.sum(np.linalg.norm(np.diff(bk, axis=0), axis=1))) for bk in bonded]
+    total = 2 * lead + ends[0]["free"] + ends[1]["free"] + float(np.mean(run))
+    return {"exits": exits, "bonded": bonded, "run": run, "ends": ends, "total": total}
+
+
+def ribbon_wires(plan, length, floor_z, ceil_z, boxes=(), avoid=()):
+    """A ribbon's wires from its plan (ribbon_plan), each `length` long crimp to crimp: straight out of its housing
+    for DUPONT's LEAD, then free (an elastica: rod_cable, as thin as a wire, off the boards, the housings, the
+    cables in `avoid` and the wires already drawn) to its place in the ribbon, bonded to its neighbours from there
+    on.  The free ends' lengths: the plan's at either end, shared out so that each wire is `length` exactly.  The
+    farthest-going free ends first, so that the others find their way round them.  Returns ([points] per wire,
+    their lengths)."""
+    exits, bonded, run, ends = plan["exits"], plan["bonded"], plan["run"], plan["ends"]
+    n = len(bonded)
+    lead = DUPONT["LEAD"]
+    r = DUPONT["R"]
+    keep = r + 0.35                    # the wires already drawn, a little fatter: the penalty acts before they touch
+    drawn = list(avoid) + [(bk[:12], keep) for bk in bonded] + [(bk[-12:], keep) for bk in bonded]
+    peels = [[None, None] for _ in range(n)]
+    share = ends[0]["free"] / (ends[0]["free"] + ends[1]["free"])
+    for e in (0, 1):
+        end = ends[e]
+        order = sorted(range(n), key=lambda k: -float(np.linalg.norm(end["joins"][k] - end["starts"][k])))
+        for k in order:
+            free = (length - 2 * lead - run[k]) * (share if e == 0 else 1 - share)
+            a = (end["starts"][k], np.asarray(exits[e][k][1], float))
+            b = (end["joins"][k], end["into"])
+            best = None
+            # a free end that runs into one already drawn tries again, started bowed out of the ribbon's plane one
+            # way, then the other (the elastica keeps the side it starts on)
+            for lift in (0.0, 3.0, -3.0):
+                mid = (a[0] + b[0]) / 2 + end["normal"] * lift
+                pts, short, _ = rod_cable(a, b, free, floor_z, ceil_z, boxes, avoid=drawn, r=r, sag=DUPONT["SAG"],
+                                          min_r=DUPONT["MIN_R"], step=2.0, guess=[a[0], mid, b[0]] if lift else None,
+                                          push=5000.0)
+                pts = np.asarray(pts, float)
+                g = -1e9                       # no shape found (the guess comes back): the last resort
+                if len(pts) > 3 and not short:
+                    g = min([float(_segment_gaps(pts[1:-2], pts[2:-1], o[:-1], o[1:]).min()) - 2 * r
+                             for o in (np.asarray(o_, float) for o_, _ in drawn[len(avoid):])] or [0.0])
+                if best is None or g > best[0]:
+                    best = (g, pts, short)
+                if g > -0.05:
                     break
-            lo, hi = (0.4, 3.5) if arc(build(k, lift_a, lift_b, 0.4, *xs)) <= length else (0.2, 0.4)
-            if arc(build(k, lift_a, lift_b, lo, *xs)) >= length:
-                hi = lo
-            elif arc(build(k, lift_a, lift_b, hi, *xs)) <= length:
-                lo = hi
-            for _ in range(30 if lo < hi else 0):
-                h = (lo + hi) / 2
-                lo, hi = (h, hi) if arc(build(k, lift_a, lift_b, h, *xs)) < length else (lo, h)
-            made[key] = build(k, lift_a, lift_b, (lo + hi) / 2, *xs),                 max(0.0, length - arc(build(k, lift_a, lift_b, 1.6, *xs)))
-        return made[key][0]
-
-    # wires that cross on their way to their pins pass over (or under) each other: each wire's peels lift it out
-    # of the ribbon's plane by the amounts (none, 1 or 2 pitches either way) that keep every two wires a diameter
-    # apart, the least lift among the best, both ends' together (each pair's distance tabled per its lifts)
-    levels = [0.0, -pitch, pitch, -2 * pitch, 2 * pitch] if n <= 4 else [0.0]
-    lv = list(itertools.product(levels, repeat=2))   # a wire's (A, B) lifts
-    table = {}
-    for k, j in itertools.combinations(range(n), 2):
-        for u, v in itertools.product(lv, repeat=2):
-            p, q = wire(k, *u), wire(j, *v)
-            table[k, j, u, v] = float(_segment_gaps(p[:-1], p[1:], q[:-1], q[1:]).min())
-    cap = 2 * DUPONT["R"] + 0.05
-    best = None
-    for combo in itertools.product(lv, repeat=n):
-        g = min(table[k, j, combo[k], combo[j]] for k, j in itertools.combinations(range(n), 2))
-        score = (min(g, cap), -sum(abs(a) + abs(b) for a, b in combo))
-        if best is None or score > best[0]:
-            best = (score, combo)
-    wires = [wire(k, *best[1][k]) for k in range(n)]
-    return ([w.round(2).tolist() for w in wires], max(arc(w) - length for w in wires),
-            max(made[(k, *best[1][k])][1] for k in range(n)))
+            _, pts, short = best
+            if short:
+                print(f"warning: a ribbon wire's free end is {short:.1f} mm too short")
+            peels[k][e] = pts
+            drawn.append((pts, keep))
+    wires = []
+    for k in range(n):
+        a_exit, b_exit = (np.asarray(exits[e][k][0], float) for e in (0, 1))
+        w = np.vstack([a_exit, peels[k][0], bonded[k][1:-1], peels[k][1][::-1], b_exit])
+        wires.append(w)
+    return ([w.round(2).tolist() for w in wires],
+            [float(np.sum(np.linalg.norm(np.diff(w, axis=0), axis=1))) for w in wires])
 
 
 def poly(*pts):
@@ -1169,8 +1328,8 @@ def build(rack) -> Path:
         boxes = [board_box(boards[e["board"]], e["o"], ex, ey, dz) for e, ex, ey in boards_at] + walls + plugs + housings
         avoid = [(q, CABLE_R) for q in drawn]
         out = []
-        # a board's jumpers are torn off the strip together: one ribbon, its centreline routed as one rod (as wide as
-        # its wires side by side, as stiff for its weight as one), its wires peeling off near the housings
+        # a board's jumpers are torn off the strip together: one ribbon (ribbon_rod: an elastic strip, stiff within
+        # its plane), its wires about it (ribbon_wires), all as long as the strip's
         for sid in dict.fromkeys(run[0] for run in runs):
             grp = [run for run in runs if run[0] == sid]
             n = len(grp)
@@ -1182,29 +1341,34 @@ def build(rack) -> Path:
             guess = [pa, [pa[0], pa[1], zt], [pb[0], pb[1], zt], pb]
             r_band = DUPONT["R"] * n
             exits = [[plug_exit(run[4][k]) for run in grp] for k in (0, 1)]
-            # every wire is the strip's length: the centreline (between the housings' middles) starts as long; a
-            # wire that cannot reach its pins (spread far) pulls it tighter, wires with slack to spare (their pins
-            # close) let it arch higher
+            floor = dz + d["bottom"] + d["plate"]
             for length in JUMPER_LENGTHS:
                 free = span = cable_free_length({"length": length}, ea, eb)
-                for _ in range(6):
-                    pts, short, note = rod_cable(ea, eb, span, dz + d["bottom"] + d["plate"], ARCH_TOP_MAX, boxes,
-                                                 guess=guess, avoid=avoid, r=r_band, sag=DUPONT["SAG"],
-                                                 min_r=DUPONT["MIN_R"], step=DUPONT["STEP"])
-                    wires, over, loose = ribbon_wires(pts, *exits, 2 * DUPONT["R"], free,
-                                                      [STRIP_ORDER.index(run[5]) for run in grp])
-                    if short or (over < 0.3 and loose < 0.5):
-                        break
-                    span += -(over + 0.5) if over >= 0.3 else loose
-                if not short and over < 0.3:
+                if n == 1:
+                    pts, short, note = rod_cable(ea, eb, free, floor, ARCH_TOP_MAX, boxes, guess=guess, avoid=avoid,
+                                                 r=r_band, sag=DUPONT["SAG"], min_r=DUPONT["MIN_R"], step=DUPONT["STEP"])
+                    wires, lens = [pts], [free]
+                else:
+                    # the wires peel off their ribbon and bow: the centreline is a little shorter than they are
+                    wa, wb, rank = ribbon_ends(exits, [STRIP_ORDER.index(run[5]) for run in grp])
+                    g = guess
+                    for _ in range(5):
+                        pts, tt, ww, short, note = ribbon_rod(ea, eb, span, wa, wb, n, floor, ARCH_TOP_MAX, boxes,
+                                                              guess=g, avoid=avoid)
+                        plan = ribbon_plan(ribbon_curve(pts, tt, ww), exits, rank, 2 * DUPONT["R"])
+                        err = free - plan["total"]
+                        if short or abs(err) < 0.5:
+                            break
+                        span, g = span + err, pts
+                    wires, lens = ribbon_wires(plan, free, floor, ARCH_TOP_MAX, boxes, avoid)
+                    pts = [[round(float(v), 2) for v in q] for q in pts]
+                if not short:
                     break
             what = f"{sid}: its {n}-wire ribbon"
-            print(f"  {what}: {length // 10} cm, centreline {span:.0f} of {free:.0f} mm, top {max(q[2] for q in pts):.1f}",
-                  flush=True)
+            print(f"  {what}: {length // 10} cm, centreline {span:.0f} mm, wires {min(lens):.1f}–{max(lens):.1f} of "
+                  f"{free:.1f} mm, top {max(q[2] for q in pts):.1f}", flush=True)
             if short:
                 print(f"warning: {what} is {short:.0f} mm too short")
-            elif over >= 0.3:
-                print(f"warning: {what}: a wire is {over:.1f} mm too short for its pins")
             if note:
                 print(f"warning: {what}: {note}")
             avoid.append((pts, r_band))

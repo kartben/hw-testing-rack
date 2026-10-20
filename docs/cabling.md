@@ -96,13 +96,14 @@ headers soldered pins up.  Wire only what the board needs: no GND wire (the
 USB cable carries it), RESET and BOOT where the board breaks them out (B1: the
 Pico 2's RUN), and on v2 the VREF its level shifter needs beside the signals
 (B3: a UART between B3.1 and B3.2).  Tear a board's wires off the strip
-together and peel only their ends: a small ribbon over the port wall, 20 cm
-(30 cm where that does not reach).  Tear a wire whose pin lies apart from the
-others a little further.  The viewer draws them so
-(`population › jumpers` in `config/rack.yaml`; `tools/webscene.py` routes each
-ribbon, keeps every wire at the strip's length and in the strip's colour
-order, and colours the wires GND black, VREF red, RESET brown, BOOT green,
-the signals by bus).
+together and peel only their ends, 2 cm or so (more where the pins spread): a
+small ribbon over the port wall, 20 cm (30 cm where that does not reach).
+Take the strip's colours in the order its wires lie onto the pins at both ends,
+so that the wires do not cross.  The viewer draws them so
+(`population › jumpers` in `config/rack.yaml`; `tools/webscene.py`: the ribbon
+as an elastic strip, stiff across its width, every wire straight out of its
+housing for 5 mm, as long as the strip's and in its colour order, coloured GND
+black, VREF red, RESET brown, BOOT green, the signals by bus).
 
 ## Two-cable boards
 

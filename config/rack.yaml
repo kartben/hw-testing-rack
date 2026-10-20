@@ -141,8 +141,10 @@ population:
     open: true                                                     # drawer shown pulled out
     x4: v2                   # the viewer shows the planned DATA ×4 v2 here (decided 2026-10-19); the BOM and the order keep v1
     jumpers:                 # Dupont female–female, 20 cm, one 3-wire ribbon per board from the DATA ×4's header (its port)
-      B3.1: { VREF: 3V3, P1: D6, P2: D7 }      # to its pins, header pin: board pin.  A UART between B3.1 and B3.2: TX
-      B3.2: { VREF: 3V3, P1: GP0, P2: GP1 }    # and RX, and the VREF the LSF0108 needs (GND comes with the USB cable)
+      B3.1: { VREF: 3V3, P1: D7, P2: D6 }      # to its pins, header pin: board pin.  A UART between B3.1 and B3.2, each
+      B3.2: { VREF: 3V3, P1: GP0, P2: GP1 }    # P to the same P: GP0 (TX) → D7 (RX), D6 (TX) → GP1 (RX); and the VREF
+                               # the LSF0108 needs (GND comes with the USB cable).  Red, orange, yellow off the strip: in
+                               # that order the strip lies flat onto each board's pins
     boards:                  # straight 15 cm cables, each at rest in a gentle arch (tools/webscene.py › rod_cable)
       - { board: xiao,      cable: c-to-c-straight,       at: [8.7, 30.0] }     # over 14.5-15.5 cm: the boards forward,
       - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [41.7, 16.0] }    # 33 mm apart for the pegs between

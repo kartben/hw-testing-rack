@@ -156,12 +156,15 @@ def web_model(board_id: str, spec: dict, faces: int = 45000) -> dict:
     the PCBs and other large parts as they are (decimation tears a drilled board), parts under 1.2 mm dropped,
     those under 4 mm as their box, the rest decimated to fit about `faces` triangles; one colour per part."""
     sc = trimesh.load(SRC / f"{board_id}.norm.glb", force="scene")
+    span = sc.bounds[1] - sc.bounds[0]
     keep, boxes, rest = [], [], []
     for m in baked(sc):
         size = max(m.extents)
         if size < 1.2:
             continue
-        (keep if m.area > 3000 else boxes if size < 4.0 else rest).append(m)
+        # the PCB's layers (flat, a good part of the board's footprint: a small board's are under 3000 mm²) kept whole
+        layer = m.extents[2] < 2.0 and m.extents[0] * m.extents[1] > 0.3 * span[0] * span[1]
+        (keep if m.area > 3000 or layer else boxes if size < 4.0 else rest).append(m)
     budget = max(1, faces - sum(len(m.faces) for m in keep) - 12 * len(boxes))
     ratio = min(1.0, budget / max(1, sum(len(m.faces) for m in rest)))
     out = trimesh.Scene()
