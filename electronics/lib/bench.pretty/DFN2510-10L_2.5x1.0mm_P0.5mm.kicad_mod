@@ -1,0 +1,183 @@
+(footprint "DFN2510-10L_2.5x1.0mm_P0.5mm"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "DFN2510-10L 2.5 × 1.0 mm, 0.5 mm pitch: hongjiacheng's land for the H5VU25UC (LCSC C20615800), its GND pins 3 and 8 one bar; turned as USON-10_2.5x1.0mm_P0.5mm")
+	(tags "dfn2510 dfn-10 esd h5vu25uc")
+	(property "Reference" "REF**"
+		(at 0 0 0)
+		(layer "F.SilkS")
+		(uuid "c045ff46-1ed5-4a03-97d8-4b18111ec41d")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Value" "DFN2510-10L_2.5x1.0mm_P0.5mm"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(uuid "67bb8e7c-8b6e-43f5-bf99-1b0e9c262aa2")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "fddcb6a2-a581-449a-ab6d-6e740e179d4e")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "6ba6bfed-0faa-451c-8832-086bac67b395")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(attr smd)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -0.5 1.36)
+		(end 0.5 1.36)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "c2292c31-16c2-487f-a580-f7afd0da3d1d")
+	)
+	(fp_line
+		(start -0.25 -1.36)
+		(end 0.5 -1.36)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "680f9f4a-309f-4b11-844d-424e78af2189")
+	)
+	(fp_rect
+		(start -1.03 -1.5)
+		(end 1.03 1.5)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "d3989882-6176-4903-b0fa-124a4682da3f")
+	)
+	(fp_rect
+		(start -0.5 -1.25)
+		(end 0.5 1.25)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "af5cef2f-6bf0-4a48-ba1f-c648a951b053")
+	)
+	(pad "1" smd rect
+		(at -0.4375 -1)
+		(size 0.675 0.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "c20eddb8-68ef-4f17-b2bc-f2f0bda26ddd")
+	)
+	(pad "2" smd rect
+		(at -0.4375 -0.5)
+		(size 0.675 0.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "84d8a836-fa70-4060-9b34-97bd4c0f55e0")
+	)
+	(pad "3" smd rect
+		(at -0.4375 0)
+		(size 0.675 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "8251b8ab-ce12-4287-bdd9-d3cad3e11544")
+	)
+	(pad "3" smd rect
+		(at 0 0)
+		(size 0.219999 0.4)
+		(layers "F.Cu" "F.Mask")
+		(thermal_bridge_angle 45)
+		(uuid "a34988b8-29a1-4bf9-b397-e3f3bd10ffae")
+	)
+	(pad "4" smd rect
+		(at -0.4375 0.5)
+		(size 0.675 0.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "82e80f7c-eaab-4a54-bd04-b60f397f794b")
+	)
+	(pad "5" smd rect
+		(at -0.4375 1)
+		(size 0.675 0.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "4b8882e3-65ca-4e70-9ccb-95c4bad496cd")
+	)
+	(pad "6" smd rect
+		(at 0.4375 1)
+		(size 0.675 0.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "67bd961f-034a-4efb-b646-1adeb60ad80f")
+	)
+	(pad "7" smd rect
+		(at 0.4375 0.5)
+		(size 0.675 0.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "9c6efab4-aaee-421f-9797-ec1232002d6f")
+	)
+	(pad "8" smd rect
+		(at 0.4375 0)
+		(size 0.675 0.4)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "2da4bcb8-bf27-4259-83ac-1a16f055d1d3")
+	)
+	(pad "9" smd rect
+		(at 0.4375 -0.5)
+		(size 0.675 0.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "76466139-db68-41dc-88c0-05f6ae37e00e")
+	)
+	(pad "10" smd rect
+		(at 0.4375 -1)
+		(size 0.675 0.2)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(thermal_bridge_angle 45)
+		(uuid "6e6e8e62-4236-4024-b8ea-2581b56adfed")
+	)
+	(embedded_fonts no)
+	(model "${KICAD10_3DMODEL_DIR}/Package_SON.3dshapes/USON-10_2.5x1.0mm_P0.5mm.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

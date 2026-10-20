@@ -864,7 +864,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C41417363 HX PZ2.54-1x6P TP-YQ | camera pod J2 | 270° | to confirm |
 | C109471 CH446Q LQFP-44 | DATA ×4 v2 U7 U8 | 270° | to confirm |
 | C130008 LSF0108 DHVQFN-20 | DATA ×4 v2 U107–U407 | 270° | to confirm |
-| C138714 TPD4E05U06 USON-10 | DATA ×4 v2 U4, U105… | 270° | to confirm |
+| C20615800 H5VU25UC DFN2510-10L | DATA ×4 v2 U4, U105… | 270° (fit by pin name: pin 1 on pin 1, 0.005 mm rms; `test_jlc_cpl.py` checks pin 1) | to confirm |
 | C206010 TCA9534A TSSOP-16 | DATA ×4 v2 U10 | 270° | to confirm |
 | C9839 TPS60400 SOT-23-5 | DATA ×4 v2 U9 | 180° (not C51118's 270°: another EasyEDA drawing) | to confirm |
 | C150716 AP2114H-3.3 SOT-223 | DATA ×4 v2 U3 | 180°, as C6186 (fit: −0.03 mm x) | to confirm |

@@ -201,7 +201,8 @@ JLC_CPL_FIX = {
     # function (JLC numbers its anode 1, KiCad its cathode)
     "C109471": ("LQFP-44_10x10mm_P0.8mm", 270, 0.0, 0.0),                    # x4 v2 U7 U8 (CH446Q)
     "C130008": ("DHVQFN-20-1EP_2.5x4.5mm_P0.5mm_EP1x3mm", 270, 0.0, 0.0),    # x4 v2 U107–U407 (LSF0108)
-    "C138714": ("USON-10_2.5x1.0mm_P0.5mm", 270, 0.0, 0.0),                  # x4 v2 U4, U105… (TPD4E05U06)
+    "C20615800": ("DFN2510-10L_2.5x1.0mm_P0.5mm", 270, 0.0, 0.0),            # x4 v2 U4, U105… (H5VU25UC: its pins
+                                                                             # along x, pin 1 on pin 1, 0.005 mm rms)
     "C206010": ("TSSOP-16_4.4x5mm_P0.65mm", 270, 0.0, 0.0),                  # x4 v2 U10 (TCA9534A)
     "C9839": ("SOT-23-5", 180, 0.0, 0.0),                                    # x4 v2 U9 (TPS60400)
     "C150716": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                         # x4 v2 U3 (AP2114H-3.3, drawn as C6186)

@@ -51,5 +51,28 @@ class JlcCplRow(unittest.TestCase):
             self.row("top", 0, "C51118", package="SOT-23")
 
 
+# Pin 1 of JLC's own footprint (its EasyEDA land, mm from its origin, Y down), for the parts whose rotation can't
+# be told from the outline: JLC_CPL_FIX's turn must put it on pin 1 of our footprint.  (LCSC: (JLC's pin 1,
+# our library footprint))
+PIN1 = {
+    # H5VU25UC: DFN2510-10L, 10 pads in two rows, symmetric but for the pin numbers (EasyEDA, 2026-10-20)
+    "C20615800": ((-1.0, 0.433), REPO / "electronics" / "lib" / "bench.pretty" / "DFN2510-10L_2.5x1.0mm_P0.5mm.kicad_mod"),
+}
+
+
+class JlcPin1(unittest.TestCase):
+    def test_pin1_lands_on_pin1(self):
+        import math
+        import re
+        for lcsc, ((jx, jy), mod) in PIN1.items():
+            _, drot, dx, dy = build_board.JLC_CPL_FIX[lcsc]
+            m = re.search(r'\(pad "1" \w+ \w+\s*\(at ([-\d.]+) ([-\d.]+)', mod.read_text(encoding="utf-8"))
+            kx, ky = float(m.group(1)), float(m.group(2))
+            a = math.radians(drot)              # JLC turns its footprint counter-clockwise as seen (Y down)
+            x, y = jx * math.cos(a) + jy * math.sin(a) + dx, -jx * math.sin(a) + jy * math.cos(a) + dy
+            self.assertLess(math.hypot(x - kx, y - ky), 0.05, f"{lcsc}: JLC's pin 1 at ({x:.3f}, {y:.3f}), "
+                                                               f"ours at ({kx}, {ky})")
+
+
 if __name__ == "__main__":
     unittest.main()

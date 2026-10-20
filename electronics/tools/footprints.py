@@ -166,9 +166,65 @@ def usb_c_hro_31d06() -> pcbnew.FOOTPRINT:
     return fp
 
 
+def dfn2510_10l() -> pcbnew.FOOTPRINT:
+    """DFN2510-10L (2.5 × 1.0 × 0.5 mm, 0.5 mm pitch), hongjiacheng's recommended land for its H5VU25UC 4-line
+    ESD array (LCSC C20615800; datasheet rev 2.0, p. 3): pads 0.675 mm long in two rows 0.875 mm apart (1.55 mm
+    over both), 0.20 mm wide for the I/O pins, and one 0.40 × 1.55 mm GND bar for pins 3 and 8 across the
+    middle.  Drawn turned as KiCad's USON-10_2.5x1.0mm_P0.5mm (pins 1–5 down the −x row, 6–10 back up the +x
+    one), so it takes that footprint's place and its 3D body.  The GND bar: pads 3 and 8 with paste on the
+    pins' ends, joined by a copper-only pad 3 between them."""
+    name = "DFN2510-10L_2.5x1.0mm_P0.5mm"
+    fp = pcbnew.FOOTPRINT(None)
+
+    def pad(num, x, y, w, h, paste=True):
+        p = pcbnew.PAD(fp)
+        p.SetAttribute(pcbnew.PAD_ATTRIB_SMD)
+        p.SetShape(pcbnew.F_Cu, pcbnew.PAD_SHAPE_RECT)
+        p.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(w), MM(h)))
+        layers = pcbnew.PAD.SMDMask()
+        if not paste:
+            layers.RemoveLayer(pcbnew.F_Paste)
+        p.SetLayerSet(layers)
+        p.SetNumber(num)
+        p.SetFPRelativePosition(pcbnew.VECTOR2I(MM(x), MM(y)))
+        fp.Add(p)
+    row, length = 0.4375, 0.675
+    for k in range(1, 11):
+        x = -row if k <= 5 else row
+        y = -1.0 + 0.5 * (k - 1) if k <= 5 else 1.0 - 0.5 * (k - 6)
+        pad(str(k), x, y, length, 0.40 if k in (3, 8) else 0.20)
+    pad("3", 0.0, 0.0, 2 * row - length + 0.02, 0.40, paste=False)     # the bar between pins 3 and 8
+    for layer, w, hw, hh in ((pcbnew.F_CrtYd, 0.05, 1.03, 1.5), (pcbnew.F_Fab, 0.1, 0.5, 1.25)):
+        rect = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_RECT)
+        rect.SetLayer(layer)
+        rect.SetWidth(MM(w))
+        rect.SetStart(pcbnew.VECTOR2I(MM(-hw), MM(-hh)))
+        rect.SetEnd(pcbnew.VECTOR2I(MM(hw), MM(hh)))
+        fp.Add(rect)
+    for x0, x1, y in ((-0.5, 0.5, 1.36), (-0.25, 0.5, -1.36)):          # silkscreen: the short ends, pin 1's
+        line = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_SEGMENT)              # corner left open
+        line.SetLayer(pcbnew.F_SilkS)
+        line.SetWidth(MM(0.12))
+        line.SetStart(pcbnew.VECTOR2I(MM(x0), MM(y)))
+        line.SetEnd(pcbnew.VECTOR2I(MM(x1), MM(y)))
+        fp.Add(line)
+    model = pcbnew.FP_3DMODEL()
+    model.m_Filename = "${KICAD10_3DMODEL_DIR}/Package_SON.3dshapes/USON-10_2.5x1.0mm_P0.5mm.step"
+    fp.Models().append(model)
+    fp.SetAttributes(pcbnew.FP_SMD)
+    fp.SetFPID(pcbnew.LIB_ID("bench", name))
+    fp.Value().SetText(name)
+    fp.Reference().SetText("REF**")
+    fp.SetLibDescription("DFN2510-10L 2.5 × 1.0 mm, 0.5 mm pitch: hongjiacheng's land for the H5VU25UC (LCSC "
+                         "C20615800), its GND pins 3 and 8 one bar; turned as USON-10_2.5x1.0mm_P0.5mm")
+    fp.SetKeywords("dfn2510 dfn-10 esd h5vu25uc")
+    return fp
+
+
 MAKERS = {"R_1206_3216Metric_Kelvin": kelvin_1206, "ESP32-S3-WROOM-1_NoEPVias": wroom_no_ep_vias,
           "PinHeader_2x06_P2.54mm_Vertical_SMD_Tight": header_2x6_smd_tight,
-          "USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical": usb_c_hro_31d06}
+          "USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical": usb_c_hro_31d06,
+          "DFN2510-10L_2.5x1.0mm_P0.5mm": dfn2510_10l}
 
 
 def main():
