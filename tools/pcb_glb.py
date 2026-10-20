@@ -356,17 +356,29 @@ def convert_bodies(src: Path, board: str, hide: set | None = None, name: str | N
     plain to render/assets/pcb (the renders read it) and meshopt-compressed to site/assets/pcb (the viewer), as
     `name` (default the board's).  hide: the references an assembly variant leaves off: a body goes with the
     smallest footprint whose pads (0.6 mm round) hold its middle, on its side of the board; the board's own
-    faces (anything over 30 mm) stay."""
+    faces (anything over 30 mm) stay.  With the board's layer art (build/<board>-art.json, as KiCad's GLBs
+    get it) the PCB's two faces are painted from its copper, mask, silkscreen and holes (board_body): an
+    assembly variant's empty footprints show."""
     import board_models
     scene = trimesh.load(src, force="scene")
-    boxes = footprint_boxes(REPO / "electronics" / board / f"{board}.kicad_pcb") if hide else []
-    meshes, hidden = [], set()
+    pcb = REPO / "electronics" / board / f"{board}.kicad_pcb"
+    boxes = footprint_boxes(pcb) if hide else []
+    art_path = REPO / "electronics" / board / "build" / f"{board}-art.json"
+    art = json.loads(art_path.read_text()) if art_path.exists() else None
+    if art is not None:
+        m_ = re.search(r'\(copper_finish "([^"]+)"\)', pcb.read_text(encoding="utf-8"))
+        art["finish"] = m_.group(1) if m_ else None
+    meshes, hidden, faces = [], set(), []
     for node in scene.graph.nodes_geometry:
         tf, gname = scene.graph[node]
         g = scene.geometry[gname]
         if isinstance(g, trimesh.Trimesh) and len(g.faces):
             m = g.copy()
             m.apply_transform(AXES @ tf)
+            if art is not None and m.extents[2] < 2.5 and m.extents[0] > 0.9 * art["size"][0] \
+                    and m.extents[1] > 0.9 * art["size"][1]:
+                faces.append(m)             # one of the PCB's faces: painted instead
+                continue
             if boxes and max(m.extents) < 30.0:
                 cx, cy, cz = (m.bounds[0] + m.bounds[1]) / 2            # viewer axes: y = -KiCad y, z off the face
                 hold = [b for b in boxes if b[1] == (cz > 0.8) and b[2] - 0.6 <= cx <= b[4] + 0.6
@@ -378,13 +390,15 @@ def convert_bodies(src: Path, board: str, hide: set | None = None, name: str | N
             meshes += board_models._by_material(m)
     name = name or board
     out, n = board_models.by_material(meshes, name)
+    for i, m in enumerate(board_body(faces, art, name) if faces else []):
+        out.add_geometry(m, node_name=f"board{i}", geom_name=f"board{i}")
     plain = REPO / "render" / "assets" / "pcb" / f"{name}.glb"
     plain.parent.mkdir(parents=True, exist_ok=True)
     out.export(plain)
     dst = REPO / "site" / "assets" / "pcb" / f"{name}.glb"
     packed = board_models.write_web(out, dst)
     info = {"faces": int(sum(len(g.faces) for g in out.geometry.values())), "materials": n, "packed": packed,
-            "bytes": dst.stat().st_size}
+            "bytes": dst.stat().st_size, "painted": bool(faces)}
     if hide:
         info.update(hidden=len(hidden), unseen=sorted(hide - hidden))       # left-off parts with no body found
     return info
@@ -443,14 +457,14 @@ def main(boards=("bay-node", "power-hub", "data-port-x4-v2")):
         if not src.exists():
             print("skip", b, "(no fab GLB; run tools/kicad.sh", b, "--fab)")
             continue
+        art = REPO / "electronics" / b / "build" / f"{b}-art.json"
+        if not art.exists():
+            print("warning:", art, "missing (tools/kicad.sh", b, "--fab writes it): untextured board")
         if b in FROM_STEP:
             print(b, convert_bodies(src, b))
             for v in VARIANTS.get(b, ()):
                 print(f"{b}-{v}", convert_bodies(src, b, hide=variant_dnp(b, v), name=f"{b}-{v}"))
             continue
-        art = REPO / "electronics" / b / "build" / f"{b}-art.json"
-        if not art.exists():
-            print("warning:", art, "missing (tools/kicad.sh", b, "--fab writes it): untextured board")
         info = convert(src, REPO / "site" / "assets" / "pcb" / f"{b}.glb", art, strict=strict)
         print(b, info)
 
