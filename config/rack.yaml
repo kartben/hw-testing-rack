@@ -139,7 +139,7 @@ population:
                                                                    # the shield hides the GIGA's edges: its own fenced plate
   B3:                                                              # converted: B3.1–B3.4 on a DATA ×4 board
     open: true                                                     # drawer shown pulled out
-    x4: v2                   # the viewer shows the planned DATA ×4 v2 here (decided 2026-10-19); the BOM and the order keep v1
+    x4: v2                   # a DATA ×4 v2 here (decided 2026-10-19): the viewer shows it, the BOM prices its logic variant
     jumpers:                 # Dupont female–female, 20 cm, one 3-wire ribbon per board from the DATA ×4's header (its port)
       B3.1: { VREF: 3V3, P1: D7, P2: D6 }      # to its pins, header pin: board pin.  A UART between B3.1 and B3.2, each
       B3.2: { VREF: 3V3, P1: GP0, P2: GP1 }    # P to the same P: GP0 (TX) → D7 (RX), D6 (TX) → GP1 (RX); and the VREF
@@ -242,7 +242,7 @@ pcb:
                             # the right port of a pair mirrored; not fitted by JLC, soldered by hand for Dupont jumpers
   data_port_x4_v2:          # DATA ×4 v2 (electronics/data-port-x4-v2, docs/data-x4-v2-research.md): v1 plus 32 switchable pins
                             # on 8 buses and the RP2354B analyzer, for the analyzer bays only (v1 stays the base board).  A
-                            # bay with `x4: v2` shows it in the viewer; its BOM and the JLC order keep v1 until it is ordered.
+                            # bay with `x4: v2` shows it in the viewer and the BOM prices it (tools/bom.py, its logic variant).
                             # It STANDS at the back of the drawer's rear bay (docs/data-x4-v2-layout-options.md, option B),
                             # held by its printed cradle (parts/x4_cradle.scad).  KiCad x = board x = drawer x − x0, KiCad
                             # y = top_z − drawer z (y = 0 its top edge).  Its front face (F.Cu, every part JLC places:

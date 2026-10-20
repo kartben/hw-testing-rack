@@ -115,6 +115,22 @@ JLC_QUOTE = {
         "pcba": {"setup": 8.18, "stencil": 1.53, "components": 30.18, "extended parts": 27.63, "SMT": 1.47,
                  "X-ray": 3.28},
     },
+    # the DATA ×4 v2, logic variant (electronics/data-port-x4-v2: v1's hub and ports plus the CH446Q matrix and
+    # the RP2354B analyzer), one per bay showing `x4: v2`: an estimate from its fab JLC BOM, priced like v1.  The
+    # standing board, 100 × 70 mm, so JLC's 4-layer offer (jlcpcb.com calculator, 2026-10-20: $8.00 + ENIG
+    # $17.40; ENIG for the RP2354B's 0.4 mm QFN-80, Economic's pitch limit).  Every JLC part on its front face:
+    # Economic PCBA, $3.07 for each of its 20 extended types among 39.  Components at the snapshot's breaks
+    # (electronics/lib/jlc_parts.json) × 1.12 (JLC's prices and attrition, as the node's); 1,110 joints a board
+    # at $0.0017; an X-ray of each board (the QFN hub, MCU and expanders).  L1 (AOTA-B201610S3R3-101-T, the
+    # RP2350's reference inductor) sells at JLC by 32 at least, 4 in stock on 2026-10-20 (a pre-order): the 30
+    # spare are paid once per order.  J1 and the four 2 × 6 headers are hand-soldered, out of the JLC BOM.
+    "data-port-x4-v2": {
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 174.95, "estimate": True, "from_fab": True,
+        "spec": "4-layer 100×70 mm, JLC04161H-7628, ENIG",
+        "pcb": {"special offer": 8.00, "ENIG": 17.40},
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 61.85, "extended parts": 61.40, "SMT": 3.77,
+                 "X-ray": 3.28, "L1 minimum purchase (32)": 9.54},
+    },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
 # instead of ENIG, as the node (2026-10-19: $5.30 on JLC's calculator for 5 × 86 × 140 mm 4-layer, against
@@ -199,6 +215,16 @@ JLC_LEVERS = {
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (6 a "
          "board)", 1.51, "decision"),
     ],
+    "data-port-x4-v2": [
+        ("L1: FTC201612S3R3MBCA (C18724415, 3.3 µH 2016, 2.4 A, 165 mΩ; 3,152 at JLC, sold by 1, $0.05) or "
+         "AFE201610S3R3MBT (C22459316, 2 A, 140 mΩ, $0.04) instead of the AOTA-B201610S3R3-101-T (4 at JLC, sold "
+         "by 32, a pre-order): same 2016 footprint; check shielding, Isat and the polarity dot against the "
+         "RP2350's datasheet", 10.06, "decision"),
+        ("RN1–RN9, RN101–RN402: the 4 × 0402 resistor arrays (10k, 2.2k, 100 Ω: 3 extended types) as basic "
+         "0402 resistors: 60 parts instead of 15, the same 120 joints, more room", 9.21, "decision"),
+        ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
+         "board)", 1.01, "decision"),
+    ],
     "data-port": [
         ("USB-C J1: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, "
          "re-route, mechanical check", 5.88, "decision"),
@@ -221,13 +247,14 @@ JLC_PCB_PRICE = {
     "power-hub": {5: 37.80, 10: 45.50, 50: 107.30, 100: 170.80},       # 4-layer 86 × 140 mm with JLC's rails
     "data-port-x4": {5: 13.10, 10: 19.20, 50: 53.80, 100: 73.40},      # 4-layer 100 × 37 mm (2026-10-20): the
                                                                         # $25 fee is back above 10 PCBs
+    "data-port-x4-v2": {5: 25.40, 10: 32.20, 50: 92.90, 100: 136.20},  # 4-layer 100 × 70 mm, ENIG (2026-10-20)
     "data-port": {5: 5.20, 10: 6.30, 50: 17.10, 100: 20.90},           # 2-layer 40 × 17 mm
     "camera-pod": {5: 5.20, 10: 6.40, 50: 18.80, 100: 24.20},          # 2-layer 40 × 27 mm
 }
 JLC_PCB_QTY = (5, 10, 15, 20, 25, 30, 50, 75, 100, 125, 150, 200)
 # X-ray per board with a leadless part (module pad, QFN): by the number of boards assembled
 JLC_XRAY = ((10, 1.64), (50, 0.82), (200, 0.49), (500, 0.33))
-JLC_XRAY_BOARDS = {"bay-node", "power-hub", "data-port-x4"}
+JLC_XRAY_BOARDS = {"bay-node", "power-hub", "data-port-x4", "data-port-x4-v2"}
 VOLUME_QTY = (2, 5, 10, 50, 100)            # boards assembled
 VOLUME_RACKS = (1, 5, 10)                   # racks built at once, one order
 # JLC's catalog for the boards' parts: tier, stock and price breaks (tools/jlc_parts_snapshot.py)
@@ -342,9 +369,11 @@ def electronics(rack) -> tuple[list[dict], dict]:
     prices = _catalog_prices()
     n_nodes = rack.units * len(rack.rows)          # every carrier unit gets a node (double bays: 2nd is optional)
     n_x4 = sum(1 for b in rack.bays() if rack.is_multi(b.id))     # converted bays: a DATA ×4, no DATA port
+    n_v2 = sum(1 for b in rack.bays() if rack.is_multi(b.id)        # those showing the v2 (`x4: v2`): its logic
+               and (rack.raw.get("population", {}).get(b.id) or {}).get("x4") == "v2")   # variant, not v1
     rows, orders = [], {}
     for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes - n_x4),
-                       ("camera-pod", CAMERA_SETS), ("data-port-x4", n_x4)):
+                       ("camera-pod", CAMERA_SETS), ("data-port-x4", n_x4 - n_v2), ("data-port-x4-v2", n_v2)):
         q = JLC_QUOTE[name]
         assert abs(sum(q["pcb"].values()) + sum(q["pcba"].values()) - q["total"]) < 0.005, f"{name}: quote lines ≠ total"
         n = q["assembled"]

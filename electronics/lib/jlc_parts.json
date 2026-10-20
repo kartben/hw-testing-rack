@@ -502,6 +502,203 @@
     "X322524MSB4SI"
    ]
   ],
+  "data-port-x4-v2": [
+   [
+    "C45783",
+    5,
+    "22u"
+   ],
+   [
+    "C52923",
+    14,
+    "1u"
+   ],
+   [
+    "C23733",
+    5,
+    "4.7u"
+   ],
+   [
+    "C1562",
+    2,
+    "33p"
+   ],
+   [
+    "C1525",
+    41,
+    "100n"
+   ],
+   [
+    "C1548",
+    2,
+    "15p"
+   ],
+   [
+    "C2297",
+    1,
+    "KT-0805G"
+   ],
+   [
+    "C1017",
+    1,
+    "GZ2012D601TF"
+   ],
+   [
+    "C2689964",
+    4,
+    "TYPE-C-31-D-06"
+   ],
+   [
+    "C42411119",
+    1,
+    "AOTA-B201610S3R3-101-T"
+   ],
+   [
+    "C8545",
+    3,
+    "2N7002"
+   ],
+   [
+    "C25752",
+    1,
+    "12k"
+   ],
+   [
+    "C25744",
+    16,
+    "10k"
+   ],
+   [
+    "C25900",
+    2,
+    "4.7k"
+   ],
+   [
+    "C25105",
+    1,
+    "33"
+   ],
+   [
+    "C11702",
+    11,
+    "1k"
+   ],
+   [
+    "C25100",
+    2,
+    "27"
+   ],
+   [
+    "C25741",
+    18,
+    "100k"
+   ],
+   [
+    "C25792",
+    6,
+    "47k"
+   ],
+   [
+    "C23206",
+    8,
+    "56k"
+   ],
+   [
+    "C25334",
+    4,
+    "100m"
+   ],
+   [
+    "C25764",
+    4,
+    "200k"
+   ],
+   [
+    "C25725",
+    5,
+    "10k"
+   ],
+   [
+    "C26075",
+    2,
+    "2.2k"
+   ],
+   [
+    "C48442",
+    8,
+    "100"
+   ],
+   [
+    "C478081",
+    1,
+    "USB2517I-JZX"
+   ],
+   [
+    "C181499",
+    2,
+    "TCA6408ARGTR"
+   ],
+   [
+    "C51118",
+    2,
+    "AP2112K-3.3TRG1"
+   ],
+   [
+    "C138714",
+    9,
+    "TPD4E05U06DQAR"
+   ],
+   [
+    "C109471",
+    2,
+    "CH446Q"
+   ],
+   [
+    "C9839",
+    1,
+    "TPS60400DBVR"
+   ],
+   [
+    "C206010",
+    1,
+    "TCA9534APWR"
+   ],
+   [
+    "C39843328",
+    1,
+    "RP2354B"
+   ],
+   [
+    "C111738",
+    4,
+    "TPS2553DBVR-1"
+   ],
+   [
+    "C49851",
+    4,
+    "INA226AIDGSR"
+   ],
+   [
+    "C7519",
+    4,
+    "USBLC6-2SC6"
+   ],
+   [
+    "C130008",
+    4,
+    "LSF0108RKSR"
+   ],
+   [
+    "C15643",
+    1,
+    "X322524MSB4SI"
+   ],
+   [
+    "C20625731",
+    1,
+    "ABM8-272-T3"
+   ]
+  ],
   "data-port": [
    [
     "C14663",
@@ -581,48 +778,102 @@
   "C10096": {
    "mfr": "SN74LVC1G32DBVR",
    "package": "SOT-23-5",
-   "stock": 138930,
+   "stock": 167872,
    "tier": "extended",
    "priceBreaks": [
     {
-     "qFrom": 1,
+     "qFrom": 10,
      "qTo": 99,
-     "price": 0.071
+     "price": 0.0719
     },
     {
      "qFrom": 100,
      "qTo": 299,
-     "price": 0.057
+     "price": 0.0572
     },
     {
      "qFrom": 300,
      "qTo": 2999,
-     "price": 0.049
+     "price": 0.0499
     },
     {
      "qFrom": 3000,
      "qTo": 5999,
-     "price": 0.04
+     "price": 0.0403
     },
     {
      "qFrom": 6000,
      "qTo": 8999,
-     "price": 0.035
+     "price": 0.0358
     },
     {
      "qFrom": 9000,
      "qTo": null,
-     "price": 0.033
+     "price": 0.0336
     }
    ],
    "category": "Logic",
-   "manufacturer": "Texas Instruments",
-   "source": "local-db (snapshot stock)"
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 167290
+  },
+  "C1017": {
+   "mfr": "GZ2012D601TF",
+   "package": "0805",
+   "stock": 664352,
+   "tier": "basic",
+   "priceBreaks": [],
+   "category": "Filters",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": null
+  },
+  "C109471": {
+   "mfr": "CH446Q",
+   "package": "LQFP-44(10x10)",
+   "stock": 1744,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 1.6017
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 1.3529
+    },
+    {
+     "qFrom": 30,
+     "qTo": 159,
+     "price": 1.198
+    },
+    {
+     "qFrom": 160,
+     "qTo": 479,
+     "price": 0.9772
+    },
+    {
+     "qFrom": 480,
+     "qTo": 959,
+     "price": 0.9047
+    },
+    {
+     "qFrom": 960,
+     "qTo": null,
+     "price": 0.875
+    }
+   ],
+   "category": "Interface",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 1541
   },
   "C111738": {
    "mfr": "TPS2553DBVR-1",
    "package": "SOT-23-6",
-   "stock": 2626,
+   "stock": 2566,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -659,7 +910,7 @@
    "category": "Power Management (PMIC)",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 2620
+   "lcsc_stock": 2565
   },
   "C11355": {
    "mfr": "FSUSB42MUX",
@@ -701,49 +952,64 @@
    "category": "Interface",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 36835
+   "lcsc_stock": 36790
   },
   "C113965": {
    "mfr": "SMAJ30A",
    "package": "DO-214AC(SMA)",
-   "stock": 52475,
+   "stock": 50390,
    "tier": "extended",
    "priceBreaks": [
     {
-     "qFrom": 20,
+     "qFrom": 1,
      "qTo": 199,
-     "price": 0.0428
+     "price": 0.044
     },
     {
      "qFrom": 200,
      "qTo": 599,
-     "price": 0.0344
+     "price": 0.035
     },
     {
      "qFrom": 600,
      "qTo": 4999,
-     "price": 0.0297
+     "price": 0.031
     },
     {
      "qFrom": 5000,
      "qTo": 9999,
-     "price": 0.0235
+     "price": 0.025
     },
     {
      "qFrom": 10000,
      "qTo": 19999,
-     "price": 0.0211
+     "price": 0.022
     },
     {
      "qFrom": 20000,
      "qTo": null,
-     "price": 0.0198
+     "price": 0.021
     }
    ],
    "category": "Circuit Protection",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 50380
+   "manufacturer": "MDD(Microdiode Semiconductor)",
+   "source": "local-db (snapshot stock)"
+  },
+  "C11702": {
+   "mfr": "0402WGF1001TCE",
+   "package": "0402",
+   "stock": 13727760,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.004
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
   },
   "C12891": {
    "mfr": "CL31A226KAHNNNE",
@@ -786,6 +1052,48 @@
    "manufacturer": "Samsung Electro-Mechanics",
    "source": "local-db (snapshot stock)"
   },
+  "C130008": {
+   "mfr": "LSF0108RKSR",
+   "package": "VQFN-20(2.5x4.5)",
+   "stock": 19132,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 1.1424
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 0.9449
+    },
+    {
+     "qFrom": 30,
+     "qTo": 99,
+     "price": 0.8363
+    },
+    {
+     "qFrom": 100,
+     "qTo": 499,
+     "price": 0.7128
+    },
+    {
+     "qFrom": 500,
+     "qTo": 999,
+     "price": 0.6585
+    },
+    {
+     "qFrom": 1000,
+     "qTo": null,
+     "price": 0.6338
+    }
+   ],
+   "category": "Logic",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 19032
+  },
   "C13585": {
    "mfr": "CL31A106KBHNNNE",
    "package": "1206",
@@ -827,6 +1135,47 @@
    "manufacturer": "Samsung Electro-Mechanics",
    "source": "local-db (snapshot stock)"
   },
+  "C138714": {
+   "mfr": "TPD4E05U06DQAR",
+   "package": "USON-10(1x2.5)",
+   "stock": 215805,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 49,
+     "price": 0.083
+    },
+    {
+     "qFrom": 50,
+     "qTo": 149,
+     "price": 0.066
+    },
+    {
+     "qFrom": 150,
+     "qTo": 499,
+     "price": 0.057
+    },
+    {
+     "qFrom": 500,
+     "qTo": 2999,
+     "price": 0.05
+    },
+    {
+     "qFrom": 3000,
+     "qTo": 5999,
+     "price": 0.047
+    },
+    {
+     "qFrom": 6000,
+     "qTo": null,
+     "price": 0.045
+    }
+   ],
+   "category": "Circuit Protection",
+   "manufacturer": "Texas Instruments",
+   "source": "local-db (snapshot stock)"
+  },
   "C14663": {
    "mfr": "CC0603KRX7R9BB104",
    "package": "0603",
@@ -841,6 +1190,54 @@
    ],
    "category": "Capacitors",
    "manufacturer": "YAGEO",
+   "source": "local-db (snapshot stock)"
+  },
+  "C1525": {
+   "mfr": "CL05B104KO5NNNC",
+   "package": "0402",
+   "stock": 29511499,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.005
+    }
+   ],
+   "category": "Capacitors",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "source": "local-db (snapshot stock)"
+  },
+  "C1548": {
+   "mfr": "0402CG150J500NT",
+   "package": "0402",
+   "stock": 1182795,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.004
+    }
+   ],
+   "category": "Capacitors",
+   "manufacturer": "FH (Guangdong Fenghua Advanced Tech)",
+   "source": "local-db (snapshot stock)"
+  },
+  "C1562": {
+   "mfr": "0402CG330J500NT",
+   "package": "0402",
+   "stock": 1267040,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.003
+    }
+   ],
+   "category": "Capacitors",
+   "manufacturer": "FH (Guangdong Fenghua Advanced Tech)",
    "source": "local-db (snapshot stock)"
   },
   "C15643": {
@@ -954,7 +1351,7 @@
   "C16251": {
    "mfr": "USB2514B-AEZC-TR",
    "package": "VQFN-36-EP(6x6)",
-   "stock": 13147,
+   "stock": 13142,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -991,7 +1388,7 @@
    "category": "Interface",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 13147
+   "lcsc_stock": 13137
   },
   "C1663": {
    "mfr": "CL10C330JB8NNNC",
@@ -1147,7 +1544,90 @@
    "category": "Interface",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 13088
+   "lcsc_stock": 12885
+  },
+  "C206010": {
+   "mfr": "TCA9534APWR",
+   "package": "TSSOP-16",
+   "stock": 10043,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 1.3727
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 1.1255
+    },
+    {
+     "qFrom": 30,
+     "qTo": 99,
+     "price": 0.9904
+    },
+    {
+     "qFrom": 100,
+     "qTo": 499,
+     "price": 0.8371
+    },
+    {
+     "qFrom": 500,
+     "qTo": 999,
+     "price": 0.6938
+    },
+    {
+     "qFrom": 1000,
+     "qTo": null,
+     "price": 0.6625
+    }
+   ],
+   "category": "Interface",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 8880
+  },
+  "C20625731": {
+   "mfr": "ABM8-272-T3",
+   "package": "SMD3225-4P",
+   "stock": 7237,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 0.648
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 0.532
+    },
+    {
+     "qFrom": 30,
+     "qTo": 99,
+     "price": 0.483
+    },
+    {
+     "qFrom": 100,
+     "qTo": 499,
+     "price": 0.423
+    },
+    {
+     "qFrom": 500,
+     "qTo": 999,
+     "price": 0.395
+    },
+    {
+     "qFrom": 1000,
+     "qTo": null,
+     "price": 0.379
+    }
+   ],
+   "category": "Crystals, Oscillators, Resonators",
+   "manufacturer": "Abracon LLC",
+   "source": "local-db (snapshot stock)"
   },
   "C20799": {
    "mfr": "SMD1206P050TF",
@@ -1194,44 +1674,43 @@
   "C20917": {
    "mfr": "AO3400A",
    "package": "SOT-23",
-   "stock": 714304,
+   "stock": 1092516,
    "tier": "basic",
    "priceBreaks": [
     {
-     "qFrom": 5,
+     "qFrom": 1,
      "qTo": 49,
-     "price": 0.098
+     "price": 0.097
     },
     {
      "qFrom": 50,
      "qTo": 149,
-     "price": 0.0782
+     "price": 0.077
     },
     {
      "qFrom": 150,
      "qTo": 499,
-     "price": 0.0683
+     "price": 0.068
     },
     {
      "qFrom": 500,
      "qTo": 2999,
-     "price": 0.0608
+     "price": 0.06
     },
     {
      "qFrom": 3000,
      "qTo": 5999,
-     "price": 0.0548
+     "price": 0.054
     },
     {
      "qFrom": 6000,
      "qTo": null,
-     "price": 0.0519
+     "price": 0.051
     }
    ],
    "category": "Transistors/Thyristors",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 483930
+   "manufacturer": "Alpha & Omega Semicon",
+   "source": "local-db (snapshot stock)"
   },
   "C21122": {
    "mfr": "CL10B223KB8NNNC",
@@ -1280,6 +1759,48 @@
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock)"
+  },
+  "C2297": {
+   "mfr": "KT-0805G",
+   "package": "0805",
+   "stock": 2570071,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 50,
+     "qTo": 499,
+     "price": 0.0166
+    },
+    {
+     "qFrom": 500,
+     "qTo": 2999,
+     "price": 0.0129
+    },
+    {
+     "qFrom": 3000,
+     "qTo": 5999,
+     "price": 0.0102
+    },
+    {
+     "qFrom": 6000,
+     "qTo": 23999,
+     "price": 0.009
+    },
+    {
+     "qFrom": 24000,
+     "qTo": 50999,
+     "price": 0.0085
+    },
+    {
+     "qFrom": 51000,
+     "qTo": null,
+     "price": 0.0081
+    }
+   ],
+   "category": "Optoelectronics",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 1673700
   },
   "C23140": {
    "mfr": "0603WAF330JT5E",
@@ -1393,6 +1914,79 @@
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock)"
   },
+  "C23733": {
+   "mfr": "CL05A475MP5NRNC",
+   "package": "0402",
+   "stock": 2104297,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 499,
+     "price": 0.021
+    },
+    {
+     "qFrom": 500,
+     "qTo": 1499,
+     "price": 0.016
+    },
+    {
+     "qFrom": 1500,
+     "qTo": 9999,
+     "price": 0.014
+    },
+    {
+     "qFrom": 10000,
+     "qTo": 19999,
+     "price": 0.013
+    },
+    {
+     "qFrom": 20000,
+     "qTo": 49999,
+     "price": 0.012
+    },
+    {
+     "qFrom": 50000,
+     "qTo": null,
+     "price": 0.011
+    }
+   ],
+   "category": "Capacitors",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "source": "local-db (snapshot stock)"
+  },
+  "C25100": {
+   "mfr": "0402WGF270JTCE",
+   "package": "0402",
+   "stock": 80607,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
+  "C25105": {
+   "mfr": "0402WGF330JTCE",
+   "package": "0402",
+   "stock": 2550244,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.001
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
   "C25196": {
    "mfr": "0603WAF560JT5E",
    "package": "0603",
@@ -1425,6 +2019,22 @@
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock)"
   },
+  "C25725": {
+   "mfr": "4D02WGJ0103TCE",
+   "package": "0402x4",
+   "stock": 77480,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.005
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
   "C25741": {
    "mfr": "0402WGF1003TCE",
    "package": "0402",
@@ -1445,6 +2055,38 @@
    "mfr": "0402WGF1002TCE",
    "package": "0402",
    "stock": 21278633,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
+  "C25752": {
+   "mfr": "0402WGF1202TCE",
+   "package": "0402",
+   "stock": 952479,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
+  "C25764": {
+   "mfr": "0402WGF2003TCE",
+   "package": "0402",
+   "stock": 2217803,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1537,6 +2179,22 @@
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock)"
   },
+  "C26075": {
+   "mfr": "4D02WGJ0222TCE",
+   "package": "0402x4",
+   "stock": 9316,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.005
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
   "C265121": {
    "mfr": "S8B-PH-SM4-TB(LF)(SN)",
    "package": "SMD,P=2mm,卧贴",
@@ -1577,7 +2235,7 @@
    "category": "Connectors",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 18284
+   "lcsc_stock": 18269
   },
   "C265405": {
    "mfr": "S6B-PH-SM4-TB(LF)(SN)",
@@ -1619,7 +2277,49 @@
    "category": "Connectors",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 4817
+   "lcsc_stock": 4813
+  },
+  "C2689964": {
+   "mfr": "TYPE-C-31-D-06",
+   "package": "SMD",
+   "stock": 2746,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 5,
+     "qTo": 49,
+     "price": 0.2842
+    },
+    {
+     "qFrom": 50,
+     "qTo": 149,
+     "price": 0.2261
+    },
+    {
+     "qFrom": 150,
+     "qTo": 499,
+     "price": 0.2011
+    },
+    {
+     "qFrom": 500,
+     "qTo": 2499,
+     "price": 0.1615
+    },
+    {
+     "qFrom": 2500,
+     "qTo": 4999,
+     "price": 0.1476
+    },
+    {
+     "qFrom": 5000,
+     "qTo": null,
+     "price": 0.1393
+    }
+   ],
+   "category": "Connectors",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 2580
   },
   "C28323": {
    "mfr": "CL21B105KBFNNNE",
@@ -1665,7 +2365,7 @@
   "C2843876": {
    "mfr": "XL-2835UWC-02",
    "package": "SMD2835-2P",
-   "stock": 358016,
+   "stock": 367908,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1702,105 +2402,107 @@
    "category": "Optoelectronics",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 367250
+   "lcsc_stock": 367900
   },
   "C2913201": {
    "mfr": "ESP32-S3-WROOM-1-N8R8",
    "package": "SMD,25.5x18mm",
-   "stock": 6054,
+   "stock": 5483,
    "tier": "extended",
    "priceBreaks": [
     {
      "qFrom": 1,
      "qTo": 9,
-     "price": 5.025
+     "price": 5.072
     },
     {
      "qFrom": 10,
      "qTo": 29,
-     "price": 4.4
+     "price": 4.4409
     },
     {
      "qFrom": 30,
      "qTo": 99,
-     "price": 4.081
+     "price": 4.1195
     },
     {
      "qFrom": 100,
      "qTo": 649,
-     "price": 3.654
+     "price": 3.6878
     },
     {
      "qFrom": 650,
      "qTo": 1299,
-     "price": 3.498
+     "price": 3.5313
     },
     {
      "qFrom": 1300,
      "qTo": null,
-     "price": 3.433
+     "price": 3.4654
     }
    ],
    "category": "IoT/Communication Modules",
-   "manufacturer": "Espressif Systems",
-   "source": "local-db (snapshot stock)"
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 0
   },
   "C2913206": {
    "mfr": "ESP32-S3-MINI-1-N8",
    "package": "SMD",
-   "stock": 3882,
+   "stock": 3093,
    "tier": "extended",
    "priceBreaks": [
     {
      "qFrom": 1,
      "qTo": 9,
-     "price": 4.725
+     "price": 4.7558
     },
     {
      "qFrom": 10,
      "qTo": 29,
-     "price": 4.16
+     "price": 4.1872
     },
     {
      "qFrom": 30,
      "qTo": 99,
-     "price": 3.872
+     "price": 3.898
     },
     {
      "qFrom": 100,
      "qTo": 649,
-     "price": 3.357
+     "price": 3.3787
     },
     {
      "qFrom": 650,
      "qTo": 1299,
-     "price": 3.218
+     "price": 3.239
     },
     {
      "qFrom": 1300,
      "qTo": null,
-     "price": 3.159
+     "price": 3.1799
     }
    ],
    "category": "IoT/Communication Modules",
-   "manufacturer": "Espressif Systems",
-   "source": "local-db (snapshot stock)"
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 2991
   },
   "C318884": {
    "mfr": "TS-1187A-B-A-B",
    "package": "SMD-4P,5.1x5.1mm",
-   "stock": 291773,
+   "stock": 280245,
    "tier": "basic",
    "priceBreaks": [
     {
-     "qFrom": 1,
+     "qFrom": 20,
      "qTo": 199,
-     "price": 0.021
+     "price": 0.0207
     },
     {
      "qFrom": 200,
      "qTo": 599,
-     "price": 0.016
+     "price": 0.0161
     },
     {
      "qFrom": 600,
@@ -1810,17 +2512,23 @@
     {
      "qFrom": 4000,
      "qTo": 7999,
-     "price": 0.012
+     "price": 0.0122
     },
     {
      "qFrom": 8000,
+     "qTo": 19999,
+     "price": 0.0116
+    },
+    {
+     "qFrom": 20000,
      "qTo": null,
-     "price": 0.011
+     "price": 0.0111
     }
    ],
    "category": "Switches",
-   "manufacturer": "XKB Connection",
-   "source": "local-db (snapshot stock)"
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 0
   },
   "C3234095": {
    "mfr": "TJA1462AT/0Z",
@@ -1862,7 +2570,7 @@
    "category": "Interface",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 10496
+   "lcsc_stock": 10686
   },
   "C3352": {
    "mfr": "RVT1H101M0810",
@@ -1905,6 +2613,48 @@
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
    "lcsc_stock": 29510
+  },
+  "C39843328": {
+   "mfr": "RP2354B",
+   "package": "QFN-80-EP(10x10)",
+   "stock": 2309,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 1.5324
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 1.4601
+    },
+    {
+     "qFrom": 30,
+     "qTo": 99,
+     "price": 1.4157
+    },
+    {
+     "qFrom": 100,
+     "qTo": 499,
+     "price": 1.3812
+    },
+    {
+     "qFrom": 500,
+     "qTo": 999,
+     "price": 1.3598
+    },
+    {
+     "qFrom": 1000,
+     "qTo": null,
+     "price": 1.3516
+    }
+   ],
+   "category": "Global Sourcing Parts",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 1894
   },
   "C41417363": {
    "mfr": "HX PZ2.54-1x6P TP-YQ",
@@ -1963,88 +2713,130 @@
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock)"
   },
+  "C42411119": {
+   "mfr": "AOTA-B201610S3R3-101-T",
+   "package": "0806",
+   "stock": 3,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 49,
+     "price": 0.284
+    },
+    {
+     "qFrom": 50,
+     "qTo": 149,
+     "price": 0.225
+    },
+    {
+     "qFrom": 150,
+     "qTo": 499,
+     "price": 0.199
+    },
+    {
+     "qFrom": 500,
+     "qTo": 2999,
+     "price": 0.168
+    },
+    {
+     "qFrom": 3000,
+     "qTo": 5999,
+     "price": 0.153
+    },
+    {
+     "qFrom": 6000,
+     "qTo": null,
+     "price": 0.145
+    }
+   ],
+   "category": "Inductors, Coils, Chokes",
+   "manufacturer": "Abracon LLC",
+   "source": "local-db (snapshot stock)"
+  },
   "C42459160": {
    "mfr": "CH224A",
    "package": "ESSOP-10",
-   "stock": 12997,
+   "stock": 12480,
    "tier": "extended",
    "priceBreaks": [
     {
      "qFrom": 1,
      "qTo": 9,
-     "price": 0.431
+     "price": 0.4345
     },
     {
      "qFrom": 10,
      "qTo": 29,
-     "price": 0.338
+     "price": 0.3407
     },
     {
      "qFrom": 30,
      "qTo": 99,
-     "price": 0.299
+     "price": 0.3012
     },
     {
      "qFrom": 100,
      "qTo": 499,
-     "price": 0.248
+     "price": 0.2502
     },
     {
      "qFrom": 500,
      "qTo": 999,
-     "price": 0.227
+     "price": 0.2288
     },
     {
      "qFrom": 1000,
      "qTo": null,
-     "price": 0.214
+     "price": 0.2156
     }
    ],
-   "category": "Power Management (PMIC)",
-   "manufacturer": "WCH(Jiangsu Qin Heng)",
-   "source": "local-db (snapshot stock)"
+   "category": null,
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 12485
   },
   "C431540": {
    "mfr": "MSK12C02",
    "package": "SMD,8x2.8mm",
-   "stock": 206945,
+   "stock": 197278,
    "tier": "extended",
    "priceBreaks": [
     {
      "qFrom": 10,
      "qTo": 99,
-     "price": 0.0623
+     "price": 0.0598
     },
     {
      "qFrom": 100,
      "qTo": 299,
-     "price": 0.0503
+     "price": 0.0478
     },
     {
      "qFrom": 300,
      "qTo": 2999,
-     "price": 0.0443
+     "price": 0.0419
     },
     {
      "qFrom": 3000,
      "qTo": 5999,
-     "price": 0.0383
+     "price": 0.0359
     },
     {
      "qFrom": 6000,
      "qTo": 8999,
-     "price": 0.0348
+     "price": 0.0323
     },
     {
      "qFrom": 9000,
      "qTo": null,
-     "price": 0.033
+     "price": 0.0305
     }
    ],
    "category": "Switches",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 188990
+   "lcsc_stock": 187390
   },
   "C43491": {
    "mfr": "BZT52C12",
@@ -2086,53 +2878,54 @@
    "category": "Diodes",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 155800
+   "lcsc_stock": 155550
   },
   "C45262770": {
    "mfr": "LMR51635YDDCR",
    "package": "TSOT-23-6",
-   "stock": 2770,
+   "stock": 2520,
    "tier": "extended",
    "priceBreaks": [
     {
      "qFrom": 1,
      "qTo": 9,
-     "price": 1.884
+     "price": 1.8953
     },
     {
      "qFrom": 10,
      "qTo": 29,
-     "price": 1.59
+     "price": 1.5997
     },
     {
      "qFrom": 30,
      "qTo": 99,
-     "price": 1.429
+     "price": 1.4371
     },
     {
      "qFrom": 100,
      "qTo": 499,
-     "price": 1.246
+     "price": 1.2531
     },
     {
      "qFrom": 500,
      "qTo": 999,
-     "price": 1.166
+     "price": 1.1727
     },
     {
      "qFrom": 1000,
      "qTo": null,
-     "price": 1.13
+     "price": 1.1365
     }
    ],
-   "category": "Power Management (PMIC)",
-   "manufacturer": "Texas Instruments",
-   "source": "local-db (snapshot stock)"
+   "category": null,
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 2520
   },
   "C4555382": {
    "mfr": "KPA-3010SURCK",
    "package": "LED-SMD(3010)",
-   "stock": 6832,
+   "stock": 6805,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2212,6 +3005,64 @@
    "manufacturer": "Samsung Electro-Mechanics",
    "source": "local-db (snapshot stock)"
   },
+  "C478081": {
+   "mfr": "USB2517I-JZX",
+   "package": "QFN-64-EP(9x9)",
+   "stock": 3136,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 4.538
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 3.7997
+    },
+    {
+     "qFrom": 30,
+     "qTo": 259,
+     "price": 3.3607
+    },
+    {
+     "qFrom": 260,
+     "qTo": 519,
+     "price": 2.9185
+    },
+    {
+     "qFrom": 520,
+     "qTo": 1039,
+     "price": 2.7129
+    },
+    {
+     "qFrom": 1040,
+     "qTo": null,
+     "price": 2.6209
+    }
+   ],
+   "category": "Interface",
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 3136
+  },
+  "C48442": {
+   "mfr": "4D02WGJ0101TCE",
+   "package": "0402x4",
+   "stock": 268093,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.005
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
   "C495548": {
    "mfr": "B8B-PH-SM4-TB(LF)(SN)",
    "package": "SMD,P=2mm",
@@ -2263,79 +3114,80 @@
     {
      "qFrom": 1,
      "qTo": 9,
-     "price": 0.7401
+     "price": 0.7322
     },
     {
      "qFrom": 10,
      "qTo": 29,
-     "price": 0.6132
+     "price": 0.6069
     },
     {
      "qFrom": 30,
      "qTo": 99,
-     "price": 0.5226
+     "price": 0.5179
     },
     {
      "qFrom": 100,
      "qTo": 499,
-     "price": 0.45
+     "price": 0.4453
     },
     {
      "qFrom": 500,
      "qTo": 999,
-     "price": 0.427
+     "price": 0.4222
     },
     {
      "qFrom": 1000,
      "qTo": null,
-     "price": 0.4121
+     "price": 0.409
     }
    ],
    "category": "Amplifiers/Comparators",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 35133
+   "lcsc_stock": 33379
   },
   "C51118": {
    "mfr": "AP2112K-3.3TRG1",
    "package": "SOT-25-5",
-   "stock": 7525,
+   "stock": 18276,
    "tier": "extended",
    "priceBreaks": [
     {
-     "qFrom": 1,
+     "qFrom": 5,
      "qTo": 49,
-     "price": 0.172
+     "price": 0.1789
     },
     {
      "qFrom": 50,
      "qTo": 149,
-     "price": 0.136
+     "price": 0.1418
     },
     {
      "qFrom": 150,
      "qTo": 499,
-     "price": 0.119
+     "price": 0.1237
     },
     {
      "qFrom": 500,
      "qTo": 2999,
-     "price": 0.103
+     "price": 0.1076
     },
     {
      "qFrom": 3000,
      "qTo": 5999,
-     "price": 0.094
+     "price": 0.0984
     },
     {
      "qFrom": 6000,
      "qTo": null,
-     "price": 0.092
+     "price": 0.0957
     }
    ],
    "category": "Power Management (PMIC)",
-   "manufacturer": "Diodes Incorporated",
-   "source": "local-db (snapshot stock)"
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 14795
   },
   "C5184243": {
    "mfr": "USB4105-GF-A-120",
@@ -2372,7 +3224,7 @@
   "C521201": {
    "mfr": "TPS2553DDBVR",
    "package": "SOT-23-6",
-   "stock": 10016,
+   "stock": 9996,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2409,47 +3261,64 @@
    "category": "Power Management (PMIC)",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 10015
+   "lcsc_stock": 9995
   },
   "C52917434": {
    "mfr": "WS2812B-2020-V6",
    "package": "SMD2020-4P",
-   "stock": 935969,
+   "stock": 852881,
    "tier": "extended",
    "priceBreaks": [
     {
-     "qFrom": 1,
+     "qFrom": 5,
      "qTo": 49,
-     "price": 0.091
+     "price": 0.0921
     },
     {
      "qFrom": 50,
      "qTo": 149,
-     "price": 0.073
+     "price": 0.0741
     },
     {
      "qFrom": 150,
      "qTo": 499,
-     "price": 0.064
+     "price": 0.0649
     },
     {
      "qFrom": 500,
      "qTo": 2499,
-     "price": 0.057
+     "price": 0.0572
     },
     {
      "qFrom": 2500,
      "qTo": 4499,
-     "price": 0.054
+     "price": 0.0546
     },
     {
      "qFrom": 4500,
      "qTo": null,
-     "price": 0.052
+     "price": 0.0528
     }
    ],
-   "category": "Optoelectronics",
-   "manufacturer": "Worldsemi",
+   "category": null,
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 850895
+  },
+  "C52923": {
+   "mfr": "CL05A105KA5NQNC",
+   "package": "0402",
+   "stock": 9058501,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.007
+    }
+   ],
+   "category": "Capacitors",
+   "manufacturer": "Samsung Electro-Mechanics",
    "source": "local-db (snapshot stock)"
   },
   "C544399": {
@@ -2492,7 +3361,7 @@
    "category": "Circuit Protection",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 5591
+   "lcsc_stock": 5559
   },
   "C598310": {
    "mfr": "KPA-3010CGCK",
@@ -2580,43 +3449,44 @@
   "C6186": {
    "mfr": "AMS1117-3.3",
    "package": "SOT-223",
-   "stock": 1092789,
+   "stock": 1041212,
    "tier": "basic",
    "priceBreaks": [
     {
-     "qFrom": 1,
+     "qFrom": 5,
      "qTo": 49,
-     "price": 0.208
+     "price": 0.2106
     },
     {
      "qFrom": 50,
      "qTo": 149,
-     "price": 0.163
+     "price": 0.1641
     },
     {
      "qFrom": 150,
      "qTo": 499,
-     "price": 0.14
+     "price": 0.1415
     },
     {
      "qFrom": 500,
      "qTo": 2499,
-     "price": 0.12
+     "price": 0.1212
     },
     {
      "qFrom": 2500,
      "qTo": 4999,
-     "price": 0.115
+     "price": 0.1157
     },
     {
      "qFrom": 5000,
      "qTo": null,
-     "price": 0.111
+     "price": 0.1123
     }
    ],
    "category": "Power Management (PMIC)",
-   "manufacturer": "Advanced Monolithic Systems",
-   "source": "local-db (snapshot stock)"
+   "manufacturer": null,
+   "source": "live; prices from LCSC's product page (live)",
+   "lcsc_stock": 577530
   },
   "C7420333": {
    "mfr": "BAT54S",
@@ -2658,23 +3528,23 @@
    "category": "Diodes",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 868200
+   "lcsc_stock": 861550
   },
   "C7503186": {
    "mfr": "SUD50P06-15(UMW)",
    "package": "TO-252",
-   "stock": 54965,
+   "stock": 54945,
    "tier": "extended",
    "priceBreaks": [
     {
-     "qFrom": 5,
+     "qFrom": 1,
      "qTo": 49,
-     "price": 0.3628
+     "price": 0.363
     },
     {
      "qFrom": 50,
      "qTo": 149,
-     "price": 0.2839
+     "price": 0.284
     },
     {
      "qFrom": 150,
@@ -2684,7 +3554,7 @@
     {
      "qFrom": 500,
      "qTo": 2499,
-     "price": 0.2078
+     "price": 0.208
     },
     {
      "qFrom": 2500,
@@ -2694,34 +3564,33 @@
     {
      "qFrom": 5000,
      "qTo": null,
-     "price": 0.1777
+     "price": 0.178
     }
    ],
    "category": "Transistors/Thyristors",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 54410
+   "manufacturer": "UMW(Youtai Semiconductor Co., Ltd.)",
+   "source": "local-db (snapshot stock)"
   },
   "C75176": {
    "mfr": "PESD2CAN,215",
    "package": "SOT-23",
-   "stock": 34712,
+   "stock": 34512,
    "tier": "extended",
    "priceBreaks": [
     {
-     "qFrom": 5,
+     "qFrom": 1,
      "qTo": 49,
-     "price": 0.0787
+     "price": 0.078
     },
     {
      "qFrom": 50,
      "qTo": 149,
-     "price": 0.0624
+     "price": 0.062
     },
     {
      "qFrom": 150,
      "qTo": 499,
-     "price": 0.0539
+     "price": 0.053
     },
     {
      "qFrom": 500,
@@ -2731,76 +3600,74 @@
     {
      "qFrom": 3000,
      "qTo": 5999,
-     "price": 0.0446
+     "price": 0.044
     },
     {
      "qFrom": 6000,
      "qTo": null,
-     "price": 0.0429
+     "price": 0.043
     }
    ],
    "category": "Circuit Protection",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 33340
+   "manufacturer": "Nexperia",
+   "source": "local-db (snapshot stock)"
   },
   "C7519": {
    "mfr": "USBLC6-2SC6",
    "package": "SOT-23-6L",
-   "stock": 36372,
+   "stock": 34042,
    "tier": "extended",
    "priceBreaks": [
     {
-     "qFrom": 5,
+     "qFrom": 1,
      "qTo": 49,
-     "price": 0.1786
+     "price": 0.177
     },
     {
      "qFrom": 50,
      "qTo": 149,
-     "price": 0.1375
+     "price": 0.137
     },
     {
      "qFrom": 150,
      "qTo": 499,
-     "price": 0.1174
+     "price": 0.117
     },
     {
      "qFrom": 500,
      "qTo": 2999,
-     "price": 0.0995
+     "price": 0.099
     },
     {
      "qFrom": 3000,
      "qTo": 5999,
-     "price": 0.0946
+     "price": 0.094
     },
     {
      "qFrom": 6000,
      "qTo": null,
-     "price": 0.0916
+     "price": 0.091
     }
    ],
    "category": "Circuit Protection",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 39610
+   "manufacturer": "STMicroelectronics",
+   "source": "local-db (snapshot stock)"
   },
   "C78419": {
    "mfr": "SMBJ33A",
    "package": "SMB(DO-214AA)",
-   "stock": 19609,
+   "stock": 19590,
    "tier": "extended",
    "priceBreaks": [
     {
-     "qFrom": 10,
+     "qFrom": 1,
      "qTo": 99,
-     "price": 0.0742
+     "price": 0.073
     },
     {
      "qFrom": 100,
      "qTo": 299,
-     "price": 0.0601
+     "price": 0.06
     },
     {
      "qFrom": 300,
@@ -2810,34 +3677,33 @@
     {
      "qFrom": 3000,
      "qTo": 5999,
-     "price": 0.0468
+     "price": 0.046
     },
     {
      "qFrom": 6000,
      "qTo": 8999,
-     "price": 0.0426
+     "price": 0.042
     },
     {
      "qFrom": 9000,
      "qTo": null,
-     "price": 0.0405
+     "price": 0.04
     }
    ],
    "category": "Circuit Protection",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 16630
+   "manufacturer": "Brightking",
+   "source": "local-db (snapshot stock)"
   },
   "C8545": {
    "mfr": "2N7002",
    "package": "SOT-23",
-   "stock": 2600545,
+   "stock": 2595659,
    "tier": "basic",
    "priceBreaks": [
     {
-     "qFrom": 50,
+     "qFrom": 1,
      "qTo": 499,
-     "price": 0.0176
+     "price": 0.018
     },
     {
      "qFrom": 500,
@@ -2847,28 +3713,22 @@
     {
      "qFrom": 3000,
      "qTo": 5999,
-     "price": 0.0125
+     "price": 0.012
     },
     {
      "qFrom": 6000,
-     "qTo": 23999,
-     "price": 0.0113
-    },
-    {
-     "qFrom": 24000,
      "qTo": 50999,
-     "price": 0.0108
+     "price": 0.011
     },
     {
      "qFrom": 51000,
      "qTo": null,
-     "price": 0.0105
+     "price": 0.01
     }
    ],
    "category": "Transistors/Thyristors",
-   "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 1919050
+   "manufacturer": "Jiangsu Changjing Electronics Technology Co., Ltd.",
+   "source": "local-db (snapshot stock)"
   },
   "C8598": {
    "mfr": "B5819W SL",
@@ -2910,7 +3770,48 @@
    "category": "Diodes",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 102800
+   "lcsc_stock": 100620
+  },
+  "C9839": {
+   "mfr": "TPS60400DBVR",
+   "package": "SOT-23-5",
+   "stock": 29078,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 0.787
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 0.653
+    },
+    {
+     "qFrom": 30,
+     "qTo": 99,
+     "price": 0.558
+    },
+    {
+     "qFrom": 100,
+     "qTo": 499,
+     "price": 0.48
+    },
+    {
+     "qFrom": 500,
+     "qTo": 999,
+     "price": 0.456
+    },
+    {
+     "qFrom": 1000,
+     "qTo": null,
+     "price": 0.441
+    }
+   ],
+   "category": "Power Management (PMIC)",
+   "manufacturer": "Texas Instruments",
+   "source": "local-db (snapshot stock)"
   }
  }
 }
