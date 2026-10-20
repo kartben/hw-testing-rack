@@ -41,7 +41,7 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | PCBA: setup $8.18, stencil $1.53, components $2.06, extended parts $9.21, SMT $0.20 | 21.18 |
 | | | **Estimated total** | **26.38** |
 | | | Order (indicative): as quoted | 26.38 |
-| data-port-x4 | 5 PCBs (4-layer 100×28 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: board $8.00, lead-free HASL $5.20 | 13.20 |
+| data-port-x4 | 5 PCBs (4-layer 100×28 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: special offer $8.00, lead-free HASL $5.10, deburring $0.10 | 13.20 |
 | | | PCBA: setup $8.18, stencil $1.53, components $30.18, extended parts $27.63, SMT $1.47, X-ray $3.28 | 72.27 |
 | | | **Estimated total** | **85.47** |
 | | | Order (indicative): as quoted | 85.47 |
@@ -91,15 +91,15 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | power-hub | 92.75 | 53.65 | 39.34 | 26.07 | 23.03 | 22.17 |
 | data-port | 13.77 | 6.53 | 3.94 | 1.96 | 1.49 | 1.30 |
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
-| data-port-x4 | 42.73 | 25.88 | 20.03 | 12.79 | 11.64 | 11.27 |
+| data-port-x4 | 42.73 | 25.88 | 20.04 | 13.28 | 11.88 | 11.51 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 2 data-port-x4) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
 | 1 | 297.79 | 185.51 | 35.45 | 26.38 | 85.47 | **664.60** |
-| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 40.05 | **298.75** |
-| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 32.02 | **247.82** |
+| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 40.07 | **298.77** |
+| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 32.64 | **248.44** |
 
 ## Printed parts
 
