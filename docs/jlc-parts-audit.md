@@ -17,7 +17,8 @@ generated: [`bom/jlc-parts.md`](../bom/jlc-parts.md).  The costs per board and p
 - Re-run the snapshot, then `tools/bom.py`, right before an order.
 
 **Quantities.**
-- One rack takes 8 nodes, 1 hub, 7 DATA ports, 1 DATA ×4 and 2 camera pods.
+- One rack takes 8 nodes, 1 hub, 6 DATA ports, 2 DATA ×4 and 2 camera pods: the configuration's
+  converted bays B1 and B3 take a DATA ×4 each, priced as v1.
 - JLC assembles at least 2 boards per design.
 - Each design is its own PCBA order, so its parts reach their price breaks on their own, even in one
   cart.
@@ -27,11 +28,11 @@ generated: [`bom/jlc-parts.md`](../bom/jlc-parts.md).  The costs per board and p
 The parts are at JLC's price breaks: the quoted components scaled by the snapshot's prices. The
 fees per order are spread over the boards, plus one $34 shipment (USD).
 
-| Racks in one order | Node ×8 | Hub ×1 | DATA ports ×7 | Pods ×2 | DATA ×4 ×1 | **Per rack** |
+| Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | DATA ×4 ×2 | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 297.79 | 185.51 | 37.16 | 26.38 | 104.17 | **685.01** |
-| 5 | 177.29 | 53.65 | 16.18 | 7.15 | 29.62 | **290.68** |
-| 10 | 156.91 | 39.34 | 12.47 | 4.92 | 21.45 | **238.49** |
+| 1 | 297.79 | 185.51 | 35.45 | 26.38 | 104.17 | **683.30** |
+| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 42.89 | **301.59** |
+| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 33.67 | **249.47** |
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.68, hub
 $22.17, DATA ×4 $11.49, DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
@@ -44,7 +45,7 @@ Where a board's parts money goes, at 10 racks:
 |---|---:|---|
 | hub | $19.07 | TPS26600 ×4 $4.58 · ESP32-S3-MINI-1-N8 $4.16 · LMR51635 $1.59 · USB4105 ×2 $1.45 · S6B ×4 $1.15 · KPA-3010 ×10 $1.85 · TJA1462 $0.83 · CH224A $0.34 |
 | node | $12.55 | ESP32-S3-WROOM-1-N8R8 $4.08 · LMR51635 $1.43 · S6B ×3 $0.74 · TJA1462 $0.74 · USB4105 $0.63 · INA226 $0.52 · USBLC6 ×4 $0.47 · B8B $0.42 |
-| DATA ×4 | $11.64 | USB4105 ×4 $2.51 · INA226 ×4 $2.09 · USB2514B $1.54 · TCA6408A ×2 $1.43 · TPS2553-1 ×4 $1.18 · USBLC6 ×6 $0.83 |
+| DATA ×4 | $11.22 | USB4105 ×4 $2.51 · INA226 ×4 $2.09 · USB2514B $1.54 · TCA6408A ×2 $1.25 · TPS2553-1 ×4 $0.94 · USBLC6 ×6 $0.83 |
 | DATA port | $1.16 | USB4105 $0.63 · S8B $0.33 · USBLC6 $0.14 |
 | pod | $0.89 | S8B $0.37 · header $0.08 |
 
@@ -55,7 +56,7 @@ The threshold is JLC's assembly stock against 10 racks' need, summed over the bo
 | Part | Boards | JLC stock | 10 racks need | Risk |
 |---|---|---:|---:|---|
 | CH224A (C42459160) | hub | 12,997 | 10 | none: in stock since 1590b7a replaced the out-of-stock AP33772S (and its Global Sourcing); WCH only |
-| USB4105-GF-A-120 (C5184243) | node, hub, DATA ×4, DATA port | 3,748 | 210 | JLC holds 18×, but **LCSC has 0**: when JLC's stock runs out, it can't refill from LCSC |
+| USB4105-GF-A-120 (C5184243) | node, hub, DATA ×4, DATA port | 3,748 | 240 | JLC holds 16×, but **LCSC has 0**: when JLC's stock runs out, it can't refill from LCSC |
 | S6B-PH-SM4-TB (C265405) | node, hub | 4,931 | 280 | 18×; genuine JST only |
 | LMR51635YDDCR (C45262770) | node, hub | 2,770 | 90 | 31×, TI only |
 | KPA-3010CGCK (C598310) | hub | 2,203 | 60 | 37×, Kingbright only |
@@ -79,10 +80,10 @@ board's owner, and the trade-off ones need the user.
 
 | Lever | Boards | Saves (10 racks) | Kind | Check done / to do |
 |---|---|---:|---|---|
-| **USB-C where 5 A at 48 V isn't needed**: USB4105 ($0.52 at 100) → HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V, $0.15 at 100; 331k stock, the node's part before v0.5) | node J3, hub J6 (console), DATA port J1, DATA ×4 J101–J401 (20 a rack) | ≈ $95 | decision | Each port draws ≤ 1.5 A (5 A rating) at ≤ 5.25 V (20 V rating). The hub's PD input J1 keeps the GCT for the 48 V that 28 V EPR needs. Needs new footprints, a re-route (the node's USB HS pair) and a mechanical check; it also moves 19 of the 21 per rack off a part LCSC holds none of |
+| **USB-C where 5 A at 48 V isn't needed**: USB4105 ($0.52 at 100) → HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V, $0.15 at 100; 331k stock, the node's part before v0.5) | node J3, hub J6 (console), DATA port J1, DATA ×4 J101–J401 (23 a rack) | ≈ $109 | decision | Each port draws ≤ 1.5 A (5 A rating) at ≤ 5.25 V (20 V rating). The hub's PD input J1 keeps the GCT for the 48 V that 28 V EPR needs. Needs new footprints, a re-route (the node's USB HS pair) and a mechanical check; it also moves 23 of the 24 per rack off a part LCSC holds none of |
 | **JST PH SMD second source**: S6B / S8B / B8B-PH-SM4-TB ($0.25–0.42) → PH 2.0 SMD clones ≈ $0.04–0.07 (e.g. SHOU HAN 2.0-xP WT / LT, WAFER-PH2.0-6PWB C3029444), or CJT's A2001WR-S-6P C225237 / A2001WR-S-8P C225239 / A2001WV-S-8P C225232 (vertical) at $0.16–0.20 @ 100 (phosphor bronze, LCP, −40…105 °C) | node (5), hub (4), DATA ports, DATA ×4, pods (54 a rack) | ≈ $133 no-name, ≈ $70 CJT | decision (open) | Same 2 A rating; mates with PHR housings. Check the footprint geometry against each clone's drawing. Genuine JST holds up better on cables that are re-plugged |
-| **USBLC6-2SC6 second source**: ST C7519 ($0.12–0.18) → UMW C2687116 ($0.042 at 100) or TECH PUBLIC C2827654 ($0.036) | node (4), hub, DATA ports, DATA ×4 (6) (46 a rack) | ≈ $38 | decision | Same SOT-23-6 and pinout, so pins 1 / 6 and 3 / 4 still join inside and the flow-through layout holds. Check the clamp voltage and capacitance against ST's (0.35 pF line-to-line on the UMW) |
-| **DATA ×4 USB hub**: USB2514B ($1.54) + 24 MHz crystal (extended) → CH334R (C4154405, QSOP-16, $0.32 at 100, I²C) or FE1.1s (C9359, $0.40) + 12 MHz crystal C9002 (basic) | DATA ×4 | ≈ $12, plus $3.07 per order (one extended type fewer) | owner (v2) | Per-port power stays on the TPS2553s and the TCA6408A. Check MTT, the USB-IF strapping and the 3.3 V load (CH334 85 mA, same as the USB2514B's budget) |
+| **USBLC6-2SC6 second source**: ST C7519 ($0.12–0.18) → UMW C2687116 ($0.042 at 100) or TECH PUBLIC C2827654 ($0.036) | node (4), hub, DATA ports, DATA ×4 (6) (51 a rack) | ≈ $42 | decision | Same SOT-23-6 and pinout, so pins 1 / 6 and 3 / 4 still join inside and the flow-through layout holds. Check the clamp voltage and capacitance against ST's (0.35 pF line-to-line on the UMW) |
+| **DATA ×4 USB hub**: USB2514B ($1.54) + 24 MHz crystal (extended) → CH334R (C4154405, QSOP-16, $0.32 at 100, I²C) or FE1.1s (C9359, $0.40) + 12 MHz crystal C9002 (basic) | DATA ×4 | ≈ $24, plus $3.07 per order (one extended type fewer) | owner (v2) | Per-port power stays on the TPS2553s and the TCA6408A. Check MTT, the USB-IF strapping and the 3.3 V load (CH334 85 mA, same as the USB2514B's budget) |
 | **PD sink**: AP33772S (Global Sourcing, stock 0) → CH224A | hub | the hub order went from $205.95 to $185.29 | **applied** (1590b7a) | No input switch any more. The CH224Q (C46061833) and the HUSB238A-BB001-QN16R (C24833806, PD 3.x EPR to 28 / 48 V, $0.40 at 100) remain as second sources; the HUSB238 (non-A) and the CH224K stop at 20–25 V |
 | **Hub rows C and D not fitted** (already in `JLC_LEVERS`) | hub | ≈ $35 | decision | 2 × TPS26600, 2 × S6B, 4 LEDs and their passives per hub |
 

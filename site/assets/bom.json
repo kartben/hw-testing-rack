@@ -1587,14 +1587,14 @@
 "manufacturer": "YAGEO",
 "supplier": "LCSC/JLCPCB",
 "part": "C14663",
-"qty": 8,
+"qty": 7,
 "unit_eur": 0.0124,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 8 boards",
+"notes": "1 per board × 7 boards",
 "unit": "pcs",
-"ext_eur": 0.1
+"ext_eur": 0.09
 },
 {
 "category": "Electronics",
@@ -1605,14 +1605,14 @@
 "manufacturer": "Samsung Electro-Mechanics",
 "supplier": "LCSC/JLCPCB",
 "part": "C15850",
-"qty": 8,
+"qty": 7,
 "unit_eur": 0.0403,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 8 boards",
+"notes": "1 per board × 7 boards",
 "unit": "pcs",
-"ext_eur": 0.32
+"ext_eur": 0.28
 },
 {
 "category": "Electronics",
@@ -1623,14 +1623,14 @@
 "manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
 "part": "C5184243",
-"qty": 8,
+"qty": 7,
 "unit_eur": 0.8372,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 8 boards",
+"notes": "1 per board × 7 boards",
 "unit": "pcs",
-"ext_eur": 6.7
+"ext_eur": 5.86
 },
 {
 "category": "Electronics",
@@ -1641,14 +1641,14 @@
 "manufacturer": "JST",
 "supplier": "LCSC/JLCPCB",
 "part": "C265121",
-"qty": 8,
+"qty": 7,
 "unit_eur": 0.414,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 8 boards",
+"notes": "1 per board × 7 boards",
 "unit": "pcs",
-"ext_eur": 3.31
+"ext_eur": 2.9
 },
 {
 "category": "Electronics",
@@ -1659,12 +1659,12 @@
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
 "part": "C23206",
-"qty": 16,
+"qty": 14,
 "unit_eur": 0.0025,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "2 per board × 8 boards",
+"notes": "2 per board × 7 boards",
 "unit": "pcs",
 "ext_eur": 0.04
 },
@@ -1677,14 +1677,14 @@
 "manufacturer": "STMicroelectronics",
 "supplier": "LCSC/JLCPCB",
 "part": "C7519",
-"qty": 8,
+"qty": 7,
 "unit_eur": 0.1656,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 8 boards; alternative: C2687116 (UMW clone)",
+"notes": "1 per board × 7 boards; alternative: C2687116 (UMW clone)",
 "unit": "pcs",
-"ext_eur": 1.32
+"ext_eur": 1.16
 },
 {
 "category": "Electronics",
@@ -1693,20 +1693,20 @@
 "supplier": "estimate, not quoted",
 "qty": 10,
 "unit_eur": 0.5796,
-"notes": "board $6.30 = $6.30 for 10 PCBs, 8 of them assembled",
+"notes": "board $6.30 = $6.30 for 10 PCBs, 7 of them assembled",
 "unit": "pcs",
 "ext_eur": 5.8
 },
 {
 "category": "Electronics",
 "group": "data-port",
-"item": "Economic PCBA, 8 boards: setup, stencil, extended parts, SMT",
+"item": "Economic PCBA, 7 boards: setup, stencil, extended parts, SMT",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 17.81,
-"notes": "setup $8.18, stencil $1.53, extended parts $9.21, SMT $0.44",
+"unit_eur": 17.76,
+"notes": "setup $8.18, stencil $1.53, extended parts $9.21, SMT $0.38",
 "unit": "pcs",
-"ext_eur": 17.81
+"ext_eur": 17.76
 },
 {
 "category": "Electronics",
@@ -1714,10 +1714,10 @@
 "item": "Components data-port: JLC quote minus the catalogue prices above",
 "supplier": "estimate, not quoted",
 "qty": 1,
-"unit_eur": 0.36,
-"notes": "quoted components $13.21 (≈ €12.15) for 8 boards; catalogue unit prices give €11.79",
+"unit_eur": 0.31,
+"notes": "quoted components $11.56 (≈ €10.64) for 7 boards; catalogue unit prices give €10.33",
 "unit": "pcs",
-"ext_eur": 0.36
+"ext_eur": 0.31
 },
 {
 "category": "Electronics",
@@ -2778,7 +2778,7 @@
 }
 ],
 "by_category": {
-"Electronics": 653.9999999999997,
+"Electronics": 652.4399999999996,
 "Printed parts": 60.0,
 "Fasteners": 15.35,
 "Motion": 18.85,
@@ -2787,7 +2787,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 954.62,
+"total_eur": 953.06,
 "prints": [
 {
 "part": "bay_label",
@@ -3091,10 +3091,10 @@
 },
 "data-port": {
 "pcbs": 10,
-"assembled": 8,
+"assembled": 7,
 "spares": 1,
 "service": "Economic",
-"total": 38.87,
+"total": 37.16,
 "estimate": true,
 "spec": "2-layer 40×17 mm, lead-free HASL",
 "pcb": {
@@ -3103,9 +3103,9 @@
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
-"components": 13.21,
+"components": 11.56,
 "extended parts": 9.21,
-"SMT": 0.44
+"SMT": 0.38
 }
 },
 "camera-pod": {
@@ -3214,12 +3214,12 @@
 "pcba": {
 "setup": 8.18,
 "stencil": 1.53,
-"components": 13.21,
+"components": 11.56,
 "extended parts": 9.21,
-"SMT": 0.44
+"SMT": 0.38
 },
 "changes": [],
-"total": 38.87,
+"total": 37.16,
 "need": 6,
 "types": 6,
 "extended": 3,
@@ -3357,16 +3357,16 @@
 "service": "Economic",
 "standard_only": [],
 "need": 6,
-"assembled": 8,
+"assembled": 7,
 "pcbs": 10,
 "types": 6,
 "extended": 3,
 "type_fee": 9.21,
 "once": 25.22,
-"per_board": 13.65,
-"total": 38.87,
-"after_obvious": 38.87,
-"after_decisions": 28.82,
+"per_board": 11.94,
+"total": 37.16,
+"after_obvious": 37.16,
+"after_decisions": 27.11,
 "levers": [
 {
 "lever": "USB-C J1: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check",
@@ -3516,18 +3516,18 @@
 "boards": {
 "bay-node": 297.79,
 "power-hub": 185.51,
-"data-port": 35.46,
+"data-port": 35.45,
 "camera-pod": 26.38,
 "data-port-x4": 104.17
 },
 "shipping": 34.0,
-"per_rack": 683.31
+"per_rack": 683.3
 },
 "5": {
 "boards": {
 "bay-node": 886.44,
 "power-hub": 268.24,
-"data-port": 69.07,
+"data-port": 69.05,
 "camera-pod": 35.73,
 "data-port-x4": 214.47
 },
@@ -3538,7 +3538,7 @@
 "boards": {
 "bay-node": 1569.09,
 "power-hub": 393.41,
-"data-port": 112.3,
+"data-port": 112.26,
 "camera-pod": 49.23,
 "data-port-x4": 336.69
 },

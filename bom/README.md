@@ -5,7 +5,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 654 |
+| Electronics | 652 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 60 |
@@ -13,7 +13,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Motion | 19 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **955** |
+| **Total** | **953** |
 
 ≈ **€119 per bay** all-in.
 
@@ -33,10 +33,10 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | PCBA: setup $25.75, stencil $8.27, components $57.89, feeders $72.85, SMT $3.30, X-ray $3.30, packaging $0.50, special components $0.12, U1 global sourcing (est.) $20.04 | 192.02 |
 | | | **Quoted total** | **242.52** |
 | | | Order (indicative): lead-free HASL ≈ $5.30 instead of ENIG $18.00; 11 part types fewer (values merged) (−$17.05 feeders); 3 AP33772S bought instead of 5 (−$6.82 U1 global sourcing (est.)); CH224A from LCSC instead of the AP33772S (−$13.22 U1 global sourcing (est.)); no input switch (CH224A, its parts in, the switch's out) (−$2.79 components); 3 part types fewer (CH224A) (−$4.65 feeders); PCBA review: 4 × B5819W a board (+$0.24 components) | 185.53 |
-| data-port | 10 PCBs (2-layer 40×17 mm, lead-free HASL), 8 assembled, Economic PCBA | PCB: board $6.30 | 6.30 |
-| | | PCBA: setup $8.18, stencil $1.53, components $13.21, extended parts $9.21, SMT $0.44 | 32.57 |
-| | | **Estimated total** | **38.87** |
-| | | Order (indicative): as quoted | 38.87 |
+| data-port | 10 PCBs (2-layer 40×17 mm, lead-free HASL), 7 assembled, Economic PCBA | PCB: board $6.30 | 6.30 |
+| | | PCBA: setup $8.18, stencil $1.53, components $11.56, extended parts $9.21, SMT $0.38 | 30.86 |
+| | | **Estimated total** | **37.16** |
+| | | Order (indicative): as quoted | 37.16 |
 | camera-pod | 5 PCBs (2-layer 40×27 mm, lead-free HASL), 2 assembled, Economic PCBA | PCB: board $5.20 | 5.20 |
 | | | PCBA: setup $8.18, stencil $1.53, components $2.06, extended parts $9.21, SMT $0.20 | 21.18 |
 | | | **Estimated total** | **26.38** |
@@ -54,11 +54,11 @@ What each order pays once, whatever the number of boards, against what grows wit
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
 | bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 40 (23) | 61.20 | 114.99 | 206.92 | **321.91** | 321.91 | 276.44 |
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (16) | 50.49 | 123.59 | 61.94 | **185.53** | 185.53 | 146.87 |
-| data-port | Economic | 6 / 8 | 6 (3) | 9.21 | 25.22 | 13.65 | **38.87** | 38.87 | 28.82 |
+| data-port | Economic | 6 / 7 | 6 (3) | 9.21 | 25.22 | 11.94 | **37.16** | 37.16 | 27.11 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.26 | **26.38** | 26.38 | 25.59 |
 | data-port-x4 | Economic | 2 / 2 | 26 (9) | 27.63 | 69.24 | 34.93 | **104.17** | 104.17 | 77.29 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **710.86** | **710.86** | **589.01** |
+| **All** | | | | | | | **709.15** | **709.15** | **587.30** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -98,7 +98,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 2 data-port-x4) wh
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 297.79 | 185.51 | 35.46 | 26.38 | 104.17 | **683.31** |
+| 1 | 297.79 | 185.51 | 35.45 | 26.38 | 104.17 | **683.30** |
 | 5 | 177.29 | 53.65 | 13.81 | 7.15 | 42.89 | **301.59** |
 | 10 | 156.91 | 39.34 | 11.23 | 4.92 | 33.67 | **249.47** |
 
@@ -236,15 +236,15 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 2 data-port-x4) wh
 | Electronics | Bare PCB power-hub (4-layer 76×140 mm (86×140 with JLC's rails), lead-free HASL) | 5  | 6.96 | 34.78 | JLCPCB quote 2026-10-19, adjusted |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components | 1  | 85.00 | 85.00 | JLCPCB quote 2026-10-19, adjusted |
 | Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 8.49 | 8.49 | JLCPCB quote 2026-10-19, adjusted |
-| Electronics | 100n — Capacitor 100n 0603 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C14663 |
-| Electronics | 10u — Capacitor 10u 0805 | 8  | 0.04 | 0.32 | LCSC/JLCPCB C15850 |
-| Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 8  | 0.84 | 6.70 | LCSC/JLCPCB C5184243 |
-| Electronics | LEAD — JST PH 8-pin, side entry, SMD | 8  | 0.41 | 3.31 | LCSC/JLCPCB C265121 |
-| Electronics | 56k — Resistor 56k 0603 | 16  | 0.00 | 0.04 | LCSC/JLCPCB C23206 |
-| Electronics | USBLC6-2SC6 — USB ESD protection | 8  | 0.17 | 1.32 | LCSC/JLCPCB C7519 |
+| Electronics | 100n — Capacitor 100n 0603 | 7  | 0.01 | 0.09 | LCSC/JLCPCB C14663 |
+| Electronics | 10u — Capacitor 10u 0805 | 7  | 0.04 | 0.28 | LCSC/JLCPCB C15850 |
+| Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 7  | 0.84 | 5.86 | LCSC/JLCPCB C5184243 |
+| Electronics | LEAD — JST PH 8-pin, side entry, SMD | 7  | 0.41 | 2.90 | LCSC/JLCPCB C265121 |
+| Electronics | 56k — Resistor 56k 0603 | 14  | 0.00 | 0.04 | LCSC/JLCPCB C23206 |
+| Electronics | USBLC6-2SC6 — USB ESD protection | 7  | 0.17 | 1.16 | LCSC/JLCPCB C7519 |
 | Electronics | Bare PCB data-port (2-layer 40×17 mm, lead-free HASL) | 10  | 0.58 | 5.80 | estimate, not quoted |
-| Electronics | Economic PCBA, 8 boards: setup, stencil, extended parts, SMT | 1  | 17.81 | 17.81 | estimate, not quoted |
-| Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | 0.36 | 0.36 | estimate, not quoted |
+| Electronics | Economic PCBA, 7 boards: setup, stencil, extended parts, SMT | 1  | 17.76 | 17.76 | estimate, not quoted |
+| Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | 0.31 | 0.31 | estimate, not quoted |
 | Electronics | 10u — Capacitor 10u 0805 | 2  | 0.04 | 0.08 | LCSC/JLCPCB C15850 |
 | Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
 | Electronics | 100n — Capacitor 100n 0603 | 2  | 0.01 | 0.02 | LCSC/JLCPCB C14663 |
