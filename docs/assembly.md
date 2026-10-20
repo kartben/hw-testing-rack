@@ -83,8 +83,10 @@ later, take its tray out first.
    printed `x4_cradle` instead: cradle onto the same three bosses
    (3 × PT 2.6×8), the lead up the window and into the board's rear PH, then
    the board slid down into the cradle's slots, receptacles towards the wall,
-   until both latches click (press them back to lift it out).  To convert a
-   bay, swap the board; the drawer stays.  Slide the drawer
+   until both latches click.  To take it out, unplug the lead from its PH
+   first (the plug stands above the drawer's 16 mm rear wall; left plugged,
+   the lead needs ≈ 75 mm of slack), then press both latches back and lift
+   the board.  To convert a bay, swap the board; the drawer stays.  Slide the drawer
    in from the front onto the tray's ledges (its rear flange under the guide
    lips), engage the foot in the rear groove and lock it with the M2.5 from
    inside the rear bay (PT 2.6×8); then the stop screw (PT 2.3×8) through the left guide lip.
