@@ -27,6 +27,8 @@ mechanical/build/
 electronics/*/fab/gerbers/
 electronics/*/fab/*.step
 electronics/*/fab/*.glb
+# an order panel's KiCad project: tools/panel.sh rebuilds it from the board (its fab/ outputs are kept)
+electronics/*/*-panel.kicad_*
 electronics/*/docs/svg/
 electronics/**/__pycache__/
 *.kicad_prl

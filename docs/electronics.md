@@ -591,6 +591,29 @@ on the same PCB declares its variants in `b.pcb["variants"]` (name → the refer
 `<board>-<variant>-bom.csv` beside the board's own, and a part left off never shares a BOM line with
 its fitted twins (the DATA ×4 v2's base DATA-4x).
 
+**Order panels.**  A board ordered as a panel of its variants declares it in `b.pcb["panel"]`.
+`electronics/tools/panelize.py` builds it with KiKit (`tools/panel.sh <board>`: the KiCad image plus
+KiKit 1.8.1, built once), after `tools/kicad.sh <board> --fab`, which keeps the panel's outputs.
+- **Placement.**  Copy 1 stays where the board is drawn.  Each next copy is turned by its `rot` and
+  placed above the last, `gap` mm away.  The copies meet only through mouse-bite tabs at the given x:
+  a bridge `tab_width` wide, and a line of holes along each board's edge.
+- **Names.**  Parts become `<ref>_<tag>`, nets and netclasses `<tag>_<name>`, each copy keeping its own
+  connectivity.  The separator is `_` because KiCad also reads a netclass pattern as a regular
+  expression, and `L-+5V` would take `L--5V`.  The board's custom rules follow the renamed nets, so the
+  zones fill as on the board.
+- **Assembly.**  Each copy's variant leaves its parts DNP.
+- **Outputs:**
+  - `fab/<board>-panel-gerbers.zip`;
+  - one JLC BOM and CPL for both assemblies: `fab/<board>-panel-bom-jlcpcb.csv`, `-panel-cpl-jlcpcb.csv`;
+  - `docs/<board>-panel-top.png`.
+  - The panel's KiCad project is git-ignored: the script rebuilds it.
+- **Checks:**
+  - DRC (no parity: the panel has no schematic);
+  - every footprint's 3D model;
+  - the holes against copper (≥ 0.5 mm from a hole's edge) and parts (≥ 1 mm to a courtyard);
+  - each copy's rows of the panel's CPL and BOM against its variant's own files, moved and turned with it
+    (`panelize.py <board> --check`, and `tools/tests/test_panel.py` on the committed files).
+
 ## Assembly at JLCPCB
 
 Real quote taken on jlcpcb.com on 2026-10-16 from the `fab/` files (USD,

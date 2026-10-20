@@ -233,26 +233,33 @@ def jlc_cpl_row(row, lcsc: str):
     return [row["Ref"], x + "mm", y + "mm", "Bottom" if bottom else "Top", f"{r - 360 if r > 180 else r:.6f}"]
 
 
-def export_fab(outdir: Path, name: str, b):
-    fab = outdir / "fab"
-    if fab.exists():
-        shutil.rmtree(fab)
-    fab.mkdir(parents=True)
-    pcb = outdir / f"{name}.kicad_pcb"
-    sch = outdir / f"{name}.kicad_sch"
-    gerb = fab / "gerbers"
-    gerb.mkdir()
+def export_gerbers(pcb: Path, gerb: Path, zip_path: Path, n_layers: int) -> None:
+    """Gerbers and drill files of a board (or a panel) into gerb/, zipped for JLC."""
+    gerb.mkdir(parents=True, exist_ok=True)
     layers = "F.Cu,B.Cu,F.Paste,B.Paste,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts"
-    n = b.pcb.get("layers", 2)
-    if n > 2:
-        layers = ",".join(["F.Cu"] + [f"In{i}.Cu" for i in range(1, n - 1)] + ["B.Cu"]) + "," + layers.split(",", 2)[2]
+    if n_layers > 2:
+        layers = ",".join(["F.Cu"] + [f"In{i}.Cu" for i in range(1, n_layers - 1)] + ["B.Cu"]) + "," + layers.split(",", 2)[2]
     run(["kicad-cli", "pcb", "export", "gerbers", "--layers", layers, "--subtract-soldermask",
          "--use-drill-file-origin", "-o", str(gerb) + "/", pcb], check=True, capture_output=True)
     run(["kicad-cli", "pcb", "export", "drill", "--format", "excellon", "--excellon-separate-th",
          "--generate-map", "--map-format", "gerberx2", "-o", str(gerb) + "/", pcb], check=True, capture_output=True)
-    with zipfile.ZipFile(fab / f"{name}-gerbers.zip", "w", zipfile.ZIP_DEFLATED) as z:
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
         for f in sorted(gerb.iterdir()):
             z.write(f, f.name)
+
+
+def export_fab(outdir: Path, name: str, b):
+    fab = outdir / "fab"
+    # start clean, but keep the order panel's outputs (electronics/tools/panelize.py, run after this)
+    if fab.exists():
+        for f in fab.iterdir():
+            if f.name.startswith(f"{name}-panel"):
+                continue
+            shutil.rmtree(f) if f.is_dir() else f.unlink()
+    fab.mkdir(parents=True, exist_ok=True)
+    pcb = outdir / f"{name}.kicad_pcb"
+    sch = outdir / f"{name}.kicad_sch"
+    export_gerbers(pcb, fab / "gerbers", fab / f"{name}-gerbers.zip", b.pcb.get("layers", 2))
     # pick & place (JLCPCB column names), corrected to JLC's own footprints
     raw = fab / "pos-raw.csv"
     run(["kicad-cli", "pcb", "export", "pos", "--format", "csv", "--units", "mm", "--side", "both",
