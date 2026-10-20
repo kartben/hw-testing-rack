@@ -290,7 +290,9 @@ USB 2.0 only: High Speed PC ↔ board in classic mode, Full Speed to the node's 
 VBUS is drawn in `design.py` (`vbus_tracks()`, netclass Power): 0.8 mm F.Cu from J2.8 under the PH's
 housing to J1's two VBUS pad pairs, necked to 0.5 mm at the pad row, ≈ 15 mΩ (the routed 0.25 mm
 was ≈ 0.13 Ω, 0.18 V lost at the node's 1.4 A); thin tracks feed the Rp, C1 and the ESD's VBUS pin.
-Both sides are GND pours; Freerouting does the rest like on the other boards.  JLC: Economic PCBA (one
+Both sides are GND pours; Freerouting does the rest like on the other boards.  Power pads connect solid
+(`power_nets`: GND, VBUS): J1's four GND pins, J2's two and the ESD's; C1 and C2 keep reliefs (their VBUS
+end is a track).  JLC: Economic PCBA (one
 side, no Standard-only part), ≈ $34 for 10 PCBs with 8 assembled (estimate in `tools/bom.py`).
 
 A review of both boards with the Konnect MCP server (findings, fixes, what is
@@ -337,7 +339,10 @@ where Freerouting left one open run after run or took a detour: each left port's
 VBUS and CC at its receptacle, the lead's SDA / SCL / INT from J1 into their USBLC6s, the hub's right side (RESET_N up
 to R2 and C13, the CFG and NON_REM straps down to R3 / R4 / R5, VDD33 and VBUS_DET to vias), the crystal
 with PLLFILT and RBIAS, and the bottom row's +3V3 and GND.  Freerouting does the rest (on the Mac, ≈ 15 s a
-pass).
+pass).  Power pads connect solid (`power_nets`: GND, +5V, each port's 5V_SW and VBUS): the receptacles' and
+J1's GND pins, the ICs' GND pins and exposed pads (hub, expanders, INA226s, switches, ESDs) and the LDO's
+VIN, EN and GND on its islands; small parts with an end on a track keep reliefs.  The ports' 5V_SW and VBUS
+run in tracks, so their pads don't change.
 
 **Power.**  The four ports share the node's DUT_5V (≈ 1.4 A, its TPS2553); the board's logic takes
 ≈ 0.1 A of it.  Four small boards draw 0.3–0.8 A in all (typical figures from datasheets and
@@ -366,7 +371,8 @@ the bay), 2 × PT 2.6 into the printed pod.  Geometry in `config/rack.yaml` › 
 | 3.3 V | AMS1117-3.3 (U1) from CAM_5V, 10 µF in, 22 µF + 100 nF out | the Mega at 3.3 V (≈ 0.2 W in U1 at 120 mA): MISO at 3.3 V, the node's R35 stays unpopulated |
 | Light | 4 × XL-2835UWC-02 (white, 2835, 20–33 lm at 60 mA), each from CAM_5V through 100 Ω 0805 to LED_K | 18–26 mA each over the LEDs' Vf spread and CAM_5V 5.0–5.2 V, ≤ 66 mW in a 125 mW resistor, ≤ 102 mA for the four, inside the node's camera budget (the PCBA review's P1: 56 Ω 0603 gave 36–44 mA, up to 108 mW in 100 mW).  About a third less light than the 32 mA first planned, ≈ 0.6 EV that the Mega's auto-exposure takes.  Along the edge next to the camera, beside the lens, not around it; the node's AO3400A pulls LED_K low; a thin PETG diffuser 5–10 mm in front, in the pod |
 
-Both sides are GND pours; routed by Freerouting.  JLC: Economic PCBA, ≈ $23 for 5 PCBs with 2
+Both sides are GND pours; routed by Freerouting.  Power pads connect solid (`power_nets`: GND, CAM_5V):
+J1's GND pins, J2's GND and the AMS1117's; C1–C3 keep reliefs (an end on a track).  JLC: Economic PCBA, ≈ $23 for 5 PCBs with 2
 assembled (estimate in `tools/bom.py`).
 
 For a later bay node: CAM_5V has only the PTC, no switch, and the Mega has no reset pin, so a hung

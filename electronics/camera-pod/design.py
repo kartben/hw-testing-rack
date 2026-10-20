@@ -89,6 +89,9 @@ def board() -> Board:
         "finish": "HASL",
         "edge_parts": ["J1"],
         "defer_pours": False,
+        # nets carrying power (≳ 0.5 A): their IC, connector and big pads connect solid to the pours, small
+        # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
+        "power_nets": {"GND": 1, "CAM_5V": 2},
         "zones": [
             {"layer": "F.Cu", "net": "GND"},
             {"layer": "B.Cu", "net": "GND"},

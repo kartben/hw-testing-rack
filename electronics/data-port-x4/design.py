@@ -642,6 +642,9 @@ def board() -> Board:
         "stackup": "JLC04161H-7628", "finish": "HASL",
         "edge_parts": ["J*"],
         "defer_pours": False,
+        # nets carrying power (≳ 0.5 A): their IC, connector and big pads connect solid to the pours, small
+        # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
+        "power_nets": {"GND": 1, "+5V": 2, "PORT?_5V_SW": 2, "PORT?_VBUS": 2},
         # net: (plane, via Ø, drill, track width); pins over another net's area are routed instead
         "fanout_nets": {"GND": ("In1.Cu", 0.5, 0.3, 0.25), "+5V": ("In2.Cu", 0.6, 0.3, 0.4),
                         "+3V3": ("In2.Cu", 0.5, 0.3, 0.3)},
