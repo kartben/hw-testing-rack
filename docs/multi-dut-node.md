@@ -195,8 +195,10 @@ leave no room, and `/dev/draw?port=n&ma=…` makes a board draw more.
 
 Done (minimal version, `src/ports.c`, 2026-10-20):
 
-- The DATA ×4 in `bay_node.dtsi` (`dut_port1`–`4` on `ports_io0`/`1`,
-  `port1`–`4_sense`).  The board is probed after each DUT_5V on: no answer
+- The DATA ×4 in `firmware/bay-node/data-x4.dtsi` (`dut_port1`–`4` on
+  `ports_io0`/`1`, `port1`–`4_sense`), which the application adds
+  (`app.overlay`): an option on the lead, not in the board files, so MCUboot
+  never pulls in its drivers.  The board is probed after each DUT_5V on: no answer
   at 0x20, a one-port node.  One image serves both.
 - The chips are driven over I²C with shadow registers, not through the GPIO
   and sensor drivers, whose cached state would not match a chip that has just

@@ -17,6 +17,8 @@
 
 #include "../../boards/hwtr/bay_node/bay_node-pinctrl.dtsi"
 #include "../../boards/hwtr/bay_node/bay_node.dtsi"
+/* What may sit on the DATA lead (app.overlay, which a board overlay replaces) */
+#include "../data-x4.dtsi"
 
 /* The 8 MB octal PSRAM (boards/esp32s3_devkitc_procpu.conf) */
 &psram0 {

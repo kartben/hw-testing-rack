@@ -1,0 +1,8 @@
+/*
+ * The bay node application on the bay node board: the board describes the
+ * node, this adds what may sit on its DATA lead.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "data-x4.dtsi"

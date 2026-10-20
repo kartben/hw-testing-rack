@@ -43,6 +43,7 @@ firmware/
   bay-node/                      the bay node application
     boards/esp32s3_devkitc_procpu.overlay   stand-in: same pin map on a DevKitC-1
     i2c-400k.overlay             the I²C bus at 400 kHz, to try at bring-up (100 kHz by default)
+    app.overlay, data-x4.dtsi    a DATA ×4 on the DATA lead (the application's, not the board's: MCUboot)
     boards/m5stack_stamps3_procpu.*         bench node on a StampS3: console + network, no USB host
     web/index.html               status page and serial console (embedded gzipped)
     web/dev_server.py            the page against a simulated node, to work on the UI
