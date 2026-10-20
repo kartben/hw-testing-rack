@@ -3436,11 +3436,11 @@
 "group": "filament",
 "item": "PETG filament",
 "supplier": "any",
-"qty": 3.0,
+"qty": 3.1,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈2.7 kg estimated + 10 % waste, 166 parts",
-"ext_eur": 60.0
+"notes": "≈2.7 kg estimated + 10 % waste, 168 parts",
+"ext_eur": 62.0
 },
 {
 "category": "Fasteners",
@@ -3748,7 +3748,7 @@
 ],
 "by_category": {
 "Electronics": 804.5799999999989,
-"Printed parts": 60.0,
+"Printed parts": 62.0,
 "Fasteners": 15.35,
 "Motion": 18.85,
 "Cables": 53.32,
@@ -3756,7 +3756,7 @@
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 1105.2,
+"total_eur": 1107.2,
 "prints": [
 {
 "part": "bay_label",
@@ -4002,6 +4002,13 @@
 "grams_each": 78.0,
 "grams_total": 624.3,
 "stl": "mechanical/stl/tray.stl"
+},
+{
+"part": "x4_cradle",
+"qty": 2,
+"grams_each": 8.4,
+"grams_total": 16.8,
+"stl": "mechanical/stl/x4_cradle.stl"
 }
 ],
 "bays": 8,

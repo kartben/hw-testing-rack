@@ -197,7 +197,7 @@ Electronics,data-port-x4-v2-base,"Bare PCB data-port-x4-v2-base (4-layer 100×70
 Electronics,data-port-x4-v2-base,"Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray",1,pcs,41.8,41.8,"estimate, not quoted",,,,,"setup $8.18, stencil $1.53, extended parts $30.70, SMT $1.74, X-ray $3.28"
 Electronics,data-port-x4-v2-base,Components data-port-x4-v2-base: JLC quote minus the catalogue prices above,1,pcs,2.4,2.4,"estimate, not quoted",,,,,quoted components $32.12 (≈ €29.55) for 2 boards; catalogue unit prices give €27.15
 Electronics,jlc,JLCPCB shipping: every board in one cart,1,pcs,31.28,31.28,JLCPCB,,,,,DHL ≈ $27–40 for the whole order (one shipment); import VAT extra
-Printed parts,filament,PETG filament,3.0,kg,20.0,60.0,any,,,,,"≈2.7 kg estimated + 10 % waste, 166 parts"
+Printed parts,filament,PETG filament,3.1,kg,20.0,62.0,any,,,,,"≈2.7 kg estimated + 10 % waste, 168 parts"
 Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",142,pcs,0.03,4.26,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs
 Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",62,pcs,0.02,1.24,AliExpress (bulk),,,,,
 Fasteners,,"M3×6 (node PCB, power box lid, camera pods)",44,pcs,0.02,0.88,AliExpress (bulk),,,,,

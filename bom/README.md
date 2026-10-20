@@ -8,12 +8,12 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Electronics | 805 |
 | Power | 82 |
 | Cameras | 64 |
-| Printed parts | 60 |
+| Printed parts | 62 |
 | Cables | 53 |
 | Motion | 19 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,105** |
+| **Total** | **1,107** |
 
 ≈ **€138 per bay** all-in.
 
@@ -150,6 +150,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2,
 | power_box_lid | 1 | 20.8 | `mechanical/stl/power_box_lid.stl` |
 | power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |
 | tray | 8 | 78.0 | `mechanical/stl/tray.stl` |
+| x4_cradle | 2 | 8.4 | `mechanical/stl/x4_cradle.stl` |
 
 ## Line items
 
@@ -353,7 +354,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2,
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray | 1  | 41.80 | 41.80 | estimate, not quoted |
 | Electronics | Components data-port-x4-v2-base: JLC quote minus the catalogue prices above | 1  | 2.40 | 2.40 | estimate, not quoted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
-| Printed parts | PETG filament | 3.0 kg | 20.00 | 60.00 | any |
+| Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 142  | 0.03 | 4.26 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 62  | 0.02 | 1.24 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid, camera pods) | 44  | 0.02 | 0.88 | AliExpress (bulk) |
