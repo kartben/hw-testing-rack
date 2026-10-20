@@ -68,7 +68,7 @@ boards:
       offset: [0.16, 10.72, 1.68]
       recolour: { "#003700": "#00828a" }   # the STEP's generic green PCBs → Arduino's teal
       web: true             # CC BY-SA 4.0: the viewer's copy is published, with credit (docs/boards-3d.md)
-      credit: "© Arduino S.r.l., CC BY-SA 4.0 (stacked, recoloured, simplified)"
+      credit: "© Arduino S.r.l., CC BY-SA 4.0 (stacked, recoloured)"
     source: "Arduino STEP files ABX00063 + ASX00039 (CC BY-SA 4.0); datasheets ABX00063, ASX00039"
     verified: true
     zephyr: { platform: arduino_giga_r1/stm32h747xx/m7, runner: dfu-util,
@@ -126,7 +126,7 @@ boards:
     height: 4
     color: "#1e7b34"
     source: "Raspberry Pi Pico 2 datasheet"
-    model: { web: true, credit: "Pico 2 model © Raspberry Pi Ltd, MIT (simplified)" }
+    model: { web: true, credit: "Pico 2 model © Raspberry Pi Ltd, MIT" }
                             # Raspberry Pi's STEP (tools/fetch_render_assets.py), MIT: the viewer's copy is published
     pcb_t: 1.0
     verified: true
@@ -184,7 +184,7 @@ boards:
     height: 4
     color: "#202a44"
     source: "Seeed wiki"
-    model: { web: true, offset: [0, 0.76], credit: "XIAO ESP32S3 model © Seeed Studio, CC BY-SA 4.0 (simplified)" }
+    model: { web: true, offset: [0, 0.76], credit: "XIAO ESP32S3 model © Seeed Studio, CC BY-SA 4.0" }
                             # Seeed's STEP (tools/fetch_render_assets.py), CC BY-SA 4.0:
                             # the viewer's copy is published (its USB-C overhang had shifted the outline)
     pcb_t: 1.25             # its PCB's thickness (viewer: the headers sit on it)

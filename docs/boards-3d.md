@@ -7,10 +7,14 @@ downloads the ones that need no login into `render/assets/` (git-ignored), and
 `tools/board_models.py` normalises them into the frame of `mechanical/boards/boards.yaml`.
 
 The viewer uses a maker's model only where its licence lets the repository publish it
-(`model: { web: true }` in `boards.yaml`): `board_models.py` then also writes a lighter copy to
-`site/assets/boards/<board-id>.glb` (the PCBs whole, every layer of them, small boards' too:
-decimation tears a board; tiny parts dropped, small ones as boxes, the rest decimated, one colour
-per part), which the viewer draws instead of the stand-in.
+(`model: { web: true }` in `boards.yaml`): `board_models.py` then also writes a copy to
+`site/assets/boards/<board-id>.glb`, which the viewer draws instead of the stand-in.  The copy keeps
+every part as the maker drew it (decimating CAD meshes tears boards and chips), with one material per
+colour.  Gold and bright grey parts read as metal, and the solder mask lets the copper show through.
+A STEP solid painted face by face (a XIAO's black mask, gold pads and FR4 edges) is split by colour.
+gltfpack (meshoptimizer: `npm i -g gltfpack`, or its command in `$GLTFPACK`) quantises and
+meshopt-compresses the copy: the Pico 2 shrinks to 334 kB for 131 k triangles.  Without gltfpack the copy
+is written plain.
 Today: the **GIGA R1 WiFi + GIGA Display Shield** in B2, the camera bay, and the **Pico 2** and **XIAO**
 boards of the converted bays.  Their 2.54 mm pin headers (soldered pins up, for the Dupont jumpers:
 `headers:` in `boards.yaml`) are drawn by the viewer on top of the model.  A board's `screen:`
@@ -54,7 +58,7 @@ the ids from `boards.yaml`, and re-run `tools/board_models.py`.
 Credits for the photo renders: Raspberry Pi Pico 2 model © Raspberry Pi Ltd (MIT); Arduino
 UNO R4 WiFi model © Arduino S.r.l. (CC BY-SA 4.0); XIAO ESP32S3 model © Seeed Studio.
 Credits for the viewer: Arduino GIGA R1 WiFi and GIGA Display Shield models © Arduino S.r.l.,
-CC BY-SA 4.0, stacked, recoloured and simplified (`site/assets/boards/giga-r1-display.glb`, same
-licence); Raspberry Pi Pico 2 model © Raspberry Pi Ltd, MIT, simplified (`rpi-pico2.glb`); XIAO ESP32S3
-model © Seeed Studio, CC BY-SA 4.0, simplified (`xiao.glb`, same licence); the screen runs LVGL's music
+CC BY-SA 4.0, stacked and recoloured (`site/assets/boards/giga-r1-display.glb`, same
+licence); Raspberry Pi Pico 2 model © Raspberry Pi Ltd, MIT (`rpi-pico2.glb`); XIAO ESP32S3
+model © Seeed Studio, CC BY-SA 4.0 (`xiao.glb`, same licence); the screen runs LVGL's music
 demo (LVGL, MIT).

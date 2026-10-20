@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -373,8 +374,9 @@ function makeScreen(sc) {
 }
 
 // The maker's 3D model, when site/assets/boards/ has one (tools/board_models.py): it replaces the stand-in.
+// Those files are meshopt-compressed (gltfpack).
 function loadBoardModel(g, b) {
-  new GLTFLoader().loadAsync(b.model.url).then((gltf) => {
+  new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(b.model.url).then((gltf) => {
     const m = gltf.scene;
     m.matrixAutoUpdate = false;
     m.matrix.set(...b.model.matrix);

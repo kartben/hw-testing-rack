@@ -15,13 +15,19 @@ stand-in box went.  Fix-ups per board in boards.yaml:
     model: { rot: 180, flip: false, offset: [0, 0] }   # extra turn about Z, upside-down export, nudge (mm)
 
 A board made of several models (a shield on its host) lists them under model.stack instead (see stack()), and
-model.web: true also writes the viewer's lighter copy to site/assets/boards/<id>.glb, for models whose licence
-lets the repository publish them (see docs/boards-3d.md).
+model.web: true also writes the viewer's copy to site/assets/boards/<id>.glb, for models whose licence lets the
+repository publish them (see docs/boards-3d.md): compressed by gltfpack (meshoptimizer) when it is installed: on
+the PATH, or the command in $GLTFPACK.
 """
 
 from __future__ import annotations
 
+import os
+import shlex
+import shutil
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -47,6 +53,9 @@ def load_mm(path: Path) -> trimesh.Scene:
 
 
 def baked(scene: trimesh.Scene) -> list[trimesh.Trimesh]:
+    """The scene's meshes in its frame, one per material: a STEP solid painted face by face (a PCB's solder mask,
+    pads and edges; a connector's shell and insulator) comes in with several, which a glTF export would melt into
+    its first."""
     out = []
     for node in scene.graph.nodes_geometry:
         tf, g = scene.graph[node]
@@ -54,7 +63,25 @@ def baked(scene: trimesh.Scene) -> list[trimesh.Trimesh]:
         if isinstance(m, trimesh.Trimesh) and len(m.faces):
             m = m.copy()
             m.apply_transform(tf)
-            out.append(m)
+            out += _by_material(m)
+    return out
+
+
+def _by_material(m: trimesh.Trimesh) -> list[trimesh.Trimesh]:
+    subs = getattr(getattr(m.visual, "material", None), "materials", None)
+    fm = getattr(m.visual, "face_materials", None)
+    if subs is None or fm is None:
+        return [m]
+    fm = np.asarray(fm)
+    out = []
+    for k, sub in enumerate(subs):
+        faces = m.faces[fm == k]
+        if not len(faces):
+            continue
+        part = trimesh.Trimesh(vertices=m.vertices, faces=faces, process=False)
+        part.remove_unreferenced_vertices()
+        part.visual = trimesh.visual.TextureVisuals(material=sub)
+        out.append(part)
     return out
 
 
@@ -151,48 +178,59 @@ def stack(board_id: str, spec: dict) -> dict:
 WEB = REPO / "site" / "assets" / "boards"
 
 
-def web_model(board_id: str, spec: dict, faces: int = 45000) -> dict:
+def web_model(board_id: str, spec: dict) -> dict:
     """The viewer's copy (boards.yaml › model.web: the licence lets us publish it), from the normalised model:
-    the PCBs and other large parts as they are (decimation tears a drilled board), parts under 1.2 mm dropped,
-    those under 4 mm as their box, the rest decimated to fit about `faces` triangles; one colour per part."""
+    every part as the maker drew it (decimating CAD meshes tears them: a board, a chip's body), parts under 0.3
+    mm dropped; one material per part from its colour (gold and bright grey parts read as metal: pins, pads,
+    shields, sockets; the PCB's layers as they are, the solder mask see-through over the copper), the parts of one
+    material merged.  Then gltfpack, when installed, quantises and meshopt-compresses it (about a tenth of the
+    size: the viewer decodes it, GLTFLoader + MeshoptDecoder); without it the file is written plain."""
     sc = trimesh.load(SRC / f"{board_id}.norm.glb", force="scene")
     span = sc.bounds[1] - sc.bounds[0]
-    keep, boxes, rest = [], [], []
+    groups: dict[tuple, list] = {}
     for m in baked(sc):
-        size = max(m.extents)
-        if size < 1.2:
+        if max(m.extents) < 0.3:
             continue
-        # the PCB's layers (flat, a good part of the board's footprint: a small board's are under 3000 mm²) kept whole
         layer = m.extents[2] < 2.0 and m.extents[0] * m.extents[1] > 0.3 * span[0] * span[1]
-        (keep if m.area > 3000 or layer else boxes if size < 4.0 else rest).append(m)
-    budget = max(1, faces - sum(len(m.faces) for m in keep) - 12 * len(boxes))
-    ratio = min(1.0, budget / max(1, sum(len(m.faces) for m in rest)))
+        key = _finish(_mean_colour(m), layer)
+        groups.setdefault(key, []).append(m)
     out = trimesh.Scene()
-    parts = [_solid(m, _mean_colour(m)) for m in keep] + [_solid(m.bounding_box_oriented.to_mesh(), _mean_colour(m)) for m in boxes]
-    for m in rest:
-        n = max(12, int(len(m.faces) * ratio))
-        c = _mean_colour(m)
-        if len(m.faces) > n:
-            try:
-                m = m.simplify_quadric_decimation(face_count=n)
-            except Exception:
-                pass
-        parts.append(_solid(m, c))
-    for i, m in enumerate(parts):
+    for i, (key, ms) in enumerate(sorted(groups.items())):
+        rgba, metal, rough = key
+        m = trimesh.util.concatenate(ms)
+        lin = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in (v / 255 for v in rgba[:3])]
+        m.visual = trimesh.visual.TextureVisuals(material=trimesh.visual.material.PBRMaterial(
+            baseColorFactor=[*lin, rgba[3] / 255], metallicFactor=metal, roughnessFactor=rough,
+            alphaMode="BLEND" if rgba[3] < 250 else "OPAQUE", doubleSided=False))
         out.add_geometry(m, node_name=f"{board_id}-{i}", geom_name=f"{board_id}-{i}")
     WEB.mkdir(parents=True, exist_ok=True)
     dst = WEB / f"{board_id}.glb"
-    out.export(dst)
+    pack = shlex.split(os.environ["GLTFPACK"], posix=False) if os.environ.get("GLTFPACK") else (
+        [shutil.which("gltfpack")] if shutil.which("gltfpack") else None)
+    if pack:
+        with tempfile.TemporaryDirectory() as tmp:
+            raw = Path(tmp) / "raw.glb"
+            out.export(raw)
+            subprocess.run([*pack, "-i", str(raw), "-o", str(dst), "-cc", "-km"], check=True, capture_output=True)
+    else:
+        out.export(dst)
+        print(f"{board_id}: no gltfpack, its copy is not compressed")
     return {"web": str(dst.relative_to(REPO)), "faces": int(sum(len(g.faces) for g in out.geometry.values())),
-            "kB": round(dst.stat().st_size / 1024)}
+            "materials": len(groups), "kB": round(dst.stat().st_size / 1024), "packed": bool(pack)}
 
 
-def _solid(m: trimesh.Trimesh, colour) -> trimesh.Trimesh:
-    """One colour for the whole part, as glTF vertex colours, which are linear: the makers' colours are sRGB."""
-    c = np.asarray(colour, dtype=float) / 255
-    lin = np.where(c[:3] <= 0.04045, c[:3] / 12.92, ((c[:3] + 0.055) / 1.055) ** 2.4)
-    m.visual = trimesh.visual.ColorVisuals(m, face_colors=np.round(np.append(lin, c[3]) * 255).astype(np.uint8))
-    return m
+def _finish(rgba, layer: bool) -> tuple:
+    """A part's material from its colour (sRGB, 0-255): (colour, metalness, roughness).  Gold (ENIG pads, pins)
+    and bright neutral greys (tin, nickel: shields, sockets, crystals) as metal, unless the part is one of the PCB's
+    layers; the rest as plastic, solder mask, silkscreen."""
+    r, g, b, a = (int(v) for v in rgba)
+    hi, lo = max(r, g, b), min(r, g, b)
+    sat = (hi - lo) / hi if hi else 0.0
+    if hi > 120 and sat > 0.35 and r >= g > b:                    # gold
+        return (r, g, b, a), 1.0, 0.3
+    if not layer and sat < 0.12 and 85 <= hi <= 235:                # tin, nickel
+        return (r, g, b, a), 0.9, 0.35
+    return (r, g, b, a), 0.0, 0.45 if layer else 0.55
 
 
 def _mean_colour(m: trimesh.Trimesh) -> np.ndarray:
