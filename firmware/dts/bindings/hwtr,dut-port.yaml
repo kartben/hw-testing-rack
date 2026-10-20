@@ -6,6 +6,11 @@ description: |
   INA226 that measures it, and the AUX connector (UART + open-drain
   RESET/BOOT lines driven through 2N7002 N-FETs).
 
+  On a DATA x4 board (docs/multi-dut-node.md) there is one node per port,
+  its lines on the board's TCA6408A expanders, its INA226 on the board:
+  those chips run from DUT_5V, so the firmware talks to them only while
+  DUT_5V is on, and sets them up again after each DUT_5V on.
+
   Example:
 
     dut_port: dut-port {
@@ -25,9 +30,12 @@ properties:
     type: phandle-array
     required: true
     description: |
-      TPS2553 EN.  Active = DUT VBUS on.  The board pulls EN up, so the DUT
-      is powered before (and without) any firmware: the firmware must keep
-      the line in its current state when it configures it.
+      TPS2553 EN.  Active = DUT VBUS on.  The bay node pulls EN up, so the
+      DUT is powered before (and without) any firmware: the firmware must
+      keep the line in its current state when it configures it.
+      DATA x4: EN is pulled down, every port is off until the firmware
+      switches it on, one at a time, within the bay's budget (the
+      admission rule); after each DUT_5V on, every port is off again.
 
   fault-gpios:
     type: phandle-array
@@ -41,12 +49,16 @@ properties:
     description: |
       Gate of the N-FET on the AUX RESET line.  Active = the DUT's RESET
       line is pulled low (DUT held in reset).  Pulled down on the board.
+      DATA x4: the line itself, on an expander pin, with a 100k pull-up:
+      asserted by configuring the pin as an output low, released by
+      configuring it as an input (it then reads 1).
 
   boot-gpios:
     type: phandle-array
     description: |
       Gate of the N-FET on the AUX BOOT line.  Active = the DUT's BOOT strap
-      line is pulled low.  Pulled down on the board.
+      line is pulled low.  Pulled down on the board.  DATA x4: as
+      reset-gpios.
 
   power-monitor:
     type: phandle
@@ -55,6 +67,17 @@ properties:
   uart:
     type: phandle
     description: UART wired to the AUX connector (DUT console).
+
+  sub-slot:
+    type: int
+    description: |
+      DATA x4: the port's number, 1-4 (sub-slot <bay>.<n>, config/rack.yaml).
+
+  hub-port:
+    type: int
+    description: |
+      DATA x4: the hub's downstream port wired to it; the USB/IP busid is
+      1-1.<hub-port>.
 
   tx-gpios:
     type: phandle-array

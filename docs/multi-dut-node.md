@@ -120,8 +120,15 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
   pull-ups cannot feed the dead board through its chips' clamps, and the
   node's own INA226 (0x40) keeps its bus.  The expanders and the four INA226
   lose their registers with DUT_5V: the firmware leaves 0x20, 0x21 and
-  0x41–0x45 alone while it is off, and sets them up again after each
-  DUT_5V on (every port then off again).
+  0x41–0x45 alone while it is off (they NACK; 0x40 answers), and sets them
+  up again after each DUT_5V on (every port then off again):
+  1. wait ≈ 5 ms for the board's +3V3 and the FETs;
+  2. each TCA6408A: output register 0 (RESET and BOOT will drive low once
+     outputs), then the directions with every RESET and BOOT an input
+     (released: the 100k pull-ups make them read 1) and every EN an output,
+     low;
+  3. each port's INA226: calibration and alert configuration;
+  4. the wanted ports back on, one by one, through the admission rule.
 
 ## REST API
 
@@ -177,7 +184,10 @@ Done on the tools side (2026-10-19), against the simulated node: a bay's
 `plate: boards` for the former shared plate, `board_plate.scad` `BAY="<id>"`,
 `plate_bay_<id>.stl`, checked clear of the RESET/BOOT pin holes), `bayctl ports`, per-port power, reset,
 leases and `attach --follow`, and `firmware/bay-node/web/dev_server.py
---ports 4` serving this API.  The firmware itself: nothing yet.
+--ports 4` serving this API: its ports come up off and are admitted one by
+one, a power on (or `boot --power-cycle`) gets 409 when the other ports
+leave no room, and `/dev/draw?port=n&ma=…` makes a board draw more.  The
+firmware itself: nothing yet.
 
 ## A logic analyzer in a sub-slot
 

@@ -15,6 +15,7 @@ board (docs/multi-dut-node.md): four boards, sub-slots B3.1 to B3.4, served by
 /api/ports and /api/ports/<n>/{power,reset,boot}, leased one by one.  Test hooks:
 
     /dev/fault[?port=n]   trip a fake over-current (the DUT, or port n)
+    /dev/draw?port=n&ma=900   port n's board draws this much (ma=0: its usual), for the admission rule
     /dev/attach[?port=n]  toggle a fake USB/IP client (192.168.1.41; on port n's board)
     /dev/rfc2217          toggle a fake RFC 2217 client (192.168.1.41)
     /dev/boot             a short press on BOOT: confirms a pending claim
@@ -77,16 +78,43 @@ def dut_current_ma(t: float) -> int:
 PORTS = 1           # the boards the node serves; 1: today's one DUT (node["dut"])
 ports: list[dict] = []
 UP_S = 0.8          # a board's USB enumeration after power on or reset
+# The admission rule (docs/multi-dut-node.md, Power budget): a port goes on only if the ports' INA226
+# plus a reserve for its inrush stay within what the node's TPS2553 (1.34-1.52 A) is trusted with
+BAY_LIMIT_MA = 1250
+RESERVE_MA = 250
+STAGGER_S = 0.3     # the ports' start, one after the other
 
 
 def set_ports(n: int) -> None:
-    """Port n sits on the hub's port n + 1, so its busid is 1-1.<n + 1> (the doc's A1.2 -> 1-1.3)."""
+    """Port n sits on the hub's port n + 1, so its busid is 1-1.<n + 1> (the doc's A1.2 -> 1-1.3).
+    DATA x4's ports come up off (EN pulled down): the firmware switches them on one by one, each
+    through the admission rule."""
     global PORTS
     PORTS = n
-    ports[:] = [{"port": i, "hub_port": i + 1, "on": True, "latched": False, "faults": 0, "up_at": 0.0,
-                 "client": None, "lease": None,
+    ports[:] = [{"port": i, "hub_port": i + 1, "on": False, "latched": False, "faults": 0, "up_at": 0.0,
+                 "client": None, "lease": None, "draw": 0,
                  "usb": {"vid": "2fe3", "pid": "0004", "product": "USB-DEV", "serial": f"{0x5EC0A1 + i:08X}"}}
                 for i in range(1, n + 1)] if n > 1 else []
+    start = time.monotonic()
+    for k, pt in enumerate(ports):
+        if admission(pt) is None:
+            pt["on"], pt["up_at"] = True, start + k * STAGGER_S + UP_S
+
+
+def port_ma(pt: dict, now: float) -> int:
+    """What a port's board draws (its INA226)."""
+    if not pt["on"]:
+        return 0
+    return pt["draw"] or dut_current_ma(now + 2.1 * pt["port"])
+
+
+def admission(pt: dict) -> str | None:
+    """Why the port may not go on now (the other ports' draw), or None."""
+    others = sum(port_ma(q, time.monotonic()) for q in ports if q is not pt)
+    if others + RESERVE_MA > BAY_LIMIT_MA:
+        return (f"no room in the bay's budget: the other ports draw {others} mA, "
+                f"{RESERVE_MA} mA kept for a start, {BAY_LIMIT_MA} mA in all")
+    return None
 
 
 def multi() -> bool:
@@ -115,7 +143,7 @@ def lease_doc(lease: dict | None, ip: int, now: float) -> dict | None:
 def port_doc(pt: dict, ip: int = 0) -> dict:
     """One object of GET /api/ports."""
     now = time.monotonic()
-    ma = dut_current_ma(now + 2.1 * pt["port"]) if pt["on"] else 0
+    ma = port_ma(pt, now)
     mv = 5080 - ma // 10 if pt["on"] else 0
     usb = {**pt["usb"], "busid": f"1-1.{pt['hub_port']}"} if pt["on"] and now >= pt["up_at"] else None
     return {"slot": slot_name(pt["port"]), "port": pt["port"], "hub_port": pt["hub_port"],
@@ -148,12 +176,19 @@ def ports_doc(ip: int = 0) -> list[dict]:
     return [port_doc(pt, ip) for pt in ports] if multi() else [one_port_doc(status(ip))]
 
 
-def port_act(pt: dict, what: str, body: dict) -> str | None:
-    """Power, reset or boot one port, as the node's dut.c does for its one DUT; an error, or None."""
+def port_act(pt: dict, what: str, body: dict) -> tuple[int, str] | None:
+    """Power, reset or boot one port, as the node's dut.c does for its one DUT; (status, error), or None."""
     if what == "power":
         action = body.get("action")
         if action not in ("on", "off", "cycle"):
-            return "action must be on, off or cycle"
+            return 400, "action must be on, off or cycle"
+        if action != "off":
+            was = pt["on"]
+            pt["on"] = False                  # its own draw does not count against it
+            refused = admission(pt)
+            pt["on"] = was
+            if refused is not None:
+                return 409, refused
         if action == "cycle":
             time.sleep(min(int(body.get("ms", 1000)), 2000) / 1000)
         was_on = pt["on"]
@@ -164,6 +199,12 @@ def port_act(pt: dict, what: str, body: dict) -> str | None:
             pt["client"] = None           # the board left the bus: its USB/IP session ends
             pt["up_at"] = time.monotonic() + UP_S
     elif what == "boot" and body.get("power_cycle"):
+        was = pt["on"]
+        pt["on"] = False                  # back on through the admission rule, as any power on
+        refused = admission(pt)
+        pt["on"] = was
+        if refused is not None:
+            return 409, refused
         time.sleep(1.0)                   # BOOT held across a power cycle of the port: the board comes up in its ROM
         pt["on"], pt["latched"], pt["client"] = True, False, None
         pt["up_at"] = time.monotonic() + UP_S
@@ -1020,6 +1061,12 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/dev/image":
             self.send(200, make_image(query.get("version", ["0.6.0"])[0],
                                       query.get("id", [firmware.image_id])[0]), "application/octet-stream")
+        elif path == "/dev/draw" and "port" in query and multi():
+            pt = next((x for x in ports if str(x["port"]) == query["port"][0]), None)
+            if pt is None:
+                return self.json(404, {"error": f"no port {query['port'][0]} (1..{PORTS})"})
+            pt["draw"] = max(0, int(query.get("ma", ["0"])[0]))
+            self.json(200, port_doc(pt))
         elif path in ("/dev/fault", "/dev/attach") and "port" in query and multi():
             pt = next((x for x in ports if str(x["port"]) == query["port"][0]), None)
             if pt is None:
@@ -1195,7 +1242,7 @@ class Handler(BaseHTTPRequestHandler):
                                             f"{left} min left", "reason": "reserved", "service": "control",
                                    "you": ip_str(ip)})
         if (err := port_act(pt, what, body)) is not None:
-            return self.json(400, {"error": err})
+            return self.json(err[0], {"error": err[1]})
         self.json(200, port_doc(pt, ip) if port_reply else status(ip))
 
     def port_lease(self, ip: int, admin: bool, body: dict) -> bool:

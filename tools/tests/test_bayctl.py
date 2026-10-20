@@ -515,6 +515,23 @@ class MultiNodeApi(unittest.TestCase):
         self.assertTrue(bayctl.wait_for(lambda: bayctl.port_doc(b)["usb"] is not None, 5))
         self.assertEqual(bayctl.port_busid(bayctl.port_doc(b)), "1-1.4")      # ...under the same busid
 
+    def test_admission(self):
+        """DATA x4's ports come up off; the node switches them on within the bay's budget, and so does a
+        power on: 409 when the other ports leave no room (docs/multi-dut-node.md, Power budget)."""
+        b1, b2 = self.bays["B3.1"], self.bays["B3.2"]
+        self.assertTrue(all(p["power"]["on"] for p in bayctl.node_ports(self.node)))   # admitted one by one
+        bayctl.control(b2, "power", {"action": "off"})
+        urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/draw?port=1&ma=900").read()
+        try:
+            with self.assertRaisesRegex(bayctl.BayError, "409.*no room in the bay's budget"):
+                bayctl.control(b2, "power", {"action": "on"})
+            with self.assertRaisesRegex(bayctl.BayError, "409"):
+                bayctl.control(b2, "boot", {"power_cycle": True})
+            self.assertTrue(bayctl.control(b1, "power", {"action": "cycle", "ms": 10})["power"]["on"])
+        finally:
+            urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/draw?port=1&ma=0").read()
+        self.assertTrue(bayctl.control(b2, "power", {"action": "on"})["power"]["on"])
+
     def test_boot_power_cycle(self):
         b = self.bays["B3.3"]
         self.assertIsNone(bayctl.control(b, "boot", {"power_cycle": True})["usb"])   # BOOT across a power cycle
