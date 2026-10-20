@@ -5,7 +5,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 805 |
+| Electronics | 778 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 62 |
@@ -13,15 +13,15 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Motion | 19 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,107** |
+| **Total** | **1,080** |
 
-≈ **€138 per bay** all-in.
+≈ **€135 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
 ## JLCPCB orders (estimates)
 
-USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import VAT.  The power hub is a real quote (jlcpcb.com, 2026-10-19, from the fab files, with the AP33772S then: out of stock, a Global Sourcing estimate on top; the CH224A since, from LCSC).  Every other board is an **estimate** built from JLC's fees and catalogue prices: the node's last real quote (2026-10-16: 20 PCBs ENIG, 16 assembled, $367.71) priced it before rev 0.5.  The bay node is the order the user chose on 2026-10-19: 10 PCBs, lead-free HASL, 10 assembled (8 bays, 2 spares).  The per-part lines below use catalogue prices; a *Components* line per board brings them up to the estimated components figure.  *Order* applies what changed since: the through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  Re-quote before ordering (the full PCBA quote needs the user's JLC sign-in).
+USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import VAT.  The power hub is a real quote (jlcpcb.com, 2026-10-19, from the fab files, with the AP33772S then: out of stock, a Global Sourcing estimate on top; the CH224A since, from LCSC).  Every other board is an **estimate** built from JLC's fees and catalogue prices: the node's last real quote (2026-10-16: 20 PCBs ENIG, 16 assembled, $367.71) priced it before rev 0.5.  The bay node is the order the user chose on 2026-10-19: 10 PCBs, lead-free HASL, 10 assembled (8 bays, 2 spares).  The per-part lines below use catalogue prices; a *Components* line per board brings them up to the estimated components figure.  *Order* applies what changed since: the through-hole connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The DATA ×4 v2's two variants go on one order panel (data-port-x4-v2-panel: one logic and one base per panel, one Economic order); their own estimates stay for single orders.  Re-quote before ordering (the full PCBA quote needs the user's JLC sign-in).
 
 | Board | Order | Line | USD |
 |---|---|---|---:|
@@ -48,11 +48,15 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | data-port-x4-v2 | 5 PCBs (4-layer 100×70 mm, JLC04161H-7628, ENIG), 2 assembled, Economic PCBA | PCB: special offer $8.00, ENIG $17.40 | 25.40 |
 | | | PCBA: setup $8.18, stencil $1.53, components $62.62, extended parts $64.47, SMT $3.77, X-ray $3.28, L1 minimum purchase (32) $9.54 | 153.39 |
 | | | **Estimated total** | **178.79** |
-| | | Order (indicative): as quoted | 178.79 |
+| | | In the rack's order on the data-port-x4-v2-panel (one per panel) | |
 | data-port-x4-v2-base | 5 PCBs (4-layer 100×70 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: special offer $8.00, lead-free HASL $5.20 | 13.20 |
 | | | PCBA: setup $8.18, stencil $1.53, components $32.12, extended parts $30.70, SMT $1.74, X-ray $3.28 | 77.55 |
 | | | **Estimated total** | **90.75** |
-| | | Order (indicative): as quoted | 90.75 |
+| | | In the rack's order on the data-port-x4-v2-panel (one per panel) | |
+| data-port-x4-v2-panel | 5 panels (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites), 2 assembled: 2 of each board, Economic PCBA | PCB: engineering $25.00, ENIG $18.20, board $8.80 | 52.00 |
+| | | PCBA: setup $8.18, stencil $1.53, components $92.49, extended parts $64.47, SMT $5.51, X-ray $6.56, L1 minimum purchase (32) $9.54 | 188.28 |
+| | | **Estimated total** | **240.28** |
+| | | Order (indicative): as quoted | 240.28 |
 
 ## JLC cost
 
@@ -64,10 +68,9 @@ What each order pays once, whatever the number of boards, against what grows wit
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (16) | 50.49 | 123.59 | 61.94 | **185.53** | 185.53 | 146.87 |
 | data-port | Economic | 6 / 7 | 6 (3) | 9.21 | 25.22 | 11.94 | **37.16** | 37.16 | 27.11 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.26 | **26.38** | 26.38 | 25.59 |
-| data-port-x4-v2 | Economic | 1 / 2 | 41 (21) | 64.47 | 109.12 | 69.67 | **178.79** | 178.79 | 177.78 |
-| data-port-x4-v2-base | Economic | 1 / 2 | 24 (10) | 30.70 | 53.61 | 37.14 | **90.75** | 90.75 | 60.48 |
+| data-port-x4-v2-panel | Economic | 1 / 2 | 41 (21) | 64.47 | 135.72 | 104.56 | **240.28** | 240.28 | 238.26 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **874.52** | **874.52** | **748.27** |
+| **All** | | | | | | | **845.26** | **845.26** | **748.27** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -86,9 +89,7 @@ Levers (*obvious*: an engineering choice the board's owner applies; *decision*: 
 | data-port | JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check | 3.16 | decision |
 | data-port | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 | 1.01 | decision |
 | camera-pod | JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check | 0.79 | decision |
-| data-port-x4-v2 | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board) | 1.01 | decision |
-| data-port-x4-v2-base | one order with the logic variant: a 1 × 2 panel of the same PCB, a logic and a base on each, one CPL, in one Economic order: 100 × 142 with a 2 mm mouse-bite gap (ENIG, $52.00 for 5 panels, no panel fee), one setup and stencil, each type loaded once ($240.28 for 2 + 2 against $269.54).  The tabs join along the 100 mm edges, away from the ends (0.5 mm between the board and the cradle's uprights), their nubs sanded flush; the base goes ENIG; as many bases as logics.  A V-cut joint takes Standard PCBA (Economic panels have mouse bites only), 5 mm rails (100 × 150) and ≥ 0.4 mm of copper clearance along both 100 mm edges (the board keeps 0.3): $263.70 | 29.26 | decision |
-| data-port-x4-v2-base | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board) | 1.01 | decision |
+| data-port-x4-v2-panel | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board, 8 a panel) | 2.02 | decision |
 
 ### At volume
 
@@ -100,16 +101,15 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | power-hub | 92.75 | 53.65 | 39.34 | 26.07 | 23.04 | 22.18 |
 | data-port | 13.77 | 6.53 | 3.94 | 1.96 | 1.49 | 1.30 |
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
-| data-port-x4-v2 | 89.39 | 54.08 | 41.26 | 28.39 | 25.75 | 25.01 |
-| data-port-x4-v2-base | 45.38 | 28.34 | 22.37 | 15.27 | 14.02 | 13.61 |
+| data-port-x4-v2-panel | 120.14 | 74.37 | 57.21 | 41.38 | 38.04 | 37.30 |
 
-One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2, 1 data-port-x4-v2-base) when building several in one order, one shipment ($34, held: it grows with the weight):
+One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-panel) when building several in one order, one shipment ($34, held: it grows with the weight):
 
-| Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4-v2 | data-port-x4-v2-base | Per rack |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 297.81 | 185.51 | 35.45 | 26.38 | 178.79 | 90.75 | **848.69** |
-| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 54.08 | 28.34 | **341.18** |
-| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 41.26 | 22.37 | **279.50** |
+| Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4-v2-panel | Per rack |
+|---|---:|---:|---:|---:|---:|---:|
+| 1 | 297.81 | 185.51 | 35.45 | 26.38 | 240.28 | **819.43** |
+| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 74.37 | **333.13** |
+| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 57.21 | **273.07** |
 
 ## Printed parts
 
@@ -315,9 +315,6 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2,
 | Electronics | LSF0108RKSR — 8-bit passive FET level translator, auto-bidirectional, open drain and push-pull (TI's RKS VQFN-20 has the BQ pinout) | 8  | 1.04 | 8.32 | LCSC/JLCPCB C130008 |
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
 | Electronics | ABM8-272-T3 — 12 MHz crystal, 10 pF load, 50 Ω ESR, ±30 ppm, 3225 | 2  | 0.60 | 1.20 | LCSC/JLCPCB C20625731 |
-| Electronics | Bare PCB data-port-x4-v2 (4-layer 100×70 mm, JLC04161H-7628, ENIG) | 5  | 4.67 | 23.37 | estimate, not quoted |
-| Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray, L1 minimum purchase (32) | 1  | 83.51 | 83.51 | estimate, not quoted |
-| Electronics | Components data-port-x4-v2: JLC quote minus the catalogue prices above | 1  | 5.75 | 5.75 | estimate, not quoted |
 | Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
 | Electronics | 22u — Capacitor 22u 0805 | 12  | 0.18 | 2.14 | LCSC/JLCPCB C45783 |
 | Electronics | 33p — Capacitor 33p 0402 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C1562 |
@@ -350,9 +347,9 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2,
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 8  | 0.69 | 5.52 | LCSC/JLCPCB C49851 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 8  | 0.17 | 1.32 | LCSC/JLCPCB C7519 |
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
-| Electronics | Bare PCB data-port-x4-v2-base (4-layer 100×70 mm, JLC04161H-7628, lead-free HASL) | 5  | 2.43 | 12.14 | estimate, not quoted |
-| Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray | 1  | 41.80 | 41.80 | estimate, not quoted |
-| Electronics | Components data-port-x4-v2-base: JLC quote minus the catalogue prices above | 1  | 2.40 | 2.40 | estimate, not quoted |
+| Electronics | Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | estimate, not quoted |
+| Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, X-ray, L1 minimum purchase (32) | 1  | 88.13 | 88.13 | estimate, not quoted |
+| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 6.08 | 6.08 | estimate, not quoted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 142  | 0.03 | 4.26 | AliExpress (bulk) / Ruthex |

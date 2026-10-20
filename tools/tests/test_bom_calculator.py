@@ -35,7 +35,7 @@ class Orders(unittest.TestCase):
 
     def test_quote_is_order_cost(self):
         # at the quoted quantity an estimate built from the fab files is the quote itself
-        for name in ("data-port-x4-v2", "data-port-x4-v2-base"):
+        for name in ("data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel"):
             q = bom.JLC_QUOTE[name]
             self.assertAlmostEqual(bom.order_cost(name, q["assembled"], self.orders)["total"], q["total"], places=2)
 
@@ -51,6 +51,14 @@ class Orders(unittest.TestCase):
         self.assertAlmostEqual(bom.order_cost("data-port-x4-v2", 2, self.orders)["once_lines"][line], 9.54, places=2)
         self.assertEqual(bom.order_cost("data-port-x4-v2", 32, self.orders)["once_lines"][line], 0)
         self.assertEqual(bom.panel_order(40, self.orders)["once_lines"][line], 0)
+
+    def test_panel_is_the_racks_order(self):
+        # one order panel carries the rack's logic and base; their parts lines stay per board
+        self.assertIn("data-port-x4-v2-panel", self.orders)
+        self.assertNotIn("data-port-x4-v2", self.orders)
+        self.assertNotIn("data-port-x4-v2-base", self.orders)
+        self.assertEqual((self.orders["data-port-x4-v2-panel"]["types"], self.orders["data-port-x4-v2-panel"]["extended"]),
+                         (41, 21))
 
     def test_calculator(self):
         c = bom.calculator(self.orders)

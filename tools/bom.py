@@ -143,6 +143,21 @@ JLC_QUOTE = {
         "pcba": {"setup": 8.18, "stencil": 1.53, "components": 32.12, "extended parts": 30.70, "SMT": 1.74,
                  "X-ray": 3.28},
     },
+    # the rack's order for its converted bays (the orchestrator, 2026-10-20): the logic and the base above on
+    # one 1 × 2 order panel (electronics/data-port-x4-v2/fab/data-port-x4-v2-panel-*: 100 × 142 mm, the base
+    # turned 180°, top edge to top edge on two mouse-bite tabs), one Economic order: one setup and stencil,
+    # the logic's part types once (the base's are a subset), both boards' parts bought together at the
+    # breaks they reach, each board's joints and X-ray (panel_order() at 2 panels), the panels in ENIG
+    # (jlcpcb.com calculator, 2026-10-20).  One logic and one base per panel; the variants' own estimates
+    # above stay for single orders (the BOM page's calculator).
+    "data-port-x4-v2-panel": {
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 240.28, "estimate": True, "from_fab": True,
+        "boards": ("data-port-x4-v2", "data-port-x4-v2-base"),
+        "spec": "4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites",
+        "pcb": {"engineering": 25.00, "ENIG": 18.20, "board": 8.80},
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 92.49, "extended parts": 64.47, "SMT": 5.51,
+                 "X-ray": 6.56, "L1 minimum purchase (32)": 9.54},
+    },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
 # instead of ENIG, as the node (2026-10-19: $5.30 on JLC's calculator for 5 × 86 × 140 mm 4-layer, against
@@ -231,14 +246,11 @@ JLC_LEVERS = {
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board)", 1.01, "decision"),
     ],
+    "data-port-x4-v2-panel": [
+        ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
+         "board, 8 a panel)", 2.02, "decision"),
+    ],
     "data-port-x4-v2-base": [
-        ("one order with the logic variant: a 1 × 2 panel of the same PCB, a logic and a base on each, one CPL, "
-         "in one Economic order: 100 × 142 with a 2 mm mouse-bite gap (ENIG, $52.00 for 5 panels, no panel fee), "
-         "one setup and stencil, each type loaded once ($240.28 for 2 + 2 against $269.54).  The tabs join along "
-         "the 100 mm edges, away from the ends (0.5 mm between the board and the cradle's uprights), their nubs "
-         "sanded flush; the base goes ENIG; as many bases as logics.  A V-cut joint takes Standard PCBA (Economic "
-         "panels have mouse bites only), 5 mm rails (100 × 150) and ≥ 0.4 mm of copper clearance along both "
-         "100 mm edges (the board keeps 0.3): $263.70", 29.26, "decision"),
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board)", 1.01, "decision"),
     ],
@@ -396,35 +408,41 @@ def electronics(rack) -> tuple[list[dict], dict]:
     n_v2 = sum(1 for b in rack.bays() if rack.is_multi(b.id)        # those showing the v2 (`x4: v2`) take its
                and (rack.raw.get("population", {}).get(b.id) or {}).get("x4") == "v2")   # logic variant, the
     rows, orders = [], {}                                              # others its base (v1 is not ordered)
+    n_panel = min(n_v2, n_x4 - n_v2)                                  # a logic and a base per order panel
     for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes - n_x4),
-                       ("camera-pod", CAMERA_SETS), ("data-port-x4-v2", n_v2), ("data-port-x4-v2-base", n_x4 - n_v2)):
+                       ("camera-pod", CAMERA_SETS), ("data-port-x4-v2-panel", n_panel),
+                       ("data-port-x4-v2", n_v2 - n_panel), ("data-port-x4-v2-base", n_x4 - n_v2 - n_panel)):
+        if not need:
+            continue
         q = JLC_QUOTE[name]
         assert abs(sum(q["pcb"].values()) + sum(q["pcba"].values()) - q["total"]) < 0.005, f"{name}: quote lines ≠ total"
         n = q["assembled"]
         if n < need or n > max(need + q.get("spares", 0), 2):     # JLC assembles at least 2 boards
             print(f"warning: the JLC quote assembles {n} × {name} but the configuration needs {need}: re-quote")
-        path = REPO / "electronics" / VARIANT_OF.get(name, name) / f"{name}-bom.csv"
-        if not path.exists():
+        paths = {b: REPO / "electronics" / VARIANT_OF.get(b, b) / f"{b}-bom.csv" for b in q.get("boards", (name,))}
+        if not all(path.exists() for path in paths.values()):
             rows.append({"category": "Electronics", "group": name, "item": f"{name} BOM missing — run tools/kicad.sh {name} --fab",
                          "qty": 0, "unit_eur": 0})
             continue
         mine = []
-        for r in csv.DictReader(path.open(encoding="utf-8")):
-            if r.get("DNP"):
-                continue
-            usd, lcsc, basic, std_only, hand = prices.get(r["MPN"], (0.0, r.get("LCSC", ""), False, False, False))
-            mine.append({"category": "Electronics", "group": name, "item": f"{r['Value']} — {r['Description'] or r['MPN']}",
-                         "ref": r["Designator"], "mpn": r["MPN"], "manufacturer": r["Manufacturer"],
-                         "supplier": "LCSC (hand-solder, buy loose)" if hand else "LCSC/JLCPCB",
-                         "part": r.get("LCSC", "") or lcsc, "qty": int(r["Qty"]) * n,
-                         "unit_eur": round(usd * USD_EUR, 4), "basic": basic, "standard_only": std_only,
-                         "hand_solder": hand,
-                         "notes": f"{r['Qty']} per board × {n} boards" + ("; hand-solder, buy loose (LCSC)" if hand else "")
-                                  + (f"; alternative: {r['Alternative']}" if r.get("Alternative") else "")})
+        for board, path in paths.items():                # an order panel: each board's lines, as many as panels
+            for r in csv.DictReader(path.open(encoding="utf-8")):
+                if r.get("DNP"):
+                    continue
+                usd, lcsc, basic, std_only, hand = prices.get(r["MPN"], (0.0, r.get("LCSC", ""), False, False, False))
+                mine.append({"category": "Electronics", "group": board, "item": f"{r['Value']} — {r['Description'] or r['MPN']}",
+                             "ref": r["Designator"], "mpn": r["MPN"], "manufacturer": r["Manufacturer"],
+                             "supplier": "LCSC (hand-solder, buy loose)" if hand else "LCSC/JLCPCB",
+                             "part": r.get("LCSC", "") or lcsc, "qty": int(r["Qty"]) * n,
+                             "unit_eur": round(usd * USD_EUR, 4), "basic": basic, "standard_only": std_only,
+                             "hand_solder": hand,
+                             "notes": f"{r['Qty']} per board × {n} boards" + ("; hand-solder, buy loose (LCSC)" if hand else "")
+                                      + (f"; alternative: {r['Alternative']}" if r.get("Alternative") else "")})
         rows += mine
         pcb, pcba, changes = jlc_order(name, {r["mpn"] for r in mine if not r["basic"]},
                                        {r["mpn"] for r in mine if r["hand_solder"]})
         jlc = {r["part"]: r["basic"] for r in mine if r["part"] and not r["hand_solder"]}   # JLC's part types
+        unit = "panels" if "boards" in q else "boards"
         orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
                         "total": round(sum(pcb.values()) + sum(pcba.values()), 2),
                         "need": need, "types": len(jlc), "extended": sum(1 for b in jlc.values() if not b),
@@ -435,14 +453,15 @@ def electronics(rack) -> tuple[list[dict], dict]:
         spec = q["spec"].replace("ENIG", JLC_FINISH[name][0]) if name in JLC_FINISH else q["spec"]
         rows.append({"category": "Electronics", "group": name, "item": f"Bare PCB {name} ({spec})",
                      "supplier": pcb_src, "qty": q["pcbs"], "unit_eur": round(sum(pcb.values()) * USD_EUR / q["pcbs"], 4),
-                     "notes": f"{_usd(pcb)} = ${sum(pcb.values()):.2f} for {q['pcbs']} PCBs, {n} of them assembled"
+                     "notes": f"{_usd(pcb)} = ${sum(pcb.values()):.2f} for {q['pcbs']} {'panels' if 'boards' in q else 'PCBs'}, "
+                              f"{n} of them assembled"
                               + "".join(f"; {c}" for c in changes if "ENIG" in c)})
         std = sorted({r["mpn"] for r in mine if r.get("standard_only")})
         if std and q["service"] != "Standard":
             print(f"warning: {name} has Standard-only parts ({', '.join(std)}) but was quoted {q['service']} PCBA")
         fees = {k: v for k, v in pcba.items() if k != "components"}
         rows.append({"category": "Electronics", "group": name,
-                     "item": f"{q['service']} PCBA, {n} boards: {', '.join(fees)}",
+                     "item": f"{q['service']} PCBA, {n} {unit}: {', '.join(fees)}",
                      "supplier": pcba_src, "qty": 1, "unit_eur": round(sum(fees.values()) * USD_EUR, 2),
                      "notes": _usd(fees) + "".join(f"; {c}" for c in changes if "ENIG" not in c)
                               + (f"; Standard because {', '.join(std)} cannot be placed with Economic PCBA" if std else "")})
@@ -456,7 +475,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
                      "notes": f"quoted components ${q['pcba']['components']:.2f}"
                               + (f" + ${pcba['components'] - q['pcba']['components']:.2f} since"
                                  if pcba["components"] != q["pcba"]["components"] else "")
-                              + f" (≈ €{quoted_eur:.2f}) for {n} boards; catalogue unit prices give €{parts_eur:.2f}"})
+                              + f" (≈ €{quoted_eur:.2f}) for {n} {unit}; catalogue unit prices give €{parts_eur:.2f}"})
     rows.append({"category": "Electronics", "group": "jlc", "item": "JLCPCB shipping: every board in one cart",
                  "supplier": "JLCPCB", "qty": 1, "unit_eur": round(JLC_SHIPPING_USD * USD_EUR, 2),
                  "notes": f"{JLC_SHIPPING} for the whole order (one shipment); import VAT extra"})
@@ -578,6 +597,12 @@ JLC_MIN_BUY = {"data-port-x4-v2": [("C42411119", 32, "L1 minimum purchase (32)")
 PANELS = {"data-port-x4-v2-panel": ("data-port-x4-v2", "data-port-x4-v2-base")}
 
 
+def _pcba(name: str, orders: dict) -> dict:
+    """A board's PCBA lines: as adjusted for the rack's order, or its quote's when it is not in it (an
+    order panel's boards: their estimates come from the fab files, nothing to adjust)."""
+    return orders[name]["pcba"] if name in orders else JLC_QUOTE[name]["pcba"]
+
+
 def _per_board_qty(name: str, lcsc: str) -> int:
     return sum(q for l, q, _ in JLC_PARTS.get("boards", {}).get(name, []) if l == lcsc)
 
@@ -593,7 +618,9 @@ def order_cost(name: str, n: int, orders: dict) -> dict:
     minimum purchase's spares, Global Sourcing's $3), per board its parts (the quote's, scaled to JLC's
     price breaks at that quantity, parts_scale), joints, X-ray and Global Sourcing, and the bare PCBs
     at JLC's price for that quantity (the engineering fee is in it)."""
-    q, pcba = JLC_QUOTE[name], orders[name]["pcba"]
+    if name in PANELS:
+        return panel_order(n, orders, name)
+    q, pcba = JLC_QUOTE[name], _pcba(name, orders)
     k, m = q["assembled"], max(n, 2)
     once = {key: v for key, v in pcba.items() if key not in PER_BOARD and "sourcing" not in key}
     for lcsc, moq, line in JLC_MIN_BUY.get(name, []):
@@ -620,7 +647,7 @@ def panel_order(n: int, orders: dict, panel: str = "data-port-x4-v2-panel") -> d
     first, second = PANELS[panel]
     m = max(n, 2)
     lines = {line for b in (first, second) for _, _, line in JLC_MIN_BUY.get(b, [])}
-    once = {key: v for key, v in orders[first]["pcba"].items() if key not in PER_BOARD and key not in lines}
+    once = {key: v for key, v in _pcba(first, orders).items() if key not in PER_BOARD and key not in lines}
     qty = Counter()
     for name in (first, second):
         for lcsc, q, _ in JLC_PARTS.get("boards", {}).get(name, []):
@@ -629,13 +656,15 @@ def panel_order(n: int, orders: dict, panel: str = "data-port-x4-v2-panel") -> d
         for lcsc, moq, line in JLC_MIN_BUY.get(name, []):
             once[line] = _min_buy(lcsc, moq, qty[lcsc])
     parts = JLC_PARTS_MARKUP * sum(v * (part_price(lcsc, v) or 0.0) for lcsc, v in qty.items())
-    joints = sum(orders[b]["pcba"].get("SMT", 0) / JLC_QUOTE[b]["assembled"] for b in (first, second)) * m
+    joints = sum(_pcba(b, orders).get("SMT", 0) / JLC_QUOTE[b]["assembled"] for b in (first, second)) * m
     xr = xray(2 * m) * 2 * m
     pcbs, pcb = pcb_price(panel, m)
     total = sum(once.values()) + parts + joints + xr + pcb
     return {"board": panel, "boards": n, "assembled": m, "pcbs": pcbs, "pcb": pcb,
             "once": round(sum(once.values()), 2), "once_lines": {key: round(v, 2) for key, v in once.items()},
-            "parts": round(parts, 2), "joints": round(joints, 2), "x-ray": round(xr, 2), "total": round(total, 2)}
+            "parts": round(parts, 2), "joints": round(joints, 2), "x-ray": round(xr, 2),
+            "per_board": {"parts": round(parts / m, 4), "joints": round(joints / m, 4), "x-ray": round(xr / m, 4)},
+            "total": round(total, 2)}
 
 
 CALC_N = tuple(range(1, 101)) + (150, 200)
@@ -646,9 +675,9 @@ def calculator(orders: dict) -> dict:
     (site/assets/bom.json › calculator, the BOM page's quantity calculator), without shipping.
     `design`: the orders made on the same PCB, so the page can warn when a panel and single orders of
     its boards are mixed."""
-    out = {name: [order_cost(name, n, orders) for n in CALC_N] for name in orders}
-    out.update({panel: [panel_order(n, orders, panel) for n in CALC_N] for panel, boards in PANELS.items()
-                if all(b in orders for b in boards)})
+    names = list(orders) + [b for p in PANELS if p in orders for b in PANELS[p] if b not in orders]
+    names += [p for p, boards in PANELS.items() if p not in orders and all(b in orders for b in boards)]
+    out = {name: [order_cost(name, n, orders) for n in CALC_N] for name in names}
     design = defaultdict(list)
     for name in out:
         design[VARIANT_OF.get(name, PANELS.get(name, (name,))[0])].append(name)
@@ -708,8 +737,9 @@ def jlc_parts_md(orders: dict) -> list[str]:
     them; JLC assembles at least 2 boards)."""
     if not JLC_PARTS:
         return []
-    ordered = {name: rows for name, rows in JLC_PARTS["boards"].items() if name in orders}
-    per_rack = {name: orders[name]["need"] for name in ordered}
+    carried = Counter({b: orders[p]["need"] for p in PANELS if p in orders for b in PANELS[p]})
+    ordered = {name: rows for name, rows in JLC_PARTS["boards"].items() if name in orders or name in carried}
+    per_rack = {name: (orders[name]["need"] if name in orders else 0) + carried[name] for name in ordered}
     boards = {name: {r: max(2, per_rack[name] * r) for r in VOLUME_RACKS} for name in ordered}
     need10 = defaultdict(int)
     for name, rows in ordered.items():
@@ -1033,17 +1063,23 @@ def main():
            "bay node is the order the user chose on 2026-10-19: 10 PCBs, lead-free HASL, 10 assembled (8 bays, "
            "2 spares).  The per-part lines below use catalogue prices; a *Components* line per board brings them "
            "up to the estimated components figure.  *Order* applies what changed since: the through-hole "
-           "connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  Re-quote before ordering (the "
+           "connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The DATA ×4 v2's two "
+          "variants go on one order panel (data-port-x4-v2-panel: one logic and one base per panel, one Economic "
+          "order); their own estimates stay for single orders.  Re-quote before ordering (the "
            "full PCBA quote needs the user's JLC sign-in).", "",
            "| Board | Order | Line | USD |", "|---|---|---|---:|"]
     for name, q in JLC_QUOTE.items():
-        order = f"{q['pcbs']} PCBs ({q['spec']}), {q['assembled']} assembled, {q['service']} PCBA"
+        order = (f"{q['pcbs']} panels ({q['spec']}), {q['assembled']} assembled: {q['assembled']} of each board, "
+                 f"{q['service']} PCBA" if "boards" in q else
+                 f"{q['pcbs']} PCBs ({q['spec']}), {q['assembled']} assembled, {q['service']} PCBA")
         md.append(f"| {name} | {order} | PCB: {_usd(q['pcb'])} | {sum(q['pcb'].values()):.2f} |")
         md.append(f"| | | PCBA: {_usd(q['pcba'])} | {sum(q['pcba'].values()):.2f} |")
         md.append(f"| | | **{'Estimated' if q.get('estimate') else 'Quoted'} total** | **{q['total']:.2f}** |")
         if name in orders:
             o = orders[name]
             md.append(f"| | | Order (indicative): {'; '.join(o['changes']) or 'as quoted'} | {o['total']:.2f} |")
+        elif panel := next((p for p in PANELS if p in orders and name in PANELS[p]), None):
+            md.append(f"| | | In the rack's order on the {panel} (one per panel) | |")
         else:
             md.append("| | | Not in the rack's order | |")
     md += [""] + jlc_cost_md(cost) + [""] + volume_md(vol, orders)
