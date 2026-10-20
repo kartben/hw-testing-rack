@@ -537,7 +537,10 @@ class BoardSolver:
                     n_cams = len(pegs) - 1
                     if n_cams == 0:
                         continue
-                    cost = off + self.away("x", at[0]) + self.away("y", at[1]) + 6.0 + (20 if n_cams < 2 else 0)
+                    # a cam close to the pin barely stops the board turning about it: the pin goes to the far end
+                    lever = max(math.hypot(p.x - px, p.y - py) for p in pegs[1:])
+                    short = 10.0 if lever < max(self.o["w"], self.o["l"]) / 2 else 0.0
+                    cost = off + self.away("x", at[0]) + self.away("y", at[1]) + 6.0 + (20 if n_cams < 2 else 0) + short
                     if best is None or cost < best[0]:
                         best = (cost, at, pegs, [] if n_cams >= 2 else ["one cam only"])
         return best
