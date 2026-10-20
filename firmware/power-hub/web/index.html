@@ -48,17 +48,16 @@
 }
 button.bay {
   --c: var(--idle);
-  display: grid; grid-template-columns: auto 1fr; gap: 0 8px; min-width: 132px; padding: 7px 10px 7px 8px;
+  display: grid; grid-template-columns: auto auto; gap: 0 8px; min-width: 0; padding: 7px 10px 7px 8px;
   border-radius: 10px; color: inherit; border: 1px solid var(--line); background: var(--card);
   font-weight: 400; text-align: left; transition: border-color 0.15s, transform 0.15s;
   &:hover { border-color: color-mix(in srgb, var(--c) 55%, var(--line)); transform: translateY(-1px); }
   & .dot { grid-row: span 2; align-self: center; width: 9px; height: 9px; border-radius: 50%; background: var(--c);
            box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 18%, transparent); }
   & .pos { font-weight: 650; font-size: 0.9rem; }
-  & .pos small { font: 500 0.72rem var(--mono); color: var(--muted); margin-left: 4px; }
   & .cam { width: 12px; height: 12px; margin-left: 5px; vertical-align: -1px; color: var(--muted); }
   &[data-camera=active] .cam { color: var(--fault); }
-  & .what { font-size: 0.78rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  & .what { grid-column: 2; font-size: 0.78rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   &[data-state=attached] { --c: var(--attached); }
   &[data-state=enumerated], &[data-state=usbip] { --c: var(--usbip); }
   &[data-state=classic] { --c: var(--classic); }
@@ -113,18 +112,18 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
     <div class="cards">
       <section class="card">
         <h2>USB-C PD <span id="contract">—</span></h2>
-        <div class="readings">
-          <div class="reading"><b id="v">–</b><small>volts</small></div>
-          <div class="reading"><b id="a">–</b><small>amps, rows</small></div>
-          <div class="reading"><b id="w">–</b><small>watts, rows</small></div>
+        <div class="readings" title="What the rows draw">
+          <div class="reading"><b id="v">–</b><small>V</small></div>
+          <div class="reading"><b id="a">–</b><small>A</small></div>
+          <div class="reading"><b id="w">–</b><small>W</small></div>
         </div>
         <svg class="spark" id="pd-spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-label="The rows' power, last two minutes">
           <polygon points=""/><polyline points=""/>
         </svg>
         <div class="pdos" id="pdos" aria-label="What the charger offers"></div>
         <div class="actions">
-          <div class="seg" role="radiogroup" aria-label="Contract to ask for" data-admin-only>
-            <label><input type="radio" name="pref" value="epr">28 V EPR when offered</label>
+          <div class="seg" role="radiogroup" aria-label="Contract to ask for" title="28 V when the charger offers EPR, or stay at 20 V" data-admin-only>
+            <label><input type="radio" name="pref" value="epr">28 V</label>
             <label><input type="radio" name="pref" value="20v">20 V</label>
           </div>
         </div>
@@ -137,15 +136,11 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
           <div class="reading"><b id="n-fps">–</b><small>frames / s</small></div>
           <div class="reading"><b id="n-err">–</b><small>errors</small></div>
         </div>
-        <dl>
-          <dt>Bus</dt><dd id="can-state">–</dd>
-          <dt>Enumerated</dt><dd id="enum">–</dd>
-          <dt>PD sink</dt><dd id="sink">–</dd>
-          <dt>Firmware</dt><dd id="fw">–</dd>
-        </dl>
+        <p class="hint" id="bus-line"></p>
         <div class="actions">
-          <button id="btn-enum" data-admin-only>Re-enumerate</button>
-          <button id="btn-fw" data-admin-only hidden>Update firmware…</button>
+          <button id="btn-enum" data-admin-only title="Enumerate the rack bus again">Scan</button>
+          <button id="btn-fw" data-admin-only hidden>Update…</button>
+          <span class="hint" id="fw"></span>
         </div>
       </section>
     </div>
@@ -165,7 +160,7 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
     </section>
   </main>
 
-  <footer><span id="uptime"></span><a href="/api/status">/api/status</a><a href="/metrics">/metrics</a></footer>
+  <footer><span id="uptime"></span></footer>
 </div>
 
 <dialog id="confirm">
@@ -177,7 +172,7 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
   <form id="claim-form">
     <h3>Claim this hub</h3>
     <div id="claim-start">
-      <p>Switching rows and sending commands to the bays is for the hub's admin.  Claiming the hub gives this browser its admin key, after a press on the hub's <b>BOOT</b> button: nobody can claim it from the network alone.</p>
+      <p>Press the hub's <b>BOOT</b> button once. This browser keeps the admin key.</p>
       <label for="claim-key">The rack's admin key (optional, to use the same key as the bays)</label>
       <input id="claim-key" class="key" autocomplete="off" spellcheck="false" placeholder="64 hex digits, or leave empty for a new key">
     </div>
@@ -200,7 +195,7 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
 <dialog id="dlg-unlock" class="small-dlg">
   <form id="unlock-form">
     <h3>Unlock as admin</h3>
-    <p>Paste the hub's admin key (from when you claimed it, or the rack's key if it was claimed with that one).  It stays in this browser; requests are signed with it, the key itself is not sent.</p>
+    <p>Paste the hub's admin key. It stays in this browser. Requests are signed with it.</p>
     <label for="unlock-key">Admin key</label>
     <input id="unlock-key" class="key" type="password" autocomplete="off" spellcheck="false" required pattern="[0-9a-fA-F]{64}">
     <p class="hint">Lost it?  <code>hub access reset</code> on the hub's console USB-C, or hold its BOOT button for 10 s.</p>
@@ -213,12 +208,12 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
 </dialog>
 <div id="node-menu" popover>
   <header><b id="nm-pos"></b><small id="nm-meta"></small></header>
-  <button data-node-act="identify">Identify: blink its LED</button>
-  <button data-node-act="reset">Reset the board</button>
-  <button data-node-act="bootloader">Board into its bootloader</button>
-  <button data-node-act="power-cycle" class="danger">Power-cycle the board</button>
-  <a id="nm-open" target="_blank" rel="noopener">Open the bay's page ↗</a>
-  <a id="nm-cam" target="_blank" rel="noopener" hidden>Camera: live view ↗</a>
+  <button data-node-act="identify" title="Blink its LED">Identify</button>
+  <button data-node-act="reset">Reset</button>
+  <button data-node-act="bootloader">Bootloader</button>
+  <button data-node-act="power-cycle" class="danger">Power cycle</button>
+  <a id="nm-open" target="_blank" rel="noopener">Open bay</a>
+  <a id="nm-cam" target="_blank" rel="noopener" hidden>Camera</a>
 </div>
 
 <template id="t-row">
@@ -237,9 +232,9 @@ import { $, api, fix, plural, uptime, ago, Spark, toast, confirmed, poll, copyBu
   signed, claimKey, firmwareDialog, firmwareLabel } from "/rack.mjs";
 
 const pdSpark = new Spark($("pd-spark"), { floor: 5000 });
-const NODE_LABEL = { attached: "USB/IP attached", enumerated: "device ready", usbip: "no device",
-  classic: "classic", service: "service", off: "DUT off", fault: "DUT fault", lost: "no answer",
-  failed: "no address", incompatible: "newer protocol" };
+const NODE_LABEL = { attached: "USB/IP", enumerated: "ready", usbip: "idle",
+  classic: "classic", service: "service", off: "off", fault: "fault", lost: "silent",
+  failed: "no address", incompatible: "protocol" };
 const ROW_LABEL = { on: "on", off: "off", shed: "shed", fault: "fault", cycling: "cycling", waiting: "waiting" };
 const KIND_COLOR = { pd: "var(--pd)", row: "var(--ok)", fault: "var(--fault)", can: "var(--usbip)", node: "var(--muted)",
   firmware: "var(--lease)" };
@@ -276,9 +271,6 @@ function renderPd(pd) {
     return el;
   }));
   document.querySelector(`input[name=pref][value="${pd.pref}"]`).checked = true;
-  $("sink").textContent = pd.state === "usb" ? "–" :
-    `asked ${pd.asked_mv ? pd.asked_mv / 1000 + " V" : "9 V (CFG1)"} · PG ${pd.pg ? "good" : "high"}` +
-    (pd.epr_refused ? " · 28 V refused" : "");
 }
 
 /* STATUS byte 6 of the bay (docs/rack-protocol.md); its camera serves on 8081 */
@@ -293,11 +285,11 @@ function bayTile(n) {
   a.dataset.camera = n.camera ?? "none";
   a.title = [`${[n.name, n.ip].filter(Boolean).join(" · ")} · node 0x${n.id.toString(16).padStart(2, "0")} · ${n.mac ?? ""}`,
     CAM_LABEL[n.camera]].filter(Boolean).join("\n");
-  const ma = n.state === "lost" ? `${Math.round(n.seen_s)} s silent` : n.dut_ma ? `${fix(n.dut_ma, 2)} A` : "";
+  const ma = n.state === "lost" ? `${Math.round(n.seen_s)} s` : n.dut_ma ? `${fix(n.dut_ma, 2)} A` : "";
   const cam = CAM_LABEL[n.camera] ? `<svg class="cam" viewBox="0 0 16 16" aria-label="${CAM_LABEL[n.camera]}">
     <path fill="currentColor" fill-rule="evenodd" d="M5.6 2.5h4.8l1 1.5H13a1.5 1.5 0 0 1 1.5 1.5v6.5A1.5 1.5 0 0 1 13 13.5H3A1.5 1.5 0 0 1 1.5 12V5.5A1.5 1.5 0 0 1 3 4h1.6l1-1.5ZM8 5.6a2.9 2.9 0 1 0 0 5.8 2.9 2.9 0 0 0 0-5.8Z"/></svg>` : "";
-  a.innerHTML = `<span class="dot"></span><span class="pos">${n.pos}<small>${n.name || n.ip}</small>${cam}</span>
-    <span class="what">${NODE_LABEL[n.state]}${ma ? ` · ${ma}` : ""}</span>`;
+  a.innerHTML = `<span class="dot"></span><span class="pos">${n.pos}${cam}</span>
+    <span class="what">${[NODE_LABEL[n.state], ma].filter(Boolean).join(" · ")}</span>`;
   return a;
 }
 
@@ -313,12 +305,12 @@ function renderRows(s) {
     li.dataset.state = r.state;
     li.querySelector(".letter").textContent = r.name;
     li.querySelector(".st").textContent = ROW_LABEL[r.state];
-    li.querySelector(".amps").textContent = r.on ? `${fix(r.ma, 2)} A · ${(r.mw / 1000).toFixed(1)} W` : "VRACK off";
+    li.querySelector(".amps").textContent = r.on ? `${fix(r.ma, 2)} A · ${(r.mw / 1000).toFixed(1)} W` : "";
     const bays = li.querySelector(".bays");
     if (r.nodes.length) {
       bays.replaceChildren(...r.nodes.map((n) => { const x = document.createElement("li"); x.append(bayTile(n)); return x; }));
     } else {
-      bays.innerHTML = `<li class="empty">${r.on ? "no node answered" : r.state === "shed" ? "off: not enough power" : "row off"}</li>`;
+      bays.innerHTML = `<li class="empty">${r.on ? "no bay" : r.state === "shed" ? "not enough power" : ""}</li>`;
     }
     const toggle = li.querySelector("[data-row-act=toggle]");
     toggle.textContent = r.on || r.state === "fault" ? "Off" : "On";
@@ -335,20 +327,24 @@ function renderRows(s) {
     i.title = `Row ${r.name}: ${(r.mw / 1000).toFixed(1)} W`;
     return i;
   }));
-  $("budget-legend").innerHTML = s.rows.map((r) =>
-    `<span>${r.name} ${r.on ? `${(r.mw / 1000).toFixed(1)} W` : ROW_LABEL[r.state]}</span>`).join("")
-    + (max ? `<span>${((max - used) / 1000).toFixed(0)} W spare</span>` : "");
+  $("budget-legend").textContent = max ? `${((max - used) / 1000).toFixed(0)} W spare` : "";
+  $("budget-legend").hidden = !max;
 }
 
 function renderBus(s) {
   const c = s.can;
-  $("bus").textContent = `CAN ${c.bitrate / 1000} kbit/s`;
+  $("bus").textContent = `${c.bitrate / 1000} kbit/s`;
   $("n-nodes").textContent = c.nodes;
   $("n-fps").textContent = c.rx_fps;
   $("n-err").textContent = c.errors;
-  $("can-state").textContent = c.state + (c.bus_off ? ` · ${plural(c.bus_off, "bus-off")}` : "");
-  $("enum").textContent = c.enumerating ? "enumerating…"
-    : `${c.enumerated_s < 0 ? "never" : ago(c.enumerated_s)}${c.lost ? ` · ${c.lost} lost` : ""}`;
+  const busLine = [
+    c.state === "error-active" ? "" : c.state,
+    c.bus_off ? plural(c.bus_off, "bus-off") : "",
+    c.enumerating ? "scanning" : "",
+    c.lost ? `${c.lost} silent` : "",
+  ].filter(Boolean).join(" · ");
+  $("bus-line").textContent = busLine;
+  $("bus-line").hidden = !busLine;
   $("fw").innerHTML = s.firmware ? firmwareLabel(s.firmware) : s.version;
   $("btn-fw").hidden = !s.firmware;
 }
@@ -381,8 +377,9 @@ function renderAccess(a) {
   document.body.toggleAttribute("data-admin", admin);
   pill.hidden = false;
   pill.dataset.access = admin ? "admin" : access.claimed ? "locked" : "unclaimed";
-  pill.textContent = admin ? "admin" : access.claimed ? "read-only · unlock" : "unclaimed · claim";
-  pill.title = admin ? "Forget the admin key in this browser" : "";
+  pill.textContent = admin ? "admin" : access.claimed ? "unlock" : "claim";
+  pill.title = admin ? "Forget the admin key in this browser"
+    : access.claimed ? "Unlock with the admin key" : "Claim this hub";
 }
 
 function showError(id, e) {
@@ -500,8 +497,9 @@ $("rack").addEventListener("click", (ev) => {
   if (!tile) return;
   menuNode = last.rows.flatMap((r) => r.nodes).find((n) => n.id === Number(tile.dataset.id));
   if (!menuNode) return;
-  $("nm-pos").textContent = `Bay ${menuNode.pos}`;
-  $("nm-meta").textContent = `node 0x${menuNode.id.toString(16).padStart(2, "0")} · ${menuNode.ip} · ${menuNode.mac ?? ""}`;
+  $("nm-pos").textContent = menuNode.pos;
+  $("nm-meta").textContent = menuNode.ip || "";
+  $("nm-meta").title = [menuNode.mac, `node 0x${menuNode.id.toString(16).padStart(2, "0")}`].filter(Boolean).join(" · ");
   $("nm-open").href = `http://${menuNode.ip}/`;
   $("nm-cam").hidden = !CAM_LABEL[menuNode.camera];
   $("nm-cam").href = `http://${menuNode.ip}:${CAM_PORT}/stream.mjpg`;

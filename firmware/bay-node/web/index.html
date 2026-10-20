@@ -26,8 +26,22 @@
 }
 .con-foot {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; color: var(--muted); font-size: 0.85rem;
-  & .cmd { flex: 1 1 360px; }
-  & a { color: inherit; }
+  & a { color: inherit; margin-left: auto; font-size: 0.75rem; }
+}
+.toolbar select {
+  font: inherit; font-weight: 550; padding: 6px 8px; border-radius: 10px;
+  border: 1px solid var(--line); background: var(--soft); color: var(--text);
+}
+.statusline { margin: 0; color: var(--muted); font-size: 0.92rem;
+  & button { margin-left: 8px; vertical-align: baseline; }
+}
+.ports { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px;
+  & li { display: grid; grid-template-columns: 4.2em minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 0.88rem; }
+  & .slot { font-weight: 650; }
+  & .meta { color: var(--muted); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  & .acts { display: flex; gap: 6px; }
+  & button { padding: 4px 10px; font-size: 0.8rem; }
+  & li[data-state=fault] .slot { color: var(--fault); }
 }
 #con-settings, #cam-settings {
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
@@ -160,17 +174,18 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
       <section class="card">
         <h2>Power <span id="vbus">—</span></h2>
         <div class="readings">
-          <div class="reading"><b id="v">–</b><small>volts</small></div>
-          <div class="reading"><b id="a">–</b><small>amps</small></div>
-          <div class="reading"><b id="w">–</b><small>watts</small></div>
+          <div class="reading"><b id="v">–</b><small>V</small></div>
+          <div class="reading"><b id="a">–</b><small>A</small></div>
+          <div class="reading"><b id="w">–</b><small>W</small></div>
         </div>
         <svg class="spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-label="Current, last two minutes">
           <polygon id="spark-fill" points=""/><polyline id="spark" points=""/>
         </svg>
-        <div class="actions">
+        <ul class="ports" id="ports" hidden></ul>
+        <div class="actions" id="power-actions">
           <button data-action="power" data-arg="on">On</button>
           <button data-action="power" data-arg="off" class="danger" data-confirm="Switch the board's 5 V off?">Off</button>
-          <button data-action="power" data-arg="cycle" class="primary">Power cycle</button>
+          <button data-action="power" data-arg="cycle" class="primary">Cycle</button>
         </div>
       </section>
 
@@ -180,22 +195,16 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
           <label><input type="radio" name="mode" value="usbip">USB/IP</label>
           <label><input type="radio" name="mode" value="classic">Classic</label>
         </div>
-        <dl>
-          <dt>Data path</dt><dd id="path">–</dd>
-          <dt>Front port</dt><dd id="pc">–</dd>
-          <dt>USB host</dt><dd id="host">–</dd>
-          <dt>Clients</dt><dd id="sessions">–</dd>
-        </dl>
-        <div class="cmd"><code id="usbip-cmd">usbip attach -r … -b 1-1</code><button data-copy="usbip-cmd">Copy</button></div>
+        <p class="statusline" id="usb-line">–</p>
+        <div class="actions">
+          <button data-copy="usbip-cmd" id="usb-copy">Copy attach</button>
+        </div>
+        <code id="usbip-cmd" hidden>usbip attach -r … -b 1-1</code>
       </section>
 
       <section class="card" id="access-card">
         <h2>Access <span id="access-state">—</span></h2>
-        <div class="notice" id="access-open" hidden>
-          <svg viewBox="0 0 16 16"><use href="#i-open"/></svg>
-          <span id="access-open-text">Open: anyone on this network can use this bay.</span>
-        </div>
-        <div class="who"><span>You are</span><code id="you">–</code><span class="src" id="you-src"></span><span class="tag" id="you-admin" hidden>admin</span></div>
+        <div class="who"><code id="you">–</code><span class="src" id="you-src"></span><span class="tag" id="you-admin" hidden>admin</span></div>
         <div class="lease" id="lease" hidden>
           <div><b id="lease-who"></b><small id="lease-meta"></small></div>
           <button class="small" data-acc="renew" hidden>Renew</button>
@@ -218,14 +227,15 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
           <span class="badge">LIVE</span>
           <div class="idle">
             <span id="cam-idle-text">Live view off</span>
-            <button class="primary" data-cam="live">Start live view</button>
+            <button class="primary" data-cam="live">Live</button>
           </div>
         </div>
         <div class="cam-side">
           <div class="actions">
-            <button data-cam="live" id="cam-live" aria-pressed="false">Live view</button>
+            <button data-cam="live" id="cam-live" aria-pressed="false">Live</button>
             <button data-cam="snap">Snapshot</button>
-            <a id="cam-open" target="_blank" rel="noopener" hidden>Open picture ↗</a>
+            <button popovertarget="cam-settings" id="cam-fmt" title="Resolution, quality, image">–</button>
+            <a id="cam-open" target="_blank" rel="noopener" hidden>Open</a>
           </div>
           <div>
             <div class="label">Light</div>
@@ -235,13 +245,11 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
               <label><input type="radio" name="cam-light" value="off">Off</label>
             </div>
           </div>
-          <dl>
-            <dt>Camera</dt><dd id="cam-model">–</dd>
-            <dt>Picture</dt><dd><button popovertarget="cam-settings" id="cam-fmt" title="Resolution, quality, light">–</button></dd>
-            <dt>Last frame</dt><dd id="cam-last">–</dd>
-            <dt>Viewers</dt><dd id="cam-viewers">–</dd>
-          </dl>
-          <div class="cmd"><code id="cam-cmd">curl -o bay.jpg http://…:8081/snapshot.jpg</code><button data-copy="cam-cmd">Copy</button></div>
+          <p class="statusline"><span id="cam-stats"></span> <button class="small" data-copy="cam-cmd" id="cam-copy" title="Copy the snapshot URL">Copy URL</button></p>
+          <span id="cam-model" hidden></span>
+          <span id="cam-last" hidden></span>
+          <span id="cam-viewers" hidden></span>
+          <code id="cam-cmd" hidden>curl -o bay.jpg http://…:8081/snapshot.jpg</code>
         </div>
       </div>
     </section>
@@ -250,14 +258,10 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
       <h2>Console <span id="con-meta">loading…</span></h2>
       <div class="toolbar">
         <div class="group" aria-label="Target">
+          <select id="port-pick" hidden aria-label="Board"></select>
           <button data-action="reset" title="Pulse the board's RESET line">Reset</button>
           <button data-action="boot" title="Hold BOOT across a RESET pulse: ROM bootloader">Bootloader</button>
           <button data-con="break" title="Hold the board's RX line low for 250 ms">Break</button>
-        </div>
-        <div class="group" aria-label="Board power">
-          <button data-action="power" data-arg="off" class="danger" data-confirm="Switch the board's 5 V off?">Off</button>
-          <button data-action="power" data-arg="on">On</button>
-          <button data-action="power" data-arg="cycle">Cycle</button>
         </div>
         <div class="group end">
           <button data-con="ts" aria-pressed="false" title="Prefix each line with the time it arrived">Timestamps</button>
@@ -268,9 +272,10 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
       </div>
       <div class="term"><div id="term"></div></div>
       <div class="con-foot">
-        <div class="cmd"><code id="rfc-cmd">python -m serial.tools.miniterm rfc2217://…:4001 115200</code><button data-copy="rfc-cmd">Copy</button></div>
+        <button class="small" data-copy="rfc-cmd" id="rfc-copy" title="Copy the RFC 2217 command">Copy serial</button>
+        <code id="rfc-cmd" hidden>python -m serial.tools.miniterm rfc2217://…:4001 115200</code>
         <span id="con-clients"></span>
-        <a href="/xterm-LICENSE.txt">xterm.js (MIT)</a>
+        <a href="/xterm-LICENSE.txt">xterm.js</a>
       </div>
     </section>
   </main>
@@ -279,9 +284,6 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
     <span id="uptime"></span>
     <span id="fw-line"></span>
     <span id="faults"></span>
-    <a href="/metrics">/metrics</a>
-    <a href="/api/status">/api/status</a>
-    <a href="/api/aux">/api/aux</a>
   </footer>
 </div>
 
@@ -354,7 +356,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
     <select id="c-sharp" name="sharpness" data-sharp>
       <option value="auto">Auto</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
     </select>
-    <small>Applied at once, between two frames, for everyone watching, and saved for this bay.  The rotation turns the picture on this page only.  While the bay is reserved, only its holder switches the light.</small>
+    <small>Saved on this bay, for everyone watching. Rotation is this page only.</small>
     <div class="form-actions">
       <button type="button" data-camset="reset" title="White balance, exposure, gain, levels back to automatic">Reset image to auto</button>
       <button type="button" class="primary" popovertarget="cam-settings" popovertargetaction="hide">Done</button>
@@ -366,7 +368,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
   <form id="claim-form">
     <h3>Claim this bay</h3>
     <div id="claim-start">
-      <p>This node has no admin yet.  Claiming it gives this browser its admin key, after a press on the node's <b>BOOT</b> button: nobody can claim a bay from the network alone.</p>
+      <p>No admin yet. Press this node's <b>BOOT</b> button once. The key stays in this browser.</p>
       <label for="claim-key">The rack's admin key (optional, to use the same key on every bay)</label>
       <input id="claim-key" class="key" autocomplete="off" spellcheck="false" placeholder="64 hex digits, or leave empty for a new key">
     </div>
@@ -390,7 +392,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
 <dialog id="dlg-unlock" class="small-dlg">
   <form id="unlock-form">
     <h3>Unlock as admin</h3>
-    <p>Paste this bay's admin key (from <code>bayctl access keygen</code>, another bay, or when you claimed it).  It stays in this browser; requests are signed with it, the key itself is not sent.</p>
+    <p>Paste this bay's admin key. It stays in this browser. Requests are signed with it.</p>
     <label for="unlock-key">Admin key</label>
     <input id="unlock-key" class="key" type="password" autocomplete="off" spellcheck="false" required pattern="[0-9a-fA-F]{64}">
     <p class="hint">Lost it?  On the node: <code>bay access reset</code>, or hold BOOT for 10 s.</p>
@@ -405,7 +407,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
 <dialog id="dlg-lease" class="small-dlg">
   <form id="lease-form">
     <h3>Reserve this bay</h3>
-    <p>While reserved, power, reset, the console and USB/IP answer only your address (and it ends by itself).  CI does this with <code>bayctl lease</code>.</p>
+    <p>Power, reset, the console and USB/IP answer only your address until it ends.</p>
     <label for="lease-ttl">For</label>
     <select id="lease-ttl"><option value="900">15 minutes</option><option value="3600" selected>1 hour</option><option value="14400">4 hours</option><option value="86400">24 hours</option></select>
     <label for="lease-note">Note</label>
@@ -524,7 +526,10 @@ function render(s) {
   $("name").textContent = s.id ? `Bay ${s.id.toUpperCase()}` : "Bay node";
   $("where").textContent = [host, s.ip].filter(Boolean).join(" · ");
 
-  $("vbus").textContent = s.dut.on ? "VBUS on" : "VBUS off";
+  const boards = s.ports?.length > 1 ? s.ports : null;
+  $("vbus").textContent = boards
+    ? `${boards.filter((p) => p.power.on).length}/${boards.length}`
+    : s.dut.on ? "on" : "off";
   if (s.dut.meter) {
     $("v").textContent = fix(s.dut.mv, 2);
     $("a").textContent = fix(s.dut.ma, 3);
@@ -534,30 +539,80 @@ function render(s) {
     for (const id of ["v", "a", "w"]) $(id).textContent = "n/a";
   }
   $("fault-text").textContent = s.dut.latched
-    ? "Over-current: the board's 5 V was switched off."
-    : "The board is drawing too much current (VBUS in current limit).";
+    ? "Over-current. 5 V is off."
+    : "Current limit on the 5 V rail.";
 
   document.querySelector(`input[name=mode][value=${s.force_classic ? "classic" : "usbip"}]`).checked = true;
-  $("path").textContent = { usbip: "USB/IP", classic: "Classic (front port)", service: "Service" }[s.path];
-  $("pc").textContent = s.service ? "service (node)" : s.pc_detected ? "laptop plugged" : "free";
-  $("host").textContent = s.usb.running ? plural(s.usb.devices, "device") : "stopped";
-  $("sessions").textContent = s.usb.sessions ? `${s.usb.sessions} attached` : "none";
+  const front = s.service ? "service" : s.pc_detected ? "laptop on the front port" : "";
+  $("usb-line").textContent = [
+    front,
+    s.usb.running ? plural(s.usb.devices, "device") : "host stopped",
+    s.usb.sessions ? `${s.usb.sessions} attached` : "",
+  ].filter(Boolean).join(" · ") || "idle";
   $("usbip-cmd").textContent = `sudo usbip attach -r ${host} -b 1-1`;
+  $("usb-copy").hidden = s.path !== "usbip";
+  $("usb-copy").title = $("usbip-cmd").textContent;
 
   const aux = s.aux;
   $("rfc-cmd").textContent =
     `python -m serial.tools.miniterm rfc2217://${host}:${aux.rfc2217_port} ${aux.baud}`;
-  $("con-clients").textContent = [plural(aux.web_clients, "web console"),
-    `RFC 2217 ${aux.rfc2217 ? "in use" : "free"}`, aux.raw ? "raw TCP in use" : ""]
+  $("rfc-copy").title = $("rfc-cmd").textContent;
+  $("con-clients").textContent = [aux.web_clients ? plural(aux.web_clients, "console") : "",
+    aux.rfc2217 ? "RFC 2217" : "", aux.raw ? "raw TCP" : ""]
     .filter(Boolean).join(" · ");
 
-  $("uptime").textContent = `Up ${uptime(s.uptime_s)} · Zephyr ${s.version}`;
-  $("fw-line").innerHTML = s.firmware ? `Firmware ${firmwareLabel(s.firmware)}` : "";
+  $("uptime").textContent = `Up ${uptime(s.uptime_s)}`;
+  $("fw-line").innerHTML = s.firmware ? firmwareLabel(s.firmware) : s.version;
   $("acc-fw-block").hidden = !s.firmware;
   if (s.firmware) $("acc-fw").innerHTML = `${firmwareLabel(s.firmware)} · <code>${s.firmware.id}</code>`;
-  $("faults").textContent = `${plural(s.dut.faults, "fault")} since boot`;
+  $("faults").textContent = s.dut.faults ? `${plural(s.dut.faults, "fault")} since boot` : "";
   if (s.access) renderRights(s.access);
+  renderPorts(s);
   renderCamera(s);
+}
+
+/* DATA ×4: one row per board, from /api/status `ports`. One board keeps the On / Off / Cycle row. */
+function portBody() {
+  return status?.ports?.length > 1 ? { port: Number($("port-pick").value) } : {};
+}
+
+function renderPorts(s) {
+  const boards = s.ports?.length > 1 ? s.ports : null;
+  $("ports").hidden = !boards;
+  $("power-actions").hidden = !!boards;
+  $("port-pick").hidden = !boards;
+  if (!boards) return;
+  const pick = $("port-pick");
+  const prev = pick.value;
+  pick.replaceChildren(...boards.map((p) => new Option(p.slot, p.port)));
+  if ([...pick.options].some((o) => o.value === prev)) pick.value = prev;
+  const control = !s.access || can(s.access, "control");
+  $("ports").replaceChildren(...boards.map((p) => {
+    const li = document.createElement("li");
+    if (p.fault) li.dataset.state = "fault";
+    const on = p.power.on && !p.fault;
+    const ma = p.power.on ? `${fix(p.power.ma, 2)} A` : "";
+    const flag = p.fault ? "fault" : p.usbip ? "USB/IP" : p.usb ? "USB" : p.power.on ? "" : "off";
+    const slot = Object.assign(document.createElement("span"), { className: "slot", textContent: p.slot });
+    const meta = Object.assign(document.createElement("span"), {
+      className: "meta", textContent: [ma, flag].filter(Boolean).join(" · ") });
+    const acts = Object.assign(document.createElement("span"), { className: "acts" });
+    const toggle = Object.assign(document.createElement("button"), {
+      textContent: on ? "Off" : "On", className: on ? "danger" : "" });
+    toggle.dataset.port = p.port;
+    toggle.dataset.portAct = on ? "off" : "on";
+    if (on) toggle.dataset.confirm = `Switch ${p.slot} off?`;
+    toggle.disabled = !control;
+    toggle.dataset.denied = String(!control);
+    const cycle = Object.assign(document.createElement("button"), { textContent: "Cycle" });
+    cycle.dataset.port = p.port;
+    cycle.dataset.portAct = "cycle";
+    cycle.disabled = !control || !p.power.on;
+    cycle.dataset.denied = String(!control || !p.power.on);
+    acts.append(toggle, cycle);
+    li.append(slot, meta, acts);
+    return li;
+  }));
 }
 
 async function poll() {
@@ -596,7 +651,7 @@ const DONE = { on: "Power on", off: "Power off", cycle: "Power cycled", reset: "
 
 async function run(btn, path, body, what) {
   if (btn?.dataset.confirm && !(await confirmed(btn.dataset.confirm))) return;
-  const busy = document.querySelectorAll("button[data-action]");
+  const busy = document.querySelectorAll("button[data-action], button[data-port-act]");
   busy.forEach((b) => { b.disabled = true; b.dataset.busy = "1"; });
   try {
     render(await api(path, body));
@@ -643,8 +698,8 @@ function renderRights(a) {
   pill.append(text);
 
   const control = can(a, "control"), console_ = can(a, "console");
-  document.querySelectorAll("button[data-action]").forEach((b) => (b.dataset.denied = !control));
-  document.querySelectorAll("button[data-action], input[name=mode]").forEach((el) => {
+  document.querySelectorAll("button[data-action], button[data-port-act]").forEach((b) => (b.dataset.denied = !control));
+  document.querySelectorAll("button[data-action], button[data-port-act], input[name=mode], #port-pick").forEach((el) => {
     el.disabled = !control || el.dataset.busy === "1";
   });
   document.querySelectorAll("button[data-con=break], button[popovertarget=con-settings]")
@@ -669,11 +724,7 @@ function renderRights(a) {
 function renderAccessCard(a) {
   const d = acc.doc;
   const lease = a.lease.holder ? a.lease : null;
-  $("access-state").textContent = !a.claimed ? "not claimed" : a.enabled ? "rules on" : "rules off";
-  $("access-open").hidden = a.claimed && a.enabled;
-  $("access-open-text").textContent = !a.claimed
-    ? "Open: anyone on this network can use this bay.  Claim it to set rules."
-    : "Rules off: every address may use everything.";
+  $("access-state").textContent = lease ? "" : !a.claimed ? "open" : a.enabled ? "rules" : "off";
   $("you").textContent = a.you;
   $("you-src").textContent = d?.source ?? "";
   $("you-admin").hidden = !acc.admin;
@@ -701,13 +752,7 @@ function renderAccessCard(a) {
     li.append(svc, peer, since, kick);
     list.append(li);
   }
-  if (d && !d.connections.length) {
-    list.innerHTML = `<li><span class="none">No console, USB/IP or shell connection</span></li>`;
-  }
-
-  $("refused-line").innerHTML = a.refused
-    ? `<b>${a.refused} refused</b> since the node started`
-    : "Nothing refused since the node started";
+  $("refused-line").innerHTML = a.refused ? `<b>${a.refused} refused</b>` : "";
   $("btn-admin").textContent = !a.claimed ? "Claim this bay…" : acc.admin ? "Manage access…" : "Unlock…";
 }
 
@@ -841,7 +886,7 @@ function renderRules() {
   rows.replaceChildren(...acc.rules.sources.map(ruleRow), ruleRow(null));
   $("acc-add").disabled = acc.rules.sources.length >= 8;
   $("acc-enabled").checked = acc.rules.enabled;
-  $("acc-hint").textContent = `Up to 8 sources; an address gets what every matching row gives.  You are ${acc.doc.you}.  The admin key manages access from any address.`;
+  $("acc-hint").textContent = `An address gets every matching row. You are ${acc.doc.you}.`;
   const log = $("acc-refused");
   log.replaceChildren();
   for (const r of acc.doc.refused ?? []) {
@@ -1236,25 +1281,28 @@ function renderCamera(s) {
   }
   const allowed = !s.access || can(s.access, "camera");
   const snaps = c.clients - c.streams;
-  $("cam-meta").textContent = [cam.live && c.streams ? `${c.fps} fps` : "", c.lit ? "light on" : ""]
-    .filter(Boolean).join(" · ");
   $("cam-model").textContent = c.model;
-  $("cam-fmt").textContent = `${c.resolution.replace("x", " × ")} · ${c.quality}`;
+  $("cam-fmt").textContent = c.resolution.replace("x", "×");
   const [w, h] = c.resolution.split("x");
   const turned = c.rotation === 90 || c.rotation === 270;
   $("cam-view").style.aspectRatio = turned ? `${h} / ${w}` : `${w} / ${h}`;
   $("cam-view").dataset.rot = c.rotation ?? 0;
   $("cam-fmt").disabled = s.access && !can(s.access, "control");
-  $("cam-last").textContent = c.frames ? `${Math.max(1, Math.round(c.last_bytes / 1024))} KB · ${c.last_ms} ms` : "none yet";
+  $("cam-last").textContent = c.frames ? `${Math.max(1, Math.round(c.last_bytes / 1024))} KB` : "";
   $("cam-viewers").textContent = [c.streams && plural(c.streams, "stream"), snaps && plural(snaps, "snapshot")]
-    .filter(Boolean).join(" · ") || "none";
-  $("cam-auto").textContent = `Auto (${c.light})`;
+    .filter(Boolean).join(" · ");
+  $("cam-meta").textContent = [cam.live && c.streams ? `${c.fps} fps` : "", c.lit ? "light" : ""]
+    .filter(Boolean).join(" · ");
+  $("cam-stats").textContent = [$("cam-model").textContent, $("cam-last").textContent, $("cam-viewers").textContent]
+    .filter(Boolean).join(" · ");
+  $("cam-auto").parentElement.title = c.light === "on" ? "On while a picture is taken" : "Stays off";
   $("cam-cmd").textContent = `curl -o bay-${s.id || "node"}.jpg http://${host}:${c.port}/snapshot.jpg`;
+  $("cam-copy").title = $("cam-cmd").textContent;
   document.querySelectorAll("button[data-cam]").forEach((b) => (b.disabled = !allowed));
   if (!allowed && cam.shown) camStop();
   if (!cam.shown) {
     $("cam-idle-text").textContent = !allowed ? `${s.access.you} may not use the camera`
-      : c.clients >= c.slots ? `Camera busy: ${plural(c.clients, "viewer")}` : "Live view off";
+      : c.clients >= c.slots ? `Busy · ${plural(c.clients, "viewer")}` : "";
   }
 }
 
@@ -1265,7 +1313,7 @@ function camShow(live) {
   $("cam-img").src = url;
   $("cam-view").dataset.showing = live ? "live" : "still";
   $("cam-live").setAttribute("aria-pressed", live);
-  $("cam-live").textContent = live ? "Stop live view" : "Live view";
+  $("cam-live").textContent = live ? "Stop" : "Live";
   $("cam-open").hidden = live;
   $("cam-open").href = url;
 }
@@ -1276,7 +1324,7 @@ function camStop() {
   $("cam-img").removeAttribute("src");
   delete $("cam-view").dataset.showing;
   $("cam-live").setAttribute("aria-pressed", false);
-  $("cam-live").textContent = "Live view";
+  $("cam-live").textContent = "Live";
   $("cam-open").hidden = true;
 }
 
@@ -1364,10 +1412,13 @@ document.addEventListener("click", async (ev) => {
       return download();
   }
 
+  if (btn.dataset.portAct) {
+    return run(btn, "/api/power", { action: btn.dataset.portAct, port: Number(btn.dataset.port) }, btn.dataset.portAct);
+  }
   const action = btn.dataset.action;
-  if (action === "power") run(btn, "/api/power", { action: btn.dataset.arg }, btn.dataset.arg);
-  else if (action === "reset") run(btn, "/api/reset", {}, "reset");
-  else if (action === "boot") run(btn, "/api/boot", {}, "boot");
+  if (action === "power") run(btn, "/api/power", { action: btn.dataset.arg, ...portBody() }, btn.dataset.arg);
+  else if (action === "reset") run(btn, "/api/reset", portBody(), "reset");
+  else if (action === "boot") run(btn, "/api/boot", portBody(), "boot");
 });
 
 document.addEventListener("change", (ev) => {
