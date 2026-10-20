@@ -41,11 +41,19 @@ every GND and supply pin gets a short track to a via of its own on its plane (`f
 the outer GND pours, which stay as a bonus, stitched to In1.  **No drill under 0.3 mm**: JLCPCB's
 0.25 mm option costs ≈ $40 more on a 20-board order (it forces a 4-wire Kelvin test and FR4 Tg155), so
 the smallest via is 0.5/0.3 mm (`SMALL_VIA` in `pcbgen.py`, also written into `<board>.kicad_pro` as
-the DRC minimum); most vias are 0.6/0.3 mm.  **Every pour connects pads through thermal reliefs**
-(0.3 mm gap, 0.4 mm spokes): a GND pad heats up like the pad at the other end
-of its part, so small parts don't tombstone in reflow and hand-soldered pins
-take solder.  `<board>.kicad_dru` accepts a single spoke where fine-pitch
-neighbours leave no room for two.  The LMR51635's hot loop (CIN – VIN – GND) and
+the DRC minimum); most vias are 0.6/0.3 mm.  **Thermal reliefs against tombstoning, never as a
+current bottleneck** (since 2026-10-20, `power_pads()` in `pcbgen.py`).  A board declares its power
+nets (`power_nets` in `design.py`: GND, the bus, the supplies, ≳ 0.5 A).  On them, the pins of ICs,
+connectors and inductors, and any pad of 2.5 mm² or more (bulk capacitors, TVSs, power FETs),
+connect **solid** to their pour: one 0.4 mm spoke would be the narrowest point of the current's
+path.  A small part (R, C, D, Q, LED) gets the same connection on every end: solid where every end
+sits on a pour (a decoupling capacitor between a power island and the GND pour), reliefs where one
+end is a track, the pours' reliefs (0.3 mm gap, 0.4 mm spokes) otherwise; so it heats evenly in
+reflow and doesn't tombstone.  Through-hole pins keep their reliefs, so they take solder (0.8 mm
+spokes on a hand-soldered power pin).  `<board>.kicad_dru` says it twice: a rule connects the
+power nets' IC, connector and inductor pins solid, and another asks each power net's relieved pads
+for its minimum spokes (2 on the bus and the supplies); a single spoke stays allowed elsewhere, where
+fine-pitch neighbours leave no room for two.  The LMR51635's hot loop (CIN – VIN – GND) and
 its output capacitors sit on small solid top-side islands, with hand-placed
 vias to In1, as TI's layout guide asks; the AMS1117's tab gets a solid +3V3
 island with vias to In2.  Hand-soldered through-hole pads always get thermal
@@ -253,8 +261,10 @@ node went to lead-free HASL on 2026-10-19).
 * The console's USB pair runs hand-drawn on F.Cu, over In1, from the module to U5: 0.25 mm tracks
   0.2 mm apart, straight down the free column at x ≈ 45 (it crossed In2's split on B.Cu before).
   EN's 1 µF sits at the module's pin 45, beside the antenna keep-out.
-* Small parts with one pad on a solid pour (C2, C10, R3, C11–C14) get thermal reliefs on both pads
-  (`relief` in their placement), so they don't tombstone.
+* Power pads connect solid (`power_nets`): J1's GND and VBUS pins, the row connectors' GND pins,
+  the eFuses' IN and GND pins and exposed pads, the buck, the LDO's GND, C8 and D1.  Decoupling
+  capacitors between a VRACK island and the GND pour (C1, C2, C11–C14) are solid on both ends; R3
+  (VBUS sense, one end a track) is relieved on both.
 * Each eFuse has a top VRACK island on its IN pins and input capacitor, with three vias to In2.
   Each row's output runs in a hand-drawn 0.8 mm track to its connector, its output capacitor and
   its ON LED's resistor.  The SHDN pull-down and series resistor sit just below the eFuse.

@@ -11,8 +11,10 @@ a reviewable starting point, not a signed-off layout (see docs/electronics.md).
 
 from __future__ import annotations
 
+import fnmatch
 import math
 import os
+import re
 import subprocess
 from pathlib import Path
 
@@ -36,12 +38,31 @@ SMALL_VIA = (0.5, 0.3)
 
 
 DRU = """(version 1)
-# Thermal reliefs on every pour (pcbgen.py).  On fine-pitch pads (ESP32 module, MSOP/SOT pins)
-# the neighbours leave room for one spoke only: one spoke is still a relief, and enough current
-# for a GND pin.
+# Thermal reliefs on the pours (pcbgen.py), against tombstoning: small parts with one end on a pour.
+# On fine-pitch pads (ESP32 module, MSOP/SOT pins) the neighbours leave room for one spoke only: one
+# spoke is still a relief, enough for a signal or decoupling pad.  Pads that carry a board's power
+# connect solid (b.pcb["power_nets"], power_pads()), and the power nets' rules below ask for more.
 (rule "one thermal spoke is enough"
 	(constraint min_resolved_spokes 1))
 """
+
+# b.pcb["power_nets"]: the power nets' DRC rules.  Their power pins (ICs, connectors, inductors, any pad
+# of 2.5 mm² or more) connect solid, also as a rule, so a later edit in KiCad keeps them so; a pad of
+# theirs that keeps a relief (a small part's, against tombstoning) keeps at least that net's spokes.
+DRU_POWER_SOLID = """
+(rule "power pins connect solid"
+	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && ({nets}) && ({parts})")
+	(constraint zone_connection solid))
+"""
+DRU_POWER_SPOKES = """
+(rule "power nets: {n} spokes where relieved"
+	(condition "A.Type == 'Pad' && ({nets})")
+	(constraint min_resolved_spokes {n}))
+"""
+# power pins of these parts connect solid; everything else on a power net is a small part (R, C, D, Q,
+# LED...) unless one of its pads is this big
+POWER_PARTS = ("U", "J", "L")
+POWER_PAD_MM2 = 2.5
 
 # b.pcb["edge_parts"]: footprints that sit on the outline on purpose (side-entry connector mouths,
 # USB-C receptacles, the ESP32 antenna edge).  Their own silkscreen outline crosses the board edge;
@@ -247,9 +268,10 @@ class PcbBuilder:
             for pad in fp.Pads():
                 num = pad.GetNumber()
                 if hand or hint.get("relief"):
-                    # soldered by hand, or a small part with one pad on a solid power pour (`relief` in its
-                    # placement): thermal reliefs on every pad, so both ends heat alike and it doesn't tombstone
+                    # soldered by hand, or forced (`relief` in its placement): thermal reliefs on every pad;
+                    # power_pads() leaves these alone
                     pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_THERMAL)
+                    self.__dict__.setdefault("relief_refs", set()).add(p.ref)
                 if num in nets:
                     pad.SetNet(self.net(self.b.pcb_net_name(nets[num])))
                 elif num in pins:
@@ -373,6 +395,93 @@ class PcbBuilder:
             z.SetIslandRemovalMode(pcbnew.ISLAND_REMOVAL_MODE_ALWAYS)
         self.board.Add(z)
         return z
+
+    # -------------------------------------------------------------- power pads
+    def power_net_names(self) -> dict[str, int]:
+        """b.pcb["power_nets"] {net pattern: minimum spokes} → {board net name: minimum spokes}."""
+        out = {}
+        for name in (str(n) for n in self.board.GetNetsByName().keys()):
+            for pat, n in self.b.pcb["power_nets"].items():
+                if fnmatch.fnmatchcase(name.split("/")[-1], pat):
+                    out[name] = n
+                    break
+        return out
+
+    def power_rules(self) -> str:
+        """The power nets' DRC rules (DRU_POWER_*) with the board's own net names: power pins solid, and
+        each net's minimum spokes on a pad that keeps a relief."""
+        power = self.power_net_names()
+        cond = lambda names: " || ".join(f"A.NetName == '{x}'" for x in sorted(names))
+        out = DRU_POWER_SOLID.format(nets=cond(power),
+                                     parts=" || ".join(f"A.memberOfFootprint('{p}*')" for p in POWER_PARTS))
+        for n in sorted({n for n in power.values() if n > 1}):
+            out += DRU_POWER_SPOKES.format(n=n, nets=cond(x for x, m in power.items() if m == n))
+        return out
+
+    def power_pads(self) -> list[str]:
+        """Pads that carry a board's power (b.pcb["power_nets"]: GND, the bus, the supplies, ≳ 0.5 A) must
+        not hang on a thermal relief: one 0.4 mm spoke is a bottleneck (resistance, heat, voltage drop).
+          * power pins of ICs, connectors and inductors (POWER_PARTS), and any pad of POWER_PAD_MM2 or more
+            (bulk capacitors, TVSs, power FETs), connect solid;
+          * a small part (R, C, D, Q, LED) gets the same connection on all its ends, against tombstoning:
+            where one end sits on a solid pour, solid if every end sits on a pour (a decoupling capacitor
+            between a power island and the GND pour: the lowest inductance too), reliefs if an end is a
+            track; otherwise the pours' reliefs (`relief` in a placement forces reliefs);
+          * through-hole pins keep their reliefs, so they can be soldered; a hand-soldered one gets 0.8 mm
+            spokes.
+        Run once the zones exist (it looks up the pour each pad sits in).  Returns a summary per net."""
+        power = self.power_net_names()
+        zones = [z for z in self.board.Zones() if not z.GetIsRuleArea()]
+
+        def pour_mode(pad):
+            hit = None
+            for z in zones:
+                if z.GetNetCode() != pad.GetNetCode():
+                    continue
+                for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+                    if pad.IsOnLayer(layer) and z.IsOnLayer(layer) and z.Outline().Contains(pad.GetPosition()):
+                        if hit is None or z.GetAssignedPriority() > hit.GetAssignedPriority():
+                            hit = z
+            return None if hit is None else hit.GetPadConnection()
+
+        def mm2(pad):
+            s = pad.GetSize(pcbnew.F_Cu)
+            return pcbnew.ToMM(s.x) * pcbnew.ToMM(s.y)
+
+        done = {}
+        for fp in self.board.GetFootprints():
+            ref = fp.GetReference()
+            pads = [p for p in fp.Pads() if p.GetNetname() in power]
+            if not pads:
+                continue
+            hand = _field(fp, "LCSC") in HAND_SOLDER_LCSC
+            big = re.match(r"[A-Z]*", ref).group(0) in POWER_PARTS or any(mm2(p) >= POWER_PAD_MM2 for p in fp.Pads())
+            for pad in pads:
+                if pad.GetAttribute() == pcbnew.PAD_ATTRIB_PTH:
+                    if hand and hasattr(pad, "SetLocalThermalSpokeWidthOverride"):
+                        pad.SetLocalThermalSpokeWidthOverride(MM(0.8))
+                elif big and pour_mode(pad) is not None and \
+                        pad.GetLocalZoneConnection() != pcbnew.ZONE_CONNECTION_FULL:
+                    pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_FULL)
+                    done.setdefault(pad.GetNetname().split("/")[-1], []).append(f"{ref}.{pad.GetNumber()}")
+            if big or ref in getattr(self, "relief_refs", ()):
+                continue
+            # a small part: the same connection on every end
+            modes = []                      # (pad, its connection: local, else its pour's; None off a pour)
+            for pad in fp.Pads():
+                if pad.GetAttribute() not in (pcbnew.PAD_ATTRIB_SMD, pcbnew.PAD_ATTRIB_PTH):
+                    continue
+                local = pad.GetLocalZoneConnection()
+                modes.append((pad, pour_mode(pad) if local == pcbnew.ZONE_CONNECTION_INHERITED else local))
+            kinds = {m for _, m in modes}
+            if pcbnew.ZONE_CONNECTION_FULL in kinds and len(kinds) > 1:
+                both = None not in kinds
+                to = pcbnew.ZONE_CONNECTION_FULL if both else pcbnew.ZONE_CONNECTION_THERMAL
+                for pad, mode in modes:
+                    if mode is not None:
+                        pad.SetLocalZoneConnection(to)
+                done.setdefault("(both ends solid)" if both else "(both ends relieved)", []).append(ref)
+        return [f"power pads: {n} {' '.join(sorted(set(v)))}" for n, v in sorted(done.items())]
 
     def deferred_layers(self) -> set[str]:
         d = self.b.pcb.get("defer_pours", True)
@@ -500,6 +609,12 @@ class PcbBuilder:
         self.vias()
         self.tracks()
         self.zones("routing" if defer_pours else "all")
+        if self.b.pcb.get("power_nets"):
+            for line in self.power_pads():
+                print(line)
+            # the power nets' DRC rules need the board's net names: added once the parts are placed
+            dru = self.outdir / f"{self.b.name}.kicad_dru"
+            dru.write_text(dru.read_text(encoding="utf-8") + self.power_rules(), encoding="utf-8")
         if self.b.pcb.get("fanout_nets"):
             specs = {self.b.pcb_net_name(k): v for k, v in self.b.pcb["fanout_nets"].items()}
             islands = [(self.b.pcb_net_name(z["net"]), z["poly"]) for z in self.b.pcb.get("zones", [])

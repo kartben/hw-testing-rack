@@ -213,6 +213,9 @@ def board() -> Board:
                         "+5V": ("In2.Cu", 0.6, 0.3, 0.4)},
         # supply pins still left without a via to their In2 area after routing get one (pcbgen.py)
         "plane_nets": {"+5V": "In2.Cu", "+3V3": "In2.Cu"},
+        # nets carrying power (≳ 0.5 A): their IC, connector and big pads connect solid to the pours, small
+        # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
+        "power_nets": {"GND": 1, "VRACK": 2, "VIN": 2, "+5V": 2, "DUT_5V*": 2, "CAM_5V": 2},
         "stitch": 4.0,
         "zones": [
             {"layer": "In1.Cu", "net": "GND"},
@@ -261,7 +264,7 @@ def board() -> Board:
              "poly": [(8.4, 26.0), (17.2, 26.0), (17.2, 32.2), (8.4, 32.2)]},
             # the DUT switch's input (up to its ≈ 1.5 A limit): U9.IN and C20 on a top-side island, three vias
             # down to In2's +5V (one 0.3 mm via and a 0.4 mm track before: pcba-review N4)
-            {"layer": "F.Cu", "net": "+5V", "name": "dutsw-in", "priority": 3,
+            {"layer": "F.Cu", "net": "+5V", "name": "dutsw-in", "priority": 3, "connection": "solid",
              "poly": [(51.9, 37.75), (53.4, 37.75), (53.4, 39.3), (54.9, 39.3), (54.9, 40.6), (53.55, 40.6),
                       (53.55, 41.45), (52.55, 41.45), (52.55, 39.6), (51.9, 39.6)]},
         ],
@@ -380,7 +383,7 @@ def board() -> Board:
     part(s, "U2", "ldo", {"VI": "+5V", "VO": "+3V3", "GND": "GND"}, pcb=P(12, 33, 90), sch=at(102, 42, fields=(-3, -3.5)))
     # the LDO's input; a 1206 (C2/C3's 10 µF, one part type less) overlaps U2 and its neighbours here
     C(s, "C11", "10u", "+5V", "GND", size="0805", pcb=P(17.4, 36.15, 0), sch=at(95, 43.5))
-    C(s, "C12", "22u", "+3V3", "GND", size="1206", pcb=P(18.0, 30.6, 0, relief=True), sch=at(109, 43.5))
+    C(s, "C12", "22u", "+3V3", "GND", size="1206", pcb=P(18.0, 30.6, 0), sch=at(109, 43.5))
     s.tag("+5V", (92, 42), "up")
     s.wire((92, 42), "U2.VI")
     s.wire("U2.VO", (112, 42))

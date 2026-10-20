@@ -224,7 +224,7 @@ audit re-run on both boards (below).  The data port and the camera pod went to t
 | H11 | bring-up measurement (docs/assembly.md) | the module's pins already have their own vias to In1/In2 |
 | H12 | In2 VRACK band 8 mm wide (was 5 mm) | room above it, nothing else needed In2 there |
 | H13 | USB pair hand-routed on F.Cu over In1, 0.25 / 0.2 mm, U5's channels swapped to its order; C115 at EN (pin 45) | CC1/CC2: left as routed: BMC at 300 kbit/s, a cable's CC runs metres |
-| H14 | C2, C10, R3, C11–C14: thermal reliefs on both pads (`relief`) | |
+| H14 | C2, C10, R3, C11–C14: the same connection on both pads.  Since 2026-10-20 the generator decides it (`power_pads()`): solid on both where both ends sit on pours (C1, C2, C11–C14), reliefs where one is a track (R3) | |
 | H15 | notes corrected (22 nF, 1k, 22 nF), the outputs sheet on A2 | |
 
 Main's hub has had the CH224A instead of the AP33772S since these fixes were drawn (no input
@@ -245,7 +245,7 @@ H6 grows to ≈ 150 µF at plug-in: kept on purpose, and no clamp added on the C
 | N6 | review-konnect.md corrected: U12/U13 are a clamp beside the line, not flow-through | fine at 4 MHz |
 | N7 | R23 1k | a reference, not a supply |
 | N8 | R39 100k SVC → GND | |
-| N10 | C12: reliefs on both pads | |
+| N10 | C12: the same connection on both pads (solid on both since 2026-10-20) | |
 | N11 | catalog: SUD50P06-15(UMW) by UMW, HoLR1206-1W-50mR-1%-75ppm | |
 | N12 | the camera note: IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS, IO7 light | |
 

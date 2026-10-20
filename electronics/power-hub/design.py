@@ -169,6 +169,9 @@ def board() -> Board:
         "fanout_nets": {"GND": ("In1.Cu", 0.5, 0.3, 0.25), "VRACK": ("In2.Cu", 0.6, 0.3, 0.4),
                         "+3V3": ("In2.Cu", 0.6, 0.3, 0.3)},
         "plane_nets": {"VRACK": "In2.Cu", "+3V3": "In2.Cu"},
+        # nets carrying power (≳ 0.5 A): their IC, connector and big pads connect solid to the pours, small
+        # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
+        "power_nets": {"GND": 1, "VRACK": 2, "ROW_?": 2, "+5V_BUCK": 2, "+5V": 2, "USB_VBUS": 2},
         "stitch": 4.0,
         # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
         "dru": "".join(f"""
@@ -231,7 +234,7 @@ def board() -> Board:
         s.part(f"#FLG0{i}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": net}, in_bom=False, on_board=False)
     part(s, "D1", "tvs30", {"K": "VRACK", "A": "GND"}, pcb=P(67.4, 12.6, 270))
     C(s, "C1", "10u", "VRACK", "GND", size="1206", pcb=P(61.0, 11.4, 270))
-    C(s, "C2", "100n", "VRACK", "GND", pcb=P(63.0, 11.2, 270, relief=True))
+    C(s, "C2", "100n", "VRACK", "GND", pcb=P(63.0, 11.2, 270))
 
     s.block("CH224A USB PD 3.2 sink: 9 V at plug-in (CFG1 6.8k), then 20 V / 28 V EPR as the controller asks over I2C")
     # KiCad's CH224K symbol: the CH224A has its pinout (WCH), pin 1 (VDD there) is VHV, rated 32 V.  CC1/CC2 carry
@@ -248,7 +251,7 @@ def board() -> Board:
     R(s, "R6", "6.8k", "PD_CFG1", "GND", pcb=P(54.6, 13.8, 270))
     part(s, "C8", "cap100u50", {"1": "VRACK", "2": "GND"}, "100u/50V", pcb=P(70.0, 28.0, 270))
     C(s, "C9", "10u", "VRACK", "GND", size="1206", pcb=P(73.3, 19.6, 0))
-    C(s, "C10", "100n", "VRACK", "GND", pcb=P(73.0, 22.2, 0, relief=True))
+    C(s, "C10", "100n", "VRACK", "GND", pcb=P(73.0, 22.2, 0))
     s.block("I2C to the controller, VBUS sense")
     # PG: open drain, low once the contract is in place; IO39 (the net keeps its name PD_INT for the
     # firmware's pin map) and the front LED both hang on it
@@ -257,7 +260,7 @@ def board() -> Board:
     # unpowered CH224A through SDA/SCL (they also have the chip's own 10k pull-ups)
     R(s, "R13", "5.1k", "I2C_PU", "PD_SDA", pcb=P(41.0, 8.0, 0))
     R(s, "R14", "5.1k", "I2C_PU", "PD_SCL", pcb=P(41.0, 9.6, 0))
-    R(s, "R3", "100k", "VRACK", "VBUS_SENSE", pcb=P(64.6, 11.4, 270, relief=True))
+    R(s, "R3", "100k", "VRACK", "VBUS_SENSE", pcb=P(64.6, 11.4, 270))
     R(s, "R4", "10k", "VBUS_SENSE", "GND", pcb=P(19.0, 20.4, 0))
     C(s, "C3", "100n", "VBUS_SENSE", "GND", pcb=P(19.0, 22.0, 0))
     s.block("PD status (front LED): on while the CH224A reports power good (PG low)")
@@ -281,7 +284,7 @@ def board() -> Board:
                                         "MODE": "GND", "~{SHDN}": f"SHDN_{ch}", "ILIM": f"ILIM_{ch}",
                                         "dVdT": f"DVDT_{ch}", "IMON": f"IMON_{ch}", "~{FLT}": f"FLT_{ch}",
                                         "OUT": f"ROW_{ch}"}, pcb=P(EF_X, yc, 0))
-        C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(16.9, yc - 2.0, 180, relief=True))
+        C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(16.9, yc - 2.0, 180))
         C(o, f"C{30 + n}", "1u", f"ROW_{ch}", "GND", size="0805", pcb=P(34.0, yc - 2.6, 0))
         R(o, f"R{20 + n}", "7.5k", f"ILIM_{ch}", "GND", pcb=P(34.0, yc + 1.0, 0))
         C(o, f"C{20 + n}", "22n", f"DVDT_{ch}", "GND", pcb=P(34.0, yc + 2.6, 0))

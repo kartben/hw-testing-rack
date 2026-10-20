@@ -250,7 +250,7 @@ with 0.3–0.45 mm necks only at SOT-23 pins (1.5 A), `24V_BUS` daisy chain in a
 |---|---|
 | Unreadable schematic | drawn sheets, checked readable |
 | Asymmetric 4-layer stackup | S+GND / GND / PWR / S+GND, now declared as JLC04161H-7628 |
-| No thermal reliefs (tombstoning) | reliefs on every pour; solid only on the buck islands, the LDO tab and the hub's power pours; hand-soldered pads always relieved |
+| No thermal reliefs (tombstoning) | reliefs against tombstoning, never as a current bottleneck: power pads (ICs', connectors', inductors' and big pads on the declared power nets) connect solid, a small part gets the same connection on both ends, through-hole pins keep reliefs (pcbgen `power_pads()`, since 2026-10-20) |
 | Power-monitor net names | 24V_BUS → +24V → +5V → DUT_5V_SW → DUT_5V |
 | TPS54360B overkill / hot loop | LMR51635, hot loop checked (B7) |
 | JST PH everywhere, no screw terminals | done (hub input JST VH for 10 A) |
@@ -602,7 +602,7 @@ Fabio's rules, checked again on the saved files:
 | Rule | 74 × 90 |
 |---|---|
 | In1 GND only, In2 power only, no track on either | In1: one GND plane.  In2: +3V3, +5V and VRACK planes.  Tracks only on F.Cu (851) and B.Cu (179) |
-| Thermal reliefs | Every plane and pour, except the buck's hot-loop islands on F.Cu.  Those are solid by design, both ends of each part on copper, as in v0.5 |
+| Thermal reliefs | Against tombstoning, never as a current bottleneck (2026-10-20): the power nets' IC, connector and inductor pins and big pads solid (VRACK at J1/J2, the buck, U9's input, J7's and the camera's GND); small parts the same connection on both ends; through-hole pins relieved.  The buck's hot-loop islands stay solid, both ends of each part on copper |
 | Clear power net names | +5V, +3V3, VIN, VRACK, DUT_5V_SW → DUT_5V, CAM_5V |
 | USBLC6 in flow-through | U4, U8: connector side and protected side are separate nets (`*_CONN_*`).  U12, U13 (the camera's SPI) are not: each line's two pins (1/6, 3/4) are one net on the lead side, bridged under the body, a clamp beside the line; fine at 4 MHz (PCBA review N6) |
 | HS pairs hand-drawn, length-matched | J3 → J7 drawn in `usb_hs_routes()` and matched to ≈ 0.3 mm (≈ 2 ps, vias as 1.6 mm).  The DUT end is straight: DUT_CONN_DP 14.6 mm, DUT_CONN_DN 14.7 mm, no via.  The PC side is unchanged (PC_DP's bumps make up PCPATH_DN's two vias) |
