@@ -40,7 +40,7 @@ bay:
                                 # below (rows are staggered by height·sin(tilt) = 56.4 mm)
 
 drawer:
-  depth: 196             # outer, front panel included
+  depth: 208             # outer, front panel included (196 until 2026-10-20: 12 mm more at the back, for a deeper DATA ×4 v2; 208 is the most without touching the tray)
   travel: 140            # pull-out stroke (the drag chain keeps the DUT connected)
   guide_width: 7.5       # each side rail on the deck (C-channel capturing the drawer flange)
   clearance: 0.5         # per side, drawer ↔ guide
@@ -49,7 +49,7 @@ drawer:
   wall_height: 16        # side/rear walls above the drawer bottom
   front_height: 30       # front panel height above the deck
   front_thickness: 4
-  rear_bay: 30           # enclosed strip at the back: the DATA port board + cable entry
+  rear_bay: 42           # enclosed strip at the back: the DATA board(s) + cable entry; 40 mm inside, y 166–206
                          # one drawer for both DATA boards (2026-10-19): the port wall has the DATA ×4's four U's
                          # (pcb.data_port_x4.usb); a single DATA board's USB-C sits on the fourth, and the
                          # optional AUX pigtail goes through a free one
@@ -214,7 +214,7 @@ pcb:
     buttons: [[11.5, 10.0], [11.5, 16.5]]   # KiCad: SW1 RESET, SW2 BOOT (design.py), top-actuated, 1.5 mm tall: pin holes in the lid
   data_port:                # the drawer's DATA port: a USB-C source on a small board on the drawer's rear-bay floor
     size: [40, 17]          # X × Y; KiCad y=0 is the REAR edge (the 8-pin PH lead to the node), y=17 the FRONT edge (USB-C mouth)
-                            # ≤ 17 deep: the PH plug and the wires' turn down fit in the drawer's 30 mm rear bay
+                            # ≤ 17 deep: the PH plug and the wires' turn down fit in the drawer's rear bay
     thickness: 1.6
     layers: 2
     holes: [[2.6, 13.5], [37.5, 4.0]]    # Ø2.7, PT 2.6 × 8 from above into the drawer's floor bosses (the left one clear of the PH 8)

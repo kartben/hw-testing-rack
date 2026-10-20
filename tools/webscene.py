@@ -597,12 +597,13 @@ def rounded_path(pts, r, step=2.0):
     return [[round(float(v), 2) for v in p] for p in dense]
 
 
-def lead_to_board(e, mouth, z_low, x_run, depth=7.0):
+def lead_to_board(e, mouth, z_low, x_run, depth=7.0, lift=4.0):
     """The DATA lead from the drag chain's moving mouth (facing forwards) to the PH plug at the DATA
     board's rear edge, drawn from the plug: back out of it, down through the drawer's cable window,
     forwards under the drawer at z_low (over the camera-pod bosses) along x_run (clear of the chain's
     fixed run, which the drawer slides past), a flattened U-turn in front of the mouth (only `depth`
-    deep: the tray's fascia is 17 mm ahead of it with the drawer out), in."""
+    deep: the tray's fascia is 17 mm ahead of it with the drawer out), raised `lift` at its front so that,
+    the drawer out, it passes over the row cable lying on its tie anchors (y ≤ 9.4, z ≤ 10.8), in."""
     p0, d = plug_exit(e)
     p1 = p0 + d * 2.0
     p1b = np.array([x_run, p1[1], p1[2]])            # over to x_run still in the rear bay, then down
@@ -611,7 +612,7 @@ def lead_to_board(e, mouth, z_low, x_run, depth=7.0):
     pts = rounded_path([p0, p1, p1b, p2, p3], 2.5)
     a, c = (mouth[0] - p3[0]) / 2, np.array([(mouth[0] + p3[0]) / 2, p3[1], 0.0])
     for t in np.linspace(0, math.pi, 16)[1:]:
-        z = z_low + (mouth[2] - z_low) * t / math.pi
+        z = z_low + (mouth[2] - z_low) * t / math.pi + lift * math.sin(t)
         pts.append([round(float(c[0] - a * math.cos(t)), 2), round(float(c[1] - depth * math.sin(t)), 2), round(z, 2)])
     pts.append([round(float(v), 2) for v in mouth])
     return pts
@@ -1001,7 +1002,9 @@ def build(rack) -> Path:
         # board's PH from the rear: the single board's along the rear wall
         dxw_ = x0 + rack.drawer_x0
         q4 = raw["pcb"]["data_port_x4"]
-        x_win = dxw_ + q4["x0"] + q4["holes"][2][0] + 4.5 + 4.0      # 4 mm inside the window (drawer.scad › wx)
+        # every lead comes up the window where the DATA ×4's does, under its PH: further left, a single board's
+        # U-turn in front of the open drawer's chain mouth would pass over the row cable on its tie anchor
+        x_win = dxw_ + q4["x0"] + q4["ph"]
         if x4:                       # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
             q = raw["pcb"]["data_port_x4"]
             bx4 = dxw_ + q["x0"]

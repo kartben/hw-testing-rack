@@ -25,8 +25,10 @@ bay node (plenum)                                 drawer
    into the node's **DATA** header (J7, side entry on the node's right edge,
    facing the chain; the node's only DUT port), runs ~3 cm in the plenum to the
    chain's fixed end, through the drag chain, out of its moving end
-   (forwards, then a U-turn in front of it, between the chain's runs, low
-   over the tray floor) and up through the cable window at the rear right
+   (forwards, then a U-turn in front of it, between the chain's runs, its
+   front lifted ~4 mm so that, the drawer out, it rides over the row cable on
+   its tie anchors; low over the tray floor behind) and up through the cable
+   window at the rear right
    of the drawer, then along its rear wall into the port board's rear edge
    (a DATA ×4's PH is right over the window).  It never needs to be touched again.  (A sled or fixed
    bay has no chain: the lead runs from J7 back along the plenum, right of
