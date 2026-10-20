@@ -92,21 +92,22 @@ def drc_readonly(outdir: Path, name: str) -> dict:
     return out
 
 
-def bom_rows(b):
-    """Group parts for JLCPCB (Comment, Designator, Footprint, LCSC) and a detailed BOM."""
+def bom_rows(b, dnp=frozenset()):
+    """Group parts for JLCPCB (Comment, Designator, Footprint, LCSC) and a detailed BOM.  `dnp`: a variant's
+    references left unfitted on top of the parts' own DNP; fitted and unfitted parts never share a line."""
     groups: dict[tuple, list] = {}
     for p in sorted(b.parts.values(), key=lambda p: (p.ref.rstrip("0123456789"), int("".join(c for c in p.ref if c.isdigit()) or 0))):
         if not p.in_bom or not p.on_board or p.ref.startswith("#"):
             continue
-        k = (p.value, p.footprint, p.fields.get("LCSC", ""), p.fields.get("MPN", ""))
+        k = (p.value, p.footprint, p.fields.get("LCSC", ""), p.fields.get("MPN", ""), p.dnp or p.ref in dnp)
         groups.setdefault(k, []).append(p)
     rows = []
-    for (value, fp, lcsc, mpn), parts in groups.items():
+    for (value, fp, lcsc, mpn, unfitted), parts in groups.items():
         p0 = parts[0]
         rows.append({
             "Designator": ",".join(p.ref for p in parts), "Qty": len(parts), "Value": value,
             "Footprint": fp.split(":")[1], "MPN": mpn, "Manufacturer": p0.fields.get("Manufacturer", ""),
-            "LCSC": lcsc, "Description": p0.description, "DNP": "yes" if p0.dnp else "",
+            "LCSC": lcsc, "Description": p0.description, "DNP": "yes" if unfitted else "",
             "Alternative": p0.fields.get("Alternative", ""),
             "Assembly": "hand-solder, buy loose (LCSC)" if lcsc in HAND_SOLDER_LCSC else "",
         })
@@ -203,6 +204,7 @@ JLC_CPL_FIX = {
     "C138714": ("USON-10_2.5x1.0mm_P0.5mm", 270, 0.0, 0.0),                  # x4 v2 U4, U105… (TPD4E05U06)
     "C206010": ("TSSOP-16_4.4x5mm_P0.65mm", 270, 0.0, 0.0),                  # x4 v2 U10 (TCA9534A)
     "C9839": ("SOT-23-5", 180, 0.0, 0.0),                                    # x4 v2 U9 (TPS60400)
+    "C150716": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                         # x4 v2 U3 (AP2114H-3.3, drawn as C6186)
     # 4 × 0402 arrays: JLC's are drawn across (any of 90° / 270°: four equal resistors)
     "C25725": ("R_Array_Convex_4x0402", 90, 0.0, 0.0),                       # x4 v2 RN1–RN3, RN8 RN9 (10k)
     "C48442": ("R_Array_Convex_4x0402", 90, 0.0, 0.0),                       # x4 v2 RN101… (100)
@@ -256,28 +258,35 @@ def export_fab(outdir: Path, name: str, b):
     run(["kicad-cli", "pcb", "export", "pos", "--format", "csv", "--units", "mm", "--side", "both",
          "--exclude-dnp", "-o", raw, pcb], check=True, capture_output=True)
     lcsc = {p.ref: p.fields.get("LCSC", "") for p in b.parts.values()}
-    fixed = []
-    with raw.open() as fi, (fab / f"{name}-cpl-jlcpcb.csv").open("w", newline="") as fo:
-        r = csv.DictReader(fi)
-        w = csv.writer(fo)
-        w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
-        for row in r:
+    fixed, cpl = [], []
+    with raw.open() as fi:
+        for row in csv.DictReader(fi):
             if row["Ref"].startswith(("H", "TP")) or lcsc.get(row["Ref"]) in HAND_SOLDER_LCSC:
                 continue
-            w.writerow(jlc_cpl_row(row, lcsc.get(row["Ref"], "")))
+            cpl.append(jlc_cpl_row(row, lcsc.get(row["Ref"], "")))
             if lcsc.get(row["Ref"]) in JLC_CPL_FIX:
                 fixed.append(row["Ref"])
     raw.unlink()
     print("CPL: JLC footprint corrections on", " ".join(fixed))
-    rows = bom_rows(b)
-    with (fab / f"{name}-bom-jlcpcb.csv").open("w", newline="") as fo:
-        w = csv.writer(fo)
-        w.writerow(["Comment", "Designator", "Footprint", "LCSC Part #"])
-        w.writerows(jlc_bom_rows(rows))
-    with (outdir / f"{name}-bom.csv").open("w", newline="", encoding="utf-8") as fo:
-        w = csv.DictWriter(fo, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        w.writerows(rows)
+    # the board as drawn, then each assembly variant of the same PCB (b.pcb["variants"]: name → {"dnp":
+    # [references left unfitted]}), as <board>-<variant>-…: its own BOM and CPL, the same Gerbers
+    for tag, dnp in [("", frozenset())] + [(f"-{v}", frozenset(spec["dnp"]))
+                                           for v, spec in b.pcb.get("variants", {}).items()]:
+        with (fab / f"{name}{tag}-cpl-jlcpcb.csv").open("w", newline="") as fo:
+            w = csv.writer(fo)
+            w.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
+            w.writerows(r for r in cpl if r[0] not in dnp)
+        rows = bom_rows(b, dnp)
+        with (fab / f"{name}{tag}-bom-jlcpcb.csv").open("w", newline="") as fo:
+            w = csv.writer(fo)
+            w.writerow(["Comment", "Designator", "Footprint", "LCSC Part #"])
+            w.writerows(jlc_bom_rows(rows))
+        with (outdir / f"{name}{tag}-bom.csv").open("w", newline="", encoding="utf-8") as fo:
+            w = csv.DictWriter(fo, fieldnames=list(rows[0].keys()))
+            w.writeheader()
+            w.writerows(rows)
+        if tag:
+            print(f"variant {tag[1:]}: {len(dnp)} parts not fitted, {sum(1 for r in cpl if r[0] not in dnp)} placed")
     # the project's own 3D models first: the renders below, the STEP and the GLB all need them
     import pcbgen
     print("3D: project models on", pcbgen.apply_models(pcb), "footprints")

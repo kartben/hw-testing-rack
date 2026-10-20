@@ -529,7 +529,11 @@ The bay node has no through-hole part since v0.4, and the hub none since v0.5: t
 connectors are the SMD S*B-PH-SM4-TB, and the USB-C receptacles' shield tabs go through
 pin-in-paste, all placed by JLC in the same reflow pass.  A part marked `hand_solder=True` in
 `electronics/tools/catalog.py` would be kept out of the JLC BOM and CPL, and flagged
-"hand-solder, buy loose (LCSC)" in the detailed BOM's `Assembly` column.
+"hand-solder, buy loose (LCSC)" in the detailed BOM's `Assembly` column.  A board assembled two ways
+on the same PCB declares its variants in `b.pcb["variants"]` (name → the references it leaves off):
+`build_board.py` writes `<board>-<variant>-bom-jlcpcb.csv`, `…-cpl-jlcpcb.csv` and the detailed
+`<board>-<variant>-bom.csv` beside the board's own, and a part left off never shares a BOM line with
+its fitted twins (the DATA ×4 v2's base DATA-4x).
 
 ## Assembly at JLCPCB
 
@@ -753,11 +757,12 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C181499 TCA6408ARGTR QFN-16 | DATA ×4 U2 U6 | 270° | to confirm |
 | C2843876 XL-2835UWC-02 | camera pod D1–D4 | +0.24 mm x | to confirm |
 | C41417363 HX PZ2.54-1x6P TP-YQ | camera pod J2 | 270° | to confirm |
-| C109471 CH446Q LQFP-44 | DATA ×4 v2 U7 U8 (bottom) | 270° | to confirm |
-| C130008 LSF0108 DHVQFN-20 | DATA ×4 v2 U107–U407 (bottom) | 270° | to confirm |
-| C138714 TPD4E05U06 USON-10 | DATA ×4 v2 U4 (top), U105… (bottom) | 270° | to confirm |
-| C206010 TCA9534A TSSOP-16 | DATA ×4 v2 U10 (bottom) | 270° | to confirm |
-| C9839 TPS60400 SOT-23-5 | DATA ×4 v2 U9 (bottom) | 180° (not C51118's 270°: another EasyEDA drawing) | to confirm |
+| C109471 CH446Q LQFP-44 | DATA ×4 v2 U7 U8 | 270° | to confirm |
+| C130008 LSF0108 DHVQFN-20 | DATA ×4 v2 U107–U407 | 270° | to confirm |
+| C138714 TPD4E05U06 USON-10 | DATA ×4 v2 U4, U105… | 270° | to confirm |
+| C206010 TCA9534A TSSOP-16 | DATA ×4 v2 U10 | 270° | to confirm |
+| C9839 TPS60400 SOT-23-5 | DATA ×4 v2 U9 | 180° (not C51118's 270°: another EasyEDA drawing) | to confirm |
+| C150716 AP2114H-3.3 SOT-223 | DATA ×4 v2 U3 | 180°, as C6186 (fit: −0.03 mm x) | to confirm |
 | C25725, C48442, C26075 4 × 0402 arrays | DATA ×4 v2 RN… | 90° (four equal resistors: 90° or 270°) | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,

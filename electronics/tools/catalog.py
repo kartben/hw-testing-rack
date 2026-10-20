@@ -247,6 +247,13 @@ CAT = {
                      "C25334", 0.0096, basic=True, description="100 mΩ 1 % 0.25 W, as a current shunt"),
     "ldo_lp": Cat("Regulator_Linear:AP2112K-3.3", "Package_TO_SOT_SMD:SOT-23-5", "AP2112K-3.3TRG1",
                   "Diodes Incorporated", "C51118", 0.17, description="3.3 V 600 mA LDO, 250 mV dropout"),
+    # the same low dropout for a bigger load, in SOT-223 with its tab on copper: 128 °C/W bare (Diodes), thermal
+    # shutdown at 160 °C, stable on 4.7 µF ceramic.  The AMS1117 symbol: the same pins (1 GND, 2 and the tab
+    # VOUT, 3 VIN)
+    "ldo_1a": Cat("Regulator_Linear:AMS1117-3.3", "Package_TO_SOT_SMD:SOT-223-3_TabPin2", "AP2114H-3.3TRG1",
+                  "Diodes Incorporated", "C150716", 0.23,
+                  datasheet="https://www.diodes.com/assets/Datasheets/AP2114.pdf",
+                  description="3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223"),
     # DATA ×4 v2 (electronics/data-port-x4-v2, docs/data-x4-v2-research.md), checked 2026-10-19: the 7-port hub,
     # the 2 × 6 SMD pin header per port, the matrix, its translators and ESD, the co-processor and its parts
     "usb2517": Cat("bench:USB2517I", "Package_DFN_QFN:QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm", "USB2517I-JZX",
