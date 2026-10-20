@@ -98,7 +98,7 @@ A PH 6 side-entry header takes 17.2 mm along the edge, an eFuse row's parts ≈ 
 | Option | Rows | Layout | Risk | The power box |
 |---|---|---|---|---|
 | **B1** | 4, side entry at 17.5 mm | the rows packed down the left edge from y ≈ 22 to 91 | no room between the eFuse clusters for the rows' 0.8 mm outputs and their signals; re-route is hard | 40 mm shorter; 4 windows at new heights |
-| **B2** | **3, side entry at 23 mm, as today**: the 3 × 4 frame has 3 rows, the 4th output was a spare | the rows at y ≈ 33 / 56 / 79, the rest as today, moved up | the least: today's row geometry; one eFuse row fewer (≈ $2 a board) | 40 mm shorter; 3 windows |
+| **B2** | **3, side entry at 23 mm, as today**: rows A–C, the plan since 2026-10-17 (row D dropped "for now"); the frame itself can grow, a 4th row then needs another hub output | the rows at y ≈ 33 / 56 / 79, the rest as today, moved up | the least: today's row geometry; one eFuse row fewer (≈ $2 a board) | 40 mm shorter; 3 windows |
 | **B3** | 4, on vertical PH 6 (B6B-PH-SM4-TB, the node's vertical type) stacked 9.5 mm apart at the left | the leads go up and out through a slot in the box's left wall, under the lid | the leads bend inside the box (≈ 14 mm above the board) | 40 mm shorter; a slot under the lid instead of the windows |
 
 In every option:
@@ -110,6 +110,8 @@ In every option:
 
 With the PH 8 rows of fix 2, B1 no longer fits (4 × 21 mm); B2 and B3 (B8B vertical) do.
 
-**Recommended: B2.**  Three rows is what the frame takes, and it keeps today's row layout.  Then
+**Recommended: B2**, if three rows stay the plan.  The frame grows in both directions, so it doesn't stop a
+4th row; but three rows is what was planned, and the 140 W charger covers 12 bays' worst case (≈ 130 W),
+not 16 (≈ 175 W).  B2 keeps today's row layout.  Keeping a 4th output means B1 or B3.  Then
 re-place, re-route and re-check the hub (ERC/DRC, the CPL audit, Fabio's rules, the power pads),
 and Mechanics shortens the power box.
