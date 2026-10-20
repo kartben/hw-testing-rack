@@ -84,9 +84,10 @@ module adapter_metal() {                      // the female's shell, lining its 
 // the drawer's DATA port board (electronics/data-port, a stand-in): origin at its front-left corner on
 // its bare underside, components up: x = KiCad x, y rearwards (KiCad y = BD - y), z up; the board from
 // z = 0 to BT, its parts above.  BW BD BT HOLES USBX PHX from config/rack.yaml › pcb.data_port (or
-// pcb.data_port_x4: NOTCH, its rear corner cut away, and PHY, the PH's mouth that far in from the rear)
+// pcb.data_port_x4: PHR, the PH on the right edge instead, its mouth out of it, its centre at KiCad y PHR[1];
+// the planned v2's NOTCH, its rear corner cut away, and PHY, the PH's mouth that far in from the rear)
 BW = 40; BD = 17; BT = 1.6; HOLES = [[3, 8.5], [37.5, 4]]; USBX = 30.5; PHX = 17.5; PHN = 8; PHY = 0;
-NOTCH = [0, 0, 0, 0];
+NOTCH = [0, 0, 0, 0]; PHR = [];
 module dataport_pcb() difference() {
     linear_extrude(BT) offset(r = 1.5) offset(delta = -1.5) square([BW, BD]);
     for (h = HOLES) translate([h[0], BD - h[1], -1]) cylinder(d = 2.7, h = BT + 2);
@@ -97,7 +98,10 @@ module dataport_usb() difference() {                     // GCT USB4105, its mou
     translate([USBX, -0.3, BT + 1.63]) rotate([-90, 0, 0]) linear_extrude(4)
         hull() for (dx = [-1, 1] * 2.9) translate([dx, 0]) circle(d = 2.56);
 }
-module dataport_ph() translate([0, -PHY, 0]) difference() {   // JST S<PHN>B-PH-SM4-TB, side entry, its mouth to the rear
+// on the right edge (PHR): the same header turned so that its mouth faces +x, at x = BW
+module dataport_ph() if (len(PHR) == 2) translate([BW, BD - PHR[1], 0]) rotate([0, 0, -90]) translate([-PHX, -BD, 0])
+    dataport_ph_rear(); else dataport_ph_rear();
+module dataport_ph_rear() translate([0, -PHY, 0]) difference() {   // JST S<PHN>B-PH-SM4-TB, side entry, its mouth to the rear
     w = 2 * (PHN - 1) + 6;
     union() {
         translate([PHX - w / 2, BD - 8.96, BT]) cube([w, 8.61, 5.58]);

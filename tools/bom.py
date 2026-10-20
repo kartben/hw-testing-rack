@@ -105,13 +105,14 @@ JLC_QUOTE = {
     # crystal, the TPS2553-1, the INA226, the TCA6408A, the AP2112K, the USBLC6, the USB4105, the S8B: 9; the
     # AP2112K stays: the hub burns up to ≈ 0.31 W in it at high speed, above a basic SOT-23 LDO's rating, see
     # docs/electronics.md), components at catalogue prices plus ≈ 3 % attrition, ≈ 430 joints a board, an X-ray of
-    # each assembled board (the QFN hub and expanders, $1.64 each).  The bare PCB from the jlcpcb.com
-    # calculator (2026-10-19, 5 PCBs): longer than 100 mm, so JLC's $25 engineering fee, + lead-free HASL
-    # $5.10 + board and deburring $1.80.  The RESET/BOOT headers are not fitted.
+    # each assembled board (the QFN hub and expanders, $1.64 each).  The bare PCB: 100 × 28 mm since
+    # 2026-10-20, so JLC's 4-layer offer with no engineering fee, priced as the bay node's (74 × 90 mm, the same
+    # offer: $8.00 + lead-free HASL $5.20) until the JLC-cost owner re-quotes it; 108 × 24 cost $31.90 with the
+    # $25 fee.  The RESET/BOOT headers are not fitted.
     "data-port-x4": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 104.17, "estimate": True,
-        "spec": "4-layer 108×24 mm, JLC04161H-7628, lead-free HASL",
-        "pcb": {"engineering": 25.00, "lead-free HASL": 5.10, "board": 1.80},
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 85.47, "estimate": True,
+        "spec": "4-layer 100×28 mm, JLC04161H-7628, lead-free HASL",
+        "pcb": {"board": 8.00, "lead-free HASL": 5.20},
         "pcba": {"setup": 8.18, "stencil": 1.53, "components": 30.18, "extended parts": 27.63, "SMT": 1.47,
                  "X-ray": 3.28},
     },
@@ -192,9 +193,6 @@ JLC_LEVERS = {
          "board)", 5.04, "decision"),
     ],
     "data-port-x4": [
-        ("board at most 100 mm long: no engineering fee, the 4-layer offer ($13.20 for 5 instead of $31.90); "
-         "the 4 USB-C at the drawer's 18 mm pitch and the side-entry PH 8 need 108 mm, so a vertical PH 8 or a "
-         "moved J1, a new route and the tray's bosses moved: better in the DATA ×4 v2", 18.70, "decision"),
         ("USB-C J101–J401: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new "
          "footprint, re-route, mechanical check", 5.88, "decision"),
         ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
@@ -222,7 +220,9 @@ JLC_LEVERS = {
 JLC_PCB_PRICE = {
     "bay-node": {5: 13.20, 10: 19.30, 50: 72.80, 100: 108.00},         # 4-layer 74 × 90 mm
     "power-hub": {5: 37.80, 10: 45.50, 50: 107.30, 100: 170.80},       # 4-layer 86 × 140 mm with JLC's rails
-    "data-port-x4": {5: 31.90, 10: 33.50, 50: 47.80, 100: 62.80},      # 4-layer 108 × 24 mm
+    "data-port-x4": {5: 13.20, 10: 19.30, 50: 24.60, 100: 40.80},      # 4-layer 100 × 28 mm: 5 and 10 at the
+                                                                        # bay node's offer, 50 and 100 scaled from
+                                                                        # 108 × 24 less its $25 fee (estimates)
     "data-port": {5: 5.20, 10: 6.30, 50: 17.10, 100: 20.90},           # 2-layer 40 × 17 mm
     "camera-pod": {5: 5.20, 10: 6.40, 50: 18.80, 100: 24.20},          # 2-layer 40 × 27 mm
 }

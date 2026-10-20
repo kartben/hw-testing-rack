@@ -914,10 +914,10 @@
 		)
 		(uuid "c8ab49a4-eaea-5681-b00d-6a2d99e24ed9")
 	)
-	(text_box "DATA ×4 v1.0 — USB2514B hub, four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1 switch, an INA226\n  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an AP2112K 3.3 V; the PH 8 lead from the bay node's J7.\nLead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V\n  (the node's J7 mirrored: one 'Same direction' PH 8 cable).\nI²C: TCA6408A 0x20 (ports 1–2) / 0x21 (ports 3–4), INA226 0x41 / 0x43 / 0x44 / 0x45 (A1.1–A1.4); the\n  node's INA226 stays alone at 0x40."
+	(text_box "DATA ×4 v1.0 — USB2514B hub, four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1 switch, an INA226\n  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an AP2112K 3.3 V; the PH 8 lead from the bay node's J7\n  into J1 on the right edge.  100 × 28 mm.\nLead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V\n  (the node's J7 mirrored: one 'Same direction' PH 8 cable).\nI²C: TCA6408A 0x20 (ports 1–2) / 0x21 (ports 3–4), INA226 0x41 / 0x43 / 0x44 / 0x45 (A1.1–A1.4); the\n  node's INA226 stays alone at 0x40."
 		(exclude_from_sim no)
 		(at 30 219.71 0)
-		(size 360 19.05)
+		(size 360 21.59)
 		(margins 2 2 2 2)
 		(stroke
 			(width 0)

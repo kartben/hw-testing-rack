@@ -108,11 +108,11 @@ def dataport_parts(rack) -> dict:
     out = {f"dataport_{k}": ("parts/usb_plugs.scad", {**defs, "PIECE": k}, None) for k in ("pcb", "usb", "ph")}
     q = rack.raw["pcb"]["data_port_x4"]
     x4 = {**defs, "BW": q["size"][0], "BD": q["size"][1], "BT": q["thickness"], "HOLES": q["holes"], "USBX": 0,
-          "PHX": q["ph"], "PHY": q["notch"][1] + q["notch"][3], "NOTCH": q["notch"]}
+          "PHR": q["lead"]}                         # its PH 8 on the right edge, its mouth out of it
     out.update({f"dataport_{k}_x4": ("parts/usb_plugs.scad", {**x4, "PIECE": k}, None) for k in ("pcb", "usb", "ph")})
     v2 = rack.raw["pcb"]["data_port_x4_v2"]          # the planned v2: its outline; its USB-Cs and PH 8 where v1 has them
-    out["dataport_pcb_x4v2"] = ("parts/usb_plugs.scad", {**x4, "BD": v2["size"][1], "HOLES": v2["holes"],
-                                                         "NOTCH": v2["notch"], "PIECE": "pcb"}, None)
+    out["dataport_pcb_x4v2"] = ("parts/usb_plugs.scad", {**x4, "BW": v2["size"][0], "BD": v2["size"][1],
+                                                         "HOLES": v2["holes"], "NOTCH": v2["notch"], "PIECE": "pcb"}, None)
     return out
 
 
@@ -1157,13 +1157,14 @@ def build(rack) -> Path:
                               "size": [node["size"][0], node["size"][1], node["thickness"]]})
         # the DATA port board (or the DATA ×4) on its floor bosses in the drawer (components up) and its PH 8
         # lead: out of the node's J7 into the drag chain's fixed end; out of its moving end, a U-turn, up
-        # through the drawer's one cable window (under the DATA ×4's PH, at the rear right) and into the
-        # board's PH from the rear: the single board's along the rear wall
+        # through the drawer's cable window at the rear right and into the board's PH: the single board's from
+        # the rear, along the rear wall; the DATA ×4's from its right, the window beside it
         dxw_ = x0 + rack.drawer_x0
         q4 = raw["pcb"]["data_port_x4"]
-        # every lead comes up the window where the DATA ×4's does, under its PH: further left, a single board's
-        # U-turn in front of the open drawer's chain mouth would pass over the row cable on its tie anchor
-        x_win = dxw_ + q4["x0"] + q4["ph"]
+        # every lead comes up the window where the DATA ×4's does, just past the plug of its PH (on its right
+        # edge): further left, a single board's U-turn in front of the open drawer's chain mouth would pass over
+        # the row cable on its tie anchor
+        x_win = dxw_ + q4["x0"] + q4["size"][0] + 6.0 + 3.0
         if x4:                       # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
             q = raw["pcb"]["data_port_x4"]
             bx4 = dxw_ + q["x0"]
@@ -1185,16 +1186,18 @@ def build(rack) -> Path:
                                                                    round(top, 3)],
                                            "size": [w, l, h], "color": col, "layer": "drawers", "bay": bid, "row": i,
                                            "space": "row", "movable": drawer})
-            ph_xy = (bx4 + q["ph"], dy + dp_y0 + q["size"][1] - q["notch"][1] - q["notch"][3])
+            ph_xy = (bx4 + q["size"][0], dy + dp_y0 + q["size"][1] - q["lead"][1])     # J1's mouth, right edge
+            ph_dir = [-1, 0, 0]
         else:
             for k in ("pcb", "usb", "ph"):
                 add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
                     movable=drawer)
             ph_xy = (dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1])
+            ph_dir = [0, -1, 0]
         j7 = {"at": [x0 + node["x0"] + node["size"][0], rack.node_front_y + node["size"][1] - node["right"]["data"],
                      pcb_top + NODE_J7_Z], "dir": [-1, 0, 0], "up": [0, 0, 1], "type": "ph8"}
         ph = {"at": [ph_xy[0], ph_xy[1], plenum + dp_z + dp["thickness"] + 2.8],
-              "dir": [0, -1, 0], "up": [0, 0, 1], "type": "ph8"}
+              "dir": ph_dir, "up": [0, 0, 1], "type": "ph8"}
         if not drawer:
             cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 12.0, plenum - 3.0,
                                   max(ph["at"][0], x_win)), row=i, kind="ext",

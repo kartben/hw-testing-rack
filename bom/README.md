@@ -5,7 +5,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 652 |
+| Electronics | 635 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 60 |
@@ -13,9 +13,9 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Motion | 19 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **953** |
+| **Total** | **936** |
 
-≈ **€119 per bay** all-in.
+≈ **€117 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -41,10 +41,10 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | PCBA: setup $8.18, stencil $1.53, components $2.06, extended parts $9.21, SMT $0.20 | 21.18 |
 | | | **Estimated total** | **26.38** |
 | | | Order (indicative): as quoted | 26.38 |
-| data-port-x4 | 5 PCBs (4-layer 108×24 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: engineering $25.00, lead-free HASL $5.10, board $1.80 | 31.90 |
+| data-port-x4 | 5 PCBs (4-layer 100×28 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: board $8.00, lead-free HASL $5.20 | 13.20 |
 | | | PCBA: setup $8.18, stencil $1.53, components $30.18, extended parts $27.63, SMT $1.47, X-ray $3.28 | 72.27 |
-| | | **Estimated total** | **104.17** |
-| | | Order (indicative): as quoted | 104.17 |
+| | | **Estimated total** | **85.47** |
+| | | Order (indicative): as quoted | 85.47 |
 
 ## JLC cost
 
@@ -56,9 +56,9 @@ What each order pays once, whatever the number of boards, against what grows wit
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (16) | 50.49 | 123.59 | 61.94 | **185.53** | 185.53 | 146.87 |
 | data-port | Economic | 6 / 7 | 6 (3) | 9.21 | 25.22 | 11.94 | **37.16** | 37.16 | 27.11 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.26 | **26.38** | 26.38 | 25.59 |
-| data-port-x4 | Economic | 2 / 2 | 26 (9) | 27.63 | 69.24 | 34.93 | **104.17** | 104.17 | 77.29 |
+| data-port-x4 | Economic | 2 / 2 | 26 (9) | 27.63 | 50.54 | 34.93 | **85.47** | 85.47 | 77.29 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **709.15** | **709.15** | **587.30** |
+| **All** | | | | | | | **690.45** | **690.45** | **587.30** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -77,7 +77,6 @@ Levers (*obvious*: an engineering choice the board's owner applies; *decision*: 
 | data-port | JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check | 3.16 | decision |
 | data-port | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 | 1.01 | decision |
 | camera-pod | JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check | 0.79 | decision |
-| data-port-x4 | board at most 100 mm long: no engineering fee, the 4-layer offer ($13.20 for 5 instead of $31.90); the 4 USB-C at the drawer's 18 mm pitch and the side-entry PH 8 need 108 mm, so a vertical PH 8 or a moved J1, a new route and the tray's bosses moved: better in the DATA ×4 v2 | 18.70 | decision |
 | data-port-x4 | USB-C J101–J401: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, re-route, mechanical check | 5.88 | decision |
 | data-port-x4 | JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check | 0.79 | decision |
 | data-port-x4 | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (6 a board) | 1.51 | decision |
@@ -92,15 +91,15 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | power-hub | 92.75 | 53.65 | 39.34 | 26.07 | 23.03 | 22.17 |
 | data-port | 13.77 | 6.53 | 3.94 | 1.96 | 1.49 | 1.30 |
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
-| data-port-x4 | 52.08 | 29.62 | 21.45 | 13.25 | 11.86 | 11.49 |
+| data-port-x4 | 42.73 | 25.88 | 20.03 | 12.79 | 11.64 | 11.27 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 2 data-port-x4) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 297.79 | 185.51 | 35.45 | 26.38 | 104.17 | **683.30** |
-| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 42.89 | **301.59** |
-| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 33.67 | **249.47** |
+| 1 | 297.79 | 185.51 | 35.45 | 26.38 | 85.47 | **664.60** |
+| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 40.05 | **298.75** |
+| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 32.02 | **247.82** |
 
 ## Printed parts
 
@@ -285,7 +284,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 2 data-port-x4) wh
 | Electronics | TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit | 8  | 0.27 | 2.13 | LCSC/JLCPCB C111738 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 8  | 0.69 | 5.52 | LCSC/JLCPCB C49851 |
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
-| Electronics | Bare PCB data-port-x4 (4-layer 108×24 mm, JLC04161H-7628, lead-free HASL) | 5  | 5.87 | 29.35 | estimate, not quoted |
+| Electronics | Bare PCB data-port-x4 (4-layer 100×28 mm, JLC04161H-7628, lead-free HASL) | 5  | 2.43 | 12.14 | estimate, not quoted |
 | Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, X-ray | 1  | 38.72 | 38.72 | estimate, not quoted |
 | Electronics | Components data-port-x4: JLC quote minus the catalogue prices above | 1  | 0.83 | 0.83 | estimate, not quoted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
