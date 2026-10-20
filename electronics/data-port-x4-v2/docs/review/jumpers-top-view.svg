@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1220" height="760" viewBox="0 0 1220 760" font-family="Segoe UI, Helvetica, Arial, sans-serif"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#b9c2bb" stroke-width="2"/></pattern><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/></marker></defs><rect width="1220" height="760" fill="#ffffff"/><text x="30.0" y="30.0" font-size="20" text-anchor="start" fill="#1d2b22" font-weight="700" >Jumpers seen from above, bay B3 (XIAO · Pico 2 · Pico 2 · XIAO)</text>
+<text x="30.0" y="54.0" font-size="13" text-anchor="start" fill="#4b5a50" font-weight="normal" >to scale, drawer frame; the ribbons drawn flat (in the drawer they rise over the port wall); grey: the USB cables</text>
+<text x="30.0" y="84.0" font-size="15" text-anchor="start" fill="#1d2b22" font-weight="700" >A / B: a header behind each port</text>
+<rect x="30.0" y="90.0" width="454.4" height="640.0" fill="#f4f6f8" stroke="#9aa5ad"/>
+<rect x="37.4" y="205.2" width="439.7" height="510.1" fill="#dfe9f7" stroke="#7d9cc4"/>
+<rect x="30.0" y="192.4" width="454.4" height="8.0" fill="#bfc6cc"/>
+<text x="478.0" y="182.8" font-size="11" text-anchor="end" fill="#6b757d" font-weight="normal" >port wall</text>
+<rect x="42.8" y="170.0" width="320.0" height="5.1" fill="#2f5d43"/>
+<text x="202.8" y="150.8" font-size="11" text-anchor="middle" fill="#2f5d43" font-weight="normal" >DATA ×4 v2 (standing)</text>
+<rect x="65.2" y="553.2" width="56.9" height="67.1" fill="#2f6f4f" stroke="#1b4430" rx="3"/>
+<text x="93.6" y="586.7" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="700" >XIAO</text>
+<text x="93.6" y="601.7" font-size="10" text-anchor="middle" fill="#d6efe0" font-weight="normal" >B3.1</text>
+<path d="M93.6,553.2 C93.6,493.2 113.2,272.4 113.2,192.4" fill="none" stroke="#8a9099" stroke-width="5" opacity="0.55"/>
+<path d="M114.3,583.4 C114.3,463.4 110.2,330.0 110.2,170.0" fill="none" stroke="#d93a2b" stroke-width="2.4"/>
+<path d="M117.3,583.4 C117.3,463.4 113.2,330.0 113.2,170.0" fill="none" stroke="#f08c1a" stroke-width="2.4"/>
+<path d="M120.3,583.4 C120.3,463.4 116.2,330.0 116.2,170.0" fill="none" stroke="#f1c40f" stroke-width="2.4"/>
+<text x="93.6" y="633.0" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="700" >1 mm sideways</text>
+<rect x="170.8" y="501.8" width="67.2" height="163.2" fill="#2f6f4f" stroke="#1b4430" rx="3"/>
+<text x="204.4" y="583.4" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="700" >Pico 2</text>
+<text x="204.4" y="598.4" font-size="10" text-anchor="middle" fill="#d6efe0" font-weight="normal" >B3.2</text>
+<path d="M204.4,501.8 C204.4,441.8 170.8,272.4 170.8,192.4" fill="none" stroke="#8a9099" stroke-width="5" opacity="0.55"/>
+<path d="M172.6,575.3 C172.6,455.3 167.8,330.0 167.8,170.0" fill="none" stroke="#d93a2b" stroke-width="2.4"/>
+<path d="M175.6,575.3 C175.6,455.3 170.8,330.0 170.8,170.0" fill="none" stroke="#f08c1a" stroke-width="2.4"/>
+<path d="M178.6,575.3 C178.6,455.3 173.8,330.0 173.8,170.0" fill="none" stroke="#f1c40f" stroke-width="2.4"/>
+<text x="204.4" y="677.8" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="700" >2 mm sideways</text>
+<rect x="276.4" y="501.8" width="67.2" height="163.2" fill="#2f6f4f" stroke="#1b4430" rx="3"/>
+<text x="310.0" y="583.4" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="700" >Pico 2</text>
+<text x="310.0" y="598.4" font-size="10" text-anchor="middle" fill="#d6efe0" font-weight="normal" >B3.3</text>
+<path d="M310.0,501.8 C310.0,441.8 228.4,272.4 228.4,192.4" fill="none" stroke="#8a9099" stroke-width="5" opacity="0.55"/>
+<path d="M335.8,575.3 C335.8,455.3 225.4,330.0 225.4,170.0" fill="none" stroke="#d93a2b" stroke-width="2.4"/>
+<path d="M338.8,575.3 C338.8,455.3 228.4,330.0 228.4,170.0" fill="none" stroke="#f08c1a" stroke-width="2.4"/>
+<path d="M341.8,575.3 C341.8,455.3 231.4,330.0 231.4,170.0" fill="none" stroke="#f1c40f" stroke-width="2.4"/>
+<text x="310.0" y="677.8" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="700" >34 mm sideways</text>
+<rect x="382.0" y="553.2" width="56.9" height="67.1" fill="#2f6f4f" stroke="#1b4430" rx="3"/>
+<text x="410.4" y="586.7" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="700" >XIAO</text>
+<text x="410.4" y="601.7" font-size="10" text-anchor="middle" fill="#d6efe0" font-weight="normal" >B3.4</text>
+<path d="M410.4,553.2 C410.4,493.2 286.0,272.4 286.0,192.4" fill="none" stroke="#8a9099" stroke-width="5" opacity="0.55"/>
+<path d="M383.8,583.4 C383.8,463.4 283.0,330.0 283.0,170.0" fill="none" stroke="#d93a2b" stroke-width="2.4"/>
+<path d="M386.8,583.4 C386.8,463.4 286.0,330.0 286.0,170.0" fill="none" stroke="#f08c1a" stroke-width="2.4"/>
+<path d="M389.8,583.4 C389.8,463.4 289.0,330.0 289.0,170.0" fill="none" stroke="#f1c40f" stroke-width="2.4"/>
+<text x="410.4" y="633.0" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="700" >32 mm sideways</text>
+<rect x="92.9" y="164.9" width="40.6" height="16.0" fill="#2b2f33"/>
+<rect x="150.5" y="164.9" width="40.6" height="16.0" fill="#2b2f33"/>
+<rect x="208.1" y="164.9" width="40.6" height="16.0" fill="#2b2f33"/>
+<rect x="265.7" y="164.9" width="40.6" height="16.0" fill="#2b2f33"/>
+<text x="30.0" y="756.0" font-size="13" text-anchor="start" fill="#c0392b" font-weight="700" >sum of sideways runs ≈ 69 mm</text>
+<text x="630.0" y="84.0" font-size="15" text-anchor="start" fill="#1d2b22" font-weight="700" >C: one bank</text>
+<rect x="630.0" y="90.0" width="454.4" height="640.0" fill="#f4f6f8" stroke="#9aa5ad"/>
+<rect x="637.4" y="205.2" width="439.7" height="510.1" fill="#dfe9f7" stroke="#7d9cc4"/>
+<rect x="630.0" y="192.4" width="454.4" height="8.0" fill="#bfc6cc"/>
+<text x="1078.0" y="182.8" font-size="11" text-anchor="end" fill="#6b757d" font-weight="normal" >port wall</text>
+<rect x="642.8" y="170.0" width="320.0" height="5.1" fill="#2f5d43"/>
+<text x="802.8" y="150.8" font-size="11" text-anchor="middle" fill="#2f5d43" font-weight="normal" >DATA ×4 v2 (standing)</text>
+<rect x="665.2" y="553.2" width="56.9" height="67.1" fill="#2f6f4f" stroke="#1b4430" rx="3"/>
+<text x="693.6" y="586.7" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="700" >XIAO</text>
+<text x="693.6" y="601.7" font-size="10" text-anchor="middle" fill="#d6efe0" font-weight="normal" >B3.1</text>
+<path d="M693.6,553.2 C693.6,493.2 713.2,272.4 713.2,192.4" fill="none" stroke="#8a9099" stroke-width="5" opacity="0.55"/>
+<path d="M714.3,583.4 C714.3,463.4 781.9,330.0 781.9,170.0" fill="none" stroke="#d93a2b" stroke-width="2.4"/>
+<path d="M717.3,583.4 C717.3,463.4 784.9,330.0 784.9,170.0" fill="none" stroke="#f08c1a" stroke-width="2.4"/>
+<path d="M720.3,583.4 C720.3,463.4 787.9,330.0 787.9,170.0" fill="none" stroke="#f1c40f" stroke-width="2.4"/>
+<text x="693.6" y="633.0" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="700" >21 mm sideways</text>
+<rect x="770.8" y="501.8" width="67.2" height="163.2" fill="#2f6f4f" stroke="#1b4430" rx="3"/>
+<text x="804.4" y="583.4" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="700" >Pico 2</text>
+<text x="804.4" y="598.4" font-size="10" text-anchor="middle" fill="#d6efe0" font-weight="normal" >B3.2</text>
+<path d="M804.4,501.8 C804.4,441.8 770.8,272.4 770.8,192.4" fill="none" stroke="#8a9099" stroke-width="5" opacity="0.55"/>
+<path d="M772.6,575.3 C772.6,455.3 785.7,330.0 785.7,170.0" fill="none" stroke="#d93a2b" stroke-width="2.4"/>
+<path d="M775.6,575.3 C775.6,455.3 788.7,330.0 788.7,170.0" fill="none" stroke="#f08c1a" stroke-width="2.4"/>
+<path d="M778.6,575.3 C778.6,455.3 791.7,330.0 791.7,170.0" fill="none" stroke="#f1c40f" stroke-width="2.4"/>
+<text x="804.4" y="677.8" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="700" >4 mm sideways</text>
+<rect x="876.4" y="501.8" width="67.2" height="163.2" fill="#2f6f4f" stroke="#1b4430" rx="3"/>
+<text x="910.0" y="583.4" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="700" >Pico 2</text>
+<text x="910.0" y="598.4" font-size="10" text-anchor="middle" fill="#d6efe0" font-weight="normal" >B3.3</text>
+<path d="M910.0,501.8 C910.0,441.8 828.4,272.4 828.4,192.4" fill="none" stroke="#8a9099" stroke-width="5" opacity="0.55"/>
+<path d="M935.8,575.3 C935.8,455.3 789.6,330.0 789.6,170.0" fill="none" stroke="#d93a2b" stroke-width="2.4"/>
+<path d="M938.8,575.3 C938.8,455.3 792.6,330.0 792.6,170.0" fill="none" stroke="#f08c1a" stroke-width="2.4"/>
+<path d="M941.8,575.3 C941.8,455.3 795.6,330.0 795.6,170.0" fill="none" stroke="#f1c40f" stroke-width="2.4"/>
+<text x="910.0" y="677.8" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="700" >46 mm sideways</text>
+<rect x="982.0" y="553.2" width="56.9" height="67.1" fill="#2f6f4f" stroke="#1b4430" rx="3"/>
+<text x="1010.4" y="586.7" font-size="11" text-anchor="middle" fill="#ffffff" font-weight="700" >XIAO</text>
+<text x="1010.4" y="601.7" font-size="10" text-anchor="middle" fill="#d6efe0" font-weight="normal" >B3.4</text>
+<path d="M1010.4,553.2 C1010.4,493.2 886.0,272.4 886.0,192.4" fill="none" stroke="#8a9099" stroke-width="5" opacity="0.55"/>
+<path d="M983.8,583.4 C983.8,463.4 793.4,330.0 793.4,170.0" fill="none" stroke="#d93a2b" stroke-width="2.4"/>
+<path d="M986.8,583.4 C986.8,463.4 796.4,330.0 796.4,170.0" fill="none" stroke="#f08c1a" stroke-width="2.4"/>
+<path d="M989.8,583.4 C989.8,463.4 799.4,330.0 799.4,170.0" fill="none" stroke="#f1c40f" stroke-width="2.4"/>
+<text x="1010.4" y="633.0" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="700" >60 mm sideways</text>
+<rect x="758.0" y="164.9" width="97.6" height="16.0" fill="#2b2f33"/>
+<text x="630.0" y="756.0" font-size="13" text-anchor="start" fill="#c0392b" font-weight="700" >sum of sideways runs ≈ 130 mm</text></svg>
