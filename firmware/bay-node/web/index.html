@@ -32,9 +32,7 @@
   font: inherit; font-weight: 550; padding: 6px 8px; border-radius: 10px;
   border: 1px solid var(--line); background: var(--soft); color: var(--text);
 }
-.statusline { margin: 0; color: var(--muted); font-size: 0.92rem;
-  & button { margin-left: 8px; vertical-align: baseline; }
-}
+.statusline { margin: 0; color: var(--muted); font-size: 0.92rem; }
 .ports { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px;
   & li { display: grid; grid-template-columns: 4.2em minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 0.88rem; }
   & .slot { font-weight: 650; }
@@ -107,15 +105,16 @@
   & code { font: 0.85rem var(--mono); }
   & .src { color: var(--muted); }
 }
-.lease { border-radius: 10px; padding: 10px 12px; display: flex; gap: 10px; align-items: center;
+.lease { border-radius: 10px; padding: 10px 12px; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center;
   background: color-mix(in srgb, var(--lease) 9%, var(--card)); border: 1px solid color-mix(in srgb, var(--lease) 30%, transparent);
-  & div { flex: 1; min-width: 0; font-size: 0.88rem; }
-  & b { color: var(--lease); font-weight: 600; }
+  & div { flex: 1 1 auto; min-width: 0; font-size: 0.88rem; }
+  & b { color: var(--lease); font-weight: 600; white-space: nowrap; }
   & small { color: var(--muted); display: block; overflow-wrap: anywhere; }
+  & .acts { display: flex; gap: 8px; margin-left: auto; }
 }
 .conns { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.88rem;
-  & li { display: grid; grid-template-columns: 82px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
-  & .svc { font-size: 0.75rem; font-weight: 600; color: var(--muted); }
+  & li { display: grid; grid-template-columns: max-content minmax(0, 1fr) auto auto; gap: 10px; align-items: center; }
+  & .svc { font-size: 0.75rem; font-weight: 600; color: var(--muted); white-space: nowrap; }
   & code { font: 0.82rem var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   & time { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
   & .none { color: var(--muted); display: block; }
@@ -207,8 +206,10 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
         <div class="who"><code id="you">–</code><span class="src" id="you-src"></span><span class="tag" id="you-admin" hidden>admin</span></div>
         <div class="lease" id="lease" hidden>
           <div><b id="lease-who"></b><small id="lease-meta"></small></div>
-          <button class="small" data-acc="renew" hidden>Renew</button>
-          <button class="small danger" data-acc="release">Release</button>
+          <span class="acts">
+            <button class="small" data-acc="renew" hidden>Renew</button>
+            <button class="small danger" data-acc="release">Release</button>
+          </span>
         </div>
         <ul class="conns" id="conns"></ul>
         <div class="refused-line" id="refused-line"></div>
@@ -235,6 +236,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
             <button data-cam="live" id="cam-live" aria-pressed="false">Live</button>
             <button data-cam="snap">Snapshot</button>
             <button popovertarget="cam-settings" id="cam-fmt" title="Resolution, quality, image">–</button>
+            <button data-copy="cam-cmd" id="cam-copy" title="Copy the snapshot URL">Copy URL</button>
             <a id="cam-open" target="_blank" rel="noopener" hidden>Open</a>
           </div>
           <div>
@@ -245,7 +247,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
               <label><input type="radio" name="cam-light" value="off">Off</label>
             </div>
           </div>
-          <p class="statusline"><span id="cam-stats"></span> <button class="small" data-copy="cam-cmd" id="cam-copy" title="Copy the snapshot URL">Copy URL</button></p>
+          <p class="statusline" id="cam-stats"></p>
           <span id="cam-model" hidden></span>
           <span id="cam-last" hidden></span>
           <span id="cam-viewers" hidden></span>

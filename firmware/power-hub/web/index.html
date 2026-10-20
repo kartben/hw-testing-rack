@@ -87,6 +87,9 @@ button.bay {
 }
 body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
 .log-kind { font-size: 0.72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; color: var(--c, var(--muted)); }
+/* Shorter than the PD card: sit at the top of the row instead of stretching a hole under the numbers */
+#bus-card { align-self: start; }
+#bus-card .actions { margin-top: 0; align-items: center; }
 @media (max-width: 720px) {
   .shelf { grid-template-columns: 1fr auto; & .bays-cell { grid-column: 1 / -1; grid-row: 2; } }
 }
@@ -129,7 +132,7 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
         </div>
       </section>
 
-      <section class="card">
+      <section class="card" id="bus-card">
         <h2>Rack bus <span id="bus">—</span></h2>
         <div class="readings">
           <div class="reading"><b id="n-nodes">–</b><small>nodes</small></div>
