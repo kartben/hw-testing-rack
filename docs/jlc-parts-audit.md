@@ -295,12 +295,82 @@ and 2–5× on the small 2-layer boards. Its strengths:
 - an EU supply chain with no customs step;
 - a single assembled board when that is all one needs;
 - the Abracon L1 by the piece.
-None of these closes the gap.
+None of these closes the gap. The real quotes below put it at 5×, not 2×.
 
-**A real AISLER quote** would mean uploading, for each design, the Gerbers, the BOM and the
-pick-and-place: the node, the hub, the DATA port, the pod and the v2 panel (or the KiCad projects).
-It would replace three estimates with real figures: each part at AISLER's distributor price, its
-exact assembly fee, and its panel handling. It needs an AISLER account and the user's OK.
+### Real quotes: AISLER and NextPCB (2026-10-20)
+
+The rack's order quoted on both sites from the user's accounts, with the files uploaded (the user's
+OK), for quotes only: no cart, no order, no address, no coupon. JLC is bom.py's model at $1 = €0.92
+(the v2 panel at $229.91 since the H5VU25UC and 22 Ω swap). Prices are net of VAT.
+
+| Board (quantity assembled) | JLC | NextPCB | NextPCB / JLC | AISLER | AISLER / JLC |
+|---|---:|---:|---:|---:|---:|
+| node ×8 | 273.99 | 524.13 | 1.9× | 1,314.92 | 4.8× |
+| hub ×1 (JLC: 2) | 170.67 | 311.35 | 1.8× | 985.43 | 5.8× |
+| DATA port ×6 | 32.61 | 116.30 | 3.6× | 249.98 | 7.7× |
+| pod ×2 | 24.27 | 115.74 | 4.8× | 294.12 | 12× |
+| v2: panel ×1 (JLC: 2); AISLER, 2 logic boards | 211.52 | 451.63 | 2.1× | 857.61 | 4.1× |
+| **Boards** | **713.06** | **1,519.14** | **2.1×** | **3,702.06** | **5.2×** |
+| Shipping to France | 31.28 (DHL) | not quoted | | not quoted | |
+
+**Landed in France.** The EURL recovers VAT either way. JLC and NextPCB ship from China: DHL bills the
+20 % import VAT plus a clearance fee of roughly €15–20 (JLC's DDP option collects the VAT at checkout
+instead). AISLER ships from Germany: no customs, and with a VAT number its German 19 % becomes French
+reverse-charge VAT. TTC at 20 %: JLC ≈ €893, NextPCB ≈ €1,823 plus shipping, AISLER ≈ €4,442.
+
+**Lead time.**
+- JLC: about 1.5–2 weeks door to door.
+- NextPCB: assembly in 17–19 working days for the node and 8–12 for the DATA port, then shipping:
+  4–5 weeks door to door.
+- AISLER: every board dispatched Friday 13 November 2026 (18 working days), then 1–3 days in the EU.
+
+**NextPCB** (nextpcb.com PCBA quote; quantities: node 10 PCBs / 8 assembled, hub 5 / 1, DATA port
+10 / 6, pod 5 / 2, v2 panel 5 / 1, all as the rack needs).
+- In USD before promotion: node $569.71, hub $338.42, DATA port $126.41, pod $125.80, v2 panel $490.90;
+  $1,651.24 in all.
+- A new-customer "SMT $500 OFF" offer showed on every quote, taking up to $200 off each (node $369.71,
+  hub $148.42, DATA port $79.15, pod $76.03, panel $290.90). If it is $500 for the whole account, the
+  order is $1,151 (€1,059), still 1.5× JLC.
+- Its PCBs alone cost 1.6–4.6× JLC's (its public calculator). From the Gerbers it read the node's 4 mil tracks, which its public
+  calculator doesn't charge: $61.18 for 10 node PCBs against JLC's $19.30.
+- It couldn't read the KiKit panel's Gerbers: the panel's parameters were typed in (4 layers,
+  100 × 142 mm, customer panel, ENIG). The DATA port's quote left one part for a manual quote.
+- No quote was saved, so there is no quote ID.
+
+**AISLER** ("Amazing Assembly", the workspace's Sandbox projects: bay-node INPFROEN, power-hub
+QHORQCSY, data-port ROVDFBNW, camera-pod RQKSLXZJ, data-port-x4-v2 BCVHQQWW).
+- Each total is the checkout's own "Net Total" (PCB, stencil, assembly, parts). The BOM tab's prices
+  are the parts alone: the node's 8 cost €401.14 in parts out of €1,314.92.
+- Parts at AISLER's distributors cost far more than at LCSC in these small quantities: the hub's parts
+  alone are €611.57 for one board.
+- No quotation saved: "Finish the quote" needs a shipping and a billing address, which weren't entered.
+  The prices hold for 24 hours.
+- Parts it couldn't source, and what the quote assumes:
+  - node: the XKB TS-1187A buttons and the MSK12C02 slide switch are customer-supplied (2 unique parts;
+    the €15 per unique part is in the total). The UNI-ROYAL 33 Ω, 5.1 kΩ and 680 Ω became Yageo
+    RC0603FR, the 50 mΩ a Vishay WSLP1206 (1 W), the UMW SUD50P06-15 the Vishay original, and AISLER's
+    "ams OSRAM" pick for the AMS1117 the Advanced Monolithic Systems part.
+  - hub: the TS-1187A buttons are customer-supplied; the 5.1 kΩ and 7.5 kΩ became Yageo RC0603FR.
+  - pod: the 100 Ω became Yageo RC0805FR, the AMS1117 the Advanced Monolithic Systems part.
+  - v2: the H5VU25UC is customer-supplied. The four HRO TYPE-C-31-D-06 are left out of the assembly:
+    no distributor of AISLER's lists them, not even after its in-depth search. The 0402 resistors
+    became Yageo RC0402FR, the 100 mΩ shunts Yageo RL1206FR, the 33 pF and 15 pF KEMET C0402C, the
+    ferrite Murata BLM21PG601, the 2N7002 onsemi's.
+  - The DATA port needed nothing.
+- AISLER has no assembly variants: the v2 base is a logic board, so the rack's v2 is 2 logic boards
+  (€857.61; one is €743.62).
+
+**What each quote needed.**
+- AISLER: the board's `.kicad_pcb`, one per design. It reads the parts, the placement and the stackup
+  from it; Gerbers alone only give the bare-PCB price. It doesn't panelise two variants.
+- NextPCB: the Gerber zip; the pick-and-place zipped (it takes zip or xls only); a BOM with a
+  manufacturer part number for every line, which it matches by MPN. JLC's BOM has LCSC codes, not
+  MPNs, so a full BOM (`*-bom.csv`) was exported, and the panel's built from the v2 BOM by LCSC code.
+
+**Verdict.** JLC stays, on every board and for the order. NextPCB costs 2.1× (1.5× at best with its
+new-customer offer) and takes twice as long. AISLER costs 5.2×: it would only make sense for an
+EU-only supply chain or a single urgent board, and its Blitz service shortens the lead time but not
+the price.
 
 Sources:
 - [AISLER, Our simple pricing](https://community.aisler.net/t/our-simple-pricing/102);
