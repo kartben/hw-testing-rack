@@ -64,10 +64,10 @@ What each order pays once, whatever the number of boards, against what grows wit
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (16) | 50.49 | 123.59 | 61.94 | **185.53** | 185.53 | 146.87 |
 | data-port | Economic | 6 / 7 | 6 (3) | 9.21 | 25.22 | 11.94 | **37.16** | 37.16 | 27.11 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.26 | **26.38** | 26.38 | 25.59 |
-| data-port-x4-v2 | Economic | 1 / 2 | 41 (21) | 64.47 | 109.12 | 69.67 | **178.79** | 178.79 | 168.57 |
+| data-port-x4-v2 | Economic | 1 / 2 | 41 (21) | 64.47 | 109.12 | 69.67 | **178.79** | 178.79 | 177.78 |
 | data-port-x4-v2-base | Economic | 1 / 2 | 24 (10) | 30.70 | 53.61 | 37.14 | **90.75** | 90.75 | 60.38 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **874.52** | **874.52** | **738.96** |
+| **All** | | | | | | | **874.52** | **874.52** | **748.17** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -86,7 +86,6 @@ Levers (*obvious*: an engineering choice the board's owner applies; *decision*: 
 | data-port | JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check | 3.16 | decision |
 | data-port | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 | 1.01 | decision |
 | camera-pod | JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check | 0.79 | decision |
-| data-port-x4-v2 | RN1–RN9, RN101–RN402: the 4 × 0402 resistor arrays (10k, 2.2k, 100 Ω: 3 extended types) as basic 0402 resistors: 60 parts instead of 15, the same 120 joints, a re-place and re-route of the pin chains | 9.21 | decision |
 | data-port-x4-v2 | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board) | 1.01 | decision |
 | data-port-x4-v2-base | one order with the logic variant: a 1 × 2 panel of the same PCB (100 × 140, ENIG, $51.90 for 5 panels, no panel fee), a logic and a base on each, one CPL; one setup and stencil, each type loaded once ($240.18 for 2 + 2 against $269.54): the base in ENIG, mouse bites on the edges the cradle holds, as many bases as logics | 29.36 | decision |
 | data-port-x4-v2-base | USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a board) | 1.01 | decision |

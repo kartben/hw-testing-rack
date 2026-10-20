@@ -94,17 +94,20 @@ board's owner, and the trade-off ones need the user.
 | **DATA ×4 at most 100 mm long**: 108 × 24 → 100 × 37 mm | DATA ×4 | the 5-board order went from $104.17 to $85.37 (bare PCB $31.90 → $13.10, JLC's 4-layer offer; no deburring line at 37 mm) | **applied** (2b84f26, a860935) | The offer stops at 10 PCBs: above that JLC's $25 engineering fee is back, so at 50 and 100 PCBs the board costs $53.80 and $73.40, $6–11 more than at 108 × 24 (calculator, 2026-10-20). v1 is not ordered for the prototype since: the converted bays take the v2 |
 | **DATA ×4 v2 logic and base on one 1 × 2 panel** (100 × 140, ENIG, the same PCB twice, one CPL) | DATA ×4 v2 | ≈ $29 for the rack's 2 + 2 ($240.18 against $269.54), ≈ $40 at 5 + 5, ≈ $65 at 10 + 10 | decision | One setup and stencil, each type loaded once, no panel fee (one design); the base in ENIG, mouse bites on the edges the cradle holds, as many bases as logics |
 | **DATA ×4 v2 base in lead-free HASL** when ordered alone | v2 base | $12.20 per order | **applied** (bom.py) | Its finest pitch is the hub's 0.5 mm QFN, which v1 put on HASL |
-| **DATA ×4 v2 resistor arrays** → basic 0402 resistors | DATA ×4 v2 (logic) | $9.21 per order (3 extended types at Economic's $3.07) | decision (user) | 15 arrays become 60 resistors, the same 120 joints: a re-place and re-route of the pin chains. The base's RN1–RN3 sit over the hub's 0.5 mm strap pins, where a row of 0402s doesn't fit |
+| **DATA ×4 v2 resistor arrays** → basic 0402 resistors | DATA ×4 v2 (logic) | $9.21 per order (3 extended types at Economic's $3.07) | **declined** (the v2 session, 2026-10-20) | They stay: 60 resistors in place of 15 arrays means re-placing and re-routing the pin chains. In the base, RN1–RN3 sit over the hub's 0.5 mm strap pins, where a row of 0402s doesn't fit |
 | **PD sink**: AP33772S (Global Sourcing, stock 0) → CH224A | hub | the hub order went from $205.95 to $185.29 | **applied** (1590b7a) | No input switch any more. The CH224Q (C46061833) and the HUSB238A-BB001-QN16R (C24833806, PD 3.x EPR to 28 / 48 V, $0.40 at 100) remain as second sources; the HUSB238 (non-A) and the CH224K stop at 20–25 V |
 | **Hub rows C and D not fitted** (already in `JLC_LEVERS`) | hub | ≈ $35 | decision | 2 × TPS26600, 2 × S6B, 4 LEDs and their passives per hub |
 
 An external BOM review (2026-10-19) was checked against the catalog by the orchestrator. Most of its LCSC codes were wrong, and its fee premise doesn't hold on Standard PCBA (every unique type is charged). Its valid levers (the HRO USB-C, the PH clones, the USBLC6 second source) are in the table above; the fourth, the TPS2553DDBVR on the node's U9, is applied (4ebe8f1: $0.19 against $0.54, same pinout and I_LIM).
 
 Checked and rejected:
-- **DATA ×4 v2 L1** → FTC201612S3R3MBCA (C18724415) or AFE201610S3R3MBT (C22459316), in stock and sold by 1
-  (≈ $10 per order). Raspberry Pi's design guide approves only the AOTA-B201610S3R3-101-T: the inductor's
-  leakage field couples into the VREG_LX loop, so its orientation matters, and neither has a guaranteed
-  polarity mark. The logic order pre-orders 32.
+- **DATA ×4 v2 L1**: declined by the v2 session, 2026-10-20.
+  - The candidates: FTC201612S3R3MBCA (C18724415) or AFE201610S3R3MBT (C22459316), in stock and sold
+    by 1 (≈ $10 per order).
+  - The AOTA-B201610S3R3-101-T stays because Raspberry Pi qualifies it and it is polarity-marked. The
+    inductor's leakage field couples into the VREG_LX loop, so its orientation matters, and neither
+    candidate has a guaranteed mark.
+  - Only the logic order pays the 32-piece pre-order. The base doesn't fit L1.
 - **ESP32-S3-MINI-1-N4R2** costs more than the N8 at 100 ($3.66 against $3.36). The node's
   WROOM-1-N8R8 stays for the camera's octal PSRAM.
 - **Cheaper CAN transceivers without signal improvement**: TCAN1044AV (C3234993), TJA1051T/3 (C38695,
@@ -136,6 +139,81 @@ Checked and rejected:
     silicon, and Standard PCBA charges every type alike anyway. The 1 µF 50 V X7R 0603 (C5199872) is
     extended;
   - ESP32-S3 N8R8 → N8: saves $0.23 at 100, and loses the camera's PSRAM.
+
+## Surface finish: HASL or ENIG (2026-10-20)
+
+Every board is in lead-free HASL except the DATA ×4 v2's PCB. That one is ENIG for its logic
+variant's RP2354B (QFN-80, 0.4 mm pitch).
+
+**JLC's rules.**
+- The PCBA capabilities page's Economic table gives 4-layer, 1.6 mm, green boards lead-free HASL,
+  leaded HASL or ENIG, for 2–50 boards. 6 layers is ENIG only, 2–30 boards.
+- It ties no finish to a pitch. Economic's minimum IC pitch is 0.4 mm, Standard's 0.35 mm.
+- JLC X-rays every QFN, LGA and BGA automatically.
+- So a 0.4 mm QFN on lead-free HASL is not refused. JLC still advises against it:
+  - its surface-finish article says lead-free HASL "does not provide sufficient surface planarity and
+    is unsuitable for fine-pitch components";
+  - its HASL blog keeps HASL for 0.65 mm and coarser, and warns that below 0.5 mm the unevenness may
+    bridge;
+  - its blog FAQ sends fine-pitch BGAs to ENIG.
+- Fabricators' guides put HASL's pad-height spread at ±5–15 µm against < 0.5 µm for ENIG. They draw
+  the practical line between 0.5 and 0.65 mm. These are rules of thumb, not an IPC limit.
+
+**What the v2's parts face on HASL.**
+- RP2354B: 80 pads at 0.4 mm, at Economic's limit, plus a 3.4 mm exposed pad. A domed pad shifts the
+  stencil's print and the package's seat. Bridges and opens are the likely failures. A 0.4 mm QFN-80
+  is hard to rework by hand.
+- USB2517I: QFN-64 at 0.5 mm with a 4.7 mm exposed pad. The large dome under it is the risk: the
+  package floats or tilts, and voids form.
+- LSF0108 (DHVQFN-20), TCA6408A (VQFN-16) and TPD4E05U06 (USON-10): 0.5 mm, small exposed pads.
+- The vertical USB-C: 0.3 mm pads at 0.5 mm.
+- The 0.5 mm parts are the class v1 had on HASL: USB2514B QFN-36, TCA6408A, USB4105.
+
+**What ENIG buys.**
+- Flat pads, so the stencil prints evenly on the 0.4 / 0.5 mm parts and their exposed pads.
+- A longer shelf life before assembly. JLC gives no figure; guides say about 12 months.
+- Its weak point is black pad, which is rare at JLC's volumes.
+- For the user's hand soldering of J1 and the 2 × 6 headers, both finishes wet well. HASL comes
+  pre-tinned.
+
+**Cost (USD, PCB difference only; the PCBA is the same).**
+
+| Option for the rack's 2 + 2 | Order | 5 + 5 | 10 + 10 |
+|---|---:|---:|---:|
+| Two orders, logic ENIG + base HASL (bom.py) | 269.54 | 412.07 | 636.30 |
+| Two orders, both ENIG | 281.74 | 424.27 | 649.10 |
+| Two orders, both HASL | 257.34 | 399.87 | 623.50 |
+| One 1 × 2 panel, ENIG | 240.18 | 371.75 | 571.68 |
+| One 1 × 2 panel, HASL | 227.38 | 358.95 | 557.58 |
+
+- HASL instead of ENIG saves $12.20–12.80 per 100 × 70 order and $12.80–14.10 per panel order.
+- That is $2.44 a rack at 5 racks and $1.28 at 10.
+
+**Base and logic on one PCB.**
+- A HASL base and an ENIG logic can't share a panel: one panel has one finish.
+- The panel saves $29 for the rack's 2 + 2, more than HASL saves on the base ($12.20). So if the user
+  takes the panel, the base goes ENIG with the logic.
+- A panel in HASL ($227.38) is only for those who accept HASL under the 0.4 mm QFN-80.
+
+**Recommendation.**
+
+| Board | Finish | Saving | Risk |
+|---|---|---:|---|
+| DATA ×4 v2 logic | **ENIG** | 0 (HASL would save $12.20) | HASL under the 0.4 mm QFN-80 and its exposed pad risks bridges and opens on the most expensive board (≈ $31 of parts) |
+| DATA ×4 v2 base, ordered alone | **lead-free HASL** (bom.py) | $12.20 per order | Low: 0.5 mm parts as on v1. Watch the USB2517I's 4.7 mm exposed pad in JLC's X-ray report |
+| DATA ×4 v2, logic + base on one panel | **ENIG** for both | $29 against two orders | The panel's own trade-offs (`JLC_LEVERS`) |
+| bay node | lead-free HASL, kept | – | INA226 TSSOP-10, FSUSB42 MSOP-10 and USB4105 at 0.5 mm, leaded. The WROOM-1 at 1.27 mm with a 3.9 mm GND pad. Fine |
+| power hub | lead-free HASL, kept | – | Finest is the TPS26600 at 0.65 mm with its exposed pad, the MINI-1 LGA at 0.85 mm, the USB4105 at 0.5 mm. Fine |
+| DATA port | lead-free HASL, kept | – | The USB4105's 0.3 mm pads at 0.5 mm are its finest. Fine |
+| camera pod | lead-free HASL, kept | – | Nothing finer than the PH's 2 mm and 0603 parts. Fine |
+
+Sources:
+- [JLC PCBA capabilities](https://jlcpcb.com/capabilities/pcb-assembly-capabilities): the Economic
+  finish table, the minimum pitch, the X-ray FAQ;
+- [JLC surface finish article](https://jlcpcb.com/help/article/jlcpcb-surface-finish);
+- [JLC HASL blog](https://jlcpcb.com/blog/hasl-surface-finish-pcb);
+- [PCBSync surface finish guide](https://pcbsync.com/pcb-surface-finish/);
+- [PCBCart, ENIG vs immersion silver vs HASL](https://www.pcbcart.com/article/content/enig-vs-immersion-silver-vs-hasl).
 
 ## Promotions (checked 2026-10-20)
 

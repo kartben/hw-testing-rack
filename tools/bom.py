@@ -227,10 +227,7 @@ JLC_LEVERS = {
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (6 a "
          "board)", 1.51, "decision"),
     ],
-    "data-port-x4-v2": [
-        ("RN1–RN9, RN101–RN402: the 4 × 0402 resistor arrays (10k, 2.2k, 100 Ω: 3 extended types) as basic "
-         "0402 resistors: 60 parts instead of 15, the same 120 joints, a re-place and re-route of the pin "
-         "chains", 9.21, "decision"),
+    "data-port-x4-v2": [         # declined (2026-10-20, the v2 session): L1 stays the AOTA, the arrays stay
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board)", 1.01, "decision"),
     ],
