@@ -180,15 +180,26 @@ WEB = REPO / "site" / "assets" / "boards"
 
 def web_model(board_id: str, spec: dict) -> dict:
     """The viewer's copy (boards.yaml › model.web: the licence lets us publish it), from the normalised model:
-    every part as the maker drew it (decimating CAD meshes tears them: a board, a chip's body), parts under 0.3
-    mm dropped; one material per part from its colour (gold and bright grey parts read as metal: pins, pads,
-    shields, sockets; the PCB's layers as they are, the solder mask see-through over the copper), the parts of one
-    material merged.  Then gltfpack, when installed, quantises and meshopt-compresses it (about a tenth of the
-    size: the viewer decodes it, GLTFLoader + MeshoptDecoder); without it the file is written plain."""
-    sc = trimesh.load(SRC / f"{board_id}.norm.glb", force="scene")
-    span = sc.bounds[1] - sc.bounds[0]
+    by_material() (every part as drawn, one material per colour), then write_web() (meshopt when gltfpack is
+    installed)."""
+    out, n = by_material(baked(trimesh.load(SRC / f"{board_id}.norm.glb", force="scene")), board_id)
+    dst = WEB / f"{board_id}.glb"
+    packed = write_web(out, dst)
+    return {"web": str(dst.relative_to(REPO)), "faces": int(sum(len(g.faces) for g in out.geometry.values())),
+            "materials": n, "kB": round(dst.stat().st_size / 1024), "packed": packed}
+
+
+def by_material(meshes: list[trimesh.Trimesh], name: str) -> tuple[trimesh.Scene, int]:
+    """A model for the viewer from its meshes (Z up, the PCB in the XY plane): every part as the maker drew it
+    (decimating CAD meshes tears them: a board, a chip's body), parts under 0.3 mm dropped; one material per
+    part from its colour (gold and bright grey parts read as metal: pins, pads, shields, sockets; the PCB's
+    layers as they are, the solder mask see-through over the copper), the parts of one material merged.
+    Returns (scene, number of materials)."""
+    lo = np.min([m.bounds[0] for m in meshes], axis=0)
+    hi = np.max([m.bounds[1] for m in meshes], axis=0)
+    span = hi - lo
     groups: dict[tuple, list] = {}
-    for m in baked(sc):
+    for m in meshes:
         if max(m.extents) < 0.3:
             continue
         layer = m.extents[2] < 2.0 and m.extents[0] * m.extents[1] > 0.3 * span[0] * span[1]
@@ -202,21 +213,26 @@ def web_model(board_id: str, spec: dict) -> dict:
         m.visual = trimesh.visual.TextureVisuals(material=trimesh.visual.material.PBRMaterial(
             baseColorFactor=[*lin, rgba[3] / 255], metallicFactor=metal, roughnessFactor=rough,
             alphaMode="BLEND" if rgba[3] < 250 else "OPAQUE", doubleSided=False))
-        out.add_geometry(m, node_name=f"{board_id}-{i}", geom_name=f"{board_id}-{i}")
-    WEB.mkdir(parents=True, exist_ok=True)
-    dst = WEB / f"{board_id}.glb"
+        out.add_geometry(m, node_name=f"{name}-{i}", geom_name=f"{name}-{i}")
+    return out, len(groups)
+
+
+def write_web(scene: trimesh.Scene, dst: Path) -> bool:
+    """Write a viewer model: through gltfpack (meshoptimizer: on the PATH, or its command in $GLTFPACK), which
+    quantises and meshopt-compresses it (about a tenth of the size; the viewer decodes it, GLTFLoader +
+    MeshoptDecoder), else plain.  True when packed."""
+    dst.parent.mkdir(parents=True, exist_ok=True)
     pack = shlex.split(os.environ["GLTFPACK"], posix=False) if os.environ.get("GLTFPACK") else (
         [shutil.which("gltfpack")] if shutil.which("gltfpack") else None)
     if pack:
         with tempfile.TemporaryDirectory() as tmp:
             raw = Path(tmp) / "raw.glb"
-            out.export(raw)
+            scene.export(raw)
             subprocess.run([*pack, "-i", str(raw), "-o", str(dst), "-cc", "-km"], check=True, capture_output=True)
-    else:
-        out.export(dst)
-        print(f"{board_id}: no gltfpack, its copy is not compressed")
-    return {"web": str(dst.relative_to(REPO)), "faces": int(sum(len(g.faces) for g in out.geometry.values())),
-            "materials": len(groups), "kB": round(dst.stat().st_size / 1024), "packed": bool(pack)}
+        return True
+    scene.export(dst)
+    print(f"{dst.name}: no gltfpack, not compressed")
+    return False
 
 
 def _finish(rgba, layer: bool) -> tuple:

@@ -503,7 +503,9 @@ where it didn't matter (e.g. 150k RT, 100k/18k FB).
 * `<board>-bom.csv` (detailed, one line per value: MPN, manufacturer, LCSC,
   alternatives);
 * `docs/<board>-schematic.pdf`, SVGs, top/bottom/iso renders;
-* `fab/<board>.step` and `fab/<board>.glb` (the web viewer uses the GLB);
+* `fab/<board>.step` and `fab/<board>.glb` (the web viewer uses the GLB: `tools/pcb_glb.py` turns it into
+  `site/assets/pcb/<board>.glb`; the DATA ×4 v2's GLB is its STEP's, every body, kept whole and
+  meshopt-compressed, with a plain copy in `render/assets/pcb` for the renders);
 * `build/<board>-3d.json`: which placed parts the 3D export gives a body.
 
 **3D models.**  Some parts have no model in KiCad's 3D library: the ESP32-S3 module, the JST PH SMD

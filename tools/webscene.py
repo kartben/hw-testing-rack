@@ -603,7 +603,7 @@ def rounded_path(pts, r, step=2.0):
     return [[round(float(v), 2) for v in p] for p in dense]
 
 
-def lead_to_board(e, mouth, z_low, x_run, depth=7.0, lift=4.0, drop=None):
+def lead_to_board(e, mouth, z_low, x_run, depth=7.0, lift=4.0, drop=None, head=None):
     """The DATA lead from the drag chain's moving mouth (facing forwards) to the PH plug on the DATA
     board, drawn from the plug: out of it and down through the drawer's cable window, forwards under the
     drawer at z_low (over the camera-pod bosses) along x_run (clear of the chain's fixed run, which the
@@ -612,9 +612,13 @@ def lead_to_board(e, mouth, z_low, x_run, depth=7.0, lift=4.0, drop=None):
     over the row cable lying on its tie anchors (y ≤ 9.4, z ≤ 10.8), in.  A plug facing the rear (the
     single board's): back out of it, over to x_run in the rear bay, down.  drop = (x, floor z): a plug on
     the board's right edge (the DATA ×4's): out of it, down just behind it into the window's side strip at
-    x, then over to x_run under the drawer."""
+    x, then over to x_run under the drawer.  head: the lead's first points, out of the plug and down into the
+    window at x_run, drawn by the caller (the standing v2's J1: an elastica); it goes on straight down from there."""
     p0, d = plug_exit(e)
-    if drop is None:
+    if head is not None:
+        head = [np.asarray(q, float) for q in head]
+        head.append(np.array([x_run, head[-1][1], z_low]))
+    elif drop is None:
         p1 = p0 + d * 2.0
         head = [p0, p1, np.array([x_run, p1[1], p1[2]]), np.array([x_run, p1[1], z_low])]
     else:
@@ -1200,42 +1204,51 @@ def build(rack) -> Path:
         x_win = dxw_ + (q4["x0"] + q4["holes"][2][0] + 4.5 + w_end) / 2
         x4_drop = (dxw_ + (q4["x0"] + q4["size"][0] + 1.0 + w_end) / 2, plenum + d["bottom"])
         ph_z = plenum + dp_z + dp["thickness"] + 2.8
-        if x4 and v2:                # the planned v2 standing in its cradle: board, receptacles, headers, parts, PH 8
+        ph_up = [0, 0, 1]
+        if x4 and v2:                # the v2 standing in its cradle, its PH 8 (J1) on the rear face
             v = raw["pcb"]["data_port_x4_v2"]
             vx0, y_face, z0 = x4v2_frame(dy, plenum)
             bx, t, (bw, bh) = dxw_ + vx0, v["thickness"], v["size"]
             mv = {"layer": "drawers", "bay": bid, "row": i, "space": "row", "movable": drawer}
             add("x4_cradle", (dxw_, dy, plenum), row=i, layer="drawers", bay=bid, movable=drawer)
-
-            def slab(x_a, x_b, z_a, z_b):
-                items["boxes"].append({"kind": "pcb", "pos": [round(x_a, 3), round(y_face, 3), round(z_a, 3)],
-                                       "size": [round(x_b - x_a, 3), t, round(z_b - z_a, 3)], "color": "#1e6b3c", **mv})
-            nw, nh = v["notches"]["size"]
-            cuts = sorted(dxw_ + x for x in v["notches"]["x"])
-            slab(bx, bx + bw, z0 + nh, z0 + bh)                       # the board, its bottom strip between the notches
-            for x_a, x_b in zip([bx] + [c + nw / 2 for c in cuts], [c - nw / 2 for c in cuts] + [bx + bw]):
-                slab(x_a, x_b, z0, z0 + nh)
-            for n in range(1, 5):          # the vertical USB-C, their mouths 1 mm behind the port wall at v1's height
-                add("dataport_usb_x4", (dxw_ + x4_port_x(rack, n), y_face - v["face_y"] + 1.0, plenum + dp_z), row=i,
-                    layer="drawers", bay=bid, movable=drawer)
-            pins = [[round(c, 3) for c in pt] for n in range(1, 5) for pt, _ in x4v2_header_points(dxw_, dy, plenum, n)]
-            items["headers"].append({"bay": bid, "row": i, "space": "row", "movable": drawer, "board": "DATA ×4 v2",
-                                     "pins": [[x, round(y + HEADER["BASE"], 3), z] for x, y, z in pins],
-                                     "dir": [0, -1, 0], "tail": 0})     # SMD, on the front face, pins forward
-            for face, x, z, w, h, hh, col in x4v2_parts(v["usb"]):
-                y = y_face - hh if face < 0 else y_face + t
-                items["boxes"].append({"kind": "chip", "pos": [round(bx + x, 3), round(y, 3), round(plenum + z, 3)],
-                                       "size": [w, hh, h], "color": col, **mv})
-            for ux in v["usb"]:            # the port LEDs on the front face's top edge
-                items["leds"].append({"bay": bid, "row": i, "space": "row", "color": "#19e07a", "movable": drawer,
-                                      "pos": [round(bx + ux, 3), round(y_face - 0.4, 3), round(z0 + bh - 1.5, 3)]})
-            lx, lz = v["lead"]             # the PH 8 on the rear face, its mouth towards the rear
-            ph_h = 6.0
-            items["boxes"].append({"kind": "chip", "pos": [round(bx + lx - 9.75, 3), round(y_face + t, 3),
-                                                           round(plenum + lz - 2.25, 3)],
-                                   "size": [19.5, ph_h, 4.5], "color": "#f2f0e8", **mv})
-            ph_xy = (bx + lx, y_face + t + ph_h)
-            ph_dir = [0, -1, 0]
+            if (SITE_ASSETS / "pcb" / "data-port-x4-v2.glb").exists():
+                # the routed board, every body (tools/pcb_glb.py: x right, -KiCad y, its front face up), stood up:
+                # KiCad y down from its top edge, its front face towards the port wall
+                items["pcbs"].append({"board": "data-port-x4-v2", "pos": [round(bx, 3), round(y_face + t, 3),
+                                                                           round(plenum + v["top_z"], 3)],
+                                      "rot": [90, 0, 0], **mv})
+            else:                    # its stand-in: board, receptacles, headers, the study's parts, LEDs, J1
+                def slab(x_a, x_b, z_a, z_b):
+                    items["boxes"].append({"kind": "pcb", "pos": [round(x_a, 3), round(y_face, 3), round(z_a, 3)],
+                                           "size": [round(x_b - x_a, 3), t, round(z_b - z_a, 3)], "color": "#1e6b3c", **mv})
+                nw, nh = v["notches"]["size"]
+                cuts = sorted(dxw_ + x for x in v["notches"]["x"])
+                slab(bx, bx + bw, z0 + nh, z0 + bh)                       # the board, its bottom strip between the notches
+                for x_a, x_b in zip([bx] + [c + nw / 2 for c in cuts], [c - nw / 2 for c in cuts] + [bx + bw]):
+                    slab(x_a, x_b, z0, z0 + nh)
+                for n in range(1, 5):          # the vertical USB-C, their mouths 1 mm behind the port wall
+                    add("dataport_usb_x4", (dxw_ + x4_port_x(rack, n), y_face - v["face_y"] + 1.0, plenum + dp_z), row=i,
+                        layer="drawers", bay=bid, movable=drawer)
+                pins = [[round(c, 3) for c in pt] for n in range(1, 5) for pt, _ in x4v2_header_points(dxw_, dy, plenum, n)]
+                items["headers"].append({"bay": bid, "row": i, "space": "row", "movable": drawer, "board": "DATA ×4 v2",
+                                         "pins": [[x, round(y + HEADER["BASE"], 3), z] for x, y, z in pins],
+                                         "dir": [0, -1, 0], "tail": t + 1.5})   # through-hole, pins forward
+                for face, x, z, w, h, hh, col in x4v2_parts(v["usb"]):
+                    y = y_face - hh if face < 0 else y_face + t
+                    items["boxes"].append({"kind": "chip", "pos": [round(bx + x, 3), round(y, 3), round(plenum + z, 3)],
+                                           "size": [w, hh, h], "color": col, **mv})
+                for ux in v["usb"]:            # the port LEDs on the front face's top edge
+                    items["leds"].append({"bay": bid, "row": i, "space": "row", "color": "#19e07a", "movable": drawer,
+                                          "pos": [round(bx + ux, 3), round(y_face - 0.4, 3), round(z0 + bh - 1.5, 3)]})
+                lx, lz = v["lead"]
+                items["boxes"].append({"kind": "chip", "pos": [round(bx + lx - 2.25, 3), round(y_face + t, 3),
+                                                               round(plenum + lz - 8.95, 3)],
+                                       "size": [4.5, 6.0, 17.9], "color": "#f2f0e8", **mv})
+            # J1 (a B8B-PH-K-S standing 6.0 off the rear face, its pins down the board): the plug goes in from
+            # behind, its eight contacts along z
+            lx, lz = v["lead"]
+            ph_xy = (bx + lx, y_face + t + 6.0)
+            ph_dir, ph_up = [0, -1, 0], [1, 0, 0]
             ph_z = plenum + lz
         elif x4:                     # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
             q = raw["pcb"]["data_port_x4"]
@@ -1261,7 +1274,7 @@ def build(rack) -> Path:
             ph_dir = [0, -1, 0]
         j7 = {"at": [x0 + node["x0"] + node["size"][0], rack.node_front_y + node["size"][1] - node["right"]["data"],
                      pcb_top + NODE_J7_Z], "dir": [-1, 0, 0], "up": [0, 0, 1], "type": "ph8"}
-        ph = {"at": [ph_xy[0], ph_xy[1], ph_z], "dir": ph_dir, "up": [0, 0, 1], "type": "ph8"}
+        ph = {"at": [ph_xy[0], ph_xy[1], ph_z], "dir": ph_dir, "up": ph_up, "type": "ph8"}
         drop = x4_drop if x4 and not v2 else None     # v1's J1 drops into the side strip; the v2's lead the rear one
         if not drawer:
             cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 12.0, plenum - 3.0, x_win,
@@ -1274,7 +1287,21 @@ def build(rack) -> Path:
               row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 8, through the drag chain)")
         mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
         x_run = max(x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0, x_win)   # 6 mm off the fixed run
-        cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run, drop=drop), row=i, kind="ext",
+        head = None
+        if x4 and v2:                # off J1 on the v2's rear face: straight back out of the plug, then as it lies
+            # (an elastica, its own weight) down into the window's rear strip at x_run, going straight down there
+            p0, d0 = plug_exit(ph)
+            down = np.array([x_run, p0[1] + 8.0, plenum + d["bottom"] + 1.0])
+            v = raw["pcb"]["data_port_x4_v2"]
+            vx0, y_face, z0 = x4v2_frame(dy, plenum)
+            keep = [((dxw_ + vx0 - 3.0, y_face - 3.0, z0), (dxw_ + vx0 + v["size"][0] + 2.0, y_face + v["thickness"] + 2.6,
+                                                          z0 + v["size"][1])),          # the board and its uprights
+                    ((dxw_, dy + d["depth"] - d["wall"], plenum), (dxw_ + rack.drawer_w, dy + d["depth"], plenum + 30))]
+            pts, short, _ = rod_cable((p0, d0), (down, np.array([0.0, 0.0, 1.0])),
+                                      1.15 * float(np.linalg.norm(down - p0)) + 6.0, plenum + d["bottom"] - 5.0,
+                                      ARCH_TOP_MAX, keep, r=1.2, sag=CABLE_SAG, min_r=6.0, step=2.0)
+            head = pts if not short else None
+        cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run, drop=drop, head=head), row=i, kind="ext",
               bay=bid, radius=1.2, ends=[ph],
               label="DATA lead (JST PH 8, through the drag chain)", movable=True)
         return x0, plenum

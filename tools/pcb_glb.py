@@ -326,6 +326,31 @@ def convert(src: Path, dst: Path, art_path: Path | None = None, max_group_faces:
             "standins": n_standins, "bytes": dst.stat().st_size}
 
 
+def convert_bodies(src: Path, board: str) -> dict:
+    """A board's GLB converted from its STEP rather than KiCad's own GLB export: every body, the PCB one of them,
+    no copper or silkscreen meshes (the standing DATA ×4 v2's, from its session).  To the viewer's axes, then
+    board_models' treatment: one material per colour, nothing decimated (decimation tears CAD meshes).  Written
+    plain to render/assets/pcb (the renders read it) and meshopt-compressed to site/assets/pcb (the viewer)."""
+    import board_models
+    scene = trimesh.load(src, force="scene")
+    meshes = []
+    for node in scene.graph.nodes_geometry:
+        tf, gname = scene.graph[node]
+        g = scene.geometry[gname]
+        if isinstance(g, trimesh.Trimesh) and len(g.faces):
+            m = g.copy()
+            m.apply_transform(AXES @ tf)
+            meshes += board_models._by_material(m)
+    out, n = board_models.by_material(meshes, board)
+    plain = REPO / "render" / "assets" / "pcb" / f"{board}.glb"
+    plain.parent.mkdir(parents=True, exist_ok=True)
+    out.export(plain)
+    dst = REPO / "site" / "assets" / "pcb" / f"{board}.glb"
+    packed = board_models.write_web(out, dst)
+    return {"faces": int(sum(len(g.faces) for g in out.geometry.values())), "materials": n, "packed": packed,
+            "bytes": dst.stat().st_size}
+
+
 def restand(board: str) -> int:
     """Redo the stand-ins of an existing viewer GLB (site/assets/pcb/<board>.glb) from the current
     .kicad_pcb, without KiCad: drops its "standin*" nodes and adds them again."""
@@ -340,13 +365,17 @@ def restand(board: str) -> int:
     return n
 
 
-def main(boards=("bay-node", "power-hub")):
-    """  pcb_glb.py [--strict] [board ...]     KiCad fab GLBs → site/assets/pcb (+ stand-ins, 3D coverage)
+FROM_STEP = ("data-port-x4-v2",)     # boards whose fab GLB is their STEP's (every body: convert_bodies)
+
+
+def main(boards=("bay-node", "power-hub", "data-port-x4-v2")):
+    """  pcb_glb.py [--strict] [board ...]     KiCad fab GLBs → site/assets/pcb (+ stand-ins, 3D coverage); a
+                                                FROM_STEP board's (its STEP's GLB) → convert_bodies
          pcb_glb.py --standins [board ...]      redo only the stand-ins of the viewer GLBs
          pcb_glb.py --check [board ...]         the 3D coverage report alone; exit 1 if a part has no body"""
     boards = list(boards)
     strict = "--strict" in boards
-    boards = [b for b in boards if b != "--strict"] or ["bay-node", "power-hub"]
+    boards = [b for b in boards if b != "--strict"] or ["bay-node", "power-hub", "data-port-x4-v2"]
     if boards[0] == "--check":
         bad = 0
         for b in boards[1:] or ("bay-node", "power-hub"):
@@ -364,6 +393,9 @@ def main(boards=("bay-node", "power-hub")):
         src = REPO / "electronics" / b / "fab" / f"{b}.glb"
         if not src.exists():
             print("skip", b, "(no fab GLB; run tools/kicad.sh", b, "--fab)")
+            continue
+        if b in FROM_STEP:
+            print(b, convert_bodies(src, b))
             continue
         art = REPO / "electronics" / b / "build" / f"{b}-art.json"
         if not art.exists():

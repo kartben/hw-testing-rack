@@ -616,11 +616,11 @@ async function load() {
       GEOMS[name] = geo;
     }
   });
-  // PCB GLBs exported from KiCad (optional)
+  // PCB GLBs exported from KiCad (optional; the v2's meshopt-compressed: tools/pcb_glb.py)
   const pcbGlb = {};
-  for (const name of ['bay-node', 'power-hub']) {
+  for (const name of ['bay-node', 'power-hub', 'data-port-x4-v2']) {
     try {
-      const g = await new GLTFLoader().loadAsync(`assets/pcb/${name}.glb`);
+      const g = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(`assets/pcb/${name}.glb`);
       pcbGlb[name] = g.scene;
     } catch { /* stand-in */ }
   }
@@ -654,9 +654,12 @@ function build(pcbGlb) {
   // PCBs
   for (const p of DATA.pcbs) {
     const src = pcbGlb[p.board];
+    if (!src && p.board !== 'bay-node' && p.board !== 'power-hub') continue;      // its GLB missing: no stand-in
     const g = src ? src.clone(true) : (p.board === 'bay-node' ? makeNodeStandIn() : makeHubStandIn());
     g.position.set(...p.pos);
-    track(g, { layer: p.board === 'bay-node' ? 'nodes' : 'power', bay: p.bay || null, row: p.row ?? null, zone: 'pcb', space: p.space });
+    if (p.rot) g.rotation.set(deg(p.rot[0]), deg(p.rot[1]), deg(p.rot[2]));    // the standing v2
+    track(g, { layer: p.layer ?? (p.board === 'bay-node' ? 'nodes' : 'power'), bay: p.bay || null, row: p.row ?? null,
+               movable: !!p.movable, zone: 'pcb', space: p.space });
   }
   // 2.54 mm pin headers, soldered pins up (the DUTs', the DATA ×4's): tools/webscene.py › HEADER
   const H = DATA.header;

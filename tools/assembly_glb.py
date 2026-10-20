@@ -313,8 +313,10 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         tf, g = parts.graph[node]
         geoms[node] = parts.geometry[g].copy().apply_transform(tf)
     pcb = {}
-    for name in ("bay-node", "power-hub"):
-        f = ASSETS / "pcb" / f"{name}.glb"
+    for name in ("bay-node", "power-hub", "data-port-x4-v2"):
+        # the v2's viewer copy is meshopt-compressed (trimesh can't read it): its plain twin from tools/pcb_glb.py
+        f = REPO / "render" / "assets" / "pcb" / f"{name}.glb"
+        f = f if f.exists() else ASSETS / "pcb" / f"{name}.glb"
         if f.exists():
             s = trimesh.load(f)
             pcb[name] = [(s.geometry[g].copy().apply_transform(tf)) for tf, g in
@@ -369,8 +371,11 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
             add(m, f"boards:{b['id']}", place("row", b["row"], translate(np.add(b["pos"], [0, drawer_dy(b), 0]))),
                 b.get("bay"))
     for p in scene_json["pcbs"]:
+        dy = drawer_dy(p) if p.get("movable") else 0.0
         for m in pcb.get(p["board"], []):
-            add(m, f"pcb:{p['board']}", place(p.get("space"), p.get("row"), translate(p["pos"])), p.get("bay"))
+            add(m, f"pcb:{p['board']}", place(p.get("space"), p.get("row"),
+                                              translate(np.add(p["pos"], [0, dy, 0])) @ rot_xyz(p.get("rot", [0, 0, 0]))),
+                p.get("bay"))
     for bx in scene_json["boxes"]:
         m = trimesh.creation.box(bx["size"], transform=translate(np.array(bx["size"]) / 2))
         dy = drawer_dy(bx) if bx.get("movable") else 0.0
