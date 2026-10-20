@@ -2,7 +2,7 @@
  * M5Stack CoreS3 as a bench stand-in for the bay node: the USB host and
  * USB/IP to a real DUT on the CoreS3's own USB-C, Wi-Fi, the web page, the
  * shell (over telnet once the host has the PHY), the AUX console, and the
- * node's INA226 or a DATA x4 on Grove port A.  docs/cores3-bench.md has the
+ * node's INA226 or a DATA x4 on Grove port A.  docs/bench.md has the
  * bench plan.
  *
  *   USB-C          the DUT, through a USB-C OTG cable or adapter.  Its VBUS

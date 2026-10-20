@@ -71,7 +71,7 @@ jobs:
             board: power_hub/esp32s3/procpu
             app: firmware/power-hub
             sysbuild: true
-          # Bench stand-ins on an M5Stack CoreS3 (docs/cores3-bench.md): the node
+          # Bench stand-ins on an M5Stack CoreS3 (docs/bench.md): the node
           # (USB host and USB/IP on its own USB-C) and the hub (a CH224A breakout
           # on Grove port A)
           - name: cores3_node
@@ -80,6 +80,15 @@ jobs:
             sysbuild: true
           - name: cores3_hub
             board: m5stack_cores3/esp32s3/procpu
+            app: firmware/power-hub
+            sysbuild: true
+          # ... and on a Seeed XIAO ESP32-S3: the node's octal PSRAM, IMON for the hub
+          - name: xiao_node
+            board: xiao_esp32s3/esp32s3/procpu
+            app: firmware/bay-node
+            sysbuild: true
+          - name: xiao_hub
+            board: xiao_esp32s3/esp32s3/procpu
             app: firmware/power-hub
             sysbuild: true
           # The rack bus protocol on a simulated rack (hub + nodes), run below

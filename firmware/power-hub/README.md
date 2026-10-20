@@ -33,8 +33,8 @@ development server and screenshot tooling.
 
 ## Building and flashing
 
-On a bench before the hub exists: an M5Stack CoreS3 with a CH224A board on Grove port A
-(`-b m5stack_cores3/esp32s3/procpu`, [docs/cores3-bench.md](../../docs/cores3-bench.md)).
+On a bench before the hub exists: an M5Stack CoreS3 or a XIAO ESP32-S3 with a CH224A board
+(`-b m5stack_cores3/esp32s3/procpu` or `-b xiao_esp32s3/esp32s3/procpu`, [docs/bench.md](../../docs/bench.md)).
 
 In the workspace made from [`firmware/west.yml`](../west.yml) (see
 [`firmware/README.md`](../README.md#building)):

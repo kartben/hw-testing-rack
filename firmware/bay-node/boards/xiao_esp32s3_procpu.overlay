@@ -1,0 +1,116 @@
+/*
+ * Seeed XIAO ESP32-S3 (or its Sense) as a bench stand-in for the bay node:
+ * the closest one to the node, a bare ESP32-S3R8 with 8 MB of octal PSRAM
+ * like the node's WROOM-1-N8R8.  The USB host and USB/IP to a real DUT on
+ * the XIAO's USB-C, Wi-Fi, the web page, the shell (over telnet once the
+ * host has the PHY), the AUX console, RESET/BOOT, the node's INA226 and a
+ * DATA x4.  docs/bench.md has the bench plan.
+ *
+ *   USB-C   the DUT, through a USB-C OTG cable or adapter.  The USB-C's
+ *           VBUS is the XIAO's 5V pin, nothing between (Seeed's
+ *           schematic): 5 V fed into the 5V pin powers the XIAO and the
+ *           DUT, always on.  D2 (DUT_EN) can drive a high-side switch in
+ *           that feed if the XIAO runs from a LiPo on its BAT pads.
+ *           Never feed the 5V pin while a PC is on the USB-C.
+ *   D0  G1  RESET -> DUT EN/RST      D6  G43  AUX TX -> DUT RX
+ *   D1  G2  BOOT  -> DUT IO0         D7  G44  AUX RX <- DUT TX
+ *   D2  G3  DUT_EN (see above)       D8  G7   SERVICE (pulled down; to 3.3 V:
+ *   D3  G4  DUT_FLT_N (pulled up)             the USB-C back to the PC)
+ *   D4  G5  SDA: INA226 / DATA x4    D9  G8   PC_DET (pulled down)
+ *   D5  G6  SCL                      D10 G9   MUX_FORCE_PC (unused)
+ *
+ * RESET and BOOT are open drain and active low here, straight to an ESP32
+ * DUT's EN and IO0.  The console is the USB-Serial-JTAG until the host takes
+ * the PHY, then the shell over telnet; BOOT held across RESET (or SERVICE)
+ * gives the USB-C back for flashing.  Camera, status LED (the XIAO's LED
+ * stays the board's) and rack bus off.  On a Sense, D8-D10 are also its SD
+ * slot's: leave it empty.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "../../boards/hwtr/bay_node/bay_node-pinctrl.dtsi"
+#include "../../boards/hwtr/bay_node/bay_node.dtsi"
+/* A DATA x4 on D4/D5 (the board's I2C0) */
+#include "../data-x4.dtsi"
+
+&pinctrl {
+	xiao_aux_uart: xiao_aux_uart {
+		group1 {
+			pinmux = <UART1_TX_GPIO43>;
+			output-high;
+		};
+
+		group2 {
+			pinmux = <UART1_RX_GPIO44>;
+			bias-pull-up;
+		};
+	};
+};
+
+&dut_port {
+	enable-gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+	fault-gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	reset-gpios = <&gpio0 1 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
+	boot-gpios = <&gpio0 2 (GPIO_ACTIVE_LOW | GPIO_OPEN_DRAIN)>;
+	tx-gpios = <&gpio1 11 GPIO_ACTIVE_HIGH>;
+};
+
+&usb_mux {
+	force-pc-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
+	pc-detect-gpios = <&gpio0 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+	service-gpios = <&gpio0 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+};
+
+/* AUX on D6/D7, the board's UART0 pins: UART0 off */
+&uart1 {
+	pinctrl-0 = <&xiao_aux_uart>;
+};
+
+&uart0 {
+	status = "disabled";
+};
+
+/* The node's bus on the board's I2C0 pins (D4 SDA, D5 SCL) */
+&i2c0 {
+	pinctrl-0 = <&i2c0_default>;
+};
+
+&ina226 {
+	/delete-property/ alert-gpios;
+};
+
+/* SPI2 sits on D8-D10: off, with the node's camera */
+&spi2 {
+	status = "disabled";
+};
+
+&camera {
+	status = "disabled";
+};
+
+&camera_light {
+	status = "disabled";
+};
+
+&ledc0 {
+	status = "disabled";
+};
+
+/* No WS2812 */
+&status_led {
+	status = "disabled";
+};
+
+&rmt {
+	status = "disabled";
+};
+
+/* No CAN transceiver, no pins left: the rack bus is off */
+&rack_bus {
+	status = "disabled";
+};
+
+&twai {
+	status = "disabled";
+};

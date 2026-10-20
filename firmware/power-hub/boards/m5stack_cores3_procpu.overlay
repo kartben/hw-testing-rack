@@ -2,7 +2,7 @@
  * M5Stack CoreS3 as a bench stand-in for the power hub: the CH224A's
  * negotiation on a breakout (USB-C PD charger -> breakout -> its VBUS out),
  * its PG, VBUS on the ADC, the contract policy, one row (A) as logic levels,
- * Wi-Fi, the web page and the shell.  docs/cores3-bench.md has the bench
+ * Wi-Fi, the web page and the shell.  docs/bench.md has the bench
  * plan.  The CoreS3 itself runs from its USB-C (the PC: console, flashing).
  *
  *   Grove A (red)  G2 SDA, G1 SCL: the CH224A breakout (its CFG3 = SDA,

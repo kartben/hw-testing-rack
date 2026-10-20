@@ -1,0 +1,126 @@
+/*
+ * Seeed XIAO ESP32-S3 as a bench stand-in for the power hub: the CH224A's
+ * negotiation on a breakout (USB-C PD charger -> breakout -> its VBUS out),
+ * its PG, VBUS on the ADC, the contract policy, row A as logic levels with
+ * an IMON you can turn (so shedding and the adaptive 20/28 V switch too),
+ * Wi-Fi, the web page and the shell.  docs/bench.md has the bench plan.  The
+ * XIAO runs from its USB-C (the PC: console, flashing).
+ *
+ *   D0  G1  VBUS_SENSE <- the breakout's VBUS through 100k / 10k (2.5 V at
+ *           28 V; ADC1 channel 0).  Never VBUS straight on a pin.
+ *   D1  G2  ROW_EN_A: an LED + 330R to GND shows the row
+ *   D2  G3  FLT_A (pulled up: no fault; to GND: an eFuse fault)
+ *   D3  G4  PD_INT <- the CH224A's PG (open drain, pulled up here)
+ *   D4  G5  SDA -> the CH224A's CFG3     D5  G6  SCL -> its CFG2
+ *           (CFG1 6.8k to GND: 9 V at plug-in and I2C on; GND joined)
+ *   D6  G43 CAN TX, D7 G44 CAN RX: optional, a 3.3 V transceiver module
+ *   D8  G7  POS_A
+ *   D9  G8  I2C_PU (nothing on it: the CH224A's own pull-ups)
+ *   D10 G9  IMON_A: a 10k potentiometer between 3V3 and GND (1.404 V/A:
+ *           ADC1 channel 8, 0 to 2.3 A)
+ *   LED     the XIAO's own LED (G21) is CTL
+ *
+ * Rows B-D are not wired.  The console is the USB-Serial-JTAG, so UART0 is
+ * off (D6/D7 are CAN's).
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "../../boards/hwtr/power_hub/power_hub-pinctrl.dtsi"
+#include "../../boards/hwtr/power_hub/power_hub.dtsi"
+
+&pinctrl {
+	xiao_twai: xiao_twai {
+		group1 {
+			pinmux = <TWAI_TX_GPIO43>;
+			output-high;
+		};
+
+		group2 {
+			pinmux = <TWAI_RX_GPIO44>;
+			bias-pull-up;
+		};
+	};
+};
+
+&power_hub {
+	i2c-pullup-gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>;
+};
+
+&row_a {
+	enable-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+	fault-gpios = <&gpio0 3 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	pos-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+};
+
+&row_b {
+	status = "disabled";
+};
+
+&row_c {
+	status = "disabled";
+};
+
+&row_d {
+	status = "disabled";
+};
+
+/* IMON A on D10 (ADC1 channel 8); B-D not wired */
+&imon_a {
+	io-channels = <&adc0 8>;
+};
+
+&imon_b {
+	status = "disabled";
+};
+
+&imon_c {
+	status = "disabled";
+};
+
+&imon_d {
+	status = "disabled";
+};
+
+/* VBUS_SENSE on D0 (ADC1 channel 0, configured by the hub's devicetree) */
+&vbus_sense {
+	io-channels = <&adc0 0>;
+};
+
+&adc0 {
+	channel@8 {
+		reg = <8>;
+		zephyr,gain = "ADC_GAIN_1_4";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+		zephyr,resolution = <12>;
+	};
+};
+
+/* The CH224A on the board's I2C0 pins (D4 SDA, D5 SCL), PG on D3 */
+&i2c0 {
+	pinctrl-0 = <&i2c0_default>;
+};
+
+&pd_sink {
+	pg-gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+};
+
+/* CAN on D6/D7, no standby line */
+&twai {
+	pinctrl-0 = <&xiao_twai>;
+	/delete-property/ phys;
+};
+
+&can_phy {
+	status = "disabled";
+};
+
+/* CTL is the XIAO's own LED */
+&ctl_led {
+	gpios = <&gpio0 21 GPIO_ACTIVE_LOW>;
+};
+
+&uart0 {
+	status = "disabled";
+};
