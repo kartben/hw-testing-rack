@@ -1,0 +1,115 @@
+# Power distribution review: the row wiring, and a hub ≤ 100 mm (2026-10-20)
+
+A study, no board change yet.  The user's question: can the power hub fit in 100 mm, maybe with
+other connectors, and do the row cables carry enough current?  VRACK is 20 V or 28 V (the
+CH224A's contract), not 24 V.
+
+## A. The row wiring
+
+### Loads
+
+What a bay draws from the node's +5V (5.24 V).  A bay's buck (LMR51635) runs at ≈ 87 % from 28 V
+and ≈ 89 % from 20 V.
+
+| Load | Typical | Worst |
+|---|---|---|
+| The node (ESP32-S3 on Wi-Fi, LED, INA226, LDO) | 0.20 A | 0.30 A |
+| Its DUT side (a DATA port, or a DATA ×4 with its 4 ports and its hub) | per board, below | 1.52 A: the node's TPS2553D (R_ILIM 18k) caps it, whatever the DATA board asks (4 × 0.62 A on a DATA ×4) |
+| The camera and its light | 0.36 A | 0.36 A |
+
+A bay at its limits takes 11.0 W from VRACK, 13.1 W with a camera.  That is 0.39 / 0.47 A at
+28 V and 0.54 / 0.64 A at 20 V.
+
+The rack's real population (`config/rack.yaml`), typical draw of the boards (estimates, debug
+probes on):
+- **Row A:** Nucleo-64 0.12 A, Nucleo-144 0.30 A, nRF52840-DK 0.08 A, nRF54L15-DK 0.08 A.
+- **Row B:**
+  - B1: DATA-4x base with a Pico 2 and an FRDM-MCXN947, 0.33 A;
+  - B2: GIGA R1 with its display, plus the camera, 0.55 A + 0.36 A;
+  - B3: DATA ×4 v2 with 2 XIAO and 2 Pico 2, 0.33 A;
+  - B4: Uno R4, 0.10 A.
+
+### Current per segment of the daisy chain
+
+The first segment (hub → first bay) carries the whole row, the last one a single bay.
+
+| Row, VRACK | Typical (A) | Worst (A) |
+|---|---|---|
+| A, 28 V | 0.30 / 0.23 / 0.12 / 0.06 | **1.57** / 1.17 / 0.78 / 0.39 |
+| B, 28 V | 0.53 / 0.42 / 0.18 / 0.06 | **1.64** / 1.25 / 0.78 / 0.39 |
+| A, 20 V | 0.41 / 0.31 / 0.16 / 0.08 | **2.14** / 1.61 / 1.07 / 0.54 |
+| B, 20 V | 0.73 / 0.57 / 0.24 / 0.09 | **2.25** / 1.71 / 1.07 / 0.54 |
+
+![Row B's segments against the chain's limits](img/row-currents.png)
+
+A full row of four camera bays at their limits would draw 1.88 A at 28 V and 2.57 A at 20 V.  The
+whole rack typically draws ≈ 25 W.
+
+### What the chain allows
+
+| Link | Limit |
+|---|---|
+| The hub's eFuse (TPS26600, R_ILIM 7.5k) | 1.6 A per row (1.52–1.68 A): it holds the row there, whatever the bays ask |
+| JST PH contact, VRACK on one pin, GND on two | 2 A per contact **with AWG 24 only**; JST gives no figure for thinner wire, ≈ 1–1.5 A on the usual 26–28 AWG |
+| The BOM's leads (AliExpress 1005008045292937) | gauge not stated, in the text or the photos: red-white flat cable at 2 mm pitch, "bare copper", usually 26 AWG, sometimes 28 |
+| The node's J1/J2 | SMD PH on solid islands, 2 vias (0.3 mm) each into a 3.8 mm VRACK strip on In2 (0.5 oz): ≈ 24 A/mm² and 30 mV across the board at 1.6 A |
+| The hub's row outputs | 0.8 mm tracks on 1 oz with 3 vias at each layer change: ≈ 2.4 A for a 10 °C rise |
+
+Voltage drop to a row's last node, with 1.6 A in the first segment: 0.35–0.42 V on AWG 24, 0.42–0.53 V
+on AWG 26, 0.52–0.70 V on AWG 28 (VRACK on one conductor, GND on two, 20 mΩ per mated contact).  The
+nodes run from 13.5 V: **the drop doesn't matter, the contacts and the wire's heating do.**  At
+1.6 A, the VRACK conductor of a 26 AWG lead dissipates 0.34 W/m, warm (≈ +10–15 °C in the flat
+cable); 28 AWG 0.55 W/m.  Each contact dissipates ≈ 50 mW.
+
+### Verdict
+
+- **Typical loads: OK.**  ≤ 0.6 A per row at 28 V (0.8 A at 20 V), a third of a PH contact's rating.
+- **Worst case: marginal.**  At 28 V a full row reaches the eFuse's 1.6 A.  That is 80 % of a PH
+  contact, but only on AWG 24, and the leads we buy are probably 26 AWG.  It works, warm, outside
+  JST's rated conditions; the eFuse caps it, nothing burns.
+- **At 20 V the worst case (2.1–2.25 A) doesn't fit:** the eFuse limits the row.  28 V stays the
+  default; 20 V is only for light rows.
+
+### Fixes
+
+| Fix | What it gives | Cost and effort | Board change |
+|---|---|---|---|
+| **1. AWG 24 row leads**, crimped (PHR-6 + SPH-002T-P0.5S, 24 AWG; ≈ 100 crimps for 2 rows) or from a listing that states 24 AWG; measure a conductor on arrival (24 AWG ≈ 0.51 mm, 26 ≈ 0.40, 28 ≈ 0.32) | PH's 2 A rating: 1.6 A is 80 % of it | a few euros; a crimp tool and an evening | none |
+| 2. **PH 8 rows**: VRACK on 2 pins, GND on 3 (S8B-PH-SM4-TB, the node's J7 type, C265121; the same 8P "Same direction" leads as the DATA leads) | 0.8 A per contact at 1.6 A, on any gauge; the eFuse could go to 2.2 A (TPS26600's maximum, R_ILIM 5.36k) for 20 V's worst case | +$0.06 a connector; a new row pinout (docs/can.md), 4 mm more per connector | node J1/J2, hub rows, the tray windows (+4 mm) |
+| 3. JST XH 6 (S6B-XH-SM4-TB, C191914, 6 811 in stock, $0.68), 2.5 mm pitch | 3 A per contact, with AWG 22 leads (XH leads are common, mostly 26 AWG: 22 AWG to find) | +$0.29 a connector; 20 × 10 mm footprints | node J1/J2, hub rows, windows |
+| 4. Molex Micro-Fit 3.0, or power on its own 2-pin (XH or VH) plus CAN on a small PH | 5 A per contact; or separate power | ≈ $1+ a connector, two cables per hop | everything; over-sized for ≤ 2 A |
+
+**Recommended:** fix 1 now (no board change), and keep the eFuse at 1.6 A as the cap.  Fix 2 only
+if a row ever has to carry four heavy bays at 20 V.
+
+## B. The hub in ≤ 100 mm
+
+Today it is 76 × 140 mm, 86 × 140 with JLC's rails, so the $25 engineering fee applies.  At
+86 × 100 with rails it gets JLC's 4-layer offer: −$24.60 an order (`JLC_LEVERS`).  What has to fit:
+- the CH224A input on the GCT USB4105;
+- the eFuse rows, the CAN and the MINI-1 with its antenna band (its courtyard wing spans ±22.7 mm
+  across the rear edge: the module can't move sideways);
+- the 6 front LEDs and the console USB-C.
+
+A PH 6 side-entry header takes 17.2 mm along the edge, an eFuse row's parts ≈ 32 × 11.5 mm.
+
+![Today and the three placements, to scale](img/hub-100mm-options.png)
+
+| Option | Rows | Layout | Risk | The power box |
+|---|---|---|---|---|
+| **B1** | 4, side entry at 17.5 mm | the rows packed down the left edge from y ≈ 22 to 91 | no room between the eFuse clusters for the rows' 0.8 mm outputs and their signals; re-route is hard | 40 mm shorter; 4 windows at new heights |
+| **B2** | **3, side entry at 23 mm, as today**: the 3 × 4 frame has 3 rows, the 4th output was a spare | the rows at y ≈ 33 / 56 / 79, the rest as today, moved up | the least: today's row geometry; one eFuse row fewer (≈ $2 a board) | 40 mm shorter; 3 windows |
+| **B3** | 4, on vertical PH 6 (B6B-PH-SM4-TB, the node's vertical type) stacked 9.5 mm apart at the left | the leads go up and out through a slot in the box's left wall, under the lid | the leads bend inside the box (≈ 14 mm above the board) | 40 mm shorter; a slot under the lid instead of the windows |
+
+In every option:
+- the rear edge stays (PD input at x 62, the module and its antenna band), and so does the front
+  (LEDs, console);
+- the front-left screw moves to y ≈ 95;
+- `config/rack.yaml` › `pcb.power_hub` (size, holes, rows) and `power_box` (84 × 148 → 84 × 108)
+  follow.
+
+With the PH 8 rows of fix 2, B1 no longer fits (4 × 21 mm); B2 and B3 (B8B vertical) do.
+
+**Recommended: B2.**  Three rows is what the frame takes, and it keeps today's row layout.  Then
+re-place, re-route and re-check the hub (ERC/DRC, the CPL audit, Fabio's rules, the power pads),
+and Mechanics shortens the power box.

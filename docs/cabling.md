@@ -122,7 +122,8 @@ The rack bus, **VRACK**, is 20 or 28 V: whatever the hub negotiated with the
 USB-C PD charger ([power.md](power.md)).  The charger's 5 A e-marked cable
 plugs into the power box's rear wall.
 
-* **Bay to bay:** 6-pin JST PH jumpers, 24 AWG, 120 mm (VRACK, GND, CAN_H,
+* **Bay to bay:** 6-pin JST PH jumpers, 24 AWG wanted (the listing doesn't state it:
+  [power-distribution-review.md](power-distribution-review.md)), 120 mm (VRACK, GND, CAN_H,
   CAN_L, GND, POS: [can.md](can.md)), plugged into the node's right (OUT) and
   the next node's left (IN) connectors through the windows in both tray walls
   and the shared ladder (from the plugs forward to the fascia).  From the
