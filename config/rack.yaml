@@ -134,7 +134,9 @@ population:
     boards:                  # ports 2 and 4, ports 1 and 3 free (a third board leaves no room for its pegs' cams, 2026-10-20)
       - { board: rpi-pico2,    cable: c-to-micro-b-straight, slot: 2, at: [34.0, 16.0] }   # a straight 15 cm cable, an S
       - { board: frdm-mcxn947, cable: c-to-c, slot: 4, at: [60.0, 15.4] }   # its USB to the port wall, 90° plugs, an arch;
-                                                                             # left of the plate's right finger slot
+                                                                             # left of the plate's right finger slot.  The
+          # upright loop is right: 26.7 mm between the sockets (two straight plugs need 56), 15 cm the shortest that
+          # reaches, and its weight can't fold two vertical exits 35 mm apart (checked 2026-10-20: leant starts, side plugs)
     jumpers:                 # Dupont female–female, 20 cm, from the base's 2 × 6 (only GND, RESET and BOOT live): the Pico 2's
       B1.2: { RESET: RUN }     # RESET is RUN (its BOOTSEL a test pad; no GND wire: the USB cable carries it; the FRDM's MCU-Link
                                # resets it)
