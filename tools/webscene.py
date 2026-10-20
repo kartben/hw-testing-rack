@@ -69,6 +69,22 @@ WEB_PARTS["ph8_plug"] = ("parts/usb_plugs.scad", {"STYLE": "ph8"})
 NODE_J7_Z = 2.8
 NODE_J6_H = 8.0     # J6 (camera, JST PH 8 vertical, at config/rack.yaml › pcb.bay_node.cam): mated height
 
+# Dupont jumper wires, female–female, on 2.54 mm pin headers soldered pins up (boards.yaml › headers, the DATA
+# ×4's): the housing (W square, L long, a slight shoulder at its back), the crimp's insulation barrel out of it
+# (CRIMP), then a 26 AWG wire R in radius, its (EI / w)^⅓ SAG (stiff for its weight: jumpers stand in loops) and
+# its tightest bend MIN_R.  site/app.js draws the housing and crimp from these.  A header: a BASE high plastic
+# strip, its pins PIN above it (a housing's mouth rests on the strip) and TAIL below the board.
+DUPONT = dict(W=2.5, L=14.0, SHOULDER=1.6, CRIMP=1.8, R=0.65, SAG=80.0, MIN_R=4.0, STEP=5.0)
+HEADER = dict(BASE=2.5, PIN=6.0, TAIL=3.0, PITCH=2.54)
+# the usual rainbow, used for meaning: GND black, VREF red, RESET brown, BOOT green, the signals by bus
+DUPONT_COLOURS = {"black": "#1d1d1f", "brown": "#6e4127", "red": "#c62828", "orange": "#ef6c00",
+                  "yellow": "#f2c40f", "green": "#2e8b3d", "blue": "#1f5fc8", "violet": "#7b3fb5",
+                  "grey": "#8c8c8c", "white": "#ececec"}
+HEADER_PIN_COLOUR = {"GND": "black", "VREF": "red", "RESET": "brown", "BOOT": "green", "P1": "orange",
+                     "P2": "yellow", "P3": "blue", "P4": "violet", "P5": "grey", "P6": "white", "P7": "green",
+                     "P8": "brown"}
+JUMPER_LENGTHS = (200, 300)   # mm, end to end: the 20 cm strips, 30 cm where 20 cm does not reach (the usual sizes)
+
 
 # the row cable's tie anchors in the tray (tray.scad › JUMPER_TIES: carrier x, y of their centre)
 JUMPER_TIES = [(118.0, 7.25), (150.0, 7.25)]
@@ -91,7 +107,55 @@ def dataport_parts(rack) -> dict:
     x4 = {**defs, "BW": q["size"][0], "BD": q["size"][1], "BT": q["thickness"], "HOLES": q["holes"], "USBX": 0,
           "PHX": q["ph"], "PHY": q["notch"][1] + q["notch"][3], "NOTCH": q["notch"]}
     out.update({f"dataport_{k}_x4": ("parts/usb_plugs.scad", {**x4, "PIECE": k}, None) for k in ("pcb", "usb", "ph")})
+    v2 = rack.raw["pcb"]["data_port_x4_v2"]          # the planned v2: its outline; its USB-Cs and PH 8 where v1 has them
+    out["dataport_pcb_x4v2"] = ("parts/usb_plugs.scad", {**x4, "BD": v2["size"][1], "HOLES": v2["holes"],
+                                                         "NOTCH": v2["notch"], "PIECE": "pcb"}, None)
     return out
+
+
+def header_pins(bd: dict) -> list[tuple[float, float, str]]:
+    """A board's header pins (boards.yaml › headers): [(x, y, name)] in its drawing."""
+    out = []
+    for h in bd.get("headers", []):
+        (x, y), (sx, sy) = h["at"], h.get("step", [0, -HEADER["PITCH"]])
+        names = h.get("names", [])
+        out += [(x + sx * k, y + sy * k, names[k] if k < len(names) else str(k + 1)) for k in range(h["n"])]
+    return out
+
+
+def x4_header_pins(raw: dict, port: int, v2: bool) -> list[tuple[float, float, str]]:
+    """The DATA ×4's header at port 1–4: [(x, y, name)], KiCad (y from the rear edge).  v1: the 1 × 3 (GND,
+    RESET, BOOT, pcb.data_port_x4.aux); v2 (planned): the 2 × 6, odd pins on its front row (pcb.data_port_x4_v2)."""
+    if v2:
+        h = raw["pcb"]["data_port_x4_v2"]["header"]
+        x0 = h["x"][port - 1] - (h["cols"] - 1) * HEADER["PITCH"] / 2
+        return [(x0 + HEADER["PITCH"] * (k // 2), h["even_y"] if k % 2 else h["odd_y"], name)
+                for k, name in enumerate(h["names"])]
+    a = raw["pcb"]["data_port_x4"]["aux"]
+    return [(a["pin1"][port - 1] + a["step"][port - 1] * k, a["y"], name) for k, name in enumerate(a["names"])]
+
+
+# The planned v2's main parts on its top side (the research's concept placement: docs/data-x4-v2-research.md,
+# its courtyards shrunk to the bodies), until its KiCad model exists: (KiCad x, y of the body's rear-left corner,
+# w, l, h, colour).  Per port at its USB-C's x (cx); then the hub's corner.
+IC, ARRAY, METAL = "#1b1b1d", "#2b2b2d", "#c9ccd1"
+
+
+def x4v2_parts(usb_x) -> list[tuple]:
+    out = []
+    for cx in usb_x:
+        out += [(cx - 7.3, 6.15, 2.5, 1.0, 0.55, IC), (cx - 4.1, 6.15, 2.5, 1.0, 0.55, IC),          # TPD4E05U06 ×2
+                *[(cx - 0.8 + 2.6 * k, 6.1, 2.0, 1.0, 0.45, ARRAY) for k in range(4)],            # 0402 × 4 arrays
+                (cx - 7.3, 8.3, 4.5, 2.5, 0.9, IC),                                              # LSF0108
+                (cx - 1.7, 8.3, 3.0, 3.0, 1.0, IC),                                              # INA226
+                (cx + 4.1, 8.2, 3.2, 1.6, 0.6, "#3c3c3e"),                                       # 100 mR shunt
+                (cx + 4.2, 10.7, 2.9, 2.8, 1.1, IC),                                             # TPS2553
+                (cx + 5.2, 16.3, 2.9, 2.8, 1.1, IC)]                                             # USBLC6
+    return out + [(76.0, 7.3, 9.0, 9.0, 0.9, IC),                                                # USB2517
+                  (80.65, 17.45, 3.2, 2.5, 0.8, METAL),                                          # 24 MHz crystal
+                  (87.85, 19.65, 2.9, 2.8, 1.1, IC),                                             # LDO
+                  (92.05, 19.65, 2.9, 2.8, 1.1, IC), (95.85, 19.65, 2.9, 2.8, 1.1, IC),          # the lead's ESD
+                  (75.9, 21.7, 3.0, 3.0, 0.9, IC), (79.9, 21.7, 3.0, 3.0, 0.9, IC)]              # TCA6408A ×2
 
 # Parts whose print orientation differs from their assembly orientation get an
 # "assembly" variant rendered with the print rotation undone.
@@ -254,6 +318,8 @@ def plug_exit(end):
     at, d = np.array(end["at"], float), np.array(end["dir"], float)
     if end["type"] in ("ph5", "ph8"):                       # a JST PHR-n: its wires leave its back
         return at - d * 6.0, -d
+    if end["type"] == "dupont":                             # out of the crimp at the housing's back
+        return at - d * (DUPONT["L"] + DUPONT["CRIMP"]), -d
     up = np.array(end.get("up", (0, 0, 1)), float)
     p = USB_PLUGS.get(end["type"], USB_PLUGS["usb-c"])
     if end.get("style") == "right":
@@ -398,21 +464,25 @@ def _resample(pts, n):
     return np.array([np.interp(s, run, pts[:, k]) for k in range(3)]).T
 
 
-def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoid=(), outward=None):
+def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoid=(), outward=None,
+              r=CABLE_R, sag=CABLE_SAG, min_r=CABLE_MIN_R, step=None):
     """A cable as it really lies between two plugs: a rod exactly `length` long (the free length between the
     strain reliefs), leaving each relief along its plug's axis, in the shape of least energy (bending, with
     its own weight: an elastica), above floor_z, under ceil_z, out of `boxes` ((lo, hi) corners: boards,
-    walls), off itself and the cables in `avoid` (their points), and nowhere tighter than CABLE_MIN_R.  Its spare
+    walls), off itself and the cables in `avoid` (their points, or (points, radius) for a cable thinner or thicker
+    than this one), and nowhere tighter than min_r.  r, sag, min_r: the cable's radius, its (EI / w)^⅓ and its
+    tightest bend (a thin USB cable's by default; a Dupont wire's: DUPONT); step, the segments' length
+    (ROD_STEP by default; a jumper's 5 mm: the shape barely changes, the solve is 8 times faster).  Its spare
     length starts out bowed away from `outward` (an x, y: the bay's middle), so neighbours bulge apart.  SLSQP (scipy) on the segments' directions: the length
     is exact by construction.  `guess`: a path to start from (another route's points).  Returns (points,
     shortfall, note): shortfall > 0 when the plugs are too far apart for the cable, or no shape reaching both
     was found (the guess is returned then); note says what is wrong with a shape that was found (a cable too
-    long for its gap bends tighter than CABLE_MIN_R, or one that touches a board), "" when nothing is."""
+    long for its gap bends tighter than min_r, or one that touches a board), "" when nothing is."""
     from scipy.optimize import minimize
     pa, da = plug_exit(a)
     pb, db = plug_exit(b)
     ta, tb = da / np.linalg.norm(da), -db / np.linalg.norm(db)
-    n = int(np.clip(round(length / ROD_STEP), 12, 72))
+    n = int(np.clip(round(length / (step or ROD_STEP)), 12, 72))
     h = length / n
     reach = float(np.linalg.norm(pb - pa))
     start = np.array(guess if guess is not None else [pa, pb], float)
@@ -441,7 +511,7 @@ def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoi
     t0 /= np.linalg.norm(t0, axis=1)[:, None]
     x0 = np.concatenate([np.arctan2(t0[1:-1, 1], t0[1:-1, 0]), np.arcsin(np.clip(t0[1:-1, 2], -1, 1))])
     m = n - 2
-    gap = CABLE_R + 0.2              # a resting cable touches what holds it: 0.2 mm so that the checks see contact
+    gap = r + 0.2                    # a resting cable touches what holds it: 0.2 mm so that the checks see contact
     boxes = [(np.asarray(lo_, float) - gap, np.asarray(hi_, float) + gap) for lo_, hi_ in boxes]
 
     def tangents(x):
@@ -452,36 +522,40 @@ def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoi
     def nodes(t):
         return pa + h * np.vstack([np.zeros(3), np.cumsum(t, axis=0)])
 
-    def inside(p):
-        depth = np.zeros(len(p))
-        for blo, bhi in boxes:
-            d = np.minimum(p - blo, bhi - p).min(axis=1)
-            depth = np.maximum(depth, d)
-        return depth
+    box_lo = np.array([b_[0] for b_ in boxes], float).reshape(-1, 3)
+    box_hi = np.array([b_[1] for b_ in boxes], float).reshape(-1, 3)
 
-    far = np.triu(np.ones((n, n), bool), k=max(3, int(math.ceil(2 * CABLE_R / h)) + 2))
-    others = [np.asarray(q, float) for q in avoid if len(q) > 1]
+    def inside(p):
+        if not len(box_lo):
+            return np.zeros(len(p))
+        d = np.minimum(p[:, None, :] - box_lo[None], box_hi[None] - p[:, None, :]).min(axis=2)
+        return np.maximum(d.max(axis=1), 0.0)
+
+    far = np.triu(np.ones((n, n), bool), k=max(3, int(math.ceil(2 * r / h)) + 2))
+    others = [(np.asarray(q[0], float), float(q[1])) if isinstance(q, tuple) else (np.asarray(q, float), CABLE_R)
+              for q in avoid]
+    others = [(q, rq) for q, rq in others if len(q) > 1]
 
     def contact(p):
         """How far the cable runs into itself and into the other cables: segment to segment, 2 radii apart."""
         a0, a1 = p[:-1], p[1:]
-        pen = float(np.sum(np.clip(2 * CABLE_R - _segment_gaps(a0, a1, a0, a1)[far], 0.0, None) ** 2))
-        for q in others:
+        pen = float(np.sum(np.clip(2 * r - _segment_gaps(a0, a1, a0, a1)[far], 0.0, None) ** 2))
+        for q, rq in others:
             gaps = _segment_gaps(a0[1:-1], a1[1:-1], q[:-1], q[1:])
-            pen += float(np.sum(np.clip(2 * CABLE_R - gaps, 0.0, None) ** 2))
+            pen += float(np.sum(np.clip(r + rq - gaps, 0.0, None) ** 2))
         return pen
 
     def energy(x):
         t = tangents(x)
         p = nodes(t)
         bend = float(np.sum(np.diff(t, axis=0) ** 2)) / h
-        weight = h * float(np.sum(p[1:-1, 2] - p[0, 2])) / CABLE_SAG ** 3
+        weight = h * float(np.sum(p[1:-1, 2] - p[0, 2])) / sag ** 3
         return bend + weight + 200.0 * (float(np.sum(inside(p[1:-1]) ** 2)) + contact(p))
 
     cons = [{"type": "eq", "fun": lambda x: nodes(tangents(x))[-1] - pb},
             {"type": "ineq", "fun": lambda x: nodes(tangents(x))[1:-1, 2] - (floor_z + gap)},
-            {"type": "ineq", "fun": lambda x: (ceil_z - CABLE_R) - nodes(tangents(x))[1:-1, 2]},
-            {"type": "ineq", "fun": lambda x: (h / CABLE_MIN_R) ** 2 - np.sum(np.diff(tangents(x), axis=0) ** 2, axis=1)}]
+            {"type": "ineq", "fun": lambda x: (ceil_z - r) - nodes(tangents(x))[1:-1, 2]},
+            {"type": "ineq", "fun": lambda x: (h / min_r) ** 2 - np.sum(np.diff(tangents(x), axis=0) ** 2, axis=1)}]
     res = minimize(energy, x0, method="SLSQP", constraints=cons, options={"maxiter": 400, "ftol": 1e-7})
     t = tangents(res.x)
     p = nodes(t)
@@ -491,7 +565,7 @@ def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoi
     p[-1] = pb
     notes = []
     turn = np.linalg.norm(np.diff(t, axis=0), axis=1)
-    if turn.size and h / max(float(turn.max()), 1e-9) < CABLE_MIN_R - 0.5:
+    if turn.size and h / max(float(turn.max()), 1e-9) < min_r - 0.5:
         notes.append(f"too long for the gap: it bends to R {h / float(turn.max()):.0f} mm")
     if float(inside(p[1:-1]).max(initial=0.0)) > 0.5:
         notes.append("it touches a board or a wall")
@@ -619,6 +693,8 @@ def cable_free_length(cab, a, b):
     """A cable's length between its two strain reliefs: its length end to end less both plugs (a
     straight plug: shell, overmold and relief; a right-angle one: about its body's depth)."""
     def plug(e):
+        if e["type"] == "dupont":
+            return DUPONT["L"] + DUPONT["CRIMP"]
         p = USB_PLUGS.get(e["type"], USB_PLUGS["usb-c"])
         return 12 if e.get("style") == "right" else p["SL"] + p["L"] + p["REL"]
     return cab.get("length", 120) - plug(a) - plug(b)
@@ -656,6 +732,52 @@ def bezier(p0, p1, p2, p3, n=24):
     t = np.linspace(0, 1, n)[:, None]
     pts = (1 - t) ** 3 * p0 + 3 * (1 - t) ** 2 * t * p1 + 3 * (1 - t) * t ** 2 * p2 + t ** 3 * p3
     return [[round(float(c), 2) for c in p] for p in pts]
+
+
+def ribbon_wires(centre, a_exits, b_exits, pitch):
+    """A Dupont ribbon (wires torn off a strip together) from its routed centreline: its wires bonded side by side
+    in the middle, `pitch` apart, the ribbon lying flat (its width carried along by parallel transport from the
+    spread of the A end's housings), each wire peeling off near either end to its own housing: a cubic out of the
+    crimp along its axis into its place in the ribbon, the peel longer the farther that end's pins spread.
+    a_exits, b_exits: per wire (exit point, direction out of the crimp), in the wires' order.  [points] per wire."""
+    c = np.asarray(centre, float)
+    n = len(a_exits)
+    if n == 1:
+        return [c.round(2).tolist()]
+    s_ = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(c, axis=0), axis=1))])
+    t = np.gradient(c, axis=0)
+    t /= np.linalg.norm(t, axis=1)[:, None]
+    pa = np.array([q for q, _ in a_exits], float)
+    pb = np.array([q for q, _ in b_exits], float)
+    spread = pa - pa.mean(axis=0)
+    w = spread[int(np.argmax(np.linalg.norm(spread, axis=1)))]
+    w = w - np.dot(w, t[0]) * t[0]
+    if np.linalg.norm(w) < 1e-6:
+        w = np.cross(t[0], [0.0, 0.0, 1.0])
+    ws = [w / np.linalg.norm(w)]
+    for k in range(1, len(c)):                       # parallel transport: the ribbon does not twist on its own
+        v = ws[-1] - np.dot(ws[-1], t[k]) * t[k]
+        ws.append(v / (np.linalg.norm(v) or 1.0))
+    ws = np.array(ws)
+    rank = np.argsort(np.argsort(spread @ ws[0]))    # side by side in the order the A end's housings stand
+    peel = [float(np.clip(1.3 * np.linalg.norm(q - q.mean(axis=0), axis=1).max() + 18.0, 18.0, 0.4 * s_[-1]))
+            for q in (pa, pb)]
+    ia = int(np.searchsorted(s_, peel[0]))
+    ib = int(np.searchsorted(s_, s_[-1] - peel[1])) - 1
+    if ib <= ia:
+        ia = ib = len(c) // 2
+    wires = []
+    for k in range(n):
+        off = (rank[k] - (n - 1) / 2) * pitch
+        mid = c[ia:ib + 1] + ws[ia:ib + 1] * off
+        (a0, da), (b0, db) = a_exits[k], b_exits[k]
+        a0, b0, da, db = (np.asarray(v, float) for v in (a0, b0, da, db))
+        g = float(np.linalg.norm(mid[0] - a0))
+        head = bezier(a0, a0 + da * g / 3, mid[0] - t[ia] * g / 3, mid[0], max(6, int(g / 2)))
+        g = float(np.linalg.norm(b0 - mid[-1]))
+        tail = bezier(mid[-1], mid[-1] + t[ib] * g / 3, b0 + db * g / 3, b0, max(6, int(g / 2)))
+        wires.append(head[:-1] + mid.round(2).tolist() + tail[1:])
+    return wires
 
 
 def poly(*pts):
@@ -714,7 +836,7 @@ def build(rack) -> Path:
     pitch, T = rack.pitch, rack.panel_t
 
     items = {"instances": [], "frame": [], "cables": [], "chains": [], "boards": [], "pcbs": [], "boxes": [], "props": [],
-             "leds": [], "cameras": []}
+             "leds": [], "cameras": [], "headers": []}
     bays = []
 
     def add(part, pos, rot=(0, 0, 0), space="row", row=None, **meta):
@@ -754,10 +876,17 @@ def build(rack) -> Path:
     fixed = raw["chain"]["fixed"]
     chain_z = c["bottom"] + raw["chain"]["outer"][0] / 2 + 0.6     # the chain's mid-height
 
-    def unit_hardware(i, u, bid, dy, open_frac, drawer=True, x4=False):
+    def x4_frame(dy, dz, v2):
+        """The DATA ×4 in a drawer: (x of its left edge less the drawer's, y of its rear edge, z of its top) in
+        drawer terms, to turn KiCad (x, y from the rear) into the row's frame: (x0 + x, y_rear - y, top)."""
+        q = raw["pcb"]["data_port_x4_v2" if v2 else "data_port_x4"]
+        return raw["pcb"]["data_port_x4"]["x0"], dy + dp_y0 + q["size"][1], dz + dp_z + raw["pcb"]["data_port_x4"]["thickness"]
+
+    def unit_hardware(i, u, bid, dy, open_frac, drawer=True, x4=False, v2=False):
         """Tray, node and either the drawer and its chain, or a sled bay's sled and port block (no chain; the
         viewer doesn't slide them: the DUT cable is unplugged first).  x4: a converted bay's (`boards:`) DATA ×4
-        board, in the same drawer or port block as the single DATA board."""
+        board, in the same drawer or port block as the single DATA board; v2: the planned v2 (`x4: v2`) instead
+        of v1, its parts' stand-ins and its 2 × 6 headers (v1: its 1 × 3 RESET/BOOT headers)."""
         x0 = rack.unit_x(u)
         add("tray", (x0, 0, 0), row=i, layer="trays", bay=bid)
         if drawer:
@@ -792,12 +921,24 @@ def build(rack) -> Path:
         if x4:                       # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
             q = raw["pcb"]["data_port_x4"]
             bx4 = dxw_ + q["x0"]
-            for k in ("pcb", "ph"):
-                add(f"dataport_{k}_x4", (bx4, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
-                    movable=drawer)
+            add("dataport_pcb_x4v2" if v2 else "dataport_pcb_x4", (bx4, dy + dp_y0, plenum + dp_z), row=i,
+                layer="drawers", bay=bid, movable=drawer)
+            add("dataport_ph_x4", (bx4, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid, movable=drawer)
             for n in range(1, 5):
                 add("dataport_usb_x4", (dxw_ + x4_port_x(rack, n), dy + dp_y0, plenum + dp_z), row=i,
                     layer="drawers", bay=bid, movable=drawer)
+            # its headers, soldered for the Dupont jumpers, and the v2's parts (stand-ins of the concept placement)
+            kx0, y_rear, top = x4_frame(dy, plenum, v2)
+            pins = [[round(dxw_ + kx0 + x, 3), round(y_rear - y, 3)]
+                    for n in range(1, 5) for x, y, _ in x4_header_pins(raw, n, v2)]
+            items["headers"].append({"bay": bid, "row": i, "space": "row", "movable": drawer, "z": round(top, 3),
+                                     "pins": pins, "board": "DATA ×4 v2" if v2 else "DATA ×4"})
+            if v2:
+                for x, y, w, l, h, col in x4v2_parts(q["usb"]):
+                    items["boxes"].append({"kind": "chip", "pos": [round(dxw_ + kx0 + x, 3), round(y_rear - y - l, 3),
+                                                                   round(top, 3)],
+                                           "size": [w, l, h], "color": col, "layer": "drawers", "bay": bid, "row": i,
+                                           "space": "row", "movable": drawer})
             ph_xy = (bx4 + q["ph"], dy + dp_y0 + q["size"][1] - q["notch"][1] - q["notch"][3])
         else:
             for k in ("pcb", "usb", "ph"):
@@ -897,13 +1038,94 @@ def build(rack) -> Path:
         cable(pts, row=i, kind="dut", bay=bay, type=ctype, label=cables_cfg[ctype]["label"], a="usb-c", b=btype,
               ends=ends, radius=1.9, movable=drawer)
 
+    def route_jumpers(i, bid, spec, boards_at, dut_pins, dy, dz, dxw, drawer, drawn, v2):
+        """A converted bay's Dupont jumpers (population › jumpers: per board, {DATA ×4 header pin: board pin}),
+        female–female, 20 cm (30 where that does not reach: JUMPER_LENGTHS), from the board's port's header to
+        its pin header (dut_pins: slot → (the pins' plastic top, [(x, y, name)])), each housing pushed down on its
+        pin.  A board's wires as one ribbon (ribbon_wires), lying as rod_cable puts its centreline: up out of the
+        crimps, over the port wall and down onto the board, clear of the boards, the walls, the USB plugs, every
+        housing and the cables already drawn."""
+        kx0, y_rear, top = x4_frame(dy, dz, v2)
+        slots = {e["slot"].id: e["slot"] for e, _, _ in boards_at}
+        runs = []
+        for sid, pinmap in (spec or {}).items():
+            sl = slots.get(sid)
+            if sl is None:
+                raise ValueError(f"{bid} jumpers: no board {sid} in the bay")
+            hdr = {n: (x, y) for x, y, n in x4_header_pins(raw, sl.slot, v2)}
+            bz, pins = dut_pins.get(sid, (None, []))
+            for hp, dpin in pinmap.items():
+                if hp not in hdr:
+                    raise ValueError(f"{sid} jumpers: the DATA ×4 header has no pin {hp} ({', '.join(hdr)})")
+                ax, ay = dxw + kx0 + hdr[hp][0], y_rear - hdr[hp][1]
+                cands = [(x, y) for x, y, n in pins if n == str(dpin)]
+                if not cands:
+                    raise ValueError(f"{sid} jumpers: its board has no header pin {dpin} (boards.yaml › headers)")
+                px, py = min(cands, key=lambda c: math.hypot(c[0] - ax, c[1] - ay))
+                ends = [{"at": [round(x, 3), round(y, 3), round(z + HEADER["BASE"], 3)], "dir": [0, 0, -1],
+                         "up": [0, 1, 0], "type": "dupont"} for x, y, z in ((ax, ay, top), (px, py, bz))]
+                runs.append((sid, sl.slot, hp, str(dpin), ends, HEADER_PIN_COLOUR.get(hp, "white")))
+        if not runs:
+            return []
+        w2, ln = DUPONT["W"] / 2, DUPONT["L"]
+        housings = [((e["at"][0] - w2, e["at"][1] - w2, e["at"][2]), (e["at"][0] + w2, e["at"][1] + w2, e["at"][2] + ln))
+                    for *_, ends, _ in runs for e in ends]
+        top_ = ARCH_TOP_MAX + 10
+        walls = [((dxw - 30, dy + port_wall_y - d["wall"], dz), (dxw + rack.drawer_w + 30, dy + port_wall_y, dz + d["wall_height"])),
+                 ((dxw - 30, dy + d["depth"] - d["wall"], dz), (dxw + rack.drawer_w + 30, dy + d["depth"] + 30, top_)),
+                 ((dxw - 30, dy, dz), (dxw + d["wall"], dy + d["depth"], top_)),
+                 ((dxw + rack.drawer_w - d["wall"], dy, dz), (dxw + rack.drawer_w + 30, dy + d["depth"], top_)),
+                 ((dxw - 30, dy - 30, dz), (dxw + rack.drawer_w + 30, dy + d["front_thickness"], top_))]
+        p = USB_PLUGS["usb-c"]                      # the straight USB-C plugs in the port wall's sockets
+        plugs = [((dxw + x4_port_x(rack, n) - p["W"] / 2, dy + port_wall_y - p["L"] - p["REL"], dz + port_z - p["H"] / 2),
+                  (dxw + x4_port_x(rack, n) + p["W"] / 2, dy + port_wall_y, dz + port_z + p["H"] / 2)) for n in range(1, 5)]
+        boxes = [board_box(boards[e["board"]], e["o"], ex, ey, dz) for e, ex, ey in boards_at] + walls + plugs + housings
+        avoid = [(q, CABLE_R) for q in drawn]
+        out = []
+        # a board's jumpers are torn off the strip together: one ribbon, its centreline routed as one rod (as wide as
+        # its wires side by side, as stiff for its weight as one), its wires peeling off near the housings
+        for sid in dict.fromkeys(run[0] for run in runs):
+            grp = [run for run in runs if run[0] == sid]
+            n = len(grp)
+            ea, eb = ({"at": np.mean([run[4][k]["at"] for run in grp], axis=0).round(3).tolist(), "dir": [0, 0, -1],
+                       "up": [0, 1, 0], "type": "dupont"} for k in (0, 1))
+            pa, _ = plug_exit(ea)
+            pb, _ = plug_exit(eb)
+            zt = max(pa[2], pb[2]) + 15.0
+            guess = [pa, [pa[0], pa[1], zt], [pb[0], pb[1], zt], pb]
+            r_band = DUPONT["R"] * n
+            for length in JUMPER_LENGTHS:
+                free = cable_free_length({"length": length}, ea, eb)
+                pts, short, note = rod_cable(ea, eb, free, dz + d["bottom"] + d["plate"], ARCH_TOP_MAX, boxes,
+                                             guess=guess, avoid=avoid, r=r_band, sag=DUPONT["SAG"],
+                                             min_r=DUPONT["MIN_R"], step=DUPONT["STEP"])
+                if not short:
+                    break
+            what = f"{sid}: its {n}-wire ribbon"
+            print(f"  {what}: {length // 10} cm, top {max(q[2] for q in pts):.1f}", flush=True)
+            if short:
+                print(f"warning: {what} is {short:.0f} mm too short")
+            if note:
+                print(f"warning: {what}: {note}")
+            avoid.append((pts, r_band))
+            wires = ribbon_wires(pts, [plug_exit(run[4][0]) for run in grp], [plug_exit(run[4][1]) for run in grp],
+                                 2 * DUPONT["R"])
+            for (_, port, hp, dpin, ends, col), wpts in zip(grp, wires):
+                cable(wpts, row=i, kind="jumper", bay=bid, color=DUPONT_COLOURS[col], radius=DUPONT["R"], ends=ends,
+                      label=f"Dupont F–F {length // 10} cm: DATA ×4 port {port} {hp} → {sid} {dpin}", length=length,
+                      movable=drawer)
+                out.append({"slot": sid, "from": hp, "to": dpin, "colour": col, "length": length, "points": wpts,
+                            "ends": ends})
+        return out
+
+    jumpers_drawn = {}          # bay → its routed jumpers (the SolidCraft check reads them back from rack.json)
     for b in rack.bays():
         i = b.row
         info = pop.get(b.id, {})
         drawer = rack.mount(b.id) == "drawer"
         open_frac = 1.0 if info.get("open") and drawer else 0.0
         dy = -d["travel"] * open_frac
-        x0, dz = unit_hardware(i, b.unit, b.id, dy, open_frac, drawer, rack.is_multi(b.id))
+        x0, dz = unit_hardware(i, b.unit, b.id, dy, open_frac, drawer, rack.is_multi(b.id), info.get("x4") == "v2")
         dxw = x0 + rack.drawer_x0
         meta = {"id": b.id, "row": rack.rows[i]["id"], "row_index": i, "col": b.index + 1, "span": 1,
                 "camera": b.id in cams, "unit_x": x0,
@@ -950,6 +1172,23 @@ def build(rack) -> Path:
                 slots.append({"id": sl.id, "port": sl.slot, "board": bd["name"], "board_id": e["board"],
                               "cable": cables_cfg[sl.cable]["label"], "usb": bd["usb"]["type"],
                               "verified": bd.get("verified", False)})
+            # the boards' pin headers (soldered pins up), then the Dupont jumpers from the DATA ×4's headers
+            v2 = info.get("x4") == "v2"
+            dut_pins = {}
+            for e, ex, ey in boards_at:
+                sl = e["slot"]
+                bd = {**boards[e["board"]], "orient": sl.orient or "rear"}
+                hp = header_pins(bd)
+                if not hp:
+                    continue
+                bz = dz + d["bottom"] + d["plate"] + bd.get("standoff", 6) + bd.get("pcb_t", 1.6)
+                pts = [(ex + px, ey + py) for px, py in board_frame(bd, [(x, y) for x, y, _ in hp])]
+                dut_pins[sl.id] = (bz, [(x, y, n) for (x, y), (_, _, n) in zip(pts, hp)])
+                items["headers"].append({"bay": b.id, "row": i, "space": "row", "movable": drawer, "z": round(bz, 3),
+                                         "pins": [[round(x, 3), round(y, 3)] for x, y in pts], "board": sl.id})
+            jumpers_drawn[b.id] = route_jumpers(i, b.id, info.get("jumpers"), boards_at, dut_pins, dy, dz, dxw,
+                                                drawer, drawn, v2)
+            meta["jumpers"] = len(jumpers_drawn[b.id])
             meta.update({"board": f"{len(slots)} boards on a DATA ×4", "slots": slots, "data_port": ["×4"],
                          "open": bool(info.get("open")) and drawer, "mount": rack.mount(b.id),
                          "verified": all(sl_["verified"] for sl_ in slots)})
@@ -1077,6 +1316,7 @@ def build(rack) -> Path:
                  "drawer_travel": d["travel"], "plenum": plenum, "pitch": pitch, "panel": T,
                  "bay_depth": BD, "inner_x0": rack.inner_x0},
         "print": {"layer": LAYER_H, "up": {name: print_up(name) for name in sorted(stats)}},
+        "dupont": DUPONT, "header": HEADER,
         **items, "bays": bays,
     }
     out = SITE_ASSETS / "rack.json"

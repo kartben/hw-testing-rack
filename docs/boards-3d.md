@@ -10,7 +10,9 @@ The viewer uses a maker's model only where its licence lets the repository publi
 (`model: { web: true }` in `boards.yaml`): `board_models.py` then also writes a lighter copy to
 `site/assets/boards/<board-id>.glb` (the PCBs whole, tiny parts dropped, small ones as boxes,
 the rest decimated, one colour per part), which the viewer draws instead of the stand-in.
-Today: the **GIGA R1 WiFi + GIGA Display Shield** in B2, the camera bay.  A board's `screen:`
+Today: the **GIGA R1 WiFi + GIGA Display Shield** in B2, the camera bay, and the **Pico 2** and **XIAO**
+boards of the converted bays.  Their 2.54 mm pin headers (soldered pins up, for the Dupont jumpers:
+`headers:` in `boards.yaml`) are drawn by the viewer on top of the model.  A board's `screen:`
 (active area, pixels, which way its top points) gets a live LVGL demo in the viewer
 (`tools/lvgl_wasm/`, LVGL's software renderer built for wasm32).
 
@@ -35,10 +37,10 @@ model: { rot: 180, flip: false, offset: [0, 0] }
 
 | Board | Model | Licence | Login |
 |---|---|---|---|
-| Raspberry Pi Pico 2 | [official STEP](https://pip.raspberrypi.com/documents/RP-009061-CA) (Raspberry Pi Ltd) | MIT | no — **fetched** |
+| Raspberry Pi Pico 2 | [official STEP](https://pip.raspberrypi.com/documents/RP-009061-CA) (Raspberry Pi Ltd) | MIT — the viewer's copy `site/assets/boards/rpi-pico2.glb` is published | no — **fetched** |
 | Arduino UNO R4 WiFi | [official STEP](https://docs.arduino.cc/resources/models/ABX00087-step.zip) (Arduino) | CC BY-SA 4.0 | no — **fetched** |
 | Arduino GIGA R1 WiFi + GIGA Display Shield (`giga-r1-display`) | official STEP files [ABX00063](https://docs.arduino.cc/resources/models/ABX00063-step.zip) and [ASX00039](https://docs.arduino.cc/resources/models/ASX00039-step.zip) (Arduino), stacked on their Samtec strips and HLE sockets by `board_models.py` (`model.stack`), PCBs recoloured Arduino teal | CC BY-SA 4.0 — the viewer's copy `site/assets/boards/giga-r1-display.glb` is a derivative under the same licence | no — **fetched** |
-| Seeed XIAO ESP32S3 Sense (XIAO boards on a plate) | [official STEP](https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/seeed-studio-xiao-esp32s3-sense-3d_model.zip) (Seeed Studio) | none stated: renders only | no — **fetched** |
+| Seeed XIAO ESP32S3 (`xiao`: every XIAO on a plate) | [official STEP](https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/seeed-studio-xiao-esp32s3-3d_model.zip) (Seeed Studio), the plain board (the Sense adds its camera board); the outline and pins checked against Seeed's XIAO ESP32C3 v1.3 KiCad project | CC BY-SA 4.0: the Seeed wiki's licence for its content, which links the model (the user's call, 2026-10-20: no licence is written on the model itself) — the viewer's copy `site/assets/boards/xiao.glb` is published | no — **fetched** |
 | Arduino UNO R4 Minima | [official CAD zip](https://docs.arduino.cc/hardware/uno-r4-minima) (STEP inside) | CC BY-SA 4.0 | no |
 | ESP32-S3 / C6-DevKitC-1 | no board model; official DXF outline and module STEP ([espressif/kicad-libraries](https://github.com/espressif/kicad-libraries)) | CC BY-SA 4.0 + KiCad exception | no |
 | nRF52840 / nRF5340 / nRF54L15 DK | Altium hardware files on nordicsemi.com (KiCad can import them and export STEP; untested) | Nordic (BSD-style) | no |
@@ -49,7 +51,9 @@ To add one by hand, put its STEP (or GLB/WRL) at `render/assets/boards/<board-id
 the ids from `boards.yaml`, and re-run `tools/board_models.py`.
 
 Credits for the photo renders: Raspberry Pi Pico 2 model © Raspberry Pi Ltd (MIT); Arduino
-UNO R4 WiFi model © Arduino S.r.l. (CC BY-SA 4.0); XIAO ESP32S3 Sense model © Seeed Studio.
+UNO R4 WiFi model © Arduino S.r.l. (CC BY-SA 4.0); XIAO ESP32S3 model © Seeed Studio.
 Credits for the viewer: Arduino GIGA R1 WiFi and GIGA Display Shield models © Arduino S.r.l.,
 CC BY-SA 4.0, stacked, recoloured and simplified (`site/assets/boards/giga-r1-display.glb`, same
-licence); the screen runs LVGL's music demo (LVGL, MIT).
+licence); Raspberry Pi Pico 2 model © Raspberry Pi Ltd, MIT, simplified (`rpi-pico2.glb`); XIAO ESP32S3
+model © Seeed Studio, CC BY-SA 4.0, simplified (`xiao.glb`, same licence); the screen runs LVGL's music
+demo (LVGL, MIT).

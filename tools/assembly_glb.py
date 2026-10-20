@@ -64,16 +64,8 @@ def mat(name_or_rgba, metallic=0.0, rough=0.55):
 
 # USB plugs and the panel-mount socket: the parts.glb meshes (mechanical/parts/usb_plugs.scad, sized by
 # tools/webscene.py), as in the viewer.  Plug frame: +z into the receptacle, x = width, y = up.
-def plug_meshes(e: dict, geoms: dict) -> list:
-    """Meshes of one cable end (tools/webscene.py writes them into rack.json), in its space."""
-    t = e["type"] if f"usbplug_{e['type']}_shell" in geoms else "usb-c"
-    names = [(f"usbplug_{t}_shell", "silver")]
-    if e["type"] in ("ph5", "ph8"):           # the DATA lead's JST PHR-5, the camera lead's PHR-8
-        names = [(f"{e['type']}_plug", "powerlabels")]
-    elif e.get("style") == "adapter":           # a 90° adapter, its female facing up (the cable's plug stands on it)
-        names += [(f"usbplug_{t}_adapter_mold", "plug"), (f"usbplug_{t}_adapter_metal", "silver")]
-    else:
-        names += [(f"usbplug_{t}_{'right' if e.get('style') == 'right' else 'straight'}", "plug")]
+def plug_basis(e: dict) -> np.ndarray:
+    """A cable end's frame: +z along `dir` (into the receptacle), y towards `up`, at `at`."""
     z = np.array(e["dir"], float)
     z /= np.linalg.norm(z)
     up = np.array(e.get("up", (0, 0, 1)), float)
@@ -82,6 +74,48 @@ def plug_meshes(e: dict, geoms: dict) -> list:
     y = np.cross(z, x)
     B = np.eye(4)
     B[:3, 0], B[:3, 1], B[:3, 2], B[:3, 3] = x, y, z, e["at"]
+    return B
+
+
+def dupont_meshes(e: dict, D: dict) -> list:
+    """A Dupont female housing pushed down on a header pin (tools/webscene.py › DUPONT, as site/app.js draws it):
+    black and square, a slight shoulder at its back, the contact's latch in its window, the crimp's barrel."""
+    w, ln, sh, cr = D["W"], D["L"], D["SHOULDER"], D["CRIMP"]
+    B = plug_basis(e)
+    parts = [(trimesh.creation.box([w, w, ln - sh], transform=translate([0, 0, -(ln - sh) / 2])), "plug"),
+             (trimesh.creation.box([w - 0.3, w - 0.3, sh], transform=translate([0, 0, -ln + sh / 2])), "plug"),
+             (trimesh.creation.box([1.1, 0.06, 2.4], transform=translate([0, w / 2 + 0.02, -4.6])), "silver"),
+             (trimesh.creation.cylinder(radius=0.76, height=cr, sections=14, transform=translate([0, 0, -ln - cr / 2])),
+              "silver")]
+    return [with_mat(m, mat(c)).apply_transform(B) for m, c in parts]
+
+
+def header_meshes(h: dict, H: dict) -> list:
+    """A 2.54 mm pin header soldered pins up (rack.json › headers): a black strip per pin, its gold pin from the
+    tail under the board to the tip."""
+    p, base, pin, tail = H["PITCH"], H["BASE"], H["PIN"], H["TAIL"]
+    strips, pins = [], []
+    for x, y in h["pins"]:
+        strips.append(trimesh.creation.box([p - 0.04, p - 0.04, base], transform=translate([x, y, h["z"] + base / 2])))
+        n = tail + 1.6 + base + pin
+        pins.append(trimesh.creation.box([0.64, 0.64, n], transform=translate([x, y, h["z"] + base + pin - n / 2])))
+    return [with_mat(trimesh.util.concatenate(strips), mat("black")),
+            with_mat(trimesh.util.concatenate(pins), mat([0.84, 0.71, 0.37, 1.0], 1.0, 0.28))]
+
+
+def plug_meshes(e: dict, geoms: dict, dupont: dict | None = None) -> list:
+    """Meshes of one cable end (tools/webscene.py writes them into rack.json), in its space."""
+    if e["type"] == "dupont":
+        return dupont_meshes(e, dupont)
+    t = e["type"] if f"usbplug_{e['type']}_shell" in geoms else "usb-c"
+    names = [(f"usbplug_{t}_shell", "silver")]
+    if e["type"] in ("ph5", "ph8"):           # the DATA lead's JST PHR-5, the camera lead's PHR-8
+        names = [(f"{e['type']}_plug", "powerlabels")]
+    elif e.get("style") == "adapter":           # a 90° adapter, its female facing up (the cable's plug stands on it)
+        names += [(f"usbplug_{t}_adapter_mold", "plug"), (f"usbplug_{t}_adapter_metal", "silver")]
+    else:
+        names += [(f"usbplug_{t}_{'right' if e.get('style') == 'right' else 'straight'}", "plug")]
+    B = plug_basis(e)
     return [with_mat(geoms[n], mat(m)).apply_transform(B) for n, m in names if n in geoms]
 
 
@@ -333,8 +367,14 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
             add(m, f"pcb:{p['board']}", place(p.get("space"), p.get("row"), translate(p["pos"])), p.get("bay"))
     for bx in scene_json["boxes"]:
         m = trimesh.creation.box(bx["size"], transform=translate(np.array(bx["size"]) / 2))
+        dy = drawer_dy(bx) if bx.get("movable") else 0.0
         add(with_mat(m, mat("psu") if bx["kind"] == "psu" else mat(hex_rgba(bx["color"]))), f"{bx['kind']}:{bx.get('bay', '')}",
-            place(bx.get("space"), bx.get("row"), translate(bx["pos"])), bx.get("bay"))
+            place(bx.get("space"), bx.get("row"), translate(np.add(bx["pos"], [0, dy, 0]))), bx.get("bay"))
+    for h in scene_json.get("headers", []):          # pin headers, pins up (the boards', the DATA ×4's)
+        dy = drawer_dy(h) if h.get("movable") else 0.0
+        for m in header_meshes(h, scene_json["header"]):
+            add(m, f"boards:header:{h.get('board', '')}", place(h.get("space"), h.get("row"), translate([0, dy, 0])),
+                h.get("bay"))
     for led in scene_json.get("leds", []):
         rgb = hex_rgba(led["color"])[:3]
         em = PBRMaterial(baseColorFactor=[*(srgb_to_linear(c) for c in rgb), 1.0], emissiveFactor=rgb,
@@ -370,7 +410,7 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
             place(c.get("space"), c.get("row"), np.eye(4)))
         dy = drawer_dy(c) if c.get("space", "row") == "row" and c.get("movable") else 0.0
         for e in c.get("ends", []):
-            for m in plug_meshes(e, geoms):
+            for m in plug_meshes(e, geoms, scene_json.get("dupont")):
                 add(m, f"plug:{c['kind']}", place(c.get("space"), c.get("row"), translate([0, dy, 0])), c.get("bay"))
     # mm, Z-up → m, Y-up
     out.apply_transform(rot_xyz([-90, 0, 0]))

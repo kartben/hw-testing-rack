@@ -487,10 +487,31 @@ function plugBasis(e) {
   const y = new THREE.Vector3().crossVectors(z, x);
   return new THREE.Matrix4().makeBasis(x, y, z).setPosition(v3(e.at));
 }
+// A Dupont female housing pushed down on a header pin (tools/webscene.py › DUPONT): black, square, a slight
+// shoulder at its back, the contact's latch showing through its window, the crimp's barrel out of the back.
+let dupontParts = null;
+function dupontMeshes() {
+  const D = DATA.dupont;
+  if (!dupontParts) {
+    const body = new THREE.BoxGeometry(D.W, D.W, D.L - D.SHOULDER).translate(0, 0, -(D.L - D.SHOULDER) / 2);
+    const back = new RoundedBoxGeometry(D.W - 0.3, D.W - 0.3, D.SHOULDER + 0.2, 1, 0.15).translate(0, 0, -D.L + D.SHOULDER / 2 + 0.1);
+    const latch = new THREE.BoxGeometry(1.1, 0.06, 2.4).translate(0, D.W / 2 + 0.02, -4.6);
+    const crimp = new THREE.CylinderGeometry(0.72, 0.8, D.CRIMP, 14).rotateX(Math.PI / 2).translate(0, 0, -D.L - D.CRIMP / 2);
+    dupontParts = { body, back, latch, crimp, plastic: std(0x141416, 0, 0.5) };
+  }
+  const P = dupontParts;
+  return [new THREE.Mesh(P.body, P.plastic), new THREE.Mesh(P.back, P.plastic),
+    new THREE.Mesh(P.latch, PLUG_MAT.shell), new THREE.Mesh(P.crimp, PLUG_MAT.shell)];
+}
+
 function makePlug(e) {
   const g = new THREE.Group();
   g.matrixAutoUpdate = false;
   g.matrix.copy(plugBasis(e));
+  if (e.type === 'dupont') {
+    for (const m of dupontMeshes()) g.add(m);
+    return g;
+  }
   if (e.type === 'ph5' || e.type === 'ph8') {   // the DATA lead's JST PHR-5, the camera lead's PHR-8
     const m = plugMesh(`${e.type}_plug`, MAT.powerLabels);
     if (m) g.add(m);
@@ -633,7 +654,25 @@ function build(pcbGlb) {
     g.position.set(...p.pos);
     track(g, { layer: p.board === 'bay-node' ? 'nodes' : 'power', bay: p.bay || null, row: p.row ?? null, zone: 'pcb', space: p.space });
   }
-  // boxes (PSU, cameras)
+  // 2.54 mm pin headers, soldered pins up (the DUTs', the DATA ×4's): tools/webscene.py › HEADER
+  const H = DATA.header;
+  const hdrBase = new THREE.BoxGeometry(H.PITCH - 0.04, H.PITCH - 0.04, H.BASE);
+  const hdrPin = new THREE.BoxGeometry(0.64, 0.64, H.TAIL + 1.6 + H.BASE + H.PIN);
+  const gold = std(0xd6b45e, 1.0, 0.28);
+  for (const h of DATA.headers ?? []) {
+    const n = h.pins.length;
+    const base = new THREE.InstancedMesh(hdrBase, MAT.blackPlastic, n);
+    const pin = new THREE.InstancedMesh(hdrPin, gold, n);
+    const m = new THREE.Matrix4();
+    h.pins.forEach(([x, y], k) => {
+      base.setMatrixAt(k, m.makeTranslation(x, y, h.z + H.BASE / 2));
+      pin.setMatrixAt(k, m.makeTranslation(x, y, h.z + H.BASE + H.PIN - (H.TAIL + 1.6 + H.BASE + H.PIN) / 2));
+    });
+    const g = new THREE.Group();
+    g.add(base, pin);
+    track(g, { layer: 'boards', bay: h.bay, row: h.row, movable: !!h.movable, zone: 'boards', space: h.space });
+  }
+  // boxes (PSU, cameras, the planned DATA ×4 v2's parts)
   for (const bx of DATA.boxes) {
     const g = new THREE.Group();
     const mat = bx.kind === 'psu' ? MAT.psu : std(new THREE.Color(bx.color), 0.1, 0.5);
@@ -645,7 +684,7 @@ function build(pcbGlb) {
       g.add(lbl);
     }
     g.position.set(...bx.pos);
-    track(g, { layer: bx.layer, bay: bx.bay || null, row: bx.row ?? null, zone: bx.layer, space: bx.space });
+    track(g, { layer: bx.layer, bay: bx.bay || null, row: bx.row ?? null, zone: bx.layer, space: bx.space, movable: !!bx.movable });
   }
   // status LEDs in the fascia windows (glow; colour = mode)
   for (const l of DATA.leds || []) {
@@ -798,15 +837,21 @@ function setView(name, animate = true) {
     const lens = rigs[id].lens.getWorldPosition(new THREE.Vector3()).applyMatrix4(new THREE.Matrix4().copy(root.matrixWorld).invert());
     target = bayBounds(id).getCenter(new THREE.Vector3()).lerp(lens, 0.45);
     eye = target.clone().add(new THREE.Vector3(-0.32, -1, 0.1).normalize().multiplyScalar(330));
-  } else if (name === 'dut') {
-    // close-up on the selected bay's DUT cable, DATA socket to board (?view=dut&bay=B4&openbay=1)
+  } else if (name === 'dut' || name === 'jumpers') {
+    // close-up on the selected bay's DUT cable, DATA socket to board (?view=dut&bay=B4&openbay=1), or on its
+    // Dupont jumpers, DATA ×4 header to the boards' pins (?view=jumpers&bay=B3)
     root.updateMatrixWorld(true);
     const bb = new THREE.Box3();
-    for (const o of tracked) if (o.userData.bay === (selectedBay || 'B2') && o.userData.zone === 'dut') bb.expandByObject(o);
+    const zone = name === 'dut' ? 'dut' : 'jumper';
+    for (const o of tracked) if (o.userData.bay === (selectedBay || 'B2') && o.userData.zone === zone) bb.expandByObject(o);
     bb.applyMatrix4(new THREE.Matrix4().copy(root.matrixWorld).invert());
     target = bb.getCenter(new THREE.Vector3());
     // close enough to stay under the drawer of the bay above when that one is pulled out too
     eye = target.clone().add(new THREE.Vector3(-0.45, -1, 0.8).normalize().multiplyScalar(Math.max(140, bb.getSize(new THREE.Vector3()).length() * 1.45)));
+  } else if (name === 'custom') {
+    // any camera, for close-ups: ?view=custom&eye=x,y,z&look=x,y,z (the rack's frame, mm)
+    eye = new THREE.Vector3(...params.get('eye').split(',').map(Number));
+    target = new THREE.Vector3(...params.get('look').split(',').map(Number));
   } else eye = new THREE.Vector3(R.width * 1.5, -1300, R.height * 1.25);
   const to = { eye: toWorld(eye), target: toWorld(target) };
   if (!animate) { camera.position.copy(to.eye); controls.target.copy(to.target); controls.update(); return; }
@@ -839,7 +884,7 @@ function bayBounds(id) {
   return box3.applyMatrix4(inv);
 }
 function updateSelectionBox() {
-  if (!selectedBay) { selectionBox.visible = false; return; }
+  if (!selectedBay || params.has('hideui')) { selectionBox.visible = false; return; }   // no outline in captures
   root.updateMatrixWorld(true);
   selectionBox.box.copy(bayBounds(selectedBay)).expandByScalar(2);
   selectionBox.visible = true;

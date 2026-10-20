@@ -25,6 +25,9 @@
 #                as twister names it (the board YAML's `identifier`), `runner` the west runner,
 #                `console` usb (the debugger's VCOM, default) or aux (the bay's AUX UART).
 #                Board families list `choices`: config/lab.yaml picks one per bay.
+# headers      = 2.54 mm pin headers soldered pins up, where Dupont jumpers plug on (viewer: the pins, and the
+#                jumpers' ends): rows of `n` pins from pin `at` [x, y] (drawing frame) by `step` [dx, dy], their
+#                `names` in order (a name may repeat, GND: a jumper takes the one nearest its other end)
 
 boards:
   arduino-uno-r4:
@@ -107,6 +110,13 @@ boards:
     name: Raspberry Pi Pico / Pico 2 (W)
     short: PICO 2
     size: [21.0, 51.0]
+    headers:                # pins 1–20 down the left (USB at the top), 21–40 up the right, the SWD three at the bottom
+      - { at: [1.61, 49.63], step: [0, -2.54], n: 20,
+          names: [GP0, GP1, GND, GP2, GP3, GP4, GP5, GND, GP6, GP7, GP8, GP9, GND, GP10, GP11, GP12, GP13, GND, GP14, GP15] }
+      - { at: [19.39, 1.37], step: [0, 2.54], n: 20,
+          names: [GP16, GP17, GND, GP18, GP19, GP20, GP21, GND, GP22, RUN, GP26, GP27, GND, GP28, ADC_VREF, 3V3,
+                  3V3_EN, GND, VSYS, VBUS] }
+      - { at: [7.96, 1.6], step: [2.54, 0], n: 3, names: [SWCLK, GND, SWDIO] }
     holes: [[4.8, 2.0], [16.2, 2.0], [4.8, 49.0], [16.2, 49.0]]
     hole_d: 2.1
     usb: { edge: top, pos: 10.5, type: micro-b }
@@ -116,6 +126,9 @@ boards:
     height: 4
     color: "#1e7b34"
     source: "Raspberry Pi Pico 2 datasheet"
+    model: { web: true, credit: "Pico 2 model © Raspberry Pi Ltd, MIT (simplified)" }
+                            # Raspberry Pi's STEP (tools/fetch_render_assets.py), MIT: the viewer's copy is published
+    pcb_t: 1.0
     verified: true
     zephyr: { platform: rpi_pico2/rp2350a/m33_0, runner: uf2, console: aux,
               note: "no on-board probe: uf2 needs BOOTSEL (AUX BOOT to TP6, AUX RESET to RUN) and an automounted RP2350 drive; or add a Raspberry Pi Debug Probe (runner openocd)" }
@@ -140,6 +153,11 @@ boards:
     name: Espressif ESP32-C6-DevKitC-1 v1.2
     short: ESP32-C6
     size: [25.4, 51.8]
+    headers:                # J1 down the left, J3 down the right, from the module's end (the USB-Cs at the bottom)
+      - { at: [1.27, 45.8], step: [0, -2.54], n: 16, names: [3V3, RST, IO4, IO5, IO6, IO7, IO0, IO1, IO8, IO10, IO11,
+                                                              IO2, IO3, 5V, GND, NC] }
+      - { at: [24.13, 45.8], step: [0, -2.54], n: 16, names: [GND, TX, RX, IO15, IO23, IO22, IO21, IO20, IO19, IO18,
+                                                               IO9, GND, IO13, IO12, GND, NC] }
     holes: []
     fence: true
     usb: { edge: bottom, pos: 12.7, type: usb-c }    # two USB-C
@@ -155,14 +173,21 @@ boards:
   xiao:
     name: Seeed Studio XIAO (any)
     short: XIAO
-    size: [21.0, 17.8]
+    size: [17.78, 20.96]    # its USB-C on a short edge, seven pins down each long one (Seeed's XIAO ESP32C3 v1.3 KiCad)
     holes: []
     fence: true
-    usb: { edge: top, pos: 10.5, type: usb-c }
+    usb: { edge: top, pos: 8.89, type: usb-c }
+    headers:                # top view, USB at the top: D0–D6 down the left, 5V GND 3V3 D10–D7 down the right
+      - { at: [1.27, 18.03], step: [0, -2.54], n: 7, names: [D0, D1, D2, D3, D4, D5, D6] }
+      - { at: [16.51, 18.03], step: [0, -2.54], n: 7, names: [5V, GND, 3V3, D10, D9, D8, D7] }
     standoff: 6
     height: 4
     color: "#202a44"
     source: "Seeed wiki"
+    model: { web: true, offset: [0, 0.76], credit: "XIAO ESP32S3 model © Seeed Studio, CC BY-SA 4.0 (simplified)" }
+                            # Seeed's STEP (tools/fetch_render_assets.py), CC BY-SA 4.0:
+                            # the viewer's copy is published (its USB-C overhang had shifted the outline)
+    pcb_t: 1.25             # its PCB's thickness (viewer: the headers sit on it)
     verified: true
     zephyr: { choices: [xiao_ble, xiao_esp32c3, xiao_esp32c6/esp32c6/hpcore, xiao_esp32s3/esp32s3/procpu, xiao_rp2040],
               note: "pick the runner with the platform (esp32, uf2, ...)" }

@@ -37,14 +37,21 @@ bays:
     serial: /dev/serial/by-id/usb-SEGGER_J-Link_001050012345-if00
   B2:
     console: aux                             # GIGA R1: flashed by dfu-util over its USB, console on the AUX UART
-  # B3 holds four boards on a DATA ×4 board (config/rack.yaml `boards:`): name each by its sub-slot.  A
-  # sub-slot's console is the board's own USB (no AUX UART); a bare `B3:` entry keeps the node's host and
+  # B1 and B3 hold several boards on a DATA ×4 board (config/rack.yaml `boards:`): name each by its sub-slot.
+  # A sub-slot's console is the board's own USB (no AUX UART); a bare `B3:` entry keeps the node's host and
   # ports, which its sub-slots inherit.
+  B1.2:
+    id: "E6614C311B6A5F2D"                   # two Pico 2 in the rack: uf2 picks the board by its serial number
+    serial: /dev/serial/by-id/usb-ZEPHYR_USB-DEV_E6614C311B6A5F2D-if00
+  B1.4:
+    id: "IUTPXBQ3XQBQ2"                      # MCU-Link serial (west flash --dev-id)
+    serial: /dev/serial/by-id/usb-NXP_Semiconductors_MCU-LINK_FRDM-MCXN947__r0E7__IUTPXBQ3XQBQ2-if01
   B3.1:
     platform: xiao_esp32c3                   # XIAO is a family: say which one
     runner: esp32                            # picks the board by its serial port
     serial: /dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_34:85:18:9A:3C:10-if00
   B3.2:
+    id: "9F2D3A71B0C4E8D5"
     serial: /dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D3A71B0C4E8D5-if00   # Pico 2, cdc-acm-console snippet
   B3.3:                                      # the bay's logic analyzer: config/rack.yaml gives it `role: analyzer`
     # role: analyzer                         # (your own rack says it here): not in CI, no Zephyr target

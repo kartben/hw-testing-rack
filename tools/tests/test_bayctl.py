@@ -205,7 +205,7 @@ class ConvertedConfig(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             entries, warnings = bayctl.hwmap(b, Path(tmp), "python3", "/opt/rack/tools/bayctl.py", None)
             by = {e["fixtures"][0]: e for e in entries}
-            self.assertIn("bays B3.2, B3.3 use uf2 without a probe id", " | ".join(warnings))   # two Pico 2
+            self.assertIn("B3.2, B3.3 use uf2 without a probe id", " | ".join(warnings))   # two Pico 2 (B1.2's too)
             b32 = by["bay:B3.2"]                                        # one entry per board
             self.assertEqual(b32["fixtures"][:2], ["bay:B3.2", "node:B3"])
             self.assertEqual(b32["serial"], "/dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D-if00")
@@ -219,7 +219,7 @@ class ConvertedConfig(unittest.TestCase):
         self.assertNotIn("SerialDriver", t["drivers"])
         self.assertEqual(t["drivers"]["ExternalPowerDriver"]["cmd_cycle"], "python3 bayctl.py power B3.2 cycle")
         pdu = bayctl.export_pdudaemon(b, "python3", "bayctl.py")
-        self.assertEqual(pdu["_ports"][8], "B3.2")                      # a port per board under test
+        self.assertEqual(pdu["_ports"][9], "B3.2")                      # a port per board under test (B1's two first)
 
     def test_analyzer(self):
         b = self.load({"B3.3": {"role": "analyzer", "ci": True, "serial": "/dev/ttyACM9"}})   # your own rack
@@ -291,8 +291,8 @@ class AccessConfig(unittest.TestCase):
 class Slots(unittest.TestCase):
     """config/rack.yaml › population: a bay's one board, or a converted bay's boards on one plate."""
 
-    PACKED = [("xiao", (16.2, 115.6)), ("rpi-pico2", (44.2, 82.4)), ("rpi-pico2", (72.2, 82.4)),
-              ("xiao", (100.2, 115.6))]
+    PACKED = [("xiao", (19.42, 112.44)), ("rpi-pico2", (44.2, 82.4)), ("rpi-pico2", (72.2, 82.4)),
+              ("xiao", (100.2, 112.44))]
     EXAMPLE = [("xiao", (8.7, 30.0)), ("rpi-pico2", (41.7, 16.0)), ("rpi-pico2", (74.7, 16.0)),
                ("xiao", (107.7, 30.0))]
 
@@ -328,8 +328,8 @@ class Slots(unittest.TestCase):
                 rackcfg.dut_slots("C1", entry)
 
     def test_example_plate(self):
-        rack = rackcfg.load()                                           # config/rack.yaml's B3
-        self.assertEqual(rack.multi_bays(), ["B3"])
+        rack = rackcfg.load()                                           # config/rack.yaml's B1 and B3
+        self.assertEqual(rack.multi_bays(), ["B1", "B3"])
         self.assertEqual(rack.bay_boards("B3"), self.EXAMPLE)
         # B3 is on the honeycomb plate: its pegs are tools/plate_layout.py's to check (test_plate_layout)
         self.assertEqual(rack.plate_kind("B3"), "pegs")
@@ -343,7 +343,7 @@ class Slots(unittest.TestCase):
         rack = rackcfg.load()
         boards = [{"board": b} for b, _ in CONVERTED]
         rack.raw["population"]["B3"] = {"boards": boards}
-        self.assertEqual(rack.multi_bays(), ["B3"])
+        self.assertEqual(rack.multi_bays(), ["B1", "B3"])
         self.assertEqual(rack.bay_boards("B3"), self.PACKED)               # packed in a row, centred
         self.assertEqual(rack.check_bay_plate("B3"), [])
         o = rack.bay_layout("B3")[1]["o"]                                # the Pico 2 turned USB to the port wall
@@ -374,7 +374,7 @@ class Slots(unittest.TestCase):
         self.assertIn("BAY_PLATES = [];", build.boards_scad(rackcfg.load_boards(), rack))   # the honeycomb plate
         self.assertNotIn(("plate_bay_b3", "parts/board_plate.scad", {"BAY": "B3"}), build.part_jobs(rack))
         rack.raw["population"]["B3"]["plate"] = "boards"                                  # its own plate
-        self.assertIn('["B3", "boards", [[1, [16.2, 115.6], ["xiao", "XIAO", [21, 17.8]',
+        self.assertIn('["B3", "boards", [[1, [19.42, 112.44], ["xiao", "XIAO", [17.78, 20.96]',
                       build.boards_scad(rackcfg.load_boards(), rack))
         self.assertIn(("plate_bay_b3", "parts/board_plate.scad", {"BAY": "B3"}), build.part_jobs(rack))
         rack.raw["population"]["B3"]["boards"][1]["at"] = [10, 60]

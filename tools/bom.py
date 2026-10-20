@@ -803,6 +803,16 @@ def hardware(rack) -> list[dict]:
              "notes": "its channels to the neighbours' pins, a GND beside each group; one wire, its far end cut, "
                       "soldered to the Pico 2's BOOTSEL pad (TP6) for the port's BOOT pin"},
         ]
+    # Dupont jumpers from a DATA ×4 v1's RESET/BOOT headers to the boards' pins (population › jumpers); a bay showing
+    # the planned v2 (`x4: v2`) keeps v1 here, its jumpers come with v2's headers
+    n_jump = sum(len(pins) for b in rack.bays() if (e := r["population"].get(b.id) or {}).get("x4") != "v2"
+                 for pins in (e.get("jumpers") or {}).values())
+    if n_jump:
+        rows.append({"category": "Cables", "item": "Dupont jumper wires, female–female, 20 cm, a 40-wire strip "
+                                                    f"(DATA ×4 RESET/BOOT headers → the boards' pins: {n_jump} wire{'s' * (n_jump > 1)})",
+                     "supplier": "AliExpress", "qty": 1, "unit_eur": 2.0,
+                     "notes": "the usual rainbow; GND black, RESET brown, BOOT green.  The DATA ×4's 1 × 3 headers and "
+                              "the boards' pin headers are soldered by hand, pins up"})
     rows += [
         # the rack's supply: a USB PD charger outside it, into the power box's rear wall (the hub's
         # CH224A sink asks for 28 V EPR, or 20 V), so no mains wiring anywhere in the rack

@@ -127,11 +127,22 @@ population:
   A2: { board: nucleo-144,       cable: c-to-micro-b }
   A3: { board: nrf52840-dk,      cable: c-to-micro-b, mount: sled }                # a sled bay: no drag chain
   A4: { board: nrf54l15-dk,      cable: c-to-c }
-  B1: { board: frdm-mcxn947,     cable: c-to-c }
+  B1:                                                              # converted (v1): the FRDM and a Pico 2 on the DATA ×4's
+    open: true                                                     # drawer shown pulled out
+    boards:                  # ports 2 and 4, ports 1 and 3 free (a third board leaves no room for its pegs' cams, 2026-10-20)
+      - { board: rpi-pico2,    cable: c-to-micro-b-straight, slot: 2, at: [34.0, 16.0] }   # a straight 15 cm cable, an S
+      - { board: frdm-mcxn947, cable: c-to-c, slot: 4, at: [60.0, 15.4] }   # its USB to the port wall, 90° plugs, an arch;
+                                                                             # left of the plate's right finger slot
+    jumpers:                 # Dupont female–female, 20 cm, from v1's 1 × 3 RESET/BOOT header: the Pico 2's RESET is RUN
+      B1.2: { RESET: RUN }     # (its BOOTSEL a test pad; no GND wire: the USB cable carries it; the FRDM's MCU-Link resets it)
   B2: { board: giga-r1-display,  cable: c-to-c, plate: boards }   # the camera bay: a live LVGL screen (2026-10-18);
                                                                    # the shield hides the GIGA's edges: its own fenced plate
   B3:                                                              # converted: B3.1–B3.4 on a DATA ×4 board
     open: true                                                     # drawer shown pulled out
+    x4: v2                   # the viewer shows the planned DATA ×4 v2 here (decided 2026-10-19); the BOM and the order keep v1
+    jumpers:                 # Dupont female–female, 20 cm, one 3-wire ribbon per board from the DATA ×4's header (its port)
+      B3.1: { VREF: 3V3, P1: D6, P2: D7 }      # to its pins, header pin: board pin.  A UART between B3.1 and B3.2: TX
+      B3.2: { VREF: 3V3, P1: GP0, P2: GP1 }    # and RX, and the VREF the LSF0108 needs (GND comes with the USB cable)
     boards:                  # straight 15 cm cables, each at rest in a gentle arch (tools/webscene.py › rod_cable)
       - { board: xiao,      cable: c-to-c-straight,       at: [8.7, 30.0] }     # over 14.5-15.5 cm: the boards forward,
       - { board: rpi-pico2, cable: c-to-micro-b-straight, at: [41.7, 16.0] }    # 33 mm apart for the pegs between
@@ -222,6 +233,19 @@ pcb:
     notch: [86, 0, 22, 7]   # x, y, w, d: the rear-right corner cut away, for the PH plug and its lead
     ph: 97                  # KiCad x of the JST PH 8-pin (S8B-PH-SM4-TB) on the notch's front edge (y = 7), its mouth to the
                             # rear: the lead goes down through the drawer's cable window right behind it, as the DATA board's
+    aux: { y: 2.9, pin1: [8.5, 30.0, 44.5, 66.0], step: [2.54, -2.54, 2.54, -2.54], names: [GND, RESET, BOOT] }
+                            # J102–J402: per port a 1 × 3 2.54 header (GND, RESET_N, BOOT_N) along x, pin 1 at pin1[n] (KiCad),
+                            # the right port of a pair mirrored; not fitted by JLC, soldered by hand for Dupont jumpers
+  data_port_x4_v2:          # PLANNED (docs/data-x4-v2-research.md): not designed yet.  A bay with `x4: v2` shows it in the
+                            # viewer (the concept placement's stand-in); its BOM and the JLC order keep v1
+    size: [108, 27]         # X × Y, KiCad y=0 the rear edge (3 mm deeper than v1 at the rear: the front edge, the USB-Cs
+    notch: [86, 0, 22, 10]  # and the PH 8 stay where v1 has them)
+    holes: [[2.6, 16.5], [40.4, 16.6], [77.0, 3.0], [104.4, 23.6]]
+    header: { x: [11, 29, 47, 65], odd_y: 5.67, even_y: 3.13, cols: 6,
+              names: [GND, VREF, P1, P2, P3, P4, P5, P6, P7, P8, RESET, BOOT] }
+                            # per port a 2 × 6 2.54 THT header centred on its USB-C's x, pin 1 at x − 6.35: column k (from
+                            # the left) holds pins 2k−1 on the front row (odd_y) and 2k on the rear one: GND/VREF, P1/P2 …
+                            # P7/P8, RESET/BOOT (the v2 design session's layout, 2026-10-20, provisional)
   camera_pod:               # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6

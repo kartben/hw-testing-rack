@@ -9,11 +9,11 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 60 |
-| Cables | 49 |
+| Cables | 53 |
 | Motion | 19 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **951** |
+| **Total** | **955** |
 
 ≈ **€119 per bay** all-in.
 
@@ -54,9 +54,9 @@ What each order pays once, whatever the number of boards, against what grows wit
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
 | bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 40 (23) | 61.20 | 114.99 | 206.92 | **321.91** | 321.91 | 276.44 |
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (16) | 50.49 | 123.59 | 61.94 | **185.53** | 185.53 | 146.87 |
-| data-port | Economic | 7 / 8 | 6 (3) | 9.21 | 25.22 | 13.65 | **38.87** | 38.87 | 28.82 |
+| data-port | Economic | 6 / 8 | 6 (3) | 9.21 | 25.22 | 13.65 | **38.87** | 38.87 | 28.82 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.26 | **26.38** | 26.38 | 25.59 |
-| data-port-x4 | Economic | 1 / 2 | 26 (9) | 27.63 | 69.24 | 34.93 | **104.17** | 104.17 | 77.29 |
+| data-port-x4 | Economic | 2 / 2 | 26 (9) | 27.63 | 69.24 | 34.93 | **104.17** | 104.17 | 77.29 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
 | **All** | | | | | | | **710.86** | **710.86** | **589.01** |
 
@@ -94,13 +94,13 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
 | data-port-x4 | 52.08 | 29.62 | 21.45 | 13.25 | 11.86 | 11.49 |
 
-One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) when building several in one order, one shipment ($34, held: it grows with the weight):
+One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 2 data-port-x4) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4 | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 297.79 | 185.51 | 37.16 | 26.38 | 104.17 | **685.01** |
-| 5 | 177.29 | 53.65 | 16.18 | 7.15 | 29.62 | **290.68** |
-| 10 | 156.91 | 39.34 | 12.47 | 4.92 | 21.45 | **238.49** |
+| 1 | 297.79 | 185.51 | 35.46 | 26.38 | 104.17 | **683.31** |
+| 5 | 177.29 | 53.65 | 13.81 | 7.15 | 42.89 | **301.59** |
+| 10 | 156.91 | 39.34 | 11.23 | 4.92 | 33.67 | **249.47** |
 
 ## Printed parts
 
@@ -123,13 +123,13 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | ladder_b | 5 | 48.9 | `mechanical/stl/ladder_b.stl` |
 | ladder_base | 5 | 49.3 | `mechanical/stl/ladder_base.stl` |
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
-| peg_base_h10 | 11 | 0.5 | `mechanical/stl/peg_base_h10.stl` |
+| peg_base_h10 | 10 | 0.5 | `mechanical/stl/peg_base_h10.stl` |
 | peg_base_h12 | 5 | 0.5 | `mechanical/stl/peg_base_h12.stl` |
 | peg_base_h6 | 4 | 0.3 | `mechanical/stl/peg_base_h6.stl` |
-| peg_base_h9 | 2 | 0.4 | `mechanical/stl/peg_base_h9.stl` |
-| peg_bobbin | 6 | 0.9 | `mechanical/stl/peg_bobbin.stl` |
+| peg_base_h9 | 3 | 0.4 | `mechanical/stl/peg_base_h9.stl` |
+| peg_bobbin | 5 | 0.9 | `mechanical/stl/peg_bobbin.stl` |
 | peg_cam | 22 | 0.2 | `mechanical/stl/peg_cam.stl` |
-| peg_pin_d21_h9 | 2 | 0.3 | `mechanical/stl/peg_pin_d21_h9.stl` |
+| peg_pin_d21_h9 | 3 | 0.3 | `mechanical/stl/peg_pin_d21_h9.stl` |
 | peg_pin_d32_h12 | 1 | 0.5 | `mechanical/stl/peg_pin_d32_h12.stl` |
 | peg_stop_h10 | 10 | 0.5 | `mechanical/stl/peg_stop_h10.stl` |
 | peg_stop_h12 | 3 | 0.6 | `mechanical/stl/peg_stop_h12.stl` |
@@ -294,7 +294,7 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 62  | 0.02 | 1.24 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid, camera pods) | 44  | 0.02 | 0.88 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
-| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA; a DATA ×4: 2 more | 53  | 0.02 | 1.06 | AliExpress (bulk, e.g. HZYUEGOU) |
+| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA; a DATA ×4: 2 more | 55  | 0.02 | 1.10 | AliExpress (bulk, e.g. HZYUEGOU) |
 | Fasteners | PT 2.3×8 pan head, self-tapping (M2.3×8 "ST", head ≤ Ø4.5): the guide lips' screws: a drawer bay's stop; a sled bay's stop and 2 port-block locks (and 2 sled locks if fixed) | 10  | 0.02 | 0.20 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 28  | 0.01 | 0.28 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge) | 1 lot | 3.99 | 3.99 | AliExpress 1005010074888189, "6x3mm-50 pièces" |
@@ -310,10 +310,11 @@ One rack (8 bay-node, 1 power-hub, 7 data-port, 2 camera-pod, 1 data-port-x4) wh
 | Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: XIAO) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
 | Cables | USB-C ↔ USB-C, straight, 20 cm (DUT cable: UNO R4) | 1  | 2.00 | 2.00 | AliExpress (USB-C ↔ USB-C, straight, 20 cm, USB 2.0 data) |
 | Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK) | 3  | 1.00 | 3.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
-| Cables | USB-C ↔ micro-B, straight, 15 cm (DUT cable: PICO 2) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data) |
+| Cables | USB-C ↔ micro-B, straight, 15 cm (DUT cable: PICO 2) | 3  | 2.00 | 6.00 | AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data) |
 | Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 6  | 1.00 | 6.00 | AliExpress (DIY-018, "UP" and "DOWN") |
 | Analyzer | Raspberry Pi Pico 2 (RP2350), the logic analyzer in B3.3 | 1  | 5.50 | 5.50 | Raspberry Pi approved reseller (Kubii, The Pi Hut, Pimoroni) |
 | Analyzer | Dupont jumper wires, female–female, 10 cm, a 40-wire strip | 1  | 1.50 | 1.50 | AliExpress |
+| Cables | Dupont jumper wires, female–female, 20 cm, a 40-wire strip (DATA ×4 RESET/BOOT headers → the boards' pins: 1 wire) | 1  | 2.00 | 2.00 | AliExpress |
 | Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
 | Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |
 | Cameras | Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm | 2  | 28.25 | 56.50 | Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey |

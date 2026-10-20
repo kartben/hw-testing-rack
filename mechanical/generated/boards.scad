@@ -10,7 +10,7 @@ BOARD_DB = [
   ["rpi-pico2", "PICO 2", [51, 21], 2.1, [[2, 16.2], [2, 4.8], [49, 16.2], [49, 4.8]], 10.5, "micro-b", 9, false, 4, "#1e7b34", true, true],
   ["esp32-s3-devkitc", "ESP32-S3", [62.74, 25.4], 3.2, [], 12.7, "micro-b", 10, true, 8, "#151515", true, true],
   ["esp32-c6-devkitc", "ESP32-C6", [51.8, 25.4], 3.2, [], 12.7, "usb-c", 10, true, 8, "#151515", true, true],
-  ["xiao", "XIAO", [21, 17.8], 3.2, [], 10.5, "usb-c", 6, true, 4, "#202a44", true, false],
+  ["xiao", "XIAO", [17.78, 20.96], 3.2, [], 8.89, "usb-c", 6, true, 4, "#202a44", true, false],
   ["microbit-v2", "MICRO:BIT", [51.6, 42], 3.2, [], 25.8, "micro-b", 6, true, 6, "#111111", true, false],
   ["frdm-mcxn947", "FRDM-MCXN947", [55, 118], 3.2, [], 40, "usb-c", 10, true, 14, "#1b1b1b", false, false],
   ["nrf54l15-dk", "nRF54L15 DK", [64, 117], 3.2, [], 20, "usb-c", 10, true, 12, "#1d3557", false, false],

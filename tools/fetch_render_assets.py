@@ -30,8 +30,8 @@ BOARD_MODELS = {
                   "Raspberry Pi Pico 2 3D STEP, Raspberry Pi Ltd, MIT licence"),
     "arduino-uno-r4": ("https://docs.arduino.cc/resources/models/ABX00087-step.zip",
                        "Arduino UNO R4 WiFi (ABX00087) STEP, Arduino, CC BY-SA 4.0"),
-    "xiao": ("https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/seeed-studio-xiao-esp32s3-sense-3d_model.zip",
-             "Seeed Studio XIAO ESP32S3 Sense 3D model, Seeed Studio (no licence stated: renders only)"),
+    "xiao": ("https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/seeed-studio-xiao-esp32s3-3d_model.zip",
+             "Seeed Studio XIAO ESP32S3 3D model, Seeed Studio, CC BY-SA 4.0 (the Seeed wiki's licence for its resources)"),
     # the two halves of `giga-r1-display` (tools/board_models.py stacks them)
     "giga-r1-wifi": ("https://docs.arduino.cc/resources/models/ABX00063-step.zip",
                      "Arduino GIGA R1 WiFi (ABX00063) STEP, Arduino, CC BY-SA 4.0"),
