@@ -5,7 +5,7 @@ data-port-x4) stays the board of the other converted bays (decided 2026-10-20). 
 does and adds:
 
 * per port, 8 pins P1–P8 and the board's VREF on a 2 × 6 through-hole header, soldered by hand (GND,
-  VREF, P1–P8, RESET_N, BOOT_N): each pin through TPD4E05U06 ESD and 100 Ω to an LSF0108 (A side = the DUT's VREF, B side =
+  VREF, P1–P8, RESET_N, BOOT_N): each pin through H5VU25UC ESD and 100 Ω to an LSF0108 (A side = the DUT's VREF, B side =
   3.3 V; Vref_B and EN biased from the port's VBUS through 200k, so a port that is off isolates its
   pins, and a VREF left unconnected is pulled to GND by the ADC divider: nothing passes);
 * two CH446Q 8 × 16 crosspoints at ±5 V (TPS60400 for −5 V), each taking two ports' 16 pins on X; their
@@ -37,7 +37,7 @@ header; the headers; per port its power cluster; the vertical USB-C with their E
 One PCB, two assemblies (b.pcb["variants"], build_board writes each one's BOM and CPL): as drawn, DATA-4x-logic;
 "base", DATA-4x, the converted bays' board (the user, 2026-10-20: v1 is not ordered, the base board is this one
 with the logic left off).  The base leaves unfitted the matrix sheet (crosspoints, −5 V, TCA9534A, FB1), the
-co-processor sheet and each port's pin chain (TPD4E05U06, 100 Ω, LSF0108, its VREF parts): what stays is v1's
+co-processor sheet and each port's pin chain (H5VU25UC, 100 Ω, LSF0108, its VREF parts): what stays is v1's
 board, the hub, the four ports with their switch, INA226, ESD and CC, the expanders with RESET/BOOT, the
 lead's isolation and ESD, the 3.3 V.  No base signal runs through a logic part: the header's GND, RESET and
 BOOT stay live, its P pins and VREF end on empty pads, hub port 5 ends on R23/R24's empty pads.
@@ -91,7 +91,7 @@ CHIP = [(30.0, 18.8), (68.0, 18.8)]  # the crosspoints, between their two ports,
 CP = (47.0, 12.9)                   # the co-processor, top centre, turned 180°: its buses at the south-east corner
 HX, HY = 87.5, 15.0                 # the hub, top-right corner, turned 90°: its DN pins face down, to the ports
 MX_EXP = (14.0, 7.0)                # the matrix expander (TCA9534A), top-left corner, turned 90°
-# the pin chain's rows: TPD4E05U06 × 2 under the header's pins, the 100 Ω arrays, the LSF0108 (A side down)
+# the pin chain's rows: H5VU25UC × 2 under the header's pins, the 100 Ω arrays, the LSF0108 (A side down)
 TPD_Y, RN_Y, LSF_Y = 36.4, 34.2, 29.6
 PWR_Y = 48.4                        # each port's power cluster (switch, shunt, INA226): its frame's top
 # U3, the 3.3 V LDO (SOT-223, turned 90°: its tab up over the +3V3 area, its pins down over +5V), in the
@@ -117,14 +117,14 @@ Y_BUS = "DCBAEFGH"
 # the 2.2k pull-up enables on the RP2354B's east face, either side of its 3.3 V pin 15 (A at GPIO19 … D at
 # GPIO16, E at GPIO13 … H at GPIO10), the arrays RN6/RN7 right beside them in the same order
 PU_GPIO = {"A": 19, "B": 18, "C": 17, "D": 16, "E": 13, "F": 12, "G": 11, "H": 10}
-# The pin chain of a port, straight up from its header: header → TPD4E05U06 → 100 Ω → LSF0108 (A face down,
+# The pin chain of a port, straight up from its header: header → H5VU25UC → 100 Ω → LSF0108 (A face down,
 # B face up) → crosspoint X.  The header's lines leave it west → east VREF and eight lines, a lower-row
 # pin's just west of its upper-row neighbour's: P5 P1 P6 P2 P7 P3 P8 P4 (LANE).  The LSF's channels 1–8
 # take those lanes in that order (its A face, west → east: VREF, A1 … A7, A8 round its east end), so
 # nothing crosses; its B lines turn into the crosspoint's face: west of the chip (port a) lane 1 at the top,
 # east of it (port b) lane 8 at the top.
 LANE = (5, 1, 6, 2, 7, 3, 8, 4)     # the P pin in lane 1 … 8, west → east
-TPD_SIG = (1, 2, 4, 5)              # TPD4E05U06 signal pins west → east, turned 90° (pins 1–5 down, 6–10 up)
+TPD_SIG = (1, 2, 4, 5)              # the ESD array's signal pins west → east, turned 90° (pins 1–5 down, 6–10 up)
 TPD_THRU = {1: 10, 2: 9, 4: 7, 5: 6}  # the pad across from each: the line runs through both (flow-through)
 # lane → crosspoint X line: port a on the chip's west face (pins 1–8, north → south X14 X15 X6 … X11), port
 # b on its east face (pins 31–24, north → south X0 X1 … X5 X12 X13)
@@ -273,7 +273,7 @@ def port(b: Board, n: int):
         tpd = {"GND": "GND"}
         for pin, q in zip(TPD_SIG, pins):
             tpd[str(pin)] = tpd[str(TPD_THRU[pin])] = f"{p}P{q}"
-        part(s, f"U{k + 5 + j}", "tpd4e05", tpd, pcb=P(colx, TPD_Y, 90),
+        part(s, f"U{k + 5 + j}", "esd4", tpd, pcb=P(colx, TPD_Y, 90),
              sch=at(28 + 36 * j, 128, fields=(-3, -7)))
         # resistor k west → east, its pin k down (the ESD's side)
         rarray(s, f"RN{k + 1 + j}", "100", [(f"{p}P{q}", f"{p}A{q}") for q in pins],
@@ -316,7 +316,7 @@ def hub_sheet(b: Board):
     s = b.sheet("Hub", "hub.kicad_sch", "Lead, hub, expanders, 3.3 V")
     s.paper = "A2"
     s.frame("Lead from the bay node's J7 (JST PH 8, vertical, on the rear face): SDA, SCL and INT through a "
-            "TPD4E05U06", 6, 10, 70, 50)
+            "H5VU25UC", 6, 10, 70, 50)
     # through-hole on the rear face, soldered by hand (JLC's Economic assembly places the front face only), where
     # the lead comes up from the cable window (the cradle's interface): a vertical row at x 90 from pin 1 (INT,
     # the top) to pin 8 (+5V, the bottom, over the power plane's +5V tab); the USB pair (5, 6) under the hub
@@ -326,7 +326,7 @@ def hub_sheet(b: Board):
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False, sch=at(28, 16))
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(34, 16))
     # the lead's I²C and INT: one 4-line TVS array right of J1's pins 1–3 (front face)
-    part(s, "U4", "tpd4e05", {"D1+": "LEAD_SDA", "D1-": "LEAD_SCL", "D2+": "LEAD_INT", "D2-": None, "GND": "GND"},
+    part(s, "U4", "esd4", {"D1+": "LEAD_SDA", "D1-": "LEAD_SCL", "D2+": "LEAD_INT", "D2-": None, "GND": "GND"},
          pcb=P(92.9, 33.5, 0), sch=at(48, 30, fields=(-3, -6)))
     # one part per value where the size allows (JLC bills each part type): 22 µF 0805 as the ports' VBUS (and
     # the 3.3 V LDO's), 1 µF and 4.7 µF in 0402; J1's 22 µF in 1206 as v1, more of it left at 5 V
@@ -585,7 +585,7 @@ def coproc_sheet(b: Board):
         C(s, f"C{45 + i}", "100n", "+1V1", "GND", size="0402", pcb=P(x, y, rot), sch=at(70 + 5 * i, 24))
     rail(s, "+1V1", [f"C{45 + i}.1" for i in range(3)], -1)
     rail(s, "GND", [f"C{45 + i}.2" for i in range(3)], 1, "down")
-    s.frame("12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 5 (27 Ω), RUN, BOOTSEL, LED, SWD",
+    s.frame("12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 5 (22 Ω), RUN, BOOTSEL, LED, SWD",
             124, 56, 228, 98)
     # over the north face's XIN (pin 30) and XOUT (31): XIN to its pin 1 (right), XOUT through R22 to pin 3 (left)
     part(s, "Y2", "xtal12", {"1": "CP_XIN", "3": "CP_XTAL", "2": "GND", "4": "GND"}, pcb=P(cx + 1.3, 2.2, 180),
@@ -597,11 +597,13 @@ def coproc_sheet(b: Board):
     R(s, "R22", "1k", "CP_XOUT", "CP_XTAL", size="0402", pcb=P(cx - 1.6, 3.4, 90),
       sch=at(156, 68, rot=270))
     s.wire("C49.1", (146, 68), "R22.2")
-    # 27 Ω as the Pico 2 and Raspberry Pi's design guide: no JLC basic part in any size, UNI-ROYAL's extended one
-    usb27 = {"LCSC": "C25100", "MPN": "0402WGF270JTCE", "Manufacturer": "UNI-ROYAL(Uniroyal Elec)"}
-    R(s, "R23", "27", "CP_DP", "CP_HUB_DP", size="0402", pcb=P(cx + 2.4, cy + 10.4, 270), fields=usb27,
+    # The USB series resistors: 22 Ω, a JLC basic part, where the Pico 2 and Raspberry Pi's design guide fit 27 Ω (no
+    # basic part in any size).  The RP2350's USB is Full Speed only: its driver's own impedance plus 22 Ω stays
+    # inside USB's 28–44 Ω Full Speed driver window, nearer its middle than with 33 Ω
+    usb22 = {"LCSC": "C25092", "MPN": "0402WGF220JTCE", "Manufacturer": "UNI-ROYAL(Uniroyal Elec)"}
+    R(s, "R23", "22", "CP_DP", "CP_HUB_DP", size="0402", pcb=P(cx + 2.4, cy + 10.4, 270), fields=usb22,
       sch=at(140, 84, rot=90))
-    R(s, "R24", "27", "CP_DN", "CP_HUB_DN", size="0402", pcb=P(cx + 1.3, cy + 10.4, 270), fields=usb27,
+    R(s, "R24", "22", "CP_DN", "CP_HUB_DN", size="0402", pcb=P(cx + 1.3, cy + 10.4, 270), fields=usb22,
       sch=at(140, 90, rot=90))
     R(s, "R25", "10k", "+3V3_CP", "CP_RUN", size="0402", pcb=P(cx - 3.8, 5.4, 0),
       sch=at(166, 84))
@@ -649,7 +651,7 @@ def coproc_sheet(b: Board):
 # ---------------------------------------------------------------------------------------------- board
 def logic_only(b: Board) -> list[str]:
     """The parts the base DATA-4x leaves off: the matrix and co-processor sheets whole, and per port its pin
-    chain (the two TPD4E05U06, the 100 Ω arrays, the LSF0108, its Vref_B 200k and 100 nF, the VREF divider)."""
+    chain (the two H5VU25UC, the 100 Ω arrays, the LSF0108, its Vref_B 200k and 100 nF, the VREF divider)."""
     refs = [p.ref for p in b.parts.values() if p.sheet and p.sheet.name in ("Matrix", "Co-processor")]
     for n in range(1, 5):
         k = 100 * n
@@ -726,6 +728,9 @@ def board() -> Board:
     ux, uy = CP
     hand_tracks.append(("GND", "F.Cu", 0.2, [(ux - 3.4, uy + 4.6), (ux - 3.4, uy + 3.9), (ux - 1.4, uy + 1.9),
                                              (ux - 1.4, uy + 1.4)]))
+    # and the exposed pad down to the GND plane: a via between its paste windows, drawn (Freerouting doesn't
+    # always fan the pad out); more of them, and its buses can't pass under the pad on B.Cu
+    hand_vias.append(("GND", ux + 0.565, uy + 0.565, 0.5, 0.3))
     six = LAYERS == 6
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {

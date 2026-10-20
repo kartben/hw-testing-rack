@@ -589,9 +589,9 @@
     "1k"
    ],
    [
-    "C25100",
+    "C25092",
     2,
-    "27"
+    "22"
    ],
    [
     "C25741",
@@ -649,9 +649,9 @@
     "AP2114H-3.3TRG1"
    ],
    [
-    "C138714",
+    "C20615800",
     9,
-    "TPD4E05U06DQAR"
+    "H5VU25UC"
    ],
    [
     "C109471",
@@ -806,9 +806,9 @@
     "AP2114H-3.3TRG1"
    ],
    [
-    "C138714",
+    "C20615800",
     1,
-    "TPD4E05U06DQAR"
+    "H5VU25UC"
    ],
    [
     "C111738",
@@ -3988,6 +3988,63 @@
    ],
    "category": "Power Management (PMIC)",
    "manufacturer": "Texas Instruments",
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
+  },
+  "C20615800": {
+   "mfr": "H5VU25UC",
+   "package": "DFN2510-10L",
+   "stock": 13288,
+   "tier": "preferred",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 99,
+     "price": 0.031
+    },
+    {
+     "qFrom": 100,
+     "qTo": 299,
+     "price": 0.028
+    },
+    {
+     "qFrom": 300,
+     "qTo": 2999,
+     "price": 0.026
+    },
+    {
+     "qFrom": 3000,
+     "qTo": 5999,
+     "price": 0.023
+    },
+    {
+     "qFrom": 6000,
+     "qTo": 8999,
+     "price": 0.022
+    },
+    {
+     "qFrom": 9000,
+     "qTo": null,
+     "price": 0.021
+    }
+   ],
+   "category": "Circuit Protection",
+   "manufacturer": "hongjiacheng",
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
+  },
+  "C25092": {
+   "mfr": "0402WGF220JTCE",
+   "package": "0402",
+   "stock": 3686811,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   }
  }

@@ -9127,15 +9127,15 @@
 				)
 			)
 		)
-		(property "Value" "TPD4E05U06DQAR"
-			(at 70.85 309.88 0)
+		(property "Value" "H5VU25UC"
+			(at 67.7 309.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Package_SON:USON-10_2.5x1.0mm_P0.5mm"
+		(property "Footprint" "bench:DFN2510-10L_2.5x1.0mm_P0.5mm"
 			(at 71.12 325.12 0)
 			(effects
 				(font
@@ -9144,7 +9144,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tpd4e05u06.pdf"
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261524_hongjiacheng-H5VU25UC_C20615800.pdf"
 			(at 71.12 325.12 0)
 			(effects
 				(font
@@ -9153,7 +9153,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "4-channel ESD, 0.5 pF, 5.5 V stand-off, flow-through (pins 6, 7, 9, 10 route through)"
+		(property "Description" "4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 tied to 5, 4, 2, 1)"
 			(at 71.12 325.12 0)
 			(effects
 				(font
@@ -9162,7 +9162,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TPD4E05U06DQAR"
+		(property "MPN" "H5VU25UC"
 			(at 71.12 325.12 0)
 			(effects
 				(font
@@ -9171,7 +9171,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Texas Instruments"
+		(property "Manufacturer" "hongjiacheng"
 			(at 71.12 325.12 0)
 			(effects
 				(font
@@ -9180,7 +9180,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C138714"
+		(property "LCSC" "C20615800"
 			(at 71.12 325.12 0)
 			(effects
 				(font
@@ -9788,15 +9788,15 @@
 				)
 			)
 		)
-		(property "Value" "TPD4E05U06DQAR"
-			(at 162.29 309.88 0)
+		(property "Value" "H5VU25UC"
+			(at 159.14 309.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Package_SON:USON-10_2.5x1.0mm_P0.5mm"
+		(property "Footprint" "bench:DFN2510-10L_2.5x1.0mm_P0.5mm"
 			(at 162.56 325.12 0)
 			(effects
 				(font
@@ -9805,7 +9805,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tpd4e05u06.pdf"
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261524_hongjiacheng-H5VU25UC_C20615800.pdf"
 			(at 162.56 325.12 0)
 			(effects
 				(font
@@ -9814,7 +9814,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "4-channel ESD, 0.5 pF, 5.5 V stand-off, flow-through (pins 6, 7, 9, 10 route through)"
+		(property "Description" "4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 tied to 5, 4, 2, 1)"
 			(at 162.56 325.12 0)
 			(effects
 				(font
@@ -9823,7 +9823,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TPD4E05U06DQAR"
+		(property "MPN" "H5VU25UC"
 			(at 162.56 325.12 0)
 			(effects
 				(font
@@ -9832,7 +9832,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Texas Instruments"
+		(property "Manufacturer" "hongjiacheng"
 			(at 162.56 325.12 0)
 			(effects
 				(font
@@ -9841,7 +9841,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C138714"
+		(property "LCSC" "C20615800"
 			(at 162.56 325.12 0)
 			(effects
 				(font

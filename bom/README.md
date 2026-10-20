@@ -5,7 +5,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 775 |
+| Electronics | 768 |
 | Power | 82 |
 | Cameras | 64 |
 | Printed parts | 62 |
@@ -13,9 +13,9 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Motion | 19 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,077** |
+| **Total** | **1,071** |
 
-≈ **€135 per bay** all-in.
+≈ **€134 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -46,17 +46,17 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | **Estimated total** | **85.37** |
 | | | Not in the rack's order | |
 | data-port-x4-v2 | 5 PCBs (4-layer 100×70 mm, JLC04161H-7628, ENIG), 2 assembled, Economic PCBA | PCB: special offer $8.00, ENIG $17.40 | 25.40 |
-| | | PCBA: setup $8.18, stencil $1.53, components $62.62, extended parts $61.40, SMT $3.77, X-ray $3.28, L1 minimum purchase (32) $9.54 | 150.32 |
-| | | **Estimated total** | **175.72** |
+| | | PCBA: setup $8.18, stencil $1.53, components $61.57, extended parts $55.26, SMT $3.77, X-ray $3.28, L1 minimum purchase (32) $9.54 | 143.13 |
+| | | **Estimated total** | **168.53** |
 | | | In the rack's order on the data-port-x4-v2-panel (one per panel) | |
 | data-port-x4-v2-base | 5 PCBs (4-layer 100×70 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: special offer $8.00, lead-free HASL $5.20 | 13.20 |
-| | | PCBA: setup $8.18, stencil $1.53, components $32.12, extended parts $27.63, SMT $1.74, X-ray $3.28 | 74.48 |
-| | | **Estimated total** | **87.68** |
+| | | PCBA: setup $8.18, stencil $1.53, components $32.01, extended parts $24.56, SMT $1.74, X-ray $3.28 | 71.30 |
+| | | **Estimated total** | **84.50** |
 | | | In the rack's order on the data-port-x4-v2-panel (one per panel) | |
 | data-port-x4-v2-panel | 5 panels (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites), 2 assembled: 2 of each board, Economic PCBA | PCB: engineering $25.00, ENIG $18.20, board $8.80 | 52.00 |
-| | | PCBA: setup $8.18, stencil $1.53, components $92.49, extended parts $61.40, SMT $5.51, X-ray $6.56, L1 minimum purchase (32) $9.54 | 185.21 |
-| | | **Estimated total** | **237.21** |
-| | | Order (indicative): as quoted | 237.21 |
+| | | PCBA: setup $8.18, stencil $1.53, components $91.33, extended parts $55.26, SMT $5.51, X-ray $6.56, L1 minimum purchase (32) $9.54 | 177.91 |
+| | | **Estimated total** | **229.91** |
+| | | Order (indicative): as quoted | 229.91 |
 
 ## JLC cost
 
@@ -68,9 +68,9 @@ What each order pays once, whatever the number of boards, against what grows wit
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (15 + 2 pref.) | 50.49 | 123.59 | 61.94 | **185.53** | 185.53 | 146.87 |
 | data-port | Economic | 6 / 7 | 6 (3) | 9.21 | 25.22 | 11.94 | **37.16** | 37.16 | 27.11 |
 | camera-pod | Economic | 2 / 2 | 8 (3) | 9.21 | 24.12 | 2.26 | **26.38** | 26.38 | 25.59 |
-| data-port-x4-v2-panel | Economic | 1 / 2 | 41 (20 + 1 pref.) | 61.40 | 132.65 | 104.56 | **237.21** | 237.21 | 235.19 |
+| data-port-x4-v2-panel | Economic | 1 / 2 | 41 (18 + 2 pref.) | 55.26 | 126.51 | 103.40 | **229.91** | 229.91 | 227.89 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **842.19** | **842.19** | **745.20** |
+| **All** | | | | | | | **834.89** | **834.89** | **737.90** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -101,15 +101,15 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | power-hub | 92.75 | 53.65 | 39.34 | 26.07 | 23.04 | 22.18 |
 | data-port | 13.77 | 6.53 | 3.94 | 1.96 | 1.49 | 1.30 |
 | camera-pod | 13.19 | 5.95 | 3.57 | 1.69 | 1.32 | 1.13 |
-| data-port-x4-v2-panel | 118.61 | 73.76 | 56.90 | 41.32 | 38.01 | 37.30 |
+| data-port-x4-v2-panel | 114.95 | 72.14 | 55.86 | 40.93 | 37.68 | 37.03 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-panel) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4-v2-panel | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 297.81 | 185.51 | 35.45 | 26.38 | 237.21 | **816.36** |
-| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 73.76 | **332.52** |
-| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 56.90 | **272.77** |
+| 1 | 297.81 | 185.51 | 35.45 | 26.38 | 229.91 | **809.06** |
+| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 72.14 | **330.90** |
+| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 55.86 | **271.73** |
 
 ## Printed parts
 
@@ -291,7 +291,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 4.7k — Resistor 4.7k 0402 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C25900 |
 | Electronics | 33 — Resistor 33 0402 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C25105 |
 | Electronics | 1k — Resistor 1k 0402 | 22  | 0.00 | 0.03 | LCSC/JLCPCB C11702 |
-| Electronics | 27 — Resistor 27 0402 | 4  | 0.00 | 0.00 | LCSC/JLCPCB C25100 |
+| Electronics | 22 — Resistor 22 0402 | 4  | 0.00 | 0.00 | LCSC/JLCPCB C25092 |
 | Electronics | 100k — Resistor 100k 0402 | 36  | 0.00 | 0.05 | LCSC/JLCPCB C25741 |
 | Electronics | 47k — Resistor 47k 0402 | 12  | 0.00 | 0.02 | LCSC/JLCPCB C25792 |
 | Electronics | 56k — Resistor 56k 0603 | 16  | 0.00 | 0.04 | LCSC/JLCPCB C23206 |
@@ -303,7 +303,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | USB2517I-JZX — USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial | 2  | 4.15 | 8.30 | LCSC/JLCPCB C478081 |
 | Electronics | TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT | 4  | 0.81 | 3.24 | LCSC/JLCPCB C181499 |
 | Electronics | AP2114H-3.3TRG1 — 3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223 | 2  | 0.21 | 0.42 | LCSC/JLCPCB C150716 |
-| Electronics | TPD4E05U06DQAR — 4-channel ESD, 0.5 pF, 5.5 V stand-off, flow-through (pins 6, 7, 9, 10 route through) | 18  | 0.08 | 1.38 | LCSC/JLCPCB C138714 |
+| Electronics | H5VU25UC — 4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 tied to 5, 4, 2, 1) | 18  | 0.03 | 0.51 | LCSC/JLCPCB C20615800 |
 | Electronics | CH446Q — 8 × 16 analog crosspoint switch, 45–65 Ω at 12 V span, serial or parallel addressing | 4  | 1.46 | 5.85 | LCSC/JLCPCB C109471 |
 | Electronics | TPS60400DBVR — charge pump voltage inverter, 60 mA | 2  | 0.73 | 1.45 | LCSC/JLCPCB C9839 |
 | Electronics | TCA9534APWR — 8-bit I2C I/O expander, push-pull outputs, A version (0x38–0x3F) | 2  | 1.25 | 2.50 | LCSC/JLCPCB C206010 |
@@ -342,14 +342,14 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | USB2517I-JZX — USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial | 2  | 4.15 | 8.30 | LCSC/JLCPCB C478081 |
 | Electronics | TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT | 4  | 0.81 | 3.24 | LCSC/JLCPCB C181499 |
 | Electronics | AP2114H-3.3TRG1 — 3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223 | 2  | 0.21 | 0.42 | LCSC/JLCPCB C150716 |
-| Electronics | TPD4E05U06DQAR — 4-channel ESD, 0.5 pF, 5.5 V stand-off, flow-through (pins 6, 7, 9, 10 route through) | 2  | 0.08 | 0.15 | LCSC/JLCPCB C138714 |
+| Electronics | H5VU25UC — 4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 tied to 5, 4, 2, 1) | 2  | 0.03 | 0.06 | LCSC/JLCPCB C20615800 |
 | Electronics | TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit | 8  | 0.27 | 2.13 | LCSC/JLCPCB C111738 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 8  | 0.69 | 5.52 | LCSC/JLCPCB C49851 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 8  | 0.17 | 1.32 | LCSC/JLCPCB C7519 |
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
 | Electronics | Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | estimate, not quoted |
-| Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, X-ray, L1 minimum purchase (32) | 1  | 85.30 | 85.30 | estimate, not quoted |
-| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 6.08 | 6.08 | estimate, not quoted |
+| Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, X-ray, L1 minimum purchase (32) | 1  | 79.65 | 79.65 | estimate, not quoted |
+| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 5.97 | 5.97 | estimate, not quoted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 142  | 0.03 | 4.26 | AliExpress (bulk) / Ruthex |
