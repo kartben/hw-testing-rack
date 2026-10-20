@@ -35,7 +35,7 @@
 		};
 	};
 
-	/* IO2 I2C_SDA / IO1 I2C_SCL: INA226 (2.2k pull-ups on the board: 400 kHz over the DATA lead) */
+	/* IO2 I2C_SDA / IO1 I2C_SCL: INA226 and the DATA lead (2.2k pull-ups on the board) */
 	bay_i2c0_default: bay_i2c0_default {
 		group1 {
 			pinmux = <I2C0_SDA_GPIO2>,

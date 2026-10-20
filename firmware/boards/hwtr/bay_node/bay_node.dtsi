@@ -92,9 +92,14 @@
 	pinctrl-names = "default";
 };
 
+/*
+ * 100 kHz: the bus goes out on the DATA lead (J7, 45 cm) to the DATA board,
+ * through its isolation FETs; 400 kHz is out of reach on rise time there.
+ * firmware/bay-node/i2c-400k.overlay tries 400 kHz at bring-up.
+ */
 &i2c0 {
 	status = "okay";
-	clock-frequency = <I2C_BITRATE_FAST>;
+	clock-frequency = <I2C_BITRATE_STANDARD>;
 	pinctrl-0 = <&bay_i2c0_default>;
 	pinctrl-names = "default";
 

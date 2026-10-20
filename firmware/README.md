@@ -42,6 +42,7 @@ firmware/
   power-hub/                     the power hub application (its own README)
   bay-node/                      the bay node application
     boards/esp32s3_devkitc_procpu.overlay   stand-in: same pin map on a DevKitC-1
+    i2c-400k.overlay             the I²C bus at 400 kHz, to try at bring-up (100 kHz by default)
     boards/m5stack_stamps3_procpu.*         bench node on a StampS3: console + network, no USB host
     web/index.html               status page and serial console (embedded gzipped)
     web/dev_server.py            the page against a simulated node, to work on the UI
@@ -580,7 +581,7 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 |---|---|---|---|
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
 | IO1 | I2C_SCL | I²C0; also out on J7.7 to the drawer's DATA board | `&i2c0` |
-| IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (2.2k pull-ups, 400 kHz); also out on J7.6 to the drawer's DATA board (its devices keep off 0x40) | `&i2c0`, `ina226` |
+| IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (2.2k pull-ups, 100 kHz: the DATA lead; `i2c-400k.overlay` tries 400 kHz); also out on J7.6 to the drawer's DATA board (its devices keep off 0x40) | `&i2c0`, `ina226` |
 | IO4 | DATA_INT | DATA board interrupt ← J7.8 (1k series, 10k pull-up; open drain, active low), for a later DATA ×4 board | — (no driver yet) |
 | IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.8 LED_K (100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
 | IO8 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω, 10k pull-up) | `&spi2` `cs-gpios` |
