@@ -14,9 +14,9 @@
  *           Never feed the 5V pin while a PC is on the USB-C.
  *   D0  G1  RESET -> DUT EN/RST      D6  G43  AUX TX -> DUT RX
  *   D1  G2  BOOT  -> DUT IO0         D7  G44  AUX RX <- DUT TX
- *   D2  G3  DUT_EN (see above)       D8  G7   SERVICE (pulled down; to 3.3 V:
+ *   D2  G3  DUT_EN (see above)       D8  G7   SERVICE (pulled up; to GND:
  *   D3  G4  DUT_FLT_N (pulled up)             the USB-C back to the PC)
- *   D4  G5  SDA: INA226 / DATA x4    D9  G8   PC_DET (pulled down)
+ *   D4  G5  SDA: INA226 / DATA x4    D9  G8   PC_DET (pulled up; to GND: a PC)
  *   D5  G6  SCL                      D10 G9   MUX_FORCE_PC (unused)
  *
  * RESET and BOOT are open drain and active low here, straight to an ESP32
@@ -24,7 +24,9 @@
  * the PHY, then the shell over telnet; BOOT held across RESET (or SERVICE)
  * gives the USB-C back for flashing.  Camera, status LED (the XIAO's LED
  * stays the board's) and rack bus off.  On a Sense, D8-D10 are also its SD
- * slot's: leave it empty.
+ * slot's, pulled up on its board: leave the slot empty.  SERVICE and PC_DET
+ * are active low so that those pull-ups read "off" (active high, a Sense
+ * read "PC plugged" and refused USB/IP).
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -58,8 +60,8 @@
 
 &usb_mux {
 	force-pc-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
-	pc-detect-gpios = <&gpio0 8 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
-	service-gpios = <&gpio0 7 (GPIO_ACTIVE_HIGH | GPIO_PULL_DOWN)>;
+	pc-detect-gpios = <&gpio0 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	service-gpios = <&gpio0 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 };
 
 /* AUX on D6/D7, the board's UART0 pins: UART0 off */

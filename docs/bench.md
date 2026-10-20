@@ -147,7 +147,12 @@ IMON), CAN without a transceiver (with an SN65HVD230 module the hub can talk to 
 
 ESP32-S3R8 (8 MB of octal PSRAM in the package), 8 MB flash, a USB-C on the S3's own PHY, BOOT and
 RESET buttons, a user LED (G21) and 11 pins.  The Sense variant adds a camera, a microphone and an SD
-slot on D8–D10: use the same target and leave the slot empty.
+slot on D8–D10, pulled up on its board: use the same target and leave the slot empty (the node reads
+SERVICE and PC_DET active low, so those pull-ups read "off").
+
+**Clip its antenna on.**  The XIAO has no PCB antenna, only a u.FL connector (the antenna comes loose
+in the box).  Without it, `wifi scan` shows the access point around −90 dBm and every connection
+fails with "Connection timeout".
 
 **Its USB-C in host mode.**  On Seeed's schematic the USB-C's VBUS is the 5V pin, with nothing between
 (the diode sits between VBUS and the regulator) and 5.1 kΩ Rd on CC: the XIAO never sources VBUS.  So
@@ -168,15 +173,15 @@ on the USB-C.**
 | D5 G6 | SCL | SCL → its CFG2 |
 | D6 G43 | AUX TX → DUT RX | CAN TX (optional transceiver) |
 | D7 G44 | AUX RX ← DUT TX | CAN RX |
-| D8 G7 | SERVICE (pulled down; 3.3 V = the USB-C back to the PC) | POS_A |
-| D9 G8 | PC_DET (pulled down) | I2C_PU (nothing on it) |
+| D8 G7 | SERVICE (pulled up; GND = the USB-C back to the PC) | POS_A |
+| D9 G8 | PC_DET (pulled up; GND = a PC on the front port) | I2C_PU (nothing on it) |
 | D10 G9 | MUX_FORCE_PC (unused) | IMON_A: a 10k potentiometer, 3V3 to GND (1.404 V/A) |
 | LED G21 | the board's | CTL |
 
 ### Flashing the node again
 
 - **Download mode:** hold BOOT, press and release RESET, release BOOT; then `west flash`, then RESET.
-- **SERVICE:** D8 to 3.3 V gives the PHY back to the USB-Serial-JTAG without reflashing.
+- **SERVICE:** D8 to GND gives the PHY back to the USB-Serial-JTAG without reflashing.
 - **Over Wi-Fi:** `bayctl update build-node/bay-node/zephyr/zephyr.signed.bin <bay>`.
 - **The shell over telnet:** `telnet bay-<id>.local` (`bay access claim` only on SERVICE's local shell).
 

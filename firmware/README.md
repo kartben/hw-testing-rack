@@ -647,11 +647,16 @@ runs it and builds both targets with warnings as errors on every push.
   passes its host test against pyserial; the console, WebSocket and web
   server code ran on native_sim with a Zephyr DUT (the screencast), over host
   sockets rather than the node's Wi-Fi/TCP stack.  That run found that a
-  browser's keep-alive connections can hold all 3 HTTP client slots (the
+  browser's keep-alive connections can hold all the HTTP client slots (the
   server then stops accepting, the console's WebSocket waits), hence the 3 s
-  idle timeout in `prj.conf`; whether it is enough on the node is untested
-  (on native_sim the idle timeout cannot free a slot at all, so the
-  simulation uses 8 slots).  On a StampS3 (no Wi-Fi credentials yet): it
+  idle timeout in `prj.conf` (on native_sim the idle timeout cannot free a
+  slot at all, so the simulation uses 8 slots).  On a XIAO ESP32-S3 over
+  Wi-Fi, 3 slots were too few: a browser loading the page opens up to 6
+  connections at once and one over the limit is closed unanswered (the page
+  came up without its CSS), so 6 slots, with `ZVFS_POLL_MAX` at 2 + 6 (the
+  server polls its eventfd, listener and clients in one call; the hub's
+  default of 3 made every second client drop them all).  There the node's
+  and the hub's pages load whole and the web console connects.  On a StampS3 (no Wi-Fi credentials yet): it
   boots, the HTTP, RFC 2217, raw TCP and telnet listeners are up, the AUX
   settings persist, and with `bay aux loopback on` every byte sent comes
   back at 115200 and 921600, also with the DUT "off"; 22 KB of system heap

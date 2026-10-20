@@ -194,20 +194,20 @@ config ESP_SPIRAM_HEAP_SIZE
 	default 1572864 if BAY_CAMERA
 
 # usbip listener + 2 sessions, AUX raw and RFC 2217 listeners + clients,
-# telnet listener + client, HTTP listener + 3 clients, 2 web consoles, DHCP,
+# telnet listener + client, HTTP listener + 6 clients, 2 web consoles, DHCP,
 # mDNS, spare (a web console is a socket plus a websocket descriptor); the
 # camera's listener and 3 clients
 config NET_MAX_CONTEXTS
-	default 26 if BAY_CAMERA
-	default 22
+	default 29 if BAY_CAMERA
+	default 25
 
 config NET_MAX_CONN
-	default 26 if BAY_CAMERA
-	default 22
+	default 29 if BAY_CAMERA
+	default 25
 
 config ZVFS_OPEN_MAX
-	default 36 if BAY_CAMERA
-	default 32
+	default 39 if BAY_CAMERA
+	default 35
 
 # 48 KB of the 64 KB default: the RAM margin for the firmware updates (image
 # writer, upload handler).  To be watched on hardware with a busy DUT.  A

@@ -96,12 +96,17 @@
 		sense-resistor-milli-ohms = <1404>;
 	};
 
-	/* IO6 VBUS_SENSE: VBUS through 100k/10k (2.5 V at 28 V) */
+	/*
+	 * IO6 VBUS_SENSE: VBUS through 100k/10k (2.5 V at 28 V).  The ESP32's
+	 * ADC driver refuses a calibration request (every read fails with
+	 * -ENOTSUP otherwise); its eFuse calibration applies anyway.
+	 */
 	vbus_sense: vbus-sense {
 		compatible = "voltage-divider";
 		io-channels = <&adc0 5>;
 		output-ohms = <10000>;
 		full-ohms = <110000>;
+		skip-calibration;
 	};
 
 	/* IO9 CAN_STB: TJA1462AT standby (10k pull-down: normal mode) */
