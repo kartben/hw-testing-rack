@@ -76,10 +76,11 @@ later, take its tray out first.
    goes in.  The rear bay takes either DATA board, components up, its USB-C
    edge against the port wall (each receptacle behind a U), PT 2.6×8 from
    above: the DATA port board on its two Ø5 bosses, its USB-C behind the
-   fourth U (the rightmost), or a DATA ×4 on its four Ø6 bosses.  The DATA
-   lead comes up through the cable window at the rear right: straight into
-   a DATA ×4's PH, right above it, or along the rear wall into the DATA
-   port board's PH from the rear.  To convert a bay, swap the board; the
+   fourth U (the rightmost), or a DATA ×4 on its Ø6 bosses (three for a
+   v1, its fourth hole unused; four for a v2).  The DATA lead comes up
+   through the cable window at the rear right: beside a v1's right edge
+   into its PH, under a v2's notch into its PH, or along the rear wall into
+   the DATA port board's PH from the rear.  To convert a bay, swap the board; the
    drawer stays.  Slide the drawer
    in from the front onto the tray's ledges (its rear flange under the guide
    lips), engage the foot in the rear groove and lock it with the M2.5 from

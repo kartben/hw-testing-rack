@@ -598,19 +598,26 @@ def rounded_path(pts, r, step=2.0):
     return [[round(float(v), 2) for v in p] for p in dense]
 
 
-def lead_to_board(e, mouth, z_low, x_run, depth=7.0, lift=4.0):
-    """The DATA lead from the drag chain's moving mouth (facing forwards) to the PH plug at the DATA
-    board's rear edge, drawn from the plug: back out of it, down through the drawer's cable window,
-    forwards under the drawer at z_low (over the camera-pod bosses) along x_run (clear of the chain's
-    fixed run, which the drawer slides past), a flattened U-turn in front of the mouth (only `depth`
-    deep: the tray's fascia is 17 mm ahead of it with the drawer out), raised `lift` at its front so that,
-    the drawer out, it passes over the row cable lying on its tie anchors (y ≤ 9.4, z ≤ 10.8), in."""
+def lead_to_board(e, mouth, z_low, x_run, depth=7.0, lift=4.0, drop=None):
+    """The DATA lead from the drag chain's moving mouth (facing forwards) to the PH plug on the DATA
+    board, drawn from the plug: out of it and down through the drawer's cable window, forwards under the
+    drawer at z_low (over the camera-pod bosses) along x_run (clear of the chain's fixed run, which the
+    drawer slides past), a flattened U-turn in front of the mouth (only `depth` deep: the tray's fascia is
+    17 mm ahead of it with the drawer out), raised `lift` at its front so that, the drawer out, it passes
+    over the row cable lying on its tie anchors (y ≤ 9.4, z ≤ 10.8), in.  A plug facing the rear (the
+    single board's): back out of it, over to x_run in the rear bay, down.  drop = (x, floor z): a plug on
+    the board's right edge (the DATA ×4's): out of it, down just behind it into the window's side strip at
+    x, then over to x_run under the drawer."""
     p0, d = plug_exit(e)
-    p1 = p0 + d * 2.0
-    p1b = np.array([x_run, p1[1], p1[2]])            # over to x_run still in the rear bay, then down
-    p2 = np.array([x_run, p1[1], z_low])
+    if drop is None:
+        p1 = p0 + d * 2.0
+        head = [p0, p1, np.array([x_run, p1[1], p1[2]]), np.array([x_run, p1[1], z_low])]
+    else:
+        xd, floor = drop
+        head = [p0, p0 + d * 1.0 + np.array([0.0, 0.0, -2.5]), np.array([xd, p0[1], floor + 2.0]),
+                np.array([xd, p0[1], z_low]), np.array([x_run, p0[1] - 8.0, z_low])]
     p3 = np.array([x_run, mouth[1] - 1.0, z_low])
-    pts = rounded_path([p0, p1, p1b, p2, p3], 2.5)
+    pts = rounded_path(head + [p3], 2.5)
     a, c = (mouth[0] - p3[0]) / 2, np.array([(mouth[0] + p3[0]) / 2, p3[1], 0.0])
     for t in np.linspace(0, math.pi, 16)[1:]:
         z = z_low + (mouth[2] - z_low) * t / math.pi + lift * math.sin(t)
@@ -682,13 +689,19 @@ def camera_lead(j6, x0, row_h, tilt, lens, mount, depth, cp):
     return rnd(rounded_path(pts, 6.0)), end, rnd(rounded_path(mega, 5.0))
 
 
-def data_lead_short(j7, ph, x_run, top, x_up):
+def data_lead_short(j7, ph, x_run, top, x_up, drop=None):
     """A sled bay's DATA lead (no drag chain): out of the node's J7 (side entry, right edge), rising to the
     plenum's top (under the sled) at x_run, right of the node, back along it, over to the port block's
-    window and up through it at x_up, then along the rear wall into the DATA board's PH from the rear (the
-    DATA ×4's PH is right over the window: no run)."""
+    window and up through it at x_up, then along the rear wall into the single board's PH from the rear.
+    drop = (x, floor z): a DATA ×4's PH on its right edge: up the window's side strip at x, just behind the
+    plug, and into it."""
     p0, d = plug_exit(j7)
-    q, _ = plug_exit(ph)
+    q, dq = plug_exit(ph)
+    if drop is not None:
+        xd, floor = drop
+        pts = [p0, p0 + d * 5.0, (x_run, p0[1] + 12, top), (x_run, q[1] - 12, top), (xd, q[1], top),
+               (xd, q[1], floor + 2.0), q + dq * 1.0 + np.array([0.0, 0.0, -2.5]), q]
+        return rounded_path(pts, 3.0)
     yb = q[1] + 2.0
     pts = [p0, p0 + d * 5.0, (x_run, p0[1] + 12, top), (x_run, yb - 12, top), (x_up, yb, top),
            (x_up, yb, q[2]), (q[0], yb, q[2]), q]
@@ -1161,10 +1174,14 @@ def build(rack) -> Path:
         # the rear, along the rear wall; the DATA ×4's from its right, the window beside it
         dxw_ = x0 + rack.drawer_x0
         q4 = raw["pcb"]["data_port_x4"]
-        # every lead comes up the window where the DATA ×4's does, just past the plug of its PH (on its right
-        # edge): further left, a single board's U-turn in front of the open drawer's chain mouth would pass over
-        # the row cable on its tie anchor
-        x_win = dxw_ + q4["x0"] + q4["size"][0] + 6.0 + 3.0
+        # the cable window (drawer.scad): a rear strip from 1.5 mm right of the third boss to 1 mm short of the
+        # chain foot's boss, and a side strip from 1 mm right of the DATA ×4's edge.  The single board's lead
+        # comes up the rear strip's middle; the DATA ×4's (its PH on its right edge) drops into the side
+        # strip's middle, right behind its plug.  Under the drawer both run forwards at x_win: further left, a
+        # U-turn in front of the open drawer's chain mouth would pass over the row cable on its tie anchor
+        w_end = raw["chain"]["moving_x"] - rack.drawer_x0 - 5.5
+        x_win = dxw_ + (q4["x0"] + q4["holes"][2][0] + 4.5 + w_end) / 2
+        x4_drop = (dxw_ + (q4["x0"] + q4["size"][0] + 1.0 + w_end) / 2, plenum + d["bottom"])
         if x4:                       # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
             q = raw["pcb"]["data_port_x4"]
             bx4 = dxw_ + q["x0"]
@@ -1199,8 +1216,8 @@ def build(rack) -> Path:
         ph = {"at": [ph_xy[0], ph_xy[1], plenum + dp_z + dp["thickness"] + 2.8],
               "dir": ph_dir, "up": [0, 0, 1], "type": "ph8"}
         if not drawer:
-            cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 12.0, plenum - 3.0,
-                                  max(ph["at"][0], x_win)), row=i, kind="ext",
+            cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 12.0, plenum - 3.0, x_win,
+                                  drop=x4_drop if x4 else None), row=i, kind="ext",
                   bay=bid, radius=1.2, ends=[j7, ph], label="DATA lead (JST PH 8, node J7 → the port block)")
             return x0, plenum
         p0, d7 = plug_exit(j7)                             # out of the side-entry J7, straight to the chain's fixed end
@@ -1208,8 +1225,9 @@ def build(rack) -> Path:
                             (x0 + fixed[0], fixed[1], chain_z)], 6.0),
               row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 8, through the drag chain)")
         mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
-        x_run = max(ph["at"][0], x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0, x_win)   # 6 mm off the fixed run
-        cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run), row=i, kind="ext", bay=bid, radius=1.2, ends=[ph],
+        x_run = max(x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0, x_win)   # 6 mm off the fixed run
+        cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run, drop=x4_drop if x4 else None), row=i, kind="ext",
+              bay=bid, radius=1.2, ends=[ph],
               label="DATA lead (JST PH 8, through the drag chain)", movable=True)
         return x0, plenum
 
