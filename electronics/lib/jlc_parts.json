@@ -910,7 +910,7 @@
   "C10096": {
    "mfr": "SN74LVC1G32DBVR",
    "package": "SOT-23-5",
-   "stock": 167872,
+   "stock": 167727,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -946,18 +946,18 @@
    ],
    "category": "Logic",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 167290
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 167230
   },
   "C1017": {
    "mfr": "GZ2012D601TF",
    "package": "0805",
-   "stock": 664352,
+   "stock": 652746,
    "tier": "basic",
    "priceBreaks": [],
    "category": "Filters",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": null
   },
   "C109471": {
@@ -999,13 +999,13 @@
    ],
    "category": "Interface",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 1541
   },
   "C111738": {
    "mfr": "TPS2553DBVR-1",
    "package": "SOT-23-6",
-   "stock": 2566,
+   "stock": 2551,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1041,13 +1041,13 @@
    ],
    "category": "Power Management (PMIC)",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 2555
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 2550
   },
   "C11355": {
    "mfr": "FSUSB42MUX",
    "package": "MSOP-10",
-   "stock": 37373,
+   "stock": 37163,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1083,13 +1083,13 @@
    ],
    "category": "Interface",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 36790
   },
   "C113965": {
    "mfr": "SMAJ30A",
    "package": "DO-214AC(SMA)",
-   "stock": 50390,
+   "stock": 49739,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1125,12 +1125,12 @@
    ],
    "category": "Circuit Protection",
    "manufacturer": "MDD(Microdiode Semiconductor)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C11702": {
    "mfr": "0402WGF1001TCE",
    "package": "0402",
-   "stock": 13727760,
+   "stock": 20538438,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1141,12 +1141,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C12891": {
    "mfr": "CL31A226KAHNNNE",
    "package": "1206",
-   "stock": 491535,
+   "stock": 1393284,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1182,12 +1182,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C130008": {
    "mfr": "LSF0108RKSR",
    "package": "VQFN-20(2.5x4.5)",
-   "stock": 19132,
+   "stock": 19032,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1223,13 +1223,13 @@
    ],
    "category": "Logic",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 19032
   },
   "C13585": {
    "mfr": "CL31A106KBHNNNE",
    "package": "1206",
-   "stock": 2282497,
+   "stock": 2162713,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1265,12 +1265,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C138714": {
    "mfr": "TPD4E05U06DQAR",
    "package": "USON-10(1x2.5)",
-   "stock": 215805,
+   "stock": 209013,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1306,12 +1306,12 @@
    ],
    "category": "Circuit Protection",
    "manufacturer": "Texas Instruments",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C14663": {
    "mfr": "CC0603KRX7R9BB104",
    "package": "0603",
-   "stock": 31785866,
+   "stock": 40382063,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1322,7 +1322,7 @@
    ],
    "category": "Capacitors",
    "manufacturer": "YAGEO",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C150716": {
    "mfr": "AP2114H-3.3TRG1",
@@ -1363,13 +1363,13 @@
    ],
    "category": "Power Management (PMIC)",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 6215
   },
   "C1525": {
    "mfr": "CL05B104KO5NNNC",
    "package": "0402",
-   "stock": 29511499,
+   "stock": 38995154,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1380,12 +1380,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C1548": {
    "mfr": "0402CG150J500NT",
    "package": "0402",
-   "stock": 1182795,
+   "stock": 1059268,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1396,12 +1396,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "FH (Guangdong Fenghua Advanced Tech)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C1562": {
    "mfr": "0402CG330J500NT",
    "package": "0402",
-   "stock": 1267040,
+   "stock": 1171481,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1412,12 +1412,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "FH (Guangdong Fenghua Advanced Tech)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C15643": {
    "mfr": "X322524MSB4SI",
    "package": "SMD3225-4P",
-   "stock": 30279,
+   "stock": 25067,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1453,12 +1453,12 @@
    ],
    "category": "Crystals, Oscillators, Resonators",
    "manufacturer": "YXC Crystal Oscillators",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C15849": {
    "mfr": "CL10A105KB8NNNC",
    "package": "0603",
-   "stock": 9260434,
+   "stock": 14895825,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1479,12 +1479,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C15850": {
    "mfr": "CL21A106KAYNNNE",
    "package": "0805",
-   "stock": 6482627,
+   "stock": 9773189,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1520,12 +1520,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C16251": {
    "mfr": "USB2514B-AEZC-TR",
    "package": "VQFN-36-EP(6x6)",
-   "stock": 13142,
+   "stock": 13062,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1561,13 +1561,13 @@
    ],
    "category": "Interface",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 13137
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 13062
   },
   "C1663": {
    "mfr": "CL10C330JB8NNNC",
    "package": "0603",
-   "stock": 1113035,
+   "stock": 1290970,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1578,12 +1578,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C167219": {
    "mfr": "FXL0630-3R3-M",
    "package": "SMD,7x6.6mm",
-   "stock": 20350,
+   "stock": 18798,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1619,12 +1619,12 @@
    ],
    "category": "Inductors, Coils, Chokes",
    "manufacturer": "cjiang (Changjiang Microelectronics Tech)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C17408": {
    "mfr": "0805W8F1000T5E",
    "package": "0805",
-   "stock": 8691525,
+   "stock": 8526936,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1635,12 +1635,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C1779": {
    "mfr": "CL21A475KAQNNNE",
    "package": "0805",
-   "stock": 2365029,
+   "stock": 2287168,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1676,12 +1676,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C181499": {
    "mfr": "TCA6408ARGTR",
    "package": "QFN-16-EP(3x3)",
-   "stock": 13221,
+   "stock": 13000,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1717,13 +1717,13 @@
    ],
    "category": "Interface",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 12885
   },
   "C206010": {
    "mfr": "TCA9534APWR",
    "package": "TSSOP-16",
-   "stock": 10043,
+   "stock": 8942,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1759,13 +1759,13 @@
    ],
    "category": "Interface",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 8880
   },
   "C20625731": {
    "mfr": "ABM8-272-T3",
    "package": "SMD3225-4P",
-   "stock": 7237,
+   "stock": 5158,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1801,12 +1801,12 @@
    ],
    "category": "Crystals, Oscillators, Resonators",
    "manufacturer": "Abracon LLC",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C20799": {
    "mfr": "SMD1206P050TF",
    "package": "1206",
-   "stock": 15451,
+   "stock": 15427,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1842,13 +1842,13 @@
    ],
    "category": "Circuit Protection",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 15100
   },
   "C20917": {
    "mfr": "AO3400A",
    "package": "SOT-23",
-   "stock": 1092516,
+   "stock": 1037244,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1884,12 +1884,12 @@
    ],
    "category": "Transistors/Thyristors",
    "manufacturer": "Alpha & Omega Semicon",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C21122": {
    "mfr": "CL10B223KB8NNNC",
    "package": "0603",
-   "stock": 910285,
+   "stock": 843827,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1900,12 +1900,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C21190": {
    "mfr": "0603WAF1001T5E",
    "package": "0603",
-   "stock": 23215596,
+   "stock": 22140522,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1916,12 +1916,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C22790": {
    "mfr": "0603WAF1202T5E",
    "package": "0603",
-   "stock": 950753,
+   "stock": 916641,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1932,12 +1932,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C2297": {
    "mfr": "KT-0805G",
    "package": "0805",
-   "stock": 2570071,
+   "stock": 2566875,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1973,13 +1973,13 @@
    ],
    "category": "Optoelectronics",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 1673650
   },
   "C23140": {
    "mfr": "0603WAF330JT5E",
    "package": "0603",
-   "stock": 4961225,
+   "stock": 4829254,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -1990,12 +1990,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C23153": {
    "mfr": "0603WAF3902T5E",
    "package": "0603",
-   "stock": 671625,
+   "stock": 654524,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2006,12 +2006,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C23178": {
    "mfr": "0603WAF4703T5E",
    "package": "0603",
-   "stock": 1259979,
+   "stock": 1190681,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2022,12 +2022,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C23186": {
    "mfr": "0603WAF5101T5E",
    "package": "0603",
-   "stock": 23518927,
+   "stock": 23040463,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2038,12 +2038,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C23206": {
    "mfr": "0603WAF5602T5E",
    "package": "0603",
-   "stock": 854879,
+   "stock": 836786,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2054,12 +2054,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C23212": {
    "mfr": "0603WAF6801T5E",
    "package": "0603",
-   "stock": 1476764,
+   "stock": 1412619,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2070,12 +2070,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C23234": {
    "mfr": "0603WAF7501T5E",
    "package": "0603",
-   "stock": 1185764,
+   "stock": 1168442,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2086,12 +2086,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C23733": {
    "mfr": "CL05A475MP5NRNC",
    "package": "0402",
-   "stock": 2104297,
+   "stock": 2071566,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2127,12 +2127,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25100": {
    "mfr": "0402WGF270JTCE",
    "package": "0402",
-   "stock": 80607,
+   "stock": 76933,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2143,12 +2143,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25105": {
    "mfr": "0402WGF330JTCE",
    "package": "0402",
-   "stock": 2550244,
+   "stock": 2408700,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2159,13 +2159,13 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25196": {
    "mfr": "0603WAF560JT5E",
    "package": "0603",
-   "stock": 555133,
-   "tier": "extended",
+   "stock": 550514,
+   "tier": "preferred",
    "priceBreaks": [
     {
      "qFrom": 1,
@@ -2175,12 +2175,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25334": {
    "mfr": "1206W4F100LT5E",
    "package": "1206",
-   "stock": 526522,
+   "stock": 519563,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2191,13 +2191,13 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25725": {
    "mfr": "4D02WGJ0103TCE",
    "package": "0402x4",
-   "stock": 77480,
-   "tier": "extended",
+   "stock": 75088,
+   "tier": "preferred",
    "priceBreaks": [
     {
      "qFrom": 1,
@@ -2207,12 +2207,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25741": {
    "mfr": "0402WGF1003TCE",
    "package": "0402",
-   "stock": 9372343,
+   "stock": 8756998,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2223,12 +2223,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25744": {
    "mfr": "0402WGF1002TCE",
    "package": "0402",
-   "stock": 21278633,
+   "stock": 18979828,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2239,12 +2239,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25752": {
    "mfr": "0402WGF1202TCE",
    "package": "0402",
-   "stock": 952479,
+   "stock": 931158,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2255,12 +2255,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25764": {
    "mfr": "0402WGF2003TCE",
    "package": "0402",
-   "stock": 2217803,
+   "stock": 2117371,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2271,12 +2271,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25792": {
    "mfr": "0402WGF4702TCE",
    "package": "0402",
-   "stock": 7056080,
+   "stock": 6857019,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2287,12 +2287,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25803": {
    "mfr": "0603WAF1003T5E",
    "package": "0603",
-   "stock": 19338133,
+   "stock": 18966622,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2303,12 +2303,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25804": {
    "mfr": "0603WAF1002T5E",
    "package": "0603",
-   "stock": 30981226,
+   "stock": 38196567,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2319,12 +2319,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25810": {
    "mfr": "0603WAF1802T5E",
    "package": "0603",
-   "stock": 639017,
+   "stock": 614068,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2335,12 +2335,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C25900": {
    "mfr": "0402WGF4701TCE",
    "package": "0402",
-   "stock": 15974732,
+   "stock": 15278532,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2351,12 +2351,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C26075": {
    "mfr": "4D02WGJ0222TCE",
    "package": "0402x4",
-   "stock": 9316,
+   "stock": 9216,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2367,12 +2367,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C265121": {
    "mfr": "S8B-PH-SM4-TB(LF)(SN)",
    "package": "SMD,P=2mm,卧贴",
-   "stock": 18294,
+   "stock": 18260,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2408,13 +2408,13 @@
    ],
    "category": "Connectors",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 18269
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 18262
   },
   "C265405": {
    "mfr": "S6B-PH-SM4-TB(LF)(SN)",
    "package": "SMD,P=2mm,卧贴",
-   "stock": 4931,
+   "stock": 4813,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2450,13 +2450,13 @@
    ],
    "category": "Connectors",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 4813
   },
   "C2689964": {
    "mfr": "TYPE-C-31-D-06",
    "package": "SMD",
-   "stock": 2746,
+   "stock": 2736,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2492,13 +2492,13 @@
    ],
    "category": "Connectors",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 2580
   },
   "C28323": {
    "mfr": "CL21B105KBFNNNE",
    "package": "0805",
-   "stock": 2339876,
+   "stock": 2193157,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2534,7 +2534,7 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C2843876": {
    "mfr": "XL-2835UWC-02",
@@ -2575,13 +2575,13 @@
    ],
    "category": "Optoelectronics",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 367900
   },
   "C2913201": {
    "mfr": "ESP32-S3-WROOM-1-N8R8",
    "package": "SMD,25.5x18mm",
-   "stock": 5483,
+   "stock": 4373,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2617,13 +2617,14 @@
    ],
    "category": "IoT/Communication Modules",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "min_buy": 2,
    "lcsc_stock": 0
   },
   "C2913206": {
    "mfr": "ESP32-S3-MINI-1-N8",
    "package": "SMD",
-   "stock": 3093,
+   "stock": 2981,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2659,13 +2660,14 @@
    ],
    "category": "IoT/Communication Modules",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 2986
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "min_buy": 2,
+   "lcsc_stock": 2981
   },
   "C318884": {
    "mfr": "TS-1187A-B-A-B",
    "package": "SMD-4P,5.1x5.1mm",
-   "stock": 280245,
+   "stock": 273725,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2701,13 +2703,13 @@
    ],
    "category": "Switches",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 0
   },
   "C3234095": {
    "mfr": "TJA1462AT/0Z",
    "package": "SOIC-8",
-   "stock": 10496,
+   "stock": 10685,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2743,13 +2745,13 @@
    ],
    "category": "Interface",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 10685
   },
   "C3352": {
    "mfr": "RVT1H101M0810",
    "package": "SMD,D8xL10.2mm",
-   "stock": 30533,
+   "stock": 29892,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2785,13 +2787,13 @@
    ],
    "category": "Capacitors",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 29510
   },
   "C39843328": {
    "mfr": "RP2354B",
    "package": "QFN-80-EP(10x10)",
-   "stock": 2309,
+   "stock": 1881,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2827,13 +2829,13 @@
    ],
    "category": "Global Sourcing Parts",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 1889
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 1881
   },
   "C41417363": {
    "mfr": "HX PZ2.54-1x6P TP-YQ",
    "package": "SMD,P=2.54mm(Staggered pins)",
-   "stock": 14942,
+   "stock": 14822,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2869,12 +2871,12 @@
    ],
    "category": "Connectors",
    "manufacturer": "hanxia",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C4190": {
    "mfr": "0603WAF2201T5E",
    "package": "0603",
-   "stock": 6543363,
+   "stock": 6398210,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -2885,7 +2887,7 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C42411119": {
    "mfr": "AOTA-B201610S3R3-101-T",
@@ -2926,12 +2928,13 @@
    ],
    "category": "Inductors, Coils, Chokes",
    "manufacturer": "Abracon LLC",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)",
+   "min_buy": 32
   },
   "C42459160": {
    "mfr": "CH224A",
    "package": "ESSOP-10",
-   "stock": 12480,
+   "stock": 12463,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2967,13 +2970,13 @@
    ],
    "category": null,
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 12490
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 12468
   },
   "C431540": {
    "mfr": "MSK12C02",
    "package": "SMD,8x2.8mm",
-   "stock": 197278,
+   "stock": 196519,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3009,13 +3012,13 @@
    ],
    "category": "Switches",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 187390
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 187370
   },
   "C43491": {
    "mfr": "BZT52C12",
    "package": "SOD-123",
-   "stock": 163758,
+   "stock": 163197,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3051,13 +3054,13 @@
    ],
    "category": "Diodes",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 155550
   },
   "C45262770": {
    "mfr": "LMR51635YDDCR",
    "package": "TSOT-23-6",
-   "stock": 2520,
+   "stock": 2500,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3093,8 +3096,8 @@
    ],
    "category": null,
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 2520
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 2500
   },
   "C4555382": {
    "mfr": "KPA-3010SURCK",
@@ -3135,13 +3138,13 @@
    ],
    "category": "Optoelectronics",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 6325
   },
   "C45783": {
    "mfr": "CL21A226MAQNNNE",
    "package": "0805",
-   "stock": 3760654,
+   "stock": 4528740,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -3177,7 +3180,7 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C478081": {
    "mfr": "USB2517I-JZX",
@@ -3218,13 +3221,13 @@
    ],
    "category": "Interface",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 3136
   },
   "C48442": {
    "mfr": "4D02WGJ0101TCE",
    "package": "0402x4",
-   "stock": 268093,
+   "stock": 266606,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3235,12 +3238,12 @@
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C495548": {
    "mfr": "B8B-PH-SM4-TB(LF)(SN)",
    "package": "SMD,P=2mm",
-   "stock": 6413,
+   "stock": 6809,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3276,13 +3279,13 @@
    ],
    "category": "Connectors",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 6764
   },
   "C49851": {
    "mfr": "INA226AIDGSR",
    "package": "VSOP-10",
-   "stock": 40376,
+   "stock": 32722,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3318,13 +3321,13 @@
    ],
    "category": "Amplifiers/Comparators",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 32705
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 32711
   },
   "C51118": {
    "mfr": "AP2112K-3.3TRG1",
    "package": "SOT-25-5",
-   "stock": 18276,
+   "stock": 18205,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3360,13 +3363,13 @@
    ],
    "category": "Power Management (PMIC)",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 14795
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 14765
   },
   "C5184243": {
    "mfr": "USB4105-GF-A-120",
    "package": "SMD",
-   "stock": 3748,
+   "stock": 3562,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3392,7 +3395,7 @@
    ],
    "category": "Connectors",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 0
   },
   "C521201": {
@@ -3434,13 +3437,13 @@
    ],
    "category": "Power Management (PMIC)",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 9995
   },
   "C52917434": {
    "mfr": "WS2812B-2020-V6",
    "package": "SMD2020-4P",
-   "stock": 852881,
+   "stock": 850228,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3476,13 +3479,13 @@
    ],
    "category": null,
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 850815
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 850225
   },
   "C52923": {
    "mfr": "CL05A105KA5NQNC",
    "package": "0402",
-   "stock": 9058501,
+   "stock": 8069132,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -3493,12 +3496,12 @@
    ],
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C544399": {
    "mfr": "TPS26600PWPR",
    "package": "HTSSOP-16-EP",
-   "stock": 6067,
+   "stock": 5939,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3534,7 +3537,7 @@
    ],
    "category": "Circuit Protection",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 5559
   },
   "C598310": {
@@ -3576,13 +3579,13 @@
    ],
    "category": "Optoelectronics",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 1710
   },
   "C601102": {
    "mfr": "HoLR1206-1W-50mR-1%-75ppm",
    "package": "1206",
-   "stock": 19471,
+   "stock": 18842,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3618,23 +3621,23 @@
    ],
    "category": "Resistors",
    "manufacturer": "Milliohm",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C6186": {
    "mfr": "AMS1117-3.3",
    "package": "SOT-223",
-   "stock": 1041212,
+   "stock": 1042892,
    "tier": "basic",
    "priceBreaks": [
     {
      "qFrom": 5,
      "qTo": 49,
-     "price": 0.2106
+     "price": 0.2107
     },
     {
      "qFrom": 50,
      "qTo": 149,
-     "price": 0.1641
+     "price": 0.1642
     },
     {
      "qFrom": 150,
@@ -3644,7 +3647,7 @@
     {
      "qFrom": 500,
      "qTo": 2499,
-     "price": 0.1212
+     "price": 0.1213
     },
     {
      "qFrom": 2500,
@@ -3654,18 +3657,18 @@
     {
      "qFrom": 5000,
      "qTo": null,
-     "price": 0.1123
+     "price": 0.1124
     }
    ],
    "category": "Power Management (PMIC)",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 577400
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 577345
   },
   "C7420333": {
    "mfr": "BAT54S",
    "package": "SOT-23",
-   "stock": 872431,
+   "stock": 861110,
    "tier": "preferred",
    "priceBreaks": [
     {
@@ -3701,13 +3704,13 @@
    ],
    "category": "Diodes",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 861600
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 865650
   },
   "C7503186": {
    "mfr": "SUD50P06-15(UMW)",
    "package": "TO-252",
-   "stock": 54945,
+   "stock": 54727,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3743,12 +3746,12 @@
    ],
    "category": "Transistors/Thyristors",
    "manufacturer": "UMW(Youtai Semiconductor Co., Ltd.)",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C75176": {
    "mfr": "PESD2CAN,215",
    "package": "SOT-23",
-   "stock": 34512,
+   "stock": 32632,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3784,12 +3787,12 @@
    ],
    "category": "Circuit Protection",
    "manufacturer": "Nexperia",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C7519": {
    "mfr": "USBLC6-2SC6",
    "package": "SOT-23-6L",
-   "stock": 34042,
+   "stock": 44213,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3825,12 +3828,12 @@
    ],
    "category": "Circuit Protection",
    "manufacturer": "STMicroelectronics",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C78419": {
    "mfr": "SMBJ33A",
    "package": "SMB(DO-214AA)",
-   "stock": 19590,
+   "stock": 18922,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3866,12 +3869,12 @@
    ],
    "category": "Circuit Protection",
    "manufacturer": "Brightking",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C8545": {
    "mfr": "2N7002",
    "package": "SOT-23",
-   "stock": 2595659,
+   "stock": 2472727,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -3902,12 +3905,12 @@
    ],
    "category": "Transistors/Thyristors",
    "manufacturer": "Jiangsu Changjing Electronics Technology Co., Ltd.",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
   "C8598": {
    "mfr": "B5819W SL",
    "package": "SOD-123",
-   "stock": 559550,
+   "stock": 466143,
    "tier": "basic",
    "priceBreaks": [
     {
@@ -3943,13 +3946,13 @@
    ],
    "category": "Diodes",
    "manufacturer": null,
-   "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 100580
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 100540
   },
   "C9839": {
    "mfr": "TPS60400DBVR",
    "package": "SOT-23-5",
-   "stock": 29078,
+   "stock": 28135,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -3985,7 +3988,7 @@
    ],
    "category": "Power Management (PMIC)",
    "manufacturer": "Texas Instruments",
-   "source": "local-db (snapshot stock)"
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   }
  }
 }

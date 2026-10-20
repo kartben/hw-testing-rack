@@ -9,7 +9,10 @@ Writes electronics/lib/jlc_parts.json, which tools/bom.py reads to price parts a
 order reaches (JLC_PCB_PRICE's companion).  The server answers from a local snapshot of JLC's catalog
 when its live API is down: the file records which.  Where the snapshot has no prices, LCSC's public
 product data fills in the price breaks (no account, read only); its stock is LCSC's (`lcsc_stock`), not
-JLC's assembly stock (`stock`).  Set JLC_CALL to the wrapper's command line.
+JLC's assembly stock (`stock`).  JLC's own parts library (public, read only) then gives each part's tier,
+basic, preferred extended or extended (Economic PCBA loads basic and preferred parts free), JLC's
+assembly stock today and JLC's minimum purchase (`min_buy`, when above 1).  Set JLC_CALL to the wrapper's
+command line.
 """
 
 from __future__ import annotations
@@ -62,6 +65,26 @@ def lcsc_prices(lcsc: str) -> tuple[list[dict], int | None]:
     return breaks, d.get("stockNumber")
 
 
+JLC_LIBRARY = "https://jlcpcb.com/api/overseas-pcb-order/v1/shoppingCart/smtGood/selectSmtComponentList/v2"
+
+
+def jlc_library(lcsc: str) -> dict | None:
+    """One part in JLC's parts library (the search jlcpcb.com/parts runs): its tier, JLC's assembly
+    stock and minimum purchase, or None when JLC doesn't list it."""
+    import time
+    import urllib.request
+    time.sleep(0.5)
+    req = urllib.request.Request(JLC_LIBRARY, headers={"Content-Type": "application/json", "User-Agent": "curl/8.0"},
+                                 data=json.dumps({"keyword": lcsc, "currentPage": 1, "pageSize": 5}).encode())
+    d = json.load(urllib.request.urlopen(req, timeout=30)).get("data") or {}
+    for r in (d.get("componentPageInfo") or {}).get("list") or []:
+        if r.get("componentCode") == lcsc:
+            tier = ("basic" if r.get("componentLibraryType") == "base"
+                    else "preferred" if r.get("preferredComponentFlag") else "extended")
+            return {"tier": tier, "stock": r.get("stockCount"), "min_buy": r.get("minPurchaseNum") or 1}
+    return None
+
+
 def bom_lines() -> dict[str, list[tuple[str, int, str]]]:
     """board → [(LCSC, quantity per board, comment)] from its JLC BOM."""
     out = {}
@@ -81,18 +104,30 @@ def main() -> int:
             p = call("get_part", {"lcsc": lcsc})
         except Exception as e:                      # not in the catalog snapshot: keep the line, priced by bom.py
             print(f"{lcsc}: {e}", file=sys.stderr)
-            parts[lcsc] = {"missing": True}
-            continue
-        parts[lcsc] = {k: p.get(k) for k in ("mfr", "package", "stock", "tier", "priceBreaks", "category")}
-        parts[lcsc]["manufacturer"] = (p.get("attributes") or {}).get("Manufacturer")
-        parts[lcsc]["source"] = (p.get("attributes") or {}).get("Data Source", "live")
-        if not parts[lcsc]["priceBreaks"]:          # the snapshot has no prices: LCSC's own (JLC buys there)
+            parts[lcsc] = {"missing": True, "source": "not in the catalog snapshot"}
+            p = {}
+        if p:
+            parts[lcsc] = {k: p.get(k) for k in ("mfr", "package", "stock", "tier", "priceBreaks", "category")}
+            parts[lcsc]["manufacturer"] = (p.get("attributes") or {}).get("Manufacturer")
+            parts[lcsc]["source"] = (p.get("attributes") or {}).get("Data Source", "live")
+        try:                                        # JLC's library: the tier with preferred, today's stock
+            lib = jlc_library(lcsc)
+        except Exception as e:
+            print(f"{lcsc}: no JLC library entry ({e})", file=sys.stderr)
+            lib = None
+        if lib:
+            parts[lcsc].pop("missing", None)
+            parts[lcsc].update(tier=lib["tier"], stock=lib["stock"])
+            if lib["min_buy"] > 1:
+                parts[lcsc]["min_buy"] = lib["min_buy"]
+            parts[lcsc]["source"] = parts[lcsc].get("source", "JLC") + "; tier and stock from JLC's parts library (live)"
+        if not parts[lcsc].get("priceBreaks"):      # the snapshot has no prices: LCSC's own (JLC buys there)
             try:
                 parts[lcsc]["priceBreaks"], parts[lcsc]["lcsc_stock"] = lcsc_prices(lcsc)
                 parts[lcsc]["source"] += "; prices from LCSC's product page (live)"
             except Exception as e:
                 print(f"{lcsc}: no LCSC prices ({e})", file=sys.stderr)
-        print(f"{lcsc:10s} {p.get('tier', '?'):9s} {p.get('stock', 0):>9} {str(p.get('mfr'))[:30]}")
+        print(f"{lcsc:10s} {parts[lcsc].get('tier', '?'):9s} {parts[lcsc].get('stock') or 0:>9} {str(parts[lcsc].get('mfr'))[:30]}")
     OUT.write_text(json.dumps({"date": datetime.date.today().isoformat(), "boards": lines, "parts": parts},
                               ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"wrote {OUT.relative_to(REPO)} ({len(parts)} parts)")

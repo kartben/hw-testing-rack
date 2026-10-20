@@ -120,27 +120,28 @@ JLC_QUOTE = {
     # the hub and ports plus the CH446Q matrix and the RP2354B analyzer), one per bay showing `x4: v2`: an
     # estimate from its fab JLC BOM.  The standing board, 100 × 70 mm, so JLC's 4-layer offer (jlcpcb.com
     # calculator, 2026-10-20: $8.00 + ENIG $17.40; ENIG for the RP2354B's 0.4 mm QFN-80, Economic's pitch
-    # limit).  Every JLC part on its front face: Economic PCBA, $3.07 for each of its 21 extended types among 41.
+    # limit).  Every JLC part on its front face: Economic PCBA, $3.07 for each of its 20 extended types among 41
+    # (the 10k array C25725 is preferred extended: no fee).
     # Components at the snapshot's breaks (electronics/lib/jlc_parts.json) × 1.12 (JLC's prices and attrition,
     # as the node's); 1,109 joints a board at $0.0017; an X-ray of each board (the QFN hub, MCU and expanders).
     # L1 (AOTA-B201610S3R3-101-T, the one inductor Raspberry Pi approves for the RP2350's regulator) sells at
     # JLC by 32 at least, 4 in stock on 2026-10-20 (a pre-order): the 30 spare are paid once per order.  J1 and
     # the four 2 × 6 headers are hand-soldered, out of the JLC BOM.
     "data-port-x4-v2": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 178.79, "estimate": True, "from_fab": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 175.72, "estimate": True, "from_fab": True,
         "spec": "4-layer 100×70 mm, JLC04161H-7628, ENIG",
         "pcb": {"special offer": 8.00, "ENIG": 17.40},
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 62.62, "extended parts": 64.47, "SMT": 3.77,
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 62.62, "extended parts": 61.40, "SMT": 3.77,
                  "X-ray": 3.28, "L1 minimum purchase (32)": 9.54},
     },
     # its base variant (DATA-4x: the logic left off, 92 parts fewer, data-port-x4-v2-base-*), one per other
-    # converted bay: the same estimate, 10 extended types among 24, 511 joints.  Ordered on its own it takes
+    # converted bay: the same estimate, 9 extended types among 24 (and C25725, preferred), 511 joints.  Ordered on its own it takes
     # lead-free HASL, as v1: no part finer than its hub's 0.5 mm QFN ($12.20 less than ENIG for 5 PCBs).
     "data-port-x4-v2-base": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 90.75, "estimate": True, "from_fab": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 87.68, "estimate": True, "from_fab": True,
         "spec": "4-layer 100×70 mm, JLC04161H-7628, lead-free HASL",
         "pcb": {"special offer": 8.00, "lead-free HASL": 5.20},
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 32.12, "extended parts": 30.70, "SMT": 1.74,
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 32.12, "extended parts": 27.63, "SMT": 1.74,
                  "X-ray": 3.28},
     },
     # the rack's order for its converted bays (the orchestrator, 2026-10-20): the logic and the base above on
@@ -151,11 +152,11 @@ JLC_QUOTE = {
     # (jlcpcb.com calculator, 2026-10-20).  One logic and one base per panel; the variants' own estimates
     # above stay for single orders (the BOM page's calculator).
     "data-port-x4-v2-panel": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 240.28, "estimate": True, "from_fab": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 237.21, "estimate": True, "from_fab": True,
         "boards": ("data-port-x4-v2", "data-port-x4-v2-base"),
         "spec": "4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites",
         "pcb": {"engineering": 25.00, "ENIG": 18.20, "board": 8.80},
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 92.49, "extended parts": 64.47, "SMT": 5.51,
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 92.49, "extended parts": 61.40, "SMT": 5.51,
                  "X-ray": 6.56, "L1 minimum purchase (32)": 9.54},
     },
 }
@@ -351,6 +352,12 @@ def _feed_lots(rack):
     return [(cm, price, ids) for (cm, price), ids in lots.items()]
 
 
+def _tier(lcsc: str, basic: bool) -> str:
+    """A part's JLC tier: basic, preferred (preferred extended: Economic PCBA loads it free, as a basic
+    part) or extended, from JLC's parts library (jlc_parts.json), else the catalogue's basic flag."""
+    return (JLC_PARTS.get("parts", {}).get(lcsc) or {}).get("tier") or ("basic" if basic else "extended")
+
+
 def _catalog_prices() -> dict:
     """MPN → (unit USD, LCSC, basic, JLC Standard-PCBA only, hand-soldered) from the electronics
     catalogue and passive cache."""
@@ -441,12 +448,23 @@ def electronics(rack) -> tuple[list[dict], dict]:
         rows += mine
         pcb, pcba, changes = jlc_order(name, {r["mpn"] for r in mine if not r["basic"]},
                                        {r["mpn"] for r in mine if r["hand_solder"]})
-        jlc = {r["part"]: r["basic"] for r in mine if r["part"] and not r["hand_solder"]}   # JLC's part types
+        jlc = {r["part"]: _tier(r["part"], r["basic"]) for r in mine if r["part"] and not r["hand_solder"]}
         unit = "panels" if "boards" in q else "boards"
+        n_ext = sum(1 for tier in jlc.values() if tier == "extended")   # the types Economic PCBA charges
         orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
                         "total": round(sum(pcb.values()) + sum(pcba.values()), 2),
-                        "need": need, "types": len(jlc), "extended": sum(1 for b in jlc.values() if not b),
+                        "need": need, "types": len(jlc), "extended": n_ext,
+                        "preferred": sum(1 for tier in jlc.values() if tier == "preferred"),
                         "standard_only": sorted({r["mpn"] for r in mine if r.get("standard_only")})}
+        if q["service"] == "Economic" and "extended parts" in pcba and \
+                abs(pcba["extended parts"] - n_ext * JLC_FEES["Economic"]["per type"]) > 0.01:
+            print(f"warning: {name}'s quote charges ${pcba['extended parts']:.2f} for extended types, but its BOM has "
+                  f"{n_ext} (${n_ext * JLC_FEES['Economic']['per type']:.2f}): re-quote")
+        for lcsc in jlc:                                 # a JLC minimum purchase the quote doesn't carry
+            moq = (JLC_PARTS.get("parts", {}).get(lcsc) or {}).get("min_buy", 1)
+            if moq > n * sum(_per_board_qty(b, lcsc) for b in q.get("boards", (name,))) and \
+                    all(lcsc != l for b in q.get("boards", (name,)) for l, _, _ in JLC_MIN_BUY.get(b, [])):
+                print(f"warning: JLC sells {lcsc} ({name}) by {moq} at least: add it to JLC_MIN_BUY")
         src = "estimate, not quoted" if q.get("estimate") else f"JLCPCB quote {q.get('date', JLC_QUOTE_DATE)}"
         pcb_src = src + (", adjusted" if name in JLC_FINISH or pcb != q["pcb"] else "")
         pcba_src = src + (", adjusted" if pcba != q["pcba"] else "")
@@ -500,7 +518,7 @@ def jlc_cost(orders: dict) -> list[dict]:
         n_fee = o["types"] if q["service"] == "Standard" else o["extended"]
         out.append({"board": name, "service": q["service"], "standard_only": o["standard_only"],
                     "need": o["need"], "assembled": q["assembled"], "pcbs": q["pcbs"],
-                    "types": o["types"], "extended": o["extended"],
+                    "types": o["types"], "extended": o["extended"], "preferred": o.get("preferred", 0),
                     "type_fee": round(n_fee * fees["per type"], 2),
                     "once": round(o["total"] - per_board, 2), "per_board": round(per_board, 2),
                     "total": o["total"], "after_obvious": round(o["total"] - obvious, 2),
@@ -516,7 +534,7 @@ def jlc_cost_md(cost: list[dict]) -> list[str]:
           "assembled (USD, the orders above).  JLC's fees (help page of 2026-09-09): **Standard** PCBA "
           f"${std['setup']:.2f} setup + ${std['stencil']:.2f} stencil + ${std['per type']:.2f} per unique part type, "
           f"basic or extended; **Economic** PCBA ${eco['setup']:.2f} + ${eco['stencil']:.2f} + ${eco['per type']:.2f} per "
-          f"*extended* type (basic types are free); X-ray ${JLC_FEES['x-ray']:.2f} per board with a leadless part.  A "
+          f"*extended* type (basic and preferred-extended types are free); X-ray ${JLC_FEES['x-ray']:.2f} per board with a leadless part.  A "
           "board takes Standard when one of its parts is Standard-only (every ESP32-S3 module, the WS2812B-2020).  "
           f"A 4-layer board within 100 × 100 mm costs ${JLC_FEES['pcb 4-layer 100x100']:.2f} for 5 PCBs; above, "
           f"${JLC_FEES['pcb 4-layer 76x140']:.2f} at 76 × 140 mm, a $25 engineering fee included.  ENIG adds "
@@ -533,7 +551,7 @@ def jlc_cost_md(cost: list[dict]) -> list[str]:
     for c in cost:
         why = f" ({', '.join(c['standard_only'])})" if c["service"] == "Standard" and c["standard_only"] else ""
         md.append(f"| {c['board']} | {c['service']}{why} | {c['need']} / {c['assembled']} | "
-                  f"{c['types']} ({c['extended']}) | {c['type_fee']:.2f} | {c['once']:.2f} | {c['per_board']:.2f} | "
+                  f"{c['types']} ({c['extended']}{' + ' + str(c['preferred']) + ' pref.' if c['preferred'] else ''}) | {c['type_fee']:.2f} | {c['once']:.2f} | {c['per_board']:.2f} | "
                   f"**{c['total']:.2f}** | {c['after_obvious']:.2f} | {c['after_decisions']:.2f} |")
     t = {k: sum(c[k] for c in cost) + JLC_SHIPPING_USD for k in ("total", "after_obvious", "after_decisions")}
     md.append(f"| shipping | one cart, DHL | | | | {JLC_SHIPPING_USD:.2f} | | {JLC_SHIPPING_USD:.2f} | "
@@ -750,8 +768,8 @@ def jlc_parts_md(orders: dict) -> list[str]:
           f"{JLC_PARTS['date']}, `tools/jlc_parts_snapshot.py`; prices LCSC's where the catalog has none).  "
           "Per rack: " + ", ".join(f"{n} {b}" for b, n in per_rack.items()) + "; JLC assembles at least 2 boards.  "
           "*Stock*: JLC's assembly stock against 10 racks' need of that part on every board (×: times over).  "
-          "*Unit $*: at the break 1 / 5 / 10 racks reach.  *Tier*: the local catalog tells basic from extended "
-          "only; a preferred-extended part may hide in *extended* (tier to confirm on JLC's site).", ""]
+          "*Unit $*: at the break 1 / 5 / 10 racks reach.  *Tier*: JLC's parts library's (basic, preferred "
+          "extended, extended); Economic PCBA loads basic and preferred parts free.", ""]
     for name, rows in ordered.items():
         b = boards[name]
         total = {r: sum(q * (part_price(lcsc, q * b[r]) or 0) for lcsc, q, _ in rows) for r in VOLUME_RACKS}

@@ -9,11 +9,15 @@ generated: [`bom/jlc-parts.md`](../bom/jlc-parts.md).  The costs per board and p
 **Sources.**
 - `tools/jlc_parts_snapshot.py` asks the server for each part. The server reads a local snapshot of
   JLC's catalog (2026-10-18, 7.1 M parts) because its live API was down.
-- The snapshot has no prices for 38 of the 97 parts. Those take LCSC's public product data: price
+- The snapshot has no prices for 39 of the 97 parts. Those take LCSC's public product data: price
   breaks, plus LCSC's own stock as `lcsc_stock`. It is not JLC's assembly stock.
 - The result is `electronics/lib/jlc_parts.json`, which `tools/bom.py` reads.
-- The local catalog tells basic from extended only. A preferred-extended part may hide among the
-  *extended* ones (tier to confirm).
+- JLC's own parts library (the search jlcpcb.com/parts runs, public) then gives each part's tier, JLC's
+  stock today and its minimum purchase:
+  - the tiers are basic, preferred extended and extended;
+  - Economic PCBA loads basic and preferred parts free; Standard charges every type;
+  - three parts are preferred (C25725 on the v2, BAT54S, 56 Ω C25196);
+  - three sell by more than 1: L1 by 32, the two ESP32-S3 modules by 2.
 - Re-run the snapshot, then `tools/bom.py`, right before an order.
 
 **Quantities.**
@@ -35,9 +39,9 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 297.81 | 185.51 | 35.45 | 26.38 | 240.28 | **819.43** |
-| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 74.37 | **333.13** |
-| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 57.21 | **273.07** |
+| 1 | 297.81 | 185.51 | 35.45 | 26.38 | 237.21 | **816.36** |
+| 5 | 177.35 | 53.65 | 13.81 | 7.15 | 73.76 | **332.52** |
+| 10 | 156.97 | 39.34 | 11.23 | 4.92 | 56.90 | **272.77** |
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.69, hub
 $22.18, the v2 panel $37.30 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
@@ -61,11 +65,11 @@ The threshold is JLC's assembly stock against 10 racks' need, summed over the bo
 
 | Part | Boards | JLC stock | 10 racks need | Risk |
 |---|---|---:|---:|---|
-| **AOTA-B201610S3R3-101-T** (C42411119, L1) | DATA ×4 v2 (logic) | 4 (2026-10-20) | 10 | **a pre-order**: JLC sells it by 32 at least, so the logic order waits for it and pays for 30 spares ($9.54 per order). It stays: Raspberry Pi approves no other inductor for the RP2350's regulator (below) |
-| CH224A (C42459160) | hub | 12,997 | 10 | none: in stock since 1590b7a replaced the out-of-stock AP33772S (and its Global Sourcing); WCH only |
-| USB4105-GF-A-120 (C5184243) | node, hub, DATA port | 3,748 | 160 | JLC holds 23×, but **LCSC has 0**: when JLC's stock runs out, it can't refill from LCSC (the v2 has the HRO TYPE-C-31-D-06) |
-| S6B-PH-SM4-TB (C265405) | node, hub | 4,931 | 280 | 18×; genuine JST only |
-| LMR51635YDDCR (C45262770) | node, hub | 2,770 | 90 | 31×, TI only |
+| **AOTA-B201610S3R3-101-T** (C42411119, L1) | DATA ×4 v2 (logic) | 3 (2026-10-20) | 10 | **a pre-order**: JLC sells it by 32 at least, so the logic order waits for it and pays for 30 spares ($9.54 per order). It stays: Raspberry Pi approves no other inductor for the RP2350's regulator (below) |
+| CH224A (C42459160) | hub | 12,463 | 10 | none: in stock since 1590b7a replaced the out-of-stock AP33772S (and its Global Sourcing); WCH only |
+| USB4105-GF-A-120 (C5184243) | node, hub, DATA port | 3,562 | 160 | JLC holds 22×, but **LCSC has 0**: when JLC's stock runs out, it can't refill from LCSC (the v2 has the HRO TYPE-C-31-D-06) |
+| S6B-PH-SM4-TB (C265405) | node, hub | 4,813 | 280 | 17×; genuine JST only |
+| LMR51635YDDCR (C45262770) | node, hub | 2,500 | 90 | 28×, TI only |
 | KPA-3010CGCK (C598310) | hub | 2,203 | 60 | 37×, Kingbright only |
 | CH446Q (C109471) | DATA ×4 v2 | 1,744 | 20 | 87×, WCH only |
 
@@ -94,8 +98,8 @@ board's owner, and the trade-off ones need the user.
 | **USBLC6-2SC6 second source**: ST C7519 ($0.12–0.18) → UMW C2687116 ($0.042 at 100) or TECH PUBLIC C2827654 ($0.036) | node (4), hub, DATA ports, DATA ×4 v2 and its base (4 each) (47 a rack) | ≈ $38 | decision | Same SOT-23-6 and pinout, so pins 1 / 6 and 3 / 4 still join inside and the flow-through layout holds. Check the clamp voltage and capacitance against ST's (0.35 pF line-to-line on the UMW) |
 | **DATA ×4 USB hub**: USB2514B → CH334R or FE1.1s | DATA ×4 v1 | — | moot | v1 is not ordered; the v2's USB2517I serves 7 ports (the four, the analyzer, two spare) |
 | **DATA ×4 at most 100 mm long**: 108 × 24 → 100 × 37 mm | DATA ×4 | the 5-board order went from $104.17 to $85.37 (bare PCB $31.90 → $13.10, JLC's 4-layer offer; no deburring line at 37 mm) | **applied** (2b84f26, a860935) | The offer stops at 10 PCBs: above that JLC's $25 engineering fee is back, so at 50 and 100 PCBs the board costs $53.80 and $73.40, $6–11 more than at 108 × 24 (calculator, 2026-10-20). v1 is not ordered for the prototype since: the converted bays take the v2 |
-| **DATA ×4 v2 logic and base on one 1 × 2 panel** (the same PCB twice, one CPL, ENIG, one Economic order) | DATA ×4 v2 | ≈ $29 for the rack's 2 + 2 ($240.28 against $269.54), ≈ $40 at 5 + 5, ≈ $64 at 10 + 10 | **applied** (the orchestrator; bom.py's `data-port-x4-v2-panel`) | 100 × 142 with a 2 mm mouse-bite gap: one setup and stencil, each type loaded once, no panel fee (one design). The tabs join along the 100 mm edges, away from the ends: the ends sit in the cradle's slots with 0.5 mm to spare. The nubs on the bottom edge (floor, notches at x 31 / 67) and the top edge (latch hooks) are sanded flush. The base goes ENIG; as many bases as logics. A V-cut joint is below |
-| **The same panel, V-cut** instead of mouse bites | DATA ×4 v2 | ≈ $6 for the rack's 2 + 2 ($263.70), ≈ $17 at 5 + 5, ≈ $40 at 10 + 10: $23–24 more than mouse bites | decision | JLC's Economic panels take mouse bites only, so a V-cut panel is Standard PCBA: $25.56 setup, $8.21 stencil, $1.53 for each of 41 types. It needs 5 mm rails with fiducials (100 × 150, $52.60 for 5) and ≥ 0.4 mm of copper from both V-cut 100 mm edges; the board keeps 0.3. The 1 mm corner radii at those edges come out square. In return: a clean straight edge, and Standard's SPI and adjustable reflow under the 0.4 mm QFN-80 |
+| **DATA ×4 v2 logic and base on one 1 × 2 panel** (the same PCB twice, one CPL, ENIG, one Economic order) | DATA ×4 v2 | ≈ $26 for the rack's 2 + 2 ($237.21 against $263.40), ≈ $37 at 5 + 5, ≈ $61 at 10 + 10 | **applied** (the orchestrator; bom.py's `data-port-x4-v2-panel`) | 100 × 142 with a 2 mm mouse-bite gap: one setup and stencil, each type loaded once, no panel fee (one design). The tabs join along the 100 mm edges, away from the ends: the ends sit in the cradle's slots with 0.5 mm to spare. The nubs on the bottom edge (floor, notches at x 31 / 67) and the top edge (latch hooks) are sanded flush. The base goes ENIG; as many bases as logics. A V-cut joint is below |
+| **The same panel, V-cut** instead of mouse bites | DATA ×4 v2 | nothing for the rack's 2 + 2 ($263.70 against $263.40), ≈ $11 at 5 + 5, ≈ $34 at 10 + 10: $26–27 more than mouse bites | decision | JLC's Economic panels take mouse bites only, so a V-cut panel is Standard PCBA: $25.56 setup, $8.21 stencil, $1.53 for each of 41 types. It needs 5 mm rails with fiducials (100 × 150, $52.60 for 5) and ≥ 0.4 mm of copper from both V-cut 100 mm edges; the board keeps 0.3. The 1 mm corner radii at those edges come out square. In return: a clean straight edge, and Standard's SPI and adjustable reflow under the 0.4 mm QFN-80 |
 | **DATA ×4 v2 base in lead-free HASL** when ordered alone | v2 base | $12.20 per order | single orders only | Its finest pitch is the hub's 0.5 mm QFN, which v1 put on HASL. The rack's base is on the ENIG panel; the HASL estimate stays for a single base order (the BOM page's calculator) |
 | **DATA ×4 v2 resistor arrays** → basic 0402 resistors | DATA ×4 v2 (logic) | $9.21 per order (3 extended types at Economic's $3.07) | **declined** (the v2 session, 2026-10-20) | They stay: 60 resistors in place of 15 arrays means re-placing and re-routing the pin chains. In the base, RN1–RN3 sit over the hub's 0.5 mm strap pins, where a row of 0402s doesn't fit |
 | **PD sink**: AP33772S (Global Sourcing, stock 0) → CH224A | hub | the hub order went from $205.95 to $185.29 | **applied** (1590b7a) | No input switch any more. The CH224Q (C46061833) and the HUSB238A-BB001-QN16R (C24833806, PD 3.x EPR to 28 / 48 V, $0.40 at 100) remain as second sources; the HUSB238 (non-A) and the CH224K stop at 20–25 V |
@@ -183,11 +187,11 @@ variant's RP2354B (QFN-80, 0.4 mm pitch).
 
 | Option for the rack's 2 + 2 | Order | 5 + 5 | 10 + 10 |
 |---|---:|---:|---:|
-| Two orders, logic ENIG + base HASL | 269.54 | 412.07 | 636.30 |
-| Two orders, both ENIG | 281.74 | 424.27 | 649.10 |
-| Two orders, both HASL | 257.34 | 399.87 | 623.50 |
-| One 1 × 2 panel, mouse bites, Economic, ENIG (the rack's order) | 240.28 | 371.85 | 572.08 |
-| One 1 × 2 panel, mouse bites, Economic, HASL | 227.48 | 359.05 | 557.98 |
+| Two orders, logic ENIG + base HASL | 263.40 | 405.94 | 630.18 |
+| Two orders, both ENIG | 275.60 | 418.14 | 642.98 |
+| Two orders, both HASL | 251.20 | 393.74 | 617.38 |
+| One 1 × 2 panel, mouse bites, Economic, ENIG (the rack's order) | 237.21 | 368.79 | 569.02 |
+| One 1 × 2 panel, mouse bites, Economic, HASL | 224.41 | 355.99 | 554.92 |
 | One 1 × 2 panel, V-cut, Standard, ENIG | 263.70 | 395.27 | 596.00 |
 
 - HASL instead of ENIG saves $12.20–12.80 per 100 × 70 order and $12.80–14.10 per panel order.
@@ -195,9 +199,9 @@ variant's RP2354B (QFN-80, 0.4 mm pitch).
 
 **Base and logic on one PCB.**
 - A HASL base and an ENIG logic can't share a panel: one panel has one finish.
-- The panel saves $29 for the rack's 2 + 2, more than HASL saves on the base ($12.20). So if the user
+- The panel saves $26 for the rack's 2 + 2, more than HASL saves on the base ($12.20). So if the user
   takes the panel, the base goes ENIG with the logic.
-- A panel in HASL ($227.48) is only for those who accept HASL under the 0.4 mm QFN-80.
+- A panel in HASL ($224.41) is only for those who accept HASL under the 0.4 mm QFN-80.
 - A V-cut panel ($263.70) takes Standard PCBA: Economic panels have mouse bites only.
 
 **Recommendation.**
@@ -206,7 +210,7 @@ variant's RP2354B (QFN-80, 0.4 mm pitch).
 |---|---|---:|---|
 | DATA ×4 v2 logic | **ENIG** | 0 (HASL would save $12.20) | HASL under the 0.4 mm QFN-80 and its exposed pad risks bridges and opens on the most expensive board (≈ $31 of parts) |
 | DATA ×4 v2 base, ordered alone | **lead-free HASL** | $12.20 per order | Low: 0.5 mm parts as on v1. Watch the USB2517I's 4.7 mm exposed pad in JLC's X-ray report |
-| DATA ×4 v2, logic + base on one panel | **ENIG** for both | $29 against two orders | The panel's own trade-offs (`JLC_LEVERS`) |
+| DATA ×4 v2, logic + base on one panel | **ENIG** for both | $26 against two orders | The panel's own trade-offs (`JLC_LEVERS`) |
 | bay node | lead-free HASL, kept | – | INA226 TSSOP-10, FSUSB42 MSOP-10 and USB4105 at 0.5 mm, leaded. The WROOM-1 at 1.27 mm with a 3.9 mm GND pad. Fine |
 | power hub | lead-free HASL, kept | – | Finest is the TPS26600 at 0.65 mm with its exposed pad, the MINI-1 LGA at 0.85 mm, the USB4105 at 0.5 mm. Fine |
 | DATA port | lead-free HASL, kept | – | The USB4105's 0.3 mm pads at 0.5 mm are its finest. Fine |
