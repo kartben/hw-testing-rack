@@ -61,9 +61,26 @@ STACKUPS = {
     "JLC04161H-7628": [("F.Cu", 0.035), ("prepreg", 0.2104, "7628", 4.4), ("In1.Cu", 0.0152),
                        ("core", 1.065, "FR4", 4.6), ("In2.Cu", 0.0152), ("prepreg", 0.2104, "7628", 4.4),
                        ("B.Cu", 0.035)],
+    # JLCPCB JLC06161H-3313, a 6-layer 1.6 mm: 3313 prepreg under each outer layer (0.0994 mm), 0.55 mm
+    # cores, 2116 in the middle; 1 oz outer, 0.5 oz inner (jlcpcb.com/impedance, 2026-10-20)
+    "JLC06161H-3313": [("F.Cu", 0.035), ("prepreg", 0.0994, "3313", 4.1), ("In1.Cu", 0.0152),
+                       ("core", 0.55, "FR4", 4.6), ("In2.Cu", 0.0152), ("prepreg", 0.1088, "2116", 4.16),
+                       ("In3.Cu", 0.0152), ("core", 0.55, "FR4", 4.6), ("In4.Cu", 0.0152),
+                       ("prepreg", 0.0994, "3313", 4.1), ("B.Cu", 0.035)],
     # standard 2-layer 1.6 mm FR4, 1 oz copper
     "2L-1.6": [("F.Cu", 0.035), ("core", 1.51, "FR4", 4.5), ("B.Cu", 0.035)],
 }
+COPPER = ("F.Cu", "In1.Cu", "In2.Cu", "In3.Cu", "In4.Cu", "B.Cu")
+
+
+def cu(name: str) -> int:
+    """KiCad copper layer id from its name ("In3.Cu" → pcbnew.In3_Cu)."""
+    return getattr(pcbnew, name.replace(".", "_"))
+
+
+def copper_of(board) -> list[int]:
+    """The board's copper layers, outer first."""
+    return [cu(n) for n in COPPER if board.GetEnabledLayers().Contains(cu(n))]
 
 
 def stackup_sexpr(name: str, finish: str) -> str:
@@ -146,18 +163,22 @@ class PcbBuilder:
     def setup(self):
         bd = self.board
         bd.SetCopperLayerCount(self.layers)
-        if self.layers == 4:
-            # b.pcb["inner"]: name and type of In1/In2.  "mixed" = a power layer the router may still
-            # use for signals (its pours are added after routing, around the tracks)
+        if self.layers >= 4:
+            # b.pcb["inner"]: name and type of In1, In2 (In3, In4 on 6 layers).  "mixed" = a power layer
+            # the router may still use for signals (its pours are added after routing, around the tracks)
             types = {"signal": pcbnew.LT_SIGNAL, "power": pcbnew.LT_POWER, "mixed": pcbnew.LT_MIXED}
             inner = self.b.pcb.get("inner", [("In1.GND", "power"), ("In2.SIG", "signal")])
-            for layer, (name, kind) in zip((pcbnew.In1_Cu, pcbnew.In2_Cu), inner):
+            assert len(inner) == self.layers - 2, "b.pcb['inner'] names every inner layer"
+            for layer, (name, kind) in zip([cu(f"In{i}.Cu") for i in range(1, self.layers - 1)], inner):
                 bd.SetLayerName(layer, name)
                 bd.SetLayerType(layer, types[kind])
         ds = bd.GetDesignSettings()
         # JLCPCB: 0.09 mm (4-layer) / 0.127 mm (2-layer); Freerouting necks down to 0.12 at fine-pitch pads
-        ds.m_TrackMinWidth = MM(0.1 if self.layers >= 4 else 0.125)
-        ds.m_MinClearance = MM(0.127)
+        # b.pcb["min_track"], ["min_clearance"], ["hole_clearance"]: a denser board's own floor (JLC multilayer:
+        # 0.09 mm tracks and spaces, 0.2 mm from a via hole to a track)
+        ds.m_TrackMinWidth = MM(self.b.pcb.get("min_track", 0.1 if self.layers >= 4 else 0.125))
+        ds.m_MinClearance = MM(self.b.pcb.get("min_clearance", 0.127))
+        ds.m_HoleClearance = MM(self.b.pcb.get("hole_clearance", 0.25))
         ds.m_ViasMinSize = MM(0.45)
         # JLC's no-extra-cost via is a 0.3 mm hole in a 0.4 mm (multilayer) / 0.45 mm pad: SMALL_VIA's ring
         ds.m_ViasMinAnnularWidth = MM((SMALL_VIA[0] - SMALL_VIA[1]) / 2)
@@ -360,9 +381,7 @@ class PcbBuilder:
         return set(d or [])
 
     def copper_layers(self):
-        if self.layers == 4:
-            return [pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu]
-        return [pcbnew.F_Cu, pcbnew.B_Cu]
+        return [pcbnew.F_Cu] + [cu(f"In{i}.Cu") for i in range(1, self.layers - 1)] + [pcbnew.B_Cu]
 
     def zones(self, which: str = "all"):
         """which = "routing" (what the router sees: every zone except the deferred pours,
@@ -384,8 +403,7 @@ class PcbBuilder:
                 continue
             if which == "deferred" and (spec["layer"], self.b.pcb_net_name(spec["net"])) in have:
                 continue          # re-importing a session onto a board that already has its pours
-            layer = {"F.Cu": pcbnew.F_Cu, "B.Cu": pcbnew.B_Cu,
-                     "In1.Cu": getattr(pcbnew, "In1_Cu", None), "In2.Cu": getattr(pcbnew, "In2_Cu", None)}[spec["layer"]]
+            layer = cu(spec["layer"])
             self.zone(layer, spec["net"], spec.get("poly", full), priority=spec.get("priority", 0),
                       name=spec.get("name", ""), connection=spec.get("connection", "thermal"))
             if spec.get("exclusive") and which != "deferred":
@@ -426,15 +444,13 @@ class PcbBuilder:
         """b.pcb["tracks"]: [(net, layer, width mm, [(x, y), ...])] drawn before routing and locked,
         so the DSN hands them to Freerouting as protected wiring it routes around (e.g. the USB
         High-Speed pairs, which need coupling and length matching the router can't do)."""
-        layers = {"F.Cu": pcbnew.F_Cu, "B.Cu": pcbnew.B_Cu, "In1.Cu": getattr(pcbnew, "In1_Cu", None),
-                  "In2.Cu": getattr(pcbnew, "In2_Cu", None)}
         for net, layer, width, pts in self.b.pcb.get("tracks", []):
             for a, c in zip(pts, pts[1:]):
                 t = pcbnew.PCB_TRACK(self.board)
                 t.SetStart(V(*a))
                 t.SetEnd(V(*c))
                 t.SetWidth(MM(width))
-                t.SetLayer(layers[layer])
+                t.SetLayer(cu(layer))
                 t.SetNet(self.net(self.b.pcb_net_name(net)))
                 t.SetLocked(True)
                 self.board.Add(t)
@@ -598,7 +614,7 @@ def import_session(b: Board, outdir: Path) -> Path:
         v.SetDrill(MM(0.3))
         v.SetNet(pad.GetNet())
         board.Add(v)
-    board.GetDesignSettings().m_TrackMinWidth = MM(0.1 if pb.layers >= 4 else 0.125)
+    board.GetDesignSettings().m_TrackMinWidth = MM(b.pcb.get("min_track", 0.1 if pb.layers >= 4 else 0.125))
     gnd = pb.net(b.pcb_net_name("GND"))
     if b.pcb.get("stitch"):
         n = stitch_gnd(board, gnd, b.pcb["stitch"])
@@ -665,41 +681,56 @@ def drop_passthrough_vias(path: Path) -> int:
     if not uuids:
         return 0
     board = pcbnew.LoadBoard(str(path))
+    # one snapshot of the board, everything worked out on it, the removals all at the end: after a few
+    # Remove() calls SWIG can no longer list the board's tracks
+    items = list(board.GetTracks())
     gone, stubs = [], []
-    for v in [t for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.m_Uuid.AsString() in uuids]:
+    for v in [t for t in items if t.GetClass() == "PCB_VIA" and t.m_Uuid.AsString() in uuids]:
         p = v.GetPosition()
-        ends = [t.GetLayer() for t in board.GetTracks() if t.GetClass() != "PCB_VIA"
+        ends = [t.GetLayer() for t in items if t.GetClass() != "PCB_VIA"
                 and t.GetNetCode() == v.GetNetCode() and p in (t.GetStart(), t.GetEnd())]
         if not v.IsLocked() and len(ends) >= 2 and len(set(ends)) == 1:
             gone.append(v)
         elif not v.IsLocked() and len(ends) <= 1:
             stubs.append(v)          # the end of a dead branch: the via and the branch go
-    for v in gone:
-        board.Remove(v)
     zoned = {z.GetNetCode() for z in board.Zones()}
-    pruned = 0
-    for v in stubs:
-        net = v.GetNetCode()
-        board.Remove(v)
-        if net in zoned:
-            continue                 # a free track end in a pour of its net is connected
-        while True:
-            tracks = [t for t in board.GetTracks() if t.GetClass() == "PCB_TRACK" and t.GetNetCode() == net]
-            vias = [t.GetPosition() for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.GetNetCode() == net]
-            pads = [p for p in board.GetPads() if p.GetNetCode() == net]
+    nets = {v.GetNetCode() for v in stubs} - zoned       # a free track end in a pour of its net is connected
+    removed = {id(v) for v in gone + stubs}
+    pads = {}
+    for pad in board.GetPads():
+        pads.setdefault(pad.GetNetCode(), []).append(pad)
+    hits: dict = {}
 
-            def joined(pt, me):
-                return (any(o is not me and pt in (o.GetStart(), o.GetEnd()) for o in tracks)
-                        or pt in vias or any(p.HitTest(pt) for p in pads))
-            free = [t for t in tracks if not t.IsLocked()
-                    and not (joined(t.GetStart(), t) and joined(t.GetEnd(), t))]
-            if not free:
-                break
-            for t in free:
-                board.Remove(t)
-            pruned += len(free)
+    def on_pad(net, pt):
+        if (net, pt) not in hits:
+            hits[(net, pt)] = any(q.HitTest(pcbnew.VECTOR2I(*pt)) for q in pads.get(net, ()))
+        return hits[(net, pt)]
+    live = [t for t in items if t.GetClass() == "PCB_TRACK" and t.GetNetCode() in nets]
+    ends = {id(t): ((t.GetStart().x, t.GetStart().y), (t.GetEnd().x, t.GetEnd().y)) for t in live}
+    vias = {(v.GetNetCode(), v.GetPosition().x, v.GetPosition().y) for v in items
+            if v.GetClass() == "PCB_VIA" and id(v) not in removed}
+    pruned = []
+    while True:
+        free = []
+        for t in live:
+            net = t.GetNetCode()
+
+            def joined(pt, me=t, net=net):
+                return (any(o is not me and o.GetNetCode() == net and pt in ends[id(o)] for o in live)
+                        or (net, *pt) in vias or on_pad(net, pt))
+            if not t.IsLocked() and not all(joined(pt) for pt in ends[id(t)]):
+                free.append(t)
+        if not free:
+            break
+        dead = {id(t) for t in free}
+        live = [t for t in live if id(t) not in dead]
+        pruned += free
+    for o in gone + stubs + pruned:
+        board.Remove(o)
     if gone or stubs:
         pcbnew.SaveBoard(str(path), board)
+    pruned = len(pruned)
+    if gone or stubs:
         print(f"vias: dropped {len(gone)} pass-through via(s), {len(stubs)} dead-end via(s) and {pruned} stub track(s)")
     return len(gone) + len(stubs)
 
@@ -771,7 +802,7 @@ def connect_gnd_pads(board, gnd, spots_mm, via_d=SMALL_VIA[0], drill=SMALL_VIA[1
         return all(fill.Contains(pcbnew.VECTOR2I(int(e.x + r * math.cos(a)), int(e.y + r * math.sin(a))))
                    for a in [k * math.pi / 4 for k in range(8)] + [0]) if r else fill.Contains(e)
     err = MM(0.005)
-    layers = [l for l in (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu) if board.GetEnabledLayers().Contains(l)]
+    layers = copper_of(board)
     clr = MM(0.2)
 
     def obstacles_on(layer):
@@ -876,7 +907,7 @@ def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]
     vias) and pads already reached by a fixed track are left alone.  Returns [(net, done, pads)]."""
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     err, clr = MM(0.005), MM(0.2)
-    layers = [l for l in (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu) if board.GetEnabledLayers().Contains(l)]
+    layers = copper_of(board)
     edge = board.GetBoardEdgesBoundingBox()
     edge.Inflate(-MM(0.6))
     out = []
@@ -1057,8 +1088,7 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
     """
     filler = pcbnew.ZONE_FILLER(board)
     gnd_code = gnd.GetNetCode()
-    copper = [l for l in (pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu)
-              if board.GetEnabledLayers().Contains(l)]
+    copper = copper_of(board)
     keepouts = [z for z in board.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
     def ring_of(rad):
         return [(0, 0)] + [(rad * math.cos(a), rad * math.sin(a)) for a in [k * math.pi / 8 for k in range(16)]]

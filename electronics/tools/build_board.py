@@ -195,26 +195,40 @@ JLC_CPL_FIX = {
     "C598310": ("LED_Kingbright_KPA-3010_3x2x1mm", 0, 0.0, 0.825),           # hub D3 D8 D11–D14 (green)
     "C4555382": ("LED_Kingbright_KPA-3010_3x2x1mm", 0, 0.0, 0.825),          # hub D21–D24 (red)
     "C181499": ("VQFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm", 270, 0.0, 0.0),    # x4 U2 U6 (TCA6408A)
+    # DATA ×4 v2's, fitted on 2026-10-20 the same way (bottom parts un-mirrored first).  RP2354B C39843328,
+    # USB2517I C478081, ABM8 C20625731, the inductor C42411119 fit as they are; the LED C2297 too, by
+    # function (JLC numbers its anode 1, KiCad its cathode)
+    "C109471": ("LQFP-44_10x10mm_P0.8mm", 270, 0.0, 0.0),                    # x4 v2 U7 U8 (CH446Q)
+    "C130008": ("DHVQFN-20-1EP_2.5x4.5mm_P0.5mm_EP1x3mm", 270, 0.0, 0.0),    # x4 v2 U107–U407 (LSF0108)
+    "C138714": ("USON-10_2.5x1.0mm_P0.5mm", 270, 0.0, 0.0),                  # x4 v2 U4, U105… (TPD4E05U06)
+    "C206010": ("TSSOP-16_4.4x5mm_P0.65mm", 270, 0.0, 0.0),                  # x4 v2 U10 (TCA9534A)
+    "C9839": ("SOT-23-5", 180, 0.0, 0.0),                                    # x4 v2 U9 (TPS60400)
+    # 4 × 0402 arrays: JLC's are drawn across (any of 90° / 270°: four equal resistors)
+    "C25725": ("R_Array_Convex_4x0402", 90, 0.0, 0.0),                       # x4 v2 RN1–RN3, RN8 RN9 (10k)
+    "C48442": ("R_Array_Convex_4x0402", 90, 0.0, 0.0),                       # x4 v2 RN101… (100)
+    "C26075": ("R_Array_Convex_4x0402", 90, 0.0, 0.0),                       # x4 v2 RN6 RN7 (2.2k)
 }
 
 
 def jlc_cpl_row(row, lcsc: str):
-    """KiCad pos row (anchor, Y up) -> JLC CPL row, with the JLC_CPL_FIX correction applied."""
-    x, y, rot = row["PosX"], row["PosY"], row["Rot"]
-    fix = JLC_CPL_FIX.get(lcsc)
-    if fix:
-        fp, drot, dx, dy = fix
-        if fp != row["Package"]:
-            raise SystemExit(f"{row['Ref']}: JLC_CPL_FIX[{lcsc}] was checked on {fp}, not {row['Package']}")
-        if row["Side"] != "top":
-            raise SystemExit(f"{row['Ref']}: JLC_CPL_FIX is only worked out for top-side parts")
-        a = math.radians(float(rot))
-        # offset from footprint axes to board axes (KiCad, Y down), then to the pos file's Y up
-        x = f"{float(x) + dx * math.cos(a) + dy * math.sin(a):.6f}"
-        y = f"{float(y) + dx * math.sin(a) - dy * math.cos(a):.6f}"
-        r = (float(rot) + drot) % 360
-        rot = f"{r - 360 if r > 180 else r:.6f}"
-    return [row["Ref"], x + "mm", y + "mm", "Top" if row["Side"] == "top" else "Bottom", rot]
+    """KiCad pos row (anchor, Y up) -> JLC CPL row, with the JLC_CPL_FIX correction applied.
+
+    Bottom side: JLC wants the position as seen from the top (the pos file's) and the rotation as seen
+    from above the part, i.e. from below the board: 180° − KiCad's, plus the part's own correction
+    (KiCad draws a bottom footprint at θ as its library footprint mirrored top-bottom, then turned θ)."""
+    x, y, rot = row["PosX"], row["PosY"], float(row["Rot"])
+    bottom = row["Side"] != "top"
+    fp, drot, dx, dy = JLC_CPL_FIX.get(lcsc, (row["Package"], 0, 0.0, 0.0))
+    if fp != row["Package"]:
+        raise SystemExit(f"{row['Ref']}: JLC_CPL_FIX[{lcsc}] was checked on {fp}, not {row['Package']}")
+    if dx or dy:
+        a = math.radians(rot)
+        # offset from footprint axes to board axes (KiCad, Y down; mirrored on the bottom), then to Y up
+        s = -1 if bottom else 1
+        x = f"{float(x) + dx * math.cos(a) + s * dy * math.sin(a):.6f}"
+        y = f"{float(y) + dx * math.sin(a) - s * dy * math.cos(a):.6f}"
+    r = ((180 - rot if bottom else rot) + drot) % 360
+    return [row["Ref"], x + "mm", y + "mm", "Bottom" if bottom else "Top", f"{r - 360 if r > 180 else r:.6f}"]
 
 
 def export_fab(outdir: Path, name: str, b):
@@ -227,8 +241,9 @@ def export_fab(outdir: Path, name: str, b):
     gerb = fab / "gerbers"
     gerb.mkdir()
     layers = "F.Cu,B.Cu,F.Paste,B.Paste,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts"
-    if b.pcb.get("layers", 2) == 4:
-        layers = "F.Cu,In1.Cu,In2.Cu,B.Cu," + layers.split(",", 2)[2]
+    n = b.pcb.get("layers", 2)
+    if n > 2:
+        layers = ",".join(["F.Cu"] + [f"In{i}.Cu" for i in range(1, n - 1)] + ["B.Cu"]) + "," + layers.split(",", 2)[2]
     run(["kicad-cli", "pcb", "export", "gerbers", "--layers", layers, "--subtract-soldermask",
          "--use-drill-file-origin", "-o", str(gerb) + "/", pcb], check=True, capture_output=True)
     run(["kicad-cli", "pcb", "export", "drill", "--format", "excellon", "--excellon-separate-th",

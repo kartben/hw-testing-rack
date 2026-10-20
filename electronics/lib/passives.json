@@ -1,4 +1,13 @@
 {
+ "C:100n:0402": {
+  "lcsc": "C1525",
+  "mpn": "CL05B104KO5NNNC",
+  "manufacturer": "Samsung Electro-Mechanics",
+  "description": "100nF 16V X7R ±10% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
+  "price": 0.0055,
+  "stock": 29003161,
+  "basic": true
+ },
  "C:100n:0603": {
   "lcsc": "C14663",
   "mpn": "CC0603KRX7R9BB104",
@@ -33,6 +42,24 @@
   "description": "10uF 50V X5R ±10% 1206 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
   "price": 0.2722,
   "stock": 2285907,
+  "basic": true
+ },
+ "C:15p:0402": {
+  "lcsc": "C1548",
+  "mpn": "0402CG150J500NT",
+  "manufacturer": "FH (Guangdong Fenghua Advanced Tech)",
+  "description": "15pF 50V C0G ±5% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
+  "price": 0.0038,
+  "stock": 1078833,
+  "basic": true
+ },
+ "C:1u:0402": {
+  "lcsc": "C52923",
+  "mpn": "CL05A105KA5NQNC",
+  "manufacturer": "Samsung Electro-Mechanics",
+  "description": "1uF 25V X5R ±10% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
+  "price": 0.0068,
+  "stock": 8310695,
   "basic": true
  },
  "C:1u:0603": {
@@ -80,6 +107,15 @@
   "stock": 488882,
   "basic": true
  },
+ "C:33p:0402": {
+  "lcsc": "C1562",
+  "mpn": "0402CG330J500NT",
+  "manufacturer": "FH (Guangdong Fenghua Advanced Tech)",
+  "description": "33pF 50V C0G ±5% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
+  "price": 0.0032,
+  "stock": 1200124,
+  "basic": true
+ },
  "C:33p:0603": {
   "lcsc": "C1663",
   "mpn": "CL10C330JB8NNNC",
@@ -97,6 +133,15 @@
   "description": "4.7nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
   "price": 0.0058,
   "stock": 1014475,
+  "basic": true
+ },
+ "C:4.7u:0402": {
+  "lcsc": "C23733",
+  "mpn": "CL05A475MP5NRNC",
+  "manufacturer": "Samsung Electro-Mechanics",
+  "description": "10V 4.7uF X5R ±20% 0402 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
+  "price": 0.0113,
+  "stock": 2096970,
   "basic": true
  },
  "C:4.7u:0805": {
@@ -208,6 +253,15 @@
   "stock": 970176,
   "basic": true
  },
+ "R:12k:0402": {
+  "lcsc": "C25752",
+  "mpn": "0402WGF1202TCE",
+  "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+  "description": "12kΩ 50V 62.5mW Thick Film Resistor ±1% ±100ppm/℃ 0402 Chip Resistor - Surface Mount ROHS",
+  "price": 0.0018,
+  "stock": 941415,
+  "basic": true
+ },
  "R:12k:0603": {
   "lcsc": "C22790",
   "mpn": "0603WAF1202T5E",
@@ -263,6 +317,15 @@
   "stock": 5504928,
   "basic": true
  },
+ "R:1k:0402": {
+  "lcsc": "C11702",
+  "mpn": "0402WGF1001TCE",
+  "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+  "description": "1kΩ 50V 62.5mW Thick Film Resistor ±1% ±100ppm/℃ 0402 Chip Resistor - Surface Mount ROHS",
+  "price": 0.0013,
+  "stock": 20988415,
+  "basic": true
+ },
  "R:1k:0603": {
   "lcsc": "C21190",
   "mpn": "0603WAF1001T5E",
@@ -290,6 +353,15 @@
   "stock": 2275432,
   "basic": true
  },
+ "R:200k:0402": {
+  "lcsc": "C25764",
+  "mpn": "0402WGF2003TCE",
+  "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+  "description": "200kΩ 50V 62.5mW Thick Film Resistor ±1% ±100ppm/℃ 0402 Chip Resistor - Surface Mount ROHS",
+  "price": 0.0017,
+  "stock": 2150175,
+  "basic": true
+ },
  "R:20k:0603": {
   "lcsc": "C4184",
   "mpn": "0603WAF2002T5E",
@@ -308,6 +380,7 @@
   "stock": 3425502,
   "basic": true
  },
+ "R:27:0402": null,
  "R:27k:0603": {
   "lcsc": "C22967",
   "mpn": "0603WAF2702T5E",
@@ -324,6 +397,15 @@
   "description": "100mW 330Ω 75V Thick Film Resistor ±1% ±100ppm/℃ 0603 Chip Resistor - Surface Mount ROHS",
   "price": 0.002,
   "stock": 4219749,
+  "basic": true
+ },
+ "R:33:0402": {
+  "lcsc": "C25105",
+  "mpn": "0402WGF330JTCE",
+  "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+  "description": "33Ω 50V 62.5mW Thick Film Resistor ±1% ±100ppm/℃ 0402 Chip Resistor - Surface Mount ROHS",
+  "price": 0.0011,
+  "stock": 2452883,
   "basic": true
  },
  "R:33:0603": {

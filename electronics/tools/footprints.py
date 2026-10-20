@@ -77,12 +77,50 @@ def wroom_no_ep_vias() -> pcbnew.FOOTPRINT:
     return fp
 
 
+def header_2x6_smd_tight() -> pcbnew.FOOTPRINT:
+    """The stock 2 × 6 SMD pin header, wider pads, its courtyard drawn round the pads (±4.35 mm across the rows)
+    instead of KiCad's ±5.92 mm: the DATA ×4 v2's four headers sit in a row 18 mm apart with their
+    translators right in front of them.  The lead span of the part (hanxia HX PZ2.54-2x6P TP, 7.5 mm)
+    lands inside the pads."""
+    name = "PinHeader_2x06_P2.54mm_Vertical_SMD_Tight"
+    fp = pcbnew.FootprintLoad(str(STOCK / "Connector_PinHeader_2.54mm.pretty"), "PinHeader_2x06_P2.54mm_Vertical_SMD")
+    # hand-soldered and plugged often: pads 1.3 mm wide instead of 1.0 (30 % more copper to hold the pin,
+    # 1.24 mm between neighbours), as long as the stock ones
+    for pad in fp.Pads():
+        pad.SetSize(pcbnew.VECTOR2I(pad.GetSize().x, MM(1.3)))
+    for item in list(fp.GraphicalItems()):
+        if item.GetLayer() == pcbnew.F_CrtYd:
+            fp.Remove(item)
+    rect = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_RECT)
+    rect.SetLayer(pcbnew.F_CrtYd)
+    rect.SetWidth(MM(0.05))
+    rect.SetStart(pcbnew.VECTOR2I(MM(-4.35), MM(-7.87)))
+    rect.SetEnd(pcbnew.VECTOR2I(MM(4.35), MM(7.87)))
+    fp.Add(rect)
+    fp.SetFPID(pcbnew.LIB_ID("bench", name))
+    fp.SetValue(name)
+    fp.SetLibDescription("Pin header 2 × 6, 2.54 mm, SMD, as Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Vertical_SMD "
+                         "with a courtyard round the pads only")
+    return fp
+
+
+MAKERS = {"R_1206_3216Metric_Kelvin": kelvin_1206, "ESP32-S3-WROOM-1_NoEPVias": wroom_no_ep_vias,
+          "PinHeader_2x06_P2.54mm_Vertical_SMD_Tight": header_2x6_smd_tight}
+
+
 def main():
+    """`footprints.py [name ...]`: the named footprints, or all of them.  Each one in its own process:
+    KiCad's SWIG proxies get lost once a few loaded footprints have been alive (the third load fails)."""
+    import subprocess
+    import sys
     OUT.mkdir(parents=True, exist_ok=True)
-    # one at a time: KiCad's SWIG proxies get lost when two loaded footprints are alive at once
-    for make, name in ((kelvin_1206, "R_1206_3216Metric_Kelvin"), (wroom_no_ep_vias, "ESP32-S3-WROOM-1_NoEPVias")):
-        pcbnew.PCB_IO_KICAD_SEXPR().FootprintSave(OUT.as_posix(), make())
-        print("wrote", OUT / f"{name}.kicad_mod")
+    names = sys.argv[1:] or list(MAKERS)
+    if len(names) > 1:
+        for name in names:
+            subprocess.run([sys.executable, __file__, name], check=True)
+        return
+    pcbnew.PCB_IO_KICAD_SEXPR().FootprintSave(OUT.as_posix(), MAKERS[names[0]]())
+    print("wrote", OUT / f"{names[0]}.kicad_mod")
 
 
 if __name__ == "__main__":

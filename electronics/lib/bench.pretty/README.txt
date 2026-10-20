@@ -3,3 +3,6 @@ footprints (run it with KiCad's Python after changing it); do not edit the .kica
 
 * R_1206_3216Metric_Kelvin: 1206 current shunt with Kelvin sense pads (bay node R19).
 * ESP32-S3-WROOM-1_NoEPVias: the stock WROOM-1 without the 0.2 mm vias in its exposed pad (bay node U3).
+* PinHeader_2x06_P2.54mm_Vertical_SMD_Tight: the stock 2 x 6 SMD header with a courtyard round its
+  pads and body only, pads 1.3 mm wide (DATA x4 v2 J102-J402, side by side 18 mm apart,
+  soldered by hand).

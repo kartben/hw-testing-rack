@@ -328,6 +328,10 @@ class Board:
         self.sheets: list[Sheet] = []
         self.parts: dict[str, Part] = {}
         self.root_notes: list[str] = []
+        # overview sheet: paper, and whether signals shared by three sheets or more are drawn as rails
+        # (one per set of sheets) instead of a lane between every pair of those sheets
+        self.root_paper = "A3"
+        self.root_buses = False
         self.pcb: dict = {}
 
     def sheet(self, name: str, file: str, title: str | None = None, paper: str = "A3") -> Sheet:
@@ -1120,8 +1124,20 @@ def write_root(b: Board, outdir: Path):
     items = []
     n = len(b.sheets)
     w, h, gap = (64.0, 30.48, 30.48) if n > 3 else (80.0, 30.48, 40.64)
-    x0 = snap((420 - (n * w + (n - 1) * gap)) / 2)
-    top = 70.0
+    if n > 5 and b.root_buses:
+        w, gap = 52.0, 15.24
+    pw = {"A4": 297, "A3": 420, "A2": 594, "A1": 841}[b.root_paper]
+    x0 = snap((pw - (n * w + (n - 1) * gap)) / 2)
+    ns = b.net_sheets()
+    order = [sh.file for sh in b.sheets]
+    # signal rails (root_buses): nets on three sheets or more, one rail per set of sheets
+    sig_rails: dict[tuple, list[str]] = {}
+    if b.root_buses:
+        for net, files in ns.items():
+            if net not in POWER_SYMBOLS and len(files) > 2:
+                sig_rails.setdefault(tuple(sorted(files, key=order.index)), []).append(net)
+    n_rails = len([net for net in POWER_SYMBOLS if net != "GND" and len(ns.get(net, ())) > 1]) + len(sig_rails)
+    top = 70.0 if n_rails <= 4 else snap(30 + 7.62 * n_rails)
     boxes = {}
     for i, sh in enumerate(b.sheets):
         x = snap(x0 + i * (w + gap))
@@ -1139,27 +1155,27 @@ def write_root(b: Board, outdir: Path):
         for k, ln in enumerate(lines[:6]):
             items.append(_gtext(ln, x + 3, top + 8 + k * 3.6, (b.name, "rootdesc", sh.file, str(k)), 1.8))
 
-    ns = b.net_sheets()
-    # supply rails across the top, with a drop into every sheet that uses them
-    rails = [net for net in POWER_SYMBOLS if net != "GND" and len(ns.get(net, ())) > 1]
+    # supply rails across the top, with a drop into every sheet that uses them; then the signal rails
+    rails = [(net, (net,), set(ns.get(net, ()))) for net in POWER_SYMBOLS if net != "GND" and len(ns.get(net, ())) > 1]
+    rails += [(" ".join(_net_summary(nets)), tuple(nets), set(files)) for files, nets in sig_rails.items()]
     xl, xr = x0 - 12, x0 + n * w + (n - 1) * gap + 4
-    for k, net in enumerate(rails):
+    for k, (name, key, files) in enumerate(rails):
         y = snap(top - 12 - k * 7.62)
-        items.append(_gline([(xl, y), (xr, y)], (b.name, "rail", net), 0.5))
-        items.append(_gtext(net, xl - 1.5, y + 0.6, (b.name, "railtxt", net), 1.8, "right", True))
+        power = key[0] in POWER_SYMBOLS
+        items.append(_gline([(xl, y), (xr, y)], (b.name, "rail", *key), 0.5 if power else 0.3))
+        items.append(_gtext(name, xl - 1.5, y + 0.6, (b.name, "railtxt", *key), 1.8 if power else 1.4, "right", power))
         for j, sh in enumerate(b.sheets):
-            if sh.file not in ns.get(net, ()):
+            if sh.file not in files:
                 continue
-            bx = boxes[sh.file][0] + 10 + k * 7.62
-            items.append(_gline([(bx, y), (bx, top)], (b.name, "drop", net, sh.file), 0.5))
+            bx = boxes[sh.file][0] + (10 + k * 7.62 if len(rails) <= 4 else 3 + k * (w - 6) / max(1, len(rails) - 1))
+            items.append(_gline([(bx, y), (bx, top)], (b.name, "drop", *key, sh.file), 0.5 if power else 0.3))
             items.append(S("circle", S("center", snap(bx), y), S("radius", 0.6),
                            S("stroke", S("width", 0.3), S("type", Sym("default"))), S("fill", S("type", Sym("outline"))),
-                           S("uuid", uid(b.name, "tap", net, sh.file))))
+                           S("uuid", uid(b.name, "tap", *key, sh.file))))
     # signal lanes below: one per pair of sheets sharing nets
     pairs: dict[tuple[str, str], list[str]] = {}
-    order = [sh.file for sh in b.sheets]
     for net, files in ns.items():
-        if net in POWER_SYMBOLS or len(files) < 2:
+        if net in POWER_SYMBOLS or len(files) < 2 or (b.root_buses and len(files) > 2):
             continue
         fs = sorted(files, key=order.index)
         for a_ in range(len(fs)):
@@ -1182,11 +1198,11 @@ def write_root(b: Board, outdir: Path):
     if b.root_notes:
         txt = "\n".join(b.root_notes)
         items.append(S("text_box", txt, S("exclude_from_sim", Sym("no")), S("at", 30, snap(y + 15), 0),
-                       S("size", 360, snap(6 + 2.2 * (txt.count("\n") + 1))), S("margins", 2, 2, 2, 2),
+                       S("size", pw - 60, snap(6 + 2.2 * (txt.count("\n") + 1))), S("margins", 2, 2, 2, 2),
                        S("stroke", S("width", 0), S("type", Sym("default"))), S("fill", S("type", Sym("none"))),
                        _font(1.6, justify="left top"), S("uuid", uid(b.name, "rootnotes"))))
     doc = S("kicad_sch", S("version", 20250610), S("generator", "hw-testing-rack-eda"),
-            S("generator_version", "10.0"), S("uuid", b.root_uuid), S("paper", "A3"),
+            S("generator_version", "10.0"), S("uuid", b.root_uuid), S("paper", b.root_paper),
             _title_block(b, "Overview"), S("lib_symbols"), *items,
             S("sheet_instances", S("path", "/", S("page", "1"))), S("embedded_fonts", Sym("no")))
     (outdir / f"{b.name}.kicad_sch").write_text(dumps(doc) + "\n", encoding="utf-8")
@@ -1204,8 +1220,12 @@ def write_project(b: Board, outdir: Path, netclasses: list[dict] | None = None):
          "via_drill": 0.3, "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6,
          "bus_width": 12, "line_style": 0, "pcb_color": "rgba(0, 0, 0, 0.000)",
          "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2147483647},
-        *({k: v for k, v in nc.items() if k != "_patterns"} for nc in (netclasses or [])),
+        *({k: v for k, v in nc.items() if k != "_patterns"} for nc in (netclasses or []) if nc["name"] != "Default"),
     ]
+    # an entry named "Default" in the board's list tunes the default class (clearance, widths)
+    for nc in netclasses or []:
+        if nc["name"] == "Default":
+            classes[0].update({k: v for k, v in nc.items() if k != "_patterns"})
     patterns = [{"netclass": nc["name"], "pattern": pat}
                 for nc in (netclasses or []) for pat in nc.get("_patterns", [])]
     pro = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {
