@@ -421,6 +421,12 @@ Espressif's own STEP for the module, kept in the repo, and LCSC / EasyEDA models
 fetched by `python tools/fetch_pcb_models.py` into a git-ignored cache.  Run it before `--fab`.
 `python tools/pcb_glb.py --check` then lists any placed part still without a body and exits 1;
 the viewer conversion falls back to a stand-in of the part's real outline (or fails, `--strict`).
+`build_board.py` checks the models with ERC and DRC, on every run (`check_models()`, into
+`build/summary.json`): each footprint's model must resolve to a file (KiCad's library, the repo's,
+or the EasyEDA cache), and a footprint without one must have no body by nature (holes, test points,
+net ties, fiducials) or be listed in the board's `b.pcb["no_model"]`; otherwise `--check` fails.  An
+EasyEDA model not fetched yet is only reported.  Where KiCad lacks the exact package, the catalog
+borrows its nearest body: the TCA6408A's VQFN-16 3 × 3 takes the QFN-16 3 × 3 one.
 
 The bay node has no through-hole part since v0.4, and the hub none since v0.5: their JST PH
 connectors are the SMD S*B-PH-SM4-TB, and the USB-C receptacles' shield tabs go through

@@ -309,6 +309,55 @@ NO_BODY = ("MountingHole:", "TestPoint:", "NetTie:", "Fiducial:", "Symbol:")
 MODEL_DIR = Path(os.environ.get("KICAD10_3DMODEL_DIR", "/usr/share/kicad/3dmodels"))
 
 
+# the LCSC / EasyEDA models tools/fetch_pcb_models.py fetches on demand (git-ignored)
+EASYEDA_DIR = REPO / "electronics" / "lib" / "3dmodels" / "easyeda"
+
+
+def resolve_model(fn: str, outdir: Path) -> Path | None:
+    """The STEP / IGES file a footprint's (model …) path resolves to, the form KiCad's STEP and GLB
+    exports use (--subst-models replaces a .wrl with the STEP of the same name); None if none exists."""
+    env = {"KICAD10_3DMODEL_DIR": str(MODEL_DIR), "KICAD9_3DMODEL_DIR": str(MODEL_DIR),
+           "KICAD8_3DMODEL_DIR": str(MODEL_DIR), "KICAD7_3DMODEL_DIR": str(MODEL_DIR),
+           "KICAD6_3DMODEL_DIR": str(MODEL_DIR), "KIPRJMOD": str(outdir)}
+    for k, v in env.items():
+        fn = fn.replace("${" + k + "}", v)
+    p = Path(fn) if Path(fn).is_absolute() else outdir / fn
+    for cand in (p, p.with_suffix(".step"), p.with_suffix(".stp"), p.with_suffix(".STEP"), p.with_suffix(".igs")):
+        if cand.suffix.lower() in (".step", ".stp", ".igs", ".iges") and cand.exists():
+            return cand
+    return None
+
+
+def check_models(outdir: Path, name: str, allowed=()) -> dict:
+    """Every footprint gets a body in the renders, the STEP and the viewer: each shown (model …) must
+    resolve to a file (KiCad's 3D library, electronics/lib/3dmodels, or the EasyEDA cache), and a
+    footprint with none must be allowed: no body by nature (NO_BODY, board-only) or listed in the
+    board's b.pcb["no_model"] (references or footprint-id prefixes).  An EasyEDA model is only
+    reported "not fetched" while its cache file is absent (tools/fetch_pcb_models.py fetches it)."""
+    import pcbnew
+    board = pcbnew.LoadBoard(str(outdir / f"{name}.kicad_pcb"))
+    res = {"ok": 0, "no-body": 0, "not fetched": [], "problems": []}
+    for fp in board.GetFootprints():
+        ref, fpid = fp.GetReference(), fp.GetFPIDAsString()
+        if fpid.startswith(NO_BODY) or fp.GetAttributes() & pcbnew.FP_BOARD_ONLY or                 ref in allowed or fpid.startswith(tuple(a for a in allowed if ":" in a)):
+            res["no-body"] += 1
+            continue
+        models = [m.m_Filename for m in fp.Models() if m.m_Show]
+        if not models:
+            res["problems"].append(f"{ref} {fpid}: no 3D model")
+            continue
+        bad = [m for m in models if not resolve_model(m, outdir)]
+        fetchable = [m for m in bad if "/easyeda/" in m and not (EASYEDA_DIR / Path(m).name).exists()]
+        res["not fetched"] += [f"{ref} {Path(m).name}" for m in fetchable]
+        res["problems"] += [f"{ref} {fpid}: {m} not found" for m in bad if m not in fetchable]
+        res["ok"] += not bad
+    print(f"3D models: {res['ok']} resolve, {res['no-body']} without a body by nature, "
+          f"{len(res['not fetched'])} EasyEDA not fetched, {len(res['problems'])} problems")
+    for it in res["problems"][:40]:
+        print("  ", it)
+    return res
+
+
 def export_3d_coverage(outdir: Path, name: str) -> Path:
     """Which placed footprints KiCad's STEP / GLB export gives a body, and which it can't:
     build/<board>-3d.json, one entry per footprint: "model" (a STEP/IGES file it resolves, the
@@ -318,19 +367,7 @@ def export_3d_coverage(outdir: Path, name: str) -> Path:
     it has none for."""
     import pcbnew
     board = pcbnew.LoadBoard(str(outdir / f"{name}.kicad_pcb"))
-    env = {"KICAD10_3DMODEL_DIR": str(MODEL_DIR), "KICAD9_3DMODEL_DIR": str(MODEL_DIR),
-           "KICAD8_3DMODEL_DIR": str(MODEL_DIR), "KICAD7_3DMODEL_DIR": str(MODEL_DIR),
-           "KICAD6_3DMODEL_DIR": str(MODEL_DIR), "KIPRJMOD": str(outdir)}
-
-    def resolve(fn: str) -> Path | None:
-        for k, v in env.items():
-            fn = fn.replace("${" + k + "}", v)
-        p = Path(fn) if Path(fn).is_absolute() else outdir / fn
-        for cand in (p, p.with_suffix(".step"), p.with_suffix(".stp"), p.with_suffix(".STEP"), p.with_suffix(".igs")):
-            if cand.suffix.lower() in (".step", ".stp", ".igs", ".iges") and cand.exists():
-                return cand
-        return None
-
+    resolve = lambda fn: resolve_model(fn, outdir)
     out = []
     for fp in board.GetFootprints():
         fpid = fp.GetFPIDAsString()
@@ -413,8 +450,9 @@ def main():
             print("  ", it)
         copper = {k: v for k, v in d["violations"].items() if not k.startswith(("silk", "lib_"))}
         if a.fab:
-            export_fab(outdir, b.name, b)
-        sys.exit(1 if e["errors"] or copper or d["unconnected"] or d["parity"] else 0)
+            export_fab(outdir, b.name, b)       # gives catalog models to the board first (apply_models)
+        m = check_models(outdir, b.name, b.pcb.get("no_model", ()))
+        sys.exit(1 if e["errors"] or copper or d["unconnected"] or d["parity"] or m["problems"] else 0)
     import pcbgen  # needs pcbnew
     if a.ses:
         pcbgen.import_session(b, outdir)
@@ -436,9 +474,11 @@ def main():
     print(f"DRC: {d['violations']}  unconnected={d['unconnected']}  parity={d['parity']}")
     for it in d["items"][:80]:
         print("  ", it)
+    m = check_models(outdir, b.name, b.pcb.get("no_model", ()))
     summary = {"board": b.name, "parts": len([p for p in b.parts.values() if p.on_board]),
                "nets": len(b.nets()), "erc": {k: e[k] for k in ("errors", "warnings")},
-               "drc": {k: d[k] for k in ("violations", "unconnected", "parity")}, "routed": a.ses}
+               "drc": {k: d[k] for k in ("violations", "unconnected", "parity")}, "routed": a.ses,
+               "models": {"problems": m["problems"], "not fetched": m["not fetched"]}}
     (outdir / "build" / "summary.json").write_text(json.dumps(summary, indent=1))
     if a.fab:
         export_fab(outdir, b.name, b)
