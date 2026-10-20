@@ -512,7 +512,8 @@ def _data_lead_shape(part="full"):
     dl, r = CABLES.get("data_lead"), 1.8
     if dl:                                   # the viewer's route: J7 -> fixed mouth; moving mouth -> the board
         r = dl["radius"]
-        to_board = [tuple(q) for q in reversed(dl["to_board"])]   # from the moving mouth
+        to_board = [tuple(q) for q in ease([V(*q) for q in reversed(dl["to_board"])], r)]   # from the moving
+        # mouth; along the rear wall it turns into the port board's PH tighter than the lead (ease)
         tail = to_board[1:]
     if part == "stub":
         if dl:                               # its last 30 mm, up through the window
@@ -729,6 +730,27 @@ CHARGER = (66.0, 66.0, 30.0)                  # a 140 W PD 3.1 charger, lying on
 
 
 PIPE_PLAIN = False                             # check.py: True, cables as cylinders and balls (no sweeps, no fuse)
+
+
+def ease(pts, rmin):
+    """A polyline without the points where it turns tighter than rmin (the circle through each point and
+    its neighbours), its ends kept: a sweep round a bend tighter than its tube folds on itself, and the
+    HLR then hangs on its silhouette (the DATA lead's turn into the port board, 0.8 mm for a 1.2 tube).
+    For the routes that need it only: easing a route that projects well can break its projection."""
+    pts = list(pts)
+
+    def radius(a, b, c):
+        ab, bc, ca = b - a, c - b, a - c
+        k = ab.cross(bc).Length
+        return 1e9 if k < 1e-12 else ab.Length * bc.Length * ca.Length / (2 * k)
+    i = 1
+    while i < len(pts) - 1 and len(pts) > 3:
+        if radius(pts[i - 1], pts[i], pts[i + 1]) < rmin:
+            del pts[i]
+            i = max(1, i - 1)
+        else:
+            i += 1
+    return pts
 
 
 def pipe(points, r):
@@ -1276,6 +1298,24 @@ def visible(r):
     return [c for c in (r[0], r[3]) if c is not None and not c.isNull()]
 
 
+# OCC's hidden-line pass gives up (no edges at all) on some swept cables' silhouettes in some exact
+# directions; a few microradians off it does not: at most 0.01 mm on the page, well inside the 0.08 mm
+# that matches the scene's edges to their parts' own projections
+NUDGES = [(0.0, (0, 0, 0))] + [(e, s) for e in (1e-6, 1e-5, 3e-5) for s in ((1, -1, 1), (-1, 1, 1), (1, 1, -1))]
+
+
+def project_ex(shape, d):
+    """TechDraw.projectEx along d, or nudged (NUDGES) when it returns nothing visible."""
+    n = d.Length
+    for eps, sg in NUDGES:
+        r = TechDraw.projectEx(shape, V(d.x + n * eps * sg[0], d.y + n * eps * sg[1], d.z + n * eps * sg[2]))
+        if any(c.Edges for c in visible(r)):
+            if eps:
+                log("projection nudged by", eps, sg)
+            return r
+    return r
+
+
 
 def tight_center(s):
     """The centre of a shape's box; the exact box where BoundBox is much looser (swept cables)."""
@@ -1410,7 +1450,7 @@ def project(name, items, view_dir, axes=(), arrows=(), focus=None):
     t0 = time.time()
     view = View(view_dir)
     comp = Part.makeCompound([s for _, _, s, _ in items] + list(axes))
-    r = TechDraw.projectEx(comp, view.d)
+    r = project_ex(comp, view.d)
     vis = [e for c in visible(r) for e in c.Edges]
     log(name, "projected", len(vis), "edges", f"{time.time() - t0:.1f}s")
     if not vis:                              # the hidden-line pass gave up on something in the scene
@@ -1421,7 +1461,7 @@ def project(name, items, view_dir, axes=(), arrows=(), focus=None):
     from shapely import STRtree, LineString
     geoms, gkey, gadd = [], [], []
     for iid, kind, s, fast in items:
-        ri = TechDraw.projectEx(s, view.d)
+        ri = project_ex(s, view.d)
         for p in (p for c in visible(ri) for p in polylines(c, 0.01)):
             geoms.append(LineString(p))
             gkey.append(KEYS[(kind, fast)])
@@ -1638,7 +1678,32 @@ THUMBS = {
 FLAT_THUMBS = {"xt", "kl"}                            # thumbnails of flat leads (job_thumb)
 HW_VIEW = {"*": (-0.5, -1.0, 0.35), "jumper": (0.1, -0.55, 1.0), "usbc": (0.1, -1.0, 0.35)}   # a flat lead: from above
 
-if __name__ in ("__main__", "notice") and os.environ.get("NOTICE"):
+def dry(names):
+    """Each job's scene built (its shapes, wires, cut, axes, arrows), nothing projected: what a full run
+    would draw, checked in minutes (run.py --dry).  Returns the jobs that failed."""
+    bad = []
+    for n in names:
+        try:
+            if n.startswith("thumb:"):
+                iid = THUMBS[n[6:]][0]
+                shape_of(iid)
+                wires_of(iid)
+            elif n.startswith("hw:"):
+                hw_shape(n[3:])
+            else:
+                items, _, _ = step_scene(STEPS[n])
+                if not items:
+                    raise RuntimeError("an empty scene")
+        except Exception:
+            bad.append(n)
+            log(n, "FAIL", traceback.format_exc())
+    return bad
+
+
+if __name__ in ("__main__", "notice") and os.environ.get("NOTICE") and os.environ.get("NOTICE_DRY"):
+    json.dump({"failed": dry(os.environ["NOTICE"].split(","))}, open(os.path.join(OUT, "dry.json"), "w"))
+    LOG.close()
+elif __name__ in ("__main__", "notice") and os.environ.get("NOTICE"):
     for n in os.environ["NOTICE"].split(","):
         try:
             if n.startswith("thumb:"):

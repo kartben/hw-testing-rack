@@ -4,6 +4,8 @@
     python tools/notice/run.py                  # every drawing
     python tools/notice/run.py a3 pin hw:m3x8   # some of them (names: notice.py STEPS, thumb:<part>, hw:<fastener>)
     python tools/notice/run.py --prep           # steps 1-3 only: the solids, for check.py
+    python tools/notice/run.py --dry            # steps 1-3, then every scene built, nothing drawn: does the
+                                                # notice still build on this state? (minutes, exit 1 if not)
 
 1. the panel frame's constants (OpenSCAD probe, tools/panel_proto.py) -> <build>/constants.json;
 2. the printed parts of one bay -> OpenSCAD CSG -> exact solids (csg2part.py, in freecadcmd);
@@ -297,7 +299,7 @@ def pod_screws() -> dict:
 def outputs(name: str) -> list[str]:
     """The drawings a job writes (out/<name>.svg)."""
     kind, _, k = name.rpartition(":")
-    return {"thumb": [f"card_{k}", f"chip_{k}"], "hw": [f"hw_{k}"]}.get(kind, [name])
+    return {"thumb": [f"card_{k}", f"chip_{k}"], "hw": [f"hw_{k}"]}.get(kind, [name] + [f"{name}_small"] * (name == "cover"))
 
 
 def mtime(name: str) -> int | None:
@@ -310,8 +312,8 @@ def main() -> None:
     import time
     import yaml
     t0 = time.time()
-    prep = "--prep" in sys.argv
-    names = [a for a in sys.argv[1:] if a != "--prep"] or JOBS
+    prep, dry = "--prep" in sys.argv, "--dry" in sys.argv
+    names = [a for a in sys.argv[1:] if not a.startswith("--")] or JOBS
     BUILD.mkdir(parents=True, exist_ok=True)
     c = panel_proto.constants(BUILD)
     c["ROW_CABLE"] = yaml.safe_load((HERE / "notice.yaml").read_text(encoding="utf-8"))["row_cable"]
@@ -355,6 +357,17 @@ def main() -> None:
     if prep:
         print(f"{time.time() - t0:.0f} s: solids in {BUILD / 'parts'}")
         return
+    if dry:                                # every scene built, nothing projected; every page's drawing has a job
+        import pages
+        res = BUILD / "out" / "dry.json"
+        res.unlink(missing_ok=True)
+        fc("notice.py", NOTICE=",".join(names), NOTICE_DRY="1")
+        bad = json.loads(res.read_text(encoding="utf-8"))["failed"] if res.exists() else names
+        miss = sorted(set(pages.drawings()) - {o for n in JOBS for o in outputs(n)})
+        print(f"{time.time() - t0:.0f} s: {len(names) - len(bad)}/{len(names)} scenes built"
+              + (f", FAILED: {' '.join(bad)} (out/notice_log.txt)" if bad else "")
+              + (f"; notice.yaml wants drawings no job makes: {' '.join(miss)}" if miss else ""))
+        sys.exit(1 if bad or miss else 0)
     print("drawings:", " ".join(names))
     (BUILD / "out" / "notice_log.txt").unlink(missing_ok=True)     # this run's failures only
     before = {o: mtime(o) for n in names for o in outputs(n)}

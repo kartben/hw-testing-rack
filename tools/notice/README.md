@@ -19,11 +19,16 @@ are generated from one data file.
 ```bash
 python tools/notice/run.py                 # every drawing → mechanical/build/notice/out/*.svg, then the upload list
 python tools/notice/run.py a3 pin          # some of them
+python tools/notice/run.py --dry           # does it still build? every scene, nothing drawn
 ```
 
 A full run takes about 40 minutes (four FreeCAD processes); it ends with
 `pages.py plan`: the drawings whose SVG is new or changed since it was
-uploaded (`assets.json` keeps each one's SHA-256).
+uploaded (`assets.json` keeps each one's SHA-256).  The notice is redrawn
+when the design is frozen (an order, a release) or on request, not on every
+change; in between, `--dry` (a few minutes) checks that it still builds on
+the current state: every step's and part's scene, and a job for every
+drawing `notice.yaml` names.
 
 ### The drawings on another machine
 
