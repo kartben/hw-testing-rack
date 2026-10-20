@@ -251,7 +251,8 @@ The board comes out the same way, without tools once the lead is unplugged.
   - A: only the deeper geometry, regenerated.
   - B: the v2 stand-in becomes vertical.  Its outline, receptacles and header pins turn towards −y,
     `route_jumpers` starts the ribbons forward instead of up, the PH 8 lead ends on the rear face, and the
-    cradle is a new printed part.  About the size of the v2 stand-in's own change.
+    cradle is a new printed part.  About the size of the v2 stand-in's own change.  Done (2026-10-20): B3
+    shows it in its cradle, from this study's geometry until the v2 session's own.
   - C: a second outline and standoffs.
 - **Assembly notice** (`tools/notice`).  Today its drawer step shows the single DATA port board only.
   - A: every frame page regenerated (the pipeline does it), every callout checked.

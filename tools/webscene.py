@@ -25,6 +25,7 @@ WEB_PARTS = {
     "tray": ("parts/tray.scad", {"PART": "tray"}),
     "drawer": ("parts/drawer.scad", {}),
     "drawer_sled": ("parts/drawer.scad", {"PART": "sled"}),
+    "x4_cradle": ("parts/x4_cradle.scad", {"PART": "cradle"}),        # the standing DATA ×4 v2's (drawer coordinates)
     "drawer_block": ("parts/drawer.scad", {"PART": "block"}),
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
@@ -110,9 +111,6 @@ def dataport_parts(rack) -> dict:
     x4 = {**defs, "BW": q["size"][0], "BD": q["size"][1], "BT": q["thickness"], "HOLES": q["holes"], "USBX": 0,
           "PHR": q["lead"]}                         # its PH 8 on the right edge, its mouth out of it
     out.update({f"dataport_{k}_x4": ("parts/usb_plugs.scad", {**x4, "PIECE": k}, None) for k in ("pcb", "usb", "ph")})
-    v2 = rack.raw["pcb"]["data_port_x4_v2"]          # the planned v2: its outline; its USB-Cs and PH 8 where v1 has them
-    out["dataport_pcb_x4v2"] = ("parts/usb_plugs.scad", {**x4, "BW": v2["size"][0], "BD": v2["size"][1],
-                                                         "HOLES": v2["holes"], "NOTCH": v2["notch"], "PIECE": "pcb"}, None)
     return out
 
 
@@ -126,40 +124,47 @@ def header_pins(bd: dict) -> list[tuple[float, float, str]]:
     return out
 
 
-def x4_header_pins(raw: dict, port: int, v2: bool) -> list[tuple[float, float, str]]:
-    """The DATA ×4's header at port 1–4: [(x, y, name)], KiCad (y from the rear edge).  v1: the 1 × 3 (GND,
-    RESET, BOOT, pcb.data_port_x4.aux); v2 (planned): the 2 × 6, odd pins on its front row (pcb.data_port_x4_v2)."""
-    if v2:
-        h = raw["pcb"]["data_port_x4_v2"]["header"]
-        x0 = h["x"][port - 1] - (h["cols"] - 1) * HEADER["PITCH"] / 2
-        return [(x0 + HEADER["PITCH"] * (k // 2), h["even_y"] if k % 2 else h["odd_y"], name)
-                for k, name in enumerate(h["names"])]
+def x4_header_pins(raw: dict, port: int) -> list[tuple[float, float, str]]:
+    """The DATA ×4's (v1) header at port 1–4, the 1 × 3 (GND, RESET, BOOT, pcb.data_port_x4.aux): [(x, y,
+    name)], KiCad (y from the rear edge)."""
     a = raw["pcb"]["data_port_x4"]["aux"]
     return [(a["pin1"][port - 1] + a["step"][port - 1] * k, a["y"], name) for k, name in enumerate(a["names"])]
 
 
-# The planned v2's main parts on its top side, until its KiCad model exists (the v2 session's 6-layer layout,
-# 2026-10-20: the power parts in the rear row, the 2 × 6 headers in the middle band, the USB-Cs in front, v1's
-# holes): (KiCad x, y of the body's rear-left corner, w, l, h, colour).  Per port at its USB-C's x (cx); then the
-# hub's corner.
+def x4v2_header_pins(raw: dict, port: int) -> list[tuple[float, float, str]]:
+    """The standing v2's 2 × 6 header at port 1–4, on its front face, pins forward (pcb.data_port_x4_v2): [(board x,
+    drawer z, name)], odd pins on the lower row."""
+    h = raw["pcb"]["data_port_x4_v2"]["header"]
+    x0 = h["x"][port - 1] - (h["cols"] - 1) * HEADER["PITCH"] / 2
+    return [(x0 + HEADER["PITCH"] * (k // 2), h["even_z"] if k % 2 else h["odd_z"], name)
+            for k, name in enumerate(h["names"])]
+
+
+# The standing v2's main parts, until its KiCad model exists: the study's banded placement on 100 × 70
+# (docs/data-x4-v2-layout-options.md), every face's parts in bands across the board.  (face: -1 the front, towards
+# the DUTs, +1 the rear; board x of the body's left end, drawer z of its bottom, w along x, h along z, its height
+# off the face, colour).  Per port at its USB-C's x (cx); then the shared parts.
 IC, ARRAY, METAL = "#1b1b1d", "#2b2b2d", "#c9ccd1"
 
 
 def x4v2_parts(usb_x) -> list[tuple]:
     out = []
     for cx in usb_x:
-        out += [(cx - 6.0, 1.0, 4.5, 2.5, 0.9, IC),                                              # LSF0108
-                (cx - 1.2, 0.9, 3.0, 3.0, 1.0, IC),                                              # INA226
-                (cx + 2.4, 1.2, 3.2, 1.6, 0.6, "#3c3c3e"),                                       # 100 mR shunt
-                (cx + 2.4, 3.6, 2.9, 2.8, 1.1, IC),                                              # TPS2553
-                (cx - 4.0, 4.6, 2.5, 1.0, 0.55, IC), (cx - 1.2, 4.6, 2.5, 1.0, 0.55, IC),        # TPD4E05U06 ×2
-                *[(cx - 4.0 + 2.6 * k, 6.8, 2.0, 1.0, 0.45, ARRAY) for k in range(4)],            # 0402 × 4 arrays
-                (cx + 5.2, 20.4, 2.9, 2.8, 1.1, IC)]                                             # USBLC6
-    return out + [(75.6, 9.3, 9.0, 9.0, 0.9, IC),                                                # USB2517
-                  (76.0, 19.0, 3.2, 2.5, 0.8, METAL),                                            # 24 MHz crystal
-                  (87.85, 19.65, 2.9, 2.8, 1.1, IC),                                             # LDO
-                  (92.05, 19.65, 2.9, 2.8, 1.1, IC), (95.85, 19.65, 2.9, 2.8, 1.1, IC),          # the lead's ESD
-                  (75.9, 21.7, 3.0, 3.0, 0.9, IC), (79.9, 21.7, 3.0, 3.0, 0.9, IC)]              # TCA6408A ×2
+        out += [(-1, cx - 4.5, 18.0, 3.0, 3.0, 1.0, IC),                                         # INA226
+                (-1, cx - 1.0, 18.7, 1.6, 3.2, 0.6, "#3c3c3e"),                                  # 100 mR shunt
+                (-1, cx + 1.6, 18.1, 2.9, 2.8, 1.1, IC),                                         # TPS2553
+                (-1, cx + 5.2, 8.6, 2.8, 2.9, 1.1, IC),                                          # USBLC6
+                (+1, cx - 2.25, 30.75, 4.5, 2.5, 0.9, IC),                                       # LSF0108
+                (+1, cx - 4.5, 26.0, 2.5, 1.0, 0.55, IC), (+1, cx + 2.0, 26.0, 2.5, 1.0, 0.55, IC),  # TPD4E05U06 ×2
+                *[(+1, cx - 5.2 + 2.6 * k, 35.0, 2.0, 1.0, 0.45, ARRAY) for k in range(4)]]       # 0402 × 4 arrays
+    return out + [(-1, 60.0, 52.0, 9.0, 9.0, 0.9, IC),                                           # USB2517 hub
+                  (-1, 71.0, 56.0, 3.2, 2.5, 0.8, METAL),                                        # 24 MHz crystal
+                  (-1, 76.0, 55.8, 2.9, 2.8, 1.1, IC),                                           # LDO
+                  (-1, 81.0, 55.8, 3.0, 3.0, 0.9, IC), (-1, 85.5, 55.8, 3.0, 3.0, 0.9, IC),      # TCA6408A ×2
+                  (+1, 10.0, 51.0, 10.0, 10.0, 0.9, IC),                                         # RP2354B
+                  (+1, 26.0, 53.0, 6.0, 6.0, 0.9, IC), (+1, 36.0, 53.0, 6.0, 6.0, 0.9, IC),      # CH446Q ×2
+                  (+1, 46.0, 54.5, 3.0, 3.0, 0.9, IC), (+1, 51.5, 54.6, 2.9, 2.8, 1.1, IC)]      # TCA9534A, charge pump
+
 
 # Parts whose print orientation differs from their assembly orientation get an
 # "assembly" variant rendered with the print rotation undone.
@@ -1133,11 +1138,23 @@ def build(rack) -> Path:
     fixed = raw["chain"]["fixed"]
     chain_z = c["bottom"] + raw["chain"]["outer"][0] / 2 + 0.6     # the chain's mid-height
 
-    def x4_frame(dy, dz, v2):
-        """The DATA ×4 in a drawer: (x of its left edge less the drawer's, y of its rear edge, z of its top) in
+    def x4_frame(dy, dz):
+        """The DATA ×4 (v1) in a drawer: (x of its left edge less the drawer's, y of its rear edge, z of its top) in
         drawer terms, to turn KiCad (x, y from the rear) into the row's frame: (x0 + x, y_rear - y, top)."""
-        q = raw["pcb"]["data_port_x4_v2" if v2 else "data_port_x4"]
-        return raw["pcb"]["data_port_x4"]["x0"], dy + dp_y0 + q["size"][1], dz + dp_z + raw["pcb"]["data_port_x4"]["thickness"]
+        q = raw["pcb"]["data_port_x4"]
+        return q["x0"], dy + dp_y0 + q["size"][1], dz + dp_z + q["thickness"]
+
+    def x4v2_frame(dy, dz):
+        """The standing v2 in a drawer: (x of its left edge less the drawer's, y of its front face, z of its bottom
+        edge on the floor), to turn board x and drawer z into the row's frame: (x0 + x, y, dz + z)."""
+        v = raw["pcb"]["data_port_x4_v2"]
+        return v["x0"], dy + dp_y0 + v["face_y"], dz + d["bottom"]
+
+    def x4v2_header_points(dxw, dy, dz, port):
+        """The standing v2's header at a port, in the row's frame: [(the housing's mouth on the pins' strip, name)],
+        a housing pushed on along +y."""
+        vx0, y_face, _ = x4v2_frame(dy, dz)
+        return [((dxw + vx0 + x, y_face - HEADER["BASE"], dz + z), n) for x, z, n in x4v2_header_pins(raw, port)]
 
     def unit_hardware(i, u, bid, dy, open_frac, drawer=True, x4=False, v2=False):
         """Tray, node and either the drawer and its chain, or a sled bay's sled and port block (no chain; the
@@ -1182,27 +1199,58 @@ def build(rack) -> Path:
         w_end = raw["chain"]["moving_x"] - rack.drawer_x0 - 5.5
         x_win = dxw_ + (q4["x0"] + q4["holes"][2][0] + 4.5 + w_end) / 2
         x4_drop = (dxw_ + (q4["x0"] + q4["size"][0] + 1.0 + w_end) / 2, plenum + d["bottom"])
-        if x4:                       # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
+        ph_z = plenum + dp_z + dp["thickness"] + 2.8
+        if x4 and v2:                # the planned v2 standing in its cradle: board, receptacles, headers, parts, PH 8
+            v = raw["pcb"]["data_port_x4_v2"]
+            vx0, y_face, z0 = x4v2_frame(dy, plenum)
+            bx, t, (bw, bh) = dxw_ + vx0, v["thickness"], v["size"]
+            mv = {"layer": "drawers", "bay": bid, "row": i, "space": "row", "movable": drawer}
+            add("x4_cradle", (dxw_, dy, plenum), row=i, layer="drawers", bay=bid, movable=drawer)
+
+            def slab(x_a, x_b, z_a, z_b):
+                items["boxes"].append({"kind": "pcb", "pos": [round(x_a, 3), round(y_face, 3), round(z_a, 3)],
+                                       "size": [round(x_b - x_a, 3), t, round(z_b - z_a, 3)], "color": "#1e6b3c", **mv})
+            nw, nh = v["notches"]["size"]
+            cuts = sorted(dxw_ + x for x in v["notches"]["x"])
+            slab(bx, bx + bw, z0 + nh, z0 + bh)                       # the board, its bottom strip between the notches
+            for x_a, x_b in zip([bx] + [c + nw / 2 for c in cuts], [c - nw / 2 for c in cuts] + [bx + bw]):
+                slab(x_a, x_b, z0, z0 + nh)
+            for n in range(1, 5):          # the vertical USB-C, their mouths 1 mm behind the port wall at v1's height
+                add("dataport_usb_x4", (dxw_ + x4_port_x(rack, n), y_face - v["face_y"] + 1.0, plenum + dp_z), row=i,
+                    layer="drawers", bay=bid, movable=drawer)
+            pins = [[round(c, 3) for c in pt] for n in range(1, 5) for pt, _ in x4v2_header_points(dxw_, dy, plenum, n)]
+            items["headers"].append({"bay": bid, "row": i, "space": "row", "movable": drawer, "board": "DATA ×4 v2",
+                                     "pins": [[x, round(y + HEADER["BASE"], 3), z] for x, y, z in pins],
+                                     "dir": [0, -1, 0], "tail": 0})     # SMD, on the front face, pins forward
+            for face, x, z, w, h, hh, col in x4v2_parts(v["usb"]):
+                y = y_face - hh if face < 0 else y_face + t
+                items["boxes"].append({"kind": "chip", "pos": [round(bx + x, 3), round(y, 3), round(plenum + z, 3)],
+                                       "size": [w, hh, h], "color": col, **mv})
+            for ux in v["usb"]:            # the port LEDs on the front face's top edge
+                items["leds"].append({"bay": bid, "row": i, "space": "row", "color": "#19e07a", "movable": drawer,
+                                      "pos": [round(bx + ux, 3), round(y_face - 0.4, 3), round(z0 + bh - 1.5, 3)]})
+            lx, lz = v["lead"]             # the PH 8 on the rear face, its mouth towards the rear
+            ph_h = 6.0
+            items["boxes"].append({"kind": "chip", "pos": [round(bx + lx - 9.75, 3), round(y_face + t, 3),
+                                                           round(plenum + lz - 2.25, 3)],
+                                   "size": [19.5, ph_h, 4.5], "color": "#f2f0e8", **mv})
+            ph_xy = (bx + lx, y_face + t + ph_h)
+            ph_dir = [0, -1, 0]
+            ph_z = plenum + lz
+        elif x4:                     # the DATA ×4 stand-in: its board and PH, a USB-C at each of the four ports
             q = raw["pcb"]["data_port_x4"]
             bx4 = dxw_ + q["x0"]
-            add("dataport_pcb_x4v2" if v2 else "dataport_pcb_x4", (bx4, dy + dp_y0, plenum + dp_z), row=i,
-                layer="drawers", bay=bid, movable=drawer)
+            add("dataport_pcb_x4", (bx4, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid, movable=drawer)
             add("dataport_ph_x4", (bx4, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid, movable=drawer)
             for n in range(1, 5):
                 add("dataport_usb_x4", (dxw_ + x4_port_x(rack, n), dy + dp_y0, plenum + dp_z), row=i,
                     layer="drawers", bay=bid, movable=drawer)
             # its headers, soldered for the Dupont jumpers, and the v2's parts (stand-ins of the concept placement)
-            kx0, y_rear, top = x4_frame(dy, plenum, v2)
+            kx0, y_rear, top = x4_frame(dy, plenum)
             pins = [[round(dxw_ + kx0 + x, 3), round(y_rear - y, 3)]
-                    for n in range(1, 5) for x, y, _ in x4_header_pins(raw, n, v2)]
+                    for n in range(1, 5) for x, y, _ in x4_header_pins(raw, n)]
             items["headers"].append({"bay": bid, "row": i, "space": "row", "movable": drawer, "z": round(top, 3),
-                                     "pins": pins, "board": "DATA ×4 v2" if v2 else "DATA ×4"})
-            if v2:
-                for x, y, w, l, h, col in x4v2_parts(q["usb"]):
-                    items["boxes"].append({"kind": "chip", "pos": [round(dxw_ + kx0 + x, 3), round(y_rear - y - l, 3),
-                                                                   round(top, 3)],
-                                           "size": [w, l, h], "color": col, "layer": "drawers", "bay": bid, "row": i,
-                                           "space": "row", "movable": drawer})
+                                     "pins": pins, "board": "DATA ×4"})
             ph_xy = (bx4 + q["size"][0], dy + dp_y0 + q["size"][1] - q["lead"][1])     # J1's mouth, right edge
             ph_dir = [-1, 0, 0]
         else:
@@ -1213,11 +1261,11 @@ def build(rack) -> Path:
             ph_dir = [0, -1, 0]
         j7 = {"at": [x0 + node["x0"] + node["size"][0], rack.node_front_y + node["size"][1] - node["right"]["data"],
                      pcb_top + NODE_J7_Z], "dir": [-1, 0, 0], "up": [0, 0, 1], "type": "ph8"}
-        ph = {"at": [ph_xy[0], ph_xy[1], plenum + dp_z + dp["thickness"] + 2.8],
-              "dir": ph_dir, "up": [0, 0, 1], "type": "ph8"}
+        ph = {"at": [ph_xy[0], ph_xy[1], ph_z], "dir": ph_dir, "up": [0, 0, 1], "type": "ph8"}
+        drop = x4_drop if x4 and not v2 else None     # v1's J1 drops into the side strip; the v2's lead the rear one
         if not drawer:
             cable(data_lead_short(j7, ph, x0 + node["x0"] + node["size"][0] + 12.0, plenum - 3.0, x_win,
-                                  drop=x4_drop if x4 else None), row=i, kind="ext",
+                                  drop=drop), row=i, kind="ext",
                   bay=bid, radius=1.2, ends=[j7, ph], label="DATA lead (JST PH 8, node J7 → the port block)")
             return x0, plenum
         p0, d7 = plug_exit(j7)                             # out of the side-entry J7, straight to the chain's fixed end
@@ -1226,7 +1274,7 @@ def build(rack) -> Path:
               row=i, kind="ext", bay=bid, radius=1.2, ends=[j7], label="DATA lead (JST PH 8, through the drag chain)")
         mouth = (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, chain_z)
         x_run = max(x0 + fixed[0] + raw["chain"]["outer"][1] / 2 + 6.0, x_win)   # 6 mm off the fixed run
-        cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run, drop=x4_drop if x4 else None), row=i, kind="ext",
+        cable(lead_to_board(ph, mouth, z_low=9.0, x_run=x_run, drop=drop), row=i, kind="ext",
               bay=bid, radius=1.2, ends=[ph],
               label="DATA lead (JST PH 8, through the drag chain)", movable=True)
         return x0, plenum
@@ -1309,34 +1357,45 @@ def build(rack) -> Path:
         """A converted bay's Dupont jumpers (population › jumpers: per board, {DATA ×4 header pin: board pin}),
         female–female, 20 cm (30 where that does not reach: JUMPER_LENGTHS), from the board's port's header to
         its pin header (dut_pins: slot → (the pins' plastic top, [(x, y, name)])), each housing pushed down on its
-        pin.  A board's wires as one ribbon (ribbon_wires), lying as rod_cable puts its centreline: up out of the
-        crimps, over the port wall and down onto the board, clear of the boards, the walls, the USB plugs, every
-        housing and the cables already drawn."""
-        kx0, y_rear, top = x4_frame(dy, dz, v2)
+        pin; on the standing v2 (v2), pushed on its front face's pins from the front.  A board's wires as one ribbon
+        (ribbon_rod, ribbon_wires): out of the crimps (up off v1, forwards off v2), over the port wall and down
+        onto the board, clear of the boards, the walls, the USB plugs, the v2 and its cradle, every housing and the
+        cables already drawn."""
+        kx0, y_rear, top = x4_frame(dy, dz)
         slots = {e["slot"].id: e["slot"] for e, _, _ in boards_at}
         runs = []
         for sid, pinmap in (spec or {}).items():
             sl = slots.get(sid)
             if sl is None:
                 raise ValueError(f"{bid} jumpers: no board {sid} in the bay")
-            hdr = {n: (x, y) for x, y, n in x4_header_pins(raw, sl.slot, v2)}
+            if v2:                       # (the housing's mouth on the strip, the way it goes on) per header pin
+                hdr = {n: (pt, [0, 1, 0], [0, 0, 1]) for pt, n in x4v2_header_points(dxw, dy, dz, sl.slot)}
+            else:
+                hdr = {n: ((dxw + kx0 + x, y_rear - y, top + HEADER["BASE"]), [0, 0, -1], [0, 1, 0])
+                       for x, y, n in x4_header_pins(raw, sl.slot)}
             bz, pins = dut_pins.get(sid, (None, []))
             for hp, dpin in pinmap.items():
                 if hp not in hdr:
                     raise ValueError(f"{sid} jumpers: the DATA ×4 header has no pin {hp} ({', '.join(hdr)})")
-                ax, ay = dxw + kx0 + hdr[hp][0], y_rear - hdr[hp][1]
+                (ax, ay, az), adir, aup = hdr[hp]
                 cands = [(x, y) for x, y, n in pins if n == str(dpin)]
                 if not cands:
                     raise ValueError(f"{sid} jumpers: its board has no header pin {dpin} (boards.yaml › headers)")
                 px, py = min(cands, key=lambda c: math.hypot(c[0] - ax, c[1] - ay))
-                ends = [{"at": [round(x, 3), round(y, 3), round(z + HEADER["BASE"], 3)], "dir": [0, 0, -1],
-                         "up": [0, 1, 0], "type": "dupont"} for x, y, z in ((ax, ay, top), (px, py, bz))]
+                ends = [{"at": [round(ax, 3), round(ay, 3), round(az, 3)], "dir": adir, "up": aup, "type": "dupont"},
+                        {"at": [round(px, 3), round(py, 3), round(bz + HEADER["BASE"], 3)], "dir": [0, 0, -1],
+                         "up": [0, 1, 0], "type": "dupont"}]
                 runs.append((sid, sl.slot, hp, str(dpin), ends, HEADER_PIN_COLOUR.get(hp, "white")))
         if not runs:
             return []
         w2, ln = DUPONT["W"] / 2, DUPONT["L"]
-        housings = [((e["at"][0] - w2, e["at"][1] - w2, e["at"][2]), (e["at"][0] + w2, e["at"][1] + w2, e["at"][2] + ln))
-                    for *_, ends, _ in runs for e in ends]
+
+        def housing(e):
+            """A housing's box: from its mouth back along the way it goes on, W square across."""
+            at, dv = np.array(e["at"], float), np.array(e["dir"], float)
+            back, side = at - dv * ln, (1.0 - np.abs(dv)) * w2
+            return tuple(np.minimum(at, back) - side), tuple(np.maximum(at, back) + side)
+        housings = [housing(e) for *_, ends, _ in runs for e in ends]
         top_ = ARCH_TOP_MAX + 10
         walls = [((dxw - 30, dy + port_wall_y - d["wall"], dz), (dxw + rack.drawer_w + 30, dy + port_wall_y, dz + d["wall_height"])),
                  ((dxw - 30, dy + d["depth"] - d["wall"], dz), (dxw + rack.drawer_w + 30, dy + d["depth"] + 30, top_)),
@@ -1346,6 +1405,12 @@ def build(rack) -> Path:
         p = USB_PLUGS["usb-c"]                      # the straight USB-C plugs in the port wall's sockets
         plugs = [((dxw + x4_port_x(rack, n) - p["W"] / 2, dy + port_wall_y - p["L"] - p["REL"], dz + port_z - p["H"] / 2),
                   (dxw + x4_port_x(rack, n) + p["W"] / 2, dy + port_wall_y, dz + port_z + p["H"] / 2)) for n in range(1, 5)]
+        if v2:                       # the standing v2 and its cradle's uprights (their walls round its ends)
+            vx0, y_face, z0 = x4v2_frame(dy, dz)
+            (bw, bh), t = raw["pcb"]["data_port_x4_v2"]["size"], raw["pcb"]["data_port_x4_v2"]["thickness"]
+            walls += [((dxw + vx0, y_face, z0), (dxw + vx0 + bw, y_face + t, z0 + bh)),
+                      ((dxw + vx0 - 2.0, y_face - 2.6, z0), (dxw + vx0 + 5.5, y_face + t + 2.6, z0 + bh)),
+                      ((dxw + vx0 + bw - 5.5, y_face - 2.6, z0), (dxw + vx0 + bw + 2.0, y_face + t + 2.6, z0 + bh))]
         boxes = [board_box(boards[e["board"]], e["o"], ex, ey, dz) for e, ex, ey in boards_at] + walls + plugs + housings
         avoid = [(q, CABLE_R) for q in drawn]
         out = []
@@ -1354,12 +1419,13 @@ def build(rack) -> Path:
         for sid in dict.fromkeys(run[0] for run in runs):
             grp = [run for run in runs if run[0] == sid]
             n = len(grp)
-            ea, eb = ({"at": np.mean([run[4][k]["at"] for run in grp], axis=0).round(3).tolist(), "dir": [0, 0, -1],
-                       "up": [0, 1, 0], "type": "dupont"} for k in (0, 1))
-            pa, _ = plug_exit(ea)
+            ea, eb = ({"at": np.mean([run[4][k]["at"] for run in grp], axis=0).round(3).tolist(),
+                       "dir": grp[0][4][k]["dir"], "up": grp[0][4][k]["up"], "type": "dupont"} for k in (0, 1))
+            pa, da = plug_exit(ea)
             pb, _ = plug_exit(eb)
             zt = max(pa[2], pb[2]) + 15.0
-            guess = [pa, [pa[0], pa[1], zt], [pb[0], pb[1], zt], pb]
+            pa1 = pa + da * 15.0               # out along the housings first: up off v1, forwards off the standing v2
+            guess = [pa, [pa1[0], pa1[1], max(pa1[2], zt)], [pb[0], pb[1], zt], pb]
             r_band = DUPONT["R"] * n
             exits = [[plug_exit(run[4][k]) for run in grp] for k in (0, 1)]
             floor = dz + d["bottom"] + d["plate"]

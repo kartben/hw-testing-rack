@@ -668,9 +668,18 @@ function build(pcbGlb) {
     const base = new THREE.InstancedMesh(hdrBase, MAT.blackPlastic, n);
     const pin = new THREE.InstancedMesh(hdrPin, gold, n);
     const m = new THREE.Matrix4();
-    h.pins.forEach(([x, y], k) => {
-      base.setMatrixAt(k, m.makeTranslation(x, y, h.z + H.BASE / 2));
-      pin.setMatrixAt(k, m.makeTranslation(x, y, h.z + H.BASE + H.PIN - (H.TAIL + 1.6 + H.BASE + H.PIN) / 2));
+    // pins up from a board's top (pins: [x, y], z), or along `dir` from a face's points (pins: [x, y, z]); an SMD
+    // header (tail: 0) has no tail through the board
+    const dir = new THREE.Vector3(...(h.dir ?? [0, 0, 1]));
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir);
+    const tail = h.tail ?? H.TAIL + 1.6;
+    const full = H.TAIL + 1.6 + H.BASE + H.PIN;
+    const pinScale = new THREE.Vector3(1, 1, (tail + H.BASE + H.PIN) / full);
+    const one = new THREE.Vector3(1, 1, 1);
+    h.pins.forEach(([x, y, z = h.z], k) => {
+      const p = new THREE.Vector3(x, y, z);
+      base.setMatrixAt(k, m.compose(p.clone().addScaledVector(dir, H.BASE / 2), q, one));
+      pin.setMatrixAt(k, m.compose(p.clone().addScaledVector(dir, (H.BASE + H.PIN - tail) / 2), q, pinScale));
     });
     const g = new THREE.Group();
     g.add(base, pin);

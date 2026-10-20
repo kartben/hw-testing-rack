@@ -240,18 +240,23 @@ pcb:
     aux: { y: 15.9, pin1: [8.5, 30.0, 44.5, 66.0], step: [2.54, -2.54, 2.54, -2.54], names: [GND, RESET, BOOT] }
                             # J102–J402: per port a 1 × 3 2.54 header (GND, RESET_N, BOOT_N) along x, pin 1 at pin1[n] (KiCad),
                             # the right port of a pair mirrored; not fitted by JLC, soldered by hand for Dupont jumpers
-  data_port_x4_v2:          # PLANNED (docs/data-x4-v2-research.md): not designed yet.  A bay with `x4: v2` shows it in the
-                            # viewer (the concept placement's stand-in); its BOM and the JLC order keep v1
-    size: [108, 27]         # X × Y, KiCad y=0 the rear edge (3 mm deeper than v1 at the rear: the front edge, the USB-Cs
-    notch: [86, 0, 22, 10]  # and the PH 8 stay where v1 has them)
-    holes: [[3.2, 6.5], [38.7, 6.5], [81.4, 6.3], [104.4, 23.6]]   # v1's, 3 mm deeper: the drawer's same bosses
-    header: { x: [11, 29, 47, 65], odd_y: 15.12, even_y: 12.58, cols: 6,
+  data_port_x4_v2:          # PLANNED (docs/data-x4-v2-layout-options.md, option B): standing at the back of the drawer in its
+                            # printed cradle (parts/x4_cradle.scad), not designed yet.  A bay with `x4: v2` shows its stand-in
+                            # in the viewer (the study's concept geometry); its BOM and the JLC order keep v1
+    size: [100, 70]         # length (drawer x) × height (z), 1.6 thick; these mirror x4_cradle.scad (V2, V2_X0, V2_Y, NOTCH*)
+    x0: 4                   # drawer x of its left edge (the board spans x 4–104); its bottom edge on the drawer floor
+    face_y: 7.4             # its front face behind the port wall's back face (the receptacles' mouths 1 mm behind the wall)
+    thickness: 1.6
+    notches: { x: [35, 71], size: [3.4, 6.5] }   # its bottom edge's two notches (drawer x of their centres), the cradle's T-heads
+    usb: [22, 40, 58, 76]   # board x of the four vertical USB-C (HRO TYPE-C-31-D-06), mouths towards the wall, axes at the
+                            # DATA ports' height: drawer x 26, 44, 62, 80, v1's ports
+    header: { x: [22, 40, 58, 76], z: 32, odd_z: 30.73, even_z: 33.27, cols: 6,
               names: [GND, VREF, P1, P2, P3, P4, P5, P6, P7, P8, RESET, BOOT] }
-                            # per port a 2 × 6 2.54 SMD header (hand-soldered) in the middle band, centred on its USB-C's x
-                            # and on y 13.85, pin 1 at x − 6.35: column k (from the left) holds pins 2k−1 on the front row
-                            # (odd_y) and 2k on the rear one: GND/VREF, P1/P2 … P7/P8, RESET/BOOT; the power parts in the
-                            # rear row (the v2 design session's 6-layer layout, 2026-10-20).  The pins, 1.27 off the
-                            # centre: the footprint's pads lie further out, at ± 2.525 (y 16.375 / 11.325)
+                            # per port a 2 × 6 2.54 SMD header on the FRONT face, pins forward, centred on its USB-C's x and on
+                            # drawer z 32: column k (from the left) holds pins 2k−1 on the lower row (odd_z) and 2k on the upper
+                            # one: GND/VREF, P1/P2 … P7/P8, RESET/BOOT (the study's placement; the rows provisional)
+    lead: [86, 44]          # the PH 8 (B8B-PH-SM4-TB, top entry) on the REAR face: board x and drawer z of its centre, near the
+                            # right end, above the headers' band (its rear parts); its lead comes up the window's rear strip, over the cradle
   camera_pod:               # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6

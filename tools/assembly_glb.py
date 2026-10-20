@@ -91,14 +91,20 @@ def dupont_meshes(e: dict, D: dict) -> list:
 
 
 def header_meshes(h: dict, H: dict) -> list:
-    """A 2.54 mm pin header soldered pins up (rack.json › headers): a black strip per pin, its gold pin from the
-    tail under the board to the tip."""
-    p, base, pin, tail = H["PITCH"], H["BASE"], H["PIN"], H["TAIL"]
+    """A 2.54 mm pin header (rack.json › headers): a black strip per pin, its gold pin from the tail under the
+    board to the tip.  Pins up from a board's top (pins [x, y], z), or along `dir` from a face (pins [x, y, z]; an
+    SMD header's `tail` 0)."""
+    p, base, pin = H["PITCH"], H["BASE"], H["PIN"]
+    tail = h.get("tail", H["TAIL"] + 1.6)
+    dv = np.asarray(h.get("dir", [0, 0, 1]), float)
+    turn = trimesh.geometry.align_vectors([0, 0, 1], dv)
     strips, pins = [], []
-    for x, y in h["pins"]:
-        strips.append(trimesh.creation.box([p - 0.04, p - 0.04, base], transform=translate([x, y, h["z"] + base / 2])))
-        n = tail + 1.6 + base + pin
-        pins.append(trimesh.creation.box([0.64, 0.64, n], transform=translate([x, y, h["z"] + base + pin - n / 2])))
+    for q in h["pins"]:
+        at = np.array([q[0], q[1], q[2] if len(q) > 2 else h["z"]], float)
+        strips.append(trimesh.creation.box([p - 0.04, p - 0.04, base],
+                                           transform=translate(at + dv * base / 2) @ turn))
+        n = tail + base + pin
+        pins.append(trimesh.creation.box([0.64, 0.64, n], transform=translate(at + dv * (base + pin - n / 2)) @ turn))
     return [with_mat(trimesh.util.concatenate(strips), mat("black")),
             with_mat(trimesh.util.concatenate(pins), mat([0.84, 0.71, 0.37, 1.0], 1.0, 0.28))]
 
