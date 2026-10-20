@@ -224,6 +224,92 @@ Sources:
 - [PCBSync surface finish guide](https://pcbsync.com/pcb-surface-finish/);
 - [PCBCart, ENIG vs immersion silver vs HASL](https://www.pcbcart.com/article/content/enig-vs-immersion-silver-vs-hasl).
 
+## AISLER against JLC (2026-10-20)
+
+AISLER (aisler.net, Germany) priced for the rack's order: 8 nodes, 1 hub, 6 DATA ports, 2 pods, and
+the v2 as one 1 × 2 panel. Public pages only: no account, no upload, no quote, no cart. AISLER's own
+assembly calculator shows its price only once the files are uploaded.
+
+**AISLER's prices** (net, VAT added for a consumer).
+- **Bare PCBs** ("Beautiful Boards", Budget): job fee plus area × rate × quantity, in sets of 3.
+  Shipping is in the job fee.
+  - 2-layer 1.6 mm HASL: €12 + €0.067/cm².
+  - 4-layer 1.6 mm ENIG: €14 + €0.13/cm². There is no 4-layer HASL.
+  - This table (AISLER's "Our simple pricing", 2023) still matches a third-party quote of 7 October 2026:
+    4-layer 100 × 80 ENIG, €165.46 for 12 with German VAT (computed €165.17).
+- **Stencil:** €5 + €0.095/cm².
+- **Assembly** ("Amazing Assembly", from 1 board). Two published sets of figures:
+  - **A**, AISLER's own (2022), with no job fee, as an October 2026 comparison confirms: €7.50 per unique
+    part, €0.04 per placement, €0.01/cm² handling.
+  - **B**, a third party's (April 2026): €75 setup, €4.50 per unique part, €0.05 per placement.
+  - They land within 1 % of each other for this order.
+- **Parts:** AISLER buys them from distributors with live BOM integration: Würth, TI, Mouser,
+  Digi-Key, Farnell, Arrow and **LCSC**. Leftovers come back with the boards. Customer-supplied parts
+  cost €15 per unique part.
+- **Lead time:** Blitz assembly 9–12 business days (4-layer 11–12), standard 18 business days.
+
+**Order cost** (€; JLC from bom.py at $1 = €0.92, one DHL shipment included).
+- AISLER's parts are priced at LCSC's price breaks with no markup, which flatters it: Mouser or
+  Digi-Key cost more.
+- TTC adds French VAT, 20 %. For JLC that is import VAT on goods and shipping; JLC's DHL DDP option
+  collects it at checkout. Otherwise DHL bills it with a clearance fee of roughly €15–20.
+
+| Racks in one order | AISLER per rack, net (A–B) | AISLER TTC | JLC per rack, net | JLC TTC | AISLER / JLC |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 1,513–1,508 | ≈ 1,812 | 751 | ≈ 901 | 2.0× |
+| 5 | 553–555 | ≈ 665 | 306 | ≈ 367 | 1.8× |
+| 10 | 433–436 | ≈ 521 | 251 | ≈ 301 | 1.7× |
+
+**Per board, at 1 rack** (€ net):
+
+| Board | AISLER (A / B) | JLC | Ratio |
+|---|---:|---:|---:|
+| node ×8 | 559 / 516 | 274 | 1.9–2.0× |
+| hub ×1 | 346 / 322 | 171 (2 assembled) | 1.9–2.0× |
+| DATA port ×6 | 76 / 133 | 33 | 2.3–4× |
+| pod ×2 | 83 / 134 | 24 | 3.4–5.6× |
+| v2 panel ×1 | 448 / 402 | 218 (2 panels) | 1.8–2.1× |
+
+**What drives the gap.**
+- Area: €0.13/cm² against JLC's flat $8 / $14 offer within 100 × 100 mm.
+- Every unique part costs €4.50–7.50 at AISLER. JLC's Economic charges $3.07 per extended type and
+  nothing for basic ones; its Standard charges $1.53 for every type.
+- The small 2-layer boards suffer most: AISLER's per-design fees against JLC's $8.18 Economic setup.
+
+**Sourcing our parts there.**
+- LCSC is integrated, so the LCSC-only parts can be bought by AISLER, LCSC's stock permitting:
+  - CH446Q, CH224A, RP2354B;
+  - the HRO TYPE-C-31-D-06, the WS2812B-2020, FXL0630, MSK12C02, the UMW SUD50P06-15;
+  - the XL-2835UWC LED, the hanxia headers, the YXC crystal.
+- Two parts are better off at AISLER:
+  - the GCT USB4105, which LCSC holds none of, is at Mouser and Digi-Key;
+  - the Abracon L1 sells by 1 at Mouser, against JLC's 32-piece pre-order.
+- No gap is known. Anything LCSC runs out of would be a consigned part at €15 per unique part, or an
+  alternate.
+
+**Lead time.** JLC is about 1.5–2 weeks door to door: 3–4 days 4-layer PCB, then Economic assembly in
+1–3 days or Standard in ≥ 4, then DHL in 2–4 days. AISLER is 2–3.5 weeks.
+
+**Verdict.** JLC on every board and for the whole order. AISLER costs 1.7–2× as much at 1–10 racks,
+and 2–5× on the small 2-layer boards. Its strengths:
+- an EU supply chain with no customs step;
+- a single assembled board when that is all one needs;
+- the Abracon L1 by the piece.
+None of these closes the gap.
+
+**A real AISLER quote** would mean uploading, for each design, the Gerbers, the BOM and the
+pick-and-place: the node, the hub, the DATA port, the pod and the v2 panel (or the KiCad projects).
+It would replace three estimates with real figures: each part at AISLER's distributor price, its
+exact assembly fee, and its panel handling. It needs an AISLER account and the user's OK.
+
+Sources:
+- [AISLER, Our simple pricing](https://community.aisler.net/t/our-simple-pricing/102);
+- [Amazing Assembly price cuts](https://community.aisler.net/t/amazing-assembly-gets-radical-price-cuts/905);
+- [component sourcing](https://community.aisler.net/t/component-sourcing-for-assembly/2464);
+- [Amazing Assembly](https://aisler.net/products/assembly);
+- [DeltaProto, EMS vs Aisler vs JLCPCB](https://deltaproto.com/pcb-assembly-netherlands-compared);
+- [Dilder, PCB assembly and prototyping](https://dilder.dev/docs/design/pcb-assembly-and-prototyping/).
+
 ## Promotions (checked 2026-10-20)
 
 JLC's public coupon center and help pages, read without an account. The user claims and applies coupons
