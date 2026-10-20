@@ -1,4 +1,4 @@
-# JLC parts audit (2026-10-19, updated 2026-10-20 after the PCBA review fixes)
+# JLC parts audit (2026-10-19, updated 2026-10-20 after every board's PCBA review fixes)
 
 Every LCSC part on the five boards' JLC BOMs (`electronics/<board>/fab/<board>-bom-jlcpcb.csv`),
 checked with the [jlcpcb-parts](https://github.com/hulryung/jlcpcb-skill-mcp) MCP server, for series
@@ -29,12 +29,12 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×7 | Pods ×2 | DATA ×4 ×1 | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 297.79 | 185.51 | 36.86 | 26.37 | 103.76 | **684.29** |
-| 5 | 177.29 | 53.65 | 15.86 | 7.14 | 29.41 | **290.15** |
-| 10 | 156.91 | 39.34 | 12.15 | 4.91 | 21.24 | **237.96** |
+| 1 | 297.79 | 185.51 | 37.16 | 26.38 | 104.17 | **685.01** |
+| 5 | 177.29 | 53.65 | 16.18 | 7.15 | 29.62 | **290.68** |
+| 10 | 156.91 | 39.34 | 12.47 | 4.92 | 21.45 | **238.49** |
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.68, hub
-$22.17, DATA ×4 $11.29, DATA port $1.26, pod $1.13.  Holding the parts at the prototype price gave
+$22.17, DATA ×4 $11.49, DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (1590b7a) took another ≈ $4 off its
 floor.
 
@@ -44,8 +44,8 @@ Where a board's parts money goes, at 10 racks:
 |---|---:|---|
 | hub | $19.07 | TPS26600 ×4 $4.58 · ESP32-S3-MINI-1-N8 $4.16 · LMR51635 $1.59 · USB4105 ×2 $1.45 · S6B ×4 $1.15 · KPA-3010 ×10 $1.85 · TJA1462 $0.83 · CH224A $0.34 |
 | node | $12.55 | ESP32-S3-WROOM-1-N8R8 $4.08 · LMR51635 $1.43 · S6B ×3 $0.74 · TJA1462 $0.74 · USB4105 $0.63 · INA226 $0.52 · USBLC6 ×4 $0.47 · B8B $0.42 |
-| DATA ×4 | $11.53 | USB4105 ×4 $2.51 · INA226 ×4 $2.09 · USB2514B $1.54 · TCA6408A ×2 $1.43 · TPS2553-1 ×4 $1.18 · USBLC6 ×6 $0.83 |
-| DATA port | $1.12 | USB4105 $0.63 · S8B $0.33 · USBLC6 $0.14 |
+| DATA ×4 | $11.64 | USB4105 ×4 $2.51 · INA226 ×4 $2.09 · USB2514B $1.54 · TCA6408A ×2 $1.43 · TPS2553-1 ×4 $1.18 · USBLC6 ×6 $0.83 |
+| DATA port | $1.16 | USB4105 $0.63 · S8B $0.33 · USBLC6 $0.14 |
 | pod | $0.89 | S8B $0.37 · header $0.08 |
 
 ## Stock and sourcing risk

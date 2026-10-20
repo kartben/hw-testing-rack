@@ -3475,9 +3475,9 @@
 "data-port": {
 "2": 13.77,
 "5": 6.53,
-"10": 3.93,
-"50": 1.95,
-"100": 1.47
+"10": 3.94,
+"50": 1.96,
+"100": 1.49
 },
 "camera-pod": {
 "2": 13.19,
@@ -3488,18 +3488,18 @@
 },
 "data-port-x4": {
 "2": 52.08,
-"5": 29.6,
-"10": 21.42,
-"50": 13.21,
-"100": 11.82
+"5": 29.62,
+"10": 21.45,
+"50": 13.25,
+"100": 11.86
 }
 },
 "floor": {
 "bay-node": 16.68,
 "power-hub": 22.17,
-"data-port": 1.28,
+"data-port": 1.3,
 "camera-pod": 1.13,
-"data-port-x4": 11.44
+"data-port-x4": 11.49
 },
 "racks": {
 "1": {
@@ -3517,23 +3517,23 @@
 "boards": {
 "bay-node": 886.44,
 "power-hub": 268.24,
-"data-port": 80.48,
-"camera-pod": 35.72,
-"data-port-x4": 148.02
+"data-port": 80.88,
+"camera-pod": 35.73,
+"data-port-x4": 148.09
 },
 "shipping": 34.0,
-"per_rack": 290.58
+"per_rack": 290.68
 },
 "10": {
 "boards": {
 "bay-node": 1569.09,
 "power-hub": 393.41,
-"data-port": 123.83,
-"camera-pod": 49.22,
-"data-port-x4": 214.22
+"data-port": 124.7,
+"camera-pod": 49.23,
+"data-port-x4": 214.47
 },
 "shipping": 34.0,
-"per_rack": 238.38
+"per_rack": 238.49
 }
 }
 }

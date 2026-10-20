@@ -393,7 +393,7 @@
    ],
    [
     "C14663",
-    13,
+    17,
     "100n"
    ],
    [
@@ -412,6 +412,11 @@
     "USB4105-GF-A-120"
    ],
    [
+    "C8545",
+    3,
+    "2N7002"
+   ],
+   [
     "C22790",
     1,
     "12k"
@@ -423,11 +428,21 @@
    ],
    [
     "C25803",
-    2,
+    3,
     "100k"
    ],
    [
-    "C25819",
+    "C25900",
+    2,
+    "4.7k"
+   ],
+   [
+    "C25744",
+    1,
+    "10k"
+   ],
+   [
+    "C25792",
     4,
     "47k"
    ],
@@ -445,6 +460,11 @@
     "C21190",
     8,
     "1k"
+   ],
+   [
+    "C25741",
+    8,
+    "100k"
    ],
    [
     "C16251",
@@ -489,6 +509,11 @@
     "100n"
    ],
    [
+    "C15850",
+    1,
+    "10u"
+   ],
+   [
     "C5184243",
     1,
     "DATA"
@@ -499,9 +524,9 @@
     "LEAD"
    ],
    [
-    "C31850",
+    "C23206",
     2,
-    "22k"
+    "56k"
    ],
    [
     "C7519",
@@ -541,9 +566,9 @@
     "MEGA"
    ],
    [
-    "C25196",
+    "C17408",
     4,
-    "56"
+    "100"
    ],
    [
     "C6186",
@@ -597,7 +622,7 @@
   "C111738": {
    "mfr": "TPS2553DBVR-1",
    "package": "SOT-23-6",
-   "stock": 2684,
+   "stock": 2626,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -634,12 +659,12 @@
    "category": "Power Management (PMIC)",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 2625
+   "lcsc_stock": 2620
   },
   "C11355": {
    "mfr": "FSUSB42MUX",
    "package": "MSOP-10",
-   "stock": 37943,
+   "stock": 37373,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -929,7 +954,7 @@
   "C16251": {
    "mfr": "USB2514B-AEZC-TR",
    "package": "VQFN-36-EP(6x6)",
-   "stock": 13815,
+   "stock": 13147,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1025,6 +1050,22 @@
    "manufacturer": "cjiang (Changjiang Microelectronics Tech)",
    "source": "local-db (snapshot stock)"
   },
+  "C17408": {
+   "mfr": "0805W8F1000T5E",
+   "package": "0805",
+   "stock": 8691525,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.004
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
   "C1779": {
    "mfr": "CL21A475KAQNNNE",
    "package": "0805",
@@ -1069,7 +1110,7 @@
   "C181499": {
    "mfr": "TCA6408ARGTR",
    "package": "QFN-16-EP(3x3)",
-   "stock": 13226,
+   "stock": 13221,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -1106,7 +1147,7 @@
    "category": "Interface",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 13078
+   "lcsc_stock": 13088
   },
   "C20799": {
    "mfr": "SMD1206P050TF",
@@ -1190,7 +1231,7 @@
    "category": "Transistors/Thyristors",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 483935
+   "lcsc_stock": 483930
   },
   "C21122": {
    "mfr": "CL10B223KB8NNNC",
@@ -1384,6 +1425,54 @@
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock)"
   },
+  "C25741": {
+   "mfr": "0402WGF1003TCE",
+   "package": "0402",
+   "stock": 9372343,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
+  "C25744": {
+   "mfr": "0402WGF1002TCE",
+   "package": "0402",
+   "stock": 21278633,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
+  "C25792": {
+   "mfr": "0402WGF4702TCE",
+   "package": "0402",
+   "stock": 7056080,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock)"
+  },
   "C25803": {
    "mfr": "0603WAF1003T5E",
    "package": "0603",
@@ -1432,16 +1521,16 @@
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock)"
   },
-  "C25819": {
-   "mfr": "0603WAF4702T5E",
-   "package": "0603",
-   "stock": 1884843,
+  "C25900": {
+   "mfr": "0402WGF4701TCE",
+   "package": "0402",
+   "stock": 15974732,
    "tier": "basic",
    "priceBreaks": [
     {
      "qFrom": 1,
      "qTo": null,
-     "price": 0.004
+     "price": 0.002
     }
    ],
    "category": "Resistors",
@@ -1613,7 +1702,7 @@
    "category": "Optoelectronics",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 367350
+   "lcsc_stock": 367250
   },
   "C2913201": {
    "mfr": "ESP32-S3-WROOM-1-N8R8",
@@ -1697,22 +1786,6 @@
    "manufacturer": "Espressif Systems",
    "source": "local-db (snapshot stock)"
   },
-  "C31850": {
-   "mfr": "0603WAF2202T5E",
-   "package": "0603",
-   "stock": 3405534,
-   "tier": "basic",
-   "priceBreaks": [
-    {
-     "qFrom": 1,
-     "qTo": null,
-     "price": 0.004
-    }
-   ],
-   "category": "Resistors",
-   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock)"
-  },
   "C318884": {
    "mfr": "TS-1187A-B-A-B",
    "package": "SMD-4P,5.1x5.1mm",
@@ -1752,7 +1825,7 @@
   "C3234095": {
    "mfr": "TJA1462AT/0Z",
    "package": "SOIC-8",
-   "stock": 10508,
+   "stock": 10496,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2221,7 +2294,7 @@
    "category": "Amplifiers/Comparators",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 35134
+   "lcsc_stock": 35133
   },
   "C51118": {
    "mfr": "AP2112K-3.3TRG1",
@@ -2299,7 +2372,7 @@
   "C521201": {
    "mfr": "TPS2553DDBVR",
    "package": "SOT-23-6",
-   "stock": 11036,
+   "stock": 10016,
    "tier": "extended",
    "priceBreaks": [
     {
@@ -2585,7 +2658,7 @@
    "category": "Diodes",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 867450
+   "lcsc_stock": 868200
   },
   "C7503186": {
    "mfr": "SUD50P06-15(UMW)",
@@ -2711,7 +2784,7 @@
    "category": "Circuit Protection",
    "manufacturer": null,
    "source": "live; prices from LCSC's product page (live)",
-   "lcsc_stock": 39625
+   "lcsc_stock": 39610
   },
   "C78419": {
    "mfr": "SMBJ33A",
