@@ -315,5 +315,38 @@ The four recommendations, as asked:
 Meanwhile, a Pico 2 with the gusmanb UF2 in one of B3's sub-slots ("The zero-change option" above):
 B3.3, set up in [multi-dut-node.md](multi-dut-node.md#a-logic-analyzer-in-a-sub-slot).
 
-Still open: an analog output (DAC) path for driving a pin with a waveform. The digital path cannot carry
-one: the LSF0108s are level shifters with 10 k pull-ups, and the RP2354B has no DAC.
+## Decided (user, 2026-10-20)
+
+1. **Two signal layers don't route; v2 goes to 6 layers, for the analyzer bays only** (on the 108 mm
+   horizontal board; item 4 replaced that board).  The placed v2
+   left about 240 links open after six Freerouting passes (40–46 nets cross each port's area for about
+   30–35 tracks of room).  v1 (4 layers) stays the board of the other converted bays; v2 is the full
+   board only, on JLC06161H-3313 with every signal layer beside a plane.  JLC: $51.90 against $32.10
+   for 5 bare boards (ENIG is forced at 6 layers), 8–9 days instead of 3–4; assembly fees don't depend
+   on the layer count.  The "two assembly variants, one PCB" plan above is dropped.
+   Stack: first F · GND · signal · +5V · +3V3 · B, which left about 50 links open; then (user, same day)
+   F · GND · signal · signal · power (+5V and +3V3 areas) · B, the fallback named above: four signal
+   layers, each still beside a plane.
+2. **The 2 × 6 headers are SMD, soldered by the user** (out of the JLC BOM and CPL), in the middle of
+   the board.  That keeps v1's four holes, so both boards drop into the universal drawer unchanged;
+   through-hole tails would have blocked the crosspoints underneath, and a part with locating pegs
+   (hanxia TP-D) puts its pegs there too.  Wider pads (1.3 mm) instead.  The standing board of item 4 has
+   nothing on its rear face under them, so its headers are through-hole (the user, easier to solder).
+3. **Analog output: none** ("Pas de sortie analogique").  Costed for the record, none of it on the board:
+   - a DAC7311 (12-bit SPI, buffered, about $1.7, 9 µs settling, so sine waves to about 10 kHz) on bus H,
+     the matrix taking it to any pin, with a 0 Ω option across each port's LSF on P8 (that pin then loses
+     its level translation) and the RP2354B's spare ADC (GPIO46) reading it back: about $1.8 a board plus a
+     $3 feeder, about 25 mm² on the bottom, 0–3.3 V capped in software at the port's measured VREF;
+   - cheaper: PWM + RC + op-amp (about $0.3, about 5 kHz), or an 8-bit R-2R on PIO (about $0.6, up to
+     about 500 kHz, 8 spare GPIOs).
+   Driven pins stay digital (forced levels, PWM) from our Zephyr firmware.
+4. **v2 stands behind the port wall, 100 × 70 mm, one face assembled** ("v2 en 100 × 60–70 oui").
+   This is option B of [data-x4-v2-layout-options.md](data-x4-v2-layout-options.md).
+   - Why: at 108 × 37 mm with parts on both faces, the 6-layer board still left about 30 links open.
+   - Mounting: vertical USB-C receptacles through the port wall's openings, and a printed slotted cradle on
+     the drawer's DATA ×4 bosses.  The board has no holes.
+   - Assembly: every JLC part on the front face (Economic PCBA); the lead's PH 8 alone on the rear,
+     soldered by hand.
+   - Placement: the parts in blocks around the pins they use (electronics.md › DATA ×4 v2).
+   - Layers: 4 ("si on peut repasser à 4 couches ce serait top").  Every signal routes at 4 layers on the
+     standing board, as at 6.

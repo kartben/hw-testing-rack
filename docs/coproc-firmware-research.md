@@ -211,7 +211,7 @@ Zephyr, before bench time.  The spike calibrates the sizes: the link class is 16
 | USB composite and the vendor link | UDC, `device_next` | 400 | 2 d | b, c |
 | Control protocol, versioning, reboot to BOOTSEL | `reset_usb_boot()` | 500 | 3 d | b, c |
 | Consoles: 2 hardware UARTs and 2 PIO UARTs, multiplexed on the link (CDC optional) | UART drivers, `uart-bridge`; #118562, carried as a west patch until merged | 300 | 2 d | b, c |
-| Bus pull-ups (GPIO30–37), VREF and rails (ADC) | GPIO, ADC | 150 | 1 d | b, c |
+| Bus pull-ups (GPIO10–13, 16–19), VREF and rails (ADC) | GPIO, ADC | 150 | 1 d | b, c |
 | I²C emulation: 2 targets, pin pair, address and model chosen at run time | DW target, `regset_target_lib`, TMP103 and EEPROM | 300, plus ≈ 120 per new model | 4–5 d | b, c |
 | PWM and PIO stimuli (patterns from RAM) | PWM, PIO | 250 | 2–3 d | b, c |
 | Tests (protocol on native_sim) and a CI build | twister | 400 | 3 d | b, c |

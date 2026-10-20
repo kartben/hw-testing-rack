@@ -353,9 +353,102 @@ a LiPo charging takes more than a port's 0.5 A.
 JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $85 for 5 PCBs with 2 assembled
 (estimate in `tools/bom.py`).
 
-v2 (32 switchable pins on 8 buses, an RP2354B co-processor, two assembly variants): research in
-[data-x4-v2-research.md](data-x4-v2-research.md); the co-processor's firmware in
-[coproc-firmware-research.md](coproc-firmware-research.md).
+## DATA ×4 v2.0 — 100 × 70 mm, standing
+
+v1 plus virtual wires and a logic analyzer: 32 switchable pins on 8 buses and an RP2354B
+co-processor (the why in [data-x4-v2-research.md](data-x4-v2-research.md), its firmware in
+[coproc-firmware-research.md](coproc-firmware-research.md)).  For the analyzer bays only, bay B3
+first; v1 stays the board of the other converted bays (decided 2026-10-20).
+
+**It stands.**  The board stands behind the port wall instead of lying in the drawer's rear bay
+([data-x4-v2-layout-options.md](data-x4-v2-layout-options.md), option B, decided 2026-10-20).  Geometry
+in `config/rack.yaml` › `pcb.data_port_x4_v2`.
+- **Size and place.**  100 × 70 mm, drawer x 4–104.  KiCad x = drawer x − 4 and y = 72.5 − z, so
+  y = 0 is the top edge.  The bottom edge rests on the drawer floor.
+- **Holding.**  A printed cradle on the drawer's DATA ×4 bosses holds the board (the Mechanics session's
+  interface, 2026-10-20), so the board has no holes:
+  - its slots take each end's 5.5 mm; both faces keep those bands free of parts;
+  - two T-heads come up through notches in the bottom edge (3.4 × 6.5 mm at x 31 and 67), against
+    unplugging, with 7 × 6 mm of the front face free round each;
+  - the base pushes on the rear face 5.3–9.3 mm above the bottom edge, which stays bare.
+- **USB-C.**  Vertical receptacles (HRO TYPE-C-31-D-06, 6.4 mm tall) on the front face, which faces the
+  wall.  Their mouths sit 1 mm behind the wall's openings, at the ports' x and z 11, as v1's.
+- **One-sided assembly.**  Every part JLC places is on the front face, so JLC's Economic assembly applies.
+- **Rear face.**  Only the lead's PH 8 and the headers' tails, all soldered by hand.  J1 is a through-hole
+  JST B8B-PH-K-S (C157974) at x 90, its pins in a vertical row (z 41 → 27): the lead comes up from the
+  cable window beside the board's right end and plugs in from the rear.
+
+| Block | Parts | Notes |
+|---|---|---|
+| Lead | J1 on the rear face (pin 1 INT at the top … pin 8 +5V at the bottom); SDA, SCL and INT through a TPD4E05U06 (U4, right beside pins 1–3), then a 2N7002 each (Q1–Q3, gate on +3V3) with 4.7k / 4.7k / 10k pull-ups on this side (R6–R8) | One ESD part where v1 has two USBLC6.  The FETs work as v1's (PCBA review X2): with DUT_5V off they open, so the node's pull-ups cannot feed this board's dead +3V3 through the chips' clamps.  They sit in the right-hand column under J1; its +5V pin lands on a +5V tab of the power plane |
+| Hub | USB2517I (U1) on its default straps (CFG_SEL 000: no SMBus; NON_REM, GANG_EN, BOOST, PRT_SWP pulled down), 24 MHz crystal, RBIAS 12k | 7 ports: 1–4 the USB-C (busid `1-1.n` as v1), 5 the co-processor, 6–7 unused.  Top-right corner, right over J1, turned so the downstream pins face down towards the ports; its crystal below its west face.  The straps sit in two rows over its north face (RN1, RN2, R3–R5, R9), plus RN3 at its south-east corner |
+| Ports ×4 | As v1; EN pulled down (a port stays off until the node switches it on), R_ILIM right beside the switch's ILIM pin, the INA226's Vbus on the shunt's load-side sense pad, 100 nF at each USBLC6's VBUS pin | PCBA review X3, X4, X9.  Each port's power cluster sits between its header and its receptacle.  The USBLC6 is right of the receptacle, the CC resistors left of it |
+| Expanders | As v1 (U2 0x20, U6 0x21); 100k pull-ups on the RESET/BOOT expander lines | X6: they float with nothing plugged in.  Each pair's expander sits between its two power clusters |
+| Headers ×4 | 2 × 6 2.54 mm through-hole (J102–J402), read as two rows: upper VREF · P1 · P2 · P3 · P4 · BOOT, lower GND · P5 · P6 · P7 · P8 · RESET | Soldered by hand, not by JLC (hanxia HX PZ2.54-2x6P ZZ, C32713279): out of the JLC BOM and CPL.  Through-hole, easier to solder than the SMD version (the user, 2026-10-20).  The rear face carries only J1, so the tails (1.5 mm) are free.  Centred at the port's x and z 30.5, pins forward over the plate.  The odd pins are on the lower row, the even on the upper.  The names are on the silkscreen under each header, in two lines stacked like the rows (VREF, GND, BOOT, RST spelt out).  RESET/BOOT go through 1k as v1, their resistors in a column right of the header.  Strain-relieve the jumpers (tie them down) rather than letting them pull on the header |
+| Pins ×4 | 2 × TPD4E05U06 in flow-through, 100 Ω per pin (4 × 0402 arrays), LSF0108 (U107–U407) | A side = the DUT's VREF, B side = 3.3 V.  Vref_B and EN come from the port's VBUS through 200k.  VREF / 2 goes to the co-processor's ADC (100k / 100k), which also holds an unconnected VREF at 0 V.  So a port that is off, or has no VREF, passes nothing |
+| Matrix | 2 × CH446Q at ±5 V (U7: ports 1–2, U8: ports 3–4; their Y0–Y7 joined = buses D C B A E F G H), TPS60400 for −5 V (U9), TCA9534A at 0x38 (U10); their +5V (+5V_MX) through a 600 Ω ferrite (FB1, GZ2012D601TF) | The ferrite keeps the ports' switching and the charge pump's 250 kHz apart.  It carries the crosspoints, the inverter and the co-processor's LDO, about 110 mA (33 mV).  TCA9534A: P0 DAT · P1 CK · P2 STB U7 · P3 STB U8 · P4 RST (pulled up: every switch open until the node writes it) · P5 co-processor RUN · P6 BOOTSEL · P7 mark.  Each bus is pulled up to 3.3 V by 10k (RN8, RN9), the B-side pull-up of whatever pins it joins |
+| Co-processor | RP2354B (U11) wired like a Pico 2: 12 MHz ABM8-272-T3, core regulator with 3.3 µH and 3 × 4.7 µF, its own AP2112K (U12) | Hub port 5.  GPIO2–9 = buses A–H (gusmanb's CH1–8); GPIO0 → GPIO1 bridged (its trigger); GPIO14 = mark; GPIO25 = LED.  GPIO19, 18, 17, 16, 13, 12, 11, 10 switch the 2.2k pull-ups of buses A–H (our firmware); RN6/RN7 sit right beside them on the same face.  GPIO40–43 = VREF 1–4 / 2, GPIO44–45 = the ±5 V rails.  SWD on three pads at the top edge (TP1–TP3) |
+
+**Pin map.**  Each port's eight pins land on one crosspoint's X lines, in the order the layout gives;
+the firmware maps them:
+
+| Port | P1 | P2 | P3 | P4 | P5 | P6 | P7 | P8 |
+|---|---|---|---|---|---|---|---|---|
+| 1 (U7), 3 (U8) | X15 | X7 | X9 | X11 | X14 | X6 | X8 | X10 |
+| 2 (U7), 4 (U8) | X12 | X4 | X2 | X0 | X13 | X5 | X3 | X1 |
+
+X and Y are the chips' pin names; CH446Q's serial address codes for them follow its datasheet's table.
+Y0–Y7 = buses D, C, B, A, E, F, G, H on both chips.  Y0–Y3 leave by the chips' north side, towards the
+co-processor; Y4–Y7 leave by the south side.
+
+**Layout.**  The board is laid out in bands, top to bottom:
+1. The co-processor in the middle, between the two crosspoints.
+   - Its bus pins face the right-hand crosspoint (south-east corner).
+   - The pull-up enables and their arrays sit on its east face.
+   - The ADC inputs and the ±5 V dividers are on its west face.
+   - The core regulator and the USB resistors are under it.
+   - The crystal and the LED are on top, by the board's edge; its LDO over its north-west corner; the
+     area under it stays free for the buses between the two crosspoints.
+   - The hub sits in the top-right corner, the matrix expander and the SWD pads in the top-left one.
+   - The left-hand column takes the −5 V inverter (beside the left crosspoint), the +5V_MX ferrite and
+     the board's 3.3 V LDO (on the power plane's split).  The right-hand one takes J1 and its parts.
+2. Per port, its pin chain, straight up from its header.
+   - The header's lines leave it west → east: VREF, then P5 P1 P6 P2 P7 P3 P8 P4.  Each lower-row pin's line
+     passes just west of its upper-row neighbour's.
+   - Each one passes an ESD channel (flow-through), then its 100 Ω.
+   - It then enters the LSF0108 from below.  The LSF0108 is turned so its A face points down, with the
+     channels in the same order.
+   - Its B lines turn into the crosspoint's face beside it, the westmost line at the top on the west of
+     the chip, the eastmost at the top on the east.  So nothing crosses.
+3. The headers.
+4. Per port, its power cluster (switch, shunt, INA226).  The expanders sit between the clusters.
+5. The receptacles with their ESD and CC resistors.
+
+The power plane is split: +3V3 above the receptacles (the power clusters included), +5V under that line.
+- Each port switch's IN takes its +5V by a 0.6 mm track down to a via under the split, drawn before the
+  routing.  J1's pin 8 (through-hole) lands on a +5V tab of the plane.
+- The loads above the split take +5V_MX, routed like a signal: the crosspoints' VDD, the −5 V inverter and
+  the co-processor's LDO.
+- Freerouting treats a plane net's pads as connected through the plane, even over the other net's area.
+  So pads there must be drawn by hand, or sit on a net of their own.  The
+co-processor's +3V3_CP and +1V1 are routed as tracks.  A power-plane island poured after the routing
+joins the +3V3_CP vias under the RP2354B.
+
+Dense rules at JLC's multilayer floor:
+- 0.127 mm signal tracks;
+- 0.1 mm clearance (JLC: 0.09);
+- 0.5 / 0.3 mm vias;
+- 0.2 mm from a via hole to a track (JLC's minimum).
+
+The USB pairs are left to the router: the hub's host is the node's ESP32-S3, full speed only, so every
+link runs at 12 Mbit/s.  ENIG, flat for the RP2354B's 0.4 mm QFN-80.
+
+**Stackup: 4 layers**, JLC04161H-7628: F.Cu signals · In1 GND · In2 power (+3V3 / +5V) · B.Cu signals.
+- With every part on the front face, B.Cu is free for the routing.
+- Freerouting routes every link at 4 layers, as at 6 (F · GND · sig · sig · power · B), which
+  `X4V2_LAYERS=6` still builds for a comparison.
+- The user's wish ("si on peut repasser à 4 couches ce serait top"): 4.  It is $8 cheaper for 5 bare
+  boards, and takes 3–4 days instead of 8–9.
 
 ## Camera pod v1.0 — 2 layers, 40 × 27 mm
 
@@ -426,7 +519,9 @@ the viewer conversion falls back to a stand-in of the part's real outline (or fa
 or the EasyEDA cache), and a footprint without one must have no body by nature (holes, test points,
 net ties, fiducials) or be listed in the board's `b.pcb["no_model"]`; otherwise `--check` fails.  An
 EasyEDA model not fetched yet is only reported.  Where KiCad lacks the exact package, the catalog
-borrows its nearest body: the TCA6408A's VQFN-16 3 × 3 takes the QFN-16 3 × 3 one.
+borrows its nearest body: the TCA6408A's VQFN-16 3 × 3 takes the QFN-16 3 × 3 one.  Where it has no
+near body (the DATA ×4 v2's RP2354B QFN-80, USB2517I QFN-64 with a 4.7 mm pad and LSF0108 DHVQFN-20),
+`tools/make_step_models.py` draws one: a black body at the datasheet's size and a pin-1 dot.
 
 The bay node has no through-hole part since v0.4, and the hub none since v0.5: their JST PH
 connectors are the SMD S*B-PH-SM4-TB, and the USB-C receptacles' shield tabs go through
