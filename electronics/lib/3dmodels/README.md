@@ -10,6 +10,7 @@ and in CI.
 |---|---|---|---|
 | `ESP32-S3-MINI-1.step` | ESP32-S3-MINI-1 module (the boards use KiCad's `RF_Module:ESP32-S2-MINI-1` footprint: same land pattern) | [espressif/kicad-libraries](https://github.com/espressif/kicad-libraries) `3dmodels/espressif.3dshapes/ESP32-S3-MINI-1.STEP`, commit `dd76561812ab300351234ba6e0ec1295641796f0` (2026-07-28) | CC-BY-SA 4.0 with the KiCad libraries' exception (designs using it are not adapted material) |
 | `WS2812B-2020.step` | Worldsemi WS2812B-2020 | drawn here, `tools/make_step_models.py` (datasheet dimensions) | this repository's |
+| `QFN-80_10x10x0.85mm.step`, `QFN-64_9x9x0.9mm.step`, `DHVQFN-20_2.5x4.5x0.85mm.step` | RP2354B, USB2517I, LSF0108 (RKS): leadless packages KiCad's 3D library has no model for | drawn here, `tools/make_step_models.py`: a black body at the datasheet's size and a pin-1 dot | this repository's |
 | `easyeda/<LCSC>.step` | parts with no free model (JST PH SMD side entry, Kingbright KPA-3010, XKB TS-1187A, …) | LCSC / EasyEDA, fetched by `tools/fetch_pcb_models.py` | not redistributed: **git-ignored**, fetched on demand (the `.json` beside each file records its source) |
 
 The model for the ESP32-S3-MINI-1 sits at offset (−7.7, −10.25, 0) mm on the KiCad footprint:

@@ -144,6 +144,10 @@ CAT = {
                      description="LED white 6000–7500 K, 2835, 20–33 lm at 60 mA",
                      model=("easyeda/C2843876.step", (0, 0, 0), (0, 0, 0))),
     # the camera lead (docs/electronics.md): 5 V, GND, SPI with a GND between, the light's low side
+    # the same, through-hole, soldered by hand: on the face JLC's one-sided assembly leaves alone (DATA ×4 v2)
+    "ph8t": Cat("Connector_Generic:Conn_01x08", "Connector_JST:JST_PH_B8B-PH-K_1x08_P2.00mm_Vertical",
+                "B8B-PH-K-S(LF)(SN)", "JST", "C157974", 0.086, hand_solder=True,
+                description="JST PH 8-pin, vertical, through-hole"),
     "ph8v": Cat("Connector_Generic:Conn_01x08", "Connector_JST:JST_PH_B8B-PH-SM4-TB_1x08-1MP_P2.00mm_Vertical",
                 "B8B-PH-SM4-TB(LF)(SN)", "JST", "C495548", 0.57, description="JST PH 8-pin, vertical, SMD",
                 model=("easyeda/C495548.step", (0, 0.89, 0), (0, 0, 0))),
@@ -153,6 +157,10 @@ CAT = {
                  "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.66x2.46mm",
                  "TPS26600PWPR", "Texas Instruments", "C544399", 1.54,
                  datasheet="https://www.ti.com/lit/ds/symlink/tps2660.pdf", description="4.2–60 V 2.23 A eFuse"),
+    # 600 Ω at 100 MHz, 500 mA, 0.3 Ω: a quiet branch of a supply (DATA ×4 v2: the crosspoints' and the
+    # charge pump's +5V, off the ports' switching)
+    "fb600": Cat("Device:FerriteBead_Small", "Inductor_SMD:L_0805_2012Metric", "GZ2012D601TF", "Sunlord", "C1017",
+                 0.02, basic=True, description="ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805"),
     "led_g": Cat("Device:LED", "LED_SMD:LED_0805_2012Metric", "KT-0805G", "Hubei KENTO", "C2297", 0.02, basic=True,
                  description="green LED 0805"),
     "led_r": Cat("Device:LED", "LED_SMD:LED_0805_2012Metric", "NCD0805R1", "NationStar", "C84256", 0.01, basic=True,
@@ -197,6 +205,11 @@ CAT = {
     "usbc5a": Cat("Connector:USB_C_Receptacle_USB2.0_16P",
                   "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", "USB4105-GF-A-120", "GCT",
                   "C5184243", 0.91, description="USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS"),
+    # the same, standing: its mouth points away from a board that stands behind the port wall (DATA ×4 v2)
+    "usbc_v": Cat("Connector:USB_C_Receptacle_USB2.0_16P", "bench:USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical",
+                  "TYPE-C-31-D-06", "HRO", "C2689964", 0.28,
+                  description="USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
+                  model=("easyeda/C2689964.step", (0, 0, 3.62), (0, 0, 0))),   # its STEP is centred on the body: the leads at z −3.62
     "nfet_pwr": Cat("Transistor_FET:Si4162DY", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", "IRF7842TRPBF", "Infineon",
                     "C495809", 0.84, datasheet="https://www.infineon.com/dgdl/irf7842pbf.pdf",
                     description="N-MOSFET 40 V 18 A 5 mΩ, SO-8 (Si4162DY symbol: same S-S-S-G-D-D-D-D pinout)"),
@@ -240,7 +253,12 @@ CAT = {
                    "Microchip Tech", "C478081", 4.51,
                    datasheet="https://ww1.microchip.com/downloads/en/DeviceDoc/00001598C.pdf",
                    # JLC's own land (EasyEDA) has a 4.8 mm exposed pad
-                   description="USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial"),
+                   description="USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial",
+                   model=("QFN-64_9x9x0.9mm.step", (0, 0, 0), (0, 0, 0))),
+    # the same in through-hole, easier to solder by hand: where the far face has room for the tails
+    "hdr2x6t": Cat("Connector_Generic:Conn_02x06_Odd_Even", "Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Vertical",
+                   "HX PZ2.54-2x6P ZZ", "hanxia", "C32713279", 0.093, hand_solder=True,
+                   description="pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins"),
     "hdr2x6": Cat("Connector_Generic:Conn_02x06_Odd_Even", "bench:PinHeader_2x06_P2.54mm_Vertical_SMD_Tight",
                   "HX PZ2.54-2x6P TP", "hanxia", "C32713286", 0.10, hand_solder=True,
                   description="pin header 2 × 6, 2.54 mm, SMD, soldered by hand: Dupont jumpers to a DUT's pins"),
@@ -251,7 +269,8 @@ CAT = {
                    "LSF0108RKSR", "Texas Instruments", "C130008", 1.13,
                    datasheet="https://www.ti.com/lit/ds/symlink/lsf0108.pdf",
                    description="8-bit passive FET level translator, auto-bidirectional, open drain and push-pull "
-                               "(TI's RKS VQFN-20 has the BQ pinout)"),
+                               "(TI's RKS VQFN-20 has the BQ pinout)",
+                   model=("DHVQFN-20_2.5x4.5x0.85mm.step", (0, 0, 0), (0, 0, 0))),
     "tpd4e05": Cat("Power_Protection:TPD4E05U06DQA", "Package_SON:USON-10_2.5x1.0mm_P0.5mm", "TPD4E05U06DQAR",
                    "Texas Instruments", "C138714", 0.083, datasheet="https://www.ti.com/lit/ds/symlink/tpd4e05u06.pdf",
                    description="4-channel ESD, 0.5 pF, 5.5 V stand-off, flow-through (pins 6, 7, 9, 10 route through)"),
@@ -266,7 +285,8 @@ CAT = {
     "rp2354b": Cat("MCU_RaspberryPi:RP2354B", "Package_DFN_QFN:QFN-80-1EP_10x10mm_P0.4mm_EP3.4x3.4mm", "RP2354B",
                    "Raspberry Pi", "C39843328", 1.52,
                    datasheet="https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf",
-                   description="RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO)"),
+                   description="RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO)",
+                   model=("QFN-80_10x10x0.85mm.step", (0, 0, 0), (0, 0, 0))),
     # the crystal and the core regulator's inductor the RP2350 hardware design guide asks for (ABM8-272-T3:
     # 10 pF load, ESR ≤ 50 Ω, with 15 pF and 1k on XOUT; the polarity-marked Abracon, dot towards VREG_LX)
     "xtal12": Cat("Device:Crystal_GND24", "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm", "ABM8-272-T3", "Abracon LLC",
@@ -282,6 +302,7 @@ CAT = {
 }
 
 HAND_SOLDER_LCSC = {c.lcsc for c in CAT.values() if c.hand_solder}
+
 # MPN → (file, offset, rotation): see Cat.model and pcbgen.set_model()
 MODELS = {c.mpn: c.model for c in CAT.values() if c.model}
 

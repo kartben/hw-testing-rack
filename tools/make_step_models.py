@@ -9,6 +9,10 @@ KiCad's STEP reader shows), as FreeCAD's console mode exports none.  Output: ele
 * WS2812B-2020.step: Worldsemi WS2812B-2020, 2.0 × 2.0 × 0.84 mm, white body, a 1.5 × 1.5 mm
   window on top.  Origin at the body's centre, on the board: it sits on KiCad's
   LED_WS2812B-2020_PLCC4_2.0x2.0mm footprint without an offset.
+* QFN-80_10x10x0.85mm, QFN-64_9x9x0.9mm, DHVQFN-20_2.5x4.5x0.85mm: the leadless packages
+  KiCad's 3D library has no model for (RP2354B, USB2517I, LSF0108 RKS): a black
+  body at the datasheet's size and a pin-1 dot at the footprints' pin 1 corner (KiCad −x, −y).  Origin at
+  the body's centre, on the board.
 """
 
 from __future__ import annotations
@@ -33,6 +37,16 @@ window = Part.makeBox(1.5, 1.5, 0.19, App.Vector(-0.75, -0.75, 0.64))
 solids = [body, window]
 """, [(0.93, 0.93, 0.91), (0.86, 0.88, 0.82)]),
 }
+# leadless ICs: body w × l × h (KiCad x × y), pin 1 at KiCad (−x, −y), i.e. STEP (−x, +y)
+for _name, (_w, _l, _h) in {"QFN-80_10x10x0.85mm": (10.0, 10.0, 0.85), "QFN-64_9x9x0.9mm": (9.0, 9.0, 0.9),
+                            "DHVQFN-20_2.5x4.5x0.85mm": (2.5, 4.5, 0.85)}.items():
+    _r = max(0.15, min(_w, _l) * 0.06)
+    _d = 2 * _r + 0.25
+    MODELS[_name] = (f"""
+body = Part.makeBox({_w}, {_l}, {_h}, App.Vector({-_w / 2}, {-_l / 2}, 0))
+dot = Part.makeCylinder({_r}, 0.02, App.Vector({-_w / 2 + _d}, {_l / 2 - _d}, {_h}))
+solids = [body, dot]
+""", [(0.13, 0.13, 0.14), (0.62, 0.62, 0.62)])
 
 FC_SCRIPT = """
 import FreeCAD as App, Part, Import

@@ -104,8 +104,71 @@ def header_2x6_smd_tight() -> pcbnew.FOOTPRINT:
     return fp
 
 
+def usb_c_hro_31d06() -> pcbnew.FOOTPRINT:
+    """HRO TYPE-C-31-D-06 (LCSC C2689964), a vertical (top-mount) USB 2.0 receptacle: its mouth points away
+    from the board.  Built from JLC's own land (EasyEDA "USB-C-SMD_TYPE-C-31-D-06", 2026-10-20): 16 pads
+    0.3 × 0.9 mm at 0.5 mm in two rows 1.7 mm apart (A at −y, B at +y, each row's GND at its ends), four
+    plated shell legs (Ø0.6 mm) and two locating pegs (Ø0.52 / Ø0.72 mm, unplated).  Pin numbers as
+    Connector:USB_C_Receptacle_USB2.0_16P, the shell SH."""
+    name = "USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical"
+    fp = pcbnew.FOOTPRINT(None)
+    pins = {"A1": -2.75, "A4": -1.25, "A5": -0.75, "A6": -0.25, "A7": 0.25, "A8": 0.75, "A9": 1.25, "A12": 2.75,
+            "B1": 2.75, "B4": 1.25, "B5": 0.75, "B6": 0.25, "B7": -0.25, "B8": -0.75, "B9": -1.25, "B12": -2.75}
+    for num, x in pins.items():
+        pad = pcbnew.PAD(fp)
+        pad.SetAttribute(pcbnew.PAD_ATTRIB_SMD)
+        pad.SetShape(pcbnew.F_Cu, pcbnew.PAD_SHAPE_RECT)
+        pad.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(0.3), MM(0.9)))
+        pad.SetLayerSet(pcbnew.PAD.SMDMask())
+        pad.SetNumber(num)
+        pad.SetFPRelativePosition(pcbnew.VECTOR2I(MM(x), MM(-0.85 if num[0] == "A" else 0.85)))
+        fp.Add(pad)
+    for x, y in ((2.4, 2.15), (2.4, -2.15), (-2.4, -2.15), (-2.4, 2.15)):
+        pad = pcbnew.PAD(fp)
+        pad.SetAttribute(pcbnew.PAD_ATTRIB_PTH)
+        pad.SetShape(pcbnew.F_Cu, pcbnew.PAD_SHAPE_OVAL)
+        pad.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(1.35), MM(1.1)))
+        pad.SetDrillSize(pcbnew.VECTOR2I(MM(0.6), MM(0.6)))
+        pad.SetLayerSet(pcbnew.PAD.PTHMask())
+        pad.SetNumber("SH")
+        pad.SetFPRelativePosition(pcbnew.VECTOR2I(MM(x), MM(y)))
+        fp.Add(pad)
+    for x, d in ((-3.75, 0.52), (3.75, 0.72)):
+        pad = pcbnew.PAD(fp)
+        pad.SetAttribute(pcbnew.PAD_ATTRIB_NPTH)
+        pad.SetShape(pcbnew.F_Cu, pcbnew.PAD_SHAPE_CIRCLE)
+        pad.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(d), MM(d)))
+        pad.SetDrillSize(pcbnew.VECTOR2I(MM(d), MM(d)))
+        pad.SetLayerSet(pcbnew.PAD.UnplatedHoleMask())
+        pad.SetFPRelativePosition(pcbnew.VECTOR2I(MM(x), 0))
+        fp.Add(pad)
+    for layer, w, hw, hh in ((pcbnew.F_CrtYd, 0.05, 4.75, 3.0), (pcbnew.F_Fab, 0.1, 4.47, 1.63)):
+        rect = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_RECT)
+        rect.SetLayer(layer)
+        rect.SetWidth(MM(w))
+        rect.SetStart(pcbnew.VECTOR2I(MM(-hw), MM(-hh)))
+        rect.SetEnd(pcbnew.VECTOR2I(MM(hw), MM(hh)))
+        fp.Add(rect)
+    for y in (-2.95, 2.95):                     # silkscreen: the long sides, clear of the legs' pads
+        line = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_SEGMENT)
+        line.SetLayer(pcbnew.F_SilkS)
+        line.SetWidth(MM(0.12))
+        line.SetStart(pcbnew.VECTOR2I(MM(-1.5), MM(y)))
+        line.SetEnd(pcbnew.VECTOR2I(MM(1.5), MM(y)))
+        fp.Add(line)
+    fp.SetAttributes(pcbnew.FP_SMD)
+    fp.SetFPID(pcbnew.LIB_ID("bench", name))
+    fp.Value().SetText(name)
+    fp.Reference().SetText("REF**")
+    fp.SetLibDescription("USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, mouth away from the board): HRO "
+                         "TYPE-C-31-D-06 (LCSC C2689964), land from JLC's EasyEDA footprint")
+    fp.SetKeywords("usb c type-c receptacle vertical top mount hro 16p")
+    return fp
+
+
 MAKERS = {"R_1206_3216Metric_Kelvin": kelvin_1206, "ESP32-S3-WROOM-1_NoEPVias": wroom_no_ep_vias,
-          "PinHeader_2x06_P2.54mm_Vertical_SMD_Tight": header_2x6_smd_tight}
+          "PinHeader_2x06_P2.54mm_Vertical_SMD_Tight": header_2x6_smd_tight,
+          "USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical": usb_c_hro_31d06}
 
 
 def main():
