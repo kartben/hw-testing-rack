@@ -187,9 +187,10 @@ module tray() {
                 cube([LEDGE_X, CARRIER_FASCIA, LEDGE_Z - LEDGE_T - CARRIER_WALL_H + 2 * EPS]);
             translate([0, CARRIER_D - WALL, 0]) cube([CARRIER_W, WALL, CARRIER_WALL_H]);   // rear wall
             both_sides(CARRIER_D, CARRIER_WALL_H, GROOVE_END);
-            // the left one: no gusset under the detent tab, which bends down
-            guide_left(LATCH_Y[0], DRAWER_DETENT == "printed"
-                ? [[DETENT_TAB_Y0 - DETENT_TAB[2] - 1, DETENT_TAB_Y0 + DETENT_TAB[1] + 1]] : []);
+            // the left one: no gusset under the detent tab, which bends down, nor over the node's C1 (its top
+            // 1.5 under the ledge, inside a gusset's 45° slope)
+            guide_left(LATCH_Y[0], concat([[node_xy(NODE_C1)[1] - NODE_C1[2] / 2 - 1, node_xy(NODE_C1)[1] + NODE_C1[2] / 2 + 1]],
+                DRAWER_DETENT == "printed" ? [[DETENT_TAB_Y0 - DETENT_TAB[2] - 1, DETENT_TAB_Y0 + DETENT_TAB[1] + 1]] : []));
             translate([CARRIER_W, 0, 0]) mirror([1, 0, 0]) guide_left(LATCH_Y[1]);
             // node PCB standoffs
             for (h = NODE_HOLES) translate(concat(node_xy(h), [0]))
