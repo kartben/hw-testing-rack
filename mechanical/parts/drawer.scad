@@ -136,8 +136,11 @@ module drawer(rear = true, foot = true) {
             if (DRAWER_DETENT == "magnet") translate([DETENT[0], DETENT[1], 0]) mirror([0, 0, 1]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
         }
         detent_notch();
+        // the optional covers' pockets (parts/covers.scad): in the rear wall's inner face, a tab's bump in each
+        if (rear) for (x = COVER_TABS)
+            translate([x + 3 - 0.5, DRAWER_D - DRAWER_WALL - EPS, 6 + 0.7]) cube([6, COVER_BUMP + 0.2 + EPS, 2 * COVER_BUMP + 1 + 0.6]);
         if (rear) {
-            // pilots for the boards' (and the cradle's) PT 2.3 × 8, from above
+            // pilots for the single DATA port board's PT 2.3 × 8, from above
             for (h = ONE_HOLES) translate([h[0], h[1], DATA_PCB_Z - 7]) cylinder(d = PT_PILOT, h = 7 + EPS);
             // the DATA ×4's (the cradle's): an M3 insert in each, its hole running on through the floor (an
             // M3 × 8 from the cradle goes 0.7 mm past the insert)

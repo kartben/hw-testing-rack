@@ -1,6 +1,6 @@
 # Printed parts: design review
 
-**Status (2026-10-21): the obvious print-and-break fixes are in (see [Implemented](#implemented-2026-10-21)); the user's calls and the visual language are not.**  The user
+**Status (2026-10-21): the obvious print-and-break fixes, the user's calls and the visual language are in (see [Implemented](#implemented-2026-10-21)), but finding 5 (the camera sleeve: it waits for the Mega's real case) and 10 (the anchor printed into the tray: deferred by the user).**  The user
 asked for a complete review of every 3D-printed part: simple, not over-engineered, good-looking where
 it can be (rounded edges, elegant and useful markings), with assembly systems that are strong and state
 of the art for FDM PETG, checked by simulation; heat-set inserts where they belong, captive square nuts
@@ -317,12 +317,21 @@ inlays the base no longer needs 0.12–0.16 mm layers (the inlay's edge is what 
 shadow): 0.2 mm, about 30 % faster; a 0.5 chamfer on the base's bed edge and the lid's (printed face
 down: its top edge).
 
-### Drawer covers (concept, tray session)
+### Drawer covers (`covers.scad`, finding 17)
 
-V3 + the 1× lid: one family, one fixing, the most protection, no cradle change: agreed.  Two checks
-before they are drawn: the detent tabs must bend in the print plane (printed top face down, a tab
-standing from the lid's edge bends across its layers: hinge it on a vertical edge, as finding 5), and the
-header slots 8 mm in front of the pins are what a Dupont housing needs (12 mm long): fine.
+V3 + the 1× lid: one family, one fixing, the most protection, no cradle change: agreed, and drawn
+(2026-10-21).  The detent tabs bend in the print plane: each is a strip of the rear skirt, hinged at one end
+on a 2 mm post, free at the other, its outline run up through the top to the bed; 1.2 % for the 0.7 mm bump
+(the formula, 11.5 mm from the hinge to the bump, 1.5 thick), under the 1.5 % repeated.  CalculiX, the tab as
+a plate (the post fixed, 10 N on the bump, scaled to 0.7 mm): 1.12 % and 3.7 N a tab for the lid (11.6 tall),
+1.17 % and 5.6 N for the box, whose tab runs the full 72.5 mm to the bed but works as a plate near the bump:
+only 1.5 times as stiff (a slit cutting its hinge to 14 mm would save 1 N and leave a loose flap).  The header slots
+became one notch open at the bottom along the box's front, so the box lifts off with the four Dupont leads
+plugged.  SolidCraft, in place: the lid over the single DATA port board (board 1.05, its lead's plug 1.13,
+the USB plug 1.70), the box over the v2 in its cradle (cradle 0.40, Dupont blocks 0.60 in the notch, headers
+1.13, USB plugs 2.02, the board 2.10), the bumps in their pockets; in bay B2, closed and pulled out, both
+covers clear of the tray, the camera pod and the cap plate (> 3 mm), and so is their sweep over the travel.
+Faces steeper than 45° as printed: none but the 45° ledges and bump ramps.
 
 ## If the user picks the obvious set
 
@@ -338,5 +347,5 @@ For Mechanics, in one pass (about 2 days), each a small change in the SCAD:
    edges and marks; `drawer.scad` loses the v1 ledges.
 Then the STLs, `bom/README.md`, the notice (when the design freezes) and `docs/mechanical.md`.
 
-Decided: nut traps on the ladders (3).  The user's calls still open: the anchor in the tray (10), the ID inlay
-(12), four screw types (13), a printed detent (14), 2 pod screws (16), the covers (17).
+Decided and in: nut traps on the ladders (3), the ID inlay (12), four screw types (13), a printed detent (14),
+2 pod screws (16), the covers (17).  Deferred by the user: the anchor in the tray (10).

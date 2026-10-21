@@ -139,7 +139,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | chain_anchor | 7 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
 | drawer | 7 | 46.7 | `mechanical/stl/drawer.stl` |
-| drawer_block | 1 | 17.4 | `mechanical/stl/drawer_block.stl` |
+| drawer_block | 1 | 17.3 | `mechanical/stl/drawer_block.stl` |
 | drawer_sled | 1 | 29.8 | `mechanical/stl/drawer_sled.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 48.6 | `mechanical/stl/ladder_a.stl` |
@@ -164,6 +164,8 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
 | tray | 8 | 81.4 | `mechanical/stl/tray.stl` |
 | x4_cradle | 2 | 8.6 | `mechanical/stl/x4_cradle.stl` |
+| cover_lid1 (optional) | 6 | 7.6 | `mechanical/stl/cover_lid1.stl` |
+| cover_box4 (optional) | 2 | 31.3 | `mechanical/stl/cover_box4.stl` |
 
 ## Line items
 
@@ -365,6 +367,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 5.90 | 5.90 | estimate, not quoted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
+| Printed parts | Rear bay covers (optional) | 8  | 0.00 | 0.00 | printed |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 88  | 0.03 | 2.64 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3 square nut, DIN 562 (5.5 × 5.5 × 1.8) | 60  | 0.02 | 1.20 | AliExpress (bulk) |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods, the DATA ×4 cradle | 108  | 0.02 | 2.16 | AliExpress (bulk) |

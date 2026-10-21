@@ -3410,6 +3410,17 @@
 "ext_eur": 62.0
 },
 {
+"category": "Printed parts",
+"group": "covers",
+"item": "Rear bay covers (optional)",
+"supplier": "printed",
+"qty": 8,
+"unit_eur": 0,
+"notes": "one per bay: cover_lid1 over a one-board bay, cover_box4 over a DATA ×4; ≈108 g more PETG, not in the filament line",
+"unit": "pcs",
+"ext_eur": 0.0
+},
+{
 "category": "Fasteners",
 "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
 "supplier": "AliExpress (bulk) / Ruthex",
@@ -3910,14 +3921,14 @@
 "part": "drawer",
 "qty": 7,
 "grams_each": 46.7,
-"grams_total": 326.9,
+"grams_total": 326.8,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
 "part": "drawer_block",
 "qty": 1,
-"grams_each": 17.4,
-"grams_total": 17.4,
+"grams_each": 17.3,
+"grams_total": 17.3,
 "stl": "mechanical/stl/drawer_block.stl"
 },
 {
@@ -4087,6 +4098,22 @@
 "grams_each": 8.6,
 "grams_total": 17.1,
 "stl": "mechanical/stl/x4_cradle.stl"
+},
+{
+"part": "cover_lid1",
+"qty": 6,
+"grams_each": 7.6,
+"grams_total": 45.6,
+"stl": "mechanical/stl/cover_lid1.stl",
+"optional": true
+},
+{
+"part": "cover_box4",
+"qty": 2,
+"grams_each": 31.3,
+"grams_total": 62.6,
+"stl": "mechanical/stl/cover_box4.stl",
+"optional": true
 }
 ],
 "bays": 8,

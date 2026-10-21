@@ -99,6 +99,10 @@ later, take its tray out first.
    inside the rear bay (PT 2.3×8); then the stop screw (PT 2.3×8) through the left guide lip.
 5. **Plate + board + short cable**; the bay's printed label (or 12 mm tape) in
    the front recess.
+6. Optional, once the bay is validated: print its rear bay's cover
+   (`cover_lid1` over a single DATA port board, `cover_box4` over a DATA ×4)
+   and press it on: lips over the port wall's front face first, then the rear
+   edge down until both tabs click.
 
 A **sled or fixed bay** (`mount: sled` / `fixed`) skips steps 2 and 4: no chain,
 anchor (nor its two inserts), foot or magnets.  The DATA board goes into the

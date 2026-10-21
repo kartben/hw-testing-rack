@@ -79,6 +79,10 @@ DETENT_BUMP = [0.6, 3.0];                          // height, length at its base
 DETENT_TAB_Y = 155;                                // the bump's centre (carrier y = drawer y when closed): under a
                                                    // sled's flange (its notch cuts it too), clear of the lock screws
 DETENT_TAB_Y0 = DETENT_TAB_Y - DETENT_BUMP[1] / 2 - 1.2;   // the tab's free (front) end
+// The optional covers' detent (parts/covers.scad): two side-hinged tabs on the covers' rear skirt, their bumps in
+// two pockets in the drawer's rear wall, inner face (drawer.scad); the tabs' centres (x) and the bump's reach
+COVER_TABS = [30, 112];
+COVER_BUMP = 0.7;
 
 // port wall: four U's, the DATA ×4's ports (config/rack.yaml › pcb.data_port_x4).  The single DATA port is
 // our own small board (electronics/data-port, config/rack.yaml › pcb.data_port): a USB-C source on its front
