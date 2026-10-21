@@ -31,6 +31,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <zephyr/dt-bindings/input/input-event-codes.h>
 #include "../../boards/hwtr/bay_node/bay_node-pinctrl.dtsi"
 #include "../../boards/hwtr/bay_node/bay_node.dtsi"
 /* A DATA x4 on D4/D5 (the board's I2C0) */
@@ -46,6 +47,26 @@
 		group2 {
 			pinmux = <UART1_RX_GPIO44>;
 			bias-pull-up;
+		};
+	};
+};
+
+/ {
+	aliases {
+		sw0 = &boot_button;
+	};
+
+	/* The XIAO's BOOT button on G0, as the node's: a short press confirms an
+	 * access claim (then bayctl updates it over Wi-Fi), a long one
+	 * power-cycles the DUT.  A strapping pin, free to read once booted.
+	 */
+	buttons {
+		compatible = "gpio-keys";
+
+		boot_button: button_0 {
+			gpios = <&gpio0 0 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "BOOT";
+			zephyr,code = <INPUT_KEY_0>;
 		};
 	};
 };

@@ -152,7 +152,9 @@ SERVICE and PC_DET active low, so those pull-ups read "off").
 
 **Clip its antenna on.**  The XIAO has no PCB antenna, only a u.FL connector (the antenna comes loose
 in the box).  Without it, `wifi scan` shows the access point around −90 dBm and every connection
-fails with "Connection timeout".
+fails with "Connection timeout".  Keep the antenna 30–50 cm from a USB 3 hub: right next to one (a
+Genesys USB 3.1 hub with its card reader), the node kept losing its Wi-Fi ("AP not found") and its
+USB host saw transaction errors.
 
 **Its USB-C in host mode.**  On Seeed's schematic the USB-C's VBUS is the 5V pin, with nothing between
 (the diode sits between VBUS and the regulator) and 5.1 kΩ Rd on CC: the XIAO never sources VBUS.  So
@@ -181,9 +183,17 @@ on the USB-C.**
 ### Flashing the node again
 
 - **Download mode:** hold BOOT, press and release RESET, release BOOT; then `west flash`, then RESET.
+  With esptool, `--after watchdog_reset`: an RTS reset after a flash from download mode comes back
+  in download mode.
 - **SERVICE:** D8 to GND gives the PHY back to the USB-Serial-JTAG without reflashing.
-- **Over Wi-Fi:** `bayctl update build-node/bay-node/zephyr/zephyr.signed.bin <bay>`.
+- **Over Wi-Fi:** claim the node once (`bayctl access claim <bay>`, then a short press on the XIAO's
+  BOOT: the overlay makes it the node's BOOT button), then
+  `bayctl update build-node/bay-node/zephyr/zephyr.signed.bin <bay>`: 1 MB in about 25 s, back in
+  about 60 s, confirmed after its trial.
 - **The shell over telnet:** `telnet bay-<id>.local` (`bay access claim` only on SERVICE's local shell).
+  The bench build adds `hwinfo reset_cause` (why it last restarted), `heaps` (every heap: the
+  system heap, the Wi-Fi's in PSRAM, the USB/IP pool) and `kernel thread list` (each thread's
+  share of the CPU); `bay fault` shows a fatal error that restarted it and the log before it.
 
 Unplug the 5 V feed before plugging the PC.
 
