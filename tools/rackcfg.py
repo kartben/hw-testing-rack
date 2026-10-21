@@ -498,7 +498,7 @@ def scad_config(rack: Rack) -> str:
     node = rack.node
     hub = r["pcb"]["power_hub"]
     pbox = r["power_box"]
-    sa_pd = {"size": [23, 11.5], "thickness": 1.0, "usb_axis": 2.6, **r.get("standalone", {}).get("pd_module", {})}
+    sa_pd = {"size": [30, 21], "thickness": 1.6, "usb_axis": 3.2, **r.get("standalone", {}).get("pd_module", {})}
     vals = {
         "FRAME_W": round(rack.width, 3),
         "FRAME_D": round(rack.depth, 3),

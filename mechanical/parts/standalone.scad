@@ -83,28 +83,28 @@ module lid(w, d, zl, ps, btn, top, vents, cam) difference() {
     for (v = vents) translate([v[0], v[1], zl - 1]) cube([2, v[2], LID_T + 2]);
     translate([cam[0] - 4.5, cam[1] - 12, zl - 3]) cube([9, 24, LID_T + 4]);
 }
-// the PD module (config/rack.yaml › standalone.pd_module): its PCB's edge against the rear wall's inner face, its
-// seat on the floor, a fence round its sides and far end (the plug's push), a 1 mm double-sided foam pad under it.
-// In the rear wall: a collar round its USB-C's shell (the inner 0.6, it centres the receptacle whatever the board),
-// the overmold's cut through the outer 1.4 (a receptacle 0.6–2 mm proud of its PCB's edge).
-// `xc`: its axis; `d`: the box's depth; `zb`: the board's underside
+// the PD module (config/rack.yaml › standalone.pd_module, a CH224K board with its DIP switch): it stands on its long
+// edge, its back face on a 1 mm double-sided foam pad against a low wall, its USB-C (vertical) against the rear wall,
+// a low fence at its far end under its output pads (the plug's push).  Its DIP switch faces into the box: set it
+// (20 V) before the lid goes on.  In the rear wall: a collar round its USB-C's shell (the inner 0.6, it centres the
+// receptacle whatever the board), the overmold's cut through the outer 1.4 (a receptacle 0.6–2 mm proud of its PCB).
+// `xb`: its back face's x; `d`: the box's depth
 PD_FOAM = 1.0;
 PD_COLLAR = 0.6;
-function pd_far(d) = d - T - SA_PD[0];     // the board's far end
-module pd_seat(xc, d, zb) {
-    y0 = pd_far(d) - 1.5;
-    w = SA_PD[1] + 0.6;
-    difference() {
-        translate([xc - w / 2 - 1.2, y0, FL - EPS]) cube([w + 2.4, d - T - y0 + EPS, zb + SA_PD[2] + 0.6 - FL + EPS]);
-        translate([xc - w / 2, y0 + 1.2, zb - PD_FOAM]) cube([w, d, 20]);
-        // under the board's middle: room for a mid-mount receptacle's shell and the parts underneath
-        translate([xc - w / 2 + 2, y0 + 3, FL]) cube([w - 4, d, 20]);
-    }
+function pd_far(d) = d - T - SA_PD[0];                     // the board's far end
+function pd_axis(xb) = [xb + SA_PD[3], FL + SA_PD[1] / 2];   // its USB-C's axis: x, z
+module pd_seat(xb, d) {
+    far = pd_far(d);
+    translate([xb - PD_FOAM - 1.2, far - 1.5, FL - EPS]) cube([1.2, d - T - far + 1.5 + EPS, min(12, SA_PD[1] - 4) + EPS]);
+    translate([xb - PD_FOAM - 1.2, far - 1.5, FL - EPS]) cube([PD_FOAM + 1.2 + SA_PD[2] + 1.5, 1.2, 2.5 + EPS]);
 }
-module pd_cut(xc, d, zb) translate([xc, d - T - EPS, zb + SA_PD[3]]) {
-    translate([-4.65, 0, -1.8]) cube([9.3, T + 2 * EPS, 3.6]);                               // the collar (the shell)
-    translate([0, PD_COLLAR, 0]) rotate([-90, 0, 0]) usbc_plug_cut(T);                     // the overmold
+module pd_cut(xb, d) translate([pd_axis(xb)[0], d - T - EPS, pd_axis(xb)[1]]) {
+    translate([-1.8, 0, -4.65]) cube([3.6, T + 2 * EPS, 9.3]);                               // the collar (the shell)
+    translate([0, PD_COLLAR, 0]) rotate([-90, 0, 0]) rotate([0, 0, 90]) usbc_plug_cut(T);  // the overmold, upright
 }
+// a rib from a lid down onto the module's top edge
+module pd_hold(xb, d, zl) translate([xb - 1, pd_far(d) + 4, FL + SA_PD[1] + 0.3])
+    cube([SA_PD[2] + 2, 8, zl - FL - SA_PD[1] - 0.3 + EPS]);
 // a recess for the unit's name (9 mm tape, or a printed inlay as the drawer's bay label), its ceiling at 45°
 module name_recess(x, z, w = 24, h = 9.4) translate([x, -EPS, z]) hull() {
     cube([w, EPS, h + 0.6]);
@@ -119,7 +119,7 @@ S_NTOP = S_NZ + NODE_T;
 S_DX = 55.5;  S_DC = 21.5;                 // the DATA board, hung: left edge (turned over), its component face (down)
 S_DUSB = [S_DX + DATA_PCB_SIZE[0] - DATA_PCB_USB, S_DC - 1.63];   // its USB-C's axis
 S_LIDS = [[5.5, 5.5], [S_W - 5.5, 5.5], [5.5, 45], [S_W - 5.5, S_D - 5.5]];
-S_PDX = 9.8;  S_PDZ = FL + 4;              // the PD module: axis (its seat 0.2 off the node's rear-left boss), underside
+S_PDX = 4;                                 // the PD module's back face, by the left wall
 S_BTN = [nk(NODE_RESET, S_NX, S_NY), nk(NODE_BOOT, S_NX, S_NY)];
 S_ANT = [S_NX + 21, S_NX + 43];            // the node's antenna (its WROOM-1's rear end), x
 
@@ -128,12 +128,12 @@ module solo_base() difference() {
         shell(S_W, S_D, S_ZL);
         node_bosses(S_NX, S_NY);
         lid_bosses(S_LIDS, S_ZL);
-        pd_seat(S_PDX, S_D, S_PDZ);
+        pd_seat(S_PDX, S_D);
     }
     node_front(S_NX, S_NTOP);
     usbc_front(S_DUSB[0], S_DUSB[1]);
     name_recess(78, 6);
-    pd_cut(S_PDX, S_D, S_PDZ);
+    pd_cut(S_PDX, S_D);
     translate([S_ANT[0], S_D - T - EPS, FL + 4]) cube([S_ANT[1] - S_ANT[0], 0.8 + EPS, S_ZL]);   // 1.2 over the antenna
     // AUX (J5): a lead's slot at the right wall's top edge
     translate([S_W - T - 1, nk(NODE_AUX, S_NX, S_NY)[1] - 4, S_ZL - 3.5]) cube([T + 2, 8, 3.5 + EPS]);
@@ -143,12 +143,15 @@ module solo_base() difference() {
 }
 module solo_lid() lid(S_W, S_D, S_ZL, S_LIDS, S_BTN, S_NTOP,
         [for (x = [S_NX + 2 : 4 : S_NX + 22]) [x, 22, 34]], nk(NODE_CAM, S_NX, S_NY))
+    {
+    pd_hold(S_PDX, S_D, S_ZL);
     // the DATA board's two bosses: PT 2.3 × 8 up through the board (turned over, its holes mirrored in x)
     for (h = DATA_PCB_HOLES) translate([S_DX + DATA_PCB_SIZE[0] - h[0], S_NY + DATA_PCB_SIZE[1] - h[1], S_DC + DATA_PCB_T])
         difference() {
             cylinder(d = 6, h = S_ZL - S_DC - DATA_PCB_T + EPS);
             translate([0, 0, -EPS]) cylinder(d = PT_PILOT, h = 6.5);
         }
+    }
 
 // ---------------------------------------------------------------- Quad
 // the DATA ×4 v2 (config/rack.yaml › pcb.data_port_x4_v2; x4_cradle.scad): 100 × 70 × 1.6, its four USB-C on its
@@ -164,7 +167,7 @@ Q_NTOP = Q_NZ + NODE_T;
 Q_H = Q_NZ + 11.6 + 1 + LID_T;            // 1 mm over C1, the node's tallest part
 Q_ZL = Q_H - LID_T;
 Q_LIDS = [[5.5, 5.2], [Q_W - 5.5, 5.2], [5.5, Q_D - 5.5], [Q_W - 5.5, Q_D - 5.5]];   // the front pair 0.3 clear of the v2's slots
-Q_PDX = 17.5;  Q_PDZ = FL + 4;
+Q_PDX = 10.5;                              // the PD module's back face, clear of the rear-left boss
 Q_BTN = [nk(NODE_RESET, Q_NX, Q_NY), nk(NODE_BOOT, Q_NX, Q_NY)];
 Q_ANT = [Q_NX + 21, Q_NX + 43];
 Q_RAIL = [Q_VX + Q_SLOT[1] - T, Q_VY - 2.5, 6.6];   // the slots' rails: width (from the wall), front, depth (y)
@@ -179,7 +182,7 @@ module quad_base() difference() {
         for (s = [0, 1]) translate([s == 0 ? T - EPS : Q_W - T + EPS, Q_VY + 6, Q_SHELF[0]]) mirror([s, 0, 0])
             rotate([-90, 0, 0]) linear_extrude(Q_D - T - 10 - Q_VY - 6) polygon([[0, 0], [4, 0], [0, 4]]);
         lid_bosses(Q_LIDS, Q_ZL);
-        pd_seat(Q_PDX, Q_D, Q_PDZ);
+        pd_seat(Q_PDX, Q_D);
     }
     for (x = [Q_VX - 0.15, Q_VX + V2[0] - Q_SLOT[1] - 0.5]) translate([x, Q_VY - 0.15, FL + EPS]) cube([Q_SLOT[1] + 0.65, Q_SLOT[0], Q_SHELF[0]]);
     // front: the four DUT ports, a window over each header (its Dupont housing plugs in through it), the LEDs'
@@ -194,7 +197,7 @@ module quad_base() difference() {
     translate([Q_VX + V2_D1[0], -EPS, Q_VZ + V2_D1[1]]) rotate([-90, 0, 0]) cylinder(d = 3, h = T + 2);
     node_front(Q_NX, Q_NTOP);
     name_recess(Q_W - 31, Q_NZ - 2);
-    pd_cut(Q_PDX, Q_D, Q_PDZ);
+    pd_cut(Q_PDX, Q_D);
     // rear: low vents, the wall thinned over the antenna; right: AUX's slot
     for (x = [32 : 6 : 92]) translate([x, Q_D - T - 1, 8]) cube([2.5, T + 2, 20]);
     translate([Q_ANT[0], Q_D - T - EPS, Q_NZ - 4]) cube([Q_ANT[1] - Q_ANT[0], 0.8 + EPS, Q_ZL]);

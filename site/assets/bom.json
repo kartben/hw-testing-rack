@@ -6292,7 +6292,7 @@
 {
 "item": "standalone_solo_base (printed)",
 "qty": 1,
-"grams": 31.2,
+"grams": 30.9,
 "unit_eur": 0.62,
 "stl": "mechanical/stl/standalone_solo_base.stl",
 "ext_eur": 0.62
@@ -6300,20 +6300,20 @@
 {
 "item": "standalone_solo_lid (printed)",
 "qty": 1,
-"grams": 14.5,
+"grams": 14.6,
 "unit_eur": 0.29,
 "stl": "mechanical/stl/standalone_solo_lid.stl",
 "ext_eur": 0.29
 },
 {
-"item": "USB-C PD trigger module, CH224K set to 20 V (a \"decoy\" board, ≤ 25 × 12.4 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md)",
-"supplier": "AliExpress (bulk); its size goes in config/rack.yaml › standalone.pd_module",
+"item": "USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a \"decoy\" board, ≤ 30 × 21 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md)",
+"supplier": "AliExpress 3256811726090162; its size goes in config/rack.yaml › standalone.pd_module",
 "qty": 1,
 "unit_eur": 2.0,
 "ext_eur": 2.0
 },
 {
-"item": "Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module on its seat)",
+"item": "Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module against its wall)",
 "supplier": "any",
 "qty": 1,
 "unit_eur": 0.05,
@@ -6363,7 +6363,7 @@
 }
 ],
 "total_eur": 4.8,
-"grams": 45.7
+"grams": 45.5
 },
 "quad": {
 "title": "Quad (the node + the DATA ×4 v2)",
@@ -6371,7 +6371,7 @@
 {
 "item": "standalone_quad_base (printed)",
 "qty": 1,
-"grams": 74.2,
+"grams": 73.9,
 "unit_eur": 1.48,
 "stl": "mechanical/stl/standalone_quad_base.stl",
 "ext_eur": 1.48
@@ -6393,14 +6393,14 @@
 "ext_eur": 0.28
 },
 {
-"item": "USB-C PD trigger module, CH224K set to 20 V (a \"decoy\" board, ≤ 25 × 12.4 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md)",
-"supplier": "AliExpress (bulk); its size goes in config/rack.yaml › standalone.pd_module",
+"item": "USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a \"decoy\" board, ≤ 30 × 21 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md)",
+"supplier": "AliExpress 3256811726090162; its size goes in config/rack.yaml › standalone.pd_module",
 "qty": 1,
 "unit_eur": 2.0,
 "ext_eur": 2.0
 },
 {
-"item": "Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module on its seat)",
+"item": "Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module against its wall)",
 "supplier": "any",
 "qty": 1,
 "unit_eur": 0.05,
@@ -6443,7 +6443,7 @@
 }
 ],
 "total_eur": 5.83,
-"grams": 99.4
+"grams": 99.1
 },
 "desk_frame": {
 "title": "Desk frame, for either (the rack's honeycomb plate in it: the DUTs held by its pegs)",

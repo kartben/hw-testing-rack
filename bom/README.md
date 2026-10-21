@@ -411,8 +411,8 @@ One bay out of the rack, on a desk ([docs/standalone.md](../docs/standalone.md))
 |---|---:|---:|---:|---|
 | standalone_solo_base (printed) | 1 | 0.62 | 0.62 | `mechanical/stl/standalone_solo_base.stl` |
 | standalone_solo_lid (printed) | 1 | 0.29 | 0.29 | `mechanical/stl/standalone_solo_lid.stl` |
-| USB-C PD trigger module, CH224K set to 20 V (a "decoy" board, ≤ 25 × 12.4 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md) | 1 | 2.00 | 2.00 | AliExpress (bulk); its size goes in config/rack.yaml › standalone.pd_module |
-| Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module on its seat) | 1 | 0.05 | 0.05 | any |
+| USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a "decoy" board, ≤ 30 × 21 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md) | 1 | 2.00 | 2.00 | AliExpress 3256811726090162; its size goes in config/rack.yaml › standalone.pd_module |
+| Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module against its wall) | 1 | 0.05 | 0.05 | any |
 | PD lead: JST PHR-6 housing, 2 × SPH-002T-P0.5S, 2 × 15 cm 24 AWG (red VRACK on pin 1, black GND on pin 2), soldered to the module's output pads | 1 | 0.30 | 0.30 | LCSC / AliExpress |
 | JST PH 8-pin lead, pin n ↔ pin 9−n, 15 cm (node J7 → the DATA board): the rack's DATA lead, shorter | 1 | 0.90 | 0.90 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P |
 | M3 heat-set insert, 5.7 mm | 8 | 0.03 | 0.24 | AliExpress (bulk) |
@@ -427,8 +427,8 @@ One bay out of the rack, on a desk ([docs/standalone.md](../docs/standalone.md))
 | standalone_quad_base (printed) | 1 | 1.48 | 1.48 | `mechanical/stl/standalone_quad_base.stl` |
 | standalone_quad_shelf (printed) | 1 | 0.22 | 0.22 | `mechanical/stl/standalone_quad_shelf.stl` |
 | standalone_quad_lid (printed) | 1 | 0.28 | 0.28 | `mechanical/stl/standalone_quad_lid.stl` |
-| USB-C PD trigger module, CH224K set to 20 V (a "decoy" board, ≤ 25 × 12.4 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md) | 1 | 2.00 | 2.00 | AliExpress (bulk); its size goes in config/rack.yaml › standalone.pd_module |
-| Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module on its seat) | 1 | 0.05 | 0.05 | any |
+| USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a "decoy" board, ≤ 30 × 21 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md) | 1 | 2.00 | 2.00 | AliExpress 3256811726090162; its size goes in config/rack.yaml › standalone.pd_module |
+| Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module against its wall) | 1 | 0.05 | 0.05 | any |
 | PD lead: JST PHR-6 housing, 2 × SPH-002T-P0.5S, 2 × 15 cm 24 AWG (red VRACK on pin 1, black GND on pin 2), soldered to the module's output pads | 1 | 0.30 | 0.30 | LCSC / AliExpress |
 | JST PH 8-pin lead, pin n ↔ pin 9−n, 15 cm (node J7 → the DATA board): the rack's DATA lead, shorter | 1 | 0.90 | 0.90 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P |
 | M3 heat-set insert, 5.7 mm | 8 | 0.03 | 0.24 | AliExpress (bulk) |

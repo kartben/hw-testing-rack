@@ -1124,11 +1124,12 @@ def standalone(rack) -> dict:
         return {"item": f"{name} (printed)", "qty": qty, "grams": round(g * qty, 1),
                 "unit_eur": round(g * PETG_EUR_PER_KG / 1000, 2), "stl": f"mechanical/stl/{name}.stl"}
 
-    pd = {"item": "USB-C PD trigger module, CH224K set to 20 V (a \"decoy\" board, ≤ 25 × 12.4 mm): feeds the "
-                  "node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md)",
-          "supplier": "AliExpress (bulk); its size goes in config/rack.yaml › standalone.pd_module", "qty": 1,
-          "unit_eur": 2.0}
-    foam = {"item": "Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module on its seat)", "supplier": "any",
+    pd = {"item": "USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a \"decoy\" board, ≤ 30 × 21 mm): "
+                  "feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W "
+                  "(docs/cabling.md)",
+          "supplier": "AliExpress 3256811726090162; its size goes in config/rack.yaml › standalone.pd_module",
+          "qty": 1, "unit_eur": 2.0}
+    foam = {"item": "Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module against its wall)", "supplier": "any",
             "qty": 1, "unit_eur": 0.05}
     pd_lead = {"item": "PD lead: JST PHR-6 housing, 2 × SPH-002T-P0.5S, 2 × 15 cm 24 AWG (red VRACK on pin 1, black GND "
                        "on pin 2), soldered to the module's output pads", "supplier": "LCSC / AliExpress",

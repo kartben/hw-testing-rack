@@ -5,8 +5,8 @@ USB-C PD charger.  Two boxes and one accessory (`mechanical/parts/standalone.sca
 
 | | Boards | Outside (W × D × H, on its feet) | Printed (H2D, 0.20 Standard, PETG, no supports) |
 |---|---|---|---|
-| **Solo** | the bay node + the single DATA port board | 106 × 95.5 × 33.6 mm | base + lid, one plate: 64 g, 2 h 22 |
-| **Quad** | the bay node + the DATA ×4 v2 | 107 × 95.5 × 96.1 mm | base + shelf + lid, one plate: 136 g, 5 h 15 |
+| **Solo** | the bay node + the single DATA port board | 106 × 95.5 × 33.6 mm | base + lid, one plate: 64 g, 2 h 21 |
+| **Quad** | the bay node + the DATA ×4 v2 | 107 × 95.5 × 96.1 mm | base + shelf + lid, one plate: 135 g, 5 h 14 |
 | **Desk frame** | the rack's honeycomb plate, the DUTs on its pegs | 142.8 × 190.8 × 8.5 mm | frame + plate, one plate: 85 g, 4 h 01 |
 
 The bought parts and the hardware per unit: [bom/README.md › Standalone bays](../bom/README.md) (≈ €5 a unit
@@ -23,10 +23,12 @@ beyond its boards; optional, outside the rack's totals).
   windows, the port numbers 1–4 debossed.  The node lies on a shelf over it, front edge forward: PC port, SERVICE
   and status at the top of the front face.  The shelf rests on the slots' rails and two 45° ledges, 0.5 over the
   v2's top edge, so the board can't lift out.
-- **Both.**  At the back, the PD module's USB-C: the module (config/rack.yaml › standalone.pd_module) sits on a
-  seat on the floor, its PCB's edge on the rear wall, a fence round its sides and far end, a 1 mm double-sided
-  foam pad under it; a collar in the wall's inner 0.6 mm centres its USB-C's shell, whatever the board.  The rear
-  wall is 1.2 mm thick over the node's antenna, nothing metal near it.  The lid: RESET / BOOT pin holes over guide
+- **Both.**  At the back, the PD module's USB-C, upright: the module (config/rack.yaml › standalone.pd_module)
+  stands on its long edge at the rear left, its back face on a 1 mm double-sided foam pad against a low wall, its
+  PCB's edge on the rear wall, a low fence at its far end under its output pads; a collar in the wall's inner
+  0.6 mm centres its USB-C's shell, whatever the board.  Its DIP switch faces into the box, in reach with the lid
+  off.  In the Solo a rib under the lid holds its top edge.  The rear wall is 1.2 mm thick over the node's antenna,
+  nothing metal near it.  The lid: RESET / BOOT pin holes over guide
   tubes, a window over J6 (the camera's lead plugs in from above), vents over the node's buck.  AUX (J5): a slot
   for its lead at the right wall's top.  Four rubber bumpers under the box, in 0.5 mm pockets.
 - **Desk frame.**  The rack's plate drops into its pocket on two pins, as in a drawer; the DUTs sit on its pegs as
@@ -35,26 +37,29 @@ beyond its boards; optional, outside the rack's totals).
 
 ## Power
 
-A USB-C PD trigger module, a CH224K one set to 20 V (a bought "decoy" board), feeds the node's J1: pin 1 VRACK
-(red), pin 2 GND (black), a PHR-6 housing on two wires soldered to the module's output pads.  Any PD charger that
+A USB-C PD trigger module, a CH224K one with a DIP switch set to 20 V (a bought "decoy" board, e.g. AliExpress
+3256811726090162), feeds the node's J1: pin 1 VRACK (red), pin 2 GND (black), a PHR-6 housing on two wires
+soldered to the module's output pads.  Any PD charger that
 offers 20 V, 30 W or more: a bay draws 13 W at most; 15 V works too, 12 V and 9 V don't, and without the hub the
 node never takes a rack address ([cabling.md](cabling.md)).  The bought board's size goes in
-`config/rack.yaml › standalone.pd_module` (PCB length and width, thickness, the USB-C's axis over its underside):
-the seat and the collar follow.  A seller's board up to 25 × 12.4 mm fits; its USB-C may stand 0.6–2 mm proud of
-its PCB's edge.
+`config/rack.yaml › standalone.pd_module` (PCB length and width, thickness, the USB-C's axis off its back face):
+the seat and the collar follow.  The seller gives no size; the defaults, 30 × 21 × 1.6 mm, are the largest its
+photos allow, and a smaller board fits as it is (its USB-C may stand 0.6–2 mm proud of its PCB's edge).  Measure
+the one bought.
 
 ## Assembly
 
 **Solo**
 1. Heat-set the inserts: 4 in the node's bosses, 4 in the corner bosses.
-2. The PD module onto its seat on the foam pad, its USB-C into the rear wall's collar; its lead into the node's J1.
+2. The PD module, its DIP switch set to 20 V: on its edge against its wall on the foam pad, its USB-C into the
+   rear wall's collar, its far end behind the fence; its lead into the node's J1.
 3. The node onto its bosses (4 × M3×8); the DATA lead into J7.
 4. The DATA port board under the lid, component face down (2 × PT 2.3×8 up through it); its lead into its PH 8.
 5. The lid on (4 × M3×8), the four bumpers under the base.
 
 **Quad**
 1. Heat-set the inserts: 4 in the shelf's bosses, 4 in the base's corner bosses.
-2. The PD module onto its seat, as the Solo's.  The DATA lead into the v2's J1 first, then the v2 down into its
+2. The PD module, as the Solo's (DIP switch at 20 V).  The DATA lead into the v2's J1 first, then the v2 down into its
    side slots, USB-C forward.
 3. The node onto the shelf (4 × M3×8); the PD lead into J1, the DATA lead into J7; the shelf onto its ledges.
 4. The lid on (4 × M3×8), the four bumpers under the base.
@@ -66,7 +71,7 @@ front feet into the dock's slots.
 
 SolidCraft, exact solids, every board in and every plug plugged (the PC cable, the DUT cables, the charger's, the
 PH leads, the Dupont blocks): no overlap.  Closest: the USB-C overmolds 0.04 in their cuts (as on the rack's port
-wall), the PD module's USB-C 0.17 in its collar, the Dupont blocks 0.6 in their windows, the lid 1.0 over the
+wall), the PD module's USB-C 0.17 in its collar, the Solo's lid rib 0.3 over the module, the Dupont blocks 0.6 in their windows, the lid 1.0 over the
 node's C1 and its buttons' tubes 1.0 over the buttons, the docked box 0.5 off the frame and its feet 0.6 in the
 dock's slots.  Bambu Studio: no supports; past 45° as printed only short bridges over the openings in the walls
 (the longest 16.4, the Quad's header windows) and the lids' counterbore shoulders.
