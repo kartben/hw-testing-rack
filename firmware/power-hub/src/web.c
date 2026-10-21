@@ -264,6 +264,9 @@ static void respond_status(struct http_response_ctx *rsp)
 	struct out o = {resp_buf, sizeof(resp_buf)};
 	struct hub_pd_status pd;
 	struct hub_bus_status bus;
+	struct hub_budget_status budget;
+	char shed[HUB_ROWS + 1];
+	int nshed = 0;
 	int64_t now = k_uptime_get();
 	uint32_t used_mw = 0;
 
@@ -295,8 +298,19 @@ static void respond_status(struct http_response_ctx *rsp)
 		put(&o, "]}");
 	}
 
-	put(&o, "],\"budget\":{\"contract_mw\":%u,\"used_mw\":%u,\"shed_order\":\"%s\"},",
-	    pd.contract_mv * pd.contract_ma / 1000, used_mw, rows_shed_order());
+	rows_budget(&budget);
+	for (int r = 0; r < HUB_ROWS; r++) {
+		if (budget.shed & BIT(r)) {
+			shed[nshed++] = 'A' + r;
+		}
+	}
+	shed[nshed] = '\0';
+	put(&o, "],\"budget\":{\"contract_mw\":%u,\"used_mw\":%u,\"limit_mw\":%u,\"limit_ma\":%u,"
+		"\"total_ma\":%d,\"margin_pct\":%u,\"cap_mw\":%u,\"shed\":\"%s\",\"sheds\":%u,"
+		"\"shed_order\":\"%s\"},",
+	    pd.contract_mv * pd.contract_ma / 1000, used_mw,
+	    budget.limit_ma * budget.contract_mv / 1000, budget.limit_ma, budget.total_ma,
+	    budget.margin_pct, budget.cap_mw, shed, budget.sheds, rows_shed_order());
 	put(&o, "\"can\":{\"state\":\"%s\",\"bitrate\":%u,\"nodes\":%d,\"lost\":%d,\"rx_fps\":%u,"
 		"\"errors\":%u,\"tx_errors\":%u,\"bus_off\":%u,\"enumerating\":%s,"
 		"\"enumerated_s\":%d,\"enumerations\":%u}",
@@ -732,6 +746,7 @@ static int metrics_handler(struct http_client_ctx *client, enum http_transaction
 	struct out o = {resp_buf, sizeof(resp_buf)};
 	struct hub_pd_status pd;
 	struct hub_bus_status bus;
+	struct hub_budget_status budget;
 
 	ARG_UNUSED(client);
 	ARG_UNUSED(req);
@@ -773,6 +788,22 @@ static int metrics_handler(struct http_client_ctx *client, enum http_transaction
 		rows_status(r, &st);
 		put(&o, "hub_row_faults_total{row=\"%c\"} %u\n", 'A' + r, st.faults);
 	}
+	rows_budget(&budget);
+	put(&o, "# HELP hub_row_shed Row off for lack of power\n# TYPE hub_row_shed gauge\n");
+	for (int r = 0; r < HUB_ROWS; r++) {
+		put(&o, "hub_row_shed{row=\"%c\"} %d\n", 'A' + r, (budget.shed & BIT(r)) != 0);
+	}
+	put(&o, "# HELP hub_rows_amps What the rows draw (IMON, summed)\n"
+		"# TYPE hub_rows_amps gauge\nhub_rows_amps %d.%03d\n", budget.total_ma / 1000,
+	    budget.total_ma % 1000);
+	put(&o, "# HELP hub_budget_amps What the rows may draw: the contract (or the cap) less "
+		"the margin\n# TYPE hub_budget_amps gauge\nhub_budget_amps %u.%03u\n",
+	    budget.limit_ma / 1000, budget.limit_ma % 1000);
+	put(&o, "# HELP hub_budget_cap_watts Budget cap set by hand, 0 none\n"
+		"# TYPE hub_budget_cap_watts gauge\nhub_budget_cap_watts %u.%03u\n",
+	    budget.cap_mw / 1000, budget.cap_mw % 1000);
+	put(&o, "# HELP hub_row_sheds_total Rows shed for lack of power since boot\n"
+		"# TYPE hub_row_sheds_total counter\nhub_row_sheds_total %u\n", budget.sheds);
 	put(&o, "# HELP hub_nodes Nodes on the rack bus\n# TYPE hub_nodes gauge\nhub_nodes %d\n"
 		"# HELP hub_nodes_lost Nodes gone silent\n# TYPE hub_nodes_lost gauge\n"
 		"hub_nodes_lost %d\n", bus.nodes, bus.lost);

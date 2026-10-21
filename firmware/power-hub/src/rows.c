@@ -8,10 +8,10 @@
  *    once the nodes have booted (CONFIG_HUB_ROW_BOOT_MS).
  *  - The enables are held across a controller reset (pad hold): a reboot of
  *    the hub does not power-cycle the rack.
- *  - Shedding follows what the rows really draw (IMON): above
- *    CONFIG_HUB_SHED_PERCENT of the contract for CONFIG_HUB_SHED_HOLD_MS,
- *    the next row in the shed order goes off; it comes back once the
- *    contract has room for it again.  No contract at all: every row off.
+ *  - Shedding follows what the rows really draw (IMON) against the
+ *    charger's contract (budget.c): over the budget, the next row in the
+ *    shed order goes off; it comes back once the budget has room for it
+ *    again.  No contract at all: every row off.
  *  - FLT counts only while the row is on and past its soft start
  *    (CONFIG_HUB_ROW_FLT_BLANK_MS): the TPS2660 also asserts it in
  *    shutdown and while it starts (datasheet 9.3.5.3).
@@ -33,13 +33,15 @@
 #include <soc/soc.h>
 #endif
 
+#include "budget.h"
 #include "hub.h"
 
 LOG_MODULE_REGISTER(rows, CONFIG_HUB_LOG_LEVEL);
 
 #define ROWS_NODE DT_NODELABEL(rack_rows)
 #define SAMPLE_MS 250
-#define RESTORE_MARGIN_MA 200
+
+BUILD_ASSERT(HUB_ROWS == BUDGET_ROWS);
 
 struct row_cfg {
 	struct gpio_dt_spec en;
@@ -70,7 +72,6 @@ struct row {
 	bool fault;
 	uint32_t faults;
 	int32_t ma;
-	int32_t last_on_ma; /* what it drew before it was shed */
 	int64_t flt_from;   /* uptime from which FLT means a fault (on, soft start over) */
 	struct gpio_callback flt_cb;
 	struct k_work_delayable cycle_work;
@@ -82,9 +83,8 @@ static char shed_order[HUB_ROWS + 1] = "DCBA";
 static K_MUTEX_DEFINE(lock);
 
 static bool contract_final;
-static uint32_t contract_mv, contract_ma;
-static int64_t over_since;
-static int64_t room_since;
+static struct budget budget;
+static uint32_t sheds;
 
 static void sample_handler(struct k_work *work);
 static void stagger_handler(struct k_work *work);
@@ -178,9 +178,6 @@ static void row_off(int row, enum hub_row_state why)
 {
 	bool was_on = rows[row].state == HUB_ROW_ON;
 
-	if (was_on) {
-		rows[row].last_on_ma = rows[row].ma;
-	}
 	enable_write(row, false);
 	if (wired(row)) {
 		(void)gpio_pin_set_dt(&cfg[row].pos, 0);
@@ -197,7 +194,6 @@ static void row_on(int row)
 	enable_write(row, true);
 	rows[row].state = HUB_ROW_ON;
 	rows[row].flt_from = k_uptime_get() + CONFIG_HUB_ROW_FLT_BLANK_MS;
-	over_since = 0;
 }
 
 /* Turn the waiting rows on, one per CONFIG_HUB_ROW_STAGGER_MS */
@@ -295,38 +291,12 @@ static int32_t read_imon(int row)
 	return MAX(sensor_value_to_milli(&v), 0);
 }
 
-/* The next row to shed (lock held), -1 none */
-static int shed_candidate(void)
-{
-	for (const char *c = shed_order; *c != '\0'; c++) {
-		int r = *c - 'A';
-
-		if (rows[r].state == HUB_ROW_ON) {
-			return r;
-		}
-	}
-	return -1;
-}
-
-/* The next shed row to bring back: the last one shed (lock held), -1 none */
-static int restore_candidate(void)
-{
-	for (int i = (int)strlen(shed_order) - 1; i >= 0; i--) {
-		int r = shed_order[i] - 'A';
-
-		if (rows[r].state == HUB_ROW_SHED && (wanted & BIT(r))) {
-			return r;
-		}
-	}
-	return -1;
-}
-
 static void sample_handler(struct k_work *work)
 {
-	int64_t now = k_uptime_get();
-	int32_t total = 0;
-	int shed = -1, restore = -1;
-	int32_t limit;
+	struct budget_rows in = {.order = shed_order};
+	enum budget_act act;
+	int32_t total = 0, limit, base;
+	int row = -1;
 
 	ARG_UNUSED(work);
 
@@ -340,45 +310,30 @@ static void sample_handler(struct k_work *work)
 	}
 
 	k_mutex_lock(&lock, K_FOREVER);
-	limit = (int32_t)(contract_ma * CONFIG_HUB_SHED_PERCENT / 100);
-
-	if (contract_ma != 0 && total > limit) {
-		room_since = 0;
-		if (over_since == 0) {
-			over_since = now;
-		} else if (now - over_since >= CONFIG_HUB_SHED_HOLD_MS) {
-			shed = shed_candidate();
-			if (shed >= 0) {
-				row_off(shed, HUB_ROW_SHED);
-			}
-			over_since = 0;
-		}
-	} else {
-		over_since = 0;
-		restore = contract_final ? restore_candidate() : -1;
-		if (restore >= 0 && limit - total > rows[restore].last_on_ma + RESTORE_MARGIN_MA) {
-			if (room_since == 0) {
-				room_since = now;
-			} else if (now - room_since >= CONFIG_HUB_RESTORE_HOLD_S * MSEC_PER_SEC) {
-				rows[restore].state = HUB_ROW_WAITING;
-				room_since = 0;
-			} else {
-				restore = -1;
-			}
-		} else {
-			room_since = 0;
-			restore = -1;
-		}
+	for (int r = 0; r < HUB_ROWS; r++) {
+		in.ma[r] = rows[r].ma;
+		in.on |= rows[r].state == HUB_ROW_ON ? BIT(r) : 0;
+		in.shed |= rows[r].state == HUB_ROW_SHED && (wanted & BIT(r)) ? BIT(r) : 0;
+	}
+	act = budget_step(&budget, k_uptime_get(), &in, &row);
+	base = (int32_t)budget_base_ma(&budget);
+	limit = (int32_t)budget_limit_ma(&budget);
+	if (act == BUDGET_SHED) {
+		row_off(row, HUB_ROW_SHED);
+		sheds++;
+	} else if (act == BUDGET_RESTORE) {
+		rows[row].state = HUB_ROW_WAITING;
 	}
 	k_mutex_unlock(&lock);
 
-	if (shed >= 0) {
-		hub_event(HUB_EV_ROW, "row %c shed: the rows draw %d.%02d A, %d%% of the %u.%02u A contract",
-			  'A' + shed, total / 1000, total % 1000 / 10, CONFIG_HUB_SHED_PERCENT,
-			  contract_ma / 1000, contract_ma % 1000 / 10);
-	}
-	if (restore >= 0) {
-		hub_event(HUB_EV_ROW, "row %c back: the contract has room for it again", 'A' + restore);
+	if (act == BUDGET_SHED) {
+		bool over_base = total > base;
+
+		hub_event(HUB_EV_ROW, "row %c shed: %d.%02d A > %d.%02d A %s", 'A' + row,
+			  total / 1000, total % 1000 / 10, (over_base ? base : limit) / 1000,
+			  (over_base ? base : limit) % 1000 / 10, over_base ? "contract" : "budget");
+	} else if (act == BUDGET_RESTORE) {
+		hub_event(HUB_EV_ROW, "row %c back: the budget has room for it again", 'A' + row);
 		k_work_reschedule(&stagger_work, K_NO_WAIT);
 	}
 
@@ -392,8 +347,6 @@ void rows_contract(bool final, uint32_t mv, uint32_t ma)
 	bool start = false;
 
 	k_mutex_lock(&lock, K_FOREVER);
-	contract_mv = mv;
-	contract_ma = ma;
 	if (lost) {
 		/* No usable VRACK: everything off, back with the next final contract */
 		contract_final = false;
@@ -412,11 +365,65 @@ void rows_contract(bool final, uint32_t mv, uint32_t ma)
 			}
 		}
 	}
+	budget_contract(&budget, contract_final, mv, lost ? 0 : ma);
 	k_mutex_unlock(&lock);
 
 	if (start) {
 		k_work_reschedule(&stagger_work, K_NO_WAIT);
 	}
+}
+
+/* --- The budget, by hand -------------------------------------------------------- */
+
+void rows_budget(struct hub_budget_status *st)
+{
+	k_mutex_lock(&lock, K_FOREVER);
+	st->contract_mv = budget.contract_mv;
+	st->contract_ma = budget.contract_ma;
+	st->cap_mw = budget.cap_mw;
+	st->margin_pct = budget.margin_pct;
+	st->base_ma = budget_base_ma(&budget);
+	st->limit_ma = budget_limit_ma(&budget);
+	st->total_ma = 0;
+	st->shed = 0;
+	for (int r = 0; r < HUB_ROWS; r++) {
+		st->total_ma += rows[r].ma;
+		st->shed |= rows[r].state == HUB_ROW_SHED ? BIT(r) : 0;
+	}
+	st->sheds = sheds;
+	k_mutex_unlock(&lock);
+}
+
+int rows_set_budget_margin(int margin_pct)
+{
+	uint32_t cap;
+	int ret;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	ret = budget_set_margin(&budget, margin_pct);
+	cap = budget.cap_mw;
+	k_mutex_unlock(&lock);
+	if (ret != 0) {
+		return ret;
+	}
+	hub_event(HUB_EV_ROW, "budget margin %d %%", margin_pct);
+	return hub_settings_save_budget((uint8_t)margin_pct, cap);
+}
+
+int rows_set_budget_cap(uint32_t cap_mw)
+{
+	uint8_t margin;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	budget_set_cap(&budget, cap_mw);
+	margin = budget.margin_pct;
+	k_mutex_unlock(&lock);
+	if (cap_mw != 0) {
+		hub_event(HUB_EV_ROW, "budget capped at %u W", cap_mw / 1000);
+	} else {
+		hub_event(HUB_EV_ROW, "budget cap off: the contract's");
+	}
+	return hub_settings_save_budget(margin, cap_mw);
 }
 
 /* --- By hand ----------------------------------------------------------------- */
@@ -581,12 +588,13 @@ void rows_pos(int row, bool high)
 
 /* --- Init -------------------------------------------------------------------- */
 
-int rows_init(uint8_t wanted_rows, const char *order)
+int rows_init(uint8_t wanted_rows, const char *order, int margin_pct, uint32_t cap_mw)
 {
 	uint8_t kept = 0;
 	int ret;
 
 	wanted = wanted_rows;
+	budget_init(&budget, margin_pct >= 0 ? margin_pct : CONFIG_HUB_BUDGET_MARGIN_PCT, cap_mw);
 	if (order != NULL && order[0] != '\0') {
 		(void)rows_set_shed_order(order);
 	}

@@ -27,12 +27,15 @@
 
 LOG_MODULE_REGISTER(hub, CONFIG_HUB_LOG_LEVEL);
 
-/* --- Settings: "hub/id", "hub/epr", "hub/rows", "hub/shed", "hub/key" -------- */
+/* --- Settings: "hub/id", "hub/epr", "hub/rows", "hub/shed", "hub/margin",
+ *     "hub/cap", "hub/key" ---------------------------------------------------- */
 
 static char stored_id[HWTR_ID_MAX_LEN + 1];
 static bool stored_epr = IS_ENABLED(CONFIG_HUB_PD_EPR);
 static uint8_t stored_rows = BIT_MASK(HUB_ROWS);
 static char stored_shed[HUB_ROWS + 1];
+static int8_t stored_margin = -1; /* -1: CONFIG_HUB_BUDGET_MARGIN_PCT */
+static uint32_t stored_cap_mw;
 
 static int hub_settings_set(const char *key, size_t len, settings_read_cb read_cb, void *cb_arg)
 {
@@ -61,6 +64,14 @@ static int hub_settings_set(const char *key, size_t len, settings_read_cb read_c
 			return 0;
 		}
 		n = read_cb(cb_arg, stored_shed, HUB_ROWS);
+		return n < 0 ? (int)n : 0;
+	}
+	if (settings_name_steq(key, "margin", NULL)) {
+		n = read_cb(cb_arg, &stored_margin, sizeof(stored_margin));
+		return n < 0 ? (int)n : 0;
+	}
+	if (settings_name_steq(key, "cap", NULL)) {
+		n = read_cb(cb_arg, &stored_cap_mw, sizeof(stored_cap_mw));
 		return n < 0 ? (int)n : 0;
 	}
 	if (settings_name_steq(key, "key", NULL)) {
@@ -99,6 +110,14 @@ int hub_settings_save_rows(uint8_t wanted)
 int hub_settings_save_shed(const char *order)
 {
 	return settings_save_one("hub/shed", order, HUB_ROWS);
+}
+
+int hub_settings_save_budget(uint8_t margin_pct, uint32_t cap_mw)
+{
+	int8_t margin = (int8_t)margin_pct;
+	int ret = settings_save_one("hub/margin", &margin, sizeof(margin));
+
+	return ret != 0 ? ret : settings_save_one("hub/cap", &cap_mw, sizeof(cap_mw));
 }
 
 /* The admin key (firmware/common/lib/admin.c), or NULL to forget it */
@@ -238,7 +257,8 @@ int main(void)
 #endif
 
 	/* First: the rows keep what they were doing across a controller reset */
-	ret = rows_init(stored_rows, stored_shed[0] ? stored_shed : NULL);
+	ret = rows_init(stored_rows, stored_shed[0] ? stored_shed : NULL, stored_margin,
+			stored_cap_mw);
 	if (ret != 0) {
 		LOG_ERR("rows init failed: %d", ret);
 	}

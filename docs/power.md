@@ -29,7 +29,7 @@ the row's first node.  Box and lid: [mechanical.md](mechanical.md#power-box).
 | **Default** (since 2026-10-21) | a **dedicated, single-port USB PD charger, 100 W** (20 V × 5 A), e.g. the Anker Nano 100 W (A2679, ≈ €46).  VRACK is then 20 V |
 | **Cable** | USB-C to USB-C, **5 A e-marked** (100 W or 240 W rated), 1–2 m.  It is required: above 3 A a charger only offers its full current through an e-marked 5 A cable, and a 3 A one gives 60 W |
 | **Option** | for racks full of hungry DUTs, a **single-port USB PD 3.1 EPR charger, 140 W** (28 V × 5 A), with a 240 W cable.  The Samsung EP-TB410 (≈ €84 without a cable) was the cheapest found in France; UGREEN Nexode and Anker 717 140 W are often €60–80 on sale (unverified).  The hub asks for 28 V EPR whenever it is offered: no hardware change |
-| **Also works** | a 65 W charger (20 V × 3.25 A): a light rack, with power budgeting |
+| **Also works** | a 65 W charger (20 V × 3.25 A): a light rack, with power budgeting ([below](#keeping-the-rows-inside-the-contract)) |
 | **Avoid** | sharing the charger: a multi-port charger can withdraw its full offer when another device is plugged in, and renegotiate the rack down |
 
 The hub never accepts 36 V or 48 V (EPR goes up to 48 V): the bay nodes' TVS
@@ -88,8 +88,54 @@ worst ≈ 44 W.  The 140 W EPR option (28 V) covers 12 bays' worst case (≈ 130
 ≈ 45 W.
 The hub knows both sides: the contract (the CH224A: the charger's offers and
 the current granted) and each row's current (the eFuses' IMON).  When the negotiated power is below
-the worst case, it budgets (the firmware's power budget, the hub app): it limits or sheds rows before
+the worst case, it budgets ([below](#keeping-the-rows-inside-the-contract)): it limits or sheds rows before
 the charger trips.
+
+### Keeping the rows inside the contract
+
+A PD charger in overload cuts its output, and the whole rack restarts: an
+eFuse only ever trips its own row.  So the hub keeps what the rows draw inside
+what the charger granted (`src/budget.c`, tested on native_sim with made-up
+contracts in `tests/budget`):
+
+* **The budget comes from the contract**, not from constants: the current the
+  CH224A reports as granted (register 0x50) at the voltage negotiated, less a
+  **10 % margin** for the hub's own draw and IMON's error.  The rows' current
+  and the charger's limit are both currents at VRACK, so the same code covers:
+
+  | Contract | Granted | Budget for the rows |
+  |---|---|---|
+  | 140 W EPR charger, 5 A cable | 28 V × 5 A | 4.5 A, 126 W |
+  | 100 W charger without EPR (Anker Nano 100 W), 5 A cable | 20 V × 5 A | 4.5 A, 90 W |
+  | the same charger, a 3 A cable | 20 V × 3 A | 2.7 A, 54 W |
+
+  A multi-port charger that shares its power advertises less when another
+  device is plugged in: the hub renegotiates and the budget follows.  One that
+  advertises its full power but cuts at less takes a cap by hand,
+  `hub budget cap <W>` (saved, in watts, so it follows the voltage).
+* **Over the budget for 1 s**, or **past the contract itself for 250 ms**
+  (before the charger's overcurrent protection), the next row in the shed
+  order goes off: D, C, B, then A by default (`hub shed`).  IMON is summed
+  every 250 ms; one row at a time, each shed waiting for what the others draw
+  without it.
+* **Back, the last shed first**, once the budget has room for the most that
+  row drew plus 0.2 A, for 10 s, and only with a final contract.  A row shed
+  again within a minute of coming back waits twice as long the next time (up
+  to 10 min): a load that only fits now and then does not make the rack
+  oscillate.
+* **The eFuses stay at 1.6 A** whatever the voltage: the PH rows and their
+  24 AWG leads take no more.  At 28 V a row may carry 45 W, at 20 V 32 W.
+* The page shows the budget (a mark on the rows' bar) and the rows shed;
+  `/metrics` has `hub_budget_amps`, `hub_rows_amps`, `hub_row_shed` and
+  `hub_row_sheds_total`; every shed and return is an event.  The margin,
+  the cap and the thresholds are Kconfig defaults (`CONFIG_HUB_BUDGET_*`,
+  `CONFIG_HUB_SHED_*`, `CONFIG_HUB_RESTORE_*`), the margin and the cap
+  settable at run time (`hub budget margin`, `hub budget cap`).
+
+What it cannot catch: a step faster than its 250–500 ms, beyond what the
+charger tolerates for that long (rows of bays all jumping to their 1.5 A at
+once).  On the default 100 W charger that only matters past 8 bays at
+their worst case; the realistic rack draws ≈ 35–40 W with margins.
 
 Each row has its own eFuse, set to **1.6 A**: rows are wired with JST PH (2 A
 per contact, on 24 AWG: the row cables are built from 24 AWG leads), so the limit protects the connectors and the cables

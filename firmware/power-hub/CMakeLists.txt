@@ -13,6 +13,7 @@ target_sources(app PRIVATE
   src/main.c
   src/pd.c
   src/rows.c
+  src/budget.c
   src/bus.c
   src/events.c
   src/web.c

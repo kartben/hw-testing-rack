@@ -77,6 +77,38 @@ static void print_rows(const struct shell *sh)
 	shell_print(sh, "shed order: %s", rows_shed_order());
 }
 
+static void print_budget(const struct shell *sh)
+{
+	struct hub_budget_status b;
+	char shed[HUB_ROWS + 1] = "";
+	int n = 0;
+
+	rows_budget(&b);
+	for (int r = 0; r < HUB_ROWS; r++) {
+		if (b.shed & BIT(r)) {
+			shed[n++] = 'A' + r;
+		}
+	}
+	shed[n] = '\0';
+
+	if (b.base_ma == 0) {
+		shell_print(sh, "budget:    no contract, the rows are off");
+	} else {
+		shell_print(sh, "budget:    %d.%02d A of %u.%02u A (%u W): %u.%02u A %s less %u %%",
+			    b.total_ma / 1000, b.total_ma % 1000 / 10, b.limit_ma / 1000,
+			    b.limit_ma % 1000 / 10, b.limit_ma * b.contract_mv / 1000000,
+			    b.base_ma / 1000, b.base_ma % 1000 / 10,
+			    b.base_ma < b.contract_ma ? "cap" : "contract", b.margin_pct);
+	}
+	if (b.cap_mw != 0) {
+		shell_print(sh, "           cap %u W, %u row(s) shed since boot%s%s", b.cap_mw / 1000,
+			    b.sheds, n ? ", shed now: " : "", shed);
+	} else {
+		shell_print(sh, "           no cap, %u row(s) shed since boot%s%s", b.sheds,
+			    n ? ", shed now: " : "", shed);
+	}
+}
+
 static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 {
 	struct hub_bus_status bus;
@@ -88,6 +120,7 @@ static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 		    hwtr_net_connected() ? hwtr_net_addr() : "network down");
 	print_pd(sh);
 	print_rows(sh);
+	print_budget(sh);
 	bus_status(&bus);
 	shell_print(sh, "rack bus:  %d node(s), %d lost, %u frames/s, %u bus-off, %u enumeration(s)%s",
 		    bus.nodes, bus.lost, bus.rx_fps, bus.bus_off, bus.enumerations,
@@ -262,6 +295,45 @@ static int cmd_shed(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
+/* hub budget [margin <0-50> | cap <W>|off] */
+static int cmd_budget(const struct shell *sh, size_t argc, char **argv)
+{
+	char *end;
+	long v;
+	int ret = 0;
+
+	if (argc == 1) {
+		print_budget(sh);
+		return 0;
+	}
+	if (argc != 3) {
+		shell_error(sh, "usage: hub budget [margin <0-50> | cap <watts>|off]");
+		return -EINVAL;
+	}
+	if (strcmp(argv[1], "margin") == 0) {
+		v = strtol(argv[2], &end, 10);
+		ret = *end == '\0' ? rows_set_budget_margin((int)v) : -EINVAL;
+		if (ret == -EINVAL) {
+			shell_error(sh, "margin: 0 to 50 (%%)");
+		}
+	} else if (strcmp(argv[1], "cap") == 0) {
+		v = strcmp(argv[2], "off") == 0 ? 0 : strtol(argv[2], &end, 10);
+		if (v != 0 && (*end != '\0' || v < 1 || v > 240)) {
+			shell_error(sh, "cap: 1 to 240 (W), or off");
+			return -EINVAL;
+		}
+		ret = rows_set_budget_cap((uint32_t)v * 1000U);
+	} else {
+		shell_error(sh, "usage: hub budget [margin <0-50> | cap <watts>|off]");
+		return -EINVAL;
+	}
+	if (ret != 0 && ret != -EINVAL) {
+		shell_warn(sh, "set, but not saved (%d)", ret);
+	}
+	print_budget(sh);
+	return ret == -EINVAL ? ret : 0;
+}
+
 /* The shell is on the console USB-C only (no telnet): it is physical access */
 static int cmd_access(const struct shell *sh, size_t argc, char **argv)
 {
@@ -323,6 +395,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_hub,
 	SHELL_CMD_ARG(events, NULL, "Recent events", cmd_events, 1, 0),
 	SHELL_CMD_ARG(shed, NULL, "[order]: rows shed first to last (persistent), e.g. DCBA",
 		      cmd_shed, 1, 1),
+	SHELL_CMD_ARG(budget, NULL,
+		      "The rows' power budget; [margin <0-50>] %, [cap <W>|off] (persistent)",
+		      cmd_budget, 1, 2),
 	SHELL_CMD_ARG(id, NULL, "Rack id, sets the hostname rack-<id>: [<id>] (persistent)",
 		      cmd_id, 1, 1),
 	SHELL_CMD_ARG(access, NULL, "Admin key: [claim] confirms a claim, [reset] forgets the key",

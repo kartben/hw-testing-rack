@@ -1,0 +1,9 @@
+common:
+  tags: hwtr
+  integration_platforms:
+    - native_sim/native/64
+tests:
+  hwtr.hub.budget:
+    platform_allow:
+      - native_sim
+      - native_sim/native/64

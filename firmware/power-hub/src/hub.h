@@ -90,7 +90,25 @@ struct hub_row_status {
 	int32_t ma;    /* IMON, at VRACK */
 };
 
-int rows_init(uint8_t wanted, const char *shed_order);
+/* The rows' power budget (budget.c, docs/power.md) */
+struct hub_budget_status {
+	uint32_t contract_mv;
+	uint32_t contract_ma;
+	uint32_t cap_mw;     /* set by hand, 0 none */
+	uint8_t margin_pct;
+	uint32_t base_ma;    /* the contract's current, or the cap's if lower */
+	uint32_t limit_ma;   /* what the rows may draw: the base less the margin */
+	int32_t total_ma;    /* what they draw (IMON) */
+	uint8_t shed;        /* rows off for lack of power */
+	uint32_t sheds;      /* rows shed since boot */
+};
+
+/* margin_pct < 0: CONFIG_HUB_BUDGET_MARGIN_PCT; cap_mw 0: none */
+int rows_init(uint8_t wanted, const char *shed_order, int margin_pct, uint32_t cap_mw);
+void rows_budget(struct hub_budget_status *st);
+/* By hand, saved */
+int rows_set_budget_margin(int margin_pct);
+int rows_set_budget_cap(uint32_t cap_mw);
 void rows_status(int row, struct hub_row_status *st);
 uint8_t rows_on_mask(void);
 uint8_t rows_fault_mask(void);
@@ -140,6 +158,7 @@ int hub_settings_save_id(const char *id);
 int hub_settings_save_epr(bool epr);
 int hub_settings_save_rows(uint8_t wanted);
 int hub_settings_save_shed(const char *order);
+int hub_settings_save_budget(uint8_t margin_pct, uint32_t cap_mw);
 
 /* --- Web page, JSON API, /metrics (web.c) --------------------------------- */
 

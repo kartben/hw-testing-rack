@@ -18,7 +18,9 @@
 }
 .budget { display: grid; gap: 6px;
   & .bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--soft);
-           border: 1px solid var(--line); }
+           border: 1px solid var(--line); position: relative; }
+  /* The budget: the contract (or the cap) less the margin */
+  & .bar b { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--text); opacity: 0.55; }
   & .bar i { display: block; height: 100%; background: color-mix(in srgb, var(--pd) calc(100% - var(--k) * 22%), var(--card)); }
   & .bar i + i { border-left: 2px solid var(--card); }
   & .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.82rem; color: var(--muted); }
@@ -326,18 +328,29 @@ function renderRows(s) {
     li.querySelector("[data-row-act=cycle]").disabled = !r.on;
   });
 
-  const used = s.budget.used_mw, max = s.budget.contract_mw;
-  $("rows-meta").textContent = max ? `${(used / 1000).toFixed(1)} W of ${max / 1000} W` : "no PD contract";
-  $("budget-bar").replaceChildren(...s.rows.filter((r) => r.mw).map((r) => {
+  const b = s.budget, used = b.used_mw, max = b.contract_mw, limit = b.limit_mw;
+  const shed = b.shed ? ` · ${b.shed.split("").join(", ")} shed` : "";
+  $("rows-meta").textContent = max ? `${(used / 1000).toFixed(1)} W of ${(limit / 1000).toFixed(0)} W${shed}`
+    : "no PD contract";
+  const segments = s.rows.filter((r) => r.mw).map((r) => {
     const i = document.createElement("i");
     i.style.setProperty("--k", "ABCD".indexOf(r.name));
     i.style.width = `${(100 * r.mw / Math.max(max, 1)).toFixed(2)}%`;
     i.title = `Row ${r.name}: ${(r.mw / 1000).toFixed(1)} W`;
     return i;
-  }));
+  });
+  if (max) {
+    const mark = document.createElement("b");
+    mark.style.left = `${(100 * limit / max).toFixed(2)}%`;
+    mark.title = `Budget: ${(limit / 1000).toFixed(0)} W`;
+    segments.push(mark);
+  }
+  $("budget-bar").replaceChildren(...segments);
+  const base = b.cap_mw && b.cap_mw < max ? `the ${b.cap_mw / 1000} W cap` : `the ${(max / 1000).toFixed(0)} W contract`;
   $("budget-legend").innerHTML = s.rows.map((r) =>
     `<span>${r.name} ${r.on ? `${(r.mw / 1000).toFixed(1)} W` : ROW_LABEL[r.state]}</span>`).join("")
-    + (max ? `<span>${((max - used) / 1000).toFixed(0)} W spare</span>` : "");
+    + (max ? `<span>${(Math.max(limit - used, 0) / 1000).toFixed(0)} W spare</span>`
+      + `<span title="Rows are shed above it, in the order ${b.shed_order}">budget: ${base} less ${b.margin_pct} %</span>` : "");
 }
 
 function renderBus(s) {

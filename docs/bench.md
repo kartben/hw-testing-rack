@@ -221,7 +221,11 @@ Wired as in the pin map; the PD charger into the CH224A board's USB-C, the XIAO 
 | 7 | Unplug the charger | rows off on PG high, then "VBUS gone" | D1 low within 20 ms |
 | 8 | D2 to GND with row A on | "row A: eFuse fault" | counted; nothing when row A is off |
 | 9 | The potentiometer up (D10) | row A's current on the page and in `/metrics` | `hub_row_amps{row="A"}` follows the knob (1.404 V/A) |
-| 10 | Build with `-DCONFIG_HUB_SHED_PERCENT=50`, a 20 V / 3 A charger, the knob past 1.5 A for 1 s | "row A shed …", D1 low | back on 10 s after the knob goes down |
-| 11 | Build with `-DCONFIG_HUB_PD_ADAPTIVE=y`; charger EPR | 20 V first; the knob past 1.2 A: "asking for 28 V EPR" | VBUS 20 → 28 V without row A going off |
-| 12 | Row A on, press RESET | the row stays on (pad hold) | D1 high through the reset |
-| 13 | `bayctl update … --hub` | test boot, confirmed | the new version, confirmed |
+| 10 | A 100 W charger without EPR (Anker Nano 100 W: 20 V × 5 A) and a 5 A cable; `hub budget` | the budget from the contract | "4.50 A of 5.00 A contract less 10 %" (90 W); through a 3 A cable 2.70 A (54 W) |
+| 11 | `hub budget cap 30` (1.5 A at 20 V, a 1.35 A budget); the knob between 1.35 and 1.5 A | "row A shed: … budget" after 1 s, D1 low | back ("row A back") 10 s after the knob goes down |
+| 12 | The knob past 1.5 A | "row A shed: … contract" | within 0.5 s, not 1 s |
+| 13 | Within a minute of it coming back, the knob up again, then down | shed again | it comes back after 20 s, not 10 (`hub budget`: sheds counted) |
+| 14 | `/metrics`; then `hub budget cap off` | `hub_budget_amps`, `hub_rows_amps`, `hub_row_shed{row="A"}`, `hub_row_sheds_total` | the cap gone, saved across a reset like the margin (`hub budget margin`) |
+| 15 | Build with `-DCONFIG_HUB_PD_ADAPTIVE=y`; charger EPR | 20 V first; the knob past 1.2 A: "asking for 28 V EPR" | VBUS 20 → 28 V without row A going off |
+| 16 | Row A on, press RESET | the row stays on (pad hold) | D1 high through the reset |
+| 17 | `bayctl update … --hub` | test boot, confirmed | the new version, confirmed |

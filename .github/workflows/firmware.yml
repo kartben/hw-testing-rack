@@ -104,6 +104,11 @@ jobs:
           - name: ports
             board: native_sim/native/64
             app: firmware/bay-node/tests/ports
+          # The hub's power budget (src/budget.c) with made-up contracts and
+          # row currents, run below
+          - name: hub_budget
+            board: native_sim/native/64
+            app: firmware/power-hub/tests/budget
           # The patched USB/IP service (zephyr/patches.yml) on the virtual USB
           # bus, a device unplugged mid-session, run below
           - name: usbip
@@ -159,8 +164,10 @@ jobs:
         if: matrix.name == 'usbip'
         run: python3 hw-testing-rack/firmware/common/tests/usbip/test_usbip.py --exe build/zephyr/zephyr.exe
 
-      - name: Rack bus protocol / firmware updates / DATA x4 ports on native_sim
-        if: matrix.name == 'rack_bus' || matrix.name == 'update' || matrix.name == 'ports'
+      - name: Rack bus protocol / firmware updates / DATA x4 ports / hub budget on native_sim
+        if: >-
+          matrix.name == 'rack_bus' || matrix.name == 'update' || matrix.name == 'ports' ||
+          matrix.name == 'hub_budget'
         run: |
           build/zephyr/zephyr.exe | tee test.log
           grep -q "PROJECT EXECUTION SUCCESSFUL" test.log

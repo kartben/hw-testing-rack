@@ -40,6 +40,7 @@ from devserver import Admin, Firmware, PageHandler, make_image  # noqa: E402
 WEB = Path(__file__).resolve().parent
 START = time.monotonic() - 2 * 86400 - 5 * 3600
 ROWS = "ABCD"
+MARGIN_PCT = 10  # CONFIG_HUB_BUDGET_MARGIN_PCT
 
 # What a 140 W EPR charger offers, as the CH224A shows it in EPR mode: positions 1-7 SPR
 # (the unused ones empty), 8 and on EPR
@@ -75,6 +76,7 @@ hub = {
     "charger": CHARGER_140W, "pref": "epr", "usb_only": False,
     "rows": {r: {"on": r != "D", "fault": False, "shed": False, "cycling": 0.0} for r in ROWS},
     "lost": set(),
+    "sheds": 0,
     "enumerated_at": time.monotonic() - 754,
     "can": {"tx": 1520331, "rx": 4870112, "errors": 0, "bus_off": 0},
 }
@@ -178,14 +180,24 @@ def status() -> dict:
             "max_mw": max((p.get("w", 0) * 1000 or p["mv"] * p["ma"] // 1000 for p in hub["charger"]), default=0),
         },
         "rows": rows,
-        "budget": {"contract_mw": c["mv"] * c["ma"] // 1000 if c else 0,
-                   "used_mw": sum(r["mw"] for r in rows), "shed_order": "DCBA"},
+        "budget": budget_doc(c, rows, total_ma),
         "can": {"state": "error-active", "bitrate": 250000, "nodes": found, "lost": len(hub["lost"]),
                 "rx_fps": found + found // 10, "errors": hub["can"]["errors"], "bus_off": hub["can"]["bus_off"],
                 "enumerating": False, "enumerated_s": round(t - hub["enumerated_at"]),
                 "enumerations": 3},
         "firmware": firmware.doc(),
     }
+
+
+def budget_doc(c: dict | None, rows: list[dict], total_ma: int) -> dict:
+    """src/rows.c's budget: the contract's current less a 10 % margin."""
+    limit_ma = c["ma"] * (100 - MARGIN_PCT) // 100 if c else 0
+    return {"contract_mw": c["mv"] * c["ma"] // 1000 if c else 0,
+            "used_mw": sum(r["mw"] for r in rows),
+            "limit_mw": limit_ma * c["mv"] // 1000 if c else 0, "limit_ma": limit_ma,
+            "total_ma": total_ma, "margin_pct": MARGIN_PCT, "cap_mw": 0,
+            "shed": "".join(r["name"] for r in rows if r["state"] == "shed"),
+            "sheds": hub["sheds"], "shed_order": "DCBA"}
 
 
 def events_doc() -> list[dict]:
@@ -228,15 +240,16 @@ class Handler(PageHandler):
             elif path == "/dev/drop":
                 hub["charger"] = CHARGER_30W
                 hub["rows"]["C"]["shed"] = hub["rows"]["C"]["on"]
+                hub["sheds"] += 1
                 event("pd", "contract: 20.0 V / 1.50 A (30 W)")
-                event("row", "row C shed: the rows draw 1.39 A, 90% of the 1.50 A contract")
+                event("row", "row C shed: 1.52 A > 1.35 A budget")
                 self.json(200, status())
             elif path == "/dev/restore":
                 hub["charger"] = CHARGER_140W
                 for r in hub["rows"].values():
                     r["shed"] = False
                 event("pd", "contract: 28.0 V / 5.00 A EPR (140 W)")
-                event("row", "row C back: the contract has room for it again")
+                event("row", "row C back: the budget has room for it again")
                 enumerate_rack("rows back")
                 self.json(200, status())
             elif path == "/dev/fault":

@@ -17,6 +17,7 @@ USB-C PD charger, switches and meters the four rows, and runs the rack bus
 firmware/power-hub/
   src/pd.c          USB-C PD: VBUS sense, the CH224A, 28 V EPR when offered
   src/rows.c        rows A–D: eFuse enables (held across resets), FLT, IMON, sequencing, shedding
+  src/budget.c      the rows' power budget from the PD contract: which row to shed, which back
   src/bus.c         rack bus master: TWAI, POS tokens, enumeration (common/lib/rack_hub.c)
   src/web.c         status page, JSON API, /metrics
   src/shell.c       "hub" shell commands
@@ -24,6 +25,7 @@ firmware/power-hub/
   web/index.html    status page (embedded gzipped; shares /rack.css and /rack.mjs)
   web/dev_server.py the page against a simulated hub
   web/screenshots.py  docs/img/hub-ui-*.png
+  tests/budget      budget.c on native_sim with made-up contracts (ztest)
 ```
 
 Shared with the bay node, in [`firmware/common`](../common/): the rack bus
@@ -78,7 +80,7 @@ uart:~$ hub status
 | PD contract | the CH224A asks for 9 V at plug-in by itself (CFG1 6.8k); once VBUS is up the firmware powers its I²C pull-ups (I2C_PU), initializes the driver as soon as the chip answers and asks for **28 V EPR** when the charger offers it (PDO 1's EPR Mode Capable bit; tried when the chip shows no offers), 20 V otherwise (`hub pd epr\|20v`, saved); `CONFIG_HUB_PD_ADAPTIVE` (off) starts at 20 V instead and moves to 28 V EPR, without a drop, once a row draws 1.2 A.  The chip cannot report the contract: a request counts once it says PD, PG is low and VBUS_SENSE reads the voltage within 5 %; 28 V that VBUS does not follow within 3 s (`CONFIG_HUB_PD_REQUEST_MS`) falls back to 20 V.  Never above 28 V: the node's `regulator-max-microvolt` refuses it.  A contract under 15 V (`CONFIG_HUB_ROWS_MIN_MV`) never powers the rows; there is no input switch, VBUS is VRACK.  PG high for 20 ms (a renegotiation, a hard reset) sheds every row, except during a request of ours; they come back, staggered, with the next final contract, and the policy runs again |
 | Sequencing | rows stay off until the contract has held for 500 ms, then come on one after the other (300 ms apart); the rack bus is enumerated 2 s after the last one, when the nodes have booted |
 | Controller reset | the row enables are held (ESP32-S3 pad hold, RTC domain): a hub reboot or a firmware update does not power-cycle the rack; the rows found on are enumerated again |
-| Shedding | from what the rows really draw (eFuse IMON): above 90 % of the contract current for 1 s, the next row in the shed order (default D, C, B, A) goes off; it comes back once the contract has room for it again for 10 s.  No contract at all: every row off, back with the next one |
+| Shedding | the rows stay inside the charger's contract (`src/budget.c`, [docs/power.md](../../docs/power.md#keeping-the-rows-inside-the-contract)): the budget is the granted current less 10 % (`hub budget margin`), or a cap by hand (`hub budget cap <W>`); IMON summed every 250 ms, over the budget for 1 s or past the contract for 250 ms, the next row in the shed order (default D, C, B, A) goes off; it comes back, the last shed first, once the budget has room for the most it drew plus 0.2 A for 10 s (twice as long each time it is shed again within a minute).  No contract at all: every row off, back with the next one |
 | Row control | `hub row <A–D> on\|off\|cycle [ms]`, the page's buttons, `POST /api/row`; on/off is saved |
 | Faults | each eFuse's FLT (current limit, over-temperature) as an event, a count and the page's red row, counted only while the row is on and 10 ms past its soft start (the TPS2660 also asserts FLT in shutdown and start-up); a contract lost (PG) as an event |
 | Telemetry | the contract, the granted current, the protocol and PG from the CH224A (it measures nothing); VBUS from the controller's ADC divider; each row's current from IMON |
@@ -116,6 +118,7 @@ the native_sim test drives), wrapped by `src/bus.c`:
 | `hub node <C3\|0x23> identify\|reset\|bootloader\|power-cycle\|reboot` | a command to a node (answer in `hub events`) |
 | `hub events` | recent events |
 | `hub shed [DCBA]` | show or set the shed order (saved) |
+| `hub budget [margin <0-50> \| cap <W>\|off]` | the rows' budget: contract or cap, margin, what they draw, rows shed; set the margin or a cap (saved) |
 | `hub id [id]` | show or set the rack id, hostname `rack-<id>.local` (saved) |
 | `hub access` | admin key set or not, a claim pending |
 | `hub access claim` | confirm a pending claim, like a short press on BOOT |
@@ -141,7 +144,7 @@ that have a camera, red while someone watches (STATUS byte 6).
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | `pd` (state, contract, VBUS, the rows' current, the voltage asked for, the granted current, PG, the charger's PDOs), `rows` (state, current, nodes with position, IP, DUT state and current, `camera`: `none`, `ready` or `active`), `budget`, `can` |
+| `GET /api/status` | `pd` (state, contract, VBUS, the rows' current, the voltage asked for, the granted current, PG, the charger's PDOs), `rows` (state, current, nodes with position, IP, DUT state and current, `camera`: `none`, `ready` or `active`), `budget` (`limit_mw`/`limit_ma`: what the rows may draw, `total_ma`, `margin_pct`, `cap_mw`, `shed`: the rows shed now, `sheds` since boot, `shed_order`), `can` |
 | `GET /api/events` | recent events, newest first (`age_s`, `kind`, `text`) |
 | `POST /api/row` | `{"row": "B", "action": "on" \| "off" \| "cycle", "ms": 2000}` |
 | `POST /api/pd` | `{"pref": "epr" \| "20v"}` |
@@ -288,9 +291,11 @@ devicetree against U4 in `design.py`, as it does for the bay node.
   reset.  Also the pad hold across a reset, the IMON calibration and the
   shedding thresholds.
 * **Budget from the worst case.**  Shedding follows the measured row
-  currents; a row whose bays suddenly draw their 1.5 A each trips the
-  charger before the hub reacts (1 s).  A static budget (bays × worst case)
-  would be safer but sheds rows a 100 W charger could carry.
+  currents; rows whose bays all jump to their 1.5 A at once can trip a
+  charger that tolerates no overload for the 250–500 ms the hub takes past
+  the contract.  A static budget (bays × worst case) would be safer but
+  sheds rows a 100 W charger could carry.  The thresholds are untried on a
+  real charger (docs/bench.md, hub steps 10–14).
 * Node hostnames: INFO carries the IPv4 address, not the name; the page
   shows addresses.
 * **Updates over the network not run on hardware** (the swap, the rollback,

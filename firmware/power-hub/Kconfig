@@ -81,18 +81,45 @@ config HUB_ROW_CYCLE_MS
 	int "Default off time of a row power cycle (ms)"
 	default 2000
 
-config HUB_SHED_PERCENT
-	int "Shed a row when the rows draw more than this share of the contract (%)"
-	default 90
-	range 50 100
+config HUB_BUDGET_MARGIN_PCT
+	int "Share of the contract kept free below the rows' budget (%)"
+	default 10
+	range 0 50
+	help
+	  The rows may draw the contract's current (the CH224A's granted
+	  current: 5 A for 20 V x 5 A or 28 V x 5 A EPR, 3 A with a 3 A
+	  cable), or a cap set by hand, less this share: the hub's own draw
+	  and IMON's error.  Above it, rows are shed in the shed order before
+	  the charger's overcurrent protection cuts the whole rack.  Set at
+	  run time with "hub budget margin" (saved).
 
 config HUB_SHED_HOLD_MS
 	int "Over the budget this long before a row is shed (ms)"
 	default 1000
 
+config HUB_SHED_FAST_MS
+	int "Over the contract itself this long before a row is shed (ms)"
+	default 250
+	help
+	  Past the contract's current a charger may cut its output: shed
+	  sooner than CONFIG_HUB_SHED_HOLD_MS (the rows are sampled every
+	  250 ms).
+
 config HUB_RESTORE_HOLD_S
 	int "Contract stable and room to spare this long before a shed row comes back (s)"
 	default 10
+
+config HUB_RESTORE_MARGIN_MA
+	int "Room needed beyond the most a shed row drew before it comes back (mA)"
+	default 200
+
+config HUB_RESTORE_FLAP_S
+	int "A row shed again within this long of coming back waits twice as long (s)"
+	default 60
+
+config HUB_RESTORE_HOLD_MAX_S
+	int "The longest a shed row's restore hold grows to (s)"
+	default 600
 
 config HUB_EVENTS
 	int "Events kept for the web page and the shell"
