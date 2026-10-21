@@ -1,0 +1,913 @@
+{
+ "brace_a": {
+  "faces": 18,
+  "volume_cm3": 9.4,
+  "bbox": [
+   176.6,
+   118.9,
+   3.0
+  ],
+  "overhang_area_mm2": 0,
+  "overhang_faces": 0,
+  "worst": []
+ },
+ "camera_pod": {
+  "faces": 63,
+  "volume_cm3": 17.3,
+  "bbox": [
+   84.9,
+   65.3,
+   17.4
+  ],
+  "overhang_area_mm2": 27.5,
+  "overhang_faces": 3,
+  "worst": [
+   {
+    "face": 35,
+    "area": 12.8,
+    "down_deg": 0.0,
+    "center": [
+     -45.0,
+     0.5,
+     15.0
+    ],
+    "flat": true
+   },
+   {
+    "face": 59,
+    "area": 12.8,
+    "down_deg": 0.0,
+    "center": [
+     -45.0,
+     34.3,
+     15.0
+    ],
+    "flat": true
+   },
+   {
+    "face": 0,
+    "area": 1.9,
+    "down_deg": 0.0,
+    "center": [
+     -63.2,
+     35.6,
+     3.0
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "chain_anchor": {
+  "faces": 20,
+  "volume_cm3": 2.0,
+  "bbox": [
+   8.0,
+   30.0,
+   11.1
+  ],
+  "overhang_area_mm2": 0,
+  "overhang_faces": 0,
+  "worst": []
+ },
+ "chain_foot": {
+  "faces": 14,
+  "volume_cm3": 2.0,
+  "bbox": [
+   18.7,
+   25.0,
+   12.0
+  ],
+  "overhang_area_mm2": 45.4,
+  "overhang_faces": 1,
+  "worst": [
+   {
+    "face": 3,
+    "area": 45.4,
+    "down_deg": 0.0,
+    "center": [
+     -1.2,
+     15.0,
+     0.0
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "drawer": {
+  "faces": 218,
+  "volume_cm3": 67.0,
+  "bbox": [
+   156.0,
+   208.0,
+   37.8
+  ],
+  "overhang_area_mm2": 390.2,
+  "overhang_faces": 4,
+  "worst": [
+   {
+    "face": 127,
+    "area": 256.2,
+    "down_deg": 0.0,
+    "center": [
+     128.0,
+     187.9,
+     2.3
+    ],
+    "flat": true
+   },
+   {
+    "face": 12,
+    "area": 103.2,
+    "down_deg": 0.0,
+    "center": [
+     71.0,
+     0.4,
+     18.8
+    ],
+    "flat": true
+   },
+   {
+    "face": 131,
+    "area": 30.7,
+    "down_deg": 0.0,
+    "center": [
+     4.0,
+     194.0,
+     3.2
+    ],
+    "flat": true
+   },
+   {
+    "face": 129,
+    "area": 0.1,
+    "down_deg": 0.0,
+    "center": [
+     2.0,
+     71.5,
+     2.5
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "drawer_block": {
+  "faces": 108,
+  "volume_cm3": 24.9,
+  "bbox": [
+   148.0,
+   45.0,
+   16.0
+  ],
+  "overhang_area_mm2": 0,
+  "overhang_faces": 0,
+  "worst": []
+ },
+ "floor_plate": {
+  "faces": 398,
+  "volume_cm3": 54.7,
+  "bbox": [
+   165.0,
+   200.3,
+   15.0
+  ],
+  "overhang_area_mm2": 1117.2,
+  "overhang_faces": 6,
+  "worst": [
+   {
+    "face": 22,
+    "area": 355.1,
+    "down_deg": 0.0,
+    "center": [
+     158.9,
+     126.9,
+     8.0
+    ],
+    "flat": true
+   },
+   {
+    "face": 14,
+    "area": 263.1,
+    "down_deg": 0.0,
+    "center": [
+     -0.7,
+     148.3,
+     8.0
+    ],
+    "flat": true
+   },
+   {
+    "face": 11,
+    "area": 241.5,
+    "down_deg": 0.0,
+    "center": [
+     -1.1,
+     56.5,
+     8.0
+    ],
+    "flat": true
+   },
+   {
+    "face": 343,
+    "area": 149.5,
+    "down_deg": 0.0,
+    "center": [
+     159.2,
+     36.5,
+     8.0
+    ],
+    "flat": true
+   },
+   {
+    "face": 7,
+    "area": 54.0,
+    "down_deg": 0.0,
+    "center": [
+     1.0,
+     122.5,
+     14.0
+    ],
+    "flat": true
+   },
+   {
+    "face": 339,
+    "area": 54.0,
+    "down_deg": 0.0,
+    "center": [
+     157.0,
+     82.5,
+     14.0
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "ladder_a": {
+  "faces": 129,
+  "volume_cm3": 70.0,
+  "bbox": [
+   203.3,
+   241.1,
+   7.4
+  ],
+  "overhang_area_mm2": 916.6,
+  "overhang_faces": 7,
+  "worst": [
+   {
+    "face": 106,
+    "area": 488.7,
+    "down_deg": 0.0,
+    "center": [
+     173.5,
+     145.2,
+     2.4
+    ],
+    "flat": true
+   },
+   {
+    "face": 104,
+    "area": 213.6,
+    "down_deg": 0.0,
+    "center": [
+     68.1,
+     106.8,
+     2.4
+    ],
+    "flat": true
+   },
+   {
+    "face": 124,
+    "area": 180.2,
+    "down_deg": 0.0,
+    "center": [
+     108.6,
+     121.6,
+     2.4
+    ],
+    "flat": true
+   },
+   {
+    "face": 103,
+    "area": 32.1,
+    "down_deg": 0.0,
+    "center": [
+     21.9,
+     89.9,
+     2.4
+    ],
+    "flat": true
+   },
+   {
+    "face": 92,
+    "area": 1.1,
+    "down_deg": 0.0,
+    "center": [
+     123.6,
+     280.9,
+     1.2
+    ],
+    "flat": true
+   },
+   {
+    "face": 93,
+    "area": 0.5,
+    "down_deg": 0.0,
+    "center": [
+     41.1,
+     250.9,
+     1.2
+    ],
+    "flat": true
+   },
+   {
+    "face": 83,
+    "area": 0.4,
+    "down_deg": 0.0,
+    "center": [
+     203.2,
+     309.9,
+     1.2
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "ladder_base": {
+  "faces": 75,
+  "volume_cm3": 70.6,
+  "bbox": [
+   203.3,
+   154.0,
+   7.4
+  ],
+  "overhang_area_mm2": 1005.4,
+  "overhang_faces": 6,
+  "worst": [
+   {
+    "face": 56,
+    "area": 448.0,
+    "down_deg": 0.0,
+    "center": [
+     178.1,
+     10.5,
+     2.4
+    ],
+    "flat": true
+   },
+   {
+    "face": 12,
+    "area": 375.2,
+    "down_deg": 0.0,
+    "center": [
+     54.4,
+     10.5,
+     2.4
+    ],
+    "flat": true
+   },
+   {
+    "face": 70,
+    "area": 180.2,
+    "down_deg": 0.0,
+    "center": [
+     112.8,
+     10.5,
+     2.4
+    ],
+    "flat": true
+   },
+   {
+    "face": 44,
+    "area": 1.1,
+    "down_deg": 0.0,
+    "center": [
+     123.7,
+     115.9,
+     1.2
+    ],
+    "flat": true
+   },
+   {
+    "face": 7,
+    "area": 0.5,
+    "down_deg": 0.0,
+    "center": [
+     41.1,
+     85.9,
+     1.2
+    ],
+    "flat": true
+   },
+   {
+    "face": 47,
+    "area": 0.4,
+    "down_deg": 0.0,
+    "center": [
+     203.2,
+     144.9,
+     1.2
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "ladder_cap": {
+  "faces": 65,
+  "volume_cm3": 22.1,
+  "bbox": [
+   203.3,
+   91.9,
+   7.4
+  ],
+  "overhang_area_mm2": 1052.4,
+  "overhang_faces": 3,
+  "worst": [
+   {
+    "face": 47,
+    "area": 488.7,
+    "down_deg": 0.0,
+    "center": [
+     173.5,
+     475.2,
+     2.4
+    ],
+    "flat": true
+   },
+   {
+    "face": 46,
+    "area": 383.5,
+    "down_deg": 0.0,
+    "center": [
+     53.0,
+     431.4,
+     2.4
+    ],
+    "flat": true
+   },
+   {
+    "face": 48,
+    "area": 180.2,
+    "down_deg": 0.0,
+    "center": [
+     108.6,
+     451.6,
+     2.4
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "peg_base": {
+  "faces": 53,
+  "volume_cm3": 0.7,
+  "bbox": [
+   9.6,
+   9.6,
+   18.3
+  ],
+  "overhang_area_mm2": 40.1,
+  "overhang_faces": 6,
+  "worst": [
+   {
+    "face": 14,
+    "area": 29.9,
+    "down_deg": 0.0,
+    "center": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "flat": true
+   },
+   {
+    "face": 18,
+    "area": 2.6,
+    "down_deg": 0.0,
+    "center": [
+     -2.0,
+     1.9,
+     -2.3
+    ],
+    "flat": true
+   },
+   {
+    "face": 39,
+    "area": 2.6,
+    "down_deg": 0.0,
+    "center": [
+     2.7,
+     0.7,
+     -2.3
+    ],
+    "flat": true
+   },
+   {
+    "face": 45,
+    "area": 2.6,
+    "down_deg": 0.0,
+    "center": [
+     -0.7,
+     -2.7,
+     -2.3
+    ],
+    "flat": true
+   },
+   {
+    "face": 7,
+    "area": 1.2,
+    "down_deg": 0.0,
+    "center": [
+     -1.3,
+     -0.0,
+     12.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 10,
+    "area": 1.2,
+    "down_deg": 0.0,
+    "center": [
+     1.3,
+     -0.0,
+     12.6
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "peg_cam": {
+  "faces": 386,
+  "volume_cm3": 0.3,
+  "bbox": [
+   12.3,
+   13.5,
+   4.8
+  ],
+  "overhang_area_mm2": 5.5,
+  "overhang_faces": 1,
+  "worst": [
+   {
+    "face": 302,
+    "area": 5.5,
+    "down_deg": 0.0,
+    "center": [
+     4.5,
+     -0.1,
+     3.0
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "peg_stop": {
+  "faces": 52,
+  "volume_cm3": 0.7,
+  "bbox": [
+   12.0,
+   9.6,
+   18.9
+  ],
+  "overhang_area_mm2": 52.3,
+  "overhang_faces": 4,
+  "worst": [
+   {
+    "face": 8,
+    "area": 44.5,
+    "down_deg": 0.0,
+    "center": [
+     1.7,
+     0.4,
+     0.0
+    ],
+    "flat": true
+   },
+   {
+    "face": 12,
+    "area": 2.6,
+    "down_deg": 0.0,
+    "center": [
+     -2.0,
+     1.9,
+     -2.3
+    ],
+    "flat": true
+   },
+   {
+    "face": 33,
+    "area": 2.6,
+    "down_deg": 0.0,
+    "center": [
+     2.7,
+     0.7,
+     -2.3
+    ],
+    "flat": true
+   },
+   {
+    "face": 39,
+    "area": 2.6,
+    "down_deg": 0.0,
+    "center": [
+     -0.7,
+     -2.7,
+     -2.3
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "plate": {
+  "faces": 4751,
+  "volume_cm3": 60.2,
+  "bbox": [
+   137.4,
+   159.4,
+   5.0
+  ],
+  "overhang_area_mm2": 0,
+  "overhang_faces": 0,
+  "worst": []
+ },
+ "power_box_base": {
+  "faces": 109,
+  "volume_cm3": 50.6,
+  "bbox": [
+   84.0,
+   108.0,
+   32.6
+  ],
+  "overhang_area_mm2": 413.2,
+  "overhang_faces": 14,
+  "worst": [
+   {
+    "face": 72,
+    "area": 45.0,
+    "down_deg": 0.0,
+    "center": [
+     31.0,
+     20.2,
+     3.2
+    ],
+    "flat": true
+   },
+   {
+    "face": 73,
+    "area": 45.0,
+    "down_deg": 0.0,
+    "center": [
+     61.0,
+     20.2,
+     3.2
+    ],
+    "flat": true
+   },
+   {
+    "face": 74,
+    "area": 45.0,
+    "down_deg": 0.0,
+    "center": [
+     31.0,
+     80.2,
+     3.2
+    ],
+    "flat": true
+   },
+   {
+    "face": 75,
+    "area": 45.0,
+    "down_deg": 0.0,
+    "center": [
+     61.0,
+     80.2,
+     3.2
+    ],
+    "flat": true
+   },
+   {
+    "face": 38,
+    "area": 38.4,
+    "down_deg": 0.0,
+    "center": [
+     1.2,
+     75.1,
+     26.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 42,
+    "area": 38.4,
+    "down_deg": 0.0,
+    "center": [
+     1.2,
+     57.6,
+     26.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 46,
+    "area": 38.4,
+    "down_deg": 0.0,
+    "center": [
+     1.2,
+     40.1,
+     26.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 50,
+    "area": 38.4,
+    "down_deg": 0.0,
+    "center": [
+     1.2,
+     22.6,
+     26.6
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "power_box_lid": {
+  "faces": 71,
+  "volume_cm3": 21.7,
+  "bbox": [
+   84.0,
+   108.0,
+   11.9
+  ],
+  "overhang_area_mm2": 0,
+  "overhang_faces": 0,
+  "worst": []
+ },
+ "tray": {
+  "faces": 696,
+  "volume_cm3": 111.7,
+  "bbox": [
+   165.0,
+   210.0,
+   28.5
+  ],
+  "overhang_area_mm2": 6033.9,
+  "overhang_faces": 41,
+  "worst": [
+   {
+    "face": 695,
+    "area": 526.2,
+    "down_deg": 0.0,
+    "center": [
+     151.6,
+     27.9,
+     20.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 694,
+    "area": 498.5,
+    "down_deg": 0.0,
+    "center": [
+     6.4,
+     29.0,
+     20.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 538,
+    "area": 473.3,
+    "down_deg": 0.0,
+    "center": [
+     152.2,
+     108.8,
+     26.5
+    ],
+    "flat": true
+   },
+   {
+    "face": 579,
+    "area": 460.0,
+    "down_deg": 0.0,
+    "center": [
+     151.0,
+     78.0,
+     20.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 546,
+    "area": 458.6,
+    "down_deg": 0.0,
+    "center": [
+     7.0,
+     125.9,
+     20.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 575,
+    "area": 458.6,
+    "down_deg": 0.0,
+    "center": [
+     151.0,
+     125.9,
+     20.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 542,
+    "area": 419.6,
+    "down_deg": 0.0,
+    "center": [
+     6.9,
+     78.0,
+     20.6
+    ],
+    "flat": true
+   },
+   {
+    "face": 472,
+    "area": 372.7,
+    "down_deg": 0.0,
+    "center": [
+     158.9,
+     130.6,
+     8.0
+    ],
+    "flat": true
+   }
+  ]
+ },
+ "x4_cradle": {
+  "faces": 97,
+  "volume_cm3": 12.0,
+  "bbox": [
+   103.4,
+   20.7,
+   72.6
+  ],
+  "overhang_area_mm2": 1389.5,
+  "overhang_faces": 5,
+  "worst": [
+   {
+    "face": 2,
+    "area": 1317.7,
+    "down_deg": 0.0,
+    "center": [
+     53.7,
+     183.1,
+     7.8
+    ],
+    "flat": true
+   },
+   {
+    "face": 93,
+    "area": 29.7,
+    "down_deg": 0.0,
+    "center": [
+     18.2,
+     186.5,
+     7.8
+    ],
+    "flat": true
+   },
+   {
+    "face": 94,
+    "area": 29.7,
+    "down_deg": 0.0,
+    "center": [
+     53.7,
+     186.5,
+     7.8
+    ],
+    "flat": true
+   },
+   {
+    "face": 47,
+    "area": 6.2,
+    "down_deg": 0.0,
+    "center": [
+     6.8,
+     174.6,
+     72.7
+    ],
+    "flat": true
+   },
+   {
+    "face": 58,
+    "area": 6.2,
+    "down_deg": 0.0,
+    "center": [
+     101.2,
+     174.6,
+     72.7
+    ],
+    "flat": true
+   }
+  ]
+ }
+}

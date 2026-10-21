@@ -1,0 +1,74 @@
+{
+ "ladder_hook_as_drawn": {
+  "nodes": 4680,
+  "deflection_mm": 0.8,
+  "vm_max_MPa": 56.1,
+  "p1_max_MPa": 68.1,
+  "strain_pct": 3.78,
+  "disp_max_mm": 0.887
+ },
+ "ladder_hook_root10": {
+  "nodes": 5010,
+  "deflection_mm": 0.8,
+  "vm_max_MPa": 39.7,
+  "p1_max_MPa": 49.0,
+  "strain_pct": 2.72,
+  "disp_max_mm": 0.863
+ },
+ "tray_arm_as_drawn": {
+  "nodes": 10739,
+  "deflection_mm": 1.2,
+  "vm_max_MPa": 51.8,
+  "p1_max_MPa": 54.1,
+  "strain_pct": 3.01,
+  "disp_max_mm": 1.383
+ },
+ "cradle_finger_as_drawn": {
+  "nodes": 17537,
+  "deflection_mm": 1.15,
+  "vm_max_MPa": 28.8,
+  "p1_max_MPa": 35.4,
+  "strain_pct": 1.97,
+  "disp_max_mm": 1.175
+ },
+ "cradle_finger_L34_hook08": {
+  "nodes": 26076,
+  "deflection_mm": 0.95,
+  "vm_max_MPa": 14.7,
+  "p1_max_MPa": 19.0,
+  "strain_pct": 1.05,
+  "disp_max_mm": 0.962
+ },
+ "cam_pin_as_drawn": {
+  "nodes": 3988,
+  "deflection_mm": 0.25,
+  "vm_max_MPa": 64.1,
+  "p1_max_MPa": 45.4,
+  "strain_pct": 2.52,
+  "disp_max_mm": 0.259
+ },
+ "cam_pin_split65_head37": {
+  "nodes": 5783,
+  "deflection_mm": 0.15,
+  "vm_max_MPa": 19.8,
+  "p1_max_MPa": 25.0,
+  "strain_pct": 1.39,
+  "disp_max_mm": 0.154
+ },
+ "sleeve_wall_as_drawn": {
+  "nodes": 52113,
+  "deflection_mm": 0.8,
+  "vm_max_MPa": 42.1,
+  "p1_max_MPa": 59.2,
+  "strain_pct": 3.29,
+  "disp_max_mm": 0.826
+ },
+ "sleeve_wall_lip05": {
+  "nodes": 75403,
+  "deflection_mm": 0.5,
+  "vm_max_MPa": 32.1,
+  "p1_max_MPa": 49.0,
+  "strain_pct": 2.72,
+  "disp_max_mm": 0.514
+ }
+}
