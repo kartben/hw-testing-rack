@@ -6,6 +6,7 @@
 
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <zephyr/kernel.h>
@@ -16,6 +17,12 @@
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/net/wifi_credentials.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/settings/settings.h>
+#include <zephyr/shell/shell.h>
+
+#if defined(CONFIG_WIFI_ESP32)
+#include <esp_wifi.h>
+#endif
 
 #include <hwtr/net.h>
 
@@ -45,6 +52,102 @@ static void reconnect_handler(struct k_work *work)
 }
 
 static K_WORK_DELAYABLE_DEFINE(reconnect_work, reconnect_handler);
+
+/* --- Radio: TX power ceiling and 20 MHz channels ----------------------------- */
+
+static int8_t tx_power_dbm = CONFIG_HWTR_NET_TX_POWER_DBM;
+
+static void tx_power_apply(void)
+{
+#if defined(CONFIG_WIFI_ESP32)
+	esp_err_t err = esp_wifi_set_max_tx_power(tx_power_dbm * 4);
+
+	if (err != ESP_OK) {
+		LOG_WRN("cannot set the TX power to %d dBm (%d)", tx_power_dbm, err);
+	}
+#endif
+}
+
+/*
+ * Before every connection: a rack's nodes share one 2.4 GHz channel with the
+ * DUTs' radios a few cm away, so no 40 MHz channel spilling onto the next one
+ * and no more power than the AP 1-3 m away needs.
+ */
+static void radio_apply(void)
+{
+#if defined(CONFIG_WIFI_ESP32)
+	wifi_mode_t mode;
+	esp_err_t err;
+
+	/* The bandwidth belongs to the station interface: it must exist */
+	if (esp_wifi_get_mode(&mode) == ESP_OK && mode == ESP32_WIFI_MODE_NULL) {
+		(void)esp_wifi_set_mode(ESP32_WIFI_MODE_STA);
+	}
+	err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW20);
+	if (err != ESP_OK) {
+		LOG_WRN("cannot set 20 MHz channels (%d)", err);
+	}
+#endif
+	tx_power_apply();
+}
+
+#if defined(CONFIG_SETTINGS)
+static int radio_settings_set(const char *key, size_t len, settings_read_cb read_cb,
+			      void *cb_arg)
+{
+	int8_t dbm;
+
+	if (!settings_name_steq(key, "txpower", NULL)) {
+		return -ENOENT;
+	}
+	if (len != sizeof(dbm) || read_cb(cb_arg, &dbm, sizeof(dbm)) != sizeof(dbm)) {
+		return -EINVAL;
+	}
+	if (dbm >= 2 && dbm <= 20) {
+		tx_power_dbm = dbm;
+	}
+
+	return 0;
+}
+
+SETTINGS_STATIC_HANDLER_DEFINE(hwtr_radio, "radio", NULL, radio_settings_set, NULL, NULL);
+#endif
+
+#if defined(CONFIG_SHELL)
+static int cmd_radio(const struct shell *sh, size_t argc, char **argv)
+{
+	if (argc > 1) {
+		char *end;
+		long dbm = strtol(argv[1], &end, 10);
+
+		if (*end != '\0' || dbm < 2 || dbm > 20) {
+			shell_error(sh, "TX power: 2 to 20 dBm");
+			return -EINVAL;
+		}
+		tx_power_dbm = (int8_t)dbm;
+		tx_power_apply();
+#if defined(CONFIG_SETTINGS)
+		(void)settings_save_one("radio/txpower", &tx_power_dbm, sizeof(tx_power_dbm));
+#endif
+	}
+
+#if defined(CONFIG_WIFI_ESP32)
+	int8_t quarter = 0;
+	wifi_bandwidth_t bw = 0;
+
+	(void)esp_wifi_get_max_tx_power(&quarter);
+	(void)esp_wifi_get_bandwidth(WIFI_IF_STA, &bw);
+	shell_print(sh, "TX power: %d dBm asked, %d.%02d dBm in the radio; %s MHz channels",
+		    tx_power_dbm, quarter / 4, quarter % 4 * 25, bw == WIFI_BW40 ? "40" : "20");
+#else
+	shell_print(sh, "TX power: %d dBm asked", tx_power_dbm);
+#endif
+
+	return 0;
+}
+
+SHELL_CMD_ARG_REGISTER(radio, NULL, "Wi-Fi TX power: [<dBm>] 2-20 (persistent)", cmd_radio, 1, 1);
+#endif
 
 static void wifi_event_handler(struct net_mgmt_event_callback *cb, uint64_t event,
 			       struct net_if *iface)
@@ -127,6 +230,7 @@ static void net_thread(void *p1, void *p2, void *p3)
 			continue;
 		}
 
+		radio_apply();
 		ret = net_mgmt(NET_REQUEST_WIFI_CONNECT_STORED, iface, NULL, 0);
 		if (ret != 0) {
 			LOG_WRN("connect to stored networks failed (%d)", ret);

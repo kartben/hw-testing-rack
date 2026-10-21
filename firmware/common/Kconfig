@@ -35,6 +35,19 @@ config HWTR_NET
 	bool "Wi-Fi station, hostname <prefix>-<id> and reconnection"
 	depends on WIFI && WIFI_CREDENTIALS && NET_HOSTNAME_ENABLE
 
+config HWTR_NET_TX_POWER_DBM
+	int "Wi-Fi TX power ceiling (dBm)"
+	depends on HWTR_NET
+	range 2 20
+	default 11
+	help
+	  Applied before every connection; the radio may round it down to one
+	  of its steps.  With the AP 1-3 m away, 11 dBm still leaves 30 dB of
+	  margin, and the DUTs' own radios a few cm from the antenna hear much
+	  less of it than at the radio's full 20 dBm.  The shell's
+	  "radio <dBm>" changes it at run time and saves it; "radio" shows the
+	  power the radio really uses.
+
 config HWTR_ACL
 	bool "Access rules, lease, SHA-256 and HMAC (plain C)"
 

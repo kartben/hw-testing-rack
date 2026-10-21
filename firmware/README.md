@@ -182,8 +182,8 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Access control | who may use which service, a CI reservation, an admin key confirmed by a BOOT press; Zephyr's packet filter for the TCP services, a check per HTTP request.  See [Access control](#access-control) |
 | DATA ×4 | a DATA ×4 board in the drawer (probed after each DUT_5V on): four ports, each switched on through the bay's budget, its ~FAULT, current and RESET/BOOT; `bay port`, `/api/ports`.  See [docs/multi-dut-node.md](../docs/multi-dut-node.md) |
 | Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO42 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
-| Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS (`common/lib/net.c`, as the hub) |
-| Shell | `bay …` commands plus the stock `wifi`, `net` shells, on UART0 and telnet |
+| Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS; 20 MHz channels and 11 dBm of TX power, see [Wi-Fi in the rack](#wi-fi-in-the-rack) (`common/lib/net.c`, as the hub) |
+| Shell | `bay …` commands, `radio`, plus the stock `wifi`, `net` shells, on UART0 and telnet |
 | Fatal errors | restart the node instead of halting it (`src/fault.c`): a bay has to come back by itself, and its console is the USB host's.  The reason, the thread and the warnings and errors logged just before are kept across the restart in RTC memory, then reported: the log, `bay status` ("restarted: …"), `bay fault`, `/api/status`'s `last_fault`.  Gone at power-on |
 | Web | Zephyr HTTP server on port 80: status page, JSON API (same actions as the shell), Prometheus `/metrics` through Zephyr's Prometheus library |
 
@@ -218,6 +218,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | `bay access on` / `off` | apply the rules / let every address use everything (`off`: not over telnet) |
 | `bay access release` | end the lease |
 | `bay access reset` | forget the admin key, the rules and the lease (not over telnet) |
+| `radio [<dBm>]` | show, or set and save, the Wi-Fi TX power (2–20 dBm; the hub has it too) |
 
 ### Network services
 
@@ -233,6 +234,33 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 
 Which address may use which of them: [Access control](#access-control).
 Until a node is claimed it is open, as it always was.
+
+### Wi-Fi in the rack
+
+Twelve nodes, the hub and the DUTs' own radios share one room, with each
+node's antenna a few cm from its DUTs.  So each node (and the hub, through
+`common/lib/net.c`) sets its station's radio before every connection:
+
+- **20 MHz channels** (HT20): a 40 MHz channel would spill onto the next one.
+- **11 dBm of TX power** instead of the radio's full 20 dBm
+  (`CONFIG_HWTR_NET_TX_POWER_DBM`; `radio <dBm>` changes it and saves it).
+  With the AP 1–3 m away that still leaves 30 dB of margin, and the DUTs hear
+  much less of the nodes.  On the bench XIAO (RSSI −49 dBm) the status page
+  loaded no slower at 11 or 8 dBm than at 20.
+
+Set the AP up for it:
+
+- one channel for the whole rack, **6 or 11**, not 1: a DATA ×4's USB hub
+  runs a 480 MHz PLL, whose 5th harmonic is 2.400 GHz, at the bottom of channel 1;
+- 20 MHz wide on 2.4 GHz;
+- 1–3 m from the rack, behind it or beside it, not in front of the drawers.
+
+**Radio-quiet mode** (not built yet).  A DUT's own RF test, a range or
+sensitivity measurement, wants the node's radio as quiet as it can be for its
+duration.  Planned: `radio quiet <s>` (and the API) drops the TX power to
+2 dBm and holds the USB/IP traffic of the node's other DUTs, until the time
+runs out or `radio quiet off`, then puts both back.  The node stays
+associated: the session that runs the test keeps its link.
 
 ### Web page and API
 
