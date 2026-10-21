@@ -48,14 +48,18 @@ module foot() {
 
 // ------------------------------------------------------------------ anchor
 // Anchor coordinates: origin on the fixed run's axis, at the chain's mouth (y), on top of
-// the tray's insert bosses.  The block's inner face is the fixed run's outer face.
+// the tray's insert bosses.  The block's inner face is the fixed run's outer face.  Its underside stays
+// 3 mm over the tray's floor (ANCHOR_BASE: the end piece's pilots keep their wall below), the bosses
+// standing 2 mm up into two pockets in it
+ANCHOR_BASE = CARRIER_BOTTOM + 3;
 module anchor() {
     o = [CHAIN_FIXED_RUN_X, CHAIN_FIXED[1], ANCHOR_Z0];
-    h = CHAIN_Z + CHAIN_W / 2 - ANCHOR_Z0;
+    h = CHAIN_Z + CHAIN_W / 2 - ANCHOR_BASE;
     difference() {
-        translate([ANCHOR_X1 - ANCHOR[0], ANCHOR_Y0, ANCHOR_Z0] - o) rbox([ANCHOR[0], ANCHOR[1], h], r = 1.5);
+        translate([ANCHOR_X1 - ANCHOR[0], ANCHOR_Y0, ANCHOR_BASE] - o) rbox([ANCHOR[0], ANCHOR[1], h], r = 1.5);
         // M3 × 8 into the tray's inserts, heads sunk to leave 3 mm under them
         for (b = ANCHOR_BOSSES) translate(concat(b, [ANCHOR_Z0]) - o) {
+            translate([0, 0, ANCHOR_BASE - ANCHOR_Z0 - EPS]) cylinder(d = 7.5 + 0.4, h = ANCHOR_Z0 - ANCHOR_BASE + EPS);
             translate([0, 0, -EPS]) cylinder(d = M3_CLEAR, h = h + 2 * EPS);
             translate([0, 0, 3]) cylinder(d = M3_HEAD[0] + 0.4, h = h);
         }

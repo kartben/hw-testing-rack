@@ -99,7 +99,7 @@ CHAIN_FIXED_RUN_X = CHAIN_FIXED[0];
 ANCHOR = [8, 30];                                  // block X × Y
 ANCHOR_X1 = CHAIN_FIXED_RUN_X - CHAIN_H / 2;       // its inner face = the fixed run's outer face
 ANCHOR_Y0 = CHAIN_FIXED[1] - 6;
-ANCHOR_Z0 = CARRIER_BOTTOM + 3;                    // top of the insert bosses
+ANCHOR_Z0 = CARRIER_BOTTOM + 5;                    // top of the insert bosses: their 5.7 mm pockets leave 1.8 of floor
 ANCHOR_BOSSES = [for (y = [ANCHOR_Y0 + 4, ANCHOR_Y0 + ANCHOR[1] - 4]) [ANCHOR_X1 - ANCHOR[0] / 2, y]];
 // the rigid end pieces stay in straight runs over the whole stroke, and the U clears the rear wall
 assert(CHAIN_BEND_Y - CHAIN_MOVING_Y >= CHAIN_END_LENGTH, "chain: the moving end piece reaches the bend (drawer closed)");

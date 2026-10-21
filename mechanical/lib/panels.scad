@@ -42,7 +42,7 @@ GROOVE_END = CARRIER_D - 2;              // closed rear end = the tray's inserti
 
 // tray latch: flex arm in the side wall; barb into a window through the groove core
 LATCH_Y = [110, 70];                     // barb catch face (row y): left wall, right wall
-LATCH_ARM = 26;
+LATCH_ARM = 32;                          // 0.75 % at the root for the barb's 1.2 (docs/printed-parts-review.md)
 LATCH_SLOT = 1.0;
 BARB = 1.2;
 LATCH_WIN = 6;

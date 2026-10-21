@@ -687,7 +687,7 @@ def bay_chain_instances(inst, child, j, mt):
         return
     fx, fy = CH["fixed"]
     mx, my = CH["moving_x"], CH["moving_y"] + C["DRAWER_Y0"]
-    z0 = CH["bottom"] + 3                                   # the anchor bosses' top
+    z0 = CH["bottom"] + 5                                   # the anchor bosses' top (carrier.scad › ANCHOR_Z0)
     x1 = fx - LINK_R                                        # the anchor's inner face = the fixed run's outer face
     inst[f"ca{j}"] = ("chain_anchor", mt.multiply(m_tr(fx, fy, z0)))
     child[f"ca{j}"] = []

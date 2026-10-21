@@ -1170,7 +1170,7 @@ def build(rack) -> Path:
         if drawer:
             add("drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid,
                 movable=True)
-            add("chain_anchor", (x0 + fixed[0], fixed[1], c["bottom"] + 3), row=i, layer="chain", bay=bid)
+            add("chain_anchor", (x0 + fixed[0], fixed[1], c["bottom"] + 5), row=i, layer="chain", bay=bid)
             add("chain_foot", (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, plenum), row=i,
                 layer="chain", bay=bid, movable=True)
             items["chains"].append({"bay": bid, "row": i, "origin": [x0, 0, 0], "open": open_frac,

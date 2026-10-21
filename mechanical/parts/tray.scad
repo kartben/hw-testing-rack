@@ -12,7 +12,8 @@
 // the front; near the middle, a flex arm in the wall clicks a barb into the groove's window.
 // To remove a tray: pull the drawer out, press both arms inwards, slide the tray forwards.
 // Print: bottom down, PETG, 3 walls, 15 % infill, no supports (each ledge sits on its side wall,
-// its inner edge on 45° gussets with short bridges between them).
+// its inner edge on 45° gussets with short bridges between them; over the row cable's window it bridges
+// from the fascia to the wall behind; the lips' undersides rise at 45° from the guide walls).
 include <../lib/panels.scad>
 // fascia_cutouts(): lib/carrier.scad
 
@@ -21,7 +22,11 @@ PART = "tray";
 LEDGE_X = DRAWER_X0 + 4;                 // ledge reaches 4 mm under the drawer's bottom edge
 LEDGE_T = 2.5;
 LEDGE_Z = CARRIER_PLENUM;                // ledge top = the old deck surface (drawer bottom)
-GUIDE_TOP = LEDGE_Z + GUIDE_LIP_Z + GUIDE_LIP_T;
+LIP_X = DRAWER_X0 - 1;                   // the lip's tip
+// the lip's underside rises at 45° from the guide wall's face and passes 0.4 over the flange's outer edge
+// (GUIDE_LIP_Z, as the old flat lip: the anti-tip contact), so it prints without support; 2 mm at the tip
+LIP_UNDER = LEDGE_Z + GUIDE_LIP_Z - 0.5;       // at the wall's face
+GUIDE_TOP = LIP_UNDER + (LIP_X - GUIDE_WALL_T) + GUIDE_LIP_T;
 DETENT_LEDGE = [DRAWER_X0 + DRAWER_MAGNET[0] / 2 + 1, DRAWER_Y0 + DRAWER_D - 14];   // magnet in the left ledge, under the drawer's
 DETENT_PAD = [DETENT_LEDGE[0] + DRAWER_MAGNET[0] / 2 + 1, DRAWER_MAGNET[0] + 2];   // the ledge widened around it: x end, length (y)
 FLOOR_D = PR - 2 - (PF + 1);             // as in ladder.scad
@@ -53,8 +58,14 @@ CHAIN_RAILS = [[CHAIN_FIXED_RUN_X - CHAIN_H / 2 - 1.6, ANCHOR_Y0 + ANCHOR[1] + 1
 
 // ------------------------------------------------------------------ shell (shared with the plates)
 // Left side wall with its runner, latch arm and barb (x <= WALL); `ly` = barb catch face.
+// a slot through the wall (along x, from x0, `len` long) between (y, z) centres a and b, its ends round
+module wall_slot(x0, len, a, b) hull() for (c = [a, b])
+    translate([x0, c[0], c[1]]) rotate([0, 90, 0]) cylinder(d = LATCH_SLOT, h = len, $fn = 24);
+
 module side_wall(d, h, ly, runner_end) {
     rh = RUNNER_Z[1] - RUNNER_Z[0];
+    sz = [RUNNER_Z[0] - LATCH_SLOT / 2, RUNNER_Z[1] + LATCH_SLOT / 2];   // the two long slots' centre lines
+    sy = ly - LATCH_SLOT / 2;
     difference() {
         union() {
             cube([WALL, d, h]);
@@ -64,11 +75,10 @@ module side_wall(d, h, ly, runner_end) {
                 translate([-BARB, 0, 0]) cube([BARB, 1.5, rh]);
             }
         }
-        // flex arm: wall + runner between two slots, free at the front end (the barb)
-        translate([-RUNNER_OUT - BARB - 1, ly - LATCH_SLOT, RUNNER_Z[0] - LATCH_SLOT])
-            cube([WALL + RUNNER_OUT + BARB + 2, LATCH_SLOT, rh + 2 * LATCH_SLOT]);
-        for (z = [RUNNER_Z[0] - LATCH_SLOT, RUNNER_Z[1]])
-            translate([-RUNNER_OUT - 1, ly - LATCH_SLOT, z]) cube([WALL + RUNNER_OUT + 2, LATCH_ARM + LATCH_SLOT, LATCH_SLOT]);
+        // flex arm: wall + runner between two slots, free at the front end (the barb); the slots' ends round
+        // (the root's two are the arm's stress raisers)
+        wall_slot(-RUNNER_OUT - BARB - 1, WALL + RUNNER_OUT + BARB + 2, [sy, sz[0]], [sy, sz[1]]);
+        for (z = sz) wall_slot(-RUNNER_OUT - 1, WALL + RUNNER_OUT + 2, [sy, z], [ly + LATCH_ARM - LATCH_SLOT / 2, z]);
     }
 }
 
@@ -122,25 +132,31 @@ module tray_bottom_2d() {
     }
 }
 
-// ledge (drawer runner surface) + guide wall + lip, left side; 45° gussets below, every
-// GUSSET_STEP and clear of the cable and the latch arm (the ledge bridges between them)
-module guide_left() {
+// ledge (drawer runner surface) + guide wall + lip, left side; 45° gussets below, every GUSSET_STEP and
+// either side of what they must clear (the row cable's window, this side's latch arm, the node's screws),
+// the ledge bridging between them.  The ledge runs from the fascia (raised to it, tray()): over the window
+// it is a bridge from the fascia to the wall behind.  `latch_y`: this side's latch arm
+module guide_left(latch_y) {
     y0 = GUIDE_Y0;
     y1 = CARRIER_D - 2;
-    free = concat([[JUMPER_Y[0] - 1, JUMPER_Y[1] + 1], [LATCH_Y[0] - 2, LATCH_Y[0] + LATCH_ARM + 1], [LATCH_Y[1] - 2, LATCH_Y[1] + LATCH_ARM + 1]],
+    free = concat([[JUMPER_Y[0] - 1, JUMPER_Y[1] + 1], [latch_y - 2, latch_y + LATCH_ARM + 1]],
                   [for (p = NODE_ACCESS) [p[1] - NODE_ACCESS_D / 2 - 1, p[1] + NODE_ACCESS_D / 2 + 1]]);
+    gussets = concat([for (g = [y0 : GUSSET_STEP : y1 - GUSSET_T]) g], [y1 - GUSSET_T],
+                     [for (f = free) each [f[0] - GUSSET_T - 0.5, f[1] + 0.5]]);
     difference() {
         union() {
-            translate([0, y0, LEDGE_Z - LEDGE_T]) cube([LEDGE_X, y1 - y0, LEDGE_T]);
+            translate([0, 0, LEDGE_Z - LEDGE_T]) cube([LEDGE_X, y1, LEDGE_T]);
             // the side wall stops at CARRIER_WALL_H (the old deck's underside): raise it to the
             // ledge, which then sits on the wall all along instead of on the gussets alone
-            translate([0, y0, CARRIER_WALL_H - EPS]) cube([WALL, y1 - y0, LEDGE_Z - LEDGE_T - CARRIER_WALL_H + 2 * EPS]);
-            for (y =concat([for (g = [y0 : GUSSET_STEP : y1 - GUSSET_T]) g], [y1 - GUSSET_T]))
-                if (len([for (f = free) if (y + GUSSET_T > f[0] && y < f[1]) 1]) == 0)
+            translate([0, 0, CARRIER_WALL_H - EPS]) cube([WALL, y1, LEDGE_Z - LEDGE_T - CARRIER_WALL_H + 2 * EPS]);
+            for (y = gussets)
+                if (y >= y0 && y <= y1 - GUSSET_T && len([for (f = free) if (y + GUSSET_T > f[0] && y < f[1]) 1]) == 0)
                     translate([0, y, LEDGE_Z - LEDGE_T]) rotate([90, 0, 0]) mirror([0, 0, 1])
                         linear_extrude(GUSSET_T) polygon([[WALL - EPS, 0], [LEDGE_X, 0], [WALL - EPS, -(LEDGE_X - WALL)]]);
             translate([0, y0, LEDGE_Z]) cube([GUIDE_WALL_T, y1 - y0, GUIDE_TOP - LEDGE_Z]);
-            translate([0, y0, LEDGE_Z + GUIDE_LIP_Z]) cube([DRAWER_X0 - 1, y1 - y0, GUIDE_LIP_T]);
+            translate([0, y1, 0]) rotate([90, 0, 0]) linear_extrude(y1 - y0)
+                polygon([[GUIDE_WALL_T - EPS, LIP_UNDER - EPS], [LIP_X, LIP_UNDER + LIP_X - GUIDE_WALL_T], [LIP_X, GUIDE_TOP],
+                         [GUIDE_WALL_T - EPS, GUIDE_TOP]]);
         }
         // lead-in under the lip at the front
         translate([GUIDE_WALL_T, y0 - EPS, LEDGE_Z + GUIDE_LIP_Z - EPS]) hull() {
@@ -150,10 +166,12 @@ module guide_left() {
         // drawer end stop: a PT 2.3 × 8 screw (LIP_SCREW) through the lip, biting into the ledge; and a
         // sled bay's lock screws, the same way: its port block's flanges, and a fixed bay's sled (in a drawer
         // bay the first pair locks the drawer shut, for carrying the rack).  Round each shank, between the
-        // ledge and the lip, the guide wall is relieved (its face is 0.15 mm inside the shank's reach)
+        // ledge and the lip, the guide wall is relieved (its face is 0.15 mm inside the shank's reach).  The head sits
+        // in a counterbore at the old flat lip's top, so the screw reaches as deep into the ledge as it did
         for (y = [STOP_Y, BLOCK_LOCK_Y, SLED_LOCK_Y]) {
             translate([STOP_PIN_X, y, LEDGE_Z - LEDGE_T - 1]) cylinder(d = LIP_SCREW[2], h = 10);
-            translate([STOP_PIN_X, y, LEDGE_Z + GUIDE_LIP_Z - 1]) cylinder(d = LIP_SCREW[3], h = GUIDE_LIP_T + 2);
+            translate([STOP_PIN_X, y, LEDGE_Z + GUIDE_LIP_Z - 1]) cylinder(d = LIP_SCREW[3], h = GUIDE_TOP - LEDGE_Z - GUIDE_LIP_Z + 2);
+            translate([STOP_PIN_X, y, LEDGE_Z + GUIDE_LIP_Z + GUIDE_LIP_T]) cylinder(d = LIP_SCREW[1] + 0.5, h = GUIDE_TOP);
             translate([STOP_PIN_X, y, LEDGE_Z - EPS]) cylinder(d = LIP_SCREW[0] + 0.8, h = GUIDE_LIP_Z + 2 * EPS);
         }
     }
@@ -164,10 +182,13 @@ module tray() {
         union() {
             linear_extrude(CARRIER_BOTTOM) tray_bottom_2d();
             cube([CARRIER_W, CARRIER_FASCIA, CARRIER_WALL_H]);                       // fascia
+            // raised to the ledges at both ends: they start on it
+            for (x = [0, CARRIER_W - LEDGE_X]) translate([x, 0, CARRIER_WALL_H - EPS])
+                cube([LEDGE_X, CARRIER_FASCIA, LEDGE_Z - LEDGE_T - CARRIER_WALL_H + 2 * EPS]);
             translate([0, CARRIER_D - WALL, 0]) cube([CARRIER_W, WALL, CARRIER_WALL_H]);   // rear wall
             both_sides(CARRIER_D, CARRIER_WALL_H, GROOVE_END);
-            guide_left();
-            translate([CARRIER_W, 0, 0]) mirror([1, 0, 0]) guide_left();
+            guide_left(LATCH_Y[0]);
+            translate([CARRIER_W, 0, 0]) mirror([1, 0, 0]) guide_left(LATCH_Y[1]);
             // node PCB standoffs
             for (h = NODE_HOLES) translate(concat(node_xy(h), [0]))
                 cylinder(d = BOSS_D, h = CARRIER_BOTTOM + CARRIER_STANDOFF);
@@ -207,7 +228,7 @@ module tray() {
             translate([0, 0, LEDGE_Z - 0.6]) cylinder(d1 = NODE_ACCESS_D, d2 = NODE_ACCESS_D + 1.2 + 2 * EPS, h = 0.6 + EPS);
             translate([0, 0, LEDGE_Z + GUIDE_LIP_Z - EPS]) cylinder(d1 = NODE_ACCESS_D + 2, d2 = NODE_ACCESS_D, h = 1);
             if (p[1] - r < GUIDE_Y0 + 2)
-                translate([-r, GUIDE_Y0 - 1 - p[1], LEDGE_Z - LEDGE_T - 1]) cube([LEDGE_X + 1 - p[0] + r, p[1] - GUIDE_Y0 + 1, GUIDE_TOP - LEDGE_Z + LEDGE_T + 2]);
+                translate([-r, CARRIER_FASCIA - p[1], LEDGE_Z - LEDGE_T - 1]) cube([LEDGE_X + 1 - p[0] + r, p[1] - CARRIER_FASCIA, GUIDE_TOP - LEDGE_Z + LEDGE_T + 2]);
         }
         // closed-position detent magnet, flush with the left ledge (the pad below gives it its depth)
         translate([DETENT_LEDGE[0], DETENT_LEDGE[1], LEDGE_Z]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
