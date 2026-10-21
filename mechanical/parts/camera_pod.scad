@@ -4,7 +4,7 @@
 // Mega's 3.3 V and header, four white LEDs along the edge beside the camera), so nothing is soldered.
 //
 //   -D 'PART="pod"'       the printed pod (dark PETG, opaque): a plate screwed to the ceiling's four
-//                         camera inserts (4 × M3×8 from below), a sleeve the Mega's case snaps into, lens
+//                         camera inserts on a diagonal (2 × M3×8 from below), a sleeve the Mega's case snaps into, lens
 //                         down at the lens spot, its rear wall carried down as the baffle between the
 //                         LEDs and the lens, and the pod board's two standoffs behind it
 //   -D 'PART="diffuser"'  white PETG: a 1 mm floor DIFF_GAP under the LEDs on two posts, which clamp the
@@ -73,8 +73,10 @@ module pod() {
                 union() {
                     translate([-s[0] / 2, -s[1] / 2, CASE_Z]) cube([s[0], s[1], MEGA_CASE[2] + EPS]);
                     translate([-s[0] / 2, s[1] / 2 - SW, BAFFLE_Z]) cube([s[0], SW, CASE_Z - BAFFLE_Z + EPS]);
-                    for (sy = [-1, 1]) translate([-8, sy > 0 ? s[1] / 2 - SW - LIP : -s[1] / 2 + SW, CASE_Z - 1.2])
-                        cube([16, LIP, 1.2]);
+                    // the lips under the case: the rear one on the baffle's inner face, the front one carried
+                    // under its wall (it touched the wall only along an edge: a loose sliver in the print)
+                    translate([-8, s[1] / 2 - SW - LIP, CASE_Z - 1.2]) cube([16, LIP, 1.2]);
+                    translate([-8, -s[1] / 2, CASE_Z - 1.2]) cube([16, SW + LIP, 1.2]);
                 }
                 translate([-s[0] / 2 + SW, -s[1] / 2 + SW, CASE_Z - EPS]) cube([s[0] - 2 * SW, s[1] - 2 * SW, MEGA_CASE[2] + EPS]);
                 // the XH's side (XH_WIN)
@@ -82,8 +84,10 @@ module pod() {
             }
             for (h = POD_PCB_HOLES) translate([board(h)[0], board(h)[1], PCB_Z]) cylinder(d = 6, h = POD_GAP + EPS);
         }
-        // 4 × M3×8 up into the ceiling's inserts (run on past them: tray.scad), heads in counterbores
-        for (sx = [-1, 1], sy = [-1, 1]) translate([sx * P, sy * P, -PLATE_T - EPS]) {
+        // 2 × M3×8 on a diagonal up into the ceiling's inserts (run on past them: tray.scad), heads in
+        // counterbores: two screws fix a 12 g pod.  No locating rib: the pod prints ceiling face down, so
+        // nothing can stand proud of that face, and the two screws already set where it sits and its turn
+        for (s = [-1, 1]) translate([s * P, s * P, -PLATE_T - EPS]) {
             cylinder(d = M3_CLEAR, h = PLATE_T + 2 * EPS);
             cylinder(d = 6.2, h = 1.6);
         }

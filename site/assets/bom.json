@@ -3433,11 +3433,11 @@
 "category": "Fasteners",
 "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods",
 "supplier": "AliExpress (bulk)",
-"qty": 106,
+"qty": 102,
 "unit_eur": 0.02,
 "notes": "one M3 length everywhere: where it goes deeper than an insert, the insert's hole runs on past it (lib/common.scad › insert_hole(runout))",
 "unit": "pcs",
-"ext_eur": 2.12
+"ext_eur": 2.04
 },
 {
 "category": "Fasteners",
@@ -3748,14 +3748,14 @@
 "by_category": {
 "Electronics": 742.6899999999994,
 "Printed parts": 62.0,
-"Fasteners": 14.71,
+"Fasteners": 14.63,
 "Motion": 18.85,
 "Cables": 79.69999999999999,
 "Analyzer": 7.0,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 1071.05,
+"total_eur": 1070.97,
 "prints": [
 {
 "part": "bay_label",
@@ -3795,8 +3795,8 @@
 {
 "part": "camera_pod",
 "qty": 2,
-"grams_each": 12.1,
-"grams_total": 24.2,
+"grams_each": 12.2,
+"grams_total": 24.4,
 "stl": "mechanical/stl/camera_pod.stl"
 },
 {

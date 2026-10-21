@@ -939,7 +939,7 @@ def hardware(rack) -> list[dict]:
                   "screw into them)"},
         {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, "
                                          "power box lid, camera pods",
-         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_drawer + 4 * n_bays + 4 + 4 * cams, "unit_eur": 0.02,
+         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_drawer + 4 * n_bays + 4 + 2 * cams, "unit_eur": 0.02,
          "notes": "one M3 length everywhere: where it goes deeper than an insert, the insert's hole runs on past it "
                   "(lib/common.scad › insert_hole(runout))"},
         {"category": "Fasteners", "item": "M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",

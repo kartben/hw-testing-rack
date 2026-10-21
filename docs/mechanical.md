@@ -177,7 +177,7 @@ above, or the cap plate) for an Arducam Mega 3MP SPI camera in its case (B0434,
 a ~120° M12 lens) and the pod board right behind it
 ([electronics/camera-pod](../electronics/camera-pod/): the PH-8 lead's J1, the
 Mega's header J2, four white LEDs along the edge beside the camera: nothing to
-solder).  The **pod** (dark PETG, opaque) takes 4 × M3×8 into the camera
+solder).  The **pod** (dark PETG, opaque) takes 2 × M3×8 on a diagonal into the camera
 inserts (`bay.camera_mount`: a 30 mm square right of the node above, clear of
 its drag chain, on the cap plate's grid, so one pod fits every row) and reaches
 45 mm left to the lens spot (`bay.camera_lens`, bay (64, 84) below): a sleeve

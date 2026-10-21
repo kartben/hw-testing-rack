@@ -119,7 +119,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | brace_b | 4 | 6.6 | `mechanical/stl/brace_b.stl` |
 | brace_base | 4 | 6.4 | `mechanical/stl/brace_base.stl` |
 | camera_diffuser | 2 | 0.6 | `mechanical/stl/camera_diffuser.stl` |
-| camera_pod | 2 | 12.1 | `mechanical/stl/camera_pod.stl` |
+| camera_pod | 2 | 12.2 | `mechanical/stl/camera_pod.stl` |
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 7 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
@@ -352,7 +352,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 82  | 0.03 | 2.46 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3 square nut, DIN 562 (5.5 × 5.5 × 1.8) | 60  | 0.02 | 1.20 | AliExpress (bulk) |
-| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods | 106  | 0.02 | 2.12 | AliExpress (bulk) |
+| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods | 102  | 0.02 | 2.04 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
 | Fasteners | PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 "ST", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4's cradle: 3 instead of the DATA board's 2 | 63  | 0.02 | 1.26 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 28  | 0.01 | 0.28 | AliExpress (bulk) |

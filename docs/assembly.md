@@ -136,7 +136,7 @@ ladder's window, run them up the left side and into each row's first node.
 
 At the bench: the pod board on its two standoffs behind the sleeve, LEDs
 down, against the baffle, and the diffuser under it (2 × PT 2.6×14 up through
-its posts and the board).  Pod under the ceiling, 4 × M3×8 into the camera
+its posts and the board).  Pod under the ceiling, 2 × M3×8 on a diagonal into the camera
 inserts (the tray above, or the cap plate), the bay's drawer pulled out (a
 closed drawer and its DUT cable leave no room for the hand).  Then the XH →
 Dupont cable onto J2 by name and into the Mega's side (only now: the XH plug
