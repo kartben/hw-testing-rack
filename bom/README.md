@@ -6,16 +6,16 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Category | Cost (€) |
 |---|---:|
 | Electronics | 745 |
-| Cables | 90 |
 | Power | 82 |
+| Cables | 80 |
 | Cameras | 64 |
 | Printed parts | 62 |
 | Motion | 19 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,085** |
+| **Total** | **1,074** |
 
-≈ **€136 per bay** all-in.
+≈ **€134 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -363,10 +363,13 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 2 m | 4.00 | 8.00 | Olimex DRAG-CHAIN-7X7 |
 | Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain | 5  | 2.17 | 10.85 | AliExpress 1005003181041939, "7x7mm" (or one more metre of chain per pair) |
 | Cables | JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (DATA leads: node J7 → drag chain → DATA port board; camera leads: node J6 → pod J1) | 2 lot | 4.50 | 9.00 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P, Length50CM |
-| Cables | JST PH 6-pin crimp housing PHR-6 (row cables: 2 per cable) | 20  | 0.02 | 0.37 | LCSC C157952 |
-| Cables | JST PH crimp contact SPH-002T-P0.5S, 24–30 AWG, insulation Ø 0.8–1.5 mm (row cables: 12 per cable) | 150  | 0.01 | 1.25 | LCSC C111515 |
-| Cables | Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), spools of 5 m: red, black, yellow, green, white | 1 kit | 9.00 | 9.00 | AliExpress (UL1007 24AWG, 5 colours) |
-| Cables | Crimper for open-barrel contacts, 24–30 AWG (the row cables' contacts) | 1  | 40.00 | 40.00 | Engineer PA-09 (or IWISS SN-28B, ≈ €20) |
+| Cables | JST PH pre-crimped lead ASPHSPH24K152, 152 mm, 24 AWG UL1007, SPH-002T-P0.5S at both ends (row cables: the 6 bay-to-bay jumpers, 6 a cable) | 40  | 0.28 | 11.18 | Digi-Key FR 455-3082-ND (or Mouser FR) |
+| Cables | JST PH pre-crimped lead ASPHSPH24K305, 305 mm, 24 AWG UL1007, SPH-002T-P0.5S at both ends (row cables: the feed to row A, 6 a cable) | 8  | 0.44 | 3.52 | Digi-Key FR 455-3083-ND (or Mouser FR) |
+| Cables | JST PH 6-pin housing PHR-6-R, red: a row cable's IN end (the node's J1) | 10  | 0.05 | 0.45 | LCSC C495652 |
+| Cables | JST PH 6-pin housing PHR-6-BK, black: a row cable's OUT end (the node's J2, the hub's row outputs) | 10  | 0.04 | 0.40 | LCSC C495651 |
+| Cables | JST PH crimp contact SPH-002T-P0.5S, 24–30 AWG, insulation Ø 0.8–1.5 mm (the feeds JST's leads don't reach: row B (60 cm)) | 50  | 0.01 | 0.41 | LCSC C111515 |
+| Cables | Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), black, 10 m (the crimped feeds) | 1 spool | 4.00 | 4.00 | AliExpress (UL1007 24AWG) |
+| Cables | Crimper for open-barrel contacts, 28–18 AWG (the crimped feeds' contacts) | 1  | 20.00 | 20.00 | IWISS SN-28B (or Engineer PA-09, ≈ €40) |
 | Cables | Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie anchors at its front right (docs/cabling.md) | 12  | 0.02 | 0.24 | AliExpress (bulk) |
 | Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK) | 3  | 2.50 | 7.50 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
 | Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: XIAO) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |

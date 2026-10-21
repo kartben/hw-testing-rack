@@ -87,7 +87,7 @@ the current granted) and each row's current (the eFuses' IMON).  When the negoti
 budgets: it limits or sheds rows instead of letting the charger trip.
 
 Each row has its own eFuse, set to **1.6 A**: rows are wired with JST PH (2 A
-per contact, on 24 AWG: the row cables are crimped in 24 AWG), so the limit protects the connectors and the cables
+per contact, on 24 AWG: the row cables are built from 24 AWG leads), so the limit protects the connectors and the cables
 (their gauge: [power-distribution-review.md](power-distribution-review.md)).  A
 shorted row sits at its limit while the others carry on.
 
@@ -135,7 +135,7 @@ datasheet.
 
 At 28 V a row draws ≤ 1.6 A (its eFuse limit) and the whole rack ≤ 5 A (the
 contract).  The input is a 5 A USB-C receptacle (GCT USB4105) on wide pours,
-the rows JST PH (2 A on 24 AWG leads, crimped since 2026-10-21:
+the rows JST PH (2 A on 24 AWG leads, since 2026-10-21:
 [power-distribution-review.md](power-distribution-review.md)).  The bay nodes run from **13.5 to 30 V**
 (the buck starts above 13.5 V and stops below 10.8 V; 60 V silicon), so the
 same boards run from a 24 V brick too, or on a desk from a 15–30 V supply on J1.

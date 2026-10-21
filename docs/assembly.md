@@ -68,7 +68,7 @@ later, take its tray out first.
    and close them.
    Anchor onto the tray: 2 × M3×8 into its inserts; plug the lead into the
    node's DATA header (J7, on its right edge).
-3. **Row power (VRACK)**: JST PH jumper (crimped in 24 AWG and rung first:
+3. **Row power (VRACK)**: JST PH jumper (24 AWG leads, red housing into J1, rung first:
    [cabling.md](cabling.md#row-power)) to the neighbouring node, through the windows in
    both tray walls and the shared ladder; along the tray's front, tied to the
    two anchors at its front right (a cable tie through each one's tunnel),

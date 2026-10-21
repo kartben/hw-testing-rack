@@ -307,12 +307,17 @@ JLC_PARTS = json.loads(JLC_PARTS_FILE.read_text(encoding="utf-8")) if JLC_PARTS_
 # the DATA and camera leads' listing (JST PH 8, "Same direction"); the row cables came from it too until
 # 2026-10-21
 PH_LEAD_URL = "https://www.aliexpress.com/item/1005008045292937.html"
-# The row cables (docs/can.md: one type for feeds and jumpers, pin n ↔ pin 7−n), crimped in 24 AWG since
-# 2026-10-21 (the user's pick, docs/power-distribution-review.md): JST rates PH's 2 A on 24 AWG only, and no
-# ready-made PH 6 lead states 24 AWG in that layout (AliExpress's are 26 AWG or don't say, Pololu's 24 AWG
-# ones are 1:1).  Wire lengths between the plugs:
-ROW_JUMPER_MM = 150                 # bay to bay: 120 mm routed (docs/cabling.md)
-ROW_FEED_CM = [30, 60, 80]          # power box to rows A, B, C (≈ 0.25 / 0.45 / 0.6 m routed), then D...
+# The row cables (docs/can.md: one type for feeds and jumpers, pin n ↔ pin 7−n) in 24 AWG since 2026-10-21
+# (the user's pick, docs/power-distribution-review.md): JST rates PH's 2 A on 24 AWG only, and no ready-made
+# PH 6 cable states 24 AWG in that layout (AliExpress's are 26 AWG or don't say, Pololu's 24 AWG ones are 1:1).
+# Built from JST's own pre-crimped leads (SPH-002T-P0.5S at both ends, UL1007 24 AWG, black) clicked into
+# PHR-6 housings: no crimping.  They stop at 305 mm, so a longer feed is crimped.  Lead lengths:
+ROW_JUMPER_MM = 152                 # bay to bay: 120 mm routed (docs/cabling.md)
+ROW_FEED_CM = [30.5, 60, 80]        # power box to rows A, B, C (≈ 0.25 / 0.45 / 0.6 m routed), then D...
+# JST's pre-crimped PH leads, by length (mm): part and Digi-Key FR price breaks, EUR (2026-10-21; Mouser FR
+# stocks them too).  JST makes 51, 102, 152, 203, 254 and 305 mm, nothing longer.
+JST_PH_LEADS = {152: ("ASPHSPH24K152", "455-3082-ND", {1: 0.35, 10: 0.299, 25: 0.2796, 50: 0.266, 100: 0.2533}),
+                305: ("ASPHSPH24K305", "455-3083-ND", {1: 0.44, 10: 0.374, 25: 0.35, 50: 0.3334, 100: 0.3175})}
 
 
 # DUT cables (DATA port → board), per cable type of config/rack.yaml.  Listings found on 2026-10-18;
@@ -355,34 +360,60 @@ def bay_mounts(rack) -> tuple[int, int]:
 
 
 def _row_cables(rack) -> list[dict]:
-    """The row cables, crimped (ROW_FEED_CM): a jumper between neighbouring bays, a feed from the power box to
-    each row's first bay (row k gets ROW_FEED_CM[k], the last one beyond); their housings, contacts and wire."""
+    """The row cables (ROW_FEED_CM): a jumper between neighbouring bays, a feed from the power box to each row's
+    first bay (row k gets ROW_FEED_CM[k], the last one beyond).  JST's pre-crimped leads where one is long
+    enough (JST_PH_LEADS), six a cable; a longer feed crimped; red and black housings (docs/cabling.md)."""
     jumpers = sum(rack.units - 1 for _ in rack.rows)
     feeds = [ROW_FEED_CM[min(k, len(ROW_FEED_CM) - 1)] for k in range(len(rack.rows))]
+    rows = [r["id"] for r in rack.rows]
+    lead_mm = max(JST_PH_LEADS)
+    short = [r for r, cm in zip(rows, feeds) if cm * 10 <= lead_mm]
+    long_ = [(r, cm) for r, cm in zip(rows, feeds) if cm * 10 > lead_mm]
     cables = jumpers + len(feeds)
-    per_wire_m = jumpers * ROW_JUMPER_MM / 1000 + sum(feeds) / 100 + cables * 0.04   # + 2 cm stripped each end
-    lengths = f"{jumpers} jumpers of {ROW_JUMPER_MM} mm, feeds of " + " / ".join(f"{cm} cm" for cm in feeds)
-    return [
-        {"category": "Cables", "item": "JST PH 6-pin crimp housing PHR-6 (row cables: 2 per cable)",
-         "supplier": "LCSC C157952", "qty": 2 * cables + 4, "unit_eur": round(0.02 * USD_EUR, 4),
-         "notes": f"{cables} cables ({lengths}) and 4 spares"},
-        {"category": "Cables", "item": "JST PH crimp contact SPH-002T-P0.5S, 24–30 AWG, insulation Ø 0.8–1.5 mm "
-                                      "(row cables: 12 per cable)",
-         "supplier": "LCSC C111515", "qty": math.ceil(12 * cables * 1.5 / 50) * 50,
-         "unit_eur": round(0.009 * USD_EUR, 4),
-         "notes": "half again as spares: the first crimps go wrong"},
-        {"category": "Cables", "item": "Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), "
-                                      "spools of 5 m: red, black, yellow, green, white",
-         "supplier": "AliExpress (UL1007 24AWG, 5 colours)", "qty": 1, "unit": "kit", "unit_eur": 9.0,
-         "notes": "per cable: VRACK red, GND black × 2 (pins 2 and 5), CAN_H yellow, CAN_L green, POS white; "
-                  f"≈ {per_wire_m:.1f} m a colour, {2 * per_wire_m:.1f} m of black.  The gauge decides the "
-                  "connector's 2 A rating: on arrival, strip one, count the strands and measure one (24 AWG is "
-                  "7 × 0.20 mm, 11 × 0.16 or 19 × 0.12, ≈ 0.21 mm²; 7 × 0.16 is 26 AWG)"},
-        {"category": "Cables", "item": "Crimper for open-barrel contacts, 24–30 AWG (the row cables' contacts)",
-         "supplier": "Engineer PA-09 (or IWISS SN-28B, ≈ €20)", "qty": 1, "unit_eur": 40.0,
-         "notes": "a tool, bought once.  Each cable pin n ↔ pin 7−n: both housings the same face up on the "
-                  "table, the wire on pin 1 of one goes to pin 6 of the other.  Ring every cable before use"},
+
+    def lead(mm, n, spares, what):
+        part, dk, breaks = JST_PH_LEADS[mm]
+        qty = 6 * n + spares
+        eur = breaks[max(q for q in breaks if q <= qty)]
+        return {"category": "Cables", "item": f"JST PH pre-crimped lead {part}, {mm} mm, 24 AWG UL1007, "
+                                              f"SPH-002T-P0.5S at both ends (row cables: {what}, 6 a cable)",
+                "supplier": f"Digi-Key FR {dk} (or Mouser FR)", "qty": qty, "unit_eur": eur,
+                "notes": f"{n} × 6 and {spares} spares; JST's own leads, so the gauge is right.  Digi-Key FR "
+                         f"delivers free from €75: order with something else, or pay its shipping"}
+
+    out = [lead(152, jumpers, 4, f"the {jumpers} bay-to-bay jumpers")]
+    if short:
+        out.append(lead(305, len(short), 2, f"the feed to row {', '.join(short)}"))
+    out += [
+        {"category": "Cables", "item": "JST PH 6-pin housing PHR-6-R, red: a row cable's IN end (the node's J1)",
+         "supplier": "LCSC C495652", "qty": cables + 2, "unit_eur": round(0.049 * USD_EUR, 4),
+         "notes": f"{cables} cables and 2 spares; the cable works either way round, the colours only make it "
+                  "readable (docs/cabling.md)"},
+        {"category": "Cables", "item": "JST PH 6-pin housing PHR-6-BK, black: a row cable's OUT end (the node's J2, "
+                                      "the hub's row outputs)",
+         "supplier": "LCSC C495651", "qty": cables + 2, "unit_eur": round(0.043 * USD_EUR, 4),
+         "notes": f"{cables} cables and 2 spares"},
     ]
+    if long_:                                   # beyond JST's 305 mm: crimped
+        wire_m = sum(6 * (cm + 4) / 100 for _, cm in long_)
+        feeds_txt = ", ".join(f"row {r} ({cm:g} cm)" for r, cm in long_)
+        out += [
+            {"category": "Cables", "item": "JST PH crimp contact SPH-002T-P0.5S, 24–30 AWG, insulation Ø 0.8–1.5 mm "
+                                          f"(the feeds JST's leads don't reach: {feeds_txt})",
+             "supplier": "LCSC C111515", "qty": math.ceil(12 * len(long_) * 2 / 50) * 50,
+             "unit_eur": round(0.009 * USD_EUR, 4),
+             "notes": "12 a feed, as many again to learn on: the first crimps go wrong"},
+            {"category": "Cables", "item": "Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), "
+                                          "black, 10 m (the crimped feeds)",
+             "supplier": "AliExpress (UL1007 24AWG)", "qty": 1, "unit": "spool", "unit_eur": 4.0,
+             "notes": f"≈ {wire_m:.1f} m.  On arrival, strip one end, count the strands and measure one: 24 AWG "
+                      "is 7 × 0.20 mm, 11 × 0.16 or 19 × 0.12 (≈ 0.21 mm²); 7 × 0.16 is 26 AWG"},
+            {"category": "Cables", "item": "Crimper for open-barrel contacts, 28–18 AWG (the crimped feeds' contacts)",
+             "supplier": "IWISS SN-28B (or Engineer PA-09, ≈ €40)", "qty": 1, "unit_eur": 20.0,
+             "notes": f"a tool, bought once, for {12 * len(long_)} contacts: the cheap ratchet one does, with a few "
+                      "practice crimps; the Engineer makes neater PH crimps if more cables come"},
+        ]
+    return out
 
 
 def _tier(lcsc: str, basic: bool) -> str:
@@ -963,8 +994,8 @@ def hardware(rack) -> list[dict]:
                   "≈ 22 cm (no chain): the slack coiled in the plenum.  On arrival: both plugs show "
                   "the same face, pin 1 rings to pin 8; twist D+/D− (pins 3-4 at the node) by hand.  Or crimp them: "
                   "PHR-8 + 16 × SPH-002T-P0.5S, 24 AWG"},
-        # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up, crimped in
-        # 24 AWG (ROW_FEED_CM)
+        # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up, from 24 AWG
+        # leads (ROW_FEED_CM)
         *_row_cables(rack),
         {"category": "Cables", "item": "Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie "
                                       "anchors at its front right (docs/cabling.md)",

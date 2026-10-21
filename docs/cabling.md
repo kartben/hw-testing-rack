@@ -122,8 +122,8 @@ The rack bus, **VRACK**, is 20 or 28 V: whatever the hub negotiated with the
 USB-C PD charger ([power.md](power.md)).  The charger's 5 A e-marked cable
 plugs into the power box's rear wall.
 
-* **Bay to bay:** 6-pin JST PH jumpers, crimped in 24 AWG (below), 150 mm of wire for 120 mm
-  routed (VRACK, GND, CAN_H, CAN_L, GND, POS: [can.md](can.md)), plugged into the node's right (OUT) and
+* **Bay to bay:** 6-pin JST PH jumpers in 24 AWG (below), 152 mm leads for 120 mm routed (VRACK,
+  GND, CAN_H, CAN_L, GND, POS: [can.md](can.md)), plugged into the node's right (OUT) and
   the next node's left (IN) connectors through the windows in both tray walls
   and the shared ladder (from the plugs forward to the fascia).  From the
   node's OUT it heads for the tray's front right and crosses that side at
@@ -134,25 +134,35 @@ plugs into the power box's rear wall.
   twist**: pin n ↔ pin 7−n, both plugs showing the same face when the cable
   lies on a table.  (The v0.4 nodes had 2-pin, 24 V-only jumpers.)
 * **Power box to row:** one 6-pin JST PH feed per row, **the same cable** as
-  the jumpers (pin n ↔ pin 7−n), ≈ 0.25 / 0.45 / 0.6 m routed for rows A / B / C (30 / 60 / 80 cm
-  of wire).
+  the jumpers (pin n ↔ pin 7−n), ≈ 0.25 / 0.45 / 0.6 m routed for rows A / B / C (leads of
+  305 mm / 60 cm / 80 cm).
   Each plugs into the power box's left wall, reached through the left base
   ladder's window.  It runs forward along that ladder's outer face, climbs the
   rack's left side tied to the ladders, and enters the first bay's left window
   to its node's IN connector.  Out to the left and back in from the left, it
   takes a half turn along the way.  Give the CAN pair 2–3 twists per 10 cm.
 * **Making the row cables** (the user's pick, 2026-10-21: [power-distribution-review.md](power-distribution-review.md#decision-real-awg-24-leads)).
-  JST rates PH's 2 A only on 24 AWG, and no ready-made lead states 24 AWG with this pinout, so they
-  are crimped (the parts are in the BOM).
-  - **Parts:** PHR-6 housings, SPH-002T-P0.5S contacts (24–30 AWG, insulation Ø 0.8–1.5 mm), UL1007
-    24 AWG stranded wire (Ø ≈ 1.4 mm), and an open-barrel crimper (Engineer PA-09 or similar).
-  - **Check the wire first:** strip one end, count the strands and measure one.  24 AWG is 7 × 0.20 mm,
-    11 × 0.16 or 19 × 0.12 (≈ 0.21 mm²); 7 × 0.16 is 26 AWG.
-  - **Colours:** VRACK red, GND black (two wires), CAN_H yellow, CAN_L green, POS white.
-  - **Pin mapping:** lay both housings on the table, the same face up.  The wire in pin n of one goes
-    into pin 7−n of the other, so a cable lying flat has no twist.
-  - **Before use:** ring every cable with a meter, pin 1 to pin 6 and so on, and check no two pins
-    short.
+  JST rates PH's 2 A only on 24 AWG, and no ready-made 6-pin cable states 24 AWG with this pinout.  So
+  each cable is six single leads in two housings (the parts are in the BOM).
+  - **Leads:** JST's own pre-crimped ones: UL1007 24 AWG, black, an SPH-002T-P0.5S contact at each
+    end.  ASPHSPH24K152 (152 mm) makes the jumpers and ASPHSPH24K305 (305 mm) row A's feed: no
+    crimping.  JST makes none longer, so the feeds to rows B and C (60 and 80 cm) are crimped.  Use
+    SPH-002T-P0.5S contacts on UL1007 24 AWG wire with a cheap ratchet crimper (IWISS SN-28B); make a
+    few practice crimps first.  Check that wire on arrival: count the strands and measure one.  24 AWG
+    is 7 × 0.20 mm, 11 × 0.16 or 19 × 0.12 (≈ 0.21 mm²); 7 × 0.16 is 26 AWG.
+  - **Housings:** a red PHR-6-R at one end, a black PHR-6-BK at the other.  The cable works either way
+    round; the convention only makes it readable.  The red end goes into the node's IN (J1), the black
+    end into an OUT (the node's J2, a hub row output).  The red housing's position n is then J1's
+    pin n: 1 VRACK, 2 GND, 3 CAN_H, 4 CAN_L, 5 GND, 6 POS.
+  - **Insert order, for pin n ↔ pin 7−n:** hold both housings the same way, latch up, mating faces
+    away from you.  Each lead goes from a position of the red housing to the mirrored position of the
+    black one: outermost left to outermost right, and so on inwards.  Push each contact in until it
+    clicks, then tug it.
+  - **Marking (optional):** the leads are all black.  Plug the red end into a node's J1 and put a red
+    stripe (marker or heat-shrink) at both ends of the lead on J1's pin 1, VRACK.  Twist the two
+    middle leads (CAN) 2–3 turns per 10 cm, and hold the six together with a few small cable ties.
+  - **Before use:** ring every cable with a meter, red 1 to black 6 and so on, and check that no two
+    positions short.
 * **A node on the bench:** it runs only from its row, never from USB.  To
   flash or try one on a desk, give its IN connector 15–30 V (J1.1 +, J1.2 /
   J1.5 GND; e.g. a 19–24 V laptop or lab supply: the buck starts above

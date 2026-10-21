@@ -56,7 +56,7 @@ whole rack typically draws ≈ 25 W.
 |---|---|
 | The hub's eFuse (TPS26600, R_ILIM 7.5k) | 1.6 A per row (1.52–1.68 A): it holds the row there, whatever the bays ask |
 | JST PH contact, VRACK on one pin, GND on two | 2 A per contact **with AWG 24 only**; JST gives no figure for thinner wire, ≈ 1–1.5 A on the usual 26–28 AWG |
-| The BOM's leads until 2026-10-21 (AliExpress 1005008045292937; crimped 24 AWG since) | gauge not stated, in the text or the photos: red-white flat cable at 2 mm pitch, "bare copper", usually 26 AWG, sometimes 28 |
+| The BOM's leads until 2026-10-21 (AliExpress 1005008045292937; JST's 24 AWG leads since) | gauge not stated, in the text or the photos: red-white flat cable at 2 mm pitch, "bare copper", usually 26 AWG, sometimes 28 |
 | The node's J1/J2 | SMD PH on solid islands, 2 vias (0.3 mm) each into a 3.8 mm VRACK strip on In2 (0.5 oz): ≈ 24 A/mm² and 30 mV across the board at 1.6 A |
 | The hub's row outputs | 0.8 mm tracks on 1 oz with 3 vias at each layer change: ≈ 2.4 A for a 10 °C rise |
 
@@ -96,14 +96,21 @@ The user's pick on 2026-10-21, after VH was weighed against PH 8 and AWG 24:
 The decision:
 - **The rows stay JST PH 6** on the hub B1 and the nodes.  The eFuse stays at 1.6 A: 80 % of a PH
   contact's 2 A, which JST gives on 24 AWG.
-- **The row cables are crimped**, since no ready-made lead fits.  The AliExpress PH 6 leads are
-  26 AWG or don't say, and Pololu's 24 AWG ones are 1:1, where the rows need pin n ↔ pin 7−n.
-  - Parts: PHR-6 housings (C157952), SPH-002T-P0.5S contacts (C111515: 24–30 AWG, insulation
-    Ø 0.8–1.5 mm), UL1007 24 AWG stranded wire (Ø ≈ 1.4 mm) and an open-barrel crimper.
-  - The BOM carries them (`_row_cables()` in `tools/bom.py`); how to make and check them is in
-    [cabling.md](cabling.md#row-power).
-- **The wire's gauge is checked on arrival:** strip one, count the strands and measure one.  24 AWG is
-  7 × 0.20 mm, 11 × 0.16 or 19 × 0.12 (≈ 0.21 mm²); 7 × 0.16 is 26 AWG.
+- **No ready-made cable fits.**  The AliExpress PH 6 cables are 26 AWG or don't say.  Pololu's 24 AWG
+  ones are 1:1, and the rows need pin n ↔ pin 7−n.
+- **So each row cable is six single leads in two PHR-6 housings,** red at the IN end and black at the
+  OUT end.  How to make and check them is in [cabling.md](cabling.md#row-power), and the BOM carries the
+  parts (`_row_cables()` in `tools/bom.py`).
+  - **Leads:** JST's own pre-crimped leads, SPH-002T-P0.5S at both ends on UL1007 24 AWG.
+    ASPHSPH24K152 (152 mm) makes the jumpers and ASPHSPH24K305 (305 mm) row A's feed.  Digi-Key FR
+    has 32 406 and 12 167 in stock, at €0.25 and €0.32 a lead by the 100; Mouser FR has them too.
+    Clicking them into the housings needs no tool.
+  - **Feeds beyond 305 mm (rows B and C):** JST makes no longer lead, so these are crimped.  That is
+    SPH-002T-P0.5S on UL1007 24 AWG with a cheap ratchet crimper (IWISS SN-28B), 12 contacts a feed.
+    Check that wire's gauge on arrival: count the strands and measure one.  24 AWG is 7 × 0.20 mm,
+    11 × 0.16 or 19 × 0.12 (≈ 0.21 mm²); 7 × 0.16 is 26 AWG.
+  - **Cost for this rack:** ≈ €40 (6 jumpers and 2 feeds, the crimper €20 of it), against ≈ €51 for
+    crimping every cable (wire kit and an Engineer PA-09).  Digi-Key FR delivers free from €75.
 - **JST PA stays the documented fallback** if 20 V operation ever matters (its worst case is
   2.1–2.25 A a row).  It has a 2.0 mm pitch and 3 A a contact, and is ≈ 14 mm wide in 6 pins, under
   the PH 6's 17.2 mm.  So the hub's 17.5 mm pitch should hold; confirm that on its footprint before any
