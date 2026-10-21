@@ -136,7 +136,7 @@ picks SERVICE up again; `bay status` and the LED show it.
 |---|---|---|
 | **First flash and updates** | laptop on the hub's **console USB-C** (front wall, under A1, engraved "USB"), `west flash`.  That port also powers the controller (not the rows), so a hub with no PD charger, or on a desk, can be flashed too | yes |
 | **Wedged firmware** | the console USB-C is wired straight to the ESP32's USB pins and the hub's firmware never takes the PHY: esptool resets it into the ROM loader whatever the firmware does, short of firmware that reconfigures IO19/IO20 | yes |
-| **Last resort** | **BOOT** (SW2) and **RESET** (SW1), rear-left corner, top side: a pin through the lid's two holes (RESET, BOOT, engraved), down a guide tube onto each button; UART0 pads TP1–TP4 on the bottom side (lid off, 4 × M3×6, and the hub off its spacers) | yes, with a pin |
+| **Last resort** | **BOOT** (SW2) and **RESET** (SW1), rear-left corner, top side: a pin through the lid's two holes (RST, BOOT, debossed beside them), down a guide tube onto each button; UART0 pads TP1–TP4 on the bottom side (lid off, 4 × M3×6, and the hub off its spacers) | yes, with a pin |
 
 The row enables are held across the controller's resets (pad hold), so
 flashing the hub should not power-cycle the rack: to be checked on the first

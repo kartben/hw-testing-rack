@@ -146,8 +146,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | plate_giga-r1-display | 1 | 71.0 | `mechanical/stl/plate_giga-r1-display.stl` |
 | power_box_base | 1 | 35.2 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
-| power_box_lid | 1 | 15.0 | `mechanical/stl/power_box_lid.stl` |
-| power_box_lid_labels | 1 | 0.2 | `mechanical/stl/power_box_lid_labels.stl` |
+| power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
 | tray | 8 | 82.2 | `mechanical/stl/tray.stl` |
 | x4_cradle | 2 | 8.3 | `mechanical/stl/x4_cradle.stl` |
 

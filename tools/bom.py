@@ -844,8 +844,8 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         "camera_pod": cams, "camera_diffuser": cams, "bay_label": n_bays,
         # a converted bay's DATA ×4 (v2, logic or base) stands in its printed cradle at the drawer's back
         "x4_cradle": sum(1 for b in rack.bays() if rack.is_multi(b.id)),
-        # the power box: base and lid, and their optional label inlays (a second, light filament)
-        "power_box_base": 1, "power_box_lid": 1, "power_box_labels": 1, "power_box_lid_labels": 1,
+        # the power box: base and lid, and the walls' optional label inlays (a second, light filament)
+        "power_box_base": 1, "power_box_lid": 1, "power_box_labels": 1,
     })
     for row in rack.rows:
         counts[f"ladder_{row['id'].lower()}"] += cols + 1

@@ -3406,7 +3406,7 @@
 "qty": 3.1,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈2.7 kg estimated + 10 % waste, 168 parts",
+"notes": "≈2.7 kg estimated + 10 % waste, 167 parts",
 "ext_eur": 62.0
 },
 {
@@ -3972,16 +3972,9 @@
 {
 "part": "power_box_lid",
 "qty": 1,
-"grams_each": 15.0,
-"grams_total": 15.0,
+"grams_each": 15.2,
+"grams_total": 15.2,
 "stl": "mechanical/stl/power_box_lid.stl"
-},
-{
-"part": "power_box_lid_labels",
-"qty": 1,
-"grams_each": 0.2,
-"grams_total": 0.2,
-"stl": "mechanical/stl/power_box_lid_labels.stl"
 },
 {
 "part": "tray",

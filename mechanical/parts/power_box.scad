@@ -3,7 +3,6 @@
 //   openscad -D 'PART="base"' -o power_box_base.stl parts/power_box.scad
 //   openscad -D 'PART="lid"'  -o power_box_lid.stl  parts/power_box.scad
 //   openscad -D 'PART="labels"'     -o power_box_labels.stl     parts/power_box.scad   (optional inlays)
-//   openscad -D 'PART="lid_labels"' -o power_box_lid_labels.stl parts/power_box.scad
 //
 // Inside: the power hub v0.5 (USB-C PD sink, an eFuse per row, the rack controller: ESP32-S3 / CAN
 // master) on four standoffs.  Its USB-C PD input looks out of the rear wall: the rack's only
@@ -18,12 +17,13 @@
 // the lid screws into the spacers' tops (4 × M3×6).
 //
 // Box coordinates: origin at the front-left-bottom outer corner, X right, Y back, Z up.
-// Print: base upright, lid top face down; PETG, no supports.  The labels are engraved; the two
-// *_labels parts fill the engravings exactly, flush with the faces: load each with its part as one
-// object (two parts) and give it a light filament on the H2D's second nozzle, for contrast.
+// Print: base upright, lid top face down; PETG, no supports.  The walls' labels are engraved; the
+// `labels` part fills those engravings exactly, flush with the faces: load it with the base as one
+// object (two parts) and give it a light filament on the H2D's second nozzle, for contrast.  The lid
+// carries only RST and BOOT, small and debossed in its top face, in one colour.
 include <../lib/panels.scad>
 
-PART = "base";      // base | lid | labels | lid_labels | preview
+PART = "base";      // base | lid | labels | preview
 SHOW_LID = false;   // preview only
 
 W = PBOX_SIZE[0];
@@ -87,7 +87,8 @@ LID_SCREWS = [for (h = HUB_HOLES) hub_xy(h)];
 // controller.  The console USB-C on the front wall already flashes it with the box closed.
 BUTTON_TOP = HUB_TOP + 1.5;
 BUTTON_PIN = [2.2, 5.0, 1.0];       // hole Ø, guide tube OD, gap above the button
-BUTTON_NAMES = ["RESET", "BOOT"];
+BUTTON_NAMES = ["RST", "BOOT"];
+LID_TEXT = [3.15, 0.4];             // their size (3 mm capitals) and depth, in the lid's top face
 
 module rounded(size, r = R) rbox(size, r);
 
@@ -116,12 +117,11 @@ module base_labels(inlay = false) {
     engrave("PD IN", [HUB_X0 + HUB_PD, D, USB_BOTTOM - 4], 180, inlay);
 }
 
-// the lid's labels, in its top face (printed face down: the first layers): its name, and RESET / BOOT
-// beside their pin holes
-module lid_label(inlay = false) translate([0, 0, HB + LID_T - TEXT[1]]) linear_extrude(TEXT[1] + (inlay ? 0 : EPS)) {
-    translate([W / 2, D / 2 - 8]) rotate(90) label("hw-testing-rack · power", 7);
-    for (i = [0 : 1]) translate(hub_xy(HUB_BUTTONS[i]) + [BUTTON_PIN[1] / 2 + 1.5, 0]) label(BUTTON_NAMES[i], halign = "left");
-}
+// the lid's labels, in its top face (printed face down: the first layers): RST and BOOT beside their pin
+// holes, debossed, no inlay
+module lid_label() translate([0, 0, HB + LID_T - LID_TEXT[1]]) linear_extrude(LID_TEXT[1] + EPS)
+    for (i = [0 : 1]) translate(hub_xy(HUB_BUTTONS[i]) + [BUTTON_PIN[1] / 2 + 1.5, 0])
+        label(BUTTON_NAMES[i], size = LID_TEXT[0], halign = "left");
 
 // ---------------------------------------------------------------- base
 module base() {
@@ -222,10 +222,7 @@ module preview() {
     color("#c9a227") for (p = LID_SCREWS) translate([p[0], p[1], HUB_TOP]) cylinder(r = SPACER[1], h = SPACER[0], $fn = 6);
 }
 
-module lid_labels() lid_label(inlay = true);
-
 if (PART == "base") base();
 else if (PART == "lid") translate([0, D, HB + LID_T]) rotate([180, 0, 0]) lid();
 else if (PART == "labels") base_labels(inlay = true);
-else if (PART == "lid_labels") translate([0, D, HB + LID_T]) rotate([180, 0, 0]) lid_labels();
 else if (PART == "preview") preview();
