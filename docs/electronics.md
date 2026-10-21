@@ -221,6 +221,15 @@ of open cable for a board on J4).  With J4 gone, J7 is the pair's only end: one 
 and the ESD where the lead leaves the board.  A node on the bench, out of its rack, takes a DATA
 lead and a port board like a bay.
 
+**For the next node revision** (nothing to do for this one):
+- **Move C1 out from under the tray's left ledge.**  C1 is the 100 µF / 50 V bulk electrolytic
+  (CP_Elec_8x10, KiCad (6, 58.4)).  The tray dropped a gusset there (2026-10-21), so the ledge now
+  bridges 38 mm over C1 with 1.5 mm to spare.  That prints, but moving C1 out of the tray-frame band
+  would restore the gusset.  The band is carrier y 29.5–39.8, and `NODE_C1` in
+  `mechanical/lib/carrier.scad` mirrors C1's position.  A lower can is no real way out: the gusset
+  needs one under 5 mm tall ([printed-parts-fdm-review.md](printed-parts-fdm-review.md)), and the
+  usual 100 µF / 50 V cans are 8 × 10 or larger.
+
 ## Power hub v0.5 — 4 layers, 76 × 100 mm
 
 One per rack.  It lives in the power box ([mechanical.md](mechanical.md#power-box)); its outline,
