@@ -25,12 +25,13 @@
 
 LOG_MODULE_REGISTER(bay, CONFIG_BAY_LOG_LEVEL);
 
-/* --- Persistent settings: "bay/id", "bay/force_pc", "bay/aux" --------------- */
+/* --- Persistent settings: "bay/id", "bay/force_pc", "bay/aux", "bay/racked" - */
 
 static char stored_id[BAY_ID_MAX_LEN + 1];
 static bool stored_force_pc;
 static struct aux_config stored_aux;
 static bool have_stored_aux;
+static bool stored_racked; /* a hub gave it a rack address once */
 
 static int bay_settings_set(const char *key, size_t len, settings_read_cb read_cb, void *cb_arg)
 {
@@ -50,6 +51,11 @@ static int bay_settings_set(const char *key, size_t len, settings_read_cb read_c
 
 	if (settings_name_steq(key, "force_pc", NULL)) {
 		n = read_cb(cb_arg, &stored_force_pc, sizeof(stored_force_pc));
+		return n < 0 ? (int)n : 0;
+	}
+
+	if (settings_name_steq(key, "racked", NULL)) {
+		n = read_cb(cb_arg, &stored_racked, sizeof(stored_racked));
 		return n < 0 ? (int)n : 0;
 	}
 
@@ -76,6 +82,20 @@ int bay_settings_save_force_pc(bool force)
 int bay_settings_save_id(const char *id)
 {
 	return settings_save_one("bay/id", id, strlen(id));
+}
+
+bool bay_settings_racked(void)
+{
+	return stored_racked;
+}
+
+int bay_settings_save_racked(void)
+{
+	if (stored_racked) {
+		return 0;
+	}
+	stored_racked = true;
+	return settings_save_one("bay/racked", &stored_racked, sizeof(stored_racked));
 }
 
 int bay_settings_save_aux(const struct aux_config *cfg)
@@ -154,6 +174,15 @@ static uint32_t update_health(void)
 	       (RACK_NODE_VALID(bay_rack_id()) && bay_rack_hub(&hub) ? HWTR_UP_BUS : 0);
 }
 
+/*
+ * A test boot with no update record: Wi-Fi, and the rack bus only on a node a
+ * hub has addressed before (a standalone bay, on a PD trigger, never has one)
+ */
+static uint32_t update_expected(void)
+{
+	return HWTR_UP_WIFI | (bay_settings_racked() ? HWTR_UP_BUS : 0);
+}
+
 /* A reserved bay is not updated unless the admin insists */
 static const char *update_busy(void)
 {
@@ -173,6 +202,7 @@ static const char *update_busy(void)
 
 static const struct hwtr_update_cfg update_cfg = {
 	.health = update_health,
+	.expected = update_expected,
 	.busy = update_busy,
 };
 #endif

@@ -243,8 +243,10 @@ int hwtr_update_init(const struct hwtr_update_cfg *c)
 	if (!confirmed) {
 		/* A test boot: what worked before the update must work again */
 		if (strcmp(last.stage, "trial") != 0) {
-			/* Not ours (no record): ask for everything */
-			last.need = HWTR_UP_WIFI | HWTR_UP_BUS;
+			/* Not ours (no record): what this device has, or everything */
+			last.need = (cfg.expected != NULL ? cfg.expected()
+							   : HWTR_UP_WIFI | HWTR_UP_BUS) &
+				    (HWTR_UP_WIFI | HWTR_UP_BUS);
 			strcpy(last.stage, "trial");
 			strcpy(last.from, "");
 			snprintf(last.to, sizeof(last.to), "%s", APP_VERSION_STRING);

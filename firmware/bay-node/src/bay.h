@@ -368,5 +368,8 @@ static inline int camera_client_kick(int slot)
 int bay_settings_save_force_pc(bool force);
 int bay_settings_save_id(const char *id);
 int bay_settings_save_aux(const struct aux_config *cfg);
+/* A hub has given the node a rack address once (saved the first time) */
+bool bay_settings_racked(void);
+int bay_settings_save_racked(void);
 
 #endif /* BAY_H_ */

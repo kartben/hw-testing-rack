@@ -100,6 +100,8 @@ static void on_address(void *ctx, uint8_t id)
 	}
 	rack_node_name(id, position);
 	LOG_INF("rack position %s (node 0x%02x)", position, id);
+	/* In a rack from now on: a test boot also waits for the rack bus */
+	(void)bay_settings_save_racked();
 
 	/* Without a bay id the node is named after its place: bay-c3.local */
 	for (size_t i = 0; i < sizeof(lower); i++) {

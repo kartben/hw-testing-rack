@@ -206,6 +206,19 @@ static const struct hwtr_update_cfg cfg = {
 	.reboot = reboot_cb,
 };
 
+/* A device that says what it has: a standalone node, Wi-Fi only */
+static uint32_t expected_cb(void)
+{
+	return HWTR_UP_WIFI;
+}
+
+static const struct hwtr_update_cfg cfg_standalone = {
+	.health = health_cb,
+	.expected = expected_cb,
+	.busy = busy_cb,
+	.reboot = reboot_cb,
+};
+
 static void erase_trailer(uint8_t id)
 {
 	const struct flash_area *fa;
@@ -444,6 +457,32 @@ ZTEST(update, test_trial_rolls_back)
 	zassert_false(st.trial);
 	zassert_str_equal(st.last, "rolled back");
 	zassert_str_equal(st.last_to, "0.5.0");
+}
+
+ZTEST(update, test_unrecorded_test_boot)
+{
+	struct hwtr_update_status st;
+
+	/* Test-booted with no record (flashed or tested some other way): everything */
+	slot0_test_booted();
+	zassert_ok(hwtr_update_init(&cfg));
+	hwtr_update_status(&st);
+	zassert_true(st.trial);
+	zassert_equal(st.need, HWTR_UP_WIFI | HWTR_UP_BUS);
+
+	/* A standalone node asks only for what it has: Wi-Fi, confirmed without a bus */
+	(void)settings_delete("upd/stage");
+	slot0_test_booted();
+	health = HWTR_UP_WIFI;
+	zassert_ok(hwtr_update_init(&cfg_standalone));
+	hwtr_update_status(&st);
+	zassert_true(st.trial);
+	zassert_equal(st.need, HWTR_UP_WIFI);
+	k_sleep(K_SECONDS(7));
+	hwtr_update_status(&st);
+	zassert_false(st.trial);
+	zassert_true(boot_is_img_confirmed());
+	zassert_equal(reboots, 0);
 }
 
 ZTEST(update, test_usb_flash_is_no_trial)

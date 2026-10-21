@@ -75,7 +75,9 @@ static void print_rack(const struct shell *sh)
 	struct rack_hub_state hub;
 
 	if (bay_rack_id() == 0) {
-		shell_print(sh, "rack:      no position (not enumerated by the hub)");
+		shell_print(sh, "rack:      %s", bay_settings_racked()
+			    ? "no position (not enumerated by the hub)"
+			    : "standalone (no hub has addressed it)");
 		return;
 	}
 	if (bay_rack_hub(&hub)) {

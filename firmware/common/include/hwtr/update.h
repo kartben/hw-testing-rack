@@ -43,6 +43,12 @@
 struct hwtr_update_cfg {
 	/* HWTR_UP_* bits for what works right now */
 	uint32_t (*health)(void);
+	/*
+	 * HWTR_UP_* bits a test boot with no update record (an image flashed
+	 * or tested by other means) must see work: what this device has; NULL,
+	 * all of them.  A node that never had a rack bus does not ask for it.
+	 */
+	uint32_t (*expected)(void);
 	/* NULL, or why an update should wait (the bay is reserved); "force" overrides */
 	const char *(*busy)(void);
 	/* A line for the device's event log (confirmed, rolled back), or NULL */
