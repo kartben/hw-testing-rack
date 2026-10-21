@@ -1,11 +1,13 @@
-# Power distribution review: the row wiring, and the hub in 100 mm (2026-10-20)
+# Power distribution review: the row wiring, and the hub in 100 mm (2026-10-20/21)
 
 The user's question: can the power hub fit in 100 mm, maybe with other connectors, and do the row
 cables carry enough current?  VRACK is 20 V or 28 V (the CH224A's contract), not 24 V.
 
 **Decided on 2026-10-20: option B1.**  The user adopted it after its routing trial: the hub is
-76 × 100 mm with its four rows, the power box 84 × 108 ([the result](#result-b1-routed)).  The row
-wiring keeps its boards; fix 1 (AWG 24 leads) stands.
+76 × 100 mm with its four rows, the power box 84 × 108 ([the result](#result-b1-routed)).
+
+**Decided on 2026-10-21: fix 1, real AWG 24 leads** ([the decision](#decision-real-awg-24-leads)).  The
+hub B1 and the nodes keep their PH 6 rows; no PH 8, no VH, no PA for now.
 
 ## A. The row wiring
 
@@ -54,7 +56,7 @@ whole rack typically draws ≈ 25 W.
 |---|---|
 | The hub's eFuse (TPS26600, R_ILIM 7.5k) | 1.6 A per row (1.52–1.68 A): it holds the row there, whatever the bays ask |
 | JST PH contact, VRACK on one pin, GND on two | 2 A per contact **with AWG 24 only**; JST gives no figure for thinner wire, ≈ 1–1.5 A on the usual 26–28 AWG |
-| The BOM's leads (AliExpress 1005008045292937) | gauge not stated, in the text or the photos: red-white flat cable at 2 mm pitch, "bare copper", usually 26 AWG, sometimes 28 |
+| The BOM's leads until 2026-10-21 (AliExpress 1005008045292937; crimped 24 AWG since) | gauge not stated, in the text or the photos: red-white flat cable at 2 mm pitch, "bare copper", usually 26 AWG, sometimes 28 |
 | The node's J1/J2 | SMD PH on solid islands, 2 vias (0.3 mm) each into a 3.8 mm VRACK strip on In2 (0.5 oz): ≈ 24 A/mm² and 30 mV across the board at 1.6 A |
 | The hub's row outputs | 0.8 mm tracks on 1 oz with 3 vias at each layer change: ≈ 2.4 A for a 10 °C rise |
 
@@ -84,6 +86,28 @@ cable); 28 AWG 0.55 W/m.  Each contact dissipates ≈ 50 mW.
 
 **Recommended:** fix 1 now (no board change), and keep the eFuse at 1.6 A as the cap.  Fix 2 only
 if a row ever has to carry four heavy bays at 20 V.
+
+### Decision: real AWG 24 leads
+
+The user's pick on 2026-10-21, after VH was weighed against PH 8 and AWG 24:
+- **VH:** 10 A a contact, but 23.7–25.6 mm wide.  The hub at 100 mm takes 2 such rows, not 4.
+- **PH 8:** 3 rows at most on the hub.
+
+The decision:
+- **The rows stay JST PH 6** on the hub B1 and the nodes.  The eFuse stays at 1.6 A: 80 % of a PH
+  contact's 2 A, which JST gives on 24 AWG.
+- **The row cables are crimped**, since no ready-made lead fits.  The AliExpress PH 6 leads are
+  26 AWG or don't say, and Pololu's 24 AWG ones are 1:1, where the rows need pin n ↔ pin 7−n.
+  - Parts: PHR-6 housings (C157952), SPH-002T-P0.5S contacts (C111515: 24–30 AWG, insulation
+    Ø 0.8–1.5 mm), UL1007 24 AWG stranded wire (Ø ≈ 1.4 mm) and an open-barrel crimper.
+  - The BOM carries them (`_row_cables()` in `tools/bom.py`); how to make and check them is in
+    [cabling.md](cabling.md#row-power).
+- **The wire's gauge is checked on arrival:** strip one, count the strands and measure one.  24 AWG is
+  7 × 0.20 mm, 11 × 0.16 or 19 × 0.12 (≈ 0.21 mm²); 7 × 0.16 is 26 AWG.
+- **JST PA stays the documented fallback** if 20 V operation ever matters (its worst case is
+  2.1–2.25 A a row).  It has a 2.0 mm pitch and 3 A a contact, and is ≈ 14 mm wide in 6 pins, under
+  the PH 6's 17.2 mm.  So the hub's 17.5 mm pitch should hold; confirm that on its footprint before any
+  change.
 
 ## B. The hub in ≤ 100 mm
 

@@ -304,9 +304,15 @@ JLC_PARTS_FILE = REPO / "electronics" / "lib" / "jlc_parts.json"
 JLC_PARTS = json.loads(JLC_PARTS_FILE.read_text(encoding="utf-8")) if JLC_PARTS_FILE.exists() else {}
 
 
-# the row cables' listing (docs/can.md: one type for feeds and jumpers)
-ROW_CABLE_URL = "https://www.aliexpress.com/item/1005008045292937.html"
-ROW_FEED_CM = [(30, 3.19), (60, 4.69), (80, 5.29)]      # rows A, B, C (≈ 0.25 / 0.45 / 0.6 m), then D...
+# the DATA and camera leads' listing (JST PH 8, "Same direction"); the row cables came from it too until
+# 2026-10-21
+PH_LEAD_URL = "https://www.aliexpress.com/item/1005008045292937.html"
+# The row cables (docs/can.md: one type for feeds and jumpers, pin n ↔ pin 7−n), crimped in 24 AWG since
+# 2026-10-21 (the user's pick, docs/power-distribution-review.md): JST rates PH's 2 A on 24 AWG only, and no
+# ready-made PH 6 lead states 24 AWG in that layout (AliExpress's are 26 AWG or don't say, Pololu's 24 AWG
+# ones are 1:1).  Wire lengths between the plugs:
+ROW_JUMPER_MM = 150                 # bay to bay: 120 mm routed (docs/cabling.md)
+ROW_FEED_CM = [30, 60, 80]          # power box to rows A, B, C (≈ 0.25 / 0.45 / 0.6 m routed), then D...
 
 
 # DUT cables (DATA port → board), per cable type of config/rack.yaml.  Listings found on 2026-10-18;
@@ -348,13 +354,35 @@ def bay_mounts(rack) -> tuple[int, int]:
     return ms.count("drawer"), len(ms) - ms.count("drawer")
 
 
-def _feed_lots(rack):
-    """(length cm, EUR per lot of 5, [row ids]) for the feeds: row k gets ROW_FEED_CM[k] (the last one beyond)."""
-    lots = {}
-    for k, row in enumerate(rack.rows):
-        cm, price = ROW_FEED_CM[min(k, len(ROW_FEED_CM) - 1)]
-        lots.setdefault((cm, price), []).append(row["id"])
-    return [(cm, price, ids) for (cm, price), ids in lots.items()]
+def _row_cables(rack) -> list[dict]:
+    """The row cables, crimped (ROW_FEED_CM): a jumper between neighbouring bays, a feed from the power box to
+    each row's first bay (row k gets ROW_FEED_CM[k], the last one beyond); their housings, contacts and wire."""
+    jumpers = sum(rack.units - 1 for _ in rack.rows)
+    feeds = [ROW_FEED_CM[min(k, len(ROW_FEED_CM) - 1)] for k in range(len(rack.rows))]
+    cables = jumpers + len(feeds)
+    per_wire_m = jumpers * ROW_JUMPER_MM / 1000 + sum(feeds) / 100 + cables * 0.04   # + 2 cm stripped each end
+    lengths = f"{jumpers} jumpers of {ROW_JUMPER_MM} mm, feeds of " + " / ".join(f"{cm} cm" for cm in feeds)
+    return [
+        {"category": "Cables", "item": "JST PH 6-pin crimp housing PHR-6 (row cables: 2 per cable)",
+         "supplier": "LCSC C157952", "qty": 2 * cables + 4, "unit_eur": round(0.02 * USD_EUR, 4),
+         "notes": f"{cables} cables ({lengths}) and 4 spares"},
+        {"category": "Cables", "item": "JST PH crimp contact SPH-002T-P0.5S, 24–30 AWG, insulation Ø 0.8–1.5 mm "
+                                      "(row cables: 12 per cable)",
+         "supplier": "LCSC C111515", "qty": math.ceil(12 * cables * 1.5 / 50) * 50,
+         "unit_eur": round(0.009 * USD_EUR, 4),
+         "notes": "half again as spares: the first crimps go wrong"},
+        {"category": "Cables", "item": "Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), "
+                                      "spools of 5 m: red, black, yellow, green, white",
+         "supplier": "AliExpress (UL1007 24AWG, 5 colours)", "qty": 1, "unit": "kit", "unit_eur": 9.0,
+         "notes": "per cable: VRACK red, GND black × 2 (pins 2 and 5), CAN_H yellow, CAN_L green, POS white; "
+                  f"≈ {per_wire_m:.1f} m a colour, {2 * per_wire_m:.1f} m of black.  The gauge decides the "
+                  "connector's 2 A rating: on arrival, strip one, count the strands and measure one (24 AWG is "
+                  "7 × 0.20 mm, 11 × 0.16 or 19 × 0.12, ≈ 0.21 mm²; 7 × 0.16 is 26 AWG)"},
+        {"category": "Cables", "item": "Crimper for open-barrel contacts, 24–30 AWG (the row cables' contacts)",
+         "supplier": "Engineer PA-09 (or IWISS SN-28B, ≈ €20)", "qty": 1, "unit_eur": 40.0,
+         "notes": "a tool, bought once.  Each cable pin n ↔ pin 7−n: both housings the same face up on the "
+                  "table, the wire on pin 1 of one goes to pin 6 of the other.  Ring every cable before use"},
+    ]
 
 
 def _tier(lcsc: str, basic: bool) -> str:
@@ -926,7 +954,7 @@ def hardware(rack) -> list[dict]:
         {"category": "Cables", "item": "JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 "
                                       "(DATA leads: node J7 → drag chain → DATA port board; camera leads: node J6 → "
                                       "pod J1)",
-         "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 8P, Length50CM",
+         "supplier": f"AliExpress {PH_LEAD_URL}, \"Same direction\", 8P, Length50CM",
          "qty": math.ceil((n_bays + CAMERA_SETS) / 5), "unit": "lot", "unit_eur": 4.5,
          "notes": f"{n_bays} DATA + {CAMERA_SETS} camera leads; price interpolated from the 6-pin lots, not read: "
                   "check the 8P lengths on the listing (45–50 cm).  The DATA route is ≈ 38 cm plugs included "
@@ -935,26 +963,12 @@ def hardware(rack) -> list[dict]:
                   "≈ 22 cm (no chain): the slack coiled in the plenum.  On arrival: both plugs show "
                   "the same face, pin 1 rings to pin 8; twist D+/D− (pins 3-4 at the node) by hand.  Or crimp them: "
                   "PHR-8 + 16 × SPH-002T-P0.5S, 24 AWG"},
-        # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up.  Bought in
-        # lots of 5 from one AliExpress listing (checked 2026-10-18: its "Same direction" photo shows both
-        # plugs on the same face, its "Reverse direction" the 1:1 type); 6 pins
-        {"category": "Cables", "item": "JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 "
-                                      "(bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest "
-                                      "flat at the front of the plenum)",
-         "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 6P, Length20CM",
-         "qty": math.ceil(sum(cols - 1 for _ in rack.rows) / 5), "unit": "lot", "unit_eur": 2.85,
-         "notes": f"{sum(cols - 1 for _ in rack.rows)} needed; on arrival: both plugs show the same face, pin 1 rings "
-                  "to pin 6.  Or crimp them: PHR-6 + 12 × SPH-002T-P0.5S, 24 AWG"},
+        # the row cables, one type (docs/can.md): pin n ↔ pin 7−n, both plugs the same face up, crimped in
+        # 24 AWG (ROW_FEED_CM)
+        *_row_cables(rack),
         {"category": "Cables", "item": "Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie "
                                       "anchors at its front right (docs/cabling.md)",
          "supplier": "AliExpress (bulk)", "qty": 2 * sum(cols - 1 for _ in rack.rows), "unit_eur": 0.02},
-        *[{"category": "Cables", "item": f"JST PH 6-pin feed, the jumpers' type, {cm} cm, lot of 5 (power box → first "
-                                         f"bay of row {', '.join(rows_)}: VRACK, CAN, POS)",
-           "supplier": f"AliExpress {ROW_CABLE_URL}, \"Same direction\", 6P, Length{cm}CM",
-           "qty": math.ceil(len(rows_) / 5), "unit": "lot", "unit_eur": price,
-           "notes": "checked as the jumpers; the listing doesn't give the gauge (26 AWG is usual): fine for a row's "
-                    "≈ 0.4 A, warm at the eFuse's 1.6 A limit; twist the CAN pair (pins 3-4) by hand"}
-          for cm, price, rows_ in _feed_lots(rack)],
     ]
     duts = [d for b in rack.bays() for d in rack.duts(b.id) if d.cable]   # one cable per board under test
     cab = Counter(d.cable for d in duts)

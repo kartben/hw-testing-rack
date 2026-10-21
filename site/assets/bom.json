@@ -3537,13 +3537,43 @@
 },
 {
 "category": "Cables",
-"item": "JST PH 6-pin jumper, pin n ↔ pin 7−n (flat, no twist), 200 mm, lot of 5 (bay → bay through the ladder: row bus, CAN, POS; 120 mm needed, fold the rest flat at the front of the plenum)",
-"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 6P, Length20CM",
-"qty": 2,
-"unit": "lot",
-"unit_eur": 2.85,
-"notes": "6 needed; on arrival: both plugs show the same face, pin 1 rings to pin 6.  Or crimp them: PHR-6 + 12 × SPH-002T-P0.5S, 24 AWG",
-"ext_eur": 5.7
+"item": "JST PH 6-pin crimp housing PHR-6 (row cables: 2 per cable)",
+"supplier": "LCSC C157952",
+"qty": 20,
+"unit_eur": 0.0184,
+"notes": "8 cables (6 jumpers of 150 mm, feeds of 30 cm / 60 cm) and 4 spares",
+"unit": "pcs",
+"ext_eur": 0.37
+},
+{
+"category": "Cables",
+"item": "JST PH crimp contact SPH-002T-P0.5S, 24–30 AWG, insulation Ø 0.8–1.5 mm (row cables: 12 per cable)",
+"supplier": "LCSC C111515",
+"qty": 150,
+"unit_eur": 0.0083,
+"notes": "half again as spares: the first crimps go wrong",
+"unit": "pcs",
+"ext_eur": 1.25
+},
+{
+"category": "Cables",
+"item": "Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), spools of 5 m: red, black, yellow, green, white",
+"supplier": "AliExpress (UL1007 24AWG, 5 colours)",
+"qty": 1,
+"unit": "kit",
+"unit_eur": 9.0,
+"notes": "per cable: VRACK red, GND black × 2 (pins 2 and 5), CAN_H yellow, CAN_L green, POS white; ≈ 2.1 m a colour, 4.2 m of black.  The gauge decides the connector's 2 A rating: on arrival, strip one, count the strands and measure one (24 AWG is 7 × 0.20 mm, 11 × 0.16 or 19 × 0.12, ≈ 0.21 mm²; 7 × 0.16 is 26 AWG)",
+"ext_eur": 9.0
+},
+{
+"category": "Cables",
+"item": "Crimper for open-barrel contacts, 24–30 AWG (the row cables' contacts)",
+"supplier": "Engineer PA-09 (or IWISS SN-28B, ≈ €20)",
+"qty": 1,
+"unit_eur": 40.0,
+"notes": "a tool, bought once.  Each cable pin n ↔ pin 7−n: both housings the same face up on the table, the wire on pin 1 of one goes to pin 6 of the other.  Ring every cable before use",
+"unit": "pcs",
+"ext_eur": 40.0
 },
 {
 "category": "Cables",
@@ -3553,26 +3583,6 @@
 "unit_eur": 0.02,
 "unit": "pcs",
 "ext_eur": 0.24
-},
-{
-"category": "Cables",
-"item": "JST PH 6-pin feed, the jumpers' type, 30 cm, lot of 5 (power box → first bay of row A: VRACK, CAN, POS)",
-"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 6P, Length30CM",
-"qty": 1,
-"unit": "lot",
-"unit_eur": 3.19,
-"notes": "checked as the jumpers; the listing doesn't give the gauge (26 AWG is usual): fine for a row's ≈ 0.4 A, warm at the eFuse's 1.6 A limit; twist the CAN pair (pins 3-4) by hand",
-"ext_eur": 3.19
-},
-{
-"category": "Cables",
-"item": "JST PH 6-pin feed, the jumpers' type, 60 cm, lot of 5 (power box → first bay of row B: VRACK, CAN, POS)",
-"supplier": "AliExpress https://www.aliexpress.com/item/1005008045292937.html, \"Same direction\", 6P, Length60CM",
-"qty": 1,
-"unit": "lot",
-"unit_eur": 4.69,
-"notes": "checked as the jumpers; the listing doesn't give the gauge (26 AWG is usual): fine for a row's ≈ 0.4 A, warm at the eFuse's 1.6 A limit; twist the CAN pair (pins 3-4) by hand",
-"ext_eur": 4.69
 },
 {
 "category": "Cables",
@@ -3728,12 +3738,12 @@
 "Printed parts": 62.0,
 "Fasteners": 14.750000000000002,
 "Motion": 18.85,
-"Cables": 53.32,
+"Cables": 90.36,
 "Analyzer": 7.0,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 1047.49,
+"total_eur": 1084.53,
 "prints": [
 {
 "part": "bay_label",
