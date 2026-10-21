@@ -55,6 +55,10 @@ SHEETS = {
         (0, "skin 0.7 over 2.6 mm, slot 0.35 short of the flat's\nend: a 3.0 mm cantilever, 2.3 % for the nub's 0.2 mm;\nallowed 1.5 % for pegs moved at every re-layout", (0.50, 0.50)),
         (1, "SKIN_H 3.4, slot to the flat's end: 3.7 mm,\n1.5 %, ≈ 2.4 N to clip a peg", (0.50, 0.50)),
     ]),
+    "power_box_labels": ("Power box — the markings (front wall, lid on)", [
+        (0, "5.25 mm bold capitals engraved 0.8 mm and inlaid: A B C D\nunder the LED pairs, PD, CTL; PD IN at the rear; A–D at the\nrow windows; the rack's name and RESET / BOOT on the lid", (0.42, 0.56)),
+        (1, "walls plain; kept where a hand needs a mark: the row\nletters at the left-wall windows (plugging the rows) and\nPD IN at the rear USB-C (the front one is the console);\nthe lid's name and the RESET / BOOT words dropped", (0.42, 0.56)),
+    ]),
     "visual_language": ("The visual language on a real part — the drawer's front corner", [
         (0, "r 1.2 vertical edges, the bottom edge straight onto\nthe bed (elephant's foot), a blank 100 × 12 label", (0.42, 0.45)),
         (1, "R3 vertical edges; 0.5 × 45° chamfer on the bed edge;\nthe bay ID debossed 0.8 mm in the label, filled by the\nsecond nozzle; `1 2 3 4` debossed 0.4 mm in the rear-bay\nfloor.  Same rules on every part: the ladders' outline\nand row letter, FRONT arrows on plates, PT2.6 marks", (0.42, 0.45)),

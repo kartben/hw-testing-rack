@@ -74,6 +74,7 @@ that gap) so a rear tab can flex, or a shelf the case slides onto.
 | 10 | Chain anchor | A separate 1.4 g block on 2 inserts and 2 M3 × 8, 7 per rack | print it as part of the tray once the chain is measured: −7 parts, −14 inserts, −14 screws | 2 h | the chain's end piece must be known | **user** | — |
 | 11 | All | No common visual language: vertical edges r 1.2 / 1.5 / 2 / 3 / 4 or none (the tray), no bed chamfers, 5 label sizes | the family below: R3 outer verticals on big parts, R1.5 on small, 0.5 × 45° on every bed edge, text debossed 0.6 mm ≥ 4.5 mm high, arrows and screw callouts | 1 day | cosmetic | obvious | [visual_language](../mechanical/review/pairs/visual_language.png) |
 | 12 | Label | `bay_label` is a blank 100 × 12 strip | the bay ID debossed 0.8 mm and filled by the H2D's second nozzle: one object, two colours, readable at a glance | 1 h | needs a second filament loaded | **user** | [visual_language](../mechanical/review/pairs/visual_language.png) |
+| 12b | Power box | Inlaid 5.25 mm capitals on three walls and the lid: "un peu moche et inutile" (user) | walls plain; only the row letters at the windows and `PD IN` at the rear USB-C stay | 1 h | none | **user** | [power_box_labels](../mechanical/review/pairs/power_box_labels.png) |
 | 13 | BOM | 6 screw types | M3 × 8 everywhere M3 × 6 is used (node, lid, pods: the inserts and spacers take 8); PT 2.3 × 8 everywhere PT 2.6 × 8 is used (pilots 1.9): 4 types | ½ day | none | **user** | — |
 | 14 | Drawer | The magnet detent: 2 magnets, CA glue, a polarity check, a pad and two pockets per bay, for a 0.7 N job | a printed spring tab in the left ledge (20 × 2.5, bump 0.6: 0.56 % in-plane, ≈ 3 N hold) and a notch under the drawer: no parts, no glue | ½ day | wears; weaker than the magnets' ≈ 10 N | **user** | [detent](../mechanical/review/pairs/detent.png) |
 | 15 | Drawer, plate, ladders | Dead geometry: the drawer's four front ledges (DATA ×4 v1, not ordered), `board_plate.scad`'s snap and universal modes, `ladder_a` = `ladder_b` and `brace_a` = `brace_b` as separate STLs while the rows are equal | remove; one `ladder_row` and one `brace_row` STL | 2 h | none | obvious | — |
@@ -99,6 +100,8 @@ One set of rules for every part, each with its reason in FDM terms:
 | Marks | a `FRONT ▲` arrow on every part that fits one way (ladders, plates, cradle), the screw's size next to its hole (`M3×8` by the brace holes, `PT2.6` on the cradle's base), the row letter on each ladder's front post, port numbers `1–4` on the drawer's rear-bay floor in front of each U | the notice says it; the part should too |
 
 What stays as it is: the drawer front's scoop, the power box (already the reference), the honeycomb plate.
+
+![Power box: today's inlaid capitals, the walls plain with two marks kept proposed](../mechanical/review/pairs/power_box_labels.png)
 
 ![The visual language on the real drawer: r 1.2 edges and a blank label today; R3, a 0.5 chamfer at the bed, the ID inlaid and the port numbers debossed proposed](../mechanical/review/pairs/visual_language.png)
 
@@ -301,7 +304,13 @@ locate without screws.  Finding 15 does not touch them.  0.5 chamfer on the bed 
 
 ### Power box (`power_box.scad`)
 
-35 + 15 g.  The reference for looks: R4, engraved labels with inlays, vents.  Keep.  Two notes: with the
+35 + 15 g.  R4 corners, vents, a lid on the hub's spacers: keep.  **The markings (user, 2026-10-21: "un peu
+moche et inutile")**: 5.25 mm bold capitals, inlaid, on three walls and the lid.  Proposed: the walls plain,
+a mark only where a hand needs one: the row letters at the left-wall windows (which row plugs where) and
+`PD IN` at the rear USB-C (the front one is the console); the LEDs go unlabelled (pairs, in row order, the
+web UI names them), the lid loses the rack's name and the RESET / BOOT words (two bare pin holes).  Smaller,
+lighter type is not the answer on a vertical wall at 0.2 mm layers: 5 mm bold is what prints clean there,
+so fewer marks, not finer ones.  Pair: `review/pairs/power_box_labels.png`.  Two notes: with the
 inlays the base no longer needs 0.12–0.16 mm layers (the inlay's edge is what reads, not the engraving's
 shadow): 0.2 mm, about 30 % faster; a 0.5 chamfer on the base's bed edge and the lid's (printed face
 down: its top edge).
