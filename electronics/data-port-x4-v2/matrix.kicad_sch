@@ -8924,7 +8924,7 @@
 		)
 		(uuid "8f91a60f-5eb8-5713-b660-b25ccc033251")
 	)
-	(text "+5V_MX through a ferrite (the crosspoints, the inverter, the co-processor's LDO); −5 V for the crosspoints' VEE (TPS60400 inverter)"
+	(text "+5V_MX through a ferrite (the crosspoints, the inverter, the LSF0108s' bias); −5 V for the crosspoints' VEE (TPS60400 inverter)"
 		(exclude_from_sim no)
 		(at 290.83 27.94 0)
 		(effects

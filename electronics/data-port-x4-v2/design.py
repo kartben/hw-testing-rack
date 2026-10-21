@@ -391,11 +391,13 @@ def hub_sheet(b: Board):
     part(s, "U1", "usb2517", hub, pcb=P(HX, HY, 90), sch=at(124, 62, fields=(-11, -20)))
     # the seven 3.3 V pins on one rail
     rail(s, "+3V3", [f"U1.{n}" for n in (46, 64, 24, 5, 10, 52, 57)], -3)
-    # the crystal left of the hub, by XTAL1/XTAL2 (west face pins 61/60)
-    part(s, "Y1", "xtal24", {"1": "XI", "3": "XO", "2": "GND", "4": "GND"}, pcb=P(HX - 6.6, HY + 11.0, 0),
+    # the crystal south-west of the hub, below XTAL1/XTAL2 (west face pins 61/60), turned 180° (the RF review,
+    # 2026-10-21): XI (pin 61, the lower) lands on its north-east pad and XO (pin 60) on its south-west one, so the
+    # two don't cross (before, XI looped 30 mm round the hub, 2 vias); each load capacitor by its pad
+    part(s, "Y1", "xtal24", {"1": "XI", "3": "XO", "2": "GND", "4": "GND"}, pcb=P(HX - 6.6, HY + 11.0, 180),
          sch=at(94, 64, fields=(-2, -4)))
-    C(s, "C4", "33p", "XI", "GND", size="0402", pcb=P(HX - 6.6, HY + 13.6, 0), sch=at(88, 68))
-    C(s, "C5", "33p", "XO", "GND", size="0402", pcb=P(HX - 6.6, HY + 8.4, 0), sch=at(100, 68))
+    C(s, "C4", "33p", "XI", "GND", size="0402", pcb=P(HX - 6.6, HY + 8.4, 180), sch=at(88, 68))
+    C(s, "C5", "33p", "XO", "GND", size="0402", pcb=P(HX - 6.6, HY + 13.6, 0), sch=at(100, 68))
     s.wire("Y1.1", (88, 64), "C4.1")
     s.wire("Y1.3", (100, 64), "C5.1")
     # decoupling, by pin: west 64 (below the corner), 57 and 52; south 5, 10 (left and right of the DN
@@ -493,9 +495,9 @@ def matrix_sheet(b: Board):
         C(s, f"C{22 + 3 * c}", "100n", "-5V", "GND", size="0402", pcb=P(chx - 0.8, chy + 7.75, 270),
           sch=at(30, y0 + 54))
 
-    s.frame("+5V_MX through a ferrite (the crosspoints, the inverter, the co-processor's LDO); −5 V for the "
+    s.frame("+5V_MX through a ferrite (the crosspoints, the inverter, the LSF0108s' bias); −5 V for the "
             "crosspoints' VEE (TPS60400 inverter)", 114, 10, 228, 52)
-    # The matrix's +5V: the crosspoints' VDD, the −5 V inverter and the co-processor's LDO (≈ 110 mA) behind a
+    # The matrix's +5V: the crosspoints' VDD, the −5 V inverter and the LSF0108s' bias (≈ 70 mA) behind a
     # 600 Ω ferrite, off the ports' switching and the charge pump's 250 kHz.  In the left-hand column under the
     # power plane's split: its +5V end over the +5V area; +5V_MX is routed up to the loads (Supply)
     part(s, "FB1", "fb600", {"1": "+5V", "2": "+5V_MX"}, pcb=P(8.6, 63.4, 270), sch=at(124, 18))
@@ -706,14 +708,18 @@ def board() -> Board:
     outline += [(0, H, 1.0)]
     # The power plane (In2 on 4 layers, In4 on 6): +3V3 above PWR_SPLIT (the chains, the crosspoints, the
     # co-processor, the hub, the expanders' and INA226s' side), +5V below it (the power clusters, the USB-C's
-    # ESD, J1's pin 8), 0.2 mm apart.  The few +5V pins above the split (the crosspoints' VDD, the −5 V
-    # inverter, the co-processor's LDO, its sense divider) are routed.  The co-processor's +3V3_CP island
+    # ESD, J1's pin 8), 0.2 mm apart.  The few +5V_MX pins above the split (the crosspoints' VDD, the −5 V
+    # inverter, the LSF0108s' bias, the co-processor's sense divider) are routed.  The co-processor's +3V3_CP island
     # under its package is poured after the routing and joins the +3V3_CP vias that land in it.
     # +5V also reaches up the right-hand column in a tab, to J1's pin 8 and its 22 µF
-    IN_3V3 = [(0.4, 0.4), (W - 0.4, 0.4), (W - 0.4, 44.0), (89.2, 44.0), (89.2, PWR_SPLIT - 0.1),
-              (0.4, PWR_SPLIT - 0.1)]
-    IN_5V = [(0.4, PWR_SPLIT + 0.1), (89.0, PWR_SPLIT + 0.1), (89.0, 44.2), (W - 0.4, 44.2), (W - 0.4, H - 0.4),
-             (0.4, H - 0.4)]
+    # Both held 1.4 mm from the edge, notches included, 1 mm further than the other copper (the RF review,
+    # 2026-10-21): with the edge fence (below) the GND plane and the outer pours close the cavity's edge
+    E = 1.4
+    IN_3V3 = [(E, E), (W - E, E), (W - E, 44.0), (89.2, 44.0), (89.2, PWR_SPLIT - 0.1), (E, PWR_SPLIT - 0.1)]
+    bottom = [pt for x0, x1, top in reversed(NOTCHES)
+              for pt in ((x1 + E, H - E), (x1 + E, top - E), (x0 - E, top - E), (x0 - E, H - E))]
+    IN_5V = [(E, PWR_SPLIT + 0.1), (89.0, PWR_SPLIT + 0.1), (89.0, 44.2), (W - E, 44.2), (W - E, H - E), *bottom,
+             (E, H - E)]
     ISLAND = [(CP[0] - 6.1, CP[1] - 6.1), (CP[0] + 6.1, CP[1] - 6.1), (CP[0] + 6.1, CP[1] + 6.1),
               (CP[0] - 6.1, CP[1] + 6.1)]
     # Drawn before the routing (Freerouting routes round them): each port switch's IN and its 1 µF over the
@@ -747,6 +753,30 @@ def board() -> Board:
     # and the exposed pad down to the GND plane: a via between its paste windows, drawn (Freerouting doesn't
     # always fan the pad out); more of them, and its buses can't pass under the pad on B.Cu
     hand_vias.append(("GND", ux + 0.565, uy + 0.565, 0.5, 0.3))
+    # The upstream pair, drawn (the RF review, 2026-10-21): Freerouting had split it (UP_DP 86 mm round the
+    # co-processor, UP_DN 32 mm), 0.33 ns of skew on a lead that runs High Speed in classic mode.  Both pins dive
+    # under the hub's body to B.Cu.  The pair runs east between its exposed pad (left free for vias) and its south
+    # pins, down its east side past the south-east decoupling, then west of J1 to its pins 5 (D−) and 6 (D+).
+    # Side by side 0.15 mm apart, over the +3V3 plane all the way, 35.2 mm each: D+ goes 2 mm further, to pin 6,
+    # so a 0.6 mm bump on D−'s east side, by the hub, evens them
+    jx, j5, j6 = LEAD[0], LEAD[1] + 8.0, LEAD[1] + 10.0
+    dn_x, dp_x, dn_turn, dp_turn = jx - 1.35, jx - 1.75, HY + 9.57, HY + 9.4
+    up_dn = [(HX - 2.75, HY + 0.6), (HX - 2.75, HY + 2.15), (HX - 2.3, HY + 2.6), (HX + 3.55, HY + 2.6),
+             (HX + 3.95, HY + 3.0), (HX + 3.95, HY + 5.0), (HX + 4.55, HY + 5.0), (HX + 4.55, HY + 5.5),
+             (HX + 3.95, HY + 5.5), (HX + 3.95, dn_turn), (dn_x, dn_turn + HX + 3.95 - dn_x), (dn_x, j5 - 0.45),
+             (dn_x + 0.45, j5), (jx, j5)]
+    up_dp = [(HX - 3.3, HY + 1.4), (HX - 3.3, HY + 2.55), (HX - 2.85, HY + 3.0), (HX + 3.15, HY + 3.0),
+             (HX + 3.55, HY + 3.4), (HX + 3.55, dp_turn), (dp_x, dp_turn + HX + 3.55 - dp_x), (dp_x, j6 - 0.45),
+             (dp_x + 0.45, j6), (jx, j6)]
+    hand_tracks += [("UP_DN", "F.Cu", USB_W, [(HX - 4.41, HY + 0.75), up_dn[0]]), ("UP_DN", "B.Cu", USB_W, up_dn),
+                    ("UP_DP", "F.Cu", USB_W, [(HX - 4.41, HY + 1.25), up_dp[0]]), ("UP_DP", "B.Cu", USB_W, up_dp)]
+    hand_vias += [("UP_DN", *up_dn[0], 0.5, 0.3), ("UP_DP", *up_dp[0], 0.5, 0.3)]
+    # the hub's two south VDD33 pins (5 and 10) take their vias inwards, under its body (between the pads and the
+    # UP pair): their automatic fan-out vias sat right below the row, between the downstream pairs, and boxed
+    # port 2's D− in (Freerouting left it unrouted)
+    for px in (HX - 1.75, HX + 0.75):
+        hand_tracks.append(("+3V3", "F.Cu", 0.25, [(px, HY + 4.41), (px, HY + 3.75)]))
+        hand_vias.append(("+3V3", px, HY + 3.75, 0.5, 0.3))
     six = LAYERS == 6
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
@@ -770,6 +800,11 @@ def board() -> Board:
         "power_nets": {"GND": 1, "+5V": 2, "+5V_MX": 2, "-5V": 2, "+3V3": 2, "+3V3_CP": 2, "+1V1": 2,
                        "PORT?_VBUS": 2, "PORT?_5V_SW": 2},
         "stitch": 4.0,
+        # the RF review (2026-10-21): GND vias every 5 mm round the edge, 0.9 mm in, drawn before the routing; and
+        # each USB pair's lines matched within 1 mm after it (meanders on the shorter line)
+        "edge_fence": {"pitch": 5.0, "inset": 0.9},
+        "match": {"tol": 1.0, "pairs": [*((f"PORT{n}_DP", f"PORT{n}_DN") for n in range(1, 5)),
+                                        ("CP_HUB_DP", "CP_HUB_DN"), ("UP_DP", "UP_DN")]},
         "zones": [
             {"layer": "In1.Cu", "net": "GND"},
             {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "poly": IN_3V3},
@@ -793,7 +828,14 @@ def board() -> Board:
                          *((x0 - 0.35, top - 0.35, x1 + 0.35, H) for x0, x1, top in NOTCHES)))] + [
             # the panel's mouse bites (0.6 mm holes, 0.2 mm into the edge): copper at least 0.7 mm from them
             {"name": f"tab{i}", "poly": [(x - TAB_W / 2 - 0.5, 0), (x + TAB_W / 2 + 0.5, 0), (x + TAB_W / 2 + 0.5, 1.2),
-                                         (x - TAB_W / 2 - 0.5, 1.2)]} for i, x in enumerate(TABS)],
+                                         (x - TAB_W / 2 - 0.5, 1.2)]} for i, x in enumerate(TABS)] + [
+            # B.Cu runs over the power plane: no B.Cu track crosses its split (+3V3 / +5V, and the +5V tab's edge by
+            # J1), so every signal that does, the USB pairs included, crosses it on F.Cu over the GND plane (the RF
+            # review, 2026-10-21: no plane change for the return current)
+            {"name": "split", "layers": ["B.Cu"], "tracks_only": True,
+             "poly": [(0.35, PWR_SPLIT - 0.5), (89.6, PWR_SPLIT - 0.5), (89.6, PWR_SPLIT + 0.5), (0.35, PWR_SPLIT + 0.5)]},
+            {"name": "split-tab", "layers": ["B.Cu"], "tracks_only": True,
+             "poly": [(88.6, 43.6), (89.6, 43.6), (89.6, PWR_SPLIT - 0.5), (88.6, PWR_SPLIT - 0.5)]}],
         "panel": {"gap": 2.0, "tabs": TABS, "tab_width": TAB_W, "bite": {"drill": 0.6, "pitch": 1.0, "offset": 0.2},
                   "boards": [{"tag": "L", "variant": None, "rot": 0}, {"tag": "B", "variant": "base", "rot": 180}]},
         # the base DATA-4x: this PCB with the logic left off (module docstring)

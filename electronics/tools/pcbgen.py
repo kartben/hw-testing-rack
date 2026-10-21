@@ -621,6 +621,12 @@ class PcbBuilder:
                        if z["layer"] in ("F.Cu", "B.Cu") and "poly" in z]
             for net, n, todo in fanout_pads(self.board, specs, islands):
                 print(f"fan-out {net}: {n} of {todo} pads")
+        if self.b.pcb.get("edge_fence"):
+            f = self.b.pcb["edge_fence"]
+            outline = ([(x, y) for x, y, _ in self.b.pcb["outline"]] if self.b.pcb.get("outline")
+                       else [(0, 0), (self.w, 0), (self.w, self.h), (0, self.h)])
+            n, want = edge_fence(self.board, outline, self.net(self.b.pcb_net_name("GND")), f["pitch"], f["inset"])
+            print(f"edge fence: {n} of {want} GND vias")
         if route:
             self.autoroute(self.b.pcb.get("passes", 40))
         # zones are filled by `kicad-cli pcb drc --refill-zones --save-board` (KiCad's own filler)
@@ -713,6 +719,11 @@ def import_session(b: Board, outdir: Path) -> Path:
     pb.w, pb.h = b.pcb["size"]
     pb.layers = b.pcb.get("layers", 2)
     pb.nets = {}
+    if b.pcb.get("match"):
+        m = b.pcb["match"]
+        for line in tune_pairs(board, [(b.pcb_net_name(p), b.pcb_net_name(n)) for p, n in m["pairs"]],
+                               m.get("tol", 1.0)):
+            print(line)
     pb.zones("deferred")
     for ref, num in b.pcb.get("fanout", []):
         pad, via_at, _ = fanout_geometry(board, ref, num)
@@ -1425,6 +1436,184 @@ def _find_spot(polys, i, ok, sizes, step_mm=0.1):
                 xx += step
             yy += step
     return None
+
+
+def _copper_obstacles(board, layers, clear: float, skip=lambda item: False) -> dict:
+    """Per copper layer, every track, via and pad (but those `skip` names) grown by `clear` mm."""
+    err = MM(0.005)
+    out = {}
+    for l in layers:
+        sh = pcbnew.SHAPE_POLY_SET()
+        for t in board.GetTracks():
+            if t.IsOnLayer(l) and not skip(t):
+                t.TransformShapeToPolygon(sh, l, MM(clear), err, pcbnew.ERROR_OUTSIDE)
+        for fp in board.GetFootprints():
+            for p in fp.Pads():
+                if p.IsOnLayer(l) and not skip(p):
+                    p.TransformShapeToPolygon(sh, l, MM(clear), err, pcbnew.ERROR_OUTSIDE)
+        out[l] = sh
+    return out
+
+
+def edge_fence(board, outline, gnd, pitch: float, inset: float, via_d: float = 0.5, drill: float = 0.3,
+               clear: float = 0.2) -> tuple[int, int]:
+    """b.pcb["edge_fence"]: {"pitch": mm, "inset": mm}.  GND vias along the board's edge, drawn before
+    routing and locked, so Freerouting routes inside them: with the outer GND pours and the GND plane they
+    close the edge, and the power plane's cavity (its planes held back from the edge) doesn't radiate from
+    it.  One every `pitch` mm along the outline inset by `inset` mm, each slid along it by up to half a
+    pitch to clear other copper, holes and keep-outs.  Returns (placed, wanted)."""
+    layers = copper_of(board)
+    obst = _copper_obstacles(board, layers, clear)
+    holes = [(t.GetPosition().x, t.GetPosition().y, t.GetDrillValue()) for t in board.GetTracks()
+             if t.GetClass() == "PCB_VIA"]
+    holes += [(p.GetPosition().x, p.GetPosition().y, max(p.GetDrillSize().x, p.GetDrillSize().y))
+              for fp in board.GetFootprints() for p in fp.Pads() if p.GetDrillSize().x > 0]
+    keep = [z for z in board.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
+    ring = [(MM(x), MM(y)) for x, y in inset_poly(outline, inset)[0]]
+    segs = list(zip(ring, ring[1:] + ring[:1]))
+    lens = [math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in segs]
+    total = sum(lens)
+    n = max(1, round(total / MM(pitch)))
+    step = total / n
+    r = MM(via_d) // 2
+
+    def at(s):
+        s %= total
+        for (a, b), L in zip(segs, lens):
+            if s <= L:
+                f = s / L if L else 0.0
+                return a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f
+            s -= L
+        return ring[0]
+
+    def fits(x, y):
+        if any(math.hypot(x - hx, y - hy) < hd / 2 + MM(drill) / 2 + MM(0.35) for hx, hy, hd in holes):
+            return False
+        e = pcbnew.VECTOR2I(int(x), int(y))
+        if any(z.Outline().Collide(e, r) for z in keep):
+            return False
+        return not any(obst[l].Collide(e, r) for l in layers)
+
+    placed = 0
+    slide = MM(0.25)
+    for i in range(n):
+        tries = [0] + [sgn * k * slide for k in range(1, int(step / 2 / slide) + 1) for sgn in (1, -1)]
+        for ds in tries:
+            x, y = at(i * step + ds)
+            if fits(x, y):
+                v = pcbnew.PCB_VIA(board)
+                v.SetPosition(pcbnew.VECTOR2I(int(x), int(y)))
+                v.SetWidth(MM(via_d))
+                v.SetDrill(MM(drill))
+                v.SetNet(gnd)
+                if hasattr(v, "SetIsFree"):
+                    v.SetIsFree(True)       # tied to the copper through zones only
+                v.SetLocked(True)
+                board.Add(v)
+                holes.append((x, y, MM(drill)))
+                placed += 1
+                break
+    return placed, n
+
+
+def _net_length(board, code: int) -> float:
+    return sum(t.GetLength() for t in board.GetTracks() if t.GetClass() != "PCB_VIA" and t.GetNetCode() == code)
+
+
+def tune_pairs(board, pairs, tol: float, clear: float = 0.15, pitch: float = 0.5, margin: float = 0.6,
+               heights=(1.0, 0.75, 0.5, 0.35)) -> list[str]:
+    """b.pcb["match"]: {"pairs": [(net, net), ...], "tol": mm}.  Freerouting routes the two lines of a
+    differential pair on their own: after the session's import, lengthen the shorter line until the two
+    match within `tol` mm, with meanders (bumps `pitch` mm wide, as high and as many as the room beside it
+    allows) on its own straight, unlocked segments, clear of all other copper and keep-outs.  Returns one
+    report line per pair."""
+    layers = [pcbnew.F_Cu, pcbnew.B_Cu]
+    keep = [z for z in board.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowTracks()]
+    islands = [z for z in board.Zones() if not z.GetIsRuleArea() and z.GetNetname() != "GND"]
+    err = MM(0.005)
+    out = []
+
+    def place(t, short, code, deficit, base):
+        """One meander on track t (as much of `deficit` as fits); returns the length added, or 0."""
+        layer, w = t.GetLayer(), t.GetWidth()
+        obst = pcbnew.SHAPE_POLY_SET(base[layer])
+        tid = t.m_Uuid.AsString()
+        for o in board.GetTracks():
+            if o.GetClass() != "PCB_VIA" and o.GetNetCode() == code and o.IsOnLayer(layer) and o.m_Uuid.AsString() != tid:
+                o.TransformShapeToPolygon(obst, layer, MM(clear), err, pcbnew.ERROR_OUTSIDE)
+        a = pcbnew.VECTOR2I(t.GetStart().x, t.GetStart().y)
+        b = pcbnew.VECTOR2I(t.GetEnd().x, t.GetEnd().y)
+        L = t.GetLength()
+        if L <= 0:
+            return 0
+        ux, uy = (b.x - a.x) / L, (b.y - a.y) / L
+        wp, mg = MM(pitch), MM(margin)
+        mmax = int((L - 2 * mg + wp) // (2 * wp))
+        for h in heights:
+            hh = MM(h)
+            m = min(mmax, math.ceil(deficit / (2 * hh)))
+            while m >= 1:
+                last = min(hh, (deficit - 2 * hh * (m - 1)) / 2)   # the last bump's height: no more than the deficit
+                if last < MM(0.15):
+                    m -= 1
+                    continue
+                span = wp * (2 * m - 1)
+                for side in (1, -1):
+                    nx, ny = -uy * side, ux * side
+                    s0 = mg
+                    while s0 + span <= L - mg:
+                        pts = []
+                        for j in range(m):
+                            hj = hh if j < m - 1 else last
+                            x0 = s0 + 2 * wp * j
+                            for dx, dh in ((x0, 0), (x0, hj), (x0 + wp, hj), (x0 + wp, 0)):
+                                pts.append((a.x + ux * dx + nx * dh, a.y + uy * dx + ny * dh))
+                        vs = [pcbnew.VECTOR2I(int(x), int(y)) for x, y in pts]
+                        if not any(obst.Collide(pcbnew.SEG(p, q), w // 2) for p, q in zip(vs, vs[1:])):
+                            t.SetEnd(vs[0])
+                            for p, q in zip(vs, vs[1:] + [b]):
+                                nt = pcbnew.PCB_TRACK(board)
+                                nt.SetStart(p)
+                                nt.SetEnd(q)
+                                nt.SetWidth(w)
+                                nt.SetLayer(layer)
+                                nt.SetNet(short)
+                                board.Add(nt)
+                            return 2 * hh * (m - 1) + 2 * last
+                        s0 += MM(0.25)
+                m = m - 1 if m <= 4 else m // 2              # less of it where the whole doesn't fit
+        return 0
+
+    for p_name, n_name in pairs:
+        nets = [board.FindNet(p_name), board.FindNet(n_name)]
+        if None in nets:
+            out.append(f"match {p_name}/{n_name}: net missing")
+            continue
+        lp, ln = (_net_length(board, n.GetNetCode()) for n in nets)
+        before = abs(lp - ln)
+        for _ in range(40):
+            lp, ln = (_net_length(board, n.GetNetCode()) for n in nets)
+            short = nets[0] if lp < ln else nets[1]
+            deficit = abs(lp - ln)
+            if deficit <= MM(0.25):
+                break
+            code = short.GetNetCode()
+            # everything but the short line's own tracks, grown by the clearance, once per meander
+            base = _copper_obstacles(board, layers, clear,
+                                     skip=lambda it: it.GetClass() != "PCB_VIA" and it.GetNetCode() == code)
+            for layer in layers:
+                for z in keep + islands:
+                    if z.IsOnLayer(layer):
+                        base[layer].Append(z.Outline())
+            segs = sorted((t for t in board.GetTracks() if t.GetClass() != "PCB_VIA" and t.GetNetCode() == code
+                           and not t.IsLocked() and t.GetLayer() in layers), key=lambda t: -t.GetLength())
+            if not any(place(t, short, code, deficit, base) for t in segs):
+                break
+        lp, ln = (_net_length(board, n.GetNetCode()) for n in nets)
+        out.append(f"match {p_name.split('/')[-1]}/{n_name.split('/')[-1]}: {pcbnew.ToMM(lp):.2f} / "
+                   f"{pcbnew.ToMM(ln):.2f} mm, {pcbnew.ToMM(before):.2f} → {pcbnew.ToMM(abs(lp - ln)):.2f} mm"
+                   + ("" if abs(lp - ln) <= MM(tol) else f"  NOT within {tol} mm"))
+    return out
 
 
 def _seg_dist(px, py, ax, ay, bx, by):
