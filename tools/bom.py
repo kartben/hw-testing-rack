@@ -927,21 +927,22 @@ def hardware(rack) -> list[dict]:
     braces = cols * (n_rows + 1)
     n_drawer, n_sled = bay_mounts(rack)     # sled bays: no chain, foot, anchor or magnets
     n_fixed = sum(1 for b in rack.bays() if rack.mount(b.id) == "fixed")
+    n_multi = sum(1 for b in rack.bays() if rack.is_multi(b.id))   # DATA ×4 bays: the cradle on 3 inserts
     chain_m = math.ceil(0.19 * n_drawer + 0.3) if n_drawer else 0   # sold by the metre, one pair of end pieces with each
     charger = r["power_box"]["charger"]
     rows = [
         {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
-         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * n_bays + 2 * n_drawer + 4 * n_bays + 4,
+         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * n_bays + 2 * n_drawer + 4 * n_bays + 4 + 3 * n_multi,
          "unit_eur": 0.03,
          "notes": "per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera "
-                  "pod's mount); power box: 4 hub standoffs"},
+                  "pod's mount); a DATA ×4 bay's drawer: 3 in its bosses, for the cradle; power box: 4 hub standoffs"},
         {"category": "Fasteners", "item": "M3 square nut, DIN 562 (5.5 × 5.5 × 1.8)",
          "supplier": "AliExpress (bulk)", "qty": 4 * (cols + 1) * (n_rows + 1), "unit_eur": 0.02,
          "notes": "4 in the rear edge of every base and row ladder, in pockets open to its face (the braces "
                   "screw into them)"},
         {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, "
-                                         "power box lid, camera pods",
-         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_drawer + 4 * n_bays + 4 + 2 * cams, "unit_eur": 0.02,
+                                         "power box lid, camera pods, the DATA ×4 cradle",
+         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_drawer + 4 * n_bays + 4 + 2 * cams + 3 * n_multi, "unit_eur": 0.02,
          "notes": "one M3 length everywhere: where it goes deeper than an insert, the insert's hole runs on past it "
                   "(lib/common.scad › insert_hole(runout))"},
         {"category": "Fasteners", "item": "M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",
@@ -951,10 +952,10 @@ def hardware(rack) -> list[dict]:
         {"category": "Fasteners", "item": "PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 \"ST\", head ≤ Ø4.5): "
                                          "every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, "
                                          "2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and "
-                                         "2 port-block locks (and 2 sled locks if fixed); a DATA ×4's cradle: 3 instead of "
-                                         "the DATA board's 2",
+                                         "2 port-block locks (and 2 sled locks if fixed); a DATA ×4 bay: no DATA board (its "
+                                         "cradle takes M3 × 8 into inserts)",
          "supplier": "AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100)",
-         "qty": 8 * n_drawer + 5 * n_sled + 2 * n_fixed + sum(1 for b in rack.bays() if rack.is_multi(b.id)),
+         "qty": 8 * n_drawer + 5 * n_sled + 2 * n_fixed - 2 * n_multi,
          "unit_eur": 0.02,
          "notes": "pilots Ø1.9 (lib/common.scad › PT_PILOT), clearance Ø2.6; a PT 2.6's Ø5 head would rub the "
                   "drawer's wall at the guide lips (lib/carrier.scad › LIP_SCREW, checked in SolidCraft)"},

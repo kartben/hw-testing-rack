@@ -1199,7 +1199,7 @@ def build(rack) -> Path:
         # strip's middle, right behind its plug.  Under the drawer both run forwards at x_win: further left, a
         # U-turn in front of the open drawer's chain mouth would pass over the row cable on its tie anchor
         w_end = raw["chain"]["moving_x"] - rack.drawer_x0 - 5.5
-        x_win = dxw_ + (q4["x0"] + q4["holes"][2][0] + 4.5 + w_end) / 2
+        x_win = dxw_ + (q4["x0"] + q4["holes"][2][0] + 5.5 + w_end) / 2      # drawer.scad › wx: the Ø8 boss + 1.5
         x4_drop = (dxw_ + (q4["x0"] + q4["size"][0] + 1.0 + w_end) / 2, plenum + d["bottom"])
         ph_z = plenum + dp_z + dp["thickness"] + 2.8
         ph_up = [0, 0, 1]

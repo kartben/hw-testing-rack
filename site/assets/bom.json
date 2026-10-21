@@ -3413,11 +3413,11 @@
 "category": "Fasteners",
 "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
 "supplier": "AliExpress (bulk) / Ruthex",
-"qty": 82,
+"qty": 88,
 "unit_eur": 0.03,
-"notes": "per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs",
+"notes": "per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); a DATA ×4 bay's drawer: 3 in its bosses, for the cradle; power box: 4 hub standoffs",
 "unit": "pcs",
-"ext_eur": 2.46
+"ext_eur": 2.64
 },
 {
 "category": "Fasteners",
@@ -3431,13 +3431,13 @@
 },
 {
 "category": "Fasteners",
-"item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods",
+"item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods, the DATA ×4 cradle",
 "supplier": "AliExpress (bulk)",
-"qty": 102,
+"qty": 108,
 "unit_eur": 0.02,
 "notes": "one M3 length everywhere: where it goes deeper than an insert, the insert's hole runs on past it (lib/common.scad › insert_hole(runout))",
 "unit": "pcs",
-"ext_eur": 2.04
+"ext_eur": 2.16
 },
 {
 "category": "Fasteners",
@@ -3451,13 +3451,13 @@
 },
 {
 "category": "Fasteners",
-"item": "PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 \"ST\", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4's cradle: 3 instead of the DATA board's 2",
+"item": "PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 \"ST\", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4 bay: no DATA board (its cradle takes M3 × 8 into inserts)",
 "supplier": "AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100)",
-"qty": 63,
+"qty": 57,
 "unit_eur": 0.02,
 "notes": "pilots Ø1.9 (lib/common.scad › PT_PILOT), clearance Ø2.6; a PT 2.6's Ø5 head would rub the drawer's wall at the guide lips (lib/carrier.scad › LIP_SCREW, checked in SolidCraft)",
 "unit": "pcs",
-"ext_eur": 1.26
+"ext_eur": 1.14
 },
 {
 "category": "Fasteners",
@@ -3729,14 +3729,14 @@
 "by_category": {
 "Electronics": 742.6899999999994,
 "Printed parts": 62.0,
-"Fasteners": 7.640000000000001,
+"Fasteners": 7.82,
 "Motion": 18.85,
 "Cables": 79.69999999999999,
 "Analyzer": 7.0,
 "Power": 58.0,
 "Cameras": 64.1
 },
-"total_eur": 1039.98,
+"total_eur": 1040.16,
 "prints": [
 {
 "part": "bay_label_a1",
@@ -3909,15 +3909,15 @@
 {
 "part": "drawer",
 "qty": 7,
-"grams_each": 46.6,
-"grams_total": 326.0,
+"grams_each": 46.7,
+"grams_total": 326.9,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
 "part": "drawer_block",
 "qty": 1,
-"grams_each": 17.2,
-"grams_total": 17.2,
+"grams_each": 17.4,
+"grams_total": 17.4,
 "stl": "mechanical/stl/drawer_block.stl"
 },
 {
@@ -4084,8 +4084,8 @@
 {
 "part": "x4_cradle",
 "qty": 2,
-"grams_each": 8.1,
-"grams_total": 16.2,
+"grams_each": 8.6,
+"grams_total": 17.1,
 "stl": "mechanical/stl/x4_cradle.stl"
 }
 ],

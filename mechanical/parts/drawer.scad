@@ -75,6 +75,7 @@ X4_HOLES = [for (i = [0 : 2]) let (h = DATA_X4_HOLES[i]) [DATA_X4_X0 + h[0], DAT
 // the single board's two holes: their bosses stand under the DATA ×4's bare underside, Ø5 to keep 0.8 mm
 // from its second USB-C's shell leg
 ONE_HOLES = [for (h = DATA_PCB_HOLES) data_hole(h)];
+X4_BOSS_D = INSERT_M3[0] + 4;                     // the DATA ×4 bosses take M3 inserts (the cradle's M3 × 8): 2 mm of wall
 // the ledges under its front edge (drawer x from, to), either side of its USB4105's pegs (7 mm off its axis)
 ONE_LEDGES = [[DATA_PCB_X0 + 1, DATA_PORT_X[0] - 7], [DATA_PORT_X[0] + 7, DATA_PCB_X0 + DATA_PCB_SIZE[0] - 1]];
 function pin_spots() = [for (k = [NODE_RESET, NODE_BOOT]) node_xy(k) - [DRAWER_X0, 0]];   // the node's buttons, drawer xy
@@ -119,7 +120,7 @@ module drawer(rear = true, foot = true) {
             if (rear) {
                 // the boards' bosses, and two ledges under the single board's front edge (its underside is bare
                 // but for its USB4105's pegs)
-                for (h = X4_HOLES) translate([h[0], h[1], 0]) cylinder(d = 6, h = DATA_PCB_Z);
+                for (h = X4_HOLES) translate([h[0], h[1], 0]) cylinder(d = X4_BOSS_D, h = DATA_PCB_Z);
                 for (h = ONE_HOLES) translate([h[0], h[1], 0]) cylinder(d = 5, h = DATA_PCB_Z);
                 for (s = ONE_LEDGES) translate([s[0], DATA_PCB_Y0 - EPS, 0]) cube([s[1] - s[0], 2, DATA_PCB_Z]);
             }
@@ -137,14 +138,16 @@ module drawer(rear = true, foot = true) {
         detent_notch();
         if (rear) {
             // pilots for the boards' (and the cradle's) PT 2.3 × 8, from above
-            for (h = concat(X4_HOLES, ONE_HOLES))
-                translate([h[0], h[1], DATA_PCB_Z - 7]) cylinder(d = PT_PILOT, h = 7 + EPS);
+            for (h = ONE_HOLES) translate([h[0], h[1], DATA_PCB_Z - 7]) cylinder(d = PT_PILOT, h = 7 + EPS);
+            // the DATA ×4's (the cradle's): an M3 insert in each, its hole running on through the floor (an
+            // M3 × 8 from the cradle goes 0.7 mm past the insert)
+            for (h = X4_HOLES) translate([h[0], h[1], DATA_PCB_Z]) insert_hole(INSERT_M3, runout = DATA_PCB_Z - INSERT_M3[1] + 1);
             // cable window in the rear-bay floor, up to 1 mm off the rear wall and 1 mm short of the foot's boss:
             // a rear strip from 1.5 mm right of the third boss (the single board's lead comes up there and runs
             // left along the rear wall to its PH; a v2's drops behind its cradle), and a side strip 1 mm right of
             // a v1's right edge, from 4 mm behind the port wall (v1's J1 plug is right above)
             wy = DATA_PCB_Y0 + DATA_PCB_SIZE[1] + 1;
-            wx = X4_HOLES[2][0] + 4.5;
+            wx = X4_HOLES[2][0] + X4_BOSS_D / 2 + 1.5;
             sx = DATA_X4_X0 + DATA_X4_SIZE[0] + 1;
             sy = DATA_PCB_Y0 + 4;
             we = FOOT_HOLE[0] - 5.5;

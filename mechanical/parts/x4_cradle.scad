@@ -13,7 +13,8 @@
 //   come through notches in its bottom edge, between ports 1–2 and 3–4.
 // - A latch finger at each upright's top snaps over the board's top edge: press it back to lift the board.  It
 //   bends across its layers, so it is long and its root is round: 0.21 % (docs/printed-parts-review.md).
-// - The base sits on the DATA ×4's three shared bosses (H1–H3), 3 × PT 2.3 × 8 from above, and leaves the
+// - The base sits on the DATA ×4's three shared bosses (H1–H3), 3 × M3 × 8 from above into heat-set inserts in
+//   them (the user, 2026-10-21: a board is swapped often), and leaves the
 //   cable window open: the board's PH 8 lead, on its rear face, drops behind it into the window.
 // Print: as installed (bottom down), PETG, no supports; the base bridges ≤ 30 mm between its feet.
 include <../lib/carrier.scad>
@@ -39,7 +40,8 @@ SLIT = 1.0;                               // the slit that frees it from the out
 ROOT_R = 0.8;                             // the keyhole at the slit's foot: the finger's root round
 
 BOSSES = [for (i = [0 : 2]) let (h = DATA_X4_HOLES[i]) [DATA_X4_X0 + h[0], DATA_PCB_Y0 + DATA_X4_SIZE[1] - h[1]]];
-WIN_X = BOSSES[2][0] + 4.5;               // the cable window's left edge (drawer.scad › wx)
+BOSS_D = INSERT_M3[0] + 4;                // the bosses (drawer.scad › X4_BOSS_D)
+WIN_X = BOSSES[2][0] + BOSS_D / 2 + 1.5;  // the cable window's left edge (drawer.scad › wx)
 WIN_Y = DATA_PCB_Y0 + DATA_PCB_SIZE[1] + 1;   // and its front edge (› wy)
 
 Y_F = V2_Y - GAP;                         // the slot: front face
@@ -47,7 +49,7 @@ Y_R = V2_Y + V2[2] + GAP;                 // rear face
 TOP = V2_Z0 + V2[1];                      // the board's top edge
 X_L = V2_X0 - 0.5 - OW;                   // the left upright's outer face
 X_MID = V2_X0 + V2[0] / 2;
-BASE_Y1 = max([for (b = BOSSES) b[1]]) + 4.5;   // the base's rear edge
+BASE_Y1 = max([for (b = BOSSES) b[1]]) + 6;     // the base's rear edge
 assert(X_L >= DRAWER_WALL + 0.3, "the left upright hits the drawer's wall");
 
 // the left upright, a U-channel round the board's left end: front wall, outer wall, rear wall.  The rear
@@ -86,8 +88,8 @@ module cradle() {
             }
             // feet round the bosses (the base's supports while printing; clear of the bosses in the drawer)
             for (b = [BOSSES[0], BOSSES[1]]) translate([b[0], b[1], V2_Z0]) difference() {
-                cylinder(d = 10, h = BASE[0] - V2_Z0 + EPS);
-                translate([0, 0, -EPS]) cylinder(d = 6.8, h = BASE[0]);
+                cylinder(d = BOSS_D + 4, h = BASE[0] - V2_Z0 + EPS);
+                translate([0, 0, -EPS]) cylinder(d = BOSS_D + 0.8, h = BASE[0]);
             }
             translate([78, BOSSES[1][1], V2_Z0]) cylinder(d = 6, h = BASE[0] - V2_Z0 + EPS);
             // the T-heads: a bar in front of the board's bottom, a fin through its notch, a riser behind it
@@ -101,8 +103,8 @@ module cradle() {
         }
         // screw holes, heads countersunk into the base
         for (b = BOSSES) translate([b[0], b[1], BASE[0] - EPS]) {
-            cylinder(d = PT_CLEAR, h = BASE[1] + 2 * EPS);
-            translate([0, 0, BASE[1] - 2]) cylinder(d = 5.6, h = 2 + 2 * EPS);
+            cylinder(d = M3_CLEAR, h = BASE[1] + 2 * EPS);
+            translate([0, 0, BASE[1] - 2.4]) cylinder(d = 6.2, h = 2.4 + 2 * EPS);     // an M3 pan head, flush
         }
         // reliefs round each receptacle's shell legs, through the rear face
         for (x = PORT_XS) translate([x - LEG_RELIEF[0] / 2, Y_R - EPS, BASE[0] - EPS]) cube([LEG_RELIEF[0], LEG_RELIEF[1], BASE[1] + 2 * EPS]);
