@@ -183,6 +183,12 @@ int bay_settings_save_force_pc(bool force)
 	return 0;
 }
 
+/* The simulation's node was never in a rack */
+bool bay_settings_racked(void)
+{
+	return false;
+}
+
 int bay_settings_save_id(const char *new_id)
 {
 	ARG_UNUSED(new_id);
