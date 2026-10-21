@@ -1,8 +1,10 @@
 # Printed parts: FDM printability review
 
 **Status (2026-10-21): findings only; nothing applied — each item below is a yes/no for the user, Mechanics
-implements the yeses.**  Companion to [printed-parts-review.md](printed-parts-review.md) (design review): this
-one asks what the printer will make of each part.  Every STL of `main` (28 parts, in the orientation
+implements the yeses.  Covers the covers too (cover_lid1, cover_box4, and the pockets they click into in the
+drawer and the port block): sliced from the STLs of the commit that added them.**  Companion to
+[printed-parts-review.md](printed-parts-review.md) (design review): this
+one asks what the printer will make of each part.  Every STL of `main` (30 parts, in the orientation
 `tools/build.py` writes them) went through Bambu Studio's CLI as the H2D prints them — 0.4 mm nozzle, "0.20mm
 Standard @BBL H2D", Bambu PETG Basic, textured PEI plate — three ways: as designed without supports, as designed
 with tree supports (auto, 30°), and auto-oriented; plus one pass with the repo's print spec (3 walls, 15 %
@@ -26,9 +28,11 @@ plus the DATA ×4 cradle for its base.  Everything else slices clean without sup
 | Tray | 3h55 | 108 | 3h58 | 102 | floating cantilever | +12.8 g, +62 min: under the runners (z 8) and the lips (z 20–22), both walls | could not place the 165 × 210 part after rotating: no rotation needed |
 | Floor plate | 2h08 | 54 | 2h12 | 51 | floating cantilever | +2.6 g, +13 min: under the runners | as designed |
 | Cap plate | 2h11 | 56 | 2h15 | 53 | floating cantilever | +2.7 g, +14 min: under the runners | as designed |
-| Drawer | 2h03 | 64 | 2h14 | 59 | — | +0.2 g: the finger pull's ceiling | as designed |
+| Drawer (with the cover pockets) | 2h03 | 64 | 2h15 | 59 | — | +0.2 g: the cable window's rear strip, rear right (z 0–4) | as designed |
 | Sled | 1h21 | 41 | 1h30 | 37 | — | none | as designed |
-| Port block | 0h46 | 24 | 0h48 | 23 | — | none | as designed |
+| Port block (with the cover pockets) | 0h47 | 24 | 0h49 | 23 | — | none (the pockets' 6 mm ceilings print as short bridges) | as designed |
+| Cover: lid (1 board) | 0h29 | 12 | 0h28 | 12 | — | none | as designed (top face down) |
+| Cover: box (DATA ×4) | 1h44 | 52 | 1h42 | 51 | — | none; 25 mm of overhang wall = the tops of the five Ø3.5 LED windows | as designed (top face down) |
 | Row ladder | 1h40 | 46 | 1h28 | 43 | — | +0.8 g, +5 min: **inside the bed-face grooves** (harmful; they are 5.3 mm bridges and print clean) | as designed |
 | Base ladder | 1h29 | 42 | 1h18 | 41 | — | +0.9 g, same | as designed |
 | Cap strip | 0h37 | 17 | 0h35 | 16 | — | +1.0 g, same | as designed |
@@ -48,6 +52,8 @@ plus the DATA ×4 cradle for its base.  Everything else slices clean without sup
 | One drawer bay: tray, drawer, honeycomb plate, chain foot + anchor, label, 4 stops, 2 cam bases, 2 cams | 11h03 | 238 | 2 |
 | … with a camera pod and diffuser | 11h46 | 253 | 2 |
 | … B3 with the DATA ×4 cradle | 12h30 | 249 | 2 |
+| … a validated one-board bay closed with the lid | +0h29 | +12 | — |
+| … a validated DATA ×4 bay closed with the box | +1h44 | +52 | +1 (the box stands 72 mm) |
 | One column of frame, two rows: 2 base ladders, 4 row ladders, 2 cap strips, floor and cap plates, 3 braces | 16h08 | 436 | 8 |
 | Power box, base + lid | 2h07 | 69 | 1 |
 
@@ -114,8 +120,17 @@ It prints (an overhang wall, not a floating cantilever) but will show as a rough
 visible face of the rack.  Change: a 45° ceiling on the scoop, or print the drawer as is and accept it.
 Gain: a clean finger pull.
 
-**8. No change, for the record.**
-- Orientation: the slicer agrees with all 28; leave `tools/build.py` as it is.
+**8. Cover tabs: the 0.6 mm slots round each tab's foot, 0.6 → 0.8 mm — yes/no, moot if item 2 is a yes.**
+Evidence: both covers print top face down, so the U-shaped slot that frees each side-hinged tab (`SLOT` 0.6)
+lies in the first layers, where the squished first line (0.5 mm wide at 0.2 mm, no elephant-foot
+compensation in the profile) takes 0.1–0.2 mm off each side of a gap: 0.6 becomes 0.2–0.4, and a tab
+part-welded to the top at its foot is a stiffer hinge than the 1.2 % the design review sized it on.
+The slicer raises nothing else on the covers: no support anywhere, the LED windows' tops are 3.5 mm arcs,
+the ledges are 45°, the bumps are 45° both ways.  Change: 0.8 mm slots, or the 0.15 compensation of item 2,
+which widens a bed-side gap by 0.3.  Gain: the tabs free on the first print.
+
+**9. No change, for the record.**
+- Orientation: the slicer agrees with all 30; leave `tools/build.py` as it is.
 - Supports: never on the ladders or the cap strips (the trees go inside the bed-face grooves).  Nothing
   else needs them once items 1–3 are in.
 - Brim: the auto brim triggers only on the cradle (tall uprights on a small footprint); leave it on
@@ -129,3 +144,5 @@ Gain: a clean finger pull.
   under the drawer's load and softens near the PSU; the clips were sized for PETG.
 - Camera pod lips: still rigid 0.8 mm bending across the layers; already decided in the design review
   (side-hinged tab), pending with Mechanics.
+- Tray left guide: its gusset is being moved (it hits the node's bulk capacitor); items 1 and 5 are on the
+  runner and the rear wall, not the guide, and the tray's numbers above will move by minutes and a gram.
