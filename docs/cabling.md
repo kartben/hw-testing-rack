@@ -168,6 +168,17 @@ plugs into the power box's rear wall.
   flash or try one on a desk, give its IN connector 15–30 V (J1.1 +, J1.2 /
   J1.5 GND; e.g. a 19–24 V laptop or lab supply: the buck starts above
   13.5 V); the PC port then reaches the ESP32.
+* **A node alone (standalone box, no hub):** a USB-C PD trigger module wired to J1 (pin 1 +, pin 2
+  GND) supplies it.
+  - **The module:** a CH224K one, set to **20 V** (resistor, jumper or DIP switch), on any PD charger
+    that offers 20 V (≥ 30 W).  A bay draws ≤ 13 W from it, camera included.
+  - **Other voltages:** 15 V works too, for a charger without 20 V; 12 V and 9 V don't, since the buck
+    needs 13.5 V to start.
+  - **Without PD, or if the charger lacks the voltage asked for:** count on the module staying at
+    5 V, its fallback isn't documented.  The node then stays off; nothing is harmed.
+  - **Without the hub:** J1.6 (POS) stays low, so the node never takes a rack address and never
+    transmits on CAN.  A DATA ×4 still shares the node's 1.4 A DUT switch, under the firmware's port
+    budget (`BAY_PORTS_BUDGET_MA`), as in the rack.
 * **Cameras:** the bay's own node drives its camera (SPI) and light: a
   ready-made 50 cm JST-PH 8 lead, "Same direction" (≈ 45 cm routed between
   the plugs), up out of J6 (vertical, at the node's rear right; pins: CAM_5V,
