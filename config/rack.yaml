@@ -116,6 +116,15 @@ power_box:                # mechanical/parts/power_box.scad: the power hub's enc
     # Anker 717 140 W often €60–80 on sale, unverified).  The hub asks for 28 V EPR whenever it is offered:
     # no hardware change, a 240 W e-marked cable
 
+standalone:               # mechanical/parts/standalone.scad, docs/standalone.md: one bay out of the rack, on a desk
+  pd_module:              # the USB-C PD trigger module, a CH224K set to 20 V (bought), feeding the node's J1 instead of the
+                          # power hub (docs/cabling.md).  Sellers' boards run 19–25 × 8.5–12 mm: measure the one bought.
+                          # The boxes' seat is built from these numbers; their rear wall centres the USB-C shell, any board
+    size: [23, 11.5]      # its PCB: length (from the edge its USB-C sits on), width
+    thickness: 1.0        # its PCB
+    usb_axis: 2.6         # the receptacle's axis over the board's underside (top-mount ≈ t + 1.6, mid-mount ≈ t / 2)
+  feet: [10, 3]           # stick-on rubber bumpers under the boxes: Ø, height
+
 # Example population used by the docs, the BOM roll-up and the 3D viewer.
 # board ids refer to mechanical/boards/boards.yaml; cable ids to cables below.  `mount`, per bay, the same
 # tray for all: drawer (default: on a drag chain, the board stays plugged while it slides out), sled (the

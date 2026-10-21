@@ -1111,6 +1111,70 @@ def hardware(rack) -> list[dict]:
     return rows
 
 
+def standalone(rack) -> dict:
+    """The standalone bays (docs/standalone.md): what one Solo or one Quad takes beyond its boards (the node, the
+    single DATA port board or the DATA ×4 v2, from the rack's order), and the honeycomb plate's desk frame.
+    Optional: outside the rack's totals."""
+    import trimesh
+    stl_dir = REPO / "mechanical" / "stl"
+
+    def printed_line(name, qty=1):
+        stl = stl_dir / f"{name}.stl"
+        g = abs(trimesh.load(stl, force="mesh").volume) / 1000.0 * PETG_DENSITY * PRINT_FILL if stl.exists() else 0.0
+        return {"item": f"{name} (printed)", "qty": qty, "grams": round(g * qty, 1),
+                "unit_eur": round(g * PETG_EUR_PER_KG / 1000, 2), "stl": f"mechanical/stl/{name}.stl"}
+
+    pd = {"item": "USB-C PD trigger module, CH224K set to 20 V (a \"decoy\" board, ≤ 25 × 12.4 mm): feeds the "
+                  "node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md)",
+          "supplier": "AliExpress (bulk); its size goes in config/rack.yaml › standalone.pd_module", "qty": 1,
+          "unit_eur": 2.0}
+    foam = {"item": "Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module on its seat)", "supplier": "any",
+            "qty": 1, "unit_eur": 0.05}
+    pd_lead = {"item": "PD lead: JST PHR-6 housing, 2 × SPH-002T-P0.5S, 2 × 15 cm 24 AWG (red VRACK on pin 1, black GND "
+                       "on pin 2), soldered to the module's output pads", "supplier": "LCSC / AliExpress",
+               "qty": 1, "unit_eur": 0.3}
+    data_lead = {"item": "JST PH 8-pin lead, pin n ↔ pin 9−n, 15 cm (node J7 → the DATA board): the rack's DATA lead, "
+                         "shorter", "supplier": f"AliExpress {PH_LEAD_URL}, \"Same direction\", 8P", "qty": 1,
+                 "unit_eur": 0.9}
+    feet = {"item": "Rubber bumper, self-adhesive, Ø10 × 3 mm", "supplier": "AliExpress (bulk)", "qty": 4,
+            "unit_eur": 0.05}
+
+    def hw(item, n, eur):
+        return {"item": item, "supplier": "AliExpress (bulk)", "qty": n, "unit_eur": eur}
+
+    units = {
+        "solo": {"title": "Solo (the node + the single DATA port board)",
+                 "lines": [printed_line("standalone_solo_base"), printed_line("standalone_solo_lid"), pd, foam, pd_lead,
+                           data_lead, hw("M3 heat-set insert, 5.7 mm", 8, 0.03), hw("M3×8 pan head (ISO 7045)", 8, 0.02),
+                           hw("PT 2.3×8 pan head, thread-forming", 2, 0.02), feet]},
+        "quad": {"title": "Quad (the node + the DATA ×4 v2)",
+                 "lines": [printed_line("standalone_quad_base"), printed_line("standalone_quad_shelf"),
+                           printed_line("standalone_quad_lid"), pd, foam, pd_lead, data_lead,
+                           hw("M3 heat-set insert, 5.7 mm", 8, 0.03), hw("M3×8 pan head (ISO 7045)", 8, 0.02), feet]},
+        "desk_frame": {"title": "Desk frame, for either (the rack's honeycomb plate in it: the DUTs held by its pegs)",
+                       "lines": [printed_line("standalone_desk_frame"), printed_line("plate")]},
+    }
+    for u in units.values():
+        for line in u["lines"]:
+            line["ext_eur"] = round(line["qty"] * line["unit_eur"], 2)
+        u["total_eur"] = round(sum(line["ext_eur"] for line in u["lines"]), 2)
+        u["grams"] = round(sum(line.get("grams", 0) for line in u["lines"]), 1)
+    return units
+
+
+def standalone_md(units) -> list[str]:
+    md = ["", "## Standalone bays (optional, outside the totals above)", "",
+          "One bay out of the rack, on a desk ([docs/standalone.md](../docs/standalone.md)): what a unit takes beyond "
+          "its boards (the node and its DATA board, from the boards' order above) and a USB-C PD charger offering "
+          "20 V.  The printed parts at the estimate above (PETG, from the STL's volume)."]
+    for u in units.values():
+        md += ["", f"**{u['title']}**: ≈ €{u['total_eur']:.2f}, {u['grams']:.0f} g of PETG", "",
+               "| Item | Qty | Unit € | Total € | Source |", "|---|---:|---:|---:|---|"]
+        md += [f"| {line['item']} | {line['qty']} | {line['unit_eur']:.2f} | {line['ext_eur']:.2f} | "
+               f"{line.get('supplier') or '`' + line['stl'] + '`'} |" for line in u["lines"]]
+    return md
+
+
 def main():
     rack = rackcfg.load()
     elec, orders = electronics(rack)
@@ -1139,7 +1203,7 @@ def main():
             "prints": prints, "bays": n_bays, "rows_n": len(rack.rows),
             "jlc_quote": {"date": JLC_QUOTE_DATE, "currency": "USD", "shipping": JLC_SHIPPING, "boards": JLC_QUOTE,
                           "order": orders, "cost": cost, "fees": JLC_FEES, "volume": vol},
-            "calculator": calculator(orders)}
+            "calculator": calculator(orders), "standalone": (sa := standalone(rack))}
     (REPO / "site" / "assets").mkdir(parents=True, exist_ok=True)
     (REPO / "site" / "assets" / "bom.json").write_text(json.dumps(data, ensure_ascii=False, indent=0), encoding="utf-8")
 
@@ -1192,6 +1256,7 @@ def main():
         src = " ".join(x for x in (r.get("supplier", ""), r.get("part", "")) if x)
         md.append(f"| {r['category']} | {r['item']} | {r['qty']} {'' if r['unit'] == 'pcs' else r['unit']} | "
                   f"{float(r.get('unit_eur') or 0):.2f} | {r['ext_eur']:.2f} | {src} |")
+    md += standalone_md(sa)
     (out / "README.md").write_text("\n".join(md) + "\n", encoding="utf-8")
     if JLC_PARTS:
         (out / "jlc-parts.md").write_text("\n".join(jlc_parts_md(orders)) + "\n", encoding="utf-8")

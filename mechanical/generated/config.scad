@@ -103,3 +103,5 @@ PBOX_COLUMN = 0;
 PBOX_SIZE = [84, 108, 35];
 PBOX_WALL = 2.4;
 PBOX_X = 3;
+SA_PD = [23, 11.5, 1, 2.6];
+SA_FEET = [10, 3];

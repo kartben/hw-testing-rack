@@ -400,3 +400,44 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Cameras | M12 lens, 1/4", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK) | 2  | 3.00 | 6.00 | AliExpress |
 | Cameras | Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order) | 2  | 0.50 | 1.00 | AliExpress |
 | Cameras | Pod hardware: 2 × PT 2.6×14 (the pod board, through the diffuser's posts), cable ties 2.5 × 100 (the lead: 1 at the tray's rear slot, 3 under the ceiling) | 2 set | 0.30 | 0.60 | AliExpress (bulk) |
+
+## Standalone bays (optional, outside the totals above)
+
+One bay out of the rack, on a desk ([docs/standalone.md](../docs/standalone.md)): what a unit takes beyond its boards (the node and its DATA board, from the boards' order above) and a USB-C PD charger offering 20 V.  The printed parts at the estimate above (PETG, from the STL's volume).
+
+**Solo (the node + the single DATA port board)**: ≈ €4.80, 46 g of PETG
+
+| Item | Qty | Unit € | Total € | Source |
+|---|---:|---:|---:|---|
+| standalone_solo_base (printed) | 1 | 0.62 | 0.62 | `mechanical/stl/standalone_solo_base.stl` |
+| standalone_solo_lid (printed) | 1 | 0.29 | 0.29 | `mechanical/stl/standalone_solo_lid.stl` |
+| USB-C PD trigger module, CH224K set to 20 V (a "decoy" board, ≤ 25 × 12.4 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md) | 1 | 2.00 | 2.00 | AliExpress (bulk); its size goes in config/rack.yaml › standalone.pd_module |
+| Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module on its seat) | 1 | 0.05 | 0.05 | any |
+| PD lead: JST PHR-6 housing, 2 × SPH-002T-P0.5S, 2 × 15 cm 24 AWG (red VRACK on pin 1, black GND on pin 2), soldered to the module's output pads | 1 | 0.30 | 0.30 | LCSC / AliExpress |
+| JST PH 8-pin lead, pin n ↔ pin 9−n, 15 cm (node J7 → the DATA board): the rack's DATA lead, shorter | 1 | 0.90 | 0.90 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P |
+| M3 heat-set insert, 5.7 mm | 8 | 0.03 | 0.24 | AliExpress (bulk) |
+| M3×8 pan head (ISO 7045) | 8 | 0.02 | 0.16 | AliExpress (bulk) |
+| PT 2.3×8 pan head, thread-forming | 2 | 0.02 | 0.04 | AliExpress (bulk) |
+| Rubber bumper, self-adhesive, Ø10 × 3 mm | 4 | 0.05 | 0.20 | AliExpress (bulk) |
+
+**Quad (the node + the DATA ×4 v2)**: ≈ €5.83, 99 g of PETG
+
+| Item | Qty | Unit € | Total € | Source |
+|---|---:|---:|---:|---|
+| standalone_quad_base (printed) | 1 | 1.48 | 1.48 | `mechanical/stl/standalone_quad_base.stl` |
+| standalone_quad_shelf (printed) | 1 | 0.22 | 0.22 | `mechanical/stl/standalone_quad_shelf.stl` |
+| standalone_quad_lid (printed) | 1 | 0.28 | 0.28 | `mechanical/stl/standalone_quad_lid.stl` |
+| USB-C PD trigger module, CH224K set to 20 V (a "decoy" board, ≤ 25 × 12.4 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md) | 1 | 2.00 | 2.00 | AliExpress (bulk); its size goes in config/rack.yaml › standalone.pd_module |
+| Double-sided foam pad, 1 mm, ≈ 20 × 10 mm (the PD module on its seat) | 1 | 0.05 | 0.05 | any |
+| PD lead: JST PHR-6 housing, 2 × SPH-002T-P0.5S, 2 × 15 cm 24 AWG (red VRACK on pin 1, black GND on pin 2), soldered to the module's output pads | 1 | 0.30 | 0.30 | LCSC / AliExpress |
+| JST PH 8-pin lead, pin n ↔ pin 9−n, 15 cm (node J7 → the DATA board): the rack's DATA lead, shorter | 1 | 0.90 | 0.90 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P |
+| M3 heat-set insert, 5.7 mm | 8 | 0.03 | 0.24 | AliExpress (bulk) |
+| M3×8 pan head (ISO 7045) | 8 | 0.02 | 0.16 | AliExpress (bulk) |
+| Rubber bumper, self-adhesive, Ø10 × 3 mm | 4 | 0.05 | 0.20 | AliExpress (bulk) |
+
+**Desk frame, for either (the rack's honeycomb plate in it: the DUTs held by its pegs)**: ≈ €1.41, 71 g of PETG
+
+| Item | Qty | Unit € | Total € | Source |
+|---|---:|---:|---:|---|
+| standalone_desk_frame (printed) | 1 | 0.57 | 0.57 | `mechanical/stl/standalone_desk_frame.stl` |
+| plate (printed) | 1 | 0.84 | 0.84 | `mechanical/stl/plate.stl` |
