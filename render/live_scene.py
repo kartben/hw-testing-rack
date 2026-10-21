@@ -130,7 +130,7 @@ for backend in ("OPTIX", "CUDA", "HIP", "ONEAPI", "METAL"):
         gpus = [d for d in prefs.devices if d.type != "CPU"]
         if gpus:
             for d in prefs.devices:
-                d.use = True
+                d.use = d.type == backend       # the GPU alone: a CPU taking tiles slows an OptiX render
             device = backend
             break
     except Exception:

@@ -1657,7 +1657,7 @@ def build(rack) -> Path:
         lane = -3.0 - 2.6 * i
         pts = poly((x - 2, y, z), (lane + 2, y, z), (lane, y - 6, z), (lane, j1[1] + 8, z), (lane, j1[1], z + 10),
                    (lane, j1[1], j1[2] - 10), (lane + 3, j1[1], j1[2]), j1)
-        cable(pts, space="frame", kind="power-feed", color="#c62828", radius=1.4)
+        cable(pts, space="frame", kind="power-feed", color=DUPONT_COLOURS["black"], radius=1.4)   # black UL1007, as bought
 
     # --- row cable: 6-pin jumpers between neighbouring nodes, through the shared ladder (docs/can.md) ----
     # VRACK, GND, CAN_H, CAN_L, GND, POS (J1's pins 1-6, pin 1 towards the rear); J2 (right edge) carries
@@ -1674,7 +1674,8 @@ def build(rack) -> Path:
             x0u, x0n = rack.unit_x(u), rack.unit_x(u + 1)
             xa = x0u + node["x0"] + node["size"][0]
             xb = x0n + node["x0"]
-            for k, col in enumerate(("#c62828", "#222222", "#f9a825", "#2e7d32", "#222222", "#eeeeee")):
+            for k in range(6):                                    # JST's pre-crimped leads: all black (docs/cabling.md)
+                col = DUPONT_COLOURS["black"]
                 y = vy + 5 - 2 * k                                # JST PH, 2 mm pitch, 24 AWG
                 yf = 4.4 + 0.85 * (5 - k)                         # bunched at the front: 4.4–8.65
                 zk = zf + (0.7 if k % 2 else 0.0)
