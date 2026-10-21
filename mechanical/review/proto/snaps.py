@@ -22,6 +22,14 @@ SNAPS = [
     ("camera sleeve wall (camera_pod.scad: SW 1.6, 12 tall, LIP 0.8)", 0.8, 1.6, 12.0, 16.0, "across", 45, "repeated"),
     ("camera sleeve, LIP 0.5 on 2 slit tabs 16 wide (proposed)", 0.5, 1.6, 12.0, 16.0, "across", 45, "repeated"),
     ("drawer detent spring tab (proposed: 2.5 thick, 20 long, bump 0.6)", 0.6, 2.5, 20.0, 6.0, "in", 45, "repeated"),
+    # as built (2026-10-21)
+    ("BUILT ladder hook: HOOK_ROOT 10, R0.6 at the relief's ends", 0.8, 2.6, 15.5, 7.4, "in", 22, "once"),
+    ("BUILT tray latch arm: LATCH_ARM 32, the slots' ends round", 1.2, 4.3, 32.0, 5.0, "in", 30, "repeated"),
+    ("BUILT cradle finger: LATCH [40, 0.8], slit 1.0, R0.8 root (y = hook + gap 0.15)", 0.95, 2.4, 40.0, 5.0, "across", 45, "repeated"),
+    ("cam pivot as drawn, against the cam's 3.6 bore: y = (3.9 - 3.6) / 2", 0.15, 1.3, 4.5, 3.0, "across", 40, "once"),
+    ("BUILT cam pivot: relief 4.4 x 2, slit 6.5, head kept 3.9 (0.15 of hold on the bore)", 0.15, 1.3, 6.5, 3.0, "across", 40, "once"),
+    ("BUILT peg skin: SKIN_H 3.4, its slot run past the flat's corner (free 3.7)", 0.2, 0.7, 3.7, 3.4, "in", 30, "repeated"),
+    ("camera sleeve front tab through the plate, lip at 13-16 of 16 (proposed, not built)", 1.11, 1.6, 16.0, 15.0, "in", 45, "repeated"),
 ]
 ALLOW = {"in": (3.0, 1.5), "across": (1.0, 0.5)}
 import math

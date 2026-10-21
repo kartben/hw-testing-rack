@@ -29,7 +29,9 @@ CAM_FLANGE = 1.0;                       // under the PCB's edge
 CAM_BAND = 2.0;                         // PCB_T + 0.4
 CAM_GRIP = [11, 3.0, 1.8];              // the bar to turn it by
 PIVOT_D = 3.4;                          // the base's pin, the cam's bore 3.6
-PIVOT_HEAD = [3.9, 0.8];                // its snap head: Ø, height
+PIVOT_HEAD = [3.9, 0.8];                // its snap head: Ø, height (0.15 over the cam's 3.6 bore each side)
+PIVOT_SPLIT = 6.5;                      // the split's depth from the head's underside: through a relief
+PIVOT_RELIEF = [4.4, 2];                // in the column's top (Ø, depth), so each half bends 0.15 at 0.7 %
 CAM_RISE = 3.6;                         // the head's underside above the cam's own bottom
 function spiral(r0, r1, arc, off = 0) = [for (k = [0:72]) let (t = arc * k / 72) (r0 + (r1 - r0) * k / 72 + off) * [cos(t), sin(t)]];
 
@@ -55,14 +57,17 @@ module stop(h) {
 module base(h) {
     peg_plug();
     peg_flange();
-    cylinder(d1 = 8.5, d2 = 7.0, h = h - CAM_FLANGE);
-    // the pivot: split so that its head snaps through the cam's bore
+    difference() {
+        cylinder(d1 = 8.5, d2 = 7.0, h = h - CAM_FLANGE);
+        translate([0, 0, h - CAM_FLANGE - PIVOT_RELIEF[1]]) cylinder(d = PIVOT_RELIEF[0], h = PIVOT_RELIEF[1] + 1);
+    }
+    // the pivot: split so that its head snaps through the cam's bore (the halves bend across the layers)
     difference() {
         union() {
             cylinder(d = PIVOT_D, h = h - CAM_FLANGE + CAM_RISE);
             translate([0, 0, h - CAM_FLANGE + CAM_RISE]) cylinder(d1 = PIVOT_HEAD[0], d2 = PIVOT_D - 0.6, h = PIVOT_HEAD[1]);
         }
-        translate([-0.4, -5, h - CAM_FLANGE + CAM_RISE - 4.5]) cube([0.8, 10, 10]);
+        translate([-0.4, -PIVOT_RELIEF[0] / 2, h - CAM_FLANGE + CAM_RISE - PIVOT_SPLIT]) cube([0.8, PIVOT_RELIEF[0], 10]);
     }
 }
 

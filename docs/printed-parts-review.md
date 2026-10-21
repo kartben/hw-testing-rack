@@ -1,6 +1,6 @@
 # Printed parts: design review
 
-**Status (2026-10-21): review and proposals only; nothing in `mechanical/parts/` changed.**  The user
+**Status (2026-10-21): the obvious print-and-break fixes are in (see [Implemented](#implemented-2026-10-21)); the user's calls and the visual language are not.**  The user
 asked for a complete review of every 3D-printed part: simple, not over-engineered, good-looking where
 it can be (rounded edges, elegant and useful markings), with assembly systems that are strong and state
 of the art for FDM PETG, checked by simulation; heat-set inserts where they belong, captive square nuts
@@ -25,6 +25,38 @@ the beam bends in the print plane** (PETG's own short-term figure is about 4 %);
 bends across the layers** (a vertical finger on a part printed standing: the root is a layer joint, 50–70 %
 of the in-plane strength, and the first to fatigue).  Grams and times come from the BOM and the tray
 session's print plan (H2D, 0.20 mm Standard, PETG).
+
+## Implemented (2026-10-21)
+
+Findings 1, 2, 4, 6, 7, 8, 9 and part of 15, as the orchestrator picked them.  Every part re-checked: an exact
+solid (`csg2part`), `proto/overhang.py` (as built: `review/overhang_built.json`), `proto/snaps.py` and
+`proto/fem_snaps.py` (the `BUILT` and `built_*` cases), SolidCraft on the joints touched.
+
+| # | Part | As built | Strain (formula) | FEM peak (sharp-cornered model) | Deviation from the proposal |
+|---|---|---|---|---|---|
+| 1 | Tray | lip underside at 45° from the guide wall, 0.4 over the flange's outer edge (anti-tip unchanged, measured: contact at a 0.42 lift); lip 2 mm higher, screw heads counterbored to the old height; ledges start on the fascia, raised 0.5 to meet them; gussets either side of every gap | — | — | **no gusset at y 10**: it would hang in the row cable's window (no wall under it there, y 3.5–29.5).  The ledge over the window is a 28 mm bridge from the fascia instead, with a gusset just behind the window |
+| 7 | Tray | latch arm 32, the three slots' ends round | 1.14 → 0.76 % | 52 → 40 MPa | — |
+| 9 | Tray, anchor | bosses 7.5 (1.8 of floor under the pockets) | — | — | the anchor block keeps its underside 3 mm over the floor, pocketed over the bosses, so the end piece's pilots keep their 3 mm wall; `webscene.py` and the notice place it 2 mm higher |
+| 2 | Cradle | finger 40 free, hook 0.8, slit 1.0, R0.8 round at the slit's foot | 0.72 → 0.21 % | 29 → 11.5 MPa | — |
+| 4 | Pegs | relief Ø4.4 × 2 in the column's top, split 6.5 | 1.44 → 0.69 % | 38 → 26 MPa (the 64 drawn, scaled to y 0.15: linear) | **head kept at Ø3.9**: the half-pins bend (head − the cam's 3.6 bore) / 2 = 0.15, not (head − pin) / 2; a Ø3.7 head would hold the cam by 0.05 a side |
+| 8 | Pegs | `SKIN_H` 3.4, the slot run 0.15 past the flat's corner (3.7 free) | 2.33 → 1.53 % | — | — |
+| 6 | Ladders | `HOOK_ROOT` 10, the reliefs' ends round (R0.6) | 2.0 → 1.3 % | 56 → 40 MPa | — |
+| 15 | Drawer, plate | the v1-only ledges gone; `board_plate.scad`'s `MODE="snap"` and `universal` plate gone | — | — | **two ledges kept** under the single DATA board's front edge, either side of its USB4105 (they carried it too); **`ladder_a` / `ladder_b` kept**: the BOM, the viewer and the notice name them per row |
+
+Overhangs facing down steeper than 45° (mm²): tray 6,034 → 5,008 (all bridges now; the lips' 2 × 473 and the
+ledges' first-48-mm cantilevers gone), ladders −9, pegs and cradle unchanged.  SolidCraft: the tray in bay B2
+with the drawer closed and pulled out, no new contact (the chain-to-rail 0.04 mm³ was there before); the v2 in
+the cradle (slots 0.15, legs 0.54, J1 1.70, the hooks' 0.8 overlap on the way in by design); the single board on
+the drawer without the v1 ledges (legs 1.42, plug 1.6); the cam on its base (no overlap, the head in its seat).
+
+**Not done: finding 5 (the camera sleeve).**  Three things stop the side-hinged tabs as drawn: a tab cut
+from the sleeve's wall with a horizontal slit starts in mid-air when the pod prints upside down (its first
+layer hangs from the hinge alone), unless it runs through the plate to the bed; the rear wall can't flex at
+all (the pod board is 0.5 mm behind it and the diffuser's floor touches it at the case's face, so the case
+can't pass the rear lip once the diffuser is on, today either); and the front lip touches its wall along an
+edge only.  With the Mega's real case measured: a front tab through the plate (side-hinged, ≈ 1 % in the print
+plane, `snaps.py`), and at the rear either the board and diffuser 1.5 mm further back (`webscene.py` mirrors
+that gap) so a rear tab can flex, or a shelf the case slides onto.
 
 ## Ranked findings
 

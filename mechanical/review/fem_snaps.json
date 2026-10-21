@@ -70,5 +70,45 @@
   "p1_max_MPa": 49.0,
   "strain_pct": 2.72,
   "disp_max_mm": 0.514
+ },
+ "built_ladder_hook_root10": {
+  "nodes": 5010,
+  "deflection_mm": 0.8,
+  "vm_max_MPa": 39.7,
+  "p1_max_MPa": 49.0,
+  "strain_pct": 2.72,
+  "disp_max_mm": 0.863
+ },
+ "built_tray_arm_32": {
+  "nodes": 12633,
+  "deflection_mm": 1.2,
+  "vm_max_MPa": 40.0,
+  "p1_max_MPa": 42.9,
+  "strain_pct": 2.38,
+  "disp_max_mm": 1.345
+ },
+ "built_cradle_finger_L40_hook08": {
+  "nodes": 29045,
+  "deflection_mm": 0.95,
+  "vm_max_MPa": 11.5,
+  "p1_max_MPa": 15.0,
+  "strain_pct": 0.83,
+  "disp_max_mm": 0.959
+ },
+ "built_cam_pin_split65_head39": {
+  "nodes": 4558,
+  "deflection_mm": 0.15,
+  "vm_max_MPa": 26.3,
+  "p1_max_MPa": 19.3,
+  "strain_pct": 1.07,
+  "disp_max_mm": 0.154
+ },
+ "sleeve_tab_through_plate_16": {
+  "nodes": 64143,
+  "deflection_mm": 0.8,
+  "vm_max_MPa": 29.0,
+  "p1_max_MPa": 40.5,
+  "strain_pct": 2.25,
+  "disp_max_mm": 0.861
  }
 }

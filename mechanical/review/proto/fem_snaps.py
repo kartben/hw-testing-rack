@@ -79,7 +79,14 @@ CASES = {
     "cam_pin_split65_head37": (cam_pin, {"split": 6.5, "head": 3.7}, 0.15),
     "sleeve_wall_as_drawn": (sleeve_wall, {}, 0.8),
     "sleeve_wall_lip05": (sleeve_wall, {"lip": 0.5}, 0.5),
+    # as built (2026-10-21)
+    "built_ladder_hook_root10": (ladder_hook, {"root": 10.0}, 0.8),
+    "built_tray_arm_32": (tray_arm, {"L": 32.0}, 1.2),
+    "built_cradle_finger_L40_hook08": (cradle_finger, {"L": 40.0, "w": 5.0, "hook": 0.8}, 0.95),
+    "built_cam_pin_split65_head39": (cam_pin, {"split": 6.5, "head": 3.9}, 0.15),
+    "sleeve_tab_through_plate_16": (tray_arm, {"L": 16.0, "h": 1.6, "b": 15.0, "barb": 0.8}, 0.8),   # proposed, not built
 }
+ONLY = [c for c in os.environ.get("CASES", "").split(",") if c]     # run these only, merged into fem_snaps.json
 
 
 def run(name, builder, kw, y):
@@ -136,12 +143,15 @@ def run(name, builder, kw, y):
     return out
 
 
-results = {}
+OUT = os.path.join(HERE, "..", "fem_snaps.json")
+results = json.load(open(OUT)) if ONLY and os.path.exists(OUT) else {}
 for name, (b, kw, y) in CASES.items():
+    if ONLY and name not in ONLY:
+        continue
     try:
         results[name] = run(name, b, kw, y)
     except Exception as ex:
         import traceback
         results[name] = {"error": traceback.format_exc()[-600:]}
         print(name, "FAILED", ex)
-json.dump(results, open(os.path.join(HERE, "fem_snaps.json"), "w"), indent=1)
+json.dump(results, open(OUT, "w"), indent=1)

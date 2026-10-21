@@ -12,7 +12,8 @@ PLUG_AF = HEX_AF - 2 * HEX_CLEAR;   // a plug across flats
 PLUG_L = PLUG_AF / sqrt(3);         // one of its flats
 SKIN = 0.7;                         // a spring skin's thickness
 SKIN_SLOT = 0.5;                    // the slot behind it
-SKIN_H = 2.6;                       // the spring zone, from the plug's bottom up
+SKIN_H = 3.4;                       // the spring zone, from the plug's bottom up
+SKIN_ROOT = 0.15;                   // the slot runs this far past the flat's corner: 3.7 free, 1.5 % (printed-parts-review)
 NUB = 0.3;                          // a nub's reach past its flat: 0.2 over the waist going in, 0.2 under the ledge
 FLANGE = [9.6, 1.2];                // the plug's flange on the plate's top: Ø, thickness
 PCB_T = 1.6;                        // the boards' thickness the lips and cams are cut for
@@ -47,9 +48,10 @@ module peg_plug() {
     z0 = -PLATE_T + 0.1;
     difference() {
         translate([0, 0, z0]) linear_extrude(PLATE_T - 0.1 + EPS) hex2d(PLUG_AF);
-        // three skins, on the flats at 0°, 120°, 240°: a slot behind each, open at its free end
+        // three skins, on the flats at 0°, 120°, 240°: a slot behind each, open at its free end, run to the
+        // flat's far corner (and SKIN_ROOT past it: the plug's next flat still closes it)
         for (k = [0, 2, 4]) rotate(60 * k) translate([0, 0, z0 - 1]) linear_extrude(SKIN_H + 1) {
-            translate([PLUG_AF / 2 - SKIN - SKIN_SLOT, -PLUG_L / 2 + 0.35]) square([SKIN_SLOT, PLUG_L]);
+            translate([PLUG_AF / 2 - SKIN - SKIN_SLOT, -PLUG_L / 2 - SKIN_ROOT]) square([SKIN_SLOT, PLUG_L + SKIN_ROOT]);
             translate([PLUG_AF / 2 - SKIN - SKIN_SLOT, PLUG_L / 2 - SKIN_SLOT]) square([SKIN + SKIN_SLOT + 1, 2]);
         }
     }

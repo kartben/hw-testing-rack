@@ -11,7 +11,8 @@
 // - Plugging in pushes the board back onto the base's front edge, right behind the receptacles (relieved
 //   round their shell legs).  Unplugging pulls it forwards onto the slots' front walls and two T-heads that
 //   come through notches in its bottom edge, between ports 1–2 and 3–4.
-// - A latch finger at each upright's top snaps over the board's top edge: press it back to lift the board.
+// - A latch finger at each upright's top snaps over the board's top edge: press it back to lift the board.  It
+//   bends across its layers, so it is long and its root is round: 0.21 % (docs/printed-parts-review.md).
 // - The base sits on the DATA ×4's three shared bosses (H1–H3), 3 × PT 2.6 × 8 from above, and leaves the
 //   cable window open: the board's PH 8 lead, on its rear face, drops behind it into the window.
 // Print: as installed (bottom down), PETG, no supports; the base bridges ≤ 30 mm between its feet.
@@ -33,7 +34,9 @@ NOTCH_X = [35, 71];                       // their centres, drawer x: between po
 TEE = [7, 2.0];                           // a T-head's bar in front of the board: width (x), thickness (y)
 BASE = [DATA_PCB_Z, 4.0];                 // the base: its underside (the bosses' top), thickness
 LEG_RELIEF = [11, 1.2];                   // round each receptacle's shell legs on the rear face: width, depth
-LATCH = [24, 1.0];                        // the latch finger: free length, hook over the board's top edge
+LATCH = [40, 0.8];                        // the latch finger: free length, hook over the board's top edge
+SLIT = 1.0;                               // the slit that frees it from the outer wall
+ROOT_R = 0.8;                             // the round at the slit's foot, into the finger's root
 
 BOSSES = [for (i = [0 : 2]) let (h = DATA_X4_HOLES[i]) [DATA_X4_X0 + h[0], DATA_PCB_Y0 + DATA_X4_SIZE[1] - h[1]]];
 WIN_X = BOSSES[2][0] + 4.5;               // the cable window's left edge (drawer.scad › wx)
@@ -48,16 +51,21 @@ BASE_Y1 = max([for (b = BOSSES) b[1]]) + 4.5;   // the base's rear edge
 assert(X_L >= DRAWER_WALL + 0.3, "the left upright hits the drawer's wall");
 
 // the left upright, a U-channel round the board's left end: front wall, outer wall, rear wall.  The rear
-// wall's top is a latch finger (slit from the outer wall), its hook over the board's top edge with a 45°
-// lead-in on top, so the board's edge pushes it back going in
+// wall's top is a latch finger (slit from the outer wall, its foot rounded into the finger's root), its hook
+// over the board's top edge with a 45° lead-in on top, so the board's edge pushes it back going in
 module upright() {
     x1 = V2_X0 + END;
+    xs = X_L + OW + SLIT;                 // the finger's slit-side face
     difference() {
         translate([X_L, Y_F - UW, V2_Z0]) cube([x1 - X_L, Y_R + UW - (Y_F - UW), TOP - V2_Z0]);
         translate([V2_X0 - 0.5, Y_F, V2_Z0 - EPS]) cube([x1 - V2_X0 + 0.5 + EPS, Y_R - Y_F, TOP - V2_Z0 + 2 * EPS]);
-        translate([X_L + OW, Y_R - EPS, TOP - LATCH[0]]) cube([0.6, UW + 2 * EPS, LATCH[0] + EPS]);
+        translate([X_L + OW, Y_R - EPS, TOP - LATCH[0]]) cube([SLIT, UW + 2 * EPS, LATCH[0] + EPS]);
+        translate([xs, Y_R - EPS, TOP - LATCH[0]]) rotate([-90, 0, 0]) difference() {
+            cube([ROOT_R, ROOT_R, UW + 2 * EPS]);
+            translate([ROOT_R, ROOT_R, -1]) cylinder(r = ROOT_R, h = UW + 2, $fn = 32);
+        }
     }
-    translate([X_L + OW + 0.6, 0, TOP]) rotate([90, 0, 90]) linear_extrude(x1 - (X_L + OW + 0.6))
+    translate([xs, 0, TOP]) rotate([90, 0, 90]) linear_extrude(x1 - xs)
         polygon([[Y_R + UW, 0], [Y_R, 0], [Y_R, 0.2], [Y_R - GAP - LATCH[1], 0.2], [Y_R - GAP - LATCH[1], 0.6],
                  [Y_R, 1.6 + LATCH[1]], [Y_R + UW, 1.6 + LATCH[1]]]);
 }

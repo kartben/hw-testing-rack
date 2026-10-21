@@ -52,15 +52,14 @@ function data_hole(h) = [DATA_PCB_X0 + h[0], DATA_PCB_Y0 + DATA_PCB_SIZE[1] - h[
 // the DATA ports along the port wall: the DATA ×4's four (config/rack.yaml › pcb.data_port_x4)
 PORT_XS = [for (u = DATA_X4_USB) DATA_X4_X0 + u];
 assert(abs(DATA_PORT_X[0] - PORT_XS[3]) < 0.01, "the single DATA board's USB-C sits on the fourth port");
-// the DATA ×4's bosses: v1's first three holes, which the v2's cradle shares.  v1 rests on them and the front
-// ledges; a fourth hole, if v1 has one, stays unused
+// the DATA ×4's bosses: v1's first three holes, which the v2's cradle shares (v1 is not ordered: its front-edge
+// ledges are gone, docs/printed-parts-review.md); a fourth hole, if v1 has one, stays unused
 X4_HOLES = [for (i = [0 : 2]) let (h = DATA_X4_HOLES[i]) [DATA_X4_X0 + h[0], DATA_PCB_Y0 + DATA_X4_SIZE[1] - h[1]]];
 // the single board's two holes: their bosses stand under the DATA ×4's bare underside, Ø5 to keep 0.8 mm
 // from its second USB-C's shell leg
 ONE_HOLES = [for (h = DATA_PCB_HOLES) data_hole(h)];
-// the ledges under its front edge (KiCad x from, to): between the USB4105s' pegs, 7 mm either side of each axis
-X4_LEDGES = [for (k = [0 : len(DATA_X4_USB)])
-    [k == 0 ? 1 : DATA_X4_USB[k - 1] + 7, k == len(DATA_X4_USB) ? DATA_X4_SIZE[0] - 1 : DATA_X4_USB[k] - 7]];
+// the ledges under its front edge (drawer x from, to), either side of its USB4105's pegs (7 mm off its axis)
+ONE_LEDGES = [[DATA_PCB_X0 + 1, DATA_PORT_X[0] - 7], [DATA_PORT_X[0] + 7, DATA_PCB_X0 + DATA_PCB_SIZE[0] - 1]];
 function pin_spots() = [for (k = [NODE_RESET, NODE_BOOT]) node_xy(k) - [DRAWER_X0, 0]];   // the node's buttons, drawer xy
 
 module port_wall() {
@@ -98,12 +97,11 @@ module drawer(rear = true, foot = true) {
                 translate([DETENT[0], DETENT[1], 0]) cylinder(d = DETENT_BOSS, h = DRAWER_MAGNET[1] + 1.2);
             }
             if (rear) {
-                // the boards' bosses, and ledges under their front edge between the USB4105s' pegs (the
-                // undersides are bare but for them): the single board's USB-C lands where the DATA ×4's fourth
-                // does, so the same ledges carry it
+                // the boards' bosses, and two ledges under the single board's front edge (its underside is bare
+                // but for its USB4105's pegs)
                 for (h = X4_HOLES) translate([h[0], h[1], 0]) cylinder(d = 6, h = DATA_PCB_Z);
                 for (h = ONE_HOLES) translate([h[0], h[1], 0]) cylinder(d = 5, h = DATA_PCB_Z);
-                for (s = X4_LEDGES) translate([DATA_X4_X0 + s[0], DATA_PCB_Y0 - EPS, 0]) cube([s[1] - s[0], 2, DATA_PCB_Z]);
+                for (s = ONE_LEDGES) translate([s[0], DATA_PCB_Y0 - EPS, 0]) cube([s[1] - s[0], 2, DATA_PCB_Z]);
             }
         }
         // rear-open groove for the chain foot, and its lock screw
@@ -123,7 +121,7 @@ module drawer(rear = true, foot = true) {
             // cable window in the rear-bay floor, up to 1 mm off the rear wall and 1 mm short of the foot's boss:
             // a rear strip from 1.5 mm right of the third boss (the single board's lead comes up there and runs
             // left along the rear wall to its PH; a v2's drops behind its cradle), and a side strip 1 mm right of
-            // a v1's right edge, from 2 mm behind the front ledges (v1's J1 plug is right above)
+            // a v1's right edge, from 4 mm behind the port wall (v1's J1 plug is right above)
             wy = DATA_PCB_Y0 + DATA_PCB_SIZE[1] + 1;
             wx = X4_HOLES[2][0] + 4.5;
             sx = DATA_X4_X0 + DATA_X4_SIZE[0] + 1;

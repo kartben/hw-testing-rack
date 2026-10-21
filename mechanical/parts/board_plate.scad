@@ -13,18 +13,15 @@
 //
 // The former plates, kept for a converted bay that asks for its own (`plate: boards`) and for anyone who
 // prefers screws: the board placed with its debug USB facing the drawer's rear port wall (boards too long
-// for a plug behind them, usb_side, turn it to the right wall and sit to the left), on
-//   MODE = "insert": heat-set inserts (M3, or M2/M2.5 for small boards)
-//   MODE = "snap"  : split snap pins, push the board on, pinch to release
-// Hole-less or not-yet-measured boards (fence = true) get corner fences.
+// for a plug behind them, usb_side, turn it to the right wall and sit to the left), on heat-set inserts
+// (M3, or M2/M2.5 for small boards).  Hole-less or not-yet-measured boards (fence = true) get corner fences.
 // Print: flat, PETG, 2–3 walls, no support (the holes' 45° ledges print as they are).
 include <../lib/carrier.scad>
 include <../lib/hexgrid.scad>
 include <../generated/boards.scad>
 
-BOARD = "";                           // a former per-board plate ("universal": M3 slots)
+BOARD = "";                           // a former per-board plate
 BAY = "";                             // a converted bay's shared plate (generated/boards.scad › BAY_PLATES)
-MODE = "insert";
 REAR_GAP_MAX = 26;                    // room for the USB plug + cable bend behind the board
 SIDE_X = 2.5;                         // a usb_side board's gap to the plate's left edge (tools/webscene.py)
 
@@ -52,18 +49,6 @@ module insert_standoff(hole_d, h) {
     difference() {
         cylinder(d1 = ins[0] + 5, d2 = ins[0] + 3, h = h);
         translate([0, 0, h]) insert_hole(ins);
-    }
-}
-
-module snap_standoff(hole_d, h) {
-    pcb_t = 1.75;
-    cylinder(d1 = hole_d + 6, d2 = hole_d + 4, h = h);
-    difference() {
-        union() {
-            translate([0, 0, h]) cylinder(d = hole_d - 0.25, h = pcb_t + 0.3);
-            translate([0, 0, h + pcb_t]) cylinder(d1 = hole_d + 0.5, d2 = hole_d - 0.7, h = 2.0);
-        }
-        translate([-0.55, -hole_d, h + 0.6]) cube([1.1, 2 * hole_d, pcb_t + 3]);
     }
 }
 
@@ -123,16 +108,6 @@ module lightening(rec, o) {
     }
 }
 
-module universal_plate() {
-    difference() {
-        plate_body();
-        // M3 slots on a 12 mm pitch: bolt standard nylon/brass standoffs anywhere
-        for (y = [18 : 12 : PLATE_D - 18]) for (xc = [PLATE_W * 0.27, PLATE_W * 0.73])
-            translate([xc, y, -EPS]) rslot(PLATE_W * 0.42, M3_CLEAR, PLATE_T + 2 * EPS);
-        translate([PLATE_W / 2, 7, PLATE_T - 0.5]) label_text("UNIVERSAL - M3", size = 4, depth = 0.5 + EPS);
-    }
-}
-
 module board_plate(id) {
     rec = board_rec(id);
     o = board_origin(rec);
@@ -140,8 +115,7 @@ module board_plate(id) {
         union() {
             plate_body();
             if (rec[8] || len(rec[4]) == 0) fences(rec, o);
-            else for (h = rec[4]) translate([o[0] + h[0], o[1] + h[1], PLATE_T])
-                if (MODE == "snap") snap_standoff(rec[3], rec[7]); else insert_standoff(rec[3], rec[7]);
+            else for (h = rec[4]) translate([o[0] + h[0], o[1] + h[1], PLATE_T]) insert_standoff(rec[3], rec[7]);
             cable_hooks(rec, o);
         }
         lightening(rec, o);
@@ -179,8 +153,7 @@ module bay_plate(id) {
             plate_body();
             for (b = places) let(rec = b[2], o = b[1])
                 if (rec[8] || len(rec[4]) == 0) fences(rec, o);
-                else for (h = rec[4]) translate([o[0] + h[0], o[1] + h[1], PLATE_T])
-                    if (MODE == "snap") snap_standoff(rec[3], rec[7]); else insert_standoff(rec[3], rec[7]);
+                else for (h = rec[4]) translate([o[0] + h[0], o[1] + h[1], PLATE_T]) insert_standoff(rec[3], rec[7]);
         }
         bay_lightening(places);
         translate([PLATE_W / 2, 7, PLATE_T - 0.5]) label_text(id, size = 4.5, depth = 0.5 + EPS);
@@ -209,6 +182,5 @@ module hex_plate() {
 }
 
 if (BAY != "") bay_plate(BAY);
-else if (BOARD == "universal") universal_plate();
 else if (BOARD != "") board_plate(BOARD);
 else hex_plate();

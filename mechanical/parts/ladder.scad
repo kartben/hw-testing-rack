@@ -28,8 +28,11 @@ module hook_local() {
     polygon([[HOOK_W / 2 - 0.01, -(HOOK_NECK + 0.3)], [HOOK_W / 2 + HOOK_BARB, -(HOOK_NECK + 0.3)],
              [HOOK_W / 2 + HOOK_BARB, -(HOOK_DROP - 2.5)], [HOOK_W / 2 - 0.01, -HOOK_DROP]]);
 }
-module hook_relief_local()           // frees the beam root inside the ladder's own band
-    for (s = [-1, 1]) translate([s > 0 ? HOOK_W / 2 : -HOOK_W / 2 - 1, -0.5]) square([1, HOOK_ROOT + 0.5]);
+module hook_relief_local()           // frees the beam root inside the ladder's own band, its ends round
+    for (s = [-1, 1]) translate([s > 0 ? HOOK_W / 2 : -HOOK_W / 2 - 1, -0.5]) {
+        square([1, HOOK_ROOT]);
+        translate([0.5, HOOK_ROOT]) circle(r = HOOK_RELIEF_R, $fn = 24);
+    }
 module hook_slot_local() {           // receiving slot in the lower ladder's top band
     translate([-HOOK_W / 2 - 1.2, -HOOK_NECK - 0.01]) square([HOOK_W + 1.4, HOOK_NECK + 1]);
     translate([-HOOK_W / 2 - 1.2, -(HOOK_DROP + 1)]) square([HOOK_W + 1.2 + HOOK_BARB + 1.0, HOOK_DROP + 1 - HOOK_NECK]);
