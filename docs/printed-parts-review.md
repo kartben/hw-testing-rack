@@ -14,8 +14,9 @@ How this was checked:
 - every snap feature by the cantilever formulas of the snap-fit design guides (`review/proto/snaps.py`)
   and by a CalculiX FEM of the beam pushed by the deflection the joint needs (`review/proto/fem_snaps.py`,
   `review/fem_snaps.json`); PETG printed: E 1800 MPa (as `tools/panel_frame_fea.py`), ν 0.38;
-- the proposals in SolidCraft (the nut trap's fit) and as prototypes in `mechanical/review/proto/*.scad`,
-  rendered to `mechanical/review/*.png` (`proto/render.sh`).
+- the proposals in SolidCraft (the nut trap's fit) and as prototypes in `mechanical/review/proto/*.scad`:
+  each change as a before / after pair from one viewpoint, framed on the feature, with its numbers on the
+  image (`mechanical/review/pairs/<name>.png`: `proto/pairs.sh` renders, `proto/compose.py` composes).
 
 Allowable strain used for the verdicts, PETG on the H2D at 0.2 mm: **3 % one-off / 1.5 % repeated when
 the beam bends in the print plane** (PETG's own short-term figure is about 4 %); **1 % / 0.5 % when it
@@ -25,25 +26,25 @@ session's print plan (H2D, 0.20 mm Standard, PETG).
 
 ## Ranked findings
 
-| # | Part | Finding | Change | Effort | Risk | Call |
-|---|---|---|---|---|---|---|
-| 1 | Tray | The guide lips' undersides are 2.5 mm flat shelves in the air (2 × 473 mm²) and each ledge's first 48 mm have no gusset: both print as droop, right where the drawer's flange needs 0.4 mm | 45° underside on the lips (the tip keeps 3.4 mm over the ledge), a gusset at y 10, the fascia raised under the ledge | ½ day | low | obvious |
-| 2 | Cradle | The latch finger bends across the layers at 0.72 % (FEM peak 2 %) on every board swap; allowable 0.5 % | finger 40 mm free, hook 0.8, R0.8 root, slit 1.0: 0.25 % | 1 h | low | obvious |
-| 3 | Ladder | 60 heat-set inserts in a 7.4 mm edge: 1.7 mm walls on the faces that keep 0.2 mm to the trays, horizontal holes that print oval | a DIN 562 M3 square nut in a pocket open to the top face, a plain Ø3.4 hole (SolidCraft: 0.2 mm all round); −60 inserts, no iron, nothing to ream | ½ day | low | **user** (recommended) |
-| 4 | Pegs | The cam base's split pivot bends 0.25 mm per half across the layers: 2.4 % (FEM 2.5 %), allowable 1 % | Ø4.4 × 2 relief in the column's top, slit 6.5, head Ø3.7: 0.7 % | 1 h | low | obvious |
-| 5 | Camera pod | The sleeve's snap lips bend 1.6 mm vertical walls across the layers: 1.3 % (FEM 3.3 %) every time the camera comes out | two side-hinged tabs (slits on three sides, hinge vertical): 0.75 % in the print plane | 2 h | low | obvious (the case is still a placeholder) |
-| 6 | Ladder | The stacking hooks: 2.0 % in the print plane, fine for a one-off, but the FEM shows 56 MPa at the square root (1.55 × the beam figure) | root 10 mm (was 7), R0.6 at the relief's ends: 1.3 %, the peak ≈ 1.2 × | 1 h | low | obvious |
-| 7 | Tray | The latch arms: 1.1 %, fine (1.5 % allowed for repeated use), square slot ends | round the three slots' ends R0.5; arm 32 mm: 0.75 % | 1 h | low | obvious |
-| 8 | Pegs | The plug's spring skins: 2.3 % in the print plane, pegs are moved at every re-layout (1.5 % allowed) | SKIN_H 3.4, the slot run to the skin's end: 1.5 % | 1 h | low | obvious |
-| 9 | Chain anchor | Its insert pockets go 0.2 mm through the tray's floor (bosses 5.5 tall, inserts 5.7 deep): a hole in the first layer | bosses 7.5 tall (or M3 × 4 inserts) | 10 min | none | obvious |
-| 10 | Chain anchor | A separate 1.4 g block on 2 inserts and 2 M3 × 8, 7 per rack | print it as part of the tray once the chain is measured: −7 parts, −14 inserts, −14 screws | 2 h | the chain's end piece must be known | **user** |
-| 11 | All | No common visual language: vertical edges r 1.2 / 1.5 / 2 / 3 / 4 or none (the tray), no bed chamfers, 5 label sizes | the family below: R3 outer verticals on big parts, R1.5 on small, 0.5 × 45° on every bed edge, text debossed 0.6 mm ≥ 4.5 mm high, arrows and screw callouts | 1 day | cosmetic | obvious |
-| 12 | Label | `bay_label` is a blank 100 × 12 strip | the bay ID debossed 0.8 mm and filled by the H2D's second nozzle: one object, two colours, readable at a glance | 1 h | needs a second filament loaded | **user** |
-| 13 | BOM | 6 screw types | M3 × 8 everywhere M3 × 6 is used (node, lid, pods: the inserts and spacers take 8); PT 2.3 × 8 everywhere PT 2.6 × 8 is used (pilots 1.9): 4 types | ½ day | none | **user** |
-| 14 | Drawer | The magnet detent: 2 magnets, CA glue, a polarity check, a pad and two pockets per bay, for a 0.7 N job | a printed spring tab in the left ledge (20 × 2.5, bump 0.6: 0.56 % in-plane, ≈ 3 N hold) and a notch under the drawer: no parts, no glue | ½ day | wears; weaker than the magnets' ≈ 10 N | **user** |
-| 15 | Drawer, plate, ladders | Dead geometry: the drawer's four front ledges (DATA ×4 v1, not ordered), `board_plate.scad`'s snap and universal modes, `ladder_a` = `ladder_b` and `brace_a` = `brace_b` as separate STLs while the rows are equal | remove; one `ladder_row` and one `brace_row` STL | 2 h | none | obvious |
-| 16 | Camera pod | 4 × M3 × 6 and 4 inserts for a 12 g pod | 2 screws (a diagonal) and a locating rib; the grid stays | 1 h | none | **user** |
-| 17 | Covers (concept) | V3 + the 1× lid as the tray session proposes; their detent tabs must flex in the print plane | side-hinged tabs, as the camera sleeve | — | — | **user** (open) |
+| # | Part | Finding | Change | Effort | Risk | Call | Pair |
+|---|---|---|---|---|---|---|---|
+| 1 | Tray | The guide lips' undersides are 2.5 mm flat shelves in the air (2 × 473 mm²) and each ledge's first 48 mm have no gusset: both print as droop, right where the drawer's flange needs 0.4 mm | 45° underside on the lips (the tip keeps 3.4 mm over the ledge), a gusset at y 10, the fascia raised under the ledge | ½ day | low | obvious | [tray_guide](../mechanical/review/pairs/tray_guide.png) |
+| 2 | Cradle | The latch finger bends across the layers at 0.72 % (FEM peak 2 %) on every board swap; allowable 0.5 % | finger 40 mm free, hook 0.8, R0.8 root, slit 1.0: 0.25 % | 1 h | low | obvious | [cradle_finger](../mechanical/review/pairs/cradle_finger.png) |
+| 3 | Ladder | 60 heat-set inserts in a 7.4 mm edge: 1.7 mm walls on the faces that keep 0.2 mm to the trays, horizontal holes that print oval | a DIN 562 M3 square nut in a pocket open to the top face, a plain Ø3.4 hole (SolidCraft: 0.2 mm all round); −60 inserts, no iron, nothing to ream | ½ day | low | **user** (recommended) | [ladder_nut_trap](../mechanical/review/pairs/ladder_nut_trap.png) |
+| 4 | Pegs | The cam base's split pivot bends 0.25 mm per half across the layers: 2.4 % (FEM 2.5 %), allowable 1 % | Ø4.4 × 2 relief in the column's top, slit 6.5, head Ø3.7: 0.7 % | 1 h | low | obvious | [cam_pin](../mechanical/review/pairs/cam_pin.png) |
+| 5 | Camera pod | The sleeve's snap lips bend 1.6 mm vertical walls across the layers: 1.3 % (FEM 3.3 %) every time the camera comes out | two side-hinged tabs (slits on three sides, hinge vertical): 0.75 % in the print plane | 2 h | low | obvious (the case is still a placeholder) | [sleeve_tab](../mechanical/review/pairs/sleeve_tab.png) |
+| 6 | Ladder | The stacking hooks: 2.0 % in the print plane, fine for a one-off, but the FEM shows 56 MPa at the square root (1.55 × the beam figure) | root 10 mm (was 7), R0.6 at the relief's ends: 1.3 %, the peak ≈ 1.2 × | 1 h | low | obvious | [ladder_hook](../mechanical/review/pairs/ladder_hook.png) |
+| 7 | Tray | The latch arms: 1.1 %, fine (1.5 % allowed for repeated use), square slot ends | round the three slots' ends R0.5; arm 32 mm: 0.75 % | 1 h | low | obvious | [latch_arm](../mechanical/review/pairs/latch_arm.png) |
+| 8 | Pegs | The plug's spring skins: 2.3 % in the print plane, pegs are moved at every re-layout (1.5 % allowed) | SKIN_H 3.4, the slot run to the skin's end: 1.5 % | 1 h | low | obvious | [peg_skin](../mechanical/review/pairs/peg_skin.png) |
+| 9 | Chain anchor | Its insert pockets go 0.2 mm through the tray's floor (bosses 5.5 tall, inserts 5.7 deep): a hole in the first layer | bosses 7.5 tall (or M3 × 4 inserts) | 10 min | none | obvious | [anchor_boss](../mechanical/review/pairs/anchor_boss.png) |
+| 10 | Chain anchor | A separate 1.4 g block on 2 inserts and 2 M3 × 8, 7 per rack | print it as part of the tray once the chain is measured: −7 parts, −14 inserts, −14 screws | 2 h | the chain's end piece must be known | **user** | — |
+| 11 | All | No common visual language: vertical edges r 1.2 / 1.5 / 2 / 3 / 4 or none (the tray), no bed chamfers, 5 label sizes | the family below: R3 outer verticals on big parts, R1.5 on small, 0.5 × 45° on every bed edge, text debossed 0.6 mm ≥ 4.5 mm high, arrows and screw callouts | 1 day | cosmetic | obvious | — |
+| 12 | Label | `bay_label` is a blank 100 × 12 strip | the bay ID debossed 0.8 mm and filled by the H2D's second nozzle: one object, two colours, readable at a glance | 1 h | needs a second filament loaded | **user** | [drawer_front](../mechanical/review/pairs/drawer_front.png) |
+| 13 | BOM | 6 screw types | M3 × 8 everywhere M3 × 6 is used (node, lid, pods: the inserts and spacers take 8); PT 2.3 × 8 everywhere PT 2.6 × 8 is used (pilots 1.9): 4 types | ½ day | none | **user** | — |
+| 14 | Drawer | The magnet detent: 2 magnets, CA glue, a polarity check, a pad and two pockets per bay, for a 0.7 N job | a printed spring tab in the left ledge (20 × 2.5, bump 0.6: 0.56 % in-plane, ≈ 3 N hold) and a notch under the drawer: no parts, no glue | ½ day | wears; weaker than the magnets' ≈ 10 N | **user** | [detent](../mechanical/review/pairs/detent.png) |
+| 15 | Drawer, plate, ladders | Dead geometry: the drawer's four front ledges (DATA ×4 v1, not ordered), `board_plate.scad`'s snap and universal modes, `ladder_a` = `ladder_b` and `brace_a` = `brace_b` as separate STLs while the rows are equal | remove; one `ladder_row` and one `brace_row` STL | 2 h | none | obvious | — |
+| 16 | Camera pod | 4 × M3 × 6 and 4 inserts for a 12 g pod | 2 screws (a diagonal) and a locating rib; the grid stays | 1 h | none | **user** | — |
+| 17 | Covers (concept) | V3 + the 1× lid as the tray session proposes; their detent tabs must flex in the print plane | side-hinged tabs, as the camera sleeve | — | — | **user** (open) | — |
 
 Findings 1, 2, 4, 5, 6, 7, 8, 9 are print-and-break risks: none of the parts has been printed yet, and
 these would show on the first bay.  The rest is simplicity and looks.
@@ -69,7 +70,7 @@ What stays as it is: the drawer front's scoop, the power box (already the refere
 
 | Joint | Today | Verdict |
 |---|---|---|
-| Ladder rear edge → brace, 4 per ladder (60) | M3 insert in a Ø4.0 hole along the 7.4 mm edge | **Nut trap.**  The hole leaves 1.7 mm of wall on each face; a heat-set insert swells its hole, and those faces keep 0.2 mm to the trays.  The hole lies in the layer plane, so it prints oval and wants reaming.  A square nut in a pocket cut from the top face (5.9 × 5.9 × 2.2: SolidCraft gives 0.2 mm all round the nut and the screw) needs no tool, drops in, and the brace's preload pulls it onto 2.2 mm of in-plane wall.  Render: `review/ladder_nut_trap.png` |
+| Ladder rear edge → brace, 4 per ladder (60) | M3 insert in a Ø4.0 hole along the 7.4 mm edge | **Nut trap.**  The hole leaves 1.7 mm of wall on each face; a heat-set insert swells its hole, and those faces keep 0.2 mm to the trays.  The hole lies in the layer plane, so it prints oval and wants reaming.  A square nut in a pocket cut from the top face (5.9 × 5.9 × 2.2: SolidCraft gives 0.2 mm all round the nut and the screw) needs no tool, drops in, and the brace's preload pulls it onto 2.2 mm of in-plane wall.  Pair: `review/pairs/ladder_nut_trap.png` |
 | Tray → node, 4 per tray | M3 insert in a Ø7.5 boss | keep: a boss, a vertical hole, screws from above.  (Thread-forming M3 into a Ø2.5 pilot would also do: 7.5 mm of engagement, ~10 cycles) |
 | Tray underside → camera pod | 4 inserts from below | keep the insert, use 2 (finding 16) |
 | Tray → chain anchor | 2 inserts, 5.5 mm bosses | fix the depth (9); then integrate the anchor (10) |
@@ -148,7 +149,9 @@ print plane.
   Ridge/notch: fine.  Brace fixings: finding 3 (nut traps).  Grooves: fine; the tray's runner has
   0.15 mm per side.
 
-![Ladder post: insert today, square-nut trap proposed](../mechanical/review/ladder_nut_trap.png)
+![Ladder post: insert today, square-nut trap proposed](../mechanical/review/pairs/ladder_nut_trap.png)
+
+![Ladder hook: root 7 and square relief ends today, root 10 and R0.6 proposed](../mechanical/review/pairs/ladder_hook.png)
 
 ### Brace (`brace.scad`)
 
@@ -167,12 +170,16 @@ print plane.
   Proposed: the lip's underside at 45° from its tip (its edge still 3.4 mm over the ledge, the flange's
   0.4 mm kept: a line contact is all an anti-tip lip needs), the fascia raised to the ledge over the ledge's
   width, a gusset at y 10 on both walls (behind the tie strap at y 7.25, in front of the plug at
-  y 13–27).  `review/tray_guide.png`.
+  y 13–27).  `review/pairs/tray_guide.png`.
 - **Assembly.** Latch arms: finding 7.  Node inserts: keep.  Anchor: findings 9 and 10.
 - **Looks.** The fascia is the tray's only visible face: R3 on its vertical corners, 0.5 chamfer at the
   bed, 0.8 fillet on its top edge (the drawer front sits 2.5 mm above it).
 
-![Tray guide: the flat lip today, the 45° lip and front gusset proposed](../mechanical/review/tray_guide.png)
+![Tray guide: the flat lip today, the 45° lip and front gusset proposed](../mechanical/review/pairs/tray_guide.png)
+
+![Tray latch arm: square slot ends today, R0.5 and a 32 mm arm proposed](../mechanical/review/pairs/latch_arm.png)
+
+![Chain-anchor boss: the insert pocket through the floor today, a 7.5 mm boss proposed](../mechanical/review/pairs/anchor_boss.png)
 
 ![SolidCraft section at y 40 with the draft analysis: the lip's flat underside](../mechanical/review/sc-tray-section-y40.png)
 
@@ -184,31 +191,33 @@ print plane.
 - **Looks.** The front panel: R3 on its vertical corners (1.2 today; the only rounded part of the drawer),
   0.5 chamfer at the bed (the panel's bottom edge is the first thing the eye meets), 0.8 fillet on its top
   edge round the scoop.  Port numbers `1 2 3 4` debossed in the bed face of the rear bay in front of each U.
-  `review/drawer_front.png`.
+  `review/pairs/drawer_front.png`.
 - **Assembly.** The flange, the two plate pins, the foot groove and lock screw: fine.  The detent:
   finding 14 (the user's call; the magnets work, they just cost five assembly steps per bay).  The elephant's
   foot on the running face: the slicer's compensation does it; a 0.4 chamfer on the bottom outline makes
   it certain.
 
-![Drawer front: today's blank label, the proposed chamfered panel with a two-colour ID](../mechanical/review/drawer_front.png)
+![Drawer front: today's blank label, the proposed chamfered panel with a two-colour ID](../mechanical/review/pairs/drawer_front.png)
+
+![Drawer detent: the glued magnet today, a spring tab in the ledge proposed](../mechanical/review/pairs/detent.png)
 
 ### DATA ×4 v2 cradle (`x4_cradle.scad`)
 
 8.4 g.  Right idea (slots, T-heads, plug-in pushes the board onto the base), one wrong spring.
 - **Assembly: finding 2.**  The finger is the one snap in the rack that bends across its layers on
   every use.  40 mm free (the upright is 73 tall), hook 0.8, the slit 1.0 wide, R0.8 at the slit's foot:
-  0.25 %.  `review/cradle_finger.png`.  Alternative if the covers come: the V1 tower's ribs already block
+  0.25 %.  `review/pairs/cradle_finger.png`.  Alternative if the covers come: the V1 tower's ribs already block
   the latch; with a cover, a plain upright and no finger at all is the simplest.
 - **Looks.** R1.5 on the uprights' outer corners, 0.8 fillet on their tops (the hands go there), `PT2.6`
   beside the three holes, `UP ▲` on an upright (it fits one way, but a glance helps).
 
-![Cradle finger: today 24 mm, proposed 40 mm with a rounded root](../mechanical/review/cradle_finger.png)
+![Cradle finger: today 24 mm, proposed 40 mm with a rounded root](../mechanical/review/pairs/cradle_finger.png)
 
 ### Board plate and pegs (`board_plate.scad`, `hexgrid.scad`, `pegs.scad`)
 
 42 g / 0.2–0.9 g.  The best-looking system in the rack; keep it as it is bar two springs.
 - **Pegs.** Finding 8 (the skins) and finding 4 (the cam pivot).  The stop's engraved arrow (2.6 × 1.8,
-  0.4 deep) is readable; the cam's `close` arrow too.  `review/cam_pin.png`.
+  0.4 deep) is readable; the cam's `close` arrow too.  `review/pairs/cam_pin.png`.
 - **Plate.** The row numbers at 3.4 mm are at the slicer's limit: 4.5 mm, or leave them (they read in
   the renders, they may not on the print).  Finding 15: `MODE = "snap"` and `BOARD = "universal"` are
   dead code (90 lines); the fenced per-board plate stays for the GIGA stack.
@@ -216,7 +225,9 @@ print plane.
   has 0.1 mm per side in the hole.  The slicer's compensation (0.15 mm default) covers it; a 0.3 chamfer on
   the plug's bottom makes it certain.
 
-![Cam pivot: today's slit, the proposed relief and longer slit](../mechanical/review/cam_pin.png)
+![Cam pivot: today's slit, the proposed relief and longer slit](../mechanical/review/pairs/cam_pin.png)
+
+![Peg plug skins: the slot stopping short today, run to the end and taller proposed](../mechanical/review/pairs/peg_skin.png)
 
 ### Camera pod and diffuser (`camera_pod.scad`)
 
@@ -226,6 +237,8 @@ print plane.
   10 tall cut on three sides in the sleeve's wall, hinged on a vertical edge, the lip on its free end):
   0.75 % in the print plane, printable (the horizontal slit is a 0.6 mm bridge).  Finding 16: 2 screws.
 - **Looks.** R3 on the plate's outline (it has it), 0.5 chamfer on its bed edge; `LENS` arrow on the sleeve.
+
+![Camera sleeve: the rigid lipped wall today, a side-hinged tab proposed](../mechanical/review/pairs/sleeve_tab.png)
 
 ### Chain foot, anchor, link (`chain_parts.scad`)
 
