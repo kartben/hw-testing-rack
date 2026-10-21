@@ -65,3 +65,18 @@ patches:
       hub_port_wait_reset()).  Tested on native_sim against a made-up hub,
       not yet on the bench.  The same commits are the user's draft PR
       123058 (2026-10-21): drop this file when it lands.
+
+  # USB/IP: TCP_NODELAY on the connections, a completion's data no longer
+  # waits for the client to acknowledge its header (an FTDI read over USB/IP
+  # lost bytes on the bench, the FT232's 256-byte FIFO overrunning)
+  - path: zephyr/usbip-tcp-nodelay.patch
+    sha256sum: a1321472bee1acf733b4a5e6bb0c3436346535fce161d05a08a24c7279a98b42
+    module: zephyr
+    author: Benjamin Cabé
+    email: benjamin@zephyrproject.org
+    date: 2026-10-21
+    upstreamable: true
+    comments: |
+      One commit, applies with or without usbip-removal-and-busid.patch.
+      Not tested on the bench yet (esptool read_flash through the FTDI);
+      not proposed upstream (the user's call).

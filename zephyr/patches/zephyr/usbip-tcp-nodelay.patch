@@ -1,0 +1,51 @@
+From 256d16a4b13ba8bc26a4e8ded58a6dbf24c2a860 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Wed, 21 Oct 2026 20:27:56 +0200
+Subject: [PATCH] usb: usbip: disable Nagle's algorithm on connections
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A completed request is sent as a header followed by its data. With
+Nagle's algorithm, the data is held until the header is acknowledged,
+and the client delays that acknowledgment (40 ms on Linux) as it cannot
+complete the URB without the data. An IN endpoint is then polled again
+only that much later, which can be too late for a device with a small
+buffer, such as an FTDI serial converter.
+
+Set TCP_NODELAY on accepted connections, as the Linux USB/IP tools do.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ subsys/usb/host/usbip.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index 87570d54576..ac8d4522025 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -849,6 +849,7 @@ static void usbip_thread_handler(void *const a, void *const b, void *const c)
+ 	int listenfd;
+ 	int connfd;
+ 	int reuse = 1;
++	int nodelay = 1;
+ 
+ 	LOG_DBG("Started connection handling thread");
+ 
+@@ -890,6 +891,12 @@ static void usbip_thread_handler(void *const a, void *const b, void *const c)
+ 			continue;
+ 		}
+ 
++		/* A reply is sent as a header and its data, do not hold the data back */
++		if (zsock_setsockopt(connfd, NET_IPPROTO_TCP, ZSOCK_TCP_NODELAY,
++				     &nodelay, sizeof(nodelay)) < 0) {
++			LOG_WRN("setsockopt() failed: %s", strerror(errno));
++		}
++
+ 		zsock_inet_ntop(client_addr.sin_family, &client_addr.sin_addr,
+ 				addr_str, sizeof(addr_str));
+ 		LOG_INF("Connection: %s", addr_str);
+-- 
+2.55.0.windows.3
+
