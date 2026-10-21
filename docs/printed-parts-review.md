@@ -15,8 +15,10 @@ How this was checked:
   and by a CalculiX FEM of the beam pushed by the deflection the joint needs (`review/proto/fem_snaps.py`,
   `review/fem_snaps.json`); PETG printed: E 1800 MPa (as `tools/panel_frame_fea.py`), ν 0.38;
 - the proposals in SolidCraft (the nut trap's fit) and as prototypes in `mechanical/review/proto/*.scad`:
-  each change as a before / after pair from one viewpoint, framed on the feature, with its numbers on the
-  image (`mechanical/review/pairs/<name>.png`: `proto/pairs.sh` renders, `proto/compose.py` composes).
+  each change as an AVANT | APRÈS pair from one camera, framed on the feature inside its part with the part
+  it mates with (grey), the changed geometry in the accent colour, a section where the change is inside, the
+  numbers in the callouts (`mechanical/review/pairs/<name>.png`, 1600 px: `proto/pairs.sh` renders the two
+  views, `proto/compose.py` composes them).
 
 Allowable strain used for the verdicts, PETG on the H2D at 0.2 mm: **3 % one-off / 1.5 % repeated when
 the beam bends in the print plane** (PETG's own short-term figure is about 4 %); **1 % / 0.5 % when it
@@ -38,8 +40,8 @@ session's print plan (H2D, 0.20 mm Standard, PETG).
 | 8 | Pegs | The plug's spring skins: 2.3 % in the print plane, pegs are moved at every re-layout (1.5 % allowed) | SKIN_H 3.4, the slot run to the skin's end: 1.5 % | 1 h | low | obvious | [peg_skin](../mechanical/review/pairs/peg_skin.png) |
 | 9 | Chain anchor | Its insert pockets go 0.2 mm through the tray's floor (bosses 5.5 tall, inserts 5.7 deep): a hole in the first layer | bosses 7.5 tall (or M3 × 4 inserts) | 10 min | none | obvious | [anchor_boss](../mechanical/review/pairs/anchor_boss.png) |
 | 10 | Chain anchor | A separate 1.4 g block on 2 inserts and 2 M3 × 8, 7 per rack | print it as part of the tray once the chain is measured: −7 parts, −14 inserts, −14 screws | 2 h | the chain's end piece must be known | **user** | — |
-| 11 | All | No common visual language: vertical edges r 1.2 / 1.5 / 2 / 3 / 4 or none (the tray), no bed chamfers, 5 label sizes | the family below: R3 outer verticals on big parts, R1.5 on small, 0.5 × 45° on every bed edge, text debossed 0.6 mm ≥ 4.5 mm high, arrows and screw callouts | 1 day | cosmetic | obvious | — |
-| 12 | Label | `bay_label` is a blank 100 × 12 strip | the bay ID debossed 0.8 mm and filled by the H2D's second nozzle: one object, two colours, readable at a glance | 1 h | needs a second filament loaded | **user** | [drawer_front](../mechanical/review/pairs/drawer_front.png) |
+| 11 | All | No common visual language: vertical edges r 1.2 / 1.5 / 2 / 3 / 4 or none (the tray), no bed chamfers, 5 label sizes | the family below: R3 outer verticals on big parts, R1.5 on small, 0.5 × 45° on every bed edge, text debossed 0.6 mm ≥ 4.5 mm high, arrows and screw callouts | 1 day | cosmetic | obvious | [visual_language](../mechanical/review/pairs/visual_language.png) |
+| 12 | Label | `bay_label` is a blank 100 × 12 strip | the bay ID debossed 0.8 mm and filled by the H2D's second nozzle: one object, two colours, readable at a glance | 1 h | needs a second filament loaded | **user** | [visual_language](../mechanical/review/pairs/visual_language.png) |
 | 13 | BOM | 6 screw types | M3 × 8 everywhere M3 × 6 is used (node, lid, pods: the inserts and spacers take 8); PT 2.3 × 8 everywhere PT 2.6 × 8 is used (pilots 1.9): 4 types | ½ day | none | **user** | — |
 | 14 | Drawer | The magnet detent: 2 magnets, CA glue, a polarity check, a pad and two pockets per bay, for a 0.7 N job | a printed spring tab in the left ledge (20 × 2.5, bump 0.6: 0.56 % in-plane, ≈ 3 N hold) and a notch under the drawer: no parts, no glue | ½ day | wears; weaker than the magnets' ≈ 10 N | **user** | [detent](../mechanical/review/pairs/detent.png) |
 | 15 | Drawer, plate, ladders | Dead geometry: the drawer's four front ledges (DATA ×4 v1, not ordered), `board_plate.scad`'s snap and universal modes, `ladder_a` = `ladder_b` and `brace_a` = `brace_b` as separate STLs while the rows are equal | remove; one `ladder_row` and one `brace_row` STL | 2 h | none | obvious | — |
@@ -65,6 +67,8 @@ One set of rules for every part, each with its reason in FDM terms:
 | Marks | a `FRONT ▲` arrow on every part that fits one way (ladders, plates, cradle), the screw's size next to its hole (`M3×8` by the brace holes, `PT2.6` on the cradle's base), the row letter on each ladder's front post, port numbers `1–4` on the drawer's rear-bay floor in front of each U | the notice says it; the part should too |
 
 What stays as it is: the drawer front's scoop, the power box (already the reference), the honeycomb plate.
+
+![The visual language on the real drawer: r 1.2 edges and a blank label today; R3, a 0.5 chamfer at the bed, the ID inlaid and the port numbers debossed proposed](../mechanical/review/pairs/visual_language.png)
 
 ## Fasteners: inserts or nut traps
 
@@ -191,13 +195,11 @@ print plane.
 - **Looks.** The front panel: R3 on its vertical corners (1.2 today; the only rounded part of the drawer),
   0.5 chamfer at the bed (the panel's bottom edge is the first thing the eye meets), 0.8 fillet on its top
   edge round the scoop.  Port numbers `1 2 3 4` debossed in the bed face of the rear bay in front of each U.
-  `review/pairs/drawer_front.png`.
+  `review/pairs/visual_language.png`.
 - **Assembly.** The flange, the two plate pins, the foot groove and lock screw: fine.  The detent:
   finding 14 (the user's call; the magnets work, they just cost five assembly steps per bay).  The elephant's
   foot on the running face: the slicer's compensation does it; a 0.4 chamfer on the bottom outline makes
   it certain.
-
-![Drawer front: today's blank label, the proposed chamfered panel with a two-colour ID](../mechanical/review/pairs/drawer_front.png)
 
 ![Drawer detent: the glued magnet today, a spring tab in the ledge proposed](../mechanical/review/pairs/detent.png)
 
