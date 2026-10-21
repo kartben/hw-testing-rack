@@ -48,3 +48,19 @@ patches:
       address, interrupt IN parked between polls, bulk IN parked on NAK
       while transfers wait.  Not tested on hardware; not proposed upstream
       (the user's call).
+
+  # USB host hub class: the connection is debounced before a port reset, the
+  # end of the reset is polled, and a port whose resets all failed is reset
+  # again only on a new connection (the MCU-Link reset loop on the bench,
+  # firmware/common/tests/usbh_hub)
+  - path: zephyr/usbh-hub-port-reset.patch
+    sha256sum: fa79ef3f7d90dc89db5cd86453bb6a0a4f6ab31bde78c85257c4583e0ac13437
+    module: zephyr
+    author: Benjamin Cabé
+    email: benjamin@zephyrproject.org
+    date: 2026-10-21
+    upstreamable: true
+    comments: |
+      Three commits, as Linux does it (hub_port_debounce(),
+      hub_port_wait_reset()).  Tested on native_sim against a made-up hub,
+      not yet on the bench; not proposed upstream (the user's call).

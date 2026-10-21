@@ -114,6 +114,11 @@ jobs:
           - name: usbip
             board: native_sim/native/64
             app: firmware/common/tests/usbip
+          # The patched USB host hub class (zephyr/patches.yml) against a
+          # made-up hub whose ports fail to reset, run below
+          - name: usbh_hub
+            board: native_sim/native/64
+            app: firmware/common/tests/usbh_hub
     steps:
       # West workspace = $GITHUB_WORKSPACE, this repository checked out as its
       # manifest repository (manifest self.path: hw-testing-rack).
@@ -164,10 +169,10 @@ jobs:
         if: matrix.name == 'usbip'
         run: python3 hw-testing-rack/firmware/common/tests/usbip/test_usbip.py --exe build/zephyr/zephyr.exe
 
-      - name: Rack bus protocol / firmware updates / DATA x4 ports / hub budget on native_sim
+      - name: Rack bus protocol / firmware updates / DATA x4 ports / hub budget / USB hub on native_sim
         if: >-
           matrix.name == 'rack_bus' || matrix.name == 'update' || matrix.name == 'ports' ||
-          matrix.name == 'hub_budget'
+          matrix.name == 'hub_budget' || matrix.name == 'usbh_hub'
         run: |
           build/zephyr/zephyr.exe | tee test.log
           grep -q "PROJECT EXECUTION SUCCESSFUL" test.log
