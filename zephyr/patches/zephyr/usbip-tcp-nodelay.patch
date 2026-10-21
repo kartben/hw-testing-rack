@@ -1,6 +1,6 @@
-From 256d16a4b13ba8bc26a4e8ded58a6dbf24c2a860 Mon Sep 17 00:00:00 2001
+From a930c7451cba2a23e6634999b49807c1cf32a7e3 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
-Date: Wed, 21 Oct 2026 20:27:56 +0200
+Date: Wed, 21 Oct 2026 22:08:08 +0200
 Subject: [PATCH] usb: usbip: disable Nagle's algorithm on connections
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -8,12 +8,12 @@ Content-Transfer-Encoding: 8bit
 
 A completed request is sent as a header followed by its data. With
 Nagle's algorithm, the data is held until the header is acknowledged,
-and the client delays that acknowledgment (40 ms on Linux) as it cannot
-complete the URB without the data. An IN endpoint is then polled again
-only that much later, which can be too late for a device with a small
-buffer, such as an FTDI serial converter.
+and a client that delays its acknowledgment cannot complete the URB
+without the data meanwhile. The endpoint is then polled again only that
+much later, which can be too late for a device with a small buffer,
+such as a serial converter.
 
-Set TCP_NODELAY on accepted connections, as the Linux USB/IP tools do.
+Set TCP_NODELAY on accepted connections.
 
 Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
 Assisted-by: Claude:opus-5.5
@@ -46,6 +46,3 @@ index 87570d54576..ac8d4522025 100644
  		zsock_inet_ntop(client_addr.sin_family, &client_addr.sin_addr,
  				addr_str, sizeof(addr_str));
  		LOG_INF("Connection: %s", addr_str);
--- 
-2.55.0.windows.3
-

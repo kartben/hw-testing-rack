@@ -1,7 +1,7 @@
-From 482a7f0fcfad867be4c225b60f4be9c1f0b979a2 Mon Sep 17 00:00:00 2001
+From 208f2cd1795767cba23aa9b8331e70e779436f5f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Tue, 8 Sep 2026 14:48:44 +0200
-Subject: [PATCH 1/8] drivers: usb: uhc_dwc2: take the bulk data toggle from
+Subject: [PATCH 01/10] drivers: usb: uhc_dwc2: take the bulk data toggle from
  the controller
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -84,11 +84,11 @@ index 92f23d7436c..34f79b5ccd5 100644
  	LOG_DBG("Data on channel%u, prog=%u, act=%u, len=%u, mps=%u, next_pid=%u",
  		ch->index, ch->length, actual_len, xfer->buf->len,
 
-From 36deadcd70d2bb9ff2a300bc0cb328f8e7316822 Mon Sep 17 00:00:00 2001
+From 83898846708a0577ada833691905bb58005425bb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Tue, 8 Sep 2026 14:31:27 +0200
-Subject: [PATCH 2/8] drivers: usb: uhc_dwc2: rewind bulk transfers instead of
- restarting them
+Subject: [PATCH 02/10] drivers: usb: uhc_dwc2: rewind bulk transfers instead
+ of restarting them
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -196,11 +196,11 @@ index 34f79b5ccd5..fdc36853d33 100644
  
  		if (events & BIT(UHC_DWC2_CHANNEL_DO_REINIT)) {
 
-From 373a13dd04522be6e999a0ec94d110d515ec9e33 Mon Sep 17 00:00:00 2001
+From 0506fdc281b9186d2bfae558c438ef8cfd3a20a1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Thu, 1 Oct 2026 11:57:44 +0200
-Subject: [PATCH 3/8] drivers: usb: uhc_dwc2: resume a bulk IN transfer after a
- toggle error
+Subject: [PATCH 03/10] drivers: usb: uhc_dwc2: resume a bulk IN transfer after
+ a toggle error
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -236,10 +236,10 @@ index fdc36853d33..af5e6f53ac3 100644
  			/* The channel halted without reporting a reason. Fail the
  			 * transfer instead of leaving the caller waiting.
 
-From 7410e5e4758a02d6fae6d35d88eda8fcc0cb4a58 Mon Sep 17 00:00:00 2001
+From 5179ddc232eda51c1b9f4319a8a1d32a8c3eb6e6 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Tue, 29 Sep 2026 15:42:36 +0200
-Subject: [PATCH 4/8] drivers: usb: uhc_dwc2: reset the data toggles on a
+Subject: [PATCH 04/10] drivers: usb: uhc_dwc2: reset the data toggles on a
  configuration
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -304,11 +304,11 @@ index af5e6f53ac3..75a1aa2ef4e 100644
  	case USB_EP_TYPE_BULK:
  	case USB_EP_TYPE_INTERRUPT:
 
-From 98b74b25ec83b44ff7b8aa8402b59c151ed2b438 Mon Sep 17 00:00:00 2001
+From f594e0445fe8a37162148b763ce2dbfdca02556d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Fri, 9 Oct 2026 12:26:16 +0200
-Subject: [PATCH 5/8] drivers: usb: uhc_dwc2: reset the data toggle when a halt
- is cleared
+Subject: [PATCH 05/10] drivers: usb: uhc_dwc2: reset the data toggle when a
+ halt is cleared
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -370,11 +370,11 @@ index 75a1aa2ef4e..47c85c63344 100644
  	case USB_EP_TYPE_BULK:
  	case USB_EP_TYPE_INTERRUPT:
 
-From bbe2baa89caa0f2b7b1e4470587648e3f6c1a905 Mon Sep 17 00:00:00 2001
+From e14305abf15c2572f9932bfaba5d556fa995dc74 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 19:13:42 +0200
-Subject: [PATCH 6/8] drivers: usb: uhc_dwc2: keep the endpoint state by device
- address
+Subject: [PATCH 06/10] drivers: usb: uhc_dwc2: keep the endpoint state by
+ device address
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -586,10 +586,10 @@ index 47c85c63344..fca3a4e4904 100644
  		break;
  	case USB_EP_TYPE_BULK:
 
-From aa95e1a740db3546e8d2105867279f46c9c34f7e Mon Sep 17 00:00:00 2001
+From bcff9586189d2c2f87364dc14cb91c30c9985f8d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 19:13:42 +0200
-Subject: [PATCH 7/8] drivers: usb: uhc_dwc2: give the channel back between
+Subject: [PATCH 07/10] drivers: usb: uhc_dwc2: give the channel back between
  interrupt IN polls
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -921,11 +921,11 @@ index fca3a4e4904..da959fcadeb 100644
  		uhc_xfer_return(dev, xfer, -ECONNRESET);
  	}
 
-From 2f0b8712dc47ae21375d32b30d6cdceedb75d085 Mon Sep 17 00:00:00 2001
+From e46305e7c33f422537dd43a72126b5a6dfa2383b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 19:13:43 +0200
-Subject: [PATCH 8/8] drivers: usb: uhc_dwc2: give a NAKing bulk IN channel to
- waiting transfers
+Subject: [PATCH 08/10] drivers: usb: uhc_dwc2: give a NAKing bulk IN channel
+ to waiting transfers
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -1144,3 +1144,116 @@ index da959fcadeb..bdd398c3e0e 100644
  	} else {
  		/* Reinit/rewind transfer */
  		if (events & BIT(UHC_DWC2_CHANNEL_DO_REWIND)) {
+
+From b56e4af634473f999c1d6d3d89e3bc3a2a54b6e8 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Wed, 21 Oct 2026 22:07:58 +0200
+Subject: [PATCH 09/10] drivers: usb: uhc_dwc2: count consecutive transaction
+ errors only
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A bulk or control IN transfer failed on the third transaction error of
+its channel, even when the device had answered in between. A transfer
+that waits on a slow device, such as a serial converter sending a few
+bytes now and then, gathered sporadic errors until it failed, and the
+data it had already received was lost with it.
+
+Unmask the ACK and NAK interrupts after a transaction error, and start
+the count over on the next handshake, so that only consecutive errors
+fail the transfer.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ drivers/usb/uhc/uhc_dwc2.c | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index bdd398c3e0e..d032244974f 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -947,7 +947,9 @@ static uint32_t ch_handle_in_bulk_control(const struct device *dev,
+ 				ch_events |= BIT(UHC_DWC2_CHANNEL_DO_RELEASE);
+ 				ch_events |= BIT(UHC_DWC2_CHANNEL_EVENT_ERROR);
+ 			} else {
+-				/* TODO: Unmask ACK, NAK, DTGERR */
++				/* Only consecutive errors count, the next handshake resets */
++				sys_set_bits((mem_addr_t)&ch->regs->hcintmsk,
++					     USB_DWC2_HCINT_ACK | USB_DWC2_HCINT_NAK);
+ 				LOG_DBG("IN channel%d error, HCINT 0x%08x, retry %u",
+ 					ch->index, hcint, ch->error_count);
+ 				ch_events |= BIT(UHC_DWC2_CHANNEL_DO_REINIT);
+@@ -972,11 +974,14 @@ static uint32_t ch_handle_in_bulk_control(const struct device *dev,
+ 		}
+ 	} else if ((hcint & USB_DWC2_HCINT_NAK) && ch->xfer->type == USB_EP_TYPE_BULK) {
+ 		/*
+-		 * NAK is unmasked while transfers wait for a channel (see
+-		 * submit_pending()): if they still do, halt the channel and give
+-		 * it to one of them. The core retries a NAKed bulk IN by itself.
++		 * NAK is unmasked after a transaction error, and while transfers
++		 * wait for a channel (see submit_pending()): if they still do, halt
++		 * the channel and give it to one of them. The core retries a NAKed
++		 * bulk IN by itself.
+ 		 */
+-		sys_clear_bits((mem_addr_t)&ch->regs->hcintmsk, USB_DWC2_HCINT_NAK);
++		sys_clear_bits((mem_addr_t)&ch->regs->hcintmsk,
++			       USB_DWC2_HCINT_ACK | USB_DWC2_HCINT_NAK);
++		ch->error_count = 0;
+ 		if (atomic_get(&priv->waiting) && !ch->halt_park) {
+ 			ch->halt_park = true;
+ 			sys_set_bits((mem_addr_t)&ch->regs->hcchar,
+@@ -984,8 +989,8 @@ static uint32_t ch_handle_in_bulk_control(const struct device *dev,
+ 		}
+ 	} else if (hcint & (USB_DWC2_HCINT_ACK | USB_DWC2_HCINT_NAK | USB_DWC2_HCINT_DTGERR)) {
+ 		ch->error_count = 0;
+-		/* TODO: Mask ACK, NAK, DTGERR */
+-		LOG_WRN("ACK, NAK or DTG Error");
++		sys_clear_bits((mem_addr_t)&ch->regs->hcintmsk,
++			       USB_DWC2_HCINT_ACK | USB_DWC2_HCINT_NAK);
+ 	} else {
+ 		/* TODO: Add handling for other cases */
+ 		LOG_WRN("IN not halted, unhandled HCINT 0x%08x", hcint);
+
+From d34db146a6b026c59ef59a47921678438089a625 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Wed, 21 Oct 2026 22:05:23 +0200
+Subject: [PATCH 10/10] drivers: usb: uhc_dwc2: keep the data toggle of a
+ cancelled transfer
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A transfer cancelled after it had exchanged packets left the data
+toggle of its endpoint behind. The next transfer of the endpoint then
+started on the wrong toggle, and its first packet was taken for a
+repeat and dropped. Take the toggle from the controller when a transfer
+is cancelled, as when it ends otherwise.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ drivers/usb/uhc/uhc_dwc2.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index d032244974f..a813e7a62c9 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -2482,6 +2482,7 @@ static void ch_handle_events(const struct device *dev, struct uhc_dwc2_channel *
+ 		/* CANCELLED, ERROR, STALL and COMPLETE are mutually exclusive */
+ 		if (events & BIT(UHC_DWC2_CHANNEL_EVENT_CANCELLED)) {
+ 			err = -ECONNRESET;
++			ch_save_toggle(ch);
+ 		} else if (events & BIT(UHC_DWC2_CHANNEL_EVENT_ERROR)) {
+ 			err = -EIO;
+ 			ch_save_toggle(ch);
+@@ -2661,6 +2662,7 @@ static void dequeue_cancelled(const struct device *dev)
+ 				atomic_set(&ch->events, 0);
+ 				k_event_clear(&priv->events,
+ 					BIT(UHC_DWC2_EVENT_PORT_PEND_CHANNEL + ch->index));
++				ch_save_toggle(ch);
+ 				ch_release(dev, ch);
+ 			}
+ 

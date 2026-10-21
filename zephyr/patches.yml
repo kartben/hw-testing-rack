@@ -17,7 +17,7 @@ patches:
   # imported twice, bus IDs by port ("1-1", "1-1.3" behind port 3 of a hub)
   # (docs/multi-dut-node.md, firmware/common/tests/usbip)
   - path: zephyr/usbip-removal-and-busid.patch
-    sha256sum: 58c9826af031a9025d8304046669f710ec97a5ef051a4d64b95f6eac1e833620
+    sha256sum: fc18d955a64201d32b91385030ccf47e69aa81e47cb489a85880232817334317
     module: zephyr
     author: Benjamin Cabé
     email: benjamin@zephyrproject.org
@@ -32,45 +32,48 @@ patches:
   # DWC2 host (the ESP32-S3's 8 channels): an interrupt IN endpoint gives its
   # channel back between polls, a bulk IN that NAKs gives it to transfers
   # waiting for one, the endpoint state is kept by device address and freed
-  # when a device takes the address over (docs/multi-dut-node.md, USB host
-  # channels; docs/data-x4-v2-research.md, second pass)
+  # when a device takes the address over, only consecutive transaction errors
+  # fail a transfer, a cancelled transfer keeps its data toggle
+  # (docs/multi-dut-node.md, USB host channels; docs/data-x4-v2-research.md,
+  # second pass)
   - path: zephyr/uhc-dwc2-channels.patch
-    sha256sum: 56263134acc2d2e26e12849a4d9f7115064050c5a72c9bff9368a8c94e4dbb99
+    sha256sum: d73d26bc7f29bcff36780127c79805554f2f1aa435aa5cd0c7b8cd62728f2f94
     module: zephyr
     author: Benjamin Cabé
     email: benjamin@zephyrproject.org
     date: 2026-10-19
     upstreamable: true
     comments: |
-      Eight commits.  The first five are the user's open PRs, as they are:
+      Ten commits.  The first five are the user's open PRs, as they are:
       120961 (which carries 120848) and 121688; drop each with its PR when
-      it lands.  The last three are new, built on them: endpoint state by
+      it lands.  The next three are new, built on them: endpoint state by
       address, interrupt IN parked between polls, bulk IN parked on NAK
-      while transfers wait.  Not tested on hardware; not proposed upstream
-      (the user's call).
+      while transfers wait.  The last two (2026-10-21) are for the FTDI
+      bytes lost over USB/IP on the bench: consecutive transaction errors,
+      the toggle of a cancelled transfer.  Not tested on hardware; not
+      proposed upstream (the user's call).
 
   # USB host hub class: the connection is debounced before a port reset, the
   # end of the reset is polled, and a port whose resets all failed is reset
   # again only on a new connection (the MCU-Link reset loop on the bench,
   # firmware/common/tests/usbh_hub)
   - path: zephyr/usbh-hub-port-reset.patch
-    sha256sum: fa79ef3f7d90dc89db5cd86453bb6a0a4f6ab31bde78c85257c4583e0ac13437
+    sha256sum: 1f4927ea8f195365ff8ee2e1a4c2a94f9256d557e46e7402b889cdbe28347a31
     module: zephyr
     author: Benjamin Cabé
     email: benjamin@zephyrproject.org
     date: 2026-10-21
     upstreamable: true
     comments: |
-      Three commits, as Linux does it (hub_port_debounce(),
-      hub_port_wait_reset()).  Tested on native_sim against a made-up hub,
-      not yet on the bench.  The same commits are the user's draft PR
+      Three commits, from the USB 2.0 timings (TATTDB, TRSTRCY).  Tested on
+      native_sim against a made-up hub, not yet on the bench.  The same commits are the user's draft PR
       123058 (2026-10-21): drop this file when it lands.
 
   # USB/IP: TCP_NODELAY on the connections, a completion's data no longer
   # waits for the client to acknowledge its header (an FTDI read over USB/IP
-  # lost bytes on the bench, the FT232's 256-byte FIFO overrunning)
+  # on the bench got about twice as far with it)
   - path: zephyr/usbip-tcp-nodelay.patch
-    sha256sum: a1321472bee1acf733b4a5e6bb0c3436346535fce161d05a08a24c7279a98b42
+    sha256sum: 62a13cbc857cdc33294cea8311d02a96647ebd06776a7d9e4465e3a26096e5ad
     module: zephyr
     author: Benjamin Cabé
     email: benjamin@zephyrproject.org
@@ -78,5 +81,5 @@ patches:
     upstreamable: true
     comments: |
       One commit, applies with or without usbip-removal-and-busid.patch.
-      Not tested on the bench yet (esptool read_flash through the FTDI);
+      Tried on the bench (esptool read_flash through the FTDI, 2026-10-21);
       not proposed upstream (the user's call).

@@ -1,4 +1,4 @@
-From 8f131d6c68f42263e7a9ba772dcecf4ec28dcc8b Mon Sep 17 00:00:00 2001
+From 9c4ddffc6766bafac5e1cd7a32c68600b43c88e5 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:24 +0200
 Subject: [PATCH 1/7] usb: usbip: check the result of the UHC transfer
@@ -17,7 +17,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 5 insertions(+)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 4fe6f2ab1..c52381d13 100644
+index 4fe6f2ab1ab..c52381d13e3 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -231,6 +231,11 @@ static int usbip_submit_req(struct usbip_cmd_node *const cmd_nd, const uint8_t e
@@ -33,7 +33,7 @@ index 4fe6f2ab1..c52381d13 100644
  		memcpy(xfer->setup_pkt, setup, sizeof(struct usb_setup_packet));
  		LOG_HEXDUMP_DBG(xfer->setup_pkt, 8U, "setup");
 
-From 5193f10114050bed7cf6c3888c272ff2707546b3 Mon Sep 17 00:00:00 2001
+From 84492496a1e8a52c54ad2ef0551ea762d0e52344 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
 Subject: [PATCH 2/7] usb: usbip: clean up if request submission fails
@@ -56,7 +56,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index c52381d13..af4201c58 100644
+index c52381d13e3..af4201c5890 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -270,6 +270,7 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
@@ -101,7 +101,7 @@ index c52381d13..af4201c58 100644
  	}
  
 
-From 22f572b7229aaff22329620b5337cc3a36f64888 Mon Sep 17 00:00:00 2001
+From 2c3139fd76c5e4268e2f36e9f834bdad0ad19dbd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
 Subject: [PATCH 3/7] usb: usbip: dequeue pending transfers when the connection
@@ -123,7 +123,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 14 insertions(+)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index af4201c58..42d32e1e8 100644
+index af4201c5890..42d32e1e83b 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -424,6 +424,19 @@ static int usbip_handle_cmd(struct usbip_dev_ctx *const dev_ctx)
@@ -155,7 +155,7 @@ index af4201c58..42d32e1e8 100644
  			LOG_INF("CMD connection closed, errno %d", ret);
  			k_event_set_masked(&dev_ctx->event, 0, USBIP_EXPORTED);
 
-From 7cf5720f469fccafc9b7db8800cdd2a478b19114 Mon Sep 17 00:00:00 2001
+From 817ae599f024daf38648e043beff2a7dcf67485a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:26 +0200
 Subject: [PATCH 4/7] usb: usbip: drop completions of a previous connection
@@ -176,7 +176,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 42d32e1e8..a2988b4dc 100644
+index 42d32e1e83b..a2988b4dc79 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -47,6 +47,8 @@ struct usbip_dev_ctx {
@@ -223,7 +223,7 @@ index 42d32e1e8..a2988b4dc 100644
  	LOG_INF("USB device %s exported", busid);
  
 
-From 7f47cee31f2f000c8066948731d2859decbdbdc2 Mon Sep 17 00:00:00 2001
+From 6d1fb4e3c901de57b2e459683e34bd03d00da0bf Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:27 +0200
 Subject: [PATCH 5/7] usb: usbip: bind exported devices as host class instances
@@ -256,7 +256,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 212 insertions(+), 117 deletions(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index a2988b4dc..9a6bdcd48 100644
+index a2988b4dc79..9a6bdcd4879 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -10,9 +10,11 @@
@@ -763,7 +763,7 @@ index a2988b4dc..9a6bdcd48 100644
  				K_THREAD_STACK_SIZEOF(dev_thread_stacks[i]),
  				usbip_thread_cmd, ctx, NULL, NULL,
 
-From d7fe49eea3e2d1ef42e7c0ce8f7b60829c95e8f8 Mon Sep 17 00:00:00 2001
+From bb949826ae8124737dd7b85a6db8ce601b234da1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
 Subject: [PATCH 6/7] usb: usbip: close the connection when the exported device
@@ -786,7 +786,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 52 insertions(+), 5 deletions(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 9a6bdcd48..5896ba542 100644
+index 9a6bdcd4879..5896ba5422d 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -40,6 +40,11 @@ static struct k_thread usbip_thread;
@@ -907,7 +907,7 @@ index 9a6bdcd48..5896ba542 100644
  	k_mutex_unlock(&dev_ctx->lock);
  
 
-From aa2418d4f108d71340635c9aec2b483cf2e2fae8 Mon Sep 17 00:00:00 2001
+From e8d84a053845ef3f48b1575b625e38cd182fc693 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
 Subject: [PATCH 7/7] usb: usbip: name devices by their port
@@ -920,9 +920,9 @@ enumerated again. Behind a hub, two devices that reset at the same time
 can swap their bus IDs, and a client that attaches again gets the other
 device.
 
-Name a device by its place on the bus, as Linux does: "1-1" on the root
-port, "1-1.3" on port 3 of a hub there, and so on. A device on the root
-port keeps the bus ID it usually had.
+Name a device by its place on the bus: "1-1" on the root port, "1-1.3"
+on port 3 of a hub there, and so on. A device on the root port keeps the
+bus ID it usually had.
 
 Assisted-by: Claude:opus-5.5
 Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
@@ -931,7 +931,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 5896ba542..87570d545 100644
+index 5896ba5422d..00b41bee251 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -39,6 +39,9 @@ static struct k_thread usbip_thread;
@@ -949,9 +949,9 @@ index 5896ba542..87570d545 100644
  }
  
 +/*
-+ * Name the device by its place on the bus, as Linux does: "1-1" on the root
-+ * port, "1-1.3" on port 3 of a hub there, "1-1.3.2" one hub further. Unlike
-+ * the address, it does not change when the device is enumerated again.
++ * Name the device by its place on the bus: "1-1" on the root port, "1-1.3" on
++ * port 3 of a hub there, "1-1.3.2" one hub further. Unlike the address, it
++ * does not change when the device is enumerated again.
 + */
  static void usbip_busid(const struct usb_device *const udev, const uint32_t busnum,
  			char *const busid, const size_t len)
