@@ -22,5 +22,5 @@ pair anchor_boss     0,-3,5,70,0,0,24
 pair detent          10,20,11,55,0,30,36
 pair peg_skin        0,0,-2.5,150,0,20,20
 pair visual_language 14,0,12,100,0,20,66
-pair power_box_labels 42,0,16,72,0,12,100
+# power_box_labels: three views (today, plain, small), rendered by hand with the same camera 42,0,16,72,0,12,100
 ls review/pairs | wc -l

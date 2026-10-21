@@ -55,10 +55,11 @@ SHEETS = {
         (0, "skin 0.7 over 2.6 mm, slot 0.35 short of the flat's\nend: a 3.0 mm cantilever, 2.3 % for the nub's 0.2 mm;\nallowed 1.5 % for pegs moved at every re-layout", (0.50, 0.50)),
         (1, "SKIN_H 3.4, slot to the flat's end: 3.7 mm,\n1.5 %, ≈ 2.4 N to clip a peg", (0.50, 0.50)),
     ]),
-    "power_box_labels": ("Power box — the markings (front wall, lid on)", [
+    "power_box_labels": ("Power box — the markings three ways (front wall, lid on)", [
         (0, "5.25 mm bold capitals engraved 0.8 mm and inlaid: A B C D\nunder the LED pairs, PD, CTL; PD IN at the rear; A–D at the\nrow windows; the rack's name and RESET / BOOT on the lid", (0.42, 0.56)),
-        (1, "walls plain; kept where a hand needs a mark: the row\nletters at the left-wall windows (plugging the rows) and\nPD IN at the rear USB-C (the front one is the console);\nthe lid's name and the RESET / BOOT words dropped", (0.42, 0.56)),
-    ]),
+        (1, "walls bare; kept where a hand needs a mark: A–D at the\nleft-wall windows (plugging the rows), PD IN at the rear\nUSB-C (the front one is the console); the lid's name and\nRESET / BOOT dropped", (0.42, 0.56)),
+        (2, "the same, plus 3 mm capitals debossed 0.4 mm, no inlay,\nunder the LED pairs (A B C D), PD, CTL, and RESET / BOOT\nby the lid's pin holes: 15 layers tall, read up close", (0.42, 0.56)),
+    ], [("today", "AVANT"), ("plain", "APRÈS · bare"), ("small", "APRÈS · small letters")]),
     "visual_language": ("The visual language on a real part — the drawer's front corner", [
         (0, "r 1.2 vertical edges, the bottom edge straight onto\nthe bed (elephant's foot), a blank 100 × 12 label", (0.42, 0.45)),
         (1, "R3 vertical edges; 0.5 × 45° chamfer on the bed edge;\nthe bay ID debossed 0.8 mm in the label, filled by the\nsecond nozzle; `1 2 3 4` debossed 0.4 mm in the rear-bay\nfloor.  Same rules on every part: the ladders' outline\nand row letter, FRONT arrows on plates, PT2.6 marks", (0.42, 0.45)),
@@ -66,11 +67,13 @@ SHEETS = {
 }
 
 
-def sheet(name, title, callouts):
-    imgs = [mpimg.imread(PAIRS / f"{name}_{v}.png") for v in ("today", "proposed")]
-    fig, axes = plt.subplots(1, 2, figsize=(16, 8.2), dpi=100)
+def sheet(name, title, callouts, views=(("today", "AVANT"), ("proposed", "APRÈS"))):
+    imgs = [mpimg.imread(PAIRS / f"{name}_{v}.png") for v, _ in views]
+    n = len(views)
+    fig, axes = plt.subplots(1, n, figsize=(16 if n == 2 else 21, 8.2), dpi=100)
     fig.suptitle(title, fontsize=17, fontweight="bold", y=0.985)
-    for col, (ax, im, lab, colr) in enumerate(zip(axes, imgs, ("AVANT", "APRÈS"), (RED, ACCENT))):
+    for col, (ax, im, (_, lab)) in enumerate(zip(axes, imgs, views)):
+        colr = RED if col == 0 else ACCENT
         ax.imshow(im)
         ax.set_title(lab, fontsize=16, color=colr, fontweight="bold", loc="left")
         ax.set_axis_off()
@@ -84,7 +87,7 @@ def sheet(name, title, callouts):
                         bbox=dict(boxstyle="round,pad=0.45", fc="#fff8e8", ec=colr, lw=1.4),
                         arrowprops=dict(arrowstyle="->", color=colr, lw=1.8, shrinkB=3))
             y -= 0.055 * n + 0.06
-    if col == 1:
+    if n == 2:
         axes[1].text(0.98, 1.035, "accent = the geometry the proposal changes · grey = the mating part", transform=axes[1].transAxes,
                      ha="right", va="bottom", fontsize=10, color=GREY)
     plt.subplots_adjust(left=0.015, right=0.985, top=0.9, bottom=0.3, wspace=0.04)
@@ -94,5 +97,5 @@ def sheet(name, title, callouts):
     print(out.name)
 
 
-for name, (title, callouts) in SHEETS.items():
-    sheet(name, title, callouts)
+for name, spec in SHEETS.items():
+    sheet(name, *spec)
