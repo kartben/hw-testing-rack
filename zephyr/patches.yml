@@ -63,4 +63,5 @@ patches:
     comments: |
       Three commits, as Linux does it (hub_port_debounce(),
       hub_port_wait_reset()).  Tested on native_sim against a made-up hub,
-      not yet on the bench; not proposed upstream (the user's call).
+      not yet on the bench.  The same commits are the user's draft PR
+      123058 (2026-10-21): drop this file when it lands.
