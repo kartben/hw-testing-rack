@@ -25,7 +25,7 @@ plus the DATA ×4 cradle for its base.  Everything else slices clean without sup
 
 | Part | Spec: time | g | Default: time | g | Slicer message (no supports) | Tree supports would add | Auto-orient |
 |---|---:|---:|---:|---:|---|---|---|
-| Tray | 3h55 | 108 | 3h58 | 102 | floating cantilever | +12.8 g, +62 min: under the runners (z 8) and the lips (z 20–22), both walls | could not place the 165 × 210 part after rotating: no rotation needed |
+| Tray (left gusset moved off C1, re-sliced: same numbers) | 3h55 | 108 | 3h58 | 102 | floating cantilever | +12.8 g, +62 min: under the runners (z 8) and the lips (z 20–22), both walls | could not place the 165 × 210 part after rotating: no rotation needed |
 | Floor plate | 2h08 | 54 | 2h12 | 51 | floating cantilever | +2.6 g, +13 min: under the runners | as designed |
 | Cap plate | 2h11 | 56 | 2h15 | 53 | floating cantilever | +2.7 g, +14 min: under the runners | as designed |
 | Drawer (with the cover pockets) | 2h03 | 64 | 2h15 | 59 | — | +0.2 g: the cable window's rear strip, rear right (z 0–4) | as designed |
@@ -129,7 +129,39 @@ The slicer raises nothing else on the covers: no support anywhere, the LED windo
 the ledges are 45°, the bumps are 45° both ways.  Change: 0.8 mm slots, or the 0.15 compensation of item 2,
 which widens a bed-side gap by 0.3.  Gain: the tabs free on the first print.
 
-**9. No change, for the record.**
+**9. Tray left ledge: accept the 38 mm bridge over the cable window and C1, print one tray before anything
+more — yes/no?**
+The gusset behind the row cable's window hit the node's C1 (8 × 10 electrolytic, its top 1.5 mm under the
+ledge), so it moved to y 40.25: the ledge's 10 mm overhang now runs free from the fascia to there, 38 mm
+(it was 28 to the old gusset), over the window (y 3.5–29.5, no wall under the ledge at all) and over C1.
+Re-sliced the same ways:
+- *Stock profile, no supports:* the ledge's first layer (z 20.8) is laid as Bambu's thick bridge (0.4 mm):
+  111 bridge segments, 17 of them over 30 mm, the longest 39.6 mm along the span at x 6.9, anchored on the
+  fascia and the gusset; the tip's perimeter hangs as a 32 mm overhang wall; 25 mm/s (`filament_bridge_speed`)
+  with the fan at 50 % (`overhang_fan_speed`).  The next layer (z 22.4) bridges crosswise in ≤ 14 mm runs.
+  Time and grams unchanged.
+- *Spec / fdm-profile settings (3 walls):* the three perimeters hang over the span as overhang walls and the
+  bridge infill between them is 28 mm.  `max_bridge_length` 30 or 40 changes nothing in the G-code with
+  supports off (it only drives the support decision), and the "floating cantilever" flag stays in every
+  run: it is the runners' (item 1).  With tree supports the slicer puts 0.5 m of interface under this span
+  (z 19.8–20.4), as it did under the 24 mm spans before.
+- *Sag (an estimate from PETG bridging practice, not from the slicer):* 0.3–0.8 mm at mid-span on the first
+  bridging layer, worst at the tip's free perimeter; C1 keeps 0.7 mm or more of its 1.5.  The drawer rides
+  on the ledge's top, 2.3 mm above — the 0.4 bridge layer, the cross-bridged second layer and four solid
+  layers — which prints flat: the layers above are laid on the slicer's planes, not on the sagged line, and
+  the cross bridging re-anchors them.  A drooped underside is a cosmetic face over the node.  The finished
+  ledge is a shelf on the wall, not a beam: it does not sag under the drawer.
+- *Smallest geometric fix that keeps C1 clear:* there is none in the tray.  A gusset at any y over C1
+  (30.5–38.8) clears its top — 1.5 under the ledge, across x 5.85–14.15 of the 2–12 overhang — only with an
+  underside at 9° or less (1.0 mm over 6.15), an 81° overhang, worse than the bridge; a shorter can would
+  have to be under 5 mm tall.  Between the window (to 29.5) and C1 (from 30.5) there is 1 mm, not a 2 mm
+  gusset.  A sloped underside over the span is the same slope, so the same hit; a post from the floor at
+  mid-span would stand on the node's PCB or in the cable window.  What would restore the gusset is C1
+  moved out of y 29.5–39.8 on a next spin of the node — a node decision, not a tray one.
+Gain of the yes: nothing to design; the bridge is within what PETG does at this speed on the H2D, C1 keeps
+its clearance, the sliding face is unaffected, and the first printed tray tells.
+
+**10. No change, for the record.**
 - Orientation: the slicer agrees with all 30; leave `tools/build.py` as it is.
 - Supports: never on the ladders or the cap strips (the trees go inside the bed-face grooves).  Nothing
   else needs them once items 1–3 are in.
@@ -144,5 +176,5 @@ which widens a bed-side gap by 0.3.  Gain: the tabs free on the first print.
   under the drawer's load and softens near the PSU; the clips were sized for PETG.
 - Camera pod lips: still rigid 0.8 mm bending across the layers; already decided in the design review
   (side-hinged tab), pending with Mechanics.
-- Tray left guide: its gusset is being moved (it hits the node's bulk capacitor); items 1 and 5 are on the
-  runner and the rear wall, not the guide, and the tray's numbers above will move by minutes and a gram.
+- Tray left guide: its gusset moved off the node's C1; the span it leaves is item 9.  Items 1 and 5 are on
+  the runner and the rear wall, not the guide.
