@@ -62,6 +62,12 @@ module upright() {
         translate([X_L + OW, Y_R - EPS, TOP - LATCH[0]]) cube([SLIT, UW + 2 * EPS, LATCH[0] + EPS]);
         // the slit's foot: a keyhole, so the finger's root corner is round (and the mesh has no knife edge)
         translate([xs - SLIT / 2, Y_R - EPS, TOP - LATCH[0]]) rotate([-90, 0, 0]) cylinder(r = ROOT_R, h = UW + 2 * EPS, $fn = 32);
+        // the visual language: R1.5 on its four vertical edges, a 0.8 round on its outer top edges
+        for (c = [[X_L, Y_F - UW, 0, 0], [X_L, Y_R + UW, 0, 1], [x1, Y_F - UW, 1, 0], [x1, Y_R + UW, 1, 1]])
+            translate([c[0], c[1], V2_Z0 - EPS]) mirror([c[2], 0, 0]) mirror([0, c[3], 0])
+                multmatrix([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]) edge_round(TOP - V2_Z0 + 2 * EPS, r = VL_R[1]);
+        translate([X_L, Y_F - UW, TOP]) mirror([0, 0, 1]) edge_round(x1 - X_L);
+        translate([X_L, Y_R + UW, TOP]) rotate([0, 0, -90]) mirror([0, 0, 1]) edge_round(Y_R + UW - (Y_F - UW));
     }
     translate([xs, 0, TOP]) rotate([90, 0, 90]) linear_extrude(x1 - xs)
         polygon([[Y_R + UW, 0], [Y_R, 0], [Y_R, 0.2], [Y_R - GAP - LATCH[1], 0.2], [Y_R - GAP - LATCH[1], 0.6],

@@ -60,9 +60,9 @@ module jumper_2d(k)
     in_row(k) translate([JUMPER_Y[0], JUMPER_Z0 - 0.5]) square([JUMPER_Y[1] - JUMPER_Y[0], BAND_B + 2]);
 
 // ------------------------------------------------------------------ 3D features
-module ridge3(k)                     // along line z = 0 of row k (a top edge)
+module ridge3(k)                     // along line z = 0 of row k (a top edge), short of the rounded corners
     intersection() {
-        ladder_strip3();
+        translate([PF + VL_R[0], -1000, -1]) cube([PR - PF - 2 * VL_R[0], 3000, PANEL_T + 2]);
         difference() {
             in_row3(k) hull() {
                 translate([-60, -0.01, (PANEL_T - RIDGE_W) / 2]) cube([CARRIER_D + 120, 0.02, RIDGE_W]);
@@ -96,13 +96,23 @@ module brace_holes3(zs)                // the brace screws' holes in the rear ed
         }
     }
 
+// the marks on a row ladder's top face (as printed): its row letter on the front post, and FRONT with an arrow
+// in the top band, near the front (lib/common.scad › the visual language)
+module row_marks3(k) translate([0, 0, PANEL_T]) {
+    translate([PF + POST_W / 2, line_z(k, BAND_B + 30, PF + POST_W / 2)]) deboss(chr(65 + k), cap = 6);
+    in_row3(k + 1) translate([10, -BAND_T / 2]) {
+        translate([0, -2.5, -VL_DEPTH]) linear_extrude(VL_DEPTH + EPS) polygon([[0, 2.5], [5, 0], [5, 5]]);
+        translate([7, 0]) deboss("FRONT", cap = 4.5, halign = "left");
+    }
+}
+
 // ------------------------------------------------------------------ parts
 module ladder_row(k) {
     difference() {
         union() {
             linear_extrude(PANEL_T) difference() {
                 union() {
-                    band_quad(k, 0, k + 1, 0);
+                    offset(r = VL_R[0]) offset(delta = -VL_R[0]) band_quad(k, 0, k + 1, 0);   // R3 corners
                     each_hook(k) hook_local();
                 }
                 windows_2d(k, BAND_B, k + 1, -BAND_T);
@@ -116,6 +126,7 @@ module ladder_row(k) {
         grooves3(k);
         notch3(k);
         brace_holes3(brace_z(k));
+        row_marks3(k);
     }
 }
 
@@ -123,7 +134,8 @@ module ladder_base() {
     difference() {
         union() {
             linear_extrude(PANEL_T) difference() {
-                polygon([[PF, 0], [PR, 0], [PR, line_z(0, 0, PR)], [PF, line_z(0, 0, PF)]]);
+                offset(r = VL_R[0]) offset(delta = -VL_R[0])
+                    polygon([[PF, 0], [PR, 0], [PR, line_z(0, 0, PR)], [PF, line_z(0, 0, PF)]]);
                 windows_2d(0, 0, 0, -BAND_T, z0 = FLOOR_BAND);
                 each_hook(0) hook_slot_local();
                 for (ly = LATCH_Y) translate([FLOOR_Y0 + ly - 0.2, GROOVE_Z[0]]) square([LATCH_WIN, GROOVE_Z[1] - GROOVE_Z[0]]);
@@ -141,8 +153,7 @@ module ladder_cap(k) {
     difference() {
         linear_extrude(PANEL_T) difference() {
             union() {
-                offset(r = 3) offset(delta = -3) band_quad(k, 0, k, BAND_B);
-                band_quad(k, 0, k, BAND_B / 2);              // keep the bottom corners sharp
+                offset(r = VL_R[0]) offset(delta = -VL_R[0]) band_quad(k, 0, k, BAND_B);   // R3, as the rows
                 each_hook(k) hook_local();
             }
             each_hook(k) hook_relief_local();

@@ -3937,22 +3937,22 @@
 {
 "part": "ladder_a",
 "qty": 5,
-"grams_each": 48.7,
-"grams_total": 243.3,
+"grams_each": 48.6,
+"grams_total": 242.8,
 "stl": "mechanical/stl/ladder_a.stl"
 },
 {
 "part": "ladder_b",
 "qty": 5,
-"grams_each": 48.7,
-"grams_total": 243.3,
+"grams_each": 48.6,
+"grams_total": 242.8,
 "stl": "mechanical/stl/ladder_b.stl"
 },
 {
 "part": "ladder_base",
 "qty": 5,
-"grams_each": 49.1,
-"grams_total": 245.6,
+"grams_each": 49.0,
+"grams_total": 245.2,
 "stl": "mechanical/stl/ladder_base.stl"
 },
 {
@@ -4084,8 +4084,8 @@
 {
 "part": "x4_cradle",
 "qty": 2,
-"grams_each": 8.3,
-"grams_total": 16.6,
+"grams_each": 8.1,
+"grams_total": 16.2,
 "stl": "mechanical/stl/x4_cradle.stl"
 }
 ],
