@@ -32,7 +32,7 @@ session's print plan (H2D, 0.20 mm Standard, PETG).
 |---|---|---|---|---|---|---|---|
 | 1 | Tray | The guide lips' undersides are 2.5 mm flat shelves in the air (2 × 473 mm²) and each ledge's first 48 mm have no gusset: both print as droop, right where the drawer's flange needs 0.4 mm | 45° underside on the lips (the tip keeps 3.4 mm over the ledge), a gusset at y 10, the fascia raised under the ledge | ½ day | low | obvious | [tray_guide](../mechanical/review/pairs/tray_guide.png) |
 | 2 | Cradle | The latch finger bends across the layers at 0.72 % (FEM peak 2 %) on every board swap; allowable 0.5 % | finger 40 mm free, hook 0.8, R0.8 root, slit 1.0: 0.25 % | 1 h | low | obvious | [cradle_finger](../mechanical/review/pairs/cradle_finger.png) |
-| 3 | Ladder | 60 heat-set inserts in a 7.4 mm edge: 1.7 mm walls on the faces that keep 0.2 mm to the trays, horizontal holes that print oval | a DIN 562 M3 square nut in a pocket open to the top face, a plain Ø3.4 hole (SolidCraft: 0.2 mm all round); −60 inserts, no iron, nothing to ream | ½ day | low | **user** (recommended) | [ladder_nut_trap](../mechanical/review/pairs/ladder_nut_trap.png) |
+| 3 | Ladder | 60 heat-set inserts in a 7.4 mm edge: 1.7 mm walls on the faces that keep 0.2 mm to the trays, horizontal holes that print oval | a DIN 562 M3 square nut in a pocket open to the top face, a plain Ø3.4 hole (SolidCraft: 0.2 mm all round); −60 inserts, no iron, nothing to ream | ½ day | low | **decided 2026-10-21: nut traps on the ladders; inserts stay everywhere else** | [ladder_nut_trap](../mechanical/review/pairs/ladder_nut_trap.png) |
 | 4 | Pegs | The cam base's split pivot bends 0.25 mm per half across the layers: 2.4 % (FEM 2.5 %), allowable 1 % | Ø4.4 × 2 relief in the column's top, slit 6.5, head Ø3.7: 0.7 % | 1 h | low | obvious | [cam_pin](../mechanical/review/pairs/cam_pin.png) |
 | 5 | Camera pod | The sleeve's snap lips bend 1.6 mm vertical walls across the layers: 1.3 % (FEM 3.3 %) every time the camera comes out | two side-hinged tabs (slits on three sides, hinge vertical): 0.75 % in the print plane | 2 h | low | obvious (the case is still a placeholder) | [sleeve_tab](../mechanical/review/pairs/sleeve_tab.png) |
 | 6 | Ladder | The stacking hooks: 2.0 % in the print plane, fine for a one-off, but the FEM shows 56 MPa at the square root (1.55 × the beam figure) | root 10 mm (was 7), R0.6 at the relief's ends: 1.3 %, the peak ≈ 1.2 × | 1 h | low | obvious | [ladder_hook](../mechanical/review/pairs/ladder_hook.png) |
@@ -71,6 +71,13 @@ What stays as it is: the drawer front's scoop, the power box (already the refere
 ![The visual language on the real drawer: r 1.2 edges and a blank label today; R3, a 0.5 chamfer at the bed, the ID inlaid and the port numbers debossed proposed](../mechanical/review/pairs/visual_language.png)
 
 ## Fasteners: inserts or nut traps
+
+**Decided (user, 2026-10-21):** square nuts in a pocket for the ladders' brace screws; heat-set inserts
+stay where a boss and a vertical hole give them their strength (the node, the pods, the plates, the power
+box).  The numbers behind it: an M3 insert in PETG holds ≈ 350–450 N when its boss has ≥ 2 mm of wall and
+a round, vertical hole; a square nut on 2.2 mm of in-plane wall ≈ 600–1,000 N; an M3 thread-forming screw
+in a Ø2.5 pilot (the simplest, no brass, a few cycles) ≈ 200–300 N over 8 mm.  The ladder's edge is the
+insert's worst case, not the brace's load (≈ 50 N of preload).
 
 | Joint | Today | Verdict |
 |---|---|---|
@@ -288,5 +295,5 @@ For Mechanics, in one pass (about 2 days), each a small change in the SCAD:
    edges and marks; `drawer.scad` loses the v1 ledges.
 Then the STLs, `bom/README.md`, the notice (when the design freezes) and `docs/mechanical.md`.
 
-The user's calls: nut traps on the ladders (3), the anchor in the tray (10), the ID inlay (12), four
-screw types (13), a printed detent (14), 2 pod screws (16), the covers (17).
+Decided: nut traps on the ladders (3).  The user's calls still open: the anchor in the tray (10), the ID inlay
+(12), four screw types (13), a printed detent (14), 2 pod screws (16), the covers (17).
