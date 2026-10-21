@@ -113,6 +113,32 @@ daisy-chained bay to bay through the ladders → each bay node's own 60 V LMR516
 buck to 5 V.  Details and alternatives (a 24 V brick, internal mains supply,
 PoE++) are in [power.md](power.md); the rack bus is in [can.md](can.md).
 
+## Radio: the nodes' antennas and the rack's Wi-Fi
+
+Each node's ESP32-S3-WROOM-1 has its PCB antenna on the node's rear edge, in the tray under the
+drawer, flat and pointing to the back of the bay.  On the node, its keep-out holds on every layer
+(the rear 6 mm, ±24 mm).  What is around it, in a closed bay (review of 2026-10-21):
+
+| What | From the antenna | Note |
+|---|---|---|
+| The drawer floor, the plate | 12.5 / 15–20 mm above | PETG |
+| The DUT boards | 25–32 mm above.  In 6 of 8 bays within 4 mm sideways, in 2 straight over it | the closest copper, and often a radio of its own (nRF DK, GIGA R1, UNO R4 WiFi) |
+| The camera lead (camera bays) | 30 mm beside its right end, routed as in [cabling.md](cabling.md) | 18 mm if run straight back from J6 |
+| The DATA lead | 50 mm (J7), 55 mm (the chain's fixed end) | USB 2.0 high speed on a twisted pair |
+| The DATA ×4 v2 | 117 mm to its hub's 24 MHz crystal, 126 mm to the USB2517I; behind and 60–70 mm above | USB 2.0 only.  Its PLL's 5th harmonic is at 2.400 GHz, just under channel 1 |
+| The next node | ≈ 166 mm sideways, ≈ 165 mm up or down | |
+
+So, for the rack's Wi-Fi:
+- **Use one channel** for the nodes and the Wi-Fi DUTs, 6 or 11 (not 1), at 20 MHz (set the AP's
+  2.4 GHz radio to 20 MHz).  Nodes 17 cm apart on neighbouring channels block each other; on one
+  channel they take turns.
+- **Cap the nodes' transmit power at ≈ 10 dBm** when the AP is a few metres away.  That still leaves
+  30 dB or more of margin, and puts 10 dB less into the DUTs' radios 3 cm above.
+- **Put the AP 1–3 m away, behind or beside the rack, at mid-height**, not on top of it.  A node
+  looks out through the back and the sides of its bay; above it are its drawer and its DUT.
+- **Keep big DUT boards off the plate's left-rear part** when the pegs allow: 70–100 mm from the
+  plate's front edge, its left 50 mm.  That is right over the antenna.
+
 ## Software
 
 Each node runs Zephyr: `uhc_dwc2` (ESP32-S3 OTG in host mode) + the
