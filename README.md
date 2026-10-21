@@ -109,12 +109,13 @@ The photo shots (`docs/img/photo-*.jpg`) use their own scene: a small office
 lit through a window, PETG with 0.2 mm layer lines and
 rounded edges, scanned oak and plaster (CC0 textures from Poly Haven), a laptop
 showing a Zephyr shell, wired to bay B4 by a USB-C cable that hangs as a real
-one would (a catenary), depth of field and lens effects:
+one would (a catenary), depth of field, bloom and a vignette, rendered at 2× and averaged down:
 
 ```bash
 python tools/fetch_render_assets.py                     # CC0 textures + vendor board models → render/assets/
 python tools/board_models.py                            # normalise the board models (docs/boards-3d.md)
 python render/screen_terminal.py                        # the laptop's screen → render/assets/
+node tools/lvgl_frame.mjs music 480 800                 # B2's GIGA display: one frame of the viewer's LVGL demo
 python tools/assembly_glb.py --hq --with-pc-cable --open-bays B3 --out render/assembly-photo.glb
 python tools/blender_live.py exec render/live_photo.py build
 python tools/blender_live.py exec render/live_photo.py shot desk          # desk, drawer, detail → docs/img/photo-*.jpg

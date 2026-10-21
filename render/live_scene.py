@@ -60,6 +60,9 @@ for ob in rack.all_objects:
         if ob.name.startswith("led"):
             if "Emission Strength" in bsdf.inputs:
                 bsdf.inputs["Emission Strength"].default_value = 6.0
+        if ob.name.startswith("screen"):          # a lit display behind glass (tools/assembly_glb.py › screen_quad)
+            bsdf.inputs["Roughness"].default_value = 0.1
+            bsdf.inputs["Emission Strength"].default_value = 0.9
         m["hw_tweaked"] = True
 
 # --- studio: world gradient, area lights, floor -----------------------------------

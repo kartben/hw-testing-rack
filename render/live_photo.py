@@ -146,6 +146,14 @@ def dress(rack):
                 slot.material = simple(f"photo-cable-{src.name}", col, rough=0.5, coat=0.15)
             elif cat == "led":
                 slot.material = simple(f"photo-led-{src.name}", col, rough=0.3, emission=12.0)
+            elif cat == "screen" and src and src.use_nodes:
+                # the LVGL frame (tools/assembly_glb.py › screen_quad): lit, behind glossy glass
+                bsdf = next((n for n in src.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+                if bsdf:
+                    bsdf.inputs["Roughness"].default_value = 0.08
+                    bsdf.inputs["Coat Weight"].default_value = 0.6
+                    bsdf.inputs["Coat Roughness"].default_value = 0.03
+                    bsdf.inputs["Emission Strength"].default_value = 0.7
             elif cat in ("pcb", "boards", "xiao") and src and src.use_nodes:
                 bsdf = next((n for n in src.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
                 if bsdf and not src.get("photo"):

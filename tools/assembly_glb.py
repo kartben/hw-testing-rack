@@ -131,6 +131,28 @@ def with_mat(m: trimesh.Trimesh, material) -> trimesh.Trimesh:
     return m
 
 
+LVGL_FRAMES = REPO / "render" / "assets" / "lvgl"       # tools/lvgl_frame.mjs output (not committed)
+
+
+def screen_quad(sc: dict):
+    """A board's display lit with one frame of the viewer's LVGL demo (rack.json › boards › screen: the image's
+    bottom-left, bottom-right and top-left corners in the board's frame, the glass's height): a textured,
+    emissive quad 0.05 mm over the glass.  None when tools/lvgl_frame.mjs hasn't written the frame."""
+    from PIL import Image
+    png = LVGL_FRAMES / f"{sc.get('demo', 'music')}-{sc['px'][0]}x{sc['px'][1]}.png"
+    if not png.exists():
+        return None
+    z = sc["z"] + 0.05
+    bl, br, tl = (np.array([*sc[k], z], float) for k in ("bl", "br", "tl"))
+    v = np.array([bl, br, br + tl - bl, tl])
+    q = trimesh.Trimesh(vertices=v, faces=[[0, 1, 2], [0, 2, 3]], process=False)
+    img = Image.open(png).convert("RGB")
+    material = PBRMaterial(baseColorTexture=img, emissiveTexture=img, emissiveFactor=[1.0, 1.0, 1.0],
+                           metallicFactor=0.0, roughnessFactor=0.15)
+    q.visual = trimesh.visual.TextureVisuals(uv=[[0, 0], [1, 0], [1, 1], [0, 1]], material=material)
+    return q
+
+
 def hex_rgba(h):
     h = h.lstrip("#")
     return [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)] + [1.0]
@@ -369,6 +391,9 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
     for b in scene_json["boards"]:
         for m in real_board(b) or board_meshes(b):
             add(m, f"boards:{b['id']}", place("row", b["row"], translate(np.add(b["pos"], [0, drawer_dy(b), 0]))),
+                b.get("bay"))
+        if b.get("screen") and (q := screen_quad(b["screen"])) is not None:
+            add(q, f"screen:{b['id']}", place("row", b["row"], translate(np.add(b["pos"], [0, drawer_dy(b), 0]))),
                 b.get("bay"))
     for p in scene_json["pcbs"]:
         dy = drawer_dy(p) if p.get("movable") else 0.0
