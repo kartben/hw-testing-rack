@@ -3406,7 +3406,7 @@
 "qty": 3.1,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈2.7 kg estimated + 10 % waste, 175 parts",
+"notes": "≈2.7 kg estimated + 10 % waste, 172 parts",
 "ext_eur": 62.0
 },
 {
@@ -3590,7 +3590,7 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK)",
+"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: BEAGLEPLAY, GIGA + display, WIO TERMINAL)",
 "supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)",
 "qty": 3,
 "unit_eur": 2.5,
@@ -3600,13 +3600,13 @@
 },
 {
 "category": "Cables",
-"item": "USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: XIAO)",
+"item": "USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: NANO MATTER, XIAO)",
 "supplier": "AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps)",
-"qty": 2,
+"qty": 3,
 "unit_eur": 2.0,
 "notes": "straight at both ends; any short C ↔ C that states data (many short ones are charge-only)",
 "unit": "pcs",
-"ext_eur": 4.0
+"ext_eur": 6.0
 },
 {
 "category": "Cables",
@@ -3620,13 +3620,13 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK)",
+"item": "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64)",
 "supplier": "AliExpress 2251832791887129 (HOQO, \"to Micro Male\", 25 cm)",
-"qty": 3,
+"qty": 2,
 "unit_eur": 1.0,
 "notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end any up / down bend",
 "unit": "pcs",
-"ext_eur": 3.0
+"ext_eur": 2.0
 },
 {
 "category": "Cables",
@@ -3642,11 +3642,11 @@
 "category": "Cables",
 "item": "Micro-B 90° adapter, male → female, up and down, one of each per board",
 "supplier": "AliExpress (DIY-018, \"UP\" and \"DOWN\")",
-"qty": 6,
+"qty": 4,
 "unit_eur": 1.0,
 "notes": "keep the one whose female faces up once plugged into the board (the cable's straight plug stands on it, its cable leaves upwards); the other is a spare",
 "unit": "pcs",
-"ext_eur": 6.0
+"ext_eur": 4.0
 },
 {
 "category": "Analyzer",
@@ -3742,12 +3742,12 @@
 "Printed parts": 62.0,
 "Fasteners": 7.82,
 "Motion": 18.85,
-"Cables": 79.69999999999999,
+"Cables": 78.69999999999999,
 "Analyzer": 7.0,
 "Power": 58.0,
 "Cameras": 64.1
 },
-"total_eur": 1040.16,
+"total_eur": 1039.16,
 "prints": [
 {
 "part": "bay_label_a1",
@@ -3974,11 +3974,11 @@
 "stl": "mechanical/stl/ladder_cap.stl"
 },
 {
-"part": "peg_base_h10",
-"qty": 10,
-"grams_each": 0.4,
-"grams_total": 4.4,
-"stl": "mechanical/stl/peg_base_h10.stl"
+"part": "peg_base_h11",
+"qty": 3,
+"grams_each": 0.5,
+"grams_total": 1.4,
+"stl": "mechanical/stl/peg_base_h11.stl"
 },
 {
 "part": "peg_base_h12",
@@ -3989,9 +3989,9 @@
 },
 {
 "part": "peg_base_h6",
-"qty": 4,
+"qty": 9,
 "grams_each": 0.3,
-"grams_total": 1.3,
+"grams_total": 2.8,
 "stl": "mechanical/stl/peg_base_h6.stl"
 },
 {
@@ -4010,9 +4010,9 @@
 },
 {
 "part": "peg_cam",
-"qty": 22,
+"qty": 20,
 "grams_each": 0.2,
-"grams_total": 4.2,
+"grams_total": 3.9,
 "stl": "mechanical/stl/peg_cam.stl"
 },
 {
@@ -4030,11 +4030,11 @@
 "stl": "mechanical/stl/peg_pin_d32_h12.stl"
 },
 {
-"part": "peg_stop_h10",
-"qty": 10,
+"part": "peg_stop_h11",
+"qty": 4,
 "grams_each": 0.5,
-"grams_total": 5.1,
-"stl": "mechanical/stl/peg_stop_h10.stl"
+"grams_total": 2.1,
+"stl": "mechanical/stl/peg_stop_h11.stl"
 },
 {
 "part": "peg_stop_h12",
@@ -4045,9 +4045,9 @@
 },
 {
 "part": "peg_stop_h6",
-"qty": 5,
+"qty": 12,
 "grams_each": 0.4,
-"grams_total": 2.0,
+"grams_total": 4.8,
 "stl": "mechanical/stl/peg_stop_h6.stl"
 },
 {

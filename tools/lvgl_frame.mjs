@@ -4,6 +4,7 @@
 //
 //   node tools/lvgl_frame.mjs [music|widgets] [w] [h] [ms] [out.png]
 //   node tools/lvgl_frame.mjs music 480 800 6000 render/assets/lvgl/music-480x800.png
+//   node tools/lvgl_frame.mjs widgets 320 240 40000      # A4's Wio Terminal: the slideshow's Shop tab, its bar chart
 //
 // ms: how long LVGL runs before the frame is taken, in 33 ms ticks (the music demo's intro takes ~3 s).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';

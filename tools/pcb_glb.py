@@ -81,11 +81,11 @@ def paint(art: dict, side: str) -> Image.Image:
     p = "F" if side == "top" else "B"
     cu, opening, silk = layer(f"{p}.Cu"), layer(f"{p}.Mask"), layer(f"{p}.SilkS")
     img = np.empty((size[1], size[0], 3), np.uint8)
-    img[:] = MASK
-    img[cu] = MASK_CU
+    img[:] = art.get("mask", MASK)              # a maker's board in its own colours (tools/vendor_pcb.py)
+    img[cu] = art.get("mask_cu", MASK_CU)
     img[opening & cu] = FINISHES.get(art.get("finish"), FINISH)
     img[opening & ~cu] = LAMINATE
-    img[silk & ~opening] = SILK
+    img[silk & ~opening] = art.get("silk", SILK)
     out = Image.fromarray(img)
     d = ImageDraw.Draw(out)
     for x, y, dia in art["holes"]:
@@ -431,17 +431,20 @@ FROM_STEP = ("data-port-x4-v2",)     # boards whose fab GLB is their STEP's (eve
 VARIANTS = {"data-port-x4-v2": ("base",)}   # and their assembly variants, each its own model: <board>-<variant>.glb
 
 
-def main(boards=("bay-node", "power-hub", "data-port-x4-v2")):
+VIEWER_BOARDS = ("bay-node", "power-hub", "data-port", "camera-pod", "data-port-x4-v2")   # the boards the viewer draws
+
+
+def main(boards=VIEWER_BOARDS):
     """  pcb_glb.py [--strict] [board ...]     KiCad fab GLBs → site/assets/pcb (+ stand-ins, 3D coverage); a
                                                 FROM_STEP board's (its STEP's GLB) → convert_bodies
          pcb_glb.py --standins [board ...]      redo only the stand-ins of the viewer GLBs
          pcb_glb.py --check [board ...]         the 3D coverage report alone; exit 1 if a part has no body"""
     boards = list(boards)
     strict = "--strict" in boards
-    boards = [b for b in boards if b != "--strict"] or ["bay-node", "power-hub", "data-port-x4-v2"]
+    boards = [b for b in boards if b != "--strict"] or list(VIEWER_BOARDS)
     if boards[0] == "--check":
         bad = 0
-        for b in boards[1:] or ("bay-node", "power-hub"):
+        for b in boards[1:] or ("bay-node", "power-hub", "data-port", "camera-pod"):
             try:
                 check_coverage(b, strict=True)
             except SystemExit as e:

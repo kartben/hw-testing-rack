@@ -36,6 +36,7 @@ WEB_PARTS = {
     "mega_camera": ("parts/camera_pod.scad", {"PART": "mega"}),
     "podpcb": ("parts/camera_pod.scad", {"PART": "podpcb"}),
     "podpcb_parts": ("parts/camera_pod.scad", {"PART": "podpcb_parts"}),
+    "podpcb_dupont": ("parts/camera_pod.scad", {"PART": "podpcb_dupont"}),     # with the KiCad pod board
     "plate": ("parts/board_plate.scad", {}),                                 # the honeycomb plate
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {"PART": "lid"}),
@@ -306,7 +307,7 @@ def board_model(bid: str, bd: dict) -> dict | None:
 
 def board_screen(bd: dict) -> dict | None:
     """A board's display (boards.yaml › screen: the active area's bottom-left corner and size in the drawing,
-    `top`: where the image's top edge points in the drawing, +y (default) or -x, the glass's height above the
+    `top`: where the image's top edge points in the drawing, +y (default), -y or -x, the glass's height above the
     PCB's underside): the image's bottom-left, bottom-right and top-left corners in the viewer's frame, for a
     live LVGL texture."""
     sc = bd.get("screen")
@@ -314,6 +315,7 @@ def board_screen(bd: dict) -> dict | None:
         return None
     (x, y), (w, h) = sc["at"], sc["size"]
     corners = {"+y": [(x, y), (x + w, y), (x, y + h)],            # landscape: width along +x
+               "-y": [(x + w, y + h), (x, y + h), (x + w, y)],    # upside down: width along -x, top towards -y
                "-x": [(x + w, y), (x + w, y + h), (x, y)]}        # turned: width along +y, top towards -x
     bl, br, tl = board_frame(bd, corners[sc.get("top", "+y")])
     return {"bl": bl, "br": br, "tl": tl, "z": sc["z"], "px": sc["px"], "demo": sc.get("demo", "music")}
@@ -677,7 +679,7 @@ def camera_lead(j6, x0, row_h, tilt, lens, mount, depth, cp):
     b0 = (lx - (cp["leds"][0] + cp["leds"][-1]) / 2, ly + POD_SLEEVE_Y / 2 + 0.5)    # the board's KiCad origin
     board = lambda kx, ky, z: pod((b0[0] + kx, b0[1] + ky, z))
     p0, d = plug_exit(j6)
-    xs, top = min(p0[0], x0 + 78.0), up_z - 2.0
+    xs, top = x0 + 76.0, up_z - 2.0       # the rear slot's right end: 30 mm from the node's antenna (cabling.md)
     zr = 12.0                                         # along the plenum floor, through the rear slot
     yc = depth + 2.5                                  # the climb, just behind the tray's rear wall
     j1 = board(cp["size"][0], cp["lead"], POD_FACE_Z - 2.8)
@@ -726,11 +728,12 @@ def cable_free_length(cab, a, b):
     return cab.get("length", 120) - plug(a) - plug(b)
 
 
-def catenary_cable(a, touchdown, b, r=2.0):
+def catenary_cable(a, touchdown, b, r=2.0, via=None):
     """A cable hanging from plug a under its own weight (a catenary) to `touchdown` on the floor,
-    then lying there up to plug b.  Frame coordinates."""
+    then lying there up to plug b.  Frame coordinates.  via: the points it runs through first (along a
+    fascia to a cable tie): it hangs from the last."""
     s, ta = plug_exit(a)
-    pts = [s + ta * k for k in (0.0, 8.0, 16.0)]
+    pts = [s + ta * k for k in (0.0, 8.0, 16.0)] if via is None else [s] + [np.asarray(p, float) for p in via]
     s = pts[-1]
     t = np.array([touchdown[0], touchdown[1], r])
     horiz = np.array([t[0] - s[0], t[1] - s[1], 0.0])
@@ -1266,9 +1269,17 @@ def build(rack) -> Path:
             ph_xy = (bx4 + q["size"][0], dy + dp_y0 + q["size"][1] - q["lead"][1])     # J1's mouth, right edge
             ph_dir = [-1, 0, 0]
         else:
-            for k in ("pcb", "usb", "ph"):
-                add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
-                    movable=drawer)
+            if (SITE_ASSETS / "pcb" / "data-port.glb").exists():
+                # the routed board (tools/pcb_glb.py: x right, -KiCad y, its component face up): KiCad y = 0 is
+                # its rear edge, its front edge (the USB-C's mouth) against the port wall
+                items["pcbs"].append({"board": "data-port", "bay": bid, "row": i, "space": "row", "layer": "drawers",
+                                      "movable": drawer, "pos": [round(dxw_ + dp_x0, 3),
+                                                                 round(dy + dp_y0 + dp["size"][1], 3),
+                                                                 round(plenum + dp_z, 3)]})
+            else:                       # its stand-in: the board, its USB-C and its PH (parts/usb_plugs.scad)
+                for k in ("pcb", "usb", "ph"):
+                    add(f"dataport_{k}", (dxw_ + dp_x0, dy + dp_y0, plenum + dp_z), row=i, layer="drawers", bay=bid,
+                        movable=drawer)
             ph_xy = (dxw_ + dp_x0 + dp["ph"], dy + dp_y0 + dp["size"][1])
             ph_dir = [0, -1, 0]
         j7 = {"at": [x0 + node["x0"] + node["size"][0], rack.node_front_y + node["size"][1] - node["right"]["data"],
@@ -1336,6 +1347,8 @@ def build(rack) -> Path:
                  "type": "usb-c", "style": "straight" if style == "straight" else "right"}
         b_style = "straight" if style == "side" else style
         zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
+        if "z" in bd["usb"]:            # a whole device's connector: its centre this high above the plate
+            zc = bz - bd.get("standoff", 6) + bd["usb"]["z"]
         ux = o["usb_x"]
         if o["usb_side"]:
             end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": b_style}
@@ -1605,22 +1618,48 @@ def build(rack) -> Path:
                 fz = pcb_top + 1.6
                 o0 = np.array(rack.to_frame(i, (0, 0, 0)))
                 frame_dir = lambda v: [round(float(c), 4) for c in np.array(rack.to_frame(i, v)) - o0]  # noqa: E731
+                # a right-angle plug, its cable to the right along the tray's fascia to a cable tie round the
+                # right ladder's front post, then down the rack's side: nothing hangs in front of the bay below
                 pc_a = {"at": rack.to_frame(i, (fx, rack.node_front_y - 0.3, fz)), "dir": frame_dir((0, 1, 0)),
-                        "up": frame_dir((0, 0, 1)), "type": "usb-c", "style": "straight"}
+                        "up": frame_dir((1, 0, 0)), "type": "usb-c", "style": "right"}
                 # a laptop on the floor/desk to the right of the rack, its left-side USB-C port wired in
                 lap = [W + 270, -200, 0]
                 pc_b = {"at": [lap[0] - 156, lap[1] + 40, 7.5], "dir": [1, 0, 0], "type": "usb-c", "style": "straight"}
                 items["props"].append({"kind": "laptop", "space": "frame", "pos": lap, "size": [312, 218, 14],
                                        "lid_deg": 110, "bay": b.id})
-                cable(catenary_cable(pc_a, (W + 30, -150), pc_b), space="frame", kind="pc", bay=b.id,
-                      label="Laptop → front PC port (classic mode)", a="usb-c", b="usb-c", ends=[pc_a, pc_b],
-                      radius=2.0)
+                s0, _ = plug_exit(pc_a)
+                tie = np.array(rack.to_frame(i, (W + 2.5, rack.node_front_y - 6.0, fz - 1.0)))   # round the post
+                run = [s0 + (tie - s0) * t + np.array(frame_dir((0, 0, -1))) * 12.0 * t * (1 - t)  # a little sag
+                       for t in np.linspace(0.0, 1.0, 14)[1:]]
+                run.append(tie + np.array(frame_dir((0, 0, -1))) * 6.0 + np.array([3.0, 0, 0]))  # over its corner
+                cable(catenary_cable(pc_a, (tie[0] + 40, tie[1] - 60), pc_b, via=run), space="frame", kind="pc",
+                      bay=b.id, label="Laptop → front PC port (classic mode)", a="usb-c", b="usb-c",
+                      ends=[pc_a, pc_b], radius=2.0)
+                # the tie: a 2.5 mm black strap round the post (x W − 7.4 … W, from y 19) and the cable outside it
+                tx0, tx1, ty0, ty1, tz = W - 8.2, tie[0] + 4.0, tie[1] - 3.0, tie[1] + 8.0, tie[2] - 4.0
+                for p_, s_ in (((tx0, ty0), (tx1 - tx0, 1.0)), ((tx0, ty1 - 1.0), (tx1 - tx0, 1.0)),
+                               ((tx0, ty0), (1.0, ty1 - ty0)), ((tx1 - 1.0, ty0), (1.0, ty1 - ty0))):
+                    items["boxes"].append({"kind": "tie", "space": "frame", "layer": "ladders", "color": "#141414",
+                                           "pos": [round(p_[0], 2), round(p_[1], 2), round(tz, 2)],
+                                           "size": [round(s_[0], 2), round(s_[1], 2), 2.5]})
         # camera: an Arducam Mega in the printed pod under the ceiling (the bottom of the tray above, or the cap
         # plate), lens down at bay.camera_lens, wired to this bay's own node (J6).  The pod's parts are instances
         # (parts/camera_pod.scad); site/camera.js adds the light and the preview through its lens
         if b.id in cams:
             cm = raw["bay"]["camera_mount"]
-            for part in ("camera_pod", "camera_diffuser", "mega_camera", "podpcb", "podpcb_parts"):
+            pod_parts = ("camera_pod", "camera_diffuser", "mega_camera", "podpcb", "podpcb_parts")
+            if (SITE_ASSETS / "pcb" / "camera-pod.glb").exists():
+                # the routed pod board (tools/pcb_glb.py), components down: turned over about x, so KiCad's y
+                # runs along the carrier's (camera_pod.scad › board()); its back POD_GAP under the plate.  The
+                # Mega's Dupont housing on J2 stays an instance
+                cp, lens = raw["pcb"]["camera_pod"], raw["bay"]["camera_lens"]
+                b0 = (lens[0] - cm[0] - (cp["leds"][0] + cp["leds"][-1]) / 2, lens[1] - cm[1] + POD_SLEEVE_Y / 2 + 0.5)
+                items["pcbs"].append({"board": "camera-pod", "bay": b.id, "row": i + 1, "space": "row",
+                                      "layer": "cameras", "rot": [180, 0, 0],
+                                      "pos": [round(x0 + cm[0] + b0[0], 3), round(cm[1] + b0[1], 3),
+                                              round(POD_FACE_Z + cp["thickness"], 3)]})
+                pod_parts = pod_parts[:3] + ("podpcb_dupont",)
+            for part in pod_parts:
                 add(part, (x0 + cm[0], cm[1], 0), row=i + 1, layer="cameras", bay=b.id)
             items["cameras"].append({"bay": b.id, "row": i + 1, "space": "row", "layer": "cameras",
                                      **camera_view(x0, raw["bay"]["camera_lens"], raw["pcb"]["camera_pod"])})

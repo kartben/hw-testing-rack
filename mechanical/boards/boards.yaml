@@ -42,6 +42,10 @@ boards:
     standoff: 6
     height: 11
     color: "#00878f"
+    model: { web: true, recolour: { "#010a20": "#00828a" },
+             credit: "UNO R4 WiFi model © Arduino S.r.l., CC BY-SA 4.0 (recoloured)" }
+                            # Arduino's UNO R4 WiFi STEP (tools/fetch_render_assets.py), CC BY-SA 4.0: the viewer's copy
+                            # is published; its navy PCB → Arduino's teal (the Minima: the same outline, no matrix, no module)
     source: "Arduino ABX00080 datasheet, mechanical drawing"
     verified: true
     zephyr: { choices: ["arduino_uno_r4@minima", "arduino_uno_r4@wifi"], runner: pyocd,
@@ -80,11 +84,17 @@ boards:
     size: [70.0, 82.5]
     holes: [[10.87, 54.61], [59.13, 53.34], [43.89, 2.54]]
     hole_d: 3.2
-    usb: { edge: top, pos: 47.0, type: micro-b }    # MB1136 = mini-B, MB1367 = micro-AB
+    usb: { edge: top, pos: 35.0, type: micro-b }    # MB1367's ST-LINK V3E (Molex 105017, as its STEP); MB1136: mini-B at 47
     pegs: { keepout: [[left, 4, 60], [right, 4, 60]] }        # the morpho headers' pins under the long edges
     standoff: 12
     height: 12
     color: "#f2f2f2"
+    model: { flip: true, web: true, recolour: { "#003700": "#f4f4f2" },
+             credit: "NUCLEO-G474RE (MB1367) model © STMicroelectronics, Open Platform License Agreement" }
+                            # ST's STEP (tools/fetch_render_assets.py), published: ST's Open Platform License Agreement
+                            # lets it be distributed for testing boards based on ST products, which this rack does (the
+                            # user's call, 2026-10-21); flip: its morpho pins reach further below than its parts above;
+                            # its generic green PCB → the NUCLEO's white
     source: "ST UM1724 fig. 5 (holes drawing-derived, ±0.1 mm)"
     verified: true
     zephyr: { choices: [nucleo_c031c6, nucleo_f401re, nucleo_f446re, nucleo_g071rb, nucleo_g474re, nucleo_l476rg],
@@ -101,6 +111,9 @@ boards:
     standoff: 12
     height: 14
     color: "#f2f2f2"
+    model: { web: true, credit: "NUCLEO-U575ZI-Q (MB1549) model © STMicroelectronics, Open Platform License Agreement" }
+                            # ST's STEP (tools/fetch_render_assets.py), published as the NUCLEO-64's; its ST-LINK V3E
+                            # micro-B where the drawing has it
     source: "ST UM1974 fig. 6 (holes drawing-derived)"
     verified: true
     zephyr: { choices: [nucleo_f429zi, nucleo_f767zi, nucleo_h563zi, nucleo_h743zi, nucleo_u575zi_q],
@@ -192,6 +205,70 @@ boards:
     zephyr: { choices: [xiao_ble, xiao_esp32c3, xiao_esp32c6/esp32c6/hpcore, xiao_esp32s3/esp32s3/procpu, xiao_rp2040],
               note: "pick the runner with the platform (esp32, uf2, ...)" }
 
+  arduino-nano-matter:
+    name: Arduino Nano Matter (Silicon Labs MGM240S)
+    short: NANO MATTER
+    size: [17.78, 43.18]    # the Nano outline, its USB-C on a short edge (Arduino's STEP)
+    holes: []
+    fence: true
+    usb: { edge: top, pos: 8.89, type: usb-c }
+    standoff: 6             # no headers: its castellated pads on the long edges take the pegs' plastic lips, as a XIAO's
+    height: 4
+    color: "#00878f"
+    model: { rot: 180, web: true, recolour: { "#010a20": "#00828a" },
+             credit: "Nano Matter model © Arduino S.r.l., CC BY-SA 4.0 (recoloured)" }
+                            # Arduino's STEP (tools/fetch_render_assets.py), CC BY-SA 4.0: the viewer's copy is
+                            # published; its navy PCB → Arduino's teal
+    pcb_t: 1.6
+    source: "Arduino ABX00112 datasheet and STEP"
+    verified: true
+    zephyr: { platform: arduino_nano_matter, runner: openocd,
+              note: "its SAMD11 is a CMSIS-DAP probe on the USB-C; openocd needs Arduino's fork for the MG24's flash (or runner jlink)" }
+
+  beagleplay:
+    name: BeagleBoard.org BeaglePlay (TI AM6254 + CC1352P7)
+    short: BEAGLEPLAY
+    size: [80.0, 80.0]
+    holes: []
+    fence: true
+    usb: { edge: bottom, pos: 6.6, type: usb-c }     # its USB-C (power and gadget), at the end of the I/O edge (USB-A, HDMI, RJ45s)
+    standoff: 6
+    height: 14              # the RJ45 jacks
+    color: "#141414"
+    model: { web: true, recolour: { "#666666": "#141414" },
+             credit: "BeaglePlay model © Seeed Technology Co., Ltd and BeagleBoard.org Foundation, CC BY 4.0 (recoloured)" }
+                            # the makers' STEP (tools/fetch_render_assets.py), CC BY 4.0: the viewer's copy is published;
+                            # its grey PCB and copper → the board's black
+    source: "BeaglePlay rev A2 STEP (git.beagleboard.org/beagleplay/beagleplay, Design/)"
+    verified: true
+    zephyr: { choices: ["beagleplay/cc1352p7", "beagleplay/am6254/m4"],
+              note: "flashed from its own Linux (the CC1352: cc1352_flasher --play; the M4: remoteproc), over SSH on its USB gadget link: no host-side probe" }
+
+  wio-terminal:
+    name: Seeed Wio Terminal (Microchip ATSAMD51P19 + Realtek RTL8720DN)
+    short: WIO TERMINAL
+    # a whole device: its case lies on its back on the plate, the pegs' lips over its top edge (standoff + the
+    # 1.6 mm a board's edge would be = the case's 12.6 mm with its feet), its 2.4" LCD up, its USB-C on its bottom edge
+    size: [72.0, 57.0]
+    holes: []
+    fence: true
+    usb: { edge: bottom, pos: 36.0, type: usb-c, z: 6.3 }   # z: its centre above the plate (Seeed's model)
+    standoff: 11.0
+    height: 0.5
+    color: "#f2f2f0"
+    screen: { at: [11.52, 14.39], size: [48.96, 36.72], px: [320, 240], top: "-y", z: 1.6, demo: widgets }
+                            # the ILI9341's active area behind the front's clear window; the image turned so it reads from the
+                            # rack's front (its top towards the USB, the port wall: the firmware's display rotated 180°)
+    model: { flip: true, rot: 180, web: true, offset: [0, 0, -3.6],
+             recolour: { "#50676d": "#f2f2f0", "#ff5100": "#0b0c0e", "#000fff": "#2348d8" },
+             credit: "Wio Terminal model © Seeed Studio, Apache License 2.0 (recoloured)" }
+                            # Seeed's STEP of the whole device (tools/fetch_render_assets.py), Apache 2.0: published; its
+                            # design colours → white case, black glass, blue joystick
+    source: "Seeed OSHW-WioTerminal (Wio Terminal 3D.stp)"
+    verified: true
+    zephyr: { platform: wio_terminal, runner: bossac,
+              note: "its UF2 bootloader on the USB-C: a double reset enters it (the bay's AUX RESET); no on-board probe" }
+
   microbit-v2:
     name: BBC micro:bit v2
     short: MICRO:BIT
@@ -224,28 +301,35 @@ boards:
   nrf54l15-dk:
     name: Nordic nRF54L15 DK
     short: nRF54L15 DK
-    size: [64.0, 117.0]
+    size: [63.55, 117.05]   # Nordic's PCB (hardware files PCA10156 1.0.0)
     holes: []
     fence: true
-    usb: { edge: top, pos: 20.0, type: usb-c }
+    usb: { edge: top, pos: 24.0, type: usb-c }      # J3, the debugger's
     standoff: 10
     height: 12
-    color: "#1d3557"
-    source: "CNX Software (outline only)"
+    color: "#2c4763"
+    model: { rot: 180, mask: "#2c4763", vars: { PCBNUMBER: "PCA10156", PCBREVISION: "1.0.0" },
+             credit: "nRF54L15 DK model from Nordic Semiconductor's hardware files (PCA10156 1.0.0)" }
+                            # Nordic's Altium PCB through KiCad (tools/vendor_pcb.py), the renders only (no licence
+                            # stated); painted in its slate blue
+    source: "Nordic hardware files PCA10156 1.0.0 (outline, USB; its holes not taken over yet)"
     verified: false
     zephyr: { platform: nrf54l15dk/nrf54l15/cpuapp, runner: nrfutil }
 
   nrf52840-dk:
     name: Nordic nRF52840 DK
     short: nRF52840 DK
-    size: [64.0, 136.0]
+    size: [63.55, 136.58]   # Nordic's PCB (hardware files PCA10056 3.0.3)
     holes: []
     fence: true
-    usb: { edge: top, pos: 20.0, type: micro-b }
+    usb: { edge: top, pos: 31.8, type: micro-b }    # J2, the interface MCU's (IMCU USB), mid short edge
     standoff: 10
     height: 12
-    color: "#1d3557"
-    source: "approximate — measure your board"
+    color: "#174a78"
+    model: { rot: 180, mask: "#174a78", vars: { PRODUCTNAME: "nRF52840 DK", PCBNUMBER: "PCA10056", PCBREVISION: "3.0.3" },
+             credit: "nRF52840 DK model from Nordic Semiconductor's hardware files (PCA10056 3.0.3), Nordic 5-clause licence" }
+                            # Nordic's Altium PCB through KiCad (tools/vendor_pcb.py), painted in Nordic blue
+    source: "Nordic hardware files PCA10056 3.0.3 (outline, USB; its holes not taken over yet)"
     verified: false
     zephyr: { platform: nrf52840dk/nrf52840, runner: nrfutil }
 

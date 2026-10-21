@@ -161,7 +161,7 @@ def hex_rgba(h):
 def part_category(name):
     if name.endswith("_labels") or name.startswith("dataport_ph"):
         return "powerlabels"
-    if name == "mega_camera":
+    if name in ("mega_camera", "podpcb_dupont"):
         return "black"
     if name in ("camera_diffuser", "podpcb_parts"):          # white PETG, the LEDs and connectors
         return "powerlabels"
@@ -243,6 +243,7 @@ def chain_path(ch, frac):
 
 BOARD_MODELS = REPO / "render" / "assets" / "boards"      # tools/board_models.py output (not committed)
 _LIB = None
+_MODELS: dict = {}
 
 
 def real_board(b):
@@ -269,12 +270,12 @@ def real_board(b):
         # converted bay's board faces the port wall whatever its library orient (the scene's usb_side says)
         top_w = w if edge in ("top", "bottom") else l
         M = translate([0, top_w, 0]) @ rot_xyz([0, 0, -90]) @ M
-    s = trimesh.load(f, force="scene")
-    out = []
-    for node in s.graph.nodes_geometry:
-        tf, g = s.graph[node]
-        out.append(s.geometry[g].copy().apply_transform(M @ tf))
-    return out
+    if b["id"] not in _MODELS:          # its parts merged by material (board_models.by_material, as the viewer's
+        import board_models             # copy): a few dozen meshes rather than one per CAD body
+        sc, _ = board_models.by_material(board_models.baked(trimesh.load(f, force="scene")), b["id"])
+        _MODELS[b["id"]] = [sc.geometry[g].copy().apply_transform(tf) for tf, g in
+                            (sc.graph[n] for n in sc.graph.nodes_geometry)]
+    return [m.copy().apply_transform(M) for m in _MODELS[b["id"]]]
 
 
 def board_meshes(b):
@@ -306,7 +307,7 @@ def board_meshes(b):
 
 
 # stack-up order of one bay, for --explode-bay (multiples of the layer gap, along the shelf normal)
-BAY_LAYERS = [("dataport", 3), ("podpcb", 4), ("tray", 0), ("chain", 1), ("pcb", 1), ("led", 1), ("drawer", 3), ("plate", 4), ("boards", 5),
+BAY_LAYERS = [("pcb:data-port", 3), ("pcb:camera-pod", 4), ("dataport", 3), ("podpcb", 4), ("tray", 0), ("chain", 1), ("pcb", 1), ("led", 1), ("drawer", 3), ("plate", 4), ("boards", 5),
               ("camera", 4), ("mega", 4)]   # the pod already hangs a row pitch higher
 
 
@@ -335,7 +336,7 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         tf, g = parts.graph[node]
         geoms[node] = parts.geometry[g].copy().apply_transform(tf)
     pcb = {}
-    for name in ("bay-node", "power-hub", "data-port-x4-v2", "data-port-x4-v2-base"):
+    for name in ("bay-node", "power-hub", "data-port", "camera-pod", "data-port-x4-v2", "data-port-x4-v2-base"):
         # the v2's viewer copy is meshopt-compressed (trimesh can't read it): its plain twin from tools/pcb_glb.py
         f = REPO / "render" / "assets" / "pcb" / f"{name}.glb"
         f = f if f.exists() else ASSETS / "pcb" / f"{name}.glb"

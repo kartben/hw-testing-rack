@@ -129,11 +129,14 @@ module podpcb() translate([BOARD0[0], BOARD0[1], FACE_Z]) difference() {
 module podpcb_parts() translate([BOARD0[0], BOARD0[1], FACE_Z]) {
     translate([31, POD_LEAD_Y - 10, -5.6]) cube([8.65, 20, 5.6]);                           // J1, S8B-PH-SM4-TB
     translate([POD_HEADER[0] - 7.62, POD_HEADER[1] - 2.5, -2.5]) cube([15.24, 5, 2.5]);     // J2's plastic
-    translate([POD_HEADER[0] - 7.62, POD_HEADER[1] - 1.27, -2.5 - 14]) cube([15.24, 2.54, 14]);   // its Dupont housing
 }
+// the Mega cable's Dupont housing on J2 (with the board's KiCad model, the only stand-in left)
+module podpcb_dupont() translate([BOARD0[0], BOARD0[1], FACE_Z])
+    translate([POD_HEADER[0] - 7.62, POD_HEADER[1] - 1.27, -2.5 - 14]) cube([15.24, 2.54, 14]);
 
 if (PART == "pod") rotate([180, 0, 0]) pod();
 else if (PART == "diffuser") diffuser();
 else if (PART == "podpcb") podpcb();
-else if (PART == "podpcb_parts") podpcb_parts();
+else if (PART == "podpcb_parts") { podpcb_parts(); podpcb_dupont(); }
+else if (PART == "podpcb_dupont") podpcb_dupont();
 else mega();

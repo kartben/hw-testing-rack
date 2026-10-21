@@ -50,11 +50,13 @@ class Config(unittest.TestCase):
 
     def test_defaults_and_overrides(self):
         b = self.bays
-        self.assertEqual(b["A1"].platform, "nucleo_f401re")             # family resolved by the lab file
+        self.assertEqual(b["A1"].platform, "nucleo_g474re")             # family resolved by the lab file
         self.assertIsNone(b["A2"].platform)                             # family left open
         self.assertIn("nucleo_h743zi", b["A2"].choices)
-        self.assertEqual(b["A3"].platform, "nrf52840dk/nrf52840")      # from boards.yaml
-        self.assertEqual(b["A3"].runner, "nrfutil")
+        self.assertEqual(b["A4"].platform, "wio_terminal")              # from boards.yaml
+        self.assertEqual(b["A4"].runner, "bossac")
+        self.assertEqual(b["A3"].platform, "beagleplay/cc1352p7")       # a family, the lab file says which core
+        self.assertFalse(b["A3"].ci)                                    # flashed from its own Linux
         self.assertEqual(b["B2"].console, "aux")
         self.assertFalse(b["B4"].ci)
         self.assertEqual(b["B2"].host, "bay-b2.local")
@@ -89,11 +91,12 @@ class Config(unittest.TestCase):
             entries, warnings = bayctl.hwmap(self.bays, Path(tmp), "python3", "/opt/rack/tools/bayctl.py", None)
             by = {e["fixtures"][0]: e for e in entries}
             self.assertNotIn("bay:B4", by)                              # ci: false
+            self.assertNotIn("bay:A3", by)
             self.assertNotIn("bay:A2", by)                              # no platform: left out, with a warning
             self.assertTrue(any("bays.A2.platform" in w for w in warnings))
             a1 = by["bay:A1"]
             self.assertTrue(a1["connected"])
-            self.assertEqual(a1["id"], "066DFF515251717867193542")
+            self.assertEqual(a1["id"], "003A00283133510837363734")
             self.assertTrue(a1["serial"].startswith("/dev/serial/by-id/"))
             b2 = by["bay:B2"]                                           # GIGA R1: dfu-util, AUX console
             self.assertEqual(b2["runner"], "dfu-util")

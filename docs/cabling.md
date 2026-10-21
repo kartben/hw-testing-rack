@@ -81,7 +81,10 @@ the short cable adapts.  The BOM lists one per board type
 automatically (VBUS from the laptop is only sensed, never used: the board
 stays powered — and current-monitored — by the shelf).  Unplug and it's back
 on USB/IP.  Or simply unplug the short cable from the drawer port and use
-your own.
+your own.  A cable left plugged (a laptop beside the rack) takes a right-angle
+plug and runs along the tray's fascia to a cable tie round the nearest side
+ladder's front post, then down the rack's side: nothing hangs in front of the
+drawer below, which still opens.
 
 **AUX.**  For boards without a USB serial bridge or to drive RESET/BOOT:
 the node's JST PH 6 (GND, 3V3 ref, TX, RX, RESET, BOOT) can follow the same

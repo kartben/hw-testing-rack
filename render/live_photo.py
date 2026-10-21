@@ -162,7 +162,9 @@ def dress(rack):
                     r, g, b_, _ = bsdf.inputs["Base Color"].default_value
                     hi, lo = max(r, g, b_), min(r, g, b_)
                     sat = (hi - lo) / hi if hi else 0
-                    if cat != "pcb" and hi > 0.45 and (sat < 0.12 or (r > g > b_ and sat > 0.35 and hi > 0.5)):
+                    finished = src.name.startswith("finish-")          # a maker's model: tools/board_models.py
+                    if not finished and cat != "pcb" and hi > 0.45 and \
+                            (sat < 0.12 or (r > g > b_ and sat > 0.35 and hi > 0.5)):   # decided (a white PCB, a case)
                         bsdf.inputs["Metallic"].default_value = 1.0       # nickel shells, gold pins / pads
                         bsdf.inputs["Roughness"].default_value = 0.25
                     if bsdf.inputs["Metallic"].default_value < 0.5:
@@ -395,6 +397,74 @@ def usb_c_plug(name, tip, direction, coll):
     return tip + d * 0.0345
 
 
+def right_angle_plug(name, end, coll):
+    """A right-angle USB-C plug seated in a port (rack.json's cable end: `at` the port's face, `dir` into it,
+    `up` the way its cable leaves): nickel shell in the port, the overmold bent towards `up`, its relief."""
+    tip, d, up = Vector(end["at"]) / 1000.0, Vector(end["dir"]).normalized(), Vector(end["up"]).normalized()
+    nickel = simple("photo-nickel", (0.75, 0.74, 0.72), rough=0.22, metal=1.0)
+    mold = simple("photo-overmold", (0.035, 0.035, 0.038), rough=0.45, coat=0.1)
+    rot = (-d).to_track_quat("Z", "Y").to_euler()
+    box(f"{name}-shell", (0.0083, 0.0025, 0.0045), tip - d * 0.0012, nickel, coll, bevel=0.0009, rot=rot)
+    body = tip - d * 0.0068 + up * 0.0045                 # the overmold: behind the shell, its bend towards `up`
+    box(f"{name}-mold", (0.0125, 0.0068, 0.0125), body, mold, coll, bevel=0.0022,
+        rot=up.to_track_quat("Z", "Y").to_euler())
+    relief = bpy.data.meshes.new(f"{name}-relief")
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=32, radius1=0.0028, radius2=0.0023, depth=0.010)
+    bm.to_mesh(relief)
+    bm.free()
+    for poly in relief.polygons:
+        poly.use_smooth = True
+    ob = bpy.data.objects.new(f"{name}-relief", relief)
+    ob.matrix_world = (__import__("mathutils").Matrix.Translation(body + up * 0.0112) @
+                       up.to_track_quat("Z", "Y").to_matrix().to_4x4())
+    relief.materials.append(mold)
+    coll.objects.link(ob)
+
+
+def desk_run(t, u, b, b_dir, r):
+    """Lying on the desk: a lazy curve that leaves the touchdown t along u and arrives in line with plug b."""
+    end = b + Vector(b_dir).normalized() * 0.012
+    end.z = r
+    c1, c2 = t + u * 0.10, end + Vector(b_dir).normalized() * 0.10
+    c2.z = r
+    pts = []
+    for i in range(1, 31):
+        k = i / 30
+        p = (1 - k) ** 3 * t + 3 * (1 - k) ** 2 * k * c1 + 3 * (1 - k) * k ** 2 * c2 + k ** 3 * end
+        p.z = r
+        pts.append(p)
+    return pts + [b + Vector(b_dir).normalized() * 0.006, b]
+
+
+def cable_curve(coll, pts, r):
+    cu = bpy.data.curves.new("pc-cable", "CURVE")
+    cu.dimensions = "3D"
+    cu.bevel_depth, cu.bevel_resolution, cu.use_fill_caps = r, 6, True
+    sp = cu.splines.new("NURBS")
+    sp.points.add(len(pts) - 1)
+    for pt, co in zip(sp.points, pts):
+        pt.co = (co.x, co.y, co.z, 1)
+    sp.order_u, sp.use_endpoint_u, sp.resolution_u = 4, True, 6
+    ob = bpy.data.objects.new("pc-cable", cu)
+    cu.materials.append(simple("photo-cable-rubber", (0.022, 0.022, 0.024), rough=0.55, coat=0.08))
+    coll.objects.link(ob)
+    return ob
+
+
+def routed_cable(coll, pc, b_port, b_dir, r=0.0021):
+    """The rack's own route (rack.json: a right-angle plug, along the tray's fascia to a cable tie round the side
+    ladder, down the rack's side) as far as the desk, then lying on it into the laptop's port."""
+    right_angle_plug("plug-rack", pc["ends"][0], coll)
+    b = usb_c_plug("plug-laptop", b_port, b_dir, coll)
+    path = [Vector(p) / 1000.0 for p in pc["points"]]
+    k = next(i for i, p in enumerate(path) if p.z < 0.004)        # where it reaches the desk
+    pts = path[:k + 1]
+    pts[-1].z = r
+    u = Vector((pts[-1].x - pts[-2].x, pts[-1].y - pts[-2].y, 0)).normalized()
+    return cable_curve(coll, pts + desk_run(pts[-1], u, b, b_dir, r), r)
+
+
 def hanging_cable(coll, a_port, a_dir, b_port, b_dir, touchdown, r=0.0021):
     """Cable from plug A, hanging under its own weight (a catenary: the shape gravity gives a flexible
     cable, so no simulation needed) to `touchdown` on the desk, lying there, into plug B."""
@@ -480,9 +550,12 @@ def build(glb):
     import json
     pc = next(c for c in json.loads((REPO / "site" / "assets" / "rack.json").read_text(encoding="utf-8"))["cables"]
               if c["kind"] == "pc")
-    tilt = math.radians(20)
-    rack_port = Vector(pc["points"][0]) / 1000.0
-    hanging_cable(setc, rack_port, (0, -math.cos(tilt), -math.sin(tilt)), port, out, touchdown=(0.70, -0.21))
+    if pc["ends"][0].get("style") == "right":       # routed along the fascia and down the rack's side
+        routed_cable(setc, pc, port, out)
+    else:
+        tilt = math.radians(20)
+        rack_port = Vector(pc["points"][0]) / 1000.0
+        hanging_cable(setc, rack_port, (0, -math.cos(tilt), -math.sin(tilt)), port, out, touchdown=(0.70, -0.21))
 
     # a closed room, lit only through a window in the left wall (sun + sky), like a real office
     white = simple("photo-paint", (0.80, 0.79, 0.76), rough=0.85)

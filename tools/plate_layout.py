@@ -578,12 +578,13 @@ SIDE_X_MAX = 66.0          # a board turned to the right wall: its right edge at
 
 
 def classic_hint(o: dict, w: float, d: float) -> tuple[float, float]:
-    """A one-board bay's place before pegs: centred, its USB REAR_GAP_MAX from the port wall at most; a board
-    turned to the right wall as far right as its cable allows, up to 16 mm off the left edge (room for a cam
-    there), centred front to back (`away` keeps it from going further right)."""
+    """A one-board bay's place before pegs: centred across, and front to back where the plate leaves room for its
+    plug and cable's bend behind it (REAR_GAP_MAX), else that room behind it and the rest in front (a long board:
+    up to 4 mm off the front edge); a board turned to the right wall as far right as its cable allows, up to 16 mm
+    off the left edge (room for a cam there), centred front to back (`away` keeps it from going further right)."""
     if o["usb_side"]:
         return max(7.0, min(16.0, SIDE_X_MAX - o["w"])), (d - o["l"]) / 2
-    rear_gap = max(3.0, min(REAR_GAP_MAX, d - o["l"] - 4))
+    rear_gap = max(3.0, min(REAR_GAP_MAX, d - o["l"] - 4), (d - o["l"]) / 2)   # a short board isn't pushed back
     return (w - o["w"]) / 2, d - rear_gap - o["l"]
 
 

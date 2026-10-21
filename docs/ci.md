@@ -73,24 +73,24 @@ RX, GND) to the bay's AUX connector.
 $ python tools/bayctl.py hwmap -o rack-map.yaml
 wrote rack-map.yaml (8 bays) and pre-scripts in rack-scripts
 $ west twister --device-testing --hardware-map rack-map.yaml \
-      -p nrf52840dk/nrf52840 -p frdm_mcxn947/mcxn947/cpu0 -T samples/hello_world
+      -p nucleo_g474re -p wio_terminal -T samples/hello_world
 ```
 
 Each entry of the map is one bay:
 
 ```yaml
 - connected: true
-  platform: nrf52840dk/nrf52840
-  product: Nordic nRF52840 DK (bay A3)
-  runner: nrfutil
-  id: '001050012345'
-  serial: /dev/serial/by-id/usb-SEGGER_J-Link_001050012345-if00
+  platform: nucleo_g474re
+  product: ST NUCLEO-64 (MB1136 / MB1367) (bay A1)
+  runner: stm32cubeprogrammer
+  id: '003A00283133510837363734'
+  serial: /dev/serial/by-id/usb-STMicroelectronics_STLINK-V3_003A00283133510837363734-if02
   baud: 115200
-  pre_script: /ci/rack-scripts/bay-a3-pre.sh
+  pre_script: /ci/rack-scripts/bay-a1-pre.sh
   script_param:
     pre_script_timeout: 90
   fixtures:
-  - bay:A3
+  - bay:A1
 ```
 
 * **`pre_script`** runs `bayctl prepare <bay>` before every test: data path to

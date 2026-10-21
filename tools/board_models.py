@@ -12,7 +12,8 @@ at the bottom-left corner of the PCB as drawn in the vendor's mechanical drawing
 mechanical/boards/boards.yaml uses.  tools/assembly_glb.py then places it exactly where the
 stand-in box went.  Fix-ups per board in boards.yaml:
 
-    model: { rot: 180, flip: false, offset: [0, 0] }   # extra turn about Z, upside-down export, nudge (mm)
+    model: { rot: 180, flip: false, offset: [0, 0] }   # extra turn about Z, upside-down export, nudge (mm; a third
+                                                       # value lowers a whole device under its "PCB" plane)
 
 A board made of several models (a shield on its host) lists them under model.stack instead (see stack()), and
 model.web: true also writes the viewer's copy to site/assets/boards/<id>.glb, for models whose licence lets the
@@ -36,7 +37,7 @@ import yaml
 
 REPO = Path(__file__).resolve().parents[1]
 SRC = REPO / "render" / "assets" / "boards"
-EXTS = (".step", ".stp", ".glb", ".gltf", ".wrl")
+EXTS = (".step", ".stp", ".glb", ".gltf", ".wrl", ".pcbdoc")   # a PcbDoc: tools/vendor_pcb.py makes the model
 
 
 def _rot(axis, deg):
@@ -107,6 +108,9 @@ def pcb_frame(meshes: list[trimesh.Trimesh]):
 
 
 def normalise(board_id: str, spec: dict, src: Path) -> dict:
+    if src.suffix.lower() == ".pcbdoc":         # a maker's PCB design: populated and painted through KiCad
+        import vendor_pcb
+        src = vendor_pcb.convert(src, board_id, spec.get("model", {}))
     scene = load_mm(src)
     meshes = baked(scene)
     axis, z0, z1, lo, hi = pcb_frame(meshes)
@@ -136,11 +140,15 @@ def normalise(board_id: str, spec: dict, src: Path) -> dict:
     c = np.array([(lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, 0])
     R = trimesh.transformations.translation_matrix([w / 2, l / 2, -z0]) @ _rot([0, 0, 1], turn) @ \
         trimesh.transformations.translation_matrix(-c)
-    off = spec.get("model", {}).get("offset", [0, 0])
-    R = trimesh.transformations.translation_matrix([off[0], off[1], 0]) @ R
+    off = list(spec.get("model", {}).get("offset", [0, 0])) + [0.0]
+    R = trimesh.transformations.translation_matrix([off[0], off[1], off[2]]) @ R
     out = trimesh.Scene()
+    t = z1 - z0
     for i, m in enumerate(meshes):
         m.apply_transform(R)
+        if 0.01 < m.bounds[0][2] and m.bounds[1][2] < t - 0.01:
+            continue                            # inside the PCB (a board's inner copper planes): never seen
+        m = _recolour(m, spec.get("model", {}).get("recolour", {}))
         out.add_geometry(m, node_name=f"{board_id}-{i}", geom_name=f"{board_id}-{i}")
     dst = SRC / f"{board_id}.norm.glb"
     out.export(dst)
@@ -199,18 +207,22 @@ def by_material(meshes: list[trimesh.Trimesh], name: str) -> tuple[trimesh.Scene
     hi = np.max([m.bounds[1] for m in meshes], axis=0)
     span = hi - lo
     groups: dict[tuple, list] = {}
-    for m in meshes:
+    out = trimesh.Scene()
+    for i, m in enumerate(meshes):
+        if getattr(getattr(m.visual, "material", None), "baseColorTexture", None) is not None:
+            out.add_geometry(m, node_name=f"{name}-tex{i}", geom_name=f"{name}-tex{i}")   # a painted PCB face
+            continue
         if max(m.extents) < 0.3:
             continue
         layer = m.extents[2] < 2.0 and m.extents[0] * m.extents[1] > 0.3 * span[0] * span[1]
         key = _finish(_mean_colour(m), layer)
         groups.setdefault(key, []).append(m)
-    out = trimesh.Scene()
     for i, (key, ms) in enumerate(sorted(groups.items())):
         rgba, metal, rough = key
         m = trimesh.util.concatenate(ms)
         lin = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in (v / 255 for v in rgba[:3])]
         m.visual = trimesh.visual.TextureVisuals(material=trimesh.visual.material.PBRMaterial(
+            name=f"finish-{name}-{i}",          # its finish decided here (render/live_photo.py keeps it)
             baseColorFactor=[*lin, rgba[3] / 255], metallicFactor=metal, roughnessFactor=rough,
             alphaMode="BLEND" if rgba[3] < 250 else "OPAQUE", doubleSided=False))
         out.add_geometry(m, node_name=f"{name}-{i}", geom_name=f"{name}-{i}")

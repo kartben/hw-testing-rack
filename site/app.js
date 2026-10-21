@@ -143,7 +143,7 @@ function partMaterial(name) {
   if (name.startsWith('peg_')) return MAT.pegs;
   if (name === 'camera_diffuser' || name === 'podpcb_parts') return MAT.powerLabels;
   if (name.startsWith('camera_')) return MAT.cameras;
-  if (name === 'mega_camera') return MAT.blackPlastic;
+  if (name === 'mega_camera' || name === 'podpcb_dupont') return MAT.blackPlastic;
   if (name === 'podpcb') return MAT.pcbGreen;
   if (name.endsWith('_labels')) return MAT.powerLabels;
   if (name.startsWith('power_box_')) return MAT.powerBox;
@@ -345,11 +345,24 @@ function makeBoard(b) {
 }
 
 // A board's display: glossy glass over a live LVGL screen (site/screen.js), which the camera sees too, with
-// the light boxes' reflection on it.  One LVGL runs for the rack, started with the first screen.
-let lvgl = null, lvglReady = null;
-const screenMat = new THREE.MeshPhysicalMaterial({ color: 0x050608, roughness: 0.3, metalness: 0, clearcoat: 0.45,
-  clearcoatRoughness: 0.1, emissive: 0xffffff, emissiveIntensity: 0,
-  polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });   // drawn over the model's own glass
+// the light boxes' reflection on it.  One LVGL runs per screen size and demo (its own wasm instance), started
+// with the first screen that shows it.
+const lvgls = {};                 // `${demo} ${w}x${h}` → { mat, ready }
+function screenMaterial(sc) {
+  const key = `${sc.demo} ${sc.px[0]}x${sc.px[1]}`;
+  if (lvgls[key]) return lvgls[key].mat;
+  const mat = new THREE.MeshPhysicalMaterial({ color: 0x050608, roughness: 0.3, metalness: 0, clearcoat: 0.45,
+    clearcoatRoughness: 0.1, emissive: 0xffffff, emissiveIntensity: 0,
+    polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });   // drawn over the model's own glass
+  const entry = lvgls[key] = { mat, ready: null };
+  startLvgl('assets/lvgl/lvgl-demo.wasm', sc.px[0], sc.px[1], sc.demo).then((l) => {
+    mat.emissiveMap = l.tex;
+    mat.emissiveIntensity = 1.4;
+    mat.needsUpdate = true;
+    entry.ready = l;
+  }).catch((e) => console.warn('LVGL screen:', e));
+  return mat;
+}
 function makeScreen(sc) {
   const [bl, br, tl] = [sc.bl, sc.br, sc.tl].map(([x, y]) => new THREE.Vector3(x, y, sc.z));
   const tr = br.clone().add(tl).sub(bl);
@@ -359,16 +372,7 @@ function makeScreen(sc) {
   const n = new THREE.Vector3().subVectors(br, bl).cross(new THREE.Vector3().subVectors(tl, bl)).normalize();
   geo.setIndex(n.z > 0 ? [0, 1, 2, 0, 2, 3] : [0, 2, 1, 0, 3, 2]);
   geo.computeVertexNormals();
-  if (!lvgl) {
-    lvgl = startLvgl('assets/lvgl/lvgl-demo.wasm', sc.px[0], sc.px[1], sc.demo).then((l) => {
-      screenMat.emissiveMap = l.tex;
-      screenMat.emissiveIntensity = 1.4;
-      screenMat.needsUpdate = true;
-      lvglReady = l;
-      return l;
-    }).catch((e) => { console.warn('LVGL screen:', e); return null; });
-  }
-  const m = new THREE.Mesh(geo, screenMat);
+  const m = new THREE.Mesh(geo, screenMaterial(sc));
   m.userData.screen = true;
   return m;
 }
@@ -618,7 +622,7 @@ async function load() {
   });
   // PCB GLBs exported from KiCad (optional; the v2's meshopt-compressed: tools/pcb_glb.py)
   const pcbGlb = {};
-  for (const name of ['bay-node', 'power-hub', 'data-port-x4-v2', 'data-port-x4-v2-base']) {
+  for (const name of ['bay-node', 'power-hub', 'data-port', 'camera-pod', 'data-port-x4-v2', 'data-port-x4-v2-base']) {
     try {
       const g = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(`assets/pcb/${name}.glb`);
       pcbGlb[name] = g.scene;
@@ -765,7 +769,8 @@ function applyTransforms() {
     o.position.copy(u.base);
     o.visible = layerOn[u.layer];
     if (u.space === 'row') {
-      if (u.movable && u.bay) o.position.y -= R.drawer_travel * (drawerFrac[u.bay] - (initialOpen[u.bay] ?? 0));
+      // a sled bay has no chain, so no slider: its board and label stay put (undefined would make them NaN)
+      if (u.movable && u.bay) o.position.y -= R.drawer_travel * ((drawerFrac[u.bay] ?? 0) - (initialOpen[u.bay] ?? 0));
       if (u.movable) o.position.z += explode * 70;
       if (u.layer === 'cameras') o.position.z -= explode * 30;
     } else if (u.row != null) {
@@ -1012,7 +1017,7 @@ function tick(now) {
     }
     if (moving) applyTransforms();
   }
-  lvglReady?.step(now);
+  for (const l of Object.values(lvgls)) l.ready?.step(now);
   for (const rig of Object.values(rigs)) {         // the lights fade in and out over ~150 ms
     const d = rig.target - rig.level;
     if (Math.abs(d) > 1e-3) setRigLight(rig, rig.level + Math.sign(d) * Math.min(Math.abs(d), 0.12));
@@ -1023,7 +1028,7 @@ function tick(now) {
   labelRenderer.render(scene, camera);
 }
 
-if (params.has('debug')) window.__viewer = { renderer, scene, camera, controls, rigs, THREE, select, openPreview, preview: () => preview, lvgl: () => lvglReady };
+if (params.has('debug')) window.__viewer = { renderer, scene, camera, controls, rigs, THREE, select, openPreview, preview: () => preview, lvgl: () => lvgls };
 
 load().then(() => { placeEnvironment(); requestAnimationFrame(tick); }).catch((err) => {
   console.error(err);

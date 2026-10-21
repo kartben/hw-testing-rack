@@ -6,14 +6,14 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Category | Cost (€) |
 |---|---:|
 | Electronics | 743 |
-| Cables | 80 |
+| Cables | 79 |
 | Cameras | 64 |
 | Printed parts | 62 |
 | Power | 58 |
 | Motion | 19 |
 | Fasteners | 8 |
 | Analyzer | 7 |
-| **Total** | **1,040** |
+| **Total** | **1,039** |
 
 ≈ **€130 per bay** all-in.
 
@@ -146,17 +146,17 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | ladder_b | 5 | 47.9 | `mechanical/stl/ladder_b.stl` |
 | ladder_base | 5 | 48.4 | `mechanical/stl/ladder_base.stl` |
 | ladder_cap | 5 | 14.7 | `mechanical/stl/ladder_cap.stl` |
-| peg_base_h10 | 10 | 0.4 | `mechanical/stl/peg_base_h10.stl` |
+| peg_base_h11 | 3 | 0.5 | `mechanical/stl/peg_base_h11.stl` |
 | peg_base_h12 | 5 | 0.5 | `mechanical/stl/peg_base_h12.stl` |
-| peg_base_h6 | 4 | 0.3 | `mechanical/stl/peg_base_h6.stl` |
+| peg_base_h6 | 9 | 0.3 | `mechanical/stl/peg_base_h6.stl` |
 | peg_base_h9 | 3 | 0.4 | `mechanical/stl/peg_base_h9.stl` |
 | peg_bobbin | 5 | 0.9 | `mechanical/stl/peg_bobbin.stl` |
-| peg_cam | 22 | 0.2 | `mechanical/stl/peg_cam.stl` |
+| peg_cam | 20 | 0.2 | `mechanical/stl/peg_cam.stl` |
 | peg_pin_d21_h9 | 3 | 0.3 | `mechanical/stl/peg_pin_d21_h9.stl` |
 | peg_pin_d32_h12 | 1 | 0.5 | `mechanical/stl/peg_pin_d32_h12.stl` |
-| peg_stop_h10 | 10 | 0.5 | `mechanical/stl/peg_stop_h10.stl` |
+| peg_stop_h11 | 4 | 0.5 | `mechanical/stl/peg_stop_h11.stl` |
 | peg_stop_h12 | 3 | 0.6 | `mechanical/stl/peg_stop_h12.stl` |
-| peg_stop_h6 | 5 | 0.4 | `mechanical/stl/peg_stop_h6.stl` |
+| peg_stop_h6 | 12 | 0.4 | `mechanical/stl/peg_stop_h6.stl` |
 | plate | 7 | 42.0 | `mechanical/stl/plate.stl` |
 | plate_giga-r1-display | 1 | 71.0 | `mechanical/stl/plate_giga-r1-display.stl` |
 | power_box_base | 1 | 35.2 | `mechanical/stl/power_box_base.stl` |
@@ -385,12 +385,12 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Cables | Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), black, 10 m (the crimped feeds) | 1 spool | 4.00 | 4.00 | AliExpress (UL1007 24AWG) |
 | Cables | Crimper for open-barrel contacts, 28–18 AWG (the crimped feeds' contacts) | 1  | 20.00 | 20.00 | IWISS SN-28B (or Engineer PA-09, ≈ €40) |
 | Cables | Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie anchors at its front right (docs/cabling.md) | 12  | 0.02 | 0.24 | AliExpress (bulk) |
-| Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: FRDM-MCXN947, GIGA + display, nRF54L15 DK) | 3  | 2.50 | 7.50 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
-| Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: XIAO) | 2  | 2.00 | 4.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
+| Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: BEAGLEPLAY, GIGA + display, WIO TERMINAL) | 3  | 2.50 | 7.50 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
+| Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: NANO MATTER, XIAO) | 3  | 2.00 | 6.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
 | Cables | USB-C ↔ USB-C, straight, 20 cm (DUT cable: UNO R4) | 1  | 2.00 | 2.00 | AliExpress (USB-C ↔ USB-C, straight, 20 cm, USB 2.0 data) |
-| Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64, nRF52840 DK) | 3  | 1.00 | 3.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
+| Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64) | 2  | 1.00 | 2.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
 | Cables | USB-C ↔ micro-B, straight, 15 cm (DUT cable: PICO 2) | 3  | 2.00 | 6.00 | AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data) |
-| Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 6  | 1.00 | 6.00 | AliExpress (DIY-018, "UP" and "DOWN") |
+| Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 4  | 1.00 | 4.00 | AliExpress (DIY-018, "UP" and "DOWN") |
 | Analyzer | Raspberry Pi Pico 2 (RP2350), the logic analyzer in B3.3 | 1  | 5.50 | 5.50 | Raspberry Pi approved reseller (Kubii, The Pi Hut, Pimoroni) |
 | Analyzer | Dupont jumper wires, female–female, 10 cm, a 40-wire strip | 1  | 1.50 | 1.50 | AliExpress |
 | Cables | Dupont jumper wires, female–female, 20 cm, a 40-wire strip (DATA ×4 RESET/BOOT headers → the boards' pins: 1 wire) | 1  | 2.00 | 2.00 | AliExpress |

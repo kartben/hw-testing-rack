@@ -143,22 +143,21 @@ standalone:               # mechanical/parts/standalone.scad, docs/standalone.md
 population:
   A1: { board: nucleo-64,        cable: c-to-micro-b }
   A2: { board: nucleo-144,       cable: c-to-micro-b }
-  A3: { board: nrf52840-dk,      cable: c-to-micro-b, mount: sled }                # a sled bay: no drag chain
-  A4: { board: nrf54l15-dk,      cable: c-to-c }
-  B1:                                                              # converted: the FRDM and a Pico 2 on a base DATA-4x's
+  A3: { board: beagleplay,       cable: c-to-c, mount: sled }      # a sled bay: no drag chain
+  A4: { board: wio-terminal,     cable: c-to-c }                   # A3, A4: the user's picks (2026-10-21) for boards whose
+                                                                   # makers publish an open 3D model; they replaced the
+                                                                   # nRF52840 and nRF54L15 DKs
+  B1:                                                              # converted: a Pico 2 and a Nano Matter on a base DATA-4x's
     open: true                                                     # drawer shown pulled out
     x4: base                 # the standing DATA ×4 v2 assembled as DATA-4x (b.pcb variants › base: no matrix, no analyzer,
                              # no pin chain), in its cradle; the viewer shows it, the BOM prices that variant
     boards:                  # ports 2 and 4, ports 1 and 3 free (a third board leaves no room for its pegs' cams, 2026-10-20)
       - { board: rpi-pico2,    cable: c-to-micro-b-straight, slot: 2, at: [34.0, 16.0] }   # a straight 15 cm cable, an S
-      - { board: frdm-mcxn947, cable: c-to-c, slot: 4, at: [60.0, 15.4] }   # its USB to the port wall, 90° plugs, an arch;
-                                                                             # left of the plate's right finger slot.  The
-          # upright loop is right: 26.7 mm between the sockets (two straight plugs need 56), 15 cm the shortest that
-          # reaches, and its weight can't fold two vertical exits 35 mm apart (checked 2026-10-20: leant starts, side plugs)
+      - { board: arduino-nano-matter, cable: c-to-c-straight, slot: 4, at: [107.7, 24.0] }  # the same, as B3's XIAOs (it
+          # replaced the FRDM-MCXN947, which has no public 3D model: the user's pick, 2026-10-21)
     jumpers:                 # Dupont female–female, 20 cm, from the base's two 2 × 1 per port (GND/VREF, RESET/BOOT: the 2 × 6's
                              # end columns, only GND, RESET and BOOT live): the Pico 2's
-      B1.2: { RESET: RUN }     # RESET is RUN (its BOOTSEL a test pad; no GND wire: the USB cable carries it; the FRDM's MCU-Link
-                               # resets it)
+      B1.2: { RESET: RUN }     # RESET is RUN (its BOOTSEL a test pad; no GND wire: the USB cable carries it)
   B2: { board: giga-r1-display,  cable: c-to-c, plate: boards }   # the camera bay: a live LVGL screen (2026-10-18);
                                                                    # the shield hides the GIGA's edges: its own fenced plate
   B3:                                                              # converted: B3.1–B3.4 on a DATA ×4 board

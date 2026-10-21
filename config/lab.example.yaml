@@ -29,12 +29,13 @@ access:
 
 bays:
   A1:
-    platform: nucleo_f401re                  # NUCLEO-64 is a family: say which one
-    id: "066DFF515251717867193542"           # ST-LINK serial (west flash --dev-id)
-    serial: /dev/serial/by-id/usb-STMicroelectronics_STM32_STLink_066DFF515251717867193542-if02
+    platform: nucleo_g474re                  # NUCLEO-64 is a family: say which one
+    id: "003A00283133510837363734"           # ST-LINK serial (west flash --dev-id)
+    serial: /dev/serial/by-id/usb-STMicroelectronics_STLINK-V3_003A00283133510837363734-if02
   A3:
-    id: "001050012345"                       # J-Link OB serial of the nRF52840 DK
-    serial: /dev/serial/by-id/usb-SEGGER_J-Link_001050012345-if00
+    platform: beagleplay/cc1352p7            # BeaglePlay is a family: say which core
+    ci: false                                # flashed from its own Linux (cc1352_flasher), not from the CI host
+    serial: /dev/serial/by-id/usb-BeagleBoard.org_BeaglePlay_1A2B3C4D5E6F-if00
   B2:
     console: aux                             # GIGA R1: flashed by dfu-util over its USB, console on the AUX UART
   # B1 and B3 hold several boards on a DATA ×4 board (config/rack.yaml `boards:`): name each by its sub-slot.
@@ -44,8 +45,8 @@ bays:
     id: "E6614C311B6A5F2D"                   # two Pico 2 in the rack: uf2 picks the board by its serial number
     serial: /dev/serial/by-id/usb-ZEPHYR_USB-DEV_E6614C311B6A5F2D-if00
   B1.4:
-    id: "IUTPXBQ3XQBQ2"                      # MCU-Link serial (west flash --dev-id)
-    serial: /dev/serial/by-id/usb-NXP_Semiconductors_MCU-LINK_FRDM-MCXN947__r0E7__IUTPXBQ3XQBQ2-if01
+    id: "8F31C2D04A6B9E17"                   # the Nano Matter's CMSIS-DAP (its SAMD11) serial
+    serial: /dev/serial/by-id/usb-Arduino_Nano_Matter_8F31C2D04A6B9E17-if01
   B3.1:
     platform: xiao_esp32c3                   # XIAO is a family: say which one
     runner: esp32                            # picks the board by its serial port
