@@ -206,6 +206,52 @@ Unplug the 5 V feed before plugging the PC.
 | 13 | `bayctl update …` | test boot, confirmed | the new version, confirmed |
 | 14 | BOOT + RESET, `west flash` from the PC | the ROM loader takes the image | it boots the new image |
 
+### Six USB/IP sessions: what the XIAO measured (2026-10-21)
+
+The node exports up to six devices at once on boards with PSRAM (a DATA ×4: its four ports, the
+logic variant's co-processor, a spare; `firmware/bay-node/Kconfig`).  The DRAM for six sessions
+comes from the Wi-Fi adapter's heap, moved to PSRAM (`CONFIG_ESP_WIFI_HEAP_SPIRAM`).  The USB/IP pool
+and the UHC buffers stay in internal RAM: the DWC2 moves them by DMA, which does not reach PSRAM.
+
+| | internal RAM (dram0) |
+|---|---|
+| bay_node, before (one session) | 99.82 %, 672 B free |
+| bay_node, six sessions, Wi-Fi heap in PSRAM | 99.30 %, 2648 B free |
+| esp32s3_devkitc | 99.41 % |
+| xiao_esp32s3 (bench conf) | 93.3 % |
+
+On the XIAO, the page open (two web consoles), no DUT:
+
+- system heap 33.6 KB: 8.9 KB free, 25.3 KB the most used;
+- PSRAM heap: the Wi-Fi adapter's 67 KB, 70 KB at most;
+- stacks: none past 60 % (telnet 52 %, wifi 53 %, the six USB/IP device threads 24 %).
+
+Wi-Fi throughput, the Wi-Fi heap in PSRAM against the same build with it in internal RAM (four
+sessions, to fit), back to back on the same network:
+
+| Wi-Fi heap | 10 × 88 KB one after the other | 4 × 88 KB at once | 1 MB update upload |
+|---|---|---|---|
+| PSRAM | 53 KB/s, then 61 KB/s | 4.5–6.5 s | 23–28 s |
+| internal | 40 KB/s | 6.8–7.2 s | 24 s |
+
+No loss: the differences are the Wi-Fi's own.  Thirteen bursts of eight parallel 88 KB downloads
+(more than the six HTTP slots) left the node up.
+
+The 15-minute soak with DUTs behind a powered hub (all attached, consoles open, one DUT
+reflashed, the page reloaded in a loop) did not complete.  The bench found three faults, none of
+them this layout's; the last one was reproduced with the Wi-Fi heap in internal RAM:
+
+- a USB 3 hub (Genesys USB 3.1 with its card reader) next to the XIAO's antenna: the node lost
+  its Wi-Fi and its USB host saw transaction errors; moved 30–50 cm away, both stopped;
+- an NXP MCU-Link on the hub: Zephyr's hub class resets its port again and again ("Port 2 not
+  enabled after reset"), the node's network collapses, and once the USB host's thread panicked;
+- an FT232 (an M5StickC): `esptool read_flash` over USB/IP fails at every baud rate, the data
+  corrupted ("Invalid SLIP escape").
+
+The last two are being looked at in the USB host stack (Zephyr's `usbh_hub`, `uhc_dwc2`, the
+USB/IP service).  To do on the bench once they are fixed: the soak above with a Pico or an ESP32
+with native USB.
+
 ### Power hub: bench plan
 
 Wired as in the pin map; the PD charger into the CH224A board's USB-C, the XIAO on the PC.

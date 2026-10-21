@@ -193,20 +193,51 @@ config VIDEO_BUFFER_SMH_ATTRIBUTE
 config ESP_SPIRAM_HEAP_SIZE
 	default 1572864 if BAY_CAMERA
 
-# usbip listener + 2 sessions, AUX raw and RFC 2217 listeners + clients,
-# telnet listener + client, HTTP listener + 6 clients, 2 web consoles, DHCP,
-# mDNS, spare (a web console is a socket plus a websocket descriptor); the
-# camera's listener and 3 clients
+# Several DUTs over USB/IP, one session each: a DATA x4's 4 ports, the logic
+# variant's co-processor on hub port 5 and a spare.  A session is a thread
+# (2 KB stack) and a socket; the hub, the DUTs and their descriptors need the
+# hub spike's UHC sizing.  The internal RAM for it comes from the Wi-Fi
+# adapter's heap, moved to PSRAM (25 KB of the system heap instead of 51; the
+# radio's static RX buffers stay internal).  The USB/IP pool and the UHC
+# buffers stay in internal RAM: the DWC2 moves them by DMA, which does not
+# reach PSRAM.  A board without PSRAM keeps one session.
+choice ESP_WIFI_HEAP
+	default ESP_WIFI_HEAP_SPIRAM if ESP_SPIRAM
+endchoice
+
+config USBIP_DEVICES_COUNT
+	default 6 if ESP_SPIRAM
+
+config UHC_XFER_COUNT
+	default 32 if ESP_SPIRAM
+
+config UHC_BUF_COUNT
+	default 32 if ESP_SPIRAM
+
+config UHC_BUF_POOL_SIZE
+	default 4096 if ESP_SPIRAM
+
+config USBH_USB_DEVICE_HEAP
+	default 4096 if ESP_SPIRAM
+
+# usbip listener + its sessions (6, and a `usbip list` meanwhile; 1 and a
+# list without PSRAM), AUX raw and RFC 2217 listeners + clients, telnet
+# listener + client, HTTP listener + 6 clients, 2 web consoles, DHCP, mDNS,
+# spare (a web console is a socket plus a websocket descriptor); the camera's
+# listener and 3 clients (a camera means PSRAM)
 config NET_MAX_CONTEXTS
-	default 29 if BAY_CAMERA
+	default 34 if BAY_CAMERA
+	default 30 if ESP_SPIRAM
 	default 25
 
 config NET_MAX_CONN
-	default 29 if BAY_CAMERA
+	default 34 if BAY_CAMERA
+	default 30 if ESP_SPIRAM
 	default 25
 
 config ZVFS_OPEN_MAX
-	default 39 if BAY_CAMERA
+	default 44 if BAY_CAMERA
+	default 40 if ESP_SPIRAM
 	default 35
 
 # 48 KB of the 64 KB default: the RAM margin for the firmware updates (image
