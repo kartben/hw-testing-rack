@@ -11,11 +11,11 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Cameras | 64 |
 | Printed parts | 62 |
 | Motion | 19 |
-| Fasteners | 15 |
+| Fasteners | 8 |
 | Analyzer | 7 |
-| **Total** | **1,071** |
+| **Total** | **1,064** |
 
-≈ **€134 per bay** all-in.
+≈ **€133 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -147,7 +147,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | power_box_base | 1 | 35.2 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
-| tray | 8 | 82.1 | `mechanical/stl/tray.stl` |
+| tray | 8 | 81.5 | `mechanical/stl/tray.stl` |
 | x4_cradle | 2 | 8.3 | `mechanical/stl/x4_cradle.stl` |
 
 ## Line items
@@ -356,8 +356,6 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
 | Fasteners | PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 "ST", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4's cradle: 3 instead of the DATA board's 2 | 63  | 0.02 | 1.26 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 28  | 0.01 | 0.28 | AliExpress (bulk) |
-| Fasteners | Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge) | 1 lot | 3.99 | 3.99 | AliExpress 1005010074888189, "6x3mm-50 pièces" |
-| Fasteners | Cyanoacrylate glue, gel (detent magnets) | 1  | 3.00 | 3.00 | any |
 | Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 2 m | 4.00 | 8.00 | Olimex DRAG-CHAIN-7X7 |
 | Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain | 5  | 2.17 | 10.85 | AliExpress 1005003181041939, "7x7mm" (or one more metre of chain per pair) |
 | Cables | JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 (DATA leads: node J7 → drag chain → DATA port board; camera leads: node J6 → pod J1) | 2 lot | 4.50 | 9.00 | AliExpress https://www.aliexpress.com/item/1005008045292937.html, "Same direction", 8P, Length50CM |

@@ -74,10 +74,11 @@ later, take its tray out first.
    two anchors at its front right (a cable tie through each one's tunnel),
    clear of the chain foot's reach ([cabling.md](cabling.md)); the row feed
    goes into the row's first bay.
-4. **Drawer**: magnets first, one under the drawer and one in the tray's left
-   ledge: stack the pair, mark both outer faces, glue each magnet marked face
-   down into its pocket with a drop of CA, and let it set before the drawer
-   goes in.  The rear bay takes either DATA board, components up, its USB-C
+4. **Drawer**: the detent is printed (a tab in the tray's left ledge, a notch
+   under the drawer): nothing to fit.  With `drawer.detent: magnet` instead,
+   magnets first, one under the drawer and one in the tray's left ledge: stack
+   the pair, mark both outer faces, glue each magnet marked face down into its
+   pocket with a drop of CA, and let it set before the drawer goes in.  The rear bay takes either DATA board, components up, its USB-C
    edge against the port wall (each receptacle behind a U), PT 2.3×8 from
    above: the DATA port board on its two Ø5 bosses, its USB-C behind the
    fourth U (the rightmost), or a DATA ×4 on its three Ø6 bosses.  The DATA

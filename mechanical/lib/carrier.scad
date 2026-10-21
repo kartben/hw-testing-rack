@@ -68,6 +68,17 @@ SLED_FLANGE_Y = [SPLIT - 24, SPLIT - 4];
 BLOCK_LOCK_Y = (FLANGE_Y[0] + FLANGE_Y[1]) / 2;
 SLED_LOCK_Y = (SLED_FLANGE_Y[0] + SLED_FLANGE_Y[1]) / 2;
 STOP_Y = FLANGE_Y[0] - DRAWER_TRAVEL - 4.5;        // stop pin position (carrier coords)
+// The closed drawer's detent (config/rack.yaml › drawer.detent).  "printed": a spring tab cut in the tray's
+// left ledge, free at its front end, a bump on it that drops into a notch under the drawer's left wall: 2.5 mm
+// thick, 20 long, the bump 0.6 high (45° both ways): 0.56 % in the print plane, ≈ 3 N (docs/printed-parts-
+// review.md, finding 14).  "magnet": two Ø6 × 3 magnets, one in a pad on the ledge, one under the drawer.
+assert(DRAWER_DETENT == "printed" || DRAWER_DETENT == "magnet", "drawer.detent: printed or magnet");
+DETENT_TAB = [2.5, 20, 0.8];                       // width (x), length (y), the slits round it
+DETENT_TAB_X = DRAWER_X0 - 0.7;                    // its left edge (carrier x): the bump under the drawer's left wall
+DETENT_BUMP = [0.6, 3.0];                          // height, length at its base
+DETENT_TAB_Y = 155;                                // the bump's centre (carrier y = drawer y when closed): under a
+                                                   // sled's flange (its notch cuts it too), clear of the lock screws
+DETENT_TAB_Y0 = DETENT_TAB_Y - DETENT_BUMP[1] / 2 - 1.2;   // the tab's free (front) end
 
 // port wall: four U's, the DATA ×4's ports (config/rack.yaml › pcb.data_port_x4).  The single DATA port is
 // our own small board (electronics/data-port, config/rack.yaml › pcb.data_port): a USB-C source on its front

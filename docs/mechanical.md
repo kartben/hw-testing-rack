@@ -56,13 +56,18 @@ constants it reads.)
 
 The drawer slides 140 mm along the slope on the tray's two ledges (PETG on
 PETG); its rear flange segments run under the lips, so it cannot tip at full
-stroke.  A pair of 6 × 3 mm magnets (one in the drawer, one in the left ledge,
-on a pad) holds it closed against the slope; pulled out, it rests on a PT 2.3
-stop screw through the left lip, the flange still under the lips.  Want
-smoother?  Print the trays in a POM-like "igus" filament.
+stroke.  A printed detent holds it closed against the slope: a spring tab cut
+in the tray's left ledge (2.5 × 20 mm, free at its front end) carries a 0.6 mm
+bump that drops into a notch under the drawer's left wall, ≈ 3 N, no parts
+(`drawer.detent: printed`, the default; the tab bends in the print plane, 0.56 %).
+Pulled out, the drawer rests on a PT 2.3 stop screw through the left lip, the
+flange still under the lips.  Want smoother?  Print the trays in a POM-like
+"igus" filament.
 
-The magnet pockets are a slip fit (Ø + 0.25 mm): **glue the magnets**, a drop
-of CA gel in each pocket.  The other magnet pulls each one out through its
+If the tab doesn't suit after a test print, `drawer.detent: magnet` brings back a
+pair of 6 × 3 mm magnets (one in the drawer, one in the left ledge, on a pad,
+≈ 10 N) and the BOM lists them.  The magnet pockets are a slip fit (Ø + 0.25 mm):
+**glue the magnets**, a drop of CA gel in each pocket.  The other magnet pulls each one out through its
 pocket's mouth, and the drawer's boss leaves a 0.9 mm wall around its pocket,
 too thin to press-fit into.  **Check the polarity first**: stack the pair, mark both outer
 faces, and glue the marked faces into the pockets, so the two bare faces

@@ -54,7 +54,10 @@ drawer:
                          # (pcb.data_port_x4.usb); a single DATA board's USB-C sits on the fourth, and the
                          # optional AUX pigtail goes through a free one
   flange: [3.0, 3.0]     # runner flange (width, height) captured by the guides
-  magnet: [6, 3]         # closed-position detent magnet Ø × t (one in drawer, one in deck)
+  detent: printed        # the closed drawer's detent: printed, a spring tab in the tray's left ledge and a notch under
+                         # the drawer (no parts, ≈ 3 N); magnet, the two magnets below (≈ 10 N, glued).  The user,
+                         # 2026-10-21: printed, after a test print, back to magnets if it doesn't suit
+  magnet: [6, 3]         # the detent magnets (detent: magnet): Ø × t, one in the drawer, one in the tray's ledge
   plate: 5.0             # board plate thickness: the pegs' clip sits inside it (plate_grid)
 
 plate_grid:              # the board plate: one honeycomb for every board, and clip-in pegs that hold them

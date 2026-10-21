@@ -537,6 +537,7 @@ def scad_config(rack: Rack) -> str:
         "DRAWER_REAR_BAY": d["rear_bay"],
         "DRAWER_FLANGE": d["flange"],
         "DRAWER_MAGNET": d["magnet"],
+        "DRAWER_DETENT": d.get("detent", "printed"),
         "DATA_PORT_X": [round(x, 3) for x in rack.data_port_x],
         "PLATE_T": d["plate"],
         "HEX_PITCH": rack.plate_grid["pitch"],

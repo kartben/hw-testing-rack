@@ -3469,25 +3469,6 @@
 "ext_eur": 0.28
 },
 {
-"category": "Fasteners",
-"item": "Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge)",
-"supplier": "AliExpress 1005010074888189, \"6x3mm-50 pièces\"",
-"qty": 1,
-"unit": "lot",
-"unit_eur": 3.99,
-"notes": "glued (a drop of CA in the slip-fit pocket): the other magnet pulls each one out of its pocket's mouth.  Polarity: stack the pair, mark both outer faces; marked faces into the pockets",
-"ext_eur": 3.99
-},
-{
-"category": "Fasteners",
-"item": "Cyanoacrylate glue, gel (detent magnets)",
-"supplier": "any",
-"qty": 1,
-"unit_eur": 3.0,
-"unit": "pcs",
-"ext_eur": 3.0
-},
-{
 "category": "Motion",
 "item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces",
 "supplier": "Olimex DRAG-CHAIN-7X7",
@@ -3748,14 +3729,14 @@
 "by_category": {
 "Electronics": 742.6899999999994,
 "Printed parts": 62.0,
-"Fasteners": 14.63,
+"Fasteners": 7.640000000000001,
 "Motion": 18.85,
 "Cables": 79.69999999999999,
 "Analyzer": 7.0,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 1070.97,
+"total_eur": 1063.98,
 "prints": [
 {
 "part": "bay_label",
@@ -3824,7 +3805,7 @@
 "part": "drawer",
 "qty": 7,
 "grams_each": 46.7,
-"grams_total": 326.6,
+"grams_total": 326.7,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
@@ -3991,8 +3972,8 @@
 {
 "part": "tray",
 "qty": 8,
-"grams_each": 82.1,
-"grams_total": 656.8,
+"grams_each": 81.5,
+"grams_total": 652.3,
 "stl": "mechanical/stl/tray.stl"
 },
 {

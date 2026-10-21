@@ -958,14 +958,6 @@ def hardware(rack) -> list[dict]:
                   "drawer's wall at the guide lips (lib/carrier.scad › LIP_SCREW, checked in SolidCraft)"},
         {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
          "supplier": "AliExpress (bulk)", "qty": 4 * n_drawer, "unit_eur": 0.01},
-        {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the "
-                                         "drawer, one in the tray ledge)",
-         "supplier": "AliExpress 1005010074888189, \"6x3mm-50 pièces\"", "qty": math.ceil(2 * n_drawer / 50),
-         "unit": "lot", "unit_eur": 3.99,
-         "notes": "glued (a drop of CA in the slip-fit pocket): the other magnet pulls each one out of its pocket's "
-                  "mouth.  Polarity: stack the pair, mark both outer faces; marked faces into the pockets"},
-        {"category": "Fasteners", "item": "Cyanoacrylate glue, gel (detent magnets)", "supplier": "any",
-         "qty": 1, "unit_eur": 3.0},
         {"category": "Motion", "item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), "
                                       "≈ 180 mm per drawer with its two end pieces",
          "supplier": "Olimex DRAG-CHAIN-7X7", "qty": chain_m, "unit": "m", "unit_eur": 4.0,
@@ -1001,6 +993,17 @@ def hardware(rack) -> list[dict]:
                                       "anchors at its front right (docs/cabling.md)",
          "supplier": "AliExpress (bulk)", "qty": 2 * sum(cols - 1 for _ in rack.rows), "unit_eur": 0.02},
     ]
+    if r["drawer"].get("detent", "printed") == "magnet":     # drawer.detent (printed by default: no parts)
+        rows += [
+            {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the "
+                                             "drawer, one in the tray ledge)",
+             "supplier": "AliExpress 1005010074888189, \"6x3mm-50 pièces\"", "qty": math.ceil(2 * n_drawer / 50),
+             "unit": "lot", "unit_eur": 3.99,
+             "notes": "glued (a drop of CA in the slip-fit pocket): the other magnet pulls each one out of its pocket's "
+                      "mouth.  Polarity: stack the pair, mark both outer faces; marked faces into the pockets"},
+            {"category": "Fasteners", "item": "Cyanoacrylate glue, gel (detent magnets)", "supplier": "any",
+             "qty": 1, "unit_eur": 3.0},
+        ]
     duts = [d for b in rack.bays() for d in rack.duts(b.id) if d.cable]   # one cable per board under test
     cab = Counter(d.cable for d in duts)
     lib = rackcfg.load_boards()

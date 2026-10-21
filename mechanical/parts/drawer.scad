@@ -17,8 +17,8 @@
 //   single board's lead, then along the rear wall to its PH; a v2's, over its cradle) and a side strip beside
 //   a v1's right edge, under its J1.  The chain foot slides
 //   into the rear-open groove under the bottom and is locked by one PT 2.3 × 8 screw from inside the rear bay.
-// - Rear flange segments run under the guide lips (anti-tip); a magnet under
-//   the rear bay, over the tray's left ledge, gives a soft closed detent.
+// - Rear flange segments run under the guide lips (anti-tip); a notch under the left wall takes the bump of
+//   the tray's printed detent tab (or, drawer.detent: magnet, a magnet under the rear bay over the left ledge).
 // - It rides on the tray's two side ledges (parts/tray.scad), so its floor only carries the
 //   board plate: nine windows.
 // - Pin holes over the node's RESET and BOOT (through every plate too): press them with the drawer in.
@@ -27,7 +27,7 @@ include <../lib/carrier.scad>
 
 PART = "drawer";
 
-// the magnet sits right inside the left wall, its boss within the drawer's footprint (a boss
+// drawer.detent: magnet: the magnet sits right inside the left wall, its boss within the drawer's footprint (a boss
 // sticking out of the wall would hit the tray's guide lip on the last 10 mm before closing)
 DETENT = [DRAWER_MAGNET[0] / 2 + 1, DRAWER_D - 14];
 DETENT_BOSS = DRAWER_MAGNET[0] + 2;
@@ -91,10 +91,10 @@ module drawer(rear = true, foot = true) {
             for (x = [-DRAWER_FLANGE[0], DRAWER_W]) translate([x, FLANGE_Y[0], 0]) cube([DRAWER_FLANGE[0] + EPS, FLANGE_Y[1] - FLANGE_Y[0], DRAWER_FLANGE[1]]);
             // plate locating pins
             for (p = plate_pins()) translate([PLATE_X0 + p[0], PLATE_Y0 + p[1], DRAWER_BOTTOM]) cylinder(d = 3.8, h = 2.2);
-            // boss for the foot lock screw, and for the detent magnet
+            // boss for the foot lock screw, and for the detent magnet (drawer.detent: magnet)
             if (foot) {
                 translate([FOOT_HOLE[0], FOOT_HOLE[1], 0]) cylinder(d = 9, h = DRAWER_BOTTOM + 4);
-                translate([DETENT[0], DETENT[1], 0]) cylinder(d = DETENT_BOSS, h = DRAWER_MAGNET[1] + 1.2);
+                if (DRAWER_DETENT == "magnet") translate([DETENT[0], DETENT[1], 0]) cylinder(d = DETENT_BOSS, h = DRAWER_MAGNET[1] + 1.2);
             }
             if (rear) {
                 // the boards' bosses, and two ledges under the single board's front edge (its underside is bare
@@ -112,8 +112,9 @@ module drawer(rear = true, foot = true) {
                 translate([0, 0, DRAWER_BOTTOM + 4 - 2]) cylinder(d = 5.4, h = 2 + EPS);
             }
             // detent magnet from below
-            translate([DETENT[0], DETENT[1], 0]) mirror([0, 0, 1]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
+            if (DRAWER_DETENT == "magnet") translate([DETENT[0], DETENT[1], 0]) mirror([0, 0, 1]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
         }
+        detent_notch();
         if (rear) {
             // pilots for the boards' (and the cradle's) PT 2.3 × 8, from above
             for (h = concat(X4_HOLES, ONE_HOLES))
@@ -151,6 +152,12 @@ module drawer(rear = true, foot = true) {
 
 // a sled: the drawer's front, flange segments under the guide lips at its rear.  Its floor ends open: the board
 // plate runs to the port wall (y PLATE_D), over the sled's rear edge, so no rail can cross it there
+// the printed detent's notch under the left wall (and a sled's flange): the tray's bump drops into it as the
+// drawer closes; a sled gets the same detent
+module detent_notch() if (DRAWER_DETENT == "printed")
+    translate([DETENT_TAB_X - DRAWER_X0 - 0.2, DETENT_TAB_Y - DETENT_BUMP[1] / 2 - 0.2, -EPS])
+        cube([DETENT_TAB[0] + 0.4, DETENT_BUMP[1] + 0.4, DETENT_BUMP[0] + 0.2]);
+
 module sled() difference() {
     union() {
         intersection() {
@@ -161,6 +168,7 @@ module sled() difference() {
             cube([DRAWER_FLANGE[0] + EPS, SLED_FLANGE_Y[1] - SLED_FLANGE_Y[0], DRAWER_FLANGE[1]]);
     }
     lock_holes(SLED_LOCK_Y);
+    detent_notch();
 }
 
 // the port block: the drawer's rear bay on its own, its flanges drilled for the two lock screws

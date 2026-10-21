@@ -136,11 +136,11 @@ module tray_bottom_2d() {
 // either side of what they must clear (the row cable's window, this side's latch arm, the node's screws),
 // the ledge bridging between them.  The ledge runs from the fascia (raised to it, tray()): over the window
 // it is a bridge from the fascia to the wall behind.  `latch_y`: this side's latch arm
-module guide_left(latch_y) {
+module guide_left(latch_y, free_more = []) {
     y0 = GUIDE_Y0;
     y1 = CARRIER_D - 2;
     free = concat([[JUMPER_Y[0] - 1, JUMPER_Y[1] + 1], [latch_y - 2, latch_y + LATCH_ARM + 1]],
-                  [for (p = NODE_ACCESS) [p[1] - NODE_ACCESS_D / 2 - 1, p[1] + NODE_ACCESS_D / 2 + 1]]);
+                  [for (p = NODE_ACCESS) [p[1] - NODE_ACCESS_D / 2 - 1, p[1] + NODE_ACCESS_D / 2 + 1]], free_more);
     gussets = concat([for (g = [y0 : GUSSET_STEP : y1 - GUSSET_T]) g], [y1 - GUSSET_T],
                      [for (f = free) each [f[0] - GUSSET_T - 0.5, f[1] + 0.5]]);
     difference() {
@@ -187,7 +187,9 @@ module tray() {
                 cube([LEDGE_X, CARRIER_FASCIA, LEDGE_Z - LEDGE_T - CARRIER_WALL_H + 2 * EPS]);
             translate([0, CARRIER_D - WALL, 0]) cube([CARRIER_W, WALL, CARRIER_WALL_H]);   // rear wall
             both_sides(CARRIER_D, CARRIER_WALL_H, GROOVE_END);
-            guide_left(LATCH_Y[0]);
+            // the left one: no gusset under the detent tab, which bends down
+            guide_left(LATCH_Y[0], DRAWER_DETENT == "printed"
+                ? [[DETENT_TAB_Y0 - DETENT_TAB[2] - 1, DETENT_TAB_Y0 + DETENT_TAB[1] + 1]] : []);
             translate([CARRIER_W, 0, 0]) mirror([1, 0, 0]) guide_left(LATCH_Y[1]);
             // node PCB standoffs
             for (h = NODE_HOLES) translate(concat(node_xy(h), [0]))
@@ -199,12 +201,16 @@ module tray() {
             // drag-chain anchor bosses (2 × M3 inserts, outside the fixed run) and the low rails
             for (b = ANCHOR_BOSSES) translate(concat(b, [0])) cylinder(d = 7.5, h = ANCHOR_Z0);
             for (r = CHAIN_RAILS) translate([r[0], r[1], 0]) cube([1.2, r[2] - r[1], CARRIER_BOTTOM + 3]);
-            // detent magnet pad: the left ledge widened under the drawer's magnet, on a 45° gusset
-            translate([0, DETENT_LEDGE[1] - DETENT_PAD[1] / 2, LEDGE_Z - LEDGE_T]) {
+            // the detent: magnet, its pad (the left ledge widened under the drawer's magnet, on a 45° gusset);
+            // printed, the bump on the tab (carrier.scad › DETENT_TAB)
+            if (DRAWER_DETENT == "magnet") translate([0, DETENT_LEDGE[1] - DETENT_PAD[1] / 2, LEDGE_Z - LEDGE_T]) {
                 cube([DETENT_PAD[0], DETENT_PAD[1], LEDGE_T]);
                 rotate([90, 0, 0]) mirror([0, 0, 1]) linear_extrude(DETENT_PAD[1])
                     polygon([[WALL - EPS, 0], [DETENT_PAD[0], 0], [WALL - EPS, -(DETENT_PAD[0] - WALL)]]);
             }
+            else translate([DETENT_TAB_X, DETENT_TAB_Y - DETENT_BUMP[1] / 2, LEDGE_Z - EPS]) rotate([90, 0, 90])
+                linear_extrude(DETENT_TAB[0]) polygon([[0, 0], [DETENT_BUMP[0], DETENT_BUMP[0]],
+                    [DETENT_BUMP[1] - DETENT_BUMP[0], DETENT_BUMP[0]], [DETENT_BUMP[1], 0]]);
         }
         // the node's and the pods' M3 × 8 go deeper than the inserts: their holes run on through the floor
         // and through the bosses' tops
@@ -233,8 +239,16 @@ module tray() {
             if (p[1] - r < GUIDE_Y0 + 2)
                 translate([-r, CARRIER_FASCIA - p[1], LEDGE_Z - LEDGE_T - 1]) cube([LEDGE_X + 1 - p[0] + r, p[1] - CARRIER_FASCIA, GUIDE_TOP - LEDGE_Z + LEDGE_T + 2]);
         }
-        // closed-position detent magnet, flush with the left ledge (the pad below gives it its depth)
-        translate([DETENT_LEDGE[0], DETENT_LEDGE[1], LEDGE_Z]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
+        // closed-position detent: the magnet flush with the left ledge (the pad below gives it its depth), or the
+        // tab's slits: either side and across its free front end, through the ledge
+        if (DRAWER_DETENT == "magnet")
+            translate([DETENT_LEDGE[0], DETENT_LEDGE[1], LEDGE_Z]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
+        else translate([0, 0, LEDGE_Z - LEDGE_T - 1]) {
+            s = DETENT_TAB[2];
+            for (x = [DETENT_TAB_X - s, DETENT_TAB_X + DETENT_TAB[0]])
+                translate([x, DETENT_TAB_Y0 - s, 0]) cube([s, DETENT_TAB[1] + s, LEDGE_T + 2]);
+            translate([DETENT_TAB_X - s, DETENT_TAB_Y0 - s, 0]) cube([DETENT_TAB[0] + 2 * s, s, LEDGE_T + 2]);
+        }
     }
 }
 
