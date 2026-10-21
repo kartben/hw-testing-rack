@@ -36,6 +36,8 @@ VERSION = 0x0111
 OP_REQ_DEVLIST, OP_REP_DEVLIST = 0x8005, 0x0005
 OP_REQ_IMPORT, OP_REP_IMPORT = 0x8003, 0x0003
 CMD_SUBMIT, RET_SUBMIT = 1, 3
+CMD_UNLINK, RET_UNLINK = 2, 4
+ECONNRESET = 104
 DIR_OUT, DIR_IN = 0, 1
 DEVICE_SIZE = 312                      # struct usbip_devlist_data
 GET_DEVICE_DESCRIPTOR = bytes([0x80, 6, 0, 1, 0, 0, 18, 0])
@@ -158,6 +160,19 @@ def ret_submit(s: socket.socket) -> tuple[int, int, bytes]:
     return seq, status, data
 
 
+def unlink_request(seq: int, victim: int) -> bytes:
+    return struct.pack(">IIIIII", CMD_UNLINK, seq, 0x10001, DIR_OUT, 0, victim) + bytes(24)
+
+
+def reply(s: socket.socket) -> tuple[int, int, int]:
+    """The next reply, either kind: command, seqnum, status (IN data skipped)."""
+    hdr = recvall(s, 48)
+    command, seq, _, direction, _, status, actual = struct.unpack(">IIIIIiI", hdr[:28])
+    if command == RET_SUBMIT and direction == DIR_IN and actual:
+        recvall(s, actual)
+    return command, seq, status
+
+
 def device_descriptor(s: socket.socket, seq: int) -> bytes:
     submit(s, seq, 0, DIR_IN, 18, GET_DEVICE_DESCRIPTOR)
     rseq, status, data = ret_submit(s)
@@ -259,6 +274,41 @@ class UsbipTest(unittest.TestCase):
             self.assertEqual(devlist(), [])
             self.node.cmd("dut on")
             self.listed("1-1")
+
+    def test_5_unlink(self):
+        """A URB is answered once: unlinked, or completed then unlinked too late."""
+        self.listed("1-1")
+        s = attach("1-1")
+        self.assertIsNotNone(s)
+        submit(s, 1, 0, DIR_OUT, 0, SET_INTERFACE_0_ALT_1)
+        self.assertEqual(ret_submit(s)[:2], (1, 0))
+        # The device has data for a bulk IN: an unlink sent 0 to 2 ms after
+        # it races its completion
+        s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        seq = 2
+        outcomes = set()
+        for i in range(200):
+            urb, unl, check = seq, seq + 1, seq + 2
+            seq += 3
+            submit(s, urb, 1, DIR_IN, 64)
+            time.sleep((i % 100) / 50000)
+            s.sendall(unlink_request(unl, urb))
+            completed = False
+            while True:
+                command, rseq, status = reply(s)
+                if command == RET_SUBMIT:
+                    self.assertEqual(rseq, urb)
+                    completed = True
+                    continue
+                self.assertEqual((command, rseq), (RET_UNLINK, unl))
+                break
+            # Unlinked: no RET_SUBMIT; completed first: RET_UNLINK status 0
+            self.assertEqual(status, 0 if completed else -ECONNRESET, (completed, status))
+            outcomes.add(completed)
+            # Nothing more comes for the URB
+            self.assertEqual(device_descriptor(s, check)[:2], bytes([18, 1]))
+        s.close()
+        print(f"unlink outcomes seen (completed first?): {sorted(outcomes)}", file=sys.stderr)
 
 
 def build(workspace: Path, out: Path) -> Path:

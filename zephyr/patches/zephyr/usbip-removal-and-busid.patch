@@ -1,7 +1,7 @@
 From 9c4ddffc6766bafac5e1cd7a32c68600b43c88e5 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:24 +0200
-Subject: [PATCH 1/7] usb: usbip: check the result of the UHC transfer
+Subject: [PATCH 1/8] usb: usbip: check the result of the UHC transfer
  allocation
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -36,7 +36,7 @@ index 4fe6f2ab1ab..c52381d13e3 100644
 From 84492496a1e8a52c54ad2ef0551ea762d0e52344 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
-Subject: [PATCH 2/7] usb: usbip: clean up if request submission fails
+Subject: [PATCH 2/8] usb: usbip: clean up if request submission fails
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -104,7 +104,7 @@ index c52381d13e3..af4201c5890 100644
 From 2c3139fd76c5e4268e2f36e9f834bdad0ad19dbd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
-Subject: [PATCH 3/7] usb: usbip: dequeue pending transfers when the connection
+Subject: [PATCH 3/8] usb: usbip: dequeue pending transfers when the connection
  is closed
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -158,7 +158,7 @@ index af4201c5890..42d32e1e83b 100644
 From 817ae599f024daf38648e043beff2a7dcf67485a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:26 +0200
-Subject: [PATCH 4/7] usb: usbip: drop completions of a previous connection
+Subject: [PATCH 4/8] usb: usbip: drop completions of a previous connection
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -226,7 +226,7 @@ index 42d32e1e83b..a2988b4dc79 100644
 From 6d1fb4e3c901de57b2e459683e34bd03d00da0bf Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:27 +0200
-Subject: [PATCH 5/7] usb: usbip: bind exported devices as host class instances
+Subject: [PATCH 5/8] usb: usbip: bind exported devices as host class instances
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -766,7 +766,7 @@ index a2988b4dc79..9a6bdcd4879 100644
 From bb949826ae8124737dd7b85a6db8ce601b234da1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
-Subject: [PATCH 6/7] usb: usbip: close the connection when the exported device
+Subject: [PATCH 6/8] usb: usbip: close the connection when the exported device
  is removed
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -910,7 +910,7 @@ index 9a6bdcd4879..5896ba5422d 100644
 From e8d84a053845ef3f48b1575b625e38cd182fc693 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
-Subject: [PATCH 7/7] usb: usbip: name devices by their port
+Subject: [PATCH 7/8] usb: usbip: name devices by their port
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -973,3 +973,191 @@ index 5896ba5422d..00b41bee251 100644
  }
  
  /* Device list entry, filled with the context lock held and sent without it */
+
+From 24137c3f3299ace6b9d057c26250859d88644f1f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Wed, 21 Oct 2026 22:34:44 +0200
+Subject: [PATCH 8/8] usb: usbip: answer an unlink request when the transfer
+ ends
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+An unlink request was answered with -ECONNRESET as soon as the transfer
+was found pending, while the transfer could still complete and be
+answered with RET_SUBMIT. The client, which had given the URB back on
+RET_UNLINK, then got a RET_SUBMIT for an unknown sequence number and
+dropped the connection.
+
+Answer the unlink when the transfer ends instead: -ECONNRESET if it was
+cancelled, or status 0 after its RET_SUBMIT if it completed first. The
+command and completion threads send their replies under a lock, so that
+an unlink of a transfer that has just completed is answered after its
+RET_SUBMIT.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ subsys/usb/host/usbip.c | 70 +++++++++++++++++++++++++++++++++++------
+ 1 file changed, 61 insertions(+), 9 deletions(-)
+
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index 00b41bee251..43f85ef997c 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -58,6 +58,8 @@ struct usbip_dev_ctx {
+ 	struct usb_device *udev;
+ 	/* Protects udev against the removal of the device */
+ 	struct k_mutex lock;
++	/* Orders the replies sent by the command and the completion threads */
++	struct k_mutex tx_lock;
+ 	struct k_thread thread;
+ 	struct k_event event;
+ 	sys_dlist_t dlist;
+@@ -83,6 +85,9 @@ struct usbip_cmd_node {
+ 	struct usbip_dev_ctx *ctx;
+ 	struct uhc_transfer *xfer;
+ 	uint32_t session;
++	/* Sequence number of an unlink request, answered when the transfer ends */
++	uint32_t unlink_seqnum;
++	bool unlinking;
+ };
+ 
+ K_MEM_SLAB_DEFINE_TYPE(usbip_slab, struct usbip_cmd_node,
+@@ -161,6 +166,15 @@ static void check_ctrl_request(struct usb_device *const udev,
+ 	}
+ }
+ 
++/* Whether the connection the command came from is still open */
++static bool usbip_session_open(const struct usbip_cmd_node *const cmd_nd)
++{
++	struct usbip_dev_ctx *const dev_ctx = cmd_nd->ctx;
++
++	return k_event_test(&dev_ctx->event, USBIP_EXPORTED | USBIP_REMOVED) == USBIP_EXPORTED &&
++	       cmd_nd->session == dev_ctx->session;
++}
++
+ static int usbip_req_cb(struct usb_device *const udev, struct uhc_transfer *const xfer)
+ {
+ 	struct usbip_cmd_node *const cmd_nd = xfer->priv;
+@@ -169,11 +183,19 @@ static int usbip_req_cb(struct usb_device *const udev, struct uhc_transfer *cons
+ 	struct net_buf *buf = xfer->buf;
+ 	struct usbip_return ret;
+ 	unsigned int key;
++	bool unlinking;
+ 	int err;
+ 
+ 	LOG_INF("SUBMIT seqnum %u finished err %d ep 0x%02x",
+ 		cmd->hdr.seqnum, xfer->err, xfer->ep);
+ 
++	k_mutex_lock(&dev_ctx->tx_lock, K_FOREVER);
++
++	key = irq_lock();
++	sys_dlist_remove(&cmd_nd->node);
++	unlinking = cmd_nd->unlinking;
++	irq_unlock(key);
++
+ 	ret.hdr.command = net_htonl(USBIP_RET_SUBMIT);
+ 	ret.hdr.seqnum = net_htonl(cmd->hdr.seqnum);
+ 	ret.hdr.devid = net_htonl(cmd->hdr.devid);
+@@ -187,11 +209,10 @@ static int usbip_req_cb(struct usb_device *const udev, struct uhc_transfer *cons
+ 
+ 	if (xfer->err == -ECONNRESET) {
+ 		LOG_INF("URB seqnum %u unlinked (ECONNRESET)", cmd->hdr.seqnum);
+-		goto usbip_req_cb_error;
++		goto usbip_req_cb_unlink;
+ 	}
+ 
+-	if (k_event_test(&dev_ctx->event, USBIP_EXPORTED | USBIP_REMOVED) != USBIP_EXPORTED ||
+-	    cmd_nd->session != dev_ctx->session) {
++	if (!usbip_session_open(cmd_nd)) {
+ 		LOG_WRN("Connection closed, drop completed seqnum %u", cmd->hdr.seqnum);
+ 		goto usbip_req_cb_error;
+ 	}
+@@ -229,10 +250,23 @@ static int usbip_req_cb(struct usb_device *const udev, struct uhc_transfer *cons
+ 		}
+ 	}
+ 
++usbip_req_cb_unlink:
++	/* Status 0 if the transfer completed before it could be cancelled */
++	if (unlinking && usbip_session_open(cmd_nd)) {
++		memset(&ret, 0, sizeof(ret));
++		ret.hdr.command = net_htonl(USBIP_RET_UNLINK);
++		ret.hdr.seqnum = net_htonl(cmd_nd->unlink_seqnum);
++		ret.hdr.devid = net_htonl(cmd->hdr.devid);
++		ret.unlink.status = net_htonl(xfer->err == -ECONNRESET ? -ECONNRESET : 0);
++
++		err = usbip_send(dev_ctx->connfd, &ret, sizeof(ret));
++		if (err != 0) {
++			LOG_ERR("Send RET_UNLINK failed err %d errno %d", err, errno);
++		}
++	}
++
+ usbip_req_cb_error:
+-	key = irq_lock();
+-	sys_dlist_remove(&cmd_nd->node);
+-	irq_unlock(key);
++	k_mutex_unlock(&dev_ctx->tx_lock);
+ 
+ 	k_mem_slab_free(&usbip_slab, (void *)cmd_nd);
+ 	if (xfer->buf) {
+@@ -372,6 +406,7 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
+ 	memcpy(&cmd_nd->cmd, cmd, sizeof(struct usbip_command));
+ 	cmd_nd->ctx = dev_ctx;
+ 	cmd_nd->session = dev_ctx->session;
++	cmd_nd->unlinking = false;
+ 
+ 	/* The device cannot be removed until the transfer is queued */
+ 	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
+@@ -415,6 +450,7 @@ static int usbip_handle_unlink(struct usbip_dev_ctx *const dev_ctx,
+ 			       struct usbip_command *const cmd)
+ {
+ 	struct usbip_cmd_unlink *unlink = &cmd->unlink;
++	struct uhc_transfer *xfer = NULL;
+ 	struct usbip_return rsp;
+ 	struct usbip_cmd_node *cmd_nd;
+ 	unsigned int key;
+@@ -435,17 +471,32 @@ static int usbip_handle_unlink(struct usbip_dev_ctx *const dev_ctx,
+ 
+ 	memset(&rsp.unlink, 0, sizeof(rsp.unlink));
+ 
++	/* Held until the reply is sent, the completion cannot free the node meanwhile */
++	k_mutex_lock(&dev_ctx->tx_lock, K_FOREVER);
++
+ 	key = irq_lock();
+ 	SYS_DLIST_FOR_EACH_CONTAINER(&dev_ctx->dlist, cmd_nd, node) {
+ 		if (cmd_nd->cmd.hdr.seqnum == cmd->unlink.seqnum) {
+-			rsp.unlink.status = net_htonl(-ECONNRESET);
+-			(void)uhc_ep_dequeue(usbip_uhs_ctx.dev, cmd_nd->xfer);
++			cmd_nd->unlink_seqnum = cmd->hdr.seqnum;
++			cmd_nd->unlinking = true;
++			xfer = cmd_nd->xfer;
+ 			break;
+ 		}
+ 	}
+ 	irq_unlock(key);
+ 
+-	return usbip_send(dev_ctx->connfd, &rsp, sizeof(rsp));
++	if (xfer != NULL) {
++		/* The completion of the transfer replies */
++		(void)uhc_ep_dequeue(usbip_uhs_ctx.dev, xfer);
++		ret = 0;
++	} else {
++		/* Completed already, and its RET_SUBMIT sent */
++		ret = usbip_send(dev_ctx->connfd, &rsp, sizeof(rsp));
++	}
++
++	k_mutex_unlock(&dev_ctx->tx_lock);
++
++	return ret;
+ }
+ 
+ static int usbip_handle_cmd(struct usbip_dev_ctx *const dev_ctx)
+@@ -915,6 +966,7 @@ static int usbip_init(void)
+ 		/* busnum << 16 | devnum */
+ 		ctx->devid = (1U << 16) | i;
+ 		k_mutex_init(&ctx->lock);
++		k_mutex_init(&ctx->tx_lock);
+ 		sys_dlist_init(&ctx->dlist);
+ 		k_event_init(&ctx->event);
+ 	}
