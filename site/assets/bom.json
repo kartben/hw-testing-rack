@@ -3909,8 +3909,8 @@
 {
 "part": "drawer",
 "qty": 7,
-"grams_each": 46.7,
-"grams_total": 326.7,
+"grams_each": 46.6,
+"grams_total": 326.0,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
@@ -3923,8 +3923,8 @@
 {
 "part": "drawer_sled",
 "qty": 1,
-"grams_each": 29.9,
-"grams_total": 29.9,
+"grams_each": 29.8,
+"grams_total": 29.8,
 "stl": "mechanical/stl/drawer_sled.stl"
 },
 {
@@ -4077,8 +4077,8 @@
 {
 "part": "tray",
 "qty": 8,
-"grams_each": 81.5,
-"grams_total": 652.3,
+"grams_each": 81.4,
+"grams_total": 651.6,
 "stl": "mechanical/stl/tray.stl"
 },
 {

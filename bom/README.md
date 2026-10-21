@@ -138,9 +138,9 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 7 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 7 | 46.7 | `mechanical/stl/drawer.stl` |
+| drawer | 7 | 46.6 | `mechanical/stl/drawer.stl` |
 | drawer_block | 1 | 17.2 | `mechanical/stl/drawer_block.stl` |
-| drawer_sled | 1 | 29.9 | `mechanical/stl/drawer_sled.stl` |
+| drawer_sled | 1 | 29.8 | `mechanical/stl/drawer_sled.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 48.7 | `mechanical/stl/ladder_a.stl` |
 | ladder_b | 5 | 48.7 | `mechanical/stl/ladder_b.stl` |
@@ -162,7 +162,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | power_box_base | 1 | 35.2 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
-| tray | 8 | 81.5 | `mechanical/stl/tray.stl` |
+| tray | 8 | 81.4 | `mechanical/stl/tray.stl` |
 | x4_cradle | 2 | 8.3 | `mechanical/stl/x4_cradle.stl` |
 
 ## Line items

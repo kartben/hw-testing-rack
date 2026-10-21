@@ -36,9 +36,26 @@ RIB = 6;                                       // floor ribs
 FRONT_OVERHANG = DRAWER_X0 - 1;            // front panel overhangs the guides
 FOOT_GROOVE = [6.4, DRAWER_D - FOOT_HOLE[1] + 1, 2.3];
 
+// the front panel: R3 on its two front vertical corners (its back joins the drawer), a 0.5 × 45° chamfer round its
+// front and side bed edges, a 0.8 round on its top edges (lib/common.scad › the visual language)
 module front_panel() {
+    w = DRAWER_W + 2 * FRONT_OVERHANG;
+    x0 = -FRONT_OVERHANG;
+    r = VL_R[0];
+    module outline(inset = 0) intersection() {
+        hull() {
+            for (x = [x0 + r, x0 + w - r]) translate([x, r]) circle(r = r - inset, $fn = 48);
+            translate([x0 + inset, r]) square([w - 2 * inset, DRAWER_FRONT_T - r]);
+        }
+        translate([x0 - 1, -1]) square([w + 2, DRAWER_FRONT_T + 1]);
+    }
     difference() {
-        translate([-FRONT_OVERHANG, 0, 0]) rbox([DRAWER_W + 2 * FRONT_OVERHANG, DRAWER_FRONT_T, DRAWER_FRONT_H], r = 1.2);
+        hull() {
+            linear_extrude(EPS) outline(VL_CHAMFER);
+            translate([0, 0, VL_CHAMFER]) linear_extrude(DRAWER_FRONT_H - VL_CHAMFER) outline();
+        }
+        translate([x0, 0, DRAWER_FRONT_H]) mirror([0, 0, 1]) edge_round(w);
+        translate([x0, DRAWER_FRONT_T, DRAWER_FRONT_H]) mirror([0, 1, 0]) mirror([0, 0, 1]) edge_round(w);
         // finger pull: scoop at the top centre
         translate([DRAWER_W / 2, -EPS, DRAWER_FRONT_H]) rotate([-90, 0, 0])
             scale([1, 0.32, 1]) cylinder(r = 28, h = DRAWER_FRONT_T + 2 * EPS, $fn = 96);
@@ -74,6 +91,9 @@ module port_wall() {
             for (s = [-1, 1]) translate([s * (w / 2 - r), 0, r]) rotate([-90, 0, 0]) cylinder(r = r, h = t + 2 * EPS);
             translate([-w / 2, 0, r]) cube([w, t + 2 * EPS, DRAWER_WALL_H]);
         }
+        // the port numbers, 1–4 left to right, debossed in the wall's front face left of each U
+        for (i = [0 : len(PORT_XS) - 1]) translate([PORT_XS[i] - w / 2 - 2.3, y - t, PORT_Z]) rotate([90, 0, 0])
+            deboss(str(i + 1), cap = 5.5);
     }
 }
 

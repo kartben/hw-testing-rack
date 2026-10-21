@@ -51,3 +51,26 @@ module label_text(txt, size = 6, depth = 0.6, font = "Liberation Sans:style=Bold
     linear_extrude(depth) text(txt, size = size, font = font, halign = "center", valign = "center");
 }
 
+
+// ---------------------------------------------------------------- the visual language
+// One set of rules for every part (docs/printed-parts-review.md › The visual language): R3 on the outer
+// vertical edges of big parts, R1.5 on small ones; a 0.5 × 45° chamfer on the visible bed edges (it hides the
+// elephant's foot); a 0.8 round on free top edges; text debossed 0.6 mm in Liberation Sans Bold, capitals at
+// least 4.5 mm on a horizontal face, 5.5 on a vertical one.
+VL_R = [3, 1.5];
+VL_CHAMFER = 0.5;
+VL_FILLET = 0.8;
+VL_DEPTH = 0.6;
+function vl_size(cap) = cap / 0.955;      // OpenSCAD's text size for a capital height (Liberation Sans Bold)
+
+// cutters for a straight edge along +X from the origin, `len` long, between the faces y = 0 and z = 0 with
+// the material at y >= 0, z >= 0: a 45° chamfer c, or a round of radius r.  Rotate / mirror them onto an edge
+module edge_chamfer(len, c = VL_CHAMFER) translate([-EPS, 0, 0]) rotate([90, 0, 90]) linear_extrude(len + 2 * EPS)
+    polygon([[-1, -1], [c, -1], [c, -EPS], [-EPS, c], [-1, c]]);
+module edge_round(len, r = VL_FILLET) translate([-EPS, 0, 0]) rotate([90, 0, 90]) linear_extrude(len + 2 * EPS)
+    difference() { translate([-1, -1]) square([r + 1, r + 1]); translate([r, r]) circle(r = r, $fn = 32); }
+
+// text debossed into a face: lay it in the XY plane at the face (z = 0), reading from +Z; it goes `depth` down
+module deboss(t, cap = 4.5, depth = VL_DEPTH, halign = "center", valign = "center")
+    translate([0, 0, -depth]) linear_extrude(depth + EPS)
+        text(t, size = vl_size(cap), font = "Liberation Sans:style=Bold", halign = halign, valign = valign);

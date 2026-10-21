@@ -219,6 +219,12 @@ module tray() {
         for (c = cam_inserts()) translate([c[0], c[1], 0]) mirror([0, 0, 1]) insert_hole(INSERT_M3, runout = CARRIER_BOTTOM + 4 - INSERT_M3[1] + 1);
         for (b = ANCHOR_BOSSES) translate(concat(b, [ANCHOR_Z0])) insert_hole(INSERT_M3);
         fascia_cutouts();
+        // the visual language: R3 on the fascia's two outer vertical corners (with the ledges' front ends), a 0.5
+        // chamfer on its bed edge, a 0.8 round on its top front edge between the raised ends
+        for (m = [0, 1]) translate([m * CARRIER_W, 0, -EPS]) mirror([m, 0, 0])
+            multmatrix([[0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1]]) edge_round(LEDGE_Z + 1, r = VL_R[0]);
+        edge_chamfer(CARRIER_W);
+        translate([LEDGE_X, 0, CARRIER_WALL_H]) mirror([0, 0, 1]) edge_round(CARRIER_W - 2 * LEDGE_X);
         // bay label recess on the fascia, right of the controls
         translate([CARRIER_W - 34, 0.6 - EPS, CARRIER_WALL_H / 2]) rotate([90, 0, 0])
             linear_extrude(0.7) square([52, 11], center = true);
