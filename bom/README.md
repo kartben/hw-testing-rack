@@ -6,16 +6,16 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Category | Cost (€) |
 |---|---:|
 | Electronics | 743 |
-| Power | 82 |
 | Cables | 80 |
 | Cameras | 64 |
 | Printed parts | 62 |
+| Power | 58 |
 | Motion | 19 |
 | Fasteners | 8 |
 | Analyzer | 7 |
-| **Total** | **1,064** |
+| **Total** | **1,040** |
 
-≈ **€133 per bay** all-in.
+≈ **€130 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -391,8 +391,8 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Analyzer | Raspberry Pi Pico 2 (RP2350), the logic analyzer in B3.3 | 1  | 5.50 | 5.50 | Raspberry Pi approved reseller (Kubii, The Pi Hut, Pimoroni) |
 | Analyzer | Dupont jumper wires, female–female, 10 cm, a 40-wire strip | 1  | 1.50 | 1.50 | AliExpress |
 | Cables | Dupont jumper wires, female–female, 20 cm, a 40-wire strip (DATA ×4 RESET/BOOT headers → the boards' pins: 1 wire) | 1  | 2.00 | 2.00 | AliExpress |
-| Power | USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port | 1  | 70.00 | 70.00 | Anker / UGREEN / Satechi (any PD 3.1 EPR) |
-| Power | USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A / EPR e-marker) |
+| Power | USB PD charger, 100 W (20 V × 5 A), single port (e.g. Anker Nano 100 W, A2679) | 1  | 46.00 | 46.00 | Anker (anker.com/fr) / UGREEN / any PD 100 W |
+| Power | USB-C to USB-C cable, 5 A, e-marked (100 W or 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A e-marker) |
 | Cameras | Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm | 2  | 28.25 | 56.50 | Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey |
 | Cameras | M12 lens, 1/4", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK) | 2  | 3.00 | 6.00 | AliExpress |
 | Cameras | Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order) | 2  | 0.50 | 1.00 | AliExpress |

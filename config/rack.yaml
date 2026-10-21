@@ -108,8 +108,13 @@ power_box:                # mechanical/parts/power_box.scad: the power hub's enc
   size: [84, 108, 35]     # outer W × D × H: the hub (76 × 100) and its tallest part (the 100 µF bulk capacitor)
   wall: 2.4
   charger:                # outside the rack, on the USB-C PD input in the box's rear wall
-    part: "USB PD 3.1 EPR charger, 140 W (28 V × 5 A), single port"
-    cable: "USB-C to USB-C cable, 5 A, e-marked (EPR 240 W rated), 1–2 m"
+    part: "USB PD charger, 100 W (20 V × 5 A), single port (e.g. Anker Nano 100 W, A2679)"
+    price: 46               # EUR, anker.com/fr 2026-10-21
+    cable: "USB-C to USB-C cable, 5 A, e-marked (100 W or 240 W rated), 1–2 m"
+    # the option for racks full of hungry DUTs: a PD 3.1 EPR charger, 140 W (28 V × 5 A), single port, e.g.
+    # Samsung EP-TB410 (≈ €84 without a cable, the cheapest found in France on 2026-10-21; UGREEN Nexode or
+    # Anker 717 140 W often €60–80 on sale, unverified).  The hub asks for 28 V EPR whenever it is offered:
+    # no hardware change, a 240 W e-marked cable
 
 # Example population used by the docs, the BOM roll-up and the 3D viewer.
 # board ids refer to mechanical/boards/boards.yaml; cable ids to cables below.  `mount`, per bay, the same

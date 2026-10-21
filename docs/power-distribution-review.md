@@ -9,6 +9,14 @@ cables carry enough current?  VRACK is 20 V or 28 V (the CH224A's contract), not
 **Decided on 2026-10-21: fix 1, real AWG 24 leads** ([the decision](#decision-real-awg-24-leads)).  The
 hub B1 and the nodes keep their PH 6 rows; no PH 8, no VH, no PA for now.
 
+**Decided on 2026-10-21: 20 V by default.**  The rack's supply is a 100 W USB-C PD charger at
+20 V × 5 A (e.g. the Anker Nano 100 W); the 140 W EPR charger (28 V) becomes an option.  The real
+load is ≈ 35–40 W; 140 W only matters for racks full of hungry DUTs.
+- **Per row:** at 20 V the eFuse's 1.6 A caps a row at ≈ 32 W.  Typical rows draw 8–15 W (0.4–0.8 A);
+  only four bays at their worst (≈ 44 W) would reach the cap.
+- **Whole rack:** the firmware's power budget (the hub app) sheds rows before the charger trips.
+- **EPR:** 28 V stays an upgrade with no hardware change; the hub asks for it whenever it is offered.
+
 ## A. The row wiring
 
 ### Loads
@@ -72,8 +80,9 @@ cable); 28 AWG 0.55 W/m.  Each contact dissipates ≈ 50 mW.
 - **Worst case: marginal.**  At 28 V a full row reaches the eFuse's 1.6 A.  That is 80 % of a PH
   contact, but only on AWG 24, and the leads we buy are probably 26 AWG.  It works, warm, outside
   JST's rated conditions; the eFuse caps it, nothing burns.
-- **At 20 V the worst case (2.1–2.25 A) doesn't fit:** the eFuse limits the row.  28 V stays the
-  default; 20 V is only for light rows.
+- **At 20 V the worst case (2.1–2.25 A) doesn't fit:** the eFuse limits the row at 1.6 A (≈ 32 W).
+  Typical rows (0.4–0.8 A) stay well under it.  20 V is the default since 2026-10-21 (a 100 W
+  charger), with the firmware's power budget; 28 V EPR is the option for racks full of hungry DUTs.
 
 ### Fixes
 

@@ -126,8 +126,8 @@ The power box ([mechanical.md](mechanical.md#power-box)):
 4. Lift the box over the floor plate's front lip under A1 and let its sockets
    drop over the bosses.
 5. The charger's 5 A e-marked USB-C cable into the rear port, out of the back
-   through the base brace, to a dedicated USB PD 3.1 charger (140 W EPR
-   recommended, [power.md](power.md#the-charger)).
+   through the base brace, to a dedicated single-port USB PD charger (100 W at
+   20 V by default, [power.md](power.md#the-charger)).
 
 On first power-up, check the front **PD** LED: breathing = contract in place,
 steady = the charger can't give what was asked, flicker = a fault.  Rows stay

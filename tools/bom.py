@@ -1054,14 +1054,18 @@ def hardware(rack) -> list[dict]:
                               "the boards' pin headers are soldered by hand, pins up"})
     rows += [
         # the rack's supply: a USB PD charger outside it, into the power box's rear wall (the hub's
-        # CH224A sink asks for 28 V EPR, or 20 V), so no mains wiring anywhere in the rack
-        {"category": "Power", "item": charger["part"], "supplier": "Anker / UGREEN / Satechi (any PD 3.1 EPR)",
-         "qty": 1, "unit_eur": 70.0,
-         "notes": "dedicated to the rack: a multi-port charger may withdraw its 28 V / 5 A offer when something else "
-                  "is plugged in.  Realistic load ≈ 35–40 W, worst case ≈ 130 W; a 100 W (20 V × 5 A) charger "
-                  "covers normal use, the hub budgets rows against the contract"},
-        {"category": "Power", "item": charger["cable"], "supplier": "any (check the 5 A / EPR e-marker)", "qty": 1,
-         "unit_eur": 12.0, "notes": "above 3 A the charger only offers its full current through an e-marked 5 A cable"},
+        # CH224A sink asks for 28 V EPR when offered, else 20 V), so no mains wiring anywhere in the rack.
+        # 100 W at 20 V by default since 2026-10-21 (the user); 140 W EPR is the option (config/rack.yaml)
+        {"category": "Power", "item": charger["part"], "supplier": "Anker (anker.com/fr) / UGREEN / any PD 100 W",
+         "qty": 1, "unit_eur": float(charger.get("price", 46)),
+         "notes": "dedicated to the rack: a multi-port charger may withdraw its full offer when something else "
+                  "is plugged in.  Realistic load ≈ 35–40 W.  At 20 V a row is capped at ≈ 32 W (its eFuse's "
+                  "1.6 A), and the hub budgets the rows against the contract: it sheds rows before the charger "
+                  "trips.  For racks full of hungry DUTs, a 140 W PD 3.1 EPR charger (28 V): no hardware change"},
+        {"category": "Power", "item": charger["cable"], "supplier": "any (check the 5 A e-marker)", "qty": 1,
+         "unit_eur": 12.0, "notes": "required for 100 W: above 3 A a charger only offers its full current through "
+                                   "an e-marked 5 A cable (a 3 A one gives 60 W).  A cable shipped with the charger "
+                                   "and rated 100 W or more is one; 240 W rated for the 140 W EPR option"},
     ]
     if CAMERA_SETS:
         cams = CAMERA_SETS
