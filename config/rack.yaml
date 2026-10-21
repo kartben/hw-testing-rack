@@ -210,6 +210,10 @@ cables:
   row-feed:     { label: "JST PH 6-pin feed, 1:1, 24 AWG (VRACK, CAN, POS)", length: 600 }
 
 pcb:
+  solder_mask: black        # the rack's own boards (the user's choice, 2026-10-21): JLC's black mask, white silkscreen.  Free on
+                            # 2 layers (a day more to build), $8.00 more an order on 4 (jlcpcb.com calculator, 2026-10-21: 5
+                            # PCBs ≤ 100 × 100, $8.00 → $16.00, the same 3–4 days).  The viewer and the renders paint it
+                            # (tools/pcb_glb.py); order it in the JLC form's "PCB Color"
   bay_node:
     size: [74, 90]          # X × Y; KiCad y=0 is the REAR edge, y=90 the front edge (grown 10 mm at the rear for
                             # the WROOM-1 module: every y below moved by 10, the board's front and holes stay put;

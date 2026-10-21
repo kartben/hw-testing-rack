@@ -443,11 +443,27 @@ def _usd(fees: dict) -> str:
     return ", ".join(f"{k} ${v:.2f}" for k, v in fees.items())
 
 
+# JLC's price for a solder mask other than green (config/rack.yaml › pcb.solder_mask), by layer count: free on 2
+# layers (a day more to build), $8.00 an order on 4 (jlcpcb.com calculator, 2026-10-21, black, 5 PCBs ≤ 100 × 100 mm,
+# the same 3–4 days; 6 layers taken as 4, not checked)
+JLC_MASK_COLOUR = {2: 0.00, 4: 8.00, 6: 8.00}
+
+
+def _layers(name: str) -> int:
+    """A board's copper layers (config/rack.yaml › pcb), its assembly variants and panel the board's."""
+    key = name.removesuffix("-panel").removesuffix("-base").replace("-", "_")
+    return int(rackcfg.load().raw["pcb"].get(key, {}).get("layers", 2))
+
+
 def jlc_order(name: str, ext: set, hand: set) -> tuple[dict, dict, list[str]]:
-    """The quoted PCB and PCBA lines of one board, adjusted for JLC_FINISH and for the hand-soldered
-    parts (`hand`) among its extended part types (`ext`)."""
+    """The quoted PCB and PCBA lines of one board, adjusted for JLC_FINISH, for the rack's solder mask colour
+    and for the hand-soldered parts (`hand`) among its extended part types (`ext`)."""
     q = JLC_QUOTE[name]
     pcb, pcba, changes = dict(q["pcb"]), dict(q["pcba"]), []
+    mask = rackcfg.load().raw["pcb"].get("solder_mask", "green")
+    if mask != "green" and JLC_MASK_COLOUR.get(_layers(name), 8.00):
+        pcb[f"{mask} solder mask"] = JLC_MASK_COLOUR.get(_layers(name), 8.00)
+        changes.append(f"{mask} solder mask on {_layers(name)} layers (+${pcb[f'{mask} solder mask']:.2f})")
     if name in JLC_FINISH:
         finish, usd = JLC_FINISH[name]
         changes.append(f"{finish} ≈ ${usd:.2f} instead of ENIG ${pcb['ENIG']:.2f}")

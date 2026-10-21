@@ -64,6 +64,13 @@ BOARD_MODELS = {
     "beagleplay": ("https://git.beagleboard.org/api/v4/projects/beagleplay%2Fbeagleplay/repository/files/"
                    "Design%2Fbeagleplayv10_a2_board_3D_20221219.stp/raw?ref=main",
                    "BeaglePlay (rev A2) board STEP, Seeed Technology and BeagleBoard.org Foundation, CC BY 4.0"),
+    # its PCB design (Altium, imported from the Allegro original): the STEP's PCB painted from it (board_models
+    # model.paint: copper, mask, silkscreen through KiCad)
+    "beagleplay-design": ("https://git.beagleboard.org/api/v4/projects/beagleplay%2Fbeagleplay/repository/files/"
+                          "Design%2FAltium%20Export%2FBEAGLEPLAYV020_220915.PrjPcb%2FBEAGLEPLAYV020_220915.brd.PcbDoc"
+                          "/raw?ref=main",
+                          "BeaglePlay PCB design (Altium export), Seeed Technology and BeagleBoard.org Foundation, "
+                          "CC BY 4.0", "beagleplay-design.PcbDoc"),
     "wio-terminal": ("https://raw.githubusercontent.com/Seeed-Studio/OSHW-WioTerminal/master/"
                      "Design%20Files%20in%20Wio%20Terminal%20Wiki/Wio-Terminal/Wio%20Terminal%203D.stp",
                      "Seeed Wio Terminal STEP (the whole device), Seeed Studio, Apache License 2.0"),
@@ -112,13 +119,14 @@ def board_models():
             print("have", dst.relative_to(REPO))
             notes.append(f"{bid}: {note} <{url}>")
             continue
-        raw = next((f for f in (dl / f"{bid}.zip", dl / f"{bid}.step") if f.exists()), None)
+        bare = Path(member[0]).suffix if member else ".step"           # a file that isn't a zip: the STEP itself
+        raw = next((f for f in (dl / f"{bid}.zip", dl / f"{bid}{bare}") if f.exists()), None)
         if raw is None:
             data = get(url)
-            raw = dl / f"{bid}{'.zip' if data[:2] == b'PK' else '.step'}"     # a zip, or the STEP itself
+            raw = dl / f"{bid}{'.zip' if data[:2] == b'PK' else bare}"
             raw.write_bytes(data)
             print("got ", raw.relative_to(REPO), f"{raw.stat().st_size / 1e6:.1f} MB")
-        if raw.suffix == ".step":
+        if raw.suffix != ".zip":
             dst.write_bytes(raw.read_bytes())
             print("    ", raw.name, "→", dst.relative_to(REPO))
             notes.append(f"{bid}: {note} <{url}>")

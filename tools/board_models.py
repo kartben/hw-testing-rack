@@ -14,6 +14,9 @@ stand-in box went.  Fix-ups per board in boards.yaml:
 
     model: { rot: 180, flip: false, offset: [0, 0] }   # extra turn about Z, upside-down export, nudge (mm; a third
                                                        # value lowers a whole device under its "PCB" plane)
+    model: { recolour: { "#003700": "#f4f4f2" },          # a STEP's design colours → the board's real ones; parts of
+             recolour_in: [["#666666", [0, 70, 50, 82], "#e8e5d8"]] }   # one colour told apart by where they are
+    model: { paint: <the maker's PCB design (PcbDoc)>, mask: "#161616" }   # its PCB's faces painted from the design
 
 A board made of several models (a shield on its host) lists them under model.stack instead (see stack()), and
 model.web: true also writes the viewer's copy to site/assets/boards/<id>.glb, for models whose licence lets the
@@ -144,11 +147,22 @@ def normalise(board_id: str, spec: dict, src: Path) -> dict:
     R = trimesh.transformations.translation_matrix([off[0], off[1], off[2]]) @ R
     out = trimesh.Scene()
     t = z1 - z0
-    for i, m in enumerate(meshes):
+    kept = []
+    for m in meshes:
         m.apply_transform(R)
         if 0.01 < m.bounds[0][2] and m.bounds[1][2] < t - 0.01:
             continue                            # inside the PCB (a board's inner copper planes): never seen
-        m = _recolour(m, spec.get("model", {}).get("recolour", {}))
+        for colour, (x0, y0, x1, y1), to in spec.get("model", {}).get("recolour_in", []):
+            cx, cy = (m.bounds[0][:2] + m.bounds[1][:2]) / 2       # parts of one colour told apart by place
+            if x0 <= cx <= x1 and y0 <= cy <= y1:
+                m = _recolour(m, {colour: to})
+        kept.append(_recolour(m, spec.get("model", {}).get("recolour", {})))
+    paint = spec.get("model", {}).get("paint")
+    if paint:                                   # its PCB's faces painted from the maker's design (tools/vendor_pcb.py)
+        import vendor_pcb
+        pcb = vendor_pcb.design(SRC / paint, f"{board_id}-design", spec["model"])
+        kept = vendor_pcb.paint_faces(kept, vendor_pcb.layer_art(pcb, spec["model"]), board_id, spec["size"], t)
+    for i, m in enumerate(kept):
         out.add_geometry(m, node_name=f"{board_id}-{i}", geom_name=f"{board_id}-{i}")
     dst = SRC / f"{board_id}.norm.glb"
     out.export(dst)
@@ -210,6 +224,7 @@ def by_material(meshes: list[trimesh.Trimesh], name: str) -> tuple[trimesh.Scene
     out = trimesh.Scene()
     for i, m in enumerate(meshes):
         if getattr(getattr(m.visual, "material", None), "baseColorTexture", None) is not None:
+            m.visual.material.baseColorTexture = _jpeg(m.visual.material.baseColorTexture)   # not re-encoded as PNG
             out.add_geometry(m, node_name=f"{name}-tex{i}", geom_name=f"{name}-tex{i}")   # a painted PCB face
             continue
         if max(m.extents) < 0.3:
@@ -227,6 +242,17 @@ def by_material(meshes: list[trimesh.Trimesh], name: str) -> tuple[trimesh.Scene
             alphaMode="BLEND" if rgba[3] < 250 else "OPAQUE", doubleSided=False))
         out.add_geometry(m, node_name=f"{name}-{i}", geom_name=f"{name}-{i}")
     return out, len(groups)
+
+
+def _jpeg(img):
+    """A texture as a JPEG-format image: glTF export keeps a JPEG as JPEG, anything else becomes a (big) PNG."""
+    import io
+    from PIL import Image
+    if getattr(img, "format", None) == "JPEG":
+        return img
+    buf = io.BytesIO()
+    img.convert("RGB").save(buf, format="JPEG", quality=88, optimize=True)
+    return Image.open(io.BytesIO(buf.getvalue()))
 
 
 def write_web(scene: trimesh.Scene, dst: Path) -> bool:

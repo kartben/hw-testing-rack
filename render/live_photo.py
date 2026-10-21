@@ -162,12 +162,17 @@ def dress(rack):
                     r, g, b_, _ = bsdf.inputs["Base Color"].default_value
                     hi, lo = max(r, g, b_), min(r, g, b_)
                     sat = (hi - lo) / hi if hi else 0
-                    finished = src.name.startswith("finish-")          # a maker's model: tools/board_models.py
+                    painted = bsdf.inputs["Base Color"].is_linked      # a PCB face painted from its layers
+                    finished = src.name.startswith("finish-") or painted  # (its white factor is no colour) or a
                     if not finished and cat != "pcb" and hi > 0.45 and \
-                            (sat < 0.12 or (r > g > b_ and sat > 0.35 and hi > 0.5)):   # decided (a white PCB, a case)
-                        bsdf.inputs["Metallic"].default_value = 1.0       # nickel shells, gold pins / pads
-                        bsdf.inputs["Roughness"].default_value = 0.25
-                    if bsdf.inputs["Metallic"].default_value < 0.5:
+                            (sat < 0.12 or (r > g > b_ and sat > 0.35 and hi > 0.5)):   # maker's model whose finish
+                        bsdf.inputs["Metallic"].default_value = 1.0       # tools/board_models.py decided; else
+                        bsdf.inputs["Roughness"].default_value = 0.25     # nickel shells, gold pins / pads
+                    if painted:                                           # a satin mask (JLC's black), not a lacquer
+                        bsdf.inputs["Roughness"].default_value = 0.52
+                        bsdf.inputs["Coat Weight"].default_value = 0.05
+                        bsdf.inputs["Coat Roughness"].default_value = 0.4
+                    elif bsdf.inputs["Metallic"].default_value < 0.5:
                         bsdf.inputs["Roughness"].default_value = 0.32
                         bsdf.inputs["Coat Weight"].default_value = 0.35      # solder-mask lacquer
                         bsdf.inputs["Coat Roughness"].default_value = 0.15

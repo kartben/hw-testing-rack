@@ -24,7 +24,7 @@ from pathlib import Path
 
 import numpy as np
 import trimesh
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 REPO = Path(__file__).resolve().parents[1]
 # KiCad GLB (x, y-up, z = KiCad y) [m] → viewer (x, -KiCad y, up) [mm]
@@ -39,6 +39,12 @@ FINISH = (212, 170, 86)         # ENIG pads (mask openings over copper)
 FINISHES = {"ENIG": FINISH, "HASL": (198, 198, 192)}   # the board's copper_finish (design.py "finish")
 LAMINATE = (176, 160, 112)      # mask opening without copper
 SILK = (238, 238, 232)
+# the rack's own boards' solder mask (config/rack.yaml › pcb.solder_mask): its colour, over copper, its roughness.
+# JLC's black is a satin, nearly opaque black: the copper under it barely lighter, the traces showing mostly by
+# their relief catching the light (relief())
+SOLDER_MASKS = {"green": {"mask": MASK, "mask_cu": MASK_CU, "rough": 0.55},
+                "black": {"mask": (17, 18, 20), "mask_cu": (25, 26, 29), "rough": 0.55},
+                "white": {"mask": (232, 233, 229), "mask_cu": (222, 223, 218), "rough": 0.45, "silk": (24, 24, 26)}}
 HOLE = (22, 22, 22)
 EDGE = (150, 140, 102)          # board edge / hole walls
 
@@ -98,6 +104,44 @@ def paint(art: dict, side: str) -> Image.Image:
     return Image.open(io.BytesIO(buf.getvalue()))      # keeps format == "JPEG" for the GLB
 
 
+def solder_mask(art: dict) -> dict:
+    """art with the rack's own boards' solder mask (config/rack.yaml › pcb.solder_mask) where it names none."""
+    import yaml
+    raw = yaml.safe_load((REPO / "config" / "rack.yaml").read_text(encoding="utf-8"))
+    sm = SOLDER_MASKS[raw.get("pcb", {}).get("solder_mask", "green")]
+    return {"mask": sm["mask"], "mask_cu": sm["mask_cu"], "rough": sm["rough"], "silk": sm.get("silk", SILK), **art}
+
+
+def relief(art: dict, side: str) -> Image.Image:
+    """A normal map of one face (tangent space, as its texture): the mask lies over the copper (35 µm) and the
+    silkscreen over the mask (≈ 15 µm), so the traces show by their edges catching the light, which on a dark
+    mask is how one sees them."""
+    (ox, oy), (w, h) = art["origin"], art["size"]
+    k = PX_PER_MM / 2                             # half the colour's resolution: a subtle relief, a smaller file
+    size = (int(round(w * k)), int(round(h * k)))
+
+    def layer(name):
+        im = Image.new("L", size, 0)
+        d = ImageDraw.Draw(im)
+        for poly in art["layers"].get(name, []):
+            if len(poly) >= 3:
+                d.polygon([((x - ox) * k, (y - oy) * k) for x, y in poly], fill=255)
+        return im
+
+    p = "F" if side == "top" else "B"
+    hgt = (np.asarray(layer(f"{p}.Cu").filter(ImageFilter.GaussianBlur(0.8)), float) * 1.0
+           + np.asarray(layer(f"{p}.SilkS").filter(ImageFilter.GaussianBlur(0.4)), float) * 0.4) / 255.0
+    gy, gx = np.gradient(hgt)
+    # 35 µm of copper under a mask that rounds its edges over ≈ 0.15 mm: a flank of ≈ 8–10° at its steepest
+    s = 0.25
+    n = np.dstack([-gx * s, gy * s, np.ones_like(hgt)])      # image y runs down the texture: v up
+    n /= np.linalg.norm(n, axis=2, keepdims=True)
+    out = Image.fromarray(np.round((n * 0.5 + 0.5) * 255).astype(np.uint8), "RGB")
+    buf = io.BytesIO()
+    out.save(buf, format="JPEG", quality=90, optimize=True)
+    return Image.open(io.BytesIO(buf.getvalue()))
+
+
 def board_body(parts: list, art: dict | None, name: str) -> list:
     body = trimesh.util.concatenate(parts)
     nz = body.face_normals[:, 2]
@@ -116,7 +160,8 @@ def board_body(parts: list, art: dict | None, name: str) -> list:
         m = body.submesh([faces], append=True)
         kx, ky = m.vertices[:, 0], -m.vertices[:, 1]
         uv = np.column_stack([(kx - ox) / w, 1.0 - (ky - oy) / h])
-        mat = pbr(baseColorTexture=paint(art, side), metallicFactor=0.0, roughnessFactor=0.55, name=f"{name}-{side}")
+        mat = pbr(baseColorTexture=paint(art, side), normalTexture=relief(art, side), metallicFactor=0.0,
+                  roughnessFactor=art.get("rough", 0.55), name=f"{name}-{side}")
         m.visual = trimesh.visual.TextureVisuals(uv=uv, material=mat)
         out.append(m)
     if len(edge):
@@ -281,7 +326,7 @@ def convert(src: Path, dst: Path, art_path: Path | None = None, max_group_faces:
             strict: bool = False) -> dict:
     scene = trimesh.load(src)
     board = src.stem
-    art = json.loads(art_path.read_text()) if art_path and art_path.exists() else None
+    art = solder_mask(json.loads(art_path.read_text())) if art_path and art_path.exists() else None
     pcb = REPO / "electronics" / board / f"{board}.kicad_pcb"
     if art is not None and pcb.exists():
         m = re.search(r'\(copper_finish "([^"]+)"\)', pcb.read_text(encoding="utf-8"))
@@ -364,7 +409,7 @@ def convert_bodies(src: Path, board: str, hide: set | None = None, name: str | N
     pcb = REPO / "electronics" / board / f"{board}.kicad_pcb"
     boxes = footprint_boxes(pcb) if hide else []
     art_path = REPO / "electronics" / board / "build" / f"{board}-art.json"
-    art = json.loads(art_path.read_text()) if art_path.exists() else None
+    art = solder_mask(json.loads(art_path.read_text())) if art_path.exists() else None
     if art is not None:
         m_ = re.search(r'\(copper_finish "([^"]+)"\)', pcb.read_text(encoding="utf-8"))
         art["finish"] = m_.group(1) if m_ else None

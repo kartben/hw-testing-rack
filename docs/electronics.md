@@ -595,7 +595,10 @@ where it didn't matter (e.g. 150k RT, 100k/18k FB).
 * `fab/<board>.step` and `fab/<board>.glb` (the web viewer and the renders use the GLB: `tools/pcb_glb.py`
   turns the bay node's, the power hub's, the DATA port's, the camera pod's and the DATA ×4 v2's into
   `site/assets/pcb/<board>.glb`, each drawn where the rack puts the board; the DATA ×4 v2's GLB is its STEP's, every body, kept whole and
-  meshopt-compressed, with a plain copy in `render/assets/pcb` for the renders; both faces are painted
+  meshopt-compressed, with a plain copy in `render/assets/pcb` for the renders.  Every board is painted in
+  the rack's solder mask, `config/rack.yaml › pcb.solder_mask` (black since 2026-10-21: JLC's satin black, white
+  silkscreen, the traces showing only by their relief; tick "PCB Color: Black" in the JLC order, free on 2 layers,
+  $8.00 an order on 4, which the BOM adds); the v2's both faces are painted
   from `build/<board>-art.json`, so its base variant's empty footprints show);
 * `build/<board>-3d.json`: which placed parts the 3D export gives a body.
 

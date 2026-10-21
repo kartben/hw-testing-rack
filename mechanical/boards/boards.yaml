@@ -235,10 +235,17 @@ boards:
     standoff: 6
     height: 14              # the RJ45 jacks
     color: "#141414"
-    model: { web: true, recolour: { "#666666": "#141414" },
+    model: { web: true, paint: beagleplay-design.PcbDoc, mask: "#161616", silk: "#f0f0ea", finish: ENIG, tent_vias: true,
+             recolour: { "#666666": "#b9bcc1", "#97a3da": "#c3c6cb", "#bee2ff": "#c3c6cb", "#67728d": "#c3c6cb",
+                         "#5d2209": "#1d1d1d", "#e28807": "#c9a24c", "#ce2a01": "#b39470", "#ce4906": "#b39470",
+                         "#00005a": "#ecebe4" },
+             recolour_in: [["#666666", [0, 70, 50, 82], "#e8e5d8"]],   # the OLDI and CSI FPC connectors: cream
              credit: "BeaglePlay model © Seeed Technology Co., Ltd and BeagleBoard.org Foundation, CC BY 4.0 (recoloured)" }
-                            # the makers' STEP (tools/fetch_render_assets.py), CC BY 4.0: the viewer's copy is published;
-                            # its grey PCB and copper → the board's black
+                            # the makers' STEP (tools/fetch_render_assets.py), CC BY 4.0: the viewer's copy is published.
+                            # Its PCB (a grey slab) painted from their PCB design: black mask, ENIG pads, white silkscreen;
+                            # its design colours → nickel shells (the RJ45s, USB-A, HDMI, USB-C), tan capacitors, the RTC
+                            # cell holder's black base and brass clip, cream Grove, QWIIC and FPC connectors (the makers'
+                            # photo, docs.beagleboard.org › BeaglePlay › components-front)
     source: "BeaglePlay rev A2 STEP (git.beagleboard.org/beagleplay/beagleplay, Design/)"
     verified: true
     zephyr: { choices: ["beagleplay/cc1352p7", "beagleplay/am6254/m4"],

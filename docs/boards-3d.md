@@ -40,7 +40,12 @@ its parts (`kicad-cli pcb export glb`) and paints the board's two faces from its
 silkscreen and holes (`build_board.export_art`, `pcb_glb.board_body`) in the board's own solder-mask
 colour (`model: { mask: "#174a78" }`), its text variables (the product name on the silkscreen) from
 `model.vars`.  A part whose model KiCad can't read (a SolidWorks part) gets a black block over its pads.
-It needs KiCad 10 (`kicad-cli` and a python with `pcbnew`: `$KICAD_CLI`, `$KICAD_PYTHON`).
+It needs KiCad 10 (`kicad-cli` and a python with `pcbnew`: `$KICAD_CLI`, `$KICAD_PYTHON`).  A maker that
+publishes both (the BeaglePlay: a STEP whose PCB is a plain slab, and its PCB design) keeps the STEP's parts and
+gets its PCB's faces painted from the design (`model: { paint: beagleplay-design.PcbDoc, mask: "#161616" }`,
+`vendor_pcb.paint_faces`: the design's outline laid on the STEP's).  Every painted face carries a normal map
+of its copper and silkscreen (`pcb_glb.relief`): the traces show by their edges under the mask, as on a real
+board, most of all a dark one.
 
 `board_models.py` finds the PCB (the two biggest planes of the dominant flat axis), turns the
 component side up and lays the outline on the drawing's bottom-left corner.  It turns the model
@@ -65,7 +70,7 @@ STEP's generic PCB colour for the board's real one.)
 | Arduino Nano Matter | [official STEP](https://docs.arduino.cc/resources/models/ABX00112-step.zip) (Arduino), recoloured teal | CC BY-SA 4.0 (the CAD files' `License.txt`) — `arduino-nano-matter.glb` published | no — **fetched** |
 | ST NUCLEO-64 (`nucleo-64`: a NUCLEO-G474RE, MB1367 rev D) | STEP in ST's [board manufacturing specification](https://www.st.com/resource/en/board_manufacturing_specification/mb1367_manufacturing.zip) (the board page's CAD resources), its generic green PCB recoloured white | ST's Open Platform License Agreement: distribution "for the purpose of evaluating, testing, and developing application boards based on ST products"; this rack tests ST boards, so `nucleo-64.glb` is published (the user's call, 2026-10-21) | no — **fetched** (st.com answers only a browser's headers) |
 | ST NUCLEO-144 (`nucleo-144`: a NUCLEO-U575ZI-Q, MB1549 rev C, its ST-LINK on micro-B) | STEP in ST's [MB1549 manufacturing specification](https://www.st.com/resource/en/board_manufacturing_specification/mb1549-manufacturing.zip) | as the NUCLEO-64's — `nucleo-144.glb` published | no — **fetched** |
-| BeaglePlay (rev A2) | [the makers' STEP](https://git.beagleboard.org/beagleplay/beagleplay/-/tree/main/Design) (BeagleBoard.org, Seeed), its grey PCB recoloured black | CC BY 4.0 — `beagleplay.glb` published | no — **fetched** (through git.beagleboard.org's API: its web pages ask a browser check) |
+| BeaglePlay (rev A2) | [the makers' STEP](https://git.beagleboard.org/beagleplay/beagleplay/-/tree/main/Design) (BeagleBoard.org, Seeed), its PCB (a grey slab) painted from their PCB design (the repository's Altium export: black mask, ENIG pads, white silkscreen; `model.paint`), its design colours swapped for the board's (nickel shells, cream Grove, QWIIC and FPC connectors, a brass cell clip) after the makers' photo | CC BY 4.0 — `beagleplay.glb` published | no — **fetched** (through git.beagleboard.org's API: its web pages ask a browser check) |
 | Seeed Wio Terminal | [Seeed's STEP of the whole device](https://github.com/Seeed-Studio/OSHW-WioTerminal) (OSHW-WioTerminal, `Wio Terminal 3D.stp`), its design colours → white case, black glass, blue joystick | Apache License 2.0 — `wio-terminal.glb` published | no — **fetched** |
 | Nordic nRF52840 DK (PCA10056 3.0.3) | Altium PCB in Nordic's [hardware files](https://nsscprodmedia.blob.core.windows.net/prod/software-and-other-downloads/dev-kits/nrf52840-dk/nrf52840-development-kit---hardware-files-3_0_3.zip), its parts' models embedded: populated through KiCad (`tools/vendor_pcb.py`), painted Nordic blue; the interface MCU (a SolidWorks part) a block | Nordic's 5-clause licence (BSD-style, "must only be used with a Nordic Semiconductor ASA integrated circuit") — the renders only | no — **fetched** |
 | Nordic nRF54L15 DK (PCA10156 1.0.0) | Altium PCB in Nordic's [hardware files](https://nsscprodmedia.blob.core.windows.net/prod/software-and-other-downloads/dev-kits/nrf54l15-dk/pca10156-nrf54l15-dk-1_0_0.zip), as the nRF52840 DK's, slate blue | no licence stated (the schematic: "All rights reserved") — the renders only | no — **fetched** |
