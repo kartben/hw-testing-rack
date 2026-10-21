@@ -28,7 +28,7 @@ session's print plan (H2D, 0.20 mm Standard, PETG).
 
 ## Implemented (2026-10-21)
 
-Findings 1, 2, 4, 6, 7, 8, 9 and part of 15, as the orchestrator picked them.  Every part re-checked: an exact
+Findings 1, 2, 4, 6, 7, 8, 9 and part of 15, as the orchestrator picked them, and 3 as the user decided it.  Every part re-checked: an exact
 solid (`csg2part`), `proto/overhang.py` (as built: `review/overhang_built.json`), `proto/snaps.py` and
 `proto/fem_snaps.py` (the `BUILT` and `built_*` cases), SolidCraft on the joints touched.
 
@@ -41,6 +41,7 @@ solid (`csg2part`), `proto/overhang.py` (as built: `review/overhang_built.json`)
 | 4 | Pegs | relief Ø4.4 × 2 in the column's top, split 6.5 | 1.44 → 0.69 % | 38 → 26 MPa (the 64 drawn, scaled to y 0.15: linear) | **head kept at Ø3.9**: the half-pins bend (head − the cam's 3.6 bore) / 2 = 0.15, not (head − pin) / 2; a Ø3.7 head would hold the cam by 0.05 a side |
 | 8 | Pegs | `SKIN_H` 3.4, the slot run 0.15 past the flat's corner (3.7 free) | 2.33 → 1.53 % | — | — |
 | 6 | Ladders | `HOOK_ROOT` 10, the reliefs' ends round (R0.6) | 2.0 → 1.3 % | 56 → 40 MPa | — |
+| 3 | Ladders | (decided by the user) a DIN 562 M3 square nut in a 5.9 × 5.9 × 2.2 pocket open to the ladder's top face, 2.2 from the rear edge, a plain Ø3.4 hole; a 0.1 mm rib in the pocket holds the nut while the ladder stands | — | — | the rib is new.  SolidCraft (brace strap, M3 × 8 pan head, nut): 0.2 round the nut but the rib's 0.17 mm³ press, the screw through the whole nut and 1 mm past it; the pockets sit 8 mm behind the trays' rear ends, so they stay reachable from the back at every level: a nut goes in just before its brace screw.  BOM: 142 → 82 inserts, + 60 nuts, the M3 × 8 unchanged |
 | 15 | Drawer, plate | the v1-only ledges gone; `board_plate.scad`'s `MODE="snap"` and `universal` plate gone | — | — | **two ledges kept** under the single DATA board's front edge, either side of its USB4105 (they carried it too); **`ladder_a` / `ladder_b` kept**: the BOM, the viewer and the notice name them per row |
 
 Overhangs facing down steeper than 45° (mm²): tray 6,034 → 5,008 (all bridges now; the lips' 2 × 473 and the

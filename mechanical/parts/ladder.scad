@@ -83,10 +83,17 @@ module grooves3(k)                   // tray runner grooves on both faces, open 
     in_row3(k) for (z = [-1, PANEL_T - GROOVE_D])
         translate([-40, GROOVE_Z[0], z]) cube([GROOVE_END + 40, GROOVE_Z[1] - GROOVE_Z[0], GROOVE_D + 1]);
 
-module brace_holes3(zs)                // heat-set insert holes in the rear edge (in the ladder plane)
-    for (z = zs) translate([PR + 1, z, PANEL_T / 2]) rotate([0, -90, 0]) {
-        cylinder(d = BRACE_INSERT[0], h = BRACE_INSERT[1] + 1, $fn = 20);
-        cylinder(d1 = BRACE_INSERT[0] + 0.8, d2 = BRACE_INSERT[0], h = 1.4, $fn = 20);     // lead-in
+module brace_holes3(zs)                // the brace screws' holes in the rear edge and their square nuts' pockets
+    for (z = zs) {
+        translate([PR + 1, z, PANEL_T / 2]) rotate([0, -90, 0]) cylinder(d = M3_CLEAR, h = BRACE_NUT_SET + BRACE_NUT[1] + 6, $fn = 20);
+        a = BRACE_NUT[0] / 2 + BRACE_NUT_CLEAR;                  // the pocket's half-width round the screw's axis
+        difference() {
+            translate([PR - BRACE_NUT_SET - BRACE_NUT[1] - 2 * BRACE_NUT_CLEAR, z - a, PANEL_T / 2 - a])
+                cube([BRACE_NUT[1] + 2 * BRACE_NUT_CLEAR, 2 * a, PANEL_T]);
+            // the rib that holds the nut: along the pocket's depth, on its lower wall (z − a)
+            translate([PR - BRACE_NUT_SET - BRACE_NUT[1] / 2 - BRACE_NUT_CLEAR, z - a, PANEL_T / 2 - a - 1])
+                cylinder(r = BRACE_NUT_CLEAR + 0.1, h = PANEL_T + 2, $fn = 16);
+        }
     }
 
 // ------------------------------------------------------------------ parts

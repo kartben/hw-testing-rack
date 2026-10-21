@@ -3413,11 +3413,21 @@
 "category": "Fasteners",
 "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
 "supplier": "AliExpress (bulk) / Ruthex",
-"qty": 142,
+"qty": 82,
 "unit_eur": 0.03,
-"notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs",
+"notes": "per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs",
 "unit": "pcs",
-"ext_eur": 4.26
+"ext_eur": 2.46
+},
+{
+"category": "Fasteners",
+"item": "M3 square nut, DIN 562 (5.5 × 5.5 × 1.8)",
+"supplier": "AliExpress (bulk)",
+"qty": 60,
+"unit_eur": 0.02,
+"notes": "4 in the rear edge of every base and row ladder, in pockets open to its face (the braces screw into them)",
+"unit": "pcs",
+"ext_eur": 1.2
 },
 {
 "category": "Fasteners",
@@ -3716,14 +3726,14 @@
 "by_category": {
 "Electronics": 745.4699999999995,
 "Printed parts": 62.0,
-"Fasteners": 15.35,
+"Fasteners": 14.750000000000002,
 "Motion": 18.85,
 "Cables": 53.32,
 "Analyzer": 7.0,
 "Power": 82.0,
 "Cameras": 64.1
 },
-"total_eur": 1048.09,
+"total_eur": 1047.49,
 "prints": [
 {
 "part": "bay_label",
@@ -3819,22 +3829,22 @@
 {
 "part": "ladder_a",
 "qty": 5,
-"grams_each": 48.8,
-"grams_total": 244.2,
+"grams_each": 48.7,
+"grams_total": 243.3,
 "stl": "mechanical/stl/ladder_a.stl"
 },
 {
 "part": "ladder_b",
 "qty": 5,
-"grams_each": 48.8,
-"grams_total": 244.2,
+"grams_each": 48.7,
+"grams_total": 243.3,
 "stl": "mechanical/stl/ladder_b.stl"
 },
 {
 "part": "ladder_base",
 "qty": 5,
-"grams_each": 49.3,
-"grams_total": 246.4,
+"grams_each": 49.1,
+"grams_total": 245.6,
 "stl": "mechanical/stl/ladder_base.stl"
 },
 {

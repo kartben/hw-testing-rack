@@ -17,8 +17,7 @@ the latest CI run).
 * Per bay: `tray`, `drawer`, `chain_foot`, `chain_anchor`, the board `plate`
   and the pegs its boards need (`python tools/plate_layout.py <bay>`), `bay_label`.
 
-Heat-set inserts (M3 × 5.7) while the parts are on the bench: 4 in the rear
-edge of every base and row ladder (the braces screw into them), 4 in each
+Heat-set inserts (M3 × 5.7) while the parts are on the bench: 4 in each
 tray's node standoffs and 2 in its chain anchor, 4 under the ceiling of every
 bay (the tray above, or the cap plate: a camera pod's mount, so a pod can go
 in any bay later).
@@ -27,8 +26,12 @@ in any bay later).
 
 1. Two **base ladders** upright; the **floor plate** slides in from the front,
    into their bottom grooves.
-2. **Base brace** at the back: 4 × M3×8 pan head into the rear-edge inserts
-   (the 1st and 3rd on the left ladder, the 2nd and 4th on the right one).
+2. **Base brace** at the back: first push an M3 square nut (DIN 562) into each
+   pocket by the ladders' rear edges, from the face it opens to (a small rib
+   holds it while the ladder stands; the pockets are behind the trays, so they
+   stay reachable from the back at every level), then 4 × M3×8 pan head
+   through the brace into the nuts (the 1st and 3rd on the left ladder, the
+   2nd and 4th on the right one).
    Each diagonal is 0.25 mm short: the X is taut once the fourth screw is in.
 3. **Row ladders** onto the base ladders: ridge into notch, the two snap hooks
    click.  (Release a hook by pushing its barb through the window.)
@@ -41,7 +44,7 @@ in any bay later).
 ## 3. The next bay
 
 It shares the middle ladder: one more ladder per level.  Base ladder on the
-right and floor plate; base brace into the free inserts of the shared ladder
+right and floor plate; base brace into the free nuts of the shared ladder
 (its 1st and 3rd); then row ladders, trays and braces; cap strip and cap plate.
 
 ## 4. Inside each bay

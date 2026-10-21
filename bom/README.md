@@ -13,7 +13,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Motion | 19 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,048** |
+| **Total** | **1,047** |
 
 ≈ **€131 per bay** all-in.
 
@@ -127,9 +127,9 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | drawer_block | 1 | 17.2 | `mechanical/stl/drawer_block.stl` |
 | drawer_sled | 1 | 29.9 | `mechanical/stl/drawer_sled.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
-| ladder_a | 5 | 48.8 | `mechanical/stl/ladder_a.stl` |
-| ladder_b | 5 | 48.8 | `mechanical/stl/ladder_b.stl` |
-| ladder_base | 5 | 49.3 | `mechanical/stl/ladder_base.stl` |
+| ladder_a | 5 | 48.7 | `mechanical/stl/ladder_a.stl` |
+| ladder_b | 5 | 48.7 | `mechanical/stl/ladder_b.stl` |
+| ladder_base | 5 | 49.1 | `mechanical/stl/ladder_base.stl` |
 | ladder_cap | 5 | 15.4 | `mechanical/stl/ladder_cap.stl` |
 | peg_base_h10 | 10 | 0.4 | `mechanical/stl/peg_base_h10.stl` |
 | peg_base_h12 | 5 | 0.5 | `mechanical/stl/peg_base_h12.stl` |
@@ -351,7 +351,8 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 5.97 | 5.97 | estimate, not quoted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
-| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 142  | 0.03 | 4.26 | AliExpress (bulk) / Ruthex |
+| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 82  | 0.03 | 2.46 | AliExpress (bulk) / Ruthex |
+| Fasteners | M3 square nut, DIN 562 (5.5 × 5.5 × 1.8) | 60  | 0.02 | 1.20 | AliExpress (bulk) |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 62  | 0.02 | 1.24 | AliExpress (bulk) |
 | Fasteners | M3×6 (node PCB, power box lid, camera pods) | 44  | 0.02 | 0.88 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |

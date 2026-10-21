@@ -16,10 +16,10 @@ grooves; an X brace behind every bay and row keeps the grid square.
 
 | Part | File | Notes |
 |---|---|---|
-| Ladder | `ladder.scad` (`PART="row"`, `ROW=k`) | side wall between two bays, one per row: front and rear posts, a bottom band with the tray grooves (both faces), a top band, one brace; stacks on the ladder below with a ridge/notch joint and two in-plane snap hooks (release through the window); 4 heat-set inserts in the rear edge |
+| Ladder | `ladder.scad` (`PART="row"`, `ROW=k`) | side wall between two bays, one per row: front and rear posts, a bottom band with the tray grooves (both faces), a top band, one brace; stacks on the ladder below with a ridge/notch joint and two in-plane snap hooks (release through the window); 4 M3 square nuts (DIN 562) in pockets by the rear edge, open to one face, 2.2 mm of wall between nut and edge |
 | Base ladder / cap strip | `ladder.scad` (`"base"`, `"cap"`) | floor → row A (holds a floor plate); the strip on top holds the cap plate |
 | Floor / cap plate | `tray.scad` (`PART="floor_plate"`, `"cap_plate"`) | the tie between the base ladders and the top row's ceiling: a regular 30 mm grid (the camera pod's pitch) with an M3-insert boss at every crossing: the top row's pods take the same square as under a tray (x 94/124, y 30/60), anything else any square |
-| Rear brace | `brace.scad` (`ROW=k`, `-1` for the base) | an X behind each bay and level, screwed (4 × M3×8 pan head, Phillips) into the inserts in the rear edges of its two ladders; left and right holes at different heights, so neighbouring braces share a ladder.  No slack: snug 3.1 mm holes, and each diagonal is 0.25 mm short, so the X is taut once the fourth screw is in |
+| Rear brace | `brace.scad` (`ROW=k`, `-1` for the base) | an X behind each bay and level, screwed (4 × M3×8 pan head, Phillips) into the square nuts in the rear edges of its two ladders; left and right holes at different heights, so neighbouring braces share a ladder.  No slack: snug 3.1 mm holes, and each diagonal is 0.25 mm short, so the X is taut once the fourth screw is in |
 
 The column pitch is 165.8 mm: a 158 mm tray, a 7.4 mm ladder and 0.2 mm of
 clearance on each side (`frame.panel_thickness`, `frame.panel_clearance`).

@@ -60,13 +60,18 @@ RIDGE_W = PANEL_T - 2.4;                 // ridge base width (45° sides)
 RIDGE_GAP = HOOK_W + 6;                  // no ridge / notch around a hook
 
 // rear diagonal braces: an X per bay and per row, screwed behind the rear posts of its two
-// ladders (M3 × 8 into heat-set inserts).  Four inserts per rear post; a brace uses the 1st and 3rd on its left ladder and
+// ladders (M3 × 8 into square nuts).  Four nuts per rear post; a brace uses the 1st and 3rd on its left ladder and
 // the 2nd and 4th on its right one, so the two bays sharing a ladder never meet.
 BRACE_T = 3;
 XBRACE_W = 8;
 BRACE_PRELOAD = 0.25;                    // each diagonal is this much shorter than its holes' spacing: taut X
 BRACE_SCREW_HOLE = 3.1;                  // in the brace: an M3 screw threads in snugly, no slack
-BRACE_INSERT = [INSERT_M3[0], 6.2];      // heat-set M3 insert in the ladder's rear edge: Ø × depth
+// each nut a DIN 562 M3 square nut in a pocket open to the ladder's top face (as printed), BRACE_NUT_SET behind
+// the rear edge, through a plain M3 hole: the screw pulls it onto that in-plane wall.  A 0.1 mm rib in the pocket
+// holds the nut in while the ladder stands, until its screw is in (docs/printed-parts-review.md › Fasteners)
+BRACE_NUT = [5.5, 1.8];                  // across flats, thickness
+BRACE_NUT_CLEAR = 0.2;                   // round it in its pocket
+BRACE_NUT_SET = 2.2;                     // the pocket's wall to the rear edge
 function brace_z(k) = k < 0
     ? let (top = line_z(0, 0, PR)) [30, 48, top - 44, top - 26]
     : let (b = line_z(k, 0, PR), h = ROW_HEIGHTS[min(k, len(ROW_HEIGHTS) - 1)]) [b + 28, b + 46, b + h - 47, b + h - 29];

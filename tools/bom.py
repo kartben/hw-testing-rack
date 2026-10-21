@@ -869,11 +869,14 @@ def hardware(rack) -> list[dict]:
     charger = r["power_box"]["charger"]
     rows = [
         {"category": "Fasteners", "item": "M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",
-         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * (cols + 1) * (n_rows + 1) + 4 * n_bays + 2 * n_drawer + 4 * n_bays + 4,
+         "supplier": "AliExpress (bulk) / Ruthex", "qty": 4 * n_bays + 2 * n_drawer + 4 * n_bays + 4,
          "unit_eur": 0.03,
-         "notes": "4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node "
-                  "standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub "
-                  "standoffs"},
+         "notes": "per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera "
+                  "pod's mount); power box: 4 hub standoffs"},
+        {"category": "Fasteners", "item": "M3 square nut, DIN 562 (5.5 × 5.5 × 1.8)",
+         "supplier": "AliExpress (bulk)", "qty": 4 * (cols + 1) * (n_rows + 1), "unit_eur": 0.02,
+         "notes": "4 in the rear edge of every base and row ladder, in pockets open to its face (the braces "
+                  "screw into them)"},
         {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",
          "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_drawer, "unit_eur": 0.02},
         {"category": "Fasteners", "item": "M3×6 (node PCB, power box lid, camera pods)", "supplier": "AliExpress (bulk)",

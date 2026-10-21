@@ -195,7 +195,8 @@ Electronics,data-port-x4-v2-panel,"Economic PCBA, 2 panels: setup, stencil, exte
 Electronics,data-port-x4-v2-panel,Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above,1,pcs,5.97,5.97,"estimate, not quoted",,,,,quoted components $91.33 (≈ €84.02) for 2 panels; catalogue unit prices give €78.05
 Electronics,jlc,JLCPCB shipping: every board in one cart,1,pcs,31.28,31.28,JLCPCB,,,,,DHL ≈ $27–40 for the whole order (one shipment); import VAT extra
 Printed parts,filament,PETG filament,3.1,kg,20.0,62.0,any,,,,,"≈2.7 kg estimated + 10 % waste, 168 parts"
-Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",142,pcs,0.03,4.26,AliExpress (bulk) / Ruthex,,,,,4 in the rear edge of every base and row ladder (the braces screw in); per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs
+Fasteners,,"M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes)",82,pcs,0.03,2.46,AliExpress (bulk) / Ruthex,,,,,per tray 4 node standoffs + 2 chain anchor (drawer bays); 4 under every bay's ceiling (a camera pod's mount); power box: 4 hub standoffs
+Fasteners,,"M3 square nut, DIN 562 (5.5 × 5.5 × 1.8)",60,pcs,0.02,1.2,AliExpress (bulk),,,,,"4 in the rear edge of every base and row ladder, in pockets open to its face (the braces screw into them)"
 Fasteners,,"M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",62,pcs,0.02,1.24,AliExpress (bulk),,,,,
 Fasteners,,"M3×6 (node PCB, power box lid, camera pods)",44,pcs,0.02,0.88,AliExpress (bulk),,,,,
 Fasteners,,"M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",4,pcs,0.1,0.4,AliExpress (bulk),,,,,power box: through the hub's holes into the standoff inserts; the lid screws into their tops
