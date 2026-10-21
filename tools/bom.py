@@ -936,26 +936,25 @@ def hardware(rack) -> list[dict]:
          "supplier": "AliExpress (bulk)", "qty": 4 * (cols + 1) * (n_rows + 1), "unit_eur": 0.02,
          "notes": "4 in the rear edge of every base and row ladder, in pockets open to its face (the braces "
                   "screw into them)"},
-        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor",
-         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_drawer, "unit_eur": 0.02},
-        {"category": "Fasteners", "item": "M3×6 (node PCB, power box lid, camera pods)", "supplier": "AliExpress (bulk)",
-         "qty": 4 * n_bays + 4 + 4 * cams, "unit_eur": 0.02},
+        {"category": "Fasteners", "item": "M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, "
+                                         "power box lid, camera pods",
+         "supplier": "AliExpress (bulk)", "qty": 4 * braces + 2 * n_drawer + 4 * n_bays + 4 + 4 * cams, "unit_eur": 0.02,
+         "notes": "one M3 length everywhere: where it goes deeper than an insert, the insert's hole runs on past it "
+                  "(lib/common.scad › insert_hole(runout))"},
         {"category": "Fasteners", "item": "M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF)",
          "supplier": "AliExpress (bulk)", "qty": 4, "unit_eur": 0.10,
-         "notes": "power box: through the hub's holes into the standoff inserts; the lid screws into their tops"},
-        {"category": "Fasteners", "item": "PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): "
-                                         "foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA; "
-                                         "a DATA ×4: 2 more",
-         "supplier": "AliExpress (bulk, e.g. HZYUEGOU)",
-         "qty": 7 * n_drawer + 2 * n_sled + 2 * sum(1 for b in rack.bays() if rack.is_multi(b.id)), "unit_eur": 0.02,
-         "notes": "every printed pilot for them is 2.1–2.2 mm (≈ 0.8 × d)"},
-        {"category": "Fasteners", "item": "PT 2.3×8 pan head, self-tapping (M2.3×8 \"ST\", head ≤ Ø4.5): the guide lips' "
-                                         "screws: a drawer bay's stop; a sled bay's stop and 2 port-block locks (and 2 sled "
-                                         "locks if fixed)",
+         "notes": "power box: through the hub's holes into the standoff inserts; the lid's M3×8 goes 5.6 mm into "
+                  "their tops (a female thread ≥ 6 mm deep)"},
+        {"category": "Fasteners", "item": "PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 \"ST\", head ≤ Ø4.5): "
+                                         "every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, "
+                                         "2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and "
+                                         "2 port-block locks (and 2 sled locks if fixed); a DATA ×4's cradle: 3 instead of "
+                                         "the DATA board's 2",
          "supplier": "AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100)",
-         "qty": n_drawer + 3 * n_sled + 2 * n_fixed, "unit_eur": 0.02,
-         "notes": "pilots Ø1.9 in the ledges, Ø2.6 in the lips; a Ø5 PT 2.6 head would rub the drawer's wall "
-                  "(lib/carrier.scad › LIP_SCREW, checked in SolidCraft)"},
+         "qty": 8 * n_drawer + 5 * n_sled + 2 * n_fixed + sum(1 for b in rack.bays() if rack.is_multi(b.id)),
+         "unit_eur": 0.02,
+         "notes": "pilots Ø1.9 (lib/common.scad › PT_PILOT), clearance Ø2.6; a PT 2.6's Ø5 head would rub the "
+                  "drawer's wall at the guide lips (lib/carrier.scad › LIP_SCREW, checked in SolidCraft)"},
         {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
          "supplier": "AliExpress (bulk)", "qty": 4 * n_drawer, "unit_eur": 0.01},
         {"category": "Fasteners", "item": "Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the "

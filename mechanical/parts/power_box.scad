@@ -14,7 +14,7 @@
 // floor drop over the plate's insert bosses that fall under it (an M3 through each socket screws
 // it down if wanted).  Nothing overhangs the hub: it drops straight in.  It sits on four standoffs
 // with heat-set inserts; an M3 male-female hex spacer through each of its holes holds it down, and
-// the lid screws into the spacers' tops (4 × M3×6).
+// the lid screws into the spacers' tops (4 × M3×8: 5.6 into their 6 mm female threads).
 //
 // Box coordinates: origin at the front-left-bottom outer corner, X right, Y back, Z up.
 // Print: base upright, lid top face down; PETG, no supports.  The walls' labels are engraved; the

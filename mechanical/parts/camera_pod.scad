@@ -4,7 +4,7 @@
 // Mega's 3.3 V and header, four white LEDs along the edge beside the camera), so nothing is soldered.
 //
 //   -D 'PART="pod"'       the printed pod (dark PETG, opaque): a plate screwed to the ceiling's four
-//                         camera inserts (4 × M3×6 from below), a sleeve the Mega's case snaps into, lens
+//                         camera inserts (4 × M3×8 from below), a sleeve the Mega's case snaps into, lens
 //                         down at the lens spot, its rear wall carried down as the baffle between the
 //                         LEDs and the lens, and the pod board's two standoffs behind it
 //   -D 'PART="diffuser"'  white PETG: a 1 mm floor DIFF_GAP under the LEDs on two posts, which clamp the
@@ -82,7 +82,7 @@ module pod() {
             }
             for (h = POD_PCB_HOLES) translate([board(h)[0], board(h)[1], PCB_Z]) cylinder(d = 6, h = POD_GAP + EPS);
         }
-        // 4 × M3×6 up into the ceiling's inserts, heads in counterbores
+        // 4 × M3×8 up into the ceiling's inserts (run on past them: tray.scad), heads in counterbores
         for (sx = [-1, 1], sy = [-1, 1]) translate([sx * P, sy * P, -PLATE_T - EPS]) {
             cylinder(d = M3_CLEAR, h = PLATE_T + 2 * EPS);
             cylinder(d = 6.2, h = 1.6);

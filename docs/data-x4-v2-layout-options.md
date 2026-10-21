@@ -189,7 +189,7 @@ U's.  JLC-stocked, USB 2.0, 16-pin, SMD with shell legs (2026-10-20):
 - The port LEDs sit on the top edge of the front face, where the user and the camera see them.
 
 **Holding: the slot (user's idea).** A printed cradle acts as a card guide:
-- a base screwed onto today's DATA ×4 bosses with the same PT 2.6 × 8 from above, leaving the cable window
+- a base screwed onto today's DATA ×4 bosses with the same PT 2.3 × 8 from above, leaving the cable window
   open;
 - two uprights, each with a 1.9 mm slot for the board's 1.6 mm edges;
 - the board slides in from above.  Its bottom edge rests on the drawer floor, with the base's front edge
@@ -259,7 +259,7 @@ The board comes out the same way, without tools once the lead is unplugged.
   - B: one step (cradle, board, lead).
   - C: one step (standoffs, hat).
 - **BOM.**
-  - B: the cradle (≈ 10 g PETG), the board's 4 × PT 2.6 × 8 now holding the cradle, and 4 × C2689964
+  - B: the cradle (≈ 10 g PETG), the board's 4 × PT 2.3 × 8 now holding the cradle, and 4 × C2689964
     instead of 4 × USB4105.
   - C: the stacking pair, 4 standoffs and their screws, a second PCB.
 

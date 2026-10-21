@@ -55,13 +55,13 @@ reaches the guide lips' screws (the stop screw, a sled bay's locks): they sit
 5 mm from the side ladder and 2.6 mm from the drawer's wall.  To convert a bay
 later, take its tray out first.
 
-1. **Node** onto the tray standoffs (4 × M3×6).  Its two left screws sit under
+1. **Node** onto the tray standoffs (4 × M3×8).  Its two left screws sit under
    the left guide: feed each one through the guide's hole above it on a
    magnetic PH bit (shaft Ø ≤ 5 mm) and drive it there, the drawer still out.
 2. **Drag chain**: cut ≈ 180 mm including the two end pieces (Olimex
    DRAG-CHAIN-7X7).  At the bench, screw the fixed end piece to the
    `chain_anchor` and the moving one to the `chain_foot`'s fin, each with
-   2 × PT 2.6×8 and washers, tab against the part's flat face.  Check the
+   2 × PT 2.3×8 and washers, tab against the part's flat face.  Check the
    DATA lead with a meter first: pin n to pin 9−n on all 8 ("Same direction";
    a 1:1 lead puts the node's SCL on GND; the camera's PH 8 lead the same, its
    MOSI and CS).  Open the links, lay the lead in ([cabling.md](cabling.md))
@@ -78,14 +78,14 @@ later, take its tray out first.
    ledge: stack the pair, mark both outer faces, glue each magnet marked face
    down into its pocket with a drop of CA, and let it set before the drawer
    goes in.  The rear bay takes either DATA board, components up, its USB-C
-   edge against the port wall (each receptacle behind a U), PT 2.6×8 from
+   edge against the port wall (each receptacle behind a U), PT 2.3×8 from
    above: the DATA port board on its two Ø5 bosses, its USB-C behind the
    fourth U (the rightmost), or a DATA ×4 on its three Ø6 bosses.  The DATA
    lead comes up through the cable window at the rear right: beside a
    DATA ×4's right edge into its PH, or along the rear wall into the DATA
    port board's PH from the rear.  The standing DATA ×4 v2 goes in its
    printed `x4_cradle` instead: cradle onto the same three bosses
-   (3 × PT 2.6×8), the lead up the window and into the board's rear PH, then
+   (3 × PT 2.3×8), the lead up the window and into the board's rear PH, then
    the board slid down into the cradle's slots, receptacles towards the wall,
    until both latches click.  To take it out, unplug the lead from its PH
    first (the plug stands above the drawer's 16 mm rear wall; left plugged,
@@ -93,7 +93,7 @@ later, take its tray out first.
    the board.  To convert a bay, swap the board; the drawer stays.  Slide the drawer
    in from the front onto the tray's ledges (its rear flange under the guide
    lips), engage the foot in the rear groove and lock it with the M2.5 from
-   inside the rear bay (PT 2.6×8); then the stop screw (PT 2.3×8) through the left guide lip.
+   inside the rear bay (PT 2.3×8); then the stop screw (PT 2.3×8) through the left guide lip.
 5. **Plate + board + short cable**, printed `bay_label` (or 12 mm tape) in the
    front recess.
 
@@ -119,7 +119,7 @@ The power box ([mechanical.md](mechanical.md#power-box)):
 2. Lower the hub straight in, its USB-C PD input towards the rear wall, and screw the 4 M3×12
    male-female hex spacers through its holes into the inserts (by hand or with pliers: the row
    connector next to the front-left hole leaves no room for a 5.5 mm socket).
-3. Lid on: its rim inside the walls, 4 × M3×6 into the spacers.
+3. Lid on: its rim inside the walls, 4 × M3×8 into the spacers.
 4. Lift the box over the floor plate's front lip under A1 and let its sockets
    drop over the bosses.
 5. The charger's 5 A e-marked USB-C cable into the rear port, out of the back
@@ -136,7 +136,7 @@ ladder's window, run them up the left side and into each row's first node.
 
 At the bench: the pod board on its two standoffs behind the sleeve, LEDs
 down, against the baffle, and the diffuser under it (2 × PT 2.6×14 up through
-its posts and the board).  Pod under the ceiling, 4 × M3×6 into the camera
+its posts and the board).  Pod under the ceiling, 4 × M3×8 into the camera
 inserts (the tray above, or the cap plate), the bay's drawer pulled out (a
 closed drawer and its DUT cable leave no room for the hand).  Then the XH →
 Dupont cable onto J2 by name and into the Mega's side (only now: the XH plug

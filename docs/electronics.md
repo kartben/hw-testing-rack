@@ -282,7 +282,7 @@ like the bay node's yet.
 ## DATA port v1.0 — 2 layers, 40 × 17 mm
 
 The drawer's USB-C port for the board under test (×1 per drawer): a small board screwed
-components up to the floor of the drawer's rear bay (2 × PT 2.6×8 from above, one each end), the
+components up to the floor of the drawer's rear bay (2 × PT 2.3×8 from above, one each end), the
 receptacle's mouth behind a U in the port wall, an 8-wire JST PH lead from its rear edge to
 the node's J7 through the drag chain ([cabling.md](cabling.md)).  It replaces the USB-C coupler
 and the 90° extension.  Geometry in `config/rack.yaml` › `pcb.data_port`.
@@ -309,7 +309,7 @@ still open) is in [review-konnect.md](review-konnect.md).
 
 A converted bay's drawer board (×1 per converted bay, `population › boards:` in `config/rack.yaml`): one
 bay node serves up to four small USB boards, sub-slots `<bay>.1`–`.4` ([multi-dut-node.md](multi-dut-node.md)).
-It replaces the DATA port on the drawer's rear-bay floor (3 × PT 2.6×8 from above), on the same PH 8
+It replaces the DATA port on the drawer's rear-bay floor (3 × PT 2.3×8 from above), on the same PH 8
 lead from the node's J7; its four USB-C sit behind the port wall's U's at drawer x 26 / 44 / 62 / 80
 (18 mm apart, `.1` on the left).  100 mm long since 2026-10-20, for JLC's 4-layer offer (JLC adds a $25
 engineering fee above 100 mm): it was 108 × 24 with a rear notch for the lead; now it is 13 mm deeper

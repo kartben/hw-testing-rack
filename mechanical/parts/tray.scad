@@ -206,8 +206,11 @@ module tray() {
                     polygon([[WALL - EPS, 0], [DETENT_PAD[0], 0], [WALL - EPS, -(DETENT_PAD[0] - WALL)]]);
             }
         }
-        for (h = NODE_HOLES) translate(concat(node_xy(h), [CARRIER_BOTTOM + CARRIER_STANDOFF])) insert_hole(INSERT_M3);
-        for (c = cam_inserts()) translate([c[0], c[1], 0]) mirror([0, 0, 1]) insert_hole(INSERT_M3);
+        // the node's and the pods' M3 × 8 go deeper than the inserts: their holes run on through the floor
+        // and through the bosses' tops
+        for (h = NODE_HOLES) translate(concat(node_xy(h), [CARRIER_BOTTOM + CARRIER_STANDOFF]))
+            insert_hole(INSERT_M3, runout = CARRIER_BOTTOM + CARRIER_STANDOFF - INSERT_M3[1] + 1);
+        for (c = cam_inserts()) translate([c[0], c[1], 0]) mirror([0, 0, 1]) insert_hole(INSERT_M3, runout = CARRIER_BOTTOM + 4 - INSERT_M3[1] + 1);
         for (b = ANCHOR_BOSSES) translate(concat(b, [ANCHOR_Z0])) insert_hole(INSERT_M3);
         fascia_cutouts();
         // bay label recess on the fascia, right of the controls

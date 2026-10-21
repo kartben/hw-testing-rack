@@ -123,7 +123,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | cap_plate | 4 | 39.3 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 7 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 7 | 46.6 | `mechanical/stl/drawer.stl` |
+| drawer | 7 | 46.7 | `mechanical/stl/drawer.stl` |
 | drawer_block | 1 | 17.2 | `mechanical/stl/drawer_block.stl` |
 | drawer_sled | 1 | 29.9 | `mechanical/stl/drawer_sled.stl` |
 | floor_plate | 4 | 38.2 | `mechanical/stl/floor_plate.stl` |
@@ -147,7 +147,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | power_box_base | 1 | 35.2 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
-| tray | 8 | 82.2 | `mechanical/stl/tray.stl` |
+| tray | 8 | 82.1 | `mechanical/stl/tray.stl` |
 | x4_cradle | 2 | 8.3 | `mechanical/stl/x4_cradle.stl` |
 
 ## Line items
@@ -352,11 +352,9 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
 | Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 82  | 0.03 | 2.46 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3 square nut, DIN 562 (5.5 × 5.5 × 1.8) | 60  | 0.02 | 1.20 | AliExpress (bulk) |
-| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor | 62  | 0.02 | 1.24 | AliExpress (bulk) |
-| Fasteners | M3×6 (node PCB, power box lid, camera pods) | 44  | 0.02 | 0.88 | AliExpress (bulk) |
+| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods | 106  | 0.02 | 2.12 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
-| Fasteners | PT 2.6×8 pan head, thread-forming for plastics (or M2.5×8 self-tapping): foot lock, 4 for the chain's end pieces, 2 for the DATA port board; a sled bay: 2 DATA; a DATA ×4: 2 more | 55  | 0.02 | 1.10 | AliExpress (bulk, e.g. HZYUEGOU) |
-| Fasteners | PT 2.3×8 pan head, self-tapping (M2.3×8 "ST", head ≤ Ø4.5): the guide lips' screws: a drawer bay's stop; a sled bay's stop and 2 port-block locks (and 2 sled locks if fixed) | 10  | 0.02 | 0.20 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
+| Fasteners | PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 "ST", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4's cradle: 3 instead of the DATA board's 2 | 63  | 0.02 | 1.26 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 28  | 0.01 | 0.28 | AliExpress (bulk) |
 | Fasteners | Neodymium disc magnet 6×3 mm N35, lot of 50 (drawer detent: one in the drawer, one in the tray ledge) | 1 lot | 3.99 | 3.99 | AliExpress 1005010074888189, "6x3mm-50 pièces" |
 | Fasteners | Cyanoacrylate glue, gel (detent magnets) | 1  | 3.00 | 3.00 | any |

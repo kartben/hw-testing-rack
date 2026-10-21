@@ -16,7 +16,7 @@
 //   comes up through the cable window at the rear right, from the drag chain's moving end: a rear strip (the
 //   single board's lead, then along the rear wall to its PH; a v2's, over its cradle) and a side strip beside
 //   a v1's right edge, under its J1.  The chain foot slides
-//   into the rear-open groove under the bottom and is locked by one PT 2.6 × 8 screw from inside the rear bay.
+//   into the rear-open groove under the bottom and is locked by one PT 2.3 × 8 screw from inside the rear bay.
 // - Rear flange segments run under the guide lips (anti-tip); a magnet under
 //   the rear bay, over the tray's left ledge, gives a soft closed detent.
 // - It rides on the tray's two side ledges (parts/tray.scad), so its floor only carries the
@@ -115,9 +115,9 @@ module drawer(rear = true, foot = true) {
             translate([DETENT[0], DETENT[1], 0]) mirror([0, 0, 1]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
         }
         if (rear) {
-            // pilots for the boards' PT 2.6 × 8, from above
+            // pilots for the boards' (and the cradle's) PT 2.3 × 8, from above
             for (h = concat(X4_HOLES, ONE_HOLES))
-                translate([h[0], h[1], DATA_PCB_Z - 7]) cylinder(d = 2.1, h = 7 + EPS);
+                translate([h[0], h[1], DATA_PCB_Z - 7]) cylinder(d = PT_PILOT, h = 7 + EPS);
             // cable window in the rear-bay floor, up to 1 mm off the rear wall and 1 mm short of the foot's boss:
             // a rear strip from 1.5 mm right of the third boss (the single board's lead comes up there and runs
             // left along the rear wall to its PH; a v2's drops behind its cradle), and a side strip 1 mm right of

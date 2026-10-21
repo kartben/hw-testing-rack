@@ -19,7 +19,7 @@ bay node (plenum)                                 drawer
    DATA port is our own 40 × 17 mm board ([electronics/data-port](../electronics/data-port/design.py)):
    a USB-C receptacle (a source: Rp 22k on CC1/CC2, USBLC6 ESD at the
    receptacle) screwed components up to the floor behind the port wall
-   (2 × PT 2.6×8, one each end), its mouth behind a U in the wall: the
+   (2 × PT 2.3×8, one each end), its mouth behind a U in the wall: the
    board's short cable plugs into it.  A JST PH 8-pin lead (VBUS, GND, D+, D−, GND, then
    the node's I²C and INT, which the port board leaves open, for a later DATA ×4 board) plugs
    into the node's **DATA** header (J7, side entry on the node's right edge,

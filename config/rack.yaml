@@ -224,7 +224,7 @@ pcb:
                             # ≤ 17 deep: the PH plug and the wires' turn down fit in the drawer's rear bay
     thickness: 1.6
     layers: 2
-    holes: [[2.6, 13.5], [37.5, 4.0]]    # Ø2.7, PT 2.6 × 8 from above into the drawer's floor bosses (the left one clear of the PH 8)
+    holes: [[2.6, 13.5], [37.5, 4.0]]    # Ø2.7, PT 2.3 × 8 from above into the drawer's floor bosses (the left one clear of the PH 8)
     usb: 30.5               # KiCad x of the USB-C (GCT USB4105) on the front edge: the right edge ≤ 9.5 mm right of it (the
                             # chain foot's lock screw); its centre 1.63 mm above the component face (3.23 above the underside)
     ph: 14.4                # KiCad x of the JST PH 8-pin (side entry) on the rear edge: its courtyard clear of the USB4105's (x ≤ 14.5)
@@ -236,7 +236,7 @@ pcb:
     x0: 15                  # drawer x of its left edge (KiCad x = drawer x − 15): drawer x 15–115
     thickness: 1.6
     layers: 4
-    holes: [[3.2, 16.5], [38.7, 16.5], [81.4, 16.3]]   # Ø2.7, PT 2.6 × 8 from above into the floor bosses: where they were
+    holes: [[3.2, 16.5], [38.7, 16.5], [81.4, 16.3]]   # Ø2.7, PT 2.3 × 8 from above into the floor bosses: where they were
                             # on the 24 mm board, the drawer's DATA ×4 bosses (the v2's first three)
     usb: [11, 29, 47, 65]   # KiCad x of the four USB-C (USB4105), ports 1–4 left to right: drawer x 26, 44, 62, 80 (18 mm pitch)
     lead: [95.1, 20.0]      # J1, the JST PH 8 (S8B-PH-SM4-TB, side entry) at the rear end of the RIGHT edge: its footprint centre

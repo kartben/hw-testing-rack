@@ -11,6 +11,10 @@ INSERT_M25 = [3.6, 4.5];
 M3_CLEAR = 3.4;
 M5_CLEAR = 5.5;
 M3_HEAD = [6.0, 3.0];      // DIN 912 / ISO 7380 head Ø × height (button head ~5.7)
+// The rack's four screw types (docs/printed-parts-review.md, finding 13): M3 × 8 into inserts, nuts and
+// spacers; PT 2.3 × 8 thread-forming into printed pilots; the M3 spacers; M2.5 washers
+PT_PILOT = 1.9;            // a PT 2.3's pilot (≈ 0.8 × d)
+PT_CLEAR = 2.6;            // and its clearance hole
 
 module rbox(size, r = 2, center = false) {
     // Box with rounded vertical edges.
@@ -24,10 +28,12 @@ module rslot(len, w, h) {
     hull() for (x = [-(len - w) / 2, (len - w) / 2]) translate([x, 0, 0]) cylinder(d = w, h = h);
 }
 
-module insert_hole(spec = INSERT_M3) {
-    // Pocket for a heat-set insert, opening at z=0 and going -Z.
+module insert_hole(spec = INSERT_M3, runout = 0) {
+    // Pocket for a heat-set insert, opening at z=0 and going -Z; `runout`: an M3 clearance hole that
+    // carries on past it, so an M3 × 8 that goes deeper than the insert doesn't bottom on the plastic
     translate([0, 0, -spec[1]]) cylinder(d = spec[0], h = spec[1] + EPS);
     translate([0, 0, -0.6]) cylinder(d1 = spec[0], d2 = spec[0] + 0.8, h = 0.6 + EPS);
+    if (runout > 0) translate([0, 0, -spec[1] - runout]) cylinder(d = M3_CLEAR, h = runout + EPS);
 }
 
 module screw_through(d = M3_CLEAR, h = 20, head = M3_HEAD, counterbore = true) {

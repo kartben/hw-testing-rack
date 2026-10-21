@@ -72,7 +72,7 @@ STOP_Y = FLANGE_Y[0] - DRAWER_TRAVEL - 4.5;        // stop pin position (carrier
 // port wall: four U's, the DATA ×4's ports (config/rack.yaml › pcb.data_port_x4).  The single DATA port is
 // our own small board (electronics/data-port, config/rack.yaml › pcb.data_port): a USB-C source on its front
 // edge, on the fourth U, a side-entry JST PH 8 on its rear edge for the lead from the node's J7.
-// Components up on two bosses of the rear-bay floor, 2 × PT 2.6 × 8 from above, its front edge against
+// Components up on two bosses of the rear-bay floor, 2 × PT 2.3 × 8 from above, its front edge against
 // the port wall's back face: the receptacle sits 1.7 mm behind the wall's front face, in the USB-C plug
 // cut carried up through the wall's top (a U): a straight plug's overmold or a right-angle plug's body
 // (19 mm tall, the wall's top only 5 mm over the axis) goes in until the plug seats.
