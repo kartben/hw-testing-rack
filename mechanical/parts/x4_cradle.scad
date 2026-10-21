@@ -16,7 +16,7 @@
 // - The base sits on the DATA ×4's three shared bosses (H1–H3), 3 × M3 × 8 from above into heat-set inserts in
 //   them (the user, 2026-10-21: a board is swapped often), and leaves the
 //   cable window open: the board's PH 8 lead, on its rear face, drops behind it into the window.
-// Print: as installed (bottom down), PETG, no supports; the base bridges ≤ 30 mm between its feet.
+// Print: as installed (bottom down), PETG, no supports; the base bridges ≤ 16 mm between its feet.
 include <../lib/carrier.scad>
 
 PART = "cradle";
@@ -91,7 +91,10 @@ module cradle() {
                 cylinder(d = BOSS_D + 4, h = BASE[0] - V2_Z0 + EPS);
                 translate([0, 0, -EPS]) cylinder(d = BOSS_D + 0.8, h = BASE[0]);
             }
-            translate([78, BOSSES[1][1], V2_Z0]) cylinder(d = 6, h = BASE[0] - V2_Z0 + EPS);
+            // and Ø6 posts where the drawer's floor is bare, so the base bridges ≤ 16 mm as printed (the one at
+            // x 95 forward of the third boss; docs/printed-parts-fdm-review.md, item 3)
+            for (p = [[36, BOSSES[1][1]], [78, BOSSES[1][1]], [95, 179]])
+                translate([p[0], p[1], V2_Z0]) cylinder(d = 6, h = BASE[0] - V2_Z0 + EPS);
             // the T-heads: a bar in front of the board's bottom, a fin through its notch, a riser behind it
             // up to the base
             for (x = NOTCH_X) {

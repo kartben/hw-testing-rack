@@ -38,6 +38,16 @@ GROOVE_Z = [RUNNER_Z[0] - 0.15, RUNNER_Z[1] + 0.15];
 GROOVE_D = 2.4;                          // per face: leaves a 2.6 mm core
 RUNNER_OUT = PANEL_CLEAR + GROOVE_D - 0.3;
 RUNNER_Y0 = 4;
+// the runner's underside slopes at 45° from its tip down to the wall (no overhang as printed); the grooves'
+// lower lip takes the same chamfer on both faces, 0.15 off the slope (docs/printed-parts-fdm-review.md, item 1)
+GROOVE_LIP = RUNNER_OUT - PANEL_CLEAR - (RUNNER_Z[0] - GROOVE_Z[0]) + 0.15 * sqrt(2);
+// a groove on both faces of a ladder, local frame: x along it (from x0, `len` long), y = row z, z = thickness
+module grooves_both(x0, len) for (f = [0, 1]) {
+    translate([x0, GROOVE_Z[0], f == 0 ? -1 : PANEL_T - GROOVE_D]) cube([len, GROOVE_Z[1] - GROOVE_Z[0], GROOVE_D + 1]);
+    translate([x0, 0, 0]) rotate([90, 0, 90]) linear_extrude(len) polygon(f == 0
+        ? [[GROOVE_Z[0] + EPS, GROOVE_LIP + EPS], [GROOVE_Z[0] + EPS, -1], [GROOVE_Z[0] - GROOVE_LIP - 1, -1]]
+        : [[GROOVE_Z[0] + EPS, PANEL_T - GROOVE_LIP - EPS], [GROOVE_Z[0] + EPS, PANEL_T + 1], [GROOVE_Z[0] - GROOVE_LIP - 1, PANEL_T + 1]]);
+}
 GROOVE_END = CARRIER_D - 2;              // closed rear end = the tray's insertion stop
 
 // tray latch: flex arm in the side wall; barb into a window through the groove core
@@ -72,6 +82,8 @@ BRACE_SCREW_HOLE = 3.1;                  // in the brace: an M3 screw threads in
 BRACE_NUT = [5.5, 1.8];                  // across flats, thickness
 BRACE_NUT_CLEAR = 0.2;                   // round it in its pocket
 BRACE_NUT_SET = 2.2;                     // the pocket's wall to the rear edge
+NUT_RIB = [0.4, 0.4];                    // the rib that holds the nut: width, reach into the pocket (one line;
+                                         // 0.2 past the clearance, docs/printed-parts-fdm-review.md, item 4)
 function brace_z(k) = k < 0
     ? let (top = line_z(0, 0, PR)) [30, 48, top - 44, top - 26]
     : let (b = line_z(k, 0, PR), h = ROW_HEIGHTS[min(k, len(ROW_HEIGHTS) - 1)]) [b + 28, b + 46, b + h - 47, b + h - 29];

@@ -79,9 +79,8 @@ module notch3(k)                     // along line z = 0 of row k (a bottom edge
         }
         for (hy = HOOK_Y) in_row3(k) translate([hy - RIDGE_GAP / 2, -1, -1]) cube([RIDGE_GAP, RIDGE + 4, PANEL_T + 2]);
     }
-module grooves3(k)                   // tray runner grooves on both faces, open at the front
-    in_row3(k) for (z = [-1, PANEL_T - GROOVE_D])
-        translate([-40, GROOVE_Z[0], z]) cube([GROOVE_END + 40, GROOVE_Z[1] - GROOVE_Z[0], GROOVE_D + 1]);
+module grooves3(k)                   // tray runner grooves on both faces, open at the front, their lower lip chamfered
+    in_row3(k) grooves_both(-40, GROOVE_END + 40);
 
 module brace_holes3(zs)                // the brace screws' holes in the rear edge and their square nuts' pockets
     for (z = zs) {
@@ -91,8 +90,8 @@ module brace_holes3(zs)                // the brace screws' holes in the rear ed
             translate([PR - BRACE_NUT_SET - BRACE_NUT[1] - 2 * BRACE_NUT_CLEAR, z - a, PANEL_T / 2 - a])
                 cube([BRACE_NUT[1] + 2 * BRACE_NUT_CLEAR, 2 * a, PANEL_T]);
             // the rib that holds the nut: along the pocket's depth, on its lower wall (z − a)
-            translate([PR - BRACE_NUT_SET - BRACE_NUT[1] / 2 - BRACE_NUT_CLEAR, z - a, PANEL_T / 2 - a - 1])
-                cylinder(r = BRACE_NUT_CLEAR + 0.1, h = PANEL_T + 2, $fn = 16);
+            translate([PR - BRACE_NUT_SET - BRACE_NUT[1] / 2 - BRACE_NUT_CLEAR - NUT_RIB[0] / 2, z - a - EPS, PANEL_T / 2 - a - 1])
+                cube([NUT_RIB[0], NUT_RIB[1] + EPS, PANEL_T + 2]);
         }
     }
 
@@ -142,9 +141,8 @@ module ladder_base() {
             }
             ridge3(0);
         }
-        // floor plate grooves (horizontal), open at the front
-        for (z = [-1, PANEL_T - GROOVE_D])
-            translate([PF - 1, GROOVE_Z[0], z]) cube([FLOOR_Y0 + FLOOR_D - PF + 1, GROOVE_Z[1] - GROOVE_Z[0], GROOVE_D + 1]);
+        // floor plate grooves (horizontal), open at the front, their lower lip chamfered
+        grooves_both(PF - 1, FLOOR_Y0 + FLOOR_D - PF + 1);
         brace_holes3(brace_z(-1));
     }
 }

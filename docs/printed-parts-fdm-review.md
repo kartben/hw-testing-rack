@@ -1,7 +1,11 @@
 # Printed parts: FDM printability review
 
-**Status (2026-10-21): findings only; nothing applied — each item below is a yes/no for the user, Mechanics
-implements the yeses.  Covers the covers too (cover_lid1, cover_box4, and the pockets they click into in the
+**Status (2026-10-21): the user's yeses are in: items 1, 2, 3, 4, 5 and 7; 6 and 8 declined (the profile's
+hole and elephant-foot compensations cover them).  Two deviations: item 3's foot at x 95 stands at y 179, forward
+of the third boss (at the bosses' line it would stand on it); item 7's 45° ceiling is the label recess's top
+edge: the finger pull's notch opens upwards and has no ceiling, the 233 mm of overhang wall at z 18–20 is the
+recess's 0.9 mm top over its 116 mm (twice, one per perimeter).  Earlier: findings only, each item a yes/no for
+the user, Mechanics implementing the yeses.  Covers the covers too (cover_lid1, cover_box4, and the pockets they click into in the
 drawer and the port block): sliced from the STLs of the commit that added them.**  Companion to
 [printed-parts-review.md](printed-parts-review.md) (design review): this
 one asks what the printer will make of each part.  Every STL of `main` (30 parts, in the orientation

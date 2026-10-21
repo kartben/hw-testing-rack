@@ -59,9 +59,12 @@ module front_panel() {
         // finger pull: scoop at the top centre
         translate([DRAWER_W / 2, -EPS, DRAWER_FRONT_H]) rotate([-90, 0, 0])
             scale([1, 0.32, 1]) cylinder(r = 28, h = DRAWER_FRONT_T + 2 * EPS, $fn = 96);
-        // label recess (12 mm tape)
-        translate([DRAWER_W / 2, -EPS, DRAWER_FRONT_H * 0.42]) rotate([90, 0, 0]) mirror([0, 0, 1])
-            linear_extrude(0.9) offset(r = 0.6) square([DRAWER_W - 26, 12.4 - 1.2], center = true);
+        // label recess (the bay label, or 12 mm tape): its ceiling at 45°, opening towards the face, so nothing
+        // overhangs as printed (the label fits the 12.4 at its back; docs/printed-parts-fdm-review.md, item 7)
+        translate([DRAWER_W / 2, -EPS, DRAWER_FRONT_H * 0.42]) rotate([90, 0, 0]) mirror([0, 0, 1]) hull() {
+            linear_extrude(EPS) translate([0, 0.45]) offset(r = 0.6) square([DRAWER_W - 26, 12.4 - 1.2 + 0.9], center = true);
+            translate([0, 0, 0.9 - EPS]) linear_extrude(EPS) offset(r = 0.6) square([DRAWER_W - 26, 12.4 - 1.2], center = true);
+        }
     }
 }
 

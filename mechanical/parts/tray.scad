@@ -70,6 +70,10 @@ module side_wall(d, h, ly, runner_end) {
         union() {
             cube([WALL, d, h]);
             translate([-RUNNER_OUT, RUNNER_Y0, RUNNER_Z[0]]) cube([RUNNER_OUT + EPS, runner_end - RUNNER_Y0, rh]);
+            // its underside at 45° from the tip down to the wall: nothing overhangs as printed (the ladders'
+            // grooves take the same chamfer, lib/panels.scad › GROOVE_LIP)
+            translate([0, runner_end, 0]) rotate([90, 0, 0]) linear_extrude(runner_end - RUNNER_Y0)
+                polygon([[-RUNNER_OUT, RUNNER_Z[0] + EPS], [EPS, RUNNER_Z[0] + EPS], [EPS, RUNNER_Z[0] - RUNNER_OUT]]);
             translate([-RUNNER_OUT, ly, RUNNER_Z[0]]) hull() {      // barb: square catch face, ramp behind
                 translate([-EPS, 0, 0]) cube([EPS, 4, rh]);
                 translate([-BARB, 0, 0]) cube([BARB, 1.5, rh]);
@@ -232,8 +236,15 @@ module tray() {
         // row cable: through both side walls and their runners, under the ledge
         for (x = [-RUNNER_OUT - 1, CARRIER_W - WALL - EPS])
             translate([x, JUMPER_Y[0], JUMPER_Z0]) cube([WALL + RUNNER_OUT + 1 + 2 * EPS, JUMPER_Y[1] - JUMPER_Y[0], LEDGE_Z - LEDGE_T - JUMPER_Z0]);
-        // rear service slot (row feed, the camera lead, airflow)
-        translate([20, CARRIER_D - WALL - EPS, CARRIER_BOTTOM + 2]) cube([60, WALL + 2 * EPS, CARRIER_WALL_H - 5]);
+        // rear service slot (row feed, the camera lead, airflow): open to the wall's top edge, so the leads drop in
+        // from above and nothing bridges over it; its corners R1.5, in and out
+        translate([0, CARRIER_D + 1, 0]) rotate([90, 0, 0]) linear_extrude(WALL + 2) {
+            translate([20, CARRIER_BOTTOM + 2]) offset(r = VL_R[1]) offset(delta = -VL_R[1]) square([60, CARRIER_WALL_H]);
+            for (s = [0, 1]) translate([s == 0 ? 20 - VL_R[1] : 80, CARRIER_WALL_H - VL_R[1]]) difference() {
+                square([VL_R[1] + EPS, VL_R[1] + EPS]);
+                translate([s == 0 ? 0 : VL_R[1], 0]) circle(r = VL_R[1], $fn = 32);
+            }
+        }
         // the node's RESET button sits under the left ledge's inner edge: a notch over its plunger lets a
         // pin reach it from above, drawer pulled out; the drawer still rests on 1.5 mm of ledge there
         translate(concat(node_xy(NODE_RESET), [LEDGE_Z - LEDGE_T - 1])) cylinder(r = LEDGE_X - node_xy(NODE_RESET)[0] + 1.5, h = LEDGE_T + 2);

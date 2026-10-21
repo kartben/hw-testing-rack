@@ -3899,8 +3899,8 @@
 {
 "part": "cap_plate",
 "qty": 4,
-"grams_each": 39.3,
-"grams_total": 157.1,
+"grams_each": 39.9,
+"grams_total": 159.7,
 "stl": "mechanical/stl/cap_plate.stl"
 },
 {
@@ -3920,8 +3920,8 @@
 {
 "part": "drawer",
 "qty": 7,
-"grams_each": 46.7,
-"grams_total": 326.8,
+"grams_each": 46.6,
+"grams_total": 326.5,
 "stl": "mechanical/stl/drawer.stl"
 },
 {
@@ -3941,36 +3941,36 @@
 {
 "part": "floor_plate",
 "qty": 4,
-"grams_each": 38.2,
-"grams_total": 152.7,
+"grams_each": 38.8,
+"grams_total": 155.2,
 "stl": "mechanical/stl/floor_plate.stl"
 },
 {
 "part": "ladder_a",
 "qty": 5,
-"grams_each": 48.6,
-"grams_total": 242.8,
+"grams_each": 47.9,
+"grams_total": 239.7,
 "stl": "mechanical/stl/ladder_a.stl"
 },
 {
 "part": "ladder_b",
 "qty": 5,
-"grams_each": 48.6,
-"grams_total": 242.8,
+"grams_each": 47.9,
+"grams_total": 239.7,
 "stl": "mechanical/stl/ladder_b.stl"
 },
 {
 "part": "ladder_base",
 "qty": 5,
-"grams_each": 49.0,
-"grams_total": 245.2,
+"grams_each": 48.4,
+"grams_total": 241.9,
 "stl": "mechanical/stl/ladder_base.stl"
 },
 {
 "part": "ladder_cap",
 "qty": 5,
-"grams_each": 15.4,
-"grams_total": 76.8,
+"grams_each": 14.7,
+"grams_total": 73.4,
 "stl": "mechanical/stl/ladder_cap.stl"
 },
 {
@@ -4088,15 +4088,15 @@
 {
 "part": "tray",
 "qty": 8,
-"grams_each": 81.4,
-"grams_total": 651.6,
+"grams_each": 82.0,
+"grams_total": 656.3,
 "stl": "mechanical/stl/tray.stl"
 },
 {
 "part": "x4_cradle",
 "qty": 2,
-"grams_each": 8.6,
-"grams_total": 17.1,
+"grams_each": 8.8,
+"grams_total": 17.5,
 "stl": "mechanical/stl/x4_cradle.stl"
 },
 {
