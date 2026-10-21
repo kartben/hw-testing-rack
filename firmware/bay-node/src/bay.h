@@ -212,6 +212,17 @@ void bay_rack_info_changed(void);
 /* The hub asked this node to show itself: the LED blinks */
 bool bay_rack_identifying(void);
 
+/* --- A fatal error restarts the node, reported after (fault.c) ------------ */
+
+/* At boot: logs the fatal error that restarted the node, if any */
+void fault_init(void);
+/* That error ("fatal error <reason> in <thread>: <last log line>"), "" none */
+const char *fault_last(void);
+/* The warnings and errors logged just before it, "" none */
+const char *fault_tail(void);
+/* The warnings and errors since this boot (the last ones), into buf */
+int fault_log_now(char *buf, size_t size);
+
 /* --- Network, identity (net.c) -------------------------------------------- */
 
 #define BAY_ID_MAX_LEN 15

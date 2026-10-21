@@ -143,6 +143,7 @@ struct status_doc {
 	const char *version;
 	const char *path;
 	int32_t uptime_s;
+	const char *last_fault;
 	bool service;
 	bool pc_detected;
 	bool force_classic;
@@ -219,6 +220,7 @@ static const struct json_obj_descr status_descr[] = {
 	JSON_OBJ_DESCR_PRIM(struct status_doc, version, JSON_TOK_STRING),
 	JSON_OBJ_DESCR_PRIM(struct status_doc, path, JSON_TOK_STRING),
 	JSON_OBJ_DESCR_PRIM(struct status_doc, uptime_s, JSON_TOK_NUMBER),
+	JSON_OBJ_DESCR_PRIM(struct status_doc, last_fault, JSON_TOK_STRING),
 	JSON_OBJ_DESCR_PRIM(struct status_doc, service, JSON_TOK_TRUE),
 	JSON_OBJ_DESCR_PRIM(struct status_doc, pc_detected, JSON_TOK_TRUE),
 	JSON_OBJ_DESCR_PRIM(struct status_doc, force_classic, JSON_TOK_TRUE),
@@ -343,6 +345,7 @@ static void status_fill(struct status_doc *s, uint32_t ip)
 	s->version = KERNEL_VERSION_STRING;
 	s->path = bay_data_path_str(usb_mux_path());
 	s->uptime_s = (int32_t)(k_uptime_get() / MSEC_PER_SEC);
+	s->last_fault = fault_last();
 	s->service = usb_mux_service();
 	s->pc_detected = usb_mux_pc_detected();
 	s->force_classic = usb_mux_force_pc_get();

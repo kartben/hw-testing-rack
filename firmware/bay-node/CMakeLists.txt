@@ -12,6 +12,7 @@ project(bay_node)
 
 target_sources(app PRIVATE
   src/main.c
+  src/fault.c
   src/dut.c
   src/ports.c
   src/usb_mux.c

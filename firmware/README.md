@@ -184,6 +184,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO42 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
 | Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS (`common/lib/net.c`, as the hub) |
 | Shell | `bay …` commands plus the stock `wifi`, `net` shells, on UART0 and telnet |
+| Fatal errors | restart the node instead of halting it (`src/fault.c`): a bay has to come back by itself, and its console is the USB host's.  The reason, the thread and the warnings and errors logged just before are kept across the restart in RTC memory, then reported: the log, `bay status` ("restarted: …"), `bay fault`, `/api/status`'s `last_fault`.  Gone at power-on |
 | Web | Zephyr HTTP server on port 80: status page, JSON API (same actions as the shell), Prometheus `/metrics` through Zephyr's Prometheus library |
 
 ### Shell
@@ -191,6 +192,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Command | Effect |
 |---|---|
 | `bay status` | id/hostname, IP, rack position, data path, USB host (devices, USB/IP sessions), power and V/I/P, fault count, AUX stats |
+| `bay fault` | the fatal error that restarted the node and the log just before it; the warnings and errors since this boot |
 | `bay power` | DUT VBUS state and V/I/P |
 | `bay power on` / `off` | switch DUT VBUS (`on` also clears a latched fault) |
 | `bay power cycle [ms]` | off, wait (default 1000 ms), on |
@@ -248,7 +250,7 @@ main actions.
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract; `camera` (camera builds): `GET /api/camera` without the settings and choices |
+| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract; `camera` (camera builds): `GET /api/camera` without the settings and choices; `last_fault`: the fatal error that restarted the node ("fatal error 4 in usbh: …"), "" none since power-on |
 | `POST /api/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}` |
 | `POST /api/reset` | `{"ms": 100}` (body optional) |
 | `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |

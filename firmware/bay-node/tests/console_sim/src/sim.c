@@ -105,6 +105,26 @@ int dut_power_read(struct dut_power_reading *r)
 	return 0;
 }
 
+/* --- No fatal error to report (fault.c) ----------------------------------- */
+
+const char *fault_last(void)
+{
+	return "";
+}
+
+const char *fault_tail(void)
+{
+	return "";
+}
+
+int fault_log_now(char *buf, size_t size)
+{
+	if (size > 0) {
+		buf[0] = 0;
+	}
+	return 0;
+}
+
 /* --- Data path, USB host, network, identity ------------------------------- */
 
 bool usb_mux_service(void)

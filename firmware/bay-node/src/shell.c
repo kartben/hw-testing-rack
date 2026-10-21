@@ -98,6 +98,9 @@ static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 	shell_print(sh, "bay id:    %s (%s.local)", bay_id()[0] ? bay_id() : "(unset)",
 		    net_hostname_get());
 	shell_print(sh, "network:   %s", bay_net_connected() ? bay_net_addr() : "down");
+	if (fault_last()[0] != '\0') {
+		shell_print(sh, "restarted: after a %s", fault_last());
+	}
 	print_rack(sh);
 	shell_print(sh, "data path: %s (SERVICE %s, PC %s, classic %s)",
 		    bay_data_path_str(usb_mux_path()), usb_mux_service() ? "on" : "off",
@@ -578,7 +581,29 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_camera,
 );
 #endif
 
+/* The fatal error that restarted the node, and the log just before it */
+static int cmd_fault(const struct shell *sh, size_t argc, char **argv)
+{
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	static char now[420];
+
+	if (fault_last()[0] == 0) {
+		shell_print(sh, "no fatal error since power-on");
+	} else {
+		shell_print(sh, "restarted after a %s; the log before it:", fault_last());
+		shell_print(sh, "%s", fault_tail());
+	}
+	fault_log_now(now, sizeof(now));
+	shell_print(sh, "warnings and errors since this boot:");
+	shell_print(sh, "%s", now);
+	return 0;
+}
+
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
+	SHELL_CMD_ARG(fault, NULL, "The fatal error that restarted the node, the log before it",
+		      cmd_fault, 1, 0),
 	SHELL_CMD_ARG(status, NULL, "Mode, network, power, USB host and AUX state", cmd_status,
 		      1, 0),
 	SHELL_CMD_ARG(power, NULL, "DUT VBUS: [on|off|cycle [ms]], no argument = V/I/P", cmd_power,
@@ -606,3 +631,35 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 );
 
 SHELL_CMD_REGISTER(bay, &sub_bay, "hw-testing-rack bay node", NULL);
+
+#if CONFIG_SYS_HEAP_ARRAY_SIZE > 0 && defined(CONFIG_SYS_HEAP_RUNTIME_STATS)
+#include <zephyr/sys/sys_heap.h>
+
+/*
+ * heaps: every heap (the system heap, the PSRAM one, the pools), where it
+ * lives (0x3c...: PSRAM on the ESP32-S3), free, used, the most ever used.
+ * On a board that keeps an array of its heaps (CONFIG_SYS_HEAP_ARRAY_SIZE).
+ */
+static int cmd_heaps(const struct shell *sh, size_t argc, char **argv)
+{
+	struct sys_heap **heaps;
+	int n = sys_heap_array_get(&heaps);
+
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	for (int i = 0; i < n; i++) {
+		struct sys_memory_stats st;
+
+		if (sys_heap_runtime_stats_get(heaps[i], &st) != 0) {
+			continue;
+		}
+		shell_print(sh, "%p  %7zu B  free %7zu  used %7zu  most %7zu", (void *)heaps[i]->heap,
+			    st.free_bytes + st.allocated_bytes, st.free_bytes, st.allocated_bytes,
+			    st.max_allocated_bytes);
+	}
+	return 0;
+}
+
+SHELL_CMD_REGISTER(heaps, NULL, "Every heap: where, free, used, most used", cmd_heaps);
+#endif

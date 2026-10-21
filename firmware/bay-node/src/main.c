@@ -212,6 +212,7 @@ int main(void)
 	int ret;
 
 	LOG_INF("hw-testing-rack bay node");
+	fault_init();
 
 	ret = settings_subsys_init();
 	if (ret == 0) {
