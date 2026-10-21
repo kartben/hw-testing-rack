@@ -121,29 +121,30 @@ JLC_QUOTE = {
     # the hub and ports plus the CH446Q matrix and the RP2354B analyzer), one per bay showing `x4: v2`: an
     # estimate from its fab JLC BOM.  The standing board, 100 × 70 mm, so JLC's 4-layer offer (jlcpcb.com
     # calculator, 2026-10-20: $8.00 + ENIG $17.40; ENIG for the RP2354B's 0.4 mm QFN-80, Economic's pitch
-    # limit).  Every JLC part on its front face: Economic PCBA, $3.07 for each of its 18 extended types among 41
+    # limit).  Every JLC part on its front face: Economic PCBA, $3.07 for each of its 17 extended types among 40
     # (the 10k array C25725 and the H5VU25UC ESD C20615800 are preferred extended: no fee; R23/R24 22 Ω basic,
-    # since 2026-10-20, in place of an extended 27 Ω).
+    # since 2026-10-20, in place of an extended 27 Ω; since 2026-10-21 the co-processor's AP2112K is gone, its
+    # 3.3 V from the board's through a ferrite, and each port has a VBUS LED: the usability review).
     # Components at the snapshot's breaks (electronics/lib/jlc_parts.json) × 1.12 (JLC's prices and attrition,
-    # as the node's); 1,109 joints a board at $0.0017; an X-ray of each board (the QFN hub, MCU and expanders).
+    # as the node's); 1,120 joints a board at $0.0017; an X-ray of each board (the QFN hub, MCU and expanders).
     # L1 (AOTA-B201610S3R3-101-T, the one inductor Raspberry Pi approves for the RP2350's regulator) sells at
     # JLC by 32 at least, 4 in stock on 2026-10-20 (a pre-order): the 30 spare are paid once per order.  J1 and
     # the four 2 × 6 headers are hand-soldered, out of the JLC BOM.
     "data-port-x4-v2": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 168.53, "estimate": True, "from_fab": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 165.27, "estimate": True, "from_fab": True,
         "spec": "4-layer 100×70 mm, JLC04161H-7628, ENIG",
         "pcb": {"special offer": 8.00, "ENIG": 17.40},
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 61.57, "extended parts": 55.26, "SMT": 3.77,
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 61.34, "extended parts": 52.19, "SMT": 3.81,
                  "X-ray": 3.28, "L1 minimum purchase (32)": 9.54},
     },
-    # its base variant (DATA-4x: the logic left off, 92 parts fewer, data-port-x4-v2-base-*), one per other
-    # converted bay: the same estimate, 8 extended types among 24 (and C25725, C20615800, preferred), 511 joints.  Ordered on its own it takes
+    # its base variant (DATA-4x: the logic left off, 91 parts fewer, data-port-x4-v2-base-*), one per other
+    # converted bay: the same estimate, 8 extended types among 25 (and C25725, C20615800, preferred), 527 joints.  Ordered on its own it takes
     # lead-free HASL, as v1: no part finer than its hub's 0.5 mm QFN ($12.20 less than ENIG for 5 PCBs).
     "data-port-x4-v2-base": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 84.50, "estimate": True, "from_fab": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 84.73, "estimate": True, "from_fab": True,
         "spec": "4-layer 100×70 mm, JLC04161H-7628, lead-free HASL",
         "pcb": {"special offer": 8.00, "lead-free HASL": 5.20},
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 32.01, "extended parts": 24.56, "SMT": 1.74,
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 32.19, "extended parts": 24.56, "SMT": 1.79,
                  "X-ray": 3.28},
     },
     # the rack's order for its converted bays (the orchestrator, 2026-10-20): the logic and the base above on
@@ -154,11 +155,11 @@ JLC_QUOTE = {
     # (jlcpcb.com calculator, 2026-10-20).  One logic and one base per panel; the variants' own estimates
     # above stay for single orders (the BOM page's calculator).
     "data-port-x4-v2-panel": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 229.91, "estimate": True, "from_fab": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 226.88, "estimate": True, "from_fab": True,
         "boards": ("data-port-x4-v2", "data-port-x4-v2-base"),
         "spec": "4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites",
         "pcb": {"engineering": 25.00, "ENIG": 18.20, "board": 8.80},
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 91.33, "extended parts": 55.26, "SMT": 5.51,
+        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 91.28, "extended parts": 52.19, "SMT": 5.60,
                  "X-ray": 6.56, "L1 minimum purchase (32)": 9.54},
     },
 }

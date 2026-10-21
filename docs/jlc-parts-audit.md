@@ -39,15 +39,17 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 297.81 | 160.91 | 35.45 | 26.38 | 229.91 | **784.46** |
-| 5 | 177.35 | 48.73 | 13.81 | 7.15 | 72.14 | **325.98** |
-| 10 | 156.97 | 36.73 | 11.23 | 4.92 | 55.86 | **269.12** |
+| 1 | 297.81 | 160.91 | 35.45 | 26.38 | 226.88 | **781.43** |
+| 5 | 177.35 | 48.73 | 13.81 | 7.15 | 71.55 | **325.39** |
+| 10 | 156.97 | 36.73 | 11.23 | 4.92 | 55.58 | **268.83** |
 
 The hub is 76 × 100 mm since 2026-10-20 (3cb4152): inside JLC's 100 × 100 offer, no $25 engineering
-fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors (cc3ba32).
+fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors (cc3ba32), and since 2026-10-21 the usability
+review's pass: the co-processor's AP2112K out (17 extended types, not 18), a VBUS LED per port, $3.03
+less a panel order.
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.69, hub
-$21.78, the v2 panel $37.03 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
+$21.78, the v2 panel $37.05 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (1590b7a) took another ≈ $4 off its
 floor.
 

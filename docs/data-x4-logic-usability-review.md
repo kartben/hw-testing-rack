@@ -1,6 +1,7 @@
 # DATA-4x-logic: usability and simplification review
 
-**Status (2026-10-20): review only, nothing changed on the board.**  The user asked for a usability review of
+**Status (2026-10-20): review only, nothing changed on the board.**  **Applied 2026-10-21** in the v2 session's pass (one re-route): findings 1 (layout B, the user's "oui je valide"), 2 (the bias from +5V_MX, with the VREF dividers at 10k / 10k: through 100k / 100k an unwired VREF floats up to ≈ 2.1 V on the bias current and the group passes), 3 (the VBUS LEDs), 4 (U12 out), 5 (22 Ω, earlier) and 7 (docs); 6, the bus header, later.  The BOM: 17 extended types (the 22 Ω swap had taken the 20 to
+18 already), the panel order $229.91 → $226.88.  The user asked for a usability review of
 the DATA-4x-logic (the standing DATA ×4 v2, [electronics.md](electronics.md) › "DATA ×4 v2.0"): the Dupont
 headers ("je me demande si on pourrait pas avoir quelque chose de complètement groupé si au final les
 connexions sont complètement virtuelles"), features in excess or missing, and what would simplify the

@@ -6,7 +6,8 @@ does and adds:
 
 * per port, 8 pins P1–P8 and the board's VREF on a 2 × 6 through-hole header, soldered by hand (GND,
   VREF, P1–P8, RESET_N, BOOT_N): each pin through H5VU25UC ESD and 100 Ω to an LSF0108 (A side = the DUT's VREF, B side =
-  3.3 V; Vref_B and EN biased from the port's VBUS through 200k, so a port that is off isolates its
+  3.3 V; Vref_B and EN biased from +5V_MX through 200k, so a group is a voltage domain of its own: a board that is off
+  takes its VREF down and isolates its
   pins, and a VREF left unconnected is pulled to GND by the ADC divider: nothing passes);
 * two CH446Q 8 × 16 crosspoints at ±5 V (TPS60400 for −5 V), each taking two ports' 16 pins on X; their
   Y lines joined are the eight buses A–H, each pulled up to 3.3 V by 10k (the B-side pull-up of
@@ -16,7 +17,8 @@ does and adds:
   lays it out), on hub port 5: the stock gusmanb LogicAnalyzer UF2 sees the buses on CH1–8 (GPIO2–9,
   GPIO0 → 1 bridged for its triggers); our firmware later switches 2.2k pull-ups per bus (GPIO10–13,
   16–19) and reads the VREFs (GPIO40–43) and the ±5 V rails (GPIO44–45).  The node holds its RUN and
-  BOOTSEL (QSPI_SS through 1k) on the TCA9534A, and the mark line (GPIO14) for triggers.  Its own 3.3 V LDO.
+  BOOTSEL (QSPI_SS through 1k) on the TCA9534A, and the mark line (GPIO14) for triggers.  Its 3.3 V from the
+  board's, through a ferrite.
 
 v1's PCBA-review fixes (docs/pcba-review.md, X1–X11) carried over: the lead's SDA, SCL and INT through
 three 2N7002 (gate on +3V3) with 4.7k / 4.7k / 10k on this side, so the node's pull-ups cannot feed the
@@ -223,6 +225,13 @@ def port(b: Board, n: int):
     C(s, f"C{k + 2}", "22u", p + "VBUS", "GND", size="0805", pcb=P(cx - 3.6, 56.9, 0), sch=at(55, 35.5))
     s.wire(f"C{k + 2}.1", (55, 33))
     C(s, f"C{k + 3}", "100n", "+3V3", "GND", size="0402", pcb=P(x0 + 7.8, y0 + 0.9, 180), sch=at(80, 18))
+    # the port's VBUS LED (the user, 2026-10-21): green, on the switched 5 V before the shunt, so the INA226
+    # doesn't count its ≈ 3 mA; by its port's number over the header's west end, its 1k above it
+    R(s, f"R{k + 14}", "1k", p + "5V_SW", p + "LED_A", size="0402", pcb=P(cx - 5.2, HDR_Y - 9.8, 270),
+      sch=at(84, 30, rot=90))
+    part(s, f"D{k + 1}", "led_g", {"A": p + "LED_A", "K": "GND"}, pcb=P(cx - 5.2, HDR_Y - 7.0, 90),
+         sch=at(94, 30, rot=180))
+    s.wire(f"R{k + 14}.2", f"D{k + 1}.A")
 
     s.frame(f"USB-C {n} (source): Rp 56k on each CC; USBLC6 in flow-through (connector side | hub side)",
             6, 50, 108, 100)
@@ -245,7 +254,7 @@ def port(b: Board, n: int):
     s.wire(f"{usb}.A6", f"{esd}.3")
     C(s, f"C{k + 4}", "100n", "+5V", "GND", size="0402", pcb=P(cx + 7.0, USB_Y - 2.9, 0), sch=at(96, 76))   # X9
 
-    s.frame(f"Header {n} (2 × 6 SMD): GND, VREF, P1–P8, RESET_N, BOOT_N; RESET/BOOT through 1k, "
+    s.frame(f"Header {n} (2 × 6 through-hole): GND, VREF, P1–P8, RESET_N, BOOT_N; RESET/BOOT through 1k, "
             "their expander lines pulled up", 112, 10, 228, 56)
     hdr = {str(k): (sig if sig == "GND" else p + sig) for k, sig in HDR_SIG.items()}
     # through-hole, soldered by hand (the user's call, 2026-10-20: easier than SMD; the rear face has room for
@@ -287,14 +296,20 @@ def port(b: Board, n: int):
     rail(s, "GND", [f"U{k + 7}.GND", f"U{k + 7}.EPAD"], 2, "down")
     # its references' parts in a column left of it (port b: under the crosspoint's south-east corner)
     bx, by = lx - 4.0, LSF_Y - 1.0
-    R(s, f"R{k + 11}", "200k", p + "VBUS", p + "VREFB", size="0402", pcb=P(bx, by, 0), sch=at(162, 122))
+    # Vref_B and EN from the board's +5V_MX through 200k (the usability review's finding 2, 2026-10-21): not the
+    # port's VBUS, so a group is a voltage domain of its own, any board on any group.  TI: Vref_B ≥ Vref_A + 0.6 V,
+    # so VREF up to ≈ 4.4 V translates as specified (a 5 V board: its highs clamp near 4.2 V, as with VBUS)
+    R(s, f"R{k + 11}", "200k", "+5V_MX", p + "VREFB", size="0402", pcb=P(bx, by, 0), sch=at(162, 122))
     C(s, f"C{k + 5}", "100n", p + "VREFB", "GND", size="0402", pcb=P(bx, by + 1.1, 0), sch=at(162, 130))
     s.wire(f"R{k + 11}.2", f"C{k + 5}.1")
-    # VREF / 2 to the co-processor's ADC; with VREF unconnected it holds the LSF's reference at 0 V: no pin passes
-    R(s, f"R{k + 12}", "100k", p + "VREF", f"CP_VREF{n}", size="0402", pcb=P(bx, by + 2.2, 0), sch=at(180, 122))
-    R(s, f"R{k + 13}", "100k", f"CP_VREF{n}", "GND", size="0402", pcb=P(bx, by + 3.3, 0), sch=at(180, 130))
+    # VREF / 2 to the co-processor's ADC, and the pull-down that closes an unwired group.  The bias current
+    # (≈ 20 µA) leaves the LSF0108 by Vref_A: through 100k + 100k an unwired VREF would float up to ≈ 2.1 V and
+    # the group would pass; through 10k + 10k it stays ≈ 0.4 V, under the 0.65 V the LSF needs to translate.  A
+    # wired VREF supplies VREF / 20k (165 µA at 3.3 V)
+    R(s, f"R{k + 12}", "10k", p + "VREF", f"CP_VREF{n}", size="0402", pcb=P(bx, by + 2.2, 0), sch=at(180, 122))
+    R(s, f"R{k + 13}", "10k", f"CP_VREF{n}", "GND", size="0402", pcb=P(bx, by + 3.3, 0), sch=at(180, 130))
     s.wire(f"R{k + 12}.2", f"R{k + 13}.1")
-    # VREF comes from the DUT through the header, Vref_B from VBUS through 200k: no power output drives them
+    # VREF comes from the DUT through the header, Vref_B from +5V_MX through 200k: no power output drives them
     s.part(f"#FLG{k + 1}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": p + "VREF"}, in_bom=False, on_board=False,
            sch=at(200, 120))
     s.part(f"#FLG{k + 2}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": p + "VREFB"}, in_bom=False, on_board=False,
@@ -308,7 +323,8 @@ def port(b: Board, n: int):
                "INA226 Vbus on the shunt's load-side sense pad (= VBUS).",
                "EN pulled down: the port stays off until the node switches it on.",
                "Pins: P1–P8 → crosspoint X lines (docs/electronics.md › DATA ×4 v2 map);",
-               "  the LSF0108 passes nothing while the port's VBUS is off or its VREF is unconnected."]
+               "  the LSF0108 passes nothing while its VREF is at 0 V or unconnected (a board that is off).",
+               "VBUS LED: on while the port's switch is on (5V_SW, before the shunt)."]
 
 
 # ----------------------------------------------------------------------------------- hub, lead, power
@@ -429,7 +445,7 @@ def hub_sheet(b: Board):
     s.frame("I²C isolation: open with DUT_5V off, so the node's pull-ups cannot feed this board", 172, 76, 228, 130)
     for i, (q, r, line, val) in enumerate((("Q1", "R6", "SDA", "4.7k"), ("Q2", "R7", "SCL", "4.7k"),
                                            ("Q3", "R8", "INT", "10k"))):
-        y = 48.6 + 3.7 * i
+        y = 49.6 + 3.7 * i
         part(s, q, "nfet", {"G": "+3V3", "S": line, "D": "LEAD_" + line}, pcb=P(86.5, y, 0),
              sch=at(190, 88 + 14 * i))
         R(s, r, val, "+3V3", line, size="0402", pcb=P(83.0, y, 90), sch=at(210, 86 + 14 * i))
@@ -543,18 +559,18 @@ def coproc_sheet(b: Board):
     rail(s, "GND", ["U11.VREG_PGND", "U11.GND"], 2, "down")
     rail_v(s, "CP_TRIG", ["U11.GPIO0", "U11.GPIO1"], 2, "right")
     s.part("#FLG04", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+1V1"}, in_bom=False, on_board=False, sch=at(196, 38))
-    s.frame("Its own 3.3 V (AP2112K) and the core regulator as Raspberry Pi lays it out (3.3 µH, 3 × 4.7 µF, 33 Ω)",
+    s.frame("Its 3.3 V from +3V3 through a ferrite, the core regulator as Raspberry Pi lays it out (3.3 µH, 3 × 4.7 µF, 33 Ω)",
             124, 10, 228, 52)
-    s.tag("+5V_MX", (140, 22), "up")
-    s.wire((140, 22), (140, 25), "U12.VIN")
-    # above the co-processor's north-west corner, out of the bus lane under it
-    part(s, "U12", "ldo_lp", {"VIN": "+5V_MX", "EN": "+5V_MX", "GND": "GND", "NC": None, "VOUT": "+3V3_CP"},
-         pcb=P(cx - 8.5, 4.6, 0), sch=at(150, 26, fields=(-3, -4)))
-    C(s, "C30", "1u", "+5V_MX", "GND", size="0402", pcb=P(cx - 11.8, 4.6, 90), sch=at(136, 28))
-    s.wire("C30.1", (136, 25), (140, 25))
-    s.wire("U12.EN", (144, 26), (144, 25))
+    # +3V3_CP: the board's +3V3 through a 600 Ω ferrite (the usability review's finding 4, 2026-10-21: no LDO of
+    # its own, an extended part type less; U3 takes its ≈ 15–45 mA), in place of the AP2112K above the
+    # co-processor's north-west corner; its 4.7 µF on the island side
+    s.tag("+3V3", (140, 22), "up")
+    part(s, "FB2", "fb600", {"1": "+3V3", "2": "+3V3_CP"}, pcb=P(cx - 8.5, 4.6, 0), sch=at(150, 25, rot=90))
+    s.wire((140, 22), (140, 25), "FB2.1")
+    s.part("#FLG07", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+3V3_CP"}, in_bom=False, on_board=False,
+           sch=at(166, 20))
     C(s, "C31", "4.7u", "+3V3_CP", "GND", size="0402", pcb=P(cx - 5.4, 4.6, 90), sch=at(160, 28))
-    s.wire("U12.VOUT", (160, 25), "C31.1")
+    s.wire("FB2.2", (160, 25), "C31.1")
     s.wire((160, 25), (168, 25), net="+3V3_CP")
     s.tag("+3V3_CP", (168, 25), "right")
     # VREG pins 61–65 at the south face's west end: the inductor and its three 4.7 µF right there
@@ -784,11 +800,12 @@ def board() -> Board:
         "variants": {"base": {"dnp": logic_only(b)}},
         "texts": [
             {"text": "DATA ×4 v2.0", "x": 17.3, "y": 2.0, "size": 0.8},     # off the panel's tab at x 9
-            *({"text": str(n), "x": CFG["usb"][n - 1] - 6.6, "y": USB_Y + 4.6, "size": 1.0} for n in range(1, 5)),
-            # each header's pin names in two lines under it (the ESD sits right over it), stacked as its rows:
-            # the even (upper) row's names over the odd (lower) row's
+            # layout B (the usability review, the user's "oui je valide", 2026-10-21): each header's pin names in
+            # two lines over it, read with the jumpers in, stacked as its rows (the even, upper row's over the odd,
+            # lower row's), and a big port number by it, beside the port's VBUS LED
+            *({"text": str(n), "x": CFG["usb"][n - 1] - 7.4, "y": HDR_Y - 7.0, "size": 2.0} for n in range(1, 5)),
             *({"text": HDR_PINS[i], "x": CFG["usb"][n] - 6.35 + 2.54 * (i // 2),
-               "y": HDR_Y + (4.7 if i % 2 == 0 else 3.7), "size": 0.8}
+               "y": HDR_Y - (4.6 if i % 2 == 1 else 3.4), "size": 0.8}
               for n in range(4) for i in range(12)),
         ],
     }

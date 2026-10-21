@@ -137,7 +137,8 @@ population:
                                                                              # left of the plate's right finger slot.  The
           # upright loop is right: 26.7 mm between the sockets (two straight plugs need 56), 15 cm the shortest that
           # reaches, and its weight can't fold two vertical exits 35 mm apart (checked 2026-10-20: leant starts, side plugs)
-    jumpers:                 # Dupont female–female, 20 cm, from the base's 2 × 6 (only GND, RESET and BOOT live): the Pico 2's
+    jumpers:                 # Dupont female–female, 20 cm, from the base's two 2 × 1 per port (GND/VREF, RESET/BOOT: the 2 × 6's
+                             # end columns, only GND, RESET and BOOT live): the Pico 2's
       B1.2: { RESET: RUN }     # RESET is RUN (its BOOTSEL a test pad; no GND wire: the USB cable carries it; the FRDM's MCU-Link
                                # resets it)
   B2: { board: giga-r1-display,  cable: c-to-c, plate: boards }   # the camera bay: a live LVGL screen (2026-10-18);
@@ -267,10 +268,11 @@ pcb:
     usb: [22, 40, 58, 76]   # board x of the four vertical USB-C (HRO TYPE-C-31-D-06, 6.4 mm tall), mouths towards the
                             # wall: drawer x 26, 44, 62, 80, v1's ports
     usb_z: 11               # their axis: the port wall's openings, as v1's
-    header: { x: [22, 40, 58, 76], z: 30.5, odd_z: 29.23, even_z: 31.77, cols: 6,
+    header: { x: [22, 40, 58, 76], z: 28.5, odd_z: 27.23, even_z: 29.77, cols: 6,
               names: [GND, VREF, P5, P1, P6, P2, P7, P3, P8, P4, RESET, BOOT] }
                             # per port a 2 × 6 2.54 through-hole header (hand-soldered, its tails 1.5 mm out of the rear
-                            # face) on the FRONT face, pins forward, centred on its USB-C's x and on drawer z 30.5, pin 1
+                            # face) on the FRONT face, pins forward, centred on its USB-C's x and on drawer z 28.5 (layout
+                            # B, 2026-10-21: its names over it, its port number and VBUS LED by its west end), pin 1
                             # at x − 6.35: column k (from the left) holds pins 2k−1 on the lower row (odd_z) and 2k on the
                             # upper one.  Read as rows (the user, 2026-10-20): upper VREF 1 2 3 4 BOOT, lower GND 5 6 7 8
                             # RESET.  names: in pin order 1–12

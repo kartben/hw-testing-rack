@@ -93,7 +93,8 @@ up the drawer's cable window and through one of the port wall's free U's
 GND, RESET, BOOT per port, pins up; the v2, standing at the back of the
 drawer: a 2 × 6 GND, VREF, P1–P8, RESET, BOOT on its front face, pins forward,
 of which the base DATA-4x carries only GND, RESET and BOOT: its pin chain is not
-fitted) take female–female Dupont jumpers to the board's own pins, its pin
+fitted, so it solders two 2 × 1 pieces per port, the header's end columns GND/VREF
+and RESET/BOOT) take female–female Dupont jumpers to the board's own pins, its pin
 headers soldered pins up.  Wire only what the board needs: no GND wire (the
 USB cable carries it), RESET and BOOT where the board breaks them out (B1, on a
 base: the Pico 2's RUN), and on DATA-4x-logic the VREF its level shifter needs
