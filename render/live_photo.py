@@ -23,14 +23,16 @@ from pathlib import Path
 
 import bmesh
 import bpy
-import numpy as np
 from mathutils import Vector
 
 REPO = Path(HW_REPO)  # noqa: F821 — injected by tools/blender_live.py
+sys.path.insert(0, str(REPO / "render"))
+import importlib  # noqa: E402
+import supersample  # noqa: E402  (render/supersample.py: gpu_only, still)
+importlib.reload(supersample)
 MODE = sys.argv[1] if len(sys.argv) > 1 else "build"
 SCENE = "hw-testing-rack-photo"
 LAYER_MM = 0.2
-SS = 2                  # supersampling factor of the shots
 
 # printed parts; their layers stack along the part's thinnest local axis (ladders, braces and
 # plates print flat, drawers and trays floor-down)
@@ -442,23 +444,6 @@ def hanging_cable(coll, a_port, a_dir, b_port, b_dir, touchdown, r=0.0021):
     return ob
 
 
-def gpu_only():
-    """Cycles on the GPU alone (OptiX first), whatever the preferences say: a fresh Blender has none set, and
-    a CPU left ticked beside the GPU takes tiles and slows the render.  Session only, never saved."""
-    prefs = bpy.context.preferences.addons["cycles"].preferences
-    for backend in ("OPTIX", "CUDA", "HIP", "ONEAPI", "METAL"):
-        try:
-            prefs.compute_device_type = backend
-            prefs.get_devices()
-        except Exception:
-            continue
-        if any(d.type == backend for d in prefs.devices):
-            for d in prefs.devices:
-                d.use = d.type == backend
-            return "GPU"
-    return "CPU"
-
-
 def build(glb):
     sc = bpy.data.scenes.get(SCENE) or bpy.data.scenes.new(SCENE)
     win = bpy.context.window_manager.windows[0]
@@ -561,7 +546,7 @@ def build(glb):
     setc.objects.link(cam)
     sc.camera = cam
     sc.render.engine = "CYCLES"
-    sc.cycles.device = gpu_only()
+    sc.cycles.device = supersample.gpu_only()
     sc.cycles.samples = 256
     sc.cycles.use_denoising = True
     sc.cycles.denoising_use_gpu = True
@@ -677,33 +662,8 @@ def shot(name, out, samples, res):
         c = bay_center("B1")
         aim(cam, c + Vector((-0.24, -0.36, 0.05)), c + Vector((0.20, -0.08, -0.03)), 50, 5.6,
             focus=led_world("B2"))
-    # rendered at SS× the size, then each SS × SS block averaged: supersampling, so thin edges (layer lines,
-    # pins, cables) stay crisp where the denoiser and the 1.5 px pixel filter would smear them at 1×
     w, h = (int(v) for v in res.split("x"))
-    sc.render.resolution_x, sc.render.resolution_y = w * SS, h * SS
-    sc.render.resolution_percentage = 100
-    sc.cycles.device = gpu_only()
-    sc.cycles.samples = samples
-    tmp = str(Path(bpy.app.tempdir or ".") / f"photo-{name}-ss.png")
-    sc.render.filepath = tmp
-    sc.render.image_settings.file_format = "PNG"
-    sc.render.image_settings.color_depth = "16"
-    Path(out).parent.mkdir(parents=True, exist_ok=True)
-    with bpy.context.temp_override(window=bpy.context.window_manager.windows[0], scene=sc):
-        bpy.ops.render.render(write_still=True, scene=sc.name)
-    big = bpy.data.images.load(tmp, check_existing=False)
-    px = np.empty(w * SS * h * SS * 4, dtype=np.float32)
-    big.pixels.foreach_get(px)
-    px = px.reshape(h, SS, w, SS, 4).mean(axis=(1, 3))
-    # a 16-bit PNG loads as a float buffer, in linear: average there, into a float image, which the save
-    # encodes back to sRGB (a byte image would take the linear values as display values: too dark)
-    img = bpy.data.images.new(f"photo-{name}", w, h, alpha=False, float_buffer=True)
-    img.pixels.foreach_set(px.ravel())
-    img.file_format = "JPEG" if out.lower().endswith((".jpg", ".jpeg")) else "PNG"
-    img.save(filepath=out, quality=92)
-    bpy.data.images.remove(img)
-    bpy.data.images.remove(big)
-    return {"shot": name, "out": out, "samples": samples, "supersample": SS}
+    return {"shot": name, **supersample.still(sc, out, w, h, samples)}
 
 
 if MODE == "build":
@@ -713,4 +673,4 @@ else:
     name = sys.argv[2] if len(sys.argv) > 2 else "desk"
     out = str(REPO / (sys.argv[3] if len(sys.argv) > 3 else f"docs/img/photo-{name}.jpg"))
     result = shot(name, out, int(sys.argv[4]) if len(sys.argv) > 4 else 384,
-                  sys.argv[5] if len(sys.argv) > 5 else "1600x1000")
+                  sys.argv[5] if len(sys.argv) > 5 else "2400x1500")

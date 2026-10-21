@@ -14,10 +14,14 @@ import bpy
 from mathutils import Vector
 
 REPO = Path(HW_REPO)  # noqa: F821 — injected by tools/blender_live.py
+sys.path.insert(0, str(REPO / "render"))
+import importlib  # noqa: E402
+import supersample  # noqa: E402  (render/supersample.py: gpu_only, still)
+importlib.reload(supersample)
 SHOT = sys.argv[1] if len(sys.argv) > 1 else "hero"
 OUT = str(REPO / (sys.argv[2] if len(sys.argv) > 2 else f"docs/img/{SHOT.replace(':', '-')}.jpg"))
-SAMPLES = int(sys.argv[3]) if len(sys.argv) > 3 else 192
-RES = sys.argv[4] if len(sys.argv) > 4 else "1920x1200"
+SAMPLES = int(sys.argv[3]) if len(sys.argv) > 3 else 384
+RES = sys.argv[4] if len(sys.argv) > 4 else "2400x1500"
 
 sc = bpy.data.scenes["hw-testing-rack"]
 bpy.context.window_manager.windows[0].scene = sc
@@ -63,14 +67,4 @@ elif name == "exploded":
     aim(c + Vector((0.85, -1.15, 0.55)) * size, c + Vector((0, 0, -0.02 * size)), 35)
 
 w, h = (int(v) for v in RES.split("x"))
-sc.render.resolution_x, sc.render.resolution_y = w, h
-sc.cycles.samples = SAMPLES
-sc.render.filepath = OUT
-jpeg = OUT.lower().endswith((".jpg", ".jpeg"))
-sc.render.image_settings.file_format = "JPEG" if jpeg else "PNG"
-if jpeg:
-    sc.render.image_settings.quality = 90
-Path(OUT).parent.mkdir(parents=True, exist_ok=True)
-with bpy.context.temp_override(window=bpy.context.window_manager.windows[0], scene=sc):
-    bpy.ops.render.render(write_still=True, scene=sc.name)
-result = {"shot": SHOT, "out": OUT, "device": sc.cycles.device, "samples": SAMPLES}
+result = {"shot": SHOT, **supersample.still(sc, OUT, w, h, SAMPLES)}
