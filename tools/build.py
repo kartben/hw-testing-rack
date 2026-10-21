@@ -112,7 +112,6 @@ def part_jobs(rack) -> list[tuple[str, str, dict]]:
         ("plate", "parts/board_plate.scad", {}),                                # the honeycomb plate
         ("camera_pod", "parts/camera_pod.scad", {"PART": "pod"}),
         ("camera_diffuser", "parts/camera_pod.scad", {"PART": "diffuser"}),
-        ("bay_label", "parts/label.scad", {}),
         ("power_box_base", "parts/power_box.scad", {"PART": "base"}),
         ("power_box_lid", "parts/power_box.scad", {"PART": "lid"}),
         ("power_box_labels", "parts/power_box.scad", {"PART": "labels"}),
@@ -120,6 +119,9 @@ def part_jobs(rack) -> list[tuple[str, str, dict]]:
     for k, row in enumerate(rack.rows):      # one ladder and one brace per row (their heights differ)
         jobs.append((f"ladder_{row['id'].lower()}", "parts/ladder.scad", {"PART": "row", "ROW": k}))
         jobs.append((f"brace_{row['id'].lower()}", "parts/brace.scad", {"ROW": k}))
+    for bay in rack.bays():                 # each bay's label: the body and its ID's inlay (two parts that register)
+        for piece, suffix in (("body", ""), ("inlay", "_inlay")):
+            jobs.append((f"bay_label_{bay.id.lower()}{suffix}", "parts/label.scad", {"ID": bay.id, "PART": piece}))
     for name, defines in plate_layout.peg_parts(rackcfg.load_boards()).items():     # its pegs
         jobs.append((name, "parts/pegs.scad", defines))
     for bay in rack.bays():                 # a bay that asks for the former plates (`plate: boards`)

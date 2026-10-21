@@ -873,7 +873,9 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         "ladder_base": cols + 1, "ladder_cap": cols + 1, "floor_plate": cols, "cap_plate": cols, "brace_base": cols,
         "tray": n_bays, "drawer": n_drawer, "chain_foot": n_drawer, "chain_anchor": n_drawer,
         "drawer_sled": n_sled, "drawer_block": n_sled,
-        "camera_pod": cams, "camera_diffuser": cams, "bay_label": n_bays,
+        "camera_pod": cams, "camera_diffuser": cams,
+        # each bay's label: its body and its ID's inlay (the H2D's second filament), printed as one object
+        **{f"bay_label_{b.id.lower()}{s}": 1 for b in rack.bays() for s in ("", "_inlay")},
         # a converted bay's DATA ×4 (v2, logic or base) stands in its printed cradle at the drawer's back
         "x4_cradle": sum(1 for b in rack.bays() if rack.is_multi(b.id)),
         # the power box: base and lid, and the walls' optional label inlays (a second, light filament)

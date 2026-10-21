@@ -15,7 +15,9 @@ the latest CI run).
 * Per column: `floor_plate`, `cap_plate`, one brace per level (`brace_base`,
   `brace_a` …).
 * Per bay: `tray`, `drawer`, `chain_foot`, `chain_anchor`, the board `plate`
-  and the pegs its boards need (`python tools/plate_layout.py <bay>`), `bay_label`.
+  and the pegs its boards need (`python tools/plate_layout.py <bay>`), its label
+  (`bay_label_<bay>` and `bay_label_<bay>_inlay`, one object in two colours:
+  [mechanical.md](mechanical.md), Bay label).
 
 Heat-set inserts (M3 × 5.7) while the parts are on the bench: 4 in each
 tray's node standoffs and 2 in its chain anchor, 4 under the ceiling of every
@@ -95,8 +97,8 @@ later, take its tray out first.
    in from the front onto the tray's ledges (its rear flange under the guide
    lips), engage the foot in the rear groove and lock it with the M2.5 from
    inside the rear bay (PT 2.3×8); then the stop screw (PT 2.3×8) through the left guide lip.
-5. **Plate + board + short cable**, printed `bay_label` (or 12 mm tape) in the
-   front recess.
+5. **Plate + board + short cable**; the bay's printed label (or 12 mm tape) in
+   the front recess.
 
 A **sled or fixed bay** (`mount: sled` / `fixed`) skips steps 2 and 4: no chain,
 anchor (nor its two inserts), foot or magnets.  The DATA board goes into the

@@ -3406,7 +3406,7 @@
 "qty": 3.1,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈2.7 kg estimated + 10 % waste, 167 parts",
+"notes": "≈2.7 kg estimated + 10 % waste, 175 parts",
 "ext_eur": 62.0
 },
 {
@@ -3739,11 +3739,116 @@
 "total_eur": 1063.98,
 "prints": [
 {
-"part": "bay_label",
-"qty": 8,
+"part": "bay_label_a1",
+"qty": 1,
 "grams_each": 0.8,
-"grams_total": 6.7,
-"stl": "mechanical/stl/bay_label.stl"
+"grams_total": 0.8,
+"stl": "mechanical/stl/bay_label_a1.stl"
+},
+{
+"part": "bay_label_a1_inlay",
+"qty": 1,
+"grams_each": 0.0,
+"grams_total": 0.0,
+"stl": "mechanical/stl/bay_label_a1_inlay.stl"
+},
+{
+"part": "bay_label_a2",
+"qty": 1,
+"grams_each": 0.8,
+"grams_total": 0.8,
+"stl": "mechanical/stl/bay_label_a2.stl"
+},
+{
+"part": "bay_label_a2_inlay",
+"qty": 1,
+"grams_each": 0.0,
+"grams_total": 0.0,
+"stl": "mechanical/stl/bay_label_a2_inlay.stl"
+},
+{
+"part": "bay_label_a3",
+"qty": 1,
+"grams_each": 0.8,
+"grams_total": 0.8,
+"stl": "mechanical/stl/bay_label_a3.stl"
+},
+{
+"part": "bay_label_a3_inlay",
+"qty": 1,
+"grams_each": 0.0,
+"grams_total": 0.0,
+"stl": "mechanical/stl/bay_label_a3_inlay.stl"
+},
+{
+"part": "bay_label_a4",
+"qty": 1,
+"grams_each": 0.8,
+"grams_total": 0.8,
+"stl": "mechanical/stl/bay_label_a4.stl"
+},
+{
+"part": "bay_label_a4_inlay",
+"qty": 1,
+"grams_each": 0.0,
+"grams_total": 0.0,
+"stl": "mechanical/stl/bay_label_a4_inlay.stl"
+},
+{
+"part": "bay_label_b1",
+"qty": 1,
+"grams_each": 0.8,
+"grams_total": 0.8,
+"stl": "mechanical/stl/bay_label_b1.stl"
+},
+{
+"part": "bay_label_b1_inlay",
+"qty": 1,
+"grams_each": 0.0,
+"grams_total": 0.0,
+"stl": "mechanical/stl/bay_label_b1_inlay.stl"
+},
+{
+"part": "bay_label_b2",
+"qty": 1,
+"grams_each": 0.8,
+"grams_total": 0.8,
+"stl": "mechanical/stl/bay_label_b2.stl"
+},
+{
+"part": "bay_label_b2_inlay",
+"qty": 1,
+"grams_each": 0.0,
+"grams_total": 0.0,
+"stl": "mechanical/stl/bay_label_b2_inlay.stl"
+},
+{
+"part": "bay_label_b3",
+"qty": 1,
+"grams_each": 0.8,
+"grams_total": 0.8,
+"stl": "mechanical/stl/bay_label_b3.stl"
+},
+{
+"part": "bay_label_b3_inlay",
+"qty": 1,
+"grams_each": 0.0,
+"grams_total": 0.0,
+"stl": "mechanical/stl/bay_label_b3_inlay.stl"
+},
+{
+"part": "bay_label_b4",
+"qty": 1,
+"grams_each": 0.8,
+"grams_total": 0.8,
+"stl": "mechanical/stl/bay_label_b4.stl"
+},
+{
+"part": "bay_label_b4_inlay",
+"qty": 1,
+"grams_each": 0.0,
+"grams_total": 0.0,
+"stl": "mechanical/stl/bay_label_b4_inlay.stl"
 },
 {
 "part": "brace_a",

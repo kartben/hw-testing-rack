@@ -114,7 +114,22 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 
 | Part | Qty | g each (est.) | STL |
 |---|---:|---:|---|
-| bay_label | 8 | 0.8 | `mechanical/stl/bay_label.stl` |
+| bay_label_a1 | 1 | 0.8 | `mechanical/stl/bay_label_a1.stl` |
+| bay_label_a1_inlay | 1 | – | `mechanical/stl/bay_label_a1_inlay.stl` |
+| bay_label_a2 | 1 | 0.8 | `mechanical/stl/bay_label_a2.stl` |
+| bay_label_a2_inlay | 1 | – | `mechanical/stl/bay_label_a2_inlay.stl` |
+| bay_label_a3 | 1 | 0.8 | `mechanical/stl/bay_label_a3.stl` |
+| bay_label_a3_inlay | 1 | – | `mechanical/stl/bay_label_a3_inlay.stl` |
+| bay_label_a4 | 1 | 0.8 | `mechanical/stl/bay_label_a4.stl` |
+| bay_label_a4_inlay | 1 | – | `mechanical/stl/bay_label_a4_inlay.stl` |
+| bay_label_b1 | 1 | 0.8 | `mechanical/stl/bay_label_b1.stl` |
+| bay_label_b1_inlay | 1 | – | `mechanical/stl/bay_label_b1_inlay.stl` |
+| bay_label_b2 | 1 | 0.8 | `mechanical/stl/bay_label_b2.stl` |
+| bay_label_b2_inlay | 1 | – | `mechanical/stl/bay_label_b2_inlay.stl` |
+| bay_label_b3 | 1 | 0.8 | `mechanical/stl/bay_label_b3.stl` |
+| bay_label_b3_inlay | 1 | – | `mechanical/stl/bay_label_b3_inlay.stl` |
+| bay_label_b4 | 1 | 0.8 | `mechanical/stl/bay_label_b4.stl` |
+| bay_label_b4_inlay | 1 | – | `mechanical/stl/bay_label_b4_inlay.stl` |
 | brace_a | 4 | 6.6 | `mechanical/stl/brace_a.stl` |
 | brace_b | 4 | 6.6 | `mechanical/stl/brace_b.stl` |
 | brace_base | 4 | 6.4 | `mechanical/stl/brace_base.stl` |
