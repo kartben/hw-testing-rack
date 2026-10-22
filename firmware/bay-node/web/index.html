@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/xterm.css">
 <style>
 /* The bay page's own components; the shared ones are in /rack.css */
+.cards .actions { gap: 5px; & button { padding: 7px 9px; font-size: 0.85rem; } }
 /* Console */
 .toolbar {
   display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
@@ -92,8 +93,14 @@
 }
 @media (max-width: 760px) { .cam-body { grid-template-columns: 1fr; } }
 /* Access */
-.pill.access { color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent);
+.pill.access { border: 0; cursor: pointer; color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent);
   & svg { width: 13px; height: 13px; } }
+.lease-ports { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;
+  & label { display: inline-flex; flex-direction: row; align-items: center; gap: 6px; margin: 0; padding: 5px 10px;
+            border-radius: 8px; border: 1px solid var(--line); background: var(--soft); color: var(--text); cursor: pointer; }
+  & label:has(:checked) { border-color: var(--usbip); background: color-mix(in srgb, var(--usbip) 14%, var(--soft)); }
+  & input { width: auto; margin: 0; }
+}
 .who { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.9rem;
   & code { font: 0.85rem var(--mono); }
   & .src { color: var(--muted); }
@@ -166,7 +173,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
     grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center;
     justify-content: space-between; gap: 6px 12px; padding-top: 4px;
   }
-  & .port-info { font-size: 0.8rem; color: var(--muted);
+  & .port-info { font-size: 0.8rem; color: var(--muted); display: inline-flex; align-items: center; gap: 8px;
     &[data-st=fault] { color: var(--fault); font-weight: 600; }
     &[data-st=lease] { color: var(--lease); font-weight: 500; }
   }
@@ -201,7 +208,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
         <div class="sub" id="where">connecting…</div>
       </div>
     </div>
-    <span class="pill access" id="access-pill" hidden></span>
+    <button type="button" class="pill access" id="access-pill" data-acc="admin" title="Manage access" hidden></button>
     <span class="pill" id="state">offline</span>
   </header>
 
@@ -231,7 +238,9 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
         <div class="actions">
           <button data-action="power" data-arg="on">On</button>
           <button data-action="power" data-arg="off" class="danger" data-confirm="Switch the board's 5 V off?">Off</button>
-          <button data-action="power" data-arg="cycle" class="primary">Power cycle</button>
+          <button data-action="power" data-arg="cycle" class="primary">Cycle</button>
+          <button data-action="reset" data-single-only title="Pulse the board's RESET line">Reset</button>
+          <button data-action="boot" data-single-only title="Hold BOOT across a RESET pulse: ROM bootloader">Boot</button>
         </div>
       </section>
 
@@ -319,11 +328,6 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
           <button data-action="reset" title="Pulse the board's RESET line">Reset</button>
           <button data-action="boot" title="Hold BOOT across a RESET pulse: ROM bootloader">Bootloader</button>
           <button data-con="break" title="Hold the board's RX line low for 250 ms">Break</button>
-        </div>
-        <div class="group" aria-label="Board power">
-          <button data-action="power" data-arg="off" class="danger" data-confirm="Switch the board's 5 V off?">Off</button>
-          <button data-action="power" data-arg="on">On</button>
-          <button data-action="power" data-arg="cycle">Cycle</button>
         </div>
         <div class="group end">
           <button data-con="ts" aria-pressed="false" title="Prefix each line with the time it arrived">Timestamps</button>
@@ -476,6 +480,10 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
   <form id="lease-form">
     <h3>Reserve this bay</h3>
     <p>While reserved, power, reset, the console and USB/IP answer only your address (and it ends by itself).  CI does this with <code>bayctl lease</code>.</p>
+    <div id="lease-ports-wrap" hidden>
+      <label>Sub-slots <small>(leave all unchecked for the whole bay)</small></label>
+      <div class="lease-ports" id="lease-ports"></div>
+    </div>
     <label for="lease-ttl">For</label>
     <select id="lease-ttl"><option value="900">15 minutes</option><option value="3600" selected>1 hour</option><option value="14400">4 hours</option><option value="86400">24 hours</option></select>
     <label for="lease-note">Note</label>
@@ -592,6 +600,7 @@ function render(s) {
   const onCount = multi ? s.ports.filter((p) => p.power.on).length : 0;
   $("vbus").textContent = multi ? `${onCount} / ${s.ports.length} on` : s.dut.on ? "VBUS on" : "VBUS off";
   document.querySelector(".card.console").hidden = multi;
+  document.querySelectorAll("[data-single-only]").forEach((b) => (b.hidden = multi));
   if (multi && con.ws) con.ws.close();
   if (s.dut.meter) {
     $("v").textContent = fix(s.dut.mv, 2);
@@ -622,7 +631,8 @@ function render(s) {
   } else if (usbDoc) {
     renderUsb(usbDoc);
   }
-  $("usbip-cmd").textContent = `sudo usbip attach -r ${host} -b 1-1`;
+  const firstBus = multi ? (s.ports.find((p) => p.usb)?.usb.busid ?? "1-1.1") : "1-1";
+  $("usbip-cmd").textContent = `sudo usbip attach -r ${host} -b ${firstBus}`;
 
   const aux = s.aux;
   $("rfc-cmd").textContent =
@@ -707,9 +717,17 @@ function portBar(p) {
     info.textContent = "Over-current fault · 5 V latched off";
   } else if (p.lease?.holder) {
     info.dataset.st = "lease";
-    info.textContent = p.lease.yours
+    info.append(p.lease.yours
       ? `Reserved by you${p.lease.note ? ` (${p.lease.note})` : ""}`
-      : `Reserved by ${p.lease.holder}${p.lease.note ? ` (${p.lease.note})` : ""}`;
+      : `Reserved by ${p.lease.holder}${p.lease.note ? ` (${p.lease.note})` : ""}`);
+    if (p.lease.yours || acc.admin) {
+      const rel = el("button", "small danger", "Release");
+      rel.type = "button";
+      rel.dataset.acc = "release-port";
+      rel.dataset.slot = p.slot;
+      rel.dataset.yours = Boolean(p.lease.yours);
+      info.append(rel);
+    }
   } else {
     info.textContent = p.power.on ? "5 V on" : "5 V off";
   }
@@ -1142,9 +1160,23 @@ async function accessAction(btn) {
         return acc.admin ? openManage() : $("dlg-unlock").showModal();
       case "unlock":
         return $("dlg-unlock").showModal();
-      case "reserve":
+      case "reserve": {
         showError("lease-err");
+        const multi = (status?.ports?.length ?? 0) > 1;
+        $("lease-ports-wrap").hidden = !multi;
+        if (multi) {
+          const box = $("lease-ports");
+          box.replaceChildren(...status.ports.map((p) => {
+            const lb = el("label");
+            const cb = Object.assign(el("input"), { type: "checkbox", value: p.slot });
+            cb.disabled = Boolean(p.lease?.holder && !p.lease.yours);
+            if (btn.dataset.slot === p.slot) cb.checked = true;
+            lb.append(cb, p.slot);
+            return lb;
+          }));
+        }
         return $("dlg-lease").showModal();
+      }
       case "renew":
         await api("/api/lease", { ttl_s: 3600, note: lease?.note ?? "" });
         toast("Reservation renewed for 1 hour");
@@ -1152,6 +1184,12 @@ async function accessAction(btn) {
       case "release":
         await (lease?.yours || !acc.admin ? api : signed)("/api/lease", { release: true });
         toast("Reservation released");
+        break;
+      case "release-port":
+        await (btn.dataset.yours === "true" || !acc.admin ? api : signed)(
+          "/api/lease", { release: true, ports: [btn.dataset.slot] }
+        );
+        toast(`${btn.dataset.slot}: reservation released`);
         break;
       case "kick":
         if (!(await confirmed(`Close this connection and refuse its address for a minute?`))) return;
@@ -1187,9 +1225,12 @@ $("unlock-form").addEventListener("submit", async (ev) => {
 $("lease-form").addEventListener("submit", async (ev) => {
   ev.preventDefault();
   try {
-    await api("/api/lease", { ttl_s: Number($("lease-ttl").value), note: $("lease-note").value });
+    const ports = [...$("lease-ports").querySelectorAll("input:checked")].map((i) => i.value);
+    const req = { ttl_s: Number($("lease-ttl").value), note: $("lease-note").value };
+    if (ports.length) req.ports = ports;
+    await api("/api/lease", req);
     $("dlg-lease").close();
-    toast("Reserved");
+    toast(ports.length ? `Reserved ${ports.join(", ")}` : "Reserved");
     pollNow();
   } catch (e) {
     showError("lease-err", e);
