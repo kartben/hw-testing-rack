@@ -454,10 +454,14 @@ def main():
     ap.add_argument("--fab", action="store_true")
     ap.add_argument("--sch-only", action="store_true")
     ap.add_argument("--check", action="store_true", help="ERC + DRC of the committed project only (CI)")
+    ap.add_argument("--outdir", help="work on a copy of the project in this folder (tools/route_farm.py's candidates)")
+    ap.add_argument("--routed", help="with --ses: a board another router routed, imported instead of the session")
     a = ap.parse_args()
     mod = load_design(a.board)
     b = mod.board()
     outdir = REPO / "electronics" / a.board
+    if a.outdir:
+        outdir = Path(a.outdir) if Path(a.outdir).is_absolute() else REPO / a.outdir
     if a.check:
         (outdir / "build").mkdir(exist_ok=True)
         e, d = erc(outdir, b.name), drc_readonly(outdir, b.name)
@@ -472,7 +476,7 @@ def main():
         sys.exit(1 if e["errors"] or copper or d["unconnected"] or d["parity"] or m["problems"] else 0)
     import pcbgen  # needs pcbnew
     if a.ses:
-        pcbgen.import_session(b, outdir)
+        pcbgen.import_session(b, outdir, Path(a.routed) if a.routed else None)
         e = json.loads((outdir / "build" / "erc-summary.json").read_text()) if (outdir / "build" / "erc-summary.json").exists() else {"errors": -1, "warnings": -1}
     else:
         generate_schematic(b, outdir, getattr(mod, "NETCLASSES", None))
@@ -496,6 +500,11 @@ def main():
                "nets": len(b.nets()), "erc": {k: e[k] for k in ("errors", "warnings")},
                "drc": {k: d[k] for k in ("violations", "unconnected", "parity")}, "routed": a.ses,
                "models": {"problems": m["problems"], "not fetched": m["not fetched"]}}
+    if a.ses:
+        import pcbnew
+        from route_metrics import routing_metrics
+        summary["routing"] = routing_metrics(pcbnew.LoadBoard(str(outdir / f"{b.name}.kicad_pcb")), b)
+        summary["drc"]["copper"] = {k: v for k, v in d["violations"].items() if not k.startswith(("silk", "lib_"))}
     (outdir / "build" / "summary.json").write_text(json.dumps(summary, indent=1))
     if a.fab:
         export_fab(outdir, b.name, b)

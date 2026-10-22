@@ -688,7 +688,118 @@ def write_via_rules(pro: Path):
     pro.write_text(json.dumps(data, indent=2, ensure_ascii=False) + chr(10), encoding="utf-8")
 
 
+def _zone_clearance(z) -> int:
+    c = z.GetLocalClearance()
+    return c if isinstance(c, int) else MM(0.25)
+
+
+def plane_areas(board, log=print) -> dict[int, list[list[tuple[float, float]]]]:
+    """What the DSN export should say of each copper zone it writes as a plane (board.Zones(): copper, not
+    rule areas, in its order), where KiCad's outline would mislead Freerouting:
+      * a zone another net's zone cuts: its outline less every zone of another net that wins over it on its
+        layer (KiCad's fill order: the higher priority, then KiCad's own tie-break), grown by the clearance
+        between them, fractured (no holes).  Overlapping outlines put a via of either net "in" both;
+      * an area of a net that nothing fixed (a via, a through-hole pad, a drawn track) ties to the net's main
+        area (its largest, on a plane layer if it has one): left out.  Freerouting takes an item that touches
+        any area of its net as connected to the plane and never tries to route it: an island fed by nothing hid
+        its pads' open links (KiCad's DRC found them, Freerouting's report didn't).
+    {index: outlines in mm, [] to leave the zone out}; zones not listed stay as KiCad wrote them."""
+    zones = [z for z in board.Zones() if not z.GetIsRuleArea() and z.IsOnCopperLayer()]
+    polys, cut = [], set()
+    for i, z in enumerate(zones):
+        ps = z.Outline().CloneDropTriangulation()
+        for j, o in enumerate(zones):
+            if i == j or o.GetNetCode() == z.GetNetCode() or o.GetLayer() != z.GetLayer() or not o.HigherPriority(z):
+                continue
+            hole = o.Outline().CloneDropTriangulation()
+            hole.Inflate(max(_zone_clearance(z), _zone_clearance(o)), pcbnew.CORNER_STRATEGY_ROUND_ALL_CORNERS,
+                         MM(0.01))
+            before = ps.Area()
+            ps.BooleanSubtract(hole)
+            if ps.Area() < before:
+                cut.add(i)
+        ps.Fracture()
+        polys.append(ps)
+    # each net's areas (zone, outline) and fixed copper, joined where they touch: union-find
+    areas = [(i, k) for i, ps in enumerate(polys) for k in range(ps.OutlineCount())]
+    parent = list(range(len(areas)))
+
+    def root(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def join(x, y):
+        parent[root(x)] = root(y)
+
+    def under(net, pt, layer=None):
+        """The areas of `net` at `pt` (on `layer`, or on any layer for a drill)."""
+        return [ai for ai, (i, k) in enumerate(areas) if zones[i].GetNetCode() == net
+                and (layer is None or zones[i].GetLayer() == layer) and polys[i].Outline(k).PointInside(pt)]
+
+    def node(hits=()):
+        n = len(parent)
+        parent.append(n)
+        for h in hits:
+            join(n, h)
+        return n
+    # a drill (via, through-hole pad) joins every area of its net it sits in; an SMD pad, those on its layer
+    drills, pads = {}, []
+    for t in board.GetTracks():
+        if t.GetClass() == "PCB_VIA":
+            q = t.GetPosition()
+            drills[(t.GetNetCode(), q.x, q.y)] = node(under(t.GetNetCode(), q))
+    for fp in board.GetFootprints():
+        for pad in fp.Pads():
+            q, n = pad.GetPosition(), pad.GetNetCode()
+            if pad.GetDrillSize().x > 0:
+                drills[(n, q.x, q.y)] = node(under(n, q))
+            else:
+                layer = pcbnew.F_Cu if pad.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
+                pads.append((n, layer, pad, node(under(n, q, layer))))
+    # a drawn track joins what its ends touch: a drill, a pad, an area on its layer, another track's end
+    ends = {}
+    for t in board.GetTracks():
+        if t.GetClass() == "PCB_VIA":
+            continue
+        n, layer, me = t.GetNetCode(), t.GetLayer(), node()
+        for e in (t.GetStart(), t.GetEnd()):
+            for h in under(n, e, layer):
+                join(me, h)
+            if (n, e.x, e.y) in drills:
+                join(me, drills[(n, e.x, e.y)])
+            for pn, pl, pad, v in pads:
+                if pn == n and pl == layer and pad.HitTest(e):
+                    join(me, v)
+            key = (n, layer, e.x, e.y)
+            if key in ends:
+                join(me, ends[key])
+            ends[key] = me
+    plane_layers = {zones[i].GetLayer() for i, _ in areas if board.GetLayerType(zones[i].GetLayer()) == pcbnew.LT_POWER}
+    out = {}
+    for n in sorted({zones[i].GetNetCode() for i, _ in areas}):
+        mine = [ai for ai, (i, k) in enumerate(areas) if zones[i].GetNetCode() == n]
+        main = root(max(mine, key=lambda ai: (zones[areas[ai][0]].GetLayer() in plane_layers,
+                                              abs(polys[areas[ai][0]].Outline(areas[ai][1]).Area()))))
+        for ai in mine:
+            if root(ai) != main:
+                i, k = areas[ai]
+                log(f"plane {zones[i].GetNetname()} on {board.GetLayerName(zones[i].GetLayer())}: an area of "
+                    f"{abs(polys[i].Outline(k).Area()) / 1e12:.0f} mm² that nothing fixed ties to the rest, left out "
+                    "(its pads are routed like any other)")
+                out.setdefault(i, list(range(polys[i].OutlineCount()))).remove(k)
+    for i in sorted(cut | set(out)):
+        keep = out.get(i, range(polys[i].OutlineCount()))
+        out[i] = [[(pcbnew.ToMM(polys[i].Outline(k).CPoint(m).x), pcbnew.ToMM(polys[i].Outline(k).CPoint(m).y))
+                   for m in range(polys[i].Outline(k).PointCount())] for k in keep]
+        if i in cut:
+            log(f"plane {zones[i].GetNetname()} on {board.GetLayerName(zones[i].GetLayer())}: cut by the zones over it")
+    return out
+
+
 def export_dsn(b: Board, outdir: Path) -> Path:
+    import dsn as dsnlib
     path = outdir / f"{b.name}.kicad_pcb"
     board = pcbnew.LoadBoard(str(path))
     dsn = outdir / "build" / f"{b.name}.dsn"
@@ -699,24 +810,37 @@ def export_dsn(b: Board, outdir: Path) -> Path:
     # 0.15 mm): give it 2 µm of margin over what KiCad's DRC checks
     import re
     text = dsn.read_text(encoding="utf-8")
-    dsn.write_text(re.sub(r"\(clearance (\d+(?:\.\d+)?)\)", lambda m: f"(clearance {float(m.group(1)) + 2:g})", text),
-                   encoding="utf-8")
+    text = re.sub(r"\(clearance (\d+(?:\.\d+)?)\)", lambda m: f"(clearance {float(m.group(1)) + 2:g})", text)
+    # the planes as KiCad's fill can reach them, not as their outlines overlap (plane_areas)
+    # (PCBGEN_DSN_PLANES=kicad keeps KiCad's outlines, to compare)
+    entries = dsnlib.planes(text)
+    zones = [z for z in board.Zones() if not z.GetIsRuleArea() and z.IsOnCopperLayer()]
+    if os.environ.get("PCBGEN_DSN_PLANES") == "kicad":
+        print("planes: KiCad's outlines (PCBGEN_DSN_PLANES=kicad)")
+    elif len(entries) == len(zones) and all(z.GetNetname() == net.strip('"') for z, (_, _, net, _) in zip(zones, entries)):
+        text = dsnlib.replace_planes(text, plane_areas(board))
+    else:
+        print(f"planes: {len(entries)} in the DSN for {len(zones)} zones: left as exported")
+    # in one order whatever order KiCad wrote it in: the same design routes the same way every time
+    dsn.write_text(dsnlib.canonical(text), encoding="utf-8")
     print("exported", dsn)
     return dsn
 
 
-def import_session(b: Board, outdir: Path) -> Path:
+def import_session(b: Board, outdir: Path, routed: Path | None = None) -> Path:
     """Import Freerouting's session, then add the outer-layer copper pours (they were
-    left out of the DSN so the router had to connect every pad with real copper)."""
+    left out of the DSN so the router had to connect every pad with real copper).
+    `routed`: a board another router routed from this one (tools/route_farm.py), taken instead of the
+    session, with the same steps after it."""
     path = outdir / f"{b.name}.kicad_pcb"
     ses = outdir / "build" / f"{b.name}.ses"
     # the fan-out reservations and the exclusive pours' cores have done their job (they kept the router's
     # tracks off): drop them from the file before loading it, so a drawn track of the pour's own net may
     # cross its core (BOARD.Remove() on a zone leaves SWIG unable to type the board's footprints afterwards)
-    path.write_text(_strip_zones(_strip_zones(path.read_text(encoding="utf-8"), "fanout:"), "core:"),
+    path.write_text(_strip_zones(_strip_zones((routed or path).read_text(encoding="utf-8"), "fanout:"), "core:"),
                     encoding="utf-8")
     board = pcbnew.LoadBoard(str(path))
-    if not pcbnew.ImportSpecctraSES(board, str(ses)):
+    if routed is None and not pcbnew.ImportSpecctraSES(board, str(ses)):
         raise RuntimeError("SES import failed")
     pb = PcbBuilder.__new__(PcbBuilder)
     pb.b, pb.outdir, pb.path, pb.board = b, outdir, path, board
@@ -786,7 +910,7 @@ def import_session(b: Board, outdir: Path) -> Path:
             pcbnew.SaveBoard(str(path), board)
     drop_passthrough_vias(path)
     drop_pad_dots(path)
-    print("imported", ses)
+    print("imported", routed or ses)
     return path
 
 
@@ -1036,13 +1160,69 @@ def connect_gnd_pads(board, gnd, spots_mm, via_d=SMALL_VIA[0], drill=SMALL_VIA[1
     return n
 
 
+# a supply pad over another net's area of a split plane: how far its fan-out may go to reach its own (mm)
+REMOTE_FEED_MM = 8.0
+
+
+def _feed_path(a, layer, obst, via_fits, half, inside, max_mm=REMOTE_FEED_MM, step_mm=0.1):
+    """The shortest track (45° steps on a 0.1 mm grid, a little extra for each bend) from pad centre `a`, on
+    `layer`, clear of `obst[layer]` (other nets' copper, grown by the clearance), to a spot where
+    `via_fits`, tried only where `inside` (the net's own area); at most `max_mm` long.  Its corners, or None."""
+    import heapq
+    st = MM(step_mm)
+    moves = [(1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1), (0, -1), (1, -1)]
+    free, goal = {}, {}
+
+    def pt(n):
+        return pcbnew.VECTOR2I(a.x + n[0] * st, a.y + n[1] * st)
+
+    def ok(n):
+        if n not in free:
+            free[n] = n == (0, 0) or not obst[layer].Collide(pt(n), half)
+        return free[n]
+    limit = max_mm / step_mm
+    seen = {}
+    heap = [(0.0, (0, 0), -1, None)]
+    while heap:
+        cost, n, d, prev = heapq.heappop(heap)
+        if (n, d) in seen:
+            continue
+        seen[(n, d)] = prev
+        if n != (0, 0) and inside(pt(n)):
+            if n not in goal:
+                goal[n] = via_fits(pt(n))
+            if goal[n]:
+                path, key = [n], (n, d)
+                while seen[key] is not None:
+                    key = seen[key]
+                    path.append(key[0])
+                corners = [path[0]] + [q for i, q in enumerate(path[1:-1], 1)
+                                       if (path[i - 1][0] - q[0], path[i - 1][1] - q[1]) != (q[0] - path[i + 1][0],
+                                                                                         q[1] - path[i + 1][1])] + [path[-1]]
+                pts = [pt(q) for q in reversed(corners)]
+                pts[0] = a
+                if any(obst[layer].Collide(pcbnew.SEG(u, v), half) for u, v in zip(pts[1:], pts[2:])):
+                    return None
+                return pts
+        for k, (dx, dy) in enumerate(moves):
+            m = (n[0] + dx, n[1] + dy)
+            c = cost + (1.4142 if dx and dy else 1.0) + (3.0 if d not in (-1, k) else 0.0)
+            if c > limit * 1.5 or (m, k) in seen or not ok(m):
+                continue
+            heapq.heappush(heap, (c, m, k, (n, d)))
+    return None
+
+
 def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]:
     """b.pcb["fanout_nets"]: {net: (plane layer, via Ø, drill, track width)}.  Before routing, every
     SMD pad of these nets gets a short track out of its footprint to a via of its own landing on the
     net's plane (In1 for GND, the net's area of In2 for a supply), locked so Freerouting keeps it:
     no GND or supply pin then depends on an outer pour that signal tracks may cut in pieces.  Pads
     inside a top-side island of their own net (`islands`: [(net, poly mm)], which carry their own
-    vias) and pads already reached by a fixed track are left alone.  Returns [(net, done, pads)]."""
+    vias) and pads already reached by a fixed track are left alone.  A pad over another net's area of
+    a split plane gets its track to the nearest spot of its own area, up to REMOTE_FEED_MM away:
+    Freerouting doesn't route those (its fan-out drops their via in the wrong area, then it leaves
+    them open).  Returns [(net, done, pads)]."""
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     err, clr = MM(0.005), MM(0.2)
     layers = copper_of(board)
@@ -1111,6 +1291,7 @@ def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]
             if any(bb.Contains(pcbnew.VECTOR2I(x, y)) for x, y in ends):
                 continue
             todo += 1
+            remote = not fill.Contains(a)
             layer = pcbnew.F_Cu if pad.IsOnLayer(pcbnew.F_Cu) else pcbnew.B_Cu
             c = pad.GetParentFootprint().GetPosition()
             ux, uy = a.x - c.x, a.y - c.y
@@ -1122,7 +1303,7 @@ def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]
                 dx, dy = math.cos(ang), math.sin(ang)
                 bend = 1 - (dx * ux + dy * uy)           # 0 straight out of the footprint, 2 back into it
                 reach = abs(dx) * bb.GetWidth() / 2 + abs(dy) * bb.GetHeight() / 2 + r_via + MM(0.1)
-                for step in range(30):
+                for step in range(int(REMOTE_FEED_MM * 10) if remote else 30):
                     L = reach + MM(0.1 * step)
                     score = pcbnew.ToMM(L) + 1.5 * bend
                     if best and score >= best[0]:
@@ -1133,18 +1314,23 @@ def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]
                     if via_fits(e):
                         best = (score, e)
                         break
-            if not best:
+            path = [a, best[1]] if best else None
+            if not best and remote:
+                # no straight way out to its own area: one with bends
+                path = _feed_path(a, layer, obst, via_fits, MM(width) // 2, lambda q: fill.Contains(q))
+            if not path:
                 print(f"fan-out {name}: no room by {pad.GetParentFootprint().GetReference()}.{pad.GetNumber()}")
                 continue
-            e = best[1]
-            t = pcbnew.PCB_TRACK(board)
-            t.SetStart(a)
-            t.SetEnd(e)
-            t.SetWidth(MM(width))
-            t.SetLayer(layer)
-            t.SetNet(net)
-            t.SetLocked(True)
-            board.Add(t)
+            e = path[-1]
+            for u, w in zip(path, path[1:]):
+                t = pcbnew.PCB_TRACK(board)
+                t.SetStart(u)
+                t.SetEnd(w)
+                t.SetWidth(MM(width))
+                t.SetLayer(layer)
+                t.SetNet(net)
+                t.SetLocked(True)
+                board.Add(t)
             v = pcbnew.PCB_VIA(board)
             v.SetPosition(e)
             v.SetWidth(MM(via_d))
@@ -1154,6 +1340,10 @@ def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]
             board.Add(v)
             holes.append((e, MM(drill)))
             done += 1
+            if remote:
+                L = sum(pcbnew.ToMM((w - u).EuclideanNorm()) for u, w in zip(path, path[1:]))
+                print(f"fan-out {name}: {pad.GetParentFootprint().GetReference()}.{pad.GetNumber()} over another "
+                      f"net's area, fed by {L:.1f} mm of track ({len(path) - 2} bends)")
         out.append((name, done, todo))
     return out
 
