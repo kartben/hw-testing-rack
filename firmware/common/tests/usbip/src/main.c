@@ -1,8 +1,8 @@
 /*
  * USB/IP on native_sim: the service (CONFIG_USBIP, with zephyr/patches.yml)
  * starts by itself on the virtual host controller; this puts a device on the
- * virtual bus, a loopback function and a serial converter (serial_emu.c), and
- * drives them from the shell:
+ * virtual bus, a loopback function, a serial converter (serial_emu.c) and a
+ * mass-storage-like function (storage_emu.c), and drives them from the shell:
  *
  *   dut off    the device goes (as a board that resets or is unplugged)
  *   dut on     it comes back and enumerates again

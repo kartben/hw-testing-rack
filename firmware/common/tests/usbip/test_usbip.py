@@ -7,13 +7,16 @@ workspace where `west patch apply` has run:
 
 Builds this directory (unless --exe is given) and starts it: the service on
 Zephyr's virtual host controller, a device on the virtual bus with a loopback
-function and a serial converter (src/serial_emu.c), the shell on stdin ("dut
-off" unplugs the device, "dut on" plugs it back, "ra" sets the read-ahead,
-"emu" drives the converter, "sessions" lists the imported devices).  The
-tests are a USB/IP client speaking the protocol over TCP (port 3240), as
-`usbip list` and `usbip attach` do: the device list, an import, transfers,
-the device going away in the middle of a session, and a serial converter
-read by a client a round trip away, with and without the read-ahead.
+function, a serial converter (src/serial_emu.c) and a mass-storage-like
+function (src/storage_emu.c), the shell on stdin ("dut off" unplugs the
+device, "dut on" plugs it back, "ra" sets the read-ahead, "emu" drives the
+converter, "msd" the storage function, "sessions" lists the imported
+devices).  The tests are a USB/IP client speaking the protocol over TCP
+(port 3240), as `usbip list` and `usbip attach` do: the device list, an
+import, transfers, the device going away in the middle of a session, a
+serial converter read by a client a round trip away, with and without the
+read-ahead, and mass storage requests of 120 KB, larger than the service's
+buffer pool.
 
 What this cannot cover: a hub (Zephyr has no virtual one), so the bus IDs
 behind hub ports ("1-1.3") are not exercised; the timing of a real
@@ -53,6 +56,8 @@ FTDI_PURGE_RX = bytes([0x40, 0, 1, 0, 0, 0, 0, 0])
 FTDI_MPS = 64
 FTDI_LSR_OVERRUN = 0x02
 SERIAL_RATE = 11520                    # bytes/s: 115200 baud, 8N1
+MSD_REQUEST = 122880                   # a mass storage request: 120 KB
+EPIPE = 32
 FAR_RTT = 0.04                         # s: a client across the network
 
 ARGS: argparse.Namespace
@@ -219,6 +224,27 @@ def ftdi_split(replies: list[bytes]) -> tuple[bytes, list[bytes]]:
             statuses.append(pkt[:2])
             data += pkt[2:]
     return bytes(data), statuses
+
+
+def storage_eps(s: socket.socket, seq: int) -> tuple[int, int]:
+    """The bulk IN and OUT endpoints of the mass storage function (class 8)."""
+    submit(s, seq, 0, DIR_IN, 255, GET_CONFIG_DESCRIPTOR)
+    rseq, status, desc = ret_submit(s)
+    assert (rseq, status) == (seq, 0), (rseq, status)
+    i, storage, eps = 0, False, {}
+    while i + 2 < len(desc) and desc[i]:
+        if desc[i + 1] == 4:
+            storage = desc[i + 5] == 0x08
+        elif desc[i + 1] == 5 and storage:
+            eps[desc[i + 2] & 0x80] = desc[i + 2] & 0x0F
+        i += desc[i]
+    assert len(eps) == 2, f"no mass storage function in {desc.hex()}"
+    return eps[0x80], eps[0]
+
+
+def storage_pattern(n: int) -> bytes:
+    """What the storage function sends and expects: byte i is i ^ i >> 8 ^ i >> 16."""
+    return bytes((i ^ i >> 8 ^ i >> 16) & 0xFF for i in range(n))
 
 
 def missing(data: bytes) -> int:
@@ -514,6 +540,84 @@ class UsbipTest(unittest.TestCase):
         self.assertEqual(stats["dropped"], 0, stats)
         self.assertGreater(len(data), SERIAL_RATE, stats)
         self.assertTrue(any(t > 0.8 and len(d) > 2 for t, d in replies), "no data after the purge")
+
+    def storage_session(self) -> tuple[socket.socket, int, int]:
+        """A session on the mass storage function: the socket, its IN and OUT endpoints."""
+        self.node.cmd("msd reset")
+        self.addCleanup(self.node.cmd, "msd reset")
+        self.listed("1-1")
+        s = attach("1-1")
+        self.assertIsNotNone(s)
+        self.addCleanup(s.close)
+        s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        return (s, *storage_eps(s, 1))
+
+    def msd_stats(self) -> dict[str, int]:
+        start = self.node.mark()
+        self.node.cmd("msd stats")
+        with self.node.lock:
+            out = self.node.out[start:]
+        m = re.search(rb"SIM: msd in (\d+) out (\d+) bad (\d+)", out)
+        self.assertIsNotNone(m, out)
+        return dict(zip(("in", "out", "bad"), map(int, m.groups())))
+
+    def test_9a_large_in(self):
+        """Reads of 120 KB, more than the pool: whole, ending short, ending on a ZLP."""
+        s, ep_in, _ = self.storage_session()
+        for seq, (device_sends, zlp) in enumerate(((MSD_REQUEST, False), (100000, False),
+                                                   (8192, True)), 2):
+            self.node.cmd(f"msd in {device_sends}" + (" zlp" if zlp else ""))
+            submit(s, seq, ep_in, DIR_IN, MSD_REQUEST)
+            rseq, status, data = ret_submit(s)
+            self.assertEqual((rseq, status, len(data)), (seq, 0, device_sends))
+            self.assertEqual(data, storage_pattern(device_sends), "data lost, repeated or moved")
+
+    def test_9b_large_out(self):
+        """Writes of 120 KB and of a length that is no multiple of anything."""
+        s, _, ep_out = self.storage_session()
+        sent = 0
+        for seq, n in enumerate((MSD_REQUEST, 10000), 2):
+            data = storage_pattern(sent + n)[sent:]
+            submit(s, seq, ep_out, DIR_OUT, n, data=data)
+            self.assertEqual(ret_submit(s)[:2], (seq, 0))
+            sent += n
+        self.assertEqual(self.msd_stats(), {"in": 0, "out": sent, "bad": 0})
+
+    def test_9c_large_unlink(self):
+        """A 120 KB read, then a write, unlinked half-way: RET_UNLINK only."""
+        s, ep_in, ep_out = self.storage_session()
+        self.node.cmd("msd rate 1")
+        self.node.cmd(f"msd in {MSD_REQUEST}")
+        submit(s, 2, ep_in, DIR_IN, MSD_REQUEST)
+        submit(s, 3, ep_out, DIR_OUT, MSD_REQUEST, data=storage_pattern(MSD_REQUEST))
+        time.sleep(0.5)
+        stats = self.msd_stats()
+        self.assertTrue(0 < stats["in"] < MSD_REQUEST and 0 < stats["out"] < MSD_REQUEST, stats)
+        s.sendall(unlink_request(4, 2) + unlink_request(5, 3))
+        self.assertEqual({reply(s), reply(s)},
+                         {(RET_UNLINK, 4, -ECONNRESET), (RET_UNLINK, 5, -ECONNRESET)})
+        self.assertFalse(readable(s, 0.3), "an answer to an unlinked request")
+        # Nothing more goes on either endpoint
+        stats = self.msd_stats()
+        time.sleep(0.2)
+        self.assertEqual(self.msd_stats()["out"], stats["out"])
+        self.assertEqual(device_descriptor(s, 6)[:2], bytes([18, 1]))
+
+    def test_9d_large_stall(self):
+        """The device halts the endpoint in the third segment: -EPIPE, and the data before."""
+        s, ep_in, _ = self.storage_session()
+        self.node.cmd("msd stall 10240")
+        self.node.cmd(f"msd in {MSD_REQUEST}")
+        submit(s, 2, ep_in, DIR_IN, MSD_REQUEST)
+        rseq, status, data = ret_submit(s)
+        self.assertEqual((rseq, status, len(data)), (2, -EPIPE, 10240))
+        self.assertEqual(data, storage_pattern(10240))
+        # CLEAR_FEATURE(ENDPOINT_HALT) and the endpoint works again
+        submit(s, 3, 0, DIR_OUT, 0, bytes([0x02, 1, 0, 0, 0x80 | ep_in, 0, 0, 0]))
+        self.assertEqual(ret_submit(s)[:2], (3, 0))
+        self.node.cmd("msd in 5000")
+        submit(s, 4, ep_in, DIR_IN, MSD_REQUEST)
+        self.assertEqual(ret_submit(s), (4, 0, storage_pattern(5000)))
 
 
 def build(workspace: Path, out: Path) -> Path:
