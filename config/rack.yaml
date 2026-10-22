@@ -281,7 +281,8 @@ pcb:
     top_z: 72.5             # drawer z of its top edge (the drawer's underside z = 0, its floor's top 2.5)
     face_y: 7.4             # its front face behind the port wall's back face (the receptacles' mouths 1 mm behind the wall)
     thickness: 1.6
-    layers: 4               # F · GND · power (+3V3 above y 55.7, +5V below) · B: routed (2026-10-20); 6 also routes
+    layers: 6               # F · GND · sig · sig · power (+3V3 above y 55.7, +5V below) · B since the HS review
+                            # (2026-10-22): the USB pairs drawn on F.Cu over GND leave 4 layers unroutable
     cradle: 5.5             # each end's 5.5 mm in the cradle's slots (and its latches), both faces free of parts
     notches: { x: [35, 71], size: [3.4, 6.5] }   # its bottom edge's two notches (drawer x of their centres; width,
                             # depth), the cradle's T-heads.  Front face free of parts 7 wide × 6.0 tall round each; rear

@@ -43,12 +43,14 @@ co-processor sheet and each port's pin chain (H5VU25UC, 100 Ω, LSF0108, its VRE
 board, the hub, the four ports with their switch, INA226, ESD and CC, the expanders with RESET/BOOT, the
 lead's isolation and ESD, the 3.3 V.  No base signal runs through a logic part: the header's GND, RESET and
 BOOT stay live, its P pins and VREF end on empty pads, hub port 5 ends on R23/R24's empty pads.
-4 layers, JLC04161H-7628: F · In1 GND · In2 +3V3 above, +5V below · B (B.Cu free for the routing).  6 layers
-(pcb.layers, X4V2_LAYERS=6: F · GND · sig · sig · power · B) also routes, for a comparison.
+6 layers since the HS review (2026-10-22), JLC06161H-3313: F (the High-Speed pairs, drawn) · In1 GND · In2 · In3 ·
+In4 +3V3 above, +5V below · B.  4 layers (pcb.layers, X4V2_LAYERS=4: F · GND · power · B) still builds: with the
+pairs drawn on F.Cu it no longer routes.
 """
 
 from __future__ import annotations
 
+import math
 import os
 import sys
 from pathlib import Path
@@ -150,6 +152,40 @@ def at(x, y, rot=0, mirror="", fields=None):
     if fields is not None:
         d["fields"] = fields
     return d
+
+
+def offset(poly, d):
+    """A polyline (mm) shifted d mm sideways, mitred at its corners: to the west when it heads down the board (+y),
+    to the north when it heads west.  A differential pair's two lines from its centreline."""
+    out = []
+    for i, (x, y) in enumerate(poly):
+        ns = []
+        segs = ([(poly[i - 1], poly[i])] if i else []) + ([(poly[i], poly[i + 1])] if i < len(poly) - 1 else [])
+        for (ax, ay), (bx, by) in segs:
+            L = math.hypot(bx - ax, by - ay)
+            ns.append((-(by - ay) / L, (bx - ax) / L))
+        (n1x, n1y), (n2x, n2y) = ns[0], ns[-1]
+        k = 1 + n1x * n2x + n1y * n2y
+        out.append((round(x + d * (n1x + n2x) / k, 4), round(y + d * (n1y + n2y) / k, 4)))
+    return out
+
+
+def bumps(poly, y_at, n, h, w=0.5):
+    """n bumps h mm high and w mm wide on the polyline's vertical stretch that spans y_at, towards offset()'s side:
+    length for the shorter line of a pair, away from the other one."""
+    for i, ((ax, ay), (bx, by)) in enumerate(zip(poly, poly[1:])):
+        if abs(ax - bx) < 1e-6 and min(ay, by) <= y_at <= max(ay, by):
+            s = 1 if by > ay else -1
+            pts, y = [], y_at
+            for _ in range(n):
+                pts += [(ax, y), (ax - s * h, y), (ax - s * h, y + s * w), (ax, y + s * w)]
+                y += 2 * s * w
+            return poly[:i + 1] + pts + poly[i + 1:]
+    raise ValueError(f"no vertical stretch spans y {y_at}")
+
+
+def plen(poly):
+    return sum(math.dist(a, b) for a, b in zip(poly, poly[1:]))
 
 
 def rail(s, net, pins, dy, d="up"):
@@ -262,11 +298,15 @@ def port(b: Board, n: int):
     part(s, f"J{k + 2}", "hdr2x6t", hdr, f"PINS{n}", pcb=P(cx - 6.35, HDR_Y + 1.27, 90),
          sch=at(184, 30, fields=(-1, -5)))
     # RESET/BOOT 1k and the expander lines' pull-ups in a column right of the header, by its pins 12 (upper
-    # row) and 11 (lower row)
-    for r, sig, y, rot, sy in ((f"R{k + 7}", "RST", HDR_Y + 2.45, 270, 34), (f"R{k + 8}", "BOOT", HDR_Y - 3.4, 90, 44)):
+    # row) and 11 (lower row).  Ports 1–3: 1.85 mm lower and 1.9 mm apart (down to just over the expander), so the
+    # band over the headers stays free for the USB pairs' trunk on F.Cu (the HS review, 2026-10-22); port 4's
+    # stays, Q1 right under it and no pair passing it
+    ys = ((HDR_Y - 3.4, HDR_Y - 1.45, HDR_Y + 0.5, HDR_Y + 2.45) if n == 4 else
+          (HDR_Y - 1.55, HDR_Y + 0.35, HDR_Y + 2.25, HDR_Y + 4.15))
+    for r, sig, y, rot, sy in ((f"R{k + 7}", "RST", ys[3], 270, 34), (f"R{k + 8}", "BOOT", ys[0], 90, 44)):
         R(s, r, "1k", p + sig + "_IO", p + sig + "_N", size="0402", pcb=P(cx + 9.0, y, rot), sch=at(150, sy, rot=90))
     # X6: the expander's RESET/BOOT inputs pulled up (they float with nothing plugged in, and raise INT)
-    for r, sig, j, y, rot in ((f"R{k + 9}", "RST", 0, HDR_Y + 0.5, 270), (f"R{k + 10}", "BOOT", 1, HDR_Y - 1.45, 90)):
+    for r, sig, j, y, rot in ((f"R{k + 9}", "RST", 0, ys[2], 270), (f"R{k + 10}", "BOOT", 1, ys[1], 90)):
         R(s, r, "100k", "+3V3", p + sig + "_IO", size="0402", pcb=P(cx + 9.0, y, rot),
           sch=at(138, (34, 44)[j] - 5))
         s.wire(f"{r}.2", (138, (34, 44)[j]), f"R{k + 7 + j}.1")
@@ -753,24 +793,66 @@ def board() -> Board:
     # and the exposed pad down to the GND plane: a via between its paste windows, drawn (Freerouting doesn't
     # always fan the pad out); more of them, and its buses can't pass under the pad on B.Cu
     hand_vias.append(("GND", ux + 0.565, uy + 0.565, 0.5, 0.3))
-    # The upstream pair, drawn (the RF review, 2026-10-21): Freerouting had split it (UP_DP 86 mm round the
-    # co-processor, UP_DN 32 mm), 0.33 ns of skew on a lead that runs High Speed in classic mode.  Both pins dive
-    # under the hub's body to B.Cu.  The pair runs east between its exposed pad (left free for vias) and its south
-    # pins, down its east side past the south-east decoupling, then west of J1 to its pins 5 (D−) and 6 (D+).
-    # Side by side 0.15 mm apart, over the +3V3 plane all the way, 35.2 mm each: D+ goes 2 mm further, to pin 6,
-    # so a 0.6 mm bump on D−'s east side, by the hub, evens them
+    # The High-Speed pairs on F.Cu over the GND plane, drawn (the HS review, 2026-10-22, the user's rule: "keep
+    # them over a continuous GND reference, preferably on F.Cu above In1"; Freerouting had put them mostly on B.Cu,
+    # over the split power plane, each line its own way).  Each port's centreline, corner by corner, from under
+    # the hub's south row: ports 1–3 down side by side under the hub, west in three lanes over the headers (the
+    # band their RESET/BOOT columns leave free), each down its header gap's east side to over its ESD; port 4's
+    # down the board's east side, past Q1–Q3.  D− and D+ either side, USB_W lines 0.15 mm apart (≈ 90 Ω: the USB
+    # netclass); they leave the hub's pins at its 0.5 mm pitch and close up.  At the ESD, D− turns
+    # into pin 6 and D+ goes on to pin 4, 1.9 mm further: two bumps on D− in its last way down even them
+    hs_centre = {
+        1: [(84.0, 20.55), (84.0, 35.15), (80.0, 39.15), (32.05, 39.15), (32.05, 49.85), (32.55, 50.35),
+            (32.55, 50.85), (33.3, 51.6), (33.3, 57.4), (31.6, 59.1), (31.6, 59.8)],
+        2: [(85.0, 20.55), (85.0, 35.56), (80.41, 40.15), (49.95, 40.15), (49.95, 58.75), (49.6, 59.1), (49.6, 59.8)],
+        3: [(86.5, 20.55), (86.5, 35.48), (80.83, 41.15), (68.05, 41.15), (68.05, 49.85), (68.55, 50.35),
+            (68.55, 50.85), (69.3, 51.6), (69.3, 57.4), (67.6, 59.1), (67.6, 59.8)],
+        4: [(87.5, 20.55), (87.5, 47.65), (88.9, 49.05), (88.9, 57.45), (87.2, 59.15), (86.25, 59.15), (85.6, 59.8),
+            (85.6, 60.0)],
+    }
+    hs_bump_y = {1: 55.6, 2: 55.6, 3: 55.6, 4: 50.3}     # port 4's between Q1's and Q2's pins
+    hp = (USB_W + 0.15) / 2                                # half the pair's pitch: its lines 0.15 mm apart
+    for n, c in hs_centre.items():
+        cx = CFG["usb"][n - 1]
+        x0_, ex = c[0][0], c[-1][0]
+        p6, p4 = (cx + 8.137, USB_Y - 0.95), (cx + 8.137, USB_Y + 0.95)
+        dn = [(x0_ - 0.25, HY + 4.41), (x0_ - 0.25, HY + 4.9)] + offset(c, hp) + \
+            [(ex - hp, p6[1] - 0.5), (p6[0] + 0.76, p6[1]), p6]
+        dp = [(x0_ + 0.25, HY + 4.41), (x0_ + 0.25, HY + 4.9)] + offset(c, -hp) + \
+            [(ex + hp, p4[1] - 0.45), (ex - 0.25, p4[1]), p4]
+        dn = bumps(dn, hs_bump_y[n], 2, (plen(dp) - plen(dn)) / 4)
+        hand_tracks += [(f"PORT{n}_DN", "F.Cu", USB_W, dn), (f"PORT{n}_DP", "F.Cu", USB_W, dp)]
+    # Ports 1 and 3 come down just east of the expanders, whose east pins (SCL, INT, the second port's RST_IO and
+    # BOOT_IO) all leave that way: the pair keeps clear of R201/R401 above, then steps 0.75 mm east, so the
+    # gap holds two tracks.  RST_IO (pin 10, boxed in between INT and BOOT_IO) is drawn: down the gap's west side
+    # to a via south of the package; INT takes its east side
+    for ex_, ey_, _ in EXP:
+        net = f"PORT{2 if ex_ < 50 else 4}_RST_IO"
+        hand_tracks.append((net, "F.Cu", 0.127, [(ex_ + 1.4375, ey_ + 0.25), (ex_ + 2.05, ey_ + 0.25),
+                                                 (ex_ + 2.05, ey_ + 1.5), (ex_ + 2.25, ey_ + 1.7)]))
+        hand_vias.append((net, ex_ + 2.25, ey_ + 1.7, 0.5, 0.3))
+    # The upstream pair (the RF review, 2026-10-21; on F.Cu since the HS review): its pins sit between the hub's
+    # straps and its crystal, and the downstream pairs wall J1 off on F.Cu, so it dives under the hub's body to
+    # B.Cu (between its exposed pad, left free for vias, and its south pins; ≈ 11 mm over the +3V3 plane, among
+    # the hub's decoupling), comes up past its east side and runs down the board's east side on F.Cu to J1's
+    # pins 5 (D−) and 6 (D+), from the east.  D+ goes 2 mm further, to pin 6: two bumps on D−, east of RN3
     jx, j5, j6 = LEAD[0], LEAD[1] + 8.0, LEAD[1] + 10.0
-    dn_x, dp_x, dn_turn, dp_turn = jx - 1.35, jx - 1.75, HY + 9.57, HY + 9.4
-    up_dn = [(HX - 2.75, HY + 0.6), (HX - 2.75, HY + 2.15), (HX - 2.3, HY + 2.6), (HX + 3.55, HY + 2.6),
-             (HX + 3.95, HY + 3.0), (HX + 3.95, HY + 5.0), (HX + 4.55, HY + 5.0), (HX + 4.55, HY + 5.5),
-             (HX + 3.95, HY + 5.5), (HX + 3.95, dn_turn), (dn_x, dn_turn + HX + 3.95 - dn_x), (dn_x, j5 - 0.45),
-             (dn_x + 0.45, j5), (jx, j5)]
-    up_dp = [(HX - 3.3, HY + 1.4), (HX - 3.3, HY + 2.55), (HX - 2.85, HY + 3.0), (HX + 3.15, HY + 3.0),
-             (HX + 3.55, HY + 3.4), (HX + 3.55, dp_turn), (dp_x, dp_turn + HX + 3.55 - dp_x), (dp_x, j6 - 0.45),
-             (dp_x + 0.45, j6), (jx, j6)]
-    hand_tracks += [("UP_DN", "F.Cu", USB_W, [(HX - 4.41, HY + 0.75), up_dn[0]]), ("UP_DN", "B.Cu", USB_W, up_dn),
-                    ("UP_DP", "F.Cu", USB_W, [(HX - 4.41, HY + 1.25), up_dp[0]]), ("UP_DP", "B.Cu", USB_W, up_dp)]
-    hand_vias += [("UP_DN", *up_dn[0], 0.5, 0.3), ("UP_DP", *up_dp[0], 0.5, 0.3)]
+    # (D−'s way up just north of its line, D+'s just east of it: neither line passes the other's via)
+    up_dn_b = [(HX - 2.75, HY + 0.6), (HX - 2.75, HY + 2.15), (HX - 2.3, HY + 2.6), (HX + 6.45, HY + 2.6),
+               (HX + 6.75, HY + 2.3), (HX + 6.75, HY + 2.1)]
+    up_dp_b = [(HX - 3.3, HY + 1.4), (HX - 3.3, HY + 2.55), (HX - 2.85, HY + 3.0), (HX + 7.05, HY + 3.0),
+               (HX + 7.35, HY + 3.3)]
+    up_dn_f = [up_dn_b[-1], (HX + 6.75, j5 - 0.45), (HX + 6.3, j5), (jx, j5)]
+    up_dp_f = [up_dp_b[-1], (HX + 7.15, HY + 3.5), (HX + 7.15, j6 - 0.65), (HX + 6.5, j6), (jx, j6)]
+    up_dn_esc = [(HX - 4.41, HY + 0.75), up_dn_b[0]]
+    up_dp_esc = [(HX - 4.41, HY + 1.25), up_dp_b[0]]
+    gap = plen(up_dp_esc) + plen(up_dp_b) + plen(up_dp_f) - plen(up_dn_esc) - plen(up_dn_b) - plen(up_dn_f)
+    up_dn_f = bumps(up_dn_f, 25.0, 2, gap / 4)
+    hand_tracks += [("UP_DN", "F.Cu", USB_W, up_dn_esc), ("UP_DN", "B.Cu", USB_W, up_dn_b),
+                    ("UP_DN", "F.Cu", USB_W, up_dn_f), ("UP_DP", "F.Cu", USB_W, up_dp_esc),
+                    ("UP_DP", "B.Cu", USB_W, up_dp_b), ("UP_DP", "F.Cu", USB_W, up_dp_f)]
+    hand_vias += [("UP_DN", *up_dn_b[0], 0.5, 0.3), ("UP_DP", *up_dp_b[0], 0.5, 0.3),
+                  ("UP_DN", *up_dn_b[-1], 0.5, 0.3), ("UP_DP", *up_dp_b[-1], 0.5, 0.3)]
     # the hub's two south VDD33 pins (5 and 10) take their vias inwards, under its body (between the pads and the
     # UP pair): their automatic fan-out vias sat right below the row, between the downstream pairs, and boxed
     # port 2's D− in (Freerouting left it unrouted)
@@ -832,9 +914,9 @@ def board() -> Board:
             # B.Cu runs over the power plane: no B.Cu track crosses its split (+3V3 / +5V, and the +5V tab's edge by
             # J1), so every signal that does, the USB pairs included, crosses it on F.Cu over the GND plane (the RF
             # review, 2026-10-21: no plane change for the return current)
-            {"name": "split", "layers": ["B.Cu"], "tracks_only": True,
+            {"name": "split", "layers": ["B.Cu", "In3.Cu"] if six else ["B.Cu"], "tracks_only": True,
              "poly": [(0.35, PWR_SPLIT - 0.5), (89.6, PWR_SPLIT - 0.5), (89.6, PWR_SPLIT + 0.5), (0.35, PWR_SPLIT + 0.5)]},
-            {"name": "split-tab", "layers": ["B.Cu"], "tracks_only": True,
+            {"name": "split-tab", "layers": ["B.Cu", "In3.Cu"] if six else ["B.Cu"], "tracks_only": True,
              "poly": [(88.6, 43.6), (89.6, 43.6), (89.6, PWR_SPLIT - 0.5), (88.6, PWR_SPLIT - 0.5)]}],
         "panel": {"gap": 2.0, "tabs": TABS, "tab_width": TAB_W, "bite": {"drill": 0.6, "pitch": 1.0, "offset": 0.2},
                   "boards": [{"tag": "L", "variant": None, "rot": 0}, {"tag": "B", "variant": "base", "rot": 180}]},

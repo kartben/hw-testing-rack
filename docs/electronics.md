@@ -467,7 +467,7 @@ Rebuild it after any change to the board: `tools/kicad.sh data-port-x4-v2 --fab`
 | Ports ×4 | As v1; EN pulled down (a port stays off until the node switches it on), R_ILIM right beside the switch's ILIM pin, the INA226's Vbus on the shunt's load-side sense pad, 100 nF at each USBLC6's VBUS pin | PCBA review X3, X4, X9.  Each port's power cluster sits between its header and its receptacle.  The USBLC6 is right of the receptacle, the CC resistors left of it  A green VBUS LED per port (D101–D401, KT-0805G through 1k, ≈ 3 mA) on its switched 5 V, before the shunt, so the INA226 doesn't count it: on while the port is on (the user, 2026-10-21) |
 | Expanders | As v1 (U2 0x20, U6 0x21); 100k pull-ups on the RESET/BOOT expander lines | X6: they float with nothing plugged in.  Each pair's expander sits between its two power clusters |
 | 3.3 V | AP2114H-3.3 (U3, C150716, SOT-223) from +5V, 22 µF in and out (C2, C3) | It takes the hub, the expanders and the INA226s.  The USB2517I draws 330 mA with four High-Speed ports busy (its datasheet, all supplies, typical; 420 mA with seven), against the USB2514B's 155 mA on v1.  That is ≈ 0.6–0.7 W in the LDO from 5.0–5.24 V, too much for v1's AP2112K in SOT-23-5.  The AP2114H keeps v1's low dropout (≈ 0.16 V at 0.35 A), so the hub keeps running while the ports sag the +5V.  It is rated 1 A with thermal shutdown at 160 °C, 128 °C/W bare.  Its tab sits on a top-side +3V3 island with six vias into the +3V3 plane, its VIN on a +5V island with two vias: ≈ 60–70 °C/W, about 45 °C over the drawer's air.  Left-hand column, across the power plane's split.  The AMS1117 (basic) would save $3.07 but drops 1.1 V.  Since 2026-10-21 it also feeds the co-processor (+3V3_CP through FB2, ≈ 15–45 mA): ≈ 0.39 A, 0.66–0.75 W from 5.0–5.24 V, ≈ 50 °C over the drawer's air |
-| Headers ×4 | 2 × 6 2.54 mm through-hole (J102–J402), read as two rows: upper VREF · P1 · P2 · P3 · P4 · BOOT, lower GND · P5 · P6 · P7 · P8 · RESET | Soldered by hand, not by JLC (hanxia HX PZ2.54-2x6P ZZ, C32713279): out of the JLC BOM and CPL.  Through-hole, easier to solder than the SMD version (the user, 2026-10-20).  The rear face carries only J1, so the tails (1.5 mm) are free.  Layout B (the usability review; the user, 2026-10-21: "oui je valide"): one 2 × 6 per port, centred at the port's x and z 28.5, pins forward over the plate.  The odd pins are on the lower row, the even on the upper.  The names are on the silkscreen over each header, where they stay readable with the jumpers in, in two lines stacked like the rows (VREF, GND, BOOT, RST spelt out); a big port number and the port's VBUS LED sit over its west end.  Each port's pins are a voltage domain of their own (its VREF), so the four groups stay four whatever the header (layouts A and C, and the one bank, in the review).  RESET/BOOT go through 1k as v1, their resistors in a column right of the header.  Strain-relieve the jumpers (tie them down) rather than letting them pull on the header |
+| Headers ×4 | 2 × 6 2.54 mm through-hole (J102–J402), read as two rows: upper VREF · P1 · P2 · P3 · P4 · BOOT, lower GND · P5 · P6 · P7 · P8 · RESET | Soldered by hand, not by JLC (hanxia HX PZ2.54-2x6P ZZ, C32713279): out of the JLC BOM and CPL.  Through-hole, easier to solder than the SMD version (the user, 2026-10-20).  The rear face carries only J1, so the tails (1.5 mm) are free.  Layout B (the usability review; the user, 2026-10-21: "oui je valide"): one 2 × 6 per port, centred at the port's x and z 28.5, pins forward over the plate.  The odd pins are on the lower row, the even on the upper.  The names are on the silkscreen over each header, where they stay readable with the jumpers in, in two lines stacked like the rows (VREF, GND, BOOT, RST spelt out); a big port number and the port's VBUS LED sit over its west end.  Each port's pins are a voltage domain of their own (its VREF), so the four groups stay four whatever the header (layouts A and C, and the one bank, in the review).  RESET/BOOT go through 1k as v1, their resistors in a column right of the header (ports 1–3's lowered since the HS review, 2026-10-22: the band over the headers carries the USB pairs).  Strain-relieve the jumpers (tie them down) rather than letting them pull on the header |
 | Pins ×4 | 2 × H5VU25UC in flow-through, 100 Ω per pin (4 × 0402 arrays), LSF0108 (U107–U407) | A side = the DUT's VREF, B side = 3.3 V.  Vref_B and EN come from the board's +5V_MX through 200k (the usability review, 2026-10-21; before, from the port's VBUS): each group is a voltage domain of its own, any board on any group, two groups for a board that needs 16 pins.  TI wants Vref_B ≥ Vref_A + 0.6 V, so a VREF up to ≈ 4.4 V translates as specified; a 5 V board's highs clamp near 4.2 V (as they did from VBUS).  The bias current (≈ 20 µA) leaves the LSF0108 by Vref_A, so the VREF divider to the co-processor's ADC (VREF / 2) is 10k / 10k: an unwired VREF stays ≈ 0.4 V, under the 0.65 V the LSF needs to translate, and the group passes nothing (through 100k / 100k it would float up to ≈ 2.1 V and pass).  A board that is off takes its VREF down and isolates its pins the same way.  A wired VREF supplies VREF / 20k (165 µA at 3.3 V).  The ESD arrays are hongjiacheng's H5VU25UC (C20615800, JLC "preferred extended": no part-type fee) in place of TI's TPD4E05U06 (2026-10-20).  The same pins, its 6/7/9/10 tied inside to their pair (TI's are NC); its own DFN2510-10L land (`bench:`, the GND pins one bar).  Its stand-off is 5 V (TI's 5.5 V), breakdown 6 V at least: every line it guards stays at 5 V or less, a DUT's pins at its VREF (≤ 5 V), the lead's I²C and INT at 3.3 V |
 | Matrix | 2 × CH446Q at ±5 V (U7: ports 1–2, U8: ports 3–4; their Y0–Y7 joined = buses D C B A E F G H), TPS60400 for −5 V (U9), TCA9534A at 0x38 (U10); their +5V (+5V_MX) through a 600 Ω ferrite (FB1, GZ2012D601TF) | The ferrite keeps the ports' switching and the charge pump's 250 kHz apart.  It carries the crosspoints, the inverter and the four LSF0108s' bias (µA), about 70 mA (20 mV); the co-processor takes +3V3 since 2026-10-21.  TCA9534A: P0 DAT · P1 CK · P2 STB U7 · P3 STB U8 · P4 RST (pulled up: every switch open until the node writes it) · P5 co-processor RUN · P6 BOOTSEL · P7 mark.  Each bus is pulled up to 3.3 V by 10k (RN8, RN9), the B-side pull-up of whatever pins it joins |
 | Co-processor | RP2354B (U11) wired like a Pico 2: 12 MHz ABM8-272-T3, core regulator with 3.3 µH and 3 × 4.7 µF; its 3.3 V (+3V3_CP) from the board's +3V3 through a 600 Ω ferrite (FB2, C1017) | Hub port 5.  GPIO2–9 = buses A–H (gusmanb's CH1–8); GPIO0 → GPIO1 bridged (its trigger); GPIO14 = mark; GPIO25 = LED.  GPIO19, 18, 17, 16, 13, 12, 11, 10 switch the 2.2k pull-ups of buses A–H (our firmware); RN6/RN7 sit right beside them on the same face.  GPIO40–43 = VREF 1–4 / 2, GPIO44–45 = the ±5 V rails.  SWD on three pads at the top edge (TP1–TP3).  No LDO of its own since 2026-10-21 (the usability review: an extended part type less): U3 takes its ≈ 15–45 mA.  USB through 22 Ω (R23/R24, basic) where the Pico 2 fits 27 Ω: Full Speed only, the driver's own impedance plus 22 Ω stays inside USB's 28–44 Ω window |
@@ -534,28 +534,47 @@ Power tracks:
 
 The USB pairs.  The hub's host is the node's ESP32-S3, full speed only (12 Mbit/s), except in classic mode:
 a laptop on the bay's PC port then takes the hub at High Speed.  After the RF review (2026-10-21, against
-a bench node whose Wi-Fi a USB 3 hub beside its antenna knocked out; this board has no SuperSpeed):
-- the upstream pair, from the hub to J1, is drawn and locked: side by side under the hub's body and down
-  its east side, over the +3V3 plane, 35.2 mm each (Freerouting had taken D+ 86 mm round the co-processor);
-- no B.Cu track crosses the power plane's split (+3V3 / +5V, and the +5V tab's edge by J1): a B.Cu keep-out
-  along it makes every signal that does, the pairs included, cross on F.Cu over the GND plane, so the
+a bench node whose Wi-Fi a USB 3 hub beside its antenna knocked out; this board has no SuperSpeed) and the
+HS review (2026-10-22, the user's rule: "keep them over a continuous GND reference, preferably on F.Cu
+above In1.Cu"):
+- the five High-Speed pairs are drawn and locked in `design.py` as coupled pairs: their two lines side by
+  side all the way, 0.15 mm apart (≈ 90 Ω, below), equal in length by construction (two bumps on D−, where
+  D+ goes on to the far pin);
+- the four port pairs run on F.Cu over the GND plane, from under the hub's south row to their ESD: ports 1–3
+  west in three lanes over the headers, then each down its header gap; port 4 down the board's east side.
+  95, 77, 61 and 47 mm.  Freerouting had put them mostly on B.Cu, over the split power plane, each line its
+  own way (up to 16 mm apart);
+- the upstream pair's pins sit between the hub's straps and its crystal, walled off from J1 on F.Cu by the
+  downstream pairs: it dives under the hub's body to B.Cu for ≈ 11 mm (over the +3V3 plane, among the hub's
+  decoupling), then runs down the east side on F.Cu to J1, ≈ 40 mm;
+- the expanders' RST_IO of ports 2 and 4 (pin 10, between INT and BOOT_IO on the side facing a pair) is drawn
+  to a via south of the package: ports 1 and 3's pairs step 0.75 mm east there to leave the room;
+- no B.Cu or In3 track crosses the power plane's split (+3V3 / +5V, and the +5V tab's edge by J1): a
+  keep-out along it on both makes every signal that does cross on F.Cu or In2, over the GND plane, so the
   return current never changes plane there;
 - the hub's two south VDD33 pins (5, 10) take their vias under its body, so its downstream pairs leave the
   south row unboxed;
-- after the routing, each pair's two lines are matched within 1 mm, by a meander on the shorter one
-  (`match`).  Freerouting still routes each line on its own: the port pairs are matched, not coupled
-  (ports 1–3's lines run 7–16 mm apart on average, 2.5–4.4 before).  Drawing them as coupled pairs, like
-  the upstream one, is the open item (High Speed, classic mode only);
+- each port's leg from its ESD to its receptacle (≈ 10 mm, where D+ and D− reach the USB-C's two rows) is
+  routed by Freerouting: its crossing dives to In2 or In3 (on B.Cu over the +5V plane before);
+- the co-processor's pair (Full Speed only) is routed by Freerouting, mostly on In3; `match` finds no room for
+  a meander, and its lines differ by 2 mm: 13 ps against an 83 ns bit;
 - the hub's 480 MHz PLL puts its 5th harmonic at 2.400 GHz, the band's edge, 1 MHz under Wi-Fi channel 1.
 
 ENIG, flat for the RP2354B's 0.4 mm QFN-80.
 
-**Stackup: 4 layers**, JLC04161H-7628: F.Cu signals · In1 GND · In2 power (+3V3 / +5V) · B.Cu signals.
-- With every part on the front face, B.Cu is free for the routing.
-- Freerouting routes every link at 4 layers, as at 6 (F · GND · sig · sig · power · B), which
-  `X4V2_LAYERS=6` still builds for a comparison.
-- The user's wish ("si on peut repasser à 4 couches ce serait top"): 4.  It is $8 cheaper for 5 bare
-  boards, and takes 3–4 days instead of 8–9.
+**Stackup: 6 layers** since the HS review (2026-10-22), JLC06161H-3313: F.Cu signals and the High-Speed
+pairs · In1 GND · In2 signals · In3 signals · In4 power (+3V3 / +5V) · B.Cu signals.
+- The pairs drawn on F.Cu wall the rest of the board off.  At 4 layers Freerouting left 27–29 links open
+  after 30 passes; at 6 it routes them all.  The user's wish for 4 ("si on peut repasser à 4 couches ce serait
+  top") gave way to the HS rule, as agreed for this fallback.  `X4V2_LAYERS=4` still builds the 4-layer board.
+- In2 references In1's GND.  In3 and B.Cu reference the split power plane: the split's keep-out covers both.
+- ≈ 90 Ω on the outer layers: 0.15 mm lines 0.15 mm apart over 0.1 mm of 3313 prepreg (at 4 layers, 0.25 mm
+  over 0.21 mm of 7628).
+- Cost (jlcpcb.com, 2026-10-22): the rack's order panel, 5 × 100 × 142 mm ENIG, $60.40 instead of $52.00; one
+  board on its own, 5 × 100 × 70 mm, $49.40 instead of $25.40.  ENIG only: from 6 layers JLC fills and caps
+  the vias and offers no HASL, so the base variant loses its lead-free HASL.  The rack's black mask costs
+  $33.10 an order at 6 layers ($8.00 at 4): green on this panel is a lever in the BOM.  8–9 days instead of
+  3–4.
 
 ## Camera pod v1.0 — 2 layers, 40 × 27 mm
 

@@ -23,8 +23,9 @@ class Orders(unittest.TestCase):
         _, cls.orders = bom.electronics(rackcfg.load())
 
     def test_panel_reproduces_the_quote(self):
-        # the 1 × 2 base + logic panel as priced in docs/jlc-parts-audit.md (rounding: the quoted SMT lines)
-        for n, usd in ((2, 226.88), (5, 357.73), (10, 555.77)):
+        # the 1 × 2 base + logic panel as priced in docs/jlc-parts-audit.md (rounding: the quoted SMT lines), its
+        # bare PCBs at 6 layers since the HS review (2026-10-22: $8.40 more for 5 panels, $8.80 for 10)
+        for n, usd in ((2, 235.28), (5, 366.13), (10, 564.57)):
             self.assertAlmostEqual(bom.panel_order(n, self.orders)["total"], usd, delta=0.02)
 
     def test_volume_is_order_cost(self):
