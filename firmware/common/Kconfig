@@ -48,6 +48,14 @@ config HWTR_NET_TX_POWER_DBM
 	  "radio <dBm>" changes it at run time and saves it; "radio" shows the
 	  power the radio really uses.
 
+# Mains powered: the station never sleeps.  In modem sleep the AP holds each
+# frame for the station until the next DTIM beacon: the bench XIAO answered a
+# wired ping in 174 ms on average (350 ms at worst) against 16 ms awake, and
+# every USB/IP request waits as long.
+choice ESP32_WIFI_STA_POWER_SAVE_MODE
+	default ESP32_WIFI_STA_POWER_SAVE_NONE if HWTR_NET
+endchoice
+
 config HWTR_ACL
 	bool "Access rules, lease, SHA-256 and HMAC (plain C)"
 

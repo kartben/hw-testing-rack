@@ -182,7 +182,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Access control | who may use which service, a CI reservation, an admin key confirmed by a BOOT press; Zephyr's packet filter for the TCP services, a check per HTTP request.  See [Access control](#access-control) |
 | DATA ×4 | a DATA ×4 board in the drawer (probed after each DUT_5V on): four ports, each switched on through the bay's budget, its ~FAULT, current and RESET/BOOT; `bay port`, `/api/ports`.  See [docs/multi-dut-node.md](../docs/multi-dut-node.md) |
 | Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO42 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
-| Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS; 20 MHz channels and 11 dBm of TX power, see [Wi-Fi in the rack](#wi-fi-in-the-rack) (`common/lib/net.c`, as the hub) |
+| Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS; no power save, 20 MHz channels and 11 dBm of TX power, see [Wi-Fi in the rack](#wi-fi-in-the-rack) (`common/lib/net.c`, as the hub) |
 | Shell | `bay …` commands, `radio`, plus the stock `wifi`, `net` shells, on UART0 and telnet |
 | Fatal errors | restart the node instead of halting it (`src/fault.c`): a bay has to come back by itself, and its console is the USB host's.  The reason, the thread and the warnings and errors logged just before are kept across the restart in RTC memory, then reported: the log, `bay status` ("restarted: …"), `bay fault`, `/api/status`'s `last_fault`.  Gone at power-on |
 | Web | Zephyr HTTP server on port 80: status page, JSON API (same actions as the shell), Prometheus `/metrics` through Zephyr's Prometheus library |
@@ -241,6 +241,11 @@ Twelve nodes, the hub and the DUTs' own radios share one room, with each
 node's antenna a few cm from its DUTs.  So each node (and the hub, through
 `common/lib/net.c`) sets its station's radio before every connection:
 
+- **No power save**: the radio stays awake.  In modem sleep (the ESP32 driver's
+  default) the AP holds every frame for the node until the next DTIM beacon:
+  the bench XIAO answered a ping from a wired PC in 174 ms on average, up to
+  350 ms, against 13–16 ms awake.  It costs about 0.2 W per node, already in
+  [the power budget](../docs/power.md)'s 0.7–1 W.
 - **20 MHz channels** (HT20): a 40 MHz channel would spill onto the next one.
 - **11 dBm of TX power** instead of the radio's full 20 dBm
   (`CONFIG_HWTR_NET_TX_POWER_DBM`; `radio <dBm>` changes it and saves it).

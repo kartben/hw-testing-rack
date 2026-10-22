@@ -85,7 +85,7 @@ uart:~$ hub status
 | Faults | each eFuse's FLT (current limit, over-temperature) as an event, a count and the page's red row, counted only while the row is on and 10 ms past its soft start (the TPS2660 also asserts FLT in shutdown and start-up); a contract lost (PG) as an event |
 | Telemetry | the contract, the granted current, the protocol and PG from the CH224A (it measures nothing); VBUS from the controller's ADC divider; each row's current from IMON |
 | Rack bus | TWAI at 250 kbit/s on the TJA1462AT (CAN SIC; STB through `can-transceiver-gpio`); enumeration over the POS tokens, the node table, commands to nodes with retries; the RACK frame every second |
-| Network | Wi-Fi station, DHCP, mDNS `rack-<id>.local`, 20 MHz channels and 11 dBm of TX power (firmware/common's `hwtr_net`, as the nodes: [Wi-Fi in the rack](../README.md#wi-fi-in-the-rack)) |
+| Network | Wi-Fi station, DHCP, mDNS `rack-<id>.local`, no power save, 20 MHz channels and 11 dBm of TX power (firmware/common's `hwtr_net`, as the nodes: [Wi-Fi in the rack](../README.md#wi-fi-in-the-rack)) |
 | Web | Zephyr HTTP server on port 80: status page, JSON API, Prometheus `/metrics` |
 | Access | reading is open; switching rows, the contract choice, the enumeration and the node commands are admin requests, signed with the hub's admin key, claimed with a press on BOOT (see [Access](#access)) |
 | CTL LED | on: contract, rows as wanted; slow blink: no PD charger or contract settling; double blink: rows shed; fast blink: a row in fault; flicker: a claim waits for BOOT |
