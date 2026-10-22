@@ -74,7 +74,7 @@ CAMERAS_ACTIVE = {0x03}
 hub = {
     "hostname": "rack", "ip": "192.168.1.40", "version": "0.5.0",
     "charger": CHARGER_140W, "pref": "epr", "usb_only": False,
-    "rows": {r: {"on": r != "D", "fault": False, "shed": False, "cycling": 0.0} for r in ROWS},
+    "rows": {r: {"on": r != "D", "fault": False, "faults": int(r == "B"), "shed": False, "cycling": 0.0} for r in ROWS},
     "lost": set(),
     "sheds": 0,
     "enumerated_at": time.monotonic() - 754,
@@ -162,7 +162,7 @@ def status() -> dict:
         state = ("fault" if r["fault"] else "shed" if r["shed"] else
                  "cycling" if r["cycling"] > t else "on" if r["on"] else "off")
         rows.append({"name": row, "state": state, "on": r["on"] and not r["shed"], "fault": r["fault"],
-                     "wanted": r["on"], "faults": int(r["fault"]),
+                     "wanted": r["on"], "faults": r["faults"],
                      "ma": ma, "mw": ma * (c["mv"] if c else 0) // 1000, "nodes": nodes})
     vbus = (c["mv"] - total_ma * 12 // 1000) if c else 0
     found = sum(len(r["nodes"]) for r in rows)
@@ -256,6 +256,7 @@ class Handler(PageHandler):
                 row = q.get("row", "C").upper()
                 hub["rows"][row]["fault"] = not q.get("off")
                 if hub["rows"][row]["fault"]:
+                    hub["rows"][row]["faults"] += 1
                     event("fault", f"row {row}: eFuse in current limit (1.6 A)")
                 self.json(200, status())
             elif path == "/dev/lose":
@@ -342,8 +343,12 @@ class Handler(PageHandler):
                 if action not in ("identify", "reset", "bootloader", "power-cycle", "power-on", "power-off", "reboot"):
                     self.json(400, {"error": "action identify|reset|bootloader|power-*|reboot"})
                     return
+                key = (ROWS[nid >> 4], nid & 15) if (nid >> 4) < len(ROWS) else None
+                if key in NODES and action in ("power-on", "power-off"):
+                    name, base, st = NODES[key]
+                    NODES[key] = (name, base or 110, "enumerated" if action == "power-on" else "off")
                 event("node", f"node 0x{nid:02x}: {action}")
-                self.json(200, {"result": "done"})
+                self.json(200, status())
             else:
                 self.json(404, {"error": "not found"})
 

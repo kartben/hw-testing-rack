@@ -70,17 +70,22 @@ button.bay {
     & .pos { color: var(--muted); } }
 }
 #node-menu {
-  margin: 0; inset: auto; position: fixed; min-width: 220px; padding: 6px;
+  margin: 0; inset: auto; position: fixed; min-width: 240px; padding: 6px;
   border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text);
   box-shadow: 0 12px 36px #0004;
   & header { display: block; padding: 6px 10px 8px; margin: 0 0 4px; border-bottom: 1px solid var(--line); }
-  & header b { font-size: 1rem; }
-  & header small { display: block; color: var(--muted); font: 0.75rem var(--mono); }
+  & header b { font-size: 1rem; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  & header b span { font-size: 0.78rem; font-weight: 550; color: var(--muted); }
+  & header small { display: block; color: var(--muted); font: 0.75rem/1.4 var(--mono); margin-top: 2px; white-space: pre-line; }
+  & hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
   & button, & a { display: block; width: 100%; text-align: left; padding: 7px 10px; border: 0; border-radius: 8px;
                   background: none; font: inherit; font-weight: 500; color: inherit; text-decoration: none; cursor: pointer; }
   & button:hover, & a:hover { background: var(--soft); }
   & .danger { color: var(--fault); }
+  & [hidden] { display: none; }
 }
+.banner[data-show] { display: flex; }
+.actions[hidden] { display: none; }
 .pill.access {
   --c: var(--idle);
   font: inherit; font-size: 0.85rem; font-weight: 550; border: 0; cursor: pointer; padding: 4px 12px;
@@ -90,6 +95,7 @@ button.bay {
 }
 body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
 .log-kind { font-size: 0.72rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; color: var(--c, var(--muted)); }
+.log-age { color: var(--muted); font-size: 0.78rem; margin-left: 6px; }
 @media (max-width: 720px) {
   .shelf { grid-template-columns: 1fr auto; & .bays-cell { grid-column: 1 / -1; grid-row: 2; } }
 }
@@ -162,12 +168,15 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
     </section>
 
     <section class="card">
-      <h2>Events</h2>
+      <h2>Events <span id="events-meta"></span></h2>
       <table class="log"><tbody id="events"></tbody></table>
+      <div class="actions" id="events-more-wrap" hidden>
+        <button class="small" id="btn-events-more" type="button">Show all</button>
+      </div>
     </section>
   </main>
 
-  <footer><span id="uptime"></span><a href="/api/status">/api/status</a><a href="/metrics">/metrics</a></footer>
+  <footer><span id="uptime"></span><span id="foot-faults"></span><a href="/api/status">/api/status</a><a href="/metrics">/metrics</a></footer>
 </div>
 
 <dialog id="confirm">
@@ -215,12 +224,15 @@ body:not([data-admin]) [data-admin-only] { opacity: 0.55; }
 </dialog>
 <div id="node-menu" popover>
   <header><b id="nm-pos"></b><small id="nm-meta"></small></header>
-  <button data-node-act="identify">Identify: blink its LED</button>
-  <button data-node-act="reset">Reset the board</button>
-  <button data-node-act="bootloader">Board into its bootloader</button>
-  <button data-node-act="power-cycle" class="danger">Power-cycle the board</button>
   <a id="nm-open" target="_blank" rel="noopener">Open the bay's page ↗</a>
   <a id="nm-cam" target="_blank" rel="noopener" hidden>Camera: live view ↗</a>
+  <hr id="nm-sep">
+  <button data-node-act="identify" data-admin-only>Identify: blink its LED</button>
+  <button data-node-act="reset" data-admin-only>Reset the board</button>
+  <button data-node-act="bootloader" data-admin-only>Board into its bootloader</button>
+  <button id="nm-power" data-node-act="power-on" data-admin-only>Power on the board</button>
+  <button data-node-act="power-cycle" class="danger" data-admin-only>Power-cycle the board</button>
+  <button data-node-act="reboot" class="danger" data-admin-only>Reboot the bay node</button>
 </div>
 
 <template id="t-row">
@@ -314,8 +326,10 @@ function renderRows(s) {
     }
     li.dataset.state = r.state;
     li.querySelector(".letter").textContent = r.name;
-    li.querySelector(".st").textContent = ROW_LABEL[r.state];
-    li.querySelector(".amps").textContent = r.on ? `${fix(r.ma, 2)} A · ${(r.mw / 1000).toFixed(1)} W` : "VRACK off";
+    li.querySelector(".st").textContent = ROW_LABEL[r.state]
+      + (r.faults && !r.fault ? ` · ${plural(r.faults, "fault")}` : "");
+    li.querySelector(".amps").textContent = r.on ? `${fix(r.ma, 2)} A · ${(r.mw / 1000).toFixed(1)} W`
+      : r.state === "shed" ? "shed by budget" : r.state === "waiting" ? "waiting for PD" : "VRACK off";
     const bays = li.querySelector(".bays");
     if (r.nodes.length) {
       bays.replaceChildren(...r.nodes.map((n) => { const x = document.createElement("li"); x.append(bayTile(n)); return x; }));
@@ -323,7 +337,8 @@ function renderRows(s) {
       bays.innerHTML = `<li class="empty">${r.on ? "no node answered" : r.state === "shed" ? "off: not enough power" : "row off"}</li>`;
     }
     const toggle = li.querySelector("[data-row-act=toggle]");
-    toggle.textContent = r.on || r.state === "fault" ? "Off" : "On";
+    const active = r.on || r.wanted || r.state === "fault";
+    toggle.textContent = active ? "Off" : "On";
     toggle.classList.toggle("danger", r.on);
     li.querySelector("[data-row-act=cycle]").disabled = !r.on;
   });
@@ -376,12 +391,22 @@ function render(s) {
   document.title = `Rack · ${label}`;
   $("where").textContent = [`${s.hostname}.local`, s.ip, `${s.can.nodes} bays`].join(" · ");
   const bad = s.rows.filter((r) => r.fault).map((r) => r.name);
-  $("fault-text").textContent = bad.length ? `Row ${bad.join(", ")}: eFuse in current limit (1.6 A)` : "";
+  const lostNodes = s.rows.flatMap((r) => r.nodes).filter((n) => n.state === "lost").map((n) => n.pos);
+  const alerts = [
+    bad.length && `Row ${bad.join(", ")}: eFuse in current limit (1.6 A)`,
+    lostNodes.length && `Bay ${lostNodes.join(", ")}: no answer on rack bus`,
+    s.can.state !== "error-active" && `Rack bus: ${s.can.state}`,
+  ].filter(Boolean);
+  $("fault-text").textContent = alerts.join(" · ");
+  $("fault-text").parentElement.toggleAttribute("data-show", alerts.length > 0);
   renderAccess(s.access);
   renderPd(s.pd);
   renderRows(s);
   renderBus(s);
   $("uptime").textContent = `Up ${uptime(s.uptime_s)}`;
+  const totalFaults = s.rows.reduce((sum, r) => sum + (r.faults ?? 0), 0);
+  $("foot-faults").textContent = `${plural(totalFaults, "fault")} since boot`
+    + (s.budget.sheds ? ` · ${plural(s.budget.sheds, "shed")}` : "");
 }
 
 /* --- Admin: the page's actions are signed with the hub's admin key ----------- */
@@ -496,15 +521,32 @@ document.addEventListener("click", (ev) => {
 });
 copyButtons();
 
-async function renderEvents() {
-  const ev = await api("/api/events");
-  $("events").innerHTML = ev.slice(0, 8).map((e) => {
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+let showAllEvents = false;
+let lastEvents = [];
+
+function drawEvents() {
+  const list = showAllEvents ? lastEvents : lastEvents.slice(0, 8);
+  $("events-meta").textContent = lastEvents.length ? `${lastEvents.length}` : "";
+  $("events-more-wrap").hidden = lastEvents.length <= 8;
+  $("btn-events-more").textContent = showAllEvents ? "Show fewer" : `Show all (${lastEvents.length})`;
+  $("events").innerHTML = list.length ? list.map((e) => {
     const t = new Date(Date.now() - e.age_s * 1000);
     const when = Date.now() - t < 86400e3 ? t.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
       : t.toLocaleDateString([], { month: "short", day: "numeric" });
-    return `<tr><td>${when}</td><td><span class="log-kind" style="--c:${KIND_COLOR[e.kind]}">${e.kind}</span></td><td>${e.text}</td></tr>`;
-  }).join("");
+    return `<tr><td>${when}<span class="log-age">· ${ago(e.age_s)}</span></td><td><span class="log-kind" style="--c:${KIND_COLOR[e.kind]}">${esc(e.kind)}</span></td><td>${esc(e.text)}</td></tr>`;
+  }).join("") : `<tr><td colspan="3">No events recorded since boot.</td></tr>`;
 }
+
+async function renderEvents() {
+  lastEvents = await api("/api/events");
+  drawEvents();
+}
+
+$("btn-events-more").addEventListener("click", () => {
+  showAllEvents = !showAllEvents;
+  drawEvents();
+});
 
 let menuNode = null;
 
@@ -513,16 +555,36 @@ $("rack").addEventListener("click", (ev) => {
   if (!tile) return;
   menuNode = last.rows.flatMap((r) => r.nodes).find((n) => n.id === Number(tile.dataset.id));
   if (!menuNode) return;
-  $("nm-pos").textContent = `Bay ${menuNode.pos}`;
-  $("nm-meta").textContent = `node 0x${menuNode.id.toString(16).padStart(2, "0")} · ${menuNode.ip} · ${menuNode.mac ?? ""}`;
+  const hasIp = Boolean(menuNode.ip && menuNode.ip !== "0.0.0.0");
+  if ((ev.ctrlKey || ev.metaKey) && hasIp) {
+    window.open(`http://${menuNode.ip}/`, "_blank", "noopener");
+    return;
+  }
+  const posEl = $("nm-pos");
+  posEl.textContent = `Bay ${menuNode.pos} `;
+  const stSpan = document.createElement("span");
+  stSpan.textContent = NODE_LABEL[menuNode.state] ?? menuNode.state;
+  posEl.append(stSpan);
+  const dut = menuNode.dut_mv ? `${fix(menuNode.dut_mv, 2)} V · ${fix(menuNode.dut_ma, 2)} A` : "";
+  $("nm-meta").textContent = [
+    `node 0x${menuNode.id.toString(16).padStart(2, "0")} · ${hasIp ? menuNode.ip : "no IP"}` + (menuNode.version ? ` · fw ${menuNode.version}` : ""),
+    [menuNode.mac, dut].filter(Boolean).join(" · "),
+  ].filter(Boolean).join("\n");
+  $("nm-open").hidden = !hasIp;
   $("nm-open").href = `http://${menuNode.ip}/`;
-  $("nm-cam").hidden = !CAM_LABEL[menuNode.camera];
+  $("nm-cam").hidden = !hasIp || !CAM_LABEL[menuNode.camera];
   $("nm-cam").href = `http://${menuNode.ip}:${CAM_PORT}/stream.mjpg`;
+  $("nm-sep").hidden = !hasIp;
+  const pwr = $("nm-power"), dutOff = menuNode.state === "off" || menuNode.state === "fault";
+  pwr.dataset.nodeAct = dutOff ? "power-on" : "power-off";
+  pwr.textContent = dutOff ? "Power on the board" : "Power off the board";
+  pwr.classList.toggle("danger", !dutOff);
   const menu = $("node-menu");
   const box = tile.getBoundingClientRect();
-  menu.style.left = `${Math.min(box.left, innerWidth - 240)}px`;
-  menu.style.top = `${box.bottom + 6}px`;
   menu.showPopover();
+  const mw = menu.offsetWidth || 240, mh = menu.offsetHeight || 280;
+  menu.style.left = `${Math.max(8, Math.min(box.left, innerWidth - mw - 8))}px`;
+  menu.style.top = `${box.bottom + 6 + mh <= innerHeight - 8 ? box.bottom + 6 : Math.max(8, box.top - mh - 6)}px`;
 });
 
 $("node-menu").addEventListener("click", async (ev) => {
@@ -530,11 +592,15 @@ $("node-menu").addEventListener("click", async (ev) => {
   if (!btn || !menuNode) return;
   const action = btn.dataset.nodeAct, pos = menuNode.pos;
   $("node-menu").hidePopover();
-  if (action === "power-cycle" && !await confirmed(`Power-cycle the board in bay ${pos}?`)) return;
+  const prompt = action === "power-cycle" ? `Power-cycle the board in bay ${pos}?`
+    : action === "power-off" ? `Switch off the board in bay ${pos}?`
+    : action === "reboot" ? `Reboot bay node ${pos}? Active USB/IP or console sessions will drop.` : "";
+  if (prompt && !await confirmed(prompt)) return;
   try {
-    await admin("/api/node", { id: menuNode.id, action });
+    const s = await admin("/api/node", { id: menuNode.id, action });
+    if (s?.rows) render(s);
     toast(`${pos}: ${action} sent`);
-    setTimeout(renderEvents, 800);
+    setTimeout(renderEvents, 600);
   } catch (e) {
     if (!e.quiet) toast(e.message);
   }
@@ -545,8 +611,9 @@ $("rack").addEventListener("click", async (ev) => {
   if (!btn) return;
   const row = btn.closest(".shelf").dataset.row;
   const r = last.rows.find((x) => x.name === row);
-  const action = btn.dataset.rowAct === "cycle" ? "cycle" : r.on || r.fault ? "off" : "on";
-  if (action !== "on" && !await confirmed(
+  const active = r.on || r.wanted || r.state === "fault";
+  const action = btn.dataset.rowAct === "cycle" ? "cycle" : active ? "off" : "on";
+  if (action !== "on" && r.on && !await confirmed(
     `${action === "cycle" ? "Power-cycle" : "Switch off"} row ${row}? Its ${plural(r.nodes.length, "bay")} and their boards lose power.`)) return;
   btn.disabled = true;
   try {
