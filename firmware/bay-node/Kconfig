@@ -248,4 +248,19 @@ config USBIP_BUF_POOL_SIZE
 	depends on USBIP
 	default 49152
 
+# The USB host thread runs each transfer's completion, and USB/IP sends its
+# RET_SUBMIT through the network stack from there.  The 1 KB default was full
+# (1024 of 1024 bytes) on the bench XIAO with an FT232 streaming over USB/IP,
+# and the ESP32-S3 has no stack guard: an overflow corrupts whatever lies next.
+config USBH_STACK_SIZE
+	depends on USB_HOST_STACK
+	default 2048
+
+# The USB/IP threads (the service, one per session) peaked at 1104 bytes with
+# an FT232 streaming and a card reader attached: 1.5 KB each instead of 2 pays
+# for the host thread's extra 1 KB and saves 2.5 KB more.
+config USBIP_THREAD_STACK_SIZE
+	depends on USBIP
+	default 1536
+
 source "Kconfig.zephyr"
