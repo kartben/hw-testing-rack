@@ -159,8 +159,18 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
   & li[data-st=attached] { --c: var(--attached); }
   & li[data-st=ready] { --c: var(--usbip); }
   & li[data-st=off] { --c: var(--idle); }
+  & li[data-st=fault] { --c: var(--fault); }
   & li[data-st=empty] { color: var(--muted); }
   & li[data-st=empty] .ico { --c: var(--idle); opacity: 0.6; }
+  & .port-bar {
+    grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center;
+    justify-content: space-between; gap: 6px 12px; padding-top: 4px;
+  }
+  & .port-info { font-size: 0.8rem; color: var(--muted);
+    &[data-st=fault] { color: var(--fault); font-weight: 600; }
+    &[data-st=lease] { color: var(--lease); font-weight: 500; }
+  }
+  & .port-acts { display: flex; flex-wrap: wrap; gap: 6px; }
   & .none { color: var(--muted); padding: 6px 0; }
 }
 @media (max-width: 900px) {
@@ -578,7 +588,11 @@ function render(s) {
   $("name").textContent = bayId ? `Bay ${bayId}` : "Bay node";
   $("where").textContent = [rackPos, host, s.ip].filter(Boolean).join(" · ");
 
-  $("vbus").textContent = s.dut.on ? "VBUS on" : "VBUS off";
+  const multi = (s.ports?.length ?? 0) > 1;
+  const onCount = multi ? s.ports.filter((p) => p.power.on).length : 0;
+  $("vbus").textContent = multi ? `${onCount} / ${s.ports.length} on` : s.dut.on ? "VBUS on" : "VBUS off";
+  document.querySelector(".card.console").hidden = multi;
+  if (multi && con.ws) con.ws.close();
   if (s.dut.meter) {
     $("v").textContent = fix(s.dut.mv, 2);
     $("a").textContent = fix(s.dut.ma, 3);
@@ -587,9 +601,12 @@ function render(s) {
   } else {
     for (const id of ["v", "a", "w"]) $(id).textContent = "n/a";
   }
-  $("fault-text").textContent = s.dut.latched
-    ? "Over-current: the board's 5 V was switched off."
-    : "The board is drawing too much current (VBUS in current limit).";
+  const faultSlots = multi ? s.ports.filter((p) => p.fault).map((p) => p.slot).join(", ") : "";
+  $("fault-text").textContent = faultSlots
+    ? `Over-current on ${faultSlots}: the port's 5 V was switched off.`
+    : s.dut.latched
+      ? "Over-current: the board's 5 V was switched off."
+      : "The board is drawing too much current (VBUS in current limit).";
 
   document.querySelector(`input[name=mode][value=${s.force_classic ? "classic" : "usbip"}]`).checked = true;
   $("path").textContent = { usbip: "USB/IP", classic: "Classic (front port)", service: "Service" }[s.path];
@@ -635,10 +652,29 @@ async function run(btn, path, body, what) {
   const busy = document.querySelectorAll("button[data-action]");
   busy.forEach((b) => { b.disabled = true; b.dataset.busy = "1"; });
   try {
-    render(await api(path, body));
-    toast(DONE[what]);
+    if (btn?.dataset.port) {
+      const req = { ...body, port: Number(btn.dataset.port) };
+      if (btn.dataset.arg === "power_cycle") req.power_cycle = true;
+      render(await api(path, req));
+      toast(`${btn.dataset.slot || `Port ${btn.dataset.port}`}: ${DONE[what]}`);
+    } else if (path === "/api/power" && (status?.ports?.length ?? 0) > 1) {
+      const fromFault = btn?.closest(".banner");
+      const targets = fromFault
+        ? status.ports.filter((p) => p.fault)
+        : status.ports.filter((p) => body.action === "off" ? p.power.on : body.action === "on" ? !p.power.on || p.fault : true);
+      let last = null;
+      for (const p of (targets.length ? targets : status.ports)) {
+        last = await api(path, { ...body, port: p.port });
+      }
+      if (last) render(last);
+      toast(DONE[what]);
+    } else {
+      render(await api(path, body));
+      toast(DONE[what]);
+    }
   } catch (e) {
     toast(`Failed: ${e.message}`);
+    pollStatus();
   } finally {
     busy.forEach((b) => { b.dataset.busy = ""; b.disabled = b.dataset.denied === "true"; });
   }
@@ -663,8 +699,54 @@ function icon(id) {
   return span;
 }
 
+function portBar(p) {
+  const bar = el("div", "port-bar");
+  const info = el("span", "port-info");
+  if (p.fault) {
+    info.dataset.st = "fault";
+    info.textContent = "Over-current fault · 5 V latched off";
+  } else if (p.lease?.holder) {
+    info.dataset.st = "lease";
+    info.textContent = p.lease.yours
+      ? `Reserved by you${p.lease.note ? ` (${p.lease.note})` : ""}`
+      : `Reserved by ${p.lease.holder}${p.lease.note ? ` (${p.lease.note})` : ""}`;
+  } else {
+    info.textContent = p.power.on ? "5 V on" : "5 V off";
+  }
+  const acts = el("div", "port-acts");
+  const denied = (status?.access && !can(status.access, "control")) || (p.lease?.holder && !p.lease.yours);
+  const mkBtn = (label, action, arg, cls, confirmMsg, title) => {
+    const b = el("button", `small ${cls || ""}`.trim(), label);
+    b.type = "button";
+    b.dataset.action = action;
+    if (arg) b.dataset.arg = arg;
+    b.dataset.port = p.port;
+    b.dataset.slot = p.slot;
+    b.dataset.denied = Boolean(denied);
+    b.disabled = Boolean(denied);
+    if (confirmMsg) b.dataset.confirm = confirmMsg;
+    if (title) b.title = title;
+    return b;
+  };
+  if (p.power.on) {
+    acts.append(
+      mkBtn("Reset", "reset", null, "", null, `Pulse ${p.slot}'s RESET line`),
+      mkBtn("Bootloader", "boot", null, "", null, `Hold BOOT across a RESET pulse on ${p.slot}`),
+      mkBtn("Cycle", "power", "cycle", "", null, `Power cycle ${p.slot}`),
+      mkBtn("Off", "power", "off", "danger", `Switch ${p.slot}'s 5 V off?`, `Switch ${p.slot}'s 5 V off`),
+    );
+  } else {
+    acts.append(
+      mkBtn("Power on", "power", "on", "primary", null, `Switch ${p.slot}'s 5 V on`),
+      mkBtn("Bootloader", "boot", "power_cycle", "", null, `Hold BOOT across power-on on ${p.slot}`),
+    );
+  }
+  bar.append(info, acts);
+  return bar;
+}
+
 /* Strings from the device (iProduct, iManufacturer, iSerial) only ever go in as text */
-function usbRow(d) {
+function usbRow(d, port = null) {
   const li = el("li");
   li.dataset.st = d.usbip.client ? "attached" : d.usbip.offered ? "ready" : "off";
   const kind = KIND.find(([k]) => d.classes.some((c) => c.startsWith(k)));
@@ -709,7 +791,6 @@ function usbRow(d) {
   }
   li.append(st);
 
-  const port = status?.ports?.length > 1 ? status.ports.find((p) => p.slot === d.slot) : null;
   const ma = port?.power?.ma ?? d.ma;
   li.append(el("div", "ma", ma != null ? `${fix(ma, 3)} A` : ""));
   if (d.usbip.offered) {
@@ -722,31 +803,39 @@ function usbRow(d) {
     none.title = "USB/IP serves at most its configured number of devices";
     li.append(none);
   }
+  if (port) li.append(portBar(port));
   return li;
 }
 
 /* A DATA x4 port with nothing enumerated on it */
 function emptyRow(p) {
   const li = el("li");
-  li.dataset.st = "empty";
+  li.dataset.st = p.fault ? "fault" : "empty";
   li.append(icon("i-usb"));
   const id = el("div", "id");
-  id.append(el("b", null, "No device"), el("small", null, p.power.on ? "Nothing on this port" : "Port off"));
+  id.append(
+    el("b", null, p.fault ? "Over-current fault" : "No device"),
+    el("small", null, p.fault ? "Port 5 V switched off" : p.power.on ? "Nothing on this port" : "Port off"),
+  );
   li.append(id, el("div", "kinds"));
   const where = el("div", "where");
   where.append(el("b", null, p.slot), el("code", null, `1-1.${p.port}`));
-  li.append(where, el("div", "st"), el("div", "ma"), el("span", "act"));
+  const st = el("div", "st");
+  st.append(el("i"), el("span", null, p.fault ? "Fault" : p.power.on ? "No device" : "Power off"));
+  const ma = el("div", "ma", p.power.ma != null ? `${fix(p.power.ma, 3)} A` : "");
+  li.append(where, st, ma, el("span", "act"), portBar(p));
   return li;
 }
 
 function renderUsb(doc) {
   const list = $("usb-list");
-  const rows = doc.devices.map(usbRow);
-  if (doc.hub?.data_x4 && status?.ports) {
-    for (const p of status.ports) {
-      if (!p.usb) rows.splice(p.port - 1, 0, emptyRow(p));
-    }
-  }
+  const multi = (status?.ports?.length ?? 0) > 1;
+  const rows = multi
+    ? status.ports.flatMap((p) => {
+        const devs = doc.devices.filter((d) => d.slot === p.slot || d.hub_port === p.port);
+        return devs.length ? devs.map((d) => usbRow(d, p)) : [emptyRow(p)];
+      })
+    : doc.devices.map((d) => usbRow(d, null));
   list.replaceChildren(...rows);
   if (!rows.length) {
     const li = el("li");
@@ -754,8 +843,8 @@ function renderUsb(doc) {
     list.append(li);
   }
   const n = doc.devices.length;
-  $("usb-meta").textContent = !doc.hub ? plural(n, "device")
-    : doc.hub.data_x4 ? `DATA ×4 hub (${doc.hub.name}) · ${n} of ${status?.ports?.length ?? 4} ports in use`
+  $("usb-meta").textContent = !doc.hub && !multi ? plural(n, "device")
+    : doc.hub?.data_x4 || multi ? `DATA ×4 hub${doc.hub ? ` (${doc.hub.name})` : ""} · ${n} of ${status?.ports?.length ?? 4} ports in use`
     : `${plural(n, "device")} behind ${doc.hub.name}`;
 }
 
@@ -795,7 +884,10 @@ function renderRights(a) {
   pill.append(text);
 
   const control = can(a, "control"), console_ = can(a, "console");
-  document.querySelectorAll("button[data-action]").forEach((b) => (b.dataset.denied = !control));
+  document.querySelectorAll("button[data-action]").forEach((b) => {
+    const p = b.dataset.port && status?.ports?.find((x) => String(x.port) === b.dataset.port);
+    b.dataset.denied = !control || Boolean(p?.lease?.holder && !p.lease.yours);
+  });
   document.querySelectorAll("button[data-action], input[name=mode]").forEach((el) => {
     el.disabled = !control || el.dataset.busy === "1";
   });
@@ -1242,7 +1334,7 @@ function scheduleConnect(ms) {
 async function connect(slot = 0) {
   clearTimeout(con.retry);
   con.retry = null;
-  if (con.ws || (con.connecting && slot === 0) || document.hidden) return;
+  if (con.ws || (con.connecting && slot === 0) || document.hidden || (status?.ports?.length ?? 0) > 1) return;
   /* No console right now (rules, someone else's lease): wait for the status poll to give one */
   const a = status?.access;
   if (a && !can(a, "console")) {
