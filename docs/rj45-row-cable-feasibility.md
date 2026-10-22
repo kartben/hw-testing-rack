@@ -17,7 +17,7 @@ document covers the electrical side and the verdict; the mechanical side is Mech
   - Every free OUT jack in the rack is live: there is always one, on the last node of each row.
   - The hub can probe its own outputs before switching them on.  Real protection also needs a
     switched, probed VRACK pass-through on every node.
-  - That redesigns the node, the hub, the tray walls, the ladders and the power box, about 1–2 weeks,
+  - That redesigns the node, the hub and the power box's wall, and shortens the drawer's stroke, about 1–2 weeks,
     right before the rev A order.
 - **Recommendation: no-go for rev A.**  Keep PH 6 and JST's 24 AWG leads, which were just decided.
   **Go for rev B**, with hub probing, a switched OUT on each node and the pinout below.  Possibly add
@@ -159,7 +159,7 @@ what makes RJ45 safe in a lab full of laptops.
 - Node: J1/J2 and the switched OUT, ≈ 2 days.
 - Hub: jacks and the probe, ≈ 1–2 days.
 - Firmware: the probes and 1b, ≈ 3 days.
-- Mechanics: the tray, ladders and power box (their estimate).
+- Mechanics: the power box's cut-outs, and the drawer's stroke and chain at 128 mm (their estimate).
 - Then the reviews and the CPL audit.
 
 ## 7. Go / no-go
