@@ -3,7 +3,7 @@
 The user's idea: carry the row bus on Ethernet Cat5e patch cords instead of the 6-pin JST PH cables.
 The row bus is VRACK, GND, CAN_H, CAN_L, GND and POS (docs/can.md).  A study, no change yet.  This
 document covers the electrical side and the verdict; the mechanical side is Mechanics'
-([rj45-row-cable-mechanical.md](rj45-row-cable-mechanical.md), in progress).
+([rj45-row-cable-mechanical.md](rj45-row-cable-mechanical.md)).
 
 ## Verdict
 
@@ -63,9 +63,12 @@ No 8P8C without magnetics is a JLC basic part.  The candidates (sizes from JLC's
   and checks, plus the switched OUT (section 4).
 - **Hub B1:** four jacks at 17.5 mm pitch down the left edge fit (14.7 mm each).  The re-placement and
   the probe circuit take ≈ 1 day.
-- **Mechanics** (their study): the tray and ladder windows grow from ≈ 16 × 6.6 to ≈ 16 × 14, the
-  power box's left wall too, and the cords' bend inside the ladder (Cat5e ≈ 20–25 mm radius, slim
-  ≈ 15 mm).
+- **Mechanics** ([their study](rj45-row-cable-mechanical.md)): the RJ-064-1 fits, tab down.
+  - Today's tray and ladder windows (26 × 13.1 and 26 × 20) already pass the plug, with 0.7–1.9 mm to
+    spare; the cord runs straight between the boots.  Only the power box's left wall needs new
+    13 × 11.5 cut-outs.
+  - J1/J2 stay at KiCad y 73: the front-left corner is ruled out (the M3 hole at (3.5, 86.5), and D4).
+  - **The cost is the drawer's stroke: 128 mm instead of 140**, so the chain foot clears the cord.
 
 ## 3. Current and cable
 
@@ -88,9 +91,11 @@ At 0.8 A a conductor this runs above PoE++'s ≈ 0.5 A, but the rack has short, 
   resistance and brittle.  On arrival, a magnet test or a scratch shows silver.
 - **Gauge:** 24 or 26 AWG.  28 AWG slim cords are fine for the ≤ 0.25 m jumpers, and they route more
   easily.
-- **Lengths:** 0.15–0.25 m jumpers (120 mm routed today) and 0.5 / 0.75 / 1 m feeds for rows A / B / C,
-  all stock lengths (≈ €1.5–3 each from EU shops that state pure copper).  The JST mix needs crimping
-  beyond 305 mm; these don't.
+- **Lengths ([Mechanics](rj45-row-cable-mechanical.md)):** 12 cm jumpers, made to length: a 0.15 m cord's slack has nowhere to go,
+  and stock 0.1 m cords are likely too short for the 92 mm between the mouths.  So the jumpers need
+  RJ45 plugs crimped on (a crimper and plugs, ≈ €20), or a cord maker's custom length.  The feeds are
+  0.25 / 0.5 / 0.75 / 0.75 m for rows A–D, stock lengths (≈ €1.5–3 each from EU shops that state pure
+  copper).
 
 ## 4. CAN, and misplug safety
 
@@ -146,9 +151,9 @@ what makes RJ45 safe in a lab full of laptops.
 | Jacks (24 on the nodes, 4 on the hub) | 28 × S6B-PH-SM4-TB, ≈ $9 | 28 × C7205199, ≈ $9.5 |
 | Part types | — | +1 on the node (PH 6 stays for AUX): +$1.53 an order (Standard PCBA) |
 | Protection | — | hub ≈ $0.2, nodes ≈ $1.8 |
-| Cables (9 jumpers, 3 feeds) | JST leads, housings, crimped long feeds, the crimper: ≈ €45 | 12 cords: ≈ €20–30, no tool |
+| Cables (9 jumpers, 3 feeds) | JST leads, housings, crimped long feeds, the crimper: ≈ €45 | 3 stock feeds and 9 jumpers made to length (12 cm): ≈ €25–35 with an RJ45 crimper |
 | Assembly | 72 leads clicked in, 12 contacts crimped | none |
-| **Net** | | ≈ −€15 to −€25 a rack, and an hour of assembly saved |
+| **Net** | | ≈ −€10 to −€20 a rack; the 72 leads aren't clicked in, but 9 jumpers get crimped plugs |
 
 **Schedule:** about 1–2 weeks before the rev A order.
 - Node: J1/J2 and the switched OUT, ≈ 2 days.
@@ -159,9 +164,13 @@ what makes RJ45 safe in a lab full of laptops.
 
 ## 7. Go / no-go
 
-**No-go for rev A.**  The gain is convenience (cords from any shop, latching plugs, no crimping) and
-≈ €20 a rack.  The cost is a node and hub redesign, a mechanical round, and a live-jack hazard that
-labels alone don't remove.  PH 6 with JST's 24 AWG leads meets the electrical need today.
+**No-go for rev A.**  The gain is convenience (stock feed cords, latching plugs) and ≈ €10–20 a rack;
+the 12 cm jumpers still have to be made to length.  The cost:
+- a node and hub redesign;
+- a mechanical round, and 12 mm of drawer stroke (128 mm instead of 140);
+- a live-jack hazard that labels alone don't remove.
+
+PH 6 with JST's 24 AWG leads meets the electrical need today.
 
 **Go for rev B,** as one change:
 - the RJ45 pinout above;
