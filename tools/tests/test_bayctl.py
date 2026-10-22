@@ -835,6 +835,51 @@ class Update(unittest.TestCase):
         self.assertEqual([n.id for n in nodes][:3], ["A1", "A2", "A3"])
         self.assertTrue(all(n.host.startswith("192.168.1.") for n in nodes))
 
+    def test_hub_and_row_cli(self):
+        self.assertEqual(bayctl.hub_node_id("A1"), 0x01)
+        self.assertEqual(bayctl.hub_node_id("c3"), 0x23)
+        self.assertEqual(bayctl.hub_node_id("0x12"), 0x12)
+        for bad in ("E1", "A0", "A16", "0x10", "0x41", "nope"):
+            with self.assertRaises(bayctl.BayError, msg=bad):
+                bayctl.hub_node_id(bad)
+
+        lab = Path(tempfile.mkdtemp()) / "lab.yaml"
+        lab.write_text(json.dumps({"hub": f"127.0.0.1:{self.port}"}))
+        env = {**os.environ, "BAYCTL_KEY": self.key.hex()}
+
+        def cli(*args: str) -> str:
+            r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(lab), *args],
+                               capture_output=True, text=True, timeout=30, env=env)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            return r.stdout
+
+        out = cli("hub", "status")
+        self.assertIn("PD 28.0 V / 5.00 A EPR", out)
+        self.assertIn("row A  ON", out)
+        self.assertIn("row D  OFF", out)
+
+        out = cli("row", "D", "on")
+        self.assertIn("row D  ON", out)
+        out = cli("row", "D", "off")
+        self.assertIn("row D  OFF", out)
+
+        out = cli("hub", "pd", "20v")
+        self.assertIn("PD 20.0 V / 5.00 A", out)
+        out = cli("hub", "pd", "epr")
+        self.assertIn("PD 28.0 V / 5.00 A EPR", out)
+
+        out = cli("hub", "enumerate")
+        self.assertIn("CAN", out)
+
+        out = cli("hub", "node", "B2", "power-on")
+        self.assertIn("node 0x12 (B2): power-on", out)
+        out = cli("hub", "node", "0x12", "power-off")
+        self.assertIn("node 0x12 (B2): power-off", out)
+
+        out = cli("hub", "events")
+        self.assertIn("node 0x12: power-off", out)
+        self.assertIn("row D on", out)
+
 
 if __name__ == "__main__":
     unittest.main()

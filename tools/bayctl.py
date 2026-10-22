@@ -24,6 +24,8 @@
     python tools/bayctl.py update IMAGE B3 [...]        firmware over the network (zephyr.signed.bin)
     python tools/bayctl.py update IMAGE --all           every bay node the hub lists, one after the other
     python tools/bayctl.py update IMAGE --hub           the power hub itself (lab.yaml `hub:`, or rack.local)
+    python tools/bayctl.py row A|B|C|D on|off|cycle [--ms 1000]   switch or cycle a rack row on the power hub
+    python tools/bayctl.py hub [status|events|enumerate|pd|node|claim]   inspect or control the power hub
 
 A bay with a DATA ×4 board holds up to four boards, sub-slots B3.1 to B3.4 (docs/multi-dut-node.md):
 name one (`power B3.2 cycle`, `attach B3.2 --follow`, `prepare B3.2`, `lease B3.2`) or the whole bay
@@ -644,6 +646,82 @@ def rack_nodes(hub: Bay) -> list[Bay]:
     return out
 
 
+HUB_NODE_ACTIONS = ("identify", "reset", "bootloader", "power-cycle", "power-on", "power-off", "reboot")
+
+
+def hub_node_id(target: str) -> int:
+    """Resolve a bay position ("A1", "C3") or node address ("0x23", "35") to a CAN node id."""
+    text = str(target).strip()
+    m = re.fullmatch(r"([A-Da-d])([1-9]\d*)", text)
+    if m:
+        pos = int(m.group(2))
+        if 1 <= pos <= 15:
+            return ("ABCD".index(m.group(1).upper()) << 4) | pos
+    try:
+        nid = int(text, 0)
+        if 1 <= nid <= 0x3F and (nid & 0x0F) != 0:
+            return nid
+    except ValueError:
+        pass
+    raise BayError(f"node {target!r}: expected a bay position (A1..D15) or node id (0x01..0x3f)")
+
+
+def _print_hub_row(r: dict) -> None:
+    state = r.get("state", "on" if r.get("on") else "off").upper()
+    nodes = " ".join(f"{n.get('pos', '?')}({n.get('state', '?')} {n.get('dut_ma', 0)}mA)"
+                     for n in r.get("nodes", []))
+    faults = f" [faults:{r['faults']}]" if r.get("faults") else ""
+    print(f"row {r.get('name', '?')}  {state:7}  {r.get('ma', 0):4} mA  {r.get('mw', 0) / 1000:5.1f} W"
+          f"{faults}" + (f"  {nodes}" if nodes else ""))
+
+
+def _print_hub_status(s: dict) -> None:
+    pd = s.get("pd") or {}
+    c = pd.get("contract")
+    budget = s.get("budget") or {}
+    can = s.get("can") or {}
+    if c:
+        pd_str = (f"PD {c.get('mv', 0) / 1000:.1f} V / {c.get('ma', 0) / 1000:.2f} A"
+                  + (" EPR" if c.get("epr") else "")
+                  + f" (used {budget.get('used_mw', 0) / 1000:.1f} W / {budget.get('limit_mw', 0) / 1000:.1f} W budget)")
+    else:
+        pd_str = f"PD {pd.get('state', 'usb')} (no contract)"
+    shed = f"  SHED:{budget['shed']}" if budget.get("shed") else ""
+    print(f"{s.get('hostname', 'hub')}  {s.get('ip', '')}  {pd_str}{shed}  "
+          f"CAN {can.get('nodes', 0)} nodes ({can.get('lost', 0)} lost)")
+    for r in s.get("rows", []):
+        _print_hub_row(r)
+
+
+def _print_hub_events(events: list[dict]) -> None:
+    if not events:
+        print("no events")
+        return
+    for e in events:
+        print(f"  {e.get('age_s', 0):5}s  {e.get('kind', '?'):8}  {e.get('text', '')}")
+
+
+def hub_cli(a: argparse.Namespace) -> int:
+    hub = hub_device(a.lab)
+    cmd = a.hub_cmd or "status"
+    if cmd == "status":
+        _print_hub_status(api(hub, "/api/status"))
+    elif cmd == "events":
+        _print_hub_events(api(hub, "/api/events"))
+    elif cmd == "enumerate":
+        _print_hub_status(api(hub, "/api/enumerate", {}, key=admin_key()))
+    elif cmd == "pd":
+        _print_hub_status(api(hub, "/api/pd", {"pref": a.pref}, key=admin_key()))
+    elif cmd == "node":
+        nid = hub_node_id(a.target)
+        api(hub, "/api/node", {"id": nid, "action": a.action}, key=admin_key())
+        print(f"hub: node 0x{nid:02x} ({'ABCD'[nid >> 4]}{nid & 15}): {a.action}")
+    elif cmd == "claim":
+        access_claim(hub, admin_key())
+        print("hub: claimed")
+    return 0
+
+
 def _post_image(dev: Bay, ticket: str, data: bytes, timeout: float) -> dict:
     req = urllib.request.Request(f"{dev.url}/api/update?ticket={ticket}", data=data, method="POST",
                                  headers={"Content-Type": "application/octet-stream"})
@@ -997,6 +1075,21 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--hub", action="store_true", help="the power hub itself")
     p.add_argument("--force", action="store_true", help="also reserved bays")
     p.add_argument("--timeout", type=float, default=420.0, help="restart and trial, per device (s)")
+    p = sub.add_parser("row", help="switch or power-cycle a rack row (A-D) on the power hub")
+    p.add_argument("row", choices=list("ABCDabcd"), metavar="ROW")
+    p.add_argument("action", choices=["on", "off", "cycle"])
+    p.add_argument("--ms", type=int, default=1000)
+    p = sub.add_parser("hub", help="inspect or control the power hub")
+    hsub = p.add_subparsers(dest="hub_cmd")
+    hsub.add_parser("status")
+    hsub.add_parser("events")
+    hsub.add_parser("enumerate")
+    hp = hsub.add_parser("pd")
+    hp.add_argument("pref", choices=["epr", "20v"])
+    hn = hsub.add_parser("node")
+    hn.add_argument("target", help="bay position (A1..D15) or CAN node id (0x01..0x3f)")
+    hn.add_argument("action", choices=list(HUB_NODE_ACTIONS))
+    hsub.add_parser("claim")
     a = ap.parse_args(argv)
 
     try:
@@ -1135,6 +1228,17 @@ def main(argv: list[str] | None = None) -> int:
             return access_cli(a, bays)
         elif a.cmd == "update":
             return update_cli(a, bays)
+        elif a.cmd == "row":
+            row_name = a.row.upper()
+            body = {"row": row_name, "action": a.action}
+            if a.action == "cycle":
+                body["ms"] = a.ms
+            s = api(hub_device(a.lab), "/api/row", body, key=admin_key())
+            row_doc = next((r for r in s.get("rows", []) if r.get("name") == row_name), None)
+            if row_doc:
+                _print_hub_row(row_doc)
+        elif a.cmd == "hub":
+            return hub_cli(a)
     except BayError as e:
         print(f"bayctl: {e}", file=sys.stderr)
         return 1
