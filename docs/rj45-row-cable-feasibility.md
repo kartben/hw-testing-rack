@@ -63,7 +63,14 @@ No 8P8C without magnetics is a JLC basic part.  The candidates (sizes from JLC's
   and checks, plus the switched OUT (section 4).
 - **Hub B1:** four jacks at 17.5 mm pitch down the left edge fit (14.7 mm each).  The re-placement and
   the probe circuit take ≈ 1 day.
-- **Mechanics** ([their study](rj45-row-cable-mechanical.md)): the RJ-064-1 fits, tab down.
+- **Mechanics** ([their study](rj45-row-cable-mechanical.md)), their verdict: "Mechanically it fits.
+  The jacks go where J1 / J2 / the hub's row connectors are, with no new windows in the trays or
+  ladders.  It costs the drawer 12 mm of stroke (140 → 128), the base ladder's diagonal reversed,
+  four cut-outs in the power box wall, and 12 cm hop cords made to length.  About 3 days of
+  mechanical work, for rev B."  In detail:
+  - The RJ-064-1 (≤ 11 mm, tab down) clears the left ledge by 0.5 mm and the drawer by 3 mm.  A
+    13.3 mm jack hits the ledge.  A mid-mount jack drops the latch below the windows' bottom.
+  - On the hub it sits 1 mm under the lid, with the lid's rim notched.
   - Today's tray and ladder windows (26 × 13.1 and 26 × 20) already pass the plug, with 0.7–1.9 mm to
     spare; the cord runs straight between the boots.  Only the power box's left wall needs new
     13 × 11.5 cut-outs.
@@ -89,8 +96,8 @@ At 0.8 A a conductor this runs above PoE++'s ≈ 0.5 A, but the rack has short, 
 - **Type:** Cat5e or Cat6 patch cord, U/UTP, 4 pairs, wired straight.
 - **Copper:** stranded pure copper ("CU", "BC").  Never CCA (copper-clad aluminium): ≈ 1.6× the
   resistance and brittle.  On arrival, a magnet test or a scratch shows silver.
-- **Gauge:** 24 or 26 AWG.  28 AWG slim cords are fine for the ≤ 0.25 m jumpers, and they route more
-  easily.
+- **Gauge:** 24 or 26 AWG.  28 AWG slim cords are fine for the ≤ 0.25 m jumpers; standard Ø 5.5 mm
+  cords route too (Mechanics), so slim ones aren't needed.
 - **Lengths ([Mechanics](rj45-row-cable-mechanical.md)):** 12 cm jumpers, made to length: a 0.15 m cord's slack has nowhere to go,
   and stock 0.1 m cords are likely too short for the 92 mm between the mouths.  So the jumpers need
   RJ45 plugs crimped on (a crimper and plugs, ≈ €20), or a cord maker's custom length.  The feeds are
@@ -159,7 +166,8 @@ what makes RJ45 safe in a lab full of laptops.
 - Node: J1/J2 and the switched OUT, ≈ 2 days.
 - Hub: jacks and the probe, ≈ 1–2 days.
 - Firmware: the probes and 1b, ≈ 3 days.
-- Mechanics: the power box's cut-outs, and the drawer's stroke and chain at 128 mm (their estimate).
+- Mechanics: ≈ 3 days.  The power box's cut-outs, the drawer's stroke and chain at 128 mm, and the
+  base ladder's diagonal reversed.
 - Then the reviews and the CPL audit.
 
 ## 7. Go / no-go
