@@ -58,10 +58,11 @@ LOG_WINDOW = 16384 - 512
 
 node = {
     "id": "b3", "hostname": "bay-b3", "ip": "192.168.1.53", "version": "4.5.0-rc2",
-    "path": "usbip", "service": False, "pc_detected": False, "force_classic": False,
+    "path": "usbip", "last_fault": "", "service": False, "pc_detected": False, "force_classic": False,
     "usb": {"running": True, "devices": 1, "sessions": 0},
     "dut": {"on": True, "fault": False, "latched": False, "faults": 0, "meter": True,
             "mv": 0, "ma": 0, "mw": 0},
+    "rack": {"node": 0, "pos": "", "hub": False, "hub_mv": 0, "hub_epr": False, "rows_on": 0},
 }
 aux = {"baud": 115200, "data_bits": 8, "parity": "none", "stop_bits": 1, "enter": "cr",
        "echo": False, "esptool_reset": False}
@@ -1155,11 +1156,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json(404, {"error": f"no port {query['port'][0]} (1..{PORTS})"})
             if path == "/dev/fault":
                 pt.update(on=False, latched=True, faults=pt["faults"] + 1, client=None)
+                node["last_fault"] = f"port{pt['port']}_oc"
             else:
                 pt["client"] = None if pt["client"] else ip_int("192.168.1.41")
             self.json(200, port_doc(pt))
         elif path == "/dev/fault":
             node["dut"].update(on=False, latched=True, faults=node["dut"]["faults"] + 1)
+            node["last_fault"] = "dut_oc"
             self.json(200, status())
         elif path == "/dev/attach":
             fake_client("usbip:51234", "usbip", "USB/IP", 51234)

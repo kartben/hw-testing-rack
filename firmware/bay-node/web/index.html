@@ -524,13 +524,16 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
 <div id="toast" popover="manual"></div>
 
 <script type="module">
-import { $, api, fix, plural, uptime, storedKey, storeKey, signed, claimKey, firmwareDialog,
-  firmwareLabel } from "/rack.mjs";
+import { $, api, fix, plural, uptime, Spark, toast, confirmed, copyText, copyButtons, poll,
+  storedKey, storeKey, signed, claimKey, firmwareDialog, firmwareLabel } from "/rack.mjs";
 
-const samples = [];
+const dutSpark = new Spark(document.querySelector(".spark"));
 let host = location.hostname;
 let status = null;
-let timer;
+let lastUsbSeen = "";
+let usbDoc = null;
+let usbFetchedAt = 0;
+let usbRetry;
 
 const LABEL = {
   fault: "fault", service: "service", classic: "classic", off: "power off",
@@ -555,32 +558,23 @@ function setState(state) {
   $("state").textContent = LABEL[state];
 }
 
-function spark(ma) {
-  samples.push(ma);
-  if (samples.length > 60) samples.shift();
-  const data = samples.length > 1 ? samples : [ma, ma];
-  const max = Math.max(100, ...data) * 1.1;
-  const step = 120 / (data.length - 1);
-  const pts = data.map((v, i) => `${(i * step).toFixed(1)},${(40 - v / max * 38).toFixed(1)}`);
-  $("spark").setAttribute("points", pts.join(" "));
-  $("spark-fill").setAttribute("points", `0,40 ${pts.join(" ")} 120,40`);
-}
-
 function render(s) {
   status = s;
   host = s.hostname ? `${s.hostname}.local` : location.hostname;
   const state = stateOf(s);
   setState(state);
-  document.title = `${s.id ? `Bay ${s.id.toUpperCase()}` : "Bay node"} · ${LABEL[state]}`;
-  $("name").textContent = s.id ? `Bay ${s.id.toUpperCase()}` : "Bay node";
-  $("where").textContent = [host, s.ip].filter(Boolean).join(" · ");
+  const bayId = (s.id || s.rack?.pos || "").toUpperCase();
+  const rackPos = s.rack?.pos && s.rack.pos.toUpperCase() !== bayId ? `slot ${s.rack.pos.toUpperCase()}` : "";
+  document.title = `${bayId ? `Bay ${bayId}` : "Bay node"} · ${LABEL[state]}`;
+  $("name").textContent = bayId ? `Bay ${bayId}` : "Bay node";
+  $("where").textContent = [rackPos, host, s.ip].filter(Boolean).join(" · ");
 
   $("vbus").textContent = s.dut.on ? "VBUS on" : "VBUS off";
   if (s.dut.meter) {
     $("v").textContent = fix(s.dut.mv, 2);
     $("a").textContent = fix(s.dut.ma, 3);
     $("w").textContent = fix(s.dut.mw, 2);
-    spark(Math.max(0, s.dut.ma));
+    dutSpark.push(Math.max(0, s.dut.ma));
   } else {
     for (const id of ["v", "a", "w"]) $(id).textContent = "n/a";
   }
@@ -594,10 +588,13 @@ function render(s) {
   $("host").textContent = s.usb.running ? plural(s.usb.devices, "device") : "stopped";
   $("sessions").textContent = s.usb.sessions ? `${s.usb.sessions} attached` : "none";
   // A client came or went, a device was plugged: the USB devices card follows now
-  const usbSeen = `${s.usb.sessions}/${s.usb.devices}`;
+  const portsUsb = (s.ports ?? []).map((p) => `${p.power.on}:${p.usb?.busid ?? ""}:${p.usbip?.client ?? ""}`).join(",");
+  const usbSeen = `${s.usb.sessions}/${s.usb.devices}/${portsUsb}`;
   if (usbSeen !== lastUsbSeen) {
     lastUsbSeen = usbSeen;
     refreshUsb();
+  } else if (usbDoc) {
+    renderUsb(usbDoc);
   }
   $("usbip-cmd").textContent = `sudo usbip attach -r ${host} -b 1-1`;
 
@@ -605,47 +602,20 @@ function render(s) {
   $("rfc-cmd").textContent =
     `python -m serial.tools.miniterm rfc2217://${host}:${aux.rfc2217_port} ${aux.baud}`;
   $("con-clients").textContent = [plural(aux.web_clients, "web console"),
-    `RFC 2217 ${aux.rfc2217 ? "in use" : "free"}`, aux.raw ? "raw TCP in use" : ""]
+    `RFC 2217 ${aux.rfc2217 ? "in use" : "free"}`, aux.raw ? "raw TCP in use" : "",
+    aux.dropped ? `${aux.dropped} B dropped` : ""]
     .filter(Boolean).join(" · ");
 
   $("uptime").textContent = `Up ${uptime(s.uptime_s)} · Zephyr ${s.version}`;
   $("fw-line").innerHTML = s.firmware ? `Firmware ${firmwareLabel(s.firmware)}` : "";
   $("acc-fw-block").hidden = !s.firmware;
   if (s.firmware) $("acc-fw").innerHTML = `${firmwareLabel(s.firmware)} · <code>${s.firmware.id}</code>`;
-  $("faults").textContent = `${plural(s.dut.faults, "fault")} since boot`;
+  $("faults").textContent = [
+    `${plural(s.dut.faults, "fault")} since boot`,
+    s.last_fault ? `restarted after ${s.last_fault}` : "",
+  ].filter(Boolean).join(" · ");
   if (s.access) renderRights(s.access);
   renderCamera(s);
-}
-
-async function poll() {
-  clearTimeout(timer);
-  try {
-    render(await api("/api/status"));
-  } catch (e) {
-    setState("offline");
-    if (e.status === 403 || e.status === 423) {
-      $("where").textContent = "access restricted";
-      restricted(e.data);
-    } else {
-      $("where").textContent = "node unreachable, retrying…";
-    }
-  }
-  if (!document.hidden) timer = setTimeout(poll, 2000);
-}
-
-function toast(msg) {
-  const t = $("toast");
-  t.textContent = msg;
-  t.showPopover?.();
-  clearTimeout(t.hide);
-  t.hide = setTimeout(() => t.hidePopover?.(), 2500);
-}
-
-function confirmed(text) {
-  const dlg = $("confirm");
-  $("confirm-text").textContent = text;
-  dlg.showModal();
-  return new Promise((ok) => dlg.addEventListener("close", () => ok(dlg.returnValue === "ok"), { once: true }));
 }
 
 const DONE = { on: "Power on", off: "Power off", cycle: "Power cycled", reset: "Target reset",
@@ -724,10 +694,15 @@ function usbRow(d) {
   const st = el("div", "st");
   st.append(el("i"), el("span", null, d.usbip.client ? "Attached"
     : d.usbip.offered ? "Ready to attach" : "Not exported"));
-  if (d.usbip.client) st.append(el("small", null, `${d.usbip.client} · ${uptime(d.usbip.since_s)}`));
+  if (d.usbip.client) {
+    const since = d.usbip.since_s + Math.round((Date.now() - usbFetchedAt) / 1000);
+    st.append(el("small", null, `${d.usbip.client} · ${uptime(since)}`));
+  }
   li.append(st);
 
-  li.append(el("div", "ma", d.ma != null ? `${fix(d.ma, 3)} A` : ""));
+  const port = status?.ports?.length > 1 ? status.ports.find((p) => p.slot === d.slot) : null;
+  const ma = port?.power?.ma ?? d.ma;
+  li.append(el("div", "ma", ma != null ? `${fix(ma, 3)} A` : ""));
   if (d.usbip.offered) {
     const btn = el("button", "small act", "Copy attach");
     btn.dataset.attach = d.busid;
@@ -775,26 +750,16 @@ function renderUsb(doc) {
     : `${plural(n, "device")} behind ${doc.hub.name}`;
 }
 
-let lastUsbSeen = "";
-
 async function refreshUsb() {
-  try { renderUsb(await api("/api/usb")); } catch { /* the status poll reports the node */ }
-}
-
-async function pollUsb() {
-  await refreshUsb();
-  setTimeout(pollUsb, document.hidden ? 15000 : 4000);
-}
-
-async function copy(id) {
-  const text = $(id).textContent;
+  clearTimeout(usbRetry);
   try {
-    await navigator.clipboard.writeText(text);
-  } catch {
-    getSelection().selectAllChildren($(id));
-    document.execCommand("copy");
-  }
-  toast("Copied");
+    usbDoc = await api("/api/usb");
+    usbFetchedAt = Date.now();
+    renderUsb(usbDoc);
+    if (!document.hidden && usbDoc.devices.some((d) => !d.strings)) {
+      usbRetry = setTimeout(refreshUsb, 1000);
+    }
+  } catch { /* the status poll reports the node */ }
 }
 
 /* --- Access control ----------------------------------------------------- */
@@ -899,15 +864,6 @@ function restricted(data) {
   $("ro-text").append(b, data?.reason === "reserved" ? data.error
     : `${data?.you ?? "This address"} may not see this bay.`);
   banner.querySelector("button").hidden = acc.admin;
-}
-
-async function pollAccess() {
-  try {
-    acc.doc = acc.admin ? await signed("/api/access").catch(() => api("/api/access")) : await api("/api/access");
-    if (acc.admin && !acc.doc.admin) acc.admin = false;
-    if (status?.access) renderAccessCard(status.access);
-  } catch { /* the status poll reports the node */ }
-  setTimeout(pollAccess, document.hidden ? 15000 : 4000);
 }
 
 function showError(id, e) {
@@ -1101,8 +1057,8 @@ async function accessAction(btn) {
 }
 
 function pollNow() {
-  poll();
-  api("/api/access").then((d) => { acc.doc = { ...d, admin: acc.admin }; status?.access && renderAccessCard(status.access); }).catch(() => {});
+  pollStatus();
+  pollAccess();
 }
 
 $("claim-form").addEventListener("submit", claimFlow);
@@ -1140,8 +1096,9 @@ $("acc-discard").onclick = () => {
   renderRules();
 };
 $("acc-save").onclick = saveRules;
-$("acc-copy-key").onclick = async () => {
-  try { await navigator.clipboard.writeText(storedKey()); toast("Key copied"); } catch { toast("Copy failed"); }
+$("acc-copy-key").onclick = async (ev) => {
+  await copyText(storedKey(), ev.currentTarget);
+  toast("Key copied");
 };
 $("acc-forget").onclick = async () => {
   if (!(await confirmed("Forget the admin key in this browser?  You will need it to unlock again."))) return;
@@ -1486,7 +1443,7 @@ async function fillCamSettings() {
 async function camSet(body) {
   try {
     camFill(await api("/api/camera", body));
-    poll();
+    pollStatus();
   } catch (e) {
     toast(`Failed: ${e.message}`);
     fillCamSettings();
@@ -1512,13 +1469,14 @@ $("cam-img").addEventListener("error", () => {
 
 /* --- Events ------------------------------------------------------------- */
 
+copyButtons();
+
 document.addEventListener("click", async (ev) => {
   const btn = ev.target.closest("button");
   if (!btn) return;
-  if (btn.dataset.copy) return copy(btn.dataset.copy);
   if (btn.dataset.attach) {
-    try { await navigator.clipboard.writeText(btn.title); toast("Copied"); } catch { toast("Copy failed"); }
-    return;
+    await copyText(btn.title, btn);
+    return toast("Copied");
   }
   if (btn.dataset.acc) return accessAction(btn);
   if (btn.dataset.cam === "live") return cam.live ? camStop() : camShow(true);
@@ -1567,19 +1525,35 @@ $("cam-settings").addEventListener("toggle", (ev) => ev.newState === "open" && f
 $("cam-form").addEventListener("submit", (ev) => ev.preventDefault());
 document.addEventListener("visibilitychange", () => {
   /* A hidden tab gives its camera slot back */
-  if (document.hidden && cam.live) {
-    cam.resume = true;
-    camStop();
-  } else if (!document.hidden && cam.resume) {
-    cam.resume = false;
-    camShow(true);
+  if (document.hidden) {
+    clearTimeout(usbRetry);
+    if (cam.live) {
+      cam.resume = true;
+      camStop();
+    }
+  } else {
+    lastUsbSeen = "";
+    if (cam.resume) {
+      cam.resume = false;
+      camShow(true);
+    }
   }
-  if (!document.hidden) poll();
 });
 acc.admin = /^[0-9a-f]{64}$/.test(storedKey());
-poll();
-pollAccess();
-pollUsb();
+const pollStatus = poll(async () => render(await api("/api/status")), 2000, (e) => {
+  setState("offline");
+  if (e.status === 403 || e.status === 423) {
+    $("where").textContent = "access restricted";
+    restricted(e.data);
+  } else {
+    $("where").textContent = "node unreachable, retrying…";
+  }
+});
+const pollAccess = poll(async () => {
+  acc.doc = acc.admin ? await signed("/api/access").catch(() => api("/api/access")) : await api("/api/access");
+  if (acc.admin && !acc.doc.admin) acc.admin = false;
+  if (status?.access) renderAccessCard(status.access);
+}, 4000);
 startConsole();
 </script>
 </body>

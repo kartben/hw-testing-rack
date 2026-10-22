@@ -74,12 +74,28 @@ export function confirmed(text) {
     { once: true }));
 }
 
+/* Copy text to the clipboard (falls back to execCommand on plain HTTP origins) */
+export async function copyText(text, el) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    (el?.closest("dialog, [popover]") ?? document.body).append(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+}
+
 /* Buttons with data-copy="<element id>" copy that element's text */
 export function copyButtons(root = document) {
   root.addEventListener("click", async (ev) => {
     const btn = ev.target.closest("[data-copy]");
     if (!btn) return;
-    await navigator.clipboard.writeText($(btn.dataset.copy).textContent);
+    await copyText($(btn.dataset.copy).textContent, btn);
     toast("Copied");
   });
 }
@@ -96,7 +112,10 @@ export function poll(fn, ms, onError) {
     }
     if (!document.hidden) timer = setTimeout(run, ms);
   };
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) run(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) clearTimeout(timer);
+    else run();
+  });
   run();
   return run;
 }
