@@ -264,11 +264,12 @@ config USBH_STACK_SIZE
 	default 2048
 
 # The USB/IP threads (the service, one per session) peaked at 1104 bytes with
-# an FT232 streaming and a card reader attached: 1.5 KB each instead of 2 pays
-# for the host thread's extra 1 KB and saves 2.5 KB more.
+# an FT232 streaming and a card reader attached.  With the read-ahead a session
+# thread also sends the data it answers a read with: 1392 bytes on the bench
+# XIAO, too close to 1.5 KB, so 1.75 KB each.
 config USBIP_THREAD_STACK_SIZE
 	depends on USBIP
-	default 1536
+	default 1792
 
 # TCP's work queue (retransmissions, timers) peaked at 304 bytes of its 2 KB
 # on the bench XIAO, an FT232 streaming over USB/IP included.
