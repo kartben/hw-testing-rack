@@ -259,9 +259,67 @@ them this layout's; the last one was reproduced with the Wi-Fi heap in internal 
 - an FT232 (an M5StickC): `esptool read_flash` over USB/IP fails at every baud rate, the data
   corrupted ("Invalid SLIP escape").
 
-The last two are being looked at in the USB host stack (Zephyr's `usbh_hub`, `uhc_dwc2`, the
-USB/IP service).  To do on the bench once they are fixed: the soak above with a Pico or an ESP32
-with native USB.
+Where they stand (2026-10-22):
+- the FT232's losses are understood and fixed (next section);
+- the hub class's reset loop has fixes on main (`zephyr/patches/zephyr/usbh-hub-port-reset.patch`), not yet tried with the MCU-Link;
+- the panic was the USB host thread overflowing its stack (below).
+
+To do on the bench: the MCU-Link on the hub, then the soak above with a Pico or an ESP32 with native USB.
+
+### Serial converters over USB/IP: what the XIAO measured (2026-10-22)
+
+The M5StickC's converter lost bytes over USB/IP without raising a single overrun flag.  It is an
+FTDI look-alike: Linux sees an "FT2232C/D" from "Hades2001".  usbmon on the client and a count on
+the node agreed to the byte: every IN transfer the node returned reached Linux intact.  The bytes
+were lost in the converter, whose receive FIFO filled while nobody polled it.  The node polls a
+bulk IN endpoint only while one of the client's reads is there, and Linux's serial driver keeps
+two reads in flight.  Between a read's answer and the next read lies a network round trip.
+
+Three things made that gap longer than the converter's margin:
+
+- **The ESP32 Wi-Fi driver's modem sleep.**  A wired PC's ping took 174 ms on average and up to
+  350 ms; with the radio awake, 13–16 ms.  It is off since 019109e.
+- **The FTDI latency timer**, 4 ms by default on Linux.  Each read comes back with a few dozen
+  bytes, so two reads cover about 10 ms.  At 100 ms the reads fill their 512 bytes, which gives
+  about 65 ms of margin at 115200.
+- **The client.**  zephyrbox, on 5 GHz with its own Wi-Fi power save on, had 36 % of its round
+  trips to the node past 65 ms (p99 1.5 s).  The bench PC, wired, through WSL2 (`vhci_hcd` and
+  `ftdi_sio` load as modules), had 1–3 % (p99 60–110 ms).
+
+The fix is the USB/IP read-ahead (`CONFIG_USBIP_READ_AHEAD`, in
+`zephyr/patches/zephyr/usbip-removal-and-busid.patch`).  For the converters the bay node picks
+(FTDI, CP210x, PL2303, CH34x), the node keeps a read of its own queued on the bulk IN endpoint.
+It answers the client's reads from what it holds: at most 8 reads' worth, from the USB/IP pool.
+
+esptool `read_flash 0 0x20000` at 115200 (128 KB, MD5 checked by esptool), main at 5b430f4:
+
+| Client | Before | With the read-ahead |
+|---|---|---|
+| bench PC, wired (WSL2), latency timer 4 ms | 0/3, each failed after ~5 KB | 3/3, 82 kbit/s |
+| bench PC, wired, latency timer 100 ms | 0/3, each failed after 10–19 s | 3/3, 80 kbit/s |
+| zephyrbox, Wi-Fi | every run failed | 3/3, 80 kbit/s |
+
+The limit that stays is the client's two reads in flight: about 2 × 512 bytes per round trip,
+roughly 22 KB/s at a 46 ms average.  That is enough for 115200–230400 streams.  A continuous
+921600 stream (92 KB/s) would still overflow over Wi-Fi.  DUTs with native USB (CDC-ACM) are not
+affected: they hold their data until they are polled.
+
+The same work fixed USB/IP's unlink race: the client's unlinks at a port close used to drop the
+whole session ("cannot find a urb" on the client).  The node now answers an unlink only once the
+transfer has ended.
+
+Stacks after the runs, two sessions at once (the FT232 and the hub's card reader); no fatal error:
+
+| Thread | Size | Peak |
+|---|---|---|
+| `usbh` (USB host) | 2048 | 1312.  At the former 1024 it was full (1024 of 1024): USB/IP sends its replies from this thread, so this overflow is the likely cause of the "fatal error 4 in usbh" |
+| USB/IP session (the FT232) | 1792 | 1408 |
+| USB/IP service | 1792 | 1152 |
+| `rx_q[0]` (network RX) | 2048 | 1696 |
+| `hwtr_net` | 2560 | 1600 |
+| `tcp_work` | 1024 | 304 |
+
+bay_node's internal RAM with all of it: 99.14 %, 3264 bytes free.
 
 ### Power hub: bench plan
 
