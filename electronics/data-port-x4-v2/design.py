@@ -44,8 +44,8 @@ board, the hub, the four ports with their switch, INA226, ESD and CC, the expand
 lead's isolation and ESD, the 3.3 V.  No base signal runs through a logic part: the header's GND, RESET and
 BOOT stay live, its P pins and VREF end on empty pads, hub port 5 ends on R23/R24's empty pads.
 6 layers since the HS review (2026-10-22), JLC06161H-3313: F (the High-Speed pairs, drawn) · In1 GND · In2 · In3 ·
-In4 +3V3 above, +5V below · B.  4 layers (pcb.layers, X4V2_LAYERS=4: F · GND · power · B) still builds: with the
-pairs drawn on F.Cu it no longer routes.
+In4 +3V3 above, +5V below · B.  4 layers (pcb.layers, X4V2_LAYERS=4: F · GND · power · B) still builds, and
+routes clean through the Freerouting portfolio: that build is kept routed as electronics/data-port-x4-v2-4l.
 """
 
 from __future__ import annotations

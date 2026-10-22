@@ -1756,13 +1756,14 @@ def tidy_file(path: str, cores=(), fanout=(), **kw):
 
     bars = [(board.GetLayerID(layer), net, poly_set(p)) for layer, net, polys in cores for p in polys]
     bars += [(None, None, poly_set(fanout_geometry(board, ref, num)[2])) for ref, num in fanout]
-    n, before, after = tidy_tracks(board, bars=bars, **kw)
+    n, widened, before, after = tidy_tracks(board, bars=bars, **kw)
     board.Save(path)
-    print(f"tidy: {n} runs straightened or merged, router segments {before} -> {after} ({time.time() - t0:.0f} s)")
+    print(f"tidy: {n} runs straightened or merged, {widened} necks widened, router segments {before} -> {after} "
+          f"({time.time() - t0:.0f} s)")
 
 
 def tidy_tracks(board, short: float = 0.6, reach: int = 12, margin: float = 0.002, skip=(),
-                bars=()) -> tuple[int, int, int]:
+                bars=()) -> tuple[int, int, int, int]:
     """b.pcb["tidy"]: {"short": mm, "reach": segments}.  Freerouting lays a route as it found it, around each
     obstacle's clearance octagon: staircases of 45° and straight segments where one bend would do, pads left
     by a short straight and a micro-jog; its optimizer pulls them tight one corner at a time and keeps them.
@@ -1774,8 +1775,10 @@ def tidy_tracks(board, short: float = 0.6, reach: int = 12, margin: float = 0.00
     edge, the keep-outs that bar tracks (the footprints' too) and `bars`: (layer or None for all, net or
     None for all, SHAPE_POLY_SET) that other nets' tracks stay out of.  Then collinear neighbours merge.
     Drawn (locked) tracks and the nets in `skip` are never touched.  Where neighbours or vias hem a
-    staircase in (a bus weaving through a via field), it stays: only a re-route moves it.  Returns (runs
-    replaced, router segments before, after)."""
+    staircase in (a bus weaving through a via field), it stays: only a re-route moves it.  First, a router
+    track that Freerouting's neck-down left under the board's minimum width (0.063 mm against the DATA ×4
+    v2's 0.09) is widened to it, where its clearances allow.  Returns (runs replaced, tracks widened, router
+    segments before, after)."""
     T = MM(0.001)                                       # 1 µm: the geometry's tolerance
     layers = copper_of(board)
     skip = set(skip)
@@ -1803,10 +1806,16 @@ def tidy_tracks(board, short: float = 0.6, reach: int = 12, margin: float = 0.00
             grid[l].setdefault(c, []).append(entry)
 
     pads = [p for fp in board.GetFootprints() for p in fp.Pads()]
-    for item in list(board.GetTracks()) + pads:
+
+    def index_all():
         for l in layers:
-            if item.IsOnLayer(l):
-                index(item, l)
+            grid[l].clear()
+        for item in list(board.GetTracks()) + pads:
+            for l in layers:
+                if item.IsOnLayer(l):
+                    index(item, l)
+
+    index_all()
 
     def clear_of(a, b, w, l, net, name, own):
         """Segment a-b, w wide, of `net` on layer l: clear of every other net, the edge and the keep-outs."""
@@ -1835,6 +1844,15 @@ def tidy_tracks(board, short: float = 0.6, reach: int = 12, margin: float = 0.00
         return [t for t in board.GetTracks()
                 if t.GetClass() == "PCB_TRACK" and not t.IsLocked() and t.GetLayer() in layers]
 
+    floor, widened = board.GetDesignSettings().m_TrackMinWidth, 0
+    for t in router_tracks():
+        l = t.GetLayer()
+        if t.GetWidth() < floor and clear_of(t.GetStart(), t.GetEnd(), floor, l, t.GetNetCode(), t.GetNetname(),
+                                              t.GetOwnClearance(l)):
+            t.SetWidth(floor)
+            widened += 1
+    if widened:
+        index_all()                                     # the widened tracks' shapes
     before, replaced = len(router_tracks()), 0
     for _ in range(4):
         changed = False
@@ -1936,7 +1954,7 @@ def tidy_tracks(board, short: float = 0.6, reach: int = 12, margin: float = 0.00
                         index(nt, l)
         if not changed:
             break
-    return replaced, before, len(router_tracks())
+    return replaced, widened, before, len(router_tracks())
 
 
 def tune_pairs(board, pairs, tol: float, clear: float = 0.15, pitch: float = 0.5, margin: float = 0.6,

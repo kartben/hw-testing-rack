@@ -11,6 +11,7 @@
 #   tools/kicad.sh bay-node --fab           # same as --check --fab
 #   --outdir=DIR, --routed=FILE are passed to build_board.py (a candidate's copy of the project);
 #   KICAD_NAME names the container; PCBGEN_DSN_PLANES=kicad keeps KiCad's own plane outlines in the DSN;
+#   X4V2_LAYERS=4 builds the DATA x4 v2 on 4 layers instead of its configured 6 (a comparison run);
 #   FR_OPT_THREADS=1: Freerouting's optimizer on one thread, the same board every time (by default it takes
 #   every core and is faster, but not repeatable: on the DATA x4 v2, one thread is 33 min of a 40 min run)
 set -euo pipefail
@@ -29,7 +30,7 @@ esac; done
 if command -v cygpath >/dev/null 2>&1; then MOUNT="$(cygpath -m "$REPO")"; export MSYS_NO_PATHCONV=1; else MOUNT="$REPO"; fi
 
 kicad() {
-  docker run --rm ${KICAD_NAME:+--name "$KICAD_NAME"} -v "$MOUNT:/work" -w /work -e HOME=/tmp -e PCBGEN_DSN_PLANES "$IMAGE" sh -c     "mkdir -p /tmp/.config/kicad/10.0 && cp /usr/share/kicad/template/sym-lib-table /usr/share/kicad/template/fp-lib-table /tmp/.config/kicad/10.0/ && python3 electronics/tools/build_board.py $* $EXTRA"
+  docker run --rm ${KICAD_NAME:+--name "$KICAD_NAME"} -v "$MOUNT:/work" -w /work -e HOME=/tmp -e PCBGEN_DSN_PLANES -e X4V2_LAYERS "$IMAGE" sh -c     "mkdir -p /tmp/.config/kicad/10.0 && cp /usr/share/kicad/template/sym-lib-table /usr/share/kicad/template/fp-lib-table /tmp/.config/kicad/10.0/ && python3 electronics/tools/build_board.py $* $EXTRA"
 }
 
 if [ "$ROUTE" = 1 ]; then

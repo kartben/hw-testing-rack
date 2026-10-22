@@ -1,7 +1,8 @@
 # Autorouting: a Freerouting portfolio, and three routers on our boards
 
 **Status (2026-10-22): measured; pipeline fixes in; three design fixes, the bay node and the hub re-routed, every
-board straightened (below, "Applied").**  The question was whether a
+board straightened (below, "Applied"); the DATA ×4 v2 also routed clean on 4 layers, kept beside its 6-layer
+build.**  The question was whether a
 faster, multi-core autorouter is worth building.  Plan agreed: first run Freerouting as a parallel portfolio
 and fix the split-plane bug (step 0), then benchmark open-source routers on our own boards (step 1), then
 decide.
@@ -286,6 +287,8 @@ After the user found staircases in routed copper: 45° and straight segments in 
   dogleg whose middle segment lies on one of the run's own lines.  It does so only where every clearance holds.
   - It leaves alone what the router saw as fixed: drawn tracks, the differential pairs (they stay side by side),
     the exclusive pours' cores, the fan-out reservations, the footprints' keep-outs.
+  - Before that, it widens any router track that Freerouting's neck-down left under the board's minimum width,
+    where the clearances allow (below, "The DATA ×4 v2 on 4 layers").
   - `tools/kicad.sh <board> --tidy` runs it on a routed board, without re-routing.
 - **Bends are counted** (`route_metrics`: where two segments of a net meet and turn).  They cost 0.5 mm each in the
   farm's ranking (`BEND_MM`): of two runs as long, with as many vias, the straighter wins.
@@ -324,6 +327,26 @@ with their bends.
 - **Data port, camera pod:** routing kept, straightened (`tools/kicad.sh <board> --tidy`).
 - All five: ERC 0, copper DRC 0 (the DATA ×4 v2 keeps its 4 silkscreen-over-copper warnings), parity 0, every 3D
   model found.  Fab outputs, the DATA ×4 v2's panel and the viewer's models are regenerated.
+
+## The DATA ×4 v2 on 4 layers
+
+Its 6-layer stackup came from one 4-layer run that left 27–29 links open (029728b), before the fixes above.  The
+same design at `X4V2_LAYERS=4` (F · GND · power · B), through the portfolio (`--farm farm-4l`, the Mac and
+zephyrbox), 2026-10-22:
+
+- **4 clean runs of 16 scored**: `order2` (787 vias, 5172.7 mm), `nofanout-noopt`, `via10-noopt`,
+  `via10-order1-noopt`.  The others leave 1–12 links open, a narrow track or a floating island.
+- **The optimizer can't finish.**  9 runs reached 0 unrouted, then spent the rest of the 45 min cap in the
+  one-thread optimizer and gave no session.  With it off (`-noopt`) they finish in 8–25 min; the straightening
+  pass then does much of its work.
+- **Neck-down under the floor.**  Most complete runs had 2–5 tracks narrowed to 0.063–0.076 mm (floor 0.09).
+  `tidy_tracks` now widens such a track to the board's minimum first, where its clearances allow: all four of
+  `order2`'s.  Three runs keep 2 it can't widen.
+- **The +3V3_CP island** floats in 6 runs: Freerouting joins that net by tracks only, with no via into In2's
+  island, as on 6 layers.  A fan-out via in `design.py` would make the join certain.
+- **Kept beside the 6-layer board**, as `electronics/data-port-x4-v2-4l`: a `design.py` that builds the 6-layer
+  design at 4 layers, routed with `order2`'s session; the Hardware CI checks it.  The comparison (cost, vias in
+  pads, return paths) is in docs/electronics.md.
 
 ## Our own router?
 

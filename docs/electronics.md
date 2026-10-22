@@ -583,6 +583,19 @@ pairs · In1 GND · In2 signals · In3 signals · In4 power (+3V3 / +5V) · B.Cu
 - The pairs drawn on F.Cu wall the rest of the board off.  At 4 layers Freerouting left 27–29 links open
   after 30 passes; at 6 it routes them all.  The user's wish for 4 ("si on peut repasser à 4 couches ce serait
   top") gave way to the HS rule, as agreed for this fallback.  `X4V2_LAYERS=4` still builds the 4-layer board.
+- **Both builds are kept** (the user, 2026-10-22): this one, the rack's, and
+  [`electronics/data-port-x4-v2-4l`](../electronics/data-port-x4-v2-4l/design.py), the same design on 4 layers
+  (F · GND · power · B), routed clean by the Freerouting portfolio since its fixes
+  ([autorouting-benchmark.md](autorouting-benchmark.md), "The DATA ×4 v2 on 4 layers").
+  - The same High-Speed pairs, on F.Cu over GND end to end, 0.25 mm lines 0.15 mm apart (≈ 90 Ω, estimated,
+    not field-solved).  In1 and In2 carry no signal track.
+  - Cheaper and faster: $25.40 for 5 logic boards (ENIG), $13.20 for 5 bases (lead-free HASL), the panel
+    $52.00; black mask $8.00 an order; 3–4 days (jlcpcb.com, 2026-10-20).
+  - Its costs: 29 vias sit in 27 SMD pads, 18 of them 0402/0603 pads.  JLC fills and caps vias for free only from
+    6 layers: order the 4-layer board with via-in-pad filling (not quoted), or move those vias out first.
+  - B.Cu carries 2004 mm of signal (102 mm here), over the split power plane instead of In2 over GND.  None
+    crosses the +3V3 / +5V split.  12 segments cross the +3V3_CP island's edge (this board has 21 on In3).
+  - Busier: 2001 bends against 1491, 5173 mm of copper against 4828.
 - In2 references In1's GND.  In3 and B.Cu reference the split power plane: the split's keep-out covers both.
 - ≈ 90 Ω on the outer layers: 0.15 mm lines 0.15 mm apart over 0.1 mm of 3313 prepreg (at 4 layers, 0.25 mm
   over 0.21 mm of 7628).
