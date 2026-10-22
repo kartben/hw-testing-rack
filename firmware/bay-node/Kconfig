@@ -205,6 +205,46 @@ choice ESP_WIFI_HEAP
 	default ESP_WIFI_HEAP_SPIRAM if ESP_SPIRAM
 endchoice
 
+# The network stack in PSRAM as well, with Espressif's two options: its packet
+# slabs, TCP connections and threads' stacks (.noinit), and the IP stack's and
+# HTTP server's .bss (contexts, buffer pools, the server's clients).  The CPU
+# reaches them through the cache and no DMA does: the Wi-Fi driver copies
+# every frame.  Internal RAM stays for what the USB host's DMA needs.
+config ESP32_WIFI_NET_ALLOC_SPIRAM
+	default y if ESP_SPIRAM
+
+config ESP_SPIRAM_BSS_RELOC_LIBS_AND_OBJS
+	default "libsubsys__net__ip.a libsubsys__net__lib__http.a" if ESP_SPIRAM
+
+# In PSRAM the network's packets and buffers cost no internal RAM: three times
+# as many.  With 48 TX buffers of 128 bytes, three busy TCP connections (2 KB
+# in flight each) drained the pool: eight web clients looping with no pause
+# made a USB/IP session fail its send (ENOBUFS) and a quarter of the requests.
+# With these, the same load passed both read_flash runs and all but 4 of
+# 1192 requests.
+config NET_PKT_RX_COUNT
+	default 48 if ESP_SPIRAM
+	default 24
+
+config NET_PKT_TX_COUNT
+	default 64 if ESP_SPIRAM
+	default 24
+
+config NET_BUF_RX_COUNT
+	default 96 if ESP_SPIRAM
+	default 48
+
+config NET_BUF_TX_COUNT
+	default 144 if ESP_SPIRAM
+	default 48
+
+# More system heap now that the internal RAM has room: under that load it
+# peaked at 33600 of its 33684 bytes.
+config HEAP_MEM_POOL_ADD_SIZE_BAY_NODE
+	int
+	default 16384 if ESP_SPIRAM
+	default 0
+
 config USBIP_DEVICES_COUNT
 	default 6 if ESP_SPIRAM
 

@@ -352,6 +352,37 @@ The same runs found two problems, both fixed in ee2b751:
 
 bay_node's internal RAM after ee2b751: 99.28 %, 2752 bytes free.
 
+**Then the network stack moved to PSRAM**, on the boards that have it, through Espressif's two
+options (`firmware/bay-node/Kconfig`):
+
+- `ESP32_WIFI_NET_ALLOC_SPIRAM` moves the network's .noinit: packet slabs, TCP connections, its
+  threads' stacks;
+- `ESP_SPIRAM_BSS_RELOC_LIBS_AND_OBJS` moves the IP stack's and the HTTP server's .bss.
+
+That freed 73 KB of internal RAM on bay_node (99.28 % → 79.98 %).  It paid for three times the
+network buffers (they now cost PSRAM only: 64/48 packets, 144/96 buffers for TX/RX) and 16 KB more
+system heap (50 KB): bay_node is at 84.29 %, 58 KB free.  Boards without PSRAM (the StampS3) keep
+the old counts.
+
+The same loads on the XIAO after that:
+
+| Load | USB/IP | Web requests | System heap peak |
+|---|---|---|---|
+| realistic | 2/2 `read_flash` | 249/249 | 29.1 of 50 KB |
+| stress | no session dropped, no ENOBUFS; `read_flash` 2/2 in one run, 0/2 in the next ("Corrupt data") | 1039/1048, then 1188/1192 | 35.9 of 50 KB |
+
+The old 33.7 KB system heap would have run out under the stress.  `read_flash` failing under the
+stress is airtime, not memory.  Eight clients with no pause keep the radio busy, so the
+converter's data waits longer than the read-ahead's eight replies can cover.
+
+Firmware updates over Wi-Fi, with the network stack in PSRAM, writing the flash while it runs:
+1038 KB in 21–28 s, both the old firmware writing the new one and the new one writing itself.
+
+**Still to measure: USB mass storage.**  Linux sends the card reader requests of up to 120 KB
+(`max_sectors_kb` 120), and the node takes each one whole from the 48 KB USB/IP pool.  A request
+that does not fit is refused (`-ENOMEM`).  Reading or writing a real card, or a Pico's BOOTSEL
+drive, has not been tried.
+
 ### Power hub: bench plan
 
 Wired as in the pin map; the PD charger into the CH224A board's USB-C, the XIAO on the PC.
