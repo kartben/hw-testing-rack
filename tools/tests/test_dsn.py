@@ -210,3 +210,10 @@ class FarmRuns(unittest.TestCase):
         order = sorted(runs, key=lambda r: route_farm.rank_key(runs[r]))
         # complete first, then clean, then copper + 2 mm a via: b (230 + 40) before a (200 + 80)
         self.assertEqual(order, ["b", "a", "d", "c", "e"])
+
+    def test_rank_bends(self):
+        # as long, as many vias: the straighter first, a bend counting 0.5 mm
+        s = lambda bends: {"drc": {"unconnected": 0, "parity": 0, "copper": {}},
+                           "routing": {"vias": 10, "length_mm": 100.0, "bends": bends}}
+        self.assertLess(route_farm.rank_key(s(40)), route_farm.rank_key(s(60)))
+        self.assertEqual(route_farm.cost(s(40)), 100.0 + 2 * 10 + 0.5 * 40)

@@ -199,7 +199,8 @@ def board() -> Board:
             {"layer": "F.Cu", "net": "+5V_BUCK", "connection": "solid", "name": "buck-5v", "priority": 3,
              "poly": [(62.8, 16.1 + BY), (67.3, 16.1 + BY), (67.3, 8.6 + BY), (71.0, 8.6 + BY), (71.0, 17.9 + BY),
                       (62.8, 17.9 + BY)]},
-            {"layer": "F.Cu", "net": "VRACK", "connection": "solid", "name": "buck-vin", "priority": 3,
+            # exclusive: another net's track cut it in two in 15 of 17 routings (docs/autorouting-benchmark.md)
+            {"layer": "F.Cu", "net": "VRACK", "connection": "solid", "name": "buck-vin", "priority": 3, "exclusive": 0.3,
              "poly": [(55.6, 12.5 + BY), (57.8, 12.5 + BY), (57.8, 20.7 + BY), (55.6, 20.7 + BY)]},
         ],
         "vias": [

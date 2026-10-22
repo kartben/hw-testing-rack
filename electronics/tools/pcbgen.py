@@ -18,9 +18,12 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pcbnew
+
+import octilinear
 
 from catalog import HAND_SOLDER_LCSC, MODELS
 from eda import Board, Part, REPO
@@ -847,12 +850,9 @@ def import_session(b: Board, outdir: Path, routed: Path | None = None) -> Path:
     pb.w, pb.h = b.pcb["size"]
     pb.layers = b.pcb.get("layers", 2)
     pb.nets = {}
-    if b.pcb.get("tidy") is not None:
-        # in a process of its own: removing tracks leaves this one's SWIG proxies untyped
+    if b.pcb.get("tidy", {}) is not None:
         board.Save(str(path))
-        subprocess.run([sys.executable, "-c", "import sys, json; sys.path.insert(0, sys.argv[1]); import pcbgen; "
-                        "pcbgen.tidy_file(sys.argv[2], **json.loads(sys.argv[3]))",
-                        str(Path(__file__).parent), str(path), json.dumps(b.pcb["tidy"])], check=True)
+        tidy_board(b, path)
         board = pcbnew.LoadBoard(str(path))
         pb.board = board
     if b.pcb.get("match"):
@@ -1722,32 +1722,72 @@ def _net_length(board, code: int) -> float:
     return sum(t.GetLength() for t in board.GetTracks() if t.GetClass() != "PCB_VIA" and t.GetNetCode() == code)
 
 
-def tidy_file(path: str, **kw):
-    """tidy_tracks() on a saved board, in a process of its own (see import_session)."""
+def tidy_board(b: Board, path: Path):
+    """tidy_tracks() on the board saved at `path`, as b.pcb["tidy"] says (every board, unless it says None),
+    in a process of its own: removing tracks leaves this one's SWIG proxies untyped.  The differential pairs'
+    lines stay as the router laid them, side by side; the exclusive pours' cores and the fan-out
+    reservations bar tracks as they did while routing."""
+    kw = b.pcb.get("tidy", {})
+    if kw is None:
+        return
+    from route_metrics import diff_pairs
+    names = {str(n) for n in pcbnew.LoadBoard(str(path)).GetNetsByName().keys()}
+    cores = [(spec["layer"], b.pcb_net_name(spec["net"]), inset_poly(spec["poly"], spec["exclusive"]))
+             for spec in b.pcb.get("zones", []) if spec.get("exclusive")]
+    kw = {**kw, "skip": [n for pair in diff_pairs(b, names) for n in pair], "cores": cores,
+          "fanout": [list(f) for f in b.pcb.get("fanout", [])]}
+    subprocess.run([sys.executable, "-c", "import sys, json; sys.path.insert(0, sys.argv[1]); import pcbgen; "
+                    "pcbgen.tidy_file(sys.argv[2], **json.loads(sys.argv[3]))",
+                    str(Path(__file__).parent), str(path), json.dumps(kw)], check=True)
+
+
+def tidy_file(path: str, cores=(), fanout=(), **kw):
+    """tidy_tracks() on a saved board (see tidy_board).  cores: [layer, net, [poly mm, ...]] that other nets'
+    tracks stay out of; fanout: [ref, pad] whose dog-bone's room no track may take."""
+    t0 = time.time()
     board = pcbnew.LoadBoard(path)
-    n, before, after = tidy_tracks(board, **kw)
+
+    def poly_set(poly):
+        ps = pcbnew.SHAPE_POLY_SET()
+        ps.NewOutline()
+        for x, y in poly:
+            ps.Append(MM(x), MM(y))
+        return ps
+
+    bars = [(board.GetLayerID(layer), net, poly_set(p)) for layer, net, polys in cores for p in polys]
+    bars += [(None, None, poly_set(fanout_geometry(board, ref, num)[2])) for ref, num in fanout]
+    n, before, after = tidy_tracks(board, bars=bars, **kw)
     board.Save(path)
-    print(f"tidy: {n} runs straightened or merged, router segments {before} -> {after}")
+    print(f"tidy: {n} runs straightened or merged, router segments {before} -> {after} ({time.time() - t0:.0f} s)")
 
 
-def tidy_tracks(board, short: float = 0.6, reach: int = 4, margin: float = 0.01) -> tuple[int, int, int]:
-    """b.pcb["tidy"]: {"short": mm, "reach": segments}.  Freerouting leaves many pads by a short straight, a
-    micro-jog and only then its diagonal, and its optimizer doesn't straighten them.  After the session's
-    import, along each chain of the router's own segments (one net, one layer, one width, through bends that
-    no via, pad, drawn track or branch touches), a run of up to `reach` segments holding one shorter than
-    `short` mm becomes one straight or 45° segment, or a 45° segment and a straight one: only when that is
-    no longer than the run, has fewer segments, and keeps every other net's copper, the board's edge and the
-    keep-outs that bar tracks at their clearance (+ `margin` mm).  Then collinear neighbours merge.  Drawn
-    (locked) tracks are never touched.  Returns (runs replaced, router segments before, after)."""
+def tidy_tracks(board, short: float = 0.6, reach: int = 12, margin: float = 0.002, skip=(),
+                bars=()) -> tuple[int, int, int]:
+    """b.pcb["tidy"]: {"short": mm, "reach": segments}.  Freerouting lays a route as it found it, around each
+    obstacle's clearance octagon: staircases of 45° and straight segments where one bend would do, pads left
+    by a short straight and a micro-jog; its optimizer pulls them tight one corner at a time and keeps them.
+    After the session's import, along each chain of the router's own segments (one net, one layer, one
+    width, through bends that no via, pad, drawn track or branch touches), a run of up to `reach` segments
+    becomes the fewest straight and 45° segments that join its ends (octilinear.paths: one, one bend or a
+    dogleg), or, for a run holding one shorter than `short` mm, as many without it.  Only when that is no
+    longer than the run and keeps its clearance (+ `margin` mm) to every other net's copper, the board's
+    edge, the keep-outs that bar tracks (the footprints' too) and `bars`: (layer or None for all, net or
+    None for all, SHAPE_POLY_SET) that other nets' tracks stay out of.  Then collinear neighbours merge.
+    Drawn (locked) tracks and the nets in `skip` are never touched.  Where neighbours or vias hem a
+    staircase in (a bus weaving through a via field), it stays: only a re-route moves it.  Returns (runs
+    replaced, router segments before, after)."""
     T = MM(0.001)                                       # 1 µm: the geometry's tolerance
     layers = copper_of(board)
+    skip = set(skip)
     outline = pcbnew.SHAPE_POLY_SET()
     board.GetBoardPolygonOutlines(outline, True)
     edge_segs = [outline.Outline(i).CSegment(k) for i in range(outline.OutlineCount())
                  for k in range(outline.Outline(i).SegmentCount())]
     edge_clear = board.GetDesignSettings().m_CopperEdgeClearance
-    keep = {l: [pcbnew.SHAPE_POLY_SET(z.Outline()) for z in board.Zones()
-                if z.GetIsRuleArea() and z.GetDoNotAllowTracks() and z.IsOnLayer(l)] for l in layers}
+    areas = list(board.Zones()) + [z for fp in board.GetFootprints() for z in fp.Zones()]
+    keep = {l: [(None, pcbnew.SHAPE_POLY_SET(z.Outline())) for z in areas
+                if z.GetIsRuleArea() and z.GetDoNotAllowTracks() and z.IsOnLayer(l)]
+            + [(net, ps) for bl, net, ps in bars if bl is None or bl == l] for l in layers}
     cell = MM(2.0)
     grid = {l: {} for l in layers}                      # per layer, a 2 mm grid of (uuid, net, clearance, shape)
     dead = set()
@@ -1768,7 +1808,7 @@ def tidy_tracks(board, short: float = 0.6, reach: int = 4, margin: float = 0.01)
             if item.IsOnLayer(l):
                 index(item, l)
 
-    def clear_of(a, b, w, l, net, own):
+    def clear_of(a, b, w, l, net, name, own):
         """Segment a-b, w wide, of `net` on layer l: clear of every other net, the edge and the keep-outs."""
         seg = pcbnew.SEG(a, b)
         half = w // 2
@@ -1783,19 +1823,10 @@ def tidy_tracks(board, short: float = 0.6, reach: int = 4, margin: float = 0.01)
                     return False
         if any(e.Distance(seg) < half + edge_clear + MM(margin) for e in edge_segs):
             return False
-        return not any(k.Collide(seg, half) for k in keep[l])
+        return not any(k.Collide(seg, half) for k_net, k in keep[l] if k_net != name)
 
     def dist(p, q):
         return math.hypot(q.x - p.x, q.y - p.y)
-
-    def elbows(a, b):
-        dx, dy = b.x - a.x, b.y - a.y
-        if abs(dx) <= T or abs(dy) <= T or abs(abs(dx) - abs(dy)) <= T:
-            return [[a, b]]
-        d = min(abs(dx), abs(dy))
-        sx, sy = (1 if dx > 0 else -1), (1 if dy > 0 else -1)
-        return [[a, pcbnew.VECTOR2I(a.x + sx * d, a.y + sy * d), b],
-                [a, pcbnew.VECTOR2I(b.x - sx * d, b.y - sy * d), b]]
 
     def key(p):
         return (p.x, p.y)
@@ -1812,12 +1843,13 @@ def tidy_tracks(board, short: float = 0.6, reach: int = 4, margin: float = 0.01)
             if t.GetClass() == "PCB_VIA":
                 vias.setdefault(t.GetNetCode(), set()).add(key(t.GetPosition()))
             elif t.GetClass() == "PCB_TRACK":
-                if not t.IsLocked() and t.GetLayer() in layers:
+                if not t.IsLocked() and t.GetLayer() in layers and t.GetNetname() not in skip:
                     groups.setdefault((t.GetNetCode(), t.GetLayer(), t.GetWidth()), []).append(t)
                 for p in (t.GetStart(), t.GetEnd()):
                     other_ends.setdefault((t.GetNetCode(), t.GetLayer()), []).append(
-                        (key(p), t.IsLocked(), t.GetWidth()))
+                        (key(p), t.IsLocked() or t.GetNetname() in skip, t.GetWidth()))
         for (net, l, w), segs in groups.items():
+            name = segs[0].GetNetname()
             ends = {}
             for t in segs:
                 for p in (t.GetStart(), t.GetEnd()):
@@ -1852,18 +1884,19 @@ def tidy_tracks(board, short: float = 0.6, reach: int = 4, margin: float = 0.01)
                         for j in range(min(len(pts) - 1, i + reach), i + 1, -1):
                             run = pts[i:j + 1]
                             least = min(dist(p, q) for p, q in zip(run, run[1:]))
-                            if least >= MM(short):
-                                continue
                             old = sum(dist(p, q) for p, q in zip(run, run[1:]))
-                            for cand in elbows(pts[i], pts[j]):
-                                if sum(dist(p, q) for p, q in zip(cand, cand[1:])) > old + T:
-                                    continue
+                            for cand in octilinear.paths(key(pts[i]), key(pts[j]), T, [key(p) for p in run[1:-1]]):
+                                n = len(cand) - 1
                                 # fewer segments, or as many with the run's shortest one gone
-                                shortest = min(dist(p, q) for p, q in zip(cand, cand[1:]))
-                                if len(cand) - 1 > j - i or shortest < MM(0.05) or (
-                                        len(cand) - 1 == j - i and shortest < max(2 * least, MM(0.25))):
+                                if n > j - i or (n == j - i and least >= MM(short)):
                                     continue
-                                if all(clear_of(p, q, w, l, net, own) for p, q in zip(cand, cand[1:])):
+                                if octilinear.length(cand) > old + T:
+                                    continue
+                                shortest = min(math.dist(p, q) for p, q in zip(cand, cand[1:]))
+                                if shortest < MM(0.05) or (n == j - i and shortest < max(2 * least, MM(0.25))):
+                                    continue
+                                cand = [pcbnew.VECTOR2I(*p) for p in cand]
+                                if all(clear_of(p, q, w, l, net, name, own) for p, q in zip(cand, cand[1:])):
                                     best = (j, cand)
                                     break
                             if best:

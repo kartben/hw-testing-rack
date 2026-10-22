@@ -5,6 +5,7 @@
 #   tools/kicad.sh bay-node --route         # + Freerouting (Java, in eclipse-temurin:25-jre)
 #   tools/kicad.sh bay-node --route --fab   # + gerbers, CPL, BOM, PDF, renders, STEP/GLB
 #   tools/kicad.sh bay-node --ses [--fab]   # re-import the last Freerouting session (no re-route)
+#   tools/kicad.sh bay-node --tidy [--fab]  # straighten the routed PCB's router tracks as after --ses (no re-route)
 #   tools/kicad.sh bay-node --dsn           # placed PCB + build/<board>.dsn, no routing (tools/route_farm.py)
 #   tools/kicad.sh bay-node --check [--fab] # ERC + read-only DRC of the PCB as it is (CI), + fab outputs
 #   tools/kicad.sh bay-node --fab           # same as --check --fab
@@ -19,9 +20,9 @@ JRE="${JRE_IMAGE:-eclipse-temurin:25-jre}"
 FR_VER=2.5.0
 FR_JAR="$REPO/.cache/freerouting/freerouting-$FR_VER.jar"
 BOARD="$1"; shift
-ROUTE=0; SES=0; CHECK=0; DSN=0; FAB=""; EXTRA=""
+ROUTE=0; SES=0; TIDY=0; CHECK=0; DSN=0; FAB=""; EXTRA=""
 for a in "$@"; do case "$a" in
-  --route) ROUTE=1 ;; --ses) SES=1 ;; --check) CHECK=1 ;; --dsn) DSN=1 ;; --fab) FAB="--fab" ;;
+  --route) ROUTE=1 ;; --ses) SES=1 ;; --tidy) TIDY=1 ;; --check) CHECK=1 ;; --dsn) DSN=1 ;; --fab) FAB="--fab" ;;
   --outdir=*|--routed=*) EXTRA="$EXTRA $a" ;;
   *) echo "unknown option: $a" >&2; exit 2 ;;
 esac; done
@@ -44,6 +45,8 @@ elif [ "$DSN" = 1 ]; then
   kicad "$BOARD" --dsn
 elif [ "$SES" = 1 ]; then
   kicad "$BOARD" --ses $FAB
+elif [ "$TIDY" = 1 ]; then
+  kicad "$BOARD" --tidy $FAB
 elif [ "$CHECK" = 1 ] || [ -n "$FAB" ]; then
   kicad "$BOARD" --check $FAB
 else

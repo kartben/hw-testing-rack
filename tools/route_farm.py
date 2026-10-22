@@ -11,7 +11,7 @@ board on any machine.  So the cores go to runs that differ, each a complete Free
 via and rip-up costs, fan-out and optimizer on or off, and the order of the nets (the DSN's nets and
 components permuted with a seed, electronics/tools/dsn.py).  Each run's session is imported into its own
 copy of the project, as tools/kicad.sh --ses would, and ranked by KiCad's verdict: unconnected items,
-copper DRC errors, then copper length plus 2 mm a via (VIA_MM).
+copper DRC errors, then copper length plus 2 mm a via (VIA_MM) and 0.5 mm a bend (BEND_MM).
 
 Steps (--step, default all):
   prepare  tools/kicad.sh <board> --dsn on the committed design, kept in build/farm/base (the board's own
@@ -585,15 +585,17 @@ def kicad_remote(host: Host, args: list[str], proj: Path, run: Path, name: str):
 # a via counts as this much track in a run's cost (copper length + VIA_MM × vias): 2 mm, about what a via
 # adds to a route in drilling, its two pads' clearance and the turn into it
 VIA_MM = 2.0
+# and a bend (after pcbgen.tidy_tracks) this much: of two routes as long, with as many vias, the straighter
+BEND_MM = 0.5
 
 
 def cost(score: dict) -> float:
     r = score.get("routing", {})
-    return round(r.get("length_mm", 0) + VIA_MM * r.get("vias", 0), 1)
+    return round(r.get("length_mm", 0) + VIA_MM * r.get("vias", 0) + BEND_MM * r.get("bends", 0), 1)
 
 
 def rank_key(score: dict) -> tuple:
-    """Fewest unconnected items, then copper DRC errors and parity, then the cost (length and vias)."""
+    """Fewest unconnected items, then copper DRC errors and parity, then the cost (length, vias, bends)."""
     if not score or "drc" not in score:
         return (10 ** 9,)
     d = score["drc"]
@@ -634,7 +636,8 @@ def report(board: str, rids: list[str]) -> dict:
                      "fr_cpu_s": meta.get("fr_cpu_s"), "key": rank_key(score),
                      "unconnected": score.get("drc", {}).get("unconnected"),
                      "copper": score.get("drc", {}).get("copper"), "vias": score.get("routing", {}).get("vias"),
-                     "length_mm": score.get("routing", {}).get("length_mm"), "cost": cost(score) if score else None,
+                     "length_mm": score.get("routing", {}).get("length_mm"),
+                     "bends": score.get("routing", {}).get("bends"), "cost": cost(score) if score else None,
                      "error": score.get("error") or ("stopped (--run-timeout)" if meta.get("exit") == 124 else None)})
     rows.sort(key=lambda r: r["key"])
     walls = [r["wall_s"] for r in rows if r["wall_s"]]
@@ -642,11 +645,13 @@ def report(board: str, rids: list[str]) -> dict:
            "longest_run_s": max(walls) if walls else None}
     (farm_dir(board) / "report.json").write_text(json.dumps(rep, indent=1))
     print(f"\n{board}: {len(rows)} runs, best {rep['best']}")
-    print(f"{'run':18} {'host':6} {'wall':>6} {'FR':>4} {'unconn':>6} {'copper':>6} {'vias':>5} {'mm':>8} {'cost':>8}")
+    print(f"{'run':18} {'host':6} {'wall':>6} {'FR':>4} {'unconn':>6} {'copper':>6} {'vias':>5} {'mm':>8} "
+          f"{'bends':>5} {'cost':>8}")
     for r in rows:
         cu = sum((r["copper"] or {}).values()) if r["copper"] is not None else "-"
         print(f"{r['run']:18} {str(r['host'] or '-'):6} {str(r['wall_s'] or '-'):>6} {str(r['fr_unrouted']):>4} "
-              f"{str(r['unconnected']):>6} {str(cu):>6} {str(r['vias']):>5} {str(r['length_mm']):>8} {str(r['cost']):>8}"
+              f"{str(r['unconnected']):>6} {str(cu):>6} {str(r['vias']):>5} {str(r['length_mm']):>8} "
+              f"{str(r['bends']):>5} {str(r['cost']):>8}"
               + (f"  error: {r['error'][:60]}" if r["error"] else ""))
     return rep
 

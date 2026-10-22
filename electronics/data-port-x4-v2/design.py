@@ -881,8 +881,6 @@ def board() -> Board:
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
         "size": (W, H), "layers": LAYERS, "outline": outline, "passes": 80,
-        # after the import: the router's micro-jogs at the pads straightened (pcbgen tidy_tracks)
-        "tidy": {"short": 0.6, "reach": 6},
         # dense: JLC's multilayer floor (0.09 mm tracks and spaces, 0.2 mm from a via hole to a track); 0.1 mm
         # clearance and the 0.5 / 0.3 mm via keep the hole 0.2 mm from any track
         "min_track": 0.09, "min_clearance": 0.1, "hole_clearance": 0.2,

@@ -11,10 +11,12 @@ import math
 
 import pcbnew
 
+import octilinear
+
 MM = pcbnew.ToMM
 
 
-def _pairs(b, names: set[str]) -> list[tuple[str, str]]:
+def diff_pairs(b, names: set[str]) -> list[tuple[str, str]]:
     """The board's differential pairs: b.pcb["match"]'s, else every net ending in _DP / _P with its _DN / _N."""
     if b.pcb.get("match"):
         return [(b.pcb_net_name(p), b.pcb_net_name(n)) for p, n in b.pcb["match"]["pairs"]]
@@ -64,7 +66,7 @@ def pair_quality(tracks, pos_code, neg_code, step: float = 0.1) -> dict:
 
 
 def routing_metrics(board, b) -> dict:
-    """Vias, track length per layer, pairs, plane-layer copper and locked tracks of a loaded board."""
+    """Vias, track length per layer, bends, pairs, plane-layer copper and locked tracks of a loaded board."""
     tracks = list(board.GetTracks())
     vias = [t for t in tracks if t.GetClass() == "PCB_VIA"]
     segs = [t for t in tracks if t.GetClass() != "PCB_VIA"]
@@ -80,11 +82,18 @@ def routing_metrics(board, b) -> dict:
                     and (board.GetLayerName(t.GetLayer()), t.GetNetname()) not in poured)
     nets = {str(n): v.GetNetCode() for n, v in board.GetNetsByName().items()}
     pairs = {}
-    for pn, nn in _pairs(b, set(nets)):
+    for pn, nn in diff_pairs(b, set(nets)):
         if pn in nets and nn in nets:
             pairs[f"{pn.split('/')[-1]}/{nn.split('/')[-1]}"] = pair_quality(tracks, nets[pn], nets[nn])
+    # bends: where exactly two segments of a net meet on a layer and the track turns
+    ends: dict = {}
+    for t in segs:
+        a, e = t.GetStart(), t.GetEnd()
+        for p, q in ((a, e), (e, a)):
+            ends.setdefault((t.GetNetCode(), t.GetLayer(), p.x, p.y), []).append((q.x - p.x, q.y - p.y))
+    bends = sum(1 for v in ends.values() if len(v) == 2 and octilinear.bent(*v))
     return {
-        "vias": len(vias), "tracks": len(segs),
+        "vias": len(vias), "tracks": len(segs), "bends": bends,
         "length_mm": round(sum(per_layer.values()), 1),
         "length_per_layer": {k: round(v, 1) for k, v in sorted(per_layer.items())},
         "locked_tracks": sum(1 for t in segs if t.IsLocked()), "locked_vias": sum(1 for t in vias if t.IsLocked()),

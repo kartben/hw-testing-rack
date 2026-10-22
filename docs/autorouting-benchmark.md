@@ -1,6 +1,7 @@
 # Autorouting: a Freerouting portfolio, and three routers on our boards
 
-**Status (2026-10-22): measured; pipeline fixes in, no board re-routed.**  The question was whether a
+**Status (2026-10-22): measured; pipeline fixes in; three design fixes, the bay node and the hub re-routed, every
+board straightened (below, "Applied").**  The question was whether a
 faster, multi-core autorouter is worth building.  Plan agreed: first run Freerouting as a parallel portfolio
 and fix the split-plane bug (step 0), then benchmark open-source routers on our own boards (step 1), then
 decide.
@@ -25,6 +26,9 @@ decide.
 - **Don't write a router from scratch** (below: "Our own router?").  Most of what made routing painful was in our
   DSN and pipeline, now fixed generically: overlapping planes, cut-off islands, supply pads over the other net's
   area, a DSN that changed with every build, an optimizer that never ran the same way twice.
+- **Straighten after routing** (below, "Straight tracks").  Freerouting's staircases cost it nothing.  A pass after
+  the import takes 4–19 % of the bends off, and the farm now ranks runs by bends too.  Buses that weave together
+  between vias are out of its reach: only a re-route moves them.
 
 **Ranking** (all five boards): 1. Freerouting portfolio, 2. Freerouting single run, 3. KiCadRoutingTools,
 4. Topola.
@@ -38,7 +42,7 @@ decide.
   - Its result goes through the import `tools/kicad.sh --ses` runs (`pcbgen.import_session`: outer pours, GND
     stitching, plane ties, pass-through vias, pair tuning, tidy), then KiCad's DRC.
   - Runs are ranked by unconnected items, then copper DRC errors (silkscreen excluded), then copper length plus
-    2 mm per via.
+    2 mm per via (and, since the straightening pass, 0.5 mm per bend).
   - `electronics/tools/route_metrics.py` adds vias, length per layer, locked tracks kept, copper on the plane
     layers, and each pair's skew and coupling.
 - **Machines:**
@@ -92,11 +96,11 @@ times are for 17 runs on 9 slots (6 on the Mac, 3 on zephyrbox); the single run 
   cost 10 on the hub, neck-down off or a net order elsewhere.  That is the case for a portfolio.
 - **The hub's open link**, in 15 of its runs: the narrow `buck-vin` island (VRACK, F.Cu, 2.2 mm wide) is cut in
   two by another net's track.  Freerouting doesn't treat a pour on a signal layer as an obstacle, and the island
-  isn't `exclusive` in `design.py`.  Two runs miss it.
+  wasn't `exclusive` in `design.py`.  Two runs missed it.  It is `exclusive` now (below, "Applied").
 - **Cores.**  Each run uses one core (CPU s ≈ wall s); the portfolio used 9.  The slowest run takes 1.5–2× the
   pipeline's run: that sets the wall time with enough slots.
-- **Not applied.**  The portfolio's boards differ from the committed ones in routing only.  Installing one
-  (`--apply`) and checking it (`tools/kicad.sh <board> --check --fab`) is left to each board's owner.
+- **Not applied then.**  The portfolio's boards differ from the committed ones in routing only.  The bay node
+  and the hub have since been re-routed, after their design fixes (below, "Applied").
 - **Looks.**  Each board's signal layers were rendered before / after, side by side.  The portfolio's best reads
   like the committed board: same router, same style.  Where it saves vias, it sometimes takes a longer way on
   B.Cu.
@@ -143,10 +147,10 @@ to compare.
    the whole outline as copper of the net.
    - Freerouting's own check ("overlapping conduction areas") fired on the bay node (+3V3 / +5V), the hub
      (VRACK / +3V3) and the DATA ×4 v2 (+3V3 / +5V).
-   - On the bay node these are 0.3 mm strips where an outline's offset points the wrong way: x 22.0–22.3 and
-     47.85–48.15 mm along y 34–44.  Both zones have the same priority, so KiCad's fill gives each strip to the
-     zone with the larger UUID, which is new at each build.  The DATA ×4 v2 had the same along J1's +5V tab
-     (fixed in its `design.py` on main, 8442861).  A `design.py` fix for the bay node is proposed, not made.
+   - On the bay node it was one 0.3 mm strip on In2, x 22.0–22.3 mm along y 34.3–44, where the +5V outline ran
+     0.3 mm into the +3V3 one.  Both zones have the same priority, so KiCad's fill gave the strip to the zone
+     with the larger UUID, which is new at each build.  The DATA ×4 v2 had the same along J1's +5V tab (fixed in
+     its `design.py` on main, 8442861).  The bay node's `design.py` now stops the +5V outline at x 21.7.
    - **Fix** (`pcbgen.plane_areas`, at DSN export): each plane is its outline less every other-net zone that
      wins over it on its layer (priority, then KiCad's tie-break), grown by the clearance.
    - The warning is gone from every run of the three boards.  An island poured over another net's area by
@@ -175,7 +179,7 @@ to compare.
      is locked like the other fan-outs.
    - The same test with the fix: every supply pad connected in all three runs; the one link left open is a bus
      line (PORT1_B2 or PORT3_B2).  The eight pads get 4.8–6.2 mm feeds with 1–3 bends, the drawn feeds' job.  The
-     drawn feeds could go from `design.py` (proposed, not done).
+     drawn feeds stay: without them no run of five came out clean (below, "Applied").
    - On the committed designs it adds three +3V3 feeds on the DATA ×4 v2 and two on the bay node (U2.2, U11.3).
      Freerouting routed those, or the import tied them, before.
 
@@ -268,6 +272,59 @@ scoring.  The same runs on both sides.
 - So: worth it where a pair is routed by the router on a roomy board (the bay node's ESP pair, the data port's
   pairs); not on the DATA ×4 v2, whose High-Speed pairs are drawn by hand anyway.
 
+## Straight tracks
+
+After the user found staircases in routed copper: 45° and straight segments in turn, where one bend would do.
+
+- **Why Freerouting leaves them.**  Its search goes round each obstacle's clearance octagon, and its optimizer
+  pulls a route tight one corner at a time.  A staircase between two points is exactly as long as the path
+  with one bend, so neither Freerouting nor the farm's ranking (length and vias) preferred the straighter one.
+- **`pcbgen.tidy_tracks`, now on every board** (it was the DATA ×4 v2's alone, for jogs under 0.6 mm).  After the
+  import, it walks each chain of the router's segments (one net, layer and width, between vias, pads and
+  branches).  It replaces the longest run it can, up to 12 segments, with the fewest straight and 45° segments
+  that join the same ends at no more length (`electronics/tools/octilinear.py`): one segment, one bend, or a
+  dogleg whose middle segment lies on one of the run's own lines.  It does so only where every clearance holds.
+  - It leaves alone what the router saw as fixed: drawn tracks, the differential pairs (they stay side by side),
+    the exclusive pours' cores, the fan-out reservations, the footprints' keep-outs.
+  - `tools/kicad.sh <board> --tidy` runs it on a routed board, without re-routing.
+- **Bends are counted** (`route_metrics`: where two segments of a net meet and turn).  They cost 0.5 mm each in the
+  farm's ranking (`BEND_MM`): of two runs as long, with as many vias, the straighter wins.
+
+| Board | Committed: bends · vias · copper | Now | Routing |
+|---|---|---|---|
+| data-port | 56 · 34 · 173.9 mm | the same | kept: nothing the pass can straighten |
+| camera-pod | 59 · 38 · 231.0 mm | 48 · 38 · 225.9 mm (bends −19 %) | kept, straightened |
+| bay-node | 631 · 401 · 2269.5 mm | 504 · 435 · 2183.2 mm (bends −20 %, copper −4 %) | re-routed (`noneck`), straightened |
+| power-hub | 767 · 433 · 3536.8 mm | 655 · 436 · 3446.9 mm (bends −15 %, copper −3 %) | re-routed (`planevia50`), straightened |
+| DATA ×4 v2 | 1505 · 810 · 4828.3 mm | 1491 · 810 · 4827.6 mm (bends −1 %) | kept, straightened |
+
+- On the same routing, the pass alone takes 4–19 % of the bends off: the bay node's `ripup30` 607 → 583, the hub's
+  single run 709 → 661, the camera pod 59 → 48.  The DATA ×4 v2 already had its jog pass.
+- KiCad's DRC is clean after it on all five boards.
+- **What stays.**  A staircase stays where it is hemmed in.  On the DATA ×4 v2, buses on In2 and In3 weave
+  together between vias: each line follows its neighbour, and only re-routing the group would straighten them.
+  The pass can't move vias either: a jog into a via stays.
+
+## Applied (2026-10-22)
+
+Three `design.py` fixes from the findings above, then each changed board re-routed by the portfolio on the fixed
+design (`build/farm-fix`).  The best six runs of each were scored again with the straightening pass and ranked
+with their bends.
+
+- **Bay node:** In2's +5V outline stops at x 21.7, clear of the +3V3 one.  15 of 17 runs clean.  Best `noneck`
+  (neck-down off): 435 vias, 2183.2 mm, 504 bends.  `ripup30`, the best before bends counted (402 vias,
+  2212.1 mm, 583 bends), is a near tie on cost: 3307.6 against 3305.2.
+- **Power hub:** `buck-vin` is `exclusive`.  14 of 17 runs clean (2 before).  Best `planevia50`: 436 vias,
+  3446.9 mm, 655 bends; `order5` a near tie (461 vias, 3413.1 mm, 625 bends).
+- **DATA ×4 v2:** its four drawn switch feeds stay.  Without them, the five settings that had been best gave no
+  clean run.  `noneck` left 6 links open (SDA, INT, a port's D−).  `order4` and `noopt` left In4's +3V3_CP island
+  unconnected: Freerouting joined that net by tracks only, with no via into the island (`noopt` also necked 3
+  tracks under the floor).  `single` and
+  `planevia50` were still in the one-thread optimizer at the 45 min cap.  Its committed routing is straightened.
+- **Data port, camera pod:** routing kept, straightened (`tools/kicad.sh <board> --tidy`).
+- All five: ERC 0, copper DRC 0 (the DATA ×4 v2 keeps its 4 silkscreen-over-copper warnings), parity 0, every 3D
+  model found.  Fab outputs, the DATA ×4 v2's panel and the viewer's models are regenerated.
+
 ## Our own router?
 
 Not from scratch, and no reverse engineering needed: all three are open source.  Freerouting is GPL-3: read for
@@ -288,6 +345,7 @@ The cheap way to combine them, in order:
 
 ## Reproduce
 
-- `tools/route_farm.py` and `electronics/tools/dsn.py` are in the repo; the tests are `tools/tests/test_dsn.py`.
+- `tools/route_farm.py`, `electronics/tools/dsn.py` and `electronics/tools/octilinear.py` are in the repo; the tests
+  are `tools/tests/test_dsn.py` and `tools/tests/test_octilinear.py`.
 - KRT, the hybrid flow and Topola ran from scratch scripts (`bench_krt.py`, `hybrid.py`, `topola_variants.py`).
   They are kept with the renders in the session's notes, not in the repo.

@@ -270,7 +270,8 @@ node went to lead-free HASL on 2026-10-19).
   GND vias.  The outer GND pours are stitched to In1.
 * The input's current runs in a top-side VRACK pour, kept free of other tracks (`exclusive`):
   connector → TVS → input capacitors → vias to In2, which carries VRACK under the whole input
-  block; a 0.8 mm bottom track feeds the buck.
+  block; a 0.8 mm bottom track feeds the buck.  The buck's own VRACK island (`buck-vin`, 2.2 mm
+  wide) is `exclusive` too: another net's track used to cut it in two.
 * The CH224A sits beside the connector: CC1 / CC2 a few millimetres, its supply's RC and CFG1
   resistor at its pins.
 * The console's USB pair runs hand-drawn on F.Cu, over In1, from the module to U5: 0.25 mm tracks
@@ -534,10 +535,12 @@ runs on a board it sees fully routed, and its first-found routes leave many pads
 - every drawn track ends on its pad's very centre: Freerouting joins a track to a pin there only (2.5 µm off,
   it had left the HS pairs and the port switches' IN open);
 - In4's +3V3 and +5V areas no longer overlap (they did by 0.2 mm along J1's +5V tab).
-After the import, `tidy` (pcbgen's `tidy_tracks()`) straightens what the optimizer leaves: a run of the
-router's segments holding one under 0.6 mm becomes one 45° segment, or a 45° one and a straight one, where it
-is no longer and the clearances allow.  J1's leads now leave their pads by one diagonal.  Jogs into vias stay
-(the vias would have to move).
+After the import, `tidy` (pcbgen's `tidy_tracks()`, on every board since 2026-10-22) straightens what the
+optimizer leaves: a run of the router's segments becomes the fewest straight and 45° segments that join its
+ends, where that is no longer and the clearances allow, and a run holding one under 0.6 mm loses it.  J1's
+leads now leave their pads by one diagonal.  Jogs into vias stay, and so do the buses that weave together
+between vias on In2 and In3: the vias would have to move (docs/autorouting-benchmark.md, "Straight tracks").
+The switches' IN feeds stay drawn: without them no run of the portfolio came out clean.
 
 Power tracks:
 - The routed +5V stretches are 0.6 mm, as v1.
