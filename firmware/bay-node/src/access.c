@@ -174,6 +174,28 @@ enum acl_verdict access_check(enum acl_service svc, uint32_t ip)
 	return v;
 }
 
+enum acl_verdict access_check_port(enum acl_service svc, int port, uint32_t ip)
+{
+	k_spinlock_key_t k = k_spin_lock(&lock);
+	int64_t now = now_ms();
+	enum acl_verdict v = acl_check_port(&st, now, svc, port, ip);
+
+	if (v != ACL_OK) {
+		acl_refused(&st, now, ip, svc, v);
+	}
+	k_spin_unlock(&lock, k);
+
+	if (v != ACL_OK) {
+		char who[ACL_IP_STR_LEN];
+
+		acl_format_ip(ip, who);
+		LOG_INF("refused %s on port %d from %s (%s)", acl_service_name(svc), port, who,
+			acl_verdict_name(v));
+	}
+
+	return v;
+}
+
 uint8_t access_allowed(uint32_t ip)
 {
 	k_spinlock_key_t k = k_spin_lock(&lock);
@@ -381,6 +403,7 @@ int access_reset(void)
 	k = k_spin_lock(&lock);
 	st.rules = fresh.rules;
 	memset(&st.lease, 0, sizeof(st.lease));
+	memset(st.port_lease, 0, sizeof(st.port_lease));
 	memset(st.blocks, 0, sizeof(st.blocks));
 	k_spin_unlock(&lock, k);
 
@@ -433,6 +456,56 @@ bool access_lease_get(struct acl_lease *l, uint32_t *remaining_s)
 
 	*l = st.lease;
 	*remaining_s = active ? (uint32_t)((st.lease.until - now + 999) / 1000) : 0;
+	k_spin_unlock(&lock, k);
+
+	return active;
+}
+
+int access_port_lease_take(int port, uint32_t ip, uint32_t ttl_s, const char *note)
+{
+	k_spinlock_key_t k = k_spin_lock(&lock);
+	int64_t now = now_ms();
+	bool renew = acl_port_lease_active(&st, now, port) &&
+		     st.port_lease[port - 1].holder == ip;
+	int ret = acl_port_lease_take(&st, now, port, ip, ttl_s, note);
+
+	k_spin_unlock(&lock, k);
+
+	if (ret == 0 && !renew) {
+		char who[ACL_IP_STR_LEN];
+
+		acl_format_ip(ip, who);
+		LOG_INF("port %d reserved by %s for %u s", port, who, ttl_s);
+	}
+
+	return ret;
+}
+
+int access_port_lease_release(int port, uint32_t ip, bool force)
+{
+	k_spinlock_key_t k = k_spin_lock(&lock);
+	int ret = acl_port_lease_release(&st, now_ms(), port, ip, force);
+
+	k_spin_unlock(&lock, k);
+
+	return ret;
+}
+
+bool access_port_lease_get(int port, struct acl_lease *l, uint32_t *remaining_s)
+{
+	k_spinlock_key_t k;
+	int64_t now;
+	bool active;
+
+	if (port < 1 || port > ACL_MAX_PORTS) {
+		*remaining_s = 0;
+		return false;
+	}
+	k = k_spin_lock(&lock);
+	now = now_ms();
+	active = acl_port_lease_active(&st, now, port);
+	*l = st.port_lease[port - 1];
+	*remaining_s = active ? (uint32_t)((l->until - now + 999) / 1000) : 0;
 	k_spin_unlock(&lock, k);
 
 	return active;

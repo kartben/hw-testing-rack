@@ -298,6 +298,7 @@ uint32_t access_ip(const struct net_sockaddr *addr);
 uint32_t access_peer(int fd);
 /* May ip use svc now?  Refusals are logged */
 enum acl_verdict access_check(enum acl_service svc, uint32_t ip);
+enum acl_verdict access_check_port(enum acl_service svc, int port, uint32_t ip);
 /* What ip may use now (ACL_BIT() mask), nothing logged */
 uint8_t access_allowed(uint32_t ip);
 bool access_enabled(void);
@@ -329,6 +330,9 @@ int access_lease_take(uint32_t ip, uint32_t ttl_s, const char *note);
 int access_lease_release(uint32_t ip, bool force);
 /* True while a lease is held */
 bool access_lease_get(struct acl_lease *l, uint32_t *remaining_s);
+int access_port_lease_take(int port, uint32_t ip, uint32_t ttl_s, const char *note);
+int access_port_lease_release(int port, uint32_t ip, bool force);
+bool access_port_lease_get(int port, struct acl_lease *l, uint32_t *remaining_s);
 
 int access_connections(struct access_conn *out, int max);
 /* Close a connection by id and refuse its address that service for a while */

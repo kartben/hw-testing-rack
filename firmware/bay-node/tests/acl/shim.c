@@ -80,6 +80,27 @@ EXPORT const char *shim_lease_note(void)
 	return st.lease.note;
 }
 
+EXPORT int shim_check_port(long long now, int svc, int port, const char *ip)
+{
+	return acl_check_port(&st, now, (enum acl_service)svc, port, ip_of(ip));
+}
+
+EXPORT int shim_port_lease_take(long long now, int port, const char *ip, unsigned int ttl_s,
+				const char *note)
+{
+	return acl_port_lease_take(&st, now, port, ip_of(ip), ttl_s, note);
+}
+
+EXPORT int shim_port_lease_release(long long now, int port, const char *ip, int force)
+{
+	return acl_port_lease_release(&st, now, port, ip_of(ip), force != 0);
+}
+
+EXPORT const char *shim_port_lease_note(int port)
+{
+	return (port >= 1 && port <= ACL_MAX_PORTS) ? st.port_lease[port - 1].note : "";
+}
+
 EXPORT void shim_block(long long now, const char *ip, int services, unsigned int ms)
 {
 	acl_block(&st, now, ip_of(ip), (uint8_t)services, ms);

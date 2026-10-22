@@ -71,6 +71,14 @@ bool acl_lease_active(const struct acl_state *s, int64_t now)
 	return s->lease.holder != 0 && now < s->lease.until;
 }
 
+bool acl_port_lease_active(const struct acl_state *s, int64_t now, int port)
+{
+	if (port < 1 || port > ACL_MAX_PORTS) {
+		return false;
+	}
+	return s->port_lease[port - 1].holder != 0 && now < s->port_lease[port - 1].until;
+}
+
 enum acl_verdict acl_check(const struct acl_state *s, int64_t now, enum acl_service svc,
 			   uint32_t ip)
 {
@@ -94,6 +102,22 @@ enum acl_verdict acl_check(const struct acl_state *s, int64_t now, enum acl_serv
 	return ACL_OK;
 }
 
+enum acl_verdict acl_check_port(const struct acl_state *s, int64_t now, enum acl_service svc,
+				int port, uint32_t ip)
+{
+	enum acl_verdict v = acl_check(s, now, svc, ip);
+
+	if (v != ACL_OK) {
+		return v;
+	}
+	if ((ACL_LEASED & ACL_BIT(svc)) && acl_port_lease_active(s, now, port) &&
+	    ip != s->port_lease[port - 1].holder) {
+		return ACL_RESERVED;
+	}
+
+	return ACL_OK;
+}
+
 int acl_lease_take(struct acl_state *s, int64_t now, uint32_t ip, uint32_t ttl_s,
 		   const char *note)
 {
@@ -102,6 +126,11 @@ int acl_lease_take(struct acl_state *s, int64_t now, uint32_t ip, uint32_t ttl_s
 	}
 	if (acl_lease_active(s, now) && s->lease.holder != ip) {
 		return -EBUSY;
+	}
+	for (int p = 1; p <= ACL_MAX_PORTS; p++) {
+		if (acl_port_lease_active(s, now, p) && s->port_lease[p - 1].holder != ip) {
+			return -EBUSY;
+		}
 	}
 
 	s->lease.holder = ip;
@@ -121,6 +150,45 @@ int acl_lease_release(struct acl_state *s, int64_t now, uint32_t ip, bool force)
 	}
 
 	memset(&s->lease, 0, sizeof(s->lease));
+
+	return 0;
+}
+
+int acl_port_lease_take(struct acl_state *s, int64_t now, int port, uint32_t ip, uint32_t ttl_s,
+			const char *note)
+{
+	struct acl_lease *l;
+
+	if (port < 1 || port > ACL_MAX_PORTS || ip == 0 || ttl_s < ACL_LEASE_MIN_S ||
+	    ttl_s > ACL_LEASE_MAX_S) {
+		return -EINVAL;
+	}
+	if ((acl_lease_active(s, now) && s->lease.holder != ip) ||
+	    (acl_port_lease_active(s, now, port) && s->port_lease[port - 1].holder != ip)) {
+		return -EBUSY;
+	}
+
+	l = &s->port_lease[port - 1];
+	l->holder = ip;
+	l->until = now + (int64_t)ttl_s * 1000;
+	acl_copy_text(l->note, sizeof(l->note), note != NULL ? note : "");
+
+	return 0;
+}
+
+int acl_port_lease_release(struct acl_state *s, int64_t now, int port, uint32_t ip, bool force)
+{
+	if (port < 1 || port > ACL_MAX_PORTS) {
+		return -EINVAL;
+	}
+	if (!acl_port_lease_active(s, now, port)) {
+		return -ENOENT;
+	}
+	if (!force && s->port_lease[port - 1].holder != ip) {
+		return -EPERM;
+	}
+
+	memset(&s->port_lease[port - 1], 0, sizeof(s->port_lease[port - 1]));
 
 	return 0;
 }

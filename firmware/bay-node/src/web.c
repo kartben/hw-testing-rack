@@ -451,11 +451,14 @@ static void slot_name(int port, char *buf, size_t size)
  * One object of GET /api/ports (full) or of /api/status's ports (short):
  * a DATA x4 port, or the one DUT as port 1 (no hub: busid 1-1)
  */
-static int port_json(char *buf, size_t size, int port, bool full)
+static int port_json(char *buf, size_t size, int port, uint32_t ip, bool full)
 {
 	struct port_info pi;
-	char name[24], usb[64] = "null";
+	char name[24], busid[16], usb[64] = "null", usbip[48] = "null", lease_str[128] = "null";
 	struct dut_power_reading r = {0};
+	struct acl_lease lease;
+	uint32_t client_ip = 0, since_s = 0, remaining = 0;
+	bool leased;
 
 	if (port > 0) {
 		if (ports_info(port, &pi) != 0) {
@@ -472,32 +475,48 @@ static int port_json(char *buf, size_t size, int port, bool full)
 		}
 	}
 	slot_name(port, name, sizeof(name));
+	snprintf(busid, sizeof(busid), "1-1%s%.0u", port > 0 ? "." : "", port > 0 ? pi.hub_port : 0);
 	if (pi.usb && full && port > 0) {
-		snprintf(usb, sizeof(usb), "{\"vid\":\"%04x\",\"pid\":\"%04x\",\"busid\":\"1-1.%u\"}",
-			 pi.vid, pi.pid, pi.hub_port);
+		snprintf(usb, sizeof(usb), "{\"vid\":\"%04x\",\"pid\":\"%04x\",\"busid\":\"%s\"}",
+			 pi.vid, pi.pid, busid);
 	} else if (pi.usb) {
-		snprintf(usb, sizeof(usb), "{\"busid\":\"1-1%s%.0u\"}", port > 0 ? "." : "",
-			 port > 0 ? pi.hub_port : 0);
+		snprintf(usb, sizeof(usb), "{\"busid\":\"%s\"}", busid);
+	}
+	if (pi.usb && usb_host_usbip_client(busid, &client_ip, &since_s) == 0) {
+		char addr[ACL_IP_STR_LEN];
+
+		acl_format_ip(client_ip, addr);
+		snprintf(usbip, sizeof(usbip), "{\"client\":\"%s\"}", addr);
+	}
+	leased = port > 0 ? access_port_lease_get(port, &lease, &remaining)
+			  : access_lease_get(&lease, &remaining);
+	if (leased) {
+		char holder[ACL_IP_STR_LEN];
+
+		acl_format_ip(lease.holder, holder);
+		snprintf(lease_str, sizeof(lease_str),
+			 "{\"holder\":\"%s\",\"note\":\"%s\",\"remaining_s\":%u,\"yours\":%s}",
+			 holder, lease.note, remaining, lease.holder == ip ? "true" : "false");
 	}
 
 	if (!full) {
 		return snprintf(buf, size,
 				"{\"slot\":\"%s\",\"port\":%u,\"power\":{\"on\":%s,\"ma\":%d},"
-				"\"fault\":%s,\"usb\":%s,\"usbip\":null,\"lease\":null}",
+				"\"fault\":%s,\"usb\":%s,\"usbip\":%s,\"lease\":%s}",
 				name, pi.slot, pi.on ? "true" : "false", pi.ma,
-				pi.latched ? "true" : "false", usb);
+				pi.latched ? "true" : "false", usb, usbip, lease_str);
 	}
 	return snprintf(buf, size,
 			"{\"slot\":\"%s\",\"port\":%u,\"hub_port\":%s%.0u,"
 			"\"power\":{\"on\":%s,\"mv\":%d,\"ma\":%d,\"mw\":%d,\"faults\":%u},"
-			"\"fault\":%s,\"usb\":%s,\"usbip\":null,\"lease\":null}",
+			"\"fault\":%s,\"usb\":%s,\"usbip\":%s,\"lease\":%s}",
 			name, pi.slot, port > 0 ? "" : "null", port > 0 ? pi.hub_port : 0,
 			pi.on ? "true" : "false", pi.mv, pi.ma, pi.mw, pi.faults,
-			pi.latched ? "true" : "false", usb);
+			pi.latched ? "true" : "false", usb, usbip, lease_str);
 }
 
 /* The ports as a JSON array: a DATA x4's, or the one DUT's */
-static int ports_json_array(char *buf, size_t size, bool full)
+static int ports_json_array(char *buf, size_t size, uint32_t ip, bool full)
 {
 	int count = ports_count();
 	size_t len = 1;
@@ -511,7 +530,7 @@ static int ports_json_array(char *buf, size_t size, bool full)
 		if (i > 0) {
 			buf[len++] = ',';
 		}
-		n = port_json(buf + len, size - len, count > 0 ? i + 1 : 0, full);
+		n = port_json(buf + len, size - len, count > 0 ? i + 1 : 0, ip, full);
 		if (n < 0 || (size_t)n >= size - len - 1) {
 			return -ENOMEM;
 		}
@@ -523,9 +542,11 @@ static int ports_json_array(char *buf, size_t size, bool full)
 	return len;
 }
 
+static uint32_t status_ip;
+
 static int ports_status_json(char *buf, size_t size)
 {
-	return ports_json_array(buf, size, false);
+	return ports_json_array(buf, size, status_ip, false);
 }
 
 static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
@@ -533,6 +554,7 @@ static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 	static struct status_doc s;
 	int ret;
 
+	status_ip = ip;
 	status_fill(&s, ip);
 	ret = json_obj_encode_buf(status_descr, ARRAY_SIZE(status_descr), &s, resp_buf,
 				  sizeof(resp_buf));
@@ -872,6 +894,32 @@ static int action_handler(struct http_client_ctx *client, enum http_transaction_
 		}
 	}
 
+	if (what == API_POWER || what == API_RESET || what == API_BOOT) {
+		int target = port > 0 ? port : ((fields & ACTION_FIELD_PORT) ? areq.port : 0);
+		struct acl_lease lease;
+		uint32_t remaining;
+
+		if (target >= 1 && target <= ports_count() &&
+		    access_check_port(ACL_CONTROL, target, ip) == ACL_RESERVED &&
+		    access_port_lease_get(target, &lease, &remaining)) {
+			char slot[24], holder[ACL_IP_STR_LEN], who[ACL_IP_STR_LEN];
+
+			slot_name(target, slot, sizeof(slot));
+			acl_format_ip(lease.holder, holder);
+			acl_format_ip(ip, who);
+			snprintf(resp_buf, sizeof(resp_buf),
+				 "{\"error\":\"%s reserved by %s%s%s%s, %u min left\","
+				 "\"reason\":\"reserved\",\"service\":\"control\",\"you\":\"%s\"}",
+				 slot, holder, lease.note[0] ? " (" : "", lease.note,
+				 lease.note[0] ? ")" : "", (remaining + 59) / 60, who);
+			rsp->status = HTTP_423_LOCKED;
+			rsp->body = resp_buf;
+			rsp->body_len = strlen(resp_buf);
+			rsp->final_chunk = true;
+			return 0;
+		}
+	}
+
 	err = do_action(what, port, &areq, fields, &code);
 	if (err != NULL) {
 		respond_error(rsp, code, err);
@@ -880,7 +928,7 @@ static int action_handler(struct http_client_ctx *client, enum http_transaction_
 
 	/* /api/ports/<n>/...: the port's object; otherwise the status document */
 	if (port > 0) {
-		n = port_json(resp_buf, sizeof(resp_buf), port, true);
+		n = port_json(resp_buf, sizeof(resp_buf), port, ip, true);
 		respond_buf(rsp, n < (int)sizeof(resp_buf) ? n : -ENOMEM);
 		return 0;
 	}
@@ -912,12 +960,16 @@ static int ports_handler(struct http_client_ctx *client, enum http_transaction_s
 			 const struct http_request_ctx *req, struct http_response_ctx *rsp,
 			 void *user_data)
 {
+	uint32_t ip;
+
 	ARG_UNUSED(req);
 	ARG_UNUSED(user_data);
 
-	if (status == HTTP_SERVER_REQUEST_DATA_FINAL &&
-	    !refused(rsp, ACL_STATUS, access_peer(client->fd))) {
-		respond_buf(rsp, ports_json_array(resp_buf, sizeof(resp_buf), true));
+	if (status == HTTP_SERVER_REQUEST_DATA_FINAL) {
+		ip = access_peer(client->fd);
+		if (!refused(rsp, ACL_STATUS, ip)) {
+			respond_buf(rsp, ports_json_array(resp_buf, sizeof(resp_buf), ip, true));
+		}
 	}
 
 	return 0;
@@ -1554,6 +1606,8 @@ struct access_req {
 	char *note;
 	int32_t ttl_s;
 	bool release;
+	char *ports[ACL_MAX_PORTS + 1];
+	size_t ports_len;
 };
 
 static const struct json_obj_descr access_req_descr[] = {
@@ -1563,6 +1617,8 @@ static const struct json_obj_descr access_req_descr[] = {
 	JSON_OBJ_DESCR_PRIM(struct access_req, note, JSON_TOK_STRING),
 	JSON_OBJ_DESCR_PRIM(struct access_req, ttl_s, JSON_TOK_NUMBER),
 	JSON_OBJ_DESCR_PRIM(struct access_req, release, JSON_TOK_TRUE),
+	JSON_OBJ_DESCR_ARRAY(struct access_req, ports, ACL_MAX_PORTS + 1, ports_len,
+			     JSON_TOK_STRING),
 };
 
 #define AREQ_KEY     BIT(0)
@@ -1571,6 +1627,7 @@ static const struct json_obj_descr access_req_descr[] = {
 #define AREQ_NOTE    BIT(3)
 #define AREQ_TTL     BIT(4)
 #define AREQ_RELEASE BIT(5)
+#define AREQ_PORTS   BIT(6)
 
 static void respond_access(struct http_response_ctx *rsp, uint32_t ip, bool admin)
 {
@@ -1618,12 +1675,103 @@ static void respond_claim(struct http_response_ctx *rsp, uint32_t ip, const stru
 				  hex, CONFIG_BAY_ACCESS_CLAIM_S));
 }
 
+static int port_by_slot(const char *s)
+{
+	char name[24];
+	int count = ports_count();
+
+	if (s == NULL) {
+		return 0;
+	}
+	for (int p = 1; p <= count; p++) {
+		slot_name(p, name, sizeof(name));
+		if (strcasecmp(s, name) == 0) {
+			return p;
+		}
+	}
+	return 0;
+}
+
+static void respond_port_reserved(struct http_response_ctx *rsp, int port, uint32_t holder_ip)
+{
+	char slot[24], holder[ACL_IP_STR_LEN];
+
+	slot_name(port, slot, sizeof(slot));
+	acl_format_ip(holder_ip, holder);
+	snprintf(resp_buf, sizeof(resp_buf),
+		 "{\"error\":\"%s reserved by %s\",\"reason\":\"reserved\"}", slot, holder);
+	rsp->status = HTTP_423_LOCKED;
+	rsp->body = resp_buf;
+	rsp->body_len = strlen(resp_buf);
+	rsp->final_chunk = true;
+}
+
 static void respond_lease(struct http_response_ctx *rsp, uint32_t ip, bool admin,
 			  const struct access_req *req, int fields)
 {
+	struct acl_lease lease;
+	uint32_t remaining;
 	int ret;
 
-	if ((fields & AREQ_RELEASE) && req->release) {
+	if (fields & AREQ_PORTS) {
+		int chosen[ACL_MAX_PORTS];
+		int count = ports_count();
+
+		if (count == 0) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST,
+				      "this node serves one board: lease the bay (no \"ports\")");
+			return;
+		}
+		if (req->ports_len == 0 || req->ports_len > (size_t)count) {
+			respond_error(rsp, HTTP_400_BAD_REQUEST, "ports: a list of sub-slots");
+			return;
+		}
+		for (size_t i = 0; i < req->ports_len; i++) {
+			chosen[i] = port_by_slot(req->ports[i]);
+			if (chosen[i] == 0) {
+				respond_error(rsp, HTTP_400_BAD_REQUEST,
+					      "ports: unknown sub-slot");
+				return;
+			}
+		}
+		if ((fields & AREQ_RELEASE) && req->release) {
+			for (size_t i = 0; i < req->ports_len; i++) {
+				if (!admin &&
+				    access_port_lease_get(chosen[i], &lease, &remaining) &&
+				    lease.holder != ip) {
+					respond_error(rsp, HTTP_403_FORBIDDEN,
+						      "only its holder or an admin may release it");
+					return;
+				}
+			}
+			for (size_t i = 0; i < req->ports_len; i++) {
+				(void)access_port_lease_release(chosen[i], ip, admin);
+			}
+		} else {
+			uint32_t ttl = (fields & AREQ_TTL) ? req->ttl_s : LEASE_DEFAULT_S;
+
+			if (refused(rsp, ACL_CONTROL, ip)) {
+				return;
+			}
+			if ((fields & AREQ_TTL) &&
+			    (req->ttl_s < ACL_LEASE_MIN_S || req->ttl_s > ACL_LEASE_MAX_S)) {
+				respond_error(rsp, HTTP_400_BAD_REQUEST,
+					      "ttl_s must be 10..86400");
+				return;
+			}
+			for (size_t i = 0; i < req->ports_len; i++) {
+				if (access_port_lease_get(chosen[i], &lease, &remaining) &&
+				    lease.holder != ip) {
+					respond_port_reserved(rsp, chosen[i], lease.holder);
+					return;
+				}
+			}
+			for (size_t i = 0; i < req->ports_len; i++) {
+				(void)access_port_lease_take(
+					chosen[i], ip, ttl, (fields & AREQ_NOTE) ? req->note : "");
+			}
+		}
+	} else if ((fields & AREQ_RELEASE) && req->release) {
 		ret = access_lease_release(ip, admin);
 		if (ret == -EPERM) {
 			respond_error(rsp, HTTP_403_FORBIDDEN,
@@ -1635,6 +1783,12 @@ static void respond_lease(struct http_response_ctx *rsp, uint32_t ip, bool admin
 		if (refused(rsp, ACL_CONTROL, ip)) {
 			return;
 		}
+		for (int p = 1; p <= ports_count(); p++) {
+			if (access_port_lease_get(p, &lease, &remaining) && lease.holder != ip) {
+				respond_port_reserved(rsp, p, lease.holder);
+				return;
+			}
+		}
 		ret = access_lease_take(ip, (fields & AREQ_TTL) ? req->ttl_s : LEASE_DEFAULT_S,
 					(fields & AREQ_NOTE) ? req->note : "");
 		if (ret == -EINVAL) {
@@ -1643,7 +1797,12 @@ static void respond_lease(struct http_response_ctx *rsp, uint32_t ip, bool admin
 		}
 	}
 
+	status_ip = ip;
 	respond_access(rsp, ip, admin);
+	if (ports_count() > 0 && rsp->status == 0) {
+		status_append("ports", ports_status_json);
+		rsp->body_len = strlen(resp_buf);
+	}
 }
 
 static void do_access(enum access_api what, struct http_client_ctx *client, char *body,

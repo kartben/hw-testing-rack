@@ -474,6 +474,13 @@ static int cmd_access_status(const struct shell *sh, size_t argc, char **argv)
 	} else {
 		shell_print(sh, "lease:     none");
 	}
+	for (int p = 1; p <= ports_count(); p++) {
+		if (access_port_lease_get(p, &lease, &remaining)) {
+			acl_format_ip(lease.holder, a);
+			shell_print(sh, "  port %d:  %s, %u s left%s%s", p, a, remaining,
+				    lease.note[0] ? ", " : "", lease.note);
+		}
+	}
 
 	n = access_connections(conns, ARRAY_SIZE(conns));
 	for (int i = 0; i < n; i++) {
@@ -535,10 +542,17 @@ static int cmd_access_reset(const struct shell *sh, size_t argc, char **argv)
 
 static int cmd_access_release(const struct shell *sh, size_t argc, char **argv)
 {
+	bool released = access_lease_release(0, true) == 0;
+
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
 
-	if (access_lease_release(0, true) != 0) {
+	for (int p = 1; p <= ACL_MAX_PORTS; p++) {
+		if (access_port_lease_release(p, 0, true) == 0) {
+			released = true;
+		}
+	}
+	if (!released) {
 		shell_print(sh, "no lease");
 	}
 

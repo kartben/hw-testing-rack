@@ -42,8 +42,12 @@ def build(outdir: Path) -> ctypes.CDLL:
     sigs = {
         "shim_reset": ([], None), "shim_rules": ([i, i], None), "shim_add": ([s, s, i], i),
         "shim_rights": ([s], i), "shim_source_of": ([s], i), "shim_check": ([ll, i, s], i),
+        "shim_check_port": ([ll, i, i, s], i),
         "shim_lease_take": ([ll, s, u, s], i), "shim_lease_release": ([ll, s, i], i),
-        "shim_lease_note": ([], s), "shim_block": ([ll, s, i, u], None),
+        "shim_lease_note": ([], s),
+        "shim_port_lease_take": ([ll, i, s, u, s], i), "shim_port_lease_release": ([ll, i, s, i], i),
+        "shim_port_lease_note": ([i], s),
+        "shim_block": ([ll, s, i, u], None),
         "shim_refused": ([ll, s, i, i], None), "shim_refused_total": ([], u),
         "shim_log": ([i, s, sz], None), "shim_cidr": ([s, s], i), "shim_ip": ([s, s], i),
         "shim_service_mask": ([s], i), "shim_copy_text": ([s, s, sz], None),
@@ -81,6 +85,15 @@ class Acl:
 
     def release(self, now: int, ip: str, force: bool = False) -> int:
         return self.lib.shim_lease_release(now, ip.encode(), int(force))
+
+    def check_port(self, now: int, svc: int, port: int, ip: str) -> int:
+        return self.lib.shim_check_port(now, svc, port, ip.encode())
+
+    def take_port(self, now: int, port: int, ip: str, ttl: int, note: str = "") -> int:
+        return self.lib.shim_port_lease_take(now, port, ip.encode(), ttl, note.encode())
+
+    def release_port(self, now: int, port: int, ip: str, force: bool = False) -> int:
+        return self.lib.shim_port_lease_release(now, port, ip.encode(), int(force))
 
     def log(self) -> list[str]:
         out = []
@@ -239,6 +252,30 @@ class TestAcl(unittest.TestCase):
         self.assertEqual(acl.take(0, "0.0.0.0", 60), -EINVAL)
         self.assertEqual(acl.take(0, "192.168.1.41", 86400, "x" * 80), 0)
         self.assertEqual(len(self.lib.shim_lease_note()), 39)
+
+    def test_port_lease(self) -> None:
+        acl = self.acl
+        # Port 2 leased by .41: port 2 is reserved to .41, port 1 stays free
+        self.assertEqual(acl.take_port(1000, 2, "192.168.1.41", 60, "sub-slot B3.2"), 0)
+        self.assertEqual(self.lib.shim_port_lease_note(2), b"sub-slot B3.2")
+        self.assertEqual(acl.check_port(2000, CONTROL, 2, "192.168.1.41"), OK)
+        self.assertEqual(acl.check_port(2000, CONTROL, 2, "192.168.1.42"), RESERVED)
+        self.assertEqual(acl.check_port(2000, CONTROL, 1, "192.168.1.42"), OK)
+        self.assertEqual(acl.check_port(2000, STATUS, 2, "192.168.1.42"), OK)
+        # Another host may lease port 3, but cannot lease port 2 or the whole bay
+        self.assertEqual(acl.take_port(2000, 3, "192.168.1.42", 60), 0)
+        self.assertEqual(acl.take_port(2000, 2, "192.168.1.42", 60), -EBUSY)
+        self.assertEqual(acl.take(2000, "192.168.1.41", 60), -EBUSY)
+        # Release port 3; now .41 holds the only port lease and may lease the whole bay
+        self.assertEqual(acl.release_port(3000, 3, "192.168.1.41"), -EPERM)
+        self.assertEqual(acl.release_port(3000, 3, "192.168.1.42"), 0)
+        self.assertEqual(acl.take(3000, "192.168.1.41", 60), 0)
+        # While the whole bay is leased by .41, .42 cannot lease any port
+        self.assertEqual(acl.take_port(4000, 1, "192.168.1.42", 60), -EBUSY)
+        # Bounds on port index
+        self.assertEqual(acl.take_port(0, 0, "192.168.1.41", 60), -EINVAL)
+        self.assertEqual(acl.take_port(0, 5, "192.168.1.41", 60), -EINVAL)
+        self.assertEqual(acl.release_port(0, 0, "192.168.1.41"), -EINVAL)
 
     # --- Kicks, log -------------------------------------------------------------
 

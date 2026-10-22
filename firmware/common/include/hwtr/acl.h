@@ -27,6 +27,7 @@
 #define ACL_NOTE_LEN    39
 #define ACL_LOG_SIZE    16
 #define ACL_MAX_BLOCKS  4
+#define ACL_MAX_PORTS   4
 #define ACL_KEY_LEN     32
 #define ACL_MAC_LEN     32
 
@@ -94,6 +95,7 @@ struct acl_refusal {
 struct acl_state {
 	struct acl_rules rules;
 	struct acl_lease lease;
+	struct acl_lease port_lease[ACL_MAX_PORTS];
 	struct acl_block blocks[ACL_MAX_BLOCKS];
 	struct acl_refusal log[ACL_LOG_SIZE];
 	uint32_t refused_total;
@@ -109,6 +111,9 @@ int acl_source_of(const struct acl_rules *r, uint32_t ip);
 /* May this address open (or keep) a connection to this service now? */
 enum acl_verdict acl_check(const struct acl_state *s, int64_t now, enum acl_service svc,
 			   uint32_t ip);
+/* Same for a DATA x4 sub-slot (port 1..ACL_MAX_PORTS) */
+enum acl_verdict acl_check_port(const struct acl_state *s, int64_t now, enum acl_service svc,
+				int port, uint32_t ip);
 
 bool acl_lease_active(const struct acl_state *s, int64_t now);
 /* Take or renew; -EBUSY while another address holds it, -EINVAL for a bad ttl */
@@ -116,6 +121,11 @@ int acl_lease_take(struct acl_state *s, int64_t now, uint32_t ip, uint32_t ttl_s
 		   const char *note);
 /* By its holder, or anyone with force (admin); -ENOENT none, -EPERM not yours */
 int acl_lease_release(struct acl_state *s, int64_t now, uint32_t ip, bool force);
+
+bool acl_port_lease_active(const struct acl_state *s, int64_t now, int port);
+int acl_port_lease_take(struct acl_state *s, int64_t now, int port, uint32_t ip, uint32_t ttl_s,
+			const char *note);
+int acl_port_lease_release(struct acl_state *s, int64_t now, int port, uint32_t ip, bool force);
 #define ACL_LEASE_MIN_S 10
 #define ACL_LEASE_MAX_S 86400
 
