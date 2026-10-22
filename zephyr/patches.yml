@@ -68,8 +68,9 @@ patches:
       data toggle.  The eleventh (2026-10-22): the ESP32-S3's channel counts
       127 packets at most, and a 16 KB mass storage read (256 packets) made
       the node panic; a channel is now programmed with what its counters
-      hold and the transfer goes on in the next run.  Not proposed upstream
-      (the user's call).
+      hold and the transfer goes on in the next run.  That one, ported onto
+      main, is the user's draft PR 123165 (2026-10-22): drop it when it
+      lands.  The others are not proposed upstream (the user's call).
 
   # USB host hub class: the connection is debounced before a port reset, the
   # end of the reset is polled, and a port whose resets all failed is reset
@@ -99,5 +100,6 @@ patches:
     upstreamable: true
     comments: |
       One commit, applies with or without usbip-removal-and-busid.patch.
-      Tried on the bench (esptool read_flash through the FTDI, 2026-10-21);
-      not proposed upstream (the user's call).
+      Tried on the bench (esptool read_flash through the FTDI, 2026-10-21).
+      The same commit is the user's draft PR 123166 (2026-10-22): drop this
+      file when it lands.
