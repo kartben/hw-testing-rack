@@ -245,6 +245,29 @@ The renders (each board's signal layers: before, the portfolio's best, KRT) are 
 | KRT | `.kicad_pcb` | `.kicad_pcb` | stitches existing zones | kept | coupled (`route_diff`) | 1 | yes |
 | Topola | DSN (KiCad's fails) | SES (0-width wires) | no | — | — | 1 | — |
 
+## The hybrid flow, tried
+
+KRT routes the differential pairs `design.py` doesn't draw (`route_diff.py`, on the unrouted board); those tracks
+are locked, the DSN is exported again, and the Freerouting portfolio routes the rest; then the same import and
+scoring.  The same runs on both sides.
+
+| Board | Portfolio alone: best · clean runs · pairs | Hybrid: best · clean runs · pairs |
+|---|---|---|
+| data-port (2 pairs) | 30 vias, 153.7 mm · 16 / 17 · coupled 11 %, 38 %; skew 2.8, 0.7 mm | 31 vias, 158.6 mm (+3 %) · **17 / 17** · coupled **88 %, 84 %**; skew 1.8, 1.5 mm |
+| bay-node (ESP pair) | 403 vias, 2216.8 mm · 15 / 17 · coupled 10 %, skew 1.2 mm | 406 vias, 2190.9 mm (−0.7 %) · **17 / 17** · coupled **98 %**, skew 3.6 mm |
+| DATA ×4 v2 (6 pairs) | `noopt`: 0 open, 0 DRC, 800 vias, 4783 mm · CP_HUB coupled 45 % | `noopt`: 0 open, **6 DRC**, 828 vias, 4861 mm · CP_HUB coupled 74 % |
+| power-hub | — | KRT can't start the USB_CONN pair from the bare board (every cell around the connector's pins blocked) |
+
+- On the simple boards it is a win: every run clean, and the pairs actually coupled (84–98 % of their length side
+  by side, against 10–38 %), for ±3 % of copper.  Skew isn't matched by that flow: adding such a pair to
+  `b.pcb["match"]` would let `pcbgen.tune_pairs` even it after routing.
+- On the dense DATA ×4 v2 it isn't.  At the board's 0.1 mm floor KRT drew the pairs 0.1 mm apart (their class asks
+  0.127): 19 clearance errors and two stubs short of the USB-C's A6 pads, in every run.  With the class's
+  clearance its pairs are clean, but the rest routes longer (+1.6 %, +28 vias) with neck-down errors; the other
+  four runs were still in the one-thread optimizer at the 45 min cap.
+- So: worth it where a pair is routed by the router on a roomy board (the bay node's ESP pair, the data port's
+  pairs); not on the DATA ×4 v2, whose High-Speed pairs are drawn by hand anyway.
+
 ## Our own router?
 
 Not from scratch, and no reverse engineering needed: all three are open source.  Freerouting is GPL-3: read for
@@ -256,8 +279,8 @@ ideas, don't copy.  KRT and Topola are MIT.  What each does best is now measured
   pass, pair tuning, scoring.
 
 The cheap way to combine them, in order:
-1. **A hybrid flow.**  KRT routes the pairs (coupled); they are locked; the Freerouting portfolio routes the
-   rest; `pcbgen` tidies.  No new router: each does what it does best.
+1. **A hybrid flow** (tried above).  KRT routes the pairs (coupled); they are locked; the Freerouting portfolio
+   routes the rest; `pcbgen` tidies.  It works on the simple boards, not yet on the dense one.
 2. **Contribute to KRT** what our boards need: per-netclass clearance, hole clearance, KiCad's connectivity as
    the check.  Then it may finish our dense boards as well as fast.
 3. **Our own core**, in Rust, only if 1 and 2 fall short.  It would mean months of work to reach Freerouting's
@@ -266,5 +289,5 @@ The cheap way to combine them, in order:
 ## Reproduce
 
 - `tools/route_farm.py` and `electronics/tools/dsn.py` are in the repo; the tests are `tools/tests/test_dsn.py`.
-- KRT and Topola ran from scratch scripts (`bench_krt.py`, `topola_variants.py`).  They are kept with the renders
-  in the session's notes, not in the repo.
+- KRT, the hybrid flow and Topola ran from scratch scripts (`bench_krt.py`, `hybrid.py`, `topola_variants.py`).
+  They are kept with the renders in the session's notes, not in the repo.
