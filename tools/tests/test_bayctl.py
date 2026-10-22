@@ -479,11 +479,25 @@ class MultiNodeApi(unittest.TestCase):
                     cls.proc.kill()
                     raise
                 time.sleep(0.2)
+        try:
+            cls.wait_enumerated()
+        except AssertionError:
+            cls.proc.kill()
+            raise
 
     @classmethod
     def tearDownClass(cls):
         cls.proc.terminate()
         cls.proc.wait(5)
+
+    @classmethod
+    def wait_enumerated(cls):
+        """The boards enumerate UP_S after their power on, one after the other (dev_server.py)."""
+        deadline = time.monotonic() + 10
+        while not all(p["usb"] for p in bayctl.node_ports(cls.node)):
+            if time.monotonic() > deadline:
+                raise AssertionError("the boards never enumerated")
+            time.sleep(0.1)
 
     def cli(self, *args) -> str:
         r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(self.lab),
@@ -607,6 +621,7 @@ class MultiNodeApi(unittest.TestCase):
         self.cli("power", "B3", "on")
         self.assertIn("B3.4 reserved for 127.0.0.1, 600 s", self.cli("lease", "B3.4", "--for", "10m"))
         self.assertIn("B3.4 released", self.cli("release", "B3.4"))
+        self.wait_enumerated()
         out = self.cli("status", "B3.4")
         self.assertIn("B3", out)
         # The USB devices behind the DATA x4 hub, by name (GET /api/usb)
