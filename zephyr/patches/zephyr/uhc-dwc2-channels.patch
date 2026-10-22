@@ -1,7 +1,7 @@
 From 208f2cd1795767cba23aa9b8331e70e779436f5f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Tue, 8 Sep 2026 14:48:44 +0200
-Subject: [PATCH 01/10] drivers: usb: uhc_dwc2: take the bulk data toggle from
+Subject: [PATCH 01/11] drivers: usb: uhc_dwc2: take the bulk data toggle from
  the controller
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -87,7 +87,7 @@ index 92f23d7436c..34f79b5ccd5 100644
 From 83898846708a0577ada833691905bb58005425bb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Tue, 8 Sep 2026 14:31:27 +0200
-Subject: [PATCH 02/10] drivers: usb: uhc_dwc2: rewind bulk transfers instead
+Subject: [PATCH 02/11] drivers: usb: uhc_dwc2: rewind bulk transfers instead
  of restarting them
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -199,7 +199,7 @@ index 34f79b5ccd5..fdc36853d33 100644
 From 0506fdc281b9186d2bfae558c438ef8cfd3a20a1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Thu, 1 Oct 2026 11:57:44 +0200
-Subject: [PATCH 03/10] drivers: usb: uhc_dwc2: resume a bulk IN transfer after
+Subject: [PATCH 03/11] drivers: usb: uhc_dwc2: resume a bulk IN transfer after
  a toggle error
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -239,7 +239,7 @@ index fdc36853d33..af5e6f53ac3 100644
 From 5179ddc232eda51c1b9f4319a8a1d32a8c3eb6e6 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Tue, 29 Sep 2026 15:42:36 +0200
-Subject: [PATCH 04/10] drivers: usb: uhc_dwc2: reset the data toggles on a
+Subject: [PATCH 04/11] drivers: usb: uhc_dwc2: reset the data toggles on a
  configuration
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -307,7 +307,7 @@ index af5e6f53ac3..75a1aa2ef4e 100644
 From f594e0445fe8a37162148b763ce2dbfdca02556d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Fri, 9 Oct 2026 12:26:16 +0200
-Subject: [PATCH 05/10] drivers: usb: uhc_dwc2: reset the data toggle when a
+Subject: [PATCH 05/11] drivers: usb: uhc_dwc2: reset the data toggle when a
  halt is cleared
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -373,7 +373,7 @@ index 75a1aa2ef4e..47c85c63344 100644
 From e14305abf15c2572f9932bfaba5d556fa995dc74 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 19:13:42 +0200
-Subject: [PATCH 06/10] drivers: usb: uhc_dwc2: keep the endpoint state by
+Subject: [PATCH 06/11] drivers: usb: uhc_dwc2: keep the endpoint state by
  device address
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -589,7 +589,7 @@ index 47c85c63344..fca3a4e4904 100644
 From bcff9586189d2c2f87364dc14cb91c30c9985f8d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 19:13:42 +0200
-Subject: [PATCH 07/10] drivers: usb: uhc_dwc2: give the channel back between
+Subject: [PATCH 07/11] drivers: usb: uhc_dwc2: give the channel back between
  interrupt IN polls
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -924,7 +924,7 @@ index fca3a4e4904..da959fcadeb 100644
 From e46305e7c33f422537dd43a72126b5a6dfa2383b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 19:13:43 +0200
-Subject: [PATCH 08/10] drivers: usb: uhc_dwc2: give a NAKing bulk IN channel
+Subject: [PATCH 08/11] drivers: usb: uhc_dwc2: give a NAKing bulk IN channel
  to waiting transfers
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -1148,7 +1148,7 @@ index da959fcadeb..bdd398c3e0e 100644
 From b56e4af634473f999c1d6d3d89e3bc3a2a54b6e8 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Wed, 21 Oct 2026 22:07:58 +0200
-Subject: [PATCH 09/10] drivers: usb: uhc_dwc2: count consecutive transaction
+Subject: [PATCH 09/11] drivers: usb: uhc_dwc2: count consecutive transaction
  errors only
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -1219,7 +1219,7 @@ index bdd398c3e0e..d032244974f 100644
 From d34db146a6b026c59ef59a47921678438089a625 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Wed, 21 Oct 2026 22:05:23 +0200
-Subject: [PATCH 10/10] drivers: usb: uhc_dwc2: keep the data toggle of a
+Subject: [PATCH 10/11] drivers: usb: uhc_dwc2: keep the data toggle of a
  cancelled transfer
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -1257,3 +1257,132 @@ index d032244974f..a813e7a62c9 100644
  				ch_release(dev, ch);
  			}
  
+
+From 2271e98a2ca945b2da4bc51af287976582956a8a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Thu, 22 Oct 2026 12:23:37 +0200
+Subject: [PATCH 11/11] drivers: usb: uhc_dwc2: split bulk transfers the
+ channel counters cannot hold
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A channel is programmed with the packet count and the size of the whole
+transfer, but the width of these fields is chosen when the core is
+synthesized: 7 and 16 bits on the ESP32-S3. A full-speed bulk transfer
+of more than 127 packets, 8128 bytes, overflowed the packet count, and a
+16 KB read from a mass storage device ended in a kernel panic.
+
+Take the widths from GHWCFG3, program a channel with at most what they
+hold, and start the next run of a bulk transfer where the last one
+ended, until the transfer is done or the device sends a short packet.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ drivers/usb/uhc/uhc_dwc2.c | 50 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
+
+diff --git a/drivers/usb/uhc/uhc_dwc2.c b/drivers/usb/uhc/uhc_dwc2.c
+index a813e7a62c9..95730280b6a 100644
+--- a/drivers/usb/uhc/uhc_dwc2.c
++++ b/drivers/usb/uhc/uhc_dwc2.c
+@@ -155,6 +155,9 @@ struct uhc_dwc2_data {
+ 	struct uhc_dwc2_channel_data ch_data[MAX_CHANNEL_DATA];
+ 	/* Number of channels, available on the hardware */
+ 	uint32_t numhstchnl;
++	/* Largest transfer size and packet count a channel is programmed with */
++	uint32_t max_xfersize;
++	uint32_t max_pktcnt;
+ 	/* Number of channels currently not claimed */
+ 	uint32_t free_chs;
+ 	/* Transfers wait for a channel, see submit_pending() */
+@@ -379,6 +382,7 @@ static inline int dwc2_core_init_host_gusbcfg(const struct device *dev)
+ 	struct usb_dwc2_reg *const base = uhc_dwc2_get_base(dev);
+ 	uint32_t gusbcfg = sys_read32((mem_addr_t)&base->gusbcfg);
+ 	uint32_t ghwcfg2 = sys_read32((mem_addr_t)&base->ghwcfg2);
++	uint32_t ghwcfg3 = sys_read32((mem_addr_t)&base->ghwcfg3);
+ 	uint32_t ghwcfg4 = sys_read32((mem_addr_t)&base->ghwcfg4);
+ 	const k_timepoint_t timepoint = sys_timepoint_calc(K_MSEC(100));
+ 
+@@ -404,6 +408,11 @@ static inline int dwc2_core_init_host_gusbcfg(const struct device *dev)
+ 		return -EIO;
+ 	}
+ 
++	data->max_pktcnt = GHWCFG3_PKTCOUNT(usb_dwc2_get_ghwcfg3_pktsizewidth(ghwcfg3));
++	data->max_xfersize = GHWCFG3_XFERSIZE(usb_dwc2_get_ghwcfg3_xfersizewidth(ghwcfg3));
++	LOG_DBG("Max packet count %u, Max transfer size %u",
++		data->max_pktcnt, data->max_xfersize);
++
+ 	if (usb_dwc2_get_ghwcfg2_hsphytype(ghwcfg2) == USB_DWC2_GHWCFG2_HSPHYTYPE_NO_HS) {
+ 		/* Select FS PHY */
+ 		LOG_DBG("Fullspeed PHY init");
+@@ -1731,6 +1740,7 @@ static void ch_start_control(const struct device *dev,
+ static void ch_start_bulk(const struct device *dev,
+ 			  struct uhc_dwc2_channel *const ch)
+ {
++	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
+ 	struct uhc_transfer *const xfer = ch->xfer;
+ 	mem_addr_t dma_addr = 0;
+ 	uint32_t pkt_cnt;
+@@ -1753,6 +1763,9 @@ static void ch_start_bulk(const struct device *dev,
+ 		LOG_HEXDUMP_DBG(xfer->buf->data, ch->length, "BULK OUT");
+ 	}
+ 
++	/* A transfer longer than the channel counters hold goes on in more runs */
++	ch->length = MIN(ch->length, ROUND_DOWN(MIN(priv->max_xfersize,
++						     priv->max_pktcnt * xfer->mps), xfer->mps));
+ 	pkt_cnt = calc_packet_count(ch->length, xfer->mps);
+ 
+ 	hctsiz = usb_dwc2_set_hctsiz_pid(ch->data->next_pid) |
+@@ -1926,6 +1939,39 @@ static void ch_reinit(const struct device *dev,
+ 	}
+ }
+ 
++/*
++ * Start the next run of a bulk transfer that the last one did not finish,
++ * unless the device ended it with a short packet.
++ */
++static bool ch_continue_bulk(const struct device *dev, struct uhc_dwc2_channel *const ch)
++{
++	struct uhc_transfer *const xfer = ch->xfer;
++	uint32_t hctsiz;
++
++	if (xfer->type != USB_EP_TYPE_BULK) {
++		return false;
++	}
++
++	if (USB_EP_DIR_IS_IN(xfer->ep)) {
++		hctsiz = sys_read32((mem_addr_t)&ch->regs->hctsiz);
++		if (usb_dwc2_get_hctsiz_xfersize(hctsiz) != 0U ||
++		    ch->length == net_buf_tailroom(xfer->buf)) {
++			return false;
++		}
++	} else if (ch->length == xfer->buf->len) {
++		return false;
++	}
++
++	ch_complete_data(dev, ch);
++	if (USB_EP_DIR_IS_OUT(xfer->ep)) {
++		net_buf_pull(xfer->buf, ch->length);
++	}
++
++	ch_reinit(dev, ch);
++
++	return true;
++}
++
+ static void port_start_periodic(const struct device *dev)
+ {
+ 	struct uhc_dwc2_data *const priv = uhc_get_private(dev);
+@@ -2489,6 +2535,10 @@ static void ch_handle_events(const struct device *dev, struct uhc_dwc2_channel *
+ 		} else if (events & BIT(UHC_DWC2_CHANNEL_EVENT_STALL)) {
+ 			err = -EPIPE;
+ 		} else if (events & BIT(UHC_DWC2_CHANNEL_EVENT_CPLT)) {
++			if (ch_continue_bulk(dev, ch)) {
++				return;
++			}
++
+ 			err = 0;
+ 			ch_complete(dev, ch);
+ 		} else {

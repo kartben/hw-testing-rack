@@ -47,25 +47,29 @@ patches:
   # channel back between polls, a bulk IN that NAKs gives it to transfers
   # waiting for one, the endpoint state is kept by device address and freed
   # when a device takes the address over, only consecutive transaction errors
-  # fail a transfer, a cancelled transfer keeps its data toggle
+  # fail a transfer, a cancelled transfer keeps its data toggle, a bulk
+  # transfer longer than the channel counters hold goes in several runs
   # (docs/multi-dut-node.md, USB host channels; docs/data-x4-v2-research.md,
   # second pass)
   - path: zephyr/uhc-dwc2-channels.patch
-    sha256sum: d73d26bc7f29bcff36780127c79805554f2f1aa435aa5cd0c7b8cd62728f2f94
+    sha256sum: 258b9ac2b72d420a6ac48b9ba8a20057557cbbb0af9ad7c5da915ef08d3cdf2a
     module: zephyr
     author: Benjamin Cabé
     email: benjamin@zephyrproject.org
     date: 2026-10-19
     upstreamable: true
     comments: |
-      Ten commits.  The first five are the user's open PRs, as they are:
+      Eleven commits.  The first five are the user's open PRs, as they are:
       120961 (which carries 120848) and 121688; drop each with its PR when
       it lands.  The next three are new, built on them: endpoint state by
       address, interrupt IN parked between polls, bulk IN parked on NAK
       while transfers wait.  The last two (2026-10-21): only consecutive
       transaction errors fail a transfer, a cancelled transfer keeps its
-      data toggle.  Not tested on hardware; not
-      proposed upstream (the user's call).
+      data toggle.  The eleventh (2026-10-22): the ESP32-S3's channel counts
+      127 packets at most, and a 16 KB mass storage read (256 packets) made
+      the node panic; a channel is now programmed with what its counters
+      hold and the transfer goes on in the next run.  Not proposed upstream
+      (the user's call).
 
   # USB host hub class: the connection is debounced before a port reset, the
   # end of the reset is polled, and a port whose resets all failed is reset

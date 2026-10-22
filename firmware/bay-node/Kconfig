@@ -297,11 +297,12 @@ config USBIP_READ_AHEAD
 	default y
 
 # USB mass storage: up to 120 KB per request, more than the pool.  Requests
-# over 4 KB keep their data in PSRAM and go through the pool 4 KB at a time
-# (the DWC2's DMA does not reach PSRAM).
+# over 16 KB keep their data in PSRAM and go through the pool 16 KB at a time
+# (the DWC2's DMA does not reach PSRAM): 8 trips through the USB host thread
+# for a 120 KB read instead of 30 at 4 KB.
 config USBIP_SEGMENT_SIZE
 	depends on USBIP
-	default 4096 if ESP_SPIRAM
+	default 16384 if ESP_SPIRAM
 
 # 48 KB of the 64 KB default: the RAM margin for the firmware updates (image
 # writer, upload handler).  To be watched on hardware with a busy DUT.  A
