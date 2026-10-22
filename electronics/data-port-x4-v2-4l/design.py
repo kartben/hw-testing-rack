@@ -4,8 +4,8 @@
     tools/kicad.sh data-port-x4-v2-4l --check --fab
 
 Routed by the Freerouting portfolio (docs/autorouting-benchmark.md, "The DATA ×4 v2 on 4 layers"): 0 open,
-copper DRC 0, parity 0.  Ordering it: ask JLC for via-in-pad filling (29 vias sit in 27 SMD pads, which JLC
-fills and caps for free only from 6 layers), or move those vias out of the pads first."""
+copper DRC 0, parity 0.  Its only vias in pads are the 8 drawn in the QFNs' thermal pads, fine unfilled: JLC
+fills and caps vias for free only from 6 layers, and no via sits in a small part's or a pin's pad."""
 
 import importlib.util
 import os

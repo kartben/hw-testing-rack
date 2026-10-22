@@ -591,11 +591,13 @@ pairs · In1 GND · In2 signals · In3 signals · In4 power (+3V3 / +5V) · B.Cu
     not field-solved).  In1 and In2 carry no signal track.
   - Cheaper and faster: $25.40 for 5 logic boards (ENIG), $13.20 for 5 bases (lead-free HASL), the panel
     $52.00; black mask $8.00 an order; 3–4 days (jlcpcb.com, 2026-10-20).
-  - Its costs: 29 vias sit in 27 SMD pads, 18 of them 0402/0603 pads.  JLC fills and caps vias for free only from
-    6 layers: order the 4-layer board with via-in-pad filling (not quoted), or move those vias out first.
-  - B.Cu carries 2004 mm of signal (102 mm here), over the split power plane instead of In2 over GND.  None
-    crosses the +3V3 / +5V split.  12 segments cross the +3V3_CP island's edge (this board has 21 on In3).
-  - Busier: 2001 bends against 1491, 5173 mm of copper against 4828.
+  - Vias in pads: only the 8 drawn in the QFNs' thermal pads (hub, co-processor, expanders, LSF0108s), accepted
+    unfilled (Fabio, 2026-10-23).  JLC fills and caps vias for free only from 6 layers, so since that day no via
+    of the router's or the pipeline's lands on an SMD pad: none in a 0402/0603 or a pin, where an open via drains
+    the joint (this board, routed before, has 17 there, filled for free).
+  - B.Cu carries 1981 mm of signal (102 mm here), over the split power plane instead of In2 over GND.  None
+    crosses the +3V3 / +5V split.  9 segments cross the +3V3_CP island's edge (this board has 21 on In3).
+  - Busier: 749 vias, 1932 bends and 5194 mm of copper, against 810, 1491 and 4828.
 - In2 references In1's GND.  In3 and B.Cu reference the split power plane: the split's keep-out covers both.
 - ≈ 90 Ω on the outer layers: 0.15 mm lines 0.15 mm apart over 0.1 mm of 3313 prepreg (at 4 layers, 0.25 mm
   over 0.21 mm of 7628).

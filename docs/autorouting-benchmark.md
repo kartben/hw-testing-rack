@@ -344,9 +344,22 @@ zephyrbox), 2026-10-22:
   `order2`'s.  Three runs keep 2 it can't widen.
 - **The +3V3_CP island** floats in 6 runs: Freerouting joins that net by tracks only, with no via into In2's
   island, as on 6 layers.  A fan-out via in `design.py` would make the join certain.
+- **No via in a small part's pad** (2026-10-23).  `order2` had 29 vias in 27 SMD pads: 8 the QFNs' thermal pads'
+  (drawn, accepted unfilled), 18 in 0402/0603 pads and one in a 0.4 mm pin.  JLC fills and caps vias for free
+  only from 6 layers, and an open via there drains the joint.  None was Freerouting's (none is in its session):
+  - pcbgen's fan-out landed a via on a neighbouring pad of the same net (13, the pin's included);
+  - the GND stitching, after routing, put vias on capacitor pads (6), and in later runs on the crystal's.
+  Now the fan-out, the pad ties and the stitching keep every via off every SMD pad, and the DSN says
+  `(control (via_at_smd off))` (`dsn.no_via_at_smd`) so that Freerouting won't either.  The same 16 settings, optimizer off (`--farm farm-vip`): 4 clean,
+  the best `ripup30-order2` with 749 vias, 5194.1 mm and 1932 bends, and only the 8 thermal-pad vias in pads.
+  The others leave 2–22 links open, a narrow track (`MARK` on B.Cu) or the floating island.
+- **The +3V3_CP island as a fanned-out plane, tried and dropped.**  Grown over every +3V3_CP pad and typed a
+  plane, it made Freerouting take the RP2354B's 0.4 mm pins as joined through it, though they have no room for a
+  via: 12–14 links open in every run.  A pin with no room would need a drawn link to its decoupling capacitor's
+  via first.
 - **Kept beside the 6-layer board**, as `electronics/data-port-x4-v2-4l`: a `design.py` that builds the 6-layer
-  design at 4 layers, routed with `order2`'s session; the Hardware CI checks it.  The comparison (cost, vias in
-  pads, return paths) is in docs/electronics.md.
+  design at 4 layers, routed with `ripup30-order2`'s session; the Hardware CI checks it.  The comparison (cost,
+  vias in pads, return paths) is in docs/electronics.md.
 
 ## Our own router?
 
