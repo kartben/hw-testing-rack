@@ -78,14 +78,14 @@ def check_halves(outdir: Path, name: str, spec: dict, size: tuple[float, float])
     """Each copy's rows of the panel's CPL and BOM against its variant's own files: the same parts, each moved
     and turned with its copy (CPL in JLC's frame: Y up, mm), the same LCSC parts in the same numbers."""
     fab = outdir / "fab"
-    rows = list(csv.DictReader((fab / f"{name}-panel-cpl-jlcpcb.csv").open(encoding="utf-8")))
-    bom = list(csv.DictReader((fab / f"{name}-panel-bom-jlcpcb.csv").open(encoding="utf-8")))
+    rows = list(csv.DictReader((fab / f"{name}-panel-cpl-jlcpcb.csv").read_text(encoding="utf-8").splitlines()))
+    bom = list(csv.DictReader((fab / f"{name}-panel-bom-jlcpcb.csv").read_text(encoding="utf-8").splitlines()))
     errors = []
     num = lambda s: float(s.removesuffix("mm"))
     for tag, variant, rot, f in placement(spec, size):
         bom_f, cpl_f = variant_files(fab, name, variant)
         want = {}
-        for r in csv.DictReader(cpl_f.open(encoding="utf-8")):
+        for r in csv.DictReader(cpl_f.read_text(encoding="utf-8").splitlines()):
             x, y = f(num(r["Mid X"]), -num(r["Mid Y"]))
             want[f"{r['Designator']}_{tag}"] = (x, -y, r["Layer"], (float(r["Rotation"]) + rot) % 360)
         got = {r["Designator"]: (num(r["Mid X"]), num(r["Mid Y"]), r["Layer"], float(r["Rotation"]) % 360)
@@ -100,7 +100,7 @@ def check_halves(outdir: Path, name: str, spec: dict, size: tuple[float, float])
                 errors.append(f"{ref}: panel ({x1:.3f}, {y1:.3f}) {l1} {r1:.2f}° ≠ variant moved "
                               f"({x0:.3f}, {y0:.3f}) {l0} {r0:.2f}°")
         need = Counter()
-        for r in csv.DictReader(bom_f.open(encoding="utf-8")):
+        for r in csv.DictReader(bom_f.read_text(encoding="utf-8").splitlines()):
             need[r["LCSC Part #"]] += len([d for d in r["Designator"].split(",") if d])
         have = Counter()
         for r in bom:

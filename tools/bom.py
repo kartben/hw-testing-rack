@@ -520,7 +520,7 @@ def electronics(rack) -> tuple[list[dict], dict]:
             continue
         mine = []
         for board, path in paths.items():                # an order panel: each board's lines, as many as panels
-            for r in csv.DictReader(path.open(encoding="utf-8")):
+            for r in csv.DictReader(path.read_text(encoding="utf-8").splitlines()):
                 if r.get("DNP"):
                     continue
                 usd, lcsc, basic, std_only, hand = prices.get(r["MPN"], (0.0, r.get("LCSC", ""), False, False, False))
