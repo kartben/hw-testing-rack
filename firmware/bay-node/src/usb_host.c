@@ -10,6 +10,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <string.h>
+
 #include <zephyr/kernel.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/usb/uhc.h>
@@ -123,6 +125,29 @@ int usb_host_usbip_sessions(void)
 	return n;
 }
 
+int usb_host_usbip_client(const char *busid, uint32_t *ip, uint32_t *since_s)
+{
+	static struct usbip_session_info sessions[CONFIG_USBIP_DEVICES_COUNT];
+	static K_MUTEX_DEFINE(lock);
+	int ret = -ENOENT;
+	int n;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	n = usbip_get_sessions(sessions, ARRAY_SIZE(sessions));
+	for (int i = 0; i < n; i++) {
+		if (strcmp(sessions[i].busid, busid) == 0 &&
+		    sessions[i].peer.sa_family == NET_AF_INET) {
+			*ip = net_ntohl(net_sin(&sessions[i].peer)->sin_addr.s_addr);
+			*since_s = (k_uptime_get() - sessions[i].since_ms) / MSEC_PER_SEC;
+			ret = 0;
+			break;
+		}
+	}
+	k_mutex_unlock(&lock);
+
+	return ret;
+}
+
 #if defined(CONFIG_USBIP_READ_AHEAD)
 
 /*
@@ -174,6 +199,19 @@ static int read_ahead_init(void)
 }
 
 SYS_INIT(read_ahead_init, APPLICATION, 0);
+
+int usb_host_read_ahead(const struct usb_device_descriptor *desc)
+{
+	return read_ahead_policy(desc);
+}
+
+#else
+
+int usb_host_read_ahead(const struct usb_device_descriptor *desc)
+{
+	ARG_UNUSED(desc);
+	return 0;
+}
 
 #endif /* CONFIG_USBIP_READ_AHEAD */
 
@@ -281,6 +319,14 @@ int usb_host_usbip_sessions(void)
 	return 0;
 }
 
+int usb_host_usbip_client(const char *busid, uint32_t *ip, uint32_t *since_s)
+{
+	ARG_UNUSED(busid);
+	ARG_UNUSED(ip);
+	ARG_UNUSED(since_s);
+	return -ENOENT;
+}
+
 int usb_host_release_phy(void)
 {
 	return -ENOTSUP;
@@ -297,6 +343,19 @@ int usb_host_port_device(uint8_t hub_port, uint16_t *vid, uint16_t *pid)
 	ARG_UNUSED(vid);
 	ARG_UNUSED(pid);
 	return -ENODEV;
+}
+
+int usb_host_read_ahead(const struct usb_device_descriptor *desc)
+{
+	ARG_UNUSED(desc);
+	return 0;
+}
+
+int usb_info_list(struct usb_dev_info *out, int max)
+{
+	ARG_UNUSED(out);
+	ARG_UNUSED(max);
+	return 0;
 }
 
 #endif /* CONFIG_USBIP */

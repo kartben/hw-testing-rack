@@ -193,6 +193,40 @@ static int cmd_boot(const struct shell *sh, size_t argc, char **argv)
 }
 
 /* "bay port": the DATA x4's ports, or one of them */
+/* The USB devices: bus id, IDs, name, maker, serial, USB/IP client */
+static int cmd_usb(const struct shell *sh, size_t argc, char **argv)
+{
+	static BAY_EXT_RAM struct usb_dev_info devs[USB_INFO_MAX];
+	int n = usb_info_list(devs, ARRAY_SIZE(devs));
+
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	if (n <= 0) {
+		shell_print(sh, n < 0 ? "USB host busy, try again" : "no USB device");
+		return 0;
+	}
+	for (int i = 0; i < n; i++) {
+		const struct usb_dev_info *u = &devs[i];
+		uint32_t ip, since_s;
+		char who[48] = "";
+
+		if (usb_host_usbip_client(u->busid, &ip, &since_s) == 0) {
+			snprintf(who, sizeof(who), ", attached by %u.%u.%u.%u for %u s", ip >> 24,
+				 (ip >> 16) & 0xff, (ip >> 8) & 0xff, ip & 0xff, since_s);
+		}
+		shell_print(sh, "%-8s %04x:%04x  %s%s%s%s", u->busid, u->vid, u->pid,
+			    u->product[0] ? u->product : u->known ? u->known : "(no name)",
+			    u->manufacturer[0] ? " (" : "", u->manufacturer,
+			    u->manufacturer[0] ? ")" : "");
+		shell_print(sh, "         %s%s%s%s%s", (u->classes & USB_CLS_HUB) ? "hub" : "device",
+			    u->serial[0] ? ", S/N " : "", u->serial,
+			    u->read_ahead ? ", read ahead" : "", who);
+	}
+
+	return 0;
+}
+
 static int cmd_port(const struct shell *sh, size_t argc, char **argv)
 {
 	struct port_info pi;
@@ -612,6 +646,8 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 	SHELL_CMD_ARG(boot, NULL, "Reset into the DUT's bootloader, or BOOT line [hold|release]",
 		      cmd_boot, 1, 1),
 	SHELL_CMD_ARG(mode, NULL, "USB data path: [usbip|classic] (persistent)", cmd_mode, 1, 1),
+	SHELL_CMD_ARG(usb, NULL, "USB devices: bus id, IDs, name, serial, USB/IP client", cmd_usb,
+		      1, 0),
 	SHELL_CMD_ARG(port, NULL,
 		      "DATA x4 ports: no argument = their state; <n> on|off|cycle [ms]|reset|boot [cycle]",
 		      cmd_port, 1, 3),

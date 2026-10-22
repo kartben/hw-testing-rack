@@ -886,6 +886,27 @@ def _print_port(p: dict) -> None:
           + (f"  USB/IP {client.get('client')}" if client else ""))
 
 
+def _print_usb(bay: Bay) -> None:
+    """GET /api/usb: one line per USB device, its name, maker, serial and USB/IP client."""
+    try:
+        doc = api(bay, "/api/usb", timeout=5)
+    except BayError:
+        return                                  # a node without /api/usb (older firmware)
+    hub = doc.get("hub")
+    if hub:
+        print(f"USB hub {hub.get('vid')}:{hub.get('pid')} {hub.get('name', '')}")
+    for d in doc.get("devices", []):
+        who = (d.get("usbip") or {}).get("client")
+        line = f"  {d.get('busid', '?'):8} {d.get('slot', ''):6} {d.get('vid')}:{d.get('pid')}  {d.get('name', '')}"
+        if d.get("manufacturer"):
+            line += f" ({d['manufacturer']})"
+        if d.get("serial"):
+            line += f"  S/N {d['serial']}"
+        if d.get("classes"):
+            line += f"  [{', '.join(d['classes'])}]"
+        print(line + (f"  USB/IP {who}" if who else ""))
+
+
 def analyzer_state(usb: dict | None, la: dict) -> str:
     """What an analyzer's port holds: gusmanb's firmware, the ROM's BOOTSEL, something else, or nothing."""
     if not usb:
@@ -1010,6 +1031,7 @@ def main(argv: list[str] | None = None) -> int:
             if node.multi:
                 for port in node_ports(node):
                     _print_port(port)
+            _print_usb(node)
         elif a.cmd == "ports":
             for port in node_ports(node_bay(bays, a.bay)):
                 _print_port(port)

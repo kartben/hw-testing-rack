@@ -27,6 +27,11 @@ target_sources(app PRIVATE
   src/rack.c
 )
 target_sources_ifdef(CONFIG_BAY_CAMERA app PRIVATE src/camera.c)
+# The USB devices' strings: read with the host's own control requests
+target_sources_ifdef(CONFIG_USBIP app PRIVATE src/usb_info.c)
+if(CONFIG_USBIP)
+  target_include_directories(app PRIVATE ${ZEPHYR_BASE}/subsys/usb/host)
+endif()
 
 # Status page, the shared /rack.css and /rack.mjs, the vendored xterm.js:
 # gzipped into the image (served as-is with Content-Encoding: gzip)

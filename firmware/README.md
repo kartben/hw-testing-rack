@@ -180,6 +180,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Buttons | BOOT (IO0) once booted: short press confirms an access claim, held ≥ 1 s power-cycles the DUT, ≥ 10 s resets access control.  RESET is the ESP32's EN |
 | Camera | an Arducam Mega on J6 (SPI2, 4 MHz) and its light (LEDC PWM, 25 kHz), optional: snapshots and an MJPEG stream on TCP 8081, frames in PSRAM.  See [Camera](#camera) |
 | Access control | who may use which service, a CI reservation, an admin key confirmed by a BOOT press; Zephyr's packet filter for the TCP services, a check per HTTP request.  See [Access control](#access-control) |
+| USB devices | each enumerated device on the page's USB devices card, in `/api/usb` and `bay usb`: its name (the product string, else a table of known IDs, else vid:pid), maker, serial number, the classes of its interfaces (CDC ACM, HID, mass storage, CMSIS-DAP…), speed, bus id and slot, and its USB/IP client.  A thread reads each device's strings once, as it shows up, into PSRAM (`src/usb_info.c`) |
 | DATA ×4 | a DATA ×4 board in the drawer (probed after each DUT_5V on): four ports, each switched on through the bay's budget, its ~FAULT, current and RESET/BOOT; `bay port`, `/api/ports`.  See [docs/multi-dut-node.md](../docs/multi-dut-node.md) |
 | Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO42 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
 | Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS; no power save, 20 MHz channels and 11 dBm of TX power, see [Wi-Fi in the rack](#wi-fi-in-the-rack) (`common/lib/net.c`, as the hub) |
@@ -200,6 +201,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | `bay reset hold` / `release` | hold / release RESET |
 | `bay boot` | hold BOOT, pulse RESET, release BOOT 200 ms later: ROM bootloader on most MCUs |
 | `bay boot hold` / `release` | hold / release the BOOT strap |
+| `bay usb` | the USB devices: bus id, vid:pid, name and maker, serial number, read-ahead, USB/IP client |
 | `bay port` | a DATA ×4's ports: on/off, fault, V/I, USB device |
 | `bay port <n> on` / `off` / `cycle [ms]` | one port (`on` through the bay's budget, and clears a latched fault) |
 | `bay port <n> reset` / `boot [cycle]` | its RESET pulse; BOOT held across a RESET pulse, or across a power cycle of the port |
@@ -288,6 +290,7 @@ main actions.
 | `POST /api/reset` | `{"ms": 100}` (body optional) |
 | `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |
 | `GET /api/ports` | the boards: a DATA ×4's four ports, or the one DUT as port 1 ([docs/multi-dut-node.md](../docs/multi-dut-node.md)) |
+| `GET /api/usb` | the USB devices: `{"hub": {vid, pid, name, data_x4} or null, "devices": [{busid, slot, hub_port, vid, pid, name, name_from (product, table, ids), manufacturer, serial, strings, speed, classes, usbip: {client, since_s, offered, read_ahead}, ma}]}`; `offered`: the USB/IP service exports it (not a hub, within `USBIP_DEVICES_COUNT`); the strings come from the devices, escaped; the serial numbers are for everyone with the status right (twister hardware maps) |
 | `POST /api/ports/<n>/power`, `/reset`, `/boot` | one port; `boot` takes `{"power_cycle": true}`; 409 when the bay's budget has no room.  On a DATA ×4 node `/api/power`, `/reset` and `/boot` need `"port": n` |
 | `POST /api/mode` | `{"mode": "usbip" \| "classic"}` (persistent) |
 | `GET /api/aux` | AUX UART settings, consoles connected, byte counters |

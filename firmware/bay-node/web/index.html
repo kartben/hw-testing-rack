@@ -123,6 +123,47 @@ table.matrix { border-collapse: collapse; width: 100%; font-size: 0.9rem; min-wi
 button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 1.5px solid var(--line); background: transparent; color: transparent; font-size: 0.85rem; line-height: 1;
   &[aria-pressed=true] { background: var(--ok); border-color: var(--ok); color: #fff; }
 }
+/* USB devices */
+.usbdev { list-style: none; margin: 0; padding: 0; display: grid;
+  & li { display: grid; align-items: center; gap: 4px 14px; padding: 10px 0;
+         grid-template-columns: 34px minmax(0, 1fr) 15.5rem 6rem 11rem 3.8rem 6.6rem;
+         grid-template-areas: "ico id kinds where st ma act"; }
+  & li + li { border-top: 1px solid var(--line); }
+  & .ico { grid-area: ico; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+           color: var(--c, var(--idle)); background: color-mix(in srgb, var(--c, var(--idle)) 12%, transparent); }
+  & .ico svg { width: 18px; height: 18px; }
+  & .id { grid-area: id; min-width: 0; }
+  & .id b { display: block; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  & .id small { display: block; color: var(--muted); font-size: 0.8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  & .id code { font: 0.78rem var(--mono); }
+  & .id .from { font-style: italic; }
+  & .kinds { grid-area: kinds; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; }
+  & .id .sn code { user-select: all; }
+  & .chip { font-size: 0.72rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; white-space: nowrap;
+            color: var(--muted); background: var(--soft); border: 1px solid var(--line); }
+  & .chip.ra { color: var(--usbip); background: color-mix(in srgb, var(--usbip) 10%, transparent);
+               border-color: color-mix(in srgb, var(--usbip) 30%, transparent); }
+  & .where { grid-area: where; font-size: 0.85rem; }
+  & .where b { font-weight: 600; }
+  & .where code { display: block; font: 0.78rem var(--mono); color: var(--muted); }
+  & .st { grid-area: st; font-size: 0.85rem; display: grid; grid-template-columns: 10px 1fr; column-gap: 7px; align-items: center; }
+  & .st i { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--idle)); }
+  & .st small { grid-column: 2; color: var(--muted); font-size: 0.78rem; }
+  & .ma { grid-area: ma; font-size: 0.85rem; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  & .act { grid-area: act; }
+  & li[data-st=attached] { --c: var(--attached); }
+  & li[data-st=ready] { --c: var(--usbip); }
+  & li[data-st=off] { --c: var(--idle); }
+  & li[data-st=empty] { color: var(--muted); }
+  & li[data-st=empty] .ico { --c: var(--idle); opacity: 0.6; }
+  & .none { color: var(--muted); padding: 6px 0; }
+}
+@media (max-width: 900px) {
+  .usbdev li { grid-template-columns: 34px minmax(0, 1fr) auto;
+               grid-template-areas: "ico id act" ". kinds kinds" ". where where" ". st st" ". ma ma"; }
+  .usbdev .kinds { justify-content: flex-start; }
+  .usbdev .ma { text-align: left; }
+}
 @media (max-width: 600px) { .term { height: 360px; } .toolbar .group.end { margin-left: 0; } }
 </style>
 </head>
@@ -130,6 +171,11 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-lock" viewBox="0 0 16 16"><path fill="currentColor" d="M5 7V5a3 3 0 0 1 6 0v2h.5A1.5 1.5 0 0 1 13 8.5v5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 13.5v-5A1.5 1.5 0 0 1 4.5 7H5Zm1.5 0h3V5a1.5 1.5 0 0 0-3 0v2Z"/></symbol>
   <symbol id="i-open" viewBox="0 0 16 16"><path fill="currentColor" d="M6.5 7h5A1.5 1.5 0 0 1 13 8.5v5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 3 13.5v-5A1.5 1.5 0 0 1 4.5 7H5V5a3 3 0 0 1 5.8-1.1l-1.4.6A1.5 1.5 0 0 0 6.5 5v2Z"/></symbol>
+  <!-- USB devices: a probe, a serial adapter, a drive, anything else -->
+  <symbol id="i-probe" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" d="M3 5.5h7.5a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H3zM12.5 8H15M1 7v2M5 3.5v2M8 3.5v2M5 10.5v2M8 10.5v2"/></symbol>
+  <symbol id="i-serial" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" d="M2.5 5h11l-1.5 6h-8zM5.5 7.5h.01M8 7.5h.01M10.5 7.5h.01M6.8 9.3h.01M9.3 9.3h.01"/></symbol>
+  <symbol id="i-drive" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" d="M4 1.8h5.5L12 4.3v9.9H4zM6 4.5v2M8 4.5v2"/></symbol>
+  <symbol id="i-usb" viewBox="0 0 16 16"><path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" d="M8 1.5v11M8 1.5 6.5 3.5h3zM8 9.5 4.5 7.5V5.8M8 11l3.5-2V7M4.5 5.8h.01M10.5 6h2v1h-2zM8 14.5a1.2 1.2 0 1 0 0-.01"/></symbol>
 </svg>
 <div class="wrap">
   <header>
@@ -209,6 +255,11 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
         </div>
       </section>
     </div>
+
+    <section class="card" id="usb-card">
+      <h2>USB devices <span id="usb-meta">—</span></h2>
+      <ul class="usbdev" id="usb-list"><li><span class="none">Looking…</span></li></ul>
+    </section>
 
     <section class="card camera" id="cam-card" hidden>
       <h2>Camera <span id="cam-meta"></span></h2>
@@ -542,6 +593,12 @@ function render(s) {
   $("pc").textContent = s.service ? "service (node)" : s.pc_detected ? "laptop plugged" : "free";
   $("host").textContent = s.usb.running ? plural(s.usb.devices, "device") : "stopped";
   $("sessions").textContent = s.usb.sessions ? `${s.usb.sessions} attached` : "none";
+  // A client came or went, a device was plugged: the USB devices card follows now
+  const usbSeen = `${s.usb.sessions}/${s.usb.devices}`;
+  if (usbSeen !== lastUsbSeen) {
+    lastUsbSeen = usbSeen;
+    refreshUsb();
+  }
   $("usbip-cmd").textContent = `sudo usbip attach -r ${host} -b 1-1`;
 
   const aux = s.aux;
@@ -606,6 +663,127 @@ async function run(btn, path, body, what) {
   } finally {
     busy.forEach((b) => { b.dataset.busy = ""; b.disabled = b.dataset.denied === "true"; });
   }
+}
+
+/* --- USB devices: GET /api/usb, the board's devices and a DATA x4's ------- */
+
+const KIND = [["CMSIS-DAP", "i-probe"], ["Debug probe", "i-probe"], ["Serial", "i-serial"],
+  ["CDC ACM", "i-serial"], ["Mass storage", "i-drive"]];
+const SPEED = { low: "LS", full: "FS", high: "HS" };
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function icon(id) {
+  const span = el("span", "ico");
+  span.innerHTML = `<svg viewBox="0 0 16 16"><use href="#${id}"/></svg>`;
+  return span;
+}
+
+/* Strings from the device (iProduct, iManufacturer, iSerial) only ever go in as text */
+function usbRow(d) {
+  const li = el("li");
+  li.dataset.st = d.usbip.client ? "attached" : d.usbip.offered ? "ready" : "off";
+  const kind = KIND.find(([k]) => d.classes.some((c) => c.startsWith(k)));
+  li.append(icon(kind ? kind[1] : "i-usb"));
+
+  const id = el("div", "id");
+  id.append(el("b", null, d.name), el("small"));
+  id.firstChild.title = d.name;
+  const meta = id.querySelector("small");
+  if (d.manufacturer) meta.append(`${d.manufacturer} · `);
+  else if (d.name_from !== "product") meta.append(el("span", "from", d.name_from === "table"
+    ? "known ID, no name string · " : "unknown device · "));
+  meta.append(el("code", null, `${d.vid}:${d.pid}`));
+  if (d.serial) {
+    const sn = el("small", "sn", "S/N ");
+    sn.append(el("code", null, d.serial));
+    id.append(sn);
+  }
+  li.append(id);
+
+  const kinds = el("div", "kinds");
+  for (const c of d.classes) kinds.append(el("span", "chip", c));
+  if (d.usbip.read_ahead) {
+    const ra = el("span", "chip ra", "read-ahead");
+    ra.title = "The node reads this serial adapter ahead of the client: no byte lost over Wi-Fi";
+    kinds.append(ra);
+  }
+  kinds.append(el("span", "chip", SPEED[d.speed] ?? d.speed));
+  li.append(kinds);
+
+  const where = el("div", "where");
+  if (d.slot) where.append(el("b", null, d.slot));
+  where.append(el("code", null, d.busid));
+  li.append(where);
+
+  const st = el("div", "st");
+  st.append(el("i"), el("span", null, d.usbip.client ? "Attached"
+    : d.usbip.offered ? "Ready to attach" : "Not exported"));
+  if (d.usbip.client) st.append(el("small", null, `${d.usbip.client} · ${uptime(d.usbip.since_s)}`));
+  li.append(st);
+
+  li.append(el("div", "ma", d.ma != null ? `${fix(d.ma, 3)} A` : ""));
+  if (d.usbip.offered) {
+    const btn = el("button", "small act", "Copy attach");
+    btn.dataset.attach = d.busid;
+    btn.title = `sudo usbip attach -r ${host} -b ${d.busid}`;
+    li.append(btn);
+  } else {
+    const none = el("span", "act");
+    none.title = "USB/IP serves at most its configured number of devices";
+    li.append(none);
+  }
+  return li;
+}
+
+/* A DATA x4 port with nothing enumerated on it */
+function emptyRow(p) {
+  const li = el("li");
+  li.dataset.st = "empty";
+  li.append(icon("i-usb"));
+  const id = el("div", "id");
+  id.append(el("b", null, "No device"), el("small", null, p.power.on ? "Nothing on this port" : "Port off"));
+  li.append(id, el("div", "kinds"));
+  const where = el("div", "where");
+  where.append(el("b", null, p.slot), el("code", null, `1-1.${p.port}`));
+  li.append(where, el("div", "st"), el("div", "ma"), el("span", "act"));
+  return li;
+}
+
+function renderUsb(doc) {
+  const list = $("usb-list");
+  const rows = doc.devices.map(usbRow);
+  if (doc.hub?.data_x4 && status?.ports) {
+    for (const p of status.ports) {
+      if (!p.usb) rows.splice(p.port - 1, 0, emptyRow(p));
+    }
+  }
+  list.replaceChildren(...rows);
+  if (!rows.length) {
+    const li = el("li");
+    li.append(el("span", "none", "No USB device: the board is off or not plugged"));
+    list.append(li);
+  }
+  const n = doc.devices.length;
+  $("usb-meta").textContent = !doc.hub ? plural(n, "device")
+    : doc.hub.data_x4 ? `DATA ×4 hub (${doc.hub.name}) · ${n} of ${status?.ports?.length ?? 4} ports in use`
+    : `${plural(n, "device")} behind ${doc.hub.name}`;
+}
+
+let lastUsbSeen = "";
+
+async function refreshUsb() {
+  try { renderUsb(await api("/api/usb")); } catch { /* the status poll reports the node */ }
+}
+
+async function pollUsb() {
+  await refreshUsb();
+  setTimeout(pollUsb, document.hidden ? 15000 : 4000);
 }
 
 async function copy(id) {
@@ -1338,6 +1516,10 @@ document.addEventListener("click", async (ev) => {
   const btn = ev.target.closest("button");
   if (!btn) return;
   if (btn.dataset.copy) return copy(btn.dataset.copy);
+  if (btn.dataset.attach) {
+    try { await navigator.clipboard.writeText(btn.title); toast("Copied"); } catch { toast("Copy failed"); }
+    return;
+  }
   if (btn.dataset.acc) return accessAction(btn);
   if (btn.dataset.cam === "live") return cam.live ? camStop() : camShow(true);
   if (btn.dataset.cam === "snap") return camShow(false);
@@ -1397,6 +1579,7 @@ document.addEventListener("visibilitychange", () => {
 acc.admin = /^[0-9a-f]{64}$/.test(storedKey());
 poll();
 pollAccess();
+pollUsb();
 startConsole();
 </script>
 </body>

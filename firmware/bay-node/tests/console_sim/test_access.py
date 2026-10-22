@@ -188,6 +188,18 @@ class AccessSim(unittest.TestCase):
                                                                "yours": False}})
         self.assertEqual(post(OTHER, "/api/reset", {"ms": 10})[0], 200)
         self.assertEqual(get(ADMIN, "/api/access")[1]["claim"], "none")
+
+        # --- The USB devices: their strings come from the devices, escaped ----
+        code, u = get(OTHER, "/api/usb")
+        self.assertEqual(code, 200)
+        self.assertIsNone(u["hub"])
+        dev = u["devices"][0]
+        self.assertEqual((dev["busid"], dev["vid"], dev["pid"], dev["name_from"]),
+                         ("1-1", "1fc9", "0143", "product"))
+        self.assertEqual(dev["name"], 'MCU-Link \\ CMSIS-DAP\t\x01')
+        self.assertEqual(dev["manufacturer"], 'NXP "Semi"')
+        self.assertEqual(dev["classes"], ["CMSIS-DAP", "CDC ACM", "HID"])
+        self.assertEqual(dev["usbip"], {"client": None, "since_s": None, "offered": True, "read_ahead": False})
         # Rules need the key
         self.assertEqual(post(ADMIN, "/api/access/rules", {"enabled": True})[0], 403)
 

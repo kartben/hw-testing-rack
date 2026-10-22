@@ -7,6 +7,7 @@
  *   POST /api/reset    {"ms": 100}
  *   POST /api/boot     {}                 DUT into its bootloader
  *   GET  /api/ports    the boards: a DATA x4's four ports, or the one DUT as port 1
+ *   GET  /api/usb      the USB devices: names, classes, serial numbers, USB/IP clients
  *   POST /api/ports/<n>/power, /reset, /boot   one port, as above; boot takes
  *                      {"power_cycle": true}: BOOT held across a power cycle
  *                      of the port.  409 when the bay's budget has no room.
@@ -58,6 +59,7 @@
 #include <zephyr/version.h>
 #include <zephyr/data/json.h>
 #include <zephyr/net/hostname.h>
+#include <zephyr/net/net_ip.h>
 #include <zephyr/net/http/server.h>
 #include <zephyr/net/http/service.h>
 #include <zephyr/net/prometheus/collector.h>
@@ -930,6 +932,233 @@ static struct http_resource_detail_dynamic ports_detail = {
 	.cb = ports_handler,
 };
 
+/* --- GET /api/usb: the devices the USB host enumerated --------------------- */
+
+static BAY_EXT_RAM struct usb_dev_info usb_devs[USB_INFO_MAX];
+static BAY_EXT_RAM char usb_buf[6144];
+
+/*
+ * A JSON string, or null for an empty one.  The strings come from the
+ * devices: quotes, backslashes and control characters are escaped.
+ */
+static char *json_str(char *p, char *end, const char *s)
+{
+	if (s == NULL || s[0] == '\0') {
+		return p + snprintf(p, end - p, "null");
+	}
+	if (p < end) {
+		*p++ = '"';
+	}
+	for (; *s != '\0' && p + 7 < end; s++) {
+		unsigned char c = *s;
+
+		if (c == '"' || c == '\\') {
+			*p++ = '\\';
+			*p++ = c;
+		} else if (c < 0x20) {
+			p += snprintf(p, end - p, "\\u%04x", c);
+		} else {
+			*p++ = c;
+		}
+	}
+	if (p < end) {
+		*p++ = '"';
+	}
+	*(p < end ? p : end - 1) = '\0';
+
+	return p;
+}
+
+/* What a device is, for people: its interfaces' classes, its serial chip */
+static int usb_classes(const struct usb_dev_info *u, const char **out, int max)
+{
+	static const struct {
+		uint16_t bit;
+		const char *name;
+	} names[] = {
+		{USB_CLS_CDC_ACM, "CDC ACM"}, {USB_CLS_HID, "HID"}, {USB_CLS_MSC, "Mass storage"},
+		{USB_CLS_DFU, "DFU"}, {USB_CLS_AUDIO, "Audio"}, {USB_CLS_VIDEO, "Video"},
+	};
+	int n = 0;
+
+	if (u->classes & USB_CLS_CMSIS_DAP) {
+		out[n++] = "CMSIS-DAP";
+	} else if (u->classes & USB_CLS_PROBE) {
+		out[n++] = "Debug probe";
+	}
+	if (u->read_ahead != 0) {
+		out[n++] = u->vid == 0x0403 ? "Serial (FTDI)" : u->vid == 0x10c4 ? "Serial (CP210x)"
+			 : u->vid == 0x1a86 ? "Serial (CH34x)" : u->vid == 0x067b ? "Serial (PL2303)"
+			 : "Serial";
+	}
+	ARRAY_FOR_EACH_PTR(names, c) {
+		if ((u->classes & c->bit) && n < max) {
+			out[n++] = c->name;
+		}
+	}
+	if (n == 0 && (u->classes & USB_CLS_VENDOR)) {
+		out[n++] = "Vendor";
+	}
+	if (n == 0) {
+		out[n++] = "Other";
+	}
+
+	return n;
+}
+
+static const char *usb_speed(uint8_t speed)
+{
+	/* enum usb_device_speed */
+	switch (speed) {
+	case 1:
+		return "low";
+	case 2:
+		return "full";
+	case 3:
+		return "high";
+	default:
+		return "unknown";
+	}
+}
+
+/* A device behind the DATA x4 hub: the port its hub port is, and its current */
+static int usb_port_of(const struct usb_dev_info *u, int32_t *ma)
+{
+	struct port_info pi;
+
+	for (int p = 1; u->root_port != 0 && p <= ports_count(); p++) {
+		if (ports_info(p, &pi) == 0 && pi.hub_port == u->root_port) {
+			*ma = pi.ma;
+			return p;
+		}
+	}
+
+	return 0;
+}
+
+static char *usb_dev_json(char *p, char *end, const struct usb_dev_info *u)
+{
+	const char *classes[8];
+	char slot[24], vidpid[10];
+	int port, ncls;
+	int32_t ma = 0;
+	uint32_t ip = 0, since_s = 0;
+	bool client = usb_host_usbip_client(u->busid, &ip, &since_s) == 0;
+
+	port = usb_port_of(u, &ma);
+	slot_name(port, slot, sizeof(slot));
+	snprintf(vidpid, sizeof(vidpid), "%04x:%04x", u->vid, u->pid);
+
+	p += snprintf(p, end - p, "{\"busid\":\"%s\",\"slot\":", u->busid);
+	p = json_str(p, end, slot);
+	p += snprintf(p, end - p, ",\"hub_port\":");
+	p += u->root_port ? snprintf(p, end - p, "%u", u->root_port) : snprintf(p, end - p, "null");
+	p += snprintf(p, end - p, ",\"vid\":\"%04x\",\"pid\":\"%04x\",\"name\":", u->vid, u->pid);
+	p = json_str(p, end, u->product[0] ? u->product : u->known ? u->known : vidpid);
+	p += snprintf(p, end - p, ",\"name_from\":\"%s\",\"manufacturer\":",
+		      u->product[0] ? "product" : u->known ? "table" : "ids");
+	p = json_str(p, end, u->manufacturer);
+	p += snprintf(p, end - p, ",\"serial\":");
+	p = json_str(p, end, u->serial);
+	p += snprintf(p, end - p, ",\"strings\":%s,\"speed\":\"%s\",\"classes\":[",
+		      u->strings ? "true" : "false", usb_speed(u->speed));
+	ncls = usb_classes(u, classes, ARRAY_SIZE(classes));
+	for (int i = 0; i < ncls; i++) {
+		p += snprintf(p, end - p, "%s\"%s\"", i ? "," : "", classes[i]);
+	}
+	p += snprintf(p, end - p, "],\"usbip\":{\"client\":");
+	if (client) {
+		char addr[NET_INET_ADDRSTRLEN];
+		struct net_in_addr in = {.s_addr = net_htonl(ip)};
+
+		net_addr_ntop(NET_AF_INET, &in, addr, sizeof(addr));
+		p += snprintf(p, end - p, "\"%s\",\"since_s\":%u", addr, since_s);
+	} else {
+		p += snprintf(p, end - p, "null,\"since_s\":null");
+	}
+	p += snprintf(p, end - p, ",\"offered\":%s,\"read_ahead\":%s},\"ma\":",
+		      u->offered ? "true" : "false", u->read_ahead != 0 ? "true" : "false");
+	p += port > 0 ? snprintf(p, end - p, "%d}", ma) : snprintf(p, end - p, "null}");
+
+	return p;
+}
+
+/*
+ * {"hub": the hub on the root port or null, "devices": [...]}: the hubs are
+ * not in the devices; a DATA x4's empty ports are in /api/status's ports
+ */
+static int usb_json(char *buf, size_t size)
+{
+	char *p = buf, *end = buf + size;
+	int n = usb_info_list(usb_devs, ARRAY_SIZE(usb_devs));
+	const struct usb_dev_info *hub = NULL;
+	bool first = true;
+
+	for (int i = 0; i < n; i++) {
+		if ((usb_devs[i].classes & USB_CLS_HUB) && usb_devs[i].level == 1) {
+			hub = &usb_devs[i];
+		}
+	}
+	p += snprintf(p, end - p, "{\"hub\":");
+	if (hub != NULL) {
+		p += snprintf(p, end - p, "{\"vid\":\"%04x\",\"pid\":\"%04x\",\"name\":",
+			      hub->vid, hub->pid);
+		p = json_str(p, end, hub->product[0] ? hub->product
+				     : hub->known ? hub->known : "USB hub");
+		p += snprintf(p, end - p, ",\"data_x4\":%s}", ports_count() > 0 ? "true" : "false");
+	} else {
+		p += snprintf(p, end - p, "null");
+	}
+	p += snprintf(p, end - p, ",\"devices\":[");
+	for (int i = 0; i < n && p < end - 1; i++) {
+		if (usb_devs[i].classes & USB_CLS_HUB) {
+			continue;
+		}
+		if (!first) {
+			*p++ = ',';
+		}
+		first = false;
+		p = usb_dev_json(p, end, &usb_devs[i]);
+	}
+	p += snprintf(p, end - p, "]}");
+
+	return p < end - 1 ? p - buf : -ENOMEM;
+}
+
+static int usb_handler(struct http_client_ctx *client, enum http_transaction_status status,
+		       const struct http_request_ctx *req, struct http_response_ctx *rsp,
+		       void *user_data)
+{
+	int len;
+
+	ARG_UNUSED(req);
+	ARG_UNUSED(user_data);
+
+	if (status != HTTP_SERVER_REQUEST_DATA_FINAL ||
+	    refused(rsp, ACL_STATUS, access_peer(client->fd))) {
+		return 0;
+	}
+	len = usb_json(usb_buf, sizeof(usb_buf));
+	if (len < 0) {
+		respond_error(rsp, HTTP_500_INTERNAL_SERVER_ERROR, "response too large");
+		return 0;
+	}
+	rsp->body = usb_buf;
+	rsp->body_len = len;
+	rsp->final_chunk = true;
+
+	return 0;
+}
+
+static struct http_resource_detail_dynamic usb_detail = {
+	.common = {
+		.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+		.bitmask_of_supported_http_methods = BIT(HTTP_GET),
+		.content_type = "application/json",
+	},
+	.cb = usb_handler,
+};
+
 /* --- /api/aux ------------------------------------------------------------ */
 
 struct aux_req {
@@ -1757,6 +1986,7 @@ HTTP_RESOURCE_DEFINE(reset_res, bay_http, "/api/reset", &reset_detail);
 HTTP_RESOURCE_DEFINE(boot_res, bay_http, "/api/boot", &boot_detail);
 HTTP_RESOURCE_DEFINE(mode_res, bay_http, "/api/mode", &mode_detail);
 HTTP_RESOURCE_DEFINE(ports_res, bay_http, "/api/ports", &ports_detail);
+HTTP_RESOURCE_DEFINE(usb_res, bay_http, "/api/usb", &usb_detail);
 HTTP_RESOURCE_DEFINE(metrics_res, bay_http, "/metrics", &metrics_detail);
 HTTP_RESOURCE_DEFINE(aux_res, bay_http, "/api/aux", &aux_detail);
 HTTP_RESOURCE_DEFINE(break_res, bay_http, "/api/aux/break", &break_detail);

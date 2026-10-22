@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <zephyr/kernel.h>
+#include <zephyr/usb/usb_ch9.h>
 
 #include <hwtr/acl.h>
 
@@ -114,6 +115,48 @@ bool usb_host_running(void);
 int usb_host_release_phy(void);
 /* Back from SERVICE mode: take the PHY and start the host again */
 int usb_host_claim_phy(void);
+/* The USB/IP client attached to busid: its IPv4 address and for how long */
+int usb_host_usbip_client(const char *busid, uint32_t *ip, uint32_t *since_s);
+/* Whether USB/IP reads the device ahead (enum usbip_read_ahead, 0: no) */
+int usb_host_read_ahead(const struct usb_device_descriptor *desc);
+
+/* --- USB devices: identity, classes, strings (usb_info.c) ----------------- */
+
+#define USB_INFO_MAX 8
+#define USB_STR_LEN  64
+
+#define USB_CLS_CDC_ACM   BIT(0)
+#define USB_CLS_HID       BIT(1)
+#define USB_CLS_MSC       BIT(2)
+#define USB_CLS_DFU       BIT(3)
+#define USB_CLS_VENDOR    BIT(4)
+#define USB_CLS_HUB       BIT(5)
+#define USB_CLS_AUDIO     BIT(6)
+#define USB_CLS_VIDEO     BIT(7)
+#define USB_CLS_OTHER     BIT(8)
+#define USB_CLS_CMSIS_DAP BIT(9)  /* says so in its product string */
+#define USB_CLS_PROBE     BIT(10) /* a known debug probe */
+
+struct usb_dev_info {
+	char busid[24];     /* as USB/IP names it: 1-1, 1-1.<port>, ... */
+	uint8_t addr;
+	uint8_t level;      /* 1: on the root port */
+	uint8_t root_port;  /* behind the hub on the root port: its port; else 0 */
+	uint8_t speed;      /* enum usb_device_speed */
+	uint8_t read_ahead; /* enum usbip_read_ahead */
+	uint16_t vid;
+	uint16_t pid;
+	uint16_t classes;   /* USB_CLS_* */
+	bool strings;       /* the strings below were read */
+	bool offered;       /* USB/IP exports it (not a hub, not past its sessions) */
+	const char *known;  /* a name from the table of known IDs, or NULL */
+	char manufacturer[USB_STR_LEN];
+	char product[USB_STR_LEN];
+	char serial[USB_STR_LEN];
+};
+
+/* The configured devices, at most max; the strings may still be on their way */
+int usb_info_list(struct usb_dev_info *out, int max);
 
 /* --- Status LED (status_led.c) -------------------------------------------- */
 

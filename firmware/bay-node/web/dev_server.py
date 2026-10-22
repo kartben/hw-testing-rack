@@ -93,7 +93,7 @@ def set_ports(n: int) -> None:
     PORTS = n
     ports[:] = [{"port": i, "hub_port": i, "on": False, "latched": False, "faults": 0, "up_at": 0.0,
                  "client": None, "lease": None, "draw": 0,
-                 "usb": {"vid": "2fe3", "pid": "0004", "product": "USB-DEV", "serial": f"{0x5EC0A1 + i:08X}"}}
+                 "usb": dict(USB_PRESETS[X4_PRESETS[i - 1]])}
                 for i in range(1, n + 1)] if n > 1 else []
     start = time.monotonic()
     for k, pt in enumerate(ports):
@@ -174,6 +174,75 @@ def short_port(d: dict) -> dict:
 
 def ports_doc(ip: int = 0) -> list[dict]:
     return [port_doc(pt, ip) for pt in ports] if multi() else [one_port_doc(status(ip))]
+
+
+# --- USB devices (/api/usb): what the node's USB host enumerated --------------
+
+# Read once at enumeration: the device descriptor, the class of each interface
+# (CMSIS-DAP by its interface string) and the three strings.  The name is
+# iProduct, else the node's table of known IDs, else vid:pid.
+USB_PRESETS = {
+    "nucleo": {"vid": "0483", "pid": "374b", "manufacturer": "STMicroelectronics",
+               "product": "STM32 STLink", "serial": "066DFF495150898367102236", "speed": "full",
+               "classes": ["Debug probe", "CDC ACM", "Mass storage"], "serial_bridge": False},
+    "mculink": {"vid": "1fc9", "pid": "0143", "manufacturer": "NXP Semiconductors",
+                "product": "MCU-LINK on-board (r0E7) CMSIS-DAP V3.172", "serial": "3ZQ1J4ZBMTNKS",
+                "speed": "full", "classes": ["CMSIS-DAP", "CDC ACM", "HID"], "serial_bridge": False},
+    "ft232": {"vid": "0403", "pid": "6001", "manufacturer": "FTDI", "product": "FT232R USB UART",
+              "serial": "A50285BI", "speed": "full", "classes": ["Serial (FTDI)"], "serial_bridge": True},
+    "ch340": {"vid": "1a86", "pid": "7523", "manufacturer": None, "product": None, "serial": None,
+              "speed": "full", "classes": ["Serial (CH34x)"], "serial_bridge": True},
+    "pico": {"vid": "2e8a", "pid": "0003", "manufacturer": "Raspberry Pi", "product": "RP2 Boot",
+             "serial": "E0C9125B0D9B", "speed": "full", "classes": ["Mass storage", "Vendor"],
+             "serial_bridge": False},
+    "unknown": {"vid": "1209", "pid": "c0de", "manufacturer": None, "product": None, "serial": None,
+                "speed": "full", "classes": ["Vendor"], "serial_bridge": False},
+}
+# The node's table of known IDs (src/usb_names.c): names for devices without iProduct
+USB_KNOWN = {("1a86", "7523"): "CH340 serial adapter", ("0403", "6001"): "FT232 serial adapter",
+             ("2e8a", "0003"): "RP2040 in BOOTSEL", ("1fc9", "0143"): "MCU-Link",
+             ("0483", "374b"): "ST-LINK/V2-1"}
+X4_PRESETS = ["mculink", "ft232", "pico", "ch340"]   # DATA x4 ports 1..4
+usb_one = "nucleo"                                      # a one-port bay's DUT: /dev/usb?preset=
+USB_SINCE = {}                                          # busid -> when its USB/IP client attached
+HUB = {"vid": "0424", "pid": "2517", "name": "USB2517 hub", "data_x4": True}
+
+
+def usb_dev_doc(dev: dict, busid: str, slot: str, hub_port, client: int | None, ma) -> dict:
+    """One object of GET /api/usb's devices."""
+    name, source = dev["product"], "product"
+    if not name:
+        name, source = USB_KNOWN.get((dev["vid"], dev["pid"])), "table"
+    if not name:
+        name, source = f"{dev['vid']}:{dev['pid']}", "ids"
+    now = time.monotonic()
+    if client:
+        USB_SINCE.setdefault(busid, now - 754)
+    else:
+        USB_SINCE.pop(busid, None)
+    return {"busid": busid, "slot": slot, "hub_port": hub_port, "vid": dev["vid"], "pid": dev["pid"],
+            "name": name, "name_from": source, "manufacturer": dev["manufacturer"], "serial": dev["serial"],
+            "strings": True, "speed": dev["speed"], "classes": dev["classes"],
+            "usbip": {"client": ip_str(client) if client else None,
+                      "since_s": int(now - USB_SINCE[busid]) if client else None,
+                      "offered": True, "read_ahead": dev["serial_bridge"]},
+            "ma": ma}
+
+
+def usb_doc() -> dict:
+    s = status()
+    if multi():
+        devs = []
+        for d in ports_doc():
+            if d["usb"]:
+                pt = ports[d["port"] - 1]
+                devs.append(usb_dev_doc(pt["usb"], d["usb"]["busid"], d["slot"], d["hub_port"],
+                                        pt["client"], d["power"]["ma"]))
+        return {"hub": HUB, "devices": devs}
+    d = one_port_doc(s)
+    client = next((c["peer"] for c in access.fake if c["service"] == "usbip"), None)
+    devs = [usb_dev_doc(USB_PRESETS[usb_one], "1-1", d["slot"], None, client, None)] if d["usb"] else []
+    return {"hub": None, "devices": devs}
 
 
 def port_act(pt: dict, what: str, body: dict) -> tuple[int, str] | None:
@@ -1035,6 +1104,19 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/aux":
             if not self.refused("status"):
                 self.json(200, aux_doc())
+        elif path == "/api/usb":
+            if not self.refused("status"):
+                self.json(200, usb_doc())
+        elif path == "/dev/usb":
+            global usb_one
+            preset = query.get("preset", ["nucleo"])[0]
+            if preset not in USB_PRESETS:
+                return self.json(404, {"error": f"presets: {', '.join(USB_PRESETS)}"})
+            if "port" in query and multi():
+                ports[int(query["port"][0]) - 1]["usb"] = dict(USB_PRESETS[preset])
+            else:
+                usb_one = preset
+            self.json(200, usb_doc())
         elif path == "/metrics":
             if not self.refused("status"):
                 self.send(200, metrics().encode(), "text/plain")

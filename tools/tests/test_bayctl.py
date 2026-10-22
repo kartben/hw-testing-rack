@@ -607,7 +607,12 @@ class MultiNodeApi(unittest.TestCase):
         self.cli("power", "B3", "on")
         self.assertIn("B3.4 reserved for 127.0.0.1, 600 s", self.cli("lease", "B3.4", "--for", "10m"))
         self.assertIn("B3.4 released", self.cli("release", "B3.4"))
-        self.assertIn("B3", self.cli("status", "B3.4"))
+        out = self.cli("status", "B3.4")
+        self.assertIn("B3", out)
+        # The USB devices behind the DATA x4 hub, by name (GET /api/usb)
+        self.assertIn("USB hub 0424:2517 USB2517 hub", out)
+        self.assertIn("1-1.1    B3.1   1fc9:0143  MCU-LINK on-board (r0E7) CMSIS-DAP V3.172 (NXP Semiconductors)", out)
+        self.assertIn("1a86:7523  CH340 serial adapter", out)
 
 
 class AccessApi(unittest.TestCase):

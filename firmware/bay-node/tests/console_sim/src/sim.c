@@ -169,6 +169,31 @@ int usb_host_usbip_sessions(void)
 	return 0;
 }
 
+/* A probe whose strings need escaping in JSON: they come from the device */
+int usb_info_list(struct usb_dev_info *out, int max)
+{
+	static const struct usb_dev_info devs[] = {
+		{.busid = "1-1", .addr = 1, .level = 1, .speed = 2, .vid = 0x1fc9, .pid = 0x0143,
+		 .classes = USB_CLS_CDC_ACM | USB_CLS_HID | USB_CLS_CMSIS_DAP | USB_CLS_PROBE,
+		 .strings = true, .offered = true, .known = "NXP MCU-Link", .manufacturer = "NXP \"Semi\"",
+		 .product = "MCU-Link \\ CMSIS-DAP\t\x01", .serial = "3ZQ1J4ZBMTNKS"},
+	};
+	int n = MIN(max, (int)ARRAY_SIZE(devs));
+
+	memcpy(out, devs, n * sizeof(devs[0]));
+
+	return n;
+}
+
+int usb_host_usbip_client(const char *busid, uint32_t *ip, uint32_t *since_s)
+{
+	ARG_UNUSED(busid);
+	ARG_UNUSED(ip);
+	ARG_UNUSED(since_s);
+
+	return -ENOENT;
+}
+
 bool usb_host_running(void)
 {
 	return true;

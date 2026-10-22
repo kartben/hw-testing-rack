@@ -103,6 +103,15 @@ config BAY_SERVICE_PHY_HANDOVER
 	  (esptool auto-reset) and debug (OpenOCD) the node.  Switching
 	  SERVICE off starts the host again.
 
+config BAY_USB_INFO_STACK_SIZE
+	int "Stack of the thread that reads the USB devices' strings"
+	default 1024
+	depends on USBIP
+	help
+	  A thread reads the manufacturer, product and serial strings of each
+	  device once, as it shows up, for the status page and the shell.
+	  It peaked at 624 bytes on the bench XIAO (a hub and three devices).
+
 config BAY_ACCESS_CLAIM_S
 	int "Seconds to confirm an access claim with BOOT"
 	default 60
