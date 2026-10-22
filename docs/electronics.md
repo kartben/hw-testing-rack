@@ -526,6 +526,19 @@ Dense rules at JLC's multilayer floor:
 - 0.5 / 0.3 mm vias;
 - 0.2 mm from a via hole to a track (JLC's minimum).
 
+Routing (2026-10-22, after the user found jogs where tracks leave J1's pads).  Freerouting's optimizer only
+runs on a board it sees fully routed, and its first-found routes leave many pads by a short straight, a
+0.2 mm jog and then their diagonal.  So nothing is left for the pours to join:
+- each QFN's exposed pad takes a via in the pad (from 6 layers JLC fills and caps every via for free);
+- U3's islands, the hub's pin 19 and RN3's spare pad are joined by drawn tracks;
+- every drawn track ends on its pad's very centre: Freerouting joins a track to a pin there only (2.5 µm off,
+  it had left the HS pairs and the port switches' IN open);
+- In4's +3V3 and +5V areas no longer overlap (they did by 0.2 mm along J1's +5V tab).
+After the import, `tidy` (pcbgen's `tidy_tracks()`) straightens what the optimizer leaves: a run of the
+router's segments holding one under 0.6 mm becomes one 45° segment, or a 45° one and a straight one, where it
+is no longer and the clearances allow.  J1's leads now leave their pads by one diagonal.  Jogs into vias stay
+(the vias would have to move).
+
 Power tracks:
 - The routed +5V stretches are 0.6 mm, as v1.
 - The ports' 5V_SW and VBUS are 0.3 mm (v1: 0.4).  The vertical USB-C's VBUS pads are 0.3 mm wide at a
@@ -556,8 +569,8 @@ above In1.Cu"):
   south row unboxed;
 - each port's leg from its ESD to its receptacle (≈ 10 mm, where D+ and D− reach the USB-C's two rows) is
   routed by Freerouting: its crossing dives to In2 or In3 (on B.Cu over the +5V plane before);
-- the co-processor's pair (Full Speed only) is routed by Freerouting, mostly on In3; `match` finds no room for
-  a meander, and its lines differ by 2 mm: 13 ps against an 83 ns bit;
+- the co-processor's pair (Full Speed only) is routed by Freerouting, mostly on In3, where `match` places no
+  meander (outer layers only); its lines differ by 2 mm: 13 ps against an 83 ns bit;
 - the hub's 480 MHz PLL puts its 5th harmonic at 2.400 GHz, the band's edge, 1 MHz under Wi-Fi channel 1.
 
 ENIG, flat for the RP2354B's 0.4 mm QFN-80.

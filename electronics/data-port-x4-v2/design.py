@@ -755,7 +755,7 @@ def board() -> Board:
     # Both held 1.4 mm from the edge, notches included, 1 mm further than the other copper (the RF review,
     # 2026-10-21): with the edge fence (below) the GND plane and the outer pours close the cavity's edge
     E = 1.4
-    IN_3V3 = [(E, E), (W - E, E), (W - E, 44.0), (89.2, 44.0), (89.2, PWR_SPLIT - 0.1), (E, PWR_SPLIT - 0.1)]
+    IN_3V3 = [(E, E), (W - E, E), (W - E, 44.0), (88.8, 44.0), (88.8, PWR_SPLIT - 0.1), (E, PWR_SPLIT - 0.1)]
     bottom = [pt for x0, x1, top in reversed(NOTCHES)
               for pt in ((x1 + E, H - E), (x1 + E, top - E), (x0 - E, top - E), (x0 - E, H - E))]
     IN_5V = [(E, PWR_SPLIT + 0.1), (89.0, PWR_SPLIT + 0.1), (89.0, 44.2), (W - E, 44.2), (W - E, H - E), *bottom,
@@ -767,7 +767,7 @@ def board() -> Board:
     hand_tracks, hand_vias = [], []
     for cx in CFG["usb"]:
         x0, y0 = cx - 5.0, PWR_Y
-        pin_in = (x0 + 2.45 + 1.14, y0 + 2.2 + 0.95)          # the switch's IN (pin 1, turned 180°)
+        pin_in = (x0 + 2.45 + 1.1375, y0 + 2.2 + 0.95)        # the switch's IN (pin 1, turned 180°): its centre
         c1 = (x0 + 5.13, y0 + 2.9 + 0.48)                     # its 1 µF's +5V pad
         via = (c1[0] + 0.5, PWR_SPLIT + 1.1)                   # right of the shunt's VBUS pad, left of the INA226
         hand_tracks.append(("+5V", "F.Cu", 0.6, [pin_in, c1, (via[0], c1[1] + 0.5), via]))
@@ -777,6 +777,24 @@ def board() -> Board:
     lx, ly = LDO
     hand_vias += [("+3V3", x, y, 0.5, 0.3) for x in (lx - 3.05, lx + 3.05) for y in (ly - 5.1, ly - 3.5, ly - 1.9)]
     hand_vias += [("+5V", lx + dx, ly + 4.8, 0.6, 0.3) for dx in (1.9, 3.15)]
+    # The links only the pours used to make, drawn: with one open Freerouting skips its optimizer, and its routes
+    # stay as first found (micro-jogs leaving the pads, the user's find, 2026-10-22).  A drawn track joins its pad
+    # for Freerouting only on the pad's very centre (2.5 µm off, the HS pairs and the switches' IN stayed open):
+    # every drawn end lands on its pad's centre.  U3's tab to C3 and to an island via, its VIN to a +5V via and the
+    # other one to C2 (inside the islands' cores: pcbgen drops the cores once routed); the expanders', LSF0108s'
+    # and hub's exposed pads to a via in the pad (from 6 layers JLC fills and caps every via for free); the hub's
+    # GND pin 19, which has no room for a via, onto its exposed pad; RN3's spare GND pad onto its neighbour, whose
+    # dog-bone is drawn with it (a pad a drawn track reaches gets no automatic one)
+    hand_tracks += [("+3V3", "F.Cu", 0.6, [(lx, ly - 5.35), (lx, ly - 3.5), (lx + 3.05, ly - 3.5)]),
+                    ("+5V", "F.Cu", 0.6, [(lx + 2.3, ly + 3.15), (lx + 1.9, ly + 4.8)]),
+                    ("+5V", "F.Cu", 0.6, [(lx + 3.15, ly + 4.8), (lx + 2.9, ly + 5.95)])]
+    for x_, y_ in [(ex_, ey_) for ex_, ey_, _ in EXP] + [(c - 0.5, LSF_Y) for c in CFG["usb"]] + [(HX, HY)]:
+        hand_tracks.append(("GND", "F.Cu", 0.25, [(x_, y_), (x_ + 0.3, y_)]))
+        hand_vias.append(("GND", x_ + 0.3, y_, 0.5, 0.3))
+    hand_tracks += [("GND", "F.Cu", 0.2, [(HX + 4.4125, HY + 2.75), (HX + 2.95, HY + 2.75), (HX + 2.25, HY + 2.05),
+                                          (HX, HY)]),
+                    ("GND", "F.Cu", 0.2, [(HX + 3.75, HY + 7.1), (HX + 3.25, HY + 7.1), (HX + 3.006, HY + 6.51)])]
+    hand_vias.append(("GND", HX + 3.006, HY + 6.51, 0.5, 0.3))
     # CP_RUN, from the matrix expander's P5 (pin 10, top left) to the co-processor's RUN pull-up R25, along the
     # top edge on B.Cu under the SWD pads (Freerouting left it open)
     rx, ry = MX_EXP[0] + 2.5 * 0.65, MX_EXP[1] - 2.8625                # U10 pin 10, turned 90°
@@ -815,10 +833,10 @@ def board() -> Board:
     for n, c in hs_centre.items():
         cx = CFG["usb"][n - 1]
         x0_, ex = c[0][0], c[-1][0]
-        p6, p4 = (cx + 8.137, USB_Y - 0.95), (cx + 8.137, USB_Y + 0.95)
-        dn = [(x0_ - 0.25, HY + 4.41), (x0_ - 0.25, HY + 4.9)] + offset(c, hp) + \
+        p6, p4 = (cx + 8.1375, USB_Y - 0.95), (cx + 8.1375, USB_Y + 0.95)
+        dn = [(x0_ - 0.25, HY + 4.4125), (x0_ - 0.25, HY + 4.9)] + offset(c, hp) + \
             [(ex - hp, p6[1] - 0.5), (p6[0] + 0.76, p6[1]), p6]
-        dp = [(x0_ + 0.25, HY + 4.41), (x0_ + 0.25, HY + 4.9)] + offset(c, -hp) + \
+        dp = [(x0_ + 0.25, HY + 4.4125), (x0_ + 0.25, HY + 4.9)] + offset(c, -hp) + \
             [(ex + hp, p4[1] - 0.45), (ex - 0.25, p4[1]), p4]
         dn = bumps(dn, hs_bump_y[n], 2, (plen(dp) - plen(dn)) / 4)
         hand_tracks += [(f"PORT{n}_DN", "F.Cu", USB_W, dn), (f"PORT{n}_DP", "F.Cu", USB_W, dp)]
@@ -844,8 +862,8 @@ def board() -> Board:
                (HX + 7.35, HY + 3.3)]
     up_dn_f = [up_dn_b[-1], (HX + 6.75, j5 - 0.45), (HX + 6.3, j5), (jx, j5)]
     up_dp_f = [up_dp_b[-1], (HX + 7.15, HY + 3.5), (HX + 7.15, j6 - 0.65), (HX + 6.5, j6), (jx, j6)]
-    up_dn_esc = [(HX - 4.41, HY + 0.75), up_dn_b[0]]
-    up_dp_esc = [(HX - 4.41, HY + 1.25), up_dp_b[0]]
+    up_dn_esc = [(HX - 4.4125, HY + 0.75), up_dn_b[0]]
+    up_dp_esc = [(HX - 4.4125, HY + 1.25), up_dp_b[0]]
     gap = plen(up_dp_esc) + plen(up_dp_b) + plen(up_dp_f) - plen(up_dn_esc) - plen(up_dn_b) - plen(up_dn_f)
     up_dn_f = bumps(up_dn_f, 25.0, 2, gap / 4)
     hand_tracks += [("UP_DN", "F.Cu", USB_W, up_dn_esc), ("UP_DN", "B.Cu", USB_W, up_dn_b),
@@ -857,12 +875,14 @@ def board() -> Board:
     # UP pair): their automatic fan-out vias sat right below the row, between the downstream pairs, and boxed
     # port 2's D− in (Freerouting left it unrouted)
     for px in (HX - 1.75, HX + 0.75):
-        hand_tracks.append(("+3V3", "F.Cu", 0.25, [(px, HY + 4.41), (px, HY + 3.75)]))
+        hand_tracks.append(("+3V3", "F.Cu", 0.25, [(px, HY + 4.4125), (px, HY + 3.75)]))
         hand_vias.append(("+3V3", px, HY + 3.75, 0.5, 0.3))
     six = LAYERS == 6
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
         "size": (W, H), "layers": LAYERS, "outline": outline, "passes": 80,
+        # after the import: the router's micro-jogs at the pads straightened (pcbgen tidy_tracks)
+        "tidy": {"short": 0.6, "reach": 6},
         # dense: JLC's multilayer floor (0.09 mm tracks and spaces, 0.2 mm from a via hole to a track); 0.1 mm
         # clearance and the 0.5 / 0.3 mm via keep the hole 0.2 mm from any track
         "min_track": 0.09, "min_clearance": 0.1, "hole_clearance": 0.2,

@@ -12,10 +12,12 @@ a reviewable starting point, not a signed-off layout (see docs/electronics.md).
 from __future__ import annotations
 
 import fnmatch
+import json
 import math
 import os
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 import pcbnew
@@ -708,9 +710,11 @@ def import_session(b: Board, outdir: Path) -> Path:
     left out of the DSN so the router had to connect every pad with real copper)."""
     path = outdir / f"{b.name}.kicad_pcb"
     ses = outdir / "build" / f"{b.name}.ses"
-    # the fan-out reservations have done their job: drop them from the file before loading it
-    # (BOARD.Remove() on a zone leaves SWIG unable to type the board's footprints afterwards)
-    path.write_text(_strip_zones(path.read_text(encoding="utf-8"), "fanout:"), encoding="utf-8")
+    # the fan-out reservations and the exclusive pours' cores have done their job (they kept the router's
+    # tracks off): drop them from the file before loading it, so a drawn track of the pour's own net may
+    # cross its core (BOARD.Remove() on a zone leaves SWIG unable to type the board's footprints afterwards)
+    path.write_text(_strip_zones(_strip_zones(path.read_text(encoding="utf-8"), "fanout:"), "core:"),
+                    encoding="utf-8")
     board = pcbnew.LoadBoard(str(path))
     if not pcbnew.ImportSpecctraSES(board, str(ses)):
         raise RuntimeError("SES import failed")
@@ -719,6 +723,14 @@ def import_session(b: Board, outdir: Path) -> Path:
     pb.w, pb.h = b.pcb["size"]
     pb.layers = b.pcb.get("layers", 2)
     pb.nets = {}
+    if b.pcb.get("tidy") is not None:
+        # in a process of its own: removing tracks leaves this one's SWIG proxies untyped
+        board.Save(str(path))
+        subprocess.run([sys.executable, "-c", "import sys, json; sys.path.insert(0, sys.argv[1]); import pcbgen; "
+                        "pcbgen.tidy_file(sys.argv[2], **json.loads(sys.argv[3]))",
+                        str(Path(__file__).parent), str(path), json.dumps(b.pcb["tidy"])], check=True)
+        board = pcbnew.LoadBoard(str(path))
+        pb.board = board
     if b.pcb.get("match"):
         m = b.pcb["match"]
         for line in tune_pairs(board, [(b.pcb_net_name(p), b.pcb_net_name(n)) for p, n in m["pairs"]],
@@ -1518,6 +1530,190 @@ def edge_fence(board, outline, gnd, pitch: float, inset: float, via_d: float = 0
 
 def _net_length(board, code: int) -> float:
     return sum(t.GetLength() for t in board.GetTracks() if t.GetClass() != "PCB_VIA" and t.GetNetCode() == code)
+
+
+def tidy_file(path: str, **kw):
+    """tidy_tracks() on a saved board, in a process of its own (see import_session)."""
+    board = pcbnew.LoadBoard(path)
+    n, before, after = tidy_tracks(board, **kw)
+    board.Save(path)
+    print(f"tidy: {n} runs straightened or merged, router segments {before} -> {after}")
+
+
+def tidy_tracks(board, short: float = 0.6, reach: int = 4, margin: float = 0.01) -> tuple[int, int, int]:
+    """b.pcb["tidy"]: {"short": mm, "reach": segments}.  Freerouting leaves many pads by a short straight, a
+    micro-jog and only then its diagonal, and its optimizer doesn't straighten them.  After the session's
+    import, along each chain of the router's own segments (one net, one layer, one width, through bends that
+    no via, pad, drawn track or branch touches), a run of up to `reach` segments holding one shorter than
+    `short` mm becomes one straight or 45° segment, or a 45° segment and a straight one: only when that is
+    no longer than the run, has fewer segments, and keeps every other net's copper, the board's edge and the
+    keep-outs that bar tracks at their clearance (+ `margin` mm).  Then collinear neighbours merge.  Drawn
+    (locked) tracks are never touched.  Returns (runs replaced, router segments before, after)."""
+    T = MM(0.001)                                       # 1 µm: the geometry's tolerance
+    layers = copper_of(board)
+    outline = pcbnew.SHAPE_POLY_SET()
+    board.GetBoardPolygonOutlines(outline, True)
+    edge_segs = [outline.Outline(i).CSegment(k) for i in range(outline.OutlineCount())
+                 for k in range(outline.Outline(i).SegmentCount())]
+    edge_clear = board.GetDesignSettings().m_CopperEdgeClearance
+    keep = {l: [pcbnew.SHAPE_POLY_SET(z.Outline()) for z in board.Zones()
+                if z.GetIsRuleArea() and z.GetDoNotAllowTracks() and z.IsOnLayer(l)] for l in layers}
+    cell = MM(2.0)
+    grid = {l: {} for l in layers}                      # per layer, a 2 mm grid of (uuid, net, clearance, shape)
+    dead = set()
+
+    def cells(x0, y0, x1, y1):
+        return [(i, j) for i in range(int(x0 // cell), int(x1 // cell) + 1)
+                for j in range(int(y0 // cell), int(y1 // cell) + 1)]
+
+    def index(item, l):
+        bb = item.GetBoundingBox()
+        entry = (item.m_Uuid.AsString(), item.GetNetCode(), item.GetOwnClearance(l), item.GetEffectiveShape(l))
+        for c in cells(bb.GetLeft(), bb.GetTop(), bb.GetRight(), bb.GetBottom()):
+            grid[l].setdefault(c, []).append(entry)
+
+    pads = [p for fp in board.GetFootprints() for p in fp.Pads()]
+    for item in list(board.GetTracks()) + pads:
+        for l in layers:
+            if item.IsOnLayer(l):
+                index(item, l)
+
+    def clear_of(a, b, w, l, net, own):
+        """Segment a-b, w wide, of `net` on layer l: clear of every other net, the edge and the keep-outs."""
+        seg = pcbnew.SEG(a, b)
+        half = w // 2
+        r = half + MM(1.0)
+        seen = set()
+        for c in cells(min(a.x, b.x) - r, min(a.y, b.y) - r, max(a.x, b.x) + r, max(a.y, b.y) + r):
+            for uid, o_net, o_clear, shape in grid[l].get(c, ()):
+                if uid in seen or uid in dead or (o_net == net and net > 0):
+                    continue
+                seen.add(uid)
+                if shape.Collide(seg, half + max(own, o_clear) + MM(margin)):
+                    return False
+        if any(e.Distance(seg) < half + edge_clear + MM(margin) for e in edge_segs):
+            return False
+        return not any(k.Collide(seg, half) for k in keep[l])
+
+    def dist(p, q):
+        return math.hypot(q.x - p.x, q.y - p.y)
+
+    def elbows(a, b):
+        dx, dy = b.x - a.x, b.y - a.y
+        if abs(dx) <= T or abs(dy) <= T or abs(abs(dx) - abs(dy)) <= T:
+            return [[a, b]]
+        d = min(abs(dx), abs(dy))
+        sx, sy = (1 if dx > 0 else -1), (1 if dy > 0 else -1)
+        return [[a, pcbnew.VECTOR2I(a.x + sx * d, a.y + sy * d), b],
+                [a, pcbnew.VECTOR2I(b.x - sx * d, b.y - sy * d), b]]
+
+    def key(p):
+        return (p.x, p.y)
+
+    def router_tracks():
+        return [t for t in board.GetTracks()
+                if t.GetClass() == "PCB_TRACK" and not t.IsLocked() and t.GetLayer() in layers]
+
+    before, replaced = len(router_tracks()), 0
+    for _ in range(4):
+        changed = False
+        vias, other_ends, groups = {}, {}, {}
+        for t in board.GetTracks():
+            if t.GetClass() == "PCB_VIA":
+                vias.setdefault(t.GetNetCode(), set()).add(key(t.GetPosition()))
+            elif t.GetClass() == "PCB_TRACK":
+                if not t.IsLocked() and t.GetLayer() in layers:
+                    groups.setdefault((t.GetNetCode(), t.GetLayer(), t.GetWidth()), []).append(t)
+                for p in (t.GetStart(), t.GetEnd()):
+                    other_ends.setdefault((t.GetNetCode(), t.GetLayer()), []).append(
+                        (key(p), t.IsLocked(), t.GetWidth()))
+        for (net, l, w), segs in groups.items():
+            ends = {}
+            for t in segs:
+                for p in (t.GetStart(), t.GetEnd()):
+                    ends.setdefault(key(p), []).append(t)
+            fixed = set(vias.get(net, ())) | {k for k, locked, wd in other_ends.get((net, l), ()) if locked or wd != w}
+            for p in pads:
+                if p.GetNetCode() == net and p.IsOnLayer(l):
+                    # a pad's centre stays; the bends inside it move only when the chain ends on that centre
+                    c = key(p.GetPosition())
+                    fixed.add(c)
+                    if c not in ends:
+                        fixed.update(k for k in ends if p.HitTest(pcbnew.VECTOR2I(*k)))
+            anchor = {k for k, ts in ends.items() if len(ts) != 2 or k in fixed}
+            done = set()
+            for start in [k for k in ends if k in anchor]:
+                for first in ends[start]:
+                    if first.m_Uuid.AsString() in done:
+                        continue
+                    chain, pts, k, t = [], [pcbnew.VECTOR2I(*start)], start, first
+                    while t is not None and t.m_Uuid.AsString() not in done:
+                        done.add(t.m_Uuid.AsString())
+                        chain.append(t)
+                        k = key(t.GetEnd()) if key(t.GetStart()) == k else key(t.GetStart())
+                        pts.append(pcbnew.VECTOR2I(*k))
+                        if k in anchor:
+                            break
+                        t = next((o for o in ends[k] if o.m_Uuid.AsString() != t.m_Uuid.AsString()), None)
+                    own = chain[0].GetOwnClearance(l)
+                    new, i, edits = [pts[0]], 0, 0
+                    while i < len(pts) - 1:
+                        best = None
+                        for j in range(min(len(pts) - 1, i + reach), i + 1, -1):
+                            run = pts[i:j + 1]
+                            least = min(dist(p, q) for p, q in zip(run, run[1:]))
+                            if least >= MM(short):
+                                continue
+                            old = sum(dist(p, q) for p, q in zip(run, run[1:]))
+                            for cand in elbows(pts[i], pts[j]):
+                                if sum(dist(p, q) for p, q in zip(cand, cand[1:])) > old + T:
+                                    continue
+                                # fewer segments, or as many with the run's shortest one gone
+                                shortest = min(dist(p, q) for p, q in zip(cand, cand[1:]))
+                                if len(cand) - 1 > j - i or shortest < MM(0.05) or (
+                                        len(cand) - 1 == j - i and shortest < max(2 * least, MM(0.25))):
+                                    continue
+                                if all(clear_of(p, q, w, l, net, own) for p, q in zip(cand, cand[1:])):
+                                    best = (j, cand)
+                                    break
+                            if best:
+                                break
+                        if best:
+                            new += best[1][1:]
+                            i = best[0]
+                            edits += 1
+                        else:
+                            new.append(pts[i + 1])
+                            i += 1
+                    merged = [new[0]]
+                    for p in new[1:]:                   # collinear neighbours, same direction: one segment
+                        if len(merged) >= 2:
+                            a, b = merged[-2], merged[-1]
+                            cross = (b.x - a.x) * (p.y - b.y) - (b.y - a.y) * (p.x - b.x)
+                            if abs(cross) <= T * max(dist(a, b), dist(b, p), 1) and \
+                                    (b.x - a.x) * (p.x - b.x) + (b.y - a.y) * (p.y - b.y) > 0:
+                                merged[-1] = p
+                                edits += 1
+                                continue
+                        merged.append(p)
+                    if not edits:
+                        continue
+                    changed, replaced = True, replaced + edits
+                    for c in chain:
+                        dead.add(c.m_Uuid.AsString())
+                        board.Remove(c)
+                    for p, q in zip(merged, merged[1:]):
+                        nt = pcbnew.PCB_TRACK(board)
+                        nt.SetStart(p)
+                        nt.SetEnd(q)
+                        nt.SetWidth(w)
+                        nt.SetLayer(l)
+                        nt.SetNetCode(net)
+                        board.Add(nt)
+                        index(nt, l)
+        if not changed:
+            break
+    return replaced, before, len(router_tracks())
 
 
 def tune_pairs(board, pairs, tol: float, clear: float = 0.15, pitch: float = 0.5, margin: float = 0.6,
