@@ -9,11 +9,11 @@ Builds this directory (unless --exe is given) and starts it: the service on
 Zephyr's virtual host controller, a device on the virtual bus with a loopback
 function and a serial converter (src/serial_emu.c), the shell on stdin ("dut
 off" unplugs the device, "dut on" plugs it back, "ra" sets the read-ahead,
-"emu" drives the converter).  The tests are a USB/IP client speaking the
-protocol over TCP (port 3240), as `usbip list` and `usbip attach` do: the
-device list, an import, transfers, the device going away in the middle of a
-session, and a serial converter read by a client a round trip away, with and
-without the read-ahead.
+"emu" drives the converter, "sessions" lists the imported devices).  The
+tests are a USB/IP client speaking the protocol over TCP (port 3240), as
+`usbip list` and `usbip attach` do: the device list, an import, transfers,
+the device going away in the middle of a session, and a serial converter
+read by a client a round trip away, with and without the read-ahead.
 
 What this cannot cover: a hub (Zephyr has no virtual one), so the bus IDs
 behind hub ports ("1-1.3") are not exercised; the timing of a real
@@ -292,6 +292,32 @@ class UsbipTest(unittest.TestCase):
         self.assertIsNotNone(s2, "the context stayed taken after the client left")
         self.assertEqual(device_descriptor(s2, 1)[:2], bytes([18, 1]))
         s2.close()
+
+    def sessions(self) -> list[tuple[str, str, int]]:
+        """The imported devices, as usbip_get_sessions() gives them: bus ID, client, since."""
+        start = self.node.mark()
+        self.node.cmd("sessions")
+        with self.node.lock:
+            out = self.node.out[start:]
+        return [(b.decode(), a.decode(), int(t))
+                for b, a, t in re.findall(rb"SIM: session (\S+) from (\S+) since (\d+)", out)]
+
+    def test_2a_sessions(self):
+        """The application sees the imported device, its client, and when it went."""
+        self.listed("1-1")
+        self.assertEqual(self.sessions(), [])
+        s = attach("1-1")
+        self.assertIsNotNone(s)
+        self.addCleanup(s.close)
+        device_descriptor(s, 1)
+        sessions = self.sessions()
+        self.assertEqual([(b, a) for b, a, _ in sessions], [("1-1", "127.0.0.1")])
+        self.assertGreater(sessions[0][2], 0)
+        s.close()
+        end = time.monotonic() + 5
+        while self.sessions() and time.monotonic() < end:
+            time.sleep(0.1)
+        self.assertEqual(self.sessions(), [])
 
     def test_3_unplug_during_session(self):
         self.listed("1-1")

@@ -7,6 +7,7 @@
  *   dut off    the device goes (as a board that resets or is unplugged)
  *   dut on     it comes back and enumerates again
  *   ra <mode>  how the service reads ahead from now on: none, stream, ftdi
+ *   sessions   the imported devices, as the service tells the application
  *
  * The client is test_usbip.py.
  *
@@ -16,6 +17,7 @@
 #include <string.h>
 
 #include <zephyr/kernel.h>
+#include <zephyr/net/socket.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/sys/printk.h>
 #include <zephyr/usb/usbd.h>
@@ -78,6 +80,29 @@ static int cmd_ra(const struct shell *sh, size_t argc, char **argv)
 
 SHELL_CMD_ARG_REGISTER(ra, NULL, "none|stream|ftdi: read-ahead of the next session", cmd_ra,
 		       2, 0);
+
+static int cmd_sessions(const struct shell *sh, size_t argc, char **argv)
+{
+	struct usbip_session_info info[CONFIG_USBIP_DEVICES_COUNT];
+	char addr[NET_INET_ADDRSTRLEN];
+	int n;
+
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	n = usbip_get_sessions(info, ARRAY_SIZE(info));
+	for (int i = 0; i < n; i++) {
+		zsock_inet_ntop(NET_AF_INET, &net_sin(&info[i].peer)->sin_addr, addr, sizeof(addr));
+		shell_print(sh, "SIM: session %s from %s since %lld", info[i].busid, addr,
+			    info[i].since_ms);
+	}
+
+	shell_print(sh, "SIM: sessions: 0");
+
+	return 0;
+}
+
+SHELL_CMD_REGISTER(sessions, NULL, "the imported devices", cmd_sessions);
 
 int main(void)
 {

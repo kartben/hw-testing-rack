@@ -16,16 +16,17 @@ patches:
   # freed memory, hubs are not on offer, an exported device cannot be
   # imported twice, bus IDs by port ("1-1", "1-1.3" behind port 3 of a hub),
   # an unlink is answered once the transfer ends, USB serial converters are
-  # read ahead (docs/multi-dut-node.md, firmware/common/tests/usbip)
+  # read ahead, the application can list the imported devices
+  # (docs/multi-dut-node.md, firmware/common/tests/usbip)
   - path: zephyr/usbip-removal-and-busid.patch
-    sha256sum: 2fbf2553f35d957d82a0cc68bb9a9d6e4176262f6625ae0087a3fbcf8b8b41ff
+    sha256sum: d45b9601022b57cb2341a8ed00e4cabd4a633f73c6723358f8707a14f94ff7c5
     module: zephyr
     author: Benjamin Cabé
     email: benjamin@zephyrproject.org
     date: 2026-10-19
     upstreamable: true
     comments: |
-      Nine commits, each building on its own.  The first two overlap the
+      Ten commits, each building on its own.  The first two overlap the
       maintainer's open PR 104189 (transfer allocation, cleanup when a
       submission fails): drop them when it lands.  The eighth (2026-10-21):
       an unlink answered with -ECONNRESET while its transfer completed made
@@ -34,8 +35,9 @@ patches:
       queued on a serial converter's bulk IN so its FIFO does not overflow
       while the client's next read crosses the network (the FT232 losing
       bytes on the bench); the bay node picks the converters by VID and PID
-      (src/usb_host.c).  Not proposed upstream (the user's call,
-      2026-10-19).
+      (src/usb_host.c).  The tenth (2026-10-22): usbip_get_sessions() and
+      usbip_device_offered(), for the bay page's USB devices card.  Not
+      proposed upstream (the user's call, 2026-10-19).
 
   # DWC2 host (the ESP32-S3's 8 channels): an interrupt IN endpoint gives its
   # channel back between polls, a bulk IN that NAKs gives it to transfers

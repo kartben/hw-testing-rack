@@ -1,7 +1,7 @@
 From 9c4ddffc6766bafac5e1cd7a32c68600b43c88e5 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:24 +0200
-Subject: [PATCH 1/9] usb: usbip: check the result of the UHC transfer
+Subject: [PATCH 01/10] usb: usbip: check the result of the UHC transfer
  allocation
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -36,7 +36,7 @@ index 4fe6f2ab1ab..c52381d13e3 100644
 From 84492496a1e8a52c54ad2ef0551ea762d0e52344 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
-Subject: [PATCH 2/9] usb: usbip: clean up if request submission fails
+Subject: [PATCH 02/10] usb: usbip: clean up if request submission fails
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -104,8 +104,8 @@ index c52381d13e3..af4201c5890 100644
 From 2c3139fd76c5e4268e2f36e9f834bdad0ad19dbd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
-Subject: [PATCH 3/9] usb: usbip: dequeue pending transfers when the connection
- is closed
+Subject: [PATCH 03/10] usb: usbip: dequeue pending transfers when the
+ connection is closed
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -158,7 +158,7 @@ index af4201c5890..42d32e1e83b 100644
 From 817ae599f024daf38648e043beff2a7dcf67485a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:26 +0200
-Subject: [PATCH 4/9] usb: usbip: drop completions of a previous connection
+Subject: [PATCH 04/10] usb: usbip: drop completions of a previous connection
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -226,7 +226,8 @@ index 42d32e1e83b..a2988b4dc79 100644
 From 6d1fb4e3c901de57b2e459683e34bd03d00da0bf Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:27 +0200
-Subject: [PATCH 5/9] usb: usbip: bind exported devices as host class instances
+Subject: [PATCH 05/10] usb: usbip: bind exported devices as host class
+ instances
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -766,8 +767,8 @@ index a2988b4dc79..9a6bdcd4879 100644
 From bb949826ae8124737dd7b85a6db8ce601b234da1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
-Subject: [PATCH 6/9] usb: usbip: close the connection when the exported device
- is removed
+Subject: [PATCH 06/10] usb: usbip: close the connection when the exported
+ device is removed
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -910,7 +911,7 @@ index 9a6bdcd4879..5896ba5422d 100644
 From e8d84a053845ef3f48b1575b625e38cd182fc693 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
-Subject: [PATCH 7/9] usb: usbip: name devices by their port
+Subject: [PATCH 07/10] usb: usbip: name devices by their port
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -977,7 +978,7 @@ index 5896ba5422d..00b41bee251 100644
 From 24137c3f3299ace6b9d057c26250859d88644f1f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Wed, 21 Oct 2026 22:34:44 +0200
-Subject: [PATCH 8/9] usb: usbip: answer an unlink request when the transfer
+Subject: [PATCH 08/10] usb: usbip: answer an unlink request when the transfer
  ends
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -1165,8 +1166,8 @@ index 00b41bee251..43f85ef997c 100644
 From d792ec4efdd40d5c1f2a3edfb04258360a873647 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Thu, 22 Oct 2026 04:23:13 +0200
-Subject: [PATCH 9/9] usb: usbip: read ahead on the bulk IN endpoints of serial
- converters
+Subject: [PATCH 09/10] usb: usbip: read ahead on the bulk IN endpoints of
+ serial converters
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -1849,3 +1850,164 @@ index 43f85ef997c..2ceb6d593bc 100644
  		k_event_init(&ctx->event);
  	}
  
+
+From 62dd875823e17d0ad36a9e6628747c58843f9980 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Thu, 22 Oct 2026 11:14:27 +0200
+Subject: [PATCH 10/10] usb: usbip: let the application query the imported
+ devices
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+An application that shows the state of the USB devices needs to know
+which of them a client has imported, from where and since when, and
+which ones the service offers at all.
+
+Add usbip_get_sessions(), which fills the bus ID, the client's address
+and the uptime at the import of each imported device, and
+usbip_device_offered(), true for a device in the device list of the
+service.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ include/zephyr/usb/usbip.h | 34 +++++++++++++++++++++++++
+ subsys/usb/host/usbip.c    | 51 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 85 insertions(+)
+
+diff --git a/include/zephyr/usb/usbip.h b/include/zephyr/usb/usbip.h
+index 84d721244e0..14460de6d3c 100644
+--- a/include/zephyr/usb/usbip.h
++++ b/include/zephyr/usb/usbip.h
+@@ -12,6 +12,7 @@
+ #ifndef ZEPHYR_INCLUDE_USB_USBIP_H_
+ #define ZEPHYR_INCLUDE_USB_USBIP_H_
+ 
++#include <zephyr/net/net_ip.h>
+ #include <zephyr/usb/usb_ch9.h>
+ 
+ #ifdef __cplusplus
+@@ -62,6 +63,39 @@ typedef enum usbip_read_ahead (*usbip_read_ahead_cb_t)(const struct usb_device_d
+  */
+ void usbip_set_read_ahead_cb(usbip_read_ahead_cb_t cb);
+ 
++struct usb_device;
++
++/** A device imported by a client */
++struct usbip_session_info {
++	/** Bus ID of the device, as in the device list */
++	char busid[32];
++	/** Address of the client */
++	struct net_sockaddr peer;
++	/** Uptime at the import, in milliseconds */
++	int64_t since_ms;
++};
++
++/**
++ * @brief Get the devices imported by a client
++ *
++ * @param[out] info Entries to fill
++ * @param[in] max   Number of entries
++ *
++ * @return Number of entries filled
++ */
++int usbip_get_sessions(struct usbip_session_info *info, int max);
++
++/**
++ * @brief Whether the service offers a device
++ *
++ * The service offers each device it has a context for, except hubs.
++ *
++ * @param[in] udev Device
++ *
++ * @return true if the device is in the device list of the service
++ */
++bool usbip_device_offered(const struct usb_device *udev);
++
+ /**
+  * @}
+  */
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index 2ceb6d593bc..63384d5f296 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -87,6 +87,9 @@ struct usbip_dev_ctx {
+ 	uint32_t devid;
+ 	/* Incremented on each import, to drop completions of an earlier one */
+ 	uint32_t session;
++	/* Address of the client, and uptime at the import */
++	struct net_sockaddr peer;
++	int64_t since;
+ #ifdef CONFIG_USBIP_READ_AHEAD
+ 	struct usbip_read_ahead_ep ra;
+ #endif
+@@ -1279,6 +1282,7 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
+ 		.status = 0,
+ 	};
+ 	struct usbip_dev_ctx *dev_ctx = NULL;
++	net_socklen_t peer_len;
+ 	char busid[32];
+ 	int ret;
+ 
+@@ -1318,6 +1322,12 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
+ 	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
+ 	dev_ctx->connfd = connfd;
+ 	dev_ctx->session++;
++	dev_ctx->since = k_uptime_get();
++	peer_len = sizeof(dev_ctx->peer);
++	if (zsock_getpeername(connfd, &dev_ctx->peer, &peer_len) != 0) {
++		memset(&dev_ctx->peer, 0, sizeof(dev_ctx->peer));
++	}
++
+ 	k_event_clear(&dev_ctx->event, USBIP_REMOVED);
+ 	k_event_post(&dev_ctx->event, USBIP_EXPORTED);
+ 	k_mutex_unlock(&dev_ctx->lock);
+@@ -1327,6 +1337,47 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
+ 	return 0;
+ }
+ 
++int usbip_get_sessions(struct usbip_session_info *const info, const int max)
++{
++	struct usbip_bus_ctx *const bus_ctx = &default_bus_ctx;
++	int n = 0;
++
++	for (unsigned int i = 0; i < CONFIG_USBIP_DEVICES_COUNT && n < max; i++) {
++		struct usbip_dev_ctx *const dev_ctx = &bus_ctx->devs[i];
++		uint32_t events;
++
++		k_mutex_lock(&dev_ctx->lock, K_FOREVER);
++
++		events = k_event_test(&dev_ctx->event, USBIP_EXPORTED | USBIP_REMOVED);
++		if (dev_ctx->udev != NULL && events == USBIP_EXPORTED) {
++			usbip_busid(dev_ctx->udev, bus_ctx->busnum, info[n].busid,
++				    sizeof(info[n].busid));
++			info[n].peer = dev_ctx->peer;
++			info[n].since_ms = dev_ctx->since;
++			n++;
++		}
++
++		k_mutex_unlock(&dev_ctx->lock);
++	}
++
++	return n;
++}
++
++bool usbip_device_offered(const struct usb_device *const udev)
++{
++	bool offered = false;
++
++	for (unsigned int i = 0; i < CONFIG_USBIP_DEVICES_COUNT && !offered; i++) {
++		struct usbip_dev_ctx *const dev_ctx = &default_bus_ctx.devs[i];
++
++		k_mutex_lock(&dev_ctx->lock, K_FOREVER);
++		offered = udev != NULL && dev_ctx->udev == udev;
++		k_mutex_unlock(&dev_ctx->lock);
++	}
++
++	return offered;
++}
++
+ static int usbip_handle_connection(struct usbip_bus_ctx *const bus_ctx, int connfd)
+ {
+ 	struct usbip_req_header hdr;
