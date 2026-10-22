@@ -19,10 +19,15 @@
   & .chip { font-family: var(--mono); font-size: 0.82rem; font-weight: 500; }
 }
 .term {
-  height: 440px; padding: 8px 4px 8px 10px; border-radius: 10px; background: var(--term-bg);
+  position: relative; height: 440px; padding: 8px 4px 8px 10px; border-radius: 10px; background: var(--term-bg);
   border: 1px solid var(--line); overflow: hidden;
   & #term { height: 100%; }
   & .xterm-viewport { scrollbar-width: thin; }
+  & .term-follow {
+    position: absolute; right: 18px; bottom: 12px; z-index: 5;
+    box-shadow: 0 4px 12px #0004; background: var(--card);
+    &[hidden] { display: none; }
+  }
 }
 .con-foot {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; color: var(--muted); font-size: 0.85rem;
@@ -312,12 +317,16 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
         </div>
         <div class="group end">
           <button data-con="ts" aria-pressed="false" title="Prefix each line with the time it arrived">Timestamps</button>
-          <button data-con="clear" title="Clear the screen (the log keeps everything)">Clear</button>
+          <button data-con="copy" title="Copy the selection, or the whole log">Copy</button>
+          <button data-con="clear" title="Clear the screen (Shift-click to also clear the download log)">Clear</button>
           <button data-con="download" title="Everything received since the page opened">Download</button>
           <button class="chip" popovertarget="con-settings" title="Port settings"><span id="con-format">115200 8N1</span> ⚙</button>
         </div>
       </div>
-      <div class="term"><div id="term"></div></div>
+      <div class="term">
+        <div id="term"></div>
+        <button type="button" class="small term-follow" id="term-follow" data-con="bottom" hidden>Jump to bottom ↓</button>
+      </div>
       <div class="con-foot">
         <div class="cmd"><code id="rfc-cmd">python -m serial.tools.miniterm rfc2217://…:4001 115200</code><button data-copy="rfc-cmd">Copy</button></div>
         <span id="con-clients"></span>
@@ -793,6 +802,14 @@ function renderRights(a) {
   document.querySelectorAll("button[data-con=break], button[popovertarget=con-settings]")
     .forEach((b) => (b.disabled = !console_));
   if (con.term) con.term.options.disableStdin = !console_;
+  if (!console_ && !con.ws) {
+    con.denied = true;
+    clearTimeout(con.retry);
+    setMeta(lease && !lease.yours ? `reserved by ${lease.holder}` : `not allowed from ${a.you}`);
+  } else if (console_ && con.denied) {
+    con.denied = false;
+    connect();
+  }
 
   const banner = $("ro-banner");
   banner.hidden = control;
@@ -1125,10 +1142,11 @@ $("acc-update").onclick = () => {
 
 const con = {
   term: null, ws: null, cfg: null, slots: 2, boot: null, lastPos: null, timestamps: false,
-  lineStart: true, log: [], logBytes: 0,
+  lineStart: true, log: [], logBytes: 0, retry: null, connecting: false, denied: false,
 };
 const LOG_MAX = 4 << 20;
 const enc = new TextEncoder();
+const ANSI_RE = /\x1b(?:\[[0-9;?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\))/g;
 const EOL = { cr: "\r", lf: "\n", crlf: "\r\n" };
 
 function cssColor(variable) {
@@ -1215,21 +1233,43 @@ function input(text) {
  * says hello with the stream position of the first byte it replays (and a
  * per-boot id), so a reconnecting page skips what it already shows.
  */
+function scheduleConnect(ms) {
+  clearTimeout(con.retry);
+  con.retry = null;
+  if (!document.hidden) con.retry = setTimeout(() => connect(), ms);
+}
+
 async function connect(slot = 0) {
+  clearTimeout(con.retry);
+  con.retry = null;
+  if (con.ws || (con.connecting && slot === 0) || document.hidden) return;
   /* No console right now (rules, someone else's lease): wait for the status poll to give one */
   const a = status?.access;
   if (a && !can(a, "console")) {
+    con.connecting = false;
+    con.denied = true;
     setMeta(a.lease.holder && !a.lease.yours ? `reserved by ${a.lease.holder}` : `not allowed from ${a.you}`);
-    setTimeout(connect, 2000);
     return;
   }
+  con.denied = false;
+  con.connecting = true;
   /* A ticket ties the WebSocket to this address's console right */
   let ticket;
   try {
     ({ ticket } = await api("/api/console/ticket", {}));
   } catch (e) {
-    setMeta(e.status === 403 || e.status === 423 ? `not available: ${e.message}` : "node unreachable, retrying…");
-    setTimeout(connect, 5000);
+    con.connecting = false;
+    if (e.status === 403 || e.status === 423) {
+      con.denied = true;
+      setMeta(`not available: ${e.message}`);
+    } else {
+      setMeta("node unreachable, retrying…");
+      scheduleConnect(5000);
+    }
+    return;
+  }
+  if (document.hidden) {
+    con.connecting = false;
     return;
   }
   const url = `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/console/ws/${slot}?t=${ticket}`;
@@ -1243,6 +1283,7 @@ async function connect(slot = 0) {
       const msg = JSON.parse(ev.data);
       if (msg.type === "hello") {
         hello = true;
+        con.connecting = false;
         pos = msg.pos;
         if (con.boot !== null && con.boot !== msg.boot) {
           con.lastPos = null;
@@ -1271,12 +1312,14 @@ async function connect(slot = 0) {
     if (con.ws === ws) con.ws = null;
     if (!hello) {
       if (slot + 1 < con.slots) return connect(slot + 1);
+      con.connecting = false;
       setMeta(`busy: ${con.slots} consoles already open`);
-      setTimeout(connect, 5000);
+      scheduleConnect(5000);
       return;
     }
+    con.connecting = false;
     setMeta("disconnected, reconnecting…");
-    setTimeout(connect, 2000);
+    scheduleConnect(2000);
   };
   con.ws = ws;
 }
@@ -1315,10 +1358,18 @@ async function saveSettings(ev) {
   }
 }
 
+function plainLog() {
+  const dec = new TextDecoder();
+  let text = "";
+  for (const chunk of con.log) text += dec.decode(chunk, { stream: true });
+  text += dec.decode();
+  return text.replace(ANSI_RE, "");
+}
+
 function download() {
   const name = `${status?.hostname ?? "bay"}-console-${new Date().toISOString().slice(0, 19).replace(/:/g, "-")}.log`;
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob(con.log, { type: "text/plain" }));
+  a.href = URL.createObjectURL(new Blob([plainLog()], { type: "text/plain" }));
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
@@ -1341,7 +1392,14 @@ async function startConsole() {
   term.loadAddon(fit);
   term.open($("term"));
   fit.fit();
-  new ResizeObserver(() => fit.fit()).observe($("term"));
+  const syncScroll = () => {
+    const b = term.buffer?.active;
+    $("term-follow").hidden = !b || b.viewportY >= b.baseY;
+  };
+  term.onScroll(syncScroll);
+  term.onWriteParsed(syncScroll);
+  $("term").querySelector(".xterm-viewport")?.addEventListener("scroll", syncScroll, { passive: true });
+  new ResizeObserver(() => { fit.fit(); syncScroll(); }).observe($("term"));
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => (term.options.theme = termTheme()));
   term.onData(input);
   term.onBinary((bin) => con.ws?.send(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
@@ -1358,7 +1416,7 @@ async function startConsole() {
 
 /* --- Camera: its pictures come from its own port (src/camera.c) --------- */
 
-const cam = { live: false, shown: false, resume: false };
+const cam = { live: false, shown: false, resume: false, error: "" };
 const camLight = () => document.querySelector("input[name=cam-light]:checked").value;
 const camUrl = (what) => `http://${location.hostname}:${status.camera.port}/${what}?light=${camLight()}`;
 
@@ -1389,12 +1447,13 @@ function renderCamera(s) {
   if (!allowed && cam.shown) camStop();
   if (!cam.shown) {
     $("cam-idle-text").textContent = !allowed ? `${s.access.you} may not use the camera`
-      : c.clients >= c.slots ? `Camera busy: ${plural(c.clients, "viewer")}` : "Live view off";
+      : cam.error || (c.clients >= c.slots ? `Camera busy: ${plural(c.clients, "viewer")}` : "Live view off");
   }
 }
 
 function camShow(live) {
   const url = live ? camUrl("stream.mjpg") : `${camUrl("snapshot.jpg")}&t=${Date.now()}`;
+  cam.error = "";
   cam.live = live;
   cam.shown = true;
   $("cam-img").src = url;
@@ -1407,6 +1466,7 @@ function camShow(live) {
 
 /* No src: the browser closes the stream, a viewer slot frees on the node */
 function camStop() {
+  cam.error = "";
   cam.live = cam.shown = false;
   $("cam-img").removeAttribute("src");
   delete $("cam-view").dataset.showing;
@@ -1464,7 +1524,8 @@ $("cam-form").addEventListener("change", (ev) => {
 $("cam-img").addEventListener("error", () => {
   if (!cam.shown) return;
   camStop();
-  $("cam-idle-text").textContent = "No picture: the camera is busy or did not answer";
+  cam.error = "No picture: the camera is busy or did not answer";
+  $("cam-idle-text").textContent = cam.error;
 });
 
 /* --- Events ------------------------------------------------------------- */
@@ -1497,8 +1558,27 @@ document.addEventListener("click", async (ev) => {
       con.lineStart = true;
       btn.setAttribute("aria-pressed", con.timestamps);
       return;
+    case "copy": {
+      const sel = con.term?.hasSelection() ? con.term.getSelection() : "";
+      const txt = sel || plainLog();
+      if (!txt) return toast("Nothing to copy");
+      await copyText(txt, btn);
+      return toast(sel ? "Selection copied" : "Log copied");
+    }
     case "clear":
       con.term?.clear();
+      $("term-follow").hidden = true;
+      if (ev.shiftKey) {
+        con.log.length = 0;
+        con.logBytes = 0;
+        con.lineStart = true;
+        toast("Screen and log cleared");
+      }
+      return;
+    case "bottom":
+      con.term?.scrollToBottom();
+      $("term-follow").hidden = true;
+      con.term?.focus();
       return;
     case "download":
       return download();
@@ -1512,7 +1592,7 @@ document.addEventListener("click", async (ev) => {
 
 document.addEventListener("change", (ev) => {
   if (ev.target.name === "mode") run(null, "/api/mode", { mode: ev.target.value }, ev.target.value);
-  if (ev.target.name === "cam-light" && cam.live) camShow(true);
+  if (ev.target.name === "cam-light" && cam.shown) camShow(cam.live);
   if (ev.target.name === "baud") {
     $("f-baud-custom").hidden = ev.target.value !== "custom";
     if (ev.target.value === "custom") $("f-baud-custom").focus();
@@ -1527,12 +1607,14 @@ document.addEventListener("visibilitychange", () => {
   /* A hidden tab gives its camera slot back */
   if (document.hidden) {
     clearTimeout(usbRetry);
+    clearTimeout(con.retry);
     if (cam.live) {
       cam.resume = true;
       camStop();
     }
   } else {
     lastUsbSeen = "";
+    if (!con.ws && !con.connecting && !con.denied) connect();
     if (cam.resume) {
       cam.resume = false;
       camShow(true);
