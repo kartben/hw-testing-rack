@@ -321,6 +321,37 @@ Stacks after the runs, two sessions at once (the FT232 and the hub's card reader
 
 bay_node's internal RAM with all of it: 99.14 %, 3264 bytes free.
 
+### Several sessions and the web page at once (2026-10-22)
+
+The XIAO ran three USB/IP sessions at once: the FT232 streaming `read_flash`, the hub's card reader
+(no card in it) and an MCU-Link (attached, nothing opened).  Web clients ran from the bench PC at
+the same time.
+
+| Load | USB/IP | Web requests |
+|---|---|---|
+| realistic: three pages polling `/api/status` and `/api/ports` every 2 s, `/metrics` every 10 s | 2/2 `read_flash` complete | 255/255 |
+| stress: eight clients looping on `/`, `/api/status`, `/metrics`, `/api/ports` with no pause | the FT232's session dropped | about 20 % failed |
+
+Under the stress the node ran out of network TX buffers, not of RAM.  Its log read "Send
+RET_SUBMIT failed err -105" (ENOBUFS), and USB/IP closes a session whose send fails.  The node
+did not restart.  That load is far beyond a few open pages, and it is accepted for now.
+
+The peaks, both loads included:
+
+- system heap: 29.0 of 33.7 KB;
+- USB/IP pool: 3.1 of 48 KB (no card in the reader, so no large transfer);
+- PSRAM heap: 82 KB of 1 MB;
+- stacks: none past 80 %.  The highest: a USB/IP session at 1440 of 1792, `tcp_work` at 752,
+  `rx_q[0]` at 1696 of 2048.
+
+The same runs found two problems, both fixed in ee2b751:
+
+- `/metrics` answered 500 to every second call in a row.  Zephyr's Prometheus formatter appends
+  to the string already in its buffer.
+- TCP's work queue needed 752 bytes under web load, and now has 1536.
+
+bay_node's internal RAM after ee2b751: 99.28 %, 2752 bytes free.
+
 ### Power hub: bench plan
 
 Wired as in the pin map; the PD charger into the CH224A board's USB-C, the XIAO on the PC.
