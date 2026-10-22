@@ -605,7 +605,9 @@ def score_logged(board: str, rid: str) -> dict:
         r = score_one(board, rid)
     except Exception as e:      # noqa: BLE001
         r = {"error": str(e)}
-    if "drc" in r and not r.get("cached"):
+    if r.get("cached"):
+        pass
+    elif "drc" in r:
         log(f"{board} {rid}: unconnected {r['drc']['unconnected']}, copper {r['drc'].get('copper')}, "
             f"vias {r['routing'].get('vias')}, {r['routing'].get('length_mm')} mm")
     elif r:
