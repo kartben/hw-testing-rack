@@ -144,6 +144,21 @@ def replace_planes(text: str, areas: dict[int, list[list[tuple[float, float]]]])
     return "".join(out) + text[last:]
 
 
+def no_via_at_smd(text: str) -> str:
+    """The structure's control set to (via_at_smd off): Freerouting then never drops a via on an SMD pad, where
+    an open via drains the solder from a small part's joint (KiCad's export says nothing, and Freerouting
+    allows it).  An existing control block is replaced."""
+    s, e = find(text, "structure")
+    ctl = next(((a, b) for a, b, k in children(text, s, e) if k == "control"), None)
+    first = next(iter(children(text, s, e)), None)
+    at = ctl[0] if ctl else (first[0] if first else e - 1)
+    indent = text[text.rfind("\n", 0, at) + 1:at] if first else "    "
+    block = "(control (via_at_smd off))"
+    if ctl:
+        return text[:ctl[0]] + block + text[ctl[1]:]
+    return text[:at] + block + "\n" + indent + text[at:]
+
+
 def split_planes_as_signals(text: str) -> tuple[str, list[str]]:
     """A power layer that carries the planes of several nets (a split plane) turned into a signal layer that no
     wire may use (a wire_keepout over the board): its nets are routed as signals, pad by pad to the plane's

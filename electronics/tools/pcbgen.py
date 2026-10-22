@@ -824,6 +824,10 @@ def export_dsn(b: Board, outdir: Path) -> Path:
         text = dsnlib.replace_planes(text, plane_areas(board))
     else:
         print(f"planes: {len(entries)} in the DSN for {len(zones)} zones: left as exported")
+    # no via of Freerouting's on an SMD pad (b.pcb["via_at_smd"]: True allows it): an open via there drains a
+    # small part's joint; the exposed pads' vias are drawn
+    if not b.pcb.get("via_at_smd"):
+        text = dsnlib.no_via_at_smd(text)
     # in one order whatever order KiCad wrote it in: the same design routes the same way every time
     dsn.write_text(dsnlib.canonical(text), encoding="utf-8")
     print("exported", dsn)
@@ -1099,6 +1103,13 @@ def connect_gnd_pads(board, gnd, spots_mm, via_d=SMALL_VIA[0], drill=SMALL_VIA[1
                     anchors.append((p.GetPosition(), min(p.GetSize().x, p.GetSize().y) // 2))
     edge = board.GetBoardEdgesBoundingBox()
     edge.Inflate(-MM(0.6))
+    smd = pcbnew.SHAPE_POLY_SET()             # no via on an SMD pad, its own net's included (fanout_pads)
+    for fp in board.GetFootprints():
+        for p in fp.Pads():
+            if p.GetDrillSize().x == 0:
+                for l in (pcbnew.F_Cu, pcbnew.B_Cu):
+                    if p.IsOnLayer(l):
+                        p.TransformShapeToPolygon(smd, l, MM(0.05), err, pcbnew.ERROR_OUTSIDE)
 
     def via_fits(e):
         if not edge.Contains(e):
@@ -1107,6 +1118,8 @@ def connect_gnd_pads(board, gnd, spots_mm, via_d=SMALL_VIA[0], drill=SMALL_VIA[1
             if math.hypot(e.x - q.x, e.y - q.y) < d / 2 + MM(drill) / 2 + MM(0.35):
                 return False
         if not on_plane(e, MM(via_d) / 2 + MM(0.1)):
+            return False
+        if smd.Collide(e, MM(via_d) // 2):
             return False
         return not any(obst[l].Collide(e, MM(via_d) // 2) for l in layers)
 
@@ -1253,6 +1266,15 @@ def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]
                 if z.GetIsRuleArea() and z.IsOnLayer(layer) and (z.GetDoNotAllowTracks() or z.GetDoNotAllowVias()):
                     sh.Append(z.Outline())
             obst[layer] = sh
+        # a fan-out via lands on no SMD pad, its own net's included (an open via in a small part's pad drains
+        # its joint)
+        smd = pcbnew.SHAPE_POLY_SET()
+        for fp in board.GetFootprints():
+            for p in fp.Pads():
+                if p.GetDrillSize().x == 0 and p.GetNetCode() == code:
+                    for layer in (pcbnew.F_Cu, pcbnew.B_Cu):
+                        if p.IsOnLayer(layer):
+                            p.TransformShapeToPolygon(smd, layer, MM(0.05), err, pcbnew.ERROR_OUTSIDE)
         holes = [(t.GetPosition(), t.GetDrillValue()) for t in board.GetTracks() if t.GetClass() == "PCB_VIA"]
         holes += [(p.GetPosition(), max(p.GetDrillSize().x, p.GetDrillSize().y))
                   for fp in board.GetFootprints() for p in fp.Pads() if p.GetDrillSize().x > 0]
@@ -1277,7 +1299,7 @@ def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]
                                                      int(e.y + (r_via + MM(0.15)) * math.sin(a))))
                        for a in [k * math.pi / 4 for k in range(8)]):
                 return False
-            return not any(obst[l].Collide(e, r_via) for l in layers)
+            return not smd.Collide(e, r_via) and not any(obst[l].Collide(e, r_via) for l in layers)
 
         pads = [p for fp in board.GetFootprints() for p in fp.Pads()
                 if p.GetNetCode() == code and p.GetDrillSize().x == 0
@@ -1445,6 +1467,16 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
                 if pad.GetNetCode() == gnd_code:
                     anchors.append(p)
 
+    # no stitching via on an SMD pad, a GND one included: a solid pad lies inside its pour's fill, and an open via
+    # there drains the joint (a small part's, a crystal's)
+    smd = pcbnew.SHAPE_POLY_SET()
+    for fp in board.GetFootprints():
+        for pad in fp.Pads():
+            if pad.GetDrillSize().x == 0:
+                for l in (pcbnew.F_Cu, pcbnew.B_Cu):
+                    if pad.IsOnLayer(l):
+                        pad.TransformShapeToPolygon(smd, l, MM(0.05), MM(0.005), pcbnew.ERROR_OUTSIDE)
+
     def fills():
         filler.Fill(board.Zones())
         out = {l: [] for l in copper}
@@ -1486,6 +1518,8 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
         for z in keepouts:
             if z.Outline().Contains(pcbnew.VECTOR2I(int(x), int(y))):
                 return False
+        if smd.Collide(pcbnew.VECTOR2I(int(x), int(y)), MM(via_d) // 2):
+            return False
         return hole_ok(x, y, d)
 
     def add(x, y, vd=via_d, d=drill):

@@ -142,6 +142,20 @@ class SplitAsSignals(unittest.TestCase):
         self.assertEqual(dsn.split_planes_as_signals(one), (one, []))
 
 
+class NoViaAtSmd(unittest.TestCase):
+    def test_control_in_structure(self):
+        out = dsn.no_via_at_smd(BOARD)
+        s, e = dsn.find(out, "structure")
+        ctl = [out[a:b] for a, b, k in dsn.children(out, s, e) if k == "control"]
+        self.assertEqual(ctl, ["(control (via_at_smd off))"])
+        self.assertEqual(out.replace("(control (via_at_smd off))", "").replace("\n    \n", "\n"), BOARD)
+
+    def test_replaces_an_existing_control(self):
+        out = dsn.no_via_at_smd(dsn.no_via_at_smd(BOARD).replace("via_at_smd off", "via_at_smd on"))
+        self.assertEqual(out.count("(control"), 1)
+        self.assertIn("(control (via_at_smd off))", out)
+
+
 class Canonical(unittest.TestCase):
     # what changes between two KiCad exports of one board: list order, a fixed track's grouping into paths,
     # the numbering of same-name footprint images, their coordinates' last digit
