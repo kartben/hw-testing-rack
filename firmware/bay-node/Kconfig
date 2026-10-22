@@ -243,8 +243,12 @@ config NET_BUF_RX_COUNT
 	default 96 if ESP_SPIRAM
 	default 48
 
+# TCP sends at most a third of the TX buffers ahead of the acknowledgments
+# (subsys/net/ip/tcp.c): 144 of 128 bytes made a 6 KB window, and a USB/IP
+# session sent a 120 KB mass storage read 6 KB per Wi-Fi round trip.  512
+# make it 21 KB.
 config NET_BUF_TX_COUNT
-	default 144 if ESP_SPIRAM
+	default 512 if ESP_SPIRAM
 	default 48
 
 # More system heap now that the internal RAM has room: under that load it
