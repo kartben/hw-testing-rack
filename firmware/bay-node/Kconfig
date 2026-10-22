@@ -263,4 +263,9 @@ config USBIP_THREAD_STACK_SIZE
 	depends on USBIP
 	default 1536
 
+# TCP's work queue (retransmissions, timers) peaked at 304 bytes of its 2 KB
+# on the bench XIAO, an FT232 streaming over USB/IP included.
+config NET_TCP_WORKQ_STACK_SIZE
+	default 1024
+
 source "Kconfig.zephyr"

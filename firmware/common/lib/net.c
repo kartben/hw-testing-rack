@@ -30,7 +30,8 @@ LOG_MODULE_REGISTER(hwtr_net, CONFIG_HWTR_RACK_LOG_LEVEL);
 
 #define RECONNECT_DELAY K_SECONDS(10)
 
-#define NET_THREAD_STACK_SIZE 4096
+/* It peaked at 1600 bytes on the bench XIAO, connects and reconnects included */
+#define NET_THREAD_STACK_SIZE 2560
 #define NET_THREAD_PRIORITY   K_PRIO_PREEMPT(10)
 
 static const char *prefix = "";
