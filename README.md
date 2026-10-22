@@ -43,9 +43,9 @@ ESP32-S3 in each bay.**
 | | |
 |---|---|
 | ![drawer](docs/img/photo-drawer.jpg) | ![boards](docs/img/photo-boards.jpg) |
-| A drawer pulled out, board still connected | Raspberry Pi Pico 2 on its plate, UNO R4 WiFi next door ([real models](docs/boards-3d.md)) |
-| ![status LEDs](docs/img/photo-detail.jpg) | ![bay node](electronics/bay-node/docs/bay-node-iso.png) |
-| Printed drawer fronts and status LEDs along a row | Bay node — ESP32-S3, 2 USB muxes, TPS2553, INA226, 60 V buck |
+| Bay B3 pulled out, still connected: a DATA ×4 at the back serves two XIAOs and two Pico 2s | The DATA ×4 up close: a USB-C lead per board, Dupont jumpers wiring a UART between two of them ([real models](docs/boards-3d.md)) |
+| ![row B](docs/img/photo-detail.jpg) | ![bay node](electronics/bay-node/docs/bay-node-iso.png) |
+| Row B: the GIGA's LVGL screen in B2, between two DATA ×4 bays | Bay node — ESP32-S3 (8 MB PSRAM), 2 USB muxes, TPS2553, INA226, CAN, 60 V buck |
 
 Neutral technical renders: [the rack](docs/img/hero.jpg), [one bay exploded](docs/architecture.md),
 [side view](docs/mechanical.md).
