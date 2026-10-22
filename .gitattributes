@@ -2,6 +2,7 @@
 *.stl binary
 *.png binary
 *.zip binary
+*.hdr binary
 *.kicad_sch text eol=lf
 *.kicad_pcb text eol=lf
 *.kicad_pro text eol=lf

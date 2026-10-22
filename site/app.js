@@ -7,6 +7,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -21,8 +22,15 @@ const container = $('viewport');
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: params.has('capture') });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+// AgX, as the photos (render/live_photo.py), with their "Medium High Contrast" look: a contrast of 1.2 about
+// middle grey in AgX's log encoding, before its curve
+renderer.toneMapping = THREE.AgXToneMapping;
+renderer.toneMappingExposure = 1.2;                 // the photos' +0.3 EV
+const AGX_CURVE = 'color = agxDefaultContrastApprox( color );';
+if (THREE.ShaderChunk.tonemapping_pars_fragment.includes(AGX_CURVE)) {
+  THREE.ShaderChunk.tonemapping_pars_fragment = THREE.ShaderChunk.tonemapping_pars_fragment.replace(AGX_CURVE,
+    `color = clamp( ( color - 0.6061 ) * 1.2 + 0.6061, 0.0, 1.0 );\n\t${AGX_CURVE}`);
+} else console.warn('three.js AgX chunk changed: no contrast look');
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 container.appendChild(renderer.domElement);
@@ -48,11 +56,23 @@ controls.maxDistance = 5000;
 
 const sun = new THREE.DirectionalLight(0xffffff, 2.2);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-sun.shadow.bias = -0.0004;
-sun.shadow.normalBias = 0.6;
+sun.shadow.mapSize.set(2048, 2048);      // 4096 in high quality; the frustum hugs the rack (fitSunShadow)
+sun.shadow.bias = -0.0002;
+sun.shadow.normalBias = 0.9;             // mm: ~2.5 texels at 4096²
 scene.add(sun, sun.target);
-scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x1a1d22, 0.55));
+const hemi = new THREE.HemisphereLight(0xdfe8ff, 0x1a1d22, 0.55);
+scene.add(hemi);
+// The room's light: a real one (Poly Haven's "Small Empty Room 1", CC0, cut to 512 × 256: 390 KB), its window
+// on the sun's side; the page's background stays the page's.  Three's own room and a sky light until it loads.
+new RGBELoader().loadAsync('assets/env/small_empty_room_1_512.hdr').then((hdr) => {
+  hdr.mapping = THREE.EquirectangularReflectionMapping;
+  const old = scene.environment;
+  scene.environment = pmrem.fromEquirectangular(hdr).texture;
+  scene.environmentIntensity = 1.25;
+  scene.remove(hemi);
+  old.dispose();
+  hdr.dispose();
+}).catch((e) => console.warn('room light:', e));
 
 const root = new THREE.Group();          // Z-up, millimetres
 root.rotation.x = -Math.PI / 2;
@@ -126,7 +146,25 @@ if (dot(vUpView, vUpView) > 0.01) {
   };
   return mat;
 }
-for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'pegs', 'cams', 'chainParts', 'cameras', 'powerBox', 'powerLabels']) printLook(MAT[k]);
+// PETG as the photos have it (render/live_photo.py › petg): satin, its pigments a little less saturated than
+// the flat colours above
+for (const k of ['ladders', 'trays', 'braces', 'framePlates', 'drawers', 'plates', 'pegs', 'cams', 'chainParts', 'cameras', 'powerBox', 'powerLabels']) {
+  const c = MAT[k].color, grey = (c.r + c.g + c.b) / 3;
+  c.setRGB(grey + 0.82 * (c.r - grey), grey + 0.82 * (c.g - grey), grey + 0.82 * (c.b - grey));
+  MAT[k].roughness = 0.42;
+  printLook(MAT[k]);
+}
+
+// What glows (the status LEDs, the cameras' light boxes) writes alpha 2 into the HDR frame, and only that is
+// bloomed (high quality, setQuality): a bright drawer in the sun, a glint on glass or an LCD (no brighter than
+// a white part in the room) stays as it is.  On the screen the alpha means nothing.
+function glows(mat) {
+  mat.onBeforeCompile = (sh) => {
+    sh.fragmentShader = sh.fragmentShader.replace('#include <dithering_fragment>', '#include <dithering_fragment>\ngl_FragColor.a *= 2.0;');
+  };
+  mat.customProgramCacheKey = () => 'glows';
+  return mat;
+}
 
 function partMaterial(name) {
   if (name.startsWith('dataport_pcb')) return MAT.pcbGreen;    // the DATA board, and the DATA ×4 one (…_x4)
@@ -357,7 +395,7 @@ function screenMaterial(sc) {
   const entry = lvgls[key] = { mat, ready: null };
   startLvgl('assets/lvgl/lvgl-demo.wasm', sc.px[0], sc.px[1], sc.demo).then((l) => {
     mat.emissiveMap = l.tex;
-    mat.emissiveIntensity = 1.4;
+    mat.emissiveIntensity = 0.85;     // an LCD's white: a little over a white part in the room's light, no glow
     mat.needsUpdate = true;
     entry.ready = l;
   }).catch((e) => console.warn('LVGL screen:', e));
@@ -578,7 +616,7 @@ function makeLaptop(p) {
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   const screen = new THREE.Mesh(new THREE.PlaneGeometry(w - 24, d - 30),
-    new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.9, roughness: 0.15 }));
+    new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.75, roughness: 0.15 }));
   screen.rotation.x = Math.PI / 2;
   screen.position.set(0, -0.2, (d - 6) / 2);
   hinge.add(lid, screen);
@@ -709,7 +747,7 @@ function build(pcbGlb) {
   // status LEDs in the fascia windows (glow; colour = mode)
   for (const l of DATA.leds || []) {
     const m = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 1.2, 16),
-      new THREE.MeshStandardMaterial({ color: l.color, emissive: l.color, emissiveIntensity: 2.2 }));
+      glows(new THREE.MeshStandardMaterial({ color: l.color, emissive: l.color, emissiveIntensity: 3.5 })));
     m.position.set(l.pos[0], l.pos[1] + 0.6, l.pos[2]);
     track(m, { layer: l.layer ?? 'nodes', bay: l.bay ?? null, row: l.row ?? null, zone: 'led', space: l.space ?? 'row' });
   }
@@ -718,6 +756,7 @@ function build(pcbGlb) {
     const rig = makeCameraRig(c, MAT);
     track(rig.group, { layer: 'cameras', bay: c.bay, row: c.row, zone: 'cameras', space: 'row' });
     rigs[c.bay] = rig;
+    for (const L of rig.lights) { glows(L.ledMat); glows(L.diffMat); }
   }
   // chains
   for (const ch of DATA.chains) {
@@ -799,7 +838,7 @@ function buildUI() {
     for (const k of Object.keys(drawerFrac)) { drawerFrac[k] = drawerTarget[k] = +e.target.value; }
     applyTransforms();
   });
-  $('explode').addEventListener('input', (e) => { explode = +e.target.value; applyTransforms(); });
+  $('explode').addEventListener('input', (e) => { explode = +e.target.value; applyTransforms(); fitSunShadow(); });
   $('xray').addEventListener('change', (e) => setXray(e.target.checked));
   $('autorotate').addEventListener('change', (e) => { controls.autoRotate = e.target.checked; });
   $('camLights').addEventListener('change', (e) => { for (const r of Object.values(rigs)) r.target = e.target.checked ? 1 : 0; syncCameraUI(); });
@@ -981,13 +1020,133 @@ function placeEnvironment() {
   const c = toWorld(rackCenter());
   sun.position.set(c.x + 700, c.y + 2600, c.z + 500);      // high, like the room's ceiling lights: the trays shade the bays
   sun.target.position.copy(c);
-  const s = sun.shadow.camera;
-  s.left = -900; s.right = 900; s.top = 900; s.bottom = -900; s.near = 100; s.far = 5000;
-  s.updateProjectionMatrix();
+  fitSunShadow();
   const ground = new THREE.Mesh(new THREE.CircleGeometry(2600, 64), std(0x161a20, 0, 0.92));
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   scene.add(ground);
+}
+
+// The sun's shadow camera hugs what casts shadows: the rack with its drawers pulled out, the power box, the
+// laptop (again when the explode slider moves them).  4096² over its ~1.4 m is ~0.35 mm a texel, 2048² 0.7 mm,
+// where a fixed 1.8 m square gave 0.9 mm.  The far plane reaches well past the floor under it.
+function fitSunShadow() {
+  if (!DATA) return;
+  root.updateMatrixWorld(true);
+  const bb = new THREE.Box3().setFromObject(root);
+  bb.max.z += DATA.rack.drawer_travel;               // world +Z: the rack's front
+  const s = sun.shadow.camera;
+  s.position.copy(sun.position);
+  s.lookAt(sun.target.position);
+  s.updateMatrixWorld(true);
+  const lo = new THREE.Vector3(Infinity, Infinity, Infinity), hi = lo.clone().negate(), p = new THREE.Vector3();
+  for (let i = 0; i < 8; i++) {
+    p.set(i & 1 ? bb.max.x : bb.min.x, i & 2 ? bb.max.y : bb.min.y, i & 4 ? bb.max.z : bb.min.z).applyMatrix4(s.matrixWorldInverse);
+    lo.min(p); hi.max(p);
+  }
+  s.left = lo.x - 10; s.right = hi.x + 10; s.bottom = lo.y - 10; s.top = hi.y + 10;
+  s.near = Math.max(1, -hi.z - 50); s.far = -lo.z + 800;
+  s.updateProjectionMatrix();
+}
+
+// ------------------------------------------------------------------ quality
+// "high": the frame goes through a composer: the scene into a 4× multisampled HDR target, ambient occlusion
+// (GTAO, a few cm: drawers in their bays, boards on their plates, the rack on the floor), a glow on what glows
+// (glows()), then AgX; and 4096² sun shadows.  "low": straight to the screen with the canvas' own MSAA,
+// 2048² shadows.  The same light and materials either way.  ?quality=high|low, else the panel's choice
+// (remembered on this browser), else low on a phone, a tablet or a small GPU and high elsewhere, dropped to
+// low if the first seconds run under 25 fps.  The post-processing code loads only for high.
+const QKEY = 'hw-testing-rack.quality';
+let quality = 'low', qualityAuto = false, composer = null, fpsWatch = null;
+function storedQuality() { try { return localStorage.getItem(QKEY); } catch { return null; } }
+function autoQuality() {
+  const gl = renderer.getContext();
+  const info = gl.getExtension('WEBGL_debug_renderer_info');
+  const gpu = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
+  const phone = navigator.userAgentData?.mobile || /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)
+    || window.matchMedia('(pointer: coarse)').matches;
+  const small = /SwiftShader|llvmpipe|software|Mali|Adreno|PowerVR|Intel\(R\) (HD|UHD) Graphics|Intel HD/i.test(gpu);
+  return phone || small ? 'low' : 'high';
+}
+
+async function makeComposer() {
+  const [{ EffectComposer }, { RenderPass }, { GTAOPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
+    import('three/addons/postprocessing/EffectComposer.js'), import('three/addons/postprocessing/RenderPass.js'),
+    import('three/addons/postprocessing/GTAOPass.js'), import('three/addons/postprocessing/UnrealBloomPass.js'),
+    import('three/addons/postprocessing/OutputPass.js')]);
+  const w = window.innerWidth, h = window.innerHeight;
+  // The scene pass draws into the composer's read buffer, which is back there every frame (two passes swap): that
+  // one is multisampled and keeps its depth for the AO; the other only takes full-screen passes
+  const c = new EffectComposer(renderer, new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, depthBuffer: false }));
+  c.renderTarget2.dispose();
+  c.renderTarget2 = c.readBuffer = new THREE.WebGLRenderTarget(w, h,
+    { type: THREE.HalfFloatType, samples: 4, depthTexture: new THREE.DepthTexture(w, h) });
+  c.addPass(new RenderPass(scene, camera));
+  // The AO reads the scene pass' own depth (its normals from it) rather than drawing the scene a second time:
+  // what draws no depth (labels, the x-ray drawers) casts none, and the models without normals need none
+  const ao = new GTAOPass(scene, camera, w, h);
+  ao.updateGtaoMaterial({ radius: 60, thickness: 30, distanceExponent: 2, distanceFallOff: 1, scale: 1.6, samples: 16 });
+  const aoRender = ao.render.bind(ao);
+  ao.render = (r, writeBuffer, readBuffer, ...rest) => { ao.setGBuffer(readBuffer.depthTexture); aoRender(r, writeBuffer, readBuffer, ...rest); };
+  c.addPass(ao);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0.3, 0.3, 1.0);
+  bloom.materialHighPassFilter.fragmentShader = /* glsl */`
+uniform sampler2D tDiffuse;
+uniform float luminosityThreshold;
+uniform float smoothWidth;
+varying vec2 vUv;
+void main() {           // only what glows (alpha 2: glows()), and only its bright part: a lit LED, a light box
+  vec4 t = texture2D( tDiffuse, vUv );
+  float v = max( t.r, max( t.g, t.b ) );
+  gl_FragColor = vec4( t.rgb * smoothstep( 1.2, 1.8, t.a ) * smoothstep( luminosityThreshold, luminosityThreshold + smoothWidth, v ), 1.0 );
+}`;
+  bloom.materialHighPassFilter.uniforms.smoothWidth.value = 1.5;
+  bloom.materialHighPassFilter.needsUpdate = true;
+  c.addPass(bloom);
+  c.addPass(new OutputPass());
+  c.setPixelRatio(renderer.getPixelRatio());
+  c.setSize(w, h);
+  return c;
+}
+
+async function setQuality(q, { remember = false } = {}) {
+  if (q === 'high' && !composer) {
+    try { composer = await makeComposer(); } catch (e) { console.warn('post-processing:', e); q = 'low'; }
+  }
+  quality = q;
+  // the page's colour (#0e1116) out of AgX at this exposure (in high quality the background is tone-mapped too)
+  const e = renderer.toneMappingExposure;
+  if (q === 'high') scene.background.setRGB(0.013963 / e, 0.015388 / e, 0.018732 / e);
+  else scene.background.set(0x0e1116);
+  const size = q === 'high' ? 4096 : 2048;
+  if (sun.shadow.mapSize.x !== size) {
+    sun.shadow.mapSize.set(size, size);
+    sun.shadow.map?.dispose();
+    sun.shadow.map = null;
+  }
+  if (remember) { qualityAuto = false; try { localStorage.setItem(QKEY, q); } catch { /* private window */ } }
+  $('hq').checked = q === 'high';
+}
+
+function renderFrame() {
+  if (quality === 'high' && composer) composer.render();
+  else renderer.render(scene, camera);
+}
+
+// Auto high quality whose frames take over 40 ms (median of 3 s, once the boards and screens have come in and
+// their shaders compiled) goes low.
+function watchFps(now) {
+  if (!qualityAuto || quality !== 'high') return;
+  if (document.hidden) { fpsWatch = null; return; }
+  fpsWatch ??= { start: now + 4000, last: now, dts: [] };
+  const dt = now - fpsWatch.last;
+  fpsWatch.last = now;
+  if (now < fpsWatch.start) return;
+  fpsWatch.dts.push(dt);
+  if (now - fpsWatch.start < 3000) return;
+  const med = fpsWatch.dts.sort((a, b) => a - b)[fpsWatch.dts.length >> 1];
+  qualityAuto = false;
+  if (med > 40) { console.info(`viewer: ${(1000 / med).toFixed(1)} fps in high quality, going low`); setQuality('low'); }
 }
 
 // ------------------------------------------------------------------ loop
@@ -995,6 +1154,7 @@ function onResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  composer?.setSize(window.innerWidth, window.innerHeight);
   labelRenderer.setSize(window.innerWidth, window.innerHeight);
 }
 window.addEventListener('resize', onResize);
@@ -1023,14 +1183,19 @@ function tick(now) {
     if (Math.abs(d) > 1e-3) setRigLight(rig, rig.level + Math.sign(d) * Math.min(Math.abs(d), 0.12));
   }
   controls.update();
-  renderer.render(scene, camera);
+  renderFrame();
   if (previewBay) preview.update(scene, now, [selectionBox]);
   labelRenderer.render(scene, camera);
+  watchFps(now);
 }
 
-if (params.has('debug')) window.__viewer = { renderer, scene, camera, controls, rigs, THREE, select, openPreview, preview: () => preview, lvgl: () => lvgls };
+if (params.has('debug')) window.__viewer = { renderer, scene, camera, controls, rigs, THREE, select, openPreview, preview: () => preview, lvgl: () => lvgls,
+  renderFrame, setQuality, quality: () => quality, composer: () => composer, sun };
 
-load().then(() => { placeEnvironment(); requestAnimationFrame(tick); }).catch((err) => {
+const askedQuality = ['high', 'low'].includes(params.get('quality')) ? params.get('quality') : storedQuality();
+qualityAuto = !['high', 'low'].includes(askedQuality);
+$('hq').addEventListener('change', (e) => setQuality(e.target.checked ? 'high' : 'low', { remember: true }));
+Promise.all([load(), setQuality(qualityAuto ? autoQuality() : askedQuality)]).then(() => { placeEnvironment(); requestAnimationFrame(tick); }).catch((err) => {
   console.error(err);
   $('loading').textContent = 'Could not load the model: ' + err.message;
 });

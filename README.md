@@ -89,6 +89,12 @@ pulls bay B4's drawer out and frames its DUT cable (DATA port to board), with no
 `?bay=B2&view=camera&camlight=1&preview=B2` looks into a camera bay with its LEDs on and opens what
 its camera sees (an Arducam Mega with a ~120° lens: fisheye, noise, auto-exposure and JPEG, at 5 fps).
 
+The viewer lights the rack like the photos: a real room (Poly Haven's "Small Empty Room 1", CC0, cut to
+512 × 256 in `site/assets/env/`), AgX with Blender's "Medium High Contrast" look, PETG with its layer lines.
+Its *High quality* box (on by default on a desktop GPU, off on phones and small GPUs, and dropped by itself
+under 25 fps) adds ambient occlusion (GTAO), a glow on the status LEDs and the camera lights, 4× MSAA through
+the post-processing and 4096² sun shadows; `?quality=high` or `?quality=low` forces one for screenshots.
+
 Photoreal renders (Blender + Cycles) start from `render/assembly.glb`, baked
 from the same scene as the viewer by `python tools/assembly_glb.py --hq` (`--hq`:
 full-resolution part meshes instead of the viewer's lighter ones).  Either
