@@ -93,6 +93,8 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
 `dut.c` stays the bay's DUT_5V; `ports.c` adds the DATA ×4's ports, and a
 one-port node answers `/api/ports` with its one DUT as port 1.
 
+![USB devices card on a DATA ×4 bay (B3.1–B3.4): per-port power, reset, bootloader, current and lease state](img/web-ui-ports.png)
+
 ## Power budget
 
 > The DATA ×4 board as designed (v1.0, `electronics/data-port-x4`,

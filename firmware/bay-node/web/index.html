@@ -889,7 +889,7 @@ function renderRights(a) {
     b.dataset.denied = !control || Boolean(p?.lease?.holder && !p.lease.yours);
   });
   document.querySelectorAll("button[data-action], input[name=mode]").forEach((el) => {
-    el.disabled = !control || el.dataset.busy === "1";
+    el.disabled = el.dataset.denied === "true" || !control || el.dataset.busy === "1";
   });
   document.querySelectorAll("button[data-con=break], button[popovertarget=con-settings]")
     .forEach((b) => (b.disabled = !console_));

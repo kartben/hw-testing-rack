@@ -116,6 +116,21 @@ def main() -> None:
         time.sleep(3 * POLL_S)
         shoot_top(light, "web-ui-access-readonly")
 
+        # DATA x4: four sub-slots (B3.1-B3.4) with per-port controls
+        dev_server.PEER_OVERRIDE["127.0.0.1"] = "192.168.1.23"
+        acc.set_rules({"enabled": False, "everyone": ["all"], "sources": []})
+        acc.lease = None
+        dev_server.node.update(id="b3", hostname="bay-b3", ip="192.168.1.53")
+        dev_server.set_ports(4)
+        time.sleep(2.2)
+        dev_server.ports[0]["client"] = ip("192.168.1.41")
+        dev_server.ports[2]["lease"] = {"holder": ip("192.168.1.41"), "note": "twister job 8812",
+                                        "until": time.monotonic() + 3600}
+        dev_server.ports[3]["on"] = False
+        dark.set_viewport_size(DESKTOP)
+        dark.reload()
+        time.sleep(POLL_S)
+        shoot(dark, "web-ui-ports", "#usb-card")
 
 
 if __name__ == "__main__":

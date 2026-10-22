@@ -1156,13 +1156,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json(404, {"error": f"no port {query['port'][0]} (1..{PORTS})"})
             if path == "/dev/fault":
                 pt.update(on=False, latched=True, faults=pt["faults"] + 1, client=None)
-                node["last_fault"] = f"port{pt['port']}_oc"
             else:
                 pt["client"] = None if pt["client"] else ip_int("192.168.1.41")
             self.json(200, port_doc(pt))
         elif path == "/dev/fault":
             node["dut"].update(on=False, latched=True, faults=node["dut"]["faults"] + 1)
-            node["last_fault"] = "dut_oc"
             self.json(200, status())
         elif path == "/dev/attach":
             fake_client("usbip:51234", "usbip", "USB/IP", 51234)
