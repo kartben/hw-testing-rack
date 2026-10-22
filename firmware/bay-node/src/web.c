@@ -1662,6 +1662,8 @@ static int metrics_handler(struct http_client_ctx *client, enum http_transaction
 	}
 
 	metrics_update();
+	/* The formatter appends to the string already in the buffer */
+	resp_buf[0] = '\0';
 	ret = prometheus_format_exposition(&bay_collector, resp_buf, sizeof(resp_buf));
 	if (ret < 0) {
 		LOG_ERR("metrics formatting failed: %d", ret);
