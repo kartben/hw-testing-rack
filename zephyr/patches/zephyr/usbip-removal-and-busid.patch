@@ -1,7 +1,7 @@
 From 9c4ddffc6766bafac5e1cd7a32c68600b43c88e5 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:24 +0200
-Subject: [PATCH 1/8] usb: usbip: check the result of the UHC transfer
+Subject: [PATCH 1/9] usb: usbip: check the result of the UHC transfer
  allocation
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -36,7 +36,7 @@ index 4fe6f2ab1ab..c52381d13e3 100644
 From 84492496a1e8a52c54ad2ef0551ea762d0e52344 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
-Subject: [PATCH 2/8] usb: usbip: clean up if request submission fails
+Subject: [PATCH 2/9] usb: usbip: clean up if request submission fails
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -104,7 +104,7 @@ index c52381d13e3..af4201c5890 100644
 From 2c3139fd76c5e4268e2f36e9f834bdad0ad19dbd Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
-Subject: [PATCH 3/8] usb: usbip: dequeue pending transfers when the connection
+Subject: [PATCH 3/9] usb: usbip: dequeue pending transfers when the connection
  is closed
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -158,7 +158,7 @@ index af4201c5890..42d32e1e83b 100644
 From 817ae599f024daf38648e043beff2a7dcf67485a Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:26 +0200
-Subject: [PATCH 4/8] usb: usbip: drop completions of a previous connection
+Subject: [PATCH 4/9] usb: usbip: drop completions of a previous connection
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -226,7 +226,7 @@ index 42d32e1e83b..a2988b4dc79 100644
 From 6d1fb4e3c901de57b2e459683e34bd03d00da0bf Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:27 +0200
-Subject: [PATCH 5/8] usb: usbip: bind exported devices as host class instances
+Subject: [PATCH 5/9] usb: usbip: bind exported devices as host class instances
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -766,7 +766,7 @@ index a2988b4dc79..9a6bdcd4879 100644
 From bb949826ae8124737dd7b85a6db8ce601b234da1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
-Subject: [PATCH 6/8] usb: usbip: close the connection when the exported device
+Subject: [PATCH 6/9] usb: usbip: close the connection when the exported device
  is removed
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -910,7 +910,7 @@ index 9a6bdcd4879..5896ba5422d 100644
 From e8d84a053845ef3f48b1575b625e38cd182fc693 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
-Subject: [PATCH 7/8] usb: usbip: name devices by their port
+Subject: [PATCH 7/9] usb: usbip: name devices by their port
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -977,7 +977,7 @@ index 5896ba5422d..00b41bee251 100644
 From 24137c3f3299ace6b9d057c26250859d88644f1f Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Wed, 21 Oct 2026 22:34:44 +0200
-Subject: [PATCH 8/8] usb: usbip: answer an unlink request when the transfer
+Subject: [PATCH 8/9] usb: usbip: answer an unlink request when the transfer
  ends
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -1161,3 +1161,691 @@ index 00b41bee251..43f85ef997c 100644
  		sys_dlist_init(&ctx->dlist);
  		k_event_init(&ctx->event);
  	}
+
+From d792ec4efdd40d5c1f2a3edfb04258360a873647 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Thu, 22 Oct 2026 04:23:13 +0200
+Subject: [PATCH 9/9] usb: usbip: read ahead on the bulk IN endpoints of serial
+ converters
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A USB serial converter has a receive FIFO of a few hundred bytes, and
+drops what comes in while it is full. Over USB/IP, its bulk IN endpoint
+is polled only while a request of the client is there, and each answer
+takes a round trip on the network before the next request comes: at
+115200 baud, the FIFO overflows in that time.
+
+Add an option to keep a transfer queued on a bulk IN endpoint of the
+devices an application selects, from the first request of the client on
+it, and to answer the requests of the client with the data received. The
+data is held in replies of the size of the requests, from the USBIP pool,
+at most CONFIG_USBIP_READ_AHEAD_DEPTH of them; while they are all held,
+the endpoint is not read and the device holds its data back as it would
+without the option. Throughput remains bound by the requests the client
+keeps in flight per round trip.
+
+FTDI converters send two status bytes in each packet, and a packet with
+the status bytes alone whenever their latency timer expires. In the FTDI
+mode, the replies keep that framing: data is merged into packets of the
+same modem status, never across a line error, and packets with no data
+and no new status are not kept, so they do not fill the replies.
+
+The data read ahead is dropped on a request that resets the endpoint, and
+on an FTDI reset or purge of the receive buffer. An unlinked request that
+waits for data is answered with RET_UNLINK only, and once no request
+waits, the endpoint is not read ahead any more.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ include/zephyr/usb/usbip.h    |  73 ++++++
+ subsys/usb/host/Kconfig.usbip |  18 ++
+ subsys/usb/host/usbip.c       | 468 ++++++++++++++++++++++++++++++++++
+ 3 files changed, 559 insertions(+)
+ create mode 100644 include/zephyr/usb/usbip.h
+
+diff --git a/include/zephyr/usb/usbip.h b/include/zephyr/usb/usbip.h
+new file mode 100644
+index 00000000000..84d721244e0
+--- /dev/null
++++ b/include/zephyr/usb/usbip.h
+@@ -0,0 +1,73 @@
++/*
++ * Copyright (c) 2026 Benjamin Cabé <benjamin@zephyrproject.org>
++ *
++ * SPDX-License-Identifier: Apache-2.0
++ */
++
++/**
++ * @file
++ * @brief USB/IP service
++ */
++
++#ifndef ZEPHYR_INCLUDE_USB_USBIP_H_
++#define ZEPHYR_INCLUDE_USB_USBIP_H_
++
++#include <zephyr/usb/usb_ch9.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/**
++ * @brief USB/IP service
++ * @defgroup usbip USB/IP service
++ * @ingroup usb
++ * @{
++ */
++
++/** How the service reads ahead on the bulk IN endpoints of a device */
++enum usbip_read_ahead {
++	/** Bulk IN transfers are issued for the requests of the client only */
++	USBIP_READ_AHEAD_NONE,
++	/** Read ahead, a reply carries the data of one or more transfers */
++	USBIP_READ_AHEAD_STREAM,
++	/**
++	 * Read ahead, each packet of the endpoint starts with two status
++	 * bytes, as FTDI serial converters send them: a reply carries the
++	 * data of one or more packets of the same status, in packets again
++	 */
++	USBIP_READ_AHEAD_FTDI,
++};
++
++/**
++ * @brief Callback choosing the read-ahead of a device
++ *
++ * @param[in] desc Device descriptor of the device
++ *
++ * @return How to read ahead on the bulk IN endpoints of the device
++ */
++typedef enum usbip_read_ahead (*usbip_read_ahead_cb_t)(const struct usb_device_descriptor *desc);
++
++/**
++ * @brief Set the callback choosing the read-ahead of the exported devices
++ *
++ * The service then keeps a transfer queued on a bulk IN endpoint of the
++ * devices the callback selects, from the first request of the client on that
++ * endpoint, and answers the requests of the client with the data received.
++ * A device that cannot hold data back, such as a serial converter with a
++ * small buffer, keeps being read while the requests of the client are in
++ * transit.
++ *
++ * @param[in] cb Callback, NULL for no read-ahead
++ */
++void usbip_set_read_ahead_cb(usbip_read_ahead_cb_t cb);
++
++/**
++ * @}
++ */
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* ZEPHYR_INCLUDE_USB_USBIP_H_ */
+diff --git a/subsys/usb/host/Kconfig.usbip b/subsys/usb/host/Kconfig.usbip
+index 0c4d9a8e8c5..983f7fb9dbf 100644
+--- a/subsys/usb/host/Kconfig.usbip
++++ b/subsys/usb/host/Kconfig.usbip
+@@ -55,6 +55,24 @@ config USBIP_DEVICES_COUNT
+ 	help
+ 	  Number of devices that can be exported.
+ 
++config USBIP_READ_AHEAD
++	bool "Read ahead on bulk IN endpoints"
++	help
++	  Keep a transfer queued on a bulk IN endpoint of the devices an
++	  application selects with usbip_set_read_ahead_cb(), and answer the
++	  requests of the client with the data received. Throughput remains
++	  bound by the requests the client keeps in flight per round trip.
++
++config USBIP_READ_AHEAD_DEPTH
++	int "Replies held per endpoint read ahead"
++	depends on USBIP_READ_AHEAD
++	range 1 32
++	default 8
++	help
++	  Replies waiting for the requests of the client on an endpoint read
++	  ahead, each the size of the requests of the client and taken from the
++	  USBIP pool. Reading ahead stops while they are all held.
++
+ module = USBIP
+ module-str = usbip
+ source "subsys/logging/Kconfig.template.log_config"
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index 43f85ef997c..2ceb6d593bc 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -13,6 +13,7 @@
+ #include <zephyr/usb/class/usb_hub.h>
+ #include <zephyr/net/socket.h>
+ #include <zephyr/net_buf.h>
++#include <zephyr/usb/usbip.h>
+ 
+ #include <usbh_class.h>
+ #include <usbh_device.h>
+@@ -49,6 +50,25 @@ static struct k_thread usbip_thread;
+ /* How often a connection waiting for a command checks for the device removal */
+ #define USBIP_IDLE_CHECK_MS	250
+ 
++#ifdef CONFIG_USBIP_READ_AHEAD
++/* Bulk IN endpoint read ahead, its data waiting for the requests of the client */
++struct usbip_read_ahead_ep {
++	/* Transfer in flight, NULL if there is none */
++	struct uhc_transfer *xfer;
++	/* Replies, each at most the size of a request */
++	struct net_buf *replies;
++	/* Requests of the client waiting for data */
++	sys_dlist_t waiting;
++	int err;
++	uint16_t len;
++	uint16_t mps;
++	uint8_t count;
++	uint8_t ep;
++	uint8_t mode;
++	uint8_t modem_status;
++};
++#endif
++
+ /*
+  * Context of the exported device. It is a host class instance, the host
+  * support binds it to a device when the device is configured.
+@@ -67,6 +87,9 @@ struct usbip_dev_ctx {
+ 	uint32_t devid;
+ 	/* Incremented on each import, to drop completions of an earlier one */
+ 	uint32_t session;
++#ifdef CONFIG_USBIP_READ_AHEAD
++	struct usbip_read_ahead_ep ra;
++#endif
+ };
+ 
+ /* Context of the exported bus (not really used yet) */
+@@ -334,6 +357,432 @@ submit_req_err:
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_USBIP_READ_AHEAD
++
++/* Line status errors of an FTDI packet: such a packet is never merged */
++#define USBIP_FTDI_LSR_ERRORS	0x9E
++
++static usbip_read_ahead_cb_t usbip_read_ahead_cb;
++
++void usbip_set_read_ahead_cb(usbip_read_ahead_cb_t cb)
++{
++	usbip_read_ahead_cb = cb;
++}
++
++/* Answer a request of the client with data read ahead, or an error */
++static void usbip_ra_reply(struct usbip_dev_ctx *const dev_ctx,
++			   struct usbip_cmd_node *const cmd_nd, const int status,
++			   const uint8_t *const data, const size_t len)
++{
++	const struct usbip_command *const cmd = &cmd_nd->cmd;
++	struct usbip_return ret = {0};
++
++	ret.hdr.command = net_htonl(USBIP_RET_SUBMIT);
++	ret.hdr.seqnum = net_htonl(cmd->hdr.seqnum);
++	ret.hdr.devid = net_htonl(cmd->hdr.devid);
++	ret.hdr.direction = net_htonl(cmd->hdr.direction);
++	ret.hdr.ep = net_htonl(dev_ctx->ra.ep);
++	ret.submit.status = net_htonl(status);
++	ret.submit.actual_length = net_htonl(len);
++	ret.submit.start_frame = net_htonl(cmd->submit.start_frame);
++	ret.submit.numof_iso_pkts = net_htonl(0xFFFFFFFFUL);
++
++	if (usbip_send(dev_ctx->connfd, &ret, sizeof(ret)) != 0 ||
++	    (len != 0 && usbip_send(dev_ctx->connfd, data, len) != 0)) {
++		LOG_ERR("Send RET_SUBMIT failed, errno %d", errno);
++	}
++
++	k_mem_slab_free(&usbip_slab, (void *)cmd_nd);
++}
++
++static struct net_buf *usbip_ra_new_reply(struct usbip_read_ahead_ep *const ra)
++{
++	struct net_buf *buf;
++
++	buf = net_buf_alloc_len(&usbip_pool, ra->len, K_NO_WAIT);
++	if (buf == NULL) {
++		LOG_WRN("No buffer for data read ahead on ep 0x%02x", ra->ep);
++		return NULL;
++	}
++
++	if (ra->replies == NULL) {
++		ra->replies = buf;
++	} else {
++		net_buf_frag_add(ra->replies, buf);
++	}
++
++	ra->count++;
++
++	return buf;
++}
++
++/* Data with no framing: the replies are filled up in order */
++static void usbip_ra_add_stream(struct usbip_read_ahead_ep *const ra, struct net_buf *const in)
++{
++	struct net_buf *last = ra->replies == NULL ? NULL : net_buf_frag_last(ra->replies);
++	size_t n;
++
++	while (in->len > 0) {
++		if (last == NULL || net_buf_tailroom(last) == 0) {
++			last = usbip_ra_new_reply(ra);
++			if (last == NULL) {
++				return;
++			}
++		}
++
++		n = MIN(net_buf_tailroom(last), in->len);
++		net_buf_add_mem(last, net_buf_pull_mem(in, n), n);
++	}
++}
++
++/*
++ * A packet of an FTDI converter, two status bytes then data. Its data goes on
++ * in the last packet of the replies if that one is not full, has the same modem
++ * status, and neither has a line error; else it starts a packet, after full
++ * packets only. A packet with no data and no new status is not kept.
++ */
++static void usbip_ra_add_ftdi(struct usbip_read_ahead_ep *const ra,
++			      const uint8_t *const pkt, const size_t len)
++{
++	struct net_buf *buf = ra->replies == NULL ? NULL : net_buf_frag_last(ra->replies);
++	const uint8_t *data = pkt + 2;
++	size_t n = len - 2;
++	uint8_t *last = NULL;
++	size_t last_len = 0;
++	bool same;
++	size_t k;
++
++	if (buf != NULL && buf->len > 0) {
++		last = buf->data + ROUND_DOWN(buf->len - 1U, ra->mps);
++		last_len = buf->data + buf->len - last;
++	}
++
++	same = pkt[0] == ra->modem_status && (pkt[1] & USBIP_FTDI_LSR_ERRORS) == 0 &&
++	       (last == NULL || (last[0] == pkt[0] && (last[1] & USBIP_FTDI_LSR_ERRORS) == 0));
++
++	if (n == 0 && same) {
++		if (last != NULL) {
++			last[1] = pkt[1];
++		}
++
++		return;
++	}
++
++	ra->modem_status = pkt[0];
++
++	if (same && last != NULL && last_len < ra->mps) {
++		k = MIN(MIN(ra->mps - last_len, n), net_buf_tailroom(buf));
++		net_buf_add_mem(buf, data, k);
++		last[1] = pkt[1];
++		data += k;
++		n -= k;
++		if (n == 0) {
++			return;
++		}
++	}
++
++	if (buf == NULL || buf->len % ra->mps != 0 || net_buf_tailroom(buf) < 2U + n) {
++		buf = usbip_ra_new_reply(ra);
++		if (buf == NULL) {
++			return;
++		}
++	}
++
++	net_buf_add_mem(buf, pkt, 2);
++	net_buf_add_mem(buf, data, n);
++}
++
++/* Drop the data read ahead, and cancel the transfer in flight */
++static void usbip_ra_flush(struct usbip_read_ahead_ep *const ra)
++{
++	if (ra->xfer != NULL) {
++		(void)uhc_ep_dequeue(usbip_uhs_ctx.dev, ra->xfer);
++		ra->xfer = NULL;
++	}
++
++	if (ra->replies != NULL) {
++		net_buf_unref(ra->replies);
++		ra->replies = NULL;
++	}
++
++	ra->count = 0;
++	ra->err = 0;
++	ra->modem_status = 0;
++}
++
++/* Stop reading ahead, the requests waiting are dropped without an answer */
++static void usbip_ra_stop(struct usbip_dev_ctx *const dev_ctx)
++{
++	struct usbip_read_ahead_ep *const ra = &dev_ctx->ra;
++	sys_dnode_t *node;
++
++	while ((node = sys_dlist_get(&ra->waiting)) != NULL) {
++		k_mem_slab_free(&usbip_slab, CONTAINER_OF(node, struct usbip_cmd_node, node));
++	}
++
++	usbip_ra_flush(ra);
++	ra->ep = 0;
++}
++
++/* Answer the requests waiting, in order */
++static void usbip_ra_serve(struct usbip_dev_ctx *const dev_ctx)
++{
++	struct usbip_read_ahead_ep *const ra = &dev_ctx->ra;
++	struct usbip_cmd_node *cmd_nd;
++	struct net_buf *reply;
++	size_t len;
++
++	while (!sys_dlist_is_empty(&ra->waiting) && ra->replies != NULL) {
++		cmd_nd = CONTAINER_OF(sys_dlist_get(&ra->waiting), struct usbip_cmd_node, node);
++		reply = ra->replies;
++		len = MIN(reply->len, cmd_nd->cmd.submit.length);
++		if (ra->mode == USBIP_READ_AHEAD_FTDI && len < reply->len) {
++			len = ROUND_DOWN(len, ra->mps);
++		}
++
++		usbip_ra_reply(dev_ctx, cmd_nd, 0, reply->data, len);
++
++		if (len == reply->len) {
++			ra->replies = net_buf_frag_del(NULL, reply);
++			ra->count--;
++		} else {
++			net_buf_pull(reply, len);
++		}
++	}
++
++	/* After the data, the requests get the error, and reading ahead stops */
++	if (ra->err != 0 && ra->replies == NULL && !sys_dlist_is_empty(&ra->waiting)) {
++		while (!sys_dlist_is_empty(&ra->waiting)) {
++			cmd_nd = CONTAINER_OF(sys_dlist_get(&ra->waiting), struct usbip_cmd_node,
++					      node);
++			usbip_ra_reply(dev_ctx, cmd_nd, ra->err, NULL, 0);
++		}
++
++		usbip_ra_stop(dev_ctx);
++	}
++}
++
++static int usbip_ra_cb(struct usb_device *const udev, struct uhc_transfer *const xfer);
++
++/* Keep a transfer queued on the endpoint while there is room for its data */
++static void usbip_ra_arm(struct usbip_dev_ctx *const dev_ctx)
++{
++	struct usbip_read_ahead_ep *const ra = &dev_ctx->ra;
++	struct usb_device *const udev = dev_ctx->udev;
++	struct uhc_transfer *xfer;
++	struct net_buf *buf = NULL;
++
++	if (ra->ep == 0 || ra->xfer != NULL || ra->err != 0 ||
++	    ra->count >= CONFIG_USBIP_READ_AHEAD_DEPTH) {
++		return;
++	}
++
++	xfer = usbh_xfer_alloc(udev, ra->ep, usbip_ra_cb, dev_ctx);
++	if (xfer != NULL) {
++		buf = net_buf_alloc_len(&usbip_pool, ra->len, K_NO_WAIT);
++	}
++
++	if (buf == NULL || usbh_xfer_buf_add(udev, xfer, buf) != 0 ||
++	    usbh_xfer_enqueue(udev, xfer) != 0) {
++		LOG_ERR("Failed to read ahead on ep 0x%02x", ra->ep);
++		if (buf != NULL) {
++			net_buf_unref(buf);
++		}
++
++		if (xfer != NULL) {
++			(void)uhc_xfer_unref(xfer);
++		}
++
++		ra->err = -ENOMEM;
++		usbip_ra_serve(dev_ctx);
++		return;
++	}
++
++	ra->xfer = xfer;
++}
++
++static int usbip_ra_cb(struct usb_device *const udev, struct uhc_transfer *const xfer)
++{
++	struct usbip_dev_ctx *const dev_ctx = xfer->priv;
++	struct usbip_read_ahead_ep *const ra = &dev_ctx->ra;
++	struct net_buf *const buf = xfer->buf;
++
++	k_mutex_lock(&dev_ctx->tx_lock, K_FOREVER);
++
++	/* The data of a transfer cancelled by a flush is dropped */
++	if (ra->xfer == xfer) {
++		ra->xfer = NULL;
++
++		if (xfer->err != 0) {
++			LOG_WRN("Read ahead on ep 0x%02x failed, err %d", ra->ep, xfer->err);
++			ra->err = xfer->err;
++		} else if (ra->mode == USBIP_READ_AHEAD_FTDI) {
++			for (size_t off = 0; off + 2U <= buf->len; off += ra->mps) {
++				usbip_ra_add_ftdi(ra, buf->data + off,
++						  MIN(ra->mps, buf->len - off));
++			}
++		} else {
++			usbip_ra_add_stream(ra, buf);
++		}
++
++		usbip_ra_serve(dev_ctx);
++		usbip_ra_arm(dev_ctx);
++	}
++
++	k_mutex_unlock(&dev_ctx->tx_lock);
++
++	if (buf != NULL) {
++		net_buf_unref(buf);
++	}
++
++	(void)uhc_xfer_unref(xfer);
++
++	return 0;
++}
++
++/*
++ * Requests that reset the endpoint stop reading ahead, unless requests of the
++ * client wait. An FTDI reset or purge of the receive buffer drops the data read
++ * ahead.
++ */
++static void usbip_ra_control(struct usbip_dev_ctx *const dev_ctx,
++			     const struct usb_setup_packet *const setup)
++{
++	struct usbip_read_ahead_ep *const ra = &dev_ctx->ra;
++
++	if (setup->RequestType.type == USB_REQTYPE_TYPE_STANDARD) {
++		if (setup->bRequest != USB_SREQ_SET_CONFIGURATION &&
++		    setup->bRequest != USB_SREQ_SET_INTERFACE &&
++		    (setup->bRequest != USB_SREQ_CLEAR_FEATURE ||
++		     setup->RequestType.recipient != USB_REQTYPE_RECIPIENT_ENDPOINT ||
++		     sys_le16_to_cpu(setup->wIndex) != ra->ep)) {
++			return;
++		}
++
++		if (sys_dlist_is_empty(&ra->waiting)) {
++			usbip_ra_stop(dev_ctx);
++			return;
++		}
++	} else if (ra->mode != USBIP_READ_AHEAD_FTDI || setup->bmRequestType != 0x40 ||
++		   setup->bRequest != 0 || sys_le16_to_cpu(setup->wValue) > 1) {
++		return;
++	}
++
++	usbip_ra_flush(ra);
++	usbip_ra_arm(dev_ctx);
++}
++
++/*
++ * Take a request of the client, with the device lock held. Returns false if the
++ * request is to be submitted to the device.
++ */
++static bool usbip_ra_submit(struct usbip_dev_ctx *const dev_ctx,
++			    struct usbip_cmd_node *const cmd_nd, const uint8_t ep,
++			    const struct usb_setup_packet *const setup)
++{
++	struct usbip_read_ahead_ep *const ra = &dev_ctx->ra;
++	struct usb_device *const udev = dev_ctx->udev;
++	const uint32_t len = cmd_nd->cmd.submit.length;
++	const struct usb_ep_descriptor *desc;
++	enum usbip_read_ahead mode;
++	bool taken = false;
++	uint16_t mps;
++
++	k_mutex_lock(&dev_ctx->tx_lock, K_FOREVER);
++
++	if (USB_EP_GET_IDX(ep) == 0U) {
++		if (ra->ep != 0) {
++			usbip_ra_control(dev_ctx, setup);
++		}
++
++		goto out;
++	}
++
++	if (ra->ep == 0) {
++		if (!USB_EP_DIR_IS_IN(ep) || usbip_read_ahead_cb == NULL) {
++			goto out;
++		}
++
++		desc = udev->ep_in[USB_EP_GET_IDX(ep)].desc;
++		if (desc == NULL ||
++		    (desc->bmAttributes & USB_EP_TRANSFER_TYPE_MASK) != USB_EP_TYPE_BULK) {
++			goto out;
++		}
++
++		mps = USB_MPS_EP_SIZE(sys_le16_to_cpu(desc->wMaxPacketSize));
++		if (mps == 0U || len < mps || len % mps != 0U || len > UINT16_MAX) {
++			goto out;
++		}
++
++		mode = usbip_read_ahead_cb(&udev->dev_desc);
++		if (mode == USBIP_READ_AHEAD_NONE) {
++			goto out;
++		}
++
++		LOG_INF("Read ahead on ep 0x%02x, %u bytes", ep, len);
++		ra->ep = ep;
++		ra->mps = mps;
++		ra->len = len;
++		ra->mode = mode;
++	} else if (ra->ep != ep || len < ra->mps) {
++		goto out;
++	}
++
++	sys_dlist_append(&ra->waiting, &cmd_nd->node);
++	usbip_ra_serve(dev_ctx);
++	usbip_ra_arm(dev_ctx);
++	taken = true;
++
++out:
++	k_mutex_unlock(&dev_ctx->tx_lock);
++
++	return taken;
++}
++
++/*
++ * Unlink a request waiting for data read ahead, with the transmit lock held.
++ * Once no request waits, the client has stopped reading: so does the service.
++ */
++static bool usbip_ra_unlink(struct usbip_dev_ctx *const dev_ctx, const uint32_t seqnum)
++{
++	struct usbip_read_ahead_ep *const ra = &dev_ctx->ra;
++	struct usbip_cmd_node *cmd_nd;
++
++	SYS_DLIST_FOR_EACH_CONTAINER(&ra->waiting, cmd_nd, node) {
++		if (cmd_nd->cmd.hdr.seqnum == seqnum) {
++			sys_dlist_remove(&cmd_nd->node);
++			k_mem_slab_free(&usbip_slab, (void *)cmd_nd);
++			if (sys_dlist_is_empty(&ra->waiting)) {
++				usbip_ra_stop(dev_ctx);
++			}
++
++			return true;
++		}
++	}
++
++	return false;
++}
++
++#else
++
++static inline bool usbip_ra_submit(struct usbip_dev_ctx *const dev_ctx,
++				   struct usbip_cmd_node *const cmd_nd, const uint8_t ep,
++				   const struct usb_setup_packet *const setup)
++{
++	return false;
++}
++
++static inline bool usbip_ra_unlink(struct usbip_dev_ctx *const dev_ctx, const uint32_t seqnum)
++{
++	return false;
++}
++
++static inline void usbip_ra_stop(struct usbip_dev_ctx *const dev_ctx)
++{
++}
++
++#endif /* CONFIG_USBIP_READ_AHEAD */
++
+ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
+ 			       struct usbip_command *const cmd)
+ {
+@@ -413,6 +862,12 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
+ 
+ 	if (dev_ctx->udev == NULL || k_event_test(&dev_ctx->event, USBIP_REMOVED)) {
+ 		ret = -ENODEV;
++	} else if (usbip_ra_submit(dev_ctx, cmd_nd, ep, &setup)) {
++		/* Answered with data read ahead */
++		k_mutex_unlock(&dev_ctx->lock);
++		net_buf_unref(buf);
++
++		return 0;
+ 	} else {
+ 		key = irq_lock();
+ 		sys_dlist_append(&dev_ctx->dlist, &cmd_nd->node);
+@@ -474,6 +929,11 @@ static int usbip_handle_unlink(struct usbip_dev_ctx *const dev_ctx,
+ 	/* Held until the reply is sent, the completion cannot free the node meanwhile */
+ 	k_mutex_lock(&dev_ctx->tx_lock, K_FOREVER);
+ 
++	/* A request waiting for data read ahead has no transfer */
++	if (usbip_ra_unlink(dev_ctx, cmd->unlink.seqnum)) {
++		rsp.unlink.status = net_htonl(-ECONNRESET);
++	}
++
+ 	key = irq_lock();
+ 	SYS_DLIST_FOR_EACH_CONTAINER(&dev_ctx->dlist, cmd_nd, node) {
+ 		if (cmd_nd->cmd.hdr.seqnum == cmd->unlink.seqnum) {
+@@ -568,6 +1028,10 @@ static void usbip_close(struct usbip_dev_ctx *const dev_ctx)
+ 		usbip_dequeue_all(dev_ctx);
+ 	}
+ 
++	k_mutex_lock(&dev_ctx->tx_lock, K_FOREVER);
++	usbip_ra_stop(dev_ctx);
++	k_mutex_unlock(&dev_ctx->tx_lock);
++
+ 	zsock_close(dev_ctx->connfd);
+ 	k_event_clear(&dev_ctx->event, USBIP_EXPORTED);
+ 
+@@ -627,6 +1091,9 @@ static int usbip_class_removed(struct usbh_class_data *const c_data)
+ 	if (k_event_test(&dev_ctx->event, USBIP_EXPORTED)) {
+ 		/* Reading from the socket returns end of file, the connection is closed */
+ 		usbip_dequeue_all(dev_ctx);
++		k_mutex_lock(&dev_ctx->tx_lock, K_FOREVER);
++		usbip_ra_stop(dev_ctx);
++		k_mutex_unlock(&dev_ctx->tx_lock);
+ 		k_event_post(&dev_ctx->event, USBIP_REMOVED);
+ 		(void)zsock_shutdown(dev_ctx->connfd, ZSOCK_SHUT_RD);
+ 	}
+@@ -968,6 +1435,7 @@ static int usbip_init(void)
+ 		k_mutex_init(&ctx->lock);
+ 		k_mutex_init(&ctx->tx_lock);
+ 		sys_dlist_init(&ctx->dlist);
++		IF_ENABLED(CONFIG_USBIP_READ_AHEAD, (sys_dlist_init(&ctx->ra.waiting);))
+ 		k_event_init(&ctx->event);
+ 	}
+ 

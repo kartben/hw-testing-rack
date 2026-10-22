@@ -240,6 +240,13 @@ config ZVFS_OPEN_MAX
 	default 40 if ESP_SPIRAM
 	default 35
 
+# USB serial converters read ahead (src/usb_host.c): up to
+# USBIP_READ_AHEAD_DEPTH + 2 buffers of the client's read size from the pool
+# per converter in use, about 5 KB for an FTDI converter (512-byte reads)
+config USBIP_READ_AHEAD
+	depends on USBIP
+	default y
+
 # 48 KB of the 64 KB default: the RAM margin for the firmware updates (image
 # writer, upload handler).  To be watched on hardware with a busy DUT.  A
 # default rather than a prj.conf line: the bench boards without a USB host

@@ -4,7 +4,8 @@
  *
  * The USB/IP service (subsys/usb/host/usbip.c) owns the host: it defines the
  * usbh context on zephyr_uhc0, starts it at boot and serves port 3240.  We
- * only look at that context and stop/start it around SERVICE mode.
+ * only look at that context, stop/start it around SERVICE mode, and tell the
+ * service which devices it reads ahead.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -13,6 +14,7 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/usb/uhc.h>
 #include <zephyr/usb/usbh.h>
+#include <zephyr/usb/usbip.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/net/net_context.h>
 #include <zephyr/net/net_ip.h>
@@ -120,6 +122,60 @@ int usb_host_usbip_sessions(void)
 
 	return n;
 }
+
+#if defined(CONFIG_USBIP_READ_AHEAD)
+
+/*
+ * USB serial converters are read ahead: their small receive FIFO overflows
+ * while the client's next read crosses the network.  An FTDI converter frames
+ * each packet with two status bytes; the others send plain data.  Only these
+ * chips: the same vendors make mass storage bridges and debug probes, whose
+ * replies are messages that must not be merged.
+ */
+static const struct {
+	uint16_t vid;
+	uint16_t pid; /* 0: any */
+	enum usbip_read_ahead mode;
+} read_ahead_devices[] = {
+	{0x0403, 0, USBIP_READ_AHEAD_FTDI},		/* FTDI */
+	{0x10c4, 0xea60, USBIP_READ_AHEAD_STREAM},	/* CP2102, CP2104, CP2109 */
+	{0x10c4, 0xea70, USBIP_READ_AHEAD_STREAM},	/* CP2105 */
+	{0x10c4, 0xea71, USBIP_READ_AHEAD_STREAM},	/* CP2108 */
+	{0x067b, 0x2303, USBIP_READ_AHEAD_STREAM},	/* PL2303 */
+	{0x067b, 0x23a3, USBIP_READ_AHEAD_STREAM},	/* PL2303G */
+	{0x067b, 0x23b3, USBIP_READ_AHEAD_STREAM},
+	{0x067b, 0x23c3, USBIP_READ_AHEAD_STREAM},
+	{0x067b, 0x23d3, USBIP_READ_AHEAD_STREAM},
+	{0x067b, 0x23e3, USBIP_READ_AHEAD_STREAM},
+	{0x067b, 0x23f3, USBIP_READ_AHEAD_STREAM},
+	{0x1a86, 0x7523, USBIP_READ_AHEAD_STREAM},	/* CH340 */
+	{0x1a86, 0x5523, USBIP_READ_AHEAD_STREAM},	/* CH341 */
+	{0x1a86, 0x55d2, USBIP_READ_AHEAD_STREAM},	/* CH342 */
+	{0x1a86, 0x55d3, USBIP_READ_AHEAD_STREAM},	/* CH343 */
+	{0x1a86, 0x55d4, USBIP_READ_AHEAD_STREAM},	/* CH9102 */
+};
+
+static enum usbip_read_ahead read_ahead_policy(const struct usb_device_descriptor *desc)
+{
+	ARRAY_FOR_EACH_PTR(read_ahead_devices, d) {
+		if (d->vid == desc->idVendor && (d->pid == 0 || d->pid == desc->idProduct)) {
+			return d->mode;
+		}
+	}
+
+	return USBIP_READ_AHEAD_NONE;
+}
+
+static int read_ahead_init(void)
+{
+	usbip_set_read_ahead_cb(read_ahead_policy);
+
+	return 0;
+}
+
+SYS_INIT(read_ahead_init, APPLICATION, 0);
+
+#endif /* CONFIG_USBIP_READ_AHEAD */
 
 #if defined(CONFIG_BAY_SERVICE_PHY_HANDOVER)
 
