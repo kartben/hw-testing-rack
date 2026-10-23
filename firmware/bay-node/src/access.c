@@ -134,7 +134,7 @@ static int save_key(const uint8_t *key)
 
 uint32_t access_ip(const struct net_sockaddr *addr)
 {
-	if (addr == NULL || addr->sa_family != NET_AF_INET) {
+	if (addr == NULL || net_sin(addr)->sin_family != NET_AF_INET) {
 		return 0;
 	}
 
