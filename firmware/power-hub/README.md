@@ -12,11 +12,11 @@ C and D are not fitted), and runs the rack bus
 > ([`common/tests/rack_bus`](../common/tests/rack_bus/)).  See
 > [open items](#open-items).
 
-![The hub's status page (simulated hub): the USB-C PD contract and the charger's offers, the rack bus, rows A–D with their bays, the events](../../docs/img/hub-ui-dark.png)
+![The hub's status page (simulated hub): the USB-C PD contract and the charger's offers, the rack bus, rows A and B with their bays (C and D not fitted), the events](../../docs/img/hub-ui-dark.png)
 
 ```
 firmware/power-hub/
-  src/pd.c          USB-C PD: VBUS sense, the CH224A, 28 V EPR when offered
+  src/pd.c          USB-C PD: VBUS sense, the CH224A, 20 V (28 V EPR opt-in)
   src/rows.c        rows A–D: eFuse enables (held across resets), FLT, IMON, sequencing, shedding
   src/budget.c      the rows' power budget from the PD contract: which row to shed, which back
   src/bus.c         rack bus master: TWAI, POS tokens, enumeration (common/lib/rack_hub.c)
@@ -78,7 +78,7 @@ uart:~$ hub status
 
 | Feature | Implementation |
 |---|---|
-| PD contract | the CH224A asks for 9 V at plug-in by itself (CFG1 6.8k); once VBUS is up the firmware powers its I²C pull-ups (I2C_PU), initializes the driver as soon as the chip answers and asks for **28 V EPR** when the charger offers it (PDO 1's EPR Mode Capable bit; tried when the chip shows no offers), 20 V otherwise (`hub pd epr\|20v`, saved); `CONFIG_HUB_PD_ADAPTIVE` (off) starts at 20 V instead and moves to 28 V EPR, without a drop, once a row draws 1.2 A.  The chip cannot report the contract: a request counts once it says PD, PG is low and VBUS_SENSE reads the voltage within 5 %; 28 V that VBUS does not follow within 3 s (`CONFIG_HUB_PD_REQUEST_MS`) falls back to 20 V.  Never above 28 V: the node's `regulator-max-microvolt` refuses it.  A contract under 15 V (`CONFIG_HUB_ROWS_MIN_MV`) never powers the rows; there is no input switch, VBUS is VRACK.  PG high for 20 ms (a renegotiation, a hard reset) sheds every row, except during a request of ours; they come back, staggered, with the next final contract, and the policy runs again |
+| PD contract | the CH224A asks for 9 V at plug-in by itself (CFG1 6.8k); once VBUS is up the firmware powers its I²C pull-ups (I2C_PU), initializes the driver as soon as the chip answers and asks for **20 V**; 28 V EPR is opt-in (`CONFIG_HUB_PD_EPR`, or `hub pd epr\|20v`, saved): then it asks for 28 V EPR when the charger offers it (PDO 1's EPR Mode Capable bit; tried when the chip shows no offers), 20 V otherwise; `CONFIG_HUB_PD_ADAPTIVE` (off) starts at 20 V instead and moves to 28 V EPR, without a drop, once a row draws 1.2 A.  The chip cannot report the contract: a request counts once it says PD, PG is low and VBUS_SENSE reads the voltage within 5 %; 28 V that VBUS does not follow within 3 s (`CONFIG_HUB_PD_REQUEST_MS`) falls back to 20 V.  Never above 28 V: the node's `regulator-max-microvolt` refuses it.  A contract under 15 V (`CONFIG_HUB_ROWS_MIN_MV`) never powers the rows; there is no input switch, VBUS is VRACK.  PG high for 20 ms (a renegotiation, a hard reset) sheds every row, except during a request of ours; they come back, staggered, with the next final contract, and the policy runs again |
 | Sequencing | rows stay off until the contract has held for 500 ms, then come on one after the other (300 ms apart); the rack bus is enumerated 2 s after the last one, when the nodes have booted |
 | Controller reset | the row enables are held (ESP32-S3 pad hold, RTC domain): a hub reboot or a firmware update does not power-cycle the rack; the rows found on are enumerated again |
 | Shedding | the rows stay inside the charger's contract (`src/budget.c`, [docs/power.md](../../docs/power.md#keeping-the-rows-inside-the-contract)): the budget is the granted current less 10 % (`hub budget margin`), or a cap by hand (`hub budget cap <W>`); IMON summed every 250 ms, over the budget for 1 s or past the contract for 250 ms, the next row in the shed order (default D, C, B, A) goes off; it comes back, the last shed first, once the budget has room for the most it drew plus 0.2 A for 10 s (twice as long each time it is shed again within a minute).  No contract at all: every row off, back with the next one |

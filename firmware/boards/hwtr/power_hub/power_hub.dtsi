@@ -32,7 +32,7 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 
-		/* IO14 ROW_EN_A -> SHDN through 10k (100k pull-down: off without firmware) */
+		/* IO14 ROW_EN_A -> SHDN through 10k (10k pull-down: off without firmware) */
 		row_a: row@0 {
 			reg = <0>;
 			enable-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
@@ -75,8 +75,8 @@
 	};
 
 	/*
-	 * IMON: the TPS26600 sources 78 uA/A into 18k (1.404 V/A), through
-	 * 1k + 10 nF to the ADC: a 1.404 ohm "shunt" with unity gain.
+	 * IMON: the TPS26600 sources 78 uA/A into 18k (1.404 V/A), through a
+	 * 1k + 47 nF RC filter (47 us) to the ADC: a 1.404 ohm "shunt" with unity gain.
 	 */
 	imon_a: imon-a {
 		compatible = "current-sense-amplifier";
@@ -126,7 +126,7 @@
 	leds {
 		compatible = "gpio-leds";
 
-		/* IO35 CTL_LED: the controller's green LED on the front wall (330R) */
+		/* IO35 CTL_LED: the controller's green LED on the front wall (1k) */
 		ctl_led: led_0 {
 			gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
 			label = "CTL";

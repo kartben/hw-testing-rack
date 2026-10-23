@@ -72,7 +72,7 @@ CAMERAS_ACTIVE = {0x03}
 
 hub = {
     "hostname": "rack", "ip": "192.168.1.40", "version": "0.5.0",
-    "charger": CHARGER_140W, "pref": "epr", "usb_only": False,
+    "charger": CHARGER_140W, "pref": "20v", "usb_only": False,   # CONFIG_HUB_PD_EPR: opt-in
     "rows": {r: {"on": r in FITTED, "fault": False, "faults": int(r == "B"), "shed": False, "cycling": 0.0} for r in ROWS},
     "lost": set(),
     "sheds": 0,
@@ -251,7 +251,7 @@ class Handler(PageHandler):
                 hub["charger"] = CHARGER_140W
                 for r in hub["rows"].values():
                     r["shed"] = False
-                event("pd", "contract: 28.0 V / 5.00 A EPR (140 W)")
+                event("pd", "contract: 20 V / 5.00 A (100 W)")
                 event("row", "row B back: the budget has room for it again")
                 enumerate_rack("rows back")
                 self.json(200, status())
@@ -363,12 +363,12 @@ def serve(port: int = 8767) -> ThreadingHTTPServer:
     if not events:
         now = time.time()
         # Power-up with the CH224A: it asks for 9 V by itself (CFG1), the rows wait
-        # (their eFuses lock out below 15 V), then pd.c asks for 28 V EPR (20 V
-        # without it); the texts are pd.c's
+        # (their eFuses lock out below 15 V), then pd.c asks for 20 V (28 V EPR
+        # when opted in); the texts are pd.c's
         for dt, kind, text in ((-2 * 86400 - 5 * 3600, "pd", "VBUS 9.0 V: PD sink up"),
                                (-2 * 86400 - 5 * 3600 + 1, "pd",
                                 "contract: 9 V / 3.00 A (27 W), too low for the rows"),
-                               (-2 * 86400 - 5 * 3600 + 3, "pd", "contract: 28 V / 5.00 A EPR (140 W)"),
+                               (-2 * 86400 - 5 * 3600 + 3, "pd", "contract: 20 V / 5.00 A (100 W)"),
                                (-2 * 86400 - 5 * 3600 + 3, "row", "rows A, B on (staggered, 300 ms)"),
                                (-3 * 3600, "fault", "row B: eFuse in current limit for 40 ms"),
                                (-754, "can", "enumeration (node 0x11 rebooted): 6 nodes")):

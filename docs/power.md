@@ -6,7 +6,8 @@ parts.  The cable plugs into the **power box**, a printed box in the base cell
 under A1 that holds the **power hub v0.5**:
 
 * a **USB PD 3.2 sink** (WCH CH224A) that asks the charger for 9 V at
-  plug-in, then for 20 V (28 V EPR when the charger offers it) when the controller asks over I²C.
+  plug-in, then for 20 V when the controller asks over I²C (28 V EPR when the charger offers it, once
+  opted in: `CONFIG_HUB_PD_EPR` or `hub pd epr`).
   VBUS is the rack bus (VRACK): there is no input switch, the eFuses keep the
   rows off until the contract is final;
 * an **eFuse per row** (TPS26600, 1.6 A), off until the controller turns it on.  Four row outputs;
@@ -30,7 +31,7 @@ the row's first node.  Box and lid: [mechanical.md](mechanical.md#power-box).
 |---|---|
 | **Default** (since 2026-10-21) | a **dedicated, single-port USB PD charger, 100 W** (20 V × 5 A), e.g. the Anker Nano 100 W (A2679, ≈ €46).  VRACK is then 20 V |
 | **Cable** | USB-C to USB-C, **5 A e-marked** (100 W or 240 W rated), 1–2 m.  It is required: above 3 A a charger only offers its full current through an e-marked 5 A cable, and a 3 A one gives 60 W |
-| **Option** | for racks full of hungry DUTs, a **single-port USB PD 3.1 EPR charger, 140 W** (28 V × 5 A), with a 240 W cable.  The Samsung EP-TB410 (≈ €84 without a cable) was the cheapest found in France; UGREEN Nexode and Anker 717 140 W are often €60–80 on sale (unverified).  The hub asks for 28 V EPR whenever it is offered: no hardware change |
+| **Option** | for racks full of hungry DUTs, a **single-port USB PD 3.1 EPR charger, 140 W** (28 V × 5 A), with a 240 W cable.  The Samsung EP-TB410 (≈ €84 without a cable) was the cheapest found in France; UGREEN Nexode and Anker 717 140 W are often €60–80 on sale (unverified).  The hub asks for 28 V EPR when it is offered once opted in (`hub pd epr`, saved): no hardware change |
 | **Also works** | a 65 W charger (20 V × 3.25 A): a light rack, with power budgeting ([below](#keeping-the-rows-inside-the-contract)) |
 | **Avoid** | sharing the charger: a multi-port charger can withdraw its full offer when another device is plugged in, and renegotiate the rack down |
 

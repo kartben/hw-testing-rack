@@ -1194,7 +1194,7 @@ class Update(unittest.TestCase):
             return r.stdout
 
         out = cli("hub", "status")
-        self.assertIn("PD 28.0 V / 5.00 A EPR", out)
+        self.assertIn("PD 20.0 V / 5.00 A", out)    # 28 V EPR is opt-in (CONFIG_HUB_PD_EPR)
         self.assertIn("row A  ON", out)
         self.assertIn("row C  not fitted", out)
         self.assertIn("row D  not fitted", out)

@@ -128,7 +128,7 @@ With a DUT on its USB-C the CoreS3 runs from its battery: charge it first (an ho
 | 1 | Flash (`--erase`), open the console (USB-Serial-JTAG, 115200) | the boot log, `hub` shell | `hub pd`: state "no VBUS" |
 | 2 | Wi-Fi as for the node; open `http://rack.local/` | the hub's page | `/api/status` answers |
 | 3 | Plug the charger into the CH224A board | "VBUS 9.0 V: PD sink up", then "contract: 9 V …, too low for the rows" | `hub pd`: status 0x08 (PD), PG low, VBUS ≈ 9 V on the ADC (± 5 %) |
-| 4 | Wait | the hub asks for 28 V (EPR charger) or 20 V: "contract: 28 V / … EPR" | VBUS ≈ 28 V (or 20 V); `asked` matches; the page shows the PDOs |
+| 4 | Wait | the hub asks for 20 V (28 V once `hub pd epr`, EPR charger): "contract: 20 V / …" | VBUS ≈ 28 V (or 20 V); `asked` matches; the page shows the PDOs |
 | 5 | After 0.5 s | "row A on" | G5 high (its LED on); rows B–D stay off |
 | 6 | `hub pd 20v`, then `hub pd epr` | the contract steps 28 → 20 → 28 V | each step reaches VBUS within 3 s; row A stays on (VBUS ≥ 15 V) |
 | 7 | A charger without EPR, or a 3 A cable | 28 V asked, VBUS stays at 20 V: "asking for 20 V" | the fall-back within `CONFIG_HUB_PD_REQUEST_MS` (3 s); `epr_refused` in `/api/status` |

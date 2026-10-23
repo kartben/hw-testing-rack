@@ -5,10 +5,11 @@
  * CFG1 resistor), and it keeps the contract through controller resets.  The
  * controller watches VBUS on its ADC; once VBUS is up it powers the sink's
  * I2C pull-ups (I2C_PU), initializes the driver (zephyr,deferred-init) as
- * soon as the chip answers, and asks for 28 V EPR when the charger offers it,
- * 20 V otherwise.  CONFIG_HUB_PD_ADAPTIVE starts at 20 V instead, and moves
- * to 28 V EPR (a PD transition: VRACK does not drop) once a row draws
- * CONFIG_HUB_PD_ADAPTIVE_MA.
+ * soon as the chip answers, and asks for 20 V.  28 V EPR is opt-in
+ * (CONFIG_HUB_PD_EPR, or the saved choice): then it asks for 28 V EPR when
+ * the charger offers it, 20 V otherwise.  CONFIG_HUB_PD_ADAPTIVE starts at
+ * 20 V instead, and moves to 28 V EPR (a PD transition: VRACK does not drop)
+ * once a row draws CONFIG_HUB_PD_ADAPTIVE_MA.
  *
  * The chip cannot report the voltage in place: a request counts once the
  * chip says PD, PG is low and VBUS_SENSE reads the voltage asked for, within
@@ -149,7 +150,7 @@ static void policy_handler(struct k_work *work)
 	 */
 	epr_offered = st.npdos == 0 || (st.pdos[0].raw & CH224A_PDO1_EPR_CAPABLE) != 0U ||
 		      fixed_pdo(&st, EPR_MV) != 0;
-	/* The policy: 28 V EPR when offered, else 20 V; adaptive, 20 V until a row needs more */
+	/* The policy: 28 V EPR when chosen and offered, else 20 V; adaptive, 20 V until a row needs more */
 	want = st.epr_pref && epr_offered && !st.epr_refused &&
 	       (!IS_ENABLED(CONFIG_HUB_PD_ADAPTIVE) || epr_needed) ? EPR_MV : SPR_MV;
 	/* The same request already on its way: let it finish */
