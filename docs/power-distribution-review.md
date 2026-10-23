@@ -21,8 +21,9 @@ load is ≈ 35–40 W; 140 W only matters for racks full of hungry DUTs.
 
 ### Loads
 
-What a bay draws from the node's +5V (5.24 V).  A bay's buck (LMR51635) runs at ≈ 87 % from 28 V
-and ≈ 89 % from 20 V.
+What a bay draws from the node's +5V (5.24 V).  A bay's buck (LMR51635 at the review, LMR51625 since
+2026-10-23: the same switches in TI SLUSF64B; its 4.7 µH's 11 mΩ more cost ≈ 0.05 W at 2.2 A) runs at
+≈ 87 % from 28 V and ≈ 89 % from 20 V.
 
 | Load | Typical | Worst |
 |---|---|---|
