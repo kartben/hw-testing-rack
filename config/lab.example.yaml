@@ -1,17 +1,32 @@
-# Per-installation data for tools/bayctl.py: copy to config/lab.yaml (git ignores it) and fill in.
+# Per-installation data for tools/bayctl.py: copy to config/lab.yaml (git ignores it) if you need it.
 #
-# Bays and their board family come from config/rack.yaml (`population`), each family's Zephyr
-# target / west runner / console from mechanical/boards/boards.yaml (`zephyr:`).  This file only
-# adds what is specific to your rack: which exact board a family bay holds, probe serial numbers,
-# console device paths on the CI host, hosts.  Any key here overrides the defaults.
+# Each slot's board target (Zephyr target, west runner, probe id, console) lives on its node: set it on
+# the node's page, or with `bayctl import lab FILE`.  `bayctl hwmap` reads the rack: the power hub lists
+# the nodes, each node its slots and the USB device in each, and the console's /dev/serial/by-id name
+# comes from that device's USB strings, as udev makes it.  This file is optional overrides: per slot
+# (bays.<slot>.*, over what its node says), per node (a `host:` when the hub's address will not do, its
+# ports), and the access rules.  Its entries also stand in for a node the rack does not report (offline,
+# or no hub answers): then they say it all, as the example rack below does (the CI job builds a map from
+# this file alone).  In your rack, keep only what the nodes cannot know.
 #
-# Finding a probe's serial number and console path (Linux CI host, usbip installed):
+# Keys per slot: platform (the Zephyr target), runner (west runner), id (probe serial number, west flash
+# --dev-id), serial (the console's path on the CI host), console (usb: the device's first serial port,
+# usb:NN: the one on interface NN, aux: the bay's AUX UART, none), ci (false: out of the map), fixtures,
+# product (twister's), baud, role (analyzer: a DATA ×4 port's logic analyzer, never in the map), and
+# board (a mechanical/boards/boards.yaml family: its defaults, for a slot whose node gives no target).
+# A sub-slot (B3.2: node B3's DATA ×4 port 2) inherits its node's host and ports (bays.B3).
+#
+# Backups: `bayctl export lab -o targets.yaml` saves the nodes' targets in this form, each with the device
+# it is pinned to; `bayctl import lab targets.yaml [B3 ...]` puts them back.
+#
+# Finding a probe's serial number and console path by hand (Linux CI host, usbip installed):
 #   python tools/bayctl.py attach A1 --show
 #   → /dev/serial/by-id/usb-STMicroelectronics_STLINK-V3_002B00283232511239353236-if02
 #     the serial number is the part before -ifNN: 002B00283232511239353236
 
-domain: local          # bay hosts: bay-<id>.<domain> (mDNS); or give `host:` per bay
-# hub: rack.local      # the power hub (bayctl update --all / --hub); default rack.<domain>
+domain: local          # node hosts the hub does not give: bay-<id>.<domain> (mDNS); or `host:` per bay
+# hub: rack.local      # the power hub, which lists the nodes; default rack.<domain>.  BAYCTL_HUB=host[:port]
+                       # overrides it, BAYCTL_HUB=none (or hub: false) works without it: this file alone
 # http_port: 80        # node web/API port (CONFIG_BAY_HTTP_PORT)
 # aux_port: 4000       # node raw AUX UART port (CONFIG_BAY_AUX_TCP_PORT)
 # rfc2217_port: 4001   # node AUX UART with RFC 2217 (CONFIG_BAY_RFC2217_PORT)
@@ -27,39 +42,44 @@ access:
     admin-laptop: {cidr: 192.168.1.23, allow: [all]}
     prometheus: {cidr: 192.168.1.5, allow: [status]}
 
+# The example rack (config/rack.yaml's population), as its nodes would report it.
 bays:
   A1:
-    platform: nucleo_g474re                  # NUCLEO-64 is a family: say which one
+    platform: nucleo_g474re                  # its family (NUCLEO-64) found from the target: runner stm32cubeprogrammer
     id: "003A00283133510837363734"           # ST-LINK serial (west flash --dev-id)
     serial: /dev/serial/by-id/usb-STMicroelectronics_STLINK-V3_003A00283133510837363734-if02
+  A2:
+    board: nucleo-144                        # no target yet: hwmap asks for one, among the family's
   A3:
     platform: beagleplay/cc1352p7            # BeaglePlay is a family: say which core
     ci: false                                # flashed from its own Linux (cc1352_flasher), not from the CI host
     serial: /dev/serial/by-id/usb-BeagleBoard.org_BeaglePlay_1A2B3C4D5E6F-if00
-  B2:
-    console: aux                             # GIGA R1: flashed by dfu-util over its USB, console on the AUX UART
-  # B1 and B3 hold several boards on a DATA ×4 board (config/rack.yaml `boards:`): name each by its sub-slot.
-  # A sub-slot's console is the board's own USB (no AUX UART); a bare `B3:` entry keeps the node's host and
-  # ports, which its sub-slots inherit.
-  B1.2:
+  A4:
+    board: wio-terminal                      # the family's target and runner (boards.yaml); no console path yet
+  B1.2:                                      # B1 and B3: a DATA ×4 board, one entry per port (B1.2: port 2)
+    board: rpi-pico2
     id: "E6614C311B6A5F2D"                   # two Pico 2 in the rack: uf2 picks the board by its serial number
     serial: /dev/serial/by-id/usb-ZEPHYR_USB-DEV_E6614C311B6A5F2D-if00
   B1.4:
+    board: arduino-nano-matter
     id: "8F31C2D04A6B9E17"                   # the Nano Matter's CMSIS-DAP (its SAMD11) serial
     serial: /dev/serial/by-id/usb-Arduino_Nano_Matter_8F31C2D04A6B9E17-if01
+  B2:
+    board: giga-r1-display
+    console: aux                             # GIGA R1: flashed by dfu-util over its USB, console on the AUX UART
   B3.1:
     platform: xiao_esp32c3                   # XIAO is a family: say which one
     runner: esp32                            # picks the board by its serial port
     serial: /dev/serial/by-id/usb-Espressif_USB_JTAG_serial_debug_unit_34:85:18:9A:3C:10-if00
   B3.2:
+    board: rpi-pico2
     id: "9F2D3A71B0C4E8D5"
     serial: /dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D3A71B0C4E8D5-if00   # Pico 2, cdc-acm-console snippet
-  B3.3:                                      # the bay's logic analyzer: config/rack.yaml gives it `role: analyzer`
-    # role: analyzer                         # (your own rack says it here): not in CI, no Zephyr target
+  B3.3:
+    role: analyzer                           # the bay's logic analyzer (only this file says so): not in CI
     serial: /dev/serial/by-id/usb-Dr._Gusman_LogicAnalyzer_4C81E2D07A93F615-if00   # gusmanb's firmware, 1209:3020
   B3.4:
     platform: xiao_ble
-    runner: uf2
     ci: false                                # kept for a person at the bench
   B4:
     platform: "arduino_uno_r4@wifi"
@@ -67,8 +87,10 @@ bays:
     access:                                  # added to the rack's rules for this bay only
       sources:
         lab-desk: {cidr: 192.168.1.66, allow: [all]}
+  # Overrides on what a node says, for instance:
   # A1:
-  #   host: 192.168.1.71                     # no mDNS on this network
-  #   runner: jlink                          # override the board's default runner
+  #   host: 192.168.1.71                     # this address, not the hub's
+  #   runner: jlink                          # another runner than the node's
+  #   serial: /dev/ttyACM0                   # another path than the by-id name bayctl derives
   #   product: "STM32 STLink"                # twister product string, when openocd needs it
   #   fixtures: [ethernet, sd-card]          # twister fixtures this bay provides

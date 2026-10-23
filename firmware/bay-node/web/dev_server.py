@@ -140,11 +140,17 @@ def port_reserved(pt: dict, ip: int) -> bool:
     return port_lease_active(pt) and pt["lease"]["holder"] != ip
 
 
+def secs_left(until: float, now: float) -> int:
+    """Seconds left, rounded up from whole milliseconds as the node counts them: a lease just
+    taken for 600 s reads 600 (the float difference alone can come out a hair over)."""
+    return math.ceil(round(until - now, 3))
+
+
 def lease_doc(lease: dict | None, ip: int, now: float) -> dict | None:
     if lease is None or now >= lease["until"]:
         return None
     return {"holder": ip_str(lease["holder"]), "note": lease["note"],
-            "remaining_s": math.ceil(lease["until"] - now), "yours": lease["holder"] == ip}
+            "remaining_s": secs_left(lease["until"], now), "yours": lease["holder"] == ip}
 
 
 def port_doc(pt: dict, ip: int = 0) -> dict:
@@ -753,7 +759,7 @@ class Access:
             lease = {"holder": "", "note": "", "remaining_s": 0, "yours": False}
             if self.lease_active():
                 lease = {"holder": ip_str(self.lease["holder"]), "note": self.lease["note"],
-                         "remaining_s": math.ceil(self.lease["until"] - time.monotonic()),
+                         "remaining_s": secs_left(self.lease["until"], time.monotonic()),
                          "yours": self.lease["holder"] == ip}
             allow = self.allowed(ip)
             return {"enabled": self.enabled, "claimed": self.key is not None, "you": ip_str(ip),
@@ -769,7 +775,7 @@ class Access:
                  "claim": "pending" if self.claim and not self.claim["done"] and now < self.claim["until"] else "none"}
             if self.lease_active():
                 d["lease"] = {"holder": ip_str(self.lease["holder"]), "note": self.lease["note"],
-                              "remaining_s": math.ceil(self.lease["until"] - now),
+                              "remaining_s": secs_left(self.lease["until"], now),
                               "yours": self.lease["holder"] == ip}
         for c in self.connections():
             d["connections"].append({"id": c["id"], "service": c["service"], "label": c["label"],

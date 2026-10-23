@@ -23,21 +23,51 @@ Linux `usbip` tool.
 
 ## Where the data comes from
 
-1. **`config/rack.yaml`, `population`**: which board family sits in which bay.
-2. **`mechanical/boards/boards.yaml`, `zephyr:`**: each family's Zephyr target
-   (the `identifier` twister uses), west runner and console.  Families such as
-   NUCLEO-64 list their possible targets under `choices`.
-3. **`config/lab.yaml`** (per installation, git-ignored; start from
-   [`config/lab.example.yaml`](../config/lab.example.yaml)): which exact board a
-   family bay holds, probe serial numbers, the console device path on the CI
-   host, hosts, and any override (runner, baud, fixtures, `ci: false`).
+The rack itself says what it holds; bayctl reads it at each run:
+
+1. **The power hub** lists the nodes on its rack bus by position and address
+   (`GET /api/status`).  bayctl finds the hub at `BAYCTL_HUB` (`host` or
+   `host:port`), else `hub:` in `config/lab.yaml`, else `rack.<domain>`
+   (`rack.local`).  `BAYCTL_HUB=none` skips it.  The lookup gives up within a
+   few seconds: with no hub, bayctl warns and goes on with the lab file alone.
+2. **Each node** gives its slots (`GET /api/boards`): a one-board bay has one,
+   named like the bay (`A1`), a DATA ×4 bay one per port (`B3.1` to `B3.4`, the
+   node's port *n*).  A slot carries its **board target**, set on the node's
+   page (or by `bayctl import lab`, below) and kept in the node's flash: the
+   Zephyr target (the `identifier` twister uses), the west runner, the probe
+   id, the console (`usb`, `usb:NN`, `aux` or `none`) and whether it goes in
+   the map.  It also carries the USB device in the slot now, its descriptor
+   strings and its serial ports, and the device the target was saved for: a
+   different board in the slot is flagged, and `hwmap` warns about it.
+3. **`config/lab.yaml`** (per installation, git-ignored, optional; start from
+   [`config/lab.example.yaml`](../config/lab.example.yaml)): overrides.  Per
+   slot, `bays.<slot>.platform`, `runner`, `id`, `serial`, `console`, `ci`,
+   `fixtures`, `product`, `baud` win over what the node says, and `role:
+   analyzer` marks a DATA ×4 port that holds the bay's logic analyzer (kept out
+   of the map).  Per node, `host:` (else the hub's address for that position,
+   else `bay-<id>.<domain>`) and the ports.  Entries for slots the rack does not
+   report (a node offline, or no hub) stand alone, as the example file does.
+4. **`mechanical/boards/boards.yaml`, `zephyr:`**: defaults per board family
+   (runner, twister `product`, notes), the family found from the target, or
+   named by a lab entry's `board:`.
+
+The console's path on the CI host is derived from the device's strings the
+way udev names `/dev/serial/by-id` (systemd's `60-serial.rules` and its
+`usb_id` builtin): `usb-<vendor>_<product>_<serial>-if<NN>`, plus `-port<P>`
+for a USB-serial bridge (FTDI, CP210x, CH34x, PL2303); a missing manufacturer
+or product string gives the VID or the PID instead, and characters udev does not
+keep become `_`.  `console: usb` is the device's first serial port, `usb:02`
+the one on interface 2.  The probe id is the slot's own, else the device's USB
+serial number (for the `esp32` runner: the console's path).
 
 ```console
-$ cp config/lab.example.yaml config/lab.yaml
+$ export BAYCTL_HUB=rack.local
 $ python tools/bayctl.py list --probe
-A1   nucleo-64          nucleo_f401re                      stm32cubeprogrammer  usb  bay-a1.local  VBUS on 92 mA
-A3   nrf52840-dk        nrf52840dk/nrf52840                nrfutil              usb  bay-a3.local  VBUS on 41 mA
-B3   rpi-pico2          rpi_pico2/rp2350a/m33_0            uf2                  aux  bay-b3.local  VBUS on 23 mA
+A1    nucleo-64           nucleo_g474re                      stm32cubeprogrammer  usb     192.168.1.61  VBUS on 92 mA
+A2    nucleo-144          (no target)                        stm32cubeprogrammer  usb     192.168.1.62  VBUS on 88 mA
+B2    giga-r1-display     arduino_giga_r1/stm32h747xx/m7     dfu-util             aux     192.168.1.78  VBUS on 210 mA
+B3.1  xiao                xiao_esp32c3                       esp32                usb     192.168.1.79  VBUS on 41 mA
+B3.3  -                   analyzer: gusmanb 6.0.0.1          -                    usb     192.168.1.79  [analyzer]  VBUS on 23 mA
 ...
 ```
 
@@ -49,41 +79,64 @@ B3   rpi-pico2          rpi_pico2/rp2350a/m33_0            uf2                  
 * `usbip attach` needs root: bayctl runs it through `sudo -n`, so give the CI
   user a NOPASSWD sudoers rule for the `usbip` binary only (or set
   `BAYCTL_USBIP` to another wrapper).
-* `bay-<id>.local` names: mDNS resolution (`avahi-daemon` + `libnss-mdns`), or
-  `host:` per bay in `config/lab.yaml`.
+* The hub: `BAYCTL_HUB=<its address>` in the CI job's environment (or `hub:`
+  in `config/lab.yaml`), unless `rack.local` resolves there.  The nodes are
+  then reached by the addresses the hub gives; `bay-<id>.local` names (mDNS:
+  `avahi-daemon` + `libnss-mdns`) or `host:` per bay only without a hub.
 * The flashing tools of the boards you host (nrfutil, LinkServer, pyOCD,
   STM32CubeProgrammer, ...) and their udev rules, exactly as for boards plugged
   into the host directly: after `usbip attach` the probe is a local USB device.
 
-Then collect each bay's probe serial number and console path once:
+Then give each slot its board target, once, on its node's page (the USB
+devices card: Set board… or Edit under the device, for the target, the
+runner, the probe id and the console; the dialog suggests targets from the
+device's USB id, [firmware/README.md › Board targets](../firmware/README.md#board-targets)).  The node keeps it across
+restarts and firmware updates.  Bays whose board prints its console on a UART
+rather than on the probe's virtual COM port (Pico 2, UNO R4 Minima, ...) get
+console `aux` and three wires (TX, RX, GND) to the bay's AUX connector.  A
+probe with several serial ports takes `usb:NN`, its interface number: the
+by-id names after an attach show it.
 
 ```console
 $ python tools/bayctl.py attach A3 --show
 /dev/serial/by-id/usb-SEGGER_J-Link_001050012345-if00
 ```
 
-and put them in `config/lab.yaml` (`id:` is the part before `-ifNN`).  Bays
-whose board prints its console on a UART rather than on the probe's virtual
-COM port (Pico 2, UNO R4 Minima, ...) get `console: aux` and three wires (TX,
-RX, GND) to the bay's AUX connector.
+## Backups: export and import
+
+```console
+$ python tools/bayctl.py export lab -o rack-targets.yaml
+wrote rack-targets.yaml (9 slots)
+$ python tools/bayctl.py import lab rack-targets.yaml          # every slot in the file
+$ python tools/bayctl.py import lab rack-targets.yaml B3.2 A1  # or only these (B3: all of B3's)
+```
+
+`export lab` writes every slot's target as the nodes hold it, in the form of
+`config/lab.yaml` (`platform`, `runner`, `id`, `console`, `ci: false` for a
+slot out of the map) plus the device it is pinned to (`pin: {vid, pid,
+serial}`).  `import lab` writes them back (`PUT /api/ports/<n>/board`, the
+control right; refused while another host holds the port's lease), with that
+pin: a restored slot still flags another board in it.  An entry without a pin
+is pinned to the device in the slot now.  Any lab file with `platform:`
+entries can be imported, a hand-written `config/lab.yaml` included.
 
 ## Zephyr twister
 
 ```console
 $ python tools/bayctl.py hwmap -o rack-map.yaml
-wrote rack-map.yaml (8 bays) and pre-scripts in rack-scripts
+wrote rack-map.yaml (8 boards) and pre-scripts in rack-scripts
 $ west twister --device-testing --hardware-map rack-map.yaml \
       -p nucleo_g474re -p wio_terminal -T samples/hello_world
 ```
 
-Each entry of the map is one bay:
+Each entry of the map is one board (a bay's, or a DATA ×4 port's):
 
 ```yaml
 - connected: true
   platform: nucleo_g474re
   product: ST NUCLEO-64 (MB1136 / MB1367) (bay A1)
   runner: stm32cubeprogrammer
-  id: '003A00283133510837363734'
+  id: 003A00283133510837363734
   serial: /dev/serial/by-id/usb-STMicroelectronics_STLINK-V3_003A00283133510837363734-if02
   baud: 115200
   pre_script: /ci/rack-scripts/bay-a1-pre.sh
@@ -102,14 +155,24 @@ Each entry of the map is one bay:
   pty twister gives it to the node's raw AUX port.  Twister splits that command
   on spaces and commas, so keep the Python and repository paths free of both.
 * **Probe ids.**  Every bay gets attached to the CI host, so two nRF DKs show
-  up as two J-Links at once: without `id:` the runner may flash the wrong one.
-  `hwmap` warns about runners shared by bays without an id.  For the `esp32`
-  runner the serial port *is* the id, and bayctl fills it in.
+  up as two J-Links at once: the runner must pick its board.  The id is the
+  slot's probe id, else the USB serial number of the device in the slot; for
+  the `esp32` runner the serial port *is* the id, and bayctl fills it in.
+  `hwmap` warns about runners shared by boards without an id.
 * **`fixtures: [bay:<id>]`** lets a test plan pin a test to one bay
-  (`--fixture bay:A3`); add your own per bay (`fixtures:` in `config/lab.yaml`).
-* Bays without a platform, and `ci: false` bays (e.g. the one kept for a
-  laptop in classic mode), stay out of the map; bays without a console path are
-  written with `connected: false` until you add one.
+  (`--fixture bay:A3`; a DATA ×4 port's also has `node:<bay>`); add your own
+  per slot (`fixtures:` in `config/lab.yaml`).
+* Slots without a target (warned, with the node's page to set it on), slots
+  out of the map (the page's switch, or `ci: false`: e.g. the bay kept for a
+  laptop in classic mode), analyzers and empty DATA ×4 ports stay out of the
+  map.  A board without a console path (powered off when the map was made, no
+  serial port on that interface, console `none`) is written with
+  `connected: false` and a warning; `serial:` in `config/lab.yaml` gives one by
+  hand.  A board that is not the one its target was saved for is written as it
+  is, with a warning.
+* **Offline**: with no hub and no node reachable, the map comes from the lab
+  file's entries alone (the repository's CI job does this with
+  `config/lab.example.yaml`).
 
 ## labgrid
 
@@ -131,7 +194,9 @@ $ python tools/bayctl.py export pdudaemon > pdudaemon.conf
 ```
 
 declares the rack as one PDU (`hw-testing-rack`) with PDUDaemon's
-`localcmdline` driver, one port per bay in bay order (`bayctl power-port <n>`).
+`localcmdline` driver, one port per board in rack order, as the rack reports
+them (empty DATA ×4 ports left out; `bayctl power-port <n>`): regenerate it
+when boards move.
 A LAVA device then uses the usual
 `pduclient --daemon <host> --hostname hw-testing-rack --port <n> --command on|off|reboot`.
 

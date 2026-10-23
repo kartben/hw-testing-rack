@@ -174,8 +174,9 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 
 ## Tools
 
-- `config/lab.yaml` names boards by sub-slot (`bays: {A1.2: {platform:
-  xiao_esp32c3}}`); `config/rack.yaml` says which bays hold a DATA ×4.
+- Each sub-slot's board target lives on its node (`GET /api/boards`, set
+  on the page), and the node says how many ports it has; `config/lab.yaml`
+  only overrides, by sub-slot (`bays: {A1.2: {runner: openocd}}`).
 - `bayctl attach A1.2` asks `bay-a1.local/api/ports` for port 2's busid and
   runs `usbip attach -r bay-a1.local -b 1-1.2`; a new `--follow` re-attaches
   after a reset.  `bayctl power A1.2 cycle`, `bayctl reset A1.2`; a bare

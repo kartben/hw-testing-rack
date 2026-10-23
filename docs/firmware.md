@@ -199,7 +199,7 @@ python tools/bayctl.py update build-hub/power-hub/zephyr/zephyr.signed.bin --hub
 `--all` takes the nodes the hub lists, one after the other, and stops at
 the first one whose new firmware does not stay: a firmware that fails on
 one node does not go to the next.  Reserved bays are skipped (`--force`
-updates them anyway).  The hub is `rack.local` unless `config/lab.yaml`
+updates them anyway).  The hub is `rack.local` unless `BAYCTL_HUB` or `config/lab.yaml`
 says `hub:`.
 
 **Cost.**  MCUboot: 48 KB of its 64 KB partition.  The images: 1.07 MB (bay,

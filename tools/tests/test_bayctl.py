@@ -1,9 +1,10 @@
-"""Tests for tools/bayctl.py, against the repository's rack and the firmware's simulated node.
+"""Tests for tools/bayctl.py, against the repository's example lab file and the firmware's simulated node.
 
     python -m unittest discover -s tools/tests -v
 
 No rack needed: the node API is firmware/bay-node/web/dev_server.py (same endpoints and JSON
-as the firmware), the AUX UART a local echo server.
+as the firmware), the power hub's list of nodes a small server here, the AUX UART a local echo
+server.  BAYCTL_HUB=none for every test that does not set its own: no lookup of a real rack.local.
 """
 
 from __future__ import annotations
@@ -21,6 +22,7 @@ import threading
 import time
 import unittest
 import urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest import mock
 
@@ -36,6 +38,17 @@ import rackcfg  # noqa: E402
 LAB_EXAMPLE = REPO / "config" / "lab.example.yaml"
 DEV_SERVER = REPO / "firmware" / "bay-node" / "web" / "dev_server.py"
 HUB_DEV_SERVER = REPO / "firmware" / "power-hub" / "web" / "dev_server.py"
+BAYCTL = REPO / "tools" / "bayctl.py"
+
+_env = mock.patch.dict(os.environ, {"BAYCTL_HUB": "none"})
+
+
+def setUpModule():
+    _env.start()
+
+
+def tearDownModule():
+    _env.stop()
 
 
 def free_port() -> int:
@@ -44,14 +57,137 @@ def free_port() -> int:
         return s.getsockname()[1]
 
 
+def lab_file(doc: dict) -> Path:
+    path = Path(tempfile.mkdtemp()) / "lab.yaml"
+    path.write_text(json.dumps(doc))                    # JSON is YAML
+    return path
+
+
+def start_node(*args: str) -> tuple[subprocess.Popen, int]:
+    """The simulated node on a free port, once it answers."""
+    port = free_port()
+    proc = subprocess.Popen([sys.executable, str(DEV_SERVER), str(port), *args],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    node = bayctl.Bay(id="B3", board="bay-node", host="127.0.0.1", http_port=port)
+    deadline = time.monotonic() + 10
+    while True:
+        try:
+            bayctl.api(node, "/api/status", timeout=1)
+            return proc, port
+        except bayctl.BayError:
+            if time.monotonic() > deadline:
+                proc.kill()
+                raise
+            time.sleep(0.2)
+
+
+class FakeHub:
+    """The power hub's GET /api/status, as much of it as bayctl reads: rows[].nodes[] (position, address, state)."""
+
+    def __init__(self, nodes: list[dict]):
+        hub = self
+        self.nodes = nodes
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):  # noqa: N802
+                ok = self.path == "/api/status"
+                body = json.dumps({"hostname": "rack", "rows": [{"name": "B", "state": "on", "nodes": hub.nodes}]}
+                                  if ok else {"error": "not found"}).encode()
+                self.send_response(200 if ok else 404)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *args):
+                pass
+
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.server.daemon_threads = True
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.address = f"127.0.0.1:{self.server.server_address[1]}"
+
+    def close(self):
+        self.server.shutdown()
+        self.server.server_close()
+
+
+# ------------------------------------------------------------------------- console names
+
+MCULINK = {"vid": "1fc9", "pid": "0143", "manufacturer": "NXP Semiconductors",
+           "product": "MCU-LINK on-board (r0E7) CMSIS-DAP V3.172", "serial": "3ZQ1J4ZBMTNKS", "ttys": [{"if": "01"}]}
+
+
+class ByIdName(unittest.TestCase):
+    """/dev/serial/by-id names as udev makes them (60-serial.rules, the usb_id builtin)."""
+
+    def name(self, manufacturer, product, serial, vid="0000", pid="0000", nn="00", port=None) -> str:
+        tty = {"if": nn} if port is None else {"if": nn, "port": port}
+        return bayctl.by_id_name({"vid": vid, "pid": pid, "manufacturer": manufacturer, "product": product,
+                                  "serial": serial}, tty)
+
+    def test_examples(self):
+        self.assertEqual(self.name("STMicroelectronics", "STM32 STLink", "066DFF495150898367102236", nn="02"),
+                         "usb-STMicroelectronics_STM32_STLink_066DFF495150898367102236-if02")
+        self.assertEqual(self.name("NXP Semiconductors", "MCU-LINK on-board (r0E7) CMSIS-DAP V3.172", "3ZQ1J4ZBMTNKS",
+                                   nn="01"),
+                         "usb-NXP_Semiconductors_MCU-LINK_on-board__r0E7__CMSIS-DAP_V3.172_3ZQ1J4ZBMTNKS-if01")
+        self.assertEqual(self.name("FTDI", "FT232R USB UART", "A50285BI", port=0),
+                         "usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0")
+        self.assertEqual(self.name(None, None, None, vid="1a86", pid="7523", port=0), "usb-1a86_7523-if00-port0")
+        self.assertEqual(self.name("Espressif", "USB JTAG/serial debug unit", "34:85:18:9A:3C:10"),
+                         "usb-Espressif_USB_JTAG_serial_debug_unit_34:85:18:9A:3C:10-if00")
+
+    def test_udev_cleaning(self):
+        # Runs of whitespace: one "_", none at the ends; a comma in the serial: no serial
+        self.assertEqual(bayctl.usb_serial_id({"manufacturer": "  Acme \t  Corp ", "product": "Widget (v2)",
+                                               "serial": "A,B", "vid": "1234", "pid": "abcd"}),
+                         "Acme_Corp_Widget__v2_")
+        # Valid UTF-8 kept, a control byte replaced, a non-ASCII serial dropped
+        self.assertEqual(bayctl.usb_serial_id({"manufacturer": "Café", "product": "x\x01y", "serial": "Ä1"}),
+                         "Café_x_y")
+        # No strings: the ids, 4 hex digits
+        self.assertEqual(bayctl.usb_serial_id({"manufacturer": "", "product": None, "serial": " 12 34 ",
+                                               "vid": "0x2E8A", "pid": "3"}), "2e8a_0003_12_34")
+        # udev reads at most 63 bytes of a manufacturer or product string
+        self.assertEqual(bayctl.usb_serial_id({"manufacturer": "A" * 80, "product": "B", "serial": None}),
+                         "A" * 63 + "_B")
+        self.assertEqual(self.name("X", "Y", None, nn=2), "usb-X_Y-if02")
+
+    def test_console_path(self):
+        path = bayctl.console_path("usb", MCULINK)
+        self.assertEqual(path, "/dev/serial/by-id/usb-NXP_Semiconductors_MCU-LINK_on-board__r0E7__CMSIS-DAP_V3.172_"
+                               "3ZQ1J4ZBMTNKS-if01")
+        two = {**MCULINK, "ttys": [{"if": "00"}, {"if": "02"}]}
+        self.assertTrue(bayctl.console_path("usb", two).endswith("-if00"))
+        self.assertTrue(bayctl.console_path("usb:02", two).endswith("-if02"))
+        self.assertIsNone(bayctl.console_path("usb:03", two))
+        self.assertIsNone(bayctl.console_path("aux", two))
+        self.assertIsNone(bayctl.console_path("usb", None))
+        self.assertIsNone(bayctl.console_path("usb", {**MCULINK, "strings": False}))   # not read yet
+
+    def test_family(self):
+        families = yaml.safe_load(bayctl.BOARDS_YAML.read_text(encoding="utf-8"))["boards"]
+        self.assertEqual(bayctl.family_of("nucleo_g474re", None, families), "nucleo-64")          # its choices
+        self.assertEqual(bayctl.family_of("xiao_esp32c6/esp32c6/hpcore", None, families), "xiao")
+        self.assertEqual(bayctl.family_of("rpi_pico2/rp2350a/m33", None, families), "rpi-pico2")  # the same board
+        self.assertEqual(bayctl.family_of("frdm_mcxn947/mcxn947/cpu0", MCULINK, families), "frdm-mcxn947")
+        self.assertIsNone(bayctl.family_of("qemu_x86", None, families))
+
+
+# ------------------------------------------------------------------------- the lab file alone
+
 class Config(unittest.TestCase):
+    """config/lab.example.yaml with no rack (BAYCTL_HUB=none): its entries stand alone."""
+
     def setUp(self):
         self.bays = bayctl.load_bays(lab_yaml=LAB_EXAMPLE)
 
     def test_defaults_and_overrides(self):
         b = self.bays
-        self.assertEqual(b["A1"].platform, "nucleo_g474re")             # family resolved by the lab file
-        self.assertIsNone(b["A2"].platform)                             # family left open
+        self.assertEqual(b["A1"].platform, "nucleo_g474re")             # the lab file's target
+        self.assertEqual((b["A1"].board, b["A1"].runner), ("nucleo-64", "stm32cubeprogrammer"))   # its family's
+        self.assertIsNone(b["A2"].platform)                             # family named, target left open
         self.assertIn("nucleo_h743zi", b["A2"].choices)
         self.assertEqual(b["A4"].platform, "wio_terminal")              # from boards.yaml
         self.assertEqual(b["A4"].runner, "bossac")
@@ -61,13 +197,15 @@ class Config(unittest.TestCase):
         self.assertFalse(b["B4"].ci)
         self.assertEqual(b["B2"].host, "bay-b2.local")
         self.assertEqual(b["B2"].url, "http://bay-b2.local")
+        self.assertTrue(all(x.reported is None for x in b.values()))   # nothing from a node
 
     def test_example_bay(self):
-        b = self.bays                                                   # config/rack.yaml's B3: four boards
+        b = self.bays                                                   # B3: four boards, by the lab's sub-slots
         self.assertNotIn("B3", b)
         self.assertEqual([k for k in b if k.startswith("B3")], ["B3.1", "B3.2", "B3.3", "B3.4"])
         self.assertEqual(b["B3.1"].platform, "xiao_esp32c3")           # the lab file, per sub-slot
         self.assertEqual(b["B3.2"].platform, "rpi_pico2/rp2350a/m33_0")
+        self.assertEqual(b["B3.2"].console, "usb")                     # boards.yaml says aux: no AUX on a sub-slot
         self.assertFalse(b["B3.4"].ci)
         b33 = b["B3.3"]                                                 # the bay's logic analyzer (`role:`)
         self.assertEqual((b33.role, b33.ci, b33.platform, b33.runner), ("analyzer", False, None, None))
@@ -75,6 +213,7 @@ class Config(unittest.TestCase):
         self.assertEqual([x.id for x in bayctl.dut_targets(b, "B3")], ["B3.1", "B3.2", "B3.4"])
         self.assertEqual(len(bayctl.dut_targets(b, "B3", analyzers=True)), 4)   # its power is the bay's
         self.assertEqual([x.id for x in bayctl.dut_targets(b, "B3.3")], ["B3.3"])  # named, it is there
+        self.assertEqual(list(b).index("B3.1"), list(b).index("B2") + 1)         # rack order
 
     def test_example_analyzer(self):
         la = bayctl.analyzer_info()                                     # config/rack.yaml › analyzer
@@ -107,6 +246,8 @@ class Config(unittest.TestCase):
             self.assertFalse(a4["connected"])
             self.assertNotIn("bay:B3.3", by)                            # the analyzer: no test target
             self.assertFalse(any("B3.3" in w for w in warnings))
+            self.assertEqual(by["bay:B3.1"]["id"], by["bay:B3.1"]["serial"])   # esp32: the board by its port
+            self.assertEqual(by["bay:B3.2"]["fixtures"][:2], ["bay:B3.2", "node:B3"])
             self.assertEqual([w for w in warnings if "without a probe id" in w], [])   # one board per runner
             pre = Path(a1["pre_script"]).read_text()
             self.assertIn("prepare A1", pre)
@@ -118,14 +259,25 @@ class Config(unittest.TestCase):
         self.assertEqual(t["resources"]["NetworkSerialPort"],
                          {"host": "bay-b2.local", "port": 4001, "speed": 115200, "protocol": "rfc2217"})
         self.assertEqual(t["drivers"]["ExternalPowerDriver"]["cmd_cycle"], "python3 bayctl.py power B2 cycle")
+        self.assertEqual(lg["targets"]["bay-b3-2"]["resources"], {})   # a sub-slot: power, no AUX UART
         pdu = bayctl.export_pdudaemon(self.bays, "python3", "bayctl.py")
         cmd = pdu["pdus"]["hw-testing-rack"]["cmd_on"]
         self.assertEqual(cmd % 3, "python3 bayctl.py power-port 3 on")   # PDUDaemon formats with %
         self.assertEqual(pdu["_ports"][1], "A1")
+        self.assertEqual(pdu["_ports"][5], "B1.2")
+        self.assertEqual(bayctl.export_lab(self.bays), {"bays": {}})   # nothing read from a node
 
     def test_unknown_bay(self):
         with self.assertRaises(bayctl.BayError):
             bayctl.get_bay(self.bays, "Z9")
+
+    def test_named(self):
+        """A command's bays: their nodes only, and a bay nobody lists by its mDNS name."""
+        b = bayctl.load_bays(lab_yaml=LAB_EXAMPLE, names=["B3.2"])
+        self.assertEqual(list(b), ["B3.1", "B3.2", "B3.3", "B3.4"])
+        c = bayctl.load_bays(lab_yaml=LAB_EXAMPLE, names=["C2"])
+        self.assertEqual((list(c), c["C2"].host, c["C2"].slot), (["C2"], "bay-c2.local", None))
+        self.assertEqual(bayctl.load_bays(lab_yaml=LAB_EXAMPLE, names=["nonsense"]), {})
 
     def test_hwmap_lease(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -141,74 +293,50 @@ class Config(unittest.TestCase):
             bayctl.duration("soon")
 
 
-def lab_file(doc: dict) -> Path:
-    path = Path(tempfile.mkdtemp()) / "lab.yaml"
-    path.write_text(json.dumps(doc))                    # JSON is YAML
-    return path
-
-
-CONVERTED = [("xiao", "c-to-c"), ("rpi-pico2", "c-to-micro-b"), ("rpi-pico2", "c-to-micro-b"), ("xiao", "c-to-c")]
-
-
-def converted_rack() -> Path:
-    """config/rack.yaml with bay B3 converted (docs/multi-dut-node.md): four boards on a DATA ×4."""
-    raw = yaml.safe_load((REPO / "config" / "rack.yaml").read_text(encoding="utf-8"))
-    raw["population"]["B3"] = {"boards": [{"board": b, "cable": c} for b, c in CONVERTED]}
-    path = Path(tempfile.mkdtemp()) / "rack.yaml"
-    path.write_text(json.dumps(raw), encoding="utf-8")
-    return path
-
-
-class ConvertedConfig(unittest.TestCase):
-    """A converted bay's boards, by sub-slot: B3.1 to B3.4."""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.rack = converted_rack()
+class LabOnly(unittest.TestCase):
+    """A DATA ×4 bay described by the lab file alone (its node offline): sub-slots B3.1 to B3.4."""
 
     def load(self, bays: dict):
-        return bayctl.load_bays(rack_yaml=self.rack, lab_yaml=lab_file({"bays": bays}))
+        return bayctl.load_bays(lab_yaml=lab_file({"bays": bays}), live=False)
 
     def test_sub_slots(self):
-        b = self.load({"B3.1": {"platform": "xiao_esp32c3"}})
+        b = self.load({"B3": {"host": "10.0.0.3", "http_port": 8080}, "B3.1": {"platform": "xiao_esp32c3"},
+                       "B3.2": {"board": "rpi-pico2"}, "B3.4": {}, "A1": {"platform": "nucleo_g474re"}})
         self.assertNotIn("B3", b)
-        self.assertEqual([k for k in b if k.startswith("B3")], ["B3.1", "B3.2", "B3.3", "B3.4"])
-        self.assertEqual(list(b).index("B3.1"), list(b).index("B2") + 1)   # rack order
+        self.assertEqual(list(b), ["A1", "B3.1", "B3.2", "B3.4"])
         b32 = b["B3.2"]
         self.assertEqual((b32.board, b32.node, b32.slot, b32.multi), ("rpi-pico2", "B3", 2, True))
         self.assertEqual(b32.platform, "rpi_pico2/rp2350a/m33_0")      # from boards.yaml
         self.assertEqual(b32.console, "usb")                           # boards.yaml says aux: no AUX on a sub-slot
-        self.assertEqual(b32.url, "http://bay-b3.local")               # the node's
-        self.assertEqual(b["B3.1"].platform, "xiao_esp32c3")           # the lab file, per sub-slot
-        self.assertIsNone(b["A1"].slot)
-        self.assertEqual([x.id for x in bayctl.dut_targets(b, "b3")], ["B3.1", "B3.2", "B3.3", "B3.4"])
-        self.assertEqual([x.id for x in bayctl.dut_targets(b, "B3.2")], ["B3.2"])
-        node = bayctl.node_bay(b, "B3.3")
-        self.assertEqual((node.id, node.slot, node.host), ("B3", None, "bay-b3.local"))
-        self.assertEqual([n.id for n in bayctl.nodes_of(b, ["B3.1", "b3", "A1"])], ["B3", "A1"])
-        self.assertEqual(len(bayctl.nodes_of(b, [])), 8)                # every node once
-        with self.assertRaisesRegex(bayctl.BayError, "several boards"):
-            bayctl.get_bay(b, "B3")                                     # a converted bay: say which board
-        with self.assertRaises(bayctl.BayError):
-            bayctl.get_bay(b, "B3.5")
-
-    def test_lab(self):
-        b = self.load({"B3": {"host": "10.0.0.3", "http_port": 8080}, "B3.2": {"platform": "rpi_pico2/rp2350b/m33"}})
         self.assertEqual((b["B3.4"].host, b["B3.4"].http_port), ("10.0.0.3", 8080))   # the node's, inherited
-        self.assertEqual(b["B3.2"].platform, "rpi_pico2/rp2350b/m33")
-        for bad, msg in [({"B3.5": {}}, "no such sub-slot"), ({"A1.1": {}}, "one board"),
-                         ({"B3.2": {"console": "aux"}}, "no AUX UART"), ({"B3.x": {}}, "sub-slot")]:
-            with self.assertRaisesRegex(bayctl.BayError, msg):
+        self.assertEqual(b["B3.1"].runner, "esp32")                    # the xiao family's, for that target
+        self.assertIsNone(b["A1"].slot)
+        self.assertEqual([x.id for x in bayctl.dut_targets(b, "b3")], ["B3.1", "B3.2", "B3.4"])
+        node = bayctl.node_bay(b, "B3.4")
+        self.assertEqual((node.id, node.slot, node.host), ("B3", None, "10.0.0.3"))
+        self.assertEqual([n.id for n in bayctl.nodes_of(b, ["B3.1", "b3", "A1"])], ["B3", "A1"])
+        self.assertEqual(len(bayctl.nodes_of(b, [])), 2)                # every node once
+        with self.assertRaisesRegex(bayctl.BayError, "several boards"):
+            bayctl.get_bay(b, "B3")                                     # a DATA ×4 bay: say which board
+        with self.assertRaises(bayctl.BayError):
+            bayctl.get_bay(b, "B3.3")
+
+    def test_errors(self):
+        for bad, msg in [({"B3.5": {}}, "a sub-slot is"), ({"A1": {"platform": "x"}, "A1.1": {}}, "holds one board"),
+                         ({"B3.2": {"console": "aux"}}, "no AUX UART"), ({"B3.x": {}}, "sub-slot"),
+                         ({"A1": {"console": "serial"}}, "console must be")]:
+            with self.assertRaisesRegex(bayctl.BayError, msg, msg=bad):
                 self.load(bad)
 
     def test_hwmap_and_exports(self):
         b = self.load({"B3.1": {"platform": "xiao_esp32c3", "runner": "esp32", "serial": "/dev/ttyACM7"},
-                       "B3.2": {"serial": "/dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D-if00"},
-                       "B3.4": {"ci": False}})
+                       "B3.2": {"board": "rpi-pico2", "serial": "/dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D-if00"},
+                       "B3.3": {"board": "rpi-pico2"}, "B3.4": {"board": "xiao", "ci": False},
+                       "A1": {"platform": "nucleo_g474re", "console": "none"}})
         with tempfile.TemporaryDirectory() as tmp:
             entries, warnings = bayctl.hwmap(b, Path(tmp), "python3", "/opt/rack/tools/bayctl.py", None)
             by = {e["fixtures"][0]: e for e in entries}
-            self.assertIn("B3.2, B3.3 use uf2 without a probe id", " | ".join(warnings))   # two Pico 2 (B1.2's too)
+            self.assertIn("B3.2, B3.3 use uf2 without a probe id", " | ".join(warnings))   # two Pico 2
             b32 = by["bay:B3.2"]                                        # one entry per board
             self.assertEqual(b32["fixtures"][:2], ["bay:B3.2", "node:B3"])
             self.assertEqual(b32["serial"], "/dev/serial/by-id/usb-ZEPHYR_USB-DEV_9F2D-if00")
@@ -217,17 +345,19 @@ class ConvertedConfig(unittest.TestCase):
             self.assertIn("prepare B3.2", Path(b32["pre_script"]).read_text())
             self.assertEqual(by["bay:B3.1"]["id"], "/dev/ttyACM7")     # esp32: the board by its serial port
             self.assertNotIn("bay:B3.4", by)                            # ci: false
+            self.assertFalse(by["bay:A1"]["connected"])                 # console none
+            self.assertIn("bay A1: console none", " | ".join(warnings))
         t = bayctl.export_labgrid(b, "python3", "bayctl.py")["targets"]["bay-b3-2"]
         self.assertEqual(t["resources"], {})                            # power, no AUX UART
         self.assertNotIn("SerialDriver", t["drivers"])
         self.assertEqual(t["drivers"]["ExternalPowerDriver"]["cmd_cycle"], "python3 bayctl.py power B3.2 cycle")
         pdu = bayctl.export_pdudaemon(b, "python3", "bayctl.py")
-        self.assertEqual(pdu["_ports"][9], "B3.2")                      # a port per board under test (B1's two first)
+        self.assertEqual(pdu["_ports"][3], "B3.2")                      # a port per board under test, rack order
 
     def test_analyzer(self):
-        b = self.load({"B3.3": {"role": "analyzer", "ci": True, "serial": "/dev/ttyACM9"}})   # your own rack
+        b = self.load({"B3.3": {"role": "analyzer", "ci": True, "serial": "/dev/ttyACM9"}, "B3.1": {}})
         self.assertEqual(b["B3.3"].role, "analyzer")
-        self.assertIsNone(b["B3.3"].platform)                           # no Zephyr target from boards.yaml
+        self.assertIsNone(b["B3.3"].platform)                           # no Zephyr target
         with tempfile.TemporaryDirectory() as tmp:
             entries, _ = bayctl.hwmap(b, Path(tmp), "python3", "bayctl.py", None)
             self.assertNotIn("bay:B3.3", [e["fixtures"][0] for e in entries])   # whatever its `ci`
@@ -240,13 +370,64 @@ class ConvertedConfig(unittest.TestCase):
             bayctl.dut_targets(self.load(only), "B3")
 
 
+class HubLookup(unittest.TestCase):
+    """Where the hub is, and what bayctl does when it does not answer."""
+
+    def test_address(self):
+        plain = lab_file({})
+        with mock.patch.dict(os.environ, {"BAYCTL_HUB": "10.0.0.9:8080"}):
+            self.assertEqual(bayctl.hub_address(lab_file({"hub": "rack.lan"})), "10.0.0.9:8080")   # first
+            hub = bayctl.hub_device(plain)
+            self.assertEqual((hub.host, hub.http_port), ("10.0.0.9", 8080))
+        with mock.patch.dict(os.environ, {"BAYCTL_HUB": ""}):
+            self.assertEqual(bayctl.hub_address(lab_file({"hub": "rack.lan"})), "rack.lan")
+            self.assertEqual(bayctl.hub_address(lab_file({"domain": "lab"})), "rack.lab")
+            self.assertEqual(bayctl.hub_address(plain), "rack.local")
+            self.assertIsNone(bayctl.hub_address(lab_file({"hub": False})))
+        self.assertIsNone(bayctl.hub_address(plain))                   # BAYCTL_HUB=none
+        with self.assertRaisesRegex(bayctl.BayError, "no hub"):
+            bayctl.hub_device(plain)
+
+    def test_offline(self):
+        """No hub at that address: a warning within seconds, and the lab file's entries."""
+        dead = f"127.0.0.1:{free_port()}"
+        warnings: list[str] = []
+        with mock.patch.dict(os.environ, {"BAYCTL_HUB": dead}):
+            b = bayctl.load_bays(lab_yaml=LAB_EXAMPLE, warnings=warnings)
+        self.assertIn("A1", b)
+        self.assertTrue(any("hub: cannot reach" in w and "config/lab.yaml" in w for w in warnings), warnings)
+        with tempfile.TemporaryDirectory() as tmp:
+            t0 = time.monotonic()
+            r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(LAB_EXAMPLE), "hwmap",
+                                "-o", str(Path(tmp) / "map.yaml"), "--python", "python3"],
+                               capture_output=True, text=True, timeout=60, env={**os.environ, "BAYCTL_HUB": dead})
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertLess(time.monotonic() - t0, 20)
+            self.assertIn("warning: hub: cannot reach", r.stderr)
+            self.assertIn("(7 boards)", r.stdout)
+
+    def test_strings_retry(self):
+        """A device just enumerated, its strings not read yet: one more look a second later, then a warning."""
+        dev = {**MCULINK, "busid": "1-1.1"}
+        slot = {"slot": "B3.1", "port": 1, "board": "frdm_mcxn947/mcxn947/cpu0", "console": "usb", "map": True}
+        early, late = [{**slot, "device": {**dev, "strings": False}}], [{**slot, "device": {**dev, "strings": True}}]
+        node = bayctl.Bay(id="B3", board="bay-node", host="127.0.0.1")
+        lab = bayctl.Lab(lab_file({}))
+        with mock.patch.object(bayctl, "node_slots", side_effect=[early, late]) as ns, \
+                mock.patch.object(bayctl.time, "sleep") as sleep:
+            self.assertEqual(bayctl._read_slots(node, lab), late)
+        self.assertEqual((ns.call_count, sleep.call_args[0][0], lab.warnings), (2, bayctl.STRINGS_WAIT_S, []))
+        with mock.patch.object(bayctl, "node_slots", side_effect=[early, early]), \
+                mock.patch.object(bayctl.time, "sleep"):
+            self.assertEqual(bayctl._read_slots(node, lab), early)
+        self.assertIn("not read its device's USB strings yet", lab.warnings[0])
+
+
 class AccessConfig(unittest.TestCase):
     """The `access:` section of config/lab.yaml, as the nodes get it."""
 
     def lab(self, doc: dict) -> Path:
-        path = Path(tempfile.mkdtemp()) / "lab.yaml"
-        path.write_text(json.dumps(doc))
-        return path
+        return lab_file(doc)
 
     def test_example(self):
         rules = bayctl.access_rules(LAB_EXAMPLE, "B3")
@@ -291,8 +472,12 @@ class AccessConfig(unittest.TestCase):
             self.assertEqual(bayctl.admin_key(), bytes([0xAB] * 32))
 
 
+CONVERTED = [("xiao", "c-to-c"), ("rpi-pico2", "c-to-micro-b"), ("rpi-pico2", "c-to-micro-b"), ("xiao", "c-to-c")]
+
+
 class Slots(unittest.TestCase):
-    """config/rack.yaml › population: a bay's one board, or a converted bay's boards on one plate."""
+    """config/rack.yaml › population (the mechanical side: tools/rackcfg.py): a bay's one board, or a
+    converted bay's boards on one plate.  bayctl does not read it."""
 
     PACKED = [("xiao", (19.42, 112.44)), ("rpi-pico2", (44.2, 82.4)), ("rpi-pico2", (72.2, 82.4)),
               ("xiao", (100.2, 112.44))]
@@ -399,25 +584,15 @@ class Usbip(unittest.TestCase):
         self.assertEqual(bayctl.parse_usbip_port(out), [("00", "bay-b3.local", "1-1")])
 
 
+# ------------------------------------------------------------------------- the simulated node
+
 class NodeApi(unittest.TestCase):
     """bayctl against the firmware's simulated node (web/dev_server.py)."""
 
     @classmethod
     def setUpClass(cls):
-        cls.port = free_port()
-        cls.proc = subprocess.Popen([sys.executable, str(DEV_SERVER), str(cls.port)],
-                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        cls.proc, cls.port = start_node()
         cls.bay = bayctl.Bay(id="B3", board="rpi-pico2", host="127.0.0.1", http_port=cls.port)
-        deadline = time.monotonic() + 10
-        while True:
-            try:
-                bayctl.api(cls.bay, "/api/status", timeout=1)
-                break
-            except bayctl.BayError:
-                if time.monotonic() > deadline:
-                    cls.proc.kill()
-                    raise
-                time.sleep(0.2)
 
     @classmethod
     def tearDownClass(cls):
@@ -437,12 +612,18 @@ class NodeApi(unittest.TestCase):
         bayctl.api(self.bay, "/api/boot", {})
 
     def test_cli(self):
-        lab = Path(tempfile.mkdtemp()) / "lab.yaml"
-        lab.write_text(json.dumps({"bays": {"A1": {"host": "127.0.0.1", "http_port": self.port}}}))
-        r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(lab), "power", "a1", "cycle",
+        lab = lab_file({"bays": {"A1": {"host": "127.0.0.1", "http_port": self.port}}})
+        r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(lab), "power", "a1", "cycle",
                             "--ms", "10"], capture_output=True, text=True, timeout=30)
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("VBUS on", r.stdout)
+
+    def test_one_board(self):
+        """A one-board node: one slot, named by the bay's position (here A1, whatever the node calls itself)."""
+        b = bayctl.load_bays(lab_yaml=lab_file({"bays": {"A1": {"host": "127.0.0.1", "http_port": self.port}}}))
+        a1 = b["A1"]
+        self.assertEqual((list(b), a1.slot, a1.multi, a1.reported["port"]), (["A1"], None, False, 1))
+        self.assertEqual(a1.device["vid"], "0483")                      # dev_server's NUCLEO's ST-LINK
 
     def test_unreachable(self):
         bay = bayctl.Bay(id="X1", board="x", host="127.0.0.1", http_port=free_port())
@@ -457,28 +638,15 @@ class NodeApi(unittest.TestCase):
 
 
 class MultiNodeApi(unittest.TestCase):
-    """A converted bay against the simulated node with four ports (dev_server.py --ports 4)."""
+    """A DATA ×4 bay against the simulated node with four ports (dev_server.py --ports 4): its sub-slots from
+    the node itself (the lab file only gives its host)."""
 
     @classmethod
     def setUpClass(cls):
-        cls.port = free_port()
-        cls.proc = subprocess.Popen([sys.executable, str(DEV_SERVER), str(cls.port), "--ports", "4"],
-                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        cls.lab = Path(tempfile.mkdtemp()) / "lab.yaml"
-        cls.lab.write_text(json.dumps({"bays": {"B3": {"host": "127.0.0.1", "http_port": cls.port}}}))
-        cls.rack = converted_rack()
-        cls.bays = bayctl.load_bays(rack_yaml=cls.rack, lab_yaml=cls.lab)
+        cls.proc, cls.port = start_node("--ports", "4")
+        cls.lab = lab_file({"bays": {"B3": {"host": "127.0.0.1", "http_port": cls.port}}})
+        cls.bays = bayctl.load_bays(lab_yaml=cls.lab)
         cls.node = bayctl.node_bay(cls.bays, "B3")
-        deadline = time.monotonic() + 10
-        while True:
-            try:
-                bayctl.api(cls.node, "/api/status", timeout=1)
-                break
-            except bayctl.BayError:
-                if time.monotonic() > deadline:
-                    cls.proc.kill()
-                    raise
-                time.sleep(0.2)
         try:
             cls.wait_enumerated()
         except AssertionError:
@@ -500,13 +668,14 @@ class MultiNodeApi(unittest.TestCase):
             time.sleep(0.1)
 
     def cli(self, *args) -> str:
-        r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(self.lab),
-                            "--rack", str(self.rack), *args],
+        r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(self.lab), *args],
                            capture_output=True, text=True, timeout=30)
         self.assertEqual(r.returncode, 0, r.stderr)
         return r.stdout
 
     def test_ports(self):
+        self.assertEqual([k for k in self.bays], ["B3.1", "B3.2", "B3.3", "B3.4"])   # the node's ports
+        self.assertTrue(self.bays["B3.2"].multi)
         ports = bayctl.node_ports(self.node)
         self.assertEqual([p["slot"] for p in ports], ["B3.1", "B3.2", "B3.3", "B3.4"])
         self.assertEqual(bayctl.port_busid(bayctl.port_doc(self.bays["B3.2"])), "1-1.2")   # hub port n = USB-C n
@@ -556,8 +725,7 @@ class MultiNodeApi(unittest.TestCase):
         self.assertIn("B3.3", self.cli("boot", "B3.3", "--power-cycle"))
         # leave the shared node as found: the next test lists B3.3's busid (a slow CI runner got there first)
         self.assertTrue(bayctl.wait_for(lambda: bayctl.port_doc(b)["usb"] is not None, 5))
-        r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(self.lab),
-                            "--rack", str(self.rack), "boot", "A1", "--power-cycle"],
+        r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(self.lab), "boot", "A1", "--power-cycle"],
                            capture_output=True, text=True, timeout=30)
         self.assertNotEqual(r.returncode, 0)                            # a bay's one DUT: its AUX RESET
         self.assertIn("sub-slot's", r.stderr)
@@ -572,6 +740,8 @@ class MultiNodeApi(unittest.TestCase):
             bayctl.control(b1, "power", {"action": "on"})                      # the other boards stay free
             with self.assertRaisesRegex(bayctl.BayError, "423"):
                 bayctl.lease(self.node, 60)                                     # the whole bay: B3.2 is taken
+            with self.assertRaisesRegex(bayctl.BayError, "423"):              # its target too
+                bayctl.api(b2, "/api/ports/2/board", {"board": "rpi_pico2/rp2350a/m33"}, method="PUT")
         finally:
             urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/peer").read()
         self.assertEqual(bayctl.lease_left(b2, bayctl.release(b2)), 0)
@@ -630,26 +800,197 @@ class MultiNodeApi(unittest.TestCase):
         self.assertIn("1a86:7523  CH340 serial adapter", out)
 
 
+class LiveRack(unittest.TestCase):
+    """The hardware map from the rack: a hub listing B3, the simulated DATA ×4 node there (dev_server.py
+    --ports 4), each port's target set on the node (PUT /api/ports/<n>/board), the lab file over it."""
+
+    TARGETS = {1: {"board": "frdm_mcxn947/mcxn947/cpu0", "runner": "linkserver", "console": "usb"},   # MCU-Link
+               2: {"board": "nucleo_g474re", "console": "usb:00", "probe_id": "066DFF495150898367102236"},   # FT232
+               3: {"board": "rpi_pico2/rp2350a/m33_0", "runner": "uf2"}}                             # Pico in BOOTSEL
+    NXP = "/dev/serial/by-id/usb-NXP_Semiconductors_MCU-LINK_on-board__r0E7__CMSIS-DAP_V3.172_3ZQ1J4ZBMTNKS-if01"
+    FTDI = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
+
+    @classmethod
+    def setUpClass(cls):
+        cls.proc, cls.port = start_node("--ports", "4")
+        cls.hub = FakeHub([{"id": 0x13, "pos": "B3", "ip": "127.0.0.1", "state": "ok", "dut_ma": 90},
+                           {"id": 0x14, "pos": "B4", "ip": "0.0.0.0", "state": "lost"}])      # not on the rack now
+        cls.env = mock.patch.dict(os.environ, {"BAYCTL_HUB": cls.hub.address})
+        cls.env.start()
+        cls.node = bayctl.Bay(id="B3", board="bay-node", host="127.0.0.1", http_port=cls.port)
+        try:
+            cls.wait_enumerated()
+            for n, body in cls.TARGETS.items():
+                cls.put(n, body)
+        except Exception:
+            cls.tearDownClass()
+            raise
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.env.stop()
+        cls.hub.close()
+        cls.proc.terminate()
+        cls.proc.wait(5)
+
+    @classmethod
+    def wait_enumerated(cls):
+        deadline = time.monotonic() + 10
+        while not all(p["usb"] for p in bayctl.node_ports(cls.node)):
+            if time.monotonic() > deadline:
+                raise AssertionError("the boards never enumerated")
+            time.sleep(0.1)
+
+    @classmethod
+    def put(cls, n: int, body: dict) -> dict:
+        return bayctl.api(cls.node, f"/api/ports/{n}/board", body, method="PUT")
+
+    def dev(self, path: str) -> None:
+        urllib.request.urlopen(f"http://127.0.0.1:{self.port}{path}").read()
+
+    def load(self, bays: dict | None = None, warnings: list | None = None) -> dict:
+        lab = lab_file({"http_port": self.port, "bays": bays or {}})   # the hub gives no port: the lab's
+        return bayctl.load_bays(lab_yaml=lab, warnings=warnings)
+
+    def hwmap(self, bays: dict) -> tuple[dict, list[str]]:
+        with tempfile.TemporaryDirectory() as tmp:
+            entries, warnings = bayctl.hwmap(bays, Path(tmp), "python3", "/opt/rack/tools/bayctl.py", None)
+        return {e["fixtures"][0]: e for e in entries}, warnings
+
+    def cli(self, lab: Path, *args) -> subprocess.CompletedProcess:
+        return subprocess.run([sys.executable, str(BAYCTL), "--lab", str(lab), *args],
+                              capture_output=True, text=True, timeout=60)
+
+    def test_hwmap_from_rack(self):
+        b = self.load()
+        self.assertEqual(list(b), ["B3.1", "B3.2", "B3.3", "B3.4"])  # B3 from the hub, its ports from the node
+        self.assertEqual((b["B3.1"].host, b["B3.1"].board, b["B3.2"].board), ("127.0.0.1", "frdm-mcxn947", "nucleo-64"))
+        by, warnings = self.hwmap(b)
+        b31 = by["bay:B3.1"]
+        self.assertEqual((b31["platform"], b31["runner"], b31["serial"]),
+                         ("frdm_mcxn947/mcxn947/cpu0", "linkserver", self.NXP))
+        self.assertEqual(b31["id"], "3ZQ1J4ZBMTNKS")                   # the device's USB serial
+        self.assertEqual(b31["fixtures"], ["bay:B3.1", "node:B3"])
+        b32 = by["bay:B3.2"]                                           # an FT232: a usb-serial bridge's -port0
+        self.assertEqual((b32["serial"], b32["id"]), (self.FTDI, "066DFF495150898367102236"))
+        self.assertEqual(b32["runner"], "stm32cubeprogrammer")         # none on the node: its family's
+        b33 = by["bay:B3.3"]                                           # in BOOTSEL: no serial port
+        self.assertFalse(b33["connected"])
+        self.assertEqual(b33["id"], "E0C9125B0D9B")
+        text = " | ".join(warnings)
+        self.assertIn("bay B3.3: 2e8a:0003 RP2 Boot has no serial port", text)
+        self.assertNotIn("bay:B3.4", by)                               # a CH340 but no target yet
+        self.assertIn("bay B3.4 (1a86:7523): no board target: set its board target on the node's page", text)
+        self.assertNotIn("B4", " ".join(b))                            # the hub lost it
+
+    def test_lab_overrides(self):
+        b = self.load({"B3.1": {"serial": "/dev/ttyACM3", "id": "X1", "fixtures": ["can"], "product": "MCU-Link"},
+                       "B3.2": {"ci": False}, "B3.3": {"role": "analyzer"},
+                       "B3.4": {"platform": "bbc_microbit_v2", "runner": "pyocd", "serial": "/dev/ttyUSB0"},
+                       "A1": {"platform": "nucleo_g474re", "serial": "/dev/ttyACM9"}})
+        self.assertEqual(list(b), ["A1", "B3.1", "B3.2", "B3.3", "B3.4"])
+        self.assertIsNone(b["A1"].reported)                            # not on the rack: the lab's entry alone
+        by, warnings = self.hwmap(b)
+        b31 = by["bay:B3.1"]
+        self.assertEqual((b31["serial"], b31["id"], b31["product"], b31["fixtures"]),
+                         ("/dev/ttyACM3", "X1", "MCU-Link", ["bay:B3.1", "node:B3", "can"]))
+        self.assertEqual(b31["platform"], "frdm_mcxn947/mcxn947/cpu0")   # still the node's
+        self.assertNotIn("bay:B3.2", by)                               # ci: false
+        self.assertNotIn("bay:B3.3", by)                               # an analyzer, by the lab file
+        self.assertEqual((by["bay:B3.4"]["platform"], by["bay:B3.4"]["serial"]), ("bbc_microbit_v2", "/dev/ttyUSB0"))
+        self.assertEqual((by["bay:A1"]["serial"], by["bay:A1"]["runner"]), ("/dev/ttyACM9", "stm32cubeprogrammer"))
+        self.assertFalse(any("B3.4" in w for w in warnings))
+        self.assertEqual([x.id for x in bayctl.dut_targets(b, "B3")], ["B3.1", "B3.2", "B3.4"])
+
+    def test_mismatch_map_and_vacant(self):
+        self.dev("/dev/usb?preset=ch340&port=2")                       # another board in port 2
+        self.put(3, {**self.TARGETS[3], "map": False})                 # port 3 out of the map, on the node
+        bayctl.api(self.node, "/api/ports/4/power", {"action": "off"})   # port 4: nothing in it, no target
+        try:
+            b = self.load()
+            self.assertTrue(b["B3.2"].mismatch)
+            self.assertTrue(b["B3.4"].vacant)
+            by, warnings = self.hwmap(b)
+            self.assertEqual(by["bay:B3.2"]["serial"], "/dev/serial/by-id/usb-1a86_7523-if00-port0")   # still written
+            self.assertIn("bay B3.2: 1a86:7523 S/N - is not the board its target was saved for (0403:6001 S/N "
+                          "A50285BI)", " | ".join(warnings))
+            self.assertNotIn("bay:B3.3", by)                           # map: false
+            self.assertFalse(any("B3.4" in w for w in warnings))       # an empty port: nothing to say
+            self.assertEqual([x.id for x in bayctl.dut_targets(b, "B3")], ["B3.1", "B3.2", "B3.3"])
+            self.assertEqual(len(bayctl.dut_targets(b, "B3", analyzers=True)), 4)   # its power: every port
+            self.assertNotIn("B3.4", bayctl.export_pdudaemon(b, "python3", "bayctl.py")["_ports"].values())
+            r = self.cli(lab_file({"http_port": self.port}), "list")
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertRegex(r.stdout, r"B3\.4 +- +\(empty port\)")
+            self.assertIn("[not the board its target was saved for]", r.stdout)
+        finally:
+            self.dev("/dev/usb?preset=ft232&port=2")
+            self.put(3, self.TARGETS[3])
+            bayctl.api(self.node, "/api/ports/4/power", {"action": "on"})
+            self.wait_enumerated()
+
+    def test_export_import(self):
+        """export lab saves the targets with their pins; import lab writes them back, pins kept."""
+        before = bayctl.api(self.node, "/api/boards")["slots"]
+        doc = bayctl.export_lab(self.load())
+        self.assertEqual(doc["bays"]["B3.1"], {"platform": "frdm_mcxn947/mcxn947/cpu0", "runner": "linkserver",
+                                               "pin": {"vid": "1fc9", "pid": "0143", "serial": "3ZQ1J4ZBMTNKS"}})
+        self.assertEqual(doc["bays"]["B3.2"]["console"], "usb:00")
+        self.assertEqual(doc["bays"]["B3.2"]["id"], "066DFF495150898367102236")
+        self.assertNotIn("B3.4", doc["bays"])                          # no target
+        lab = lab_file({"http_port": self.port})
+        backup = Path(tempfile.mkdtemp()) / "targets.yaml"
+        r = self.cli(lab, "export", "lab", "-o", str(backup))
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("(3 slots)", r.stdout)
+        self.assertEqual(yaml.safe_load(backup.read_text(encoding="utf-8")), doc)
+        try:
+            for n in (1, 2, 3):
+                self.put(n, {"board": None})                           # wiped (a node replaced, NVS erased)
+            self.dev("/dev/usb?preset=xiao&port=1")                    # and another board in port 1 meanwhile
+            r = self.cli(lab, "import", "lab", str(backup), "B3.2")    # one slot
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn("B3.2: nucleo_g474re, pinned to 0403:6001 S/N A50285BI", r.stdout)
+            self.assertIsNone(bayctl.api(self.node, "/api/ports/1/board")["board"])
+            r = self.cli(lab, "import", "lab", str(backup))             # all of them
+            self.assertEqual(r.returncode, 0, r.stderr)
+            p1 = bayctl.api(self.node, "/api/ports/1/board")
+            self.assertEqual(p1["pinned"], {"vid": "1fc9", "pid": "0143", "serial": "3ZQ1J4ZBMTNKS"})   # the pin kept
+            self.assertTrue(p1["mismatch"])                            # the XIAO is not that board
+        finally:
+            self.dev("/dev/usb?preset=mculink&port=1")
+        after = bayctl.api(self.node, "/api/boards")["slots"]
+        keys = ("board", "runner", "probe_id", "console", "map", "pinned", "mismatch")
+        self.assertEqual([{k: s[k] for k in keys} for s in after], [{k: s[k] for k in keys} for s in before])
+        r = self.cli(lab, "import", "lab", str(backup), "C1")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("no entry for C1", r.stderr)
+
+    def test_cli(self):
+        lab = lab_file({"http_port": self.port})
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "rack-map.yaml"
+            r = self.cli(lab, "hwmap", "-o", str(out), "--python", "python3")
+            self.assertEqual(r.returncode, 0, r.stderr)
+            self.assertIn("(3 boards)", r.stdout)
+            entries = yaml.safe_load(out.read_text(encoding="utf-8"))
+            self.assertEqual(entries[0]["serial"], self.NXP)
+        r = self.cli(lab, "power", "B3", "off")                        # the node's ports, no lab entry for B3
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertFalse(any(p["power"]["on"] for p in bayctl.node_ports(self.node)))
+        r = self.cli(lab, "power", "B3", "on")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.wait_enumerated()
+
+
 class AccessApi(unittest.TestCase):
     """Claim, rules, lease and kicks against the simulated node (its own instance: it changes the rules)."""
 
     @classmethod
     def setUpClass(cls):
-        cls.port = free_port()
-        cls.proc = subprocess.Popen([sys.executable, str(DEV_SERVER), str(cls.port)],
-                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        cls.proc, cls.port = start_node()
         cls.bay = bayctl.Bay(id="B3", board="rpi-pico2", host="127.0.0.1", http_port=cls.port)
         cls.key = os.urandom(32)            # a test key, made up for this run
-        deadline = time.monotonic() + 10
-        while True:
-            try:
-                bayctl.api(cls.bay, "/api/status", timeout=1)
-                break
-            except bayctl.BayError:
-                if time.monotonic() > deadline:
-                    cls.proc.kill()
-                    raise
-                time.sleep(0.2)
 
     @classmethod
     def tearDownClass(cls):
@@ -687,6 +1028,8 @@ class AccessApi(unittest.TestCase):
             self.assertEqual(bayctl.api(bay, "/api/status")["access"]["allow"], ["status"])
             with self.assertRaisesRegex(bayctl.BayError, "403"):
                 bayctl.api(bay, "/api/power", {"action": "on"})
+            with self.assertRaisesRegex(bayctl.BayError, "403"):    # a board target needs control
+                bayctl.api(bay, "/api/ports/1/board", {"board": "nucleo_g474re"}, method="PUT")
         finally:
             self.as_peer("")
 
@@ -714,9 +1057,8 @@ class AccessApi(unittest.TestCase):
                       {(r["ip"], r["service"], r["reason"]) for r in refused})
 
     def test_cli_show_and_keygen(self):
-        lab = Path(tempfile.mkdtemp()) / "lab.yaml"
-        lab.write_text(json.dumps({"bays": {"B3": {"host": "127.0.0.1", "http_port": self.port}}}))
-        tool = [sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(lab)]
+        lab = lab_file({"bays": {"B3": {"host": "127.0.0.1", "http_port": self.port}}})
+        tool = [sys.executable, str(BAYCTL), "--lab", str(lab)]
         r = subprocess.run([*tool, "access", "keygen"], capture_output=True, text=True, timeout=30)
         self.assertRegex(r.stdout.strip(), r"^[0-9a-f]{64}$")
         env = {k: v for k, v in os.environ.items() if k != "BAYCTL_KEY"}
@@ -746,10 +1088,9 @@ class Pty(unittest.TestCase):
                 except OSError:
                     pass                    # the bridge is killed at the end of the test
         threading.Thread(target=echo, daemon=True).start()
-        lab = Path(tempfile.mkdtemp()) / "lab.yaml"
-        lab.write_text(json.dumps({"bays": {"A1": {"host": "127.0.0.1", "aux_port": port}}}))
-        p = subprocess.Popen([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(lab), "pty", "A1"],
-                             stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        lab = lab_file({"bays": {"A1": {"host": "127.0.0.1", "aux_port": port}}})
+        p = subprocess.Popen([sys.executable, str(BAYCTL), "--lab", str(lab), "pty", "A1"],
+                             stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
         try:
             p.stdin.write(b"uart:~$ kernel version\r\n")
             p.stdin.flush()
@@ -843,12 +1184,11 @@ class Update(unittest.TestCase):
             with self.assertRaises(bayctl.BayError, msg=bad):
                 bayctl.hub_node_id(bad)
 
-        lab = Path(tempfile.mkdtemp()) / "lab.yaml"
-        lab.write_text(json.dumps({"hub": f"127.0.0.1:{self.port}"}))
-        env = {**os.environ, "BAYCTL_KEY": self.key.hex()}
+        lab = lab_file({"hub": f"127.0.0.1:{self.port}"})              # the lab file's `hub:` (no BAYCTL_HUB)
+        env = {**{k: v for k, v in os.environ.items() if k != "BAYCTL_HUB"}, "BAYCTL_KEY": self.key.hex()}
 
         def cli(*args: str) -> str:
-            r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(lab), *args],
+            r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(lab), *args],
                                capture_output=True, text=True, timeout=30, env=env)
             self.assertEqual(r.returncode, 0, r.stderr)
             return r.stdout
@@ -865,7 +1205,7 @@ class Update(unittest.TestCase):
         self.assertIn("row B  ON", out)
 
         # A row the hub does not have (power_hub.dtsi: rows C and D are not fitted)
-        r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(lab), "row", "D", "on"],
+        r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(lab), "row", "D", "on"],
                            capture_output=True, text=True, timeout=30, env=env)
         self.assertEqual(r.returncode, 1)
         self.assertIn("row not fitted", r.stderr)
