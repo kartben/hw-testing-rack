@@ -80,26 +80,30 @@ JLC_QUOTE = {
                  "X-ray": 3.30, "packaging": 0.50, "special components": 0.12, "U1 global sourcing (est.)": 20.04},
         "gs_parts": 3,          # AP33772S bought through Global Sourcing since JLC_SINCE_QUOTE (5 in the quote)
     },
-    # the drawer's DATA port board (v1.0, 2 layers, parts on one side) is NOT quoted either: Economic
-    # PCBA (setup $8.18, stencil $1.53, $3.07 per extended part type: the USB4105, the S8B-PH and the
-    # USBLC6), components at catalogue prices plus ≈ 3 % attrition, ≈ 32 joints a board.  The
-    # USB4105's four shell stakes are through-hole, as on the node: JLC may add a small fee for them.
-    # One per node but the converted bays' (a DATA ×4 instead): six, and a seventh as a spare.  An
-    # eighth would cost $1.62 more (7 and 8 boards reach the same price breaks); the USB4105's and the
-    # S8B's 10-piece breaks make all ten PCBs $2.18 more than seven.
+    # the drawer's DATA port board (v1.0, 2 layers, parts on one side), one per node but the converted bays'
+    # (a DATA ×4 instead): six.  JLC's real quote, 2026-10-23 (jlcpcb.com, the user's account, main's d44251a
+    # Gerbers, JLC BOM and CPL uploaded with the user's OK): 10 PCBs, all 10 assembled, green, lead-free HASL,
+    # Economic PCBA: $40.76.  Economic assembles every PCB of an order, 2 of 5 its one exception
+    # (assembled_of()), so the six come with four spares: JLC's form offers 10 of 10 and nothing between (the
+    # estimate, 7 of 10, was not orderable).  JLC charges the USB4105 (J1) as a special component ($0.03 a
+    # piece), adds its nitrogen reflow, mandatory with Economic PCBA ($0.99), and no deburring with PCBA.
     "data-port": {
-        "pcbs": 10, "assembled": 7, "spares": 1, "service": "Economic", "total": 37.30, "estimate": True,
+        "pcbs": 10, "assembled": 10, "spares": 4, "service": "Economic", "total": 40.76, "date": "2026-10-23",
+        "from_fab": True,
         "spec": "2-layer 40×17 mm, lead-free HASL",
-        "pcb": {"board": 6.30},                 # jlcpcb.com calculator, 2026-10-19 (JLC_PCB_PRICE)
-        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 11.56, "extended parts": 9.27, "SMT": 0.38},
+        "pcb": {"special offer": 5.00, "lead-free HASL": 1.10},
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 13.61, "extended parts": 9.27, "SMT": 0.70,
+                 "special components": 0.30, "nitrogen reflow": 0.99},
     },
-    # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS): an estimate built like
-    # the DATA port's, Economic PCBA, $3.07 per extended part type (the S8B, the SMD header, the LED)
+    # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS).  JLC's real quote,
+    # 2026-10-23 (as the DATA port's): 5 PCBs, 2 assembled, green, lead-free HASL, Economic PCBA: $27.28, the
+    # nitrogen reflow $0.86; three extended types (the S8B, the SMD header, the LED)
     "camera-pod": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 26.52, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 27.28, "date": "2026-10-23", "from_fab": True,
         "spec": "2-layer 40×27 mm, lead-free HASL",
-        "pcb": {"board": 5.20},                 # jlcpcb.com calculator, 2026-10-19 (JLC_PCB_PRICE)
-        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 2.06, "extended parts": 9.27, "SMT": 0.20},
+        "pcb": {"special offer": 4.00, "lead-free HASL": 1.10},
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 2.08, "extended parts": 9.27, "SMT": 0.18,
+                 "nitrogen reflow": 0.86},
     },
     # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), NOT ordered for
     # the prototype (the user, 2026-10-20: the converted bays wait for the v2, its base variant below); kept as
@@ -327,8 +331,11 @@ JLC_PCB_PRICE = {
     # 4-layer ENIG, mouse bites, one design: no panel fee (2026-10-23, every quantity JLC sells)
     "data-port-x4-v2-panel": {5: 52.00, 10: 62.50, 15: 72.80, 20: 83.30, 25: 93.60, 30: 104.10, 50: 145.60,
                               75: 187.00, 100: 233.50, 125: 280.10, 150: 327.95, 200: 421.15},
-    "data-port": {5: 5.20, 10: 6.30, 50: 17.10, 100: 20.90},           # 2-layer 40 × 17 mm
-    "camera-pod": {5: 5.20, 10: 6.40, 50: 18.80, 100: 24.20},          # 2-layer 40 × 27 mm
+    # 2-layer 40 × 17 mm and 40 × 27 mm.  With PCBA, JLC charges no deburring (the real quotes of 2026-10-23:
+    # $6.10 for 10 DATA ports, $5.10 for 5 pods): the calculator's $0.10 at 5 and $0.20 at 10 are out; the 50
+    # and 100 points still carry it (a few dimes)
+    "data-port": {5: 5.10, 10: 6.10, 50: 17.10, 100: 20.90},
+    "camera-pod": {5: 5.10, 10: 6.20, 50: 18.80, 100: 24.20},
 }
 JLC_PCB_QTY = (5, 10, 15, 20, 25, 30, 50, 75, 100, 125, 150, 200)
 
@@ -645,7 +652,9 @@ def electronics(rack) -> tuple[list[dict], dict]:
     return rows, orders
 
 
-PER_BOARD = ("components", "SMT", "X-ray")      # PCBA lines that grow with the boards assembled (and Global Sourcing)
+# PCBA lines that grow with the boards assembled (and Global Sourcing); JLC charges a special component
+# (hard to process: the USB4105, the RP2354B) a piece
+PER_BOARD = ("components", "SMT", "X-ray", "special components")
 
 
 def jlc_cost(orders: dict) -> list[dict]:
@@ -789,6 +798,14 @@ def _min_buy(lcsc: str, moq: int, used: int) -> float:
     return round(max(0, moq - used) * (part_price(lcsc, used) or 0.0) * JLC_PARTS_MARKUP, 2)
 
 
+def assembled_of(service: str, n: int, pcbs: int) -> int:
+    """Boards JLC assembles when n are wanted out of `pcbs` PCBs: at least 2, and Economic PCBA assembles every
+    PCB of the order, 2 of 5 its one exception (jlcpcb.com's form, 2026-10-23: 5 PCBs offer 5 or 2, 10 only
+    10, 15 only 15).  Standard takes any number (the node's 16 of 20, 2026-10-16)."""
+    m = max(n, 2)
+    return m if service != "Economic" or (pcbs == 5 and m == 2) else pcbs
+
+
 def order_cost(name: str, n: int, orders: dict) -> dict:
     """One JLC order of n boards of one design (JLC assembles at least 2), from its quote as adjusted
     (`orders`, electronics()): the PCBA lines paid once (setup, stencil, part types, packaging, a
@@ -798,7 +815,8 @@ def order_cost(name: str, n: int, orders: dict) -> dict:
     if name in PANELS:
         return panel_order(n, orders, name)
     q, pcba = JLC_QUOTE[name], _pcba(name, orders)
-    k, m = q["assembled"], max(n, 2)
+    pcbs, pcb = pcb_price(name, max(n, 2))
+    k, m = q["assembled"], assembled_of(q["service"], n, pcbs)
     once = {key: v for key, v in pcba.items() if key not in PER_BOARD and "sourcing" not in key}
     from_snapshot = q.get("estimate", False) and not q.get("parts_from_quote")
     for lcsc, moq, line in JLC_MIN_BUY.get(name, []) if from_snapshot else ():
@@ -809,9 +827,10 @@ def order_cost(name: str, n: int, orders: dict) -> dict:
         once["Global Sourcing"] = 3.0                   # ≈ $3 once, the rest per part bought
     each = {"parts": pcba["components"] / k * parts_scale(name, m), "joints": pcba.get("SMT", 0) / k,
             "x-ray": xray(m) if name in JLC_XRAY_BOARDS else 0.0}
+    if pcba.get("special components"):
+        each["special components"] = pcba["special components"] / k
     if sourcing:
         each["sourcing"] = (sourcing - 3.0) / q.get("gs_parts", q["pcbs"])
-    pcbs, pcb = pcb_price(name, m)
     total = sum(once.values()) + m * sum(each.values()) + pcb
     return {"board": name, "boards": n, "assembled": m, "pcbs": pcbs, "pcb": pcb,
             "once": round(sum(once.values()), 2), "once_lines": {key: round(v, 2) for key, v in once.items()},
@@ -824,7 +843,9 @@ def panel_order(n: int, orders: dict, panel: str = "data-port-x4-v2-panel") -> d
     once, packaging), the parts of both boards bought together at the breaks they reach, the panel's
     joints, X-ray where JLC charges it (at the tier of all the boards assembled), the bare panels."""
     first, second = PANELS[panel]
-    q, m = JLC_QUOTE[panel], max(n, 2)
+    q = JLC_QUOTE[panel]
+    pcbs, pcb = pcb_price(panel, max(n, 2))
+    m = assembled_of(q["service"], n, pcbs)
     lines = {line for b in (first, second) for _, _, line in JLC_MIN_BUY.get(b, [])}
     once = {key: v for key, v in _pcba(panel, orders).items() if key not in PER_BOARD and key not in lines}
     per_panel = Counter()
@@ -844,12 +865,13 @@ def panel_order(n: int, orders: dict, panel: str = "data-port-x4-v2-panel") -> d
         parts = _pcba(panel, orders)["components"] * snapshot(m) / snapshot(q["assembled"])   # buys in), scaled
     once.update(mask_colour(panel))
     joints = _pcba(panel, orders).get("SMT", 0) / JLC_QUOTE[panel]["assembled"] * m      # the panel's own quote
+    special = _pcba(panel, orders).get("special components", 0) / JLC_QUOTE[panel]["assembled"] * m
     xr = xray(2 * m) * 2 * m if {first, second} & JLC_XRAY_BOARDS else 0.0
-    pcbs, pcb = pcb_price(panel, m)
-    total = sum(once.values()) + parts + joints + xr + pcb
+    total = sum(once.values()) + parts + joints + special + xr + pcb
     return {"board": panel, "boards": n, "assembled": m, "pcbs": pcbs, "pcb": pcb,
             "once": round(sum(once.values()), 2), "once_lines": {key: round(v, 2) for key, v in once.items()},
-            "parts": round(parts, 2), "joints": round(joints, 2), "x-ray": round(xr, 2),
+            "parts": round(parts, 2), "joints": round(joints, 2), "special components": round(special, 2),
+            "x-ray": round(xr, 2),
             "per_board": {"parts": round(parts / m, 4), "joints": round(joints / m, 4), "x-ray": round(xr / m, 4)},
             "total": round(total, 2)}
 

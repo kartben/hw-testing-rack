@@ -24,8 +24,9 @@ class Orders(unittest.TestCase):
 
     def test_panel_reproduces_the_quote(self):
         # the 1 × 2 base + logic panel: JLC's real quote of 2026-10-23 (green, Economic, $201.72) and the
-        # RP2354B it left unplaced (JLC_SINCE_QUOTE), its parts scaled from the quote's at JLC's price breaks
-        for n, usd in ((2, 207.86), (5, 325.10), (10, 517.51)):
+        # RP2354B it left unplaced (JLC_SINCE_QUOTE), its parts scaled from the quote's at JLC's price breaks,
+        # its special components a piece
+        for n, usd in ((2, 207.86), (5, 325.82), (10, 519.43)):
             self.assertAlmostEqual(bom.panel_order(n, self.orders)["total"], usd, delta=0.02)
 
     def test_volume_is_order_cost(self):
@@ -38,11 +39,20 @@ class Orders(unittest.TestCase):
         # at the quoted quantity an order is its quote: as adjusted for the rack's order (the panel), else the
         # quote, what changed since on its PCBA lines (JLC_SINCE_QUOTE) and the rack's mask colour (the quotes
         # are green)
-        for name in ("data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel"):
+        for name in ("data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel", "data-port", "camera-pod"):
             q = bom.JLC_QUOTE[name]
             since = sum(usd for _, line, usd in bom.JLC_SINCE_QUOTE.get(name, []) if line in q["pcba"])
             want = self.orders[name]["total"] if name in self.orders else                 q["total"] + since + sum(bom.mask_colour(name).values())
             self.assertAlmostEqual(bom.order_cost(name, q["assembled"], self.orders)["total"], want, places=2)
+
+    def test_economic_assembles_every_pcb(self):
+        # Economic PCBA assembles the whole order, 2 of 5 its one exception (jlcpcb.com, 2026-10-23); Standard
+        # takes any number
+        self.assertEqual([bom.assembled_of("Economic", n, p) for n, p in ((1, 5), (2, 5), (3, 5), (6, 10), (60, 75))],
+                         [2, 2, 5, 10, 75])
+        self.assertEqual(bom.assembled_of("Standard", 9, 10), 9)
+        o = bom.order_cost("data-port", 6, self.orders)
+        self.assertEqual((o["pcbs"], o["assembled"], o["total"]), (10, 10, 40.76))     # the rack's six: the quote
 
     def test_at_least_two(self):
         for name in self.orders:

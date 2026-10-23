@@ -39,9 +39,9 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 292.34 | 150.12 | 35.59 | 26.52 | 207.86 | **746.43** |
-| 5 | 173.67 | 44.09 | 13.84 | 7.17 | 65.02 | **310.59** |
-| 10 | 153.17 | 33.34 | 11.24 | 4.94 | 51.75 | **257.85** |
+| 1 | 292.34 | 150.12 | 40.76 | 27.28 | 207.86 | **752.36** |
+| 5 | 173.67 | 44.13 | 14.28 | 7.30 | 65.16 | **311.35** |
+| 10 | 153.17 | 33.39 | 13.54 | 5.01 | 51.94 | **260.45** |
 
 Every board is green since 2026-10-23 (the user: "faisons tout en vert"; `pcb.solder_mask: green`):
 JLC's green costs nothing. Black cost $8.00 per order on 4 layers (the node, the hub) and kept the v2
@@ -66,7 +66,7 @@ saved to the cart. 5 panels, 2 assembled.
 - **JLC's Economic PCBA takes a coloured mask on 2 layers only** (black: HASL only); 4 layers are green
   only, and 6 are green ENIG (jlcpcb.com/capabilities/pcb-assembly-capabilities, read 2026-10-23). A black
   v2 would be Standard, ordered as a panel or alone, so the v2 goes green: $46.60 less on the panel. The
-  DATA port and the pod (2 layers, lead-free HASL) stay Economic in black.
+  DATA port and the pod (2 layers, lead-free HASL) could stay Economic in black; they are green with the rest.
 
 **The logic and the base ordered alone: real quotes too (2026-10-23), in black.** The same Gerbers,
 with each variant's JLC BOM and CPL, uploaded with the user's OK; 5 PCBs, 2 assembled, black, Standard.
@@ -100,13 +100,41 @@ cost $236.85 apart, against $207.86 on the panel.
     "data-port-x4-v2-gerbers" (logic, base).
   The user can delete them; nothing is in the cart.
 
+**The DATA port and the camera pod: real quotes (2026-10-23).** main's Gerbers, JLC BOM and CPL (d44251a),
+uploaded from the user's account with the user's OK; green, lead-free HASL, Economic. The quotes were read
+and nothing was saved to the cart.
+
+| | DATA port | Camera pod |
+|---|---:|---:|
+| PCBs, assembled | 10, 10 | 5, 2 |
+| Bare PCBs | $6.10: $5.00, HASL $1.10 | $5.10: $4.00, HASL $1.10 |
+| Setup, stencil | $8.24, $1.55 | $8.24, $1.55 |
+| Extended types | 3 × $3.09 = $9.27 | 3 × $3.09 = $9.27 |
+| Components, SMT | $13.61 (6 items), $0.70 | $2.08 (8 items), $0.18 |
+| Special components, nitrogen reflow | $0.30, $0.99 | –, $0.86 |
+| **Quote** | **$40.76** | **$27.28** |
+| The estimate it replaces | $37.30 (7 of 10 assembled) | $26.52 |
+
+- **Economic PCBA assembles every PCB of an order**, 2 of 5 its one exception: JLC's form offers 5 or 2
+  for 5 PCBs, only 10 for 10, only 15 for 15. The estimate's 7 of 10 was not orderable, so the rack's six
+  DATA ports come with four spares. bom.py now assembles the whole order in Economic (`assembled_of()`):
+  at 10 racks, 60 DATA ports are 75 assembled. Standard takes any number (the node's 16 of 20).
+- **Nitrogen reflow is mandatory with Economic PCBA** ("No" is greyed out): $0.99 for the DATA ports,
+  $0.86 for the pods. The v2 panel's Economic quote of the same morning had no such line.
+- **Special components are charged a piece** (the USB4105, $0.03): bom.py now counts them per board, on
+  the hub and the v2 panel too.
+- **No deburring with PCBA**: the calculator's $0.10 (5 PCBs) and $0.20 (10) are not on the quotes.
+- **Account:** two more uploads with their PCBA drafts, "data-port-gerbers" and "camera-pod-gerbers"
+  (jlcpcb.com › Projects › Quotes: ten files in all, which JLC deletes after a year). The cart already
+  showed one item from before; it was not touched.
+
 The hub is 76 × 100 mm since 2026-10-20 (d2e9c73): inside JLC's 100 × 100 offer, no $25 engineering
 fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors (3f91006), and since 2026-10-21 the usability
 review's pass: the co-processor's AP2112K out (17 extended types, not 18), a VBUS LED per port, $3.03
 less a panel order.
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.33, hub
-$18.48, the v2 panel $34.80 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
+$18.54, the v2 panel $34.80 (a logic and a base), DATA port $1.35, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (a20dd24) took another ≈ $4 off its
 floor.
 
