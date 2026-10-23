@@ -23,9 +23,9 @@ class Orders(unittest.TestCase):
         _, cls.orders = bom.electronics(rackcfg.load())
 
     def test_panel_reproduces_the_quote(self):
-        # the 1 × 2 base + logic panel: JLC's real quote of 2026-10-23 (black, Standard, $249.86) and the
+        # the 1 × 2 base + logic panel: JLC's real quote of 2026-10-23 (green, Economic, $201.72) and the
         # RP2354B it left unplaced (JLC_SINCE_QUOTE), its parts scaled from the quote's at JLC's price breaks
-        for n, usd in ((2, 254.46), (5, 376.00), (10, 576.08)):
+        for n, usd in ((2, 207.86), (5, 325.10), (10, 517.51)):
             self.assertAlmostEqual(bom.panel_order(n, self.orders)["total"], usd, delta=0.02)
 
     def test_volume_is_order_cost(self):
@@ -68,11 +68,12 @@ class Orders(unittest.TestCase):
         self.assertEqual((o["types"], o["extended"], o["preferred"]), (40, 17, 2))   # C25725, C20615800 preferred
 
     def test_economic_fees_follow_the_tiers(self):
-        # Economic PCBA charges the extended types only: basic and preferred-extended ones load free
+        # Economic PCBA charges the extended types only: basic and preferred-extended ones load free (the
+        # order's lines: a type the quote left unplaced comes back through JLC_SINCE_QUOTE)
         for name, o in self.orders.items():
             q = bom.JLC_QUOTE[name]
-            if q["service"] == "Economic" and "extended parts" in q["pcba"]:
-                self.assertAlmostEqual(q["pcba"]["extended parts"],
+            if q["service"] == "Economic" and "extended parts" in o["pcba"]:
+                self.assertAlmostEqual(o["pcba"]["extended parts"],
                                        o["extended"] * bom.JLC_FEES["Economic"]["per type"], places=2, msg=name)
 
     def test_calculator(self):

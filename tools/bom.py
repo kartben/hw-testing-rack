@@ -56,10 +56,10 @@ JLC_QUOTE = {
     # packaging $0.52; components at catalogue prices × 1.12 (JLC's prices and attrition).  The page
     # also lists a Standard handling fee (≥ $14.93) that the 2026-10-16 quote didn't carry: to confirm.
     "bay-node": {
-        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 318.85, "estimate": True,
+        "pcbs": 10, "assembled": 10, "spares": 2, "service": "Standard", "total": 319.86, "estimate": True,
         "spec": "4-layer 74×90 mm, lead-free HASL, 5 mm edge rails if JLC adds them for Standard PCBA",
         "pcb": {"board": 19.50},
-        "pcba": {"setup": 25.56, "stencil": 8.21, "components": 184.62, "feeders": 58.14, "SMT": 5.90,
+        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 184.62, "feeders": 58.90, "SMT": 5.90,
                  "X-ray": 16.40, "packaging": 0.52},
     },
     # v0.5, quoted on jlcpcb.com on 2026-10-19 (the user's account), from main's fab files: the gerbers,
@@ -88,18 +88,18 @@ JLC_QUOTE = {
     # eighth would cost $1.62 more (7 and 8 boards reach the same price breaks); the USB4105's and the
     # S8B's 10-piece breaks make all ten PCBs $2.18 more than seven.
     "data-port": {
-        "pcbs": 10, "assembled": 7, "spares": 1, "service": "Economic", "total": 37.16, "estimate": True,
+        "pcbs": 10, "assembled": 7, "spares": 1, "service": "Economic", "total": 37.30, "estimate": True,
         "spec": "2-layer 40×17 mm, lead-free HASL",
         "pcb": {"board": 6.30},                 # jlcpcb.com calculator, 2026-10-19 (JLC_PCB_PRICE)
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 11.56, "extended parts": 9.21, "SMT": 0.38},
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 11.56, "extended parts": 9.27, "SMT": 0.38},
     },
     # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS): an estimate built like
     # the DATA port's, Economic PCBA, $3.07 per extended part type (the S8B, the SMD header, the LED)
     "camera-pod": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 26.38, "estimate": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 26.52, "estimate": True,
         "spec": "2-layer 40×27 mm, lead-free HASL",
         "pcb": {"board": 5.20},                 # jlcpcb.com calculator, 2026-10-19 (JLC_PCB_PRICE)
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 2.06, "extended parts": 9.21, "SMT": 0.20},
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 2.06, "extended parts": 9.27, "SMT": 0.20},
     },
     # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), NOT ordered for
     # the prototype (the user, 2026-10-20: the converted bays wait for the v2, its base variant below); kept as
@@ -122,53 +122,62 @@ JLC_QUOTE = {
     # on its own (the rack orders it on the panel below).  The standing board, 100 × 70 mm, 4 layers again
     # (2026-10-23: the Freerouting portfolio routes the High-Speed pairs on F.Cu over GND at 4 layers; the
     # 6-layer build is the alternative), JLC04161H-7628, 0.3 mm vias plugged at no charge, ENIG for the
-    # RP2354B's 0.4 mm QFN-80.  JLC's real quote, 2026-10-23 (jlcpcb.com, the user's account, the committed
-    # Gerbers and the logic's JLC BOM and CPL of 2cd2cc0 uploaded with the user's OK; no cart): 5 PCBs, 2
-    # assembled, black, so Standard PCBA (JLC's Economic takes 4 layers in green only), with two 5 mm rails on
-    # the 70 mm sides: 100 × 80, still JLC's 4-layer offer, no engineering fee.  $193.75 with the black mask
-    # ($8.00, mask_colour()); the RP2354B (U11) was out of stock at JLC and left unplaced (JLC_SINCE_QUOTE).
-    # No X-ray line.  L1 (AOTA-B201610S3R3-101-T, the one inductor Raspberry Pi approves for the RP2350's
-    # regulator) in stock, bought by 5.  J1 and the four 2 × 6 headers are hand-soldered, out of the JLC BOM.
+    # RP2354B's 0.4 mm QFN-80, green (pcb.data_port_x4_v2.solder_mask, the user, 2026-10-23: JLC's Economic PCBA
+    # takes 4 layers in green only).  An estimate from that day's real quotes (jlcpcb.com, the user's account,
+    # the committed Gerbers and the logic's JLC BOM and CPL of 2cd2cc0): the logic's own, in black, so Standard
+    # with rails (100 × 80): $193.75 (PCB $33.50 = $8.00 + ENIG $17.50 + black $8.00; setup $25.75, stencil
+    # $8.27, 39 types × $1.55 = $60.45, components $60.14, SMT $4.90, packaging $0.50, special components
+    # $0.24); its components and joints (SMT × 5.77 / 6.57, the panel's Economic rate over its Standard one)
+    # with the panel's green Economic fees ($8.24 setup, $1.55 stencil, $3.09 for each of its 17 extended types,
+    # $0.12 special components a board, no packaging); the RP2354B, out of stock at JLC that day, at its $1.52
+    # (2 boards, its type among the 17); the board without rails, 100 × 70: $8.00 + ENIG $17.40.  No X-ray
+    # line.  L1 (AOTA-B201610S3R3-101-T, the one inductor Raspberry Pi approves for the RP2350's regulator) in
+    # stock, bought by 5 (the quote's components carry it: parts_from_quote).  J1 and the four 2 × 6 headers are
+    # hand-soldered, out of the JLC BOM.
     "data-port-x4-v2": {
-        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 185.75, "date": "2026-10-23", "from_fab": True,
-        "spec": "4-layer 100×70 mm (100×80 with JLC's rails), JLC04161H-7628, ENIG",
-        "pcb": {"special offer": 8.00, "ENIG": 17.50},
-        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 60.14, "feeders": 60.45, "SMT": 4.90,
-                 "packaging": 0.50, "special components": 0.24},
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 155.45, "estimate": True, "from_fab": True,
+        "parts_from_quote": True,
+        "spec": "4-layer 100×70 mm, JLC04161H-7628, ENIG",
+        "pcb": {"special offer": 8.00, "ENIG": 17.40},
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 63.19, "extended parts": 52.53, "SMT": 4.30,
+                 "special components": 0.24},
     },
     # its base variant (DATA-4x: the logic left off, 91 parts fewer, data-port-x4-v2-base-*), one per other
-    # converted bay, ordered on its own: JLC's real quote of the same day, the same files' base BOM and CPL,
-    # lead-free HASL (no part finer than its hub's 0.5 mm QFN), black, Standard, 100 × 80 with the rails: $128.47
-    # with the mask, every part in stock.
+    # converted bay, ordered on its own: the same green Economic estimate, from its own real quote of 2026-10-23
+    # in black, Standard: $128.47 (PCB $21.20 = $8.00 + lead-free HASL $5.20 + black $8.00; setup $25.75,
+    # stencil $8.27, 25 types × $1.55 = $38.75, components $31.19, SMT $2.57, packaging $0.50, special components
+    # $0.24), every part in stock; 8 extended types among 25 (and C25725, C20615800, preferred).  Lead-free
+    # HASL: no part finer than its hub's 0.5 mm QFN.
     "data-port-x4-v2-base": {
-        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 120.47, "date": "2026-10-23", "from_fab": True,
-        "spec": "4-layer 100×70 mm (100×80 with JLC's rails), JLC04161H-7628, lead-free HASL",
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 81.40, "estimate": True, "from_fab": True,
+        "parts_from_quote": True,
+        "spec": "4-layer 100×70 mm, JLC04161H-7628, lead-free HASL",
         "pcb": {"special offer": 8.00, "lead-free HASL": 5.20},
-        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 31.19, "feeders": 38.75, "SMT": 2.57,
-                 "packaging": 0.50, "special components": 0.24},
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 31.19, "extended parts": 24.72, "SMT": 2.26,
+                 "special components": 0.24},
     },
     # the rack's order for its converted bays (the orchestrator, 2026-10-20): the logic and the base above on
     # one 1 × 2 order panel (electronics/data-port-x4-v2/fab/data-port-x4-v2-panel-*: 100 × 142 mm, the base
     # turned 180°, top edge to top edge on two mouse-bite tabs), one order: one setup and stencil, the logic's
     # part types once (the base's are a subset), both boards' parts bought together at the breaks they reach
     # (panel_order()).  JLC's real quote, 2026-10-23 (jlcpcb.com, the user's account, the panel's committed
-    # Gerbers, JLC BOM and CPL of 2cd2cc0 uploaded with the user's OK): 5 panels, 2 assembled, black: Standard
-    # PCBA, the only one JLC offers on 4 layers in black, so JLC adds two 5 mm rails (110 × 142 mm).  $249.86
-    # with the black mask ($8.00, mask_colour()), 3–4 days; the RP2354B (U11, logic) was out of stock at JLC
-    # and left unplaced (JLC_SINCE_QUOTE).  JLC flags the rows that join _L and _B designators ("multiple types
-    # of parts?") and leaves them for a tick; no X-ray line.  The same panel in green, Economic, no rails:
-    # $201.72 (PCB $52.00; setup $8.24, stencil $1.55, 39 components $84.24, 16 extended types $49.44, SMT
-    # $5.77, special components $0.48), $207.86 with the RP2354B (JLC_LEVERS).
+    # Gerbers, JLC BOM and CPL of 2cd2cc0 uploaded with the user's OK): 5 panels, 2 assembled, green (the
+    # user, 2026-10-23: "Ok, vert"; pcb.data_port_x4_v2.solder_mask), Economic PCBA, no rails: $201.72, 3–4
+    # days; the RP2354B (U11, logic) was out of stock at JLC and left unplaced (JLC_SINCE_QUOTE: $207.86 with
+    # it).  JLC flags the rows that join _L and _B designators ("multiple types of parts?") and leaves them for
+    # a tick; no X-ray line.  The alternative, black: Standard PCBA, the only one JLC offers on 4 layers in
+    # black, two 5 mm rails (110 × 142 mm): $249.86 (PCB $61.10 = $25 + ENIG $18.40 + black $8.00 + $9.70;
+    # setup $25.75, stencil $8.27, 39 types × $1.55 = $60.45, components $86.73, SMT $6.57, packaging $0.51,
+    # special components $0.48), $254.46 with the RP2354B: $46.60 more an order.
     # One logic and one base per panel; the variants' own estimates above stay for single orders (the BOM
     # page's calculator).
     "data-port-x4-v2-panel": {
-        "pcbs": 5, "assembled": 2, "service": "Standard", "total": 241.86, "date": "2026-10-23", "from_fab": True,
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 201.72, "date": "2026-10-23", "from_fab": True,
         "boards": ("data-port-x4-v2", "data-port-x4-v2-base"),
-        "spec": "4-layer 100×142 mm panel of a logic and a base (110×142 with JLC's rails), JLC04161H-7628, ENIG, "
-                "mouse bites",
-        "pcb": {"engineering": 25.00, "ENIG": 18.40, "board": 9.70},
-        "pcba": {"setup": 25.75, "stencil": 8.27, "components": 86.73, "feeders": 60.45, "SMT": 6.57,
-                 "packaging": 0.51, "special components": 0.48},
+        "spec": "4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites",
+        "pcb": {"engineering": 25.00, "ENIG": 18.20, "board": 8.80},
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 84.24, "extended parts": 49.44, "SMT": 5.77,
+                 "special components": 0.48},
     },
 }
 # What the order changes against that quote (indicative, not re-quoted): the hub in lead-free HASL
@@ -211,22 +220,21 @@ JLC_SINCE_QUOTE = {"power-hub": [("76 × 100 mm: JLC's 4-layer offer, no enginee
                                   # each row output (the board's type, 4 a board); the gate clamp went with the switch
                                   ("PCBA review: 4 × B5819W a board", "components", 0.24)],
                    # the v2 panel's quote left the RP2354B (C39843328) unplaced: JLC had none in stock on
-                   # 2026-10-23 (2 at its $1.5242 once restocked, a 40th type; other users sold theirs at $2.91)
+                   # 2026-10-23 (2 at its $1.5242 once restocked, a 17th extended type; other users sold theirs
+                   # at $2.91)
                    "data-port-x4-v2-panel": [("RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price",
                                               "components", 3.05),
-                                             ("RP2354B: its part type", "feeders", 1.55)],
-                   "data-port-x4-v2": [("RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price",
-                                        "components", 3.05),
-                                       ("RP2354B: its part type", "feeders", 1.55)],
+                                             ("RP2354B: its extended part type", "extended parts", 3.09)],
                    # the bay node, after its estimate: 2.2k I2C pull-ups (N2) and a 470k POS pull-down (N3),
-                   # two part types more at Standard PCBA's $1.53 (R23 1k and R39 100k are values it has)
-                   "bay-node": [("PCBA review: 2.2k and 470k, two part types more", "feeders", 3.06)]}
+                   # two part types more at Standard PCBA's $1.55 (R23 1k and R39 100k are values it has)
+                   "bay-node": [("PCBA review: 2.2k and 470k, two part types more", "feeders", 3.10)]}
 
-# JLC's fees, from its help page "PCB Assembly Cost" (updated 2026-09-09) and the jlcpcb.com
-# calculator (2026-10-19, 4-layer, 5 PCBs): what a board's part types and size cost per order
+# JLC's fees, as its real quotes of 2026-10-23 charge them (its help page "PCB Assembly Cost" of 2026-09-09
+# still says $25.56 / $8.21 / $1.53 and $8.18 / $1.53 / $3.07) and the jlcpcb.com calculator (2026-10-19,
+# 4-layer, 5 PCBs): what a board's part types and size cost per order
 JLC_FEES = {
-    "Standard": {"setup": 25.56, "stencil": 8.21, "per type": 1.53, "types": "every unique part type"},
-    "Economic": {"setup": 8.18, "stencil": 1.53, "per type": 3.07, "types": "extended part types only"},
+    "Standard": {"setup": 25.75, "stencil": 8.27, "per type": 1.55, "types": "every unique part type"},
+    "Economic": {"setup": 8.24, "stencil": 1.55, "per type": 3.09, "types": "extended part types only"},
     "panel": 8.21,              # PCBA of a panel holding more than one design
     "x-ray": 1.64,              # per assembled board with a leadless part (module pad, QFN, LGA), 1-10 boards
     "pcb 4-layer 100x100": 8.00,        # 5 PCBs at JLC's offer: no engineering fee
@@ -271,9 +279,6 @@ JLC_LEVERS = {
     "data-port-x4-v2-panel": [
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board, 8 a panel)", 2.02, "decision"),
-        ("green solder mask on this panel instead of the rack's black: JLC's Economic PCBA takes 4 layers in "
-         "green only (real quotes, 2026-10-23: $207.86 in green against $254.46 in black, RP2354B included)",
-         46.60, "decision"),
     ],
     "data-port-x4-v2-base": [
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
@@ -302,15 +307,14 @@ JLC_PCB_PRICE = {
                                                                         # (2026-10-20): the $25 fee above 10 PCBs
     "data-port-x4": {5: 13.10, 10: 19.20, 50: 53.80, 100: 73.40},      # 4-layer 100 × 37 mm (2026-10-20): the
                                                                         # $25 fee is back above 10 PCBs
-    # the DATA ×4 v2 in Standard (black on 4 layers), with JLC's rails on its 70 mm sides: 100 × 80 mm, JLC's
-    # 4-layer offer up to 10 (2026-10-23; at 100 × 70 without rails, Economic in green: $25.40 / $32.20 ENIG)
-    "data-port-x4-v2": {5: 25.50, 10: 32.40, 50: 100.30, 100: 149.70},  # 4-layer 100 × 80 mm, ENIG
-    "data-port-x4-v2-base": {5: 13.20, 10: 19.40, 50: 81.40, 100: 123.60},  # the same PCB, lead-free HASL
+    # the DATA ×4 v2, green, Economic: no rails (2026-10-23; in black, Standard, with JLC's rails: 100 × 80 for
+    # a single board, $25.50 / $32.40 / $100.30 / $149.70 in ENIG, 110 × 142 for the panel, $53.10 for 5)
+    "data-port-x4-v2": {5: 25.40, 10: 32.20, 50: 92.90, 100: 136.20},  # 4-layer 100 × 70 mm, ENIG
+    "data-port-x4-v2-base": {5: 13.20, 10: 19.40, 50: 74.90, 100: 111.90},  # the same PCB, lead-free HASL
     # the order panel (electronics/data-port-x4-v2/fab/*-panel-*): a logic and a base on one 100 × 142 mm panel,
-    # 110 × 142 with JLC's rails, 4-layer ENIG, mouse bites, one design: no panel fee (2026-10-23, every quantity
-    # JLC sells; without rails, in green: $52.00 for 5)
-    "data-port-x4-v2-panel": {5: 53.10, 10: 64.50, 15: 75.90, 20: 87.40, 25: 98.80, 30: 110.20, 50: 156.10,
-                              75: 201.30, 100: 252.80, 125: 305.05, 150: 356.45, 200: 459.05},
+    # 4-layer ENIG, mouse bites, one design: no panel fee (2026-10-23, every quantity JLC sells)
+    "data-port-x4-v2-panel": {5: 52.00, 10: 62.50, 15: 72.80, 20: 83.30, 25: 93.60, 30: 104.10, 50: 145.60,
+                              75: 187.00, 100: 233.50, 125: 280.10, 150: 327.95, 200: 421.15},
     "data-port": {5: 5.20, 10: 6.30, 50: 17.10, 100: 20.90},           # 2-layer 40 × 17 mm
     "camera-pod": {5: 5.20, 10: 6.40, 50: 18.80, 100: 24.20},          # 2-layer 40 × 27 mm
 }
@@ -326,11 +330,11 @@ JLC_FINISHES = {
     "power-hub": ("lead-free HASL", "ENIG", {5: 25.60, 10: 32.60, 50: 104.60, 100: 157.90}),
     "data-port": ("lead-free HASL", "ENIG", {5: 20.80, 10: 21.90, 50: 29.30, 100: 33.80}),
     "camera-pod": ("lead-free HASL", "ENIG", {5: 20.80, 10: 22.00, 50: 31.30, 100: 37.80}),
-    "data-port-x4-v2": ("ENIG", "lead-free HASL", {5: 13.20, 10: 19.40, 50: 81.40, 100: 123.60}),
-    "data-port-x4-v2-base": ("lead-free HASL", "ENIG", {5: 25.50, 10: 32.40, 50: 100.30, 100: 149.70}),
-    "data-port-x4-v2-panel": ("ENIG", "lead-free HASL", {5: 40.10, 10: 50.10, 15: 60.10, 20: 70.20, 25: 80.20,
-                                                         30: 90.10, 50: 130.30, 75: 168.40, 100: 212.80,
-                                                         125: 256.90, 150: 302.15, 200: 390.65}),
+    "data-port-x4-v2": ("ENIG", "lead-free HASL", {5: 13.20, 10: 19.40, 50: 74.90, 100: 111.90}),
+    "data-port-x4-v2-base": ("lead-free HASL", "ENIG", {5: 25.40, 10: 32.20, 50: 92.90, 100: 136.20}),
+    "data-port-x4-v2-panel": ("ENIG", "lead-free HASL", {5: 39.20, 10: 48.30, 15: 57.40, 20: 66.50, 25: 75.60,
+                                                         30: 84.70, 50: 121.10, 75: 156.00, 100: 196.10,
+                                                         125: 236.20, 150: 276.60, 200: 357.85}),
 }
 # X-ray per board with a leadless part (module pad, QFN): by the number of boards assembled
 JLC_XRAY = ((10, 1.64), (50, 0.82), (200, 0.49), (500, 0.33))
@@ -490,9 +494,10 @@ JLC_MASK_COLOUR = {2: 0.00, 4: 8.00, 6: 33.10}
 
 
 def mask_colour(name: str) -> dict:
-    """JLC's line for the rack's solder mask on one order of a board or panel (config/rack.yaml ›
-    pcb.solder_mask), paid once per order whatever the quantity; none for green or where JLC charges nothing."""
-    mask = rackcfg.load().raw["pcb"].get("solder_mask", "green")
+    """JLC's line for a board's solder mask on one order of it or its panel (config/rack.yaml ›
+    pcb.<board>.solder_mask, else pcb.solder_mask: rackcfg.Rack.solder_mask), paid once per order whatever the
+    quantity; none for green or where JLC charges nothing."""
+    mask = rackcfg.load().solder_mask(name)
     usd = JLC_MASK_COLOUR.get(_layers(name), 8.00) if mask != "green" else 0.0
     return {f"{mask} solder mask": usd} if usd else {}
 
@@ -783,7 +788,8 @@ def order_cost(name: str, n: int, orders: dict) -> dict:
     q, pcba = JLC_QUOTE[name], _pcba(name, orders)
     k, m = q["assembled"], max(n, 2)
     once = {key: v for key, v in pcba.items() if key not in PER_BOARD and "sourcing" not in key}
-    for lcsc, moq, line in JLC_MIN_BUY.get(name, []) if q.get("estimate", False) else ():
+    from_snapshot = q.get("estimate", False) and not q.get("parts_from_quote")
+    for lcsc, moq, line in JLC_MIN_BUY.get(name, []) if from_snapshot else ():
         once[line] = _min_buy(lcsc, moq, _per_board_qty(name, lcsc) * m)    # a real quote's parts carry them
     once.update(mask_colour(name))
     sourcing = sum(v for key, v in pcba.items() if "sourcing" in key)

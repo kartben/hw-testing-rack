@@ -388,6 +388,15 @@ class Rack:
         return self.plenum - self.carrier["deck"]
 
     # ---- pcb placement --------------------------------------------------------
+    def solder_mask(self, board: str) -> str:
+        """A board's solder mask colour: its own pcb.<board>.solder_mask, else the rack's pcb.solder_mask, else
+        green.  An assembly variant or an order panel takes its board's (data-port-x4-v2-base and
+        data-port-x4-v2-panel: pcb.data_port_x4_v2)."""
+        pcb = self.raw.get("pcb", {})
+        key = board.removesuffix("-panel").removesuffix("-base").replace("-", "_")
+        own = pcb.get(key) if isinstance(pcb.get(key), dict) else {}
+        return own.get("solder_mask") or pcb.get("solder_mask") or "green"
+
     @property
     def node(self) -> dict:
         return self.raw["pcb"]["bay_node"]

@@ -39,18 +39,21 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 305.81 | 168.91 | 35.45 | 26.38 | 254.46 | **825.01** |
-| 5 | 178.95 | 50.33 | 13.81 | 7.15 | 75.20 | **332.24** |
-| 10 | 157.77 | 37.53 | 11.23 | 4.92 | 57.61 | **272.47** |
+| 1 | 306.86 | 168.91 | 35.59 | 26.52 | 207.86 | **779.74** |
+| 5 | 179.16 | 50.33 | 13.84 | 7.17 | 65.02 | **322.33** |
+| 10 | 157.87 | 37.53 | 11.24 | 4.94 | 51.75 | **266.74** |
 
-Each 4-layer order includes the rack's black mask ($8.00 per order, jlcpcb.com 2026-10-23; free on 2
-layers). The v2 is 4 layers again since 2026-10-23 (eaf77b9).
+The node's and the hub's 4-layer orders include the rack's black mask ($8.00 per order, jlcpcb.com
+2026-10-23); it is free on 2 layers. The v2 is 4 layers again since 2026-10-23 (eaf77b9) and green since
+the same day (the user: "Ok, vert"; `pcb.data_port_x4_v2.solder_mask: green` over the rack's black), so
+it gets Economic PCBA. JLC's fees are those its quotes charged on 2026-10-23: Economic $8.24 setup,
+$1.55 stencil, $3.09 per extended type; Standard $25.75, $8.27, $1.55 per type.
 
 **The v2 panel's real JLC quote (2026-10-23).** The panel's committed Gerbers, JLC BOM and CPL were
 uploaded to jlcpcb.com from the user's account with the user's OK. The quote was read and nothing was
 saved to the cart. 5 panels, 2 assembled.
 
-| | Black (the rack's) | Green |
+| | Black (the alternative) | Green (the rack's) |
 |---|---:|---:|
 | PCBA service | Standard (the only one offered) | Economic |
 | Bare panels | $61.10: $25 fee, ENIG $18.40, black $8.00, board $9.70 (110 × 142 with JLC's rails) | $52.00 (100 × 142, no rails) |
@@ -63,12 +66,14 @@ saved to the cart. 5 panels, 2 assembled.
 
 - **JLC's Economic PCBA takes a coloured mask on 2 layers only** (black: HASL only); 4 layers are green
   only, and 6 are green ENIG (jlcpcb.com/capabilities/pcb-assembly-capabilities, read 2026-10-23). A black
-  v2 is therefore Standard, ordered as a panel or alone. The DATA port and the pod (2 layers, lead-free
-  HASL) stay Economic in black. Green on the panel saves $46.60 an order (`JLC_LEVERS`).
+  v2 would be Standard, ordered as a panel or alone, so the v2 goes green: $46.60 less on the panel. The
+  DATA port and the pod (2 layers, lead-free HASL) stay Economic in black.
 
-**The logic and the base ordered alone: real quotes too (2026-10-23).** The same Gerbers, with each
-variant's JLC BOM and CPL, uploaded with the user's OK; 5 PCBs, 2 assembled, black, Standard. JLC puts
-its rails on the 70 mm sides: 100 × 80 mm, still its 4-layer offer, so no $25 fee.
+**The logic and the base ordered alone: real quotes too (2026-10-23), in black.** The same Gerbers,
+with each variant's JLC BOM and CPL, uploaded with the user's OK; 5 PCBs, 2 assembled, black, Standard.
+JLC puts its rails on the 70 mm sides: 100 × 80 mm, still its 4-layer offer, so no $25 fee. In green,
+bom.py estimates them in Economic from these quotes and the panel's green fees: the logic $155.45, the
+RP2354B included; the base $81.40.
 
 | | Logic, ENIG | Base, lead-free HASL |
 |---|---:|---:|
@@ -80,7 +85,8 @@ its rails on the 70 mm sides: 100 × 80 mm, still its 4-layer offer, so no $25 f
 | **Quote** | **$193.75** | **$128.47** |
 | With the RP2354B | $198.35 | – (all in stock) |
 
-A logic and a base ordered apart cost $326.82, against $254.46 on the panel.
+In black, a logic and a base ordered apart cost $326.82, against $254.46 on the panel. In green, they
+cost $236.85 apart, against $207.86 on the panel.
 - **The RP2354B (C39843328) was out of stock at JLC** (0, shortfall 2). JLC offered only other users'
   idle parts at $2.91 each through its cart, which was not touched. The quote leaves U11 unplaced;
   bom.py adds 2 at JLC's $1.52 and its part type.
@@ -101,7 +107,7 @@ review's pass: the co-processor's AP2112K out (17 extended types, not 18), a VBU
 less a panel order.
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.69, hub
-$21.78, the v2 panel $36.24 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
+$21.78, the v2 panel $34.80 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (1590b7a) took another ≈ $4 off its
 floor.
 
