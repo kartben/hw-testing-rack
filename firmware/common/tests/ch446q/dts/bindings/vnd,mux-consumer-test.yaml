@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: A MUX consumer, for the test
+
+compatible: "vnd,mux-consumer-test"
+
+include: [base.yaml, mux-consumer.yaml]

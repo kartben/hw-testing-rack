@@ -1,0 +1,82 @@
+/*
+ * mx: the DATA x4 v2's TCA9534A as 8 emulated pins (P0 DAT, P1 CK, P2 U7's
+ * STB, P3 U8's STB, P4 RST); u7 and u8 share data, clock and reset.  apart:
+ * a third chip with its data line on one port (inverted on the way, active
+ * low) and its clock and strobe on another, written line by line, no reset.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	mx: gpio-mx {
+		compatible = "zephyr,gpio-emul";
+		gpio-controller;
+		#gpio-cells = <2>;
+		ngpios = <8>;
+		rising-edge;
+		falling-edge;
+		high-level;
+		low-level;
+	};
+
+	pa: gpio-pa {
+		compatible = "zephyr,gpio-emul";
+		gpio-controller;
+		#gpio-cells = <2>;
+		ngpios = <8>;
+		rising-edge;
+		falling-edge;
+		high-level;
+		low-level;
+	};
+
+	pb: gpio-pb {
+		compatible = "zephyr,gpio-emul";
+		gpio-controller;
+		#gpio-cells = <2>;
+		ngpios = <8>;
+		rising-edge;
+		falling-edge;
+		high-level;
+		low-level;
+	};
+
+	u7: crosspoint-u7 {
+		compatible = "wch,ch446q";
+		data-gpios = <&mx 0 GPIO_ACTIVE_HIGH>;
+		clock-gpios = <&mx 1 GPIO_ACTIVE_HIGH>;
+		strobe-gpios = <&mx 2 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&mx 4 GPIO_ACTIVE_HIGH>;
+		#mux-control-cells = <1>;
+		#mux-state-cells = <2>;
+	};
+
+	u8: crosspoint-u8 {
+		compatible = "wch,ch446q";
+		data-gpios = <&mx 0 GPIO_ACTIVE_HIGH>;
+		clock-gpios = <&mx 1 GPIO_ACTIVE_HIGH>;
+		strobe-gpios = <&mx 3 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&mx 4 GPIO_ACTIVE_HIGH>;
+		#mux-control-cells = <1>;
+		#mux-state-cells = <2>;
+	};
+
+	apart: crosspoint-apart {
+		compatible = "wch,ch446q";
+		data-gpios = <&pa 5 GPIO_ACTIVE_LOW>;
+		clock-gpios = <&pb 0 GPIO_ACTIVE_HIGH>;
+		strobe-gpios = <&pb 7 GPIO_ACTIVE_HIGH>;
+		#mux-control-cells = <1>;
+		#mux-state-cells = <2>;
+	};
+
+	/* Port 1's P1 and P2 on U7 (X15, X7), port 3's P1 on U8 (X15), as the DATA x4 v2 */
+	pins: pins {
+		compatible = "vnd,mux-consumer-test";
+		mux-controls = <&u7 15>, <&u7 7>, <&u8 15>;
+		mux-control-names = "p1-1", "p1-2", "p3-1";
+		mux-states = <&u7 15 0x09>;
+	};
+};

@@ -8,8 +8,8 @@ Two applications, both on an ESP32-S3, share this tree:
 | **[Power hub](power-hub/README.md)** | one per rack: USB-C PD in, rows A–D, the rack bus (CAN) master |
 
 They speak the rack bus protocol ([docs/rack-protocol.md](../docs/rack-protocol.md))
-and share [`common/`](common/): the protocol, the CH224A driver, Wi-Fi and
-hostname, the web pages' CSS and helpers, xterm.js, the development server
+and share [`common/`](common/): the protocol, the CH224A and CH446Q drivers,
+Wi-Fi, hostname and DNS-SD, the web pages' CSS and helpers, xterm.js, the development server
 and the screenshot tooling.
 
 Firmware for the ESP32-S3 on each [bay node](../electronics/bay-node/design.py):

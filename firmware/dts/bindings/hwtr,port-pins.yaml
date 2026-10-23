@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  The DATA x4 v2's port pins on its pin matrix (two CH446Q): one
+  mux-controls entry per pin, named p<port>-<pin>.  A pin's state is the
+  mask of the buses it joins (the board's devicetree says which bit is
+  which bus).
+
+compatible: "hwtr,port-pins"
+
+include: [base.yaml, mux-consumer.yaml]

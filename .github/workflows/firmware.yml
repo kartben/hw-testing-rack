@@ -124,6 +124,11 @@ jobs:
           - name: dnssd
             board: native_sim/native/64
             app: firmware/common/tests/dnssd
+          # The CH446Q MUX driver (drivers/mux/mux_wch_ch446q.c) against chips
+          # emulated on gpio_emul, run below
+          - name: ch446q
+            board: native_sim/native/64
+            app: firmware/common/tests/ch446q
     steps:
       # West workspace = $GITHUB_WORKSPACE, this repository checked out as its
       # manifest repository (manifest self.path: hw-testing-rack).
@@ -174,10 +179,11 @@ jobs:
         if: matrix.name == 'usbip'
         run: python3 hw-testing-rack/firmware/common/tests/usbip/test_usbip.py --exe build/zephyr/zephyr.exe
 
-      - name: Rack bus protocol / firmware updates / DATA x4 ports / hub budget / USB hub / DNS-SD on native_sim
+      - name: Rack bus protocol / firmware updates / DATA x4 ports / hub budget / USB hub / DNS-SD / CH446Q on native_sim
         if: >-
           matrix.name == 'rack_bus' || matrix.name == 'update' || matrix.name == 'ports' ||
-          matrix.name == 'hub_budget' || matrix.name == 'usbh_hub' || matrix.name == 'dnssd'
+          matrix.name == 'hub_budget' || matrix.name == 'usbh_hub' || matrix.name == 'dnssd' ||
+          matrix.name == 'ch446q'
         run: |
           build/zephyr/zephyr.exe | tee test.log
           grep -q "PROJECT EXECUTION SUCCESSFUL" test.log

@@ -18,6 +18,24 @@ config REGULATOR_CH224A_INIT_PRIORITY
 	default 86
 	depends on REGULATOR_CH224A
 
+config MUX_WCH_CH446Q
+	bool "WCH CH446Q analog crosspoint switch MUX driver"
+	default y
+	depends on MUX && DT_HAS_WCH_CH446Q_ENABLED
+	select GPIO
+	help
+	  The 8 x 16 crosspoint in its serial address mode as a MUX controller:
+	  a control line per X, its state the mask of the Y lines it connects
+	  to.  Written for upstream (drivers/mux/mux_wch_ch446q.c).
+
+config MUX_WCH_CH446Q_INIT_PRIORITY
+	int "CH446Q init priority"
+	depends on MUX_WCH_CH446Q
+	default 60
+	help
+	  After the GPIO controller its lines are on, often an I2C expander,
+	  and before any MUX consumer that references it.
+
 config HWTR_RACK_PROTO
 	bool "Rack bus protocol (docs/rack-protocol.md)"
 	help

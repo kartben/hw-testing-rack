@@ -4,6 +4,8 @@ zephyr_include_directories(include)
 
 # CH224A USB PD sink, as a regulator (out of tree)
 add_subdirectory_ifdef(CONFIG_REGULATOR_CH224A drivers/regulator)
+# CH446Q crosspoint switch as a MUX controller (the DATA x4 v2's pin matrix)
+add_subdirectory_ifdef(CONFIG_MUX_WCH_CH446Q drivers/mux)
 
 # Rack bus protocol (docs/rack-protocol.md): frames, hub and node state
 # machines; Wi-Fi station and hostname; access rules, the admin key;

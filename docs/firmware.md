@@ -6,8 +6,8 @@ dogfooding rig for Zephyr's new USB host stack.  The firmware lives in
 ([`firmware/README.md`](../firmware/README.md): build, flashing, shell, pin
 map), the power hub ([`firmware/power-hub/README.md`](../firmware/power-hub/README.md)),
 and what they share ([`firmware/common`](../firmware/common/)): the rack bus
-protocol ([rack-protocol.md](rack-protocol.md)), the CH224A driver,
-Wi-Fi, the web pages' CSS, helpers and tooling.
+protocol ([rack-protocol.md](rack-protocol.md)), the CH224A and CH446Q
+drivers, Wi-Fi, the web pages' CSS, helpers and tooling.
 
 > **Status:** both boards and applications build against Zephyr main
 > (pinned in `firmware/west.yml`); the rack bus protocol runs on a simulated

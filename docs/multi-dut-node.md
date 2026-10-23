@@ -172,11 +172,17 @@ one-port node answers `/api/ports` with its one DUT as port 1.
      INA226: its ALERT limit;
   4. the wanted ports back on, one by one, through the admission rule.
 
-### Rules for the co-processor (not code yet)
+### Rules for the pin matrix and the co-processor (not code yet)
 
-The DATA ×4 v2's RP2354B drives the pin matrix (two CH446Q) and its
-pull-ups; its firmware is not written yet.  When it is, it keeps the same
-rule as the node: nothing drives an unpowered board.
+The node drives the DATA ×4 v2's pin matrix (two CH446Q) through the board's
+TCA9534A.  The driver is written, for Zephyr's MUX subsystem
+(`firmware/common/drivers/mux/mux_wch_ch446q.c`, `wch,ch446q`; tested on
+native_sim against emulated chips): each chip's X line is a control line,
+its state the mask of the Y lines (buses) it joins; `port_pins` in
+`firmware/bay-node/data-x4.dtsi` names the 32 port pins `p1-1` … `p4-8`.
+No virtual-wire API on top yet.  The RP2354B drives the buses' pull-ups;
+its firmware is not written yet.  Both keep the node's rule: nothing drives
+an unpowered board.
 
 - The matrix switches stay open while their port is off (MX_RST high, the
   default until the node writes the TCA9534A), and open when it goes off.

@@ -69,6 +69,52 @@
 		power-monitor = <&port4_sense>;
 	};
 
+	/*
+	 * DATA x4 v2: the pin matrix, two CH446Q (MUX controllers, a control
+	 * line per X) on the TCA9534A, sharing DAT, CK and RST.  Like the
+	 * expander they run from DUT_5V: the application initializes them once
+	 * the board is up.
+	 */
+	crosspoint_u7: crosspoint-u7 {
+		compatible = "wch,ch446q";
+		data-gpios = <&ports_mx 0 GPIO_ACTIVE_HIGH>;
+		clock-gpios = <&ports_mx 1 GPIO_ACTIVE_HIGH>;
+		strobe-gpios = <&ports_mx 2 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&ports_mx 4 GPIO_ACTIVE_HIGH>;
+		#mux-control-cells = <1>;
+		#mux-state-cells = <2>;
+		zephyr,deferred-init;
+	};
+
+	crosspoint_u8: crosspoint-u8 {
+		compatible = "wch,ch446q";
+		data-gpios = <&ports_mx 0 GPIO_ACTIVE_HIGH>;
+		clock-gpios = <&ports_mx 1 GPIO_ACTIVE_HIGH>;
+		strobe-gpios = <&ports_mx 3 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&ports_mx 4 GPIO_ACTIVE_HIGH>;
+		#mux-control-cells = <1>;
+		#mux-state-cells = <2>;
+		zephyr,deferred-init;
+	};
+
+	/*
+	 * The 32 port pins on the matrix, by name: p<port>-<pin> (ports 1-2 on
+	 * U7, 3-4 on U8; docs/electronics.md, the pin map).  A pin's state is
+	 * the mask of the buses it joins, the chips' Y lines: bit 0 bus D,
+	 * 1 C, 2 B, 3 A, 4 E, 5 F, 6 G, 7 H.
+	 */
+	port_pins: port-pins {
+		compatible = "hwtr,port-pins";
+		mux-controls = <&crosspoint_u7 15>, <&crosspoint_u7 7>, <&crosspoint_u7 9>, <&crosspoint_u7 11>, <&crosspoint_u7 14>, <&crosspoint_u7 6>, <&crosspoint_u7 8>, <&crosspoint_u7 10>,
+			       <&crosspoint_u7 12>, <&crosspoint_u7 4>, <&crosspoint_u7 2>, <&crosspoint_u7 0>, <&crosspoint_u7 13>, <&crosspoint_u7 5>, <&crosspoint_u7 3>, <&crosspoint_u7 1>,
+			       <&crosspoint_u8 15>, <&crosspoint_u8 7>, <&crosspoint_u8 9>, <&crosspoint_u8 11>, <&crosspoint_u8 14>, <&crosspoint_u8 6>, <&crosspoint_u8 8>, <&crosspoint_u8 10>,
+			       <&crosspoint_u8 12>, <&crosspoint_u8 4>, <&crosspoint_u8 2>, <&crosspoint_u8 0>, <&crosspoint_u8 13>, <&crosspoint_u8 5>, <&crosspoint_u8 3>, <&crosspoint_u8 1>;
+		mux-control-names = "p1-1", "p1-2", "p1-3", "p1-4", "p1-5", "p1-6", "p1-7", "p1-8",
+				    "p2-1", "p2-2", "p2-3", "p2-4", "p2-5", "p2-6", "p2-7", "p2-8",
+				    "p3-1", "p3-2", "p3-3", "p3-4", "p3-5", "p3-6", "p3-7", "p3-8",
+				    "p4-1", "p4-2", "p4-3", "p4-4", "p4-5", "p4-6", "p4-7", "p4-8";
+	};
+
 };
 
 &DATA_X4_I2C {
@@ -123,8 +169,9 @@
 	/*
 	 * DATA x4 v2: the matrix expander (TCA9534A, not fitted on the base v2),
 	 * register-compatible too: P0 DAT, P1 CK, P2/P3 STB, P4 RST, P5 RUN,
-	 * P6 BOOTSEL, P7 MARK.  src/ports.c drives MARK low at set-up; the rest
-	 * is the co-processor's (docs/multi-dut-node.md).
+	 * P6 BOOTSEL, P7 MARK.  P0-P4 drive the crosspoints (crosspoint_u7/u8
+	 * above), P5-P6 the co-processor; src/ports.c drives MARK low at set-up
+	 * (docs/multi-dut-node.md).
 	 */
 	ports_mx: gpio@38 {
 		compatible = "ti,tca9538";
