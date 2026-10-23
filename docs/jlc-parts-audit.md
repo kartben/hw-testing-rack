@@ -39,9 +39,14 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 297.81 | 160.91 | 35.45 | 26.38 | 226.88 | **781.43** |
-| 5 | 177.35 | 48.73 | 13.81 | 7.15 | 71.55 | **325.39** |
-| 10 | 156.97 | 36.73 | 11.23 | 4.92 | 55.58 | **268.83** |
+| 1 | 305.81 | 168.91 | 35.45 | 26.38 | 234.88 | **805.43** |
+| 5 | 178.95 | 50.33 | 13.81 | 7.15 | 73.15 | **330.19** |
+| 10 | 157.77 | 37.53 | 11.23 | 4.92 | 56.38 | **271.23** |
+
+Each 4-layer order includes the rack's black mask ($8.00 per order, jlcpcb.com 2026-10-23; free on 2
+layers). The v2 is 4 layers again since 2026-10-23 (eaf77b9): $25.40 for 5 logic boards in ENIG, $13.20
+for 5 bases in lead-free HASL, $52.00 for 5 panels. The 6-layer build cost $8.40 more per 5 panels, and
+$33.10 for its black mask.
 
 The hub is 76 × 100 mm since 2026-10-20 (3cb4152): inside JLC's 100 × 100 offer, no $25 engineering
 fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors (cc3ba32), and since 2026-10-21 the usability
