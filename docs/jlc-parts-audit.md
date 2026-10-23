@@ -39,9 +39,11 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 292.34 | 150.12 | 40.76 | 27.28 | 207.86 | **752.36** |
-| 5 | 173.67 | 44.13 | 14.28 | 7.30 | 65.16 | **311.35** |
-| 10 | 153.17 | 33.39 | 13.54 | 5.01 | 51.94 | **260.45** |
+| 1 | 249.08 | 144.98 | 40.76 | 27.28 | 207.86 | **703.96** |
+| 5 | 142.85 | 41.63 | 14.28 | 7.30 | 65.16 | **278.03** |
+| 10 | 125.87 | 31.19 | 13.54 | 5.01 | 51.94 | **230.94** |
+
+Every board's order is a real JLC quote since 2026-10-23 (below).
 
 Every board is green since 2026-10-23 (the user: "faisons tout en vert"; `pcb.solder_mask: green`):
 JLC's green costs nothing. Black cost $8.00 per order on 4 layers (the node, the hub) and kept the v2
@@ -128,13 +130,40 @@ and nothing was saved to the cart.
   (jlcpcb.com › Projects › Quotes: ten files in all, which JLC deletes after a year). The cart already
   showed one item from before; it was not touched.
 
+**The node and the hub: real quotes (2026-10-23).** main's fab files (the hub's 7ff9a52, the node's f9916db),
+uploaded from the user's account with the user's OK; green, lead-free HASL, Standard PCBA (the ESP32-S3
+modules take no Economic), JLC's two 5 mm rails. The quotes were read and nothing was saved to the cart.
+
+| | Node | Hub |
+|---|---:|---:|
+| PCBs, assembled | 10, 10 | 5, 2 |
+| Bare PCBs | $19.40: $14.00, HASL $5.40 (84 × 90 with the rails) | $13.20: $8.00, HASL $5.20 (86 × 100) |
+| Setup, stencil | $25.75, $8.27 | $25.75, $8.27 |
+| Part types | 40 × $1.55 = $62.00 | 33 × $1.55 = $51.15 |
+| Components, SMT | $143.36 (40 items), $6.96 | $40.41 (33 items), $2.30 |
+| X-ray, packaging, special components | –, $0.52, $0.30 | $3.30, $0.50, $0.12 |
+| **Quote** | **$266.56** | **$145.00** |
+| What it replaces | the estimate: $316.95 with its adjustments | the quote of 2026-10-19: $150.14 adjusted |
+
+- **No X-ray on the node**: the WROOM-1 is castellated. The hub's MINI-1 has its pads underneath and is
+  X-rayed ($1.65 a board); bom.py X-rays the hub only.
+- **The node's parts cost less than estimated**: $143.36 against $178.61 for 10 boards. The estimate took
+  catalogue prices × 1.12; JLC buys at its own breaks.
+- **D4 (WS2812B-2020)**: JLC flags it as difficult. It reviews the part after the order and may charge an
+  advanced option and 2 more days; the quote carries no fee for it.
+- **U1 / U2 (LMR51625)**: JLC's listing says SOT-23-6 and the BOM TSOT-23-6, so JLC leaves the row unticked
+  until confirmed. It is TI's DDC package (SOT-23-THN); JLC's EasyEDA footprint is the LMR51635's, pad for pad.
+- **Standard takes any quantity** ("Custom Qty", from 2 to the PCB count), unlike Economic.
+- **Account:** two more uploads with their drafts, "power-hub-gerbers" and "bay-node-gerbers": twelve files
+  in all.
+
 The hub is 76 × 100 mm since 2026-10-20 (d2e9c73): inside JLC's 100 × 100 offer, no $25 engineering
 fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors (3f91006), and since 2026-10-21 the usability
 review's pass: the co-processor's AP2112K out (17 extended types, not 18), a VBUS LED per port, $3.03
 less a panel order.
 
-Floor per board, once the fees per order no longer count (100-board breaks): node $16.33, hub
-$18.54, the v2 panel $34.80 (a logic and a base), DATA port $1.35, pod $1.13.  Holding the parts at the prototype price gave
+Floor per board, once the fees per order no longer count (100-board breaks): node $13.18, hub
+$16.84, the v2 panel $34.80 (a logic and a base), DATA port $1.35, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (a20dd24) took another ≈ $4 off its
 floor.
 
@@ -142,8 +171,8 @@ Where a board's parts money goes, at 10 racks:
 
 | Board | Parts per board | Biggest lines |
 |---|---:|---|
-| hub | $19.12 | TPS26600 ×4 $4.58 · ESP32-S3-MINI-1-N8 $4.16 · LMR51635 $1.59 · USB4105 ×2 $1.45 · S6B ×4 $1.15 · KPA-3010 ×10 $1.85 · TJA1462 $0.83 · CH224A $0.34 |
-| node | $12.14 | ESP32-S3-WROOM-1-N8R8 $4.08 · LMR51625 $1.01 · S6B ×3 $0.74 · TJA1462 $0.74 · USB4105 $0.63 · INA226 $0.52 · USBLC6 ×4 $0.47 · B8B $0.42 |
+| hub | $15.55 | ESP32-S3-MINI-1-N8 $4.19 · TPS26600 ×2 $2.60 · USB4105 ×2 $1.45 · LMR51625 $1.07 · 10 µF ×4 $1.02 · KPA-3010 ×4 $0.97 · TJA1462 $0.83 · S6B ×2 $0.64 (rows A and B) |
+| node | $12.16 | ESP32-S3-WROOM-1-N8R8 $4.08 · LMR51625 $1.01 · S6B ×3 $0.74 · TJA1462 $0.74 · USB4105 $0.63 · INA226 $0.52 · USBLC6 ×4 $0.47 · B8B $0.42 |
 | DATA ×4 v2 | $23.57 | USB2517I $3.80 · LSF0108 ×4 $3.35 · CH446Q ×2 $2.71 · INA226 ×4 $2.07 · RP2354B $1.46 · TCA6408A ×2 $1.43 · TPS2553-1 ×4 $1.18 · TYPE-C-31-D-06 ×4 $1.14 · TCA9534 $1.13 |
 | v2 base | $12.40 | USB2517I $3.80 · INA226 ×4 $2.07 · TCA6408A ×2 $1.43 · TPS2553-1 ×4 $1.18 · TYPE-C-31-D-06 ×4 $1.14 · USBLC6 ×4 $0.71 · AP2114H $0.23 |
 | DATA port | $1.16 | USB4105 $0.63 · S8B $0.33 · USBLC6 $0.14 |
@@ -159,13 +188,13 @@ The threshold is JLC's assembly stock against 10 racks' need, summed over the bo
 | CH224A (C42459160) | hub | 12,463 | 10 | none: in stock since a20dd24 replaced the out-of-stock AP33772S (and its Global Sourcing); WCH only |
 | USB4105-GF-A-120 (C5184243) | node, hub, DATA port | 3,562 | 160 | JLC holds 22×, but **LCSC has 0**: when JLC's stock runs out, it can't refill from LCSC (the v2 has the HRO TYPE-C-31-D-06) |
 | S6B-PH-SM4-TB (C265405) | node, hub | 4,813 | 280 | 17×; genuine JST only |
-| LMR51625YDDCR (C44991044) | node | 4,220 | 80 | 53×, TI only; the hub's LMR51635 (C45262770): 937 on 2026-10-23, 10 needed |
+| LMR51625YDDCR (C44991044) | node, hub | 4,220 | 90 | 47×, TI only |
 | KPA-3010CGCK (C598310) | hub | 2,203 | 60 | 37×, Kingbright only |
 | CH446Q (C109471) | DATA ×4 v2 | 1,744 | 20 | 87×, WCH only |
 
 Single-source parts with no drop-in at JLC:
 - ESP32-S3 modules (Espressif);
-- TPS26600 eFuse and the LMR51625 / LMR51635 bucks (TI);
+- TPS26600 eFuse and LMR51625 buck (TI);
 - CH224A PD sink (WCH);
 - TJA1462 CAN SIC transceiver (NXP; the TI TCAN1462 is out of stock);
 - USB2514B and USB2517I USB hubs (Microchip);
@@ -212,9 +241,9 @@ Checked and rejected:
   loses signal improvement on the star bus (docs/can.md). The TJA1462 stays.
 - **TPS26600, INA226, TCA6408A**: no drop-in in JLC's catalog. find_alternatives returned none; a
   cheaper part means a new footprint for cents.
-- **LMR51635**: already cheap for a 60 V, 3.5 A synchronous buck. The node takes its 2.5 A sibling since
-  2026-10-23 (LMR51625, C44991044: same pinout and footprint, TI's 4.7 µH; a bay draws ≤ 2.2 A), $0.53 less
-  a node at 10 ($6.01 an order); the hub keeps the LMR51635. The input needs ≥ 40 V (VRACK 28 V,
+- **LMR51635**: already cheap for a 60 V, 3.5 A synchronous buck. The node and the hub take its 2.5 A sibling
+  since 2026-10-23 (LMR51625, C44991044: same pinout and footprint, TI's 4.7 µH; a bay draws ≤ 2.2 A, the hub's
+  controller < 0.7 A), $0.53 less a board at 10. The input needs ≥ 40 V (VRACK 28 V,
   33 V TVS), which rules out the basic 30 V bucks.
 - **Regulators** (AMS1117, AP2112K, XC6206): none proposed. The DATA ×4's USB2514B draws ≈ 0.16 A on
   3.3 V, and the XC6206's SOT-23 can't shed ≈ 0.31 W.
