@@ -244,8 +244,10 @@ Done on the tools side (2026-10-19), against the simulated node: a bay's
 `plate_bay_<id>.stl`, checked clear of the RESET/BOOT pin holes), `bayctl ports`, per-port power, reset,
 leases and `attach --follow`, and `firmware/bay-node/web/dev_server.py
 --ports 4` serving this API: its ports come up off and are admitted one by
-one, a power on (or `boot --power-cycle`) gets 409 when the other ports
-leave no room, and `/dev/draw?port=n&ma=…` makes a board draw more.
+one, a power on (or `boot --power-cycle`) gets 409 when what the bay draws
+(the DATA ×4 board included) leaves no room, `/dev/draw?port=n&ma=…` makes
+a board draw more, and `/dev/foreign?port=n` puts a board powered from
+elsewhere on a port.
 
 ### In the firmware
 

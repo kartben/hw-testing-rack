@@ -703,7 +703,8 @@ class MultiNodeApi(unittest.TestCase):
 
     def test_admission(self):
         """DATA x4's ports come up off; the node switches them on within the bay's budget, and so does a
-        power on: 409 when the other ports leave no room (docs/multi-dut-node.md, Power budget)."""
+        power on: 409 when what the bay draws leaves no room, or a board powered from elsewhere sits on
+        the port (docs/multi-dut-node.md, Power budget); RESET and BOOT are held while a port is off."""
         b1, b2 = self.bays["B3.1"], self.bays["B3.2"]
         self.assertTrue(all(p["power"]["on"] for p in bayctl.node_ports(self.node)))   # admitted one by one
         bayctl.control(b2, "power", {"action": "off"})
@@ -716,6 +717,14 @@ class MultiNodeApi(unittest.TestCase):
             self.assertTrue(bayctl.control(b1, "power", {"action": "cycle", "ms": 10})["power"]["on"])
         finally:
             urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/draw?port=1&ma=0").read()
+        urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/foreign?port=2").read()
+        try:
+            with self.assertRaisesRegex(bayctl.BayError, "409.*VBUS is up while it is off"):
+                bayctl.control(b2, "power", {"action": "on"})
+        finally:
+            urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/foreign?port=2").read()
+        with self.assertRaisesRegex(bayctl.BayError, "503.*the port is off"):
+            bayctl.control(b2, "reset", {"ms": 20})
         self.assertTrue(bayctl.control(b2, "power", {"action": "on"})["power"]["on"])
 
     def test_boot_power_cycle(self):

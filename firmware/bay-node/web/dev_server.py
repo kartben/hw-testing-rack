@@ -19,6 +19,7 @@ as the firmware's build does (board_targets.py).  Test hooks:
 
     /dev/fault[?port=n]   trip a fake over-current (the DUT, or port n)
     /dev/draw?port=n&ma=900   port n's board draws this much (ma=0: its usual), for the admission rule
+    /dev/foreign?port=n   toggle a board on port n powered from elsewhere (its VBUS up while the port is off)
     /dev/attach[?port=n]  toggle a fake USB/IP client (192.168.1.41; on port n's board)
     /dev/rfc2217          toggle a fake RFC 2217 client (192.168.1.41)
     /dev/boot             a short press on BOOT: confirms a pending claim
@@ -85,11 +86,14 @@ def dut_current_ma(t: float) -> int:
 PORTS = 1           # the boards the node serves; 1: today's one DUT (node["dut"])
 ports: list[dict] = []
 UP_S = 0.8          # a board's USB enumeration after power on or reset
-# The admission rule (docs/multi-dut-node.md, Power budget): a port goes on only if the ports' INA226
-# plus a reserve for its inrush stay within what the node's TPS2553 (1.34-1.52 A) is trusted with
-BAY_LIMIT_MA = 1250
-RESERVE_MA = 250
+# The admission rule (docs/multi-dut-node.md, Power budget; ports.c): a port goes on only if what the
+# bay draws on the node's INA226 (DUT_5V: the DATA x4 board itself counts) plus a reserve for its
+# inrush stays within what the node's TPS2553 (1.34-1.52 A) is trusted with
+BUDGET_MA = 1150    # CONFIG_BAY_PORTS_BUDGET_MA
+RESERVE_MA = 100    # CONFIG_BAY_PORTS_RESERVE_MA
+BOARD_MA = 380      # the DATA x4 board's own draw: its hub, co-processor and LEDs (0.3-0.46 A)
 STAGGER_S = 0.3     # the ports' start, one after the other
+DISCHARGE_S = 0.3   # a power cycle without "ms": until the port's VBUS is under 1 V (2 s at most)
 
 
 def set_ports(n: int) -> None:
@@ -99,7 +103,7 @@ def set_ports(n: int) -> None:
     global PORTS
     PORTS = n
     ports[:] = [{"port": i, "hub_port": i, "on": False, "latched": False, "faults": 0, "up_at": 0.0,
-                 "client": None, "lease": None, "draw": 0,
+                 "client": None, "lease": None, "draw": 0, "foreign": False,
                  "usb": dict(USB_PRESETS[X4_PRESETS[i - 1]])}
                 for i in range(1, n + 1)] if n > 1 else []
     start = time.monotonic()
@@ -115,12 +119,20 @@ def port_ma(pt: dict, now: float) -> int:
     return pt["draw"] or dut_current_ma(now + 2.1 * pt["port"])
 
 
+def bay_ma(now: float) -> int:
+    """What the node's INA226 reads on DUT_5V: the DATA x4 board and its ports."""
+    return BOARD_MA + int(8 * math.sin(now / 5)) + sum(port_ma(q, now) for q in ports)
+
+
 def admission(pt: dict) -> str | None:
-    """Why the port may not go on now (the other ports' draw), or None."""
-    others = sum(port_ma(q, time.monotonic()) for q in ports if q is not pt)
-    if others + RESERVE_MA > BAY_LIMIT_MA:
-        return (f"no room in the bay's budget: the other ports draw {others} mA, "
-                f"{RESERVE_MA} mA kept for a start, {BAY_LIMIT_MA} mA in all")
+    """Why the port (off) may not go on now, as web.c words it (409), or None."""
+    if pt["foreign"]:
+        return ("the port's VBUS is up while it is off (a board powered from elsewhere): "
+                "it comes on once that has gone")
+    bay = bay_ma(time.monotonic())
+    if bay + RESERVE_MA > BUDGET_MA:
+        return (f"no room in the bay's budget: the bay draws {bay} mA, "
+                f"{RESERVE_MA} mA kept for a start, {BUDGET_MA} mA in all")
     return None
 
 
@@ -363,7 +375,7 @@ def port_act(pt: dict, what: str, body: dict) -> tuple[int, str] | None:
             if refused is not None:
                 return 409, refused
         if action == "cycle":
-            time.sleep(min(int(body.get("ms", 1000)), 2000) / 1000)
+            time.sleep(min(int(body["ms"]), 2000) / 1000 if "ms" in body else DISCHARGE_S)
         was_on = pt["on"]
         pt["on"] = action != "off"
         if pt["on"]:
@@ -382,6 +394,8 @@ def port_act(pt: dict, what: str, body: dict) -> tuple[int, str] | None:
         pt["on"], pt["latched"], pt["client"] = True, False, None
         pt["up_at"] = time.monotonic() + UP_S
     else:
+        if not pt["on"]:                  # RESET and BOOT are held while the port is off
+            return 503, "the port is off, or the DATA board is not set up (DUT_5V off?)"
         time.sleep(0.3 if what == "boot" else min(int(body.get("ms", 100)), 500) / 1000)
         if pt["on"]:
             pt["client"] = None           # a reset re-enumerates the board, under the same busid
@@ -1091,10 +1105,11 @@ def status(ip: int = 0) -> dict:
     dut.update(ma=ma, mv=mv, mw=ma * mv // 1000)
     node["path"] = "classic" if node["force_classic"] else "usbip"
     docs = [port_doc(pt, ip) for pt in ports]
-    if docs:                            # the node's totals: the sum of the currents, flags ORed
+    if docs:                            # the node's totals: its own meter (the board counts), flags ORed
+        ma = bay_ma(time.monotonic())
+        mv = 5080 - ma // 10
         dut.update(on=any(d["power"]["on"] for d in docs), latched=any(d["fault"] for d in docs),
-                   faults=sum(d["power"]["faults"] for d in docs), ma=sum(d["power"]["ma"] for d in docs),
-                   mv=max(d["power"]["mv"] for d in docs), mw=sum(d["power"]["mw"] for d in docs))
+                   faults=sum(d["power"]["faults"] for d in docs), ma=ma, mv=mv, mw=ma * mv // 1000)
         node["usb"]["devices"] = sum(d["usb"] is not None for d in docs)
         node["usb"]["sessions"] = (sum(d["usbip"] is not None for d in docs)
                                    + sum(c["service"] == "usbip" for c in access.fake))
@@ -1258,11 +1273,14 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/dev/image":
             self.send(200, make_image(query.get("version", ["0.6.0"])[0],
                                       query.get("id", [firmware.image_id])[0]), "application/octet-stream")
-        elif path == "/dev/draw" and "port" in query and multi():
+        elif path in ("/dev/draw", "/dev/foreign") and "port" in query and multi():
             pt = next((x for x in ports if str(x["port"]) == query["port"][0]), None)
             if pt is None:
                 return self.json(404, {"error": f"no port {query['port'][0]} (1..{PORTS})"})
-            pt["draw"] = max(0, int(query.get("ma", ["0"])[0]))
+            if path == "/dev/foreign":
+                pt["foreign"] = not pt["foreign"]
+            else:
+                pt["draw"] = max(0, int(query.get("ma", ["0"])[0]))
             self.json(200, port_doc(pt))
         elif path in ("/dev/fault", "/dev/attach") and "port" in query and multi():
             pt = next((x for x in ports if str(x["port"]) == query["port"][0]), None)
