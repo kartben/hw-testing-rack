@@ -96,6 +96,10 @@ class Orders(unittest.TestCase):
             self.assertTrue(all(usd > 0 for usd in o["total"]), name)
             self.assertLess(o["total"][0], o["total"][-1], name)
         self.assertIn("data-port-x4-v2-panel", c["orders"])
+        # the boards JLC assembles: 3 logic boards are 5 (Economic), 9 nodes are 9 (Standard)
+        n = c["n"]
+        self.assertEqual(c["orders"]["data-port-x4-v2"]["assembled"][n.index(3)], 5)
+        self.assertEqual(c["orders"]["bay-node"]["assembled"][n.index(9)], 9)
         self.assertEqual(sorted(c["design"]["data-port-x4-v2"]),
                          ["data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel"])
 

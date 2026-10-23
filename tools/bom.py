@@ -846,7 +846,10 @@ def calculator(orders: dict) -> dict:
               for name, os in out.items() if name in JLC_FINISHES}
     return {"currency": "USD", "usd_eur": USD_EUR, "shipping_usd": JLC_SHIPPING_USD, "n": list(CALC_N),
             "min_assembled": 2,
-            "orders": {name: {"total": [o["total"] for o in os], "pcbs": [o["pcbs"] for o in os]}
+            # per n: the order's total, the PCBs bought and the boards JLC assembles (Economic: the whole lot,
+            # 2 of 5 its one exception; assembled_of())
+            "orders": {name: {"total": [o["total"] for o in os], "pcbs": [o["pcbs"] for o in os],
+                              "assembled": [o["assembled"] for o in os]}
                        for name, os in out.items()},
             "finish": finish,
             "panels": {panel: list(boards) for panel, boards in PANELS.items() if panel in out},
