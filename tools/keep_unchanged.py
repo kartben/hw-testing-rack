@@ -14,7 +14,8 @@ bytes, so an output is only committed with the change that alters it.  Same mean
 - .png .jpg .jpeg: the same size, no 3 × 3 patch of pixels that moved by more than 32 levels, and an average
   difference under half a level (a raytraced render's noise is scattered single pixels; a part that moved
   is a patch);
-- .glb: equal bytes, or the same JSON chunk (key order ignored) and the same binary chunk;
+- .glb: equal bytes, the same JSON (key order ignored) and binary chunks, or the same scene laid out
+  differently: the same structure and images, and in each mesh the same triangles (as for an STL; trimesh);
 - .stl: the same triangles, in any order (binary or ASCII), to 0.1 µm, zero-area slivers left out.
 
 tools/kicad.sh runs it on the board's folder after --fab.  Pillow is needed for images (skipped without it).
@@ -87,20 +88,59 @@ def _glb_chunks(data: bytes):
     return out
 
 
+JSON_CHUNK, BIN_CHUNK = 0x4E4F534A, 0x004E4942
+
+
 def same_glb(a: bytes, b: bytes) -> bool:
     if a == b:
         return True
     ca, cb = _glb_chunks(a), _glb_chunks(b)
     if ca is None or cb is None or set(ca) != set(cb):
         return False
-    json_kind = 0x4E4F534A
-    for kind in ca:
-        if kind == json_kind:
-            if json.loads(ca[kind].rstrip(b" \0")) != json.loads(cb[kind].rstrip(b" \0")):
-                return False
-        elif ca[kind] != cb[kind]:
-            return False
-    return True
+    ja, jb = (json.loads(c[JSON_CHUNK].rstrip(b" \0")) for c in (ca, cb))
+    if ja == jb and ca.get(BIN_CHUNK) == cb.get(BIN_CHUNK):
+        return True
+    # the same scene, its buffers laid out differently (a mesh from an STL whose triangles came in another
+    # order, or with other zero-area slivers): the same structure, images and triangles
+    if _glb_skeleton(ja) != _glb_skeleton(jb) or _glb_images(ja, ca) != _glb_images(jb, cb):
+        return False
+    try:
+        return _glb_geometry(a) == _glb_geometry(b)
+    except ImportError:                 # trimesh missing: only an exact match counts
+        return False
+
+
+def _glb_skeleton(j: dict) -> dict:
+    """The glTF JSON without what points into the binary chunk (accessors, buffer views, buffers) or
+    dates it."""
+    j = {k: v for k, v in j.items() if k not in ("accessors", "bufferViews", "buffers")}
+    if "extras" in j.get("asset", {}):
+        j["asset"] = {**j["asset"], "extras": {k: v for k, v in j["asset"]["extras"].items() if k != "generated_at"}}
+    j["meshes"] = [{**m, "primitives": [{**{k: v for k, v in pr.items() if k not in ("attributes", "indices")},
+                                          "attributes": sorted(pr.get("attributes", {}))}
+                                         for pr in m.get("primitives", [])]} for m in j.get("meshes", [])]
+    j["images"] = [{k: v for k, v in im.items() if k != "bufferView"} for im in j.get("images", [])]
+    return j
+
+
+def _glb_images(j: dict, chunks: dict) -> list:
+    blob, views, out = chunks.get(BIN_CHUNK, b""), j.get("bufferViews", []), []
+    for im in j.get("images", []):
+        v = views[im["bufferView"]] if "bufferView" in im else None
+        out.append(blob[v.get("byteOffset", 0): v.get("byteOffset", 0) + v["byteLength"]] if v else im.get("uri"))
+    return out
+
+
+def _glb_geometry(data: bytes) -> dict:
+    import trimesh
+    scene = trimesh.load(io.BytesIO(data), file_type="glb", process=False)
+    if not isinstance(scene, trimesh.Scene):
+        scene = trimesh.Scene(scene)
+    out = {}
+    for name, g in scene.geometry.items():
+        faces = getattr(g, "faces", None)
+        out[name] = _canonical(g.vertices[faces].tolist()) if faces is not None and len(faces) else             sorted(tuple(round(c, 4) for c in v) for v in g.vertices.tolist())
+    return out
 
 
 def _stl_triangles(data: bytes) -> list | None:
@@ -124,9 +164,17 @@ def _stl_triangles(data: bytes) -> list | None:
         for i in range(n):
             v = struct.unpack_from("<12f", data, 84 + 50 * i)[3:]
             raw.append([v[0:3], v[3:6], v[6:9]])
+    return _canonical(raw)
+
+
+def _canonical(raw) -> list:
+    """Triangles as sorted tuples of vertices rounded to 0.1 µm (in the file's mm), each turned to start at its
+    smallest vertex (its winding kept), zero-area slivers left out: OpenSCAD triangulates those differently
+    run to run."""
+    tris = []
     for t in raw:
         t = [tuple(round(c, 4) for c in v) for v in t]
-        if _area2(t) < 1e-10:           # a zero-area sliver: OpenSCAD triangulates those differently run to run
+        if _area2(t) < 1e-10:
             continue
         k = t.index(min(t))
         tris.append(tuple(t[k:] + t[:k]))

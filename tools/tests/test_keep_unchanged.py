@@ -138,10 +138,42 @@ class Glbs(unittest.TestCase):
         b = glb('{"nodes": [{"name": "a"}], "asset": {"version": "2.0"}}', b"\1\2\3\4")
         self.assertTrue(ku.same_glb(a, b))
 
-    def test_content_counts(self):
+    def test_structure_counts(self):
         a = glb('{"asset": {"version": "2.0"}}', b"\1\2\3\4")
-        self.assertFalse(ku.same_glb(a, glb('{"asset": {"version": "2.0"}}', b"\1\2\3\5")))
         self.assertFalse(ku.same_glb(a, glb('{"asset": {"version": "2.1"}}', b"\1\2\3\4")))
+
+
+class GlbMeshes(unittest.TestCase):
+    """A scene from STLs: its triangles' order and slivers vary, its shape doesn't."""
+
+    def setUp(self):
+        try:
+            import numpy as np
+            import trimesh
+        except ImportError:
+            self.skipTest("trimesh missing")
+        self.np, self.trimesh = np, trimesh
+        box = trimesh.creation.box((10, 20, 5))
+        self.box = trimesh.Trimesh(box.vertices, box.faces, process=False)      # without the creation's metadata
+
+    def scene(self, mesh) -> bytes:
+        s = self.trimesh.Scene()
+        s.add_geometry(mesh, node_name="part", geom_name="part")
+        return s.export(file_type="glb")
+
+    def test_face_order_and_slivers_are_ignored(self):
+        np, trimesh, b = self.np, self.trimesh, self.box
+        shuffled = trimesh.Trimesh(b.vertices, b.faces[::-1], process=False)
+        n = len(b.vertices)
+        sliver = trimesh.Trimesh(np.vstack([b.vertices, [[50, 50, 0], [50, 50, 1], [50, 50, 2]]]),
+                                 np.vstack([b.faces, [[n, n + 1, n + 2]]]), process=False)
+        self.assertTrue(ku.same_glb(self.scene(b), self.scene(shuffled)))
+        self.assertTrue(ku.same_glb(self.scene(b), self.scene(sliver)))
+
+    def test_a_moved_mesh_counts(self):
+        moved = self.box.copy()
+        moved.apply_translation((0, 0, 0.5))
+        self.assertFalse(ku.same_glb(self.scene(self.box), self.scene(moved)))
 
 
 def stl_binary(tris) -> bytes:
