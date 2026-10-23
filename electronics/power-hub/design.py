@@ -50,6 +50,9 @@ RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["power_hub"]
 W, H = CFG["size"]
 ROWS = ["A", "B", "C", "D"]
+# Rows fitted on this build: the rack has two rows (the user, 2026-10-23).  The others keep their footprints and
+# routing; their eFuse, connector and LEDs are DNP, their passives stay (FLT pulled up, IMON at 0 V)
+FITTED = ["A", "B"]
 ROW_Y = CFG["rows"]                 # KiCad y of each row connector (left edge)
 LED_X = CFG["front"]["leds"]        # ON/FAULT pair centres A–D, then PD, CTL
 USB_X = CFG["front"]["usb"]
@@ -283,10 +286,11 @@ def board() -> Board:
         n = k + 1
         yc, yj = ef_y(k), ROW_Y[k]
         o.block(f"Row {ch}: TPS26600 eFuse 1.6 A, enable, ON / FAULT LEDs, 6-pin JST PH")
+        dnp = ch not in FITTED
         part(o, f"U{10 + n}", "efuse", {"IN": "VRACK", "GND": "GND", "RTN": "GND", "UVLO": "GND", "OVP": "GND",
                                         "MODE": "GND", "~{SHDN}": f"SHDN_{ch}", "ILIM": f"ILIM_{ch}",
                                         "dVdT": f"DVDT_{ch}", "IMON": f"IMON_{ch}", "~{FLT}": f"FLT_{ch}",
-                                        "OUT": f"ROW_{ch}"}, pcb=P(EF_X, yc, 0))
+                                        "OUT": f"ROW_{ch}"}, pcb=P(EF_X, yc, 0), dnp=dnp)
         C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(16.9, yc - 2.0, 180))
         C(o, f"C{30 + n}", "1u", f"ROW_{ch}", "GND", size="0805", pcb=P(34.0, yc - 2.6, 0))
         R(o, f"R{20 + n}", "7.5k", f"ILIM_{ch}", "GND", pcb=P(34.0, yc + 1.0, 0))
@@ -305,15 +309,16 @@ def board() -> Board:
         R(o, f"R{90 + n}", "100k", "+3V3", f"FLT_{ch}", pcb=P(34.0, yc - 0.6, 0))
         R(o, f"R{50 + n}", "1k", f"ROW_EN_{ch}", f"FLTLED_{ch}", pcb=P(LED_X[k] + 3.0, H - 5.0, 90))
         part(o, f"D{20 + n}", "led_side_r", {"A": f"FLTLED_{ch}", "K": f"FLT_{ch}"}, "FAULT",
-             pcb=P(LED_X[k] + 3.0, LED_Y, 180))
+             pcb=P(LED_X[k] + 3.0, LED_Y, 180), dnp=dnp)
         # ON: green LED on the row's own output
         R(o, f"R{40 + n}", "10k", f"ROW_{ch}", f"ON_{ch}", pcb=P(36.825, yc - 4.5, 0))
-        part(o, f"D{10 + n}", "led_side_g", {"A": f"ON_{ch}", "K": "GND"}, "ON", pcb=P(LED_X[k] - 3.0, LED_Y, 180))
+        part(o, f"D{10 + n}", "led_side_g", {"A": f"ON_{ch}", "K": "GND"}, "ON", pcb=P(LED_X[k] - 3.0, LED_Y, 180),
+             dnp=dnp)
         # the row cable, with the bay nodes' OUT pinout (J1's mirrored, docs/can.md): POS, GND, CAN_L,
         # CAN_H, GND, VRACK, so the feed is the same flat cable as the node-to-node jumpers.  POS through
         # 10k (behind pin 1) + a clamp to GND / 3.3 V, so VRACK on it from a wrong cable costs ≈ 3 mA
         part(o, f"J{1 + n}", "ph6", {"1": f"POS_{ch}_CONN", "2": "GND", "3": "CAN_L", "4": "CAN_H", "5": "GND",
-                                    "6": f"ROW_{ch}"}, f"ROW {ch}", pcb=P(PH_EDGE, yj, 270))
+                                    "6": f"ROW_{ch}"}, f"ROW {ch}", pcb=P(PH_EDGE, yj, 270), dnp=dnp)
         R(o, f"R{100 + n}", "10k", f"POS_{ch}", f"POS_{ch}_CONN", pcb=P(11.0, yj - 6.9, 90))
         # the row cable's inductive kick when the eFuse cuts a short: a Schottky to GND at the connector, its
         # cathode on the output track (TPS2660 §12.1; OUT ≥ −0.3 V)

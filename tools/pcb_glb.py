@@ -248,7 +248,7 @@ STANDINS = [   # footprint name prefix → builder(pin count)
 
 def coverage(board: str) -> list[dict] | None:
     """electronics/<board>/build/<board>-3d.json (written by `tools/kicad.sh <board> --fab`): per
-    footprint, "model" / "no-body" / "missing" in KiCad's 3D export."""
+    footprint, "model" / "no-body" / "dnp" (not fitted, left out) / "missing" in KiCad's 3D export."""
     path = REPO / "electronics" / board / "build" / f"{board}-3d.json"
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
 
@@ -298,7 +298,8 @@ def check_coverage(board: str, strict: bool = False) -> set | None:
     covered = {e["ref"] for e in miss if e["side"] == "top" and any(e["footprint"].startswith(p) for p, _ in STANDINS)}
     bare = [e for e in miss if e["ref"] not in covered]
     print(f"{board} 3D: {sum(e['status'] == 'model' for e in cov)} KiCad models, {len(covered)} stand-ins, "
-          f"{sum(e['status'] == 'no-body' for e in cov)} without a body by nature, {len(bare)} MISSING")
+          f"{sum(e['status'] == 'no-body' for e in cov)} without a body by nature, "
+          f"{sum(e['status'] == 'dnp' for e in cov)} not fitted, {len(bare)} MISSING")
     if bare:
         lines = "\n".join(f"    {e['ref']:6s} {e['footprint']}  ({e['model'] or 'no model'})" for e in bare)
         msg = (f"\n!!! {board}: {len(bare)} placed part(s) have no 3D body in the viewer:\n{lines}\n"

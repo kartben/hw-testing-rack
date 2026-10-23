@@ -230,14 +230,12 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | B5819W SL — 40 V 1 A Schottky | 12  | 0.03 | 0.33 | LCSC/JLCPCB C8598 |
 | Electronics | CTL — green LED, side view 3 × 2 × 1 mm | 2  | 0.22 | 0.44 | LCSC/JLCPCB C598310 |
 | Electronics | PESD2CAN,215 — CAN bus ESD protection, 24 V stand-off | 2  | 0.07 | 0.14 | LCSC/JLCPCB C75176 |
-| Electronics | ON — green LED, side view 3 × 2 × 1 mm | 8  | 0.22 | 1.77 | LCSC/JLCPCB C598310 |
-| Electronics | FAULT — red LED, side view 3 × 2 × 1 mm | 8  | 0.17 | 1.32 | LCSC/JLCPCB C4555382 |
+| Electronics | ON — green LED, side view 3 × 2 × 1 mm | 4  | 0.22 | 0.88 | LCSC/JLCPCB C598310 |
+| Electronics | FAULT — red LED, side view 3 × 2 × 1 mm | 4  | 0.17 | 0.66 | LCSC/JLCPCB C4555382 |
 | Electronics | BAT54S — dual Schottky in series: clamps a line to GND and +3V3 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C7420333 |
 | Electronics | PD IN — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 2  | 0.84 | 1.67 | LCSC/JLCPCB C5184243 |
 | Electronics | ROW A — JST PH 6-pin, side entry, SMD | 2  | 0.36 | 0.72 | LCSC/JLCPCB C265405 |
 | Electronics | ROW B — JST PH 6-pin, side entry, SMD | 2  | 0.36 | 0.72 | LCSC/JLCPCB C265405 |
-| Electronics | ROW C — JST PH 6-pin, side entry, SMD | 2  | 0.36 | 0.72 | LCSC/JLCPCB C265405 |
-| Electronics | ROW D — JST PH 6-pin, side entry, SMD | 2  | 0.36 | 0.72 | LCSC/JLCPCB C265405 |
 | Electronics | USB — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 2  | 0.84 | 1.67 | LCSC/JLCPCB C5184243 |
 | Electronics | 3.3u — 3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded | 2  | 0.10 | 0.20 | LCSC/JLCPCB C167219 |
 | Electronics | 1k — Resistor 1k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C21190 |
@@ -257,10 +255,10 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | ESP32-S3-MINI-1-N8 — ESP32-S3 module, 8 MB flash, PCB antenna, USB OTG (full speed) | 2  | 4.34 | 8.68 | LCSC/JLCPCB C2913206 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 2  | 0.17 | 0.33 | LCSC/JLCPCB C7519 |
 | Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 2  | 0.93 | 1.86 | LCSC/JLCPCB C3234095 |
-| Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 8  | 1.42 | 11.33 | LCSC/JLCPCB C544399 |
+| Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 4  | 1.42 | 5.67 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×100 mm (86×100 with JLC's rails), lead-free HASL) | 5  | 3.90 | 19.50 | JLCPCB quote 2026-10-19, adjusted |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components | 1  | 85.00 | 85.00 | JLCPCB quote 2026-10-19, adjusted |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 8.49 | 8.49 | JLCPCB quote 2026-10-19, adjusted |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 17.14 | 17.14 | JLCPCB quote 2026-10-19, adjusted |
 | Electronics | 100n — Capacitor 100n 0603 | 7  | 0.01 | 0.09 | LCSC/JLCPCB C14663 |
 | Electronics | 10u — Capacitor 10u 0805 | 7  | 0.04 | 0.28 | LCSC/JLCPCB C15850 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 7  | 0.84 | 5.86 | LCSC/JLCPCB C5184243 |

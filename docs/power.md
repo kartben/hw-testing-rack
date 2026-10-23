@@ -9,7 +9,9 @@ under A1 that holds the **power hub v0.5**:
   plug-in, then for 20 V (28 V EPR when the charger offers it) when the controller asks over I²C.
   VBUS is the rack bus (VRACK): there is no input switch, the eFuses keep the
   rows off until the contract is final;
-* an **eFuse per row** (TPS26600, 1.6 A), off until the controller turns it on;
+* an **eFuse per row** (TPS26600, 1.6 A), off until the controller turns it on.  Four row outputs;
+  rows C and D are not fitted for now, since the rack has two rows (what refitting takes:
+  [electronics.md](electronics.md#power-hub-v05--4-layers-76--100-mm));
 * the **rack controller** (an ESP32-S3, CAN master; see [can.md](can.md) and
   [electronics.md](electronics.md#power-hub-v05--4-layers-76--100-mm)).  The box is
   drawn around its outline and connector positions in `config/rack.yaml` ›

@@ -314,8 +314,9 @@ def export_fab(outdir: Path, name: str, b):
     run(["kicad-cli", "pcb", "export", "step", "--subst-models", "-f", "-o", fab / f"{name}.step", pcb], check=False,
         capture_output=True)
     # board body + component models only: the layer art goes to the viewer as a texture
-    # (tools/pcb_glb.py), from the polygons export_art() writes
-    run(["kicad-cli", "pcb", "export", "glb", "--subst-models", "-f", "-o", fab / f"{name}.glb", pcb],
+    # (tools/pcb_glb.py), from the polygons export_art() writes.  The viewer shows the board as built: no DNP
+    # parts (the STEP keeps them, the envelope a fit check needs if they are fitted later)
+    run(["kicad-cli", "pcb", "export", "glb", "--subst-models", "--no-dnp", "-f", "-o", fab / f"{name}.glb", pcb],
         check=False, capture_output=True)
     export_art(outdir, name)
     export_3d_coverage(outdir, name)
@@ -379,9 +380,9 @@ def export_3d_coverage(outdir: Path, name: str) -> Path:
     """Which placed footprints KiCad's STEP / GLB export gives a body, and which it can't:
     build/<board>-3d.json, one entry per footprint: "model" (a STEP/IGES file it resolves, the
     form the GLB export uses; a .wrl is replaced by the STEP of the same name, --subst-models),
-    "no-body" (holes, test pads, net ties) or "missing" (no model, or a model file that isn't in
-    KiCad's 3D library).  tools/pcb_glb.py adds stand-ins for the missing ones and fails on any
-    it has none for."""
+    "no-body" (holes, test pads, net ties), "dnp" (not fitted: left out of the GLB) or "missing" (no
+    model, or a model file that isn't in KiCad's 3D library).  tools/pcb_glb.py adds stand-ins for the
+    missing ones and fails on any it has none for."""
     import pcbnew
     board = pcbnew.LoadBoard(str(outdir / f"{name}.kicad_pcb"))
     resolve = lambda fn: resolve_model(fn, outdir)
@@ -393,6 +394,8 @@ def export_3d_coverage(outdir: Path, name: str) -> Path:
         hit = next((r for r in (resolve(m.m_Filename) for m in models) if r), None)
         if fpid.startswith(NO_BODY) or fp.GetAttributes() & pcbnew.FP_BOARD_ONLY:
             status = "no-body"
+        elif fp.GetAttributes() & pcbnew.FP_DNP:
+            status = "dnp"
         else:
             status = "model" if hit else "missing"
         out.append({"ref": fp.GetReference(), "footprint": fpid, "side": side, "status": status,

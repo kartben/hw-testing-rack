@@ -8219,7 +8219,7 @@
 		(path "/2095d87a-d585-5eca-842a-d5acf4a94cae/dc40f4f2-6ad9-56c5-9b5f-e65d19a661ae")
 		(sheetname "Outputs")
 		(sheetfile "outputs.kicad_sch")
-		(attr smd)
+		(attr smd dnp)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 0.895 1.51)
@@ -21048,7 +21048,7 @@
 		(path "/2095d87a-d585-5eca-842a-d5acf4a94cae/eb6d4e15-cdfc-5482-b1b3-2461a4e7239e")
 		(sheetname "Outputs")
 		(sheetfile "outputs.kicad_sch")
-		(attr smd)
+		(attr smd dnp)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 0.895 1.51)
@@ -23894,7 +23894,7 @@
 		(path "/2095d87a-d585-5eca-842a-d5acf4a94cae/fc1c1b3f-96f5-5397-b319-920d765854fc")
 		(sheetname "Outputs")
 		(sheetfile "outputs.kicad_sch")
-		(attr smd)
+		(attr smd dnp)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 0.895 1.51)
@@ -28560,7 +28560,7 @@
 		(path "/2095d87a-d585-5eca-842a-d5acf4a94cae/79ce2a48-9ebb-5bfd-b734-c71948abee39")
 		(sheetname "Outputs")
 		(sheetfile "outputs.kicad_sch")
-		(attr smd)
+		(attr smd dnp)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -2.31 -2.735)
@@ -30602,7 +30602,7 @@
 		(path "/2095d87a-d585-5eca-842a-d5acf4a94cae/0d1bb07e-55c9-5082-b390-57a5432c4111")
 		(sheetname "Outputs")
 		(sheetfile "outputs.kicad_sch")
-		(attr smd)
+		(attr smd dnp)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -6.34 4.51)
@@ -32289,7 +32289,7 @@
 		(path "/2095d87a-d585-5eca-842a-d5acf4a94cae/4c134ec6-5561-5914-9e65-47c877373300")
 		(sheetname "Outputs")
 		(sheetfile "outputs.kicad_sch")
-		(attr smd)
+		(attr smd dnp)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start 0.895 1.51)
@@ -32878,7 +32878,7 @@
 		(path "/2095d87a-d585-5eca-842a-d5acf4a94cae/0d682f3f-e624-5d94-b39f-aae9756b8e78")
 		(sheetname "Outputs")
 		(sheetfile "outputs.kicad_sch")
-		(attr smd)
+		(attr smd dnp)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -6.34 4.51)
@@ -35108,7 +35108,7 @@
 		(path "/2095d87a-d585-5eca-842a-d5acf4a94cae/bbf64f5b-400c-5e29-97e9-df603b875ef0")
 		(sheetname "Outputs")
 		(sheetfile "outputs.kicad_sch")
-		(attr smd)
+		(attr smd dnp)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
 			(start -2.31 -2.735)
