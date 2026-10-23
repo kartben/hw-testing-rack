@@ -6902,7 +6902,7 @@
 		)
 		(uuid "57ee726b-5e11-530c-bf29-d684624a5ddd")
 	)
-	(text_box "TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on\n  even with no firmware; ~FAULT flags current limit / over-temperature.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DUT_5V at the shunt.\nAUX: TX/RX through 1k, VREF = +3V3 through 33 Ω (level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
+	(text_box "TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on\n  even with no firmware; ~FAULT flags current limit / over-temperature.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DUT_5V at the shunt.\nAUX: TX/RX through 1k, VREF = +3V3 through 1k (R23, a level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
 		(exclude_from_sim no)
 		(at 15.24 132.08 0)
 		(size 152.4 17.78)

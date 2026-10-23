@@ -171,7 +171,7 @@ def board() -> Board:
                         "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX"])
     b.root_notes = [
         "Bay node — one per bay.  Sheets:",
-        "  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51625 buck, AMS1117",
+        "  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51625 buck, AP2114H",
         "  MCU: ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM), reset/boot, status LED, UART pads",
         "  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)",
         "  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT",
@@ -258,7 +258,7 @@ def board() -> Board:
             # stitched to In1 around the pad (no via in the pad)
             {"layer": "F.Cu", "net": "GND", "name": "esp-gnd", "priority": 3,
              "poly": [(27.3, 12.0), (33.7, 12.0), (33.7, 18.4), (27.3, 18.4)]},
-            # AMS1117 tab: up to ~0.7 W at Wi-Fi peaks (1.7 V × 0.4 A); top-side copper on the tab and
+            # AP2114H tab: up to ~0.7 W at Wi-Fi peaks (1.7 V × 0.4 A); top-side copper on the tab and
             # C12, vias down to the +3V3 area on In2; exclusive, as the buck's (a track once cut C12 off it)
             {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 3, "exclusive": 0.5,
              "poly": [(8.4, 26.0), (17.2, 26.0), (17.2, 32.2), (8.4, 32.2)]},
@@ -380,7 +380,10 @@ def board() -> Board:
     s.wire((74, 53), (46, 53), (46, 47), "U1.FB")
 
     s.frame("3.3 V logic supply", 88, 32, 116, 50)
-    part(s, "U2", "ldo", {"VI": "+5V", "VO": "+3V3", "GND": "GND"}, pcb=P(12, 33, 90), sch=at(102, 42, fields=(-3, -3.5)))
+    # AP2114H-3.3 (ldo_1a): specified stable with ceramics (C11, C12), where the AMS1117 guarantees it only with 22 µF
+    # tantalum (the schematic counter-review, 2026-10-23).  Its SOT-223 "H" pinout, 1 GND · 2 and tab VOUT · 3 VIN,
+    # is the AMS1117's: the same footprint and copper
+    part(s, "U2", "ldo_1a", {"VI": "+5V", "VO": "+3V3", "GND": "GND"}, pcb=P(12, 33, 90), sch=at(102, 42, fields=(-3, -3.5)))
     # the LDO's input; a 1206 (C2/C3's 10 µF, one part type less) overlaps U2 and its neighbours here
     C(s, "C11", "10u", "+5V", "GND", size="0805", pcb=P(17.4, 36.15, 0), sch=at(95, 43.5))
     C(s, "C12", "22u", "+3V3", "GND", size="1206", pcb=P(18.0, 30.6, 0), sch=at(109, 43.5))
@@ -656,7 +659,7 @@ def board() -> Board:
     d.note("  even with no firmware; ~FAULT flags current limit / over-temperature.")
     d.note("INA226 (I2C 0x40) runs from +3V3: it measures the drop across")
     d.note("  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DUT_5V at the shunt.")
-    d.note("AUX: TX/RX through 1k, VREF = +3V3 through 33 Ω (level hint),")
+    d.note("AUX: TX/RX through 1k, VREF = +3V3 through 1k (R23, a level hint),")
     d.note("  RESET/BOOT open-drain (2N7002, 100k gate pull-downs).")
 
     # ------------------------------------------------------------------ rack bus: CAN + POS (docs/can.md)
@@ -715,7 +718,7 @@ def board() -> Board:
     k.note("  250 kbit/s (125 kbit/s fallback).  TJA1462AT (SIC): VCC 5 V, VIO 3.3 V, bus pins −36/+40 V, passive unpowered.")
     k.note("POS: active-high 3.3 V token.  From reset the node holds POS_OUT low; when POS_IN goes high and it has")
     k.note("  no address yet, it answers with its MAC, takes (row, position) from the hub, then raises POS_OUT.")
-    k.note("  R29 keeps POS_IN low with no cable; the next node's 100k keeps POS_OUT low before firmware.")
+    k.note("  R29 keeps POS_IN low with no cable; the next node's 470k keeps POS_OUT low before firmware.")
 
     # ------------------------------------------------------------------ camera (Arducam Mega SPI) and its light
     # J6 stands vertical at the rear right (pin 1 at the rear), east of the antenna band: its lead leaves straight
@@ -747,10 +750,13 @@ def board() -> Board:
     R(c, "R35", "680", "CAM_MISO", "GND", pcb=P(rx, ry + 7.2, 0), sch=at(40, 40), dnp=True)
     # CS pull-up over the In2 +3V3 area under the module's corner (the resistor row sits over +5V)
     R(c, "R37", "10k", "CAM_CS", "+3V3", pcb=P(36.6, 40.2, 0), sch=at(40, 54))
+    # their VBUS pin (5) on +3V3, not CAM_5V (the schematic counter-review, 2026-10-23): with CAM_5V off (the PTC
+    # tripped), the SPI lines would feed the pod through the upper diodes, and CAM_5V's clamp sits above the
+    # ESP32's 3.6 V
     part(c, "U12", "esd", {"1": "CAM_SCK_C", "6": "CAM_SCK_C", "3": "CAM_MOSI_C", "4": "CAM_MOSI_C",
-                           "5": "CAM_5V", "2": "GND"}, pcb=P(cx - 6.4, cy - 1.4, 0), sch=at(76, 22))
+                           "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy - 1.4, 0), sch=at(76, 22))
     part(c, "U13", "esd", {"1": "CAM_MISO_C", "6": "CAM_MISO_C", "3": "CAM_CS_C", "4": "CAM_CS_C",
-                           "5": "CAM_5V", "2": "GND"}, pcb=P(cx - 6.4, cy + 3.4, 0), sch=at(76, 38))
+                           "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy + 3.4, 0), sch=at(76, 38))
     # the light: 2–4 white 5 V LEDs (a strip segment, its own resistors) from CAM_5V to LED_K, ≤ 150 mA
     part(c, "Q4", "nfet_ll", {"G": "CAM_LED", "S": "GND", "D": "LED_K"}, pcb=P(cx - 6.0, cy + 7.8, 0), sch=at(80, 52))
     R(c, "R36", "100k", "CAM_LED", "GND", pcb=P(cx - 6.0, cy + 11.2, 0), sch=at(70, 54))

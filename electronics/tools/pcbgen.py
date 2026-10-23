@@ -1226,7 +1226,7 @@ def _feed_path(a, layer, obst, via_fits, half, inside, max_mm=REMOTE_FEED_MM, st
     return None
 
 
-def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]:
+def fanout_pads(board, specs: dict, islands: list, only=None) -> list[tuple[str, int, int]]:
     """b.pcb["fanout_nets"]: {net: (plane layer, via Ø, drill, track width)}.  Before routing, every
     SMD pad of these nets gets a short track out of its footprint to a via of its own landing on the
     net's plane (In1 for GND, the net's area of In2 for a supply), locked so Freerouting keeps it:
@@ -1235,7 +1235,8 @@ def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]
     vias) and pads already reached by a fixed track are left alone.  A pad over another net's area of
     a split plane gets its track to the nearest spot of its own area, up to REMOTE_FEED_MM away:
     Freerouting doesn't route those (its fan-out drops their via in the wrong area, then it leaves
-    them open).  Returns [(net, done, pads)]."""
+    them open).  `only`: the pads ("REF.PAD") to fan out, the others left alone (a routed board's patch).
+    Returns [(net, done, pads)]."""
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     err, clr = MM(0.005), MM(0.2)
     layers = copper_of(board)
@@ -1308,6 +1309,8 @@ def fanout_pads(board, specs: dict, islands: list) -> list[tuple[str, int, int]]
         for pad in pads:
             a = pad.GetPosition()
             if any(s.Contains(a) for s in skip):
+                continue
+            if only is not None and f"{pad.GetParentFootprint().GetReference()}.{pad.GetNumber()}" not in only:
                 continue
             bb = pad.GetBoundingBox()
             if any(bb.Contains(pcbnew.VECTOR2I(x, y)) for x, y in ends):

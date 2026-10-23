@@ -146,7 +146,7 @@ def jlc_bom_rows(rows):
 # matter if JLC ever places them again.
 JLC_CPL_FIX = {
     "C173752": ("JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal", 180, 1.0, 0.0),    # bay J1 J2 J6 (seen; hand-soldered)
-    "C6186": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                            # bay U2 (seen)
+    "C6186": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                            # camera pod U1 (seen on the bay U2)
     "C165948": ("USB_C_Receptacle_HRO_TYPE-C-31-M-12", 0, 0.0, -1.57),        # bay J3 J4 until v0.4
     "C2913206": ("ESP32-S2-MINI-1", 0, 0.0, 2.55),                            # bay U3
     # bay SW3: on its pegs.  KiCad's footprint is Shouhan's land pattern (pads 1.95 mm from the peg holes);
@@ -207,7 +207,7 @@ JLC_CPL_FIX = {
                                                                              # along x, pin 1 on pin 1, 0.005 mm rms)
     "C206010": ("TSSOP-16_4.4x5mm_P0.65mm", 270, 0.0, 0.0),                  # x4 v2 U10 (TCA9534A)
     "C9839": ("SOT-23-5", 180, 0.0, 0.0),                                    # x4 v2 U9 (TPS60400)
-    "C150716": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                         # x4 v2 U3 (AP2114H-3.3, drawn as C6186)
+    "C150716": ("SOT-223-3_TabPin2", 180, 0.0, 0.0),                         # bay U2, x4 v2 U3 (AP2114H-3.3, drawn as C6186)
     # 4 × 0402 arrays: JLC's are drawn across (any of 90° / 270°: four equal resistors)
     "C25725": ("R_Array_Convex_4x0402", 90, 0.0, 0.0),                       # x4 v2 RN1–RN3, RN8 RN9 (10k)
     "C48442": ("R_Array_Convex_4x0402", 90, 0.0, 0.0),                       # x4 v2 RN101… (100)

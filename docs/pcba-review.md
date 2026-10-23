@@ -146,7 +146,7 @@ text only).
 | N6 | U12, U13 | minor | Pins 1/6 and 3/4 share one net, bridged under the body: not flow-through, while `review-konnect.md` says it is. Fine electrically at 4 MHz | Correct the doc, or split the nets | Électronique |
 | N7 | R23 AUX_VREF | minor | 33 Ω 0603 (`design.py:612`); a short on the lead is 0.33 W on a 0.1 W part; on a DUT's 3.3 V it back-powers the DUT when DUT_5V is off | 1k, or document "reference only" | Électronique |
 | N8 | SVC | minor | SW3 is SVC's only driver, with no pull; FSUSB42's select must not float during switch travel | 100k pull-down | Électronique |
-| N9 | U2 AMS1117 | minor | All-ceramic output; the datasheet asks for tantalum | Measure a +3V3 load step | Électronique |
+| N9 | U2 AMS1117 | minor | All-ceramic output; the datasheet asks for tantalum | Done 2026-10-23: U2 is an AP2114H-3.3, stable with ceramics (same footprint); still measure the +3V3 load step | Électronique |
 | N10 | C12 | minor | Pad 1 on the solid LDO tab, pad 2 relieved: tombstone risk | Balance the pads | Électronique |
 | N11 | Q1 (C7503186), R19 (C601102) | minor (sourcing) | The listings say `SUD50P06-15(UMW)` by UMW and `HoLR1206-1W-50mR-1%-75ppm`; `catalog.py` has other text (pinouts match) | Correct MPN and maker in `catalog.py` | Électronique |
 | N12 | camera note | minor | `design.py:740` lists IO36/21/42/11/10; the pin map is IO11/10/9/8/7 | Fix the note | Électronique |

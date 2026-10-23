@@ -170,5 +170,5 @@ lock the nut ([firmware/README.md › Camera](../firmware/README.md#camera)).
   through the 9 V → 28 V step and when a loaded row is cut (stay at 20 V if it passes 31 V); the AP2112K's temperature through a long Wi-Fi transfer in the closed box; the In2
   VRACK band's temperature at the full 5 A (a thermal camera on the board's bottom); a row shorted
   at the end of its lead: OUT not below −0.3 V (D4x), the other rows unaffected.
-- Node: F1's margin in a warm rack, camera and light on; the +3V3 load step (the AMS1117 on
-  ceramics only); the I²C rise time with a DATA ×4 on the lead (under 300 ns at 400 kHz).
+- Node: F1's margin in a warm rack, camera and light on; the +3V3 load step (the AP2114H, stable on
+  ceramics); the I²C rise time with a DATA ×4 on the lead (under 300 ns at 400 kHz).

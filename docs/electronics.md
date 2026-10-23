@@ -55,7 +55,7 @@ power nets' IC, connector and inductor pins solid, and another asks each power n
 for its minimum spokes (2 on the bus and the supplies); a single spoke stays allowed elsewhere, where
 fine-pitch neighbours leave no room for two.  The LMR51625's hot loop (CIN – VIN – GND) and
 its output capacitors sit on small solid top-side islands, with hand-placed
-vias to In1, as TI's layout guide asks; the AMS1117's tab gets a solid +3V3
+vias to In1, as TI's layout guide asks; the AP2114H's tab gets a solid +3V3
 island with vias to In2.  Hand-soldered through-hole pads always get thermal
 reliefs, even on solid pours.  Connectors that overhang the outline on purpose
 are listed as `edge_parts`: their silkscreen may cross the board edge (the fab
@@ -106,14 +106,14 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | Rack bus | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 470k pull-down (100k until the PCBA review: 2.75 V high); POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a wrong cable (VRACK on a POS pin) costs ≈ 2.5 mA at 28 V |
 | Protection | SUD50P06 P-FET + 12 V zener, SMBJ33A, 100 µF/50 V | reverse polarity, hot-plug clamp < 54 V |
 | 5 V | LMR51625YDDCR (60 V, 2.5 A, synchronous, 1.1 MHz) + 4.7 µH FXL0630 | TI typical application (SLUSF64B table 8-1): 3 × 22 µF out (the table asks 22 µF), 2 × 10 µF + 100 nF in; a bay draws ≤ 2.2 A (the DUT switch's 1.52 A is TI's IOSmax at 18k, tolerance included), so the inductor peaks at ≈ 2.6 A from 28 V, under the 2.9 A minimum peak limit (the LMR51635, 3.5 A with 3.3 µH, until 2026-10-23: same pinout and footprint, $0.53 more a node); FB 100k/18k → 5.24 V (≈ 4.75 V still at the DATA board at 1.4 A, below); EN 100k/10k: on above 13.5 V, off below 10.8 V |
-| 3.3 V | AMS1117-3.3 | logic only |
+| 3.3 V | AP2114H-3.3 (U2, C150716, SOT-223) | logic only; stable with the ceramic C11 / C12, where the AMS1117 it replaced (the schematic counter-review, 2026-10-23) guaranteed it only with 22 µF tantalum; the same SOT-223 pinout and copper |
 | MCU | ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM for the camera's frames; the DevKitC-1-N8R8's module), C2913201 | antenna on the rear edge, keep-out on all layers (the footprint's own ±24 mm band); `bench:ESP32-S3-WROOM-1_NoEPVias` (no 0.2 mm vias in the exposed pad: a GND island stitched around it); rated −40…+65 °C |
 | DUT power | TPS2553D (RILIM 18k → 1.34–1.52 A; the TPS2553's pinout and I_LIM equations, plus reverse-voltage protection, at a third of the price), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N), Vbus tied to Vin− at its pins (DUT_5V at the shunt's load end); default **on** (also without firmware), fault flag to GPIO |
 | USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (1k: a reference for the DUT's levels, not a supply), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
 | DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DUT_5V · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 5.1k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm), which leaves 6–8 open, or a [DATA ×4 board](#data-4-v10--4-layers-100--37-mm); `pcb.bay_node.right.data` is its centre (KiCad y) |
-| Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side, AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.5 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); at the rear right, its lead straight back, its parts in a block west of it; `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
+| Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side (their VBUS pin on +3V3, not CAM_5V: with CAM_5V off the SPI lines can't feed the pod through them, and the clamp stays under the ESP32's 3.6 V), AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.5 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); at the rear right, its lead straight back, its parts in a block west of it; `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
 muxes, at 480 Mb/s if the DUT can.  Freerouting can't route differential pairs, so that chain (J3 →
@@ -933,7 +933,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | LCSC part | Refs | Correction | Status |
 |---|---|---|---|
 | C173752 JST S2B-PH-K | node J1 J2 J6 | 180°, +1.00 mm x | was wrong in the preview; hand-soldered now, not in the CPL |
-| C6186 AMS1117 SOT-223 | node U2 | 180° | looked wrong in the preview; confirm the fix |
+| C6186 AMS1117 SOT-223 | camera pod U1 (node U2 until 2026-10-23) | 180° | looked wrong in the preview; confirm the fix |
 | C165948 HRO TYPE-C-31-M-12 | node J3 J4 until v0.4 | −1.57 mm y | not on the boards since v0.5 |
 | C2913206 ESP32-S3-MINI-1 | hub U4 (node U3 until the camera) | +2.55 mm y | to confirm |
 | C2913201 ESP32-S3-WROOM-1-N8R8 | node U3 | +3.63 mm y | to confirm |
@@ -975,7 +975,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C20615800 H5VU25UC DFN2510-10L | DATA ×4 v2 U4, U105… | 270° (fit by pin name: pin 1 on pin 1, 0.005 mm rms; `test_jlc_cpl.py` checks pin 1) | to confirm |
 | C206010 TCA9534A TSSOP-16 | DATA ×4 v2 U10 | 270° | to confirm |
 | C9839 TPS60400 SOT-23-5 | DATA ×4 v2 U9 | 180° (not C51118's 270°: another EasyEDA drawing) | to confirm |
-| C150716 AP2114H-3.3 SOT-223 | DATA ×4 v2 U3 | 180°, as C6186 (fit: −0.03 mm x) | to confirm |
+| C150716 AP2114H-3.3 SOT-223 | node U2 (since 2026-10-23), DATA ×4 v2 U3 | 180°, as C6186 (fit: −0.03 mm x) | to confirm |
 | C25725, C48442, C26075 4 × 0402 arrays | DATA ×4 v2 RN… | 90° (four equal resistors: 90° or 270°) | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
