@@ -23,9 +23,9 @@ class Orders(unittest.TestCase):
         _, cls.orders = bom.electronics(rackcfg.load())
 
     def test_panel_reproduces_the_quote(self):
-        # the 1 × 2 base + logic panel as priced in docs/jlc-parts-audit.md (rounding: the quoted SMT lines), its
-        # bare PCBs at 4 layers again (jlcpcb.com, 2026-10-23), the rack's black mask $8.00 an order on top
-        for n, usd in ((2, 234.88), (5, 365.73), (10, 563.77)):
+        # the 1 × 2 base + logic panel: JLC's real quote of 2026-10-23 (black, Standard, $249.86) and the
+        # RP2354B it left unplaced (JLC_SINCE_QUOTE), its parts scaled from the quote's at JLC's price breaks
+        for n, usd in ((2, 254.46), (5, 376.00), (10, 576.08)):
             self.assertAlmostEqual(bom.panel_order(n, self.orders)["total"], usd, delta=0.02)
 
     def test_volume_is_order_cost(self):
@@ -35,12 +35,12 @@ class Orders(unittest.TestCase):
                 self.assertAlmostEqual(usd, round(bom.order_cost(name, n, self.orders)["total"] / n, 2), places=2)
 
     def test_quote_is_order_cost(self):
-        # at the quoted quantity an estimate built from the fab files is the quote itself, plus the rack's
-        # mask colour (the quotes are green)
+        # at the quoted quantity an order is its quote: as adjusted for the rack's order (the panel), else the
+        # quote plus the rack's mask colour (the quotes are green)
         for name in ("data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel"):
             q = bom.JLC_QUOTE[name]
-            self.assertAlmostEqual(bom.order_cost(name, q["assembled"], self.orders)["total"],
-                                   q["total"] + sum(bom.mask_colour(name).values()), places=2)
+            want = self.orders[name]["total"] if name in self.orders else                 q["total"] + sum(bom.mask_colour(name).values())
+            self.assertAlmostEqual(bom.order_cost(name, q["assembled"], self.orders)["total"], want, places=2)
 
     def test_at_least_two(self):
         for name in self.orders:
@@ -50,10 +50,11 @@ class Orders(unittest.TestCase):
         self.assertEqual(bom.panel_order(1, self.orders)["total"], bom.panel_order(2, self.orders)["total"])
 
     def test_minimum_purchase(self):
-        line = "L1 minimum purchase (32)"
-        self.assertAlmostEqual(bom.order_cost("data-port-x4-v2", 2, self.orders)["once_lines"][line], 9.54, places=2)
-        self.assertEqual(bom.order_cost("data-port-x4-v2", 32, self.orders)["once_lines"][line], 0)
-        self.assertEqual(bom.panel_order(40, self.orders)["once_lines"][line], 0)
+        # JLC's quote of 2026-10-23 buys L1 by 5; the panel's real quote carries JLC's own purchase
+        line = "L1 minimum purchase (5)"
+        self.assertAlmostEqual(bom.order_cost("data-port-x4-v2", 2, self.orders)["once_lines"][line], 0.95, places=2)
+        self.assertEqual(bom.order_cost("data-port-x4-v2", 5, self.orders)["once_lines"][line], 0)
+        self.assertNotIn(line, bom.panel_order(2, self.orders)["once_lines"])
 
     def test_panel_is_the_racks_order(self):
         # one order panel carries the rack's logic and base; their parts lines stay per board

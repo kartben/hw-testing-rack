@@ -39,14 +39,45 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 305.81 | 168.91 | 35.45 | 26.38 | 234.88 | **805.43** |
-| 5 | 178.95 | 50.33 | 13.81 | 7.15 | 73.15 | **330.19** |
-| 10 | 157.77 | 37.53 | 11.23 | 4.92 | 56.38 | **271.23** |
+| 1 | 305.81 | 168.91 | 35.45 | 26.38 | 254.46 | **825.01** |
+| 5 | 178.95 | 50.33 | 13.81 | 7.15 | 75.20 | **332.24** |
+| 10 | 157.77 | 37.53 | 11.23 | 4.92 | 57.61 | **272.47** |
 
 Each 4-layer order includes the rack's black mask ($8.00 per order, jlcpcb.com 2026-10-23; free on 2
-layers). The v2 is 4 layers again since 2026-10-23 (eaf77b9): $25.40 for 5 logic boards in ENIG, $13.20
-for 5 bases in lead-free HASL, $52.00 for 5 panels. The 6-layer build cost $8.40 more per 5 panels, and
-$33.10 for its black mask.
+layers). The v2 is 4 layers again since 2026-10-23 (eaf77b9).
+
+**The v2 panel's real JLC quote (2026-10-23).** The panel's committed Gerbers, JLC BOM and CPL were
+uploaded to jlcpcb.com from the user's account with the user's OK. The quote was read and nothing was
+saved to the cart. 5 panels, 2 assembled.
+
+| | Black (the rack's) | Green |
+|---|---:|---:|
+| PCBA service | Standard (the only one offered) | Economic |
+| Bare panels | $61.10: $25 fee, ENIG $18.40, black $8.00, board $9.70 (110 × 142 with JLC's rails) | $52.00 (100 × 142, no rails) |
+| Setup, stencil | $25.75, $8.27 | $8.24, $1.55 |
+| Part types | 39 × $1.55 = $60.45 | 16 extended × $3.09 = $49.44 |
+| Components (39 items), SMT | $86.73, $6.57 | $84.24, $5.77 |
+| Packaging, special components | $0.51, $0.48 | –, $0.48 |
+| **Quote** | **$249.86** | **$201.72** |
+| With the RP2354B (2 at $1.52, its type) | $254.46 | $207.86 |
+
+- **JLC's Economic PCBA takes a coloured mask on 2 layers only** (black: HASL only); 4 layers are green
+  only, and 6 are green ENIG (jlcpcb.com/capabilities/pcb-assembly-capabilities, read 2026-10-23). A black
+  v2 is therefore Standard, as are the logic or the base ordered alone (110 × 70 with the rails, so the
+  $25 fee: estimates of $211.07 and $142.57). The DATA port and the pod (2 layers, lead-free HASL) stay
+  Economic in black. Green on the panel saves $46.60 an order (`JLC_LEVERS`).
+- **The RP2354B (C39843328) was out of stock at JLC** (0, shortfall 2). JLC offered only other users'
+  idle parts at $2.91 each through its cart, which was not touched. The quote leaves U11 unplaced;
+  bom.py adds 2 at JLC's $1.52 and its part type.
+- **L1 is no longer a pre-order**: 197 in stock, and the quote buys 5 for 2 panels. JLC's library lists
+  a 26-piece minimum to buy into a parts library.
+- **No X-ray line** on either quote: bom.py no longer adds X-ray to the v2.
+- **JLC's check.** It flags each BOM row that joins `_L` and `_B` designators ("there may be multiple
+  types of parts") and leaves it unticked. Tick them before ordering.
+- **What stays in the account:**
+  - the Gerber uploads, twice (the quote page's Upload History);
+  - two PCBA drafts it saved automatically, "data-port-x4-v2-panel-gerbers", one green and one black.
+  The user can delete them; nothing is in the cart.
 
 The hub is 76 × 100 mm since 2026-10-20 (3cb4152): inside JLC's 100 × 100 offer, no $25 engineering
 fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors (cc3ba32), and since 2026-10-21 the usability
@@ -54,7 +85,7 @@ review's pass: the co-processor's AP2112K out (17 extended types, not 18), a VBU
 less a panel order.
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.69, hub
-$21.78, the v2 panel $37.05 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
+$21.78, the v2 panel $36.24 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (1590b7a) took another ≈ $4 off its
 floor.
 
