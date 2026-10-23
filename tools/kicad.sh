@@ -53,3 +53,19 @@ elif [ "$CHECK" = 1 ] || [ -n "$FAB" ]; then
 else
   kicad "$BOARD"
 fi
+
+# An output regenerated with new bytes for the same content (a date, a render's noise) goes back to the committed
+# one: outputs are committed with the change that alters them, never for a date (tools/keep_unchanged.py)
+if [ -n "$FAB" ]; then
+  PY=""
+  COMMON="$(git -C "$MOUNT" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+  for p in "${PYTHON:-}" "$REPO/.venv/bin/python" "$REPO/.venv/Scripts/python.exe" \
+           "${COMMON%/.git}/.venv/bin/python" "${COMMON%/.git}/.venv/Scripts/python.exe" python3 python; do
+    if [ -n "$p" ] && "$p" -c "import PIL" >/dev/null 2>&1; then PY="$p"; break; fi
+  done
+  if [ -n "$PY" ]; then
+    "$PY" "$MOUNT/tools/keep_unchanged.py" "$MOUNT/electronics/$BOARD"
+  else
+    echo "keep_unchanged: no Python with Pillow (set PYTHON=...): unchanged outputs not restored"
+  fi
+fi

@@ -24,6 +24,16 @@ DESKTOP = {"width": 1100, "height": 400}
 POLL_S = 2.5   # the pages poll their status every 2 s
 
 
+def quantise(path: Path, dither: bool = False) -> None:
+    """A screenshot cut to 256 colours, in place: every committed shot stays a third of an RGB PNG."""
+    from PIL import Image
+
+    Image.open(path).convert("RGB").quantize(
+        256, method=Image.Quantize.MEDIANCUT,
+        dither=Image.Dither.FLOYDSTEINBERG if dither else Image.Dither.NONE,
+    ).save(path, optimize=True)
+
+
 class Shots:
     def __init__(self, server, out: Path = DOCS_IMG, channel: str = "chrome"):
         self.server = server
@@ -56,16 +66,12 @@ class Shots:
         time.sleep(wait)
 
     def shoot(self, page, name: str, what: str = ".wrap", palette: bool = False) -> Path:
-        """palette: 256 colours, dithered (Pillow), for a shot with a camera frame in it, whose
-        noise would make a PNG of several MB."""
+        """Every shot is cut to 256 colours (Pillow): a UI's flat colours and text survive it at
+        about a third of the size.  palette: dithered as well, for a shot with a camera frame in
+        it, whose noise would make a PNG of several MB."""
         path = self.out / f"{name}.png"
         page.locator(what).screenshot(path=path, animations="disabled")
-        if palette:
-            from PIL import Image
-
-            Image.open(path).convert("RGB").quantize(
-                256, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.FLOYDSTEINBERG
-            ).save(path, optimize=True)
+        quantise(path, dither=palette)
         print(f"wrote {path}")
         return path
 
@@ -77,5 +83,6 @@ class Shots:
         page.screenshot(path=path, animations="disabled", full_page=True, clip={
             "x": foot["x"] - 4, "y": head["y"] - 4, "width": foot["width"] + 8,
             "height": foot["y"] + foot["height"] - head["y"] + 8})
+        quantise(path)
         print(f"wrote {path}")
         return path

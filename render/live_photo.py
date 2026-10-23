@@ -319,7 +319,7 @@ def screen_material():
     b.inputs["Base Color"].default_value = (0.01, 0.01, 0.012, 1)
     b.inputs["Roughness"].default_value = 0.05
     term = REPO / "render" / "assets" / "laptop-screen.png"          # render/screen_terminal.py
-    img_path = term if term.exists() else REPO / "electronics" / "bay-node" / "docs" / "bay-node-top.png"
+    img_path = term if term.exists() else REPO / "electronics" / "bay-node" / "docs" / "bay-node-top.jpg"
     tc = nt.nodes.new("ShaderNodeTexCoord")
     mp = nt.nodes.new("ShaderNodeMapping")
     # generated coords on the screen's X/Z face; the KiCad render keeps the board's aspect

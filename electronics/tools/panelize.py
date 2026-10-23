@@ -20,7 +20,7 @@ Writes, beside the board:
     <board>-panel.kicad_pcb / .kicad_pro / .kicad_dru       the panel (zones refilled with the board's rules)
     fab/<board>-panel-gerbers.zip                             its Gerbers and drill files
     fab/<board>-panel-bom-jlcpcb.csv, -panel-cpl-jlcpcb.csv   one BOM and CPL for both assemblies
-    docs/<board>-panel-top.png                                a render
+    docs/<board>-panel-top.jpg                                a render
 and checks: DRC (no schematic: no parity), every footprint's 3D model, the mouse bites' clearance to copper and
 to parts, and that each copy's rows in the panel's CPL and BOM are its variant's own (<board>[-<variant>]-…),
 moved and turned with it.
@@ -237,9 +237,8 @@ def build(name: str) -> int:
     ok &= not errors
 
     docs = outdir / "docs"
-    subprocess.run(["kicad-cli", "pcb", "render", "--side", "top", "--width", "1400", "--height", "2000",
-                    "--quality", "high", "--background", "transparent", "-o", docs / f"{pname}-top.png", out],
-                   check=False, capture_output=True)
+    build_board.render(out, docs / f"{pname}-top.jpg", "--side", "top", "--width", "1400", "--height", "2000",
+                       "--quality", "high")
     shutil.rmtree(outdir / "build" / "panel-gerbers", ignore_errors=True)
     return 0 if ok else 1
 

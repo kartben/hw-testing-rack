@@ -707,7 +707,7 @@ KiKit 1.8.1, built once), after `tools/kicad.sh <board> --fab`, which keeps the 
 - **Outputs:**
   - `fab/<board>-panel-gerbers.zip`;
   - one JLC BOM and CPL for both assemblies: `fab/<board>-panel-bom-jlcpcb.csv`, `-panel-cpl-jlcpcb.csv`;
-  - `docs/<board>-panel-top.png`.
+  - `docs/<board>-panel-top.jpg`.
   - The panel's KiCad project is git-ignored: the script rebuilds it.
 - **Checks:**
   - DRC (no parity: the panel has no schematic);

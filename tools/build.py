@@ -202,6 +202,11 @@ def main() -> int:
         webscene.build(rack)
         import bom  # noqa: E402
         bom.main()
+    if a.what in ("stl", "all", "web"):
+        # OpenSCAD orders an STL's triangles (and splits its zero-area slivers) differently run to run: the
+        # unchanged ones go back to their committed bytes (tools/keep_unchanged.py), as do unchanged GLBs
+        import keep_unchanged  # noqa: E402
+        keep_unchanged.main([str(MECH / "stl"), str(SITE_ASSETS)])
     return 1 if failed else 0
 
 

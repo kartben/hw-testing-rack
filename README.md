@@ -44,7 +44,7 @@ ESP32-S3 in each bay.**
 |---|---|
 | ![drawer](docs/img/photo-drawer.jpg) | ![boards](docs/img/photo-boards.jpg) |
 | Bay B3 pulled out, still connected: a DATA ×4 at the back serves two XIAOs and two Pico 2s | The DATA ×4 up close: a USB-C lead per board, Dupont jumpers wiring a UART between two of them ([real models](docs/boards-3d.md)) |
-| ![row B](docs/img/photo-detail.jpg) | ![bay node](electronics/bay-node/docs/bay-node-iso.png) |
+| ![row B](docs/img/photo-detail.jpg) | ![bay node](electronics/bay-node/docs/bay-node-iso.jpg) |
 | Row B: the GIGA's LVGL screen in B2, between two DATA ×4 bays | Bay node — ESP32-S3 (8 MB PSRAM), 2 USB muxes, TPS2553, INA226, CAN, 60 V buck |
 
 Neutral technical renders: [the rack](docs/img/hero.jpg), [one bay exploded](docs/architecture.md),
@@ -83,6 +83,10 @@ tools/kicad.sh camera-pod --route --fab
 python tools/bom.py                          # full rack BOM
 python -m http.server -d site 8000           # open http://localhost:8000
 ```
+
+Generated outputs (STLs, Gerbers, renders, PDFs, GLBs, the BOM) are committed with the change that alters
+them, never for a date: `python tools/keep_unchanged.py` puts back every regenerated file whose content didn't
+change (`tools/kicad.sh … --fab` runs it on its board).
 
 For screenshots the viewer takes URL parameters: `?bay=B4&openbay=1&view=dut&hideui`
 pulls bay B4's drawer out and frames its DUT cable (DATA port to board), with no UI.

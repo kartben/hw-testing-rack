@@ -27,6 +27,7 @@ sys.path.insert(0, str(HERE))
 REPO = HERE.parents[1]
 
 from catalog import HAND_SOLDER_LCSC  # noqa: E402
+from fab_dates import undate  # noqa: E402
 from eda import generate_schematic  # noqa: E402
 
 
@@ -244,9 +245,41 @@ def export_gerbers(pcb: Path, gerb: Path, zip_path: Path, n_layers: int) -> None
          "--use-drill-file-origin", "-o", str(gerb) + "/", pcb], check=True, capture_output=True)
     run(["kicad-cli", "pcb", "export", "drill", "--format", "excellon", "--excellon-separate-th",
          "--generate-map", "--map-format", "gerberx2", "-o", str(gerb) + "/", pcb], check=True, capture_output=True)
+    write_zip(zip_path, sorted(gerb.iterdir()))
+
+
+def write_zip(zip_path: Path, files) -> None:
+    """A zip that is the same bytes for the same files: no creation dates in them (fab_dates), members in name
+    order, one fixed timestamp and mode, so a run that changes nothing leaves the committed zip as it was."""
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
-        for f in sorted(gerb.iterdir()):
-            z.write(f, f.name)
+        for f in sorted(files, key=lambda f: f.name):
+            zi = zipfile.ZipInfo(f.name, date_time=(1980, 1, 1, 0, 0, 0))
+            zi.compress_type = zipfile.ZIP_DEFLATED
+            zi.external_attr = 0o644 << 16
+            z.writestr(zi, undate(f.name, f.read_bytes()))
+
+
+JPEG_QUALITY = 85         # the doc renders: ≈ a third of the PNGs' size, silkscreen text still sharp
+
+
+def render(pcb: Path, jpg: Path, *opts) -> None:
+    """A kicad-cli 3D render as a JPEG on white (PNG renders were 2–4× bigger, and every regenerated one stays
+    in the repository's history).  The PNG kicad-cli writes goes through the board's build/ folder."""
+    tmp = jpg.parent.parent / "build" / f"{jpg.stem}-render.png"
+    tmp.parent.mkdir(exist_ok=True)
+    run(["kicad-cli", "pcb", "render", *opts, "--background", "transparent", "-o", tmp, pcb], check=False,
+        capture_output=True)
+    if not tmp.exists():
+        return
+    from PIL import Image
+    im = Image.open(tmp).convert("RGBA")
+    bg = Image.new("RGBA", im.size, (255, 255, 255, 255))
+    bg.alpha_composite(im)
+    bg.convert("RGB").save(jpg, "JPEG", quality=JPEG_QUALITY, optimize=True)
+    tmp.unlink()
+    old = jpg.with_suffix(".png")           # the render's PNG from before 2026-10-23
+    if old.exists():
+        old.unlink()
 
 
 def export_fab(outdir: Path, name: str, b):
@@ -304,13 +337,10 @@ def export_fab(outdir: Path, name: str, b):
     run(["kicad-cli", "sch", "export", "pdf", "-o", docs / f"{name}-schematic.pdf", sch], check=True,
         capture_output=True)
     run(["kicad-cli", "sch", "export", "svg", "-o", str(docs / "svg"), sch], check=False, capture_output=True)
-    for side, extra in (("top", []), ("bottom", [])):
-        run(["kicad-cli", "pcb", "render", "--side", side, "--width", "1600", "--height", "1300", "--quality",
-             "high", "--background", "transparent", "-o", docs / f"{name}-{side}.png", *extra, pcb],
-            check=False, capture_output=True)
-    run(["kicad-cli", "pcb", "render", "--rotate", "-40,0,35", "--zoom", "0.85", "--width", "1600", "--height",
-         "1200", "--quality", "high", "--background", "transparent", "-o", docs / f"{name}-iso.png", pcb],
-        check=False, capture_output=True)
+    for side in ("top", "bottom"):
+        render(pcb, docs / f"{name}-{side}.jpg", "--side", side, "--width", "1600", "--height", "1300", "--quality", "high")
+    render(pcb, docs / f"{name}-iso.jpg", "--rotate", "-40,0,35", "--zoom", "0.85", "--width", "1600", "--height", "1200",
+           "--quality", "high")
     run(["kicad-cli", "pcb", "export", "step", "--subst-models", "-f", "-o", fab / f"{name}.step", pcb], check=False,
         capture_output=True)
     # board body + component models only: the layer art goes to the viewer as a texture
