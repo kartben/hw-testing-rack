@@ -39,14 +39,13 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 306.86 | 168.91 | 35.59 | 26.52 | 207.86 | **779.74** |
-| 5 | 179.16 | 50.33 | 13.84 | 7.17 | 65.02 | **322.33** |
-| 10 | 157.87 | 37.53 | 11.24 | 4.94 | 51.75 | **266.74** |
+| 1 | 298.86 | 160.91 | 35.59 | 26.52 | 207.86 | **763.74** |
+| 5 | 177.56 | 48.73 | 13.84 | 7.17 | 65.02 | **319.13** |
+| 10 | 157.07 | 36.73 | 11.24 | 4.94 | 51.75 | **265.14** |
 
-The node's and the hub's 4-layer orders include the rack's black mask ($8.00 per order, jlcpcb.com
-2026-10-23); it is free on 2 layers. The v2 is 4 layers again since 2026-10-23 (eaf77b9) and green since
-the same day (the user: "Ok, vert"; `pcb.data_port_x4_v2.solder_mask: green` over the rack's black), so
-it gets Economic PCBA. JLC's fees are those its quotes charged on 2026-10-23: Economic $8.24 setup,
+Every board is green since 2026-10-23 (the user: "faisons tout en vert"; `pcb.solder_mask: green`):
+JLC's green costs nothing. Black cost $8.00 per order on 4 layers (the node, the hub) and kept the v2
+out of Economic PCBA. The v2 is 4 layers again since the same day (eaf77b9). JLC's fees are those its quotes charged on 2026-10-23: Economic $8.24 setup,
 $1.55 stencil, $3.09 per extended type; Standard $25.75, $8.27, $1.55 per type.
 
 **The v2 panel's real JLC quote (2026-10-23).** The panel's committed Gerbers, JLC BOM and CPL were

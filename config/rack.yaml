@@ -210,11 +210,11 @@ cables:
   row-feed:     { label: "JST PH 6-pin feed, 1:1, 24 AWG (VRACK, CAN, POS)", length: 600 }
 
 pcb:
-  solder_mask: black        # the rack's own boards (the user's choice, 2026-10-21): JLC's black mask, white silkscreen.  Free on
-                            # 2 layers (a day more to build), $8.00 more an order on 4 (jlcpcb.com calculator, 2026-10-21: 5
-                            # PCBs ≤ 100 × 100, $8.00 → $16.00, the same 3–4 days).  The viewer and the renders paint it
-                            # (tools/pcb_glb.py); order it in the JLC form's "PCB Color".  A board's own
-                            # pcb.<board>.solder_mask overrides it (rackcfg.Rack.solder_mask): the DATA ×4 v2 is green
+  solder_mask: green        # the rack's own boards, every one (the user, 2026-10-23: "faisons tout en vert"; black from
+                            # 2026-10-21): JLC's green, white silkscreen, at no charge.  JLC's Economic PCBA takes 4 layers in
+                            # green only, and black cost $8.00 an order on 4 layers (jlcpcb.com, 2026-10-23).  The viewer and
+                            # the renders paint it (tools/pcb_glb.py); order it in the JLC form's "PCB Color".  A board's own
+                            # pcb.<board>.solder_mask overrides it (rackcfg.Rack.solder_mask)
   bay_node:
     size: [74, 90]          # X × Y; KiCad y=0 is the REAR edge, y=90 the front edge (grown 10 mm at the rear for
                             # the WROOM-1 module: every y below moved by 10, the board's front and holes stay put;
@@ -285,9 +285,6 @@ pcb:
     layers: 4               # F · GND · power (+3V3 above y 55.7, +5V below) · B: 4 layers again since 2026-10-23 (the
                             # routing portfolio and its fixes route it clean); electronics/data-port-x4-v2-6l keeps
                             # the 6-layer build (X4V2_LAYERS=6)
-    solder_mask: green      # over pcb.solder_mask, for every v2 order (the panel, the logic or the base alone): JLC's
-                            # Economic PCBA takes 4 layers in green only, black is Standard ($46.60 more for the panel,
-                            # real quotes of 2026-10-23); the user, 2026-10-23: "Ok, vert"
     cradle: 5.5             # each end's 5.5 mm in the cradle's slots (and its latches), both faces free of parts
     notches: { x: [35, 71], size: [3.4, 6.5] }   # its bottom edge's two notches (drawer x of their centres; width,
                             # depth), the cradle's T-heads.  Front face free of parts 7 wide × 6.0 tall round each; rear

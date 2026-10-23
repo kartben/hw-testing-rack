@@ -122,8 +122,8 @@ JLC_QUOTE = {
     # on its own (the rack orders it on the panel below).  The standing board, 100 × 70 mm, 4 layers again
     # (2026-10-23: the Freerouting portfolio routes the High-Speed pairs on F.Cu over GND at 4 layers; the
     # 6-layer build is the alternative), JLC04161H-7628, 0.3 mm vias plugged at no charge, ENIG for the
-    # RP2354B's 0.4 mm QFN-80, green (pcb.data_port_x4_v2.solder_mask, the user, 2026-10-23: JLC's Economic PCBA
-    # takes 4 layers in green only).  An estimate from that day's real quotes (jlcpcb.com, the user's account,
+    # RP2354B's 0.4 mm QFN-80, green (pcb.solder_mask, the user, 2026-10-23: JLC's Economic PCBA takes 4 layers
+    # in green only).  An estimate from that day's real quotes (jlcpcb.com, the user's account,
     # the committed Gerbers and the logic's JLC BOM and CPL of 2cd2cc0): the logic's own, in black, so Standard
     # with rails (100 × 80): $193.75 (PCB $33.50 = $8.00 + ENIG $17.50 + black $8.00; setup $25.75, stencil
     # $8.27, 39 types × $1.55 = $60.45, components $60.14, SMT $4.90, packaging $0.50, special components
@@ -162,7 +162,7 @@ JLC_QUOTE = {
     # part types once (the base's are a subset), both boards' parts bought together at the breaks they reach
     # (panel_order()).  JLC's real quote, 2026-10-23 (jlcpcb.com, the user's account, the panel's committed
     # Gerbers, JLC BOM and CPL of 2cd2cc0 uploaded with the user's OK): 5 panels, 2 assembled, green (the
-    # user, 2026-10-23: "Ok, vert"; pcb.data_port_x4_v2.solder_mask), Economic PCBA, no rails: $201.72, 3–4
+    # user, 2026-10-23: "Ok, vert", then every board green; pcb.solder_mask), Economic PCBA, no rails: $201.72, 3–4
     # days; the RP2354B (U11, logic) was out of stock at JLC and left unplaced (JLC_SINCE_QUOTE: $207.86 with
     # it).  JLC flags the rows that join _L and _B designators ("multiple types of parts?") and leaves them for
     # a tick; no X-ray line.  The alternative, black: Standard PCBA, the only one JLC offers on 4 layers in
