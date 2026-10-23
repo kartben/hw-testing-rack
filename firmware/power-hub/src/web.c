@@ -439,6 +439,9 @@ static const char *do_row(const struct api_req *r, int fields)
 	if (row < 0 || row >= HUB_ROWS) {
 		return "row must be A-D";
 	}
+	if (!rows_fitted(row)) {
+		return "row not fitted";
+	}
 	if (strcmp(r->action, "on") == 0) {
 		ret = rows_set(row, true);
 	} else if (strcmp(r->action, "off") == 0) {
@@ -770,6 +773,9 @@ static int metrics_handler(struct http_client_ctx *client, enum http_transaction
 	for (int r = 0; r < HUB_ROWS; r++) {
 		struct hub_row_status st;
 
+		if (!rows_fitted(r)) {
+			continue;
+		}
 		rows_status(r, &st);
 		put(&o, "hub_row_on{row=\"%c\"} %d\n", 'A' + r, st.state == HUB_ROW_ON);
 	}
@@ -777,6 +783,9 @@ static int metrics_handler(struct http_client_ctx *client, enum http_transaction
 	for (int r = 0; r < HUB_ROWS; r++) {
 		struct hub_row_status st;
 
+		if (!rows_fitted(r)) {
+			continue;
+		}
 		rows_status(r, &st);
 		put(&o, "hub_row_amps{row=\"%c\"} %d.%03d\n", 'A' + r, st.ma / 1000, st.ma % 1000);
 	}
@@ -785,12 +794,18 @@ static int metrics_handler(struct http_client_ctx *client, enum http_transaction
 	for (int r = 0; r < HUB_ROWS; r++) {
 		struct hub_row_status st;
 
+		if (!rows_fitted(r)) {
+			continue;
+		}
 		rows_status(r, &st);
 		put(&o, "hub_row_faults_total{row=\"%c\"} %u\n", 'A' + r, st.faults);
 	}
 	rows_budget(&budget);
 	put(&o, "# HELP hub_row_shed Row off for lack of power\n# TYPE hub_row_shed gauge\n");
 	for (int r = 0; r < HUB_ROWS; r++) {
+		if (!rows_fitted(r)) {
+			continue;
+		}
 		put(&o, "hub_row_shed{row=\"%c\"} %d\n", 'A' + r, (budget.shed & BIT(r)) != 0);
 	}
 	put(&o, "# HELP hub_rows_amps What the rows draw (IMON, summed)\n"

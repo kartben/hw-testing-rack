@@ -51,8 +51,13 @@
 			current-sense = <&imon_b>;
 		};
 
+		/*
+		 * Rows C and D are not fitted on the first build: their eFuses (U13,
+		 * U14), connectors (J4, J5) and LEDs are DNP.  Okay once fitted.
+		 */
 		row_c: row@2 {
 			reg = <2>;
+			status = "disabled";
 			enable-gpios = <&gpio0 16 GPIO_ACTIVE_HIGH>;
 			fault-gpios = <&gpio1 15 GPIO_ACTIVE_LOW>;
 			pos-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
@@ -61,6 +66,7 @@
 
 		row_d: row@3 {
 			reg = <3>;
+			status = "disabled";
 			enable-gpios = <&gpio0 17 GPIO_ACTIVE_HIGH>;
 			fault-gpios = <&gpio1 1 GPIO_ACTIVE_LOW>;
 			pos-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;

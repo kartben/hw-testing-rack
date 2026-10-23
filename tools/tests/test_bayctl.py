@@ -856,12 +856,19 @@ class Update(unittest.TestCase):
         out = cli("hub", "status")
         self.assertIn("PD 28.0 V / 5.00 A EPR", out)
         self.assertIn("row A  ON", out)
-        self.assertIn("row D  OFF", out)
+        self.assertIn("row C  not fitted", out)
+        self.assertIn("row D  not fitted", out)
 
-        out = cli("row", "D", "on")
-        self.assertIn("row D  ON", out)
-        out = cli("row", "D", "off")
-        self.assertIn("row D  OFF", out)
+        out = cli("row", "B", "off")
+        self.assertIn("row B  OFF", out)
+        out = cli("row", "B", "on")
+        self.assertIn("row B  ON", out)
+
+        # A row the hub does not have (power_hub.dtsi: rows C and D are not fitted)
+        r = subprocess.run([sys.executable, str(REPO / "tools" / "bayctl.py"), "--lab", str(lab), "row", "D", "on"],
+                           capture_output=True, text=True, timeout=30, env=env)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("row not fitted", r.stderr)
 
         out = cli("hub", "pd", "20v")
         self.assertIn("PD 20.0 V / 5.00 A", out)
@@ -878,7 +885,7 @@ class Update(unittest.TestCase):
 
         out = cli("hub", "events")
         self.assertIn("node 0x12: power-off", out)
-        self.assertIn("row D on", out)
+        self.assertIn("row B on", out)
 
 
 if __name__ == "__main__":

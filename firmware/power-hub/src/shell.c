@@ -68,6 +68,10 @@ static void print_rows(const struct shell *sh)
 		struct hub_row_status st;
 		int n;
 
+		if (!rows_fitted(r)) {
+			shell_print(sh, "row %c:     not fitted", 'A' + r);
+			continue;
+		}
 		rows_status(r, &st);
 		n = bus_row_nodes(r, nodes);
 		shell_print(sh, "row %c:     %-8s %4d mA  %d node(s)%s%s, %u fault(s)", 'A' + r,
@@ -136,6 +140,10 @@ static int cmd_row(const struct shell *sh, size_t argc, char **argv)
 
 	if (row < 0) {
 		return row;
+	}
+	if (!rows_fitted(row)) {
+		shell_error(sh, "row %c is not fitted", 'A' + row);
+		return -ENODEV;
 	}
 	if (strcmp(argv[2], "on") == 0) {
 		ret = rows_set(row, true);

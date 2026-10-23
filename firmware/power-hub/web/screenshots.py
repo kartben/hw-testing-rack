@@ -3,8 +3,8 @@
     pip install playwright
     python firmware/power-hub/web/screenshots.py            # -> docs/img/hub-ui-*.png
 
-Runs dev_server.py in-process (a simulated hub: 140 W EPR charger, nine
-bays in three rows), opens the page in the installed Chrome (--channel
+Runs dev_server.py in-process (a simulated hub: 140 W EPR charger, six
+bays in rows A and B), opens the page in the installed Chrome (--channel
 msedge for Edge), lets it collect samples for the input sparkline, then
 shoots: the claim dialog, then as the admin the rack in dark and light, the
 charger renegotiating down to 30 W with a row shed, an eFuse fault and a
@@ -61,15 +61,15 @@ def main() -> None:
         s.shoot(dark, "hub-ui-dark")
         s.shoot(light, "hub-ui-light")
 
-        s.poke("/dev/drop", wait=3 * POLL_S)    # the charger renegotiates to 30 W: row C shed
+        s.poke("/dev/drop", wait=3 * POLL_S)    # the charger renegotiates to 30 W: row B shed
         s.shoot(dark, "hub-ui-shed")
         s.poke("/dev/restore")
 
         s.poke("/dev/fault?row=B")              # an eFuse in current limit
-        s.poke("/dev/lose?node=0x22")           # C2 goes silent
+        s.poke("/dev/lose?node=0x13")           # B3 goes silent
         s.shoot(light, "hub-ui-fault")
         s.poke("/dev/fault?row=B&off=1", wait=0)
-        s.poke("/dev/lose?node=0x22", wait=0)
+        s.poke("/dev/lose?node=0x13", wait=0)
 
         # A firmware update: the dialog follows the restart and the trial...
         images = Path(tempfile.mkdtemp())

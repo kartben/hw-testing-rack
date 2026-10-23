@@ -89,7 +89,7 @@ node's real console code, Zephyr's shell sample as the DUT); details in
 | Access | written | reading is open; the page's actions (rows, contract, enumeration, node commands) are admin requests signed with the hub's key, claimed with a press on its BOOT button (`firmware/common/lib/admin.c`, as the bay nodes) |
 | Updates | written, tested on native_sim, not on hardware | as the bay nodes (same code, `firmware/common/lib/update.c`): [Programming › Over the network](#over-the-network); the console USB-C otherwise |
 
-![The hub's status page (simulated hub): the PD contract and the charger's offers, the rack bus, rows A–D with their bays](img/hub-ui-dark.png)
+![The hub's status page (simulated hub): the PD contract and the charger's offers, the rack bus, rows A and B with their bays (C and D not fitted)](img/hub-ui-dark.png)
 
 *The hub's page at `http://rack-<id>.local/`; the rows and the bays link
 to each bay's own page.  More in

@@ -80,6 +80,7 @@ enum hub_row_state {
 	HUB_ROW_ON,
 	HUB_ROW_SHED,     /* off for lack of power, comes back by itself */
 	HUB_ROW_CYCLING,
+	HUB_ROW_ABSENT,   /* not fitted: disabled in the devicetree */
 };
 
 struct hub_row_status {
@@ -110,6 +111,7 @@ void rows_budget(struct hub_budget_status *st);
 int rows_set_budget_margin(int margin_pct);
 int rows_set_budget_cap(uint32_t cap_mw);
 void rows_status(int row, struct hub_row_status *st);
+bool rows_fitted(int row);
 uint8_t rows_on_mask(void);
 uint8_t rows_fault_mask(void);
 uint8_t rows_shed_mask(void);

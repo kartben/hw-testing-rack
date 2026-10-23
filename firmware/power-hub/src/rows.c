@@ -12,6 +12,8 @@
  *    charger's contract (budget.c): over the budget, the next row in the
  *    shed order goes off; it comes back once the budget has room for it
  *    again.  No contract at all: every row off.
+ *  - A row disabled in the devicetree is not fitted: absent, never
+ *    enabled, no FLT interrupt, no IMON in the budget.
  *  - FLT counts only while the row is on and past its soft start
  *    (CONFIG_HUB_ROW_FLT_BLANK_MS): the TPS2660 also asserts it in
  *    shutdown and while it starts (datasheet 9.3.5.3).
@@ -61,10 +63,15 @@ struct row_cfg {
 
 static const struct row_cfg cfg[HUB_ROWS] = {DT_FOREACH_CHILD_STATUS_OKAY(ROWS_NODE, ROW_CFG)};
 
-/* A row the board wires (a bench stand-in may have only some: the others are disabled) */
+/* A row the board has (not fitted, or not on a bench stand-in: disabled) */
 static bool wired(int row)
 {
 	return cfg[row].en.port != NULL;
+}
+
+bool rows_fitted(int row)
+{
+	return row >= 0 && row < HUB_ROWS && wired(row);
 }
 
 struct row {
@@ -95,7 +102,7 @@ static K_WORK_DELAYABLE_DEFINE(fault_work, fault_handler);
 
 const char *rows_state_str(enum hub_row_state state)
 {
-	static const char *const names[] = {"off", "waiting", "on", "shed", "cycling"};
+	static const char *const names[] = {"off", "waiting", "on", "shed", "cycling", "absent"};
 
 	return names[state];
 }
@@ -480,6 +487,9 @@ int rows_cycle(int row, uint32_t off_ms)
 	if (row < 0 || row >= HUB_ROWS) {
 		return -EINVAL;
 	}
+	if (!wired(row)) {
+		return -ENODEV;
+	}
 
 	k_mutex_lock(&lock, K_FOREVER);
 	if (rows[row].state != HUB_ROW_ON) {
@@ -532,7 +542,7 @@ void rows_status(int row, struct hub_row_status *st)
 {
 	k_mutex_lock(&lock, K_FOREVER);
 	st->state = rows[row].state;
-	st->wanted = (wanted & BIT(row)) != 0;
+	st->wanted = wired(row) && (wanted & BIT(row)) != 0;
 	st->fault = rows[row].fault;
 	st->faults = rows[row].faults;
 	st->ma = rows[row].ma;
@@ -606,7 +616,7 @@ int rows_init(uint8_t wanted_rows, const char *order, int margin_pct, uint32_t c
 		bool on = pad_held(n) && pad_level(n) != 0;
 
 		if (!wired(r)) {
-			rows[r].state = HUB_ROW_OFF;
+			rows[r].state = HUB_ROW_ABSENT;
 			k_work_init_delayable(&rows[r].cycle_work, cycle_handler);
 			continue;
 		}

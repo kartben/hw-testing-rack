@@ -3,13 +3,13 @@
     python firmware/power-hub/web/dev_server.py [port]      # then open http://localhost:8767
 
 Same endpoints and JSON as src/web.c.  The "hub" is a dict the POSTs change:
-a 140 W EPR charger, four rows of bay nodes on the rack bus (CAN), their
-currents.  Test hooks:
+a 140 W EPR charger, rows A and B of bay nodes on the rack bus (CAN) as on
+the first build (rows C and D not fitted), their currents.  Test hooks:
 
-    /dev/drop             the charger renegotiates down to 20 V / 1.5 A (30 W): row C shed
+    /dev/drop             the charger renegotiates down to 20 V / 1.5 A (30 W): row B shed
     /dev/restore          back to the 140 W charger
-    /dev/fault?row=C      row C's eFuse trips (current limit), /dev/fault?row=C&off=1 clears it
-    /dev/lose?node=0x22   a node stops sending STATUS
+    /dev/fault?row=B      row B's eFuse trips (current limit), /dev/fault?row=B&off=1 clears it
+    /dev/lose?node=0x13   a node stops sending STATUS
     /dev/usb              the controller runs from its console USB-C only (no PD charger)
     /dev/boot             a short press on BOOT: confirms a pending claim
     /dev/rollback         the next firmware update does not confirm itself (MCUboot goes back)
@@ -40,6 +40,7 @@ from devserver import Admin, Firmware, PageHandler, make_image  # noqa: E402
 WEB = Path(__file__).resolve().parent
 START = time.monotonic() - 2 * 86400 - 5 * 3600
 ROWS = "ABCD"
+FITTED = "AB"   # power_hub.dtsi: rows C and D are not fitted on the first build
 MARGIN_PCT = 10  # CONFIG_HUB_BUDGET_MARGIN_PCT
 
 # What a 140 W EPR charger offers, as the CH224A shows it in EPR mode: positions 1-7 SPR
@@ -63,18 +64,16 @@ NODES = {
     ("A", 3): ("bay-a3", 420, "attached"),
     ("B", 1): ("bay-b1", 60, "classic"), ("B", 2): ("bay-b2", 0, "off"),
     ("B", 3): ("bay-b3", 140, "enumerated"),
-    ("C", 1): ("bay-c1", 310, "attached"), ("C", 2): ("bay-c2", 75, "service"),
-    ("C", 3): ("bay-c3", 210, "enumerated"),
 }
 
-# Bays with a camera (node ids: A1, A3, B3, C1), and the one someone is watching
-CAMERAS = {0x01, 0x03, 0x13, 0x21}
+# Bays with a camera (node ids: A1, A3, B3), and the one someone is watching
+CAMERAS = {0x01, 0x03, 0x13}
 CAMERAS_ACTIVE = {0x03}
 
 hub = {
     "hostname": "rack", "ip": "192.168.1.40", "version": "0.5.0",
     "charger": CHARGER_140W, "pref": "epr", "usb_only": False,
-    "rows": {r: {"on": r != "D", "fault": False, "faults": int(r == "B"), "shed": False, "cycling": 0.0} for r in ROWS},
+    "rows": {r: {"on": r in FITTED, "fault": False, "faults": int(r == "B"), "shed": False, "cycling": 0.0} for r in ROWS},
     "lost": set(),
     "sheds": 0,
     "enumerated_at": time.monotonic() - 754,
@@ -156,6 +155,10 @@ def status() -> dict:
     rows, total_ma = [], 0
     for row in ROWS:
         r = hub["rows"][row]
+        if row not in FITTED:   # src/rows.c: absent, never on, not counted
+            rows.append({"name": row, "state": "absent", "on": False, "fault": False, "wanted": False,
+                         "faults": 0, "ma": 0, "mw": 0, "nodes": []})
+            continue
         nodes = nodes_of(row, t)
         ma = row_current(row, nodes)
         total_ma += ma
@@ -239,28 +242,28 @@ class Handler(PageHandler):
                 self.json(200, events_doc())
             elif path == "/dev/drop":
                 hub["charger"] = CHARGER_30W
-                hub["rows"]["C"]["shed"] = hub["rows"]["C"]["on"]
+                hub["rows"]["B"]["shed"] = hub["rows"]["B"]["on"]
                 hub["sheds"] += 1
                 event("pd", "contract: 20.0 V / 1.50 A (30 W)")
-                event("row", "row C shed: 1.52 A > 1.35 A budget")
+                event("row", "row B shed: 1.52 A > 1.35 A budget")
                 self.json(200, status())
             elif path == "/dev/restore":
                 hub["charger"] = CHARGER_140W
                 for r in hub["rows"].values():
                     r["shed"] = False
                 event("pd", "contract: 28.0 V / 5.00 A EPR (140 W)")
-                event("row", "row C back: the budget has room for it again")
+                event("row", "row B back: the budget has room for it again")
                 enumerate_rack("rows back")
                 self.json(200, status())
             elif path == "/dev/fault":
-                row = q.get("row", "C").upper()
+                row = q.get("row", "B").upper()
                 hub["rows"][row]["fault"] = not q.get("off")
                 if hub["rows"][row]["fault"]:
                     hub["rows"][row]["faults"] += 1
                     event("fault", f"row {row}: eFuse in current limit (1.6 A)")
                 self.json(200, status())
             elif path == "/dev/lose":
-                nid = int(q.get("node", "0x22"), 0)
+                nid = int(q.get("node", "0x13"), 0)
                 hub["lost"] ^= {nid}
                 if nid in hub["lost"]:
                     event("can", f"node {ROWS[nid >> 4]}{nid & 15} (0x{nid:02x}) lost: no STATUS for 3.5 s")
@@ -316,6 +319,9 @@ class Handler(PageHandler):
                 if row not in ROWS or action not in ("on", "off", "cycle"):
                     self.json(400, {"error": "row A-D, action on|off|cycle"})
                     return
+                if row not in FITTED:
+                    self.json(400, {"error": "row not fitted"})
+                    return
                 r = hub["rows"][row]
                 if action == "cycle":
                     cycle(row, int(body.get("ms", 1000)))
@@ -363,9 +369,9 @@ def serve(port: int = 8767) -> ThreadingHTTPServer:
                                (-2 * 86400 - 5 * 3600 + 1, "pd",
                                 "contract: 9 V / 3.00 A (27 W), too low for the rows"),
                                (-2 * 86400 - 5 * 3600 + 3, "pd", "contract: 28 V / 5.00 A EPR (140 W)"),
-                               (-2 * 86400 - 5 * 3600 + 3, "row", "rows A, B, C on (staggered, 300 ms)"),
+                               (-2 * 86400 - 5 * 3600 + 3, "row", "rows A, B on (staggered, 300 ms)"),
                                (-3 * 3600, "fault", "row B: eFuse in current limit for 40 ms"),
-                               (-754, "can", "enumeration (node 0x21 rebooted): 9 nodes")):
+                               (-754, "can", "enumeration (node 0x11 rebooted): 6 nodes")):
             events.append((now + dt, kind, text))
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True

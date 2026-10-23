@@ -254,7 +254,8 @@ const pdSpark = new Spark($("pd-spark"), { floor: 5000 });
 const NODE_LABEL = { attached: "USB/IP attached", enumerated: "device ready", usbip: "no device",
   classic: "classic", service: "service", off: "DUT off", fault: "DUT fault", lost: "no answer",
   failed: "no address", incompatible: "newer protocol" };
-const ROW_LABEL = { on: "on", off: "off", shed: "shed", fault: "fault", cycling: "cycling", waiting: "waiting" };
+const ROW_LABEL = { on: "on", off: "off", shed: "shed", fault: "fault", cycling: "cycling", waiting: "waiting",
+  absent: "not fitted" };
 const KIND_COLOR = { pd: "var(--pd)", row: "var(--ok)", fault: "var(--fault)", can: "var(--usbip)", node: "var(--muted)",
   firmware: "var(--lease)" };
 let last = null;
@@ -317,13 +318,16 @@ function bayTile(n) {
 
 function renderRows(s) {
   const rack = $("rack");
-  s.rows.forEach((r, i) => {
+  /* A row the hub does not have (not fitted) has no shelf */
+  const rows = s.rows.filter((r) => r.state !== "absent");
+  while (rack.children.length > rows.length) rack.lastElementChild.remove();
+  rows.forEach((r, i) => {
     let li = rack.children[i];
     if (!li) {
       li = $("t-row").content.firstElementChild.cloneNode(true);
-      li.dataset.row = r.name;
       rack.append(li);
     }
+    li.dataset.row = r.name;
     li.dataset.state = r.state;
     li.querySelector(".letter").textContent = r.name;
     li.querySelector(".st").textContent = ROW_LABEL[r.state]
@@ -362,7 +366,7 @@ function renderRows(s) {
   }
   $("budget-bar").replaceChildren(...segments);
   const base = b.cap_mw && b.cap_mw < max ? `the ${b.cap_mw / 1000} W cap` : `the ${(max / 1000).toFixed(0)} W contract`;
-  $("budget-legend").innerHTML = s.rows.map((r) =>
+  $("budget-legend").innerHTML = rows.map((r) =>
     `<span>${r.name} ${r.on ? `${(r.mw / 1000).toFixed(1)} W` : ROW_LABEL[r.state]}</span>`).join("")
     + (max ? `<span>${(Math.max(limit - used, 0) / 1000).toFixed(0)} W spare</span>`
       + `<span title="Rows are shed above it, in the order ${b.shed_order}">budget: ${base} less ${b.margin_pct} %</span>` : "");

@@ -667,6 +667,9 @@ def hub_node_id(target: str) -> int:
 
 
 def _print_hub_row(r: dict) -> None:
+    if r.get("state") == "absent":
+        print(f"row {r.get('name', '?')}  not fitted")
+        return
     state = r.get("state", "on" if r.get("on") else "off").upper()
     nodes = " ".join(f"{n.get('pos', '?')}({n.get('state', '?')} {n.get('dut_ma', 0)}mA)"
                      for n in r.get("nodes", []))
