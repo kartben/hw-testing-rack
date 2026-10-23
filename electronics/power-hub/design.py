@@ -1,6 +1,7 @@
 """Power hub v0.5 — one per rack, in the power box under A1 (mechanical/parts/power_box.scad).
 
-USB-C PD in, from a dedicated USB PD 3.1 charger (140 W EPR recommended) on a 5 A e-marked cable.
+USB-C PD in, from a dedicated USB PD charger (100 W at 20 V by default, 140 W EPR at 28 V as an option)
+on a 5 A e-marked cable.
 A CH224A sink controller (WCH, PD 3.2) negotiates the PD contract: 9 V at plug-in (its CFG1
 resistor), then the rack controller asks it over I2C for 28 V EPR when the charger offers it, 20 V
 otherwise; the chip keeps the contract, and the EPR keep-alive, through ESP32 reboots.  VBUS is the
@@ -8,8 +9,9 @@ rack bus (VRACK, 20 or 28 V): no input switch, the four eFuses are the switches 
 the controller has a contract, reverse current blocked).
 VRACK fans out to four rows (A–D), each with its own TPS26600 eFuse:
   * current limit ≈ 1.6 A (RILIM 7.5k): it protects the JST PH (2 A) row cable;
-  * slow start (dVdT 22 nF ≈ 5 ms at 28 V);
-  * internal UV 15 V / OV 33 V defaults, auto-retry;
+  * slow start (dVdT 47 nF ≈ 7.5 ms at 20 V, 10.5 ms at 28 V): a row of four nodes (≈ 450 µF) charges
+    at ≈ 1.2 A, under the limit (22 nF needed ≈ 2.6 A);
+  * internal UV 15 V / OV 31–34 V (typ 32.6 V) defaults, auto-retry;
   * OFF until the controller turns it on: SHDN is pulled low, the ESP32 drives it high once the PD
     contract is final (row by row, staggered) and sheds rows when the contract drops;
   * ON (green, on the row's own output) and FAULT (red, from the open-drain FLT) side-view LEDs in
@@ -276,7 +278,7 @@ def board() -> Board:
     s.note("  controller reads the source's PDOs (0x60-0x8F) and writes 0x0A: 5 = 28 V EPR when offered, else 4 = 20 V.")
     s.note("No input switch: VBUS is VRACK.  The eFuses (UV 15 V, off until enabled, reverse current blocked) are the")
     s.note("  switches; the controller turns the rows on once 0x09 says PD (and EPR) and VBUS_SENSE reads the voltage.")
-    s.note("SMAJ30A: 30 V stand-off, above a 28 V EPR contract; the eFuses (60 V) and the TPS26600 OVP (33 V) follow.")
+    s.note("SMAJ30A: 30 V stand-off, above a 28 V EPR contract; the eFuses (60 V) and the TPS26600 OVP (31–34 V) follow.")
     s.note("R5/C4: the CH224A's VHV/VBUS pins are rated 32 V; the RC filters the fast edges the TVS can't reach.")
     s.note("VBUS_SENSE: 100k/10k from VBUS → 2.5 V at 28 V for the ESP32's ADC; also tells the firmware when to enable I2C_PU.")
 
@@ -294,10 +296,10 @@ def board() -> Board:
         C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(16.9, yc - 2.0, 180))
         C(o, f"C{30 + n}", "1u", f"ROW_{ch}", "GND", size="0805", pcb=P(34.0, yc - 2.6, 0))
         R(o, f"R{20 + n}", "7.5k", f"ILIM_{ch}", "GND", pcb=P(34.0, yc + 1.0, 0))
-        C(o, f"C{20 + n}", "22n", f"DVDT_{ch}", "GND", pcb=P(34.0, yc + 2.6, 0))
+        C(o, f"C{20 + n}", "47n", f"DVDT_{ch}", "GND", pcb=P(34.0, yc + 2.6, 0))
         R(o, f"R{30 + n}", "18k", f"IMON_{ch}", "GND", pcb=P(34.0, yc + 4.2, 0))
         R(o, f"R{60 + n}", "1k", f"IMON_{ch}", f"ADC_IMON_{ch}", pcb=P(37.4, yc + 4.2, 0))
-        C(o, f"C{60 + n}", "22n", f"ADC_IMON_{ch}", "GND", pcb=P(40.4, yc + 4.2, 0))
+        C(o, f"C{60 + n}", "47n", f"ADC_IMON_{ch}", "GND", pcb=P(40.4, yc + 4.2, 0))
         # SHDN: off by default (10k to GND: the pin sources up to 10 µA, 0.1 V, under the 0.55 V threshold;
         # 100k gave 1 V, on without firmware: pcba-review H3); the controller drives ROW_EN high, through 10k
         # (1.65 V), to turn it on
@@ -325,20 +327,21 @@ def board() -> Board:
         part(o, f"D{40 + n}", "schottky", {"A": "GND", "K": f"ROW_{ch}"}, pcb=P(11.5, yj + 6.635, 270))
         part(o, f"D{30 + n}", "bat54s", {"A": "GND", "K": "+3V3", "COM": f"POS_{ch}"}, pcb=P(16.6, yj + 7.6, 0))
     o.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).")
-    o.note("t_dVdT = 8e3 · V_IN · C_dVdT → 22 nF ≈ 3.5 ms at 20 V, 4.9 ms at 28 V.")
-    o.note("IMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 22 nF to the ESP32's ADC.")
+    o.note("t_dVdT = 8e3 · V_IN · C_dVdT → 47 nF ≈ 7.5 ms at 20 V, 10.5 ms at 28 V.  A row of four nodes (≈ 450 µF)")
+    o.note("  then charges at C / (8e3 · C_dVdT) ≈ 1.2 A, under the 1.6 A limit (22 nF needed ≈ 2.6 A).")
+    o.note("IMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 47 nF (47 µs) to the ESP32's ADC.")
     o.note("SHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (on above 0.94 V).")
     o.note("The firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.")
     o.note("FLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for")
     o.note("  a fault on an enabled row (FLT is also low while a row is off or starting).")
     o.note("D41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.")
-    o.note("UVLO / OVP / MODE to GND: internal 15 V / 33 V thresholds, current-limit mode, auto-retry.")
+    o.note("UVLO / OVP / MODE to GND: internal 15 V / 31–34 V (typ 32.6 V) thresholds, current-limit mode, auto-retry.")
 
     # ------------------------------------------------------------------ controller
-    c = b.sheet("Controller", "controller.kicad_sch", "Rack controller: supplies, ESP32-S3, USB-C, CAN")
-    c.block("5 V buck: LMR51635, as the bay node (TI SLUSF64B table 8-2), from VBUS ahead of the switch")
-    part(c, "U2", "buck", {"VIN": "VRACK", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
-                           "GND": "GND"}, pcb=P(58.00, 12.0 + BY, 0))
+    c = b.sheet("Controller", "controller.kicad_sch", "Rack controller: supplies, ESP32-S3, USB-C, CAN", paper="A2")
+    c.block("5 V buck: LMR51625 (2.5 A; the controller takes < 0.7 A) and 4.7 µH, as the bay node (TI SLUSF64B table 8-1), from VRACK")
+    part(c, "U2", "buck25", {"VIN": "VRACK", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
+                             "GND": "GND"}, pcb=P(58.00, 12.0 + BY, 0))
     C(c, "C104", "10u", "VRACK", "GND", size="1206", pcb=P(58.00, 16.8 + BY, 0))
     C(c, "C105", "10u", "VRACK", "GND", size="1206", pcb=P(58.00, 19.4 + BY, 0))
     C(c, "C106", "100n", "VRACK", "GND", pcb=P(58.00, 14.6 + BY, 0))
@@ -347,7 +350,7 @@ def board() -> Board:
     R(c, "R205", "39k", "VRACK", "BUCK_EN", pcb=P(54.78, 14.3 + BY, 90))
     R(c, "R206", "18k", "BUCK_EN", "GND", pcb=P(54.00, 12.0 + BY, 180))
     C(c, "C107", "100n", "BUCK_CB", "BUCK_SW", pcb=P(59.60, 9.5 + BY, 0))
-    part(c, "L1", "buck_l", {"1": "BUCK_SW", "2": "+5V_BUCK"}, "3.3u", pcb=P(65.70, 12.0 + BY, 0))
+    part(c, "L1", "buck_l47", {"1": "BUCK_SW", "2": "+5V_BUCK"}, "4.7u", pcb=P(65.70, 12.0 + BY, 0))
     for i in range(3):
         C(c, f"C{108 + i}", "22u", "+5V_BUCK", "GND", size="1206", pcb=P(64.0 + 2.5 * i, 18.5 + BY, 270))
     # FB 100k/18k: 0.8 V × (1 + 100/18) = 5.24 V, as the bay node; ≈ 4.9 V after D4 for the TJA1462AT (4.5–5.5 V)
@@ -410,7 +413,7 @@ def board() -> Board:
     for i, (r1, r2, cc, mid, y) in enumerate((("R215", "R216", "C118", "CAN_TERM1", 64.0), ("R217", "R218", "C119", "CAN_TERM2", 66.6))):
         R(c, r1, "56", "CAN_H", mid, pcb=P(61.0, y, 0))
         R(c, r2, "56", mid, "CAN_L", pcb=P(64.4, y, 0))
-        C(c, cc, "22n", mid, "GND", pcb=P(67.6, y, 0))      # split cap: the eFuses' 22n (dVdT, IMON filter), one type
+        C(c, cc, "47n", mid, "GND", pcb=P(67.6, y, 0))      # split cap: the eFuses' 47n (dVdT, IMON filter), one type
     part(c, "D9", "can_esd", {"1": "CAN_H", "2": "CAN_L", "3": "GND"}, pcb=P(55.5, 66.0, 0))
 
     c.block("Mounting (M3, on the power box's standoffs)")
@@ -419,7 +422,7 @@ def board() -> Board:
     c.note("GPIO: IO1/2/4/5 IMON A–D, IO6 VBUS_SENSE (ADC1) · IO7/8/9 CAN TX/RX/STB · IO10–13 POS A–D ·")
     c.note("  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·")
     c.note("  IO19/20 USB.  Strapping IO3/45/46 unused.")
-    c.note("Termination: two split 2 × 56 Ω + 22 nF (56 Ω in all) at the star centre; nodes carry none.")
+    c.note("Termination: two split 2 × 56 Ω + 47 nF (56 Ω in all) at the star centre; nodes carry none.")
     c.note("+5V: buck (5.24 V; ≈ 4.8 V in dropout on a 5 V contract) or USB VBUS through B5819W Schottkys;")
     c.note("  AP2112K (250 mV dropout) keeps 3.3 V down to a 5 V contract.  The TJA1462AT wants 4.5–5.5 V: CAN runs once VRACK is up.")
     return b

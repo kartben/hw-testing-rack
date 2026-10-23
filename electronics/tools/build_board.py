@@ -153,8 +153,8 @@ JLC_CPL_FIX = {
     # JLC's has its pegs 0.55 mm from its origin and its pads drawn 0.13 mm further out.  The pegs go into
     # the 0.85 mm holes, so they set the point (pcba-review N1, 2026-10-19; −0.25 until then, from the pads)
     "C431540": ("SW_SPDT_Shouhan_MSK12C02", 0, 0.0, -0.55),
-    "C45262770": ("TSOT-23-6", 270, 0.0, 0.0),                                # hub U2 (LMR51635; FXL0630 L1 needs none)
-    "C44991044": ("TSOT-23-6", 270, 0.0, 0.0),                                # bay U1 (LMR51625: drawn as C45262770)
+    "C45262770": ("TSOT-23-6", 270, 0.0, 0.0),                                # LMR51635: both boards' buck until 2026-10-23
+    "C44991044": ("TSOT-23-6", 270, 0.0, 0.0),                                # bay U1, hub U2 (LMR51625: drawn as C45262770)
     "C11355": ("MSOP-10_3x3mm_P0.5mm", 270, 0.0, 0.0),                        # bay U5 U6
     "C49851": ("TSSOP-10_3x3mm_P0.5mm", 270, 0.0, 0.0),                       # bay U10
     "C7519": ("SOT-23-6", 270, 0.0, 0.0),                                     # bay U4 U8

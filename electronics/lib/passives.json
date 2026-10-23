@@ -153,6 +153,15 @@
   "stock": 2370592,
   "basic": true
  },
+ "C:47n:0603": {
+  "lcsc": "C1622",
+  "mpn": "CL10B473KB8NNNC",
+  "manufacturer": "Samsung Electro-Mechanics",
+  "description": "47nF 50V X7R ±10% 0603 Multilayer Ceramic Capacitors MLCC - SMD/SMT ROHS",
+  "price": 0.0077,
+  "stock": 1005547,
+  "basic": true
+ },
  "C:47p:0603": {
   "lcsc": "C1671",
   "mpn": "CL10C470JB8NNNC",

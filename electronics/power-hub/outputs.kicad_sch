@@ -3172,7 +3172,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22n"
+		(property "Value" "47n"
 			(at 120.65 71.12 0)
 			(effects
 				(font
@@ -3199,7 +3199,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 22n 0603"
+		(property "Description" "Capacitor 47n 0603"
 			(at 116.84 73.66 0)
 			(effects
 				(font
@@ -3208,7 +3208,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C21122"
+		(property "LCSC" "C1622"
 			(at 116.84 73.66 0)
 			(effects
 				(font
@@ -3217,7 +3217,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B223KB8NNNC"
+		(property "MPN" "CL10B473KB8NNNC"
 			(at 116.84 73.66 0)
 			(effects
 				(font
@@ -3617,7 +3617,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22n"
+		(property "Value" "47n"
 			(at 151.13 73.66 0)
 			(effects
 				(font
@@ -3644,7 +3644,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 22n 0603"
+		(property "Description" "Capacitor 47n 0603"
 			(at 147.32 76.2 0)
 			(effects
 				(font
@@ -3653,7 +3653,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C21122"
+		(property "LCSC" "C1622"
 			(at 147.32 76.2 0)
 			(effects
 				(font
@@ -3662,7 +3662,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B223KB8NNNC"
+		(property "MPN" "CL10B473KB8NNNC"
 			(at 147.32 76.2 0)
 			(effects
 				(font
@@ -6871,7 +6871,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22n"
+		(property "Value" "47n"
 			(at 120.65 151.13 0)
 			(effects
 				(font
@@ -6898,7 +6898,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 22n 0603"
+		(property "Description" "Capacitor 47n 0603"
 			(at 116.84 153.67 0)
 			(effects
 				(font
@@ -6907,7 +6907,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C21122"
+		(property "LCSC" "C1622"
 			(at 116.84 153.67 0)
 			(effects
 				(font
@@ -6916,7 +6916,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B223KB8NNNC"
+		(property "MPN" "CL10B473KB8NNNC"
 			(at 116.84 153.67 0)
 			(effects
 				(font
@@ -7316,7 +7316,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22n"
+		(property "Value" "47n"
 			(at 151.13 153.67 0)
 			(effects
 				(font
@@ -7343,7 +7343,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 22n 0603"
+		(property "Description" "Capacitor 47n 0603"
 			(at 147.32 156.21 0)
 			(effects
 				(font
@@ -7352,7 +7352,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C21122"
+		(property "LCSC" "C1622"
 			(at 147.32 156.21 0)
 			(effects
 				(font
@@ -7361,7 +7361,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B223KB8NNNC"
+		(property "MPN" "CL10B473KB8NNNC"
 			(at 147.32 156.21 0)
 			(effects
 				(font
@@ -10570,7 +10570,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22n"
+		(property "Value" "47n"
 			(at 120.65 232.41 0)
 			(effects
 				(font
@@ -10597,7 +10597,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 22n 0603"
+		(property "Description" "Capacitor 47n 0603"
 			(at 116.84 234.95 0)
 			(effects
 				(font
@@ -10606,7 +10606,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C21122"
+		(property "LCSC" "C1622"
 			(at 116.84 234.95 0)
 			(effects
 				(font
@@ -10615,7 +10615,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B223KB8NNNC"
+		(property "MPN" "CL10B473KB8NNNC"
 			(at 116.84 234.95 0)
 			(effects
 				(font
@@ -11015,7 +11015,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22n"
+		(property "Value" "47n"
 			(at 151.13 234.95 0)
 			(effects
 				(font
@@ -11042,7 +11042,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 22n 0603"
+		(property "Description" "Capacitor 47n 0603"
 			(at 147.32 237.49 0)
 			(effects
 				(font
@@ -11051,7 +11051,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C21122"
+		(property "LCSC" "C1622"
 			(at 147.32 237.49 0)
 			(effects
 				(font
@@ -11060,7 +11060,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B223KB8NNNC"
+		(property "MPN" "CL10B473KB8NNNC"
 			(at 147.32 237.49 0)
 			(effects
 				(font
@@ -14269,7 +14269,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22n"
+		(property "Value" "47n"
 			(at 120.65 312.42 0)
 			(effects
 				(font
@@ -14296,7 +14296,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 22n 0603"
+		(property "Description" "Capacitor 47n 0603"
 			(at 116.84 314.96 0)
 			(effects
 				(font
@@ -14305,7 +14305,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C21122"
+		(property "LCSC" "C1622"
 			(at 116.84 314.96 0)
 			(effects
 				(font
@@ -14314,7 +14314,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B223KB8NNNC"
+		(property "MPN" "CL10B473KB8NNNC"
 			(at 116.84 314.96 0)
 			(effects
 				(font
@@ -14714,7 +14714,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "22n"
+		(property "Value" "47n"
 			(at 151.13 314.96 0)
 			(effects
 				(font
@@ -14741,7 +14741,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 22n 0603"
+		(property "Description" "Capacitor 47n 0603"
 			(at 147.32 317.5 0)
 			(effects
 				(font
@@ -14750,7 +14750,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C21122"
+		(property "LCSC" "C1622"
 			(at 147.32 317.5 0)
 			(effects
 				(font
@@ -14759,7 +14759,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B223KB8NNNC"
+		(property "MPN" "CL10B473KB8NNNC"
 			(at 147.32 317.5 0)
 			(effects
 				(font
@@ -18155,10 +18155,10 @@
 			)
 		)
 	)
-	(text_box "TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).\nt_dVdT = 8e3 · V_IN · C_dVdT → 22 nF ≈ 3.5 ms at 20 V, 4.9 ms at 28 V.\nIMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 22 nF to the ESP32's ADC.\nSHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (on above 0.94 V).\nThe firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.\nFLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for\n  a fault on an enabled row (FLT is also low while a row is off or starting).\nD41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.\nUVLO / OVP / MODE to GND: internal 15 V / 33 V thresholds, current-limit mode, auto-retry."
+	(text_box "TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).\nt_dVdT = 8e3 · V_IN · C_dVdT → 47 nF ≈ 7.5 ms at 20 V, 10.5 ms at 28 V.  A row of four nodes (≈ 450 µF)\n  then charges at C / (8e3 · C_dVdT) ≈ 1.2 A, under the 1.6 A limit (22 nF needed ≈ 2.6 A).\nIMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 47 nF (47 µs) to the ESP32's ADC.\nSHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (on above 0.94 V).\nThe firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.\nFLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for\n  a fault on an enabled row (FLT is also low while a row is off or starting).\nD41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.\nUVLO / OVP / MODE to GND: internal 15 V / 31–34 V (typ 32.6 V) thresholds, current-limit mode, auto-retry."
 		(exclude_from_sim no)
 		(at 20.32 353.06 0)
-		(size 414.02 25.4)
+		(size 414.02 26.67)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

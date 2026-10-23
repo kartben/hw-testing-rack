@@ -244,14 +244,14 @@ with JLC's rails) it gets JLC's 4-layer offer, without the $25 engineering fee
 |---|---|---|
 | USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → VRACK, 100 µF / 50 V; no input switch | the whole rack's current, ≤ 5 A, in top pours.  VBUS is VRACK: the eFuses keep the rows off until the contract is final and block reverse current, so nothing switches the input (the AP33772S version had a 5 mΩ shunt and back-to-back IRF7842 NMOS here) |
 | PD sink | WCH CH224A (ESSOP-10): 9 V at plug-in (CFG1 6.8 k, the one-resistor mode, I²C on), its own Rd on CC1/CC2, supply (VHV and VBUS tied) through 56 Ω + 1 µF 50 V, I²C + PG to the controller, its own LED in the front wall (PD) | the controller asks for 28 V EPR (else 20 V) over I²C; rows stay locked out below 15 V; the chip keeps the contract through controller resets.  Its pins are rated 32 V: the RC takes surges' fast edges off |
-| Rows A–D | 4 × TPS26600 (1.6 A, ≈ 5 ms soft start, UV 15 V / OV 33 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md).  **Rows C and D are not fitted for now** (below) |
+| Rows A–D | 4 × TPS26600 (1.6 A, soft start 47 nF: ≈ 7.5 ms at 20 V, 10.5 ms at 28 V, UV 15 V / OV 31–34 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md).  A row of four nodes is ≈ 450 µF: the soft start charges it at ≈ 1.2 A, under the limit (22 nF until 2026-10-23 needed ≈ 2.6 A).  **Rows C and D are not fitted for now** (below) |
 | Row control | SHDN pulled low by 10 k (the pin sources up to 10 µA: 0.1 V, under its 0.55 V threshold; 100 k gave 1 V, enough to turn a row on without firmware); the controller drives ROW_EN high through 10 k (1.65 V) | **rows are off without firmware**; on once the contract is final, one after the other |
 | Per row | ON (green, from the row's own output through 10 k by the eFuse); FAULT (red) from the row's ROW_EN into the open-drain FLT, so it lights only for a fault on an enabled row (the TPS26600 also pulls FLT low while a row is off or starting); FLT also to the controller (100 k pull-up); a B5819W from GND to the output at the connector, for the cable's kick when the eFuse cuts a short | Kingbright KPA-3010 side-view LEDs in the box's front wall |
-| Row current | IMON 18 k → 1.4 V/A, 1 k + 22 nF to the ESP32's ADC | |
-| Controller supply | LMR51635 from VRACK (EN 39k/18k: from ≈ 3.9 V; FB 100k/18k: 5.24 V; the bay node's layout, with the LMR51635 and 3.3 µH the node had until 2026-10-23), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from the charger's first 5 V; runs on the console USB alone for flashing |
+| Row current | IMON 18 k → 1.4 V/A, 1 k + 47 nF (47 µs) to the ESP32's ADC | |
+| Controller supply | LMR51625 (2.5 A; the controller takes < 0.7 A) + 4.7 µH from VRACK, the bay node's pair (TI SLUSF64B table 8-1; the LMR51635 and 3.3 µH until 2026-10-23, same pinout and footprint) (EN 39k/18k: from ≈ 3.9 V; FB 100k/18k: 5.24 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from the charger's first 5 V; runs on the console USB alone for flashing |
 | Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
 | PD interface | SDA / SCL (the CH224A's CFG3 / CFG2) with 5.1 k pull-ups fed from a GPIO (I2C_PU), PG (open drain, low once the contract is in place) with a 10 k pull-up to 3.3 V on the net PD_INT, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered CH224A |
-| CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 22 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
+| CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 47 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
 | POS | 4 GPIOs → 10 k → pin 1 of each row output (the outputs have the bay nodes' OUT pinout: 1 POS · 2 GND · 3 CAN_L · 4 CAN_H · 5 GND · 6 VRACK), BAT54S clamp to GND / 3.3 V | survives a wrong cable (VRACK on POS) |
 
 **Layout**, with the bay node's practices: JLC's 4-layer stackup (JLC04161H-7628), ENIG for now (the
@@ -787,7 +787,7 @@ Two savings are applied since, as adjustments to the quote (≈ $213):
   - PD INT divider 10k/18k: 3.2 V.
   - I²C pull-ups 5.1k.
   - Every front LED on 1k (1.2–1.4 mA).
-  - The IMON filters and the CAN split caps on 22 nF (the eFuses' dVdT value).
+  - The IMON filters and the CAN split caps on the eFuses' dVdT value (22 nF then, 47 nF since 2026-10-23).
   - The LDO's input cap 1 µF 0805 (the eFuses' part; the buck's 3 × 22 µF sit just before D4).
 
 **The CH224A instead of the AP33772S: ≈ $185.**  The AP33772S had no LCSC stock; the CH224A
@@ -810,10 +810,10 @@ current limit and IMON, the CH224A's CFG1, the buck's FB).
 |---|---|
 | PD input | 4: CH224A, 6.8k (CFG1), SMAJ30A, 100 µF (the AP33772S version had 8: the switch, shunt and NTC) |
 | 4 eFuse rows | 5: TPS26600, S6B, red LED, BAT54S, 7.5k ILIM |
-| 5 V buck, 3.3 V LDO | 5: LMR51635, inductor, AP2112K, 22 µF, 39k |
+| 5 V buck, 3.3 V LDO | 5: LMR51625, inductor, AP2112K, 22 µF, 39k |
 | ESP32 and USB console | 4: ESP32-S3-MINI-1, USBLC6, 2 buttons, 1 µF 0603 |
 | CAN | 2: TJA1462AT, PESD2CAN |
-| shared | 13: 100n, 22n, 1 µF 0805, 10 µF 1206, green LED, USB4105, B5819W (the buck's OR and, since the PCBA review, each row's output), 1k, 100k, 10k, 5.1k, 56 Ω, 18k |
+| shared | 13: 100n, 47n, 1 µF 0805, 10 µF 1206, green LED, USB4105, B5819W (the buck's OR and, since the PCBA review, each row's output), 1k, 100k, 10k, 5.1k, 56 Ω, 18k |
 
 **Rows C and D are not fitted for now** (the user, 2026-10-23: the rack has two rows).  Their
 footprints and routing stay; `FITTED` in `design.py` marks their costly parts DNP, so the JLC BOM and
@@ -939,8 +939,8 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C2913201 ESP32-S3-WROOM-1-N8R8 | node U3 | +3.63 mm y | to confirm |
 | C471518 JST B6B-PH-SM4-TB | node J5 until the 74 × 90 re-layout | 180°, −0.63 mm y | not on the node any more |
 | C431540 MSK12C02 | node SW3 | −0.55 mm y (on its pegs: KiCad's footprint is Shouhan's land pattern, JLC's draws its pads 0.13 mm further out; −0.25 mm until the PCBA review left the pegs 0.30 mm off their 0.85 mm holes) | to confirm, drills shown |
-| C45262770 LMR51635 TSOT-23-6 | hub U2 (node U1 until 2026-10-23) | 270° (same EasyEDA footprint as C7519) | to confirm |
-| C44991044 LMR51625 SOT-23-6 | node U1 | 270° (EasyEDA draws it as C45262770 and C7519) | to confirm |
+| C45262770 LMR51635 TSOT-23-6 | node U1 and hub U2 until 2026-10-23 | 270° (same EasyEDA footprint as C7519) | to confirm |
+| C44991044 LMR51625 SOT-23-6 | node U1, hub U2 | 270° (EasyEDA draws it as C45262770 and C7519) | to confirm |
 | C11355 FSUSB42 MSOP-10 | node U5 U6 | 270° | to confirm |
 | C49851 INA226 VSSOP-10 | node U10, DATA ×4 U102–U402 | 270° | to confirm |
 | C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8 U12 U13, data port U1, DATA ×4 U4 U5 U103–U403 | 270° | to confirm |

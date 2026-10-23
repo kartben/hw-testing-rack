@@ -208,7 +208,7 @@
 		pg-gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
 		/* CFG1 6.8k: 9 V at plug-in */
 		startup-microvolt = <9000000>;
-		/* Never above 28 V (the nodes' TVS, the eFuses' 33 V OVP) */
+		/* Never above 28 V (the nodes' TVS, the eFuses' 31–34 V OVP) */
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <28000000>;
 	};

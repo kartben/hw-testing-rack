@@ -35,7 +35,7 @@ the row's first node.  Box and lid: [mechanical.md](mechanical.md#power-box).
 | **Avoid** | sharing the charger: a multi-port charger can withdraw its full offer when another device is plugged in, and renegotiate the rack down |
 
 The hub never accepts 36 V or 48 V (EPR goes up to 48 V): the bay nodes' TVS
-stands off 33 V and the eFuses cut out at 33 V.  20 V and 28 V are both fine,
+stands off 33 V and the eFuses cut out at 31–34 V (typ 32.6 V).  20 V and 28 V are both fine,
 the nodes start above 13.5 V.
 
 ## Negotiation and sequencing
@@ -200,7 +200,7 @@ same boards run from a 24 V brick too, or on a desk from a 15–30 V supply on J
 USB PD charger (100 W at 20 V; 140 W EPR at 28 V as an option) → 5 A e-marked cable → hub (in the power box):
   USB4105 (5 A) → SMAJ30A TVS → VRACK (VBUS itself, no input switch), 100 µF
      CH224A on VBUS through 56 Ω + 1 µF: the contract (9 V, then 28 / 20 V as the controller asks)
-  → 4 × TPS26600 eFuse (rows A–D, 1.6 A limit, ≈ 5 ms soft start, UV 15 V / OV 33 V, auto-retry, off until enabled)
+  → 4 × TPS26600 eFuse (rows A–D, 1.6 A limit, 7.5–10.5 ms soft start, UV 15 V / OV 31–34 V, auto-retry, off until enabled)
   → 6-pin JST PH → each bay node:
      SUD50P06 P-FET → SMBJ33A TVS → 100 µF → LMR51625 (60 V, on above 13.5 V) → 5 V
      → TPS2553 → 50 mΩ shunt (INA226) → DUT
@@ -226,7 +226,7 @@ USB PD charger (100 W at 20 V; 140 W EPR at 28 V as an option) → 5 A e-marked 
   damped.  Bring-up checks it on two or three chargers (assembly.md); a charger
   that refuses it gets C8 left off.
 * A short on VRACK itself, ahead of the eFuses, is the charger's to catch
-  (every PD source has its own OCP).  Above 28 V: the eFuses cut out at 33 V,
+  (every PD source has its own OCP).  Above 28 V: the eFuses cut out at 31–34 V,
   and the CH224A resets above 32 V; its supply's RC rides through a surge's
   fast edge, but the SMAJ30A only starts at 33.3 V.
 * **No clamp on the CH224A's supply.**  A zener there would have to stay off
