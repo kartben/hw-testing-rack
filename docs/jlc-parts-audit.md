@@ -39,9 +39,9 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 298.86 | 160.91 | 35.59 | 26.52 | 207.86 | **763.74** |
-| 5 | 177.56 | 48.73 | 13.84 | 7.17 | 65.02 | **319.13** |
-| 10 | 157.07 | 36.73 | 11.24 | 4.94 | 51.75 | **265.14** |
+| 1 | 298.86 | 150.12 | 35.59 | 26.52 | 207.86 | **752.95** |
+| 5 | 177.56 | 44.09 | 13.84 | 7.17 | 65.02 | **314.48** |
+| 10 | 157.07 | 33.34 | 11.24 | 4.94 | 51.75 | **261.75** |
 
 Every board is green since 2026-10-23 (the user: "faisons tout en vert"; `pcb.solder_mask: green`):
 JLC's green costs nothing. Black cost $8.00 per order on 4 layers (the node, the hub) and kept the v2
@@ -106,7 +106,7 @@ review's pass: the co-processor's AP2112K out (17 extended types, not 18), a VBU
 less a panel order.
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.69, hub
-$21.78, the v2 panel $34.80 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
+$18.48, the v2 panel $34.80 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (1590b7a) took another ≈ $4 off its
 floor.
 
@@ -155,7 +155,7 @@ board's owner, and the trade-off ones need the user.
 
 | Lever | Boards | Saves (10 racks) | Kind | Check done / to do |
 |---|---|---:|---|---|
-| **USB-C where 5 A at 48 V isn't needed**: USB4105 ($0.52 at 100) → HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V, $0.15 at 100; 331k stock, the node's part before v0.5) | node J3, hub J6 (console), DATA port J1 (15 a rack; the v2 has HRO already) | ≈ $71 | decision | Each port draws ≤ 1.5 A (5 A rating) at ≤ 5.25 V (20 V rating). The hub's PD input J1 keeps the GCT for the 48 V that 28 V EPR needs. Needs new footprints, a re-route (the node's USB HS pair) and a mechanical check; it also moves 15 of the 16 per rack off a part LCSC holds none of |
+| **USB-C where 5 A at 48 V isn't needed**: USB4105 ($0.52 at 100) → HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V, $0.15 at 100; 331k stock, the node's part before v0.5) | node J3, hub J6 (console), DATA port J1 (15 a rack; the v2 has HRO already) | ≈ $71 | decision | Each port draws ≤ 1.5 A (5 A rating) at ≤ 5.25 V (20 V rating). The hub's PD input J1 keeps the GCT for the 48 V that 28 V EPR needs. Needs new footprints, a re-route (the node's USB HS pair) and a mechanical check; it also moves 15 of the 16 per rack off a part LCSC holds none of. On the hub alone it saves nothing: J1 stays GCT, so the HRO is one part type more ($1.55, as much as it saves) |
 | **JST PH SMD second source**: S6B / S8B / B8B-PH-SM4-TB ($0.25–0.42) → PH 2.0 SMD clones ≈ $0.04–0.07 (e.g. SHOU HAN 2.0-xP WT / LT, WAFER-PH2.0-6PWB C3029444), or CJT's A2001WR-S-6P C225237 / A2001WR-S-8P C225239 / A2001WV-S-8P C225232 (vertical) at $0.16–0.20 @ 100 (phosphor bronze, LCP, −40…105 °C) | node (5), hub (4), DATA ports, DATA ×4, pods (52 a rack; the v2's J1 is hand-soldered) | ≈ $129 no-name, ≈ $68 CJT | decision (open) | Same 2 A rating; mates with PHR housings. Check the footprint geometry against each clone's drawing. Genuine JST holds up better on cables that are re-plugged |
 | **USBLC6-2SC6 second source**: ST C7519 ($0.12–0.18) → UMW C2687116 ($0.042 at 100) or TECH PUBLIC C2827654 ($0.036) | node (4), hub, DATA ports, DATA ×4 v2 and its base (4 each) (47 a rack) | ≈ $38 | decision | Same SOT-23-6 and pinout, so pins 1 / 6 and 3 / 4 still join inside and the flow-through layout holds. Check the clamp voltage and capacitance against ST's (0.35 pF line-to-line on the UMW) |
 | **DATA ×4 USB hub**: USB2514B → CH334R or FE1.1s | DATA ×4 v1 | — | moot | v1 is not ordered; the v2's USB2517I serves 7 ports (the four, the analyzer, two spare) |
@@ -165,7 +165,7 @@ board's owner, and the trade-off ones need the user.
 | **DATA ×4 v2 base in lead-free HASL** when ordered alone | v2 base | $12.20 per order | single orders only | Its finest pitch is the hub's 0.5 mm QFN, which v1 put on HASL. The rack's base is on the ENIG panel; the HASL estimate stays for a single base order (the BOM page's calculator) |
 | **DATA ×4 v2 resistor arrays** → basic 0402 resistors | DATA ×4 v2 (logic) | $9.21 per order (3 extended types at Economic's $3.07) | **declined** (the v2 session, 2026-10-20) | They stay: 60 resistors in place of 15 arrays means re-placing and re-routing the pin chains. In the base, RN1–RN3 sit over the hub's 0.5 mm strap pins, where a row of 0402s doesn't fit |
 | **PD sink**: AP33772S (Global Sourcing, stock 0) → CH224A | hub | the hub order went from $205.95 to $185.29 | **applied** (1590b7a) | No input switch any more. The CH224Q (C46061833) and the HUSB238A-BB001-QN16R (C24833806, PD 3.x EPR to 28 / 48 V, $0.40 at 100) remain as second sources; the HUSB238 (non-A) and the CH224K stop at 20–25 V |
-| **Hub rows C and D not fitted** (already in `JLC_LEVERS`) | hub | ≈ $35 | decision | 2 × TPS26600, 2 × S6B, 4 LEDs and their passives per hub |
+| **Hub rows C and D not fitted** | hub | $10.79 a hub order (2 assembled): $10.59 parts, $0.20 joints | **applied** (91617fd; the user, 2026-10-23: "ne montons pas C et D pour l'instant") | 2 × TPS26600, 2 × S6B, 4 LEDs per hub DNP, their passives kept; no part type goes, so no feeder fee (`JLC_SINCE_QUOTE`) |
 
 An external BOM review (2026-10-19) was checked against the catalog by the orchestrator. Most of its LCSC codes were wrong, and its fee premise doesn't hold on Standard PCBA (every unique type is charged). Its valid levers (the HRO USB-C, the PH clones, the USBLC6 second source) are in the table above; the fourth, the TPS2553DDBVR on the node's U9, is applied (4ebe8f1: $0.19 against $0.54, same pinout and I_LIM).
 

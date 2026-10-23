@@ -218,7 +218,14 @@ JLC_SINCE_QUOTE = {"power-hub": [("76 × 100 mm: JLC's 4-layer offer, no enginee
                                   ("3 part types fewer (CH224A)", "feeders", -4.65),
                                   # the PCBA review's fixes (2026-10-20) that apply with the CH224A: a B5819W at
                                   # each row output (the board's type, 4 a board); the gate clamp went with the switch
-                                  ("PCBA review: 4 × B5819W a board", "components", 0.24)],
+                                  ("PCBA review: 4 × B5819W a board", "components", 0.24),
+                                  # rows C and D not fitted on the first build (91617fd, the user, 2026-10-23:
+                                  # "ne montons pas C et D pour l'instant"): U13/U14, J4/J5, D13/D14, D23/D24 DNP,
+                                  # their passives kept; no part type goes (rows A and B use each), so no feeder
+                                  # fee; the parts at the snapshot's breaks × 1.12, 58 joints a board at $0.0017
+                                  ("rows C and D not fitted: 2 × TPS26600, 2 × S6B-PH, 4 LEDs a board",
+                                   "components", -10.59),
+                                  ("rows C and D not fitted: 58 joints fewer a board", "SMT", -0.20)],
                    # the v2 panel's quote left the RP2354B (C39843328) unplaced: JLC had none in stock on
                    # 2026-10-23 (2 at its $1.5242 once restocked, a 17th extended type; other users sold theirs
                    # at $2.91)
@@ -247,16 +254,16 @@ JLC_FEES = {
 # "decision": a trade-off for the user.  A lever applied in a board leaves this list for its quote.
 JLC_LEVERS = {
     "power-hub": [
-        ("rows C and D not fitted (DNP, footprints kept): the rack has 2 rows", 9.68, "decision"),
-        ("USB-C J6 (the console; the PD input J1 stays GCT for 48 V): HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) "
-         "instead of the GCT USB4105: a new footprint, re-route, mechanical check", 1.47, "decision"),
+        # rows C and D not fitted: applied (JLC_SINCE_QUOTE).  The console USB-C J6 in HRO instead of the GCT
+        # saves nothing: the PD input J1 stays GCT, so the HRO is a part type more ($1.55), as much as it saves
         ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
          "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check (4 a board)", 2.66, "decision"),
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's "
          "C7519", 0.25, "decision"),
     ],
     "bay-node": [
-        ("9 assembled instead of 10 (8 bays and 1 spare)", 21.08, "decision"),
+        ("9 assembled instead of 10 (8 bays and 1 spare): four parts cross back over a 10-piece price break, "
+         "so one board less saves little", 1.02, "decision"),
         ("USB-C J3: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, "
          "re-route, mechanical check", 5.37, "decision"),
         ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
