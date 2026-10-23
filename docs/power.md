@@ -202,12 +202,12 @@ USB PD charger (100 W at 20 V; 140 W EPR at 28 V as an option) → 5 A e-marked 
      CH224A on VBUS through 56 Ω + 1 µF: the contract (9 V, then 28 / 20 V as the controller asks)
   → 4 × TPS26600 eFuse (rows A–D, 1.6 A limit, ≈ 5 ms soft start, UV 15 V / OV 33 V, auto-retry, off until enabled)
   → 6-pin JST PH → each bay node:
-     SUD50P06 P-FET → SMBJ33A TVS → 100 µF → LMR51635 (60 V, on above 13.5 V) → 5 V
+     SUD50P06 P-FET → SMBJ33A TVS → 100 µF → LMR51625 (60 V, on above 13.5 V) → 5 V
      → TPS2553 → 50 mΩ shunt (INA226) → DUT
 ```
 
 * Hot-plugging a bay node into a live bus rings up to ~2× the bus on ceramic
-  caps: the bay buck is a **60 V** LMR51635 and its TVS clamps below 54 V; the
+  caps: the bay buck is a **60 V** LMR51625 and its TVS clamps below 54 V; the
   electrolytic damps the ringing.
 * The hub eFuses soft-start each row, so plugging a row never browns out the
   others, and a shorted bay only trips its own row.
@@ -238,5 +238,5 @@ USB PD charger (100 W at 20 V; 140 W EPR at 28 V as an option) → 5 A e-marked 
   ESSOP-10, replaceable by hand).  With the default 100 W charger VBUS is 20 V:
   the pins sit 11 V under their rating.
 
-Sources: WCH CH224 datasheet (v2.1), USB PD 3.1 specification, TI TPS2660 / LMR51635 (SLUSF64B)
+Sources: WCH CH224 datasheet (v2.1), USB PD 3.1 specification, TI TPS2660 / LMR51625 and LMR51635 (SLUSF64B)
 datasheets, ADI AN-88 (hot-plug ringing), LCSC listings (Oct 2026).

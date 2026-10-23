@@ -53,7 +53,7 @@ reflow and doesn't tombstone.  Through-hole pins keep their reliefs, so they tak
 spokes on a hand-soldered power pin).  `<board>.kicad_dru` says it twice: a rule connects the
 power nets' IC, connector and inductor pins solid, and another asks each power net's relieved pads
 for its minimum spokes (2 on the bus and the supplies); a single spoke stays allowed elsewhere, where
-fine-pitch neighbours leave no room for two.  The LMR51635's hot loop (CIN – VIN – GND) and
+fine-pitch neighbours leave no room for two.  The LMR51625's hot loop (CIN – VIN – GND) and
 its output capacitors sit on small solid top-side islands, with hand-placed
 vias to In1, as TI's layout guide asks; the AMS1117's tab gets a solid +3V3
 island with vias to In2.  Hand-soldered through-hole pads always get thermal
@@ -105,7 +105,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | Row cable in/out | 2 × JST PH 6, side entry, SMD (S6B-PH-SM4-TB).  J1 (IN): 1 VRACK · 2 GND · 3 CAN_H · 4 CAN_L · 5 GND · 6 POS in; J2 (OUT) mirrored: 1 POS out · 3 CAN_L · 4 CAN_H · 6 VRACK ([can.md](can.md)) | daisy chain, 2 A per contact; the hub's 1.6 A eFuse protects it; each power pin on a solid island with vias to its plane; every net runs straight across (J1.1 → J2.6, J1.3/4 → J2.4/3): the jumper between nodes lies flat, no twist |
 | Rack bus | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, STB tied low) + PESD2CAN on the tap; POS in: 10k + BAT54S + 470k pull-down (100k until the PCBA review: 2.75 V high); POS out: 10k + BAT54S | transceiver right on the pair (stubs 1.8 / 2.3 mm routed, ≤ 20 mm asked), no termination (both are in the hub); a wrong cable (VRACK on a POS pin) costs ≈ 2.5 mA at 28 V |
 | Protection | SUD50P06 P-FET + 12 V zener, SMBJ33A, 100 µF/50 V | reverse polarity, hot-plug clamp < 54 V |
-| 5 V | LMR51635YDDCR (60 V, 3.5 A, synchronous, 1.1 MHz) + 3.3 µH FXL0630 | TI typical application (SLUSF64B table 8-2): 3 × 22 µF out, 2 × 10 µF + 100 nF in; FB 100k/18k → 5.24 V (≈ 4.75 V still at the DATA board at 1.4 A, below); EN 100k/10k: on above 13.5 V, off below 10.8 V |
+| 5 V | LMR51625YDDCR (60 V, 2.5 A, synchronous, 1.1 MHz) + 4.7 µH FXL0630 | TI typical application (SLUSF64B table 8-1): 3 × 22 µF out (the table asks 22 µF), 2 × 10 µF + 100 nF in; a bay draws ≤ 2.2 A, so the inductor peaks at ≈ 2.6 A from 28 V, under the 2.9 A minimum peak limit (the LMR51635, 3.5 A with 3.3 µH, until 2026-10-23: same pinout and footprint, $0.53 more a node); FB 100k/18k → 5.24 V (≈ 4.75 V still at the DATA board at 1.4 A, below); EN 100k/10k: on above 13.5 V, off below 10.8 V |
 | 3.3 V | AMS1117-3.3 | logic only |
 | MCU | ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM for the camera's frames; the DevKitC-1-N8R8's module), C2913201 | antenna on the rear edge, keep-out on all layers (the footprint's own ±24 mm band); `bench:ESP32-S3-WROOM-1_NoEPVias` (no 0.2 mm vias in the exposed pad: a GND island stitched around it); rated −40…+65 °C |
 | DUT power | TPS2553D (RILIM 18k → 1.34–1.52 A; the TPS2553's pinout and I_LIM equations, plus reverse-voltage protection, at a third of the price), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N), Vbus tied to Vin− at its pins (DUT_5V at the shunt's load end); default **on** (also without firmware), fault flag to GPIO |
@@ -148,7 +148,7 @@ status LED on its own RGB LED's IO38, so the bench stand-in needs no remap.  `fi
 **Row power VRACK, 20 or 28 V.** The hub negotiates 20 V, or 28 V (EPR), from a USB-C PD charger
 and passes it to the rows as VRACK (pin 1 of the row cable; the node's net `VRACK`, then `VIN`
 after the reverse-polarity P-FET).  The input stage takes both: the SMBJ33A stands off 33 V
-(28 V + 5 % = 29.4 V), the LMR51635 runs from 4.3 to 60 V and its EN divider (100k/10k) starts it
+(28 V + 5 % = 29.4 V), the LMR51625 runs from 4.3 to 60 V and its EN divider (100k/10k) starts it
 above 13.5 V, and the P-FET and its 12 V gate zener are rated 60 V.  At 20 V a row draws more
 current for the same load; the hub's eFuse still caps it at 1.6 A.  The hub keeps every row off
 until the PD contract is final, so a node sees one clean power-up.
@@ -929,7 +929,8 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C2913201 ESP32-S3-WROOM-1-N8R8 | node U3 | +3.63 mm y | to confirm |
 | C471518 JST B6B-PH-SM4-TB | node J5 until the 74 × 90 re-layout | 180°, −0.63 mm y | not on the node any more |
 | C431540 MSK12C02 | node SW3 | −0.55 mm y (on its pegs: KiCad's footprint is Shouhan's land pattern, JLC's draws its pads 0.13 mm further out; −0.25 mm until the PCBA review left the pegs 0.30 mm off their 0.85 mm holes) | to confirm, drills shown |
-| C45262770 LMR51635 TSOT-23-6 | node U1 | 270° (same EasyEDA footprint as C7519) | to confirm |
+| C45262770 LMR51635 TSOT-23-6 | hub U2 (node U1 until 2026-10-23) | 270° (same EasyEDA footprint as C7519) | to confirm |
+| C44991044 LMR51625 SOT-23-6 | node U1 | 270° (EasyEDA draws it as C45262770 and C7519) | to confirm |
 | C11355 FSUSB42 MSOP-10 | node U5 U6 | 270° | to confirm |
 | C49851 INA226 VSSOP-10 | node U10, DATA ×4 U102–U402 | 270° | to confirm |
 | C7519 USBLC6-2SC6 SOT-23-6 | node U4 U8 U12 U13, data port U1, DATA ×4 U4 U5 U103–U403 | 270° | to confirm |
@@ -969,7 +970,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
 0805, 1206), the electrolytics (+ pad), the diodes and LEDs (cathode side),
-the WS2812B-2020, the FXL0630 inductor (C167219), the TS-1187A buttons and the 3225 crystal (C15643);
+the WS2812B-2020, the FXL0630 inductors (C167219, C167220: one EasyEDA footprint), the TS-1187A buttons and the 3225 crystal (C15643);
 for DATA ×4 v2 the RP2354B (C39843328), the USB2517I (C478081), the ABM8 crystal
 (C20625731) and the AOTA 3.3 µH inductor (C42411119).  The green
 LED C2297 numbers its pads the other way round (pad 2 is the cathode), but
@@ -996,7 +997,7 @@ as KiCad has it.
 ## Custom library
 
 `electronics/lib/bench.kicad_sym` holds the symbols the stock library
-lacks: TPS2553DBV, LMR51635 (KiCad's LMR51430 has another pinout), and for
+lacks: TPS2553DBV, LMR51635 (the LMR51625's too, same pinout; KiCad's LMR51430 has another), and for
 DATA ×4 v2 the CH446Q and the USB2517I (generated by
 `electronics/tools/symbols.py`, pin names as in their datasheets).  The
 footprints and 3D models come from KiCad 10's standard libraries, the few

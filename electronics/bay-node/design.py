@@ -3,7 +3,7 @@
 Functions
   * Row cable in/out (JST PH 6, daisy-chained bay to bay, docs/can.md): the row bus VRACK (20 V, or
     28 V EPR, from the hub's USB-C PD supply), the rack's CAN pair and the POS addressing token.
-    Reverse-polarity P-FET, TVS, LMR51635 synchronous buck to 5 V / 3.5 A, 3.3 V LDO for the logic.
+    Reverse-polarity P-FET, TVS, LMR51625 synchronous buck to 5 V / 2.5 A, 3.3 V LDO for the logic.
   * CAN: TJA1462AT on the ESP32-S3 TWAI, tapping the pair that runs J1 → J2 (no termination).
   * POS: token in on J1.6, out on J2.1 (J2 is J1 mirrored), each through 10k + a BAT54S clamp (survives VRACK on it).
   * DUT power: DUT_5V through a TPS2553 current-limited switch (≈1.4 A) and a 50 mΩ shunt read by an
@@ -171,7 +171,7 @@ def board() -> Board:
                         "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX"])
     b.root_notes = [
         "Bay node — one per bay.  Sheets:",
-        "  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51635 buck, AMS1117",
+        "  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51625 buck, AMS1117",
         "  MCU: ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM), reset/boot, status LED, UART pads",
         "  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)",
         "  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT",
@@ -348,7 +348,7 @@ def board() -> Board:
     s.wire("Q1.S", (48, 12))
     s.tag("VIN", (48, 12), "up")
 
-    s.frame("5 V buck: LMR51635, synchronous, 1.1 MHz, 3.5 A (TI SLUSF64B typical application)", 6, 32, 84, 60)
+    s.frame("5 V buck: LMR51625, synchronous, 1.1 MHz, 2.5 A (TI SLUSF64B typical application)", 6, 32, 84, 60)
     s.tag("VIN", (12, 38), "up")
     s.wire((12, 38), (35, 38), (35, 45), "U1.VIN")
     C(s, "C2", "10u", "VIN", "GND", size="1206", pcb=P(8, 48.8, 0), sch=at(16, 41.5))
@@ -362,12 +362,12 @@ def board() -> Board:
     s.wire((29, 38), "R2.1")
     s.wire("R2.2", "R3.1")
     s.wire((29, 44), (33, 44), (33, 47), "U1.EN")
-    part(s, "U1", "buck", {"VIN": "VIN", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
-                           "GND": "GND"}, pcb=P(8, 44, 0), sch=at(40, 46, fields=(-4, -4)))
+    part(s, "U1", "buck25", {"VIN": "VIN", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
+                             "GND": "GND"}, pcb=P(8, 44, 0), sch=at(40, 46, fields=(-4, -4)))
     C(s, "C5", "100n", "BUCK_CB", "BUCK_SW", pcb=P(9.6, 41.5, 0), sch=at(51.5, 41, rot=90))
     s.wire("U1.CB", (46, 45), (46, 41), "C5.1")
     s.wire("C5.2", (53, 46))
-    part(s, "L1", "buck_l", {"1": "BUCK_SW", "2": "+5V"}, "3.3u", pcb=P(15.7, 44, 0), sch=at(57.5, 46, rot=90))
+    part(s, "L1", "buck_l47", {"1": "BUCK_SW", "2": "+5V"}, "4.7u", pcb=P(15.7, 44, 0), sch=at(57.5, 46, rot=90))
     s.wire("U1.SW", (53, 46), "L1.1")
     s.wire("L1.2", (80, 46))
     s.tag("+5V", (80, 46), "up")
@@ -389,8 +389,9 @@ def board() -> Board:
     s.wire("U2.VO", (112, 42))
     s.tag("+3V3", (112, 42), "up")
     s.notes_at = (6, 64, 110)
-    s.note("LMR51635YDDCR: 1.1 MHz, PFM at light load with spread spectrum.  Values from TI SLUSF64B table 8-2 (5 V, 1.1 MHz):")
-    s.note("  L 3.3 µH (FXL0630, 9.5 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.")
+    s.note("LMR51625YDDCR (2.5 A; a bay draws ≤ 2.2 A): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):")
+    s.note("  L 4.7 µH (FXL0630, 9 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.")
+    s.note("  At 2.2 A from 28 V the inductor peaks at ≈ 2.6 A (0.8 A ripple), under the 2.9 A minimum peak current limit.")
     s.note("FB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V: ≈ 4.75 V still reaches the DATA board at 1.4 A over 50 cm")
     s.note("  of PH lead (switch, shunt, one PH pin each way); everything on +5V takes it (TJA1462AT ≤ 5.5 V).")
     s.note("EN 100k/10k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node")

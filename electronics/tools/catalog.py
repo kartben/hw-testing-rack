@@ -59,6 +59,17 @@ CAT = {
                 description="4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum"),
     "buck_l": Cat("Device:L", "Inductor_SMD:L_Changjiang_FXL0630", "FXL0630-3R3-M", "cjiang", "C167219", 0.11,
                   description="3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded"),
+    # the bay node's buck since 2026-10-23: the family's 2.5 A part, same DDC package and pinout (TI SLUSF64B
+    # table 5-1), same EasyEDA footprint; a bay draws ≤ 2.2 A (docs/power-distribution-review.md).  The hub
+    # keeps the LMR51635 ("buck")
+    "buck25": Cat("bench:LMR51635", "Package_TO_SOT_SMD:TSOT-23-6", "LMR51625YDDCR", "Texas Instruments",
+                  "C44991044", 1.19, datasheet="https://www.ti.com/lit/ds/symlink/lmr51625.pdf",
+                  alt="LMR51625YFDDCR (C45262768): same, forced PWM, no spread spectrum; "
+                      "LMR51635YDDCR (C45262770): 3.5 A, 3.3 µH",
+                  description="4.3–60 V 2.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum"),
+    # its inductor: TI SLUSF64B table 8-1 (LMR51625, 5 V, 1.1 MHz), the same FXL0630 footprint
+    "buck_l47": Cat("Device:L", "Inductor_SMD:L_Changjiang_FXL0630", "FXL0630-4R7-M", "cjiang", "C167220", 0.10,
+                    description="4.7 µH, 9 A sat, 6 A rms, 33 mΩ, molded"),
     "ldo": Cat("Regulator_Linear:AMS1117-3.3", "Package_TO_SOT_SMD:SOT-223-3_TabPin2", "AMS1117-3.3", "AMS", "C6186",
                0.21, basic=True, description="3.3 V 1 A LDO"),
     "pfet": Cat("Transistor_FET:SUD50P06-15", "Package_TO_SOT_SMD:TO-252-2", "SUD50P06-15(UMW)", "UMW", "C7503186",

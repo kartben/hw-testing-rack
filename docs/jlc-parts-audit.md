@@ -39,9 +39,9 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 | Racks in one order | Node ×8 | Hub ×1 | DATA ports ×6 | Pods ×2 | v2 panel ×1 (logic + base) | **Per rack** |
 |---:|---:|---:|---:|---:|---:|---:|
-| 1 | 298.86 | 150.12 | 35.59 | 26.52 | 207.86 | **752.95** |
-| 5 | 177.56 | 44.09 | 13.84 | 7.17 | 65.02 | **314.48** |
-| 10 | 157.07 | 33.34 | 11.24 | 4.94 | 51.75 | **261.75** |
+| 1 | 292.34 | 150.12 | 35.59 | 26.52 | 207.86 | **746.43** |
+| 5 | 173.67 | 44.09 | 13.84 | 7.17 | 65.02 | **310.59** |
+| 10 | 153.17 | 33.34 | 11.24 | 4.94 | 51.75 | **257.85** |
 
 Every board is green since 2026-10-23 (the user: "faisons tout en vert"; `pcb.solder_mask: green`):
 JLC's green costs nothing. Black cost $8.00 per order on 4 layers (the node, the hub) and kept the v2
@@ -105,7 +105,7 @@ fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors
 review's pass: the co-processor's AP2112K out (17 extended types, not 18), a VBUS LED per port, $3.03
 less a panel order.
 
-Floor per board, once the fees per order no longer count (100-board breaks): node $16.69, hub
+Floor per board, once the fees per order no longer count (100-board breaks): node $16.33, hub
 $18.48, the v2 panel $34.80 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
 $20.85 and $36.04 for the node and the hub; the hub's CH224A (a20dd24) took another ≈ $4 off its
 floor.
@@ -115,7 +115,7 @@ Where a board's parts money goes, at 10 racks:
 | Board | Parts per board | Biggest lines |
 |---|---:|---|
 | hub | $19.12 | TPS26600 ×4 $4.58 · ESP32-S3-MINI-1-N8 $4.16 · LMR51635 $1.59 · USB4105 ×2 $1.45 · S6B ×4 $1.15 · KPA-3010 ×10 $1.85 · TJA1462 $0.83 · CH224A $0.34 |
-| node | $12.58 | ESP32-S3-WROOM-1-N8R8 $4.08 · LMR51635 $1.43 · S6B ×3 $0.74 · TJA1462 $0.74 · USB4105 $0.63 · INA226 $0.52 · USBLC6 ×4 $0.47 · B8B $0.42 |
+| node | $12.14 | ESP32-S3-WROOM-1-N8R8 $4.08 · LMR51625 $1.01 · S6B ×3 $0.74 · TJA1462 $0.74 · USB4105 $0.63 · INA226 $0.52 · USBLC6 ×4 $0.47 · B8B $0.42 |
 | DATA ×4 v2 | $23.57 | USB2517I $3.80 · LSF0108 ×4 $3.35 · CH446Q ×2 $2.71 · INA226 ×4 $2.07 · RP2354B $1.46 · TCA6408A ×2 $1.43 · TPS2553-1 ×4 $1.18 · TYPE-C-31-D-06 ×4 $1.14 · TCA9534 $1.13 |
 | v2 base | $12.40 | USB2517I $3.80 · INA226 ×4 $2.07 · TCA6408A ×2 $1.43 · TPS2553-1 ×4 $1.18 · TYPE-C-31-D-06 ×4 $1.14 · USBLC6 ×4 $0.71 · AP2114H $0.23 |
 | DATA port | $1.16 | USB4105 $0.63 · S8B $0.33 · USBLC6 $0.14 |
@@ -131,13 +131,13 @@ The threshold is JLC's assembly stock against 10 racks' need, summed over the bo
 | CH224A (C42459160) | hub | 12,463 | 10 | none: in stock since a20dd24 replaced the out-of-stock AP33772S (and its Global Sourcing); WCH only |
 | USB4105-GF-A-120 (C5184243) | node, hub, DATA port | 3,562 | 160 | JLC holds 22×, but **LCSC has 0**: when JLC's stock runs out, it can't refill from LCSC (the v2 has the HRO TYPE-C-31-D-06) |
 | S6B-PH-SM4-TB (C265405) | node, hub | 4,813 | 280 | 17×; genuine JST only |
-| LMR51635YDDCR (C45262770) | node, hub | 2,500 | 90 | 28×, TI only |
+| LMR51625YDDCR (C44991044) | node | 4,220 | 80 | 53×, TI only; the hub's LMR51635 (C45262770): 937 on 2026-10-23, 10 needed |
 | KPA-3010CGCK (C598310) | hub | 2,203 | 60 | 37×, Kingbright only |
 | CH446Q (C109471) | DATA ×4 v2 | 1,744 | 20 | 87×, WCH only |
 
 Single-source parts with no drop-in at JLC:
 - ESP32-S3 modules (Espressif);
-- TPS26600 eFuse and LMR51635 buck (TI);
+- TPS26600 eFuse and the LMR51625 / LMR51635 bucks (TI);
 - CH224A PD sink (WCH);
 - TJA1462 CAN SIC transceiver (NXP; the TI TCAN1462 is out of stock);
 - USB2514B and USB2517I USB hubs (Microchip);
@@ -184,7 +184,9 @@ Checked and rejected:
   loses signal improvement on the star bus (docs/can.md). The TJA1462 stays.
 - **TPS26600, INA226, TCA6408A**: no drop-in in JLC's catalog. find_alternatives returned none; a
   cheaper part means a new footprint for cents.
-- **LMR51635**: already cheap for a 60 V, 3.5 A synchronous buck. The input needs ≥ 40 V (VRACK 28 V,
+- **LMR51635**: already cheap for a 60 V, 3.5 A synchronous buck. The node takes its 2.5 A sibling since
+  2026-10-23 (LMR51625, C44991044: same pinout and footprint, TI's 4.7 µH; a bay draws ≤ 2.2 A), $0.53 less
+  a node at 10 ($6.01 an order); the hub keeps the LMR51635. The input needs ≥ 40 V (VRACK 28 V,
   33 V TVS), which rules out the basic 30 V bucks.
 - **Regulators** (AMS1117, AP2112K, XC6206): none proposed. The DATA ×4's USB2514B draws ≈ 0.16 A on
   3.3 V, and the XC6206's SOT-23 can't shed ≈ 0.31 W.

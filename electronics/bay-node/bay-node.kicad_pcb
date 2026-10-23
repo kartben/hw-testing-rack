@@ -8167,7 +8167,7 @@
 				)
 			)
 		)
-		(property "Value" "3.3u"
+		(property "Value" "4.7u"
 			(at 0 4.25 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -8190,7 +8190,7 @@
 				)
 			)
 		)
-		(property "Description" "3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded"
+		(property "Description" "4.7 µH, 9 A sat, 6 A rms, 33 mΩ, molded"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -8213,7 +8213,7 @@
 				)
 			)
 		)
-		(property "MPN" "FXL0630-3R3-M"
+		(property "MPN" "FXL0630-4R7-M"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -8237,7 +8237,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C167219"
+		(property "LCSC" "C167220"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -15221,7 +15221,7 @@
 				)
 			)
 		)
-		(property "Value" "LMR51635YDDCR"
+		(property "Value" "LMR51625YDDCR"
 			(at 0 2.4 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -15233,7 +15233,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lmr51635.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lmr51625.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -15244,7 +15244,7 @@
 				)
 			)
 		)
-		(property "Description" "4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum"
+		(property "Description" "4.3–60 V 2.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -15267,7 +15267,7 @@
 				)
 			)
 		)
-		(property "MPN" "LMR51635YDDCR"
+		(property "MPN" "LMR51625YDDCR"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -15291,7 +15291,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C45262770"
+		(property "LCSC" "C44991044"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -15303,7 +15303,7 @@
 				)
 			)
 		)
-		(property "Alternative" "LMR51635YFDDCR (C44750836): same, forced PWM, no spread spectrum"
+		(property "Alternative" "LMR51625YFDDCR (C45262768): same, forced PWM, no spread spectrum; LMR51635YDDCR (C45262770): 3.5 A, 3.3 µH"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)

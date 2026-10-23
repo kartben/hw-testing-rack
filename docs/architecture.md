@@ -109,7 +109,7 @@ A USB PD charger (100 W at 20 V by default, 140 W EPR at 28 V as an option; a 5 
 cable) → the power hub in the power box under A1 (CH224A sink: 20 V, or 28 V EPR on the
 controller's request when offered; TVS, no input switch, one 1.6 A TPS26600 eFuse per row, off until the
 contract is final) → one 6-pin JST PH feed per row (VRACK, CAN, POS) →
-daisy-chained bay to bay through the ladders → each bay node's own 60 V LMR51635
+daisy-chained bay to bay through the ladders → each bay node's own 60 V LMR51625
 buck to 5 V.  Details and alternatives (a 24 V brick, internal mains supply,
 PoE++) are in [power.md](power.md); the rack bus is in [can.md](can.md).
 

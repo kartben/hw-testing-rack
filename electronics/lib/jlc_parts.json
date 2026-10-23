@@ -83,9 +83,9 @@
     "DATA"
    ],
    [
-    "C167219",
+    "C167220",
     1,
-    "3.3u"
+    "4.7u"
    ],
    [
     "C7503186",
@@ -158,9 +158,9 @@
     "SERVICE"
    ],
    [
-    "C45262770",
+    "C44991044",
     1,
-    "LMR51635YDDCR"
+    "LMR51625YDDCR"
    ],
    [
     "C6186",
@@ -4046,6 +4046,89 @@
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
+  },
+  "C167220": {
+   "mfr": "FXL0630-4R7-M",
+   "package": "SMD,7x6.6mm",
+   "stock": 163756,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 49,
+     "price": 0.096
+    },
+    {
+     "qFrom": 50,
+     "qTo": 149,
+     "price": 0.078
+    },
+    {
+     "qFrom": 150,
+     "qTo": 1499,
+     "price": 0.069
+    },
+    {
+     "qFrom": 1500,
+     "qTo": 2999,
+     "price": 0.051
+    },
+    {
+     "qFrom": 3000,
+     "qTo": 4499,
+     "price": 0.048
+    },
+    {
+     "qFrom": 4500,
+     "qTo": null,
+     "price": 0.046
+    }
+   ],
+   "category": "Inductors, Coils, Chokes",
+   "manufacturer": "cjiang (Changjiang Microelectronics Tech)",
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live) (added 2026-10-23)"
+  },
+  "C44991044": {
+   "mfr": "LMR51625YDDCR",
+   "package": "SOT-23-6",
+   "stock": 4220,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 1.1948
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 1.0744
+    },
+    {
+     "qFrom": 30,
+     "qTo": 99,
+     "price": 1.0084
+    },
+    {
+     "qFrom": 100,
+     "qTo": 499,
+     "price": 0.9324
+    },
+    {
+     "qFrom": 500,
+     "qTo": 999,
+     "price": 0.8994
+    },
+    {
+     "qFrom": 1000,
+     "qTo": null,
+     "price": 0.8846
+    }
+   ],
+   "category": null,
+   "manufacturer": null,
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live) (added 2026-10-23)",
+   "lcsc_stock": 4220
   }
  }
 }

@@ -234,7 +234,12 @@ JLC_SINCE_QUOTE = {"power-hub": [("76 × 100 mm: JLC's 4-layer offer, no enginee
                                              ("RP2354B: its extended part type", "extended parts", 3.09)],
                    # the bay node, after its estimate: 2.2k I2C pull-ups (N2) and a 470k POS pull-down (N3),
                    # two part types more at Standard PCBA's $1.55 (R23 1k and R39 100k are values it has)
-                   "bay-node": [("PCBA review: 2.2k and 470k, two part types more", "feeders", 3.10)]}
+                   "bay-node": [("PCBA review: 2.2k and 470k, two part types more", "feeders", 3.10),
+                                # the 5 V buck in LMR51625 (2.5 A) with TI's 4.7 µH (the user, 2026-10-23): the
+                                # same footprints, one extended type for another each; at the 10-piece breaks
+                                # (LCSC $1.0744 against $1.5997, the inductor $0.096 against $0.107) × 1.12
+                                ("5 V buck LMR51625 + 4.7 µH instead of the LMR51635 + 3.3 µH", "components",
+                                 -6.01)]}
 
 # JLC's fees, as its real quotes of 2026-10-23 charge them (its help page "PCB Assembly Cost" of 2026-09-09
 # still says $25.56 / $8.21 / $1.53 and $8.18 / $1.53 / $3.07) and the jlcpcb.com calculator (2026-10-19,
@@ -262,8 +267,8 @@ JLC_LEVERS = {
          "C7519", 0.25, "decision"),
     ],
     "bay-node": [
-        ("9 assembled instead of 10 (8 bays and 1 spare): four parts cross back over a 10-piece price break, "
-         "so one board less saves little", 1.02, "decision"),
+        ("9 assembled instead of 10 (8 bays and 1 spare): eight parts cross back over a price break (the "
+         "WROOM-1 alone $0.63 more each), so one board less saves little", 2.34, "decision"),
         ("USB-C J3: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, "
          "re-route, mechanical check", 5.37, "decision"),
         ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
@@ -631,8 +636,8 @@ def electronics(rack) -> tuple[list[dict], dict]:
                      "item": f"Components {name}: JLC quote minus the catalogue prices above",
                      "supplier": pcba_src, "qty": 1, "unit_eur": round(quoted_eur - parts_eur, 2),
                      "notes": f"quoted components ${q['pcba']['components']:.2f}"
-                              + (f" + ${pcba['components'] - q['pcba']['components']:.2f} since"
-                                 if pcba["components"] != q["pcba"]["components"] else "")
+                              + (f" {'+' if d >= 0 else '−'} ${abs(d):.2f} since"
+                                 if (d := round(pcba["components"] - q["pcba"]["components"], 2)) else "")
                               + f" (≈ €{quoted_eur:.2f}) for {n} {unit}; catalogue unit prices give €{parts_eur:.2f}"})
     rows.append({"category": "Electronics", "group": "jlc", "item": "JLCPCB shipping: every board in one cart",
                  "supplier": "JLCPCB", "qty": 1, "unit_eur": round(JLC_SHIPPING_USD * USD_EUR, 2),

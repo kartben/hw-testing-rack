@@ -4307,7 +4307,7 @@
 				)
 			)
 		)
-		(property "Value" "LMR51635YDDCR"
+		(property "Value" "LMR51625YDDCR"
 			(at 98.265 109.22 0)
 			(effects
 				(font
@@ -4324,7 +4324,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lmr51635.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lmr51625.pdf"
 			(at 101.6 116.84 0)
 			(effects
 				(font
@@ -4333,7 +4333,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum"
+		(property "Description" "4.3–60 V 2.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum"
 			(at 101.6 116.84 0)
 			(effects
 				(font
@@ -4342,7 +4342,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "LMR51635YDDCR"
+		(property "MPN" "LMR51625YDDCR"
 			(at 101.6 116.84 0)
 			(effects
 				(font
@@ -4360,7 +4360,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C45262770"
+		(property "LCSC" "C44991044"
 			(at 101.6 116.84 0)
 			(effects
 				(font
@@ -4369,7 +4369,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternative" "LMR51635YFDDCR (C44750836): same, forced PWM, no spread spectrum"
+		(property "Alternative" "LMR51625YFDDCR (C45262768): same, forced PWM, no spread spectrum; LMR51635YDDCR (C45262770): 3.5 A, 3.3 µH"
 			(at 101.6 116.84 0)
 			(effects
 				(font
@@ -4595,7 +4595,7 @@
 				)
 			)
 		)
-		(property "Value" "3.3u"
+		(property "Value" "4.7u"
 			(at 146.05 118.44 90)
 			(effects
 				(font
@@ -4621,7 +4621,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded"
+		(property "Description" "4.7 µH, 9 A sat, 6 A rms, 33 mΩ, molded"
 			(at 146.05 116.84 0)
 			(effects
 				(font
@@ -4630,7 +4630,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "FXL0630-3R3-M"
+		(property "MPN" "FXL0630-4R7-M"
 			(at 146.05 116.84 0)
 			(effects
 				(font
@@ -4648,7 +4648,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C167219"
+		(property "LCSC" "C167220"
 			(at 146.05 116.84 0)
 			(effects
 				(font
@@ -7384,7 +7384,7 @@
 		)
 		(uuid "7376166c-b3c8-5564-8b4c-fa1f21898bad")
 	)
-	(text "5 V buck: LMR51635, synchronous, 1.1 MHz, 3.5 A (TI SLUSF64B typical application)"
+	(text "5 V buck: LMR51625, synchronous, 1.1 MHz, 2.5 A (TI SLUSF64B typical application)"
 		(exclude_from_sim no)
 		(at 16.51 83.82 0)
 		(effects
@@ -7420,10 +7420,10 @@
 		)
 		(uuid "49c92759-f989-5add-a87e-f01e10797d7a")
 	)
-	(text_box "LMR51635YDDCR: 1.1 MHz, PFM at light load with spread spectrum.  Values from TI SLUSF64B table 8-2 (5 V, 1.1 MHz):\n  L 3.3 µH (FXL0630, 9.5 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.\nFB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V: ≈ 4.75 V still reaches the DATA board at 1.4 A over 50 cm\n  of PH lead (switch, shunt, one PH pin each way); everything on +5V takes it (TJA1462AT ≤ 5.5 V).\nEN 100k/10k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node\n  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.\nLayout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island\n  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.\nInput: SUD50P06 P-FET (reverse polarity, Vgs clamped by the 12 V zener); SMBJ33A clamps hot-plug ringing below 54 V (U1: 63 V abs max).\nVRACK is 20 V, or 28 V (EPR), from the hub's USB-C PD supply: SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the buck runs\n  4.3–60 V and starts above 13.5 V, the P-FET and the zener clamp are rated 60 V / 12 V.  At 20 V a row draws more current: ≤ 1.6 A."
+	(text_box "LMR51625YDDCR (2.5 A; a bay draws ≤ 2.2 A): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):\n  L 4.7 µH (FXL0630, 9 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.\n  At 2.2 A from 28 V the inductor peaks at ≈ 2.6 A (0.8 A ripple), under the 2.9 A minimum peak current limit.\nFB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V: ≈ 4.75 V still reaches the DATA board at 1.4 A over 50 cm\n  of PH lead (switch, shunt, one PH pin each way); everything on +5V takes it (TJA1462AT ≤ 5.5 V).\nEN 100k/10k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node\n  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.\nLayout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island\n  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.\nInput: SUD50P06 P-FET (reverse polarity, Vgs clamped by the 12 V zener); SMBJ33A clamps hot-plug ringing below 54 V (U1: 63 V abs max).\nVRACK is 20 V, or 28 V (EPR), from the hub's USB-C PD supply: SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the buck runs\n  4.3–60 V and starts above 13.5 V, the P-FET and the zener clamp are rated 60 V / 12 V.  At 20 V a row draws more current: ≤ 1.6 A."
 		(exclude_from_sim no)
 		(at 15.24 162.56 0)
-		(size 279.4 29.21)
+		(size 279.4 31.75)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)
