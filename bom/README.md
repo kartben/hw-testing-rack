@@ -45,13 +45,13 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | PCBA: setup $8.18, stencil $1.53, components $30.18, extended parts $27.63, SMT $1.47, X-ray $3.28 | 72.27 |
 | | | **Estimated total** | **85.37** |
 | | | Not in the rack's order | |
-| data-port-x4-v2 | 5 PCBs (4-layer 100×70 mm (110×70 with JLC's rails), JLC04161H-7628, ENIG), 2 assembled, Standard PCBA | PCB: engineering $25.00, ENIG $17.50, board $4.80 | 47.30 |
-| | | PCBA: setup $25.75, stencil $8.27, components $61.34, feeders $62.00, SMT $4.47, packaging $0.51, special components $0.48, L1 minimum purchase (5) $0.95 | 163.77 |
-| | | **Estimated total** | **211.07** |
+| data-port-x4-v2 | 5 PCBs (4-layer 100×70 mm (100×80 with JLC's rails), JLC04161H-7628, ENIG), 2 assembled, Standard PCBA | PCB: special offer $8.00, ENIG $17.50 | 25.50 |
+| | | PCBA: setup $25.75, stencil $8.27, components $60.14, feeders $60.45, SMT $4.90, packaging $0.50, special components $0.24 | 160.25 |
+| | | **Quoted total** | **185.75** |
 | | | In the rack's order on the data-port-x4-v2-panel (one per panel) | |
-| data-port-x4-v2-base | 5 PCBs (4-layer 100×70 mm (110×70 with JLC's rails), JLC04161H-7628, lead-free HASL), 2 assembled, Standard PCBA | PCB: engineering $25.00, lead-free HASL $5.20, board $4.80 | 35.00 |
-| | | PCBA: setup $25.75, stencil $8.27, components $32.19, feeders $38.75, SMT $2.10, packaging $0.51 | 107.57 |
-| | | **Estimated total** | **142.57** |
+| data-port-x4-v2-base | 5 PCBs (4-layer 100×70 mm (100×80 with JLC's rails), JLC04161H-7628, lead-free HASL), 2 assembled, Standard PCBA | PCB: special offer $8.00, lead-free HASL $5.20 | 13.20 |
+| | | PCBA: setup $25.75, stencil $8.27, components $31.19, feeders $38.75, SMT $2.57, packaging $0.50, special components $0.24 | 107.27 |
+| | | **Quoted total** | **120.47** |
 | | | In the rack's order on the data-port-x4-v2-panel (one per panel) | |
 | data-port-x4-v2-panel | 5 panels (4-layer 100×142 mm panel of a logic and a base (110×142 with JLC's rails), JLC04161H-7628, ENIG, mouse bites), 2 assembled: 2 of each board, Standard PCBA | PCB: engineering $25.00, ENIG $18.40, board $9.70 | 53.10 |
 | | | PCBA: setup $25.75, stencil $8.27, components $86.73, feeders $60.45, SMT $6.57, packaging $0.51, special components $0.48 | 188.76 |

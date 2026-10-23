@@ -36,10 +36,12 @@ class Orders(unittest.TestCase):
 
     def test_quote_is_order_cost(self):
         # at the quoted quantity an order is its quote: as adjusted for the rack's order (the panel), else the
-        # quote plus the rack's mask colour (the quotes are green)
+        # quote, what changed since on its PCBA lines (JLC_SINCE_QUOTE) and the rack's mask colour (the quotes
+        # are green)
         for name in ("data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel"):
             q = bom.JLC_QUOTE[name]
-            want = self.orders[name]["total"] if name in self.orders else                 q["total"] + sum(bom.mask_colour(name).values())
+            since = sum(usd for _, line, usd in bom.JLC_SINCE_QUOTE.get(name, []) if line in q["pcba"])
+            want = self.orders[name]["total"] if name in self.orders else                 q["total"] + since + sum(bom.mask_colour(name).values())
             self.assertAlmostEqual(bom.order_cost(name, q["assembled"], self.orders)["total"], want, places=2)
 
     def test_at_least_two(self):
@@ -50,10 +52,11 @@ class Orders(unittest.TestCase):
         self.assertEqual(bom.panel_order(1, self.orders)["total"], bom.panel_order(2, self.orders)["total"])
 
     def test_minimum_purchase(self):
-        # JLC's quote of 2026-10-23 buys L1 by 5; the panel's real quote carries JLC's own purchase
+        # JLC's quotes of 2026-10-23 buy L1 by 5, and a real quote's components carry JLC's own purchase:
+        # no minimum-buy line on the logic alone or the panel
         line = "L1 minimum purchase (5)"
-        self.assertAlmostEqual(bom.order_cost("data-port-x4-v2", 2, self.orders)["once_lines"][line], 0.95, places=2)
-        self.assertEqual(bom.order_cost("data-port-x4-v2", 5, self.orders)["once_lines"][line], 0)
+        self.assertEqual(bom.JLC_MIN_BUY["data-port-x4-v2"][0][1], 5)
+        self.assertNotIn(line, bom.order_cost("data-port-x4-v2", 2, self.orders)["once_lines"])
         self.assertNotIn(line, bom.panel_order(2, self.orders)["once_lines"])
 
     def test_panel_is_the_racks_order(self):

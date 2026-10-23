@@ -63,9 +63,24 @@ saved to the cart. 5 panels, 2 assembled.
 
 - **JLC's Economic PCBA takes a coloured mask on 2 layers only** (black: HASL only); 4 layers are green
   only, and 6 are green ENIG (jlcpcb.com/capabilities/pcb-assembly-capabilities, read 2026-10-23). A black
-  v2 is therefore Standard, as are the logic or the base ordered alone (110 × 70 with the rails, so the
-  $25 fee: estimates of $211.07 and $142.57). The DATA port and the pod (2 layers, lead-free HASL) stay
-  Economic in black. Green on the panel saves $46.60 an order (`JLC_LEVERS`).
+  v2 is therefore Standard, ordered as a panel or alone. The DATA port and the pod (2 layers, lead-free
+  HASL) stay Economic in black. Green on the panel saves $46.60 an order (`JLC_LEVERS`).
+
+**The logic and the base ordered alone: real quotes too (2026-10-23).** The same Gerbers, with each
+variant's JLC BOM and CPL, uploaded with the user's OK; 5 PCBs, 2 assembled, black, Standard. JLC puts
+its rails on the 70 mm sides: 100 × 80 mm, still its 4-layer offer, so no $25 fee.
+
+| | Logic, ENIG | Base, lead-free HASL |
+|---|---:|---:|
+| Bare PCBs | $33.50: $8.00, ENIG $17.50, black $8.00 | $21.20: $8.00, HASL $5.20, black $8.00 |
+| Setup, stencil | $25.75, $8.27 | $25.75, $8.27 |
+| Part types | 39 × $1.55 = $60.45 | 25 × $1.55 = $38.75 |
+| Components, SMT | $60.14 (39 items), $4.90 | $31.19 (25 items), $2.57 |
+| Packaging, special components | $0.50, $0.24 | $0.50, $0.24 |
+| **Quote** | **$193.75** | **$128.47** |
+| With the RP2354B | $198.35 | – (all in stock) |
+
+A logic and a base ordered apart cost $326.82, against $254.46 on the panel.
 - **The RP2354B (C39843328) was out of stock at JLC** (0, shortfall 2). JLC offered only other users'
   idle parts at $2.91 each through its cart, which was not touched. The quote leaves U11 unplaced;
   bom.py adds 2 at JLC's $1.52 and its part type.
@@ -75,8 +90,9 @@ saved to the cart. 5 panels, 2 assembled.
 - **JLC's check.** It flags each BOM row that joins `_L` and `_B` designators ("there may be multiple
   types of parts") and leaves it unticked. Tick them before ordering.
 - **What stays in the account:**
-  - the Gerber uploads, twice (the quote page's Upload History);
-  - two PCBA drafts it saved automatically, "data-port-x4-v2-panel-gerbers", one green and one black.
+  - the Gerber uploads, the panel's twice and the board's twice (the quote page's Upload History);
+  - four PCBA drafts it saved automatically: "data-port-x4-v2-panel-gerbers" (green, black) and
+    "data-port-x4-v2-gerbers" (logic, base).
   The user can delete them; nothing is in the cart.
 
 The hub is 76 × 100 mm since 2026-10-20 (3cb4152): inside JLC's 100 × 100 offer, no $25 engineering
