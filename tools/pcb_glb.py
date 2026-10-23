@@ -104,11 +104,11 @@ def paint(art: dict, side: str) -> Image.Image:
     return Image.open(io.BytesIO(buf.getvalue()))      # keeps format == "JPEG" for the GLB
 
 
-def solder_mask(art: dict) -> dict:
-    """art with the rack's own boards' solder mask (config/rack.yaml › pcb.solder_mask) where it names none."""
-    import yaml
-    raw = yaml.safe_load((REPO / "config" / "rack.yaml").read_text(encoding="utf-8"))
-    sm = SOLDER_MASKS[raw.get("pcb", {}).get("solder_mask", "green")]
+def solder_mask(art: dict, board: str = "") -> dict:
+    """art with the board's solder mask (config/rack.yaml › pcb.<board>.solder_mask, else the rack's
+    pcb.solder_mask; rackcfg.Rack.solder_mask) where it names none."""
+    import rackcfg
+    sm = SOLDER_MASKS[rackcfg.load().solder_mask(board)]
     return {"mask": sm["mask"], "mask_cu": sm["mask_cu"], "rough": sm["rough"], "silk": sm.get("silk", SILK), **art}
 
 
@@ -326,7 +326,7 @@ def convert(src: Path, dst: Path, art_path: Path | None = None, max_group_faces:
             strict: bool = False) -> dict:
     scene = trimesh.load(src)
     board = src.stem
-    art = solder_mask(json.loads(art_path.read_text())) if art_path and art_path.exists() else None
+    art = solder_mask(json.loads(art_path.read_text()), board) if art_path and art_path.exists() else None
     pcb = REPO / "electronics" / board / f"{board}.kicad_pcb"
     if art is not None and pcb.exists():
         m = re.search(r'\(copper_finish "([^"]+)"\)', pcb.read_text(encoding="utf-8"))
@@ -409,7 +409,7 @@ def convert_bodies(src: Path, board: str, hide: set | None = None, name: str | N
     pcb = REPO / "electronics" / board / f"{board}.kicad_pcb"
     boxes = footprint_boxes(pcb) if hide else []
     art_path = REPO / "electronics" / board / "build" / f"{board}-art.json"
-    art = solder_mask(json.loads(art_path.read_text())) if art_path.exists() else None
+    art = solder_mask(json.loads(art_path.read_text()), board) if art_path.exists() else None
     if art is not None:
         m_ = re.search(r'\(copper_finish "([^"]+)"\)', pcb.read_text(encoding="utf-8"))
         art["finish"] = m_.group(1) if m_ else None
