@@ -7,8 +7,9 @@ Runs dev_server.py in-process (simulated node), opens the page in the
 installed Chrome (--channel msedge for Edge, or --channel chromium after
 `playwright install chromium`), lets it collect a minute of current samples
 for the sparkline (and of the fake board's log for the console), then
-shoots each state, access control last (web-ui-access*.png): the node
-claimed with a key made up for the run, rules, a CI job holding the bay.
+shoots each state, then access control (web-ui-access*.png): the node
+claimed with a key made up for the run, rules, a CI job holding the bay;
+last a DATA x4 bay's ports and a board target's dialog.
 The browser and server plumbing is firmware/common/web/shots.py.
 """
 
@@ -39,6 +40,8 @@ def main() -> None:
     dev_server.PEER_OVERRIDE["127.0.0.1"] = "192.168.1.23"
     # The node is B2's, the bay its camera frames show (camera/, the GIGA R1)
     dev_server.node.update(id="b2", hostname="bay-b2", ip="192.168.1.78")
+    # Its board's target, for bayctl hwmap (the USB devices card's line)
+    dev_server.set_board(1, {"board": "nucleo_g474re"})
 
     with Shots(dev_server.serve(0), args.out, args.channel) as s:
         poke, shoot, base = s.poke, s.shoot, s.base
@@ -127,10 +130,27 @@ def main() -> None:
         dev_server.ports[2]["lease"] = {"holder": ip("192.168.1.41"), "note": "twister job 8812",
                                         "until": time.monotonic() + 3600}
         dev_server.ports[3]["on"] = False
+        # Board targets: two set (B3.3's held by the job), B3.2's serial adapter not yet
+        dev_server.boards.clear()
+        dev_server.set_board(1, {"board": "frdm_mcxn947/mcxn947/cpu0"})
+        dev_server.set_board(3, {"board": "rpi_pico2/rp2350a/m33_0"})
         dark.set_viewport_size(DESKTOP)
         dark.reload()
         time.sleep(POLL_S)
         shoot(dark, "web-ui-ports", "#usb-card")
+
+        # A XIAO ESP32-C6 in B3.4: its board target, picked from the suggestions for 303a:1001
+        poke("/dev/usb?preset=xiao&port=4", wait=0)
+        dev_server.ports[3].update(on=True, up_at=time.monotonic())
+        light.set_viewport_size({"width": DESKTOP["width"], "height": 900})
+        light.reload()
+        time.sleep(2 * POLL_S)
+        light.click("#usb-list button[data-board='4']")
+        light.wait_for_selector("#board-settings:popover-open")
+        light.click("#b-sugg button[data-pick='xiao_esp32c6/esp32c6/hpcore']")
+        light.evaluate("document.activeElement.blur()")
+        time.sleep(0.5)
+        shoot(light, "web-ui-board-target", "#board-settings")
 
 
 if __name__ == "__main__":

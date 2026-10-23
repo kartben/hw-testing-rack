@@ -178,7 +178,42 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
     &[data-st=lease] { color: var(--lease); font-weight: 500; }
   }
   & .port-acts { display: flex; flex-wrap: wrap; gap: 6px; }
-  & .none { color: var(--muted); padding: 6px 0; }
+  & .port-left { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
+  & .none { color: var(--muted); padding: 6px 0; grid-column: 1 / -1; }
+}
+/* A slot's Zephyr board target, under its device */
+.board { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); min-width: 0;
+  & code { font: 0.78rem var(--mono); color: var(--text); background: var(--soft); border: 1px solid var(--line);
+           border-radius: 6px; padding: 1px 6px; overflow-wrap: anywhere; }
+  & .unset, & .warn { color: color-mix(in srgb, var(--service) 70%, var(--text)); }
+  & .warn { font-weight: 600; }
+  & .chip { font-size: 0.7rem; }
+}
+#board-settings {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
+  padding: 20px; width: min(480px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto;
+  box-shadow: 0 16px 48px #0004;
+  &::backdrop { background: #0003; }
+  & h3 { margin: 0 0 14px; font-size: 1rem; }
+  & form { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 14px; align-items: center; }
+  & label { color: var(--muted); }
+  & select, & input:not([type=checkbox]) {
+    font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--soft); color: var(--text); width: 100%; box-sizing: border-box; }
+  & input:not([type=checkbox]) { font-family: var(--mono); font-size: 0.88rem; }
+  & input:invalid { border-color: var(--fault); }
+  & .check { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; color: var(--text); }
+  & .sugg { grid-column: 2; display: flex; flex-wrap: wrap; gap: 6px; margin-top: -4px;
+            & button { font: 0.75rem var(--mono); } }
+  & .sugg:empty { display: none; }
+  & small { grid-column: 1 / -1; color: var(--muted); }
+  & small.hint { grid-column: 2; margin-top: -6px; }
+  & small code { font: 0.78rem var(--mono); }
+  & .warn { grid-column: 1 / -1; margin: 0; padding: 8px 10px; border-radius: 8px; font-size: 0.85rem;
+            background: color-mix(in srgb, var(--service) 12%, var(--card)); }
+  & .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px;
+                    & .danger { margin-right: auto; } }
+  & [hidden] { display: none; }
 }
 @media (max-width: 900px) {
   .usbdev li { grid-template-columns: 34px minmax(0, 1fr) auto;
@@ -436,6 +471,33 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
   </form>
 </div>
 
+<div id="board-settings" popover>
+  <h3 id="b-title">Board target</h3>
+  <form id="board-form">
+    <p class="warn" id="b-mismatch" hidden></p>
+    <label for="b-board">Zephyr board</label>
+    <input id="b-board" name="board" list="b-targets" required maxlength="63" pattern="[A-Za-z0-9_@.\/+\-]+"
+           autocomplete="off" spellcheck="false" placeholder="nucleo_g474re">
+    <datalist id="b-targets"></datalist>
+    <div class="sugg" id="b-sugg"></div>
+    <small class="hint" id="b-sugg-note"></small>
+    <label for="b-runner">Runner</label>
+    <select id="b-runner" name="runner"></select>
+    <label for="b-probe">Probe id</label>
+    <input id="b-probe" name="probe_id" maxlength="47" pattern="[!#-\[\]-~]+" autocomplete="off" spellcheck="false">
+    <small class="hint" id="b-probe-note"></small>
+    <label for="b-console">Console</label>
+    <select id="b-console" name="console"></select>
+    <label class="check"><input type="checkbox" name="map"> In twister's hardware map</label>
+    <small id="b-note"></small>
+    <div class="form-actions">
+      <button type="button" class="danger" id="b-clear">Clear</button>
+      <button type="button" popovertarget="board-settings" popovertargetaction="hide">Cancel</button>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </form>
+</div>
+
 <dialog id="dlg-claim" class="small-dlg">
   <form id="claim-form">
     <h3>Claim this bay</h3>
@@ -559,6 +621,8 @@ let host = location.hostname;
 let status = null;
 let lastUsbSeen = "";
 let usbDoc = null;
+let boardsDoc = null;
+let boardTargets = null;
 let usbFetchedAt = 0;
 let usbRetry;
 
@@ -709,7 +773,7 @@ function icon(id) {
   return span;
 }
 
-function portBar(p) {
+function portBar(p, board = null) {
   const bar = el("div", "port-bar");
   const info = el("span", "port-info");
   if (p.fault) {
@@ -759,12 +823,18 @@ function portBar(p) {
       mkBtn("Bootloader", "boot", "power_cycle", "", null, `Hold BOOT across power-on on ${p.slot}`),
     );
   }
-  bar.append(info, acts);
+  const left = el("span", "port-left");
+  left.append(info);
+  if (board) {
+    board.prepend("·");
+    left.append(board);
+  }
+  bar.append(left, acts);
   return bar;
 }
 
 /* Strings from the device (iProduct, iManufacturer, iSerial) only ever go in as text */
-function usbRow(d, port = null) {
+function usbRow(d, port = null, slot = null) {
   const li = el("li");
   li.dataset.st = d.usbip.client ? "attached" : d.usbip.offered ? "ready" : "off";
   const kind = KIND.find(([k]) => d.classes.some((c) => c.startsWith(k)));
@@ -821,12 +891,13 @@ function usbRow(d, port = null) {
     none.title = "USB/IP serves at most its configured number of devices";
     li.append(none);
   }
-  if (port) li.append(portBar(port));
+  if (port) li.append(portBar(port, slot && boardLine(slot)));
+  else if (slot) li.append(boardBar(slot));
   return li;
 }
 
 /* A DATA x4 port with nothing enumerated on it */
-function emptyRow(p) {
+function emptyRow(p, slot = null) {
   const li = el("li");
   li.dataset.st = p.fault ? "fault" : "empty";
   li.append(icon("i-usb"));
@@ -841,23 +912,29 @@ function emptyRow(p) {
   const st = el("div", "st");
   st.append(el("i"), el("span", null, p.fault ? "Fault" : p.power.on ? "No device" : "Power off"));
   const ma = el("div", "ma", p.power.ma != null ? `${fix(p.power.ma, 3)} A` : "");
-  li.append(where, st, ma, el("span", "act"), portBar(p));
+  li.append(where, st, ma, el("span", "act"), portBar(p, slot?.board ? boardLine(slot) : null));
   return li;
 }
 
 function renderUsb(doc) {
   const list = $("usb-list");
   const multi = (status?.ports?.length ?? 0) > 1;
+  const slots = boardsDoc?.slots ?? [];
+  /* A slot's target goes under the device it names: its tty or probe, else the first */
+  const carrier = (devs, b) => b && (devs.find((d) => d.busid === b.device?.busid) ?? devs[0]);
   const rows = multi
     ? status.ports.flatMap((p) => {
         const devs = doc.devices.filter((d) => d.slot === p.slot || d.hub_port === p.port);
-        return devs.length ? devs.map((d) => usbRow(d, p)) : [emptyRow(p)];
+        const b = slots.find((s) => s.port === p.port);
+        const c = carrier(devs, b);
+        return devs.length ? devs.map((d) => usbRow(d, p, d === c ? b : null)) : [emptyRow(p, b)];
       })
-    : doc.devices.map((d) => usbRow(d, null));
+    : doc.devices.map((d, _, all) => usbRow(d, null, d === carrier(all, slots[0]) ? slots[0] : null));
   list.replaceChildren(...rows);
   if (!rows.length) {
     const li = el("li");
     li.append(el("span", "none", "No USB device: the board is off or not plugged"));
+    if (slots[0]?.board) li.append(boardBar(slots[0]));
     list.append(li);
   }
   const n = doc.devices.length;
@@ -869,13 +946,158 @@ function renderUsb(doc) {
 async function refreshUsb() {
   clearTimeout(usbRetry);
   try {
-    usbDoc = await api("/api/usb");
+    [usbDoc, boardsDoc] = await Promise.all([api("/api/usb"), api("/api/boards").catch(() => boardsDoc)]);
     usbFetchedAt = Date.now();
     renderUsb(usbDoc);
+    if (boardsDoc && !boardTargets) loadTargets().then(() => usbDoc && renderUsb(usbDoc));
     if (!document.hidden && usbDoc.devices.some((d) => !d.strings)) {
       usbRetry = setTimeout(refreshUsb, 1000);
     }
   } catch { /* the status poll reports the node */ }
+}
+
+/* --- Board targets: GET /api/boards, PUT /api/ports/<n>/board (bayctl hwmap) -- */
+
+/* The targets boards.yaml lists, by USB ID (/board-targets.json, built in) */
+let targetsReq = null;
+const loadTargets = () => (targetsReq ??= api("/board-targets.json")
+  .then((t) => (boardTargets = t))
+  .catch(() => { targetsReq = null; }));
+const targetOf = (board) => boardTargets?.targets.find((t) => t.board === board);
+const pinText = (x) => (x.serial ? `serial number ${x.serial}` : `USB ID ${x.vid}:${x.pid}`);
+
+/* Exact VID:PID first, then the vendor's wildcard (a J-Link: 1366:*) */
+function suggestions(dev) {
+  const id = `${dev.vid}:${dev.pid}`, any = `${dev.vid}:*`;
+  const all = boardTargets?.targets ?? [];
+  return [...all.filter((t) => t.usb.includes(id)), ...all.filter((t) => !t.usb.includes(id) && t.usb.includes(any))];
+}
+
+function boardDenied(b) {
+  const lease = status?.ports?.find((p) => p.port === b.port)?.lease;
+  return Boolean((status?.access && !can(status.access, "control")) || (lease?.holder && !lease.yours));
+}
+
+/* "nucleo_g474re stm32cubeprogrammer [Edit]", or "No board target [Set board…]" */
+function boardLine(b) {
+  const line = el("span", "board");
+  if (b.board) {
+    line.append(el("code", null, b.board));
+    const runner = b.runner ?? targetOf(b.board)?.runner;
+    if (runner) line.append(el("span", null, runner));
+    if (!b.map) {
+      const chip = el("span", "chip", "not in CI");
+      chip.title = "Left out of bayctl hwmap's hardware map";
+      line.append(chip);
+    }
+    if (b.mismatch) {
+      const warn = el("span", "warn", "Another board in the slot");
+      warn.title = `Set for ${pinText(b.pinned)}; the slot holds ${b.device ? pinText(b.device) : "nothing"}`;
+      line.append(warn);
+    }
+  } else {
+    line.append(el("span", "unset", "No board target"));
+  }
+  const btn = el("button", b.board ? "small" : "small primary", b.board ? "Edit" : "Set board…");
+  btn.type = "button";
+  btn.dataset.board = b.port;
+  btn.disabled = boardDenied(b);
+  btn.title = btn.disabled ? "Needs the control right" : `${b.slot}'s Zephyr board target, for bayctl hwmap`;
+  line.append(btn);
+  return line;
+}
+
+/* A one-board node's rows have no port bar: the target gets its own */
+function boardBar(b) {
+  const bar = el("div", "port-bar");
+  bar.append(boardLine(b));
+  return bar;
+}
+
+function fillRunners(sel, board, current) {
+  const def = targetOf(board)?.runner;
+  const names = [...new Set([...(boardTargets?.runners ?? []), ...(current ? [current] : [])])].sort();
+  const first = el("option", null, def ? `${def} (default for this board)` : "The board's default");
+  first.value = "";
+  sel.replaceChildren(first, ...names.map((r) => el("option", null, r)));
+  sel.value = current ?? "";
+}
+
+function fillConsoles(sel, dev, current) {
+  const ttys = dev?.ttys ?? [];
+  const opts = [["usb", ttys.length ? `This device's USB serial (interface ${ttys[0].if})` : "This device's USB serial"],
+    ...ttys.slice(1).map((t) => [`usb:${t.if}`, `This device's USB serial, interface ${t.if}`])];
+  if ((status?.ports?.length ?? 0) <= 1) opts.push(["aux", "The bay's AUX UART (RFC 2217)"]);
+  opts.push(["none", "None"]);
+  if (!opts.some(([v]) => v === current)) opts.push([current, current]);
+  sel.replaceChildren(...opts.map(([v, text]) => Object.assign(el("option", null, text), { value: v })));
+  sel.value = current;
+}
+
+const bedit = { port: 0, slot: "" };
+
+async function openBoard(port) {
+  await loadTargets();
+  let b = boardsDoc?.slots.find((s) => s.port === port);
+  b = await api(`/api/ports/${port}/board`).catch(() => b);
+  if (!b) return;
+  Object.assign(bedit, { port, slot: b.slot });
+  const f = $("board-form"), dev = b.device;
+  $("b-title").textContent = `${b.slot} · board target`;
+  $("b-mismatch").hidden = !b.mismatch;
+  $("b-mismatch").textContent = b.mismatch ? `Set for the board with ${pinText(b.pinned)}; the slot now holds ` +
+    `${dev ? `the one with ${pinText(dev)}` : "nothing"}.  Saving sets it for the board there now.` : "";
+  f.board.value = b.board ?? "";
+  $("b-targets").replaceChildren(...(boardTargets?.targets ?? []).map((t) =>
+    Object.assign(el("option"), { value: t.board, label: t.family })));
+  const sugg = dev ? suggestions(dev) : [];
+  f.board.placeholder = sugg[0]?.board ?? "nucleo_g474re";
+  $("b-sugg").replaceChildren(...sugg.slice(0, 6).map((t) => {
+    const s = el("button", "small", t.board);
+    s.type = "button";
+    s.dataset.pick = t.board;
+    s.title = t.family;
+    return s;
+  }));
+  $("b-sugg-note").textContent = !dev ? "Nothing in the slot: type the target."
+    : !boardTargets ? "The list of targets did not load: type the target."
+    : !sugg.length ? `No board in boards.yaml lists ${dev.vid}:${dev.pid}: type the target.`
+    : `Suggested for ${dev.vid}:${dev.pid}${dev.product ? `, ${dev.product}` : ""}` +
+      `${sugg.length > 6 ? ` (${sugg.length - 6} more in the list)` : ""}.`;
+  fillRunners(f.runner, f.board.value, b.runner);
+  f.probe_id.value = b.probe_id ?? "";
+  f.probe_id.placeholder = dev?.serial ?? "";
+  $("b-probe-note").textContent = dev?.serial
+    ? "Empty: this device's USB serial number, so west flashes this board, not its neighbour."
+    : "This device has no serial number: give the probe's, or west may pick another board.";
+  fillConsoles(f.console, dev, b.console);
+  f.map.checked = b.map;
+  $("b-note").replaceChildren(`Saved on the node for ${b.slot}${dev ? `, with this board's ${pinText(dev)}` : ""}: ` +
+    "another board in the slot is flagged.  ", el("code", null, "bayctl hwmap"), " reads it from every node.");
+  $("b-clear").hidden = !b.board;
+  $("board-settings").showPopover();
+  f.board.focus();
+}
+
+async function putBoard(body, done) {
+  try {
+    const doc = await api(`/api/ports/${bedit.port}/board`, body, {}, "PUT");
+    if (boardsDoc) boardsDoc.slots = boardsDoc.slots.map((s) => (s.port === doc.port ? doc : s));
+    $("board-settings").hidePopover();
+    if (usbDoc) renderUsb(usbDoc);
+    toast(`${bedit.slot}: board target ${done}`);
+  } catch (e) {
+    toast(`Not ${done}: ${e.message}`);
+  }
+}
+
+function saveBoard(ev) {
+  ev.preventDefault();
+  const f = ev.target;
+  const body = { board: f.board.value.trim(), console: f.console.value, map: f.map.checked };
+  if (f.runner.value) body.runner = f.runner.value;
+  if (f.probe_id.value.trim()) body.probe_id = f.probe_id.value.trim();
+  putBoard(body, "saved");
 }
 
 /* --- Access control ----------------------------------------------------- */
@@ -1673,6 +1895,12 @@ document.addEventListener("click", async (ev) => {
     return toast("Copied");
   }
   if (btn.dataset.acc) return accessAction(btn);
+  if (btn.dataset.board) return openBoard(Number(btn.dataset.board));
+  if (btn.dataset.pick) {
+    $("board-form").board.value = btn.dataset.pick;
+    return fillRunners($("board-form").runner, btn.dataset.pick, $("board-form").runner.value || null);
+  }
+  if (btn.id === "b-clear") return putBoard({}, "cleared");
   if (btn.dataset.cam === "live") return cam.live ? camStop() : camShow(true);
   if (btn.dataset.cam === "snap") return camShow(false);
   if (btn.dataset.camset === "reset") return camSet({ reset: true });
@@ -1736,6 +1964,9 @@ $("con-settings").addEventListener("toggle", (ev) => ev.newState === "open" && f
 $("con-form").addEventListener("submit", saveSettings);
 $("cam-settings").addEventListener("toggle", (ev) => ev.newState === "open" && fillCamSettings());
 $("cam-form").addEventListener("submit", (ev) => ev.preventDefault());
+$("board-form").addEventListener("submit", saveBoard);
+$("b-board").addEventListener("input", (ev) =>
+  fillRunners($("board-form").runner, ev.target.value.trim(), $("board-form").runner.value || null));
 document.addEventListener("visibilitychange", () => {
   /* A hidden tab gives its camera slot back */
   if (document.hidden) {

@@ -23,12 +23,23 @@ target_sources(app PRIVATE
   ${BAY}/src/rfc2217.c
   ${BAY}/src/web.c
   ${BAY}/src/access.c
+  ${BAY}/src/boards.c
   ${BAY}/src/shell.c
   ${BAY}/src/ports.c
 )
 
 set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated)
 generate_inc_file_for_target(app ${BAY}/web/index.html ${gen_dir}/index.html.gz.inc --gzip)
+# The board targets the page suggests per USB device: a table built from
+# mechanical/boards/boards.yaml, gzipped like the page (/board-targets.json)
+set(boards_yaml ${BAY}/../../mechanical/boards/boards.yaml)
+add_custom_command(
+  OUTPUT ${gen_dir}/board-targets.json
+  COMMAND ${PYTHON_EXECUTABLE} ${BAY}/web/board_targets.py ${boards_yaml} ${gen_dir}/board-targets.json
+  DEPENDS ${BAY}/web/board_targets.py ${boards_yaml}
+)
+generate_inc_file_for_target(app ${gen_dir}/board-targets.json ${gen_dir}/board-targets.json.gz.inc
+  --gzip)
 hwtr_web_assets(bay_http)
 hwtr_web_xterm(bay_http)
 

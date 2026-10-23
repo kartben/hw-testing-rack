@@ -175,7 +175,8 @@ int usb_info_list(struct usb_dev_info *out, int max)
 	static const struct usb_dev_info devs[] = {
 		{.busid = "1-1", .addr = 1, .level = 1, .speed = 2, .vid = 0x1fc9, .pid = 0x0143,
 		 .classes = USB_CLS_CDC_ACM | USB_CLS_HID | USB_CLS_CMSIS_DAP | USB_CLS_PROBE,
-		 .strings = true, .offered = true, .known = "NXP MCU-Link", .manufacturer = "NXP \"Semi\"",
+		 .strings = true, .offered = true, .known = "NXP MCU-Link", .tty_n = 1, .tty_if = {1},
+		 .manufacturer = "NXP \"Semi\"",
 		 .product = "MCU-Link \\ CMSIS-DAP\t\x01", .serial = "3ZQ1J4ZBMTNKS"},
 	};
 	int n = MIN(max, (int)ARRAY_SIZE(devs));

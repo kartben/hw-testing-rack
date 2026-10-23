@@ -124,6 +124,7 @@ int usb_host_read_ahead(const struct usb_device_descriptor *desc);
 
 #define USB_INFO_MAX 8
 #define USB_STR_LEN  64
+#define USB_TTY_MAX  4
 
 #define USB_CLS_CDC_ACM   BIT(0)
 #define USB_CLS_HID       BIT(1)
@@ -150,6 +151,10 @@ struct usb_dev_info {
 	bool strings;       /* the strings below were read */
 	bool offered;       /* USB/IP exports it (not a hub, not past its sessions) */
 	const char *known;  /* a name from the table of known IDs, or NULL */
+	/* The interfaces a host makes a tty of: CDC ACM, a serial chip's (tty_bridge) */
+	uint8_t tty_n;
+	uint8_t tty_if[USB_TTY_MAX];
+	bool tty_bridge;
 	char manufacturer[USB_STR_LEN];
 	char product[USB_STR_LEN];
 	char serial[USB_STR_LEN];
@@ -345,9 +350,25 @@ uint32_t access_console_redeem(const char *ticket);
 /* GET /api/access document; admin adds the rules and the refusal log */
 int access_json(char *buf, size_t size, uint32_t ip, bool admin);
 
+/* --- Board targets, one per slot (boards.c) -------------------------------- */
+
+#define BOARDS_MAX 4
+
+/* The slots: a DATA x4's ports, or the bay's one DUT as port 1 */
+int boards_slots(void);
+/* GET /api/boards; one slot's object (-ENOENT: no such port) */
+int boards_json(char *buf, size_t size);
+int boards_slot_json(char *buf, size_t size, int port);
+/* PUT /api/ports/<port>/board, the body changed in place: NULL, or the error */
+const char *boards_put(int port, char *body, size_t len);
+
 /* --- Web page, JSON API, /metrics (web.c) --------------------------------- */
 
 int web_init(void);
+/* A slot's name: the bay's position (or id), then ".<port>" when port > 0 */
+void bay_slot_name(int port, char *buf, size_t size);
+/* A string from a device or a user as JSON, null when empty; returns the end */
+char *bay_json_str(char *p, char *end, const char *s);
 
 /* --- Bay camera and its light (camera.c) ---------------------------------- */
 

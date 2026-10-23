@@ -1,6 +1,7 @@
 /*
  * The USB devices the host enumerated, for the status page, /api/usb and the
- * shell: identity, the classes of their interfaces, the strings they give,
+ * shell: identity, the classes of their interfaces, the ttys a host makes of
+ * them (for /dev/serial/by-id), the strings they give,
  * a name from a table of known IDs when they give no product string, and
  * whether USB/IP reads them ahead.
  *
@@ -388,6 +389,40 @@ static uint16_t iface_classes(const struct usb_device *d)
 	return classes;
 }
 
+/*
+ * The interfaces a host makes a tty of, numbered as udev does
+ * (ID_USB_INTERFACE_NUM, /dev/serial/by-id/...-if<nn>): CDC ACM control
+ * interfaces, or a serial chip's vendor interfaces (ttyUSB, -port0)
+ */
+static void iface_ttys(const struct usb_device *d, struct usb_dev_info *u)
+{
+	const struct usb_cfg_descriptor *cfg = d->cfg_desc;
+	const uint8_t *p = d->cfg_desc;
+	size_t total;
+
+	u->tty_bridge = u->read_ahead != 0;
+	if (cfg == NULL) {
+		return;
+	}
+	total = sys_le16_to_cpu(cfg->wTotalLength);
+	for (size_t off = 0; off + 2 <= total && p[off] >= 2 && u->tty_n < USB_TTY_MAX;
+	     off += p[off]) {
+		const struct usb_if_descriptor *ifd = (const void *)&p[off];
+		bool tty;
+
+		if (ifd->bDescriptorType != USB_DESC_INTERFACE || off + sizeof(*ifd) > total ||
+		    ifd->bAlternateSetting != 0) {
+			continue;
+		}
+		tty = u->tty_bridge ? ifd->bInterfaceClass == USB_BCC_VENDOR
+				    : ifd->bInterfaceClass == USB_BCC_CDC_CONTROL &&
+					      ifd->bInterfaceSubClass == 0x02;
+		if (tty) {
+			u->tty_if[u->tty_n++] = ifd->bInterfaceNumber;
+		}
+	}
+}
+
 /* The bus id the USB/IP service gives the device: 1-1, 1-1.<port>, ... */
 static void busid_of(const struct usb_device *d, char *busid, size_t len)
 {
@@ -436,6 +471,7 @@ int usb_info_list(struct usb_dev_info *out, int max)
 		u->pid = sys_le16_to_cpu(d->dev_desc.idProduct);
 		u->classes = iface_classes(d);
 		u->read_ahead = usb_host_read_ahead(&d->dev_desc);
+		iface_ttys(d, u);
 
 		ARRAY_FOR_EACH_PTR(known, k) {
 			if (k->vid == u->vid && (k->pid == 0 || k->pid == u->pid)) {

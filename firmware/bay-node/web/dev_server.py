@@ -12,7 +12,10 @@ grabbed).  The "node" is a dict the
 POSTs change; its DUT is a fake Zephyr board that boots, logs in colour and
 runs a tiny shell on the console.  With --ports 4 it is a bay with a DATA ×4
 board (docs/multi-dut-node.md): four boards, sub-slots B3.1 to B3.4, served by
-/api/ports and /api/ports/<n>/{power,reset,boot}, leased one by one.  Test hooks:
+/api/ports and /api/ports/<n>/{power,reset,boot}, leased one by one.  Each slot's
+Zephyr board target (GET /api/boards, GET and PUT /api/ports/<n>/board, src/boards.c)
+lives in memory; /board-targets.json is built from mechanical/boards/boards.yaml
+as the firmware's build does (board_targets.py).  Test hooks:
 
     /dev/fault[?port=n]   trip a fake over-current (the DUT, or port n)
     /dev/draw?port=n&ma=900   port n's board draws this much (ma=0: its usual), for the admission rule
@@ -25,6 +28,7 @@ board (docs/multi-dut-node.md): four boards, sub-slots B3.1 to B3.4, served by
     /dev/image?version=0.6.0[&id=power-hub/power_hub]   an image to upload (unsigned, laid
                           out as zephyr.signed.bin; the bay's own id by default)
     /dev/camera           unplug or plug the camera
+    /dev/usb?preset=xiao[&port=n]   another device on the one DUT's port, or on port n
 """
 
 from __future__ import annotations
@@ -47,7 +51,9 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 WEB = Path(__file__).resolve().parent
+sys.path.insert(0, str(WEB))
 sys.path.insert(0, str(WEB.parents[1] / "common" / "web"))
+import board_targets  # noqa: E402
 from devserver import COMMON_STATIC, XTERM_STATIC, Firmware, make_image, ws_frame, ws_read  # noqa: E402
 
 # The page, and what firmware/common serves on the node too (/rack.css, xterm.js)
@@ -185,19 +191,26 @@ def ports_doc(ip: int = 0) -> list[dict]:
 USB_PRESETS = {
     "nucleo": {"vid": "0483", "pid": "374b", "manufacturer": "STMicroelectronics",
                "product": "STM32 STLink", "serial": "066DFF495150898367102236", "speed": "full",
-               "classes": ["Debug probe", "CDC ACM", "Mass storage"], "serial_bridge": False},
+               "classes": ["Debug probe", "CDC ACM", "Mass storage"], "serial_bridge": False,
+               "ttys": [{"if": "02"}]},
     "mculink": {"vid": "1fc9", "pid": "0143", "manufacturer": "NXP Semiconductors",
                 "product": "MCU-LINK on-board (r0E7) CMSIS-DAP V3.172", "serial": "3ZQ1J4ZBMTNKS",
-                "speed": "full", "classes": ["CMSIS-DAP", "CDC ACM", "HID"], "serial_bridge": False},
+                "speed": "full", "classes": ["CMSIS-DAP", "CDC ACM", "HID"], "serial_bridge": False,
+                "ttys": [{"if": "01"}]},
     "ft232": {"vid": "0403", "pid": "6001", "manufacturer": "FTDI", "product": "FT232R USB UART",
-              "serial": "A50285BI", "speed": "full", "classes": ["Serial (FTDI)"], "serial_bridge": True},
+              "serial": "A50285BI", "speed": "full", "classes": ["Serial (FTDI)"], "serial_bridge": True,
+              "ttys": [{"if": "00", "port": 0}]},
     "ch340": {"vid": "1a86", "pid": "7523", "manufacturer": None, "product": None, "serial": None,
-              "speed": "full", "classes": ["Serial (CH34x)"], "serial_bridge": True},
+              "speed": "full", "classes": ["Serial (CH34x)"], "serial_bridge": True,
+              "ttys": [{"if": "00", "port": 0}]},
     "pico": {"vid": "2e8a", "pid": "0003", "manufacturer": "Raspberry Pi", "product": "RP2 Boot",
              "serial": "E0C9125B0D9B", "speed": "full", "classes": ["Mass storage", "Vendor"],
-             "serial_bridge": False},
+             "serial_bridge": False, "ttys": []},
+    "xiao": {"vid": "303a", "pid": "1001", "manufacturer": "Espressif", "product": "USB JTAG/serial debug unit",
+             "serial": "34:85:18:9A:3C:10", "speed": "full", "classes": ["CDC ACM", "Vendor"],
+             "serial_bridge": False, "ttys": [{"if": "00"}]},
     "unknown": {"vid": "1209", "pid": "c0de", "manufacturer": None, "product": None, "serial": None,
-                "speed": "full", "classes": ["Vendor"], "serial_bridge": False},
+                "speed": "full", "classes": ["Vendor"], "serial_bridge": False, "ttys": []},
 }
 # The node's table of known IDs (src/usb_names.c): names for devices without iProduct
 USB_KNOWN = {("1a86", "7523"): "CH340 serial adapter", ("0403", "6001"): "FT232 serial adapter",
@@ -224,6 +237,7 @@ def usb_dev_doc(dev: dict, busid: str, slot: str, hub_port, client: int | None, 
     return {"busid": busid, "slot": slot, "hub_port": hub_port, "vid": dev["vid"], "pid": dev["pid"],
             "name": name, "name_from": source, "manufacturer": dev["manufacturer"], "serial": dev["serial"],
             "strings": True, "speed": dev["speed"], "classes": dev["classes"],
+            "ttys": dev.get("ttys", []),
             "usbip": {"client": ip_str(client) if client else None,
                       "since_s": int(now - USB_SINCE[busid]) if client else None,
                       "offered": True, "read_ahead": dev["serial_bridge"]},
@@ -244,6 +258,89 @@ def usb_doc() -> dict:
     client = next((c["peer"] for c in access.fake if c["service"] == "usbip"), None)
     devs = [usb_dev_doc(USB_PRESETS[usb_one], "1-1", d["slot"], None, client, None)] if d["usb"] else []
     return {"hub": None, "devices": devs}
+
+
+# --- Board targets (GET /api/boards, GET and PUT /api/ports/<n>/board): src/boards.c ---------
+
+BOARDS_YAML = WEB.parents[2] / "mechanical" / "boards" / "boards.yaml"
+boards: dict[int, dict] = {}        # port -> board, runner, probe_id, console, map, pinned
+BOARD_RE = re.compile(r"[A-Za-z0-9_@./+-]{1,63}$")
+RUNNER_RE = re.compile(r"[a-z0-9_-]{1,23}$")
+PROBE_RE = re.compile(r"[!#-\[\]-~]{1,47}$")      # printable, no space, quote or backslash
+CONSOLE_RE = re.compile(r"(usb|usb:[0-9a-f]{2}|aux|none)$")
+USB_SERIAL_RE = re.compile(r"[ !#-\[\]-~]{0,47}$")
+
+
+def slot_count() -> int:
+    return PORTS if multi() else 1
+
+
+def slot_device(n: int) -> dict | None:
+    """The device in port n's slot now, as /api/boards gives it, or None."""
+    if multi():
+        pt = ports[n - 1]
+        d = port_doc(pt)
+        dev, busid = pt["usb"], d["usb"]["busid"] if d["usb"] else None
+    else:
+        d = one_port_doc(status())
+        dev, busid = USB_PRESETS[usb_one], "1-1" if d["usb"] else None
+    if busid is None:
+        return None
+    return {"busid": busid, "vid": dev["vid"], "pid": dev["pid"], "manufacturer": dev["manufacturer"],
+            "product": dev["product"], "serial": dev["serial"], "strings": True, "ttys": dev.get("ttys", [])}
+
+
+def board_doc(n: int) -> dict:
+    """One slot of GET /api/boards: its target, what it was set for, what is in it now."""
+    rec, dev = boards.get(n), slot_device(n)
+    pinned = rec["pinned"] if rec else None
+    mismatch = False
+    if pinned and dev:
+        mismatch = ((pinned["serial"] or "") != (dev["serial"] or "") if pinned["serial"]
+                    else (pinned["vid"], pinned["pid"]) != (dev["vid"], dev["pid"]))
+    return {"slot": slot_name(n), "port": n,
+            "board": rec["board"] if rec else None, "runner": rec["runner"] if rec else None,
+            "probe_id": rec["probe_id"] if rec else None, "console": rec["console"] if rec else "usb",
+            "map": rec["map"] if rec else True, "pinned": pinned, "device": dev, "mismatch": mismatch}
+
+
+def boards_doc() -> dict:
+    return {"slots": [board_doc(n) for n in range(1, slot_count() + 1)]}
+
+
+def set_board(n: int, body: dict) -> str | None:
+    """PUT /api/ports/<n>/board: an error, or None once saved.  The record is pinned to the device in the
+    slot now (or to the body's `pin`, for a restore); no board clears the slot."""
+    if not body.get("board"):
+        boards.pop(n, None)
+        return None
+    board, runner, probe = body["board"], body.get("runner") or None, body.get("probe_id") or None
+    console, in_map = body.get("console") or "usb", body.get("map", True)
+    if not isinstance(board, str) or not BOARD_RE.match(board):
+        return "board: a Zephyr board target, 1-63 of A-Z a-z 0-9 _ @ . / + -"
+    if runner is not None and (not isinstance(runner, str) or not RUNNER_RE.match(runner)):
+        return "runner: a west runner, 1-23 of a-z 0-9 _ -"
+    if probe is not None and (not isinstance(probe, str) or not PROBE_RE.match(probe)):
+        return "probe_id: 1-47 printable characters, no space, quote or backslash"
+    if not isinstance(console, str) or not CONSOLE_RE.match(console):
+        return "console: usb, usb:<interface, 2 hex digits>, aux or none"
+    if console == "aux" and multi():
+        return "console: a DATA x4 port has no AUX UART: its board's USB, or none"
+    if not isinstance(in_map, bool):
+        return "map: true or false"
+    if body.get("pin") is not None:            # null, as absent (the node's JSON parser skips nulls)
+        pin = body["pin"]
+        if not (isinstance(pin, dict) and all(
+                isinstance(pin.get(k), str) and re.fullmatch(r"[0-9a-f]{4}", pin[k]) for k in ("vid", "pid"))
+                and USB_SERIAL_RE.match(pin.get("serial") or "")):
+            return "pin: {\"vid\": \"0483\", \"pid\": \"374b\", \"serial\": \"...\"}"
+        pinned = {"vid": pin["vid"], "pid": pin["pid"], "serial": pin.get("serial") or None}
+    else:
+        dev = slot_device(n)
+        pinned = {"vid": dev["vid"], "pid": dev["pid"], "serial": dev["serial"]} if dev else None
+    boards[n] = {"board": board, "runner": runner, "probe_id": probe, "console": console, "map": in_map,
+                 "pinned": pinned}
+    return None
 
 
 def port_act(pt: dict, what: str, body: dict) -> tuple[int, str] | None:
@@ -1108,6 +1205,17 @@ class Handler(BaseHTTPRequestHandler):
         elif path == "/api/usb":
             if not self.refused("status"):
                 self.json(200, usb_doc())
+        elif path == "/board-targets.json":
+            self.send(200, json.dumps(board_targets.targets(BOARDS_YAML), separators=(",", ":")).encode(),
+                      "application/json")
+        elif path == "/api/boards":
+            if not self.refused("status"):
+                self.json(200, boards_doc())
+        elif (m := re.fullmatch(r"/api/ports/(\d+)/board", path)):
+            if not 1 <= int(m[1]) <= slot_count():
+                self.json(404, {"error": f"no port {m[1]} on this node (1..{slot_count()})"})
+            elif not self.refused("status"):
+                self.json(200, board_doc(int(m[1])))
         elif path == "/dev/usb":
             global usb_one
             preset = query.get("preset", ["nucleo"])[0]
@@ -1310,6 +1418,38 @@ class Handler(BaseHTTPRequestHandler):
         else:
             return self.json(404, {"error": "not found"})
         self.json(200, status(self.peer()))
+
+    def do_PUT(self) -> None:  # noqa: N802
+        """PUT /api/ports/<n>/board: a slot's board target (the control right, the port's lease)."""
+        raw = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+        path = urlsplit(self.path).path
+        if firmware.down():
+            return self.json(503, {"error": "restarting"})
+        m = re.fullmatch(r"/api/ports/(\d+)/board", path)
+        if not m:
+            return self.json(404, {"error": "not found"})
+        try:
+            body = json.loads(raw or b"{}")
+        except json.JSONDecodeError:
+            return self.json(400, {"error": "bad JSON"})
+        n = int(m[1])
+        if not isinstance(body, dict):
+            return self.json(400, {"error": "bad JSON"})
+        if not 1 <= n <= slot_count():
+            return self.json(404, {"error": f"no port {n} on this node (1..{slot_count()})"})
+        if self.refused("control"):
+            return
+        ip = self.peer()
+        if multi() and port_reserved(ports[n - 1], ip):
+            lease = ports[n - 1]["lease"]
+            note = f" ({lease['note']})" if lease["note"] else ""
+            left = math.ceil((lease["until"] - time.monotonic()) / 60)
+            return self.json(423, {"error": f"{slot_name(n)} reserved by {ip_str(lease['holder'])}{note}, "
+                                            f"{left} min left", "reason": "reserved", "service": "control",
+                                   "you": ip_str(ip)})
+        if (err := set_board(n, body)) is not None:
+            return self.json(400, {"error": err})
+        self.json(200, board_doc(n))
 
     def port_post(self, n, what: str, body: dict, port_reply: bool) -> None:
         """POST /api/ports/<n>/<what>, or /api/<what> with "port": n: the port's object, or the status."""

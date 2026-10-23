@@ -7,7 +7,13 @@
  *   POST /api/reset    {"ms": 100}
  *   POST /api/boot     {}                 DUT into its bootloader
  *   GET  /api/ports    the boards: a DATA x4's four ports, or the one DUT as port 1
- *   GET  /api/usb      the USB devices: names, classes, serial numbers, USB/IP clients
+ *   GET  /api/usb      the USB devices: names, classes, serial numbers, ttys, USB/IP clients
+ *   GET  /api/boards   each slot's Zephyr board target, and the device in it (boards.c)
+ *   GET  /api/ports/<n>/board, PUT {"board": "nucleo_g474re", "runner": "...",
+ *                      "probe_id": "...", "console": "usb" | "usb:02" | "aux" | "none",
+ *                      "map": true, "pin": {"vid", "pid", "serial"}}   one slot's;
+ *                      no board clears it.  n is 1 on a one-board node.
+ *   GET  /board-targets.json   the targets the page suggests (mechanical/boards/boards.yaml)
  *   POST /api/ports/<n>/power, /reset, /boot   one port, as above; boot takes
  *                      {"power_cycle": true}: BOOT held across a power cycle
  *                      of the port.  409 when the bay's budget has no room.
@@ -44,7 +50,7 @@
  * Every POST of an action answers with the new /api/status document, errors
  * with {"error": "..."} and a 4xx/5xx status.  Each request needs the right
  * for what it does (access.c): status to read, control for power, reset,
- * boot, mode and the camera's settings, console for the console and its
+ * boot, mode, the board targets and the camera's settings, console for the console and its
  * settings; 403 when the rules refuse it, 423 while another address holds
  * the lease.  Admin requests are signed (X-Bay-Auth, see access.c).
  *
@@ -432,6 +438,13 @@ static __maybe_unused void status_append(const char *name, int (*fn)(char *buf, 
 }
 
 /* A port's name: the bay's position (or id) and the port, "C3.2" */
+static void slot_name(int port, char *buf, size_t size);
+
+void bay_slot_name(int port, char *buf, size_t size)
+{
+	slot_name(port, buf, size);
+}
+
 static void slot_name(int port, char *buf, size_t size)
 {
 	const char *pos = bay_rack_position();
@@ -699,6 +712,34 @@ static const struct json_obj_descr action_descr[] = {
 
 static char action_err[128];
 
+/* True (and the response set) when another address holds this DATA x4 port's lease */
+static bool port_reserved(struct http_response_ctx *rsp, int port, uint32_t ip)
+{
+	char slot[24], holder[ACL_IP_STR_LEN], who[ACL_IP_STR_LEN];
+	struct acl_lease lease;
+	uint32_t remaining;
+
+	if (port < 1 || port > ports_count() ||
+	    access_check_port(ACL_CONTROL, port, ip) != ACL_RESERVED ||
+	    !access_port_lease_get(port, &lease, &remaining)) {
+		return false;
+	}
+	slot_name(port, slot, sizeof(slot));
+	acl_format_ip(lease.holder, holder);
+	acl_format_ip(ip, who);
+	snprintf(resp_buf, sizeof(resp_buf),
+		 "{\"error\":\"%s reserved by %s%s%s%s, %u min left\","
+		 "\"reason\":\"reserved\",\"service\":\"control\",\"you\":\"%s\"}",
+		 slot, holder, lease.note[0] ? " (" : "", lease.note, lease.note[0] ? ")" : "",
+		 (remaining + 59) / 60, who);
+	rsp->status = HTTP_423_LOCKED;
+	rsp->body = resp_buf;
+	rsp->body_len = strlen(resp_buf);
+	rsp->final_chunk = true;
+
+	return true;
+}
+
 /* A DATA x4 port's power, reset or boot; NULL, or an error and its status */
 static const char *do_port_action(enum api_action what, int port, const struct action_req *req,
 				  int fields, enum http_status *code)
@@ -894,30 +935,9 @@ static int action_handler(struct http_client_ctx *client, enum http_transaction_
 		}
 	}
 
-	if (what == API_POWER || what == API_RESET || what == API_BOOT) {
-		int target = port > 0 ? port : ((fields & ACTION_FIELD_PORT) ? areq.port : 0);
-		struct acl_lease lease;
-		uint32_t remaining;
-
-		if (target >= 1 && target <= ports_count() &&
-		    access_check_port(ACL_CONTROL, target, ip) == ACL_RESERVED &&
-		    access_port_lease_get(target, &lease, &remaining)) {
-			char slot[24], holder[ACL_IP_STR_LEN], who[ACL_IP_STR_LEN];
-
-			slot_name(target, slot, sizeof(slot));
-			acl_format_ip(lease.holder, holder);
-			acl_format_ip(ip, who);
-			snprintf(resp_buf, sizeof(resp_buf),
-				 "{\"error\":\"%s reserved by %s%s%s%s, %u min left\","
-				 "\"reason\":\"reserved\",\"service\":\"control\",\"you\":\"%s\"}",
-				 slot, holder, lease.note[0] ? " (" : "", lease.note,
-				 lease.note[0] ? ")" : "", (remaining + 59) / 60, who);
-			rsp->status = HTTP_423_LOCKED;
-			rsp->body = resp_buf;
-			rsp->body_len = strlen(resp_buf);
-			rsp->final_chunk = true;
-			return 0;
-		}
+	if ((what == API_POWER || what == API_RESET || what == API_BOOT) &&
+	    port_reserved(rsp, port > 0 ? port : ((fields & ACTION_FIELD_PORT) ? areq.port : 0), ip)) {
+		return 0;
 	}
 
 	err = do_action(what, port, &areq, fields, &code);
@@ -993,7 +1013,7 @@ static BAY_EXT_RAM char usb_buf[6144];
  * A JSON string, or null for an empty one.  The strings come from the
  * devices: quotes, backslashes and control characters are escaped.
  */
-static char *json_str(char *p, char *end, const char *s)
+char *bay_json_str(char *p, char *end, const char *s)
 {
 	if (s == NULL || s[0] == '\0') {
 		return p + snprintf(p, end - p, "null");
@@ -1102,21 +1122,27 @@ static char *usb_dev_json(char *p, char *end, const struct usb_dev_info *u)
 	snprintf(vidpid, sizeof(vidpid), "%04x:%04x", u->vid, u->pid);
 
 	p += snprintf(p, end - p, "{\"busid\":\"%s\",\"slot\":", u->busid);
-	p = json_str(p, end, slot);
+	p = bay_json_str(p, end, slot);
 	p += snprintf(p, end - p, ",\"hub_port\":");
 	p += u->root_port ? snprintf(p, end - p, "%u", u->root_port) : snprintf(p, end - p, "null");
 	p += snprintf(p, end - p, ",\"vid\":\"%04x\",\"pid\":\"%04x\",\"name\":", u->vid, u->pid);
-	p = json_str(p, end, u->product[0] ? u->product : u->known ? u->known : vidpid);
+	p = bay_json_str(p, end, u->product[0] ? u->product : u->known ? u->known : vidpid);
 	p += snprintf(p, end - p, ",\"name_from\":\"%s\",\"manufacturer\":",
 		      u->product[0] ? "product" : u->known ? "table" : "ids");
-	p = json_str(p, end, u->manufacturer);
+	p = bay_json_str(p, end, u->manufacturer);
 	p += snprintf(p, end - p, ",\"serial\":");
-	p = json_str(p, end, u->serial);
+	p = bay_json_str(p, end, u->serial);
 	p += snprintf(p, end - p, ",\"strings\":%s,\"speed\":\"%s\",\"classes\":[",
 		      u->strings ? "true" : "false", usb_speed(u->speed));
 	ncls = usb_classes(u, classes, ARRAY_SIZE(classes));
 	for (int i = 0; i < ncls; i++) {
 		p += snprintf(p, end - p, "%s\"%s\"", i ? "," : "", classes[i]);
+	}
+	/* The ttys a host makes of it, as udev numbers them (bayctl: /dev/serial/by-id) */
+	p += snprintf(p, end - p, "],\"ttys\":[");
+	for (int i = 0; i < u->tty_n; i++) {
+		p += snprintf(p, end - p, "%s{\"if\":\"%02x\"%s}", i ? "," : "", u->tty_if[i],
+			      u->tty_bridge ? ",\"port\":0" : "");
 	}
 	p += snprintf(p, end - p, "],\"usbip\":{\"client\":");
 	if (client) {
@@ -1155,7 +1181,7 @@ static int usb_json(char *buf, size_t size)
 	if (hub != NULL) {
 		p += snprintf(p, end - p, "{\"vid\":\"%04x\",\"pid\":\"%04x\",\"name\":",
 			      hub->vid, hub->pid);
-		p = json_str(p, end, hub->product[0] ? hub->product
+		p = bay_json_str(p, end, hub->product[0] ? hub->product
 				     : hub->known ? hub->known : "USB hub");
 		p += snprintf(p, end - p, ",\"data_x4\":%s}", ports_count() > 0 ? "true" : "false");
 	} else {
@@ -1210,6 +1236,119 @@ static struct http_resource_detail_dynamic usb_detail = {
 	},
 	.cb = usb_handler,
 };
+
+/* --- GET /api/boards, GET and PUT /api/ports/<n>/board (boards.c) ---------- */
+
+static void respond_usb_buf(struct http_response_ctx *rsp, int len)
+{
+	if (len < 0) {
+		respond_error(rsp, HTTP_500_INTERNAL_SERVER_ERROR, "response too large");
+		return;
+	}
+	rsp->body = usb_buf;
+	rsp->body_len = len;
+	rsp->final_chunk = true;
+}
+
+static int boards_handler(struct http_client_ctx *client, enum http_transaction_status status,
+			  const struct http_request_ctx *req, struct http_response_ctx *rsp,
+			  void *user_data)
+{
+	ARG_UNUSED(req);
+	ARG_UNUSED(user_data);
+
+	if (status == HTTP_SERVER_REQUEST_DATA_FINAL &&
+	    !refused(rsp, ACL_STATUS, access_peer(client->fd))) {
+		respond_usb_buf(rsp, boards_json(usb_buf, sizeof(usb_buf)));
+	}
+
+	return 0;
+}
+
+static struct http_resource_detail_dynamic boards_detail = {
+	.common = {
+		.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+		.bitmask_of_supported_http_methods = BIT(HTTP_GET),
+		.content_type = "application/json",
+	},
+	.cb = boards_handler,
+};
+
+/* user_data: the port.  Writing a target is control, and the port's lease */
+static int board_handler(struct http_client_ctx *client, enum http_transaction_status status,
+			 const struct http_request_ctx *req, struct http_response_ctx *rsp,
+			 void *user_data)
+{
+	static char body[512];
+	static size_t len;
+	static bool too_long;
+	int port = POINTER_TO_INT(user_data);
+	const char *err;
+	uint32_t ip;
+	int n;
+
+	if (status == HTTP_SERVER_TRANSACTION_ABORTED ||
+	    status == HTTP_SERVER_TRANSACTION_COMPLETE) {
+		len = 0;
+		too_long = false;
+		return 0;
+	}
+	if (client->method == HTTP_PUT) {
+		if (len + req->data_len >= sizeof(body)) {
+			too_long = true;
+		} else {
+			memcpy(body + len, req->data, req->data_len);
+			len += req->data_len;
+		}
+	}
+	if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
+		return 0;
+	}
+
+	ip = access_peer(client->fd);
+	if (refused(rsp, client->method == HTTP_PUT ? ACL_CONTROL : ACL_STATUS, ip)) {
+		return 0;
+	}
+	if (port > boards_slots()) {
+		snprintf(action_err, sizeof(action_err), "no port %d on this node (1..%d)", port,
+			 boards_slots());
+		respond_error(rsp, HTTP_404_NOT_FOUND, action_err);
+		return 0;
+	}
+	if (client->method == HTTP_PUT) {
+		if (port_reserved(rsp, port, ip)) {
+			return 0;
+		}
+		if (too_long) {
+			respond_error(rsp, HTTP_413_PAYLOAD_TOO_LARGE, "body too large");
+			return 0;
+		}
+		body[len] = '\0';
+		err = boards_put(port, body, len);
+		if (err != NULL) {
+			respond_error(rsp, strcmp(err, "not saved") == 0 ? HTTP_500_INTERNAL_SERVER_ERROR
+								       : HTTP_400_BAD_REQUEST, err);
+			return 0;
+		}
+	}
+	n = boards_slot_json(usb_buf, sizeof(usb_buf), port);
+	respond_usb_buf(rsp, n);
+
+	return 0;
+}
+
+#define BOARD_RESOURCE(_i, _)                                                                      \
+	static struct http_resource_detail_dynamic board_detail_##_i = {                           \
+		.common = {                                                                        \
+			.type = HTTP_RESOURCE_TYPE_DYNAMIC,                                        \
+			.bitmask_of_supported_http_methods = BIT(HTTP_GET) | BIT(HTTP_PUT),        \
+			.content_type = "application/json",                                        \
+		},                                                                                 \
+		.cb = board_handler,                                                               \
+		.user_data = INT_TO_POINTER(UTIL_INC(_i)),                                         \
+	}
+
+LISTIFY(BOARDS_MAX, BOARD_RESOURCE, (;));
 
 /* --- /api/aux ------------------------------------------------------------ */
 
@@ -2085,6 +2224,14 @@ static const uint8_t index_html_gz[] = {
 static struct http_resource_detail_static index_detail =
 	HWTR_WEB_STATIC_GZ(index_html_gz, "text/html");
 
+/* The board targets the page suggests, from boards.yaml (web/board_targets.py) */
+static const uint8_t board_targets_gz[] = {
+#include "board-targets.json.gz.inc"
+};
+
+static struct http_resource_detail_static board_targets_detail =
+	HWTR_WEB_STATIC_GZ(board_targets_gz, "application/json");
+
 /* --- /console/ws/<slot>: one WebSocket resource (and buffer) per console --- */
 
 /*
@@ -2146,6 +2293,8 @@ HTTP_RESOURCE_DEFINE(boot_res, bay_http, "/api/boot", &boot_detail);
 HTTP_RESOURCE_DEFINE(mode_res, bay_http, "/api/mode", &mode_detail);
 HTTP_RESOURCE_DEFINE(ports_res, bay_http, "/api/ports", &ports_detail);
 HTTP_RESOURCE_DEFINE(usb_res, bay_http, "/api/usb", &usb_detail);
+HTTP_RESOURCE_DEFINE(boards_res, bay_http, "/api/boards", &boards_detail);
+HTTP_RESOURCE_DEFINE(board_targets_res, bay_http, "/board-targets.json", &board_targets_detail);
 HTTP_RESOURCE_DEFINE(metrics_res, bay_http, "/metrics", &metrics_detail);
 HTTP_RESOURCE_DEFINE(aux_res, bay_http, "/api/aux", &aux_detail);
 HTTP_RESOURCE_DEFINE(break_res, bay_http, "/api/aux/break", &break_detail);
@@ -2172,6 +2321,13 @@ LISTIFY(CONFIG_BAY_CONSOLE_WEB_CLIENTS, CONSOLE_WS_RESOURCE, (;));
 #define PORT_RESOURCES(_i, _)                                                                      	static struct http_resource_detail_dynamic port_power_detail_##_i =                        		ACTION_RESOURCE(PORT_ACTION(API_POWER, _i + 1));                                   	static struct http_resource_detail_dynamic port_reset_detail_##_i =                        		ACTION_RESOURCE(PORT_ACTION(API_RESET, _i + 1));                                   	static struct http_resource_detail_dynamic port_boot_detail_##_i =                         		ACTION_RESOURCE(PORT_ACTION(API_BOOT, _i + 1));                                    	HTTP_RESOURCE_DEFINE(port_power_res_##_i, bay_http,                                        			     "/api/ports/" STRINGIFY(UTIL_INC(_i)) "/power",                       			     &port_power_detail_##_i);                                             	HTTP_RESOURCE_DEFINE(port_reset_res_##_i, bay_http,                                        			     "/api/ports/" STRINGIFY(UTIL_INC(_i)) "/reset",                       			     &port_reset_detail_##_i);                                             	HTTP_RESOURCE_DEFINE(port_boot_res_##_i, bay_http,                                         			     "/api/ports/" STRINGIFY(UTIL_INC(_i)) "/boot", &port_boot_detail_##_i)
 
 LISTIFY(4, PORT_RESOURCES, (;));
+
+/* /api/ports/<n>/board: n = 1..4 (1: a one-board node's DUT) */
+#define BOARD_RESOURCE_DEFINE(_i, _)                                                               \
+	HTTP_RESOURCE_DEFINE(board_res_##_i, bay_http,                                             \
+			     "/api/ports/" STRINGIFY(UTIL_INC(_i)) "/board", &board_detail_##_i)
+
+LISTIFY(BOARDS_MAX, BOARD_RESOURCE_DEFINE, (;));
 
 int web_init(void)
 {

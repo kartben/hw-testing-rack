@@ -182,6 +182,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Access control | who may use which service, a CI reservation, an admin key confirmed by a BOOT press; Zephyr's packet filter for the TCP services, a check per HTTP request.  See [Access control](#access-control) |
 | USB devices | each enumerated device on the page's USB devices card, in `/api/usb` and `bay usb`: its name (the product string, else a table of known IDs, else vid:pid), maker, serial number, the classes of its interfaces (CDC ACM, HID, mass storage, CMSIS-DAP…), speed, bus id and slot, and its USB/IP client.  A thread reads each device's strings once, as it shows up, into PSRAM (`src/usb_info.c`) |
 | DATA ×4 | a DATA ×4 board in the drawer (probed after each DUT_5V on): four ports, each switched on through the bay's budget, its ~FAULT, current and RESET/BOOT; `bay port`, `/api/ports`.  See [docs/multi-dut-node.md](../docs/multi-dut-node.md) |
+| Board targets | each slot's Zephyr board, runner, probe and console, in NVS for the device in it; `/api/boards`, the page's Edit; `bayctl hwmap` reads them ([Board targets](#board-targets)) |
 | Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO42 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
 | Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS; no power save, 20 MHz channels and 11 dBm of TX power, see [Wi-Fi in the rack](#wi-fi-in-the-rack) (`common/lib/net.c`, as the hub) |
 | Shell | `bay …` commands, `radio`, plus the stock `wifi`, `net` shells, on UART0 and telnet |
@@ -272,7 +273,7 @@ associated: the session that runs the test keeps its link.
 ### Web page and API
 
 `http://bay-<id>.local/` is a single self-contained page: plain HTML, CSS and
-an ES module, no framework or CDN, about 18 KB gzipped in flash (plus
+an ES module, no framework or CDN, about 25 KB gzipped in flash (plus
 xterm.js for the console, below).  It follows the browser's light/dark
 theme, polls `/api/status` every 2 s while visible, and offers the shell's
 main actions.
@@ -290,8 +291,11 @@ main actions.
 | `POST /api/reset` | `{"ms": 100}` (body optional) |
 | `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |
 | `GET /api/ports` | the boards: a DATA ×4's four ports, or the one DUT as port 1 ([docs/multi-dut-node.md](../docs/multi-dut-node.md)) |
-| `GET /api/usb` | the USB devices: `{"hub": {vid, pid, name, data_x4} or null, "devices": [{busid, slot, hub_port, vid, pid, name, name_from (product, table, ids), manufacturer, serial, strings, speed, classes, usbip: {client, since_s, offered, read_ahead}, ma}]}`; `offered`: the USB/IP service exports it (not a hub, within `USBIP_DEVICES_COUNT`); the strings come from the devices, escaped; the serial numbers are for everyone with the status right (twister hardware maps) |
+| `GET /api/usb` | the USB devices: `{"hub": {vid, pid, name, data_x4} or null, "devices": [{busid, slot, hub_port, vid, pid, name, name_from (product, table, ids), manufacturer, serial, strings, speed, classes, ttys, usbip: {client, since_s, offered, read_ahead}, ma}]}`; `offered`: the USB/IP service exports it (not a hub, within `USBIP_DEVICES_COUNT`); `ttys`: the interfaces a host makes a tty of, numbered as udev does (`[{"if": "02"}]`, `"port": 0` for a serial bridge's); the strings come from the devices, escaped; the serial numbers are for everyone with the status right (twister hardware maps) |
 | `POST /api/ports/<n>/power`, `/reset`, `/boot` | one port; `boot` takes `{"power_cycle": true}`; 409 when the bay's budget has no room.  On a DATA ×4 node `/api/power`, `/reset` and `/boot` need `"port": n` |
+| `GET /api/boards` | each slot's [board target](#board-targets) and the device in the slot now: `{"slots": [{slot, port, board, runner, probe_id, console, map, pinned: {vid, pid, serial}, device: {busid, vid, pid, manufacturer, product, serial, strings, ttys}, mismatch}]}`, `null` where unset or empty |
+| `GET`, `PUT /api/ports/<n>/board` | one slot's (`n` is 1 on a one-board node); `PUT {"board": "nucleo_g474re", "runner": "stm32cubeprogrammer", "probe_id": "…", "console": "usb" \| "usb:02" \| "aux" \| "none", "map": true}` saves it for the device in the slot now, or for `"pin": {"vid", "pid", "serial"}` (a restore); no `board` clears it; control right, and the port's lease |
+| `GET /board-targets.json` | the targets the page suggests, by USB ID: `mechanical/boards/boards.yaml` at build time (`web/board_targets.py`) |
 | `POST /api/mode` | `{"mode": "usbip" \| "classic"}` (persistent) |
 | `GET /api/aux` | AUX UART settings, consoles connected, byte counters |
 | `POST /api/aux` | any of `{"baud": 115200, "data_bits": 8, "parity": "none" \| "odd" \| "even", "stop_bits": 1, "enter": "cr" \| "lf" \| "crlf", "echo": false, "esptool_reset": false}`, applied and saved; answers with `GET /api/aux` |
@@ -336,6 +340,30 @@ light on or off (`/dev/camera` unplugs it);
 The screenshots come from that simulation:
 `python firmware/bay-node/web/screenshots.py` (Playwright, Pillow and an
 installed Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
+
+### Board targets
+
+Each slot (the bay, or a DATA ×4's A1.1–A1.4) keeps the Zephyr board in it,
+in NVS (`src/boards.c`): its target, west runner, probe id, the console
+twister reads, and whether it goes in the hardware map.  The USB devices
+card shows it under the device, with Edit (control right); the dialog
+suggests the targets `mechanical/boards/boards.yaml` lists for the
+device's USB ID (`usb:`, per board and per target).
+
+<img src="../docs/img/web-ui-board-target.png" width="480" alt="Board target dialog of B3.4, a XIAO ESP32-C6 (303a:1001): the Zephyr board xiao_esp32c6/esp32c6/hpcore picked from five suggestions, runner esp32 (the board's default), probe id empty (the device's serial number), console the device's USB serial, in twister's hardware map">
+
+- **Pinned to the board.**  The target is saved for the device in the slot
+  then (USB ID and serial number); another board in the slot shows
+  "Another board in the slot" until its target is saved.
+- **Probe id**: empty means the device's USB serial number, so west flashes
+  this board and not its neighbour.
+- **Console**: `usb`, the device's first tty
+  (`/dev/serial/by-id/usb-…-if02` on the CI host); `usb:NN`, another
+  interface; `aux`, the bay's AUX UART over RFC 2217 (one-board nodes);
+  `none`.
+- **`bayctl hwmap`** builds twister's hardware map from every node's
+  targets, through the hub's node list, and `bayctl export lab` /
+  `import lab` back them up ([docs/ci.md](../docs/ci.md)).
 
 ### Camera
 

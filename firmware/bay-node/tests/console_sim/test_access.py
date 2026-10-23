@@ -1,4 +1,4 @@
-"""Access control of the bay node on native_sim: the real access.c, web.c and aux_console.c.
+"""Access control of the bay node on native_sim: the real access.c, web.c, boards.c and aux_console.c.
 
 Linux only (native_sim, host sockets); in the Zephyr build image:
 
@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import gzip
 import hashlib
 import hmac
 import http.client
@@ -263,6 +264,41 @@ class AccessSim(unittest.TestCase):
         self.assertTrue(closed_soon(tcp(OTHER, 4000)))                                       # raw
         self.assertEqual(post(ADMIN, "/api/power", {"action": "on"})[0], 200)
 
+        # --- Board targets: read with status, written with control, pinned to the device ----
+        code, b = get(OTHER, "/api/boards")
+        self.assertEqual(code, 200, b)
+        slot = b["slots"][0]
+        self.assertEqual((slot["port"], slot["board"], slot["console"], slot["map"], slot["pinned"]),
+                         (1, None, "usb", True, None))
+        self.assertEqual((slot["device"]["busid"], slot["device"]["serial"], slot["device"]["ttys"]),
+                         ("1-1", "3ZQ1J4ZBMTNKS", [{"if": "01"}]))
+        target = {"board": "frdm_mcxn947/mcxn947/cpu0", "runner": "linkserver", "console": "aux"}
+        self.assertEqual(request(OTHER, "PUT", "/api/ports/1/board", target)[0], 403)
+        code, b = request(CI, "PUT", "/api/ports/1/board", target)
+        self.assertEqual(code, 200, b)
+        self.assertEqual((b["board"], b["runner"], b["probe_id"], b["console"], b["map"], b["mismatch"]),
+                         ("frdm_mcxn947/mcxn947/cpu0", "linkserver", None, "aux", True, False))
+        self.assertEqual(b["pinned"], {"vid": "1fc9", "pid": "0143", "serial": "3ZQ1J4ZBMTNKS"})
+        for bad in ({"board": "bad board"}, {"board": "x", "console": "usb:1"}, {"board": "x", "runner": "J-Link"},
+                    {"board": "x", "pin": {"vid": "1fc9", "pid": "143"}}):
+            self.assertEqual(request(CI, "PUT", "/api/ports/1/board", bad)[0], 400, bad)
+        self.assertEqual(get(OTHER, "/api/ports/2/board")[0], 404)
+        # Set for another board (a restore from bayctl export): the one in the slot is flagged
+        code, b = request(CI, "PUT", "/api/ports/1/board",
+                          {**target, "pin": {"vid": "1fc9", "pid": "0143", "serial": "OTHERBOARD"}})
+        self.assertEqual((code, b["mismatch"]), (200, True))
+        self.assertTrue(get(OTHER, "/api/boards")[1]["slots"][0]["mismatch"])
+        self.assertFalse(request(CI, "PUT", "/api/ports/1/board", target)[1]["mismatch"])
+        # The page's suggestions, built from boards.yaml
+        conn = http.client.HTTPConnection("127.0.0.1", 80, timeout=5, source_address=(OTHER, 0))
+        conn.request("GET", "/board-targets.json")
+        r = conn.getresponse()
+        targets = json.loads(gzip.decompress(r.read()))
+        conn.close()
+        self.assertEqual(r.getheader("Content-Encoding"), "gzip")
+        self.assertIn({"board": "frdm_mcxn947/mcxn947/cpu0", "runner": "linkserver", "family": "NXP FRDM-MCXN947",
+                       "usb": ["1fc9:0143"]}, targets["targets"])
+
         # The web console needs a ticket from an address with the console right
         _, t = post(ADMIN, "/api/console/ticket", {})
         self.assertEqual(websocket(ADMIN, f"/console/ws/0?t={t['ticket']}"), 101)
@@ -297,6 +333,7 @@ class AccessSim(unittest.TestCase):
         self.assertIn("twister job 8812", e["error"])
         self.assertEqual(get(ADMIN, "/api/status")[1]["access"]["lease"]["holder"], CI)
         self.assertEqual(post(CI, "/api/power", {"action": "cycle", "ms": 10})[0], 200)
+        self.assertEqual(request(ADMIN, "PUT", "/api/ports/1/board", {"board": "x"})[0], 423)
         self.assertEqual(post(ADMIN, "/api/lease", {"ttl_s": 60})[0], 423)
         self.assertEqual(post(ADMIN, "/api/lease", {"release": True})[0], 403)              # not the holder
         self.assertEqual(post(CI, "/api/lease", {"ttl_s": 5})[0], 400)
@@ -320,12 +357,16 @@ class AccessSim(unittest.TestCase):
         self.assertEqual((s["access"]["claimed"], s["access"]["enabled"], s["access"]["allow"]),
                          (True, True, ["status"]))
         self.assertEqual(signed(ADMIN, "GET", "/api/access")[1]["rules"]["sources"][0]["name"], "admin-laptop")
+        b = get(OTHER, "/api/boards")[1]["slots"][0]                                         # the board target too
+        self.assertEqual((b["board"], b["console"], b["mismatch"]), ("frdm_mcxn947/mcxn947/cpu0", "aux", False))
 
         # --- Local recovery ---------------------------------------------------------
         node.shell("bay access reset", "open until claimed")
         code, s = get(OTHER, "/api/status")
         self.assertEqual((s["access"]["claimed"], s["access"]["enabled"]), (False, False))
         self.assertEqual(post(OTHER, "/api/reset", {"ms": 10})[0], 200)
+        code, b = request(OTHER, "PUT", "/api/ports/1/board", {})                            # no board: cleared
+        self.assertEqual((code, b["board"], b["pinned"]), (200, None, None))
 
 
 def build(workspace: Path, out: Path) -> Path:

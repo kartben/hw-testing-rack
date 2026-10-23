@@ -24,6 +24,7 @@ target_sources(app PRIVATE
   src/shell.c
   src/web.c
   src/access.c
+  src/boards.c
   src/rack.c
 )
 target_sources_ifdef(CONFIG_BAY_CAMERA app PRIVATE src/camera.c)
@@ -37,6 +38,17 @@ endif()
 # gzipped into the image (served as-is with Content-Encoding: gzip)
 set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated)
 generate_inc_file_for_target(app web/index.html ${gen_dir}/index.html.gz.inc --gzip)
+set(BAY ${CMAKE_CURRENT_SOURCE_DIR})
+# The board targets the page suggests per USB device: a table built from
+# mechanical/boards/boards.yaml, gzipped like the page (/board-targets.json)
+set(boards_yaml ${BAY}/../../mechanical/boards/boards.yaml)
+add_custom_command(
+  OUTPUT ${gen_dir}/board-targets.json
+  COMMAND ${PYTHON_EXECUTABLE} ${BAY}/web/board_targets.py ${boards_yaml} ${gen_dir}/board-targets.json
+  DEPENDS ${BAY}/web/board_targets.py ${boards_yaml}
+)
+generate_inc_file_for_target(app ${gen_dir}/board-targets.json ${gen_dir}/board-targets.json.gz.inc
+  --gzip)
 hwtr_web_assets(bay_http)
 hwtr_web_xterm(bay_http)
 # Firmware updates (when built with MCUboot): /api/update, /api/update/begin

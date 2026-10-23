@@ -93,7 +93,7 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
 `dut.c` stays the bay's DUT_5V; `ports.c` adds the DATA ×4's ports, and a
 one-port node answers `/api/ports` with its one DUT as port 1.
 
-![USB devices card on a DATA ×4 bay (B3.1–B3.4): per-port power, reset, bootloader, current and lease state](img/web-ui-ports.png)
+![USB devices card on a DATA ×4 bay (B3.1–B3.4): per-port power, reset, bootloader, current, lease state and board target](img/web-ui-ports.png)
 
 ## Power budget
 
@@ -144,6 +144,7 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 | `POST /api/ports/<n>/reset`, `/boot` | as today, for one port; `/boot` with `{"power_cycle": true}`: BOOT held across a power cycle of the port instead of a RESET pulse (a board whose RESET is not wired: [the analyzer](#a-logic-analyzer-in-a-sub-slot)) |
 | `GET /api/status` | adds `ports` (the same objects, shorter) |
 | `/api/power`, `/api/reset`, `/api/boot` | unchanged on a one-port node; on a multi-port node they need `"port": n` (409 without) |
+| `GET /api/boards`, `GET` / `PUT /api/ports/<n>/board` | each sub-slot's Zephyr board target (board, runner, probe id, console), saved on the node for the board in it ([firmware/README.md › Board targets](../firmware/README.md#board-targets)) |
 | `/metrics` | the DUT metrics labelled `port="A1.2"` |
 
 ## Access control and leases

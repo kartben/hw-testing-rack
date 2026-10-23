@@ -7,11 +7,11 @@
 
 export const $ = (id) => document.getElementById(id);
 
-/* GET without a body, POST with one; errors carry the HTTP status and the board's reply */
-export async function api(path, body, headers = {}) {
+/* GET without a body, POST (or PUT) with one; errors carry the HTTP status and the board's reply */
+export async function api(path, body, headers = {}, method = "POST") {
   const text = typeof body === "string" ? body : body === undefined ? undefined : JSON.stringify(body);
   const init = text === undefined ? { headers } : {
-    method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: text,
+    method, headers: { "Content-Type": "application/json", ...headers }, body: text,
   };
   const res = await fetch(path, { ...init, signal: AbortSignal.timeout(text ? 10000 : 4000) });
   const data = await res.json().catch(() => ({}));

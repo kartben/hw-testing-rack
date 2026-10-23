@@ -24,7 +24,10 @@
 # zephyr       = CI defaults for tools/bayctl.py (twister hardware map): `platform` is the target
 #                as twister names it (the board YAML's `identifier`), `runner` the west runner,
 #                `console` usb (the debugger's VCOM, default) or aux (the bay's AUX UART).
-#                Board families list `choices`: config/lab.yaml picks one per bay.
+#                Board families list `choices`: the node's page (or config/lab.yaml) picks one per slot.
+#                `usb`: the VID:PID the debug USB shows (vvvv:pppp, or vvvv:* for any of a vendor's): the
+#                node's page suggests these targets for a device with that id (firmware/bay-node/web/
+#                board_targets.py builds its table).  `targets`: per target, a `runner` and `usb` of its own.
 # headers      = 2.54 mm pin headers soldered pins up, where Dupont jumpers plug on (viewer: the pins, and the
 #                jumpers' ends): rows of `n` pins from pin `at` [x, y] (drawing frame) by `step` [dx, dy], their
 #                `names` in order (a name may repeat, GND: a jumper takes the one nearest its other end)
@@ -49,6 +52,7 @@ boards:
     source: "Arduino ABX00080 datasheet, mechanical drawing"
     verified: true
     zephyr: { choices: ["arduino_uno_r4@minima", "arduino_uno_r4@wifi"], runner: pyocd,
+              targets: { "arduino_uno_r4@minima": { usb: ["2341:0069"] }, "arduino_uno_r4@wifi": { usb: ["2341:1002"] } },
               note: "the UNO R4 WiFi's ESP32-S3 is its CMSIS-DAP probe and USB console; the Minima has neither: SWD probe, console on AUX" }
 
   giga-r1-display:
@@ -75,7 +79,7 @@ boards:
       credit: "© Arduino S.r.l., CC BY-SA 4.0 (stacked, recoloured)"
     source: "Arduino STEP files ABX00063 + ASX00039 (CC BY-SA 4.0); datasheets ABX00063, ASX00039"
     verified: true
-    zephyr: { platform: arduino_giga_r1/stm32h747xx/m7, runner: dfu-util,
+    zephyr: { platform: arduino_giga_r1/stm32h747xx/m7, runner: dfu-util, usb: ["2341:0266", "2341:0366"],
               note: "build with --shield arduino_giga_display_shield (LVGL samples run on it); dfu-util needs the bootloader: double-tap RESET (AUX RESET)" }
 
   nucleo-64:
@@ -98,7 +102,7 @@ boards:
     source: "ST UM1724 fig. 5 (holes drawing-derived, ±0.1 mm)"
     verified: true
     zephyr: { choices: [nucleo_c031c6, nucleo_f401re, nucleo_f446re, nucleo_g071rb, nucleo_g474re, nucleo_l476rg],
-              runner: stm32cubeprogrammer }
+              runner: stm32cubeprogrammer, usb: ["0483:374b", "0483:374e", "0483:374f"] }   # ST-LINK/V2-1, V3E
 
   nucleo-144:
     name: ST NUCLEO-144 (MB1137 / MB1364 / MB1404)
@@ -117,7 +121,7 @@ boards:
     source: "ST UM1974 fig. 6 (holes drawing-derived)"
     verified: true
     zephyr: { choices: [nucleo_f429zi, nucleo_f767zi, nucleo_h563zi, nucleo_h743zi, nucleo_u575zi_q],
-              runner: stm32cubeprogrammer }
+              runner: stm32cubeprogrammer, usb: ["0483:374b", "0483:374e", "0483:374f", "0483:3753", "0483:3754"] }
 
   rpi-pico2:
     name: Raspberry Pi Pico / Pico 2 (W)
@@ -144,6 +148,7 @@ boards:
     pcb_t: 1.0
     verified: true
     zephyr: { platform: rpi_pico2/rp2350a/m33_0, runner: uf2, console: aux,
+              usb: ["2e8a:000f", "2e8a:0003"],     # in BOOTSEL: RP2350, RP2040
               note: "no on-board probe: uf2 needs BOOTSEL (AUX BOOT to TP6, AUX RESET to RUN) and an automounted RP2350 drive; or add a Raspberry Pi Debug Probe (runner openocd)" }
 
   esp32-s3-devkitc:
@@ -160,7 +165,7 @@ boards:
     color: "#151515"
     source: "Espressif DXF ESP32-S3-DevKitC-1 v1.1"
     verified: true
-    zephyr: { platform: esp32s3_devkitc/esp32s3/procpu, runner: esp32 }
+    zephyr: { platform: esp32s3_devkitc/esp32s3/procpu, runner: esp32, usb: ["303a:1001", "10c4:ea60"] }
 
   esp32-c6-devkitc:
     name: Espressif ESP32-C6-DevKitC-1 v1.2
@@ -181,7 +186,7 @@ boards:
     color: "#151515"
     source: "Espressif dimension drawing v1.2"
     verified: true
-    zephyr: { platform: esp32c6_devkitc/esp32c6/hpcore, runner: esp32 }
+    zephyr: { platform: esp32c6_devkitc/esp32c6/hpcore, runner: esp32, usb: ["303a:1001"] }
 
   xiao:
     name: Seeed Studio XIAO (any)
@@ -203,6 +208,11 @@ boards:
     pcb_t: 1.25             # its PCB's thickness (viewer: the headers sit on it)
     verified: true
     zephyr: { choices: [xiao_ble, xiao_esp32c3, xiao_esp32c6/esp32c6/hpcore, xiao_esp32s3/esp32s3/procpu, xiao_rp2040],
+              targets: { xiao_ble: { runner: uf2, usb: ["2886:8045", "2886:0045"] },
+                         xiao_esp32c3: { runner: esp32, usb: ["303a:1001"] },
+                         xiao_esp32c6/esp32c6/hpcore: { runner: esp32, usb: ["303a:1001"] },
+                         xiao_esp32s3/esp32s3/procpu: { runner: esp32, usb: ["303a:1001"] },
+                         xiao_rp2040: { runner: uf2, usb: ["2e8a:0003"] } },
               note: "pick the runner with the platform (esp32, uf2, ...)" }
 
   arduino-nano-matter:
@@ -273,7 +283,7 @@ boards:
                             # design colours → white case, black glass, blue joystick
     source: "Seeed OSHW-WioTerminal (Wio Terminal 3D.stp)"
     verified: true
-    zephyr: { platform: wio_terminal, runner: bossac,
+    zephyr: { platform: wio_terminal, runner: bossac, usb: ["2886:802d", "2886:002d"],
               note: "its UF2 bootloader on the USB-C: a double reset enters it (the bay's AUX RESET); no on-board probe" }
 
   microbit-v2:
@@ -289,7 +299,7 @@ boards:
     color: "#111111"
     source: "Mouser listing (outline only)"
     verified: true
-    zephyr: { platform: bbc_microbit_v2, runner: pyocd }
+    zephyr: { platform: bbc_microbit_v2, runner: pyocd, usb: ["0d28:0204"] }   # DAPLink
 
   frdm-mcxn947:
     name: NXP FRDM-MCXN947
@@ -303,7 +313,7 @@ boards:
     color: "#1b1b1b"
     source: "NXP UM12018 (outline only; holes not published)"
     verified: false
-    zephyr: { platform: frdm_mcxn947/mcxn947/cpu0, runner: linkserver }
+    zephyr: { platform: frdm_mcxn947/mcxn947/cpu0, runner: linkserver, usb: ["1fc9:0143"] }   # MCU-Link
 
   nrf54l15-dk:
     name: Nordic nRF54L15 DK
@@ -321,7 +331,7 @@ boards:
                             # stated); painted in its slate blue
     source: "Nordic hardware files PCA10156 1.0.0 (outline, USB; its holes not taken over yet)"
     verified: false
-    zephyr: { platform: nrf54l15dk/nrf54l15/cpuapp, runner: nrfutil }
+    zephyr: { platform: nrf54l15dk/nrf54l15/cpuapp, runner: nrfutil, usb: ["1366:*"] }   # J-Link OB
 
   nrf52840-dk:
     name: Nordic nRF52840 DK
@@ -338,7 +348,7 @@ boards:
                             # Nordic's Altium PCB through KiCad (tools/vendor_pcb.py), painted in Nordic blue
     source: "Nordic hardware files PCA10056 3.0.3 (outline, USB; its holes not taken over yet)"
     verified: false
-    zephyr: { platform: nrf52840dk/nrf52840, runner: nrfutil }
+    zephyr: { platform: nrf52840dk/nrf52840, runner: nrfutil, usb: ["1366:*"] }   # J-Link OB
 
   nrf5340-dk:
     name: Nordic nRF5340 DK
@@ -352,7 +362,7 @@ boards:
     color: "#1d3557"
     source: "approximate — measure your board"
     verified: false
-    zephyr: { platform: nrf5340dk/nrf5340/cpuapp, runner: nrfutil }
+    zephyr: { platform: nrf5340dk/nrf5340/cpuapp, runner: nrfutil, usb: ["1366:*"] }   # J-Link OB
 
   frdm-k64f:
     name: NXP FRDM-K64F
@@ -366,7 +376,7 @@ boards:
     color: "#f0f0f0"
     source: "community measurement (outline only)"
     verified: false
-    zephyr: { platform: frdm_k64f, runner: pyocd }
+    zephyr: { platform: frdm_k64f, runner: pyocd, usb: ["0d28:0204"] }   # OpenSDA, DAPLink firmware
 
   stm32f746g-disco:
     name: ST STM32F746G-DISCO
@@ -383,7 +393,7 @@ boards:
     color: "#0b2c4a"
     source: "approximate — measure your board"
     verified: false
-    zephyr: { platform: stm32f746g_disco, runner: stm32cubeprogrammer }
+    zephyr: { platform: stm32f746g_disco, runner: stm32cubeprogrammer, usb: ["0483:374b"] }
 
   mimxrt1060-evkb:
     name: NXP MIMXRT1060-EVKB
@@ -398,7 +408,7 @@ boards:
     color: "#141414"
     source: "approximate — measure your board"
     verified: false
-    zephyr: { platform: "mimxrt1060_evk@B/mimxrt1062/qspi", runner: linkserver }
+    zephyr: { platform: "mimxrt1060_evk@B/mimxrt1062/qspi", runner: linkserver, usb: ["1fc9:0143"] }
 
   mimxrt1170-evkb:
     name: NXP MIMXRT1170-EVKB
@@ -414,4 +424,4 @@ boards:
     span: 2
     source: "approximate — measure your board"
     verified: false
-    zephyr: { platform: "mimxrt1170_evk@B/mimxrt1176/cm7", runner: linkserver }
+    zephyr: { platform: "mimxrt1170_evk@B/mimxrt1176/cm7", runner: linkserver, usb: ["1fc9:0143"] }
