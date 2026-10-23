@@ -56,6 +56,19 @@ choice ESP32_WIFI_STA_POWER_SAVE_MODE
 	default ESP32_WIFI_STA_POWER_SAVE_NONE if HWTR_NET
 endchoice
 
+config HWTR_DNSSD
+	bool "DNS-SD: the services that listen, under the hostname"
+	depends on MDNS_RESPONDER_DNS_SD
+	help
+	  The application describes its services and a TXT record;
+	  hwtr_dnssd keeps the mDNS responder's DNS-SD records in step with
+	  them (hwtr/dnssd.h).
+
+config HWTR_DNSSD_REFRESH_MS
+	int "How often the advertised services are checked (ms)"
+	depends on HWTR_DNSSD
+	default 2000
+
 config HWTR_ACL
 	bool "Access rules, lease, SHA-256 and HMAC (plain C)"
 

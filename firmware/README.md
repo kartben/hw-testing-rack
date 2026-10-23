@@ -184,7 +184,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | DATA ×4 | a DATA ×4 board in the drawer (probed after each DUT_5V on): four ports, each switched on through the bay's budget, its ~FAULT, current and RESET/BOOT; `bay port`, `/api/ports`.  See [docs/multi-dut-node.md](../docs/multi-dut-node.md) |
 | Board targets | each slot's Zephyr board, runner, probe and console, in NVS for the device in it; `/api/boards`, the page's Edit; `bayctl hwmap` reads them ([Board targets](#board-targets)) |
 | Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO42 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
-| Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS; no power save, 20 MHz channels and 11 dBm of TX power, see [Wi-Fi in the rack](#wi-fi-in-the-rack) (`common/lib/net.c`, as the hub) |
+| Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS, its services advertised over DNS-SD (below); no power save, 20 MHz channels and 11 dBm of TX power, see [Wi-Fi in the rack](#wi-fi-in-the-rack) (`common/lib/net.c`, as the hub) |
 | Shell | `bay …` commands, `radio`, plus the stock `wifi`, `net` shells, on UART0 and telnet |
 | Fatal errors | restart the node instead of halting it (`src/fault.c`): a bay has to come back by itself, and its console is the USB host's.  The reason, the thread and the warnings and errors logged just before are kept across the restart in RTC memory, then reported: the log, `bay status` ("restarted: …"), `bay fault`, `/api/status`'s `last_fault`.  Gone at power-on |
 | Web | Zephyr HTTP server on port 80: status page, JSON API (same actions as the shell), Prometheus `/metrics` through Zephyr's Prometheus library |
@@ -233,7 +233,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | TCP 4001 | AUX UART, RFC 2217, one client (`CONFIG_BAY_RFC2217_PORT`) |
 | TCP 4000 | AUX UART, raw bytes, one client (`CONFIG_BAY_AUX_TCP_PORT`) |
 | TCP 8081 | the camera: `/snapshot.jpg`, `/stream.mjpg`, up to 3 clients (`CONFIG_BAY_CAMERA_PORT`, `_CLIENTS`); 503 without a camera |
-| UDP 5353 | mDNS: `bay-<id>.local`; without an id, the rack position the hub gave (`bay-c3.local`); before that `bay<MAC>` |
+| UDP 5353 | mDNS: `bay-<id>.local`; without an id, the rack position the hub gave (`bay-c3.local`); before that `bay<MAC>`.  DNS-SD, under that name: `_http._tcp` (80), `_usbip._tcp` (3240) while the DUT is on the S3's USB (not in classic or service mode), `_rfc2217._tcp` (4001) while it listens; TXT `id`, `pos` (rack position), `fw`, `mode` (`usbip`, `classic`, `service`) and `slots` with a DATA ×4.  Checked every 2 s (`common/lib/dnssd.c`), answers kept 2 min in caches (`avahi-browse -rt _usbip._tcp`, `dns-sd -B _usbip._tcp`) |
 
 Which address may use which of them: [Access control](#access-control).
 Until a node is claimed it is open, as it always was.
@@ -471,8 +471,8 @@ dropped before USB/IP or the shell, which Zephyr runs itself, ever see it
 server checks every request (403, or 423 while reserved) and the web
 console needs a ticket from an address with the console right, because a
 WebSocket descriptor carries no peer address.  When the rules or the lease
-change, connections that are no longer allowed are closed.  mDNS is left
-alone.
+change, connections that are no longer allowed are closed.  mDNS and DNS-SD
+are left alone.
 
 **Reservation (lease).**  An address with the control right can reserve
 the bay for 10 s to 24 h (`POST /api/lease`, `bayctl lease`, or *Reserve…*
@@ -753,8 +753,7 @@ runs it and builds both targets with warnings as errors on every push.
   images over Wi-Fi, the trial and the rollback: tested on native_sim and
   against the simulated node), then over the rack bus:
   [docs/firmware.md › Over the network](../docs/firmware.md#over-the-network).
-* **Not yet written:** DNS-SD advertisement of `_usbip._tcp`, `_http._tcp`
-  and `_rfc2217._tcp`, the shell on the USB-Serial-JTAG in SERVICE mode,
+* **Not yet written:** the shell on the USB-Serial-JTAG in SERVICE mode,
   INA226 alert handling, RFC 2217 line/modem state notifications (the server
   answers polls with CTS/DSR/CD up).
 * **Zephyr's HTTP server** registers every WebSocket of a resource with that

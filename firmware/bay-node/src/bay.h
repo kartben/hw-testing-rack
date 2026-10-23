@@ -225,6 +225,8 @@ void aux_stats_get(struct aux_stats *st);
 /* Test without a DUT: the UART loops TX back to RX (ESP32 only, else -ENOTSUP) */
 int aux_loopback(bool on);
 bool aux_loopback_get(void);
+/* The TCP port RFC 2217 listens on, 0 when it does not */
+uint16_t aux_rfc2217_port(void);
 /* Queue bytes for the DUT like a client; returns how many fit */
 size_t aux_send(const uint8_t *buf, size_t len);
 /* web.c: a WebSocket on /console/ws/<slot> is ready, for a browser at ip */

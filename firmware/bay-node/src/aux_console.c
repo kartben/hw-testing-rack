@@ -87,6 +87,7 @@ static atomic_t rx_head;     /* bytes received since boot (mod 2^32) */
 static atomic_t log_full;    /* rx_head went past LOG_SIZE once */
 static atomic_t tx_bytes;
 static atomic_t dropped;
+static atomic_t rfc_listening; /* the RFC 2217 listener is open (DNS-SD) */
 
 RING_BUF_DECLARE(tx_ring, CONFIG_BAY_AUX_TX_BUF_SIZE);
 
@@ -906,6 +907,8 @@ static void hub_thread(void *p1, void *p2, void *p3)
 	ARG_UNUSED(p2);
 	ARG_UNUSED(p3);
 
+	atomic_set(&rfc_listening, rfc_lfd >= 0);
+
 	LOG_INF("AUX UART: web console /console, RFC 2217 tcp/%d, raw tcp/%d",
 		CONFIG_BAY_RFC2217_PORT, CONFIG_BAY_AUX_TCP_PORT);
 
@@ -1050,6 +1053,11 @@ void aux_stats_get(struct aux_stats *st)
 	}
 	st->rfc2217_client = rfc.fd >= 0;
 	st->raw_client = raw.fd >= 0;
+}
+
+uint16_t aux_rfc2217_port(void)
+{
+	return atomic_get(&rfc_listening) ? CONFIG_BAY_RFC2217_PORT : 0;
 }
 
 int aux_console_init(const struct aux_config *stored)

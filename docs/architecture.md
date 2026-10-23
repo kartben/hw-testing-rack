@@ -143,7 +143,7 @@ So, for the rack's Wi-Fi:
 
 Each node runs Zephyr: `uhc_dwc2` (ESP32-S3 OTG in host mode) + the
 `usbip` host service + Wi-Fi + a small REST/shell API for power, AUX and
-telemetry, mDNS-advertised as `bay-<id>.local`.  See [firmware.md](firmware.md).
+telemetry, mDNS-advertised as `bay-<id>.local`, its services over DNS-SD.  See [firmware.md](firmware.md).
 
 ```console
 $ usbip list -r bay-b3.local

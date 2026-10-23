@@ -7,14 +7,15 @@ add_subdirectory_ifdef(CONFIG_REGULATOR_CH224A drivers/regulator)
 
 # Rack bus protocol (docs/rack-protocol.md): frames, hub and node state
 # machines; Wi-Fi station and hostname; access rules, the admin key;
-# firmware updates (MCUboot); the JPEG end finder (bay camera)
+# firmware updates (MCUboot); the JPEG end finder (bay camera); DNS-SD
 if(CONFIG_HWTR_RACK_PROTO OR CONFIG_HWTR_NET OR CONFIG_HWTR_ACL OR CONFIG_HWTR_IMG OR
-   CONFIG_HWTR_JPEG)
+   CONFIG_HWTR_JPEG OR CONFIG_HWTR_DNSSD)
   zephyr_library_named(hwtr)
   zephyr_library_sources_ifdef(CONFIG_HWTR_RACK_PROTO lib/rack_proto.c)
   zephyr_library_sources_ifdef(CONFIG_HWTR_RACK_HUB lib/rack_hub.c)
   zephyr_library_sources_ifdef(CONFIG_HWTR_RACK_NODE lib/rack_node.c)
   zephyr_library_sources_ifdef(CONFIG_HWTR_NET lib/net.c)
+  zephyr_library_sources_ifdef(CONFIG_HWTR_DNSSD lib/dnssd.c)
   zephyr_library_sources_ifdef(CONFIG_HWTR_ACL lib/acl.c)
   zephyr_library_sources_ifdef(CONFIG_HWTR_ADMIN lib/admin.c)
   zephyr_library_sources_ifdef(CONFIG_HWTR_IMG lib/mcuboot_img.c)

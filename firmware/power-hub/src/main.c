@@ -12,6 +12,7 @@
 
 #include <string.h>
 
+#include <zephyr/app_version.h>
 #include <zephyr/kernel.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/led.h>
@@ -20,6 +21,7 @@
 #include <zephyr/logging/log.h>
 
 #include <hwtr/admin.h>
+#include <hwtr/dnssd.h>
 #include <hwtr/net.h>
 #include <hwtr/update.h>
 
@@ -231,6 +233,16 @@ static const struct hwtr_update_cfg update_cfg = {
 };
 #endif
 
+#if defined(CONFIG_HWTR_DNSSD)
+/* The page, under rack-<id>.local; TXT: the hub's id and its firmware */
+static void dnssd_fill(struct hwtr_dnssd_desc *d)
+{
+	hwtr_dnssd_service(d, "_http", CONFIG_HUB_HTTP_PORT);
+	hwtr_dnssd_txt(d, "id", hwtr_net_id());
+	hwtr_dnssd_txt(d, "fw", APP_VERSION_STRING);
+}
+#endif
+
 int main(void)
 {
 	uint32_t tick = 0;
@@ -279,6 +291,9 @@ int main(void)
 	if (ret != 0) {
 		LOG_ERR("network init failed: %d", ret);
 	}
+#if defined(CONFIG_HWTR_DNSSD)
+	(void)hwtr_dnssd_start(dnssd_fill);
+#endif
 
 	ret = web_init();
 	if (ret != 0) {

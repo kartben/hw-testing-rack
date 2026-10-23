@@ -119,6 +119,11 @@ jobs:
           - name: usbh_hub
             board: native_sim/native/64
             app: firmware/common/tests/usbh_hub
+          # DNS-SD (lib/dnssd.c): the records the mDNS responder gets, kept in
+          # step with what listens, run below
+          - name: dnssd
+            board: native_sim/native/64
+            app: firmware/common/tests/dnssd
     steps:
       # West workspace = $GITHUB_WORKSPACE, this repository checked out as its
       # manifest repository (manifest self.path: hw-testing-rack).
@@ -169,10 +174,10 @@ jobs:
         if: matrix.name == 'usbip'
         run: python3 hw-testing-rack/firmware/common/tests/usbip/test_usbip.py --exe build/zephyr/zephyr.exe
 
-      - name: Rack bus protocol / firmware updates / DATA x4 ports / hub budget / USB hub on native_sim
+      - name: Rack bus protocol / firmware updates / DATA x4 ports / hub budget / USB hub / DNS-SD on native_sim
         if: >-
           matrix.name == 'rack_bus' || matrix.name == 'update' || matrix.name == 'ports' ||
-          matrix.name == 'hub_budget' || matrix.name == 'usbh_hub'
+          matrix.name == 'hub_budget' || matrix.name == 'usbh_hub' || matrix.name == 'dnssd'
         run: |
           build/zephyr/zephyr.exe | tee test.log
           grep -q "PROJECT EXECUTION SUCCESSFUL" test.log
