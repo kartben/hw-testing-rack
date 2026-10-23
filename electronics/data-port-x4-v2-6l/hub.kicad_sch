@@ -17704,10 +17704,10 @@
 		)
 		(uuid "5b8e63e1-e9e3-52f4-9082-63e283700539")
 	)
-	(text_box "Hub straps: CFG_SEL[2:0] = 000 (internal default, strap options on), NON_REM 00, GANG_EN 0 (ports\n  switched one by one: here by the expanders), BOOST 00, PRT_SWP 0000000; ports 6 and 7 unused,\n  nothing on them.  PRTPWR unused, OCS_N on their pull-ups.  VBUS_DET on 3.3 V.\nHub port n = USB-C n (busid 1-1.n) for n = 1–4; port 5 = the co-processor.\nExpander pins are inputs at power-up; the EN pull-downs keep every port off until the node writes.\nINT (J1.1 → the node's IO4): both expanders' INT and the four INA226 ALERTs, open drain, wired-OR, through Q3.\nI²C and INT: the node's pull-ups on LEAD_*, 4.7k / 4.7k / 10k here; with DUT_5V off the chips here lose\n  their registers: the node sets them up again after each DUT_5V on, and leaves this board's addresses alone while off.\nJ1 (through-hole) stands on the rear face: soldered by hand (the PCBA places the front face only)."
+	(text_box "Hub straps: CFG_SEL[2:0] = 000 (internal default, strap options on), NON_REM 00, GANG_EN 0 (ports\n  switched one by one: here by the expanders), BOOST 00, PRT_SWP 0000000; ports 6 and 7 declared but\n  unused (cosmetic).  On purpose: PRTPWR unused and OCS_N on their pull-ups (the node switches each port\n  and reads its FAULT_N through the expanders); VBUS_DET on 3.3 V (self-powered hub).\nHub port n = USB-C n (busid 1-1.n) for n = 1–4; port 5 = the co-processor.\nExpander pins are inputs at power-up; the EN pull-downs keep every port off until the node writes.\nINT (J1.1 → the node's IO4): both expanders' INT and the four INA226 ALERTs, open drain, wired-OR, through Q3.\nI²C and INT: the node's pull-ups on LEAD_*, 4.7k / 4.7k / 10k here; with DUT_5V off the chips here lose\n  their registers: the node sets them up again after each DUT_5V on, and leaves this board's addresses alone while off.\nJ1 (through-hole) stands on the rear face: soldered by hand (the PCBA places the front face only)."
 		(exclude_from_sim no)
 		(at 15.24 279.4 0)
-		(size 558.8 25.4)
+		(size 558.8 26.67)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

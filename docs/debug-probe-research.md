@@ -144,7 +144,8 @@ leads anyway.
 - The 100 Ω bounds a collision at the turnaround.
 - This is why v2 rejected the TXS010x: their one-shots would have been the problem here.
 
-The SWD signals only ever see the board's VREF, so 5 V boards are out, as for every virtual wire.
+The SWD signals only ever see the board's VREF, and a 5 V board follows the rule of every virtual wire
+(electronics.md › DATA ×4 v2, "The VREF rule"): only with TTL inputs, VREF on its own 3.3 V pin.
 
 **Which buses.**
 - The probe's signals sit on fixed RP2354B pins, so on fixed buses.

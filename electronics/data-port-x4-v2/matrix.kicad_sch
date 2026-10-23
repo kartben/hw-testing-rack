@@ -8960,10 +8960,10 @@
 		)
 		(uuid "70c77e4c-0edb-572d-8487-74c540230461")
 	)
-	(text_box "CH446Q serial mode (P/S low): 7 address bits on CK, data on DAT, latched by STB; RST high = all open.\nTCA9534A 0x38: P0 DAT, P1 CK, P2 STB U7, P3 STB U8, P4 RST, P5 RUN, P6 BOOTSEL, P7 mark.\nRUN and BOOTSEL are open drain emulated (output register 0, the pin switched to output)."
+	(text_box "CH446Q serial mode (P/S low): 7 address bits on CK, data on DAT, latched by STB; RST high = all open.\nTCA9534A 0x38: P0 DAT, P1 CK, P2 STB U7, P3 STB U8, P4 RST, P5 RUN, P6 BOOTSEL, P7 mark.\nRUN and BOOTSEL are open drain emulated (output register 0, the pin switched to output).\n±5 V on purpose: at a single 5 V R_on is 120–225 Ω, and a 1.8 V board's I²C low would fail."
 		(exclude_from_sim no)
 		(at 289.56 294.64 0)
-		(size 279.4 11.43)
+		(size 279.4 13.97)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

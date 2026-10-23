@@ -8,7 +8,9 @@ does and adds:
   VREF, P1–P8, RESET_N, BOOT_N): each pin through H5VU25UC ESD and 100 Ω to an LSF0108 (A side = the DUT's VREF, B side =
   3.3 V; Vref_B and EN biased from +5V_MX through 200k, so a group is a voltage domain of its own: a board that is off
   takes its VREF down and isolates its
-  pins, and a VREF left unconnected is pulled to GND by the ADC divider: nothing passes);
+  pins, and a VREF left unconnected is pulled to GND by the ADC divider: nothing passes).  Specified for
+  0.95–3.6 V logic; a 5 V board with TTL inputs takes VREF from its own 3.3 V pin (electronics.md › "The
+  VREF rule");
 * two CH446Q 8 × 16 crosspoints at ±5 V (TPS60400 for −5 V), each taking two ports' 16 pins on X; their
   Y lines joined are the eight buses A–H, each pulled up to 3.3 V by 10k (the B-side pull-up of
   whatever pins it joins).  The node writes them through a TCA9534A (0x38: DAT, CK, one
@@ -277,7 +279,9 @@ def port(b: Board, n: int):
                             "SHIELD": "GND"}, f"PORT{n}", pcb=P(cx, USB_Y, 0), sch=at(50, 76, fields=(-8, -11)))
     s.wire(f"{usb}.A7", f"{usb}.B7")
     s.wire(f"{usb}.A6", f"{usb}.B6")
-    # the CC resistors left of the receptacle, level with its two pad rows (CC1 on the upper, CC2 the lower)
+    # the CC resistors left of the receptacle, level with its two pad rows (CC1 on the upper, CC2 the lower).
+    # Source only: Rp from the switched VBUS, no CC detection; a source that back-feeds the port trips the
+    # TPS2553 (≈ 4 ms, latched, FAULT_N), and the node refuses EN while Vbus is already there
     R(s, f"R{k + 4}", "56k", p + "VBUS", p + "CC1", pcb=P(cx - 6.6, USB_Y - 1.1, 0), sch=at(62, 64.5))
     R(s, f"R{k + 5}", "56k", p + "VBUS", p + "CC2", pcb=P(cx - 6.6, USB_Y + 1.1, 0), sch=at(66, 64.5))
     s.wire(f"{usb}.CC1", (62, 72), f"R{k + 4}.2")
@@ -298,7 +302,8 @@ def port(b: Board, n: int):
     part(s, f"J{k + 2}", "hdr2x6t", hdr, f"PINS{n}", pcb=P(cx - 6.35, HDR_Y + 1.27, 90),
          sch=at(184, 30, fields=(-1, -5)))
     # RESET/BOOT 1k and the expander lines' pull-ups in a column right of the header, by its pins 12 (upper
-    # row) and 11 (lower row).  Ports 1–3: 1.85 mm lower and 1.9 mm apart (down to just over the expander), so the
+    # row) and 11 (lower row).  The DUT's own pull-ups should be ≥ 4.7k: against 1k, the 1k in series stops an
+    # asserted line at ≈ 1.65 V.  Ports 1–3: 1.85 mm lower and 1.9 mm apart (down to just over the expander), so the
     # band over the headers stays free for the USB pairs' trunk on F.Cu (the HS review, 2026-10-22); port 4's
     # stays, Q1 right under it and no pair passing it
     ys = ((HDR_Y - 3.4, HDR_Y - 1.45, HDR_Y + 0.5, HDR_Y + 2.45) if n == 4 else
@@ -337,8 +342,10 @@ def port(b: Board, n: int):
     # its references' parts in a column left of it (port b: under the crosspoint's south-east corner)
     bx, by = lx - 4.0, LSF_Y - 1.0
     # Vref_B and EN from the board's +5V_MX through 200k (the usability review's finding 2, 2026-10-21): not the
-    # port's VBUS, so a group is a voltage domain of its own, any board on any group.  TI: Vref_B ≥ Vref_A + 0.6 V,
-    # so VREF up to ≈ 4.4 V translates as specified (a 5 V board: its highs clamp near 4.2 V, as with VBUS)
+    # port's VBUS, so a group is a voltage domain of its own, any board on any group.  TI requires Vref_B ≥
+    # Vref_A + 0.8 V and recommends 1.0 V: with +5V_MX at 4.75 V, VREF up to ≈ 3.9 V translates as specified.  A 5 V
+    # board with TTL inputs takes VREF from its own 3.3 V pin; at a 5 V VREF the bus rises to ≈ 4.0–4.2 V (outside
+    # TI's conditions, harmless: the other ports clamp to their VREF, the RP2354B's GPIO tolerate 5 V powered)
     R(s, f"R{k + 11}", "200k", "+5V_MX", p + "VREFB", size="0402", pcb=P(bx, by, 0), sch=at(162, 122))
     C(s, f"C{k + 5}", "100n", p + "VREFB", "GND", size="0402", pcb=P(bx, by + 1.1, 0), sch=at(162, 130))
     s.wire(f"R{k + 11}.2", f"C{k + 5}.1")
@@ -364,6 +371,9 @@ def port(b: Board, n: int):
                "EN pulled down: the port stays off until the node switches it on.",
                "Pins: P1–P8 → crosspoint X lines (docs/electronics.md › DATA ×4 v2 map);",
                "  the LSF0108 passes nothing while its VREF is at 0 V or unconnected (a board that is off).",
+               "VREF: the board's I/O supply, 0.95–3.6 V; a 5 V board with TTL inputs: its own 3.3 V pin.",
+               "Source only (Rp from the switched VBUS); a back-feeding source trips the TPS2553 (latched).",
+               "The DUT's RESET/BOOT pull-ups ≥ 4.7k: against 1k, the 1k in series stops at ≈ 1.65 V.",
                "VBUS LED: on while the port's switch is on (5V_SW, before the shunt)."]
 
 
@@ -417,14 +427,14 @@ def hub_sheet(b: Board):
     for n in range(1, 8):
         hub[f"LED_A{n}_N/PRT_SWP{n}"] = f"HUB_SWP{n}"
         hub[f"PRTPWR{n}"] = None
-        hub[f"OCS{n}_N"] = None             # internal pull-ups: the expander reads FAULT, not the hub
+        hub[f"OCS{n}_N"] = None             # on purpose: internal pull-ups, the node reads FAULT through the expanders
     for n in range(4, 8):
         hub[f"LED_B{n}_N"] = None
     for n in range(1, 5):
         hub[f"USBDN{n}_DP/PRT_DIS_P{n}"] = f"PORT{n}_DP"
         hub[f"USBDN{n}_DM/PRT_DIS_M{n}"] = f"PORT{n}_DN"
     hub["USBDN5_DP/PRT_DIS_P5"], hub["USBDN5_DM/PRT_DIS_M5"] = "CP_HUB_DP", "CP_HUB_DN"
-    for n in (6, 7):                        # unused, left enabled with nothing on them
+    for n in (6, 7):                        # declared but unused, left enabled with nothing on them (cosmetic)
         hub[f"USBDN{n}_DP/PRT_DIS_P{n}"], hub[f"USBDN{n}_DM/PRT_DIS_M{n}"] = None, None
     # turned 90°: DN1–DN5 on its south face (down the column to the ports), the upstream pair, the crystal,
     # RBIAS and 1V8PLL on its west face, the straps north
@@ -494,8 +504,9 @@ def hub_sheet(b: Board):
     s.notes_at = (6, 110, 220)
     s.notes = [
         "Hub straps: CFG_SEL[2:0] = 000 (internal default, strap options on), NON_REM 00, GANG_EN 0 (ports",
-        "  switched one by one: here by the expanders), BOOST 00, PRT_SWP 0000000; ports 6 and 7 unused,",
-        "  nothing on them.  PRTPWR unused, OCS_N on their pull-ups.  VBUS_DET on 3.3 V.",
+        "  switched one by one: here by the expanders), BOOST 00, PRT_SWP 0000000; ports 6 and 7 declared but",
+        "  unused (cosmetic).  On purpose: PRTPWR unused and OCS_N on their pull-ups (the node switches each port",
+        "  and reads its FAULT_N through the expanders); VBUS_DET on 3.3 V (self-powered hub).",
         "Hub port n = USB-C n (busid 1-1.n) for n = 1–4; port 5 = the co-processor.",
         "Expander pins are inputs at power-up; the EN pull-downs keep every port off until the node writes.",
         "INT (J1.1 → the node's IO4): both expanders' INT and the four INA226 ALERTs, open drain, wired-OR, through Q3.",
@@ -537,6 +548,7 @@ def matrix_sheet(b: Board):
 
     s.frame("+5V_MX through a ferrite (the crosspoints, the inverter, the LSF0108s' bias); −5 V for the "
             "crosspoints' VEE (TPS60400 inverter)", 114, 10, 228, 52)
+    # The −5 V on purpose: at a single 5 V the CH446Q's R_on is 120–225 Ω, and a 1.8 V board's I²C low would fail.
     # The matrix's +5V: the crosspoints' VDD, the −5 V inverter and the LSF0108s' bias (≈ 70 mA) behind a
     # 600 Ω ferrite, off the ports' switching and the charge pump's 250 kHz.  In the left-hand column under the
     # power plane's split: its +5V end over the +5V area; +5V_MX is routed up to the loads (Supply)
@@ -568,7 +580,8 @@ def matrix_sheet(b: Board):
     s.notes_at = (114, 116, 110)
     s.notes = ["CH446Q serial mode (P/S low): 7 address bits on CK, data on DAT, latched by STB; RST high = all open.",
                "TCA9534A 0x38: P0 DAT, P1 CK, P2 STB U7, P3 STB U8, P4 RST, P5 RUN, P6 BOOTSEL, P7 mark.",
-               "RUN and BOOTSEL are open drain emulated (output register 0, the pin switched to output)."]
+               "RUN and BOOTSEL are open drain emulated (output register 0, the pin switched to output).",
+               "±5 V on purpose: at a single 5 V R_on is 120–225 Ω, and a 1.8 V board's I²C low would fail."]
 
 
 # -------------------------------------------------------------------------------- co-processor (full)

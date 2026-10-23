@@ -13254,10 +13254,10 @@
 		)
 		(uuid "5895f820-6baa-5e36-91a7-f6000e7018ee")
 	)
-	(text_box "Port 4 = sub-slot A1.4, hub port 4, busid 1-1.4.\nINA226 at 0x45; expander U6 (0x21).\nILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.\nINA226 Vbus on the shunt's load-side sense pad (= VBUS).\nEN pulled down: the port stays off until the node switches it on.\nPins: P1–P8 → crosspoint X lines (docs/electronics.md › DATA ×4 v2 map);\n  the LSF0108 passes nothing while its VREF is at 0 V or unconnected (a board that is off).\nVBUS LED: on while the port's switch is on (5V_SW, before the shunt)."
+	(text_box "Port 4 = sub-slot A1.4, hub port 4, busid 1-1.4.\nINA226 at 0x45; expander U6 (0x21).\nILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.\nINA226 Vbus on the shunt's load-side sense pad (= VBUS).\nEN pulled down: the port stays off until the node switches it on.\nPins: P1–P8 → crosspoint X lines (docs/electronics.md › DATA ×4 v2 map);\n  the LSF0108 passes nothing while its VREF is at 0 V or unconnected (a board that is off).\nVREF: the board's I/O supply, 0.95–3.6 V; a 5 V board with TTL inputs: its own 3.3 V pin.\nSource only (Rp from the switched VBUS); a back-feeding source trips the TPS2553 (latched).\nThe DUT's RESET/BOOT pull-ups ≥ 4.7k: against 1k, the 1k in series stops at ≈ 1.65 V.\nVBUS LED: on while the port's switch is on (5V_SW, before the shunt)."
 		(exclude_from_sim no)
 		(at 284.48 157.48 0)
-		(size 294.64 22.86)
+		(size 294.64 29.21)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

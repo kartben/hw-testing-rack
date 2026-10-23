@@ -258,8 +258,12 @@ parts on the top side so that JLC Economic can build it.
 
 ### Limits to state in the UI and the docs
 
-- **5 V logic boards cannot be wired**: the LSF0108's A side stops at 4.5 V and the buses are 3.3 V.
-  The node refuses a VREF above 3.6 V.
+- **5 V logic boards**: virtual wires and the analyzer are specified for 0.95–3.6 V logic.  A 5 V board
+  with TTL-compatible inputs (AVR / ATmega, most 5 V Arduinos) works with VREF on its own 3.3 V pin: it
+  receives 3.3 V highs, the LSF0108 stays within spec and the bus at 3.3 V.  VREF at 5 V lifts the bus to
+  ≈ 4.0–4.2 V, outside TI's conditions but harmless.  Strict-CMOS 5 V inputs are not guaranteed; true 5 V
+  support would be a v2.1 (a ≈ 6.5 V Vref_B rail, the bus pull-ups at 5 V).  The rule: electronics.md ›
+  DATA ×4 v2, "The VREF rule".
 - **A missing VREF must isolate the port**: with VREF unconnected the LSF's reference floats up through
   the 200 k bias and the pass FETs let 3.3 V through to a 1.8 V board.  A 100 k pull-down on each VREF
   input keeps an unconnected port at 0 V, which blocks its pins.  Expert-obvious, for the design.

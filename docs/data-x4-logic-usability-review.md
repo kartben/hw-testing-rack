@@ -50,7 +50,9 @@ Vref_B from +5V_MX instead, and a group becomes a free voltage domain:
 - a board powered from elsewhere (its own supply, a debugger) can use a group;
 - one thin bias line (it carries µA) feeds the four 200k resistors, instead of four PORTn_VBUS branches
   climbing 25–30 mm through the header band.  +5V_MX passes at x 7.7 on B.Cu, level with them; the LSF0108's
-  bias wants a supply about 1 V above the highest VREF (TI's application note), so a 5 V source, not +3V3.
+  bias wants a supply about 1 V above the highest VREF (TI requires 0.8 V and recommends 1.0 V), so a 5 V
+  source, not +3V3.  With +5V_MX at 4.75 V, VREF tops out at ≈ 3.9 V; a 5 V board takes VREF from its own
+  3.3 V pin (electronics.md › DATA ×4 v2, "The VREF rule").
 
 The rule changes from "a switched-off port isolates its pins" to "a board that is off isolates its
 pins".  Physically each board still sits in front of its port, so its group stays the header behind it.
@@ -91,7 +93,7 @@ the user set on 10-20, and the base gets the same 4 pins per port from two 2 × 
 | Block (logic only) | $ a board | Verdict |
 |---|---|---|
 | 2 × CH446Q, 32 pins on 8 buses | 3.20 | Keep: it is the feature, sized to the maximum (decided).  4 pins a port would drop one CH446Q, four ESD and four arrays (≈ $2.2 a board, ≈ $5 an order) and half the pins: no. |
-| −5 V (TPS60400) | 0.79 + type | Keep: without it R_on doubles and I²C at 400 kHz fails. |
+| −5 V (TPS60400) | 0.79 + type | Keep: without it R_on doubles (120–225 Ω at a single 5 V) and I²C fails: at 400 kHz, and a 1.8 V board's low. |
 | TCA9534A (matrix, RUN, BOOTSEL, mark) | 1.37 + type | Keep: wires and BOOTSEL survive a co-processor reboot.  One TCA6424A ($1.77, C80692) for all 24 lines would save a type and ≈ $6 an order, but re-place the base's expanders and change the node's I²C map: no. |
 | RP2354B, crystal, L1 | 2.46 + 3 types | Keep.  L1 (the AOTA, and its $9.5 minimum purchase) and the arrays were settled on 10-20.  The crystal could be C9002 (basic, 12 MHz, but 20 pF and 80 Ω ESR against the ABM8's 10 pF and 50 Ω): $4.30 saved, but the stock gusmanb UF2 and Raspberry Pi's advice assume the ABM8.  Not worth a day-one risk. |
 | U12, the co-processor's own AP2112K | 0.18 + type | **Cut** (finding 4).  +3V3_CP from +3V3 through a ferrite (C1017, already on the board).  U3 takes ≈ 30–50 mA more: ≈ +0.1 W, ≈ +6 °C, and the hub likely draws less than its 330 mA (High-Speed) behind a full-speed-only host.  The +3V3_CP island stays; the base leaves the ferrite off. |

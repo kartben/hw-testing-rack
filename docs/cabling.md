@@ -101,8 +101,11 @@ and RESET/BOOT) take female–female Dupont jumpers to the board's own pins, its
 headers soldered pins up.  Wire only what the board needs: no GND wire (the
 USB cable carries it), RESET and BOOT where the board breaks them out (B1, on a
 base: the Pico 2's RUN), and on DATA-4x-logic the VREF its level shifter needs
-beside the signals
-(B3: a UART between B3.1 and B3.2).  Tear a board's wires off the strip
+beside the signals (B3: a UART between B3.1 and B3.2).  VREF is the board's I/O
+supply (1.8 or 3.3 V); a 5 V board with TTL inputs (AVR, most 5 V Arduinos)
+takes it from its own 3.3 V pin (electronics.md › DATA ×4 v2, "The VREF rule").
+RESET and BOOT work against the board's own pull-ups of 4.7 kΩ or more (1k in
+series on the DATA ×4).  Tear a board's wires off the strip
 together and peel only their ends, 2 cm or so (more where the pins spread): a
 small ribbon over the port wall (off v2, straight forwards over it), 20 cm
 (30 cm where that does not reach).
