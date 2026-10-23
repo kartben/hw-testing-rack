@@ -758,7 +758,8 @@ static const char *do_port_action(enum api_action what, int port, const struct a
 		} else if (strcmp(req->action, "off") == 0) {
 			ret = ports_power(port, false, NULL);
 		} else if (strcmp(req->action, "cycle") == 0) {
-			ms = (fields & ACTION_FIELD_MS) ? req->ms : CONFIG_BAY_POWER_CYCLE_MS;
+			/* Without "ms", as long as its VBUS takes to fall under 1 V (2 s at most) */
+			ms = (fields & ACTION_FIELD_MS) ? req->ms : 0;
 			ret = ports_power_cycle(port, K_MSEC(ms), &others);
 		} else {
 			return "action must be on, off or cycle";
@@ -781,13 +782,17 @@ static const char *do_port_action(enum api_action what, int port, const struct a
 	case -EBUSY:
 		*code = HTTP_409_CONFLICT;
 		snprintf(action_err, sizeof(action_err),
-			 "no room in the bay's budget: the other ports draw %d mA, %d mA kept for a "
+			 "no room in the bay's budget: the bay draws %d mA, %d mA kept for a "
 			 "start, %d mA in all", others, CONFIG_BAY_PORTS_RESERVE_MA,
 			 CONFIG_BAY_PORTS_BUDGET_MA);
 		return action_err;
+	case -EALREADY:
+		*code = HTTP_409_CONFLICT;
+		return "the port's VBUS is up while it is off (a board powered from elsewhere): "
+		       "it comes on once that has gone";
 	case -EAGAIN:
 		*code = HTTP_503_SERVICE_UNAVAILABLE;
-		return "the DATA board is not set up (DUT_5V off?)";
+		return "the port is off, or the DATA board is not set up (DUT_5V off?)";
 	case -ENOTSUP:
 		return "this port has no such line";
 	case -ENOENT:

@@ -109,8 +109,9 @@
 		reg = <0x40>;
 		current-lsb-microamps = <50>;
 		rshunt-micro-ohms = <50000>;
-		avg-count = <16>;
-		/* IO39 INA_ALERT_N (10k pull-up), not used by the driver yet */
+		/* 4 averages: 8.8 ms a reading, the ALERT that sheds a DATA x4 port */
+		avg-count = <4>;
+		/* IO39 INA_ALERT_N (10k pull-up): src/ports.c sets it and takes its interrupt */
 		alert-gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
 	};
 };

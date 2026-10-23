@@ -25,17 +25,60 @@ config BAY_BOOTLOADER_HOLD_MS
 	default 200
 
 config BAY_PORTS_BUDGET_MA
-	int "DATA x4: the four ports' draw may not pass this (mA)"
-	default 1250
+	int "DATA x4: a port goes on only if the bay stays within this (mA)"
+	default 1150
 	help
-	  The node's TPS2553 feeds the four ports through DUT_5V and limits at
-	  1.34-1.52 A.  A port goes on only if the others' draw plus
-	  BAY_PORTS_RESERVE_MA stays within this (docs/multi-dut-node.md,
-	  Power budget).
+	  The node's TPS2553 feeds the DATA x4 through DUT_5V and limits at
+	  1.34-1.52 A.  A port goes on only if what the bay draws (the node's
+	  INA226 on DUT_5V: the board itself counts) plus BAY_PORTS_RESERVE_MA
+	  stays within this (docs/multi-dut-node.md, Power budget).
 
 config BAY_PORTS_RESERVE_MA
 	int "DATA x4: kept for a port's start (mA)"
-	default 250
+	default 100
+	help
+	  A port shed by BAY_PORTS_SHED_MA needs room for what it drew
+	  instead, if that is more.
+
+config BAY_PORTS_SHED_MA
+	int "DATA x4: over this, the last port switched on goes off (mA)"
+	default 1250
+	help
+	  The node's INA226 ALERT (its shunt over this, about 9 ms with
+	  4 averages), or the poll as a backup: the port switched on last goes
+	  off, before the node's TPS2553 (1.34 A minimum) cuts the whole bay.
+	  It stays wanted and comes back once the budget has room for it.
+
+config BAY_PORTS_BOARD_MA
+	int "DATA x4: the board's own draw, without a node meter (mA)"
+	default 500
+	help
+	  Without the node's INA226 (a stand-in, or it does not answer), the
+	  bay's draw is the ports' sum plus this: the hub, the co-processor,
+	  the LEDs (0.3-0.46 A).
+
+config BAY_PORTS_VBUS_OFF_MV
+	int "DATA x4: a power cycle waits for the port's VBUS under this (mV)"
+	default 1000
+	help
+	  Under 1 V the board on the port is well below any brown-out: off.
+
+config BAY_PORTS_DISCHARGE_MS
+	int "DATA x4: a power cycle waits this long at most for that (ms)"
+	default 2000
+	help
+	  The TPS2553-1 does not discharge its output: a board on the port
+	  does.  A port with nothing on it keeps 1.5-2 V on its 22 uF once its
+	  LED stops conducting; it goes back on after this.
+
+config BAY_PORTS_VBUS_FOREIGN_MV
+	int "DATA x4: a port whose VBUS reads over this while off stays off (mV)"
+	default 3500
+	help
+	  The ports are sink-only, with no CC detection: a board powered from
+	  elsewhere (4.4 V or more) would meet the port's 5 V.  A wanted port
+	  comes on once its VBUS has gone.  A port's own residual charge stays
+	  under this.
 
 config BAY_PORTS_STAGGER_MS
 	int "DATA x4: between two ports switched on one after the other (ms)"

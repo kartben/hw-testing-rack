@@ -641,7 +641,7 @@ What the PCBA review ([pcba-review.md](pcba-review.md)) left to the bench, per b
 
 | Board | What | How | Expect |
 |---|---|---|---|
-| DATA ×4 | VBUS at each USB-C against the total load (X11) | a resistor or an electronic load on a USB-C breakout per port, 0.25 A steps up to the admission limit (1.25 A in all); a meter at the receptacle, against the port's INA226 | ≥ 4.75 V up to ≈ 1 A in all; ≈ 4.54 V at the node's 1.34 A limit (estimate).  Lower: raise the node's +5V, or lower the admission limit |
+| DATA ×4 | VBUS at each USB-C against the total load (X11) | a resistor or an electronic load on a USB-C breakout per port, 0.25 A steps up to the admission limit (1.15 A in all, the board included); a meter at the receptacle, against the port's INA226 | ≥ 4.75 V up to ≈ 1 A in all; ≈ 4.54 V at the node's 1.34 A limit (estimate).  Lower: raise the node's +5V, or lower the admission limit |
 | DATA ×4 | Ports off at power-up (X3) | DUT_5V on, no firmware command: each `PORTn_VBUS` | 0 V until the firmware enables the port |
 | DATA ×4 | No back-feed with DUT_5V off (X2) | node running, DUT_5V off: the board's +3V3; an I²C scan from the node | +3V3 under 0.1 V; the node's INA226 (0x40) still answers, 0x20/0x21/0x41–0x45 don't |
 | DATA port | VBUS at the receptacle at the node's limit (D1) | a 1.3 A load on a USB-C breakout; a meter at J1 and at J2.8 | under 30 mV between them (≈ 15 mΩ of copper) |

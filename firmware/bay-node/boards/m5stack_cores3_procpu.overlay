@@ -79,7 +79,7 @@
 		reg = <0x40>;
 		current-lsb-microamps = <50>;
 		rshunt-micro-ohms = <50000>;
-		avg-count = <16>;
+		avg-count = <4>;
 	};
 };
 

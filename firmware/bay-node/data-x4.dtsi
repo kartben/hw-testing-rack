@@ -8,7 +8,8 @@
  * The firmware probes the board (none: today's one DUT) and drives these
  * chips itself (src/ports.c): they lose their registers with DUT_5V, so
  * their drivers never touch them (zephyr,deferred-init, never initialized).
- * Hub port n is USB-C n.  Pins: electronics/data-port-x4/design.py.
+ * Hub port n is USB-C n.  Pins: electronics/data-port-x4/design.py and
+ * data-port-x4-v2/design.py (the same, plus the matrix expander).
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -116,6 +117,21 @@
 		reg = <0x44>;
 		current-lsb-microamps = <25>;
 		rshunt-micro-ohms = <100000>;
+		zephyr,deferred-init;
+	};
+
+	/*
+	 * DATA x4 v2: the matrix expander (TCA9534A, not fitted on the base v2),
+	 * register-compatible too: P0 DAT, P1 CK, P2/P3 STB, P4 RST, P5 RUN,
+	 * P6 BOOTSEL, P7 MARK.  src/ports.c drives MARK low at set-up; the rest
+	 * is the co-processor's (docs/multi-dut-node.md).
+	 */
+	ports_mx: gpio@38 {
+		compatible = "ti,tca9538";
+		reg = <0x38>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		ngpios = <8>;
 		zephyr,deferred-init;
 	};
 

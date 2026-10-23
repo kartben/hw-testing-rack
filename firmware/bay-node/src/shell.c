@@ -230,7 +230,7 @@ static int cmd_usb(const struct shell *sh, size_t argc, char **argv)
 static int cmd_port(const struct shell *sh, size_t argc, char **argv)
 {
 	struct port_info pi;
-	uint32_t ms = CONFIG_BAY_POWER_CYCLE_MS;
+	uint32_t ms = 0; /* a port's cycle waits for its VBUS under 1 V */
 	int32_t others = 0;
 	char *end;
 	long n;
@@ -276,7 +276,9 @@ static int cmd_port(const struct shell *sh, size_t argc, char **argv)
 		return -EINVAL;
 	}
 	if (ret == -EBUSY) {
-		shell_error(sh, "no room in the budget: the other ports draw %d mA", others);
+		shell_error(sh, "no room in the budget: the bay draws %d mA", others);
+	} else if (ret == -EALREADY) {
+		shell_error(sh, "port %ld: VBUS up while off (powered from elsewhere); on once gone", n);
 	} else if (ret != 0) {
 		shell_error(sh, "port %ld: %d", n, ret);
 	}

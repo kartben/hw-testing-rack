@@ -1,8 +1,30 @@
 /*
  * A DATA x4 board on native_sim's emulated I2C bus (i2c0), as the bay node
- * application adds it.
+ * application adds it, and the node's own INA226 on DUT_5V (dut_port's
+ * power-monitor), its ALERT on an emulated GPIO.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include "../../data-x4.dtsi"
+
+/ {
+	dut_port: dut-port {
+		compatible = "hwtr,dut-port";
+		enable-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
+		fault-gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+		power-monitor = <&node_meter>;
+	};
+};
+
+&i2c0 {
+	/* ports.c reads it raw; its driver (dut.c's) is not in the test */
+	node_meter: ina226@40 {
+		compatible = "ti,ina226";
+		reg = <0x40>;
+		current-lsb-microamps = <50>;
+		rshunt-micro-ohms = <50000>;
+		alert-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+		zephyr,deferred-init;
+	};
+};

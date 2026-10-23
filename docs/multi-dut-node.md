@@ -48,12 +48,12 @@ The expanders' pins come up as inputs.  On DATA ×4 each EN is pulled down
 stays off until the firmware switches it on within the bay's budget
 ([Power budget](#power-budget)).  That is the one exception to the
 binding's rule that a board is powered before (and without) any firmware.
-RESET and BOOT are held released by 100k pull-ups (the TCA6408A has none,
-and a floating input would raise INT); they go straight to the board's
-pins through 1k: Zephyr's driver
-refuses `GPIO_OPEN_DRAIN`, so the dut-port code asserts a line by
-configuring it as an output low and releases it by configuring it as an
-input.
+RESET and BOOT have 100k pull-ups (the TCA6408A has none, and a floating
+input would raise INT); they go straight to the board's pins through 1k:
+Zephyr's driver refuses `GPIO_OPEN_DRAIN`, so the dut-port code asserts a
+line by configuring it as an output low and releases it by configuring it
+as an input.  A port that is off holds both asserted, so the pull-ups never
+feed an unpowered board ([Power budget](#power-budget), safety rules).
 
 Power goes through the board's switches (current limit, fault, measured),
 not the hub's own port power: it does not depend on the USB link, and works
@@ -103,15 +103,31 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 - **Per port**, a TPS2553-1: limit ≈ 0.48–0.58 A, 7.5 ms deglitch, then
   latched off until EN toggles.  The firmware reports the port's fault and
   toggles EN on the next `on`.
-- **The node's own TPS2553** (≈ 1.34–1.52 A) feeds the four ports through
-  J7, and the node cuts DUT_5V after 1 s in current limit
+- **The node's own TPS2553** (≈ 1.34–1.52 A) feeds the whole board through
+  J7: the four ports and the board itself (the hub, 220 mA at full speed to
+  330 mA at high speed, the co-processor, the matrix's 5 V, the LEDs:
+  ≈ 0.3–0.46 A).  The node cuts DUT_5V after 1 s in current limit
   (`CONFIG_BAY_DUT_FAULT_OFF_MS`): the whole bay goes.
-- **Admission.**  A port is switched on only if the sum of the four ports'
-  INA226 (0x41, 0x43, 0x44, 0x45) plus a ≈ 0.25 A reserve stays at or under
-  1.25 A; otherwise 409.
-- **Shedding.**  The node's INA226 (0x40) alerts at ≈ 1.3 A: within ≈ 10 ms
-  the firmware turns off the last port switched on (or the one drawing the
-  most) through its expander, well before the 1 s cut of the whole bay.
+- **Admission.**  A port is switched on only if what the bay draws, read on
+  the node's INA226 (0x40, on DUT_5V: the board counts), plus 100 mA for its
+  start stays at or under 1150 mA (`CONFIG_BAY_PORTS_BUDGET_MA`,
+  `CONFIG_BAY_PORTS_RESERVE_MA`); otherwise 409.  Without the node's meter (a
+  stand-in, or it does not answer) the bay's draw is the ports' INA226 (0x41,
+  0x43, 0x44, 0x45) plus 500 mA for the board (`CONFIG_BAY_PORTS_BOARD_MA`).
+- **Shedding.**  The node's INA226 holds its ALERT (IO39) low while its
+  shunt reads over 1250 mA (`CONFIG_BAY_PORTS_SHED_MA`: Alert Limit 25000,
+  2.5 µV each across 50 mΩ; SOL, not latched), each reading averaged over 4
+  conversions (8.8 ms).  The interrupt turns off the port switched on last,
+  and the bay is read again 20 ms later until it is under; the 100 ms poll
+  does the same without the interrupt (the stand-ins have no ALERT line).
+  All well before the node's 1.34 A and its 1 s cut of the whole bay.  A shed
+  port stays wanted: it comes back once the budget has room for what it drew.
+- **What that guarantees**, with the board at its 0.46 A worst case: **one
+  port at its full 500 mA**, always (0.46 + 0.1 A to start it, 0.96 A
+  running); **four ports only at ≲ 190 mA each** (the fourth starts at
+  0.46 + 3 × 0.19 + 0.1 = 1.13 A, and 1.22 A running stays under the shed).
+  More, and the last port waits, or is shed.  Without the node's meter, four
+  ports at ≲ 180 mA.
 - **Expanders** (two TCA6408A, 0x20 for ports 1–2 and 0x21 for ports
   3–4): EN, FAULT_N, RESET and BOOT per port, nothing else (no UART per
   port; the hub resets with the bay's power or a USB bus reset).  RESET and
@@ -120,6 +136,28 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 - **Ports come up off** (EN pulled down): the firmware switches them on one
   by one through the admission rule, so four boards booting together never
   meet the node's limit before the firmware runs.
+- **Safety rules** for the boards on the ports:
+  - RESET and BOOT are held asserted (outputs, low) while a port is off: the
+    100k pull-ups would otherwise put 3.3 V on an unpowered board's pins.
+    After EN, 5 ms, BOOT is released, then RESET (BOOT stays held for a boot
+    into the bootloader).  RESET or BOOT asked of a port that is off: 503.
+  - The ports are sink-only, with no CC detection: a port whose VBUS (its
+    INA226's bus input, on the shunt's load side) reads over 3.5 V while off
+    (`CONFIG_BAY_PORTS_VBUS_FOREIGN_MV`) is not switched on (409), since a
+    board powered from elsewhere (4.4 V or more) would meet the port's 5 V.
+    A wanted port comes on by itself once its VBUS has gone.
+  - A power cycle keeps the port off (for the `ms` asked, none by default)
+    until its VBUS reads under 1 V (`CONFIG_BAY_PORTS_VBUS_OFF_MV`: the
+    board is well below any brown-out), 2 s at most
+    (`CONFIG_BAY_PORTS_DISCHARGE_MS`), instead of a fixed 1 s.  The
+    TPS2553-1 does not discharge its output; a board on the port does.  A
+    port with nothing on it keeps ≈ 1.5–2 V for tens of seconds (22 µF
+    against the INA226's ≈ 830 kΩ bus input, once its LED, before the
+    shunt, stops conducting): its cycle waits the 2 s and it goes back on,
+    that charge being well under 3.5 V.
+  - v2: the matrix expander's MARK (TCA9534A P7) an output, low, at each
+    set-up; the rest of that expander belongs to the co-processor's rules
+    below.
 - **DUT_5V off.**  The board's I²C and INT reach the node through three
   2N7002s, gate on the board's +3V3: with DUT_5V off they open, the node's
   pull-ups cannot feed the dead board through its chips' clamps, and the
@@ -128,12 +166,26 @@ one-port node answers `/api/ports` with its one DUT as port 1.
   0x41–0x45 alone while it is off (they NACK; 0x40 answers), and sets them
   up again after each DUT_5V on (every port then off again):
   1. wait ≈ 5 ms for the board's +3V3 and the FETs;
-  2. each TCA6408A: output register 0 (RESET and BOOT will drive low once
-     outputs), then the directions with every RESET and BOOT an input
-     (released: the 100k pull-ups make them read 1) and every EN an output,
-     low;
-  3. each port's INA226: calibration and alert configuration;
+  2. each TCA6408A: output register 0, then the directions with every EN,
+     RESET and BOOT an output, low (every port off, its lines held);
+  3. each port's INA226: its averaging; on the v2, MARK low; the node's
+     INA226: its ALERT limit;
   4. the wanted ports back on, one by one, through the admission rule.
+
+### Rules for the co-processor (not code yet)
+
+The DATA ×4 v2's RP2354B drives the pin matrix (two CH446Q) and its
+pull-ups; its firmware is not written yet.  When it is, it keeps the same
+rule as the node: nothing drives an unpowered board.
+
+- The matrix switches stay open while their port is off (MX_RST high, the
+  default until the node writes the TCA9534A), and open when it goes off.
+- Break-before-make: a route opens its old crosspoint before closing the new
+  one; two sources never share a line.
+- Open-drain drive: a line is pulled low or let go (to its pull-up), never
+  driven high into a board's pin.
+- The RP2354B's internal pull-downs are cleared on GPIO10–13 and 16–19 (the
+  2.2k pull-up enables A–H) before anything else.
 
 ## REST API
 
@@ -216,14 +268,18 @@ Done (minimal version, `src/ports.c`, 2026-10-20):
   100 mΩ shunt (no calibration needed).
 - ~FAULT polled every 100 ms: the port is marked latched and its EN goes low;
   `on` again restarts the TPS2553-1.
+- The budget on the node's INA226 and the shedding on its ALERT, the safety
+  rules above (2026-10-23).
 - `GET /api/ports`, `POST /api/ports/<n>/power|reset|boot` (boot takes
   `power_cycle`), `"port": n` on `/api/power|reset|boot` (409 without on a
   DATA ×4 node), `ports` in `/api/status`, `bay port` in the shell.
 - `firmware/bay-node/tests/ports`: the start one port at a time, the
   admission, a latched fault, a DUT_5V cycle with no I²C while off, RESET and
-  BOOT, a board that goes and comes back.
+  BOOT (held while off), a board that goes and comes back, the shedding (on
+  the ALERT and by the poll), the budget without a node meter, a port's VBUS
+  while off and its power cycle.
 
-Not yet: shedding on the node's INA226 alert, leases per port, the USB/IP
+Not yet: leases per port, the USB/IP
 client per port, `/metrics` by port, the CAN PORTS frame, the product
 string of a port's USB device.
 

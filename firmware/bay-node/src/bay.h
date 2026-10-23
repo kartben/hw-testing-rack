@@ -75,8 +75,10 @@ int ports_count(void);
 /* slot 1..4; -ENOENT no such port, -ENODEV no board */
 int ports_info(int slot, struct port_info *pi);
 /*
- * -EBUSY: the budget has no room (others: what the other ports draw, mA, may
- * be NULL); -EAGAIN: the board is not set up (DUT_5V off)
+ * -EBUSY: the budget has no room (others: what the bay draws, mA, may be
+ * NULL); -EALREADY: its VBUS is up while it is off (a board powered from
+ * elsewhere), it comes on once that has gone; -EAGAIN: the board
+ * is not set up (DUT_5V off), or the port is off (RESET, BOOT)
  */
 int ports_power(int slot, bool on, int32_t *others);
 int ports_power_cycle(int slot, k_timeout_t off_time, int32_t *others);
