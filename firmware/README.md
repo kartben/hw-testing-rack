@@ -171,7 +171,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | USB/IP export of the DUT | `CONFIG_USBIP` on `zephyr_uhc0` (= `&usb_otg`, DWC2 host, ESP32-S3 FS quirk), with the rack's patch (`zephyr/patches.yml`); TCP 3240; bus id by port: `1-1` (`1-1.<n>` behind a hub) |
 | DUT power | TPS2553 EN on IO41, kept **on** at boot (the board pulls it up); `bay power on/off/cycle` |
 | Over-current | TPS2553 ~FAULT on IO40 (interrupt): logged and counted; after `CONFIG_BAY_DUT_FAULT_OFF_MS` (1 s) in current limit VBUS is switched off and the fault latched until `bay power on` |
-| Telemetry | INA226 @ 0x40 through the Zephyr sensor API (`ti,ina226`, 50 mΩ, 50 µA/LSB, 16× averaging): bus mV, mA, mW in `bay power` / `bay status` |
+| Telemetry | INA226 @ 0x40 through the Zephyr sensor API (`ti,ina226`, 50 mΩ, 50 µA/LSB, 4× averaging, 8.8 ms a reading): bus mV, mA, mW in `bay power` / `bay status` |
 | Data path | reads PC_DET (IO13) and SVC (IO15); `bay mode classic` drives MUX_FORCE_PC (IO14), persisted |
 | SERVICE mode | stops the USB host and routes the internal PHY to the USB-Serial-JTAG (`CONFIG_BAY_SERVICE_PHY_HANDOVER`); restarts the host when SERVICE goes off |
 | AUX console | UART1 (IO47 TX / IO21 RX), interrupt driven, shared by the web console (WebSocket, xterm.js), an RFC 2217 server (port 4001) and raw TCP (port 4000); settings persisted per bay; BREAK; TX released while the DUT is off.  See [Serial console](#serial-console) |
@@ -674,7 +674,7 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
 | IO21 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
 | IO38 | LED_DIN | WS2812B (33 Ω), RMT channel 0 (the DevKitC-1 v1.1's own RGB LED pin) | `status_led` |
-| IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up), not used yet | `ina226` `alert-gpios` |
+| IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up): over 1.25 A on DUT_5V, the DATA ×4 port switched on last goes off (`src/ports.c`) | `ina226` `alert-gpios` |
 | IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up) | `dut_port` `fault-gpios` |
 | IO41 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware) | `dut_port` `enable-gpios` |
 | IO42 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
@@ -688,7 +688,7 @@ Each signal sits on the module edge that faces where it goes on the board: the r
 the DUT power block (I²C at its rear end) and POS_OUT runs to J2 (docs/can.md); the bottom row the
 AUX connector (right half), the mode logic and the camera's SPI (left half); the left column the
 rack bus block (CAN transceiver, POS input), SERVICE, the camera's CS and light and the DATA
-board's INT (IO4).  IO5 and IO6 are free.  The CAN protocol itself is not written yet: the devicetree only describes the pins.
+board's INT (IO4).  IO5 and IO6 are free.  The rack bus protocol runs on the CAN pins (`src/rack.c`, [docs/rack-protocol.md](../docs/rack-protocol.md)).
 Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad JTAG pins, free as GPIOs since
 the node debugs over USB-Serial-JTAG.  The map is chosen so that an ESP32-S3-DevKitC-1 v1.1
 (N8R8, the same module) takes it as is: every pin is on its headers, none is the octal PSRAM's
@@ -754,7 +754,7 @@ runs it and builds both targets with warnings as errors on every push.
   against the simulated node), then over the rack bus:
   [docs/firmware.md › Over the network](../docs/firmware.md#over-the-network).
 * **Not yet written:** the shell on the USB-Serial-JTAG in SERVICE mode,
-  INA226 alert handling, RFC 2217 line/modem state notifications (the server
+  RFC 2217 line/modem state notifications (the server
   answers polls with CTS/DSR/CD up).
 * **Zephyr's HTTP server** registers every WebSocket of a resource with that
   resource's one data buffer, so two consoles on one resource would share

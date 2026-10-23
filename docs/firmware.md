@@ -281,7 +281,7 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   StampS3 the firmware boots with its listeners up and the UART path works
   in loopback, but the WebSocket and TCP paths have not run over Wi-Fi yet.
 * Updates over the network on hardware (swap time, rollback, power loss during a swap), then over the rack bus ([Programming](#over-the-network));
-  shell on the USB-Serial-JTAG in SERVICE mode, INA226 alert.
+  shell on the USB-Serial-JTAG in SERVICE mode.
 * Upstream nits seen while dogfooding: the Prometheus library needs exactly
   one label per metric and rejects negative gauge values; the HTTP server
   shares one WebSocket data buffer per resource (one resource per console
