@@ -9,7 +9,7 @@ board.  Mock-ups, to scale from the routed board's footprints:
 [`electronics/data-port-x4-v2/docs/review/`](../electronics/data-port-x4-v2/docs/review/).
 
 Costs are per **panel order** as the rack orders it: 2 panels, so 2 logic and 2 base boards, $237.21
-(`tools/bom.py` › `panel_order(2)`, with 5329627's preferred tier: 20 extended types to load).  The logic's own share is ≈ $76 of it: parts $30.5, 11 extended part
+(`tools/bom.py` › `panel_order(2)`, with 92f09f4's preferred tier: 20 extended types to load).  The logic's own share is ≈ $76 of it: parts $30.5, 11 extended part
 types $33.8 (at $3.07 each, loaded once per order), L1's minimum purchase $9.5, joints ≈ $2.
 *Obvious*: an engineering call the board's session makes and reports; *user*: a real trade-off.
 

@@ -89,7 +89,7 @@ times are for 17 runs on 9 slots (6 on the Mac, 3 on zephyrbox); the single run 
 | power-hub | 433 vias, 3536.8 mm | **1 open**, 455 vias, 3517.9 mm | `via10`: 521 vias, 3460.4 mm | **2 / 17** | 246 s → 842 s |
 | DATA ×4 v2 | 810 vias, 4828.3 mm | 0 open, 800 vias, 4781.6 mm | `planevia50`: 799 vias, 4781.6 mm (0 %) | 4 / 17 (7 stopped at 45 min) | 40 min → 90 min |
 
-- **The DATA ×4 v2 before main's tidy-up** (8442861; same portfolio, same scoring): the single run had 4 copper
+- **The DATA ×4 v2 before main's tidy-up** (77a0264; same portfolio, same scoring): the single run had 4 copper
   DRC errors (3 tracks necked under 0.09 mm, an isolated copper island) and 3 of 17 runs were clean; the best,
   neck-down off, was clean with 800 vias and 4772.8 mm.  Since then its own run is clean.  7 runs went past
   45 min and were stopped: autorouter passes on a board it sees almost complete, or the one-thread optimizer.
@@ -129,7 +129,7 @@ times are for 17 runs on 9 slots (6 on the Mac, 3 on zephyrbox); the single run 
   complete (above).
 - **Its "unrouted" count isn't KiCad's.**  It counts as open the GND pads on the outer pours, and pads reached by
   a drawn track that doesn't end on the pad's exact centre.  KiCad then finds them connected (main fixed the
-  DATA ×4 v2's drawn ends in 8442861).
+  DATA ×4 v2's drawn ends in 77a0264).
 - **Neck-down goes under the floor.**  `automatic_neckdown` narrows tracks at crowded pads to 0.076 and
   0.063 mm on the DATA ×4 v2, whose floor is 0.09 mm: 1–8 `track_width` errors per run.  The portfolio has
   runs without it.
@@ -151,7 +151,7 @@ to compare.
    - On the bay node it was one 0.3 mm strip on In2, x 22.0–22.3 mm along y 34.3–44, where the +5V outline ran
      0.3 mm into the +3V3 one.  Both zones have the same priority, so KiCad's fill gave the strip to the zone
      with the larger UUID, which is new at each build.  The DATA ×4 v2 had the same along J1's +5V tab (fixed in
-     its `design.py` on main, 8442861).  The bay node's `design.py` now stops the +5V outline at x 21.7.
+     its `design.py` on main, 77a0264).  The bay node's `design.py` now stops the +5V outline at x 21.7.
    - **Fix** (`pcbgen.plane_areas`, at DSN export): each plane is its outline less every other-net zone that
      wins over it on its layer (priority, then KiCad's tie-break), grown by the clearance.
    - The warning is gone from every run of the three boards.  An island poured over another net's area by
@@ -330,7 +330,7 @@ with their bends.
 
 ## The DATA ×4 v2 on 4 layers
 
-Its 6-layer stackup came from one 4-layer run that left 27–29 links open (029728b), before the fixes above.  The
+Its 6-layer stackup came from one 4-layer run that left 27–29 links open (88bb19d), before the fixes above.  The
 same design at `X4V2_LAYERS=4` (F · GND · power · B), through the portfolio (`--farm farm-4l`, the Mac and
 zephyrbox), 2026-10-22:
 

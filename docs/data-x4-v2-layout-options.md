@@ -20,7 +20,7 @@ cable window to the board's rear face.
 ## Options compared
 
 The baseline is the v2 board as it is being routed: 108 × 37 mm, 6 layers, 214 parts on both sides,
-horizontal in the drawer's 40 mm rear bay (drawer 208 deep, c0330ae).
+horizontal in the drawer's 40 mm rear bay (drawer 208 deep, e899c01).
 
 | | Today | A: deeper, horizontal | **B: vertical** | C: mezzanine |
 |---|---|---|---|---|

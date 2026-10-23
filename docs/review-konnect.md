@@ -1,7 +1,7 @@
 # Board review with Konnect (rev 0.2 → 0.3)
 
 Review of the two rev 0.2 boards (`electronics/bay-node`, `electronics/power-hub`, commit
-`da40db9`) with the Konnect MCP server (0.13.0, KiCad PCM plugin) against a
+`257e63c`) with the Konnect MCP server (0.13.0, KiCad PCM plugin) against a
 live KiCad 10.0.7, in the light of Fabio's review of v0.1.  Done on 2026-10-16; the fixes below
 make rev 0.3.
 
@@ -146,7 +146,7 @@ unchanged).
 
 *Why:* the ESP32-S3 is full-speed only, but in **classic mode** a laptop talks to the DUT through
 both FSUSB42s, and a High-Speed DUT will negotiate 480 Mb/s.  Freerouting has no differential-pair
-support; measured on its routing (da40db9 → first re-route of this review):
+support; measured on its routing (257e63c → first re-route of this review):
 
 | pair | P / N length | skew | coupled | layers, vias |
 |---|---|---|---|---|
@@ -586,7 +586,7 @@ AUX and DATA go to the drag chain, CAM to the rear slot.  The user then dropped 
   port's J2 5 / 6 and U1's channels swap with it, and its copper stays as it was.  The DUT power block
   took J4's place.
 - **Unchanged.**  The front half and the left holes did not move: the tray drills a Ø6.4 access hole
-  over each left screw instead (c05b24f).
+  over each left screw instead (a09923f).
 - **+5V at 5.24 V** (FB 100k/18k, both basic, already in the BOM), for ≈ 4.75 V at the DATA board at
   1.4 A.
 - **INA226 Vbus on Vin−.**  Vbus now ties to Vin− at the pins (8 and 9), so it reads DUT_5V at the

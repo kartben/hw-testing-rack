@@ -297,7 +297,7 @@ No change for the tray session beyond moving the bosses.
 ### JLC cost
 
 No real quote: there are no v2 Gerbers yet, and none are uploaded from research.  The estimates above
-stand.  The power hub's real Standard quote (2ab88eb) came ≈ 7 % over its estimate (≈ $243 against
+stand.  The power hub's real Standard quote (437a29f) came ≈ 7 % over its estimate (≈ $243 against
 ≈ $227), extended-part feeders ($72.85) its largest assembly line: allow ≈ +10 % on the full variant
 until the design is quoted.
 

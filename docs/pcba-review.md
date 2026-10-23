@@ -1,6 +1,6 @@
 # PCBA pre-order review (pcba-design-skills v1.0.0)
 
-Review of the five boards on `main` at `b4e3a56`, done on 2026-10-19 before the JLCPCB order.  It
+Review of the five boards on `main` at `99d875a`, done on 2026-10-19 before the JLCPCB order.  It
 uses Keitark's pcba-design-skills v1.0.0 as
 checklists, with their gates (`PASS` / `USER_REVIEW` / `BLOCKED`) and their scripts.  The skills
 used:

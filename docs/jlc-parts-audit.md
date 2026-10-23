@@ -45,7 +45,7 @@ fees per order are spread over the boards, plus one $34 shipment (USD).
 
 Every board is green since 2026-10-23 (the user: "faisons tout en vert"; `pcb.solder_mask: green`):
 JLC's green costs nothing. Black cost $8.00 per order on 4 layers (the node, the hub) and kept the v2
-out of Economic PCBA. The v2 is 4 layers again since the same day (eaf77b9). JLC's fees are those its quotes charged on 2026-10-23: Economic $8.24 setup,
+out of Economic PCBA. The v2 is 4 layers again since the same day (a5ca11d). JLC's fees are those its quotes charged on 2026-10-23: Economic $8.24 setup,
 $1.55 stencil, $3.09 per extended type; Standard $25.75, $8.27, $1.55 per type.
 
 **The v2 panel's real JLC quote (2026-10-23).** The panel's committed Gerbers, JLC BOM and CPL were
@@ -100,14 +100,14 @@ cost $236.85 apart, against $207.86 on the panel.
     "data-port-x4-v2-gerbers" (logic, base).
   The user can delete them; nothing is in the cart.
 
-The hub is 76 × 100 mm since 2026-10-20 (3cb4152): inside JLC's 100 × 100 offer, no $25 engineering
-fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors (cc3ba32), and since 2026-10-21 the usability
+The hub is 76 × 100 mm since 2026-10-20 (d2e9c73): inside JLC's 100 × 100 offer, no $25 engineering
+fee, $24.60 less an order. The v2 panel has the H5VU25UC and the 22 Ω resistors (3f91006), and since 2026-10-21 the usability
 review's pass: the co-processor's AP2112K out (17 extended types, not 18), a VBUS LED per port, $3.03
 less a panel order.
 
 Floor per board, once the fees per order no longer count (100-board breaks): node $16.69, hub
 $18.48, the v2 panel $34.80 (a logic and a base), DATA port $1.30, pod $1.13.  Holding the parts at the prototype price gave
-$20.85 and $36.04 for the node and the hub; the hub's CH224A (1590b7a) took another ≈ $4 off its
+$20.85 and $36.04 for the node and the hub; the hub's CH224A (a20dd24) took another ≈ $4 off its
 floor.
 
 Where a board's parts money goes, at 10 racks:
@@ -128,7 +128,7 @@ The threshold is JLC's assembly stock against 10 racks' need, summed over the bo
 | Part | Boards | JLC stock | 10 racks need | Risk |
 |---|---|---:|---:|---|
 | **AOTA-B201610S3R3-101-T** (C42411119, L1) | DATA ×4 v2 (logic) | 3 (2026-10-20) | 10 | **a pre-order**: JLC sells it by 32 at least, so the logic order waits for it and pays for 30 spares ($9.54 per order). It stays: Raspberry Pi approves no other inductor for the RP2350's regulator (below) |
-| CH224A (C42459160) | hub | 12,463 | 10 | none: in stock since 1590b7a replaced the out-of-stock AP33772S (and its Global Sourcing); WCH only |
+| CH224A (C42459160) | hub | 12,463 | 10 | none: in stock since a20dd24 replaced the out-of-stock AP33772S (and its Global Sourcing); WCH only |
 | USB4105-GF-A-120 (C5184243) | node, hub, DATA port | 3,562 | 160 | JLC holds 22×, but **LCSC has 0**: when JLC's stock runs out, it can't refill from LCSC (the v2 has the HRO TYPE-C-31-D-06) |
 | S6B-PH-SM4-TB (C265405) | node, hub | 4,813 | 280 | 17×; genuine JST only |
 | LMR51635YDDCR (C45262770) | node, hub | 2,500 | 90 | 28×, TI only |
@@ -159,15 +159,15 @@ board's owner, and the trade-off ones need the user.
 | **JST PH SMD second source**: S6B / S8B / B8B-PH-SM4-TB ($0.25–0.42) → PH 2.0 SMD clones ≈ $0.04–0.07 (e.g. SHOU HAN 2.0-xP WT / LT, WAFER-PH2.0-6PWB C3029444), or CJT's A2001WR-S-6P C225237 / A2001WR-S-8P C225239 / A2001WV-S-8P C225232 (vertical) at $0.16–0.20 @ 100 (phosphor bronze, LCP, −40…105 °C) | node (5), hub (4), DATA ports, DATA ×4, pods (52 a rack; the v2's J1 is hand-soldered) | ≈ $129 no-name, ≈ $68 CJT | decision (open) | Same 2 A rating; mates with PHR housings. Check the footprint geometry against each clone's drawing. Genuine JST holds up better on cables that are re-plugged |
 | **USBLC6-2SC6 second source**: ST C7519 ($0.12–0.18) → UMW C2687116 ($0.042 at 100) or TECH PUBLIC C2827654 ($0.036) | node (4), hub, DATA ports, DATA ×4 v2 and its base (4 each) (47 a rack) | ≈ $38 | decision | Same SOT-23-6 and pinout, so pins 1 / 6 and 3 / 4 still join inside and the flow-through layout holds. Check the clamp voltage and capacitance against ST's (0.35 pF line-to-line on the UMW) |
 | **DATA ×4 USB hub**: USB2514B → CH334R or FE1.1s | DATA ×4 v1 | — | moot | v1 is not ordered; the v2's USB2517I serves 7 ports (the four, the analyzer, two spare) |
-| **DATA ×4 at most 100 mm long**: 108 × 24 → 100 × 37 mm | DATA ×4 | the 5-board order went from $104.17 to $85.37 (bare PCB $31.90 → $13.10, JLC's 4-layer offer; no deburring line at 37 mm) | **applied** (2b84f26, a860935) | The offer stops at 10 PCBs: above that JLC's $25 engineering fee is back, so at 50 and 100 PCBs the board costs $53.80 and $73.40, $6–11 more than at 108 × 24 (calculator, 2026-10-20). v1 is not ordered for the prototype since: the converted bays take the v2 |
+| **DATA ×4 at most 100 mm long**: 108 × 24 → 100 × 37 mm | DATA ×4 | the 5-board order went from $104.17 to $85.37 (bare PCB $31.90 → $13.10, JLC's 4-layer offer; no deburring line at 37 mm) | **applied** (1c0dfbd, 6954594) | The offer stops at 10 PCBs: above that JLC's $25 engineering fee is back, so at 50 and 100 PCBs the board costs $53.80 and $73.40, $6–11 more than at 108 × 24 (calculator, 2026-10-20). v1 is not ordered for the prototype since: the converted bays take the v2 |
 | **DATA ×4 v2 logic and base on one 1 × 2 panel** (the same PCB twice, one CPL, ENIG, one Economic order) | DATA ×4 v2 | ≈ $26 for the rack's 2 + 2 ($237.21 against $263.40), ≈ $37 at 5 + 5, ≈ $61 at 10 + 10 | **applied** (the orchestrator; bom.py's `data-port-x4-v2-panel`) | 100 × 142 with a 2 mm mouse-bite gap: one setup and stencil, each type loaded once, no panel fee (one design). The tabs join along the 100 mm edges, away from the ends: the ends sit in the cradle's slots with 0.5 mm to spare. The nubs on the bottom edge (floor, notches at x 31 / 67) and the top edge (latch hooks) are sanded flush. The base goes ENIG; as many bases as logics. A V-cut joint is below |
 | **The same panel, V-cut** instead of mouse bites | DATA ×4 v2 | nothing for the rack's 2 + 2 ($263.70 against $263.40), ≈ $11 at 5 + 5, ≈ $34 at 10 + 10: $26–27 more than mouse bites | decision | JLC's Economic panels take mouse bites only, so a V-cut panel is Standard PCBA: $25.56 setup, $8.21 stencil, $1.53 for each of 41 types. It needs 5 mm rails with fiducials (100 × 150, $52.60 for 5) and ≥ 0.4 mm of copper from both V-cut 100 mm edges; the board keeps 0.3. The 1 mm corner radii at those edges come out square. In return: a clean straight edge, and Standard's SPI and adjustable reflow under the 0.4 mm QFN-80 |
 | **DATA ×4 v2 base in lead-free HASL** when ordered alone | v2 base | $12.20 per order | single orders only | Its finest pitch is the hub's 0.5 mm QFN, which v1 put on HASL. The rack's base is on the ENIG panel; the HASL estimate stays for a single base order (the BOM page's calculator) |
 | **DATA ×4 v2 resistor arrays** → basic 0402 resistors | DATA ×4 v2 (logic) | $9.21 per order (3 extended types at Economic's $3.07) | **declined** (the v2 session, 2026-10-20) | They stay: 60 resistors in place of 15 arrays means re-placing and re-routing the pin chains. In the base, RN1–RN3 sit over the hub's 0.5 mm strap pins, where a row of 0402s doesn't fit |
-| **PD sink**: AP33772S (Global Sourcing, stock 0) → CH224A | hub | the hub order went from $205.95 to $185.29 | **applied** (1590b7a) | No input switch any more. The CH224Q (C46061833) and the HUSB238A-BB001-QN16R (C24833806, PD 3.x EPR to 28 / 48 V, $0.40 at 100) remain as second sources; the HUSB238 (non-A) and the CH224K stop at 20–25 V |
-| **Hub rows C and D not fitted** | hub | $10.79 a hub order (2 assembled): $10.59 parts, $0.20 joints | **applied** (91617fd; the user, 2026-10-23: "ne montons pas C et D pour l'instant") | 2 × TPS26600, 2 × S6B, 4 LEDs per hub DNP, their passives kept; no part type goes, so no feeder fee (`JLC_SINCE_QUOTE`) |
+| **PD sink**: AP33772S (Global Sourcing, stock 0) → CH224A | hub | the hub order went from $205.95 to $185.29 | **applied** (a20dd24) | No input switch any more. The CH224Q (C46061833) and the HUSB238A-BB001-QN16R (C24833806, PD 3.x EPR to 28 / 48 V, $0.40 at 100) remain as second sources; the HUSB238 (non-A) and the CH224K stop at 20–25 V |
+| **Hub rows C and D not fitted** | hub | $10.79 a hub order (2 assembled): $10.59 parts, $0.20 joints | **applied** (c234f1f; the user, 2026-10-23: "ne montons pas C et D pour l'instant") | 2 × TPS26600, 2 × S6B, 4 LEDs per hub DNP, their passives kept; no part type goes, so no feeder fee (`JLC_SINCE_QUOTE`) |
 
-An external BOM review (2026-10-19) was checked against the catalog by the orchestrator. Most of its LCSC codes were wrong, and its fee premise doesn't hold on Standard PCBA (every unique type is charged). Its valid levers (the HRO USB-C, the PH clones, the USBLC6 second source) are in the table above; the fourth, the TPS2553DDBVR on the node's U9, is applied (4ebe8f1: $0.19 against $0.54, same pinout and I_LIM).
+An external BOM review (2026-10-19) was checked against the catalog by the orchestrator. Most of its LCSC codes were wrong, and its fee premise doesn't hold on Standard PCBA (every unique type is charged). Its valid levers (the HRO USB-C, the PH clones, the USBLC6 second source) are in the table above; the fourth, the TPS2553DDBVR on the node's U9, is applied (6c5c5de: $0.19 against $0.54, same pinout and I_LIM).
 
 Checked and rejected:
 - **DATA ×4 v2 L1**: declined by the v2 session, 2026-10-20.
@@ -188,11 +188,11 @@ Checked and rejected:
   33 V TVS), which rules out the basic 30 V bucks.
 - **Regulators** (AMS1117, AP2112K, XC6206): none proposed. The DATA ×4's USB2514B draws ≈ 0.16 A on
   3.3 V, and the XC6206's SOT-23 can't shed ≈ 0.31 W.
-- **IRF7842 second source**: the VBsemi clone (C5438941) has 30 in stock.  Moot since 1590b7a: the
+- **IRF7842 second source**: the VBsemi clone (C5438941) has 30 in stock.  Moot since a20dd24: the
   CH224A hub has no input switch.
 - **Hub Q1 / Q2 at 60 V**: the AP33772S drives the gate at most 4 V above VCC. The 60 V SO-8 parts in
   stock are ≥ 28 mΩ at 4.5 V, against the IRF7842's 5.9 mΩ (docs/electronics.md). They stayed at 40 V, and
-  then went with the input switch (1590b7a).
+  then went with the input switch (a20dd24).
 - **Node C11 10u 0805 → 1206**: the larger footprint overlaps U2 and its neighbours.
 - **From the external review**:
   - removing the C1 bulk cap;
@@ -375,7 +375,7 @@ OK), for quotes only: no cart, no order, no address, no coupon. JLC is bom.py's 
 | **Boards** | **713.06** | **1,519.14** | **2.1×** | **3,702.06** | **5.2×** |
 | Shipping to France | 31.28 (DHL) | not quoted | | not quoted | |
 
-All three hub prices are for the hub at 76 × 140 mm. At 76 × 100 (3cb4152), JLC's hub is $160.91
+All three hub prices are for the hub at 76 × 140 mm. At 76 × 100 (d2e9c73), JLC's hub is $160.91
 (€148.04) and the rack's boards €690. The other two lose only their bare-PCB share; the ratios
 barely move.
 

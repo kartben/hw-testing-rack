@@ -278,7 +278,7 @@ two reads in flight.  Between a read's answer and the next read lies a network r
 Three things made that gap longer than the converter's margin:
 
 - **The ESP32 Wi-Fi driver's modem sleep.**  A wired PC's ping took 174 ms on average and up to
-  350 ms; with the radio awake, 13–16 ms.  It is off since 019109e.
+  350 ms; with the radio awake, 13–16 ms.  It is off since aed6b64.
 - **The FTDI latency timer**, 4 ms by default on Linux.  Each read comes back with a few dozen
   bytes, so two reads cover about 10 ms.  At 100 ms the reads fill their 512 bytes, which gives
   about 65 ms of margin at 115200.
@@ -291,7 +291,7 @@ The fix is the USB/IP read-ahead (`CONFIG_USBIP_READ_AHEAD`, in
 (FTDI, CP210x, PL2303, CH34x), the node keeps a read of its own queued on the bulk IN endpoint.
 It answers the client's reads from what it holds: at most 8 reads' worth, from the USB/IP pool.
 
-esptool `read_flash 0 0x20000` at 115200 (128 KB, MD5 checked by esptool), main at 5b430f4:
+esptool `read_flash 0 0x20000` at 115200 (128 KB, MD5 checked by esptool), main at fff8a08:
 
 | Client | Before | With the read-ahead |
 |---|---|---|
@@ -344,13 +344,13 @@ The peaks, both loads included:
 - stacks: none past 80 %.  The highest: a USB/IP session at 1440 of 1792, `tcp_work` at 752,
   `rx_q[0]` at 1696 of 2048.
 
-The same runs found two problems, both fixed in ee2b751:
+The same runs found two problems, both fixed in 1e5ae5a:
 
 - `/metrics` answered 500 to every second call in a row.  Zephyr's Prometheus formatter appends
   to the string already in its buffer.
 - TCP's work queue needed 752 bytes under web load, and now has 1536.
 
-bay_node's internal RAM after ee2b751: 99.28 %, 2752 bytes free.
+bay_node's internal RAM after 1e5ae5a: 99.28 %, 2752 bytes free.
 
 **Then the network stack moved to PSRAM**, on the boards that have it, through Espressif's two
 options (`firmware/bay-node/Kconfig`):
