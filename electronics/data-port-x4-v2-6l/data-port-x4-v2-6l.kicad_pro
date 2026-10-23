@@ -264,7 +264,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "data-port-x4-v2-4l.kicad_pro",
+    "filename": "data-port-x4-v2-6l.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -353,13 +353,13 @@
         "bus_width": 12,
         "clearance": 0.127,
         "diff_pair_gap": 0.15,
-        "diff_pair_width": 0.25,
+        "diff_pair_width": 0.15,
         "line_style": 0,
         "name": "USB",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 3,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.25,
+        "track_width": 0.15,
         "tuning_profile": "",
         "via_diameter": 0.5,
         "via_drill": 0.3,
@@ -443,43 +443,43 @@
     "legacy_lib_list": [],
     "top_level_sheets": [
       {
-        "filename": "data-port-x4-v2-4l.kicad_sch",
-        "name": "data-port-x4-v2-4l",
+        "filename": "data-port-x4-v2-6l.kicad_sch",
+        "name": "data-port-x4-v2-6l",
         "uuid": "00000000-0000-0000-0000-000000000000"
       }
     ]
   },
   "sheets": [
     [
-      "afc8f90c-9fd6-5974-9005-9c7743288e31",
+      "6eede3c9-04e8-5df8-9dbf-dd766ca3200a",
       "Root"
     ],
     [
-      "8b0c9aac-3e02-524f-9b9b-5d9f62ea6e2c",
+      "45a04347-8732-5237-9e3b-340287b3f578",
       "Hub"
     ],
     [
-      "d9235d2c-4272-545e-a34d-4c638ddc5aeb",
+      "125dc686-f76a-5214-936e-4da94614514c",
       "Port 1"
     ],
     [
-      "d1fae929-7025-539b-8600-4beea15d9022",
+      "ac14d110-b641-5e40-a282-77d7516cd3e4",
       "Port 2"
     ],
     [
-      "aee62a5c-79e6-57d3-a1d3-25501e02eba9",
+      "76303e69-a9f7-592c-9301-ccf39b66bdac",
       "Port 3"
     ],
     [
-      "d1f3506f-d439-5a92-b95b-76c631472b98",
+      "ac7695c8-b192-5d16-b2f9-3d2966451868",
       "Port 4"
     ],
     [
-      "1586f3b1-40db-5021-b414-2161efd488bc",
+      "502396b8-bd6b-5893-a2f3-d22d4d678cde",
       "Matrix"
     ],
     [
-      "8b517262-4bef-5078-b6ca-5e9f708993a6",
+      "0ac51c55-9033-5c6b-81d3-0bad3de74b2b",
       "Co-processor"
     ]
   ],

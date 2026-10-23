@@ -11,7 +11,7 @@
 #   tools/kicad.sh bay-node --fab           # same as --check --fab
 #   --outdir=DIR, --routed=FILE are passed to build_board.py (a candidate's copy of the project);
 #   KICAD_NAME names the container; PCBGEN_DSN_PLANES=kicad keeps KiCad's own plane outlines in the DSN;
-#   X4V2_LAYERS=4 builds the DATA x4 v2 on 4 layers instead of its configured 6 (a comparison run);
+#   X4V2_LAYERS overrides the DATA x4 v2's configured 4 layers (data-port-x4-v2-6l builds it on 6);
 #   FR_OPT_THREADS=1: Freerouting's optimizer on one thread, the same board every time (by default it takes
 #   every core and is faster, but not repeatable: on the DATA x4 v2, one thread is 33 min of a 40 min run)
 set -euo pipefail

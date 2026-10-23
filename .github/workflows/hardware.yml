@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        board: [bay-node, power-hub, data-port, camera-pod, data-port-x4, data-port-x4-v2, data-port-x4-v2-4l]
+        board: [bay-node, power-hub, data-port, camera-pod, data-port-x4, data-port-x4-v2, data-port-x4-v2-6l]
     steps:
       - uses: actions/checkout@v4
       - name: Library tables

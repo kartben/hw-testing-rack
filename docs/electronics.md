@@ -530,16 +530,17 @@ Dense rules at JLC's multilayer floor:
 Routing (2026-10-22, after the user found jogs where tracks leave J1's pads).  Freerouting's optimizer only
 runs on a board it sees fully routed, and its first-found routes leave many pads by a short straight, a
 0.2 mm jog and then their diagonal.  So nothing is left for the pours to join:
-- each QFN's exposed pad takes a via in the pad (from 6 layers JLC fills and caps every via for free);
+- each QFN's exposed pad takes a via in the pad (left open at 4 layers: fine in a thermal pad, below);
 - U3's islands, the hub's pin 19 and RN3's spare pad are joined by drawn tracks;
 - every drawn track ends on its pad's very centre: Freerouting joins a track to a pin there only (2.5 µm off,
   it had left the HS pairs and the port switches' IN open);
-- In4's +3V3 and +5V areas no longer overlap (they did by 0.2 mm along J1's +5V tab).
+- the power plane's +3V3 and +5V areas no longer overlap (they did by 0.2 mm along J1's +5V tab).
 After the import, `tidy` (pcbgen's `tidy_tracks()`, on every board since 2026-10-22) straightens what the
 optimizer leaves: a run of the router's segments becomes the fewest straight and 45° segments that join its
 ends, where that is no longer and the clearances allow, and a run holding one under 0.6 mm loses it.  J1's
 leads now leave their pads by one diagonal.  Jogs into vias stay, and so do the buses that weave together
-between vias on In2 and In3: the vias would have to move (docs/autorouting-benchmark.md, "Straight tracks").
+between vias (on B.Cu; on In2 and In3 at 6 layers): the vias would have to move
+(docs/autorouting-benchmark.md, "Straight tracks").
 The switches' IN feeds stay drawn: without them no run of the portfolio came out clean.
 
 Power tracks:
@@ -565,47 +566,42 @@ above In1.Cu"):
   decoupling), then runs down the east side on F.Cu to J1, ≈ 40 mm;
 - the expanders' RST_IO of ports 2 and 4 (pin 10, between INT and BOOT_IO on the side facing a pair) is drawn
   to a via south of the package: ports 1 and 3's pairs step 0.75 mm east there to leave the room;
-- no B.Cu or In3 track crosses the power plane's split (+3V3 / +5V, and the +5V tab's edge by J1): a
-  keep-out along it on both makes every signal that does cross on F.Cu or In2, over the GND plane, so the
-  return current never changes plane there;
+- no B.Cu track crosses the power plane's split (+3V3 / +5V, and the +5V tab's edge by J1): a keep-out along
+  it (on In3 too at 6 layers) makes every signal that does cross on F.Cu, over the GND plane, so the return
+  current never changes plane there;
 - the hub's two south VDD33 pins (5, 10) take their vias under its body, so its downstream pairs leave the
   south row unboxed;
 - each port's leg from its ESD to its receptacle (≈ 10 mm, where D+ and D− reach the USB-C's two rows) is
-  routed by Freerouting: its crossing dives to In2 or In3 (on B.Cu over the +5V plane before);
-- the co-processor's pair (Full Speed only) is routed by Freerouting, mostly on In3, where `match` places no
-  meander (outer layers only); its lines differ by 2 mm: 13 ps against an 83 ns bit;
+  routed by Freerouting: its crossing dives to B.Cu, 6–9 mm over the +5V area (to In2 or In3 at 6 layers);
+- the co-processor's pair (Full Speed only) is routed by Freerouting on F.Cu and B.Cu, matched by `match`
+  (at 6 layers, mostly on In3, where it places no meander, its lines differ by 2 mm: 13 ps against an 83 ns
+  bit);
 - the hub's 480 MHz PLL puts its 5th harmonic at 2.400 GHz, the band's edge, 1 MHz under Wi-Fi channel 1.
 
 ENIG, flat for the RP2354B's 0.4 mm QFN-80.
 
-**Stackup: 6 layers** since the HS review (2026-10-22), JLC06161H-3313: F.Cu signals and the High-Speed
-pairs · In1 GND · In2 signals · In3 signals · In4 power (+3V3 / +5V) · B.Cu signals.
-- The pairs drawn on F.Cu wall the rest of the board off.  At 4 layers Freerouting left 27–29 links open
-  after 30 passes; at 6 it routes them all.  The user's wish for 4 ("si on peut repasser à 4 couches ce serait
-  top") gave way to the HS rule, as agreed for this fallback.  `X4V2_LAYERS=4` still builds the 4-layer board.
-- **Both builds are kept** (the user, 2026-10-22): this one, the rack's, and
-  [`electronics/data-port-x4-v2-4l`](../electronics/data-port-x4-v2-4l/design.py), the same design on 4 layers
-  (F · GND · power · B), routed clean by the Freerouting portfolio since its fixes
-  ([autorouting-benchmark.md](autorouting-benchmark.md), "The DATA ×4 v2 on 4 layers").
-  - The same High-Speed pairs, on F.Cu over GND end to end, 0.25 mm lines 0.15 mm apart (≈ 90 Ω, estimated,
-    not field-solved).  In1 and In2 carry no signal track.
-  - Cheaper and faster: $25.40 for 5 logic boards (ENIG), $13.20 for 5 bases (lead-free HASL), the panel
-    $52.00; black mask $8.00 an order; 3–4 days (jlcpcb.com, 2026-10-20).
-  - Vias in pads: only the 8 drawn in the QFNs' thermal pads (hub, co-processor, expanders, LSF0108s), accepted
-    unfilled (Fabio, 2026-10-23).  JLC fills and caps vias for free only from 6 layers, so since that day no via
-    of the router's or the pipeline's lands on an SMD pad: none in a 0402/0603 or a pin, where an open via drains
-    the joint (this board, routed before, has 17 there, filled for free).
-  - B.Cu carries 1981 mm of signal (102 mm here), over the split power plane instead of In2 over GND.  None
-    crosses the +3V3 / +5V split.  9 segments cross the +3V3_CP island's edge (this board has 21 on In3).
-  - Busier: 749 vias, 1932 bends and 5194 mm of copper, against 810, 1491 and 4828.
-- In2 references In1's GND.  In3 and B.Cu reference the split power plane: the split's keep-out covers both.
-- ≈ 90 Ω on the outer layers: 0.15 mm lines 0.15 mm apart over 0.1 mm of 3313 prepreg (at 4 layers, 0.25 mm
-  over 0.21 mm of 7628).
-- Cost (jlcpcb.com, 2026-10-22): the rack's order panel, 5 × 100 × 142 mm ENIG, $60.40 instead of $52.00; one
-  board on its own, 5 × 100 × 70 mm, $49.40 instead of $25.40.  ENIG only: from 6 layers JLC fills and caps
-  the vias and offers no HASL, so the base variant loses its lead-free HASL.  The rack's black mask costs
-  $33.10 an order at 6 layers ($8.00 at 4): green on this panel is a lever in the BOM.  8–9 days instead of
-  3–4.
+**Stackup: 4 layers** again since 2026-10-23 (the user's choice), JLC04161H-7628: F.Cu signals and the High-Speed
+pairs · In1 GND · In2 power (+3V3 / +5V, the +3V3_CP island) · B.Cu signals.
+- Why: the routing portfolio and its fixes (split planes, straightening, the neck-down floor, no via in an SMD pad)
+  route it clean, cheaper and faster than 6 ([autorouting-benchmark.md](autorouting-benchmark.md), "The DATA ×4
+  v2 on 4 layers").  On 2026-10-22 one 4-layer run had left 27–29 links open, and the HS review took it to 6.
+- The 6-layer build is kept as [`electronics/data-port-x4-v2-6l`](../electronics/data-port-x4-v2-6l/design.py)
+  (`X4V2_LAYERS=6`: F · GND · sig · sig · power · B), with its routing unchanged.
+- Routed with the portfolio's `ripup30-order2`: 750 vias, 5194 mm, 1930 bends; F.Cu 3213 mm, B.Cu 1981 mm; In1
+  and In2 carry no signal track.  The 6-layer board: 810 vias, 4828 mm, 1491 bends, B.Cu 102 mm, the rest on In2
+  and In3.
+- B.Cu references the split power plane: none of its tracks crosses the +3V3 / +5V split (keep-out), 9
+  segments cross the +3V3_CP island's edge (21 on In3 at 6 layers).
+- ≈ 90 Ω on the outer layers: 0.25 mm lines 0.15 mm apart over 0.21 mm of 7628 (estimated, not field-solved;
+  0.15 mm over 0.1 mm of 3313 at 6 layers).
+- Vias in pads: only the 8 drawn in the QFNs' thermal pads, left open (JLC fills and caps vias for free only
+  from 6 layers), fine in a thermal pad (Fabio, 2026-10-23).  No via lands on any other SMD pad, where an open
+  via drains the joint; the 6-layer board, routed before that rule, has 17 there, filled for free.
+- Finish: ENIG for the order panel and the logic board, flat for the RP2354B's 0.4 mm QFN-80; the base ordered
+  alone can take lead-free HASL (its finest pitch is the hub's 0.5 mm).
+- Cost (jlcpcb.com, 5 pieces; 2026-10-20 at 4 layers, 2026-10-22 at 6): the order panel, 100 × 142 mm ENIG,
+  $52.00 ($60.40 at 6 layers); one logic board alone, 100 × 70 mm ENIG, $25.40 ($49.40); one base alone in
+  lead-free HASL $13.20; the black mask $8.00 an order ($33.10); 3–4 days (8–9).
 
 ## Camera pod v1.0 — 2 layers, 40 × 27 mm
 

@@ -1,8 +1,8 @@
 # Autorouting: a Freerouting portfolio, and three routers on our boards
 
-**Status (2026-10-22): measured; pipeline fixes in; three design fixes, the bay node and the hub re-routed, every
-board straightened (below, "Applied"); the DATA ×4 v2 also routed clean on 4 layers, kept beside its 6-layer
-build.**  The question was whether a
+**Status (2026-10-23): measured; pipeline fixes in; three design fixes, the bay node and the hub re-routed, every
+board straightened (below, "Applied"); the DATA ×4 v2 routed clean on 4 layers, now the rack's board, its 6-layer
+build kept.**  The question was whether a
 faster, multi-core autorouter is worth building.  Plan agreed: first run Freerouting as a parallel portfolio
 and fix the split-plane bug (step 0), then benchmark open-source routers on our own boards (step 1), then
 decide.
@@ -357,9 +357,10 @@ zephyrbox), 2026-10-22:
   plane, it made Freerouting take the RP2354B's 0.4 mm pins as joined through it, though they have no room for a
   via: 12–14 links open in every run.  A pin with no room would need a drawn link to its decoupling capacitor's
   via first.
-- **Kept beside the 6-layer board**, as `electronics/data-port-x4-v2-4l`: a `design.py` that builds the 6-layer
-  design at 4 layers, routed with `ripup30-order2`'s session; the Hardware CI checks it.  The comparison (cost,
-  vias in pads, return paths) is in docs/electronics.md.
+- **The rack's board since 2026-10-23** (the user's choice): `electronics/data-port-x4-v2` on 4 layers, routed
+  with `ripup30-order2`'s session (750 vias, 5194 mm, 1930 bends once imported), its order panel too.  The 6-layer
+  board is kept, routing unchanged, as `electronics/data-port-x4-v2-6l` (a `design.py` with `X4V2_LAYERS=6`); the
+  Hardware CI checks both.  The comparison (cost, vias in pads, return paths) is in docs/electronics.md.
 
 ## Our own router?
 
