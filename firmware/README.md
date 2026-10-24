@@ -273,8 +273,10 @@ How much one channel carries (an ns-3 study, [wifi-capacity-ns3.md](../docs/wifi
 - saturation between 8 and 12 flashes, at about 3.2 MB/s;
 - half of that when the DUTs' own Wi-Fi or a neighbour shares the channel.
 
-So: a dedicated AP with 11b off, the DUTs' Wi-Fi tests on another channel, and at most 8 flashes at
-once per channel.
+So:
+- a dedicated AP with 11b off;
+- the DUTs' Wi-Fi inside the bays on the rack's channel, and distant DUT networks on the other;
+- at most 8 flashes at once per channel.
 
 **Radio-quiet mode** (not built yet).  A DUT's own RF test, a range or
 sensitivity measurement, wants the node's radio as quiet as it can be for its

@@ -535,6 +535,47 @@ class MdnsPeer : public Application
     Ptr<UniformRandomVariable> m_rng;
 };
 
+/*
+ * Path loss with a near zone: below 1 m, free space between the rack's small antennas plus a few dB
+ * (40.2 dB at 1 m and 20 dB a decade at 2.437 GHz, the BabbleSim study's model), so a DUT 3 cm from
+ * its node couples at about 15 dB; from 1 m on, the log-distance law calibrated on the bench's
+ * -49 dBm from the AP.  The two zones do not join at 1 m: the far one carries the enclosure and the
+ * antennas' orientation towards the AP, which the near one does not.
+ */
+class RackLossModel : public PropagationLossModel
+{
+  public:
+    static TypeId GetTypeId()
+    {
+        static TypeId tid = TypeId("RackLossModel").SetParent<PropagationLossModel>();
+        return tid;
+    }
+
+    void Setup(double nearExtraDb, double farRefDb)
+    {
+        m_nearExtra = nearExtraDb;
+        m_farRef = farRefDb;
+    }
+
+  private:
+    double DoCalcRxPower(double txPowerDbm, Ptr<MobilityModel> a,
+                         Ptr<MobilityModel> b) const override
+    {
+        const double d = std::max(a->GetDistanceFrom(b), 0.01);
+        const double loss = d < 1.0 ? 40.2 + 20.0 * std::log10(d) + m_nearExtra
+                                    : m_farRef + 30.0 * std::log10(d);
+        return txPowerDbm - loss;
+    }
+
+    int64_t DoAssignStreams(int64_t) override
+    {
+        return 0;
+    }
+
+    double m_nearExtra = 5;
+    double m_farRef = 59.68;
+};
+
 /* Channel airtime as a silent station at the rack's centre sees it: time not idle */
 Time g_busy;
 
@@ -604,6 +645,8 @@ main(int argc, char* argv[])
     uint32_t dutChannel = 0;       // harsh: the DUTs' lab AP (0: the rack's)
     uint32_t neighbourChannel = 0; // harsh: the neighbour's BSS (0: the rack's)
     bool spectrum = false;         // the spectrum PHY (adjacent-channel leakage)
+    bool nearLoss = false;         // free space below 1 m (RackLossModel) instead of the far law
+    double dutCm = 0;              // harsh: DUT antenna to its node's, cm (0: the 9.4 cm of the first runs)
     /* Ideal: the best rate for the link SNR.  ns-3's Minstrel-HT left some stations of a
      * 16-node BSS unreachable, idle, with 30+ dB of SNR: a simulator artefact */
     std::string rateManager = "ns3::IdealWifiManager";
@@ -635,6 +678,8 @@ main(int argc, char* argv[])
     cmd.AddValue("neighbourChannel", "harsh: the neighbour's channel (0: the rack's)",
                  neighbourChannel);
     cmd.AddValue("spectrum", "spectrum PHY instead of Yans", spectrum);
+    cmd.AddValue("nearLoss", "free-space loss below 1 m (near zone)", nearLoss);
+    cmd.AddValue("dutCm", "harsh: DUT to node distance, cm (0: 9.4 cm)", dutCm);
     cmd.AddValue("rateManager", "rate control of the rack BSS", rateManager);
     cmd.Parse(argc, argv);
     dutChannel = dutChannel ? dutChannel : rackChannel;
@@ -643,7 +688,7 @@ main(int argc, char* argv[])
 
     if (header)
     {
-        std::cout << "scenario,bays,active,cams,txPower,apDist,beacon11b,usbipDir,ampduMpdus,rackChannel,dutChannel,neighbourChannel,spectrum,seed,assoc,stas,dead,"
+        std::cout << "scenario,bays,active,cams,txPower,apDist,beacon11b,usbipDir,ampduMpdus,rackChannel,dutChannel,neighbourChannel,spectrum,nearLoss,dutCm,seed,assoc,stas,dead,"
                      "airtime_pct,ping_p50_ms,ping_p95_ms,ping_p99_ms,ping_loss_pct,"
                      "http_n,http_p50_ms,http_p95_ms,http_p99_ms,http_timeouts,"
                      "scrape_p95_ms,mac_ok,mac_retx,mac_fail,mac_retx_pct,"
@@ -723,7 +768,10 @@ main(int argc, char* argv[])
         pos->Add(Vector(cx + 1.0, -2.0, cz)); // the DUTs' lab AP
         for (uint32_t i = 0; i < dutStas; i++)
         {
-            pos->Add(Vector((i % 4) * colPitch + 0.05, 0.08, (i / 4) * rowPitch));
+            /* over its node, as the boards sit 25-32 mm over the antenna (architecture.md) */
+            const double off = dutCm > 0 ? dutCm / 100.0 / std::sqrt(2.0) : 0;
+            pos->Add(dutCm > 0 ? Vector((i % 4) * colPitch + off, off, (i / 4) * rowPitch)
+                               : Vector((i % 4) * colPitch + 0.05, 0.08, (i / 4) * rowPitch));
         }
         pos->Add(Vector(cx, 12.0, cz)); // a neighbour's AP, through a wall
         pos->Add(Vector(cx - 2.0, 13.0, cz));
@@ -747,10 +795,21 @@ main(int argc, char* argv[])
     /* --- the channel: Yans for one channel; the spectrum PHY when the BSSs use different
      * channels, so that a transmission leaks into the neighbouring channel through the 802.11
      * transmit mask (Yans would isolate the channels perfectly) */
-    Ptr<LogDistancePropagationLossModel> loss = CreateObject<LogDistancePropagationLossModel>();
-    loss->SetAttribute("Exponent", DoubleValue(3.0));
-    loss->SetAttribute("ReferenceDistance", DoubleValue(1.0));
-    loss->SetAttribute("ReferenceLoss", DoubleValue(46.68 + extraLoss));
+    Ptr<PropagationLossModel> loss;
+    if (nearLoss)
+    {
+        Ptr<RackLossModel> rl = CreateObject<RackLossModel>();
+        rl->Setup(5.0, 46.68 + extraLoss);
+        loss = rl;
+    }
+    else
+    {
+        Ptr<LogDistancePropagationLossModel> ld = CreateObject<LogDistancePropagationLossModel>();
+        ld->SetAttribute("Exponent", DoubleValue(3.0));
+        ld->SetAttribute("ReferenceDistance", DoubleValue(1.0));
+        ld->SetAttribute("ReferenceLoss", DoubleValue(46.68 + extraLoss));
+        loss = ld;
+    }
     Ptr<ConstantSpeedPropagationDelayModel> delay =
         CreateObject<ConstantSpeedPropagationDelayModel>();
     YansWifiPhyHelper yansPhy;
@@ -1177,7 +1236,8 @@ main(int argc, char* argv[])
     std::cout << scenario << "," << bays << "," << active << "," << cams << "," << txPower << ","
               << apDist << "," << (beacon11b ? 1 : 0) << "," << usbipDir << "," << ampduMpdus
               << "," << rackChannel << "," << dutChannel << "," << neighbourChannel << ","
-              << (spectrum ? 1 : 0) << "," << seed << ","
+              << (spectrum ? 1 : 0) << "," << (nearLoss ? 1 : 0) << "," << dutCm << "," << seed
+              << ","
               << associated << "," << staDevs.GetN() << "," << dead << ","
               << 100.0 * g_busy.GetSeconds() / win << "," << Percentile(g_pingMs, 0.5) << ","
               << Percentile(g_pingMs, 0.95) << "," << Percentile(g_pingMs, 0.99) << ","

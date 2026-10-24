@@ -24,8 +24,11 @@ The scenario, the sweep, the run script and the result CSVs are in
 - **The real risk is foreign traffic on the rack's channel.**  4 DUTs with their own Wi-Fi plus a
   neighbour, 18 Mbit/s in all, take half the airtime.  Then 8 flashes get 160 kB/s each and control
   requests take 275 ms at p95.
-- **Channel choice repairs most of it.**  With the rack on 11 and that traffic on 6, 8 flashes get
-  339 kB/s each again.  Some is lost to the DUTs leaking into the adjacent channel from a few cm.
+- **Channel choice repairs part of it, if the in-bay DUTs stay on the rack's channel.**  A neighbour's
+  BSS belongs on the other channel.  A DUT 3 cm from its node, on the other channel, makes that node's
+  control requests take seconds (near-field pass).  On the rack's channel they take turns, and 8
+  flashes get 258 kB/s each.  Receiver blocking, not modelled, can only make the neighbouring channel
+  worse.
 - **TX power (8–20 dBm) and AP distance (1–3 m) change nothing** at this range: every link is at the
   top MCS.  The 11b beacons cost 2–3 % of airtime.  A larger ESP32 block-ack window gains at most 7 %,
   because the node's TCP window is the limit.
@@ -36,13 +39,14 @@ The scenario, the sweep, the run script and the result CSVs are in
 
 ns-3.49 (2026-10-06), one C++ scenario (`rack-wifi.cc`), one run per point of the sweep, 20 s
 measured after 5 s of association and warm-up, 3–4 seeds per point (up to 10 in the channel pass),
-307 runs in all, 9 of them aborted by ns-3 (below, "Simulator artefacts").
+383 runs in all, 19 of them aborted by ns-3 (below, "Simulator artefacts").
 
 | Part | Model | From |
 |---|---|---|
 | Stations | the bay nodes (8, or 16 with rows C and D) and the power hub: 802.11n 1×1 HT20, MCS 0–7, long guard interval, no power save | `firmware/README.md` › Wi-Fi in the rack |
 | AP | one, 1–3 m in front of the rack's face, channel 6, 20 MHz, 20 dBm | same |
-| PHY | Yans, one channel.  The channel-choice pass uses the spectrum PHY, where a transmission leaks into the next channel through the 802.11 transmit mask | `channel` sweep |
+| PHY | Yans, one channel.  The channel-choice passes use the spectrum PHY, where a transmission leaks into the next channel through the 802.11 transmit mask | `channel`, `channel_near` sweeps |
+| Near zone | in the near-field pass: free space below 1 m plus 5 dB (BabbleSim's model), the DUTs 3 cm from their nodes; the calibrated law from 1 m on | `--nearLoss`, `--dutCm` |
 | Placement | 4 columns 165.8 mm apart, rows 165 mm apart (`config/rack.yaml`); every node hears every other: no hidden station | rack geometry |
 | Propagation | log-distance, exponent 3, 46.7 dB at 1 m (free space at 2.437 GHz) + 13 dB, so that the AP gives −49 dBm at 2 m, as the bench XIAO measured | bench RSSI |
 | Node TX power | 11 dBm (default), 8 and 20 dBm in the sweep | `CONFIG_HWTR_NET_TX_POWER_DBM` |
@@ -184,10 +188,50 @@ The neighbour's BSS stays on channel 6.  The rack moves to 11, and the DUTs' lab
 - **Not all of it, because the DUTs sit a few centimetres from the nodes.**  Four DUT radios at
   20 dBm leak into the adjacent channel, about −28 to −40 dB at 25 MHz from the transmit mask.  With a
   single flash, the rack's channel is still 33 % busy (11 % on a clean channel).
-- **The DUTs' own Wi-Fi does less harm on the other channel than on the rack's.**  Moved to 11 with
-  the rack, it leaves 256 kB/s per node at 8 flashes; left on 6, next door, 339.
+- In this first pass, the DUTs' own Wi-Fi seemed to do less harm on the other channel than on the
+  rack's (339 against 256 kB/s at 8 flashes).  **The near-field pass below reverses that for DUTs in
+  the bays.**
 - ns-3 aborted 9 of the 72 runs itself, all with the rack and the neighbour on different channels:
   the spectrum PHY's internal "Invalid WifiPhy state RX".  Every point keeps 3–10 runs.
+
+### Channel choice with the DUTs 3 cm from their nodes (near field)
+
+The first pass underrated the coupling inside the rack.
+- Its log-distance law was calibrated on the AP's link and stops at 1 m: 59.7 dB at any shorter
+  distance.
+- Its DUTs sat 9.4 cm from their nodes.
+- In the rack the DUT boards sit 25–32 mm over the node's antenna (architecture.md).
+
+This pass (`channel_near`, `--nearLoss=1 --dutCm=3`) changes two things:
+- **The loss below 1 m** is free space between small antennas plus 5 dB, the BabbleSim study's model:
+  about 15 dB from a DUT 3 cm away and 30 dB between neighbouring nodes.  From 1 m on, the calibrated
+  law is kept.
+- **The DUTs** sit 3 cm from their nodes.
+
+The same three layouts, on the spectrum PHY:
+
+| Flashes | All on 6 | Rack on 11; DUTs (3 cm) and neighbour on 6 | Rack and DUTs on 11; neighbour on 6 |
+|---|---|---|---|
+| 1 | 362 kB/s, HTTP p95 7 ms | 357 kB/s, **606 ms** | 362 kB/s, 4 ms |
+| 4 | 363 kB/s, p95 87 ms | 307 kB/s (worst node 233), **1.2 s** | 362 kB/s, 12 ms |
+| 8 | 156 kB/s, p95 283 ms | 161 kB/s (worst node 25), **3.0 s** | **258 kB/s, 150 ms** |
+| 16 | 39 kB/s, p95 909 ms | 118 kB/s (one node 0), **3.1 s** | 76 kB/s, 442 ms |
+
+- **A DUT in the bay on the other channel breaks its node.**  At 3 cm the DUT's transmit mask alone
+  puts −23 to −35 dBm into the node's channel, against the AP's −49 dBm.  So every one of the node's
+  receptions that overlaps a DUT frame fails, and nothing makes them take turns, since neither hears
+  the other.  Control requests then take seconds, TCP retransmits, and some nodes starve.
+- **On the rack's channel they share by carrier sense**, as architecture.md says: at 8 flashes
+  258 kB/s per node and 150 ms at p95, with every node served.
+- **Moving the rack away from the neighbour's BSS still helps.**  The neighbour is 12 m away, and its
+  leakage is negligible.
+- Scenario 2 with the near-zone loss (`ci_near`) gives the same results as the main sweep (8 flashes:
+  362 kB/s, p95 17 ms; 12: 270; 16: 168).  Stronger coupling between nodes changes nothing on one
+  channel: they already heard each other.
+- **Receiver blocking is still not modelled.**  A DUT 3 cm away puts about +5 dBm on the node's
+  antenna, where a receiver's front end compresses.  ns-3 counts only the transmit mask's leakage.
+  The real effect of a neighbouring channel is at least as bad as this table.
+- ns-3 aborted 10 of these 64 runs (the same assertion).  The middle column keeps 2–5 runs per point.
 
 ### TX power and AP distance
 
@@ -217,6 +261,10 @@ BabbleSim study), not for capacity: 8 dBm costs nothing here.
   are not worth their RAM.
 
 ## Not modelled
+
+- **Receiver blocking.**  A DUT 3 cm away puts about +5 dBm on its node's antenna.  ns-3 counts only
+  the transmit mask's leakage into the node's channel, not the front end compressing.  So the
+  neighbouring-channel results are a best case.
 
 - **Near-field coupling.**  The nodes are 16.6 cm apart and their DUTs a few cm from them: the
   antennas, the DUT boards, the USB cables and the printed rack are not in the model.  Propagation is
@@ -248,15 +296,20 @@ BabbleSim study), not for capacity: 8 dBm costs nothing here.
     tables say how many it dropped.
 - **Spectrum PHY aborts.**  With BSSs on different channels, ns-3.49's spectrum PHY sometimes stops
   the run on an internal assertion ("Invalid WifiPhy state RX").  That was 9 of the 72 channel-choice
-  runs.  `run.sh` lets the other runs go on, and the sweep adds seeds where points thinned out.
+  runs, and 10 of the 64 near-field ones.  `run.sh` lets the other runs go on, and the sweeps add
+  seeds where points thinned out.
 
 ## Recommendations
 
-1. **A dedicated AP for the rack, on its own channel: 6 or 11, never 1** (the hub PLL's harmonic sits
-   at 2.400 GHz).  Pick the one where no neighbour is heard.  Keep the DUTs' own Wi-Fi tests off the
-   rack's channel: rack on 6, the DUTs' lab AP on 11, or the reverse.  Of every setting studied, this
-   one matters most.  The busy-channel case halves the capacity, and moving the rack to the other
-   channel takes 8 flashes from 155 back to 339 kB/s each.
+1. **A dedicated AP for the rack, on 6 or 11, never 1** (the hub PLL's harmonic sits at 2.400 GHz).
+   - Pick the channel where no neighbour is heard.  Moving the rack off a neighbour's BSS is worth
+     doing.
+   - **The DUTs' Wi-Fi inside the bays goes on the rack's channel**, as architecture.md says.  At 3 cm
+     a neighbouring channel leaks more into the node than the AP's signal, so neither side defers and
+     the node's receptions fail: control requests take seconds (near-field pass).  On the same channel
+     they take turns.
+   - **DUT networks away from the rack** (the lab's AP for the DUTs, other benches) go on the other
+     channel.
 2. **Turn 11b off on that AP** (basic rates from 6 Mbit/s).  That is 2–3 % of airtime back, and
    faster broadcasts.  Cheap, but secondary.
 3. **At most 8 simultaneous USB/IP flashes per channel.**  A rack-wide limit in bayctl's pre-script, a
