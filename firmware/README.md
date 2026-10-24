@@ -240,9 +240,14 @@ Until a node is claimed it is open, as it always was.
 
 ### Wi-Fi in the rack
 
-Twelve nodes, the hub and the DUTs' own radios share one room, with each
-node's antenna a few cm from its DUTs.  So each node (and the hub, through
-`common/lib/net.c`) sets its station's radio before every connection:
+Eight nodes (sixteen with rows C and D), the hub and the DUTs' own radios
+share one room, with each node's antenna about 10 cm from its DUTs.  So each
+node (and the hub, through `common/lib/net.c`) sets its station's radio
+before every connection.  A BabbleSim model of the rack
+([docs/wifi-coexistence.md](../docs/wifi-coexistence.md)) ranks what helps a
+BLE link between two DUTs: the host's channel classification first, then the
+node's TX power and the AP's distance; the Wi-Fi channel and the number of
+nodes hardly matter.
 
 - **No power save**: the radio stays awake.  In modem sleep (the ESP32 driver's
   default) the AP holds every frame for the node until the next DTIM beacon:
