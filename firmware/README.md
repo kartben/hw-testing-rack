@@ -263,6 +263,14 @@ Set the AP up for it:
 - 20 MHz wide on 2.4 GHz;
 - 1–3 m from the rack, behind it or beside it, not in front of the drawers.
 
+How much one channel carries (an ns-3 study, [wifi-capacity-ns3.md](../docs/wifi-capacity-ns3.md)):
+- 8 simultaneous USB/IP flashes at full speed;
+- saturation between 8 and 12 flashes, at about 3.2 MB/s;
+- half of that when the DUTs' own Wi-Fi or a neighbour shares the channel.
+
+So: a dedicated AP with 11b off, the DUTs' Wi-Fi tests on another channel, and at most 8 flashes at
+once per channel.
+
 **Radio-quiet mode** (not built yet).  A DUT's own RF test, a range or
 sensitivity measurement, wants the node's radio as quiet as it can be for its
 duration.  Planned: `radio quiet <s>` (and the API) drops the TX power to
