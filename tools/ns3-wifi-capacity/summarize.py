@@ -45,6 +45,11 @@ SWEEPS = {
     "ci_near": (["active"], COMMON),
     "racks": (["bays", "scenario", "cams", "active"], COMMON + CAM + [
               ("dut_goodput_Mbps", "DUT Wi-Fi Mbit/s", 1), ("neighbour_goodput_Mbps", "neighbour Mbit/s", 1)]),
+    "wifi6": (["bays", "standard", "heMcs", "cams", "active"], [
+              ("airtime_pct", "airtime %", 0), ("usbip_goodput_kBps", "USB/IP kB/s per node", 0),
+              ("usbip_goodput_min_kBps", "worst node kB/s", 0), ("http_p95_ms", "HTTP p95 ms", 0),
+              ("mac_retx_pct", "MAC retx %", 0), ("ul_tb_pct", "UL in TB PPDUs %", 0),
+              ("cam_fps", "camera fps", 1)]),
     "ampdu": (["active", "ampduMpdus"], [("airtime_pct", "airtime %", 0),
               ("usbip_goodput_kBps", "USB/IP kB/s per node", 0), ("total_MBps", "total MB/s", 2),
               ("http_p95_ms", "HTTP p95 ms", 0), ("mac_retx_pct", "MAC retx %", 0)]),
@@ -62,7 +67,7 @@ def load(path):
     rows = []
     with open(path, newline="") as f:
         for r in csv.DictReader(f):
-            row = {k: (v if k in ("scenario", "usbipDir") else num(v)) for k, v in r.items()}
+            row = {k: (v if k in ("scenario", "usbipDir", "standard", "ru_dl", "ru_ul") else num(v)) for k, v in r.items()}
             row["ping_loss_pct"] = max(0.0, row["ping_loss_pct"]) if not math.isnan(row["ping_loss_pct"]) else math.nan
             g, a = row["usbip_goodput_kBps"], row["active"]
             row["total_MBps"] = g * a / 1e3 if not math.isnan(g) else math.nan

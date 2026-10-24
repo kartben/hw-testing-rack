@@ -37,6 +37,11 @@ The scenario, the sweep, the run script and the result CSVs are in
     are the limit, not Wi-Fi.
   - 16 bays: about 32 DUTs at that speed.  All 64 at once get ≈ 43 kB/s each.
   - Details: "The two rack sizes, per DUT".
+- **Wi-Fi 6 helps through its PHY, not through OFDMA.**
+  - An 11ax single-user client at HE-MCS 9 moves the saturation from about 8 to about 12 flashing
+    nodes, and gives +32 % per node at 16.
+  - ns-3's UL OFDMA adds 8 % at 16 flashes, and costs latency below saturation.
+  - It needs another node MCU: of Espressif's Wi-Fi 6 parts, only the S31 has a USB host.
 - **Wi-Fi stops being enough** when CI flashes more than about 8 nodes at once per channel, or when
   the rack's channel is shared with busy foreign traffic.
 
@@ -44,7 +49,7 @@ The scenario, the sweep, the run script and the result CSVs are in
 
 ns-3.49 (2026-10-06), one C++ scenario (`rack-wifi.cc`), one run per point of the sweep, 20 s
 measured after 5 s of association and warm-up, 3–4 seeds per point (up to 10 in the channel pass),
-605 runs in all, 19 of them aborted by ns-3 (below, "Simulator artefacts").
+803 runs in all, 19 of them aborted by ns-3 (below, "Simulator artefacts").
 
 | Part | Model | From |
 |---|---|---|
@@ -324,6 +329,107 @@ on one node get about 90 kB/s each.  Flash times below are for a 1 MB image.
 
 Control requests stay under 15 ms at p95 up to 8 flashing nodes, whatever the rack size.  Beyond 8,
 they take 120–190 ms.
+
+### Wi-Fi 6 (802.11ax): does it help?
+
+The `wifi6` sweep uses the same setup as `racks`, with every bay's node and the hub associated and
+their background traffic.  It compares three rack BSSs, all with A-MPDUs of 6 (the ESP32 window):
+- **11n HT20**: today's ESP32-S3.
+- **11ax HE20 single-user**: a 1×1 client of the ESP32-S31, C5 or C6 class, with a Wi-Fi 6 AP and no
+  OFDMA.
+- **11ax HE20 with DL and UL OFDMA**: ns-3's `RrMultiUserScheduler`.
+  - DL OFDMA whenever the AP has frames for several stations.
+  - UL OFDMA through a BSRP poll, then a Basic Trigger Frame after each DL MU PPDU.
+
+How it was run:
+- All three run on the spectrum PHY, because ns-3's UL OFDMA needs it.  On it, 11n matches the Yans
+  runs above: 274 and 173 kB/s at 12 and 16 flashes, against 274 and 172.
+- HE links are fixed at HE-MCS 9 (`--heMcs=9`), as a client capped there would run: every link is at
+  the top of its range at this distance.  The rate manager's choice, MCS 11 (1024-QAM), is a side run.
+- 198 runs, 3 seeds per point, none aborted or dropped.
+
+Each cell reads: USB/IP kB/s per flashing node (worst node) · HTTP p95 ms · airtime.
+
+**8 bays** (32 DUTs):
+
+| Flashing nodes | 1 | 2 | 4 | 8 |
+|---|---|---|---|---|
+| 11n HT20 (today) | 362 · 2 · 10 % | 362 · 2 · 18 % | 362 · 3 · 35 % | 362 · 14 · 68 % |
+| 11ax, single-user | 362 · 1 · 9 % | 362 · 2 · 16 % | 362 · 3 · 30 % | 362 · 8 · 58 % |
+| 11ax, DL + UL OFDMA | 362 · 3 · 12 % | 362 · 3 · 22 % | 362 · 5 · 41 % | 362 · 34 · 80 % |
+| 11n + 2 cameras | 362 · 3 · 17 % | 362 · 5 · 26 % | 362 · 10 · 43 % | 362 · 42 · 76 % |
+| 11ax single-user + 2 cameras | 362 · 3 · 14 % | 362 · 3 · 21 % | 362 · 6 · 36 % | 362 · 18 · 63 % |
+| 11ax OFDMA + 2 cameras | 362 · 5 · 18 % | 362 · 7 · 28 % | 362 · 14 · 50 % | 362 · 60 · 83 % |
+
+**16 bays** (64 DUTs):
+
+| Flashing nodes | 1 | 2 | 4 | 8 | 12 | 16 |
+|---|---|---|---|---|---|---|
+| 11n HT20 (today) | 362 · 2 · 11 % | 362 · 2 · 19 % | 362 · 3 · 36 % | 362 · 14 · 69 % | 274 (263) · 124 · 81 % | 173 (164) · 194 · 79 % |
+| 11ax, single-user | 362 · 2 · 10 % | 362 · 2 · 17 % | 362 · 3 · 31 % | 362 · 7 · 59 % | 359 (352) · 92 · 78 % | 228 (220) · 145 · 76 % |
+| 11ax, DL + UL OFDMA | 362 · 3 · 17 % | 362 · 4 · 26 % | 362 · 6 · 46 % | 362 · 40 · 80 % | 359 (355) · 117 · 84 % | 247 (240) · 164 · 83 % |
+| 11n + 2 cameras | 362 · 5 · 18 % | 362 · 5 · 26 % | 362 · 9 · 44 % | 362 · 41 · 77 % | 238 (222) · 142 · 82 % | 148 (137) · 226 · 80 % |
+| 11ax single-user + 2 cameras | 362 · 3 · 15 % | 362 · 4 · 22 % | 362 · 5 · 36 % | 362 · 20 · 64 % | 328 (313) · 105 · 78 % | 202 (190) · 159 · 77 % |
+| 11ax OFDMA + 2 cameras | 362 · 6 · 23 % | 362 · 7 · 32 % | 362 · 12 · 52 % | 362 · 54 · 84 % | 320 (299) · 123 · 85 % | 212 (193) · 201 · 84 % |
+
+At MCS 11 with 16 bays, single-user gets 362 kB/s at 12 flashes and 266 at 16; OFDMA gets 362 and 282.
+
+**What it shows:**
+- **Wi-Fi 6 moves the saturation point from about 8 to about 12 flashing nodes.**  The gain comes from
+  HE's PHY rather than from OFDMA: single-user HE alone moves it.
+  - At 16 flashes: +32 % per node (228 against 173 kB/s).
+  - At 8 flashes: control requests take 7 ms at p95 instead of 14.
+  - HE-MCS 9 is 115 Mbit/s against HT's 65.  Contention keeps the gain well below the rate ratio.
+- **UL OFDMA, with ns-3's scheduler, does not move the saturation further.**
+  - At 12 flashes it matches single-user; at 16 it adds 8 % (247 against 228 kB/s).
+  - Below saturation it costs airtime and latency: at 8 flashes, 80 % and 40 ms at p95, against
+    59 % and 7 ms single-user.
+  - The share of the stations' frames sent in trigger-based PPDUs falls from about 80 % at 1 flash
+    to 45 % at 8 and 24 % at 16.  Most uplink frames still contend, so MAC retransmissions barely
+    move (93 % against 102 % at 16 flashes).
+- **RU sizes ns-3 picks** in 20 MHz:
+  - 1–4 busy nodes: DL mostly 242- and 106-tone, UL 26-tone.
+  - 8 busy nodes: DL mostly 52-tone (88 %), UL mostly 26-tone (69 %, 20 % 52-tone).
+  - 12–16: 26-tone in 94–99 % of the RUs, both ways.
+- **Per DUT, 16 bays** (11n → 11ax single-user → 11ax OFDMA):
+  - all 64 DUTs at once get ≈ 43 → 57 → 62 kB/s;
+  - 48 DUTs (12 nodes) get ≈ 68 → 90 → 90 kB/s.
+  - With 8 bays nothing changes for the DUTs: all 32 already flash at ≈ 90 kB/s on 11n.
+- **BSS colouring and OBSS-PD** (not run): they cannot help in the recommended busy setting.
+  - The only foreign BSS on the rack's channel is the DUTs' own Wi-Fi, 3 cm from the nodes.  Each
+    side hears the other at about −10 to −20 dBm, far above OBSS-PD's −82 to −62 dBm window, so
+    neither may ignore the other's frames.
+  - The neighbour is on another channel, where colouring does not apply.
+
+**Limits:**
+- **ns-3's MU scheduler is generic.**
+  - Round robin, with equal-size RUs.
+  - UL OFDMA only right after a DL MU PPDU (`AccessReqInterval` left at 0), and a BSRP poll each
+    time.
+  - No MU-EDCA, so the stations keep contending at full EDCA while they are triggered.
+  - A real AP's scheduler, with MU-EDCA pushing HE stations' own contention back, could do better on
+    the uplink.  Many APs also ship with UL OFDMA off.  Only a bench with the real AP and clients
+    settles it.
+- **The node.**  The ESP32-S3 is 802.11n only.
+  - Of Espressif's Wi-Fi 6 parts, only the ESP32-S31 has a USB host.  The C5 and C6 have no USB OTG.
+  - The S31's Zephyr support is two draft PRs ([esp32-s31-research.md](esp32-s31-research.md)).
+- **Zephyr.**  Zephyr's ESP32 Wi-Fi driver (`drivers/wifi/esp32`) sets no 802.11ax or OFDMA option.
+  The protocol set and the HE features are the binary blob's defaults.
+  - hal_espressif has DL OFDMA reception statistics and TB PPDU structures.
+  - Whether the C5, C6 or S31 blob answers trigger frames (UL OFDMA) by default is in "To check by
+    the user" below, as is those clients' HE-MCS cap.
+
+### To check by the user (Wi-Fi 6)
+
+1. **The HE-MCS cap of an ESP32-C6, C5 or S31 client**, in HE20, 1 spatial stream.
+   - Espressif datasheets: <https://www.espressif.com/en/support/documents/technical-documents>
+     (ESP32-C6, ESP32-C5), § Wi-Fi radio and baseband.
+   - Question: up to MCS 7, 9 or 11?  The tables above assume MCS 9; MCS 11 is the side run.
+2. **UL OFDMA in Espressif's Wi-Fi blob.**
+   - Same datasheets, § Wi-Fi MAC.  Also ESP-IDF's Wi-Fi guide, § "Wi-Fi 6": 
+     <https://docs.espressif.com/projects/esp-idf/en/latest/esp32c6/api-guides/wifi.html>.
+   - Question: does the station answer Basic Trigger Frames with HE TB PPDUs (UL OFDMA) by default,
+     or only receive DL OFDMA?
 
 ## Not modelled
 

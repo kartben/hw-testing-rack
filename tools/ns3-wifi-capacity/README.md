@@ -20,7 +20,7 @@ python3 tools/ns3-wifi-capacity/summarize.py
 ```
 
 `run.sh` configures the tree itself (optimized, those modules only) the first time.  The whole study
-is 383 runs; 10 parallel jobs on a 12-core Mac took about 13 minutes.
+is 803 runs; 10–11 parallel jobs on a 12-core Mac take about 13 minutes per 200–400 runs.
 
 One run by hand:
 
@@ -31,4 +31,6 @@ ns-3.49/build/scratch/ns3.49-rack-wifi-optimized --scenario=ci --active=8 --cams
 Scenarios: `idle` (background only), `ci` (`--active` nodes in USB/IP, `--cams` camera streams),
 `harsh` (`ci` plus DUT Wi-Fi on the same channel and a neighbouring BSS; `--rackChannel`, `--dutChannel`
 and `--neighbourChannel` move them apart, on the spectrum PHY; `--nearLoss` and `--dutCm` give the
-near-field pass).  The other options are in `--help`.
+near-field pass).  `--standard=ax` makes the rack BSS 802.11ax HE20, `--standard=axmu` adds DL and UL
+OFDMA (ns-3's round-robin MU scheduler, spectrum PHY), `--heMcs` fixes the HE MCS.  The other options
+are in `--help`.

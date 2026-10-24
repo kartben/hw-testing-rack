@@ -594,6 +594,61 @@ PhyState(Time start, Time duration, WifiPhyState state)
     }
 }
 
+/* 802.11ax: the RU sizes of DL and UL MU PPDUs, and how much stations send in TB PPDUs */
+std::map<RuType, uint64_t> g_ruDl;
+std::map<RuType, uint64_t> g_ruUl;
+uint64_t g_staSu = 0;
+uint64_t g_staTb = 0;
+
+void
+PsduTx(bool fromAp, WifiConstPsduMap psdus, WifiTxVector txv, double)
+{
+    if (!InWindow())
+    {
+        return;
+    }
+    if (txv.IsDlMu())
+    {
+        for (const auto& [staId, info] : txv.GetHeMuUserInfoMap())
+        {
+            g_ruDl[WifiRu::GetRuType(info.ru)]++;
+        }
+    }
+    else if (txv.IsUlMu())
+    {
+        for (const auto& [staId, psdu] : psdus)
+        {
+            g_ruUl[WifiRu::GetRuType(txv.GetRu(staId))]++;
+        }
+        g_staTb++;
+    }
+    else if (!fromAp)
+    {
+        g_staSu++;
+    }
+}
+
+std::string
+RuMix(const std::map<RuType, uint64_t>& m)
+{
+    static const std::map<RuType, std::string> names = {
+        {RuType::RU_26_TONE, "26"}, {RuType::RU_52_TONE, "52"}, {RuType::RU_106_TONE, "106"},
+        {RuType::RU_242_TONE, "242"}};
+    uint64_t total = 0;
+    for (const auto& [t, n] : m)
+    {
+        total += n;
+    }
+    std::string s;
+    for (const auto& [t, n] : m)
+    {
+        const auto it = names.find(t);
+        s += (s.empty() ? "" : " ") + (it != names.end() ? it->second : "other") + ":" +
+             std::to_string(int(std::lround(100.0 * n / total))) + "%";
+    }
+    return s.empty() ? "-" : s;
+}
+
 std::vector<double> g_pingMs;
 uint64_t g_pingTx = 0;
 
@@ -650,6 +705,11 @@ main(int argc, char* argv[])
     /* Ideal: the best rate for the link SNR.  ns-3's Minstrel-HT left some stations of a
      * 16-node BSS unreachable, idle, with 30+ dB of SNR: a simulator artefact */
     std::string rateManager = "ns3::IdealWifiManager";
+    /* the rack BSS: n (HT20, the ESP32-S3), ax (HE20 single-user), axmu (HE20, DL and UL OFDMA
+     * from ns-3's round-robin MU scheduler; it needs the spectrum PHY) */
+    std::string standard = "n";
+    double muAccessUs = 0; // axmu: the MU scheduler's own channel-access requests, µs (0: none)
+    uint32_t heMcs = 0;    // ax, axmu: a fixed HE MCS (0: the rate manager's choice)
 
     CommandLine cmd(__FILE__);
     cmd.AddValue("scenario", "idle, ci or harsh", scenario);
@@ -681,20 +741,28 @@ main(int argc, char* argv[])
     cmd.AddValue("nearLoss", "free-space loss below 1 m (near zone)", nearLoss);
     cmd.AddValue("dutCm", "harsh: DUT to node distance, cm (0: 9.4 cm)", dutCm);
     cmd.AddValue("rateManager", "rate control of the rack BSS", rateManager);
+    cmd.AddValue("standard", "rack BSS: n, ax or axmu (OFDMA)", standard);
+    cmd.AddValue("muAccessUs", "axmu: MU scheduler access request interval, us", muAccessUs);
+    cmd.AddValue("heMcs", "ax, axmu: fixed HE MCS of the rack BSS (0: rate manager)", heMcs);
     cmd.Parse(argc, argv);
     dutChannel = dutChannel ? dutChannel : rackChannel;
     neighbourChannel = neighbourChannel ? neighbourChannel : rackChannel;
-    spectrum = spectrum || dutChannel != rackChannel || neighbourChannel != rackChannel;
+    spectrum = spectrum || dutChannel != rackChannel || neighbourChannel != rackChannel ||
+               standard == "axmu";
+    if (standard != "n" && standard != "ax" && standard != "axmu")
+    {
+        NS_FATAL_ERROR("--standard: n, ax or axmu");
+    }
 
     if (header)
     {
-        std::cout << "scenario,bays,active,cams,txPower,apDist,beacon11b,usbipDir,ampduMpdus,rackChannel,dutChannel,neighbourChannel,spectrum,nearLoss,dutCm,seed,assoc,stas,dead,"
+        std::cout << "scenario,bays,active,cams,txPower,apDist,beacon11b,usbipDir,ampduMpdus,rackChannel,dutChannel,neighbourChannel,spectrum,nearLoss,dutCm,standard,heMcs,seed,assoc,stas,dead,"
                      "airtime_pct,ping_p50_ms,ping_p95_ms,ping_p99_ms,ping_loss_pct,"
                      "http_n,http_p50_ms,http_p95_ms,http_p99_ms,http_timeouts,"
                      "scrape_p95_ms,mac_ok,mac_retx,mac_fail,mac_retx_pct,"
                      "tcp_segs,tcp_retx,tcp_retx_pct,usbip_offered_kBps,usbip_goodput_kBps,"
                      "usbip_goodput_min_kBps,cam_fps,cam_skipped_pct,cam_kBps,"
-                     "dut_goodput_Mbps,neighbour_goodput_Mbps,wall_s\n";
+                     "dut_goodput_Mbps,neighbour_goodput_Mbps,ru_dl,ru_ul,ul_tb_pct,wall_s\n";
         return 0;
     }
 
@@ -837,14 +905,36 @@ main(int argc, char* argv[])
     onChannel(rackChannel);
 
     WifiHelper wifi;
-    wifi.SetStandard(WIFI_STANDARD_80211n);
+    wifi.SetStandard(standard == "n" ? WIFI_STANDARD_80211n : WIFI_STANDARD_80211ax);
     const std::string nonUnicast = beacon11b ? "DsssRate1Mbps" : "ErpOfdmRate6Mbps";
     WifiMacHelper mac;
     const Ssid rackSsid("rack");
+    /* The rack BSS's rate control.  With --heMcs, 802.11ax links run at that HE MCS, as a client
+     * capped below MCS 11 would (every link is at the top of its range at this distance) */
+    auto setRackRates = [&](bool ap) {
+        const bool fixed = standard != "n" && heMcs > 0;
+        const std::string manager = fixed ? "ns3::ConstantRateWifiManager" : rateManager;
+        if (fixed)
+        {
+            wifi.SetRemoteStationManager(manager, "DataMode",
+                                         StringValue("HeMcs" + std::to_string(heMcs)),
+                                         "ControlMode", StringValue("ErpOfdmRate24Mbps"),
+                                         "NonUnicastMode",
+                                         StringValue(ap ? nonUnicast : "ErpOfdmRate6Mbps"));
+        }
+        else if (ap)
+        {
+            wifi.SetRemoteStationManager(manager, "NonUnicastMode", StringValue(nonUnicast));
+        }
+        else
+        {
+            wifi.SetRemoteStationManager(manager);
+        }
+    };
 
     phy->Set("TxPowerStart", DoubleValue(txPower));
     phy->Set("TxPowerEnd", DoubleValue(txPower));
-    wifi.SetRemoteStationManager(rateManager);
+    setRackRates(false);
     mac.SetType("ns3::StaWifiMac", "Ssid", SsidValue(rackSsid), "ActiveProbing",
                 BooleanValue(false));
     NodeContainer stas;
@@ -854,10 +944,20 @@ main(int argc, char* argv[])
 
     phy->Set("TxPowerStart", DoubleValue(apTxPower));
     phy->Set("TxPowerEnd", DoubleValue(apTxPower));
-    wifi.SetRemoteStationManager(rateManager, "NonUnicastMode",
-                                 StringValue(nonUnicast));
-    mac.SetType("ns3::ApWifiMac", "Ssid", SsidValue(rackSsid));
-    NetDeviceContainer apDev = wifi.Install(*phy, mac, ap);
+    setRackRates(true);
+    WifiMacHelper apMac;
+    apMac.SetType("ns3::ApWifiMac", "Ssid", SsidValue(rackSsid));
+    if (standard == "axmu")
+    {
+        /* DL OFDMA whenever the AP has frames for several stations, and a Basic Trigger Frame
+         * (after a BSRP poll) for UL OFDMA right after each DL MU PPDU.  20 MHz holds up to 9
+         * RUs of 26 tones. */
+        apMac.SetMultiUserScheduler("ns3::RrMultiUserScheduler", "EnableUlOfdma",
+                                    BooleanValue(true), "EnableBsrp", BooleanValue(true),
+                                    "NStations", UintegerValue(std::min(stas.GetN(), 9U)),
+                                    "AccessReqInterval", TimeValue(MicroSeconds(muAccessUs)));
+    }
+    NetDeviceContainer apDev = wifi.Install(*phy, apMac, ap);
     if (!beacon11b)
     {
         /* Management frames (beacons) go at the first basic rate, DSSS 1 Mbit/s unless the basic
@@ -880,7 +980,9 @@ main(int argc, char* argv[])
     NetDeviceContainer nbApDev;
     if (harsh)
     {
-        /* the DUTs' own radios at full power, their AP and the neighbour's with 11b beacons */
+        /* the DUTs' own radios at full power, their AP and the neighbour's with 11b beacons:
+         * 802.11n whatever the rack runs */
+        wifi.SetStandard(WIFI_STANDARD_80211n);
         phy->Set("TxPowerStart", DoubleValue(20));
         phy->Set("TxPowerEnd", DoubleValue(20));
         wifi.SetRemoteStationManager(rateManager);
@@ -1123,6 +1225,12 @@ main(int argc, char* argv[])
         "State", MakeCallback(&PhyState));
     WifiTxStatsHelper txStats(g_start, g_stop);
     txStats.Enable(rackDevs);
+    for (uint32_t i = 0; i < rackDevs.GetN(); i++)
+    {
+        const bool fromAp = i == rackDevs.GetN() - 1;
+        rackDevs.Get(i)->GetObject<WifiNetDevice>()->GetPhy()->TraceConnectWithoutContext(
+            "PhyTxPsduBegin", MakeBoundCallback(&PsduTx, fromAp));
+    }
     std::vector<uint64_t> harshAtStart(harshSinks.size(), 0);
     uint32_t associated = 0;
     Simulator::Schedule(g_start, [&]() {
@@ -1236,7 +1344,8 @@ main(int argc, char* argv[])
     std::cout << scenario << "," << bays << "," << active << "," << cams << "," << txPower << ","
               << apDist << "," << (beacon11b ? 1 : 0) << "," << usbipDir << "," << ampduMpdus
               << "," << rackChannel << "," << dutChannel << "," << neighbourChannel << ","
-              << (spectrum ? 1 : 0) << "," << (nearLoss ? 1 : 0) << "," << dutCm << "," << seed
+              << (spectrum ? 1 : 0) << "," << (nearLoss ? 1 : 0) << "," << dutCm << ","
+              << standard << "," << heMcs << "," << seed
               << ","
               << associated << "," << staDevs.GetN() << "," << dead << ","
               << 100.0 * g_busy.GetSeconds() / win << "," << Percentile(g_pingMs, 0.5) << ","
@@ -1249,7 +1358,10 @@ main(int argc, char* argv[])
               << "," << g_tcpRetx << ","
               << (g_tcpSegs ? 100.0 * g_tcpRetx / g_tcpSegs : NAN) << "," << offered / nU << ","
               << goodput / nU << "," << goodMin << "," << camFps / nC << "," << camSkip / nC
-              << "," << camKBps / nC << "," << dutGood << "," << nbGood << "," << wall << "\n";
+              << "," << camKBps / nC << "," << dutGood << "," << nbGood << "," << RuMix(g_ruDl)
+              << "," << RuMix(g_ruUl) << ","
+              << (g_staSu + g_staTb ? 100.0 * g_staTb / (g_staSu + g_staTb) : NAN) << ","
+              << wall << "\n";
 
     Simulator::Destroy();
     return 0;

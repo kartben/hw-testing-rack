@@ -70,6 +70,19 @@ SWEEPS = {
                   neighbourChannel=(6,), dutCm=(3,)))
         for b, act, seeds in ((8, (1, 2, 4, 6, 8), (1, 2, 3, 4)),
                               (16, (1, 2, 4, 8, 12, 16), (1, 2, 3, 4, 5)))),
+    # Wi-Fi 6 against today's 802.11n, both rack sizes, on the spectrum PHY (UL OFDMA needs it):
+    # HE20 single-user and HE20 with DL + UL OFDMA at HE-MCS 9, CI with and without 2 cameras;
+    # then the same at the rate manager's choice (MCS 11) at the saturated points
+    "wifi6": lambda: itertools.chain(
+        itertools.chain.from_iterable(
+            racks("ci", (1, 2, 3), bays=(b,), active=act, cams=(0, 2), spectrum=(1,), standard=(s,),
+                  heMcs=(0 if s == "n" else 9,))
+            for b, act in ((8, (1, 2, 4, 8)), (16, (1, 2, 4, 8, 12, 16)))
+            for s in ("n", "ax", "axmu")),
+        racks("ci", (1, 2, 3), bays=(8,), active=(8,), spectrum=(1,), standard=("ax", "axmu"),
+              heMcs=(0,)),
+        racks("ci", (1, 2, 3), bays=(16,), active=(12, 16), spectrum=(1,), standard=("ax", "axmu"),
+              heMcs=(0,))),
 }
 
 # the recommended setting: 8 dBm, channel 11, 11b off, the near-zone loss
