@@ -9,6 +9,11 @@ in its `results/`.  How much the rack's Wi-Fi itself carries is another study
 
 ## In short
 
+- **8 or 16 bays, up to 32 or 64 DUTs: the same picture.** A rack is 8 bays
+  (32 DUTs with DATA ×4 boards) today, 16 (64 DUTs) with rows C and D.  At 16
+  bays the stress case fills 71 % of the air instead of 37 %, and costs no
+  more throughput: the DUTs' nearest node sets the level ([By rack
+  size](#by-rack-size-8-bays-32-duts-and-16-bays-64-duts)).
 - **Host channel classification is the lever that works.** Zephyr's open
   link layer has no automatic channel assessment: it uses only the channel map
   the host gives it (`LE Set Host Channel Classification`,
@@ -82,9 +87,7 @@ in its `results/`.  How much the rack's Wi-Fi itself carries is another study
 | idle | mDNS, ARP, polls from every node (54 Mbps), and the AP's beacons | 3.4 % with 11b beacons, 1.4 % without |
 | flash | the DUTs' own node being flashed: AP downlink (80 %), its ACKs | 8.3 % |
 | stress | 4 flashes and 2 cameras streaming at once | 36.7 % |
-
-The ns-3 study puts 8 simultaneous flashes at about 70 % of the air: twice
-this stress case, which a busy CI day can reach.
+| stress, 16 bays | 8 flashes and 4 cameras (`ConfigSet=100`), as the ns-3 study's 8 flashes | 70.7 % |
 
 Each point is one 60 s run with one seed.  Three seeds of the stress case at
 11 dBm moved its throughput by ±3 points: smaller differences are noise.
@@ -96,6 +99,57 @@ central received, per second connected, against 158 kB/s without Wi-Fi.
 "Lost" is the share of link-layer packets on the data channels that did not
 arrive intact.  It is 1.2 % without Wi-Fi: the central cuts the last
 packet of each connection event short.
+
+### By rack size: 8 bays (32 DUTs) and 16 bays (64 DUTs)
+
+Every node and the hub on the air, the AP 2 m away.  Today's settings
+(11 dBm, channel 6, 11b on) against the proposals (8 dBm, channel 11, 11b
+off), with and without the host's channel classification.  The stress case
+grows with the rack.  The table gives throughput against no Wi-Fi, then scan
+to connected (average / worst; 109 / 415 ms without Wi-Fi).
+
+**8 bays, up to 32 DUTs**
+
+| traffic | settings | Wi-Fi on the air | flow | flow, channels classified | scan to connected |
+|---|---|---|---|---|---|
+| idle | today | 3.4 % | 94 % | 100 % | 109 / 415 ms |
+| idle | proposed | 1.4 % | 97 % | 100 % | 109 / 415 ms |
+| flash | today | 8.3 % | 88 % | 100 % | 109 / 415 ms |
+| flash | proposed | 6.3 % | 90 % | 100 % | 109 / 415 ms |
+| stress: 4 flashes, 2 cameras | today | 36.7 % | 71 % | 100 % | 111 / 415 ms |
+| stress: 4 flashes, 2 cameras | proposed | 34.6 % | 78 % | 100 % | 112 / 415 ms |
+
+**16 bays, up to 64 DUTs**
+
+| traffic | settings | Wi-Fi on the air | flow | flow, channels classified | scan to connected |
+|---|---|---|---|---|---|
+| idle | today | 3.4 % | 95 % | 100 % | 109 / 415 ms |
+| idle | proposed | 1.4 % | 98 % | 100 % | 109 / 415 ms |
+| flash | today | 8.3 % | 88 % | 100 % | 109 / 415 ms |
+| flash | proposed | 6.3 % | 90 % | 100 % | 109 / 415 ms |
+| stress: 8 flashes, 4 cameras | today | 70.7 % | 71 % | 100 % | 111 / 415 ms |
+| stress: 8 flashes, 4 cameras | proposed | 68.6 % | 78 % | 100 % | 110 / 415 ms |
+
+- No connection was dropped or failed to be set up.
+- The today/8-bay points match the earlier sweep (flash 88 %, stress 71 %).
+- Doubling the rack doubles the stress airtime and costs nothing more: what
+  hurts is the bursts of the DUTs' nearest node.  The AP at 2 m and the farther
+  nodes reach the DUTs weakly enough for BLE to ride over them, in this model.
+- The proposals gain 2–7 points without classification.
+
+**Two DUTs of one bay** (the same DATA ×4, 4 cm apart, their node 3 cm away;
+16 bays):
+
+| traffic | settings | flow | flow, channels classified |
+|---|---|---|---|
+| idle | today / proposed | 99 / 100 % | 100 / 100 % |
+| flash | today / proposed | 88 / 90 % | 100 / 100 % |
+| stress | today / proposed | 75 / 85 % | 100 / 100 % |
+
+The node comes 7 cm closer (10 dB more), but so does the other DUT (8 dB more
+signal).  The node's bursts on the overlapping channels were already
+destructive at 10 cm; the stronger BLE signal rides over the AP and the
+farther nodes better, so the pair does slightly better.
 
 ### Data flow, by node TX power and Wi-Fi channel
 

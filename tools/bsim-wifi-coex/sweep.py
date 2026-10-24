@@ -16,7 +16,7 @@ BLE channel, BER from the SNR).  It is a model: compare scenarios with each
 other, not with the field.
 
 usage: sweep.py <plan> [--jobs N] [--out results.csv]
-plans: smoke, flow, disc, afh, extra, all
+plans: smoke, flow, disc, afh, racks, extra, all
 """
 
 from __future__ import annotations
@@ -85,6 +85,15 @@ PROFILES = {
     "flash": (["-ConfigSet=10"], 0.8, 0.0, 1),
     # stress: 4 flashes and 2 cameras streaming up at once; ~50 % asked
     "stress": (["-ConfigSet=50"], 0.45, 0.05, 6),
+    # stress for 16 bays: 8 flashes and 4 cameras, ~70 % of the air (ns-3)
+    "stress16": (["-ConfigSet=100"], 0.45, 0.05, 12),
+}
+
+# The settings compared per rack size: today's, and the proposals (8 dBm,
+# channel 11, 11b off; the AP stays 2 m away)
+SETTINGS = {
+    "today": {"node_dbm": 11, "ch": 6, "beacons": "11b"},
+    "proposed": {"node_dbm": 8, "ch": 11, "beacons": "ofdm"},
 }
 
 # Beacons every 102.4 ms, ~300 bytes, at the basic rate: 1 Mbps (11b rates
@@ -107,7 +116,8 @@ def scenario_cmds(sim: str, s: dict) -> tuple[list[list[str]], int]:
     procs = [central,
              [str(BIN / "bs_coex_dut"), f"-s={sim}", "-d=1", "-testid=peripheral",
               f"-rs={seed + 1}"]]
-    paths = {(0, 1): fspl(DUT_TO_DUT_M), (1, 0): fspl(DUT_TO_DUT_M)}
+    dut_m = s.get("dut_m", DUT_TO_DUT_M)
+    paths = {(0, 1): fspl(dut_m), (1, 0): fspl(dut_m)}
     ndev = 2
 
     if s["profile"] != "none":
@@ -116,6 +126,9 @@ def scenario_cmds(sim: str, s: dict) -> tuple[list[list[str]], int]:
         n = s["nodes"]
         active = min(n, active)
         dists = node_distances(n)
+        if "own_m" in s:
+            # The DUTs on their own node's drawer floor, a few cm from it
+            dists[0] = s["own_m"]
         shares = [ap_share, hub_share] + [(1 - ap_share - hub_share) / active] * active
         shares += [0.0] * (n - active)
         ports = ["-d=2"] + [f"-d{k}={2 + k}" for k in range(1, n + 2)]
@@ -231,6 +244,26 @@ def plan(name: str) -> list[dict]:
     if name in ("afh", "all"):
         for mode, ch, prof in itertools.product(("flow", "disc"), CHANNELS, ("flash", "stress")):
             add(mode=mode, profile=prof, ch=ch, afh=True)
+    if name in ("racks", "all"):
+        # Per rack size, every node on the air: 8 bays (32 DUTs) and 16 (64),
+        # today's settings and the proposals, with and without the host's
+        # channel classification; then the BLE pair in one bay (one DATA x4:
+        # 4 cm apart, their node 3 cm away)
+        add(mode="flow", profile="none")
+        add(mode="flow", profile="none", dut_m=0.04)
+        add(mode="disc", profile="none")
+        for bays, setting, prof in itertools.product((8, 16), SETTINGS,
+                                                     ("idle", "flash", "stress")):
+            if prof == "stress" and bays == 16:
+                prof = "stress16"
+            kw = dict(SETTINGS[setting], profile=prof, nodes=bays, bays=bays, setting=setting)
+            add(mode="flow", **kw)
+            add(mode="flow", afh=True, **kw)
+            add(mode="disc", **kw)
+        for setting, prof, afh in itertools.product(SETTINGS, ("idle", "flash", "stress16"),
+                                                    (False, True)):
+            add(mode="flow", **SETTINGS[setting], profile=prof, nodes=16, bays=16,
+                setting=setting, afh=afh, dut_m=0.04, own_m=0.03)
     if name in ("extra", "all"):
         # OFDM beacons on the flow; the AP 1 or 3 m away; other seeds (the noise)
         for ch in (6, 11):
@@ -244,7 +277,7 @@ def plan(name: str) -> list[dict]:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("plan", choices=["smoke", "flow", "disc", "afh", "extra", "all"])
+    ap.add_argument("plan", choices=["smoke", "flow", "disc", "afh", "racks", "extra", "all"])
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--out", type=Path, default=Path("results.csv"))
     args = ap.parse_args()

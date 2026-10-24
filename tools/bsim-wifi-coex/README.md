@@ -25,6 +25,9 @@ docker exec -u root bsim-coex bash -c "cd /ws && python3 /coex/sweep.py all --jo
 python3 summarize.py results/all.csv
 ```
 
+The plan `racks` compares the two rack sizes, 8 and 16 bays (up to 32 and 64 DUTs), with
+today's settings and the proposals (`results/racks.csv`; `summarize.py results/racks.csv`).
+
 The commands run from this directory.  `setup.sh` takes the Zephyr revision
-from `firmware/west.yml`; a run of `all` (197 scenarios of 60 s simulated)
-takes about an hour on 32 threads.
+from `firmware/west.yml`; a run of `all` (248 scenarios of 60 s simulated)
+takes about an hour and a quarter on 32 threads.
