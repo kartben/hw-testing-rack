@@ -39,6 +39,16 @@ SWEEPS = {
     "beacon": lambda: runs("ci", (1, 2, 3), active=(8, 16), beacon11b=(1, 0)),
     # scenario 4: DUT Wi-Fi on the same channel plus a neighbouring BSS
     "harsh": lambda: runs("harsh", (1, 2, 3), active=(1, 4, 8, 16), beacon11b=(1, 0)),
+    # channel choice in the busy-channel case: the neighbour's BSS on 6, the rack (and the DUTs'
+    # lab AP) moved to 11; the all-on-6 reference on the same (spectrum) PHY
+    "channel": lambda: itertools.chain(
+        runs("harsh", (1, 2, 3, 4), active=(1, 4, 8, 16), rackChannel=(6,), dutChannel=(6,),
+             neighbourChannel=(6,), spectrum=(1,)),
+        runs("harsh", (1, 2, 3, 4), active=(1, 4, 8, 16), rackChannel=(11,), dutChannel=(6, 11),
+             neighbourChannel=(6,)),
+        # more seeds where the spectrum PHY's aborts thinned the points out
+        runs("harsh", (5, 6, 7, 8, 9, 10), active=(8, 16), rackChannel=(11,), dutChannel=(6, 11),
+             neighbourChannel=(6,))),
     # the ESP32's block-ack window (ESP32_WIFI_TX/RX_BA_WIN, 6 by default, 32 at most)
     "ampdu": lambda: runs("ci", (1, 2, 3), active=(8, 12, 16), ampduMpdus=(6, 16, 32)),
 }

@@ -14,7 +14,7 @@ import statistics
 import sys
 from pathlib import Path
 
-NUM = ("ampduMpdus", "bays", "active", "cams", "txPower", "apDist", "beacon11b", "seed", "assoc", "stas", "dead")
+NUM = ("rackChannel", "dutChannel", "neighbourChannel", "spectrum", "ampduMpdus", "bays", "active", "cams", "txPower", "apDist", "beacon11b", "seed", "assoc", "stas", "dead")
 
 # per sweep: the axes that vary, then the columns shown (CSV name, title, digits)
 COMMON = [("airtime_pct", "airtime %", 0), ("usbip_goodput_kBps", "USB/IP kB/s per node", 0),
@@ -38,6 +38,8 @@ SWEEPS = {
                ("usbip_goodput_kBps", "USB/IP kB/s per node", 0), ("http_p95_ms", "HTTP p95 ms", 0)]),
     "harsh": (["active", "beacon11b"], COMMON + [("dut_goodput_Mbps", "DUT Wi-Fi Mbit/s", 1),
               ("neighbour_goodput_Mbps", "neighbour Mbit/s", 1)]),
+    "channel": (["active", "rackChannel", "dutChannel", "neighbourChannel"], COMMON + [
+                ("dut_goodput_Mbps", "DUT Wi-Fi Mbit/s", 1), ("neighbour_goodput_Mbps", "neighbour Mbit/s", 1)]),
     "ampdu": (["active", "ampduMpdus"], [("airtime_pct", "airtime %", 0),
               ("usbip_goodput_kBps", "USB/IP kB/s per node", 0), ("total_MBps", "total MB/s", 2),
               ("http_p95_ms", "HTTP p95 ms", 0), ("mac_retx_pct", "MAC retx %", 0)]),

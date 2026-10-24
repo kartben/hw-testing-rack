@@ -19,6 +19,7 @@
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/propagation-module.h"
+#include "ns3/spectrum-module.h"
 #include "ns3/wifi-module.h"
 
 #include <algorithm>
@@ -599,6 +600,10 @@ main(int argc, char* argv[])
     bool header = false;
     bool debug = false;
     double staggerMs = 0; // between two nodes' first flows
+    uint32_t rackChannel = 6;
+    uint32_t dutChannel = 0;       // harsh: the DUTs' lab AP (0: the rack's)
+    uint32_t neighbourChannel = 0; // harsh: the neighbour's BSS (0: the rack's)
+    bool spectrum = false;         // the spectrum PHY (adjacent-channel leakage)
     /* Ideal: the best rate for the link SNR.  ns-3's Minstrel-HT left some stations of a
      * 16-node BSS unreachable, idle, with 30+ dB of SNR: a simulator artefact */
     std::string rateManager = "ns3::IdealWifiManager";
@@ -625,12 +630,20 @@ main(int argc, char* argv[])
     cmd.AddValue("header", "print the CSV header and exit", header);
     cmd.AddValue("debug", "per-bay details on stderr", debug);
     cmd.AddValue("staggerMs", "delay between two nodes' flows starting, ms", staggerMs);
+    cmd.AddValue("rackChannel", "the rack's channel", rackChannel);
+    cmd.AddValue("dutChannel", "harsh: the DUTs' lab AP channel (0: the rack's)", dutChannel);
+    cmd.AddValue("neighbourChannel", "harsh: the neighbour's channel (0: the rack's)",
+                 neighbourChannel);
+    cmd.AddValue("spectrum", "spectrum PHY instead of Yans", spectrum);
     cmd.AddValue("rateManager", "rate control of the rack BSS", rateManager);
     cmd.Parse(argc, argv);
+    dutChannel = dutChannel ? dutChannel : rackChannel;
+    neighbourChannel = neighbourChannel ? neighbourChannel : rackChannel;
+    spectrum = spectrum || dutChannel != rackChannel || neighbourChannel != rackChannel;
 
     if (header)
     {
-        std::cout << "scenario,bays,active,cams,txPower,apDist,beacon11b,usbipDir,ampduMpdus,seed,assoc,stas,dead,"
+        std::cout << "scenario,bays,active,cams,txPower,apDist,beacon11b,usbipDir,ampduMpdus,rackChannel,dutChannel,neighbourChannel,spectrum,seed,assoc,stas,dead,"
                      "airtime_pct,ping_p50_ms,ping_p95_ms,ping_p99_ms,ping_loss_pct,"
                      "http_n,http_p50_ms,http_p95_ms,http_p99_ms,http_timeouts,"
                      "scrape_p95_ms,mac_ok,mac_retx,mac_fail,mac_retx_pct,"
@@ -731,17 +744,38 @@ main(int argc, char* argv[])
     mob.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mob.Install(all);
 
-    /* --- the channel */
-    YansWifiChannelHelper chan;
-    chan.SetPropagationDelay("ns3::ConstantSpeedPropagationDelayModel");
-    chan.AddPropagationLoss("ns3::LogDistancePropagationLossModel", "Exponent", DoubleValue(3.0),
-                            "ReferenceDistance", DoubleValue(1.0), "ReferenceLoss",
-                            DoubleValue(46.68 + extraLoss));
-    Ptr<YansWifiChannel> channel = chan.Create();
-
-    YansWifiPhyHelper phy;
-    phy.SetChannel(channel);
-    phy.Set("ChannelSettings", StringValue("{6, 20, BAND_2_4GHZ, 0}"));
+    /* --- the channel: Yans for one channel; the spectrum PHY when the BSSs use different
+     * channels, so that a transmission leaks into the neighbouring channel through the 802.11
+     * transmit mask (Yans would isolate the channels perfectly) */
+    Ptr<LogDistancePropagationLossModel> loss = CreateObject<LogDistancePropagationLossModel>();
+    loss->SetAttribute("Exponent", DoubleValue(3.0));
+    loss->SetAttribute("ReferenceDistance", DoubleValue(1.0));
+    loss->SetAttribute("ReferenceLoss", DoubleValue(46.68 + extraLoss));
+    Ptr<ConstantSpeedPropagationDelayModel> delay =
+        CreateObject<ConstantSpeedPropagationDelayModel>();
+    YansWifiPhyHelper yansPhy;
+    SpectrumWifiPhyHelper spectrumPhy;
+    WifiPhyHelper* phy = &yansPhy;
+    if (spectrum)
+    {
+        Ptr<MultiModelSpectrumChannel> sc = CreateObject<MultiModelSpectrumChannel>();
+        sc->AddPropagationLossModel(loss);
+        sc->SetPropagationDelayModel(delay);
+        spectrumPhy.SetChannel(sc);
+        phy = &spectrumPhy;
+    }
+    else
+    {
+        Ptr<YansWifiChannel> yc = CreateObject<YansWifiChannel>();
+        yc->SetPropagationLossModel(loss);
+        yc->SetPropagationDelayModel(delay);
+        yansPhy.SetChannel(yc);
+    }
+    auto onChannel = [&](uint32_t ch) {
+        phy->Set("ChannelSettings",
+                 StringValue("{" + std::to_string(ch) + ", 20, BAND_2_4GHZ, 0}"));
+    };
+    onChannel(rackChannel);
 
     WifiHelper wifi;
     wifi.SetStandard(WIFI_STANDARD_80211n);
@@ -749,22 +783,22 @@ main(int argc, char* argv[])
     WifiMacHelper mac;
     const Ssid rackSsid("rack");
 
-    phy.Set("TxPowerStart", DoubleValue(txPower));
-    phy.Set("TxPowerEnd", DoubleValue(txPower));
+    phy->Set("TxPowerStart", DoubleValue(txPower));
+    phy->Set("TxPowerEnd", DoubleValue(txPower));
     wifi.SetRemoteStationManager(rateManager);
     mac.SetType("ns3::StaWifiMac", "Ssid", SsidValue(rackSsid), "ActiveProbing",
                 BooleanValue(false));
     NodeContainer stas;
     stas.Add(bayNodes);
     stas.Add(hub);
-    NetDeviceContainer staDevs = wifi.Install(phy, mac, stas);
+    NetDeviceContainer staDevs = wifi.Install(*phy, mac, stas);
 
-    phy.Set("TxPowerStart", DoubleValue(apTxPower));
-    phy.Set("TxPowerEnd", DoubleValue(apTxPower));
+    phy->Set("TxPowerStart", DoubleValue(apTxPower));
+    phy->Set("TxPowerEnd", DoubleValue(apTxPower));
     wifi.SetRemoteStationManager(rateManager, "NonUnicastMode",
                                  StringValue(nonUnicast));
     mac.SetType("ns3::ApWifiMac", "Ssid", SsidValue(rackSsid));
-    NetDeviceContainer apDev = wifi.Install(phy, mac, ap);
+    NetDeviceContainer apDev = wifi.Install(*phy, mac, ap);
     if (!beacon11b)
     {
         /* Management frames (beacons) go at the first basic rate, DSSS 1 Mbit/s unless the basic
@@ -779,7 +813,7 @@ main(int argc, char* argv[])
 
     mac.SetType("ns3::AdhocWifiMac");
     wifi.SetRemoteStationManager(rateManager);
-    NetDeviceContainer monDev = wifi.Install(phy, mac, monitor);
+    NetDeviceContainer monDev = wifi.Install(*phy, mac, monitor);
 
     NetDeviceContainer dutDevs;
     NetDeviceContainer dutApDev;
@@ -788,21 +822,25 @@ main(int argc, char* argv[])
     if (harsh)
     {
         /* the DUTs' own radios at full power, their AP and the neighbour's with 11b beacons */
-        phy.Set("TxPowerStart", DoubleValue(20));
-        phy.Set("TxPowerEnd", DoubleValue(20));
+        phy->Set("TxPowerStart", DoubleValue(20));
+        phy->Set("TxPowerEnd", DoubleValue(20));
         wifi.SetRemoteStationManager(rateManager);
+        onChannel(dutChannel);
         mac.SetType("ns3::StaWifiMac", "Ssid", SsidValue(Ssid("lab")), "ActiveProbing",
                     BooleanValue(false));
-        dutDevs = wifi.Install(phy, mac, duts);
+        dutDevs = wifi.Install(*phy, mac, duts);
+        onChannel(neighbourChannel);
         mac.SetType("ns3::StaWifiMac", "Ssid", SsidValue(Ssid("neighbour")), "ActiveProbing",
                     BooleanValue(false));
-        nbDevs = wifi.Install(phy, mac, nbStas);
+        nbDevs = wifi.Install(*phy, mac, nbStas);
         wifi.SetRemoteStationManager(rateManager, "NonUnicastMode",
                                      StringValue("DsssRate1Mbps"));
+        onChannel(dutChannel);
         mac.SetType("ns3::ApWifiMac", "Ssid", SsidValue(Ssid("lab")));
-        dutApDev = wifi.Install(phy, mac, dutAp);
+        dutApDev = wifi.Install(*phy, mac, dutAp);
+        onChannel(neighbourChannel);
         mac.SetType("ns3::ApWifiMac", "Ssid", SsidValue(Ssid("neighbour")));
-        nbApDev = wifi.Install(phy, mac, nbAp);
+        nbApDev = wifi.Install(*phy, mac, nbAp);
     }
 
     /* A-MPDUs no longer than the ESP32's block-ack window, both ways */
@@ -1138,7 +1176,8 @@ main(int argc, char* argv[])
 
     std::cout << scenario << "," << bays << "," << active << "," << cams << "," << txPower << ","
               << apDist << "," << (beacon11b ? 1 : 0) << "," << usbipDir << "," << ampduMpdus
-              << "," << seed << ","
+              << "," << rackChannel << "," << dutChannel << "," << neighbourChannel << ","
+              << (spectrum ? 1 : 0) << "," << seed << ","
               << associated << "," << staDevs.GetN() << "," << dead << ","
               << 100.0 * g_busy.GetSeconds() / win << "," << Percentile(g_pingMs, 0.5) << ","
               << Percentile(g_pingMs, 0.95) << "," << Percentile(g_pingMs, 0.99) << ","

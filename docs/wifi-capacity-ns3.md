@@ -24,6 +24,8 @@ The scenario, the sweep, the run script and the result CSVs are in
 - **The real risk is foreign traffic on the rack's channel.**  4 DUTs with their own Wi-Fi plus a
   neighbour, 18 Mbit/s in all, take half the airtime.  Then 8 flashes get 160 kB/s each and control
   requests take 275 ms at p95.
+- **Channel choice repairs most of it.**  With the rack on 11 and that traffic on 6, 8 flashes get
+  339 kB/s each again.  Some is lost to the DUTs leaking into the adjacent channel from a few cm.
 - **TX power (8–20 dBm) and AP distance (1–3 m) change nothing** at this range: every link is at the
   top MCS.  The 11b beacons cost 2–3 % of airtime.  A larger ESP32 block-ack window gains at most 7 %,
   because the node's TCP window is the limit.
@@ -33,12 +35,14 @@ The scenario, the sweep, the run script and the result CSVs are in
 ## The model
 
 ns-3.49 (2026-10-06), one C++ scenario (`rack-wifi.cc`), one run per point of the sweep, 20 s
-measured after 5 s of association and warm-up, 3–4 seeds per point.
+measured after 5 s of association and warm-up, 3–4 seeds per point (up to 10 in the channel pass),
+307 runs in all, 9 of them aborted by ns-3 (below, "Simulator artefacts").
 
 | Part | Model | From |
 |---|---|---|
 | Stations | the bay nodes (8, or 16 with rows C and D) and the power hub: 802.11n 1×1 HT20, MCS 0–7, long guard interval, no power save | `firmware/README.md` › Wi-Fi in the rack |
 | AP | one, 1–3 m in front of the rack's face, channel 6, 20 MHz, 20 dBm | same |
+| PHY | Yans, one channel.  The channel-choice pass uses the spectrum PHY, where a transmission leaks into the next channel through the 802.11 transmit mask | `channel` sweep |
 | Placement | 4 columns 165.8 mm apart, rows 165 mm apart (`config/rack.yaml`); every node hears every other: no hidden station | rack geometry |
 | Propagation | log-distance, exponent 3, 46.7 dB at 1 m (free space at 2.437 GHz) + 13 dB, so that the AP gives −49 dBm at 2 m, as the bench XIAO measured | bench RSSI |
 | Node TX power | 11 dBm (default), 8 and 20 dBm in the sweep | `CONFIG_HWTR_NET_TX_POWER_DBM` |
@@ -158,6 +162,33 @@ traffic.  It is constant-rate UDP, which does not back off.
   get 160 kB/s each, below the node's floor, and 16 get 40 kB/s with second-long control requests.
 - 11b or OFDM beacons hardly matter here (the same rows with 6 Mbit/s beacons: 362 / 163 / 41 kB/s).
 
+### Channel choice in the busy case
+
+The neighbour's BSS stays on channel 6.  The rack moves to 11, and the DUTs' lab AP either stays on
+6 or moves with the rack.
+- These runs use ns-3's spectrum PHY.  With it, a transmission leaks into the next channel through
+  the 802.11 transmit mask (Yans isolates channels perfectly).
+- The all-on-6 reference was run again on the spectrum PHY.  It matches the Yans runs within a few
+  per cent.
+
+| Flashes | All on 6 | Rack on 11; DUTs and neighbour on 6 | Rack and DUTs on 11; neighbour on 6 |
+|---|---|---|---|
+| 1 | 59 % airtime, HTTP p95 8 ms | 33 %, 3 ms | 36 %, 4 ms |
+| 4 | 362 kB/s, p95 80 ms | 362 kB/s, 6 ms | 362 kB/s, 11 ms |
+| 8 | 155 kB/s, p95 282 ms | **339 kB/s, 107 ms** | 256 kB/s, 148 ms |
+| 16 | 37 kB/s, p95 916 ms | 107 kB/s, 311 ms | 74 kB/s, 456 ms |
+
+- **Moving the rack off the neighbour's channel gives most of the capacity back.**  At 8 flashes a
+  node gets 339 kB/s instead of 155; a clean channel gives 362.  At 4 flashes, control latency is
+  back to the clean channel's (p95 6 ms instead of 80).
+- **Not all of it, because the DUTs sit a few centimetres from the nodes.**  Four DUT radios at
+  20 dBm leak into the adjacent channel, about −28 to −40 dB at 25 MHz from the transmit mask.  With a
+  single flash, the rack's channel is still 33 % busy (11 % on a clean channel).
+- **The DUTs' own Wi-Fi does less harm on the other channel than on the rack's.**  Moved to 11 with
+  the rack, it leaves 256 kB/s per node at 8 flashes; left on 6, next door, 339.
+- ns-3 aborted 9 of the 72 runs itself, all with the rack and the neighbour on different channels:
+  the spectrum PHY's internal "Invalid WifiPhy state RX".  Every point keeps 3–10 runs.
+
 ### TX power and AP distance
 
 At 8 flashes, node TX power (8, 11, 20 dBm) and AP distance (1, 2, 3 m) change nothing: 362 kB/s
@@ -215,13 +246,17 @@ BabbleSim study), not for capacity: 8 dBm costs nothing here.
   - It depends on the seed: a change in timing, such as OFDM beacons, makes it go away.
   - `rack-wifi.cc` counts these stations (`dead`).  `summarize.py` leaves such runs out, and the
     tables say how many it dropped.
+- **Spectrum PHY aborts.**  With BSSs on different channels, ns-3.49's spectrum PHY sometimes stops
+  the run on an internal assertion ("Invalid WifiPhy state RX").  That was 9 of the 72 channel-choice
+  runs.  `run.sh` lets the other runs go on, and the sweep adds seeds where points thinned out.
 
 ## Recommendations
 
 1. **A dedicated AP for the rack, on its own channel: 6 or 11, never 1** (the hub PLL's harmonic sits
    at 2.400 GHz).  Pick the one where no neighbour is heard.  Keep the DUTs' own Wi-Fi tests off the
    rack's channel: rack on 6, the DUTs' lab AP on 11, or the reverse.  Of every setting studied, this
-   one matters most: the busy-channel case halves the capacity.
+   one matters most.  The busy-channel case halves the capacity, and moving the rack to the other
+   channel takes 8 flashes from 155 back to 339 kB/s each.
 2. **Turn 11b off on that AP** (basic rates from 6 Mbit/s).  That is 2–3 % of airtime back, and
    faster broadcasts.  Cheap, but secondary.
 3. **At most 8 simultaneous USB/IP flashes per channel.**  A rack-wide limit in bayctl's pre-script, a

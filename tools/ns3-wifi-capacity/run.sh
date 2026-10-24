@@ -30,6 +30,8 @@ names=$sweep
 for s in $names; do
     out="$here/results/$s.csv"
     "$bin" --header > "$out"
-    python3 "$here/sweep.py" "$s" | xargs -P "$jobs" -L 1 "$bin" >> "$out"
+    # a run that ns-3 aborts (the spectrum PHY's intermittent "Invalid WifiPhy state RX") leaves
+    # no line, and the others go on
+    python3 "$here/sweep.py" "$s" | xargs -P "$jobs" -L 1 sh -c '"$0" "$@" || true' "$bin" >> "$out"
     echo "$(($(wc -l < "$out") - 1)) runs in $out"
 done
