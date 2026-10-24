@@ -12,16 +12,19 @@ a-t-on tout intégré en respectant les schémas de référence des datasheets ?
   placement.
 - Our side is design.py (the schematic as generated) and the fab BOM.
 - Datasheets and guides come from the makers, or from LCSC mirrors for the Chinese parts; each section lists them.
-- Each critical "to fix" was re-read in the source itself: the L1 polarity and the DVDD decoupling (RP2350
-  datasheet §6.1.3, §6.3.8), the GPIO limits (Table 1680), the hub's crystal circuit (DS00001598C Fig. 9-1)
-  and its silicon errata (DS80000628A Module 2).
+- Each "to fix" rests on a quote that was re-read in the source itself.
 - Nothing on the board was changed; this file proposes.
+- The user, 2026-10-24: "S'il y a le moindre doute laisse moi, humain, vérifier manuellement les datasheets pour
+  te donner une réponse définitive".  So any point that is ambiguous, read from a figure only, taken from an
+  unofficial or uncertain source, or resting on an inference is marked **to check by the user**, not decided
+  here.  The questions are listed below.
 
 **Verdicts.**
 - **OK**: as the datasheet asks.
 - **justified deviation**: we differ, for a reason that holds.
 - **to fix**: a datasheet requirement is not met; the quote is given.
-- **check**: the documents can't settle it; a measurement can.
+- **check**: a bench measurement settles it.
+- **to check by the user (Un)**: a human reads the datasheet and answers question Un below.
 
 ## Summary
 
@@ -30,21 +33,29 @@ The schematic follows the datasheets almost everywhere:
 - straps, addresses, current limits, crystal loads, the LSF0108 bias and the TPS60400's capacitors are all
   right;
 - of about 240 rows, 176 are OK and 18 are justified deviations, each with its reason;
-- 23 are left to bring-up measurements.
+- the rest wait on bench measurements or on the user's reading.
 
-**Ten items to fix.**
-- Five are on the RP2354B and its core regulator.  The worst: L1's polarity dot is specified on the wrong pad,
-  and the regulator's placement departs from Raspberry Pi's mandatory layout.
-- Two are on the USB2517I: its crystal lacks the 1 MΩ of Microchip's circuit, and a silicon erratum asks for a
-  reset supervisor.
+**Nine items to fix.**
+- Five are on the RP2354B and its core regulator, the worst: L1's footprint carries no polarity mark, and the
+  regulator's placement departs from Raspberry Pi's layout.
+- One is on the USB2517I: a silicon erratum asks for a reset supervisor.
 - One adds ESD to each header's VREF pin.
 - Two are wording, docs and firmware only.
 
+**Ten questions for the user (U1–U10).**  The weightiest:
+- **U1, L1's orientation.**  Our design.py puts L1's dot on the VREG_LX pad.  Raspberry Pi's figures, as read
+  here, put it on +1V1.
+- **U4, the CH446Q.**  Its only manual is a Chinese one from an LCSC mirror; the ±5 V supply and the logic
+  levels rest on that reading.
+- **U5, the H5VU25UC pinout.**  The datasheet is a Chinese maker's, from LCSC; a wrong pinout would short lines.
+
 **Cost.**
-- Items 1–8 add no new part type, except the supervisor.
-- The mandatory value changes cost ≈ $0.02 a board.
+- No to-fix item adds a new part type, except the supervisor.
+- C47 costs ≈ $0.014 a board.
 - The VREF ESD costs ≈ $0.12 a board.
 - The supervisor costs $3.07 an order plus ≈ $0.05 a board; a fee-free partial alternative is given.
+- Depending on the answers: U2 adds ≈ $0.002 a board; U7 could cost $3.07 an order; U8 and U9 cost nothing
+  (resistors already in the BOM).
 
 **Sourcing.**
 - JLC's live stock on 2026-10-24: the approved inductor AOTA-B201610S3R3-101-T is back (202 pieces).
@@ -55,22 +66,39 @@ The schematic follows the datasheets almost everywhere:
 
 | # | What | Why (source) | Change | BOM and cost | Variant |
 |---|---|---|---|---|---|
-| 1 | **L1's polarity dot specified on the wrong pad**; the footprint has no mark | The inductor "must be marked for polarity … and placed on the layout as indicated in Figure 26"; the orientation matters, "especially at higher output currents and for higher load transients" (RP2350 DS §6.3.8.2–3, p.412–413). Fig. 26/28 and Raspberry Pi's Minimal R4 footprint put the dot on the **+1V1 (VOUT)** pad. design.py and catalog.py say "dot towards VREG_LX", which is reversed | L1 pin 1 = +1V1; a footprint with a pin-1 dot by that pad (Raspberry Pi's AOTA land: 0.7 × 1.7 mm pads at ±0.7 mm); correct both notes; check JLC's placement preview shows the dot on +1V1 | none | logic |
+| 1 | **L1's footprint has no polarity mark** (and its pin-1 pad depends on U1) | The inductor "must be marked for polarity … and placed on the layout as indicated in Figure 26"; the orientation matters, "especially at higher output currents and for higher load transients" (RP2350 DS §6.3.8.2–3, p.412–413). L_Murata_DFE201610P has no mark, so JLC's placement is undetermined | A footprint with a pin-1 dot, pin 1 on the pad U1's answer names (Raspberry Pi's AOTA land: 0.7 × 1.7 mm pads at ±0.7 mm); correct the notes in design.py and catalog.py; check JLC's placement preview | none | logic |
 | 2 | **Core-regulator placement is not Raspberry Pi's layout** | "Designers should follow … Figure 26 as closely as possible"; keep the switching loops small (DS §6.3.8, §6.3.8.1, p.409–412). Ours is one row 2.5 mm out with L1 turned 90°. CIN (C32) sits beyond the LX pin from VIN, so its loop needs vias. PGND goes to the exposed pad, not to CIN/COUT's GND | Copy the Minimal R4 block, turned 180° with U11 (coordinates in the RP2354B section). Draw its copper in design.py: PGND to the CIN/COUT GND with 2 adjacent vias, CFILT on its own GND via, VREG_FB taken from COUT away from LX | none | logic |
 | 3 | **No copper cut-out under LX / L1** | "cut away any extra copper underneath the inductor"; on 4+ layers "cut away any copper immediately underneath LX/VREG_LX" (DS §6.3.8.1 and Fig. 27, p.411–412) | Pour keep-outs on F.Cu under L1 and on In1 (and In2) under the LX pad and trace | none | logic |
 | 4 | **DVDD pin 32 has 100 nF where 4.7 µF is asked** | "The DVDD pin furthest from the regulator should be decoupled with a 4.7 µF capacitor close to the pin" (DS §6.1.3 p.400; again §6.3.8.1) | C47 100 nF → 4.7 µF | C23733 (basic, already a line); +$0.014/board | logic |
-| 5 | **GPIO45 (−5 V sense) can go below −0.5 V** | VPIN min −0.5 V (DS Table 1680 p.1335). With −5 V up and +3V3_CP below 1.6 V (start-up after the TPS60400, −5 V lingering at power-down), the 47k/100k divider takes the pin to −1.6 V | R40 47k → 10k: the pin stays ≥ −0.48 V even with +3V3_CP at 0 (nominal 2.55 V, ≈ 9 mV of the −5 V rail per LSB); update the formula in design.py's note and the firmware | C25744 (basic, already a line); ±$0 | logic |
-| 6 | **The hub's crystal has no 1 MΩ across it** | DS00001598C Fig. 9-1 "Typical crystal circuit" draws a 1 Meg across XTAL1–XTAL2. The EVB-USB2517 fits it (R19 1Meg). Unlike the USB251xB, the USB2517 datasheet never says it is internal. Without it the oscillator may fail to start, and the hub would not enumerate | One 0402 1 MΩ across XI–XO beside Y1 | +1 line: C26083 (basic), $0.002/board | both |
-| 7 | **The hub's reset: the RC doesn't cover a brown-out** | Errata DS80000628A Module 2: "The internal POR does not generate reset when power drops below the threshold. For a supply that has non-monotonous ramp reset may be lost … Device might not enumerate. Solution: Use external power on reset circuit (for example … MAX809S (V2.9V) voltage supervisor)". R2/C6 reset a clean ramp only. A DUT_5V sag (the node's 1.34 A limit) can leave the hub hung | MAX809S (2.93 V, 140 ms, push-pull) driving RESET_N in place of R2/C6. **Fee-free partial alternative:** keep the RC, add a 1N4148WS (C2128, basic) from RESET_N to +3V3 for a fast discharge, and have the node cycle DUT_5V when the hub doesn't enumerate | +1 extended type: C347371 (MAX809S, 216k in stock) $0.05/board + **$3.07 per order** | both |
-| 8 | **The headers' VREF pins have no ESD** | Vref_A biases all eight pass gates and is rated ±2 kV HBM / ±1 kV CDM only (LSF0108 SDLS966M §6.2 p.5). P1–P8 on the same hand-wired header get IEC 61000-4-2 ±8 kV H5VU25UC | One more H5VU25UC per port, VREF through one line in flow-through.  Its spare lines could take RESET_N/BOOT_N too (then it is fitted on the base as well) | +4 × C20615800 (already a line, no new type), ≈ $0.12/board + 4 placements | logic (or both) |
-| 9 | **An unwired VREF doesn't isolate its group** | TI guarantees the off state only with EN low (SDLS966M §8.3.2 p.11). 0.65 V is only the minimum Vref_A for specified translation. At ≈ 0.4 V (unwired, 10k + 10k), lows still pass both ways and highs to the DUT clamp at ≈ 0.4 V. design.py and electronics.md say "the group passes nothing" | Correct the wording. The firmware keeps a port's crosspoint switches open while its VREF reads under 0.65 V (GPIO40–43 < 0.33 V). "DUT off" and "board off" do hold (SLVA675B §5.6; EN low with +5V_MX off) | none | logic |
-| 10 | **Stale doc lines** | (a) +5V_MX carries ≈ 1–4 mA, not "≈ 70 mA": two CH446Q, the pump's IQ, the LSF bias, R38/R39. (b) FB1 does little at the pump's 50–250 kHz (≈ 1 µH): the "250 kHz apart" comment overstates it. (c) The H5VU25UC datasheet draws pins 6/7/9/10 unconnected inside, not "tied" (harmless here: each line runs through both pads). (d) U3's "60–70 °C/W" is not a Diodes figure | Correct design.py, catalog.py and electronics.md | none | both |
+| 5 | **GPIO45 (−5 V sense) can go below −0.5 V** | VPIN min −0.5 V (DS Table 1680 p.1335). With −5 V up and +3V3_CP below 1.6 V (start-up after the TPS60400, −5 V lingering at power-down), the 47k/100k divider takes the pin to −1.6 V. The timing is inferred; the fix holds whatever it is | R40 47k → 10k: the pin stays ≥ −0.48 V even with +3V3_CP at 0 (nominal 2.55 V, ≈ 9 mV of the −5 V rail per LSB); update the formula in design.py's note and the firmware | C25744 (basic, already a line); ±$0 | logic |
+| 6 | **The hub's reset: the RC doesn't cover a brown-out** | Errata DS80000628A Module 2: "The internal POR does not generate reset when power drops below the threshold. For a supply that has non-monotonous ramp reset may be lost … Device might not enumerate. Solution: Use external power on reset circuit (for example … MAX809S (V2.9V) voltage supervisor)". R2/C6 reset a clean ramp only. A DUT_5V sag (the node's 1.34 A limit) can leave the hub hung | MAX809S (2.93 V, 140 ms, push-pull) driving RESET_N in place of R2/C6. **Fee-free partial alternative:** keep the RC, add a 1N4148WS (C2128, basic) from RESET_N to +3V3 for a fast discharge, and have the node cycle DUT_5V when the hub doesn't enumerate | +1 extended type: C347371 (MAX809S, 216k in stock) $0.05/board + **$3.07 per order** | both |
+| 7 | **The headers' VREF pins have no ESD** | Vref_A biases all eight pass gates and is rated ±2 kV HBM / ±1 kV CDM only (LSF0108 SDLS966M §6.2 p.5). P1–P8 on the same hand-wired header get IEC 61000-4-2 ±8 kV H5VU25UC. A design judgment, not a datasheet requirement | One more H5VU25UC per port, VREF through one line in flow-through.  Its spare lines could take RESET_N/BOOT_N too (then it is fitted on the base as well) | +4 × C20615800 (already a line, no new type), ≈ $0.12/board + 4 placements | logic (or both) |
+| 8 | **The docs claim an unwired VREF isolates its group** | TI guarantees the off state only with EN low (SDLS966M §8.3.2 p.11), and 0.65 V is only the minimum Vref_A for specified translation. So "the group passes nothing" (design.py, electronics.md) is not backed. What happens at ≈ 0.4 V is a bench check | Correct the wording.  The firmware keeps a port's crosspoint switches open while its VREF reads under 0.65 V (GPIO40–43 < 0.33 V).  "DUT off" and "board off" do hold (SLVA675B §5.6; EN low with +5V_MX off) | none | logic |
+| 9 | **Stale doc lines** | (a) +5V_MX carries ≈ 1–4 mA, not "≈ 70 mA": two CH446Q, the pump's IQ, the LSF bias, R38/R39. (b) FB1 does little at the pump's 50–250 kHz (≈ 1 µH): the "250 kHz apart" comment overstates it. (c) U3's "60–70 °C/W" is not a Diodes figure | Correct design.py, catalog.py and electronics.md | none | both |
 
 Optional, no new part type and no fee:
 - hub C7/C8 1 µF → 4.7 µF (C23733): VDD18 / VDD18PLL meet "1.0 µF ±20 %" with no margin once DC bias and
-  temperature are counted;
+  temperature are counted (see U10);
 - a 4.7 µF local bulk on +3V3 beside U1 (the EVB has 4.7 µF + 10 µF);
 - 10k to +3V3 on the D± of the hub's unused ports 6/7, to hide them from the host (cosmetic).
+
+## To check by the user
+
+Each answer is yes / no or a value.  "Now" is what the board has; the last column says what each answer
+changes.
+
+| # | Datasheet (maker URL, revision) | Where | Question | Now | If yes / if no |
+|---|---|---|---|---|---|
+| U1 | RP2350 datasheet, https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf, build 2026-10-01 (80d627281ed5). Also Abracon's AOTA-B201610S3R3-101-T datasheet Rev A (2024-09-13), via https://www.lcsc.com/datasheet/lcsc_datasheet_2412101620_Abracon-LLC-AOTA-B201610S3R3-101-T_C42411119.pdf | §6.3.8 Fig. 26 (p.411), §6.3.8.2 (p.412), Fig. 28 (p.413); Abracon p.4 (marking) | In Fig. 26, is the inductor's orientation dot on the pad joined to COUT / VOUT (+1V1), and not on the pad joined to VREG_LX? Fig. 28 draws the dot at the "−" end of the current arrow; Abracon's p.4 labels the dotted end "+", the opposite | L1 pin 1 = CP_VREG_LX; design.py and catalog.py say "dot towards VREG_LX"; the footprint has no mark | **Yes:** L1 pin 1 = +1V1 and the notes swap. **No:** the pins stay. Either way, the marked footprint of fix 1 |
+| U2 | Microchip USB2517/USB2517I, https://ww1.microchip.com/downloads/en/DeviceDoc/00001598C.pdf (it opens in a browser; Microchip refuses scripted downloads), DS00001598C | §9.1, Fig. 9-1 "Typical crystal circuit" (p.52) | Is the 1 Meg across XTAL1–XTAL2 in Fig. 9-1 an external part? Unlike the USB251xB's, this datasheet never says one is inside | None.  Microchip's EVB-USB2517 fits one (R19 1Meg) | **Yes:** add 1 MΩ 0402 across XI–XO beside Y1, C26083 (basic), $0.002/board, both variants. **No:** optional (harmless in parallel) |
+| U3 | Same datasheet DS00001598C | Table 5-1, the USBDNx_DP/PRT_DIS_Px and USBDNx_DM/PRT_DIS_Mx rows (p.10) | Is a downstream port disabled when only **one** of its D+ / D− lines is high at RESET_N's release? (The USB251xB datasheet asks for both) | Ports 1–4 are off at the hub's reset, but a self-powered DUT pulls D+ (FS) or D− (LS) up through 1.5k by itself | **Yes:** a self-powered DUT present at the hub's reset disables its port. The node must reset the hub before enabling such DUTs, or the docs warn. **No:** nothing to do |
+| U4 | WCH CH446 manual, https://www.wch-ic.com/downloads/CH446DS1_PDF.html (read here: version 1C, Chinese, LCSC mirror of 2017-05-15) | §4.1 pin table (p.2), §5 (p.3), §6.2–6.3 (p.6) | (a) Is VDD = +5 V with VEE = −5 V an allowed supply? (b) At VDD − GND = 5 V, is VIH ≤ 2.0 V (3.3 V logic a valid high)? (c) In serial mode (P/S low), must AX0–3 / AY0–2 be tied to GND? (d) Does RST high hold every switch open? (e) Is there any R_on figure for a 10 V span (VDD − VEE)? | (a) +5V_MX / −5 V; (b) DAT/CK/STB from a 3.3 V TCA9534A; (c) all on GND; (d) R20 pulls RST high until the node writes; (e) none assumed | (a) **No:** the supplies change (a single 5 V gives R_on 120–225 Ω). (b) **No:** level-shift DAT/CK/STB. (c, d) **No:** straps or firmware change. (e) The value decides whether a 1.8 V board's I²C low passes (≲ 120 Ω needed) |
+| U5 | hongjiacheng H5VU25UC, Rev 2.0; no maker URL found, only https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261524_hongjiacheng-H5VU25UC_C20615800.pdf | Function diagram (p.1), recommended land pattern (p.3) | (a) Are pins 1, 2, 4, 5 the I/O lines and pins 3 and 8 GND? (b) Are pins 6, 7, 9, 10 unconnected inside, or tied to 5, 4, 2, 1? | (a) I/O on 1, 2, 4, 5; GND on 3 and 8, one bar. (b) Each line runs through both pads of its pair, on one net | (a) **No:** the footprint and symbol are wrong, a mandatory fix before the order (9 parts a board). (b) Docs wording only |
+| U6 | TI LSF0108, https://www.ti.com/lit/ds/symlink/lsf0108.pdf, SDLS966M (May 2023) | §9.2, Table 9-2 and its note (p.14) | May Vref_A (the DUT's VREF) exceed the B side's pull-up voltage (3.3 V), e.g. VREF 3.4–3.6 V, given the note "Vref_A is required to be the lowest voltage level across all inputs and outputs"? | The VREF rule allows 0.95–3.6 V; the bus pull-ups are at 3.3 V | **No:** the VREF rule stops at 3.3 V (docs, and the firmware's warning). **Yes:** nothing |
+| U7 | Raspberry Pi "Hardware design with RP2350", https://datasheets.raspberrypi.com/rp2350/hardware-design-with-rp2350.pdf, Release 3; RP2350 datasheet (as U1) | Hardware design §5.1 (p.15); datasheet Table 1678 (p.1334) | Do Raspberry Pi give a tolerance or range for the "27 Ω series termination resistors"? Would 22 Ω 1 % do for Full Speed? | R23/R24 22 Ω (basic); no basic 27 Ω exists | **27 Ω strict:** 27 Ω 0402 (extended, +$3.07 an order). **22 Ω allowed:** nothing |
+| U8 | RP2350 datasheet (as U1) | Table 1680 (p.1335), VPIN −0.5 … IOVDD + 0.5 V; §12.4 (ADC) | Does the datasheet allow any injection current into a GPIO / ADC pin while IOVDD = 0? If so, how much? | Board off and a self-powered DUT's VREF wired: GPIO40–43 get VREF / 2 through 5 kΩ, ≤ 0.26 mA each | **No allowance:** 100k in series with each ADC input (4 × C25741, basic, already a line; fine for DC per §12.4.3), or a note to keep the board powered while DUTs are. **Allowed and ≥ 0.3 mA:** nothing |
+| U9 | TI TCA6408A, https://www.ti.com/lit/ds/symlink/tca6408a.pdf, SCPS192E (Jan 2023) | Table 5-1, RESET row (p.4); §8.3.4 (p.20–21) | May RESET be tied directly to VCCI, or is the pull-up resistor required ("connect to VCCI through a pull-up resistor, if no active connection is used")? | Tied directly to +3V3 on U2 and U6 | **Resistor required:** 10k per expander (C25744, basic, already a line, $0). **Direct allowed:** nothing |
+| U10 | Samsung Electro-Mechanics CL05A105KA5NQNC (C52923): its product page or MLCC simulator on product.samsungsem.com (search the part number; the direct link didn't answer on 2026-10-24); TPS60400, https://www.ti.com/lit/ds/symlink/tps60400.pdf, SLVS324C, §7.3 (p.4) | The part's DC-bias characteristic | What is its capacitance at 5 V DC and at 1.8 V DC? | TPS60400 C26–C28 at ≈ 5 V; hub VDD18 / VDD18PLL C7, C8 at 1.8 V | **Under ≈ 0.5 µF at 5 V:** C28 (−5 V out) to a larger part. **Under ≈ 0.8 µF at 1.8 V:** C7/C8 to 4.7 µF (C23733, basic, already a line) |
 
 ## Sourcing
 
@@ -87,7 +115,8 @@ Optional, no new part type and no fee:
 
 The base leaves 91 parts off: the matrix and co-processor sheets, and each port's pin chain.  Nothing it keeps
 depends on them.
-- It shares items 6, 7 and 10 (the hub) and the U3 checks; its 3.3 V load is about the same (the hub dominates).
+- It shares fix 6, U2, U3, U9, U10 (the hub's capacitors) and the U3 LDO checks; its 3.3 V load is about the
+  same (the hub dominates).
 - Hub port 5 ends on R23/R24's empty pads: ≈ 43 mm open D± stubs.  That is harmless: nothing attaches, and the
   port stays enabled and empty.
 - The headers' P pins and VREF end on empty pads; VREF's divider and LSF are off, so the pin floats, unused.
@@ -106,8 +135,8 @@ Each section lists its own; the ones that matter most:
    - DUT_5V cycled at 10–500 ms and dragged to ≈ 3 V and back: the hub must re-enumerate every time (erratum
      Module 2).
    - XTAL2 amplitude (drive level).
-4. **CH446Q R_on at ±5 V** (WCH gives no figure for a 10 V span): it needs ≲ 120 Ω for a 1.8 V board's I²C low
-   with the 2.2k on.  Also the −5 V rail and its ripple, and the crosspoints' VEE current.
+4. **CH446Q R_on at ±5 V** (no figure for a 10 V span, U4e): it needs ≲ 120 Ω for a 1.8 V board's I²C low with
+   the 2.2k on.  Also the −5 V rail and its ripple, and the crosspoints' VEE current.
 5. **+5V_MX at no load ≤ 5.25 V** (TPS60400 VI max; 10 mV of margin at the node's 5.24 V).
 6. **VBUS under 0.5 A ≥ 4.75 V.**  This needs +5V ≥ 4.87 V at the board.
 7. **An empty port's VBUS decays with τ ≈ 18 s** (INA226 830 kΩ, 22 µF): the node's "refuse EN while VBUS is
@@ -115,8 +144,8 @@ Each section lists its own; the ones that matter most:
 8. **The TCA9534A → CH446Q writes.**  DAT, CK↑ and STB each in their own I²C write; rewrite the switch map every
    few seconds (CH446 manual §7.1).
 9. **Q1–Q3 (CJ 2N7002, Vth up to 2.5 V)** on SDA/SCL/INT: VOL ≤ 0.4 V and the fall times, both directions.
-10. **Back-feed.**  With DUT_5V off and a self-powered DUT on a header, measure the current into GPIO40–43
-    (≤ ≈ 0.26 mA each) and +3V3_CP.
+10. **An unwired VREF** (fix 8): with header n open, drive a bus low and high from the co-processor and watch
+    the P pins.
 
 ## How to read the sections
 
@@ -146,7 +175,7 @@ Our coordinates are KiCad mm from design.py. U11 is at (47.0, 12.9), turned 180�
 | COUT (C33) value / type | "COUT must be 4.7 µF ±20 % with a maximum parasitic resistance of 250 mΩ and a maximum inductance of 6 nH" | C23733 4.7 µF ±20 % 0402 (ESL ≈ 0.3–0.5 nH); at 1.1 V the DC-bias loss is small | OK | [DS] §6.3.8.2 p.412 |
 | RFILT / CFILT (R21 / C34) | 33 Ω + 4.7 µF on VREG_AVDD ("draws around 200 µA") | 33 Ω C25105 + C23733 4.7 µF | OK | [HW] §2.1 p.7; [DS] Fig. 22 p.408 |
 | L1 part | Must be shielded, 3.3 µH ±20 %, DCR ≤ 250 mΩ, Isat ≥ 1.5 A, polarity-marked; AOTA-B201610S3R3-101-T recommended | AOTA-B201610S3R3-101-T (C42411119). See the L1 table | OK (part) | [DS] §6.3.8.2 p.412 |
-| **L1 orientation (polarity dot)** | Fig. 26 (Pico 2 layout) puts the orientation indicator on the inductor pad tied to V_OUT/COUT; VREG_LX goes to the other pad. Fig. 28: current enters at "+" and leaves at "−", the dot being at "−". [MIN]'s own footprint: pad 1 = **+1V1**, with the silk and fab dot at pad 1, and pad 2 = VREG_LX. "The inductor must be marked for polarity and placed on the layout as indicated in Figure 26" | design.py and catalog.py both say "**dot towards VREG_LX**". L1 pin 1 = CP_VREG_LX, and the footprint (L_Murata_DFE201610P) has no polarity mark, so nothing tells JLC where the dot goes | **to fix** | [DS] §6.3.8 Fig. 26 p.411, §6.3.8.2 p.412, Fig. 28 p.413; [MIN] L1 footprint |
+| **L1 orientation (polarity dot)** | Fig. 26 (Pico 2 layout) puts the orientation indicator on the inductor pad tied to V_OUT/COUT; VREG_LX goes to the other pad. Fig. 28: current enters at "+" and leaves at "−", the dot being at "−". [MIN]'s own footprint: pad 1 = **+1V1**, with the silk and fab dot at pad 1, and pad 2 = VREG_LX. "The inductor must be marked for polarity and placed on the layout as indicated in Figure 26" | design.py and catalog.py both say "**dot towards VREG_LX**". L1 pin 1 = CP_VREG_LX, and the footprint (L_Murata_DFE201610P) has no polarity mark, so nothing tells JLC where the dot goes | **to check by the user (U1)** for the pad; the missing footprint mark: **to fix** | [DS] §6.3.8 Fig. 26 p.411, §6.3.8.2 p.412, Fig. 28 p.413; [MIN] L1 footprint |
 | **Regulator placement (CIN, COUT, L1)** | "Designers should follow the above schematic Figure 25 and layout Figure 26 as closely as possible"; "these guidelines must be strictly followed". [MIN]/Fig. 26: CIN straddles VIN/PGND 1.16 mm from the pin row, COUT right behind it (2.1 mm), L1 behind COUT (3.75 mm), its axis parallel to the chip edge, with the +1V1 pad on the FB side. "It is critical to keep the loop area … as small … as possible" | All in one row 2.5 mm out (y 20.3): R21 x 40.0, C34 41.2, **C32 (CIN) 42.4**, **L1 44.1 turned 270°** (axis perpendicular to the edge), **C33 (COUT) 45.8**. CIN lies west of LX (pin 63, x 44.0), while VIN (pin 64, x 44.4) is east of it. So the VIN→CIN→PGND loop cannot close on F.Cu without crossing LX: it goes through vias and planes. COUT's GND likewise sits east of LX, away from PGND. PGND is hand-routed inwards to the exposed pad (design.py l.822) rather than to the CIN/COUT GND | **to fix** | [DS] §6.3.8 p.409–411, §6.3.8.1 p.411–412; [HW] §2.1 p.6–7; [MIN] C6/C7/L1/R3/C9 |
 | Copper under LX / L1 | "On the top layer … cut away any extra copper underneath the inductor"; "For a multi-layer board (4 or more layers) please cut away any copper immediately underneath LX/VREG_LX node" (Fig. 27, layer 2) | design.py `keepouts` holds only the edge, tab and split areas. The F.Cu GND pour, In1 GND and In2 +3V3 all run under L1 and LX | **to fix** | [DS] §6.3.8.1 p.411–412, Fig. 27 p.412 |
 | GND vias / CFILT GND | High-current GND back to the QFN pad "at one single point (using 2 adjacent vias)"; "CFILT must also have a low impedance … path back to the QFN GND pad (don't share any GND vias with the CIN/COUT high current GND)"; "CIN needs its own separate GND via" | Freerouting decides; not visible in design.py | check | [DS] §6.3.8.1 p.411–412 |
@@ -158,7 +187,7 @@ Our coordinates are KiCad mm from design.py. U11 is at (47.0, 12.9), turned 180�
 | Supply sequencing | Any order except VREG_VIN/VREG_AVDD together | Single rail | OK | [DS] §6.1.8 p.401 |
 
 Notes
-- **Polarity conflict between the documents.** Abracon's own marking drawing ([AOTA] p.4) labels the dotted terminal "+" (current in). RP's Fig. 28 puts the dot at "−" (current out). The verified layouts settle it: Pico 2 (Fig. 26) and RP's Minimal R4 footprint both put the dot on the **+1V1 / V_OUT** pad, and the requirement is "placed on the layout as indicated in Figure 26". Our current note is therefore reversed.
+- **Polarity conflict between the documents.** Abracon's own marking drawing ([AOTA] p.4) labels the dotted terminal "+" (current in). RP's Fig. 28 puts the dot at "−" (current out). The verified layouts settle it: Pico 2 (Fig. 26) and RP's Minimal R4 footprint both put the dot on the **+1V1 / V_OUT** pad, and the requirement is "placed on the layout as indicated in Figure 26". If so, our note is reversed: question U1 asks the user to confirm it from the figures.
 - With L1 turned 90° from Fig. 26 and its loop closed through vias, even the "right" dot side is not the verified field geometry. RP's own words: "if you choose not to use our example, then you do so at your own risk" ([HW] §2.1 p.7).
 
 ### Y2 ABM8-272-T3 (12 MHz) with U11 XIN/XOUT
@@ -180,7 +209,7 @@ Notes
 | DCR | ≤ 250 mΩ | 115 typ / 140 max mΩ | OK | [AOTA] p.1 |
 | Shielding | Fully shielded | Molded, "shielded construction" | OK | [AOTA] p.1 |
 | Polarity mark | Required; parts aligned on the reel | White ink dot, "approved for use with Raspberry Pi's RP235x" | OK | [DS] §6.3.8.2 p.412; [AOTA] p.1, p.4 |
-| Land pattern | Abracon: 1.0 × 1.6 mm pads, 1.0 mm gap. RP [MIN]: 0.7 × 1.7 mm at ±0.7 mm, silk dot by pad 1 (+1V1) | KiCad L_Murata_DFE201610P: 0.55 × 1.6 mm at ±0.725 mm (covers the 0.6 ±0.2 mm terminals), **no polarity mark** | to fix (mark; see U11 row) | [AOTA] p.4; [MIN] L1 |
+| Land pattern | Abracon: 1.0 × 1.6 mm pads, 1.0 mm gap. RP [MIN]: 0.7 × 1.7 mm at ±0.7 mm, silk dot by pad 1 (+1V1) | KiCad L_Murata_DFE201610P: 0.55 × 1.6 mm at ±0.725 mm (covers the 0.6 ±0.2 mm terminals), **no polarity mark** | to fix (the mark); the pad: U1 | [AOTA] p.4; [MIN] L1 |
 | Availability | — | JLC live search 2026-10-24: **202 in stock**, $0.361, extended. The local `jlcpcb-parts` snapshot shows 3. Also stocked by Mouser/Future/Farnell (global sourcing or consignment) | check (order early) | `jlc` MCP C42411119 |
 
 #### L1 sourcing: in-stock 2016 (0806) alternatives at JLC/LCSC
@@ -215,7 +244,7 @@ Also from the same search: **RP2354B C39843328 shows 0 in stock at JLC** (2026-1
 
 | Reference element | Datasheet / guide | Ours | Verdict | Source |
 |---|---|---|---|---|
-| USB series resistors | "These I/Os do require 27 Ω series termination resistors placed close to the chip"; Table 1678: "27 Ω series resistor required for USB operation" | R23/R24 **22 Ω** (C25092, basic). No basic 27 Ω exists: C25100 and others are extended, +$3.07 per order. ≈ 6 mm from pins 66/67 ([MIN] 3.9 mm). Link: a few cm, on board, to the USB2517I's DN5, Full Speed. The USB FS window 28–44 Ω cannot be checked: RP doesn't publish its driver impedance | justified deviation (check) | [HW] §5.1 p.15; [DS] Table 1678 p.1334 |
+| USB series resistors | "These I/Os do require 27 Ω series termination resistors placed close to the chip"; Table 1678: "27 Ω series resistor required for USB operation" | R23/R24 **22 Ω** (C25092, basic). No basic 27 Ω exists: C25100 and others are extended, +$3.07 per order. ≈ 6 mm from pins 66/67 ([MIN] 3.9 mm). Link: a few cm, on board, to the USB2517I's DN5, Full Speed. The USB FS window 28–44 Ω cannot be checked: RP doesn't publish its driver impedance | **to check by the user (U7)** | [HW] §5.1 p.15; [DS] Table 1678 p.1334 |
 | USB pull-ups / pull-downs | Built in, no external parts | None | OK | [HW] §5.1 p.15 |
 | RUN | Digital In (FT), internal pull-up; "If RUN is not used, it should be tied high"; can be "driven from an external source" | R25 10k to +3V3_CP; TCA9534A P5 (on +3V3) open-drain emulation, input (high-Z) at reset, so the chip runs at power-up | OK | [DS] §7.3.3 p.452; Table 1677 p.1334 |
 | BOOTSEL | QSPI_SS strap through 1 kΩ (R6) so the chip can over-drive it; keep it on RP2354; no external pull-up needed (R1 DNF) | R26 1k to CP_BOOT_N (TCA9534A P6, high-Z at reset); QSPI_SD0–3/SCLK unconnected (in-package flash) | OK | [HW] §3.1 p.10–11 |
@@ -226,7 +255,7 @@ Also from the same search: **RP2354B C39843328 shows 0 in stock at JLC** (2026-1
 | GPIO10–13/16–19 (2.2k enables) | Standard FT outputs | 2.2k from a driven-high GPIO onto a bus; with a 5 V VREF (outside the 0.95–3.6 V spec) ≈ 0.4 mA flows back into the GPIO | OK in spec | [DS] Table 1683 p.1336 |
 | ADC pins type / range | GPIO40–47 are "Digital IO / Analogue" (standard, **not FT**): VPIN −0.5 … IOVDD + 0.5 V; ADC input 0 … ADC_AVDD; "voltage on the ADC inputs must not exceed IOVDD" | — | — | [DS] Table 1673 p.1331, Table 1680 p.1335, Table 1685 p.1338, §6.1.5 p.401 |
 | GPIO40–43 = VREF n / 2 | ≤ IOVDD | 10k/10k from VREF ≤ 3.6 V gives ≤ 1.8 V; 5 kΩ source | OK powered | [DS] §12.4 p.965–966 |
-| GPIO40–43, board off | IOVDD = 0 means VPIN ≤ 0.5 V | Self-powered DUT with this board unpowered (DUT_5V off): 1.8 V behind 10k, so ≤ 0.26 mA per pin (≤ 1 mA for four) flows through the ESD diodes into +3V3_CP. RP specifies no injection current | check | [DS] Table 1680 p.1335 |
+| GPIO40–43, board off | IOVDD = 0 means VPIN ≤ 0.5 V | Self-powered DUT with this board unpowered (DUT_5V off): 1.8 V behind 10k, so ≤ 0.26 mA per pin (≤ 1 mA for four) flows through the ESD diodes into +3V3_CP. RP specifies no injection current | **to check by the user (U8)** | [DS] Table 1680 p.1335 |
 | GPIO44 = +5V_MX × 47/147 | ≤ IOVDD | ≤ 1.68 V at 5.24 V; 32 kΩ source. +5V_MX is up before the AP2114H output, so during start-up the pin is > IOVDD + 0.5 with ≤ 40 µA injected (transient) | OK (transient check) | [DS] Table 1680 p.1335 |
 | **GPIO45 = −5 V sense** | VPIN ≥ −0.5 V | 47k to +3V3_CP, 100k to −5V: nominally 0.65 V. **If +3V3_CP < 1.6 V while −5 V is present, the pin goes below −0.5 V** (−1.6 V open circuit with +3V3_CP = 0; clamped by the ESD diode, ≈ 35 µA). This happens while the AP2114H starts after the TPS60400, and at power-down, where −5 V on C28 (light load) can outlive +3V3 | **to fix** (free) | [DS] Table 1680 p.1335 |
 | −5 V absent, +3V3_CP present | ≤ ADC_AVDD | 3.3 × 100/147 = 2.24 V | OK | [DS] Table 1685 p.1338 |
@@ -257,8 +286,8 @@ Sources:
 | Symbol pin map | Fig. 3-1 / Table 5-1 pin numbers | All 64 pins and EP 65 in `symbols.py usb2517()` match. The duplicate VDDA33 name binds all four pins (eda.py matches by name) | OK | DS Fig. 3-1 p7, Table 5-1 p10–15; AN26.21 §1.1 A p2 |
 | 3.3 V supply range | VDD33/VDDA33/VDD33PLL/VDD33CR 3.0–3.6 V (abs. 4.6 V) | +3V3 from AP2114H-3.3 | OK | DS §8.2 p48, §8.1 p47 |
 | 3.3 V decoupling | Datasheet gives no value. Caps close to pins, low-inductance connections; EVB: 0.1 µF per pin plus 4.7 µF and 2 × 10 µF bulk | 100 nF on each of pins 46, 64, 24, 5, 10, 52, 57 (C11–C17). Nearest bulk is C3 22 µF at the LDO, ≈ 78 mm away through the In2 plane | OK (values). Placement: check (see notes) | AN26.21 §2.1 A/D p4; AN26.2 §3.1 p6, §3.6.3 p14; EVB BOM items 1, 5, 6 |
-| VDD18 (pin 25), internal core regulator output | "must have a 1.0 µF (or greater) ±20% (ESR < 0.1 Ω) capacitor to VSS" | C7 1 µF 0402 25 V X5R ±10% (C52923) + C9 100 nF | OK, thin margin (notes) | DS Table 5-1 p15 |
-| VDD18PLL (pin 62), internal PLL regulator output | Same 1.0 µF (or greater) ±20%, ESR < 0.1 Ω | C8 1 µF + C10 100 nF | OK, thin margin; C8 is ≈ 5 mm from pin 62 (check) | DS Table 5-1 p15; AN26.2 §3.1 p6 |
+| VDD18 (pin 25), internal core regulator output | "must have a 1.0 µF (or greater) ±20% (ESR < 0.1 Ω) capacitor to VSS" | C7 1 µF 0402 25 V X5R ±10% (C52923) + C9 100 nF | OK, thin margin; DC bias: **to check by the user (U10)** | DS Table 5-1 p15 |
+| VDD18PLL (pin 62), internal PLL regulator output | Same 1.0 µF (or greater) ±20%, ESR < 0.1 Ω | C8 1 µF + C10 100 nF | OK, thin margin; DC bias: U10; C8 ≈ 5 mm from pin 62 (check) | DS Table 5-1 p15; AN26.2 §3.1 p6 |
 | Nothing driven onto regulator outputs | No external voltage on internal regulator outputs | HUB_1V8 and HUB_1V8PLL carry only their caps | OK | AN26.21 §1.1 H p2 |
 | RBIAS (pin 63) | 12.0 kΩ ±1 % to ground; return to the GND nearest the pin, via not shared | R1 12k 1 % (C25752, 0402WGF1202TCE), ≈ 3.5 mm from the pin | OK. Return path: check in layout | DS Table 5-1 p12; AN26.21 §1.1 K p2, §2.1 F p4; AN26.2 §3.6.4 p15 |
 | RESET_N (pin 43): internal POR | Datasheet: tie RESET_N to VDD33 and the internal POR handles reset. **Errata Module 2: "Internal POR circuit does not function"**; the reset may be lost on a drop or a non-monotonic ramp ("Device might not enumerate"). Fix: an external POR such as a MAX809S (2.93 V) supervisor | R2 10k up, C6 1 µF down (τ ≈ 10 ms, the EVB's τ: 100k / 0.1 µF). Handles a clean ramp; does not reset on a brown-out | **to fix** (supervisor) | DS Table 5-1 p14; ERR Module 2 p2; AN26.2 §2.4 p3 ("simple RC … not recommended"); AN26.21 §1.1 D p2 |
@@ -279,7 +308,7 @@ Sources:
 | PRTPWR1–7 / OCS1–7_N | Checklist: PRT_PWR should drive a port power switch with an open-drain OC flag (exposed ports). OCS_N are IPU (35–90 µA) | Unconnected on purpose: each TPS2553 is switched by the node through the TCA6408A, and its FAULT_N is read the same way | justified deviation. The host's port-power requests and over-current reports have no physical effect | AN26.21 §1.2 A p3; DS Table 5-1 p10, p12; Table 8-2 p49 |
 | LED_B4–7_N (14, 16, 18, 32) | Outputs only, no strap function | NC | OK | DS Table 5-1 p11 |
 | Unused ports 6 and 7 | PRT_DIS strap: "To disable, pull up with 10K resistor to 3.3V". The USB251xB datasheet requires both D+ and D− high to disable | D± left open, so the ports stay enabled; the host sees 7 ports, 6 and 7 always empty | justified deviation (cosmetic) | DS Table 5-1 p10; 251xB Table 3.2 p17 |
-| PRT_DIS on used ports | Every DN D± is a strap at RESET_N rise | Ports off at reset, so a bus-powered DUT has no pull-up then. A self-powered DUT that ignores VBUS and pulls D+ through 1.5k could read as "disable" if the USB2517 needs only one line high (not stated) | check | DS Table 5-1 p10; 251xB Table 3.2 p17 |
+| PRT_DIS on used ports | Every DN D± is a strap at RESET_N rise | Ports off at reset, so a bus-powered DUT has no pull-up then. A self-powered DUT that ignores VBUS and pulls D+ through 1.5k could read as "disable" if the USB2517 needs only one line high (not stated) | **to check by the user (U3)** | DS Table 5-1 p10; 251xB Table 3.2 p17 |
 | Ports 1–4 → USB-C | DNn_DP → PORTn_DP → USBLC6 4/3 → CONN_DP → A6/B6; D− via 6/1 → A7/B7 | As listed | OK (PRT_SWP = 0) | DS Table 5-1 p10 |
 | Port 5 → RP2354B | Integrated termination; no hub-side parts | CP_HUB_DP/DN, 22 Ω at the RP2354B (the RP2354B section). Base variant: R23/R24 not fitted, so ≈ 43 mm open stubs | OK | DS p1 |
 | Downstream VBUS bulk | Checklist: 150 µF on each exposed port's VBUS (USB-IF droop) | 22 µF after each port's own current-limited TPS2553 | see the ports section. Per-port limiting already keeps ports from loading each other | AN26.21 §1.2 C p3; AN15.17 p6 |
@@ -311,7 +340,7 @@ Notes:
 | Frequency budget | ±350 ppm (hub); USB HS ±500 ppm | ±10 ppm tol, ±20 ppm over −40…85 °C, ±3 ppm/yr, + ≈ 5–10 ppm load pull ⇒ < ±50 ppm | OK | DS §9.1 p52; XT p1 |
 | Pinout | Pads 1–3 are the crystal, 2 and 4 GND | 1 = XI, 3 = XO, 2/4 = GND | OK | XT p1 ("Top View Crystal Connection") |
 | Load capacitance | CL = (C1+CS1)(C2+CS2)/(C1+CS1+C2+CS2), CS = CB + CXTAL; CXTAL = 2 pF. The EVB uses 33 pF with an 18 pF crystal | C4 = C5 = 33 pF C0G (C1562). CB ≈ 1.5–3 pF ⇒ CL ≈ 18.3–19.0 pF, + ≈ 0.5 pF XI–XO shunt ≈ 18.8–19.5 pF vs 20 pF. The simple formula: 16.5 + 3–5 = 19.5–21.5 pF | OK (≈ −1 pF ⇒ ≈ +5 ppm, at an estimated 5 ppm/pF) | DS Fig. 9-1/9-2 p52, Table 8-3 p51; EVB BOM items 4, 32 |
-| Parallel 1 MΩ | Fig. 9-1 "Typical crystal circuit" shows a 1 Meg across XTAL1–XTAL2. The EVB populates R19 1Meg across Y1; AN15.17 places a "parallel resistor". The USB251xB states an internal 1 MΩ; the USB2517 datasheet does not | None | **to fix** | DS Fig. 9-1 p52; EVB sch. sheet 2, BOM item 21; AN15.17 p6; 251xB §7.1 p53 |
+| Parallel 1 MΩ | Fig. 9-1 "Typical crystal circuit" shows a 1 Meg across XTAL1–XTAL2. The EVB populates R19 1Meg across Y1; AN15.17 places a "parallel resistor". The USB251xB states an internal 1 MΩ; the USB2517 datasheet does not | None | **to check by the user (U2)**; fitting it anyway is harmless | DS Fig. 9-1 p52; EVB sch. sheet 2, BOM item 21; AN15.17 p6; 251xB §7.1 p53 |
 | ESR | Hub gives no limit; crystal ESR ≤ 50 Ω (16–31 MHz) | 50 Ω max | OK (same class as the EVB's HC-49) | XT p1 |
 | Drive level | Crystal 10–200 µW (100 typ). Hub drive not specified; XTAL2 ≤ VDD18 (1.8 V) | Estimate DL = ESR·(2πf·(C0+CL)·Vpp/2√2)²: 54–108 µW at 1.2 Vpp, 122–243 µW at 1.8 Vpp (ESR 25–50 Ω, C0+CL 23 pF) | check (XTAL2 amplitude) | XT p1; DS §8.2 p48 |
 | C0 | ≤ 3 pF | n/a | OK | XT p1 |
@@ -346,25 +375,27 @@ Sources:
 
 ### U7/U8 WCH CH446Q (8 × 16 crosspoint)
 
+The manual read here is WCH's Chinese one, version 1C, from an LCSC mirror; WCH's own page (https://www.wch-ic.com/downloads/CH446DS1_PDF.html) gave no newer or English copy.  The rows marked U4 rest on that reading: see "To check by the user".
+
 | Reference element | Datasheet / guide | Ours | Verdict | Source |
 |---|---|---|---|---|
 | VDD (single-supply range) | VDD 4–13.2 V (GND = 0), with VDD > GND + 4 V | +5V_MX 4.75–5.24 V | OK (0.75 V margin over GND + 4 V) | CH446 §6.2 p6 |
-| VEE and VDD − VEE | VEE −8.8 to 0 V, VDD − VEE < 13.2 V; "VDD=5V & VEE=−5V (VDD−VEE=10V)" is one of the recommended combinations | VEE −4.7 to −5.24 V, span 9.5–10.5 V | OK | CH446 §6.2 p6 |
+| VEE and VDD − VEE | VEE −8.8 to 0 V, VDD − VEE < 13.2 V; "VDD=5V & VEE=−5V (VDD−VEE=10V)" is one of the recommended combinations | VEE −4.7 to −5.24 V, span 9.5–10.5 V | OK as read; **to check by the user (U4a)** | CH446 §6.2 p6 |
 | Absolute maximum supply | VDD ≤ 16 V (VEE = GND), VEE ≥ −16 V (VDD = GND) | span ≤ 10.5 V | OK | CH446 §6.1 p6 |
 | Supply polarity and sequencing | Pin table: VDD "必须大于等于 GND", VEE "必须小于等于 GND". No other sequencing or latch-up clause in v1C | VEE starts at 0 V and goes negative as the pump starts; the TPS60400's active Schottky stops OUT going positive (R40/R41 push ≈ 22 µA in until then) | OK | CH446 §4.1 p2; TPS §8.4.1 p12 |
 | Analog pin range | Recommended VEE…VDD; absolute VEE − 0.5…VDD + 0.5 | Bus 0–3.3 V (≈ 3.6–4.2 V with a 5 V VREF). +3V3 is derived from the same +5V through the LDO, so the pull-ups never exceed VDD while it ramps | OK | CH446 §6.1–6.2 p6 |
 | Switch current | Isw ≤ 15 mA per switch, Iall ≤ 100 mA total (absolute) | Pull-up ≤ 1.8 mA. Push-pull contention between two DUTs: ≈ 6–12 mA, limited by 2 × 100 Ω | OK; the 100 Ω arrays are what keep this in range | CH446 §6.1 p6 |
-| Logic levels at 5 V | VIL ≤ 0.8 V, VIH ≥ 2.0 V at VDD − GND = 5 V | TCA9534A push-pull outputs at 3.3 V | OK: 3.3 V is a valid high | CH446 §6.3 p6 |
+| Logic levels at 5 V | VIL ≤ 0.8 V, VIH ≥ 2.0 V at VDD − GND = 5 V | TCA9534A push-pull outputs at 3.3 V | OK as read; **to check by the user (U4b)** | CH446 §6.3 p6 |
 | Static current with logic-high inputs | ICC5 0.4 typ / 1.5 max mA (VDD 5 V, inputs at 2.4 V). ICC0 ≤ 100 µA with inputs at rails | RST/DAT/CK/STB sit at 3.3 V when high | OK. Keep DAT/CK/STB low when idle (firmware) | CH446 §6.3 p6 |
 | Decoupling | "VDD 和 VEE 引脚必须外接退耦电容"; the reference circuits show 0.1 µF on each | VDD: 100 nF + 1 µF (C20/C21, C23/C24). VEE: 100 nF (C22, C25). Each sits on the face of its pin, about 1.75 mm past the pin tips | OK | CH446 §7.1 p7, Fig. §7.2 p8 |
 | Serial mode select | P/S: high = parallel, low = serial | P/S (pin 10) on GND | OK | CH446 §4.1 p2 |
-| AX0–AX3, AY0–AY2 in serial mode | "串行地址方式下，为未用引脚，必须直接连接 GND"; the §7.2 reference circuit ties them all to GND | Pins 43, 18, 19, 42, 20, 21, 40 on GND | OK | CH446 §4.1 p2, §7.2 p8 |
+| AX0–AX3, AY0–AY2 in serial mode | "串行地址方式下，为未用引脚，必须直接连接 GND"; the §7.2 reference circuit ties them all to GND | Pins 43, 18, 19, 42, 20, 21, 40 on GND | OK as read; **to check by the user (U4c)** | CH446 §4.1 p2, §7.2 p8 |
 | NC pins 9, 22, 23, 32, 44 | "未用引脚，禁止连接" (unused, do not connect) | Not in `conns`, so left open | OK | CH446 §4.1 p2 |
-| RST | Active high. While RST is high, ACT is ignored and every latch is held at 0 (all switches open) | MX_RST: R20 10k to +3V3, driven by TCA9534A P4 | OK | CH446 §4.1 p2, §5 p3 |
+| RST | Active high. While RST is high, ACT is ignored and every latch is held at 0 (all switches open) | MX_RST: R20 10k to +3V3, driven by TCA9534A P4 | OK as read; **to check by the user (U4d)** | CH446 §4.1 p2, §5 p3 |
 | Power-up latch state | Not specified | RST is high once +3V3 is up. During the ≈ 1 ms before that, the LSF0108s are still off: their EN = Vref_B ramps with 200k × 100 nF = 20 ms | OK | CH446 §5 p3; LSF §8.3.2 p11 |
 | Serial protocol | 7 rising CK edges shift ADDR6…0 (AY2…AX0), then DAT = on/off and a high STB pulse. Setup times: TAS ≥ 7 ns, TDS ≥ 8 ns, TCS ≥ 10 ns | One TCA9534A drives DAT/CK shared and STB1/STB2 separately. The expander changes all 8 pins at once | Check: firmware must put DAT, CK↑ and STB in separate writes (see Checks) | CH446 §5 p3, Fig. p4, §6.5 p7 |
 | Edge rate and refresh | Recommends slowing the digital edges and the transfer rate (VDD is shared between analog and digital); in noisy environments, rewrite the switches every few seconds | Fast push-pull edges from the TCA9534A, no RC; changes at I²C pace | Justified deviation (low rate, RST masks power-up). Firmware: periodic refresh | CH446 §7.1 p7 |
-| R_on at ±5 V | 45/65 Ω at VDD − VEE = 12 V (25 °C); 120/185 Ω at 5 V span (25 °C), 150/225 Ω at 85 °C. Nothing given for a 10 V span | ±5 V, chosen to get the low R_on | Check: R_on at a 10 V span is not specified (expect between the two) | CH446 §6.3 p6 |
+| R_on at ±5 V | 45/65 Ω at VDD − VEE = 12 V (25 °C); 120/185 Ω at 5 V span (25 °C), 150/225 Ω at 85 °C. Nothing given for a 10 V span | ±5 V, chosen to get the low R_on | **to check by the user (U4e)**, then measure | CH446 §6.3 p6 |
 | Switch capacitance | CSW 10 typ / 25 max pF per port pin; −3 dB bandwidth 50 MHz (3 kΩ load) | Two Y pins per bus, plus the X pins that are on | OK; this sets the bus speed (see the LSF notes) | CH446 §6.4 p7 |
 | VEE current | Not specified | Taken as µA-level (CMOS) | Check: measure it | CH446 §6.3 p6 |
 | Pin numbers (bench symbol) | §4.1 table and package drawing | X0–X5 = 31–26, X6–X11 = 3–8, X12/13 = 25/24, X14/15 = 1/2, Y0–Y3 = 33/35/37/39, Y4–Y7 = 17/15/13/11, VDD 38, VEE 16, GND 12, RST 41, DAT 36, CK 34, STB 14, P/S 10 | OK: they match | CH446 §3–4.1 p2 |
@@ -389,7 +420,7 @@ Notes:
 | Output voltage limit | OUT absolute −5.5 V; VO ≈ −(VI − RO·IO), RO ≈ 12–15 Ω | ≈ −VI = −5.0 to −5.24 V | OK | TPS §7.1 p4, §8.3.1 p11, §7.5 p5 |
 | Output current | ≤ 60 mA | R41 path (3.3 + 5.24)/147k ≈ 58 µA, plus 2 × CH446 VEE (not specified, µA) | OK, < 1 % of rating | TPS §7.3 p4 |
 | Capacitor values for the -400 | Table 9-1: TPS60400 CI = C(fly) = CO = 1 µF (-401 10 µF, -402 3.3 µF, -403 1 µF); ceramic X5R/X7R | C26 fly, C27 in, C28 out: all 1 µF 0402 25 V X5R (C52923) | OK | TPS Table 9-1 p14, Table 9-3 p14 |
-| CO minimum after DC bias | ROC: CO ≥ 1 µF. §9.2.1.2.4: "Smaller capacitance values can be used with light loads if higher output ripple can be tolerated" | All three caps see ≈ 5 V. A 0402 1 µF X5R typically keeps ≈ 40–60 % at 5 V, so ≈ 0.4–0.6 µF | Justified deviation (µA load; this is an unregulated pump, so no loop to destabilise) | TPS §7.3 p4, §9.2.1.2.4 p14. Samsung DC-bias curve not retrieved (product page has no data) |
+| CO minimum after DC bias | ROC: CO ≥ 1 µF. §9.2.1.2.4: "Smaller capacitance values can be used with light loads if higher output ripple can be tolerated" | All three caps see ≈ 5 V. A 0402 1 µF X5R typically keeps ≈ 40–60 % at 5 V, so ≈ 0.4–0.6 µF | **to check by the user (U10)** | TPS §7.3 p4, §9.2.1.2.4 p14. Samsung DC-bias curve not retrieved (product page has no data) |
 | IN bypass | "Bypass IN to GND with a capacitor that has the same value as the flying capacitor" | C27 1 µF = C26 | OK | TPS Pin Functions p3 |
 | Output ripple | V = IO/(fosc·CO) + 2·IO·ESR; fosc (VCO version) 30 min, 50–250 typ, 350 max kHz | Worst case ≈ 0.5 mA / (30 kHz × 0.45 µF) ≈ 37 mV p-p; typical ≈ 0.1 mA at 50 kHz ≈ 4 mV | OK | TPS eq. 6 p14, §7.5 p5 |
 | Start-up into a load | Integrated active Schottky keeps OUT from being pulled above GND | +3V3_CP pushes ≈ 22 µA in through R40/R41 until the pump runs | OK | TPS §8.4.1 p12 |
@@ -423,7 +454,7 @@ Notes:
 | EN and Vref_B wiring | "EN input should be tied directly to Vref_B … pulled up to the HIGH side (VCCB) through a bias resistor (typically 200 kΩ) … a filter capacitor on Vref_B is recommended" (0.1 µF in the figures) | EN = Vref_B, R111 200k to +5V_MX, C105 100 nF | OK | LSF §8.3.2 p11, §9.2.1.1.2 p14 |
 | Headroom | VCCB ≥ Vref_A + 0.8 V (Table 9-2); "recommended to be 1.0 V higher … for best signal integrity". ROC footnote (rev M) relaxes translation to ≥ Vref_A + 0.6 V | VCCB = +5V_MX ≥ 4.75 V: VREF ≤ 3.95 V (0.8 V rule), ≤ 3.75 V (1.0 V rule). Spec is 0.95–3.6 V | OK; design.py and electronics.md quote this correctly | LSF Table 9-2 p14, §9.2.1.1.2 p14, §6.3 note (1) p5 |
 | Vref_A range | ROC footnote: translation from Vref_A 0.65 V (rev M); §8.3.1 says 0.95–5.5 V | VREF 0.95–3.6 V | OK | LSF §6.3 p5, §8.3.1 p10 |
-| "Vref_A is the lowest voltage" | Table 9-2 note: "Vref_A is required to be the lowest voltage level across all inputs and outputs" | B pull-ups are at 3.3 V, so VREF 3.3–3.6 V breaks this | Justified deviation: A highs pass B up to ≈ Vref_A against the 10k; B highs reach A at 3.3 V (≥ 0.7 × 3.6 V) | LSF Table 9-2 p14 |
+| "Vref_A is the lowest voltage" | Table 9-2 note: "Vref_A is required to be the lowest voltage level across all inputs and outputs" | B pull-ups are at 3.3 V, so VREF 3.3–3.6 V breaks this | **to check by the user (U6)** | LSF Table 9-2 p14 |
 | Bias current sink | "Current does flow into the A-side voltage supply … not all voltage sources can sink current" | 10k + 10k (R112/R113) to GND sink it (≤ 21 µA) | OK; a good choice | LSF §9.2.1.1.2 p14 |
 | B-side pull-ups | "Pull-up resistors are always required on the high side" | Each bus: 10k to +3V3 (RN8/RN9) always, plus 2.2k switchable (RN6/RN7). An X line that no switch connects floats on its B side, which is harmless because it carries nothing | OK | LSF §8.4.1 p12 |
 | Pull-up sizing | Keep current through the pass FET ≈ ≤ 15 mA | 10k‖2.2k = 1.8k → ≤ 1.8 mA | OK | LSF §9.2.1.2.2 p15 |
@@ -468,8 +499,8 @@ Notes:
 | Clamping | VC ≤ 10 V at 1 A, ≤ 15 V at 5 A (8/20 µs) | Residual reaches the LSF A pins (7 V absolute) through 100 Ω | OK (100 Ω limits the current) | H5V p2, Fig. 4 |
 | ESD / surge | IEC 61000-4-2 ±8 kV contact, ±15 kV air; IEC 61000-4-5 5 A | Header P1–P8, lead I²C/INT | OK | H5V p1 |
 | Capacitance | ≤ 0.8 pF I/O–GND, ≤ 0.4 pF I/O–I/O | n/a | OK (negligible) | H5V p2 |
-| Pinout: I/O and GND | Function diagram: steering diodes on pins 1, 2, 4, 5, zener anode on pin 8. Recommended land joins the centre pads 3/8 into one bar | I/O 1, 2, 4, 5; GND 3 and 8 (footprint: pad 3 runs into pad 8) | OK | H5V Function Diagram p1, land pattern p3 |
-| Pins 6/7/9/10 "tied inside to 5/4/2/1" (catalog.py, electronics.md) | The function diagram draws 6, 7, 9, 10 with **no** internal connection | Each line routed through both pads of its pair. The pads are distinct (footprint `duplicate_pad_numbers_are_jumpers no`) and on the same net, so DRC's 0 unconnected means copper joins them | Check: the claim is not backed, and it does not matter for this board. Fix the catalog comment if a bench test shows them open | H5V p1; bench.pretty DFN2510-10L |
+| Pinout: I/O and GND | Function diagram: steering diodes on pins 1, 2, 4, 5, zener anode on pin 8. Recommended land joins the centre pads 3/8 into one bar | I/O 1, 2, 4, 5; GND 3 and 8 (footprint: pad 3 runs into pad 8) | OK as read; **to check by the user (U5a)** | H5V Function Diagram p1, land pattern p3 |
+| Pins 6/7/9/10 "tied inside to 5/4/2/1" (catalog.py, electronics.md) | The function diagram draws 6, 7, 9, 10 with **no** internal connection | Each line routed through both pads of its pair. The pads are distinct (footprint `duplicate_pad_numbers_are_jumpers no`) and on the same net, so DRC's 0 unconnected means copper joins them | **to check by the user (U5b)** | H5V p1; bench.pretty DFN2510-10L |
 | Polarity | Uni-directional: negative excursions clamp at −VF | Signals ≥ 0 V | OK | H5V p1 |
 | Placement | (general) ESD first at the connector | Header → ESD (TPD_Y 36.4) → 100 Ω (RN_Y 34.2) → LSF (29.6) | OK | design.py port() |
 | U4 spare line | n/a | D2− (pin 5) unused, partner pads open | OK | — |
@@ -539,7 +570,7 @@ The 10 Ω input resistors are left out deliberately. Upstream is 5 V limited to 
 | VCCI / VCCP | 1.65–5.5 V; VCCP up before VCCI recommended (SDA stuck low otherwise) | Both on +3V3, so they rise together | OK | [TCA] §6.3 p.5, §10.1 p.31 |
 | Decoupling | Caps as close as possible to the device | One 100 nF per expander, 3.1 mm south of its centre (the supply pins are on the north edge) | OK | [TCA] §11.1 p.33 |
 | ADDR | Connect directly to VCCP or GND; L = 0x20, H = 0x21 | U2 on GND (0x20), U6 on +3V3 (0x21) | OK | [TCA] Table 5-1 p.3, Table 8-3 p.25 |
-| RESET | "Connect to VCCI through a pull-up resistor, if no active connection is used"; VIH 0.7·VCCI to 5.5 V | Tied directly to +3V3 | justified deviation | [TCA] Table 5-1 p.4, §8.3.4 p.20–21 |
+| RESET | "Connect to VCCI through a pull-up resistor, if no active connection is used"; VIH 0.7·VCCI to 5.5 V | Tied directly to +3V3 | **to check by the user (U9)** | [TCA] Table 5-1 p.4, §8.3.4 p.20–21 |
 | Power-on reset | Reset is released at VPORR ≤ 1.4 V. Re-arming needs VCCP < VPORF (0.7 V min) for ≥ 1 µs; ramp 0.1–2000 ms; at power-on every P port is an input | +3V3 follows DUT_5V. At reset the EN pull-downs keep every port off | OK | [TCA] §8.4.1 p.21, Table 10-1 p.31, Table 5-1 p.3 |
 | INT | Open drain, pulled up to VCCI or VCCP | R8 10k to +3V3, wired-OR with the INA226 alerts, through Q3 | OK | [TCA] §8.3.3 p.20 |
 | P port driving EN | IOH ≤ 10 mA; VOH ≥ 2.6 V at −8 mA (VCCP 3 V) | 0.33 mA into the 10k pull-down | OK | [TCA] §6.3 p.5, §6.5 p.7 |
