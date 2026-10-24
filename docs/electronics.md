@@ -377,7 +377,8 @@ co-processor (the why in [data-x4-v2-research.md](data-x4-v2-research.md), its f
 [coproc-firmware-research.md](coproc-firmware-research.md)).  One PCB, two assemblies: DATA-4x-logic
 for the analyzer bays (B3 first), and the base DATA-4x for the other converted bays, the same board with
 the logic left off (the user, 2026-10-20: "pour la data 4x on attend la version verticale"; v1 is not
-ordered for the proto).
+ordered for the proto).  Its key ICs against their datasheets and design guides, before the order:
+[datasheet-audit-data-x4-v2.md](datasheet-audit-data-x4-v2.md) (2026-10-24, ten items to fix).
 
 **It stands.**  The board stands behind the port wall instead of lying in the drawer's rear bay
 ([data-x4-v2-layout-options.md](data-x4-v2-layout-options.md), option B, decided 2026-10-20).  Geometry
