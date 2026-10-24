@@ -637,7 +637,7 @@ GPIO (IO5 or IO6) would let the firmware restart the camera alone.
 
 ## Bring-up measurements
 
-What the PCBA review ([pcba-review.md](pcba-review.md)) left to the bench, per board, on the first ones built.
+What the PCBA review ([pcba-review.md](pcba-review.md)) left to the bench, per board, on the first ones built.  The datasheet audit ([datasheet-audit.md](datasheet-audit.md), 2026-10-24) adds its own bring-up checks.
 
 | Board | What | How | Expect |
 |---|---|---|---|
