@@ -32,6 +32,11 @@ The scenario, the sweep, the run script and the result CSVs are in
 - **TX power (8–20 dBm) and AP distance (1–3 m) change nothing** at this range: every link is at the
   top MCS.  The 11b beacons cost 2–3 % of airtime.  A larger ESP32 block-ack window gains at most 7 %,
   because the node's TCP window is the limit.
+- **Per DUT** (up to 32 DUTs with 8 bays, 64 with 16, on DATA ×4 boards):
+  - 8 bays: all 32 DUTs can flash at once at ≈ 90 kB/s each.  There the nodes' USB full-speed buses
+    are the limit, not Wi-Fi.
+  - 16 bays: about 32 DUTs at that speed.  All 64 at once get ≈ 43 kB/s each.
+  - Details: "The two rack sizes, per DUT".
 - **Wi-Fi stops being enough** when CI flashes more than about 8 nodes at once per channel, or when
   the rack's channel is shared with busy foreign traffic.
 
@@ -39,7 +44,7 @@ The scenario, the sweep, the run script and the result CSVs are in
 
 ns-3.49 (2026-10-06), one C++ scenario (`rack-wifi.cc`), one run per point of the sweep, 20 s
 measured after 5 s of association and warm-up, 3–4 seeds per point (up to 10 in the channel pass),
-383 runs in all, 19 of them aborted by ns-3 (below, "Simulator artefacts").
+605 runs in all, 19 of them aborted by ns-3 (below, "Simulator artefacts").
 
 | Part | Model | From |
 |---|---|---|
@@ -260,6 +265,66 @@ BabbleSim study), not for capacity: 8 dBm costs nothing here.
   receive window already holds a flow to about 8 segments in flight.  The extra Wi-Fi RX buffers
   are not worth their RAM.
 
+### The two rack sizes, per DUT
+
+**With DATA ×4 boards, a rack holds up to 32 DUTs (8 bays) or up to 64 DUTs (16 bays).**
+
+The `racks` sweep runs both sizes at the recommended setting:
+- 8 dBm, channel 11, 11b off, the AP at 2 m, A-MPDU 6, and the near-zone loss;
+- every bay's node and the hub associated, with their background traffic (polls, scrapes, mDNS,
+  consoles), whether they flash or not;
+- the busy channel: 4 DUTs with their own Wi-Fi on the rack's channel, 3 cm from their nodes, plus a
+  neighbour's BSS on channel 6.
+
+222 runs, none aborted, none with a dead station: 4 seeds per point at 8 bays, 5 at 16, and 6 for the
+busy channel.  Each cell reads: USB/IP kB/s per flashing node (worst node) · HTTP p95 ms · airtime.
+
+**8 bays** (8 nodes + hub, up to 32 DUTs):
+
+| Flashing nodes | 0 | 1 | 2 | 4 | 6 | 8 |
+|---|---|---|---|---|---|---|
+| CI | – · 1 · 1 % | 362 · 2 · 10 % | 362 · 2 · 18 % | 362 · 4 · 35 % | 362 · 5 · 52 % | 362 · 14 · 68 % |
+| CI + 2 cameras | | 362 · 3 · 17 % | 362 · 5 · 25 % | 362 · 9 · 43 % | 362 · 18 · 59 % | 362 · 39 · 76 % |
+| CI + 8 cameras (1 per bay) | | 362 · 12 · 40 % | 362 · 16 · 49 % | 362 · 36 · 66 % | 362 · 64 · 83 % | 280 (268) · 130 · 86 % |
+| Busy channel | | 362 · 4 · 35 % | 362 · 5 · 44 % | 362 · 9 · 61 % | 362 · 67 · 79 % | 267 (258) · 137 · 81 % |
+
+The cameras keep 5 frames/s in every 8-bay case (4.9 at worst).
+
+**16 bays** (16 nodes + hub, up to 64 DUTs):
+
+| Flashing nodes | 0 | 1 | 2 | 4 | 8 | 12 | 16 |
+|---|---|---|---|---|---|---|---|
+| CI | – · 1 · 2 % | 362 · 2 · 11 % | 362 · 2 · 19 % | 362 · 3 · 36 % | 362 · 15 · 69 % | 274 (261) · 122 · 81 % | 172 (163) · 187 · 79 % |
+| CI + 2 cameras | | 362 · 5 · 18 % | 362 · 6 · 26 % | 362 · 9 · 44 % | 362 · 41 · 77 % | 237 (222) · 142 · 81 % | 148 (138) · 217 · 80 % |
+| CI + 16 cameras (1 per bay) | | 362 · 68 · 78 % | 347 · 142 · 88 % | 174 · 208 · 88 % | 121 · 275 · 87 % | 90 · 409 · 86 % | 70 · 486 · 85 % |
+| Busy channel | | 362 · 4 · 36 % | 362 · 5 · 44 % | 362 · 11 · 62 % | 253 (243) · 142 · 80 % | 133 (126) · 259 · 79 % | 79 (74) · 421 · 78 % |
+
+With 16 cameras, the camera rate falls with the flashes: 5 frames/s up to 2 flashes, 4.6 at 4, 3.7 at
+8, and 2.5 at 16 (49 % of frames skipped).
+
+These runs match the earlier ones (11 dBm, channel 6, 11b on) within the 2–3 % that 11b off gives
+back:
+
+| Flashing nodes | Earlier | Now |
+|---|---|---|
+| 8 | 362 kB/s at 70 % airtime | 362 kB/s at 68 % |
+| 12 | 268 kB/s | 274 kB/s |
+| 16 | 166 kB/s | 172 kB/s |
+| 8, busy channel (near field) | 258 kB/s | 267 kB/s |
+
+**Per DUT.**  A node's 4 DUTs share its USB full-speed bus, about 362 kB/s.  Four simultaneous flashes
+on one node get about 90 kB/s each.  Flash times below are for a 1 MB image.
+
+| | 8 bays (32 DUTs) | 16 bays (64 DUTs) |
+|---|---|---|
+| At full speed (362 kB/s, ≈ 3 s) | 8 DUTs, one per node | 8 DUTs, one per node |
+| At ≈ 90 kB/s (≈ 11 s), 4 per node | **all 32**: the nodes' USB is the limit, not Wi-Fi | 32 (8 nodes) |
+| Everything at once | 32 at ≈ 90 kB/s; ≈ 67–70 kB/s with a camera per bay or the busy channel | 48 at ≈ 68 kB/s (12 nodes); all 64 at ≈ 43 kB/s (≈ 24 s), ≈ 37 with 2 cameras, ≈ 20 on the busy channel (≈ 50 s) |
+| At ≥ 90 kB/s (a node's 4-DUT share) | all 32 | about 32 (36 at best: 12 nodes × 3) |
+
+Control requests stay under 15 ms at p95 up to 8 flashing nodes, whatever the rack size.  Beyond 8,
+they take 120–190 ms.
+
 ## Not modelled
 
 - **Receiver blocking.**  A DUT 3 cm away puts about +5 dBm on its node's antenna.  ns-3 counts only
@@ -290,7 +355,8 @@ BabbleSim study), not for capacity: 8 dBm costs nothing here.
 - **Dead stations.**  In some runs, one or two stations send every MPDU into failure for the whole
   run, while they and the AP both hold the association.  Their HTTP probes all time out.
   - It happens only with 16 bays (17 stations), idle included: 29 of those 107 runs, against none of
-    the 134 runs with 8 bays.
+    the 134 runs with 8 bays.  None of the 129 runs with 16 bays in the rack-size pass (11b off,
+    near-zone loss) had one.
   - It depends on the seed: a change in timing, such as OFDM beacons, makes it go away.
   - `rack-wifi.cc` counts these stations (`dead`).  `summarize.py` leaves such runs out, and the
     tables say how many it dropped.

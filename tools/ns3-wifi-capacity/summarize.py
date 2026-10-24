@@ -43,6 +43,8 @@ SWEEPS = {
     "channel_near": (["active", "rackChannel", "dutChannel", "neighbourChannel"], COMMON + [
                      ("dut_goodput_Mbps", "DUT Wi-Fi Mbit/s", 1), ("neighbour_goodput_Mbps", "neighbour Mbit/s", 1)]),
     "ci_near": (["active"], COMMON),
+    "racks": (["bays", "scenario", "cams", "active"], COMMON + CAM + [
+              ("dut_goodput_Mbps", "DUT Wi-Fi Mbit/s", 1), ("neighbour_goodput_Mbps", "neighbour Mbit/s", 1)]),
     "ampdu": (["active", "ampduMpdus"], [("airtime_pct", "airtime %", 0),
               ("usbip_goodput_kBps", "USB/IP kB/s per node", 0), ("total_MBps", "total MB/s", 2),
               ("http_p95_ms", "HTTP p95 ms", 0), ("mac_retx_pct", "MAC retx %", 0)]),

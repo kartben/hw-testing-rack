@@ -59,7 +59,26 @@ SWEEPS = {
     "ci_near": lambda: runs("ci", (1, 2, 3), active=(4, 8, 12, 16), nearLoss=(1,)),
     # the ESP32's block-ack window (ESP32_WIFI_TX/RX_BA_WIN, 6 by default, 32 at most)
     "ampdu": lambda: runs("ci", (1, 2, 3), active=(8, 12, 16), ampduMpdus=(6, 16, 32)),
+    # the two rack sizes at the recommended setting, every bay's node associated with its
+    # background traffic: idle, CI, CI with 2 cameras and with one per bay, the busy channel
+    "racks": lambda: itertools.chain.from_iterable(
+        itertools.chain(
+            racks("idle", (1, 2, 3), bays=(b,)),
+            racks("ci", seeds, bays=(b,), active=act),
+            racks("ci", seeds, bays=(b,), active=act, cams=(2, b)),
+            racks("harsh", (1, 2, 3, 4, 5, 6), bays=(b,), active=act, dutChannel=(11,),
+                  neighbourChannel=(6,), dutCm=(3,)))
+        for b, act, seeds in ((8, (1, 2, 4, 6, 8), (1, 2, 3, 4)),
+                              (16, (1, 2, 4, 8, 12, 16), (1, 2, 3, 4, 5)))),
 }
+
+# the recommended setting: 8 dBm, channel 11, 11b off, the near-zone loss
+RACKS = {"txPower": 8, "beacon11b": 0, "rackChannel": 11, "nearLoss": 1}
+
+
+def racks(scenario, seeds, **axes):
+    for r in runs(scenario, seeds, **axes):
+        yield dict(r, **{k: v for k, v in RACKS.items() if k not in axes})
 
 
 def main():
