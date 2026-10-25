@@ -1086,10 +1086,11 @@ def board() -> Board:
         "keepouts": [
             # the core regulator (the audit's fixes 2 and 3, RP2350 DS §6.3.8.1 and Fig. 27): the router's tracks
             # off the block below the VREG pins (a "core:" area, dropped once routed: +1V1 leaves by its two V_OUT
-            # vias, +3V3_CP by VREG_VIN's inner end), and no copper at all under LX (pin 63 to L1's LX pad) and L1 on
-            # the planes and B.Cu
+            # vias, +3V3_CP by VREG_VIN's inner end), up to the V_OUT vias, so USB_DM / USB_DP (pins 66, 67) leave
+            # straight past their east side as on Raspberry Pi's board; and no copper at all under LX (pin 63 to
+            # L1's LX pad) and L1 on the planes and B.Cu
             {"name": "core:vreg-block", "layers": ["F.Cu"], "tracks_only": True,
-             "poly": [(CP[0] - 4.55, CP[1] + 5.4), (CP[0] - 1.25, CP[1] + 5.4), (CP[0] - 1.25, CP[1] + 9.75),
+             "poly": [(CP[0] - 4.55, CP[1] + 5.4), (CP[0] - 1.95, CP[1] + 5.4), (CP[0] - 1.95, CP[1] + 9.75),
                       (CP[0] - 4.55, CP[1] + 9.75)]},
             {"name": "lx-under", "layers": ["In1.Cu", "In2.Cu", "B.Cu"] if not six else ["In1.Cu", "In2.Cu", "In3.Cu",
                                                                                      "In4.Cu", "B.Cu"],
