@@ -5563,7 +5563,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 tied to 5, 4, 2, 1)"
+		(property "Description" "4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair)"
 			(at 121.92 76.2 0)
 			(effects
 				(font

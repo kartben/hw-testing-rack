@@ -294,15 +294,17 @@ CAT = {
                                "(TI's RKS VQFN-20 has the BQ pinout)",
                    model=("DHVQFN-20_2.5x4.5x0.85mm.step", (0, 0, 0), (0, 0, 0))),
     # 4-line ESD in flow-through (DATA ×4 v2): hongjiacheng's H5VU25UC, JLC "preferred extended" (no Economic
-    # part-type fee), in place of TI's TPD4E05U06DQAR (C138714, 0.5 pF, 5.5 V stand-off).  The same pins (I/O 1,
-    # 2, 4, 5, GND 3 and 8) and TI's symbol; its 6, 7, 9, 10 are tied inside to 5, 4, 2, 1 (TI's are NC), so a
-    # line routed through both pads of its pair carries one signal either way.  0.8 pF to GND, 5 V stand-off,
+    # part-type fee), in place of TI's TPD4E05U06DQAR (C138714, 0.5 pF, 5.5 V stand-off).  I/O on 1, 2, 4, 5 and
+    # GND on 8, as TI's, and TI's symbol; its 3, 6, 7, 9, 10 have no internal connection (its function diagram,
+    # checked by the user on 2026-10-25), so our GND on 3 is harmless and each line routed through both pads of its
+    # pair keeps flow-through by our own copper.  0.8 pF to GND, 5 V stand-off,
     # 6 V breakdown at least, 10 V clamp at 1 A, ±8 kV contact.  Its land (bench:DFN2510-10L) and KiCad's
     # USON-10 body
     "esd4": Cat("Power_Protection:TPD4E05U06DQA", "bench:DFN2510-10L_2.5x1.0mm_P0.5mm", "H5VU25UC", "hongjiacheng",
                 "C20615800", 0.031,
                 datasheet="https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261524_hongjiacheng-H5VU25UC_C20615800.pdf",
-                description="4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 tied to 5, 4, 2, 1)",
+                description="4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through "
+                            "(6, 7, 9, 10 NC inside; our copper joins each pair)",
                 model=("${KICAD10_3DMODEL_DIR}/Package_SON.3dshapes/USON-10_2.5x1.0mm_P0.5mm.step", (0, 0, 0), (0, 0, 0))),
     "rarray": Cat("Device:R_Pack04", "Resistor_SMD:R_Array_Convex_4x0402", "4D02WGJ", "UNI-ROYAL(Uniroyal Elec)", "",
                   0.0055, description="4 × resistor array 0402, 5 %"),

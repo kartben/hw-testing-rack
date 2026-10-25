@@ -314,7 +314,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | USB2517I-JZX — USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial | 2  | 4.15 | 8.30 | LCSC/JLCPCB C478081 |
 | Electronics | TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT | 4  | 0.81 | 3.24 | LCSC/JLCPCB C181499 |
 | Electronics | AP2114H-3.3TRG1 — 3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223 | 2  | 0.21 | 0.42 | LCSC/JLCPCB C150716 |
-| Electronics | H5VU25UC — 4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 tied to 5, 4, 2, 1) | 18  | 0.03 | 0.51 | LCSC/JLCPCB C20615800 |
+| Electronics | H5VU25UC — 4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair) | 18  | 0.03 | 0.51 | LCSC/JLCPCB C20615800 |
 | Electronics | CH446Q — 8 × 16 analog crosspoint switch, 45–65 Ω at 12 V span, serial or parallel addressing | 4  | 1.46 | 5.85 | LCSC/JLCPCB C109471 |
 | Electronics | TPS60400DBVR — charge pump voltage inverter, 60 mA | 2  | 0.73 | 1.45 | LCSC/JLCPCB C9839 |
 | Electronics | TCA9534APWR — 8-bit I2C I/O expander, push-pull outputs, A version (0x38–0x3F) | 2  | 1.25 | 2.50 | LCSC/JLCPCB C206010 |
@@ -353,7 +353,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | USB2517I-JZX — USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial | 2  | 4.15 | 8.30 | LCSC/JLCPCB C478081 |
 | Electronics | TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT | 4  | 0.81 | 3.24 | LCSC/JLCPCB C181499 |
 | Electronics | AP2114H-3.3TRG1 — 3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223 | 2  | 0.21 | 0.42 | LCSC/JLCPCB C150716 |
-| Electronics | H5VU25UC — 4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 tied to 5, 4, 2, 1) | 2  | 0.03 | 0.06 | LCSC/JLCPCB C20615800 |
+| Electronics | H5VU25UC — 4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair) | 2  | 0.03 | 0.06 | LCSC/JLCPCB C20615800 |
 | Electronics | TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit | 8  | 0.27 | 2.13 | LCSC/JLCPCB C111738 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 8  | 0.69 | 5.52 | LCSC/JLCPCB C49851 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 8  | 0.17 | 1.32 | LCSC/JLCPCB C7519 |
