@@ -60,7 +60,7 @@ CAT = {
     "buck_l": Cat("Device:L", "Inductor_SMD:L_Changjiang_FXL0630", "FXL0630-3R3-M", "cjiang", "C167219", 0.11,
                   description="3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded"),
     # both boards' buck since 2026-10-23: the family's 2.5 A part, same DDC package and pinout (TI SLUSF64B
-    # table 5-1), same EasyEDA footprint; a bay draws ≤ 2.2 A (docs/power-distribution-review.md), the hub's
+    # table 5-1), same EasyEDA footprint; a bay draws ≤ 2.25 A (docs/power-distribution-review.md), the hub's
     # controller < 0.7 A.  "buck" and "buck_l" (the LMR51635 and its 3.3 µH) are on neither board now
     "buck25": Cat("bench:LMR51635", "Package_TO_SOT_SMD:TSOT-23-6", "LMR51625YDDCR", "Texas Instruments",
                   "C44991044", 1.19, datasheet="https://www.ti.com/lit/ds/symlink/lmr51625.pdf",
@@ -164,6 +164,10 @@ CAT = {
                 model=("easyeda/C495548.step", (0, 0.89, 0), (0, 0, 0))),
     "pptc500": Cat("Device:Polyfuse_Small", "Fuse:Fuse_1206_3216Metric", "SMD1206P050TF", "RUILON", "C20799", 0.08,
                    description="PTC 0.5 A hold, 1206"),
+    # the node's CAM_5V since 2026-10-25 (schematic review S6): the Mega draws up to 317 mA (Arducam), ≈ 0.43 A
+    # with the LEDs, where the 0.5 A part holds only ≈ 0.31 A at 70 °C
+    "pptc750": Cat("Device:Polyfuse_Small", "Fuse:Fuse_1206_3216Metric", "SMD1206P075TF", "RUILON", "C20987", 0.08,
+                   description="PTC 0.75 A hold, 1.5 A trip, 1206"),
     "efuse": Cat("Power_Management:TPS26600PWP",
                  "Package_SO:HTSSOP-16-1EP_4.4x5mm_P0.65mm_EP3.4x5mm_Mask2.66x2.46mm",
                  "TPS26600PWPR", "Texas Instruments", "C544399", 1.54,

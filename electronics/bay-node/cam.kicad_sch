@@ -2178,7 +2178,7 @@
 				)
 			)
 		)
-		(property "Value" "0.5A"
+		(property "Value" "0.75A"
 			(at 50.8 38.176 90)
 			(effects
 				(font
@@ -2204,7 +2204,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "PTC 0.5 A hold, 1206"
+		(property "Description" "PTC 0.75 A hold, 1.5 A trip, 1206"
 			(at 50.8 35.56 0)
 			(effects
 				(font
@@ -2213,7 +2213,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "SMD1206P050TF"
+		(property "MPN" "SMD1206P075TF"
 			(at 50.8 35.56 0)
 			(effects
 				(font
@@ -2231,7 +2231,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C20799"
+		(property "LCSC" "C20987"
 			(at 50.8 35.56 0)
 			(effects
 				(font
@@ -4970,7 +4970,7 @@
 		)
 		(uuid "a2d105cf-b91a-52e7-87d7-d6a0ad6db1f2")
 	)
-	(text_box "Lead pinout: 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K (the LEDs' cathode side).\nSPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k\n  pull-up: deselected before firmware), IO7 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).\nCAM_5V through F1 (0.5 A PTC): the camera ≈ 120 mA + the LEDs ≤ 150 mA.  USBLC6s on the lead side of the 33 Ω.\nThe camera pod board runs the Mega from 3.3 V (its own AMS1117): MISO is 3.3 V and R35 stays unpopulated.\n  For a camera fed 5 V that drives MISO at 5 V instead: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V."
+	(text_box "Lead pinout: 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K (the LEDs' cathode side).\nSPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k\n  pull-up: deselected before firmware), IO7 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).\nCAM_5V through F1 (0.75 A PTC, 1.5 A trip): the camera ≤ 317 mA (Arducam) + the LEDs ≤ 102 mA.  USBLC6s on the lead side of the 33 Ω.\nThe camera pod board runs the Mega from 3.3 V (its own AMS1117): MISO is 3.3 V and R35 stays unpopulated.\n  For a camera fed 5 V that drives MISO at 5 V instead: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V."
 		(exclude_from_sim no)
 		(at 15.24 162.56 0)
 		(size 289.56 17.78)

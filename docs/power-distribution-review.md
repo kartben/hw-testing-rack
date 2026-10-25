@@ -34,6 +34,10 @@ What a bay draws from the node's +5V (5.24 V).  A bay's buck (LMR51635 at the re
 A bay at its limits takes 11.0 W from VRACK, 13.1 W with a camera.  That is 0.39 / 0.47 A at
 28 V and 0.54 / 0.64 A at 20 V.
 
+2026-10-25 (schematic review S6): the Arducam Mega draws up to 317 mA (Arducam's figure), so the camera and
+its light take ≤ 0.42 A, not 0.36.  A camera bay at its limits is then ≤ 2.25 A on +5V, 13.5 W from VRACK
+(0.48 A at 28 V, 0.66 A at 20 V).  The rows stay capped by their eFuse's 1.6 A; the figures below are the review's.
+
 The rack's real population (`config/rack.yaml`), typical draw of the boards (estimates, debug
 probes on):
 - **Row A:** Nucleo-64 0.12 A, Nucleo-144 0.30 A, nRF52840-DK 0.08 A, nRF54L15-DK 0.08 A.

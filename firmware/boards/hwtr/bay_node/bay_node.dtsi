@@ -59,7 +59,7 @@
 	/* Rack bus (docs/can.md): CAN on the row cable, and the POS addressing token */
 	rack_bus: rack-bus {
 		compatible = "hwtr,rack-bus";
-		/* IO16 POS_IN <- J1.6 through 10k and a BAT54S clamp, 100k pull-down */
+		/* IO16 POS_IN <- J1.6 through 10k and a BAT54S clamp, 150k pull-down */
 		pos-in-gpios = <&gpio0 16 GPIO_ACTIVE_HIGH>;
 		/* IO42 POS_OUT -> J2.1 (J2 is J1 mirrored) through 10k and a BAT54S clamp: low until the node has an address */
 		pos-out-gpios = <&gpio1 10 GPIO_ACTIVE_HIGH>;

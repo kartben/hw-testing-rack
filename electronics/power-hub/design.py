@@ -313,7 +313,8 @@ def board() -> Board:
         part(o, f"D{20 + n}", "led_side_r", {"A": f"FLTLED_{ch}", "K": f"FLT_{ch}"}, "FAULT",
              pcb=P(LED_X[k] + 3.0, LED_Y, 180), dnp=dnp)
         # ON: green LED on the row's own output
-        R(o, f"R{40 + n}", "10k", f"ROW_{ch}", f"ON_{ch}", pcb=P(36.825, yc - 4.5, 0))
+        # 18k: 1.4 mA and 37 mW at 28 V (10k ran at 75 % of its 0603 rating at 29.4 V: schematic review S4)
+        R(o, f"R{40 + n}", "18k", f"ROW_{ch}", f"ON_{ch}", pcb=P(36.825, yc - 4.5, 0))
         part(o, f"D{10 + n}", "led_side_g", {"A": f"ON_{ch}", "K": "GND"}, "ON", pcb=P(LED_X[k] - 3.0, LED_Y, 180),
              dnp=dnp)
         # the row cable, with the bay nodes' OUT pinout (J1's mirrored, docs/can.md): POS, GND, CAN_L,

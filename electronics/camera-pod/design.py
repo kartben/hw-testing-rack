@@ -7,7 +7,9 @@ It ties the camera and its light to the bay node's J6 with nothing to crimp or s
 * J2, a 1 × 6 2.54 mm header in the Mega's own order (VCC GND SCK MISO MOSI CS, names on the
   silkscreen): the camera's own cable plugs onto it.
 * The Mega runs from 3.3 V, an AMS1117 on CAM_5V: its MISO is then a 3.3 V output, whatever the
-  camera does with a 5 V supply (the node keeps R35, its divider footprint, unpopulated).
+  camera does with a 5 V supply (the node keeps R35, its divider footprint, unpopulated).  It draws up
+  to 317 mA (Arducam): ≈ 0.5 W in U1, so its tab gets a top-side +3V3 pour and, through three vias, a
+  bottom-side island: all the copper the routing leaves round it (schematic review S6).
 * The light: four white 2835 LEDs along the edge next to the camera (beside the lens, not around
   it), each from CAM_5V through 100 Ω 0805 to LED_K, which the node's AO3400A pulls low: 18–26 mA
   each over the LEDs' Vf spread (≈ 2.65–3.2 V at that current) and CAM_5V 5.0–5.2 V, ≤ 66 mW in a
@@ -80,9 +82,9 @@ def board() -> Board:
         part(s, f"H{i + 1}", "hole25", {}, "PT2.6", pcb=P(x, y, 0), in_bom=False)
     s.note("J1 is the bay node's J6 mirrored: a 'Same direction' PH 8 lead (pin n to pin 9−n) joins them.")
     s.note("J2 follows the Mega's own pin order; the names are on the silkscreen, its cable plugs on by name.")
-    s.note("The Mega from 3.3 V (U1, ≈ 0.2 W at 120 mA): its MISO is 3.3 V.  LEDs 18–26 mA each (100 Ω 0805, ≤ 66 mW),")
+    s.note("The Mega from 3.3 V (U1, ≈ 0.5 W at its 317 mA max, Arducam): its MISO is 3.3 V.  LEDs 18–26 mA each (100 Ω 0805, ≤ 66 mW),")
     s.note("  ≤ 102 mA for the four, off unless the node's AO3400A pulls LED_K low (PWM ≥ 20 kHz or on/off).")
-    s.note("CAM_5V: the node's 0.5 A PTC, no switch: a hung camera (the Mega has no reset pin) needs a power cycle.")
+    s.note("CAM_5V: the node's 0.75 A PTC, no switch: a hung camera (the Mega has no reset pin) needs a power cycle.")
 
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 1.5, "passes": 40,
@@ -95,7 +97,14 @@ def board() -> Board:
         "zones": [
             {"layer": "F.Cu", "net": "GND"},
             {"layer": "B.Cu", "net": "GND"},
+            # U1's tab (VOUT): up to ≈ 0.5 W with the Mega at 317 mA.  Top-side copper round the tab between
+            # the CAM_5V tracks, and a bottom-side island right of SCK, joined by three vias beside the tab
+            {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 2,
+             "poly": [(21.4, 10.95), (25.4, 10.95), (25.4, 16.8), (21.4, 16.8)]},
+            {"layer": "B.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab-b", "priority": 2,
+             "poly": [(22.2, 11.8), (27.6, 11.8), (27.6, 17.2), (22.2, 17.2)]},
         ],
+        "vias": [("+3V3", 24.75, 12.6), ("+3V3", 24.75, 13.6), ("+3V3", 24.75, 14.6)],
         "stitch": 3.0,
         "texts": [
             {"text": "VCC GND SCK MISO MOSI CS", "x": hx, "y": hy + 4.3, "size": 0.8},

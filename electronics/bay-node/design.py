@@ -21,7 +21,7 @@ Functions
     connected to two hosts at once.
   * AUX (JST PH 6, vertical): UART TX/RX + open-drain RESET/BOOT lines to the DUT.
   * CAM (JST PH 8, vertical): this bay's Arducam Mega SPI camera and its white LEDs, on a lead to the pod
-    under the ceiling: CAM_5V through a 0.5 A PTC, SPI2 (33 Ω series, USBLC6 ESD), the LEDs' low side
+    under the ceiling: CAM_5V through a 0.75 A PTC, SPI2 (33 Ω series, USBLC6 ESD), the LEDs' low side
     (AO3400A).  The module is the ESP32-S3-WROOM-1-N8R8 (8 MB octal PSRAM) for the camera's frames,
     the bench stand-in's own module, with the DevKitC-1's pin map; the board grew 10 mm at the rear for it.
   * WS2812B status LED behind the fascia, RESET/BOOT buttons, UART test pads.
@@ -392,9 +392,9 @@ def board() -> Board:
     s.wire("U2.VO", (112, 42))
     s.tag("+3V3", (112, 42), "up")
     s.notes_at = (6, 64, 110)
-    s.note("LMR51625YDDCR (2.5 A; a bay draws ≤ 2.2 A): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):")
+    s.note("LMR51625YDDCR (2.5 A; a bay draws ≤ 2.25 A): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):")
     s.note("  L 4.7 µH (FXL0630, 9 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.")
-    s.note("  At 2.2 A from 28 V the inductor peaks at ≈ 2.6 A (0.8 A ripple), under the 2.9 A minimum peak current limit.")
+    s.note("  At 2.25 A from 28 V the inductor peaks at ≈ 2.65 A (0.8 A ripple), under the 2.9 A minimum peak current limit.")
     s.note("FB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V: ≈ 4.75 V still reaches the DATA board at 1.4 A over 50 cm")
     s.note("  of PH lead (switch, shunt, one PH pin each way); everything on +5V takes it (TJA1462AT ≤ 5.5 V).")
     s.note("EN 100k/10k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node")
@@ -700,9 +700,10 @@ def board() -> Board:
     part(k, "D6", "bat54s", {"A": "GND", "K": "+3V3", "COM": "POS_IN"}, pcb=P(15.4, PWR_Y + 7.4, 0),
          sch=at(28, 46, rot=180))
     k.wire("D6.COM", (28, 42))
-    # 470k: driven through the hub's (or the previous node's) 10k and R28, POS_IN reaches 3.17 V (2.75 V with
-    # 100k, against the ESP32-S3's 2.475 V VIH: pcba-review N3); undriven, the BAT54S leakage stays below VIL
-    R(k, "R29", "470k", "POS_IN", "GND", pcb=P(19.0, PWR_Y + 7.4, 90), sch=at(35, 44.5))
+    # 150k: driven through the hub's (or the previous node's) 10k and R28, POS_IN reaches 2.87 V at 3.25 V, above
+    # the ESP32-S3's VIH (0.75 VDD); undriven (the upstream pin floats until its firmware runs), it holds POS_IN
+    # under VIL (0.81 V) against the BAT54S's warm leakage, ≈ 2–3 µA at 65 °C (schematic review S1; 470k until then)
+    R(k, "R29", "150k", "POS_IN", "GND", pcb=P(19.0, PWR_Y + 7.4, 90), sch=at(35, 44.5))
     k.wire("R29.1", (35, 42))
     R(k, "R30", "10k", "POS_OUT", "POS_OUT_CONN", pcb=P(51.8 + DX, PWR_Y + 5.0, 0), sch=at(30, 56, rot=90))
     k.wire((14, 56), "R30.1")
@@ -718,7 +719,7 @@ def board() -> Board:
     k.note("  250 kbit/s (125 kbit/s fallback).  TJA1462AT (SIC): VCC 5 V, VIO 3.3 V, bus pins −36/+40 V, passive unpowered.")
     k.note("POS: active-high 3.3 V token.  From reset the node holds POS_OUT low; when POS_IN goes high and it has")
     k.note("  no address yet, it answers with its MAC, takes (row, position) from the hub, then raises POS_OUT.")
-    k.note("  R29 keeps POS_IN low with no cable; the next node's 470k keeps POS_OUT low before firmware.")
+    k.note("  R29 keeps POS_IN low with no cable; the next node's 150k keeps POS_OUT low before firmware.")
 
     # ------------------------------------------------------------------ camera (Arducam Mega SPI) and its light
     # J6 stands vertical at the rear right (pin 1 at the rear), east of the antenna band: its lead leaves straight
@@ -737,7 +738,7 @@ def board() -> Board:
     c.wire("J6.4", (84, 30))
     c.wire((84, 28), (84, 31), net="GND")
     c.tag("GND", (84, 31), "down")
-    part(c, "F1", "pptc500", {"1": "+5V", "2": "CAM_5V"}, "0.5A", pcb=P(cx - 5.5, cy - 7.2, 90), sch=at(20, 14, rot=90))
+    part(c, "F1", "pptc750", {"1": "+5V", "2": "CAM_5V"}, "0.75A", pcb=P(cx - 5.5, cy - 7.2, 90), sch=at(20, 14, rot=90))
     C(c, "C27", "100n", "CAM_5V", "GND", pcb=P(cx - 8.0, cy - 7.2, 90), sch=at(30, 16))
     # SPI: 33 Ω in series at the node end of the lead (a few cm of track from U3: the source, for a 50 cm lead)
     rx, ry = cx - 11.5, cy - 8.2
@@ -757,14 +758,14 @@ def board() -> Board:
                            "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy - 1.4, 0), sch=at(76, 22))
     part(c, "U13", "esd", {"1": "CAM_MISO_C", "6": "CAM_MISO_C", "3": "CAM_CS_C", "4": "CAM_CS_C",
                            "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy + 3.4, 0), sch=at(76, 38))
-    # the light: 2–4 white 5 V LEDs (a strip segment, its own resistors) from CAM_5V to LED_K, ≤ 150 mA
+    # the light: the pod's four white 2835 LEDs (100 Ω each) from CAM_5V to LED_K, ≤ 102 mA
     part(c, "Q4", "nfet_ll", {"G": "CAM_LED", "S": "GND", "D": "LED_K"}, pcb=P(cx - 6.0, cy + 7.8, 0), sch=at(80, 52))
     R(c, "R36", "100k", "CAM_LED", "GND", pcb=P(cx - 6.0, cy + 11.2, 0), sch=at(70, 54))
     c.notes_at = (6, 64, 114)
     c.note("Lead pinout: 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K (the LEDs' cathode side).")
     c.note("SPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k")
     c.note("  pull-up: deselected before firmware), IO7 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).")
-    c.note("CAM_5V through F1 (0.5 A PTC): the camera ≈ 120 mA + the LEDs ≤ 150 mA.  USBLC6s on the lead side of the 33 Ω.")
+    c.note("CAM_5V through F1 (0.75 A PTC, 1.5 A trip): the camera ≤ 317 mA (Arducam) + the LEDs ≤ 102 mA.  USBLC6s on the lead side of the 33 Ω.")
     c.note("The camera pod board runs the Mega from 3.3 V (its own AMS1117): MISO is 3.3 V and R35 stays unpopulated.")
     c.note("  For a camera fed 5 V that drives MISO at 5 V instead: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V.")
     return b

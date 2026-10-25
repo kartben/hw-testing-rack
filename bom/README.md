@@ -94,8 +94,8 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 
 | Board | 2 | 5 | 10 | 50 | 100 | Floor |
 |---|---:|---:|---:|---:|---:|---:|
-| bay-node | 71.74 | 38.59 | 26.66 | 16.64 | 14.15 | 13.18 |
-| power-hub | 72.49 | 41.63 | 31.19 | 20.35 | 17.69 | 16.84 |
+| bay-node | 71.73 | 38.59 | 26.66 | 16.62 | 14.15 | 13.18 |
+| power-hub | 72.49 | 41.64 | 31.19 | 20.35 | 17.70 | 16.84 |
 | data-port | 14.32 | 6.78 | 4.08 | 2.03 | 1.55 | 1.35 |
 | camera-pod | 13.64 | 6.13 | 3.65 | 1.71 | 1.33 | 1.13 |
 | data-port-x4-v2-panel | 103.93 | 65.16 | 51.94 | 38.84 | 35.67 | 34.80 |
@@ -104,9 +104,9 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4-v2-panel | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 249.08 | 144.98 | 40.76 | 27.28 | 207.86 | **703.96** |
-| 5 | 142.85 | 41.63 | 14.28 | 7.30 | 65.16 | **278.03** |
-| 10 | 125.87 | 31.19 | 13.54 | 5.01 | 51.94 | **230.94** |
+| 1 | 249.06 | 144.98 | 40.76 | 27.28 | 207.86 | **703.94** |
+| 5 | 142.87 | 41.64 | 14.28 | 7.30 | 65.16 | **278.05** |
+| 10 | 125.72 | 31.19 | 13.54 | 5.01 | 51.94 | **230.79** |
 
 ## Printed parts
 
@@ -180,7 +180,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | WS2812B-2020-V6 — addressable RGB LED, 3.3–5.3 V | 10  | 0.08 | 0.83 | LCSC/JLCPCB C52917434 |
 | Electronics | PESD2CAN — CAN bus ESD protection, 24 V stand-off | 10  | 0.07 | 0.72 | LCSC/JLCPCB C75176 |
 | Electronics | BAT54S — dual Schottky in series: clamps a line to GND and +3V3 | 20  | 0.01 | 0.24 | LCSC/JLCPCB C7420333 |
-| Electronics | 0.5A — PTC 0.5 A hold, 1206 | 10  | 0.07 | 0.74 | LCSC/JLCPCB C20799 |
+| Electronics | 0.75A — PTC 0.75 A hold, 1.5 A trip, 1206 | 10  | 0.07 | 0.74 | LCSC/JLCPCB C20987 |
 | Electronics | ROW IN — JST PH 6-pin, side entry, SMD | 10  | 0.36 | 3.59 | LCSC/JLCPCB C265405 |
 | Electronics | ROW OUT — JST PH 6-pin, side entry, SMD | 10  | 0.36 | 3.59 | LCSC/JLCPCB C265405 |
 | Electronics | PC — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 10  | 0.84 | 8.37 | LCSC/JLCPCB C5184243 |
@@ -199,7 +199,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 50m — 50 mΩ 1 % 1 W current shunt | 10  | 0.11 | 1.10 | LCSC/JLCPCB C601102 |
 | Electronics | 2.2k — Resistor 2.2k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C4190 |
 | Electronics | 1k — Resistor 1k 0603 | 40  | 0.00 | 0.07 | LCSC/JLCPCB C21190 |
-| Electronics | 470k — Resistor 470k 0603 | 10  | 0.00 | 0.03 | LCSC/JLCPCB C23178 |
+| Electronics | 150k — Resistor 150k 0603 | 10  | 0.00 | 0.01 | LCSC/JLCPCB C22807 |
 | Electronics | RESET — tactile switch 5.1 × 5.1 mm | 10  | 0.02 | 0.18 | LCSC/JLCPCB C318884 |
 | Electronics | BOOT — tactile switch 5.1 × 5.1 mm | 10  | 0.02 | 0.18 | LCSC/JLCPCB C318884 |
 | Electronics | SERVICE — SPDT slide switch, side actuated | 10  | 0.06 | 0.55 | LCSC/JLCPCB C431540 |
@@ -215,7 +215,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 10  | 0.93 | 9.29 | LCSC/JLCPCB C3234095 |
 | Electronics | Bare PCB bay-node (4-layer 74×90 mm (84×90 with JLC's rails), lead-free HASL) | 10  | 1.78 | 17.85 | JLCPCB quote 2026-10-23 |
 | Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, packaging, special components | 1  | 95.50 | 95.50 | JLCPCB quote 2026-10-23 |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -13.53 | -13.53 | JLCPCB quote 2026-10-23 |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -13.51 | -13.51 | JLCPCB quote 2026-10-23 |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 16  | 0.01 | 0.20 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0805 | 20  | 0.03 | 0.54 | LCSC/JLCPCB C28323 |
@@ -238,12 +238,12 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 4.7u — 4.7 µH, 9 A sat, 6 A rms, 33 mΩ, molded | 2  | 0.09 | 0.18 | LCSC/JLCPCB C167220 |
 | Electronics | 1k — Resistor 1k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C21190 |
 | Electronics | 100k — Resistor 100k 0603 | 12  | 0.00 | 0.03 | LCSC/JLCPCB C25803 |
-| Electronics | 10k — Resistor 10k 0603 | 42  | 0.00 | 0.20 | LCSC/JLCPCB C25804 |
+| Electronics | 10k — Resistor 10k 0603 | 34  | 0.00 | 0.16 | LCSC/JLCPCB C25804 |
 | Electronics | 56 — Resistor 56 0603 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C25196 |
 | Electronics | 6.8k — Resistor 6.8k 0603 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C23212 |
 | Electronics | 5.1k — Resistor 5.1k 0603 | 8  | 0.00 | 0.01 | LCSC/JLCPCB C23186 |
 | Electronics | 7.5k — Resistor 7.5k 0603 | 8  | 0.00 | 0.01 | LCSC/JLCPCB C23234 |
-| Electronics | 18k — Resistor 18k 0603 | 12  | 0.00 | 0.04 | LCSC/JLCPCB C25810 |
+| Electronics | 18k — Resistor 18k 0603 | 20  | 0.00 | 0.07 | LCSC/JLCPCB C25810 |
 | Electronics | 39k — Resistor 39k 0603 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C23153 |
 | Electronics | RESET — tactile switch 5.1 × 5.1 mm | 2  | 0.02 | 0.04 | LCSC/JLCPCB C318884 |
 | Electronics | BOOT — tactile switch 5.1 × 5.1 mm | 2  | 0.02 | 0.04 | LCSC/JLCPCB C318884 |
@@ -256,7 +256,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 4  | 1.42 | 5.67 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×100 mm (86×100 with JLC's rails), lead-free HASL) | 5  | 2.43 | 12.14 | JLCPCB quote 2026-10-23 |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components | 1  | 84.08 | 84.08 | JLCPCB quote 2026-10-23 |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.70 | 4.70 | JLCPCB quote 2026-10-23 |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.71 | 4.71 | JLCPCB quote 2026-10-23 |
 | Electronics | 100n — Capacitor 100n 0603 | 10  | 0.01 | 0.12 | LCSC/JLCPCB C14663 |
 | Electronics | 10u — Capacitor 10u 0805 | 10  | 0.04 | 0.40 | LCSC/JLCPCB C15850 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 10  | 0.84 | 8.37 | LCSC/JLCPCB C5184243 |

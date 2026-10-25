@@ -4984,7 +4984,7 @@
 		)
 		(uuid "e57d6fd5-8266-54d4-b592-bf5d3abca2d0")
 	)
-	(text_box "J1 is the bay node's J6 mirrored: a 'Same direction' PH 8 lead (pin n to pin 9−n) joins them.\nJ2 follows the Mega's own pin order; the names are on the silkscreen, its cable plugs on by name.\nThe Mega from 3.3 V (U1, ≈ 0.2 W at 120 mA): its MISO is 3.3 V.  LEDs 18–26 mA each (100 Ω 0805, ≤ 66 mW),\n  ≤ 102 mA for the four, off unless the node's AO3400A pulls LED_K low (PWM ≥ 20 kHz or on/off).\nCAM_5V: the node's 0.5 A PTC, no switch: a hung camera (the Mega has no reset pin) needs a power cycle."
+	(text_box "J1 is the bay node's J6 mirrored: a 'Same direction' PH 8 lead (pin n to pin 9−n) joins them.\nJ2 follows the Mega's own pin order; the names are on the silkscreen, its cable plugs on by name.\nThe Mega from 3.3 V (U1, ≈ 0.5 W at its 317 mA max, Arducam): its MISO is 3.3 V.  LEDs 18–26 mA each (100 Ω 0805, ≤ 66 mW),\n  ≤ 102 mA for the four, off unless the node's AO3400A pulls LED_K low (PWM ≥ 20 kHz or on/off).\nCAM_5V: the node's 0.75 A PTC, no switch: a hung camera (the Mega has no reset pin) needs a power cycle."
 		(exclude_from_sim no)
 		(at 20.32 165.1 0)
 		(size 240.03 16.51)

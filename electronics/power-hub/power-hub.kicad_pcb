@@ -5536,7 +5536,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "18k"
 			(at 0 1.43 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -5559,7 +5559,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 10k 0603"
+		(property "Description" "Resistor 18k 0603"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -5582,7 +5582,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25804"
+		(property "LCSC" "C25810"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -5594,7 +5594,7 @@
 				)
 			)
 		)
-		(property "MPN" "0603WAF1002T5E"
+		(property "MPN" "0603WAF1802T5E"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -6675,7 +6675,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "18k"
 			(at 0 1.43 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -6698,7 +6698,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 10k 0603"
+		(property "Description" "Resistor 18k 0603"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -6721,7 +6721,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25804"
+		(property "LCSC" "C25810"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -6733,7 +6733,7 @@
 				)
 			)
 		)
-		(property "MPN" "0603WAF1002T5E"
+		(property "MPN" "0603WAF1802T5E"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -13727,7 +13727,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "18k"
 			(at 0 1.43 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -13750,7 +13750,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 10k 0603"
+		(property "Description" "Resistor 18k 0603"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -13773,7 +13773,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25804"
+		(property "LCSC" "C25810"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -13785,7 +13785,7 @@
 				)
 			)
 		)
-		(property "MPN" "0603WAF1002T5E"
+		(property "MPN" "0603WAF1802T5E"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -29959,7 +29959,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "18k"
 			(at 0 1.43 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -29982,7 +29982,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 10k 0603"
+		(property "Description" "Resistor 18k 0603"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -30005,7 +30005,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25804"
+		(property "LCSC" "C25810"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -30017,7 +30017,7 @@
 				)
 			)
 		)
-		(property "MPN" "0603WAF1002T5E"
+		(property "MPN" "0603WAF1802T5E"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)

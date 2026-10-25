@@ -58,9 +58,9 @@
     "BAT54S"
    ],
    [
-    "C20799",
+    "C20987",
     1,
-    "0.5A"
+    "0.75A"
    ],
    [
     "C265405",
@@ -143,9 +143,9 @@
     "1k"
    ],
    [
-    "C23178",
+    "C22807",
     1,
-    "470k"
+    "150k"
    ],
    [
     "C318884",
@@ -296,7 +296,7 @@
    ],
    [
     "C25804",
-    21,
+    17,
     "10k"
    ],
    [
@@ -321,7 +321,7 @@
    ],
    [
     "C25810",
-    6,
+    10,
     "18k"
    ],
    [
@@ -4145,6 +4145,64 @@
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live) (added 2026-10-23)"
+  },
+  "C20987": {
+   "mfr": "SMD1206P075TF",
+   "package": "1206",
+   "stock": 5657,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 5,
+     "qTo": 49,
+     "price": 0.1024
+    },
+    {
+     "qFrom": 50,
+     "qTo": 149,
+     "price": 0.0816
+    },
+    {
+     "qFrom": 150,
+     "qTo": 499,
+     "price": 0.0712
+    },
+    {
+     "qFrom": 500,
+     "qTo": 2499,
+     "price": 0.0634
+    },
+    {
+     "qFrom": 2500,
+     "qTo": 4499,
+     "price": 0.0571
+    },
+    {
+     "qFrom": 4500,
+     "qTo": null,
+     "price": 0.0461
+    }
+   ],
+   "category": "Circuit Protection",
+   "manufacturer": null,
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
+   "lcsc_stock": 5435
+  },
+  "C22807": {
+   "mfr": "0603WAF1503T5E",
+   "package": "0603",
+   "stock": 954701,
+   "tier": "basic",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.002
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   }
  }
 }
