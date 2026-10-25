@@ -113,7 +113,7 @@ Each row names the page and the question; the answer settles the change.
 **Datasheets not read:**
 - PESD2CAN: Nexperia blocked the download.
 - SMAJ30A, KPA-3010, AP2112, FSUSB42, LVC1G32, TPS60400, TCA9534A: their audit readings are kept.
-- The CH446 manual: its pin map was checked through EasyEDA only.  (The user read §6.1–6.3 on 2026-10-25: v2 audit U4 (a), (b) answered yes; (c), (d) open; (e) stays a measurement.)
+- The CH446 manual: its pin map was checked through EasyEDA only.  (The user read §6.1–6.3 on 2026-10-25: and its pin table and §5: v2 audit U4 (a)–(d) answered yes, our straps match; (e) stays a measurement.)
 - Espressif's Hardware Design Guidelines Table 12 (audit U3).
 - Samsung's DC-bias curves.
 
