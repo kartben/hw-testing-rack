@@ -161,11 +161,12 @@ JLC_QUOTE = {
     # Gerbers, JLC BOM and CPL of 2cd2cc0 uploaded with the user's OK): 5 panels, 2 assembled, green (the
     # user, 2026-10-23: "Ok, vert", then every board green; pcb.solder_mask), Economic PCBA, no rails: $201.72, 3–4
     # days; the RP2354B (U11, logic) was out of stock at JLC and left unplaced (JLC_SINCE_QUOTE: $207.86 with
-    # it, $207.89 with the BAT54S added since).  JLC flags the rows that join _L and _B designators ("multiple types of parts?") and leaves them for
-    # a tick; no X-ray line.  The alternative, black: Standard PCBA, the only one JLC offers on 4 layers in
-    # black, two 5 mm rails (110 × 142 mm): $249.86 (PCB $61.10 = $25 + ENIG $18.40 + black $8.00 + $9.70;
-    # setup $25.75, stencil $8.27, 39 types × $1.55 = $60.45, components $86.73, SMT $6.57, packaging $0.51,
-    # special components $0.48), $254.46 with the RP2354B: $46.60 more an order.
+    # it, $212.14 with the datasheet audit's fixes of 2026-10-25).  JLC flags the rows that join _L and _B
+    # designators ("multiple types of parts?") and leaves them for a tick; no X-ray line.  The alternative, black:
+    # Standard PCBA, the only one JLC offers on 4 layers in black, two 5 mm rails (110 × 142 mm): $249.86 (PCB
+    # $61.10 = $25 + ENIG $18.40 + black $8.00 + $9.70; setup $25.75, stencil $8.27, 39 types × $1.55 = $60.45,
+    # components $86.73, SMT $6.57, packaging $0.51, special components $0.48), $254.46 with the RP2354B: $46.60
+    # more an order.
     # One logic and one base per panel; the variants' own estimates above stay for single orders (the BOM
     # page's calculator).
     "data-port-x4-v2-panel": {
@@ -190,9 +191,12 @@ JLC_SINCE_QUOTE = {
                    "data-port-x4-v2-panel": [("RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price",
                                               "components", 3.05),
                                              ("RP2354B: its extended part type", "extended parts", 3.09),
-                                             # D2 (the schematic review's S2, 2026-10-25), a preferred part
-                                             # type: no fee
-                                             ("BAT54S (D2), added since: 2 at JLC's price", "components", 0.03)],
+                                             # the DATA ×4 v2 datasheet audit's fixes (2026-10-25): 12 H5VU25UC
+                                             # (preferred, no fee), 2 MAX809S (a new extended type), 1M, 10k,
+                                             # 100k, 4.7 µF; the schematic review's D2 (BAT54S) gone again
+                                             ("the datasheet audit's fixes: their parts, 2 panels at JLC's price",
+                                              "components", 1.19),
+                                             ("MAX809S (U5): its extended part type", "extended parts", 3.09)],
                    # the pod's U1 since the quote: the AP2114H-3.3 (C150716, extended, $0.2314) for the AMS1117
                    # (C6186, basic, $0.2048), stable with its ceramic output capacitor (datasheet audit F1)
                    "camera-pod": [("AP2114H-3.3 for the AMS1117 (datasheet audit F1): its extended part type",

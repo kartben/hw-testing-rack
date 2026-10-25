@@ -9035,6 +9035,306 @@
 		(uuid "759bb57d-47c0-5289-83f9-db1080b8e559")
 	)
 	(symbol
+		(lib_id "Power_Protection:TPD4E05U06DQA")
+		(at 203.2 436.88 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6ff1c186-6a8d-5ccb-b35c-fc2bf18a2571")
+		(property "Reference" "U209"
+			(at 197.68 419.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "H5VU25UC"
+			(at 199.78 421.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "bench:DFN2510-10L_2.5x1.0mm_P0.5mm"
+			(at 203.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261524_hongjiacheng-H5VU25UC_C20615800.pdf"
+			(at 203.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair)"
+			(at 203.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "H5VU25UC"
+			(at 203.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "hongjiacheng"
+			(at 203.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C20615800"
+			(at 203.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "524b31db-95e8-5c80-917d-f74735a1b73c")
+		)
+		(pin "2"
+			(uuid "cba2eac1-2d73-5d48-acee-99111e76a79e")
+		)
+		(pin "3"
+			(uuid "f65e68a2-0806-5b65-83f5-226d7c9a16de")
+		)
+		(pin "4"
+			(uuid "a1c59f88-dab3-55c8-a865-346844e30f6d")
+		)
+		(pin "5"
+			(uuid "da9a1538-3d4c-5722-bd06-6f3e93b23dcc")
+		)
+		(pin "6"
+			(uuid "bda2c9fa-d9b3-5c53-a4df-efe0e0afe2b7")
+		)
+		(pin "7"
+			(uuid "756c893e-0f56-5619-9531-fa2be7604322")
+		)
+		(pin "8"
+			(uuid "ee4dbb31-c58a-5ca1-9fc6-4e3ccb7dec90")
+		)
+		(pin "9"
+			(uuid "602b27eb-139a-5b85-90f9-009f9271a4d5")
+		)
+		(pin "10"
+			(uuid "c5bba26c-7161-5aa1-a4a7-5d63bb1e2edc")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
+					(reference "U209")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(no_connect
+		(at 190.5 434.34)
+		(uuid "20fb4ca2-2751-5eb6-b44c-79db35878389")
+	)
+	(wire
+		(pts
+			(xy 190.5 439.42)
+			(xy 187.96 439.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6ae7ffda-d052-5ec7-b6ba-d77bca8d0ef8")
+	)
+	(label "PORT2_BOOT_N"
+		(at 187.96 439.42 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "2c0cfaff-9f5e-585c-9ce4-824436fb6a1e")
+	)
+	(wire
+		(pts
+			(xy 203.2 449.58)
+			(xy 203.2 452.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "46a4afa7-c199-5ad5-a16d-7773104977b4")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 203.2 452.12 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "60a9109b-85b2-5c49-937f-b7d9ac07854c")
+		(property "Reference" "#PWR04020"
+			(at 203.2 452.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 203.2 455.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 203.2 452.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 203.2 452.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 203.2 452.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9c675282-afe6-5b52-afaa-edfcf75c18be")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
+					(reference "#PWR04020")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(no_connect
+		(at 215.9 434.34)
+		(uuid "b4cd957c-c317-5391-b70f-5f8e47e93e47")
+	)
+	(wire
+		(pts
+			(xy 215.9 439.42)
+			(xy 218.44 439.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "afd13f9e-d1a7-5e15-a01f-03a4bd4a3df5")
+	)
+	(label "PORT2_RST_N"
+		(at 218.44 439.42 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "fc517194-42c6-52fa-89b4-c226e134177c")
+	)
+	(wire
+		(pts
+			(xy 215.9 444.5)
+			(xy 218.44 444.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "283b608c-11ba-5784-8479-b4f29c8796e9")
+	)
+	(label "PORT2_RST_N"
+		(at 218.44 444.5 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "421b9b8e-2c2c-53f4-9a26-4e5b852372eb")
+	)
+	(no_connect
+		(at 215.9 429.26)
+		(uuid "5425956f-b555-55f8-abf0-7c5bb550dc35")
+	)
+	(wire
+		(pts
+			(xy 190.5 444.5)
+			(xy 187.96 444.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "797ee116-9193-57e3-b705-faa6d3ed732d")
+	)
+	(label "PORT2_BOOT_N"
+		(at 187.96 444.5 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "dc977d4d-de20-54fa-bea2-58abd41b5795")
+	)
+	(no_connect
+		(at 190.5 429.26)
+		(uuid "19f907f0-a5cc-5c85-ae27-c06a6088dc4c")
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 381 86.36 90)
 		(unit 1)
@@ -9384,7 +9684,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5c839029-e906-5c86-9846-e01671ba9a31")
-		(property "Reference" "#PWR04020"
+		(property "Reference" "#PWR04021"
 			(at 350.52 67.31 0)
 			(effects
 				(font
@@ -9434,7 +9734,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
-					(reference "#PWR04020")
+					(reference "#PWR04021")
 					(unit 1)
 				)
 			)
@@ -9556,7 +9856,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1d40af98-3a6a-5a15-9921-afaebf1a0bed")
-		(property "Reference" "#PWR04021"
+		(property "Reference" "#PWR04022"
 			(at 350.52 92.71 0)
 			(effects
 				(font
@@ -9606,11 +9906,275 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
-					(reference "#PWR04021")
+					(reference "#PWR04022")
 					(unit 1)
 				)
 			)
 		)
+	)
+	(symbol
+		(lib_id "Power_Protection:TPD4E05U06DQA")
+		(at 76.2 436.88 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f8d2e91f-a8d4-54f2-89d0-2b6649feaf0f")
+		(property "Reference" "U208"
+			(at 70.68 419.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "H5VU25UC"
+			(at 72.78 421.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "bench:DFN2510-10L_2.5x1.0mm_P0.5mm"
+			(at 76.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261524_hongjiacheng-H5VU25UC_C20615800.pdf"
+			(at 76.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair)"
+			(at 76.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "H5VU25UC"
+			(at 76.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "hongjiacheng"
+			(at 76.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C20615800"
+			(at 76.2 436.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "93be6846-4064-5fad-b9d4-60e6a8940c48")
+		)
+		(pin "2"
+			(uuid "0f1d1bb2-a326-5176-964b-158513de6a2e")
+		)
+		(pin "3"
+			(uuid "96d8a083-9dae-588d-93f2-77065c2a7456")
+		)
+		(pin "4"
+			(uuid "b47c4263-5a86-5ba3-9764-69d7d70934e4")
+		)
+		(pin "5"
+			(uuid "c3ef4054-d715-5cb8-9ef4-71592ce3335e")
+		)
+		(pin "6"
+			(uuid "0df510cb-1b3b-5e23-9748-50008c3282ab")
+		)
+		(pin "7"
+			(uuid "49cc6641-1566-5732-ac0a-c8371b34fec8")
+		)
+		(pin "8"
+			(uuid "8a93dc20-3eb3-5b57-a24c-4aba2ecba017")
+		)
+		(pin "9"
+			(uuid "5f8e0d7e-97dd-5e11-a533-c7cf18537e18")
+		)
+		(pin "10"
+			(uuid "b306e7b3-4e41-5235-b64e-794d0a412713")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
+					(reference "U208")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(no_connect
+		(at 63.5 434.34)
+		(uuid "51c03d4c-4cd8-58d5-bfbb-9cdc9fbd4519")
+	)
+	(no_connect
+		(at 63.5 439.42)
+		(uuid "948df546-6220-57e6-8c26-983ea8a245bf")
+	)
+	(wire
+		(pts
+			(xy 76.2 449.58)
+			(xy 76.2 452.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "65fbee54-2f92-5e76-b19b-ebe7a70e047b")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 76.2 452.12 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d721f0b9-5462-534a-8e14-f7a371aa3e9f")
+		(property "Reference" "#PWR04023"
+			(at 76.2 452.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 76.2 455.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 76.2 452.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 76.2 452.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 76.2 452.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "069c5412-81e9-5855-a2b3-6183a6dab5d1")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
+					(reference "#PWR04023")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(no_connect
+		(at 88.9 434.34)
+		(uuid "2c6ca003-951d-565f-88f2-d2ecfaeb02dd")
+	)
+	(wire
+		(pts
+			(xy 88.9 439.42)
+			(xy 91.44 439.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cdd00ccf-f51f-5d8c-af7b-c6235cb5e2b6")
+	)
+	(label "PORT2_VREF"
+		(at 91.44 439.42 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "29c810f1-4149-5fbc-abe2-f192ea77ac76")
+	)
+	(wire
+		(pts
+			(xy 88.9 444.5)
+			(xy 91.44 444.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b8fe78ea-d97f-5c97-b4f5-242beebbdc8c")
+	)
+	(label "PORT2_VREF"
+		(at 91.44 444.5 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "1668377d-9ed4-52ea-8678-e1835bdea662")
+	)
+	(no_connect
+		(at 88.9 429.26)
+		(uuid "b6447cf5-bfb8-53a1-b058-992b4afcfe26")
+	)
+	(no_connect
+		(at 63.5 444.5)
+		(uuid "61feaf11-14cb-5c58-9c50-b087b0460ad6")
+	)
+	(no_connect
+		(at 63.5 429.26)
+		(uuid "781dab34-f19e-5c82-8965-9085f76e3d62")
 	)
 	(symbol
 		(lib_id "Power_Protection:TPD4E05U06DQA")
@@ -9796,7 +10360,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c528246a-aa38-52b7-af40-35ed6624819a")
-		(property "Reference" "#PWR04022"
+		(property "Reference" "#PWR04024"
 			(at 71.12 340.36 0)
 			(effects
 				(font
@@ -9846,7 +10410,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
-					(reference "#PWR04022")
+					(reference "#PWR04024")
 					(unit 1)
 				)
 			)
@@ -10457,7 +11021,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "30ecc2b1-3546-5106-a1e8-db8341bff945")
-		(property "Reference" "#PWR04023"
+		(property "Reference" "#PWR04025"
 			(at 162.56 340.36 0)
 			(effects
 				(font
@@ -10507,7 +11071,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
-					(reference "#PWR04023")
+					(reference "#PWR04025")
 					(unit 1)
 				)
 			)
@@ -11836,7 +12400,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c3d73cc6-cdaa-57cb-947b-344446df12a4")
-		(property "Reference" "#PWR04024"
+		(property "Reference" "#PWR04026"
 			(at 411.48 336.55 0)
 			(effects
 				(font
@@ -11886,7 +12450,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
-					(reference "#PWR04024")
+					(reference "#PWR04026")
 					(unit 1)
 				)
 			)
@@ -12125,7 +12689,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4f59ddff-e8ec-5f13-9522-8e67f2be58c0")
-		(property "Reference" "#PWR04025"
+		(property "Reference" "#PWR04027"
 			(at 457.2 336.55 0)
 			(effects
 				(font
@@ -12175,9 +12739,159 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
-					(reference "#PWR04025")
+					(reference "#PWR04027")
 					(unit 1)
 				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 497.84 345.44 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "71c2fe28-2c54-50a2-9fe1-27681e3859d2")
+		(property "Reference" "R215"
+			(at 497.84 342.824 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 497.84 348.056 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 497.84 345.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 497.84 345.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor 100k 0402"
+			(at 497.84 345.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25741"
+			(at 497.84 345.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0402WGF1003TCE"
+			(at 497.84 345.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 497.84 345.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "19bc306a-8079-51e7-a77d-afba1ce3b8ca")
+		)
+		(pin "2"
+			(uuid "2ab5d95f-71c4-5998-8e85-59f8e30b27dd")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
+					(reference "R215")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 494.03 345.44)
+			(xy 491.49 345.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "eff579c4-719b-5994-b378-41de6155d013")
+	)
+	(label "CP_VREF2"
+		(at 491.49 345.44 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ca96aa6d-867a-5dff-abcf-12645ad7c8b1")
+	)
+	(wire
+		(pts
+			(xy 501.65 345.44)
+			(xy 504.19 345.44)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "199b9209-b02c-54fd-9b7b-ea1cafc38a9f")
+	)
+	(global_label "CP_ADC2"
+		(shape bidirectional)
+		(at 504.19 345.44 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8cdf65d9-a02c-5595-beb3-debb45326e40")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 504.19 345.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
 			)
 		)
 	)
@@ -12805,7 +13519,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "01c38dec-a237-55b3-aadf-d87327c16d4c")
-		(property "Reference" "#PWR04026"
+		(property "Reference" "#PWR04028"
 			(at 50.8 45.72 0)
 			(effects
 				(font
@@ -12855,7 +13569,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
-					(reference "#PWR04026")
+					(reference "#PWR04028")
 					(unit 1)
 				)
 			)
@@ -12926,7 +13640,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cf9fe598-1570-5a04-9517-b7f8145beeb4")
-		(property "Reference" "#PWR04027"
+		(property "Reference" "#PWR04029"
 			(at 335.28 347.98 0)
 			(effects
 				(font
@@ -12976,7 +13690,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/ac14d110-b641-5e40-a282-77d7516cd3e4"
-					(reference "#PWR04027")
+					(reference "#PWR04029")
 					(unit 1)
 				)
 			)
@@ -13092,27 +13806,16 @@
 		)
 		(uuid "6b279a51-c846-5a5c-9d94-17ac58b3adf8")
 	)
-	(global_label "CP_VREF2"
-		(shape bidirectional)
+	(label "CP_VREF2"
 		(at 457.2 320.04 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify left bottom)
 		)
-		(uuid "3b7132f6-2b26-55db-83fd-ff78f23ca900")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 457.2 320.04 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
+		(uuid "4c9f54a6-c2c1-591c-bd9b-06c5bf5af8ea")
 	)
 	(rectangle
 		(start 15.24 25.4)
@@ -13187,6 +13890,30 @@
 		(uuid "975e526c-a87a-5e54-9ba6-54b6038b7e76")
 	)
 	(rectangle
+		(start 15.24 381)
+		(end 304.8 497.84)
+		(stroke
+			(width 0.2)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "5d6d4812-41cb-5aac-a38f-f7db3df99612")
+	)
+	(text "ESD on the header's VREF (U208, in flow-through: header → ESD → LSF0108 and divider) and on RESET_N / BOOT_N (U209: header → ESD → 1k)"
+		(exclude_from_sim no)
+		(at 16.51 383.54 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "c1da8cbb-6c2c-5207-9860-0c032d62afb9")
+	)
+	(rectangle
 		(start 15.24 264.16)
 		(end 579.12 370.84)
 		(stroke
@@ -13196,7 +13923,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "5d6d4812-41cb-5aac-a38f-f7db3df99612")
+		(uuid "b10e7052-1819-5356-b1a8-a7dc1325d661")
 	)
 	(text "Pins 2: ESD in flow-through, 100 Ω, LSF0108 (A = the DUT's VREF, B = 3.3 V) to crosspoint U7's X lines"
 		(exclude_from_sim no)
@@ -13208,12 +13935,12 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "c1da8cbb-6c2c-5207-9860-0c032d62afb9")
+		(uuid "705769ad-ab5a-5a97-a88d-002b6a0c7be0")
 	)
-	(text_box "Port 2 = sub-slot A1.2, hub port 2, busid 1-1.2.\nINA226 at 0x43; expander U2 (0x20).\nILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.\nINA226 Vbus on the shunt's load-side sense pad (= VBUS).\nEN pulled down: the port stays off until the node switches it on.\nPins: P1–P8 → crosspoint X lines (docs/electronics.md › DATA ×4 v2 map);\n  the LSF0108 passes nothing while its VREF is at 0 V or unconnected (a board that is off).\nVREF: the board's I/O supply, 0.95–3.6 V; a 5 V board with TTL inputs: its own 3.3 V pin.\nSource only (Rp from the switched VBUS); a back-feeding source trips the TPS2553 (latched).\nThe DUT's RESET/BOOT pull-ups ≥ 4.7k: against 1k, the 1k in series stops at ≈ 1.65 V.\nVBUS LED: on while the port's switch is on (5V_SW, before the shunt)."
+	(text_box "Port 2 = sub-slot A1.2, hub port 2, busid 1-1.2.\nINA226 at 0x43; expander U2 (0x20).\nILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.\nINA226 Vbus on the shunt's load-side sense pad (= VBUS).\nEN pulled down: the port stays off until the node switches it on.\nPins: P1–P8 → crosspoint X lines (docs/electronics.md › DATA ×4 v2 map);\n  an unwired VREF stays ≈ 0.4 V, under the LSF0108's 0.65 V: the firmware keeps the port's\n  crosspoint switches open while its VREF reads under 0.65 V (GPIO40–43 under 0.33 V).\nESD: VREF through U208, RESET_N / BOOT_N through U209 (flow-through).\nVREF: the board's I/O supply, 0.95–3.6 V; a 5 V board with TTL inputs: its own 3.3 V pin.\nSource only (Rp from the switched VBUS); a back-feeding source trips the TPS2553 (latched).\nThe DUT's RESET/BOOT pull-ups ≥ 4.7k: against 1k, the 1k in series stops at ≈ 1.65 V.\nVBUS LED: on while the port's switch is on (5V_SW, before the shunt)."
 		(exclude_from_sim no)
 		(at 284.48 157.48 0)
-		(size 294.64 29.21)
+		(size 294.64 33.02)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

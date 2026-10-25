@@ -6,3 +6,7 @@ footprints (run it with KiCad's Python after changing it); do not edit the .kica
 * PinHeader_2x06_P2.54mm_Vertical_SMD_Tight: the stock 2 x 6 SMD header with a courtyard round its
   pads and body only, pads 1.3 mm wide (DATA x4 v2 J102-J402, side by side 18 mm apart,
   soldered by hand).
+* L_Abracon_AOTA-B201610: the RP2350 core regulator's polarity-marked 2016 inductor on Raspberry Pi's
+  RP2350B Minimal land, pad 1 the dotted terminal (DATA x4 v2 L1, pad 1 on +1V1).
+* C_0402_1005Metric_RP: the stock 0402 capacitor on Raspberry Pi's wide land (pads 0.47 x 0.55 at
+  +/-0.515 mm), the RP2350 regulator's CIN / COUT (DATA x4 v2 C32, C33).

@@ -4042,7 +4042,7 @@
 		)
 		(uuid "aa817bdd-7627-506b-878e-d6058b5b3ee1")
 	)
-	(global_label "CP_VREF1"
+	(global_label "CP_ADC1"
 		(shape bidirectional)
 		(at 124.46 210.82 180)
 		(fields_autoplaced yes)
@@ -4075,7 +4075,7 @@
 		)
 		(uuid "1b6b928e-4b90-5081-a015-9309a7f8edd1")
 	)
-	(global_label "CP_VREF2"
+	(global_label "CP_ADC2"
 		(shape bidirectional)
 		(at 124.46 213.36 180)
 		(fields_autoplaced yes)
@@ -4108,7 +4108,7 @@
 		)
 		(uuid "42d0dff3-b6f0-52d3-a3b7-b652e31f37f8")
 	)
-	(global_label "CP_VREF3"
+	(global_label "CP_ADC3"
 		(shape bidirectional)
 		(at 124.46 215.9 180)
 		(fields_autoplaced yes)
@@ -4141,7 +4141,7 @@
 		)
 		(uuid "5c6bfa24-41ec-5d50-854c-1edd4a36e784")
 	)
-	(global_label "CP_VREF4"
+	(global_label "CP_ADC4"
 		(shape bidirectional)
 		(at 124.46 218.44 180)
 		(fields_autoplaced yes)
@@ -5470,7 +5470,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Inductor_SMD:L_Murata_DFE201610P"
+		(property "Footprint" "bench:L_Abracon_AOTA-B201610"
 			(at 345.44 106.68 0)
 			(effects
 				(font
@@ -5488,7 +5488,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "3.3 µH 2.4 A molded inductor, 0806, polarity dot (RP2350 core regulator)"
+		(property "Description" "3.3 µH 2.4 A molded inductor, 0806, polarity dot on pad 1 (RP2350 core regulator)"
 			(at 345.44 106.68 0)
 			(effects
 				(font
@@ -5559,7 +5559,7 @@
 		)
 		(uuid "470e1a6d-f978-52f9-b405-dd4c0b2cfcfe")
 	)
-	(label "CP_VREG_LX"
+	(label "+1V1"
 		(at 339.09 106.68 180)
 		(fields_autoplaced yes)
 		(effects
@@ -5581,7 +5581,7 @@
 		)
 		(uuid "07cf4aee-ade4-545f-87b7-8126f82c0171")
 	)
-	(label "+1V1"
+	(label "CP_VREG_LX"
 		(at 351.79 106.68 0)
 		(fields_autoplaced yes)
 		(effects
@@ -5618,7 +5618,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+		(property "Footprint" "bench:C_0402_1005Metric_RP"
 			(at 457.2 111.76 0)
 			(effects
 				(font
@@ -5812,7 +5812,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+		(property "Footprint" "bench:C_0402_1005Metric_RP"
 			(at 370.84 111.76 0)
 			(effects
 				(font
@@ -7515,7 +7515,7 @@
 				)
 			)
 		)
-		(property "Value" "100n"
+		(property "Value" "4.7u"
 			(at 208.332 62.23 0)
 			(effects
 				(font
@@ -7541,7 +7541,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 100n 0402"
+		(property "Description" "Capacitor 4.7u 0402"
 			(at 203.2 60.96 0)
 			(effects
 				(font
@@ -7550,7 +7550,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C1525"
+		(property "LCSC" "C23733"
 			(at 203.2 60.96 0)
 			(effects
 				(font
@@ -7559,7 +7559,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL05B104KO5NNNC"
+		(property "MPN" "CL05A475MP5NRNC"
 			(at 203.2 60.96 0)
 			(effects
 				(font
@@ -10964,7 +10964,7 @@
 				)
 			)
 		)
-		(property "Value" "47k"
+		(property "Value" "10k"
 			(at 542.071 300.99 0)
 			(effects
 				(font
@@ -10990,7 +10990,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 47k 0402"
+		(property "Description" "Resistor 10k 0402"
 			(at 538.48 299.72 0)
 			(effects
 				(font
@@ -10999,7 +10999,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25792"
+		(property "LCSC" "C25744"
 			(at 538.48 299.72 0)
 			(effects
 				(font
@@ -11008,7 +11008,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0402WGF4702TCE"
+		(property "MPN" "0402WGF1002TCE"
 			(at 538.48 299.72 0)
 			(effects
 				(font
@@ -12794,10 +12794,10 @@
 		)
 		(uuid "8d09f7ce-b02a-5855-b87c-5a0346971a7e")
 	)
-	(text_box "GPIO2–9 = buses A–H (gusmanb CH1–8, 8-bit mode); GPIO0 → GPIO1 bridged (its trigger path).\nGPIO14 = the node's mark (TCA9534A P7); GPIO25 = LED; GPIO19…16, 13…10 = pull-up enables A…H (2.2k);\nGPIO40–43 = VREF 1–4 / 2; GPIO44 = +5V × 47/147; GPIO45 = 3.3 V − (3.3 + 5) × 47/147 from −5 V.\nRUN pulled up, BOOTSEL (QSPI_SS) through 1k: both held by the node (TCA9534A), open drain.\nCore regulator: L1 polarity dot towards VREG_LX; C32, C33, C34 and L1 as close as the Pico 2's."
+	(text_box "GPIO2–9 = buses A–H (gusmanb CH1–8, 8-bit mode); GPIO0 → GPIO1 bridged (its trigger path).\nGPIO14 = the node's mark (TCA9534A P7); GPIO25 = LED; GPIO19…16, 13…10 = pull-up enables A…H (2.2k);\nGPIO40–43 = VREF 1–4 / 2 (through 100k); GPIO44 = +5V × 47/147;\n  GPIO45 = 3.3 V − (3.3 + 5) × 10/110 from −5 V (2.55 V nominal).\nRUN pulled up, BOOTSEL (QSPI_SS) through 1k: both held by the node (TCA9534A), open drain.\nCore regulator: Raspberry Pi's Minimal R4 block turned 180°; L1's dot (pad 1) on +1V1, not VREG_LX.\nC47 (DVDD pin 32, furthest from the regulator) 4.7 µF; no copper under LX / L1 (In1, In2, B.Cu)."
 		(exclude_from_sim no)
 		(at 15.24 314.96 0)
-		(size 284.48 16.51)
+		(size 284.48 20.32)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

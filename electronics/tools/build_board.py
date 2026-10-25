@@ -115,6 +115,10 @@ def bom_rows(b, dnp=frozenset()):
     return rows
 
 
+# A land of our own for a stock package: the same part, the same BOM line (JLC places its own footprint)
+JLC_SAME_PART_LAND = {"C_0402_1005Metric_RP": "C_0402_1005Metric"}     # x4 v2 C32 C33 (RP's CIN / COUT land)
+
+
 def jlc_bom_rows(rows):
     """One line per LCSC part: JLC deselects lines that resolve to the same part ("Multiple lines in
     the BOM have been matched to the same part"), so e.g. J3 PC + J4 DUT become one line.  Parts
@@ -125,7 +129,7 @@ def jlc_bom_rows(rows):
             groups.setdefault(r["LCSC"] or f"{r['Value']}|{r['Footprint']}", []).append(r)
     out = []
     for rs in groups.values():
-        fps = {r["Footprint"] for r in rs}
+        fps = {JLC_SAME_PART_LAND.get(r["Footprint"], r["Footprint"]) for r in rs}
         if len(fps) > 1:
             raise SystemExit(f"LCSC {rs[0]['LCSC']} on different footprints {sorted(fps)}")
         values = list(dict.fromkeys(r["Value"] for r in rs))
@@ -175,6 +179,7 @@ JLC_CPL_FIX = {
     "C3234095": ("SOIC-8_3.9x4.9mm_P1.27mm", 270, 0.0, 0.0),                  # and TJA1462AT
     "C75176": ("SOT-23", 180, 0.0, 0.0),                                      # bay D5, hub D9 (PESD2CAN)
     "C7420333": ("SOT-23", 180, 0.0, 0.0),                                    # bay D6 D7, hub POS clamps (BAT54S)
+    "C347371": ("SOT-23", 180, 0.0, 0.0),                                     # x4 v2 U5 (MAX809S, unfitted)
     "C5184243": ("USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal", 0, 0.0, -1.30),  # bay J3 J4, hub USB-C
     # the DATA lead's 5-pin PH pair, fitted on 2026-10-18 the same way
     "C265104": ("JST_PH_S5B-PH-SM4-TB_1x05-1MP_P2.00mm_Horizontal", 180, 0.0, 0.14),  # data port J2

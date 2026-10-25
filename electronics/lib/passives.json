@@ -564,5 +564,14 @@
   "stock": 1224711,
   "basic": true
  },
- "R:84.5k:0603": null
+ "R:84.5k:0603": null,
+ "R:1M:0402": {
+  "lcsc": "C26083",
+  "mpn": "0402WGF1004TCE",
+  "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+  "description": "1MΩ 50V 62.5mW Thick Film Resistor ±1% ±100ppm/℃ 0402 Chip Resistor - Surface Mount ROHS",
+  "price": 0.002,
+  "stock": 2881314,
+  "basic": true
+ }
 }

@@ -221,10 +221,92 @@ def dfn2510_10l() -> pcbnew.FOOTPRINT:
     return fp
 
 
+def aota_b201610() -> pcbnew.FOOTPRINT:
+    """Abracon AOTA-B201610S3R3-101-T (2.0 × 1.6 mm), the RP2350 core regulator's inductor, on Raspberry Pi's own
+    land (RP2350B Minimal R4: pads 0.7 × 1.7 mm at ±0.7 mm) with its polarity mark: pad 1 is the dotted
+    terminal, which goes on VOUT / +1V1 (RP2350 datasheet Fig. 26, the user's reading, 2026-10-25).  A silk
+    dot beyond pad 1's end and a fab dot inside the body by pad 1; the courtyard reaches the silk dot.  KiCad's
+    L_Murata_DFE201610P body (the same 2016 size) for the 3D view."""
+    name = "L_Abracon_AOTA-B201610"
+    fp = pcbnew.FOOTPRINT(None)
+    for num, x in (("1", -0.7), ("2", 0.7)):
+        p = pcbnew.PAD(fp)
+        p.SetAttribute(pcbnew.PAD_ATTRIB_SMD)
+        p.SetShape(pcbnew.F_Cu, pcbnew.PAD_SHAPE_ROUNDRECT)
+        p.SetRoundRectRadiusRatio(pcbnew.F_Cu, 0.25)
+        p.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(0.7), MM(1.7)))
+        p.SetLayerSet(pcbnew.PAD.SMDMask())
+        p.SetNumber(num)
+        p.SetFPRelativePosition(pcbnew.VECTOR2I(MM(x), 0))
+        fp.Add(p)
+    for layer, w, (x0, y0, x1, y1) in ((pcbnew.F_CrtYd, 0.05, (-1.3, -1.45, 1.3, 1.1)),
+                                       (pcbnew.F_Fab, 0.1, (-1.0, -0.8, 1.0, 0.8))):
+        rect = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_RECT)
+        rect.SetLayer(layer)
+        rect.SetWidth(MM(w))
+        rect.SetStart(pcbnew.VECTOR2I(MM(x0), MM(y0)))
+        rect.SetEnd(pcbnew.VECTOR2I(MM(x1), MM(y1)))
+        fp.Add(rect)
+    for y in (-1.0, 1.0):                       # silkscreen: the long sides between the pads
+        line = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_SEGMENT)
+        line.SetLayer(pcbnew.F_SilkS)
+        line.SetWidth(MM(0.12))
+        line.SetStart(pcbnew.VECTOR2I(MM(-0.15), MM(y)))
+        line.SetEnd(pcbnew.VECTOR2I(MM(0.15), MM(y)))
+        fp.Add(line)
+    for layer, (x, y), r in ((pcbnew.F_SilkS, (-0.7, -1.2), 0.1), (pcbnew.F_Fab, (-0.65, -0.5), 0.12)):
+        dot = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_CIRCLE)
+        dot.SetLayer(layer)
+        dot.SetWidth(MM(0.1))
+        dot.SetFilled(True)
+        dot.SetStart(pcbnew.VECTOR2I(MM(x), MM(y)))
+        dot.SetEnd(pcbnew.VECTOR2I(MM(x + r), MM(y)))
+        fp.Add(dot)
+    model = pcbnew.FP_3DMODEL()
+    model.m_Filename = "${KICAD10_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_Murata_DFE201610P.step"
+    fp.Models().append(model)
+    fp.SetAttributes(pcbnew.FP_SMD)
+    fp.SetFPID(pcbnew.LIB_ID("bench", name))
+    fp.Value().SetText(name)
+    fp.Reference().SetText("REF**")
+    fp.SetLibDescription("Inductor 2.0 × 1.6 mm, Abracon AOTA-B201610 (polarity-marked), Raspberry Pi's RP2350B "
+                         "Minimal land: pads 0.7 × 1.7 mm at ±0.7 mm, pad 1 the dotted terminal (silk and fab dot)")
+    fp.SetKeywords("inductor 2016 abracon aota polarity rp2350")
+    return fp
+
+
+def c0402_rp() -> pcbnew.FOOTPRINT:
+    """The stock 0402 capacitor on Raspberry Pi's "capc1005x50_wide" land (RP2350B Minimal R4, its core regulator's
+    CIN and COUT): pads 0.47 × 0.55 mm at ±0.515 mm, 0.56 mm apart instead of 0.4, so VREG_LX passes between them
+    0.3 mm wide as in the datasheet's Fig. 26; its courtyard ±0.44 mm across, so CIN and COUT sit at Raspberry Pi's
+    0.94 mm pitch."""
+    name = "C_0402_1005Metric_RP"
+    fp = pcbnew.FootprintLoad(str(STOCK / "Capacitor_SMD.pretty"), "C_0402_1005Metric")
+    for pad in fp.Pads():
+        pad.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(0.47), MM(0.55)))
+        pad.SetFPRelativePosition(pcbnew.VECTOR2I(MM(-0.515 if pad.GetNumber() == "1" else 0.515), 0))
+    for item in list(fp.GraphicalItems()):
+        if item.GetLayer() == pcbnew.F_CrtYd:
+            fp.Remove(item)
+    rect = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_RECT)
+    rect.SetLayer(pcbnew.F_CrtYd)
+    rect.SetWidth(MM(0.05))
+    rect.SetStart(pcbnew.VECTOR2I(MM(-0.96), MM(-0.44)))
+    rect.SetEnd(pcbnew.VECTOR2I(MM(0.96), MM(0.44)))
+    fp.Add(rect)
+    fp.SetFPID(pcbnew.LIB_ID("bench", name))
+    fp.SetValue(name)
+    fp.SetLibDescription("Capacitor SMD 0402 (1005 Metric) on Raspberry Pi's wide land (RP2350B Minimal R4): pads "
+                         "0.47 × 0.55 mm at ±0.515 mm, the RP2350 regulator's CIN / COUT, VREG_LX between them")
+    fp.SetKeywords("capacitor 0402 rp2350 regulator")
+    return fp
+
+
 MAKERS = {"R_1206_3216Metric_Kelvin": kelvin_1206, "ESP32-S3-WROOM-1_NoEPVias": wroom_no_ep_vias,
           "PinHeader_2x06_P2.54mm_Vertical_SMD_Tight": header_2x6_smd_tight,
           "USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical": usb_c_hro_31d06,
-          "DFN2510-10L_2.5x1.0mm_P0.5mm": dfn2510_10l}
+          "DFN2510-10L_2.5x1.0mm_P0.5mm": dfn2510_10l, "L_Abracon_AOTA-B201610": aota_b201610,
+          "C_0402_1005Metric_RP": c0402_rp}
 
 
 def main():

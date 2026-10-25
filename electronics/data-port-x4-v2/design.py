@@ -6,9 +6,9 @@ does and adds:
 
 * per port, 8 pins P1–P8 and the board's VREF on a 2 × 6 through-hole header, soldered by hand (GND,
   VREF, P1–P8, RESET_N, BOOT_N): each pin through H5VU25UC ESD and 100 Ω to an LSF0108 (A side = the DUT's VREF, B side =
-  3.3 V; Vref_B and EN biased from +5V_MX through 200k, so a group is a voltage domain of its own: a board that is off
-  takes its VREF down and isolates its
-  pins, and a VREF left unconnected is pulled to GND by the ADC divider: nothing passes).  Specified for
+  3.3 V; Vref_B and EN biased from +5V_MX through 200k, so a group is a voltage domain of its own; a VREF left
+  unconnected is held ≈ 0.4 V by the ADC divider, and the firmware keeps that port's crosspoint switches open);
+  VREF, RESET_N and BOOT_N through H5VU25UC ESD too.  Specified for
   0.95–3.6 V logic; a 5 V board with TTL inputs takes VREF from its own 3.3 V pin (electronics.md › "The
   VREF rule");
 * two CH446Q 8 × 16 crosspoints at ±5 V (TPS60400 for −5 V), each taking two ports' 16 pins on X; their
@@ -18,8 +18,8 @@ does and adds:
 * an RP2354B co-processor wired like a Pico 2 (12 MHz ABM8-272-T3, its core regulator as Raspberry Pi
   lays it out), on hub port 5: the stock gusmanb LogicAnalyzer UF2 sees the buses on CH1–8 (GPIO2–9,
   GPIO0 → 1 bridged for its triggers); our firmware later switches 2.2k pull-ups per bus (GPIO10–13,
-  16–19) and reads the VREFs (GPIO40–43) and the ±5 V rails (GPIO44–45).  The node holds its RUN and
-  BOOTSEL (QSPI_SS through 1k) on the TCA9534A, and the mark line (GPIO14) for triggers.  Its 3.3 V from the
+  16–19) and reads the VREFs (GPIO40–43, through 100k) and the ±5 V rails (GPIO44–45).  The node holds its RUN
+  and   BOOTSEL (QSPI_SS through 1k) on the TCA9534A, and the mark line (GPIO14) for triggers.  Its 3.3 V from the
   board's, through a ferrite.
 
 v1's PCBA-review fixes (docs/pcba-review.md, X1–X11) carried over: the lead's SDA, SCL and INT through
@@ -42,9 +42,9 @@ One PCB, two assemblies (b.pcb["variants"], build_board writes each one's BOM an
 "base", DATA-4x, the converted bays' board (the user, 2026-10-20: v1 is not ordered, the base board is this one
 with the logic left off).  The base leaves unfitted the matrix sheet (crosspoints, −5 V, TCA9534A, FB1), the
 co-processor sheet and each port's pin chain (H5VU25UC, 100 Ω, LSF0108, its VREF parts): what stays is v1's
-board, the hub, the four ports with their switch, INA226, ESD and CC, the expanders with RESET/BOOT, the
-lead's isolation and ESD, the 3.3 V.  No base signal runs through a logic part: the header's GND, RESET and
-BOOT stay live, its P pins and VREF end on empty pads, hub port 5 ends on R23/R24's empty pads.
+board, the hub and its reset supervisor, the four ports with their switch, INA226, ESD and CC, the expanders
+with RESET/BOOT (and their ESD), the lead's isolation and ESD, the 3.3 V.  No base signal runs through a logic part: the
+header's GND, RESET and BOOT stay live, its P pins and VREF end on empty pads, hub port 5 ends on R23/R24's empty pads.
 4 layers (pcb.layers, JLC04161H-7628): F (the High-Speed pairs, drawn) · In1 GND · In2 +3V3 above, +5V below · B,
 again since 2026-10-23: the routing portfolio and its fixes route it clean.  6 layers (X4V2_LAYERS=6: F · GND ·
 sig · sig · power · B, the HS review's of 2026-10-22) still builds, for a comparison.
@@ -301,15 +301,24 @@ def port(b: Board, n: int):
     # the tails), pins forward over the drawer's plate.  The footprint's origin is pin 1 (lower row, west end)
     part(s, f"J{k + 2}", "hdr2x6t", hdr, f"PINS{n}", pcb=P(cx - 6.35, HDR_Y + 1.27, 90),
          sch=at(184, 30, fields=(-1, -5)))
-    # RESET/BOOT 1k and the expander lines' pull-ups in a column right of the header, by its pins 12 (upper
-    # row) and 11 (lower row).  The DUT's own pull-ups should be ≥ 4.7k: against 1k, the 1k in series stops an
-    # asserted line at ≈ 1.65 V.  Ports 1–3: 1.85 mm lower and 1.9 mm apart (down to just over the expander), so the
-    # band over the headers stays free for the USB pairs' trunk on F.Cu (the HS review, 2026-10-22); port 4's
-    # stays, Q1 right under it and no pair passing it
+    # RESET/BOOT through 1k and an H5VU25UC, the expander lines' pull-ups in a column right of the header, by
+    # its pins 12 (upper row) and 11 (lower row).  The DUT's own pull-ups should be ≥ 4.7k: against 1k, the 1k in
+    # series stops an asserted line at ≈ 1.65 V.  Ports 1–3's pull-ups: 1.85 mm lower and 1.9 mm apart (down to just
+    # over the expander), so the band over the headers stays free for the USB pairs' trunk on F.Cu (the HS review,
+    # 2026-10-22); port 4's stay, Q1 right under them and no pair passing them
     ys = ((HDR_Y - 3.4, HDR_Y - 1.45, HDR_Y + 0.5, HDR_Y + 2.45) if n == 4 else
           (HDR_Y - 1.55, HDR_Y + 0.35, HDR_Y + 2.25, HDR_Y + 4.15))
-    for r, sig, y, rot, sy in ((f"R{k + 7}", "RST", ys[3], 270, 34), (f"R{k + 8}", "BOOT", ys[0], 90, 44)):
-        R(s, r, "1k", p + sig + "_IO", p + sig + "_N", size="0402", pcb=P(cx + 9.0, y, rot), sch=at(150, sy, rot=90))
+    # The ESD (the audit's fix 7 and the schematic review's N4; fitted on the base too): RESET_N and BOOT_N
+    # each through a pair of its pads in flow-through, header → ESD → 1k, so the 1k sit right behind it, over
+    # the header's east end, clear of the pairs' trunk (ports 1–3); port 4's over its LSF0108's east end, where
+    # the three pairs coming down from the hub leave room.  BOOT on pins 2 / 9, RESET on 5 / 6
+    ex, ey = (cx + 5.6, 33.0) if n == 4 else (cx + 6.0, 37.2)
+    part(s, f"U{k + 9}", "esd4", {"GND": "GND", "2": p + "BOOT_N", "9": p + "BOOT_N", "5": p + "RST_N",
+                                  "6": p + "RST_N", "1": None, "10": None, "4": None, "7": None},
+         pcb=P(ex, ey, 90), sch=at(80, 172, fields=(-3, -7)))
+    for r, sig, dx, sy in ((f"R{k + 7}", "RST", 1.0, 34), (f"R{k + 8}", "BOOT", -0.5, 44)):
+        R(s, r, "1k", p + sig + "_IO", p + sig + "_N", size="0402", pcb=P(ex + dx, ey - 2.2, 270),
+          sch=at(150, sy, rot=90))
     # X6: the expander's RESET/BOOT inputs pulled up (they float with nothing plugged in, and raise INT)
     for r, sig, j, y, rot in ((f"R{k + 9}", "RST", 0, ys[2], 270), (f"R{k + 10}", "BOOT", 1, ys[1], 90)):
         R(s, r, "100k", "+3V3", p + sig + "_IO", size="0402", pcb=P(cx + 9.0, y, rot),
@@ -319,6 +328,16 @@ def port(b: Board, n: int):
         s.tag(p + sig + "_IO", (128, (34, 44)[j]), "left")
 
     # ---- the pins: ESD, 100 Ω, LSF0108, to the crosspoint
+    s.frame(f"ESD on the header's VREF (U{k + 8}, in flow-through: header → ESD → LSF0108 and divider) and on "
+            f"RESET_N / BOOT_N (U{k + 9}: header → ESD → 1k)", 6, 150, 120, 196)
+    # VREF biases all eight of the LSF0108's pass gates and its Vref_A is rated ±2 kV HBM only: an H5VU25UC of its
+    # own (the audit's fix 7), one line in flow-through, west of the port's LED, over the header's west end
+    # (VREF, its pin 2).  The header's VREF and its RESET/BOOT are 12.7 mm apart with the pairs' trunk over them:
+    # one ESD apiece.  Logic only (on the base VREF ends on empty pads)
+    part(s, f"U{k + 8}", "esd4", {"GND": "GND", "5": p + "VREF", "6": p + "VREF", "1": None, "10": None,
+                                  "2": None, "9": None, "4": None, "7": None},
+         pcb=P(cx - 8.0, 34.8, 90), sch=at(30, 172, fields=(-3, -7)))
+
     s.frame(f"Pins {n}: ESD in flow-through, 100 Ω, LSF0108 (A = the DUT's VREF, "
             f"B = 3.3 V) to crosspoint {'U7' if n <= 2 else 'U8'}'s X lines", 6, 104, 228, 146)
     lx = cx - 0.5                       # the LSF, its A face over the two slot columns
@@ -349,13 +368,21 @@ def port(b: Board, n: int):
     R(s, f"R{k + 11}", "200k", "+5V_MX", p + "VREFB", size="0402", pcb=P(bx, by, 0), sch=at(162, 122))
     C(s, f"C{k + 5}", "100n", p + "VREFB", "GND", size="0402", pcb=P(bx, by + 1.1, 0), sch=at(162, 130))
     s.wire(f"R{k + 11}.2", f"C{k + 5}.1")
-    # VREF / 2 to the co-processor's ADC, and the pull-down that closes an unwired group.  The bias current
+    # VREF / 2 to the co-processor's ADC, and the pull-down that holds an unwired VREF low.  The bias current
     # (≈ 20 µA) leaves the LSF0108 by Vref_A: through 100k + 100k an unwired VREF would float up to ≈ 2.1 V and
-    # the group would pass; through 10k + 10k it stays ≈ 0.4 V, under the 0.65 V the LSF needs to translate.  A
-    # wired VREF supplies VREF / 20k (165 µA at 3.3 V)
+    # the group would translate; through 10k + 10k it stays ≈ 0.4 V, under the 0.65 V minimum TI specifies.
+    # That does not open the group: TI guarantees the off state only with EN low (SDLS966M §8.3.2), and below
+    # Vref_A + VTH its pass gates still conduct, so lows pass both ways and highs into A clamp at ≈ 0.4 V.  The
+    # isolation is the crosspoint's: the firmware keeps a port's switches open while its VREF reads under 0.65 V
+    # (the audit's fix 8).  A wired VREF supplies VREF / 20k (165 µA at 3.3 V)
     R(s, f"R{k + 12}", "10k", p + "VREF", f"CP_VREF{n}", size="0402", pcb=P(bx, by + 2.2, 0), sch=at(180, 122))
     R(s, f"R{k + 13}", "10k", f"CP_VREF{n}", "GND", size="0402", pcb=P(bx, by + 3.3, 0), sch=at(180, 130))
     s.wire(f"R{k + 12}.2", f"R{k + 13}.1")
+    # 100k in series to the ADC pin (the audit's U8, its conservative option): with the board off and a
+    # self-powered DUT's VREF wired, the co-processor's unpowered GPIO40–43 would take VREF / 2 through 5k; through
+    # 105k it is ≤ 20 µA.  The RP2350's ADC reads DC through it (§12.4.3); north of the divider, on the way up
+    R(s, f"R{k + 15}", "100k", f"CP_VREF{n}", f"CP_ADC{n}", size="0402", pcb=P(bx, by - 2.1, 0),
+      sch=at(196, 136, rot=90))
     # VREF comes from the DUT through the header, Vref_B from +5V_MX through 200k: no power output drives them
     s.part(f"#FLG{k + 1}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": p + "VREF"}, in_bom=False, on_board=False,
            sch=at(200, 120))
@@ -370,7 +397,9 @@ def port(b: Board, n: int):
                "INA226 Vbus on the shunt's load-side sense pad (= VBUS).",
                "EN pulled down: the port stays off until the node switches it on.",
                "Pins: P1–P8 → crosspoint X lines (docs/electronics.md › DATA ×4 v2 map);",
-               "  the LSF0108 passes nothing while its VREF is at 0 V or unconnected (a board that is off).",
+               "  an unwired VREF stays ≈ 0.4 V, under the LSF0108's 0.65 V: the firmware keeps the port's",
+               "  crosspoint switches open while its VREF reads under 0.65 V (GPIO40–43 under 0.33 V).",
+               "ESD: VREF through U" + str(k + 8) + ", RESET_N / BOOT_N through U" + str(k + 9) + " (flow-through).",
                "VREF: the board's I/O supply, 0.95–3.6 V; a 5 V board with TTL inputs: its own 3.3 V pin.",
                "Source only (Rp from the switched VBUS); a back-feeding source trips the TPS2553 (latched).",
                "The DUT's RESET/BOOT pull-ups ≥ 4.7k: against 1k, the 1k in series stops at ≈ 1.65 V.",
@@ -405,8 +434,8 @@ def hub_sheet(b: Board):
     # with seven): ≈ 0.35 A in all, 0.6–0.7 W in the LDO from 5.0–5.24 V, twice v1's (its USB2514B: 155 mA).
     # Too much for v1's AP2112K in SOT-23-5, so an AP2114H: the same low dropout (≈ 0.16 V at 0.35 A: the hub
     # keeps running while the ports sag the +5V, as v1 wants), 1 A, in SOT-223, its tab on a top-side +3V3
-    # island with six vias into the +3V3 plane (128 °C/W bare; on the island and the plane ≈ 60–70 °C/W:
-    # ≈ 45 °C over the drawer's air).  Its VIN pin on a +5V island with two vias
+    # island with six vias into the +3V3 plane (Diodes gives 128 °C/W bare and no figure for a board's copper:
+    # the bring-up measures it).  Its VIN pin on a +5V island with two vias
     part(s, "U3", "ldo_1a", {"VI": "+5V", "VO": "+3V3", "GND": "GND"}, pcb=P(*LDO, 90),
          sch=at(34, 69, fields=(-3, -4)))
     C(s, "C2", "22u", "+5V", "GND", size="0805", pcb=P(LDO[0] + 2.9, LDO[1] + 6.9, 270), sch=at(20, 72))
@@ -416,7 +445,7 @@ def hub_sheet(b: Board):
     s.wire((44, 69), (50, 69), net="+3V3")
     s.tag("+3V3", (50, 69), "up")
 
-    s.frame("USB2517I hub on its straps (CFG_SEL 000: internal default, straps on), 24 MHz crystal",
+    s.frame("USB2517I hub, CFG_SEL 110 (internal default configuration, straps disabled), 24 MHz crystal",
             74, 10, 168, 104)
     hub = {"USBUP_DM": "UP_DN", "USBUP_DP": "UP_DP", "VDD33": "+3V3", "VDD33PLL": "+3V3", "VDD33CR": "+3V3",
            "VDDA33": "+3V3", "VDD18": "HUB_1V8", "VDD18PLL": "HUB_1V8PLL", "VSS": "GND", "TEST": "GND",
@@ -450,37 +479,44 @@ def hub_sheet(b: Board):
     C(s, "C5", "33p", "XO", "GND", size="0402", pcb=P(HX - 6.6, HY + 13.6, 0), sch=at(100, 68))
     s.wire("Y1.1", (88, 64), "C4.1")
     s.wire("Y1.3", (100, 64), "C5.1")
+    # 1 MΩ across XTAL1–XTAL2 as the datasheet's Fig. 9-1 draws it (and Microchip's EVB fits it, R19): DS00001598C
+    # never says it is inside (the audit's U2, its conservative option); west of the crystal
+    R(s, "R10", "1M", "XO", "XI", size="0402", pcb=P(HX - 9.3, HY + 9.0, 90), sch=at(94, 56, rot=90))
     # decoupling, by pin: west 64 (below the corner), 57 and 52; south 5, 10 (left and right of the DN
     # pairs); east 24; north 46 (and 44 beside it)
     for i, (ref, xy, rot) in enumerate((("C11", (HX - 4.7, HY + 6.6), 90), ("C13", (HX - 6.2, HY - 1.1), 180),
                                         ("C12", (HX - 6.2, HY - 2.25), 180), ("C15", (HX - 8.75, HY + 6.6), 90),
                                         ("C16", (HX + 1.6, HY + 7.6), 90), ("C14", (HX + 6.05, HY + 1.2), 90),
-                                        ("C17", (HX - 1.0, HY - 11.8), 90))):
+                                        ("C17", (HX + 0.3, HY - 12.1), 90))):
         C(s, ref, "100n", "+3V3", "GND", size="0402", pcb=P(*xy, rot), sch=at(80 + 6 * i, 24))
-    C(s, "C8", "1u", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 7.75, HY + 6.6, 90), sch=at(128, 24))
+    # VDD18 / VDD18PLL: the datasheet's 1.0 µF ± 20 % has no margin left once a 0402's DC bias and temperature
+    # are counted (the audit's U10): 4.7 µF, the board's 4.7 µF line
+    C(s, "C8", "4.7u", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 7.75, HY + 6.6, 90), sch=at(128, 24))
     C(s, "C10", "100n", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 6.75, HY + 6.6, 90), sch=at(134, 24))
-    C(s, "C7", "1u", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 0.9, 90), sch=at(146, 24))
+    C(s, "C7", "4.7u", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 0.9, 90), sch=at(146, 24))
     C(s, "C9", "100n", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 3.0, 90), sch=at(152, 24))
-    # RBIAS, reset (R2 up, C6 down: about 5 ms with D2 below, 10 ms alone) and the three single straps
+    # RBIAS and the reset: a MAX809S supervisor drives RESET_N (the audit's fix 6).  The hub's errata
+    # (DS80000628A, Module 2): "The internal POR does not generate reset when power drops below the threshold
+    # … Use external power on reset circuit (for example … MAX809S (V2.9V) voltage supervisor)": an RC resets a
+    # clean ramp only, and a DUT_5V sag (the node's 1.34 A limit) could leave the hub hung.  RESET low below
+    # 2.93 V (2.78–3.08 V over temperature) and for 150–560 ms after +3V3 is back, push-pull; its 100 nF (C6) at
+    # its VDD.  Over the north face, its RESET pad right above RESET_N (pin 43).  RESET_N is the hub's alone
+    # (the schematic review's S2 tied the co-processor's RUN to it through D2 until CFG_SEL 110)
     R(s, "R1", "12k", "RBIAS", "GND", size="0402", pcb=P(HX - 5.75, HY + 6.6, 90), sch=at(84, 92))
-    R(s, "R2", "10k", "+3V3", "HUB_RST_N", size="0402", pcb=P(HX - 1.25, HY - 9.4, 90), sch=at(92, 88))
-    C(s, "C6", "1u", "HUB_RST_N", "GND", size="0402", pcb=P(HX - 2.3, HY - 9.4, 90), sch=at(92, 96))
-    s.wire("R2.2", "C6.1")
-    # S2 (the schematic review, 2026-10-25): the co-processor is held in reset while the hub is.  The USB2517
-    # samples each downstream D+ / D− as a port-disable strap when RESET_N rises, and one high line is enough
-    # (the user checked DS00001598C Table 5-1 p.10, straps on with CFG_SEL 000): the RP2354B's D+ pull-up on port 5
-    # must not be up by then.  One Schottky of a BAT54S (preferred, no fee; VF ≤ 240 mV at 0.1 mA, ≤ 320 mV at
-    # 1 mA) from CP_RUN to HUB_RST_N: with RESET_N low, RUN sits at ≈ 0.3 V (R25's ≈ 0.33 mA), under the
-    # RP2350's VIL 0.8 V; RUN is released ≈ VF ahead of RESET_N, and its firmware takes far longer than that to
-    # pull D+ up.  R25 then also charges C6: the hub's reset (to VIH 2.0 V) goes from ≈ 9.3 to ≈ 4.6–5 ms, ≫ the
-    # 1 µs minimum, and RESET_N stays under VIL 0.8 V through a 3.3 V rise of ≤ ≈ 1.3 ms (DS Note 8-1).  The
-    # TCA9534A pulling RUN low leaves the diode reversed (≤ 2 µA): no effect on the hub.  Fitted on both variants
-    # (on the base, CP_RUN just floats); its second diode (COM → K) is left open
-    part(s, "D2", "bat54s", {"A": "CP_RUN", "K": None, "COM": "HUB_RST_N"}, pcb=P(HX - 5.5, HY - 11.1, 0),
-         sch=at(100, 100, rot=90))
-    # X8: every strap pin pulled: CFG_SEL 000, NON_REM 00, GANG_EN 0, BOOST 00, PRT_SWP 0000000.  Over the
-    # north face in two rows (the pins at 0.5 mm leave no room for one row), a resistor over its pin, the
-    # west face's three round the corner into RN1; CFG2, SWP7 and SWP6 round the south-east corner into RN3
+    part(s, "U5", "max809s", {"GND": "GND", "~{RESET}": "HUB_RST_N", "VCC": "+3V3"},
+         pcb=P(HX - 2.2, HY - 10.1, 90), sch=at(90, 80, fields=(-4, -5)))
+    C(s, "C6", "100n", "+3V3", "GND", size="0402", pcb=P(HX - 3.0, HY - 12.7, 180), sch=at(78, 84))
+    # CFG_SEL[2:0] = 110 since 2026-10-25: "Internal Default Configuration, Strap Options are Disabled" (DS00001598C
+    # Table 5-2 p. 16, the user's reading).  The hub loads Table 7-1's defaults (§7.4 p. 41), which are what our
+    # straps set (CFG1 9Bh: self-powered, individual port switching and over-current sensing; NRD, BOOST, PRT_SWP
+    # 00h; CFG2 20h, CFG3 00h), and no longer samples D+ / D− as port-disable straps (PDS = PDB = 00h: every port
+    # enabled): a self-powered DUT present at the hub's reset keeps its port, and the co-processor's D+ pull-up
+    # races nothing (the schematic review's S2 and its D2 are gone).  CFG_SEL1 (HS_IND, pin 42) and CFG_SEL2 up
+    # through 10k, CFG_SEL0 (SCL) down, all static at RESET_N's rise.  HS_IND drives after reset (I/O12, 12 mA):
+    # 0.33 mA into its 10k, and it lights no LED here (CFG_SEL1 high makes it active low).  The other strap
+    # pins keep their pull-downs (X8; no longer read, harmless on the LED outputs): over the north face in two
+    # rows (the pins at 0.5 mm leave no room for one row), a resistor over its pin, the west face's three round
+    # the corner into RN1; CFG2, SWP7 and SWP6 round the south-east corner into RN3
     R(s, "R3", "10k", "HUB_SWP3", "GND", size="0402", pcb=P(HX - 2.85, HY - 7.1, 90), sch=at(100, 92))
     R(s, "R4", "10k", "HUB_NONREM0", "GND", size="0402", pcb=P(HX - 1.8, HY - 7.1, 90), sch=at(106, 92))
     R(s, "R5", "10k", "HUB_SWP4", "GND", size="0402", pcb=P(HX + 3.6, HY - 7.1, 90), sch=at(112, 92))
@@ -488,19 +524,26 @@ def hub_sheet(b: Board):
     for i, (nets, x, y, rot) in enumerate(((["HUB_SWP1", "HUB_BOOST0", "HUB_SWP2", "HUB_BOOST1"], HX - 4.8, HY - 7.1, 270),
                                            (["HUB_CFG1", "HUB_CFG0", "HUB_NONREM1", "HUB_GANG"], HX + 0.8, HY - 9.4, 90),
                                            (["HUB_CFG2", "HUB_SWP7", "HUB_SWP6", None], HX + 3.5, HY + 7.6, 90))):
-        rarray(s, f"RN{1 + i}", "10k", [(net, "GND" if net else None) for net in nets], P(x, y, rot),
-               sch=at(126 + 12 * i, 92, rot=180, fields=(3, 0)))
-        rail(s, "GND", [f"RN{1 + i}.{9 - k}" for k in range(1, 5) if nets[k - 1]], 2, "down")
+        up = ("HUB_CFG1", "HUB_CFG2")
+        rarray(s, f"RN{1 + i}", "10k", [(net, ("+3V3" if net in up else "GND") if net else None) for net in nets],
+               P(x, y, rot), sch=at(126 + 12 * i, 92, rot=180, fields=(3, 0)))
+        rail(s, "GND", [f"RN{1 + i}.{9 - k}" for k in range(1, 5) if nets[k - 1] and nets[k - 1] not in up], 2, "down")
+        if nets[0] in up:
+            rail(s, "+3V3", [f"RN{1 + i}.8"], 2, "down")
 
     s.frame("Two TCA6408A expanders, one per pair of ports: EN, FAULT_N, RESET, BOOT", 172, 10, 228, 70)
+    # each RESET through 10k to +3V3 (TI: "connect to VCCI through a pull-up resistor, if no active connection
+    # is used"; the audit's U9, its conservative option), the resistor by pin 1
     for i, (ref, cref, (x, y, addr), sy) in enumerate((("U2", "C18", EXP[0], 24), ("U6", "C19", EXP[1], 52))):
-        exp = {"V_{CCI}": "+3V3", "V_{CCP}": "+3V3", "~{RESET}": "+3V3", "GND": "GND", "EPAD": "GND",
+        exp = {"V_{CCI}": "+3V3", "V_{CCP}": "+3V3", "~{RESET}": f"EXP{i + 1}_RST_N", "GND": "GND", "EPAD": "GND",
                "ADDR": addr, "SCL": "SCL", "SDA": "SDA", "~{INT}": "INT"}
         for half, n in (("a", 2 * i + 1), ("b", 2 * i + 2)):
             for pin, sig in EXP_LINES[half].items():
                 exp[pin] = f"PORT{n}_{sig}"
         part(s, ref, "tca6408", exp, pcb=P(x, y, 0), sch=at(200, sy, fields=(-4, -9)))
         C(s, cref, "100n", "+3V3", "GND", size="0402", pcb=P(x, y + 3.1, 0), sch=at(184, sy - 4))
+        R(s, f"R{11 + i}", "10k", "+3V3", f"EXP{i + 1}_RST_N", size="0402", pcb=P(x - 3.1, y - 1.7, 270),
+          sch=at(178, sy + 8))
 
     # X2 (as v1): the lead's bus (LEAD_*, the node's pull-ups) and this board's (SDA/SCL/INT, pulled up here),
     # a 2N7002 per line, gate on +3V3 (NXP AN10441).  Either side pulling low turns the FET on (the body
@@ -515,13 +558,13 @@ def hub_sheet(b: Board):
         R(s, r, val, "+3V3", line, size="0402", pcb=P(83.0, y, 90), sch=at(210, 86 + 14 * i))
     s.notes_at = (6, 110, 220)
     s.notes = [
-        "Hub straps: CFG_SEL[2:0] = 000 (internal default, strap options on), NON_REM 00, GANG_EN 0 (ports",
-        "  switched one by one: here by the expanders), BOOST 00, PRT_SWP 0000000; ports 6 and 7 declared but",
-        "  unused (cosmetic).  On purpose: PRTPWR unused and OCS_N on their pull-ups (the node switches each port",
-        "  and reads its FAULT_N through the expanders); VBUS_DET on 3.3 V (self-powered hub).",
+        "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).",
+        "Hub: CFG_SEL[2:0] = 110 (internal default configuration, strap options disabled: DS00001598C Table 5-2):",
+        "  self-powered, ports switched and sensed one by one (here by the expanders), no port disabled, D+ / D− not",
+        "  sampled at reset; the other strap pins keep their pull-downs, unread.  Ports 6 and 7 enabled, unused",
+        "  (cosmetic).  On purpose: PRTPWR unused and OCS_N on their pull-ups (the node switches each port and reads",
+        "  its FAULT_N through the expanders); VBUS_DET on 3.3 V (self-powered hub).",
         "Hub port n = USB-C n (busid 1-1.n) for n = 1–4; port 5 = the co-processor.",
-        "D+ / D− of each port are straps at RESET_N's rise (one high line disables the port): D2 holds the",
-        "  co-processor in reset with the hub; a self-powered DUT on a port then loses it until the next hub reset.",
         "Expander pins are inputs at power-up; the EN pull-downs keep every port off until the node writes.",
         "INT (J1.1 → the node's IO4): both expanders' INT and the four INA226 ALERTs, open drain, wired-OR, through Q3.",
         "I²C and INT: the node's pull-ups on LEAD_*, 4.7k / 4.7k / 10k here; with DUT_5V off the chips here lose",
@@ -563,9 +606,10 @@ def matrix_sheet(b: Board):
     s.frame("+5V_MX through a ferrite (the crosspoints, the inverter, the LSF0108s' bias); −5 V for the "
             "crosspoints' VEE (TPS60400 inverter)", 114, 10, 228, 52)
     # The −5 V on purpose: at a single 5 V the CH446Q's R_on is 120–225 Ω, and a 1.8 V board's I²C low would fail.
-    # The matrix's +5V: the crosspoints' VDD, the −5 V inverter and the LSF0108s' bias (≈ 70 mA) behind a
-    # 600 Ω ferrite, off the ports' switching and the charge pump's 250 kHz.  In the left-hand column under the
-    # power plane's split: its +5V end over the +5V area; +5V_MX is routed up to the loads (Supply)
+    # The matrix's +5V: the crosspoints' VDD, the −5 V inverter, the LSF0108s' bias and the +5V sense divider
+    # (≈ 1–4 mA in all) behind a 600 Ω ferrite (≈ 1 µH low down: little filtering at the pump's 50–250 kHz, a
+    # DC path of its own).  In the left-hand column under the power plane's split: its +5V end over the +5V
+    # area; +5V_MX is routed up to the loads (Supply)
     part(s, "FB1", "fb600", {"1": "+5V", "2": "+5V_MX"}, pcb=P(8.6, 63.4, 270), sch=at(124, 18))
     s.wire("FB1.1", ("FB1.1", -3, 0))
     s.tag("+5V", ("FB1.1", -3, 0), "left")
@@ -610,7 +654,7 @@ def coproc_sheet(b: Board):
         gp[f"GPIO{2 + i}"] = f"BUS_{bus}"
         gp[f"GPIO{PU_GPIO[bus]}"] = f"CP_PU_{bus}"
     for n in range(4):
-        gp[f"GPIO{40 + n}/ADC{n}"] = f"CP_VREF{n + 1}"
+        gp[f"GPIO{40 + n}/ADC{n}"] = f"CP_ADC{n + 1}"
     for g in [15] + list(range(20, 25)) + list(range(26, 40)) + [46, 47]:
         gp[f"GPIO{g}" if g < 40 else f"GPIO{g}/ADC{g - 40}"] = None
     rp = {"IOVDD": "+3V3_CP", "QSPI_IOVDD": "+3V3_CP", "USB_OTP_VDD": "+3V3_CP", "ADC_AVDD": "+3V3_CP",
@@ -642,16 +686,21 @@ def coproc_sheet(b: Board):
     s.wire("FB2.2", (160, 25), "C31.1")
     s.wire((160, 25), (168, 25), net="+3V3_CP")
     s.tag("+3V3_CP", (168, 25), "right")
-    # VREG pins 61–65 at the south face's west end: the inductor and its three 4.7 µF right there
-    part(s, "L1", "l3u3_vreg", {"1": "CP_VREG_LX", "2": "+1V1"}, pcb=P(cx - 2.9, cy + 7.4, 270),
+    # The core regulator as Raspberry Pi lays it out (the audit's fix 2: "Designers should follow … Figure 26 as
+    # closely as possible"): their RP2350B Minimal R4 block, turned 180° with U11, so VREG pins 61–65 (AVDD, PGND,
+    # LX, VIN, FB, west → east) face south.  CIN straddles VIN and PGND 1.16 mm out from the pin row, COUT right
+    # behind it, L1 behind COUT with its axis along the chip's edge, the +1V1 pad (its dot, pad 1) on the FB
+    # side; RFILT / CFILT west of them.  LX runs between CIN's and COUT's pads to L1, on F.Cu; the copper is
+    # drawn in board() (PGND, VIN, LX, +1V1, FB, AVDD, the vias), the planes cut under LX and L1 (fix 3)
+    part(s, "L1", "l3u3_vreg", {"1": "+1V1", "2": "CP_VREG_LX"}, pcb=P(cx - 3.0, cy + 8.65, 180),
          sch=at(136, 42, rot=90))
-    C(s, "C32", "4.7u", "+3V3_CP", "GND", size="0402", pcb=P(cx - 4.6, cy + 7.4, 270),   # VREG_VIN
-      sch=at(180, 44))
-    C(s, "C33", "4.7u", "+1V1", "GND", size="0402", pcb=P(cx - 1.2, cy + 7.4, 270),     # DVDD out
-      sch=at(146, 44))
-    R(s, "R21", "33", "+3V3_CP", "CP_VREG_AVDD", size="0402", pcb=P(cx - 7.0, cy + 7.4, 270),
+    # CIN and COUT on Raspberry Pi's own 0402 land (pads 0.56 mm apart): LX passes between them 0.3 mm wide
+    for ref, net, dy, sx in (("C32", "+3V3_CP", 6.06, 180), ("C33", "+1V1", 7.0, 146)):      # CIN, COUT
+        C(s, ref, "4.7u", net, "GND", size="0402", pcb=P(cx - 3.0, cy + dy, 180),
+          sch=at(sx, 44)).footprint = "bench:C_0402_1005Metric_RP"
+    R(s, "R21", "33", "+3V3_CP", "CP_VREG_AVDD", size="0402", pcb=P(cx - 5.2, cy + 8.45, 90),
       sch=at(160, 42, rot=90))
-    C(s, "C34", "4.7u", "CP_VREG_AVDD", "GND", size="0402", pcb=P(cx - 5.8, cy + 7.4, 270),
+    C(s, "C34", "4.7u", "CP_VREG_AVDD", "GND", size="0402", pcb=P(cx - 5.2, cy + 6.5, 90),
       sch=at(168, 44))
     s.wire("R21.2", (168, 42), "C34.1")
     s.part("#FLG05", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "CP_VREG_AVDD"}, in_bom=False, on_board=False,
@@ -666,8 +715,10 @@ def coproc_sheet(b: Board):
         C(s, f"C{35 + i}", "100n", "+3V3_CP", "GND", size="0402", pcb=P(x, y, rot), sch=at(12 + 5 * i, 24))
     rail(s, "+3V3_CP", [f"C{35 + i}.1" for i in range(10)], -1)
     rail(s, "GND", [f"C{35 + i}.2" for i in range(10)], 1, "down")
+    # pin 32, the DVDD pin furthest from the regulator: 4.7 µF (DS §6.1.3, the audit's fix 4)
     for i, (x, y, rot) in enumerate(((cx - 6.7, cy + 5.4, 180), (cx + 7.0, cy + 4.4, 0), (cx - 0.6, cy - 7.4, 90))):
-        C(s, f"C{45 + i}", "100n", "+1V1", "GND", size="0402", pcb=P(x, y, rot), sch=at(70 + 5 * i, 24))
+        C(s, f"C{45 + i}", "4.7u" if i == 2 else "100n", "+1V1", "GND", size="0402", pcb=P(x, y, rot),
+          sch=at(70 + 5 * i, 24))
     rail(s, "+1V1", [f"C{45 + i}.1" for i in range(3)], -1)
     rail(s, "GND", [f"C{45 + i}.2" for i in range(3)], 1, "down")
     s.frame("12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 5 (22 Ω), RUN, BOOTSEL, LED, SWD",
@@ -714,13 +765,15 @@ def coproc_sheet(b: Board):
     for j in range(2):
         rarray(s, f"RN{6 + j}", "2.2k", [(f"CP_PU_{BUSES[i]}", f"BUS_{BUSES[i]}") for i in range(4 * j, 4 * j + 4)],
                P(cx + 7.4, cy - 2.8 + 3.0 * j, 0), sch=at(162 + 12 * j, 124))
-    # the ±5 V dividers left of the west face, by GPIO44/45 (pins 55/56)
+    # the ±5 V dividers left of the west face, by GPIO44/45 (pins 55/56).  −5 V's: 10k up to +3V3_CP (the audit's
+    # fix 5; 47k before), so GPIO45 stays ≥ −0.48 V (VPIN min −0.5 V) even with −5 V up and +3V3_CP at 0:
+    # nominal 3.3 − 8.3 × 10/110 = 2.55 V, ≈ 9 mV of the −5 V rail per LSB
     R(s, "R38", "100k", "+5V_MX", "CP_SNS_5V", size="0402", pcb=P(cx - 9.2, cy - 0.6, 0),
       sch=at(196, 118))
     R(s, "R39", "47k", "CP_SNS_5V", "GND", size="0402", pcb=P(cx - 9.2, cy + 0.5, 0),
       sch=at(196, 128))
     s.wire("R38.2", "R39.1")
-    R(s, "R40", "47k", "+3V3_CP", "CP_SNS_N5V", size="0402", pcb=P(cx - 9.2, cy + 1.6, 0),
+    R(s, "R40", "10k", "+3V3_CP", "CP_SNS_N5V", size="0402", pcb=P(cx - 9.2, cy + 1.6, 0),
       sch=at(212, 118))
     R(s, "R41", "100k", "CP_SNS_N5V", "-5V", size="0402", pcb=P(cx - 9.2, cy + 2.7, 0),
       sch=at(212, 128))
@@ -728,20 +781,23 @@ def coproc_sheet(b: Board):
     s.notes_at = (6, 124, 112)
     s.notes = ["GPIO2–9 = buses A–H (gusmanb CH1–8, 8-bit mode); GPIO0 → GPIO1 bridged (its trigger path).",
                "GPIO14 = the node's mark (TCA9534A P7); GPIO25 = LED; GPIO19…16, 13…10 = pull-up enables A…H (2.2k);",
-               "GPIO40–43 = VREF 1–4 / 2; GPIO44 = +5V × 47/147; GPIO45 = 3.3 V − (3.3 + 5) × 47/147 from −5 V.",
+               "GPIO40–43 = VREF 1–4 / 2 (through 100k); GPIO44 = +5V × 47/147;",
+               "  GPIO45 = 3.3 V − (3.3 + 5) × 10/110 from −5 V (2.55 V nominal).",
                "RUN pulled up, BOOTSEL (QSPI_SS) through 1k: both held by the node (TCA9534A), open drain.",
-               "Core regulator: L1 polarity dot towards VREG_LX; C32, C33, C34 and L1 as close as the Pico 2's."]
+               "Core regulator: Raspberry Pi's Minimal R4 block turned 180°; L1's dot (pad 1) on +1V1, not VREG_LX.",
+               "C47 (DVDD pin 32, furthest from the regulator) 4.7 µF; no copper under LX / L1 (In1, In2, B.Cu)."]
 
 
 # ---------------------------------------------------------------------------------------------- board
 def logic_only(b: Board) -> list[str]:
     """The parts the base DATA-4x leaves off: the matrix and co-processor sheets whole, and per port its pin
-    chain (the two H5VU25UC, the 100 Ω arrays, the LSF0108, its Vref_B 200k and 100 nF, the VREF divider)."""
+    chain (the three H5VU25UC on P1–P8 and VREF, the 100 Ω arrays, the LSF0108, its Vref_B 200k and 100 nF, the
+    VREF divider and its 100k to the ADC).  The RESET/BOOT ESD stays."""
     refs = [p.ref for p in b.parts.values() if p.sheet and p.sheet.name in ("Matrix", "Co-processor")]
     for n in range(1, 5):
         k = 100 * n
         refs += [f"U{k + 5}", f"U{k + 6}", f"RN{k + 1}", f"RN{k + 2}", f"U{k + 7}", f"R{k + 11}", f"C{k + 5}",
-                 f"R{k + 12}", f"R{k + 13}"]
+                 f"R{k + 12}", f"R{k + 13}", f"U{k + 8}", f"R{k + 15}"]
     return sorted(r for r in refs if r in b.parts and b.parts[r].in_bom and not r.startswith("#"))
 
 
@@ -820,8 +876,10 @@ def board() -> Board:
         hand_vias.append(("GND", x_ + 0.3, y_, 0.5, 0.3))
     hand_tracks += [("GND", "F.Cu", 0.2, [(HX + 4.4125, HY + 2.75), (HX + 2.95, HY + 2.75), (HX + 2.25, HY + 2.05),
                                           (HX, HY)]),
-                    ("GND", "F.Cu", 0.2, [(HX + 3.75, HY + 7.1), (HX + 3.25, HY + 7.1), (HX + 3.006, HY + 6.51)])]
-    hand_vias.append(("GND", HX + 3.006, HY + 6.51, 0.5, 0.3))
+                    ("GND", "F.Cu", 0.2, [(HX + 3.75, HY + 7.1), (HX + 3.25, HY + 7.1)]),
+                    # its via over pads 6 / 7, away from pad 8 (CFG_SEL2's pull-up, +3V3 since CFG_SEL 110)
+                    ("GND", "F.Cu", 0.2, [(HX + 3.25, HY + 7.1), (HX + 3.5, HY + 6.85), (HX + 3.5, HY + 6.45)])]
+    hand_vias.append(("GND", HX + 3.5, HY + 6.45, 0.5, 0.3))
     # CP_RUN, from the matrix expander's P5 (pin 10, top left) to the co-processor's RUN pull-up R25, along the
     # top edge on B.Cu under the SWD pads (Freerouting left it open)
     rx, ry = MX_EXP[0] + 2.5 * 0.65, MX_EXP[1] - 2.8625                # U10 pin 10, turned 90°
@@ -830,11 +888,60 @@ def board() -> Board:
                     ("CP_RUN", "B.Cu", 0.127, [(rx, 2.4), (rx + 0.65, 1.75), (r25[0], 1.75)]),
                     ("CP_RUN", "F.Cu", 0.127, [(r25[0], 1.75), r25])]
     hand_vias += [("CP_RUN", rx, 2.4, 0.5, 0.3), ("CP_RUN", r25[0], 1.75, 0.5, 0.3)]
-    # the RP2354B's VREG_PGND (pin 62, between VREG_AVDD and VREG_LX on its south face) inwards onto its
-    # exposed GND pad, under the package
+    # The core regulator's copper as Raspberry Pi draws it (the datasheet's Fig. 26, their RP2350B Minimal R4-S1
+    # file), turned 180° with U11 (the audit's fix 2; coproc_sheet() places the parts at their coordinates).  VREG
+    # pins 61 AVDD, 62 PGND, 63 LX, 64 VIN, 65 FB at x − 3.8 … − 2.2 on the south row (y + 4.9); CIN (C32) and
+    # COUT (C33) at x − 3.0, their GND pads west.  Their copper areas (VREG below): LX between CIN's and COUT's
+    # pads to L1's LX pad; +1V1 from COUT to L1's dotted pad and the two V_OUT vias; PGND from its pin over CIN's
+    # and COUT's GND to its two adjacent vias, the one point where the regulator's current meets the GND plane.
+    # CFILT (C34) on its own GND via; VREG_FB taken at the V_OUT vias, away from LX.  The tracks under the areas
+    # are what the router sees (it knows no copper areas): pin to pad centres, straight and 45° only
     ux, uy = CP
-    hand_tracks.append(("GND", "F.Cu", 0.2, [(ux - 3.4, uy + 4.6), (ux - 3.4, uy + 3.9), (ux - 1.4, uy + 1.9),
-                                             (ux - 1.4, uy + 1.4)]))
+    pin = {n: (ux - 3.8 + 0.4 * (n - 61), uy + 4.9) for n in range(61, 66)}
+    cin_v, cin_g = (ux - 2.485, uy + 6.06), (ux - 3.515, uy + 6.06)     # C32: +3V3_CP, GND (RP's land, ±0.515)
+    cout_v, cout_g = (ux - 2.485, uy + 7.0), (ux - 3.515, uy + 7.0)     # C33: +1V1, GND
+    l_out, l_lx = (ux - 2.3, uy + 8.65), (ux - 3.7, uy + 8.65)          # L1: pad 1 +1V1 (the dot), pad 2 LX
+    pg_vias = [(ux - 4.1, uy + 6.35), (ux - 4.1, uy + 6.95)]
+    out_vias = [(ux - 1.7, uy + 6.6), (ux - 1.7, uy + 7.2)]
+    cfilt_v, cfilt_g, rfilt = (ux - 5.2, uy + 6.98), (ux - 5.2, uy + 6.02), (ux - 5.2, uy + 7.94)
+    cfilt_via = (ux - 4.8, uy + 5.3)
+    vin_via = (ux - 2.6, uy + 3.85)
+    hand_tracks += [("+3V3_CP", "F.Cu", 0.25, [pin[64], (pin[64][0], cin_v[1]), cin_v]),
+                    ("GND", "F.Cu", 0.25, [pin[62], (pin[62][0], cin_g[1]), cin_g]),
+                    ("GND", "F.Cu", 0.3, [cin_g, cout_g]),
+                    *(("GND", "F.Cu", 0.3, [v, g]) for v, g in zip(pg_vias, (cin_g, cout_g))),
+                    ("CP_VREG_LX", "F.Cu", 0.3, [pin[63], (ux - 3.0, uy + 7.5), (ux - 3.7, uy + 8.2), l_lx]),
+                    ("+1V1", "F.Cu", 0.3, [cout_v, (cout_v[0], l_out[1]), l_out]),
+                    ("+1V1", "F.Cu", 0.3, [cout_v, (ux - 2.1, uy + 7.0), (ux - 1.9, uy + 7.2), out_vias[1]]),
+                    ("+1V1", "F.Cu", 0.3, [out_vias[1], out_vias[0]]),
+                    ("+1V1", "F.Cu", 0.15, [pin[65], (ux - 2.2, uy + 5.5), (ux - 1.9, uy + 5.8), (ux - 1.9, uy + 6.4),
+                                            out_vias[0]]),
+                    ("CP_VREG_AVDD", "F.Cu", 0.2, [pin[61], (ux - 3.8, uy + 5.05), (ux - 4.64, uy + 5.89),
+                                                   (ux - 4.64, uy + 6.42), cfilt_v]),
+                    ("CP_VREG_AVDD", "F.Cu", 0.2, [cfilt_v, rfilt]),
+                    ("GND", "F.Cu", 0.25, [cfilt_g, (ux - 5.2, uy + 5.7), cfilt_via]),
+                    # the V_OUT vias joined on B.Cu too (Raspberry Pi's +1V1 trunk starts there); VREG_VIN inwards from
+                    # its pin to a via into the +3V3_CP island (In2) under the package: the block's +3V3_CP way out
+                    ("+1V1", "B.Cu", 0.3, [out_vias[0], out_vias[1]]),
+                    ("+3V3_CP", "F.Cu", 0.25, [pin[64], vin_via])]
+    hand_vias += ([("GND", *v, 0.6, 0.3) for v in pg_vias] + [("+1V1", *v, 0.6, 0.3) for v in out_vias] +   # RP's
+                  [("GND", *cfilt_via, 0.6, 0.3), ("+3V3_CP", *vin_via, 0.5, 0.3)])                     # 0.6 mm vias
+    # Raspberry Pi's copper areas (Minimal R4-S1's F.Cu zones, x and y turned about U11) with their settings (solid
+    # on their pads, 0.15 mm from the other nets, 0.15 mm wide at least), inside a hole of the F.Cu GND pour
+    # (VREG_HOLE): the PGND area meets the main GND only through its two vias, and no copper lies under L1's body
+    # or beside LX
+    VREG = [("+1V1", "vreg-out", [(-2.65, 6.75), (-2.65, 9.5), (-1.95, 9.5), (-1.95, 7.7), (-2.25, 7.4),
+                                  (-2.25, 7.25), (-2.05, 7.25), (-1.85, 7.45), (-1.65, 7.45), (-1.4, 7.2), (-1.4, 6.55),
+                                  (-1.6, 6.35)]),
+            ("CP_VREG_LX", "vreg-lx", [(-2.9, 4.6), (-2.9, 5.4), (-2.85, 5.45), (-2.85, 7.6), (-3.35, 8.1),
+                                       (-3.35, 9.5), (-4.05, 9.5), (-4.05, 7.8), (-3.75, 7.5), (-3.3, 7.5),
+                                       (-3.15, 7.35), (-3.15, 5.45)]),
+            ("GND", "vreg-pgnd", [(-3.3, 4.6), (-3.3, 6.3), (-3.45, 6.3), (-3.45, 6.75), (-3.3, 6.75), (-3.3, 7.25),
+                                  (-4.1, 7.25), (-4.4, 6.95), (-4.4, 6.2), (-3.5, 5.3)]),
+            ("+3V3_CP", "vreg-vin", [(-2.5, 4.15), (-2.5, 5.55), (-2.25, 5.8), (-2.25, 6.3), (-2.7, 6.3)])]
+    vreg_zones = [{"layer": "F.Cu", "net": net, "name": name, "priority": 3, "connection": "solid", "clearance": 0.15,
+                   "min_width": 0.15, "poly": [(ux + x, uy + y) for x, y in poly]} for net, name, poly in VREG]
+    VREG_HOLE = [(ux - 4.55, uy + 3.9), (ux - 1.25, uy + 3.9), (ux - 1.25, uy + 9.75), (ux - 4.55, uy + 9.75)]
     # and the exposed pad down to the GND plane: a via between its paste windows, drawn (Freerouting doesn't
     # always fan the pad out); more of them, and its buses can't pass under the pad on B.Cu
     hand_vias.append(("GND", ux + 0.565, uy + 0.565, 0.5, 0.3))
@@ -898,6 +1005,32 @@ def board() -> Board:
                     ("UP_DP", "B.Cu", USB_W, up_dp_b), ("UP_DP", "F.Cu", USB_W, up_dp_f)]
     hand_vias += [("UP_DN", *up_dn_b[0], 0.5, 0.3), ("UP_DP", *up_dp_b[0], 0.5, 0.3),
                   ("UP_DN", *up_dn_b[-1], 0.5, 0.3), ("UP_DP", *up_dp_b[-1], 0.5, 0.3)]
+    # Each port's VREF through its ESD (U108–U408) in flow-through, drawn (the router joined the header to the divider
+    # directly and left the ESD on a stub): header pin 2 up on B.Cu, under the pairs' trunk, to a via, then F.Cu into
+    # the ESD's pin 5, over to pin 6 and on to the divider's R112–R412
+    for cx in CFG["usb"]:
+        k = 100 * (CFG["usb"].index(cx) + 1)
+        net = f"PORT{k // 100}_VREF"
+        p5, p6 = (cx - 7.0, 34.8 + 0.4375), (cx - 7.0, 34.8 - 0.4375)     # U(k+8) at (cx − 8.0, 34.8), turned 90°
+        hdr, via, r12 = (cx - 6.35, HDR_Y - 1.27), (cx - 6.35, 38.2), (cx - 4.5 - 0.51, LSF_Y + 1.2)
+        hand_tracks += [(net, "B.Cu", 0.15, [hdr, via]),
+                        (net, "F.Cu", 0.15, [via, (via[0], 36.0), (p5[0], 36.0 - (via[0] - p5[0])), p5]),
+                        (net, "F.Cu", 0.15, [p5, p6]),
+                        (net, "F.Cu", 0.15, [p6, (p6[0], r12[1] + 1.0), (p6[0] + 1.0, r12[1]), r12]),
+                        # and on to the LSF0108's Vref_A (pin 2, its south row's west end), between C(k+5) and R(k+12)
+                        (net, "F.Cu", 0.127, [r12, (r12[0], r12[1] - 0.55), (cx - 2.25, r12[1] - 0.55),
+                                              (cx - 2.25, LSF_Y + 1.1875)])]
+        hand_vias.append((net, *via, 0.5, 0.3))
+    # Ports 1–3's RESET_N likewise, drawn into its ESD's (U109–U309) pin 5 from below (the router joined it between
+    # pins 5 and 6 on port 2): header pin 11 up on B.Cu, east of pin 12 and under the pairs' trunk, a via under pin 5,
+    # then pin 5, pin 6 and the 1k R(k+7) in a line (port 4's ESD stands elsewhere: the router's is right)
+    for cx in CFG["usb"][:3]:
+        net = f"PORT{CFG['usb'].index(cx) + 1}_RST_N"
+        p5, p6, r7 = (cx + 7.0, 37.2 + 0.4375), (cx + 7.0, 37.2 - 0.4375), (cx + 7.0, 35.0 + 0.51)
+        hdr, via = (cx + 6.35, HDR_Y + 1.27), (cx + 7.0, 38.35)
+        hand_tracks += [(net, "B.Cu", 0.127, [hdr, (cx + 7.4, hdr[1] - 1.05), (cx + 7.4, via[1] + 0.4), via]),
+                        (net, "F.Cu", 0.127, [via, p5]), (net, "F.Cu", 0.127, [p5, p6, r7])]
+        hand_vias.append((net, *via, 0.5, 0.3))
     # the hub's two south VDD33 pins (5 and 10) take their vias inwards, under its body (between the pads and the
     # UP pair): their automatic fan-out vias sat right below the row, between the downstream pairs, and boxed
     # port 2's D− in (Freerouting left it unrouted)
@@ -945,11 +1078,25 @@ def board() -> Board:
             {"layer": "F.Cu", "net": "+5V", "name": "ldo-vin", "priority": 3, "exclusive": 0.3,
              "poly": [(LDO[0] + 1.3, LDO[1] + 2.0), (LDO[0] + 3.75, LDO[1] + 2.0), (LDO[0] + 3.75, LDO[1] + 6.5),
                       (LDO[0] + 1.3, LDO[1] + 6.5)]},
-            {"layer": "F.Cu", "net": "GND"},
+            {"layer": "F.Cu", "net": "GND", "holes": [VREG_HOLE]},
             {"layer": "B.Cu", "net": "GND"},
+            *vreg_zones,
         ],
         "tracks": hand_tracks, "vias": hand_vias,
-        "keepouts": [{"name": f"edge{i}", "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
+        "keepouts": [
+            # the core regulator (the audit's fixes 2 and 3, RP2350 DS §6.3.8.1 and Fig. 27): the router's tracks
+            # off the block below the VREG pins (a "core:" area, dropped once routed: +1V1 leaves by its two V_OUT
+            # vias, +3V3_CP by VREG_VIN's inner end), and no copper at all under LX (pin 63 to L1's LX pad) and L1 on
+            # the planes and B.Cu
+            {"name": "core:vreg-block", "layers": ["F.Cu"], "tracks_only": True,
+             "poly": [(CP[0] - 4.55, CP[1] + 5.4), (CP[0] - 1.25, CP[1] + 5.4), (CP[0] - 1.25, CP[1] + 9.75),
+                      (CP[0] - 4.55, CP[1] + 9.75)]},
+            {"name": "lx-under", "layers": ["In1.Cu", "In2.Cu", "B.Cu"] if not six else ["In1.Cu", "In2.Cu", "In3.Cu",
+                                                                                     "In4.Cu", "B.Cu"],
+             "poly": [(CP[0] - 3.3, CP[1] + 4.95), (CP[0] - 2.7, CP[1] + 4.95), (CP[0] - 2.7, CP[1] + 7.62),
+                      (CP[0] - 1.9, CP[1] + 7.62), (CP[0] - 1.9, CP[1] + 9.82), (CP[0] - 4.2, CP[1] + 9.82),
+                      (CP[0] - 4.2, CP[1] + 7.62), (CP[0] - 3.3, CP[1] + 7.62)]}] + [
+            {"name": f"edge{i}", "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, W, 0.35), (W - 0.35, 0, W, H), (0, H - 0.35, W, H), (0, 0, 0.35, H),
                          *((x0 - 0.35, top - 0.35, x1 + 0.35, H) for x0, x1, top in NOTCHES)))] + [

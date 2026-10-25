@@ -359,7 +359,7 @@ class PcbBuilder:
 
     # -------------------------------------------------------------- zones
     def zone(self, layer, net: str | None, poly, priority=0, keepout=False, name="", layers=None, tracks_only=False,
-             connection="thermal", vias_only=False):
+             connection="thermal", vias_only=False, fills_only=False, holes=None, clearance=None, min_width=None):
         z = pcbnew.ZONE(self.board)
         z.SetLayer(layer)
         if net:
@@ -368,6 +368,10 @@ class PcbBuilder:
         ol.NewOutline()
         for (x, y) in poly:
             ol.Append(MM(x), MM(y))
+        for hole in holes or []:              # areas the zone leaves out (e.g. a block with copper of its own)
+            k = ol.NewHole()
+            for (x, y) in hole:
+                ol.Append(MM(x), MM(y), 0, k)
         z.SetAssignedPriority(priority)
         if name:
             z.SetZoneName(name)
@@ -375,9 +379,10 @@ class PcbBuilder:
             z.SetIsRuleArea(True)
             # tracks_only: keep the router's tracks out but let vias and the GND pour in
             # (exported to the DSN as a wire_keepout); vias_only: keep vias out, tracks and pours in
-            # (a via_keepout: e.g. a plane's narrow neck that a row of vias would cut)
-            z.SetDoNotAllowTracks(not vias_only)
-            z.SetDoNotAllowVias(not tracks_only)
+            # (a via_keepout: e.g. a plane's narrow neck that a row of vias would cut); fills_only: keep the
+            # pours out, tracks and vias in (not exported to the DSN: e.g. no copper under an inductor's body)
+            z.SetDoNotAllowTracks(not (vias_only or fills_only))
+            z.SetDoNotAllowVias(not (tracks_only or fills_only))
             z.SetDoNotAllowZoneFills(not (tracks_only or vias_only))
             z.SetDoNotAllowPads(False)
             z.SetDoNotAllowFootprints(False)
@@ -386,8 +391,8 @@ class PcbBuilder:
                 ls.AddLayer(l)
             z.SetLayerSet(ls)
         else:
-            z.SetMinThickness(MM(0.2))
-            z.SetLocalClearance(MM(0.25))
+            z.SetMinThickness(MM(0.2 if min_width is None else min_width))
+            z.SetLocalClearance(MM(0.25 if clearance is None else clearance))
             # thermal reliefs: a pad on a pour heats up like the pad at its other end, so small
             # parts don't tombstone in reflow and hand-soldered pins can be soldered.  "solid" is
             # for the buck's hot-loop islands, where both ends of every part sit on copper anyway.
@@ -519,7 +524,8 @@ class PcbBuilder:
                 continue          # re-importing a session onto a board that already has its pours
             layer = cu(spec["layer"])
             self.zone(layer, spec["net"], spec.get("poly", full), priority=spec.get("priority", 0),
-                      name=spec.get("name", ""), connection=spec.get("connection", "thermal"))
+                      name=spec.get("name", ""), connection=spec.get("connection", "thermal"),
+                      holes=spec.get("holes"), clearance=spec.get("clearance"), min_width=spec.get("min_width"))
             if spec.get("exclusive") and which != "deferred":
                 # Freerouting doesn't treat a copper area on a signal layer as an obstacle: other nets'
                 # tracks would cross the pour and cut it in pieces.  Keep tracks out of its core; the
@@ -532,7 +538,7 @@ class PcbBuilder:
                 layers = [getattr(pcbnew, n.replace(".", "_")) for n in ko["layers"]] if "layers" in ko else None
                 self.zone(pcbnew.F_Cu, None, ko["poly"], keepout=True, name=ko.get("name", "keepout"),
                           layers=layers, tracks_only=ko.get("tracks_only", False),
-                          vias_only=ko.get("vias_only", False))
+                          vias_only=ko.get("vias_only", False), fills_only=ko.get("fills_only", False))
             for ref, num in self.b.pcb.get("fanout", []):
                 _, _, poly = fanout_geometry(self.board, ref, num)
                 self.zone(pcbnew.F_Cu, None, poly, keepout=True, name=f"fanout:{ref}.{num}")

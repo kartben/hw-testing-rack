@@ -321,14 +321,23 @@ CAT = {
                    description="RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO)",
                    model=("QFN-80_10x10x0.85mm.step", (0, 0, 0), (0, 0, 0))),
     # the crystal and the core regulator's inductor the RP2350 hardware design guide asks for (ABM8-272-T3:
-    # 10 pF load, ESR ≤ 50 Ω, with 15 pF and 1k on XOUT; the polarity-marked Abracon, dot towards VREG_LX)
+    # 10 pF load, ESR ≤ 50 Ω, with 15 pF and 1k on XOUT; the polarity-marked Abracon, its dot on pad 1, which
+    # goes on VOUT / +1V1 as in the datasheet's Fig. 26 (the user's reading, 2026-10-25), on Raspberry Pi's land)
     "xtal12": Cat("Device:Crystal_GND24", "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm", "ABM8-272-T3", "Abracon LLC",
                   "C20625731", 0.65, description="12 MHz crystal, 10 pF load, 50 Ω ESR, ±30 ppm, 3225"),
-    "l3u3_vreg": Cat("Device:L", "Inductor_SMD:L_Murata_DFE201610P", "AOTA-B201610S3R3-101-T", "Abracon LLC",
+    "l3u3_vreg": Cat("Device:L", "bench:L_Abracon_AOTA-B201610", "AOTA-B201610S3R3-101-T", "Abracon LLC",
                      "C42411119", 0.28,
                      alt="LCSC stock low (1 on 2026-10-19): JLC Global Sourcing; YSMC201612H-3R3MB (C41405891, "
                          "unmarked polarity) only at our own risk, per Raspberry Pi",
-                     description="3.3 µH 2.4 A molded inductor, 0806, polarity dot (RP2350 core regulator)"),
+                     description="3.3 µH 2.4 A molded inductor, 0806, polarity dot on pad 1 (RP2350 core regulator)"),
+    # the USB2517I's reset supervisor (its errata DS80000628A, Module 2: the internal POR misses a brown-out;
+    # Microchip names a MAX809S): UMW's, 2.93 V (2.78–3.08 V over −40…125 °C), 150–560 ms (240 typ.), push-pull
+    # active low, valid from VDD 1 V; pin 1 GND, 2 RESET, 3 VDD (UMW MAX809 datasheet, May 2025, p. 5–7)
+    "max809s": Cat("Power_Supervisor:LM809", "Package_TO_SOT_SMD:SOT-23", "MAX809S",
+                   "UMW(Youtai Semiconductor Co., Ltd.)", "C347371", 0.042,
+                   datasheet="https://www.lcsc.com/datasheet/lcsc_datasheet_2311091734_UMW-Youtai-Semiconductor-Co---Ltd--MAX809S_C347371.pdf",
+                   alt="MAX809STRG (onsemi, C9965, $0.36)",
+                   description="reset supervisor 2.93 V, ≥ 150 ms, push-pull active-low RESET, SOT-23"),
     "testpad": Cat("Connector:TestPoint", "TestPoint:TestPoint_Pad_D1.5mm", "test pad", "-", "", 0.0),
     "hole": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_3.2mm_M3", "M3 mounting hole", "-", "", 0.0),
     "hole25": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_2.7mm_M2.5", "M2.5 / PT 2.6 mounting hole", "-", "", 0.0),

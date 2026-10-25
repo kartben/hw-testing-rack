@@ -186,6 +186,9 @@ an unpowered board.
 
 - The matrix switches stay open while their port is off (MX_RST high, the
   default until the node writes the TCA9534A), and open when it goes off.
+- A port's switches stay open while its VREF reads under 0.65 V (the RP2354B's GPIO40–43, VREF / 2 through
+  100k: under 0.33 V).  An unwired VREF sits at ≈ 0.4 V, where the LSF0108 is not specified as off (EN stays
+  high): only the crosspoint isolates that group (the v2 datasheet audit's fix 8).
 - Break-before-make: a route opens its old crosspoint before closing the new
   one; two sources never share a line.
 - Open-drain drive: a line is pulled low or let go (to its pull-up), never
