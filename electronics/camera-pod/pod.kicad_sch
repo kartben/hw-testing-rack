@@ -2761,7 +2761,7 @@
 				)
 			)
 		)
-		(property "Value" "AMS1117-3.3"
+		(property "Value" "AP2114H-3.3TRG1"
 			(at 76.2 109.22 0)
 			(effects
 				(font
@@ -2778,7 +2778,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.diodes.com/assets/Datasheets/AP2114.pdf"
 			(at 76.2 100.33 0)
 			(effects
 				(font
@@ -2787,7 +2787,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "3.3 V 1 A LDO"
+		(property "Description" "3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223"
 			(at 76.2 100.33 0)
 			(effects
 				(font
@@ -2796,7 +2796,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "AMS1117-3.3"
+		(property "MPN" "AP2114H-3.3TRG1"
 			(at 76.2 100.33 0)
 			(effects
 				(font
@@ -2805,7 +2805,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "AMS"
+		(property "Manufacturer" "Diodes Incorporated"
 			(at 76.2 100.33 0)
 			(effects
 				(font
@@ -2814,7 +2814,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C6186"
+		(property "LCSC" "C150716"
 			(at 76.2 100.33 0)
 			(effects
 				(font

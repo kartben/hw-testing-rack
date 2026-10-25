@@ -18155,10 +18155,10 @@
 			)
 		)
 	)
-	(text_box "TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).\nt_dVdT = 8e3 · V_IN · C_dVdT → 47 nF ≈ 7.5 ms at 20 V, 10.5 ms at 28 V.  A row of four nodes (≈ 450 µF)\n  then charges at C / (8e3 · C_dVdT) ≈ 1.2 A, under the 1.6 A limit (22 nF needed ≈ 2.6 A).\nIMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 47 nF (47 µs) to the ESP32's ADC.\nSHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (on above 0.94 V).\nThe firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.\nFLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for\n  a fault on an enabled row (FLT is also low while a row is off or starting).\nD41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.\nUVLO / OVP / MODE to GND: internal 15 V / 31–34 V (typ 32.6 V) thresholds, current-limit mode, auto-retry."
+	(text_box "TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).\nt_dVdT = 8e3 · V_IN · C_dVdT → 47 nF ≈ 7.5 ms at 20 V, 10.5 ms at 28 V.  A row of four nodes (≈ 450 µF)\n  then charges at C / (8e3 · C_dVdT) ≈ 1.2 A typically, under the 1.6 A limit (22 nF needed ≈ 2.6 A); at the\n  corners (+20 % capacitance, a fast dVdT, the nodes' load, the limit at its 1.5 A minimum) a row starts in current limit.\nIMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 47 nF to the ESP32's ADC: the pin is a current\n  source, so τ = (18k + 1k) × 47 nF ≈ 0.9 ms, against the firmware's 250 ms polling.\nSHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (TI: ≥ 1 V to turn on, p. 26).\nThe firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.\nFLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for\n  a fault on an enabled row (FLT is also low while a row is off or starting).\nD41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.\nUVLO / OVP / MODE to GND: internal 15 V / 31–34 V (typ 32.6 V) thresholds, current-limit mode, auto-retry."
 		(exclude_from_sim no)
 		(at 20.32 353.06 0)
-		(size 414.02 26.67)
+		(size 414.02 31.75)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

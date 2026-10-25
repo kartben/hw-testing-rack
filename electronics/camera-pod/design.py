@@ -6,7 +6,7 @@ It ties the camera and its light to the bay node's J6 with nothing to crimp or s
   direction", pin n to pin 9−n) from the node's J6; its pinout here is J6's mirrored.
 * J2, a 1 × 6 2.54 mm header in the Mega's own order (VCC GND SCK MISO MOSI CS, names on the
   silkscreen): the camera's own cable plugs onto it.
-* The Mega runs from 3.3 V, an AMS1117 on CAM_5V: its MISO is then a 3.3 V output, whatever the
+* The Mega runs from 3.3 V, an AP2114H on CAM_5V: its MISO is then a 3.3 V output, whatever the
   camera does with a 5 V supply (the node keeps R35, its divider footprint, unpopulated).  It draws up
   to 317 mA (Arducam): ≈ 0.5 W in U1, so its tab gets a top-side +3V3 pour and, through three vias, a
   bottom-side island: all the copper the routing leaves round it (schematic review S6).
@@ -55,7 +55,7 @@ def board() -> Board:
                         "Generated from electronics/camera-pod/design.py — edit the Python, then regenerate"])
     b.root_notes = [
         "Camera pod v1.0 — PH 8 lead from the bay node's J6, 1 × 6 header for the Arducam Mega's cable,",
-        "  AMS1117 3.3 V for the camera, four white 2835 LEDs switched by the node (LED_K).",
+        "  AP2114H 3.3 V for the camera, four white 2835 LEDs switched by the node (LED_K).",
         "Lead pinout here: 1 LED_K · 2 CS · 3 MISO · 4 MOSI · 5 GND · 6 SCK · 7 GND · 8 CAM_5V",
         "  (the node's J6 mirrored: one 'Same direction' PH 8 cable).",
     ]
@@ -69,7 +69,10 @@ def board() -> Board:
     hx, hy = CFG["header"]
     part(s, "J2", "hdr6_smd", {"1": "+3V3", "2": "GND", "3": "SCK", "4": "MISO", "5": "MOSI", "6": "CS"}, "MEGA",
          pcb=P(hx, hy, 90))
-    part(s, "U1", "ldo", {"VI": "CAM_5V", "VO": "+3V3", "GND": "GND"}, pcb=P(20.0, 13.0, 0))
+    # the AP2114H-3.3 (ldo_1a, the node's U2): stable with the ceramic C2, where the AMS1117 was specified only
+    # with 22 µF tantalum; the same SOT-223 pinout (1 GND, 2 VOUT and tab, 3 VIN), copper and CPL correction
+    # (datasheet audit F1).  Order the AP2114H, never the HA: the HA's pinout differs
+    part(s, "U1", "ldo_1a", {"VI": "CAM_5V", "VO": "+3V3", "GND": "GND"}, pcb=P(20.0, 13.0, 0))
     C(s, "C1", "10u", "CAM_5V", "GND", size="0805", pcb=P(26.5, 12.0, 90))
     C(s, "C2", "22u", "+3V3", "GND", size="1206", pcb=P(13.0, 14.0, 90))
     C(s, "C3", "100n", "+3V3", "GND", pcb=P(hx + 9.8, hy - 0.5, 90))

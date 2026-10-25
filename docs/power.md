@@ -168,8 +168,9 @@ DATA board at 1.4 A through the switch, the shunt and ≈ 50 cm of PH lead.
 
 * **Negotiates on its own** (9 V from one resistor at power-up) and keeps the
   contract, and EPR's keep-alive, through controller resets.
-* **I²C to the controller** (address 0x22, on in the one-resistor mode): the
-  charger's offers (PDOs, EPR's too), the contract's state (PD, EPR), the
+* **I²C to the controller** (address 0x22, on in the one-resistor mode, single-byte
+  transfers on the CH224A): the charger's offers (PDOs, EPR's too; CH224 V2.1 lists them for
+  both parts, readable under 100 W: with our 100 W charger still to check, schematic review R3), the contract's state (PD, EPR), the
   voltage request (5 to 28 V, PPS, AVS) and the current granted.  PG (open
   drain) goes low once the contract is in place.
 * **In stock at LCSC** (12 739 on 2026-10-19, $0.43), one extended part type

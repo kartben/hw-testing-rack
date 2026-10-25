@@ -109,11 +109,11 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | 3.3 V | AP2114H-3.3 (U2, C150716, SOT-223) | logic only; stable with the ceramic C11 / C12, where the AMS1117 it replaced (the schematic counter-review, 2026-10-23) guaranteed it only with 22 µF tantalum; the same SOT-223 pinout and copper |
 | MCU | ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM for the camera's frames; the DevKitC-1-N8R8's module), C2913201 | antenna on the rear edge, keep-out on all layers (the footprint's own ±24 mm band); `bench:ESP32-S3-WROOM-1_NoEPVias` (no 0.2 mm vias in the exposed pad: a GND island stitched around it); rated −40…+65 °C |
 | DUT power | TPS2553D (RILIM 18k → 1.34–1.52 A; the TPS2553's pinout and I_LIM equations, plus reverse-voltage protection, at a third of the price), 50 mΩ Kelvin shunt, INA226 @0x40 | +5V → DUT_5V_SW → shunt → DUT_5V (the DUT's VBUS); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N), Vbus tied to Vin− at its pins (DUT_5V at the shunt's load end); default **on** (also without firmware), fault flag to GPIO |
-| USB | 2 × FSUSB42 + 74LVC1G32, 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
+| USB | 2 × FSUSB42 + 74LVC1G32 (150k from its output back to PC_DET for ≈ 0.14 V of hysteresis: the laptop's VBUS rises far slower than its 10 ns/V, datasheet audit F3), 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (1k: a reference for the DUT's levels, not a supply), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
 | DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DUT_5V · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 2.2k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's [DATA port board](#data-port-v10--2-layers-40--17-mm), which leaves 6–8 open, or a [DATA ×4 board](#data-4-v10--4-layers-100--37-mm); `pcb.bay_node.right.data` is its centre (KiCad y) |
-| Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side (their VBUS pin on +3V3, not CAM_5V: with CAM_5V off the SPI lines can't feed the pod through them, and the clamp stays under the ESP32's 3.6 V), AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.5 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); at the rear right, its lead straight back, its parts in a block west of it; `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
+| Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side (their VBUS pins on +3V3 with C28 100 nF between them, datasheet audit F4; +3V3, not CAM_5V: with CAM_5V off the SPI lines can't feed the pod through them, and the clamp stays under the ESP32's 3.6 V), AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.75 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); at the rear right, its lead straight back, its parts in a block west of it; `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
 muxes, at 480 Mb/s if the DUT can.  Freerouting can't route differential pairs, so that chain (J3 →
@@ -154,7 +154,8 @@ current for the same load; the hub's eFuse still caps it at 1.6 A.  The hub keep
 until the PD contract is final, so a node sees one clean power-up.
 
 **USB-C roles:** the front PC port is a sink (5.1 k Rd on CC) whose VBUS is
-only sensed; the DUT port is a source (22 k Rp → "1.5 A") with switched VBUS.
+only sensed.  The DUT's USB-C is on the DATA board in the drawer, a source (56 k Rp, "default USB power"), its VBUS
+switched here.
 
 **Camera (J6).**  Each bay's camera, an Arducam Mega 3MP SPI (M12 version B0434, ≈ 120° lens) in
 the pod under the bay's ceiling, and its 2–4 white 5 V LEDs hang on one ≈ 50 cm PH 8 lead from the
@@ -246,8 +247,8 @@ with JLC's rails) it gets JLC's 4-layer offer, without the $25 engineering fee
 | Rows A–D | 4 × TPS26600 (1.6 A, soft start 47 nF: ≈ 7.5 ms at 20 V, 10.5 ms at 28 V, UV 15 V / OV 31–34 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md).  A row of four nodes is ≈ 450 µF: the soft start charges it at ≈ 1.2 A, under the limit (22 nF until 2026-10-23 needed ≈ 2.6 A).  **Rows C and D are not fitted for now** (below) |
 | Row control | SHDN pulled low by 10 k (the pin sources up to 10 µA: 0.1 V, under its 0.55 V threshold; 100 k gave 1 V, enough to turn a row on without firmware); the controller drives ROW_EN high through 10 k (1.65 V) | **rows are off without firmware**; on once the contract is final, one after the other |
 | Per row | ON (green, from the row's own output through 18 k by the eFuse: 1.4 mA, 37 mW at 28 V); FAULT (red) from the row's ROW_EN into the open-drain FLT, so it lights only for a fault on an enabled row (the TPS26600 also pulls FLT low while a row is off or starting); FLT also to the controller (100 k pull-up); a B5819W from GND to the output at the connector, for the cable's kick when the eFuse cuts a short | Kingbright KPA-3010 side-view LEDs in the box's front wall |
-| Row current | IMON 18 k → 1.4 V/A, 1 k + 47 nF (47 µs) to the ESP32's ADC | |
-| Controller supply | LMR51625 (2.5 A; the controller takes < 0.7 A) + 4.7 µH from VRACK, the bay node's pair (TI SLUSF64B table 8-1; the LMR51635 and 3.3 µH until 2026-10-23, same pinout and footprint) (EN 39k/18k: from ≈ 3.9 V; FB 100k/18k: 5.24 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from the charger's first 5 V; runs on the console USB alone for flashing |
+| Row current | IMON 18 k → 1.4 V/A, 1 k + 47 nF to the ESP32's ADC: the pin is a current source, so τ = (18k + 1k) × 47 nF ≈ 0.9 ms (the firmware polls every 250 ms) | |
+| Controller supply | LMR51625 (2.5 A; the controller takes < 0.7 A) + 4.7 µH from VRACK, the bay node's pair (TI SLUSF64B table 8-1; the LMR51635 and 3.3 µH until 2026-10-23, same pinout and footprint) (EN 39k/18k: from ≈ 3.9 V, off below ≈ 3.8 V, the internal UVLO; FB 100k/18k: 5.24 V; the bay node's layout), B5819W diode OR with the console USB-C's VBUS → +5V, AP2112K (250 mV dropout) → 3.3 V | alive from the charger's first 5 V; runs on the console USB alone for flashing |
 | Controller | ESP32-S3-MINI-1 (antenna at the rear edge), RESET / BOOT, native USB on a USB4105 (USBLC6), CTL LED | GPIO map in the controller sheet's notes |
 | PD interface | SDA / SCL (the CH224A's CFG3 / CFG2) with 5.1 k pull-ups fed from a GPIO (I2C_PU), PG (open drain, low once the contract is in place) with a 10 k pull-up to 3.3 V on the net PD_INT, VBUS_SENSE 100 k / 10 k to an ADC | the pull-ups come on only once VBUS is up: a USB-powered controller never back-feeds an unpowered CH224A |
 | CAN | TJA1462AT (NXP), signal improvement (VCC 5 V, VIO 3.3 V, bus pins −36 / +40 V), two split terminations 2 × 56 Ω + 47 nF (56 Ω in all), PESD2CAN | the star centre; nodes carry no termination |
@@ -624,11 +625,11 @@ the bay), 2 × PT 2.6 into the printed pod.  Geometry in `config/rack.yaml` › 
 |---|---|---|
 | Lead | J1, JST PH 8, side entry, SMD (S8B-PH-SM4-TB), mouth out of the right edge: 1 LED_K · 2 CS · 3 MISO · 4 MOSI · 5 GND · 6 SCK · 7 GND · 8 CAM_5V | the node's J6 mirrored: a ready-made "Same direction" PH 8 lead (pin n ↔ pin 9−n) |
 | Camera | J2, 1 × 6 pin header, 2.54 mm, SMD (staggered pins), in the Mega's own order VCC · GND · SCK · MISO · MOSI · CS, the names on the silkscreen | an XH 2.54 6-pin → Dupont cable from the Mega's side connector (its own, if it ends in Dupont sockets), plugged on by name |
-| 3.3 V | AMS1117-3.3 (U1) from CAM_5V, 10 µF in, 22 µF + 100 nF out | the Mega at 3.3 V (≈ 0.5 W in U1 at its 317 mA max, Arducam): MISO at 3.3 V, the node's R35 stays unpopulated |
+| 3.3 V | AP2114H-3.3 (U1, C150716, the node's U2; the AMS1117 until the datasheet audit's F1: specified stable only with 22 µF tantalum) from CAM_5V, 10 µF in, 22 µF + 100 nF out, its tab on a top-side +3V3 pour and a bottom-side island (three vias) | the Mega at 3.3 V (≈ 0.5 W in U1 at its 317 mA max, Arducam): MISO at 3.3 V, the node's R35 stays unpopulated |
 | Light | 4 × XL-2835UWC-02 (white, 2835, 20–33 lm at 60 mA), each from CAM_5V through 100 Ω 0805 to LED_K | 18–26 mA each over the LEDs' Vf spread and CAM_5V 5.0–5.2 V, ≤ 66 mW in a 125 mW resistor, ≤ 102 mA for the four, inside the node's camera budget (the PCBA review's P1: 56 Ω 0603 gave 36–44 mA, up to 108 mW in 100 mW).  About a third less light than the 32 mA first planned, ≈ 0.6 EV that the Mega's auto-exposure takes.  Along the edge next to the camera, beside the lens, not around it; the node's AO3400A pulls LED_K low; a thin PETG diffuser 5–10 mm in front, in the pod |
 
 Both sides are GND pours; routed by Freerouting.  Power pads connect solid (`power_nets`: GND, CAM_5V):
-J1's GND pins, J2's GND and the AMS1117's; C1–C3 keep reliefs (an end on a track).  JLC: Economic PCBA, ≈ $23 for 5 PCBs with 2
+J1's GND pins, J2's GND and the AP2114H's; C1–C3 keep reliefs (an end on a track).  JLC: Economic PCBA, ≈ $23 for 5 PCBs with 2
 assembled (estimate in `tools/bom.py`).
 
 For a later bay node: CAM_5V has only the PTC, no switch, and the Mega has no reset pin, so a hung
@@ -645,7 +646,7 @@ What the PCBA review ([pcba-review.md](pcba-review.md)) left to the bench, per b
 | DATA ×4 | Ports off at power-up (X3) | DUT_5V on, no firmware command: each `PORTn_VBUS` | 0 V until the firmware enables the port |
 | DATA ×4 | No back-feed with DUT_5V off (X2) | node running, DUT_5V off: the board's +3V3; an I²C scan from the node | +3V3 under 0.1 V; the node's INA226 (0x40) still answers, 0x20/0x21/0x41–0x45 don't |
 | DATA port | VBUS at the receptacle at the node's limit (D1) | a 1.3 A load on a USB-C breakout; a meter at J1 and at J2.8 | under 30 mV between them (≈ 15 mΩ of copper) |
-| Camera pod | 3.3 V stability (P2): the AMS1117 on a 22 µF MLCC where its datasheet asks for tantalum | scope on C2, 20 MHz limit, at power-up, with the camera streaming and the LEDs switching | no sustained ringing, 3.3 V ± 3 %.  Ringing: a tantalum for C2, or 1 Ω in series with it |
+| Camera pod | 3.3 V and the LDO's heat: the AP2114H (stable on its 22 µF MLCC since the datasheet audit's F1) drops ≈ 0.5 W at the Mega's 317 mA | scope on C2, 20 MHz limit, at power-up, with the camera streaming and the LEDs switching; the tab's temperature at full capture | 3.3 V ± 3 %, no sustained ringing; the tab under ≈ 100 °C |
 | Camera pod | LED current (P1) | the voltage across one 100 Ω, LEDs on | 1.8–2.6 V (18–26 mA) |
 
 ## Sourcing
@@ -783,7 +784,7 @@ Two savings are applied since, as adjustments to the quote (≈ $213):
 - **Eleven values merged** onto values the board already has (no footprint moved), so eleven fewer
   part types at $1.55 each in Standard PCBA's feeders: 48 → 37.  −$17.05.
   - FB 100k/18k: 5.24 V, as the node; ≈ 4.9 V after D4 for the TJA1462AT.
-  - EN 39k/18k: on at 3.9 V, off below 3.1 V.
+  - EN 39k/18k: on at 3.9 V, off below ≈ 3.8 V (the internal UVLO; the divider alone 3.1 V).
   - PD INT divider 10k/18k: 3.2 V.
   - I²C pull-ups 5.1k.
   - Every front LED on 1k (1.2–1.4 mA).
@@ -933,7 +934,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | LCSC part | Refs | Correction | Status |
 |---|---|---|---|
 | C173752 JST S2B-PH-K | node J1 J2 J6 | 180°, +1.00 mm x | was wrong in the preview; hand-soldered now, not in the CPL |
-| C6186 AMS1117 SOT-223 | camera pod U1 (node U2 until 2026-10-23) | 180° | looked wrong in the preview; confirm the fix |
+| C6186 AMS1117 SOT-223 | node U2 until 2026-10-23, camera pod U1 until the datasheet audit (F1) | 180° | looked wrong in the preview; confirm the fix |
 | C165948 HRO TYPE-C-31-M-12 | node J3 J4 until v0.4 | −1.57 mm y | not on the boards since v0.5 |
 | C2913206 ESP32-S3-MINI-1 | hub U4 (node U3 until the camera) | +2.55 mm y | to confirm |
 | C2913201 ESP32-S3-WROOM-1-N8R8 | node U3 | +3.63 mm y | to confirm |
@@ -975,7 +976,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C20615800 H5VU25UC DFN2510-10L | DATA ×4 v2 U4, U105… | 270° (fit by pin name: pin 1 on pin 1, 0.005 mm rms; `test_jlc_cpl.py` checks pin 1) | to confirm |
 | C206010 TCA9534A TSSOP-16 | DATA ×4 v2 U10 | 270° | to confirm |
 | C9839 TPS60400 SOT-23-5 | DATA ×4 v2 U9 | 180° (not C51118's 270°: another EasyEDA drawing) | to confirm |
-| C150716 AP2114H-3.3 SOT-223 | node U2 (since 2026-10-23), DATA ×4 v2 U3 | 180°, as C6186 (fit: −0.03 mm x) | to confirm |
+| C150716 AP2114H-3.3 SOT-223 | node U2 (since 2026-10-23), DATA ×4 v2 U3, camera pod U1 (since the datasheet audit's F1) | 180°, as C6186 (fit: −0.03 mm x) | to confirm |
 | C25725, C48442, C26075 4 × 0402 arrays | DATA ×4 v2 RN… | 90° (four equal resistors: 90° or 270°) | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,

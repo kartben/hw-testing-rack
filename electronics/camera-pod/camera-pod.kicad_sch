@@ -65,7 +65,7 @@
 		)
 		(uuid "6d2e9698-b1e9-53e7-8880-5994b8cf3ba0")
 	)
-	(text_box "Camera pod v1.0 — PH 8 lead from the bay node's J6, 1 × 6 header for the Arducam Mega's cable,\n  AMS1117 3.3 V for the camera, four white 2835 LEDs switched by the node (LED_K).\nLead pinout here: 1 LED_K · 2 CS · 3 MISO · 4 MOSI · 5 GND · 6 SCK · 7 GND · 8 CAM_5V\n  (the node's J6 mirrored: one 'Same direction' PH 8 cable)."
+	(text_box "Camera pod v1.0 — PH 8 lead from the bay node's J6, 1 × 6 header for the Arducam Mega's cable,\n  AP2114H 3.3 V for the camera, four white 2835 LEDs switched by the node (LED_K).\nLead pinout here: 1 LED_K · 2 CS · 3 MISO · 4 MOSI · 5 GND · 6 SCK · 7 GND · 8 CAM_5V\n  (the node's J6 mirrored: one 'Same direction' PH 8 cable)."
 		(exclude_from_sim no)
 		(at 30 115.57 0)
 		(size 360 15.24)

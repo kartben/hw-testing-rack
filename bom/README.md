@@ -5,7 +5,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 664 |
+| Electronics | 667 |
 | Cables | 79 |
 | Cameras | 64 |
 | Printed parts | 62 |
@@ -13,7 +13,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Motion | 19 |
 | Fasteners | 8 |
 | Analyzer | 7 |
-| **Total** | **960** |
+| **Total** | **963** |
 
 ≈ **€120 per bay** all-in.
 
@@ -40,7 +40,7 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | camera-pod | 5 PCBs (2-layer 40×27 mm, lead-free HASL), 2 assembled, Economic PCBA | PCB: special offer $4.00, lead-free HASL $1.10 | 5.10 |
 | | | PCBA: setup $8.24, stencil $1.55, components $2.08, extended parts $9.27, SMT $0.18, nitrogen reflow $0.86 | 22.18 |
 | | | **Quoted total** | **27.28** |
-| | | Order (indicative): as quoted | 27.28 |
+| | | Order (indicative): AP2114H-3.3 for the AMS1117 (datasheet audit F1): its extended part type (+$3.09 extended parts); AP2114H-3.3 for the AMS1117: 2 at JLC's price (+$0.05 components) | 30.42 |
 | data-port-x4 | 5 PCBs (4-layer 100×37 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: special offer $8.00, lead-free HASL $5.10 | 13.10 |
 | | | PCBA: setup $8.18, stencil $1.53, components $30.18, extended parts $27.63, SMT $1.47, X-ray $3.28 | 72.27 |
 | | | **Estimated total** | **85.37** |
@@ -67,10 +67,10 @@ What each order pays once, whatever the number of boards, against what grows wit
 | bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 40 (23 + 1 pref.) | 62.00 | 115.94 | 150.62 | **266.56** | 266.56 | 241.33 |
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (15 + 2 pref.) | 51.15 | 98.87 | 46.13 | **145.00** | 145.00 | 143.42 |
 | data-port | Economic | 6 / 10 | 6 (3) | 9.27 | 26.15 | 14.61 | **40.76** | 40.76 | 30.71 |
-| camera-pod | Economic | 2 / 2 | 8 (3) | 9.27 | 25.02 | 2.26 | **27.28** | 27.28 | 26.49 |
+| camera-pod | Economic | 2 / 2 | 8 (4) | 12.36 | 28.11 | 2.31 | **30.42** | 30.42 | 29.63 |
 | data-port-x4-v2-panel | Economic | 1 / 2 | 40 (17 + 2 pref.) | 52.53 | 114.32 | 93.54 | **207.86** | 207.86 | 205.84 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **721.46** | **721.46** | **681.79** |
+| **All** | | | | | | | **724.60** | **724.60** | **684.93** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -94,19 +94,19 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 
 | Board | 2 | 5 | 10 | 50 | 100 | Floor |
 |---|---:|---:|---:|---:|---:|---:|
-| bay-node | 71.73 | 38.59 | 26.66 | 16.62 | 14.15 | 13.18 |
+| bay-node | 71.73 | 38.59 | 26.66 | 16.62 | 14.15 | 13.19 |
 | power-hub | 72.49 | 41.64 | 31.19 | 20.35 | 17.70 | 16.84 |
 | data-port | 14.32 | 6.78 | 4.08 | 2.03 | 1.55 | 1.35 |
-| camera-pod | 13.64 | 6.13 | 3.65 | 1.71 | 1.33 | 1.13 |
+| camera-pod | 15.21 | 6.78 | 3.99 | 1.80 | 1.38 | 1.15 |
 | data-port-x4-v2-panel | 103.93 | 65.16 | 51.94 | 38.84 | 35.67 | 34.80 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-panel) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4-v2-panel | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 249.06 | 144.98 | 40.76 | 27.28 | 207.86 | **703.94** |
-| 5 | 142.87 | 41.64 | 14.28 | 7.30 | 65.16 | **278.05** |
-| 10 | 125.72 | 31.19 | 13.54 | 5.01 | 51.94 | **230.79** |
+| 1 | 249.05 | 144.98 | 40.76 | 30.42 | 207.86 | **707.07** |
+| 5 | 142.88 | 41.64 | 14.28 | 7.97 | 65.16 | **278.73** |
+| 10 | 125.73 | 31.19 | 13.54 | 5.37 | 51.94 | **231.16** |
 
 ## Printed parts
 
@@ -171,7 +171,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 |---|---|---:|---:|---:|---|
 | Electronics | 100u/50V — 100 µF 50 V aluminium electrolytic | 10  | 0.06 | 0.64 | LCSC/JLCPCB C3352 |
 | Electronics | 10u — Capacitor 10u 1206 | 20  | 0.25 | 5.01 | LCSC/JLCPCB C13585 |
-| Electronics | 100n — Capacitor 100n 0603 | 140  | 0.01 | 1.74 | LCSC/JLCPCB C14663 |
+| Electronics | 100n — Capacitor 100n 0603 | 150  | 0.01 | 1.86 | LCSC/JLCPCB C14663 |
 | Electronics | 22u — Capacitor 22u 1206 | 60  | 0.11 | 6.83 | LCSC/JLCPCB C12891 |
 | Electronics | 10u — Capacitor 10u 0805 | 10  | 0.04 | 0.40 | LCSC/JLCPCB C15850 |
 | Electronics | 1u — Capacitor 1u 0603 | 10  | 0.01 | 0.13 | LCSC/JLCPCB C15849 |
@@ -187,7 +187,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | AUX — JST PH 6-pin, side entry, SMD | 10  | 0.36 | 3.59 | LCSC/JLCPCB C265405 |
 | Electronics | CAM — JST PH 8-pin, vertical, SMD | 10  | 0.52 | 5.24 | LCSC/JLCPCB C495548 |
 | Electronics | DATA — JST PH 8-pin, side entry, SMD | 10  | 0.41 | 4.14 | LCSC/JLCPCB C265121 |
-| Electronics | 4.7u — 4.7 µH, 9 A sat, 6 A rms, 33 mΩ, molded | 10  | 0.09 | 0.92 | LCSC/JLCPCB C167220 |
+| Electronics | 4.7u — 4.7 µH, 7.5 A sat (9 A typ), 5.5 A rms, 33 mΩ, molded | 10  | 0.09 | 0.92 | LCSC/JLCPCB C167220 |
 | Electronics | SUD50P06-15(UMW) — P-MOSFET 60 V, reverse-polarity protection | 10  | 0.33 | 3.31 | LCSC/JLCPCB C7503186 |
 | Electronics | 2N7002 — N-MOSFET 60 V (open-drain AUX outputs) | 20  | 0.02 | 0.37 | LCSC/JLCPCB C8545 |
 | Electronics | AO3400A — N-MOSFET 30 V 5.7 A, 48 mΩ at 2.5 V (the camera light's low side) | 10  | 0.09 | 0.92 | LCSC/JLCPCB C20917 |
@@ -199,7 +199,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 50m — 50 mΩ 1 % 1 W current shunt | 10  | 0.11 | 1.10 | LCSC/JLCPCB C601102 |
 | Electronics | 2.2k — Resistor 2.2k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C4190 |
 | Electronics | 1k — Resistor 1k 0603 | 40  | 0.00 | 0.07 | LCSC/JLCPCB C21190 |
-| Electronics | 150k — Resistor 150k 0603 | 10  | 0.00 | 0.01 | LCSC/JLCPCB C22807 |
+| Electronics | 150k — Resistor 150k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C22807 |
 | Electronics | RESET — tactile switch 5.1 × 5.1 mm | 10  | 0.02 | 0.18 | LCSC/JLCPCB C318884 |
 | Electronics | BOOT — tactile switch 5.1 × 5.1 mm | 10  | 0.02 | 0.18 | LCSC/JLCPCB C318884 |
 | Electronics | SERVICE — SPDT slide switch, side actuated | 10  | 0.06 | 0.55 | LCSC/JLCPCB C431540 |
@@ -215,7 +215,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 10  | 0.93 | 9.29 | LCSC/JLCPCB C3234095 |
 | Electronics | Bare PCB bay-node (4-layer 74×90 mm (84×90 with JLC's rails), lead-free HASL) | 10  | 1.78 | 17.85 | JLCPCB quote 2026-10-23 |
 | Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, packaging, special components | 1  | 95.50 | 95.50 | JLCPCB quote 2026-10-23 |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -13.51 | -13.51 | JLCPCB quote 2026-10-23 |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -13.65 | -13.65 | JLCPCB quote 2026-10-23 |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 16  | 0.01 | 0.20 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0805 | 20  | 0.03 | 0.54 | LCSC/JLCPCB C28323 |
@@ -235,13 +235,13 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | ROW A — JST PH 6-pin, side entry, SMD | 2  | 0.36 | 0.72 | LCSC/JLCPCB C265405 |
 | Electronics | ROW B — JST PH 6-pin, side entry, SMD | 2  | 0.36 | 0.72 | LCSC/JLCPCB C265405 |
 | Electronics | USB — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 2  | 0.84 | 1.67 | LCSC/JLCPCB C5184243 |
-| Electronics | 4.7u — 4.7 µH, 9 A sat, 6 A rms, 33 mΩ, molded | 2  | 0.09 | 0.18 | LCSC/JLCPCB C167220 |
+| Electronics | 4.7u — 4.7 µH, 7.5 A sat (9 A typ), 5.5 A rms, 33 mΩ, molded | 2  | 0.09 | 0.18 | LCSC/JLCPCB C167220 |
 | Electronics | 1k — Resistor 1k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C21190 |
 | Electronics | 100k — Resistor 100k 0603 | 12  | 0.00 | 0.03 | LCSC/JLCPCB C25803 |
-| Electronics | 10k — Resistor 10k 0603 | 34  | 0.00 | 0.16 | LCSC/JLCPCB C25804 |
+| Electronics | 10k — Resistor 10k 0603 | 32  | 0.00 | 0.15 | LCSC/JLCPCB C25804 |
 | Electronics | 56 — Resistor 56 0603 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C25196 |
 | Electronics | 6.8k — Resistor 6.8k 0603 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C23212 |
-| Electronics | 5.1k — Resistor 5.1k 0603 | 8  | 0.00 | 0.01 | LCSC/JLCPCB C23186 |
+| Electronics | 5.1k — Resistor 5.1k 0603 | 10  | 0.00 | 0.01 | LCSC/JLCPCB C23186 |
 | Electronics | 7.5k — Resistor 7.5k 0603 | 8  | 0.00 | 0.01 | LCSC/JLCPCB C23234 |
 | Electronics | 18k — Resistor 18k 0603 | 20  | 0.00 | 0.07 | LCSC/JLCPCB C25810 |
 | Electronics | 39k — Resistor 39k 0603 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C23153 |
@@ -256,7 +256,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 4  | 1.42 | 5.67 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×100 mm (86×100 with JLC's rails), lead-free HASL) | 5  | 2.43 | 12.14 | JLCPCB quote 2026-10-23 |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components | 1  | 84.08 | 84.08 | JLCPCB quote 2026-10-23 |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.71 | 4.71 | JLCPCB quote 2026-10-23 |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.72 | 4.72 | JLCPCB quote 2026-10-23 |
 | Electronics | 100n — Capacitor 100n 0603 | 10  | 0.01 | 0.12 | LCSC/JLCPCB C14663 |
 | Electronics | 10u — Capacitor 10u 0805 | 10  | 0.04 | 0.40 | LCSC/JLCPCB C15850 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 10  | 0.84 | 8.37 | LCSC/JLCPCB C5184243 |
@@ -273,10 +273,10 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | LEAD — JST PH 8-pin, side entry, SMD | 2  | 0.41 | 0.83 | LCSC/JLCPCB C265121 |
 | Electronics | MEGA — pin header 1 × 6, 2.54 mm, SMD | 2  | 0.07 | 0.15 | LCSC/JLCPCB C41417363 |
 | Electronics | 100 — Resistor 100 0805 | 8  | 0.00 | 0.03 | LCSC/JLCPCB C17408 |
-| Electronics | AMS1117-3.3 — 3.3 V 1 A LDO | 2  | 0.19 | 0.39 | LCSC/JLCPCB C6186 |
+| Electronics | AP2114H-3.3TRG1 — 3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223 | 2  | 0.21 | 0.42 | LCSC/JLCPCB C150716 |
 | Electronics | Bare PCB camera-pod (2-layer 40×27 mm, lead-free HASL) | 5  | 0.94 | 4.69 | JLCPCB quote 2026-10-23 |
-| Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, nitrogen reflow | 1  | 18.49 | 18.49 | JLCPCB quote 2026-10-23 |
-| Electronics | Components camera-pod: JLC quote minus the catalogue prices above | 1  | 0.09 | 0.09 | JLCPCB quote 2026-10-23 |
+| Electronics | Economic PCBA, 2 boards: setup, stencil, extended parts, SMT, nitrogen reflow | 1  | 21.33 | 21.33 | JLCPCB quote 2026-10-23, adjusted |
+| Electronics | Components camera-pod: JLC quote minus the catalogue prices above | 1  | 0.11 | 0.11 | JLCPCB quote 2026-10-23, adjusted |
 | Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
 | Electronics | 22u — Capacitor 22u 0805 | 12  | 0.18 | 2.14 | LCSC/JLCPCB C45783 |
 | Electronics | 33p — Capacitor 33p 0402 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C1562 |

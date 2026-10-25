@@ -6,7 +6,7 @@ Functions
     Reverse-polarity P-FET, TVS, LMR51625 synchronous buck to 5 V / 2.5 A, 3.3 V LDO for the logic.
   * CAN: TJA1462AT on the ESP32-S3 TWAI, tapping the pair that runs J1 → J2 (no termination).
   * POS: token in on J1.6, out on J2.1 (J2 is J1 mirrored), each through 10k + a BAT54S clamp (survives VRACK on it).
-  * DUT power: DUT_5V through a TPS2553 current-limited switch (≈1.4 A) and a 50 mΩ shunt read by an
+  * DUT power: DUT_5V through a TPS2553D current-limited switch (≈1.4 A) and a 50 mΩ shunt read by an
     INA226; the DUT's D+/D- through ESD.
   * DATA (JST PH 8, side entry, right edge): the DUT's USB and power, the node's I²C and an INT line on
     an 8-wire lead to the drawer's DATA port board (electronics/data-port: USB-C, Rp, ESD; it leaves the
@@ -168,13 +168,13 @@ def board() -> Board:
     b = Board("bay-node", "Bay node", "0.5",
               comments=["ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf",
                         "Generated from electronics/bay-node/design.py — edit the Python, then regenerate",
-                        "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX"])
+                        "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT power on the DATA lead · USB 2.0 muxes · INA226 · AUX"])
     b.root_notes = [
         "Bay node — one per bay.  Sheets:",
         "  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51625 buck, AP2114H",
         "  MCU: ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM), reset/boot, status LED, UART pads",
-        "  USB: front PC port, DUT port, two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)",
-        "  DUT power & AUX: TPS2553 switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT",
+        "  USB: front PC port, the DUT's USB on the DATA lead (J7), two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)",
+        "  DUT power & AUX: TPS2553D switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT",
         "  Camera: JST PH 8 to the bay's Arducam Mega (SPI2, 5 V through a PTC) and its LEDs (AO3400A low side)",
         "  Rack bus: TJA1462AT CAN transceiver on the row pair, POS token in/out (docs/can.md)",
         "",
@@ -258,7 +258,7 @@ def board() -> Board:
             # stitched to In1 around the pad (no via in the pad)
             {"layer": "F.Cu", "net": "GND", "name": "esp-gnd", "priority": 3,
              "poly": [(27.3, 12.0), (33.7, 12.0), (33.7, 18.4), (27.3, 18.4)]},
-            # AP2114H tab: up to ~0.7 W at Wi-Fi peaks (1.7 V × 0.4 A); top-side copper on the tab and
+            # AP2114H tab: ≈ 0.8 W at Wi-Fi peaks (1.94 V × 0.4 A), ≈ 1 W at Espressif's 0.5 A; top-side copper on the tab and
             # C12, vias down to the +3V3 area on In2; exclusive, as the buck's (a track once cut C12 off it)
             {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 3, "exclusive": 0.5,
              "poly": [(8.4, 26.0), (17.2, 26.0), (17.2, 32.2), (8.4, 32.2)]},
@@ -393,7 +393,7 @@ def board() -> Board:
     s.tag("+3V3", (112, 42), "up")
     s.notes_at = (6, 64, 110)
     s.note("LMR51625YDDCR (2.5 A; a bay draws ≤ 2.25 A): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):")
-    s.note("  L 4.7 µH (FXL0630, 9 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.")
+    s.note("  L 4.7 µH (FXL0630, 7.5 A sat guaranteed, 9 A typ);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.")
     s.note("  At 2.25 A from 28 V the inductor peaks at ≈ 2.65 A (0.8 A ripple), under the 2.9 A minimum peak current limit.")
     s.note("FB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V: ≈ 4.75 V still reaches the DATA board at 1.4 A over 50 cm")
     s.note("  of PH lead (switch, shunt, one PH pin each way); everything on +5V takes it (TJA1462AT ≤ 5.5 V).")
@@ -550,6 +550,10 @@ def board() -> Board:
     u.wire("U7.5", (40, 66), "C19.1")
     u.tag("+3V3", (40, 66), "up")
     R(u, "R13", "100k", "MUX_FORCE_PC", "GND", pcb=P(27.5, 44.6, 0), sch=at(28, 77.5))
+    # hysteresis on PC_DET: the laptop's VBUS rises at ≈ 50 µs/V through R11/R12, where the LVC1G32 wants
+    # ≤ 10 ns/V and warns of oscillation (TI SCES219W §5.3).  150k from MUX_SEL back to PC_DET: ≈ 0.14 V of
+    # hysteresis; PC_DET reads 0.35 V while MUX_FORCE_PC holds MUX_SEL high with no PC (datasheet audit F3)
+    R(u, "R42", "150k", "MUX_SEL", "PC_DET", pcb=P(24.4, 42.0, 90), sch=at(60, 82))
     u.wire("U7.2", (24, 75))
     u.wire("R13.1", (28, 75))
     u.tag("MUX_FORCE_PC", (24, 75), "left")
@@ -569,7 +573,7 @@ def board() -> Board:
 
     # ------------------------------------------------------------------ DUT power + AUX
     d = b.sheet("DUT power & AUX", "dut.kicad_sch", "DUT power switch, monitor and AUX")
-    d.frame("DUT power path: +5V → TPS2553 switch → 50 mΩ shunt → DUT_5V (J7.1), INA226 across the shunt",
+    d.frame("DUT power path: +5V → TPS2553D switch → 50 mΩ shunt → DUT_5V (J7.1), INA226 across the shunt",
             6, 12, 124, 46)
     d.tag("+5V", (18, 29), "up")
     d.wire((18, 29), "U9.IN")
@@ -758,6 +762,9 @@ def board() -> Board:
                            "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy - 1.4, 0), sch=at(76, 22))
     part(c, "U13", "esd", {"1": "CAM_MISO_C", "6": "CAM_MISO_C", "3": "CAM_CS_C", "4": "CAM_CS_C",
                            "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy + 3.4, 0), sch=at(76, 38))
+    # their VBUS pins' 100 nF (ST USBLC6-2 §2.3: datasheet audit F4), above U12 between F1 and it, its +3V3 end by
+    # U12's pin 5 (the two parts' courtyards leave no room between U12 and U13)
+    C(c, "C28", "100n", "+3V3", "GND", pcb=P(cx - 5.4, cy - 4.0, 180), sch=at(90, 30))
     # the light: the pod's four white 2835 LEDs (100 Ω each) from CAM_5V to LED_K, ≤ 102 mA
     part(c, "Q4", "nfet_ll", {"G": "CAM_LED", "S": "GND", "D": "LED_K"}, pcb=P(cx - 6.0, cy + 7.8, 0), sch=at(80, 52))
     R(c, "R36", "100k", "CAM_LED", "GND", pcb=P(cx - 6.0, cy + 11.2, 0), sch=at(70, 54))
@@ -766,7 +773,7 @@ def board() -> Board:
     c.note("SPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k")
     c.note("  pull-up: deselected before firmware), IO7 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).")
     c.note("CAM_5V through F1 (0.75 A PTC, 1.5 A trip): the camera ≤ 317 mA (Arducam) + the LEDs ≤ 102 mA.  USBLC6s on the lead side of the 33 Ω.")
-    c.note("The camera pod board runs the Mega from 3.3 V (its own AMS1117): MISO is 3.3 V and R35 stays unpopulated.")
+    c.note("The camera pod board runs the Mega from 3.3 V (its own AP2114H): MISO is 3.3 V and R35 stays unpopulated.")
     c.note("  For a camera fed 5 V that drives MISO at 5 V instead: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V.")
     return b
 

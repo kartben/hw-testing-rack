@@ -132,6 +132,8 @@ desk, feed 15–30 V on J1 (pin 1 +, pins 2 / 5 GND): the buck starts above 13.5
 After a flash the port drops for a second (reset), comes back, and the node
 picks SERVICE up again; `bay status` and the LED show it.
 
+**Once, at the first flash (irreversible):** burn the eFuse that disables USB-OTG download (`espefuse.py --port <port> burn_efuse DIS_USB_OTG_DOWNLOAD_MODE 1`).  In USB-OTG download boot the ROM drives IO40 high and IO39 / IO38 low (ESP32-S3 Hardware Design Guidelines §1.3.13, Table 12).  On the node IO40 is DUT_FLT_N: it would fight the TPS2553D's open-drain ~FAULT if the DUT faults then.  We never use OTG download: UART0 and USB-Serial-JTAG download, our two flashing paths, stay.  An eFuse can't be unburnt; never burn `STRAP_JTAG_SEL` (GPIO3 floats).  Datasheet audit F5.
+
 ### Power hub
 
 | | How | Box closed? |
@@ -139,6 +141,8 @@ picks SERVICE up again; `bay status` and the LED show it.
 | **First flash and updates** | laptop on the hub's **console USB-C** (front wall, under A1, engraved "USB"), `west flash`.  That port also powers the controller (not the rows), so a hub with no PD charger, or on a desk, can be flashed too | yes |
 | **Wedged firmware** | the console USB-C is wired straight to the ESP32's USB pins and the hub's firmware never takes the PHY: esptool resets it into the ROM loader whatever the firmware does, short of firmware that reconfigures IO19/IO20 | yes |
 | **Last resort** | **BOOT** (SW2) and **RESET** (SW1), rear-left corner, top side: a pin through the lid's two holes (RST, BOOT, debossed beside them), down a guide tube onto each button; UART0 pads TP1–TP4 on the bottom side (lid off, 4 × M3×8, and the hub off its spacers) | yes, with a pin |
+
+**Once, at the first flash (irreversible):** burn the eFuse that disables USB-OTG download (`espefuse.py --port <port> burn_efuse DIS_USB_OTG_DOWNLOAD_MODE 1`).  In USB-OTG download boot the ROM drives IO40 high and IO39 / IO38 low (ESP32-S3 Hardware Design Guidelines §1.3.13, Table 12).  On the hub IO40 is PD_SCL: it would back-feed an unpowered CH224A through SCL, which I2C_PU exists to avoid.  We never use OTG download: UART0 and USB-Serial-JTAG download, our two flashing paths, stay.  An eFuse can't be unburnt; never burn `STRAP_JTAG_SEL` (GPIO3 floats).  Datasheet audit F5.
 
 The row enables are held across the controller's resets (pad hold), so
 flashing the hub should not power-cycle the rack: to be checked on the first

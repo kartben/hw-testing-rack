@@ -6479,7 +6479,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "4.7 µH, 9 A sat, 6 A rms, 33 mΩ, molded"
+		(property "Description" "4.7 µH, 7.5 A sat (9 A typ), 5.5 A rms, 33 mΩ, molded"
 			(at 151.13 50.8 0)
 			(effects
 				(font
@@ -15113,7 +15113,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "5.1k"
 			(at 33.02 323.85 0)
 			(effects
 				(font
@@ -15140,7 +15140,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 10k 0603"
+		(property "Description" "Resistor 5.1k 0603"
 			(at 30.48 326.39 0)
 			(effects
 				(font
@@ -15149,7 +15149,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25804"
+		(property "LCSC" "C23186"
 			(at 30.48 326.39 0)
 			(effects
 				(font
@@ -15158,7 +15158,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF1002T5E"
+		(property "MPN" "0603WAF5101T5E"
 			(at 30.48 326.39 0)
 			(effects
 				(font

@@ -56,18 +56,24 @@ Datasheets used:
 
 ### To fix
 
+**F1–F6 applied on 2026-10-25** (the user: "Go"), each row below as written, with these differences:
+- F5 is a documented first-flash step for the node and the hub ([firmware.md](firmware.md), flagged irreversible); nothing is burnt yet.
+- The F6 CH224A note follows CH224 **V2.1**: Table 5-3 (p. 6) lists 0x50–0x53 and 0x60–0x8F with no "Only CH224Q" mark, and p. 7 makes SRCCAP readable from adapters under 100 W.  Whether it reads with our 100 W charger is still to check (schematic review R3).  The notes no longer claim "same die".
+- The node's "5.1k" I²C and POS_IN notes were already right (2.2k; 150k since the schematic review's S1).
+- The optional list below was left out (the user didn't ask for it).
+
 | # | Board | Change | BOM / cost | PCB | JLC cart |
 |---|---|---|---|---|---|
-| F1 | camera pod | U1 AMS1117-3.3 → **AP2114H-3.3TRG1** (C150716, the node's U2). The AMS1117 is only specified stable with 22 µF *tantalum*; ours is a 22 µF ceramic | +$0.03 a board; one more extended type on the pod's Economic order: +$3.09 | none: same SOT-223 pinout (1 GND, 2 VOUT/tab, 3 VIN), same CPL correction (180°, as C6186). Catalog key `ldo` → `ldo_1a` | BOM re-upload |
-| F2 | power hub | R214 (TJA1462 STB pull-down) **10k → 5.1k**. STB's internal pull-up can be 20 kΩ: with 10k a floating GPIO leaves STB at up to 1.10 V, above VIL 0.99 V | C23186, basic, already on the board: $0 | none | BOM re-upload |
-| F3 | bay node | **U7 SN74LVC1G32: hysteresis on PC_DET.** The laptop's VBUS rises in ≥ 0.2 ms through 10k/18k (≈ 50 µs/V), against the gate's 10 ns/V input limit; the datasheet warns of oscillation, so MUX_SEL can chatter on plug and unplug. 150k from MUX_SEL (U7.4) to PC_DET (U7.1): ≈ 0.14 V of hysteresis | +1 basic type (C22807, 150k 0603): +$1.55 (Standard PCBA counts every type) | one 0603 added, re-route | Gerbers + BOM + CPL |
-| F4 | bay node | **U12/U13 (the camera SPI's USBLC6): 100 nF on their VBUS pin**, which now reaches +3V3 through 5–11 mm of thin track and no capacitor (ST recommends 100 nF) | C14663, basic, already on the board: ≈ $0 | one 0603 added | Gerbers + BOM + CPL (with F3) |
-| F5 | node and hub | **Burn the eFuse `DIS_USB_OTG_DOWNLOAD_MODE`** at first flash. In USB-OTG download boot the ROM drives IO40 high and IO39/IO38 low. On the node, IO40 is DUT_FLT_N: it fights the TPS2553's open drain if the DUT faults then. On the hub it is PD_SCL: it back-feeds an unpowered CH224A, which I2C_PU exists to avoid. We flash over UART0 and USB-Serial-JTAG, which stay | none | none | none (provisioning step, irreversible) |
-| F6 | hub, node | **Notes that are wrong or stale** (comments, schematic notes, docs; no BOM). Hub: see the list after this table. Node: see the second list | none | none | none |
+| F1 ✓ | camera pod | U1 AMS1117-3.3 → **AP2114H-3.3TRG1** (C150716, the node's U2). The AMS1117 is only specified stable with 22 µF *tantalum*; ours is a 22 µF ceramic | +$0.03 a board; one more extended type on the pod's Economic order: +$3.09 | none: same SOT-223 pinout (1 GND, 2 VOUT/tab, 3 VIN), same CPL correction (180°, as C6186). Catalog key `ldo` → `ldo_1a` | BOM re-upload |
+| F2 ✓ | power hub | R214 (TJA1462 STB pull-down) **10k → 5.1k**. STB's internal pull-up can be 20 kΩ: with 10k a floating GPIO leaves STB at up to 1.10 V, above VIL 0.99 V | C23186, basic, already on the board: $0 | none | BOM re-upload |
+| F3 ✓ | bay node | **U7 SN74LVC1G32: hysteresis on PC_DET.** The laptop's VBUS rises in ≥ 0.2 ms through 10k/18k (≈ 50 µs/V), against the gate's 10 ns/V input limit; the datasheet warns of oscillation, so MUX_SEL can chatter on plug and unplug. 150k from MUX_SEL (U7.4) to PC_DET (U7.1): ≈ 0.14 V of hysteresis | +1 basic type (C22807, 150k 0603): +$1.55 (Standard PCBA counts every type) | one 0603 added, re-route | Gerbers + BOM + CPL |
+| F4 ✓ | bay node | **U12/U13 (the camera SPI's USBLC6): 100 nF on their VBUS pin**, which now reaches +3V3 through 5–11 mm of thin track and no capacitor (ST recommends 100 nF) | C14663, basic, already on the board: ≈ $0 | one 0603 added | Gerbers + BOM + CPL (with F3) |
+| F5 ✓ | node and hub | **Burn the eFuse `DIS_USB_OTG_DOWNLOAD_MODE`** at first flash. In USB-OTG download boot the ROM drives IO40 high and IO39/IO38 low. On the node, IO40 is DUT_FLT_N: it fights the TPS2553's open drain if the DUT faults then. On the hub it is PD_SCL: it back-feeds an unpowered CH224A, which I2C_PU exists to avoid. We flash over UART0 and USB-Serial-JTAG, which stay | none | none | none (provisioning step, irreversible) |
+| F6 ✓ | hub, node | **Notes that are wrong or stale** (comments, schematic notes, docs; no BOM). Hub: see the list after this table. Node: see the second list | none | none | none |
 
 F6, the hub's notes:
 - The IMON filter is τ = (18k + 1k) × 47 nF ≈ **0.9 ms, not 47 µs**: the IMON pin is a current source into 18k.
-- The CH224A has no source-PDO registers: 0x60–0x8F and AVS/PPS 0x51–0x53 are "Only CH224Q", and the CH224A takes single-byte transfers only. design.py, power.md and the catalog say the controller reads the PDOs and that the CH224Q is "the same die".
+- The CH224A takes single-byte transfers only.  V2.0 marked the source PDOs (0x60–0x8F) and AVS/PPS (0x51–0x53) "Only CH224Q"; V2.1 lists them for both parts, with SRCCAP readable from adapters under 100 W (to check with ours: review R3).  The notes said the controller reads the PDOs and that the CH224Q is "the same die": reworded to that.
 - The buck stops at ≈ 3.8 V (its internal UVLO), not 3.1 V.
 - SHDN turns on at ≥ 1 V (TI p. 26), not "above 0.94 V".
 - The soft start stays under the current limit only typically: at the corners a row starts in current limit.

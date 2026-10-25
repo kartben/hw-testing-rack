@@ -10,7 +10,7 @@
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
-		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT port · USB 2.0 muxes · INA226 · AUX")
+		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT power on the DATA lead · USB 2.0 muxes · INA226 · AUX")
 	)
 	(lib_symbols
 		(symbol "Connector_Generic:Conn_01x06"
@@ -6830,7 +6830,7 @@
 		)
 		(uuid "3e141f3f-32d9-5688-a4ae-b2211f27f0f4")
 	)
-	(text "DUT power path: +5V → TPS2553 switch → 50 mΩ shunt → DUT_5V (J7.1), INA226 across the shunt"
+	(text "DUT power path: +5V → TPS2553D switch → 50 mΩ shunt → DUT_5V (J7.1), INA226 across the shunt"
 		(exclude_from_sim no)
 		(at 16.51 33.02 0)
 		(effects

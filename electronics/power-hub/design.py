@@ -275,7 +275,9 @@ def board() -> Board:
     R(s, "R2", "1k", "+3V3", "PD_LED_A", pcb=P(LED_X[4], H - 5.0, 90))
     part(s, "D3", "led_side_g", {"A": "PD_LED_A", "K": "PD_INT"}, "PD", pcb=P(LED_X[4], LED_Y, 180))
     s.note("U1 is the CH224A (WCH, PD 3.2): CFG1 6.8k asks for 9 V at plug-in and turns its I2C on (0x22); the")
-    s.note("  controller reads the source's PDOs (0x60-0x8F) and writes 0x0A: 5 = 28 V EPR when offered, else 4 = 20 V.")
+    s.note("  controller writes 0x0A: 5 = 28 V EPR when offered, else 4 = 20 V (single-byte I2C transfers).  CH224 V2.1")
+    s.note("  lists the source's PDOs (0x60-0x8F) for both parts, readable under 100 W (p. 7): with our 100 W charger,")
+    s.note("  still to check (schematic review R3); without them the firmware tries 28 V and checks VBUS.")
     s.note("No input switch: VBUS is VRACK.  The eFuses (UV 15 V, off until enabled, reverse current blocked) are the")
     s.note("  switches; the controller turns the rows on once 0x09 says PD (and EPR) and VBUS_SENSE reads the voltage.")
     s.note("SMAJ30A: 30 V stand-off, above a 28 V EPR contract; the eFuses (60 V) and the TPS26600 OVP (31–34 V) follow.")
@@ -329,9 +331,11 @@ def board() -> Board:
         part(o, f"D{30 + n}", "bat54s", {"A": "GND", "K": "+3V3", "COM": f"POS_{ch}"}, pcb=P(16.6, yj + 7.6, 0))
     o.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).")
     o.note("t_dVdT = 8e3 · V_IN · C_dVdT → 47 nF ≈ 7.5 ms at 20 V, 10.5 ms at 28 V.  A row of four nodes (≈ 450 µF)")
-    o.note("  then charges at C / (8e3 · C_dVdT) ≈ 1.2 A, under the 1.6 A limit (22 nF needed ≈ 2.6 A).")
-    o.note("IMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 47 nF (47 µs) to the ESP32's ADC.")
-    o.note("SHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (on above 0.94 V).")
+    o.note("  then charges at C / (8e3 · C_dVdT) ≈ 1.2 A typically, under the 1.6 A limit (22 nF needed ≈ 2.6 A); at the")
+    o.note("  corners (+20 % capacitance, a fast dVdT, the nodes' load, the limit at its 1.5 A minimum) a row starts in current limit.")
+    o.note("IMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 47 nF to the ESP32's ADC: the pin is a current")
+    o.note("  source, so τ = (18k + 1k) × 47 nF ≈ 0.9 ms, against the firmware's 250 ms polling.")
+    o.note("SHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (TI: ≥ 1 V to turn on, p. 26).")
     o.note("The firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.")
     o.note("FLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for")
     o.note("  a fault on an enabled row (FLT is also low while a row is off or starting).")
@@ -346,7 +350,8 @@ def board() -> Board:
     C(c, "C104", "10u", "VRACK", "GND", size="1206", pcb=P(58.00, 16.8 + BY, 0))
     C(c, "C105", "10u", "VRACK", "GND", size="1206", pcb=P(58.00, 19.4 + BY, 0))
     C(c, "C106", "100n", "VRACK", "GND", pcb=P(58.00, 14.6 + BY, 0))
-    # EN: on from ≈ 3.9 V (off below ≈ 3.1 V), so the controller runs on a contract's first 5 V; 39k/18k,
+    # EN: on from ≈ 3.9 V, so the controller runs on a contract's first 5 V; the internal UVLO dominates, on at
+    # 4.0-4.25 V, off below ≈ 3.8 V (the divider alone would let go at ≈ 3.1 V); 39k/18k,
     # values the board already has (one part type less in JLC's feeders)
     R(c, "R205", "39k", "VRACK", "BUCK_EN", pcb=P(54.78, 14.3 + BY, 90))
     R(c, "R206", "18k", "BUCK_EN", "GND", pcb=P(54.00, 12.0 + BY, 180))
@@ -410,7 +415,9 @@ def board() -> Board:
                                "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "CAN_STB"}, "TJA1462AT", pcb=P(56.0, 60.0, 0))
     C(c, "C116", "100n", "+5V", "GND", pcb=P(50.6, 57.6, 0))
     C(c, "C117", "100n", "+3V3", "GND", pcb=P(50.6, 62.4, 0))
-    R(c, "R214", "10k", "CAN_STB", "GND", pcb=P(62.0, 57.4, 0))
+    # 5.1k: STB's internal pull-up can be 20 kΩ, so with IO9 floating 10k left STB at up to 1.10 V, above VIL
+    # 0.99 V; 5.1k holds it ≤ 0.67 V (NXP TJA1462 §7.3.2, Table 8: datasheet audit F2)
+    R(c, "R214", "5.1k", "CAN_STB", "GND", pcb=P(62.0, 57.4, 0))
     for i, (r1, r2, cc, mid, y) in enumerate((("R215", "R216", "C118", "CAN_TERM1", 64.0), ("R217", "R218", "C119", "CAN_TERM2", 66.6))):
         R(c, r1, "56", "CAN_H", mid, pcb=P(61.0, y, 0))
         R(c, r2, "56", mid, "CAN_L", pcb=P(64.4, y, 0))

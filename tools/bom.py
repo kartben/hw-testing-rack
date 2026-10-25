@@ -189,7 +189,12 @@ JLC_SINCE_QUOTE = {
                    # at $2.91)
                    "data-port-x4-v2-panel": [("RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price",
                                               "components", 3.05),
-                                             ("RP2354B: its extended part type", "extended parts", 3.09)]}
+                                             ("RP2354B: its extended part type", "extended parts", 3.09)],
+                   # the pod's U1 since the quote: the AP2114H-3.3 (C150716, extended, $0.2314) for the AMS1117
+                   # (C6186, basic, $0.2048), stable with its ceramic output capacitor (datasheet audit F1)
+                   "camera-pod": [("AP2114H-3.3 for the AMS1117 (datasheet audit F1): its extended part type",
+                                   "extended parts", 3.09),
+                                  ("AP2114H-3.3 for the AMS1117: 2 at JLC's price", "components", 0.05)]}
 
 # JLC's fees, as its real quotes of 2026-10-23 charge them (its help page "PCB Assembly Cost" of 2026-09-09
 # still says $25.56 / $8.21 / $1.53 and $8.18 / $1.53 / $3.07) and the jlcpcb.com calculator (2026-10-19,

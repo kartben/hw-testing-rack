@@ -3657,7 +3657,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternative" "CH224Q (C46061833, DFN-10-EP 2x2, same die); the AP33772SDKZ-13-FA01 (C24374260, another board)"
+		(property "Alternative" "CH224Q (C46061833, DFN-10-EP 2x2, the same family); the AP33772SDKZ-13-FA01 (C24374260, another board)"
 			(at 45.72 132.08 0)
 			(effects
 				(font
@@ -6504,10 +6504,10 @@
 			)
 		)
 	)
-	(text_box "U1 is the CH224A (WCH, PD 3.2): CFG1 6.8k asks for 9 V at plug-in and turns its I2C on (0x22); the\n  controller reads the source's PDOs (0x60-0x8F) and writes 0x0A: 5 = 28 V EPR when offered, else 4 = 20 V.\nNo input switch: VBUS is VRACK.  The eFuses (UV 15 V, off until enabled, reverse current blocked) are the\n  switches; the controller turns the rows on once 0x09 says PD (and EPR) and VBUS_SENSE reads the voltage.\nSMAJ30A: 30 V stand-off, above a 28 V EPR contract; the eFuses (60 V) and the TPS26600 OVP (31–34 V) follow.\nR5/C4: the CH224A's VHV/VBUS pins are rated 32 V; the RC filters the fast edges the TVS can't reach.\nVBUS_SENSE: 100k/10k from VBUS → 2.5 V at 28 V for the ESP32's ADC; also tells the firmware when to enable I2C_PU."
+	(text_box "U1 is the CH224A (WCH, PD 3.2): CFG1 6.8k asks for 9 V at plug-in and turns its I2C on (0x22); the\n  controller writes 0x0A: 5 = 28 V EPR when offered, else 4 = 20 V (single-byte I2C transfers).  CH224 V2.1\n  lists the source's PDOs (0x60-0x8F) for both parts, readable under 100 W (p. 7): with our 100 W charger,\n  still to check (schematic review R3); without them the firmware tries 28 V and checks VBUS.\nNo input switch: VBUS is VRACK.  The eFuses (UV 15 V, off until enabled, reverse current blocked) are the\n  switches; the controller turns the rows on once 0x09 says PD (and EPR) and VBUS_SENSE reads the voltage.\nSMAJ30A: 30 V stand-off, above a 28 V EPR contract; the eFuses (60 V) and the TPS26600 OVP (31–34 V) follow.\nR5/C4: the CH224A's VHV/VBUS pins are rated 32 V; the RC filters the fast edges the TVS can't reach.\nVBUS_SENSE: 100k/10k from VBUS → 2.5 V at 28 V for the ESP32's ADC; also tells the firmware when to enable I2C_PU."
 		(exclude_from_sim no)
 		(at 20.32 266.7 0)
-		(size 240.03 20.32)
+		(size 240.03 25.4)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)
