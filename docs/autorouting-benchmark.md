@@ -359,8 +359,8 @@ zephyrbox), 2026-10-22:
   via first.
 - **The rack's board since 2026-10-23** (the user's choice): `electronics/data-port-x4-v2` on 4 layers, routed
   with `ripup30-order2`'s session (750 vias, 5194 mm, 1930 bends once imported), its order panel too.  The 6-layer
-  board is kept, routing unchanged, as `electronics/data-port-x4-v2-6l` (a `design.py` with `X4V2_LAYERS=6`); the
-  Hardware CI checks both.  The comparison (cost, vias in pads, return paths) is in docs/electronics.md.
+  board was kept as `electronics/data-port-x4-v2-6l` until 2026-10-25 (removed; `X4V2_LAYERS=6` still builds
+  that stack-up).  The comparison (cost, vias in pads, return paths) is in docs/electronics.md.
 
 ## Our own router?
 

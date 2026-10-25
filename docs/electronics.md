@@ -595,8 +595,8 @@ pairs · In1 GND · In2 power (+3V3 / +5V, the +3V3_CP island) · B.Cu signals.
 - Why: the routing portfolio and its fixes (split planes, straightening, the neck-down floor, no via in an SMD pad)
   route it clean, cheaper and faster than 6 ([autorouting-benchmark.md](autorouting-benchmark.md), "The DATA ×4
   v2 on 4 layers").  On 2026-10-22 one 4-layer run had left 27–29 links open, and the HS review took it to 6.
-- The 6-layer build is kept as [`electronics/data-port-x4-v2-6l`](../electronics/data-port-x4-v2-6l/design.py)
-  (`X4V2_LAYERS=6`: F · GND · sig · sig · power · B), with its routing unchanged.
+- The 6-layer build (`X4V2_LAYERS=6`: F · GND · sig · sig · power · B) was kept routed in its own folder until
+  2026-10-25; git history has it.
 - Routed with the portfolio's `ripup30-order2`: 750 vias, 5194 mm, 1930 bends; F.Cu 3213 mm, B.Cu 1981 mm; In1
   and In2 carry no signal track.  The 6-layer board: 810 vias, 4828 mm, 1491 bends, B.Cu 102 mm, the rest on In2
   and In3.

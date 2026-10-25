@@ -47,7 +47,7 @@ lead's isolation and ESD, the 3.3 V.  No base signal runs through a logic part: 
 BOOT stay live, its P pins and VREF end on empty pads, hub port 5 ends on R23/R24's empty pads.
 4 layers (pcb.layers, JLC04161H-7628): F (the High-Speed pairs, drawn) · In1 GND · In2 +3V3 above, +5V below · B,
 again since 2026-10-23: the routing portfolio and its fixes route it clean.  6 layers (X4V2_LAYERS=6: F · GND ·
-sig · sig · power · B, the HS review's of 2026-10-22) still builds, kept routed as electronics/data-port-x4-v2-6l.
+sig · sig · power · B, the HS review's of 2026-10-22) still builds, for a comparison.
 """
 
 from __future__ import annotations
