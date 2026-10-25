@@ -206,8 +206,8 @@ cables:
   c-to-c-straight-20:    { label: "USB-C ↔ USB-C, straight, 20 cm", a: usb-c, b: usb-c,      length: 200, style: straight }
   c-to-micro-b-straight: { label: "USB-C ↔ micro-B, straight, 15 cm", a: usb-c, b: micro-b, length: 150, style: straight }
   data-lead:    { label: "JST PH 8-pin DATA lead, pin n ↔ pin 9−n, 400–500 mm (node J7 → DATA port board)", length: 400 }
-  row-jumper:   { label: "JST PH 6-pin row cable, 1:1, 24 AWG, 120 mm", length: 120 }
-  row-feed:     { label: "JST PH 6-pin feed, 1:1, 24 AWG (VRACK, CAN, POS)", length: 600 }
+  row-jumper:   { label: "JST PH 6-pin row cable, pin n ↔ pin 7−n, 24 AWG, 120 mm", length: 120 }
+  row-feed:     { label: "JST PH 6-pin feed, pin n ↔ pin 7−n, 24 AWG (VRACK, CAN, POS)", length: 600 }
 
 pcb:
   solder_mask: green        # the rack's own boards, every one (the user, 2026-10-23: "faisons tout en vert"; black from
