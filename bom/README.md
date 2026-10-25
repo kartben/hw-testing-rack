@@ -56,7 +56,7 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | data-port-x4-v2-panel | 5 panels (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites), 2 assembled: 2 of each board, Economic PCBA | PCB: engineering $25.00, ENIG $18.20, board $8.80 | 52.00 |
 | | | PCBA: setup $8.24, stencil $1.55, components $84.24, extended parts $49.44, SMT $5.77, special components $0.48 | 149.72 |
 | | | **Quoted total** | **201.72** |
-| | | Order (indicative): RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price (+$3.05 components); RP2354B: its extended part type (+$3.09 extended parts) | 207.86 |
+| | | Order (indicative): RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price (+$3.05 components); RP2354B: its extended part type (+$3.09 extended parts); BAT54S (D2), added since: 2 at JLC's price (+$0.03 components) | 207.89 |
 
 ## JLC cost
 
@@ -68,9 +68,9 @@ What each order pays once, whatever the number of boards, against what grows wit
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (15 + 2 pref.) | 51.15 | 98.87 | 46.13 | **145.00** | 145.00 | 143.42 |
 | data-port | Economic | 6 / 10 | 6 (3) | 9.27 | 26.15 | 14.61 | **40.76** | 40.76 | 30.71 |
 | camera-pod | Economic | 2 / 2 | 8 (4) | 12.36 | 28.11 | 2.31 | **30.42** | 30.42 | 29.63 |
-| data-port-x4-v2-panel | Economic | 1 / 2 | 40 (17 + 2 pref.) | 52.53 | 114.32 | 93.54 | **207.86** | 207.86 | 205.84 |
+| data-port-x4-v2-panel | Economic | 1 / 2 | 41 (17 + 3 pref.) | 52.53 | 114.32 | 93.57 | **207.89** | 207.89 | 205.87 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **724.60** | **724.60** | **684.93** |
+| **All** | | | | | | | **724.63** | **724.63** | **684.96** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -98,15 +98,15 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | power-hub | 72.49 | 41.64 | 31.19 | 20.35 | 17.70 | 16.84 |
 | data-port | 14.32 | 6.78 | 4.08 | 2.03 | 1.55 | 1.35 |
 | camera-pod | 15.21 | 6.78 | 3.99 | 1.80 | 1.38 | 1.15 |
-| data-port-x4-v2-panel | 103.93 | 65.16 | 51.94 | 38.84 | 35.67 | 34.80 |
+| data-port-x4-v2-panel | 103.94 | 65.18 | 51.96 | 38.86 | 35.69 | 34.82 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-panel) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4-v2-panel | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 249.05 | 144.98 | 40.76 | 30.42 | 207.86 | **707.07** |
-| 5 | 142.88 | 41.64 | 14.28 | 7.97 | 65.16 | **278.73** |
-| 10 | 125.73 | 31.19 | 13.54 | 5.37 | 51.94 | **231.16** |
+| 1 | 249.05 | 144.98 | 40.76 | 30.42 | 207.89 | **707.10** |
+| 5 | 142.88 | 41.64 | 14.28 | 7.97 | 65.18 | **278.75** |
+| 10 | 125.73 | 31.19 | 13.54 | 5.37 | 51.96 | **231.18** |
 
 ## Printed parts
 
@@ -285,6 +285,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 4.7u — Capacitor 4.7u 0402 | 8  | 0.01 | 0.08 | LCSC/JLCPCB C23733 |
 | Electronics | 15p — Capacitor 15p 0402 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C1548 |
 | Electronics | KT-0805G — green LED 0805 | 10  | 0.02 | 0.18 | LCSC/JLCPCB C2297 |
+| Electronics | BAT54S — dual Schottky in series: clamps a line to GND and +3V3 | 2  | 0.01 | 0.02 | LCSC/JLCPCB C7420333 |
 | Electronics | GZ2012D601TF — ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805 | 4  | 0.02 | 0.07 | LCSC/JLCPCB C1017 |
 | Electronics | LEAD — JST PH 8-pin, vertical, through-hole | 2  | 0.08 | 0.16 | LCSC (hand-solder, buy loose) C157974 |
 | Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
@@ -330,6 +331,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 33p — Capacitor 33p 0402 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C1562 |
 | Electronics | 1u — Capacitor 1u 0402 | 14  | 0.01 | 0.09 | LCSC/JLCPCB C52923 |
 | Electronics | 100n — Capacitor 100n 0402 | 38  | 0.01 | 0.19 | LCSC/JLCPCB C1525 |
+| Electronics | BAT54S — dual Schottky in series: clamps a line to GND and +3V3 | 2  | 0.01 | 0.02 | LCSC/JLCPCB C7420333 |
 | Electronics | KT-0805G — green LED 0805 | 8  | 0.02 | 0.15 | LCSC/JLCPCB C2297 |
 | Electronics | LEAD — JST PH 8-pin, vertical, through-hole | 2  | 0.08 | 0.16 | LCSC (hand-solder, buy loose) C157974 |
 | Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
@@ -360,7 +362,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
 | Electronics | Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | JLCPCB quote 2026-10-23 |
 | Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 63.08 | 63.08 | JLCPCB quote 2026-10-23, adjusted |
-| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 2.23 | 2.23 | JLCPCB quote 2026-10-23, adjusted |
+| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 2.21 | 2.21 | JLCPCB quote 2026-10-23, adjusted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
 | Printed parts | Rear bay covers (optional) | 8  | 0.00 | 0.00 | printed |

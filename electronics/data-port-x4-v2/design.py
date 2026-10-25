@@ -461,11 +461,23 @@ def hub_sheet(b: Board):
     C(s, "C10", "100n", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 6.75, HY + 6.6, 90), sch=at(134, 24))
     C(s, "C7", "1u", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 0.9, 90), sch=at(146, 24))
     C(s, "C9", "100n", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 3.0, 90), sch=at(152, 24))
-    # RBIAS, reset (R2 up, C6 down: about 10 ms) and the three single straps
+    # RBIAS, reset (R2 up, C6 down: about 5 ms with D2 below, 10 ms alone) and the three single straps
     R(s, "R1", "12k", "RBIAS", "GND", size="0402", pcb=P(HX - 5.75, HY + 6.6, 90), sch=at(84, 92))
     R(s, "R2", "10k", "+3V3", "HUB_RST_N", size="0402", pcb=P(HX - 1.25, HY - 9.4, 90), sch=at(92, 88))
     C(s, "C6", "1u", "HUB_RST_N", "GND", size="0402", pcb=P(HX - 2.3, HY - 9.4, 90), sch=at(92, 96))
     s.wire("R2.2", "C6.1")
+    # S2 (the schematic review, 2026-10-25): the co-processor is held in reset while the hub is.  The USB2517
+    # samples each downstream D+ / D− as a port-disable strap when RESET_N rises, and one high line is enough
+    # (the user checked DS00001598C Table 5-1 p.10, straps on with CFG_SEL 000): the RP2354B's D+ pull-up on port 5
+    # must not be up by then.  One Schottky of a BAT54S (preferred, no fee; VF ≤ 240 mV at 0.1 mA, ≤ 320 mV at
+    # 1 mA) from CP_RUN to HUB_RST_N: with RESET_N low, RUN sits at ≈ 0.3 V (R25's ≈ 0.33 mA), under the
+    # RP2350's VIL 0.8 V; RUN is released ≈ VF ahead of RESET_N, and its firmware takes far longer than that to
+    # pull D+ up.  R25 then also charges C6: the hub's reset (to VIH 2.0 V) goes from ≈ 9.3 to ≈ 4.6–5 ms, ≫ the
+    # 1 µs minimum, and RESET_N stays under VIL 0.8 V through a 3.3 V rise of ≤ ≈ 1.3 ms (DS Note 8-1).  The
+    # TCA9534A pulling RUN low leaves the diode reversed (≤ 2 µA): no effect on the hub.  Fitted on both variants
+    # (on the base, CP_RUN just floats); its second diode (COM → K) is left open
+    part(s, "D2", "bat54s", {"A": "CP_RUN", "K": None, "COM": "HUB_RST_N"}, pcb=P(HX - 5.5, HY - 11.1, 0),
+         sch=at(100, 100, rot=90))
     # X8: every strap pin pulled: CFG_SEL 000, NON_REM 00, GANG_EN 0, BOOST 00, PRT_SWP 0000000.  Over the
     # north face in two rows (the pins at 0.5 mm leave no room for one row), a resistor over its pin, the
     # west face's three round the corner into RN1; CFG2, SWP7 and SWP6 round the south-east corner into RN3
@@ -508,6 +520,8 @@ def hub_sheet(b: Board):
         "  unused (cosmetic).  On purpose: PRTPWR unused and OCS_N on their pull-ups (the node switches each port",
         "  and reads its FAULT_N through the expanders); VBUS_DET on 3.3 V (self-powered hub).",
         "Hub port n = USB-C n (busid 1-1.n) for n = 1–4; port 5 = the co-processor.",
+        "D+ / D− of each port are straps at RESET_N's rise (one high line disables the port): D2 holds the",
+        "  co-processor in reset with the hub; a self-powered DUT on a port then loses it until the next hub reset.",
         "Expander pins are inputs at power-up; the EN pull-downs keep every port off until the node writes.",
         "INT (J1.1 → the node's IO4): both expanders' INT and the four INA226 ALERTs, open drain, wired-OR, through Q3.",
         "I²C and INT: the node's pull-ups on LEAD_*, 4.7k / 4.7k / 10k here; with DUT_5V off the chips here lose",

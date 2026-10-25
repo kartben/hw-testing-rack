@@ -9,6 +9,7 @@ C1,1,22u,C_1206_3216Metric,CL31A226KAHNNNE,Samsung Electro-Mechanics,C12891,Capa
 "C31,C32,C33,C34",4,4.7u,C_0402_1005Metric,CL05A475MP5NRNC,Samsung Electro-Mechanics,C23733,Capacitor 4.7u 0402,yes,,
 "C48,C49",2,15p,C_0402_1005Metric,0402CG150J500NT,FH (Guangdong Fenghua Advanced Tech),C1548,Capacitor 15p 0402,yes,,
 D1,1,KT-0805G,LED_0805_2012Metric,KT-0805G,Hubei KENTO,C2297,green LED 0805,yes,,
+D2,1,BAT54S,SOT-23,BAT54S,hongjiacheng,C7420333,dual Schottky in series: clamps a line to GND and +3V3,,,
 "D101,D201,D301,D401",4,KT-0805G,LED_0805_2012Metric,KT-0805G,Hubei KENTO,C2297,green LED 0805,,,
 "FB1,FB2",2,GZ2012D601TF,L_0805_2012Metric,GZ2012D601TF,Sunlord,C1017,"ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805",yes,,
 J1,1,LEAD,JST_PH_B8B-PH-K_1x08_P2.00mm_Vertical,B8B-PH-K-S(LF)(SN),JST,C157974,"JST PH 8-pin, vertical, through-hole",,,"hand-solder, buy loose (LCSC)"

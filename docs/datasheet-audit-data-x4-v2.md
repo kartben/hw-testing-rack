@@ -42,7 +42,7 @@ The schematic follows the datasheets almost everywhere:
 - One adds ESD to each header's VREF pin.
 - Two are wording, docs and firmware only.
 
-**Ten questions for the user (U1–U10).**  The weightiest:
+**Ten questions for the user (U1–U10)**, and two more since (U11–U12, the hub's straps, 2026-10-25).  The weightiest:
 - **U1, L1's orientation.**  Our design.py puts L1's dot on the VREG_LX pad.  Raspberry Pi's figures, as read
   here, put it on +1V1.
 - **U4, the CH446Q.**  Its only manual is a Chinese one from an LCSC mirror; the ±5 V supply and the logic
@@ -99,6 +99,8 @@ changes.
 | U8 | RP2350 datasheet (as U1) | Table 1680 (p.1335), VPIN −0.5 … IOVDD + 0.5 V; §12.4 (ADC) | Does the datasheet allow any injection current into a GPIO / ADC pin while IOVDD = 0? If so, how much? | Board off and a self-powered DUT's VREF wired: GPIO40–43 get VREF / 2 through 5 kΩ, ≤ 0.26 mA each | **No allowance:** 100k in series with each ADC input (4 × C25741, basic, already a line; fine for DC per §12.4.3), or a note to keep the board powered while DUTs are. **Allowed and ≥ 0.3 mA:** nothing |
 | U9 | TI TCA6408A, https://www.ti.com/lit/ds/symlink/tca6408a.pdf, SCPS192E (Jan 2023) | Table 5-1, RESET row (p.4); §8.3.4 (p.20–21) | May RESET be tied directly to VCCI, or is the pull-up resistor required ("connect to VCCI through a pull-up resistor, if no active connection is used")? | Tied directly to +3V3 on U2 and U6 | **Resistor required:** 10k per expander (C25744, basic, already a line, $0). **Direct allowed:** nothing |
 | U10 | Samsung Electro-Mechanics CL05A105KA5NQNC (C52923): its product page or MLCC simulator on product.samsungsem.com (search the part number; the direct link didn't answer on 2026-10-24); TPS60400, https://www.ti.com/lit/ds/symlink/tps60400.pdf, SLVS324C, §7.3 (p.4) | The part's DC-bias characteristic | What is its capacitance at 5 V DC and at 1.8 V DC? | TPS60400 C26–C28 at ≈ 5 V; hub VDD18 / VDD18PLL C7, C8 at 1.8 V | **Under ≈ 0.5 µF at 5 V:** C28 (−5 V out) to a larger part. **Under ≈ 0.8 µF at 1.8 V:** C7/C8 to 4.7 µF (C23733, basic, already a line) |
+| U11 | Microchip USB2517/USB2517I, https://ww1.microchip.com/downloads/en/DeviceDoc/00001598C.pdf (it opens in a browser), DS00001598C | Table 5-2, "SMBus or EEPROM interface behavior" (p.15–16) | Which CFG_SEL[2:0] value gives "Internal Default Configuration, Strap Options are Disabled" with nothing else (no dynamic power switching, no ganged switching or sensing, no bus-power operation)? Our reading of the table: 110 | CFG_SEL 000 (pulled down): internal defaults, straps on | **110 (or another value):** that value is the way out in electronics.md › "Port-disable straps" (two strap resistors to +3V3). **None:** the straps stay on, and with them the self-powered DUT warning and D2 |
+| U12 | Same datasheet | Table 5-1, PRT_DIS rows (p.10: "If the strap is enabled by package and configuration settings (see Table 5-2)"); Table 7-1 (p.19–20); §7.5 (p.41) | With the strap options disabled (U11's value): (a) are D+ / D− no longer sampled as PRT_DIS? (b) Are the internal defaults the values our straps set today (self-powered, NON_REM 00, individual port power switching and sensing, BOOST 00, PRT_SWP 0, no port disabled)? | Straps on: a self-powered DUT present at the hub's reset disables its port, and D2 keeps the co-processor's D+ low | **(a) and (b) yes:** U11's mode removes the self-powered DUT case and S2's reason for D2. **Either no:** stay on 000 |
 
 ## Sourcing
 

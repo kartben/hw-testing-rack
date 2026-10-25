@@ -24,9 +24,9 @@ class Orders(unittest.TestCase):
 
     def test_panel_reproduces_the_quote(self):
         # the 1 × 2 base + logic panel: JLC's real quote of 2026-10-23 (green, Economic, $201.72) and the
-        # RP2354B it left unplaced (JLC_SINCE_QUOTE), its parts scaled from the quote's at JLC's price breaks,
-        # its special components a piece
-        for n, usd in ((2, 207.86), (5, 325.82), (10, 519.43)):
+        # RP2354B it left unplaced and the BAT54S added since (JLC_SINCE_QUOTE), its parts scaled from the
+        # quote's at JLC's price breaks, its special components a piece
+        for n, usd in ((2, 207.89), (5, 325.91), (10, 519.60)):
             self.assertAlmostEqual(bom.panel_order(n, self.orders)["total"], usd, delta=0.02)
 
     def test_volume_is_order_cost(self):
@@ -75,7 +75,7 @@ class Orders(unittest.TestCase):
         self.assertNotIn("data-port-x4-v2", self.orders)
         self.assertNotIn("data-port-x4-v2-base", self.orders)
         o = self.orders["data-port-x4-v2-panel"]
-        self.assertEqual((o["types"], o["extended"], o["preferred"]), (40, 17, 2))   # C25725, C20615800 preferred
+        self.assertEqual((o["types"], o["extended"], o["preferred"]), (41, 17, 3))   # C25725, C20615800, C7420333 preferred
 
     def test_economic_fees_follow_the_tiers(self):
         # Economic PCBA charges the extended types only: basic and preferred-extended ones load free (the
