@@ -52,9 +52,9 @@ Each row names the page and the question; the answer settles the change.
 | R7 | Arducam Mega (B0434) datasheet | VCC range, current, pin order | Does it run on 3.3 V VCC (MISO then at 3.3 V)? Max current ≤ 120 mA? | No 3.3 V: MISO back to 5 V levels (node R35 fitted). |
 | R8 | — (measure) | DATA lead from the BOM (AliExpress, `rack-bom.csv:205`) | Conductor gauge: 24 AWG ≈ 0.51 mm, 26 ≈ 0.40 mm? J7.1 carries up to 1.5 A, and JST PH's 2 A is for #24 only. | 26/28: crimp our own PHR-8 leads in 24 AWG, or lower the TPS2553 limit. |
 | R9 | — (try) | `electronics.md` claims a PH-6 plug cannot enter an S8B | Does a PHR-6 enter a spare S8B-PH-SM4? | Yes: add it to S3's warning. |
+| R10 | hongjiacheng BAT54S Rev 2.0 (LCSC C7420333), https://www.lcsc.com/datasheet/lcsc_datasheet_2310171613_hongjiacheng-BAT54S_C7420333.pdf | p. 1 function diagram (BAT54, A, C, S side by side) | Is the BAT54S a series pair, pin 1 anode, pin 2 cathode, pin 3 the junction? That is our reading of the figure, and LCSC says "Series Connection"; its EasyEDA symbol names the pins "K1, K2, A" instead. | Yes: nothing (our symbol on the hub and the node's D6/D7). No: the clamps short every POS line to GND; another series BAT54S. |
 
 **Answered here:**
-- **BAT54S pinout** (hongjiacheng C7420333, Rev 2.0 p. 1). The function diagram draws BAT54, A, C and S side by side. For the S, pin 1 is the anode, pin 2 the cathode and pin 3 the junction: a series pair, as our symbol has it on the hub and the node (D6/D7). LCSC's EasyEDA symbol names the pins "K1, K2, A", which is wrong but does not reach our libraries.
 - **Audit U4(b).** The CH224A's VBUS is rated 32 V (V2.1 §7.1 p. 11, §8.1.1 p. 13); V2.0's 3.8 V was CFG1's.
 - **The audit's reset-state row** is now cited: GPIO7/12/14/41/42/48 have no weak pull at reset (Table 2-1 pp. 16–17), so the node's 100k pulls are uncontested.
 - **Audit F3, F4, F5** are confirmed against the netlist.
