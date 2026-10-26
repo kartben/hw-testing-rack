@@ -111,3 +111,20 @@ patches:
       Tried on the bench (esptool read_flash through the FTDI, 2026-10-21).
       The same commit is the user's draft PR 123166 (2026-10-22): drop this
       file when it lands.
+
+  # Sockets: a stream socket's receive window opens as recv() consumes the
+  # data, not only when it returns: a recv() with MSG_WAITALL for more than
+  # the window waited forever (USB/IP writes of over 4 KB on the bench)
+  - path: zephyr/net-sockets-recv-window.patch
+    sha256sum: 2f619074dbe7e192f3938684fc4df9dda70fde6c14eaed7d05677f3460a2ca9b
+    module: zephyr
+    author: Benjamin Cabé
+    email: benjamin@zephyrproject.org
+    date: 2026-10-26
+    upstreamable: true
+    comments: |
+      Two commits: the fix (subsys/net/lib/sockets/sockets_inet.c) and an
+      IPv4 and IPv6 test in tests/net/socket/tcp that fails without it (2 s
+      timeout) and passes with it, the suite 67/67 on native_sim.  Zephyr's
+      main still had the bug on 2026-10-26.  The same commits are the user's
+      draft PR 123575 (2026-10-26): drop this file when it lands.
