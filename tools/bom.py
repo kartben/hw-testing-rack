@@ -98,22 +98,6 @@ JLC_QUOTE = {
         "pcba": {"setup": 8.24, "stencil": 1.55, "components": 2.08, "extended parts": 9.27, "SMT": 0.18,
                  "nitrogen reflow": 0.86},
     },
-    # the DATA ×4 (v1.0, 4 layers, parts on one side, no module: Economic PCBA takes 4 layers), NOT ordered for
-    # the prototype (the user, 2026-10-20: the converted bays wait for the v2, its base variant below); kept as
-    # it was priced: an estimate built like the DATA port's, $3.07 per extended part type (the USB2514B, its
-    # crystal, the TPS2553-1, the INA226, the TCA6408A, the AP2112K, the USBLC6, the USB4105, the S8B: 9; the
-    # AP2112K stays: the hub burns up to ≈ 0.31 W in it at high speed, above a basic SOT-23 LDO's rating, see
-    # docs/electronics.md), components at catalogue prices plus ≈ 3 % attrition, ≈ 430 joints a board, an X-ray of
-    # each assembled board (the QFN hub and expanders, $1.64 each).  The bare PCB: 100 mm long since 2026-10-20
-    # (100 × 37), so JLC's 4-layer offer with no engineering fee (jlcpcb.com calculator, 2026-10-20: $8.00 +
-    # lead-free HASL $5.10, no deburring at 37 mm wide); 108 × 24 cost $31.90 with the $25 fee.  The RESET/BOOT headers are not fitted.
-    "data-port-x4": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 85.37, "estimate": True,
-        "spec": "4-layer 100×37 mm, JLC04161H-7628, lead-free HASL",
-        "pcb": {"special offer": 8.00, "lead-free HASL": 5.10},
-        "pcba": {"setup": 8.18, "stencil": 1.53, "components": 30.18, "extended parts": 27.63, "SMT": 1.47,
-                 "X-ray": 3.28},
-    },
     # the DATA ×4 v2 (electronics/data-port-x4-v2), one PCB in two assemblies.  The logic variant (DATA-4x-logic:
     # the hub and ports plus the CH446Q matrix and the RP2354B analyzer), one per bay showing `x4: v2`, ordered
     # on its own (the rack orders it on the panel below).  The standing board, 100 × 70 mm, 4 layers again
@@ -239,14 +223,6 @@ JLC_LEVERS = {
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board)", 5.04, "decision"),
     ],
-    "data-port-x4": [
-        ("USB-C J101–J401: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new "
-         "footprint, re-route, mechanical check", 5.88, "decision"),
-        ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
-         "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check", 0.79, "decision"),
-        ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (6 a "
-         "board)", 1.51, "decision"),
-    ],
     "data-port-x4-v2": [         # declined (2026-10-20, the v2 session): L1 stays the AOTA, the arrays stay
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board)", 1.01, "decision"),
@@ -281,8 +257,6 @@ JLC_PCB_PRICE = {
                                                                         # rails, the real quote of 2026-10-23)
     "power-hub": {5: 13.20, 10: 19.40, 50: 85.20, 100: 130.70},        # 4-layer 86 × 100 mm with JLC's rails
                                                                         # (2026-10-20): the $25 fee above 10 PCBs
-    "data-port-x4": {5: 13.10, 10: 19.20, 50: 53.80, 100: 73.40},      # 4-layer 100 × 37 mm (2026-10-20): the
-                                                                        # $25 fee is back above 10 PCBs
     # the DATA ×4 v2, green, Economic: no rails (2026-10-23; in black, Standard, with JLC's rails: 100 × 80 for
     # a single board, $25.50 / $32.40 / $100.30 / $149.70 in ENIG, 110 × 142 for the panel, $53.10 for 5)
     "data-port-x4-v2": {5: 25.40, 10: 32.20, 50: 92.90, 100: 136.20},  # 4-layer 100 × 70 mm, ENIG
@@ -317,9 +291,9 @@ JLC_FINISHES = {
 }
 # X-ray per board with a leadless part (module pad, QFN): by the number of boards assembled
 JLC_XRAY = ((10, 1.64), (50, 0.82), (200, 0.49), (500, 0.33))
-# the boards JLC X-rays: the hub (the MINI-1's pads under it) and the DATA ×4 v1 (QFNs); the real quotes of
-# 2026-10-23 charge the node (the WROOM-1 is castellated) and the v2 none
-JLC_XRAY_BOARDS = {"power-hub", "data-port-x4"}
+# the boards JLC X-rays: the hub (the MINI-1's pads under it); the real quotes of 2026-10-23 charge the node
+# (the WROOM-1 is castellated) and the v2 none
+JLC_XRAY_BOARDS = {"power-hub"}
 # an assembly variant: its BOM files sit in its PCB's folder, under its own name (electronics/tools/build_board.py)
 VARIANT_OF = {"data-port-x4-v2-base": "data-port-x4-v2"}
 VOLUME_QTY = (2, 5, 10, 50, 100)            # boards assembled

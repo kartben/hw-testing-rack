@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-BOARDS = ("bay-node", "power-hub", "data-port-x4", "data-port-x4-v2", "data-port-x4-v2-base", "data-port", "camera-pod")
+BOARDS = ("bay-node", "power-hub", "data-port-x4-v2", "data-port-x4-v2-base", "data-port", "camera-pod")
 # an assembly variant's files sit in its PCB's folder, under its own name (electronics/tools/build_board.py)
 VARIANT_OF = {"data-port-x4-v2-base": "data-port-x4-v2"}
 OUT = REPO / "electronics" / "lib" / "jlc_parts.json"

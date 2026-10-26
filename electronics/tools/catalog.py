@@ -235,7 +235,7 @@ CAT = {
                  description="TVS 30 V stand-off, 400 W (unidirectional): above a 28 V EPR contract"),
     "ntc10k": Cat("Device:Thermistor_NTC", "Resistor_SMD:R_0603_1608Metric", "NCP18XH103F03RB", "Murata", "C13564",
                   0.05, description="NTC 10 kΩ B3380, 0603 (the AP33772S's default curve)"),
-    # DATA ×4 (electronics/data-port-x4): the hub, its crystal, the ports' latch-off switches, the
+    # DATA ×4 (the v1 board, retired 2026-10-26; the v2 keeps these parts): the hub, its crystal, the ports' latch-off switches, the
     # expanders, the RESET/BOOT pigtail header, a basic-part shunt (checked 2026-10-19)
     "usb2514b": Cat("Interface_USB:USB2514B_Bi", "Package_DFN_QFN:QFN-36-1EP_6x6mm_P0.5mm_EP3.7x3.7mm",
                     "USB2514B-AEZC-TR", "Microchip Tech", "C16251", 1.81,

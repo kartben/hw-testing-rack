@@ -8,8 +8,8 @@
  * The firmware probes the board (none: today's one DUT) and drives these
  * chips itself (src/ports.c): they lose their registers with DUT_5V, so
  * their drivers never touch them (zephyr,deferred-init, never initialized).
- * Hub port n is USB-C n.  Pins: electronics/data-port-x4/design.py and
- * data-port-x4-v2/design.py (the same, plus the matrix expander).
+ * Hub port n is USB-C n.  Pins: electronics/data-port-x4-v2/design.py (its base
+ * variant has the same expanders; the v1 board, retired 2026-10-26, did too).
  *
  * SPDX-License-Identifier: Apache-2.0
  */

@@ -4285,26 +4285,6 @@
 "nitrogen reflow": 0.86
 }
 },
-"data-port-x4": {
-"pcbs": 5,
-"assembled": 2,
-"service": "Economic",
-"total": 85.37,
-"estimate": true,
-"spec": "4-layer 100×37 mm, JLC04161H-7628, lead-free HASL",
-"pcb": {
-"special offer": 8.0,
-"lead-free HASL": 5.1
-},
-"pcba": {
-"setup": 8.18,
-"stencil": 1.53,
-"components": 30.18,
-"extended parts": 27.63,
-"SMT": 1.47,
-"X-ray": 3.28
-}
-},
 "data-port-x4-v2": {
 "pcbs": 5,
 "assembled": 2,

@@ -317,6 +317,9 @@ still open) is in [review-konnect.md](review-konnect.md).
 
 ## DATA ×4 v1.0 — 4 layers, 100 × 37 mm
 
+**Retired 2026-10-26:** never ordered; the DATA ×4 v2's base variant does its job, and its folder
+(electronics/data-port-x4) is gone (git history keeps it).  This section stays because the v2 builds on it.
+
 A converted bay's drawer board (×1 per converted bay, `population › boards:` in `config/rack.yaml`): one
 bay node serves up to four small USB boards, sub-slots `<bay>.1`–`.4` ([multi-dut-node.md](multi-dut-node.md)).
 It replaces the DATA port on the drawer's rear-bay floor (3 × PT 2.3×8 from above), on the same PH 8

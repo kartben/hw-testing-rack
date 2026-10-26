@@ -41,10 +41,6 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | PCBA: setup $8.24, stencil $1.55, components $2.08, extended parts $9.27, SMT $0.18, nitrogen reflow $0.86 | 22.18 |
 | | | **Quoted total** | **27.28** |
 | | | Order (indicative): AP2114H-3.3 for the AMS1117 (datasheet audit F1): its extended part type (+$3.09 extended parts); AP2114H-3.3 for the AMS1117: 2 at JLC's price (+$0.05 components) | 30.42 |
-| data-port-x4 | 5 PCBs (4-layer 100×37 mm, JLC04161H-7628, lead-free HASL), 2 assembled, Economic PCBA | PCB: special offer $8.00, lead-free HASL $5.10 | 13.10 |
-| | | PCBA: setup $8.18, stencil $1.53, components $30.18, extended parts $27.63, SMT $1.47, X-ray $3.28 | 72.27 |
-| | | **Estimated total** | **85.37** |
-| | | Not in the rack's order | |
 | data-port-x4-v2 | 5 PCBs (4-layer 100×70 mm, JLC04161H-7628, ENIG), 2 assembled, Economic PCBA | PCB: special offer $8.00, ENIG $17.40 | 25.40 |
 | | | PCBA: setup $8.24, stencil $1.55, components $63.19, extended parts $52.53, SMT $4.30, special components $0.24 | 130.05 |
 | | | **Estimated total** | **155.45** |
