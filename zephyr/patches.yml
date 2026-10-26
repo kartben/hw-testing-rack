@@ -164,3 +164,17 @@ patches:
       A backport of upstream 0f138590a32, merged on 2026-10-16, 20 commits
       after the Zephyr pinned in firmware/west.yml: drop this file at the
       next bump.
+
+  # Shell over telnet: a failed deferred send (ENOBUFS, ENETDOWN) ended the
+  # connection from the send work, which then waited for itself: the system
+  # work queue stopped for good, and with it telnet and the web server's
+  # client timeouts (the bench XIAO after a Wi-Fi drop under USB/IP load)
+  - path: zephyr/shell-telnet-send-work.patch
+    sha256sum: 34abce4aaf8b0e58de3b71394938b5496dc876475a7254631066069283598b93
+    module: zephyr
+    author: Benjamin Cabé
+    email: benjamin@zephyrproject.org
+    date: 2026-10-26
+    upstreamable: true
+    comments: |
+      Zephyr's main still had the bug on 2026-10-26.

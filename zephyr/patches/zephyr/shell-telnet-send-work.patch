@@ -1,0 +1,49 @@
+From 760b6a4e885c980cdc00f5ba3222ddfeea72ad4b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 26 Oct 2026 16:01:23 +0100
+Subject: [PATCH] shell: backends: telnet: do not wait for the send work from
+ itself
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When the deferred send fails with an error other than EAGAIN, such as
+ENOBUFS when the network buffers run out or ENETDOWN, telnet_send() ends
+the client connection from the send work handler. There,
+telnet_end_client_connection() cancels the send work with
+k_work_cancel_delayable_sync(), which waits for the handler to return:
+the handler waits for itself and the system work queue stops for good,
+along with the telnet shell and every other user of the queue.
+
+The send work runs on the system work queue, where it is either the
+caller or not running: cancel it without waiting there.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ subsys/shell/backends/shell_telnet.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/subsys/shell/backends/shell_telnet.c b/subsys/shell/backends/shell_telnet.c
+index e1770bcb1..cdc07e941 100644
+--- a/subsys/shell/backends/shell_telnet.c
++++ b/subsys/shell/backends/shell_telnet.c
+@@ -55,8 +55,13 @@ static void telnet_end_client_connection(void)
+ 	sh_telnet->fds[SOCK_ID_CLIENT].fd = -1;
+ 	sh_telnet->output_lock = false;
+ 
+-	k_work_cancel_delayable_sync(&sh_telnet->send_work,
+-				     &sh_telnet->work_sync);
++	/* The send work ends the connection itself when its send fails */
++	if (k_current_get() == k_work_queue_thread_get(&k_sys_work_q)) {
++		(void)k_work_cancel_delayable(&sh_telnet->send_work);
++	} else {
++		k_work_cancel_delayable_sync(&sh_telnet->send_work,
++					     &sh_telnet->work_sync);
++	}
+ 
+ 	ret = net_socket_service_register(&telnet_server, sh_telnet->fds,
+ 					  ARRAY_SIZE(sh_telnet->fds), NULL);
+-- 
+2.53.0
+
