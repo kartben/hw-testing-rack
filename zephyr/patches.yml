@@ -17,17 +17,18 @@ patches:
   # imported twice, bus IDs by port ("1-1", "1-1.3" behind port 3 of a hub),
   # an unlink is answered once the transfer ends, USB serial converters are
   # read ahead, the application can list the imported devices, requests
-  # larger than the buffer pool go through it in segments
-  # (docs/multi-dut-node.md, firmware/common/tests/usbip)
+  # larger than the buffer pool go through it in segments, a mass storage
+  # read is sent as its segments come (docs/multi-dut-node.md,
+  # firmware/common/tests/usbip)
   - path: zephyr/usbip-removal-and-busid.patch
-    sha256sum: 00deb34533fa881b364a4c95fa42837666e5a1b7116e8477976819265bf994c2
+    sha256sum: 73f21b2f817f8bd66390584f55d054b61892b2d16a11dacf7ce351167a5315fa
     module: zephyr
     author: Benjamin Cabé
     email: benjamin@zephyrproject.org
     date: 2026-10-19
     upstreamable: true
     comments: |
-      Eleven commits, each building on its own.  The first two overlap the
+      Twelve commits, each building on its own.  The first two overlap the
       maintainer's open PR 104189 (transfer allocation, cleanup when a
       submission fails): drop them when it lands.  The eighth (2026-10-21):
       an unlink answered with -ECONNRESET while its transfer completed made
@@ -40,8 +41,15 @@ patches:
       usbip_device_offered(), for the bay page's USB devices card.  The
       eleventh (2026-10-22): CONFIG_USBIP_SEGMENT_SIZE, a request larger
       than the pool (a mass storage device gets up to 120 KB) held in PSRAM
-      and sent through the pool 4 KB at a time.  Not proposed upstream
-      (the user's call, 2026-10-19).
+      and sent through the pool a segment at a time (16 KB with PSRAM,
+      firmware/bay-node/Kconfig).  The twelfth (2026-10-26): the next
+      segment is queued before the data of the last one is handled, and on
+      a Bulk-Only mass storage interface a read is sent to the client as
+      each segment completes, after a reply that claims the requested
+      length; an early end of the data stage is filled, and the command
+      status wrapper tells the client (Bulk-Only Transport 1.0, 6.7.2).
+      USB and Wi-Fi then overlap: 2x on the XIAO bench, same data (SHA-256).
+      Not proposed upstream (the user's call, 2026-10-19).
 
   # DWC2 host (the ESP32-S3's 8 channels): an interrupt IN endpoint gives its
   # channel back between polls, a bulk IN that NAKs gives it to transfers

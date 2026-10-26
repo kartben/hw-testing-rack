@@ -16,7 +16,7 @@ devices).  The tests are a USB/IP client speaking the protocol over TCP
 import, transfers, the device going away in the middle of a session, a
 serial converter read by a client a round trip away, with and without the
 read-ahead, and mass storage requests of 120 KB, larger than the service's
-buffer pool.
+buffer pool, the reads sent as their data comes.
 
 What this cannot cover: a hub (Zephyr has no virtual one), so the bus IDs
 behind hub ports ("1-1.3") are not exercised; the timing of a real
@@ -57,6 +57,7 @@ FTDI_MPS = 64
 FTDI_LSR_OVERRUN = 0x02
 SERIAL_RATE = 11520                    # bytes/s: 115200 baud, 8N1
 MSD_REQUEST = 122880                   # a mass storage request: 120 KB
+MSD_SEGMENT = 4096                     # CONFIG_USBIP_SEGMENT_SIZE (prj.conf)
 EPIPE = 32
 FAR_RTT = 0.04                         # s: a client across the network
 
@@ -562,15 +563,20 @@ class UsbipTest(unittest.TestCase):
         return dict(zip(("in", "out", "bad"), map(int, m.groups())))
 
     def test_9a_large_in(self):
-        """Reads of 120 KB, more than the pool: whole, ending short, ending on a ZLP."""
+        """Reads of 120 KB, more than the pool, sent as their data comes: whole, ending short or
+        on a ZLP (the rest filled, as the device itself may), shorter than a segment (as is)."""
         s, ep_in, _ = self.storage_session()
         for seq, (device_sends, zlp) in enumerate(((MSD_REQUEST, False), (100000, False),
-                                                   (8192, True)), 2):
+                                                   (8192, True), (3000, False)), 2):
             self.node.cmd(f"msd in {device_sends}" + (" zlp" if zlp else ""))
             submit(s, seq, ep_in, DIR_IN, MSD_REQUEST)
             rseq, status, data = ret_submit(s)
-            self.assertEqual((rseq, status, len(data)), (seq, 0, device_sends))
-            self.assertEqual(data, storage_pattern(device_sends), "data lost, repeated or moved")
+            # A reply that starts with the first segment claims the requested length
+            claimed = MSD_REQUEST if device_sends >= MSD_SEGMENT else device_sends
+            self.assertEqual((rseq, status, len(data)), (seq, 0, claimed))
+            self.assertEqual(data[:device_sends], storage_pattern(device_sends),
+                             "data lost, repeated or moved")
+            self.assertEqual(data[device_sends:], bytes(claimed - device_sends))
 
     def test_9b_large_out(self):
         """Writes of 120 KB and of a length that is no multiple of anything."""
@@ -604,20 +610,56 @@ class UsbipTest(unittest.TestCase):
         self.assertEqual(device_descriptor(s, 6)[:2], bytes([18, 1]))
 
     def test_9d_large_stall(self):
-        """The device halts the endpoint in the third segment: -EPIPE, and the data before."""
+        """The device halts the endpoint in the first segment: -EPIPE, and the data before; in
+        the third, once the reply has started: the rest filled, the halt seen on the next read."""
         s, ep_in, _ = self.storage_session()
-        self.node.cmd("msd stall 10240")
+        clear_halt = bytes([0x02, 1, 0, 0, 0x80 | ep_in, 0, 0, 0])
+        self.node.cmd("msd stall 2048")
         self.node.cmd(f"msd in {MSD_REQUEST}")
         submit(s, 2, ep_in, DIR_IN, MSD_REQUEST)
         rseq, status, data = ret_submit(s)
-        self.assertEqual((rseq, status, len(data)), (2, -EPIPE, 10240))
-        self.assertEqual(data, storage_pattern(10240))
+        self.assertEqual((rseq, status, len(data)), (2, -EPIPE, 2048))
+        self.assertEqual(data, storage_pattern(2048))
         # CLEAR_FEATURE(ENDPOINT_HALT) and the endpoint works again
-        submit(s, 3, 0, DIR_OUT, 0, bytes([0x02, 1, 0, 0, 0x80 | ep_in, 0, 0, 0]))
+        submit(s, 3, 0, DIR_OUT, 0, clear_halt)
         self.assertEqual(ret_submit(s)[:2], (3, 0))
-        self.node.cmd("msd in 5000")
+        self.node.cmd("msd reset")
+        self.node.cmd("msd stall 10240")
+        self.node.cmd(f"msd in {MSD_REQUEST}")
         submit(s, 4, ep_in, DIR_IN, MSD_REQUEST)
-        self.assertEqual(ret_submit(s), (4, 0, storage_pattern(5000)))
+        rseq, status, data = ret_submit(s)
+        self.assertEqual((rseq, status, len(data)), (4, 0, MSD_REQUEST))
+        self.assertEqual(data, storage_pattern(10240) + bytes(MSD_REQUEST - 10240))
+        submit(s, 5, ep_in, DIR_IN, 13)
+        self.assertEqual(ret_submit(s)[:2], (5, -EPIPE))
+        submit(s, 6, 0, DIR_OUT, 0, clear_halt)
+        self.assertEqual(ret_submit(s)[:2], (6, 0))
+        self.node.cmd("msd in 3000")
+        submit(s, 7, ep_in, DIR_IN, MSD_REQUEST)
+        self.assertEqual(ret_submit(s), (7, 0, storage_pattern(3000)))
+
+    def test_9e_streamed_read_alone(self):
+        """A request while a read is sent as its data comes is answered after it; a read whose
+        device holds the data back ends early (filled) for it, after a second."""
+        s, ep_in, _ = self.storage_session()
+        self.node.cmd("msd rate 4")
+        self.node.cmd(f"msd in {MSD_REQUEST}")
+        submit(s, 2, ep_in, DIR_IN, MSD_REQUEST)
+        time.sleep(0.1)
+        submit(s, 3, 0, DIR_IN, 18, GET_DEVICE_DESCRIPTOR)
+        self.assertEqual(ret_submit(s), (2, 0, storage_pattern(MSD_REQUEST)))
+        rseq, status, data = ret_submit(s)
+        self.assertEqual((rseq, status, data[:2]), (3, 0, bytes([18, 1])))
+        # Two segments, then nothing: the descriptor request waits a second, then the read ends
+        self.node.cmd("msd reset")
+        self.node.cmd("msd in 8192")
+        submit(s, 4, ep_in, DIR_IN, MSD_REQUEST)
+        time.sleep(0.1)
+        start = time.monotonic()
+        submit(s, 5, 0, DIR_IN, 18, GET_DEVICE_DESCRIPTOR)
+        self.assertEqual(ret_submit(s), (4, 0, storage_pattern(8192) + bytes(MSD_REQUEST - 8192)))
+        self.assertEqual(ret_submit(s)[:2], (5, 0))
+        self.assertGreater(time.monotonic() - start, 0.9)
 
 
 def build(workspace: Path, out: Path) -> Path:

@@ -411,6 +411,7 @@ it (measured in the spike).
 | `usbip.c` | busid by port path (`1-1.3`), not by address | in `zephyr/patches.yml`, not proposed upstream yet |
 | `usbip.c` | hubs left out of the device list | same patch |
 | `usbip.c` | a session ends when its device disconnects (upstream keeps a pointer to the freed device) | same patch |
+| `usbip.c` | a mass storage read sent as its data comes, so that USB and Wi-Fi overlap (Bulk-Only Transport 1.0, 6.7.2): 330 → 820 kB/s on the XIAO bench with the node's Wi-Fi settings | same patch |
 | `usbip.c` | an import policy callback (busid, client address) | for per-port leases |
 | host core | a device's removal that waits for its cancelled transfers before freeing it (`usbh_device_disconnect()` frees at once; the controller cancels in its own thread) | a narrow window, for every class, not only USB/IP |
 | hub class | a public API for port power and status, and port events for the application | the spike uses the stack's private requests |
