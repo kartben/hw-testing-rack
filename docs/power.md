@@ -205,7 +205,7 @@ same boards run from a 24 V brick too, or on a desk from a 15–30 V supply on J
 USB PD charger (100 W at 20 V; 140 W EPR at 28 V as an option) → 5 A e-marked cable → hub (in the power box):
   USB4105 (5 A) → SMAJ30A TVS → VRACK (VBUS itself, no input switch), 100 µF
      CH224A on VBUS through 56 Ω + 1 µF: the contract (9 V, then 28 / 20 V as the controller asks)
-  → 4 × TPS26600 eFuse (rows A–D, 1.6 A limit, 7.5–10.5 ms soft start, UV 15 V / OV 31–34 V, auto-retry, off until enabled)
+  → 4 × TPS26600 eFuse (rows A–D, 1.6 A limit, 16–22 ms soft start (100 nF dVdT: ≈ 7–9 W typical, ≈ 14 W worst for 19–24 ms in the eFuse), UV 15 V / OV 31–34 V, auto-retry, off until enabled)
   → 6-pin JST PH → each bay node:
      SUD50P06 P-FET → SMBJ33A TVS → 100 µF → LMR51625 (60 V, on above 13.5 V) → 5 V
      → TPS2553 → 50 mΩ shunt (INA226) → DUT

@@ -84,10 +84,11 @@ config HUB_ROW_BOOT_MS
 
 config HUB_ROW_FLT_BLANK_MS
 	int "A row's FLT is ignored this long after the row is turned on (ms)"
-	default 25
+	default 50
 	help
 	  The TPS2660 asserts FLT in shutdown and during its soft start
-	  (47 nF dVdT: about 7.5 ms at 20 V, 10.5 ms at 28 V): FLT counts
+	  (100 nF dVdT: about 16 ms at 20 V, 22 ms at 28 V, ≤ 39 ms at the
+	  worst corner with the PGOOD deglitch): FLT counts
 	  only while the row is on and this long after it was turned on.  The red LEDs are fed from ROW_EN, so
 	  an off row shows none either.
 

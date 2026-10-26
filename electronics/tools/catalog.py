@@ -339,6 +339,8 @@ CAT = {
                    alt="MAX809STRG (onsemi, C9965, $0.36)",
                    description="reset supervisor 2.93 V, ≥ 150 ms, push-pull active-low RESET, SOT-23"),
     "testpad": Cat("Connector:TestPoint", "TestPoint:TestPoint_Pad_D1.5mm", "test pad", "-", "", 0.0),
+    # a signal's test pad (Eve's DFT rule: supplies 1.5–2 mm, signals 1.0 mm), bare, out of the BOM
+    "testpad1": Cat("Connector:TestPoint", "TestPoint:TestPoint_Pad_D1.0mm", "test pad", "-", "", 0.0),
     "hole": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_3.2mm_M3", "M3 mounting hole", "-", "", 0.0),
     "hole25": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_2.7mm_M2.5", "M2.5 / PT 2.6 mounting hole", "-", "", 0.0),
 }

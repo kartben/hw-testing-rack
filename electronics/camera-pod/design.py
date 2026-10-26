@@ -83,6 +83,11 @@ def board() -> Board:
         R(s, f"R{n}", "100", "CAM_5V", f"LED_A{n}", size="0805", pcb=P(x, CFG["led_y"] + 4.2, 0))
     for i, (x, y) in enumerate(CFG["holes"]):
         part(s, f"H{i + 1}", "hole25", {}, "PT2.6", pcb=P(x, y, 0), in_bom=False)
+    s.block("Test pads (bottom side, labelled): no short to GND, then CAM_5V and 3.3 V at power-up")
+    # bare 1.5 mm pads, no part, no paste, out of the BOM (Eve's bring-up rule, 2026-10-26)
+    for i, net in enumerate(("GND", "CAM_5V", "+3V3")):
+        part(s, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(6.0 + 3 * i, 21.5, 0, "bottom"), in_bom=False)
+    part(s, "TP4", "testpad", {"1": "GND"}, "GND", pcb=P(33.0, 21.5, 0, "bottom"), in_bom=False)    # GND, spread
     s.note("J1 is the bay node's J6 mirrored: a 'Same direction' PH 8 lead (pin n to pin 9−n) joins them.")
     s.note("J2 follows the Mega's own pin order; the names are on the silkscreen, its cable plugs on by name.")
     s.note("The Mega from 3.3 V (U1, ≈ 0.5 W at its 317 mA max, Arducam): its MISO is 3.3 V.  LEDs 18–26 mA each (100 Ω 0805, ≤ 66 mW),")
@@ -102,9 +107,9 @@ def board() -> Board:
             {"layer": "B.Cu", "net": "GND"},
             # U1's tab (VOUT): up to ≈ 0.5 W with the Mega at 317 mA.  Top-side copper round the tab between
             # the CAM_5V tracks, and a bottom-side island right of SCK, joined by three vias beside the tab
-            {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 2,
+            {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 2, "exclusive": 0.4,
              "poly": [(21.4, 10.95), (25.4, 10.95), (25.4, 16.8), (21.4, 16.8)]},
-            {"layer": "B.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab-b", "priority": 2,
+            {"layer": "B.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab-b", "priority": 2, "exclusive": 0.4,
              "poly": [(22.2, 11.8), (27.6, 11.8), (27.6, 17.2), (22.2, 17.2)]},
         ],
         "vias": [("+3V3", 24.75, 12.6), ("+3V3", 24.75, 13.6), ("+3V3", 24.75, 14.6)],
@@ -112,6 +117,9 @@ def board() -> Board:
         "texts": [
             {"text": "VCC GND SCK MISO MOSI CS", "x": hx, "y": hy + 4.3, "size": 0.8},
             {"text": "CAM POD v1.0", "x": 6.0, "y": 9.6, "size": 0.8},
+            *({"text": t, "x": 6.0 + 3 * i, "y": 19.6, "size": 0.8, "layer": "B.SilkS"}
+              for i, t in enumerate(("GND", "5V", "3V3"))),
+            {"text": "GND", "x": 33.0, "y": 19.6, "size": 0.8, "layer": "B.SilkS"},
         ],
     }
     return b

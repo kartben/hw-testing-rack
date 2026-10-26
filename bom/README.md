@@ -95,7 +95,7 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | Board | 2 | 5 | 10 | 50 | 100 | Floor |
 |---|---:|---:|---:|---:|---:|---:|
 | bay-node | 71.73 | 38.59 | 26.66 | 16.62 | 14.15 | 13.19 |
-| power-hub | 72.49 | 41.64 | 31.19 | 20.35 | 17.70 | 16.84 |
+| power-hub | 72.49 | 41.64 | 31.19 | 20.36 | 17.70 | 16.85 |
 | data-port | 14.32 | 6.78 | 4.08 | 2.03 | 1.55 | 1.35 |
 | camera-pod | 15.21 | 6.78 | 3.99 | 1.80 | 1.38 | 1.15 |
 | data-port-x4-v2-panel | 106.07 | 66.30 | 52.80 | 39.42 | 36.17 | 35.28 |
@@ -217,10 +217,10 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, packaging, special components | 1  | 95.50 | 95.50 | JLCPCB quote 2026-10-23 |
 | Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -13.65 | -13.65 | JLCPCB quote 2026-10-23 |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
-| Electronics | 100n — Capacitor 100n 0603 | 16  | 0.01 | 0.20 | LCSC/JLCPCB C14663 |
+| Electronics | 100n — Capacitor 100n 0603 | 24  | 0.01 | 0.30 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0805 | 20  | 0.03 | 0.54 | LCSC/JLCPCB C28323 |
 | Electronics | 100u/50V — 100 µF 50 V aluminium electrolytic | 2  | 0.06 | 0.13 | LCSC/JLCPCB C3352 |
-| Electronics | 47n — Capacitor 47n 0603 | 20  | 0.01 | 0.14 | LCSC/JLCPCB C1622 |
+| Electronics | 47n — Capacitor 47n 0603 | 12  | 0.01 | 0.09 | LCSC/JLCPCB C1622 |
 | Electronics | 22u — Capacitor 22u 1206 | 10  | 0.11 | 1.14 | LCSC/JLCPCB C12891 |
 | Electronics | 1u — Capacitor 1u 0603 | 4  | 0.01 | 0.05 | LCSC/JLCPCB C15849 |
 | Electronics | SMAJ30A — TVS 30 V stand-off, 400 W (unidirectional): above a 28 V EPR contract | 2  | 0.04 | 0.08 | LCSC/JLCPCB C113965 |
@@ -256,7 +256,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 4  | 1.42 | 5.67 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×100 mm (86×100 with JLC's rails), lead-free HASL) | 5  | 2.43 | 12.14 | JLCPCB quote 2026-10-23 |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components | 1  | 84.08 | 84.08 | JLCPCB quote 2026-10-23 |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.72 | 4.72 | JLCPCB quote 2026-10-23 |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.67 | 4.67 | JLCPCB quote 2026-10-23 |
 | Electronics | 100n — Capacitor 100n 0603 | 10  | 0.01 | 0.12 | LCSC/JLCPCB C14663 |
 | Electronics | 10u — Capacitor 10u 0805 | 10  | 0.04 | 0.40 | LCSC/JLCPCB C15850 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 10  | 0.84 | 8.37 | LCSC/JLCPCB C5184243 |

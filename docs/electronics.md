@@ -244,7 +244,7 @@ with JLC's rails) it gets JLC's 4-layer offer, without the $25 engineering fee
 |---|---|---|
 | USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → VRACK, 100 µF / 50 V; no input switch | the whole rack's current, ≤ 5 A, in top pours.  VBUS is VRACK: the eFuses keep the rows off until the contract is final and block reverse current, so nothing switches the input (the AP33772S version had a 5 mΩ shunt and back-to-back IRF7842 NMOS here) |
 | PD sink | WCH CH224A (ESSOP-10): 9 V at plug-in (CFG1 6.8 k, the one-resistor mode, I²C on), its own Rd on CC1/CC2, supply (VHV and VBUS tied) through 56 Ω + 1 µF 50 V, I²C + PG to the controller, its own LED in the front wall (PD) | the controller asks for 20 V over I²C (28 V EPR opt-in); rows stay locked out below 15 V; the chip keeps the contract through controller resets.  Its pins are rated 32 V: the RC takes surges' fast edges off |
-| Rows A–D | 4 × TPS26600 (1.6 A, soft start 47 nF: ≈ 7.5 ms at 20 V, 10.5 ms at 28 V, UV 15 V / OV 31–34 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md).  A row of four nodes is ≈ 450 µF: the soft start charges it at ≈ 1.2 A, under the limit (22 nF until 2026-10-23 needed ≈ 2.6 A).  **Rows C and D are not fitted for now** (below) |
+| Rows A–D | 4 × TPS26600 (1.6 A, soft start 100 nF: ≈ 16 ms at 20 V, 22 ms at 28 V, UV 15 V / OV 31–34 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md).  A row of four nodes is ≈ 450 µF: the soft start charges it at ≈ 0.56 A, under the limit even at the corners; the eFuse takes ≈ 7–9 W typically, ≈ 14 W worst, for 19–24 ms, inside TI's thermal-shutdown curve with its 30 % margin (Fig. 55).  22 nF until 2026-10-23 needed ≈ 2.6 A; 47 nF until 2026-10-26 met the shutdown time at 28 V and 85 °C (datasheet audit U1).  **Rows C and D are not fitted for now** (below) |
 | Row control | SHDN pulled low by 10 k (the pin sources up to 10 µA: 0.1 V, under its 0.55 V threshold; 100 k gave 1 V, enough to turn a row on without firmware); the controller drives ROW_EN high through 10 k (1.65 V) | **rows are off without firmware**; on once the contract is final, one after the other |
 | Per row | ON (green, from the row's own output through 18 k by the eFuse: 1.4 mA, 37 mW at 28 V); FAULT (red) from the row's ROW_EN into the open-drain FLT, so it lights only for a fault on an enabled row (the TPS26600 also pulls FLT low while a row is off or starting); FLT also to the controller (100 k pull-up); a B5819W from GND to the output at the connector, for the cable's kick when the eFuse cuts a short | Kingbright KPA-3010 side-view LEDs in the box's front wall |
 | Row current | IMON 18 k → 1.4 V/A, 1 k + 47 nF to the ESP32's ADC: the pin is a current source, so τ = (18k + 1k) × 47 nF ≈ 0.9 ms (the firmware polls every 250 ms) | |
@@ -655,6 +655,17 @@ For a later bay node: CAM_5V has only the PTC, no switch, and the Mega has no re
 camera needs a power cycle of the whole bay (the review's P3).  A load switch on CAM_5V from a free
 GPIO (IO5 or IO6) would let the firmware restart the camera alone.
 
+## Test pads
+
+Every board has bare test pads on the bottom.  Each is named on B.SilkS.  They are not in the BOM or the CPL, so there is no part and no assembly fee.  Supply and GND pads are 1.5 mm; signal pads are 1.0 mm.  Every pad is more than 2 mm from any THT pad or hole (the closest is 4.7 mm, the pod's second GND).  Their positions are fixed in each `design.py`, so a fixture or a probe card still fits after a new revision.
+
+| Board | Pads (silkscreen names) |
+|---|---|
+| Bay node | under the module: TX, RX, 3V3, GND, EN, IO0, FLT (DUT_FLT_N), ALRT (INA_ALERT_N), SDA, SCL, GND; along the bottom edge: GND, VIN, 5V, 3V3, DUT 5V, CAM 5V |
+| Power hub | TX, RX, 3V3, GND, EN, IO0; PD SDA/SCL (CH224A); 5V, VRACK, two more GND; FLT and IMON for each row (A–D) |
+| Camera pod | GND, 5V, 3V3; a second GND at the far end |
+| DATA port | 5V (VBUS), GND |
+
 ## Bring-up measurements
 
 What the PCBA review ([pcba-review.md](pcba-review.md)) left to the bench, per board, on the first ones built.  The datasheet audit ([datasheet-audit.md](datasheet-audit.md), 2026-10-24) adds its own bring-up checks.  So does the schematic review ([schematic-review-2026-10-25.md](schematic-review-2026-10-25.md)).
@@ -807,7 +818,7 @@ Two savings are applied since, as adjustments to the quote (≈ $213):
   - PD INT divider 10k/18k: 3.2 V.
   - I²C pull-ups 5.1k.
   - Every front LED on 1k (1.2–1.4 mA).
-  - The IMON filters and the CAN split caps on the eFuses' dVdT value (22 nF then, 47 nF since 2026-10-23).
+  - The IMON filters and the CAN split caps on the eFuses' dVdT value (22 nF then, 47 nF from 2026-10-23; the dVdT went to 100 nF on 2026-10-26, the filters stay on 47 nF).
   - The LDO's input cap 1 µF 0805 (the eFuses' part; the buck's 3 × 22 µF sit just before D4).
 
 **The CH224A instead of the AP33772S: ≈ $185.**  The AP33772S had no LCSC stock; the CH224A

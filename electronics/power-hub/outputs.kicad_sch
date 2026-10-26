@@ -3172,7 +3172,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "47n"
+		(property "Value" "100n"
 			(at 120.65 71.12 0)
 			(effects
 				(font
@@ -3199,7 +3199,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 47n 0603"
+		(property "Description" "Capacitor 100n 0603"
 			(at 116.84 73.66 0)
 			(effects
 				(font
@@ -3208,7 +3208,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C1622"
+		(property "LCSC" "C14663"
 			(at 116.84 73.66 0)
 			(effects
 				(font
@@ -3217,7 +3217,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B473KB8NNNC"
+		(property "MPN" "CC0603KRX7R9BB104"
 			(at 116.84 73.66 0)
 			(effects
 				(font
@@ -3226,7 +3226,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
+		(property "Manufacturer" "YAGEO"
 			(at 116.84 73.66 0)
 			(effects
 				(font
@@ -6871,7 +6871,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "47n"
+		(property "Value" "100n"
 			(at 120.65 151.13 0)
 			(effects
 				(font
@@ -6898,7 +6898,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 47n 0603"
+		(property "Description" "Capacitor 100n 0603"
 			(at 116.84 153.67 0)
 			(effects
 				(font
@@ -6907,7 +6907,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C1622"
+		(property "LCSC" "C14663"
 			(at 116.84 153.67 0)
 			(effects
 				(font
@@ -6916,7 +6916,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B473KB8NNNC"
+		(property "MPN" "CC0603KRX7R9BB104"
 			(at 116.84 153.67 0)
 			(effects
 				(font
@@ -6925,7 +6925,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
+		(property "Manufacturer" "YAGEO"
 			(at 116.84 153.67 0)
 			(effects
 				(font
@@ -10570,7 +10570,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "47n"
+		(property "Value" "100n"
 			(at 120.65 232.41 0)
 			(effects
 				(font
@@ -10597,7 +10597,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 47n 0603"
+		(property "Description" "Capacitor 100n 0603"
 			(at 116.84 234.95 0)
 			(effects
 				(font
@@ -10606,7 +10606,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C1622"
+		(property "LCSC" "C14663"
 			(at 116.84 234.95 0)
 			(effects
 				(font
@@ -10615,7 +10615,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B473KB8NNNC"
+		(property "MPN" "CC0603KRX7R9BB104"
 			(at 116.84 234.95 0)
 			(effects
 				(font
@@ -10624,7 +10624,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
+		(property "Manufacturer" "YAGEO"
 			(at 116.84 234.95 0)
 			(effects
 				(font
@@ -14269,7 +14269,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "47n"
+		(property "Value" "100n"
 			(at 120.65 312.42 0)
 			(effects
 				(font
@@ -14296,7 +14296,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Capacitor 47n 0603"
+		(property "Description" "Capacitor 100n 0603"
 			(at 116.84 314.96 0)
 			(effects
 				(font
@@ -14305,7 +14305,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C1622"
+		(property "LCSC" "C14663"
 			(at 116.84 314.96 0)
 			(effects
 				(font
@@ -14314,7 +14314,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "CL10B473KB8NNNC"
+		(property "MPN" "CC0603KRX7R9BB104"
 			(at 116.84 314.96 0)
 			(effects
 				(font
@@ -14323,7 +14323,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
+		(property "Manufacturer" "YAGEO"
 			(at 116.84 314.96 0)
 			(effects
 				(font
@@ -18155,7 +18155,7 @@
 			)
 		)
 	)
-	(text_box "TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).\nt_dVdT = 8e3 · V_IN · C_dVdT → 47 nF ≈ 7.5 ms at 20 V, 10.5 ms at 28 V.  A row of four nodes (≈ 450 µF)\n  then charges at C / (8e3 · C_dVdT) ≈ 1.2 A typically, under the 1.6 A limit (22 nF needed ≈ 2.6 A); at the\n  corners (+20 % capacitance, a fast dVdT, the nodes' load, the limit at its 1.5 A minimum) a row starts in current limit.\nIMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 47 nF to the ESP32's ADC: the pin is a current\n  source, so τ = (18k + 1k) × 47 nF ≈ 0.9 ms, against the firmware's 250 ms polling.\nSHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (TI: ≥ 1 V to turn on, p. 26).\nThe firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.\nFLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for\n  a fault on an enabled row (FLT is also low while a row is off or starting).\nD41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.\nUVLO / OVP / MODE to GND: internal 15 V / 31–34 V (typ 32.6 V) thresholds, current-limit mode, auto-retry."
+	(text_box "TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).\nt_dVdT = 8e3 · V_IN · C_dVdT → 100 nF ≈ 16 ms at 20 V, 22 ms at 28 V.  A row of four nodes (≈ 450 µF) then\n  charges at C / (8e3 · C_dVdT) ≈ 0.56 A (≤ 1.3 A at the corners with the nodes' load), under the 1.6 A limit.\n  The eFuse takes ≈ 7–9 W typically, ≈ 14 W worst, for 19–24 ms: TI Fig. 55 with its 30 % margin (47 nF: ≈ 21 W, 12 ms).\nIMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 47 nF to the ESP32's ADC: the pin is a current\n  source, so τ = (18k + 1k) × 47 nF ≈ 0.9 ms, against the firmware's 250 ms polling.\nSHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (TI: ≥ 1 V to turn on, p. 26).\nThe firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.\nFLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for\n  a fault on an enabled row (FLT is also low while a row is off or starting).\nD41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.\nUVLO / OVP / MODE to GND: internal 15 V / 31–34 V (typ 32.6 V) thresholds, current-limit mode, auto-retry."
 		(exclude_from_sim no)
 		(at 20.32 353.06 0)
 		(size 414.02 31.75)

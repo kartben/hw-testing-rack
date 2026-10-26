@@ -3247,6 +3247,376 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 66.04 88.9 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "69d5de65-991a-5ebb-abb6-2b1384a67563")
+		(property "Reference" "TP11"
+			(at 58.876 87.63 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "EN"
+			(at 59.926 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 66.04 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 66.04 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 66.04 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 66.04 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 66.04 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f7c7bcf1-ceab-517f-ba85-26483f91dcf1")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
+					(reference "TP11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 66.04 88.9)
+			(xy 68.58 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dedc03e0-95f6-5f48-9ca7-2e6eadb5e3d5")
+	)
+	(label "EN"
+		(at 68.58 88.9 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f1c685c8-cc5f-50f3-96f3-2de69517ec00")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 78.74 88.9 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ecd52dd2-4f42-59fb-af3b-d326f65645b9")
+		(property "Reference" "TP12"
+			(at 71.576 87.63 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BOOT"
+			(at 71.576 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 78.74 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 78.74 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 78.74 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 78.74 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 78.74 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b11e77ec-3b10-583b-a719-e3b39f2052e7")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
+					(reference "TP12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 78.74 88.9)
+			(xy 81.28 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e98cf839-d1c9-5bde-98ab-52d510912ad4")
+	)
+	(label "BOOT"
+		(at 81.28 88.9 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "dd27ae9d-3d81-57e8-89e1-02dfc29053f0")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 91.44 88.9 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a0283217-1142-54ca-ba71-3a8bfd9ccf97")
+		(property "Reference" "TP17"
+			(at 84.276 87.63 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 84.801 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 91.44 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 91.44 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 91.44 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 91.44 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 91.44 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fa38bbdc-58d0-525d-b555-f9372c11f051")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
+					(reference "TP17")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 91.44 88.9)
+			(xy 93.98 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b7e8e3ef-2e0a-5686-96f4-e33d73030a0e")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 93.98 88.9 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "69f57c9f-60e3-5e59-ba98-b9f418a519b3")
+		(property "Reference" "#PWR03006"
+			(at 93.98 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 99.77 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 93.98 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 93.98 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 93.98 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1c9f3259-631f-5dcc-82cd-838ac845c156")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
+					(reference "#PWR03006")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "RF_Module:ESP32-S3-WROOM-1")
 		(at 203.2 96.52 0)
 		(unit 1)
@@ -3479,7 +3849,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "77cf1cf4-d91f-58ed-82dd-3a6a778fc400")
-		(property "Reference" "#PWR03006"
+		(property "Reference" "#PWR03007"
 			(at 203.2 127 0)
 			(effects
 				(font
@@ -3529,7 +3899,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
-					(reference "#PWR03006")
+					(reference "#PWR03007")
 					(unit 1)
 				)
 			)
@@ -4585,7 +4955,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6bd31596-2420-5a80-b233-c74d279ff7bf")
-		(property "Reference" "#PWR03007"
+		(property "Reference" "#PWR03008"
 			(at 243.84 66.04 0)
 			(effects
 				(font
@@ -4635,7 +5005,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
-					(reference "#PWR03007")
+					(reference "#PWR03008")
 					(unit 1)
 				)
 			)
@@ -4757,7 +5127,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "54301d3b-b9e9-5c47-ad3c-691f4f134bb2")
-		(property "Reference" "#PWR03008"
+		(property "Reference" "#PWR03009"
 			(at 254 66.04 0)
 			(effects
 				(font
@@ -4807,7 +5177,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
-					(reference "#PWR03008")
+					(reference "#PWR03009")
 					(unit 1)
 				)
 			)
@@ -4948,7 +5318,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f087e9bd-2b52-5c06-8936-814aced38541")
-		(property "Reference" "#PWR03009"
+		(property "Reference" "#PWR03010"
 			(at 78.74 154.94 0)
 			(effects
 				(font
@@ -4998,7 +5368,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
-					(reference "#PWR03009")
+					(reference "#PWR03010")
 					(unit 1)
 				)
 			)
@@ -5237,7 +5607,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2f02bec5-5fa4-52dd-a1c5-fd9de8c4230e")
-		(property "Reference" "#PWR03010"
+		(property "Reference" "#PWR03011"
 			(at 93.98 142.24 0)
 			(effects
 				(font
@@ -5287,7 +5657,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
-					(reference "#PWR03010")
+					(reference "#PWR03011")
 					(unit 1)
 				)
 			)
@@ -5504,7 +5874,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ad859f09-fab6-5f87-994e-10f12f94ee2e")
-		(property "Reference" "#PWR03011"
+		(property "Reference" "#PWR03012"
 			(at 38.1 101.6 0)
 			(effects
 				(font
@@ -5554,7 +5924,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
-					(reference "#PWR03011")
+					(reference "#PWR03012")
 					(unit 1)
 				)
 			)
@@ -5570,7 +5940,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3e2b7294-89e3-584a-b2ca-acf788c33944")
-		(property "Reference" "#PWR03012"
+		(property "Reference" "#PWR03013"
 			(at 45.72 104.14 0)
 			(effects
 				(font
@@ -5620,7 +5990,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
-					(reference "#PWR03012")
+					(reference "#PWR03013")
 					(unit 1)
 				)
 			)
@@ -5636,7 +6006,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "32c113db-2edd-5da7-9c53-6023b2895695")
-		(property "Reference" "#PWR03013"
+		(property "Reference" "#PWR03014"
 			(at 203.2 55.88 0)
 			(effects
 				(font
@@ -5686,7 +6056,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
-					(reference "#PWR03013")
+					(reference "#PWR03014")
 					(unit 1)
 				)
 			)
@@ -5702,7 +6072,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9994a23a-4360-5219-afcf-6a5fe0f8095f")
-		(property "Reference" "#PWR03014"
+		(property "Reference" "#PWR03015"
 			(at 78.74 132.08 0)
 			(effects
 				(font
@@ -5752,7 +6122,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/342cf2d8-2555-5c90-a32c-abde03bd4d01"
-					(reference "#PWR03014")
+					(reference "#PWR03015")
 					(unit 1)
 				)
 			)
@@ -5805,7 +6175,7 @@
 		)
 		(uuid "852c59fc-0130-5399-b3de-294c31a63d3e")
 	)
-	(text "UART test pads"
+	(text "Debug test pads (bottom side): UART, EN, IO0, GND, 3.3 V"
 		(exclude_from_sim no)
 		(at 16.51 81.28 0)
 		(effects

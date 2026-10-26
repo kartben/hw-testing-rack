@@ -9,8 +9,9 @@ rack bus (VRACK, 20 or 28 V): no input switch, the four eFuses are the switches 
 the controller has a contract, reverse current blocked).
 VRACK fans out to four rows (A–D), each with its own TPS26600 eFuse:
   * current limit ≈ 1.6 A (RILIM 7.5k): it protects the JST PH (2 A) row cable;
-  * slow start (dVdT 47 nF ≈ 7.5 ms at 20 V, 10.5 ms at 28 V): a row of four nodes (≈ 450 µF) charges
-    at ≈ 1.2 A, under the limit (22 nF needed ≈ 2.6 A);
+  * slow start (dVdT 100 nF ≈ 16 ms at 20 V, 22 ms at 28 V): a row of four nodes (≈ 450 µF) charges at
+    ≈ 0.56 A, under the limit even at the corners; the eFuse then takes ≈ 7–9 W typically, ≈ 14 W at the
+    worst corner, for 19–24 ms, within its thermal-shutdown time with TI's margin (47 nF wasn't, at 28 V);
   * internal UV 15 V / OV 31–34 V (typ 32.6 V) defaults, auto-retry;
   * OFF until the controller turns it on: SHDN is pulled low, the ESP32 drives it high once the PD
     contract is final (row by row, staggered) and sheds rows when the contract drops;
@@ -223,13 +224,24 @@ def board() -> Board:
             ("PD_CC1", PD_X + 1.25, 8.15, 0.5, 0.3),
             ("GND", 60.5, H - 15.05, 0.5, 0.3),         # U5's GND pin, between the USB pair's wires
             ("VRACK", 55.8, 14.55, 0.8, 0.4), ("VRACK", 56.7, 13.5 + BY, 0.8, 0.4),
+            # J1's left GND pads (A12/B1, one spot): one via right below them, drawn, so the automatic fan-out
+            # (a via per pad, at y 8.0) can't cut the pour off the left VBUS pads (A9/B4) beside them
+            ("GND", 58.852, 7.375, 0.5, 0.3),           # 0.5 mm: 0.2 mm from the VBUS pad A9
         ],
-        "tracks": tracks,
+        "tracks": tracks + [("GND", "F.Cu", 0.3, [(58.8, 7.08), (58.852, 7.375)])],
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
         "keepouts": [{"name": "antenna", "poly": [(21.3, -0.1), (38.7, -0.1), (38.7, 5.6), (21.3, 5.6)]}],
         "texts": [
             {"text": "hw-testing-rack · power hub v0.5", "x": 58, "y": 74, "size": 1.0},
             *[{"text": ch, "x": 13.8, "y": ROW_Y[k] + 8.3, "size": 1.2} for k, ch in enumerate(ROWS)],
+            # the bottom-side test pads' names (TP1–TP7, the controller sheet): bring-up probes (Eve's rule, 2026-10-26)
+            *({"text": t, "x": x, "y": y, "size": 0.8, "layer": "B.SilkS"}
+              for t, x, y in (("TX", 27.8, 16.5), ("GND", 27.6, 19.1), ("RX", 34.8, 16.5), ("3V3", 35.0, 19.1),
+                              ("EN", 27.8, 13.9), ("IO0", 34.8, 13.9),
+                              ("5V", 70.0, 55.9), ("VRACK", 66.0, 21.9), ("GND", 70.0, 31.9),
+                              ("PD", 45.3, 7.2), ("SDA", 44.0, 10.8), ("SCL", 46.6, 10.8), ("GND", 46.6, 54.0))),
+            *({"text": t, "x": 47.6, "y": max(ef_y(k) - 1.3, 31.6) + dy, "size": 0.8, "layer": "B.SilkS"}
+              for k, ch in enumerate(ROWS) for t, dy in ((f"FLT {ch}", 0.0), (f"IMON {ch}", 2.6))),
         ],
     }
 
@@ -298,7 +310,9 @@ def board() -> Board:
         C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(16.9, yc - 2.0, 180))
         C(o, f"C{30 + n}", "1u", f"ROW_{ch}", "GND", size="0805", pcb=P(34.0, yc - 2.6, 0))
         R(o, f"R{20 + n}", "7.5k", f"ILIM_{ch}", "GND", pcb=P(34.0, yc + 1.0, 0))
-        C(o, f"C{20 + n}", "47n", f"DVDT_{ch}", "GND", pcb=P(34.0, yc + 2.6, 0))
+        # 100 nF: at 28 V and 85 °C a 47 nF start (≈ 21 W for 12 ms at the worst corner) met the TPS2660's thermal
+        # shutdown time (Fig. 55: ≈ 8–10 ms at 21 W); 100 nF halves the power for twice the time (datasheet audit U1)
+        C(o, f"C{20 + n}", "100n", f"DVDT_{ch}", "GND", pcb=P(34.0, yc + 2.6, 0))
         R(o, f"R{30 + n}", "18k", f"IMON_{ch}", "GND", pcb=P(34.0, yc + 4.2, 0))
         R(o, f"R{60 + n}", "1k", f"IMON_{ch}", f"ADC_IMON_{ch}", pcb=P(37.4, yc + 4.2, 0))
         C(o, f"C{60 + n}", "47n", f"ADC_IMON_{ch}", "GND", pcb=P(40.4, yc + 4.2, 0))
@@ -330,9 +344,9 @@ def board() -> Board:
         part(o, f"D{40 + n}", "schottky", {"A": "GND", "K": f"ROW_{ch}"}, pcb=P(11.5, yj + 6.635, 270))
         part(o, f"D{30 + n}", "bat54s", {"A": "GND", "K": "+3V3", "COM": f"POS_{ch}"}, pcb=P(16.6, yj + 7.6, 0))
     o.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).")
-    o.note("t_dVdT = 8e3 · V_IN · C_dVdT → 47 nF ≈ 7.5 ms at 20 V, 10.5 ms at 28 V.  A row of four nodes (≈ 450 µF)")
-    o.note("  then charges at C / (8e3 · C_dVdT) ≈ 1.2 A typically, under the 1.6 A limit (22 nF needed ≈ 2.6 A); at the")
-    o.note("  corners (+20 % capacitance, a fast dVdT, the nodes' load, the limit at its 1.5 A minimum) a row starts in current limit.")
+    o.note("t_dVdT = 8e3 · V_IN · C_dVdT → 100 nF ≈ 16 ms at 20 V, 22 ms at 28 V.  A row of four nodes (≈ 450 µF) then")
+    o.note("  charges at C / (8e3 · C_dVdT) ≈ 0.56 A (≤ 1.3 A at the corners with the nodes' load), under the 1.6 A limit.")
+    o.note("  The eFuse takes ≈ 7–9 W typically, ≈ 14 W worst, for 19–24 ms: TI Fig. 55 with its 30 % margin (47 nF: ≈ 21 W, 12 ms).")
     o.note("IMON: 78 µA/A into 18k → 1.4 V/A (2.2 V at the limit), 1k + 47 nF to the ESP32's ADC: the pin is a current")
     o.note("  source, so τ = (18k + 1k) × 47 nF ≈ 0.9 ms, against the firmware's 250 ms polling.")
     o.note("SHDN: 10k to GND (row off: ≤ 10 µA from the pin, 0.1 V), ROW_EN through 10k → 1.65 V (TI: ≥ 1 V to turn on, p. 26).")
@@ -398,6 +412,16 @@ def board() -> Board:
                                          ("+5V", (70.0, 54.0), "bottom"), ("VRACK", (66.0, 20.0), "bottom"),
                                          ("GND", (70.0, 30.0), "bottom"))):
         part(c, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(*xy, 0, side), in_bom=False)
+    # Eve's DFT rules (2026-10-26): the resets, the faults, the flashing pins, the analog IMON and the CH224A's I²C
+    # on bare 1.0 mm bottom pads, > 2 mm from THT pads, in positions kept from revision to revision; a third GND
+    # none on In2's VRACK band (y 21.6–29.6 under the module): their vias would cut it from the eFuse column
+    sig = [("EN", (30.0, 13.9)), ("BOOT", (32.6, 13.9)), ("PD_SDA", (44.0, 9.0)), ("PD_SCL", (46.6, 9.0))]
+    for k, ch in enumerate(ROWS):           # each row's FLT and IMON, at its eFuse cluster (row D's below the band)
+        y0 = max(ef_y(k) - 1.3, 31.6)
+        sig += [(f"FLT_{ch}", (44.0, y0)), (f"ADC_IMON_{ch}", (44.0, y0 + 2.6))]
+    for i, (net, xy) in enumerate(sig):
+        part(c, f"TP{8 + i}", "testpad1", {"1": net}, net, pcb=P(*xy, 0, "bottom"), in_bom=False)
+    part(c, f"TP{8 + len(sig)}", "testpad", {"1": "GND"}, "GND", pcb=P(44.0, 54.0, 0, "bottom"), in_bom=False)
 
     c.block("USB-C: the controller's console / firmware (native USB), and its 5 V without a PD charger")
     part(c, "J6", "usbc5a", {"VBUS": "USB_VBUS", "GND": "GND", "CC1": "USB_CC1", "CC2": "USB_CC2",
@@ -421,7 +445,7 @@ def board() -> Board:
     for i, (r1, r2, cc, mid, y) in enumerate((("R215", "R216", "C118", "CAN_TERM1", 64.0), ("R217", "R218", "C119", "CAN_TERM2", 66.6))):
         R(c, r1, "56", "CAN_H", mid, pcb=P(61.0, y, 0))
         R(c, r2, "56", mid, "CAN_L", pcb=P(64.4, y, 0))
-        C(c, cc, "47n", mid, "GND", pcb=P(67.6, y, 0))      # split cap: the eFuses' 47n (dVdT, IMON filter), one type
+        C(c, cc, "47n", mid, "GND", pcb=P(67.6, y, 0))      # split cap: the IMON filters' 47n, one type
     part(c, "D9", "can_esd", {"1": "CAN_H", "2": "CAN_L", "3": "GND"}, pcb=P(55.5, 66.0, 0))
 
     c.block("Mounting (M3, on the power box's standoffs)")

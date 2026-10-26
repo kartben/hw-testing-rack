@@ -293,6 +293,13 @@ def board() -> Board:
         ],
         "texts": [
             {"text": "hw-testing-rack · bay node v0.5", "x": 32, "y": 56, "size": 0.8, "layer": "B.SilkS"},
+            # the test pads' names, bottom side: the supply row (TP5–TP10) and the UART block (TP1–TP4)
+            *({"text": t, "x": 45.0 + 3 * i, "y": 74.2, "size": 0.8, "rot": 90, "layer": "B.SilkS"}
+              for i, t in enumerate(("GND", "VIN", "5V", "3V3", "DUT 5V", "CAM 5V"))),
+            *({"text": t, "x": 41.0, "y": y, "size": 0.8, "layer": "B.SilkS"}
+              for t, y in (("RX", 10.2), ("GND", 12.8), ("EN", 15.4), ("FLT", 18.0), ("SDA", 20.6), ("GND", 23.2))),
+            *({"text": t, "x": 48.0, "y": y, "size": 0.8, "layer": "B.SilkS"}
+              for t, y in (("TX", 10.2), ("3V3", 12.8), ("IO0", 15.4), ("ALRT", 18.0), ("SCL", 20.6))),
             {"text": "PC", "x": 37.0, "y": 80.2, "size": 0.9},
             {"text": "SVC", "x": 50, "y": 83.6, "size": 0.8},
             {"text": "ROW IN", "x": 5.2, "y": PWR_Y + 9.6, "size": 0.8},
@@ -391,6 +398,15 @@ def board() -> Board:
     s.wire((92, 42), "U2.VI")
     s.wire("U2.VO", (112, 42))
     s.tag("+3V3", (112, 42), "up")
+
+    s.frame("Supply test pads (bottom side, labelled): no short to GND, then each rail at power-up", 88, 52, 116, 62)
+    # a row on the bottom side, x 45–60 at y 70 (clear of the hand-drawn +5V and +3V3 tracks at x 33.6 and 41.5),
+    # with DUT_5V (DUT sheet) and CAM_5V (Camera sheet): bare 1.5 mm pads, no part, no paste, out of the BOM (Eve's
+    # DFT rules, 2026-10-26: supplies, GND spread over the board, resets, faults, flashing, buses; > 2 mm from THT
+    # pads; positions kept from revision to revision).  VIN, after the P-FET, is the main rail: VRACK is on J1/J2.6
+    for i, net in enumerate(("GND", "VIN", "+5V", "+3V3")):
+        part(s, f"TP{5 + i}", "testpad", {"1": net}, net, pcb=P(45.0 + 3 * i, 70.0, 0, "bottom"), in_bom=False,
+             sch=at(92 + 6 * i, 57, rot=90, fields="left"))
     s.notes_at = (6, 64, 110)
     s.note("LMR51625YDDCR (2.5 A; a bay draws ≤ 2.25 A): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):")
     s.note("  L 4.7 µH (FXL0630, 7.5 A sat guaranteed, 9 A typ);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.")
@@ -420,7 +436,7 @@ def board() -> Board:
     m.wire("R7.2", (22, 22))
     m.tag("BOOT", (32, 22), "right")
 
-    m.frame("UART test pads", 6, 31, 40, 45)
+    m.frame("Debug test pads (bottom side): UART, EN, IO0, GND, 3.3 V", 6, 31, 40, 45)
     # a 2 × 2 block on the bottom side, beside the WROOM's TXD0/RXD0 pins (right column, rear half)
     tp_xy = ((45.8, 10.2), (43.2, 10.2), (43.2, 12.8), (45.8, 12.8))
     for i, (net, y) in enumerate((("U0TX", 35), ("U0RX", 37), ("GND", 39), ("+3V3", 42))):
@@ -430,6 +446,12 @@ def board() -> Board:
     m.tag("GND", (15, 40), "down")
     m.wire("TP4.1", (18, 42), (18, 41))
     m.tag("+3V3", (18, 41), "up")
+    # the rest of the bottom-side debug block: EN and IO0 (1.0 mm), and a GND at its foot (1.5 mm)
+    for i, (ref, kind, net, xy) in enumerate((("TP11", "testpad1", "EN", (43.2, 15.4)),
+                                              ("TP12", "testpad1", "BOOT", (45.8, 15.4)),
+                                              ("TP17", "testpad", "GND", (43.2, 23.2)))):
+        part(m, ref, kind, {"1": net}, net, pcb=P(*xy, 0, "bottom"), in_bom=False,
+             sch=at(26 + 5 * i, 35, rot=90, fields="left"))
 
     m.frame("ESP32-S3-WROOM-1-N8R8 (PCB antenna at the board's rear edge: no copper under it, any layer)", 46, 6, 112, 56)
     # the module's top edge on the board's rear edge; its footprint carries the antenna keep-out (±24 mm)
@@ -655,6 +677,14 @@ def board() -> Board:
                     ("AUX_BOOT_N", (88, 76))):
         d.tag(net, xy, "right")
 
+    d.frame("Test pads (bottom side): DUT_5V in the supply row; faults and I²C in the debug block", 116, 46, 160, 64)
+    part(d, "TP9", "testpad", {"1": "DUT_5V"}, "DUT_5V", pcb=P(57.0, 70.0, 0, "bottom"), in_bom=False,
+         sch=at(122, 56, rot=90, fields="left"))
+    # the faults and the I²C bus, 1.0 mm, in the bottom-side debug block beside the UART pads (x 43.2 / 45.8)
+    for i, (ref, net, xy) in enumerate((("TP13", "DUT_FLT_N", (43.2, 18.0)), ("TP14", "INA_ALERT_N", (45.8, 18.0)),
+                                         ("TP15", "I2C_SDA", (43.2, 20.6)), ("TP16", "I2C_SCL", (45.8, 20.6)))):
+        part(d, ref, "testpad1", {"1": net}, net, pcb=P(*xy, 0, "bottom"), in_bom=False,
+             sch=at(130 + 7 * i, 56, rot=90, fields="left"))
     d.frame("Mounting (M3, matches the carrier standoffs)", 116, 66, 160, 80)
     for i, (x, y) in enumerate(CFG["holes"]):
         part(d, f"H{i + 1}", "hole", {}, "M3", pcb=P(x, y, 0), in_bom=False, sch=at(122 + 9 * i, 73))
@@ -768,6 +798,9 @@ def board() -> Board:
     # the light: the pod's four white 2835 LEDs (100 Ω each) from CAM_5V to LED_K, ≤ 102 mA
     part(c, "Q4", "nfet_ll", {"G": "CAM_LED", "S": "GND", "D": "LED_K"}, pcb=P(cx - 6.0, cy + 7.8, 0), sch=at(80, 52))
     R(c, "R36", "100k", "CAM_LED", "GND", pcb=P(cx - 6.0, cy + 11.2, 0), sch=at(70, 54))
+    c.frame("CAM_5V test pad (bottom side, in the supply row)", 124, 6, 158, 22)
+    part(c, "TP10", "testpad", {"1": "CAM_5V"}, "CAM_5V", pcb=P(60.0, 70.0, 0, "bottom"), in_bom=False,
+         sch=at(136, 14, rot=90, fields="left"))
     c.notes_at = (6, 64, 114)
     c.note("Lead pinout: 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K (the LEDs' cathode side).")
     c.note("SPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k")
