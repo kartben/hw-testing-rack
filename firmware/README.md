@@ -466,6 +466,32 @@ focused once, by hand, at the real distance (lens tip to board ≈ 75–80 mm).
 4. Hold the lens still and tighten the nut finger-tight; check with one
    more snapshot, then set the resolution back (640 × 480 for the stream).
 
+### Front display (study)
+
+A Waveshare 1.9" touch LCD (ST7789V2, 320 × 170; CST816 touch on I2C) with
+the bay's status in LVGL, for the node's revision B: revision A has no
+connector for it.  Built with the `front-display` snippet on the
+application only:
+
+```
+west build -b bay_node/esp32s3/procpu firmware/bay-node --sysbuild -- -Dbay-node_SNIPPET=front-display
+```
+
+The panel shares SPI2 with the camera (CS on IO5, DC on IO6, the two free
+pins), its reset and the touch controller's tie to EN, the backlight stays
+on and the touch controller is polled (no INT pin).  LVGL's heap, render
+buffer and state go to PSRAM: in internal RAM the node overflows by 15 KB.
+`display` in the shell prints the refresh times.
+
+| On bay_node | Without | With the display |
+|---|---|---|
+| Image | 1059 KB | 1307 KB (+247 KB, of a 3840 KB slot) |
+| Internal RAM (dram0) | 345424 B, 90.7 % | 351136 B, 92.2 % (+5.7 KB: LVGL's thread stack, touch queue) |
+| PSRAM, static | | +44.5 KB (27 KB render buffer, 16 KB LVGL heap) |
+
+On the XIAO, SPI at 10 MHz without DMA: a full frame in 132 ms, one value
+redrawn in 15 ms, a status refresh with nothing changed in 0.1 ms.
+
 ## Access control
 
 ![Access card of bay B2 seen by its admin while a CI job holds the bay: the lease with its note and time left, the job's USB/IP and RFC 2217 connections with Kick buttons, the count of refused attempts](../docs/img/web-ui-access.png)

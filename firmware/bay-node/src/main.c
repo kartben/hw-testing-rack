@@ -284,6 +284,13 @@ int main(void)
 	}
 #endif
 
+#if defined(CONFIG_BAY_DISPLAY)
+	ret = display_init();
+	if (ret != 0) {
+		LOG_ERR("display init failed: %d", ret);
+	}
+#endif
+
 	while (true) {
 		status_led_update();
 		k_sleep(K_MSEC(250));

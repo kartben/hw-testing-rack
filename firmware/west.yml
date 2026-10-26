@@ -27,9 +27,11 @@ manifest:
         # Only what an ESP32-S3 Wi-Fi node needs: the HAL (+ Wi-Fi blobs),
         # the crypto libraries the Wi-Fi supplicant pulls in, and MCUboot
         # (sysbuild builds it in front of the application, for the updates
-        # over Wi-Fi).
+        # over Wi-Fi), and LVGL for the front display (the front-display
+        # snippet).
         name-allowlist:
           - hal_espressif
           - mbedtls
           - tf-psa-crypto
           - mcuboot
+          - lvgl

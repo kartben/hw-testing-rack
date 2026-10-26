@@ -224,6 +224,15 @@ config BAY_CAMERA_STACK_SIZE
 
 endif # BAY_CAMERA
 
+config BAY_DISPLAY
+	bool "Front display: the bay's status in LVGL"
+	default y
+	depends on LVGL && DISPLAY
+	help
+	  A status screen on the display chosen as zephyr,display: bay id,
+	  address, DUT power, DATA x4 ports, USB/IP sessions.  Built with the
+	  front-display snippet (firmware/snippets/front-display).
+
 config BAY_LED_BRIGHTNESS
 	int "Status LED brightness (1-255)"
 	default 40
@@ -265,7 +274,10 @@ endchoice
 config ESP32_WIFI_NET_ALLOC_SPIRAM
 	default y if ESP_SPIRAM
 
+# LVGL too, with the front display: its heap, render buffer and state.  The
+# display's SPI has no DMA, the CPU copies from PSRAM through the cache.
 config ESP_SPIRAM_BSS_RELOC_LIBS_AND_OBJS
+	default "libsubsys__net__ip.a libsubsys__net__lib__http.a libmodules__lvgl.a" if ESP_SPIRAM && LVGL
 	default "libsubsys__net__ip.a libsubsys__net__lib__http.a" if ESP_SPIRAM
 
 # In PSRAM the network's packets and buffers cost no internal RAM: three times

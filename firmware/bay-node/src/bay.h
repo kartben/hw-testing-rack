@@ -402,6 +402,11 @@ struct camera_client_info {
 	int64_t since; /* uptime, ms */
 };
 
+#if defined(CONFIG_BAY_DISPLAY)
+/* The front display's status screen; -ENODEV without the display */
+int display_init(void);
+#endif
+
 #if defined(CONFIG_BAY_CAMERA)
 /* -ENODEV without a camera (the port still answers, with 503) */
 int camera_init(void);

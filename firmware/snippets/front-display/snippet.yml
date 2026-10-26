@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: Apache-2.0
+
+# The front display, a Waveshare 1.9" touch LCD, with the bay's status in LVGL:
+#   west build -b bay_node/esp32s3/procpu firmware/bay-node -S front-display
+name: front-display
+append:
+  EXTRA_CONF_FILE: front-display.conf
+boards:
+  /bay_node.*/:
+    append:
+      EXTRA_DTC_OVERLAY_FILE: bay_node.overlay

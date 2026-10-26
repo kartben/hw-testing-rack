@@ -28,6 +28,7 @@ target_sources(app PRIVATE
   src/rack.c
 )
 target_sources_ifdef(CONFIG_BAY_CAMERA app PRIVATE src/camera.c)
+target_sources_ifdef(CONFIG_BAY_DISPLAY app PRIVATE src/display.c)
 # The USB devices' strings: read with the host's own control requests
 target_sources_ifdef(CONFIG_USBIP app PRIVATE src/usb_info.c)
 if(CONFIG_USBIP)
