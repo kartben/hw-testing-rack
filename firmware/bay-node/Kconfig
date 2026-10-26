@@ -289,10 +289,31 @@ config NET_BUF_RX_COUNT
 # TCP sends at most a third of the TX buffers ahead of the acknowledgments
 # (subsys/net/ip/tcp.c): 144 of 128 bytes made a 6 KB window, and a USB/IP
 # session sent a 120 KB mass storage read 6 KB per Wi-Fi round trip.  512
-# make it 21 KB.
+# made it 21 KB; 1536 make it 64 KB, the most without window scaling.  A mass
+# storage read is sent as its segments come (zephyr/patches.yml) from the USB
+# host's thread, which queues the next segment only once the send returns:
+# with room for the whole read, it returns as soon as the data is queued.
 config NET_BUF_TX_COUNT
-	default 512 if ESP_SPIRAM
+	default 1536 if ESP_SPIRAM
 	default 48
+
+# The Wi-Fi driver's hot paths in IRAM (18 KB of internal RAM) instead of
+# running from flash through the cache, and a TX block ack window of 32
+# frames (buffers from its heap in PSRAM).  On the XIAO bench a streamed mass
+# storage read went from 360-390 kB/s with the defaults to 820 kB/s with
+# these, the window above and the PSRAM at 80 MHz; IRAM alone took a plain TCP
+# upload from 400 to 560 kB/s.
+config ESP32_WIFI_IRAM_OPT
+	default y if ESP_SPIRAM
+
+config ESP32_WIFI_RX_IRAM_OPT
+	default y if ESP_SPIRAM
+
+config ESP32_WIFI_TX_BA_WIN
+	default 32 if ESP_SPIRAM
+
+config ESP32_WIFI_DYNAMIC_TX_BUFFER_NUM
+	default 64 if ESP_SPIRAM
 
 # More system heap now that the internal RAM has room: under that load it
 # peaked at 33600 of its 33684 bytes.

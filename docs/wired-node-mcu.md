@@ -204,8 +204,9 @@ of the WROOM-1.
 - **Fed from the rack**: DIN-rail industrial switches take 12–48 V DC, so the hub's 20/28 V could feed
   them, but they cost $80–200 for 16 ports.  Two cheap 8-port 5 V or 12 V switches behind a buck from
   VRACK is the low-cost version (≈ $30 in all), at the price of a cascade and a second box.
-- 10/100 is enough: a node feeds at most 362 kB/s (3 Mbit/s).  The uplink to the lab is the only
-  link that sums them (16 × 3 = 48 Mbit/s).
+- 10/100 is enough: a node feeds at most the USB full-speed bus, ≈ 1.2 MB/s (10 Mbit/s; 820 kB/s
+  measured over Wi-Fi).  The uplink to the lab is the only link that sums them (16 × 10 =
+  160 Mbit/s, so gigabit there).
 
 **Cable path.**  A home run per tray, star-wired, unlike the row cables' daisy chain.
 - Slim Cat6 patch cables (28 AWG, ≈ 3.8 mm) of 0.3–1 m, up the rack's left side tied to the ladders
