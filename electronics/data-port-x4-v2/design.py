@@ -108,6 +108,39 @@ LDO = (9.7, 55.7)
 # milled.  Two mouse-bite tabs join them where both top edges are bare: at x 9 and 91 (each the other's mirror,
 # so they meet), clear of the cradle's 5.5 mm ends; no copper within 1.2 mm of the edge there
 TABS, TAB_W = (9.0, 91.0), 6.0
+# The bring-up test points (Eve's DFT rule, relayed 2026-10-26): bare pads on the rear face (B.Cu, mask open, no
+# paste, out of the BOM and CPL), each named on B.SilkS under it; 1.5 mm on GND and the rails, 1.0 mm on signals.
+# GND spread over the board, the supplies, the resets, the faults, SWD and the buses a header or J1 doesn't already
+# bring out, never a USB pair; each > 2 mm from the THT pads and J1, clear of the cradle's 5.5 mm ends, the push
+# band and the notches, and kept from one revision to the next.  ref: (net, name, pad Ø, x, y); each sheet places
+# its own (testpoint())
+TPS = {
+    # the co-processor's row along the top edge: BOOTSEL, RUN, SWD, a GND and its 3.3 V; its core rail under it, on
+    # that rail's own rear track
+    "TP1": ("CP_SWCLK", "SWCLK", 1.0, 30.0, 3.6), "TP2": ("CP_SWDIO", "SWDIO", 1.0, 25.5, 3.6),
+    "TP3": ("GND", "GND", 1.5, 33.75, 3.0), "TP10": ("+3V3_CP", "+3V3_CP", 1.5, 38.25, 3.25),
+    "TP11": ("+1V1", "+1V1", 1.5, 43.12, 15.4), "TP12": ("CP_RUN", "RUN", 1.0, 21.75, 3.4),
+    "TP13": ("CP_BOOT_N", "BOOT", 1.0, 17.75, 3.5),
+    # the left-hand column: the matrix (its bus, its two rails by the TPS60400; STB1 and RST on their own rear
+    # tracks, RST under the co-processor's row), +3V3 and the lead's +5V by the AP2114H, a GND with each group
+    "TP4": ("-5V", "−5V", 1.5, 11.0, 20.5), "TP5": ("+5V_MX", "+5V_MX", 1.5, 11.0, 23.7),
+    "TP6": ("GND", "GND", 1.5, 11.0, 26.9), "TP7": ("+3V3", "+3V3", 1.5, 11.0, 47.5),
+    "TP8": ("GND", "GND", 1.5, 11.0, 50.7), "TP9": ("+5V", "+5V", 1.5, 11.0, 57.9),
+    "TP14": ("MX_DAT", "DAT", 1.0, 8.0, 13.5), "TP15": ("MX_CK", "CK", 1.0, 11.0, 13.5),
+    "TP16": ("MX_STB1", "STB1", 1.0, 18.5, 12.74), "TP17": ("MX_STB2", "STB2", 1.0, 7.75, 17.5),
+    "TP18": ("MX_RST", "MX RST", 1.0, 31.5, 8.705), "TP19": ("GND", "GND", 1.5, 14.25, 17.5),
+    # the hub's reset and core rail, with a GND
+    "TP20": ("HUB_RST_N", "HUB RST", 1.0, 81.5, 4.5), "TP21": ("GND", "GND", 1.5, 77.0, 5.0),
+    "TP22": ("HUB_1V8", "1V8", 1.5, 92.5, 19.25),
+    # the board side of the lead's I²C and INT, below J1, with a GND
+    "TP23": ("INT", "INT", 1.0, 91.0, 50.5), "TP24": ("SDA", "SDA", 1.0, 91.0, 53.2),
+    "TP25": ("SCL", "SCL", 1.0, 90.75, 55.9), "TP26": ("GND", "GND", 1.5, 88.0, 56.5),
+    # each port's FAULT_N on its own rear track between its expander and its switch (port(): TP{k + 1}), a GND by
+    # each pair's expander
+    "TP27": ("GND", "GND", 1.5, 26.0, 56.15), "TP28": ("GND", "GND", 1.5, 71.5, 56.15),
+    "TP101": ("PORT1_FLT_N", "FLT1", 1.0, 24.3, 50.64), "TP201": ("PORT2_FLT_N", "FLT2", 1.0, 39.75, 53.76),
+    "TP301": ("PORT3_FLT_N", "FLT3", 1.0, 56.68, 49.3), "TP401": ("PORT4_FLT_N", "FLT4", 1.0, 74.75, 49.9),
+}
 J1_ROT = 270                        # J1 on the rear face: its pins run down (+y) from pin 1
 
 
@@ -190,6 +223,15 @@ def plen(poly):
     return sum(math.dist(a, b) for a, b in zip(poly, poly[1:]))
 
 
+def testpoints(s, refs, title):
+    """The sheet's bring-up test points (TPS) in a frame of their own, top right, seven to a row"""
+    s.frame(title, 240, 10, 330, 30 + 14 * ((len(refs) + 6) // 7))
+    for i, ref in enumerate(refs):
+        net, _, d, x, y = TPS[ref]
+        part(s, ref, "testpad" if d > 1.2 else "testpad1", {"1": net}, pcb=P(x, y, 0, "bottom"), in_bom=False,
+             sch=at(248 + 12 * (i % 7), 30 + 14 * (i // 7)))
+
+
 def rail(s, net, pins, dy, d="up"):
     """Pins in one row ("REF.PIN") wired dy units out to a common line, tagged once at its first end."""
     for pin in pins:
@@ -245,6 +287,7 @@ def port(b: Board, n: int):
     # X3: the port is off until the node switches it on (4 × 0.5 A would exceed the node's 1.4 A)
     R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(x0 + 9.9, y0 + 3.65, 90), sch=at(14, 36))
     R(s, f"R{k + 3}", "10k", "+3V3", p + "FLT_N", size="0402", pcb=P(x0 + 9.9, y0 + 5.6, 90), sch=at(40, 36))
+    testpoints(s, [f"TP{k + 1}"], "Bring-up test point on the rear face (B.Cu): FAULT_N")
     # Kelvin shunt: pins 1/4 carry the port's current, 2/3 are sense pads at the resistor's own ends; pin 1
     # under the switch's OUT
     part(s, sh, "shunt100m", {"1": p + "5V_SW", "4": p + "VBUS", "2": p + "SNS_P", "3": p + "SNS_N"},
@@ -556,6 +599,9 @@ def hub_sheet(b: Board):
         part(s, q, "nfet", {"G": "+3V3", "S": line, "D": "LEAD_" + line}, pcb=P(86.5, y, 0),
              sch=at(190, 88 + 14 * i))
         R(s, r, val, "+3V3", line, size="0402", pcb=P(83.0, y, 90), sch=at(210, 86 + 14 * i))
+    testpoints(s, ["TP7", "TP8", "TP9", "TP20", "TP21", "TP22", "TP23", "TP24", "TP25", "TP26", "TP27", "TP28"],
+               "Bring-up test points on the rear face (B.Cu, bare pads, not in the BOM): +3V3, +5V, the hub's "
+               "reset and 1.8 V, the lead's I²C and INT, GND")
     s.notes_at = (6, 110, 220)
     s.notes = [
         "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).",
@@ -640,6 +686,8 @@ def matrix_sheet(b: Board):
                "TCA9534A 0x38: P0 DAT, P1 CK, P2 STB U7, P3 STB U8, P4 RST, P5 RUN, P6 BOOTSEL, P7 mark.",
                "RUN and BOOTSEL are open drain emulated (output register 0, the pin switched to output).",
                "±5 V on purpose: at a single 5 V R_on is 120–225 Ω, and a 1.8 V board's I²C low would fail."]
+    testpoints(s, ["TP4", "TP5", "TP6", "TP14", "TP15", "TP16", "TP17", "TP18", "TP19"],
+               "Bring-up test points on the rear face (B.Cu): ±5 V, the expander's bus and RST, GND (logic only)")
 
 
 # -------------------------------------------------------------------------------- co-processor (full)
@@ -750,10 +798,8 @@ def coproc_sheet(b: Board):
     part(s, "D1", "led_g", {"A": "CP_LED_A", "K": "GND"}, pcb=P(cx + 8.4, 2.4, 0),
          sch=at(188, 68, rot=180))
     s.wire("R27.2", "D1.A")
-    # SWD on the top edge, top left
-    for i, (net, xy) in enumerate((("CP_SWCLK", (28.0, 2.2)), ("CP_SWDIO", (25.2, 2.2)),
-                                   ("GND", (22.4, 2.2)))):
-        part(s, f"TP{i + 1}", "testpad", {"1": net}, pcb=P(*xy, 0), in_bom=False, sch=at(204 + 8 * i, 86))
+    testpoints(s, ["TP1", "TP2", "TP3", "TP10", "TP11", "TP12", "TP13"],
+               "Bring-up test points on the rear face (B.Cu): SWD, RUN, BOOTSEL, its rails, GND (logic only)")
     s.frame("Bus pull-ups: 10k to 3.3 V always (the LSFs' B side), 2.2k switched by the co-processor "
             "(GPIO10–13, 16–19); the ±5 V rails into the ADC", 124, 102, 228, 144)
     # right of the east face: the 2.2k arrays by the enables (A at the top), the 10k arrays right of them,
@@ -881,13 +927,20 @@ def board() -> Board:
                     ("GND", "F.Cu", 0.2, [(HX + 3.25, HY + 7.1), (HX + 3.5, HY + 6.85), (HX + 3.5, HY + 6.45)])]
     hand_vias.append(("GND", HX + 3.5, HY + 6.45, 0.5, 0.3))
     # CP_RUN, from the matrix expander's P5 (pin 10, top left) to the co-processor's RUN pull-up R25, along the
-    # top edge on B.Cu under the SWD pads (Freerouting left it open)
+    # top edge on B.Cu above the co-processor's test points (Freerouting left it open)
     rx, ry = MX_EXP[0] + 2.5 * 0.65, MX_EXP[1] - 2.8625                # U10 pin 10, turned 90°
     r25 = (CP[0] - 3.8 + 0.51, 5.4)                                     # R25's CP_RUN pad
     hand_tracks += [("CP_RUN", "F.Cu", 0.127, [(rx, ry), (rx, 2.4)]),
                     ("CP_RUN", "B.Cu", 0.127, [(rx, 2.4), (rx + 0.65, 1.75), (r25[0], 1.75)]),
                     ("CP_RUN", "F.Cu", 0.127, [(r25[0], 1.75), r25])]
     hand_vias += [("CP_RUN", rx, 2.4, 0.5, 0.3), ("CP_RUN", r25[0], 1.75, 0.5, 0.3)]
+    # the two test points Freerouting left open (TPS): RUN up onto that track, +3V3_CP through a via to FB2's
+    # output pad
+    tp12, tp10, fb2 = TPS["TP12"][3:], TPS["TP10"][3:], (CP[0] - 8.5 + 1.0625, 4.6)
+    hand_tracks += [("CP_RUN", "B.Cu", 0.127, [tp12, (tp12[0], 1.75)]),
+                    ("+3V3_CP", "B.Cu", 0.127, [tp10, (38.8, 3.8), (38.8, 4.55)]),
+                    ("+3V3_CP", "F.Cu", 0.127, [(38.8, 4.55), (fb2[0], 4.55)])]           # into its pad, level
+    hand_vias.append(("+3V3_CP", 38.8, 4.55, 0.5, 0.3))
     # The core regulator's copper as Raspberry Pi draws it (the datasheet's Fig. 26, their RP2350B Minimal R4-S1
     # file), turned 180° with U11 (the audit's fix 2; coproc_sheet() places the parts at their coordinates).  VREG
     # pins 61 AVDD, 62 PGND, 63 LX, 64 VIN, 65 FB at x − 3.8 … − 2.2 on the south row (y + 4.9); CIN (C32) and
@@ -1124,6 +1177,13 @@ def board() -> Board:
             *({"text": HDR_PINS[i], "x": CFG["usb"][n] - 6.35 + 2.54 * (i // 2),
                "y": HDR_Y - (4.6 if i % 2 == 1 else 3.4), "size": 0.8}
               for n in range(4) for i in range(12)),
+            # the bring-up test points' names, on the rear face under each pad (mirrored, read from behind), and
+            # what the base doesn't have (only GND is live there): the co-processor's row and core rail, the matrix
+            *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "layer": "B.SilkS"}
+              for net, name, d, x, y in TPS.values()),
+            {"text": "LOGIC ONLY", "x": 28.0, "y": 6.6, "size": 0.8, "layer": "B.SilkS"},
+            {"text": "LOGIC ONLY", "x": 11.0, "y": 11.6, "size": 0.8, "layer": "B.SilkS"},
+            {"text": "LOGIC ONLY", "x": 43.12, "y": 18.4, "size": 0.8, "layer": "B.SilkS"},
         ],
     }
     return b

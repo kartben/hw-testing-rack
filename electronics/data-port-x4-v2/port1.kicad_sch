@@ -12,6 +12,129 @@
 		(comment 2 "Generated from electronics/data-port-x4-v2/design.py — edit the Python, then regenerate")
 	)
 	(lib_symbols
+		(symbol "Connector:TestPoint"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.762)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector:USB_C_Receptacle_USB2.0_16P"
 			(pin_names
 				(offset 1.016)
@@ -6123,6 +6246,122 @@
 		(uuid "91bf0171-215f-51fd-bba8-adc52a135f92")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 101.6 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 629.92 76.2 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c4e9d073-8002-56cc-835f-c1dcebc50cca")
+		(property "Reference" "TP101"
+			(at 634.307 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 635.882 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 629.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 629.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 629.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 629.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 629.92 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "346ab80a-7270-58af-80b8-2f1c6fa8d870")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
+					(reference "TP101")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 629.92 76.2)
+			(xy 629.92 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3e561d2d-3a62-5640-9fbd-1d01ecf34aa4")
+	)
+	(global_label "PORT1_FLT_N"
+		(shape bidirectional)
+		(at 629.92 78.74 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "9fecdbc5-a28a-5b49-b0bf-8167ded41a7c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 629.92 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13886,6 +14125,30 @@
 		(uuid "a06a592c-87dc-5c0e-ac89-16f66e0ffa50")
 	)
 	(rectangle
+		(start 609.6 25.4)
+		(end 838.2 111.76)
+		(stroke
+			(width 0.2)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "3724b96b-e3f3-5cd1-9f25-8a484809fe47")
+	)
+	(text "Bring-up test point on the rear face (B.Cu): FAULT_N"
+		(exclude_from_sim no)
+		(at 610.87 27.94 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "3fb82a40-91e0-590c-a19c-9154b16609a5")
+	)
+	(rectangle
 		(start 15.24 127)
 		(end 274.32 254)
 		(stroke
@@ -13895,7 +14158,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "3724b96b-e3f3-5cd1-9f25-8a484809fe47")
+		(uuid "1da11c98-6aed-5031-b194-99b365cb34e9")
 	)
 	(text "USB-C 1 (source): Rp 56k on each CC; USBLC6 in flow-through (connector side | hub side)"
 		(exclude_from_sim no)
@@ -13907,7 +14170,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "3fb82a40-91e0-590c-a19c-9154b16609a5")
+		(uuid "4af9f993-1654-5ed1-8150-210ea4c9027c")
 	)
 	(rectangle
 		(start 284.48 25.4)
@@ -13919,7 +14182,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "1da11c98-6aed-5031-b194-99b365cb34e9")
+		(uuid "4292ef55-a484-5eaa-abb5-b33604565fda")
 	)
 	(text "Header 1 (2 × 6 through-hole): GND, VREF, P1–P8, RESET_N, BOOT_N; RESET/BOOT through 1k, their expander lines pulled up"
 		(exclude_from_sim no)
@@ -13931,7 +14194,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "4af9f993-1654-5ed1-8150-210ea4c9027c")
+		(uuid "78fe2930-c124-5d81-a504-e0b7299c7b20")
 	)
 	(rectangle
 		(start 15.24 381)
@@ -13943,7 +14206,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "4292ef55-a484-5eaa-abb5-b33604565fda")
+		(uuid "4d16bd8f-17ed-5abe-b252-20a4476d386e")
 	)
 	(text "ESD on the header's VREF (U108, in flow-through: header → ESD → LSF0108 and divider) and on RESET_N / BOOT_N (U109: header → ESD → 1k)"
 		(exclude_from_sim no)
@@ -13955,7 +14218,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "78fe2930-c124-5d81-a504-e0b7299c7b20")
+		(uuid "b83e3ff0-d064-5e0b-be71-a99875e367cd")
 	)
 	(rectangle
 		(start 15.24 264.16)
@@ -13967,7 +14230,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "4d16bd8f-17ed-5abe-b252-20a4476d386e")
+		(uuid "12c891db-a1c1-51c3-a6d7-87d6756dbea4")
 	)
 	(text "Pins 1: ESD in flow-through, 100 Ω, LSF0108 (A = the DUT's VREF, B = 3.3 V) to crosspoint U7's X lines"
 		(exclude_from_sim no)
@@ -13979,7 +14242,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "b83e3ff0-d064-5e0b-be71-a99875e367cd")
+		(uuid "8e2b6d3b-eb41-5eff-88f2-de8023e5b3cc")
 	)
 	(text_box "Port 1 = sub-slot A1.1, hub port 1, busid 1-1.1.\nINA226 at 0x41; expander U2 (0x20).\nILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.\nINA226 Vbus on the shunt's load-side sense pad (= VBUS).\nEN pulled down: the port stays off until the node switches it on.\nPins: P1–P8 → crosspoint X lines (docs/electronics.md › DATA ×4 v2 map);\n  an unwired VREF stays ≈ 0.4 V, under the LSF0108's 0.65 V: the firmware keeps the port's\n  crosspoint switches open while its VREF reads under 0.65 V (GPIO40–43 under 0.33 V).\nESD: VREF through U108, RESET_N / BOOT_N through U109 (flow-through).\nVREF: the board's I/O supply, 0.95–3.6 V; a 5 V board with TTL inputs: its own 3.3 V pin.\nSource only (Rp from the switched VBUS); a back-feeding source trips the TPS2553 (latched).\nThe DUT's RESET/BOOT pull-ups ≥ 4.7k: against 1k, the 1k in series stops at ≈ 1.65 V.\nVBUS LED: on while the port's switch is on (5V_SW, before the shunt)."
 		(exclude_from_sim no)

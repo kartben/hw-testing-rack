@@ -444,7 +444,7 @@ for the rack's 2 + 2, against $270 as two orders.
   and the 5.5 mm slot ends stay milled.
 - **Tabs.**  Two, on the top-edge joint, at x 9 and 91: each is the other's mirror, so they meet.  These are
   the only spots both top edges leave bare, between the cradle's ends and the parts and routes across the
-  top: the SWD pads, the crystal, CP_RUN and the bus tracks.
+  top: the co-processor's test pads (on the rear), the crystal, CP_RUN and the bus tracks.
   - Each tab is 6 mm wide, with seven 0.6 mm holes at a 1 mm pitch (0.4 mm between holes) on each side,
     0.2 mm into the edge: 28 holes, within JLC's guide (5–8 a set, 0.35–0.4 mm apart).
   - The guide also asks for a set every 50–60 mm; these are 82 mm apart.  Break the joint gently, or cut
@@ -472,7 +472,7 @@ Rebuild it after any change to the board: `tools/kicad.sh data-port-x4-v2 --fab`
 | Headers ×4 | 2 × 6 2.54 mm through-hole (J102–J402), read as two rows: upper VREF · P1 · P2 · P3 · P4 · BOOT, lower GND · P5 · P6 · P7 · P8 · RESET | Soldered by hand, not by JLC (hanxia HX PZ2.54-2x6P ZZ, C32713279): out of the JLC BOM and CPL.  Through-hole, easier to solder than the SMD version (the user, 2026-10-20).  The rear face carries only J1, so the tails (1.5 mm) are free.  Layout B (the usability review; the user, 2026-10-21: "oui je valide"): one 2 × 6 per port, centred at the port's x and z 28.5, pins forward over the plate.  The odd pins are on the lower row, the even on the upper.  The names are on the silkscreen over each header, where they stay readable with the jumpers in, in two lines stacked like the rows (VREF, GND, BOOT, RST spelt out); a big port number and the port's VBUS LED sit over its west end.  Each port's pins are a voltage domain of their own (its VREF), so the four groups stay four whatever the header (layouts A and C, and the one bank, in the review).  RESET/BOOT go through an H5VU25UC in flow-through (U109–U409, fitted on the base too; the audit's fix 7 and the schematic review's N4), then 1k as v1, the 1k right behind the ESD over the header's east end (port 4's over its LSF0108's east end, clear of the pairs coming down from the hub); the expander lines' 100k pull-ups in a column right of the header (ports 1–3's lowered since the HS review, 2026-10-22: the band over the headers carries the USB pairs).  VREF has an H5VU25UC of its own (U108–U408, logic only), west of the port's LED: VREF and RESET/BOOT sit at the header's two ends, 12.7 mm apart under the pairs' trunk, too far for one part in flow-through on both.  Strain-relieve the jumpers (tie them down) rather than letting them pull on the header.  The DUT's own RESET/BOOT pull-ups should be 4.7 kΩ or more: against a 1 kΩ pull-up, the 1k in series stops an asserted line at ≈ 1.65 V |
 | Pins ×4 | 2 × H5VU25UC in flow-through, 100 Ω per pin (4 × 0402 arrays), LSF0108 (U107–U407); VREF through a third H5VU25UC (U108–U408) | A side = the DUT's VREF, B side = 3.3 V.  Vref_B and EN come from the board's +5V_MX through 200k (the usability review, 2026-10-21; before, from the port's VBUS): each group is a voltage domain of its own, any board on any group, two groups for a board that needs 16 pins.  TI requires Vref_B ≥ Vref_A + 0.8 V and recommends 1.0 V: with +5V_MX at its 4.75 V low, a VREF up to ≈ 3.9 V translates as specified (the VREF rule below).  The bias current (≈ 20 µA) leaves the LSF0108 by Vref_A, so the VREF divider to the co-processor's ADC (VREF / 2, then 100k to the pin: the audit's U8) is 10k / 10k: an unwired VREF stays ≈ 0.4 V, under the 0.65 V minimum TI specifies for translation (through 100k / 100k it would float up to ≈ 2.1 V and translate).  That alone does not isolate the group: TI guarantees the off state only with EN low (SDLS966M §8.3.2), and under Vref_A + VTH the pass gates still conduct, so lows pass both ways and highs into A clamp at ≈ 0.4 V (the audit's fix 8; how it behaves at ≈ 0.4 V is a bench check).  The isolation is the crosspoints': the firmware keeps a port's switches open while its VREF reads under 0.65 V (GPIO40–43 under 0.33 V).  A DUT that is off (SLVA675B §5.6) and a board that is off (EN low with +5V_MX off) do isolate.  A wired VREF supplies VREF / 20k (165 µA at 3.3 V).  The ESD arrays are hongjiacheng's H5VU25UC (C20615800, JLC "preferred extended": no part-type fee) in place of TI's TPD4E05U06 (2026-10-20).  The same I/O and GND pins (I/O 1, 2, 4, 5; GND 8); its 3, 6, 7, 9, 10 have no internal connection (its function diagram, checked 2026-10-25), and our copper joins each line's pair of pads; its own DFN2510-10L land (`bench:`, pads 3 and 8 one bar).  Its stand-off is 5 V (TI's 5.5 V), breakdown 6 V at least: every line it guards stays at 5 V or less, a DUT's pins at its VREF (≤ 5 V), the lead's I²C and INT at 3.3 V |
 | Matrix | 2 × CH446Q at ±5 V (U7: ports 1–2, U8: ports 3–4; their Y0–Y7 joined = buses D C B A E F G H), TPS60400 for −5 V (U9), TCA9534A at 0x38 (U10); their +5V (+5V_MX) through a 600 Ω ferrite (FB1, GZ2012D601TF) | The −5 V stays on purpose: at a single 5 V the CH446Q's R_on is 120–225 Ω, and a 1.8 V board's I²C low through it would fail.  The ferrite gives the matrix a DC path of its own (≈ 1 µH low down, it filters little at the pump's 50–250 kHz).  It carries the crosspoints, the inverter, the four LSF0108s' bias and the +5V sense divider: ≈ 1–4 mA; the co-processor takes +3V3 since 2026-10-21.  TCA9534A: P0 DAT · P1 CK · P2 STB U7 · P3 STB U8 · P4 RST (pulled up: every switch open until the node writes it) · P5 co-processor RUN · P6 BOOTSEL · P7 mark.  Each bus is pulled up to 3.3 V by 10k (RN8, RN9), the B-side pull-up of whatever pins it joins |
-| Co-processor | RP2354B (U11) wired like a Pico 2: 12 MHz ABM8-272-T3, core regulator with 3.3 µH and 3 × 4.7 µF; its 3.3 V (+3V3_CP) from the board's +3V3 through a 600 Ω ferrite (FB2, C1017) | The core regulator is Raspberry Pi's RP2350B Minimal R4 block, turned 180° with the chip (the audit's fixes 1–3): CIN and COUT across VIN / PGND, L1 behind them along the chip's edge, its dot (pad 1, the land's silk and fab dot) on +1V1 as Fig. 26 draws it (the user's reading, 2026-10-25).  Its copper is theirs: the LX, +1V1 and PGND copper areas of their RP2350B Minimal R4-S1 file, turned with the chip, with their two V_OUT vias (VREG_FB taken there) and PGND's two adjacent GND vias; CFILT on its own via.  CIN and COUT sit on Raspberry Pi's own 0402 land (pads 0.56 mm apart, 0.94 mm pitch), so LX runs between them 0.3 mm wide as theirs.  The F.Cu GND pour leaves a hole round the block, so its high-current GND meets the main GND only through those two vias ("only connect to main GND at one point"), and nothing else lies under L1 or beside LX; no copper under LX and L1 on In1, In2 and B.Cu either.  Raspberry Pi's hardware design guide (Release 3) asks for exactly their layout: "if you choose not to use our example, then you do so at your own risk".  DVDD pin 32, the furthest from the regulator, on 4.7 µF (C47).  GPIO45 reads −5 V through 10k / 100k from +3V3_CP (R40, R41: 2.55 V nominal, ≥ −0.48 V even unpowered).  Hub port 5.  GPIO2–9 = buses A–H (gusmanb's CH1–8); GPIO0 → GPIO1 bridged (its trigger); GPIO14 = mark; GPIO25 = LED.  GPIO19, 18, 17, 16, 13, 12, 11, 10 switch the 2.2k pull-ups of buses A–H (our firmware); RN6/RN7 sit right beside them on the same face.  GPIO40–43 = VREF 1–4 / 2 (through 100k), GPIO44–45 = the ±5 V rails.  SWD on three pads at the top edge (TP1–TP3).  No LDO of its own since 2026-10-21 (the usability review: an extended part type less): U3 takes its ≈ 15–45 mA.  USB through 22 Ω (R23/R24, basic) where the Pico 2 fits 27 Ω: Full Speed only, the driver's own impedance plus 22 Ω stays inside USB's 28–44 Ω window |
+| Co-processor | RP2354B (U11) wired like a Pico 2: 12 MHz ABM8-272-T3, core regulator with 3.3 µH and 3 × 4.7 µF; its 3.3 V (+3V3_CP) from the board's +3V3 through a 600 Ω ferrite (FB2, C1017) | The core regulator is Raspberry Pi's RP2350B Minimal R4 block, turned 180° with the chip (the audit's fixes 1–3): CIN and COUT across VIN / PGND, L1 behind them along the chip's edge, its dot (pad 1, the land's silk and fab dot) on +1V1 as Fig. 26 draws it (the user's reading, 2026-10-25).  Its copper is theirs: the LX, +1V1 and PGND copper areas of their RP2350B Minimal R4-S1 file, turned with the chip, with their two V_OUT vias (VREG_FB taken there) and PGND's two adjacent GND vias; CFILT on its own via.  CIN and COUT sit on Raspberry Pi's own 0402 land (pads 0.56 mm apart, 0.94 mm pitch), so LX runs between them 0.3 mm wide as theirs.  The F.Cu GND pour leaves a hole round the block, so its high-current GND meets the main GND only through those two vias ("only connect to main GND at one point"), and nothing else lies under L1 or beside LX; no copper under LX and L1 on In1, In2 and B.Cu either.  Raspberry Pi's hardware design guide (Release 3) asks for exactly their layout: "if you choose not to use our example, then you do so at your own risk".  DVDD pin 32, the furthest from the regulator, on 4.7 µF (C47).  GPIO45 reads −5 V through 10k / 100k from +3V3_CP (R40, R41: 2.55 V nominal, ≥ −0.48 V even unpowered).  Hub port 5.  GPIO2–9 = buses A–H (gusmanb's CH1–8); GPIO0 → GPIO1 bridged (its trigger); GPIO14 = mark; GPIO25 = LED.  GPIO19, 18, 17, 16, 13, 12, 11, 10 switch the 2.2k pull-ups of buses A–H (our firmware); RN6/RN7 sit right beside them on the same face.  GPIO40–43 = VREF 1–4 / 2 (through 100k), GPIO44–45 = the ±5 V rails.  SWD on two test pads on the rear face, along the top edge, beside a GND (TP1–TP3).  No LDO of its own since 2026-10-21 (the usability review: an extended part type less): U3 takes its ≈ 15–45 mA.  USB through 22 Ω (R23/R24, basic) where the Pico 2 fits 27 Ω: Full Speed only, the driver's own impedance plus 22 Ω stays inside USB's 28–44 Ω window |
 
 **Hub configuration: CFG_SEL 110 (2026-10-25).**  The USB2517 reads CFG_SEL[2:0] as RESET_N rises; 110 is
 "Internal Default Configuration, Strap Options are Disabled" (DS00001598C Table 5-2 p. 16, the user's reading;
@@ -488,6 +488,32 @@ Rebuild it after any change to the board: `tools/kicad.sh data-port-x4-v2 --fab`
   CFG_SEL0 (SCL) stays down: static, stable at RESET_N's rise.  HS_IND drives after reset (I/O12, 12 mA): its
   10k takes 0.33 mA, and no LED hangs on it (CFG_SEL1 high makes it active low).  The LED pins that were straps
   keep their pull-downs: unread, harmless.
+
+**Bring-up test points (Eve's DFT rule, 2026-10-26).**  Bare pads on the rear face (B.Cu, mask open, no paste,
+out of the BOM and CPL), each named on B.SilkS under it: 1.5 mm on GND and the rails, 1.0 mm on signals.
+They carry the bring-up's checks (no short from a supply to GND, then each rail at its voltage) and a probe
+on each line that a header or J1 doesn't already bring out: the resets, the faults, SWD and the buses.
+- **Rules.**  Each pad is more than 2 mm from the THT pads and from J1, the rear face's only part.  All
+  stay clear of the cradle's 5.5 mm ends, the push band and the notches.  None sits on a USB pair.  The
+  positions are meant to stay from one revision to the next.
+- **The co-processor, along the top edge:** TP13 BOOT (CP_BOOT_N, its QSPI_SS), TP12 RUN, TP2 SWDIO,
+  TP1 SWCLK, TP3 GND, TP10 +3V3_CP.  SWD was on the front face before.  Its core rail, TP11 +1V1, sits
+  under it, on that rail's own rear track.
+- **The matrix, in the left-hand column** by its TCA9534A and the TPS60400:
+  - TP14 DAT, TP15 CK, TP16 STB1, TP17 STB2, TP19 GND; STB1 sits on its own rear track, and so does
+    TP18 MX RST, under the co-processor's row;
+  - TP4 −5V, TP5 +5V_MX, TP6 GND.
+- **The supplies, lower in that column** by the AP2114H: TP7 +3V3, TP8 GND, TP9 +5V (the lead's).
+- **The hub, top right:** TP20 HUB RST (HUB_RST_N, U5's output), TP21 GND, TP22 1V8 (its core rail).
+- **Below J1:** TP23 INT, TP24 SDA, TP25 SCL (the board side of the lead's isolation), TP26 GND.
+- **Each port's FAULT_N:** TP101–TP401 FLT1–FLT4, each on its own rear track between its expander and its
+  switch.  TP27 and TP28 are GND points by the expanders.
+- **Left out:** VREF, RESET_N and BOOT_N (on each header), the lead's own lines (on J1) and the USB pairs.
+- **LOGIC ONLY.**  The co-processor's row, its +1V1 and the matrix's group carry that mark (all but their
+  GND): the base leaves their parts off, so its pads there float.
+- **Where the router stopped.**  Most links are Freerouting's.  Where it gave up, a TP sits on a rear track
+  of its own net, or a short drawn link joins it: RUN up onto CP_RUN's track, and +3V3_CP through a via to
+  FB2.
 
 **The VREF rule.**  Virtual wires and the analyzer are specified for boards with 0.95–3.6 V logic: wire VREF
 to the board's I/O supply.
@@ -519,7 +545,7 @@ co-processor; Y4–Y7 leave by the south side.
    - The core regulator and the USB resistors are under it.
    - The crystal and the LED are on top, by the board's edge; the
      area under it stays free for the buses between the two crosspoints.
-   - The hub sits in the top-right corner, the matrix expander and the SWD pads in the top-left one.
+   - The hub sits in the top-right corner, the matrix expander in the top-left one.
    - The left-hand column takes the −5 V inverter (beside the left crosspoint), the +5V_MX ferrite and
      the board's 3.3 V LDO (on the power plane's split).  The right-hand one takes J1 and its parts.
 2. Per port, its pin chain, straight up from its header.
@@ -657,7 +683,7 @@ GPIO (IO5 or IO6) would let the firmware restart the camera alone.
 
 ## Test pads
 
-Every board has bare test pads on the bottom.  Each is named on B.SilkS.  They are not in the BOM or the CPL, so there is no part and no assembly fee.  Supply and GND pads are 1.5 mm; signal pads are 1.0 mm.  Every pad is more than 2 mm from any THT pad or hole (the closest is 4.7 mm, the pod's second GND).  Their positions are fixed in each `design.py`, so a fixture or a probe card still fits after a new revision.
+Every board has bare test pads on the bottom.  Each is named on B.SilkS.  They are not in the BOM or the CPL, so there is no part and no assembly fee.  Supply and GND pads are 1.5 mm; signal pads are 1.0 mm.  Every pad is more than 2 mm from any THT pad or hole.  On the four boards below, the closest is 4.7 mm (the pod's second GND).  On the DATA ×4 v2 it is 2.1 mm (TP27, by J101); TP23 is 2.0 mm from J1's courtyard.  Their positions are fixed in each `design.py`, so a fixture or a probe card still fits after a new revision.
 
 | Board | Pads (silkscreen names) |
 |---|---|
@@ -665,6 +691,7 @@ Every board has bare test pads on the bottom.  Each is named on B.SilkS.  They a
 | Power hub | TX, RX, 3V3, GND, EN, IO0; PD SDA/SCL (CH224A); 5V, VRACK, two more GND; FLT and IMON for each row (A–D) |
 | Camera pod | GND, 5V, 3V3; a second GND at the far end |
 | DATA port | 5V (VBUS), GND |
+| DATA ×4 v2 | 32, listed with the board above: 8 GND; +3V3, +5V, the hub's 1V8 and the logic's −5V, +5V_MX, +3V3_CP, +1V1; SWDIO, SWCLK, RUN, BOOT; the matrix's DAT, CK, STB1, STB2, MX RST; HUB RST; INT, SDA, SCL; FLT1–FLT4 |
 
 ## Bring-up measurements
 
