@@ -147,3 +147,20 @@ patches:
       dormant interface and stopped DHCP client took the address and every
       USB/IP session down.  With the address kept through a forced drop, a
       64 MB read went on.  Not proposed upstream (the user's call).
+
+  # TCP: a connection keeps its negotiated MSS when later segments carry
+  # options; one ACK with SACK blocks (the client's first loss) dropped it to
+  # 536 bytes for the rest of the connection (a USB/IP read went from 700 to
+  # 450 kB/s on the bench; with this, 1460 throughout and 740-770 kB/s again
+  # after each loss)
+  - path: zephyr/net-tcp-keep-mss.patch
+    sha256sum: e6151fd5148e36e85e8bd0b12a9972a23d6fc51f0fcffb037ae966270fd19d2f
+    module: zephyr
+    author: Robert Lubos
+    email: robert.lubos@nordicsemi.no
+    date: 2026-10-14
+    upstreamable: false
+    comments: |
+      A backport of upstream 0f138590a32, merged on 2026-10-16, 20 commits
+      after the Zephyr pinned in firmware/west.yml: drop this file at the
+      next bump.

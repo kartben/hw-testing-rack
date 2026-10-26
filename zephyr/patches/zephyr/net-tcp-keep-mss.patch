@@ -1,0 +1,61 @@
+From 0f138590a32b261f031650a5c942218930c00ee0 Mon Sep 17 00:00:00 2001
+From: Robert Lubos <robert.lubos@nordicsemi.no>
+Date: Wed, 14 Oct 2026 13:25:53 +0200
+Subject: [PATCH] net: tcp: Keep the negotiated MSS when later segments carry
+ options
+
+tcp_in() parsed the options of every received segment straight into
+recv_options, and tcp_options_check() starts by clearing mss_found,
+wnd_found and sack_perm_found. Any segment with options after the
+handshake therefore dropped the negotiated MSS and conn_mss() fell back
+to 536 bytes for the rest of the connection, shrinking the segment size,
+the congestion window and the window thresholds derived from it. With
+SACK enabled a peer sends ACKs with SACK blocks after the first loss, so
+this hit every long-lived connection that saw a loss event.
+
+Validate the option list of every segment as before, but store MSS,
+window scale and SACK permitted only from segments with SYN set, which
+are the only ones that may carry them.
+
+Assisted-by: Claude:claude-fable-5.1
+Signed-off-by: Robert Lubos <robert.lubos@nordicsemi.no>
+---
+ subsys/net/ip/tcp.c | 25 ++++++++++++++++++-------
+ 1 file changed, 18 insertions(+), 7 deletions(-)
+
+diff --git a/subsys/net/ip/tcp.c b/subsys/net/ip/tcp.c
+index 0466265b8b3b..84d9881326ac 100644
+--- a/subsys/net/ip/tcp.c
++++ b/subsys/net/ip/tcp.c
+@@ -3236,13 +3236,24 @@ static enum net_verdict tcp_in(struct tcp *conn, struct net_pkt *pkt,
+ 		goto out;
+ 	}
+ 
+-	if (tcp_options_len && !tcp_options_check(&conn->recv_options, pkt,
+-						  tcp_options_len)) {
+-		NET_DBG("[%p] DROP: Invalid TCP option list", conn);
+-		net_tcp_reply_rst(pkt);
+-		do_close = true;
+-		close_status = -ECONNRESET;
+-		goto out;
++	if (tcp_options_len > 0) {
++		struct tcp_options options = { 0 };
++
++		if (!tcp_options_check(&options, pkt, tcp_options_len)) {
++			NET_DBG("[%p] DROP: Invalid TCP option list", conn);
++			net_tcp_reply_rst(pkt);
++			do_close = true;
++			close_status = -ECONNRESET;
++			goto out;
++		}
++
++		/* MSS, window scale and SACK permitted are only negotiated in
++		 * SYN segments. Options on later segments, such as SACK blocks,
++		 * must not discard the negotiated values.
++		 */
++		if ((th_flags(th) & SYN) != 0) {
++			conn->recv_options = options;
++		}
+ 	}
+ 
+ 	if ((conn->state != TCP_LISTEN) && (conn->state != TCP_SYN_SENT) && FL(&fl, &, SYN)) {
