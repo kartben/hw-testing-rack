@@ -128,3 +128,22 @@ patches:
       timeout) and passes with it, the suite 67/67 on native_sim.  Zephyr's
       main still had the bug on 2026-10-26.  The same commits are the user's
       draft PR 123575 (2026-10-26): drop this file when it lands.
+
+  # ESP32 Wi-Fi: the reason and signal of a lost station link logged as a
+  # warning (the node's "bay fault"), and CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS:
+  # a lost link held, interface up and address kept, while the station
+  # reconnects (firmware/common/Kconfig: 30 s)
+  - path: zephyr/wifi-esp32-link-hold.patch
+    sha256sum: 3ed820efc907b3e3ee71e639d30a3232cd65e742154c5136d84854802bfa15d3
+    module: zephyr
+    author: Benjamin Cabé
+    email: benjamin@zephyrproject.org
+    date: 2026-10-26
+    upstreamable: true
+    comments: |
+      Two commits.  On the bench a home AP stopped its beacons for about 5 s
+      now and then, two clients on different APs and bands dropped at the
+      same second (reason 200, beacon timeout, RSSI -50), and the driver's
+      dormant interface and stopped DHCP client took the address and every
+      USB/IP session down.  With the address kept through a forced drop, a
+      64 MB read went on.  Not proposed upstream (the user's call).

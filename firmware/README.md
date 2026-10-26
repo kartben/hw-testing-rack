@@ -260,11 +260,25 @@ nodes hardly matter.
   With the AP 1–3 m away that still leaves 30 dB of margin, and the DUTs hear
   much less of the nodes.  On the bench XIAO (RSSI −49 dBm) the status page
   loaded no slower at 11 or 8 dBm than at 20.
+- **A lost link is held**: 15 s without the AP's beacons before the link
+  counts as lost (`CONFIG_HWTR_NET_BEACON_TIMEOUT_S`, 6 s by default), then up
+  to 30 s with the interface up and its address kept while the station
+  reconnects (`CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS`, a patch in
+  [zephyr/patches.yml](../zephyr/patches.yml)).  Without it, every drop took
+  the address and every USB/IP session down.  The connections stay open; a
+  transfer in flight still has to end within its client's timeout (30 s for a
+  mass storage command).  `bay fault` lists each loss with its reason ("Link
+  lost, reason N").
 
 Set the AP up for it:
 
 - one channel for the whole rack, **6 or 11**, not 1: a DATA ×4's USB hub
   runs a 480 MHz PLL, whose 5th harmonic is 2.400 GHz, at the bottom of channel 1;
+- that channel **fixed**, not chosen automatically, and **one AP, without mesh
+  nodes or repeaters**: on the bench a home mesh dropped its stations now and
+  then (reason 200, beacons missing; reason 6, sent away, at RSSI −46), the
+  node and a PC on another of its APs at the same second, and moved the node
+  from channel 6 to 2;
 - 20 MHz wide on 2.4 GHz;
 - 1–3 m from the rack, behind it or beside it, not in front of the drawers.
 

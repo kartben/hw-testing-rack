@@ -66,6 +66,23 @@ config HWTR_NET_TX_POWER_DBM
 	  "radio <dBm>" changes it at run time and saves it; "radio" shows the
 	  power the radio really uses.
 
+config HWTR_NET_BEACON_TIMEOUT_S
+	int "Time (s) without the AP's beacons before the link counts as lost"
+	depends on HWTR_NET
+	range 3 60
+	default 15
+	help
+	  Applied before every connection (ESP32: esp_wifi_set_inactive_time(),
+	  6 s by default).  On the bench a home AP went quiet now and then for
+	  about 5 s, on two of its clients at once, and every USB/IP session of
+	  the node went down with the link.
+
+# A link lost all the same is held while the station reconnects: the interface
+# keeps its address, and the USB/IP, console and web connections go on if the
+# AP is back within 30 s (zephyr/patches.yml, wifi-esp32-link-hold.patch)
+config ESP32_WIFI_STA_LINK_HOLD_MS
+	default 30000 if HWTR_NET
+
 # Mains powered: the station never sleeps.  In modem sleep the AP holds each
 # frame for the station until the next DTIM beacon: the bench XIAO answered a
 # wired ping in 174 ms on average (350 ms at worst) against 16 ms awake, and

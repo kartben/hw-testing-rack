@@ -1,0 +1,255 @@
+From ba1b2d0264ede7bd71964bf5b9642db1d9f2e50d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 26 Oct 2026 14:25:46 +0100
+Subject: [PATCH 1/2] drivers: wifi: esp32: log the reason of a lost link
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A station that loses its link reports it with a reason code, logged only
+at debug level, so a link that drops now and then leaves nothing to tell
+missed beacons from an access point sending the station away.
+
+Log the reason and the signal strength as a warning when a connected
+station loses its link other than on its own request.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ drivers/wifi/esp32/src/esp_wifi_drv.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/wifi/esp32/src/esp_wifi_drv.c b/drivers/wifi/esp32/src/esp_wifi_drv.c
+index e5f501f5ba1..76320214bc1 100644
+--- a/drivers/wifi/esp32/src/esp_wifi_drv.c
++++ b/drivers/wifi/esp32/src/esp_wifi_drv.c
+@@ -769,6 +769,10 @@ static void esp_wifi_handle_sta_disconnect_event(void *event_data)
+ 	}
+ #endif
+ 
++	if (esp32_data.state == ESP32_STA_CONNECTED && event->reason != WIFI_REASON_ASSOC_LEAVE) {
++		LOG_WRN("Link lost, reason %u, RSSI %d", event->reason, event->rssi);
++	}
++
+ #if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT)
+ 	if (roaming) {
+ 		/* The supplicant reconnects on its own; bound the wait. */
+-- 
+2.53.0
+
+
+From 5d05c8bdd6a327584c2dc06ee1794a499cbf91bf Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 26 Oct 2026 14:27:14 +0100
+Subject: [PATCH 2/2] drivers: wifi: esp32: hold a lost station link while
+ reconnecting
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+A connected station that loses its link takes the interface down and
+stops the DHCP client, which removes the address: every connection over
+the interface is lost, even when the access point is away for only a few
+seconds (missed beacons, an access point that sends its stations away
+when it changes channel).
+
+Add CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS. With it, a link lost other than
+on the station's own request is held: the interface stays up with its
+address while the station reconnects. If the link comes back in time,
+nothing else sees the loss and the connections go on. Otherwise the loss
+is reported as before. The default, 0, keeps the current behavior.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ drivers/wifi/esp32/Kconfig.esp32      | 12 ++++
+ drivers/wifi/esp32/src/esp_wifi_drv.c | 85 ++++++++++++++++++++++++++-
+ 2 files changed, 95 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/wifi/esp32/Kconfig.esp32 b/drivers/wifi/esp32/Kconfig.esp32
+index 603c52cb313..7d3ef85ef25 100644
+--- a/drivers/wifi/esp32/Kconfig.esp32
++++ b/drivers/wifi/esp32/Kconfig.esp32
+@@ -70,6 +70,18 @@ config ESP32_WIFI_STA_RECONNECT
+ 	help
+ 	  Set auto WiFI reconnection when disconnected.
+ 
++config ESP32_WIFI_STA_LINK_HOLD_MS
++	int "Time (ms) a lost station link is held while reconnecting"
++	range 0 600000
++	default 0
++	help
++	  When a connected station loses its link other than on its own
++	  request (missed beacons, the access point sending it away), keep the
++	  interface up with its address and reconnect, for up to this long,
++	  before reporting the link as lost. Connections over the interface
++	  then outlive an access point that is away for a few seconds. With 0,
++	  the loss is reported at once.
++
+ config ESP32_WIFI_STA_SCAN_ALL
+ 	bool "Scan all available APs when connecting in station mode"
+ 	help
+diff --git a/drivers/wifi/esp32/src/esp_wifi_drv.c b/drivers/wifi/esp32/src/esp_wifi_drv.c
+index 76320214bc1..228eeb72817 100644
+--- a/drivers/wifi/esp32/src/esp_wifi_drv.c
++++ b/drivers/wifi/esp32/src/esp_wifi_drv.c
+@@ -124,6 +124,11 @@ struct esp32_wifi_runtime {
+ #if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT)
+ 	struct k_work_delayable roam_timeout_work;
+ #endif
++#if CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
++	/* A lost link held while the station reconnects */
++	struct k_work_delayable link_hold_work;
++	bool link_held;
++#endif
+ };
+ 
+ /*
+@@ -191,12 +196,14 @@ static const char esp32_wifi_internal_event[] __maybe_unused = "esp32_wifi_inter
+ enum esp32_wifi_internal_event_id {
+ 	ESP32_WIFI_EVENT_ROAM_TIMEOUT,
+ 	ESP32_WIFI_EVENT_RSSI_RECOVER,
++	ESP32_WIFI_EVENT_LINK_HOLD_TIMEOUT,
+ };
+ 
+ K_MSGQ_DEFINE(esp32_wifi_event_msgq, sizeof(struct esp32_wifi_event),
+ 	      CONFIG_ESP32_WIFI_EVENT_QUEUE_SIZE, 4);
+ 
+-#if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT) || defined(CONFIG_ESP32_WIFI_SIGNAL_CHANGE_EVENT)
++#if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT) || defined(CONFIG_ESP32_WIFI_SIGNAL_CHANGE_EVENT) || \
++	CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
+ static void esp32_wifi_post_internal_event(enum esp32_wifi_internal_event_id id)
+ {
+ 	struct esp32_wifi_event evt = {
+@@ -700,6 +707,36 @@ static void esp32_wifi_handle_roam_timeout(void)
+ }
+ #endif /* CONFIG_ESP32_WIFI_WNM_SUPPORT */
+ 
++#if CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
++static void esp32_wifi_link_hold_work(struct k_work *work)
++{
++	ARG_UNUSED(work);
++
++	esp32_wifi_post_internal_event(ESP32_WIFI_EVENT_LINK_HOLD_TIMEOUT);
++}
++
++/* Runs on the event task; see esp32_wifi_internal_event. */
++static void esp32_wifi_handle_link_hold_timeout(void)
++{
++	if (!esp32_data.link_held) {
++		return;
++	}
++
++	LOG_WRN("Link not back, reporting it as lost");
++
++	esp32_data.link_held = false;
++	net_if_dormant_on(esp32_wifi_iface);
++#if defined(CONFIG_WIFI_STA_AUTO_DHCPV4)
++	net_dhcpv4_stop(esp32_wifi_iface);
++#endif
++	wifi_mgmt_raise_disconnect_result_event(esp32_wifi_iface, WIFI_REASON_DISCONN_UNSPECIFIED);
++
++	/* The attempt in progress goes on, as the configured policy would */
++	esp32_data.state = IS_ENABLED(CONFIG_ESP32_WIFI_STA_RECONNECT) ? ESP32_STA_CONNECTING
++								       : ESP32_STA_STARTED;
++}
++#endif
++
+ static void esp_wifi_handle_sta_connect_event(void *event_data)
+ {
+ 	ARG_UNUSED(event_data);
+@@ -718,6 +755,16 @@ static void esp_wifi_handle_sta_connect_event(void *event_data)
+ 	esp32_wifi_arm_rssi_threshold(CONFIG_ESP32_WIFI_LOW_RSSI_THRESHOLD);
+ #endif
+ 
++#if CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
++	/* Back in time: the interface and its address never changed */
++	if (esp32_data.link_held) {
++		esp32_data.link_held = false;
++		(void)k_work_cancel_delayable(&esp32_data.link_hold_work);
++		LOG_INF("Link back");
++		return;
++	}
++#endif
++
+ #if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT)
+ 	/* The application was never told the link went down, so renewing the
+ 	 * address here is exactly what keeping it was meant to avoid.
+@@ -773,6 +820,24 @@ static void esp_wifi_handle_sta_disconnect_event(void *event_data)
+ 		LOG_WRN("Link lost, reason %u, RSSI %d", event->reason, event->rssi);
+ 	}
+ 
++#if CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
++	/* Reconnect while the link is held, until it is back or no longer held */
++	if (!roaming && event->reason != WIFI_REASON_ASSOC_LEAVE &&
++	    (esp32_data.state == ESP32_STA_CONNECTED || esp32_data.link_held)) {
++		if (!esp32_data.link_held) {
++			esp32_data.link_held = true;
++			k_work_reschedule(&esp32_data.link_hold_work,
++					  K_MSEC(CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS));
++		}
++
++		esp32_data.state = ESP32_STA_ROAMING;
++		esp_wifi_connect();
++		return;
++	}
++
++	esp32_data.link_held = false;
++#endif
++
+ #if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT)
+ 	if (roaming) {
+ 		/* The supplicant reconnects on its own; bound the wait. */
+@@ -1257,7 +1322,8 @@ void esp_wifi_event_handler(const char *event_base, int32_t event_id, void *even
+ 	struct esp32_wifi_runtime *ap_data = &esp32_data;
+ #endif
+ 
+-#if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT) || defined(CONFIG_ESP32_WIFI_SIGNAL_CHANGE_EVENT)
++#if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT) || defined(CONFIG_ESP32_WIFI_SIGNAL_CHANGE_EVENT) || \
++	CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
+ 	if (event_base == ESP32_WIFI_INTERNAL_EVENT) {
+ 		switch (event_id) {
+ #if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT)
+@@ -1265,6 +1331,11 @@ void esp_wifi_event_handler(const char *event_base, int32_t event_id, void *even
+ 			esp32_wifi_handle_roam_timeout();
+ 			break;
+ #endif
++#if CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
++		case ESP32_WIFI_EVENT_LINK_HOLD_TIMEOUT:
++			esp32_wifi_handle_link_hold_timeout();
++			break;
++#endif
+ #if defined(CONFIG_ESP32_WIFI_SIGNAL_CHANGE_EVENT)
+ 		case ESP32_WIFI_EVENT_RSSI_RECOVER:
+ 			esp32_wifi_handle_rssi_recover();
+@@ -1288,6 +1359,10 @@ void esp_wifi_event_handler(const char *event_base, int32_t event_id, void *even
+ #if defined(CONFIG_ESP32_WIFI_WNM_SUPPORT)
+ 		(void)k_work_cancel_delayable(&esp32_data.roam_timeout_work);
+ #endif
++#if CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
++		(void)k_work_cancel_delayable(&esp32_data.link_hold_work);
++		esp32_data.link_held = false;
++#endif
+ #if defined(CONFIG_ESP32_WIFI_SIGNAL_CHANGE_EVENT)
+ 		(void)k_work_cancel_delayable(&esp32_data.rssi_recover_work);
+ #endif
+@@ -1486,6 +1561,9 @@ static int esp32_wifi_disconnect(const struct device *dev __unused, struct net_i
+ #if defined(CONFIG_ESP32_WIFI_SIGNAL_CHANGE_EVENT)
+ 	(void)k_work_cancel_delayable(&esp32_data.rssi_recover_work);
+ #endif
++#if CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
++	(void)k_work_cancel_delayable(&esp32_data.link_hold_work);
++#endif
+ 
+ 	return 0;
+ }
+@@ -2446,6 +2524,9 @@ static int esp32_wifi_dev_init(const struct device *dev)
+ #if defined(CONFIG_ESP32_WIFI_SIGNAL_CHANGE_EVENT)
+ 	k_work_init_delayable(&esp32_data.rssi_recover_work, esp32_wifi_rssi_recover_work);
+ #endif
++#if CONFIG_ESP32_WIFI_STA_LINK_HOLD_MS > 0
++	k_work_init_delayable(&esp32_data.link_hold_work, esp32_wifi_link_hold_work);
++#endif
+ #if defined(CONFIG_ESP32_WIFI_AP_STA_MODE)
+ 	k_mutex_init(&esp32_ap_sta_data.send_lock);
+ 	k_sem_init(&esp32_ap_sta_data.tx_done_sem, 0, 1);

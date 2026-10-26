@@ -72,7 +72,8 @@ static void tx_power_apply(void)
 /*
  * Before every connection: a rack's nodes share one 2.4 GHz channel with the
  * DUTs' radios a few cm away, so no 40 MHz channel spilling onto the next one
- * and no more power than the AP 1-3 m away needs.
+ * and no more power than the AP 1-3 m away needs; a few seconds without the
+ * AP's beacons do not drop the link.
  */
 static void radio_apply(void)
 {
@@ -87,6 +88,10 @@ static void radio_apply(void)
 	err = esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW20);
 	if (err != ESP_OK) {
 		LOG_WRN("cannot set 20 MHz channels (%d)", err);
+	}
+	err = esp_wifi_set_inactive_time(WIFI_IF_STA, CONFIG_HWTR_NET_BEACON_TIMEOUT_S);
+	if (err != ESP_OK) {
+		LOG_WRN("cannot set the beacon timeout (%d)", err);
 	}
 #endif
 	tx_power_apply();
