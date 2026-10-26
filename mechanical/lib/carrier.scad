@@ -97,6 +97,13 @@ PORT_Z = DRAWER_BOTTOM + 8.5;                      // the USB-C mouth's centre (
 DATA_PCB_Z = PORT_Z - 1.63 - DATA_PCB_T;           // the board's underside (the USB4105's mouth 1.63 over its top): the bosses' top
 DATA_PCB_X0 = DATA_PORT_X[0] - DATA_PCB_USB;       // drawer x of the board's left edge (KiCad x = 0)
 DATA_PCB_Y0 = DRAWER_PORT_WALL_Y;                  // drawer y of its front edge: the port wall's back face
+function data_hole(h) = [DATA_PCB_X0 + h[0], DATA_PCB_Y0 + DATA_PCB_SIZE[1] - h[1]];   // KiCad → drawer xy
+// the single board's two holes: their bosses stand under the DATA ×4's bare underside, Ø5 to keep 0.8 mm
+// from its second USB-C's shell leg
+ONE_HOLES = [for (h = DATA_PCB_HOLES) data_hole(h)];
+// the ledges under its front edge (drawer x from, to), either side of its USB4105's pegs (7 mm off its axis);
+// they and the bosses reach the board's underside (x4_cradle.scad's comb clears them)
+ONE_LEDGES = [[DATA_PCB_X0 + 1, DATA_PORT_X[0] - 7], [DATA_PORT_X[0] + 7, DATA_PCB_X0 + DATA_PCB_SIZE[0] - 1]];
 
 // board plate (drops into the drawer between front panel and port wall)
 PLATE_W = DRAWER_INNER_W - 0.6;

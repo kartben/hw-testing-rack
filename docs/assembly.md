@@ -90,7 +90,11 @@ later, take its tray out first.
    into each of the drawer's three Ø8 DATA ×4 bosses, the cradle onto them
    (3 × M3×8), the lead up the window and into the board's rear PH, then
    the board slid down into the cradle's slots, receptacles towards the wall,
-   until both latches click.  To take it out, unplug the lead from its PH
+   until both latches click (the receptacles drop into the comb's U's).
+   Then the strip on the comb, its tongues in the U's, and its 5 PT 2.3×8
+   from above (a screwdriver with a shaft of 60 mm or more, between the
+   port wall and the board).  To take it out, unscrew and lift the strip,
+   unplug the lead from its PH
    first (the plug stands above the drawer's 16 mm rear wall; left plugged,
    the lead needs ≈ 75 mm of slack), then press both latches back and lift
    the board.  To convert a bay, swap the board; the drawer stays.  Slide the drawer

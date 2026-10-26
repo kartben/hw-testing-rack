@@ -157,7 +157,8 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
 | tray | 8 | 82.0 | `mechanical/stl/tray.stl` |
-| x4_cradle | 2 | 8.8 | `mechanical/stl/x4_cradle.stl` |
+| x4_cradle | 2 | 12.0 | `mechanical/stl/x4_cradle.stl` |
+| x4_strip | 2 | 1.2 | `mechanical/stl/x4_strip.stl` |
 | cover_lid1 (optional) | 6 | 7.6 | `mechanical/stl/cover_lid1.stl` |
 | cover_box4 (optional) | 2 | 31.3 | `mechanical/stl/cover_box4.stl` |
 
@@ -370,7 +371,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Fasteners | M3 square nut, DIN 562 (5.5 × 5.5 × 1.8) | 60  | 0.02 | 1.20 | AliExpress (bulk) |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods, the DATA ×4 cradle | 108  | 0.02 | 2.16 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
-| Fasteners | PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 "ST", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4 bay: no DATA board (its cradle takes M3 × 8 into inserts) | 57  | 0.02 | 1.14 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
+| Fasteners | PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 "ST", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4 bay: no DATA board (its cradle takes M3 × 8 into inserts), 5 for the strip over its receptacles | 67  | 0.02 | 1.34 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 28  | 0.01 | 0.28 | AliExpress (bulk) |
 | Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 2 m | 4.00 | 8.00 | Olimex DRAG-CHAIN-7X7 |
 | Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain | 5  | 2.17 | 10.85 | AliExpress 1005003181041939, "7x7mm" (or one more metre of chain per pair) |

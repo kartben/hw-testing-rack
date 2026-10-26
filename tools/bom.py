@@ -945,6 +945,7 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         **{f"bay_label_{b.id.lower()}{s}": 1 for b in rack.bays() for s in ("", "_inlay")},
         # a converted bay's DATA ×4 (v2, logic or base) stands in its printed cradle at the drawer's back
         "x4_cradle": sum(1 for b in rack.bays() if rack.is_multi(b.id)),
+        "x4_strip": sum(1 for b in rack.bays() if rack.is_multi(b.id)),     # over its receptacles, 5 PT 2.3×8
         # the power box: base and lid, and the walls' optional label inlays (a second, light filament)
         "power_box_base": 1, "power_box_lid": 1, "power_box_labels": 1,
     })
@@ -1037,9 +1038,9 @@ def hardware(rack) -> list[dict]:
                                          "every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, "
                                          "2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and "
                                          "2 port-block locks (and 2 sled locks if fixed); a DATA ×4 bay: no DATA board (its "
-                                         "cradle takes M3 × 8 into inserts)",
+                                         "cradle takes M3 × 8 into inserts), 5 for the strip over its receptacles",
          "supplier": "AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100)",
-         "qty": 8 * n_drawer + 5 * n_sled + 2 * n_fixed - 2 * n_multi,
+         "qty": 8 * n_drawer + 5 * n_sled + 2 * n_fixed - 2 * n_multi + 5 * n_multi,
          "unit_eur": 0.02,
          "notes": "pilots Ø1.9 (lib/common.scad › PT_PILOT), clearance Ø2.6; a PT 2.6's Ø5 head would rub the "
                   "drawer's wall at the guide lips (lib/carrier.scad › LIP_SCREW, checked in SolidCraft)"},

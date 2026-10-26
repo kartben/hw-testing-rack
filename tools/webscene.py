@@ -26,6 +26,7 @@ WEB_PARTS = {
     "drawer": ("parts/drawer.scad", {}),
     "drawer_sled": ("parts/drawer.scad", {"PART": "sled"}),
     "x4_cradle": ("parts/x4_cradle.scad", {"PART": "cradle"}),        # the standing DATA ×4 v2's (drawer coordinates)
+    "x4_strip": ("parts/x4_cradle.scad", {"PART": "strip_in_place"}), # and the strip over its receptacles
     "drawer_block": ("parts/drawer.scad", {"PART": "block"}),
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
@@ -1212,6 +1213,7 @@ def build(rack) -> Path:
             bx, t, (bw, bh) = dxw_ + vx0, v["thickness"], v["size"]
             mv = {"layer": "drawers", "bay": bid, "row": i, "space": "row", "movable": drawer}
             add("x4_cradle", (dxw_, dy, plenum), row=i, layer="drawers", bay=bid, movable=drawer)
+            add("x4_strip", (dxw_, dy, plenum), row=i, layer="drawers", bay=bid, movable=drawer)
             model = "data-port-x4-v2" + ("-base" if variant == "base" else "")    # its assembly: the base's lacks
             if (SITE_ASSETS / "pcb" / f"{model}.glb").exists():                     # the logic (tools/pcb_glb.py)
                 # the routed board, every body (tools/pcb_glb.py: x right, -KiCad y, its front face up), stood up:

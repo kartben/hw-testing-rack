@@ -68,19 +68,14 @@ module front_panel() {
     }
 }
 
-function data_hole(h) = [DATA_PCB_X0 + h[0], DATA_PCB_Y0 + DATA_PCB_SIZE[1] - h[1]];   // KiCad → drawer xy
 // the DATA ports along the port wall: the DATA ×4's four (config/rack.yaml › pcb.data_port_x4)
 PORT_XS = [for (u = DATA_X4_USB) DATA_X4_X0 + u];
 assert(abs(DATA_PORT_X[0] - PORT_XS[3]) < 0.01, "the single DATA board's USB-C sits on the fourth port");
 // the DATA ×4's bosses: v1's first three holes, which the v2's cradle shares (v1 is not ordered: its front-edge
 // ledges are gone, docs/printed-parts-review.md); a fourth hole, if v1 has one, stays unused
 X4_HOLES = [for (i = [0 : 2]) let (h = DATA_X4_HOLES[i]) [DATA_X4_X0 + h[0], DATA_PCB_Y0 + DATA_X4_SIZE[1] - h[1]]];
-// the single board's two holes: their bosses stand under the DATA ×4's bare underside, Ø5 to keep 0.8 mm
-// from its second USB-C's shell leg
-ONE_HOLES = [for (h = DATA_PCB_HOLES) data_hole(h)];
 X4_BOSS_D = INSERT_M3[0] + 4;                     // the DATA ×4 bosses take M3 inserts (the cradle's M3 × 8): 2 mm of wall
-// the ledges under its front edge (drawer x from, to), either side of its USB4105's pegs (7 mm off its axis)
-ONE_LEDGES = [[DATA_PCB_X0 + 1, DATA_PORT_X[0] - 7], [DATA_PORT_X[0] + 7, DATA_PCB_X0 + DATA_PCB_SIZE[0] - 1]];
+// the single board's bosses and ledges: lib/carrier.scad › ONE_HOLES, ONE_LEDGES
 function pin_spots() = [for (k = [NODE_RESET, NODE_BOOT]) node_xy(k) - [DRAWER_X0, 0]];   // the node's buttons, drawer xy
 
 module port_wall() {
