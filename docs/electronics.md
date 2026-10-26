@@ -563,8 +563,12 @@ runs on a board it sees fully routed, and its first-found routes leave many pads
 - the power plane's +3V3 and +5V areas no longer overlap (they did by 0.2 mm along J1's +5V tab).
 After the import, `tidy` (pcbgen's `tidy_tracks()`, on every board since 2026-10-22) straightens what the
 optimizer leaves: a run of the router's segments becomes the fewest straight and 45° segments that join its
-ends, where that is no longer and the clearances allow, and a run holding one under 0.6 mm loses it.  J1's
-leads now leave their pads by one diagonal.  Jogs into vias stay, and so do the buses that weave together
+ends, where that is no longer and the clearances allow, and a run holding one under 0.6 mm loses it.  Its last
+step (`unjog()`, since 2026-10-26, the user's find of micro zigzags) takes the router's micro-jogs: a few short
+segments (each under 0.25 mm, 0.2 mm aside in all) stepping a track sideways between two parallel runs, often
+where it necks down to pass two pads, or up and back down.  One run slides onto the other's line, each segment
+keeping its width.  Where the clearance needs the offset, the jog becomes one 45° step.  The DATA ×4 v2 lost 39
+of them.  J1's leads now leave their pads by one diagonal.  Jogs into vias stay, and so do the buses that weave together
 between vias (on B.Cu; on In2 and In3 at 6 layers): the vias would have to move
 (docs/autorouting-benchmark.md, "Straight tracks").
 The switches' IN feeds stay drawn: without them no run of the portfolio came out clean.

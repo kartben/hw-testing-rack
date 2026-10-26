@@ -1799,10 +1799,10 @@ def tidy_file(path: str, cores=(), fanout=(), **kw):
 
     bars = [(board.GetLayerID(layer), net, poly_set(p)) for layer, net, polys in cores for p in polys]
     bars += [(None, None, poly_set(fanout_geometry(board, ref, num)[2])) for ref, num in fanout]
-    n, widened, before, after = tidy_tracks(board, bars=bars, **kw)
+    n, widened, before, after, jogs = tidy_tracks(board, bars=bars, **kw)
     board.Save(path)
-    print(f"tidy: {n} runs straightened or merged, {widened} necks widened, router segments {before} -> {after} "
-          f"({time.time() - t0:.0f} s)")
+    print(f"tidy: {n} runs straightened or merged, {widened} necks widened, {jogs} micro-jogs removed, router "
+          f"segments {before} -> {after} ({time.time() - t0:.0f} s)")
 
 
 def tidy_tracks(board, short: float = 0.6, reach: int = 12, margin: float = 0.002, skip=(),
@@ -1997,7 +1997,159 @@ def tidy_tracks(board, short: float = 0.6, reach: int = 12, margin: float = 0.00
                         index(nt, l)
         if not changed:
             break
-    return replaced, widened, before, len(router_tracks())
+    jogs = unjog(board, layers, skip, index, dead, clear_of, pads)
+    return replaced, widened, before, len(router_tracks()), jogs
+
+
+def unjog(board, layers, skip, index, dead, clear_of, pads, longest: float = 0.25,
+          widest: float = 0.2) -> int:
+    """tidy_tracks()'s last step: micro-jogs.  Where Freerouting necks a track down to pass two obstacles, or
+    centres it on a pad, it steps it sideways by a few short segments (each under `longest` mm, `widest` mm aside
+    in all) between two parallel runs, often up and back down, and the main pass leaves it: it works one width at a
+    time, and a pad's centre stays.  Here one of the two runs slides onto the other's line, each segment keeping
+    its width, and the jog goes: only where the segment beyond the slid run stays straight or at 45° (or the run
+    ends on a pad, its end still inside it).  Where neither run may slide, the jog becomes one 45° step onto C's
+    line.  Every new segment keeps its clearance; never at a via, a branch or a drawn track, never on `skip`'s
+    nets.  Returns the jogs removed."""
+    T = MM(0.001)
+
+    def key(p):
+        return (p.x, p.y)
+
+    def other(t, k):
+        return key(t.GetEnd()) if key(t.GetStart()) == k else key(t.GetStart())
+
+    def octilinear(dx, dy):
+        a = math.degrees(math.atan2(dy, dx)) % 45
+        return min(a, 45 - a) < 0.5
+
+    removed, gone = 0, set()                            # gone: the Python ids of the tracks taken off the board
+    for _ in range(12):
+        everything = list(board.GetTracks())            # one proxy per track for this round: `is` holds
+        vias = {(t.GetNetCode(), key(t.GetPosition())) for t in everything if t.GetClass() == "PCB_VIA"}
+        tracks = [t for t in everything if t.GetClass() == "PCB_TRACK"]
+        ends = {}
+        for t in tracks:
+            for p in (t.GetStart(), t.GetEnd()):
+                ends.setdefault((t.GetNetCode(), t.GetLayer(), key(p)), []).append(t)
+        pad_at = {}
+        for p in pads:
+            for l in layers:
+                if p.IsOnLayer(l):
+                    pad_at.setdefault((p.GetNetCode(), l), []).append(p)
+
+        def movable(t):
+            return id(t) not in gone and not t.IsLocked() and t.GetNetname() not in skip
+
+        def sole(net, l, k, t):
+            """the one other track at point k, when the chain just bends there (no via, pad, branch)"""
+            if (net, k) in vias:
+                return None
+            o = [x for x in ends.get((net, l, k), ()) if x is not t]
+            if len(o) != 1 or not movable(o[0]):
+                return None
+            if any(p.HitTest(pcbnew.VECTOR2I(*k)) for p in pad_at.get((net, l), ())):
+                return None
+            return o[0]
+
+        def replace(net, l, old, new):
+            """old tracks off the board, new ones (width, start, end) on it"""
+            for t in old:
+                dead.add(t.m_Uuid.AsString())
+                for pt in (t.GetStart(), t.GetEnd()):
+                    ends[(net, l, key(pt))] = [x for x in ends.get((net, l, key(pt)), ()) if x is not t]
+                gone.add(id(t))
+                board.Remove(t)
+            for w, p, q in new:
+                nt = pcbnew.PCB_TRACK(board)
+                nt.SetStart(pcbnew.VECTOR2I(*p))
+                nt.SetEnd(pcbnew.VECTOR2I(*q))
+                nt.SetWidth(w)
+                nt.SetLayer(l)
+                nt.SetNetCode(net)
+                board.Add(nt)
+                index(nt, l)
+                for pt in (p, q):
+                    ends.setdefault((net, l, pt), []).append(nt)
+
+        def fix(net, l, name, own, a, j1, mids, c, j2):
+            """A, the jog's short segments from j1 to j2, C: True once replaced"""
+            fa, fc = other(a, j1), other(c, j2)
+            ua = (j1[0] - fa[0], j1[1] - fa[1])          # along A towards the jog, along C away from it
+            uc = (fc[0] - j2[0], fc[1] - j2[1])
+            na, nc = math.hypot(*ua), math.hypot(*uc)
+            if na < T or nc < T:
+                return False
+            ua, uc = (ua[0] / na, ua[1] / na), (uc[0] / nc, uc[1] / nc)
+            if ua[0] * uc[0] + ua[1] * uc[1] < math.cos(math.radians(0.5)):
+                return False                            # A and C not parallel, same way
+            sv = (j2[0] - j1[0], j2[1] - j1[1])
+            along = sv[0] * ua[0] + sv[1] * ua[1]
+            side = (sv[0] - along * ua[0], sv[1] - along * ua[1])
+            lat = math.hypot(*side)
+            pts = [j1]
+            for m in mids:
+                pts.append(other(m, pts[-1]))
+            bent = any(abs((q[0] - p[0]) * ua[1] - (q[1] - p[1]) * ua[0]) > T for p, q in zip(pts, pts[1:]))
+            if not bent or lat > MM(widest) or min(na, nc) + along < MM(0.05):
+                return False
+
+            def clear(new):
+                return all(clear_of(pcbnew.VECTOR2I(*p), pcbnew.VECTOR2I(*q), w, l, net, name, own) for w, p, q in new)
+
+            # slide C back onto A's line (C's far end and the segment beyond it move by -side), or A onto C's
+            for stub, joint, far, sign in ((c, j1, fc, -1), (a, j2, fa, +1)):
+                nf = (round(far[0] + sign * side[0]), round(far[1] + sign * side[1]))
+                nxt = sole(net, l, far, stub)
+                if nxt is None:
+                    if (net, far) in vias or [x for x in ends.get((net, l, far), ()) if x is not stub]:
+                        continue                        # a via or a branch there: it stays
+                    pad_end = next((p for p in pad_at.get((net, l), ()) if p.HitTest(pcbnew.VECTOR2I(*far))), None)
+                    if pad_end is None or not pad_end.HitTest(pcbnew.VECTOR2I(*nf)):
+                        continue                        # a free end, or one the pad wouldn't hold any more
+                new, old = [(stub.GetWidth(), joint, nf)], [stub]
+                if nxt is not None:
+                    beyond = other(nxt, far)
+                    if math.dist(nf, beyond) < MM(0.05) or not octilinear(beyond[0] - nf[0], beyond[1] - nf[1]):
+                        continue
+                    new.append((nxt.GetWidth(), nf, beyond))
+                    old.append(nxt)
+                if clear(new):
+                    replace(net, l, mids + old, new)
+                    return True
+            # neither may slide: one 45° step from A's end onto C's line, C shortened (the clearance needs a jog)
+            if lat < T or nc + along - lat < MM(0.05):
+                return False
+            q = (round(j1[0] + ua[0] * lat + side[0]), round(j1[1] + ua[1] * lat + side[1]))
+            if len(mids) == 1 and other(mids[0], j1) == q:
+                return False                            # it is that step already
+            new = [(min(m.GetWidth() for m in mids), j1, q), (c.GetWidth(), q, fc)]
+            if not clear(new):
+                return False
+            replace(net, l, mids + [c], new)
+            return True
+
+        changed = False
+        for s in tracks:
+            if id(s) in gone or not movable(s) or s.GetLength() >= MM(longest) or s.GetLayer() not in layers:
+                continue
+            net, l, name, own = s.GetNetCode(), s.GetLayer(), s.GetNetname(), s.GetOwnClearance(s.GetLayer())
+            for j1 in (key(s.GetStart()), key(s.GetEnd())):     # the jog read from either end
+                a = sole(net, l, j1, s)
+                if a is None:
+                    continue
+                mids, k = [s], other(s, j1)             # the short segments of the jog, up to five
+                c = sole(net, l, k, s)
+                while c is not None and c.GetLength() < MM(longest) and len(mids) < 5:
+                    mids.append(c)
+                    k = other(c, k)
+                    c = sole(net, l, k, c)
+                if c is not None and fix(net, l, name, own, a, j1, mids, c, k):
+                    removed, changed = removed + 1, True
+                    break
+        if not changed:
+            break
+    return removed
 
 
 def tune_pairs(board, pairs, tol: float, clear: float = 0.15, pitch: float = 0.5, margin: float = 0.6,
