@@ -409,7 +409,8 @@ def port(b: Board, n: int):
     # board with TTL inputs takes VREF from its own 3.3 V pin; at a 5 V VREF the bus rises to ≈ 4.0–4.2 V (outside
     # TI's conditions, harmless: the other ports clamp to their VREF, the RP2354B's GPIO tolerate 5 V powered)
     R(s, f"R{k + 11}", "200k", "+5V_MX", p + "VREFB", size="0402", pcb=P(bx, by, 0), sch=at(162, 122))
-    C(s, f"C{k + 5}", "100n", p + "VREFB", "GND", size="0402", pcb=P(bx, by + 1.1, 0), sch=at(162, 130))
+    # 0.15 mm west of the column: its GND pad clear of the LSF0108's pin-1 mark (silk over a pad otherwise)
+    C(s, f"C{k + 5}", "100n", p + "VREFB", "GND", size="0402", pcb=P(bx - 0.15, by + 1.1, 0), sch=at(162, 130))
     s.wire(f"R{k + 11}.2", f"C{k + 5}.1")
     # VREF / 2 to the co-processor's ADC, and the pull-down that holds an unwired VREF low.  The bias current
     # (≈ 20 µA) leaves the LSF0108 by Vref_A: through 100k + 100k an unwired VREF would float up to ≈ 2.1 V and
