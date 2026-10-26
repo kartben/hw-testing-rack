@@ -82,7 +82,7 @@ node's real console code, Zephyr's shell sample as the DUT); details in
 
 | Feature | Status | How |
 |---|---|---|
-| USB-C PD | written, compile-tested | the CH224A asks for 9 V by itself; VBUS on the ADC, I²C pull-ups on once VBUS is up, the CH224A driver initialized once the chip answers (`zephyr,deferred-init`); asks for 20 V, or for 28 V EPR when offered once opted in (`CONFIG_HUB_PD_EPR`, `hub pd epr`, saved), or 20 V first and 28 V once a row draws 1.2 A (`CONFIG_HUB_PD_ADAPTIVE`), and checks VBUS reaches it within 5 % (28 V falls back to 20 V); PG high sheds the rows; never above 28 V (`regulator-max-microvolt`) |
+| USB-C PD | written, compile-tested | the CH224A asks for 9 V by itself; VBUS on the ADC, I²C pull-ups on once VBUS is up, the CH224A driver initialized once the chip answers (`zephyr,deferred-init`); asks for 20 V, or for 28 V EPR when offered once opted in (`CONFIG_HUB_PD_EPR`, `hub pd epr`, saved; locked out by `CONFIG_HUB_EPR_ALLOWED`, off until L1 is rated ≥ 60 V), or 20 V first and 28 V once a row draws 1.2 A (`CONFIG_HUB_PD_ADAPTIVE`), and checks VBUS reaches it within 5 % (28 V falls back to 20 V); PG high sheds the rows; never above 28 V (`regulator-max-microvolt`) |
 | Rows | written | eFuse enables held across a controller reset (pad hold); off until the contract has held 500 ms, then staggered (300 ms); `hub row <A–D> on\|off\|cycle`, the page, `POST /api/row` |
 | Shedding | written | from the measured row currents (IMON): above 90 % of the contract for 1 s the next row in the shed order goes off, back when the contract has room again |
 | Faults | written | each eFuse's FLT while its row is on, past the soft start; a contract lost (PG) as an event |

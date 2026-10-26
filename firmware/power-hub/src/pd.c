@@ -487,7 +487,7 @@ int pd_init(bool epr)
 	}
 
 	st.state = HUB_PD_NONE;
-	st.epr_pref = epr;
+	st.epr_pref = epr && IS_ENABLED(CONFIG_HUB_EPR_ALLOWED);
 
 	k_work_queue_init(&pd_q);
 	k_work_queue_start(&pd_q, pd_stack, K_THREAD_STACK_SIZEOF(pd_stack),
@@ -506,6 +506,10 @@ void pd_status(struct hub_pd_status *out)
 
 int pd_set_epr(bool epr)
 {
+	if (epr && !IS_ENABLED(CONFIG_HUB_EPR_ALLOWED)) {
+		return -ENOTSUP;
+	}
+
 	k_mutex_lock(&lock, K_FOREVER);
 	st.epr_pref = epr;
 	st.epr_refused = false;

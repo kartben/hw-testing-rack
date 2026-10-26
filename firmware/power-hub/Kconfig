@@ -4,8 +4,19 @@ mainmenu "hw-testing-rack power hub"
 
 menu "Power hub"
 
+config HUB_EPR_ALLOWED
+	bool "This hub's buck inductor is rated for 28 V EPR"
+	help
+	  The hub's L1 (and the nodes'), FXL0630-4R7-M, withstands 30 V
+	  (Cjiang VW): at 28 V EPR it sees about 24 V each cycle plus the
+	  switch node's ringing (docs/datasheet-audit.md, U2).  Off: 28 V
+	  EPR can be neither built in nor chosen at run time, and a saved
+	  choice of it is ignored.  Turn it on only once L1 is a part rated
+	  60 V or more (the FXL0630-4R7-MV75, not sold at JLC or LCSC).
+
 config HUB_PD_EPR
 	bool "Ask for 28 V EPR when the charger offers it"
+	depends on HUB_EPR_ALLOWED
 	help
 	  The CH224A asks for 9 V at plug-in (its CFG1 resistor); the
 	  firmware then asks for 20 V.  28 V EPR is opt-in: with this on, it
@@ -21,6 +32,7 @@ config HUB_VBUS_MIN_MV
 
 config HUB_PD_ADAPTIVE
 	bool "Start at 20 V, move to 28 V EPR once a row draws more"
+	depends on HUB_EPR_ALLOWED
 	help
 	  Off (the default): the contract CONFIG_HUB_PD_EPR (or the saved
 	  choice) asks for.

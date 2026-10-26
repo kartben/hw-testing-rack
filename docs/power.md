@@ -7,7 +7,10 @@ under A1 that holds the **power hub v0.5**:
 
 * a **USB PD 3.2 sink** (WCH CH224A) that asks the charger for 9 V at
   plug-in, then for 20 V when the controller asks over I²C (28 V EPR when the charger offers it, once
-  opted in: `CONFIG_HUB_PD_EPR` or `hub pd epr`).
+  opted in: `CONFIG_HUB_PD_EPR` or `hub pd epr`).  28 V is locked out for now
+  (`CONFIG_HUB_EPR_ALLOWED` off): the buck inductor L1, FXL0630-4R7-M on the hub and the nodes, withstands 30 V
+  and would see about 24 V plus ringing; it opens once L1 is a part rated 60 V or more
+  ([datasheet-audit.md](datasheet-audit.md), U2).
   VBUS is the rack bus (VRACK): there is no input switch, the eFuses keep the
   rows off until the contract is final;
 * an **eFuse per row** (TPS26600, 1.6 A), off until the controller turns it on.  Four row outputs;

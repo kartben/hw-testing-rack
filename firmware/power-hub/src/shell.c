@@ -170,7 +170,12 @@ static int cmd_pd(const struct shell *sh, size_t argc, char **argv)
 			shell_error(sh, "usage: hub pd [epr|20v]");
 			return -EINVAL;
 		}
-		return pd_set_epr(strcmp(argv[1], "epr") == 0);
+		int ret = pd_set_epr(strcmp(argv[1], "epr") == 0);
+
+		if (ret == -ENOTSUP) {
+			shell_error(sh, "28 V EPR is off on this hub (CONFIG_HUB_EPR_ALLOWED: L1 is rated 30 V)");
+		}
+		return ret;
 	}
 
 	print_pd(sh);
