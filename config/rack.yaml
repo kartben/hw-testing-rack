@@ -57,6 +57,8 @@ drawer:
                          # turned over (its SH 12 header down, its lead at floor level to the rear bay)
     glass: [52.36, 28.80]  # cover glass W × H (Waveshare's drawing); its PCB 51.0 × 26.6 centred behind it
     pcb: [51.0, 26.6]
+    active: [2.8, 3.05]  # its LCD's 42.72 × 22.70 active area: left and bottom edges from the glass's, seen from
+                         # the front (Waveshare's photo, the user 2026-10-27: the wide black border on the right)
     x: 82.0              # drawer x of the glass's left edge: its frame's right leg, between the window and the right
                          # wall, takes the front's right screw (parts/drawer.scad › JOINTS)
     z: 8.5               # its bottom edge above the deck: 1 mm over the plate, whatever the module's thickness

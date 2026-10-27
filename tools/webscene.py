@@ -326,8 +326,7 @@ def board_screen(bd: dict) -> dict | None:
 # ------------------------------------------------------------------ the drawer front's display
 # The node's status screen (firmware/bay-node/src/display.c) on the front display, drawn by the viewer's LVGL
 # (site/bay_screen.js) and, for the renders, by tools/lvgl_frame.mjs: its ST7789V2's 320 × 170 over the active
-# area, assumed centred in the glass (42.72 × 22.70 mm: Waveshare's 1.9" LCD; its place in the touch module's
-# glass is to check on its drawing)
+# area (42.72 × 22.70 mm: Waveshare's 1.9" LCD), at rack.yaml › drawer.display.active in the glass
 SCREEN_PX = (320, 170)
 SCREEN_AREA = (42.72, 22.70)
 # what each board draws in the bay's illustration, mA: docs/ci.md's bayctl listing where it has one, else a
@@ -1229,8 +1228,8 @@ def build(rack) -> Path:
                                                           round(gz + (gh - ph) / 2, 3)],
                                    "size": [pw, 1.6, ph], "color": "#1f4fa0", **dmv})
             # on its glass, the node's status (front_status), facing out of the front: its bottom-left corner
-            aw, ah = SCREEN_AREA
-            items["screens"].append({"pos": [round(gx + (gw - aw) / 2, 3), round(gy - 0.05, 3), round(gz + (gh - ah) / 2, 3)],
+            ax, az = disp.get("active", ((gw - SCREEN_AREA[0]) / 2, (gh - SCREEN_AREA[1]) / 2))
+            items["screens"].append({"pos": [round(gx + ax, 3), round(gy - 0.05, 3), round(gz + az, 3)],
                                      "size": list(SCREEN_AREA), "px": list(SCREEN_PX),
                                      "status": front_status(rack, bid, pop.get(bid, {})), **dmv})
         info_ = pop.get(bid, {})
