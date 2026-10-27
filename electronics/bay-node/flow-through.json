@@ -1,0 +1,13 @@
+{
+  "comment": "Flow-through ESD lines (electronics/tools/flowthru.py, tools/tests/test_flow_through.py): connector pad, the ESD part's two pads (connector side first), the next part's pad.  Every USBLC6 here carries two nets, the connector side (net) and the protected side (net2): the PC port's pair (U4), the DATA lead's pair (U8) and the camera's SPI (U12/U13, since BN-3; TP18 is SCK's test pad, on the lead side).",
+  "lines": [
+    {"net": "PC_CONN_DP", "net2": "PC_DP", "connector": "J3.A6", "esd": ["U4.4", "U4.3"], "next": "U5.3"},
+    {"net": "PC_CONN_DN", "net2": "PC_DN", "connector": "J3.A7", "esd": ["U4.6", "U4.1"], "next": "U5.4"},
+    {"net": "DUT_CONN_DP", "net2": "DUT_DP", "connector": "J7.3", "esd": ["U8.4", "U8.3"], "next": "U6.3"},
+    {"net": "DUT_CONN_DN", "net2": "DUT_DN", "connector": "J7.4", "esd": ["U8.6", "U8.1"], "next": "U6.4"},
+    {"net": "CAM_SCK_C", "net2": "CAM_SCK_P", "connector": "J6.3", "esd": ["U12.6", "U12.1"], "next": "R31.2", "taps": ["TP18.1"]},
+    {"net": "CAM_MOSI_C", "net2": "CAM_MOSI_P", "connector": "J6.5", "esd": ["U12.4", "U12.3"], "next": "R32.2"},
+    {"net": "CAM_MISO_C", "net2": "CAM_MISO_P", "connector": "J6.6", "esd": ["U13.6", "U13.1"], "next": "R33.1"},
+    {"net": "CAM_CS_C", "net2": "CAM_CS_P", "connector": "J6.7", "esd": ["U13.4", "U13.3"], "next": "R34.2"}
+  ]
+}

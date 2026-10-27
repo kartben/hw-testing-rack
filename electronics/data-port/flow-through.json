@@ -1,0 +1,7 @@
+{
+  "comment": "Flow-through ESD lines (electronics/tools/flowthru.py, tools/tests/test_flow_through.py): the receptacle's pair through U1 (USBLC6, the receptacle side as net, the lead's as net2).",
+  "lines": [
+    {"net": "CONN_DP", "net2": "LEAD_DP", "connector": "J1.A6", "esd": ["U1.6", "U1.1"], "next": "J2.6"},
+    {"net": "CONN_DN", "net2": "LEAD_DN", "connector": "J1.A7", "esd": ["U1.4", "U1.3"], "next": "J2.5"}
+  ]
+}

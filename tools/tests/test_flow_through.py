@@ -80,5 +80,34 @@ class Synthetic(unittest.TestCase):
         self.assertTrue(fails, fails)
 
 
+class SplitNets(unittest.TestCase):
+    """The same parts, the ESD's two pads on two nets: C (J1.1 to U1.1) and D (U1.2 to R1.1), a test pad TP1 on C"""
+    PARTS = [fp("J1", 0, 10, [pad(1, 0, 0, "C", 1.0, 1.0, '"*.Cu"')]),
+             fp("U1", 0, 0, [pad(1, 0, 6, "C"), pad(2, 0, 5, "D")]),
+             fp("R1", 0, 1, [pad(1, 0, 0, "D")]),
+             fp("TP1", 2, 8, [pad(1, 0, 0, "C")])]
+    LINE = {"net": "C", "net2": "D", "connector": "J1.1", "esd": ["U1.1", "U1.2"], "next": "R1.1"}
+    THROUGH = [seg((0, 10), (0, 6), "C"), seg((0, 5), (0, 1), "D")]
+
+    def run_check(self, copper, line=None):
+        text = "(kicad_pcb " + " ".join(self.PARTS + copper) + ")"
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "t.kicad_pcb"
+            path.write_text(text, encoding="utf-8")
+            return flowthru.check_line(flowthru.Board(path), line or self.LINE)
+
+    def test_through_with_a_tap(self):
+        self.assertEqual(self.run_check(self.THROUGH + [seg((0, 8), (2, 8), "C")], {**self.LINE, "taps": ["TP1.1"]}),
+                         [])
+
+    def test_untapped_pad_on_the_connector_side(self):
+        fails = self.run_check(self.THROUGH + [seg((0, 8), (2, 8), "C")])
+        self.assertTrue(any("connector's side" in f for f in fails), fails)
+
+    def test_far_side_open(self):
+        fails = self.run_check([seg((0, 10), (0, 6), "C")])
+        self.assertTrue(any("aren't joined" in f for f in fails), fails)
+
+
 if __name__ == "__main__":
     unittest.main()

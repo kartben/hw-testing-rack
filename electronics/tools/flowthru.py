@@ -13,6 +13,12 @@ touch the first ESD pad only and the next part's piece the second only, and any 
 ESD pads (the board's link under the part, where the part has none inside).  Nothing else may hang on either
 ESD pad.
 
+A line whose two sides carry two nets (a USBLC6's I/O pins named apart, PC_CONN_DP / PC_DP) also gives `net2`,
+the side away from the connector: no copper can pass the part by there, so the only bypass left is another pad
+on the connector's side.  The connector's net may then hold the connector's own pads, the first ESD pad and the
+`taps` listed (test pads) only, the connector joined to the ESD pad; `net2` must join the second ESD pad and the
+next part.
+
     python flowthru.py BOARD.kicad_pcb [LINES.json]      → one line per failure, exit status 1 if any
 """
 from __future__ import annotations
@@ -143,8 +149,55 @@ def _touch(a, b, inside=()) -> bool:
     return any(not any(_in_pad(p, *c) for p in inside) for c in _contacts(a, b))
 
 
+def _pieces(board: Board, net: str):
+    """The net's copper (pours ignored) in joined pieces: [[item, …], …]."""
+    items = [it for it in board.items if _net_of(it[1]) == net]
+    parent = list(range(len(items)))
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+    for i in range(len(items)):
+        for j in range(i + 1, len(items)):
+            if _touch(items[i], items[j]):
+                parent[find(i)] = find(j)
+    piece = {}
+    for i, it in enumerate(items):
+        piece.setdefault(find(i), []).append(it)
+    return list(piece.values())
+
+
+def _check_split(board: Board, line: dict) -> list[str]:
+    """A line whose connector side and far side are two nets (see the module's docstring)."""
+    net, net2 = line["net"], line["net2"]
+    on = {n: {name for name, ps in board.pads.items() for p in ps if _net_of(p["net"]) == n} for n in (net, net2)}
+    out = [f"{n}: no such net" for n in (net, net2) if not on[n]]
+    if out:
+        return out
+    ends = ((net, line["connector"], line["esd"][0]), (net2, line["esd"][1], line["next"]))
+    out = [f"{n}: pad {name} not on the net" for n, a, b in ends for name in (a, b) if name not in on[n]]
+    if out:
+        return out
+    ref = line["connector"].split(".")[0]
+    extra = sorted(name for name in on[net] if name.split(".")[0] != ref
+                   and name not in (line["esd"][0], *line.get("taps", ())))
+    if extra:
+        out.append(f"{net}: {', '.join(extra)} on the connector's side of {line['esd'][0]}")
+    for n, a, b in ends:
+        pa = [p for p in board.pads[a] if _net_of(p["net"]) == n]
+        pb = [p for p in board.pads[b] if _net_of(p["net"]) == n]
+        if not any(any(it[0] == "pad" and it[3] in pa for it in members) and
+                   any(it[0] == "pad" and it[3] in pb for it in members) for members in _pieces(board, n)):
+            out.append(f"{n}: {a} and {b} aren't joined")
+    return out
+
+
 def check_line(board: Board, line: dict) -> list[str]:
     """The line's failures (empty: it runs through its ESD part)."""
+    if "net2" in line:
+        return _check_split(board, line)
     net = line["net"]
     items = [it for it in board.items if _net_of(it[1]) == net]
     if not items:

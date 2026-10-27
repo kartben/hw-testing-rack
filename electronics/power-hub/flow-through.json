@@ -1,0 +1,7 @@
+{
+  "comment": "Flow-through ESD lines (electronics/tools/flowthru.py, tools/tests/test_flow_through.py): the controller's USB-C pair through U5 (USBLC6, the connector side as net, the ESP32's as net2).",
+  "lines": [
+    {"net": "USB_CONN_DP", "net2": "USB_DP", "connector": "J6.A6", "esd": ["U5.6", "U5.1"], "next": "U4.24"},
+    {"net": "USB_CONN_DN", "net2": "USB_DN", "connector": "J6.A7", "esd": ["U5.4", "U5.3"], "next": "U4.23"}
+  ]
+}
