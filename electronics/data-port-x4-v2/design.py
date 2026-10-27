@@ -573,11 +573,12 @@ def hub_sheet(b: Board):
     # never says it is inside (the audit's U2, its conservative option); west of the crystal
     R(s, "R10", "1M", "XO", "XI", size="0402", pcb=P(HX - 9.3, HY + 9.0, 90), sch=at(94, 56, rot=90))
     # decoupling, by pin: west 64 (below the corner), 57 and 52; south 5, 10 (left and right of the DN
-    # pairs); east 24; north 46 (and 44 beside it)
+    # pairs); east 24; north 46 and 44 (C17: east of the straps' RN2, along the top edge and 5 mm in from the
+    # panel tab's mouse bites, clear of the joint's bending; the straps and the MAX809S fill the way to 46)
     for i, (ref, xy, rot) in enumerate((("C11", (HX - 4.7, HY + 6.6), 90), ("C13", (HX - 6.2, HY - 1.1), 180),
                                         ("C12", (HX - 6.2, HY - 2.25), 180), ("C15", (HX - 8.75, HY + 6.6), 90),
                                         ("C16", (HX + 1.6, HY + 7.6), 90), ("C14", (HX + 6.05, HY + 1.2), 90),
-                                        ("C17", (HX + 0.3, HY - 12.1), 90))):
+                                        ("C17", (HX + 3.1, HY - 9.4), 180))):
         C(s, ref, "100n", "+3V3", "GND", size="0402", pcb=P(*xy, rot), sch=at(80 + 6 * i, 24))
     # VDD18 / VDD18PLL: the datasheet's 1.0 µF ± 20 % has no margin left once a 0402's DC bias and temperature
     # are counted (the audit's U10): 4.7 µF, the board's 4.7 µF line

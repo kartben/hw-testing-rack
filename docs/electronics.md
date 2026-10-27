@@ -466,10 +466,13 @@ for the rack's 2 + 2, against $270 as two orders.
   top: the co-processor's test pads (on the rear), the crystal, CP_RUN and the bus tracks.
   - Each tab is 6 mm wide, with seven 0.6 mm holes at a 1 mm pitch (0.4 mm between holes) on each side,
     0.2 mm into the edge: 28 holes, within JLC's guide (5–8 a set, 0.35–0.4 mm apart).
-  - The guide also asks for a set every 50–60 mm; these are 82 mm apart.  Break the joint gently, or cut
-    the tabs.
-  - No copper within 1.2 mm of the edge there (`b.pcb["keepouts"]` "tab0", "tab1").  The nearest copper
-    is 2.19 mm from a hole (a GND via), the nearest part 2.34 mm (C17).
+  - The guide also asks for a set every 50–60 mm; these are 82 mm apart.  **Depanel by cutting the tabs**
+    (side cutters through the bites, then sand), not by snapping the joint: bending it strains the 0402s
+    along the top edge.
+  - No copper within 1.2 mm of the edge there (`b.pcb["keepouts"]` "tab0", "tab1").  From a hole's edge
+    (`tools/panel.sh`): the nearest copper 0.85 mm (a GND via beside a tab), the nearest courtyard 2.93 mm
+    (C6, along the edge).  C17, the hub's 100 nF, sat 1.84 mm from tab1's bites, across the joint; it now
+    lies along the edge 5.0 mm in, east of RN2.
   - The silkscreen "DATA ×4 v2.0" moved off the left tab, to x 17.
 - **Files:** `fab/data-port-x4-v2-panel-gerbers.zip`, `-panel-bom-jlcpcb.csv` (41 lines) and
   `-panel-cpl-jlcpcb.csv`.
