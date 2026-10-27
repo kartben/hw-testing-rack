@@ -172,6 +172,45 @@ PU_GPIO = {"A": 19, "B": 18, "C": 17, "D": 16, "E": 13, "F": 12, "G": 11, "H": 1
 LANE = (5, 1, 6, 2, 7, 3, 8, 4)     # the P pin in lane 1 … 8, west → east
 TPD_SIG = (1, 2, 4, 5)              # the ESD array's signal pins west → east, turned 90° (pins 1–5 down, 6–10 up)
 TPD_THRU = {1: 10, 2: 9, 4: 7, 5: 6}  # the pad across from each: the line runs through both (flow-through)
+
+
+def p_lines(n: int):
+    """Port n's eight P lines, drawn (the kicad-happy review's X2-1, 2026-10-27: Freerouting had run six of them
+    from the header straight to the 100 Ω array, their ESD on a stub).  Every port alike: header pin → B.Cu → a
+    via → its H5VU25UC pad → across to the partner pad → the 100 Ω array.  B.Cu under the upper ports' USB pairs,
+    which cross the band between the header and the ESD on F.Cu (y 38.95–41.35); the vias in two staggered rows
+    between the pairs and the ESD pads (the lanes are 0.5 mm apart).  The lower row's pins pass between two of the
+    upper row's (P5 west of pin 4).  The array pads: outer lanes bend late, inner ones early.  The array's GND
+    pads, walled in by the middle lanes, go down to a via of their own between the lanes' vias.  Returns (tracks,
+    vias)."""
+    cx = CFG["usb"][n - 1]
+    up, lo = HDR_Y - 1.27, HDR_Y + 1.27                 # the header's rows: P1-P4 up, P5-P8 down
+    e_y, p_y, rn_y = TPD_Y + 0.4375, TPD_Y - 0.4375, RN_Y + 0.5
+    col = [cx - 6.35 + 2.54 * c for c in range(6)]      # the header's columns
+    tracks, vias = [], []
+    for j in range(2):
+        x0 = cx + (2.54 if j else -2.54)
+        # the array's GND pads (3 and 8, between the middle lanes) down to a via between the lanes' vias
+        tracks.append(("GND", "F.Cu", 0.25, [(x0, p_y), (x0, TPD_Y), (x0, e_y), (x0, e_y + 1.11)]))
+        vias.append(("GND", x0, e_y + 1.11, 0.5, 0.3))
+        for i in range(4):
+            net = f"PORT{n}_P{LANE[4 * j + i]}"
+            xe = x0 + (-1.0, -0.5, 0.5, 1.0)[i]          # TPD_SIG's pads
+            xr = x0 + (-0.75, -0.25, 0.25, 0.75)[i]      # the array's pins
+            vy = e_y + (1.46 if i in (0, 2) else 0.76)   # the via rows: 38.3, 37.6
+            down = [(xe, vy), (xe, e_y), (xe, p_y)] + ([(xe, rn_y + 0.25), (xr, rn_y)] if i in (0, 3) else
+                                                       [(xe, rn_y + 0.667), (xr, rn_y + 0.417), (xr, rn_y)])
+            if i in (1, 3):                             # P1 P2 P3 P4: the upper row, up to the lane
+                hx = col[1 + 2 * j + i // 2]
+                d = abs(hx - xe)
+                b = [(hx, up), (xe, up - d), (xe, vy)]
+            else:                                       # P5 P6 P7 P8: the lower row, between two upper pins
+                hx = col[1 + 2 * j + i // 2]
+                gap = hx - 1.27                         # west of its column's upper pin
+                b = [(hx, lo), (gap, lo - 1.27), (gap, vy + 0.66 + abs(xe - gap)), (xe, vy + 0.66), (xe, vy)]
+            tracks += [(net, "B.Cu", 0.127, b), (net, "F.Cu", 0.127, down)]
+            vias.append((net, xe, vy, 0.5, 0.3))
+    return tracks, vias
 # lane → crosspoint X line: port a on the chip's west face (pins 1–8, north → south X14 X15 X6 … X11), port
 # b on its east face (pins 31–24, north → south X0 X1 … X5 X12 X13)
 XMAP = {True: {1: 14, 2: 15, 3: 6, 4: 7, 5: 8, 6: 9, 7: 10, 8: 11},
@@ -972,6 +1011,27 @@ def board() -> Board:
     d1k = (CP[0] + 8.4 - 0.9375, 2.4)
     hand_tracks.append(("GND", "F.Cu", 0.25, [d1k, (d1k[0], 3.8)]))
     hand_vias.append(("GND", d1k[0], 3.8, 0.5, 0.3))
+    for n in range(1, 5):                               # the 32 P lines, locked (p_lines())
+        t, v = p_lines(n)
+        hand_tracks += t
+        hand_vias += v
+    # ports 1 and 4's 5V_SW, from the switch up to the VBUS LED's resistor, drawn: their old way past the header
+    # (B.Cu between two of its pins) now carries P6 / P5.  Port 1 crosses the header on F.Cu west of pin 4; port 4,
+    # under three USB pairs there, on B.Cu west of the header.  Relative to the port's x: (layer, points), vias
+    sw = {1: ([("F.Cu", [(-3.6925, 53.8), (-3.6925, 52.4), (-4.35, 52.4)]),
+               ("F.Cu", [(-4.35, 52.4), (-3.6875, 51.7375), (-3.6875, 51.55)]),
+               ("B.Cu", [(-4.35, 52.4), (-4.35, 46.39)]),
+               ("F.Cu", [(-4.35, 46.39), (-4.95, 45.79), (-4.95, 39.54), (-4.2, 38.79), (-4.2, 34.69), (-5.2, 33.69)])],
+              [(-4.35, 52.4), (-4.35, 46.39)]),
+          4: ([("F.Cu", [(-3.6925, 53.8), (-3.6925, 51.55)]),
+               ("F.Cu", [(-3.6875, 51.55), (-4.155, 51.55), (-4.757, 50.948)]),
+               ("B.Cu", [(-4.757, 50.948), (-4.757, 49.333), (-7.5, 46.59), (-7.5, 35.99), (-5.85, 34.34)]),
+               ("F.Cu", [(-5.85, 34.34), (-5.2, 33.69)])],
+              [(-4.757, 50.948), (-5.85, 34.34)])}
+    for n, (runs, vs) in sw.items():
+        cx = CFG["usb"][n - 1]
+        hand_tracks += [(f"PORT{n}_5V_SW", layer, 0.3, [(cx + x, y) for x, y in pts]) for layer, pts in runs]
+        hand_vias += [(f"PORT{n}_5V_SW", cx + x, y, 0.5, 0.3) for x, y in vs]
     # and the crystal's and C43's GND fan-outs kept where the routing expects them (the auto fan-out moves them
     # once the SWD lines pass under the crystal)
     y2g, c43g = (CP[0] + 1.3 + 1.1, 3.05), (CP[0] + 3.0, 5.02)
