@@ -242,7 +242,7 @@ H6 grows to ≈ 150 µF at plug-in: kept on purpose, and no clamp added on the C
 | N3 | R29 470k | POS_IN 3.17 V high; one part type more |
 | N4 | U9's input on a +5V top island, three vias to In2, C20 at the pins | |
 | N5, N9 | bring-up measurements | |
-| N6 | review-konnect.md corrected: U12/U13 are a clamp beside the line, not flow-through | fine at 4 MHz |
+| N6 | review-konnect.md corrected: U12/U13 are a clamp beside the line, not flow-through | fine at 4 MHz; superseded 2026-10-27 (BN-3): the nets split at the parts, flow-through like U4/U8 |
 | N7 | R23 1k | a reference, not a supply |
 | N8 | R39 100k SVC → GND | |
 | N10 | C12: the same connection on both pads (solid on both since 2026-10-20) | |

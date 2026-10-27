@@ -222,7 +222,7 @@ Firmware, no hardware change:
 | VBUS–GND ≥ 6 V breakdown; IRM at 5.25 V | +5V (U4/U8), +3V3 (U12/U13, the lines' level) | OK | Table 2 p. 2; §2.1 p. 4 |
 | CBUS 100 nF, short VBUS track (rec.) | C25 3.4 mm, C26 2.9 mm; **U12/U13 none** | OK / **to fix** (F4) | §2.3 p. 5; Fig 18 p. 9 |
 | Capacitance 3.5 pF max | SPI 4 MHz behind 33 Ω: negligible | OK | Table 2 |
-| Near the connector, flow-through | U4 at J3, U8 at J7, U12/U13 6–7 mm from J6 | OK | §2.3 p. 6 |
+| Near the connector, flow-through | U4 at J3, U8 at J7, U12/U13 6–7 mm from J6; all flow-through, each line's two pins on two nets (U12/U13 since 2026-10-27, BN-3: before, SCK, MOSI and MISO passed them by and "OK" here only meant the distance) | OK | §2.3 p. 6 |
 
 ### D4 WS2812B-2020-V6, Q4 AO3400A, Q2/Q3 2N7002
 

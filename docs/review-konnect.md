@@ -604,7 +604,7 @@ Fabio's rules, checked again on the saved files:
 | In1 GND only, In2 power only, no track on either | In1: one GND plane.  In2: +3V3, +5V and VRACK planes.  Tracks only on F.Cu (851) and B.Cu (179) |
 | Thermal reliefs | Against tombstoning, never as a current bottleneck (2026-10-20): the power nets' IC, connector and inductor pins and big pads solid (VRACK at J1/J2, the buck, U9's input, J7's and the camera's GND); small parts the same connection on both ends; through-hole pins relieved.  The buck's hot-loop islands stay solid, both ends of each part on copper |
 | Clear power net names | +5V, +3V3, VIN, VRACK, DUT_5V_SW → DUT_5V, CAM_5V |
-| USBLC6 in flow-through | U4, U8: connector side and protected side are separate nets (`*_CONN_*`).  U12, U13 (the camera's SPI) are not: each line's two pins (1/6, 3/4) are one net on the lead side, bridged under the body, a clamp beside the line; fine at 4 MHz (PCBA review N6) |
+| USBLC6 in flow-through | U4, U8: connector side and protected side are separate nets (`*_CONN_*`).  U12, U13 (the camera's SPI) too since 2026-10-27 (BN-3): `CAM_*_C` from J6 to pins 6/4, `CAM_*_P` from pins 1/3 to the 33 Ω.  Before, each line's two pins were one net, bridged under the body, and the routes passed three of the four lines by (PCBA review N6, accepted then as a clamp beside the line at 4 MHz; superseded by the flow-through rule) |
 | HS pairs hand-drawn, length-matched | J3 → J7 drawn in `usb_hs_routes()` and matched to ≈ 0.3 mm (≈ 2 ps, vias as 1.6 mm).  The DUT end is straight: DUT_CONN_DP 14.6 mm, DUT_CONN_DN 14.7 mm, no via.  The PC side is unchanged (PC_DP's bumps make up PCPATH_DN's two vias) |
 | PH, not SH | Every lead connector is a PH: J1 / J2 / J5 S6B, J7 S8B, J6 B8B |
 

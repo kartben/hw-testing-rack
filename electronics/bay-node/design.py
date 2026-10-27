@@ -171,9 +171,9 @@ def usb_hs_routes():
 # label, label offset or None for under the pad)
 TP_ROUND2 = [
     ("CAM_SCK_C", "c", 1.0, (54.3875, 14.2), True, "SCK", None),
-    ("CAM_MOSI_C", "c", 1.0, (49.9406, 12.8732), False, "MOSI", None),
-    ("CAM_MISO_C", "c", 1.0, (48.2572, 16.756), False, "MISO", (2.4, 0.0)),
-    ("CAM_CS_C", "c", 1.0, (49.7863, 19.4209), True, "CS", None),
+    ("CAM_MOSI_P", "c", 1.0, (49.9406, 12.8732), False, "MOSI", None),
+    ("CAM_MISO_P", "c", 1.0, (48.2572, 16.756), False, "MISO", (2.4, 0.0)),
+    ("CAM_CS_P", "c", 1.0, (49.7863, 19.4209), True, "CS", None),
     ("GND", "c", 1.5, (54.9, 17.9), True, "GND", None),
     ("CAN_TXD", "k", 1.0, (29.405, 62.4831), True, "TXD", None),
     ("CAN_RXD", "k", 1.0, (24.4045, 62.4177), False, "RXD", None),
@@ -803,10 +803,10 @@ def board() -> Board:
     C(c, "C27", "100n", "CAM_5V", "GND", pcb=P(cx - 8.0, cy - 7.2, 90), sch=at(30, 16))
     # SPI: 33 Ω in series at the node end of the lead (a few cm of track from U3: the source, for a 50 cm lead)
     rx, ry = cx - 11.5, cy - 8.2
-    R(c, "R31", "33", "CAM_SCK", "CAM_SCK_C", pcb=P(rx, ry, 0), sch=at(50, 24, rot=90))
-    R(c, "R32", "33", "CAM_MOSI", "CAM_MOSI_C", pcb=P(rx, ry + 1.8, 0), sch=at(50, 30, rot=90))
-    R(c, "R33", "33", "CAM_MISO_C", "CAM_MISO", pcb=P(rx, ry + 3.6, 0), sch=at(50, 36, rot=90))
-    R(c, "R34", "33", "CAM_CS", "CAM_CS_C", pcb=P(rx, ry + 5.4, 0), sch=at(50, 42, rot=90))
+    R(c, "R31", "33", "CAM_SCK", "CAM_SCK_P", pcb=P(rx, ry, 0), sch=at(50, 24, rot=90))
+    R(c, "R32", "33", "CAM_MOSI", "CAM_MOSI_P", pcb=P(rx, ry + 1.8, 0), sch=at(50, 30, rot=90))
+    R(c, "R33", "33", "CAM_MISO_P", "CAM_MISO", pcb=P(rx, ry + 3.6, 0), sch=at(50, 36, rot=90))
+    R(c, "R34", "33", "CAM_CS", "CAM_CS_P", pcb=P(rx, ry + 5.4, 0), sch=at(50, 42, rot=90))
     # the camera pod (electronics/camera-pod) runs the Mega from 3.3 V, so MISO is 3.3 V; R35 stays a fallback
     # divider for a camera fed 5 V: R33 → 330 and fit R35 (3.37 V)
     R(c, "R35", "680", "CAM_MISO", "GND", pcb=P(rx, ry + 7.2, 0), sch=at(40, 40), dnp=True)
@@ -814,10 +814,12 @@ def board() -> Board:
     R(c, "R37", "10k", "CAM_CS", "+3V3", pcb=P(36.6, 40.2, 0), sch=at(40, 54))
     # their VBUS pin (5) on +3V3, not CAM_5V (the schematic counter-review, 2026-10-23): with CAM_5V off (the PTC
     # tripped), the SPI lines would feed the pod through the upper diodes, and CAM_5V's clamp sits above the
-    # ESP32's 3.6 V
-    part(c, "U12", "esd", {"1": "CAM_SCK_C", "6": "CAM_SCK_C", "3": "CAM_MOSI_C", "4": "CAM_MOSI_C",
+    # ESP32's 3.6 V.  Flow-through, as U4 and U8: each line's two pins carry two nets, CAM_*_C from J6 to the pin
+    # facing it (6, 4) and CAM_*_P from the other (1, 3) to the 33 Ω, so no route can pass the ESD by
+    # (kicad-happy follow-up BN-3, 2026-10-27: SCK, MOSI and MISO did)
+    part(c, "U12", "esd", {"6": "CAM_SCK_C", "1": "CAM_SCK_P", "4": "CAM_MOSI_C", "3": "CAM_MOSI_P",
                            "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy - 1.4, 0), sch=at(76, 22))
-    part(c, "U13", "esd", {"1": "CAM_MISO_C", "6": "CAM_MISO_C", "3": "CAM_CS_C", "4": "CAM_CS_C",
+    part(c, "U13", "esd", {"6": "CAM_MISO_C", "1": "CAM_MISO_P", "4": "CAM_CS_C", "3": "CAM_CS_P",
                            "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy + 3.4, 0), sch=at(76, 38))
     # their VBUS pins' 100 nF (ST USBLC6-2 §2.3: datasheet audit F4), above U12 between F1 and it, its +3V3 end by
     # U12's pin 5 (the two parts' courtyards leave no room between U12 and U13)
