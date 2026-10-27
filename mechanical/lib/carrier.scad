@@ -105,12 +105,35 @@ ONE_HOLES = [for (h = DATA_PCB_HOLES) data_hole(h)];
 // they and the bosses reach the board's underside (x4_cradle.scad's comb clears them)
 ONE_LEDGES = [[DATA_PCB_X0 + 1, DATA_PORT_X[0] - 7], [DATA_PORT_X[0] + 7, DATA_PCB_X0 + DATA_PCB_SIZE[0] - 1]];
 
-// board plate (drops into the drawer between front panel and port wall)
-PLATE_W = DRAWER_INNER_W - 0.6;
+// board plate (drops into the drawer between front panel and port wall), DRAWER_PLATE_GAP off the left and right
+// walls: the display's lead runs in the right gap (rackcfg.py › plate_origin, plate_size mirror these)
+PLATE_W = DRAWER_INNER_W - DRAWER_PLATE_GAP[0] - DRAWER_PLATE_GAP[1];
 PLATE_D = DRAWER_PORT_WALL_Y - DRAWER_WALL - DRAWER_FRONT_T - 0.6;   // up to the port wall's front face
-PLATE_X0 = DRAWER_WALL + 0.3;                      // drawer coords
+PLATE_X0 = DRAWER_WALL + DRAWER_PLATE_GAP[0];      // drawer coords
 PLATE_Y0 = DRAWER_FRONT_T + 0.3;
 function plate_pins() = [[10, 10], [PLATE_W - 10, PLATE_D - 10]];   // 180°-symmetric locating pins
+PLATE_SLOTS_X = [12, PLATE_W - 12];                // the finger slots' centres
+
+// the front display (config/rack.yaml › drawer.display; none: DISPLAY_GLASS = []), drawer coords
+HAS_DISPLAY = len(DISPLAY_GLASS) == 2;
+DISPLAY_CLEAR = 0.15;                              // round the glass in its window
+// the window through the front: x0, z0, x1, z1
+DISPLAY_WIN = HAS_DISPLAY ? [DISPLAY_AT[0] - DISPLAY_CLEAR, DISPLAY_AT[1] - DISPLAY_CLEAR,
+    DISPLAY_AT[0] + DISPLAY_GLASS[0] + DISPLAY_CLEAR, DISPLAY_AT[1] + DISPLAY_GLASS[1] + DISPLAY_CLEAR] : [];
+// the plane its stand-offs seat on, drawer y (DISPLAY_FIT: recess, seat, holes, screw)
+DISPLAY_SEAT_Y = HAS_DISPLAY ? DISPLAY_FIT[0] + DISPLAY_FIT[1] : 0;
+// its four holes, drawer xz: DISPLAY_FIT[2] in from the edges of its PCB, centred behind the glass
+function display_holes() = let (m = (DISPLAY_GLASS - DISPLAY_PCB) / 2 + [1, 1] * DISPLAY_FIT[2])
+    [for (i = [0, 1], j = [0, 1]) [DISPLAY_AT[0] + (i ? DISPLAY_GLASS[0] - m[0] : m[0]),
+                                   DISPLAY_AT[1] + (j ? DISPLAY_GLASS[1] - m[1] : m[1])]];
+// the drawer front's label recess (parts/drawer.scad) and so the bay label (parts/label.scad, 16 mm shorter): 8 mm
+// of front either side, left of the display's frame when there is one
+LABEL_RECESS_W = HAS_DISPLAY ? DISPLAY_WIN[0] - DISPLAY_FRAME[0] + DRAWER_X0 - 1 - 16 : DRAWER_W - 26;
+// its SH 12 header (bottom edge, its plug 1 mm under the glass's bottom), drawer x from, to
+function display_sh_x() = [for (s = [DISPLAY_SH[1], DISPLAY_SH[0]]) DISPLAY_AT[0] + DISPLAY_GLASS[0] - s];
+// the plate's notch for the display's lead: its front-right corner from 1 mm left of the header, 4 deep (the
+// front row's holes keep their 1.8 margin), and the same turned 180° at its rear left (rackcfg.py › plate_notch_x)
+PLATE_NOTCH = HAS_DISPLAY ? [display_sh_x()[0] - 1 - PLATE_X0, 4] : [];
 
 // ---------------------------------------------------------------- drag chain
 CHAIN_W = CHAIN_OUTER[0];                          // vertical extent when lying flat

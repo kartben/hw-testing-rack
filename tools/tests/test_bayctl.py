@@ -479,8 +479,8 @@ class Slots(unittest.TestCase):
     """config/rack.yaml › population (the mechanical side: tools/rackcfg.py): a bay's one board, or a
     converted bay's boards on one plate.  bayctl does not read it."""
 
-    PACKED = [("xiao", (19.42, 112.44)), ("rpi-pico2", (44.2, 82.4)), ("rpi-pico2", (72.2, 82.4)),
-              ("xiao", (100.2, 112.44))]
+    PACKED = [("xiao", (17.97, 112.44)), ("rpi-pico2", (42.75, 82.4)), ("rpi-pico2", (70.75, 82.4)),
+              ("xiao", (98.75, 112.44))]
     EXAMPLE = [("xiao", (8.7, 30.0)), ("rpi-pico2", (41.7, 16.0)), ("rpi-pico2", (74.7, 16.0)),
                ("xiao", (107.7, 30.0))]
 
@@ -524,7 +524,7 @@ class Slots(unittest.TestCase):
 
     def test_plate(self):
         rack = rackcfg.load()
-        self.assertEqual([round(v, 3) for v in rack.plate_size], [137.4, 159.4])
+        self.assertEqual([round(v, 3) for v in rack.plate_size], [134.5, 159.4])
         self.assertEqual([(round(x, 3), round(y, 3)) for x, y in rack.plate_buttons()], [(1.2, 67.2), (9.2, 67.2)])
 
     def test_packing_and_checks(self):
@@ -562,7 +562,7 @@ class Slots(unittest.TestCase):
         self.assertIn("BAY_PLATES = [];", build.boards_scad(rackcfg.load_boards(), rack))   # the honeycomb plate
         self.assertNotIn(("plate_bay_b3", "parts/board_plate.scad", {"BAY": "B3"}), build.part_jobs(rack))
         rack.raw["population"]["B3"]["plate"] = "boards"                                  # its own plate
-        self.assertIn('["B3", "boards", [[1, [19.42, 112.44], ["xiao", "XIAO", [17.78, 20.96]',
+        self.assertIn('["B3", "boards", [[1, [17.97, 112.44], ["xiao", "XIAO", [17.78, 20.96]',
                       build.boards_scad(rackcfg.load_boards(), rack))
         self.assertIn(("plate_bay_b3", "parts/board_plate.scad", {"BAY": "B3"}), build.part_jobs(rack))
         rack.raw["population"]["B3"]["boards"][1]["at"] = [10, 60]

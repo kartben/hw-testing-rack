@@ -1,5 +1,6 @@
-// Bay label for the drawer front's label recess (116 × 12.4 × 0.9): 100 × 12 × 1.0, the bay's ID in 7 mm
-// capitals debossed 0.8 mm into the face that shows and filled by the H2D's second nozzle, flush: one object,
+// Bay label for the drawer front's label recess (LABEL_RECESS_W × 12.4 × 0.9, 70.7 wide with the display): 16 mm
+// shorter, 12 × 1.0, the bay's ID in 7 mm capitals debossed 0.8 mm into the face that shows and filled by the
+// H2D's second nozzle, flush: one object,
 // two colours (docs/printed-parts-review.md, finding 12).  That face prints on the bed, the crispest there is,
 // so the text is mirrored here and reads right on the drawer.  The two parts register:
 //
@@ -12,7 +13,7 @@ include <../lib/carrier.scad>
 
 ID = "";
 PART = "body";                          // body | inlay
-SIZE = [100, 12, 1.0];
+SIZE = [LABEL_RECESS_W - 16, 12, 1.0];
 TEXT = [7.3, 0.8];                      // text size (7 mm capitals, Liberation Sans Bold), depth
 
 module id_2d() translate([SIZE[0] / 2, SIZE[1] / 2]) mirror([1, 0])

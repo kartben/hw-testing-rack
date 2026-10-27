@@ -940,6 +940,7 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
         "ladder_base": cols + 1, "ladder_cap": cols + 1, "floor_plate": cols, "cap_plate": cols, "brace_base": cols,
         "tray": n_bays, "drawer": n_drawer, "chain_foot": n_drawer, "chain_anchor": n_drawer,
         "drawer_sled": n_sled, "drawer_block": n_sled,
+        "drawer_front": n_drawer + n_sled,          # its own part, printed face down, on a drawer or a sled
         "camera_pod": cams, "camera_diffuser": cams,
         # each bay's label: its body and its ID's inlay (the H2D's second filament), printed as one object
         **{f"bay_label_{b.id.lower()}{s}": 1 for b in rack.bays() for s in ("", "_inlay")},
@@ -1038,12 +1039,18 @@ def hardware(rack) -> list[dict]:
                                          "every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, "
                                          "2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and "
                                          "2 port-block locks (and 2 sled locks if fixed); a DATA ×4 bay: no DATA board (its "
-                                         "cradle takes M3 × 8 into inserts), 5 for the strip over its receptacles",
+                                         "cradle takes M3 × 8 into inserts), 5 for the strip over its receptacles; "
+                                         "every bay, 2 that pull its front onto the drawer from inside",
          "supplier": "AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100)",
-         "qty": 8 * n_drawer + 5 * n_sled + 2 * n_fixed - 2 * n_multi + 5 * n_multi,
+         "qty": 8 * n_drawer + 5 * n_sled + 2 * n_fixed - 2 * n_multi + 5 * n_multi + 2 * (n_drawer + n_sled),
          "unit_eur": 0.02,
          "notes": "pilots Ø1.9 (lib/common.scad › PT_PILOT), clearance Ø2.6; a PT 2.6's Ø5 head would rub the "
                   "drawer's wall at the guide lips (lib/carrier.scad › LIP_SCREW, checked in SolidCraft)"},
+        *([{"category": "Fasteners", "item": "M2×5 pan head, ISO 7045 (the front display: 4 through its frame "
+                                             "into the module's stand-offs, from behind)",
+            "supplier": "AliExpress (bulk)", "qty": 4 * (n_drawer + n_sled), "unit_eur": 0.02,
+            "notes": "the stand-offs' thread and depth aren't given (Waveshare 31122): check on arrival "
+                     "(config/rack.yaml › drawer.display.screw)"}] if r["drawer"].get("display") else []),
         {"category": "Fasteners", "item": "M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm)",
          "supplier": "AliExpress (bulk)", "qty": 4 * n_drawer, "unit_eur": 0.01},
         {"category": "Motion", "item": "Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), "

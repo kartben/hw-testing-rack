@@ -37,10 +37,14 @@ module plate_body() {
         rbox([PLATE_W, PLATE_D, PLATE_T], r = 3);
         for (p = plate_pins()) translate([p[0], p[1], -EPS]) cylinder(d = 4.2, h = PLATE_T + 1);
         // finger holes to lift the plate out
-        for (x = [12, PLATE_W - 12]) translate([x, PLATE_D / 2, -EPS]) rslot(14, 9, PLATE_T + 1);
+        for (x = PLATE_SLOTS_X) translate([x, PLATE_D / 2, -EPS]) rslot(14, 9, PLATE_T + 1);
         // pin holes over the node's RESET and BOOT, as in the drawer's floor
         for (q = button_holes()) translate(concat(q, [-EPS]))
             cylinder(d = 3.2, h = PLATE_T + 1);
+        // the front display's lead drops into its front-right corner (and the same turned 180°, the plate
+        // drops in either way): lib/carrier.scad › PLATE_NOTCH
+        if (HAS_DISPLAY) for (t = [0, 1]) translate([PLATE_W / 2, PLATE_D / 2, 0]) rotate([0, 0, 180 * t])
+            translate([PLATE_NOTCH[0] - PLATE_W / 2, -PLATE_D / 2 - 1, -EPS]) cube([PLATE_W, PLATE_NOTCH[1] + 1, PLATE_T + 2 * EPS]);
     }
 }
 
@@ -131,7 +135,7 @@ function bay_rec(id) = BAY_PLATES[search([id], BAY_PLATES, 1, 0)[0]];
 function button_holes() = [for (k = [NODE_RESET, NODE_BOOT]) node_xy(k) - [DRAWER_X0 + PLATE_X0, PLATE_Y0]];
 
 module bay_lightening(places) {
-    keep = concat(plate_pins(), button_holes(), [[12, PLATE_D / 2], [PLATE_W - 12, PLATE_D / 2]]);
+    keep = concat(plate_pins(), button_holes(), [for (x = PLATE_SLOTS_X) [x, PLATE_D / 2]]);
     for (x = [14 : 13 : PLATE_W - 14], y = [12 : 11.3 : PLATE_D - 14]) {
         xx = x + ((round(y / 11.3) % 2) ? 6.5 : 0);
         over = [for (b = places) let(o = b[1], size = b[2][2])
@@ -165,9 +169,11 @@ module bay_plate(id) {
 // ---- the honeycomb plate
 module row_numbers() {
     for (r = HEX_ROWS) if (r[0] % 2 == 1)
-        for (x = [5.2, PLATE_W - 5.2]) {
+        // in the rim's middle, between the plate's edge and the row's end hole
+        let (rim = min([for (h = HEX_HOLES) if (abs(h[1] - r[1]) < 0.01) h[0]]) - HEX_AF / 2 - HEX_U)
+        for (x = [rim / 2, PLATE_W - rim / 2]) {
             spot = [x, r[1]];
-            clear = [for (q = concat(plate_pins(), button_holes(), [[12, PLATE_D / 2], [PLATE_W - 12, PLATE_D / 2]]))
+            clear = [for (q = concat(plate_pins(), button_holes(), [for (sx = PLATE_SLOTS_X) [sx, PLATE_D / 2]]))
                      if (norm(spot - q) < 9.5) 1];
             if (len(clear) == 0) translate([x, r[1], PLATE_T - 0.5]) label_text(str(r[0]), size = 3.4, depth = 0.5 + EPS);
         }

@@ -231,17 +231,56 @@ class Rack:
 
     # ---- the board plate (lib/carrier.scad: plate coords, origin at its front-left, y to the port wall) --
     @property
+    def plate_gaps(self) -> tuple[float, float]:
+        """The plate's gaps to the left and right walls (drawer.plate_gap)."""
+        g = self.drawer.get("plate_gap", 0.3)
+        return (g, g) if isinstance(g, (int, float)) else tuple(g)
+
+    @property
     def plate_origin(self) -> tuple[float, float]:
         """The plate's front-left corner in drawer coords (PLATE_X0, PLATE_Y0)."""
         d = self.drawer
-        return d["wall"] + 0.3, d["front_thickness"] + 0.3
+        return d["wall"] + self.plate_gaps[0], d["front_thickness"] + 0.3
 
     @property
     def plate_size(self) -> tuple[float, float]:
-        """PLATE_W × PLATE_D: the drawer's inside, from its front panel up to the port wall."""
+        """PLATE_W × PLATE_D: the drawer's inside, from its front panel up to the port wall, `plate_gap` off the walls."""
         d = self.drawer
-        return (self.drawer_w - 2 * d["wall"] - 0.6,
+        return (self.drawer_w - 2 * d["wall"] - sum(self.plate_gaps),
                 d["depth"] - d["rear_bay"] - d["wall"] - d["front_thickness"] - 0.6)
+
+    @property
+    def plate_pins(self) -> list[tuple[float, float]]:
+        """The locating pins, plate coords, 180° symmetric (lib/carrier.scad › plate_pins)."""
+        w, d = self.plate_size
+        return [(10, 10), (w - 10, d - 10)]
+
+    @property
+    def plate_slots_x(self) -> tuple[float, float]:
+        """The finger slots' centres along x, plate coords (board_plate.scad › plate_body)."""
+        w, _ = self.plate_size
+        return 12, w - 12
+
+    def plate_display(self) -> tuple[float, float, float, float] | None:
+        """The front display and its frame over the plate, plate coords: from its frame's left leg to the plate's
+        right edge, back to the frame's screw heads (2 mm behind its bars).  Its lead drops into the notch in the
+        plate's front-right corner (board_plate.scad)."""
+        disp = self.drawer.get("display")
+        if not disp:
+            return None
+        px, py = self.plate_origin
+        w, _ = self.plate_size
+        leg, bar = DISPLAY_FRAME
+        back = disp["recess"] + disp["seat"] + bar + 2.0
+        return disp["x"] - 0.15 - leg - 0.5 - px, 0.0, w, back - py
+
+    def plate_notch_x(self) -> float | None:
+        """Where the plate's front-right notch for the display's lead starts, plate coords (1 mm left of its SH
+        header; the notch runs on to the plate's right edge, 4 deep, and again turned 180° at the rear left)."""
+        disp = self.drawer.get("display")
+        if not disp:
+            return None
+        return disp["x"] + disp["glass"][0] - disp["sh"][1] - 1.0 - self.plate_origin[0]
 
     def plate_buttons(self) -> list[tuple[float, float]]:
         """The pin holes over the node's RESET and BOOT, in plate coords (board_plate.scad › plate_body)."""
@@ -254,11 +293,17 @@ class Rack:
         """What a board may not cover, as (name, (x0, y0, x1, y1)) in plate coords: the locating pins, the
         finger slots and the label (board_plate.scad › plate_body).  The RESET/BOOT holes: plate_buttons."""
         w, d = self.plate_size
-        return [("locating pin", (10 - 2.1, 10 - 2.1, 10 + 2.1, 10 + 2.1)),
-                ("locating pin", (w - 10 - 2.1, d - 10 - 2.1, w - 10 + 2.1, d - 10 + 2.1)),
-                ("finger slot", (12 - 7, d / 2 - 4.5, 12 + 7, d / 2 + 4.5)),
-                ("finger slot", (w - 12 - 7, d / 2 - 4.5, w - 12 + 7, d / 2 + 4.5)),
-                ("label", (w / 2 - 25, 2, w / 2 + 25, 12))]
+        out = [("locating pin", (px - 2.1, py - 2.1, px + 2.1, py + 2.1)) for px, py in self.plate_pins]
+        out += [("finger slot", (sx - 7, d / 2 - 4.5, sx + 7, d / 2 + 4.5)) for sx in self.plate_slots_x]
+        out.append(("label", (w / 2 - 25, 2, w / 2 + 25, 12)))
+        # the front's joint: a post hanging off each side wall, its screw's head behind it (drawer.scad › JOINTS)
+        px, py = self.plate_origin
+        wall, back = self.drawer["wall"], self.drawer["front_thickness"] + 7.4 + 3 + 1.6 + 0.5 - py
+        out.append(("front's joint", (0, 0, wall + 5.2 - px + 0.5, back)))
+        out.append(("front's joint", (self.drawer_w - wall - 5.2 - px - 0.5, 0, w, back)))
+        if self.plate_display():
+            out.append(("display", self.plate_display()))
+        return out
 
     @property
     def plate_grid(self) -> dict:
@@ -280,14 +325,14 @@ class Rack:
         n_rows = int((d - 2 * (m + half_y)) / g["row"] + 1e-9) + 1
         y0 = (d - (n_rows - 1) * g["row"]) / 2
         n_long = int((w - 2 * (m + half_x)) / p + 1e-9) + 1
-        slots = [(x, d / 2) for x in (12.0, w - 12.0)]            # finger slots: 14 × 9 along X (plate_keepouts)
+        slots = [(x, d / 2) for x in self.plate_slots_x]          # finger slots: 14 × 9 along X (plate_keepouts)
         out = []
         for j in range(n_rows):
             n = n_long if j % 2 else n_long - 1
             y = y0 + j * g["row"]
             for i in range(n):
                 x = w / 2 + p * (i - (n - 1) / 2)
-                if any(math.hypot(x - px, y - py) < 2.1 + half_y + m for px, py in ((10, 10), (w - 10, d - 10))):
+                if any(math.hypot(x - px, y - py) < 2.1 + half_y + m for px, py in self.plate_pins):
                     continue
                 if any(math.hypot(max(abs(x - sx) - 2.5, 0), y - sy) < 4.5 + half_y + m for sx, sy in slots):
                     continue
@@ -499,6 +544,18 @@ def scad_value(v) -> str:
     raise TypeError(v)
 
 
+DISPLAY_FRAME = (2.2, 2.5)     # the display frame's legs and bars, thick (parts/drawer.scad › display_frame)
+
+
+def display_consts(disp: dict | None) -> dict:
+    """drawer.display → DISPLAY_* (empty lists when the drawer has none: drawer.scad keeps its old front)."""
+    keys = ("DISPLAY_GLASS", "DISPLAY_PCB", "DISPLAY_AT", "DISPLAY_SH", "DISPLAY_FIT", "DISPLAY_FRAME")
+    if not disp:
+        return {k: [] for k in keys}
+    return dict(zip(keys, (disp["glass"], disp["pcb"], [disp["x"], disp["z"]], disp["sh"],
+                           [disp["recess"], disp["seat"], disp["holes"], disp["screw"]], list(DISPLAY_FRAME))))
+
+
 def scad_config(rack: Rack) -> str:
     r = rack.raw
     c = rack.carrier
@@ -544,6 +601,8 @@ def scad_config(rack: Rack) -> str:
         "DRAWER_WALL_H": d["wall_height"],
         "DRAWER_FRONT_H": d["front_height"],
         "DRAWER_FRONT_T": d["front_thickness"],
+        "DRAWER_PLATE_GAP": list(rack.plate_gaps),
+        **display_consts(d.get("display")),
         "DRAWER_REAR_BAY": d["rear_bay"],
         "DRAWER_FLANGE": d["flange"],
         "DRAWER_MAGNET": d["magnet"],

@@ -14,7 +14,7 @@ the latest CI run).
   `ladder_b`, `ladder_c`: their heights differ) and a `ladder_cap`.
 * Per column: `floor_plate`, `cap_plate`, one brace per level (`brace_base`,
   `brace_a` …).
-* Per bay: `tray`, `drawer`, `chain_foot`, `chain_anchor`, the board `plate`
+* Per bay: `tray`, `drawer` and `drawer_front`, `chain_foot`, `chain_anchor`, the board `plate`
   and the pegs its boards need (`python tools/plate_layout.py <bay>`), its label
   (`bay_label_<bay>` and `bay_label_<bay>_inlay`, one object in two colours:
   [mechanical.md](mechanical.md), Bay label).
@@ -76,7 +76,14 @@ later, take its tray out first.
    two anchors at its front right (a cable tie through each one's tunnel),
    clear of the chain foot's reach ([cabling.md](cabling.md)); the row feed
    goes into the row's first bay.
-4. **Drawer**: the detent is printed (a tab in the tray's left ledge, a notch
+4. **Drawer**: its front first.  Plug the display's SH lead, feed the lead
+   through the window from the front, then the module, a little raised so the
+   plug clears the window's bottom edge, its stand-offs onto the frame's bars:
+   4 × M2×5 from behind (each pierces the skin over its hole).  The front
+   against the drawer's walls, a PT 2.3×8 either side from inside the drawer,
+   through the post at the wall's front end into the front (before the plate);
+   the lead down into the right gap, along the right wall and through the
+   port wall's foot into the rear bay.  The detent is printed (a tab in the tray's left ledge, a notch
    under the drawer): nothing to fit.  With `drawer.detent: magnet` instead,
    magnets first, one under the drawer and one in the tray's left ledge: stack
    the pair, mark both outer faces, glue each magnet marked face down into its

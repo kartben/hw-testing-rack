@@ -11,9 +11,9 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Printed parts | 62 |
 | Power | 58 |
 | Motion | 19 |
-| Fasteners | 8 |
+| Fasteners | 9 |
 | Analyzer | 7 |
-| **Total** | **967** |
+| **Total** | **968** |
 
 ≈ **€121 per bay** all-in.
 
@@ -108,21 +108,21 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 
 | Part | Qty | g each (est.) | STL |
 |---|---:|---:|---|
-| bay_label_a1 | 1 | 0.8 | `mechanical/stl/bay_label_a1.stl` |
+| bay_label_a1 | 1 | 0.4 | `mechanical/stl/bay_label_a1.stl` |
 | bay_label_a1_inlay | 1 | – | `mechanical/stl/bay_label_a1_inlay.stl` |
-| bay_label_a2 | 1 | 0.8 | `mechanical/stl/bay_label_a2.stl` |
+| bay_label_a2 | 1 | 0.4 | `mechanical/stl/bay_label_a2.stl` |
 | bay_label_a2_inlay | 1 | – | `mechanical/stl/bay_label_a2_inlay.stl` |
-| bay_label_a3 | 1 | 0.8 | `mechanical/stl/bay_label_a3.stl` |
+| bay_label_a3 | 1 | 0.4 | `mechanical/stl/bay_label_a3.stl` |
 | bay_label_a3_inlay | 1 | – | `mechanical/stl/bay_label_a3_inlay.stl` |
-| bay_label_a4 | 1 | 0.8 | `mechanical/stl/bay_label_a4.stl` |
+| bay_label_a4 | 1 | 0.4 | `mechanical/stl/bay_label_a4.stl` |
 | bay_label_a4_inlay | 1 | – | `mechanical/stl/bay_label_a4_inlay.stl` |
-| bay_label_b1 | 1 | 0.8 | `mechanical/stl/bay_label_b1.stl` |
+| bay_label_b1 | 1 | 0.4 | `mechanical/stl/bay_label_b1.stl` |
 | bay_label_b1_inlay | 1 | – | `mechanical/stl/bay_label_b1_inlay.stl` |
-| bay_label_b2 | 1 | 0.8 | `mechanical/stl/bay_label_b2.stl` |
+| bay_label_b2 | 1 | 0.4 | `mechanical/stl/bay_label_b2.stl` |
 | bay_label_b2_inlay | 1 | – | `mechanical/stl/bay_label_b2_inlay.stl` |
-| bay_label_b3 | 1 | 0.8 | `mechanical/stl/bay_label_b3.stl` |
+| bay_label_b3 | 1 | 0.4 | `mechanical/stl/bay_label_b3.stl` |
 | bay_label_b3_inlay | 1 | – | `mechanical/stl/bay_label_b3_inlay.stl` |
-| bay_label_b4 | 1 | 0.8 | `mechanical/stl/bay_label_b4.stl` |
+| bay_label_b4 | 1 | 0.4 | `mechanical/stl/bay_label_b4.stl` |
 | bay_label_b4_inlay | 1 | – | `mechanical/stl/bay_label_b4_inlay.stl` |
 | brace_a | 4 | 6.6 | `mechanical/stl/brace_a.stl` |
 | brace_b | 4 | 6.6 | `mechanical/stl/brace_b.stl` |
@@ -132,9 +132,10 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | cap_plate | 4 | 39.9 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 7 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 7 | 46.6 | `mechanical/stl/drawer.stl` |
+| drawer | 7 | 35.9 | `mechanical/stl/drawer.stl` |
 | drawer_block | 1 | 17.3 | `mechanical/stl/drawer_block.stl` |
-| drawer_sled | 1 | 29.8 | `mechanical/stl/drawer_sled.stl` |
+| drawer_front | 8 | 13.7 | `mechanical/stl/drawer_front.stl` |
+| drawer_sled | 1 | 19.0 | `mechanical/stl/drawer_sled.stl` |
 | floor_plate | 4 | 38.8 | `mechanical/stl/floor_plate.stl` |
 | ladder_a | 5 | 47.9 | `mechanical/stl/ladder_a.stl` |
 | ladder_b | 5 | 47.9 | `mechanical/stl/ladder_b.stl` |
@@ -148,11 +149,12 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | peg_cam | 20 | 0.2 | `mechanical/stl/peg_cam.stl` |
 | peg_pin_d21_h9 | 3 | 0.3 | `mechanical/stl/peg_pin_d21_h9.stl` |
 | peg_pin_d32_h12 | 1 | 0.5 | `mechanical/stl/peg_pin_d32_h12.stl` |
+| peg_pin_d32_h6 | 1 | 0.3 | `mechanical/stl/peg_pin_d32_h6.stl` |
 | peg_stop_h11 | 4 | 0.5 | `mechanical/stl/peg_stop_h11.stl` |
 | peg_stop_h12 | 3 | 0.6 | `mechanical/stl/peg_stop_h12.stl` |
-| peg_stop_h6 | 12 | 0.4 | `mechanical/stl/peg_stop_h6.stl` |
-| plate | 7 | 42.0 | `mechanical/stl/plate.stl` |
-| plate_giga-r1-display | 1 | 71.0 | `mechanical/stl/plate_giga-r1-display.stl` |
+| peg_stop_h6 | 11 | 0.4 | `mechanical/stl/peg_stop_h6.stl` |
+| plate | 7 | 39.6 | `mechanical/stl/plate.stl` |
+| plate_giga-r1-display | 1 | 70.8 | `mechanical/stl/plate_giga-r1-display.stl` |
 | power_box_base | 1 | 35.2 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
@@ -371,7 +373,8 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Fasteners | M3 square nut, DIN 562 (5.5 × 5.5 × 1.8) | 60  | 0.02 | 1.20 | AliExpress (bulk) |
 | Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods, the DATA ×4 cradle | 108  | 0.02 | 2.16 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
-| Fasteners | PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 "ST", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4 bay: no DATA board (its cradle takes M3 × 8 into inserts), 5 for the strip over its receptacles | 67  | 0.02 | 1.34 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
+| Fasteners | PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 "ST", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4 bay: no DATA board (its cradle takes M3 × 8 into inserts), 5 for the strip over its receptacles; every bay, 2 that pull its front onto the drawer from inside | 83  | 0.02 | 1.66 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
+| Fasteners | M2×5 pan head, ISO 7045 (the front display: 4 through its frame into the module's stand-offs, from behind) | 32  | 0.02 | 0.64 | AliExpress (bulk) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 28  | 0.01 | 0.28 | AliExpress (bulk) |
 | Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 2 m | 4.00 | 8.00 | Olimex DRAG-CHAIN-7X7 |
 | Motion | End pieces for 7×7 chain (pair: tab with 2 holes 8 mm apart), the drawers beyond one pair per metre of chain | 5  | 2.17 | 10.85 | AliExpress 1005003181041939, "7x7mm" (or one more metre of chain per pair) |
@@ -434,9 +437,9 @@ One bay out of the rack, on a desk ([docs/standalone.md](../docs/standalone.md))
 | M3×8 pan head (ISO 7045) | 8 | 0.02 | 0.16 | AliExpress (bulk) |
 | Rubber bumper, self-adhesive, Ø10 × 3 mm | 4 | 0.05 | 0.20 | AliExpress (bulk) |
 
-**Desk frame, for either (the rack's honeycomb plate in it: the DUTs held by its pegs)**: ≈ €1.41, 71 g of PETG
+**Desk frame, for either (the rack's honeycomb plate in it: the DUTs held by its pegs)**: ≈ €1.36, 68 g of PETG
 
 | Item | Qty | Unit € | Total € | Source |
 |---|---:|---:|---:|---|
 | standalone_desk_frame (printed) | 1 | 0.57 | 0.57 | `mechanical/stl/standalone_desk_frame.stl` |
-| plate (printed) | 1 | 0.84 | 0.84 | `mechanical/stl/plate.stl` |
+| plate (printed) | 1 | 0.79 | 0.79 | `mechanical/stl/plate.stl` |

@@ -1,13 +1,16 @@
 // Bay drawer (one per bay) — drawer coordinates: origin at the front-left
 // corner of the drawer body, z = 0 on the tray's ledges.
 //
-//   -D 'PART="drawer"'  the drawer (default)
+//   -D 'PART="drawer"'  the drawer (default), without its front
+//   -D 'PART="front"'   its front, face down as printed (PART="front_in_place": in drawer coordinates)
 //   -D 'PART="sled"'    a sled bay's plate: the drawer cut 1 mm in front of its port wall, no chain foot,
 //                       no magnet; two flange segments at its rear (lock screws in a fixed bay)
 //   -D 'PART="block"'   a sled bay's port block: the drawer's rear bay on its own, locked into the tray by
 //                       two PT 2.3 × 8 through the guide lips
 //
-// - Front panel with a finger pull and a recess for 12 mm label tape.
+// - Front panel with a finger pull, a recess for 12 mm label tape and the display's window, its frame behind:
+//   its own part, printed face down (the window's a plain hole, the frame stands straight up), pulled onto the
+//   side walls, a PT 2.3 × 8 either side from inside the drawer into its back.
 // - Board-plate pocket: plates drop in (two 180°-symmetric locating pins).
 // - Rear bay behind the port wall, one for both DATA boards (a bay converts by changing the board, not the
 //   drawer): four U's in the wall, the DATA ×4's ports.  A DATA ×4 v1 on three floor bosses; a DATA ×4 v2,
@@ -35,7 +38,19 @@ RIB = 6;                                       // floor ribs
 
 FRONT_OVERHANG = DRAWER_X0 - 1;            // front panel overhangs the guides
 FOOT_GROOVE = [6.4, DRAWER_D - FOOT_HOLE[1] + 1, 2.3];
-
+LABEL_Z = DRAWER_FRONT_H * 0.42;           // the label recess's centre height
+// with a display, the pull and the label share the front's left part, the window and its frame the right one
+FRONT_LEFT_X = HAS_DISPLAY ? (DISPLAY_WIN[0] - DISPLAY_FRAME[0] - FRONT_OVERHANG) / 2 : DRAWER_W / 2;
+// the front's joint: a PT 2.3 × 8 either side, from inside the drawer along the drawer through a post hanging off
+// the side wall (its underside at 45° from the plate's top) into a boss on the front's back, 0.3 short of the post:
+// the screw pulls the front onto the walls' and the floor's front ends.  On the right the display frame's leg is
+// the boss.  [screw x, boss x0, boss x1]
+JOINT_Y = DRAWER_FRONT_T + 7.4;            // the posts' front faces
+JOINT_T = 3;                               // the posts, thick
+JOINT_Z = 13.5;                            // the screws' height
+JOINT_W = 5.2;                             // a post, in from its wall's inner face
+JOINTS = [[DRAWER_WALL + 2.75, DRAWER_WALL + 0.3, DRAWER_WALL + JOINT_W],
+          [DRAWER_W - DRAWER_WALL - 2.9, DRAWER_W - DRAWER_WALL - JOINT_W, DRAWER_W - DRAWER_WALL - 0.3]];
 // the front panel: R3 on its two front vertical corners (its back joins the drawer), a 0.5 × 45° chamfer round its
 // front and side bed edges, a 0.8 round on its top edges (lib/common.scad › the visual language)
 module front_panel() {
@@ -56,17 +71,70 @@ module front_panel() {
         }
         translate([x0, 0, DRAWER_FRONT_H]) mirror([0, 0, 1]) edge_round(w);
         translate([x0, DRAWER_FRONT_T, DRAWER_FRONT_H]) mirror([0, 1, 0]) mirror([0, 0, 1]) edge_round(w);
-        // finger pull: scoop at the top centre
-        translate([DRAWER_W / 2, -EPS, DRAWER_FRONT_H]) rotate([-90, 0, 0])
+        // finger pull: scoop at the top centre (of the left part, with a display)
+        translate([FRONT_LEFT_X, -EPS, DRAWER_FRONT_H]) rotate([-90, 0, 0])
             scale([1, 0.32, 1]) cylinder(r = 28, h = DRAWER_FRONT_T + 2 * EPS, $fn = 96);
         // label recess (the bay label, or 12 mm tape): its ceiling at 45°, opening towards the face, so nothing
         // overhangs as printed (the label fits the 12.4 at its back; docs/printed-parts-fdm-review.md, item 7)
-        translate([DRAWER_W / 2, -EPS, DRAWER_FRONT_H * 0.42]) rotate([90, 0, 0]) mirror([0, 0, 1]) hull() {
-            linear_extrude(EPS) translate([0, 0.45]) offset(r = 0.6) square([DRAWER_W - 26, 12.4 - 1.2 + 0.9], center = true);
-            translate([0, 0, 0.9 - EPS]) linear_extrude(EPS) offset(r = 0.6) square([DRAWER_W - 26, 12.4 - 1.2], center = true);
+        translate([FRONT_LEFT_X, -EPS, LABEL_Z]) rotate([90, 0, 0]) mirror([0, 0, 1]) hull() {
+            linear_extrude(EPS) translate([0, 0.45]) offset(r = 0.6) square([LABEL_RECESS_W, 12.4 - 1.2 + 0.9], center = true);
+            translate([0, 0, 0.9 - EPS]) linear_extrude(EPS) offset(r = 0.6) square([LABEL_RECESS_W, 12.4 - 1.2], center = true);
         }
+        if (HAS_DISPLAY) display_window();
     }
 }
+
+// the display goes in from the front through a plain window, DISPLAY_CLEAR round its glass
+module display_window() let (w = DISPLAY_WIN)
+    translate([w[0], -EPS, w[1]]) cube([w[2] - w[0], DRAWER_FRONT_T + 2 * EPS, w[3] - w[1]]);
+
+// its frame on the front's back: a leg either side of the window and two bars across behind it at its holes'
+// heights.  Its stand-offs seat on the bars, an M2 from behind into each.  Printed face down, the legs stand
+// straight up and the bars bridge between them; the bottom bar steps back over its SH header and plug
+module display_frame() {
+    w = DISPLAY_WIN;
+    leg = DISPLAY_FRAME[0];
+    bar = DISPLAY_FRAME[1];
+    h = display_holes();
+    z = [h[0][1] - 2.5, h[1][1] + 2.5];
+    y1 = DISPLAY_SEAT_Y + bar;
+    difference() {
+        union() {
+            // the right leg fills the room to the right wall: the front's right screw goes into it
+            for (x = [[w[0] - leg, w[0]], [w[2], JOINTS[1][2]]]) translate([x[0], DRAWER_FRONT_T - EPS, z[0]])
+                cube([x[1] - x[0], y1 - DRAWER_FRONT_T + EPS, z[1] - z[0]]);
+            for (zc = [h[0][1], h[1][1]]) translate([w[0] - EPS, DISPLAY_SEAT_Y, zc - 2.5]) cube([w[2] - w[0] + 2 * EPS, bar, 5]);
+        }
+        // the screw holes from 0.2 behind the seat: the bars' first layer bridges whole, the screw pierces it
+        for (p = h) translate([p[0], DISPLAY_SEAT_Y + 0.2, p[1]]) rotate([-90, 0, 0])
+            cylinder(d = DISPLAY_FIT[3] + 0.4, h = bar, $fn = 24);
+        sh = display_sh_x();
+        translate([sh[0] - 2, DISPLAY_SEAT_Y - EPS, z[0] - EPS]) cube([sh[1] - sh[0] + 4, 1 + EPS, 5 + 2 * EPS]);
+    }
+}
+
+// the front on its own (PART "front"): the panel, the display's frame and the joint's bosses, clear of the display's
+// way in through the window
+module front() difference() {
+    union() {
+        front_panel();
+        if (HAS_DISPLAY) display_frame();
+        for (j = JOINTS) translate([j[1], DRAWER_FRONT_T - EPS, JOINT_Z - 3.5]) cube([j[2] - j[1], JOINT_Y - 0.3 - DRAWER_FRONT_T + EPS, 7]);
+    }
+    for (j = JOINTS) translate([j[0], JOINT_Y - 0.3 + EPS, JOINT_Z]) rotate([90, 0, 0]) cylinder(d = PT_PILOT, h = 5.3, $fn = 16);
+    // 0.3 clear of the posts (the display frame's right leg runs to them)
+    for (x = [[-EPS, DRAWER_WALL + JOINT_W], [DRAWER_W - DRAWER_WALL - JOINT_W, DRAWER_W + EPS]])
+        translate([x[0], JOINT_Y - 0.3, DRAWER_BOTTOM + PLATE_T]) cube([x[1] - x[0], 0.3 + EPS, DRAWER_WALL_H - DRAWER_BOTTOM - PLATE_T + EPS]);
+    if (HAS_DISPLAY) let (w = DISPLAY_WIN) translate([w[0], -EPS, w[1]]) cube([w[2] - w[0], DISPLAY_SEAT_Y + EPS, w[3] - w[1]]);
+}
+
+// the joint's posts (drawer side) and their screws' clearance
+module joint_posts() for (i = [0, 1]) let (o = i == 0 ? 0 : DRAWER_W, s = i == 0 ? 1 : -1, z0 = DRAWER_BOTTOM + PLATE_T,
+                                          w = DRAWER_WALL + JOINT_W)
+    translate([0, JOINT_Y, 0]) rotate([90, 0, 0]) mirror([0, 0, 1]) linear_extrude(JOINT_T)
+        polygon([[o, z0], [o + s * DRAWER_WALL, z0], [o + s * w, z0 + JOINT_W], [o + s * w, DRAWER_WALL_H], [o, DRAWER_WALL_H]]);
+module joint_holes() for (j = JOINTS)
+    translate([j[0], JOINT_Y - EPS, JOINT_Z]) rotate([-90, 0, 0]) cylinder(d = PT_CLEAR, h = JOINT_T + 2 * EPS, $fn = 24);
 
 // the DATA ports along the port wall: the DATA ×4's four (config/rack.yaml › pcb.data_port_x4)
 PORT_XS = [for (u = DATA_X4_USB) DATA_X4_X0 + u];
@@ -90,6 +158,9 @@ module port_wall() {
             for (s = [-1, 1]) translate([s * (w / 2 - r), 0, r]) rotate([-90, 0, 0]) cylinder(r = r, h = t + 2 * EPS);
             translate([-w / 2, 0, r]) cube([w, t + 2 * EPS, DRAWER_WALL_H]);
         }
+        // the display's lead into the rear bay: a notch at the wall's foot over the plate's right gap
+        if (HAS_DISPLAY) translate([DRAWER_W - DRAWER_WALL - DRAWER_PLATE_GAP[1] - 0.5, y - t - EPS, DRAWER_BOTTOM - EPS])
+            cube([DRAWER_PLATE_GAP[1] + 0.5 + EPS, t + 2 * EPS, 5.5 + EPS]);
         // the port numbers, 1–4 left to right, debossed in the wall's front face left of each U
         for (i = [0 : len(PORT_XS) - 1]) translate([PORT_XS[i] - w / 2 - 2.3, y - t, PORT_Z]) rotate([90, 0, 0])
             deboss(str(i + 1), cap = 5.5);
@@ -100,8 +171,8 @@ module port_wall() {
 module drawer(rear = true, foot = true) {
     difference() {
         union() {
-            rbox([DRAWER_W, DRAWER_D, DRAWER_BOTTOM], r = 2);
-            front_panel();
+            translate([0, DRAWER_FRONT_T, 0]) rbox([DRAWER_W, DRAWER_D - DRAWER_FRONT_T, DRAWER_BOTTOM], r = 2);
+            joint_posts();
             // side and rear walls
             for (x = [0, DRAWER_W - DRAWER_WALL]) translate([x, DRAWER_FRONT_T, 0]) cube([DRAWER_WALL, DRAWER_D - DRAWER_FRONT_T, DRAWER_WALL_H]);
             translate([0, DRAWER_D - DRAWER_WALL, 0]) cube([DRAWER_W, DRAWER_WALL, DRAWER_WALL_H]);
@@ -134,6 +205,7 @@ module drawer(rear = true, foot = true) {
             if (DRAWER_DETENT == "magnet") translate([DETENT[0], DETENT[1], 0]) mirror([0, 0, 1]) magnet_pocket(DRAWER_MAGNET[0], DRAWER_MAGNET[1]);
         }
         detent_notch();
+        joint_holes();
         // the optional covers' pockets (parts/covers.scad): in the rear wall's inner face, a tab's bump in each
         if (rear) for (x = COVER_TABS)
             translate([x + 3 - 0.5, DRAWER_D - DRAWER_WALL - EPS, 6 + 0.7]) cube([6, COVER_BUMP + 0.2 + EPS, 2 * COVER_BUMP + 1 + 0.6]);
@@ -208,6 +280,8 @@ module block() difference() {
 module lock_holes(y) for (x = [STOP_PIN_X - DRAWER_X0, DRAWER_W - (STOP_PIN_X - DRAWER_X0)])
     translate([x, y, -EPS]) cylinder(d = LIP_SCREW[3], h = DRAWER_FLANGE[1] + 2 * EPS);
 
-if (PART == "sled") sled();
+if (PART == "front") rotate([90, 0, 0]) front();
+else if (PART == "front_in_place") front();
+else if (PART == "sled") sled();
 else if (PART == "block") block();
 else drawer();

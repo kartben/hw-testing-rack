@@ -47,8 +47,28 @@ drawer:
   bottom: 2.5
   wall: 2.0
   wall_height: 16        # side/rear walls above the drawer bottom
-  front_height: 30       # front panel height above the deck
+  front_height: 41       # front panel height above the deck (30 until 2026-10-26): the display's window, 1 mm over
+                         # the plate, and a 3.5 mm strip over it.  The front is its own part, printed face down
+                         # (parts/drawer.scad › front), screwed to the drawer's side walls from inside
   front_thickness: 4
+  plate_gap: [0.3, 3.2]  # between the board plate and the left, right walls (0.3 each until 2026-10-26): the
+                         # display's lead runs at floor level in the right one
+  display:               # the node rev B's front display (the user, 2026-10-26): Waveshare 1.9inch Touch LCD (31122),
+                         # turned over (its SH 12 header down, its lead at floor level to the rear bay)
+    glass: [52.36, 28.80]  # cover glass W × H (Waveshare's drawing); its PCB 51.0 × 26.6 centred behind it
+    pcb: [51.0, 26.6]
+    x: 82.0              # drawer x of the glass's left edge: its frame's right leg, between the window and the right
+                         # wall, takes the front's right screw (parts/drawer.scad › JOINTS)
+    z: 8.5               # its bottom edge above the deck: 1 mm over the plate, whatever the module's thickness
+    # it goes in from the front, through a plain window, its stand-offs seated on the frame behind the front and
+    # screwed from behind (the user's idea, 2026-10-27): no glue, and a press on the glass goes straight into the frame
+    recess: 0.3          # the glass's face behind the front's
+    seat: 8.6            # the glass's face to its stand-offs' ends, assumed (glass + LCD 4.0, PCB 1.6, stand-offs 3.0):
+                         # measure on arrival.  If it is off, the glass only stands out or sinks in by as much
+    holes: 3.5           # its four holes, from the PCB's edges (Waveshare's drawing)
+    screw: 2.0           # M2 into its stand-offs (the holes' Ø isn't given: measure)
+    sh: [12.3, 25.8]     # its SH 12 header along the bottom edge, from the glass's right end (Waveshare's photo):
+                         # the plate's front-right notch starts left of it
   rear_bay: 42           # enclosed strip at the back: the DATA board(s) + cable entry; 40 mm inside, y 166–206
                          # one drawer for both DATA boards (2026-10-19): the port wall has the DATA ×4's four U's
                          # (pcb.data_port_x4.usb); a single DATA board's USB-C sits on the fourth, and the

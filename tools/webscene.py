@@ -25,6 +25,7 @@ WEB_PARTS = {
     "tray": ("parts/tray.scad", {"PART": "tray"}),
     "drawer": ("parts/drawer.scad", {}),
     "drawer_sled": ("parts/drawer.scad", {"PART": "sled"}),
+    "drawer_front": ("parts/drawer.scad", {"PART": "front_in_place"}),
     "x4_cradle": ("parts/x4_cradle.scad", {"PART": "cradle"}),        # the standing DATA ×4 v2's (drawer coordinates)
     "x4_strip": ("parts/x4_cradle.scad", {"PART": "strip_in_place"}), # and the strip over its receptacles
     "drawer_block": ("parts/drawer.scad", {"PART": "block"}),
@@ -1137,10 +1138,8 @@ def build(rack) -> Path:
     dp_x0 = data_ports[0] - dp["usb"]      # the DATA board in the drawer (lib/carrier.scad › DATA_PCB_X0, ..)
     dp_y0 = port_wall_y                   # its front edge: the port wall's back face
     dp_z = port_z - 1.63 - dp["thickness"]  # its underside, on the floor bosses (components up)
-    plate_x0 = d["wall"] + 0.3
-    plate_y0 = d["front_thickness"] + 0.3
-    plate_w = rack.drawer_w - 2 * d["wall"] - 0.6
-    plate_d = port_wall_y - d["wall"] - d["front_thickness"] - 0.6
+    plate_x0, plate_y0 = rack.plate_origin
+    plate_w, plate_d = rack.plate_size
     fixed = raw["chain"]["fixed"]
     chain_z = c["bottom"] + raw["chain"]["outer"][0] / 2 + 0.6     # the chain's mid-height
 
@@ -1170,8 +1169,8 @@ def build(rack) -> Path:
         x0 = rack.unit_x(u)
         add("tray", (x0, 0, 0), row=i, layer="trays", bay=bid)
         if drawer:
-            add("drawer", (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid,
-                movable=True)
+            for part in ("drawer", "drawer_front"):
+                add(part, (x0 + rack.drawer_x0, dy, plenum), row=i, layer="drawers", bay=bid, movable=True)
             add("chain_anchor", (x0 + fixed[0], fixed[1], c["bottom"] + 5), row=i, layer="chain", bay=bid)
             add("chain_foot", (x0 + raw["chain"]["moving_x"], raw["chain"]["moving_y"] + dy, plenum), row=i,
                 layer="chain", bay=bid, movable=True)
@@ -1182,8 +1181,18 @@ def build(rack) -> Path:
                                     "width": raw["chain"]["outer"][0], "height": raw["chain"]["outer"][1],
                                     "pitch": raw["chain"]["pitch"]})
         else:
-            for part in ("drawer_sled", "drawer_block"):
+            for part in ("drawer_sled", "drawer_front", "drawer_block"):
                 add(part, (x0 + rack.drawer_x0, 0, plenum), row=i, layer="drawers", bay=bid)
+        disp = d.get("display")
+        if disp:    # the front display's stand-in: glass and LCD in the window, its PCB behind (drawer.scad › front)
+            dmv = {"layer": "drawers", "bay": bid, "row": i, "space": "row", "movable": drawer}
+            (gw, gh), (pw, ph) = disp["glass"], disp["pcb"]
+            gx, gy, gz = x0 + rack.drawer_x0 + disp["x"], (dy if drawer else 0) + disp["recess"], plenum + disp["z"]
+            items["boxes"].append({"kind": "chip", "pos": [round(gx, 3), round(gy, 3), round(gz, 3)],
+                                   "size": [gw, 4.0, gh], "color": "#101418", **dmv})
+            items["boxes"].append({"kind": "pcb", "pos": [round(gx + (gw - pw) / 2, 3), round(gy + 4.0, 3),
+                                                          round(gz + (gh - ph) / 2, 3)],
+                                   "size": [pw, 1.6, ph], "color": "#1f4fa0", **dmv})
         info_ = pop.get(bid, {})
         led = "#2f7bff" if info_.get("pc_cable") else ("#ffb300" if info_.get("open") else "#19e07a")
         items["leds"].append({"bay": bid, "row": i, "space": "row", "color": led,
