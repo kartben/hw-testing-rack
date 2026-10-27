@@ -2,7 +2,8 @@
  * The front display (the front-display snippet): a Waveshare 1.9" touch LCD,
  * an ST7789V2 at 320 x 170 and a CST816 touch controller, with the bay's
  * status in LVGL, refreshed once a second from LVGL's own work queue.
- * "display" in the shell prints how long the refreshes take.
+ * "display" in the shell prints how long the refreshes take.  The 3D viewer
+ * draws the same screen: keep tools/lvgl_wasm/status.c in step.
  *
  * SPDX-License-Identifier: Apache-2.0
  */

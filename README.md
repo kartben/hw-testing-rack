@@ -126,6 +126,7 @@ python tools/fetch_render_assets.py                     # CC0 textures + vendor 
 python tools/board_models.py                            # normalise the board models (docs/boards-3d.md)
 python render/screen_terminal.py                        # the laptop's screen → render/assets/
 node tools/lvgl_frame.mjs music 480 800                 # B2's GIGA display: one frame of the viewer's LVGL demo
+                                                        # (the drawer fronts' status screens: assembly_glb.py draws them)
 python tools/assembly_glb.py --hq --with-pc-cable --open-bays B3 --out render/assembly-photo.glb
 python tools/blender_live.py exec render/live_photo.py build
 python tools/blender_live.py exec render/live_photo.py shot desk          # desk, drawer, detail → docs/img/photo-*.jpg

@@ -25,7 +25,10 @@ its model lowered under its "PCB" plane (`model.offset`'s third value), its USB-
 front).  Their 2.54 mm pin headers (soldered pins up, for the Dupont jumpers:
 `headers:` in `boards.yaml`) are drawn by the viewer on top of the model.  A board's `screen:`
 (active area, pixels, which way its top points) gets a live LVGL demo in the viewer
-(`tools/lvgl_wasm/`, LVGL's software renderer built for wasm32).
+(`tools/lvgl_wasm/`, LVGL's software renderer built for wasm32).  The drawer fronts' 1.9" displays show
+their node's status screen as the firmware draws it (`firmware/bay-node/src/display.c`, mirrored in
+`tools/lvgl_wasm/status.c`), each with its bay's values (`tools/webscene.py` › `front_status`), refreshed
+every second; the renders take one frame per bay (`node tools/lvgl_frame.mjs status`).
 
 ```bash
 python tools/fetch_render_assets.py     # textures + the board models below

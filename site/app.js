@@ -12,7 +12,7 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 import { makeCameraRig, setRigLight, refreshRigShadows, CameraPreview } from './camera.js';
-import { startLvgl } from './screen.js';
+import { startLvgl, startStatus } from './screen.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -386,12 +386,14 @@ function makeBoard(b) {
 // the light boxes' reflection on it.  One LVGL runs per screen size and demo (its own wasm instance), started
 // with the first screen that shows it.
 const lvgls = {};                 // `${demo} ${w}x${h}` → { mat, ready }
+let fronts = null;                // the drawer fronts' displays (startStatus), once their LVGL runs
+const glassMaterial = () => new THREE.MeshPhysicalMaterial({ color: 0x050608, roughness: 0.3, metalness: 0,
+  clearcoat: 0.45, clearcoatRoughness: 0.1, emissive: 0xffffff, emissiveIntensity: 0,
+  polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });   // drawn over the model's own glass
 function screenMaterial(sc) {
   const key = `${sc.demo} ${sc.px[0]}x${sc.px[1]}`;
   if (lvgls[key]) return lvgls[key].mat;
-  const mat = new THREE.MeshPhysicalMaterial({ color: 0x050608, roughness: 0.3, metalness: 0, clearcoat: 0.45,
-    clearcoatRoughness: 0.1, emissive: 0xffffff, emissiveIntensity: 0,
-    polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });   // drawn over the model's own glass
+  const mat = glassMaterial();
   const entry = lvgls[key] = { mat, ready: null };
   startLvgl('assets/lvgl/lvgl-demo.wasm', sc.px[0], sc.px[1], sc.demo).then((l) => {
     mat.emissiveMap = l.tex;
@@ -743,6 +745,26 @@ function build(pcbGlb) {
     }
     g.position.set(...bx.pos);
     track(g, { layer: bx.layer, bay: bx.bay || null, row: bx.row ?? null, zone: bx.layer, space: bx.space, movable: !!bx.movable });
+  }
+  // the drawer fronts' displays: each its node's status screen, live (rack.json › screens), on its glass
+  const frontScreens = DATA.screens ?? [];
+  const frontMats = frontScreens.map(glassMaterial);
+  frontScreens.forEach((f, k) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(f.size[0], f.size[1]), frontMats[k]);
+    m.rotation.x = Math.PI / 2;           // facing out of the front, its top up
+    m.position.set(f.pos[0] + f.size[0] / 2, f.pos[1], f.pos[2] + f.size[1] / 2);
+    m.userData.screen = true;
+    track(m, { layer: f.layer, bay: f.bay, row: f.row, movable: !!f.movable, zone: f.layer, space: f.space });
+  });
+  if (frontScreens.length) {
+    startStatus('assets/lvgl/lvgl-demo.wasm', frontScreens).then((st) => {
+      st.textures.forEach((tex, k) => {
+        frontMats[k].emissiveMap = tex;
+        frontMats[k].emissiveIntensity = 0.85;
+        frontMats[k].needsUpdate = true;
+      });
+      fronts = st;
+    }).catch((e) => console.warn('front displays:', e));
   }
   // status LEDs in the fascia windows (glow; colour = mode)
   for (const l of DATA.leds || []) {
@@ -1178,6 +1200,7 @@ function tick(now) {
     if (moving) applyTransforms();
   }
   for (const l of Object.values(lvgls)) l.ready?.step(now);
+  fronts?.step(now);
   for (const rig of Object.values(rigs)) {         // the lights fade in and out over ~150 ms
     const d = rig.target - rig.level;
     if (Math.abs(d) > 1e-3) setRigLight(rig, rig.level + Math.sign(d) * Math.min(Math.abs(d), 0.12));

@@ -15,6 +15,8 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import shutil
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -145,6 +147,34 @@ def screen_quad(sc: dict):
     z = sc["z"] + 0.05
     bl, br, tl = (np.array([*sc[k], z], float) for k in ("bl", "br", "tl"))
     v = np.array([bl, br, br + tl - bl, tl])
+    q = trimesh.Trimesh(vertices=v, faces=[[0, 1, 2], [0, 2, 3]], process=False)
+    img = Image.open(png).convert("RGB")
+    material = PBRMaterial(baseColorTexture=img, emissiveTexture=img, emissiveFactor=[1.0, 1.0, 1.0],
+                           metallicFactor=0.0, roughnessFactor=0.15)
+    q.visual = trimesh.visual.TextureVisuals(uv=[[0, 0], [1, 0], [1, 1], [0, 1]], material=material)
+    return q
+
+
+def front_frames():
+    """Every bay's front display frame from rack.json (tools/lvgl_frame.mjs status): its status changes with the
+    population, so it is drawn again at each bake.  Without node, the frames already there."""
+    node = shutil.which("node")
+    if node:
+        subprocess.run([node, str(REPO / "tools" / "lvgl_frame.mjs"), "status"], check=True)
+    else:
+        print("node not found: the front displays keep their last frames")
+
+
+def front_screen_quad(s: dict):
+    """A drawer front's display lit with its bay's status (rack.json › screens: the active area's bottom-left
+    corner and size, on the glass; render/assets/lvgl/status-<bay>.png): a textured, emissive quad facing out of
+    the front.  None when its frame isn't there."""
+    from PIL import Image
+    png = LVGL_FRAMES / f"status-{s['status']['id']}.png"
+    if not png.exists():
+        return None
+    (x, y, z), (w, h) = s["pos"], s["size"]
+    v = np.array([[x, y, z], [x + w, y, z], [x + w, y, z + h], [x, y, z + h]], float)
     q = trimesh.Trimesh(vertices=v, faces=[[0, 1, 2], [0, 2, 3]], process=False)
     img = Image.open(png).convert("RGB")
     material = PBRMaterial(baseColorTexture=img, emissiveTexture=img, emissiveFactor=[1.0, 1.0, 1.0],
@@ -407,6 +437,12 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         dy = drawer_dy(bx) if bx.get("movable") else 0.0
         add(with_mat(m, mat("psu") if bx["kind"] == "psu" else mat(hex_rgba(bx["color"]))), f"{bx['kind']}:{bx.get('bay', '')}",
             place(bx.get("space"), bx.get("row"), translate(np.add(bx["pos"], [0, dy, 0]))), bx.get("bay"))
+    if scene_json.get("screens"):
+        front_frames()
+    for s in scene_json.get("screens", []):          # the drawer fronts' displays, each its bay's status
+        if (q := front_screen_quad(s)) is not None:
+            dy = drawer_dy(s) if s.get("movable") else 0.0
+            add(q, f"screen:front:{s['bay']}", place(s.get("space"), s.get("row"), translate([0, dy, 0])), s.get("bay"))
     for h in scene_json.get("headers", []):          # pin headers, pins up (the boards', the DATA ×4's)
         dy = drawer_dy(h) if h.get("movable") else 0.0
         for m in header_meshes(h, scene_json["header"]):

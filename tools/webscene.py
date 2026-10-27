@@ -323,6 +323,41 @@ def board_screen(bd: dict) -> dict | None:
     return {"bl": bl, "br": br, "tl": tl, "z": sc["z"], "px": sc["px"], "demo": sc.get("demo", "music")}
 
 
+# ------------------------------------------------------------------ the drawer front's display
+# The node's status screen (firmware/bay-node/src/display.c) on the front display, drawn by the viewer's LVGL
+# (site/bay_screen.js) and, for the renders, by tools/lvgl_frame.mjs: its ST7789V2's 320 × 170 over the active
+# area, assumed centred in the glass (42.72 × 22.70 mm: Waveshare's 1.9" LCD; its place in the touch module's
+# glass is to check on its drawing)
+SCREEN_PX = (320, 170)
+SCREEN_AREA = (42.72, 22.70)
+# what each board draws in the bay's illustration, mA: docs/ci.md's bayctl listing where it has one, else a
+# typical idle draw (the notes' DUT current survey); a DATA ×4's own hub on top of its ports'
+SCREEN_MA = {"nucleo-64": 92, "nucleo-144": 88, "giga-r1-display": 210, "xiao": 41, "rpi-pico2": 13,
+             "beagleplay": 420, "wio-terminal": 120, "arduino-nano-matter": 15, "arduino-uno-r4": 38}
+SCREEN_ANALYZER_MA = 23
+SCREEN_HUB_MA = 60
+
+
+def front_status(rack, bid: str, info: dict) -> dict:
+    """What a bay's front display shows (display.c's refresh(): its position, address, the DUT rail, a DATA ×4's
+    ports, USB/IP sessions and the data path), as the viewer's illustration: the addresses of docs/ci.md's
+    listing (row A from .61, row B from .77), every board powered and healthy."""
+    row, n = ord(bid[0]) - ord("A"), int(bid[1:])
+    slots = rack.duts(bid)
+    ma = lambda sl: SCREEN_ANALYZER_MA if sl.role == "analyzer" else SCREEN_MA.get(sl.board, 50)
+    st = {"id": bid, "addr": f"192.168.1.{60 + 16 * row + n}", "fault": False,
+          "path": "classic" if info.get("pc_cable") else "usbip"}
+    if rack.is_multi(bid):
+        on = {sl.slot: ma(sl) for sl in slots}
+        st["ports"] = [{"on": k in on, "ma": on.get(k, 0)} for k in range(1, 5)]
+        st["dut"] = {"mv": 4990 + 7 * n, "ma": sum(on.values()) + SCREEN_HUB_MA}
+    else:
+        st["ports"] = None                       # no DATA ×4: "1  -" … "4  -"
+        st["dut"] = {"mv": 5010 + 9 * n + 5 * row, "ma": sum(ma(sl) for sl in slots)} if slots else None
+    st["usbip"] = 0 if st["path"] == "classic" else len(slots)
+    return st
+
+
 def plug_exit(end):
     """Where the cable leaves a plug's strain relief and which way: a straight plug out of its back,
     a right-angle one out of its top.  end = {at: receptacle face, dir: into it, up, type, style}."""
@@ -1105,7 +1140,7 @@ def build(rack) -> Path:
     pitch, T = rack.pitch, rack.panel_t
 
     items = {"instances": [], "frame": [], "cables": [], "chains": [], "boards": [], "pcbs": [], "boxes": [], "props": [],
-             "leds": [], "cameras": [], "headers": []}
+             "leds": [], "cameras": [], "headers": [], "screens": []}
     bays = []
 
     def add(part, pos, rot=(0, 0, 0), space="row", row=None, **meta):
@@ -1193,6 +1228,11 @@ def build(rack) -> Path:
             items["boxes"].append({"kind": "pcb", "pos": [round(gx + (gw - pw) / 2, 3), round(gy + 4.0, 3),
                                                           round(gz + (gh - ph) / 2, 3)],
                                    "size": [pw, 1.6, ph], "color": "#1f4fa0", **dmv})
+            # on its glass, the node's status (front_status), facing out of the front: its bottom-left corner
+            aw, ah = SCREEN_AREA
+            items["screens"].append({"pos": [round(gx + (gw - aw) / 2, 3), round(gy - 0.05, 3), round(gz + (gh - ah) / 2, 3)],
+                                     "size": list(SCREEN_AREA), "px": list(SCREEN_PX),
+                                     "status": front_status(rack, bid, pop.get(bid, {})), **dmv})
         info_ = pop.get(bid, {})
         led = "#2f7bff" if info_.get("pc_cable") else ("#ffb300" if info_.get("open") else "#19e07a")
         items["leds"].append({"bay": bid, "row": i, "space": "row", "color": led,

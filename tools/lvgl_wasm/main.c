@@ -1,7 +1,10 @@
-/* The 3D viewer's LVGL screen: LVGL's own demos rendered by its software renderer into a frame buffer that
- * the page copies into a texture (site/screen.js).  Built freestanding for wasm32 by build.sh. */
+/* The 3D viewer's LVGL screen: LVGL's own demos, or the bay node's front display (status.c), rendered by its
+ * software renderer into a frame buffer that the page copies into a texture (site/screen.js).  Built
+ * freestanding for wasm32 by build.sh. */
 #include "lvgl.h"
 #include "demos/lv_demos.h"
+
+void status_create(void);
 
 #define MAX_W 800
 #define MAX_H 800
@@ -25,6 +28,8 @@ __attribute__((export_name("screen_init"))) uint32_t *screen_init(int w, int h, 
 	lv_display_set_flush_cb(disp, flush);
 	if (demo == 0) {
 		lv_demo_music();
+	} else if (demo == 2) {
+		status_create();
 	} else {
 		lv_demo_widgets();
 		lv_demo_widgets_start_slideshow();
