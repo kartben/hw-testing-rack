@@ -62,7 +62,7 @@ What each order pays once, whatever the number of boards, against what grows wit
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
 | bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 8 / 10 | 40 (23 + 1 pref.) | 62.00 | 115.94 | 150.62 | **266.56** | 266.56 | 241.33 |
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (15 + 2 pref.) | 51.15 | 98.87 | 46.13 | **145.00** | 145.00 | 143.42 |
-| data-port | Economic | 6 / 10 | 6 (3) | 9.27 | 26.15 | 14.61 | **40.76** | 40.76 | 30.71 |
+| data-port | Economic | 6 / 10 | 7 (3) | 9.27 | 26.15 | 14.61 | **40.76** | 40.76 | 30.71 |
 | camera-pod | Economic | 2 / 2 | 8 (4) | 12.36 | 28.11 | 2.31 | **30.42** | 30.42 | 29.63 |
 | data-port-x4-v2-panel | Economic | 1 / 2 | 42 (18 + 2 pref.) | 55.62 | 117.41 | 94.73 | **212.14** | 212.14 | 210.12 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
@@ -257,13 +257,14 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.67 | 4.67 | JLCPCB quote 2026-10-23 |
 | Electronics | 100n — Capacitor 100n 0603 | 10  | 0.01 | 0.12 | LCSC/JLCPCB C14663 |
 | Electronics | 10u — Capacitor 10u 0805 | 10  | 0.04 | 0.40 | LCSC/JLCPCB C15850 |
+| Electronics | 100n — Capacitor 100n 0402 | 10  | 0.01 | 0.05 | LCSC/JLCPCB C1525 |
 | Electronics | DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 10  | 0.84 | 8.37 | LCSC/JLCPCB C5184243 |
 | Electronics | LEAD — JST PH 8-pin, side entry, SMD | 10  | 0.41 | 4.14 | LCSC/JLCPCB C265121 |
 | Electronics | 56k — Resistor 56k 0603 | 20  | 0.00 | 0.05 | LCSC/JLCPCB C23206 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 10  | 0.17 | 1.66 | LCSC/JLCPCB C7519 |
 | Electronics | Bare PCB data-port (2-layer 40×17 mm, lead-free HASL) | 10  | 0.56 | 5.61 | JLCPCB quote 2026-10-23 |
 | Electronics | Economic PCBA, 10 boards: setup, stencil, extended parts, SMT, special components, nitrogen reflow | 1  | 19.37 | 19.37 | JLCPCB quote 2026-10-23 |
-| Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | -2.22 | -2.22 | JLCPCB quote 2026-10-23 |
+| Electronics | Components data-port: JLC quote minus the catalogue prices above | 1  | -2.27 | -2.27 | JLCPCB quote 2026-10-23 |
 | Electronics | 10u — Capacitor 10u 0805 | 2  | 0.04 | 0.08 | LCSC/JLCPCB C15850 |
 | Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
 | Electronics | 100n — Capacitor 100n 0603 | 2  | 0.01 | 0.02 | LCSC/JLCPCB C14663 |

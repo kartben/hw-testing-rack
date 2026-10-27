@@ -12,7 +12,7 @@ the 90° extension cable.
 * VBUS from the lead to the receptacle on 0.8 mm F.Cu drawn here (netclass Power), round the PH's
   pads under its housing and into J1's VBUS pads from behind, necked to 0.5 mm at the pad row: ≈ 15 mΩ
   instead of the routed 0.25 mm's ≈ 0.13 Ω (D1).  10 µF at the receptacle (C2), 100 nF at the lead's
-  end (C1); thin tracks feed the Rp and the ESD's VBUS pin.
+  end (C1) and at the ESD's VBUS pin (C3, ST §2.3); thin tracks feed the Rp and the ESD.
 * The lead's GND pins (4, 7: the whole DUT return) and the ESD's each have a drawn via to the B.Cu pour.
 * USBLC6 ESD on D+/D− right at the receptacle, where the plugs go in.
 * The lead: VBUS, GND, D+, D−, GND (the pair between two grounds), then the node's I²C and INT,
@@ -71,7 +71,7 @@ def vbus_tracks():
     t(0.8, (a4, 7.2), (a9 - 0.5, 7.2), (a9, 7.7), (a9, row))
     t(0.5, (a9, row), (a9, 9.75))
     t(0.6, (ux - 0.95, 5.8), (ux - 0.95, 7.2))                                 # C2
-    t(0.3, (CFG["ph"] + 2.0, H - 4.64), (CFG["ph"] + 2.0, 4.7))                # U1.5 (the ESD's VBUS)
+    t(0.3, (CFG["ph"] + 2.0, H - 4.64), (CFG["ph"] + 2.0, 10.72), (CFG["ph"] + 2.0, 4.7))   # U1.5, through C3.1
     t(0.4, (j8, 9.0), (j8, 9.78), (j8 + 4.5, 14.28))                          # C1, by the lead
     t(0.3, (j8 + 4.5, 14.28), (j8 + 5.97, 15.75), (20.6, 15.75), (21.0, 15.35), (21.0, 13.72), (21.4, 13.32),
       (ux + 7.0, 13.32))                                                     # R1, R2 (under J1)
@@ -101,6 +101,9 @@ def board() -> Board:
     part(s, "U1", "esd", {"6": "CONN_DP", "1": "LEAD_DP", "4": "CONN_DN", "3": "LEAD_DN", "5": "VBUS", "2": "GND"},
          pcb=P(CFG["ph"] + 2.0, H - 3.5, 90))
     C(s, "C1", "100n", "VBUS", "GND", pcb=P(CFG["ph"] - 2.5, H - 3.5, 90))
+    # ST's §2.3 / Fig. 18: 100 nF right at VBUS (pin 5), on the track that feeds it; 0402, between the PH's and
+    # the ESD's courtyards (1.36 mm), with its own GND via (kicad-happy review, DP-5)
+    C(s, "C3", "100n", "VBUS", "GND", size="0402", pcb=P(CFG["ph"] + 2.48, 10.72, 0))
     s.block("Lead to the bay node's DATA header (J7): 4 GND, 5 D−, 6 D+, 7 GND, 8 VBUS; 1–3 (INT, I²C) open")
     part(s, "J2", "ph8", {"1": None, "2": None, "3": None, "4": "GND", "5": "LEAD_DN", "6": "LEAD_DP", "7": "GND",
                           "8": "VBUS"}, "LEAD",
@@ -141,9 +144,11 @@ def board() -> Board:
             ("GND", "F.Cu", 0.5, [(9.4, 7.75), (9.4, 9.15), (8.65, 9.9)]),
             ("GND", "F.Cu", 0.5, [(15.4, 7.75), (15.4, 9.2), (14.6, 10.0)]),
             ("GND", "F.Cu", 0.3, [(CFG["ph"] + 2.0, H - 2.363), (CFG["ph"] + 2.0, H - 3.5)]),
+            ("GND", "F.Cu", 0.3, [(CFG["ph"] + 2.96, 10.72), (CFG["ph"] + 3.9, 10.72)]),       # C3's GND to its via
         ],
         "vias": [("VBUS", 7.4, TP_Y),                  # TP2 (VBUS) to the top-side VBUS track
-                 ("GND", 8.65, 9.9), ("GND", 14.6, 10.0), ("GND", CFG["ph"] + 2.0, H - 3.5, 0.5, 0.3)],
+                 ("GND", 8.65, 9.9), ("GND", 14.6, 10.0), ("GND", CFG["ph"] + 2.0, H - 3.5, 0.5, 0.3),
+                 ("GND", CFG["ph"] + 3.9, 10.72)],
         # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
         "dru": """
 (rule "USB4105 J1: GND pads beside its own pegs"
@@ -154,9 +159,10 @@ def board() -> Board:
             {"text": "DATA v1.0", "x": 7.0, "y": H - 3.0, "size": 0.8},
             *({"text": t, "x": 4.4 + 3 * i, "y": TP_Y + 1.9, "size": 0.8, "layer": "B.SilkS"}
               for i, t in enumerate(("GND", "5V"))),
-            # one label per pin, under it (rot 180: pin n at x = ph + 9 − 2n); 1–3 (INT, I²C) open
+            # one label per used pin, under it (rot 180: pin n at x = ph + 9 − 2n); 1–3 (INT, I²C) are open and
+            # unlabelled: C3 sits under pin 3
             *({"text": s, "x": CFG["ph"] + 9 - 2 * n, "y": 10.6, "size": 0.8}
-              for n, s in ((8, "5V"), (7, "G"), (6, "D+"), (5, "D−"), (4, "G"), (3, "·"), (2, "·"), (1, "·"))),
+              for n, s in ((8, "5V"), (7, "G"), (6, "D+"), (5, "D−"), (4, "G"))),
         ],
     }
     return b

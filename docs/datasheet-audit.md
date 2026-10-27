@@ -381,7 +381,7 @@ Verdict: justified.
 | Reference element | Ours | Verdict | Source |
 |---|---|---|---|
 | Flow-through: I/O1 on pins 1/6, I/O2 on 3/4 | D+ 6 → 1, D− 4 → 3 | OK | ST Fig 1 p. 1, layout p. 9 |
-| VBUS pin to the supply with a short track; short GND | VBUS with C1 100 nF 4.5 mm away; GND to the pour | OK | §2.3 p. 5, Fig 18 p. 9 |
+| VBUS pin to the supply with a short track; short GND | VBUS with C3 100 nF (0402) at the pin, ≈ 0.7 mm pad to pad, on the track that feeds it, its own GND via; GND (pin 2) through its own via.  Corrected 2026-10-27 (kicad-happy review, DP-5): until then only C1, 4.9 mm away in a straight line but ≈ 28 mm of track, not the 4.5 mm written here | OK | §2.3 p. 5, Fig 18 p. 9 |
 
 ### J1 USB-C receptacle (the DUT's source)
 

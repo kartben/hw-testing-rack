@@ -300,17 +300,17 @@ and the 90° extension.  Geometry in `config/rack.yaml` › `pcb.data_port`.
 | Block | Parts | Notes |
 |---|---|---|
 | USB-C | GCT USB4105-GF-A-120 (J1) on the front edge at x 30.5, the board's right edge 9.5 mm from it (clear of the chain foot's lock screw); its centre 1.63 mm below the component face, 3.23 mm below the back face | a source: 56k Rp on CC1 and CC2 ("default USB power", as on the DATA ×4: the node's switch limits at 1.34–1.52 A, short of the 1.5 A that 22k would advertise); 10 µF on VBUS (C2) behind it; the shell to GND.  Its mouth stands 0.28 mm past the board edge, inside the port wall's U (checked in SolidCraft on B-rep: 2.2 mm clear each side, and a USB-C plug overmold of the spec's largest size, 12.35 × 6.5 mm, clears the U by 0.2 mm) |
-| ESD | USBLC6-2SC6 (U1) flow-through, 100 nF on VBUS (C1): D+ through pins 1/6, D− through 3/4: J2's 5 / 6 swapped with J7's 3 / 4 (D+ on J7.3, so the node's pair runs straight), and U1's channels with them, so every pad keeps the copper it had | right at the receptacle, where the plugs go in |
+| ESD | USBLC6-2SC6 (U1) flow-through, 100 nF at its VBUS pin (C3, 0402, its own GND via) and at the lead (C1): D+ through pins 1/6, D− through 3/4: J2's 5 / 6 swapped with J7's 3 / 4 (D+ on J7.3, so the node's pair runs straight), and U1's channels with them, so every pad keeps the copper it had | right at the receptacle, where the plugs go in |
 | Lead | JST PH 8, side entry, SMD (S8B-PH-SM4-TB, J2), rear edge at x 14.4 (its courtyard clear of the USB4105's on a 17 mm deep board): 1–3 open (the node's INT and I²C) · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VBUS | the node's J7 mirrored: a "Same direction" PH 8 lead (pin n ↔ pin 9−n), the camera's type, joins them; 8 pins, so a 6-pin row cable (VRACK) cannot go in |
 
 USB 2.0 only: High Speed PC ↔ board in classic mode, Full Speed to the node's ESP32 otherwise.
 VBUS is drawn in `design.py` (`vbus_tracks()`, netclass Power): 0.8 mm F.Cu from J2.8 under the PH's
 housing to J1's two VBUS pad pairs, necked to 0.5 mm at the pad row, ≈ 15 mΩ (the routed 0.25 mm
-was ≈ 0.13 Ω, 0.18 V lost at the node's 1.4 A); thin tracks feed the Rp, C1 and the ESD's VBUS pin.
+was ≈ 0.13 Ω, 0.18 V lost at the node's 1.4 A); thin tracks feed the Rp, C1 and the ESD's VBUS pin (C3 on it).
 The lead's GND pins (J2.4, J2.7: the whole DUT return) each have a drawn via to the B.Cu pour beside their pad,
 and the ESD's GND (U1.2) one under the part, between its rows.
 Both sides are GND pours; Freerouting does the rest like on the other boards.  Power pads connect solid
-(`power_nets`: GND, VBUS): J1's four GND pins, J2's two and the ESD's; C1 and C2 keep reliefs (their VBUS
+(`power_nets`: GND, VBUS): J1's four GND pins, J2's two and the ESD's; C1–C3 keep reliefs (their VBUS
 end is a track).  JLC: Economic PCBA (one
 side, no Standard-only part), ≈ $34 for 10 PCBs with 8 assembled (estimate in `tools/bom.py`).
 

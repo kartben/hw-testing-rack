@@ -3741,6 +3741,202 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C")
+		(at 90.17 123.19 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f5871d4c-ec36-552f-9692-900ca811a039")
+		(property "Reference" "C3"
+			(at 93.98 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100n"
+			(at 93.98 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 90.17 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 90.17 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Capacitor 100n 0402"
+			(at 90.17 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C1525"
+			(at 90.17 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "CL05B104KO5NNNC"
+			(at 90.17 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 90.17 123.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fc5fc7f8-20ad-5bd8-9115-819643801f16")
+		)
+		(pin "2"
+			(uuid "eef3f51b-57b0-5ca4-9746-c407b9dae492")
+		)
+		(instances
+			(project "data-port"
+				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
+					(reference "C3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 90.17 119.38)
+			(xy 90.17 116.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f4bcf0b5-461d-567f-a4bb-3d73b5468119")
+	)
+	(label "VBUS"
+		(at 90.17 116.84 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "2a21538b-2ef6-5ceb-aa99-d796f923280f")
+	)
+	(wire
+		(pts
+			(xy 90.17 127)
+			(xy 90.17 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "68215354-71c9-5b42-9949-96dd46e12958")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 90.17 129.54 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "47239bf8-028c-5f3a-80be-808759ffad33")
+		(property "Reference" "#PWR02006"
+			(at 90.17 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 90.17 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 90.17 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 90.17 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 90.17 129.54 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "28dda296-6423-55a6-aa43-81e72f36c884")
+		)
+		(instances
+			(project "data-port"
+				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
+					(reference "#PWR02006")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector_Generic:Conn_01x08")
 		(at 41.91 170.18 0)
 		(unit 1)
@@ -3888,7 +4084,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "88977f7b-5454-581a-96c9-c2682c9d5bc1")
-		(property "Reference" "#PWR02006"
+		(property "Reference" "#PWR02007"
 			(at 34.29 170.18 0)
 			(effects
 				(font
@@ -3938,7 +4134,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02006")
+					(reference "#PWR02007")
 					(unit 1)
 				)
 			)
@@ -4009,7 +4205,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "70330d9f-32a3-5c4f-8d0e-048517a0f8ad")
-		(property "Reference" "#PWR02007"
+		(property "Reference" "#PWR02008"
 			(at 34.29 177.8 0)
 			(effects
 				(font
@@ -4059,7 +4255,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02007")
+					(reference "#PWR02008")
 					(unit 1)
 				)
 			)
@@ -4266,7 +4462,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0ed7e63b-774b-53bc-b909-011712c4a181")
-		(property "Reference" "#PWR02008"
+		(property "Reference" "#PWR02009"
 			(at 80.01 166.37 0)
 			(effects
 				(font
@@ -4316,7 +4512,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02008")
+					(reference "#PWR02009")
 					(unit 1)
 				)
 			)
@@ -4592,7 +4788,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0062a192-8070-5da3-9646-831af1e4a5d8")
-		(property "Reference" "#PWR02009"
+		(property "Reference" "#PWR02010"
 			(at 22.86 214.63 0)
 			(effects
 				(font
@@ -4642,7 +4838,7 @@
 		(instances
 			(project "data-port"
 				(path "/4a677053-8451-5b26-9400-50c098a33d8f/351729e2-850e-559f-aa34-46144b490769"
-					(reference "#PWR02009")
+					(reference "#PWR02010")
 					(unit 1)
 				)
 			)

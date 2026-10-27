@@ -89,13 +89,14 @@ Electronics,power-hub,"Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-
 Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,4.67,4.67,JLCPCB quote 2026-10-23,,,,,quoted components $40.41 (≈ €37.18) for 2 boards; catalogue unit prices give €32.51
 Electronics,data-port,100n — Capacitor 100n 0603,10,pcs,0.0124,0.12,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,C1,1 per board × 10 boards
 Electronics,data-port,10u — Capacitor 10u 0805,10,pcs,0.0403,0.4,LCSC/JLCPCB,C15850,CL21A106KAYNNNE,Samsung Electro-Mechanics,C2,1 per board × 10 boards
+Electronics,data-port,100n — Capacitor 100n 0402,10,pcs,0.0051,0.05,LCSC/JLCPCB,C1525,CL05B104KO5NNNC,Samsung Electro-Mechanics,C3,1 per board × 10 boards
 Electronics,data-port,"DATA — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",10,pcs,0.8372,8.37,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J1,1 per board × 10 boards
 Electronics,data-port,"LEAD — JST PH 8-pin, side entry, SMD",10,pcs,0.414,4.14,LCSC/JLCPCB,C265121,S8B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 10 boards
 Electronics,data-port,56k — Resistor 56k 0603,20,pcs,0.0025,0.05,LCSC/JLCPCB,C23206,0603WAF5602T5E,UNI-ROYAL(Uniroyal Elec),"R1,R2",2 per board × 10 boards
 Electronics,data-port,USBLC6-2SC6 — USB ESD protection,10,pcs,0.1656,1.66,LCSC/JLCPCB,C7519,USBLC6-2SC6,STMicroelectronics,U1,1 per board × 10 boards; alternative: C2687116 (UMW clone)
 Electronics,data-port,"Bare PCB data-port (2-layer 40×17 mm, lead-free HASL)",10,pcs,0.5612,5.61,JLCPCB quote 2026-10-23,,,,,"special offer $5.00, lead-free HASL $1.10 = $6.10 for 10 PCBs, 10 of them assembled"
 Electronics,data-port,"Economic PCBA, 10 boards: setup, stencil, extended parts, SMT, special components, nitrogen reflow",1,pcs,19.37,19.37,JLCPCB quote 2026-10-23,,,,,"setup $8.24, stencil $1.55, extended parts $9.27, SMT $0.70, special components $0.30, nitrogen reflow $0.99"
-Electronics,data-port,Components data-port: JLC quote minus the catalogue prices above,1,pcs,-2.22,-2.22,JLCPCB quote 2026-10-23,,,,,quoted components $13.61 (≈ €12.52) for 10 boards; catalogue unit prices give €14.74
+Electronics,data-port,Components data-port: JLC quote minus the catalogue prices above,1,pcs,-2.27,-2.27,JLCPCB quote 2026-10-23,,,,,quoted components $13.61 (≈ €12.52) for 10 boards; catalogue unit prices give €14.79
 Electronics,camera-pod,10u — Capacitor 10u 0805,2,pcs,0.0403,0.08,LCSC/JLCPCB,C15850,CL21A106KAYNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
 Electronics,camera-pod,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C2,1 per board × 2 boards
 Electronics,camera-pod,100n — Capacitor 100n 0603,2,pcs,0.0124,0.02,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,C3,1 per board × 2 boards
