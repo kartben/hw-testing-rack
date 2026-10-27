@@ -19243,6 +19243,216 @@
 			)
 		)
 	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 782.32 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ab360478-2d37-5002-b0ed-734764532262")
+		(property "Reference" "TP38"
+			(at 786.182 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 788.282 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "64d867f5-94aa-5fae-b060-146c61ecfd84")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
+					(reference "TP38")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 782.32 111.76)
+			(xy 782.32 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c785ae46-2c95-5508-89e3-d37e8231de6f")
+	)
+	(label "EXP1_RST_N"
+		(at 782.32 114.3 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ab8cbef7-0b5d-5ec9-a2b4-baf05c228a24")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 812.8 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "628f48d1-2743-5649-a1ad-1c92249352c6")
+		(property "Reference" "TP39"
+			(at 816.662 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 818.762 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "bf1fe356-83f1-56cd-b1e1-b612f35fa0de")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
+					(reference "TP39")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 812.8 111.76)
+			(xy 812.8 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6e4f2d32-03a6-5546-861c-208b6c0b880f")
+	)
+	(label "EXP2_RST_N"
+		(at 812.8 114.3 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "fa5ab436-ed2c-5a2d-9d8a-4462aabeb354")
+	)
 	(wire
 		(pts
 			(xy 60.96 167.64)
@@ -20372,7 +20582,7 @@
 		)
 		(uuid "dc18b3c3-c369-55f9-a82f-925be323228a")
 	)
-	(text "Bring-up test points on the rear face (B.Cu, bare pads, not in the BOM): +3V3, +5V, the hub's reset and 1.8 V, the lead's I²C and INT, GND"
+	(text "Bring-up test points on the rear face (B.Cu, bare pads, not in the BOM): +3V3, +5V, the hub's reset and 1.8 V, the lead's I²C and INT, the expanders' RESET, GND"
 		(exclude_from_sim no)
 		(at 610.87 27.94 0)
 		(effects

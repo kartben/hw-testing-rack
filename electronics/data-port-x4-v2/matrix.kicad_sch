@@ -9418,6 +9418,1094 @@
 			)
 		)
 	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 690.88 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "89dcfb42-21e1-50b0-a681-47c7298d7d6f")
+		(property "Reference" "TP29"
+			(at 694.742 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 696.842 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 690.88 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 690.88 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 690.88 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 690.88 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 690.88 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d09f57ea-9cbe-5774-b600-bfccabc6f064")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "TP29")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 690.88 111.76)
+			(xy 690.88 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4b9fb214-6c2d-592a-8027-9c4332bdf3a4")
+	)
+	(global_label "BUS_A"
+		(shape bidirectional)
+		(at 690.88 114.3 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "28a0042a-122c-5a10-b249-9d13d9156979")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 690.88 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 721.36 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "63cfb6b9-6b8a-514d-b0df-0bf1f3c66687")
+		(property "Reference" "TP30"
+			(at 725.222 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 727.322 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 721.36 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 721.36 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 721.36 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 721.36 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 721.36 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c5052c08-f0a8-5e67-9ec3-5a612abc20b7")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "TP30")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 721.36 111.76)
+			(xy 721.36 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f1745dab-af53-5a0a-868b-061c8ecdd5c6")
+	)
+	(global_label "BUS_B"
+		(shape bidirectional)
+		(at 721.36 114.3 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "82a74ffb-47b5-51dd-88fc-927fe494a2d3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 721.36 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 751.84 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "388bd16f-fc87-59f9-ad49-c39c8c10fcd5")
+		(property "Reference" "TP31"
+			(at 755.702 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 757.802 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 751.84 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 751.84 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 751.84 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 751.84 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 751.84 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4bce489c-82f4-51b5-af16-1bd1b54e0a9e")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "TP31")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 751.84 111.76)
+			(xy 751.84 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "87da2f70-02a3-5d94-bfc9-968bc580629e")
+	)
+	(global_label "BUS_C"
+		(shape bidirectional)
+		(at 751.84 114.3 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "5b4a20e3-8307-5371-87f2-f776ba227a5c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 751.84 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 782.32 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "99436e3e-43d6-57fa-9b55-472a1c4352dd")
+		(property "Reference" "TP32"
+			(at 786.182 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 788.282 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 782.32 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "bf3f54ab-55d6-51b7-b60e-32d43055b142")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "TP32")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 782.32 111.76)
+			(xy 782.32 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "372c4e7e-edcd-53b8-b56f-628dbf7ea3b0")
+	)
+	(global_label "BUS_D"
+		(shape bidirectional)
+		(at 782.32 114.3 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "0326acbc-b567-5077-8b90-f1e05dfce91e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 782.32 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 812.8 111.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ed383ae2-7f9e-53b6-b0af-02be55b3fd30")
+		(property "Reference" "TP33"
+			(at 816.662 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 818.762 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 812.8 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "43008691-5fef-5666-a661-9f11457f3c6e")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "TP33")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 812.8 111.76)
+			(xy 812.8 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c9acde1d-a71d-5cc9-8cae-fad64d053d9f")
+	)
+	(global_label "BUS_E"
+		(shape bidirectional)
+		(at 812.8 114.3 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "71dba5fe-f573-541d-a985-6388e5f70a8b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 812.8 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 629.92 147.32 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2cf003e9-7a57-5302-84dc-377b74e1ae2c")
+		(property "Reference" "TP34"
+			(at 633.782 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 635.882 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 629.92 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 629.92 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 629.92 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 629.92 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 629.92 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3e5f389e-b66c-5962-b2be-cd2d1fa54368")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "TP34")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 629.92 147.32)
+			(xy 629.92 149.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fd671c6e-b2f2-532c-8b97-d8a5d62a3678")
+	)
+	(global_label "BUS_F"
+		(shape bidirectional)
+		(at 629.92 149.86 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ff6625a5-d48d-5140-a450-dc3b692fe939")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 629.92 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 660.4 147.32 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1d71d685-46ed-525f-8604-65ec57024356")
+		(property "Reference" "TP35"
+			(at 664.262 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 666.362 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 660.4 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 660.4 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 660.4 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 660.4 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 660.4 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d0e462c2-392f-5a93-8fd8-39a6e80f608f")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "TP35")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 660.4 147.32)
+			(xy 660.4 149.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "be5acb6c-e153-5c21-955b-7497dde46ed6")
+	)
+	(global_label "BUS_G"
+		(shape bidirectional)
+		(at 660.4 149.86 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "63865ee7-8f0b-5cef-8ed5-715c5f13be48")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 660.4 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 690.88 147.32 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "98509b55-8add-5c62-9daf-cbc263df3b36")
+		(property "Reference" "TP36"
+			(at 694.742 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 696.842 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 690.88 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 690.88 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 690.88 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 690.88 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 690.88 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "32a82062-94f6-5604-8df4-2d2ca634f932")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "TP36")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 690.88 147.32)
+			(xy 690.88 149.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6fad804a-ed0e-5bda-bae6-828888e125e6")
+	)
+	(global_label "BUS_H"
+		(shape bidirectional)
+		(at 690.88 149.86 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "6850983f-50a3-5bdc-bc5f-e5029584a89d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 690.88 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 721.36 147.32 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1a860559-0486-5559-9608-824d1dd0c9ad")
+		(property "Reference" "TP37"
+			(at 725.222 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 727.322 148.59 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 721.36 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 721.36 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 721.36 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 721.36 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 721.36 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c9dda128-e02f-5bd0-b9ef-19bd8f879375")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "TP37")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 721.36 147.32)
+			(xy 721.36 149.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a82fad29-326d-5707-bfdd-4c1900dc36d9")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 721.36 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "19073c86-894d-549e-b9bc-1f453c5985e3")
+		(property "Reference" "#PWR07019"
+			(at 721.36 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 721.36 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 721.36 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 721.36 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 721.36 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4ed72b25-f7fb-539d-82f3-e2cc7484a6a6")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
+					(reference "#PWR07019")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(wire
 		(pts
 			(xy 147.32 134.62)
@@ -9788,7 +10876,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1edec5eb-aeaf-5d0a-9ee5-453d87b8a641")
-		(property "Reference" "#PWR07019"
+		(property "Reference" "#PWR07020"
 			(at 147.32 139.7 0)
 			(effects
 				(font
@@ -9838,7 +10926,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
-					(reference "#PWR07019")
+					(reference "#PWR07020")
 					(unit 1)
 				)
 			)
@@ -9854,7 +10942,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "283299c0-4b67-522a-a898-395af40db215")
-		(property "Reference" "#PWR07020"
+		(property "Reference" "#PWR07021"
 			(at 147.32 327.66 0)
 			(effects
 				(font
@@ -9904,7 +10992,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
-					(reference "#PWR07020")
+					(reference "#PWR07021")
 					(unit 1)
 				)
 			)
@@ -9920,7 +11008,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8ab97ffd-2b23-5afa-ad4a-d0ca1063404f")
-		(property "Reference" "#PWR07021"
+		(property "Reference" "#PWR07022"
 			(at 307.34 43.18 0)
 			(effects
 				(font
@@ -9970,7 +11058,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
-					(reference "#PWR07021")
+					(reference "#PWR07022")
 					(unit 1)
 				)
 			)
@@ -10008,7 +11096,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9e839d27-530a-592d-a31d-fd0ed1aca2c7")
-		(property "Reference" "#PWR07022"
+		(property "Reference" "#PWR07023"
 			(at 391.16 220.98 0)
 			(effects
 				(font
@@ -10058,7 +11146,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/502396b8-bd6b-5893-a2f3-d22d4d678cde"
-					(reference "#PWR07022")
+					(reference "#PWR07023")
 					(unit 1)
 				)
 			)
@@ -10162,7 +11250,7 @@
 	)
 	(rectangle
 		(start 609.6 25.4)
-		(end 838.2 147.32)
+		(end 838.2 182.88)
 		(stroke
 			(width 0.2)
 			(type dash)
@@ -10172,7 +11260,7 @@
 		)
 		(uuid "b74c8fe1-0791-5d84-a37d-1e9954999000")
 	)
-	(text "Bring-up test points on the rear face (B.Cu): ±5 V, the expander's bus and RST, GND (logic only)"
+	(text "Bring-up test points on the rear face (B.Cu): ±5 V, the expander's bus and RST, buses A–H, GND (logic only)"
 		(exclude_from_sim no)
 		(at 610.87 27.94 0)
 		(effects

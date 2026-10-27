@@ -531,12 +531,18 @@ on each line that a header or J1 doesn't already bring out: the resets, the faul
 - **Below J1:** TP23 INT, TP24 SDA, TP25 SCL (the board side of the lead's isolation), TP26 GND.
 - **Each port's FAULT_N:** TP101–TP401 FLT1–FLT4, each on its own rear track between its expander and its
   switch.  TP27 and TP28 are GND points by the expanders.
+- **The expanders' RESET** (Eve's review, 2026-10-27): TP38 EXP1 RST and TP39 EXP2 RST, each by its pull-up's
+  via (R11, R12).
+- **The buses A–H** (the same review): TP29–TP36, named A to H, behind the co-processor's east side where all
+  eight pass between it, the pull-ups and the two crosspoints, with TP37 GND.  A, B, E and F sit on a rear
+  track of their own, C, D and G beside one; H, which runs on the front only, comes down a via of its own.
+  Not a grid: each pad goes where its own bus passes, 2.6 mm or more from the next.
 - **Left out:** VREF, RESET_N and BOOT_N (on each header), the lead's own lines (on J1) and the USB pairs.
-- **LOGIC ONLY.**  The co-processor's row, its +1V1 and the matrix's group carry that mark (all but their
-  GND): the base leaves their parts off, so its pads there float.
+- **LOGIC ONLY.**  The co-processor's row, its +1V1, the matrix's group and the buses carry that mark (all but
+  their GND): the base leaves their parts off, so its pads there float.
 - **Where the router stopped.**  Most links are Freerouting's.  Where it gave up, a TP sits on a rear track
-  of its own net, or a short drawn link joins it: RUN up onto CP_RUN's track, and +3V3_CP through a via to
-  FB2.
+  of its own net, or a short drawn link joins it: RUN up onto CP_RUN's track, +3V3_CP through a via to
+  FB2, BUS H down its via, and TP37 to a GND via east of it (the automatic one, west, moved RN8's dog-bones).
 
 **The VREF rule.**  Virtual wires and the analyzer are specified for boards with 0.95–3.6 V logic: wire VREF
 to the board's I/O supply.

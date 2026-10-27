@@ -140,6 +140,16 @@ TPS = {
     "TP27": ("GND", "GND", 1.5, 26.0, 56.15), "TP28": ("GND", "GND", 1.5, 71.5, 56.15),
     "TP101": ("PORT1_FLT_N", "FLT1", 1.0, 24.3, 50.64), "TP201": ("PORT2_FLT_N", "FLT2", 1.0, 39.75, 53.76),
     "TP301": ("PORT3_FLT_N", "FLT3", 1.0, 56.68, 49.3), "TP401": ("PORT4_FLT_N", "FLT4", 1.0, 74.75, 49.9),
+    # the crosspoints' eight buses (the co-processor's GPIO2–9), behind its east side where they all pass: A, B, E
+    # and F on a rear track of their own, C, D, G and H beside one (H, front only, through a via), with a GND
+    # (Eve's review, 2026-10-27)
+    "TP29": ("BUS_A", "A", 1.0, 56.68, 9.92), "TP30": ("BUS_B", "B", 1.0, 51.79, 15.67),
+    "TP31": ("BUS_C", "C", 1.0, 52.3, 19.1), "TP32": ("BUS_D", "D", 1.0, 57.3, 17.2),
+    "TP33": ("BUS_E", "E", 1.0, 57.16, 14.51), "TP34": ("BUS_F", "F", 1.0, 54.74, 11.99),
+    "TP35": ("BUS_G", "G", 1.0, 59.95, 19.6), "TP36": ("BUS_H", "H", 1.0, 55.25, 19.0),
+    "TP37": ("GND", "GND", 1.5, 59.75, 11.25),
+    # each expander's RESET, by its pull-up's via
+    "TP38": ("EXP1_RST_N", "EXP1 RST", 1.0, 28.55, 50.25), "TP39": ("EXP2_RST_N", "EXP2 RST", 1.0, 63.85, 50.05),
 }
 # The co-processor's SWD header (the user, 2026-10-27; Eve's suggestion): 1 × 5 through-hole on the front face's top
 # edge, right of the co-processor, where both faces are free and a probe reaches it from above with the board in its
@@ -647,9 +657,10 @@ def hub_sheet(b: Board):
         part(s, q, "nfet", {"G": "+3V3", "S": line, "D": "LEAD_" + line}, pcb=P(86.5, y, 0),
              sch=at(190, 88 + 14 * i))
         R(s, r, val, "+3V3", line, size="0402", pcb=P(83.0, y, 90), sch=at(210, 86 + 14 * i))
-    testpoints(s, ["TP7", "TP8", "TP9", "TP20", "TP21", "TP22", "TP23", "TP24", "TP25", "TP26", "TP27", "TP28"],
+    testpoints(s, ["TP7", "TP8", "TP9", "TP20", "TP21", "TP22", "TP23", "TP24", "TP25", "TP26", "TP27", "TP28",
+                   "TP38", "TP39"],
                "Bring-up test points on the rear face (B.Cu, bare pads, not in the BOM): +3V3, +5V, the hub's "
-               "reset and 1.8 V, the lead's I²C and INT, GND")
+               "reset and 1.8 V, the lead's I²C and INT, the expanders' RESET, GND")
     s.notes_at = (6, 110, 220)
     s.notes = [
         "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).",
@@ -734,8 +745,10 @@ def matrix_sheet(b: Board):
                "TCA9534A 0x38: P0 DAT, P1 CK, P2 STB U7, P3 STB U8, P4 RST, P5 RUN, P6 BOOTSEL, P7 mark.",
                "RUN and BOOTSEL are open drain emulated (output register 0, the pin switched to output).",
                "±5 V on purpose: at a single 5 V R_on is 120–225 Ω, and a 1.8 V board's I²C low would fail."]
-    testpoints(s, ["TP4", "TP5", "TP6", "TP14", "TP15", "TP16", "TP17", "TP18", "TP19"],
-               "Bring-up test points on the rear face (B.Cu): ±5 V, the expander's bus and RST, GND (logic only)")
+    testpoints(s, ["TP4", "TP5", "TP6", "TP14", "TP15", "TP16", "TP17", "TP18", "TP19", "TP29", "TP30", "TP31",
+                   "TP32", "TP33", "TP34", "TP35", "TP36", "TP37"],
+               "Bring-up test points on the rear face (B.Cu): ±5 V, the expander's bus and RST, buses A–H, GND "
+               "(logic only)")
 
 
 # -------------------------------------------------------------------------------- co-processor (full)
@@ -1018,6 +1031,12 @@ def board() -> Board:
         t, v = p_lines(n)
         hand_tracks += t
         hand_vias += v
+    # the bus test pads' two drawn links (TPS): H, front only, down a via beside its track; the GND pad to a via
+    # of its own east of it (the automatic one went west and pushed RN8's +3V3 dog-bones about)
+    (hx, hy), (gx, gy) = TPS["TP36"][3:], TPS["TP37"][3:]
+    hand_tracks += [("BUS_H", "B.Cu", 0.127, [(hx + 0.48, 17.13), (hx + 0.48, hy - 0.48), (hx, hy)]),
+                    ("GND", "B.Cu", 0.25, [(gx, gy), (gx + 1.0, gy)])]
+    hand_vias += [("BUS_H", hx + 0.48, 17.13, 0.5, 0.3), ("GND", gx + 1.0, gy, 0.5, 0.3)]
     # ports 1 and 4's 5V_SW, from the switch up to the VBUS LED's resistor, drawn: their old way past the header
     # (B.Cu between two of its pins) now carries P6 / P5.  Port 1 crosses the header on F.Cu west of pin 4; port 4,
     # under three USB pairs there, on B.Cu west of the header.  Relative to the port's x: (layer, points), vias
@@ -1291,6 +1310,7 @@ def board() -> Board:
             {"text": "LOGIC ONLY", "x": 28.0, "y": 6.6, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 11.0, "y": 11.6, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 43.12, "y": 18.4, "size": 0.8, "layer": "B.SilkS"},
+            {"text": "LOGIC ONLY", "x": 55.0, "y": 21.75, "size": 0.8, "layer": "B.SilkS"},
         ],
     }
     return b
