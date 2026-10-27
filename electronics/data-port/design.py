@@ -13,6 +13,7 @@ the 90° extension cable.
   pads under its housing and into J1's VBUS pads from behind, necked to 0.5 mm at the pad row: ≈ 15 mΩ
   instead of the routed 0.25 mm's ≈ 0.13 Ω (D1).  10 µF at the receptacle (C2), 100 nF at the lead's
   end (C1); thin tracks feed the Rp and the ESD's VBUS pin.
+* The lead's GND pins (4, 7: the whole DUT return) and the ESD's each have a drawn via to the B.Cu pour.
 * USBLC6 ESD on D+/D− right at the receptacle, where the plugs go in.
 * The lead: VBUS, GND, D+, D−, GND (the pair between two grounds), then the node's I²C and INT,
   which this board leaves open (a later DATA ×4 board uses them).  Its pinout here is the node
@@ -130,8 +131,17 @@ def board() -> Board:
             {"layer": "B.Cu", "net": "GND"},
         ],
         "stitch": 3.0,
-        "tracks": vbus_tracks(),
-        "vias": [("VBUS", 7.4, 5.9)],                  # TP2 (VBUS) to the top-side VBUS track
+        # the lead's GND pins 7 and 4 (the DUT's return, ≤ 1.52 A) each down to the B.Cu pour beside their pad's
+        # end: the F.Cu island around them had one 0.3 mm via (kicad-happy review, DP-2).  The ESD's GND (U1.2)
+        # its own via, under the part between its rows: the D− line the via by pin 4 moves no longer leaves it
+        # a way out through the F.Cu pour
+        "tracks": vbus_tracks() + [
+            ("GND", "F.Cu", 0.5, [(9.4, 7.75), (9.4, 9.15), (8.65, 9.9)]),
+            ("GND", "F.Cu", 0.5, [(15.4, 7.75), (15.4, 9.2), (14.6, 10.0)]),
+            ("GND", "F.Cu", 0.3, [(CFG["ph"] + 2.0, H - 2.363), (CFG["ph"] + 2.0, H - 3.5)]),
+        ],
+        "vias": [("VBUS", 7.4, 5.9),                   # TP2 (VBUS) to the top-side VBUS track
+                 ("GND", 8.65, 9.9), ("GND", 14.6, 10.0), ("GND", CFG["ph"] + 2.0, H - 3.5, 0.5, 0.3)],
         # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
         "dru": """
 (rule "USB4105 J1: GND pads beside its own pegs"

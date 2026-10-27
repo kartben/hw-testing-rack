@@ -307,6 +307,8 @@ USB 2.0 only: High Speed PC ↔ board in classic mode, Full Speed to the node's 
 VBUS is drawn in `design.py` (`vbus_tracks()`, netclass Power): 0.8 mm F.Cu from J2.8 under the PH's
 housing to J1's two VBUS pad pairs, necked to 0.5 mm at the pad row, ≈ 15 mΩ (the routed 0.25 mm
 was ≈ 0.13 Ω, 0.18 V lost at the node's 1.4 A); thin tracks feed the Rp, C1 and the ESD's VBUS pin.
+The lead's GND pins (J2.4, J2.7: the whole DUT return) each have a drawn via to the B.Cu pour beside their pad,
+and the ESD's GND (U1.2) one under the part, between its rows.
 Both sides are GND pours; Freerouting does the rest like on the other boards.  Power pads connect solid
 (`power_nets`: GND, VBUS): J1's four GND pins, J2's two and the ESD's; C1 and C2 keep reliefs (their VBUS
 end is a track).  JLC: Economic PCBA (one
