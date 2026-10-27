@@ -13,6 +13,9 @@ are copper only (tented, no paste) under the resistor body.  Pin numbers follow 
 
 ESP32-S3-WROOM-1_NoEPVias: the stock ESP32-S3-WROOM-1 without the 0.2 mm thermal vias in its exposed
 pad (the bay node's U3).
+
+QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm_Paste4x4: the stock QFN-64 with its exposed pad's paste cut into 16
+windows that clear a 3 × 3 grid of vias at 1.2 mm (the DATA ×4 v2's USB2517, its vias drawn by the board).
 """
 
 from __future__ import annotations
@@ -74,6 +77,36 @@ def wroom_no_ep_vias() -> pcbnew.FOOTPRINT:
     fp.SetValue(name)
     fp.SetLibDescription("ESP32-S3-WROOM-1 as RF_Module:ESP32-S3-WROOM-1, without the thermal vias in the exposed "
                          "pad (pad 41): stitch the pad's copper island around it instead")
+    return fp
+
+
+def qfn64_paste4x4() -> pcbnew.FOOTPRINT:
+    """The stock QFN-64 (9 × 9 mm, 4.7 mm exposed pad), its exposed pad's paste cut for a 3 × 3 grid of 0.5 mm
+    vias at 1.2 mm in the pad: 16 windows 0.85 mm square (0.3 mm corners) on a 1.2 mm grid between the vias,
+    0.12 mm from each via's ring and 0.35 mm apart, 47 % of the pad (the stock nine 1.26 mm windows sit on the
+    vias).  The vias are the board's: the stock _ThermalVias variant's are 0.2 mm holes, under JLC's 0.3 mm."""
+    name = "QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm_Paste4x4"
+    fp = pcbnew.FootprintLoad(str(STOCK / "Package_DFN_QFN.pretty"), "QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm")
+    for pad in list(fp.Pads()):
+        if pad.GetNumber() == "":
+            fp.Remove(pad)
+    for x in (-1.8, -0.6, 0.6, 1.8):
+        for y in (-1.8, -0.6, 0.6, 1.8):
+            pad = pcbnew.PAD(fp)
+            pad.SetAttribute(pcbnew.PAD_ATTRIB_SMD)
+            pad.SetShape(pcbnew.F_Cu, pcbnew.PAD_SHAPE_ROUNDRECT)
+            pad.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(0.85), MM(0.85)))
+            pad.SetRoundRectRadiusRatio(pcbnew.F_Cu, 0.3 / 0.85)
+            ls = pcbnew.LSET()
+            ls.AddLayer(pcbnew.F_Paste)
+            pad.SetLayerSet(ls)
+            pad.SetFPRelativePosition(pcbnew.VECTOR2I(MM(x), MM(y)))
+            fp.Add(pad)
+    fp.SetFPID(pcbnew.LIB_ID("bench", name))
+    fp.SetValue(name)
+    fp.SetLibDescription("QFN-64 9 × 9 mm, 0.5 mm pitch, 4.7 mm exposed pad, as Package_DFN_QFN:QFN-64-1EP_9x9mm_P0.5mm_"
+                         "EP4.7x4.7mm, the exposed pad's paste in 16 windows clear of a 3 × 3 via grid at 1.2 mm")
+    fp.SetKeywords("QFN 64 exposed pad paste vias")
     return fp
 
 
@@ -306,7 +339,7 @@ MAKERS = {"R_1206_3216Metric_Kelvin": kelvin_1206, "ESP32-S3-WROOM-1_NoEPVias": 
           "PinHeader_2x06_P2.54mm_Vertical_SMD_Tight": header_2x6_smd_tight,
           "USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical": usb_c_hro_31d06,
           "DFN2510-10L_2.5x1.0mm_P0.5mm": dfn2510_10l, "L_Abracon_AOTA-B201610": aota_b201610,
-          "C_0402_1005Metric_RP": c0402_rp}
+          "C_0402_1005Metric_RP": c0402_rp, "QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm_Paste4x4": qfn64_paste4x4}
 
 
 def main():

@@ -962,16 +962,18 @@ def board() -> Board:
     # stay as first found (micro-jogs leaving the pads, the user's find, 2026-10-22).  A drawn track joins its pad
     # for Freerouting only on the pad's very centre (2.5 µm off, the HS pairs and the switches' IN stayed open):
     # every drawn end lands on its pad's centre.  U3's tab to C3 and to an island via, its VIN to a +5V via and the
-    # other one to C2 (inside the islands' cores: pcbgen drops the cores once routed); the expanders', LSF0108s'
-    # and hub's exposed pads to a via in the pad (from 6 layers JLC fills and caps every via for free); the hub's
-    # GND pin 19, which has no room for a via, onto its exposed pad; RN3's spare GND pad onto its neighbour, whose
+    # other one to C2 (inside the islands' cores: pcbgen drops the cores once routed); the expanders' and
+    # LSF0108s' exposed pads to a via in the pad (from 6 layers JLC fills and caps every via for free); the hub's,
+    # 4.7 mm, to nine (3 × 3 at 1.2 mm, its paste cut between them: bench:…_Paste4x4), the hub's heat and its
+    # GND return into In1; the hub's GND pin 19, which has no room for a via, onto its exposed pad; RN3's spare GND pad onto its neighbour, whose
     # dog-bone is drawn with it (a pad a drawn track reaches gets no automatic one)
     hand_tracks += [("+3V3", "F.Cu", 0.6, [(lx, ly - 5.35), (lx, ly - 3.5), (lx + 3.05, ly - 3.5)]),
                     ("+5V", "F.Cu", 0.6, [(lx + 2.3, ly + 3.15), (lx + 1.9, ly + 4.8)]),
                     ("+5V", "F.Cu", 0.6, [(lx + 3.15, ly + 4.8), (lx + 2.9, ly + 5.95)])]
-    for x_, y_ in [(ex_, ey_) for ex_, ey_, _ in EXP] + [(c - 0.5, LSF_Y) for c in CFG["usb"]] + [(HX, HY)]:
+    for x_, y_ in [(ex_, ey_) for ex_, ey_, _ in EXP] + [(c - 0.5, LSF_Y) for c in CFG["usb"]]:
         hand_tracks.append(("GND", "F.Cu", 0.25, [(x_, y_), (x_ + 0.3, y_)]))
         hand_vias.append(("GND", x_ + 0.3, y_, 0.5, 0.3))
+    hand_vias += [("GND", HX + 1.2 * i, HY + 1.2 * j, 0.5, 0.3) for i in (-1, 0, 1) for j in (-1, 0, 1)]
     hand_tracks += [("GND", "F.Cu", 0.2, [(HX + 4.4125, HY + 2.75), (HX + 2.95, HY + 2.75), (HX + 2.25, HY + 2.05),
                                           (HX, HY)]),
                     ("GND", "F.Cu", 0.2, [(HX + 3.75, HY + 7.1), (HX + 3.25, HY + 7.1)]),

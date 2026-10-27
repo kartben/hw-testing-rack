@@ -277,10 +277,10 @@ CAT = {
                   description="3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223"),
     # DATA ×4 v2 (electronics/data-port-x4-v2, docs/data-x4-v2-research.md), checked 2026-10-19: the 7-port hub,
     # the 2 × 6 SMD pin header per port, the matrix, its translators and ESD, the co-processor and its parts
-    "usb2517": Cat("bench:USB2517I", "Package_DFN_QFN:QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm", "USB2517I-JZX",
+    "usb2517": Cat("bench:USB2517I", "bench:QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm_Paste4x4", "USB2517I-JZX",
                    "Microchip Tech", "C478081", 4.51,
                    datasheet="https://ww1.microchip.com/downloads/en/DeviceDoc/00001598C.pdf",
-                   # JLC's own land (EasyEDA) has a 4.8 mm exposed pad
+                   # JLC's own land (EasyEDA) has a 4.8 mm exposed pad; the paste cut round a 3 × 3 via grid
                    description="USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial",
                    model=("QFN-64_9x9x0.9mm.step", (0, 0, 0), (0, 0, 0))),
     # the same in through-hole, easier to solder by hand: where the far face has room for the tails

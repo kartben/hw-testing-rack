@@ -36,7 +36,7 @@ R21,1,33,R_0402_1005Metric,0402WGF330JTCE,UNI-ROYAL(Uniroyal Elec),C25105,Resist
 "RN1,RN2,RN3,RN8,RN9",5,10k,R_Array_Convex_4x0402,4D02WGJ0103TCE,UNI-ROYAL(Uniroyal Elec),C25725,"4 × resistor array 0402, 5 %",,,
 "RN6,RN7",2,2.2k,R_Array_Convex_4x0402,4D02WGJ0222TCE,UNI-ROYAL(Uniroyal Elec),C26075,"4 × resistor array 0402, 5 %",,,
 "RN101,RN102,RN201,RN202,RN301,RN302,RN401,RN402",8,100,R_Array_Convex_4x0402,4D02WGJ0101TCE,UNI-ROYAL(Uniroyal Elec),C48442,"4 × resistor array 0402, 5 %",,,
-U1,1,USB2517I-JZX,QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm,USB2517I-JZX,Microchip Tech,C478081,"USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial",,,
+U1,1,USB2517I-JZX,QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm_Paste4x4,USB2517I-JZX,Microchip Tech,C478081,"USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial",,,
 "U2,U6",2,TCA6408ARGTR,VQFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm,TCA6408ARGTR,Texas Instruments,C181499,"8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT",,,
 U3,1,AP2114H-3.3TRG1,SOT-223-3_TabPin2,AP2114H-3.3TRG1,Diodes Incorporated,C150716,"3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223",,,
 "U4,U105,U106,U108,U109,U205,U206,U208,U209,U305,U306,U308,U309,U405,U406,U408,U409",17,H5VU25UC,DFN2510-10L_2.5x1.0mm_P0.5mm,H5VU25UC,hongjiacheng,C20615800,"4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair)",,,

@@ -605,7 +605,10 @@ Dense rules at JLC's multilayer floor:
 Routing (2026-10-22, after the user found jogs where tracks leave J1's pads).  Freerouting's optimizer only
 runs on a board it sees fully routed, and its first-found routes leave many pads by a short straight, a
 0.2 mm jog and then their diagonal.  So nothing is left for the pours to join:
-- each QFN's exposed pad takes a via in the pad (left open at 4 layers: fine in a thermal pad, below);
+- each QFN's exposed pad takes a via in the pad (left open at 4 layers: fine in a thermal pad, below); the
+  hub's 4.7 mm pad takes nine, 3 × 3 at 1.2 mm, for its ≈ 1.1 W.  Its paste is cut into 16 windows between
+  them (0.85 mm, 47 % of the pad, 0.12 mm from each via's ring:
+  `bench:QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm_Paste4x4`), so no paste sits on an open hole;
 - U3's islands, the hub's pin 19 and RN3's spare pad are joined by drawn tracks;
 - every drawn track ends on its pad's very centre: Freerouting joins a track to a pin there only (2.5 µm off,
   it had left the HS pairs and the port switches' IN open);
