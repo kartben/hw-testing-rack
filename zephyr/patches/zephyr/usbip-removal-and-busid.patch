@@ -1,7 +1,7 @@
-From 9c4ddffc6766bafac5e1cd7a32c68600b43c88e5 Mon Sep 17 00:00:00 2001
+From a22d862645df1cc4279ad9698320521631a62311 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:24 +0200
-Subject: [PATCH 01/12] usb: usbip: check the result of the UHC transfer
+Subject: [PATCH 01/13] usb: usbip: check the result of the UHC transfer
  allocation
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -17,7 +17,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 5 insertions(+)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 4fe6f2ab1ab..c52381d13e3 100644
+index 4fe6f2ab1..c52381d13 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -231,6 +231,11 @@ static int usbip_submit_req(struct usbip_cmd_node *const cmd_nd, const uint8_t e
@@ -33,10 +33,10 @@ index 4fe6f2ab1ab..c52381d13e3 100644
  		memcpy(xfer->setup_pkt, setup, sizeof(struct usb_setup_packet));
  		LOG_HEXDUMP_DBG(xfer->setup_pkt, 8U, "setup");
 
-From 84492496a1e8a52c54ad2ef0551ea762d0e52344 Mon Sep 17 00:00:00 2001
+From 128db62197aa21a6437e4162e3871342dd62cac1 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
-Subject: [PATCH 02/12] usb: usbip: clean up if request submission fails
+Subject: [PATCH 02/13] usb: usbip: clean up if request submission fails
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -56,7 +56,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index c52381d13e3..af4201c5890 100644
+index c52381d13..af4201c58 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -270,6 +270,7 @@ static int usbip_handle_submit(struct usbip_dev_ctx *const dev_ctx,
@@ -101,10 +101,10 @@ index c52381d13e3..af4201c5890 100644
  	}
  
 
-From 2c3139fd76c5e4268e2f36e9f834bdad0ad19dbd Mon Sep 17 00:00:00 2001
+From 20a0d72574e7c559f6b2b0458df6c364b1140890 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:25 +0200
-Subject: [PATCH 03/12] usb: usbip: dequeue pending transfers when the
+Subject: [PATCH 03/13] usb: usbip: dequeue pending transfers when the
  connection is closed
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -123,7 +123,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 14 insertions(+)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index af4201c5890..42d32e1e83b 100644
+index af4201c58..42d32e1e8 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -424,6 +424,19 @@ static int usbip_handle_cmd(struct usbip_dev_ctx *const dev_ctx)
@@ -155,10 +155,10 @@ index af4201c5890..42d32e1e83b 100644
  			LOG_INF("CMD connection closed, errno %d", ret);
  			k_event_set_masked(&dev_ctx->event, 0, USBIP_EXPORTED);
 
-From 817ae599f024daf38648e043beff2a7dcf67485a Mon Sep 17 00:00:00 2001
+From b113ad31b724b11ecc0cf8039cc2bed356a82edb Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:26 +0200
-Subject: [PATCH 04/12] usb: usbip: drop completions of a previous connection
+Subject: [PATCH 04/13] usb: usbip: drop completions of a previous connection
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -176,7 +176,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 42d32e1e83b..a2988b4dc79 100644
+index 42d32e1e8..a2988b4dc 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -47,6 +47,8 @@ struct usbip_dev_ctx {
@@ -223,10 +223,10 @@ index 42d32e1e83b..a2988b4dc79 100644
  	LOG_INF("USB device %s exported", busid);
  
 
-From 6d1fb4e3c901de57b2e459683e34bd03d00da0bf Mon Sep 17 00:00:00 2001
+From bb0d16a936e4f7f3d71af3bd0b570ca6f751d57d Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:27 +0200
-Subject: [PATCH 05/12] usb: usbip: bind exported devices as host class
+Subject: [PATCH 05/13] usb: usbip: bind exported devices as host class
  instances
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -257,7 +257,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 212 insertions(+), 117 deletions(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index a2988b4dc79..9a6bdcd4879 100644
+index a2988b4dc..9a6bdcd48 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -10,9 +10,11 @@
@@ -764,10 +764,10 @@ index a2988b4dc79..9a6bdcd4879 100644
  				K_THREAD_STACK_SIZEOF(dev_thread_stacks[i]),
  				usbip_thread_cmd, ctx, NULL, NULL,
 
-From bb949826ae8124737dd7b85a6db8ce601b234da1 Mon Sep 17 00:00:00 2001
+From fd1d717942d1f775345bdb8d3a65706b515a4660 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
-Subject: [PATCH 06/12] usb: usbip: close the connection when the exported
+Subject: [PATCH 06/13] usb: usbip: close the connection when the exported
  device is removed
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -787,7 +787,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 52 insertions(+), 5 deletions(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 9a6bdcd4879..5896ba5422d 100644
+index 9a6bdcd48..5896ba542 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -40,6 +40,11 @@ static struct k_thread usbip_thread;
@@ -908,10 +908,10 @@ index 9a6bdcd4879..5896ba5422d 100644
  	k_mutex_unlock(&dev_ctx->lock);
  
 
-From e8d84a053845ef3f48b1575b625e38cd182fc693 Mon Sep 17 00:00:00 2001
+From ecefca4c39751975f08284ad2388716e380c3b62 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 19 Oct 2026 13:28:28 +0200
-Subject: [PATCH 07/12] usb: usbip: name devices by their port
+Subject: [PATCH 07/13] usb: usbip: name devices by their port
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -932,7 +932,7 @@ Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
  1 file changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 5896ba5422d..00b41bee251 100644
+index 5896ba542..00b41bee2 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -39,6 +39,9 @@ static struct k_thread usbip_thread;
@@ -975,10 +975,10 @@ index 5896ba5422d..00b41bee251 100644
  
  /* Device list entry, filled with the context lock held and sent without it */
 
-From 24137c3f3299ace6b9d057c26250859d88644f1f Mon Sep 17 00:00:00 2001
+From b459c6a001e601fdf988d74bd981a84f300f98aa Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Wed, 21 Oct 2026 22:34:44 +0200
-Subject: [PATCH 08/12] usb: usbip: answer an unlink request when the transfer
+Subject: [PATCH 08/13] usb: usbip: answer an unlink request when the transfer
  ends
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -1003,7 +1003,7 @@ Assisted-by: Claude:opus-5.5
  1 file changed, 61 insertions(+), 9 deletions(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 00b41bee251..43f85ef997c 100644
+index 00b41bee2..43f85ef99 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -58,6 +58,8 @@ struct usbip_dev_ctx {
@@ -1163,10 +1163,10 @@ index 00b41bee251..43f85ef997c 100644
  		k_event_init(&ctx->event);
  	}
 
-From d792ec4efdd40d5c1f2a3edfb04258360a873647 Mon Sep 17 00:00:00 2001
+From 4e69185dec019b915295e3a8f3cd53f6e6c8fd50 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Thu, 22 Oct 2026 04:23:13 +0200
-Subject: [PATCH 09/12] usb: usbip: read ahead on the bulk IN endpoints of
+Subject: [PATCH 09/13] usb: usbip: read ahead on the bulk IN endpoints of
  serial converters
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -1209,7 +1209,7 @@ Assisted-by: Claude:opus-5.5
 
 diff --git a/include/zephyr/usb/usbip.h b/include/zephyr/usb/usbip.h
 new file mode 100644
-index 00000000000..84d721244e0
+index 000000000..84d721244
 --- /dev/null
 +++ b/include/zephyr/usb/usbip.h
 @@ -0,0 +1,73 @@
@@ -1287,7 +1287,7 @@ index 00000000000..84d721244e0
 +
 +#endif /* ZEPHYR_INCLUDE_USB_USBIP_H_ */
 diff --git a/subsys/usb/host/Kconfig.usbip b/subsys/usb/host/Kconfig.usbip
-index 0c4d9a8e8c5..983f7fb9dbf 100644
+index 0c4d9a8e8..983f7fb9d 100644
 --- a/subsys/usb/host/Kconfig.usbip
 +++ b/subsys/usb/host/Kconfig.usbip
 @@ -55,6 +55,24 @@ config USBIP_DEVICES_COUNT
@@ -1316,7 +1316,7 @@ index 0c4d9a8e8c5..983f7fb9dbf 100644
  module-str = usbip
  source "subsys/logging/Kconfig.template.log_config"
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 43f85ef997c..2ceb6d593bc 100644
+index 43f85ef99..2ceb6d593 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -13,6 +13,7 @@
@@ -1851,10 +1851,10 @@ index 43f85ef997c..2ceb6d593bc 100644
  	}
  
 
-From 62dd875823e17d0ad36a9e6628747c58843f9980 Mon Sep 17 00:00:00 2001
+From bacaf2b503dd9089056979e9190636b03e77e31b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Thu, 22 Oct 2026 11:14:27 +0200
-Subject: [PATCH 10/12] usb: usbip: let the application query the imported
+Subject: [PATCH 10/13] usb: usbip: let the application query the imported
  devices
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -1877,7 +1877,7 @@ Assisted-by: Claude:opus-5.5
  2 files changed, 85 insertions(+)
 
 diff --git a/include/zephyr/usb/usbip.h b/include/zephyr/usb/usbip.h
-index 84d721244e0..14460de6d3c 100644
+index 84d721244..14460de6d 100644
 --- a/include/zephyr/usb/usbip.h
 +++ b/include/zephyr/usb/usbip.h
 @@ -12,6 +12,7 @@
@@ -1929,7 +1929,7 @@ index 84d721244e0..14460de6d3c 100644
   * @}
   */
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 2ceb6d593bc..63384d5f296 100644
+index 2ceb6d593..63384d5f2 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -87,6 +87,9 @@ struct usbip_dev_ctx {
@@ -2012,10 +2012,10 @@ index 2ceb6d593bc..63384d5f296 100644
  {
  	struct usbip_req_header hdr;
 
-From ab74df702028bc929df9dcd351e07454b000f605 Mon Sep 17 00:00:00 2001
+From cd3e76f624351c808d69dc3b5a79d6024ba44ded Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Thu, 22 Oct 2026 11:06:03 +0200
-Subject: [PATCH 11/12] usb: usbip: transfer large requests in segments
+Subject: [PATCH 11/13] usb: usbip: transfer large requests in segments
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -2046,7 +2046,7 @@ Assisted-by: Claude:opus-5.5
  2 files changed, 246 insertions(+), 11 deletions(-)
 
 diff --git a/subsys/usb/host/Kconfig.usbip b/subsys/usb/host/Kconfig.usbip
-index 983f7fb9dbf..b70e22de33c 100644
+index 983f7fb9d..b70e22de3 100644
 --- a/subsys/usb/host/Kconfig.usbip
 +++ b/subsys/usb/host/Kconfig.usbip
 @@ -55,6 +55,20 @@ config USBIP_DEVICES_COUNT
@@ -2071,7 +2071,7 @@ index 983f7fb9dbf..b70e22de33c 100644
  	bool "Read ahead on bulk IN endpoints"
  	help
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index 63384d5f296..c1fde269125 100644
+index 63384d5f2..c1fde2691 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -14,6 +14,7 @@
@@ -2420,10 +2420,10 @@ index 63384d5f296..c1fde269125 100644
  	}
  
 
-From 2d941295b8cb567c1da0583d732356e237719467 Mon Sep 17 00:00:00 2001
+From 7e24818813ae23571f1a4a2b8b13af77b11e751b Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
 Date: Mon, 26 Oct 2026 12:06:41 +0100
-Subject: [PATCH 12/12] usb: usbip: send mass storage read data as it comes
+Subject: [PATCH 12/13] usb: usbip: send mass storage read data as it comes
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -2455,7 +2455,7 @@ Assisted-by: Claude:opus-5.5
  1 file changed, 203 insertions(+), 17 deletions(-)
 
 diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
-index c1fde269125..84cfca05af6 100644
+index c1fde2691..84cfca05a 100644
 --- a/subsys/usb/host/usbip.c
 +++ b/subsys/usb/host/usbip.c
 @@ -51,6 +51,9 @@ static struct k_thread usbip_thread;
@@ -2829,3 +2829,72 @@ index c1fde269125..84cfca05af6 100644
  	}
  
  	bus_ctx->uhs_ctx = &usbip_uhs_ctx;
+
+From 5cbb548b28797df25efc75d9ead8664ca8dc88ad Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Benjamin=20Cab=C3=A9?= <benjamin@zephyrproject.org>
+Date: Mon, 26 Oct 2026 19:12:55 +0100
+Subject: [PATCH 13/13] usb: usbip: a receive window of its own for an imported
+ device
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+The OUT data of a request reaches the device only once it is all in, so
+the receive window bounds how fast a client writes: a mass storage write
+of 120 KB comes in at one window per round trip. The window of the
+network stack is the same for every connection of the application, and
+one large enough for USB/IP lets other clients send more than the
+application handles at once.
+
+Add CONFIG_USBIP_RECV_WINDOW, set with SO_RCVBUF on the connection once
+it imports a device.
+
+Signed-off-by: Benjamin Cabé <benjamin@zephyrproject.org>
+Assisted-by: Claude:opus-5.5
+---
+ subsys/usb/host/Kconfig.usbip | 11 +++++++++++
+ subsys/usb/host/usbip.c       |  9 +++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/subsys/usb/host/Kconfig.usbip b/subsys/usb/host/Kconfig.usbip
+index b70e22de3..174162e37 100644
+--- a/subsys/usb/host/Kconfig.usbip
++++ b/subsys/usb/host/Kconfig.usbip
+@@ -69,6 +69,17 @@ config USBIP_SEGMENT_SIZE
+ 	  transfer may end with a short packet. 0 allocates each request whole
+ 	  from the USBIP pool.
+ 
++config USBIP_RECV_WINDOW
++	int "TCP receive window of an imported device's connection"
++	depends on NET_CONTEXT_RCVBUF
++	range 0 65535
++	default 0
++	help
++	  The receive window of a connection once it imports a device, for the
++	  OUT data of its requests, which may be larger than the window the
++	  other connections of the application get. 0 keeps the window of the
++	  network stack.
++
+ config USBIP_READ_AHEAD
+ 	bool "Read ahead on bulk IN endpoints"
+ 	help
+diff --git a/subsys/usb/host/usbip.c b/subsys/usb/host/usbip.c
+index 84cfca05a..47779ef95 100644
+--- a/subsys/usb/host/usbip.c
++++ b/subsys/usb/host/usbip.c
+@@ -1725,6 +1725,15 @@ static int usbip_handle_import(struct usbip_bus_ctx *const bus_ctx, int connfd)
+ 		return ret;
+ 	}
+ 
++#if defined(CONFIG_USBIP_RECV_WINDOW) && CONFIG_USBIP_RECV_WINDOW > 0
++	int window = CONFIG_USBIP_RECV_WINDOW;
++
++	if (zsock_setsockopt(connfd, ZSOCK_SOL_SOCKET, ZSOCK_SO_RCVBUF, &window,
++			     sizeof(window)) < 0) {
++		LOG_WRN("setsockopt() failed: %s", strerror(errno));
++	}
++#endif
++
+ 	k_mutex_lock(&dev_ctx->lock, K_FOREVER);
+ 	dev_ctx->connfd = connfd;
+ 	dev_ctx->session++;

@@ -21,14 +21,14 @@ patches:
   # read is sent as its segments come (docs/multi-dut-node.md,
   # firmware/common/tests/usbip)
   - path: zephyr/usbip-removal-and-busid.patch
-    sha256sum: 73f21b2f817f8bd66390584f55d054b61892b2d16a11dacf7ce351167a5315fa
+    sha256sum: d6df177242e6f6be12074a8d568d68e5760f42e0383ef5d60fc8c40159631e35
     module: zephyr
     author: Benjamin Cabé
     email: benjamin@zephyrproject.org
     date: 2026-10-19
     upstreamable: true
     comments: |
-      Twelve commits, each building on its own.  The first two overlap the
+      Thirteen commits, each building on its own.  The first two overlap the
       maintainer's open PR 104189 (transfer allocation, cleanup when a
       submission fails): drop them when it lands.  The eighth (2026-10-21):
       an unlink answered with -ECONNRESET while its transfer completed made
@@ -49,6 +49,9 @@ patches:
       length; an early end of the data stage is filled, and the command
       status wrapper tells the client (Bulk-Only Transport 1.0, 6.7.2).
       USB and Wi-Fi then overlap: 2x on the XIAO bench, same data (SHA-256).
+      The thirteenth (2026-10-26): CONFIG_USBIP_RECV_WINDOW, the receive
+      window of a connection that imports a device (SO_RCVBUF), for its
+      writes, apart from the window of the other connections.
       Not proposed upstream (the user's call, 2026-10-19).
 
   # DWC2 host (the ESP32-S3's 8 channels): an interrupt IN endpoint gives its

@@ -444,6 +444,10 @@ At MCS 11 with 16 bays, single-user gets 362 kB/s at 12 flashes and 266 at 16; O
   retry limits are ns-3's defaults; only the block-ack window is the ESP32's.  The rack's results
   depend most on contention, which ns-3 models well, and least on rate control (every link is at the
   top MCS).
+- **The nodes take no A-MPDU in reception** since 2026-10-27 (`ESP32_WIFI_AMPDU_RX_ENABLED` off,
+  `firmware/bay-node/Kconfig`: its block-ack reordering stalled reception for up to a minute).  The
+  model still lets the AP aggregate to them, so the flash results (PC → node) are optimistic from
+  8 flashing nodes on, where airtime runs short; reads (node → PC) are not affected.
 - **Zephyr's TCP.**  Its window and buffer limits are approximated by socket buffers; its own
   congestion behaviour is NewReno's here.
 - **USB/IP's request pattern.**  Flashing is a steady 362 kB/s stream, not Linux's URB pipeline with

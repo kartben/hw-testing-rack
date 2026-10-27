@@ -286,17 +286,33 @@ config ESP_SPIRAM_BSS_RELOC_LIBS_AND_OBJS
 # made a USB/IP session fail its send (ENOBUFS) and a quarter of the requests.
 # With these, the same load passed both read_flash runs and all but 4 of
 # 1192 requests.
-config NET_PKT_RX_COUNT
-	default 48 if ESP_SPIRAM
-	default 24
-
 config NET_PKT_TX_COUNT
 	default 64 if ESP_SPIRAM
 	default 24
 
-config NET_BUF_RX_COUNT
+# A USB/IP client writes a 120 KB mass storage request one receive window per
+# Wi-Fi round trip: 4 KB, the third of 96 RX buffers TCP takes by default,
+# made it 193 kB/s.  The connections that import a device get 64 KB
+# (CONFIG_USBIP_RECV_WINDOW, zephyr/patches.yml), with the buffers and a
+# packet for each of its 45 segments in flight.  The others keep 4 KB: given
+# 64 KB, a firmware upload came in bursts the HTTP server's flash writes did
+# not keep up with, and one upload in two was cut off.
+config NET_PKT_RX_COUNT
 	default 96 if ESP_SPIRAM
+	default 24
+
+config NET_BUF_RX_COUNT
+	default 1536 if ESP_SPIRAM
 	default 48
+
+config NET_TCP_MAX_RECV_WINDOW_SIZE
+	default 4096 if ESP_SPIRAM
+
+config NET_CONTEXT_RCVBUF
+	default y if ESP_SPIRAM
+
+config USBIP_RECV_WINDOW
+	default 65535 if ESP_SPIRAM
 
 # TCP sends at most a third of the TX buffers ahead of the acknowledgments
 # (subsys/net/ip/tcp.c): 144 of 128 bytes made a 6 KB window, and a USB/IP
@@ -323,6 +339,13 @@ config ESP32_WIFI_RX_IRAM_OPT
 
 config ESP32_WIFI_TX_BA_WIN
 	default 32 if ESP_SPIRAM
+
+# No aggregated frames (A-MPDU) in reception: once a receive window let the AP
+# send bursts long enough to aggregate, the Wi-Fi's block ack reordering held
+# every frame for up to a minute on the bench, TCP and telnet alike, 3 runs
+# in 3.  Without it, 4 runs in 4 went through, at 830-840 kB/s.
+config ESP32_WIFI_AMPDU_RX_ENABLED
+	default n
 
 config ESP32_WIFI_DYNAMIC_TX_BUFFER_NUM
 	default 64 if ESP_SPIRAM
