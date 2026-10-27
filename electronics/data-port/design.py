@@ -48,6 +48,7 @@ CFG = RACK.raw["pcb"]["data_port"]
 W, H = CFG["size"]
 PH_EDGE = 4.9                       # JST PH side entry: footprint origin from the board edge
 TP_Y = 5.35                         # the bottom test pads' row, between the PH's VBUS track and its pads
+TP3_XY = (32.95, 5.95)              # the second GND test pad, by the receptacle
 
 
 def P(x, y, rot=0, side="top"):
@@ -118,6 +119,8 @@ def board() -> Board:
     # wick); y 5.35 keeps that via off J2.8's pad on top, whose paste it drained (kicad-happy review, DP-3)
     for i, net in enumerate(("GND", "VBUS")):
         part(s, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(4.4 + 3 * i, TP_Y, 0, "bottom"), in_bom=False)
+    # a second GND at the other end, by the receptacle (Eve: GND spread; kicad-happy review, DP-6), on a GND via
+    part(s, "TP3", "testpad", {"1": "GND"}, "GND", pcb=P(*TP3_XY, 0, "bottom"), in_bom=False)
     s.note("Rp 56k to VBUS on CC1 and CC2: 'default USB power', as on the DATA ×4; not 22k (1.5 A): the node's")
     s.note("  TPS2553D switch (DUT_5V) limits at 1.34–1.52 A.  The node turns the board under test on and off.")
     s.note("The lead's pinout is the node's J7 mirrored: a 'Same direction' PH 8 cable (pin n to pin 9−n) joins them;")
@@ -148,7 +151,7 @@ def board() -> Board:
         ],
         "vias": [("VBUS", 7.4, TP_Y),                  # TP2 (VBUS) to the top-side VBUS track
                  ("GND", 8.65, 9.9), ("GND", 14.6, 10.0), ("GND", CFG["ph"] + 2.0, H - 3.5, 0.5, 0.3),
-                 ("GND", CFG["ph"] + 3.9, 10.72)],
+                 ("GND", CFG["ph"] + 3.9, 10.72), ("GND", *TP3_XY)],
         # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
         "dru": """
 (rule "USB4105 J1: GND pads beside its own pegs"
@@ -159,6 +162,7 @@ def board() -> Board:
             {"text": "DATA v1.0", "x": 7.0, "y": H - 3.0, "size": 0.8},
             *({"text": t, "x": 4.4 + 3 * i, "y": TP_Y + 1.9, "size": 0.8, "layer": "B.SilkS"}
               for i, t in enumerate(("GND", "5V"))),
+            {"text": "GND", "x": TP3_XY[0], "y": TP3_XY[1] + 1.6, "size": 0.8, "layer": "B.SilkS"},
             # one label per used pin, under it (rot 180: pin n at x = ph + 9 − 2n); 1–3 (INT, I²C) are open and
             # unlabelled: C3 sits under pin 3
             *({"text": s, "x": CFG["ph"] + 9 - 2 * n, "y": 10.6, "size": 0.8}
