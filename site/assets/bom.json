@@ -2061,6 +2061,24 @@
 {
 "category": "Electronics",
 "group": "data-port-x4-v2",
+"item": "SWD — pin header 1 × 5, 2.54 mm, through-hole",
+"ref": "J2",
+"mpn": "HX PZ2.54-1x5P ZZ",
+"manufacturer": "hanxia",
+"supplier": "LCSC (hand-solder, buy loose)",
+"part": "C32713271",
+"qty": 2,
+"unit_eur": 0.0359,
+"basic": false,
+"standard_only": false,
+"hand_solder": true,
+"notes": "1 per board × 2 boards; hand-solder, buy loose (LCSC)",
+"unit": "pcs",
+"ext_eur": 0.07
+},
+{
+"category": "Electronics",
+"group": "data-port-x4-v2",
 "item": "PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
 "ref": "J101",
 "mpn": "TYPE-C-31-D-06",
@@ -3454,10 +3472,10 @@
 "item": "Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-23, adjusted",
 "qty": 1,
-"unit_eur": 2.43,
-"notes": "quoted components $84.24 + $4.24 since (≈ €81.40) for 2 panels; catalogue unit prices give €78.97",
+"unit_eur": 2.36,
+"notes": "quoted components $84.24 + $4.24 since (≈ €81.40) for 2 panels; catalogue unit prices give €79.04",
 "unit": "pcs",
-"ext_eur": 2.43
+"ext_eur": 2.36
 },
 {
 "category": "Electronics",

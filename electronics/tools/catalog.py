@@ -256,6 +256,11 @@ CAT = {
                    model=("${KICAD10_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/QFN-16-1EP_3x3mm_P0.5mm_EP1.7x1.7mm.step",
                           (0, 0, 0), (0, 0, 0))),
     # a DUT's RESET/BOOT pigtail: Dupont female jumpers straight onto it (fitted by hand when wanted)
+    # a co-processor's SWD header (DATA ×4 v2): the Raspberry Pi Debug Probe's 3-pin lead on pins 1–3, a J-Link or an
+    # ST-Link on Dupont wires with RUN and VTref (fitted by hand)
+    "hdr5": Cat("Connector_Generic:Conn_01x05", "Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Vertical",
+                "HX PZ2.54-1x5P ZZ", "hanxia", "C32713271", 0.039, hand_solder=True,
+                description="pin header 1 × 5, 2.54 mm, through-hole"),
     "hdr3": Cat("Connector_Generic:Conn_01x03", "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",
                 "2.54-1*3PPin", "BOOMELE(Boom Precision Elec)", "C49257", 0.03, hand_solder=True,
                 description="pin header 1 × 3, 2.54 mm, through-hole"),

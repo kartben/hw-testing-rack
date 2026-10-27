@@ -286,6 +286,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | KT-0805G — green LED 0805 | 10  | 0.02 | 0.18 | LCSC/JLCPCB C2297 |
 | Electronics | GZ2012D601TF — ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805 | 4  | 0.02 | 0.07 | LCSC/JLCPCB C1017 |
 | Electronics | LEAD — JST PH 8-pin, vertical, through-hole | 2  | 0.08 | 0.16 | LCSC (hand-solder, buy loose) C157974 |
+| Electronics | SWD — pin header 1 × 5, 2.54 mm, through-hole | 2  | 0.04 | 0.07 | LCSC (hand-solder, buy loose) C32713271 |
 | Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
 | Electronics | PINS1 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins | 2  | 0.09 | 0.17 | LCSC (hand-solder, buy loose) C32713279 |
 | Electronics | PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
@@ -364,7 +365,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
 | Electronics | Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | JLCPCB quote 2026-10-23 |
 | Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 65.93 | 65.93 | JLCPCB quote 2026-10-23, adjusted |
-| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 2.43 | 2.43 | JLCPCB quote 2026-10-23, adjusted |
+| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 2.36 | 2.36 | JLCPCB quote 2026-10-23, adjusted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
 | Printed parts | Rear bay covers (optional) | 8  | 0.00 | 0.00 | printed |

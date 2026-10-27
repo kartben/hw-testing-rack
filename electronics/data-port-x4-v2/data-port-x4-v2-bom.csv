@@ -10,6 +10,7 @@ C1,1,22u,C_1206_3216Metric,CL31A226KAHNNNE,Samsung Electro-Mechanics,C12891,Capa
 "D1,D101,D201,D301,D401",5,KT-0805G,LED_0805_2012Metric,KT-0805G,Hubei KENTO,C2297,green LED 0805,,,
 "FB1,FB2",2,GZ2012D601TF,L_0805_2012Metric,GZ2012D601TF,Sunlord,C1017,"ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805",,,
 J1,1,LEAD,JST_PH_B8B-PH-K_1x08_P2.00mm_Vertical,B8B-PH-K-S(LF)(SN),JST,C157974,"JST PH 8-pin, vertical, through-hole",,,"hand-solder, buy loose (LCSC)"
+J2,1,SWD,PinHeader_1x05_P2.54mm_Vertical,HX PZ2.54-1x5P ZZ,hanxia,C32713271,"pin header 1 × 5, 2.54 mm, through-hole",,,"hand-solder, buy loose (LCSC)"
 J101,1,PORT1,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,
 J102,1,PINS1,PinHeader_2x06_P2.54mm_Vertical,HX PZ2.54-2x6P ZZ,hanxia,C32713279,"pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",,,"hand-solder, buy loose (LCSC)"
 J201,1,PORT2,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,

@@ -141,6 +141,13 @@ TPS = {
     "TP101": ("PORT1_FLT_N", "FLT1", 1.0, 24.3, 50.64), "TP201": ("PORT2_FLT_N", "FLT2", 1.0, 39.75, 53.76),
     "TP301": ("PORT3_FLT_N", "FLT3", 1.0, 56.68, 49.3), "TP401": ("PORT4_FLT_N", "FLT4", 1.0, 74.75, 49.9),
 }
+# The co-processor's SWD header (the user, 2026-10-27; Eve's suggestion): 1 × 5 through-hole on the front face's top
+# edge, right of the co-processor, where both faces are free and a probe reaches it from above with the board in its
+# cradle (a box4 cover lifts off first).  Pins 1–3 in the Pico 2's debug order, so the Raspberry Pi Debug Probe's
+# 3-pin lead plugs straight on; RUN and VTref for a J-Link or an ST-Link on Dupont wires.  VTref is the board's
+# +3V3, on the power plane there (+3V3_CP is the same rail through FB2, its island ends at x 53).  Pin 1 (x, y), east
+SWD_HDR = (59.2, 4.0)
+SWD_PINS = (("CP_SWCLK", "SWCLK"), ("GND", "GND"), ("CP_SWDIO", "SWDIO"), ("CP_RUN", "RUN"), ("+3V3", "3V3"))
 J1_ROT = 270                        # J1 on the rear face: its pins run down (+y) from pin 1
 
 
@@ -801,6 +808,10 @@ def coproc_sheet(b: Board):
     s.wire("R27.2", "D1.A")
     testpoints(s, ["TP1", "TP2", "TP3", "TP10", "TP11", "TP12", "TP13"],
                "Bring-up test points on the rear face (B.Cu): SWD, RUN, BOOTSEL, its rails, GND (logic only)")
+    s.frame("SWD header (J2, 1 × 5 through-hole, fitted by hand): the Debug Probe on 1–3, RUN and VTref for others",
+            240, 50, 330, 84)
+    part(s, "J2", "hdr5", {str(i + 1): net for i, (net, _) in enumerate(SWD_PINS)}, "SWD", pcb=P(*SWD_HDR, 90),
+         sch=at(270, 68))
     s.frame("Bus pull-ups: 10k to 3.3 V always (the LSFs' B side), 2.2k switched by the co-processor "
             "(GPIO10–13, 16–19); the ±5 V rails into the ADC", 124, 102, 228, 144)
     # right of the east face: the 2.2k arrays by the enables (A at the top), the 10k arrays right of them,
@@ -931,17 +942,41 @@ def board() -> Board:
     # top edge on B.Cu above the co-processor's test points (Freerouting left it open)
     rx, ry = MX_EXP[0] + 2.5 * 0.65, MX_EXP[1] - 2.8625                # U10 pin 10, turned 90°
     r25 = (CP[0] - 3.8 + 0.51, 5.4)                                     # R25's CP_RUN pad
+    run_y = 1.85                                                        # SWDIO's line to J2 runs 0.6 under it
     hand_tracks += [("CP_RUN", "F.Cu", 0.127, [(rx, ry), (rx, 2.4)]),
-                    ("CP_RUN", "B.Cu", 0.127, [(rx, 2.4), (rx + 0.65, 1.75), (r25[0], 1.75)]),
-                    ("CP_RUN", "F.Cu", 0.127, [(r25[0], 1.75), r25])]
-    hand_vias += [("CP_RUN", rx, 2.4, 0.5, 0.3), ("CP_RUN", r25[0], 1.75, 0.5, 0.3)]
+                    ("CP_RUN", "B.Cu", 0.127, [(rx, 2.4), (rx + 2.4 - run_y, run_y), (r25[0], run_y)]),
+                    ("CP_RUN", "F.Cu", 0.127, [(r25[0], run_y), r25])]
+    hand_vias += [("CP_RUN", rx, 2.4, 0.5, 0.3), ("CP_RUN", r25[0], run_y, 0.5, 0.3)]
     # the two test points Freerouting left open (TPS): RUN up onto that track, +3V3_CP through a via to FB2's
     # output pad
     tp12, tp10, fb2 = TPS["TP12"][3:], TPS["TP10"][3:], (CP[0] - 8.5 + 1.0625, 4.6)
-    hand_tracks += [("CP_RUN", "B.Cu", 0.127, [tp12, (tp12[0], 1.75)]),
+    hand_tracks += [("CP_RUN", "B.Cu", 0.127, [tp12, (tp12[0], run_y)]),
                     ("+3V3_CP", "B.Cu", 0.127, [tp10, (38.8, 3.8), (38.8, 4.55)]),
                     ("+3V3_CP", "F.Cu", 0.127, [(38.8, 4.55), (fb2[0], 4.55)])]           # into its pad, level
     hand_vias.append(("+3V3_CP", 38.8, 4.55, 0.5, 0.3))
+    # J2's SWDIO (Freerouting left it open): on the rear face between RUN's and SWCLK's lines to the header (gaps
+    # too narrow for a GND sliver), then up through a via onto the co-processor's SWDIO track to TP2
+    j2_dio = (SWD_HDR[0] + 2 * 2.54, SWD_HDR[1])
+    hand_tracks += [("CP_SWDIO", "B.Cu", 0.127, [j2_dio, (j2_dio[0] - 1.55, 2.45), (44.6, 2.45)]),
+                    ("CP_SWDIO", "F.Cu", 0.127, [(44.6, 2.45), (44.106, 2.45)])]
+    hand_vias.append(("CP_SWDIO", 44.6, 2.45, 0.5, 0.3))
+    # and its SWCLK (left open too): under SWDIO's line (y 2.95 keeps the crystal's and C43's GND fan-outs where they
+    # were), then up through a via onto SWCLK's node beside R25
+    hand_tracks.append(("CP_SWCLK", "B.Cu", 0.127,
+                        [SWD_HDR, (SWD_HDR[0] - 1.05, 2.95), (44.799, 2.95), (43.226, 4.523)]))
+    hand_vias.append(("CP_SWCLK", 43.226, 4.523, 0.5, 0.3))
+    # and its RUN: CP_RUN's line along the top edge carried on east, straight down to pin 4
+    j2_run = (SWD_HDR[0] + 3 * 2.54, SWD_HDR[1])
+    hand_tracks.append(("CP_RUN", "B.Cu", 0.127, [(r25[0], run_y), (j2_run[0] - (j2_run[1] - run_y), run_y), j2_run]))
+    # D1's GND fan-out drawn straight down from its cathode, clear of the SWD lines over and under it
+    d1k = (CP[0] + 8.4 - 0.9375, 2.4)
+    hand_tracks.append(("GND", "F.Cu", 0.25, [d1k, (d1k[0], 3.8)]))
+    hand_vias.append(("GND", d1k[0], 3.8, 0.5, 0.3))
+    # and the crystal's and C43's GND fan-outs kept where the routing expects them (the auto fan-out moves them
+    # once the SWD lines pass under the crystal)
+    y2g, c43g = (CP[0] + 1.3 + 1.1, 3.05), (CP[0] + 3.0, 5.02)
+    hand_tracks += [("GND", "F.Cu", 0.25, [y2g, (50.533, 3.519)]), ("GND", "F.Cu", 0.25, [c43g, (c43g[0], 4.39)])]
+    hand_vias += [("GND", 50.533, 3.519, 0.5, 0.3), ("GND", c43g[0], 4.39, 0.5, 0.3)]
     # The core regulator's copper as Raspberry Pi draws it (the datasheet's Fig. 26, their RP2350B Minimal R4-S1
     # file), turned 180° with U11 (the audit's fix 2; coproc_sheet() places the parts at their coordinates).  VREG
     # pins 61 AVDD, 62 PGND, 63 LX, 64 VIN, 65 FB at x − 3.8 … − 2.2 on the south row (y + 4.9); CIN (C32) and
@@ -1138,6 +1173,11 @@ def board() -> Board:
         ],
         "tracks": hand_tracks, "vias": hand_vias,
         "keepouts": [
+            # no via round the SWD header's hand-soldered pins (a GND stitching via landed 0.4 mm from pin 1's pad):
+            # a bridge on the rear face would ground SWCLK
+            {"name": "swd-hdr", "layers": ["F.Cu", "B.Cu"], "vias_only": True,
+             "poly": [(SWD_HDR[0] - 1.6, SWD_HDR[1] - 1.6), (SWD_HDR[0] + 4 * 2.54 + 1.6, SWD_HDR[1] - 1.6),
+                      (SWD_HDR[0] + 4 * 2.54 + 1.6, SWD_HDR[1] + 1.6), (SWD_HDR[0] - 1.6, SWD_HDR[1] + 1.6)]},
             # the core regulator (the audit's fixes 2 and 3, RP2350 DS §6.3.8.1 and Fig. 27): the router's tracks
             # off the block below the VREG pins (a "core:" area, dropped once routed: +1V1 leaves by its two V_OUT
             # vias, +3V3_CP by VREG_VIN's inner end), up to the V_OUT vias, so USB_DM / USB_DP (pins 66, 67) leave
@@ -1182,6 +1222,9 @@ def board() -> Board:
             # what the base doesn't have (only GND is live there): the co-processor's row and core rail, the matrix
             *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
+            # the SWD header's pin names, read on the front face, alternately over and under it from pin 1 (west)
+            *({"text": name, "x": SWD_HDR[0] + 2.54 * i, "y": SWD_HDR[1] + (-2.1 if i % 2 == 0 else 2.1), "size": 0.8}
+              for i, (_, name) in enumerate(SWD_PINS)),
             {"text": "LOGIC ONLY", "x": 28.0, "y": 6.6, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 11.0, "y": 11.6, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 43.12, "y": 18.4, "size": 0.8, "layer": "B.SilkS"},
