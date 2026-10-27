@@ -719,41 +719,70 @@ def bay_center(bay):
     return Vector(next(x for x in data["bays"] if x["id"] == bay)["center"]) / 1000.0
 
 
+def subject(sc, prefixes, near=None, radius=None):
+    """World bounding-box corners of the meshes whose name starts with one of `prefixes` (and, given
+    `near`, centred within `radius` of it): what a shot keeps sharp."""
+    pts = []
+    for ob in sc.objects:
+        if ob.type != "MESH" or not ob.name.startswith(prefixes):
+            continue
+        box_ = [ob.matrix_world @ Vector(c) for c in ob.bound_box]
+        if near is not None and (sum(box_, Vector()) / 8 - Vector(near)).length > radius:
+            continue
+        pts += box_
+    return pts
+
+
+def focus_span(cam, pts, lo=2.0, hi=45.0):
+    """Sharp from the subject's nearest point to its farthest, as a photographer would set it: focus at
+    the harmonic mean of the two depths, the f-number whose depth of field just spans them (circle of
+    confusion 0.03 mm on a 36 mm sensor; the render has no diffraction).  Everything else soft."""
+    fwd = (cam.rotation_euler.to_quaternion() @ Vector((0, 0, -1))).normalized()
+    d = [(Vector(p) - cam.location).dot(fwd) for p in pts]
+    dn, df = max(min(d), 0.05), max(d)
+    f, coc = cam.data.lens / 1000, 0.03e-3 * cam.data.sensor_width / 36
+    cam.data.dof.use_dof = True
+    cam.data.dof.focus_distance = 2 * dn * df / (dn + df)
+    cam.data.dof.aperture_fstop = min(max(f * f * (1 / dn - 1 / df) / (2 * coc), lo), hi)
+    return {"focus": round(cam.data.dof.focus_distance, 3), "fstop": round(cam.data.dof.aperture_fstop, 1),
+            "depth": [round(dn, 3), round(df, 3)]}
+
+
 def shot(name, out, samples, res):
     sc = bpy.data.scenes[SCENE]
     bpy.context.window_manager.windows[0].scene = sc
     cam = sc.camera
+    exposure = sc.view_settings.exposure
+    c = bay_center("B3")
+    # B3's front display and its standing DATA ×4: the drawer's two ends
+    b3 = (subject(sc, ("screen:front:B3",)) +
+          subject(sc, ("pcb:data-port-x4-v2",), c + Vector((-0.018, -0.067, -0.030)), 0.08))
     if name == "desk":
-        aim(cam, (-0.40, -2.15, 0.50), (0.50, 0.05, 0.30), 58, 5.6, focus=(0.30, 0.0, 0.33))
+        # the whole rack and the laptop it is wired to
+        aim(cam, (-0.40, -2.15, 0.50), (0.50, 0.05, 0.30), 58, 5.6)
+        dof = focus_span(cam, [p for ob in bpy.data.collections["photo-rack"].all_objects if ob.type == "MESH"
+                               for p in (ob.matrix_world @ Vector(q) for q in ob.bound_box)] +
+                         subject(sc, ("laptop",)))
     elif name == "drawer":
-        c = bay_center("B3")
-        aim(cam, c + Vector((0.30, -0.62, 0.28)), c + Vector((-0.02, -0.12, -0.03)), 50, 4.0,
-            focus=c + Vector((0.0, -0.16, -0.02)))
+        aim(cam, c + Vector((0.30, -0.62, 0.28)), c + Vector((-0.02, -0.12, -0.03)), 50, 4.0)
+        dof = focus_span(cam, b3)
     elif name == "boards":
         # the vendor models up close: Raspberry Pi Pico 2 on B3's pulled-out drawer, the
         # Arduino UNO R4 WiFi next door in B4 (the photo GLB is baked with --open-bays B3)
-        c = bay_center("B3") + Vector((0.0, -0.13, -0.05))
-        aim(cam, c + Vector((-0.20, -0.42, 0.30)), c + Vector((0.03, 0.0, 0.0)), 70, 4.0, focus=c)
+        t = c + Vector((0.0, -0.13, -0.05))
+        aim(cam, t + Vector((-0.20, -0.42, 0.30)), t + Vector((0.03, 0.0, 0.0)), 70, 4.0)
+        dof = focus_span(cam, subject(sc, ("boards:rpi-pico2",), t, 0.12) +
+                         subject(sc, ("boards:arduino-uno-r4",), bay_center("B4"), 0.15))
     elif name == "detail":
-        # B2's drawer closed and B3's pulled out, head on and low, filling the frame: B3's front display
-        # (0.75 m) and its standing DATA ×4 (0.89 m) sharp, the background soft.  Focus at the harmonic
-        # mean of the two, f/25 to hold both (no diffraction in the render)
-        c = bay_center("B3")
-        aim(cam, c + Vector((-0.070, -0.945, 0.117)), c + Vector((-0.070, -0.065, -0.071)), 85, 25.0)
-        near, far = (c + Vector(v) - cam.location for v in ((0.035, -0.224, -0.100), (-0.018, -0.067, -0.030)))
-        fwd = (cam.rotation_euler.to_quaternion() @ Vector((0, 0, -1))).normalized()
-        dn, df = near.dot(fwd), far.dot(fwd)
-        cam.data.dof.focus_distance = 2 * dn * df / (dn + df)
-        exposure = sc.view_settings.exposure
+        # B2's drawer closed and B3's pulled out, head on and low, filling the frame
+        aim(cam, c + Vector((-0.070, -0.945, 0.117)), c + Vector((-0.070, -0.065, -0.071)), 85, 5.6)
+        dof = focus_span(cam, b3)
         sc.view_settings.exposure = 1.0           # head on, the rack's inside gets little of the window
-        try:
-            w, h = (int(v) for v in res.split("x"))
-            return {"shot": name, "focus": round(cam.data.dof.focus_distance, 3),
-                    **supersample.still(sc, out, w, h, samples)}
-        finally:
-            sc.view_settings.exposure = exposure
     w, h = (int(v) for v in res.split("x"))
-    return {"shot": name, **supersample.still(sc, out, w, h, samples)}
+    try:
+        return {"shot": name, **dof, **supersample.still(sc, out, w, h, samples)}
+    finally:
+        sc.view_settings.exposure = exposure
 
 
 if MODE == "build":
