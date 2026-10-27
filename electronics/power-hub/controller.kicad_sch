@@ -14515,6 +14515,1540 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 101.6 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "29097fde-c699-563c-b3e4-7d3818689b45")
+		(property "Reference" "TP21"
+			(at 104.14 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "+5V_BUCK"
+			(at 104.14 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 101.6 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 101.6 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 101.6 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 101.6 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 101.6 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "eef38d51-94de-5fe8-8c6a-8308ce9f8eb6")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP21")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 101.6 227.33)
+			(xy 101.6 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "238033ed-99b0-50a1-b167-f98612dc9fca")
+	)
+	(label "+5V_BUCK"
+		(at 101.6 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "7fa0157a-46cf-5910-9970-4e133c6c5dc3")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 121.92 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "f1a0f273-fcd7-5082-8e28-7c58ea252b33")
+		(property "Reference" "TP22"
+			(at 124.46 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "USB_VBUS"
+			(at 124.46 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 121.92 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 121.92 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 121.92 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 121.92 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 121.92 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5e1b6211-b473-516b-8ae0-1f6c6ce32b71")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP22")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 121.92 227.33)
+			(xy 121.92 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "22f8dee5-cc05-5975-b069-4e823fbd0b96")
+	)
+	(label "USB_VBUS"
+		(at 121.92 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "f2cdfacd-136b-5b48-a1ae-dc5dd92f631b")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 142.24 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ff14100c-fa31-54fa-83a7-fe5b6c91ec31")
+		(property "Reference" "TP28"
+			(at 144.78 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "PD_INT"
+			(at 144.78 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 142.24 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 142.24 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 142.24 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 142.24 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 142.24 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "21ab0624-bf5c-536b-a450-f852ad490b42")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP28")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 142.24 227.33)
+			(xy 142.24 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b5f75ade-0f2a-5957-b2e3-a5da47082d12")
+	)
+	(global_label "PD_INT"
+		(shape bidirectional)
+		(at 142.24 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "54e42ad2-a927-5054-95bd-6a0bfe161702")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 142.24 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 161.29 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "9f18b596-d162-5723-811e-bd439a0f12c6")
+		(property "Reference" "TP29"
+			(at 163.83 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "CAN_H"
+			(at 163.83 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "dfa7d688-640f-5034-854b-e88f21fe467b")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP29")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 161.29 227.33)
+			(xy 161.29 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5689e324-4cbd-5f9f-b76f-929aff8eb499")
+	)
+	(global_label "CAN_H"
+		(shape bidirectional)
+		(at 161.29 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d5c37663-8c5f-5c92-afba-4947d8300e18")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 161.29 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 179.07 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "047d06fe-2371-54e4-87f9-56ec7f0a7114")
+		(property "Reference" "TP30"
+			(at 181.61 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "CAN_L"
+			(at 181.61 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 179.07 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 179.07 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 179.07 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 179.07 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 179.07 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "36d89f63-6ef6-5ee0-b038-026da34abd8a")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP30")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 179.07 227.33)
+			(xy 179.07 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "51ca8e55-79d5-533b-9511-ef2b892b9809")
+	)
+	(global_label "CAN_L"
+		(shape bidirectional)
+		(at 179.07 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "77166e5d-8f23-5aa4-964c-0ae6b9d74c86")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 179.07 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 195.58 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "4eac8a26-1182-529d-884c-05f3d5fb74d1")
+		(property "Reference" "TP31"
+			(at 198.12 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "CAN_TXD"
+			(at 198.12 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 195.58 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 195.58 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 195.58 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 195.58 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 195.58 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8cbee8c3-6149-597d-8ee9-03fa2a04729f")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP31")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 195.58 227.33)
+			(xy 195.58 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "68e921d4-cf5c-501b-abf2-50601283fb4a")
+	)
+	(label "CAN_TXD"
+		(at 195.58 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "b411c5f4-7501-5b53-9f44-0da710908977")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 215.9 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "fee2ed2a-2757-517f-8f16-ee64a00d7329")
+		(property "Reference" "TP32"
+			(at 218.44 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "CAN_RXD"
+			(at 218.44 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 215.9 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 215.9 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 215.9 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 215.9 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 215.9 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a6b63154-de7c-5344-ac42-0386a60c64b0")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP32")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 215.9 227.33)
+			(xy 215.9 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f76a14df-ebc0-5a1e-bcf6-5ac36280cada")
+	)
+	(label "CAN_RXD"
+		(at 215.9 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "4e6b091d-5375-5856-9a5c-c6cf8431da4b")
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 234.95 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3dd71e86-aeb4-51a1-b0b8-13199222041f")
+		(property "Reference" "TP33"
+			(at 237.49 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "ROW_EN_A"
+			(at 237.49 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 234.95 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 234.95 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 234.95 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 234.95 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 234.95 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "74169b75-13e1-536f-bcf8-81b39ba554dc")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP33")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 234.95 227.33)
+			(xy 234.95 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "581ee04b-422e-5b41-8480-f9b22689102b")
+	)
+	(global_label "ROW_EN_A"
+		(shape bidirectional)
+		(at 234.95 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b8e9033d-6394-53b0-a139-27d7cee8d603")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 234.95 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 255.27 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a38376a7-d10b-5c96-80e7-f342620d34a7")
+		(property "Reference" "TP34"
+			(at 257.81 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "ROW_EN_B"
+			(at 257.81 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 255.27 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 255.27 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 255.27 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 255.27 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 255.27 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8baaaeda-03be-5a72-a80a-db467ba207c6")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP34")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 255.27 227.33)
+			(xy 255.27 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8ae6eaf7-4171-50dd-9dc9-80769b50587c")
+	)
+	(global_label "ROW_EN_B"
+		(shape bidirectional)
+		(at 255.27 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "96d8b74f-964c-5235-a9b2-b6f092b8cbd9")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 255.27 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 275.59 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "333b7c57-f581-5ac2-bb1e-43c50966bf4e")
+		(property "Reference" "TP35"
+			(at 278.13 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "ROW_EN_C"
+			(at 278.13 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 275.59 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 275.59 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 275.59 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 275.59 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 275.59 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8665fed3-54ae-5226-bf2a-1f553abbd5ae")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP35")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 275.59 227.33)
+			(xy 275.59 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e0fcb196-2d39-50e9-8e5d-aa34c0f3998f")
+	)
+	(global_label "ROW_EN_C"
+		(shape bidirectional)
+		(at 275.59 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "a884a3e0-3289-5fc7-957f-cf6cf9b7b2d2")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 275.59 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 295.91 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1d4a6dbe-86eb-5aad-9722-b84c8eeac665")
+		(property "Reference" "TP36"
+			(at 298.45 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "ROW_EN_D"
+			(at 298.45 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 295.91 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 295.91 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 295.91 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 295.91 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 295.91 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "93b3e609-05dd-5f69-ae95-1153ffebcb67")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP36")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 295.91 227.33)
+			(xy 295.91 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bdc3c453-adc3-5fdc-8ac2-8ab772164659")
+	)
+	(global_label "ROW_EN_D"
+		(shape bidirectional)
+		(at 295.91 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b3246740-1bff-5ba0-bf1e-fa0182fc5599")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 295.91 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 316.23 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "92036e41-972f-55ba-b3e5-3f9f4c2aa16c")
+		(property "Reference" "TP37"
+			(at 318.77 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "VBUS_SENSE"
+			(at 318.77 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 316.23 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 316.23 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 316.23 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 316.23 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 316.23 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "72d348b8-06fa-5835-aaba-80f80dab54ed")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP37")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 316.23 227.33)
+			(xy 316.23 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d60682e1-bffb-5282-b18a-d731d6674fb1")
+	)
+	(global_label "VBUS_SENSE"
+		(shape bidirectional)
+		(at 316.23 229.87 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "01c5ccf2-9f6a-5f02-ad28-4d56869542a9")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 316.23 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 339.09 227.33 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ab4f0250-2269-54cd-9e1a-2c29bf271c04")
+		(property "Reference" "TP38"
+			(at 341.63 222.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "GND"
+			(at 341.63 224.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 339.09 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 339.09 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 339.09 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "701532bf-b386-5f66-8cf7-7abd1c887168")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "TP38")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 339.09 227.33)
+			(xy 339.09 229.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "85be5b3a-e333-591a-8796-e97ec4cf4848")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 339.09 229.87 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d564ddef-6408-533a-95c3-348cad86e77c")
+		(property "Reference" "#PWR04038"
+			(at 339.09 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 339.09 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 339.09 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 339.09 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 339.09 229.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9d43c0f7-e2d3-5bb9-a96e-b2581a7fdaf8")
+		)
+		(instances
+			(project "power-hub"
+				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
+					(reference "#PWR04038")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Connector:USB_C_Receptacle_USB2.0_16P")
 		(at 31.75 284.48 0)
 		(unit 1)
@@ -14675,7 +16209,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6a57ab61-1b3f-5116-8c56-657e65eb0caa")
-		(property "Reference" "#PWR04038"
+		(property "Reference" "#PWR04039"
 			(at 31.75 309.88 0)
 			(effects
 				(font
@@ -14725,7 +16259,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04038")
+					(reference "#PWR04039")
 					(unit 1)
 				)
 			)
@@ -14870,7 +16404,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a7aa1d57-46de-5447-8e75-20c93db37e93")
-		(property "Reference" "#PWR04039"
+		(property "Reference" "#PWR04040"
 			(at 24.13 309.88 0)
 			(effects
 				(font
@@ -14920,7 +16454,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04039")
+					(reference "#PWR04040")
 					(unit 1)
 				)
 			)
@@ -15044,7 +16578,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "32f171b2-28f3-5bf6-818f-38961b521d96")
-		(property "Reference" "#PWR04040"
+		(property "Reference" "#PWR04041"
 			(at 74.93 284.48 0)
 			(effects
 				(font
@@ -15094,7 +16628,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04040")
+					(reference "#PWR04041")
 					(unit 1)
 				)
 			)
@@ -15218,7 +16752,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2420623d-b842-5035-893d-1e4e4320ad32")
-		(property "Reference" "#PWR04041"
+		(property "Reference" "#PWR04042"
 			(at 64.77 287.02 0)
 			(effects
 				(font
@@ -15268,7 +16802,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04041")
+					(reference "#PWR04042")
 					(unit 1)
 				)
 			)
@@ -15433,7 +16967,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "68a45853-541b-59bc-8669-ee7ccef77fb8")
-		(property "Reference" "#PWR04042"
+		(property "Reference" "#PWR04043"
 			(at 120.65 292.1 0)
 			(effects
 				(font
@@ -15483,7 +17017,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04042")
+					(reference "#PWR04043")
 					(unit 1)
 				)
 			)
@@ -15695,7 +17229,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5d7b292a-4a02-5c7e-9394-1c861c45b306")
-		(property "Reference" "#PWR04043"
+		(property "Reference" "#PWR04044"
 			(at 85.09 279.4 0)
 			(effects
 				(font
@@ -15745,7 +17279,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04043")
+					(reference "#PWR04044")
 					(unit 1)
 				)
 			)
@@ -15916,7 +17450,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "801c8d08-d855-529c-af38-7c800db8bd2e")
-		(property "Reference" "#PWR04044"
+		(property "Reference" "#PWR04045"
 			(at 66.04 363.22 0)
 			(effects
 				(font
@@ -15966,7 +17500,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04044")
+					(reference "#PWR04045")
 					(unit 1)
 				)
 			)
@@ -15993,7 +17527,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "043b9de0-dfde-5d27-824d-d2543461662a")
-		(property "Reference" "#PWR04045"
+		(property "Reference" "#PWR04046"
 			(at 66.04 337.82 0)
 			(effects
 				(font
@@ -16043,7 +17577,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04045")
+					(reference "#PWR04046")
 					(unit 1)
 				)
 			)
@@ -16092,7 +17626,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "71f7a634-2073-5df0-89bf-396ee0f81c36")
-		(property "Reference" "#PWR04046"
+		(property "Reference" "#PWR04047"
 			(at 50.8 353.06 0)
 			(effects
 				(font
@@ -16142,7 +17676,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04046")
+					(reference "#PWR04047")
 					(unit 1)
 				)
 			)
@@ -16266,7 +17800,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "839acafb-905c-5408-bff6-53c03d172d20")
-		(property "Reference" "#PWR04047"
+		(property "Reference" "#PWR04048"
 			(at 142.24 337.82 0)
 			(effects
 				(font
@@ -16316,7 +17850,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04047")
+					(reference "#PWR04048")
 					(unit 1)
 				)
 			)
@@ -16343,7 +17877,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "37bea8c1-37a9-53de-8646-c3ecd1691e26")
-		(property "Reference" "#PWR04048"
+		(property "Reference" "#PWR04049"
 			(at 142.24 350.52 0)
 			(effects
 				(font
@@ -16393,7 +17927,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04048")
+					(reference "#PWR04049")
 					(unit 1)
 				)
 			)
@@ -16517,7 +18051,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6c324532-d6e1-57fa-9548-28eac0eec6ce")
-		(property "Reference" "#PWR04049"
+		(property "Reference" "#PWR04050"
 			(at 161.29 337.82 0)
 			(effects
 				(font
@@ -16567,7 +18101,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04049")
+					(reference "#PWR04050")
 					(unit 1)
 				)
 			)
@@ -16594,7 +18128,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "57d4d297-c887-53b5-8599-4da2eaba7f81")
-		(property "Reference" "#PWR04050"
+		(property "Reference" "#PWR04051"
 			(at 161.29 350.52 0)
 			(effects
 				(font
@@ -16644,7 +18178,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04050")
+					(reference "#PWR04051")
 					(unit 1)
 				)
 			)
@@ -16768,7 +18302,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2fdc4455-9bed-5f82-bbb4-6946b8ab6959")
-		(property "Reference" "#PWR04051"
+		(property "Reference" "#PWR04052"
 			(at 30.48 365.76 0)
 			(effects
 				(font
@@ -16818,7 +18352,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04051")
+					(reference "#PWR04052")
 					(unit 1)
 				)
 			)
@@ -17158,7 +18692,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cfdd80e1-95bc-523f-b465-cd9e146137bd")
-		(property "Reference" "#PWR04052"
+		(property "Reference" "#PWR04053"
 			(at 93.98 375.92 0)
 			(effects
 				(font
@@ -17208,7 +18742,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04052")
+					(reference "#PWR04053")
 					(unit 1)
 				)
 			)
@@ -17548,7 +19082,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "eb6bc76c-d2ca-5d5d-b5d2-4f59c2cbae73")
-		(property "Reference" "#PWR04053"
+		(property "Reference" "#PWR04054"
 			(at 104.14 375.92 0)
 			(effects
 				(font
@@ -17598,7 +19132,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04053")
+					(reference "#PWR04054")
 					(unit 1)
 				)
 			)
@@ -17723,7 +19257,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8dc8fa07-7a1e-5415-be03-f44516ec0a2e")
-		(property "Reference" "#PWR04054"
+		(property "Reference" "#PWR04055"
 			(at 182.88 356.87 0)
 			(effects
 				(font
@@ -17773,7 +19307,7 @@
 		(instances
 			(project "power-hub"
 				(path "/95d85d3b-2e4d-5514-91a9-629d91bd6731/6cd80512-eb70-557f-aea9-b51fb400ef92"
-					(reference "#PWR04054")
+					(reference "#PWR04055")
 					(unit 1)
 				)
 			)

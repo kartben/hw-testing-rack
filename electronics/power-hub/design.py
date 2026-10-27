@@ -91,6 +91,29 @@ def ef_y(k):
     return ROW_Y[k] - 0.5
 
 
+# Eve's test pads, second round (the kicad-happy review's PH-2, 2026-10-27): the supplies the first round left out on
+# 1.5 mm, the row and CAN signals on 1.0 mm, a GND by the CAN pads.  Each sits on a via of its net: a new one drawn
+# here, the row outputs' own, or one the router had put there, drawn here too so it stays; or on a B.Cu track's end.
+# No new via on In2's VRACK band.  (net, sheet, Ø, (x, y), drawn via, label)
+TP_ROUND2 = [
+    ("+5V_BUCK", "c", 1.5, (67.8, 31.6), True, "5V BUCK"),
+    ("USB_VBUS", "c", 1.5, (68.5289, 89.256), True, "USB 5V"),
+    ("PD_VHV", "s", 1.5, (51.5222, 7.3), True, "VHV"),
+    *(((f"ROW_{ch}", "o", 1.5, (14.3, ROW_Y[k] + 5.0), False, f"ROW {ch}") for k, ch in enumerate(ROWS))),
+    ("PD_INT", "c", 1.0, (54.7937, 56.8983), True, "PD PG"),
+    ("CAN_H", "c", 1.0, (60.1612, 70.23), True, "CANH"),
+    ("CAN_L", "c", 1.0, (56.8962, 68.078), False, "CANL"),
+    ("CAN_TXD", "c", 1.0, (50.6741, 55.2441), True, "TXD"),
+    ("CAN_RXD", "c", 1.0, (50.476, 61.4457), True, "RXD"),
+    ("ROW_EN_A", "c", 1.0, (13.0284, 96.6659), True, "EN A"),
+    ("ROW_EN_B", "c", 1.0, (16.1067, 59.6979), True, "EN B"),
+    ("ROW_EN_C", "c", 1.0, (20.6796, 57.3601), True, "EN C"),
+    ("ROW_EN_D", "c", 1.0, (29.6951, 24.4507), True, "EN D"),
+    ("VBUS_SENSE", "c", 1.0, (33.1723, 10.0181), False, "VSNS"),
+    ("GND", "c", 1.5, (55.95, 71.95), True, "GND"),
+]
+
+
 def board() -> Board:
     b = Board("power-hub", "Power hub", "0.5",
               comments=["USB-C PD distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack",
@@ -231,6 +254,7 @@ def board() -> Board:
             # kicad-happy review, PH-1), not south of it, where vias cut the input pour off the left VBUS pads
             # (A9/B4); the router's own fan-out of these pads goes at the import (pcbgen.drop_redundant_fanouts)
             ("GND", 58.35, 5.3, 0.5, 0.3),
+            *[(net, *xy) for net, _, _, xy, via, _ in TP_ROUND2 if via],      # the second round's test pads
         ],
         "tracks": tracks + [("GND", "F.Cu", 0.3, [(58.8, 7.08), (58.35, 6.63), (58.35, 5.3)])],
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
@@ -246,6 +270,8 @@ def board() -> Board:
                               ("PD", 45.3, 7.2), ("SDA", 44.0, 10.8), ("SCL", 46.6, 10.8), ("GND", 46.6, 54.0))),
             *({"text": t, "x": 47.6, "y": max(ef_y(k) - 1.3, 31.6) + dy, "size": 0.8, "layer": "B.SilkS"}
               for k, ch in enumerate(ROWS) for t, dy in ((f"FLT {ch}", 0.0), (f"IMON {ch}", 2.6))),
+            *({"text": lab, "x": xy[0], "y": xy[1] + d / 2 + 0.85, "size": 0.8, "layer": "B.SilkS"}
+              for _, _, d, xy, _, lab in TP_ROUND2),
         ],
     }
 
@@ -426,6 +452,9 @@ def board() -> Board:
     for i, (net, xy) in enumerate(sig):
         part(c, f"TP{8 + i}", "testpad1", {"1": net}, net, pcb=P(*xy, 0, "bottom"), in_bom=False)
     part(c, f"TP{8 + len(sig)}", "testpad", {"1": "GND"}, "GND", pcb=P(44.0, 54.0, 0, "bottom"), in_bom=False)
+    for i, (net, sheet, d, xy, _, _) in enumerate(TP_ROUND2):     # each in the sheet its net belongs to
+        part({"c": c, "o": o, "s": s}[sheet], f"TP{21 + i}", "testpad" if d > 1.2 else "testpad1", {"1": net}, net,
+             pcb=P(*xy, 0, "bottom"), in_bom=False)
 
     c.block("USB-C: the controller's console / firmware (native USB), and its 5 V without a PD charger")
     part(c, "J6", "usbc5a", {"VBUS": "USB_VBUS", "GND": "GND", "CC1": "USB_CC1", "CC2": "USB_CC2",
