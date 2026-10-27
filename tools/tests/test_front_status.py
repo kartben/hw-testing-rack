@@ -13,9 +13,14 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "tools"))
 
 import rackcfg  # noqa: E402
-import webscene  # noqa: E402
+
+try:
+    import webscene  # noqa: E402  (numpy, which the bayctl job doesn't install)
+except ImportError:
+    webscene = None
 
 
+@unittest.skipIf(webscene is None, "numpy missing")
 class FrontStatus(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
