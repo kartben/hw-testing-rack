@@ -615,9 +615,10 @@ def hub_sheet(b: Board):
     # races nothing (the schematic review's S2 and its D2 are gone).  CFG_SEL1 (HS_IND, pin 42) and CFG_SEL2 up
     # through 10k, CFG_SEL0 (SCL) down, all static at RESET_N's rise.  HS_IND drives after reset (I/O12, 12 mA):
     # 0.33 mA into its 10k, and it lights no LED here (CFG_SEL1 high makes it active low).  The other strap
-    # pins keep their pull-downs (X8; no longer read, harmless on the LED outputs): over the north face in two
-    # rows (the pins at 0.5 mm leave no room for one row), a resistor over its pin, the west face's three round
-    # the corner into RN1; CFG2, SWP7 and SWP6 round the south-east corner into RN3
+    # pins keep their pull-downs (X8; no longer read, but they bias the LED outputs and SUSP_IND, I/O12 buffers
+    # that may float tri-stated, their input receiver not said to be off: the user's call, 2026-10-27): over
+    # the north face in two rows (the pins at 0.5 mm leave no room for one row), a resistor over its pin, the
+    # west face's three round the corner into RN1; CFG2, SWP7 and SWP6 round the south-east corner into RN3
     R(s, "R3", "10k", "HUB_SWP3", "GND", size="0402", pcb=P(HX - 2.85, HY - 7.1, 90), sch=at(100, 92))
     R(s, "R4", "10k", "HUB_NONREM0", "GND", size="0402", pcb=P(HX - 1.8, HY - 7.1, 90), sch=at(106, 92))
     R(s, "R5", "10k", "HUB_SWP4", "GND", size="0402", pcb=P(HX + 3.6, HY - 7.1, 90), sch=at(112, 92))

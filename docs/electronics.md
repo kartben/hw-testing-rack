@@ -508,8 +508,12 @@ Rebuild it after any change to the board: `tools/kicad.sh data-port-x4-v2 --fab`
   pull-up on port 5 no longer races RESET_N: the schematic review's S2 (D2, CP_RUN to HUB_RST_N) is gone.
 - CFG_SEL1 (HS_IND, pin 42) and CFG_SEL2 (pin 13) go up through their 10k (one element each of RN2 and RN3),
   CFG_SEL0 (SCL) stays down: static, stable at RESET_N's rise.  HS_IND drives after reset (I/O12, 12 mA): its
-  10k takes 0.33 mA, and no LED hangs on it (CFG_SEL1 high makes it active low).  The LED pins that were straps
-  keep their pull-downs: unread, harmless.
+  10k takes 0.33 mA, and no LED hangs on it (CFG_SEL1 high makes it active low).
+- The pins that were straps keep their pull-downs (RN1, R3, R4, R5, R9; the user's call, 2026-10-27).  110
+  no longer reads them, but they are LED outputs and SUSP_IND, I/O12 buffers that may go high-impedance with
+  nothing on them.  Nothing in DS00001598C says their input receiver is off then (Table 5-3 p. 16; Table 8-2
+  p. 50 gives a ±10 µA tri-state leakage only).  The 10k keep the floating inputs from drawing current or
+  picking up noise.  They also keep a return to strap mode open by reworking only CFG_SEL's two pull-ups.
 
 **Bring-up test points (Eve's DFT rule, 2026-10-26).**  Bare pads on the rear face (B.Cu, mask open, no paste,
 out of the BOM and CPL), each named on B.SilkS under it: 1.5 mm on GND and the rails, 1.0 mm on signals.
