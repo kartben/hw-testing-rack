@@ -712,7 +712,7 @@ Every board has bare test pads on the bottom.  Each is named on B.SilkS.  They a
 |---|---|
 | Bay node | under the module: TX, RX, 3V3, GND, EN, IO0, FLT (DUT_FLT_N), ALRT (INA_ALERT_N), SDA, SCL, GND; along the bottom edge: GND, VIN, 5V, 3V3, DUT 5V, CAM 5V; second round (kicad-happy review BN-2), a GND in each group: the camera SPI by R31–R34 (SCK, MOSI, MISO, CS, on the lead side of the 33 Ω); CAN TXD/RXD and POS IN by U11; AUX TX/RX, RST, BOOT and POS OUT by the AUX column.  Each on a drawn via on one of its net's tracks or on its B.Cu track: no routing moved |
 | Power hub | TX, RX, 3V3, GND, EN, IO0; PD SDA/SCL (CH224A); 5V, VRACK, two more GND; FLT and IMON for each row (A–D); second round (kicad-happy review PH-2): 5V BUCK, USB 5V, VHV (CH224A); ROW A–D and EN A–D; CANH, CANL, TXD, RXD and a GND by them (U6); PD PG; VSNS.  Each on a via of its net or a B.Cu track's end: no routing moved, no new via on In2's VRACK band |
-| Camera pod | GND, 5V, 3V3; a second GND at the far end |
+| Camera pod | GND, 5V, 3V3; a second GND at the far end; second round (kicad-happy review CP-3), 1.0 mm by J1: SCK, MOSI, MISO, CS, LED (the LEDs' switched cathode), each on a drawn via on its F.Cu track, clear of the LDO's B.Cu island |
 | DATA port | 5V (VBUS), GND |
 | DATA ×4 v2 | 32, listed with the board above: 8 GND; +3V3, +5V, the hub's 1V8 and the logic's −5V, +5V_MX, +3V3_CP, +1V1; SWDIO, SWCLK, RUN, BOOT; the matrix's DAT, CK, STB1, STB2, MX RST; HUB RST; INT, SDA, SCL; FLT1–FLT4 |
 

@@ -48,6 +48,17 @@ def P(x, y, rot=0, side="top"):
     return {"x": x, "y": y, "rot": rot, "side": side}
 
 
+# Eve's test pads, second round (the kicad-happy review's CP-3, 2026-10-27): the camera SPI and the LEDs' switched
+# cathode on bare 1.0 mm bottom pads, by J1 where those lines come in, clear of the LDO's +3V3 island on B.Cu.  Each
+# on a new drawn via on its net's F.Cu track, so no routing moves.  (net, (x, y), label)
+TP_ROUND2 = [
+    ("SCK", (29.7886, 11.9593), "SCK"),
+    ("MOSI", (28.7148, 14.5445), "MOSI"),
+    ("MISO", (25.6824, 18.8196), "MISO"),
+    ("CS", (29.493, 19.2218), "CS"),
+    ("LED_K", (35.0758, 14.2588), "LED"),
+]
+
 def board() -> Board:
     b = Board("camera-pod", "Camera pod", "1.0",
               comments=["The bay camera pod's board: lead in, the Arducam Mega's header, its 3.3 V, the light "
@@ -88,6 +99,8 @@ def board() -> Board:
     for i, net in enumerate(("GND", "CAM_5V", "+3V3")):
         part(s, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(6.0 + 3 * i, 21.5, 0, "bottom"), in_bom=False)
     part(s, "TP4", "testpad", {"1": "GND"}, "GND", pcb=P(33.0, 21.5, 0, "bottom"), in_bom=False)    # GND, spread
+    for i, (net, xy, _) in enumerate(TP_ROUND2):
+        part(s, f"TP{5 + i}", "testpad1", {"1": net}, net, pcb=P(*xy, 0, "bottom"), in_bom=False)
     s.note("J1 is the bay node's J6 mirrored: a 'Same direction' PH 8 lead (pin n to pin 9−n) joins them.")
     s.note("J2 follows the Mega's own pin order; the names are on the silkscreen, its cable plugs on by name.")
     s.note("The Mega from 3.3 V (U1, ≈ 0.5 W at its 317 mA max, Arducam): its MISO is 3.3 V.  LEDs 18–26 mA each (100 Ω 0805, ≤ 66 mW),")
@@ -112,7 +125,8 @@ def board() -> Board:
             {"layer": "B.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab-b", "priority": 2, "exclusive": 0.4,
              "poly": [(22.2, 11.8), (27.6, 11.8), (27.6, 17.2), (22.2, 17.2)]},
         ],
-        "vias": [("+3V3", 24.75, 12.6), ("+3V3", 24.75, 13.6), ("+3V3", 24.75, 14.6)],
+        "vias": [("+3V3", 24.75, 12.6), ("+3V3", 24.75, 13.6), ("+3V3", 24.75, 14.6),
+                 *[(net, *xy) for net, xy, _ in TP_ROUND2]],          # the second round's test pads
         "stitch": 3.0,
         "texts": [
             {"text": "VCC GND SCK MISO MOSI CS", "x": hx, "y": hy + 4.3, "size": 0.8},
@@ -120,6 +134,7 @@ def board() -> Board:
             *({"text": t, "x": 6.0 + 3 * i, "y": 19.6, "size": 0.8, "layer": "B.SilkS"}
               for i, t in enumerate(("GND", "5V", "3V3"))),
             {"text": "GND", "x": 33.0, "y": 19.6, "size": 0.8, "layer": "B.SilkS"},
+            *({"text": lab, "x": x, "y": y + 1.35, "size": 0.8, "layer": "B.SilkS"} for _, (x, y), lab in TP_ROUND2),
         ],
     }
     return b
