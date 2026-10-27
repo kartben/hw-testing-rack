@@ -47,6 +47,7 @@ RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["data_port"]
 W, H = CFG["size"]
 PH_EDGE = 4.9                       # JST PH side entry: footprint origin from the board edge
+TP_Y = 5.35                         # the bottom test pads' row, between the PH's VBUS track and its pads
 
 
 def P(x, y, rot=0, side="top"):
@@ -110,9 +111,10 @@ def board() -> Board:
         part(s, f"H{i + 1}", "hole25", {}, "PT2.6", pcb=P(x, y, 0), in_bom=False)
     s.block("Test pads (bottom side, labelled): no short to GND, then VBUS at power-up")
     # bare 1.5 mm pads, no part, no paste, out of the BOM (Eve's bring-up rule, 2026-10-26)
-    # VBUS's under its hand-drawn top-side track (x 7.4), joined by a via in the pad (a bare pad: no paste to wick)
+    # VBUS's under its hand-drawn top-side track (x 7.4), joined by a via in the pad (a bare pad: no paste to
+    # wick); y 5.35 keeps that via off J2.8's pad on top, whose paste it drained (kicad-happy review, DP-3)
     for i, net in enumerate(("GND", "VBUS")):
-        part(s, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(4.4 + 3 * i, 5.9, 0, "bottom"), in_bom=False)
+        part(s, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(4.4 + 3 * i, TP_Y, 0, "bottom"), in_bom=False)
     s.note("Rp 56k to VBUS on CC1 and CC2: 'default USB power', as on the DATA ×4; not 22k (1.5 A): the node's")
     s.note("  TPS2553D switch (DUT_5V) limits at 1.34–1.52 A.  The node turns the board under test on and off.")
     s.note("The lead's pinout is the node's J7 mirrored: a 'Same direction' PH 8 cable (pin n to pin 9−n) joins them;")
@@ -140,7 +142,7 @@ def board() -> Board:
             ("GND", "F.Cu", 0.5, [(15.4, 7.75), (15.4, 9.2), (14.6, 10.0)]),
             ("GND", "F.Cu", 0.3, [(CFG["ph"] + 2.0, H - 2.363), (CFG["ph"] + 2.0, H - 3.5)]),
         ],
-        "vias": [("VBUS", 7.4, 5.9),                   # TP2 (VBUS) to the top-side VBUS track
+        "vias": [("VBUS", 7.4, TP_Y),                  # TP2 (VBUS) to the top-side VBUS track
                  ("GND", 8.65, 9.9), ("GND", 14.6, 10.0), ("GND", CFG["ph"] + 2.0, H - 3.5, 0.5, 0.3)],
         # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
         "dru": """
@@ -150,7 +152,7 @@ def board() -> Board:
 """,
         "texts": [
             {"text": "DATA v1.0", "x": 7.0, "y": H - 3.0, "size": 0.8},
-            *({"text": t, "x": 4.4 + 3 * i, "y": 7.8, "size": 0.8, "layer": "B.SilkS"}
+            *({"text": t, "x": 4.4 + 3 * i, "y": TP_Y + 1.9, "size": 0.8, "layer": "B.SilkS"}
               for i, t in enumerate(("GND", "5V"))),
             # one label per pin, under it (rot 180: pin n at x = ph + 9 − 2n); 1–3 (INT, I²C) open
             *({"text": s, "x": CFG["ph"] + 9 - 2 * n, "y": 10.6, "size": 0.8}
