@@ -56,7 +56,7 @@ for its minimum spokes (2 on the bus and the supplies); a single spoke stays all
 fine-pitch neighbours leave no room for two.  A third (since 2026-10-27, the DATA ×4 v2 review's X2-4)
 holds a supply's through-hole connector, IC and inductor pins to 4 spokes of 0.8 mm or more.  Where
 fewer fit, the pin meets its plane solid (`solid` in its placement): the DATA ×4 v2's J1.8, the lead's
-+5V, had 3, the split and pin 7 taking the rest.  GND's through-hole pins are left out: a header's GND
++5V, had 3, the split beside it taking the fourth.  GND's through-hole pins are left out: a header's GND
 carries a signal's return.  No other board's pins fall short.  The LMR51625's hot loop (CIN – VIN – GND) and
 its output capacitors sit on small solid top-side islands, with hand-placed
 vias to In1, as TI's layout guide asks; the AP2114H's tab gets a solid +3V3
