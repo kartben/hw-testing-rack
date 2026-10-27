@@ -23,6 +23,7 @@ from pathlib import Path
 
 import bmesh
 import bpy
+import numpy as np
 from mathutils import Vector
 
 REPO = Path(HW_REPO)  # noqa: F821 — injected by tools/blender_live.py
@@ -719,6 +720,90 @@ def bay_center(bay):
     return Vector(next(x for x in data["bays"] if x["id"] == bay)["center"]) / 1000.0
 
 
+def in_box(sc, lo, hi, longest=0.2):
+    """The scene's meshes centred inside lo..hi (world bounding box) and no longer than `longest` (m):
+    a drawer's contents, without the frame's posts and rails that run through it."""
+    keep = []
+    for ob in sc.objects:
+        if ob.type != "MESH":
+            continue
+        pts = [ob.matrix_world @ Vector(c) for c in ob.bound_box]
+        a = [min(p[i] for p in pts) for i in range(3)]
+        b = [max(p[i] for p in pts) for i in range(3)]
+        if all(lo[i] <= (a[i] + b[i]) / 2 <= hi[i] for i in range(3)) and max(b[i] - a[i] for i in range(3)) <= longest:
+            keep.append(ob)
+    return keep
+
+
+def mask_still(sc, keep, w, h):
+    """A w x h coverage mask (1 = one of `keep`, 0 = anything else or nothing), occlusion included:
+    Workbench, flat white on those objects and black on the rest."""
+    saved = {ob: tuple(ob.color) for ob in sc.objects}
+    eng, trans, comp, view = (sc.render.engine, sc.render.film_transparent, sc.render.use_compositing,
+                              sc.view_settings.view_transform)
+    dof = sc.camera.data.dof.use_dof
+    try:
+        for ob in sc.objects:
+            ob.color = (1, 1, 1, 1) if ob in keep else (0, 0, 0, 1)
+        sc.render.engine = "BLENDER_WORKBENCH"
+        sh = sc.display.shading
+        sh.light, sh.color_type = "FLAT", "OBJECT"
+        sh.show_shadows = sh.show_cavity = sh.show_object_outline = sh.show_specular_highlight = False
+        sc.display.render_aa = "16"
+        sc.render.film_transparent = True
+        sc.render.use_compositing = False
+        sc.view_settings.view_transform = "Standard"
+        sc.camera.data.dof.use_dof = False
+        sc.render.resolution_x, sc.render.resolution_y, sc.render.resolution_percentage = w, h, 100
+        tmp = str(Path(bpy.app.tempdir or ".") / f"{sc.name}-mask.png")
+        sc.render.filepath = tmp
+        sc.render.image_settings.file_format = "PNG"
+        with bpy.context.temp_override(window=bpy.context.window_manager.windows[0], scene=sc):
+            bpy.ops.render.render(write_still=True, scene=sc.name)
+        img = bpy.data.images.load(tmp, check_existing=False)
+        px = np.empty(w * h * 4, dtype=np.float32)
+        img.pixels.foreach_get(px)
+        bpy.data.images.remove(img)
+    finally:
+        for ob, c in saved.items():
+            ob.color = c
+        sc.render.engine, sc.render.film_transparent, sc.render.use_compositing = eng, trans, comp
+        sc.view_settings.view_transform = view
+        sc.camera.data.dof.use_dof = dof
+    m = px.reshape(h, w, 4)[..., 0]
+    for axis in (0, 1):            # a 3 px box feather, so the seam doesn't show
+        m = (np.roll(m, -1, axis) + m + np.roll(m, 1, axis)) / 3
+    return m / max(float(m.max()), 1e-6)
+
+
+def tilt_still(sc, out, w, h, samples, keep):
+    """A tilted focal plane, as a tilt lens would give: `keep` sharp through its whole depth (DoF off),
+    everything else from the camera's own shallow DoF.  Two renders and a mask, mixed in display space."""
+    tmp = Path(bpy.app.tempdir or ".")
+    soft, sharp = str(tmp / "tilt-soft.png"), str(tmp / "tilt-sharp.png")
+    info = supersample.still(sc, soft, w, h, samples)
+    sc.camera.data.dof.use_dof = False
+    try:
+        supersample.still(sc, sharp, w, h, samples)
+    finally:
+        sc.camera.data.dof.use_dof = True
+    m = mask_still(sc, keep, w, h)[..., None]
+    layers = []
+    for f in (soft, sharp):
+        img = bpy.data.images.load(f, check_existing=False)
+        px = np.empty(w * h * 4, dtype=np.float32)
+        img.pixels.foreach_get(px)
+        bpy.data.images.remove(img)
+        layers.append(px.reshape(h, w, 4))
+    mix = layers[0] * (1 - m) + layers[1] * m
+    img = bpy.data.images.new(f"{sc.name}-tilt", w, h, alpha=False)   # byte image: display values as is
+    img.pixels.foreach_set(mix.ravel())
+    img.file_format = "JPEG" if out.lower().endswith((".jpg", ".jpeg")) else "PNG"
+    img.save(filepath=out, quality=92)
+    bpy.data.images.remove(img)
+    return {**info, "out": out, "tilt": len(keep)}
+
+
 def shot(name, out, samples, res):
     sc = bpy.data.scenes[SCENE]
     bpy.context.window_manager.windows[0].scene = sc
@@ -735,11 +820,20 @@ def shot(name, out, samples, res):
         c = bay_center("B3") + Vector((0.0, -0.13, -0.05))
         aim(cam, c + Vector((-0.20, -0.42, 0.30)), c + Vector((0.03, 0.0, 0.0)), 70, 4.0, focus=c)
     elif name == "detail":
-        # raking view along row B's drawer fronts: status LEDs, printed fronts, tray fascias and ladder;
-        # sharp on B2's LED
-        c = bay_center("B1")
-        aim(cam, c + Vector((-0.24, -0.36, 0.05)), c + Vector((0.20, -0.08, -0.03)), 50, 5.6,
-            focus=led_world("B2"))
+        # B2's drawer closed and B3's pulled out, head on and low, filling the frame: B3's front display
+        # and its standing DATA ×4 sharp, the rest soft.  They are 16 cm apart in depth, beyond any aperture
+        # that still blurs the rest: B3's drawer is kept sharp through its depth (tilt_still)
+        c = bay_center("B3")
+        aim(cam, c + Vector((-0.070, -0.945, 0.117)), c + Vector((-0.070, -0.065, -0.071)), 85, 2.8,
+            focus=c + Vector((0.0, -0.146, -0.065)))
+        w, h = (int(v) for v in res.split("x"))
+        keep = in_box(sc, c + Vector((-0.078, -0.240, -0.125)), c + Vector((0.078, -0.010, 0.0)))
+        exposure = sc.view_settings.exposure
+        sc.view_settings.exposure = 1.0           # head on, the rack's inside gets little of the window
+        try:
+            return {"shot": name, **tilt_still(sc, out, w, h, samples, keep)}
+        finally:
+            sc.view_settings.exposure = exposure
     w, h = (int(v) for v in res.split("x"))
     return {"shot": name, **supersample.still(sc, out, w, h, samples)}
 

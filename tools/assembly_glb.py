@@ -402,10 +402,10 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
     out = trimesh.Scene()
     k = 0
 
-    def add(mesh, name, T, bay=None):
+    def add(mesh, name, T, bay=None, layer=None):
         nonlocal k
         if explode_bay:
-            layer = bay_layer(name)
+            layer = bay_layer(name) if layer is None else layer
             if bay != explode_bay or layer is None:
                 return
             T = translate([0, 0, layer * gap]) @ flat @ T
@@ -436,13 +436,15 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         m = trimesh.creation.box(bx["size"], transform=translate(np.array(bx["size"]) / 2))
         dy = drawer_dy(bx) if bx.get("movable") else 0.0
         add(with_mat(m, mat("psu") if bx["kind"] == "psu" else mat(hex_rgba(bx["color"]))), f"{bx['kind']}:{bx.get('bay', '')}",
-            place(bx.get("space"), bx.get("row"), translate(np.add(bx["pos"], [0, dy, 0]))), bx.get("bay"))
+            place(bx.get("space"), bx.get("row"), translate(np.add(bx["pos"], [0, dy, 0]))), bx.get("bay"),
+            bay_layer("drawer") if bx.get("layer") == "drawers" else None)   # the front display goes with its drawer
     if scene_json.get("screens"):
         front_frames()
     for s in scene_json.get("screens", []):          # the drawer fronts' displays, each its bay's status
         if (q := front_screen_quad(s)) is not None:
             dy = drawer_dy(s) if s.get("movable") else 0.0
-            add(q, f"screen:front:{s['bay']}", place(s.get("space"), s.get("row"), translate([0, dy, 0])), s.get("bay"))
+            add(q, f"screen:front:{s['bay']}", place(s.get("space"), s.get("row"), translate([0, dy, 0])), s.get("bay"),
+                bay_layer("drawer"))
     for h in scene_json.get("headers", []):          # pin headers, pins up (the boards', the DATA ×4's)
         dy = drawer_dy(h) if h.get("movable") else 0.0
         for m in header_meshes(h, scene_json["header"]):

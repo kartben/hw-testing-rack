@@ -138,11 +138,16 @@ which bays get cameras, which board sits where) and rebuild.
 ## Status
 
 v0.2 — the printed panel frame replaces the aluminium frame, **not yet
-built**.  Mechanics are printable and parametric; still to design: the power
-box and double-width bays (see [mechanical.md](docs/mechanical.md)).  Both PCBs
-pass ERC and DRC with full schematic parity but are **autorouted drafts
-awaiting human review** (see [electronics.md](docs/electronics.md)); the node
-firmware: [firmware.md](docs/firmware.md).
+built**.  Mechanics are printable and parametric, the power box included;
+still to design: double-width bays (see [mechanical.md](docs/mechanical.md)).
+Each drawer front carries the node's 1.9" touch display, waiting on the
+module to check its fit before a test print.  Five PCBs (bay node, power hub,
+DATA port, DATA ×4 v2, camera pod) pass ERC and DRC, are routed and smoothed,
+and went through a schematic review
+([schematic-review-2026-10-25.md](docs/schematic-review-2026-10-25.md)) and a
+datasheet audit; **none is fabricated yet** (see
+[electronics.md](docs/electronics.md)).  The node firmware:
+[firmware.md](docs/firmware.md).
 Board outlines marked `verified: false` in `boards.yaml` are approximate.
 
 ## License
