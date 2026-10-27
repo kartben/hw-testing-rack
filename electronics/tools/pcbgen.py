@@ -64,6 +64,14 @@ DRU_POWER_SPOKES = """
 	(condition "A.Type == 'Pad' && ({nets})")
 	(constraint min_resolved_spokes {n}))
 """
+# a supply's through-hole power pin (a connector's, soldered by hand) keeps a relief, but one that carries the
+# board's current (the user's rule, 2026-10-20): 4 spokes of 0.8 mm or more, else solid (`solid` in its placement)
+DRU_POWER_THT = """
+(rule "power pins through the board: 4 spokes of 0.8 mm where relieved"
+	(condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole' && ({nets}) && ({parts})")
+	(constraint thermal_spoke_width (min 0.8mm))
+	(constraint min_resolved_spokes 4))
+"""
 # power pins of these parts connect solid; everything else on a power net is a small part (R, C, D, Q,
 # LED...) unless one of its pads is this big
 POWER_PARTS = ("U", "J", "L")
@@ -277,6 +285,9 @@ class PcbBuilder:
                     # power_pads() leaves these alone
                     pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_THERMAL)
                     self.__dict__.setdefault("relief_refs", set()).add(p.ref)
+                if num in hint.get("solid", ()):
+                    # a supply pin with no room for 4 spokes (DRU_POWER_THT), such as a 2 mm row's end pin: solid
+                    pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_FULL)
                 if num in nets:
                     pad.SetNet(self.net(self.b.pcb_net_name(nets[num])))
                 elif num in pins:
@@ -426,6 +437,10 @@ class PcbBuilder:
                                      parts=" || ".join(f"A.memberOfFootprint('{p}*')" for p in POWER_PARTS))
         for n in sorted({n for n in power.values() if n > 1}):
             out += DRU_POWER_SPOKES.format(n=n, nets=cond(x for x, m in power.items() if m == n))
+        supplies = [x for x, m in power.items() if m > 1]          # GND's (1) are returns, often signal ones
+        if supplies:
+            out += DRU_POWER_THT.format(nets=cond(supplies),
+                                        parts=" || ".join(f"A.memberOfFootprint('{p}*')" for p in POWER_PARTS))
         return out
 
     def power_pads(self) -> list[str]:

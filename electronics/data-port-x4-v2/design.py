@@ -514,9 +514,12 @@ def hub_sheet(b: Board):
             "H5VU25UC", 6, 10, 70, 50)
     # through-hole on the rear face, soldered by hand (JLC's Economic assembly places the front face only), where
     # the lead comes up from the cable window (the cradle's interface): a vertical row at x 90 from pin 1 (INT,
-    # the top) to pin 8 (+5V, the bottom, over the power plane's +5V tab); the USB pair (5, 6) under the hub
+    # the top) to pin 8 (+5V, the bottom, over the power plane's +5V tab); the USB pair (5, 6) under the hub.
+    # Pin 8 carries the whole board's supply (≤ 1.34 A): pin 7, 0.25 mm above it, leaves room for 3 spokes only,
+    # so it meets the plane solid (DRU_POWER_THT; the review's X2-4)
     part(s, "J1", "ph8t", {"1": "LEAD_INT", "2": "LEAD_SCL", "3": "LEAD_SDA", "4": "GND", "5": "UP_DN",
-                           "6": "UP_DP", "7": "GND", "8": "+5V"}, "LEAD", pcb=P(*LEAD, J1_ROT, "bottom"),
+                           "6": "UP_DP", "7": "GND", "8": "+5V"}, "LEAD",
+         pcb={**P(*LEAD, J1_ROT, "bottom"), "solid": ["8"]},
          sch=at(16, 30, mirror="y", fields=(-2, -6)))
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False, sch=at(28, 16))
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(34, 16))
