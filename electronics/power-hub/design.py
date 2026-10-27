@@ -109,7 +109,9 @@ def board() -> Board:
     # +3V3 everywhere else, one piece wrapping around it.  Outlines don't overlap: the router takes
     # each as copper of its net.
     in2 = [
-        {"layer": "In2.Cu", "net": "VRACK", "priority": 1,
+        # priority 2: VRACK wins where the +3V3 tongue into its notch overlaps it (4.6 mm²), every build; at
+        # equal priorities KiCad's tie-break is the zones' UUIDs, new at each build, and the split moved
+        {"layer": "In2.Cu", "net": "VRACK", "priority": 2,
          # a notch over row D's FLT pull-up (R94): its +3V3 pin gets the +3V3 area under it
          "poly": [(16.2, 21.6), (45.6, 21.6), (45.6, 0.4), (75.6, 0.4), (75.6, 29.6), (35.5, 29.6), (35.5, 26.2),
                   (31.5, 26.2), (31.5, 29.6), (24.6, 29.6), (24.6, 84.0), (16.2, 84.0)]},
@@ -224,11 +226,13 @@ def board() -> Board:
             ("PD_CC1", PD_X + 1.25, 8.15, 0.5, 0.3),
             ("GND", 60.5, H - 15.05, 0.5, 0.3),         # U5's GND pin, between the USB pair's wires
             ("VRACK", 55.8, 14.55, 0.8, 0.4), ("VRACK", 56.7, 13.5 + BY, 0.8, 0.4),
-            # J1's left GND pads (A12/B1, one spot): one via right below them, drawn, so the automatic fan-out
-            # (a via per pad, at y 8.0) can't cut the pour off the left VBUS pads (A9/B4) beside them
-            ("GND", 58.852, 7.375, 0.5, 0.3),           # 0.5 mm: 0.2 mm from the VBUS pad A9
+            # J1's left GND pads (A12/B1, one spot): their via, drawn, north of them under the receptacle,
+            # between the shell leg and the peg.  Not in the pad (its solder would drain down the hole:
+            # kicad-happy review, PH-1), not south of it, where vias cut the input pour off the left VBUS pads
+            # (A9/B4); the router's own fan-out of these pads goes at the import (pcbgen.drop_redundant_fanouts)
+            ("GND", 58.35, 5.3, 0.5, 0.3),
         ],
-        "tracks": tracks + [("GND", "F.Cu", 0.3, [(58.8, 7.08), (58.852, 7.375)])],
+        "tracks": tracks + [("GND", "F.Cu", 0.3, [(58.8, 7.08), (58.35, 6.63), (58.35, 5.3)])],
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
         "keepouts": [{"name": "antenna", "poly": [(21.3, -0.1), (38.7, -0.1), (38.7, 5.6), (21.3, 5.6)]}],
         "texts": [

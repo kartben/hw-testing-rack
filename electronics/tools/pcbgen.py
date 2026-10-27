@@ -1577,7 +1577,25 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
 
     # 3. a GND pad no connected fill reaches (walled in by tracks, or in a fragment too small for a
     #    via): a thin track can often squeeze out (the pour needs 2 × 0.25 mm clearance + 0.2 mm,
-    #    a 0.2 mm track far less) to a connected part of the pour, or to a spot where a small via fits
+    #    a 0.2 mm track far less) to a connected part of the pour, or to a spot where a small via fits.
+    #    A pad whose GND tracks already lead to a via or a through-hole GND pad isn't lonely (the hub's J1
+    #    A12/B1, walled in by the input pour, with a drawn track to their via)
+    gnd_tracks = [t for t in board.GetTracks() if t.GetClass() == "PCB_TRACK" and t.GetNetCode() == gnd_code]
+    anchor_at = {(a.x, a.y) for a in anchors}
+
+    def tracked(pad):
+        seen, todo = set(), [(e.x, e.y) for t in gnd_tracks for e in (t.GetStart(), t.GetEnd()) if pad.HitTest(e)]
+        while todo:
+            q = todo.pop()
+            if q in seen:
+                continue
+            seen.add(q)
+            if q in anchor_at:
+                return True
+            todo += [(e.x, e.y) for t in gnd_tracks if q in ((t.GetStart().x, t.GetStart().y), (t.GetEnd().x, t.GetEnd().y))
+                     for e in (t.GetStart(), t.GetEnd())]
+        return False
+
     def lonely_pads(f):
         out = []
         for l in copper:
@@ -1588,7 +1606,8 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
             for fp in board.GetFootprints():
                 for pad in fp.Pads():
                     if (pad.GetNetCode() == gnd_code and pad.GetDrillSize().x == 0 and pad.IsOnLayer(l)
-                            and not any(pp.Contains(pad.GetPosition(), j) for pp, j in conn)):
+                            and not any(pp.Contains(pad.GetPosition(), j) for pp, j in conn)
+                            and not tracked(pad)):
                         out.append((l, pad))
         return out
 
