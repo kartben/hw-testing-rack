@@ -124,16 +124,33 @@ class Layouts(unittest.TestCase):
 
     def test_boards_on_the_plate_apart(self):
         w, d = self.rack.plate_size
+        wl, wr, wf = self.g.walls
         for bay, lay in self.layouts.items():
             rects = [PL.board_rect(pb.at, pb.o) for pb in lay.boards]
             for pb, (x0, y0, x1, y1) in zip(lay.boards, rects):
-                self.assertTrue(0 <= x0 and 0 <= y0 and x1 <= w and y1 <= d, msg=pb.slot)
+                # between the drawer's walls (over the plate's right gap at most: the display's lead is below)
+                self.assertTrue(wl + PL.WALL_GAP - 1e-6 <= x0 and wf + PL.WALL_GAP - 1e-6 <= y0
+                                and x1 <= wr - PL.WALL_GAP + 1e-6 and y1 <= d, msg=pb.slot)
                 self.assertLessEqual(max(abs(pb.at[0] - pb.hint[0]), abs(pb.at[1] - pb.hint[1])), PL.WINDOW_ALONE + 1e-6)
                 if self.rack.is_multi(bay):
                     self.assertLessEqual(math.hypot(pb.at[0] - pb.hint[0], pb.at[1] - pb.hint[1]), PL.WINDOW * 1.42)
             for i, a in enumerate(rects):
                 for b in rects[i + 1:]:
                     self.assertFalse(a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3], msg=bay)
+
+    def test_clear_of_the_front(self):
+        """The display, its frame and the front's joints hang over the plate's front: a peg's flange only under them."""
+        self.assertTrue(self.g.front)
+        for bay, lay in self.layouts.items():
+            for p in lay.pegs:
+                for x, y, r, z0, z1 in PL.peg_shapes(p, self.g):
+                    for rect in self.g.front:
+                        self.assertFalse(z1 > PL.FLANGE_T and PL.circle_in_rect(x, y, r, rect),
+                                         msg=f"{bay}: {p.kind} r{p.row}h{p.col} under the front's {rect}")
+            for pb in lay.boards:
+                x0, y0, x1, y1 = PL.board_rect(pb.at, pb.o)
+                for a0, b0, a1, b1 in self.g.front:
+                    self.assertFalse(x0 < a1 and a0 < x1 and y0 < b1 and b0 < y1, msg=f"{pb.slot} under the front")
 
     def test_parts_printed(self):
         parts = PL.peg_parts(self.boards)

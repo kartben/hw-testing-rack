@@ -149,6 +149,9 @@ exactly and its cams reach it within their travel; nothing may touch another
 board, another peg, a plug's way or a keep-out.  A board up to 6.4 mm high
 may lean on the drawer's side wall instead of stops (the UNO R4, whose
 straight cable needs the room on its right), any board on the front panel.
+The display's frame and screws (over the plate's front-right corner) and the
+front's joints (its front corners) hang over the plate: a peg's flange passes
+under them, nothing else does, and no board goes there.
 
 ```bash
 python tools/plate_layout.py B3          # the pegs of a bay: row, hole, turn, edge

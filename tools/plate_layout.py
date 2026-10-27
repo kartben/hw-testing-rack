@@ -33,14 +33,14 @@ OPPOSITE = {"L": "R", "R": "L", "F": "B", "B": "F"}
 
 PCB_T = 1.6
 FLANGE_R = 4.8
+FLANGE_T = 1.2             # its thickness: it passes under what hangs off the drawer's front (Grid.front)
 CAM_BODY_R = 8.0           # the cam swept round its pivot (spiral r1 + its flange's 1.2)
 CAM_TOP = 4.8              # the cam's top above its own bottom (flange 1 + band 2 + grip 1.8)
 PLUG_HALF = 6.5            # a USB plug's half width (12.4 overmold) and a margin
 PLUG_LEN = 26.0            # its way out of the board: plug, its strain relief, the cable's first bend
 WINDOW = 10.0              # how far a board may move from its hint
 WINDOW_ALONE = 30.0        # ... along its USB edge, when it is its bay's only board
-WALL_GAP = 0.2             # a board leaning on the drawer's wall: its edge this far inside the plate's edge
-                           # (the wall's face is 0.3 mm outside it)
+WALL_GAP = 0.5             # a board leaning on the drawer's wall or front: its edge this far off the wall's face
 LIP_SPAN = 3.0             # a stop's lip (and a cam's band) over the PCB, ± along the edge
 REAR_GAP_MAX = rackcfg.REAR_GAP_MAX
 
@@ -122,6 +122,13 @@ class Grid:
         # the drawer's side walls reach above a board's PCB up to this standoff: such a board may lean on one
         # (WALL_GAP off it) instead of on stops; the front panel is always tall enough
         self.wall_h_max = dr["wall_height"] - dr["bottom"] - dr["plate"] - PCB_T - 0.5
+        # the walls round the plate: the side walls' faces (plate x; the display's lead runs in the right gap, a
+        # board over it is clear of it) and the front's back (plate y)
+        gl, gr = rack.plate_gaps
+        self.walls = (-gl, self.w + gr, dr["front_thickness"] - rack.plate_origin[1])
+        # what hangs over the plate's front off the drawer's front: the display, its frame and screws, the front's
+        # joints (rackcfg.Rack.plate_keepouts).  A peg's flange passes under them, nothing else does
+        self.front = [r for what, r in rack.plate_keepouts() if what in ("display", "front's joint")]
         st, cm = g["stop"], g["cam"]
         self.e, self.alpha = st["offset"], st["angle"]
         self.neck, self.ledge, self.lip = st["neck"] / 2, st["ledge"] / 2, st["lip"] / 2
@@ -243,13 +250,13 @@ def peg_shapes(p: Peg, g: Grid) -> list[tuple[float, float, float, float, float]
     h = p.h
     if p.kind == "stop":
         cx, cy = p.post
-        return [(p.x, p.y, FLANGE_R, 0, 1.2), (cx, cy, 3.75, 0, 1.2), (cx, cy, g.ledge, 0, h),
+        return [(p.x, p.y, FLANGE_R, 0, FLANGE_T), (cx, cy, 3.75, 0, FLANGE_T), (cx, cy, g.ledge, 0, h),
                 (cx, cy, g.lip, h + PCB_T, h + PCB_T + 2.3)]
     if p.kind == "cam":
-        return [(p.x, p.y, FLANGE_R, 0, 1.2), (p.x, p.y, 4.25, 0, h - 1), (p.x, p.y, CAM_BODY_R, h - 1, h - 1 + CAM_TOP)]
+        return [(p.x, p.y, FLANGE_R, 0, FLANGE_T), (p.x, p.y, 4.25, 0, h - 1), (p.x, p.y, CAM_BODY_R, h - 1, h - 1 + CAM_TOP)]
     if p.kind == "pin":
         cx, cy = p.post
-        return [(p.x, p.y, FLANGE_R, 0, 1.2), (cx, cy, (p.hole_d + 4.1) / 2, 0, h)]
+        return [(p.x, p.y, FLANGE_R, 0, FLANGE_T), (cx, cy, (p.hole_d + 4.1) / 2, 0, h)]
     return [(p.x, p.y, 7.5, 0, 16.0)]
 
 
@@ -314,6 +321,8 @@ class Scene:
             return False
         if any(shape_in_plug(sh, pl) for pl in own_plugs):
             return False                  # the board's own plug's way
+        if any(z1 > FLANGE_T and circle_in_rect(x, y, r, rect) for x, y, r, z0, z1 in sh for rect in self.g.front):
+            return False
         return True
 
 
@@ -445,11 +454,12 @@ class BoardSolver:
 
     def wall_options(self, axis: str) -> list[tuple[str, float]]:
         """The drawer's walls a board may lean on: (edge, the board's coordinate)."""
+        wl, wr, wf = self.g.walls
         if axis == "y":
-            return [("F", WALL_GAP)]
+            return [("F", wf + WALL_GAP)]
         if self.h > self.g.wall_h_max:
             return []
-        return [("L", WALL_GAP), ("R", self.g.w - self.o["w"] - WALL_GAP)]
+        return [("L", wl + WALL_GAP), ("R", wr - WALL_GAP - self.o["w"])]
 
     def edges_layout(self) -> tuple[float, tuple, list[Peg], list[str]] | None:
         """Stops and cams on the edges.  Returns (cost, at, pegs, notes)."""
@@ -547,7 +557,10 @@ class BoardSolver:
 
     def fits(self, at) -> bool:
         x0, y0, x1, y1 = board_rect(at, self.o)
-        if x0 < WALL_GAP - 1e-6 or y0 < WALL_GAP - 1e-6 or x1 > self.g.w - WALL_GAP + 1e-6 or y1 > self.g.d - 0.5:
+        wl, wr, wf = self.g.walls
+        if x0 < wl + WALL_GAP - 1e-6 or y0 < wf + WALL_GAP - 1e-6 or x1 > wr - WALL_GAP + 1e-6 or y1 > self.g.d - 0.5:
+            return False
+        if any(x0 < a1 and a0 < x1 and y0 < b1 and b0 < y1 for a0, b0, a1, b1 in self.g.front):
             return False
         for slot, rect, top in self.scene.boards:
             a0, b0, a1, b1 = rect

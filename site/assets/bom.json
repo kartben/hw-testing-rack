@@ -3478,7 +3478,7 @@
 "qty": 3.1,
 "unit": "kg",
 "unit_eur": 20.0,
-"notes": "≈2.7 kg estimated + 10 % waste, 182 parts",
+"notes": "≈2.7 kg estimated + 10 % waste, 186 parts",
 "ext_eur": 62.0
 },
 {
@@ -4071,9 +4071,9 @@
 },
 {
 "part": "peg_base_h12",
-"qty": 5,
+"qty": 6,
 "grams_each": 0.5,
-"grams_total": 2.6,
+"grams_total": 3.1,
 "stl": "mechanical/stl/peg_base_h12.stl"
 },
 {
@@ -4099,9 +4099,9 @@
 },
 {
 "part": "peg_cam",
-"qty": 20,
+"qty": 21,
 "grams_each": 0.2,
-"grams_total": 3.9,
+"grams_total": 4.1,
 "stl": "mechanical/stl/peg_cam.stl"
 },
 {
@@ -4110,13 +4110,6 @@
 "grams_each": 0.3,
 "grams_total": 1.0,
 "stl": "mechanical/stl/peg_pin_d21_h9.stl"
-},
-{
-"part": "peg_pin_d32_h12",
-"qty": 1,
-"grams_each": 0.5,
-"grams_total": 0.5,
-"stl": "mechanical/stl/peg_pin_d32_h12.stl"
 },
 {
 "part": "peg_pin_d32_h6",
@@ -4134,9 +4127,9 @@
 },
 {
 "part": "peg_stop_h12",
-"qty": 3,
+"qty": 6,
 "grams_each": 0.6,
-"grams_total": 1.7,
+"grams_total": 3.4,
 "stl": "mechanical/stl/peg_stop_h12.stl"
 },
 {
