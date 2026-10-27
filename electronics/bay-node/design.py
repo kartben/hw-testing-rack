@@ -164,6 +164,30 @@ def usb_hs_routes():
     return tracks, vias
 
 
+# Eve's test pads, second round (the kicad-happy review's BN-2, 2026-10-27): the camera SPI by R31–R34, CAN TXD/RXD
+# and POS_IN by U11, the DUT's UART1, RESET/BOOT controls and POS_OUT by the AUX column, a GND in each group; 1.0 mm,
+# GND 1.5 mm.  Each sits where its net already is: on a new drawn via on one of its F.Cu tracks, or on one of its
+# B.Cu tracks, so no routing moves; none adds a via on In2's VRACK strip.  (net, sheet, Ø, (x, y), drawn via,
+# label, label offset or None for under the pad)
+TP_ROUND2 = [
+    ("CAM_SCK_C", "c", 1.0, (54.3875, 14.2), True, "SCK", None),
+    ("CAM_MOSI_C", "c", 1.0, (49.9406, 12.8732), False, "MOSI", None),
+    ("CAM_MISO_C", "c", 1.0, (48.2572, 16.756), False, "MISO", (2.4, 0.0)),
+    ("CAM_CS_C", "c", 1.0, (49.7863, 19.4209), True, "CS", None),
+    ("GND", "c", 1.5, (54.9, 17.9), True, "GND", None),
+    ("CAN_TXD", "k", 1.0, (29.405, 62.4831), True, "TXD", None),
+    ("CAN_RXD", "k", 1.0, (24.4045, 62.4177), False, "RXD", None),
+    ("POS_IN", "k", 1.0, (21.2359, 61.0237), True, "POS IN", None),
+    ("GND", "k", 1.5, (26.9, 61.4), True, "GND", None),
+    ("AUX_TX", "d", 1.0, (61.2841, 42.3969), False, "AUX TX", (0.0, -1.35)),
+    ("AUX_RX", "d", 1.0, (57.8491, 42.1314), False, "AUX RX", None),
+    ("AUX_RST_CTL", "d", 1.0, (60.55, 48.0991), True, "RST", None),
+    ("AUX_BOOT_CTL", "d", 1.0, (57.8041, 48.3534), False, "BOOT", None),
+    ("POS_OUT", "d", 1.0, (61.438, 45.3665), False, "POS OUT", (3.2, 0.0)),
+    ("GND", "d", 1.5, (58.4, 45.4), True, "GND", None),
+]
+
+
 def board() -> Board:
     b = Board("bay-node", "Bay node", "0.5",
               comments=["ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf",
@@ -283,7 +307,8 @@ def board() -> Board:
                                                (14.8, 26.8), (15.2, 28.4), (9.0, 29.8), (9.0, 31.5))],
                  ("+3V3", 41.5, 43.0), ("+3V3", 41.5, PWR_Y - 1.5),
                  *[("+5V", x, y) for x, y in ((53.0, 39.85), (54.0, 39.95), (54.6, 39.95))],        # U9's input island
-                 *hs_vias],
+                 *hs_vias,
+                 *[(net, *xy) for net, _, _, xy, via, _, _ in TP_ROUND2 if via]],      # the second round's test pads
         # the front +3V3 area of In2 (LED, SERVICE switch) is cut off by the VRACK strip: fed from the
         # main +3V3 area by a B.Cu track
         "tracks": [*hs_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)])],
@@ -310,6 +335,8 @@ def board() -> Board:
             {"text": "CAM", "x": CFG["cam"][0], "y": CFG["cam"][1] - 11.6, "size": 0.8},
             {"text": "RESET", "x": 7.5, "y": 25.4, "size": 0.8},
             {"text": "BOOT", "x": 15.5, "y": 25.4, "size": 0.8},
+            *({"text": lab, "x": xy[0] + (off or (0, 0))[0], "y": xy[1] + (off[1] if off else d / 2 + 0.85), "size": 0.8,
+               "layer": "B.SilkS"} for _, _, d, xy, _, lab, off in TP_ROUND2),
         ],
     }
 
@@ -808,6 +835,20 @@ def board() -> Board:
     c.note("CAM_5V through F1 (0.75 A PTC, 1.5 A trip): the camera ≤ 317 mA (Arducam) + the LEDs ≤ 102 mA.  USBLC6s on the lead side of the 33 Ω.")
     c.note("The camera pod board runs the Mega from 3.3 V (its own AP2114H): MISO is 3.3 V and R35 stays unpopulated.")
     c.note("  For a camera fed 5 V that drives MISO at 5 V instead: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V.")
+    # each in the sheet its net belongs to, in a frame of its own there
+    sheets = {"c": c, "k": k, "d": d}
+    frames = {"c": ("Test pads, second round (bottom side): the camera SPI and a GND", (124, 24, 162, 40), (128, 32)),
+              "k": ("Test pads, second round (bottom side): CAN TXD/RXD, POS_IN, a GND", (74, 6, 110, 22), (78, 14)),
+              "d": ("Test pads, second round (bottom side): AUX UART, RESET/BOOT, POS_OUT, a GND", (116, 82, 160, 98),
+                    (120, 90))}
+    for key, (title, box, _) in frames.items():
+        sheets[key].frame(title, *box)
+    count = {}
+    for i, (net, sheet, dia, xy, _, _, _) in enumerate(TP_ROUND2):
+        n = count[sheet] = count.get(sheet, -1) + 1
+        x0, y0 = frames[sheet][2]
+        part(sheets[sheet], f"TP{18 + i}", "testpad" if dia > 1.2 else "testpad1", {"1": net}, net,
+             pcb=P(*xy, 0, "bottom"), in_bom=False, sch=at(x0 + 7 * n, y0, rot=90, fields="left"))
     return b
 
 

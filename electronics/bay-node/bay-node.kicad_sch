@@ -769,10 +769,37 @@
 	)
 	(polyline
 		(pts
+			(xy 273.05 100.33)
+			(xy 273.05 133.35)
+			(xy 327.66 133.35)
+			(xy 327.66 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "cd26f09d-783b-5ac1-844b-10e7e99e0285")
+	)
+	(text "POS_OUT"
+		(exclude_from_sim no)
+		(at 275.59 132.08 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "caf62199-4cd6-5ec5-806a-bffda682bef3")
+	)
+	(polyline
+		(pts
 			(xy 83.82 100.33)
-			(xy 83.82 133.35)
-			(xy 240.03 133.35)
-			(xy 240.03 100.33)
+			(xy 83.82 143.51)
+			(xy 247.65 143.51)
+			(xy 247.65 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -783,9 +810,9 @@
 		)
 		(uuid "54079f9b-69f5-59c7-83c5-1bd34780706e")
 	)
-	(text "AUX_BOOT_CTL, AUX_RST_CTL, AUX_RX/TX, DUT_EN, DUT_FLT_N, I2C_SCL/SDA, INA_ALERT_N"
+	(text "AUX_BOOT_CTL, AUX_RST_CTL, AUX_RX/TX, DUT_EN, DUT_FLT_N, I2C_SCL/SDA, INA_ALERT_N, POS_OUT"
 		(exclude_from_sim no)
-		(at 86.36 132.08 0)
+		(at 86.36 142.24 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -797,9 +824,9 @@
 	(polyline
 		(pts
 			(xy 76.2 100.33)
-			(xy 76.2 143.51)
-			(xy 327.66 143.51)
-			(xy 327.66 100.33)
+			(xy 76.2 153.67)
+			(xy 335.28 153.67)
+			(xy 335.28 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -812,7 +839,7 @@
 	)
 	(text "CAN_RXD/TXD, POS_IN/OUT"
 		(exclude_from_sim no)
-		(at 78.74 142.24 0)
+		(at 78.74 152.4 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -824,9 +851,9 @@
 	(polyline
 		(pts
 			(xy -2.54 100.33)
-			(xy -2.54 153.67)
-			(xy 335.28 153.67)
-			(xy 335.28 100.33)
+			(xy -2.54 163.83)
+			(xy 342.9 163.83)
+			(xy 342.9 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -839,7 +866,7 @@
 	)
 	(text "CAN_H/L, POS_IN_CONN, POS_OUT_CONN"
 		(exclude_from_sim no)
-		(at 0 152.4 0)
+		(at 0 162.56 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -851,8 +878,8 @@
 	(polyline
 		(pts
 			(xy 68.58 100.33)
-			(xy 68.58 163.83)
-			(xy 421.64 163.83)
+			(xy 68.58 173.99)
+			(xy 421.64 173.99)
 			(xy 421.64 100.33)
 		)
 		(stroke
@@ -866,7 +893,7 @@
 	)
 	(text "CAM_CS/LED/SCK, CAM_MISO, CAM_MOSI"
 		(exclude_from_sim no)
-		(at 71.12 162.56 0)
+		(at 71.12 172.72 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -877,7 +904,7 @@
 	)
 	(text_box "Bay node — one per bay.  Sheets:\n  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51625 buck, AP2114H\n  MCU: ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM), reset/boot, status LED, UART pads\n  USB: front PC port, the DUT's USB on the DATA lead (J7), two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553D switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT\n  Camera: JST PH 8 to the bay's Arducam Mega (SPI2, 5 V through a PTC) and its LEDs (AO3400A low side)\n  Rack bus: TJA1462AT CAN transceiver on the row pair, POS token in/out (docs/can.md)\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
 		(exclude_from_sim no)
-		(at 30 179.07 0)
+		(at 30 189.23 0)
 		(size 360 33.02)
 		(margins 2 2 2 2)
 		(stroke

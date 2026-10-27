@@ -710,7 +710,7 @@ Every board has bare test pads on the bottom.  Each is named on B.SilkS.  They a
 
 | Board | Pads (silkscreen names) |
 |---|---|
-| Bay node | under the module: TX, RX, 3V3, GND, EN, IO0, FLT (DUT_FLT_N), ALRT (INA_ALERT_N), SDA, SCL, GND; along the bottom edge: GND, VIN, 5V, 3V3, DUT 5V, CAM 5V |
+| Bay node | under the module: TX, RX, 3V3, GND, EN, IO0, FLT (DUT_FLT_N), ALRT (INA_ALERT_N), SDA, SCL, GND; along the bottom edge: GND, VIN, 5V, 3V3, DUT 5V, CAM 5V; second round (kicad-happy review BN-2), a GND in each group: the camera SPI by R31–R34 (SCK, MOSI, MISO, CS, on the lead side of the 33 Ω); CAN TXD/RXD and POS IN by U11; AUX TX/RX, RST, BOOT and POS OUT by the AUX column.  Each on a drawn via on one of its net's tracks or on its B.Cu track: no routing moved |
 | Power hub | TX, RX, 3V3, GND, EN, IO0; PD SDA/SCL (CH224A); 5V, VRACK, two more GND; FLT and IMON for each row (A–D); second round (kicad-happy review PH-2): 5V BUCK, USB 5V, VHV (CH224A); ROW A–D and EN A–D; CANH, CANL, TXD, RXD and a GND by them (U6); PD PG; VSNS.  Each on a via of its net or a B.Cu track's end: no routing moved, no new via on In2's VRACK band |
 | Camera pod | GND, 5V, 3V3; a second GND at the far end |
 | DATA port | 5V (VBUS), GND |

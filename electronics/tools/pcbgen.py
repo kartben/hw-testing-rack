@@ -1238,7 +1238,8 @@ def fanout_pads(board, specs: dict, islands: list, only=None) -> list[tuple[str,
     net's plane (In1 for GND, the net's area of In2 for a supply), locked so Freerouting keeps it:
     no GND or supply pin then depends on an outer pour that signal tracks may cut in pieces.  Pads
     inside a top-side island of their own net (`islands`: [(net, poly mm)], which carry their own
-    vias) and pads already reached by a fixed track are left alone.  A pad over another net's area of
+    vias), pads already reached by a fixed track and pads holding a drawn via of their net (a test pad
+    on its own via) are left alone.  A pad over another net's area of
     a split plane gets its track to the nearest spot of its own area, up to REMOTE_FEED_MM away:
     Freerouting doesn't route those (its fan-out drops their via in the wrong area, then it leaves
     them open).  `only`: the pads ("REF.PAD") to fan out, the others left alone (a routed board's patch).
@@ -1287,6 +1288,9 @@ def fanout_pads(board, specs: dict, islands: list, only=None) -> list[tuple[str,
                   for fp in board.GetFootprints() for p in fp.Pads() if p.GetDrillSize().x > 0]
         ends = {(e.x, e.y) for t in board.GetTracks() if t.GetClass() != "PCB_VIA" and t.GetNetCode() == code
                 for e in (t.GetStart(), t.GetEnd())}
+        # a drawn via of the net in the pad is its way down already (a test pad on its own via)
+        held = [t.GetPosition() for t in board.GetTracks() if t.GetClass() == "PCB_VIA" and t.GetNetCode() == code
+                and t.IsLocked()]
         skip = []
         for n_, poly in islands:
             if n_ == name:
@@ -1319,7 +1323,7 @@ def fanout_pads(board, specs: dict, islands: list, only=None) -> list[tuple[str,
             if only is not None and f"{pad.GetParentFootprint().GetReference()}.{pad.GetNumber()}" not in only:
                 continue
             bb = pad.GetBoundingBox()
-            if any(bb.Contains(pcbnew.VECTOR2I(x, y)) for x, y in ends):
+            if any(bb.Contains(pcbnew.VECTOR2I(x, y)) for x, y in ends) or any(pad.HitTest(v) for v in held):
                 continue
             todo += 1
             remote = not fill.Contains(a)
