@@ -45,8 +45,10 @@ own top-side islands, under a 3 mm limit.  A capacitor of 100 nF or less also ke
 pin → cap → via order: the pin reaches its pad by copper on their one layer,
 with no via on the way, and reaches no via of its rail but through that pad.
 On an island the pin, the capacitor and the rail's vias share (a buck's
-input), a via only breaks it if it lies nearer the pin than the capacitor.
-The boards `decoupling.json`'s `order_pending` list names still break it.
+input), a via only breaks it if it lies nearer the pin than the capacitor.  A
+via that only leads on to test pads (a probe's branch) feeds nothing and
+doesn't count.  The boards `decoupling.json`'s `order_pending` list names still
+break it.
 
 **Schematics** are drawn, not just generated: every part in `design.py` has
 an `sch=` position on the 0.1" grid and the main paths are real wires
