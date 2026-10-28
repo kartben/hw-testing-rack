@@ -88,7 +88,8 @@ def board() -> Board:
     # high enough that SCK keeps its F.Cu diagonal below it; each with a GND via beside its GND pad
     C(s, "C1", "10u", "CAM_5V", "GND", size="0805", pcb=P(13.75, 15.3, 180))
     C(s, "C2", "22u", "+3V3", "GND", size="1206", pcb=P(26.6, 11.4, 90))
-    C(s, "C3", "100n", "+3V3", "GND", pcb=P(hx + 9.8, hy - 0.5, 90))
+    # the camera's 100 nF right above its VCC pin (J2.1, at hx − 6.35), its GND via above it
+    C(s, "C3", "100n", "+3V3", "GND", pcb=P(hx - 6.35, hy - 5.0, 90))
     s.block("Light: four white LEDs, 100 Ω each from CAM_5V, cathodes to LED_K (the node's low side)")
     for i, x in enumerate(CFG["leds"]):
         n = i + 1
@@ -132,7 +133,7 @@ def board() -> Board:
              "poly": [(22.2, 11.8), (27.6, 11.8), (27.6, 17.2), (22.2, 17.2)]},
         ],
         "vias": [("+3V3", 24.75, 12.6), ("+3V3", 24.75, 13.6), ("+3V3", 24.75, 14.6),
-                 ("GND", 11.7, 15.3), ("GND", 26.0, 8.75),                  # C1's and C2's returns
+                 ("GND", 11.7, 15.3), ("GND", 26.0, 8.75), ("GND", hx - 6.35, hy - 7.0),   # C1, C2, C3's returns
                  *[(net, *xy) for net, xy, _ in TP_ROUND2]],          # the second round's test pads
         "stitch": 3.0,
         "texts": [

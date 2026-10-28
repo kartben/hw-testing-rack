@@ -2,7 +2,6 @@
   "comment": "Decoupling (electronics/tools/decoupling.py: each capacitor b.pcb[\"decoupling\"] declares within 2 mm of its pin, its return within 1 mm of a via): tools/tests/test_decoupling.py holds every board that declares them to it, but the boards listed here, still to be fixed.  A board leaves the list in the commit that fixes its last one.",
   "pending": [
     "bay-node",
-    "camera-pod",
     "power-hub"
   ]
 }
