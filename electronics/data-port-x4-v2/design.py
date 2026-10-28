@@ -96,6 +96,7 @@ PWR_SPLIT = 55.7
 CHIP = [(30.0, 18.8), (68.0, 18.8)]  # the crosspoints, between their two ports, above the pin chains
 CP = (47.0, 12.9)                   # the co-processor, top centre, turned 180°: its buses at the south-east corner
 HX, HY = 87.5, 15.0                 # the hub, top-right corner, turned 90°: its DN pins face down, to the ports
+XT = (HX - 8.9, HY + 1.75)          # its 24 MHz crystal Y1, 2 mm west of XTAL1/XTAL2 (pins 61/60, y 17.25 / 16.75)
 MX_EXP = (14.0, 7.0)                # the matrix expander (TCA9534A), top-left corner, turned 90°
 # the pin chain's rows: H5VU25UC × 2 under the header's pins, the 100 Ω arrays, the LSF0108 (A side down)
 TPD_Y, RN_Y, LSF_Y = 36.4, 34.2, 29.6
@@ -182,6 +183,55 @@ PU_GPIO = {"A": 19, "B": 18, "C": 17, "D": 16, "E": 13, "F": 12, "G": 11, "H": 1
 LANE = (5, 1, 6, 2, 7, 3, 8, 4)     # the P pin in lane 1 … 8, west → east
 TPD_SIG = (1, 2, 4, 5)              # the ESD array's signal pins west → east, turned 90° (pins 1–5 down, 6–10 up)
 TPD_THRU = {1: 10, 2: 9, 4: 7, 5: 6}  # the pad across from each: the line runs through both (flow-through)
+
+
+def xtal_block():
+    """The hub's crystal Y1, drawn (Eve's layout review, 2026-10-28): XI and XO on F.Cu only, no via, every end on
+    its pad's centre.  XI from Y1's south-east pad east through R10 to pin 61; XO from its north-west pad, under the
+    case between the east pads (a GND pad above, XI's below, 0.4 mm each), through R10 to pin 60: the two run east
+    0.5 mm apart into the pins.  C4 under XI's pad, its GND on Y1's south-west GND via; C5 over XO's, with its own;
+    Y1's north-east GND pad with its own; the F.Cu and B.Cu GND pours fill round it all (no other net there:
+    XTAL_KEEP).  Also drawn, as main had them, the two lines that pass it south-east: pin 62's HUB_1V8PLL down
+    between C8 and C10, pin 63's RBIAS down between C10 and R1, no via (the router gave RBIAS two)."""
+    x, y = XT
+    xi, xo = (x + 0.85, y + 1.1), (x - 0.85, y - 1.1)          # Y1.1, Y1.3
+    r_xo, r_xi = (x + 2.3, y - 0.26), (x + 2.3, y + 0.76)       # R10.1, R10.2 (turned 270°: pad 1 up)
+    p60, p61 = (HX - 4.412, 16.75), (HX - 4.412, 17.25)          # U1.60 XO, U1.61 XI
+    c4, c5 = (x + 0.85, y + 2.65), (x - 0.85, y - 2.62)         # C4.1, C5.1
+    tracks = [("XI", "F.Cu", 0.127, [xi, (r_xi[0] - 0.34, xi[1]), r_xi]),
+              ("XI", "F.Cu", 0.127, [r_xi, (r_xi[0] + 0.26, p61[1]), p61]),
+              ("XI", "F.Cu", 0.127, [xi, c4]),
+              ("XO", "F.Cu", 0.127, [xo, (x + 0.25, y), (r_xo[0] - 0.26, y), r_xo]),
+              ("XO", "F.Cu", 0.127, [r_xo, (r_xo[0] + 0.26, p60[1]), p60]),
+              ("XO", "F.Cu", 0.127, [xo, c5])]
+    gnd = [((x + 0.85, y - 1.1), (x + 0.85, y - 2.25)),        # Y1.2 (north-east), up
+           ((x - 0.85, y + 1.1), (x - 0.85, y + 2.25)),        # Y1.4 (south-west), down
+           ((x - 0.85, y - 3.58), (x - 0.85, y - 4.35))]        # C5.2, up
+    tracks += [("GND", "F.Cu", 0.25, [a, b]) for a, b in gnd]
+    tracks.append(("GND", "F.Cu", 0.25, [(x - 0.11, y + 2.65), gnd[1][1]]))     # C4.2 to Y1.4's via
+    p62, p63, c8, c10, r1 = (HX - 4.412, 17.75), (HX - 4.412, 18.25), (79.75, 22.08), (80.75, 22.08), (81.75, 22.11)
+    tracks += [("HUB_1V8PLL", "F.Cu", 0.127, [p62, (82.858, 17.98), (81.66, 17.98), (80.25, 19.39), (80.25, 21.58), c10]),
+               ("HUB_1V8PLL", "F.Cu", 0.127, [c8, c10]),
+               ("RBIAS", "F.Cu", 0.127, [p63, (82.78, 18.25), (81.24, 19.79), (81.24, 21.6), r1])]
+    # and, between those lines, C8's, C10's and R1's GND dog-bones as main had them (the automatic ones, kept
+    # further from drawn tracks than from routed ones, would no longer fit)
+    gnd += [((79.75, 21.12), (79.75, 20.49)), ((80.75, 21.12), (80.75, 20.49)), ((81.75, 21.09), (81.75, 20.47))]
+    tracks += [("GND", "F.Cu", 0.25, [a, b]) for a, b in gnd[-3:]]
+    return tracks, [("GND", *b, 0.5, 0.3) for _, b in gnd]
+
+
+# the hub crystal's block (xtal_block()): Y1, its caps, R10 and the two lines to the pins; no other net's track or
+# via on F.Cu or B.Cu (the router's "core:" area here, XTAL_RULE for DRC), In1 solid GND under it.  It leaves the
+# crosspoint U8's port-4 lines 2.5 mm west of it, and pins 62-64 (HUB_1V8PLL, RBIAS, +3V3) a way down east of C4
+XTAL_KEEP = [(XT[0] + dx, XT[1] + dy) for dx, dy in
+             ((-1.6, -4.65), (-0.1, -4.65), (-0.1, -2.55), (1.85, -2.55), (1.85, -0.75))] +             [(HX - 4.88, XT[1] - 0.75), (HX - 4.88, XT[1] + 0.85)] +             [(XT[0] + dx, XT[1] + dy) for dx, dy in
+             ((2.85, 0.85), (2.85, 1.2), (1.85, 1.2), (1.85, 2.15), (1.4, 2.15), (1.4, 3.2), (-1.3, 3.2),
+              (-1.3, 2.55), (-2.0, 2.55), (-2.0, -2.35), (-1.6, -2.35))]
+XTAL_RULE = """
+(rule "crystal Y1: XI, XO and GND only over its parts"
+	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Hub/XI' && A.NetName != '/Hub/XO' && A.NetName != 'GND' && (A.intersectsCourtyard('Y1') || A.intersectsCourtyard('C4') || A.intersectsCourtyard('C5') || A.intersectsCourtyard('R10'))")
+	(constraint disallow track via))
+"""
 
 
 def p_lines(n: int):
@@ -576,18 +626,19 @@ def hub_sheet(b: Board):
     part(s, "U1", "usb2517", hub, pcb=P(HX, HY, 90), sch=at(124, 62, fields=(-11, -20)))
     # the seven 3.3 V pins on one rail
     rail(s, "+3V3", [f"U1.{n}" for n in (46, 64, 24, 5, 10, 52, 57)], -3)
-    # the crystal south-west of the hub, below XTAL1/XTAL2 (west face pins 61/60), turned 180° (the RF review,
-    # 2026-10-21): XI (pin 61, the lower) lands on its north-east pad and XO (pin 60) on its south-west one, so the
-    # two don't cross (before, XI looped 30 mm round the hub, 2 vias); each load capacitor by its pad
-    part(s, "Y1", "xtal24", {"1": "XI", "3": "XO", "2": "GND", "4": "GND"}, pcb=P(HX - 6.6, HY + 11.0, 180),
+    # the crystal right west of XTAL1/XTAL2 (west face pins 61/60), drawn on F.Cu with no via (Eve's layout review,
+    # 2026-10-28: "les pistes restent en top et routé au plus proche des pins, avec du GND autour"; xtal_block()).
+    # Turned 90°: XI (pin 61, the lower) leaves its south-east pad straight east, XO (pin 60) its north-west one,
+    # under the case between the two east pads (its own net only) and east too; each load capacitor on its pad
+    part(s, "Y1", "xtal24", {"1": "XI", "3": "XO", "2": "GND", "4": "GND"}, pcb=P(*XT, 90),
          sch=at(94, 64, fields=(-2, -4)))
-    C(s, "C4", "33p", "XI", "GND", size="0402", pcb=P(HX - 6.6, HY + 8.4, 180), sch=at(88, 68))
-    C(s, "C5", "33p", "XO", "GND", size="0402", pcb=P(HX - 6.6, HY + 13.6, 0), sch=at(100, 68))
+    C(s, "C4", "33p", "XI", "GND", size="0402", pcb=P(XT[0] + 0.37, XT[1] + 2.65, 180), sch=at(88, 68))
+    C(s, "C5", "33p", "XO", "GND", size="0402", pcb=P(XT[0] - 0.85, XT[1] - 3.1, 90), sch=at(100, 68))
     s.wire("Y1.1", (88, 64), "C4.1")
     s.wire("Y1.3", (100, 64), "C5.1")
     # 1 MΩ across XTAL1–XTAL2 as the datasheet's Fig. 9-1 draws it (and Microchip's EVB fits it, R19): DS00001598C
-    # never says it is inside (the audit's U2, its conservative option); west of the crystal
-    R(s, "R10", "1M", "XO", "XI", size="0402", pcb=P(HX - 9.3, HY + 9.0, 90), sch=at(94, 56, rot=90))
+    # never says it is inside (the audit's U2, its conservative option); right east of the crystal, across XO and XI
+    R(s, "R10", "1M", "XO", "XI", size="0402", pcb=P(XT[0] + 2.3, XT[1] + 0.25, 270), sch=at(94, 56, rot=90))
     # decoupling, by pin: west 64 (below the corner), 57 and 52; south 5, 10 (left and right of the DN
     # pairs); east 24; north 46 and 44 (C17: east of the straps' RN2, along the top edge and 5 mm in from the
     # panel tab's mouse bites, clear of the joint's bending; the straps and the MAX809S fill the way to 46)
@@ -1000,6 +1051,9 @@ def board() -> Board:
                     # its via over pads 6 / 7, away from pad 8 (CFG_SEL2's pull-up, +3V3 since CFG_SEL 110)
                     ("GND", "F.Cu", 0.2, [(HX + 3.25, HY + 7.1), (HX + 3.5, HY + 6.85), (HX + 3.5, HY + 6.45)])]
     hand_vias.append(("GND", HX + 3.5, HY + 6.45, 0.5, 0.3))
+    t, v = xtal_block()
+    hand_tracks += t
+    hand_vias += v
     # CP_RUN, from the matrix expander's P5 (pin 10, top left) to the co-processor's RUN pull-up R25, along the
     # top edge on B.Cu above the co-processor's test points (Freerouting left it open)
     rx, ry = MX_EXP[0] + 2.5 * 0.65, MX_EXP[1] - 2.8625                # U10 pin 10, turned 90°
@@ -1261,7 +1315,10 @@ def board() -> Board:
             *vreg_zones,
         ],
         "tracks": hand_tracks, "vias": hand_vias,
+        "dru": XTAL_RULE,
         "keepouts": [
+            # the hub crystal's block: no other net's track or via on either face (dropped once routed)
+            {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP},
             # no via round the SWD header's hand-soldered pins (a GND stitching via landed 0.4 mm from pin 1's pad):
             # a bridge on the rear face would ground SWCLK
             {"name": "swd-hdr", "layers": ["F.Cu", "B.Cu"], "vias_only": True,
