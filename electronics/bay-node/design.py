@@ -113,17 +113,16 @@ def usb_hs_routes():
     t("PC_CONN_DN", (31.2, 81.35), (32.3, 81.25), layer="B.Cu")
     via("PC_CONN_DN", 31.2, 81.35)
     via("PC_CONN_DN", 32.3, 81.25)
-    # U4's VBUS pin: its via sits in the front +3V3 area of In2, so a B.Cu track takes it past the VRACK
-    # strip to the +5V area; its GND pin gets a via between the spread pins
-    t("+5V", (32.0, 78.1375), (32.0, 79.55), w=0.3)
-    via("+5V", 32.0, 79.55)
-    t("+5V", (32.0, 79.55), (33.6, 79.55), (33.6, 64.8), layer="B.Cu", w=0.3)
+    # U4's VBUS pin: In2 under it is the front +3V3 area, so a B.Cu track takes it past the VRACK strip to the
+    # +5V area.  The pin → cap → via rule: the pin's track runs between U4's two pad rows into C25 (100 nF, the
+    # ESD clamp rail), on to a via north of it, where the B.Cu run starts; its GND pin gets a via between the
+    # spread pins
+    t("+5V", (32.0, 78.1375), (32.0, 77.0), (34.525, 77.0), (34.625, 76.9), (34.625, 75.85), w=0.3)
+    via("+5V", 34.625, 75.85)
+    t("+5V", (34.625, 75.85), (33.6, 74.825), (33.6, 64.8), layer="B.Cu", w=0.3)
     via("+5V", 33.6, 64.8)
     t("GND", (32.0, 75.8625), (32.0, 74.55), w=0.3)
     via("GND", 32.0, 74.55)
-    # C25 (100 nF on U4's VBUS, the ESD clamp rail): a via on the B.Cu +5V run, right of U4's pads
-    via("+5V", 33.6, 76.9)
-    t("+5V", (33.6, 76.9), (34.625, 76.9), w=0.3)
 
     # U4 pins 3/1 → north at x 31.05 / 31.45 → U5 (MUX_PC, rot 0) D+/D− (pins 3/4 at y 37.5/38.0, x 32.5)
     bumps = []
