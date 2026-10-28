@@ -499,7 +499,7 @@ for the rack's 2 + 2, against $270 as two orders.
   - No copper within 1.2 mm of the edge there (`b.pcb["keepouts"]` "tab0", "tab1").  From a hole's edge
     (`tools/panel.sh`): the nearest copper 0.85 mm (a GND via beside a tab), the nearest courtyard 2.93 mm
     (C6, along the edge).  C17, the hub's 100 nF, sat 1.84 mm from tab1's bites, across the joint; it now
-    lies along the edge 5.0 mm in, east of RN2.
+    sits over its pin 46, 7.6 mm in (R3, the strap it took the spot of, over RN1).
   - The silkscreen "DATA ×4 v2.0" moved off the left tab, to x 17.
 - **Files:** `fab/data-port-x4-v2-panel-gerbers.zip`, `-panel-bom-jlcpcb.csv` (41 lines) and
   `-panel-cpl-jlcpcb.csv`.

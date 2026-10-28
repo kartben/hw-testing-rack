@@ -678,12 +678,11 @@ def hub_sheet(b: Board):
     # never says it is inside (the audit's U2, its conservative option); right east of the crystal, across XO and XI
     R(s, "R10", "1M", "XO", "XI", size="0402", pcb=P(XT[0] + 2.3, XT[1] + 0.25, 270), sch=at(94, 56, rot=90))
     # decoupling, by pin: west 64 (below the corner), 57 and 52; south 5, 10 (left and right of the DN
-    # pairs); east 24; north 46 and 44 (C17: east of the straps' RN2, along the top edge and 5 mm in from the
-    # panel tab's mouse bites, clear of the joint's bending; the straps and the MAX809S fill the way to 46)
+    # pairs); east 24; north 46 (C17 right over it, in the straps' row, its +3V3 pad down: R3 gave it the spot)
     for i, (ref, xy, rot) in enumerate((("C11", (HX - 4.7, HY + 6.6), 90), ("C13", (HX - 6.2, HY - 1.1), 180),
                                         ("C12", (HX - 6.2, HY - 2.25), 180), ("C15", (HX - 8.75, HY + 6.6), 90),
                                         ("C16", (HX + 1.6, HY + 7.6), 90), ("C14", (HX + 6.05, HY + 1.2), 90),
-                                        ("C17", (HX + 3.1, HY - 9.4), 180))):
+                                        ("C17", (HX - 2.85, HY - 6.4), 90))):
         C(s, ref, "100n", "+3V3", "GND", size="0402", pcb=P(*xy, rot), sch=at(80 + 6 * i, 24))
     # VDD18 / VDD18PLL: the datasheet's 1.0 µF ± 20 % has no margin left once a 0402's DC bias and temperature
     # are counted (the audit's U10): 4.7 µF, the board's 4.7 µF line
@@ -713,8 +712,9 @@ def hub_sheet(b: Board):
     # pins keep their pull-downs (X8; no longer read, but they bias the LED outputs and SUSP_IND, I/O12 buffers
     # that may float tri-stated, their input receiver not said to be off: the user's call, 2026-10-27): over
     # the north face in two rows (the pins at 0.5 mm leave no room for one row), a resistor over its pin, the
-    # west face's three round the corner into RN1; CFG2, SWP7 and SWP6 round the south-east corner into RN3
-    R(s, "R3", "10k", "HUB_SWP3", "GND", size="0402", pcb=P(HX - 2.85, HY - 7.1, 90), sch=at(100, 92))
+    # west face's three round the corner into RN1; CFG2, SWP7 and SWP6 round the south-east corner into RN3.
+    # R3 (SWP3, pin 47) over RN1, its pin's spot C17's (pin 46's 100 nF)
+    R(s, "R3", "10k", "HUB_SWP3", "GND", size="0402", pcb=P(HX - 5.3, HY - 9.05, 180), sch=at(100, 92))
     R(s, "R4", "10k", "HUB_NONREM0", "GND", size="0402", pcb=P(HX - 1.8, HY - 7.1, 90), sch=at(106, 92))
     R(s, "R5", "10k", "HUB_SWP4", "GND", size="0402", pcb=P(HX + 3.6, HY - 7.1, 90), sch=at(112, 92))
     R(s, "R9", "10k", "HUB_SWP5", "GND", size="0402", pcb=P(HX + 4.7, HY - 7.1, 90), sch=at(118, 92))
@@ -1096,6 +1096,11 @@ def board() -> Board:
     t, v = xtal2_block()
     hand_tracks += t
     hand_vias += v
+    # C17 (pin 46's 100 nF) on the pin's line to its via, the via between them (left to the fan-out, the pin's
+    # went under the case and C17 had its own)
+    p46 = (HX - 2.75, HY - 4.4125)                                      # U1 pin 46, turned 90°
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [p46, (p46[0], HY - 5.25), (HX - 2.85, HY - 5.92)]))
+    hand_vias.append(("+3V3", p46[0], HY - 5.25, 0.5, 0.3))
     # CP_RUN, from the matrix expander's P5 (pin 10, top left) to the co-processor's RUN pull-up R25, along the
     # top edge on B.Cu above the co-processor's test points (Freerouting left it open)
     rx, ry = MX_EXP[0] + 2.5 * 0.65, MX_EXP[1] - 2.8625                # U10 pin 10, turned 90°
