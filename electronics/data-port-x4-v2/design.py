@@ -694,8 +694,9 @@ def hub_sheet(b: Board):
     # are counted (the audit's U10): 4.7 µF, the board's 4.7 µF line
     C(s, "C8", "4.7u", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 6.8, HY + 4.86, 270), sch=at(128, 24))
     C(s, "C10", "100n", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 5.66, HY + 3.93, 270), sch=at(134, 24))
-    C(s, "C7", "4.7u", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 0.9, 90), sch=at(146, 24))
-    C(s, "C9", "100n", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 3.0, 90), sch=at(152, 24))
+    # VDD18's 100 nF (C9) right at its pin (25), its 4.7 µF (C7) behind it: the store may sit further
+    C(s, "C7", "4.7u", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 3.0, 90), sch=at(146, 24))
+    C(s, "C9", "100n", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 0.9, 90), sch=at(152, 24))
     # RBIAS and the reset: a MAX809S supervisor drives RESET_N (the audit's fix 6).  The hub's errata
     # (DS80000628A, Module 2): "The internal POR does not generate reset when power drops below the threshold
     # … Use external power on reset circuit (for example … MAX809S (V2.9V) voltage supervisor)": an RC resets a
@@ -1412,11 +1413,11 @@ def board() -> Board:
         # ≤ 1 mm from a GND via).  Not declared: bulk (C1, J1's; C31, the co-processor's island; each port's VBUS
         # 22 µF), the crystals' load capacitors and the charge pump's flying capacitor.  C8, VDD18PLL's 4.7 µF, is
         # its store, behind C10 (the 100 nF at the pin), right under the crystal: its own 2.5 mm limit (no spot
-        # nearer clears Y1's courtyard).  C21 and C24, each crosspoint's VDD 1 µF, are its store too, stacked
+        # nearer clears Y1's courtyard); so is C7, VDD18's 4.7 µF, behind C9.  C21 and C24, each crosspoint's VDD 1 µF, are its store too, stacked
         # right behind the 100 nF at the pin (C20, C23): their own 3 mm limit
         "decoupling": {
             "C2": "U3.3", "C3": "U3.2", "C6": "U5.3",                                   # the LDO in and out, MAX809S
-            "C7": "U1.25", "C9": "U1.25", "C8": ("U1.62", 2.5), "C10": "U1.62",        # the hub's VDD18, VDD18PLL
+            "C7": ("U1.25", 2.5), "C9": "U1.25", "C8": ("U1.62", 2.5), "C10": "U1.62",  # the hub's VDD18, PLL
             "C11": "U1.64", "C12": "U1.52", "C13": "U1.57", "C14": "U1.24", "C15": "U1.5", "C16": "U1.10",
             "C17": "U1.46",                                                               # its seven 3.3 V pins
             "C18": "U2.15", "C19": "U6.15", "C29": "U10.16",                             # the expanders
