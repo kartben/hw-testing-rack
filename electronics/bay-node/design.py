@@ -231,6 +231,12 @@ def board() -> Board:
         # C24, U11's (the CAN transceiver's) 100 nF on Vio, from its pin (5) straight down into it; its via east of
         # it, where its own was
         ("+3V3", 0.25, [(25.595, 70.475), (25.595, 72.5), (26.445, 72.5)]),
+        # C28, U12's (the camera SPI's ESD clamp's) 100 nF on VBUS, from its pin (5) up between U12's pad rows into
+        # it, on to its via west of it, where its own was (In2's +3V3 area ends west of U12); its GND pad's via
+        # east of it
+        ("+3V3", 0.25, [(53.7375, 15.8), (53.337, 15.8), (52.538, 15.0), (52.538, 13.487), (52.825, 13.2),
+                        (52.025, 12.4), (51.375, 12.4)]),
+        ("GND", 0.25, [(54.375, 13.2), (55.25, 13.2)]),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
@@ -867,9 +873,10 @@ def board() -> Board:
                            "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy - 1.4, 0), sch=at(76, 22))
     part(c, "U13", "esd", {"6": "CAM_MISO_C", "1": "CAM_MISO_P", "4": "CAM_CS_C", "3": "CAM_CS_P",
                            "5": "+3V3", "2": "GND"}, pcb=P(cx - 6.4, cy + 3.4, 0), sch=at(76, 38))
-    # their VBUS pins' 100 nF (ST USBLC6-2 §2.3: datasheet audit F4), above U12 between F1 and it, its +3V3 end by
-    # U12's pin 5 (the two parts' courtyards leave no room between U12 and U13)
-    C(c, "C28", "100n", "+3V3", "GND", pcb=P(cx - 5.4, cy - 4.0, 180), sch=at(90, 30))
+    # their VBUS pins' 100 nF (ST USBLC6-2 §2.3: datasheet audit F4), above U12 between F1 and it (the two parts'
+    # courtyards leave no room between U12 and U13): its +3V3 end west, over the gap between U12's pad rows, where
+    # pin 5's track comes up into it, its GND end east (the pin → cap → via rule)
+    C(c, "C28", "100n", "+3V3", "GND", pcb=P(cx - 5.4, cy - 4.0, 0), sch=at(90, 30))
     # the light: the pod's four white 2835 LEDs (100 Ω each) from CAM_5V to LED_K, ≤ 102 mA
     part(c, "Q4", "nfet_ll", {"G": "CAM_LED", "S": "GND", "D": "LED_K"}, pcb=P(cx - 6.0, cy + 7.8, 0), sch=at(80, 52))
     R(c, "R36", "100k", "CAM_LED", "GND", pcb=P(cx - 6.0, cy + 11.2, 0), sch=at(70, 54))
