@@ -139,6 +139,15 @@ class Synthetic(unittest.TestCase):
                                      seg((0, 0), (0, -1.0))], value="100n")
         self.assertTrue(r["order"] and "before it" in r["order"], r)
 
+    def test_order_track_through_the_cap(self):
+        """the pin's one track straight across the cap pad, on to its via: the via is past the cap"""
+        r = self.run_check(1.55, 1.0, [via(2.8, 1.0), seg((0, 0), (1.05, 0)), seg((1.05, 0), (1.05, 2.0)),
+                                       via(1.05, 2.0, "+3V3")], value="100n")
+        self.assertIsNone(r["order"], r)
+        r = self.run_check(1.55, 1.0, [via(2.8, 1.0), seg((0, 0), (1.05, 0)), seg((1.05, 0), (1.05, 2.0)),
+                                       via(0.55, 0, "+3V3")], value="100n")       # the via on the pin's side
+        self.assertTrue(r["order"] and "before it" in r["order"], r)
+
     def test_order_bulk_exempt(self):
         """a 10 µF is held to the distances only"""
         parts = [fp("U1", 0, 0, [pad(1, 0, 0, "+3V3")]),

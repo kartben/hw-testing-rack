@@ -9,7 +9,7 @@ layout) gets its own limit, with the reason beside it in design.py: {"C2": ("U1.
     VIA mm at most: the return goes straight down to the plane, not through a pour first;
   * order (a capacitor of SMALL or less, the pin → cap → via rule of the layout review): the pin reaches the
     capacitor's pad by copper on their one layer, no via on the way, and reaches no via of its rail but through that
-    pad.  Along tracks the order is strict.  Across a pour of the rail on that layer (an island the pin, the
+    pad (a track straight across the pad counts as two, one each side).  Along tracks the order is strict.  Across a pour of the rail on that layer (an island the pin, the
     capacitor and the rail's vias share, as a buck's input), a via only comes "before" the capacitor if it is nearer
     the pin than the capacitor is.  A through-hole pad counts as a via, but for the pin itself (a connector's).
     Bulk capacitors, over SMALL, are held to the distances only.
@@ -103,6 +103,29 @@ def _pad_points(p):
     return cs + [((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) for a, b in zip(cs, cs[1:] + cs[:1])]
 
 
+def _split_at(t: dict, pad: dict) -> list[dict]:
+    """A track that runs across a pad, as its pieces outside it, each ending just inside its edge: a walk along the
+    track then meets the pad between them, as the current does (a pin's track straight through its capacitor)."""
+    x0, y0, x1, y1, w = t["g"][:5]
+    n = max(2, int(math.hypot(x1 - x0, y1 - y0) / 0.01))
+    at = lambda k: (x0 + (x1 - x0) * k / n, y0 + (y1 - y0) * k / n)
+    inside = [_in_pad(pad, *at(k)) for k in range(n + 1)]
+    if not any(inside):
+        return [t]
+    pieces, k = [], 0
+    while k <= n:
+        if inside[k]:
+            k += 1
+            continue
+        j = k
+        while j < n and not inside[j + 1]:
+            j += 1
+        a, b = at(max(k - 1, 0)), at(min(j + 1, n))
+        pieces.append({**t, "g": (*a, *b, w)})
+        k = j + 1
+    return pieces
+
+
 def order(c: Copper, pins: list, cp: dict) -> str | None:
     """The pin → cap → via rule on the capacitor's layer: None if kept, else what breaks it."""
     net = cp["net"]
@@ -112,7 +135,7 @@ def order(c: Copper, pins: list, cp: dict) -> str | None:
         return f"not on {pins[0]['ref']}'s layer"
     # the rail's copper on that layer, as nodes: pads, tracks, vias, pour pieces
     nodes = [("pad", q) for q in c.pads if q["net"] == net and on(q)]
-    nodes += [("trk", t) for t in c.tracks if t["net"] == net and t["layer"] == layer]
+    nodes += [("trk", t) for t0 in c.tracks if t0["net"] == net and t0["layer"] == layer for t in _split_at(t0, cp)]
     nodes += [("via", v) for v in c.vias if v["net"] == net]
     nodes += [("fill", f) for f in c.fills.get((net, layer), ())]
     idx = {id(n[1]): i for i, n in enumerate(nodes)}
@@ -141,8 +164,10 @@ def order(c: Copper, pins: list, cp: dict) -> str | None:
         if ka == "trk" and kb == "trk":
             return (any(_meets_track(y, *e) and free(e) for e in ends(x))
                     or any(_meets_track(x, *e) and free(e) for e in ends(y)))
-        if ka == "trk" and kb == "via":
-            return any(math.hypot(e[0] - y["x"], e[1] - y["y"]) <= y["d"] / 2 + 0.002 and free(e) for e in ends(x))
+        if ka == "trk" and kb == "via":                     # a track's end in the via, or the via on the track
+            v = (y["x"], y["y"])
+            return (any(math.hypot(e[0] - v[0], e[1] - v[1]) <= y["d"] / 2 + 0.002 and free(e) for e in ends(x))
+                    or (_meets_track(x, *v) and free(v)))
         return False                                        # via with via: not on one layer's copper
 
     def spread(start, stop, through_vias, fills=True):
