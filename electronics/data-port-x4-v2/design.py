@@ -734,7 +734,8 @@ def hub_sheet(b: Board):
 
     s.frame("Two TCA6408A expanders, one per pair of ports: EN, FAULT_N, RESET, BOOT", 172, 10, 228, 70)
     # each RESET through 10k to +3V3 (TI: "connect to VCCI through a pull-up resistor, if no active connection
-    # is used"; the audit's U9, its conservative option), the resistor by pin 1
+    # is used"; the audit's U9, its conservative option), the resistor by pin 1.  U2's 100 nF (C18) stands right
+    # over VCCI (pin 15), its +3V3 pad down (drawn in board())
     for i, (ref, cref, (x, y, addr), sy) in enumerate((("U2", "C18", EXP[0], 24), ("U6", "C19", EXP[1], 52))):
         exp = {"V_{CCI}": "+3V3", "V_{CCP}": "+3V3", "~{RESET}": f"EXP{i + 1}_RST_N", "GND": "GND", "EPAD": "GND",
                "ADDR": addr, "SCL": "SCL", "SDA": "SDA", "~{INT}": "INT"}
@@ -742,7 +743,8 @@ def hub_sheet(b: Board):
             for pin, sig in EXP_LINES[half].items():
                 exp[pin] = f"PORT{n}_{sig}"
         part(s, ref, "tca6408", exp, pcb=P(x, y, 0), sch=at(200, sy, fields=(-4, -9)))
-        C(s, cref, "100n", "+3V3", "GND", size="0402", pcb=P(x, y + 3.1, 0), sch=at(184, sy - 4))
+        C(s, cref, "100n", "+3V3", "GND", size="0402", pcb=P(x - 0.25, y - 3.25, 90) if i == 0 else P(x, y + 3.1, 0),
+          sch=at(184, sy - 4))
         R(s, f"R{11 + i}", "10k", "+3V3", f"EXP{i + 1}_RST_N", size="0402", pcb=P(x - 3.1, y - 1.7, 270),
           sch=at(178, sy + 8))
 
@@ -1084,6 +1086,15 @@ def board() -> Board:
     hand_tracks += [("+3V3", "F.Cu", 0.6, [(lx, ly - 5.35), (lx, ly - 3.5), (lx + 3.05, ly - 3.5)]),
                     ("+5V", "F.Cu", 0.6, [(lx + 2.3, ly + 3.15), (lx + 1.9, ly + 4.8)]),
                     ("+5V", "F.Cu", 0.6, [(lx + 3.15, ly + 4.8), (lx + 2.9, ly + 5.95)])]
+    # C18 (U2's 100 nF): VCCI (pin 15) straight up to it, VCCP (pin 14) bridged to VCCI and up to its own via,
+    # where its fan-out had it
+    u2x, u2y = EXP[0][:2]
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(u2x - 0.25, u2y - 2.77), (u2x - 0.25, u2y - 1.4375),
+                                               (u2x + 0.25, u2y - 1.4375), (u2x + 0.25, u2y - 2.225)]))
+    hand_vias.append(("+3V3", u2x + 0.25, u2y - 2.225, 0.5, 0.3))
+    # and its GND pad's via east of it (the automatic one went up onto PORT1_RST_IO's via)
+    hand_tracks.append(("GND", "F.Cu", 0.25, [(u2x - 0.25, u2y - 3.73), (u2x + 0.4, u2y - 3.73)]))
+    hand_vias.append(("GND", u2x + 0.4, u2y - 3.73, 0.5, 0.3))
     for x_, y_ in [(ex_, ey_) for ex_, ey_, _ in EXP] + [(c - 0.5, LSF_Y) for c in CFG["usb"]]:
         hand_tracks.append(("GND", "F.Cu", 0.25, [(x_, y_), (x_ + 0.3, y_)]))
         hand_vias.append(("GND", x_ + 0.3, y_, 0.5, 0.3))
