@@ -1,5 +1,5 @@
 """Antennas (electronics/tools/antennas.py): no dead end, lone via, doubled track or sliver on any board, but the
-ones electronics/antennas.json still lists as pending (Eve's layout review, 2026-10-28).  Every board's count is
+ones electronics/antennas.json still lists as pending (the layout review, 2026-10-28).  Every board's count is
 printed either way.
 
     python -m unittest discover -s tools/tests -v

@@ -1,6 +1,6 @@
 """Decoupling (electronics/tools/decoupling.py): every capacitor a board's design.py declares in
 b.pcb["decoupling"] sits within REACH of the power pin it serves, its return within VIA of a via, but on the boards
-electronics/decoupling.json still lists as pending (Eve's layout review, 2026-10-28).  Every board's table is
+electronics/decoupling.json still lists as pending (the layout review, 2026-10-28).  Every board's table is
 printed either way; a declaration that names no such pin or capacitor fails on every board.
 
     python -m unittest discover -s tools/tests -v

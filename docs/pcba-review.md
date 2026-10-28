@@ -119,7 +119,7 @@ Circuit **BLOCKED**, layout **USER_REVIEW**, CPL **BLOCKED**, sourcing **BLOCKED
 | H11 | U3 AP2112K | minor | θJA 184 °C/W: +35 °C average, +72 °C at sustained Wi-Fi TX | Measure; more copper | Électronique |
 | H12 | In2 VRACK band | minor | 5 mm wide, 3.9 mm neck at x ≈ 33, 0.5 oz: ≈ 5 mΩ, an estimated 10–20 °C at 5 A | Measure; widen to ≥ 8 mm | Électronique |
 | H13 | USB_DP/DN, EN, CC | minor | D+ on F.Cu (83 mm), D− on B.Cu (116 mm) across the In2 split; C115 21 mm from EN (pin 45); CC1/CC2 26/30 mm with vias | Coupled pair on F.Cu over In1; EN RC at the pin | Électronique |
-| H14 | C2, C10, R3, C11–C14 | minor | One pad in a solid pour, the other relieved: tombstoning (Fabio's reliefs rule) | Same connection on both pads | Électronique |
+| H14 | C2, C10, R3, C11–C14 | minor | One pad in a solid pour, the other relieved: tombstoning (the reliefs rule) | Same connection on both pads | Électronique |
 | H15 | schematic notes | minor | Notes say 10 nF / 680 Ω / 4.7 nF where the parts are 22n / 1k / 22n; row D runs past the frame (PDF p. 3) | Fix the notes and the sheet | Électronique |
 
 ## Bay node v0.5 (74 × 90, option B)
@@ -164,7 +164,7 @@ change voids it), sourcing **BLOCKED**.  U3 is reviewed as the AP2112K the owner
 - I²C addresses (no clash with the node's 0x40).
 - INT open drain everywhere.
 - CC Rp 56k.
-- Fabio's rules.
+- The design-review rules.
 
 | ID | Ref | Sev | Evidence | Proposed fix | Owner |
 |---|---|---|---|---|---|

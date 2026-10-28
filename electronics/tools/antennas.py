@@ -1,4 +1,4 @@
-"""Dangling copper ("antennas"), from the .kicad_pcb text alone (no pcbnew: it runs in CI).  Eve's layout review,
+"""Dangling copper ("antennas"), from the .kicad_pcb text alone (no pcbnew: it runs in CI).  The layout review,
 2026-10-28: "les antennes PCB sont légion".  Four kinds, each a finding:
 
   * dead end: a track end that meets no other copper of its net on its layer: no other track (end or body), no

@@ -114,12 +114,12 @@ def board() -> Board:
     for i, (x, y) in enumerate(CFG["holes"]):
         part(s, f"H{i + 1}", "hole25", {}, "PT2.6", pcb=P(x, y, 0), in_bom=False)
     s.block("Test pads (bottom side, labelled): no short to GND, then VBUS at power-up")
-    # bare 1.5 mm pads, no part, no paste, out of the BOM (Eve's bring-up rule, 2026-10-26)
+    # bare 1.5 mm pads, no part, no paste, out of the BOM (the bring-up DFT rule, 2026-10-26)
     # VBUS's under its hand-drawn top-side track (x 7.4), joined by a via in the pad (a bare pad: no paste to
     # wick); y 5.35 keeps that via off J2.8's pad on top, whose paste it drained (kicad-happy review, DP-3)
     for i, net in enumerate(("GND", "VBUS")):
         part(s, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(4.4 + 3 * i, TP_Y, 0, "bottom"), in_bom=False)
-    # a second GND at the other end, by the receptacle (Eve: GND spread; kicad-happy review, DP-6), on a GND via
+    # a second GND at the other end, by the receptacle (GND spread; kicad-happy review, DP-6), on a GND via
     part(s, "TP3", "testpad", {"1": "GND"}, "GND", pcb=P(*TP3_XY, 0, "bottom"), in_bom=False)
     s.note("Rp 56k to VBUS on CC1 and CC2: 'default USB power', as on the DATA ×4; not 22k (1.5 A): the node's")
     s.note("  TPS2553D switch (DUT_5V) limits at 1.34–1.52 A.  The node turns the board under test on and off.")
@@ -135,7 +135,7 @@ def board() -> Board:
         # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
         "power_nets": {"GND": 1, "VBUS": 2},
         # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
-        # (electronics/tools/decoupling.py, Eve's layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
+        # (electronics/tools/decoupling.py, the layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
         # serve no one pin: left out
         "decoupling": {"C3": "U1.5"},
         "zones": [

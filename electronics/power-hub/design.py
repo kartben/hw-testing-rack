@@ -91,7 +91,7 @@ def ef_y(k):
     return ROW_Y[k] - 0.5
 
 
-# Eve's test pads, second round (the kicad-happy review's PH-2, 2026-10-27): the supplies the first round left out on
+# The DFT test pads, second round (the kicad-happy review's PH-2, 2026-10-27): the supplies the first round left out on
 # 1.5 mm, the row and CAN signals on 1.0 mm, a GND by the CAN pads.  Each sits on a via of its net: a new one drawn
 # here, the row outputs' own, or one the router had put there, drawn here too so it stays; or on a B.Cu track's end.
 # No new via on In2's VRACK band.  (net, sheet, Ø, (x, y), drawn via, label)
@@ -206,7 +206,7 @@ def board() -> Board:
         # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
         "power_nets": {"GND": 1, "VRACK": 2, "ROW_?": 2, "+5V_BUCK": 2, "+5V": 2, "USB_VBUS": 2},
         # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
-        # (electronics/tools/decoupling.py, Eve's layout review, 2026-10-28).  Bulk, bootstrap, timing, filter and
+        # (electronics/tools/decoupling.py, the layout review, 2026-10-28).  Bulk, bootstrap, timing, filter and
         # RC capacitors serve no one pin: left out.  The buck's input is the bay node's, TI's three: C106, the 100 nF
         # across VIN and GND, and C104, the first 10 µF right behind it, are its hot loop.  C104 keeps TI's place,
         # 2.65 mm from VIN on the pins' own top-side VRACK and GND islands: its own 3 mm limit, as the node's C2.
@@ -273,7 +273,7 @@ def board() -> Board:
         "texts": [
             {"text": "hw-testing-rack · power hub v0.5", "x": 58, "y": 74, "size": 1.0},
             *[{"text": ch, "x": 13.8, "y": ROW_Y[k] + 8.3, "size": 1.2} for k, ch in enumerate(ROWS)],
-            # the bottom-side test pads' names (TP1–TP7, the controller sheet): bring-up probes (Eve's rule, 2026-10-26)
+            # the bottom-side test pads' names (TP1–TP7, the controller sheet): bring-up probes (the DFT rule, 2026-10-26)
             *({"text": t, "x": x, "y": y, "size": 0.8, "layer": "B.SilkS"}
               for t, x, y in (("TX", 27.8, 16.5), ("GND", 27.6, 19.1), ("RX", 34.8, 16.5), ("3V3", 35.0, 19.1),
                               ("EN", 27.8, 13.9), ("IO0", 34.8, 13.9),
@@ -350,7 +350,7 @@ def board() -> Board:
                                         "OUT": f"ROW_{ch}"}, pcb=P(EF_X, yc, 0), dnp=dnp)
         # the input capacitor at the IN pins' end of the island, its GND pad below it beside the GND pins, clear
         # of the eFuse's pin-1 mark
-        # (decoupling check, Eve's review: at the island's far end it was 4.0 mm from IN)
+        # (decoupling check, the layout review: at the island's far end it was 4.0 mm from IN)
         C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(20.6, yc - 1.05, 270))
         C(o, f"C{30 + n}", "1u", f"ROW_{ch}", "GND", size="0805", pcb=P(34.0, yc - 2.6, 0))
         R(o, f"R{20 + n}", "7.5k", f"ILIM_{ch}", "GND", pcb=P(34.0, yc + 1.0, 0))
@@ -444,7 +444,7 @@ def board() -> Board:
     }, pcb=P(30.0, 10.5, 0))
     # the 100 nF right beside the 3V3 pin (3), the 22 µF above it by the GND pins (1, 2), clear of the antenna
     # keep-out (y 5.6), short of the module's courtyard (x 22.05) and its pin-1 mark; below, it shut pins 4-8 in
-    # (decoupling check, Eve's review: C114 was 6.4 mm from the pin, C113 3.1)
+    # (decoupling check, the layout review: C114 was 6.4 mm from the pin, C113 3.1)
     C(c, "C113", "22u", "+3V3", "GND", size="1206", pcb=P(19.45, 6.6, 180))
     C(c, "C114", "100n", "+3V3", "GND", pcb=P(20.55, 8.8, 180))
     part(c, "SW1", "button", {"1": "EN", "2": "GND"}, "RESET", pcb=P(11.5, 10.0, 0))
@@ -459,7 +459,7 @@ def board() -> Board:
                                          ("+5V", (70.0, 54.0), "bottom"), ("VRACK", (66.0, 20.0), "bottom"),
                                          ("GND", (70.0, 30.0), "bottom"))):
         part(c, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(*xy, 0, side), in_bom=False)
-    # Eve's DFT rules (2026-10-26): the resets, the faults, the flashing pins, the analog IMON and the CH224A's I²C
+    # The DFT rules (2026-10-26): the resets, the faults, the flashing pins, the analog IMON and the CH224A's I²C
     # on bare 1.0 mm bottom pads, > 2 mm from THT pads, in positions kept from revision to revision; a third GND
     # none on In2's VRACK band (y 21.6–29.6 under the module): their vias would cut it from the eFuse column
     sig = [("EN", (30.0, 13.9)), ("BOOT", (32.6, 13.9)), ("PD_SDA", (44.0, 9.0)), ("PD_SCL", (46.6, 9.0))]
@@ -482,14 +482,14 @@ def board() -> Board:
     # flow-through, D+ on the 1–6 channel and D− on 3–4: the hand-routed pair arrives in that order
     part(c, "U5", "esd", {"6": "USB_CONN_DP", "1": "USB_DP", "4": "USB_CONN_DN", "3": "USB_DN", "5": "USB_VBUS",
                           "2": "GND"}, pcb=P(60.5, H - 12.5, 270))
-    # against U5's courtyard, 1.7 mm from its VBUS pin (decoupling check, Eve's review: 2.3 mm)
+    # against U5's courtyard, 1.7 mm from its VBUS pin (decoupling check, the layout review: 2.3 mm)
     C(c, "C120", "1u", "USB_VBUS", "GND", pcb=P(62.95, H - 13.4, 90))
 
     c.block("CAN: TJA1462AT, star bus (all row ports in parallel), both terminations here")
     part(c, "U6", "can_xcvr", {"TXD": "CAN_TXD", "VSS": "GND", "VDD": "+5V", "RXD": "CAN_RXD", "Vio": "+3V3",
                                "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "CAN_STB"}, "TJA1462AT", pcb=P(56.0, 60.0, 0))
     # each at its pin, against U6's courtyard: C116 standing west of VDD (3), its GND pad by pin 2 (GND), so RXD
-    # (pin 4) leaves under it; C117 east of VIO (5) (decoupling check, Eve's review: both sat west of the part, 3.2
+    # (pin 4) leaves under it; C117 east of VIO (5) (decoupling check, the layout review: both sat west of the part, 3.2
     # and 7.2 mm away)
     C(c, "C116", "100n", "+5V", "GND", pcb=P(51.5, 59.9, 90))
     C(c, "C117", "100n", "+3V3", "GND", pcb=P(61.2, 61.91, 0))

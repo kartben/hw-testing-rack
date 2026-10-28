@@ -164,7 +164,7 @@ def usb_hs_routes():
     return tracks, vias
 
 
-# Eve's test pads, second round (the kicad-happy review's BN-2, 2026-10-27): the camera SPI by R31–R34, CAN TXD/RXD
+# The DFT test pads, second round (the kicad-happy review's BN-2, 2026-10-27): the camera SPI by R31–R34, CAN TXD/RXD
 # and POS_IN by U11, the DUT's UART1, RESET/BOOT controls and POS_OUT by the AUX column, a GND in each group; 1.0 mm,
 # GND 1.5 mm.  Each sits where its net already is: on a new drawn via on one of its F.Cu tracks, or on one of its
 # B.Cu tracks, so no routing moves; none adds a via on In2's VRACK strip.  (net, sheet, Ø, (x, y), drawn via,
@@ -241,7 +241,7 @@ def board() -> Board:
         # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
         "power_nets": {"GND": 1, "VRACK": 2, "VIN": 2, "+5V": 2, "DUT_5V*": 2, "CAM_5V": 2},
         # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
-        # (electronics/tools/decoupling.py, Eve's layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
+        # (electronics/tools/decoupling.py, the layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
         # serve no one pin: left out.  The buck's input is TI's three (SLUSF64B table 8-1): C4, the 100 nF across
         # VIN and GND, and C2, the first 10 µF right behind it, are its hot loop.  C2 keeps TI's place, 2.65 mm from
         # VIN, its pads on the same top-side VIN and GND islands as the pins: its own 3 mm limit (a spot within 2 mm
@@ -432,7 +432,7 @@ def board() -> Board:
     part(s, "U2", "ldo_1a", {"VI": "+5V", "VO": "+3V3", "GND": "GND"}, pcb=P(12, 33, 90), sch=at(102, 42, fields=(-3, -3.5)))
     # the LDO's input; a 1206 (C2/C3's 10 µF, one part type less) overlaps U2 and its neighbours here
     C(s, "C11", "10u", "+5V", "GND", size="0805", pcb=P(17.4, 36.15, 0), sch=at(95, 43.5))
-    # C12 up against U2's courtyard (x 15.60): 1.97 mm from the tab (decoupling check, Eve's review: 2.05)
+    # C12 up against U2's courtyard (x 15.60): 1.97 mm from the tab (decoupling check, the layout review: 2.05)
     C(s, "C12", "22u", "+3V3", "GND", size="1206", pcb=P(17.92, 30.6, 0), sch=at(109, 43.5))
     s.tag("+5V", (92, 42), "up")
     s.wire((92, 42), "U2.VI")
@@ -441,7 +441,7 @@ def board() -> Board:
 
     s.frame("Supply test pads (bottom side, labelled): no short to GND, then each rail at power-up", 88, 52, 116, 62)
     # a row on the bottom side, x 45–60 at y 70 (clear of the hand-drawn +5V and +3V3 tracks at x 33.6 and 41.5),
-    # with DUT_5V (DUT sheet) and CAM_5V (Camera sheet): bare 1.5 mm pads, no part, no paste, out of the BOM (Eve's
+    # with DUT_5V (DUT sheet) and CAM_5V (Camera sheet): bare 1.5 mm pads, no part, no paste, out of the BOM (the
     # DFT rules, 2026-10-26: supplies, GND spread over the board, resets, faults, flashing, buses; > 2 mm from THT
     # pads; positions kept from revision to revision).  VIN, after the P-FET, is the main rail: VRACK is on J1/J2.6
     for i, net in enumerate(("GND", "VIN", "+5V", "+3V3")):
@@ -514,7 +514,7 @@ def board() -> Board:
         "TXD0": "U0TX", "RXD0": "U0RX",
     }, pcb=P(32, 12.75, 0), sch=at(80, 38, fields=(-14, -14)))
     # 3V3 (pin 2) and EN (pin 3) sit at the left column's rear end
-    # the 100 nF right beside the 3V3 pin (2), the 22 µF below it (decoupling check, Eve's review: C14 was 4.6 mm
+    # the 100 nF right beside the 3V3 pin (2), the 22 µF below it (decoupling check, the layout review: C14 was 4.6 mm
     # from the pin, behind C13)
     C(m, "C13", "22u", "+3V3", "GND", size="1206", pcb=P(21.0, 12.7, 270), sch=at(96, 23.5))
     C(m, "C14", "100n", "+3V3", "GND", pcb=P(21.45, 8.76, 90), sch=at(100, 23.5))
@@ -525,7 +525,7 @@ def board() -> Board:
     part(m, "D4", "rgb", {"VDD": "+3V3", "VSS": "GND", "DIN": "LED_DIN_R", "DOUT": None}, pcb=P(12, 88.2, 0),
          sch=at(31, 57, fields=(4, 1)))
     R(m, "R8", "33", "LED_DIN", "LED_DIN_R", pcb=P(16, 84.5, 0), sch=at(19.5, 57, rot=90))
-    # lying beside VDD (pin 4), its +3V3 pad towards it (decoupling check, Eve's review: 2.3 mm, standing)
+    # lying beside VDD (pin 4), its +3V3 pad towards it (decoupling check, the layout review: 2.3 mm, standing)
     C(m, "C16", "100n", "+3V3", "GND", pcb=P(15.05, 87.7, 0), sch=at(37, 53.5))
     m.wire("R8.2", "D4.DIN")
     m.wire("D4.VDD", (31, 52), "C16.1")
@@ -589,7 +589,7 @@ def board() -> Board:
     part(u, "U8", "esd", {"6": "DUT_CONN_DN", "1": "DUT_DN", "4": "DUT_CONN_DP", "3": "DUT_DP", "5": "+5V",
                           "2": "GND"}, pcb=P(51.3, 34.0, 0), sch=at(134, 58, fields=(1.5, 3.5)))
     # U8's VBUS, via In2 +5V: turned, its +5V pad right under pin 5, against U8's courtyard (decoupling check,
-    # Eve's review: 2.2 mm from the pin)
+    # The layout review: 2.2 mm from the pin)
     C(u, "C26", "100n", "+5V", "GND", pcb=P(51.6, 36.45, 180), sch=at(124, 64))
 
     # the drawer's DATA board on an 8-wire PH lead (the camera's lead type, 'Same direction'): VBUS, GND,
@@ -753,13 +753,13 @@ def board() -> Board:
     k.tag("CAN_TXD", (24, 16), "left")
     k.wire("U11.RXD", (24, 17))
     k.tag("CAN_RXD", (24, 17), "left")
-    # under Vio (pin 5), against U11's courtyard (decoupling check, Eve's review: 2.2 mm from the pin)
+    # under Vio (pin 5), against U11's courtyard (decoupling check, the layout review: 2.2 mm from the pin)
     C(k, "C24", "100n", "+3V3", "GND", pcb=P(24.82, PWR_Y - 0.5, 180), sch=at(27, 23.5))
     k.wire("U11.Vio", (27, 19), "C24.1")
     k.tag("+3V3", (27, 19), "left")
     k.wire("U11.STBY", (30, 20))
     k.tag("GND", (30, 20), "down")
-    # over VDD (pin 3), its GND pad over pin 2 (decoupling check, Eve's review: 3.2 mm from the pin, west of it)
+    # over VDD (pin 3), its GND pad over pin 2 (decoupling check, the layout review: 3.2 mm from the pin, west of it)
     C(k, "C23", "100n", "+5V", "GND", pcb=P(27.65, PWR_Y - 9.5, 0), sch=at(46, 11.5))
     k.wire("U11.VDD", (36, 10), "C23.1")
     k.tag("+5V", (36, 10), "up")
@@ -821,7 +821,7 @@ def board() -> Board:
     c.tag("GND", (84, 31), "down")
     part(c, "F1", "pptc750", {"1": "+5V", "2": "CAM_5V"}, "0.75A", pcb=P(cx - 5.5, cy - 7.2, 90), sch=at(20, 14, rot=90))
     # right above J6.1 (CAM_5V), in the notch of the connector's courtyard, on the feed from F1 (decoupling
-    # check, Eve's review: left of F1 it was 4.3 mm from the pin)
+    # check, the layout review: left of F1 it was 4.3 mm from the pin)
     C(c, "C27", "100n", "CAM_5V", "GND", pcb=P(cx - 2.8, cy - 8.8, 0), sch=at(30, 16))
     # SPI: 33 Ω in series at the node end of the lead (a few cm of track from U3: the source, for a 50 cm lead)
     rx, ry = cx - 11.5, cy - 8.2

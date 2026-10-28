@@ -161,7 +161,7 @@ With the PH 8 rows of fix 2, B1 no longer fits (4 × 21 mm); B2 and B3 (B8B vert
 **Recommended: B2**, if three rows stay the plan.  The frame grows in both directions, so it doesn't stop a
 4th row; but three rows is what was planned, and the 140 W charger covers 12 bays' worst case (≈ 130 W),
 not 16 (≈ 175 W).  B2 keeps today's row layout.  Keeping a 4th output means B1 or B3.  Then
-re-place, re-route and re-check the hub (ERC/DRC, the CPL audit, Fabio's rules, the power pads),
+re-place, re-route and re-check the hub (ERC/DRC, the CPL audit, the design-review rules, the power pads),
 and Mechanics shortens the power box.
 
 ### Result: B1, routed

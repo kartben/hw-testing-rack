@@ -18,7 +18,7 @@
 // - The base sits on the DATA ×4's three shared bosses (H1–H3), 3 × M3 × 8 from above into heat-set inserts in
 //   them (the user, 2026-10-21: a board is swapped often), and leaves the
 //   cable window open: the board's PH 8 lead, on its rear face, drops behind it into the window.
-// - The receptacles' guard (the user, 2026-10-26, after Fabio's review): a comb on the floor in front of the
+// - The receptacles' guard (the user, 2026-10-26, after the design review): a comb on the floor in front of the
 //   board, part of the cradle, holds each receptacle's body in a U (open on top: the board still drops in), and
 //   a strip over the bodies, 5 × PT 2.3 × 8 into the comb between the ports, closes the U's.  A cable pulled
 //   any way then bears on the cradle, not on the receptacles' joints.  Out: the strip first, then the board.

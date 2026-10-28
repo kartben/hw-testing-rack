@@ -1,4 +1,4 @@
-"""Decoupling capacitors beside their pins (Eve's layout review, 2026-10-28: "les capas de découplage sont parfois
+"""Decoupling capacitors beside their pins (the layout review, 2026-10-28: "les capas de découplage sont parfois
 loin de la pin"), from the .kicad_pcb text alone (no pcbnew: it runs in CI).  A board's design.py says which IC
 power pin each decoupling capacitor serves, in b.pcb["decoupling"]: {"C14": "U3.3V3", ...} (the pin by name or
 number; resolve() turns it into the pads).  A capacitor whose place is someone else's call (a datasheet's reference

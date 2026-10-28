@@ -703,7 +703,7 @@ def apply_models(path: Path) -> int:
 def write_via_rules(pro: Path):
     """KiCad's DRC reads the board's minimum drill and annular ring from <board>.kicad_pro, which
     pcbnew.SaveBoard leaves alone: write SMALL_VIA's limits there, so a via under JLC's no-extra-cost
-    size is a DRC error.  A dangling track or via (an antenna: Eve's review, 2026-10-28) is one too, not
+    size is a DRC error.  A dangling track or via (an antenna: the layout review, 2026-10-28) is one too, not
     KiCad's default warning."""
     import json
     data = json.loads(pro.read_text(encoding="utf-8"))
@@ -944,7 +944,7 @@ def import_session(b: Board, outdir: Path, routed: Path | None = None) -> Path:
 
 
 def clean_antennas(path: Path, step: str) -> dict:
-    """Eve's antennas (electronics/tools/antennas.py: dead ends, lone vias, doubled tracks, slivers) out of a routed
+    """The antennas (electronics/tools/antennas.py: dead ends, lone vias, doubled tracks, slivers) out of a routed
     board, every connection kept.  Router (unlocked) copper only: a router track lying on another of its net and
     layer goes (or keeps only what sticks out past a drawn one; two overlapping router tracks of one width become
     one); a sliver folds into its neighbours, the tracks that end on its loose end moved to its fixed one (a pad, a

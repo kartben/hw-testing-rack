@@ -100,7 +100,7 @@ the cards.
   headers, LSF0108s, ESD and arrays (52 % of the board); bottom takes the two CH446Q, the charge pump,
   the TCA9534A and the RP2354B block (21 %).  The four holes move, so do the drawer's bosses
   (`DATA_X4_HOLES`, tray session).  Single-sided would need ≈ 108 × 35 mm, which does not fit.
-* Fabio's rule "no tracks on inner layers" leaves two routing layers for 32 pins, 8 buses and the
+* The rule "no tracks on inner layers" leaves two routing layers for 32 pins, 8 buses and the
   co-processor's USB: the main design risk.  Each CH446Q under its two ports, a straight via from the
   translator above, buses on the bottom; fallback 6 layers (signal/GND/signal/signal/power/signal).
 * The Dupont jumpers leave the rear headers upwards and over the port wall: the headroom above the rear

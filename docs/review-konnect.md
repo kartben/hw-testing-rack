@@ -2,7 +2,7 @@
 
 Review of the two rev 0.2 boards (`electronics/bay-node`, `electronics/power-hub`, commit
 `257e63c`) with the Konnect MCP server (0.13.0, KiCad PCM plugin) against a
-live KiCad 10.0.7, in the light of Fabio's review of v0.1.  Done on 2026-10-16; the fixes below
+live KiCad 10.0.7, in the light of the design review of v0.1.  Done on 2026-10-16; the fixes below
 make rev 0.3.
 
 **How it was checked.** Konnect's checks run on the files on disk: `run_erc` / `run_drc`
@@ -170,7 +170,7 @@ lot from one re-route to the next.
 * the USBLC6s are used in flow-through: the connector side and the protected side are separate nets
   (`PC_CONN_DP/DN`, `DUT_CONN_DP/DN` on the connector side), so the signal can only go through the
   part (pin 6 → 1, 4 → 3) and DRC would flag any copper bridging its pins outside.  The first
-  version of this routing ran one net through both pins and a track under the package — Fabio's
+  version of this routing ran one net through both pins and a track under the package — the design review's
   remark: the part is meant to be passed through, not bridged.  Their GND/VBUS pins get a short
   track to a via between the two lines;
 * the two FSUSB42s number their pins the same way round, so a single-layer PCPATH would have to
@@ -244,7 +244,7 @@ with 0.3–0.45 mm necks only at SOT-23 pins (1.5 A), `24V_BUS` daisy chain in a
   compares bounding boxes and the ESP32 footprint's courtyard is T-shaped around the antenna;
   KiCad's own courtyard check passes.
 
-## Fabio's v0.1 points, where they stand
+## The v0.1 review points, where they stand
 
 | Point | Rev 0.2 + this review |
 |---|---|
@@ -287,7 +287,7 @@ orientations); R19's BOM footprint is now `R_1206_3216Metric_Kelvin` (same LCSC 
 **Before ordering:** reload both boards in KiCad (File → Revert) and look at them, check the new
 orientations in JLC's placement preview, and optionally decide H5.
 
-## Second round (Fabio, after v0.3) → bay node v0.4
+## Second round (after v0.3) → bay node v0.4
 
 | Remark | Answer |
 |---|---|
@@ -295,7 +295,7 @@ orientations in JLC's placement preview, and optionally decide H5.
 | How was the pair's impedance estimated? | 2-D field solver on the JLC04161H-7628 cross-section (0.2104 mm 7628 prepreg, εr 4.4, 35 µm copper): 0.25 mm tracks / 0.15 mm gap give Zdiff ≈ 93.5 Ω bare, ≈ 90 Ω under 15 µm of solder mask (εr 3.8). |
 | "The stackup is still a disaster": L3 was called power but carried signals; wants signals / GND only / power only / signals | v0.4: In2 carries power planes only (+3V3, +5V, 24 V strip), no track.  That needed a new placement (below). |
 | J5 used a JST SH, very small: pick a PH | J5 is a JST PH 6 since v0.3; in v0.4 every PH on the node is the SMD S*B-PH-SM4-TB, placed by JLC. |
-| INA226 Vbus should be tied to IN+ | Withdrawn by Fabio. |
+| INA226 Vbus should be tied to IN+ | Withdrawn by the reviewer. |
 
 **Why a new placement.** With In2 for power only, Freerouting has two signal layers, and v0.3's
 placement left 13–18 connections unrouted whatever the passes.  The cause was the GPIO map: most
@@ -597,7 +597,7 @@ AUX and DATA go to the drag chain, CAM to the rear slot.  The user then dropped 
   then C12 off the LDO tab.  The narrow VIN island is not exclusive: its feed from C1 runs along its
   edge.
 
-Fabio's rules, checked again on the saved files:
+The design-review rules, checked again on the saved files:
 
 | Rule | 74 × 90 |
 |---|---|

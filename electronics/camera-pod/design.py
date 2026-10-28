@@ -48,7 +48,7 @@ def P(x, y, rot=0, side="top"):
     return {"x": x, "y": y, "rot": rot, "side": side}
 
 
-# Eve's test pads, second round (the kicad-happy review's CP-3, 2026-10-27): the camera SPI and the LEDs' switched
+# The DFT test pads, second round (the kicad-happy review's CP-3, 2026-10-27): the camera SPI and the LEDs' switched
 # cathode on bare 1.0 mm bottom pads, by J1 where those lines come in, clear of the LDO's +3V3 island on B.Cu.  Each
 # on a new drawn via on its net's F.Cu track, so no routing moves.  (net, (x, y), label)
 TP_ROUND2 = [
@@ -84,7 +84,7 @@ def board() -> Board:
     # with 22 µF tantalum; the same SOT-223 pinout (1 GND, 2 VOUT and tab, 3 VIN), copper and CPL correction
     # (datasheet audit F1).  Order the AP2114H, never the HA: the HA's pinout differs
     part(s, "U1", "ldo_1a", {"VI": "CAM_5V", "VO": "+3V3", "GND": "GND"}, pcb=P(20.0, 13.0, 0))
-    # each beside its own pin (decoupling check, Eve's review): C1 left of VI (pin 3), C2 right of the tab (VOUT),
+    # each beside its own pin (decoupling check, the layout review): C1 left of VI (pin 3), C2 right of the tab (VOUT),
     # high enough that SCK keeps its F.Cu diagonal below it; each with a GND via beside its GND pad
     C(s, "C1", "10u", "CAM_5V", "GND", size="0805", pcb=P(13.75, 15.3, 180))
     C(s, "C2", "22u", "+3V3", "GND", size="1206", pcb=P(26.6, 11.4, 90))
@@ -98,7 +98,7 @@ def board() -> Board:
     for i, (x, y) in enumerate(CFG["holes"]):
         part(s, f"H{i + 1}", "hole25", {}, "PT2.6", pcb=P(x, y, 0), in_bom=False)
     s.block("Test pads (bottom side, labelled): no short to GND, then CAM_5V and 3.3 V at power-up")
-    # bare 1.5 mm pads, no part, no paste, out of the BOM (Eve's bring-up rule, 2026-10-26)
+    # bare 1.5 mm pads, no part, no paste, out of the BOM (the bring-up DFT rule, 2026-10-26)
     for i, net in enumerate(("GND", "CAM_5V", "+3V3")):
         part(s, f"TP{i + 1}", "testpad", {"1": net}, net, pcb=P(6.0 + 3 * i, 21.5, 0, "bottom"), in_bom=False)
     part(s, "TP4", "testpad", {"1": "GND"}, "GND", pcb=P(33.0, 21.5, 0, "bottom"), in_bom=False)    # GND, spread
@@ -119,7 +119,7 @@ def board() -> Board:
         # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
         "power_nets": {"GND": 1, "CAM_5V": 2},
         # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
-        # (electronics/tools/decoupling.py, Eve's layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
+        # (electronics/tools/decoupling.py, the layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
         # serve no one pin: left out
         "decoupling": {"C1": "U1.VI", "C2": "U1.VO", "C3": "J2.1"},
         "zones": [

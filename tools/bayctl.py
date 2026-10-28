@@ -567,7 +567,7 @@ def access_rules(lab_yaml: Path | None, bay_id: str) -> dict | None:
             ben-laptop: {cidr: 192.168.1.23, allow: [all]}
         bays:
           C1:
-            access: {sources: {fabio-desk: {cidr: 192.168.1.66, allow: [all]}}}   # added for C1
+            access: {sources: {lab-desk: {cidr: 192.168.1.66, allow: [all]}}}   # added for C1
 
     A bay's own `access:` adds sources (or replaces one of the same name) and may set
     `everyone` or `enabled`.
