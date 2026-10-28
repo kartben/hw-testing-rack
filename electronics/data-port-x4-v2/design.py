@@ -482,7 +482,9 @@ def port(b: Board, n: int):
                          "2": "GND"}, pcb=P(cx + 7.0, USB_Y, 0), sch=at(84, 76))
     s.wire(f"{usb}.B7", f"{esd}.1")
     s.wire(f"{usb}.A6", f"{esd}.3")
-    C(s, f"C{k + 4}", "100n", "+5V", "GND", size="0402", pcb=P(cx + 7.0, USB_Y - 2.9, 0), sch=at(96, 76))   # X9
+    # its VBUS 100 nF (X9) right over it, its +5V pad over the gap between the ESD's pin rows: VBUS (pin 5) runs
+    # up that gap to it, then on to its via (drawn in board(); the pair walls pin 5 in on its east)
+    C(s, f"C{k + 4}", "100n", "+5V", "GND", size="0402", pcb=P(cx + 6.52, USB_Y - 2.3, 180), sch=at(96, 76))
 
     s.frame(f"Header {n} (2 × 6 through-hole): GND, VREF, P1–P8, RESET_N, BOOT_N; RESET/BOOT through 1k, "
             "their expander lines pulled up", 112, 10, 228, 56)
@@ -1093,6 +1095,11 @@ def board() -> Board:
     # and OUT along U9's north side to where its −5 V line splits, as the router had it (to the crosspoints east
     # and TP4 north; the router, left to it, joined neither once C28 had moved)
     hand_tracks.append(("-5V", "F.Cu", 0.25, [(8.8625, 23.05), (9.41, 22.502), (11.841, 22.502)]))
+    # each port's ESD (USBLC6): VBUS (pin 5) west under its body, up between its pin rows to C104-C404, then a via
+    for cx in CFG["usb"]:
+        hand_tracks.append(("+5V", "F.Cu", 0.25, [(cx + 8.1375, USB_Y), (cx + 7.0, USB_Y), (cx + 7.0, USB_Y - 2.3),
+                                                  (cx + 7.0, USB_Y - 2.9)]))
+        hand_vias.append(("+5V", cx + 7.0, USB_Y - 2.9, 0.5, 0.3))
     # the matrix expander's VDD (U10 pin 16) to C29, then its via
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [(11.725, 4.1375), (11.0425, 4.82), (10.55, 4.82), (9.9, 4.82)]))
     hand_vias.append(("+3V3", 9.9, 4.82, 0.5, 0.3))
