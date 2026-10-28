@@ -924,7 +924,7 @@ def coproc_sheet(b: Board):
     # east 5, 15; north 24, 29), and per DVDD pin (+1V1: west 51, east 10, north 32; south 65 on C33)
     decap = [(cx - 6.7, cy - 3.8, 180), (cx - 6.7, cy - 1.8, 180), (cx - 6.7, cy + 3.6, 180),
              (cx + 0.7, cy + 7.4, 270), (cx + 3.0, cy + 7.4, 270), (cx + 6.4, cy + 5.6, 0),
-             (cx + 6.6, cy - 5.9, 0), (cx + 4.6, cy - 7.4, 90), (cx + 3.0, cy - 7.4, 90),
+             (cx + 6.6, cy - 5.9, 0), (cx + 4.45, cy - 7.4, 90), (cx + 3.0, cy - 7.4, 90),
              (cx - 2.2, cy - 7.4, 90)]
     for i, (x, y, rot) in enumerate(decap):
         C(s, f"C{35 + i}", "100n", "+3V3_CP", "GND", size="0402", pcb=P(x, y, rot), sch=at(12 + 5 * i, 24))
