@@ -523,12 +523,15 @@ def hub_sheet(b: Board):
          sch=at(16, 30, mirror="y", fields=(-2, -6)))
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False, sch=at(28, 16))
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(34, 16))
-    # the lead's I²C and INT: one 4-line TVS array right of J1's pins 1–3 (front face)
+    # the lead's I²C and INT: one 4-line TVS array right of J1's pins 1–3 (front face, where J1's pins are
+    # soldered by hand: 1.3 mm off their pads, the upstream USB pair right east of it)
     part(s, "U4", "esd4", {"D1+": "LEAD_SDA", "D1-": "LEAD_SCL", "D2+": "LEAD_INT", "D2-": None, "GND": "GND"},
          pcb=P(92.9, 33.5, 0), sch=at(48, 30, fields=(-3, -6)))
     # one part per value where the size allows (JLC bills each part type): 22 µF 0805 as the ports' VBUS (and
-    # the 3.3 V LDO's), 1 µF and 4.7 µF in 0402; J1's 22 µF in 1206 as v1, more of it left at 5 V
-    C(s, "C1", "22u", "+5V", "GND", size="1206", pcb=P(92.6, 47.8, 90), sch=at(64, 30))
+    # the 3.3 V LDO's), 1 µF and 4.7 µF in 0402; J1's 22 µF in 1206 as v1, more of it left at 5 V.  Below
+    # J1.8, 2.7 mm off its pad (0.9 before): a bridge to its GND end, J1 soldered by hand on this face, would
+    # short the lead's +5V
+    C(s, "C1", "22u", "+5V", "GND", size="1206", pcb=P(92.6, 50.4, 90), sch=at(64, 30))
 
     s.frame("3.3 V for the hub, the expanders and the INA226s (AP2114H, SOT-223 on copper)", 6, 56, 70, 86)
     s.tag("+5V", (24, 66), "up")
