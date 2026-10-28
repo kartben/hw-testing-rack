@@ -243,8 +243,10 @@ def board() -> Board:
         # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
         # (electronics/tools/decoupling.py, Eve's layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
         # serve no one pin: left out.  The buck's input is TI's three (SLUSF64B table 8-1): C4, the 100 nF across
-        # VIN and GND, is its decoupling; C2 and C3, the 2 × 10 µF behind it on the same top-side islands, its bulk
-        "decoupling": {"C4": "U1.VIN", "C11": "U2.VI", "C12": "U2.VO",
+        # VIN and GND, and C2, the first 10 µF right behind it, are its hot loop.  C2 keeps TI's place, 2.65 mm from
+        # VIN, its pads on the same top-side VIN and GND islands as the pins: its own 3 mm limit (a spot within 2 mm
+        # would send its GND back through a via).  C3, the second 10 µF, is bulk
+        "decoupling": {"C2": ("U1.VIN", 3.0), "C4": "U1.VIN", "C11": "U2.VI", "C12": "U2.VO",
                        "C13": "U3.3V3", "C14": "U3.3V3", "C16": "D4.VDD", "C17": "U5.VCC", "C18": "U6.VCC",
                        "C19": "U7.5", "C20": "U9.IN", "C22": "U10.VS", "C23": "U11.VDD", "C24": "U11.Vio",
                        "C25": "U4.5", "C26": "U8.5", "C27": "J6.1", "C28": "U12.5"},

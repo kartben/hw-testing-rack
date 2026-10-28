@@ -65,13 +65,13 @@ def via(x, y, net="GND"):
 class Synthetic(unittest.TestCase):
     """U1 pin 1 (+3V3) at (0, 0), 0.6 mm square; C1 a 0402-ish pair, pad 1 on +3V3, pad 2 on GND, 1 mm apart"""
 
-    def run_check(self, cx, cy, extra=(), rot=0):
+    def run_check(self, cx, cy, extra=(), rot=0, decl="U1.1"):
         parts = [fp("U1", 0, 0, [pad(1, 0, 0, "+3V3")]),
                  fp("C1", cx, cy, [pad(1, -0.5, 0, "+3V3", 0.5, 0.5), pad(2, 0.5, 0, "GND", 0.5, 0.5)], rot)]
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "t.kicad_pcb"
             path.write_text("(kicad_pcb " + " ".join(parts + list(extra)) + ")", encoding="utf-8")
-            return decoupling.check(path, {"C1": "U1.1"})[0]
+            return decoupling.check(path, {"C1": decl})[0]
 
     def test_beside(self):
         r = self.run_check(1.55, 0, [via(2.8, 0)])           # C1.1's edge 0.5 from U1.1's, the via's 0.25 from C1.2's
@@ -83,6 +83,27 @@ class Synthetic(unittest.TestCase):
         r = self.run_check(4.0, 0, [via(5.0, 0)])
         self.assertAlmostEqual(r["pin_mm"], 2.95, places=3)
         self.assertTrue(any("from U1.1" in p for p in r["problems"]), r)
+
+    def test_own_limit(self):
+        """A capacitor declared with its own limit (a datasheet's layout) is held to it, not to REACH"""
+        r = self.run_check(4.0, 0, [via(5.0, 0)], decl=("U1.1", 3.0))        # 2.95 mm: within its 3 mm
+        self.assertEqual(r["problems"], [])
+        r = self.run_check(4.2, 0, [via(5.2, 0)], decl=("U1.1", 3.0))        # 3.15 mm: beyond it
+        self.assertTrue(any("max 3.0" in p for p in r["problems"]), r)
+
+    def test_own_limit_resolved(self):
+        """resolve() carries the limit through to check()"""
+        class Part:
+            conns = {"VDD": "+3V3"}
+        class B:
+            parts = {"U1": Part()}
+        decl = decoupling.resolve(B(), {"C1": ("U1.VDD", 3.0), "C2": "U1.VDD"})
+        self.assertEqual(decl["C1"], ("U1.VDD", "+3V3", 3.0))
+        self.assertEqual(decl["C2"], ("U1.VDD", "+3V3", decoupling.REACH))
+        r = self.run_check(4.0, 0, [via(5.0, 0)], decl=decl["C1"])
+        self.assertEqual(r["problems"], [])
+        r = self.run_check(4.0, 0, [via(5.0, 0)], decl=decl["C2"])
+        self.assertTrue(any("max 2.0" in p for p in r["problems"]), r)
 
     def test_turned(self):
         r = self.run_check(0, 1.55, [via(0, 2.55)], rot=-90)   # pad 1 towards the pin: KiCad turns y down

@@ -38,7 +38,10 @@ pad to that pin (2 mm at most, edge to edge) and its GND pad to the nearest GND
 via (1 mm at most).  `tools/tests/test_decoupling.py` prints each board's table
 and holds it to both, but on the boards `electronics/decoupling.json` still
 lists.  Bulk, bootstrap, timing and RC capacitors serve no one pin and stay
-undeclared; the table names them.
+undeclared; the table names them.  A capacitor whose place a datasheet's
+reference layout sets gets its own limit, its reason beside it: each buck's
+first 10 µF input capacitor keeps TI's spot, 2.65 mm from VIN on the pins'
+own top-side islands, under a 3 mm limit.
 
 **Schematics** are drawn, not just generated: every part in `design.py` has
 an `sch=` position on the 0.1" grid and the main paths are real wires

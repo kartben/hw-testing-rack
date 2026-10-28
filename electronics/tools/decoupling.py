@@ -1,9 +1,10 @@
 """Decoupling capacitors beside their pins (Eve's layout review, 2026-10-28: "les capas de découplage sont parfois
 loin de la pin"), from the .kicad_pcb text alone (no pcbnew: it runs in CI).  A board's design.py says which IC
 power pin each decoupling capacitor serves, in b.pcb["decoupling"]: {"C14": "U3.3V3", ...} (the pin by name or
-number; resolve() turns it into the pads).  For each:
+number; resolve() turns it into the pads).  A capacitor whose place is someone else's call (a datasheet's reference
+layout) gets its own limit, with the reason beside it in design.py: {"C2": ("U1.VIN", 3.0)}.  For each:
 
-  * pin: from the capacitor's pad on the pin's net to the pin's pad, edge to edge, REACH mm at most;
+  * pin: from the capacitor's pad on the pin's net to the pin's pad, edge to edge, REACH mm at most (or its own);
   * via: from its other pad (its return, GND) to the nearest via or through-hole pad of that net, edge to edge,
     VIA mm at most: the return goes straight down to the plane, not through a pour first.
 
@@ -62,29 +63,36 @@ def via_gap(p, x, y, r) -> float:
     return max(math.hypot(max(abs(dx) - p["w"] / 2, 0), max(abs(dy) - p["h"] / 2, 0)) - r, 0.0)
 
 
-def resolve(b, decl: dict) -> dict[str, tuple[str, str | None]]:
-    """{cap: "REF.PIN"} → {cap: ("REF.PIN", the pin's net in design.py)}: check() then takes a pin named, not
-    numbered, as the part's pads on that net (the board file keeps pad numbers only; a tab and its pin both)."""
+def _limit(v) -> tuple[str, float]:
+    """A declaration's pin and its limit: "REF.PIN", or ("REF.PIN", mm)."""
+    return (v, REACH) if isinstance(v, str) else (v[0], float(v[1]))
+
+
+def resolve(b, decl: dict) -> dict[str, tuple[str, str | None, float]]:
+    """{cap: "REF.PIN" or ("REF.PIN", mm)} → {cap: ("REF.PIN", the pin's net in design.py, limit)}: check() then
+    takes a pin named, not numbered, as the part's pads on that net (the board file keeps pad numbers only; a tab and
+    its pin both)."""
     out = {}
-    for cap, pin in decl.items():
+    for cap, v in decl.items():
+        pin, reach = _limit(v)
         ref, name = pin.split(".", 1)
         part = b.parts.get(ref)
-        out[cap] = (pin, part.conns.get(name) if part is not None else None)
+        out[cap] = (pin, part.conns.get(name) if part is not None else None, reach)
     return out
 
 
 def check(path, decl: dict) -> list[dict]:
-    """One row per declared capacitor: {cap, pin, net, ret, side, pin_mm, via_mm, problems}.  `decl`: {cap:
-    "REF.NUM"}, or resolve()'s {cap: ("REF.PIN", net)}."""
+    """One row per declared capacitor: {cap, pin, net, ret, side, pin_mm, via_mm, reach, problems}.  `decl`: {cap:
+    "REF.NUM" or ("REF.NUM", mm)}, or resolve()'s {cap: ("REF.PIN", net, mm)}."""
     c = Copper(path)
     by_ref = {}
     for p in c.pads:
         by_ref.setdefault(p["ref"], []).append(p)
     rows = []
-    for cap, pin in decl.items():
-        pin, net = pin if isinstance(pin, tuple) else (pin, None)
+    for cap, v in decl.items():
+        (pin, net, reach) = v if isinstance(v, tuple) and len(v) == 3 else (_limit(v)[0], None, _limit(v)[1])
         row = {"cap": cap, "pin": pin, "net": "?", "ret": "?", "side": "?", "pin_mm": math.inf, "via_mm": math.inf,
-               "problems": []}
+               "reach": reach, "problems": []}
         rows.append(row)
         ref = pin.split(".", 1)[0]
         pins = by_ref.get(pin) or [q for n, qs in by_ref.items() if n.split(".", 1)[0] == ref for q in qs
@@ -108,8 +116,8 @@ def check(path, decl: dict) -> list[dict]:
         row["via_mm"] = min((via_gap(rp, *h) for h in holes), default=math.inf)
         if len({q["net"] for q in pins}) > 1:
             row["problems"].append(f"{pin}'s pads on more than one net")
-        if row["pin_mm"] > REACH:
-            row["problems"].append(f"{row['pin_mm']:.2f} mm from {pin} (max {REACH})")
+        if row["pin_mm"] > reach:
+            row["problems"].append(f"{row['pin_mm']:.2f} mm from {pin} (max {reach})")
         if row["via_mm"] > VIA:
             row["problems"].append(f"its {rp['net']} {row['via_mm']:.2f} mm from a via (max {VIA})")
     return rows
@@ -131,7 +139,8 @@ def table(name, rows, left=()) -> str:
            f"  {'cap':6} {'pin':10} {'net':14} {'side':10} {'to pin':>7} {'to via':>7}"]
     for r in rows:
         out.append(f"  {r['cap']:6} {r['pin']:10} {r['net'].split('/')[-1][-14:]:14} {r['side']:10} "
-                   f"{r['pin_mm']:7.2f} {r['via_mm']:7.2f}  {'; '.join(r['problems']) or 'ok'}")
+                   f"{r['pin_mm']:7.2f} {r['via_mm']:7.2f}  {'; '.join(r['problems']) or 'ok'}"
+                   + (f" (its own limit: {r['reach']} mm)" if r["reach"] != REACH else ""))
     if left:
         out.append("  not declared: " + ", ".join(left))
     return "\n".join(out)
