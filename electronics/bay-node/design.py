@@ -212,6 +212,13 @@ def board() -> Board:
     # strip above the connectors' other pins.  3.8 mm wide (≈ 1.9 A in 0.5 oz for 10 °C)
     bus = [(0.5, PWR_Y - 7.2), (W - 0.5, PWR_Y - 7.2), (W - 0.5, PWR_Y - 3.4), (0.5, PWR_Y - 3.4)]
     hs_tracks, hs_vias = usb_hs_routes()
+    # the pin → cap → via rule (the layout review): a small decoupling capacitor's pin reaches its rail only through
+    # the capacitor.  A drawn track runs from the pin through the capacitor's pad to the capacitor's own via (the pin
+    # then has no fan-out via of its own).  (net, width, [pin, ..., cap pad, ..., via])
+    decap_ties = [
+        # C14, U3's (the ESP32-S3-WROOM-1's) 100 nF, from its 3V3 pin (2); its via west of it
+        ("+3V3", 0.25, [(23.25, 8.76), (22.675, 8.76), (21.9, 9.535), (21.45, 9.535), (20.4, 9.535)]),
+    ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
         # 4 layers: signals + GND / GND only / power only / signals + GND.  In1 is a solid GND plane;
@@ -320,10 +327,12 @@ def board() -> Board:
                  ("+3V3", 41.5, 43.0), ("+3V3", 41.5, PWR_Y - 1.5),
                  *[("+5V", x, y) for x, y in ((53.0, 39.85), (54.0, 39.95), (54.6, 39.95))],        # U9's input island
                  *hs_vias,
-                 *[(net, *xy) for net, _, _, xy, via, _, _ in TP_ROUND2 if via]],      # the second round's test pads
+                 *[(net, *xy) for net, _, _, xy, via, _, _ in TP_ROUND2 if via],       # the second round's test pads
+                 *[(net, *pts[-1], 0.6, 0.3) for net, _, pts in decap_ties]],          # the decoupling ties' vias
         # the front +3V3 area of In2 (LED, SERVICE switch) is cut off by the VRACK strip: fed from the
         # main +3V3 area by a B.Cu track
-        "tracks": [*hs_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)])],
+        "tracks": [*hs_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)]),
+                   *[(net, "F.Cu", w, pts) for net, w, pts in decap_ties]],
         # ESP32 antenna: no copper on any layer under/around the antenna (the WROOM-1's rear 6 mm, ±24 mm)
         "keepouts": [
             {"name": "antenna", "poly": [(8.0, -0.1), (56.0, -0.1), (56.0, 6.0), (8.0, 6.0)]},
