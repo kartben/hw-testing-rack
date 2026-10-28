@@ -143,7 +143,7 @@ def board() -> Board:
                   (25.0, 84.4), (25.0, 30.0), (31.1, 30.0), (31.1, 25.8), (35.9, 25.8), (35.9, 30.0), (75.6, 30.0),
                   (75.6, H - 0.4), (0.4, H - 0.4)]},
     ]
-    # per eFuse: a top-side VRACK island on its IN pins and the input capacitor, three vias to In2
+    # per eFuse: a top-side VRACK island on its IN pins and the input capacitor, three vias to In2 at its far end
     in_islands = [{"layer": "F.Cu", "net": "VRACK", "name": f"vrack-in-{ch}", "priority": 2, "exclusive": 0.4,
                    "connection": "solid",
                    "poly": [(17.2, ef_y(k) - 2.65), (23.85, ef_y(k) - 2.65), (23.85, ef_y(k) - 1.35), (17.2, ef_y(k) - 1.35)]}
@@ -244,7 +244,7 @@ def board() -> Board:
             *[("GND", x, y + BY) for x, y in ((61.0, 14.9), (61.0, 17.4), (61.2, 21.4), (63.0, 21.6), (65.25, 21.6),
                                               (67.75, 21.6), (70.0, 21.6))],
             # eFuse IN islands down to In2 (VRACK); exposed pads: six tented GND vias each, to In1
-            *[v for k in range(4) for v in (*[("VRACK", x, ef_y(k) - 2.0, 0.8, 0.4) for x in (19.4, 20.9, 22.4)],
+            *[v for k in range(4) for v in (*[("VRACK", x, ef_y(k) - 2.0, 0.8, 0.4) for x in (17.65, 18.5, 19.3)],
                                             *[("GND", EF_X + dx, ef_y(k) + dy) for dx in (-0.9, 0.9) for dy in (-0.9, 0.0, 0.9)])],
             # each row's output: F.Cu → B.Cu beside the connector → F.Cu at its pin 6
             *[(f"ROW_{ch}", x, ROW_Y[k] + dy, 0.8, 0.4) for k, ch in enumerate(ROWS) for dy in (-5.0, 5.0)
@@ -343,7 +343,10 @@ def board() -> Board:
                                         "MODE": "GND", "~{SHDN}": f"SHDN_{ch}", "ILIM": f"ILIM_{ch}",
                                         "dVdT": f"DVDT_{ch}", "IMON": f"IMON_{ch}", "~{FLT}": f"FLT_{ch}",
                                         "OUT": f"ROW_{ch}"}, pcb=P(EF_X, yc, 0), dnp=dnp)
-        C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(16.9, yc - 2.0, 180))
+        # the input capacitor at the IN pins' end of the island, its GND pad below it beside the GND pins, clear
+        # of the eFuse's pin-1 mark
+        # (decoupling check, Eve's review: at the island's far end it was 4.0 mm from IN)
+        C(o, f"C{10 + n}", "1u", "VRACK", "GND", size="0805", pcb=P(20.6, yc - 1.05, 270))
         C(o, f"C{30 + n}", "1u", f"ROW_{ch}", "GND", size="0805", pcb=P(34.0, yc - 2.6, 0))
         R(o, f"R{20 + n}", "7.5k", f"ILIM_{ch}", "GND", pcb=P(34.0, yc + 1.0, 0))
         # 100 nF: at 28 V and 85 °C a 47 nF start (≈ 21 W for 12 ms at the worst corner) met the TPS2660's thermal
