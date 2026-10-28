@@ -477,7 +477,8 @@ def board() -> Board:
     # flow-through, D+ on the 1–6 channel and D− on 3–4: the hand-routed pair arrives in that order
     part(c, "U5", "esd", {"6": "USB_CONN_DP", "1": "USB_DP", "4": "USB_CONN_DN", "3": "USB_DN", "5": "USB_VBUS",
                           "2": "GND"}, pcb=P(60.5, H - 12.5, 270))
-    C(c, "C120", "1u", "USB_VBUS", "GND", pcb=P(63.6, H - 13.4, 90))
+    # against U5's courtyard, 1.7 mm from its VBUS pin (decoupling check, Eve's review: 2.3 mm)
+    C(c, "C120", "1u", "USB_VBUS", "GND", pcb=P(62.95, H - 13.4, 90))
 
     c.block("CAN: TJA1462AT, star bus (all row ports in parallel), both terminations here")
     part(c, "U6", "can_xcvr", {"TXD": "CAN_TXD", "VSS": "GND", "VDD": "+5V", "RXD": "CAN_RXD", "Vio": "+3V3",
