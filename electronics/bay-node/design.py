@@ -147,7 +147,7 @@ def usb_hs_routes():
     # U6 D−/D+ (pins 4/3 at y 34.0/34.5, x 46.6) → U8 (ESD, rot 0: DN through pins 1/6 at y 33.05,
     # DP through 3/4 at y 34.95) → J7 (DATA, PH 8 side entry on the right edge, rot 90: D− pin 4 at y c + 1,
     # D+ pin 3 at c + 3, pads x 64.5–68).  D− lies north on both: a straight pair, one 45° step each past
-    # U8's VBUS via (lengths within 0.05 mm)
+    # U8 (lengths within 0.05 mm)
     t("DUT_DN", (46.6, 34.0), (47.7, 34.0), (48.65, 33.05), (50.16, 33.05))
     t("DUT_DP", (46.6, 34.5), (48.0, 34.5), (48.45, 34.95), (50.16, 34.95))
     c = CFG["right"]["data"]
@@ -159,8 +159,10 @@ def usb_hs_routes():
     via("GND", 47.85, 33.0)
     t("GND", (50.16, 34.0), (49.0, 34.0))                                               # U8 GND
     via("GND", 49.0, 34.0)
-    t("+5V", (52.44, 34.0), (53.6, 34.0))                                               # U8 VBUS
-    via("+5V", 53.6, 34.0)
+    # U8 VBUS (pin 5) → C26 (its 100 nF, the pin → cap → via rule): west between U8's pad rows, down into C26's
+    # pad and on to C26's via, east of it, where its own was
+    t("+5V", (52.4375, 34.0), (51.3, 34.0), (51.3, 35.375), (52.375, 36.45), (53.225, 36.45))
+    via("+5V", 53.225, 36.45, d=0.6)
     return tracks, vias
 
 
