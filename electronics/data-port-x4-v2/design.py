@@ -1401,14 +1401,16 @@ def board() -> Board:
         # ≤ 1 mm from a GND via).  Not declared: bulk (C1, J1's; C31, the co-processor's island; each port's VBUS
         # 22 µF), the crystals' load capacitors and the charge pump's flying capacitor.  C8, VDD18PLL's 4.7 µF, is
         # its store, behind C10 (the 100 nF at the pin), right under the crystal: its own 2.5 mm limit (no spot
-        # nearer clears Y1's courtyard)
+        # nearer clears Y1's courtyard).  C21 and C24, each crosspoint's VDD 1 µF, are its store too, stacked
+        # right behind the 100 nF at the pin (C20, C23): their own 3 mm limit
         "decoupling": {
             "C2": "U3.3", "C3": "U3.2", "C6": "U5.3",                                   # the LDO in and out, MAX809S
             "C7": "U1.25", "C9": "U1.25", "C8": ("U1.62", 2.5), "C10": "U1.62",        # the hub's VDD18, VDD18PLL
             "C11": "U1.64", "C12": "U1.52", "C13": "U1.57", "C14": "U1.24", "C15": "U1.5", "C16": "U1.10",
             "C17": "U1.46",                                                               # its seven 3.3 V pins
             "C18": "U2.15", "C19": "U6.15", "C29": "U10.16",                             # the expanders
-            "C20": "U7.38", "C21": "U7.38", "C22": "U7.16", "C23": "U8.38", "C24": "U8.38", "C25": "U8.16",
+            "C20": "U7.38", "C21": ("U7.38", 3.0), "C22": "U7.16", "C23": "U8.38", "C24": ("U8.38", 3.0),
+            "C25": "U8.16",
             "C27": "U9.2", "C28": "U9.1",                                                 # crosspoints, charge pump
             "C32": "U11.64", "C33": "U11.65", "C34": "U11.61",                           # the core regulator
             "C35": "U11.41", "C36": "U11.50", "C37": "U11.59", "C38": "U11.69", "C39": "U11.76",
