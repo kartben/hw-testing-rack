@@ -208,9 +208,11 @@ def board() -> Board:
         # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
         # (electronics/tools/decoupling.py, Eve's layout review, 2026-10-28).  Bulk, bootstrap, timing, filter and
         # RC capacitors serve no one pin: left out.  The buck's input is the bay node's, TI's three: C106, the 100 nF
-        # across VIN and GND, is its decoupling; C104 and C105, the 2 × 10 µF behind it, its bulk
+        # across VIN and GND, and C104, the first 10 µF right behind it, are its hot loop.  C104 keeps TI's place,
+        # 2.65 mm from VIN on the pins' own top-side VRACK and GND islands: its own 3 mm limit, as the node's C2.
+        # C105, the second 10 µF, is bulk
         "decoupling": {"C4": "U1.VDD", **{f"C{10 + n}": f"U{10 + n}.IN" for n in range(1, 5)},
-                       "C106": "U2.VIN", "C111": "U3.VIN", "C112": "U3.VOUT",
+                       "C104": ("U2.VIN", 3.0), "C106": "U2.VIN", "C111": "U3.VIN", "C112": "U3.VOUT",
                        "C113": "U4.3V3", "C114": "U4.3V3", "C120": "U5.5", "C116": "U6.VDD", "C117": "U6.Vio"},
         "stitch": 4.0,
         # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
