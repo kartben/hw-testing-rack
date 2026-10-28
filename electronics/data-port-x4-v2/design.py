@@ -839,7 +839,8 @@ def matrix_sheet(b: Board):
                                "P3": "MX_STB2", "P4": "MX_RST", "P5": "CP_RUN", "P6": "CP_BOOT_N", "P7": "MARK"},
          pcb=P(*MX_EXP, 90), sch=at(160, 84, fields=(-10, -8)))
     rail_v(s, "GND", ["U10.A0", "U10.A1", "U10.A2"], -2, "down")
-    C(s, "C29", "100n", "+3V3", "GND", size="0402", pcb=P(10.0, 7.0, 90), sch=at(140, 74))
+    # its 100 nF (C29) right west of VDD (pin 16, top left), its +3V3 pad up (drawn in board())
+    C(s, "C29", "100n", "+3V3", "GND", size="0402", pcb=P(10.55, 5.3, 270), sch=at(140, 74))
     # RST held high (all switches open) until the node writes the expander; TCA9534A pins are inputs at reset
     R(s, "R20", "10k", "+3V3", "MX_RST", size="0402", pcb=P(18.2, 7.0, 90), sch=at(190, 76))
     s.notes_at = (114, 116, 110)
@@ -1092,6 +1093,9 @@ def board() -> Board:
     # and OUT along U9's north side to where its −5 V line splits, as the router had it (to the crosspoints east
     # and TP4 north; the router, left to it, joined neither once C28 had moved)
     hand_tracks.append(("-5V", "F.Cu", 0.25, [(8.8625, 23.05), (9.41, 22.502), (11.841, 22.502)]))
+    # the matrix expander's VDD (U10 pin 16) to C29, then its via
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(11.725, 4.1375), (11.0425, 4.82), (10.55, 4.82), (9.9, 4.82)]))
+    hand_vias.append(("+3V3", 9.9, 4.82, 0.5, 0.3))
     # C18, C19 (the expanders' 100 nF): VCCI (pin 15) straight up to it, VCCP (pin 14) bridged to VCCI and up to
     # its own via, where its fan-out had it; its GND pad's via east of it (the automatic one went up onto
     # PORT1_RST_IO's via)
