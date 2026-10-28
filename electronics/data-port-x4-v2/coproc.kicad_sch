@@ -4320,7 +4320,7 @@
 		)
 		(uuid "1b6b928e-4b90-5081-a015-9309a7f8edd1")
 	)
-	(global_label "CP_ADC2"
+	(global_label "CP_ADC4"
 		(shape bidirectional)
 		(at 124.46 213.36 180)
 		(fields_autoplaced yes)
@@ -4386,7 +4386,7 @@
 		)
 		(uuid "5c6bfa24-41ec-5d50-854c-1edd4a36e784")
 	)
-	(global_label "CP_ADC4"
+	(global_label "CP_ADC2"
 		(shape bidirectional)
 		(at 124.46 218.44 180)
 		(fields_autoplaced yes)
@@ -13864,7 +13864,7 @@
 		)
 		(uuid "920d7291-9353-5773-9cb8-6f9d5124d5d7")
 	)
-	(text_box "GPIO2–9 = buses A–H (gusmanb CH1–8, 8-bit mode); GPIO0 → GPIO1 bridged (its trigger path).\nGPIO14 = the node's mark (TCA9534A P7); GPIO25 = LED; GPIO19…16, 13…10 = pull-up enables A…H (2.2k);\nGPIO40–43 = VREF 1–4 / 2 (through 100k); GPIO44 = +5V × 47/147;\n  GPIO45 = 3.3 V − (3.3 + 5) × 10/110 from −5 V (2.55 V nominal).\nRUN pulled up, BOOTSEL (QSPI_SS) through 1k: both held by the node (TCA9534A), open drain.\nCore regulator: Raspberry Pi's Minimal R4 block turned 180°; L1's dot (pad 1) on +1V1, not VREG_LX.\nC47 (DVDD pin 32, furthest from the regulator) 4.7 µF; no copper under LX / L1 (In1, In2, B.Cu)."
+	(text_box "GPIO2–9 = buses A–H (gusmanb CH1–8, 8-bit mode); GPIO0 → GPIO1 bridged (its trigger path).\nGPIO14 = the node's mark (TCA9534A P7); GPIO25 = LED; GPIO19…16, 13…10 = pull-up enables A…H (2.2k);\nGPIO40, 43, 42, 41 = VREF 1–4 / 2 (through 100k); GPIO44 = +5V × 47/147;\n  GPIO45 = 3.3 V − (3.3 + 5) × 10/110 from −5 V (2.55 V nominal).\nRUN pulled up, BOOTSEL (QSPI_SS) through 1k: both held by the node (TCA9534A), open drain.\nCore regulator: Raspberry Pi's Minimal R4 block turned 180°; L1's dot (pad 1) on +1V1, not VREG_LX.\nC47 (DVDD pin 32, furthest from the regulator) 4.7 µF; no copper under LX / L1 (In1, In2, B.Cu)."
 		(exclude_from_sim no)
 		(at 15.24 314.96 0)
 		(size 284.48 20.32)

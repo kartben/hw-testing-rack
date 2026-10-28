@@ -868,8 +868,10 @@ def coproc_sheet(b: Board):
     for i, bus in enumerate(BUSES):
         gp[f"GPIO{2 + i}"] = f"BUS_{bus}"
         gp[f"GPIO{PU_GPIO[bus]}"] = f"CP_PU_{bus}"
-    for n in range(4):
-        gp[f"GPIO{40 + n}/ADC{n}"] = f"CP_ADC{n + 1}"
+    # VREF 1–4 on GPIO40, 43, 42, 41 (pins 49, 54, 53, 52): ports 2 and 4 swapped (2026-10-28) so their lines
+    # leave pins 52 and 54 for B.Cu without crossing, round C45 at DVDD pin 51
+    for n, g in enumerate((40, 43, 42, 41)):
+        gp[f"GPIO{g}/ADC{g - 40}"] = f"CP_ADC{n + 1}"
     for g in [15] + list(range(20, 25)) + list(range(26, 40)) + [46, 47]:
         gp[f"GPIO{g}" if g < 40 else f"GPIO{g}/ADC{g - 40}"] = None
     rp = {"IOVDD": "+3V3_CP", "QSPI_IOVDD": "+3V3_CP", "USB_OTP_VDD": "+3V3_CP", "ADC_AVDD": "+3V3_CP",
@@ -930,8 +932,9 @@ def coproc_sheet(b: Board):
         C(s, f"C{35 + i}", "100n", "+3V3_CP", "GND", size="0402", pcb=P(x, y, rot), sch=at(12 + 5 * i, 24))
     rail(s, "+3V3_CP", [f"C{35 + i}.1" for i in range(10)], -1)
     rail(s, "GND", [f"C{35 + i}.2" for i in range(10)], 1, "down")
-    # pin 32, the DVDD pin furthest from the regulator: 4.7 µF (DS §6.1.3, the audit's fix 4)
-    for i, (x, y, rot) in enumerate(((cx - 6.7, cy + 5.4, 180), (cx + 7.0, cy + 4.4, 0), (cx - 0.6, cy - 7.4, 90))):
+    # pin 32, the DVDD pin furthest from the regulator: 4.7 µF (DS §6.1.3, the audit's fix 4).  C45 right west of
+    # pin 51, on its line (drawn in board())
+    for i, (x, y, rot) in enumerate(((cx - 6.62, cy + 0.2, 180), (cx + 7.0, cy + 4.4, 0), (cx - 0.6, cy - 7.4, 90))):
         C(s, f"C{45 + i}", "4.7u" if i == 2 else "100n", "+1V1", "GND", size="0402", pcb=P(x, y, rot),
           sch=at(70 + 5 * i, 24))
     rail(s, "+1V1", [f"C{45 + i}.1" for i in range(3)], -1)
@@ -999,7 +1002,7 @@ def coproc_sheet(b: Board):
     s.notes_at = (6, 124, 112)
     s.notes = ["GPIO2–9 = buses A–H (gusmanb CH1–8, 8-bit mode); GPIO0 → GPIO1 bridged (its trigger path).",
                "GPIO14 = the node's mark (TCA9534A P7); GPIO25 = LED; GPIO19…16, 13…10 = pull-up enables A…H (2.2k);",
-               "GPIO40–43 = VREF 1–4 / 2 (through 100k); GPIO44 = +5V × 47/147;",
+               "GPIO40, 43, 42, 41 = VREF 1–4 / 2 (through 100k); GPIO44 = +5V × 47/147;",
                "  GPIO45 = 3.3 V − (3.3 + 5) × 10/110 from −5 V (2.55 V nominal).",
                "RUN pulled up, BOOTSEL (QSPI_SS) through 1k: both held by the node (TCA9534A), open drain.",
                "Core regulator: Raspberry Pi's Minimal R4 block turned 180°; L1's dot (pad 1) on +1V1, not VREG_LX.",
@@ -1101,6 +1104,24 @@ def board() -> Board:
         hand_tracks.append(("+5V", "F.Cu", 0.25, [(cx + 8.1375, USB_Y), (cx + 7.0, USB_Y), (cx + 7.0, USB_Y - 2.3),
                                                   (cx + 7.0, USB_Y - 2.9)]))
         hand_vias.append(("+5V", cx + 7.0, USB_Y - 2.9, 0.5, 0.3))
+    # the co-processor's west face round C45 (DVDD pin 51's 100 nF, right west of it): pin 51 to C45, C45's GND
+    # down to its via; VREF4 (pin 52) and VREF2 (pin 54) to B.Cu right by their pins, 4's via east, 2's west (their
+    # GPIOs swapped so that the two runs south do not cross); BUS_C's dive to B.Cu moved west of C45.  Pin 51 keeps
+    # its own via under the case into the +1V1 network: no room for one after C45 (between C36's +3V3_CP line north
+    # and the VREF vias south), so C45 is the order rule's one exception (pin → via before the capacitor)
+    ux, uy = CP[0] - 4.95, CP[1]                                       # U11's west pad column
+    hand_tracks += [("+1V1", "F.Cu", 0.2, [(ux, uy + 0.2), (CP[0] - 6.14, uy + 0.2)]),
+                    ("GND", "F.Cu", 0.25, [(CP[0] - 7.1, uy + 0.2), (CP[0] - 7.1, uy + 0.85)]),
+                    ("CP_ADC4", "F.Cu", 0.127, [(ux, uy + 0.6), (ux - 0.55, uy + 0.6), (ux - 0.8, uy + 0.85)]),
+                    ("CP_ADC2", "F.Cu", 0.127, [(ux, uy + 1.4), (ux - 1.13, uy + 1.4), (ux - 1.35, uy + 1.18)]),
+                    ("BUS_C", "F.Cu", 0.127, [(39.031, 12.252), (39.031, 12.68), (39.2, 12.85)]),
+                    ("BUS_C", "B.Cu", 0.127, [(39.2, 12.85), (39.395, 12.655), (40.603, 12.655)]),
+                    # and R39's GND via where its fan-out had it (BUS_C's via now pushes the automatic one onto
+                    # CP_SNS_5V)
+                    ("GND", "F.Cu", 0.25, [(38.31, 13.4), (38.93, 13.4)])]
+    hand_vias += [("GND", CP[0] - 7.1, uy + 0.85, 0.5, 0.3), ("CP_ADC4", ux - 0.8, uy + 0.85, 0.5, 0.3),
+                  ("CP_ADC2", ux - 1.35, uy + 1.18, 0.5, 0.3), ("BUS_C", 39.2, 12.85, 0.5, 0.3),
+                  ("GND", 38.93, 13.4, 0.5, 0.3)]
     # the matrix expander's VDD (U10 pin 16) to C29, then its via
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [(11.725, 4.1375), (11.0425, 4.82), (10.55, 4.82), (9.9, 4.82)]))
     hand_vias.append(("+3V3", 9.9, 4.82, 0.5, 0.3))
