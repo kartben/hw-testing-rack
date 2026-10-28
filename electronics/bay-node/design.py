@@ -318,10 +318,12 @@ def board() -> Board:
             {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 3, "exclusive": 0.5,
              "poly": [(8.4, 26.0), (17.2, 26.0), (17.2, 32.2), (8.4, 32.2)]},
             # the DUT switch's input (up to its ≈ 1.5 A limit): U9.IN and C20 on a top-side island, three vias
-            # down to In2's +5V (one 0.3 mm via and a 0.4 mm track before: pcba-review N4)
+            # down to In2's +5V (one 0.3 mm via and a 0.4 mm track before: pcba-review N4).  The vias sit in a
+            # row west of C20, and the island reaches the pin only along C20's row: rail → C20 → pin (the
+            # pin → cap → via rule)
             {"layer": "F.Cu", "net": "+5V", "name": "dutsw-in", "priority": 3, "connection": "solid",
-             "poly": [(51.9, 37.75), (53.4, 37.75), (53.4, 39.3), (54.9, 39.3), (54.9, 40.6), (53.55, 40.6),
-                      (53.55, 41.45), (52.55, 41.45), (52.55, 39.6), (51.9, 39.6)]},
+             "poly": [(49.7, 37.75), (53.4, 37.75), (53.4, 39.6), (53.55, 39.6), (53.55, 41.45), (52.55, 41.45),
+                      (52.55, 39.1), (49.7, 39.1)]},
         ],
         # C4's (the buck's 100 nF input capacitor) own GND via, right beside its GND pad (decoupling check)
         "vias": [("GND", 9.95, 46.6),
@@ -339,7 +341,7 @@ def board() -> Board:
                  *[("+3V3", x, y) for x, y in ((9.2, 26.8), (10.6, 26.8), (12.0, 26.8), (13.4, 26.8),
                                                (14.8, 26.8), (15.2, 28.4), (9.0, 29.8), (9.0, 31.5))],
                  ("+3V3", 41.5, 43.0), ("+3V3", 41.5, PWR_Y - 1.5),
-                 *[("+5V", x, y) for x, y in ((53.0, 39.85), (54.0, 39.95), (54.6, 39.95))],        # U9's input island
+                 *[("+5V", x, y) for x, y in ((50.1, 38.6), (50.85, 38.6), (51.6, 38.6))],          # U9's input island
                  *hs_vias,
                  *[(net, *xy) for net, _, _, xy, via, _, _ in TP_ROUND2 if via],       # the second round's test pads
                  *[(net, *pts[-1], 0.6, 0.3) for net, _, pts in decap_ties]],          # the decoupling ties' vias
