@@ -218,6 +218,8 @@ def board() -> Board:
     decap_ties = [
         # C14, U3's (the ESP32-S3-WROOM-1's) 100 nF, from its 3V3 pin (2); its via west of it
         ("+3V3", 0.25, [(23.25, 8.76), (22.675, 8.76), (21.9, 9.535), (21.45, 9.535), (20.4, 9.535)]),
+        # C16, D4's (the status RGB LED's) 100 nF, from its VDD pin (4); its via north of it
+        ("+3V3", 0.25, [(12.915, 87.65), (14.275, 87.7), (14.275, 86.65)]),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
