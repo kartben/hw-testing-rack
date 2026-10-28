@@ -48,11 +48,12 @@ class Copper:
 
     def __init__(self, path):
         root = parse(Path(path).read_text(encoding="utf-8"))
-        self.tracks, self.vias, self.pads, self.fills = [], [], [], {}
+        self.tracks, self.vias, self.pads, self.fills, self.values = [], [], [], {}, {}
         for fp in _all(root, "footprint"):
             at = _get(fp, "at")
             fx, fy, fr = float(at[1]), float(at[2]), float(at[3]) if len(at) > 3 else 0.0
             ref = next((p[2] for p in _all(fp, "property") if p[1] == "Reference"), "?")
+            self.values[ref] = next((p[2] for p in _all(fp, "property") if p[1] == "Value"), "")
             for pad in _all(fp, "pad"):
                 net = _get(pad, "net")
                 pat, size = _get(pad, "at"), _get(pad, "size")

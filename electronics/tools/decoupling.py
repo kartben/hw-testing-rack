@@ -6,7 +6,13 @@ layout) gets its own limit, with the reason beside it in design.py: {"C2": ("U1.
 
   * pin: from the capacitor's pad on the pin's net to the pin's pad, edge to edge, REACH mm at most (or its own);
   * via: from its other pad (its return, GND) to the nearest via or through-hole pad of that net, edge to edge,
-    VIA mm at most: the return goes straight down to the plane, not through a pour first.
+    VIA mm at most: the return goes straight down to the plane, not through a pour first;
+  * order (a capacitor of SMALL or less, the pin → cap → via rule of the layout review): the pin reaches the
+    capacitor's pad by copper on their one layer, no via on the way, and reaches no via of its rail but through that
+    pad.  Along tracks the order is strict.  Across a pour of the rail on that layer (an island the pin, the
+    capacitor and the rail's vias share, as a buck's input), a via only comes "before" the capacitor if it is nearer
+    the pin than the capacitor is.  A through-hole pad counts as a via, but for the pin itself (a connector's).
+    Bulk capacitors, over SMALL, are held to the distances only.
 
     python decoupling.py BOARD [...]      → each board's table, exit status 1 if a capacitor is too far
 
@@ -21,11 +27,21 @@ import math
 import sys
 from pathlib import Path
 
-from antennas import Copper
-from flowthru import _rot
+from antennas import Copper, _meets_track
+from flowthru import _in_pad, _rot
 
 REACH = 2.0                                     # mm, capacitor pad to pin pad
 VIA = 1.0                                       # mm, return pad to its via
+SMALL = 100e-9                                  # F: a capacitor this small or smaller sits between its pin and via
+
+
+def farads(value: str) -> float | None:
+    """"100n", "4.7u", "22u/50V", "1µF" → farads (None: not a capacitance)."""
+    import re
+    m = re.match(r"\s*([0-9]*\.?[0-9]+)\s*([pnuµm]?)", value or "")
+    if not m:
+        return None
+    return float(m.group(1)) * {"p": 1e-12, "n": 1e-9, "u": 1e-6, "µ": 1e-6, "m": 1e-3, "": 1.0}[m.group(2)]
 
 
 def corners(p) -> list[tuple[float, float]]:
@@ -81,6 +97,94 @@ def resolve(b, decl: dict) -> dict[str, tuple[str, str | None, float]]:
     return out
 
 
+def _pad_points(p):
+    """A pad's corners and edge midpoints: where a pour's spokes or a track's end meet it."""
+    cs = corners(p)
+    return cs + [((a[0] + b[0]) / 2, (a[1] + b[1]) / 2) for a, b in zip(cs, cs[1:] + cs[:1])]
+
+
+def order(c: Copper, pins: list, cp: dict) -> str | None:
+    """The pin → cap → via rule on the capacitor's layer: None if kept, else what breaks it."""
+    net = cp["net"]
+    layer = "F.Cu" if "F.Cu" in cp["layers"] else "B.Cu" if "B.Cu" in cp["layers"] else None
+    on = lambda p: "*" in p["layers"] or layer in p["layers"]
+    if layer is None or not all(on(q) for q in pins):
+        return f"not on {pins[0]['ref']}'s layer"
+    # the rail's copper on that layer, as nodes: pads, tracks, vias, pour pieces
+    nodes = [("pad", q) for q in c.pads if q["net"] == net and on(q)]
+    nodes += [("trk", t) for t in c.tracks if t["net"] == net and t["layer"] == layer]
+    nodes += [("via", v) for v in c.vias if v["net"] == net]
+    nodes += [("fill", f) for f in c.fills.get((net, layer), ())]
+    idx = {id(n[1]): i for i, n in enumerate(nodes)}
+    from antennas import _inside as in_fill, _near_outline
+
+    def touch(a, b, block=None) -> bool:
+        """Two copper items of the rail meet; never at a point inside `block` (the capacitor's pad, which the walk
+        must pass: two tracks joined on it meet through it)."""
+        (ka, x), (kb, y) = a, b
+        if ka > kb:
+            (ka, x), (kb, y) = (kb, y), (ka, x)
+        free = lambda q: block is None or not _in_pad(block, *q)
+        ends = lambda t: (t["g"][:2], t["g"][2:4])
+        if ka == "fill" and kb == "fill":
+            return False
+        if ka == "fill":                                    # fill with pad, trk, via
+            pts = _pad_points(y) if kb == "pad" else ends(y) if kb == "trk" else [(y["x"], y["y"])]
+            r = 0.1 if kb == "pad" else y["g"][4] / 2 if kb == "trk" else y["d"] / 2
+            return any(in_fill(x, *q) or _near_outline(x, *q, r) for q in pts)
+        if ka == "pad" and kb == "pad":
+            return any(_in_pad(y, *q) for q in _pad_points(x)) or any(_in_pad(x, *q) for q in _pad_points(y))
+        if ka == "pad" and kb == "trk":
+            return any(_in_pad(x, *e, y["g"][4] / 2) for e in ends(y))
+        if ka == "pad" and kb == "via":
+            return via_gap(x, y["x"], y["y"], y["d"] / 2) == 0.0
+        if ka == "trk" and kb == "trk":
+            return (any(_meets_track(y, *e) and free(e) for e in ends(x))
+                    or any(_meets_track(x, *e) and free(e) for e in ends(y)))
+        if ka == "trk" and kb == "via":
+            return any(math.hypot(e[0] - y["x"], e[1] - y["y"]) <= y["d"] / 2 + 0.002 and free(e) for e in ends(x))
+        return False                                        # via with via: not on one layer's copper
+
+    def spread(start, stop, through_vias, fills=True):
+        """The nodes reached from `start`, never past `stop` (nor through it); vias (and through-hole pads) only if
+        allowed, pours only if `fills`."""
+        block = nodes[next(iter(stop))][1] if stop else None
+        seen, todo = set(start), list(start)
+        while todo:
+            i = todo.pop()
+            for j, n in enumerate(nodes):
+                if j in seen or j in stop:
+                    continue
+                if not through_vias and (n[0] == "via" or (n[0] == "pad" and "*" in n[1]["layers"] and j not in start)):
+                    continue
+                if not fills and n[0] == "fill":
+                    continue
+                if touch(nodes[i], n, block):
+                    seen.add(j)
+                    todo.append(j)
+        return seen
+
+    start = {idx[id(q)] for q in pins if id(q) in idx}
+    cap = idx[id(cp)]
+    if cap not in spread(start, set(), False):
+        return f"no copper from {pins[0]['ref']} to it on {layer} but through a via"
+    is_via = lambda n: n[0] == "via" or (n[0] == "pad" and "*" in n[1]["layers"])
+    tracked = spread(start, {cap}, True, fills=False) - start
+    for j in sorted(tracked):
+        if is_via(nodes[j]):
+            n = nodes[j][1]
+            return f"{pins[0]['ref']} reaches a via at ({n['x']:.2f}, {n['y']:.2f}) before it"
+    gap = min(pad_gap(cp, q) for q in pins)
+    for j in sorted(spread(start, {cap}, True) - start - tracked):
+        if is_via(nodes[j]):
+            n = nodes[j][1]
+            d = min(via_gap(q, n["x"], n["y"], n["d"] / 2) if nodes[j][0] == "via" else pad_gap(q, n) for q in pins)
+            if d < gap:
+                return (f"{pins[0]['ref']} reaches a via at ({n['x']:.2f}, {n['y']:.2f}) across the pour, {d:.2f} mm "
+                        f"off: nearer than it")
+    return None
+
+
 def check(path, decl: dict) -> list[dict]:
     """One row per declared capacitor: {cap, pin, net, ret, side, pin_mm, via_mm, reach, problems}.  `decl`: {cap:
     "REF.NUM" or ("REF.NUM", mm)}, or resolve()'s {cap: ("REF.PIN", net, mm)}."""
@@ -92,7 +196,7 @@ def check(path, decl: dict) -> list[dict]:
     for cap, v in decl.items():
         (pin, net, reach) = v if isinstance(v, tuple) and len(v) == 3 else (_limit(v)[0], None, _limit(v)[1])
         row = {"cap": cap, "pin": pin, "net": "?", "ret": "?", "side": "?", "pin_mm": math.inf, "via_mm": math.inf,
-               "reach": reach, "problems": []}
+               "reach": reach, "small": False, "order": None, "problems": []}
         rows.append(row)
         ref = pin.split(".", 1)[0]
         pins = by_ref.get(pin) or [q for n, qs in by_ref.items() if n.split(".", 1)[0] == ref for q in qs
@@ -120,6 +224,12 @@ def check(path, decl: dict) -> list[dict]:
             row["problems"].append(f"{row['pin_mm']:.2f} mm from {pin} (max {reach})")
         if row["via_mm"] > VIA:
             row["problems"].append(f"its {rp['net']} {row['via_mm']:.2f} mm from a via (max {VIA})")
+        f = farads(c.values.get(cap, ""))
+        row["small"] = f is not None and f <= SMALL * 1.001
+        if row["small"]:
+            row["order"] = order(c, pins, cp)
+            if row["order"]:
+                row["problems"].append(f"order: {row['order']}")
     return rows
 
 

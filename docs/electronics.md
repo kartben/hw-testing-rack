@@ -41,7 +41,12 @@ lists.  Bulk, bootstrap, timing and RC capacitors serve no one pin and stay
 undeclared; the table names them.  A capacitor whose place a datasheet's
 reference layout sets gets its own limit, its reason beside it: each buck's
 first 10 µF input capacitor keeps TI's spot, 2.65 mm from VIN on the pins'
-own top-side islands, under a 3 mm limit.
+own top-side islands, under a 3 mm limit.  A capacitor of 100 nF or less also keeps the
+pin → cap → via order: the pin reaches its pad by copper on their one layer,
+with no via on the way, and reaches no via of its rail but through that pad.
+On an island the pin, the capacitor and the rail's vias share (a buck's
+input), a via only breaks it if it lies nearer the pin than the capacitor.
+The boards `decoupling.json`'s `order_pending` list names still break it.
 
 **Schematics** are drawn, not just generated: every part in `design.py` has
 an `sch=` position on the 0.1" grid and the main paths are real wires
