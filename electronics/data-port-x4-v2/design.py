@@ -1246,6 +1246,9 @@ def board() -> Board:
             [(ex - hp, p6[1] - 0.5), (p6[0] + 0.76, p6[1]), p6]
         dp = [(x0_ + 0.25, HY + 4.4125), (x0_ + 0.25, HY + 4.9)] + offset(c, -hp) + \
             [(ex + hp, p4[1] - 0.45), (ex - 0.25, p4[1]), p4]
+        # no point within 0.1 mm of the last one kept (port 4's D− met its turn into the ESD 0.05 mm on: a sliver)
+        dn, dp = ([q for i, q in enumerate(pts) if i in (0, len(pts) - 1) or
+                   ((q[0] - pts[i - 1][0]) ** 2 + (q[1] - pts[i - 1][1]) ** 2) ** 0.5 >= 0.1] for pts in (dn, dp))
         dn = bumps(dn, hs_bump_y[n], 2, (plen(dp) - plen(dn)) / 4)
         hand_tracks += [(f"PORT{n}_DN", "F.Cu", USB_W, dn), (f"PORT{n}_DP", "F.Cu", USB_W, dp)]
     # Ports 1 and 3 come down just east of the expanders, whose east pins (SCL, INT, the second port's RST_IO and
