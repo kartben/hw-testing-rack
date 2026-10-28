@@ -109,7 +109,7 @@ LDO = (9.7, 55.7)
 # milled.  Two mouse-bite tabs join them where both top edges are bare: at x 9 and 91 (each the other's mirror,
 # so they meet), clear of the cradle's 5.5 mm ends; no copper within 1.2 mm of the edge there
 TABS, TAB_W = (9.0, 91.0), 6.0
-# The bring-up test points (Eve's DFT rule, relayed 2026-10-26): bare pads on the rear face (B.Cu, mask open, no
+# The bring-up test points (the DFT rule, 2026-10-26): bare pads on the rear face (B.Cu, mask open, no
 # paste, out of the BOM and CPL), each named on B.SilkS under it; 1.5 mm on GND and the rails, 1.0 mm on signals.
 # GND spread over the board, the supplies, the resets, the faults, SWD and the buses a header or J1 doesn't already
 # bring out, never a USB pair; each > 2 mm from the THT pads and J1, clear of the cradle's 5.5 mm ends, the push
@@ -143,7 +143,7 @@ TPS = {
     "TP301": ("PORT3_FLT_N", "FLT3", 1.0, 56.68, 49.3), "TP401": ("PORT4_FLT_N", "FLT4", 1.0, 74.75, 49.9),
     # the crosspoints' eight buses (the co-processor's GPIO2–9), behind its east side where they all pass: A, B, E
     # and F on a rear track of their own, C, D, G and H beside one (H, front only, through a via), with a GND
-    # (Eve's review, 2026-10-27)
+    # (the design review, 2026-10-27)
     "TP29": ("BUS_A", "A", 1.0, 56.68, 9.92), "TP30": ("BUS_B", "B", 1.0, 51.79, 15.67),
     "TP31": ("BUS_C", "C", 1.0, 52.3, 19.1), "TP32": ("BUS_D", "D", 1.0, 57.3, 17.2),
     "TP33": ("BUS_E", "E", 1.0, 57.16, 14.51), "TP34": ("BUS_F", "F", 1.0, 54.74, 11.99),
@@ -152,7 +152,7 @@ TPS = {
     # each expander's RESET, by its pull-up's via
     "TP38": ("EXP1_RST_N", "EXP1 RST", 1.0, 28.55, 50.25), "TP39": ("EXP2_RST_N", "EXP2 RST", 1.0, 63.85, 50.05),
 }
-# The co-processor's SWD header (the user, 2026-10-27; Eve's suggestion): 1 × 5 through-hole on the front face's top
+# The co-processor's SWD header (the user, 2026-10-27, after the design review): 1 × 5 through-hole on the front face's top
 # edge, right of the co-processor, where both faces are free and a probe reaches it from above with the board in its
 # cradle (a box4 cover lifts off first).  Pins 1–3 in the Pico 2's debug order, so the Raspberry Pi Debug Probe's
 # 3-pin lead plugs straight on; RUN and VTref for a J-Link or an ST-Link on Dupont wires.  VTref is the board's
@@ -186,7 +186,7 @@ TPD_THRU = {1: 10, 2: 9, 4: 7, 5: 6}  # the pad across from each: the line runs 
 
 
 def xtal_block():
-    """The hub's crystal Y1, drawn (Eve's layout review, 2026-10-28): XI and XO on F.Cu only, no via, every end on
+    """The hub's crystal Y1, drawn (the layout review, 2026-10-28): XI and XO on F.Cu only, no via, every end on
     its pad's centre.  XI from Y1's south-east pad east through R10 to pin 61; XO from its north-west pad, under the
     case between the east pads (a GND pad above, XI's below, 0.4 mm each), through R10 to pin 60: the two run east
     0.5 mm apart into the pins.  C4 under XI's pad, its GND on Y1's south-west GND via; C5 over XO's, with its own;
@@ -235,7 +235,7 @@ XTAL_RULE = """
 
 
 def xtal2_block():
-    """The co-processor's crystal Y2, its lines drawn as they lay, on F.Cu with no via (Eve's layout review,
+    """The co-processor's crystal Y2, its lines drawn as they lay, on F.Cu with no via (the layout review,
     2026-10-28): XIN from pin 30 up between the two bottom pads to the top-right one, C48 off it; XOUT from pin 31
     up beside XIN, over C47 (no longer under its body, between its pads) to R22, then XTAL to the bottom-left pad,
     C49 off it.  No other net's track or via on F.Cu over the block (XTAL2_KEEP, XTAL2_RULE); the rear face keeps
@@ -664,7 +664,7 @@ def hub_sheet(b: Board):
     part(s, "U1", "usb2517", hub, pcb=P(HX, HY, 90), sch=at(124, 62, fields=(-11, -20)))
     # the seven 3.3 V pins on one rail
     rail(s, "+3V3", [f"U1.{n}" for n in (46, 64, 24, 5, 10, 52, 57)], -3)
-    # the crystal right west of XTAL1/XTAL2 (west face pins 61/60), drawn on F.Cu with no via (Eve's layout review,
+    # the crystal right west of XTAL1/XTAL2 (west face pins 61/60), drawn on F.Cu with no via (the layout review,
     # 2026-10-28: "les pistes restent en top et routé au plus proche des pins, avec du GND autour"; xtal_block()).
     # Turned 90°: XI (pin 61, the lower) leaves its south-east pad straight east, XO (pin 60) its north-west one,
     # under the case between the two east pads (its own net only) and east too; each load capacitor on its pad
@@ -677,10 +677,10 @@ def hub_sheet(b: Board):
     # 1 MΩ across XTAL1–XTAL2 as the datasheet's Fig. 9-1 draws it (and Microchip's EVB fits it, R19): DS00001598C
     # never says it is inside (the audit's U2, its conservative option); right east of the crystal, across XO and XI
     R(s, "R10", "1M", "XO", "XI", size="0402", pcb=P(XT[0] + 2.3, XT[1] + 0.25, 270), sch=at(94, 56, rot=90))
-    # decoupling, by pin: west 64 (below the corner), 57 and 52; south 5 (C15 right under it, between ports 2
-    # and 3's pairs) and 10 (right of the DN pairs); east 24; north 46 (C17 right over it, in the straps' row, its
-    # +3V3 pad down: R3 gave it the spot)
-    for i, (ref, xy, rot) in enumerate((("C11", (HX - 4.7, HY + 6.6), 90), ("C13", (HX - 6.2, HY - 1.1), 180),
+    # decoupling, by pin: west 64 (C11 below the corner, its +3V3 pad up), 57 and 52; south 5 (C15 right under
+    # it, between ports 2 and 3's pairs) and 10 (right of the DN pairs); east 24; north 46 (C17 right over it, in
+    # the straps' row, its +3V3 pad down: R3 gave it the spot)
+    for i, (ref, xy, rot) in enumerate((("C11", (HX - 4.7, HY + 6.2), 270), ("C13", (HX - 6.2, HY - 1.1), 180),
                                         ("C12", (HX - 6.2, HY - 2.25), 180), ("C15", (HX - 1.75, HY + 6.4), 270),
                                         ("C16", (HX + 1.6, HY + 7.6), 90), ("C14", (HX + 6.05, HY + 1.2), 90),
                                         ("C17", (HX - 2.85, HY - 6.4), 90))):
@@ -1324,6 +1324,10 @@ def board() -> Board:
         hand_tracks.append(("+3V3", "F.Cu", 0.25, [(px, HY + 4.4125), (px, HY + 3.75)]))
         hand_vias.append(("+3V3", px, HY + 3.75, 0.5, 0.3))
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX - 1.75, HY + 4.4125), (HX - 1.75, HY + 5.92)]))
+    # pin 64's: the pin, its via, then C11 (its 100 nF) right below the corner
+    p64 = (HX - 4.4125, HY + 3.75)                                      # U1 pin 64
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [p64, (HX - 4.7, p64[1] + 0.2875), (HX - 4.7, HY + 5.72)]))
+    hand_vias.append(("+3V3", HX - 4.7, HY + 4.55, 0.5, 0.3))
     six = LAYERS == 6
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
