@@ -482,8 +482,11 @@ def board() -> Board:
     c.block("CAN: TJA1462AT, star bus (all row ports in parallel), both terminations here")
     part(c, "U6", "can_xcvr", {"TXD": "CAN_TXD", "VSS": "GND", "VDD": "+5V", "RXD": "CAN_RXD", "Vio": "+3V3",
                                "CANL": "CAN_L", "CANH": "CAN_H", "STBY": "CAN_STB"}, "TJA1462AT", pcb=P(56.0, 60.0, 0))
-    C(c, "C116", "100n", "+5V", "GND", pcb=P(50.6, 57.6, 0))
-    C(c, "C117", "100n", "+3V3", "GND", pcb=P(50.6, 62.4, 0))
+    # each at its pin, against U6's courtyard: C116 standing west of VDD (3), its GND pad by pin 2 (GND), so RXD
+    # (pin 4) leaves under it; C117 east of VIO (5) (decoupling check, Eve's review: both sat west of the part, 3.2
+    # and 7.2 mm away)
+    C(c, "C116", "100n", "+5V", "GND", pcb=P(51.5, 59.9, 90))
+    C(c, "C117", "100n", "+3V3", "GND", pcb=P(61.2, 61.91, 0))
     # 5.1k: STB's internal pull-up can be 20 kΩ, so with IO9 floating 10k left STB at up to 1.10 V, above VIL
     # 0.99 V; 5.1k holds it ≤ 0.67 V (NXP TJA1462 §7.3.2, Table 8: datasheet audit F2)
     R(c, "R214", "5.1k", "CAN_STB", "GND", pcb=P(62.0, 57.4, 0))
