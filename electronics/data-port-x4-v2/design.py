@@ -234,6 +234,44 @@ XTAL_RULE = """
 """
 
 
+def xtal2_block():
+    """The co-processor's crystal Y2, its lines drawn as they lay, on F.Cu with no via (Eve's layout review,
+    2026-10-28): XIN from pin 30 up between the two bottom pads to the top-right one, C48 off it; XOUT from pin 31
+    up beside XIN, over C47 (no longer under its body, between its pads) to R22, then XTAL to the bottom-left pad,
+    C49 off it.  No other net's track or via on F.Cu over the block (XTAL2_KEEP, XTAL2_RULE); the rear face keeps
+    the slow SWD/RUN lines to J2 under it, In1's solid GND between them."""
+    x = CP[0]
+    pin30, pin31 = (x + 0.2, 7.95), (x - 0.2, 7.95)
+    y1, y3, c48, c49, r1, r2 = (x + 2.4, 1.35), (x + 0.2, 3.05), (x + 4.4, 2.08), (x - 1.4, 1.88), (x - 1.6, 3.91),         (x - 1.6, 2.89)
+    # the GND dog-bones of C48, C49 and Y2's top-left GND pad, where main had them (the block keeps the automatic
+    # ones out; its bottom-right GND pad keeps its own, outside)
+    gnd = [((x + 4.4, 1.12), (x + 5.09, 0.84), 0.25), ((x - 1.4, 0.92), (x - 2.06, 0.92), 0.25),
+           ((x + 0.2, 1.35), (x + 1.24, 0.75), 0.2)]
+    return [("CP_XIN", "F.Cu", 0.127, [pin30, (x + 0.2, 7.38), (x + 1.07, 6.51), (x + 1.07, 2.98), (x + 2.05, 2.0),
+                                         (x + 2.4, 2.0), y1]),
+            ("CP_XIN", "F.Cu", 0.127, [(x + 2.4, 2.0), (x + 2.48, 2.08), c48]),
+            ("CP_XOUT", "F.Cu", 0.127, [pin31, (x - 0.2, 7.45), (x + 0.15, 7.1), (x + 0.15, 4.4), (x - 0.2, 4.05),
+                                          (x - 1.46, 4.05), r1]),
+            ("CP_XTAL", "F.Cu", 0.127, [r2, (x + 0.04, 2.89), y3]),
+            ("CP_XTAL", "F.Cu", 0.127, [r2, (x - 1.6, 2.08), c49]),
+            # beside XOUT's way up: C47 (+1V1, DVDD pin 32's 4.7 µF) straight down to its pin, and C44's +3V3_CP
+            # via moved west off that line (the router had put it on it, and +1V1 round it)
+            ("+1V1", "F.Cu", 0.25, [(x - 0.6, 5.98), (x - 0.6, 7.95)]),
+            ("+3V3_CP", "F.Cu", 0.25, [(x - 2.2, 5.98), (x - 1.4, 6.78), (x - 1.15, 6.78)])] +         [("GND", "F.Cu", w, [a, v]) for a, v, w in gnd],         [("GND", *v, 0.5, 0.3) for _, v, _ in gnd] + [("+3V3_CP", x - 1.15, 6.78, 0.5, 0.3)]
+
+
+# the co-processor crystal's block on F.Cu (xtal2_block()): Y2, C48, C49, R22 and the lines down to pins 30/31
+XTAL2_KEEP = [(CP[0] + dx, y) for dx, y in ((-2.15, 0.4), (4.95, 0.4), (4.95, 2.6), (3.5, 2.6), (3.5, 4.1),
+                                             (1.35, 4.1), (1.35, 6.7), (0.4, 7.3), (-0.05, 7.3), (-0.05, 4.3),
+                                             (-1.05, 4.3), (-1.05, 4.45), (-2.15, 4.45))]
+XTAL2_RULE = """
+(rule "crystal Y2: CP_XIN, CP_XOUT, CP_XTAL and GND only over its parts on F.Cu"
+	(layer F.Cu)
+	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Co-processor/CP_XIN' && A.NetName != '/Co-processor/CP_XOUT' && A.NetName != '/Co-processor/CP_XTAL' && A.NetName != 'GND' && (A.intersectsCourtyard('Y2') || A.intersectsCourtyard('C48') || A.intersectsCourtyard('C49') || A.intersectsCourtyard('R22'))")
+	(constraint disallow track via))
+"""
+
+
 def p_lines(n: int):
     """Port n's eight P lines, drawn (the kicad-happy review's X2-1, 2026-10-27: Freerouting had run six of them
     from the header straight to the 100 Ω array, their ESD on a stub).  Every port alike: header pin → B.Cu → a
@@ -890,7 +928,8 @@ def coproc_sheet(b: Board):
     rail(s, "GND", [f"C{45 + i}.2" for i in range(3)], 1, "down")
     s.frame("12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 5 (22 Ω), RUN, BOOTSEL, LED, SWD",
             124, 56, 228, 98)
-    # over the north face's XIN (pin 30) and XOUT (31): XIN to its pin 1 (right), XOUT through R22 to pin 3 (left)
+    # over the north face's XIN (pin 30) and XOUT (31): XIN to its pin 1 (right), XOUT through R22 to pin 3 (left);
+    # the lines drawn, the block kept clear on F.Cu (xtal2_block())
     part(s, "Y2", "xtal12", {"1": "CP_XIN", "3": "CP_XTAL", "2": "GND", "4": "GND"}, pcb=P(cx + 1.3, 2.2, 180),
          sch=at(140, 68, fields=(-2, -4)))
     C(s, "C48", "15p", "CP_XIN", "GND", size="0402", pcb=P(cx + 4.4, 1.6, 90), sch=at(134, 72))
@@ -1052,6 +1091,9 @@ def board() -> Board:
                     ("GND", "F.Cu", 0.2, [(HX + 3.25, HY + 7.1), (HX + 3.5, HY + 6.85), (HX + 3.5, HY + 6.45)])]
     hand_vias.append(("GND", HX + 3.5, HY + 6.45, 0.5, 0.3))
     t, v = xtal_block()
+    hand_tracks += t
+    hand_vias += v
+    t, v = xtal2_block()
     hand_tracks += t
     hand_vias += v
     # CP_RUN, from the matrix expander's P5 (pin 10, top left) to the co-processor's RUN pull-up R25, along the
@@ -1315,10 +1357,11 @@ def board() -> Board:
             *vreg_zones,
         ],
         "tracks": hand_tracks, "vias": hand_vias,
-        "dru": XTAL_RULE,
+        "dru": XTAL_RULE + XTAL2_RULE,
         "keepouts": [
             # the hub crystal's block: no other net's track or via on either face (dropped once routed)
             {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP},
+            {"name": "core:xtal-y2", "layers": ["F.Cu"], "poly": XTAL2_KEEP},
             # no via round the SWD header's hand-soldered pins (a GND stitching via landed 0.4 mm from pin 1's pad):
             # a bridge on the rear face would ground SWCLK
             {"name": "swd-hdr", "layers": ["F.Cu", "B.Cu"], "vias_only": True,

@@ -10,6 +10,11 @@
 	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Hub/XI' && A.NetName != '/Hub/XO' && A.NetName != 'GND' && (A.intersectsCourtyard('Y1') || A.intersectsCourtyard('C4') || A.intersectsCourtyard('C5') || A.intersectsCourtyard('R10'))")
 	(constraint disallow track via))
 
+(rule "crystal Y2: CP_XIN, CP_XOUT, CP_XTAL and GND only over its parts on F.Cu"
+	(layer F.Cu)
+	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Co-processor/CP_XIN' && A.NetName != '/Co-processor/CP_XOUT' && A.NetName != '/Co-processor/CP_XTAL' && A.NetName != 'GND' && (A.intersectsCourtyard('Y2') || A.intersectsCourtyard('C48') || A.intersectsCourtyard('C49') || A.intersectsCourtyard('R22'))")
+	(constraint disallow track via))
+
 (rule "power pins connect solid"
 	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '+3V3' || A.NetName == '+5V' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == 'GND') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
 	(constraint zone_connection solid))
