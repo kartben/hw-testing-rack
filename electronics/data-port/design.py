@@ -134,6 +134,10 @@ def board() -> Board:
         # nets carrying power (≳ 0.5 A): their IC, connector and big pads connect solid to the pours, small
         # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
         "power_nets": {"GND": 1, "VBUS": 2},
+        # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
+        # (electronics/tools/decoupling.py, Eve's layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
+        # serve no one pin: left out
+        "decoupling": {"C3": "U1.5"},
         "zones": [
             {"layer": "F.Cu", "net": "GND"},
             {"layer": "B.Cu", "net": "GND"},

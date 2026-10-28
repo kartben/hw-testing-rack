@@ -205,6 +205,12 @@ def board() -> Board:
         # nets carrying power (≳ 0.5 A): their IC, connector and big pads connect solid to the pours, small
         # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
         "power_nets": {"GND": 1, "VRACK": 2, "ROW_?": 2, "+5V_BUCK": 2, "+5V": 2, "USB_VBUS": 2},
+        # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
+        # (electronics/tools/decoupling.py, Eve's layout review, 2026-10-28).  Bulk, bootstrap, timing, filter and
+        # RC capacitors serve no one pin: left out
+        "decoupling": {"C4": "U1.VDD", **{f"C{10 + n}": f"U{10 + n}.IN" for n in range(1, 5)},
+                       "C104": "U2.VIN", "C105": "U2.VIN", "C106": "U2.VIN", "C111": "U3.VIN", "C112": "U3.VOUT",
+                       "C113": "U4.3V3", "C114": "U4.3V3", "C120": "U5.5", "C116": "U6.VDD", "C117": "U6.Vio"},
         "stitch": 4.0,
         # GCT's USB4105 footprint puts its GND pads 0.19 mm from its own NPTH pegs (the datasheet's land pattern)
         "dru": "".join(f"""

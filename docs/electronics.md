@@ -31,6 +31,15 @@ finds them in the board file, and `tools/tests/test_antennas.py` holds every
 board to none, but the ones `electronics/antennas.json` still lists.  KiCad's
 DRC reports a dangling track or via as an error.
 
+**Decoupling** (the same review): each board's `design.py` names, in
+`b.pcb["decoupling"]`, the power pin every decoupling capacitor serves.
+`electronics/tools/decoupling.py` measures, from the board file, the capacitor's
+pad to that pin (2 mm at most, edge to edge) and its GND pad to the nearest GND
+via (1 mm at most).  `tools/tests/test_decoupling.py` prints each board's table
+and holds it to both, but on the boards `electronics/decoupling.json` still
+lists.  Bulk, bootstrap, timing and RC capacitors serve no one pin and stay
+undeclared; the table names them.
+
 **Schematics** are drawn, not just generated: every part in `design.py` has
 an `sch=` position on the 0.1" grid and the main paths are real wires
 (`Sheet.wire("U1.SW", "L1.1")`), so each sheet reads left to right like a
