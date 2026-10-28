@@ -1435,7 +1435,11 @@ def board() -> Board:
         # 22 µF), the crystals' load capacitors and the charge pump's flying capacitor.  C8, VDD18PLL's 4.7 µF, is
         # its store, behind C10 (the 100 nF at the pin), right under the crystal: its own 2.5 mm limit (no spot
         # nearer clears Y1's courtyard); so is C7, VDD18's 4.7 µF, behind C9.  C21 and C24, each crosspoint's VDD 1 µF, are its store too, stacked
-        # right behind the 100 nF at the pin (C20, C23): their own 3 mm limit
+        # right behind the 100 nF at the pin (C20, C23): their own 3 mm limit.  Round the co-processor, C40, C41
+        # (IOVDD pins 5, 15) and C46 (DVDD pin 10) keep their places with their own limits: the pull-up and bus lines
+        # frame those pins on its east face (a GPIO reassignment was tried on 2026-10-29, and three routing passes
+        # did not close the east face's bus fan-out); C46's +1V1 also has C47 (4.7 µF) 2.0 mm from pin 32, no via.
+        # C44 (IOVDD pin 29) too: over the pin lies the crystal Y2's F.Cu keep-out
         "decoupling": {
             "C2": "U3.3", "C3": "U3.2", "C6": "U5.3",                                   # the LDO in and out, MAX809S
             "C7": ("U1.25", 2.5), "C9": "U1.25", "C8": ("U1.62", 2.5), "C10": "U1.62",  # the hub's VDD18, PLL
@@ -1447,8 +1451,9 @@ def board() -> Board:
             "C27": "U9.2", "C28": "U9.1",                                                 # crosspoints, charge pump
             "C32": "U11.64", "C33": "U11.65", "C34": "U11.61",                           # the core regulator
             "C35": "U11.41", "C36": "U11.50", "C37": "U11.59", "C38": "U11.69", "C39": "U11.76",
-            "C40": "U11.5", "C41": "U11.15", "C42": "U11.24", "C43": "U11.24", "C44": "U11.29",   # IOVDD
-            "C45": "U11.51", "C46": "U11.10", "C47": "U11.32",                           # DVDD
+            "C40": ("U11.5", 3.1), "C41": ("U11.15", 3.8), "C42": "U11.24", "C43": "U11.24",       # IOVDD
+            "C44": ("U11.29", 3.0),
+            "C45": "U11.51", "C46": ("U11.10", 4.0), "C47": "U11.32",                    # DVDD
             **{f"C{k + 1}": f"U{k + 1}.1" for k in (100, 200, 300, 400)},              # each port's switch IN
             **{f"C{k + 3}": f"U{k + 2}.6" for k in (100, 200, 300, 400)},              # its INA226
             **{f"C{k + 4}": f"U{k + 3}.5" for k in (100, 200, 300, 400)},              # its USBLC6's VBUS
