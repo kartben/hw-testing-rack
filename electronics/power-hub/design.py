@@ -196,6 +196,8 @@ def board() -> Board:
     decap_ties = [
         # C114, U4's (the ESP32-S3-MINI-1's) 100 nF, from its 3V3 pin (3); its via south of it
         ("+3V3", 0.25, [(23.0, 8.8), (21.325, 8.8), (21.325, 9.85)], True),
+        # C117, U6's (the TJA1462AT CAN transceiver's) 100 nF, from its VIO pin (5); its via south of it
+        ("+3V3", 0.25, [(58.475, 61.905), (60.425, 61.91), (60.425, 62.95)], True),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 3.0, "passes": 60,
