@@ -190,6 +190,13 @@ def board() -> Board:
         # EN's RC at the module's pin 45 (pcba-review H13): C115 beside it, below the module's antenna keep-out
         ("EN", "F.Cu", 0.25, [(37.0, 7.1), (38.275, 7.1), (39.225, 6.15)]),
     ]
+    # the pin → cap → via rule (the layout review): a small decoupling capacitor's pin reaches its rail only through
+    # the capacitor.  A drawn track runs from the pin through the capacitor's pad to the capacitor's own via (the pin
+    # then has no fan-out via of its own).  (net, width, [pin, ..., cap pad, ..., via], via drawn)
+    decap_ties = [
+        # C114, U4's (the ESP32-S3-MINI-1's) 100 nF, from its 3V3 pin (3); its via south of it
+        ("+3V3", 0.25, [(23.0, 8.8), (21.325, 8.8), (21.325, 9.85)], True),
+    ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 3.0, "passes": 60,
         # the bay node's build: JLC's standard 4-layer stackup and lead-free HASL.  ENIG until 2026-10-19, for
@@ -266,8 +273,10 @@ def board() -> Board:
             # (A9/B4); the router's own fan-out of these pads goes at the import (pcbgen.drop_redundant_fanouts)
             ("GND", 58.35, 5.3, 0.5, 0.3),
             *[(net, *xy) for net, _, _, xy, via, _ in TP_ROUND2 if via],      # the second round's test pads
+            *[(net, *pts[-1], 0.6, 0.3) for net, _, pts, own in decap_ties if own],   # the decoupling ties' vias
         ],
-        "tracks": tracks + [("GND", "F.Cu", 0.3, [(58.8, 7.08), (58.35, 6.63), (58.35, 5.3)])],
+        "tracks": tracks + [("GND", "F.Cu", 0.3, [(58.8, 7.08), (58.35, 6.63), (58.35, 5.3)])]
+                  + [(net, "F.Cu", w, pts) for net, w, pts, _ in decap_ties],
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
         "keepouts": [{"name": "antenna", "poly": [(21.3, -0.1), (38.7, -0.1), (38.7, 5.6), (21.3, 5.6)]}],
         "texts": [
