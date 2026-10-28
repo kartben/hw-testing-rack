@@ -823,12 +823,13 @@ def matrix_sheet(b: Board):
     s.tag("+5V_MX", ("FB1.2", 3, 0), "right")
     s.part("#FLG06", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V_MX"}, in_bom=False, on_board=False,
            sch=at(132, 14))
-    # in the left-hand column beside the left crosspoint; −5 V on to the right one is a low-current line
+    # in the left-hand column beside the left crosspoint; −5 V on to the right one is a low-current line.  Its
+    # input and output capacitors (C27, C28) right west of IN and OUT (pins 2, 1), on lines of their own
     part(s, "U9", "tps60400", {"IN": "+5V_MX", "OUT": "-5V", "C_{FLY+}": "CP_FLYP", "C_{FLY-}": "CP_FLYN", "GND": "GND"},
          pcb=P(10.0, 24.0, 0), sch=at(150, 30, fields=(-4, -6)))
     C(s, "C26", "1u", "CP_FLYP", "CP_FLYN", size="0402", pcb=P(10.0, 26.8, 0), sch=at(170, 36))
-    C(s, "C27", "1u", "+5V_MX", "GND", size="0402", pcb=P(10.0, 21.2, 0), sch=at(132, 34))
-    C(s, "C28", "1u", "-5V", "GND", size="0402", pcb=P(13.4, 24.0, 90), sch=at(186, 36))
+    C(s, "C27", "1u", "+5V_MX", "GND", size="0402", pcb=P(6.95, 24.05, 180), sch=at(132, 34))
+    C(s, "C28", "1u", "-5V", "GND", size="0402", pcb=P(6.95, 23.0, 180), sch=at(186, 36))
 
     s.frame("The node's matrix expander (TCA9534A, 0x38): the crosspoints and the co-processor's RUN / BOOTSEL",
             114, 58, 228, 110)
@@ -1085,6 +1086,12 @@ def board() -> Board:
     hand_tracks += [("+3V3", "F.Cu", 0.6, [(lx, ly - 5.35), (lx, ly - 3.5), (lx + 3.05, ly - 3.5)]),
                     ("+5V", "F.Cu", 0.6, [(lx + 2.3, ly + 3.15), (lx + 1.9, ly + 4.8)]),
                     ("+5V", "F.Cu", 0.6, [(lx + 3.15, ly + 4.8), (lx + 2.9, ly + 5.95)])]
+    # the charge pump's OUT and IN (U9's pins 1, 2) straight west to C28 and C27
+    hand_tracks += [("-5V", "F.Cu", 0.25, [(8.8625, 23.05), (7.43, 23.0)]),
+                    ("+5V_MX", "F.Cu", 0.25, [(8.8625, 24.0), (7.43, 24.05)])]
+    # and OUT along U9's north side to where its −5 V line splits, as the router had it (to the crosspoints east
+    # and TP4 north; the router, left to it, joined neither once C28 had moved)
+    hand_tracks.append(("-5V", "F.Cu", 0.25, [(8.8625, 23.05), (9.41, 22.502), (11.841, 22.502)]))
     # C18, C19 (the expanders' 100 nF): VCCI (pin 15) straight up to it, VCCP (pin 14) bridged to VCCI and up to
     # its own via, where its fan-out had it; its GND pad's via east of it (the automatic one went up onto
     # PORT1_RST_IO's via)
