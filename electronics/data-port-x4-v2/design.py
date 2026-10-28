@@ -1360,6 +1360,25 @@ def board() -> Board:
             *vreg_zones,
         ],
         "tracks": hand_tracks, "vias": hand_vias,
+        # each decoupling capacitor's pin (electronics/tools/decoupling.py: its pad ≤ 2 mm from the pin, its GND pad
+        # ≤ 1 mm from a GND via).  Not declared: bulk (C1, J1's; C31, the co-processor's island; each port's VBUS
+        # 22 µF), the crystals' load capacitors and the charge pump's flying capacitor
+        "decoupling": {
+            "C2": "U3.3", "C3": "U3.2", "C6": "U5.3",                                   # the LDO in and out, MAX809S
+            "C7": "U1.25", "C9": "U1.25", "C8": "U1.62", "C10": "U1.62",                 # the hub's VDD18, VDD18PLL
+            "C11": "U1.64", "C12": "U1.52", "C13": "U1.57", "C14": "U1.24", "C15": "U1.5", "C16": "U1.10",
+            "C17": "U1.46",                                                               # its seven 3.3 V pins
+            "C18": "U2.15", "C19": "U6.15", "C29": "U10.16",                             # the expanders
+            "C20": "U7.38", "C21": "U7.38", "C22": "U7.16", "C23": "U8.38", "C24": "U8.38", "C25": "U8.16",
+            "C27": "U9.2", "C28": "U9.1",                                                 # crosspoints, charge pump
+            "C32": "U11.64", "C33": "U11.65", "C34": "U11.61",                           # the core regulator
+            "C35": "U11.41", "C36": "U11.50", "C37": "U11.59", "C38": "U11.69", "C39": "U11.76",
+            "C40": "U11.5", "C41": "U11.15", "C42": "U11.24", "C43": "U11.24", "C44": "U11.29",   # IOVDD
+            "C45": "U11.51", "C46": "U11.10", "C47": "U11.32",                           # DVDD
+            **{f"C{k + 1}": f"U{k + 1}.1" for k in (100, 200, 300, 400)},              # each port's switch IN
+            **{f"C{k + 3}": f"U{k + 2}.6" for k in (100, 200, 300, 400)},              # its INA226
+            **{f"C{k + 4}": f"U{k + 3}.5" for k in (100, 200, 300, 400)},              # its USBLC6's VBUS
+            **{f"C{k + 5}": f"U{k + 7}.20" for k in (100, 200, 300, 400)}},            # its LSF0108's VREF_B
         "dru": XTAL_RULE + XTAL2_RULE,
         "keepouts": [
             # the hub crystal's block: no other net's track or via on either face (dropped once routed)
