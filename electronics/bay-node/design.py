@@ -519,7 +519,8 @@ def board() -> Board:
     part(m, "D4", "rgb", {"VDD": "+3V3", "VSS": "GND", "DIN": "LED_DIN_R", "DOUT": None}, pcb=P(12, 88.2, 0),
          sch=at(31, 57, fields=(4, 1)))
     R(m, "R8", "33", "LED_DIN", "LED_DIN_R", pcb=P(16, 84.5, 0), sch=at(19.5, 57, rot=90))
-    C(m, "C16", "100n", "+3V3", "GND", pcb=P(16, 87.8, 90), sch=at(37, 53.5))
+    # lying beside VDD (pin 4), its +3V3 pad towards it (decoupling check, Eve's review: 2.3 mm, standing)
+    C(m, "C16", "100n", "+3V3", "GND", pcb=P(15.05, 87.7, 0), sch=at(37, 53.5))
     m.wire("R8.2", "D4.DIN")
     m.wire("D4.VDD", (31, 52), "C16.1")
     m.tag("+3V3", (31, 52), "up")
