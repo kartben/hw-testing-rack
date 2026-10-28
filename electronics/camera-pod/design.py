@@ -84,8 +84,10 @@ def board() -> Board:
     # with 22 µF tantalum; the same SOT-223 pinout (1 GND, 2 VOUT and tab, 3 VIN), copper and CPL correction
     # (datasheet audit F1).  Order the AP2114H, never the HA: the HA's pinout differs
     part(s, "U1", "ldo_1a", {"VI": "CAM_5V", "VO": "+3V3", "GND": "GND"}, pcb=P(20.0, 13.0, 0))
-    C(s, "C1", "10u", "CAM_5V", "GND", size="0805", pcb=P(26.5, 12.0, 90))
-    C(s, "C2", "22u", "+3V3", "GND", size="1206", pcb=P(13.0, 14.0, 90))
+    # each beside its own pin (decoupling check, Eve's review): C1 left of VI (pin 3), C2 right of the tab (VOUT),
+    # high enough that SCK keeps its F.Cu diagonal below it; each with a GND via beside its GND pad
+    C(s, "C1", "10u", "CAM_5V", "GND", size="0805", pcb=P(13.75, 15.3, 180))
+    C(s, "C2", "22u", "+3V3", "GND", size="1206", pcb=P(26.6, 11.4, 90))
     C(s, "C3", "100n", "+3V3", "GND", pcb=P(hx + 9.8, hy - 0.5, 90))
     s.block("Light: four white LEDs, 100 Ω each from CAM_5V, cathodes to LED_K (the node's low side)")
     for i, x in enumerate(CFG["leds"]):
@@ -130,6 +132,7 @@ def board() -> Board:
              "poly": [(22.2, 11.8), (27.6, 11.8), (27.6, 17.2), (22.2, 17.2)]},
         ],
         "vias": [("+3V3", 24.75, 12.6), ("+3V3", 24.75, 13.6), ("+3V3", 24.75, 14.6),
+                 ("GND", 11.7, 15.3), ("GND", 26.0, 8.75),                  # C1's and C2's returns
                  *[(net, *xy) for net, xy, _ in TP_ROUND2]],          # the second round's test pads
         "stitch": 3.0,
         "texts": [

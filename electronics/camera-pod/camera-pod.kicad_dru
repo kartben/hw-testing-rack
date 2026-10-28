@@ -18,3 +18,8 @@
 (rule "power nets: 2 spokes where relieved"
 	(condition "A.Type == 'Pad' && (A.NetName == '/Pod/CAM_5V')")
 	(constraint min_resolved_spokes 2))
+
+(rule "power pins through the board: 4 spokes of 0.8 mm where relieved"
+	(condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole' && (A.NetName == '/Pod/CAM_5V') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
+	(constraint thermal_spoke_width (min 0.8mm))
+	(constraint min_resolved_spokes 4))
