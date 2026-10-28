@@ -191,8 +191,9 @@ def xtal_block():
     case between the east pads (a GND pad above, XI's below, 0.4 mm each), through R10 to pin 60: the two run east
     0.5 mm apart into the pins.  C4 under XI's pad, its GND on Y1's south-west GND via; C5 over XO's, with its own;
     Y1's north-east GND pad with its own; the F.Cu and B.Cu GND pours fill round it all (no other net there:
-    XTAL_KEEP).  Also drawn, as main had them, the two lines that pass it south-east: pin 62's HUB_1V8PLL down
-    between C8 and C10, pin 63's RBIAS down between C10 and R1, no via (the router gave RBIAS two)."""
+    XTAL_KEEP).  Also drawn, south-east of it: pin 62's HUB_1V8PLL to C10, its 100 nF right by the pin, and on to
+    C8, its 4.7 µF beside it (each its pad 1 up, its GND via below); pin 63's RBIAS down the pins' side, past
+    pin 64's via, to R1 (pad 1 up); no via on either (the router gave RBIAS two)."""
     x, y = XT
     xi, xo = (x + 0.85, y + 1.1), (x - 0.85, y - 1.1)          # Y1.1, Y1.3
     r_xo, r_xi = (x + 2.3, y - 0.26), (x + 2.3, y + 0.76)       # R10.1, R10.2 (turned 270°: pad 1 up)
@@ -209,13 +210,15 @@ def xtal_block():
            ((x - 0.85, y - 3.58), (x - 0.85, y - 4.35))]        # C5.2, up
     tracks += [("GND", "F.Cu", 0.25, [a, b]) for a, b in gnd]
     tracks.append(("GND", "F.Cu", 0.25, [(x - 0.11, y + 2.65), gnd[1][1]]))     # C4.2 to Y1.4's via
-    p62, p63, c8, c10, r1 = (HX - 4.412, 17.75), (HX - 4.412, 18.25), (79.75, 22.08), (80.75, 22.08), (81.75, 22.11)
-    tracks += [("HUB_1V8PLL", "F.Cu", 0.127, [p62, (82.858, 17.98), (81.66, 17.98), (80.25, 19.39), (80.25, 21.58), c10]),
-               ("HUB_1V8PLL", "F.Cu", 0.127, [c8, c10]),
-               ("RBIAS", "F.Cu", 0.127, [p63, (82.78, 18.25), (81.24, 19.79), (81.24, 21.6), r1])]
-    # and, between those lines, C8's, C10's and R1's GND dog-bones as main had them (the automatic ones, kept
-    # further from drawn tracks than from routed ones, would no longer fit)
-    gnd += [((79.75, 21.12), (79.75, 20.49)), ((80.75, 21.12), (80.75, 20.49)), ((81.75, 21.09), (81.75, 20.47))]
+    p62, p63 = (HX - 4.412, 17.75), (HX - 4.412, 18.25)
+    c10, c8, r1 = (HX - 5.66, HY + 3.45), (HX - 6.8, HY + 4.38), (HX - 5.75, HY + 6.09)       # their pads 1
+    tracks += [("HUB_1V8PLL", "F.Cu", 0.127, [p62, (c10[0] + 0.7, p62[1]), c10]),
+               ("HUB_1V8PLL", "F.Cu", 0.127, [c10, (c10[0] - (c8[1] - c10[1]), c8[1]), c8]),
+               ("RBIAS", "F.Cu", 0.127, [p63, (HX - 5.12, p63[1]), (HX - 5.12, HY + 5.2), (r1[0], HY + 5.83), r1])]
+    # and C10's, C8's and R1's GND dog-bones, down (the automatic ones, kept further from drawn tracks than from
+    # routed ones, would not fit)
+    gnd += [((c10[0], HY + 4.41), (c10[0], HY + 5.05)), ((c8[0], HY + 5.34), (c8[0], HY + 5.98)),
+            ((r1[0], HY + 7.11), (r1[0], HY + 7.73))]
     tracks += [("GND", "F.Cu", 0.25, [a, b]) for a, b in gnd[-3:]]
     return tracks, [("GND", *b, 0.5, 0.3) for _, b in gnd]
 
@@ -687,8 +690,8 @@ def hub_sheet(b: Board):
         C(s, ref, "100n", "+3V3", "GND", size="0402", pcb=P(*xy, rot), sch=at(80 + 6 * i, 24))
     # VDD18 / VDD18PLL: the datasheet's 1.0 µF ± 20 % has no margin left once a 0402's DC bias and temperature
     # are counted (the audit's U10): 4.7 µF, the board's 4.7 µF line
-    C(s, "C8", "4.7u", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 7.75, HY + 6.6, 90), sch=at(128, 24))
-    C(s, "C10", "100n", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 6.75, HY + 6.6, 90), sch=at(134, 24))
+    C(s, "C8", "4.7u", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 6.8, HY + 4.86, 270), sch=at(128, 24))
+    C(s, "C10", "100n", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 5.66, HY + 3.93, 270), sch=at(134, 24))
     C(s, "C7", "4.7u", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 0.9, 90), sch=at(146, 24))
     C(s, "C9", "100n", "HUB_1V8", "GND", size="0402", pcb=P(HX + 6.05, HY - 3.0, 90), sch=at(152, 24))
     # RBIAS and the reset: a MAX809S supervisor drives RESET_N (the audit's fix 6).  The hub's errata
@@ -698,7 +701,7 @@ def hub_sheet(b: Board):
     # 2.93 V (2.78–3.08 V over temperature) and for 150–560 ms after +3V3 is back, push-pull; its 100 nF (C6) at
     # its VDD.  Over the north face, its RESET pad right above RESET_N (pin 43).  RESET_N is the hub's alone
     # (the schematic review's S2 tied the co-processor's RUN to it through D2 until CFG_SEL 110)
-    R(s, "R1", "12k", "RBIAS", "GND", size="0402", pcb=P(HX - 5.75, HY + 6.6, 90), sch=at(84, 92))
+    R(s, "R1", "12k", "RBIAS", "GND", size="0402", pcb=P(HX - 5.75, HY + 6.6, 270), sch=at(84, 92))
     part(s, "U5", "max809s", {"GND": "GND", "~{RESET}": "HUB_RST_N", "VCC": "+3V3"},
          pcb=P(HX - 2.2, HY - 10.1, 90), sch=at(90, 80, fields=(-4, -5)))
     C(s, "C6", "100n", "+3V3", "GND", size="0402", pcb=P(HX - 3.0, HY - 12.7, 180), sch=at(78, 84))
@@ -1379,10 +1382,12 @@ def board() -> Board:
         "tracks": hand_tracks, "vias": hand_vias,
         # each decoupling capacitor's pin (electronics/tools/decoupling.py: its pad ≤ 2 mm from the pin, its GND pad
         # ≤ 1 mm from a GND via).  Not declared: bulk (C1, J1's; C31, the co-processor's island; each port's VBUS
-        # 22 µF), the crystals' load capacitors and the charge pump's flying capacitor
+        # 22 µF), the crystals' load capacitors and the charge pump's flying capacitor.  C8, VDD18PLL's 4.7 µF, is
+        # its store, behind C10 (the 100 nF at the pin), right under the crystal: its own 2.5 mm limit (no spot
+        # nearer clears Y1's courtyard)
         "decoupling": {
             "C2": "U3.3", "C3": "U3.2", "C6": "U5.3",                                   # the LDO in and out, MAX809S
-            "C7": "U1.25", "C9": "U1.25", "C8": "U1.62", "C10": "U1.62",                 # the hub's VDD18, VDD18PLL
+            "C7": "U1.25", "C9": "U1.25", "C8": ("U1.62", 2.5), "C10": "U1.62",        # the hub's VDD18, VDD18PLL
             "C11": "U1.64", "C12": "U1.52", "C13": "U1.57", "C14": "U1.24", "C15": "U1.5", "C16": "U1.10",
             "C17": "U1.46",                                                               # its seven 3.3 V pins
             "C18": "U2.15", "C19": "U6.15", "C29": "U10.16",                             # the expanders
