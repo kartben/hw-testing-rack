@@ -171,11 +171,12 @@ def board() -> Board:
         tracks.append((f"SHDN_{ch}", "F.Cu", 0.25, [(EF_X - 2.8625, yc + 1.625), (21.4, yc + 1.625),
                                                    (21.4, yc + 3.675), (19.825, yc + 3.675)]))
     # PD input: CC1 straight down to a via (routed underneath to the CH224A; CC2 leaves behind the
-    # receptacle, the router's way); VBUS reaches the buck in a 0.8 mm bottom track from the input block
+    # receptacle, the router's way); VBUS reaches the buck in a 0.8 mm bottom track from the input block, up into
+    # the buck's input island at its far end: past C105, C104 and C106 before VIN (the pin → cap → via rule)
     tracks += [
         ("PD_CC1", "F.Cu", 0.2, [(PD_X + 1.25, 7.08), (PD_X + 1.25, 8.15)]),
         ("GND", "F.Cu", 0.25, [(PD_X + 3.2, 6.9), (PD_X + 4.2, 6.9)]),
-        ("VRACK", "B.Cu", 0.8, [(55.8, 14.55), (55.8, 30.0), (56.7, 31.0), (56.7, 13.5 + BY)]),
+        ("VRACK", "B.Cu", 0.8, [(55.8, 14.55), (55.8, 30.0), (56.7, 31.0), (56.7, 21.0 + BY)]),
     ]
     # the console's USB pair (full speed), U4 pins 23/24 → U5: coupled on F.Cu over In1's GND (0.25 mm,
     # 0.2 mm apart), straight down the free column at x ≈ 45 between the eFuse parts and the buck, into
@@ -198,6 +199,9 @@ def board() -> Board:
         ("+3V3", 0.25, [(23.0, 8.8), (21.325, 8.8), (21.325, 9.85)], True),
         # C117, U6's (the TJA1462AT CAN transceiver's) 100 nF, from its VIO pin (5); its via south of it
         ("+3V3", 0.25, [(58.475, 61.905), (60.425, 61.91), (60.425, 62.95)], True),
+        # C106, the controller buck's (U2, the LMR51625's) 100 nF input, from its VIN pin (3).  No via of its own: both
+        # sit on the buck's top-side VRACK island, whose feed comes up at its far end, past C105 and C104
+        ("VRACK", 0.4, [(56.862, 34.95), (56.862, 36.238), (57.225, 36.6)], False),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 3.0, "passes": 60,
@@ -250,7 +254,7 @@ def board() -> Board:
                       (62.8, 17.9 + BY)]},
             # exclusive: another net's track cut it in two in 15 of 17 routings (docs/autorouting-benchmark.md)
             {"layer": "F.Cu", "net": "VRACK", "connection": "solid", "name": "buck-vin", "priority": 3, "exclusive": 0.3,
-             "poly": [(55.6, 12.5 + BY), (57.8, 12.5 + BY), (57.8, 20.7 + BY), (55.6, 20.7 + BY)]},
+             "poly": [(55.6, 12.5 + BY), (57.8, 12.5 + BY), (57.8, 21.5 + BY), (55.6, 21.5 + BY)]},
         ],
         "vias": [
             # C106's (the buck's 100 nF input capacitor) own GND via right beside its GND pad (decoupling check)
@@ -268,7 +272,7 @@ def board() -> Board:
             # CC1 under the VBUS pour, on B.Cu
             ("PD_CC1", PD_X + 1.25, 8.15, 0.5, 0.3),
             ("GND", 60.5, H - 15.05, 0.5, 0.3),         # U5's GND pin, between the USB pair's wires
-            ("VRACK", 55.8, 14.55, 0.8, 0.4), ("VRACK", 56.7, 13.5 + BY, 0.8, 0.4),
+            ("VRACK", 55.8, 14.55, 0.8, 0.4), ("VRACK", 56.7, 21.0 + BY, 0.8, 0.4),
             # J1's left GND pads (A12/B1, one spot): their via, drawn, north of them under the receptacle,
             # between the shell leg and the peg.  Not in the pad (its solder would drain down the hole:
             # kicad-happy review, PH-1), not south of it, where vias cut the input pour off the left VBUS pads

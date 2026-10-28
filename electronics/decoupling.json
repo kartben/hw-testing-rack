@@ -3,7 +3,6 @@
   "pending": [],
   "order_pending": [
     "bay-node",
-    "data-port-x4-v2",
-    "power-hub"
+    "data-port-x4-v2"
   ]
 }
