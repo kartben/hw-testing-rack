@@ -222,6 +222,9 @@ def board() -> Board:
         ("+3V3", 0.25, [(12.915, 87.65), (14.275, 87.7), (14.275, 86.65)]),
         # C17, U5's (the PC-side USB mux's) 100 nF, from its VCC pin (1); its via north of it
         ("+3V3", 0.25, [(32.5, 36.5), (32.5, 34.725), (31.975, 34.2), (31.975, 33.15)]),
+        # C18, U6's (the DUT-side USB mux's) 100 nF, from its VCC pin (1) into its pad from above; its via west of
+        # it (In2's +3V3 area ends just east of C18)
+        ("+3V3", 0.25, [(46.6, 35.5), (47.6, 35.5), (47.6, 37.225), (46.6, 37.225)]),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
