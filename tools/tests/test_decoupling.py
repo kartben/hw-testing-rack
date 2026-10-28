@@ -148,6 +148,18 @@ class Synthetic(unittest.TestCase):
                                        via(0.55, 0, "+3V3")], value="100n")       # the via on the pin's side
         self.assertTrue(r["order"] and "before it" in r["order"], r)
 
+    def test_order_probe_branch(self):
+        """a via on the pin's side that only leads on to a test pad (a bottom-side probe) feeds nothing; one that
+        leads on to a part does"""
+        bottom = '(segment (start 0 -1.0) (end -2.0 -1.0) (width 0.25) (layer "B.Cu") (net "+3V3"))'
+        branch = [via(2.8, 0), seg((0, 0), (1.05, 0)), seg((0, 0), (0, -1.0)), via(0, -1.0, "+3V3"), bottom]
+        tp = fp("TP1", -2.0, -1.0, [pad(1, 0, 0, "+3V3", 1.5, 1.5, layers='"B.Cu" "B.Mask"')])
+        r = self.run_check(1.55, 0, branch + [tp], value="100n")
+        self.assertIsNone(r["order"], r)
+        part = fp("R9", -2.0, -1.0, [pad(1, 0, 0, "+3V3", layers='"B.Cu"')])
+        r = self.run_check(1.55, 0, branch + [part], value="100n")
+        self.assertTrue(r["order"] and "before it" in r["order"], r)
+
     def test_order_bulk_exempt(self):
         """a 10 µF is held to the distances only"""
         parts = [fp("U1", 0, 0, [pad(1, 0, 0, "+3V3")]),

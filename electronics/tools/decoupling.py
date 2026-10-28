@@ -9,10 +9,11 @@ layout) gets its own limit, with the reason beside it in design.py: {"C2": ("U1.
     VIA mm at most: the return goes straight down to the plane, not through a pour first;
   * order (a capacitor of SMALL or less, the pin → cap → via rule of the layout review): the pin reaches the
     capacitor's pad by copper on their one layer, no via on the way, and reaches no via of its rail but through that
-    pad (a track straight across the pad counts as two, one each side).  Along tracks the order is strict.  Across a pour of the rail on that layer (an island the pin, the
-    capacitor and the rail's vias share, as a buck's input), a via only comes "before" the capacitor if it is nearer
-    the pin than the capacitor is.  A through-hole pad counts as a via, but for the pin itself (a connector's).
-    Bulk capacitors, over SMALL, are held to the distances only.
+    pad (a track straight across the pad counts as two, one each side; a via that only leads on to test pads
+    feeds nothing and doesn't count).  Along tracks the order is strict.  Across a pour of the rail on that layer
+    (an island the pin, the capacitor and the rail's vias share, as a buck's input), a via only comes "before" the
+    capacitor if it is nearer the pin than the capacitor is.  A through-hole pad counts as a via, but for the pin
+    itself (a connector's).  Bulk capacitors, over SMALL, are held to the distances only.
 
     python decoupling.py BOARD [...]      → each board's table, exit status 1 if a capacitor is too far
 
@@ -126,6 +127,35 @@ def _split_at(t: dict, pad: dict) -> list[dict]:
     return pieces
 
 
+def _probe_only(c: Copper, v: dict, layer: str) -> bool:
+    """A via whose copper off `layer` leads to test pads and nothing else (a probe's branch: no plane, no part, no other
+    via): it feeds nothing, so it comes neither before nor after a capacitor."""
+    net = v["net"]
+    off = lambda q: layer not in q["layers"] and "*" not in q["layers"]
+    if any(l != layer and c.filled(net, l, v["x"], v["y"], v["d"] / 2) for n, l in c.fills if n == net):
+        return False
+    tracks = [t for t in c.tracks if t["net"] == net and t["layer"] != layer]
+    seen, ends = set(), [(v["x"], v["y"], v["d"] / 2)]
+    while ends:
+        x, y, r = ends.pop()
+        for t in tracks:
+            if id(t) in seen:
+                continue
+            a, b = t["g"][:2], t["g"][2:4]
+            if (math.hypot(a[0] - x, a[1] - y) <= r + 0.002 or math.hypot(b[0] - x, b[1] - y) <= r + 0.002
+                    or (r and _meets_track(t, x, y))):
+                seen.add(id(t))
+                if any(c.filled(net, t["layer"], *e) for e in (a, b)):
+                    return False
+                ends += [(*a, 0.0), (*b, 0.0)]
+    pts = [(v["x"], v["y"])] + [e for t in tracks if id(t) in seen for e in (t["g"][:2], t["g"][2:4])]
+    if any(w is not v and any(math.hypot(w["x"] - x, w["y"] - y) <= w["d"] / 2 + 0.002 for x, y in pts)
+           for w in c.vias if w["net"] == net):
+        return False
+    pads = [q for q in c.pads if q["net"] == net and any(_in_pad(q, *e) for e in pts)]
+    return bool(pads) and all(off(q) and q["ref"].startswith("TP") for q in pads)
+
+
 def order(c: Copper, pins: list, cp: dict) -> str | None:
     """The pin → cap → via rule on the capacitor's layer: None if kept, else what breaks it."""
     net = cp["net"]
@@ -196,7 +226,7 @@ def order(c: Copper, pins: list, cp: dict) -> str | None:
     is_via = lambda n: n[0] == "via" or (n[0] == "pad" and "*" in n[1]["layers"])
     tracked = spread(start, {cap}, True, fills=False) - start
     for j in sorted(tracked):
-        if is_via(nodes[j]):
+        if is_via(nodes[j]) and not (nodes[j][0] == "via" and _probe_only(c, nodes[j][1], layer)):
             n = nodes[j][1]
             return f"{pins[0]['ref']} reaches a via at ({n['x']:.2f}, {n['y']:.2f}) before it"
     gap = min(pad_gap(cp, q) for q in pins)
