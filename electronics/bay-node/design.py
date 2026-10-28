@@ -227,6 +227,9 @@ def board() -> Board:
         ("+3V3", 0.25, [(46.6, 35.5), (47.6, 35.5), (47.6, 37.225), (46.6, 37.225)]),
         # C19, U7's (the mux-select OR gate's) 100 nF, from its VCC pin (5); its via east of it, where its own was
         ("+3V3", 0.25, [(28.6375, 40.55), (28.6375, 40.19), (28.275, 39.8275), (28.275, 38.6), (29.125, 38.6)]),
+        # C24, U11's (the CAN transceiver's) 100 nF on Vio, from its pin (5) straight down into it; its via east of
+        # it, where its own was
+        ("+3V3", 0.25, [(25.595, 70.475), (25.595, 72.5), (26.445, 72.5)]),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
