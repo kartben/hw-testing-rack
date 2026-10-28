@@ -677,10 +677,11 @@ def hub_sheet(b: Board):
     # 1 MΩ across XTAL1–XTAL2 as the datasheet's Fig. 9-1 draws it (and Microchip's EVB fits it, R19): DS00001598C
     # never says it is inside (the audit's U2, its conservative option); right east of the crystal, across XO and XI
     R(s, "R10", "1M", "XO", "XI", size="0402", pcb=P(XT[0] + 2.3, XT[1] + 0.25, 270), sch=at(94, 56, rot=90))
-    # decoupling, by pin: west 64 (below the corner), 57 and 52; south 5, 10 (left and right of the DN
-    # pairs); east 24; north 46 (C17 right over it, in the straps' row, its +3V3 pad down: R3 gave it the spot)
+    # decoupling, by pin: west 64 (below the corner), 57 and 52; south 5 (C15 right under it, between ports 2
+    # and 3's pairs) and 10 (right of the DN pairs); east 24; north 46 (C17 right over it, in the straps' row, its
+    # +3V3 pad down: R3 gave it the spot)
     for i, (ref, xy, rot) in enumerate((("C11", (HX - 4.7, HY + 6.6), 90), ("C13", (HX - 6.2, HY - 1.1), 180),
-                                        ("C12", (HX - 6.2, HY - 2.25), 180), ("C15", (HX - 8.75, HY + 6.6), 90),
+                                        ("C12", (HX - 6.2, HY - 2.25), 180), ("C15", (HX - 1.75, HY + 6.4), 270),
                                         ("C16", (HX + 1.6, HY + 7.6), 90), ("C14", (HX + 6.05, HY + 1.2), 90),
                                         ("C17", (HX - 2.85, HY - 6.4), 90))):
         C(s, ref, "100n", "+3V3", "GND", size="0402", pcb=P(*xy, rot), sch=at(80 + 6 * i, 24))
@@ -1230,13 +1231,15 @@ def board() -> Board:
     # the hub's south row: ports 1–3 down side by side under the hub, west in three lanes over the headers (the
     # band their RESET/BOOT columns leave free), each down its header gap's east side to over its ESD; port 4's
     # down the board's east side, past Q1–Q3.  D− and D+ either side, USB_W lines 0.15 mm apart (≈ 90 Ω: the USB
-    # netclass); they leave the hub's pins at its 0.5 mm pitch and close up.  At the ESD, D− turns
-    # into pin 6 and D+ goes on to pin 4, 1.9 mm further: two bumps on D− in its last way down even them
+    # netclass); they leave the hub's pins at its 0.5 mm pitch and close up, ports 2 and 3 each 25 µm out from
+    # their pins' centre (C15, pin 5's 100 nF, fits between them).  At the ESD, D− turns into pin 6 and D+ goes
+    # on to pin 4, 1.9 mm further: two bumps on D− in its last way down even them
+    hs_pin = {1: 1, 2: 3, 3: 6, 4: 8}                     # each port's D− pin, on the hub's south row
     hs_centre = {
         1: [(84.0, 20.55), (84.0, 35.15), (80.0, 39.15), (32.05, 39.15), (32.05, 49.85), (32.55, 50.35),
             (32.55, 50.85), (33.3, 51.6), (33.3, 57.4), (31.6, 59.1), (31.6, 59.8)],
-        2: [(85.0, 20.55), (85.0, 35.56), (80.41, 40.15), (49.95, 40.15), (49.95, 58.75), (49.6, 59.1), (49.6, 59.8)],
-        3: [(86.5, 20.55), (86.5, 35.48), (80.83, 41.15), (68.05, 41.15), (68.05, 49.85), (68.55, 50.35),
+        2: [(84.975, 20.55), (84.975, 35.585), (80.41, 40.15), (49.95, 40.15), (49.95, 58.75), (49.6, 59.1), (49.6, 59.8)],
+        3: [(86.525, 20.55), (86.525, 35.455), (80.83, 41.15), (68.05, 41.15), (68.05, 49.85), (68.55, 50.35),
             (68.55, 50.85), (69.3, 51.6), (69.3, 57.4), (67.6, 59.1), (67.6, 59.8)],
         4: [(87.5, 20.55), (87.5, 47.65), (88.9, 49.05), (88.9, 57.45), (87.2, 59.15), (86.25, 59.15), (85.6, 59.8),
             (85.6, 60.0)],
@@ -1245,11 +1248,11 @@ def board() -> Board:
     hp = (USB_W + 0.15) / 2                                # half the pair's pitch: its lines 0.15 mm apart
     for n, c in hs_centre.items():
         cx = CFG["usb"][n - 1]
-        x0_, ex = c[0][0], c[-1][0]
+        px, ex = HX - 3.5 + 0.5 * (hs_pin[n] - 1), c[-1][0]        # its two pins' centre, its end
         p6, p4 = (cx + 8.1375, USB_Y - 0.95), (cx + 8.1375, USB_Y + 0.95)
-        dn = [(x0_ - 0.25, HY + 4.4125), (x0_ - 0.25, HY + 4.9)] + offset(c, hp) + \
+        dn = [(px - 0.25, HY + 4.4125), (px - 0.25, HY + 4.9)] + offset(c, hp) + \
             [(ex - hp, p6[1] - 0.5), (p6[0] + 0.76, p6[1]), p6]
-        dp = [(x0_ + 0.25, HY + 4.4125), (x0_ + 0.25, HY + 4.9)] + offset(c, -hp) + \
+        dp = [(px + 0.25, HY + 4.4125), (px + 0.25, HY + 4.9)] + offset(c, -hp) + \
             [(ex + hp, p4[1] - 0.45), (ex - 0.25, p4[1]), p4]
         # no point within 0.1 mm of the last one kept (port 4's D− met its turn into the ESD 0.05 mm on: a sliver)
         dn, dp = ([q for i, q in enumerate(pts) if i in (0, len(pts) - 1) or
@@ -1315,10 +1318,12 @@ def board() -> Board:
         hand_vias.append((net, *via, 0.5, 0.3))
     # the hub's two south VDD33 pins (5 and 10) take their vias inwards, under its body (between the pads and the
     # UP pair): their automatic fan-out vias sat right below the row, between the downstream pairs, and boxed
-    # port 2's D− in (Freerouting left it unrouted)
+    # port 2's D− in (Freerouting left it unrouted).  Pin 5's line goes on down to C15, its 100 nF, between ports
+    # 2 and 3's pairs
     for px in (HX - 1.75, HX + 0.75):
         hand_tracks.append(("+3V3", "F.Cu", 0.25, [(px, HY + 4.4125), (px, HY + 3.75)]))
         hand_vias.append(("+3V3", px, HY + 3.75, 0.5, 0.3))
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX - 1.75, HY + 4.4125), (HX - 1.75, HY + 5.92)]))
     six = LAYERS == 6
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {

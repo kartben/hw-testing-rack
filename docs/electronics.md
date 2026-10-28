@@ -678,7 +678,8 @@ above In1.Cu"):
   D+ goes on to the far pin);
 - the four port pairs run on F.Cu over the GND plane, from under the hub's south row to their ESD: ports 1–3
   west in three lanes over the headers, then each down its header gap; port 4 down the board's east side.
-  95, 77, 61 and 47 mm.  Freerouting had put them mostly on B.Cu, over the split power plane, each line its
+  95, 77, 61 and 47 mm.  Under the hub, ports 2 and 3 run 25 µm out from their pins' centre, so C15 (pin
+  5's 100 nF) fits between them, 0.79 mm under its pin.  Freerouting had put them mostly on B.Cu, over the split power plane, each line its
   own way (up to 16 mm apart);
 - the upstream pair's pins sit between the hub's straps and its crystal, walled off from J1 on F.Cu by the
   downstream pairs: it dives under the hub's body to B.Cu for ≈ 11 mm (over the +3V3 plane, among the hub's
