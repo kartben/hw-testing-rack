@@ -508,8 +508,10 @@ def board() -> Board:
         "TXD0": "U0TX", "RXD0": "U0RX",
     }, pcb=P(32, 12.75, 0), sch=at(80, 38, fields=(-14, -14)))
     # 3V3 (pin 2) and EN (pin 3) sit at the left column's rear end
-    C(m, "C13", "22u", "+3V3", "GND", size="1206", pcb=P(21.0, 9.5, 90), sch=at(96, 23.5))
-    C(m, "C14", "100n", "+3V3", "GND", pcb=P(21.0, 13.4, 90), sch=at(100, 23.5))
+    # the 100 nF right beside the 3V3 pin (2), the 22 µF below it (decoupling check, Eve's review: C14 was 4.6 mm
+    # from the pin, behind C13)
+    C(m, "C13", "22u", "+3V3", "GND", size="1206", pcb=P(21.0, 12.7, 270), sch=at(96, 23.5))
+    C(m, "C14", "100n", "+3V3", "GND", pcb=P(21.45, 8.76, 90), sch=at(100, 23.5))
     m.wire("U3.3V3", (80, 22), "C14.1")
     m.tag("+3V3", (80, 22), "up")
 
