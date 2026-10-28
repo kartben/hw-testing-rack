@@ -703,12 +703,16 @@ def apply_models(path: Path) -> int:
 def write_via_rules(pro: Path):
     """KiCad's DRC reads the board's minimum drill and annular ring from <board>.kicad_pro, which
     pcbnew.SaveBoard leaves alone: write SMALL_VIA's limits there, so a via under JLC's no-extra-cost
-    size is a DRC error."""
+    size is a DRC error.  A dangling track or via (an antenna: Eve's review, 2026-10-28) is one too, not
+    KiCad's default warning."""
     import json
     data = json.loads(pro.read_text(encoding="utf-8"))
-    rules = data.setdefault("board", {}).setdefault("design_settings", {}).setdefault("rules", {})
+    settings = data.setdefault("board", {}).setdefault("design_settings", {})
+    rules = settings.setdefault("rules", {})
     rules["min_through_hole_diameter"] = SMALL_VIA[1]
     rules["min_via_annular_width"] = round((SMALL_VIA[0] - SMALL_VIA[1]) / 2, 4)
+    severities = settings.setdefault("rule_severities", {})
+    severities["track_dangling"] = severities["via_dangling"] = "error"
     pro.write_text(json.dumps(data, indent=2, ensure_ascii=False) + chr(10), encoding="utf-8")
 
 
@@ -934,24 +938,284 @@ def import_session(b: Board, outdir: Path, routed: Path | None = None) -> Path:
             print(f"plane {name}: {n} of {len(spots)} pads tied to {layer}")
             pcbnew.SaveBoard(str(path), board)
     drop_passthrough_vias(path)
-    drop_pad_dots(path)
+    clean_board(path)                   # Freerouting's dots and every other antenna
     print("imported", routed or ses)
     return path
 
 
-def drop_pad_dots(path: Path):
-    """Freerouting leaves a dot on some pads it reached: a track a few µm long, at its net's width, inside
-    a pad of its own net.  Remove them (a board of its own: SWIG loses its types after a Remove)."""
-    board = pcbnew.LoadBoard(str(path))
-    pads = [(p.GetNetCode(), p) for fp in board.GetFootprints() for p in fp.Pads()]
-    dots = [t for t in board.GetTracks() if t.GetClass() == "PCB_TRACK" and t.GetLength() < MM(0.01)
-            and any(n == t.GetNetCode() and p.IsOnLayer(t.GetLayer()) and p.HitTest(t.GetStart())
-                    and p.HitTest(t.GetEnd()) for n, p in pads)]
-    for t in dots:
-        board.Remove(t)
-    if dots:
-        pcbnew.SaveBoard(str(path), board)
-        print(f"dropped {len(dots)} dots Freerouting left on pads")
+def clean_antennas(path: Path, step: str) -> dict:
+    """Eve's antennas (electronics/tools/antennas.py: dead ends, lone vias, doubled tracks, slivers) out of a routed
+    board, every connection kept.  Router (unlocked) copper only: a router track lying on another of its net and
+    layer goes (or keeps only what sticks out past a drawn one; two overlapping router tracks of one width become
+    one); a sliver folds into its neighbours, the tracks that end on its loose end moved to its fixed one (a pad, a
+    via, a drawn track); then KiCad's DRC names the dead ends and lone vias, which go, until none is left.  Drawn
+    copper is never touched: what it adds is design.py's to fix (antennas.py reports it).  One `step` per call,
+    "fix" (doubles, slivers) or "dead" (dead ends, lone vias), in a process of its own (SWIG loses its types after
+    a Remove; clean_board runs them in turn until nothing changes).  Returns the counts."""
+    import json
+    import tempfile
+    T, SL = MM(0.002), MM(0.1)
+    done = {"doubles": 0, "slivers": 0, "dead ends": 0, "lone vias": 0}
+
+    def same(p, q):
+        return abs(p.x - q.x) <= T and abs(p.y - q.y) <= T
+
+    def collinear(a, b):
+        ax, ay, bx, by = a.GetStart().x, a.GetStart().y, a.GetEnd().x, a.GetEnd().y
+        L = math.hypot(bx - ax, by - ay)
+        if L < T:
+            return False
+        return all(abs((p.x - ax) * (by - ay) - (p.y - ay) * (bx - ax)) / L <= T for p in (b.GetStart(), b.GetEnd()))
+
+    def span(a, b):
+        """b's ends along a's direction, a's start at 0 (a's end at its length)"""
+        ax, ay = a.GetStart().x, a.GetStart().y
+        L = a.GetLength()
+        ux, uy = (a.GetEnd().x - ax) / L, (a.GetEnd().y - ay) / L
+        return sorted(((p.x - ax) * ux + (p.y - ay) * uy) for p in (b.GetStart(), b.GetEnd())), (ax, ay, ux, uy)
+
+    if step == "fix":
+        board = pcbnew.LoadBoard(str(path))
+        items = list(board.GetTracks())
+        tracks = [t for t in items if t.GetClass() == "PCB_TRACK"]
+        vias = [t for t in items if t.GetClass() == "PCB_VIA"]
+        pads = list(board.GetPads())
+        gone, changed = {}, 0
+        # 1. doubles
+        groups = {}
+        for t in tracks:
+            groups.setdefault((t.GetNetCode(), t.GetLayer()), []).append(t)
+        for grp in groups.values():
+            for i, a in enumerate(grp):
+                for b in grp[i + 1:]:
+                    if id(a) in gone or id(b) in gone or not collinear(a, b) or a.GetLength() < T:
+                        continue
+                    (lo, hi), (ax, ay, ux, uy) = span(a, b)
+                    L = a.GetLength()
+                    if min(L, hi) - max(0, lo) <= T:
+                        continue                                    # end to end, or apart
+                    for keep, drop in ((a, b), (b, a)):
+                        if drop.IsLocked():
+                            continue
+                        (dlo, dhi), _ = span(keep, drop) if keep is b else ((lo, hi), None)
+                        kL = keep.GetLength()
+                        if dlo >= -T and dhi <= kL + T and drop.GetWidth() <= keep.GetWidth():
+                            gone[id(drop)] = drop                    # inside the other
+                            done["doubles"] += 1
+                            break
+                        if keep.IsLocked() or drop.GetWidth() != keep.GetWidth():
+                            continue                                # sticks out past a drawn one: left to report
+                        # two router tracks of one width sharing a run: one track over both
+                        (blo, bhi), (kx, ky, kux, kuy) = span(keep, drop)
+                        a0, a1 = min(0, blo), max(kL, bhi)
+                        keep.SetStart(pcbnew.VECTOR2I(int(kx + kux * a0), int(ky + kuy * a0)))
+                        keep.SetEnd(pcbnew.VECTOR2I(int(kx + kux * a1), int(ky + kuy * a1)))
+                        gone[id(drop)] = drop
+                        done["doubles"] += 1
+                        changed += 1
+                        break
+        # 2. slivers: the router tracks on one end moved onto the other (a fixed end stays: a pad, a via, a drawn
+        #    track), or both onto the middle; the first of those that keeps every moved track's clearance
+        others = {}
+        for o in tracks + vias + pads:
+            for layer in board.GetEnabledLayers().CuStack():
+                if o.IsOnLayer(layer):
+                    others.setdefault(layer, []).append(o)
+
+        def blocked(t, a, b):
+            layer, net = t.GetLayer(), t.GetNetCode()
+            seg = pcbnew.SHAPE_SEGMENT(a, b, t.GetWidth())
+            x0, x1, y0, y1 = min(a.x, b.x), max(a.x, b.x), min(a.y, b.y), max(a.y, b.y)
+            reach = t.GetWidth() + MM(1.0)
+            for o in others.get(layer, ()):
+                if o is t or id(o) in gone or o.GetNetCode() == net:
+                    continue
+                bb = o.GetBoundingBox()
+                if (bb.GetRight() < x0 - reach or bb.GetLeft() > x1 + reach or bb.GetBottom() < y0 - reach
+                        or bb.GetTop() > y1 + reach):
+                    continue
+                if o.GetEffectiveShape(layer).Collide(seg, max(t.GetOwnClearance(layer), o.GetOwnClearance(layer))):
+                    return True
+            return False
+
+        for s in tracks:
+            if id(s) in gone or s.IsLocked() or s.GetLength() > SL + T:
+                continue
+            net, layer = s.GetNetCode(), s.GetLayer()
+
+            def fixed(p):
+                return (any(v.GetNetCode() == net and same(v.GetPosition(), p) for v in vias)
+                        or any(q.GetNetCode() == net and q.IsOnLayer(layer) and q.HitTest(p) for q in pads)
+                        or any(t is not s and id(t) not in gone and t.IsLocked() and t.GetNetCode() == net
+                               and t.GetLayer() == layer and (same(t.GetStart(), p) or same(t.GetEnd(), p))
+                               for t in tracks))
+            p, q = pcbnew.VECTOR2I(s.GetStart().x, s.GetStart().y), pcbnew.VECTOR2I(s.GetEnd().x, s.GetEnd().y)
+            fp, fq = fixed(p), fixed(q)
+            # one end on a via or a pad, the other already inside that copper: the sliver joins nothing new
+            holders = ([v for v in vias if v.GetNetCode() == net and v.HitTest(p) and v.HitTest(q)]
+                       + [o for o in pads if o.GetNetCode() == net and o.IsOnLayer(layer) and o.HitTest(p)
+                          and o.HitTest(q)])
+            if holders:
+                gone[id(s)] = s
+                done["slivers"] += 1
+                continue
+            if fp and fq:
+                continue
+            mid = pcbnew.VECTOR2I((p.x + q.x) // 2, (p.y + q.y) // 2)
+            ends = {"p": p, "q": q}
+            tries = (([("q", p)] if not fq else []) + ([("p", q)] if not fp else [])
+                     + ([("p", mid), ("q", mid)] if not (fp or fq) else []))
+            near = {k: [(t, same(t.GetStart(), e)) for t in tracks
+                        if t is not s and id(t) not in gone and t.GetNetCode() == net and t.GetLayer() == layer
+                        and not t.IsLocked() and (same(t.GetStart(), e) or same(t.GetEnd(), e))]
+                    for k, e in ends.items()}
+            plan = None
+            if not (fp or fq):                                      # both ends onto the middle
+                moves = [(t, st, mid) for k in "pq" for t, st in near[k]]
+                if not any(blocked(t, mid if st else t.GetStart(), t.GetEnd() if st else mid) for t, st, _ in moves):
+                    plan = moves
+            for k, to in [x for x in tries if x[1] is not mid]:
+                if plan is not None:
+                    break
+                moves = [(t, st, to) for t, st in near[k]]
+                if not any(blocked(t, to if st else t.GetStart(), t.GetEnd() if st else to) for t, st, _ in moves):
+                    plan = moves
+            if plan is None and len(near["p"]) == 1 and len(near["q"]) == 1:
+                # a jog between two parallel tracks: one of them moved square across onto the other's line, its far
+                # end landing on the body of a track there, or sliding along the one track beyond (its angle kept)
+                for k, to in (("q", p), ("p", q)):
+                    t, st = near[k][0]
+                    other = near["p" if k == "q" else "q"][0][0]
+                    u = (t.GetEnd() - t.GetStart()) if st else (t.GetStart() - t.GetEnd())
+                    w = other.GetEnd() - other.GetStart()
+                    if abs(u.x * w.y - u.y * w.x) > T * max(t.GetLength(), 1):
+                        continue                                    # not parallel
+                    far = t.GetEnd() if st else t.GetStart()
+                    if fixed(far):
+                        continue
+                    e = ends[k]
+                    L2 = u.x * u.x + u.y * u.y
+                    along = ((to.x - e.x) * u.x + (to.y - e.y) * u.y) / L2
+                    across = (to.x - e.x - along * u.x, to.y - e.y - along * u.y)
+                    far2 = pcbnew.VECTOR2I(int(round(far.x + across[0])), int(round(far.y + across[1])))
+                    beyond = [(b, same(b.GetStart(), far)) for b in tracks
+                              if b is not t and b is not s and id(b) not in gone and b.GetNetCode() == net
+                              and b.GetLayer() == layer and (same(b.GetStart(), far) or same(b.GetEnd(), far))]
+                    moves = []
+                    if len(beyond) < 2 or not any(pcbnew.SEG(b.GetStart(), b.GetEnd()).Distance(far2) <= T
+                                                  for b, _ in beyond):
+                        if len(beyond) != 1 or beyond[0][0].IsLocked():
+                            continue
+                        b, bs = beyond[0]
+                        bv = (b.GetEnd() - b.GetStart()) if bs else (b.GetStart() - b.GetEnd())
+                        cross = bv.x * u.y - bv.y * u.x
+                        if abs(cross) <= T * max(b.GetLength(), 1):
+                            continue
+                        lam = ((to.x - far.x) * u.y - (to.y - far.y) * u.x) / cross
+                        if not 0 < lam < 1 - T / b.GetLength():
+                            continue
+                        far2 = pcbnew.VECTOR2I(int(round(far.x + lam * bv.x)), int(round(far.y + lam * bv.y)))
+                        if blocked(b, far2 if bs else b.GetStart(), b.GetEnd() if bs else far2):
+                            continue
+                        moves = [(b, bs, far2)]
+                    if blocked(t, to, far2):
+                        continue
+                    plan = [(t, st, to), (t, not st, far2)] + moves
+                    break
+                if plan is None and not (fp or fq):
+                    # both lines needed where they are (a pinch on each): the step stretched past SLIVER along
+                    # them, its ends taken back off the two runs, inside the copper it had
+                    (tp, sp), (tq, sq) = near["p"][0], near["q"][0]
+                    up = (tp.GetStart() - tp.GetEnd()) if sp else (tp.GetEnd() - tp.GetStart())   # into p
+                    n = math.hypot(up.x, up.y)
+                    ux, uy = up.x / n, up.y / n
+                    a = (q.x - p.x) * ux + (q.y - p.y) * uy
+                    c2 = (q.x - p.x) ** 2 + (q.y - p.y) ** 2 - a * a
+                    want = SL + 10 * T
+                    dl = (math.sqrt(max(want * want - c2, 0)) - a) / 2
+                    on = (tq.GetEnd() - tq.GetStart()) if sq else (tq.GetStart() - tq.GetEnd())    # out of q
+                    ahead = (on.x * ux + on.y * uy) > 0 and abs(on.x * uy - on.y * ux) <= T
+                    if ahead and 0 < dl and tp.GetLength() > dl + T and tq.GetLength() > dl + T:
+                        p2 = pcbnew.VECTOR2I(int(round(p.x - dl * ux)), int(round(p.y - dl * uy)))
+                        q2 = pcbnew.VECTOR2I(int(round(q.x + dl * ux)), int(round(q.y + dl * uy)))
+                        if not (blocked(s, p2, q2)
+                                or blocked(tp, p2 if sp else tp.GetStart(), tp.GetEnd() if sp else p2)
+                                or blocked(tq, q2 if sq else tq.GetStart(), tq.GetEnd() if sq else q2)):
+                            for t, st, to in ((tp, sp, p2), (tq, sq, q2)):
+                                (t.SetStart if st else t.SetEnd)(to)
+                            s.SetStart(p2)
+                            s.SetEnd(q2)
+                            done["slivers"] += 1
+                            changed += 1
+                            continue
+            if plan is None:
+                continue                                            # every fold costs a clearance: it stays
+            for t, st, to in plan:
+                (t.SetStart if st else t.SetEnd)(to)
+            gone[id(s)] = s
+            done["slivers"] += 1
+            changed += 1
+        for t in tracks:                                            # a track folded to nothing
+            if id(t) not in gone and not t.IsLocked() and t.GetLength() < T:
+                gone[id(t)] = t
+        for t in gone.values():
+            board.Remove(t)
+        if gone or changed:
+            pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+            pcbnew.SaveBoard(str(path), board)
+        return done
+    # 3. dead ends and lone vias, as KiCad's DRC sees them (the pours filled)
+    if step == "dead":
+        rpt = Path(tempfile.mkstemp(suffix=".json")[1])
+        subprocess.run(["kicad-cli", "pcb", "drc", "--format", "json", "--refill-zones", "-o", str(rpt), str(path)],
+                       check=False, capture_output=True)
+        data = json.loads(rpt.read_text(encoding="utf-8"))
+        loose = {it["uuid"]: v["type"] for v in data.get("violations", [])
+                 if v["type"] in ("track_dangling", "via_dangling") for it in v["items"]}
+        board = pcbnew.LoadBoard(str(path))
+        items = list(board.GetTracks())
+
+        def carries(t):
+            """another track's end or a via on its body, between its ends: removing it would cut that one off"""
+            if t.GetClass() == "PCB_VIA":
+                return False
+            seg = pcbnew.SEG(t.GetStart(), t.GetEnd())
+            return any(o is not t and o.GetNetCode() == t.GetNetCode() and o.IsOnLayer(t.GetLayer())
+                       and seg.Distance(e) <= t.GetWidth() // 2 and not same(e, t.GetStart()) and not same(e, t.GetEnd())
+                       for o in items
+                       for e in ((o.GetPosition(),) if o.GetClass() == "PCB_VIA" else (o.GetStart(), o.GetEnd())))
+        dead = [t for t in items if t.m_Uuid.AsString() in loose and not t.IsLocked() and not carries(t)]
+        for t in dead:
+            done["lone vias" if t.GetClass() == "PCB_VIA" else "dead ends"] += 1
+            board.Remove(t)
+        if dead:
+            pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+            pcbnew.SaveBoard(str(path), board)
+    return done
+
+
+def clean_board(path: Path, rounds: int = 6) -> dict:
+    """clean_antennas() on the board saved at `path`, its two steps in turn, each in a process of its own (they
+    remove tracks), until neither changes anything.  The project's DRC severities first: a dangling track or via is
+    an error."""
+    import json
+    write_via_rules(path.with_suffix(".kicad_pro"))
+    total = {}
+    for _ in range(rounds):
+        moved = 0
+        for step in ("fix", "dead"):
+            r = subprocess.run([sys.executable, "-c", "import sys, json; sys.path.insert(0, sys.argv[1]); import pcbgen; "
+                                "from pathlib import Path; print(json.dumps(pcbgen.clean_antennas(Path(sys.argv[2]), sys.argv[3])))",
+                                str(Path(__file__).resolve().parent), str(path), step],
+                               check=True, capture_output=True, text=True)
+            d = json.loads(next(l for l in reversed(r.stdout.splitlines()) if l.startswith("{")))   # past KiCad's debug lines
+            for k, n in d.items():
+                total[k] = total.get(k, 0) + n
+            moved += sum(d.values())
+        if not moved:
+            break
+    print("antennas: " + ", ".join(f"{n} {k}" for k, n in total.items()) + " removed")
+    return total
 
 
 def drop_passthrough_vias(path: Path) -> int:

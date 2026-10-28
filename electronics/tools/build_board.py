@@ -497,6 +497,8 @@ def main():
     ap.add_argument("--routed", help="with --ses: a board another router routed, imported instead of the session")
     ap.add_argument("--tidy", action="store_true", help="straighten the router's tracks of the PCB as it is "
                     "(pcbgen.tidy_board, as after --ses), no re-route")
+    ap.add_argument("--clean", action="store_true", help="take the antennas off the PCB as it is (dead ends, lone "
+                    "vias, doubled tracks, slivers: pcbgen.clean_antennas, as after --ses and --tidy), no re-route")
     a = ap.parse_args()
     mod = load_design(a.board)
     b = mod.board()
@@ -516,11 +518,13 @@ def main():
         m = check_models(outdir, b.name, b.pcb.get("no_model", ()))
         sys.exit(1 if e["errors"] or copper or d["unconnected"] or d["parity"] or m["problems"] else 0)
     import pcbgen  # needs pcbnew
-    if a.ses or a.tidy:
+    if a.ses or a.tidy or a.clean:
         if a.ses:
             pcbgen.import_session(b, outdir, Path(a.routed) if a.routed else None)
         else:
-            pcbgen.tidy_board(b, outdir / f"{b.name}.kicad_pcb")
+            if a.tidy:
+                pcbgen.tidy_board(b, outdir / f"{b.name}.kicad_pcb")
+            pcbgen.clean_board(outdir / f"{b.name}.kicad_pcb")
         e = json.loads((outdir / "build" / "erc-summary.json").read_text()) if (outdir / "build" / "erc-summary.json").exists() else {"errors": -1, "warnings": -1}
     else:
         generate_schematic(b, outdir, getattr(mod, "NETCLASSES", None))
@@ -542,9 +546,9 @@ def main():
     m = check_models(outdir, b.name, b.pcb.get("no_model", ()))
     summary = {"board": b.name, "parts": len([p for p in b.parts.values() if p.on_board]),
                "nets": len(b.nets()), "erc": {k: e[k] for k in ("errors", "warnings")},
-               "drc": {k: d[k] for k in ("violations", "unconnected", "parity")}, "routed": a.ses or a.tidy,
+               "drc": {k: d[k] for k in ("violations", "unconnected", "parity")}, "routed": a.ses or a.tidy or a.clean,
                "models": {"problems": m["problems"], "not fetched": m["not fetched"]}}
-    if a.ses or a.tidy:
+    if a.ses or a.tidy or a.clean:
         import pcbnew
         from route_metrics import routing_metrics
         summary["routing"] = routing_metrics(pcbnew.LoadBoard(str(outdir / f"{b.name}.kicad_pcb")), b)

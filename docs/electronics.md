@@ -14,11 +14,22 @@ $ tools/kicad.sh bay-node                  # schematic + placed PCB + ERC/DRC
 $ tools/kicad.sh bay-node --route --fab    # + Freerouting + Gerbers/CPL/BOM/PDF/renders/STEP/GLB
 $ tools/kicad.sh bay-node --ses --fab      # re-import the last Freerouting session (no re-route)
 $ tools/kicad.sh bay-node --check          # ERC + read-only DRC of the PCB as it is (what CI runs)
+$ tools/kicad.sh bay-node --clean          # take the routed PCB's antennas off (no re-route)
 ```
 
 `tools/kicad.sh` runs everything in the official `kicad/kicad:10.0-full`
 image (and Freerouting in a JRE image), so the only prerequisite is Docker.
 The generated projects open in a local KiCad 10 as normal projects.
+
+**Antennas** (Eve's layout review, 2026-10-28): every import ends with
+pcbgen's `clean_antennas()`, which takes off what the router and the tidy pass
+leave hanging.  That is a track end that meets nothing of its net, a via that
+meets its net on one layer only, a router track lying over another of its net,
+and slivers (0.1 mm or shorter), folded into their neighbours where the
+clearances allow.  Drawn copper is never touched.  `electronics/tools/antennas.py`
+finds them in the board file, and `tools/tests/test_antennas.py` holds every
+board to none, but the ones `electronics/antennas.json` still lists.  KiCad's
+DRC reports a dangling track or via as an error.
 
 **Schematics** are drawn, not just generated: every part in `design.py` has
 an `sch=` position on the 0.1" grid and the main paths are real wires
