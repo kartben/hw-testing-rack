@@ -437,8 +437,11 @@ def board() -> Board:
         "IO35": "CTL_LED", "IO39": "PD_INT", "IO40": "PD_SCL", "IO41": "PD_SDA", "IO42": "I2C_PU",
         "TXD0": "U0TX", "RXD0": "U0RX",
     }, pcb=P(30.0, 10.5, 0))
-    C(c, "C113", "22u", "+3V3", "GND", size="1206", pcb=P(19.8, 10.5, 90))
-    C(c, "C114", "100n", "+3V3", "GND", pcb=P(19.8, 14.6, 90))
+    # the 100 nF right beside the 3V3 pin (3), the 22 µF above it by the GND pins (1, 2), clear of the antenna
+    # keep-out (y 5.6), short of the module's courtyard (x 22.05) and its pin-1 mark; below, it shut pins 4-8 in
+    # (decoupling check, Eve's review: C114 was 6.4 mm from the pin, C113 3.1)
+    C(c, "C113", "22u", "+3V3", "GND", size="1206", pcb=P(19.45, 6.6, 180))
+    C(c, "C114", "100n", "+3V3", "GND", pcb=P(20.55, 8.8, 180))
     part(c, "SW1", "button", {"1": "EN", "2": "GND"}, "RESET", pcb=P(11.5, 10.0, 0))
     R(c, "R209", "10k", "+3V3", "EN", pcb=P(17.0, 9.5, 90))
     C(c, "C115", "1u", "EN", "GND", pcb=P(40.0, 6.15, 0))           # at EN (pin 45); R209 by the RESET button
