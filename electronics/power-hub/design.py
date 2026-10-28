@@ -241,6 +241,8 @@ def board() -> Board:
              "poly": [(55.6, 12.5 + BY), (57.8, 12.5 + BY), (57.8, 20.7 + BY), (55.6, 20.7 + BY)]},
         ],
         "vias": [
+            # C106's (the buck's 100 nF input capacitor) own GND via right beside its GND pad (decoupling check)
+            ("GND", 59.95, 14.6 + BY),
             *[("GND", x, y + BY) for x, y in ((61.0, 14.9), (61.0, 17.4), (61.2, 21.4), (63.0, 21.6), (65.25, 21.6),
                                               (67.75, 21.6), (70.0, 21.6))],
             # eFuse IN islands down to In2 (VRACK); exposed pads: six tented GND vias each, to In1
