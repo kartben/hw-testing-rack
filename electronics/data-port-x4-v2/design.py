@@ -678,11 +678,11 @@ def hub_sheet(b: Board):
     # never says it is inside (the audit's U2, its conservative option); right east of the crystal, across XO and XI
     R(s, "R10", "1M", "XO", "XI", size="0402", pcb=P(XT[0] + 2.3, XT[1] + 0.25, 270), sch=at(94, 56, rot=90))
     # decoupling, by pin: west 64 (C11 below the corner, its +3V3 pad up), 57 and 52; south 5 (C15 right under
-    # it, between ports 2 and 3's pairs) and 10 (right of the DN pairs); east 24; north 46 (C17 right over it, in
+    # it, between ports 2 and 3's pairs) and 10 (C16 right under it, by port 4's pair); east 24; north 46 (C17 right over it, in
     # the straps' row, its +3V3 pad down: R3 gave it the spot)
     for i, (ref, xy, rot) in enumerate((("C11", (HX - 4.7, HY + 6.2), 270), ("C13", (HX - 6.2, HY - 1.1), 180),
                                         ("C12", (HX - 6.2, HY - 2.25), 180), ("C15", (HX - 1.75, HY + 6.4), 270),
-                                        ("C16", (HX + 1.6, HY + 7.6), 90), ("C14", (HX + 6.05, HY + 1.2), 90),
+                                        ("C16", (HX + 0.95, HY + 6.7), 270), ("C14", (HX + 6.05, HY + 1.2), 90),
                                         ("C17", (HX - 2.85, HY - 6.4), 90))):
         C(s, ref, "100n", "+3V3", "GND", size="0402", pcb=P(*xy, rot), sch=at(80 + 6 * i, 24))
     # VDD18 / VDD18PLL: the datasheet's 1.0 µF ± 20 % has no margin left once a 0402's DC bias and temperature
@@ -1319,11 +1319,14 @@ def board() -> Board:
     # the hub's two south VDD33 pins (5 and 10) take their vias inwards, under its body (between the pads and the
     # UP pair): their automatic fan-out vias sat right below the row, between the downstream pairs, and boxed
     # port 2's D− in (Freerouting left it unrouted).  Pin 5's line goes on down to C15, its 100 nF, between ports
-    # 2 and 3's pairs
+    # 2 and 3's pairs; pin 10's to C16, between port 4's D+ and the co-processor's D− via (0.2 mm wide, 0.139 mm
+    # from that via)
     for px in (HX - 1.75, HX + 0.75):
         hand_tracks.append(("+3V3", "F.Cu", 0.25, [(px, HY + 4.4125), (px, HY + 3.75)]))
         hand_vias.append(("+3V3", px, HY + 3.75, 0.5, 0.3))
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX - 1.75, HY + 4.4125), (HX - 1.75, HY + 5.92)]))
+    hand_tracks.append(("+3V3", "F.Cu", 0.2, [(HX + 0.75, HY + 4.4125), (HX + 0.7, HY + 4.9), (HX + 0.7, HY + 5.97),
+                                             (HX + 0.95, HY + 6.22)]))
     # pin 64's: the pin, its via, then C11 (its 100 nF) right below the corner
     p64 = (HX - 4.4125, HY + 3.75)                                      # U1 pin 64
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [p64, (HX - 4.7, p64[1] + 0.2875), (HX - 4.7, HY + 5.72)]))
