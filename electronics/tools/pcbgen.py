@@ -1595,6 +1595,19 @@ def fanout_pads(board, specs: dict, islands: list, only=None) -> list[tuple[str,
                 if p.GetNetCode() == code and p.GetDrillSize().x == 0
                 and (p.IsOnLayer(pcbnew.F_Cu) or p.IsOnLayer(pcbnew.B_Cu))]
         done = todo = 0
+        mine = {pcbnew.F_Cu: [], pcbnew.B_Cu: []}          # the fan-out tracks so far
+
+        def along(layer, a, e):
+            """a, e on the line of a fan-out track already there, sharing a run with it: a doubled track"""
+            for u, w in mine[layer]:
+                d = w - u
+                L = math.hypot(d.x, d.y)
+                if L == 0 or any(abs((q.x - u.x) * d.y - (q.y - u.y) * d.x) / L > err for q in (a, e)):
+                    continue
+                lo, hi = sorted(((q.x - u.x) * d.x + (q.y - u.y) * d.y) / L for q in (a, e))
+                if min(hi, L) - max(lo, 0) > err:
+                    return True
+            return False
         for pad in pads:
             a = pad.GetPosition()
             if any(s.Contains(a) for s in skip):
@@ -1625,6 +1638,8 @@ def fanout_pads(board, specs: dict, islands: list, only=None) -> list[tuple[str,
                     e = pcbnew.VECTOR2I(int(a.x + dx * L), int(a.y + dy * L))
                     if obst[layer].Collide(pcbnew.SEG(a, e), MM(width) // 2):
                         break
+                    if along(layer, a, e):
+                        break                           # along a neighbour's fan-out: a doubled track
                     if via_fits(e):
                         best = (score, e)
                         break
@@ -1645,6 +1660,7 @@ def fanout_pads(board, specs: dict, islands: list, only=None) -> list[tuple[str,
                 t.SetNet(net)
                 t.SetLocked(True)
                 board.Add(t)
+                mine[layer].append((u, w))
             v = pcbnew.PCB_VIA(board)
             v.SetPosition(e)
             v.SetWidth(MM(via_d))

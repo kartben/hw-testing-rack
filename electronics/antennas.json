@@ -1,4 +1,4 @@
 {
   "comment": "Antennas (electronics/tools/antennas.py: dead ends, lone vias, doubled tracks, slivers): tools/tests/test_antennas.py holds every board to none, but the boards listed here, still to be cleaned (pcbgen.clean_antennas, tools/kicad.sh <board> --clean).  A board leaves the list in the commit that cleans it.",
-  "pending": ["power-hub", "data-port-x4-v2"]
+  "pending": ["data-port-x4-v2"]
 }
