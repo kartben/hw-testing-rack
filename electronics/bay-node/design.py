@@ -582,7 +582,9 @@ def board() -> Board:
     u.frame("DUT USB: ESD at the DATA lead's node end (flow-through), towards J7", 106, 40, 160, 72)
     part(u, "U8", "esd", {"6": "DUT_CONN_DN", "1": "DUT_DN", "4": "DUT_CONN_DP", "3": "DUT_DP", "5": "+5V",
                           "2": "GND"}, pcb=P(51.3, 34.0, 0), sch=at(134, 58, fields=(1.5, 3.5)))
-    C(u, "C26", "100n", "+5V", "GND", pcb=P(51.6, 36.9, 0), sch=at(124, 64))       # U8's VBUS, via In2 +5V
+    # U8's VBUS, via In2 +5V: turned, its +5V pad right under pin 5, against U8's courtyard (decoupling check,
+    # Eve's review: 2.2 mm from the pin)
+    C(u, "C26", "100n", "+5V", "GND", pcb=P(51.6, 36.45, 180), sch=at(124, 64))
 
     # the drawer's DATA board on an 8-wire PH lead (the camera's lead type, 'Same direction'): VBUS, GND,
     # D−, D+, GND as before, then the node's I²C (the INA226's bus, 2.2k pull-ups on this board) and an
