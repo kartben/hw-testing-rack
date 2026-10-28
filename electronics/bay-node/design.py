@@ -809,7 +809,9 @@ def board() -> Board:
     c.wire((84, 28), (84, 31), net="GND")
     c.tag("GND", (84, 31), "down")
     part(c, "F1", "pptc750", {"1": "+5V", "2": "CAM_5V"}, "0.75A", pcb=P(cx - 5.5, cy - 7.2, 90), sch=at(20, 14, rot=90))
-    C(c, "C27", "100n", "CAM_5V", "GND", pcb=P(cx - 8.0, cy - 7.2, 90), sch=at(30, 16))
+    # right above J6.1 (CAM_5V), in the notch of the connector's courtyard, on the feed from F1 (decoupling
+    # check, Eve's review: left of F1 it was 4.3 mm from the pin)
+    C(c, "C27", "100n", "CAM_5V", "GND", pcb=P(cx - 2.8, cy - 8.8, 0), sch=at(30, 16))
     # SPI: 33 Ω in series at the node end of the lead (a few cm of track from U3: the source, for a 50 cm lead)
     rx, ry = cx - 11.5, cy - 8.2
     R(c, "R31", "33", "CAM_SCK", "CAM_SCK_P", pcb=P(rx, ry, 0), sch=at(50, 24, rot=90))
