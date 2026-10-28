@@ -220,6 +220,8 @@ def board() -> Board:
         ("+3V3", 0.25, [(23.25, 8.76), (22.675, 8.76), (21.9, 9.535), (21.45, 9.535), (20.4, 9.535)]),
         # C16, D4's (the status RGB LED's) 100 nF, from its VDD pin (4); its via north of it
         ("+3V3", 0.25, [(12.915, 87.65), (14.275, 87.7), (14.275, 86.65)]),
+        # C17, U5's (the PC-side USB mux's) 100 nF, from its VCC pin (1); its via north of it
+        ("+3V3", 0.25, [(32.5, 36.5), (32.5, 34.725), (31.975, 34.2), (31.975, 33.15)]),
     ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
