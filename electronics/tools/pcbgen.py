@@ -1208,7 +1208,9 @@ def clean_board(path: Path, rounds: int = 6) -> dict:
                                 "from pathlib import Path; print(json.dumps(pcbgen.clean_antennas(Path(sys.argv[2]), sys.argv[3])))",
                                 str(Path(__file__).resolve().parent), str(path), step],
                                check=True, capture_output=True, text=True)
-            d = json.loads(next(l for l in reversed(r.stdout.splitlines()) if l.startswith("{")))   # past KiCad's debug lines
+            # the step's own line, past KiCad's debug lines; in the KiCad image SWIG's leak warnings share stdout and
+            # can land mid-line ("...type 'PCB_TRACK *{"doubles": 20, ...}"), so the last {...} wherever it sits
+            d = json.loads(re.findall(r'\{"[^{}]*\}', r.stdout)[-1])
             for k, n in d.items():
                 total[k] = total.get(k, 0) + n
             moved += sum(d.values())
