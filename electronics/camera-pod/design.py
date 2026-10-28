@@ -135,6 +135,10 @@ def board() -> Board:
         "vias": [("+3V3", 24.75, 12.6), ("+3V3", 24.75, 13.6), ("+3V3", 24.75, 14.6),
                  ("GND", 11.7, 15.3), ("GND", 26.0, 8.75), ("GND", hx - 6.35, hy - 7.0),   # C1, C2, C3's returns
                  *[(net, *xy) for net, xy, _ in TP_ROUND2]],          # the second round's test pads
+        # the pin → cap → via rule (the layout review): J2.1 (the camera's VCC) reaches its rail only through C3, the
+        # 100 nF right above it.  The rail (no plane on this board) comes in on C3's far side, at the end of its stub
+        "tracks": [("+3V3", "F.Cu", 0.4, [(hx - 6.35, hy - 1.66), (hx - 6.35, hy - 4.225)]),
+                   ("+3V3", "F.Cu", 0.4, [(hx - 6.35, hy - 4.225), (hx - 5.25, hy - 4.225)])],
         "stitch": 3.0,
         "texts": [
             {"text": "VCC GND SCK MISO MOSI CS", "x": hx, "y": hy + 4.3, "size": 0.8},
