@@ -1150,6 +1150,12 @@ def board() -> Board:
                     ("+3V3_CP", "F.Cu", 0.25, [(CP[0] - 0.6, CP[1] + 4.95), (CP[0] - 0.6, CP[1] + 5.62), c38,
                                                (c38[0] - 0.65, c38[1])])]
     hand_vias.append(("+3V3_CP", c38[0] - 0.65, c38[1], 0.5, 0.3))
+    # C39 (IOVDD pin 76's 100 nF): the pin down into it, C39 on east to its own via in the island (its nearest
+    # via was past C40 and pin 5), the line going on to C40 as the router had it
+    c39 = (CP[0] + 3.0, CP[1] + 6.92)                                   # C39's +3V3_CP pad
+    hand_tracks.append(("+3V3_CP", "F.Cu", 0.25, [(CP[0] + 2.2, CP[1] + 4.95), (CP[0] + 2.2, CP[1] + 6.12), c39,
+                                                  (c39[0] + 1.6, c39[1]), (CP[0] + 5.92, CP[1] + 5.6)]))
+    hand_vias.append(("+3V3_CP", c39[0] + 0.6, c39[1], 0.5, 0.3))
     # CP_DP (the co-processor's USB D+, Full Speed) from pin 67 up along the south pad row's inner edge, under the
     # case (0.15 mm there, its netclass's 0.127 mm from CP_DN and from the pads), to B.Cu east of CP_ADC3's line,
     # and on down to R23: it ran between pins 68-69 and C38, where pin 69 now goes down to its capacitor
