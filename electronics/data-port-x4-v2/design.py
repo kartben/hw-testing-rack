@@ -687,7 +687,7 @@ def hub_sheet(b: Board):
     # the straps' row, its +3V3 pad down: R3 gave it the spot)
     for i, (ref, xy, rot) in enumerate((("C11", (HX - 4.7, HY + 6.2), 270), ("C13", (HX - 6.2, HY + 0.25), 180),
                                         ("C12", (HX - 6.2, HY - 2.25), 180), ("C15", (HX - 1.75, HY + 6.4), 270),
-                                        ("C16", (HX + 0.95, HY + 6.7), 270), ("C14", (HX + 6.05, HY + 1.2), 90),
+                                        ("C16", (HX + 0.95, HY + 6.7), 270), ("C14", (HX + 6.05, HY + 0.95), 270),
                                         ("C17", (HX - 2.85, HY - 6.4), 90))):
         C(s, ref, "100n", "+3V3", "GND", size="0402", pcb=P(*xy, rot), sch=at(80 + 6 * i, 24))
     # VDD18 / VDD18PLL: the datasheet's 1.0 µF ± 20 % has no margin left once a 0402's DC bias and temperature
@@ -1167,6 +1167,12 @@ def board() -> Board:
     p57 = (HX - 4.4125, HY + 0.25)                                      # U1 pin 57
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [p57, (HX - 5.72, p57[1]), (HX - 5.72, HY + 0.95)]))
     hand_vias.append(("+3V3", HX - 5.72, HY + 0.95, 0.5, 0.3))
+    # C14 (pin 24's 100 nF) turned so its +3V3 pad faces the pin: the pin east to it (a jog down past C9's pad),
+    # C14 on east to its via
+    p24 = (HX + 4.4125, HY + 0.25)                                      # U1 pin 24
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [p24, (HX + 5.83, p24[1]), (HX + 6.05, HY + 0.47),
+                                               (HX + 6.7, HY + 0.47)]))
+    hand_vias.append(("+3V3", HX + 6.7, HY + 0.47, 0.5, 0.3))
     # CP_RUN, from the matrix expander's P5 (pin 10, top left) to the co-processor's RUN pull-up R25, along the
     # top edge on B.Cu above the co-processor's test points (Freerouting left it open)
     rx, ry = MX_EXP[0] + 2.5 * 0.65, MX_EXP[1] - 2.8625                # U10 pin 10, turned 90°
