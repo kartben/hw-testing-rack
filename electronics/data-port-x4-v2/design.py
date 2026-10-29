@@ -1156,6 +1156,13 @@ def board() -> Board:
     hand_tracks.append(("+3V3_CP", "F.Cu", 0.25, [(CP[0] + 2.2, CP[1] + 4.95), (CP[0] + 2.2, CP[1] + 6.12), c39,
                                                   (c39[0] + 1.6, c39[1]), (CP[0] + 5.92, CP[1] + 5.6)]))
     hand_vias.append(("+3V3_CP", c39[0] + 0.6, c39[1], 0.5, 0.3))
+    # C43 and C42 (IOVDD pin 24's two 100 nF): the pin up into C43, C43 on into C42, C42 down to its via in the
+    # island, south of it (MX_DAT, MX_CK and MX_RST run along the north side on B.Cu); the pin's line under the
+    # case (to its via, pin 29 and pin 15) gone
+    c43, c42 = (CP[0] + 3.0, CP[1] - 6.92), (CP[0] + 4.45, CP[1] - 6.92)     # their +3V3_CP pads
+    hand_tracks.append(("+3V3_CP", "F.Cu", 0.25, [(CP[0] + 2.6, CP[1] - 4.95), (CP[0] + 2.6, CP[1] - 6.52), c43, c42,
+                                                  (c42[0], CP[1] - 6.25)]))
+    hand_vias.append(("+3V3_CP", c42[0], CP[1] - 6.25, 0.5, 0.3))
     # CP_DP (the co-processor's USB D+, Full Speed) from pin 67 up along the south pad row's inner edge, under the
     # case (0.15 mm there, its netclass's 0.127 mm from CP_DN and from the pads), to B.Cu east of CP_ADC3's line,
     # and on down to R23: it ran between pins 68-69 and C38, where pin 69 now goes down to its capacitor
