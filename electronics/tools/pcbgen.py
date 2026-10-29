@@ -40,6 +40,9 @@ MM = pcbnew.FromMM
 # keeps the hole 0.25 mm from any track the router keeps 0.15 mm from the pad (Freerouting doesn't
 # know KiCad's hole clearance rule).
 SMALL_VIA = (0.5, 0.3)
+# clean_antennas() folds a router track this short (mm, + 2 µm) into its neighbours as a sliver: unjog() must not
+# leave one, or the two passes undo each other at every import, the jog creeping on by a few µm each time
+SLIVER = 0.1
 
 
 DRU = """(version 1)
@@ -954,7 +957,7 @@ def clean_antennas(path: Path, step: str) -> dict:
     a Remove; clean_board runs them in turn until nothing changes).  Returns the counts."""
     import json
     import tempfile
-    T, SL = MM(0.002), MM(0.1)
+    T, SL = MM(0.002), MM(SLIVER)
     done = {"doubles": 0, "slivers": 0, "dead ends": 0, "lone vias": 0}
 
     def same(p, q):
@@ -2415,7 +2418,9 @@ def unjog(board, layers, skip, index, dead, clear_of, pads, longest: float = 0.2
                 return False
 
             def clear(new):
-                return all(clear_of(pcbnew.VECTOR2I(*p), pcbnew.VECTOR2I(*q), w, l, net, name, own) for w, p, q in new)
+                # and no segment clean_antennas() would fold back as a sliver
+                return all(math.dist(p, q) > MM(SLIVER + 0.002) and
+                           clear_of(pcbnew.VECTOR2I(*p), pcbnew.VECTOR2I(*q), w, l, net, name, own) for w, p, q in new)
 
             # slide C back onto A's line (C's far end and the segment beyond it move by -side), or A onto C's
             for stub, joint, far, sign in ((c, j1, fc, -1), (a, j2, fa, +1)):
