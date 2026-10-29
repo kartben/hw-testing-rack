@@ -452,7 +452,8 @@ def port(b: Board, n: int):
     # VBUS's bulk capacitor between the cluster and the receptacle
     C(s, f"C{k + 2}", "22u", p + "VBUS", "GND", size="0805", pcb=P(cx - 3.6, 56.9, 0), sch=at(55, 35.5))
     s.wire(f"C{k + 2}.1", (55, 33))
-    C(s, f"C{k + 3}", "100n", "+3V3", "GND", size="0402", pcb=P(x0 + 7.8, y0 + 0.9, 180), sch=at(80, 18))
+    # the INA226's 100 nF right over its VS pin (6), its +3V3 pad in line with it (drawn in board())
+    C(s, f"C{k + 3}", "100n", "+3V3", "GND", size="0402", pcb=P(x0 + 8.03, y0 + 0.9, 180), sch=at(80, 18))
     # the port's VBUS LED (the user, 2026-10-21): green, on the switched 5 V before the shunt, so the INA226
     # doesn't count its ≈ 3 mA; by its port's number over the header's west end, its 1k above it
     R(s, f"R{k + 14}", "1k", p + "5V_SW", p + "LED_A", size="0402", pcb=P(cx - 5.2, HDR_Y - 9.8, 270),
@@ -1069,13 +1070,20 @@ def board() -> Board:
     # Drawn before the routing (Freerouting routes round them): each port switch's IN and its 1 µF over the
     # +3V3 area, by a 0.6 mm track down past the INA226 to a via into the +5V area
     hand_tracks, hand_vias = [], []
-    for cx in CFG["usb"]:
+    for n, cx in enumerate(CFG["usb"], 1):
         x0, y0 = cx - 5.0, PWR_Y
         pin_in = (x0 + 2.45 + 1.1375, y0 + 2.2 + 0.95)        # the switch's IN (pin 1, turned 180°): its centre
         c1 = (x0 + 5.13, y0 + 2.9 + 0.48)                     # its 1 µF's +5V pad
         via = (c1[0] + 0.5, PWR_SPLIT + 1.1)                   # right of the shunt's VBUS pad, left of the INA226
         hand_tracks.append(("+5V", "F.Cu", 0.6, [pin_in, c1, (via[0], c1[1] + 0.5), via]))
         hand_vias.append(("+5V", *via, 0.6, 0.3))
+        # the INA226's VS (pin 6, turned 90°) straight up to its 100 nF (C103-C403), then its via: the pin → cap →
+        # via order.  The via north of it on ports 1 and 3, east of it on 2 and 4, where the port's EN line (and
+        # SDA, on 4) passes north
+        vs = (x0 + 8.51, y0 + 2.45)
+        via = (vs[0], y0 + 0.15) if n % 2 else (vs[0] + 0.63, y0 + 0.9)
+        hand_tracks.append(("+3V3", "F.Cu", 0.25, [vs, (vs[0], y0 + 0.9), via]))
+        hand_vias.append(("+3V3", *via, 0.5, 0.3))
     # U3's islands' vias: six from the tab's +3V3 island into the +3V3 plane, either side of the tab; two from
     # the VIN island into the +5V plane, between the VIN pin and C2
     lx, ly = LDO
