@@ -1135,6 +1135,13 @@ def board() -> Board:
     hand_tracks.append(("+3V3_CP", "F.Cu", 0.25, [(CP[0] - 4.95, c35[1]), c35, (c35[0], c35[1] - 0.18),
                                                   (CP[0] - 5.75, CP[1] - 4.45)]))
     hand_vias.append(("+3V3_CP", CP[0] - 5.75, CP[1] - 4.45, 0.5, 0.3))
+    # C37 (IOVDD pins 59 and 60's 100 nF) likewise: the two pins bridged and west into it, C37 on south-east to
+    # its via in the island, where the router had it (the pins' line under the case to pin 64's via gone)
+    c37 = (CP[0] - 6.22, CP[1] + 3.6)                                   # C37's +3V3_CP pad
+    v37 = (40.7998, 17.3915)                                            # its via, as routed (its B.Cu run to R21)
+    hand_tracks += [("+3V3_CP", "F.Cu", 0.25, [(CP[0] - 4.95, CP[1] + 3.4), (CP[0] - 4.95, CP[1] + 3.8)]),
+                    ("+3V3_CP", "F.Cu", 0.25, [(CP[0] - 4.95, c37[1]), c37, (40.3442, 16.9358), v37])]
+    hand_vias.append(("+3V3_CP", *v37, 0.5, 0.3))
     # the co-processor's west face round C45 (DVDD pin 51's 100 nF, right west of it): pin 51 to C45, C45's GND
     # down to its via; VREF4 (pin 52) and VREF2 (pin 54) to B.Cu right by their pins, 4's via east, 2's west (their
     # GPIOs swapped so that the two runs south do not cross); BUS_C's dive to B.Cu moved west of C45.  Pin 51 keeps
