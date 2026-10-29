@@ -2,7 +2,6 @@
   "comment": "Decoupling (electronics/tools/decoupling.py: each capacitor b.pcb[\"decoupling\"] declares within 2 mm of its pin, its return within 1 mm of a via; a capacitor of 100 nF or less in the pin → cap → via order): tools/tests/test_decoupling.py holds every board that declares them to it, but the boards listed here, still to be fixed: \"pending\" for every rule, \"order_pending\" for the order alone.  A board leaves a list in the commit that fixes its last capacitor.",
   "pending": [],
   "order_pending": [
-    "bay-node",
     "data-port-x4-v2"
   ]
 }
