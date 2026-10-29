@@ -1142,6 +1142,23 @@ def board() -> Board:
     hand_tracks += [("+3V3_CP", "F.Cu", 0.25, [(CP[0] - 4.95, CP[1] + 3.4), (CP[0] - 4.95, CP[1] + 3.8)]),
                     ("+3V3_CP", "F.Cu", 0.25, [(CP[0] - 4.95, c37[1]), c37, (40.3442, 16.9358), v37])]
     hand_vias.append(("+3V3_CP", *v37, 0.5, 0.3))
+    # C38 (IOVDD pins 68 and 69's 100 nF) likewise: the two pins bridged, pin 69 down-east into C38, C38 on west
+    # to its via in the island (pin 69's via under the case and its line on to pin 76 gone; CP_DP, which ran
+    # between the pins and C38, left to the router)
+    c38 = (CP[0] + 0.7, CP[1] + 6.92)                                   # C38's +3V3_CP pad
+    hand_tracks += [("+3V3_CP", "F.Cu", 0.25, [(CP[0] - 1.0, CP[1] + 4.95), (CP[0] - 0.6, CP[1] + 4.95)]),
+                    ("+3V3_CP", "F.Cu", 0.25, [(CP[0] - 0.6, CP[1] + 4.95), (CP[0] - 0.6, CP[1] + 5.62), c38,
+                                               (c38[0] - 0.65, c38[1])])]
+    hand_vias.append(("+3V3_CP", c38[0] - 0.65, c38[1], 0.5, 0.3))
+    # CP_DP (the co-processor's USB D+, Full Speed) from pin 67 up along the south pad row's inner edge, under the
+    # case (0.15 mm there, its netclass's 0.127 mm from CP_DN and from the pads), to B.Cu east of CP_ADC3's line,
+    # and on down to R23: it ran between pins 68-69 and C38, where pin 69 now goes down to its capacitor
+    hand_tracks += [("CP_DP", "F.Cu", 0.15, [(CP[0] - 1.4, CP[1] + 4.95), (CP[0] - 1.4, CP[1] + 4.32),
+                                             (CP[0] - 0.12, CP[1] + 4.32), (CP[0] + 0.1, CP[1] + 4.1)]),
+                    ("CP_DP", "B.Cu", 0.25, [(CP[0] + 0.1, CP[1] + 4.1), (CP[0] + 0.1, CP[1] + 5.7), (48.379, 19.879),
+                                             (48.379, 22.134)]),
+                    ("CP_DP", "F.Cu", 0.25, [(48.379, 22.134), (48.744, 22.134), (49.4, 22.79)])]
+    hand_vias += [("CP_DP", CP[0] + 0.1, CP[1] + 4.1, 0.5, 0.3), ("CP_DP", 48.379, 22.134, 0.5, 0.3)]
     # the co-processor's west face round C45 (DVDD pin 51's 100 nF, right west of it): pin 51 to C45, C45's GND
     # down to its via; VREF4 (pin 52) and VREF2 (pin 54) to B.Cu right by their pins, 4's via east, 2's west (their
     # GPIOs swapped so that the two runs south do not cross); BUS_C's dive to B.Cu moved west of C45.  Pin 51 keeps
