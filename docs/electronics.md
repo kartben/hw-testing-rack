@@ -699,7 +699,12 @@ above In1.Cu"):
 - the hub's two south VDD33 pins (5, 10) take their vias under its body, so its downstream pairs leave the
   south row unboxed;
 - each port's leg from its ESD to its receptacle (≈ 10 mm, where D+ and D− reach the USB-C's two rows) is
-  routed by Freerouting: its crossing dives to B.Cu, 6–9 mm over the +5V area (to In2 or In3 at 6 layers);
+  routed by Freerouting: its crossing dives to B.Cu, 6–9 mm over the +5V area (to In2 or In3 at 6 layers).
+  Pad to ESD pin, D+ and D− differ by −0.06 to +1.96 mm with the plug one way and −2.22 to −3.93 mm the other
+  (measured 2026-10-29): at most 3.9 mm, ≈ 25 ps against a 2.08 ns High-Speed bit, left uncompensated.  On any
+  USB-C receptacle the second row mirrors the first (D+ and D− swap places), so one line's A–B link crosses the
+  other's and the two ways differ: no meander evens both, and on these few millimetres one would add its own
+  impedance step and only move the skew from one way to the other;
 - the co-processor's pair (Full Speed only) is routed by Freerouting on F.Cu and B.Cu, matched by `match`
   (at 6 layers, mostly on In3, where it places no meander, its lines differ by 2 mm: 13 ps against an 83 ns
   bit);
