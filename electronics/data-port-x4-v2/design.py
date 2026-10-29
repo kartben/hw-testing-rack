@@ -1125,22 +1125,14 @@ def board() -> Board:
     # the matrix expander's VDD (U10 pin 16) to C29, then its via
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [(11.725, 4.1375), (11.0425, 4.82), (10.55, 4.82), (9.9, 4.82)]))
     hand_vias.append(("+3V3", 9.9, 4.82, 0.5, 0.3))
-    # C18, C19 (the expanders' 100 nF): VCCI (pin 15) straight up to it, VCCP (pin 14) bridged to VCCI and up to
-    # its own via, where its fan-out had it; its GND pad's via east of it (the automatic one went up onto
-    # PORT1_RST_IO's via)
-    for i, (ux, uy, _) in enumerate(EXP):
-        if i == 0:
-            # U2's in the pin → cap → via order: VCCP bridged to VCCI, VCCI up to C18, C18 on to a via west of it
-            # (VCCP's own via gone)
-            hand_tracks += [("+3V3", "F.Cu", 0.25, [(ux + 0.25, uy - 1.4375), (ux - 0.25, uy - 1.4375),
-                                                    (ux - 0.25, uy - 2.77), (ux - 0.85, uy - 3.25)])]
-            hand_vias.append(("+3V3", ux - 0.85, uy - 3.25, 0.5, 0.3))
-        else:
-            hand_tracks.append(("+3V3", "F.Cu", 0.25, [(ux - 0.25, uy - 2.77), (ux - 0.25, uy - 1.4375),
-                                                       (ux + 0.25, uy - 1.4375), (ux + 0.25, uy - 2.225)]))
-            hand_vias.append(("+3V3", ux + 0.25, uy - 2.225, 0.5, 0.3))
-        hand_tracks.append(("GND", "F.Cu", 0.25, [(ux - 0.25, uy - 3.73), (ux + 0.4, uy - 3.73)]))
-        hand_vias.append(("GND", ux + 0.4, uy - 3.73, 0.5, 0.3))
+    # C18, C19 (the expanders' 100 nF), in the pin → cap → via order: VCCP (pin 14) bridged to VCCI (pin 15),
+    # VCCI straight up to the capacitor, the capacitor on to its via west of it; its GND pad's via east of it (the
+    # automatic one went up onto PORT1_RST_IO's via)
+    for ux, uy, _ in EXP:
+        hand_tracks += [("+3V3", "F.Cu", 0.25, [(ux + 0.25, uy - 1.4375), (ux - 0.25, uy - 1.4375),
+                                                (ux - 0.25, uy - 2.77), (ux - 0.85, uy - 3.25)]),
+                        ("GND", "F.Cu", 0.25, [(ux - 0.25, uy - 3.73), (ux + 0.4, uy - 3.73)])]
+        hand_vias += [("+3V3", ux - 0.85, uy - 3.25, 0.5, 0.3), ("GND", ux + 0.4, uy - 3.73, 0.5, 0.3)]
     for x_, y_ in [(ex_, ey_) for ex_, ey_, _ in EXP] + [(c - 0.5, LSF_Y) for c in CFG["usb"]]:
         hand_tracks.append(("GND", "F.Cu", 0.25, [(x_, y_), (x_ + 0.3, y_)]))
         hand_vias.append(("GND", x_ + 0.3, y_, 0.5, 0.3))
