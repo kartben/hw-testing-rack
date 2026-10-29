@@ -1065,8 +1065,10 @@ def board() -> Board:
               for pt in ((x1 + E, H - E), (x1 + E, top - E), (x0 - E, top - E), (x0 - E, H - E))]
     IN_5V = [(E, PWR_SPLIT + 0.1), (89.0, PWR_SPLIT + 0.1), (89.0, 44.2), (W - E, 44.2), (W - E, H - E), *bottom,
              (E, H - E)]
-    ISLAND = [(CP[0] - 6.1, CP[1] - 6.1), (CP[0] + 6.1, CP[1] - 6.1), (CP[0] + 6.1, CP[1] + 6.1),
-              (CP[0] - 6.1, CP[1] + 6.1)]
+    # the co-processor's +3V3_CP island: U11 and its 100 nF ring west, north and south, so that each capacitor's
+    # via, past its +3V3_CP pad, lands in it (no +3V3 or +5V via in the ring)
+    ISLAND = [(CP[0] - 6.65, CP[1] - 8.15), (CP[0] + 6.1, CP[1] - 8.15), (CP[0] + 6.1, CP[1] + 8.1),
+              (CP[0] - 6.65, CP[1] + 8.1)]
     # Drawn before the routing (Freerouting routes round them): each port switch's IN and its 1 µF over the
     # +3V3 area, by a 0.6 mm track down past the INA226 to a via into the +5V area
     hand_tracks, hand_vias = [], []
