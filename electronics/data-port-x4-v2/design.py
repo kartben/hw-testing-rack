@@ -1121,6 +1121,12 @@ def board() -> Board:
         hand_tracks.append(("+5V", "F.Cu", 0.25, [(cx + 8.1375, USB_Y), (cx + 7.0, USB_Y), (cx + 7.0, USB_Y - 2.3),
                                                   (cx + 7.0, USB_Y - 2.9)]))
         hand_vias.append(("+5V", cx + 7.0, USB_Y - 2.9, 0.5, 0.3))
+    # the co-processor's 3.3 V (+3V3_CP) into its In2 island right past FB2, C31 and R25: from R25's pad down to
+    # a via in the island (the feed used to reach the island through IOVDD pin 41, under the case), so that each
+    # IOVDD pin can reach the rail through its own 100 nF alone
+    r25 = (CP[0] - 4.31, 5.4)                                           # R25's +3V3_CP pad
+    hand_tracks.append(("+3V3_CP", "F.Cu", 0.25, [r25, (CP[0] - 4.485, 5.575), (CP[0] - 4.485, 7.4)]))
+    hand_vias.append(("+3V3_CP", CP[0] - 4.485, 7.4, 0.5, 0.3))
     # the co-processor's west face round C45 (DVDD pin 51's 100 nF, right west of it): pin 51 to C45, C45's GND
     # down to its via; VREF4 (pin 52) and VREF2 (pin 54) to B.Cu right by their pins, 4's via east, 2's west (their
     # GPIOs swapped so that the two runs south do not cross); BUS_C's dive to B.Cu moved west of C45.  Pin 51 keeps
