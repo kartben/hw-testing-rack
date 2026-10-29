@@ -1107,6 +1107,15 @@ def board() -> Board:
     # and OUT along U9's north side to where its −5 V line splits, as the router had it (to the crosspoints east
     # and TP4 north; the router, left to it, joined neither once C28 had moved)
     hand_tracks.append(("-5V", "F.Cu", 0.25, [(8.8625, 23.05), (9.41, 22.502), (11.841, 22.502)]))
+    # C22 (the left crosspoint's VEE 100 nF, U7 pin 16) in the pin → cap → via order: the pin down to C22, C22 on
+    # east to a via, and B.Cu from there up to where the −5 V runs to U8 and R41 meet (they left from the pin, by a
+    # via there)
+    cx7, cy7 = CHIP[0]
+    vee = (cx7 - 0.1, cy7 + 7.27)                                       # C22's via
+    meet = (31.2027, 22.8324)                                           # the B.Cu runs' junction, as routed
+    hand_tracks += [("-5V", "F.Cu", 0.25, [(cx7 - 0.8, cy7 + 5.6625), (cx7 - 0.8, vee[1]), vee]),
+                    ("-5V", "B.Cu", 0.25, [vee, (vee[0], meet[1] + meet[0] - vee[0]), meet])]
+    hand_vias.append(("-5V", *vee, 0.5, 0.3))
     # each port's ESD (USBLC6): VBUS (pin 5) west under its body, up between its pin rows to C104-C404, then a via
     for cx in CFG["usb"]:
         hand_tracks.append(("+5V", "F.Cu", 0.25, [(cx + 8.1375, USB_Y), (cx + 7.0, USB_Y), (cx + 7.0, USB_Y - 2.3),
