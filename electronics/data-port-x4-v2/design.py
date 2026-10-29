@@ -1413,10 +1413,13 @@ def board() -> Board:
                                              (HX + 0.95, HY + 6.22)]))
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX + 0.95, HY + 6.22), (HX + 1.6, HY + 6.22)]))
     hand_vias.append(("+3V3", HX + 1.6, HY + 6.22, 0.5, 0.3))
-    # pin 64's: the pin, its via, then C11 (its 100 nF) right below the corner
+    # pin 64's: the pin down to C11 (its 100 nF) right below the corner, and its via inwards, under the hub's
+    # body, off that line (it sat on it, between the pin and C11).  C11 is an exception to the pin → cap → via
+    # order: no via fits past its +3V3 pad, between R1's RBIAS pad west and port 1's D− east
     p64 = (HX - 4.4125, HY + 3.75)                                      # U1 pin 64
-    hand_tracks.append(("+3V3", "F.Cu", 0.25, [p64, (HX - 4.7, p64[1] + 0.2875), (HX - 4.7, HY + 5.72)]))
-    hand_vias.append(("+3V3", HX - 4.7, HY + 4.55, 0.5, 0.3))
+    hand_tracks += [("+3V3", "F.Cu", 0.25, [p64, (HX - 4.7, p64[1] + 0.2875), (HX - 4.7, HY + 5.72)]),
+                    ("+3V3", "F.Cu", 0.25, [p64, (HX - 3.6, HY + 3.6)])]
+    hand_vias.append(("+3V3", HX - 3.6, HY + 3.6, 0.5, 0.3))
     six = LAYERS == 6
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
