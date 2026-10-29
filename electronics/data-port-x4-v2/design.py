@@ -701,13 +701,13 @@ def hub_sheet(b: Board):
     # (DS80000628A, Module 2): "The internal POR does not generate reset when power drops below the threshold
     # … Use external power on reset circuit (for example … MAX809S (V2.9V) voltage supervisor)": an RC resets a
     # clean ramp only, and a DUT_5V sag (the node's 1.34 A limit) could leave the hub hung.  RESET low below
-    # 2.93 V (2.78–3.08 V over temperature) and for 150–560 ms after +3V3 is back, push-pull; its 100 nF (C6) at
-    # its VDD.  Over the north face, its RESET pad right above RESET_N (pin 43).  RESET_N is the hub's alone
+    # 2.93 V (2.78–3.08 V over temperature) and for 150–560 ms after +3V3 is back, push-pull; its 100 nF (C6) right
+    # over its VCC pin (3), its +3V3 pad in line with it (drawn in board()).  Over the north face, its RESET pad right above RESET_N (pin 43).  RESET_N is the hub's alone
     # (the schematic review's S2 tied the co-processor's RUN to it through D2 until CFG_SEL 110)
     R(s, "R1", "12k", "RBIAS", "GND", size="0402", pcb=P(HX - 5.75, HY + 6.6, 270), sch=at(84, 92))
     part(s, "U5", "max809s", {"GND": "GND", "~{RESET}": "HUB_RST_N", "VCC": "+3V3"},
          pcb=P(HX - 2.2, HY - 10.1, 90), sch=at(90, 80, fields=(-4, -5)))
-    C(s, "C6", "100n", "+3V3", "GND", size="0402", pcb=P(HX - 3.0, HY - 12.7, 180), sch=at(78, 84))
+    C(s, "C6", "100n", "+3V3", "GND", size="0402", pcb=P(HX - 2.68, HY - 12.7, 180), sch=at(78, 84))
     # CFG_SEL[2:0] = 110 since 2026-10-25: "Internal Default Configuration, Strap Options are Disabled" (DS00001598C
     # Table 5-2 p. 16, the user's reading).  The hub loads Table 7-1's defaults (§7.4 p. 41), which are what our
     # straps set (CFG1 9Bh: self-powered, individual port switching and over-current sensing; NRD, BOOST, PRT_SWP
@@ -1122,6 +1122,10 @@ def board() -> Board:
     hand_vias += [("GND", CP[0] - 7.1, uy + 0.85, 0.5, 0.3), ("CP_ADC4", ux - 0.8, uy + 0.85, 0.5, 0.3),
                   ("CP_ADC2", ux - 1.35, uy + 1.18, 0.5, 0.3), ("BUS_C", 39.2, 12.85, 0.5, 0.3),
                   ("GND", 38.93, 13.4, 0.5, 0.3)]
+    # the hub's reset supervisor in the pin → cap → via order: VCC (U5 pin 3) straight up to C6, C6 on east to
+    # its via
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX - 2.2, HY - 11.038), (HX - 2.2, HY - 12.7), (HX - 1.5, HY - 12.7)]))
+    hand_vias.append(("+3V3", HX - 1.5, HY - 12.7, 0.5, 0.3))
     # the matrix expander's VDD (U10 pin 16) to C29, then its via
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [(11.725, 4.1375), (11.0425, 4.82), (10.55, 4.82), (9.9, 4.82)]))
     hand_vias.append(("+3V3", 9.9, 4.82, 0.5, 0.3))
