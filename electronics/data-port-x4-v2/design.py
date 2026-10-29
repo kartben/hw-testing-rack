@@ -1556,6 +1556,25 @@ def board() -> Board:
             **{f"C{k + 3}": f"U{k + 2}.6" for k in (100, 200, 300, 400)},              # its INA226
             **{f"C{k + 4}": f"U{k + 3}.5" for k in (100, 200, 300, 400)},              # its USBLC6's VBUS
             **{f"C{k + 5}": f"U{k + 7}.20" for k in (100, 200, 300, 400)}},            # its LSF0108's VREF_B
+        # the 100 nF that cannot keep the pin → cap → via order where they sit (decoupling.py), with the measures
+        # (2026-10-29): each still beside its pin, no via between pin and capacitor but where noted
+        "decoupling_order_exempt": {
+            "C11": "U1 pin 64's via under the case, beyond the pin; none fits past C11's pad: R1's RBIAS pad 0.12 mm "
+                   "into one west of it, port 1's D- 0.03 mm into one east",
+            "C15": "U1 pin 5's via under the case, beyond the pin; none fits past C15's pad between ports 2 and 3's "
+                   "pairs: each 0.30 mm into one either side",
+            "C20": "U7's VDD (pin 38): +5V_MX comes in at the pin from under the case; to reach C20's far side it "
+                   "would cross every north pin's line on F.Cu or the buses on B.Cu.  C20 0.59 mm from the pin, no via",
+            "C23": "U8's VDD (pin 38): likewise, +5V_MX up from its via (67.47, 16.36) under the case.  C23 0.59 mm "
+                   "from the pin, no via",
+            "C40": "U11 pin 5 (east face, framed by the pull-up and bus lines): C40 3.0 mm away, the pin on to the "
+                   "island's via first",
+            "C41": "U11 pin 15 (east face, likewise): C41 3.7 mm away, the two meet through the island",
+            "C44": "U11 pin 29: the crystal Y2's keep-out over the pin; C44 2.7 mm away, the two meet through vias",
+            "C45": "U11 pin 51 (DVDD) keeps its via under the case into +1V1: no room past C45 between C36's +3V3_CP "
+                   "line north and the VREF vias south.  C45 0.51 mm west of the pin",
+            "C46": "U11 pin 10 (DVDD, east face): C46 3.9 mm away, the two meet through vias; C47 (4.7 uF) 2.0 mm "
+                   "from pin 32, no via"},
         "dru": XTAL_RULE + XTAL2_RULE,
         "keepouts": [
             # the hub crystal's block: no other net's track or via on either face (dropped once routed)

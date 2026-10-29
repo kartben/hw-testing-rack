@@ -1,7 +1,8 @@
 """Decoupling (electronics/tools/decoupling.py): every capacitor a board's design.py declares in
 b.pcb["decoupling"] sits within REACH of the power pin it serves, its return within VIA of a via, but on the boards
 electronics/decoupling.json still lists as pending (the layout review, 2026-10-28).  A capacitor of 100 nF or less
-also keeps the pin → cap → via order, but on the boards its "order_pending" list names.  Every board's table is
+also keeps the pin → cap → via order, but on the boards its "order_pending" list names and for the capacitors a board
+exempts by name (b.pcb["decoupling_order_exempt"], each with its reason).  Every board's table is
 printed either way; a declaration that names no such pin or capacitor fails on every board.
 
     python -m unittest discover -s tools/tests -v
@@ -38,7 +39,7 @@ class Boards(unittest.TestCase):
                 continue
             b = build_board.load_design(name).board()
             decl = b.pcb["decoupling"]
-            rows = decoupling.check(board, decoupling.resolve(b, decl))
+            rows = decoupling.check(board, decoupling.resolve(b, decl), b.pcb.get("decoupling_order_exempt", {}))
             tables.append(decoupling.table(name + ("  (pending)" if name in pending else "")
                                            + ("  (order pending)" if name in order_pending else ""), rows,
                                            decoupling.undeclared(board, decl)))
@@ -80,13 +81,13 @@ class Synthetic(unittest.TestCase):
     """U1 pin 1 (+3V3) at (0, 0), 0.6 mm square; C1 a 0402-ish pair, pad 1 on +3V3, pad 2 on GND, 1 mm apart (no value:
     the distances only; the order tests give it 100 nF)"""
 
-    def run_check(self, cx, cy, extra=(), rot=0, decl="U1.1", value=""):
+    def run_check(self, cx, cy, extra=(), rot=0, decl="U1.1", value="", exempt=()):
         parts = [fp("U1", 0, 0, [pad(1, 0, 0, "+3V3")]),
                  fp("C1", cx, cy, [pad(1, -0.5, 0, "+3V3", 0.5, 0.5), pad(2, 0.5, 0, "GND", 0.5, 0.5)], rot, value)]
         with tempfile.TemporaryDirectory() as d:
             path = Path(d) / "t.kicad_pcb"
             path.write_text("(kicad_pcb " + " ".join(parts + list(extra)) + ")", encoding="utf-8")
-            return decoupling.check(path, {"C1": decl})[0]
+            return decoupling.check(path, {"C1": decl}, exempt)[0]
 
     def test_beside(self):
         r = self.run_check(1.55, 0, [via(2.8, 0)])           # C1.1's edge 0.5 from U1.1's, the via's 0.25 from C1.2's
@@ -126,6 +127,16 @@ class Synthetic(unittest.TestCase):
                                      via(1.05, -1.0, "+3V3")], value="100n")
         self.assertIsNone(r["order"], r)
         self.assertEqual(r["problems"], [])
+
+    def test_order_exempt(self):
+        """a capacitor exempt by name: its order still worked out, but no problem; exempt and in order, a problem"""
+        bad = [via(2.8, 0), seg((0, 0), (1.05, 0)), via(0, -1.0, "+3V3"), seg((0, 0), (0, -1.0))]
+        r = self.run_check(1.55, 0, bad, value="100n", exempt={"C1": "no room"})
+        self.assertTrue(r["order"] and "before it" in r["order"], r)
+        self.assertEqual(r["problems"], [])
+        good = [via(2.8, 0), seg((0, 0), (1.05, 0)), seg((1.05, 0), (1.05, -1.0)), via(1.05, -1.0, "+3V3")]
+        r = self.run_check(1.55, 0, good, value="100n", exempt={"C1": "no room"})
+        self.assertEqual(r["problems"], ["order exemption no longer needed"])
 
     def test_order_through_the_plane(self):
         """the pin and the cap each on its own via: they only meet through the plane"""

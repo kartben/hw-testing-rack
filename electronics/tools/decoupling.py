@@ -13,7 +13,10 @@ layout) gets its own limit, with the reason beside it in design.py: {"C2": ("U1.
     feeds nothing and doesn't count).  Along tracks the order is strict.  Across a pour of the rail on that layer
     (an island the pin, the capacitor and the rail's vias share, as a buck's input), a via only comes "before" the
     capacitor if it is nearer the pin than the capacitor is.  A through-hole pad counts as a via, but for the pin
-    itself (a connector's).  Bulk capacitors, over SMALL, are held to the distances only.
+    itself (a connector's).  Bulk capacitors, over SMALL, are held to the distances only.  A capacitor that cannot
+    keep the order where it sits (no via fits past its pad, its rail comes in at the pin) is exempt from it by name,
+    with the reason and the measures beside it: b.pcb["decoupling_order_exempt"] = {"C11": "why", ...}.  Its order is
+    still worked out and shown; an exemption it no longer needs is a problem, so the list stays true.
 
     python decoupling.py BOARD [...]      → each board's table, exit status 1 if a capacitor is too far
 
@@ -240,9 +243,10 @@ def order(c: Copper, pins: list, cp: dict) -> str | None:
     return None
 
 
-def check(path, decl: dict) -> list[dict]:
-    """One row per declared capacitor: {cap, pin, net, ret, side, pin_mm, via_mm, reach, problems}.  `decl`: {cap:
-    "REF.NUM" or ("REF.NUM", mm)}, or resolve()'s {cap: ("REF.PIN", net, mm)}."""
+def check(path, decl: dict, exempt=()) -> list[dict]:
+    """One row per declared capacitor: {cap, pin, net, ret, side, pin_mm, via_mm, reach, exempt, problems}.  `decl`:
+    {cap: "REF.NUM" or ("REF.NUM", mm)}, or resolve()'s {cap: ("REF.PIN", net, mm)}; `exempt`: the capacitors
+    exempt from the order (b.pcb["decoupling_order_exempt"])."""
     c = Copper(path)
     by_ref = {}
     for p in c.pads:
@@ -251,7 +255,7 @@ def check(path, decl: dict) -> list[dict]:
     for cap, v in decl.items():
         (pin, net, reach) = v if isinstance(v, tuple) and len(v) == 3 else (_limit(v)[0], None, _limit(v)[1])
         row = {"cap": cap, "pin": pin, "net": "?", "ret": "?", "side": "?", "pin_mm": math.inf, "via_mm": math.inf,
-               "reach": reach, "small": False, "order": None, "problems": []}
+               "reach": reach, "small": False, "order": None, "exempt": cap in exempt, "problems": []}
         rows.append(row)
         ref = pin.split(".", 1)[0]
         pins = by_ref.get(pin) or [q for n, qs in by_ref.items() if n.split(".", 1)[0] == ref for q in qs
@@ -283,8 +287,11 @@ def check(path, decl: dict) -> list[dict]:
         row["small"] = f is not None and f <= SMALL * 1.001
         if row["small"]:
             row["order"] = order(c, pins, cp)
-            if row["order"]:
+            if row["order"] and not row["exempt"]:
                 row["problems"].append(f"order: {row['order']}")
+        if row["exempt"] and not row["order"]:
+            row["problems"].append("order exemption no longer needed" if row["small"] else
+                                   "order exemption on a bulk capacitor")
     return rows
 
 
@@ -305,7 +312,8 @@ def table(name, rows, left=()) -> str:
     for r in rows:
         out.append(f"  {r['cap']:6} {r['pin']:10} {r['net'].split('/')[-1][-14:]:14} {r['side']:10} "
                    f"{r['pin_mm']:7.2f} {r['via_mm']:7.2f}  {'; '.join(r['problems']) or 'ok'}"
-                   + (f" (its own limit: {r['reach']} mm)" if r["reach"] != REACH else ""))
+                   + (f" (its own limit: {r['reach']} mm)" if r["reach"] != REACH else "")
+                   + (f" (order exempt: {r['order']})" if r["exempt"] and r["order"] else ""))
     if left:
         out.append("  not declared: " + ", ".join(left))
     return "\n".join(out)
@@ -319,7 +327,7 @@ if __name__ == "__main__":
         b = build_board.load_design(name).board()
         decl = b.pcb.get("decoupling", {})
         path = build_board.REPO / "electronics" / name / f"{name}.kicad_pcb"
-        rows = check(path, resolve(b, decl))
+        rows = check(path, resolve(b, decl), b.pcb.get("decoupling_order_exempt", {}))
         print(table(name, rows, undeclared(path, decl)))
         bad |= any(r["problems"] for r in rows)
     sys.exit(1 if bad else 0)

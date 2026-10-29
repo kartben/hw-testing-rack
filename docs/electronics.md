@@ -48,7 +48,12 @@ On an island the pin, the capacitor and the rail's vias share (a buck's
 input), a via only breaks it if it lies nearer the pin than the capacitor.  A
 via that only leads on to test pads (a probe's branch) feeds nothing and
 doesn't count.  The boards `decoupling.json`'s `order_pending` list names still
-break it.
+break it.  A capacitor that cannot keep the order where it sits (no via fits
+past its pad, or its rail comes in at the pin) is exempt by name, in
+`b.pcb["decoupling_order_exempt"]`, with the reason and the measures; the
+table still shows its order, and an exemption no longer needed fails the test.
+The DATA ×4 v2 has nine: the hub's C11 and C15, the crosspoints' C20 and C23,
+the co-processor's C40, C41, C44, C45 and C46.
 
 **Schematics** are drawn, not just generated: every part in `design.py` has
 an `sch=` position on the 0.1" grid and the main paths are real wires
