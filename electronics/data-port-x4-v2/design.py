@@ -1161,11 +1161,17 @@ def board() -> Board:
     t, v = xtal2_block()
     hand_tracks += t
     hand_vias += v
-    # C17 (pin 46's 100 nF) on the pin's line to its via, the via between them (left to the fan-out, the pin's
-    # went under the case and C17 had its own)
+    # C17 (pin 46's 100 nF) in the pin → cap → via order: right over the pin, the pin straight up into it (its
+    # last 0.1 mm step inside the pad) and C17 on west to its via (the via used to sit between them; east, it
+    # would cut pin 45's HUB_NONREM0 off from R4).  Pin 47's HUB_SWP3 dives to B.Cu right above its pin, under
+    # C17's line, and RN1's GND pad 8 keeps its dog-bone east
     p46 = (HX - 2.75, HY - 4.4125)                                      # U1 pin 46, turned 90°
-    hand_tracks.append(("+3V3", "F.Cu", 0.25, [p46, (p46[0], HY - 5.25), (HX - 2.85, HY - 5.92)]))
-    hand_vias.append(("+3V3", p46[0], HY - 5.25, 0.5, 0.3))
+    hand_tracks += [("+3V3", "F.Cu", 0.25, [p46, (p46[0], HY - 5.82), (HX - 2.85, HY - 5.92),
+                                            (HX - 3.7, HY - 5.92)]),
+                    ("HUB_SWP3", "F.Cu", 0.127, [(HX - 3.25, HY - 4.4125), (HX - 3.25, HY - 5.25)]),
+                    ("GND", "F.Cu", 0.25, [(HX - 4.05, HY - 6.6), (HX - 3.5, HY - 6.6)])]
+    hand_vias += [("+3V3", HX - 3.7, HY - 5.92, 0.5, 0.3), ("HUB_SWP3", HX - 3.25, HY - 5.25, 0.5, 0.3),
+                  ("GND", HX - 3.5, HY - 6.6, 0.5, 0.3)]
     # C12 (pin 52's 100 nF) in the pin → cap → via order: the pin straight west to it, on its line, C12 on up to
     # its via (the pin's own fan-out via, under the case, gone)
     p52 = (HX - 4.4125, HY - 2.25)                                      # U1 pin 52
