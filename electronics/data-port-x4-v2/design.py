@@ -1401,17 +1401,18 @@ def board() -> Board:
         hand_tracks += [(net, "B.Cu", 0.127, [hdr, (cx + 7.4, hdr[1] - 1.05), (cx + 7.4, via[1] + 0.4), via]),
                         (net, "F.Cu", 0.127, [via, p5]), (net, "F.Cu", 0.127, [p5, p6, r7])]
         hand_vias.append((net, *via, 0.5, 0.3))
-    # the hub's two south VDD33 pins (5 and 10) take their vias inwards, under its body (between the pads and the
-    # UP pair): their automatic fan-out vias sat right below the row, between the downstream pairs, and boxed
-    # port 2's D− in (Freerouting left it unrouted).  Pin 5's line goes on down to C15, its 100 nF, between ports
-    # 2 and 3's pairs; pin 10's to C16, between port 4's D+ and the co-processor's D− via (0.2 mm wide, 0.139 mm
-    # from that via)
-    for px in (HX - 1.75, HX + 0.75):
-        hand_tracks.append(("+3V3", "F.Cu", 0.25, [(px, HY + 4.4125), (px, HY + 3.75)]))
-        hand_vias.append(("+3V3", px, HY + 3.75, 0.5, 0.3))
+    # the hub's south VDD33 pin 5 takes its via inwards, under its body (between the pads and the UP pair): its
+    # automatic fan-out via sat right below the row, between the downstream pairs, and boxed port 2's D− in
+    # (Freerouting left it unrouted).  Its line goes on down to C15, its 100 nF, between ports 2 and 3's pairs.
+    # Pin 10's runs down to C16, between port 4's D+ and the co-processor's D− via (0.2 mm wide, 0.139 mm from
+    # that via), and C16 on east to its via: the pin → cap → via order (its via under the body gone)
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX - 1.75, HY + 4.4125), (HX - 1.75, HY + 3.75)]))
+    hand_vias.append(("+3V3", HX - 1.75, HY + 3.75, 0.5, 0.3))
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX - 1.75, HY + 4.4125), (HX - 1.75, HY + 5.92)]))
     hand_tracks.append(("+3V3", "F.Cu", 0.2, [(HX + 0.75, HY + 4.4125), (HX + 0.7, HY + 4.9), (HX + 0.7, HY + 5.97),
                                              (HX + 0.95, HY + 6.22)]))
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX + 0.95, HY + 6.22), (HX + 1.6, HY + 6.22)]))
+    hand_vias.append(("+3V3", HX + 1.6, HY + 6.22, 0.5, 0.3))
     # pin 64's: the pin, its via, then C11 (its 100 nF) right below the corner
     p64 = (HX - 4.4125, HY + 3.75)                                      # U1 pin 64
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [p64, (HX - 4.7, p64[1] + 0.2875), (HX - 4.7, HY + 5.72)]))
