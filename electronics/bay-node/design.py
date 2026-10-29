@@ -240,6 +240,20 @@ def board() -> Board:
         # C22, U10's (the INA226's) 100 nF on VS, from its pin (6) down into it; its via east of it, where its own was
         ("+3V3", 0.25, [(49.85, 26.9), (49.85, 27.525), (48.775, 28.6), (49.625, 28.6)]),
     ]
+    # the shunt's sense lines, a Kelvin pair: R19's sense pads (2: SHUNT_P, 3: SHUNT_N) to U10's IN+ (10) and
+    # IN- (9; Vbus, pin 8, tied to it), 0.25 mm lines 0.15 mm apart on B.Cu, one via pair at each end: out of U10's
+    # pins west under its body, down through the gap between the vias south of it, one diagonal to R19
+    shunt_pair = [
+        ("SHUNT_P", "F.Cu", [(49.85, 24.9), (47.85, 24.9), (47.85, 27.65)]),
+        ("SHUNT_N", "F.Cu", [(49.85, 25.9), (49.85, 25.4), (48.25, 25.4), (48.25, 26.55), (48.6, 26.9), (48.6, 27.65)]),
+        ("SHUNT_P", "B.Cu", [(47.85, 27.65), (47.85, 30.633), (48.6, 31.383), (48.6, 32.683), (49.6, 33.683),
+                             (49.6, 35.183), (54.275, 39.858), (54.275, 42.825), (54.1, 43.0)]),
+        ("SHUNT_N", "B.Cu", [(48.6, 27.65), (48.6, 28.0), (48.25, 28.35), (48.25, 30.467), (49.0, 31.217),
+                             (49.0, 32.517), (50.0, 33.517), (50.0, 35.017), (54.675, 39.692), (54.675, 42.825),
+                             (55.0, 43.15)]),
+        ("SHUNT_P", "F.Cu", [(54.1, 43.0), (54.7, 42.4), (55.6, 42.4)]),
+        ("SHUNT_N", "F.Cu", [(55.0, 43.15), (55.45, 43.6), (55.6, 43.6)]),
+    ]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
         # 4 layers: signals + GND / GND only / power only / signals + GND.  In1 is a solid GND plane;
@@ -351,11 +365,14 @@ def board() -> Board:
                  *[("+5V", x, y) for x, y in ((50.1, 38.6), (50.85, 38.6), (51.6, 38.6))],          # U9's input island
                  *hs_vias,
                  *[(net, *xy) for net, _, _, xy, via, _, _ in TP_ROUND2 if via],       # the second round's test pads
-                 *[(net, *pts[-1], 0.6, 0.3) for net, _, pts in decap_ties]],          # the decoupling ties' vias
+                 *[(net, *pts[-1], 0.6, 0.3) for net, _, pts in decap_ties],           # the decoupling ties' vias
+                 *[(net, x, y, 0.6, 0.3) for net, x, y in (("SHUNT_P", 47.85, 27.65), ("SHUNT_N", 48.6, 27.65),
+                                                           ("SHUNT_P", 54.1, 43.0), ("SHUNT_N", 55.0, 43.15))]],
         # the front +3V3 area of In2 (LED, SERVICE switch) is cut off by the VRACK strip: fed from the
         # main +3V3 area by a B.Cu track
         "tracks": [*hs_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)]),
-                   *[(net, "F.Cu", w, pts) for net, w, pts in decap_ties]],
+                   *[(net, "F.Cu", w, pts) for net, w, pts in decap_ties],
+                   *[(net, layer, 0.25, pts) for net, layer, pts in shunt_pair]],
         # ESP32 antenna: no copper on any layer under/around the antenna (the WROOM-1's rear 6 mm, ±24 mm)
         "keepouts": [
             {"name": "antenna", "poly": [(8.0, -0.1), (56.0, -0.1), (56.0, 6.0), (8.0, 6.0)]},
