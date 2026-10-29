@@ -1158,6 +1158,11 @@ def board() -> Board:
     p46 = (HX - 2.75, HY - 4.4125)                                      # U1 pin 46, turned 90°
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [p46, (p46[0], HY - 5.25), (HX - 2.85, HY - 5.92)]))
     hand_vias.append(("+3V3", p46[0], HY - 5.25, 0.5, 0.3))
+    # C12 (pin 52's 100 nF) in the pin → cap → via order: the pin straight west to it, on its line, C12 on up to
+    # its via (the pin's own fan-out via, under the case, gone)
+    p52 = (HX - 4.4125, HY - 2.25)                                      # U1 pin 52
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [p52, (HX - 5.72, p52[1]), (HX - 5.72, HY - 3.05)]))
+    hand_vias.append(("+3V3", HX - 5.72, HY - 3.05, 0.5, 0.3))
     # CP_RUN, from the matrix expander's P5 (pin 10, top left) to the co-processor's RUN pull-up R25, along the
     # top edge on B.Cu above the co-processor's test points (Freerouting left it open)
     rx, ry = MX_EXP[0] + 2.5 * 0.65, MX_EXP[1] - 2.8625                # U10 pin 10, turned 90°
