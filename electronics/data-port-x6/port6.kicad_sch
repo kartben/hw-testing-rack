@@ -8991,7 +8991,7 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:TPD4E05U06DQA")
-		(at 543.56 111.76 0)
+		(at 543.56 91.44 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9000,7 +9000,7 @@
 		(fields_autoplaced yes)
 		(uuid "7cdabf46-9bf5-518b-aa0d-c0eb09f3f2f0")
 		(property "Reference" "U609"
-			(at 538.04 93.98 0)
+			(at 538.04 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9008,7 +9008,7 @@
 			)
 		)
 		(property "Value" "H5VU25UC"
-			(at 540.14 96.52 0)
+			(at 540.14 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9016,7 +9016,7 @@
 			)
 		)
 		(property "Footprint" "bench:DFN2510-10L_2.5x1.0mm_P0.5mm"
-			(at 543.56 111.76 0)
+			(at 543.56 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9025,7 +9025,7 @@
 			)
 		)
 		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261524_hongjiacheng-H5VU25UC_C20615800.pdf"
-			(at 543.56 111.76 0)
+			(at 543.56 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9034,7 +9034,7 @@
 			)
 		)
 		(property "Description" "4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair)"
-			(at 543.56 111.76 0)
+			(at 543.56 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9043,7 +9043,7 @@
 			)
 		)
 		(property "MPN" "H5VU25UC"
-			(at 543.56 111.76 0)
+			(at 543.56 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9052,7 +9052,7 @@
 			)
 		)
 		(property "Manufacturer" "hongjiacheng"
-			(at 543.56 111.76 0)
+			(at 543.56 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9061,7 +9061,7 @@
 			)
 		)
 		(property "LCSC" "C20615800"
-			(at 543.56 111.76 0)
+			(at 543.56 91.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9108,14 +9108,32 @@
 			)
 		)
 	)
-	(no_connect
-		(at 530.86 109.22)
-		(uuid "8939ee8e-18c3-5495-8ccd-0e33c5517452")
+	(wire
+		(pts
+			(xy 530.86 88.9)
+			(xy 528.32 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d9d6db7c-5bf2-57c9-9529-c3e50b5417b2")
+	)
+	(label "PORT6_BOOT_N"
+		(at 528.32 88.9 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "f6ce39f8-cf78-5559-8a20-99cd0c99535a")
 	)
 	(wire
 		(pts
-			(xy 530.86 114.3)
-			(xy 528.32 114.3)
+			(xy 530.86 93.98)
+			(xy 528.32 93.98)
 		)
 		(stroke
 			(width 0)
@@ -9123,8 +9141,8 @@
 		)
 		(uuid "8b2feaf3-12dc-513e-953c-758475053dad")
 	)
-	(label "PORT6_BOOT_N"
-		(at 528.32 114.3 180)
+	(label "PORT6_VREF"
+		(at 528.32 93.98 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9136,8 +9154,8 @@
 	)
 	(wire
 		(pts
-			(xy 543.56 124.46)
-			(xy 543.56 127)
+			(xy 543.56 104.14)
+			(xy 543.56 106.68)
 		)
 		(stroke
 			(width 0)
@@ -9147,7 +9165,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 543.56 127 0)
+		(at 543.56 106.68 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9156,7 +9174,7 @@
 		(fields_autoplaced yes)
 		(uuid "59f3994f-17df-5b36-a9ae-8713a2eb3ff3")
 		(property "Reference" "#PWR09018"
-			(at 543.56 127 0)
+			(at 543.56 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9165,7 +9183,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 543.56 130.81 0)
+			(at 543.56 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9173,7 +9191,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 543.56 127 0)
+			(at 543.56 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9182,7 +9200,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 543.56 127 0)
+			(at 543.56 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9191,7 +9209,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 543.56 127 0)
+			(at 543.56 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9212,13 +9230,13 @@
 		)
 	)
 	(no_connect
-		(at 556.26 109.22)
+		(at 556.26 88.9)
 		(uuid "1a45f3db-18a5-50d7-a8d7-54ff6b56e72d")
 	)
 	(wire
 		(pts
-			(xy 556.26 114.3)
-			(xy 558.8 114.3)
+			(xy 556.26 93.98)
+			(xy 558.8 93.98)
 		)
 		(stroke
 			(width 0)
@@ -9227,7 +9245,7 @@
 		(uuid "4ca86ad3-ee71-5499-8a33-5bf213f821b5")
 	)
 	(label "PORT6_RST_N"
-		(at 558.8 114.3 0)
+		(at 558.8 93.98 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9239,8 +9257,8 @@
 	)
 	(wire
 		(pts
-			(xy 556.26 119.38)
-			(xy 558.8 119.38)
+			(xy 556.26 99.06)
+			(xy 558.8 99.06)
 		)
 		(stroke
 			(width 0)
@@ -9249,7 +9267,7 @@
 		(uuid "a8534f19-0516-598a-922b-322132a31bca")
 	)
 	(label "PORT6_RST_N"
-		(at 558.8 119.38 0)
+		(at 558.8 99.06 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9260,13 +9278,13 @@
 		(uuid "b2e296ec-91d5-59e3-91d6-0ec551f1a305")
 	)
 	(no_connect
-		(at 556.26 104.14)
+		(at 556.26 83.82)
 		(uuid "7bafaf7f-2d60-51f9-9ca3-458f69dd3cd8")
 	)
 	(wire
 		(pts
-			(xy 530.86 119.38)
-			(xy 528.32 119.38)
+			(xy 530.86 99.06)
+			(xy 528.32 99.06)
 		)
 		(stroke
 			(width 0)
@@ -9274,8 +9292,8 @@
 		)
 		(uuid "fe218402-8815-5bc2-91bb-1f2038b97d02")
 	)
-	(label "PORT6_BOOT_N"
-		(at 528.32 119.38 180)
+	(label "PORT6_VREF"
+		(at 528.32 99.06 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9285,9 +9303,27 @@
 		)
 		(uuid "c4278113-afbc-55be-99dc-35b6f6e9c49f")
 	)
-	(no_connect
-		(at 530.86 104.14)
-		(uuid "f9824428-f4a5-5379-8171-e7169ba35ed4")
+	(wire
+		(pts
+			(xy 530.86 83.82)
+			(xy 528.32 83.82)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6ad13f46-fb18-595b-a191-70c992244a3b")
+	)
+	(label "PORT6_BOOT_N"
+		(at 528.32 83.82 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "9f4eff8b-d28f-58bd-935f-2d9180cd2011")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -9869,270 +9905,6 @@
 	)
 	(symbol
 		(lib_id "Power_Protection:TPD4E05U06DQA")
-		(at 543.56 55.88 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "741709df-c75c-5118-8668-f9da1c59dfd9")
-		(property "Reference" "U608"
-			(at 538.04 38.1 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "H5VU25UC"
-			(at 540.14 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "bench:DFN2510-10L_2.5x1.0mm_P0.5mm"
-			(at 543.56 55.88 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://wmsc.lcsc.com/wmsc/upload/file/pdf/v2/lcsc/2401261524_hongjiacheng-H5VU25UC_C20615800.pdf"
-			(at 543.56 55.88 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair)"
-			(at 543.56 55.88 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "H5VU25UC"
-			(at 543.56 55.88 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "hongjiacheng"
-			(at 543.56 55.88 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C20615800"
-			(at 543.56 55.88 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "76b02494-d8c5-5d89-902d-76c609a4803f")
-		)
-		(pin "2"
-			(uuid "1cc05f91-a1b4-562a-af77-b5ce79c6eff1")
-		)
-		(pin "3"
-			(uuid "46bdf7a0-b4ef-5e8d-bf59-33c30754bb37")
-		)
-		(pin "4"
-			(uuid "86666148-b809-54ea-bec0-b1e0c391aaaa")
-		)
-		(pin "5"
-			(uuid "ca56b8fc-bf77-5e0b-b5e7-e0361e594fda")
-		)
-		(pin "6"
-			(uuid "dd36a7c1-955a-5fb6-8056-d0f14c80561e")
-		)
-		(pin "7"
-			(uuid "7dc32cc5-fc85-55a2-9e57-052485b5afb2")
-		)
-		(pin "8"
-			(uuid "f9d3a7c9-51f9-5b23-884b-a185ed09d2a9")
-		)
-		(pin "9"
-			(uuid "15cf2f18-e095-5e8d-b9ec-331a30a34060")
-		)
-		(pin "10"
-			(uuid "150bdac9-f7df-58dc-a741-fb15b6a4b069")
-		)
-		(instances
-			(project "data-port-x6"
-				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
-					(reference "U608")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(no_connect
-		(at 530.86 53.34)
-		(uuid "f46bd3f9-6242-5249-86e6-a8f6be59145d")
-	)
-	(no_connect
-		(at 530.86 58.42)
-		(uuid "ff8f67b9-f66e-53d3-81a7-0471f6e8a3c4")
-	)
-	(wire
-		(pts
-			(xy 543.56 68.58)
-			(xy 543.56 71.12)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "93630fe7-2faf-5b5c-89ec-7a5d21df1eac")
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 543.56 71.12 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "870c71c1-1cf1-5e0b-8806-6bc0de6f1fac")
-		(property "Reference" "#PWR09021"
-			(at 543.56 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 543.56 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 543.56 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 543.56 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 543.56 71.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "002182c8-59f6-5845-a0d9-a5c33315e910")
-		)
-		(instances
-			(project "data-port-x6"
-				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
-					(reference "#PWR09021")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(no_connect
-		(at 556.26 53.34)
-		(uuid "b4bb0123-79ec-5f94-9910-703f57efcbbb")
-	)
-	(wire
-		(pts
-			(xy 556.26 58.42)
-			(xy 558.8 58.42)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b4548f17-43ee-5df7-bd10-fb2e9b6f12c4")
-	)
-	(label "PORT6_VREF"
-		(at 558.8 58.42 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d26fabbe-ca47-5179-b0fa-f94900ace8b3")
-	)
-	(wire
-		(pts
-			(xy 556.26 63.5)
-			(xy 558.8 63.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "31f531d2-824e-5f4f-9067-359f9449d9d8")
-	)
-	(label "PORT6_VREF"
-		(at 558.8 63.5 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "2dcadf57-13b4-5fa7-bd9a-91db15a76adb")
-	)
-	(no_connect
-		(at 556.26 48.26)
-		(uuid "5376df66-e7e9-5de5-aa6b-c0682ea4fb99")
-	)
-	(no_connect
-		(at 530.86 63.5)
-		(uuid "4c968ddc-7ca7-5d2d-a7a8-b1af8b932f4f")
-	)
-	(no_connect
-		(at 530.86 48.26)
-		(uuid "4ef88d7f-6b08-593e-8f4b-930e2449f9b1")
-	)
-	(symbol
-		(lib_id "Power_Protection:TPD4E05U06DQA")
 		(at 71.12 325.12 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -10261,7 +10033,7 @@
 		)
 		(uuid "e8397287-dd71-5a8f-ac54-1a1df8565eca")
 	)
-	(label "PORT6_P5"
+	(label "PORT6_P1"
 		(at 55.88 322.58 180)
 		(fields_autoplaced yes)
 		(effects
@@ -10283,7 +10055,7 @@
 		)
 		(uuid "be49d874-816f-531b-83f5-436b1842efbe")
 	)
-	(label "PORT6_P1"
+	(label "PORT6_P2"
 		(at 55.88 327.66 180)
 		(fields_autoplaced yes)
 		(effects
@@ -10315,7 +10087,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9a372de1-242f-5fe4-9475-2c8bf9438012")
-		(property "Reference" "#PWR09022"
+		(property "Reference" "#PWR09021"
 			(at 71.12 340.36 0)
 			(effects
 				(font
@@ -10365,7 +10137,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
-					(reference "#PWR09022")
+					(reference "#PWR09021")
 					(unit 1)
 				)
 			)
@@ -10382,7 +10154,7 @@
 		)
 		(uuid "1c2f5a29-cabd-5ec2-bde6-ce973e4881aa")
 	)
-	(label "PORT6_P6"
+	(label "PORT6_P3"
 		(at 86.36 322.58 0)
 		(fields_autoplaced yes)
 		(effects
@@ -10404,7 +10176,7 @@
 		)
 		(uuid "161dc442-5724-5e48-b726-3ad48a165bbc")
 	)
-	(label "PORT6_P2"
+	(label "PORT6_P4"
 		(at 86.36 327.66 0)
 		(fields_autoplaced yes)
 		(effects
@@ -10426,7 +10198,7 @@
 		)
 		(uuid "1f7dddcd-f779-5898-a837-a1f1f2853291")
 	)
-	(label "PORT6_P2"
+	(label "PORT6_P4"
 		(at 86.36 332.74 0)
 		(fields_autoplaced yes)
 		(effects
@@ -10448,7 +10220,7 @@
 		)
 		(uuid "1b7c19aa-fd9a-5393-8848-f7db150d5144")
 	)
-	(label "PORT6_P6"
+	(label "PORT6_P3"
 		(at 86.36 317.5 0)
 		(fields_autoplaced yes)
 		(effects
@@ -10470,7 +10242,7 @@
 		)
 		(uuid "384f9903-a359-5850-90bf-67adafc350a0")
 	)
-	(label "PORT6_P1"
+	(label "PORT6_P2"
 		(at 55.88 332.74 180)
 		(fields_autoplaced yes)
 		(effects
@@ -10492,7 +10264,7 @@
 		)
 		(uuid "3977fd22-bbbc-5f6c-ad9c-59d2489c90e6")
 	)
-	(label "PORT6_P5"
+	(label "PORT6_P1"
 		(at 55.88 317.5 180)
 		(fields_autoplaced yes)
 		(effects
@@ -10502,295 +10274,6 @@
 			(justify right bottom)
 		)
 		(uuid "2068874e-0c45-5d73-87b8-3c649850a4e1")
-	)
-	(symbol
-		(lib_id "Device:R_Pack04")
-		(at 127 325.12 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "a2d0e7be-3c6f-5fab-92ae-01999c42a01e")
-		(property "Reference" "RN601"
-			(at 123.275 318.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "100"
-			(at 122.225 331.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_Array_Convex_4x0402"
-			(at 127 325.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 325.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "4 × resistor array 0402, 5 %"
-			(at 127 325.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "4D02WGJ0101TCE"
-			(at 127 325.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
-			(at 127 325.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C48442"
-			(at 127 325.12 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "fb1933f0-6152-5100-9dea-d10b8aab80ca")
-		)
-		(pin "2"
-			(uuid "5664b9d3-3bfb-5d0f-acfe-ccab2f4870aa")
-		)
-		(pin "3"
-			(uuid "db441180-06ff-5255-8c16-5daa557a5b75")
-		)
-		(pin "4"
-			(uuid "10ee1057-2bb3-5dfc-b985-3a89bda931d4")
-		)
-		(pin "5"
-			(uuid "4848a00e-9c95-54a6-b58a-cf066aca0742")
-		)
-		(pin "6"
-			(uuid "50edace1-4e0b-5a43-8666-8432307803ac")
-		)
-		(pin "7"
-			(uuid "f9f3aa30-b0c4-51af-909f-7d29ea60866f")
-		)
-		(pin "8"
-			(uuid "9c76469c-226c-59af-ab6a-8defdb7501c7")
-		)
-		(instances
-			(project "data-port-x6"
-				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
-					(reference "RN601")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 121.92 330.2)
-			(xy 121.92 332.74)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5e0aa06d-53e1-503b-93b5-4126e6c552a5")
-	)
-	(label "PORT6_P5"
-		(at 121.92 332.74 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "63fd5793-a3f2-5a89-8545-6053fe976973")
-	)
-	(wire
-		(pts
-			(xy 124.46 330.2)
-			(xy 124.46 332.74)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1798b8bd-0809-5aca-a8eb-dc2684556ba8")
-	)
-	(label "PORT6_P1"
-		(at 124.46 332.74 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "cbbf6b0e-68a9-58b4-8474-f77363fcb7ba")
-	)
-	(wire
-		(pts
-			(xy 127 330.2)
-			(xy 127 332.74)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "39c2abf5-f8a8-56de-9ab7-a93ad9c089d6")
-	)
-	(label "PORT6_P6"
-		(at 127 332.74 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "f54c37b1-2cad-5f3d-82cc-4a734081e025")
-	)
-	(wire
-		(pts
-			(xy 129.54 330.2)
-			(xy 129.54 332.74)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "00d6ed2f-b866-5649-a6d3-33c2887d42fc")
-	)
-	(label "PORT6_P2"
-		(at 129.54 332.74 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "aa1d4e0c-fc36-5fe6-a8f8-cb3be05d0cdb")
-	)
-	(wire
-		(pts
-			(xy 129.54 320.04)
-			(xy 129.54 317.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "89442cb2-62a1-558d-96f0-eca8175737ee")
-	)
-	(label "PORT6_A2"
-		(at 129.54 317.5 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "3d600c3a-2901-5da6-be33-f9e5aa18c401")
-	)
-	(wire
-		(pts
-			(xy 127 320.04)
-			(xy 127 317.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6b3f14f1-56ea-5987-b157-60d7dff28281")
-	)
-	(label "PORT6_A6"
-		(at 127 317.5 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "19687495-32a3-50e3-b28e-ce1889e9a62e")
-	)
-	(wire
-		(pts
-			(xy 124.46 320.04)
-			(xy 124.46 317.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f0f7bcca-eff2-506f-aade-52c2e9c44476")
-	)
-	(label "PORT6_A1"
-		(at 124.46 317.5 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "67ebba19-b1b4-5823-830e-85710fa523c6")
-	)
-	(wire
-		(pts
-			(xy 121.92 320.04)
-			(xy 121.92 317.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "54b3f266-1672-518f-8c82-3e35241ac673")
-	)
-	(label "PORT6_A5"
-		(at 121.92 317.5 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e543be42-fb7c-5815-94a5-0575cb48da64")
 	)
 	(symbol
 		(lib_id "Power_Protection:TPD4E05U06DQA")
@@ -10922,7 +10405,7 @@
 		)
 		(uuid "35601ad9-2194-5ad8-b120-d3723d426f82")
 	)
-	(label "PORT6_P7"
+	(label "PORT6_P8"
 		(at 147.32 322.58 180)
 		(fields_autoplaced yes)
 		(effects
@@ -10944,7 +10427,7 @@
 		)
 		(uuid "84046986-a2e2-54e7-8c9c-172d0be924ba")
 	)
-	(label "PORT6_P3"
+	(label "PORT6_P7"
 		(at 147.32 327.66 180)
 		(fields_autoplaced yes)
 		(effects
@@ -10976,7 +10459,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8082b2f1-11af-551f-8f3f-99edb95b32c8")
-		(property "Reference" "#PWR09023"
+		(property "Reference" "#PWR09022"
 			(at 162.56 340.36 0)
 			(effects
 				(font
@@ -11026,7 +10509,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
-					(reference "#PWR09023")
+					(reference "#PWR09022")
 					(unit 1)
 				)
 			)
@@ -11043,7 +10526,7 @@
 		)
 		(uuid "4e1fe092-47a8-5412-b64a-607e3044098e")
 	)
-	(label "PORT6_P8"
+	(label "PORT6_P6"
 		(at 177.8 322.58 0)
 		(fields_autoplaced yes)
 		(effects
@@ -11065,7 +10548,7 @@
 		)
 		(uuid "8bf4d3f9-8581-5cd9-abeb-f3bc5e2df461")
 	)
-	(label "PORT6_P4"
+	(label "PORT6_P5"
 		(at 177.8 327.66 0)
 		(fields_autoplaced yes)
 		(effects
@@ -11087,7 +10570,7 @@
 		)
 		(uuid "f9399ba1-58ce-5630-9e2f-9b056979fe43")
 	)
-	(label "PORT6_P4"
+	(label "PORT6_P5"
 		(at 177.8 332.74 0)
 		(fields_autoplaced yes)
 		(effects
@@ -11109,7 +10592,7 @@
 		)
 		(uuid "6bd711f9-1419-59f3-8281-5c04f4eade7a")
 	)
-	(label "PORT6_P8"
+	(label "PORT6_P6"
 		(at 177.8 317.5 0)
 		(fields_autoplaced yes)
 		(effects
@@ -11131,7 +10614,7 @@
 		)
 		(uuid "231cc309-0694-5a96-9a73-8f71e7371cb3")
 	)
-	(label "PORT6_P3"
+	(label "PORT6_P7"
 		(at 147.32 332.74 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11153,7 +10636,7 @@
 		)
 		(uuid "90cf6f8b-0d37-5853-b2eb-a2457f1a083f")
 	)
-	(label "PORT6_P7"
+	(label "PORT6_P8"
 		(at 147.32 317.5 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11163,6 +10646,295 @@
 			(justify right bottom)
 		)
 		(uuid "d8d66b08-4c5b-55b1-847a-d4fb70b953a6")
+	)
+	(symbol
+		(lib_id "Device:R_Pack04")
+		(at 127 325.12 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a2d0e7be-3c6f-5fab-92ae-01999c42a01e")
+		(property "Reference" "RN601"
+			(at 123.275 318.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100"
+			(at 122.225 331.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_Array_Convex_4x0402"
+			(at 127 325.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 127 325.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "4 × resistor array 0402, 5 %"
+			(at 127 325.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "4D02WGJ0101TCE"
+			(at 127 325.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 127 325.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C48442"
+			(at 127 325.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fb1933f0-6152-5100-9dea-d10b8aab80ca")
+		)
+		(pin "2"
+			(uuid "5664b9d3-3bfb-5d0f-acfe-ccab2f4870aa")
+		)
+		(pin "3"
+			(uuid "db441180-06ff-5255-8c16-5daa557a5b75")
+		)
+		(pin "4"
+			(uuid "10ee1057-2bb3-5dfc-b985-3a89bda931d4")
+		)
+		(pin "5"
+			(uuid "4848a00e-9c95-54a6-b58a-cf066aca0742")
+		)
+		(pin "6"
+			(uuid "50edace1-4e0b-5a43-8666-8432307803ac")
+		)
+		(pin "7"
+			(uuid "f9f3aa30-b0c4-51af-909f-7d29ea60866f")
+		)
+		(pin "8"
+			(uuid "9c76469c-226c-59af-ab6a-8defdb7501c7")
+		)
+		(instances
+			(project "data-port-x6"
+				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
+					(reference "RN601")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 121.92 330.2)
+			(xy 121.92 332.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5e0aa06d-53e1-503b-93b5-4126e6c552a5")
+	)
+	(label "PORT6_P4"
+		(at 121.92 332.74 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "63fd5793-a3f2-5a89-8545-6053fe976973")
+	)
+	(wire
+		(pts
+			(xy 124.46 330.2)
+			(xy 124.46 332.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1798b8bd-0809-5aca-a8eb-dc2684556ba8")
+	)
+	(label "PORT6_P3"
+		(at 124.46 332.74 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "cbbf6b0e-68a9-58b4-8474-f77363fcb7ba")
+	)
+	(wire
+		(pts
+			(xy 127 330.2)
+			(xy 127 332.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "39c2abf5-f8a8-56de-9ab7-a93ad9c089d6")
+	)
+	(label "PORT6_P2"
+		(at 127 332.74 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "f54c37b1-2cad-5f3d-82cc-4a734081e025")
+	)
+	(wire
+		(pts
+			(xy 129.54 330.2)
+			(xy 129.54 332.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "00d6ed2f-b866-5649-a6d3-33c2887d42fc")
+	)
+	(label "PORT6_P1"
+		(at 129.54 332.74 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "aa1d4e0c-fc36-5fe6-a8f8-cb3be05d0cdb")
+	)
+	(wire
+		(pts
+			(xy 129.54 320.04)
+			(xy 129.54 317.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "89442cb2-62a1-558d-96f0-eca8175737ee")
+	)
+	(label "PORT6_A1"
+		(at 129.54 317.5 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "3d600c3a-2901-5da6-be33-f9e5aa18c401")
+	)
+	(wire
+		(pts
+			(xy 127 320.04)
+			(xy 127 317.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6b3f14f1-56ea-5987-b157-60d7dff28281")
+	)
+	(label "PORT6_A2"
+		(at 127 317.5 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "19687495-32a3-50e3-b28e-ce1889e9a62e")
+	)
+	(wire
+		(pts
+			(xy 124.46 320.04)
+			(xy 124.46 317.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f0f7bcca-eff2-506f-aade-52c2e9c44476")
+	)
+	(label "PORT6_A3"
+		(at 124.46 317.5 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "67ebba19-b1b4-5823-830e-85710fa523c6")
+	)
+	(wire
+		(pts
+			(xy 121.92 320.04)
+			(xy 121.92 317.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "54b3f266-1672-518f-8c82-3e35241ac673")
+	)
+	(label "PORT6_A4"
+		(at 121.92 317.5 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e543be42-fb7c-5815-94a5-0575cb48da64")
 	)
 	(symbol
 		(lib_id "Device:R_Pack04")
@@ -11288,7 +11060,7 @@
 		)
 		(uuid "8b304a5b-18dd-52fe-b050-f8b3e817e607")
 	)
-	(label "PORT6_P7"
+	(label "PORT6_P5"
 		(at 213.36 332.74 270)
 		(fields_autoplaced yes)
 		(effects
@@ -11310,7 +11082,7 @@
 		)
 		(uuid "5d00b5eb-1d54-5b01-8b30-6093b7e91212")
 	)
-	(label "PORT6_P3"
+	(label "PORT6_P6"
 		(at 215.9 332.74 270)
 		(fields_autoplaced yes)
 		(effects
@@ -11332,7 +11104,7 @@
 		)
 		(uuid "8510e7b4-967a-59ac-9fd5-ce7417cc2c2f")
 	)
-	(label "PORT6_P8"
+	(label "PORT6_P7"
 		(at 218.44 332.74 270)
 		(fields_autoplaced yes)
 		(effects
@@ -11354,7 +11126,7 @@
 		)
 		(uuid "f96fcc9c-4510-5ba8-8619-684af45de0f0")
 	)
-	(label "PORT6_P4"
+	(label "PORT6_P8"
 		(at 220.98 332.74 270)
 		(fields_autoplaced yes)
 		(effects
@@ -11376,7 +11148,7 @@
 		)
 		(uuid "85d5c612-46d6-5cd5-b3ae-bcee4162dc3c")
 	)
-	(label "PORT6_A4"
+	(label "PORT6_A8"
 		(at 220.98 317.5 90)
 		(fields_autoplaced yes)
 		(effects
@@ -11398,7 +11170,7 @@
 		)
 		(uuid "f9953ffd-a9e3-5cb6-af4b-abec0c66797d")
 	)
-	(label "PORT6_A8"
+	(label "PORT6_A7"
 		(at 218.44 317.5 90)
 		(fields_autoplaced yes)
 		(effects
@@ -11420,7 +11192,7 @@
 		)
 		(uuid "dc558d44-34ed-5890-8efa-846cccc6a885")
 	)
-	(label "PORT6_A3"
+	(label "PORT6_A6"
 		(at 215.9 317.5 90)
 		(fields_autoplaced yes)
 		(effects
@@ -11442,7 +11214,7 @@
 		)
 		(uuid "d4782660-bbf7-5d65-afc9-de2722b53992")
 	)
-	(label "PORT6_A7"
+	(label "PORT6_A5"
 		(at 213.36 317.5 90)
 		(fields_autoplaced yes)
 		(effects
@@ -11660,7 +11432,7 @@
 		)
 		(uuid "06c3bbf4-b821-5100-9a70-02917101fa08")
 	)
-	(label "PORT6_A1"
+	(label "PORT6_A6"
 		(at 322.58 320.04 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11682,7 +11454,7 @@
 		)
 		(uuid "07009cf2-52ad-5314-9e67-4890fc8e9f36")
 	)
-	(label "PORT6_A6"
+	(label "PORT6_A7"
 		(at 322.58 322.58 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11704,7 +11476,7 @@
 		)
 		(uuid "bc361c3b-1c4e-55d3-bb36-35db2193c0a3")
 	)
-	(label "PORT6_A2"
+	(label "PORT6_A8"
 		(at 322.58 325.12 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11726,7 +11498,7 @@
 		)
 		(uuid "85ea9df6-39fd-5657-a08f-cb8823428b17")
 	)
-	(label "PORT6_A7"
+	(label "PORT6_A4"
 		(at 322.58 327.66 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11770,7 +11542,7 @@
 		)
 		(uuid "86e5c763-7def-589b-b301-5c57562da725")
 	)
-	(label "PORT6_A8"
+	(label "PORT6_A2"
 		(at 322.58 332.74 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11792,7 +11564,7 @@
 		)
 		(uuid "8de71aa3-9d78-5ed4-9097-e907167209ef")
 	)
-	(label "PORT6_A4"
+	(label "PORT6_A1"
 		(at 322.58 335.28 180)
 		(fields_autoplaced yes)
 		(effects
@@ -11814,7 +11586,7 @@
 		)
 		(uuid "948800ab-7d5c-56ef-93b2-0d64b3154ec8")
 	)
-	(global_label "PORT6_B4"
+	(global_label "PORT6_B1"
 		(shape bidirectional)
 		(at 347.98 335.28 0)
 		(fields_autoplaced yes)
@@ -11847,7 +11619,7 @@
 		)
 		(uuid "65adafad-157a-52a3-8bc8-e3d3f74451e6")
 	)
-	(global_label "PORT6_B8"
+	(global_label "PORT6_B2"
 		(shape bidirectional)
 		(at 347.98 332.74 0)
 		(fields_autoplaced yes)
@@ -11913,7 +11685,7 @@
 		)
 		(uuid "5eb5fa86-6f0d-579c-9e2d-037ea1ce8bb0")
 	)
-	(global_label "PORT6_B7"
+	(global_label "PORT6_B4"
 		(shape bidirectional)
 		(at 347.98 327.66 0)
 		(fields_autoplaced yes)
@@ -11946,7 +11718,7 @@
 		)
 		(uuid "1a5bd256-3b0b-5812-84b2-462f64621805")
 	)
-	(global_label "PORT6_B2"
+	(global_label "PORT6_B8"
 		(shape bidirectional)
 		(at 347.98 325.12 0)
 		(fields_autoplaced yes)
@@ -11979,7 +11751,7 @@
 		)
 		(uuid "50ab6c7d-4af6-500f-adee-1e56ace70495")
 	)
-	(global_label "PORT6_B6"
+	(global_label "PORT6_B7"
 		(shape bidirectional)
 		(at 347.98 322.58 0)
 		(fields_autoplaced yes)
@@ -12012,7 +11784,7 @@
 		)
 		(uuid "9a80a54c-8d93-54e0-8b20-038548506477")
 	)
-	(global_label "PORT6_B1"
+	(global_label "PORT6_B6"
 		(shape bidirectional)
 		(at 347.98 320.04 0)
 		(fields_autoplaced yes)
@@ -12355,7 +12127,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7bd864fe-cb8a-5315-a642-000166c2b228")
-		(property "Reference" "#PWR09024"
+		(property "Reference" "#PWR09023"
 			(at 411.48 336.55 0)
 			(effects
 				(font
@@ -12405,7 +12177,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
-					(reference "#PWR09024")
+					(reference "#PWR09023")
 					(unit 1)
 				)
 			)
@@ -12644,7 +12416,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d9d50cbb-4793-58e3-bcc7-6d7d4543e538")
-		(property "Reference" "#PWR09025"
+		(property "Reference" "#PWR09024"
 			(at 457.2 336.55 0)
 			(effects
 				(font
@@ -12694,7 +12466,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
-					(reference "#PWR09025")
+					(reference "#PWR09024")
 					(unit 1)
 				)
 			)
@@ -13551,7 +13323,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e9a5ba2c-594d-5520-b37b-7d450fdb1083")
-		(property "Reference" "#PWR09026"
+		(property "Reference" "#PWR09025"
 			(at 335.28 347.98 0)
 			(effects
 				(font
@@ -13601,7 +13373,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
-					(reference "#PWR09026")
+					(reference "#PWR09025")
 					(unit 1)
 				)
 			)
@@ -13812,7 +13584,7 @@
 		)
 		(uuid "73cf3ab1-acd6-5d58-bd24-ccab4c18d77d")
 	)
-	(text "Header 6 (2 × 6 through-hole, black): GND, VREF, P1–P8, RESET_N, BOOT_N; ESD on VREF (in flow-through to the LSF0108 and the divider) and on RESET/BOOT (to the 1k), their expander lines pulled up"
+	(text "Header 6 (2 × 6 through-hole, black): GND, VREF, P1–P8, RESET_N, BOOT_N; one H5VU25UC on BOOT, VREF and RESET (flow-through: VREF on to the LSF0108 and the divider, RESET/BOOT to the 1k by the expander, their expander lines pulled up)"
 		(exclude_from_sim no)
 		(at 285.75 27.94 0)
 		(effects
@@ -13848,7 +13620,7 @@
 		)
 		(uuid "76a1c52a-e420-5a1f-bbe6-aac58fca4dbd")
 	)
-	(text_box "Port 6 = hub port 5, busid 1-1.5; supplied by +5V_B.\nINA226 at 0x4c; expander U6 (TCA9535, 0x21).\nILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.\nINA226 Vbus on the shunt's load-side sense pad (= VBUS).\nEN pulled down: the port stays off until the node switches it on.\nPins: P1–P8 → crosspoint X lines (as the DATA ×4 v2's map, a third chip for ports 5–6);\n  an unwired VREF stays ≈ 0.4 V, under the LSF0108's 0.65 V: the firmware keeps the port's\n  crosspoint switches open while its VREF reads under 0.65 V.\nESD: VREF through U608, RESET_N / BOOT_N through U609 (flow-through).\nVREF: the board's I/O supply, 0.95–3.6 V; a 5 V board with TTL inputs: its own 3.3 V pin.\nSource only (Rp from the switched VBUS); a back-feeding source trips the TPS2553 (latched).\nThe DUT's RESET/BOOT pull-ups ≥ 4.7k: against 1k, the 1k in series stops at ≈ 1.65 V.\nHeader: black; left column VREF 1 2 3 4 BOOT, right GND 5 6 7 8 RESET."
+	(text_box "Port 6 = hub port 5, busid 1-1.5; supplied by +5V_B.\nINA226 at 0x4c; expander U6 (TCA9535, 0x21).\nILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.\nINA226 Vbus on the shunt's load-side sense pad (= VBUS).\nEN pulled down: the port stays off until the node switches it on.\nPins: P1–P8 → LSF0108 ch5 6 7 8 4 3 2 1 (LANE) → crosspoint X lines (XMAP, the DATA ×4 v2's;\n  a third chip for ports 5–6).  An unwired VREF stays ≈ 0.4 V, under the LSF0108's 0.65 V: the\n  firmware keeps the port's crosspoint switches open while its VREF reads under 0.65 V.\nESD (flow-through): P1–P4 U605, P5–P8 U606, BOOT_N / VREF / RESET_N U609.\nVREF: the board's I/O supply, 0.95–3.6 V; a 5 V board with TTL inputs: its own 3.3 V pin.\nSource only (Rp from the switched VBUS); a back-feeding source trips the TPS2553 (latched).\nThe DUT's RESET/BOOT pull-ups ≥ 4.7k: against 1k, the 1k in series stops at ≈ 1.65 V.\nHeader: black; left column VREF 1 2 3 4 BOOT, right GND 5 6 7 8 RESET."
 		(exclude_from_sim no)
 		(at 284.48 157.48 0)
 		(size 294.64 33.02)

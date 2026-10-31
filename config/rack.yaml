@@ -329,8 +329,11 @@ pcb:
   data_port_x6:             # DATA ×6 (electronics/data-port-x6, prototype, 2026-10-31): six ports for the porte-revues
                             # bays, the v2's logic widened (three CH446Q, 48 pins); same frame as the v2: board x = drawer
                             # x − x0, KiCad y = top_z − drawer z.  It stands where the v2 stands, 10 mm taller (the
-                            # cradle's uprights grow with it), its front face towards the port wall (six U's at 15 mm)
-    size: [100, 80]
+                            # cradle's uprights grow with it), its front face towards the port wall (six U's at 15 mm).
+                            # 120 mm long (the user, 2026-10-31: 100 left each pin chain a 7.6 mm column, too narrow to
+                            # route on 4 layers); the 20 mm more to the right (drawer x 104–124)
+    size: [120, 80]
+    corner_notch: [1.5, 5.0]   # its bottom-right corner cut (width, height): the drag chain foot's boss
     x0: 4
     top_z: 82.5
     face_y: 7.4
@@ -341,14 +344,15 @@ pcb:
     usb: [12.5, 27.5, 42.5, 57.5, 72.5, 87.5]    # board x of the six vertical USB-C, 15 mm apart, mouths to the wall
     usb_z: 11
     # the six 2 × 6 through-hole headers, upright (2 columns × 6 rows), grouped at the top: board x of each
-    # one's centre (7.62 mm apart, one empty pitch between two), drawer z of their centre.  Each its own colour
-    # (MINTRON MTP125-1206S1-…), port 1 → 6: red, yellow, green, blue, white, black (proposed, the user to confirm).
-    # Columns as read from the front: the left VREF 1 2 3 4 BOOT, the right GND 5 6 7 8 RESET, top to bottom
-    blocks: { x: [27.5, 35.12, 42.74, 50.36, 57.98, 65.6], z: 73.0,
+    # one's centre (11 mm apart: each its pin chain's column under it), drawer z of their centre.  Each its own
+    # colour (MINTRON MTP125-1206S1-…), port 1 → 6: red, yellow, green, blue, white, black (proposed, the user to
+    # confirm).  Columns as read from the front: the left VREF 1 2 3 4 BOOT, the right GND 5 6 7 8 RESET, top to bottom
+    blocks: { x: [28.5, 39.5, 50.5, 61.5, 72.5, 83.5], z: 73.0,
               colours: [R, Y, G, B, W, K] }
-    lead: [90, 34]          # J1, the PH 8 lead (the v2's, same pinout, same place): board x, drawer z of its centre
-    vin: [72.85, 52.5]      # J3, the 20 V input (PH 3 vertical, VIN–GND–VIN, rear face, hand-soldered): board x,
-                            # drawer z of its centre (pin 2); its pins run down the board, 2 mm apart
+    lead: [93, 58.5]        # J1, the PH 8 lead (the v2's pinout), rear face: board x, drawer z of its centre; its pins
+                            # run down the board, 2 mm apart, pin 1 at the top.  Over the hub, out of the USB pairs' way
+    vin: [110, 21.3]        # J3, the 20 V input (PH 3 vertical, VIN–GND–VIN, rear face, hand-soldered): board x,
+                            # drawer z of its centre (pin 2); lying, its pins along the board 2 mm apart, by the chain
   camera_pod:             # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6
