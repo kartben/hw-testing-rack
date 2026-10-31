@@ -76,13 +76,15 @@ HX, HY = 87.5, 31.0                 # the hub, turned 90°, DN pins south
 XT = (HX - 8.9, HY + 1.75)          # its 24 MHz crystal
 CHIP = [(29.4, 41.3), (48.26, 41.3), (67.12, 41.3)]    # the crosspoints: ports 1–2, 3–4, 5–6
 EXP = [(38.83, 41.3, "GND"), (57.69, 41.3, "+3V3")]    # the TCA9535s between them: ports 1–3, 4–6
-MX_EXP = (76.85, 41.3)              # the matrix expander (TCA9534A), right of the third crosspoint
+MX_EXP = (9.6, 31.1)                # the matrix expander (TCA9534A), under J2: by the co-processor's RUN/BOOT
 LDO = (10.4, 53.5)                  # U3, the 3.3 V LDO, under converter A (+5V_A), tab up
 BULK = (72.85, 22.3)                # VIN's 33 µF, under the blocks' legend; J3 right under it
 SWD_HDR = (7.2, 26.2)               # J2, the co-processor's SWD header (1 × 5), pin 1 west, under it
 SWD_PINS = (("CP_SWCLK", "SWCLK"), ("GND", "GND"), ("CP_SWDIO", "SWDIO"), ("CP_RUN", "RUN"), ("+3V3", "3V3"))
-NINV = (10.5, 30.6)                 # U9, the −5 V inverter, under J2
+NINV = (19.5, 30.6)                 # U9, the −5 V inverter, right of it
 CL_Y = 56.7                         # each port's power cluster: its frame's top
+PWR_SPLIT = 64.6                    # the power plane: +3V3 above, +5V_A / +5V_B under (MID_X between them)
+MID_X = 50.0
 UP_Y = 66.5                         # over each receptacle: its VBUS 22 µF, CC resistors, LED
 CH_Y = 18.8                         # each port's pin chain: its first row (the ESD), under its block
 # the two 5 V converters: the bay node's LMR51625 block (bay-node/design.py) at an offset, the node's own layout
@@ -130,16 +132,16 @@ ARRAYS = {"100": ("4D02WGJ0101TCE", "C48442"), "10k": ("4D02WGJ0103TCE", "C25725
 # ref: (net, name, pad Ø, x, y); each sheet places its own (testpoints())
 TPS = {
     # the co-processor: SWD, RUN, BOOTSEL, its rails, a GND
-    "TP1": ("CP_SWCLK", "SWCLK", 1.0, 8.0, 2.4), "TP2": ("CP_SWDIO", "SWDIO", 1.0, 10.6, 2.4),
-    "TP3": ("GND", "GND", 1.5, 13.4, 2.6), "TP10": ("+3V3_CP", "+3V3_CP", 1.5, 7.6, 8.6),
+    "TP1": ("CP_SWCLK", "SWCLK", 1.0, 7.4, 2.4), "TP2": ("CP_SWDIO", "SWDIO", 1.0, 11.6, 2.4),
+    "TP3": ("GND", "GND", 1.5, 15.2, 2.6), "TP10": ("+3V3_CP", "+3V3_CP", 1.5, 7.6, 8.6),
     "TP11": ("+1V1", "+1V1", 1.5, 12.0, 15.4), "TP12": ("CP_RUN", "RUN", 1.0, 7.4, 13.0),
     "TP13": ("CP_BOOT_N", "BOOT", 1.0, 7.4, 16.0),
     # the matrix: ±5 V, the expander's bus, STB1–3 and RST, a GND
-    "TP4": ("-5V", "−5V", 1.5, 15.5, 30.0), "TP5": ("+5V_MX", "+5V_MX", 1.5, 18.5, 30.0),
-    "TP6": ("GND", "GND", 1.5, 21.5, 30.0), "TP14": ("MX_DAT", "DAT", 1.0, 73.5, 38.0),
-    "TP15": ("MX_CK", "CK", 1.0, 76.0, 38.0), "TP16": ("MX_STB1", "STB1", 1.0, 73.5, 50.5),
-    "TP17": ("MX_STB2", "STB2", 1.0, 76.0, 50.5), "TP40": ("MX_STB3", "STB3", 1.0, 78.5, 50.5),
-    "TP18": ("MX_RST", "MX RST", 1.0, 78.5, 38.0), "TP19": ("GND", "GND", 1.5, 81.0, 50.5),
+    "TP4": ("-5V", "−5V", 1.5, 19.6, 29.8), "TP5": ("+5V_MX", "+5V_MX", 1.5, 18.6, 33.4),
+    "TP6": ("GND", "GND", 1.5, 22.2, 33.4), "TP14": ("MX_DAT", "DAT", 1.0, 7.2, 29.8),
+    "TP15": ("MX_CK", "CK", 1.0, 11.0, 29.8), "TP16": ("MX_STB1", "STB1", 1.0, 7.2, 33.4),
+    "TP17": ("MX_STB2", "STB2", 1.0, 11.0, 33.4), "TP40": ("MX_STB3", "STB3", 1.0, 14.8, 33.4),
+    "TP18": ("MX_RST", "MX RST", 1.0, 15.2, 29.8), "TP19": ("GND", "GND", 1.5, 24.4, 30.6),
     # the supplies: VIN, +5V_A, +5V_B, +3V3, with GND
     "TP7": ("+3V3", "+3V3", 1.5, 13.5, 49.0), "TP8": ("GND", "GND", 1.5, 10.5, 49.0),
     "TP9": ("+5V_A", "+5V_A", 1.5, 7.5, 49.0), "TP41": ("+5V_B", "+5V_B", 1.5, 84.0, 16.0),
@@ -148,12 +150,12 @@ TPS = {
     "TP20": ("HUB_RST_N", "HUB RST", 1.0, 81.5, 20.5), "TP21": ("GND", "GND", 1.5, 77.0, 21.0),
     "TP22": ("HUB_1V8", "1V8", 1.5, 92.5, 35.25),
     # the board side of the lead's I²C and INT, with a GND
-    "TP23": ("INT", "INT", 1.0, 85.5, 42.5), "TP24": ("SDA", "SDA", 1.0, 85.5, 45.0),
-    "TP25": ("SCL", "SCL", 1.0, 85.5, 47.5), "TP26": ("GND", "GND", 1.5, 85.5, 50.0),
+    "TP23": ("INT", "INT", 1.0, 85.5, 42.0), "TP24": ("SDA", "SDA", 1.0, 85.5, 44.6),
+    "TP25": ("SCL", "SCL", 1.0, 85.5, 47.2), "TP26": ("GND", "GND", 1.5, 85.5, 50.2),
     # GND by each expander
     "TP27": ("GND", "GND", 1.5, 38.85, 51.0), "TP28": ("GND", "GND", 1.5, 57.35, 51.0),
     # the crosspoints' eight buses (the co-processor's GPIO2–9), on their way between the chips, with a GND
-    **{f"TP{29 + i}": (f"BUS_{b}", b, 1.0, 37.0 + 2.2 * (i % 4), 31.0 + 2.2 * (i // 4)) for i, b in enumerate(BUSES)},
+    **{f"TP{29 + i}": (f"BUS_{b}", b, 1.0, 37.0 + 2.2 * (i % 4), 30.4 + 3.0 * (i // 4)) for i, b in enumerate(BUSES)},
     "TP37": ("GND", "GND", 1.5, 46.5, 32.1),
     # each port's FAULT_N (port(): TP{k + 1}) by its switch
     **{f"TP{100 * n + 1}": (f"PORT{n}_FLT_N", f"FLT{n}", 1.0, USBS[n - 1] + 4.0, CL_Y + 8.0) for n in range(1, 7)},
@@ -340,7 +342,8 @@ def port(b: Board, n: int):
 
     e = (n - 1) // 3
     s.notes_at = (112, 62, 116)
-    s.notes = [f"Port {n} = hub port {n}, busid 1-1.{n}; supplied by {v5}.",
+    hp = n - 1 if n > 1 else 6
+    s.notes = [f"Port {n} = hub port {hp}, busid 1-1.{hp}; supplied by {v5}.",
                f"INA226 at 0x{INA_HEX[n - 1]:02x}; expander {('U2', 'U6')[e]} (TCA9535, 0x{0x20 + e:02x}).",
                "ILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.",
                "INA226 Vbus on the shunt's load-side sense pad (= VBUS).",
@@ -459,9 +462,12 @@ def hub_sheet(b: Board):
         hub[f"OCS{n}_N"] = None
     for n in range(4, 8):
         hub[f"LED_B{n}_N"] = None
-    for n in range(1, 7):
-        hub[f"USBDN{n}_DP/PRT_DIS_P{n}"] = f"PORT{n}_DP"
-        hub[f"USBDN{n}_DM/PRT_DIS_M{n}"] = f"PORT{n}_DN"
+    # its south face's DN1–5 to USB-C 2–6, its west face's DN6 to USB-C 1: the pairs come down and turn west in
+    # lanes, the lowest dropping off first, none crossing; DN7 (west face) to the co-processor
+    for dn in range(1, 7):
+        n = dn + 1 if dn <= 5 else 1
+        hub[f"USBDN{dn}_DP/PRT_DIS_P{dn}"] = f"PORT{n}_DP"
+        hub[f"USBDN{dn}_DM/PRT_DIS_M{dn}"] = f"PORT{n}_DN"
     hub["USBDN7_DP/PRT_DIS_P7"], hub["USBDN7_DM/PRT_DIS_M7"] = "CP_HUB_DP", "CP_HUB_DN"
     part(s, "U1", "usb2517", hub, pcb=P(HX, HY, 90), sch=at(124, 62, fields=(-11, -20)))
     rail(s, "+3V3", [f"U1.{n}" for n in (46, 64, 24, 5, 10, 52, 57)], -3)
@@ -536,7 +542,7 @@ def hub_sheet(b: Board):
         "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).",
         "Hub: CFG_SEL[2:0] = 110 (internal default configuration, strap options disabled: DS00001598C Table 5-2),",
         "  as the DATA ×4 v2's; all seven downstream ports used.",
-        "Hub port n = USB-C n (busid 1-1.n) for n = 1–6; port 7 = the co-processor.",
+        "Hub ports: 1–5 = USB-C 2–6 (busid 1-1.1 … 1-1.5), 6 = USB-C 1 (1-1.6), 7 = the co-processor (1-1.7).",
         "Expanders: TCA9535 U2 0x20 (ports 1–3), U6 0x21 (ports 4–6, the mark on P14).  Each port: RESET, BOOT, EN,",
         "  FAULT_N (port 1 on P00–P03, 2 on P04–P07, 3 on P10–P13).  Inputs at power-up: the EN pull-downs keep every",
         "  port off until the node writes; the spare pins set as outputs, low, by the firmware.",
@@ -577,7 +583,7 @@ def matrix_sheet(b: Board):
 
     s.frame("+5V_MX through a ferrite (the crosspoints, the inverter, the LSF0108s' bias); −5 V for the "
             "crosspoints' VEE (TPS60400 inverter)", 114, 10, 228, 52)
-    part(s, "FB1", "fb600", {"1": "+5V_A", "2": "+5V_MX"}, pcb=P(NINV[0] + 5.0, NINV[1] + 0.5, 0), sch=at(124, 18))
+    part(s, "FB1", "fb600", {"1": "+5V_A", "2": "+5V_MX"}, pcb=P(NINV[0] - 2.9, NINV[1] + 3.0, 0), sch=at(124, 18))
     s.wire("FB1.1", ("FB1.1", -3, 0))
     s.tag("+5V_A", ("FB1.1", -3, 0), "left")
     s.wire("FB1.2", ("FB1.2", 3, 0))
@@ -587,18 +593,18 @@ def matrix_sheet(b: Board):
     part(s, "U9", "tps60400", {"IN": "+5V_MX", "OUT": "-5V", "C_{FLY+}": "CP_FLYP", "C_{FLY-}": "CP_FLYN", "GND": "GND"},
          pcb=P(*NINV, 0), sch=at(150, 30, fields=(-4, -6)))
     C(s, "C26", "1u", "CP_FLYP", "CP_FLYN", size="0402", pcb=P(NINV[0], NINV[1] + 2.8, 0), sch=at(170, 36))
-    C(s, "C27", "1u", "+5V_MX", "GND", size="0402", pcb=P(NINV[0] - 3.05, NINV[1] + 0.05, 180), sch=at(132, 34))
-    C(s, "C28", "1u", "-5V", "GND", size="0402", pcb=P(NINV[0] - 3.05, NINV[1] - 1.0, 180), sch=at(186, 36))
+    C(s, "C27", "1u", "+5V_MX", "GND", size="0402", pcb=P(NINV[0] - 3.1, NINV[1] + 0.05, 180), sch=at(132, 34))
+    C(s, "C28", "1u", "-5V", "GND", size="0402", pcb=P(NINV[0] - 3.1, NINV[1] - 1.0, 180), sch=at(186, 36))
 
     s.frame("The node's matrix expander (TCA9534A, 0x38): the crosspoints and the co-processor's RUN / BOOTSEL",
             114, 58, 228, 100)
     part(s, "U10", "tca9534", {"VDD": "+3V3", "GND": "GND", "A0": "GND", "A1": "GND", "A2": "GND", "SCL": "SCL",
                                "SDA": "SDA", "~{INT}": None, "P0": "MX_DAT", "P1": "MX_CK", "P2": "MX_STB1",
                                "P3": "MX_STB2", "P4": "MX_RST", "P5": "CP_RUN", "P6": "CP_BOOT_N", "P7": "MX_STB3"},
-         pcb=P(*MX_EXP, 90), sch=at(160, 84, fields=(-10, -8)))
+         pcb=P(*MX_EXP, 0), sch=at(160, 84, fields=(-10, -8)))
     rail_v(s, "GND", ["U10.A0", "U10.A1", "U10.A2"], -2, "down")
-    C(s, "C29", "100n", "+3V3", "GND", size="0402", pcb=P(MX_EXP[0], MX_EXP[1] - 4.9, 0), sch=at(140, 74))
-    R(s, "R20", "10k", "+3V3", "MX_RST", size="0402", pcb=P(MX_EXP[0], MX_EXP[1] + 4.9, 0), sch=at(190, 76))
+    C(s, "C29", "100n", "+3V3", "GND", size="0402", pcb=P(MX_EXP[0] + 4.5, MX_EXP[1] - 2.0, 90), sch=at(140, 74))
+    R(s, "R20", "10k", "+3V3", "MX_RST", size="0402", pcb=P(MX_EXP[0] + 4.5, MX_EXP[1] + 2.0, 90), sch=at(190, 76))
     s.notes_at = (114, 102, 110)
     s.notes = ["CH446Q serial mode (P/S low): 7 address bits on CK, data on DAT, latched by STB; RST high = all open.",
                "TCA9534A 0x38: P0 DAT, P1 CK, P2 STB U7, P3 STB U8, P4 RST, P5 RUN, P6 BOOTSEL, P7 STB U12.",
@@ -782,6 +788,21 @@ def board() -> Board:
     for x0, x1, top in reversed(NOTCHES):
         outline += [(x1, H, 0), (x1, top, 0.5), (x0, top, 0.5), (x0, H, 0)]
     outline += [(0, H, 1.0)]
+    # The power plane (In2): +3V3 over the top of the board, down to the split under the clusters (PWR_SPLIT); under
+    # it, +5V_A west of x 50 (ports 1–3) and +5V_B east (ports 4–6), 0.2 mm apart, never joined.  Each converter's
+    # output reaches its own area through the cradle's band at its end (nothing else uses it, either face): +5V_A
+    # from under converter A (west, middle) down the west band, +5V_B from under converter B (the top-right corner)
+    # down the east band.  Each port switch's IN takes its 5 V by a track down past the split, as the v2's.  All
+    # 1.4 mm from the edge, notches included
+    E = 1.4
+    bottom = [pt for x0, x1, top in reversed(NOTCHES)
+              for pt in ((x1 + E, H - E), (x1 + E, top - E), (x0 - E, top - E), (x0 - E, H - E))]
+    IN_5VA = [(E, 34.0), (22.8, 34.0), (22.8, 49.6), (5.4, 49.6), (5.4, PWR_SPLIT + 0.1), (MID_X - 0.1, PWR_SPLIT + 0.1),
+              *[pt for pt in bottom if pt[0] < MID_X], (MID_X - 0.1, H - E), (E, H - E)]
+    IN_5VB = [(75.8, E), (W - E, E), (W - E, H - E), *[pt for pt in bottom if pt[0] > MID_X], (MID_X + 0.1, H - E),
+              (MID_X + 0.1, PWR_SPLIT + 0.1), (94.6, PWR_SPLIT + 0.1), (94.6, 14.6), (75.8, 14.6)]
+    IN_3V3 = [(E, E), (75.6, E), (75.6, 14.8), (94.4, 14.8), (94.4, PWR_SPLIT - 0.1), (5.6, PWR_SPLIT - 0.1),
+              (5.6, 49.8), (23.0, 49.8), (23.0, 33.8), (E, 33.8)]
     pwr = "In2.Cu"
     b.pcb = {
         "size": (W, H), "layers": LAYERS, "outline": outline, "passes": 80,
@@ -790,30 +811,42 @@ def board() -> Board:
         "stackup": "JLC04161H-7628", "finish": "ENIG",
         "edge_parts": [],
         "defer_pours": False,
-        "fanout_nets": {"GND": ("In1.Cu", 0.5, 0.3, 0.25)},
-        "plane_nets": {},
+        "fanout_nets": {"GND": ("In1.Cu", 0.5, 0.3, 0.25), "+5V_A": (pwr, 0.6, 0.3, 0.4), "+5V_B": (pwr, 0.6, 0.3, 0.4),
+                        "+3V3": (pwr, 0.5, 0.3, 0.25)},
+        "plane_nets": {"+5V_A": pwr, "+5V_B": pwr, "+3V3": pwr},
         "power_nets": {"GND": 1, "VIN": 2, "+5V_A": 2, "+5V_B": 2, "+5V_MX": 2, "-5V": 2, "+3V3": 2, "+3V3_CP": 2,
                        "+1V1": 2, "PORT?_VBUS": 2, "PORT?_5V_SW": 2},
         "stitch": 4.0,
         "edge_fence": {"pitch": 5.0, "inset": 0.9},
-        "zones": [{"layer": "In1.Cu", "net": "GND"}],
+        "zones": [{"layer": "In1.Cu", "net": "GND"},
+                  {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "poly": IN_3V3},
+                  {"layer": pwr, "net": "+5V_A", "name": "pwr-5va", "poly": IN_5VA},
+                  {"layer": pwr, "net": "+5V_B", "name": "pwr-5vb", "poly": IN_5VB},
+                  {"layer": "F.Cu", "net": "GND"}, {"layer": "B.Cu", "net": "GND"}],
         "tracks": [], "vias": [],
         "keepouts": [{"name": f"edge{i}", "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, W, 0.35), (W - 0.35, 0, W, H), (0, H - 0.35, W, H), (0, 0, 0.35, H),
-                         *((x0 - 0.35, top - 0.35, x1 + 0.35, H) for x0, x1, top in NOTCHES)))],
+                         *((x0 - 0.35, top - 0.35, x1 + 0.35, H) for x0, x1, top in NOTCHES)))] + [
+            # B.Cu runs over the power plane: no B.Cu track crosses its main splits (+3V3 / +5V, +5V_A / +5V_B), so a
+            # signal that does crosses on F.Cu over the GND plane (the v2's RF review)
+            {"name": "split", "layers": ["B.Cu"], "tracks_only": True,
+             "poly": [(0.35, PWR_SPLIT - 0.5), (W - 0.35, PWR_SPLIT - 0.5), (W - 0.35, PWR_SPLIT + 0.5), (0.35, PWR_SPLIT + 0.5)]},
+            {"name": "split-ab", "layers": ["B.Cu"], "tracks_only": True,
+             "poly": [(MID_X - 0.5, PWR_SPLIT), (MID_X + 0.5, PWR_SPLIT), (MID_X + 0.5, H - 0.35), (MID_X - 0.5, H - 0.35)]}],
         "variants": {"base": {"dnp": logic_only(b)}},
         "texts": [
             {"text": "DATA ×6 v1.0", "x": 50.0, "y": 78.0, "size": 0.8},
-            # each block's port number under it, and the columns' names once, right of the six (read with the
-            # jumpers in: the left column's name, then the right's)
-            *({"text": str(n), "x": BLK_X[n - 1], "y": BLK_Y + 8.9, "size": 1.2} for n in range(1, 7)),
+            # each block's port number over it (its chain's ESD right under it), and the columns' names once, right of
+            # the six (read with the jumpers in: the left column's name, then the right's)
+            *({"text": str(n), "x": BLK_X[n - 1], "y": 0.95, "size": 0.8} for n in range(1, 7)),
             *({"text": f"{a} {c}", "x": BLK_X[-1] + 6.6, "y": BLK_Y - 6.35 + 2.54 * i, "size": 0.8}
               for i, (a, c) in enumerate(LEGEND)),
             *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
-            *({"text": name, "x": SWD_HDR[0] + 2.54 * i, "y": SWD_HDR[1] + (-2.1 if i % 2 == 0 else 2.1), "size": 0.8}
-              for i, (_, name) in enumerate(SWD_PINS)),
+            *({"text": name, "x": SWD_HDR[0] + 2.54 * i, "y": SWD_HDR[1] - (2.2 if i % 2 == 0 else 3.3), "size": 0.8}
+              for i, (_, name) in enumerate(SWD_PINS[:4])),
+            {"text": SWD_PINS[4][1], "x": SWD_HDR[0] + 4 * 2.54 + 3.0, "y": SWD_HDR[1], "size": 0.8},
         ],
     }
     return b

@@ -1,0 +1,20 @@
+(version 1)
+# Thermal reliefs on the pours (pcbgen.py), against tombstoning: small parts with one end on a pour.
+# On fine-pitch pads (ESP32 module, MSOP/SOT pins) the neighbours leave room for one spoke only: one
+# spoke is still a relief, enough for a signal or decoupling pad.  Pads that carry a board's power
+# connect solid (b.pcb["power_nets"], power_pads()), and the power nets' rules below ask for more.
+(rule "one thermal spoke is enough"
+	(constraint min_resolved_spokes 1))
+
+(rule "power pins connect solid"
+	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '+3V3' || A.NetName == '+5V_A' || A.NetName == '+5V_B' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == '/Port 5/PORT5_5V_SW' || A.NetName == '/Port 5/PORT5_VBUS' || A.NetName == '/Port 6/PORT6_5V_SW' || A.NetName == '/Port 6/PORT6_VBUS' || A.NetName == '/Power/VIN' || A.NetName == 'GND') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
+	(constraint zone_connection solid))
+
+(rule "power nets: 2 spokes where relieved"
+	(condition "A.Type == 'Pad' && (A.NetName == '+3V3' || A.NetName == '+5V_A' || A.NetName == '+5V_B' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == '/Port 5/PORT5_5V_SW' || A.NetName == '/Port 5/PORT5_VBUS' || A.NetName == '/Port 6/PORT6_5V_SW' || A.NetName == '/Port 6/PORT6_VBUS' || A.NetName == '/Power/VIN')")
+	(constraint min_resolved_spokes 2))
+
+(rule "power pins through the board: 4 spokes of 0.8 mm where relieved"
+	(condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole' && (A.NetName == '+3V3' || A.NetName == '+5V_A' || A.NetName == '+5V_B' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == '/Port 5/PORT5_5V_SW' || A.NetName == '/Port 5/PORT5_VBUS' || A.NetName == '/Port 6/PORT6_5V_SW' || A.NetName == '/Port 6/PORT6_VBUS' || A.NetName == '/Power/VIN') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
+	(constraint thermal_spoke_width (min 0.8mm))
+	(constraint min_resolved_spokes 4))
