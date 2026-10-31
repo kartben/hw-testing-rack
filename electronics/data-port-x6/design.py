@@ -82,7 +82,7 @@ CP = (15.9, 12.9)                   # RP2354B, turned 180°: the v2's block
 CP_DX = CP[0] - 47.0                # its shift from the v2's (47.0, 12.9)
 HX, HY = 103.0, 39.5                # the hub, turned 90°: DN pins south, down into the corridor
 XT = (HX - 8.9, HY + 1.75)          # its 24 MHz crystal
-CHIP = [(34.0, 39.3), (56.0, 39.3), (78.0, 39.3)]      # the crosspoints: ports 1–2, 3–4, 5–6
+CHIP = [(35.5, 39.3), (57.5, 39.3), (79.5, 39.3)]      # the crosspoints: ports 1–2, 3–4, 5–6
 EXP = [(10.4, 52.2, "GND"), (108.0, 18.5, "+3V3")]     # the TCA9535s: ports 1–3 at the west end, 4–6 at the east
 MX_EXP = (9.6, 30.6)                # the matrix expander (TCA9534A), under J2: by the co-processor's RUN/BOOT
 LDO = (107.0, 5.5)                  # U3, the 3.3 V LDO, in the top-right corner, tab east
@@ -267,7 +267,7 @@ TPS = {
     "TP11": ("+1V1", "+1V1", 1.5, 12.0, 15.4), "TP12": ("CP_RUN", "RUN", 1.0, 7.4, 13.0),
     "TP13": ("CP_BOOT_N", "BOOT", 1.0, 7.4, 16.0),
     # the matrix: ±5 V, the expander's bus, STB1–3 and RST, a GND
-    "TP4": ("-5V", "−5V", 1.5, 19.6, 30.4), "TP5": ("+5V_MX", "+5V_MX", 1.5, 67.0, 30.4),
+    "TP4": ("-5V", "−5V", 1.5, 19.6, 30.4), "TP5": ("+5V_MX", "+5V_MX", 1.5, 68.5, 30.4),
     "TP6": ("GND", "GND", 1.5, 21.6, 32.6), "TP14": ("MX_DAT", "DAT", 1.0, 7.2, 29.8),
     "TP15": ("MX_CK", "CK", 1.0, 11.0, 29.8), "TP16": ("MX_STB1", "STB1", 1.0, 7.2, 33.4),
     "TP17": ("MX_STB2", "STB2", 1.0, 11.0, 33.4), "TP40": ("MX_STB3", "STB3", 1.0, 14.8, 33.4),
@@ -287,8 +287,8 @@ TPS = {
     # GND by each expander
     "TP27": ("GND", "GND", 1.5, 19.6, 44.6), "TP28": ("GND", "GND", 1.5, 110.0, 24.6),
     # the crosspoints' eight buses (the co-processor's GPIO2–9), between the first two chips, with a GND
-    **{f"TP{29 + i}": (f"BUS_{b}", b, 1.0, 44.0 + 2.2 * (i % 2), 32.5 + 2.5 * (i // 2)) for i, b in enumerate(BUSES)},
-    "TP37": ("GND", "GND", 1.5, 45.1, 42.9),
+    **{f"TP{29 + i}": (f"BUS_{b}", b, 1.0, 45.5 + 2.2 * (i % 2), 32.5 + 2.5 * (i // 2)) for i, b in enumerate(BUSES)},
+    "TP37": ("GND", "GND", 1.5, 46.6, 42.9),
     # each port's FAULT_N (port(): TP{k + 1}) by its switch
     **{f"TP{100 * n + 1}": (f"PORT{n}_FLT_N", f"FLT{n}", 1.0, USBS[n - 1] + 4.0, CL_Y + 6.5) for n in range(1, 7)},
 }
@@ -751,7 +751,7 @@ def matrix_sheet(b: Board):
 
     s.frame("+5V_MX through a ferrite (the crosspoints, the inverter, the LSF0108s' bias); −5 V for the "
             "crosspoints' VEE (TPS60400 inverter)", 114, 10, 228, 52)
-    part(s, "FB1", "fb600", {"1": "+5V_L", "2": "+5V_MX"}, pcb=P(67.0, 34.0, 90), sch=at(124, 18))
+    part(s, "FB1", "fb600", {"1": "+5V_L", "2": "+5V_MX"}, pcb=P(68.5, 34.0, 90), sch=at(124, 18))
     s.wire("FB1.1", ("FB1.1", -3, 0))
     s.tag("+5V_L", ("FB1.1", -3, 0), "left")
     s.wire("FB1.2", ("FB1.2", 3, 0))
