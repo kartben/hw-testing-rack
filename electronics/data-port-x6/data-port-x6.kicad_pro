@@ -291,22 +291,6 @@
         "diff_pair_gap": 0.15,
         "diff_pair_width": 0.2,
         "line_style": 0,
-        "name": "Pins",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.127,
-        "tuning_profile": "",
-        "via_diameter": 0.5,
-        "via_drill": 0.3,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.1,
-        "diff_pair_gap": 0.15,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
         "name": "Port",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 2,
@@ -374,22 +358,6 @@
     "netclass_patterns": [
       {
         "netclass": "Supply",
-        "pattern": "*+3V3_CP"
-      },
-      {
-        "netclass": "Supply",
-        "pattern": "*+1V1"
-      },
-      {
-        "netclass": "Supply",
-        "pattern": "-5V"
-      },
-      {
-        "netclass": "Supply",
-        "pattern": "+5V_MX"
-      },
-      {
-        "netclass": "Supply",
         "pattern": "+3V3"
       },
       {
@@ -399,10 +367,6 @@
       {
         "netclass": "Supply",
         "pattern": "*HUB_1V8PLL"
-      },
-      {
-        "netclass": "Supply",
-        "pattern": "*CP_VREG_AVDD"
       },
       {
         "netclass": "Power",
@@ -439,22 +403,6 @@
       {
         "netclass": "USB",
         "pattern": "*_DN"
-      },
-      {
-        "netclass": "Pins",
-        "pattern": "*PORT?_P?"
-      },
-      {
-        "netclass": "Pins",
-        "pattern": "*PORT?_A?"
-      },
-      {
-        "netclass": "Pins",
-        "pattern": "*PORT?_B?"
-      },
-      {
-        "netclass": "Pins",
-        "pattern": "BUS_?"
       }
     ]
   },
@@ -517,14 +465,6 @@
     [
       "506fe7bc-5b14-5098-88f9-0220f2b20d85",
       "Port 6"
-    ],
-    [
-      "aede9184-173c-59ac-885e-de1344ea969c",
-      "Matrix"
-    ],
-    [
-      "5420bb49-ba09-557c-bb85-be5c298d8159",
-      "Co-processor"
     ]
   ],
   "text_variables": {

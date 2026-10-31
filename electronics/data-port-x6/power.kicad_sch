@@ -8,7 +8,7 @@
 		(title "DATA ×6 — 20 V input, two 5 V converters")
 		(rev "1.0")
 		(company "hw-testing-rack")
-		(comment 1 "A porte-revues bay's drawer board: six USB-C behind a hub, 48 switchable pins on 8 buses, a logic analyzer (hw-testing-rack)")
+		(comment 1 "A porte-revues drawer board: six switched, measured USB-C behind a hub (hw-testing-rack)")
 		(comment 2 "Generated from electronics/data-port-x6/design.py — edit the Python, then regenerate")
 	)
 	(lib_symbols

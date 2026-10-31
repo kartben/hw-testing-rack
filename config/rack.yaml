@@ -327,9 +327,10 @@ pcb:
                             # z 41 to pin 8 (+5V) at z 27; the housing 4.5 (x) × 17.9 (z), 6.0 off the face, its mouth
                             # towards the rear: the lead plugs in from behind and drops into the cable window
   data_port_x6:             # DATA ×6 (electronics/data-port-x6, prototype, 2026-10-31): six ports for the porte-revues
-                            # bays, the v2's logic widened (three CH446Q, 48 pins); same frame as the v2: board x = drawer
-                            # x − x0, KiCad y = top_z − drawer z.  It stands where the v2 stands, 10 mm taller (the
-                            # cradle's uprights grow with it), its front face towards the port wall (six U's at 15 mm).
+                            # bays, power only since 2026-10-31 (hub, switch and INA226 per port; no pin header: the
+                            # DATA ×4 v2 keeps the logic); same frame as the v2: board x = drawer x − x0, KiCad y =
+                            # top_z − drawer z.  It stands where the v2 stands, 10 mm taller (the cradle's uprights grow
+                            # with it), its front face towards the port wall (six U's at 15 mm).
                             # 120 mm long (the user, 2026-10-31: 100 left each pin chain a 7.6 mm column, too narrow to
                             # route on 4 layers); the 20 mm more to the right (drawer x 104–124)
     size: [120, 80]
@@ -343,12 +344,6 @@ pcb:
     notches: { x: [39, 69], size: [3.4, 6.5] }   # DRAWER x (not board x) of their centres: between ports 2–3, 4–5
     usb: [12.5, 27.5, 42.5, 57.5, 72.5, 87.5]    # board x of the six vertical USB-C, 15 mm apart, mouths to the wall
     usb_z: 11
-    # the six 2 × 6 through-hole headers, upright (2 columns × 6 rows), grouped at the top: board x of each
-    # one's centre (11 mm apart: each its pin chain's column under it), drawer z of their centre.  Each its own
-    # colour (MINTRON MTP125-1206S1-…), port 1 → 6: red, yellow, green, blue, white, black (proposed, the user to
-    # confirm).  Columns as read from the front: the left VREF 1 2 3 4 BOOT, the right GND 5 6 7 8 RESET, top to bottom
-    blocks: { x: [30.0, 41.0, 52.0, 63.0, 74.0, 85.0], z: 73.0,
-              colours: [R, Y, G, B, W, K] }
     lead: [93, 58.5]        # J1, the PH 8 lead (the v2's pinout), rear face: board x, drawer z of its centre; its pins
                             # run down the board, 2 mm apart, pin 1 at the top.  Over the hub, out of the USB pairs' way
     vin: [110, 21.3]        # J3, the 20 V input (PH 3 vertical, VIN–GND–VIN, rear face, hand-soldered): board x,

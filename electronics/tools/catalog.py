@@ -295,19 +295,6 @@ CAT = {
     "hdr2x6t": Cat("Connector_Generic:Conn_02x06_Odd_Even", "Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Vertical",
                    "HX PZ2.54-2x6P ZZ", "hanxia", "C32713279", 0.093, hand_solder=True,
                    description="pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins"),
-    # the DATA ×6's six headers, one colour per port (MINTRON's one series: the same 2.5 mm plastic and 6 mm pins;
-    # LCSC stock 90–100 a colour on 2026-10-31, the black 750), soldered by hand
-    **{f"hdr2x6t_{k}": Cat("Connector_Generic:Conn_02x06_Odd_Even",
-                           "Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Vertical", mpn, "MINTRON", lcsc, 0.079,
-                           hand_solder=True,
-                           description=f"pin header 2 × 6, 2.54 mm, {colour}, through-hole, soldered by hand: Dupont "
-                                       "jumpers to a DUT's pins")
-       for k, colour, mpn, lcsc in (("R", "red", "MTP125-1206S1-R", "C53959161"),
-                                    ("Y", "yellow", "MTP125-1206S1-Y", "C53959172"),
-                                    ("G", "green", "MTP125-1206S1-G", "C53959194"),
-                                    ("B", "blue", "MTP125-1206S1-B", "C53959205"),
-                                    ("W", "white", "MTP125-1206S1-W", "C53959183"),
-                                    ("K", "black", "MTP125-1206S1", "C358695"))},
     "hdr2x6": Cat("Connector_Generic:Conn_02x06_Odd_Even", "bench:PinHeader_2x06_P2.54mm_Vertical_SMD_Tight",
                   "HX PZ2.54-2x6P TP", "hanxia", "C32713286", 0.10, hand_solder=True,
                   description="pin header 2 × 6, 2.54 mm, SMD, soldered by hand: Dupont jumpers to a DUT's pins"),
@@ -335,9 +322,9 @@ CAT = {
                 model=("${KICAD10_3DMODEL_DIR}/Package_SON.3dshapes/USON-10_2.5x1.0mm_P0.5mm.step", (0, 0, 0), (0, 0, 0))),
     "rarray": Cat("Device:R_Pack04", "Resistor_SMD:R_Array_Convex_4x0402", "4D02WGJ", "UNI-ROYAL(Uniroyal Elec)", "",
                   0.0055, description="4 × resistor array 0402, 5 %"),
-    # DATA ×6 (electronics/data-port-x6), checked 2026-10-31: TI's 16-bit expander for four ports' EN, FAULT_N,
-    # RESET and BOOT (the TCA6408A has two addresses only); push-pull outputs, open-drain INT, 0x20–0x27.  Not UMW's
-    # TCA9535PWR (C22396388): its outputs are open drain
+    # DATA ×6 (electronics/data-port-x6), checked 2026-10-31: TI's 16-bit expander for the six ports' EN and
+    # FAULT_N (the TCA6408A has 8 lines); push-pull outputs, open-drain INT, 0x20–0x27.  Not UMW's TCA9535PWR
+    # (C22396388): its outputs are open drain
     "tca9535": Cat("Interface_Expansion:TCA9535RTWR", "Package_DFN_QFN:WQFN-24-1EP_4x4mm_P0.5mm_EP2.45x2.45mm",
                    "TCA9535RTWR", "Texas Instruments", "C129354", 1.28,
                    datasheet="https://www.ti.com/lit/ds/symlink/tca9535.pdf",
