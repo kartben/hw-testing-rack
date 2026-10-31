@@ -232,7 +232,8 @@ module drawer(rear = true, foot = true) {
             // cable window in the rear-bay floor, up to 1 mm off the rear wall and 1 mm short of the foot's boss:
             // a rear strip from 1.5 mm right of the third boss (the single board's lead comes up there and runs
             // left along the rear wall to its PH; a v2's drops behind its cradle), and a side strip 1 mm right of
-            // a v1's right edge, from 4 mm behind the port wall (v1's J1 plug is right above)
+            // a v1's right edge, from 4 mm behind the port wall (v1's J1 plug is right above; none in a ×6's drawer: its
+            // 120 mm board stands there)
             wy = DATA_PCB_Y0 + DATA_PCB_SIZE[1] + 1;
             wx = X4_HOLES[2][0] + X4_BOSS_D / 2 + 1.5;
             sx = DATA_X4_X0 + DATA_X4_SIZE[0] + 1;
@@ -242,7 +243,7 @@ module drawer(rear = true, foot = true) {
             assert(sx < we - 4, "the DATA ×4 is too long for a side strip beside it");
             translate([0, 0, -EPS]) linear_extrude(DRAWER_BOTTOM + 2 * EPS) offset(r = 2) offset(delta = -2) union() {
                 translate([wx, wy]) square([we - wx, wr - wy]);
-                translate([sx, sy]) square([we - sx, wr - sy]);
+                if (!X6) translate([sx, sy]) square([we - sx, wr - sy]);
             }
         }
         // pin holes over the node's RESET and BOOT
