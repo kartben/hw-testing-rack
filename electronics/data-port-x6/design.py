@@ -95,7 +95,10 @@ PWR_SPLIT = 64.6                    # the power plane: +3V3 above, +5V_A / +5V_B
 MID_X = 50.0
 UP_Y = 66.5                         # over each receptacle: its VBUS 22 µF, CC resistors, LED
 CH_Y = 19.3                         # each port's pin chain: its first row (the three ESD), under its block
-CH_DX = 0.2                         # the LSF0108's offset east of its column's centre (its A row under the arrays)
+CH_DX = 0.3                         # the LSF0108's offset east of its column's centre (its A row under the arrays)
+LSF_Y = CH_Y + 6.8                  # its centre: 2.1 mm under the arrays' pads for the A lines' 45° runs
+R1K = {"RST": (0.68, CH_Y + 2.05), "BOOT": (-1.0, CH_Y + 2.05)}    # each port's RESET / BOOT 1k (x from bx)
+DIV_X = -4.75                       # an even port's VREF divider (x from bx): west of its A1 line
 # the hub's pairs (hs_pairs()): each port's lane in the corridor over the clusters (its centreline), and, for
 # USB-C 2–6, its USBLC6 west of the receptacle and its D− on the way down to it (D+ 0.4 mm east): clear of the
 # R(k+2)/R(k+3) pads of the cluster west of it and of its own USBLC6's pin 4 and 5 pads
@@ -329,12 +332,12 @@ def rarray(s, ref, value, pairs, pcb, sch=None):
 
 
 def exp_res(n: int, i: int):
-    """Where port n's RESET / BOOT pull-ups (i 0, 1) and 1k (i 2, 3) stand, by its TCA9535: U2's (ports 1–3) in two
-    columns east of it, the pull-ups then the 1k, a port to two rows; U6's (ports 4–6) in one column east of it"""
+    """Where port n's RESET (i 0) and BOOT (i 1) pull-ups stand, by its TCA9535 (their 1k stay under the header):
+    U2's (ports 1–3) in a column east of it, U6's (ports 4–6) likewise"""
     j = (n - 1) % 3
     if n <= 3:
-        return (14.4 + 2.1 * (i // 2), 48.6 + 1.15 * (2 * j + i % 2), 0)
-    return (112.55, 12.6 + 1.0 * (4 * j + i), 0)
+        return (14.4, 48.6 + 1.15 * (2 * j + i), 0)
+    return (112.55, 13.6 + 1.0 * (2 * j + i), 0)
 
 
 def supply(n: int) -> str:
@@ -430,9 +433,10 @@ def port(b: Board, n: int):
     part(s, f"U{k + 9}", "esd4", {"GND": "GND", "1": p + "BOOT_N", "10": p + "BOOT_N", "2": p + "VREF",
                                   "9": p + "VREF", "5": p + "RST_N", "6": p + "RST_N", "4": None, "7": None},
          pcb=P(bx + ESD_X["c"], CH_Y, 90), sch=at(214, 36, fields=(-3, -7)))
-    # the 1k and the expander lines' pull-ups by the expander (exp_res())
+    # the 1k right under that ESD (its RESET and BOOT pads straight down into them, chain_lines()), turned 90°: the
+    # _N pad up; the expander lines' pull-ups by the expander (exp_res())
     for i, (r, sig, sy) in enumerate(((f"R{k + 7}", "RST", 34), (f"R{k + 8}", "BOOT", 44))):
-        R(s, r, "1k", p + sig + "_IO", p + sig + "_N", size="0402", pcb=P(*exp_res(n, 2 + i)),
+        R(s, r, "1k", p + sig + "_IO", p + sig + "_N", size="0402", pcb=P(bx + R1K[sig][0], R1K[sig][1], 90),
           sch=at(150, sy, rot=90))
     for i, (r, sig) in enumerate(((f"R{k + 9}", "RST"), (f"R{k + 10}", "BOOT"))):
         R(s, r, "100k", "+3V3", p + sig + "_IO", size="0402", pcb=P(*exp_res(n, i)), sch=at(138, (34, 44)[i] - 5))
@@ -451,17 +455,18 @@ def port(b: Board, n: int):
         part(s, f"U{k + 5 + j}", "esd4", tpd, pcb=P(bx + ESD_X[side], CH_Y, 90),
              sch=at(28 + 36 * j, 128, fields=(-3, -7)))
     # the 100 Ω arrays right under them, turned 270° (each resistor upright, its P end up; pins 4 … 1 west to east):
-    # the a array 0.2 mm west of its ESD, the b array 0.6 mm east of the middle, their lines straight into the A row
+    # each array's pins under its ESD's (a 0.25 mm east, b 0.25 mm west): two lines of each straight down, two with
+    # a 0.5 mm jog
     rarray(s, f"RN{k + 1}", "100", [(f"{p}P{q}", f"{p}A{q}") for q in (4, 3, 2, 1)],
-           P(bx - 3.0, CH_Y + 2.35, 270), sch=at(50, 128))
+           P(bx - 2.95, CH_Y + 2.35, 270), sch=at(50, 128))
     rarray(s, f"RN{k + 2}", "100", [(f"{p}P{q}", f"{p}A{q}") for q in (5, 6, 7, 8)],
-           P(bx + 2.4, CH_Y + 2.35, 270), sch=at(86, 128))
+           P(bx + 2.75, CH_Y + 2.35, 270), sch=at(86, 128))
     lsf = {"GND": "GND", "RefA": p + "VREF", "RefB": p + "VREFB", "EN": p + "VREFB", "EPAD": "GND"}
     for c in range(1, 9):
         lsf[f"A{c}"] = f"{p}A{LANE[c - 1]}"
         lsf[f"B{c}"] = f"{p}B{LANE[c - 1]}"
     # turned 270°: A row up (ch8 … ch1, RefA), B row down in the same order, RefB and EN at its east end
-    part(s, f"U{k + 7}", "lsf0108", lsf, pcb=P(bx + CH_DX, CH_Y + 6.7, 270), sch=at(132, 128, fields=(-10, -8)))
+    part(s, f"U{k + 7}", "lsf0108", lsf, pcb=P(bx + CH_DX, LSF_Y, 270), sch=at(132, 128, fields=(-10, -8)))
     rail(s, "GND", [f"U{k + 7}.GND", f"U{k + 7}.EPAD"], 2, "down")
     # Vref_B and EN from +5V_MX through 200k (the v2's: each group a voltage domain of its own), east of the LSF0108
     # by its RefB/EN end
@@ -471,7 +476,7 @@ def port(b: Board, n: int):
     s.wire(f"R{k + 11}.2", f"C{k + 5}.1")
     # VREF / 2 to the co-processor's ADC through 100k (the v2's divider: an unwired VREF stays ≈ 0.4 V), on the
     # side its B lines leave free: under R/C east for a port west of its crosspoint (odd), west for the other
-    dvx, dvy = (bx + 4.2, CH_Y + 8.3) if n % 2 else (bx - 4.0, CH_Y + 5.3)
+    dvx, dvy = (bx + 4.2, CH_Y + 8.3) if n % 2 else (bx + DIV_X, CH_Y + 5.3)
     R(s, f"R{k + 12}", "10k", p + "VREF", f"CP_VREF{n}", size="0402", pcb=P(dvx, dvy, 0), sch=at(180, 122))
     R(s, f"R{k + 13}", "10k", f"CP_VREF{n}", "GND", size="0402", pcb=P(dvx, dvy + 1.0, 180), sch=at(180, 130))
     s.wire(f"R{k + 12}.2", f"R{k + 13}.1")
@@ -978,6 +983,94 @@ def hs_pairs():
     return tracks, vias
 
 
+def chain_lines(n: int):
+    """Port n's header lines through their ESD, drawn (the v2's p_lines(), the kicad-happy review's X2-1: left alone,
+    Freerouting runs a line from the header straight to the next part, its ESD on a stub).  On F.Cu, every port
+    alike (x from the block's centre bx):
+    * P1–P4 out of the left column's pins west, down outside it (x −3.4 … −2.35, 0.35 apart), fanned out under it
+      onto the left H5VU25UC's pads, across to their partners and on into the 100 Ω array; P5–P8 the mirror image;
+    * VREF from pin 1 down the channel between the two columns, BOOT and RESET straight down from the bottom row,
+      through the middle H5VU25UC: BOOT and RESET on into their 1k, VREF down to a via, then on B.Cu to a via by the
+      LSF0108's Vref_A and the divider (odd ports: east of the LSF0108; even ports: a B.Cu branch west);
+    * each array's A lines on to the LSF0108's A row, 45°: the array's outer pins down, the side pin A1 round;
+    * each ESD's GND pads up to a via between its two middle lines;
+    * the 1k's _IO pads down to a via each (the expander's long lines: the router's).
+    Returns (tracks, vias)."""
+    bx = BLK_X[n - 1]
+    p = f"PORT{n}_"
+    tracks, vias = [], []
+    w = 0.127
+    rows = [BLK_Y - 6.35 + 2.54 * r for r in range(6)]          # the header's rows, y
+    top, bot = CH_Y - 0.4375, CH_Y + 0.4375                     # the H5VU25UC's pad rows
+    rn_t, rn_b = CH_Y + 2.35 - 0.5, CH_Y + 2.35 + 0.5           # the arrays' pad rows
+    a_y = LSF_Y - 1.1875                                        # the LSF0108's A row
+    lx = bx + CH_DX                                             # the LSF0108's centre x
+
+    def seg(net, pts, width=w):
+        tracks.append((net, "F.Cu", width, [(bx + x, y) for x, y in pts]))
+
+    # P lines: (P k, header row, column side, its vertical, where it fans out, ESD pad x, array pin x)
+    for side in (-1, 1):
+        fys = (15.0, 15.6, 16.8, 16.8) if side < 0 else (15.0, 15.6, 17.15, 16.8)     # where each fans out
+        for i, (q, vx) in enumerate(((1, 3.4), (2, 3.05), (3, 2.7), (4, 2.35))):
+            fy = fys[i]
+            k = q if side < 0 else q + 4
+            r = rows[1 + i]
+            ex = side * (4.2, 3.7, 2.7, 2.2)[i] if side < 0 else (4.0, 3.5, 2.5, 2.0)[i]
+            ax = side * (3.7, 3.2, 2.7, 2.2)[i] if side < 0 else (3.5, 3.0, 2.5, 2.0)[i]
+            vx *= side
+            d = abs(ex - vx)
+            fan = [(vx, fy), (ex, fy + d)] if d > 0.01 else []
+            seg(p + f"P{k}", [(side * 1.27, r), (vx - side * 0.5, r), (vx, r + 0.5)] + fan + [(ex, top), (ex, bot)] +
+                ([(ex, bot + 0.45), (ax, bot + 0.45 + abs(ex - ax)), (ax, rn_t)] if abs(ex - ax) > 0.01 else
+                 [(ax, rn_t)]))
+    # A lines: the arrays' bottom pads to the A row (A1, the side pin 10, round under it)
+    for k, ax, px in ((2, -3.2, -1.45), (3, -2.7, -0.95), (4, -2.2, -0.45),
+                      (8, 2.0, 0.05), (7, 2.5, 0.55), (6, 3.0, 1.05), (5, 3.5, 1.55)):
+        px += CH_DX - 0.3
+        d = abs(ax - px)
+        seg(p + f"A{k}", [(ax, rn_b), (ax, a_y - 0.4125 - d), (px, a_y - 0.4125), (px, a_y)])
+    seg(p + "A1", [(-3.7, rn_b), (-3.7, LSF_Y - 0.25), (CH_DX - 2.188, LSF_Y - 0.25)])
+    # BOOT, RESET: down from the bottom row through the middle ESD into their 1k, whose _IO pads go down to a via
+    bk, rk = R1K["BOOT"], R1K["RST"]
+    seg(p + "BOOT_N", [(-1.27, rows[5]), (-1.27, rows[5] + 0.75), (-1.0, rows[5] + 1.02), (-1.0, top), (-1.0, bot),
+                       (bk[0], bk[1] - 0.51)])
+    seg(p + "RST_N", [(1.27, rows[5]), (1.27, rows[5] + 0.75), (1.0, rows[5] + 1.02), (1.0, top), (1.0, bot),
+                      (1.0, bot + 0.4), (rk[0], bot + 0.72), (rk[0], rk[1] - 0.51)])
+    for sig, (x, y), v in (("BOOT", bk, (-1.0, CH_Y + 3.3)), ("RST", rk, (0.55, CH_Y + 3.25))):
+        seg(p + sig + "_IO", [(x, y + 0.51), (x, v[1] - abs(x - v[0])), v] if abs(x - v[0]) > 0.01 else
+            [(x, y + 0.51), v])
+        vias.append((p + sig + "_IO", bx + v[0], v[1], 0.5, 0.3))
+    # VREF: pin 1 east into the channel, down it, onto the middle ESD's pin 9, across to pin 2, down to its via
+    v1, v2 = (-0.16, CH_Y + 2.05), (3.05, LSF_Y - 0.85)
+    seg(p + "VREF", [(-1.27, rows[0]), (-0.5, rows[0]), (0.0, rows[0] + 0.5), (0.0, rows[5] + 0.85),
+                     (-0.5, rows[5] + 1.35), (-0.5, top), (-0.5, bot), (-0.5, bot + 0.3), (v1[0], bot + 0.64), v1])
+    # B.Cu to the via by Vref_A, then F.Cu into it (pin 2, the A row's east end)
+    tracks.append((p + "VREF", "B.Cu", w, [(bx + v1[0], v1[1]), (bx + 1.3, v1[1]),
+                                          (bx + v2[0], v1[1] + v2[0] - 1.3), (bx + v2[0], v2[1])]))
+    ra = (CH_DX + 1.75, a_y)
+    seg(p + "VREF", [v2, (v2[0] - (v2[1] - ra[1]), ra[1]), ra])
+    vias += [(p + "VREF", bx + v1[0], v1[1], 0.5, 0.3), (p + "VREF", bx + v2[0], v2[1], 0.5, 0.3)]
+    if n % 2:
+        # the divider east, under R(k+11)/C(k+5): B.Cu down past the EN pad, F.Cu into R(k+12)'s pad 1
+        v3, r12 = (3.05, CH_Y + 7.85), (4.2 - 0.51, CH_Y + 8.3)
+        tracks.append((p + "VREF", "B.Cu", w, [(bx + v2[0], v2[1]), (bx + v3[0], v3[1])]))
+        seg(p + "VREF", [v3, (v3[0] + r12[1] - v3[1], r12[1]), r12])
+        vias.append((p + "VREF", bx + v3[0], v3[1], 0.5, 0.3))
+    else:
+        # the divider west: a B.Cu branch from the first via, F.Cu down into R(k+12)'s pad 1
+        v3, r12 = (DIV_X - 0.51, CH_Y + 4.35), (DIV_X - 0.51, CH_Y + 5.3)
+        tracks.append((p + "VREF", "B.Cu", w, [(bx + v1[0], v1[1]), (bx - 3.9, v1[1]),
+                                              (bx + v3[0], v1[1] + (-3.9 - v3[0])), (bx + v3[0], v3[1])]))
+        seg(p + "VREF", [v3, r12])
+        vias.append((p + "VREF", bx + v3[0], v3[1], 0.5, 0.3))
+    # each ESD's GND pads up to a via between its two middle lines
+    for ex in ESD_X.values():
+        seg("GND", [(ex, top), (ex, CH_Y - 1.55)], 0.25)
+        vias.append(("GND", bx + ex, CH_Y - 1.55, 0.5, 0.3))
+    return tracks, vias
+
+
 def drawn():
     """The copper drawn before the routing that the v2 already had round its co-processor and its hub, which
     stand here as on the v2 (the co-processor CP_DX west of it, the hub one row lower): the core regulator as
@@ -1161,6 +1254,10 @@ def drawn():
     t, v = hs_pairs()
     hand_tracks += t
     hand_vias += v
+    for n in range(1, 7):
+        t, v = chain_lines(n)
+        hand_tracks += t
+        hand_vias += v
     # pin 64's: the pin down to C11 (its 100 nF) right below the corner, and its via inwards, under the hub's
     # body, off that line (it sat on it, between the pin and C11).  C11 is an exception to the pin → cap → via
     # order: no via fits past its +3V3 pad, between R1's RBIAS pad west and port 1's D− east
