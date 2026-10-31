@@ -337,7 +337,7 @@ pcb:
     thickness: 1.6
     layers: 4
     cradle: 5.5
-    notches: { x: [39, 69], size: [3.4, 6.5] }   # between ports 2–3 and 4–5
+    notches: { x: [39, 69], size: [3.4, 6.5] }   # DRAWER x (not board x) of their centres: between ports 2–3, 4–5
     usb: [12.5, 27.5, 42.5, 57.5, 72.5, 87.5]    # board x of the six vertical USB-C, 15 mm apart, mouths to the wall
     usb_z: 11
     # the six 2 × 6 through-hole headers, upright (2 columns × 6 rows), grouped at the top: board x of each
@@ -347,7 +347,8 @@ pcb:
     blocks: { x: [27.5, 35.12, 42.74, 50.36, 57.98, 65.6], z: 73.0,
               colours: [R, Y, G, B, W, K] }
     lead: [90, 34]          # J1, the PH 8 lead (the v2's, same pinout, same place): board x, drawer z of its centre
-    vin: [72.85, 52.5]      # J3, the PH 2 20 V input (rear face, hand-soldered): board x, drawer z of its centre
+    vin: [72.85, 52.5]      # J3, the 20 V input (PH 3 vertical, VIN–GND–VIN, rear face, hand-soldered): board x,
+                            # drawer z of its centre (pin 2); its pins run down the board, 2 mm apart
   camera_pod:             # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6

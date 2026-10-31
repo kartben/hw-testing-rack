@@ -1,4 +1,5 @@
 Designator,Qty,Value,Footprint,MPN,Manufacturer,LCSC,Description,DNP,Alternative,Assembly
+"C1,C65,C66,C67,C75,C76,C77",7,22u,C_1206_3216Metric,CL31A226KAHNNNE,Samsung Electro-Mechanics,C12891,Capacitor 22u 1206,,,
 "C2,C3,C102,C202,C302,C402,C502,C602",8,22u,C_0805_2012Metric,CL21A226MAQNNNE,Samsung Electro-Mechanics,C45783,Capacitor 22u 0805,,,
 "C4,C5",2,33p,C_0402_1005Metric,0402CG330J500NT,FH (Guangdong Fenghua Advanced Tech),C1562,Capacitor 33p 0402,,,
 "C6,C9,C10,C11,C12,C13,C14,C15,C16,C17,C18,C19,C20,C22,C23,C25,C29,C35,C36,C37,C38,C39,C40,C41,C42,C43,C44,C45,C46,C56,C58,C103,C104,C105,C203,C204,C205,C303,C304,C305,C403,C404,C405,C503,C504,C505,C603,C604,C605",49,100n,C_0402_1005Metric,CL05B104KO5NNNC,Samsung Electro-Mechanics,C1525,Capacitor 100n 0402,,,
@@ -6,15 +7,14 @@ Designator,Qty,Value,Footprint,MPN,Manufacturer,LCSC,Description,DNP,Alternative
 "C21,C24,C26,C27,C28,C57,C101,C201,C301,C401,C501,C601",12,1u,C_0402_1005Metric,CL05A105KA5NQNC,Samsung Electro-Mechanics,C52923,Capacitor 1u 0402,,,
 "C32,C33",2,4.7u,C_0402_1005Metric_RP,CL05A475MP5NRNC,Samsung Electro-Mechanics,C23733,Capacitor 4.7u 0402,,,
 "C48,C49",2,15p,C_0402_1005Metric,0402CG150J500NT,FH (Guangdong Fenghua Advanced Tech),C1548,Capacitor 15p 0402,,,
-C60,1,33u,CP_Elec_6.3x5.4,SVC1H330M0605,ROQANG,C55509533,"33 µF 50 V aluminium electrolytic, 6.3 × 5.4 mm",,,
+C60,1,33u,CP_Elec_6.3x7.7,RVT1H330M0607,ROQANG,C72509,"33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm",,"VH1H330ME077000CE0 (C240518): 33 µF 50 V, 6.3 × 7.7 mm",
 "C61,C62,C71,C72",4,10u,C_1206_3216Metric,CL31A106KBHNNNE,Samsung Electro-Mechanics,C13585,Capacitor 10u 1206,,,
 "C63,C64,C73,C74",4,100n,C_0603_1608Metric,CC0603KRX7R9BB104,YAGEO,C14663,Capacitor 100n 0603,,,
-"C65,C66,C67,C75,C76,C77",6,22u,C_1206_3216Metric,CL31A226KAHNNNE,Samsung Electro-Mechanics,C12891,Capacitor 22u 1206,,,
 "D1,D101,D201,D301,D401,D501,D601",7,KT-0805G,LED_0805_2012Metric,KT-0805G,Hubei KENTO,C2297,green LED 0805,,,
 "FB1,FB2",2,GZ2012D601TF,L_0805_2012Metric,GZ2012D601TF,Sunlord,C1017,"ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805",,,
 J1,1,LEAD,JST_PH_B8B-PH-K_1x08_P2.00mm_Vertical,B8B-PH-K-S(LF)(SN),JST,C157974,"JST PH 8-pin, vertical, through-hole",,,"hand-solder, buy loose (LCSC)"
 J2,1,SWD,PinHeader_1x05_P2.54mm_Vertical,HX PZ2.54-1x5P ZZ,hanxia,C32713271,"pin header 1 × 5, 2.54 mm, through-hole",,,"hand-solder, buy loose (LCSC)"
-J3,1,VIN,JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical,B2B-PH-K-S(LF)(SN),JST,C131337,"JST PH 2-pin, top entry, 2 A",,,"hand-solder, buy loose (LCSC)"
+J3,1,VIN,JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical,B3B-PH-K-S(LF)(SN),JST,C131339,"JST PH 3-pin, top entry, 2 A",,,"hand-solder, buy loose (LCSC)"
 J101,1,PORT1,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,
 J102,1,PINS1,PinHeader_2x06_P2.54mm_Vertical,MTP125-1206S1-R,MINTRON,C53959161,"pin header 2 × 6, 2.54 mm, red, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",,,"hand-solder, buy loose (LCSC)"
 J201,1,PORT2,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,

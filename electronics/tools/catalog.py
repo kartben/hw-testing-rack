@@ -82,9 +82,11 @@ CAT = {
                   description="TVS 33 V stand-off, 1500 W (unidirectional)"),
     "cap100u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_8x10", "RVT1H101M0810", "Honor Elec", "C3352", 0.069,
                      description="100 µF 50 V aluminium electrolytic"),
-    # DATA ×6: the 20 V input's bulk, against the overshoot of a hot plug (6.3 × 5.4 mm, the lowest at JLC)
-    "cap33u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_6.3x5.4", "SVC1H330M0605", "ROQANG", "C55509533",
-                    0.044, description="33 µF 50 V aluminium electrolytic, 6.3 × 5.4 mm"),
+    # DATA ×6: the 20 V input's bulk at its PH 3, against the overshoot of a hot plug (the Électronique session's
+    # pick, 2026-10-31: the family of the node's C1, 6.3 × 7.7 mm)
+    "cap33u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_6.3x7.7", "RVT1H330M0607", "ROQANG", "C72509", 0.039,
+                    alt="VH1H330ME077000CE0 (C240518): 33 µF 50 V, 6.3 × 7.7 mm",
+                    description="33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm"),
     "cap220u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_10x10", "RVT1H221M1010", "Honor Elec", "C3358", 0.14,
                      description="220 µF 50 V aluminium electrolytic"),
     "mux": Cat("Interface_USB:FSUSB42MUX", "Package_SO:MSOP-10_3x3mm_P0.5mm", "FSUSB42MUX", "onsemi", "C11355", 0.31,
@@ -131,6 +133,9 @@ CAT = {
     "ph2": Cat("Connector_Generic:Conn_01x02", "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal",
                "S2B-PH-SM4-TB(LF)(SN)", "JST", "C295747", 0.22, description="JST PH 2-pin, side entry, SMD, 2 A",
                model=("easyeda/C295747.step", (1.0, -2.9, 0), (0, 0, 0))),
+    # the DATA ×6's 20 V input, VIN–GND–VIN: either pre-crimped lead direction fits
+    "ph3v": Cat("Connector_Generic:Conn_01x03", "Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical",
+                "B3B-PH-K-S(LF)(SN)", "JST", "C131339", 0.042, hand_solder=True, description="JST PH 3-pin, top entry, 2 A"),
     "ph2v": Cat("Connector_Generic:Conn_01x02", "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical",
                 "B2B-PH-K-S(LF)(SN)", "JST", "C131337", 0.04, hand_solder=True, description="JST PH 2-pin, top entry, 2 A"),
     "ph6": Cat("Connector_Generic:Conn_01x06", "Connector_JST:JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal",

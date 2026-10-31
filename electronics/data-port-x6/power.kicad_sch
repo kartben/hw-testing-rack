@@ -135,7 +135,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector_Generic:Conn_01x02"
+		(symbol "Connector_Generic:Conn_01x03"
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -146,7 +146,7 @@
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
 			(property "Reference" "J"
-				(at 0 2.54 0)
+				(at 0 5.08 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -155,7 +155,7 @@
 					)
 				)
 			)
-			(property "Value" "Conn_01x02"
+			(property "Value" "Conn_01x03"
 				(at 0 -5.08 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -187,7 +187,7 @@
 					)
 				)
 			)
-			(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -220,9 +220,9 @@
 					)
 				)
 			)
-			(symbol "Conn_01x02_1_1"
+			(symbol "Conn_01x03_1_1"
 				(rectangle
-					(start -1.27 1.27)
+					(start -1.27 3.81)
 					(end 1.27 -3.81)
 					(stroke
 						(width 0.254)
@@ -230,6 +230,17 @@
 					)
 					(fill
 						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
 					)
 				)
 				(rectangle
@@ -255,7 +266,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 0 0)
+					(at -5.08 2.54 0)
 					(length 3.81)
 					(name "Pin_1"
 						(effects
@@ -273,7 +284,7 @@
 					)
 				)
 				(pin passive line
-					(at -5.08 -2.54 0)
+					(at -5.08 0 0)
 					(length 3.81)
 					(name "Pin_2"
 						(effects
@@ -283,6 +294,24 @@
 						)
 					)
 					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1372,7 +1401,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
+		(lib_id "Connector_Generic:Conn_01x03")
 		(at 40.64 76.2 0)
 		(mirror y)
 		(unit 1)
@@ -1398,7 +1427,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_JST:JST_PH_B2B-PH-K_1x02_P2.00mm_Vertical"
+		(property "Footprint" "Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical"
 			(at 40.64 76.2 0)
 			(effects
 				(font
@@ -1416,7 +1445,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "JST PH 2-pin, top entry, 2 A"
+		(property "Description" "JST PH 3-pin, top entry, 2 A"
 			(at 40.64 76.2 0)
 			(effects
 				(font
@@ -1425,7 +1454,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "B2B-PH-K-S(LF)(SN)"
+		(property "MPN" "B3B-PH-K-S(LF)(SN)"
 			(at 40.64 76.2 0)
 			(effects
 				(font
@@ -1443,7 +1472,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C131337"
+		(property "LCSC" "C131339"
 			(at 40.64 76.2 0)
 			(effects
 				(font
@@ -1458,6 +1487,9 @@
 		(pin "2"
 			(uuid "17ee9d04-97d9-50bd-9c2d-42d213e450fb")
 		)
+		(pin "3"
+			(uuid "6c0b78e4-6b16-5262-bb54-0b90c9a642f5")
+		)
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
@@ -1469,8 +1501,8 @@
 	)
 	(wire
 		(pts
-			(xy 45.72 76.2)
-			(xy 48.26 76.2)
+			(xy 45.72 73.66)
+			(xy 48.26 73.66)
 		)
 		(stroke
 			(width 0)
@@ -1479,7 +1511,7 @@
 		(uuid "5ec4a840-3afc-562b-911e-138c053b40ce")
 	)
 	(label "VIN"
-		(at 48.26 76.2 0)
+		(at 48.26 73.66 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -1491,8 +1523,8 @@
 	)
 	(wire
 		(pts
-			(xy 45.72 78.74)
-			(xy 48.26 78.74)
+			(xy 45.72 76.2)
+			(xy 48.26 76.2)
 		)
 		(stroke
 			(width 0)
@@ -1502,7 +1534,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 48.26 78.74 90)
+		(at 48.26 76.2 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1511,7 +1543,7 @@
 		(fields_autoplaced yes)
 		(uuid "f92a1469-8034-537e-b166-cc314c4dd92c")
 		(property "Reference" "#PWR03001"
-			(at 48.26 78.74 0)
+			(at 48.26 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1520,7 +1552,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 54.05 78.74 90)
+			(at 54.05 76.2 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1528,7 +1560,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 48.26 78.74 0)
+			(at 48.26 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1537,7 +1569,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 48.26 78.74 0)
+			(at 48.26 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1546,7 +1578,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 48.26 78.74 0)
+			(at 48.26 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1565,6 +1597,28 @@
 				)
 			)
 		)
+	)
+	(wire
+		(pts
+			(xy 45.72 78.74)
+			(xy 48.26 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "98223a91-3378-5c19-b1b9-000427cfb6c7")
+	)
+	(label "VIN"
+		(at 48.26 78.74 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "98c4738d-8254-5137-9a39-070bea452df0")
 	)
 	(symbol
 		(lib_id "power:PWR_FLAG")
@@ -1680,7 +1734,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:CP_Elec_6.3x5.4"
+		(property "Footprint" "Capacitor_SMD:CP_Elec_6.3x7.7"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -1698,7 +1752,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "33 µF 50 V aluminium electrolytic, 6.3 × 5.4 mm"
+		(property "Description" "33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -1707,7 +1761,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "SVC1H330M0605"
+		(property "MPN" "RVT1H330M0607"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -1725,7 +1779,16 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C55509533"
+		(property "LCSC" "C72509"
+			(at 101.6 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternative" "VH1H330ME077000CE0 (C240518): 33 µF 50 V, 6.3 × 7.7 mm"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -6986,7 +7049,7 @@
 		)
 		(uuid "a84acc71-7626-5c74-9fee-30cb6e89e134")
 	)
-	(text "VIN: the rack's 20 V from the node (after its reverse protection), a PH 2 on the rear face"
+	(text "VIN: the rack's 20 V from the node (after its reverse protection), a PH 3 VIN–GND–VIN on the rear face"
 		(exclude_from_sim no)
 		(at 16.51 27.94 0)
 		(effects
@@ -7070,7 +7133,7 @@
 		)
 		(uuid "d609dd40-39ff-5074-9458-89ec5072f3f3")
 	)
-	(text_box "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).\n+5V_A: ports 1–3 and the logic (hub, co-processor, matrix, 3.3 V LDO); +5V_B: ports 4–6.  Never in parallel:\n  the power plane's +5V split left / right.  Load: 6 × 0.5 A + 0.25 A logic = 3.25 A; 4 A at the TPS2553s'\n  0.62 A limit (A ≤ 2.1 A, B ≤ 1.9 A).\nFB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.\nVIN from the node's VRACK after its reverse-protection P-FET (node rev. B): no second protection here.\n  ≈ 0.95 A at 20 V, 0.7 A at 28 V; a PH contact carries 2 A."
+	(text_box "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).\n+5V_A: ports 1–3; +5V_B: ports 4–6 (the logic takes +5V_L, J1.8).  Never in parallel: the power plane's +5V\n  split left / right.  Each 1.5 A at 0.5 A a port, 1.86 A at the TPS2553s' 0.62 A limit (≈ 1 W lost each).\nVIN on J3 (PH 3: 1 VIN, 2 GND, 3 VIN): either pre-crimped lead direction fits.\nFB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.\nVIN from the node's VRACK after its reverse-protection P-FET (node rev. B): no second protection here.\n  ≈ 0.95 A at 20 V, 0.7 A at 28 V; a PH contact carries 2 A."
 		(exclude_from_sim no)
 		(at 15.24 142.24 0)
 		(size 508 20.32)

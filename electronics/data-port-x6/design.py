@@ -17,9 +17,11 @@ v2 does, per port and for the board, with:
 * two TCA9535 (16 bits, 0x20 / 0x21) for the ports' EN, FAULT_N, RESET and BOOT, three ports each; the mark
   line to the co-processor on a spare bit of the second;
 * the RP2354B as the v2's, on the hub's port 7, its ADC full: VREF 1–6 and the ±5 V rails;
-* the ports' 5 V made here from the rack's 20 V (VIN, a PH 2 of its own on the rear face, after the node's
-  protection): two LMR51625, +5V_A for ports 1–3 and the logic, +5V_B for ports 4–6, never in parallel (the
-  power plane's +5V split left / right).  The PH 8 lead is the v2's, pin for pin.
+* the ports' 5 V made here from the rack's 20 V (VIN, a PH 3 of its own on the rear face, VIN–GND–VIN so either
+  pre-crimped lead fits, after the node's protection): two LMR51625, +5V_A for ports 1–3, +5V_B for ports 4–6,
+  never in parallel (the power plane's +5V split left / right).  The logic (the hub, the co-processor, the matrix,
+  the 3.3 V) keeps the v2's supply, the node's switched 5 V on the PH 8 lead's pin 8 (+5V_L): the node can still
+  power-cycle the hub, and the ports stay off while the logic is.  The PH 8 lead is the v2's, pin for pin.
 
 The board stands where the v2 stands (config/rack.yaml › pcb.data_port_x6), 100 × 80 mm, 10 mm taller, held at
 both ends by the cradle; every part JLC places on the front face (Economic, one side), the headers, the leads and
@@ -57,7 +59,7 @@ USB_Y = TOP_Z - CFG["usb_z"]        # their axis (z 11, the port wall's openings
 BLK_X = CFG["blocks"]["x"]          # the six header blocks' centres
 BLK_Y = TOP_Z - CFG["blocks"]["z"]
 LEAD = (CFG["lead"][0], TOP_Z - CFG["lead"][1] - 7.0)      # J1's pin 1, its pins running down
-VIN_J = (CFG["vin"][0], TOP_Z - CFG["vin"][1] - 1.0)       # J3's pin 1 (VIN), pin 2 (GND) 2 mm under it
+VIN_J = (CFG["vin"][0], TOP_Z - CFG["vin"][1] - 2.0)       # J3's pin 1 (VIN), pins 2 (GND) and 3 (VIN) under it
 # The header's pins (PinHeader_2x06 upright: odd pins the left column, even the right, rows top to bottom).  Read
 # from the front (the study, 2026-10-31): the left column VREF, P1, P2, P3, P4, BOOT, the right GND, P5, P6, P7,
 # P8, RESET; each row pairs P k with P k + 4, as the v2's columns did
@@ -146,6 +148,7 @@ TPS = {
     "TP7": ("+3V3", "+3V3", 1.5, 13.5, 49.0), "TP8": ("GND", "GND", 1.5, 10.5, 49.0),
     "TP9": ("+5V_A", "+5V_A", 1.5, 7.5, 49.0), "TP41": ("+5V_B", "+5V_B", 1.5, 84.0, 16.0),
     "TP42": ("VIN", "VIN", 1.5, 80.0, 16.0), "TP43": ("GND", "GND", 1.5, 88.0, 16.0),
+    "TP44": ("+5V_L", "+5V_L", 1.5, 86.5, 58.6),
     # the hub's reset and core rail, with a GND
     "TP20": ("HUB_RST_N", "HUB RST", 1.0, 81.5, 20.5), "TP21": ("GND", "GND", 1.5, 77.0, 21.0),
     "TP22": ("HUB_1V8", "1V8", 1.5, 92.5, 35.25),
@@ -201,7 +204,7 @@ def rarray(s, ref, value, pairs, pcb, sch=None):
 
 
 def supply(n: int) -> str:
-    """Port n's 5 V: +5V_A for ports 1–3 (and the logic), +5V_B for ports 4–6"""
+    """Port n's 5 V: +5V_A for ports 1–3, +5V_B for ports 4–6 (the logic takes +5V_L, the lead's)"""
     return "+5V_A" if n <= 3 else "+5V_B"
 
 
@@ -362,12 +365,17 @@ def port(b: Board, n: int):
 def power_sheet(b: Board):
     s = b.sheet("Power", "power.kicad_sch", "20 V input, two 5 V converters")
     s.paper = "A2"
-    s.frame("VIN: the rack's 20 V from the node (after its reverse protection), a PH 2 on the rear face", 6, 10, 62, 50)
-    # through-hole on the rear face, soldered by hand, as J1; its lead comes up behind the board
-    part(s, "J3", "ph2v", {"1": "VIN", "2": "GND"}, "VIN", pcb={**P(*VIN_J, 270, "bottom"), "solid": ["1", "2"]},
-         sch=at(16, 30, mirror="y", fields=(-2, -6)))
+    s.frame("VIN: the rack's 20 V from the node (after its reverse protection), a PH 3 VIN–GND–VIN on the rear face",
+            6, 10, 62, 50)
+    # through-hole on the rear face, soldered by hand, as J1; its lead comes up behind the board.  VIN on both outer
+    # pins, GND in the middle: a pre-crimped PH lead "same direction" or "reversed" fits either way (on a PH 2 a reversed
+    # one would swap VIN and GND, the grounds already joined through the PH 8: the node's VIN short to GND); ≈ 0.85 A
+    # at 20 V for six ports at 0.5 A, on two contacts
+    part(s, "J3", "ph3v", {"1": "VIN", "2": "GND", "3": "VIN"}, "VIN",
+         pcb={**P(*VIN_J, 270, "bottom"), "solid": ["1", "2", "3"]}, sch=at(16, 30, mirror="y", fields=(-2, -6)))
     s.part("#FLG08", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "VIN"}, in_bom=False, on_board=False, sch=at(28, 18))
-    # the input's bulk against a hot plug's overshoot (the node's lead is ≈ 50 cm, the converters' ceramics alone ring)
+    # the input's bulk against a hot plug's overshoot (the node's lead is ≈ 50 cm, the converters' ceramics alone
+    # ring), right at J3, before either converter's 10 µF
     part(s, "C60", "cap33u50", {"1": "VIN", "2": "GND"}, "33u", pcb=P(*BULK, 90),
          sch=at(40, 30))
     # EN 100k/10k, as the node's: both converters start above 13.5 V and stop below 10.8 V
@@ -412,9 +420,9 @@ def power_sheet(b: Board):
     s.notes_at = (6, 56, 200)
     s.notes = [
         "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).",
-        "+5V_A: ports 1–3 and the logic (hub, co-processor, matrix, 3.3 V LDO); +5V_B: ports 4–6.  Never in parallel:",
-        "  the power plane's +5V split left / right.  Load: 6 × 0.5 A + 0.25 A logic = 3.25 A; 4 A at the TPS2553s'",
-        "  0.62 A limit (A ≤ 2.1 A, B ≤ 1.9 A).",
+        "+5V_A: ports 1–3; +5V_B: ports 4–6 (the logic takes +5V_L, J1.8).  Never in parallel: the power plane's +5V",
+        "  split left / right.  Each 1.5 A at 0.5 A a port, 1.86 A at the TPS2553s' 0.62 A limit (≈ 1 W lost each).",
+        "VIN on J3 (PH 3: 1 VIN, 2 GND, 3 VIN): either pre-crimped lead direction fits.",
         "FB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.",
         "VIN from the node's VRACK after its reverse-protection P-FET (node rev. B): no second protection here.",
         "  ≈ 0.95 A at 20 V, 0.7 A at 28 V; a PH contact carries 2 A.",
@@ -425,23 +433,29 @@ def power_sheet(b: Board):
 def hub_sheet(b: Board):
     s = b.sheet("Hub", "hub.kicad_sch", "Lead, hub, expanders, 3.3 V")
     s.paper = "A2"
-    s.frame("Lead from the node's J7 (PH 8, rear face): I²C and INT through an H5VU25UC; pin 8 open", 6, 10, 70, 50)
-    # the v2's J1, pin for pin, where the v2 has it; its pin 8 (the node's DUT_5V) is left open: this board makes
-    # its own 5 V from VIN (power_sheet())
+    s.frame("Lead from the node's J7 (PH 8, rear face): I²C and INT through an H5VU25UC; pin 8 the logic's 5 V",
+            6, 10, 70, 50)
+    # the v2's J1, pin for pin, where the v2 has it.  Its pin 8, the node's switched 5 V (DUT_5V, its TPS2553: 1.34 A),
+    # feeds the logic as on the v2 (+5V_L: the 3.3 V LDO, the matrix's +5V_MX): the node still power-cycles the hub,
+    # and with the logic off the expanders' pins float and the EN pull-downs keep every port off.  The ports' 5 V
+    # comes from VIN (power_sheet()).  Solid to its pad, as the v2's J1.8
     part(s, "J1", "ph8t", {"1": "LEAD_INT", "2": "LEAD_SCL", "3": "LEAD_SDA", "4": "GND", "5": "UP_DN",
-                           "6": "UP_DP", "7": "GND", "8": None}, "LEAD",
-         pcb=P(*LEAD, J1_ROT, "bottom"), sch=at(16, 30, mirror="y", fields=(-2, -6)))
+                           "6": "UP_DP", "7": "GND", "8": "+5V_L"}, "LEAD",
+         pcb={**P(*LEAD, J1_ROT, "bottom"), "solid": ["8"]}, sch=at(16, 30, mirror="y", fields=(-2, -6)))
+    s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V_L"}, in_bom=False, on_board=False, sch=at(28, 16))
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(34, 16))
+    # the lead's bulk, the v2's C1 (22 µF 1206), by pin 8
+    C(s, "C1", "22u", "+5V_L", "GND", size="1206", pcb=P(LEAD[0] - 3.4, LEAD[1] + 12.5, 90), sch=at(64, 30))
     part(s, "U4", "esd4", {"D1+": "LEAD_SDA", "D1-": "LEAD_SCL", "D2+": "LEAD_INT", "D2-": None, "GND": "GND"},
          pcb=P(LEAD[0] + 2.75, LEAD[1] - 0.6, 90), sch=at(48, 30, fields=(-3, -6)))
 
     s.frame("3.3 V for the hub, the expanders, the INA226s and the co-processor (AP2114H, SOT-223 on copper)",
             6, 56, 70, 86)
-    s.tag("+5V_A", (24, 66), "up")
+    s.tag("+5V_L", (24, 66), "up")
     s.wire((24, 66), (24, 69), "U3.VI")
-    part(s, "U3", "ldo_1a", {"VI": "+5V_A", "VO": "+3V3", "GND": "GND"}, pcb=P(*LDO, 0),
+    part(s, "U3", "ldo_1a", {"VI": "+5V_L", "VO": "+3V3", "GND": "GND"}, pcb=P(*LDO, 0),
          sch=at(34, 69, fields=(-3, -4)))
-    C(s, "C2", "22u", "+5V_A", "GND", size="0805", pcb=P(LDO[0] + 5.6, LDO[1] + 1.8, 90), sch=at(20, 72))
+    C(s, "C2", "22u", "+5V_L", "GND", size="0805", pcb=P(LDO[0] + 5.6, LDO[1] + 1.8, 90), sch=at(20, 72))
     s.wire("C2.1", (20, 69), (24, 69))
     C(s, "C3", "22u", "+3V3", "GND", size="0805", pcb=P(LDO[0] + 5.6, LDO[1] - 1.8, 90), sch=at(44, 72))
     s.wire("U3.VO", (44, 69), "C3.1")
@@ -534,9 +548,9 @@ def hub_sheet(b: Board):
              sch=at(186, 118 + 12 * i))
         R(s, r, val, "+3V3", line, size="0402", pcb=P(LEAD[0] + 2.75, LEAD[1] + 13.1 + 1.0 * i, 0),
           sch=at(212, 116 + 12 * i))
-    testpoints(s, ["TP7", "TP8", "TP20", "TP21", "TP22", "TP23", "TP24", "TP25", "TP26", "TP27", "TP28"],
+    testpoints(s, ["TP7", "TP8", "TP44", "TP20", "TP21", "TP22", "TP23", "TP24", "TP25", "TP26", "TP27", "TP28"],
                "Test points (rear face, bare pads, not in the BOM): +3V3, the hub's reset and 1.8 V, the lead's "
-               "I²C and INT, GND", 6, 136, per_row=11)
+               "I²C and INT, GND", 6, 136, per_row=12)
     s.notes_at = (6, 108, 160)
     s.notes = [
         "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).",
@@ -548,7 +562,8 @@ def hub_sheet(b: Board):
         "  port off until the node writes; the spare pins set as outputs, low, by the firmware.",
         "INT (J1.1 → the node's IO4): both expanders' INT and the six INA226 ALERTs, open drain, wired-OR, through Q3.",
         "I²C: TCA9535 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C, TCA9534A 0x38; the node's INA226 0x40.",
-        "J1 pin 8 (the node's switched +5V) is open: the ports and the logic take their 5 V from VIN (sheet Power).",
+        "J1 pin 8 (the node's switched +5V, ≤ 1.34 A) feeds the logic (+5V_L: U3, +5V_MX); the ports take theirs",
+        "  from VIN (sheet Power).  With +5V_L off, the expanders' pins float and the EN pull-downs keep the ports off.",
         "J1 (through-hole) stands on the rear face: soldered by hand (the PCBA places the front face only).",
     ]
 
@@ -583,9 +598,9 @@ def matrix_sheet(b: Board):
 
     s.frame("+5V_MX through a ferrite (the crosspoints, the inverter, the LSF0108s' bias); −5 V for the "
             "crosspoints' VEE (TPS60400 inverter)", 114, 10, 228, 52)
-    part(s, "FB1", "fb600", {"1": "+5V_A", "2": "+5V_MX"}, pcb=P(NINV[0] - 2.9, NINV[1] + 3.0, 0), sch=at(124, 18))
+    part(s, "FB1", "fb600", {"1": "+5V_L", "2": "+5V_MX"}, pcb=P(NINV[0] - 2.9, NINV[1] + 3.0, 0), sch=at(124, 18))
     s.wire("FB1.1", ("FB1.1", -3, 0))
-    s.tag("+5V_A", ("FB1.1", -3, 0), "left")
+    s.tag("+5V_L", ("FB1.1", -3, 0), "left")
     s.wire("FB1.2", ("FB1.2", 3, 0))
     s.tag("+5V_MX", ("FB1.2", 3, 0), "right")
     s.part("#FLG06", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V_MX"}, in_bom=False, on_board=False,
@@ -763,16 +778,18 @@ def board() -> Board:
     b.root_paper, b.root_buses = "A2", True
     b.root_notes = [
         "DATA ×6 v1.0 — USB2517I hub (7 ports), six USB-C each with a TPS2553-1, an INA226 and ESD, two TCA9535",
-        "  for EN/FAULT/RESET/BOOT, an AP2114H 3.3 V; two LMR51625 make the ports' 5 V from VIN (20 V, PH 2).",
+        "  for EN/FAULT/RESET/BOOT, an AP2114H 3.3 V; two LMR51625 make the ports' 5 V from VIN (20 V, PH 3);",
+        "  the logic runs on the lead's switched 5 V (J1.8), as the v2's.",
         "Pins: 48 on three CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 7, a TCA9534A for the",
         "  matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled.",
         "Headers: six 2 × 6 blocks at the top, one colour per port (red, yellow, green, blue, white, black).",
-        "Lead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 (open) — the DATA ×4 v2's lead.",
+        "Lead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V — the DATA ×4 v2's lead.",
         "I²C: TCA9535 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C, TCA9534A 0x38; the node's 0x40.",
         "Assembled as DATA-6x-logic (as drawn) or DATA-6x (BOM/CPL '-base': the matrix, the co-processor and the",
         "  ports' pin chains not fitted).",
-        "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 0.95 A at 20 V · +5V_A 5.24 V, ≤ 2.1 A (ports 1–3 at their",
-        "  0.62 A limit and the logic) · +5V_B 5.24 V, ≤ 1.9 A (ports 4–6) · PORTn_VBUS 5.1–5.24 V, 0.50–0.62 A limit ·",
+        "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 0.85 A at 20 V · +5V_A / +5V_B 5.24 V, ≤ 1.86 A each (ports",
+        "  1–3 / 4–6 at the 0.62 A limit) · +5V_L 4.75–5.24 V (the node's switched 5 V over the lead), ≤ 0.46 A ·",
+        "  PORTn_VBUS 5.1–5.24 V, 0.50–0.62 A limit ·",
         "  +3V3 3.3 V (AP2114H), ≤ 0.5 A (the hub 0.42 A at most) · +3V3_CP 3.3 V (FB2), ≤ 60 mA · +1V1 1.1 V (the",
         "  RP2354B's regulator), ≤ 0.1 A · +5V_MX 5.2 V (FB1), ≤ 10 mA · −5V −4.9 to −5.2 V (TPS60400), ≤ 1 mA ·",
         "  HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own regulators).",
@@ -814,7 +831,7 @@ def board() -> Board:
         "fanout_nets": {"GND": ("In1.Cu", 0.5, 0.3, 0.25), "+5V_A": (pwr, 0.6, 0.3, 0.4), "+5V_B": (pwr, 0.6, 0.3, 0.4),
                         "+3V3": (pwr, 0.5, 0.3, 0.25)},
         "plane_nets": {"+5V_A": pwr, "+5V_B": pwr, "+3V3": pwr},
-        "power_nets": {"GND": 1, "VIN": 2, "+5V_A": 2, "+5V_B": 2, "+5V_MX": 2, "-5V": 2, "+3V3": 2, "+3V3_CP": 2,
+        "power_nets": {"GND": 1, "VIN": 2, "+5V_A": 2, "+5V_B": 2, "+5V_L": 2, "+5V_MX": 2, "-5V": 2, "+3V3": 2, "+3V3_CP": 2,
                        "+1V1": 2, "PORT?_VBUS": 2, "PORT?_5V_SW": 2},
         "stitch": 4.0,
         "edge_fence": {"pitch": 5.0, "inset": 0.9},
@@ -862,7 +879,7 @@ NETCLASSES = [
     {"name": "Power", "clearance": 0.15, "track_width": 0.6, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
-     "_patterns": ["+5V_A", "+5V_B", "VIN", "*BUCK?_SW"]},
+     "_patterns": ["+5V_A", "+5V_B", "+5V_L", "VIN", "*BUCK?_SW"]},
     {"name": "Port", "clearance": 0.1, "track_width": 0.3, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,

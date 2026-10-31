@@ -13016,7 +13016,7 @@
 			)
 		)
 	)
-	(global_label "+5V_A"
+	(global_label "+5V_L"
 		(shape bidirectional)
 		(at 307.34 43.18 180)
 		(fields_autoplaced yes)
