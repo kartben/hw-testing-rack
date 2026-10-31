@@ -144,6 +144,10 @@ assert(abs(DATA_PORT_X[0] - PORT_XS[3]) < 0.01, "the single DATA board's USB-C s
 X4_HOLES = [for (i = [0 : 2]) let (h = DATA_X4_HOLES[i]) [DATA_X4_X0 + h[0], DATA_PCB_Y0 + DATA_X4_SIZE[1] - h[1]]];
 X4_BOSS_D = INSERT_M3[0] + 4;                     // the DATA ×4 bosses take M3 inserts (the cradle's M3 × 8): 2 mm of wall
 // the single board's bosses and ledges: lib/carrier.scad › ONE_HOLES, ONE_LEDGES
+// A DATA ×4 v2's plugs reach the ledges' front strip: the overmold (12.35 × 6.5 at most, on PORT_Z) passes the
+// port wall's U and stops at the v2's mouths, 1 mm behind the wall, its underside (7.75) 0.02 into the ledges'
+// top (SolidCraft, 2026-10-31).  That strip drops 0.3 for 1.2 mm; the single board keeps 0.8 mm of ledge.
+LEDGE_STEP = [1.2, 0.3];                          // depth (y), drop
 function pin_spots() = [for (k = [NODE_RESET, NODE_BOOT]) node_xy(k) - [DRAWER_X0, 0]];   // the node's buttons, drawer xy
 
 module port_wall() {
@@ -188,10 +192,13 @@ module drawer(rear = true, foot = true) {
             }
             if (rear) {
                 // the boards' bosses, and two ledges under the single board's front edge (its underside is bare
-                // but for its USB4105's pegs)
+                // but for its USB4105's pegs), their front strip lowered under a DATA ×4 v2 plug's overmold
                 for (h = X4_HOLES) translate([h[0], h[1], 0]) cylinder(d = X4_BOSS_D, h = DATA_PCB_Z);
                 for (h = ONE_HOLES) translate([h[0], h[1], 0]) cylinder(d = 5, h = DATA_PCB_Z);
-                for (s = ONE_LEDGES) translate([s[0], DATA_PCB_Y0 - EPS, 0]) cube([s[1] - s[0], 2, DATA_PCB_Z]);
+                for (s = ONE_LEDGES) translate([s[0], DATA_PCB_Y0 - EPS, 0]) difference() {
+                    cube([s[1] - s[0], 2, DATA_PCB_Z]);
+                    translate([-EPS, -EPS, DATA_PCB_Z - LEDGE_STEP[1]]) cube([s[1] - s[0] + 2 * EPS, LEDGE_STEP[0] + EPS, 1]);
+                }
             }
         }
         // rear-open groove for the chain foot, and its lock screw
