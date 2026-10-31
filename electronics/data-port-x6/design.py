@@ -273,8 +273,9 @@ TPS = {
     "TP17": ("MX_STB2", "STB2", 1.0, 11.0, 33.4), "TP40": ("MX_STB3", "STB3", 1.0, 14.8, 33.4),
     "TP18": ("MX_RST", "MX RST", 1.0, 15.2, 29.8), "TP19": ("GND", "GND", 1.5, 23.6, 29.6),
     # the supplies: VIN, +5V_A, +5V_B, +3V3, with GND
-    "TP7": ("+3V3", "+3V3", 1.5, 13.5, 47.0), "TP8": ("GND", "GND", 1.5, 10.5, 47.0),
-    "TP9": ("+5V_A", "+5V_A", 1.5, 7.5, 47.0), "TP41": ("+5V_B", "+5V_B", 1.5, 112.5, 69.5),
+    # (each rear pad clear of the B.Cu keep-outs along the power plane's splits: none can reach a pad in them)
+    "TP7": ("+3V3", "+3V3", 1.5, 104.0, 11.0), "TP8": ("GND", "GND", 1.5, 16.0, 44.6),
+    "TP9": ("+5V_A", "+5V_A", 1.5, 8.0, 44.6), "TP41": ("+5V_B", "+5V_B", 1.5, 112.5, 69.5),
     "TP42": ("VIN", "VIN", 1.5, 100.0, 62.5), "TP43": ("GND", "GND", 1.5, 103.0, 62.5),
     "TP44": ("+5V_L", "+5V_L", 1.5, 88.6, 34.0),
     # the hub's reset and core rail, with a GND
@@ -284,12 +285,12 @@ TPS = {
     "TP23": ("INT", "INT", 1.0, LEAD[0] + 5.8, LEAD[1] - 0.5), "TP24": ("SDA", "SDA", 1.0, LEAD[0] + 5.8, LEAD[1] + 2.0),
     "TP25": ("SCL", "SCL", 1.0, LEAD[0] + 5.8, LEAD[1] + 4.5), "TP26": ("GND", "GND", 1.5, LEAD[0] + 5.8, LEAD[1] + 7.3),
     # GND by each expander
-    "TP27": ("GND", "GND", 1.5, 16.0, 46.6), "TP28": ("GND", "GND", 1.5, 110.0, 24.6),
+    "TP27": ("GND", "GND", 1.5, 19.6, 44.6), "TP28": ("GND", "GND", 1.5, 110.0, 24.6),
     # the crosspoints' eight buses (the co-processor's GPIO2–9), between the first two chips, with a GND
     **{f"TP{29 + i}": (f"BUS_{b}", b, 1.0, 44.0 + 2.2 * (i % 2), 32.5 + 2.5 * (i // 2)) for i, b in enumerate(BUSES)},
     "TP37": ("GND", "GND", 1.5, 45.1, 42.9),
     # each port's FAULT_N (port(): TP{k + 1}) by its switch
-    **{f"TP{100 * n + 1}": (f"PORT{n}_FLT_N", f"FLT{n}", 1.0, USBS[n - 1] + 4.0, CL_Y + 8.0) for n in range(1, 7)},
+    **{f"TP{100 * n + 1}": (f"PORT{n}_FLT_N", f"FLT{n}", 1.0, USBS[n - 1] + 4.0, CL_Y + 6.5) for n in range(1, 7)},
 }
 
 
@@ -333,11 +334,12 @@ def rarray(s, ref, value, pairs, pcb, sch=None):
 
 def exp_res(n: int, i: int):
     """Where port n's RESET (i 0) and BOOT (i 1) pull-ups stand, by its TCA9535 (their 1k stay under the header):
-    U2's (ports 1–3) in a column east of it, U6's (ports 4–6) likewise"""
+    U2's (ports 1–3) in a column east of it, past its spares' array, their _IO pads west; U6's (ports 4–6) in a
+    column west of it, their _IO pads east (each expander's spares' array on its east face, by those pins)"""
     j = (n - 1) % 3
     if n <= 3:
-        return (14.4, 48.6 + 1.15 * (2 * j + i), 0)
-    return (112.55, 13.6 + 1.0 * (2 * j + i), 0)
+        return (16.6, 48.6 + 1.15 * (2 * j + i), 180)
+    return (103.8, 13.6 + 1.0 * (2 * j + i), 0)
 
 
 def supply(n: int) -> str:
@@ -684,10 +686,12 @@ def hub_sheet(b: Board):
             exp[pin] = f"EXP{i + 1}_{pin}"
         part(s, ref, "tca9535", exp, pcb=P(x, y, 0), sch=at(202, sy, fields=(-4, -12)))
         C(s, cref, "100n", "+3V3", "GND", size="0402", pcb=P(x, y - 3.6, 90), sch=at(184, sy - 10))
-        # the spares' array: U2's under it, U6's west of it
-        rarray(s, f"RN{10 + i}", "10k", [(f"EXP{i + 1}_{pin}", "GND") for pin in spare] + [(None, None)] * (4 - len(spare)),
-               P(x, y + 3.75, 90) if i == 0 else P(x - 4.0, y, 0), sch=at(224, sy + 16))
-        rail(s, "GND", [f"RN{10 + i}.{9 - q}" for q in range(1, len(spare) + 1)], 2, "down")
+        # the spares' array east of it, each resistor on its pin's row (pins 17 … 14 down the east face, the
+        # array's 1 … 4); U6's one row lower, its pin 1 by pin 18 (GND) unused, the mark (pin 14) passing under it
+        pairs = [(f"EXP{i + 1}_{pin}", "GND") for pin in reversed(spare)]
+        pairs = [(None, None)] * (4 - len(pairs)) + pairs
+        rarray(s, f"RN{10 + i}", "10k", pairs, P(x + 3.7, y - 0.5 * i, 0), sch=at(224, sy + 16))
+        rail(s, "GND", [f"RN{10 + i}.{9 - q}" for q in range(1, 5) if pairs[q - 1][0]], 2, "down")
 
     s.frame("I²C isolation: open with the board's 3.3 V off (the node's pull-ups can't feed it)", 172, 106, 232, 148)
     for i, (q, r, line, val) in enumerate((("Q1", "R6", "SDA", "4.7k"), ("Q2", "R7", "SCL", "4.7k"),
