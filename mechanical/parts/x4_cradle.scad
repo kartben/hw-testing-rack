@@ -7,6 +7,8 @@
 //   -D 'PART="strip"'    the strip over the receptacles (PETG), its top face down: no supports
 //   -D 'PART="strip_in_place"'   the same, where it goes, for the viewer and the checks
 //   -D 'PART="board"'    the board's stand-in (outline, notches), for the viewer and the checks
+//   -D 'BOARD="x6"'      any of these for the DATA ×6 (config/rack.yaml › pcb.data_port_x6) in its own drawer
+//                        (drawer.scad, DATA="x6"): 10 mm taller, six ports at 15 mm
 //
 // - The board stands on the drawer floor, its front face 7.4 mm behind the port wall's back face (the
 //   receptacles' mouths 1 mm behind it), and slides down from above into two end slots (0.15 mm a side).
@@ -22,23 +24,31 @@
 //   board, part of the cradle, holds each receptacle's body in a U (open on top: the board still drops in), and
 //   a strip over the bodies, 5 × PT 2.3 × 8 into the comb between the ports, closes the U's.  A cable pulled
 //   any way then bears on the cradle, not on the receptacles' joints.  Out: the strip first, then the board.
+// - The DATA ×6 takes the same cradle, its uprights 10 mm taller, a pocket in the comb for each of its six
+//   receptacles and the strip screwed between each two (its 15 mm pitch leaves no room outside the end ports).
+//   Its T-heads are 5 mm wide: an ESD comes down to z 9.25 over each notch.  The port numbers, with no room
+//   beside the drawer's U's, are debossed in the strip's front face.
 // Print: as installed (bottom down), PETG, no supports; the base bridges ≤ 16 mm between its feet.
 include <../lib/carrier.scad>
 
 PART = "cradle";
+BOARD = "x4";
+X6 = BOARD == "x6";
 
-V2 = [100, 70, 1.6];                      // the board: length (x), height (z), thickness (y): the v2 session, 2026-10-20
-V2_X0 = 4;                                // its left edge
-V2_Y = DATA_PCB_Y0 + 7.4;                 // its front face (the receptacles' mouths 1 mm behind the port wall)
+V2 = X6 ? [DATA_X6_SIZE[0], DATA_X6_SIZE[1], DATA_X6_T]
+        : [100, 70, 1.6];                 // the board: length (x), height (z), thickness (y): the v2 session, 2026-10-20
+V2_X0 = X6 ? DATA_X6_X0 : 4;              // its left edge
+V2_Y = DATA_PCB_Y0 + (X6 ? DATA_X6_FACE_Y : 7.4);   // its front face (the receptacles' mouths 1 mm behind the port wall)
 V2_Z0 = DRAWER_BOTTOM;                    // its bottom edge, on the floor
-PORT_XS = [for (u = DATA_X4_USB) DATA_X4_X0 + u];   // the four U's (drawer.scad)
+PORT_XS = X6 ? [for (u = DATA_X6_USB) DATA_X6_X0 + u]
+             : [for (u = DATA_X4_USB) DATA_X4_X0 + u];   // the drawer's U's (drawer.scad)
 GAP = 0.15;                               // per side in the slots and at the base's edge
 END = 5.5;                                // the board's ends inside the slots (no parts there, either face)
 UW = 2.4;                                 // the uprights' front and rear walls
 OW = 1.2;                                 // their outer wall
-NOTCH = [3.4, 6.5];                       // the board's bottom-edge notches: width, height
-NOTCH_X = [35, 71];                       // their centres, drawer x: between ports 1–2 and 3–4
-TEE = [7, 2.0];                           // a T-head's bar in front of the board: width (x), thickness (y)
+NOTCH = X6 ? DATA_X6_NOTCH : [3.4, 6.5];  // the board's bottom-edge notches: width, height
+NOTCH_X = X6 ? DATA_X6_NOTCH_X : [35, 71];   // their centres, drawer x: between ports 1–2 and 3–4 (the ×6: 2–3, 4–5)
+TEE = [X6 ? 5 : 7, 2.0];                  // a T-head's bar in front of the board: width (x), thickness (y)
 BASE = [DATA_PCB_Z, 4.0];                 // the base: its underside (the bosses' top), thickness
 LEG_RELIEF = [11, 1.2];                   // round each receptacle's shell legs on the rear face: width, depth
 LATCH = [40, 0.8];                        // the latch finger: free length, hook over the board's top edge
@@ -66,8 +76,10 @@ TOP = V2_Z0 + V2[1];                      // the board's top edge
 X_L = V2_X0 - 0.5 - OW;                   // the left upright's outer face
 X_MID = V2_X0 + V2[0] / 2;
 BASE_Y1 = max([for (b = BOSSES) b[1]]) + 6;     // the base's rear edge
-// the strip's screws: either side of the end ports and between each two
-GUARD_SCREWS = concat([PORT_XS[0] - 9], [for (i = [0 : 2]) (PORT_XS[i] + PORT_XS[i + 1]) / 2], [PORT_XS[3] + 9]);
+// the strip's screws: between each two ports, and either side of the end ports where the strip reaches past them
+GUARD_SCREWS = concat(X6 ? [] : [PORT_XS[0] - 9],
+                      [for (i = [0 : len(PORT_XS) - 2]) (PORT_XS[i] + PORT_XS[i + 1]) / 2],
+                      X6 ? [] : [PORT_XS[len(PORT_XS) - 1] + 9]);
 assert(X_L >= DRAWER_WALL + 0.3, "the left upright hits the drawer's wall");
 
 // the left upright, a U-channel round the board's left end: front wall, outer wall, rear wall.  The rear
@@ -111,16 +123,18 @@ module guard_pocket(x, top) {
 }
 
 // the comb: on the floor from the uprights' outer faces, fused with their front walls and the T-heads; clear of
-// the single DATA board's ledges and bosses (the drawer's rear bay takes either board)
+// the single DATA board's ledges and bosses (the drawer's rear bay takes either board; the ×6's drawer has none)
 module comb() difference() {
     union() {
         translate([X_L, COMB_Y[0], V2_Z0]) cube([2 * X_MID - 2 * X_L, COMB_Y[1] - COMB_Y[0], COMB_TOP - V2_Z0]);
         translate([X_L, COMB_Y[1] - EPS, V2_Z0]) cube([2 * X_MID - 2 * X_L, Y_F - COMB_Y[1] + EPS, COMB_LOW - V2_Z0]);
     }
     for (x = PORT_XS) guard_pocket(x, COMB_TOP);
-    for (s = ONE_LEDGES) translate([s[0] - GAP, COMB_Y[0] - 1, V2_Z0 - EPS])
-        cube([s[1] - s[0] + 2 * GAP, DATA_PCB_Y0 + 2 + GAP - COMB_Y[0] + 1, DATA_PCB_Z + GAP - V2_Z0 + EPS]);
-    for (h = ONE_HOLES) translate([h[0], h[1], V2_Z0 - EPS]) cylinder(d = 5 + 2 * GAP, h = DATA_PCB_Z + GAP - V2_Z0 + EPS);
+    if (!X6) {
+        for (s = ONE_LEDGES) translate([s[0] - GAP, COMB_Y[0] - 1, V2_Z0 - EPS])
+            cube([s[1] - s[0] + 2 * GAP, DATA_PCB_Y0 + 2 + GAP - COMB_Y[0] + 1, DATA_PCB_Z + GAP - V2_Z0 + EPS]);
+        for (h = ONE_HOLES) translate([h[0], h[1], V2_Z0 - EPS]) cylinder(d = 5 + 2 * GAP, h = DATA_PCB_Z + GAP - V2_Z0 + EPS);
+    }
     for (x = GUARD_SCREWS) translate([x, GUARD_SY, COMB_TOP - 5.5]) cylinder(d = PT_PILOT, h = 5.5 + EPS, $fn = 24);
 }
 
@@ -136,6 +150,9 @@ module strip() difference() {
         translate([x, GUARD_SY, COMB_TOP - EPS]) cylinder(d = PT_CLEAR, h = STRIP_TOP - COMB_TOP + 2 * EPS, $fn = 24);
         translate([x - SEAT[0] / 2, COMB_Y[0] - 1, STRIP_TOP - SEAT[1]]) cube([SEAT[0], COMB_Y[1] - COMB_Y[0] + 2, SEAT[1] + 1]);
     }
+    // the ×6's port numbers in its front face, over each U (above the port wall's top)
+    if (X6) for (i = [0 : len(PORT_XS) - 1]) translate([PORT_XS[i], COMB_Y[0], (COMB_TOP + STRIP_TOP) / 2 + 0.3])
+        rotate([90, 0, 0]) deboss(str(i + 1), cap = 3);
     // the visual language: a 0.8 round on its top's long edges
     translate([V2_X0 + END, COMB_Y[0], STRIP_TOP]) mirror([0, 0, 1]) edge_round(V2[0] - 2 * END);
     translate([V2_X0 + END, COMB_Y[1], STRIP_TOP]) mirror([0, 1, 0]) mirror([0, 0, 1]) edge_round(V2[0] - 2 * END);

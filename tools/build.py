@@ -107,6 +107,8 @@ def part_jobs(rack) -> list[tuple[str, str, dict]]:
         ("drawer_block", "parts/drawer.scad", {"PART": "block"}),
         ("x4_cradle", "parts/x4_cradle.scad", {}),                               # the standing DATA ×4 v2's
         ("x4_strip", "parts/x4_cradle.scad", {"PART": "strip"}),                 # and the strip over its receptacles
+        ("x6_cradle", "parts/x4_cradle.scad", {"BOARD": "x6"}),                  # the DATA ×6's (prototype)
+        ("x6_strip", "parts/x4_cradle.scad", {"PART": "strip", "BOARD": "x6"}),
         ("cover_lid1", "parts/covers.scad", {"PART": "lid1"}),                   # optional: a one-board rear bay's lid
         ("cover_box4", "parts/covers.scad", {"PART": "box4"}),                   # optional: a DATA ×4 rear bay's box
         # optional, outside the rack: the standalone bays (docs/standalone.md) and the plate's desk frame
