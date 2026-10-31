@@ -76,10 +76,19 @@ TOP = V2_Z0 + V2[1];                      // the board's top edge
 X_L = V2_X0 - 0.5 - OW;                   // the left upright's outer face
 X_MID = V2_X0 + V2[0] / 2;
 BASE_Y1 = max([for (b = BOSSES) b[1]]) + 6;     // the base's rear edge
-// the strip's screws: between each two ports, and either side of the end ports where the strip reaches past them
-GUARD_SCREWS = concat(X6 ? [] : [PORT_XS[0] - 9],
+// the strip's screws: between each two ports, and 9 mm outside an end port where the strip reaches past it (both
+// on the ×4 v2; on the ×6 only past port 6, its 15 mm pitch leaves no room left of port 1)
+// the comb's and the strip's right end: the ×6's stop 6.5 mm past its port 6, clear of its 5 V converter (from x 99,
+// z 4.3, 3.1 mm off the board's front face); the right upright holds on through the base
+COMB_X1 = X6 ? PORT_XS[len(PORT_XS) - 1] + 6.5 : 2 * X_MID - X_L;
+STRIP_X = [V2_X0 + END + 0.1, X6 ? COMB_X1 - 0.1 : V2_X0 + V2[0] - END - 0.1];
+function on_strip(x) = x - SEAT[0] / 2 - 1 >= STRIP_X[0] && x + SEAT[0] / 2 + 1 <= STRIP_X[1];
+GUARD_SCREWS = concat([for (x = [PORT_XS[0] - 9]) if (on_strip(x)) x],
                       [for (i = [0 : len(PORT_XS) - 2]) (PORT_XS[i] + PORT_XS[i + 1]) / 2],
-                      X6 ? [] : [PORT_XS[len(PORT_XS) - 1] + 9]);
+                      [for (x = [PORT_XS[len(PORT_XS) - 1] + 9]) if (on_strip(x)) x]);
+// the drawer's boss for its chain foot's lock screw (drawer.scad: Ø9, DRAWER_BOTTOM + 4 tall): a 120 mm board's
+// right upright stands over it, 0.5 mm clear round it
+FOOT_BOSS = [9 + 1, DRAWER_BOTTOM + 4 + 0.5];
 assert(X_L >= DRAWER_WALL + 0.3, "the left upright hits the drawer's wall");
 
 // the left upright, a U-channel round the board's left end: front wall, outer wall, rear wall.  The rear
@@ -126,8 +135,8 @@ module guard_pocket(x, top) {
 // the single DATA board's ledges and bosses (the drawer's rear bay takes either board; the ×6's drawer has none)
 module comb() difference() {
     union() {
-        translate([X_L, COMB_Y[0], V2_Z0]) cube([2 * X_MID - 2 * X_L, COMB_Y[1] - COMB_Y[0], COMB_TOP - V2_Z0]);
-        translate([X_L, COMB_Y[1] - EPS, V2_Z0]) cube([2 * X_MID - 2 * X_L, Y_F - COMB_Y[1] + EPS, COMB_LOW - V2_Z0]);
+        translate([X_L, COMB_Y[0], V2_Z0]) cube([COMB_X1 - X_L, COMB_Y[1] - COMB_Y[0], COMB_TOP - V2_Z0]);
+        translate([X_L, COMB_Y[1] - EPS, V2_Z0]) cube([COMB_X1 - X_L, Y_F - COMB_Y[1] + EPS, COMB_LOW - V2_Z0]);
     }
     for (x = PORT_XS) guard_pocket(x, COMB_TOP);
     if (!X6) {
@@ -142,7 +151,7 @@ module comb() difference() {
 // through it at each screw, its head in a slot across the strip
 module strip() difference() {
     union() {
-        translate([V2_X0 + END + 0.1, COMB_Y[0], COMB_TOP]) cube([V2[0] - 2 * END - 0.2, COMB_Y[1] - COMB_Y[0], STRIP_TOP - COMB_TOP]);
+        translate([STRIP_X[0], COMB_Y[0], COMB_TOP]) cube([STRIP_X[1] - STRIP_X[0], COMB_Y[1] - COMB_Y[0], STRIP_TOP - COMB_TOP]);
         for (x = PORT_XS) let (w = USBC_BODY[0] + 2 * GUARD_GAP - 0.3, z0 = PORT_Z + USBC_BODY[1] / 2 + GUARD_GAP)
             translate([x - w / 2, COMB_Y[0], z0]) cube([w, COMB_Y[1] - COMB_Y[0], COMB_TOP - z0 + EPS]);
     }
@@ -154,8 +163,8 @@ module strip() difference() {
     if (X6) for (i = [0 : len(PORT_XS) - 1]) translate([PORT_XS[i], COMB_Y[0], (COMB_TOP + STRIP_TOP) / 2 + 0.3])
         rotate([90, 0, 0]) deboss(str(i + 1), cap = 3);
     // the visual language: a 0.8 round on its top's long edges
-    translate([V2_X0 + END, COMB_Y[0], STRIP_TOP]) mirror([0, 0, 1]) edge_round(V2[0] - 2 * END);
-    translate([V2_X0 + END, COMB_Y[1], STRIP_TOP]) mirror([0, 1, 0]) mirror([0, 0, 1]) edge_round(V2[0] - 2 * END);
+    translate([STRIP_X[0] - 0.1, COMB_Y[0], STRIP_TOP]) mirror([0, 0, 1]) edge_round(STRIP_X[1] - STRIP_X[0] + 0.2);
+    translate([STRIP_X[0] - 0.1, COMB_Y[1], STRIP_TOP]) mirror([0, 1, 0]) mirror([0, 0, 1]) edge_round(STRIP_X[1] - STRIP_X[0] + 0.2);
 }
 
 module cradle() {
@@ -194,13 +203,15 @@ module cradle() {
         }
         // reliefs round each receptacle's shell legs, through the rear face
         for (x = PORT_XS) translate([x - LEG_RELIEF[0] / 2, Y_R - EPS, BASE[0] - EPS]) cube([LEG_RELIEF[0], LEG_RELIEF[1], BASE[1] + 2 * EPS]);
+        translate([FOOT_HOLE[0], FOOT_HOLE[1], -EPS]) cylinder(d = FOOT_BOSS[0], h = FOOT_BOSS[1] + EPS, $fn = 48);
     }
 }
 
-// the board's stand-in: its outline and the two bottom-edge notches
+// the board's stand-in: its outline and the two bottom-edge notches (the ×6: and its bottom-right corner's)
 module board() translate([V2_X0, V2_Y, V2_Z0]) difference() {
     cube([V2[0], V2[2], V2[1]]);
     for (x = NOTCH_X) translate([x - V2_X0 - NOTCH[0] / 2, -EPS, -EPS]) cube([NOTCH[0], V2[2] + 2 * EPS, NOTCH[1] + EPS]);
+    if (X6) translate([V2[0] - DATA_X6_CORNER[0], -EPS, -EPS]) cube([DATA_X6_CORNER[0] + EPS, V2[2] + 2 * EPS, DATA_X6_CORNER[1] + EPS]);
 }
 
 if (PART == "board") board();

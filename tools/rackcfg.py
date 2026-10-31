@@ -656,6 +656,7 @@ def scad_config(rack: Rack) -> str:
         "DATA_X6_USB": r["pcb"]["data_port_x6"]["usb"],
         "DATA_X6_NOTCH_X": r["pcb"]["data_port_x6"]["notches"]["x"],
         "DATA_X6_NOTCH": r["pcb"]["data_port_x6"]["notches"]["size"],
+        "DATA_X6_CORNER": r["pcb"]["data_port_x6"]["corner_notch"],
         "POD_PCB_SIZE": r["pcb"]["camera_pod"]["size"],
         "POD_PCB_T": r["pcb"]["camera_pod"]["thickness"],
         "POD_PCB_HOLES": r["pcb"]["camera_pod"]["holes"],
