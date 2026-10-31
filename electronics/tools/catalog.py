@@ -82,6 +82,9 @@ CAT = {
                   description="TVS 33 V stand-off, 1500 W (unidirectional)"),
     "cap100u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_8x10", "RVT1H101M0810", "Honor Elec", "C3352", 0.069,
                      description="100 µF 50 V aluminium electrolytic"),
+    # DATA ×6: the 20 V input's bulk, against the overshoot of a hot plug (6.3 × 5.4 mm, the lowest at JLC)
+    "cap33u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_6.3x5.4", "SVC1H330M0605", "ROQANG", "C55509533",
+                    0.044, description="33 µF 50 V aluminium electrolytic, 6.3 × 5.4 mm"),
     "cap220u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_10x10", "RVT1H221M1010", "Honor Elec", "C3358", 0.14,
                      description="220 µF 50 V aluminium electrolytic"),
     "mux": Cat("Interface_USB:FSUSB42MUX", "Package_SO:MSOP-10_3x3mm_P0.5mm", "FSUSB42MUX", "onsemi", "C11355", 0.31,
@@ -287,6 +290,19 @@ CAT = {
     "hdr2x6t": Cat("Connector_Generic:Conn_02x06_Odd_Even", "Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Vertical",
                    "HX PZ2.54-2x6P ZZ", "hanxia", "C32713279", 0.093, hand_solder=True,
                    description="pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins"),
+    # the DATA ×6's six headers, one colour per port (MINTRON's one series: the same 2.5 mm plastic and 6 mm pins;
+    # LCSC stock 90–100 a colour on 2026-10-31, the black 750), soldered by hand
+    **{f"hdr2x6t_{k}": Cat("Connector_Generic:Conn_02x06_Odd_Even",
+                           "Connector_PinHeader_2.54mm:PinHeader_2x06_P2.54mm_Vertical", mpn, "MINTRON", lcsc, 0.079,
+                           hand_solder=True,
+                           description=f"pin header 2 × 6, 2.54 mm, {colour}, through-hole, soldered by hand: Dupont "
+                                       "jumpers to a DUT's pins")
+       for k, colour, mpn, lcsc in (("R", "red", "MTP125-1206S1-R", "C53959161"),
+                                    ("Y", "yellow", "MTP125-1206S1-Y", "C53959172"),
+                                    ("G", "green", "MTP125-1206S1-G", "C53959194"),
+                                    ("B", "blue", "MTP125-1206S1-B", "C53959205"),
+                                    ("W", "white", "MTP125-1206S1-W", "C53959183"),
+                                    ("K", "black", "MTP125-1206S1", "C358695"))},
     "hdr2x6": Cat("Connector_Generic:Conn_02x06_Odd_Even", "bench:PinHeader_2x06_P2.54mm_Vertical_SMD_Tight",
                   "HX PZ2.54-2x6P TP", "hanxia", "C32713286", 0.10, hand_solder=True,
                   description="pin header 2 × 6, 2.54 mm, SMD, soldered by hand: Dupont jumpers to a DUT's pins"),
@@ -314,6 +330,13 @@ CAT = {
                 model=("${KICAD10_3DMODEL_DIR}/Package_SON.3dshapes/USON-10_2.5x1.0mm_P0.5mm.step", (0, 0, 0), (0, 0, 0))),
     "rarray": Cat("Device:R_Pack04", "Resistor_SMD:R_Array_Convex_4x0402", "4D02WGJ", "UNI-ROYAL(Uniroyal Elec)", "",
                   0.0055, description="4 × resistor array 0402, 5 %"),
+    # DATA ×6 (electronics/data-port-x6), checked 2026-10-31: TI's 16-bit expander for four ports' EN, FAULT_N,
+    # RESET and BOOT (the TCA6408A has two addresses only); push-pull outputs, open-drain INT, 0x20–0x27.  Not UMW's
+    # TCA9535PWR (C22396388): its outputs are open drain
+    "tca9535": Cat("Interface_Expansion:TCA9535RTWR", "Package_DFN_QFN:WQFN-24-1EP_4x4mm_P0.5mm_EP2.45x2.45mm",
+                   "TCA9535RTWR", "Texas Instruments", "C129354", 1.28,
+                   datasheet="https://www.ti.com/lit/ds/symlink/tca9535.pdf",
+                   description="16-bit I2C I/O expander, push-pull outputs, open-drain INT, WQFN-24 4 × 4"),
     "tca9534": Cat("Interface_Expansion:TCA9534", "Package_SO:TSSOP-16_4.4x5mm_P0.65mm", "TCA9534APWR",
                    "Texas Instruments", "C206010", 1.36, datasheet="https://www.ti.com/lit/ds/symlink/tca9534a.pdf",
                    description="8-bit I2C I/O expander, push-pull outputs, A version (0x38–0x3F)"),

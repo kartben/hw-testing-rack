@@ -326,7 +326,29 @@ pcb:
                             # x and drawer z of its centre.  Its pins run DOWN the board, every 2 mm, from pin 1 (INT) at
                             # z 41 to pin 8 (+5V) at z 27; the housing 4.5 (x) × 17.9 (z), 6.0 off the face, its mouth
                             # towards the rear: the lead plugs in from behind and drops into the cable window
-  camera_pod:               # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
+  data_port_x6:             # DATA ×6 (electronics/data-port-x6, prototype, 2026-10-31): six ports for the porte-revues
+                            # bays, the v2's logic widened (three CH446Q, 48 pins); same frame as the v2: board x = drawer
+                            # x − x0, KiCad y = top_z − drawer z.  It stands where the v2 stands, 10 mm taller (the
+                            # cradle's uprights grow with it), its front face towards the port wall (six U's at 15 mm)
+    size: [100, 80]
+    x0: 4
+    top_z: 82.5
+    face_y: 7.4
+    thickness: 1.6
+    layers: 4
+    cradle: 5.5
+    notches: { x: [39, 69], size: [3.4, 6.5] }   # between ports 2–3 and 4–5
+    usb: [12.5, 27.5, 42.5, 57.5, 72.5, 87.5]    # board x of the six vertical USB-C, 15 mm apart, mouths to the wall
+    usb_z: 11
+    # the six 2 × 6 through-hole headers, upright (2 columns × 6 rows), grouped at the top: board x of each
+    # one's centre (7.62 mm apart, one empty pitch between two), drawer z of their centre.  Each its own colour
+    # (MINTRON MTP125-1206S1-…), port 1 → 6: red, yellow, green, blue, white, black (proposed, the user to confirm).
+    # Columns as read from the front: the left VREF 1 2 3 4 BOOT, the right GND 5 6 7 8 RESET, top to bottom
+    blocks: { x: [27.5, 35.12, 42.74, 50.36, 57.98, 65.6], z: 73.0,
+              colours: [R, Y, G, B, W, K] }
+    lead: [90, 34]          # J1, the PH 8 lead (the v2's, same pinout, same place): board x, drawer z of its centre
+    vin: [72.85, 52.5]      # J3, the PH 2 20 V input (rear face, hand-soldered): board x, drawer z of its centre
+  camera_pod:             # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6
     layers: 2
