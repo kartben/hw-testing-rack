@@ -7806,7 +7806,7 @@
 		)
 		(uuid "6cc735f4-419c-55de-8356-a517de261a45")
 	)
-	(global_label "CP_HUB_DP"
+	(global_label "PORT1_DP"
 		(shape bidirectional)
 		(at 347.98 152.4 0)
 		(fields_autoplaced yes)
@@ -7839,7 +7839,7 @@
 		)
 		(uuid "20c0dc2a-9e03-58d3-816c-33647d4161ef")
 	)
-	(global_label "CP_HUB_DN"
+	(global_label "PORT1_DN"
 		(shape bidirectional)
 		(at 347.98 154.94 0)
 		(fields_autoplaced yes)
@@ -7872,7 +7872,7 @@
 		)
 		(uuid "9e11f1f6-8577-5e0d-9581-f5fc90134b93")
 	)
-	(global_label "PORT1_DP"
+	(global_label "CP_HUB_DP"
 		(shape bidirectional)
 		(at 347.98 157.48 0)
 		(fields_autoplaced yes)
@@ -7905,7 +7905,7 @@
 		)
 		(uuid "6ded2822-bd91-5c95-8984-aa17dd6b9010")
 	)
-	(global_label "PORT1_DN"
+	(global_label "CP_HUB_DN"
 		(shape bidirectional)
 		(at 347.98 160.02 0)
 		(fields_autoplaced yes)
@@ -21157,7 +21157,7 @@
 		)
 		(uuid "c5f40a60-6f2d-5074-8b31-4ea048a48803")
 	)
-	(text_box "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).\nHub: CFG_SEL[2:0] = 110 (internal default configuration, strap options disabled: DS00001598C Table 5-2),\n  as the DATA ×4 v2's; all seven downstream ports used.\nHub ports: 1–5 = USB-C 2–6 (busid 1-1.1 … 1-1.5), 6 = the co-processor (1-1.6), 7 = USB-C 1 (1-1.7).\nExpanders: TCA9535 U2 0x20 (ports 1–3), U6 0x21 (ports 4–6, the mark on P14).  Each port: RESET, BOOT, EN,\n  FAULT_N (port 1 on P00–P03, 2 on P04–P07, 3 on P10–P13).  Inputs at power-up: the EN pull-downs keep every\n  port off until the node writes; the spare pins set as outputs, low, by the firmware.\nINT (J1.1 → the node's IO4): both expanders' INT and the six INA226 ALERTs, open drain, wired-OR, through Q3.\nI²C: TCA9535 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C, TCA9534A 0x38; the node's INA226 0x40.\nJ1 pin 8 (the node's switched +5V, ≤ 1.34 A) feeds the logic (+5V_L: U3, +5V_MX); the ports take theirs\n  from VIN (sheet Power).  With +5V_L off, the expanders' pins float and the EN pull-downs keep the ports off.\nJ1 (through-hole) stands on the rear face: soldered by hand (the PCBA places the front face only)."
+	(text_box "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).\nHub: CFG_SEL[2:0] = 110 (internal default configuration, strap options disabled: DS00001598C Table 5-2),\n  as the DATA ×4 v2's; all seven downstream ports used.\nHub ports: 1–5 = USB-C 2–6 (busid 1-1.1 … 1-1.5), 6 = USB-C 1 (1-1.6), 7 = the co-processor (1-1.7).\nExpanders: TCA9535 U2 0x20 (ports 1–3), U6 0x21 (ports 4–6, the mark on P14).  Each port: RESET, BOOT, EN,\n  FAULT_N (port 1 on P00–P03, 2 on P04–P07, 3 on P10–P13).  Inputs at power-up: the EN pull-downs keep every\n  port off until the node writes; the spare pins set as outputs, low, by the firmware.\nINT (J1.1 → the node's IO4): both expanders' INT and the six INA226 ALERTs, open drain, wired-OR, through Q3.\nI²C: TCA9535 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C, TCA9534A 0x38; the node's INA226 0x40.\nJ1 pin 8 (the node's switched +5V, ≤ 1.34 A) feeds the logic (+5V_L: U3, +5V_MX); the ports take theirs\n  from VIN (sheet Power).  With +5V_L off, the expanders' pins float and the EN pull-downs keep the ports off.\nJ1 (through-hole) stands on the rear face: soldered by hand (the PCBA places the front face only)."
 		(exclude_from_sim no)
 		(at 15.24 274.32 0)
 		(size 406.4 31.75)

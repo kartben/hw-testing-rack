@@ -630,7 +630,7 @@
 		)
 		(uuid "41a4b5b0-eefc-576d-a353-d8f6c941febf")
 	)
-	(text "processor on hub port 6"
+	(text "processor on hub port 7"
 		(exclude_from_sim no)
 		(at 576.58 87.63 0)
 		(effects
@@ -2410,7 +2410,7 @@
 		)
 		(uuid "a0ce8790-f464-5047-ba21-e2941342dab0")
 	)
-	(text_box "DATA ×6 v1.0 — USB2517I hub (7 ports), six USB-C each with a TPS2553-1, an INA226 and ESD, two TCA9535\n  for EN/FAULT/RESET/BOOT, an AP2114H 3.3 V; two LMR51625 make the ports' 5 V from VIN (20 V, PH 3);\n  the logic runs on the lead's switched 5 V (J1.8), as the v2's.\nPins: 48 on three CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 6, a TCA9534A for the\n  matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled.\nHeaders: six 2 × 6 blocks at the top, one colour per port (red, yellow, green, blue, white, black).\nLead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V — the DATA ×4 v2's lead.\nI²C: TCA9535 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C, TCA9534A 0x38; the node's 0x40.\nAssembled as DATA-6x-logic (as drawn) or DATA-6x (BOM/CPL '-base': the matrix, the co-processor and the\n  ports' pin chains not fitted).\nRails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 0.85 A at 20 V · +5V_A / +5V_B 5.24 V, ≤ 1.86 A each (ports\n  1–3 / 4–6 at the 0.62 A limit) · +5V_L 4.75–5.24 V (the node's switched 5 V over the lead), ≤ 0.46 A ·\n  PORTn_VBUS 5.1–5.24 V, 0.50–0.62 A limit ·\n  +3V3 3.3 V (AP2114H), ≤ 0.5 A (the hub 0.42 A at most) · +3V3_CP 3.3 V (FB2), ≤ 60 mA · +1V1 1.1 V (the\n  RP2354B's regulator), ≤ 0.1 A · +5V_MX 5.2 V (FB1), ≤ 10 mA · −5V −4.9 to −5.2 V (TPS60400), ≤ 1 mA ·\n  HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own regulators)."
+	(text_box "DATA ×6 v1.0 — USB2517I hub (7 ports), six USB-C each with a TPS2553-1, an INA226 and ESD, two TCA9535\n  for EN/FAULT/RESET/BOOT, an AP2114H 3.3 V; two LMR51625 make the ports' 5 V from VIN (20 V, PH 3);\n  the logic runs on the lead's switched 5 V (J1.8), as the v2's.\nPins: 48 on three CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 7, a TCA9534A for the\n  matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled.\nHeaders: six 2 × 6 blocks at the top, one colour per port (red, yellow, green, blue, white, black).\nLead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V — the DATA ×4 v2's lead.\nI²C: TCA9535 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C, TCA9534A 0x38; the node's 0x40.\nAssembled as DATA-6x-logic (as drawn) or DATA-6x (BOM/CPL '-base': the matrix, the co-processor and the\n  ports' pin chains not fitted).\nRails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 0.85 A at 20 V · +5V_A / +5V_B 5.24 V, ≤ 1.86 A each (ports\n  1–3 / 4–6 at the 0.62 A limit) · +5V_L 4.75–5.24 V (the node's switched 5 V over the lead), ≤ 0.46 A ·\n  PORTn_VBUS 5.1–5.24 V, 0.50–0.62 A limit ·\n  +3V3 3.3 V (AP2114H), ≤ 0.5 A (the hub 0.42 A at most) · +3V3_CP 3.3 V (FB2), ≤ 60 mA · +1V1 1.1 V (the\n  RP2354B's regulator), ≤ 0.1 A · +5V_MX 5.2 V (FB1), ≤ 10 mA · −5V −4.9 to −5.2 V (TPS60400), ≤ 1 mA ·\n  HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own regulators)."
 		(exclude_from_sim no)
 		(at 30 337.82 0)
 		(size 534 40.64)

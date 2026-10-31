@@ -16,7 +16,7 @@ v2 does, per port and for the board, with:
   TCA9534A's P7 (the matrix keeps one expander: one I²C write a step, the v2's driver);
 * two TCA9535 (16 bits, 0x20 / 0x21) for the ports' EN, FAULT_N, RESET and BOOT, three ports each; the mark
   line to the co-processor on a spare bit of the second;
-* the RP2354B as the v2's, on the hub's port 6, its ADC full: VREF 1–6 and the ±5 V rails;
+* the RP2354B as the v2's, on the hub's port 7, its ADC full: VREF 1–6 and the ±5 V rails;
 * the ports' 5 V made here from the rack's 20 V (VIN, a PH 3 of its own on the rear face, VIN–GND–VIN so either
   pre-crimped lead fits, after the node's protection): two LMR51625, +5V_A for ports 1–3, +5V_B for ports 4–6,
   never in parallel (the power plane's +5V split left / right).  The logic (the hub, the co-processor, the matrix,
@@ -34,6 +34,7 @@ the v2: as drawn DATA-6x-logic; "base" leaves the logic off.
 
 from __future__ import annotations
 
+import math
 import os
 import sys
 from pathlib import Path
@@ -95,6 +96,12 @@ MID_X = 50.0
 UP_Y = 66.5                         # over each receptacle: its VBUS 22 µF, CC resistors, LED
 CH_Y = 19.3                         # each port's pin chain: its first row (the three ESD), under its block
 CH_DX = 0.2                         # the LSF0108's offset east of its column's centre (its A row under the arrays)
+# the hub's pairs (hs_pairs()): each port's lane in the corridor over the clusters (its centreline), and, for
+# USB-C 2–6, its USBLC6 west of the receptacle and its D− on the way down to it (D+ 0.4 mm east): clear of the
+# R(k+2)/R(k+3) pads of the cluster west of it and of its own USBLC6's pin 4 and 5 pads
+LANES = {1: 48.5, 2: 49.6, 3: 50.7, 4: 51.8, 5: 52.9, 6: 54.0}
+ESD_PX = {n: USBS[n - 1] - (6.9 if n == 2 else 7.4) for n in range(2, 7)}
+DROP_DN = {n: 18.44 if n == 2 else USBS[n - 1] - 9.6 for n in range(2, 7)}
 # the two 5 V converters: the bay node's LMR51625 block (bay-node/design.py) at an offset, the node's own layout:
 # A west of the chains, B in the bottom-right corner (behind the port wall: nothing in it over 3 mm)
 BUCKS = {"A": (2.4, -7.0), "B": (92.0, 25.4)}
@@ -266,7 +273,7 @@ TPS = {
     "TP7": ("+3V3", "+3V3", 1.5, 13.5, 47.0), "TP8": ("GND", "GND", 1.5, 10.5, 47.0),
     "TP9": ("+5V_A", "+5V_A", 1.5, 7.5, 47.0), "TP41": ("+5V_B", "+5V_B", 1.5, 112.5, 69.5),
     "TP42": ("VIN", "VIN", 1.5, 100.0, 62.5), "TP43": ("GND", "GND", 1.5, 103.0, 62.5),
-    "TP44": ("+5V_L", "+5V_L", 1.5, 96.6, 35.0),
+    "TP44": ("+5V_L", "+5V_L", 1.5, 88.6, 34.0),
     # the hub's reset and core rail, with a GND
     "TP20": ("HUB_RST_N", "HUB RST", 1.0, HX - 0.5, HY - 14.0), "TP21": ("GND", "GND", 1.5, HX + 3.5, HY - 14.9),
     "TP22": ("HUB_1V8", "1V8", 1.5, HX + 5.0, HY + 4.25),
@@ -348,9 +355,9 @@ def port(b: Board, n: int):
             6, 10, 108, 44)
     s.tag(v5, (20, 18), "up")
     s.wire((20, 18), (20, 21), f"{sw}.IN")
-    # the cluster in a 12 × 8 mm frame over the port's USB-C (x0, y0 its corner), the v2's; port 1's 1 mm east, its
+    # the cluster in a 12 × 8 mm frame over the port's USB-C (x0, y0 its corner), the v2's; port 1's 0.6 mm east, its
     # pair coming down the west edge past its ILIM resistor
-    x0, y0 = cx - (4.0 if n == 1 else 5.0), CL_Y
+    x0, y0 = cx - (4.4 if n == 1 else 5.0), CL_Y
     part(s, sw, "vbus_sw_latch", {"IN": v5, "GND": "GND", "EN": p + "EN", "~{FAULT}": p + "FLT_N",
                                   "ILIM": p + "ILIM", "OUT": p + "5V_SW"}, pcb=P(x0 + 2.45, y0 + 2.2, 180),
          sch=at(30, 22, fields=(-4, -4)))
@@ -359,8 +366,8 @@ def port(b: Board, n: int):
     R(s, f"R{k + 1}", "47k", p + "ILIM", "GND", size="0402", pcb=P(x0 - 0.97, y0 + 2.2, 180), sch=at(22, 28))
     s.wire(f"{sw}.ILIM", (22, 24), f"R{k + 1}.1")
     # the port is off until the node switches it on
-    R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(x0 + 9.9, y0 + 3.65, 90), sch=at(14, 36))
-    R(s, f"R{k + 3}", "10k", "+3V3", p + "FLT_N", size="0402", pcb=P(x0 + 9.9, y0 + 5.6, 90), sch=at(40, 36))
+    R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(x0 + 9.75, y0 + 3.65, 90), sch=at(14, 36))
+    R(s, f"R{k + 3}", "10k", "+3V3", p + "FLT_N", size="0402", pcb=P(x0 + 9.75, y0 + 5.6, 90), sch=at(40, 36))
     testpoints(s, [f"TP{k + 1}"], "Test point (rear face): FAULT_N", 112, 80)
     part(s, sh, "shunt100m", {"1": p + "5V_SW", "4": p + "VBUS", "2": p + "SNS_P", "3": p + "SNS_N"},
          "100m", pcb=P(x0 + 2.77, y0 + 5.4, 0), sch=at(46, 23))
@@ -400,9 +407,9 @@ def port(b: Board, n: int):
     s.wire(f"{usb}.CC2", (66, 73), f"R{k + 5}.2")
     # The USBLC6 in the gap left of the receptacle, turned 180°: pins 1/3 east to it, 6/4 west, where the hub's
     # pair comes straight down between two clusters.  Port 1's west of its receptacle, over it (the cradle's band
-    # beside it): its pair comes down the board's west edge.  Its VBUS 100 nF right over its pin 5.  Port 2's
-    # 0.6 mm east: its pair comes down beside port 1's shifted cluster
-    ex_ = (cx - 7.5 + (0.6 if n == 2 else 0.0), USB_Y, 180) if n > 1 else (cx - 4.2, UP_Y - 0.25, 180)
+    # beside it): its pair comes down the board's west edge.  Its VBUS 100 nF right over its pin 5.  ESD_PX: each
+    # pair's way down between its pins' pads and the cluster west of it
+    ex_ = (ESD_PX[n], USB_Y, 180) if n > 1 else (cx - 4.2, UP_Y - 0.25, 180)
     part(s, esd, "esd", {"1": p + "CONN_DN", "6": p + "DN", "3": p + "CONN_DP", "4": p + "DP", "5": v5,
                          "2": "GND"}, pcb=P(*ex_), sch=at(84, 76))
     s.wire(f"{usb}.B7", f"{esd}.1")
@@ -477,7 +484,7 @@ def port(b: Board, n: int):
 
     e = (n - 1) // 3
     s.notes_at = (112, 62, 116)
-    hp = n - 1 if n > 1 else 7
+    hp = n - 1 if n > 1 else 6
     s.notes = [f"Port {n} = hub port {hp}, busid 1-1.{hp}; supplied by {v5}.",
                f"INA226 at 0x{INA_HEX[n - 1]:02x}; expander {('U2', 'U6')[e]} (TCA9535, 0x{0x20 + e:02x}).",
                "ILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.",
@@ -611,14 +618,14 @@ def hub_sheet(b: Board):
     for n in range(4, 8):
         hub[f"LED_B{n}_N"] = None
     # its south face's DN1–5 to USB-C 2–6: the pairs come down into the corridor over the clusters and turn west in
-    # lanes, the lowest dropping off first, none crossing.  Its west face's DN7 to USB-C 1: out under DN6, round the
-    # crystal's north and down its west side into the corridor's top lane; DN6 (the topmost) to the co-processor,
-    # north-west over it
-    for dn in (1, 2, 3, 4, 5, 7):
+    # lanes, the lowest dropping off first, none crossing (drawn: hs_pairs()).  Its west face's DN6 to USB-C 1: west
+    # over the crystal's keep-out, north round it and down its west side into the corridor's top lane; DN7 under
+    # it to the co-processor, down to B.Cu under the hub's body
+    for dn in range(1, 7):
         n = dn + 1 if dn <= 5 else 1
         hub[f"USBDN{dn}_DP/PRT_DIS_P{dn}"] = f"PORT{n}_DP"
         hub[f"USBDN{dn}_DM/PRT_DIS_M{dn}"] = f"PORT{n}_DN"
-    hub["USBDN6_DP/PRT_DIS_P6"], hub["USBDN6_DM/PRT_DIS_M6"] = "CP_HUB_DP", "CP_HUB_DN"
+    hub["USBDN7_DP/PRT_DIS_P7"], hub["USBDN7_DM/PRT_DIS_M7"] = "CP_HUB_DP", "CP_HUB_DN"
     part(s, "U1", "usb2517", hub, pcb=P(HX, HY, 90), sch=at(124, 62, fields=(-11, -20)))
     rail(s, "+3V3", [f"U1.{n}" for n in (46, 64, 24, 5, 10, 52, 57)], -3)
     part(s, "Y1", "xtal24", {"1": "XI", "3": "XO", "2": "GND", "4": "GND"}, pcb=P(*XT, 90),
@@ -630,7 +637,7 @@ def hub_sheet(b: Board):
     R(s, "R10", "1M", "XO", "XI", size="0402", pcb=P(XT[0] + 2.3, XT[1] + 0.25, 270), sch=at(94, 56, rot=90))
     for i, (ref, xy, rot) in enumerate((("C11", (HX - 4.7, HY + 6.2), 270), ("C13", (HX - 6.2, HY + 0.25), 180),
                                         ("C12", (HX - 6.2, HY - 2.25), 180), ("C15", (HX - 1.75, HY + 6.4), 270),
-                                        ("C16", (HX + 0.95, HY + 6.7), 270), ("C14", (HX + 6.05, HY + 0.95), 270),
+                                        ("C16", (HX + 0.75, HY + 6.4), 270), ("C14", (HX + 6.05, HY + 0.95), 270),
                                         ("C17", (HX - 2.85, HY - 6.4), 90))):
         C(s, ref, "100n", "+3V3", "GND", size="0402", pcb=P(*xy, rot), sch=at(80 + 6 * i, 24))
     C(s, "C8", "4.7u", "HUB_1V8PLL", "GND", size="0402", pcb=P(HX - 6.8, HY + 4.86, 270), sch=at(128, 24))
@@ -693,7 +700,7 @@ def hub_sheet(b: Board):
         "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).",
         "Hub: CFG_SEL[2:0] = 110 (internal default configuration, strap options disabled: DS00001598C Table 5-2),",
         "  as the DATA ×4 v2's; all seven downstream ports used.",
-        "Hub ports: 1–5 = USB-C 2–6 (busid 1-1.1 … 1-1.5), 6 = the co-processor (1-1.6), 7 = USB-C 1 (1-1.7).",
+        "Hub ports: 1–5 = USB-C 2–6 (busid 1-1.1 … 1-1.5), 6 = USB-C 1 (1-1.6), 7 = the co-processor (1-1.7).",
         "Expanders: TCA9535 U2 0x20 (ports 1–3), U6 0x21 (ports 4–6, the mark on P14).  Each port: RESET, BOOT, EN,",
         "  FAULT_N (port 1 on P00–P03, 2 on P04–P07, 3 on P10–P13).  Inputs at power-up: the EN pull-downs keep every",
         "  port off until the node writes; the spare pins set as outputs, low, by the firmware.",
@@ -771,7 +778,7 @@ def matrix_sheet(b: Board):
 
 # -------------------------------------------------------------------------------- co-processor (full)
 def coproc_sheet(b: Board):
-    s = b.sheet("Co-processor", "coproc.kicad_sch", "RP2354B analyzer / co-processor on hub port 6")
+    s = b.sheet("Co-processor", "coproc.kicad_sch", "RP2354B analyzer / co-processor on hub port 7")
     cx, cy = CP
     s.paper = "A2"
     s.frame("RP2354B, wired like a Pico 2 (gusmanb's PICO_2 UF2 runs as it is); its decoupling", 6, 10, 120, 118)
@@ -834,7 +841,7 @@ def coproc_sheet(b: Board):
           sch=at(70 + 5 * i, 24))
     rail(s, "+1V1", [f"C{45 + i}.1" for i in range(3)], -1)
     rail(s, "GND", [f"C{45 + i}.2" for i in range(3)], 1, "down")
-    s.frame("12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 6 (22 Ω), RUN, BOOTSEL, LED, SWD",
+    s.frame("12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 7 (22 Ω), RUN, BOOTSEL, LED, SWD",
             124, 56, 228, 98)
     part(s, "Y2", "xtal12", {"1": "CP_XIN", "3": "CP_XTAL", "2": "GND", "4": "GND"}, pcb=P(cx + 1.3, 2.2, 180),
          sch=at(140, 68, fields=(-2, -4)))
@@ -890,12 +897,87 @@ def coproc_sheet(b: Board):
                "GPIO40, 43, 42, 41, 44, 45 = VREF 1–6 / 2 (through 100k); GPIO46 = +5V_MX × 47/147;",
                "  GPIO47 = 3.3 V − (3.3 + 5) × 10/110 from −5 V (2.55 V nominal).  The ADC's eight inputs all used.",
                "RUN pulled up, BOOTSEL (QSPI_SS) through 1k: both held by the node (TCA9534A), open drain.",
-               "USB on the hub's port 6 (Full Speed, 22 Ω).",
+               "USB on the hub's port 7 (Full Speed, 22 Ω).",
                "Core regulator: Raspberry Pi's Minimal R4 block turned 180°; L1's dot (pad 1) on +1V1, not VREG_LX.",
                "C47 (DVDD pin 32, furthest from the regulator) 4.7 µF; no copper under LX / L1 (In1, In2, B.Cu)."]
 
 
 # ---------------------------------------------------------------------------------------- drawn copper
+def offset(poly, d):
+    """A polyline (mm) shifted d mm sideways, mitred at its corners: to the west when it heads down the board (+y),
+    to the north when it heads west, to the east when it heads up.  A differential pair's two lines from its
+    centreline (the v2's)."""
+    out = []
+    for i, (x, y) in enumerate(poly):
+        ns = []
+        segs = ([(poly[i - 1], poly[i])] if i else []) + ([(poly[i], poly[i + 1])] if i < len(poly) - 1 else [])
+        for (ax, ay), (bx, by) in segs:
+            L = math.hypot(bx - ax, by - ay)
+            ns.append((-(by - ay) / L, (bx - ax) / L))
+        (n1x, n1y), (n2x, n2y) = ns[0], ns[-1]
+        k = 1 + n1x * n2x + n1y * n2y
+        out.append((round(x + d * (n1x + n2x) / k, 4), round(y + d * (n1y + n2y) / k, 4)))
+    return out
+
+
+def hs_pairs():
+    """The USB pairs, drawn (the v2's HS review, 2026-10-22: over a continuous GND reference, F.Cu above In1;
+    Freerouting puts them on B.Cu, each line its own way).  D− and D+ either side of each pair's centreline
+    (offset(), D− on its right-hand side), USB_W lines 0.15 mm apart (≈ 90 Ω: the USB netclass); they leave the
+    hub's pins at their 0.5 mm pitch and close up.  No length-matching bumps (the layout review: on USB they make it
+    worse).
+    * USB-C 2–6 (the south face, DN1–5): down side by side under the hub (ports 3 and 4, 5 and 6 each 50 µm out
+      from their pins' centre: C15 and C16, pins 5 and 10's 100 nF, between them), west in the corridor's lanes
+      (LANES), the lowest dropping off first, each down past the cluster west of it (DROP_DN) to its USBLC6: D+
+      into pin 4, D− on past it to pin 6.
+    * USB-C 1 (the west face, DN6): west between C12 and the crystal's keep-out, north round it, west, down its
+      west side into the top lane, west under the crosspoints, up over converter A's outputs and down the board's
+      west edge to its USBLC6 over its receptacle.
+    The upstream pair and the co-processor's (pins 58/59, 55/56: boxed in by USB-C 1's pair, C13 and the crystal's
+    keep-out, they leave under the hub's body) are left to the router for now.  Returns (tracks, vias)."""
+    tracks, vias = [], []
+    hp, c = (USB_W + 0.15) / 2, 0.8
+    sy, top = HY + 4.4125, HY + 4.9             # the hub's south row, the pairs' start under it
+
+    def keep(pts):
+        """no point within 0.1 mm of the last one kept (a sliver otherwise)"""
+        out = [pts[0]]
+        for q in pts[1:-1]:
+            if math.dist(q, out[-1]) >= 0.1:
+                out.append(q)
+        return out + [pts[-1]]
+
+    def esd_pins(x, y):
+        """a USBLC6's pin 4 (D+) and pin 6 (D−), turned 180°: its hub side, west"""
+        return (x - 1.138, y - 0.95), (x - 1.138, y + 0.95)
+
+    for n, (pin, d) in {2: (1, 0.0), 3: (3, -0.05), 4: (6, 0.05), 5: (8, -0.05), 6: (11, 0.05)}.items():
+        px = HX - 3.5 + 0.5 * (pin - 1)                 # its pins' centre
+        x, y, xd = px + d, LANES[n], DROP_DN[n] + hp
+        p4, p6 = esd_pins(ESD_PX[n], USB_Y)
+        # each line straight out of its pin, then in to the pair's pitch by y top + 0.4 (C15/C16 just under)
+        cl = [(x, top + 0.4), (x, y - c), (x - c, y), (xd + c, y), (xd, y + c), (xd, p4[1] - 0.4)]
+        dn = keep([(px - 0.25, sy), (px - 0.25, top)] + offset(cl, hp) +
+                  [(xd - hp, p6[1] - 0.5), (xd - hp + 0.5, p6[1]), p6])
+        dp = keep([(px + 0.25, sy), (px + 0.25, top)] + offset(cl, -hp) + [(xd + hp + 0.4, p4[1]), p4])
+        tracks += [(f"PORT{n}_DN", "F.Cu", USB_W, dn), (f"PORT{n}_DP", "F.Cu", USB_W, dp)]
+
+    # USB-C 1: north round the keep-out at x 95, west at y 35.9, down at x 90.7; up over converter A from x 26.5,
+    # down the west edge at x 5.9
+    p4, p6 = esd_pins(USBS[0] - 4.2, UP_Y - 0.25)
+    y1, xe, ye = LANES[1], 5.85, 46.6
+    cl = [(HX - 4.9, HY - 1.45), (95.0 + c, HY - 1.45), (95.0, HY - 1.45 - c), (95.0, 35.9 + c), (95.0 - c, 35.9),
+          (90.7 + c, 35.9), (90.7, 35.9 + c), (90.7, y1 - c), (90.7 - c, y1), (26.5, y1), (26.5 - (y1 - ye), ye),
+          (xe + c, ye), (xe, ye + c), (xe, p4[1] - 0.4)]
+    # D+ straight out of pin 54 (its line on the pin's row), D− in from pin 53 by 0.1 mm: clear of C12's pad
+    dn = keep([(HX - 4.4125, HY - 1.75), (HX - 4.8, HY - 1.75)] + offset(cl, hp) +
+              [(xe - hp, p6[1] - 0.5), (xe - hp + 0.5, p6[1]), p6])
+    dp = keep([(HX - 4.4125, HY - 1.25), (HX - 4.9, HY - 1.25)] + offset(cl, -hp) + [(xe + hp + 0.4, p4[1]), p4])
+    tracks += [("PORT1_DN", "F.Cu", USB_W, dn), ("PORT1_DP", "F.Cu", USB_W, dp)]
+
+    return tracks, vias
+
+
 def drawn():
     """The copper drawn before the routing that the v2 already had round its co-processor and its hub, which
     stand here as on the v2 (the co-processor CP_DX west of it, the hub one row lower): the core regulator as
@@ -1068,16 +1150,17 @@ def drawn():
     hand_vias.append(("GND", ux + 0.565, uy + 0.565, 0.5, 0.3))
     # the hub's south VDD33 pin 5 takes its via inwards, under its body (between the pads and the UP pair): its
     # automatic fan-out via sat right below the row, between the downstream pairs, and boxed port 2's D− in
-    # (Freerouting left it unrouted).  Its line goes on down to C15, its 100 nF, between ports 2 and 3's pairs.
-    # Pin 10's runs down to C16, between port 4's D+ and the co-processor's D− via (0.2 mm wide, 0.139 mm from
-    # that via), and C16 on east to its via: the pin → cap → via order (its via under the body gone)
-    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX - 1.75, HY + 4.4125), (HX - 1.75, HY + 3.75)]))
-    hand_vias.append(("+3V3", HX - 1.75, HY + 3.75, 0.5, 0.3))
-    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX - 1.75, HY + 4.4125), (HX - 1.75, HY + 5.92)]))
-    hand_tracks.append(("+3V3", "F.Cu", 0.2, [(HX + 0.75, HY + 4.4125), (HX + 0.7, HY + 4.9), (HX + 0.7, HY + 5.97),
-                                             (HX + 0.95, HY + 6.22)]))
-    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX + 0.95, HY + 6.22), (HX + 1.6, HY + 6.22)]))
-    hand_vias.append(("+3V3", HX + 1.6, HY + 6.22, 0.5, 0.3))
+    # (Freerouting left it unrouted).  Its line goes on down to C15, its 100 nF, between USB-C 3 and 4's pairs.
+    # Pin 10 likewise, C16 between USB-C 5 and 6's (the v2's C16 took its via east, where USB-C 6's pair runs here).
+    # Each capacitor's GND pad down to a via of its own between the pairs
+    for x in (HX - 1.75, HX + 0.75):
+        hand_tracks += [("+3V3", "F.Cu", 0.25, [(x, HY + 4.4125), (x, HY + 3.75)]),
+                        ("+3V3", "F.Cu", 0.25, [(x, HY + 4.4125), (x, HY + 5.92)]),
+                        ("GND", "F.Cu", 0.25, [(x, HY + 6.88), (x, HY + 7.6)])]
+        hand_vias += [("+3V3", x, HY + 3.75, 0.5, 0.3), ("GND", x, HY + 7.6, 0.5, 0.3)]
+    t, v = hs_pairs()
+    hand_tracks += t
+    hand_vias += v
     # pin 64's: the pin down to C11 (its 100 nF) right below the corner, and its via inwards, under the hub's
     # body, off that line (it sat on it, between the pin and C11).  C11 is an exception to the pin → cap → via
     # order: no via fits past its +3V3 pad, between R1's RBIAS pad west and port 1's D− east
@@ -1111,7 +1194,7 @@ def board() -> Board:
         "DATA ×6 v1.0 — USB2517I hub (7 ports), six USB-C each with a TPS2553-1, an INA226 and ESD, two TCA9535",
         "  for EN/FAULT/RESET/BOOT, an AP2114H 3.3 V; two LMR51625 make the ports' 5 V from VIN (20 V, PH 3);",
         "  the logic runs on the lead's switched 5 V (J1.8), as the v2's.",
-        "Pins: 48 on three CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 6, a TCA9534A for the",
+        "Pins: 48 on three CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 7, a TCA9534A for the",
         "  matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled.",
         "Headers: six 2 × 6 blocks at the top, one colour per port (red, yellow, green, blue, white, black).",
         "Lead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V — the DATA ×4 v2's lead.",
