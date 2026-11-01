@@ -34,6 +34,7 @@ firmware contract on top of it.  Both firmwares use one header for it,
 | `0x200` | **RACK**: the hub's state (contract, rows) | hub → all | every 1 s |
 | `0x280 + id` | **STATUS**: node state, the heartbeat | node → hub | every 1 s |
 | `0x300 + id` | **INFO**: IPv4, firmware version | node → hub | every 10 s and on change |
+| `0x380 + id` | **GRANT**: the bay's power grant on its DATA lead | hub → node | every 1 s |
 | `0x700`–`0x77F` | **ENUM_REQ**: a node without an address (low 7 bits from its MAC) | node → hub | enumeration |
 | `0x780 + id` | **HELLO**: address taken | node → hub | enumeration |
 | `0x7F0` | **ENUM_ASSIGN**: here is your address | hub → node | enumeration |
@@ -67,7 +68,9 @@ lower one wins and the other retries.
 | 2–3 | DUT bus voltage, mV |
 | 4–5 | DUT current, mA |
 | 6 | flags: bit 0 the bay is reserved (access lease), 1 the bay has a camera, 2 someone is watching it (a stream or a snapshot under way); older nodes send 0, a hub ignores bits it does not know |
-| 7 | 0 |
+| 7 | DATA ports waiting for power: wanted on, kept off by the bay's grant (older nodes: 0) |
+
+Node rev B: bytes 2–5 read the DATA lead's supply, DATA_VIN (20–28 V), after the eFuse.
 
 ### INFO `0x300 + id`
 
@@ -116,6 +119,26 @@ action for a repeated sequence number).
 | 5 | rows on (bit 0 = A) |
 | 6 | rows in fault |
 | 7 | counter |
+
+### GRANT `0x380 + id` (every second, from the hub, after RACK)
+
+| Byte | |
+|---|---|
+| 0–1 | power the bay may draw on its DATA lead (DATA_VIN), mW |
+| 2 | what sets it: bit 0 the row's eFuse, bit 1 the charger's contract |
+| 3 | 0 |
+
+The hub sends one to each node with an address on a powered row: the
+smaller of an equal share of the row's eFuse (`CONFIG_HUB_ROW_LIMIT_MA`,
+1.6 A) and of the rows' budget among the bays of the powered rows, both
+less the budget margin, at the contract's voltage, less what the node
+draws itself (`CONFIG_HUB_NODE_OWN_MW`, plus `CONFIG_HUB_CAMERA_OWN_MW`
+when its STATUS says it has a camera).  100 W at 20 V with 12 bays, four a
+row: 1.6 A × 90 % × 20 V / 4 = 7.2 W, less 1.8 W, 5.4 W.
+
+The node switches its DATA ports on only within the grant and sheds the
+last one switched on when the bay goes over it; without a GRANT for 3 s
+(no hub, or an older one) it keeps to its own limit.
 
 ## Enumeration
 
@@ -170,5 +193,6 @@ second.  The same happens when a row is turned on.
 | Bus off | the TWAI recovers by itself (128 × 11 recessive bits); both sides count it |
 | CMD without REPLY | two retries 100 ms apart, then "no answer" to whoever asked |
 
-Bus load: 16 nodes × (STATUS every second + INFO every 10 s) plus the RACK
-frame is ≈ 20 frames per second, about 1 % of the bus at 250 kbit/s.
+Bus load: 16 nodes × (STATUS and GRANT every second + INFO every 10 s)
+plus the RACK frame is ≈ 35 frames per second, about 2 % of the bus at
+250 kbit/s.

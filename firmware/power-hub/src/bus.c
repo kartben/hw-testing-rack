@@ -14,6 +14,7 @@
 #include <zephyr/drivers/can.h>
 #include <zephyr/logging/log.h>
 
+#include "budget.h"
 #include "hub.h"
 
 LOG_MODULE_REGISTER(bus, CONFIG_HUB_LOG_LEVEL);
@@ -142,6 +143,50 @@ static void send_rack(void)
 	(void)bus_send(NULL, &f);
 }
 
+BUILD_ASSERT(BUDGET_BY_ROW == RACK_GRANT_ROW && BUDGET_BY_CONTRACT == RACK_GRANT_CONTRACT);
+
+/*
+ * Each bay's power grant (GRANT), every second: its share of its row and of
+ * the contract, less the node itself and its camera.  The grants are worked
+ * out without the bus lock: rows.c calls into this file with its own held.
+ */
+static void send_grants(void)
+{
+	uint8_t on = rows_on_mask();
+	uint8_t count[RACK_ROWS];
+	struct rack_grant g[RACK_ROWS][2]; /* [row][camera] */
+	uint32_t rack = 0;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	memcpy(count, hub.count, sizeof(count));
+	k_mutex_unlock(&lock);
+
+	for (int r = 0; r < RACK_ROWS; r++) {
+		rack += (on & BIT(r)) ? count[r] : 0;
+	}
+	for (int r = 0; r < RACK_ROWS; r++) {
+		for (int cam = 0; cam < 2; cam++) {
+			uint32_t own = CONFIG_HUB_NODE_OWN_MW + (cam ? CONFIG_HUB_CAMERA_OWN_MW : 0);
+			uint32_t mw = rows_grant_mw(count[r], rack, own, &g[r][cam].flags);
+
+			g[r][cam].mw = (uint16_t)MIN(mw, UINT16_MAX);
+		}
+	}
+
+	k_mutex_lock(&lock, K_FOREVER);
+	for (int r = 0; r < RACK_ROWS; r++) {
+		for (int p = 1; p <= RACK_POSITIONS && (on & BIT(r)); p++) {
+			const struct rack_hub_node *n = &hub.nodes[r][p];
+			bool cam = n->have_status && (n->status.flags2 & RACK_ST2_CAMERA);
+
+			if (n->state == RACK_NODE_OK) {
+				rack_hub_grant(&hub, RACK_NODE_ID(r, p), &g[r][cam]);
+			}
+		}
+	}
+	k_mutex_unlock(&lock);
+}
+
 static void state_change(const struct device *dev, struct can_state_change_callback *cb,
 			 enum can_state state, struct can_bus_err_cnt err)
 {
@@ -188,6 +233,7 @@ static void bus_thread(void *p1, void *p2, void *p3)
 
 		if (now64 >= next_rack) {
 			send_rack();
+			send_grants();
 			next_rack = now64 + RACK_MS;
 		}
 		if (now64 >= next_rate) {

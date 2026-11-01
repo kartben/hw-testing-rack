@@ -107,6 +107,8 @@ struct hub_budget_status {
 /* margin_pct < 0: CONFIG_HUB_BUDGET_MARGIN_PCT; cap_mw 0: none */
 int rows_init(uint8_t wanted, const char *shed_order, int margin_pct, uint32_t cap_mw);
 void rows_budget(struct hub_budget_status *st);
+/* A bay's power grant on its DATA lead, mW (budget_grant_mw()); *by: BUDGET_BY_* */
+uint32_t rows_grant_mw(uint32_t row_bays, uint32_t rack_bays, uint32_t own_mw, uint8_t *by);
 /* By hand, saved */
 int rows_set_budget_margin(int margin_pct);
 int rows_set_budget_cap(uint32_t cap_mw);

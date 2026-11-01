@@ -52,6 +52,8 @@ static char position[4] = "";
 static int64_t identify_until;
 static int64_t hub_seen;
 static struct rack_hub_state hub;
+static int64_t grant_seen;
+static struct rack_grant grant;
 static bool info_pending;
 
 static void reboot_handler(struct k_work *work)
@@ -224,6 +226,16 @@ static void on_hub(void *ctx, const struct rack_hub_state *state)
 	hub_seen = k_uptime_get();
 }
 
+static void on_grant(void *ctx, const struct rack_grant *g)
+{
+	ARG_UNUSED(ctx);
+	if (grant_seen == 0 || g->mw != grant.mw) {
+		LOG_INF("the hub grants the bay %u mW on its DATA lead", g->mw);
+	}
+	grant = *g;
+	grant_seen = k_uptime_get();
+}
+
 static const struct rack_node_ops ops = {
 	.send = bus_send,
 	.pos_in = get_pos_in,
@@ -233,6 +245,7 @@ static const struct rack_node_ops ops = {
 	.info = fill_info,
 	.command = command,
 	.hub = on_hub,
+	.grant = on_grant,
 };
 
 /* --- Thread --------------------------------------------------------------- */
@@ -356,6 +369,16 @@ bool bay_rack_hub(struct rack_hub_state *st)
 	return true;
 }
 
+bool bay_rack_grant(struct rack_grant *g)
+{
+	if (grant_seen == 0 || k_uptime_get() - grant_seen > HUB_STALE_MS) {
+		return false;
+	}
+	*g = grant;
+
+	return true;
+}
+
 void bay_rack_info_changed(void)
 {
 	info_pending = true;
@@ -386,6 +409,12 @@ const char *bay_rack_position(void)
 bool bay_rack_hub(struct rack_hub_state *st)
 {
 	ARG_UNUSED(st);
+	return false;
+}
+
+bool bay_rack_grant(struct rack_grant *g)
+{
+	ARG_UNUSED(g);
 	return false;
 }
 

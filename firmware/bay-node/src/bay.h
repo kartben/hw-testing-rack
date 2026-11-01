@@ -283,6 +283,8 @@ uint8_t bay_rack_id(void);
 const char *bay_rack_position(void);
 /* The hub's last RACK frame; false when none came for 3 s */
 bool bay_rack_hub(struct rack_hub_state *st);
+/* The bay's power grant from the hub (GRANT); false when none came for 3 s */
+bool bay_rack_grant(struct rack_grant *g);
 /* The IP address changed: INFO goes out at the next tick */
 void bay_rack_info_changed(void);
 /* The hub asked this node to show itself: the LED blinks */

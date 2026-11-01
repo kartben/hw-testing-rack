@@ -136,6 +136,30 @@ config HUB_RESTORE_HOLD_MAX_S
 	int "The longest a shed row's restore hold grows to (s)"
 	default 600
 
+config HUB_ROW_LIMIT_MA
+	int "A row's eFuse current limit (mA)"
+	default 1600
+	help
+	  The TPS26600 on each row output (R_ILIM 7.5k): what the row's bays
+	  share.  Each bay's power grant (GRANT, docs/rack-protocol.md) is at
+	  most an equal share of it, less the budget margin, at the
+	  contract's voltage.
+
+config HUB_NODE_OWN_MW
+	int "What a node draws itself, not in its bay's grant (mW)"
+	default 1800
+	help
+	  A bay's grant is for its DATA lead (DATA_VIN, which the node
+	  measures): its share less the node itself, the ESP32-S3 on Wi-Fi,
+	  its LED and INA226, at worst.
+
+config HUB_CAMERA_OWN_MW
+	int "What a bay's camera and its light draw, not in its grant (mW)"
+	default 2500
+	help
+	  Taken off the grant of a bay whose STATUS says it has a camera:
+	  streaming with the light on, at worst.
+
 config HUB_EVENTS
 	int "Events kept for the web page and the shell"
 	default 32

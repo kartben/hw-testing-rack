@@ -126,6 +126,7 @@ board makes its own 5 V from it.  The eFuse is **off** until the firmware turns 
 | Shedding | written | from the measured row currents (IMON): above 90 % of the contract for 1 s the next row in the shed order goes off, back when the contract has room again |
 | Faults | written | each eFuse's FLT while its row is on, past the soft start; a contract lost (PG) as an event |
 | Rack bus master | written, tested on a simulated rack | enumeration over the POS tokens, the node table, commands with retries, the RACK frame every second |
+| Bay power grants | written, tested on native_sim (the share, the frame) | every second, each bay's share of its row's eFuse and of the contract, less the node itself, as a GRANT frame ([rack-protocol.md](rack-protocol.md)): what the node may switch its DATA ports on with |
 | Web, shell | written | status page (PD offers, rows and their bays, rack bus, events), JSON API, `/metrics`, `hub …` shell on the console USB-C (no telnet) |
 | Access | written | reading is open; the page's actions (rows, contract, enumeration, node commands) are admin requests signed with the hub's key, claimed with a press on its BOOT button (`firmware/common/lib/admin.c`, as the bay nodes) |
 | Updates | written, tested on native_sim, not on hardware | as the bay nodes (same code, `firmware/common/lib/update.c`): [Programming › Over the network](#over-the-network); the console USB-C otherwise |

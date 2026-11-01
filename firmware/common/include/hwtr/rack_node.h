@@ -37,6 +37,8 @@ struct rack_node_ops {
 	uint8_t (*command)(void *ctx, const struct rack_cmd *cmd, uint16_t *err);
 	/* optional: the hub's RACK frame */
 	void (*hub)(void *ctx, const struct rack_hub_state *state);
+	/* optional: the bay's power grant (GRANT, every second while the hub sends them) */
+	void (*grant)(void *ctx, const struct rack_grant *grant);
 };
 
 struct rack_node {

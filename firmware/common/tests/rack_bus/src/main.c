@@ -27,6 +27,8 @@ struct sim_node {
 	struct rack_node rn;
 	int executed;
 	uint8_t id_seen;
+	int grants;
+	struct rack_grant grant;
 };
 
 static struct {
@@ -170,10 +172,18 @@ static uint8_t node_command(void *ctx, const struct rack_cmd *cmd, uint16_t *err
 	return RACK_OK;
 }
 
+static void node_grant(void *ctx, const struct rack_grant *g)
+{
+	struct sim_node *n = ctx;
+
+	n->grants++;
+	n->grant = *g;
+}
+
 static const struct rack_node_ops node_ops = {
 	.send = node_send, .pos_in = node_pos_in, .set_pos_out = node_set_pos_out,
 	.address = node_address, .status = node_status, .info = node_info,
-	.command = node_command,
+	.command = node_command, .grant = node_grant,
 };
 
 /* --- Simulation ---------------------------------------------------------- */
@@ -284,8 +294,9 @@ ZTEST(rack_bus, test_frames)
 {
 	const uint8_t mac[6] = {1, 2, 3, 4, 5, 6};
 	struct rack_status st = {.flags = 0xA5, .counter = 7, .dut_mv = 5012, .dut_ma = 1499,
-				 .flags2 = RACK_ST2_RESERVED | RACK_ST2_CAMERA};
+				 .flags2 = RACK_ST2_RESERVED | RACK_ST2_CAMERA, .waiting = 2};
 	struct rack_status st2;
+	struct rack_grant g = {.mw = 5400, .flags = RACK_GRANT_ROW}, g2;
 	struct rack_info info;
 	struct rack_cmd c ={.op = RACK_CMD_POWER, .seq = 9, .nargs = 3, .arg = {2, 0xE8, 0x03}};
 	struct rack_cmd c2;
@@ -302,7 +313,20 @@ ZTEST(rack_bus, test_frames)
 	zassert_equal(st2.dut_mv, st.dut_mv);
 	zassert_equal(st2.dut_ma, st.dut_ma);
 	zassert_equal(st2.flags2, st.flags2);
+	zassert_equal(st2.waiting, 2);
 	zassert_equal(rack_dec_info(&f, &node, &info), -1, "a STATUS is not an INFO");
+	/* An older node's STATUS of 7 bytes: nothing waits */
+	f.len = 7;
+	zassert_ok(rack_dec_status(&f, &node, &st2));
+	zassert_equal(st2.waiting, 0);
+
+	rack_enc_grant(&f, 0x23, &g);
+	zassert_equal(f.id, 0x380 + 0x23);
+	zassert_ok(rack_dec_grant(&f, &node, &g2));
+	zassert_equal(node, 0x23);
+	zassert_equal(g2.mw, 5400);
+	zassert_equal(g2.flags, RACK_GRANT_ROW);
+	zassert_equal(rack_dec_cmd(&f, &node, &c2), -1, "a GRANT is not a CMD");
 
 	rack_enc_cmd(&f, 0x05, &c);
 	zassert_equal(f.id, 0x105);
@@ -351,6 +375,38 @@ ZTEST(rack_bus, test_enumerate)
 	zassert_true(rack_hub_node(&sim.hub, 0x12)->have_status);
 	zassert_true(rack_hub_node(&sim.hub, 0x12)->have_info);
 	zassert_equal(rack_hub_node(&sim.hub, 0x31)->status.dut_ma, 120);
+}
+
+ZTEST(rack_bus, test_grant)
+{
+	struct sim_node *a1 = plug(0, 1, true);
+	struct sim_node *a2 = plug(0, 2, true);
+	struct rack_grant g = {.mw = 5400, .flags = RACK_GRANT_ROW};
+
+	/* No address yet: a node ignores grants */
+	rack_hub_grant(&sim.hub, 0x01, &g);
+	run(10);
+	zassert_equal(a1->grants, 0);
+
+	rack_hub_enumerate(&sim.hub, rows_mask(), 0, sim.now);
+	run(2000);
+	assert_ids();
+
+	/* To A1 only, kept in the hub's node table */
+	rack_hub_grant(&sim.hub, 0x01, &g);
+	run(10);
+	zassert_equal(a1->grants, 1);
+	zassert_equal(a1->grant.mw, 5400);
+	zassert_equal(a1->grant.flags, RACK_GRANT_ROW);
+	zassert_equal(a2->grants, 0);
+	zassert_true(rack_hub_node(&sim.hub, 0x01)->have_grant);
+	zassert_equal(rack_hub_node(&sim.hub, 0x01)->grant.mw, 5400);
+	zassert_false(rack_hub_node(&sim.hub, 0x02)->have_grant);
+
+	/* An id that is not a node's: nothing sent */
+	rack_hub_grant(&sim.hub, 0x40, &g);
+	run(10);
+	zassert_equal(a1->grants + a2->grants, 1);
 }
 
 ZTEST(rack_bus, test_node_reboot)

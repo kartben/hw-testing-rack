@@ -401,6 +401,17 @@ void rows_budget(struct hub_budget_status *st)
 	k_mutex_unlock(&lock);
 }
 
+uint32_t rows_grant_mw(uint32_t row_bays, uint32_t rack_bays, uint32_t own_mw, uint8_t *by)
+{
+	uint32_t mw;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	mw = budget_grant_mw(&budget, row_bays, rack_bays, own_mw, by);
+	k_mutex_unlock(&lock);
+
+	return mw;
+}
+
 int rows_set_budget_margin(int margin_pct)
 {
 	uint32_t cap;

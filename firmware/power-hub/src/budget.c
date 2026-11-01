@@ -72,6 +72,24 @@ uint32_t budget_limit_ma(const struct budget *b)
 	return budget_base_ma(b) * (100U - b->margin_pct) / 100U;
 }
 
+uint32_t budget_grant_mw(const struct budget *b, uint32_t row_bays, uint32_t rack_bays,
+			 uint32_t own_mw, uint8_t *by)
+{
+	uint64_t row_mw, rack_mw, share;
+
+	*by = 0;
+	if (b->contract_mv == 0 || row_bays == 0 || rack_bays == 0) {
+		return 0;
+	}
+	row_mw = (uint64_t)CONFIG_HUB_ROW_LIMIT_MA * (100U - b->margin_pct) / 100U *
+		 b->contract_mv / 1000U / row_bays;
+	rack_mw = (uint64_t)budget_limit_ma(b) * b->contract_mv / 1000U / rack_bays;
+	share = MIN(row_mw, rack_mw);
+	*by = row_mw <= rack_mw ? BUDGET_BY_ROW : BUDGET_BY_CONTRACT;
+
+	return share > own_mw ? (uint32_t)(share - own_mw) : 0;
+}
+
 /* The next row to shed: the first one on in the shed order, -1 none */
 static int shed_candidate(const struct budget_rows *rows)
 {

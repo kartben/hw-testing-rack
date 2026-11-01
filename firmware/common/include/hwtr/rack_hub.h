@@ -46,6 +46,8 @@ struct rack_hub_node {
 	uint32_t seen_ms;
 	struct rack_status status;
 	struct rack_info info;
+	bool have_grant;
+	struct rack_grant grant; /* the last one sent */
 };
 
 enum rack_hub_event {
@@ -122,6 +124,9 @@ void rack_hub_tick(struct rack_hub *h, uint32_t now);
 /* Send a CMD (retried until a REPLY); returns its sequence number, or -1 if all slots are busy */
 int rack_hub_cmd(struct rack_hub *h, uint8_t node, uint8_t op, const uint8_t *args, uint8_t nargs,
 		 uint32_t now);
+
+/* Send a node its power grant (GRANT), kept in its entry of the node table */
+void rack_hub_grant(struct rack_hub *h, uint8_t node, const struct rack_grant *g);
 
 /* NULL unless the id is a valid node id */
 struct rack_hub_node *rack_hub_node(struct rack_hub *h, uint8_t id);

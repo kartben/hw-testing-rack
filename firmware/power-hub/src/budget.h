@@ -86,4 +86,18 @@ uint32_t budget_limit_ma(const struct budget *b);
 enum budget_act budget_step(struct budget *b, int64_t now, const struct budget_rows *rows,
 			    int *row);
 
+/* What sets a grant: the same bits as the GRANT frame's byte 2 */
+#define BUDGET_BY_ROW      (1U << 0)
+#define BUDGET_BY_CONTRACT (1U << 1)
+
+/*
+ * A bay's power grant on its DATA lead (mW): the smaller of an equal share
+ * of its row's eFuse (CONFIG_HUB_ROW_LIMIT_MA, among row_bays) and of the
+ * rows' limit (among rack_bays, the bays of the powered rows), both less the
+ * margin at the contract's voltage, less own_mw (the node itself).  0
+ * without a contract or bays.  *by: BUDGET_BY_ROW or BUDGET_BY_CONTRACT.
+ */
+uint32_t budget_grant_mw(const struct budget *b, uint32_t row_bays, uint32_t rack_bays,
+			 uint32_t own_mw, uint8_t *by);
+
 #endif /* BUDGET_H_ */

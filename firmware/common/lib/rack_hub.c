@@ -50,6 +50,20 @@ int rack_hub_count(const struct rack_hub *h)
 	return n;
 }
 
+void rack_hub_grant(struct rack_hub *h, uint8_t node, const struct rack_grant *g)
+{
+	struct rack_hub_node *n = rack_hub_node(h, node);
+	struct rack_frame f;
+
+	if (n == NULL) {
+		return;
+	}
+	rack_enc_grant(&f, node, g);
+	(void)h->ops->send(h->ctx, &f);
+	n->grant = *g;
+	n->have_grant = true;
+}
+
 static void forget_row(struct rack_hub *h, int row)
 {
 	memset(h->nodes[row], 0, sizeof(h->nodes[row]));

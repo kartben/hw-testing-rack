@@ -311,4 +311,45 @@ ZTEST(budget, test_no_contract_no_decision)
 	zassert_equal(run(&in, 30000, &row, NULL), BUDGET_KEEP);
 }
 
+ZTEST(budget, test_bay_grants)
+{
+	struct budget_rows in;
+	uint8_t by;
+
+	/*
+	 * 100 W at 20 V, 12 bays, 4 a row: the row gives 1.6 A x 90 % x 20 V / 4 =
+	 * 7.2 W a bay, the contract 4.5 A x 20 V / 12 = 7.5 W: the row sets it,
+	 * less the node's 1.8 W
+	 */
+	start(20000, 5000, &in, 0);
+	zassert_equal(CONFIG_HUB_ROW_LIMIT_MA, 1600);
+	zassert_equal(budget_grant_mw(&b, 4, 12, 1800, &by), 5400);
+	zassert_equal(by, BUDGET_BY_ROW);
+	/* A bay with a camera: 2.5 W less */
+	zassert_equal(budget_grant_mw(&b, 4, 12, 1800 + 2500, &by), 2900);
+
+	/* Two bays in the row, 8 in the rack: 14.4 W from the row, 11.25 W from the contract */
+	zassert_equal(budget_grant_mw(&b, 2, 8, 1800, &by), 9450);
+	zassert_equal(by, BUDGET_BY_CONTRACT);
+
+	/* 140 W EPR: the same currents at 28 V */
+	contract(true, 28000, 5000);
+	zassert_equal(budget_grant_mw(&b, 4, 12, 1800, &by), 8280);
+	zassert_equal(by, BUDGET_BY_ROW);
+
+	/* A 3 A cable: 2.7 A x 20 V / 12 = 4.5 W, the contract sets it */
+	contract(true, 20000, 3000);
+	zassert_equal(budget_grant_mw(&b, 4, 12, 1800, &by), 2700);
+	zassert_equal(by, BUDGET_BY_CONTRACT);
+
+	/* A share smaller than the node itself: nothing for its DATA lead */
+	zassert_equal(budget_grant_mw(&b, 15, 60, 1800, &by), 0);
+
+	/* No contract, or no bays: no grant */
+	contract(false, 0, 0);
+	zassert_equal(budget_grant_mw(&b, 4, 12, 1800, &by), 0);
+	contract(true, 20000, 5000);
+	zassert_equal(budget_grant_mw(&b, 0, 0, 1800, &by), 0);
+}
+
 ZTEST_SUITE(budget, NULL, NULL, NULL, NULL, NULL);

@@ -94,6 +94,7 @@ void rack_node_rx(struct rack_node *n, const struct rack_frame *f, uint32_t now)
 {
 	enum rack_bcast_op op;
 	struct rack_cmd cmd;
+	struct rack_grant grant;
 	struct rack_frame out;
 	uint8_t mac[6], node;
 
@@ -125,6 +126,10 @@ void rack_node_rx(struct rack_node *n, const struct rack_frame *f, uint32_t now)
 	} else if (n->id != 0 && rack_dec_cmd(f, &node, &cmd) == 0) {
 		if (node == n->id) {
 			on_cmd(n, &cmd);
+		}
+	} else if (n->id != 0 && rack_dec_grant(f, &node, &grant) == 0) {
+		if (node == n->id && n->ops->grant != NULL) {
+			n->ops->grant(n->ctx, &grant);
 		}
 	} else if (rack_dec_hub(f, &n->hub) == 0) {
 		n->have_hub = true;

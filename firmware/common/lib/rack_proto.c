@@ -103,6 +103,7 @@ void rack_enc_status(struct rack_frame *f, uint8_t node, const struct rack_statu
 	put16(&f->data[2], s->dut_mv);
 	put16(&f->data[4], s->dut_ma);
 	f->data[6] = s->flags2;
+	f->data[7] = s->waiting;
 }
 
 void rack_enc_info(struct rack_frame *f, uint8_t node, const struct rack_info *info)
@@ -148,6 +149,13 @@ void rack_enc_hub(struct rack_frame *f, const struct rack_hub_state *h)
 	f->data[5] = h->rows_on;
 	f->data[6] = h->rows_fault;
 	f->data[7] = h->counter;
+}
+
+void rack_enc_grant(struct rack_frame *f, uint8_t node, const struct rack_grant *g)
+{
+	frame(f, RACK_CAN_ID(RACK_FN_GRANT, node), 4);
+	put16(&f->data[0], g->mw);
+	f->data[2] = g->flags;
 }
 
 int rack_dec_bcast(const struct rack_frame *f, enum rack_bcast_op *op)
@@ -204,6 +212,7 @@ int rack_dec_status(const struct rack_frame *f, uint8_t *node, struct rack_statu
 	s->dut_mv = get16(&f->data[2]);
 	s->dut_ma = get16(&f->data[4]);
 	s->flags2 = f->data[6];
+	s->waiting = f->len >= 8 ? f->data[7] : 0;
 
 	return 0;
 }
@@ -269,6 +278,17 @@ int rack_dec_hub(const struct rack_frame *f, struct rack_hub_state *h)
 	h->rows_on = f->data[5];
 	h->rows_fault = f->data[6];
 	h->counter = f->data[7];
+
+	return 0;
+}
+
+int rack_dec_grant(const struct rack_frame *f, uint8_t *node, struct rack_grant *g)
+{
+	if (node_frame(f, RACK_FN_GRANT, 3, node) != 0) {
+		return -1;
+	}
+	g->mw = get16(&f->data[0]);
+	g->flags = f->data[2];
 
 	return 0;
 }

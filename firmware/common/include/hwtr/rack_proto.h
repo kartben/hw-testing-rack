@@ -45,6 +45,7 @@ enum rack_fn {
 	RACK_FN_RACK = 0x4,   /* 0x200: hub -> all, every second */
 	RACK_FN_STATUS = 0x5, /* 0x280 + id: node -> hub, every second */
 	RACK_FN_INFO = 0x6,   /* 0x300 + id: node -> hub */
+	RACK_FN_GRANT = 0x7,  /* 0x380 + id: hub -> node, the bay's power grant, every second */
 	RACK_FN_REQ = 0xE,    /* 0x700 + MAC hash: ENUM_REQ, node without an address */
 	RACK_FN_ENUM = 0xF,   /* 0x780 + id: HELLO; 0x7F0: ENUM_ASSIGN */
 };
@@ -99,6 +100,7 @@ struct rack_status {
 	uint16_t dut_mv;
 	uint16_t dut_ma;
 	uint8_t flags2;
+	uint8_t waiting; /* DATA ports kept off by the bay's grant (byte 7) */
 };
 
 struct rack_info {
@@ -161,6 +163,16 @@ struct rack_hub_state {
 	uint8_t counter;
 };
 
+/* GRANT byte 2: what sets the grant */
+#define RACK_GRANT_ROW      (1U << 0) /* the row's share of its eFuse */
+#define RACK_GRANT_CONTRACT (1U << 1) /* the bay's share of the charger's contract */
+
+/* What the bay may draw on its DATA lead (DATA_VIN), net of the node itself */
+struct rack_grant {
+	uint16_t mw;
+	uint8_t flags;
+};
+
 /* --- Encoding (node is the sender's or the addressee's id) ------------------ */
 
 void rack_enc_bcast(struct rack_frame *f, enum rack_bcast_op op);
@@ -173,6 +185,7 @@ void rack_enc_alert(struct rack_frame *f, uint8_t node, const struct rack_alert 
 void rack_enc_cmd(struct rack_frame *f, uint8_t node, const struct rack_cmd *c);
 void rack_enc_reply(struct rack_frame *f, uint8_t node, const struct rack_reply *r);
 void rack_enc_hub(struct rack_frame *f, const struct rack_hub_state *h);
+void rack_enc_grant(struct rack_frame *f, uint8_t node, const struct rack_grant *g);
 
 /* --- Decoding: 0 on success, -1 if the frame is not that message ----------- */
 
@@ -186,6 +199,7 @@ int rack_dec_alert(const struct rack_frame *f, uint8_t *node, struct rack_alert 
 int rack_dec_cmd(const struct rack_frame *f, uint8_t *node, struct rack_cmd *c);
 int rack_dec_reply(const struct rack_frame *f, uint8_t *node, struct rack_reply *r);
 int rack_dec_hub(const struct rack_frame *f, struct rack_hub_state *h);
+int rack_dec_grant(const struct rack_frame *f, uint8_t *node, struct rack_grant *g);
 
 /* "C3" for 0x23 (buf: 4 bytes) */
 const char *rack_node_name(uint8_t node, char buf[4]);
