@@ -186,7 +186,9 @@ TPS = {
     "TP22": ("HUB_1V8", "1V8", 1.5, HX + 5.0, HY + 4.25),
     # the board side of the lead's I²C, with a GND: a row under J1, 2 mm clear of its housing (rear face)
     "TP24": ("SDA", "SDA", 1.0, LEAD[0] - 0.5, LEAD[1] + 5.5),
-    "TP25": ("SCL", "SCL", 1.0, LEAD[0] + 2.0, LEAD[1] + 5.5), "TP26": ("GND", "GND", 1.5, LEAD[0] + 4.5, LEAD[1] + 5.5),
+    # (its GND under SDA's: at the row's east end its courtyard reached 0.29 mm into the east cradle band, and the
+    # row's tracks and vias leave no nearer spot)
+    "TP25": ("SCL", "SCL", 1.0, LEAD[0] + 2.0, LEAD[1] + 5.5), "TP26": ("GND", "GND", 1.5, LEAD[0] - 0.5, LEAD[1] + 8.55),
     # GND by the expander
     "TP27": ("GND", "GND", 1.5, EXP[0] - 4.0, EXP[1] + 2.6),
     # each port's FAULT_N (port(): TP{k + 1}) by its switch
