@@ -56,6 +56,44 @@ LCSC has stock (3 685 on 2026-10-19), but JLC flags the GCT USB4105-GF-A-120 (C5
 (quantity 0).  **Tick it again at every order**, or the board comes without its USB-C.  The part stays: it is
 rated 5 A (the hub's PD input carries up to 5 A at 28 V), and the stakes hold it against plug forces.
 
+## Buck inductors rated for 28 V EPR (2026-11-01)
+
+28 V EPR stays locked out while the buck inductors withstand 30 V ([docs/power.md](../docs/power.md),
+[docs/datasheet-audit.md](../docs/datasheet-audit.md), U2).  Wanted: a part in the FXL0630 footprint (KiCad's
+`L_Changjiang_FXL0630`: pads 2.35 × 3.5 mm, centres 6.05 mm apart) whose own datasheet states 60 V or more.
+
+| Value (boards) | Now | Pick | JLC stock, price (1 pc) | Rating | Isat | DCR typ / max |
+|---|---|---|---|---|---|---|
+| 4.7 µH (node L1, hub L1, DATA ×6 L2 / L3) | FXL0630-4R7-M (C167220): VW 30 V, 7.5 A (9 A typ), 33 mΩ | Vishay **IHLP2525CZEK4R7M01** (C48009678) | 5 690, $0.69 | 75 V | 10 A (−20 %); heat 5.5 A | 37 / 40 mΩ |
+| 3.3 µH (DATA ×4 v2 L2, LMR51635) | FXL0630-3R3-M (C167219): 9.5 A, 22 mΩ | Vishay **IHLP2525CZER3R3M01** (C506574) | 11 794, $0.84 | 75 V | 13.5 A (−20 %); heat 6 A | 28 / 30 mΩ |
+
+Vishay IHLP-2525CZ-01, document 34104, revision 01-Oct-2026 ([vishay.com/doc?34104](https://www.vishay.com/doc?34104)),
+p. 1: "Rated operating voltage (across inductor) = 75 V", and the table above.  P. 2: EK and ER are the same part
+on 2500- and 2000-piece reels.  The ER 4.7 µH (C553961: 4 459, $1.04) has JLC's full listing, while the EK one's
+is blank.  Body 6.86 × 6.47 × 3.0 mm max; terminals 3.18 wide, 1.27 long, 2.16–3.43 mm from the centre: inside the
+FXL0630 pads (1.85–4.20 mm), so no layout change.  Check the rotation on JLC's placement preview: a two-pad
+part's reference orientation may differ from the FXL0630's.
+
+Against the FXL0630: DCR up a few mΩ (+44 mW for each DATA ×6 regulator at 2.5 A, +0.1 W for the ×4 v2's at
+3.5 A, nothing at the node's 0.8 A), and +$0.6–0.75 a part (extended tier, like the FXL0630).  28 V opens only once
+every inductor on VRACK has been swapped.
+
+Alternate: Würth WE-LHMI 7030 (datasheets 74437346047 and 74437346033, rev. 003.000 of 2024-12-27, p. 1:
+"Operating Voltage V_OP DC 120 V max"): 4.7 µH, 7.5 A typ (−10 %), 37 / 40 mΩ; 3.3 µH, 8.4 A, 28 / 30 mΩ.  Body
+7.3 × 6.6 × 2.8 mm, terminals 3.0 × 1.8 mm (1.85–3.65 mm from the centre); Würth's own land pattern is 8.4 mm over
+the pads, as ours.  Neither JLC nor LCSC has stock (C2047177, C5914141): Global Sourcing or consigned.
+
+Rejected, by the maker's sheet:
+
+* 30 V: Cjiang FXL0630 (VW, p. 14) and FAUL0630 (automotive, "Absolute maximum voltage 30VDC"); Sunlord
+  MWSA0603S (C408446, note 7 p. 11); APV APH0630, XR XR0630, Chilisin MHCB06030 and SOREDE SRYH (the same line).
+  Every Chinese 0630 sheet read states 30 V.
+* No voltage stated: TDK SPM6530T (C76856, no stock), Abracon ASPI-0630LR (C2041346, no stock), Bourns SRP7030 and
+  SRP7028A, Sumida 0630CDMCCDS, Cybermax CMLO0630H.
+
+To check: the 75 V line is new in Vishay's sheet (the revision of 10-Aug-06 had none).  Does it hold for the date
+codes in JLC's stock?  (Vishay's magnetics@vishay.com.)
+
 ## Camera lens
 
 The Mega 3MP has a 1/4" sensor, and its stock 2.8 mm lens gives 90° diagonally (75° × 56°).  The worst board needs
