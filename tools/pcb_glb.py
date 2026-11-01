@@ -473,11 +473,11 @@ def restand(board: str) -> int:
     return n
 
 
-FROM_STEP = ("data-port-x4-v2",)     # boards whose fab GLB is their STEP's (every body: convert_bodies)
+FROM_STEP = ("data-port-x4-v2", "data-port-x6")     # boards whose fab GLB is their STEP's (every body: convert_bodies)
 VARIANTS = {"data-port-x4-v2": ("base",)}   # and their assembly variants, each its own model: <board>-<variant>.glb
 
 
-VIEWER_BOARDS = ("bay-node", "power-hub", "data-port", "camera-pod", "data-port-x4-v2")   # the boards the viewer draws
+VIEWER_BOARDS = ("bay-node", "power-hub", "data-port", "camera-pod", "data-port-x4-v2", "data-port-x6")   # the boards the viewer draws
 
 
 def main(boards=VIEWER_BOARDS):
