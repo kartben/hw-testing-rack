@@ -23,13 +23,13 @@ class Orders(unittest.TestCase):
         _, cls.orders = bom.electronics(rackcfg.load())
 
     def test_panel_reproduces_the_quote(self):
-        # the 1 × 2 base + logic panel: JLC's real quote of 2026-10-23 (green, Economic, $201.72), the RP2354B
-        # it left unplaced and the datasheet audit's fixes since (JLC_SINCE_QUOTE), its parts scaled from the
-        # quote's at JLC's price breaks, its special components a piece
+        # the 1 × 2 base + logic panel: JLC's real quote of 2026-11-01 (green, Economic, $235.45), the C60 it
+        # left unplaced (Standard-only, JLC_SINCE_QUOTE), its parts scaled from the quote's at JLC's price
+        # breaks, its special components a piece
         q = bom.JLC_QUOTE["data-port-x4-v2-panel"]
         if q.get("stale_since"):
             self.skipTest(f"the panel's quote is stale since {q['stale_since']}: {q['stale']}")
-        for n, usd in ((2, 212.14), (5, 331.52), (10, 528.04)):
+        for n, usd in ((2, 238.78), (5, 375.43), (10, 604.01)):
             self.assertAlmostEqual(bom.panel_order(n, self.orders)["total"], usd, delta=0.02)
 
     def test_volume_is_order_cost(self):
@@ -81,7 +81,9 @@ class Orders(unittest.TestCase):
         q = bom.JLC_QUOTE["data-port-x4-v2-panel"]
         if q.get("stale_since"):
             self.skipTest(f"the panel's quote is stale since {q['stale_since']}: {q['stale']}")
-        self.assertEqual((o["types"], o["extended"], o["preferred"]), (42, 18, 2))   # C25725, C20615800 preferred
+        # JLC's quote of 2026-11-01: 50 types, 24 placed extended of which 3 preferred (C25725, C25796,
+        # C20615800), and C60's (extended, unplaced: Standard-only)
+        self.assertEqual((o["types"], o["extended"], o["preferred"]), (50, 22, 3))
 
     def test_economic_fees_follow_the_tiers(self):
         # Economic PCBA charges the extended types only: basic and preferred-extended ones load free (the

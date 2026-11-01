@@ -5,7 +5,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 708 |
+| Electronics | 711 |
 | Cables | 101 |
 | Cameras | 64 |
 | Printed parts | 62 |
@@ -13,9 +13,9 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Motion | 19 |
 | Fasteners | 9 |
 | Analyzer | 7 |
-| **Total** | **1,028** |
+| **Total** | **1,031** |
 
-≈ **€128 per bay** all-in.
+≈ **€129 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -50,10 +50,9 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | **Estimated total** | **81.40** |
 | | | In the rack's order on the data-port-x4-v2-panel (one per panel) | |
 | data-port-x4-v2-panel | 5 panels (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites), 2 assembled: 2 of each board, Economic PCBA | PCB: engineering $25.00, ENIG $18.20, board $8.80 | 52.00 |
-| | | PCBA: setup $8.24, stencil $1.55, components $84.24, extended parts $49.44, SMT $5.77, special components $0.48 | 149.72 |
-| | | **Quoted total** | **201.72** |
-| | | *Quote stale since 2026-11-01: the v2's rework changed its BOM (layout B, its own 5 V converter, the lead's map B).  The order below is the calculator's until a re-quote* | |
-| | | Order (indicative): RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price (+$3.05 components); RP2354B: its extended part type (+$3.09 extended parts); the datasheet audit's fixes: their parts, 2 panels at JLC's price (+$1.19 components); MAX809S (U5): its extended part type (+$3.09 extended parts); quote stale since 2026-11-01: the v2's rework changed its BOM (layout B, its own 5 V converter, the lead's map B); parts and extended types from the BOM until a re-quote | 235.64 |
+| | | PCBA: setup $8.24, stencil $1.55, components $101.52, extended parts $64.89, SMT $6.77, special components $0.48 | 183.45 |
+| | | **Quoted total** | **235.45** |
+| | | Order (indicative): C60 (33 µF 50 V), Standard-only at JLC: 4 Economic ones at JLC's price (+$0.24 components); C60: its extended part type (+$3.09 extended parts) | 238.78 |
 
 ## JLC cost
 
@@ -65,9 +64,9 @@ What each order pays once, whatever the number of boards, against what grows wit
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (15 + 2 pref.) | 51.15 | 98.87 | 57.10 | **155.97** | 155.97 | 153.06 |
 | data-port | Economic | 6 / 10 | 7 (3) | 9.27 | 26.15 | 14.61 | **40.76** | 40.76 | 30.71 |
 | camera-pod | Economic | 2 / 2 | 8 (4) | 12.36 | 28.11 | 2.31 | **30.42** | 30.42 | 29.63 |
-| data-port-x4-v2-panel | Economic | 1 / 2 | 50 (22 + 2 pref.) | 67.98 | 129.77 | 105.87 | **235.64** | 235.64 | 233.62 |
+| data-port-x4-v2-panel | Economic | 1 / 2 | 50 (22 + 3 pref.) | 67.98 | 129.77 | 109.01 | **238.78** | 238.78 | 236.76 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **769.29** | **769.29** | **728.29** |
+| **All** | | | | | | | **772.43** | **772.43** | **731.43** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -91,19 +90,19 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 
 | Board | 2 | 5 | 10 | 50 | 100 | Floor |
 |---|---:|---:|---:|---:|---:|---:|
-| bay-node | 72.41 | 39.25 | 27.25 | 17.14 | 14.62 | 13.66 |
-| power-hub | 77.97 | 46.81 | 36.05 | 24.45 | 21.51 | 20.65 |
+| bay-node | 72.48 | 39.35 | 27.25 | 17.22 | 14.72 | 13.75 |
+| power-hub | 77.97 | 46.83 | 36.09 | 24.57 | 21.65 | 20.79 |
 | data-port | 14.32 | 6.78 | 4.08 | 2.03 | 1.55 | 1.35 |
 | camera-pod | 15.21 | 6.78 | 3.99 | 1.80 | 1.38 | 1.15 |
-| data-port-x4-v2-panel | 117.82 | 73.77 | 58.68 | 43.71 | 40.08 | 39.06 |
+| data-port-x4-v2-panel | 119.39 | 75.09 | 60.40 | 44.73 | 41.26 | 40.24 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-panel) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4-v2-panel | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 254.33 | 155.95 | 40.76 | 30.42 | 235.64 | **751.10** |
-| 5 | 147.15 | 46.81 | 14.28 | 7.97 | 73.77 | **296.79** |
-| 10 | 129.85 | 36.05 | 13.54 | 5.37 | 58.68 | **246.89** |
+| 1 | 255.17 | 155.95 | 40.76 | 30.42 | 238.78 | **755.08** |
+| 5 | 147.16 | 46.83 | 14.28 | 7.97 | 75.09 | **298.13** |
+| 10 | 130.56 | 36.09 | 13.54 | 5.37 | 60.40 | **249.35** |
 
 ## Printed parts
 
@@ -386,9 +385,9 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 8  | 0.69 | 5.52 | LCSC/JLCPCB C49851 |
 | Electronics | USBLC6-2SC6 — USB ESD protection | 8  | 0.17 | 1.32 | LCSC/JLCPCB C7519 |
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
-| Electronics | Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | calculator (the JLCPCB quote of 2026-10-23 is stale since 2026-11-01) |
-| Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 77.30 | 77.30 | calculator (the JLCPCB quote of 2026-10-23 is stale since 2026-11-01), adjusted |
-| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 0.01 | 0.01 | calculator (the JLCPCB quote of 2026-10-23 is stale since 2026-11-01), adjusted |
+| Electronics | Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | JLCPCB quote 2026-11-01 |
+| Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 78.22 | 78.22 | JLCPCB quote 2026-11-01, adjusted |
+| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 1.98 | 1.98 | JLCPCB quote 2026-11-01, adjusted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
 | Printed parts | Rear bay covers (optional) | 8  | 0.00 | 0.00 | printed |

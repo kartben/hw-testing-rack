@@ -144,27 +144,27 @@ JLC_QUOTE = {
     # one 1 × 2 order panel (electronics/data-port-x4-v2/fab/data-port-x4-v2-panel-*: 100 × 142 mm, the base
     # turned 180°, top edge to top edge on two mouse-bite tabs), one order: one setup and stencil, the logic's
     # part types once (the base's are a subset), both boards' parts bought together at the breaks they reach
-    # (panel_order()).  JLC's real quote, 2026-10-23 (jlcpcb.com, the user's account, the panel's committed
-    # Gerbers, JLC BOM and CPL of 2cd2cc0 uploaded with the user's OK): 5 panels, 2 assembled, green (the
-    # user, 2026-10-23: "Ok, vert", then every board green; pcb.solder_mask), Economic PCBA, no rails: $201.72, 3–4
-    # days; the RP2354B (U11, logic) was out of stock at JLC and left unplaced (JLC_SINCE_QUOTE: $207.86 with
-    # it, $212.14 with the datasheet audit's fixes of 2026-10-25).  JLC flags the rows that join _L and _B
-    # designators ("multiple types of parts?") and leaves them for a tick; no X-ray line.  The alternative, black:
+    # (panel_order()).  JLC's real quote, 2026-11-01, after the v2's rework (layout B on the DATA ×6's grid, its
+    # own 5 V from the rack's 20 V, the lead's map B; jlcpcb.com, the user's account, main's 68bfe5cc panel
+    # Gerbers, JLC BOM and CPL uploaded with the user's OK): 5 panels, 2 assembled, green (pcb.solder_mask),
+    # Economic PCBA, no rails, 3–4 days: $235.45.  50 part types, 24 of them extended, 3 of those preferred
+    # (C25725, C25796, C20615800): 21 × $3.09.  The RP2354B (U11, logic) in stock and placed.  One type left
+    # unplaced: C60 (C72509, 33 µF 50 V, 2 a panel), which JLC places with Standard PCBA only (JLC_SINCE_QUOTE).
+    # JLC flags the rows that join _L and _B designators ("multiple types of parts?") and leaves them for a
+    # tick; no X-ray line, no nitrogen-reflow line.  It replaces the quote of 2026-10-23 ($201.72 before the
+    # rework, $212.14 with the RP2354B and the datasheet audit's fixes).  The alternative, black (2026-10-23):
     # Standard PCBA, the only one JLC offers on 4 layers in black, two 5 mm rails (110 × 142 mm): $249.86 (PCB
     # $61.10 = $25 + ENIG $18.40 + black $8.00 + $9.70; setup $25.75, stencil $8.27, 39 types × $1.55 = $60.45,
     # components $86.73, SMT $6.57, packaging $0.51, special components $0.48), $254.46 with the RP2354B: $46.60
     # more an order.
     # One logic and one base per panel; the variants' own estimates above stay for single orders (the BOM
-    # page's calculator).  Stale since the v2's rework of 2026-11-01 (layout B on the DATA ×6's grid, its own 5 V
-    # from the rack's 20 V, the lead's map B): priced by the calculator until a re-quote
+    # page's calculator).
     "data-port-x4-v2-panel": {
-        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 201.72, "date": "2026-10-23", "from_fab": True,
-        "stale_since": "2026-11-01",
-        "stale": "the v2's rework changed its BOM (layout B, its own 5 V converter, the lead's map B)",
+        "pcbs": 5, "assembled": 2, "service": "Economic", "total": 235.45, "date": "2026-11-01", "from_fab": True,
         "boards": ("data-port-x4-v2", "data-port-x4-v2-base"),
         "spec": "4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites",
         "pcb": {"engineering": 25.00, "ENIG": 18.20, "board": 8.80},
-        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 84.24, "extended parts": 49.44, "SMT": 5.77,
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 101.52, "extended parts": 64.89, "SMT": 6.77,
                  "special components": 0.48},
     },
 }
@@ -175,18 +175,13 @@ JLC_FINISH = {}
 # for the quoted order).  The node's and the hub's changes since their estimate and quote of 2026-10-19 lived
 # here until their real quotes of 2026-10-23.
 JLC_SINCE_QUOTE = {
-                   # the v2 panel's quote left the RP2354B (C39843328) unplaced: JLC had none in stock on
-                   # 2026-10-23 (2 at its $1.5242 once restocked, a 17th extended type; other users sold theirs
-                   # at $2.91)
-                   "data-port-x4-v2-panel": [("RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price",
-                                              "components", 3.05),
-                                             ("RP2354B: its extended part type", "extended parts", 3.09),
-                                             # the DATA ×4 v2 datasheet audit's fixes (2026-10-25): 12 H5VU25UC
-                                             # (preferred, no fee), 2 MAX809S (a new extended type), 1M, 10k,
-                                             # 100k, 4.7 µF; the schematic review's D2 (BAT54S) gone again
-                                             ("the datasheet audit's fixes: their parts, 2 panels at JLC's price",
-                                              "components", 1.19),
-                                             ("MAX809S (U5): its extended part type", "extended parts", 3.09)],
+                   # the v2 panel's quote of 2026-11-01 left C60 unplaced: its RVT1H330M0607 (C72509) is
+                   # Standard-only at JLC.  Priced as an Economic 33 µF 50 V in the same 6.3 × 7.7 mm case would
+                   # be, the catalogue's alternate VH1H330ME077000CE0 (C240518, extended, $0.0594), until the
+                   # board's owner picks one
+                   "data-port-x4-v2-panel": [("C60 (33 µF 50 V), Standard-only at JLC: 4 Economic ones at JLC's price",
+                                              "components", 0.24),
+                                             ("C60: its extended part type", "extended parts", 3.09)],
                    # the pod's U1 since the quote: the AP2114H-3.3 (C150716, extended, $0.2314) for the AMS1117
                    # (C6186, basic, $0.2048), stable with its ceramic output capacitor (datasheet audit F1)
                    "camera-pod": [("AP2114H-3.3 for the AMS1117 (datasheet audit F1): its extended part type",
