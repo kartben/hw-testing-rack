@@ -127,6 +127,24 @@ class Rules(unittest.TestCase):
         self.assertFalse([k for c in classes for k in c if k.startswith("_")])
 
 
+class Severities(unittest.TestCase):
+    KICAD = {"silk_overlap": "warning", "track_dangling": "warning", "courtyards_overlap": "error"}
+
+    def test_the_boards_own_calls_by_name(self):
+        sev = dict(self.KICAD)
+        netrules.apply_severities(sev, {"silk_overlap": "error", "courtyards_overlap": "warning"})
+        self.assertEqual(sev, {"silk_overlap": "error", "track_dangling": "warning", "courtyards_overlap": "warning"})
+        self.assertEqual(netrules.apply_severities(dict(self.KICAD), None), self.KICAD)
+
+    def test_unknown_check_or_severity_stops(self):
+        with self.assertRaisesRegex(ValueError, "no such KiCad check"):
+            netrules.apply_severities(dict(self.KICAD), {"silk_overlaps": "ignore"})
+        with self.assertRaisesRegex(ValueError, "not one of"):
+            netrules.apply_severities(dict(self.KICAD), {"silk_overlap": "off"})
+        # a project KiCad hasn't saved yet lists no check: nothing to compare with
+        self.assertEqual(netrules.apply_severities({}, {"silk_overlap": "ignore"}), {"silk_overlap": "ignore"})
+
+
 @unittest.skipUnless(eda.KICAD_SYMBOL_DIR.exists(), "KiCad's symbol library (KICAD_SYMBOL_DIR) not here")
 class Boards(unittest.TestCase):
     def test_every_pattern_matches_a_net(self):

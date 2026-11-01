@@ -10,6 +10,7 @@ return, so every board is built and checked with them.  A board that declares no
 * A "Sensitive" class (enables, faults, resets) beside a "USB" class: 3 × the USB track width between them, the
   layout review's spacing between a fast bus and the lines outside it that must not pick up its edges
   (sensitive_rules).
+* b.pcb["severities"]: the board's own DRC severities, written into its .kicad_pro (apply_severities).
 
 Keys starting with "_" stay out of the .kicad_pro (eda.write_project).  No track_angle constraint here, ever: KiCad
 drops the whole .kicad_dru on it, silently.
@@ -121,3 +122,20 @@ def sensitive_rules(netclasses) -> str:
 def class_rules(netclasses, pcb: dict, net_name=lambda n: n) -> str:
     """Every rule the board's netclasses ask for, as .kicad_dru text ("" when they ask for none)."""
     return min_width_rules(netclasses, pcb, net_name) + sensitive_rules(netclasses)
+
+
+SEVERITIES = ("error", "warning", "ignore")
+
+
+def apply_severities(rule_severities: dict, severities: dict | None) -> dict:
+    """b.pcb["severities"] {KiCad check: error | warning | ignore} into the .kicad_pro's
+    board.design_settings.rule_severities, in place: one board's own call on one check, by name, never a
+    generator-wide silence.  A check the file doesn't list (KiCad writes every one it knows) or a severity KiCad
+    doesn't know is an error: KiCad would skip it without a word."""
+    for check, sev in (severities or {}).items():
+        if sev not in SEVERITIES:
+            raise ValueError(f"DRC severity {check}: {sev!r}, not one of {', '.join(SEVERITIES)}")
+        if rule_severities and check not in rule_severities:
+            raise ValueError(f"DRC severity {check}: no such KiCad check")
+        rule_severities[check] = sev
+    return rule_severities

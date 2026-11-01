@@ -111,6 +111,9 @@ every board is built and checked with them; a board that declares nothing gets n
 - A `Sensitive` class (enables, faults, resets) beside a `USB` class is kept 3 × the USB track width off
   it, the layout review's spacing between a fast bus and the lines outside it.  Freerouting routes with
   it too: the DSN gets a `class_class` clearance between the two classes.
+- `b.pcb["severities"]` (`{check: error | warning | ignore}`) sets one board's DRC severities in its
+  `.kicad_pro`, by KiCad's check names; an unknown check or severity stops the build.  The generator
+  itself silences nothing.
 
 `tools/kicad.sh <board> --rules` rewrites a routed board's `.kicad_dru` and its `.kicad_pro` DRC settings
 from the design, then runs DRC, without touching its copper.

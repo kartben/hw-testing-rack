@@ -642,7 +642,7 @@ class PcbBuilder:
         # zones are filled by `kicad-cli pcb drc --refill-zones --save-board` (KiCad's own filler)
         pcbnew.SaveBoard(str(self.path), self.board)
         write_stackup(self.path, self.b.pcb)
-        write_via_rules(self.path.with_suffix(".kicad_pro"))
+        write_via_rules(self.path.with_suffix(".kicad_pro"), self.b.pcb.get("severities"))
         return self.path
 
 
@@ -705,7 +705,7 @@ def write_rules(b: Board, outdir: Path, netclasses=None) -> Path:
     board = pcbnew.LoadBoard(str(path))
     dru = outdir / f"{b.name}.kicad_dru"
     dru.write_text(dru_text(b, netclasses, [str(n) for n in board.GetNetsByName().keys()]), encoding="utf-8")
-    write_via_rules(path.with_suffix(".kicad_pro"))
+    write_via_rules(path.with_suffix(".kicad_pro"), b.pcb.get("severities"))
     print("rules:", dru.name, path.with_suffix(".kicad_pro").name)
     return dru
 
@@ -748,12 +748,14 @@ def apply_models(path: Path) -> int:
     return n
 
 
-def write_via_rules(pro: Path):
+def write_via_rules(pro: Path, board_severities: dict | None = None):
     """KiCad's DRC reads the board's minimum drill and annular ring from <board>.kicad_pro, which
     pcbnew.SaveBoard leaves alone: write SMALL_VIA's limits there, so a via under JLC's no-extra-cost
     size is a DRC error.  A dangling track or via (an antenna: the layout review, 2026-10-28) is one too, not
-    KiCad's default warning."""
+    KiCad's default warning.  Then the board's own severities (b.pcb["severities"], netrules.apply_severities),
+    after these: one board's call on one check; a call without them keeps the ones written before."""
     import json
+    from netrules import apply_severities
     data = json.loads(pro.read_text(encoding="utf-8"))
     settings = data.setdefault("board", {}).setdefault("design_settings", {})
     rules = settings.setdefault("rules", {})
@@ -761,6 +763,10 @@ def write_via_rules(pro: Path):
     rules["min_via_annular_width"] = round((SMALL_VIA[0] - SMALL_VIA[1]) / 2, 4)
     severities = settings.setdefault("rule_severities", {})
     severities["track_dangling"] = severities["via_dangling"] = "error"
+    try:
+        apply_severities(severities, board_severities)
+    except ValueError as e:
+        raise SystemExit(f"{pro.stem}: {e}")
     pro.write_text(json.dumps(data, indent=2, ensure_ascii=False) + chr(10), encoding="utf-8")
 
 
