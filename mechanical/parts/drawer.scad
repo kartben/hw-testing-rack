@@ -7,21 +7,18 @@
 //                       no magnet; two flange segments at its rear (lock screws in a fixed bay)
 //   -D 'PART="block"'   a sled bay's port block: the drawer's rear bay on its own, locked into the tray by
 //                       two PT 2.3 × 8 through the guide lips
-//   -D 'DATA="x6"'      the drawer for a DATA ×6 (config/rack.yaml › pcb.data_port_x6, prototype): six U's at its
-//                       15 mm pitch, 1.6 mm ribs between them, no single DATA board (its bosses and ledges gone), the
-//                       port numbers on the cradle's strip (no room beside a U); the DATA ×4 v2's drawer is unchanged
 //
 // - Front panel with a finger pull, a recess for 12 mm label tape and the display's window, its frame behind:
 //   its own part, printed face down (the window's a plain hole, the frame stands straight up), pulled onto the
 //   side walls, a PT 2.3 × 8 either side from inside the drawer into its back.
 // - Board-plate pocket: plates drop in (two 180°-symmetric locating pins).
 // - Rear bay behind the port wall, one for both DATA boards (a bay converts by changing the board, not the
-//   drawer): four U's in the wall, the DATA ×4's ports.  A DATA ×4 v1 on three floor bosses; a DATA ×4 v2,
-//   standing, in its cradle (parts/x4_cradle.scad) on the same three; or the single DATA port board on two
-//   more, its USB-C behind the fourth U, the optional AUX pigtail through a free one.  Every board's PH 8 lead
-//   comes up through the cable window at the rear right, from the drag chain's moving end: a rear strip (the
-//   single board's lead, then along the rear wall to its PH; a v2's, over its cradle) and a side strip beside
-//   a v1's right edge, under its J1.  The chain foot slides
+//   drawer): six identical upright slots in the wall on one grid, the DATA ×6's ports, the v2's in slots 2–5,
+//   a straight plug in each (an angled one only if its cable leaves upwards).  No numbers: on either board
+//   port 1 is the leftmost seen from the DUT's side (docs/mechanical.md).  Either
+//   board stands in the same cradle (parts/x4_cradle.scad) on three floor bosses (where v1's holes were), the
+//   optional AUX pigtail through a free slot.  The board's PH 8 lead comes up through the cable window at the
+//   rear right, from the drag chain's moving end, and over the cradle to the board's rear face.  The chain foot slides
 //   into the rear-open groove under the bottom and is locked by one PT 2.3 × 8 screw from inside the rear bay.
 // - Rear flange segments run under the guide lips (anti-tip); a notch under the left wall takes the bump of
 //   the tray's printed detent tab (or, drawer.detent: magnet, a magnet under the rear bay over the left ledge).
@@ -32,8 +29,6 @@
 include <../lib/carrier.scad>
 
 PART = "drawer";
-DATA = "x4";
-X6 = DATA == "x6";
 
 // drawer.detent: magnet: the magnet sits right inside the left wall, its boss within the drawer's footprint (a boss
 // sticking out of the wall would hit the tray's guide lip on the last 10 mm before closing)
@@ -141,40 +136,37 @@ module joint_posts() for (i = [0, 1]) let (o = i == 0 ? 0 : DRAWER_W, s = i == 0
 module joint_holes() for (j = JOINTS)
     translate([j[0], JOINT_Y - EPS, JOINT_Z]) rotate([-90, 0, 0]) cylinder(d = PT_CLEAR, h = JOINT_T + 2 * EPS, $fn = 24);
 
-// the DATA ports along the port wall: the DATA ×4's four (config/rack.yaml › pcb.data_port_x4), or the ×6's six
-PORT_XS = X6 ? [for (u = DATA_X6_USB) DATA_X6_X0 + u] : [for (u = DATA_X4_USB) DATA_X4_X0 + u];
-assert(X6 || abs(DATA_PORT_X[0] - PORT_XS[3]) < 0.01, "the single DATA board's USB-C sits on the fourth port");
-assert(len([for (i = [1 : len(PORT_XS) - 1]) if (PORT_XS[i] - PORT_XS[i - 1] < USBC_PLUG_CUT[0] + 1.6) 1]) == 0,
-       "a rib between two U's is under 1.6 mm");
+// the DATA ports along the port wall: the grid's six (lib/carrier.scad › DATA_PORTS), the v2's four on it, six
+// identical standing slots (the user, 2026-11-01: never mixed orientations)
+PORT_XS = DATA_PORTS;
+assert(len([for (r = DATA_PORT_ROT) if (r != 90) 1]) == 0 && len(DATA_PORT_ROT) == len(PORT_XS),
+       "a DATA ×6 receptacle not standing: the wall's slots are all alike");
+// a warning until the v2 is re-placed on the grid (pcb.data_port_x4_v2), then an assert again
+if (len([for (u = DATA_V2_USB) if (min([for (x = PORT_XS) abs(x - DATA_V2_X0 - u)]) > 0.01) 1]) > 0)
+    echo("WARNING: a DATA ×4 v2 port off the grid");
+assert(len([for (i = [1 : len(PORT_XS) - 1]) if (PORT_XS[i] - PORT_XS[i - 1] < USBC_PLUG_CUT[1] + 1.6) 1]) == 0,
+       "a rib between two slots is under 1.6 mm");
 // the DATA ×4's bosses: v1's first three holes, which the v2's cradle shares (v1 is not ordered: its front-edge
 // ledges are gone, docs/printed-parts-review.md); a fourth hole, if v1 has one, stays unused
 X4_HOLES = [for (i = [0 : 2]) let (h = DATA_X4_HOLES[i]) [DATA_X4_X0 + h[0], DATA_PCB_Y0 + DATA_X4_SIZE[1] - h[1]]];
 X4_BOSS_D = INSERT_M3[0] + 4;                     // the DATA ×4 bosses take M3 inserts (the cradle's M3 × 8): 2 mm of wall
-// the single board's bosses and ledges: lib/carrier.scad › ONE_HOLES, ONE_LEDGES
-// A DATA ×4 v2's plugs reach the ledges' front strip: the overmold (12.35 × 6.5 at most, on PORT_Z) passes the
-// port wall's U and stops at the v2's mouths, 1 mm behind the wall, its underside (7.75) 0.02 into the ledges'
-// top (SolidCraft, 2026-10-31).  That strip drops 0.3 for 1.2 mm; the single board keeps 0.8 mm of ledge.
-LEDGE_STEP = [1.2, 0.3];                          // depth (y), drop
 function pin_spots() = [for (k = [NODE_RESET, NODE_BOOT]) node_xy(k) - [DRAWER_X0, 0]];   // the node's buttons, drawer xy
 
 module port_wall() {
     y = DRAWER_PORT_WALL_Y;
     t = DRAWER_WALL;
-    w = USBC_PLUG_CUT[0];
-    r = 1.5;                                        // the U's bottom corners: a right-angle body's fit there
+    w = USBC_PLUG_CUT[1];
+    r = 1.5;                                        // the slot's bottom corners: a full round would leave an R 2 overmold 0.04
     difference() {
         translate([0, y - t, 0]) cube([DRAWER_W, t, DRAWER_WALL_H]);
-        // the DATA ports: the USB-C plug cut's width, from its bottom up through the wall's top
-        for (x = PORT_XS) translate([x, y - t - EPS, PORT_Z - USBC_PLUG_CUT[1] / 2]) hull() {
+        // the DATA ports: the USB-C plug cut stood on end, from its bottom up through the wall's top
+        for (x = PORT_XS) translate([x, y - t - EPS, PORT_Z - USBC_PLUG_CUT[0] / 2]) hull() {
             for (s = [-1, 1]) translate([s * (w / 2 - r), 0, r]) rotate([-90, 0, 0]) cylinder(r = r, h = t + 2 * EPS);
             translate([-w / 2, 0, r]) cube([w, t + 2 * EPS, DRAWER_WALL_H]);
         }
         // the display's lead into the rear bay: a notch at the wall's foot over the plate's right gap
         if (HAS_DISPLAY) translate([DRAWER_W - DRAWER_WALL - DRAWER_PLATE_GAP[1] - 0.5, y - t - EPS, DRAWER_BOTTOM - EPS])
             cube([DRAWER_PLATE_GAP[1] + 0.5 + EPS, t + 2 * EPS, 5.5 + EPS]);
-        // the port numbers, 1–4 left to right, debossed in the wall's front face left of each U
-        if (!X6) for (i = [0 : len(PORT_XS) - 1]) translate([PORT_XS[i] - w / 2 - 2.3, y - t, PORT_Z]) rotate([90, 0, 0])
-            deboss(str(i + 1), cap = 5.5);
     }
 }
 
@@ -198,14 +190,8 @@ module drawer(rear = true, foot = true) {
                 if (DRAWER_DETENT == "magnet") translate([DETENT[0], DETENT[1], 0]) cylinder(d = DETENT_BOSS, h = DRAWER_MAGNET[1] + 1.2);
             }
             if (rear) {
-                // the boards' bosses, and two ledges under the single board's front edge (its underside is bare
-                // but for its USB4105's pegs), their front strip lowered under a DATA ×4 v2 plug's overmold
+                // the cradle's bosses
                 for (h = X4_HOLES) translate([h[0], h[1], 0]) cylinder(d = X4_BOSS_D, h = DATA_PCB_Z);
-                if (!X6) for (h = ONE_HOLES) translate([h[0], h[1], 0]) cylinder(d = 5, h = DATA_PCB_Z);
-                if (!X6) for (s = ONE_LEDGES) translate([s[0], DATA_PCB_Y0 - EPS, 0]) difference() {
-                    cube([s[1] - s[0], 2, DATA_PCB_Z]);
-                    translate([-EPS, -EPS, DATA_PCB_Z - LEDGE_STEP[1]]) cube([s[1] - s[0] + 2 * EPS, LEDGE_STEP[0] + EPS, 1]);
-                }
             }
         }
         // rear-open groove for the chain foot, and its lock screw
@@ -224,27 +210,16 @@ module drawer(rear = true, foot = true) {
         if (rear) for (x = COVER_TABS)
             translate([x + 3 - 0.5, DRAWER_D - DRAWER_WALL - EPS, 6 + 0.7]) cube([6, COVER_BUMP + 0.2 + EPS, 2 * COVER_BUMP + 1 + 0.6]);
         if (rear) {
-            // pilots for the single DATA port board's PT 2.3 × 8, from above
-            if (!X6) for (h = ONE_HOLES) translate([h[0], h[1], DATA_PCB_Z - 7]) cylinder(d = PT_PILOT, h = 7 + EPS);
-            // the DATA ×4's (the cradle's): an M3 insert in each, its hole running on through the floor (an
-            // M3 × 8 from the cradle goes 0.7 mm past the insert)
+            // the cradle's bosses: an M3 insert in each, its hole running on through the floor (an M3 × 8 from
+            // the cradle goes 0.7 mm past the insert)
             for (h = X4_HOLES) translate([h[0], h[1], DATA_PCB_Z]) insert_hole(INSERT_M3, runout = DATA_PCB_Z - INSERT_M3[1] + 1);
-            // cable window in the rear-bay floor, up to 1 mm off the rear wall and 1 mm short of the foot's boss:
-            // a rear strip from 1.5 mm right of the third boss (the single board's lead comes up there and runs
-            // left along the rear wall to its PH; a v2's drops behind its cradle), and a side strip 1 mm right of
-            // a v1's right edge, from 4 mm behind the port wall (v1's J1 plug is right above; none in a ×6's drawer: its
-            // 120 mm board stands there)
-            wy = DATA_PCB_Y0 + DATA_PCB_SIZE[1] + 1;
+            // cable window in the rear-bay floor, from 1.5 mm right of the third boss, up to 1 mm off the rear
+            // wall and 1 mm short of the foot's boss: the board's lead comes up there, behind its cradle
             wx = X4_HOLES[2][0] + X4_BOSS_D / 2 + 1.5;
-            sx = DATA_X4_X0 + DATA_X4_SIZE[0] + 1;
-            sy = DATA_PCB_Y0 + 4;
             we = FOOT_HOLE[0] - 5.5;
             wr = DRAWER_D - DRAWER_WALL - 1;
-            assert(sx < we - 4, "the DATA ×4 is too long for a side strip beside it");
-            translate([0, 0, -EPS]) linear_extrude(DRAWER_BOTTOM + 2 * EPS) offset(r = 2) offset(delta = -2) union() {
-                translate([wx, wy]) square([we - wx, wr - wy]);
-                if (!X6) translate([sx, sy]) square([we - sx, wr - sy]);
-            }
+            translate([0, 0, -EPS]) linear_extrude(DRAWER_BOTTOM + 2 * EPS) offset(r = 2) offset(delta = -2)
+                translate([wx, DATA_WIN_Y]) square([we - wx, wr - DATA_WIN_Y]);
         }
         // pin holes over the node's RESET and BOOT
         for (p = pin_spots()) translate([p[0], p[1], -EPS]) cylinder(d = 3.2, h = DRAWER_BOTTOM + 2 * EPS);

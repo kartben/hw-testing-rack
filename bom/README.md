@@ -132,8 +132,8 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | cap_plate | 4 | 39.9 | `mechanical/stl/cap_plate.stl` |
 | chain_anchor | 7 | 1.4 | `mechanical/stl/chain_anchor.stl` |
 | chain_foot | 7 | 1.4 | `mechanical/stl/chain_foot.stl` |
-| drawer | 7 | 35.8 | `mechanical/stl/drawer.stl` |
-| drawer_block | 1 | 17.3 | `mechanical/stl/drawer_block.stl` |
+| drawer | 7 | 35.6 | `mechanical/stl/drawer.stl` |
+| drawer_block | 1 | 17.1 | `mechanical/stl/drawer_block.stl` |
 | drawer_front | 8 | 13.7 | `mechanical/stl/drawer_front.stl` |
 | drawer_sled | 1 | 19.0 | `mechanical/stl/drawer_sled.stl` |
 | floor_plate | 4 | 38.8 | `mechanical/stl/floor_plate.stl` |

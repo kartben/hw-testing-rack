@@ -86,17 +86,22 @@ DETENT_TAB_Y0 = DETENT_TAB_Y - DETENT_BUMP[1] / 2 - 1.2;   // the tab's free (fr
 COVER_TABS = [30, 112];
 COVER_BUMP = 0.7;
 
-// port wall: four U's, the DATA ×4's ports (config/rack.yaml › pcb.data_port_x4).  The single DATA port is
-// our own small board (electronics/data-port, config/rack.yaml › pcb.data_port): a USB-C source on its front
-// edge, on the fourth U, a side-entry JST PH 8 on its rear edge for the lead from the node's J7.
-// Components up on two bosses of the rear-bay floor, 2 × PT 2.3 × 8 from above, its front edge against
-// the port wall's back face: the receptacle sits 1.7 mm behind the wall's front face, in the USB-C plug
-// cut carried up through the wall's top (a U): a straight plug's overmold or a right-angle plug's body
-// (19 mm tall, the wall's top only 5 mm over the axis) goes in until the plug seats.
+// port wall: six slots on one grid (the user, 2026-11-01), the DATA ×6's ports (config/rack.yaml ›
+// pcb.data_port_x6); the DATA ×4 v2's four sit on the middle four, so one drawer and one cradle take either
+// board.  The receptacles stand with their slot upright (2026-11-01), all six alike, and so does the USB-C
+// plug cut, carried up through the wall's top: a straight plug's overmold (12.35 tall, 1.2 over the wall's top)
+// goes in until the plug seats.  An angled plug fits only if its cable leaves upwards: sideways it meets the
+// next port.
+DATA_PORTS = [for (u = DATA_X6_USB) DATA_X6_X0 + u];   // drawer x of the six slots
+DATA_PORT_ROT = DATA_X6_USB_ROT;                   // each one's receptacle: 90 standing (drawer.scad asserts it)
 PORT_Z = DRAWER_BOTTOM + 8.5;                      // the USB-C mouth's centre (tools/webscene.py mirrors it)
-DATA_PCB_Z = PORT_Z - 1.63 - DATA_PCB_T;           // the board's underside (the USB4105's mouth 1.63 over its top): the bosses' top
+// the DATA ×4 bosses' top, where v1's 1.6 mm board sat (its USB4105's mouth 1.63 over it): the cradle's base
+DATA_PCB_Z = PORT_Z - 1.63 - 1.6;
+DATA_PCB_Y0 = DRAWER_PORT_WALL_Y;                  // the port wall's back face
+DATA_WIN_Y = DATA_PCB_Y0 + 18;                     // the rear bay's cable window: its front edge
+// the single DATA board (electronics/data-port), obsolete since 2026-11-01: only the cradle's comb still clears
+// its bosses and ledges
 DATA_PCB_X0 = DATA_PORT_X[0] - DATA_PCB_USB;       // drawer x of the board's left edge (KiCad x = 0)
-DATA_PCB_Y0 = DRAWER_PORT_WALL_Y;                  // drawer y of its front edge: the port wall's back face
 function data_hole(h) = [DATA_PCB_X0 + h[0], DATA_PCB_Y0 + DATA_PCB_SIZE[1] - h[1]];   // KiCad → drawer xy
 // the single board's two holes: their bosses stand under the DATA ×4's bare underside, Ø5 to keep 0.8 mm
 // from its second USB-C's shell leg
