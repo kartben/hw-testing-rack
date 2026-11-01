@@ -5,8 +5,8 @@ Their boards stand in a slotted tray with no Dupont lead, so this board has no p
 co-processor; the DATA ×4 v2 keeps the logic (the user, 2026-10-31: "une carte 4x logic et une 6x purement
 power").
 
-* six vertical USB-C at a 15 mm pitch (the plug's overmould sets it), each with its TPS2553-1, its INA226, its
-  USBLC6 in flow-through and Rp 56k on each CC, as the v2's;
+* six vertical USB-C at a 15.5 mm pitch (the plug's overmould sets it), standing (their slot upright), each with its
+  TPS2553-1, its INA226, its USBLC6 in flow-through and Rp 56k on each CC, as the v2's;
 * the USB2517I hub (ports 1–6, the 7th unused) with its crystal and reset, the lead's I²C isolation, a 3.3 V LDO;
 * one TCA9535 (0x20) for the six ports' EN and FAULT_N, its four spare pins pulled down;
 * the ports' 5 V made here from the rack's 20 V (VIN, a PH 3 of its own on the rear face, VIN–GND–VIN so either
@@ -46,6 +46,12 @@ _NW, _ND = CFG["notches"]["size"]
 NOTCHES = [(x - CFG["x0"] - _NW / 2, x - CFG["x0"] + _NW / 2, H - _ND) for x in CFG["notches"]["x"]]
 CORNER = CFG["corner_notch"]        # the bottom-right corner's cut (width, height): none at 100 mm
 USBS = CFG["usb"]                   # board x of the six vertical USB-C
+USB_ROT = CFG["usb_rot"]            # each one's turn: all six standing (90), as conn_pairs() draws them
+assert USB_ROT == [90] * 6, "conn_pairs() draws the six USB-C standing"
+# each port's cluster, its USBLC6 and its hub pair's drop: 2.2 mm west of its receptacle.  The receptacles moved east
+# so that USB-C 1 stands with its USBLC6 beside it, clear of the cradle's band (2026-11-01); the clusters stayed,
+# USB-C 6's pull-ups and INA226 would reach the east band
+COLS = [x - 2.2 for x in USBS]
 USB_Y = TOP_Z - CFG["usb_z"]        # their axis (z 11, the port wall's openings)
 LEAD = (CFG["lead"][0], TOP_Z - CFG["lead"][1] + 7.0)      # J1's pin 1, its pins running up
 VIN_J = (CFG["vin"][0], TOP_Z - CFG["vin"][1])             # J3's pin 2 (GND), pins 1 and 3 (VIN) either side
@@ -61,11 +67,10 @@ BULK = (80.5, 24.0)                 # VIN's 33 µF (7.7 mm tall: over the port w
 CL_Y = 46.7                         # each port's power cluster: its frame's top
 PWR_SPLIT = 54.6                    # the power plane: +3V3 above, +5V_A / +5V_B under (MID_X between them)
 MID_X = 50.0
-UP_Y = 56.5                         # over each receptacle: its VBUS 22 µF, CC resistors, LED
-# each USB-C's USBLC6 (2–6 west of the receptacle, between two clusters: the pair comes straight down to it;
-# USB-C 1's over its receptacle, clear of the cradle's band: ESD1)
-ESD_PX = {n: USBS[n - 1] - (6.9 if n == 2 else 7.4) for n in range(2, 7)}
-ESD1 = (USBS[0] - 3.65, UP_Y - 0.25)
+# each USB-C's USBLC6, west of its receptacle on its axis: 2–6 between two clusters (the hub's pair comes straight
+# down to it), USB-C 1's between the cradle's band and its receptacle (ESD1)
+ESD_PX = {1: USBS[0] - 5.7, **{n: COLS[n - 1] - (6.9 if n == 2 else 7.4) for n in range(2, 7)}}
+ESD1 = (ESD_PX[1], USB_Y)
 # the hub's pairs (hs_pairs()): each one's lane in the corridor under the hub (its centreline; USB-C 2–3 west,
 # 5–6 east, 4 straight down), and its way down between the cluster west of it and its own to its USBLC6 (D−'s
 # line; D+ 0.4 mm east): clear of the R(k+2)/R(k+3) pads west of it and of its USBLC6's pin 4 and 5 pads
@@ -177,7 +182,7 @@ TPS = {
     # GND by the expander
     "TP27": ("GND", "GND", 1.5, EXP[0] - 4.0, EXP[1] + 2.6),
     # each port's FAULT_N (port(): TP{k + 1}) by its switch
-    **{f"TP{100 * n + 1}": (f"PORT{n}_FLT_N", f"FLT{n}", 1.0, USBS[n - 1] + 4.0, CL_Y + 6.5) for n in range(1, 7)},
+    **{f"TP{100 * n + 1}": (f"PORT{n}_FLT_N", f"FLT{n}", 1.0, COLS[n - 1] + 4.0, CL_Y + 6.5) for n in range(1, 7)},
 }
 
 
@@ -216,6 +221,16 @@ def supply(n: int) -> str:
 
 
 # ----------------------------------------------------------------------------------------------- ports
+def low_parts(n: int) -> dict:
+    """Each port's parts by its receptacle, {name: (x, y, rot)}: the VBUS LED and its 1k lying over the receptacle,
+    under the shunt and the INA226; its VBUS 22 µF and the CC1 and CC2 56k in a row under it, over the board's
+    edge (USB-C 4's CC2 clear of the comb notch east of it).  Nothing east of a receptacle: the next port's hub pair
+    comes down there."""
+    cx = USBS[n - 1]
+    return {"r1k": (cx - 1.9, USB_Y - 5.85, 0), "led": (cx + 1.2, USB_Y - 5.9, 180),
+            "c22": (cx - 0.4, USB_Y + 6.1, 0), "cc1": (cx - 3.15, USB_Y + 6.1, 0), "cc2": (cx + 2.35, USB_Y + 6.1, 0)}
+
+
 def port(b: Board, n: int):
     cx = USBS[n - 1]
     k = 100 * n
@@ -230,7 +245,7 @@ def port(b: Board, n: int):
     s.wire((20, 18), (20, 21), f"{sw}.IN")
     # the cluster in a 12 × 8 mm frame over the port's USB-C (x0, y0 its corner), the v2's; port 1's 0.6 mm east, its
     # pair coming down the west edge past its ILIM resistor (upright there: clear of the cradle's band)
-    x0, y0 = cx - (4.4 if n == 1 else 5.0), CL_Y
+    x0, y0 = COLS[n - 1] - (4.4 if n == 1 else 5.0), CL_Y
     part(s, sw, "vbus_sw_latch", {"IN": v5, "GND": "GND", "EN": p + "EN", "~{FAULT}": p + "FLT_N",
                                   "ILIM": p + "ILIM", "OUT": p + "5V_SW"}, pcb=P(x0 + 2.45, y0 + 2.2, 180),
          sch=at(30, 22, fields=(-4, -4)))
@@ -254,17 +269,15 @@ def port(b: Board, n: int):
     s.wire(f"{sh}.3", (50, 24), (50, 26), f"{ina}.Vin-")
     s.wire(f"{sh}.4", (46, 33), (60, 33))
     s.tag(p + "VBUS", (60, 33), "right")
-    # Over the receptacle, between the cluster and it: VBUS's bulk capacitor, the CC resistors, the VBUS LED and
-    # its 1k (on the switched 5 V before the shunt: the INA226 doesn't count it).  Port 1, whose USBLC6 stands
-    # here too (the cradle's band leaves it no room beside its receptacle), has them shifted east of it
-    ux = [cx - 2.6, cx - 0.55, cx + 0.55, cx + 2.4, cx + 4.0] if n > 1 else [cx - 0.6, cx + 1.05, cx + 2.15, cx + 4.0,
-                                                                            cx + 5.6]
-    C(s, f"C{k + 2}", "22u", p + "VBUS", "GND", size="0805", pcb=P(ux[0], UP_Y, 90), sch=at(55, 35.5))
+    # By the receptacle: VBUS's bulk capacitor, the CC resistors, the VBUS LED and its 1k (on the switched 5 V before
+    # the shunt: the INA226 doesn't count it): low_parts()
+    lp = low_parts(n)
+    C(s, f"C{k + 2}", "22u", p + "VBUS", "GND", size="0805", pcb=P(*lp["c22"]), sch=at(55, 35.5))
     s.wire(f"C{k + 2}.1", (55, 33))
     C(s, f"C{k + 3}", "100n", "+3V3", "GND", size="0402", pcb=P(x0 + 8.03, y0 + 0.9, 180), sch=at(80, 18))
-    R(s, f"R{k + 14}", "1k", p + "5V_SW", p + "LED_A", size="0402", pcb=P(ux[4], UP_Y, 90),
+    R(s, f"R{k + 14}", "1k", p + "5V_SW", p + "LED_A", size="0402", pcb=P(*lp["r1k"]),
       sch=at(84, 30, rot=90))
-    part(s, f"D{k + 1}", "led_g", {"A": p + "LED_A", "K": "GND"}, pcb=P(ux[3], UP_Y, 90),
+    part(s, f"D{k + 1}", "led_g", {"A": p + "LED_A", "K": "GND"}, pcb=P(*lp["led"]),
          sch=at(94, 30, rot=180))
     s.wire(f"R{k + 14}.2", f"D{k + 1}.A")
 
@@ -272,25 +285,25 @@ def port(b: Board, n: int):
             6, 50, 104, 100)
     part(s, usb, "usbc_v", {"VBUS": p + "VBUS", "GND": "GND", "CC1": p + "CC1", "CC2": p + "CC2",
                             "D+": p + "CONN_DP", "D-": p + "CONN_DN", "SBU1": None, "SBU2": None,
-                            "SHIELD": "GND"}, f"PORT{n}", pcb=P(cx, USB_Y, 0), sch=at(50, 76, fields=(-8, -11)))
+                            "SHIELD": "GND"}, f"PORT{n}", pcb=P(cx, USB_Y, USB_ROT[n - 1]),
+         sch=at(50, 76, fields=(-8, -11)))
     s.wire(f"{usb}.A7", f"{usb}.B7")
     s.wire(f"{usb}.A6", f"{usb}.B6")
-    R(s, f"R{k + 4}", "56k", p + "VBUS", p + "CC1", size="0402", pcb=P(ux[1], UP_Y, 90), sch=at(62, 64.5))
-    R(s, f"R{k + 5}", "56k", p + "VBUS", p + "CC2", size="0402", pcb=P(ux[2], UP_Y, 90), sch=at(66, 64.5))
+    R(s, f"R{k + 4}", "56k", p + "VBUS", p + "CC1", size="0402", pcb=P(*lp["cc1"]), sch=at(62, 64.5))
+    R(s, f"R{k + 5}", "56k", p + "VBUS", p + "CC2", size="0402", pcb=P(*lp["cc2"]), sch=at(66, 64.5))
     s.wire(f"{usb}.CC1", (62, 72), f"R{k + 4}.2")
     s.wire(f"{usb}.CC2", (66, 73), f"R{k + 5}.2")
-    # The USBLC6 in the gap left of the receptacle, turned 180°: pins 1/3 east to it, 6/4 west, where the hub's
-    # pair comes straight down between two clusters.  Port 1's west of its receptacle, over it (the cradle's band
-    # beside it): its pair comes down the board's west edge.  Its VBUS 100 nF right over its pin 5.  ESD_PX: each
-    # pair's way down between its pins' pads and the cluster west of it
-    ex_ = (ESD_PX[n], USB_Y, 180) if n > 1 else (*ESD1, 180)
+    # The USBLC6 west of the receptacle, turned 180°: pins 1/3 east to it, 6/4 west, where the hub's pair comes
+    # straight down between two clusters (USB-C 1's down the board's west edge).  Its VBUS 100 nF right over its pin
+    # 5.  ESD_PX: each pair's way down between its pins' pads and the cluster west of it
+    ex_ = (ESD_PX[n], USB_Y, 180)
     part(s, esd, "esd", {"1": p + "CONN_DN", "6": p + "DN", "3": p + "CONN_DP", "4": p + "DP", "5": v5,
                          "2": "GND"}, pcb=P(*ex_), sch=at(84, 76))
     s.wire(f"{usb}.B7", f"{esd}.1")
     s.wire(f"{usb}.A6", f"{esd}.3")
     # its VBUS 100 nF over it, its supply pad on the body's centre line: VBUS (pin 5) runs under the body and up
     # between the pin rows into it (drawn in drawn())
-    cap = (ex_[0] + 0.48, ex_[1] - (2.3 if n > 1 else 2.35))
+    cap = (ex_[0] + 0.48, ex_[1] - 2.3)
     C(s, f"C{k + 4}", "100n", v5, "GND", size="0402", pcb=P(*cap, 0), sch=at(96, 76))
 
     s.notes_at = (108, 50, 50)
@@ -536,10 +549,10 @@ HS_BAND = 0.775     # each pair's band: its centreline ± (0.2 + 0.125 to its li
 
 def pair_centrelines():
     """Each USB pair's centreline (hs_pairs()), and the part of it the band keeps other tracks off: its runs in
-    the corridor over the clusters (from the lane's corner, or 1 mm under the hub's row for USB-C 4, down to the
-    clusters' top: between two clusters each port's EN and FAULT_N pull-ups sit by the next pair's drop, 2 mm of
-    it), and USB-C 1's long ones (from its turn west over the crystal down the west edge to 2.4 mm over its
-    USBLC6).  {n: (centreline, band)}"""
+    the corridor over the clusters and its drop between two of them (from the lane's corner, or 1 mm under the
+    hub's row for USB-C 4, down to 2.6 mm over its USBLC6: the EN and FAULT_N pull-ups of the cluster west of the
+    drop stand 0.15–0.25 mm clear of the band, their lines leave them west), and USB-C 1's long ones (from its turn
+    west over the crystal down the west edge to 2.4 mm over its USBLC6).  {n: (centreline, band)}"""
     c, hp = 0.8, (USB_W + 0.15) / 2
     top = HY + 4.9
     out = {}
@@ -549,11 +562,11 @@ def pair_centrelines():
         if n == 4:
             y = HY + 9.0
             cl = [(x, top + 0.4), (x, y), (xd, y + x - xd), (xd, end)]
-            band = [(x, HY + 8.0), (x, y), (xd, y + x - xd), (xd, CL_Y - 0.5)]
+            band = [(x, HY + 8.0), (x, y), (xd, y + x - xd), (xd, USB_Y - 2.6)]
         else:
             y, e = LANES[n], -1 if xd < x else 1
             cl = [(x, top + 0.4), (x, y - c), (x + e * c, y), (xd - e * c, y), (xd, y + c), (xd, end)]
-            band = cl[1:-1] + [(xd, CL_Y - 0.5)]
+            band = cl[1:-1] + [(xd, USB_Y - 2.6)]
         out[n] = (cl, band)
     xn, yw, xe = HX - 8.0, HY - 3.6, 5.2
     cl = [(HX - 4.9, HY - 1.45), (xn + c, HY - 1.45), (xn, HY - 1.45 - c), (xn, yw + c), (xn - c, yw), (xe + c, yw),
@@ -616,6 +629,45 @@ def hs_pairs():
     return tracks, []
 
 
+def conn_pairs():
+    """Each USBLC6's pair on to its receptacle, drawn (the router took D+ round the receptacle: 41 mm and six vias on
+    USB-C 1).  The receptacles stand, their A column (A12 … A1, north to south) facing the USBLC6 west of them, A7
+    (D−) north of A6 (D+); the USBLC6 keeps its lines' order, pin 3 (D+) north of pin 1 (D−).  So one line crosses
+    under the other, and the receptacle's own crossover (D+ on A6 and B6, D− on A7 and B7, one column turned against
+    the other) takes no more vias:
+    * D+ on F.Cu, no via: east, down 1.2 mm past the USBLC6's GND via, into A6, then diagonally between the two
+      columns to B6;
+    * D− down to B.Cu by its pin, under D+, up north of D+'s line by A7 and into it; on from that via on B.Cu, under
+      the A column, to a via between the columns, up into B7.
+    D− runs 0.1–0.4 mm short of D+ into either column, whichever way the plug goes in; no length-matching bump (the
+    layout review: on USB they make it worse).  Also drawn: each USBLC6's GND pin to its via, and VBUS across the
+    columns, A9 to B4 and A4 to B9.  Returns (tracks, vias)."""
+    tracks, vias = [], []
+    for n, cx in enumerate(USBS, 1):
+        p = f"PORT{n}_"
+        ex, ey = ESD_PX[n], USB_Y
+        e3, e1 = (ex + 1.1375, ey - 0.95), (ex + 1.1375, ey + 0.95)         # its pins 3 (D+) and 1 (D−), turned 180°
+        gv = (ex + 2.15, ey)
+        tracks.append(("GND", "F.Cu", 0.25, [(ex + 1.1375, ey), gv]))
+        vias.append(("GND", *gv, 0.5, 0.3))
+
+        def c(dx, dy):
+            return cx + dx, USB_Y + dy
+        # the A column at cx − 0.85, the B column at cx + 0.85, 0.5 mm pitch
+        a9, a7, a6, a4 = (c(-0.85, d) for d in (-1.25, -0.25, 0.25, 1.25))
+        b4, b6, b7, b9 = (c(0.85, d) for d in (-1.25, -0.25, 0.25, 1.25))
+        v1, vn, vs = (ex + 2.15, e1[1]), c(-1.85, -0.3), c(0.0, 0.6)        # D−'s vias: by its pin, by A7, between
+        tracks += [(p + "CONN_DP", "F.Cu", USB_W, [e3, (ex + 2.3, e3[1]), (ex + 3.5, a6[1]), a6]),
+                   (p + "CONN_DP", "F.Cu", USB_W, [a6, c(-0.4, 0.25), c(0.4, -0.25), b6]),
+                   (p + "CONN_DN", "F.Cu", USB_W, [e1, v1]),
+                   (p + "CONN_DN", "B.Cu", USB_W, [v1, vn, vs]),
+                   (p + "CONN_DN", "F.Cu", USB_W, [vn, a7]),
+                   (p + "CONN_DN", "F.Cu", USB_W, [vs, c(0.4, 0.25), b7]),
+                   (p + "VBUS", "F.Cu", 0.3, [a9, b4]), (p + "VBUS", "F.Cu", 0.3, [a4, b9])]
+        vias += [(p + "CONN_DN", *v, 0.5, 0.3) for v in (v1, vn, vs)]
+    return tracks, vias
+
+
 def drawn():
     """The copper drawn before the routing that the v2 already had round its hub, which stands here as on the v2
     (in the middle of the top edge): the crystal's block, each 100 nF in the pin → cap → via order, the exposed
@@ -662,18 +714,17 @@ def drawn():
     hand_vias.append(("+3V3", p21[0] + 0.95, EXP[1] - 3.09, 0.5, 0.3))
     # each port's INA226: VS (pin 6, turned 90°) straight up into its 100 nF, then on to its via (the v2's).  Its
     # USBLC6: VBUS (pin 5) under the body to its centre line and up between the pin rows into its 100 nF, then on
-    # to a via in its 5 V area (port 1's 100 nF stands north of the plane split: its via comes before it, exempt)
-    for n, cx in enumerate(USBS, 1):
-        x0 = cx - (4.4 if n == 1 else 5.0)
+    # to a via in its 5 V area
+    for n, qx in enumerate(COLS, 1):
+        x0 = qx - (4.4 if n == 1 else 5.0)
         vs = (x0 + 8.51, CL_Y + 2.45)
         hand_tracks.append(("+3V3", "F.Cu", 0.25, [vs, (vs[0], CL_Y + 0.15)]))
         hand_vias.append(("+3V3", vs[0], CL_Y + 0.15, 0.5, 0.3))
-        ex, ey = (ESD_PX[n], USB_Y) if n > 1 else ESD1
+        ex, ey = ESD_PX[n], USB_Y
         v5 = "+5V_A" if n <= 3 else "+5V_B"
-        top = ey - (2.9 if n > 1 else 2.35)
+        top = ey - 2.9
         hand_tracks.append((v5, "F.Cu", 0.25, [(ex - 1.138, ey), (ex, ey), (ex, top)]))
-        if n > 1:
-            hand_vias.append((v5, ex, top, 0.5, 0.3))
+        hand_vias.append((v5, ex, top, 0.5, 0.3))
     # C13 (pin 57's 100 nF) likewise, on pin 57's line: the pin west to it, C13 on down to its via
     p57 = (HX - 4.4125, HY + 0.25)                                      # U1 pin 57
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [p57, (HX - 5.72, p57[1]), (HX - 5.72, HY + 0.95)]))
@@ -695,6 +746,9 @@ def drawn():
                         ("GND", "F.Cu", 0.25, [(x, HY + 6.88), (x, HY + 7.6)])]
         hand_vias += [("+3V3", x, HY + 3.75, 0.5, 0.3), ("GND", x, HY + 7.6, 0.5, 0.3)]
     t, v = hs_pairs()
+    hand_tracks += t
+    hand_vias += v
+    t, v = conn_pairs()
     hand_tracks += t
     hand_vias += v
     # pin 64's: the pin down to C11 (its 100 nF) right below the corner, and its via inwards, under the hub's
@@ -801,10 +855,7 @@ def board() -> Board:
             "C15": "U1 pin 5's via under the case, beyond the pin; none fits past C15's pad between USB-C 3 and 4's "
                    "pairs: 0.17 mm to each",
             "C16": "U1 pin 10's via under the case, beyond the pin; none fits past C16's pad between USB-C 5 and "
-                   "6's pairs: 0.17 mm to each",
-            "C104": "U103 (USB-C 1's USBLC6, over its receptacle) has C104 over its pin 5, north of the plane split: "
-                    "past C104's pad In2 is +3V3, so +5V_A comes up by a via under U103's body, between the pin and "
-                    "C104 (1.75 mm from the pin); USB-C 1's pair walls the west edge off"},
+                   "6's pairs: 0.17 mm to each"},
         "dru": XTAL_RULE,
         "keepouts": [
             # the crystal's block (dropped once routed), as the v2's
@@ -833,7 +884,7 @@ def board() -> Board:
                 ("split-5vb-foot", (TBX - 0.6, TB - 0.4, W - 5.0, TB + 0.6)),
                 ("split-5vb-band", (W - 6.0, TB - 0.4, W - 5.0, PWR_SPLIT)))],
         "texts": [
-            {"text": "DATA ×6 v1.0", "x": 50.0, "y": H - 2.5, "size": 0.8},
+            {"text": "DATA ×6 v1.0", "x": 51.8, "y": H - 2.5, "size": 0.8},     # between USB-C 3 and 4's rows
             *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
             # the two leads' connectors, named on the rear face where they plug in

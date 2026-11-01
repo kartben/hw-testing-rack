@@ -343,8 +343,13 @@ pcb:
     layers: 4
     cradle: 5.5
     notches: { x: [38.5, 69.5], size: [3.4, 6.5] }   # DRAWER x (not board x) of their centres: between ports 2–3, 4–5
-    usb: [11.25, 26.75, 42.25, 57.75, 73.25, 88.75]  # board x of the six vertical USB-C, 15.5 mm apart (the grid shared
-                                                     # with the v2: its 15.24 mm headers fit), mouths to the wall
+    usb: [13.45, 28.95, 44.45, 59.95, 75.45, 90.95]  # board x of the six vertical USB-C, 15.5 mm apart (the grid shared
+                                                     # with the v2: its 15.24 mm headers fit), mouths to the wall; 2.2 mm
+                                                     # east of their clusters since they stand (USB-C 1's USBLC6 beside
+                                                     # it, clear of the cradle's band; USB-C 6 0.5 mm clear of the east one)
+    usb_rot: [90, 90, 90, 90, 90, 90]  # each receptacle's turn on the board (KiCad degrees): 90 standing, its slot
+                                       # upright (3.2 wide, 8.9 tall, same centre), its pins facing its USBLC6 west of
+                                       # it (2026-11-01); 0 would lie (8.9 × 3.2).  All six alike: one slot shape
     usb_z: 11
     lead: [89, 41]          # J1, the PH 8 lead (the v2's pinout), rear face: board x, drawer z of its centre; its pins
                             # run up the board, 2 mm apart, pin 8 (+5V) at the top.  At the east end, its upstream
