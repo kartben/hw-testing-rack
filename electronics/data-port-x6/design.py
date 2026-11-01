@@ -22,6 +22,7 @@ rear face.
 
 from __future__ import annotations
 
+import math
 import os
 import sys
 from pathlib import Path
@@ -63,6 +64,11 @@ MID_X = 50.0
 UP_Y = 56.5                         # over each receptacle: its VBUS 22 µF, CC resistors, LED
 # each USB-C's USBLC6 (2–6 west of the receptacle, between two clusters: the pair comes straight down to it)
 ESD_PX = {n: USBS[n - 1] - (6.9 if n == 2 else 7.4) for n in range(2, 7)}
+# the hub's pairs (hs_pairs()): each one's lane in the corridor under the hub (its centreline; USB-C 2–3 west,
+# 5–6 east, 4 straight down), and its way down between the cluster west of it and its own to its USBLC6 (D−'s
+# line; D+ 0.4 mm east): clear of the R(k+2)/R(k+3) pads west of it and of its USBLC6's pin 4 and 5 pads
+LANES = {2: HY + 9.0, 3: HY + 10.1, 5: HY + 10.1, 6: HY + 9.0}
+DROP_DN = {n: ESD_PX[n] - 2.2 for n in range(2, 7)}
 # the two 5 V converters: the bay node's LMR51625 block (bay-node/design.py) at an offset, the node's own layout,
 # along the top edge: A in the top-left corner, B in the top-right one (each over its plane tongue, down the
 # cradle's band at its end); their feedback dividers (100k over 18k) beside each converter's west side
@@ -501,10 +507,87 @@ def hub_sheet(b: Board):
 
 
 # ---------------------------------------------------------------------------------------- drawn copper
+def offset(poly, d):
+    """A polyline (mm) shifted d mm sideways, mitred at its corners: to the west when it heads down the board (+y),
+    to the north when it heads west, to the south when it heads east, to the east when it heads up.  A
+    differential pair's two lines from its centreline (the v2's)."""
+    out = []
+    for i, (x, y) in enumerate(poly):
+        ns = []
+        segs = ([(poly[i - 1], poly[i])] if i else []) + ([(poly[i], poly[i + 1])] if i < len(poly) - 1 else [])
+        for (ax, ay), (bx, by) in segs:
+            L = math.hypot(bx - ax, by - ay)
+            ns.append((-(by - ay) / L, (bx - ax) / L))
+        (n1x, n1y), (n2x, n2y) = ns[0], ns[-1]
+        k = 1 + n1x * n2x + n1y * n2y
+        out.append((round(x + d * (n1x + n2x) / k, 4), round(y + d * (n1y + n2y) / k, 4)))
+    return out
+
+
+def hs_pairs():
+    """The USB pairs, drawn (the v2's HS review, 2026-10-22: over a continuous GND reference, F.Cu above In1;
+    Freerouting puts them on B.Cu, each line its own way).  D− and D+ either side of each pair's centreline
+    (offset(), D− on its right-hand side), USB_W lines 0.15 mm apart (≈ 90 Ω: the USB netclass); they leave the
+    hub's pins at their 0.5 mm pitch and close up.  No length-matching bumps (the layout review: on USB they make it
+    worse).
+    * USB-C 2–6 (the south face, DN1–5): down side by side under the hub (ports 3 and 4, 5 and 6 each 50 µm out
+      from their pins' centre: C15 and C16, pins 5 and 10's 100 nF, between them); 2 and 3 turn west in the
+      corridor's lanes (LANES), 5 and 6 east, the outer pin's pair first, none crossing; 4 steps 0.9 mm west and
+      goes on down.  Each down between two clusters (DROP_DN) to its USBLC6: D+ into pin 4, D− on past it to pin 6.
+    * USB-C 1 (the west face, DN6): west between C12 and the crystal's keep-out, north round it, west over the
+      expander's lines and down the board's west edge to its USBLC6 over its receptacle.
+    The upstream pair (pins 58/59: boxed in by USB-C 1's pair, C13 and the crystal's keep-out, it leaves under the
+    hub's body) is left to the router.  Returns (tracks, vias)."""
+    tracks = []
+    hp, c = (USB_W + 0.15) / 2, 0.8
+    sy, top = HY + 4.4125, HY + 4.9             # the hub's south row, the pairs' start under it
+
+    def keep(pts):
+        """no point within 0.1 mm of the last one kept (a sliver otherwise)"""
+        out = [pts[0]]
+        for q in pts[1:-1]:
+            if math.dist(q, out[-1]) >= 0.1:
+                out.append(q)
+        return out + [pts[-1]]
+
+    def esd_pins(x, y):
+        """a USBLC6's pin 4 (D+) and pin 6 (D−), turned 180°: its hub side, west"""
+        return (x - 1.138, y - 0.95), (x - 1.138, y + 0.95)
+
+    for n, (pin, d) in {2: (1, 0.0), 3: (3, -0.05), 4: (6, 0.05), 5: (8, -0.05), 6: (11, 0.05)}.items():
+        px = HX - 3.5 + 0.5 * (pin - 1)                 # its pins' centre
+        x, xd = px + d, DROP_DN[n] + hp
+        p4, p6 = esd_pins(ESD_PX[n], USB_Y)
+        # each line straight out of its pin, then in to the pair's pitch by y top + 0.4 (C15/C16 just under)
+        if n == 4:
+            y = HY + 9.0
+            cl = [(x, top + 0.4), (x, y), (xd, y + x - xd), (xd, p4[1] - 0.4)]
+        else:
+            y, e = LANES[n], -1 if xd < x else 1
+            cl = [(x, top + 0.4), (x, y - c), (x + e * c, y), (xd - e * c, y), (xd, y + c), (xd, p4[1] - 0.4)]
+        dn = keep([(px - 0.25, sy), (px - 0.25, top)] + offset(cl, hp) +
+                  [(xd - hp, p6[1] - 0.5), (xd - hp + 0.5, p6[1]), p6])
+        dp = keep([(px + 0.25, sy), (px + 0.25, top)] + offset(cl, -hp) + [(xd + hp + 0.4, p4[1]), p4])
+        tracks += [(f"PORT{n}_DN", "F.Cu", USB_W, dn), (f"PORT{n}_DP", "F.Cu", USB_W, dp)]
+
+    # USB-C 1: west from the pins, north round the keep-out at x HX − 8, west at y HY − 3.6, down the west edge at
+    # x 5.2 (in the cradle's band, which only parts must keep clear of), past R101
+    p4, p6 = esd_pins(USBS[0] - 4.2, UP_Y - 0.25)
+    xn, yw, xe = HX - 8.0, HY - 3.6, 5.2
+    cl = [(HX - 4.9, HY - 1.45), (xn + c, HY - 1.45), (xn, HY - 1.45 - c), (xn, yw + c), (xn - c, yw), (xe + c, yw),
+          (xe, yw + c), (xe, p4[1] - 0.4)]
+    # D+ straight out of pin 54 (its line on the pin's row), D− in from pin 53 by 0.1 mm: clear of C12's pad
+    dn = keep([(HX - 4.4125, HY - 1.75), (HX - 4.8, HY - 1.75)] + offset(cl, hp) +
+              [(xe - hp, p6[1] - 0.5), (xe - hp + 0.5, p6[1]), p6])
+    dp = keep([(HX - 4.4125, HY - 1.25), (HX - 4.9, HY - 1.25)] + offset(cl, -hp) + [(xe + hp + 0.4, p4[1]), p4])
+    tracks += [("PORT1_DN", "F.Cu", USB_W, dn), ("PORT1_DP", "F.Cu", USB_W, dp)]
+    return tracks, []
+
+
 def drawn():
     """The copper drawn before the routing that the v2 already had round its hub, which stands here as on the v2
     (in the middle of the top edge): the crystal's block, each 100 nF in the pin → cap → via order, the exposed
-    pad's vias.  Returns (tracks, vias)."""
+    pad's vias, the USB pairs.  Returns (tracks, vias)."""
     hand_tracks, hand_vias = [], []
     # the hub's reset supervisor in the pin → cap → via order: VCC (U5 pin 3) straight up to C6, C6 on east to
     # its via
@@ -556,6 +639,9 @@ def drawn():
                         ("+3V3", "F.Cu", 0.25, [(x, HY + 4.4125), (x, HY + 5.92)]),
                         ("GND", "F.Cu", 0.25, [(x, HY + 6.88), (x, HY + 7.6)])]
         hand_vias += [("+3V3", x, HY + 3.75, 0.5, 0.3), ("GND", x, HY + 7.6, 0.5, 0.3)]
+    t, v = hs_pairs()
+    hand_tracks += t
+    hand_vias += v
     # pin 64's: the pin down to C11 (its 100 nF) right below the corner, and its via inwards, under the hub's
     # body, off that line (it sat on it, between the pin and C11).  C11 is an exception to the pin → cap → via
     # order: no via fits past its +3V3 pad, between R1's RBIAS pad west and port 1's D− east
