@@ -100,6 +100,13 @@ reliefs, even on solid pours.  Connectors that overhang the outline on purpose
 are listed as `edge_parts`: their silkscreen may cross the board edge (the fab
 clips it), every other silkscreen check still applies.
 
+The layout review's rules are generated from what a board declares (`electronics/tools/netrules.py`), so
+every board is built and checked with them; a board that declares nothing gets nothing new:
+
+- A netclass pattern (`_patterns` in `NETCLASSES`) that matches no net stops the build.  KiCad compares
+  a pattern with the whole net name, sheet path included: a bare `VIN` misses a sub-sheet's `/Power/VIN`
+  and leaves it in Default without a word.  The error names the wildcard that reaches it (`*VIN`).
+
 How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 
 1. The router sees the inner GND plane and the outer GND pours, and connects

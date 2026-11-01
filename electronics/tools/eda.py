@@ -1213,7 +1213,12 @@ def write_project(b: Board, outdir: Path, netclasses: list[dict] | None = None):
 
     Everything else — board design rules, rule severities, teardrops, … — is set by
     PcbBuilder and written back by pcbnew.SaveBoard, so an existing file is updated in place
-    instead of being reset to KiCad defaults by a schematic-only run."""
+    instead of being reset to KiCad defaults by a schematic-only run.  A pattern that matches none of the
+    board's nets stops the build (netrules.unmatched_patterns): its nets would sit in Default unnoticed."""
+    from netrules import unmatched_patterns
+    bad = unmatched_patterns(netclasses, {b.pcb_net_name(n) for n in b.nets()})
+    if bad:
+        raise SystemExit(f"{b.name}: " + "\n".join(bad))
     path = outdir / f"{b.name}.kicad_pro"
     classes = [
         {"name": "Default", "clearance": 0.15, "track_width": 0.25, "via_diameter": 0.6,
