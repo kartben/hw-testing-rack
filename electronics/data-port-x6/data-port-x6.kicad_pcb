@@ -4254,6 +4254,42 @@
 				)
 			)
 		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "0058c7bb-285a-4e2b-85e2-5eec7c7ae36b")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "95d36830-3774-4b93-8ca7-53ab042f3958")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a98c9105-8dda-4488-984b-5fd6ec45c78d")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/d1619316-f18c-5791-89ee-451f44788176/0a985694-7e33-504f-a57a-ca37603ac01b")
 		(sheetname "Port 5")
 		(sheetfile "port5.kicad_sch")
@@ -18189,6 +18225,42 @@
 				)
 			)
 		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "08cdbe04-8a82-4494-91bb-392266d23cc0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6aeda52d-2e02-4620-9f30-31ed034fbfb2")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9a14c36d-35d8-4f09-8f2b-b70e255335fc")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/907c5eea-b13f-57a8-ba9b-a18849e157f1/fb0037c8-830f-586e-846a-06cc0c75792d")
 		(sheetname "Port 1")
 		(sheetfile "port1.kicad_sch")
@@ -19175,6 +19247,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e745327f-f7b6-4d9d-889c-c1531b11ed44")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5b7ad1cb-9b00-4b25-90d7-43d5414ffd87")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "b78adaba-c6ff-46e3-a1c0-6c5495f477b3")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -20259,6 +20367,42 @@
 				)
 			)
 		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "78ac1120-8ded-4210-86c0-a43c906bebb6")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "dc9fdaaa-42a6-4f30-933f-45ceee9dbdc0")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e41fe25a-9086-447d-a35f-420e84ddbda9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/f568977c-2eda-5d13-ba01-adf06e25b750/95831927-a234-5b04-9935-c05f3b50f8f8")
 		(sheetname "Port 3")
 		(sheetfile "port3.kicad_sch")
@@ -20777,6 +20921,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "275d545f-7eb2-4938-930e-6661dee5c570")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a32d749f-c458-45d3-bb72-965d16211302")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "1b2bf419-1f3b-4cd6-9cf2-e7db54ced1ce")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -21534,6 +21714,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a14b4675-8529-4ce4-97b3-1a0d757ed3db")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "73079ce6-f1ce-4a31-9d52-04d8da2a4037")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3daf4061-1f0b-4f67-b01d-ace0c1f47d76")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -23780,6 +23996,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "6b7236a0-1911-4c43-b8bb-7c4d03403b69")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "43b9e85e-baa1-45d1-9593-4433ba866d7a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "4d408049-60e5-4fa2-85a8-86c45c5d8487")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -26553,6 +26805,42 @@
 				)
 			)
 		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e63fc371-7359-474a-858d-b949716c5c1a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "aaa07e75-db24-4b3d-a1e1-3e69a065624a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "9750f014-d906-447f-9071-f07cb61db3ed")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/d1619316-f18c-5791-89ee-451f44788176/7738ff0e-e89a-5fce-ab4a-d265617515e1")
 		(sheetname "Port 5")
 		(sheetfile "port5.kicad_sch")
@@ -29279,6 +29567,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "59670a02-5b7b-4077-98b7-e89f478db63f")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "a186d1b2-2645-48a0-b3bc-50055cc8b902")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "113e2844-af9c-4aaa-969d-61ec9bff5d3f")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)
@@ -34300,6 +34624,42 @@
 				)
 			)
 		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3f2a0cef-bd6f-4486-91a6-d5870193fa0a")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c0c337ca-8cec-4cad-8bff-43d9c05b01b9")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fdb68126-f8dd-4dbd-a225-6b6173e5fa4c")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/f568977c-2eda-5d13-ba01-adf06e25b750/dbcbe7ac-44b9-5473-8591-ca8ed45e4a7c")
 		(sheetname "Port 3")
 		(sheetfile "port3.kicad_sch")
@@ -35769,6 +36129,42 @@
 				)
 			)
 		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c6e665ae-ab43-4d6f-8174-d531a9d19059")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "bbc84689-e2cd-43ab-b0c2-d6f911539c16")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "c87d6b0a-3fa4-4eac-9d92-af572e7a7ec1")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
 		(path "/506fe7bc-5b14-5098-88f9-0220f2b20d85/acba86bd-1e14-5fa5-8cd4-24383e84404d")
 		(sheetname "Port 6")
 		(sheetfile "port6.kicad_sch")
@@ -36287,6 +36683,42 @@
 			(effects
 				(font
 					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "LCSC" "C25796"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "fc841130-768a-4141-acd8-f41f280c1e02")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5b5131fe-7b53-42f4-baa5-f92e17107640")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "636e8dfd-53f1-42b1-b73b-6a39327daadd")
+			(effects
+				(font
+					(size 1.27 1.27)
 					(thickness 0.15)
 				)
 			)

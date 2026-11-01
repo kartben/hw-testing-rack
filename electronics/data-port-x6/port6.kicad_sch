@@ -5603,6 +5603,33 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C25796"
+			(at 157.48 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 157.48 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+			(at 157.48 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "15f310a3-a922-5017-8a7d-ca8fba05ff86")
 		)
@@ -5685,6 +5712,33 @@
 			)
 		)
 		(property "Description" "Resistor 56k 0402"
+			(at 167.64 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C25796"
+			(at 167.64 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "0402WGF5602TCE"
+			(at 167.64 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
 			(at 167.64 163.83 0)
 			(effects
 				(font

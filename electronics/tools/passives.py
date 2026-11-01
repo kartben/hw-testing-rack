@@ -57,6 +57,8 @@ WANTED = [
     ("R", "200k", "0402", ""), ("R", "33", "0402", ""), ("R", "27", "0402", ""),
     # DATA ×4 v2: the hub crystal's 1 MΩ (the datasheet audit's U2)
     ("R", "1M", "0402", ""),
+    # DATA ×6: its USB-C's Rp 56k, 0402 (each receptacle's row over it)
+    ("R", "56k", "0402", ""),
 ]
 
 UNITS_C = {"p": "pF", "n": "nF", "u": "uF"}
