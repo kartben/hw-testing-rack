@@ -531,6 +531,37 @@ def offset(poly, d):
     return out
 
 
+HS_BAND = 0.775     # each pair's band: its centreline ± (0.2 + 0.125 to its lines' outer edges + 0.45, 3 × their 0.15)
+
+
+def pair_centrelines():
+    """Each USB pair's centreline (hs_pairs()), and the part of it the band keeps other tracks off: its runs in
+    the corridor over the clusters (from the lane's corner, or 1 mm under the hub's row for USB-C 4, down to the
+    clusters' top: between two clusters each port's EN and FAULT_N pull-ups sit by the next pair's drop, 2 mm of
+    it), and USB-C 1's long ones (from its turn west over the crystal down the west edge to 2.4 mm over its
+    USBLC6).  {n: (centreline, band)}"""
+    c, hp = 0.8, (USB_W + 0.15) / 2
+    top = HY + 4.9
+    out = {}
+    for n, (pin, d) in {2: (1, 0.0), 3: (3, -0.05), 4: (6, 0.05), 5: (8, -0.05), 6: (11, 0.05)}.items():
+        x, xd = HX - 3.5 + 0.5 * (pin - 1) + d, DROP_DN[n] + hp
+        end = USB_Y - 0.95 - 0.4                        # over its USBLC6's pin 4
+        if n == 4:
+            y = HY + 9.0
+            cl = [(x, top + 0.4), (x, y), (xd, y + x - xd), (xd, end)]
+            band = [(x, HY + 8.0), (x, y), (xd, y + x - xd), (xd, CL_Y - 0.5)]
+        else:
+            y, e = LANES[n], -1 if xd < x else 1
+            cl = [(x, top + 0.4), (x, y - c), (x + e * c, y), (xd - e * c, y), (xd, y + c), (xd, end)]
+            band = cl[1:-1] + [(xd, CL_Y - 0.5)]
+        out[n] = (cl, band)
+    xn, yw, xe = HX - 8.0, HY - 3.6, 5.2
+    cl = [(HX - 4.9, HY - 1.45), (xn + c, HY - 1.45), (xn, HY - 1.45 - c), (xn, yw + c), (xn - c, yw), (xe + c, yw),
+          (xe, yw + c), (xe, ESD1[1] - 0.95 - 0.4)]
+    out[1] = (cl, cl[3:-1] + [(xe, ESD1[1] - 2.4)])
+    return out
+
+
 def hs_pairs():
     """The USB pairs, drawn (the v2's HS review, 2026-10-22: over a continuous GND reference, F.Cu above In1;
     Freerouting puts them on B.Cu, each line its own way).  D− and D+ either side of each pair's centreline
@@ -546,7 +577,7 @@ def hs_pairs():
     The upstream pair (pins 58/59: boxed in by USB-C 1's pair, C13 and the crystal's keep-out, it leaves under the
     hub's body) is left to the router.  Returns (tracks, vias)."""
     tracks = []
-    hp, c = (USB_W + 0.15) / 2, 0.8
+    hp = (USB_W + 0.15) / 2
     sy, top = HY + 4.4125, HY + 4.9             # the hub's south row, the pairs' start under it
 
     def keep(pts):
@@ -561,17 +592,13 @@ def hs_pairs():
         """a USBLC6's pin 4 (D+) and pin 6 (D−), turned 180°: its hub side, west"""
         return (x - 1.138, y - 0.95), (x - 1.138, y + 0.95)
 
-    for n, (pin, d) in {2: (1, 0.0), 3: (3, -0.05), 4: (6, 0.05), 5: (8, -0.05), 6: (11, 0.05)}.items():
+    cls = pair_centrelines()
+    for n, pin in {2: 1, 3: 3, 4: 6, 5: 8, 6: 11}.items():
         px = HX - 3.5 + 0.5 * (pin - 1)                 # its pins' centre
-        x, xd = px + d, DROP_DN[n] + hp
         p4, p6 = esd_pins(ESD_PX[n], USB_Y)
         # each line straight out of its pin, then in to the pair's pitch by y top + 0.4 (C15/C16 just under)
-        if n == 4:
-            y = HY + 9.0
-            cl = [(x, top + 0.4), (x, y), (xd, y + x - xd), (xd, p4[1] - 0.4)]
-        else:
-            y, e = LANES[n], -1 if xd < x else 1
-            cl = [(x, top + 0.4), (x, y - c), (x + e * c, y), (xd - e * c, y), (xd, y + c), (xd, p4[1] - 0.4)]
+        cl = cls[n][0]
+        xd = cl[-1][0]
         dn = keep([(px - 0.25, sy), (px - 0.25, top)] + offset(cl, hp) +
                   [(xd - hp, p6[1] - 0.5), (xd - hp + 0.5, p6[1]), p6])
         dp = keep([(px + 0.25, sy), (px + 0.25, top)] + offset(cl, -hp) + [(xd + hp + 0.4, p4[1]), p4])
@@ -580,9 +607,7 @@ def hs_pairs():
     # USB-C 1: west from the pins, north round the keep-out at x HX − 8, west at y HY − 3.6, down the west edge at
     # x 5.2 (in the cradle's band, which only parts must keep clear of), past R101
     p4, p6 = esd_pins(*ESD1)
-    xn, yw, xe = HX - 8.0, HY - 3.6, 5.2
-    cl = [(HX - 4.9, HY - 1.45), (xn + c, HY - 1.45), (xn, HY - 1.45 - c), (xn, yw + c), (xn - c, yw), (xe + c, yw),
-          (xe, yw + c), (xe, p4[1] - 0.4)]
+    cl, xe = cls[1][0], cls[1][0][-1][0]
     # D+ straight out of pin 54 (its line on the pin's row), D− in from pin 53 by 0.1 mm: clear of C12's pad
     dn = keep([(HX - 4.4125, HY - 1.75), (HX - 4.8, HY - 1.75)] + offset(cl, hp) +
               [(xe - hp, p6[1] - 0.5), (xe - hp + 0.5, p6[1]), p6])
@@ -606,8 +631,11 @@ def drawn():
                     ("GND", "F.Cu", 0.2, [(HX + 3.75, HY + 7.35), (HX + 3.25, HY + 7.35)]),
                     # its via under pads 6 / 7, between them and USB-C 6's lane, away from pad 5 (CFG_SEL2's pull-up,
                     # +3V3 since CFG_SEL 110)
-                    ("GND", "F.Cu", 0.2, [(HX + 3.25, HY + 7.35), (HX + 3.5, HY + 7.6), (HX + 3.5, HY + 8.15)])]
-    hand_vias.append(("GND", HX + 3.5, HY + 8.15, 0.5, 0.3))
+                    ("GND", "F.Cu", 0.2, [(HX + 3.25, HY + 7.35), (HX + 3.5, HY + 7.6), (HX + 3.5, HY + 8.15)]),
+                    # pad 5 (CFG_SEL2's pull-up) straight down to its +3V3 via, west of the GND one, clear of USB-C
+                    # 6's pair turning east and of its band
+                    ("+3V3", "F.Cu", 0.2, [(HX + 2.75, HY + 7.35), (HX + 2.75, HY + 8.15)])]
+    hand_vias += [("GND", HX + 3.5, HY + 8.15, 0.5, 0.3), ("+3V3", HX + 2.75, HY + 8.15, 0.5, 0.3)]
     t, v = xtal_block()
     hand_tracks += t
     hand_vias += v
@@ -781,6 +809,11 @@ def board() -> Board:
         "keepouts": [
             # the crystal's block (dropped once routed), as the v2's
             {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP}] + [
+            # each USB pair's band on F.Cu (the layout review: 3 × the track gap between a fast bus and other nets'
+            # lines, the enables and faults first): no other track along it, vias in (dropped once routed)
+            {"name": f"core:usb{n}", "layers": ["F.Cu"], "tracks_only": True,
+             "poly": offset(band, HS_BAND) + offset(band, -HS_BAND)[::-1]}
+            for n, (_, band) in sorted(pair_centrelines().items())] + [
             {"name": f"edge{i}", "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, W, 0.35), (W - 0.35, 0, W, H), (0, H - 0.35, W, H), (0, 0, 0.35, H),
