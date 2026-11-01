@@ -139,7 +139,7 @@ XTAL_RULE = """
 
 # The layout review's checks as rules (2026-11-01): the supplies' widths (the hub's fine-pitch fan-out aside: its
 # 1.8 V pins' lines neck down at the pads, and HUB_1V8PLL's whole 3 mm, drawn in the crystal's block from pin 62 to
-# C10 and C8 between XI and RBIAS, is 0.127), and the enables, faults, resets and interrupts (the Sensitive class)
+# C10 and C8 between XI and RBIAS, is 0.127), and the enables, faults and resets (the Sensitive class)
 # kept 3 × the USB lines' width off them, against a coupled spike that would switch a port off or reset the hub
 BOARD_RULES = """
 (rule "Power, Port and Supply: 0.25 mm at least, but in the hub's fan-out"
@@ -147,7 +147,7 @@ BOARD_RULES = """
 	(condition "A.Type == 'Track' && (A.hasNetclass('Power') || A.hasNetclass('Port') || A.hasNetclass('Supply')) && !A.intersectsCourtyard('U1') && A.NetName != '/Hub/HUB_1V8PLL'")
 	(constraint track_width (min 0.25mm)))
 
-(rule "enables, faults, resets, interrupts: 0.75 mm off the USB pairs"
+(rule "enables, faults, resets: 0.75 mm off the USB pairs"
 	(severity error)
 	(condition "A.hasNetclass('USB') && B.hasNetclass('Sensitive')")
 	(constraint clearance (min 0.75mm)))
@@ -188,8 +188,8 @@ TPS = {
     # the hub's reset and core rail, with a GND
     "TP20": ("HUB_RST_N", "HUB RST", 1.0, HX - 0.5, HY - 14.0), "TP21": ("GND", "GND", 1.5, HX + 3.5, HY - 14.9),
     "TP22": ("HUB_1V8", "1V8", 1.5, HX + 5.0, HY + 4.25),
-    # the board side of the lead's I²C and INT, with a GND: a row under J1, 2 mm clear of its housing (rear face)
-    "TP23": ("INT", "INT", 1.0, LEAD[0] - 3.0, LEAD[1] + 5.5), "TP24": ("SDA", "SDA", 1.0, LEAD[0] - 0.5, LEAD[1] + 5.5),
+    # the board side of the lead's I²C, with a GND: a row under J1, 2 mm clear of its housing (rear face)
+    "TP24": ("SDA", "SDA", 1.0, LEAD[0] - 0.5, LEAD[1] + 5.5),
     "TP25": ("SCL", "SCL", 1.0, LEAD[0] + 2.0, LEAD[1] + 5.5), "TP26": ("GND", "GND", 1.5, LEAD[0] + 4.5, LEAD[1] + 5.5),
     # GND by the expander
     "TP27": ("GND", "GND", 1.5, EXP[0] - 4.0, EXP[1] + 2.6),
@@ -284,7 +284,7 @@ def port(b: Board, n: int):
     s.wire(f"{sw}.OUT", f"{sh}.1")
     a1, a0 = INA_ADDR[n - 1]
     part(s, ina, "ina226", {"VS": "+3V3", "GND": "GND", "A1": a1, "A0": a0, "SDA": "SDA", "SCL": "SCL",
-                            "~{Alert}": "INT", "Vin+": p + "SNS_P", "Vin-": p + "SNS_N", "Vbus": p + "SNS_N"},
+                            "~{Alert}": None, "Vin+": p + "SNS_P", "Vin-": p + "SNS_N", "Vbus": p + "SNS_N"},
          pcb=P(ina_x(n), y0 + 4.6, 90), sch=at(66, 24, fields=(-9, -7)))
     s.wire(f"{sh}.2", (52, 22), (52, 25), f"{ina}.Vin+")
     s.wire(f"{sh}.3", (50, 24), (50, 26), f"{ina}.Vin-")
@@ -403,15 +403,16 @@ def power_sheet(b: Board):
 def hub_sheet(b: Board):
     s = b.sheet("Hub", "hub.kicad_sch", "Lead, hub, expander, 3.3 V")
     s.paper = "A2"
-    s.frame("Lead from the node's J7 (PH 8, rear face): I²C and INT through an H5VU25UC; pin 8 VIN (sheet Power)",
+    s.frame("Lead from the node's J7 (PH 8, rear face): I²C through an H5VU25UC; pin 8 VIN (sheet Power), pin 1 open",
             6, 10, 70, 50)
     # the v2's J1, pin for pin, where the v2 has it.  Its pin 8 the rack's 20 V, which the node switches (its eFuse):
-    # VIN, the converters' (power_sheet()), so the node power-cycles the whole board.  Solid to its pad
-    part(s, "J1", "ph8t", {"1": "LEAD_INT", "2": "LEAD_SCL", "3": "LEAD_SDA", "4": "GND", "5": "UP_DN",
+    # VIN, the converters' (power_sheet()), so the node power-cycles the whole board.  Solid to its pad.  Its pin 1
+    # open (2026-11-01): a camera lead plugged in by mistake puts nothing on it, and the node polls instead of INT
+    part(s, "J1", "ph8t", {"1": None, "2": "LEAD_SCL", "3": "LEAD_SDA", "4": "GND", "5": "UP_DN",
                            "6": "UP_DP", "7": "GND", "8": "VIN"}, "LEAD",
          pcb={**P(*LEAD, J1_ROT, "bottom"), "solid": ["8"]}, sch=at(16, 30, mirror="y", fields=(-2, -6)))
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(34, 16))
-    part(s, "U4", "esd4", {"D1+": "LEAD_SDA", "D1-": "LEAD_SCL", "D2+": "LEAD_INT", "D2-": None, "GND": "GND"},
+    part(s, "U4", "esd4", {"D1+": "LEAD_SDA", "D1-": "LEAD_SCL", "D2+": None, "D2-": None, "GND": "GND"},
          pcb=P(LEAD[0] + 3.25, LEAD[1] + 0.9, 90), sch=at(48, 30, fields=(-3, -6)))
 
     s.frame("3.3 V for the hub, the expander and the INA226s (AP2114H, SOT-223 on copper)",
@@ -493,7 +494,7 @@ def hub_sheet(b: Board):
     # no RESET pin (the TCA6408A's): power-on reset only.  Its 100 nF right over VCC
     x, y = EXP
     exp = {"VCC": "+3V3", "GND": "GND", "EPAD": "GND", "A0": "GND", "A1": "GND", "A2": "GND", "SCL": "SCL",
-           "SDA": "SDA", "~{INT}": "INT", **EXP_LINES}
+           "SDA": "SDA", "~{INT}": None, **EXP_LINES}
     # the spare pins pulled down by 10k (an array east of it, each resistor on its pin's row: pins 17 … 14 down the
     # east face, the array's 1 … 4): an input reads 0 rather than float until the firmware sets it as an output, and
     # an output set high by mistake drives 0.33 mA
@@ -507,16 +508,15 @@ def hub_sheet(b: Board):
     rail(s, "GND", [f"RN10.{9 - q}" for q in range(1, 5)], 2, "down")
 
     s.frame("I²C isolation: open with the board's 3.3 V off (the node's pull-ups can't feed it)", 172, 106, 232, 148)
-    for i, (q, r, line, val) in enumerate((("Q1", "R6", "SDA", "4.7k"), ("Q2", "R7", "SCL", "4.7k"),
-                                           ("Q3", "R8", "INT", "10k"))):
+    for i, (q, r, line, val) in enumerate((("Q1", "R6", "SDA", "4.7k"), ("Q2", "R7", "SCL", "4.7k"))):
         y = LEAD[1] - 10.4 + 4.0 * i
         part(s, q, "nfet", {"G": "+3V3", "S": line, "D": "LEAD_" + line}, pcb=P(LEAD[0] + 3.25, y, 90),
              sch=at(186, 118 + 12 * i))
         R(s, r, val, "+3V3", line, size="0402", pcb=P(LEAD[0] + 3.25, LEAD[1] - 15.4 + 1.0 * i, 0),
           sch=at(212, 116 + 12 * i))
-    testpoints(s, ["TP7", "TP8", "TP20", "TP21", "TP22", "TP23", "TP24", "TP25", "TP26", "TP27"],
+    testpoints(s, ["TP7", "TP8", "TP20", "TP21", "TP22", "TP24", "TP25", "TP26", "TP27"],
                "Test points (rear face, bare pads, not in the BOM): +3V3, the hub's reset and 1.8 V, the lead's "
-               "I²C and INT, GND", 6, 136, per_row=12)
+               "I²C, GND", 6, 136, per_row=12)
     s.notes_at = (6, 108, 160)
     s.notes = [
         "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).",
@@ -526,7 +526,9 @@ def hub_sheet(b: Board):
         "Expander: TCA9535 U2 0x20.  Port n's EN on P0/P1(2n − 2), FAULT_N on the next bit (ports 1–4 on P00–P07,",
         "  5–6 on P10–P13).  Inputs at power-up: the EN pull-downs keep every port off until the node writes; the",
         "  spare pins P14–P17 set as outputs, low, by the firmware.",
-        "INT (J1.1 → the node's IO4): the expander's INT and the six INA226 ALERTs, open drain, wired-OR, through Q3.",
+        "No INT on the lead (J1.1 open, 2026-11-01): the node polls the expander and the INA226s every 10–20 ms.",
+        "  The INA226 alerts stay transparent (Mask/Enable LEN = 0), or the node reads Mask/Enable on each poll; the",
+        "  expander's INT and the INA226 ALERT pins are left open.  A port's fault needs no node: its TPS2553 latches off.",
         "I²C: TCA9535 0x20, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C; the node's INA226 0x40.",
         "J1 pin 8: VIN, the node's switched 20 V, to the converters (sheet Power); the hub's 3.3 V (U3) from +5V_B.",
         "  With VIN off the whole board is off; the EN pull-downs keep every port off until the node writes.",
@@ -812,7 +814,7 @@ def board() -> Board:
         "  TCA9535 for their EN and FAULT_N, an AP2114H 3.3 V; two LMR51625 make all its 5 V from VIN (20 V,",
         "  J1.8, switched by the node).  No pin header: the porte-revues bays' boards take no Dupont lead (the",
         "  DATA ×4 v2 keeps the logic).  One face assembled.",
-        "Lead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×4 v2's lead.",
+        "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×4 v2's lead.",
         "I²C: TCA9535 0x20, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C; the node's 0x40.",
         "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 1.2 A at 20 V · +5V_A / +5V_B 5.24 V, ≤ 1.86 A / 2.32 A",
         "  (ports 1–3 / 4–6 at the 0.62 A limit, +5V_B with the 3.3 V LDO's 0.46 A) ·",
@@ -959,11 +961,11 @@ NETCLASSES = [
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,
      "_patterns": ["*PORT?_5V_SW", "*PORT?_VBUS"]},
-    # the enables, faults, resets and interrupts: Default's widths, kept off the USB pairs (BOARD_RULES)
+    # the enables, faults and resets: Default's widths, kept off the USB pairs (BOARD_RULES)
     {"name": "Sensitive", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 6,
-     "_patterns": ["*PORT?_EN", "*PORT?_FLT_N", "*HUB_RST_N", "INT", "*LEAD_INT", "*BUCK_EN"]},
+     "_patterns": ["*PORT?_EN", "*PORT?_FLT_N", "*HUB_RST_N", "*BUCK_EN"]},
     {"name": "USB", "clearance": 0.127, "track_width": USB_W, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": USB_W, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 3,

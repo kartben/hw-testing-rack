@@ -352,9 +352,9 @@ pcb:
                                        # it (2026-11-01); 0 would lie (8.9 × 3.2).  All six alike: one slot shape
     usb_z: 11
     lead: [89, 41]          # J1, the PH 8 lead (the v2's pinout), rear face: board x, drawer z of its centre; its pins
-                            # run up the board, 2 mm apart, pin 8 (VIN, the node's switched 20 V) at the top.  At the
-                            # east end, its upstream pins level with the hub's; the lead runs behind the board to the
-                            # rear cable window
+                            # run up the board, 2 mm apart: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN
+                            # (the node's switched 20 V), pin 8 at the top.  At the east end, its upstream pins level
+                            # with the hub's; the lead runs behind the board to the rear cable window
   camera_pod:             # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6

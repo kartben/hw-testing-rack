@@ -4285,38 +4285,9 @@
 			)
 		)
 	)
-	(wire
-		(pts
-			(xy 177.8 68.58)
-			(xy 180.34 68.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0e87f393-62ce-5e2a-9978-f78e8fecf8ba")
-	)
-	(global_label "INT"
-		(shape bidirectional)
-		(at 180.34 68.58 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "38f8ccc3-2333-5166-b44d-94a2b12cbc75")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 180.34 68.58 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
+	(no_connect
+		(at 177.8 68.58)
+		(uuid "15886875-ed88-5fda-a024-a255c16ae324")
 	)
 	(wire
 		(pts

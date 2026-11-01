@@ -888,9 +888,9 @@
 		(fill
 			(type none)
 		)
-		(uuid "a63d2969-0894-50db-951e-a638570bb6da")
+		(uuid "9d9738f5-efe4-5636-a132-51c138cc0e39")
 	)
-	(text "INT SCL SDA"
+	(text "SCL SDA"
 		(exclude_from_sim no)
 		(at 21.59 43.18 0)
 		(effects
@@ -899,7 +899,7 @@
 			)
 			(justify right)
 		)
-		(uuid "c006979f-fad5-5db3-9ba0-a79823f8e349")
+		(uuid "a26d0943-9f94-5859-b13e-6766ff804b2c")
 	)
 	(polyline
 		(pts
@@ -913,7 +913,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "87ef3cff-8bdc-5476-bb1f-7484395faebe")
+		(uuid "3bc5cbe2-b7fd-568e-9b90-e2b914f8447d")
 	)
 	(circle
 		(center 60.96 43.18)
@@ -925,7 +925,7 @@
 		(fill
 			(type outline)
 		)
-		(uuid "4809b490-cc01-58de-9b66-3c2709fc60bd")
+		(uuid "e895645b-f3ca-57b1-93a4-34a48e918937")
 	)
 	(polyline
 		(pts
@@ -939,7 +939,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "bfb03bb1-6a7a-5ae7-91e0-6ec34700a6e6")
+		(uuid "3e0ad6e5-0876-594c-822f-9dd1c930340d")
 	)
 	(circle
 		(center 195.58 43.18)
@@ -951,7 +951,7 @@
 		(fill
 			(type outline)
 		)
-		(uuid "5cadb720-b6b4-585b-87fd-41b68d19ffeb")
+		(uuid "fd112f52-9933-504a-b17f-b6e688fcbde8")
 	)
 	(polyline
 		(pts
@@ -965,7 +965,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "3a823b2a-2332-50da-ac37-18c2ffa7fb6c")
+		(uuid "2c9c077d-5d7f-5de7-9cd3-4118537325e0")
 	)
 	(circle
 		(center 262.89 43.18)
@@ -977,7 +977,7 @@
 		(fill
 			(type outline)
 		)
-		(uuid "5bf88a1c-ad9b-5ed7-b113-1c1ab8656ea9")
+		(uuid "959c56ae-3ad6-543f-9dac-0d42fc1670b4")
 	)
 	(polyline
 		(pts
@@ -991,7 +991,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "6d326634-9ca6-5246-943b-a21d4fe50d79")
+		(uuid "5c7b9481-006a-50e6-bad3-a973e972eb9e")
 	)
 	(circle
 		(center 330.2 43.18)
@@ -1003,7 +1003,7 @@
 		(fill
 			(type outline)
 		)
-		(uuid "1cb0812d-55d5-5b64-85d9-43576488543a")
+		(uuid "70f50237-9532-5ef8-92fd-6261ffe4482c")
 	)
 	(polyline
 		(pts
@@ -1017,7 +1017,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "3ce0a0a4-206d-568d-92e0-46760db6a83e")
+		(uuid "88aefc25-8c64-5463-be6e-5b9a5ed11e17")
 	)
 	(circle
 		(center 397.51 43.18)
@@ -1029,7 +1029,7 @@
 		(fill
 			(type outline)
 		)
-		(uuid "211d7635-092c-5d09-b04f-8f14753f47d9")
+		(uuid "b7806cac-b6a5-53fd-beb2-87333e591b17")
 	)
 	(polyline
 		(pts
@@ -1043,7 +1043,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "8f5037f6-18f3-5e00-b1e0-91ae3228ff7f")
+		(uuid "6cae659c-0789-5452-a7d0-d0237b596ccc")
 	)
 	(circle
 		(center 464.82 43.18)
@@ -1055,7 +1055,7 @@
 		(fill
 			(type outline)
 		)
-		(uuid "26dca95e-83a9-5170-a6d8-66eb82d24158")
+		(uuid "e5af3a78-f2e0-55b3-9d64-d446ddc87f08")
 	)
 	(polyline
 		(pts
@@ -1069,7 +1069,7 @@
 		(fill
 			(type none)
 		)
-		(uuid "ee299792-3a48-5ea0-944a-5683c48cd654")
+		(uuid "9fa25ae0-5faa-54e6-b3cc-166e92ffcd1b")
 	)
 	(circle
 		(center 532.13 43.18)
@@ -1081,7 +1081,7 @@
 		(fill
 			(type outline)
 		)
-		(uuid "8174d06f-615d-5840-bcd0-3d46a7559466")
+		(uuid "9e6296ca-a522-5b05-b409-2eb90c5447a4")
 	)
 	(polyline
 		(pts
@@ -1401,7 +1401,7 @@
 		)
 		(uuid "fb07a3e1-79ed-5cff-884e-7b9659d903bb")
 	)
-	(text_box "DATA ×6 v1.0 — USB2517I hub (7 ports, 6 used), six USB-C each with a TPS2553-1, an INA226 and ESD, a\n  TCA9535 for their EN and FAULT_N, an AP2114H 3.3 V; two LMR51625 make all its 5 V from VIN (20 V,\n  J1.8, switched by the node).  No pin header: the porte-revues bays' boards take no Dupont lead (the\n  DATA ×4 v2 keeps the logic).  One face assembled.\nLead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×4 v2's lead.\nI²C: TCA9535 0x20, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C; the node's 0x40.\nRails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 1.2 A at 20 V · +5V_A / +5V_B 5.24 V, ≤ 1.86 A / 2.32 A\n  (ports 1–3 / 4–6 at the 0.62 A limit, +5V_B with the 3.3 V LDO's 0.46 A) ·\n  PORTn_VBUS 5.1–5.24 V, 0.50–0.62 A limit ·\n  +3V3 3.3 V (AP2114H), ≤ 0.5 A (the hub 0.42 A at most) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own\n  regulators)."
+	(text_box "DATA ×6 v1.0 — USB2517I hub (7 ports, 6 used), six USB-C each with a TPS2553-1, an INA226 and ESD, a\n  TCA9535 for their EN and FAULT_N, an AP2114H 3.3 V; two LMR51625 make all its 5 V from VIN (20 V,\n  J1.8, switched by the node).  No pin header: the porte-revues bays' boards take no Dupont lead (the\n  DATA ×4 v2 keeps the logic).  One face assembled.\nLead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×4 v2's lead.\nI²C: TCA9535 0x20, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C; the node's 0x40.\nRails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 1.2 A at 20 V · +5V_A / +5V_B 5.24 V, ≤ 1.86 A / 2.32 A\n  (ports 1–3 / 4–6 at the 0.62 A limit, +5V_B with the 3.3 V LDO's 0.46 A) ·\n  PORTn_VBUS 5.1–5.24 V, 0.50–0.62 A limit ·\n  +3V3 3.3 V (AP2114H), ≤ 0.5 A (the hub 0.42 A at most) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own\n  regulators)."
 		(exclude_from_sim no)
 		(at 30 186.69 0)
 		(size 534 30.48)

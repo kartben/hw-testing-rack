@@ -15,7 +15,7 @@
 	(condition "A.Type == 'Track' && (A.hasNetclass('Power') || A.hasNetclass('Port') || A.hasNetclass('Supply')) && !A.intersectsCourtyard('U1') && A.NetName != '/Hub/HUB_1V8PLL'")
 	(constraint track_width (min 0.25mm)))
 
-(rule "enables, faults, resets, interrupts: 0.75 mm off the USB pairs"
+(rule "enables, faults, resets: 0.75 mm off the USB pairs"
 	(severity error)
 	(condition "A.hasNetclass('USB') && B.hasNetclass('Sensitive')")
 	(constraint clearance (min 0.75mm)))
