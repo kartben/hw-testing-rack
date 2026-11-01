@@ -891,6 +891,16 @@ def export_dsn(b: Board, outdir: Path, netclasses=None) -> Path:
         raise RuntimeError("DSN export failed")
     import re
     text = dsn.read_text(encoding="utf-8")
+    # KiCad writes a rule area that keeps neither tracks nor vias out (fills_only, a footprint keep-out) as a full
+    # keepout: out of the DSN, so the router may take the copper it lets through
+    passable = []
+    for z in board.Zones():
+        if z.GetIsRuleArea() and not z.GetDoNotAllowTracks() and not z.GetDoNotAllowVias():
+            ol = z.Outline().Outline(0)
+            pts = [(pcbnew.ToMM(ol.CPoint(i).x) * 1000, -pcbnew.ToMM(ol.CPoint(i).y) * 1000)
+                   for i in range(ol.PointCount())]
+            passable += [(board.GetLayerName(l), pts) for l in z.GetLayerSet().CuStack()]
+    text = dsnlib.drop_keepouts(text, passable)
     # the Sensitive class kept off the fast buses as the .kicad_dru keeps it (netrules.sensitive_spacing): a
     # class-to-class clearance Freerouting routes with, not only a DRC error after the route
     for a, fast, mm in sensitive_spacing(netclasses):

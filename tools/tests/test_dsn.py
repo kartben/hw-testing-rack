@@ -156,6 +156,33 @@ class NoViaAtSmd(unittest.TestCase):
         self.assertIn("(control (via_at_smd off))", out)
 
 
+class DropKeepouts(unittest.TestCase):
+    # as KiCad writes rule areas: a footprint keep-out on both faces, a real one, a wire_keepout; one wrapped line
+    AREAS = BOARD.replace(
+        '    (plane "+5 V"',
+        '    (keepout "" (polygon F.Cu 0  0 0  5500 0  5500 -30000  0 -30000  0 0))\n'
+        '    (keepout "" (polygon B.Cu 0  0 0  5500 0  5500 -30000  0 -30000  0 0))\n'
+        '    (keepout "" (polygon F.Cu 0  31000 -24000  38000 -24000  38000 -30000  31000 -30000\n'
+        '            31000 -24000))\n'
+        '    (wire_keepout "" (polygon F.Cu 0  0 0  5500 0  5500 -30000  0 -30000  0 0))\n'
+        '    (plane "+5 V"')
+
+    def test_only_the_areas_named_go(self):
+        band = [(0, 0), (5500, 0), (5500, -30000), (0, -30000)]           # any order, no closing repeat
+        out = dsn.drop_keepouts(self.AREAS, [("F.Cu", band[::-1]), ("B.Cu", band),
+                                             ("F.Cu", [(31000.2, -24000), (38000, -24000), (38000, -30000),
+                                                       (31000, -30000)])])
+        kids = [(k, out[a:b]) for a, b, k in dsn.children(out, *dsn.find(out, "structure"))]
+        self.assertEqual([k for k, _ in kids if "keepout" in k], ["wire_keepout"])
+        self.assertEqual(out, BOARD.replace('    (plane "+5 V"', '    (wire_keepout "" (polygon F.Cu 0  0 0  5500 0  '
+                                            '5500 -30000  0 -30000  0 0))\n    (plane "+5 V"'))
+
+    def test_other_shape_or_layer_kept(self):
+        band = [(0, 0), (5500, 0), (5500, -30000), (0, -30000)]
+        self.assertEqual(dsn.drop_keepouts(self.AREAS, [("In1.GND", band), ("F.Cu", band[:3])]), self.AREAS)
+        self.assertEqual(dsn.drop_keepouts(self.AREAS, []), self.AREAS)
+
+
 class ClassClearance(unittest.TestCase):
     # KiCad 10 names each net's classes together: a Sensitive net's class is "Sensitive,Default"
     CLASSES = BOARD.replace('    (class kicad_default "" A B "C D" (circuit (use_via Via)))\n',

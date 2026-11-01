@@ -159,6 +159,34 @@ def no_via_at_smd(text: str) -> str:
     return text[:at] + block + "\n" + indent + text[at:]
 
 
+def drop_keepouts(text: str, shapes) -> str:
+    """The structure's full keep-outs (keepout "" (polygon LAYER 0 x y ...)) whose layer and corners are one of
+    `shapes` [(layer name, [(x, y) µm, KiCad's export axes (Y up)])] taken out, each with the line it stood on;
+    corners compared as a set to the µm, the closing repeat and the order aside.  KiCad writes a rule area that
+    keeps neither tracks nor vias out (a pour-only or a footprint keep-out) as a full keepout, which would bar
+    Freerouting from copper the area lets through."""
+    want = {(layer, frozenset((round(x), round(y)) for x, y in pts)) for layer, pts in shapes}
+    where = find(text, "structure")
+    if where is None or not want:
+        return text
+    out, last = [], 0
+    for a, b, k in children(text, *where):
+        if k != "keepout":
+            continue
+        poly = next(((s, e) for s, e, kk in children(text, a, b) if kk == "polygon"), None)
+        if poly is None:
+            continue
+        words = _ATOM.findall(text[poly[0] + 1:poly[1] - 1])
+        nums = [float(v) for v in words[3:]]
+        shape = (words[1].strip('"'), frozenset((round(x), round(y)) for x, y in zip(nums[0::2], nums[1::2])))
+        if shape not in want:
+            continue
+        start = text.rfind("\n", 0, a)
+        out += [text[last:start if text[start + 1:a].strip() == "" else a]]
+        last = b
+    return "".join(out) + text[last:]
+
+
 def class_clearance(text: str, a: str, b: str, clearance: float) -> str:
     """A clearance between two netclasses, in the network: (class_class (classes A B) (rule (clearance N))), N in
     the file's units (µm), for every class KiCad wrote that holds `a` and every one that holds `b`.  KiCad 10 names
