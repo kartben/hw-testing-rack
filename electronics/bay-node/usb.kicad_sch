@@ -6322,361 +6322,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 314.96 233.68 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "28c6c522-9b97-5bda-82bc-aeec98367476")
-		(property "Reference" "R41"
-			(at 314.96 231.064 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1k"
-			(at 314.96 236.296 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 314.96 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 314.96 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor 1k 0603"
-			(at 314.96 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C21190"
-			(at 314.96 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "0603WAF1001T5E"
-			(at 314.96 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
-			(at 314.96 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "67994293-276e-5b84-a31a-f6853ab51325")
-		)
-		(pin "2"
-			(uuid "e6148597-e69c-5f63-a345-ed35f05a688a")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "R41")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 311.15 233.68)
-			(xy 308.61 233.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c8ad63b3-fdd7-5612-a04e-9d57a42a4f25")
-	)
-	(global_label "DATA_INT"
-		(shape bidirectional)
-		(at 308.61 233.68 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a05fd329-a39e-5362-bb19-a3d97f7352c7")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 308.61 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 318.77 233.68)
-			(xy 321.31 233.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "004a920f-fd40-5365-b08f-81ba463017f4")
-	)
-	(label "DATA_INT_C"
-		(at 321.31 233.68 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "13d6f33f-3a7c-52f3-a1a6-4018ef8d42b8")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 294.64 241.3 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c5227b1a-ecf8-5b1a-aadd-5b150922252a")
-		(property "Reference" "R38"
-			(at 298.231 240.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 298.231 242.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 294.64 241.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 294.64 241.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor 10k 0603"
-			(at 294.64 241.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C25804"
-			(at 294.64 241.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "0603WAF1002T5E"
-			(at 294.64 241.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
-			(at 294.64 241.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "df44ee63-9de2-5a75-a466-2896c44a7dd4")
-		)
-		(pin "2"
-			(uuid "0143c41c-fb02-5859-ab44-cf197ace4574")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "R38")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 294.64 237.49)
-			(xy 294.64 234.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "69f10ec1-4168-5331-a334-5cacd81a6d4f")
-	)
-	(global_label "DATA_INT"
-		(shape bidirectional)
-		(at 294.64 234.95 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "ffcb8c83-28d4-554f-aeb5-d5699a07c974")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 294.64 234.95 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 294.64 245.11)
-			(xy 294.64 247.65)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b1aded03-cb2f-5caa-a9c6-ebc7c1d5b346")
-	)
-	(symbol
-		(lib_id "power:+3V3")
-		(at 294.64 247.65 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "5bf69445-1ce0-5078-bbb5-260be7e46b85")
-		(property "Reference" "#PWR04017"
-			(at 294.64 247.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 294.64 251.46 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 294.64 247.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 294.64 247.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 294.64 247.65 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "5fbdb04c-8f6c-5ab4-9e7b-13d89b8b6baf")
-		)
-		(instances
-			(project "bay-node"
-				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04017")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "74xGxx:74LVC1G32")
 		(at 101.6 187.96 0)
 		(unit 1)
@@ -6834,7 +6479,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "20dbacec-215d-5228-8c4f-da292acfcc02")
-		(property "Reference" "#PWR04018"
+		(property "Reference" "#PWR04017"
 			(at 101.6 200.66 0)
 			(effects
 				(font
@@ -6884,7 +6529,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04018")
+					(reference "#PWR04017")
 					(unit 1)
 				)
 			)
@@ -7006,7 +6651,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fef99925-93cf-5b51-aa57-b210d89d6aff")
-		(property "Reference" "#PWR04019"
+		(property "Reference" "#PWR04018"
 			(at 116.84 177.8 0)
 			(effects
 				(font
@@ -7056,7 +6701,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04019")
+					(reference "#PWR04018")
 					(unit 1)
 				)
 			)
@@ -7178,7 +6823,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6dd4ddd5-504e-59ea-810b-5f1bf3471b80")
-		(property "Reference" "#PWR04020"
+		(property "Reference" "#PWR04019"
 			(at 71.12 203.2 0)
 			(effects
 				(font
@@ -7228,7 +6873,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04020")
+					(reference "#PWR04019")
 					(unit 1)
 				)
 			)
@@ -7665,7 +7310,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "80d8a638-d771-5db6-aa80-62cbde46e3ca")
-		(property "Reference" "#PWR04021"
+		(property "Reference" "#PWR04020"
 			(at 198.12 209.55 0)
 			(effects
 				(font
@@ -7715,7 +7360,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04021")
+					(reference "#PWR04020")
 					(unit 1)
 				)
 			)
@@ -8186,7 +7831,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c7c8cf22-254f-516f-967e-2064b1311409")
-		(property "Reference" "#PWR04022"
+		(property "Reference" "#PWR04021"
 			(at 71.12 121.92 0)
 			(effects
 				(font
@@ -8236,7 +7881,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04022")
+					(reference "#PWR04021")
 					(unit 1)
 				)
 			)
@@ -8252,7 +7897,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9e3a0ee2-7cee-5bfa-acf4-39afe3eed8a2")
-		(property "Reference" "#PWR04023"
+		(property "Reference" "#PWR04022"
 			(at 193.04 40.64 0)
 			(effects
 				(font
@@ -8302,7 +7947,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04023")
+					(reference "#PWR04022")
 					(unit 1)
 				)
 			)
@@ -8329,7 +7974,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e0752315-caed-5be1-b1a7-a0a4d74ff76a")
-		(property "Reference" "#PWR04024"
+		(property "Reference" "#PWR04023"
 			(at 264.16 40.64 0)
 			(effects
 				(font
@@ -8379,7 +8024,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04024")
+					(reference "#PWR04023")
 					(unit 1)
 				)
 			)
@@ -8417,7 +8062,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1a58b479-3984-5fe5-9a53-4a610d070a11")
-		(property "Reference" "#PWR04025"
+		(property "Reference" "#PWR04024"
 			(at 363.22 213.36 0)
 			(effects
 				(font
@@ -8467,7 +8112,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04025")
+					(reference "#PWR04024")
 					(unit 1)
 				)
 			)
@@ -8505,7 +8150,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2da2b315-1364-5b79-bb70-e5210e9bb90a")
-		(property "Reference" "#PWR04026"
+		(property "Reference" "#PWR04025"
 			(at 363.22 220.98 0)
 			(effects
 				(font
@@ -8555,7 +8200,7 @@
 		(instances
 			(project "bay-node"
 				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
-					(reference "#PWR04026")
+					(reference "#PWR04025")
 					(unit 1)
 				)
 			)
@@ -8605,16 +8250,71 @@
 			)
 		)
 	)
-	(label "DATA_INT_C"
-		(at 363.22 228.6 180)
+	(symbol
+		(lib_id "power:GND")
+		(at 363.22 228.6 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
+		(uuid "e291a856-170e-5abc-a524-f29e36fd6f50")
+		(property "Reference" "#PWR04026"
+			(at 363.22 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
-			(justify right bottom)
 		)
-		(uuid "a627f5df-5ed4-50ae-a45f-8d0a67d5fd5e")
+		(property "Value" "GND"
+			(at 357.43 228.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 363.22 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 363.22 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 363.22 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "646f418c-494b-53b8-8d9c-3638be134499")
+		)
+		(instances
+			(project "bay-node"
+				(path "/76847c0c-2f76-566c-8109-428b2bf58b3f/c87ef098-13d8-5d4c-814e-a4c6487f5259"
+					(reference "#PWR04026")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:+3V3")
@@ -8964,7 +8664,7 @@
 		)
 		(uuid "c9ea6eba-b094-5fec-a89c-32f7b4e4794a")
 	)
-	(text "DATA: the DUT's USB, I²C and INT on an 8-wire PH lead to the drawer's DATA board"
+	(text "DATA: the DATA board's supply, the DUT's USB and I²C on an 8-wire PH lead"
 		(exclude_from_sim no)
 		(at 270.51 193.04 0)
 		(effects

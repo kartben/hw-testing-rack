@@ -9,8 +9,9 @@ Functions
   * DATA power: VIN through a TPS26600 eFuse (≈1.6 A, off until the firmware turns it on) and a 50 mΩ
     shunt read by an INA226: DATA_VIN, the DATA board's supply (it makes its ports' 5 V); the DUT's D+/D-
     through ESD.
-  * DATA (JST PH 8, side entry, right edge): DATA_VIN, the DUT's USB, the node's I²C and an INT line on
-    an 8-wire lead to the drawer's DATA board (DATA ×6 or ×4).  The node has no DUT receptacle of its own.
+  * DATA (JST PH 8, side entry, right edge): DATA_VIN, the DUT's USB and the node's I²C on an 8-wire lead
+    to the drawer's DATA board (DATA ×6 or ×4): 1 DATA_VIN · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL ·
+    8 GND.  The node has no DUT receptacle of its own.
   * Two USB 2.0 muxes:
       MUX_DUT: DUT ↔ ESP32-S3 USB-OTG (USB/IP mode, default)
                DUT ↔ front PC port      (classic mode: plug a laptop and the
@@ -274,8 +275,9 @@ def board() -> Board:
         ("DATA_DVDT", "F.Cu", 0.25, [(col[4], top), (col[4], 45.625)]),
         ("DATA_ILIM", "F.Cu", 0.25, [(col[5], top), (col[5], 46.6), (52.55, 45.625)]),
         ("DUT_EN", "F.Cu", 0.25, [(col[6], bot), (col[6], 55.375)]),
-        # D8's cathode (the lead's kick clamp) straight into J7.1
-        ("DATA_VIN", "F.Cu", 0.6, [(63.15, 37.6), (63.75, 37.0), (66.25, 37.0)]),
+        # D8's cathode (the lead's kick clamp) straight into J7.1; a vertex where the router's DATA_VIN from R19
+        # meets it (Freerouting takes a wire ending mid-segment as unconnected)
+        ("DATA_VIN", "F.Cu", 0.6, [(63.15, 37.6), (63.75, 37.0), (65.4743, 37.0), (66.25, 37.0)]),
     ]
     efuse_vias = [("VIN", 46.6, 67.6, 0.8, 0.4),
                   *[("GND", ex + dx, ey + dy) for dx in (-1.5, 0.0, 1.5) for dy in (-0.75, 0.75)]]
@@ -576,7 +578,7 @@ def board() -> Board:
         "IO11": "CAM_SCK", "IO10": "CAM_MOSI", "IO9": "CAM_MISO",
         # left column -> the rack bus block (CAN, POS_IN), SERVICE, the camera's CS and light
         "IO15": "SVC", "IO16": "POS_IN", "IO17": "CAN_RXD", "IO18": "CAN_TXD",
-        "IO8": "CAM_CS", "IO7": "CAM_LED", "IO4": "DATA_INT",
+        "IO8": "CAM_CS", "IO7": "CAM_LED",
         "TXD0": "U0TX", "RXD0": "U0RX",
     }, pcb=P(32, 12.75, 0), sch=at(80, 38, fields=(-14, -14)))
     # 3V3 (pin 2) and EN (pin 3) sit at the left column's rear end
@@ -600,7 +602,7 @@ def board() -> Board:
     m.note("GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/1 I2C SDA/SCL · IO47/21 UART1 TX/RX (AUX) ·")
     m.note("IO12 AUX_RST · IO48 AUX_BOOT · IO38 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·")
     m.note("IO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO42 POS_OUT · camera SPI2: IO11 SCK · IO10 MOSI · IO9 MISO · IO8 CS ·")
-    m.note("IO7 light · IO4 DATA_INT (J7.8, open drain, active low).  Free: IO5, IO6.  IO35–IO37 are the octal PSRAM's;")
+    m.note("IO7 light.  Free: IO4 (the DATA lead's INT until node rev B), IO5, IO6.  IO35–IO37 are the octal PSRAM's;")
     m.note("the WROOM-1 has no IO26/IO33/IO34.  The I²C bus (IO1/IO2) also goes out on J7.6/7 to the drawer's DATA board.")
     m.note("The map is the ESP32-S3-DevKitC-1 v1.1's (N8R8) as is: the bench stand-in needs no remap.")
     m.note("Strapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY).")
@@ -659,22 +661,21 @@ def board() -> Board:
     C(u, "C26", "100n", "+5V", "GND", pcb=P(51.6, 36.45, 180), sch=at(124, 64))
 
     # the drawer's DATA board on an 8-wire PH lead (the camera's lead type, 'Same direction'): DATA_VIN (the
-    # eFused VIN, 20–28 V: the board makes its own 5 V), GND, D−, D+, GND, then the node's I²C (the INA226's
-    # bus, 2.2k pull-ups on this board) and an open-drain, active-low INT (10k pull-up here, 1k in series at the
-    # connector); the DATA board's I²C devices keep off 0x40.  Side entry on the right edge (like J2: pin 1
+    # eFused VIN, 20–28 V: the board makes its own 5 V), GND, D−, D+, GND, the node's I²C (the INA226's bus,
+    # 2.2k pull-ups on this board; the DATA board's I²C devices keep off 0x40) and GND on pin 8.  Pin 8 is GND
+    # since node rev B (no INT: the node polls the DATA board): a camera lead plugged in here, either way round,
+    # lands J7.1 on one of the pod's end GND pins and J7.8 on the other, a short the eFuse cuts, and a 1:1 DATA
+    # lead puts J7.1 on the DATA board's unconnected pin 1.  Side entry on the right edge (like J2: pin 1
     # towards the front), its mouth towards the drag chain's fixed end; the pair from U8 is drawn in
     # usb_hs_routes.  DATA_VIN comes after the shunt.
-    u.frame("DATA: the DUT's USB, I²C and INT on an 8-wire PH lead to the drawer's DATA board", 106, 75, 160, 100)
+    u.frame("DATA: the DATA board's supply, the DUT's USB and I²C on an 8-wire PH lead", 106, 75, 160, 100)
     part(u, "J7", "ph8", {"1": "DATA_VIN", "2": "GND", "3": "DUT_CONN_DP", "4": "DUT_CONN_DN", "5": "GND", "6": "I2C_SDA",
-                           "7": "I2C_SCL", "8": "DATA_INT_C"}, "DATA",
+                           "7": "I2C_SCL", "8": "GND"}, "DATA",
          pcb=P(EDGE_X, CFG["right"]["data"], 90), sch=at(152, 86, fields=(1, -7)))
     for pin, dy, net in (("1", -3, "DATA_VIN"), ("2", -2, "GND"), ("3", -1, "DUT_CONN_DP"), ("4", 0, "DUT_CONN_DN"),
-                         ("5", 1, "GND"), ("6", 2, "I2C_SDA"), ("7", 3, "I2C_SCL"), ("8", 4, "DATA_INT_C")):
+                         ("5", 1, "GND"), ("6", 2, "I2C_SDA"), ("7", 3, "I2C_SCL"), ("8", 4, "GND")):
         u.wire(f"J7.{pin}", (143, 86 + dy))
         u.tag(net, (143, 86 + dy), "left")
-    R(u, "R41", "1k", "DATA_INT", "DATA_INT_C", pcb=P(58.0, 29.4, 0), sch=at(124, 92, rot=90))
-    # the INT pull-up beside the module (over In2 +3V3; J7 sits over +5V)
-    R(u, "R38", "10k", "DATA_INT", "+3V3", pcb=P(20.9, 16.9, 90), sch=at(116, 95))
 
     u.frame("Mode logic: MUX_SEL = PC_DET OR MUX_FORCE_PC; SERVICE switch", 6, 58, 84, 86)
     part(u, "U7", "or", {"1": "PC_DET", "2": "MUX_FORCE_PC", "3": "GND", "4": "MUX_SEL", "5": "+3V3"},

@@ -703,7 +703,7 @@
 		)
 		(uuid "c6829a7b-2315-5f70-b4aa-e6258ce3401d")
 	)
-	(text "DATA_INT, ESP_DN/DP, I2C_SCL/SDA,"
+	(text "ESP_DN/DP, I2C_SCL/SDA, MUX_FORCE_PC,"
 		(exclude_from_sim no)
 		(at 93.98 109.22 0)
 		(effects
@@ -714,7 +714,7 @@
 		)
 		(uuid "365a5790-c67b-5d5c-bb49-72ea4ac0a6d9")
 	)
-	(text "MUX_FORCE_PC, PC_DET, SVC"
+	(text "PC_DET, SVC"
 		(exclude_from_sim no)
 		(at 93.98 111.76 0)
 		(effects

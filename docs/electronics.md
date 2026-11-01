@@ -151,7 +151,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | USB | 2 × FSUSB42 + 74LVC1G32 (150k from its output back to PC_DET for ≈ 0.14 V of hysteresis: the laptop's VBUS rises far slower than its 10 ns/V, datasheet audit F3), 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (1k: a reference for the DUT's levels, not a supply), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
-| DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DATA_VIN (20–28 V, ≤ 1.6 A) · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 INT; USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 2.2k pull-ups), INT to IO4 (10k pull-up, 1k series, open drain, active low) | the node's only DUT port: the lead to the drawer's DATA board (×6, or ×4 where a DUT needs wires), which makes its own 5 V from DATA_VIN; `pcb.bay_node.right.data` is its centre (KiCad y) |
+| DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DATA_VIN (20–28 V, ≤ 1.6 A) · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 GND (an INT until node rev B: the node polls the DATA board); USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 2.2k pull-ups) | the node's only DUT port: the lead to the drawer's DATA board (×6, or ×4 where a DUT needs wires), which makes its own 5 V from DATA_VIN; `pcb.bay_node.right.data` is its centre (KiCad y) |
 | Camera | J6, JST PH 8, vertical, SMD (B8B-PH-SM4-TB): 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K; 33 Ω series on the SPI lines, 2 × USBLC6 on the lead side (their VBUS pins on +3V3 with C28 100 nF between them, datasheet audit F4; +3V3, not CAM_5V: with CAM_5V off the SPI lines can't feed the pod through them, and the clamp stays under the ESP32's 3.6 V), AO3400A low side for the LEDs (100k gate pull-down), CAM_5V through a 0.75 A PTC | this bay's Arducam Mega SPI camera and white LEDs (below); at the rear right, its lead straight back, its parts in a block west of it; `pcb.bay_node.cam` in `config/rack.yaml` is J6's centre |
 
 **USB High-Speed path.** In classic mode a laptop on the front port talks to the DUT through both
@@ -178,7 +178,7 @@ sits in the rear-right corner) · IO42 POS_OUT towards J2 · IO38 LED; bottom ro
 TX/RX · IO12 AUX_RST · IO48 AUX_BOOT · IO13 PC_DET · IO14 MUX_FORCE_PC and the camera on SPI2
 through the GPIO matrix, IO11 SCK · IO10 MOSI · IO9 MISO; left column IO15 SVC · IO16 POS_IN ·
 IO17/IO18 CAN RX/TX (TWAI) · IO8 the camera's CS · IO7 its light; IO19/IO20 USB; TXD0/RXD0 on test
-pads (bottom side); IO4 the DATA board's INT (J7.8).  IO5 and IO6 are free.  The WROOM-1's octal PSRAM takes IO35–IO37 and it has no
+pads (bottom side).  IO4 (the DATA board's INT on J7.8 until node rev B), IO5 and IO6 are free.  The WROOM-1's octal PSRAM takes IO35–IO37 and it has no
 IO26/IO33/IO34; IO3, IO45 and IO46 (strapping) stay unused.  The map is the one an
 ESP32-S3-DevKitC-1 v1.1 (N8R8, the same module) can take as is: every pin on its headers, the
 status LED on its own RGB LED's IO38, so the bench stand-in needs no remap.  `firmware/README.md` has the full table, checked against the schematic by
@@ -239,20 +239,20 @@ hole through the ledge over each (screw and screwdriver go through, drawer out);
 those holes follow `pcb.bay_node.holes`.
 
 **J7, the DATA lead (8 wires).**  Since the density decisions (2026-10-19) the DATA lead also
-carries the node's I²C and an interrupt, for a DATA ×4 board in the drawer (its own I²C
-devices, an INT back to IO4); the single DATA port board leaves those three pins open, and both use
-the camera's lead type (PH 8, "Same direction").  Pin 1 is 5 V for the far board's ports: one PH
-contact (2 A) carries the TPS2553's ≈ 1.4 A limit; two GND pins frame the pair.  The I²C bus then reaches ≈ 50 cm of lead: 400 kHz with the node's 2.2k pull-ups
+carries the node's I²C, for the DATA board in the drawer (its own I²C devices), on the camera's
+lead type (PH 8, "Same direction").  Since node rev B pin 1 is DATA_VIN, the rack's VIN (20–28 V)
+through the TPS26600 eFuse: one PH contact (2 A) carries its ≈ 1.6 A limit, and the DATA board
+makes its own 5 V; two GND pins frame the pair, and pin 8 is GND too (the INT it carried went: the
+node polls the DATA board).  The I²C bus then reaches ≈ 50 cm of lead: 400 kHz with the node's 2.2k pull-ups
 (≈ 100–150 pF: ≈ 0.2 µs rise time; 5.1k until pcba-review N2), the far board adds no strong pull-ups and
 keeps its addresses off the INA226's 0x40.
-INT is open drain, active low: 10k pull-up beside the module, 1k in series at J7.  U8 clamps D±
-right behind J7; no room was left for an ESD array on the I²C and INT pins: the far board protects
+U8 clamps D±
+right behind J7; no room was left for an ESD array on the I²C pins: the far board protects
 its lines where they meet the outside.  J7 is a side-entry S8B on the right edge, pin 1 at the
 front, its pads facing west, towards U8 and the DUT power block; its D± are the end of the
-hand-drawn High-Speed chain (above).  J6 and J7 take the same lead: both carry 5 V on pin 1 and
-GND on pin 2, and the silkscreen names them (CAM, DATA).  A camera lead in J7 is harmless (the Mega stays deselected; D− meets
-the pod's GND, D+ its SCK); a DATA lead in J6 puts MOSI (33 Ω) on a GND pin while the camera driver probes: plug by
-the names.
+hand-drawn High-Speed chain (above).  J6 and J7 take the same lead type, and the silkscreen names
+them (CAM, DATA): plug by the names.  Until the camera lead's own rev B pinout (GND on its end pins),
+a camera lead in J7 would put DATA_VIN on the pod's CAM_5V.
 
 **No DUT receptacle on the node.**  Until the 74 × 90 re-layout J7 tapped the DUT pair at J4's own
 pads, and whichever port was unused hung on the pair as a stub (a DATA lead left in J7 was ≈ 40 cm
