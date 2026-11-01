@@ -314,9 +314,11 @@ pcb:
                             # routing portfolio and its fixes route it clean); X4V2_LAYERS=6 still builds the 6-layer
                             # stack-up for a comparison
     cradle: 5.5             # each end's 5.5 mm in the cradle's slots (and its latches), both faces free of parts
-    notches: { x: [35, 71], size: [3.4, 6.5] }   # its bottom edge's two notches (drawer x of their centres; width,
-                            # depth), the cradle's T-heads.  Front face free of parts 7 wide × 6.0 tall round each; rear
-                            # face bare 5.3–9.3 mm above the bottom edge (the base's push band)
+    notches: { x: [35, 71], size: [3.4, 6.5], tee: [-2.2, 2.5] }   # its bottom edge's two notches (drawer x of
+                            # their centres; width, depth), the cradle's T-heads; tee: each T-head bar's ends off its
+                            # notch's centre (x4_cradle.scad reads it), the bar 0.5 under the notch's depth: the front
+                            # face free of parts over it, 0.3 mm round.  Rear face bare 5.3–9.3 mm above the bottom
+                            # edge (the base's push band)
     usb: [22, 40, 58, 76]   # board x of the four vertical USB-C (HRO TYPE-C-31-D-06, 6.4 mm tall), mouths towards the
                             # wall: drawer x 26, 44, 62, 80, v1's ports
     usb_z: 11               # their axis: the port wall's openings, as v1's
@@ -348,7 +350,8 @@ pcb:
     thickness: 1.6
     layers: 4
     cradle: 5.5
-    notches: { x: [38.5, 69.5], size: [3.4, 6.5] }   # DRAWER x (not board x) of their centres: between ports 2–3, 4–5
+    notches: { x: [38.5, 69.5], size: [3.4, 6.5], tee: [-2.2, 2.5] }   # DRAWER x (not board x) of their centres:
+                            # between ports 2–3, 4–5; tee: each T-head bar's ends off its notch's centre, as the v2's
     usb: [13.45, 28.95, 44.45, 59.95, 75.45, 90.95]  # board x of the six vertical USB-C, 15.5 mm apart (the grid shared
                                                      # with the v2: its 15.24 mm headers fit), mouths to the wall; 2.2 mm
                                                      # east of their clusters since they stand (USB-C 1's USBLC6 beside

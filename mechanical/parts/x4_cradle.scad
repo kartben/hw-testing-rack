@@ -36,7 +36,8 @@ PART = "cradle";
 
 // a warning until the v2 is re-placed on the ×6's grid (pcb.data_port_x4_v2), then an assert again
 if (!(DATA_X6_SIZE == DATA_V2_SIZE && DATA_X6_X0 == DATA_V2_X0 && DATA_X6_T == DATA_V2_T
-      && DATA_X6_FACE_Y == DATA_V2_FACE_Y && DATA_X6_NOTCH_X == DATA_V2_NOTCH_X && DATA_X6_NOTCH == DATA_V2_NOTCH))
+      && DATA_X6_FACE_Y == DATA_V2_FACE_Y && DATA_X6_NOTCH_X == DATA_V2_NOTCH_X && DATA_X6_NOTCH == DATA_V2_NOTCH
+      && DATA_X6_TEE == DATA_V2_TEE))
     echo("WARNING: the DATA ×6 and the DATA ×4 v2 no longer share an outline: one cradle no longer takes both");
 V2 = [DATA_X6_SIZE[0], DATA_X6_SIZE[1], DATA_X6_T];   // the board: length (x), height (z), thickness (y)
 V2_X0 = DATA_X6_X0;                       // its left edge
@@ -51,8 +52,8 @@ NOTCH = DATA_X6_NOTCH;                    // the board's bottom-edge notches: wi
 NOTCH_X = DATA_X6_NOTCH_X;                // their centres, drawer x: between slots 2–3 and 4–5
 // a T-head's bar in front of the board, from the comb to the slot's front face: its ends off the notch's centre.
 // Its left end 1.1 off the USB-C on its left (ports 2 and 4: their shell legs at ±2.3), its right end 0.8 past
-// the notch (nothing there below the 7 × 6 zone's top)
-TEE = [-2.2, 2.5];
+// the notch (rack.yaml's notches.tee: the boards keep their front face free of parts over it, 0.3 mm round)
+TEE = DATA_X6_TEE;
 BASE = [DATA_PCB_Z, 4.0];                 // the base: its underside (the bosses' top), thickness
 LEG_RELIEF = [7, 1.2];                    // round each receptacle's shell legs on the rear face (±2.15 across): width, depth
 LATCH = [40, 0.8];                        // the latch finger: free length, hook over the board's top edge
