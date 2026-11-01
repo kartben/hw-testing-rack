@@ -1498,6 +1498,16 @@ def board() -> Board:
     hand_tracks += [("BUS_H", "B.Cu", 0.127, [(hx + 0.48, 17.13), (hx + 0.48, hy - 0.48), (hx, hy)]),
                     ("GND", "B.Cu", 0.25, [(gx, gy), (gx + 1.0, gy)])]
     hand_vias += [("BUS_H", hx + 0.48, 17.13, 0.5, 0.3), ("GND", gx + 1.0, gy, 0.5, 0.3)]
+    # RN8's pin 5 (+3V3) on pin 6's via, with no via of its own: the only way out for BUS_D from its pull-ups (RN6,
+    # RN8 pin 4) to its line east of the arrays runs between RN8's two columns, under pin 5
+    rx, ry = CP[0] + 10.4, CP[1] - 2.8
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [(rx + 0.5, ry + 0.75), (rx + 0.5, ry + 0.25), (rx + 1.1, ry + 0.25)]))
+    hand_vias.append(("+3V3", rx + 1.1, ry + 0.25, 0.5, 0.3))
+    # C27 and C28's GND vias right west of their pads: the fan-out put them 0.6 mm further, past the decoupling rule's
+    # 1 mm (electronics/tools/decoupling.py)
+    for y in (23.0, 24.05):
+        hand_tracks.append(("GND", "F.Cu", 0.25, [(6.47, y), (5.84, y)]))
+        hand_vias.append(("GND", 5.84, y, 0.5, 0.3))
     # ports 1 and 4's 5V_SW, from the switch up to the VBUS LED's resistor, drawn: their old way past the header
     # (B.Cu between two of its pins) now carries P6 / P5.  Port 1 crosses the header on F.Cu west of pin 4; port 4,
     # under three USB pairs there, on B.Cu west of the header.  Their cluster end relative to the cluster's x0, their
