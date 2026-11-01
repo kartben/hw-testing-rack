@@ -46,8 +46,8 @@ module node_bosses(x0, y0) for (h = NODE_HOLES) translate(concat(nk(h, x0, y0), 
     cylinder(d = BOSS_D, h = STAND + EPS);                                  // as the tray's standoffs
     translate([0, 0, STAND + EPS]) insert_hole(INSERT_M3);
 }
-// the node's front edge, as the tray's fascia (lib/carrier.scad › fascia_cutouts): its PC port (the USB-C stadium,
-// so an overmold passes), the status LED's window, the SERVICE switch's slot; `top`: the node's PCB top
+// the node's front edge, as the tray's fascia (lib/carrier.scad › fascia_cutouts): its PC port (the plug cut, so
+// an overmold passes), the status LED's window, the SERVICE switch's slot; `top`: the node's PCB top
 module node_front(x0, top) {
     translate([x0 + NODE_FRONT[0], -EPS, top + 1.6]) rotate([-90, 0, 0]) usbc_plug_cut(T + 2);
     translate([x0 + NODE_FRONT[1], -EPS, top + 0.7]) rotate([-90, 0, 0]) cylinder(d = 3.2, h = T + 2);

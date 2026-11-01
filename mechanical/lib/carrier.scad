@@ -16,13 +16,15 @@ NODE_BOOT = [15.5, 21.5];                          // SW2 BOOT, beside it
 NODE_C1 = [6, 58.4, 8.3, 10];                      // C1, the 100 µF bulk electrolytic (CP_Elec_8x10): KiCad centre, its
                                                    // base's side, its height over the board: the node's tallest part
 
-// Opening for a USB-C plug's overmold: the USB-C stadium, scaled up.  The USB-IF reference
-// overmold is at most 12.35 × 6.5 mm; this one also passes squarer overmolds (corner radius
-// ≥ 2 mm).  A receptacle behind a wall's outer face needs it, not a shell-sized cut, or the
-// overmold stops on the wall before the plug seats.  Width, height.
+// Opening for a USB-C plug's overmold.  The USB-IF reference overmold is at most 12.35 × 6.5 mm, its corners
+// R 2 or rounder: this one clears it by 0.525 mm or more all round, flat with r 1.5 corners (the USB-C stadium
+// of the same size left an R 2 overmold's corners 0.04).  A receptacle behind a wall's outer face needs it, not
+// a shell-sized cut, or the overmold stops on the wall before the plug seats.  Width, height; corner radius.
 USBC_PLUG_CUT = [13.4, 7.8];
+USBC_PLUG_R = 1.5;
 module usbc_plug_cut(h)         // centred on the plug axis, extruded along +Z
-    hull() for (dx = [-1, 1] * (USBC_PLUG_CUT[0] - USBC_PLUG_CUT[1]) / 2) translate([dx, 0, 0]) cylinder(d = USBC_PLUG_CUT[1], h = h);
+    hull() for (sx = [-1, 1], sy = [-1, 1])
+        translate([sx * (USBC_PLUG_CUT[0] / 2 - USBC_PLUG_R), sy * (USBC_PLUG_CUT[1] / 2 - USBC_PLUG_R), 0]) cylinder(r = USBC_PLUG_R, h = h);
 
 // front wall of the tray: PC/classic USB-C port, status LED window, SERVICE switch.  The node's
 // USB-C receptacle (J3, GCT USB4105) has its face 0.275 mm proud of the PCB edge, i.e. 2.7 mm

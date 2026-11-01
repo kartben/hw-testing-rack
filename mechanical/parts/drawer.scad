@@ -156,7 +156,7 @@ module port_wall() {
     y = DRAWER_PORT_WALL_Y;
     t = DRAWER_WALL;
     w = USBC_PLUG_CUT[1];
-    r = 1.5;                                        // the slot's bottom corners: a full round would leave an R 2 overmold 0.04
+    r = USBC_PLUG_R;                                // the slot's bottom corners, as the plug cut's (lib/carrier.scad)
     difference() {
         translate([0, y - t, 0]) cube([DRAWER_W, t, DRAWER_WALL_H]);
         // the DATA ports: the USB-C plug cut stood on end, from its bottom up through the wall's top
