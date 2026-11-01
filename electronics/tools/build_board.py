@@ -548,7 +548,7 @@ def main():
         pb = pcbgen.PcbBuilder(b, outdir, getattr(mod, "NETCLASSES", None))
         pb.build(route=False, defer_pours=a.dsn)
         if a.dsn:
-            pcbgen.export_dsn(b, outdir)
+            pcbgen.export_dsn(b, outdir, getattr(mod, "NETCLASSES", None))
     d = drc(outdir, b.name)
     print(f"DRC: {d['violations']}  unconnected={d['unconnected']}  parity={d['parity']}")
     for it in d["items"][:80]:

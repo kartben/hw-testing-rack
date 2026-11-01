@@ -109,7 +109,8 @@ every board is built and checked with them; a board that declares nothing gets n
 - A class's `_min_width` (mm) becomes a DRC error under that track width, except where
   `b.pcb["min_width_except"]` says (courtyards, nets: a fine-pitch part's fan-out).
 - A `Sensitive` class (enables, faults, resets) beside a `USB` class is kept 3 × the USB track width off
-  it, the layout review's spacing between a fast bus and the lines outside it.
+  it, the layout review's spacing between a fast bus and the lines outside it.  Freerouting routes with
+  it too: the DSN gets a `class_class` clearance between the two classes.
 
 `tools/kicad.sh <board> --rules` rewrites a routed board's `.kicad_dru` and its `.kicad_pro` DRC settings
 from the design, then runs DRC, without touching its copper.

@@ -156,6 +156,35 @@ class NoViaAtSmd(unittest.TestCase):
         self.assertIn("(control (via_at_smd off))", out)
 
 
+class ClassClearance(unittest.TestCase):
+    # KiCad 10 names each net's classes together: a Sensitive net's class is "Sensitive,Default"
+    CLASSES = BOARD.replace('    (class kicad_default "" A B "C D" (circuit (use_via Via)))\n',
+                            '    (class kicad_default "" (circuit (use_via Via)))\n'
+                            "    (class Sensitive,Default A (circuit (use_via Via)) (rule (width 127) (clearance 100)))\n"
+                            "    (class USB,Default B (circuit (use_via Via)) (rule (width 250) (clearance 127)))\n"
+                            '    (class "USB,Pins,Default" "C D" (rule (width 250) (clearance 127)))\n')
+
+    def test_one_entry_per_pair_of_classes_at_the_end_of_the_network(self):
+        out = dsn.class_clearance(self.CLASSES, "Sensitive", "USB", 750)
+        kids = [(k, out[a:b]) for a, b, k in dsn.children(out, *dsn.find(out, "network"))]
+        self.assertEqual([k for k, _ in kids], ["net", "net", "net", "class", "class", "class", "class",
+                                                "class_class", "class_class"])
+        self.assertEqual(kids[-2][1], "(class_class (classes Sensitive,Default USB,Default)\n"
+                                      "      (rule (clearance 750))\n    )")
+        self.assertIn("(classes Sensitive,Default USB,Pins,Default)", kids[-1][1])
+        self.assertEqual(dsn.find(out)[1], len(out.rstrip()))           # still one balanced file
+        # what follows the network as KiCad wrote it
+        self.assertEqual(out[out.index("  (wiring"):], self.CLASSES[self.CLASSES.index("  (wiring"):])
+
+    def test_canonical_keeps_it(self):
+        out = dsn.canonical(dsn.class_clearance(self.CLASSES, "Sensitive", "USB", 752))
+        self.assertIn("(rule (clearance 752))", out)
+
+    def test_nothing_without_both_classes(self):
+        self.assertEqual(dsn.class_clearance(BOARD, "Sensitive", "USB", 750), BOARD)
+        self.assertEqual(dsn.class_clearance(self.CLASSES, "Sensitive", "HDMI", 750), self.CLASSES)
+
+
 class Canonical(unittest.TestCase):
     # what changes between two KiCad exports of one board: list order, a fixed track's grouping into paths,
     # the numbering of same-name footprint images, their coordinates' last digit

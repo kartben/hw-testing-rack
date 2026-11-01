@@ -874,18 +874,25 @@ def plane_areas(board, log=print) -> dict[int, list[list[tuple[float, float]]]]:
     return out
 
 
-def export_dsn(b: Board, outdir: Path) -> Path:
+def export_dsn(b: Board, outdir: Path, netclasses=None) -> Path:
     import dsn as dsnlib
+    from netrules import sensitive_spacing
     path = outdir / f"{b.name}.kicad_pcb"
     board = pcbnew.LoadBoard(str(path))
     dsn = outdir / "build" / f"{b.name}.dsn"
     dsn.parent.mkdir(parents=True, exist_ok=True)
     if not pcbnew.ExportSpecctraDSN(board, str(dsn)):
         raise RuntimeError("DSN export failed")
-    # Freerouting rounds its geometry and sometimes lands a hair under the clearance (0.1487 for
-    # 0.15 mm): give it 2 µm of margin over what KiCad's DRC checks
     import re
     text = dsn.read_text(encoding="utf-8")
+    # the Sensitive class kept off the fast buses as the .kicad_dru keeps it (netrules.sensitive_spacing): a
+    # class-to-class clearance Freerouting routes with, not only a DRC error after the route
+    for a, fast, mm in sensitive_spacing(netclasses):
+        if "(unit um)" not in text:
+            raise RuntimeError("DSN not in µm: the class clearance would be written in the wrong unit")
+        text = dsnlib.class_clearance(text, a, fast, mm * 1000)
+    # Freerouting rounds its geometry and sometimes lands a hair under the clearance (0.1487 for
+    # 0.15 mm): give it 2 µm of margin over what KiCad's DRC checks
     text = re.sub(r"\(clearance (\d+(?:\.\d+)?)\)", lambda m: f"(clearance {float(m.group(1)) + 2:g})", text)
     # the planes as KiCad's fill can reach them, not as their outlines overlap (plane_areas)
     # (PCBGEN_DSN_PLANES=kicad keeps KiCad's outlines, to compare)

@@ -159,6 +159,25 @@ def no_via_at_smd(text: str) -> str:
     return text[:at] + block + "\n" + indent + text[at:]
 
 
+def class_clearance(text: str, a: str, b: str, clearance: float) -> str:
+    """A clearance between two netclasses, in the network: (class_class (classes A B) (rule (clearance N))), N in
+    the file's units (µm), for every class KiCad wrote that holds `a` and every one that holds `b`.  KiCad 10 names
+    a net's classes together ("Sensitive,Default"); Freerouting keeps that much between their wires, vias and pins
+    (its NetClass.ClassClass, an entry of its clearance matrix).  The text as it was if either class is missing."""
+    where = find(text, "network")
+    if where is None:
+        return text
+    names = [atoms(text[s:e])[1] for s, e, k in children(text, *where) if k == "class"]
+    quote = lambda n: f'"{n}"' if re.search(r'[\s()"]', n) else n
+    pairs = [(x, y) for x in names if a in x.split(",") for y in names if b in y.split(",")]
+    if not pairs:
+        return text
+    end = where[1] - 1
+    block = "".join(f"\n    (class_class (classes {quote(x)} {quote(y)})\n      (rule (clearance {_num(clearance)}))\n    )"
+                    for x, y in pairs)
+    return text[:end].rstrip() + block + "\n  " + text[end:]
+
+
 def split_planes_as_signals(text: str) -> tuple[str, list[str]]:
     """A power layer that carries the planes of several nets (a split plane) turned into a signal layer that no
     wire may use (a wire_keepout over the board): its nets are routed as signals, pad by pad to the plane's
