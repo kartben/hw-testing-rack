@@ -378,11 +378,11 @@
       },
       {
         "netclass": "Power",
-        "pattern": "+5V_L"
+        "pattern": "*+5V_L"
       },
       {
         "netclass": "Power",
-        "pattern": "VIN"
+        "pattern": "*VIN"
       },
       {
         "netclass": "Power",
