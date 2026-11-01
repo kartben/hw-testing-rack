@@ -81,7 +81,7 @@ node's real console code, Zephyr's shell sample as the DUT); details in
 ### The DATA lead's power-on rule (node rev B)
 
 Not in the firmware yet.  From node rev B, J7.1 carries the rack's VIN (20–28 V) through a
-TPS26600 eFuse (U9: ≈ 1.6 A limit, 4–5 ms soft start, current limit with auto-retry), and the DATA
+TPS26600 eFuse (U9: ≈ 1.76 A limit, 4–5 ms soft start, current limit with auto-retry), and the DATA
 board makes its own 5 V from it.  The eFuse is **off** until the firmware turns it on: its SHDN
 (IO41, `DUT_EN`) has a 10k pull-down, and the firmware holds IO41 low until the checks pass.
 

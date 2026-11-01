@@ -6,7 +6,7 @@ Functions
     Reverse-polarity P-FET, TVS, LMR51625 synchronous buck to 5 V / 2.5 A, 3.3 V LDO for the logic.
   * CAN: TJA1462AT on the ESP32-S3 TWAI, tapping the pair that runs J1 → J2 (no termination).
   * POS: token in on J1.6, out on J2.1 (J2 is J1 mirrored), each through 10k + a BAT54S clamp (survives VRACK on it).
-  * DATA power: VIN through a TPS26600 eFuse (≈1.6 A, off until the firmware turns it on) and a 50 mΩ
+  * DATA power: VIN through a TPS26600 eFuse (≈1.76 A, off until the firmware turns it on) and a 50 mΩ
     shunt read by an INA226: DATA_VIN, the DATA board's supply (it makes its ports' 5 V); the DUT's D+/D-
     through ESD.
   * DATA (JST PH 8, side entry, right edge): DATA_VIN, the DUT's USB and the node's I²C on an 8-wire lead
@@ -195,7 +195,7 @@ def board() -> Board:
     b = Board("bay-node", "Bay node", "0.5",
               comments=["ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf",
                         "Generated from electronics/bay-node/design.py — edit the Python, then regenerate",
-                        "Row bus 20–28 V + CAN + POS in/out · 20–28 V/1.6 A eFused supply on the DATA lead · USB 2.0 muxes · INA226 · AUX"])
+                        "Row bus 20–28 V + CAN + POS in/out · 20–28 V/1.76 A eFused supply on the DATA lead · USB 2.0 muxes · INA226 · AUX"])
     b.root_notes = [
         "Bay node — one per bay.  Sheets:",
         "  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51625 buck, AP2114H",
@@ -740,7 +740,7 @@ def board() -> Board:
     d.wire("U9.~{SHDN}", (16, 35))
     R(d, "R17", "10k", "DUT_EN", "GND", pcb=P(EFUSE[0] + 1.625, 56.2, 270), sch=at(30, 36.5))
     d.tag("DUT_EN", (16, 35), "left")
-    R(d, "R16", "7.5k", "DATA_ILIM", "GND", pcb=P(52.55, 44.8, 90), sch=at(50, 35.5))
+    R(d, "R16", "6.8k", "DATA_ILIM", "GND", pcb=P(52.55, 44.8, 90), sch=at(50, 35.5))
     d.wire("U9.ILIM", "R16.1")
     C(d, "C29", "22n", "DATA_DVDT", "GND", pcb=P(EFUSE[0] + 0.325, 44.8, 90), sch=at(47, 40.5))
     d.wire("U9.dVdT", (47, 35), "C29.1")
@@ -824,13 +824,16 @@ def board() -> Board:
     for i, (x, y) in enumerate(CFG["holes"]):
         part(d, f"H{i + 1}", "hole", {}, "M3", pcb=P(x, y, 0), in_bom=False, sch=at(122 + 9 * i, 73))
     d.notes_at = (6, 52, 60)
-    d.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A a contact).")
+    d.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 6.8k ≈ 1.76 A (1.67–1.85 A at ±5 %), under JST PH's 2 A a contact.")
+    d.note("  The DATA ×6 draws ≈ 1.0 A at 20 V (1.2 A with its six ports at their 0.62 A limit), 0.75 A at 28 V,")
+    d.note("  ≈ 1.5 A at 13.5–15 V fully loaded: ≥ 11 % below the limit there.  6.49k (1.85 A) is no JLC basic part.")
     d.note("  t_dVdT ≈ 8.65e3 · V_IN · C_dVdT → 22 nF: 3.8 ms at 20 V, 5.3 ms at 28 V; ≈ 0.3 A into 60 µF.")
     d.note("  SHDN pulled down: DATA_VIN is OFF until the firmware drives DUT_EN high (≥ 1 V).")
     d.note("  UVLO / OVP / MODE to GND: internal 15 V / 31–34 V, current limit, auto-retry.")
     d.note("  ~FLT: limit, over-temperature, UV/OV; also low while off or starting.")
     d.note("INA226 (I2C 0x40) runs from +3V3: it measures the drop across")
-    d.note("  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DATA_VIN")
+    d.note("  R19 (50 mΩ → 1.64 A full scale: the ×6's 1.5 A reads, only an overload saturates; Kelvin sense pads);")
+    d.note("  Vbus on Vin-: DATA_VIN")
     d.note("  (≤ 34 V behind the eFuse's OVP: 36 V range, 40 V maximum).")
     d.note("AUX: TX/RX through 1k, VREF = +3V3 through 1k (R23, a level hint),")
     d.note("  RESET/BOOT open-drain (2N7002, 100k gate pull-downs).")

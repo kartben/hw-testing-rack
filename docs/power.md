@@ -148,7 +148,7 @@ per contact, on 24 AWG: the row cables are built from 24 AWG leads), so the limi
 (their gauge: [power-distribution-review.md](power-distribution-review.md)).  A
 shorted row sits at its limit while the others carry on.
 
-**No batteries on rack DUTs.**  Each bay's DATA lead is limited to ≈ 1.6 A of VIN
+**No batteries on rack DUTs.**  Each bay's DATA lead is limited to ≈ 1.76 A of VIN
 (the node's TPS26600 eFuse), and a DATA board's ports to 0.5 A each.  Four small boards
 without batteries take 0.3–0.8 A between them, with millisecond radio peaks of
 0.27–0.4 A each; a board charging its LiPo takes 0.6–1.2 A on its own (a Wio
@@ -206,7 +206,7 @@ USB PD charger (100 W at 20 V; 140 W EPR at 28 V as an option) → 5 A e-marked 
   → 4 × TPS26600 eFuse (rows A–D, 1.6 A limit, 16–22 ms soft start (100 nF dVdT: ≈ 7–9 W typical, ≈ 14 W worst for 19–24 ms in the eFuse), UV 15 V / OV 31–34 V, auto-retry, off until enabled)
   → 6-pin JST PH → each bay node:
      SUD50P06 P-FET → SMBJ33A TVS → 100 µF → LMR51625 (60 V, on above 13.5 V) → 5 V (the node)
-     → TPS26600 eFuse (1.6 A, 4–5 ms soft start, UV 15 V / OV 31–34 V, off until enabled) → 50 mΩ shunt
+     → TPS26600 eFuse (1.76 A, 4–5 ms soft start, UV 15 V / OV 31–34 V, off until enabled) → 50 mΩ shunt
        (INA226) → 8-pin JST PH DATA lead → the DATA board's own 5 V → DUT
 ```
 

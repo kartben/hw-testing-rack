@@ -29,7 +29,7 @@ Electronics,bay-node,10k — Resistor 10k 0603,100,pcs,0.0048,0.48,LCSC/JLCPCB,C
 Electronics,bay-node,18k — Resistor 18k 0603,20,pcs,0.0037,0.07,LCSC/JLCPCB,C25810,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),"R5,R12",2 per board × 10 boards
 Electronics,bay-node,33 — Resistor 33 0603,50,pcs,0.0023,0.11,LCSC/JLCPCB,C23140,0603WAF330JT5E,UNI-ROYAL(Uniroyal Elec),"R8,R31,R32,R33,R34",5 per board × 10 boards
 Electronics,bay-node,5.1k — Resistor 5.1k 0603,20,pcs,0.0014,0.03,LCSC/JLCPCB,C23186,0603WAF5101T5E,UNI-ROYAL(Uniroyal Elec),"R9,R10",2 per board × 10 boards
-Electronics,bay-node,7.5k — Resistor 7.5k 0603,10,pcs,0.0017,0.02,LCSC/JLCPCB,C23234,0603WAF7501T5E,UNI-ROYAL(Uniroyal Elec),R16,1 per board × 10 boards
+Electronics,bay-node,6.8k — Resistor 6.8k 0603,10,pcs,0.0021,0.02,LCSC/JLCPCB,C23212,0603WAF6801T5E,UNI-ROYAL(Uniroyal Elec),R16,1 per board × 10 boards
 Electronics,bay-node,50m — 50 mΩ 1 % 1 W current shunt,10,pcs,0.1104,1.1,LCSC/JLCPCB,C601102,HoLR1206-1W-50mR-1%-75ppm,Milliohm,R19,1 per board × 10 boards
 Electronics,bay-node,2.2k — Resistor 2.2k 0603,20,pcs,0.0017,0.03,LCSC/JLCPCB,C4190,0603WAF2201T5E,UNI-ROYAL(Uniroyal Elec),"R21,R22",2 per board × 10 boards
 Electronics,bay-node,1k — Resistor 1k 0603,30,pcs,0.0017,0.05,LCSC/JLCPCB,C21190,0603WAF1001T5E,UNI-ROYAL(Uniroyal Elec),"R23,R24,R25",3 per board × 10 boards

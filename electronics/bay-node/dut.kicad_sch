@@ -10,7 +10,7 @@
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
-		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 20–28 V/1.6 A eFused supply on the DATA lead · USB 2.0 muxes · INA226 · AUX")
+		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 20–28 V/1.76 A eFused supply on the DATA lead · USB 2.0 muxes · INA226 · AUX")
 	)
 	(lib_symbols
 		(symbol "Connector:TestPoint"
@@ -3126,7 +3126,7 @@
 				)
 			)
 		)
-		(property "Value" "7.5k"
+		(property "Value" "6.8k"
 			(at 131.116 91.44 0)
 			(effects
 				(font
@@ -3152,7 +3152,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 7.5k 0603"
+		(property "Description" "Resistor 6.8k 0603"
 			(at 127 90.17 0)
 			(effects
 				(font
@@ -3161,7 +3161,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23234"
+		(property "LCSC" "C23212"
 			(at 127 90.17 0)
 			(effects
 				(font
@@ -3170,7 +3170,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF7501T5E"
+		(property "MPN" "0603WAF6801T5E"
 			(at 127 90.17 0)
 			(effects
 				(font
@@ -9187,10 +9187,10 @@
 		)
 		(uuid "57ee726b-5e11-530c-bf29-d684624a5ddd")
 	)
-	(text_box "TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A a contact).\n  t_dVdT ≈ 8.65e3 · V_IN · C_dVdT → 22 nF: 3.8 ms at 20 V, 5.3 ms at 28 V; ≈ 0.3 A into 60 µF.\n  SHDN pulled down: DATA_VIN is OFF until the firmware drives DUT_EN high (≥ 1 V).\n  UVLO / OVP / MODE to GND: internal 15 V / 31–34 V, current limit, auto-retry.\n  ~FLT: limit, over-temperature, UV/OV; also low while off or starting.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DATA_VIN\n  (≤ 34 V behind the eFuse's OVP: 36 V range, 40 V maximum).\nAUX: TX/RX through 1k, VREF = +3V3 through 1k (R23, a level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
+	(text_box "TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 6.8k ≈ 1.76 A (1.67–1.85 A at ±5 %), under JST PH's 2 A a contact.\n  The DATA ×6 draws ≈ 1.0 A at 20 V (1.2 A with its six ports at their 0.62 A limit), 0.75 A at 28 V,\n  ≈ 1.5 A at 13.5–15 V fully loaded: ≥ 11 % below the limit there.  6.49k (1.85 A) is no JLC basic part.\n  t_dVdT ≈ 8.65e3 · V_IN · C_dVdT → 22 nF: 3.8 ms at 20 V, 5.3 ms at 28 V; ≈ 0.3 A into 60 µF.\n  SHDN pulled down: DATA_VIN is OFF until the firmware drives DUT_EN high (≥ 1 V).\n  UVLO / OVP / MODE to GND: internal 15 V / 31–34 V, current limit, auto-retry.\n  ~FLT: limit, over-temperature, UV/OV; also low while off or starting.\nINA226 (I2C 0x40) runs from +3V3: it measures the drop across\n  R19 (50 mΩ → 1.64 A full scale: the ×6's 1.5 A reads, only an overload saturates; Kelvin sense pads);\n  Vbus on Vin-: DATA_VIN\n  (≤ 34 V behind the eFuse's OVP: 36 V range, 40 V maximum).\nAUX: TX/RX through 1k, VREF = +3V3 through 1k (R23, a level hint),\n  RESET/BOOT open-drain (2N7002, 100k gate pull-downs)."
 		(exclude_from_sim no)
 		(at 15.24 132.08 0)
-		(size 152.4 26.67)
+		(size 152.4 33.02)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

@@ -81,7 +81,7 @@ flowchart LR
   MUXD -- "HSD2 (classic)" --> MUXP
   PC["Laptop on the<br/>front PC port"] --> MUXP
   MUXP -- "HSD2 (SERVICE)" --> ESP
-  SW -- "20–28 V ≤1.6 A" --> INA -- "DATA board: its own 5 V" --> DUT
+  SW -- "20–28 V ≤1.8 A" --> INA -- "DATA board: its own 5 V" --> DUT
   PC -. "VBUS sensed only" .-> OR --> MUXD
   ESP -. "MUX_FORCE_PC" .-> OR
   ESP -. "Wi-Fi: USB/IP, REST, mDNS" .-> LAN(("LAN"))

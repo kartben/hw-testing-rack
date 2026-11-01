@@ -196,7 +196,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 18k — Resistor 18k 0603 | 20  | 0.00 | 0.07 | LCSC/JLCPCB C25810 |
 | Electronics | 33 — Resistor 33 0603 | 50  | 0.00 | 0.11 | LCSC/JLCPCB C23140 |
 | Electronics | 5.1k — Resistor 5.1k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C23186 |
-| Electronics | 7.5k — Resistor 7.5k 0603 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C23234 |
+| Electronics | 6.8k — Resistor 6.8k 0603 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C23212 |
 | Electronics | 50m — 50 mΩ 1 % 1 W current shunt | 10  | 0.11 | 1.10 | LCSC/JLCPCB C601102 |
 | Electronics | 2.2k — Resistor 2.2k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C4190 |
 | Electronics | 1k — Resistor 1k 0603 | 30  | 0.00 | 0.05 | LCSC/JLCPCB C21190 |
