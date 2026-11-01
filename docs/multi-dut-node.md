@@ -115,6 +115,8 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 > the eFuse's 1.76 A.  A port that waits for power, or that was shed, stays wanted and comes back in
 > turn once there is room; the API and the page show it as waiting (shed), and STATUS tells the hub
 > how many wait.  A request the budget refuses (409) is not queued, as on rev A.
+>
+> ![Power card on a rev B bay: DATA_VIN, the bay's draw, the hub's grant and a port waiting for power](img/web-ui-budget.png)
 
 - **Per port**, a TPS2553-1: limit ≈ 0.48–0.58 A, 7.5 ms deglitch, then
   latched off until EN toggles.  The firmware reports the port's fault and

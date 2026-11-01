@@ -86,12 +86,13 @@ def dut_current_ma(t: float) -> int:
 PORTS = 1           # the boards the node serves; 1: today's one DUT (node["dut"])
 ports: list[dict] = []
 UP_S = 0.8          # a board's USB enumeration after power on or reset
-# The admission rule (docs/multi-dut-node.md, Power budget; ports.c): a port goes on only if what the
-# bay draws on the node's INA226 (DUT_5V: the DATA x4 board itself counts) plus a reserve for its
-# inrush stays within what the node's TPS2553 (1.34-1.52 A) is trusted with
-BUDGET_MA = 1150    # CONFIG_BAY_PORTS_BUDGET_MA
-RESERVE_MA = 100    # CONFIG_BAY_PORTS_RESERVE_MA
-BOARD_MA = 380      # the DATA x4 board's own draw: its hub, co-processor and LEDs (0.3-0.46 A)
+# The admission rule (docs/multi-dut-node.md, Power budget; ports.c), node rev B: a port goes on only
+# if what the bay draws on DATA_VIN (the node's INA226: the DATA x4 board itself counts) plus a
+# reserve for its inrush stays within the hub's grant
+GRANT_MW = 5400     # the hub's GRANT: 100 W at 20 V, 12 bays, four a row
+RESERVE_MW = 600    # CONFIG_BAY_PORTS_RESERVE_MW
+DATA_VIN_MV = 19850  # the rack's 20 V at the bay, after the row's drop
+BOARD_MA = 380      # the DATA x4 board's own draw at 5 V: its hub, co-processor and LEDs (0.3-0.46 A)
 STAGGER_S = 0.3     # the ports' start, one after the other
 DISCHARGE_S = 0.3   # a power cycle without "ms": until the port's VBUS is under 1 V (2 s at most)
 
@@ -103,7 +104,7 @@ def set_ports(n: int) -> None:
     global PORTS
     PORTS = n
     ports[:] = [{"port": i, "hub_port": i, "on": False, "latched": False, "faults": 0, "up_at": 0.0,
-                 "client": None, "lease": None, "draw": 0, "foreign": False,
+                 "client": None, "lease": None, "draw": 0, "foreign": False, "waiting": False,
                  "usb": dict(USB_PRESETS[X4_PRESETS[i - 1]])}
                 for i in range(1, n + 1)] if n > 1 else []
     start = time.monotonic()
@@ -120,8 +121,13 @@ def port_ma(pt: dict, now: float) -> int:
 
 
 def bay_ma(now: float) -> int:
-    """What the node's INA226 reads on DUT_5V: the DATA x4 board and its ports."""
+    """What the DATA x4 board and its ports draw at 5 V."""
     return BOARD_MA + int(8 * math.sin(now / 5)) + sum(port_ma(q, now) for q in ports)
+
+
+def bay_mw(now: float) -> int:
+    """What the node's INA226 reads on DATA_VIN: the board's 5 V through its converters (88 %)."""
+    return int(bay_ma(now) * 5.08 / 0.88)
 
 
 def admission(pt: dict) -> str | None:
@@ -129,10 +135,10 @@ def admission(pt: dict) -> str | None:
     if pt["foreign"]:
         return ("the port's VBUS is up while it is off (a board powered from elsewhere): "
                 "it comes on once that has gone")
-    bay = bay_ma(time.monotonic())
-    if bay + RESERVE_MA > BUDGET_MA:
-        return (f"no room in the bay's budget: the bay draws {bay} mA, "
-                f"{RESERVE_MA} mA kept for a start, {BUDGET_MA} mA in all")
+    bay = bay_mw(time.monotonic())
+    if bay + RESERVE_MW > GRANT_MW:
+        return (f"no room in the bay's budget: the bay draws {bay} mW, "
+                f"{RESERVE_MW} mW kept for a start, {GRANT_MW} mW in all (the hub's grant)")
     return None
 
 
@@ -173,7 +179,7 @@ def port_doc(pt: dict, ip: int = 0) -> dict:
     usb = {**pt["usb"], "busid": f"1-1.{pt['hub_port']}"} if pt["on"] and now >= pt["up_at"] else None
     return {"slot": slot_name(pt["port"]), "port": pt["port"], "hub_port": pt["hub_port"],
             "power": {"on": pt["on"], "mv": mv, "ma": ma, "mw": ma * mv // 1000, "faults": pt["faults"],
-                      "state": power_state(pt["on"], pt["latched"])},
+                      "state": power_state(pt["on"], pt["latched"], pt["waiting"])},
             "fault": pt["latched"], "usb": usb,
             "usbip": {"client": ip_str(pt["client"])} if pt["client"] and usb else None,
             "lease": lease_doc(pt["lease"], ip, now)}
@@ -192,9 +198,9 @@ def one_port_doc(s: dict) -> dict:
             "lease": lease if lease["remaining_s"] else None}
 
 
-def power_state(on: bool, latched: bool) -> str:
-    """A port's power in a word, as the firmware's: on, fault, off (this node has no budget to wait on)."""
-    return "on" if on else "fault" if latched else "off"
+def power_state(on: bool, latched: bool, waiting: bool = False) -> str:
+    """A port's power in a word, as the firmware's: on, fault, waiting (for power), off."""
+    return "on" if on else "fault" if latched else "waiting" if waiting else "off"
 
 
 def short_port(d: dict) -> dict:
@@ -386,6 +392,7 @@ def port_act(pt: dict, what: str, body: dict) -> tuple[int, str] | None:
             time.sleep(min(int(body["ms"]), 2000) / 1000 if "ms" in body else DISCHARGE_S)
         was_on = pt["on"]
         pt["on"] = action != "off"
+        pt["waiting"] = False             # on, or switched off by hand: no longer wanted back
         if pt["on"]:
             pt["latched"] = False
         if not pt["on"] or action == "cycle" or not was_on:
@@ -399,7 +406,7 @@ def port_act(pt: dict, what: str, body: dict) -> tuple[int, str] | None:
         if refused is not None:
             return 409, refused
         time.sleep(1.0)                   # BOOT held across a power cycle of the port: the board comes up in its ROM
-        pt["on"], pt["latched"], pt["client"] = True, False, None
+        pt["on"], pt["latched"], pt["client"], pt["waiting"] = True, False, None, False
         pt["up_at"] = time.monotonic() + UP_S
     else:
         if not pt["on"]:                  # RESET and BOOT are held while the port is off
@@ -1113,11 +1120,11 @@ def status(ip: int = 0) -> dict:
     dut.update(ma=ma, mv=mv, mw=ma * mv // 1000)
     node["path"] = "classic" if node["force_classic"] else "usbip"
     docs = [port_doc(pt, ip) for pt in ports]
-    if docs:                            # the node's totals: its own meter (the board counts), flags ORed
-        ma = bay_ma(time.monotonic())
-        mv = 5080 - ma // 10
+    if docs:                            # the node's totals: its own meter on DATA_VIN (the board counts), flags ORed
+        mw = bay_mw(time.monotonic())
         dut.update(on=any(d["power"]["on"] for d in docs), latched=any(d["fault"] for d in docs),
-                   faults=sum(d["power"]["faults"] for d in docs), ma=ma, mv=mv, mw=ma * mv // 1000)
+                   faults=sum(d["power"]["faults"] for d in docs), ma=mw * 1000 // DATA_VIN_MV,
+                   mv=DATA_VIN_MV, mw=mw)
         node["usb"]["devices"] = sum(d["usb"] is not None for d in docs)
         node["usb"]["sessions"] = (sum(d["usbip"] is not None for d in docs)
                                    + sum(c["service"] == "usbip" for c in access.fake))
@@ -1128,10 +1135,13 @@ def status(ip: int = 0) -> dict:
                     "rfc2217": any(c["id"] == "rfc2217" for c in access.fake), "raw": False,
                     "rx": len(console.log), "tx": console.tx, "dropped": 0},
             "access": access.summary(ip), "firmware": firmware.doc(), "camera": camera.doc()}
-    # A node rev A's budget, in mA on its 5 V (rev B's is in mW on the DATA lead, the hub's grant)
-    s["budget"] = {"unit": "mA", "limit": 1150, "granted": False, "reserve": 100,
-                   "draw": dut["ma"] if docs else 0, "waiting": 0, "sheds": 0, "board": bool(docs),
-                   "lead_off": None}
+    # A DATA x4 bay is node rev B's: mW on the DATA lead against the hub's grant.  The one-DUT node
+    # is a stand-in's, in mA on its 5 V (the page shows no budget for it)
+    s["budget"] = ({"unit": "mW", "limit": GRANT_MW, "granted": True, "reserve": RESERVE_MW,
+                    "draw": dut["mw"], "waiting": sum(pt["waiting"] for pt in ports), "sheds": 0,
+                    "board": True, "lead_off": None} if docs else
+                   {"unit": "mA", "limit": 1150, "granted": False, "reserve": 100, "draw": 0,
+                    "waiting": 0, "sheds": 0, "board": False, "lead_off": None})
     s["ports"] = [short_port(d) for d in docs or [one_port_doc(s)]]
     return s
 

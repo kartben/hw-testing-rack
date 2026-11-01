@@ -42,6 +42,13 @@ START = time.monotonic() - 2 * 86400 - 5 * 3600
 ROWS = "ABCD"
 FITTED = "AB"   # power_hub.dtsi: rows C and D are not fitted on the first build
 MARGIN_PCT = 10  # CONFIG_HUB_BUDGET_MARGIN_PCT
+# Each bay's GRANT (src/budget.c budget_grant_mw()): its share of its row's eFuse and of the contract
+ROW_LIMIT_MA = 1600   # CONFIG_HUB_ROW_LIMIT_MA
+NODE_OWN_MW = 1800    # CONFIG_HUB_NODE_OWN_MW
+CAMERA_OWN_MW = 2500  # CONFIG_HUB_CAMERA_OWN_MW
+# A node rev B's DATA lead: its DATA board (≈ 0.38 A at 5 V) and the board on it, through ≈ 88 %
+DATA_BOARD_MA = 380
+LINE_DROP_MV = 150
 
 # What a 140 W EPR charger offers, as the CH224A shows it in EPR mode: positions 1-7 SPR
 # (the unused ones empty), 8 and on EPR
@@ -117,10 +124,28 @@ def pdo_list(c: dict | None) -> list[dict]:
     return out
 
 
-def nodes_of(row: str, t: float) -> list[dict]:
+def powered(row: str) -> bool:
     r = hub["rows"][row]
-    if not r["on"] or r["shed"]:
+    return row in FITTED and r["on"] and not r["shed"]
+
+
+def grant_mw(c: dict | None, row_bays: int, rack_bays: int, camera: bool) -> int | None:
+    """src/budget.c budget_grant_mw(): the smaller of an equal share of the row's eFuse and of the rows'
+    budget, both less the margin, at the contract's voltage, less the node itself (and its camera)."""
+    if not c or not row_bays or not rack_bays:
+        return None
+    row = ROW_LIMIT_MA * (100 - MARGIN_PCT) // 100 * c["mv"] // 1000 // row_bays
+    rack = c["ma"] * (100 - MARGIN_PCT) // 100 * c["mv"] // 1000 // rack_bays
+    return max(min(row, rack) - NODE_OWN_MW - (CAMERA_OWN_MW if camera else 0), 0)
+
+
+def nodes_of(row: str, t: float) -> list[dict]:
+    """A powered row's nodes, rev B: each reports its DATA lead (DATA_VIN, its STATUS) and gets a GRANT."""
+    if not powered(row):
         return []
+    c = contract()
+    vin = c["mv"] - LINE_DROP_MV if c else 0
+    bays = {r: sum(rr == r for rr, _ in NODES) for r in ROWS if powered(r)}
     out = []
     for (rr, pos), (name, base, state) in sorted(NODES.items()):
         if rr != row:
@@ -128,14 +153,16 @@ def nodes_of(row: str, t: float) -> list[dict]:
         nid = node_id(row, pos)
         lost = nid in hub["lost"]
         wobble = 1 + 0.08 * math.sin(t / 7 + nid) + random.uniform(-0.02, 0.02)
-        ma = 0 if state == "off" else int(base * wobble)
+        # The DATA lead's power: the DATA board and its board at 5 V, through ≈ 88 %
+        mw = 0 if state == "off" or not vin else int((DATA_BOARD_MA + base * wobble) * 5.06 / 0.88)
+        camera = nid in CAMERAS
         out.append({"id": nid, "pos": f"{row}{pos}", "name": "", "ip": f"192.168.1.{60 + nid}",
                     "mac": f"34:b7:da:56:{nid:02x}:{len(name):02x}",
                     "state": "lost" if lost else state,
-                    "camera": "active" if nid in CAMERAS_ACTIVE else "ready" if nid in CAMERAS else "none",
-                    "dut_ma": ma, "dut_mv": 5060 - ma // 12 if ma else 0,
-                    # The GRANT the firmware sends: 100 W at 20 V, 12 bays, four a row
-                    "grant_mw": None if lost else 5400, "waiting": 0,
+                    "camera": "active" if nid in CAMERAS_ACTIVE else "ready" if camera else "none",
+                    "dut_ma": mw * 1000 // vin if mw else 0, "dut_mv": vin if mw else 0,
+                    "grant_mw": None if lost else grant_mw(c, bays[row], sum(bays.values()), camera),
+                    "waiting": 0,
                     "seen_s": 9.0 if lost else round(random.uniform(0.1, 0.9), 1), "version": "0.5.0"})
         if lost:   # the row stops at a lost node: the ones after it can't get POS
             break
@@ -143,11 +170,11 @@ def nodes_of(row: str, t: float) -> list[dict]:
 
 
 def row_current(row: str, nodes: list[dict]) -> int:
-    """Row current at VRACK: each node ≈ 0.85 W plus its DUT's 5 V, through an ≈ 88 % buck."""
+    """Row current at VRACK: each node ≈ 0.85 W of its own, plus its DATA lead."""
     c = contract()
     if not nodes or not c:
         return 0
-    mw = sum(850 + n["dut_ma"] * 5.06 / 0.88 for n in nodes)
+    mw = sum(850 + n["dut_ma"] * n["dut_mv"] / 1000 for n in nodes)
     return int(mw / c["mv"] * 1000)
 
 

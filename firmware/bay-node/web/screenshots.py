@@ -129,15 +129,18 @@ def main() -> None:
         dev_server.ports[0]["client"] = ip("192.168.1.41")
         dev_server.ports[2]["lease"] = {"holder": ip("192.168.1.41"), "note": "twister job 8812",
                                         "until": time.monotonic() + 3600}
-        dev_server.ports[3]["on"] = False
+        # B3.4 wanted on, kept off by the bay's power grant (node rev B, the hub's 5.4 W)
+        dev_server.ports[3].update(on=False, waiting=True)
         # Board targets: two set (B3.3's held by the job), B3.2's serial adapter not yet
         dev_server.boards.clear()
         dev_server.set_board(1, {"board": "frdm_mcxn947/mcxn947/cpu0"})
         dev_server.set_board(3, {"board": "rpi_pico2/rp2350a/m33_0"})
         dark.set_viewport_size(DESKTOP)
         dark.reload()
-        time.sleep(POLL_S)
+        # The power card's sparkline: the bay's draw on its DATA lead, a minute of it
+        time.sleep(max(POLL_S, min(args.warmup, 60)))
         shoot(dark, "web-ui-ports", "#usb-card")
+        shoot(dark, "web-ui-budget", "#power-card")
 
         # A XIAO ESP32-C6 in B3.4: its board target, picked from the suggestions for 303a:1001
         poke("/dev/usb?preset=xiao&port=4", wait=0)
