@@ -103,7 +103,7 @@ board makes its own 5 V from it.  The eFuse is **off** until the firmware turns 
    so a lead plugged into a live J7 meets 0 V.
 5. **No INT line** (map B: J7.8 is GND): poll the DATA board's expanders and INA226s every 10–20 ms.
    The INA226 alerts run transparent (Mask/Enable LEN = 0) so each poll reads the live state, or the
-   poll reads Mask/Enable every time (that read clears a latched alert).  IO4 is free.
+   poll reads Mask/Enable every time (that read clears a latched alert).  IO4 now carries the camera's CS (IO8 before).
 6. **Budget**: the node's INA226 now reads the DATA board's VIN current (1 A at 20 V is 20 W, ≈ 4 A at
    5 V): the DATA ×4 admission and shedding thresholds in mA at 5 V
    ([multi-dut-node.md](multi-dut-node.md#power-budget)) become a power budget (the INA226's power

@@ -177,8 +177,8 @@ column IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/IO1 I²C SDA/SCL (
 sits in the rear-right corner) · IO42 POS_OUT towards J2 · IO38 LED; bottom row IO47/IO21 UART1
 TX/RX · IO12 AUX_RST · IO48 AUX_BOOT · IO13 PC_DET · IO14 MUX_FORCE_PC and the camera on SPI2
 through the GPIO matrix, IO11 SCK · IO10 MOSI · IO9 MISO; left column IO15 SVC · IO16 POS_IN ·
-IO17/IO18 CAN RX/TX (TWAI) · IO8 the camera's CS · IO7 its light; IO19/IO20 USB; TXD0/RXD0 on test
-pads (bottom side).  IO4 (the DATA board's INT on J7.8 until node rev B), IO5 and IO6 are free.  The WROOM-1's octal PSRAM takes IO35–IO37 and it has no
+IO17/IO18 CAN RX/TX (TWAI) · IO4 the camera's CS (node rev B, IO8 before) · IO7 its light; IO19/IO20 USB; TXD0/RXD0 on test
+pads (bottom side).  IO5, IO6 and IO8 are free (IO4 was the DATA board's INT on J7.8 until node rev B).  The WROOM-1's octal PSRAM takes IO35–IO37 and it has no
 IO26/IO33/IO34; IO3, IO45 and IO46 (strapping) stay unused.  The map is the one an
 ESP32-S3-DevKitC-1 v1.1 (N8R8, the same module) can take as is: every pin on its headers, the
 status LED on its own RGB LED's IO38, so the bench stand-in needs no remap.  `firmware/README.md` has the full table, checked against the schematic by

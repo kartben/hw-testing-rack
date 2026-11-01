@@ -61,8 +61,8 @@
 
 	/*
 	 * J6, the bay camera (Arducam Mega, SPI2 through the GPIO matrix, 33R
-	 * series): IO11 CAM_SCK, IO10 CAM_MOSI, IO9 CAM_MISO; CAM_CS on IO8
-	 * (cs-gpios, 10k pull-up)
+	 * series): IO11 CAM_SCK, IO10 CAM_MOSI, IO9 CAM_MISO; CAM_CS on IO4
+	 * (cs-gpios, 10k pull-up; IO8 before node rev B)
 	 */
 	bay_spim2_default: bay_spim2_default {
 		group1 {

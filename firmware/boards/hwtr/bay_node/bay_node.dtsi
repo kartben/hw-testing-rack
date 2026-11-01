@@ -164,7 +164,7 @@ zephyr_uhc0: &usb_otg {
 	status = "okay";
 	pinctrl-0 = <&bay_spim2_default>;
 	pinctrl-names = "default";
-	cs-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+	cs-gpios = <&gpio0 4 GPIO_ACTIVE_LOW>;
 
 	camera: camera@0 {
 		compatible = "arducam,mega";

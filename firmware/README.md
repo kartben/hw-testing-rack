@@ -713,8 +713,8 @@ lead lost its INT (map B), and the node polls the DATA board over I²C.
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
 | IO1 | I2C_SCL | I²C0; also out on J7.7 to the drawer's DATA board | `&i2c0` |
 | IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (2.2k pull-ups, 100 kHz: the DATA lead; `i2c-400k.overlay` tries 400 kHz); also out on J7.6 to the drawer's DATA board (its devices keep off 0x40) | `&i2c0`, `ina226` |
+| IO4 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω; 10k pull-up R37 beside the pin; IO8 before node rev B) | `&spi2` `cs-gpios` |
 | IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.6 LED_K (J6.8 before node rev B; 100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
-| IO8 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω, 10k pull-up) | `&spi2` `cs-gpios` |
 | IO9 | CAM_MISO | camera SPI2 MISO ← J6.5 (J6.6 before node rev B; 33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
 | IO10 | CAM_MOSI | camera SPI2 MOSI → J6.4 (J6.5 before node rev B; 33 Ω) | `&spi2` |
 | IO11 | CAM_SCK | camera SPI2 SCK → J6.2 (J6.3 before node rev B; 33 Ω), mode 0, 4 MHz | `&spi2` |
@@ -742,8 +742,9 @@ lead lost its INT (map B), and the node polls the DATA board over I²C.
 Each signal sits on the module edge that faces where it goes on the board: the right column feeds
 the DUT power block (I²C at its rear end) and POS_OUT runs to J2 (docs/can.md); the bottom row the
 AUX connector (right half), the mode logic and the camera's SPI (left half); the left column the
-rack bus block (CAN transceiver, POS input), SERVICE, the camera's CS and light.  IO4 (the DATA
-board's INT until node rev B), IO5 and IO6 are free.  The rack bus protocol runs on the CAN pins (`src/rack.c`, [docs/rack-protocol.md](../docs/rack-protocol.md)).
+rack bus block (CAN transceiver, POS input), SERVICE, the camera's light, and its CS at the column's
+rear end (IO4 since node rev B: under the module along the B.Cu lane the DATA board's INT left;
+IO8 before).  IO5, IO6 and IO8 are free.  The rack bus protocol runs on the CAN pins (`src/rack.c`, [docs/rack-protocol.md](../docs/rack-protocol.md)).
 Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad JTAG pins, free as GPIOs since
 the node debugs over USB-Serial-JTAG.  The map is chosen so that an ESP32-S3-DevKitC-1 v1.1
 (N8R8, the same module) takes it as is: every pin is on its headers, none is the octal PSRAM's

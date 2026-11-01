@@ -587,9 +587,10 @@ def board() -> Board:
         "IO48": "AUX_BOOT_CTL", "IO47": "AUX_TX", "IO21": "AUX_RX", "IO12": "AUX_RST_CTL",
         "IO13": "PC_DET", "IO14": "MUX_FORCE_PC",
         "IO11": "CAM_SCK", "IO10": "CAM_MOSI", "IO9": "CAM_MISO",
-        # left column -> the rack bus block (CAN, POS_IN), SERVICE, the camera's CS and light
+        # left column -> the rack bus block (CAN, POS_IN), SERVICE, the camera's light; the camera's CS on IO4, the
+        # rear end (node rev B, IO8 before): under the module, east along the B.Cu lane INT freed, to its 33 Ω
         "IO15": "SVC", "IO16": "POS_IN", "IO17": "CAN_RXD", "IO18": "CAN_TXD",
-        "IO8": "CAM_CS", "IO7": "CAM_LED",
+        "IO4": "CAM_CS", "IO7": "CAM_LED",
         "TXD0": "U0TX", "RXD0": "U0RX",
     }, pcb=P(32, 12.75, 0), sch=at(80, 38, fields=(-14, -14)))
     # 3V3 (pin 2) and EN (pin 3) sit at the left column's rear end
@@ -612,8 +613,8 @@ def board() -> Board:
     m.notes_at = (6, 70, 106)
     m.note("GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/1 I2C SDA/SCL · IO47/21 UART1 TX/RX (AUX) ·")
     m.note("IO12 AUX_RST · IO48 AUX_BOOT · IO38 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·")
-    m.note("IO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO42 POS_OUT · camera SPI2: IO11 SCK · IO10 MOSI · IO9 MISO · IO8 CS ·")
-    m.note("IO7 light.  Free: IO4 (the DATA lead's INT until node rev B), IO5, IO6.  IO35–IO37 are the octal PSRAM's;")
+    m.note("IO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO42 POS_OUT · camera SPI2: IO11 SCK · IO10 MOSI · IO9 MISO · IO4 CS ·")
+    m.note("IO7 light.  Free: IO5, IO6, IO8 (the camera's CS until node rev B).  IO35–IO37 are the octal PSRAM's;")
     m.note("the WROOM-1 has no IO26/IO33/IO34.  The I²C bus (IO1/IO2) also goes out on J7.6/7 to the drawer's DATA board.")
     m.note("The map is the ESP32-S3-DevKitC-1 v1.1's (N8R8) as is: the bench stand-in needs no remap.")
     m.note("Strapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY).")
@@ -929,8 +930,8 @@ def board() -> Board:
     # the camera pod (electronics/camera-pod) runs the Mega from 3.3 V, so MISO is 3.3 V; R35 stays a fallback
     # divider for a camera fed 5 V: R33 → 330 and fit R35 (3.37 V)
     R(c, "R35", "680", "CAM_MISO", "GND", pcb=P(rx, ry + 7.2, 0), sch=at(40, 40), dnp=True)
-    # CS pull-up over the In2 +3V3 area under the module's corner (the resistor row sits over +5V)
-    R(c, "R37", "10k", "CAM_CS", "+3V3", pcb=P(36.6, 40.2, 0), sch=at(40, 54))
+    # CS pull-up right beside its pin, IO4 (over In2's +3V3 area), where the DATA lead's INT pull-up was
+    R(c, "R37", "10k", "CAM_CS", "+3V3", pcb=P(20.9, 16.9, 90), sch=at(40, 54))
     # their VBUS pin (5) on +3V3, not CAM_5V (the schematic counter-review, 2026-10-23): with CAM_5V off (the PTC
     # tripped), the SPI lines would feed the pod through the upper diodes, and CAM_5V's clamp sits above the
     # ESP32's 3.6 V.  Flow-through, as U4 and U8: each line's two pins carry two nets, CAM_*_C from J6 to the pin
@@ -952,7 +953,7 @@ def board() -> Board:
          sch=at(136, 14, rot=90, fields="left"))
     c.notes_at = (6, 64, 114)
     c.note("Lead pinout: 1 GND · 2 SCK · 3 CAM_5V · 4 MOSI · 5 MISO · 6 LED_K (the LEDs' cathode side) · 7 CS · 8 GND.")
-    c.note("SPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k")
+    c.note("SPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO4 CS (10k")
     c.note("  pull-up: deselected before firmware), IO7 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).")
     c.note("CAM_5V through F1 (0.75 A PTC, 1.5 A trip): the camera ≤ 317 mA (Arducam) + the LEDs ≤ 102 mA.  USBLC6s on the lead side of the 33 Ω.")
     c.note("The camera pod board runs the Mega from 3.3 V (its own AP2114H): MISO is 3.3 V and R35 stays unpopulated.")
