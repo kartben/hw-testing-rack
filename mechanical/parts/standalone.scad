@@ -53,7 +53,7 @@ module node_front(x0, top) {
     translate([x0 + NODE_FRONT[1], -EPS, top + 0.7]) rotate([-90, 0, 0]) cylinder(d = 3.2, h = T + 2);
     translate([x0 + NODE_FRONT[2] - 3.7, -EPS, top + 1.4 - 1.5]) cube([7.4, T + 2, 3]);
 }
-module usbc_front(x, z) translate([x, -EPS, z]) rotate([-90, 0, 0]) usbc_plug_cut(T + 2);
+module usbc_front(x, z, rot = 0) translate([x, -EPS, z]) rotate([-90, 0, 0]) rotate([0, 0, rot]) usbc_plug_cut(T + 2);   // rot 90: standing
 module feet_pockets(w, d) for (x = [12, w - 12], y = [12, d - 12])       // 0.5 deep: they only locate the bumpers
     translate([x, y, -EPS]) cylinder(d = SA_FEET[0] + 0.6, h = FEET_SET + EPS);
 FEET_SET = 0.5;                            // so the box's underside stands SA_FEET[1] - FEET_SET over the desk
@@ -158,7 +158,7 @@ module solo_lid() lid(S_W, S_D, S_ZL, S_LIDS, S_BTN, S_NTOP,
 // front face (mouths 6.4 off it), 2 × 6 headers at 26 over its bottom edge, VBUS LEDs at 33, D1, J1 on its rear face.
 // Its USB-C and its headers at their own board x (layout B moves the USB-C onto the drawer's slots, not the headers)
 V2 = [100, 70, 1.6];
-V2_USB = DATA_V2_USB;  V2_HDR = DATA_V2_HDR_X;
+V2_USB = DATA_V2_USB;  V2_USB_ROT = DATA_V2_USB_ROT;  V2_HDR = DATA_V2_HDR_X;
 V2_USB_Z = 8.5;  V2_HDR_Z = 26;  V2_LED_Z = 33;  V2_D1 = [55.4, 67.6];
 Q_W = 107;  Q_D = 95.5;
 Q_VX = 3.5;  Q_VY = T + 1 + 6.4;  Q_VZ = FL;       // the v2: left end, front face (mouths 1 mm behind the wall), bottom
@@ -190,7 +190,7 @@ module quad_base() difference() {
     // front: the four DUT ports, a window over each header (its Dupont housing plugs in through it), the LEDs'
     // windows, the port numbers; the node's row at the top, the name
     for (k = [0 : 3]) {
-        usbc_front(Q_VX + V2_USB[k], Q_VZ + V2_USB_Z);
+        usbc_front(Q_VX + V2_USB[k], Q_VZ + V2_USB_Z, V2_USB_ROT[k]);
         x = Q_VX + V2_HDR[k];
         translate([x - 7.62 - 0.6, -EPS, Q_VZ + V2_HDR_Z - 2.54 - 0.6]) cube([15.24 + 1.2, T + 2, 5.08 + 1.2]);
         translate([x - 5.2, -EPS, Q_VZ + V2_LED_Z]) rotate([-90, 0, 0]) cylinder(d = 3, h = T + 2);
