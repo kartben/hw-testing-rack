@@ -139,6 +139,21 @@ XTAL_RULE = """
 	(constraint disallow track via))
 """
 
+# The layout review's checks as rules (2026-11-01): the supplies' widths (the hub's fine-pitch fan-out aside: its
+# 1.8 V pins' lines neck down at the pads, and HUB_1V8PLL's whole 3 mm, drawn in the crystal's block from pin 62 to
+# C10 and C8 between XI and RBIAS, is 0.127), and the enables, faults, resets and interrupts (the Sensitive class)
+# kept 3 × the USB lines' width off them, against a coupled spike that would switch a port off or reset the hub
+BOARD_RULES = """
+(rule "Power, Port and Supply: 0.25 mm at least, but in the hub's fan-out"
+	(severity error)
+	(condition "A.Type == 'Track' && (A.hasNetclass('Power') || A.hasNetclass('Port') || A.hasNetclass('Supply')) && !A.intersectsCourtyard('U1') && A.NetName != '/Hub/HUB_1V8PLL'")
+	(constraint track_width (min 0.25mm)))
+
+(rule "enables, faults, resets, interrupts: 0.75 mm off the USB pairs"
+	(severity error)
+	(condition "A.hasNetclass('USB') && B.hasNetclass('Sensitive')")
+	(constraint clearance (min 0.75mm)))
+"""
 
 def P(x, y, rot=0, side="top"):
     """A placement on the board (KiCad: y = 0 the top edge); the front face is the top side."""
@@ -215,6 +230,13 @@ def rarray(s, ref, value, pairs, pcb, sch=None):
     return part(s, ref, "rarray", conns, value, pcb=pcb, fields={"MPN": mpn, "LCSC": lcsc}, sch=sch)
 
 
+def ina_x(n: int) -> float:
+    """Port n's INA226 (board x), its 100 nF over it and its EN and FAULT_N pull-ups 2.24 mm east of it: those stand
+    0.77 mm from the next pair's D− line (BOARD_RULES: the Sensitive class 0.75 mm off USB); port 1's cluster sits
+    0.1 mm nearer its drop than the others to theirs"""
+    return COLS[n - 1] - (4.4 if n == 1 else 5.0) + 7.51 - (0.16 if n == 1 else 0.07)
+
+
 def supply(n: int) -> str:
     """Port n's 5 V: +5V_A for ports 1–3, +5V_B for ports 4–6 (the hub and the 3.3 V take +5V_L, the lead's)"""
     return "+5V_A" if n <= 3 else "+5V_B"
@@ -256,8 +278,9 @@ def port(b: Board, n: int):
       pcb=P(x0 - 0.97, y0 + 2.2, 180) if n > 1 else P(x0 - 0.5, y0 + 2.2, 90), sch=at(22, 28))
     s.wire(f"{sw}.ILIM", (22, 24), f"R{k + 1}.1")
     # the port is off until the node switches it on
-    R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(x0 + 9.75, y0 + 3.65, 90), sch=at(14, 36))
-    R(s, f"R{k + 3}", "10k", "+3V3", p + "FLT_N", size="0402", pcb=P(x0 + 9.75, y0 + 5.6, 90), sch=at(40, 36))
+    R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(ina_x(n) + 2.24, y0 + 3.65, 90), sch=at(14, 36))
+    R(s, f"R{k + 3}", "10k", "+3V3", p + "FLT_N", size="0402", pcb=P(ina_x(n) + 2.24, y0 + 5.6, 90),
+      sch=at(40, 36))
     testpoints(s, [f"TP{k + 1}"], "Test point (rear face): FAULT_N", 108, 62)
     part(s, sh, "shunt100m", {"1": p + "5V_SW", "4": p + "VBUS", "2": p + "SNS_P", "3": p + "SNS_N"},
          "100m", pcb=P(x0 + 2.77, y0 + 5.4, 0), sch=at(46, 23))
@@ -265,7 +288,7 @@ def port(b: Board, n: int):
     a1, a0 = INA_ADDR[n - 1]
     part(s, ina, "ina226", {"VS": "+3V3", "GND": "GND", "A1": a1, "A0": a0, "SDA": "SDA", "SCL": "SCL",
                             "~{Alert}": "INT", "Vin+": p + "SNS_P", "Vin-": p + "SNS_N", "Vbus": p + "SNS_N"},
-         pcb=P(x0 + 7.51, y0 + 4.6, 90), sch=at(66, 24, fields=(-9, -7)))
+         pcb=P(ina_x(n), y0 + 4.6, 90), sch=at(66, 24, fields=(-9, -7)))
     s.wire(f"{sh}.2", (52, 22), (52, 25), f"{ina}.Vin+")
     s.wire(f"{sh}.3", (50, 24), (50, 26), f"{ina}.Vin-")
     s.wire(f"{sh}.4", (46, 33), (60, 33))
@@ -275,7 +298,7 @@ def port(b: Board, n: int):
     lp = low_parts(n)
     C(s, f"C{k + 2}", "22u", p + "VBUS", "GND", size="0805", pcb=P(*lp["c22"]), sch=at(55, 35.5))
     s.wire(f"C{k + 2}.1", (55, 33))
-    C(s, f"C{k + 3}", "100n", "+3V3", "GND", size="0402", pcb=P(x0 + 8.03, y0 + 0.9, 180), sch=at(80, 18))
+    C(s, f"C{k + 3}", "100n", "+3V3", "GND", size="0402", pcb=P(ina_x(n) + 0.52, y0 + 0.9, 180), sch=at(80, 18))
     R(s, f"R{k + 14}", "1k", p + "5V_SW", p + "LED_A", size="0402", pcb=P(*lp["r1k"]),
       sch=at(84, 30, rot=90))
     part(s, f"D{k + 1}", "led_g", {"A": p + "LED_A", "K": "GND"}, pcb=P(*lp["led"]),
@@ -545,7 +568,7 @@ def offset(poly, d):
     return out
 
 
-HS_BAND = 0.775     # each pair's band: its centreline ± (0.2 + 0.125 to its lines' outer edges + 0.45, 3 × their 0.15)
+HS_BAND = 1.075     # each pair's band: its centreline ± (0.2 + 0.125 to its lines' outer edges + 0.75, 3 × their width)
 
 
 def pair_centrelines():
@@ -653,8 +676,8 @@ def up_pair():
               ("UP_DP", "B.Cu", USB_W, [hd, (cd[0] - 0.25, yb + hp), cd]),
               ("UP_DN", "F.Cu", USB_W, dn), ("UP_DP", "F.Cu", USB_W, dp)]
     vias = [(net, *v, 0.5, 0.3) for net, v in (("UP_DN", hn), ("UP_DP", hd), ("UP_DN", cn), ("UP_DP", cd))]
-    # the bands (board()) take in the vias at both ends of the B.Cu run
-    return tracks, vias, [(hn[0] - 0.55, yb), (cn[0], yb)], [(fcl[0][0], yb + 0.65)] + fcl[1:]
+    # the bands (board()) take in the vias at both ends of the B.Cu run, and 0.75 mm past them
+    return tracks, vias, [(hn[0] - 1.1, yb), (cn[0] + 1.1, yb)], [(fcl[0][0], yb + 0.65)] + fcl[1:]
 
 
 def conn_pairs():
@@ -716,7 +739,7 @@ def drawn():
                     ("GND", "F.Cu", 0.2, [(HX + 3.25, HY + 7.35), (HX + 3.5, HY + 7.6), (HX + 3.5, HY + 8.15)]),
                     # pad 5 (CFG_SEL2's pull-up) straight down to its +3V3 via, west of the GND one, clear of USB-C
                     # 6's pair turning east and of its band
-                    ("+3V3", "F.Cu", 0.2, [(HX + 2.75, HY + 7.35), (HX + 2.75, HY + 8.15)])]
+                    ("+3V3", "F.Cu", 0.25, [(HX + 2.75, HY + 7.35), (HX + 2.75, HY + 8.15)])]
     hand_vias += [("GND", HX + 3.5, HY + 8.15, 0.5, 0.3), ("+3V3", HX + 2.75, HY + 8.15, 0.5, 0.3)]
     t, v = xtal_block()
     hand_tracks += t
@@ -745,9 +768,8 @@ def drawn():
     # each port's INA226: VS (pin 6, turned 90°) straight up into its 100 nF, then on to its via (the v2's).  Its
     # USBLC6: VBUS (pin 5) under the body to its centre line and up between the pin rows into its 100 nF, then on
     # to a via in its 5 V area
-    for n, qx in enumerate(COLS, 1):
-        x0 = qx - (4.4 if n == 1 else 5.0)
-        vs = (x0 + 8.51, CL_Y + 2.45)
+    for n in range(1, 7):
+        vs = (ina_x(n) + 1.0, CL_Y + 2.45)
         hand_tracks.append(("+3V3", "F.Cu", 0.25, [vs, (vs[0], CL_Y + 0.15)]))
         hand_vias.append(("+3V3", vs[0], CL_Y + 0.15, 0.5, 0.3))
         ex, ey = ESD_PX[n], USB_Y
@@ -889,18 +911,26 @@ def board() -> Board:
                    "pairs: 0.17 mm to each",
             "C16": "U1 pin 10's via under the case, beyond the pin; none fits past C16's pad between USB-C 5 and "
                    "6's pairs: 0.17 mm to each"},
-        "dru": XTAL_RULE,
+        "dru": XTAL_RULE + BOARD_RULES,
         "keepouts": [
             # the crystal's block (dropped once routed), as the v2's
             {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP}] + [
-            # each USB pair's band on F.Cu (the layout review: 3 × the track gap between a fast bus and other nets'
-            # lines, the enables and faults first): no other track along it, vias in (dropped once routed)
+            # each USB pair's band on F.Cu (the layout review: 3 × the track width between a fast bus and other
+            # nets' lines, the enables and faults first): no other track along it, vias in (dropped once routed)
             {"name": f"core:usb{n}", "layers": ["F.Cu"], "tracks_only": True,
              "poly": offset(band, HS_BAND) + offset(band, -HS_BAND)[::-1]}
             for n, (_, band) in sorted(pair_centrelines().items())] + [
             {"name": f"core:up-{layer[0]}", "layers": [layer], "tracks_only": True,
              "poly": offset(band, HS_BAND) + offset(band, -HS_BAND)[::-1]}
             for layer, band in (("B.Cu", up_pair()[2]), ("F.Cu", up_pair()[3]))] + [
+            # round the upstream pair's vias (on B.Cu only by the hub's pins, whose fan-out it would bar) and J1's
+            # pins 5 and 6 (D−, D+), 0.75 mm past their copper: no other track there (dropped once routed)
+            {"name": f"core:up-v{i}", "layers": ["B.Cu"] if x < HX else ["F.Cu", "B.Cu"], "tracks_only": True,
+             "poly": [(x - 1.05, y - 1.05), (x + 1.05, y - 1.05), (x + 1.05, y + 1.05), (x - 1.05, y + 1.05)]}
+            for i, (_, x, y, *_) in enumerate(up_pair()[1])] + [
+            {"name": "core:j1-usb", "layers": ["F.Cu", "B.Cu"], "tracks_only": True,
+             "poly": [(LEAD[0] - 1.7, LEAD[1] - 11.4), (LEAD[0] + 1.7, LEAD[1] - 11.4), (LEAD[0] + 1.7, LEAD[1] - 6.6),
+                      (LEAD[0] - 1.7, LEAD[1] - 6.6)]}] + [
             {"name": f"edge{i}", "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, W, 0.35), (W - 0.35, 0, W, H), (0, H - 0.35, W, H), (0, 0, 0.35, H),
@@ -946,6 +976,11 @@ NETCLASSES = [
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,
      "_patterns": ["*PORT?_5V_SW", "*PORT?_VBUS"]},
+    # the enables, faults, resets and interrupts: Default's widths, kept off the USB pairs (BOARD_RULES)
+    {"name": "Sensitive", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
+     "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
+     "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 6,
+     "_patterns": ["*PORT?_EN", "*PORT?_FLT_N", "*HUB_RST_N", "INT", "*LEAD_INT", "*BUCK_EN"]},
     {"name": "USB", "clearance": 0.127, "track_width": USB_W, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": USB_W, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 3,
