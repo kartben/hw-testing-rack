@@ -9,8 +9,8 @@ under A1 that holds the **power hub v0.5**:
   plug-in, then for 20 V when the controller asks over I²C (28 V EPR when the charger offers it, once
   opted in: `CONFIG_HUB_PD_EPR` or `hub pd epr`).  28 V is locked out for now
   (`CONFIG_HUB_EPR_ALLOWED` off): an FXL0630 buck inductor withstands 30 V and would see about 24 V plus
-  ringing ([datasheet-audit.md](datasheet-audit.md), U2).  The node's L1 and the DATA ×6's L2 L3 are Vishay
-  IHLP2525CZ rated 75 V since 2026-11-01; still FXL0630: the hub's L1 and the ×4 v2's 3.3 µH L2
+  ringing ([datasheet-audit.md](datasheet-audit.md), U2).  The node's and the hub's L1 and the DATA ×6's L2 L3 are
+  Vishay IHLP2525CZ rated 75 V since 2026-11-01; still FXL0630: the ×4 v2's 3.3 µH L2
   ([bom/sourcing.md](../bom/sourcing.md)).  28 V opens once every one is rated 60 V or more, and with a 140 W charger.
   VBUS is the rack bus (VRACK): there is no input switch, the eFuses keep the
   rows off until the contract is final;

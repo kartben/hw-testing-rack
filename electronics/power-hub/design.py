@@ -429,7 +429,7 @@ def board() -> Board:
     R(c, "R205", "39k", "VRACK", "BUCK_EN", pcb=P(54.78, 14.3 + BY, 90))
     R(c, "R206", "18k", "BUCK_EN", "GND", pcb=P(54.00, 12.0 + BY, 180))
     C(c, "C107", "100n", "BUCK_CB", "BUCK_SW", pcb=P(59.60, 9.5 + BY, 0))
-    part(c, "L1", "buck_l47", {"1": "BUCK_SW", "2": "+5V_BUCK"}, "4.7u", pcb=P(65.70, 12.0 + BY, 0))
+    part(c, "L1", "buck_l47_75v", {"1": "BUCK_SW", "2": "+5V_BUCK"}, "4.7u", pcb=P(65.70, 12.0 + BY, 0))
     for i in range(3):
         C(c, f"C{108 + i}", "22u", "+5V_BUCK", "GND", size="1206", pcb=P(64.0 + 2.5 * i, 18.5 + BY, 270))
     # FB 100k/18k: 0.8 V × (1 + 100/18) = 5.24 V, as the bay node; ≈ 4.9 V after D4 for the TJA1462AT (4.5–5.5 V)
