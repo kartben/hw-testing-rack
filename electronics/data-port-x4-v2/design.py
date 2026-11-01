@@ -460,7 +460,10 @@ def port(b: Board, n: int):
          sch=at(30, 22, fields=(-4, -4)))
     C(s, f"C{k + 1}", "1u", "+5V", "GND", size="0402", pcb=P(x0 + 5.13, y0 + 2.9, 90), sch=at(15, 24))
     s.wire(f"C{k + 1}.1", (15, 21), (20, 21))
-    R(s, f"R{k + 1}", "47k", p + "ILIM", "GND", size="0402", pcb=P(x0 - 0.97, y0 + 2.2, 180), sch=at(22, 28))
+    # 45.3k, as the DATA ×6's: 524 mA at the least, so a DUT drawing its full 500 mA never trips it (47k's 505 mA
+    # fell to 499.7 with its 1 %); no JLC basic part between 39k and 47k, so an extended one
+    R(s, f"R{k + 1}", "45.3k", p + "ILIM", "GND", size="0402", pcb=P(x0 - 0.97, y0 + 2.2, 180), sch=at(22, 28),
+      fields={"LCSC": "C2933099", "MPN": "FRC0402F4532TS", "Manufacturer": "FOJAN"})
     s.wire(f"{sw}.ILIM", (22, 24), f"R{k + 1}.1")
     # X3: the port is off until the node switches it on
     R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(x0 + 9.9, y0 + 3.65, 90), sch=at(14, 36))
@@ -620,7 +623,8 @@ def port(b: Board, n: int):
     s.notes = [f"Port {n} = sub-slot A1.{n}, hub port {n}, busid 1-1.{n}.",
                f"INA226 at 0x{0x40 + [1, 3, 4, 5][n - 1]:02x}; expander {['U2', 'U6'][(n - 1) // 2]} "
                f"(0x{0x20 + (n - 1) // 2:02x}).",
-               "ILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.",
+               "ILIM 45.3k: 524 / 577 / 638 mA min / typ / max (TI SLVS841G §8.5.1 eq. 1–3), 519–644 mA with the",
+               "  resistor's 1 %; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.",
                "INA226 Vbus on the shunt's load-side sense pad (= VBUS).",
                "EN pulled down: the port stays off until the node switches it on.",
                "Pins: P1–P8 → crosspoint X lines (docs/electronics.md › DATA ×4 v2 map);",
@@ -866,7 +870,7 @@ def power_sheet(b: Board):
         "The DATA ×6's converter (TI SLUSF64B table 8-1: 4.7 µH Vishay IHLP2525CZ, 75 V; 2 × 10 µF + 100 nF in,",
         "  3 × 22 µF out).",
         "+5V: the four ports, the 3.3 V LDO (≤ 0.46 A) and the matrix: 2.46 A at 0.5 A a port, under the LMR51625's",
-        "  2.5 A; 2.94 A with all four at the TPS2553s' 0.62 A limit: the node's power budget (the four INA226s)",
+        "  2.5 A; 3.04 A with all four at the TPS2553s' 0.644 A limit: the node's power budget (the four INA226s)",
         "  keeps their sum under 2.5 A.",
         "FB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.",
         "VIN on J1.8, the node's VRACK through its eFuse (TPS26600, off by default): no second protection here.",
@@ -1225,7 +1229,7 @@ def board() -> Board:
         "  v1 stays the other bays' board.",
         "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×6's lead.",
         "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 0.75 A at 20 V · +5V 5.24 V, ≤ 2.5 A (the node's budget) ·",
-        "  PORTn_VBUS 5.1–5.24 V, 0.50–0.62 A limit · +3V3 3.3 V (AP2114H), ≤ 0.5 A · +5V_MX, −5V (sheet Matrix) ·",
+        "  PORTn_VBUS 5.1–5.24 V, 0.52–0.64 A limit · +3V3 3.3 V (AP2114H), ≤ 0.5 A · +5V_MX, −5V (sheet Matrix) ·",
         "  +3V3_CP, +1V1 (sheet Co-processor) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own regulators).",
         "I²C: TCA6408A 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45, TCA9534A 0x38; the node's INA226 0x40.",
         "Assembled as DATA-4x-logic (as drawn) or DATA-4x (BOM/CPL '-base': the matrix, the co-processor and the",
@@ -1849,7 +1853,7 @@ NETCLASSES = [
      "_patterns": ["+3V3", "*+3V3_CP", "*+1V1", "-5V", "+5V_MX"], "_min_width": 0.25},
     # +5V: the plane carries the ports' current; its routed stretches feed the few loads above the split, at v1's
     # 0.6 mm; VIN and the converter's switch node likewise.  The ports' 5V_SW and VBUS stay at 0.3 mm: the vertical USB-C's VBUS pads are 0.3 mm wide at a
-    # 0.5 mm pitch, so a wider track can't reach them, and at the 0.62 A limit 15 mm of it drops ≈ 15 mV
+    # 0.5 mm pitch, so a wider track can't reach them, and at the 0.64 A limit 15 mm of it drops ≈ 16 mV
     {"name": "Power", "clearance": 0.15, "track_width": 0.6, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,

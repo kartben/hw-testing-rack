@@ -5,7 +5,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 693 |
+| Electronics | 696 |
 | Cables | 101 |
 | Cameras | 64 |
 | Printed parts | 62 |
@@ -13,7 +13,7 @@ Configuration: **8 bays** (4 columns × 2 rows) in the panel frame. Prices are i
 | Motion | 19 |
 | Fasteners | 9 |
 | Analyzer | 7 |
-| **Total** | **1,014** |
+| **Total** | **1,016** |
 
 ≈ **€127 per bay** all-in.
 
@@ -53,7 +53,7 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | PCBA: setup $8.24, stencil $1.55, components $84.24, extended parts $49.44, SMT $5.77, special components $0.48 | 149.72 |
 | | | **Quoted total** | **201.72** |
 | | | *Quote stale since 2026-11-01: the v2's rework changed its BOM (layout B, its own 5 V converter, the lead's map B).  The order below is the calculator's until a re-quote* | |
-| | | Order (indicative): RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price (+$3.05 components); RP2354B: its extended part type (+$3.09 extended parts); the datasheet audit's fixes: their parts, 2 panels at JLC's price (+$1.19 components); MAX809S (U5): its extended part type (+$3.09 extended parts); quote stale since 2026-11-01: the v2's rework changed its BOM (layout B, its own 5 V converter, the lead's map B); parts and extended types from the BOM until a re-quote | 229.74 |
+| | | Order (indicative): RP2354B, out of stock at JLC on 2026-10-23: 2 at JLC's price (+$3.05 components); RP2354B: its extended part type (+$3.09 extended parts); the datasheet audit's fixes: their parts, 2 panels at JLC's price (+$1.19 components); MAX809S (U5): its extended part type (+$3.09 extended parts); quote stale since 2026-11-01: the v2's rework changed its BOM (layout B, its own 5 V converter, the lead's map B); parts and extended types from the BOM until a re-quote | 232.80 |
 
 ## JLC cost
 
@@ -65,9 +65,9 @@ What each order pays once, whatever the number of boards, against what grows wit
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (15 + 2 pref.) | 51.15 | 98.87 | 47.32 | **146.19** | 146.19 | 144.61 |
 | data-port | Economic | 6 / 10 | 7 (3) | 9.27 | 26.15 | 14.61 | **40.76** | 40.76 | 30.71 |
 | camera-pod | Economic | 2 / 2 | 8 (4) | 12.36 | 28.11 | 2.31 | **30.42** | 30.42 | 29.63 |
-| data-port-x4-v2-panel | Economic | 1 / 2 | 49 (21 + 2 pref.) | 64.89 | 126.68 | 103.06 | **229.74** | 229.74 | 227.72 |
+| data-port-x4-v2-panel | Economic | 1 / 2 | 50 (22 + 2 pref.) | 67.98 | 129.77 | 103.03 | **232.80** | 232.80 | 230.78 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **753.61** | **753.61** | **713.94** |
+| **All** | | | | | | | **756.67** | **756.67** | **717.00** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -95,15 +95,15 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 | power-hub | 73.08 | 42.20 | 31.71 | 20.80 | 18.11 | 17.25 |
 | data-port | 14.32 | 6.78 | 4.08 | 2.03 | 1.55 | 1.35 |
 | camera-pod | 15.21 | 6.78 | 3.99 | 1.80 | 1.38 | 1.15 |
-| data-port-x4-v2-panel | 114.87 | 71.90 | 57.20 | 42.63 | 39.10 | 38.11 |
+| data-port-x4-v2-panel | 116.40 | 72.50 | 57.50 | 42.68 | 39.12 | 38.10 |
 
 One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-panel) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port | camera-pod | data-port-x4-v2-panel | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 254.33 | 146.17 | 40.76 | 30.42 | 229.74 | **735.42** |
-| 5 | 147.15 | 42.20 | 14.28 | 7.97 | 71.90 | **290.30** |
-| 10 | 129.85 | 31.71 | 13.54 | 5.37 | 57.20 | **241.08** |
+| 1 | 254.33 | 146.17 | 40.76 | 30.42 | 232.80 | **738.48** |
+| 5 | 147.15 | 42.20 | 14.28 | 7.97 | 72.50 | **290.91** |
+| 10 | 129.85 | 31.71 | 13.54 | 5.37 | 57.50 | **241.38** |
 
 ## Printed parts
 
@@ -315,9 +315,10 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 1k — Resistor 1k 0402 | 30  | 0.00 | 0.04 | LCSC/JLCPCB C11702 |
 | Electronics | 22 — Resistor 22 0402 | 4  | 0.00 | 0.00 | LCSC/JLCPCB C25092 |
 | Electronics | 100k — Resistor 100k 0402 | 30  | 0.00 | 0.04 | LCSC/JLCPCB C25741 |
-| Electronics | 47k — Resistor 47k 0402 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C25792 |
+| Electronics | 47k — Resistor 47k 0402 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C25792 |
 | Electronics | 100k — Resistor 100k 0603 | 2  | 0.00 | 0.01 | LCSC/JLCPCB C25803 |
 | Electronics | 18k — Resistor 18k 0603 | 2  | 0.00 | 0.01 | LCSC/JLCPCB C25810 |
+| Electronics | 45.3k — Resistor 45.3k 0402 | 8  | 0.00 | 0.00 | LCSC/JLCPCB C2933099 |
 | Electronics | 56k — Resistor 56k 0402 | 16  | 0.00 | 0.03 | LCSC/JLCPCB C25796 |
 | Electronics | 100m — 100 mΩ 1 % 0.25 W, as a current shunt | 8  | 0.01 | 0.07 | LCSC/JLCPCB C25334 |
 | Electronics | 200k — Resistor 200k 0402 | 8  | 0.00 | 0.01 | LCSC/JLCPCB C25764 |
@@ -368,7 +369,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 100k — Resistor 100k 0402 | 18  | 0.00 | 0.03 | LCSC/JLCPCB C25741 |
 | Electronics | 100k — Resistor 100k 0603 | 2  | 0.00 | 0.01 | LCSC/JLCPCB C25803 |
 | Electronics | 18k — Resistor 18k 0603 | 2  | 0.00 | 0.01 | LCSC/JLCPCB C25810 |
-| Electronics | 47k — Resistor 47k 0402 | 8  | 0.00 | 0.01 | LCSC/JLCPCB C25792 |
+| Electronics | 45.3k — Resistor 45.3k 0402 | 8  | 0.00 | 0.00 | LCSC/JLCPCB C2933099 |
 | Electronics | 56k — Resistor 56k 0402 | 16  | 0.00 | 0.03 | LCSC/JLCPCB C25796 |
 | Electronics | 100m — 100 mΩ 1 % 0.25 W, as a current shunt | 8  | 0.01 | 0.07 | LCSC/JLCPCB C25334 |
 | Electronics | 1k — Resistor 1k 0402 | 24  | 0.00 | 0.03 | LCSC/JLCPCB C11702 |
@@ -384,7 +385,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | USBLC6-2SC6 — USB ESD protection | 8  | 0.17 | 1.32 | LCSC/JLCPCB C7519 |
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
 | Electronics | Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | calculator (the JLCPCB quote of 2026-10-23 is stale since 2026-11-01) |
-| Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 74.46 | 74.46 | calculator (the JLCPCB quote of 2026-10-23 is stale since 2026-11-01), adjusted |
+| Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 77.30 | 77.30 | calculator (the JLCPCB quote of 2026-10-23 is stale since 2026-11-01), adjusted |
 | Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 0.02 | 0.02 | calculator (the JLCPCB quote of 2026-10-23 is stale since 2026-11-01), adjusted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |

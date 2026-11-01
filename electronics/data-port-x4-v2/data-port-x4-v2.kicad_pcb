@@ -3177,7 +3177,7 @@
 				)
 			)
 		)
-		(property "Value" "47k"
+		(property "Value" "45.3k"
 			(at 0 1.17 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -3200,7 +3200,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 47k 0402"
+		(property "Description" "Resistor 45.3k 0402"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -3223,7 +3223,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25792"
+		(property "LCSC" "C2933099"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -3235,7 +3235,7 @@
 				)
 			)
 		)
-		(property "MPN" "0402WGF4702TCE"
+		(property "MPN" "FRC0402F4532TS"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -3247,7 +3247,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+		(property "Manufacturer" "FOJAN"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -27736,7 +27736,7 @@
 				)
 			)
 		)
-		(property "Value" "47k"
+		(property "Value" "45.3k"
 			(at 0 1.17 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -27759,7 +27759,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 47k 0402"
+		(property "Description" "Resistor 45.3k 0402"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -27782,7 +27782,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25792"
+		(property "LCSC" "C2933099"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -27794,7 +27794,7 @@
 				)
 			)
 		)
-		(property "MPN" "0402WGF4702TCE"
+		(property "MPN" "FRC0402F4532TS"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -27806,7 +27806,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+		(property "Manufacturer" "FOJAN"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -28734,7 +28734,7 @@
 				)
 			)
 		)
-		(property "Value" "47k"
+		(property "Value" "45.3k"
 			(at 0 1.17 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -28757,7 +28757,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 47k 0402"
+		(property "Description" "Resistor 45.3k 0402"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -28780,7 +28780,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25792"
+		(property "LCSC" "C2933099"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -28792,7 +28792,7 @@
 				)
 			)
 		)
-		(property "MPN" "0402WGF4702TCE"
+		(property "MPN" "FRC0402F4532TS"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -28804,7 +28804,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+		(property "Manufacturer" "FOJAN"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -48765,7 +48765,7 @@
 				)
 			)
 		)
-		(property "Value" "47k"
+		(property "Value" "45.3k"
 			(at 0 1.17 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -48788,7 +48788,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 47k 0402"
+		(property "Description" "Resistor 45.3k 0402"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -48811,7 +48811,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25792"
+		(property "LCSC" "C2933099"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -48823,7 +48823,7 @@
 				)
 			)
 		)
-		(property "MPN" "0402WGF4702TCE"
+		(property "MPN" "FRC0402F4532TS"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -48835,7 +48835,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
+		(property "Manufacturer" "FOJAN"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)

@@ -4489,7 +4489,7 @@
 		)
 		(uuid "d9ae85d5-3c54-5c1b-892f-28bc5c45e7ae")
 	)
-	(text_box "The DATA ×6's converter (TI SLUSF64B table 8-1: 4.7 µH Vishay IHLP2525CZ, 75 V; 2 × 10 µF + 100 nF in,\n  3 × 22 µF out).\n+5V: the four ports, the 3.3 V LDO (≤ 0.46 A) and the matrix: 2.46 A at 0.5 A a port, under the LMR51625's\n  2.5 A; 2.94 A with all four at the TPS2553s' 0.62 A limit: the node's power budget (the four INA226s)\n  keeps their sum under 2.5 A.\nFB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.\nVIN on J1.8, the node's VRACK through its eFuse (TPS26600, off by default): no second protection here.\n  ≈ 0.75 A at 20 V for the converter's 2.5 A, 1.1 A at 13.5 V, 0.55 A at 28 V; a PH contact carries 2 A."
+	(text_box "The DATA ×6's converter (TI SLUSF64B table 8-1: 4.7 µH Vishay IHLP2525CZ, 75 V; 2 × 10 µF + 100 nF in,\n  3 × 22 µF out).\n+5V: the four ports, the 3.3 V LDO (≤ 0.46 A) and the matrix: 2.46 A at 0.5 A a port, under the LMR51625's\n  2.5 A; 3.04 A with all four at the TPS2553s' 0.644 A limit: the node's power budget (the four INA226s)\n  keeps their sum under 2.5 A.\nFB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.\nVIN on J1.8, the node's VRACK through its eFuse (TPS26600, off by default): no second protection here.\n  ≈ 0.75 A at 20 V for the converter's 2.5 A, 1.1 A at 13.5 V, 0.55 A at 28 V; a PH contact carries 2 A."
 		(exclude_from_sim no)
 		(at 15.24 142.24 0)
 		(size 508 22.86)
