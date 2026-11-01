@@ -693,7 +693,7 @@ def board() -> Board:
               for pt in ((x1 + E, H - E), (x1 + E, top - E), (x0 - E, top - E), (x0 - E, H - E))]
     TA, TBX, TB = 23.4, 77.0, 13.8      # converter A's tongue's east edge, B's west edge, their bottom
     IN_5VA = [(E, E), (TA, E), (TA, TB), (5.4, TB), (5.4, PWR_SPLIT + 0.1), (MID_X - 0.1, PWR_SPLIT + 0.1),
-              *[pt for pt in bottom if pt[0] < MID_X], (MID_X - 0.1, H - E), (E, H - E)]
+              (MID_X - 0.1, H - E), *[pt for pt in bottom if pt[0] < MID_X], (E, H - E)]
     IN_5VB = [(TBX, E), (W - E, E), (W - E, H - ch - E), (W - cw - E, H - ch - E), (W - cw - E, H - E),
               *[pt for pt in bottom if pt[0] > MID_X], (MID_X + 0.1, H - E), (MID_X + 0.1, PWR_SPLIT + 0.1),
               (W - 5.4, PWR_SPLIT + 0.1), (W - 5.4, TB), (TBX, TB)]
