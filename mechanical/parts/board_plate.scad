@@ -41,6 +41,9 @@ module plate_body() {
         // pin holes over the node's RESET and BOOT, as in the drawer's floor
         for (q = button_holes()) translate(concat(q, [-EPS]))
             cylinder(d = 3.2, h = PLATE_T + 1);
+        // the DATA ports' plugs: a recess under each slot, in the rear edge (tools/rackcfg.py › plate_port_recesses)
+        for (r = PLATE_PORT_RECESSES) translate([r[0], r[1] - EPS, PLATE_T - PLATE_PORT_RECESS_DEPTH])
+            cube([r[2] - r[0], r[3] - r[1] + 2 * EPS, PLATE_PORT_RECESS_DEPTH + EPS]);
         // the front display's lead drops into its front-right corner (and the same turned 180°, the plate
         // drops in either way): lib/carrier.scad › PLATE_NOTCH
         if (HAS_DISPLAY) for (t = [0, 1]) translate([PLATE_W / 2, PLATE_D / 2, 0]) rotate([0, 0, 180 * t])
@@ -82,14 +85,20 @@ module fences(rec, o) {
         translate([o[0] + fx * size[0], o[1] + fy * size[1], PLATE_T]) cylinder(d = 6, h = h);
 }
 
+// a footprint [x0, y0, x1, y1] clear of the DATA ports' plugs: their recesses, and their way over them
+function clear_of_ports(f) = len([for (r = PLATE_PORT_RECESSES)
+    if (f[0] < r[2] + 0.5 && f[2] > r[0] - 0.5 && f[1] < r[3] && f[3] > r[1]) 1]) == 0;
+
 module cable_hooks(rec, o) {
-    // two open hooks either side of the USB plug path
+    // two open hooks either side of the USB plug path, but none in a DATA plug's way
     if (usb_side(rec)) {
         uy = o[1] + rec[5];
-        for (dy = [-22, 22]) translate([PLATE_W - 8, uy + dy, PLATE_T]) rotate([0, 0, 90]) hook();
+        for (dy = [-22, 22]) if (clear_of_ports([PLATE_W - 11, uy + dy - 5, PLATE_W - 5, uy + dy + 5]))
+            translate([PLATE_W - 8, uy + dy, PLATE_T]) rotate([0, 0, 90]) hook();
     } else {
         ux = o[0] + rec[5];
-        for (dx = [-22, 22]) translate([ux + dx, PLATE_D - 8, PLATE_T]) hook();
+        for (dx = [-22, 22]) if (clear_of_ports([ux + dx - 5, PLATE_D - 11, ux + dx + 5, PLATE_D - 5]))
+            translate([ux + dx, PLATE_D - 8, PLATE_T]) hook();
     }
 }
 

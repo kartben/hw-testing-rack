@@ -113,10 +113,16 @@ drawer, the node and the DUT plug never overlap.
 One plate for every board: 134.5 × 159.4 mm (the drawer's inside, 3.2 mm off its right wall for the
 display's lead, which drops into a 4 mm notch in the plate's front-right corner; the same notch, turned
 180°, at its rear left), 5 mm thick,
-a honeycomb of 197 hexagonal holes, 10 mm apart in rows along X (7.2 mm across
+a honeycomb of 177 hexagonal holes, 10 mm apart in rows along X (7.2 mm across
 flats), odd rows numbered on both rims (row 1 at the front) so that a layout
 reads "row 7, 4th hole" (`config/rack.yaml` › `plate_grid`).  Clip-in pegs hold
-the boards on it, anywhere: no more plate per board.
+the boards on it, anywhere: no more plate per board.  Its rear edge has a recess
+under each of the port wall's six slots, 7.8 mm wide, 3.5 mm deep (a 1.5 mm floor),
+from 22 mm in front of the receptacles' mouths to the edge (`drawer.port_recess`):
+a standing USB-C plug's overmold comes down 2.7 mm below the plate's top there,
+and clears the recess by 0.65 mm at its sides and 0.8 mm under it (USB-IF maximum,
+FreeCAD and SolidCraft, 2026-11-01).  No hole near a recess, and a per-board
+plate's cable hooks keep out of the plugs' way.
 
 **The clip stays inside the plate.**  A hole widens by 0.4 mm per side over
 its bottom 1.4 mm, with a 45° ledge between the two; a peg's hexagonal plug

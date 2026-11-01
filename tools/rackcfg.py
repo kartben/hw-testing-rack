@@ -312,6 +312,18 @@ class Rack:
         g["row"] = g["pitch"] * math.sqrt(3) / 2
         return g
 
+    def plate_port_recesses(self) -> list[tuple[float, float, float, float]]:
+        """The board plate's recesses under the DATA ports' plugs (drawer.port_recess), (x0, y0, x1, y1) in plate
+        coords: one under each of the DATA ×6's slots, from `length` in front of its receptacle's mouth to the
+        plate's rear edge.  At the rear only: a plate turned round would carry its boards the wrong way too."""
+        dr, r = self.drawer, self.drawer["port_recess"]
+        v = self.raw["pcb"]["data_port_x6"]
+        d = self.plate_size[1]
+        px0, py0 = self.plate_origin
+        mouth = dr["depth"] - dr["rear_bay"] + v["face_y"] - 6.4 - py0   # the receptacle's mouth (6.4 off the face)
+        return [(v["x0"] + u - px0 - r["width"] / 2, mouth - r["length"], v["x0"] + u - px0 + r["width"] / 2, d)
+                for u in v["usb"]]
+
     def plate_holes(self) -> list[tuple[int, int, float, float]]:
         """The honeycomb's holes, (row, col, x, y) in plate coords: rows along X from the front (row 1), the
         long rows (odd) one hole longer than the short ones, each row centred; none within `margin` of the
@@ -326,6 +338,7 @@ class Rack:
         y0 = (d - (n_rows - 1) * g["row"]) / 2
         n_long = int((w - 2 * (m + half_x)) / p + 1e-9) + 1
         slots = [(x, d / 2) for x in self.plate_slots_x]          # finger slots: 14 × 9 along X (plate_keepouts)
+        recesses = self.plate_port_recesses()
         out = []
         for j in range(n_rows):
             n = n_long if j % 2 else n_long - 1
@@ -337,6 +350,9 @@ class Rack:
                 if any(math.hypot(max(abs(x - sx) - 2.5, 0), y - sy) < 4.5 + half_y + m for sx, sy in slots):
                     continue
                 if any(math.hypot(x - bx, y - by) < BUTTON_HOLE_R + half_y + m for bx, by in self.plate_buttons()):
+                    continue
+                if any(math.hypot(max(x0 - x, 0, x - x1), max(y0 - y, 0, y - y1)) < half_y + m
+                       for x0, y0, x1, y1 in recesses):
                     continue
                 out.append((j + 1, i + 1, round(x, 3), round(y, 3)))
         return out
@@ -614,6 +630,8 @@ def scad_config(rack: Rack) -> str:
         "HEX_U": rack.plate_grid["undercut"],
         "HEX_CLEAR": rack.plate_grid["clear"],
         "HEX_HOLES": [[x, y] for _, _, x, y in rack.plate_holes()],
+        "PLATE_PORT_RECESSES": [[round(c, 3) for c in r_] for r_ in rack.plate_port_recesses()],
+        "PLATE_PORT_RECESS_DEPTH": rack.drawer["port_recess"]["depth"],
         "HEX_ROWS": sorted({(r, y) for r, _, _, y in rack.plate_holes()}),
         "PEG_STOP": [rack.plate_grid["stop"][k] for k in ("offset", "angle", "neck", "ledge", "lip")],
         "PEG_CAM": [rack.plate_grid["cam"][k] for k in ("r0", "r1", "arc", "under")],

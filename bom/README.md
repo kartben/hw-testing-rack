@@ -142,18 +142,19 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | ladder_base | 5 | 48.4 | `mechanical/stl/ladder_base.stl` |
 | ladder_cap | 5 | 14.7 | `mechanical/stl/ladder_cap.stl` |
 | peg_base_h11 | 3 | 0.5 | `mechanical/stl/peg_base_h11.stl` |
-| peg_base_h12 | 6 | 0.5 | `mechanical/stl/peg_base_h12.stl` |
+| peg_base_h12 | 5 | 0.5 | `mechanical/stl/peg_base_h12.stl` |
 | peg_base_h6 | 9 | 0.3 | `mechanical/stl/peg_base_h6.stl` |
 | peg_base_h9 | 3 | 0.4 | `mechanical/stl/peg_base_h9.stl` |
 | peg_bobbin | 5 | 0.9 | `mechanical/stl/peg_bobbin.stl` |
-| peg_cam | 21 | 0.2 | `mechanical/stl/peg_cam.stl` |
+| peg_cam | 20 | 0.2 | `mechanical/stl/peg_cam.stl` |
 | peg_pin_d21_h9 | 3 | 0.3 | `mechanical/stl/peg_pin_d21_h9.stl` |
+| peg_pin_d32_h12 | 1 | 0.5 | `mechanical/stl/peg_pin_d32_h12.stl` |
 | peg_pin_d32_h6 | 1 | 0.3 | `mechanical/stl/peg_pin_d32_h6.stl` |
 | peg_stop_h11 | 4 | 0.5 | `mechanical/stl/peg_stop_h11.stl` |
-| peg_stop_h12 | 6 | 0.6 | `mechanical/stl/peg_stop_h12.stl` |
+| peg_stop_h12 | 3 | 0.6 | `mechanical/stl/peg_stop_h12.stl` |
 | peg_stop_h6 | 11 | 0.4 | `mechanical/stl/peg_stop_h6.stl` |
-| plate | 7 | 39.6 | `mechanical/stl/plate.stl` |
-| plate_giga-r1-display | 1 | 70.8 | `mechanical/stl/plate_giga-r1-display.stl` |
+| plate | 7 | 41.0 | `mechanical/stl/plate.stl` |
+| plate_giga-r1-display | 1 | 68.3 | `mechanical/stl/plate_giga-r1-display.stl` |
 | power_box_base | 1 | 35.2 | `mechanical/stl/power_box_base.stl` |
 | power_box_labels | 1 | 0.1 | `mechanical/stl/power_box_labels.stl` |
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
@@ -441,9 +442,9 @@ One bay out of the rack, on a desk ([docs/standalone.md](../docs/standalone.md))
 | M3×8 pan head (ISO 7045) | 8 | 0.02 | 0.16 | AliExpress (bulk) |
 | Rubber bumper, self-adhesive, Ø10 × 3 mm | 4 | 0.05 | 0.20 | AliExpress (bulk) |
 
-**Desk frame, for either (the rack's honeycomb plate in it: the DUTs held by its pegs)**: ≈ €1.36, 68 g of PETG
+**Desk frame, for either (the rack's honeycomb plate in it: the DUTs held by its pegs)**: ≈ €1.39, 69 g of PETG
 
 | Item | Qty | Unit € | Total € | Source |
 |---|---:|---:|---:|---|
 | standalone_desk_frame (printed) | 1 | 0.57 | 0.57 | `mechanical/stl/standalone_desk_frame.stl` |
-| plate (printed) | 1 | 0.79 | 0.79 | `mechanical/stl/plate.stl` |
+| plate (printed) | 1 | 0.82 | 0.82 | `mechanical/stl/plate.stl` |
