@@ -34,11 +34,11 @@ include <../lib/carrier.scad>
 
 PART = "cradle";
 
-// a warning until the v2 is re-placed on the ×6's grid (pcb.data_port_x4_v2), then an assert again
-if (!(DATA_X6_SIZE == DATA_V2_SIZE && DATA_X6_X0 == DATA_V2_X0 && DATA_X6_T == DATA_V2_T
-      && DATA_X6_FACE_Y == DATA_V2_FACE_Y && DATA_X6_NOTCH_X == DATA_V2_NOTCH_X && DATA_X6_NOTCH == DATA_V2_NOTCH
-      && DATA_X6_TEE == DATA_V2_TEE))
-    echo("WARNING: the DATA ×6 and the DATA ×4 v2 no longer share an outline: one cradle no longer takes both");
+// one cradle takes both boards: the DATA ×6 and the DATA ×4 v2 share an outline (pcb.data_port_x6 / _x4_v2)
+assert(DATA_X6_SIZE == DATA_V2_SIZE && DATA_X6_X0 == DATA_V2_X0 && DATA_X6_T == DATA_V2_T
+       && DATA_X6_FACE_Y == DATA_V2_FACE_Y && DATA_X6_NOTCH_X == DATA_V2_NOTCH_X && DATA_X6_NOTCH == DATA_V2_NOTCH
+       && DATA_X6_TEE == DATA_V2_TEE,
+       "the DATA ×6 and the DATA ×4 v2 no longer share an outline: one cradle no longer takes both");
 V2 = [DATA_X6_SIZE[0], DATA_X6_SIZE[1], DATA_X6_T];   // the board: length (x), height (z), thickness (y)
 V2_X0 = DATA_X6_X0;                       // its left edge
 V2_Y = DATA_PCB_Y0 + DATA_X6_FACE_Y;      // its front face (the receptacles' mouths 1 mm behind the port wall)

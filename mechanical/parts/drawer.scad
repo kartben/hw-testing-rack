@@ -141,9 +141,9 @@ module joint_holes() for (j = JOINTS)
 PORT_XS = DATA_PORTS;
 assert(len([for (r = DATA_PORT_ROT) if (r != 90) 1]) == 0 && len(DATA_PORT_ROT) == len(PORT_XS),
        "a DATA ×6 receptacle not standing: the wall's slots are all alike");
-// a warning until the v2 is re-placed on the grid (pcb.data_port_x4_v2), then an assert again
-if (len([for (u = DATA_V2_USB) if (min([for (x = PORT_XS) abs(x - DATA_V2_X0 - u)]) > 0.01) 1]) > 0)
-    echo("WARNING: a DATA ×4 v2 port off the grid");
+// the v2's four on the grid too (pcb.data_port_x4_v2: its positions 2–5)
+assert(len([for (u = DATA_V2_USB) if (min([for (x = PORT_XS) abs(x - DATA_V2_X0 - u)]) > 0.01) 1]) == 0,
+       "a DATA ×4 v2 port off the grid");
 assert(len([for (i = [1 : len(PORT_XS) - 1]) if (PORT_XS[i] - PORT_XS[i - 1] < USBC_PLUG_CUT[1] + 1.6) 1]) == 0,
        "a rib between two slots is under 1.6 mm");
 // the DATA ×4's bosses: v1's first three holes, which the v2's cradle shares (v1 is not ordered: its front-edge
