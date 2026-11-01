@@ -134,6 +134,8 @@ def nodes_of(row: str, t: float) -> list[dict]:
                     "state": "lost" if lost else state,
                     "camera": "active" if nid in CAMERAS_ACTIVE else "ready" if nid in CAMERAS else "none",
                     "dut_ma": ma, "dut_mv": 5060 - ma // 12 if ma else 0,
+                    # The GRANT the firmware sends: 100 W at 20 V, 12 bays, four a row
+                    "grant_mw": None if lost else 5400, "waiting": 0,
                     "seen_s": 9.0 if lost else round(random.uniform(0.1, 0.9), 1), "version": "0.5.0"})
         if lost:   # the row stops at a lost node: the ones after it can't get POS
             break

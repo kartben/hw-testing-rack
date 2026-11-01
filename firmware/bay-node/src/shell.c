@@ -34,6 +34,8 @@ static int parse_ms(const struct shell *sh, const char *arg, uint32_t *ms)
 static void print_power(const struct shell *sh)
 {
 	struct dut_power_reading r;
+	struct ports_budget pb = {0};
+	const char *why = dut_lead_str(dut_lead_state(NULL));
 	int ret;
 
 	shell_print(sh, "DUT VBUS:  %s%s%s", dut_power_get() ? "on" : "off",
@@ -45,6 +47,17 @@ static void print_power(const struct shell *sh)
 		shell_print(sh, "           %d mV, %d mA, %d mW", r.bus_mv, r.current_ma, r.power_mw);
 	} else {
 		shell_print(sh, "           no reading (%d)", ret);
+	}
+
+	if (why != NULL) {
+		shell_print(sh, "DATA lead: off, %s", why);
+	}
+	if (ports_budget(&pb) == 0) {
+		const char *u = pb.power ? "mW" : "mA";
+
+		shell_print(sh, "Budget:    %d of %d %s%s, %u port(s) waiting, %u shed since boot",
+			    pb.draw, pb.limit, u, pb.granted ? " (the hub's grant)" : "", pb.waiting,
+			    pb.sheds);
 	}
 }
 

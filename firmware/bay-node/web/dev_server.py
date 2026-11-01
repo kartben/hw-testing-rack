@@ -172,7 +172,8 @@ def port_doc(pt: dict, ip: int = 0) -> dict:
     mv = 5080 - ma // 10 if pt["on"] else 0
     usb = {**pt["usb"], "busid": f"1-1.{pt['hub_port']}"} if pt["on"] and now >= pt["up_at"] else None
     return {"slot": slot_name(pt["port"]), "port": pt["port"], "hub_port": pt["hub_port"],
-            "power": {"on": pt["on"], "mv": mv, "ma": ma, "mw": ma * mv // 1000, "faults": pt["faults"]},
+            "power": {"on": pt["on"], "mv": mv, "ma": ma, "mw": ma * mv // 1000, "faults": pt["faults"],
+                      "state": power_state(pt["on"], pt["latched"])},
             "fault": pt["latched"], "usb": usb,
             "usbip": {"client": ip_str(pt["client"])} if pt["client"] and usb else None,
             "lease": lease_doc(pt["lease"], ip, now)}
@@ -185,14 +186,21 @@ def one_port_doc(s: dict) -> dict:
     usb = ({"vid": "2fe3", "pid": "0004", "product": "USB-DEV", "serial": "005EC0A1", "busid": "1-1"}
            if dut["on"] and s["usb"]["devices"] else None)
     return {"slot": slot_name(1), "port": 1, "hub_port": None,
-            "power": {k: dut[k] for k in ("on", "mv", "ma", "mw", "faults")}, "fault": dut["latched"],
+            "power": {**{k: dut[k] for k in ("on", "mv", "ma", "mw", "faults")},
+                      "state": power_state(dut["on"], dut["latched"])}, "fault": dut["latched"],
             "usb": usb, "usbip": {"client": ip_str(client["peer"])} if client and usb else None,
             "lease": lease if lease["remaining_s"] else None}
 
 
+def power_state(on: bool, latched: bool) -> str:
+    """A port's power in a word, as the firmware's: on, fault, off (this node has no budget to wait on)."""
+    return "on" if on else "fault" if latched else "off"
+
+
 def short_port(d: dict) -> dict:
     """The same object, shorter: /api/status's `ports`."""
-    return {"slot": d["slot"], "port": d["port"], "power": {"on": d["power"]["on"], "ma": d["power"]["ma"]},
+    return {"slot": d["slot"], "port": d["port"],
+            "power": {"on": d["power"]["on"], "ma": d["power"]["ma"], "state": d["power"]["state"]},
             "fault": d["fault"], "usb": {"busid": d["usb"]["busid"]} if d["usb"] else None,
             "usbip": d["usbip"], "lease": d["lease"]}
 
@@ -1120,6 +1128,10 @@ def status(ip: int = 0) -> dict:
                     "rfc2217": any(c["id"] == "rfc2217" for c in access.fake), "raw": False,
                     "rx": len(console.log), "tx": console.tx, "dropped": 0},
             "access": access.summary(ip), "firmware": firmware.doc(), "camera": camera.doc()}
+    # A node rev A's budget, in mA on its 5 V (rev B's is in mW on the DATA lead, the hub's grant)
+    s["budget"] = {"unit": "mA", "limit": 1150, "granted": False, "reserve": 100,
+                   "draw": dut["ma"] if docs else 0, "waiting": 0, "sheds": 0, "board": bool(docs),
+                   "lead_off": None}
     s["ports"] = [short_port(d) for d in docs or [one_port_doc(s)]]
     return s
 

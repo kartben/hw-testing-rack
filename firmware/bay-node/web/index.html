@@ -11,6 +11,11 @@
 <style>
 /* The bay page's own components; the shared ones are in /rack.css */
 .cards .actions { gap: 5px; & button { padding: 7px 9px; font-size: 0.85rem; } }
+/* The bay's power budget, under the readings */
+.budget { margin: 8px 0 0; font-size: 0.8rem; color: var(--muted);
+  &[data-st=wait] { color: var(--service); }
+  &[data-st=lead] { color: var(--fault); font-weight: 600; }
+}
 /* Console */
 .toolbar {
   display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
@@ -176,6 +181,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
   & .port-info { font-size: 0.8rem; color: var(--muted); display: inline-flex; align-items: center; gap: 8px;
     &[data-st=fault] { color: var(--fault); font-weight: 600; }
     &[data-st=lease] { color: var(--lease); font-weight: 500; }
+    &[data-st=wait] { color: var(--service); font-weight: 500; }
   }
   & .port-acts { display: flex; flex-wrap: wrap; gap: 6px; }
   & .port-left { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
@@ -270,6 +276,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
         <svg class="spark" viewBox="0 0 120 40" preserveAspectRatio="none" aria-label="Current, last two minutes">
           <polygon id="spark-fill" points=""/><polyline id="spark" points=""/>
         </svg>
+        <p class="budget" id="budget" hidden></p>
         <div class="actions">
           <button data-action="power" data-arg="on">On</button>
           <button data-action="power" data-arg="off" class="danger" data-confirm="Switch the board's 5 V off?">Off</button>
@@ -663,6 +670,7 @@ function render(s) {
   const multi = (s.ports?.length ?? 0) > 1;
   const onCount = multi ? s.ports.filter((p) => p.power.on).length : 0;
   $("vbus").textContent = multi ? `${onCount} / ${s.ports.length} on` : s.dut.on ? "VBUS on" : "VBUS off";
+  renderBudget(s.budget, multi);
   document.querySelector(".card.console").hidden = multi;
   document.querySelectorAll("[data-single-only]").forEach((b) => (b.hidden = multi));
   if (multi && con.ws) con.ws.close();
@@ -677,7 +685,9 @@ function render(s) {
   const faultSlots = multi ? s.ports.filter((p) => p.fault).map((p) => p.slot).join(", ") : "";
   $("fault-text").textContent = faultSlots
     ? `Over-current on ${faultSlots}: the port's 5 V was switched off.`
-    : s.dut.latched
+    : s.budget?.lead_off
+      ? `DATA lead off: ${s.budget.lead_off}.`
+      : s.dut.latched
       ? "Over-current: the board's 5 V was switched off."
       : "The board is drawing too much current (VBUS in current limit).";
 
@@ -716,6 +726,24 @@ function render(s) {
   ].filter(Boolean).join(" · ");
   if (s.access) renderRights(s.access);
   renderCamera(s);
+}
+
+/*
+ * The bay's budget for its ports: node rev B in mW on the DATA lead (the
+ * hub's grant, or the bay's own limit), rev A in mA on its 5 V; why the DATA
+ * lead is off, when it is
+ */
+function renderBudget(b, multi) {
+  const line = $("budget");
+  line.hidden = !b || (b.unit !== "mW" && !multi);
+  if (line.hidden) return;
+  const amount = (v) => (b.unit === "mW" ? `${fix(v, 1)} W` : `${v} mA`);
+  line.dataset.st = b.lead_off ? "lead" : b.waiting ? "wait" : "";
+  line.textContent = b.lead_off
+    ? `DATA lead off: ${b.lead_off}`
+    : [`${b.granted ? "Granted by the hub" : "Budget"} ${amount(b.limit)}`, `using ${amount(b.draw)}`,
+      b.waiting ? `${plural(b.waiting, "port")} waiting for power` : "",
+      b.sheds ? `${plural(b.sheds, "port")} shed since boot` : ""].filter(Boolean).join(" · ");
 }
 
 const DONE = { on: "Power on", off: "Power off", cycle: "Power cycled", reset: "Target reset",
@@ -792,6 +820,11 @@ function portBar(p, board = null) {
       rel.dataset.yours = Boolean(p.lease.yours);
       info.append(rel);
     }
+  } else if (p.power.state === "shed" || p.power.state === "waiting") {
+    info.dataset.st = "wait";
+    info.textContent = p.power.state === "shed"
+      ? "Shed for power · back once there is room"
+      : "Waiting for power";
   } else {
     info.textContent = p.power.on ? "5 V on" : "5 V off";
   }

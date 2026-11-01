@@ -306,9 +306,14 @@ function bayTile(n) {
   a.dataset.state = n.state;
   a.dataset.id = n.id;
   a.dataset.camera = n.camera ?? "none";
+  // Node rev B reports its DATA lead (20-28 V) and keeps it within the grant, in watts
+  const lead = n.grant_mw != null && n.dut_mv > 6000;
   a.title = [`${[n.name, n.ip].filter(Boolean).join(" · ")} · node 0x${n.id.toString(16).padStart(2, "0")} · ${n.mac ?? ""}`,
-    CAM_LABEL[n.camera]].filter(Boolean).join("\n");
-  const ma = n.state === "lost" ? `${Math.round(n.seen_s)} s silent` : n.dut_ma ? `${fix(n.dut_ma, 2)} A` : "";
+    CAM_LABEL[n.camera], lead ? `DATA lead granted ${fix(n.grant_mw, 1)} W` : "",
+    n.waiting ? `${n.waiting} port${n.waiting === 1 ? "" : "s"} waiting for power` : ""].filter(Boolean).join("\n");
+  const ma = n.state === "lost" ? `${Math.round(n.seen_s)} s silent`
+    : lead ? `${fix(n.dut_mv * n.dut_ma / 1000, 1)} of ${fix(n.grant_mw, 1)} W${n.waiting ? ` · ${n.waiting} waiting` : ""}`
+      : n.dut_ma ? `${fix(n.dut_ma, 2)} A` : "";
   const cam = CAM_LABEL[n.camera] ? `<svg class="cam" viewBox="0 0 16 16" aria-label="${CAM_LABEL[n.camera]}">
     <path fill="currentColor" fill-rule="evenodd" d="M5.6 2.5h4.8l1 1.5H13a1.5 1.5 0 0 1 1.5 1.5v6.5A1.5 1.5 0 0 1 13 13.5H3A1.5 1.5 0 0 1 1.5 12V5.5A1.5 1.5 0 0 1 3 4h1.6l1-1.5ZM8 5.6a2.9 2.9 0 1 0 0 5.8 2.9 2.9 0 0 0 0-5.8Z"/></svg>` : "";
   a.innerHTML = `<span class="dot"></span><span class="pos">${n.pos}<small>${n.name || n.ip}</small>${cam}</span>

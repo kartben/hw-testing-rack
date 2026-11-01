@@ -147,7 +147,7 @@ that have a camera, red while someone watches (STATUS byte 6).
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | `pd` (state, contract, VBUS, the rows' current, the voltage asked for, the granted current, PG, the charger's PDOs), `rows` (state, current, nodes with position, IP, DUT state and current, `camera`: `none`, `ready` or `active`), `budget` (`limit_mw`/`limit_ma`: what the rows may draw, `total_ma`, `margin_pct`, `cap_mw`, `shed`: the rows shed now, `sheds` since boot, `shed_order`), `can` |
+| `GET /api/status` | `pd` (state, contract, VBUS, the rows' current, the voltage asked for, the granted current, PG, the charger's PDOs), `rows` (state, current, nodes with position, IP, DUT state and current, `camera`: `none`, `ready` or `active`, `grant_mw`: the last GRANT sent, null none, `waiting`: its DATA ports waiting for power), `budget` (`limit_mw`/`limit_ma`: what the rows may draw, `total_ma`, `margin_pct`, `cap_mw`, `shed`: the rows shed now, `sheds` since boot, `shed_order`), `can` |
 | `GET /api/events` | recent events, newest first (`age_s`, `kind`, `text`) |
 | `POST /api/row` | `{"row": "B", "action": "on" \| "off" \| "cycle", "ms": 2000}` |
 | `POST /api/pd` | `{"pref": "epr" \| "20v"}` |

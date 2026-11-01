@@ -460,6 +460,16 @@ static void slot_name(int port, char *buf, size_t size)
 	}
 }
 
+/* A port's power, in a word: waiting is for its turn or for power, shed for power */
+static const char *port_state(const struct port_info *pi)
+{
+	return pi->on        ? "on"
+	       : pi->latched ? "fault"
+	       : pi->shed    ? "shed"
+	       : pi->waiting ? "waiting"
+			     : "off";
+}
+
 /*
  * One object of GET /api/ports (full) or of /api/status's ports (short):
  * a DATA x4 port, or the one DUT as port 1 (no hub: busid 1-1)
@@ -514,18 +524,40 @@ static int port_json(char *buf, size_t size, int port, uint32_t ip, bool full)
 
 	if (!full) {
 		return snprintf(buf, size,
-				"{\"slot\":\"%s\",\"port\":%u,\"power\":{\"on\":%s,\"ma\":%d},"
+				"{\"slot\":\"%s\",\"port\":%u,\"power\":{\"on\":%s,\"ma\":%d,\"state\":\"%s\"},"
 				"\"fault\":%s,\"usb\":%s,\"usbip\":%s,\"lease\":%s}",
-				name, pi.slot, pi.on ? "true" : "false", pi.ma,
+				name, pi.slot, pi.on ? "true" : "false", pi.ma, port_state(&pi),
 				pi.latched ? "true" : "false", usb, usbip, lease_str);
 	}
 	return snprintf(buf, size,
 			"{\"slot\":\"%s\",\"port\":%u,\"hub_port\":%s%.0u,"
-			"\"power\":{\"on\":%s,\"mv\":%d,\"ma\":%d,\"mw\":%d,\"faults\":%u},"
+			"\"power\":{\"on\":%s,\"mv\":%d,\"ma\":%d,\"mw\":%d,\"faults\":%u,"
+			"\"state\":\"%s\"},"
 			"\"fault\":%s,\"usb\":%s,\"usbip\":%s,\"lease\":%s}",
 			name, pi.slot, port > 0 ? "" : "null", port > 0 ? pi.hub_port : 0,
-			pi.on ? "true" : "false", pi.mv, pi.ma, pi.mw, pi.faults,
+			pi.on ? "true" : "false", pi.mv, pi.ma, pi.mw, pi.faults, port_state(&pi),
 			pi.latched ? "true" : "false", usb, usbip, lease_str);
+}
+
+/*
+ * /api/status's "budget": what the bay's ports are switched on within (node
+ * rev B: mW on DATA_VIN, the hub's grant or the bay's own limit; rev A: mA on
+ * DUT_5V), what it draws, the ports waiting, the sheds; and why the DATA
+ * lead is off (rev B), null when it is not
+ */
+static int budget_status_json(char *buf, size_t size)
+{
+	struct ports_budget pb = {0};
+	bool board = ports_budget(&pb) == 0;
+	const char *why = dut_lead_str(dut_lead_state(NULL));
+	int n = snprintf(buf, size,
+			 "{\"unit\":\"%s\",\"limit\":%d,\"granted\":%s,\"reserve\":%d,\"draw\":%d,"
+			 "\"waiting\":%u,\"sheds\":%u,\"board\":%s,\"lead_off\":%s%s%s}",
+			 pb.power ? "mW" : "mA", pb.limit, pb.granted ? "true" : "false", pb.reserve,
+			 pb.draw, pb.waiting, pb.sheds, board ? "true" : "false", why ? "\"" : "",
+			 why ? why : "null", why ? "\"" : "");
+
+	return n < 0 || (size_t)n >= size ? -ENOMEM : n;
 }
 
 /* The ports as a JSON array: a DATA x4's, or the one DUT's */
@@ -583,6 +615,7 @@ static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 #if defined(CONFIG_BAY_CAMERA)
 		status_append("camera", camera_status_json);
 #endif
+		status_append("budget", budget_status_json);
 		status_append("ports", ports_status_json);
 	}
 
@@ -780,7 +813,7 @@ static const char *do_port_action(enum api_action what, int port, const struct a
 	case 0:
 		return NULL;
 	case -EBUSY: {
-		struct ports_budget pb;
+		struct ports_budget pb = {0};
 		const char *u;
 
 		(void)ports_budget(&pb);
@@ -2150,20 +2183,30 @@ PROMETHEUS_COUNTER_DEFINE(bay_aux_tx_bytes_total, "Bytes from the client to the 
 			  BAY_LABEL, &bay_collector);
 PROMETHEUS_COUNTER_DEFINE(bay_access_refused_total, "Connections and requests the rules refused",
 			  BAY_LABEL, &bay_collector);
+PROMETHEUS_GAUGE_DEFINE(bay_power_limit_watts,
+			"Node rev B: what the DATA ports are switched on within (the hub's grant)",
+			BAY_LABEL, &bay_collector);
+PROMETHEUS_GAUGE_DEFINE(bay_ports_waiting, "DATA ports wanted on and kept off, waiting for power",
+			BAY_LABEL, &bay_collector);
+PROMETHEUS_COUNTER_DEFINE(bay_ports_shed_total, "DATA ports shed for power since boot", BAY_LABEL,
+			  &bay_collector);
 
 static struct prometheus_metric *const metrics[] = {
 	&bay_dut_vbus_volts.base,   &bay_dut_current_amperes.base, &bay_dut_power_watts.base,
 	&bay_dut_power_on.base,     &bay_dut_fault.base,           &bay_dut_faults_total.base,
 	&bay_usb_devices.base,      &bay_usbip_sessions.base,      &bay_aux_rx_bytes_total.base,
-	&bay_aux_tx_bytes_total.base, &bay_access_refused_total.base,
+	&bay_aux_tx_bytes_total.base, &bay_access_refused_total.base, &bay_power_limit_watts.base,
+	&bay_ports_waiting.base,    &bay_ports_shed_total.base,
 };
 
 static void metrics_update(void)
 {
 	static struct status_doc s;
 	const char *label = bay_id()[0] != '\0' ? bay_id() : net_hostname_get();
+	struct ports_budget pb = {0};
 
 	status_fill(&s, 0);
+	(void)ports_budget(&pb);
 
 	ARRAY_FOR_EACH(metrics, i) {
 		metrics[i]->labels[0].value = label;
@@ -2181,6 +2224,9 @@ static void metrics_update(void)
 	prometheus_counter_set(&bay_aux_rx_bytes_total, (uint32_t)s.aux.rx);
 	prometheus_counter_set(&bay_aux_tx_bytes_total, (uint32_t)s.aux.tx);
 	prometheus_counter_set(&bay_access_refused_total, access_refused_total());
+	prometheus_gauge_set(&bay_power_limit_watts, pb.power ? MAX(pb.limit, 0) / 1000.0 : 0.0);
+	prometheus_gauge_set(&bay_ports_waiting, pb.waiting);
+	prometheus_counter_set(&bay_ports_shed_total, pb.sheds);
 }
 
 static int metrics_handler(struct http_client_ctx *client, enum http_transaction_status status,
