@@ -131,17 +131,12 @@ def plug_box(end: dict) -> tuple:
 
 
 def dataport_parts(rack) -> dict:
-    """The DATA port board's stand-in (parts/usb_plugs.scad), sized from config/rack.yaml › pcb.data_port, and
-    the DATA ×4 one (pcb.data_port_x4; its USB-C at x 0, placed once per port)."""
-    dp = rack.raw["pcb"]["data_port"]
-    defs = {"STYLE": "dataport", "BW": dp["size"][0], "BD": dp["size"][1], "BT": dp["thickness"],
-            "HOLES": dp["holes"], "USBX": dp["usb"], "PHX": dp["ph"]}
-    out = {f"dataport_{k}": ("parts/usb_plugs.scad", {**defs, "PIECE": k}, None) for k in ("pcb", "usb", "ph")}
+    """The DATA ×4 (v1) stand-in (parts/usb_plugs.scad), sized from config/rack.yaml › pcb.data_port_x4: its
+    board, its PH 8 on the right edge (its mouth out of it), its USB-C at x 0 (placed once per port)."""
     q = rack.raw["pcb"]["data_port_x4"]
-    x4 = {**defs, "BW": q["size"][0], "BD": q["size"][1], "BT": q["thickness"], "HOLES": q["holes"], "USBX": 0,
-          "PHR": q["lead"]}                         # its PH 8 on the right edge, its mouth out of it
-    out.update({f"dataport_{k}_x4": ("parts/usb_plugs.scad", {**x4, "PIECE": k}, None) for k in ("pcb", "usb", "ph")})
-    return out
+    x4 = {"STYLE": "dataport", "BW": q["size"][0], "BD": q["size"][1], "BT": q["thickness"], "HOLES": q["holes"],
+          "USBX": 0, "PHR": q["lead"]}
+    return {f"dataport_{k}_x4": ("parts/usb_plugs.scad", {**x4, "PIECE": k}, None) for k in ("pcb", "usb", "ph")}
 
 
 def header_pins(bd: dict) -> list[tuple[float, float, str]]:
@@ -673,8 +668,8 @@ def lead_to_board(e, mouth, z_low, x_run, depth=7.0, lift=4.0, drop=None, head=N
     drawer at z_low (over the camera-pod bosses) along x_run (clear of the chain's fixed run, which the
     drawer slides past), a flattened U-turn in front of the mouth (only `depth` deep: the tray's fascia is
     17 mm ahead of it with the drawer out), raised `lift` at its front so that, the drawer out, it passes
-    over the row cable lying on its tie anchors (y ≤ 9.4, z ≤ 10.8), in.  A plug facing the rear (the
-    single board's): back out of it, over to x_run in the rear bay, down.  drop = (x, floor z): a plug on
+    over the row cable lying on its tie anchors (y ≤ 9.4, z ≤ 10.8), in.  A plug facing the rear (a standing
+    board's J1): back out of it, over to x_run in the rear bay, down.  drop = (x, floor z): a plug on
     the board's right edge (the DATA ×4's): out of it, down just behind it into the window's side strip at
     x, then over to x_run under the drawer.  head: the lead's first points, out of the plug and down into the
     window at x_run, drawn by the caller (the standing v2's J1: an elastica); it goes on straight down from there."""
@@ -765,7 +760,7 @@ def camera_lead(j6, x0, row_h, tilt, lens, mount, depth, cp):
 def data_lead_short(j7, ph, x_run, top, x_up, drop=None):
     """A sled bay's DATA lead (no drag chain): out of the node's J7 (side entry, right edge), rising to the
     plenum's top (under the sled) at x_run, right of the node, back along it, over to the port block's
-    window and up through it at x_up, then along the rear wall into the single board's PH from the rear.
+    window and up through it at x_up, then along the rear wall into the DATA board's PH from the rear.
     drop = (x, floor z): a DATA ×4's PH on its right edge: up the window's side strip at x, just behind the
     plug, and into it."""
     p0, d = plug_exit(j7)
@@ -1194,12 +1189,10 @@ def build(rack) -> Path:
         add("cap_plate", (rack.unit_x(u), 0, 0), row=n_rows, layer="frameplates")
 
     port_wall_y = d["depth"] - d["rear_bay"]
-    data_ports = rack.data_port_x          # the DATA coupler's position(s) per drawer
-    port_z = d["bottom"] + 8.5            # lib/carrier.scad › PORT_Z: the DATA board's USB-C mouth
-    dp = raw["pcb"]["data_port"]
-    dp_x0 = data_ports[0] - dp["usb"]      # the DATA board in the drawer (lib/carrier.scad › DATA_PCB_X0, ..)
-    dp_y0 = port_wall_y                   # its front edge: the port wall's back face
-    dp_z = port_z - 1.63 - dp["thickness"]  # its underside, on the floor bosses (components up)
+    port_z = d["bottom"] + 8.5            # lib/carrier.scad › PORT_Z: the DATA ports' axis
+    dp_y0 = port_wall_y                   # the DATA boards' frame: the port wall's back face
+    # v1's underside, on the floor bosses (components up, its USB4105's mouth 1.63 over its top)
+    dp_z = port_z - 1.63 - raw["pcb"]["data_port_x4"]["thickness"]
     plate_x0, plate_y0 = rack.plate_origin
     plate_w, plate_d = rack.plate_size
     fixed = raw["chain"]["fixed"]
@@ -1279,14 +1272,14 @@ def build(rack) -> Path:
         dxw_ = x0 + rack.drawer_x0
         q4 = raw["pcb"]["data_port_x4"]
         # the cable window (drawer.scad): a rear strip from 1.5 mm right of the third boss to 1 mm short of the
-        # chain foot's boss, and a side strip from 1 mm right of the DATA ×4's edge.  The single board's lead
-        # comes up the rear strip's middle; the DATA ×4's (its PH on its right edge) drops into the side
+        # chain foot's boss, and a side strip from 1 mm right of the DATA ×4's edge.  A standing board's lead
+        # comes down the rear strip; v1's (its PH on its right edge) drops into the side
         # strip's middle, right behind its plug.  Under the drawer both run forwards at x_win: further left, a
         # U-turn in front of the open drawer's chain mouth would pass over the row cable on its tie anchor
         w_end = raw["chain"]["moving_x"] - rack.drawer_x0 - 5.5
         x_win = dxw_ + (q4["x0"] + q4["holes"][2][0] + 5.5 + w_end) / 2      # drawer.scad › wx: the Ø8 boss + 1.5
         x4_drop = (dxw_ + (q4["x0"] + q4["size"][0] + 1.0 + w_end) / 2, plenum + d["bottom"])
-        ph_z = plenum + dp_z + dp["thickness"] + 2.8
+        ph_z = plenum + dp_z + q4["thickness"] + 2.8
         ph_up = [0, 0, 1]
         # a standing board in the common cradle (x4_cradle.scad, its strip over the receptacles): the v2 in a
         # converted bay, the DATA ×6 in every other one (the single DATA board is retired, 2026-11-01)
