@@ -588,8 +588,7 @@ def hs_pairs():
       goes on down.  Each down between two clusters (DROP_DN) to its USBLC6: D+ into pin 4, D− on past it to pin 6.
     * USB-C 1 (the west face, DN6): west between C12 and the crystal's keep-out, north round it, west over the
       expander's lines and down the board's west edge to its USBLC6 over its receptacle.
-    The upstream pair (pins 58/59: boxed in by USB-C 1's pair, C13 and the crystal's keep-out, it leaves under the
-    hub's body) is left to the router.  Returns (tracks, vias)."""
+    The upstream pair: up_pair().  Returns (tracks, vias)."""
     tracks = []
     hp = (USB_W + 0.15) / 2
     sy, top = HY + 4.4125, HY + 4.9             # the hub's south row, the pairs' start under it
@@ -628,6 +627,34 @@ def hs_pairs():
     dp = keep([(HX - 4.4125, HY - 1.25), (HX - 4.9, HY - 1.25)] + offset(cl, -hp) + [(xe + hp + 0.4, p4[1]), p4])
     tracks += [("PORT1_DN", "F.Cu", USB_W, dn), ("PORT1_DP", "F.Cu", USB_W, dp)]
     return tracks, []
+
+
+def up_pair():
+    """The upstream pair, drawn: J1's pins 5 (D−) and 6 (D+) to the hub's pins 58 and 59 on its west face (the
+    router's weaved 0.5–2.3 mm apart between the exposed pad's vias, faults and enables beside it).  Boxed in on F.Cu
+    by USB-C 1's pair, C13 and the crystal (hs_pairs()), it dives by its pins under the hub's body to B.Cu and runs
+    east under the exposed pad (its last row of vias moved down 0.85 mm to let it by) and the 1.8 V and 3.3 V
+    capacitors east of the hub; past them it comes up to F.Cu and crosses over there (the hub has D− north of D+, J1
+    has D− south of D+), then runs east to J1, opening to J1's 2 mm pitch at its end.  Its lines 0.4 mm apart
+    throughout, the B.Cu run over the +3V3 plane, the F.Cu one over GND; both as long within 0.3 mm.  Returns
+    (tracks, vias, the B.Cu run's centreline, the F.Cu run's) for the bands (board())."""
+    hp = (USB_W + 0.15) / 2
+    p58, p59 = (HX - 4.4125, HY + 0.75), (HX - 4.4125, HY + 1.25)        # U1 pins 58 (D−), 59 (D+)
+    j5, j6 = (LEAD[0], LEAD[1] - 8.0), (LEAD[0], LEAD[1] - 10.0)        # J1 pins 5 (D−), 6 (D+)
+    yb = HY + 1.25                                                        # the B.Cu run's centreline
+    hn, hd = (HX - 3.25, HY + 0.6), (HX - 3.25, yb + hp)                 # the vias by the pins, under the body
+    cn, cd = (HX + 9.3, yb - hp), (HX + 8.4, yb + hp + 0.25)              # where it comes up, east of C14
+    fcl = [(HX + 8.6, yb - 0.4), (HX + 8.6, j5[1] - 0.2), (HX + 9.4, j5[1] - 1.0), (j5[0] - 1.3, j5[1] - 1.0)]
+    dn = [cn, (HX + 8.8, yb - hp - 0.5)] + offset(fcl, hp)[1:] + [(j5[0] - 0.5, j5[1]), j5]
+    dp = [cd] + offset(fcl, -hp) + [(j6[0] - 0.5, j6[1]), j6]
+    tracks = [("UP_DN", "F.Cu", USB_W, [p58, (hn[0] - 0.15, p58[1]), hn]),
+              ("UP_DP", "F.Cu", USB_W, [p59, (hd[0] - 0.45, p59[1]), (hd[0] - 0.25, hd[1]), hd]),
+              ("UP_DN", "B.Cu", USB_W, [hn, (hn[0] + 0.45, yb - hp), cn]),
+              ("UP_DP", "B.Cu", USB_W, [hd, (cd[0] - 0.25, yb + hp), cd]),
+              ("UP_DN", "F.Cu", USB_W, dn), ("UP_DP", "F.Cu", USB_W, dp)]
+    vias = [(net, *v, 0.5, 0.3) for net, v in (("UP_DN", hn), ("UP_DP", hd), ("UP_DN", cn), ("UP_DP", cd))]
+    # the bands (board()) take in the vias at both ends of the B.Cu run
+    return tracks, vias, [(hn[0] - 0.55, yb), (cn[0], yb)], [(fcl[0][0], yb + 0.65)] + fcl[1:]
 
 
 def conn_pairs():
@@ -678,7 +705,9 @@ def drawn():
     # its via
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [(HX - 2.2, HY - 11.038), (HX - 2.2, HY - 12.7), (HX - 1.5, HY - 12.7)]))
     hand_vias.append(("+3V3", HX - 1.5, HY - 12.7, 0.5, 0.3))
-    hand_vias += [("GND", HX + 1.2 * i, HY + 1.2 * j, 0.5, 0.3) for i in (-1, 0, 1) for j in (-1, 0, 1)]
+    # the exposed pad's GND vias, 3 × 3, the south row 2.05 mm under its centre: the upstream pair runs between it
+    # and the middle row (up_pair())
+    hand_vias += [("GND", HX + 1.2 * i, HY + j, 0.5, 0.3) for i in (-1, 0, 1) for j in (-1.2, 0.0, 2.05)]
     hand_tracks += [("GND", "F.Cu", 0.2, [(HX + 4.4125, HY + 2.75), (HX + 2.95, HY + 2.75), (HX + 2.25, HY + 2.05),
                                           (HX, HY)]),
                     ("GND", "F.Cu", 0.2, [(HX + 3.75, HY + 7.35), (HX + 3.25, HY + 7.35)]),
@@ -747,6 +776,9 @@ def drawn():
                         ("GND", "F.Cu", 0.25, [(x, HY + 6.88), (x, HY + 7.6)])]
         hand_vias += [("+3V3", x, HY + 3.75, 0.5, 0.3), ("GND", x, HY + 7.6, 0.5, 0.3)]
     t, v = hs_pairs()
+    hand_tracks += t
+    hand_vias += v
+    t, v, _, _ = up_pair()
     hand_tracks += t
     hand_vias += v
     t, v = conn_pairs()
@@ -866,6 +898,9 @@ def board() -> Board:
             {"name": f"core:usb{n}", "layers": ["F.Cu"], "tracks_only": True,
              "poly": offset(band, HS_BAND) + offset(band, -HS_BAND)[::-1]}
             for n, (_, band) in sorted(pair_centrelines().items())] + [
+            {"name": f"core:up-{layer[0]}", "layers": [layer], "tracks_only": True,
+             "poly": offset(band, HS_BAND) + offset(band, -HS_BAND)[::-1]}
+            for layer, band in (("B.Cu", up_pair()[2]), ("F.Cu", up_pair()[3]))] + [
             {"name": f"edge{i}", "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, W, 0.35), (W - 0.35, 0, W, H), (0, H - 0.35, W, H), (0, 0, 0.35, H),
