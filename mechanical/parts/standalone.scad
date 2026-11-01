@@ -155,9 +155,11 @@ module solo_lid() lid(S_W, S_D, S_ZL, S_LIDS, S_BTN, S_NTOP,
 
 // ---------------------------------------------------------------- Quad
 // the DATA ×4 v2 (config/rack.yaml › pcb.data_port_x4_v2; x4_cradle.scad): 100 × 70 × 1.6, its four USB-C on its
-// front face (mouths 6.4 off it), 2 × 6 headers at 26 over its bottom edge, VBUS LEDs at 33, D1, J1 on its rear face
+// front face (mouths 6.4 off it), 2 × 6 headers at 26 over its bottom edge, VBUS LEDs at 33, D1, J1 on its rear face.
+// Its USB-C and its headers at their own board x (layout B moves the USB-C onto the drawer's slots, not the headers)
 V2 = [100, 70, 1.6];
-V2_USB = [22, 40, 58, 76];  V2_USB_Z = 8.5;  V2_HDR_Z = 26;  V2_LED_Z = 33;  V2_D1 = [55.4, 67.6];
+V2_USB = DATA_V2_USB;  V2_HDR = DATA_V2_HDR_X;
+V2_USB_Z = 8.5;  V2_HDR_Z = 26;  V2_LED_Z = 33;  V2_D1 = [55.4, 67.6];
 Q_W = 107;  Q_D = 95.5;
 Q_VX = 3.5;  Q_VY = T + 1 + 6.4;  Q_VZ = FL;       // the v2: left end, front face (mouths 1 mm behind the wall), bottom
 Q_SLOT = [V2[2] + 0.3, 4];                // its ends' slots: width, depth
@@ -188,8 +190,8 @@ module quad_base() difference() {
     // front: the four DUT ports, a window over each header (its Dupont housing plugs in through it), the LEDs'
     // windows, the port numbers; the node's row at the top, the name
     for (k = [0 : 3]) {
-        x = Q_VX + V2_USB[k];
-        usbc_front(x, Q_VZ + V2_USB_Z);
+        usbc_front(Q_VX + V2_USB[k], Q_VZ + V2_USB_Z);
+        x = Q_VX + V2_HDR[k];
         translate([x - 7.62 - 0.6, -EPS, Q_VZ + V2_HDR_Z - 2.54 - 0.6]) cube([15.24 + 1.2, T + 2, 5.08 + 1.2]);
         translate([x - 5.2, -EPS, Q_VZ + V2_LED_Z]) rotate([-90, 0, 0]) cylinder(d = 3, h = T + 2);
         translate([x + 3, 0, Q_VZ + V2_LED_Z]) rotate([90, 0, 0]) deboss(str(k + 1), cap = 5.5);

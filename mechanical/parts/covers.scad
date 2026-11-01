@@ -40,11 +40,13 @@ SLOT = 0.6;
 
 // the box (box4): over the standing DATA ×4 v2 (config/rack.yaml › pcb.data_port_x4_v2)
 TOP4 = 72.5 + 2.4 + 2 + T;                 // the board's top, its cradle's hooks (0.8), 2 mm clear, the top
-V2H = 4;                                   // board x → drawer x
-HDR_X = [for (x = [22, 40, 58, 76]) V2H + x - 7.62];   // the 2 × 6 headers' left ends, their z round 28.5
+V2H = DATA_V2_X0;                          // board x → drawer x
+// the 2 × 6 headers' left ends (pcb.data_port_x4_v2.header: layout B keeps them while its USB-C move onto the
+// drawer's slots), their z round 28.5
+HDR_X = [for (x = DATA_V2_HDR_X) V2H + x - 7.62];
 HDR_Z = [28.5 - 2.54, 28.5 + 2.54];
 SLOT_M = 0.6;                              // round a Dupont block
-LEDS = concat([for (x = [22, 40, 58, 76]) [V2H + x - 5.2, 35.5]], [[59.4, 70.1]]);   // VBUS per port, and D1
+LEDS = concat([for (x = DATA_V2_HDR_X) [V2H + x - 5.2, 35.5]], [[59.4, 70.1]]);   // VBUS per port (by its header), and D1
 
 // one detent: the skirt's strip between the hinge post and the free end, the bump on its back near the free end
 module bump(xc) translate([xc + 3, SKIRT[1], SKIRT_Z0 + 1]) rotate([90, 0, 90]) linear_extrude(5)
