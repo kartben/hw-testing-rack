@@ -713,11 +713,11 @@ lead lost its INT (map B), and the node polls the DATA board over I²C.
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
 | IO1 | I2C_SCL | I²C0; also out on J7.7 to the drawer's DATA board | `&i2c0` |
 | IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (2.2k pull-ups, 100 kHz: the DATA lead; `i2c-400k.overlay` tries 400 kHz); also out on J7.6 to the drawer's DATA board (its devices keep off 0x40) | `&i2c0`, `ina226` |
-| IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.8 LED_K (100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
+| IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.6 LED_K (100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
 | IO8 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω, 10k pull-up) | `&spi2` `cs-gpios` |
-| IO9 | CAM_MISO | camera SPI2 MISO ← J6.6 (33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
-| IO10 | CAM_MOSI | camera SPI2 MOSI → J6.5 (33 Ω) | `&spi2` |
-| IO11 | CAM_SCK | camera SPI2 SCK → J6.3 (33 Ω), mode 0, 4 MHz | `&spi2` |
+| IO9 | CAM_MISO | camera SPI2 MISO ← J6.5 (33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
+| IO10 | CAM_MOSI | camera SPI2 MOSI → J6.4 (33 Ω) | `&spi2` |
+| IO11 | CAM_SCK | camera SPI2 SCK → J6.2 (33 Ω), mode 0, 4 MHz | `&spi2` |
 | IO12 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
 | IO13 | PC_DET | front port VBUS via 10k/20k: laptop plugged | `usb_mux` `pc-detect-gpios` |
 | IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
