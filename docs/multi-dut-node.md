@@ -99,6 +99,10 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 
 > The DATA ×4 board as designed (v1.0, `electronics/data-port-x4`,
 > [electronics.md](electronics.md#data-4-v10--4-layers-108--24-mm)), not built yet.
+>
+> From node rev B the lead carries VIN (20–28 V) through a TPS26600 eFuse instead of DUT_5V, and the
+> DATA boards make their own 5 V: the thresholds below, in mA at 5 V on the node's INA226, become a
+> power budget.  The power-on rule: [firmware.md](firmware.md#the-data-leads-power-on-rule-node-rev-b).
 
 - **Per port**, a TPS2553-1: limit ≈ 0.48–0.58 A, 7.5 ms deglitch, then
   latched off until EN toggles.  The firmware reports the port's fault and

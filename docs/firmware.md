@@ -48,7 +48,7 @@ drivers, Wi-Fi, the web pages' CSS, helpers and tooling.
 | Feature | Status | How |
 |---|---|---|
 | USB/IP export of the DUT | written | `CONFIG_USBIP=y`, `zephyr_uhc0` → OTG controller; client: `usbip attach -r bay-<id>.local -b 1-1` |
-| Power control | written | IO41 → TPS2553 EN, kept on at boot (pull-up: the board is on before the firmware runs); `bay power on/off/cycle` |
+| Power control | written for the 5 V switch; the rev B rule below still to do | IO41 → TPS2553 EN, kept on at boot (pull-up: the board is on before the firmware runs); `bay power on/off/cycle`.  Since the TPS26600 on VIN (node rev B), IO41 drives its SHDN, off at boot (pull-down): [the DATA lead's power-on rule](#the-data-leads-power-on-rule-node-rev-b) |
 | Over-current | written | FAULT on IO40 (interrupt): logged, counted, VBUS cut and latched after 1 s in current limit |
 | Telemetry | written | INA226 (0x40, 50 mΩ) through the sensor API → V, I, P in the shell, `GET /api/status` and Prometheus `/metrics` |
 | Modes | written | reads PC_DET (IO13) and SVC (IO15); `bay mode classic\|usbip` drives MUX_FORCE_PC (IO14), persisted in settings |
@@ -77,6 +77,37 @@ control in [its own section](../firmware/README.md#access-control).*
 *The DUT's serial console in the same page, recorded on native_sim (the
 node's real console code, Zephyr's shell sample as the DUT); details in
 [`firmware/README.md`](../firmware/README.md#serial-console).*
+
+### The DATA lead's power-on rule (node rev B)
+
+Not in the firmware yet.  From node rev B, J7.1 carries the rack's VIN (20–28 V) through a
+TPS26600 eFuse (U9: ≈ 1.6 A limit, 4–5 ms soft start, current limit with auto-retry), and the DATA
+board makes its own 5 V from it.  The eFuse is **off** until the firmware turns it on: its SHDN
+(IO41, `DUT_EN`) has a 10k pull-down, and the firmware holds IO41 low until the checks pass.
+
+1. **Before switching on**, with IO41 low: on only when SCL and SDA idle high (IO1, IO2, bus released)
+   and the node's own INA226 (0x40) answers.  A DATA lead plugged 1:1 instead of "Same direction"
+   holds SCL near 0.6 V (J7.7 lands on the DATA board's GND, through its ESD diode): keep it off and
+   report "DATA lead reversed?".  (That lead harms nothing even switched on: J7.1 meets the DATA
+   board's unconnected pin 1.)
+2. **Switching on**: IO41 high.  `~FLT` (IO40) is also low while the eFuse is off or ramping: ignore it
+   for 20 ms after IO41 goes high.  Then the INA226's bus voltage must reach VIN (within ≈ 1 V) and FLT
+   must be high; otherwise off again (a camera lead in J7 shorts J7.1 to GND through the pod: the
+   eFuse limits, FLT goes low, the bus voltage stays near 0).
+3. **The board answers**: the DATA board's expander (0x20) within 1 s (its converters start above
+   13.5 V, its hub's reset holds ≤ 560 ms).  No answer: switch off (no board, or the wrong lead on J7)
+   and probe again only on the next `bay power on`.
+4. **While on**: FLT low, or the board stops answering on I²C (two missed polls in a row), switches
+   IO41 low at once and keeps it low until the next `bay power on` (no auto-retry from the firmware: the eFuse already retries every
+   512 ms in a hard short).  The same when the lead is pulled: a board that goes away turns J7 off,
+   so a lead plugged into a live J7 meets 0 V.
+5. **No INT line** (map B: J7.8 is GND): poll the DATA board's expanders and INA226s every 10–20 ms.
+   The INA226 alerts run transparent (Mask/Enable LEN = 0) so each poll reads the live state, or the
+   poll reads Mask/Enable every time (that read clears a latched alert).  IO4 is free.
+6. **Budget**: the node's INA226 now reads the DATA board's VIN current (1 A at 20 V is 20 W, ≈ 4 A at
+   5 V): the DATA ×4 admission and shedding thresholds in mA at 5 V
+   ([multi-dut-node.md](multi-dut-node.md#power-budget)) become a power budget (the INA226's power
+   register), checked against the row's share of the rack's budget.
 
 ## Power hub application
 

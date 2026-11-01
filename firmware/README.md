@@ -713,11 +713,11 @@ lead lost its INT (map B), and the node polls the DATA board over I²C.
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
 | IO1 | I2C_SCL | I²C0; also out on J7.7 to the drawer's DATA board | `&i2c0` |
 | IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (2.2k pull-ups, 100 kHz: the DATA lead; `i2c-400k.overlay` tries 400 kHz); also out on J7.6 to the drawer's DATA board (its devices keep off 0x40) | `&i2c0`, `ina226` |
-| IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.6 LED_K (100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
+| IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.6 LED_K (J6.8 before node rev B; 100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
 | IO8 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω, 10k pull-up) | `&spi2` `cs-gpios` |
-| IO9 | CAM_MISO | camera SPI2 MISO ← J6.5 (33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
-| IO10 | CAM_MOSI | camera SPI2 MOSI → J6.4 (33 Ω) | `&spi2` |
-| IO11 | CAM_SCK | camera SPI2 SCK → J6.2 (33 Ω), mode 0, 4 MHz | `&spi2` |
+| IO9 | CAM_MISO | camera SPI2 MISO ← J6.5 (J6.6 before node rev B; 33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
+| IO10 | CAM_MOSI | camera SPI2 MOSI → J6.4 (J6.5 before node rev B; 33 Ω) | `&spi2` |
+| IO11 | CAM_SCK | camera SPI2 SCK → J6.2 (J6.3 before node rev B; 33 Ω), mode 0, 4 MHz | `&spi2` |
 | IO12 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
 | IO13 | PC_DET | front port VBUS via 10k/20k: laptop plugged | `usb_mux` `pc-detect-gpios` |
 | IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
@@ -729,9 +729,9 @@ lead lost its INT (map B), and the node polls the DATA board over I²C.
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
 | IO21 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
 | IO38 | LED_DIN | WS2812B (33 Ω), RMT channel 0 (the DevKitC-1 v1.1's own RGB LED pin) | `status_led` |
-| IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up): over 1.25 A on DUT_5V, the DATA ×4 port switched on last goes off (`src/ports.c`) | `ina226` `alert-gpios` |
-| IO40 | DUT_FLT_N | TPS26600 ~FLT, the DATA lead's eFuse (10k pull-up) | `dut_port` `fault-gpios` |
-| IO41 | DUT_EN | TPS26600 SHDN, the DATA lead's VIN (R17 10k pull-down: off without firmware) | `dut_port` `enable-gpios` |
+| IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up): over 1.25 A on the DATA lead's supply (DUT_5V; DATA_VIN, 20–28 V, from node rev B), the DATA ×4 port switched on last goes off (`src/ports.c`) | `ina226` `alert-gpios` |
+| IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up); from node rev B the TPS26600's ~FLT, also low while it is off or ramping | `dut_port` `fault-gpios` |
+| IO41 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware); from node rev B the TPS26600's SHDN (10k pull-down: **off** without firmware, [docs/firmware.md](../docs/firmware.md#the-data-leads-power-on-rule-node-rev-b)) | `dut_port` `enable-gpios` |
 | IO42 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
 | IO47 | AUX_TX | UART1 TX → AUX pin 3 (1k) | `&uart1` (`dut_port` `uart`) |
 | IO48 | AUX_BOOT_CTL | 2N7002 Q3 → AUX BOOT (open drain, 100k pull-down) | `dut_port` `boot-gpios` |
@@ -742,8 +742,8 @@ lead lost its INT (map B), and the node polls the DATA board over I²C.
 Each signal sits on the module edge that faces where it goes on the board: the right column feeds
 the DUT power block (I²C at its rear end) and POS_OUT runs to J2 (docs/can.md); the bottom row the
 AUX connector (right half), the mode logic and the camera's SPI (left half); the left column the
-rack bus block (CAN transceiver, POS input), SERVICE, the camera's CS and light and the DATA
-board's INT (IO4).  IO5 and IO6 are free.  The rack bus protocol runs on the CAN pins (`src/rack.c`, [docs/rack-protocol.md](../docs/rack-protocol.md)).
+rack bus block (CAN transceiver, POS input), SERVICE, the camera's CS and light.  IO4 (the DATA
+board's INT until node rev B), IO5 and IO6 are free.  The rack bus protocol runs on the CAN pins (`src/rack.c`, [docs/rack-protocol.md](../docs/rack-protocol.md)).
 Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad JTAG pins, free as GPIOs since
 the node debugs over USB-Serial-JTAG.  The map is chosen so that an ESP32-S3-DevKitC-1 v1.1
 (N8R8, the same module) takes it as is: every pin is on its headers, none is the octal PSRAM's
