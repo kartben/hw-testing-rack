@@ -4221,14 +4221,14 @@
 "part": "x4_cradle",
 "qty": 2,
 "grams_each": 12.0,
-"grams_total": 24.0,
+"grams_total": 23.9,
 "stl": "mechanical/stl/x4_cradle.stl"
 },
 {
 "part": "x4_strip",
 "qty": 2,
-"grams_each": 1.2,
-"grams_total": 2.5,
+"grams_each": 1.0,
+"grams_total": 2.1,
 "stl": "mechanical/stl/x4_strip.stl"
 },
 {

@@ -159,7 +159,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
 | tray | 8 | 82.0 | `mechanical/stl/tray.stl` |
 | x4_cradle | 2 | 12.0 | `mechanical/stl/x4_cradle.stl` |
-| x4_strip | 2 | 1.2 | `mechanical/stl/x4_strip.stl` |
+| x4_strip | 2 | 1.0 | `mechanical/stl/x4_strip.stl` |
 | cover_lid1 (optional) | 6 | 7.6 | `mechanical/stl/cover_lid1.stl` |
 | cover_box4 (optional) | 2 | 31.3 | `mechanical/stl/cover_box4.stl` |
 
