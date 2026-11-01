@@ -5,11 +5,12 @@
 //                      headers' Dupont blocks under a notch in the front, so it lifts off with the DUT leads
 //                      plugged; a window in front of each v2 port's LED and D1), vents over the board
 //
-// It hooks over the port wall's front face (lips between the U's, clear of the plugs' overmolds) and clicks
+// It hooks over the port wall's front face (lips past the end slots, clear of the plugs' overmolds) and clicks
 // into two pockets in the rear wall's inner face with two side-hinged tabs: each a strip of the rear skirt, free
 // at one end, run up through a slot in the top to the bed, so it bends in the print plane (1.2 % for its 0.7 mm
 // bump).  Lift it by its sides: the bumps let go both ways.  The flat lid over the single DATA port board
-// (cover_lid1) is retired with that board (2026-11-01): every bay's board stands.
+// (cover_lid1) is retired with that board (2026-11-01): every bay's board stands.  A standing plug's overmold
+// rises 1.2 over the walls' top: a notch over each slot clears it.
 // Drawer coordinates (parts/drawer.scad).  Print: top face down, PETG, no supports.
 include <../lib/carrier.scad>
 
@@ -20,10 +21,15 @@ PW = DRAWER_PORT_WALL_Y;                   // the port wall's back face; its fro
 X0 = 0.3;  X1 = DRAWER_W - 0.3;            // inside the drawer's outline
 YF = PW - DRAWER_WALL - 0.1 - T;           // the front lip / the box's front wall: just in front of the port wall
 YB = DRAWER_D - 0.3;
-PORT_XS = [for (u = DATA_X4_USB) DATA_X4_X0 + u];
-UHW = USBC_PLUG_CUT[0] / 2 + 1.2;          // the lips stay this far from each U's axis (the plugs' overmolds)
+PORT_XS = DATA_PORTS;                      // the port wall's slots (lib/carrier.scad), the plugs standing
+UHW = USBC_PLUG_CUT[1] / 2 + 1.2;          // the lips stay this far from each slot's axis (the plugs' overmolds)
 LIP = 3;                                   // their drop
-LIP_SEGS = [[DRAWER_WALL + 0.1, PORT_XS[0] - UHW], [PORT_XS[3] + UHW, DRAWER_W - DRAWER_WALL - 0.1]];
+LIP_SEGS = [[DRAWER_WALL + 0.1, PORT_XS[0] - UHW], [PORT_XS[len(PORT_XS) - 1] + UHW, DRAWER_W - DRAWER_WALL - 0.1]];
+// over each slot, through the cover's front (from in front of it to behind the port wall's back face): the
+// plug cut's width, up to its top (a standing overmold's top 0.5 under it)
+module plug_notches() for (x = PORT_XS)
+    translate([x - USBC_PLUG_CUT[1] / 2, YF - 1, Z0 - LIP - 1])
+        cube([USBC_PLUG_CUT[1], PW + 1.5 - (YF - 1), PORT_Z + USBC_PLUG_CUT[0] / 2 - (Z0 - LIP - 1)]);
 FOOT = [128, 172];                         // the chain foot's lock screw, reached from above
 
 // the detent: COVER_TABS (lib/carrier.scad) — a tab 14 long, the hinge post 2, the skirt's inner face 0.1 off
@@ -83,6 +89,7 @@ module box4() difference() {
     // the headers' Dupont blocks: one notch open at the bottom, so the box lifts off with the DUT leads plugged
     translate([HDR_X[0] - SLOT_M, YF - EPS, Z0 - LIP - 1]) cube([HDR_X[3] - HDR_X[0] + 15.24 + 2 * SLOT_M, T + 2 * EPS, HDR_Z[1] + SLOT_M - (Z0 - LIP - 1)]);
     for (l = LEDS) translate([l[0], YF - EPS, l[1]]) rotate([-90, 0, 0]) cylinder(d = 3.5, h = T + 2 * EPS);
+    plug_notches();
     for (x = [20 : 10 : 100]) translate([x - 1.25, 175, TOP4 - T - 1]) cube([2.5, 25, T + 2]);   // vents over the board
     translate([FOOT[0], FOOT[1], TOP4 - T - 1]) cylinder(d = 7, h = T + 2);
 }
