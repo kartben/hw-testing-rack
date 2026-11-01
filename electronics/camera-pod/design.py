@@ -118,6 +118,8 @@ def board() -> Board:
         # nets carrying power (≳ 0.5 A): their IC, connector and big pads connect solid to the pours, small
         # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
         "power_nets": {"GND": 1, "CAM_5V": 2},
+        # no net classes: the default 0.25 mm carries CAM_5V's ≤ 0.42 A (the Mega's 317 mA, the LEDs' 102 mA) and
+        # +3V3's ≤ 0.32 A with ≈ 2 °C rise; +3V3's only 0.187 mm stretch is C2's branch
         # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
         # (electronics/tools/decoupling.py, the layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
         # serve no one pin: left out

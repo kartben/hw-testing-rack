@@ -930,6 +930,8 @@ NETCLASSES = [
     {"name": "Power", "clearance": 0.15, "track_width": 0.6, "via_diameter": 0.8, "via_drill": 0.4,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
+     # +3V3 stays in Default: its current runs in In2's +3V3 area, its tracks are pin taps and a 0.4 mm feed to the
+     # front area (LEDs, SERVICE, U11's Vio); PC_VBUS only reaches R11, the PC-detect divider
      "_patterns": ["*VRACK", "*VIN", "+5V", "*DUT_5V_SW", "*DUT_5V", "*BUCK_SW", "*CAM_5V"]},
     {"name": "USB", "clearance": 0.15, "track_width": 0.2, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.25, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,

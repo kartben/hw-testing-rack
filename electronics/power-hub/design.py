@@ -534,7 +534,9 @@ NETCLASSES = [
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
      # VRACK carries its current in pours and In2 (see b.pcb["zones"]); its tracks only feed LEDs and sense
-     # VRACK reaches the buck in a hand-drawn 0.8 mm track: the router only adds thin sense / EN taps
+     # VRACK reaches the buck in a hand-drawn 0.8 mm track: the router only adds thin sense / EN taps.
+     # +5V and USB_VBUS stay in Default too: they carry ≤ 0.67 A (U3's 0.6 A, U6's 70 mA), ≈ 5 °C rise in 0.25 mm
+     # on an outer layer, ≤ 75 mV to U3 even from the console port
      "_patterns": ["*ROW_?", "*+5V_BUCK", "*BUCK_SW"]},
     {"name": "USB", "clearance": 0.15, "track_width": 0.2, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.25, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
