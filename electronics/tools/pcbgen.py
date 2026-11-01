@@ -80,6 +80,14 @@ DRU_POWER_THT = """
 POWER_PARTS = ("U", "J", "L")
 POWER_PAD_MM2 = 2.5
 
+# the name prefix of the footprint keep-outs (b.pcb["keepouts"] with "footprints": True, PcbBuilder.keepout())
+PARTS_KEEPOUT = "parts:"
+
+
+def _keepout_name(ko: dict) -> str:
+    name = ko.get("name", "keepout")
+    return PARTS_KEEPOUT + name if ko.get("footprints") and not name.startswith(PARTS_KEEPOUT) else name
+
 # b.pcb["edge_parts"]: footprints that sit on the outline on purpose (side-entry connector mouths,
 # USB-C receptacles, the ESP32 antenna edge).  Their own silkscreen outline crosses the board edge;
 # the fab clips it, so only that pairing is let through (every other silkscreen check still runs).
@@ -369,7 +377,8 @@ class PcbBuilder:
 
     # -------------------------------------------------------------- zones
     def zone(self, layer, net: str | None, poly, priority=0, keepout=False, name="", layers=None, tracks_only=False,
-             connection="thermal", vias_only=False, fills_only=False, holes=None, clearance=None, min_width=None):
+             connection="thermal", vias_only=False, fills_only=False, holes=None, clearance=None, min_width=None,
+             footprints=False):
         z = pcbnew.ZONE(self.board)
         z.SetLayer(layer)
         if net:
@@ -390,12 +399,15 @@ class PcbBuilder:
             # tracks_only: keep the router's tracks out but let vias and the GND pour in
             # (exported to the DSN as a wire_keepout); vias_only: keep vias out, tracks and pours in
             # (a via_keepout: e.g. a plane's narrow neck that a row of vias would cut); fills_only: keep the
-            # pours out, tracks and vias in (not exported to the DSN: e.g. no copper under an inductor's body)
-            z.SetDoNotAllowTracks(not (vias_only or fills_only))
-            z.SetDoNotAllowVias(not (tracks_only or fills_only))
-            z.SetDoNotAllowZoneFills(not (tracks_only or vias_only))
+            # pours out, tracks and vias in (not exported to the DSN: e.g. no copper under an inductor's body);
+            # footprints: no part in it, its courtyard included (DRC's items_not_allowed: a printed part's seat),
+            # copper free to pass (not exported to the DSN either: it keeps neither tracks nor vias out)
+            copper = not footprints
+            z.SetDoNotAllowTracks(copper and not (vias_only or fills_only))
+            z.SetDoNotAllowVias(copper and not (tracks_only or fills_only))
+            z.SetDoNotAllowZoneFills(copper and not (tracks_only or vias_only))
             z.SetDoNotAllowPads(False)
-            z.SetDoNotAllowFootprints(False)
+            z.SetDoNotAllowFootprints(footprints)
             ls = pcbnew.LSET()
             for l in layers or self.copper_layers():
                 ls.AddLayer(l)
@@ -533,13 +545,21 @@ class PcbBuilder:
                               layers=[layer], tracks_only=True)
         if which != "deferred":
             for ko in self.b.pcb.get("keepouts", []):
-                layers = [getattr(pcbnew, n.replace(".", "_")) for n in ko["layers"]] if "layers" in ko else None
-                self.zone(pcbnew.F_Cu, None, ko["poly"], keepout=True, name=ko.get("name", "keepout"),
-                          layers=layers, tracks_only=ko.get("tracks_only", False),
-                          vias_only=ko.get("vias_only", False), fills_only=ko.get("fills_only", False))
+                self.keepout(ko)
             for ref, num in self.b.pcb.get("fanout", []):
                 _, _, poly = fanout_geometry(self.board, ref, num)
                 self.zone(pcbnew.F_Cu, None, poly, keepout=True, name=f"fanout:{ref}.{num}")
+
+    def keepout(self, ko: dict):
+        """One of b.pcb["keepouts"]: {"poly", "name", "layers" (all copper by default), and at most one of
+        "tracks_only", "vias_only", "fills_only", "footprints"}.  A footprint keep-out ("footprints": True: no part
+        where a printed part sits, e.g. the cradle's slots and T-heads) is named "parts:<name>": it stays on the
+        routed board (the "core:" and "fanout:" areas are dropped at the session's import) and write_rules() keeps
+        it in step with the design."""
+        layers = [cu(n) for n in ko["layers"]] if "layers" in ko else None
+        return self.zone(pcbnew.F_Cu, None, ko["poly"], keepout=True, name=_keepout_name(ko), layers=layers,
+                         tracks_only=ko.get("tracks_only", False), vias_only=ko.get("vias_only", False),
+                         fills_only=ko.get("fills_only", False), footprints=ko.get("footprints", False))
 
     # -------------------------------------------------------------- fixed vias
     def vias(self):
@@ -707,7 +727,40 @@ def write_rules(b: Board, outdir: Path, netclasses=None) -> Path:
     dru.write_text(dru_text(b, netclasses, [str(n) for n in board.GetNetsByName().keys()]), encoding="utf-8")
     write_via_rules(path.with_suffix(".kicad_pro"), b.pcb.get("severities"))
     print("rules:", dru.name, path.with_suffix(".kicad_pro").name)
+    print("footprint keep-outs:", sync_parts_keepouts(b, outdir))
     return dru
+
+
+def sync_parts_keepouts(b: Board, outdir: Path) -> str:
+    """The routed board's footprint keep-outs ("parts:" rule areas, PcbBuilder.keepout()) as the design declares
+    them now: left alone when they match (outline, layers), else all dropped from the file and drawn again.
+    Rule areas only: no copper moves."""
+    path = outdir / f"{b.name}.kicad_pcb"
+    want = [ko for ko in b.pcb.get("keepouts", []) if ko.get("footprints")]
+    board = pcbnew.LoadBoard(str(path))
+    copper = copper_of(board)
+
+    def key(name, layers, pts):
+        return (name, tuple(sorted(layers)), tuple((round(x, 4), round(y, 4)) for x, y in pts))
+
+    have = sorted(key(z.GetZoneName(), list(z.GetLayerSet().Seq()),
+                      [(pcbnew.ToMM(p.x), pcbnew.ToMM(p.y)) for p in
+                       (z.Outline().Outline(0).CPoint(i) for i in range(z.Outline().Outline(0).PointCount()))])
+                  for z in board.Zones() if z.GetIsRuleArea() and z.GetZoneName().startswith(PARTS_KEEPOUT))
+    wanted = sorted(key(_keepout_name(ko), [cu(n) for n in ko["layers"]] if "layers" in ko else copper, ko["poly"])
+                    for ko in want)
+    if have == wanted:
+        return f"{len(have)} as declared"
+    path.write_text(_strip_zones(path.read_text(encoding="utf-8"), PARTS_KEEPOUT), encoding="utf-8")
+    board = pcbnew.LoadBoard(str(path))
+    pb = PcbBuilder.__new__(PcbBuilder)
+    pb.b, pb.outdir, pb.path, pb.board, pb.nets = b, outdir, path, board, {}
+    pb.w, pb.h = b.pcb["size"]
+    pb.layers = b.pcb.get("layers", 2)
+    for ko in want:
+        pb.keepout(ko)
+    pcbnew.SaveBoard(str(path), board)
+    return f"{len(have)} dropped, {len(want)} drawn"
 
 
 # the project's own 3D models (electronics/lib/3dmodels), relative to each board's project folder

@@ -7,7 +7,7 @@
 #   tools/kicad.sh bay-node --ses [--fab]   # re-import the last Freerouting session (no re-route)
 #   tools/kicad.sh bay-node --tidy [--fab]  # straighten the routed PCB's router tracks as after --ses (no re-route)
 #   tools/kicad.sh bay-node --clean [--fab] # take its antennas off (dead ends, doubles, slivers; no re-route)
-#   tools/kicad.sh bay-node --rules         # rewrite its rules from the design (.kicad_dru, .kicad_pro DRC settings), DRC
+#   tools/kicad.sh bay-node --rules         # its rules from the design (.kicad_dru, DRC settings, footprint keep-outs), DRC
 #   tools/kicad.sh bay-node --dsn           # placed PCB + build/<board>.dsn, no routing (tools/route_farm.py)
 #   tools/kicad.sh bay-node --check [--fab] # ERC + read-only DRC of the PCB as it is (CI), + fab outputs
 #   tools/kicad.sh bay-node --fab           # same as --check --fab

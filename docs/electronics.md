@@ -114,9 +114,13 @@ every board is built and checked with them; a board that declares nothing gets n
 - `b.pcb["severities"]` (`{check: error | warning | ignore}`) sets one board's DRC severities in its
   `.kicad_pro`, by KiCad's check names; an unknown check or severity stops the build.  The generator
   itself silences nothing.
+- A keep-out with `"footprints": True` (`b.pcb["keepouts"]`) is a rule area that bars parts, their
+  courtyards included (DRC's `items_not_allowed`), and lets copper through: where a printed part
+  holds the board.  Named `parts:<name>`, it stays on the routed board, stays out of Freerouting's DSN,
+  and `--rules` keeps it in step with the design.
 
-`tools/kicad.sh <board> --rules` rewrites a routed board's `.kicad_dru` and its `.kicad_pro` DRC settings
-from the design, then runs DRC, without touching its copper.
+`tools/kicad.sh <board> --rules` rewrites a routed board's `.kicad_dru`, its `.kicad_pro` DRC settings
+and its footprint keep-outs from the design, then runs DRC, without touching its copper.
 
 How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 

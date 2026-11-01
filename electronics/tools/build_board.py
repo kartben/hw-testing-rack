@@ -500,7 +500,8 @@ def main():
     ap.add_argument("--clean", action="store_true", help="take the antennas off the PCB as it is (dead ends, lone "
                     "vias, doubled tracks, slivers: pcbgen.clean_antennas, as after --ses and --tidy), no re-route")
     ap.add_argument("--rules", action="store_true", help="rewrite the rules of the PCB as it is from the design "
-                    "(.kicad_dru, the .kicad_pro's DRC settings: pcbgen.write_rules), then DRC; no re-route")
+                    "(.kicad_dru, the .kicad_pro's DRC settings, footprint keep-outs: pcbgen.write_rules), then DRC; no "
+                    "re-route")
     a = ap.parse_args()
     mod = load_design(a.board)
     b = mod.board()
