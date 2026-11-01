@@ -22,7 +22,6 @@ rear face.
 
 from __future__ import annotations
 
-import math
 import os
 import sys
 from pathlib import Path
@@ -44,35 +43,32 @@ TOP_Z = CFG["top_z"]                # KiCad x = drawer x − x0, y = top_z − d
 CRADLE = CFG["cradle"]              # each end's band in the cradle's slots: no parts on either face
 _NW, _ND = CFG["notches"]["size"]
 NOTCHES = [(x - CFG["x0"] - _NW / 2, x - CFG["x0"] + _NW / 2, H - _ND) for x in CFG["notches"]["x"]]
-CORNER = CFG["corner_notch"]        # the bottom-right corner's cut (width, height): the chain foot's boss
+CORNER = CFG["corner_notch"]        # the bottom-right corner's cut (width, height): none at 100 mm
 USBS = CFG["usb"]                   # board x of the six vertical USB-C
 USB_Y = TOP_Z - CFG["usb_z"]        # their axis (z 11, the port wall's openings)
-LEAD = (CFG["lead"][0], TOP_Z - CFG["lead"][1] - 7.0)      # J1's pin 1, its pins running down
+LEAD = (CFG["lead"][0], TOP_Z - CFG["lead"][1] + 7.0)      # J1's pin 1, its pins running up
 VIN_J = (CFG["vin"][0], TOP_Z - CFG["vin"][1])             # J3's pin 2 (GND), pins 1 and 3 (VIN) either side
-# The placement (KiCad mm): see board()
-HX, HY = 103.0, 39.5                # the hub, turned 90°: DN pins south, down into the corridor
+# The placement (KiCad mm): the six ports along the bottom, each its power cluster over its USB-C; over them the
+# corridor the hub's pairs run in; along the top converter A (west), the expander, the hub (middle: its pairs fan
+# out both ways), the 3.3 V LDO, converter B (east); the two leads' connectors at the east end, over the rear
+# cable window, J1 under converter B and J3 under it, west of J1
+HX, HY = 50.0, 32.0                 # the hub, turned 90°: DN pins south, down into the corridor; DN3 over USB-C 4
 XT = (HX - 8.9, HY + 1.75)          # its 24 MHz crystal
-EXP = (10.4, 52.2)                  # the TCA9535 (EN and FAULT_N of the six ports)
-LDO = (107.0, 5.5)                  # U3, the 3.3 V LDO, in the top-right corner, tab east
-BULK = (109.7, 52.6)                # VIN's 33 µF (7.7 mm tall: over the port wall's 16 mm), J3 right under it
-CL_Y = 56.7                         # each port's power cluster: its frame's top
-PWR_SPLIT = 64.6                    # the power plane: +3V3 above, +5V_A / +5V_B under (MID_X between them)
+EXP = (30.0, 20.0)                  # the TCA9535 (EN and FAULT_N of the six ports), west of the hub
+LDO = (68.8, 4.6)                   # U3, the 3.3 V LDO, between the hub and converter B, near J1.8
+BULK = (80.5, 24.0)                 # VIN's 33 µF (7.7 mm tall: over the port wall's 16 mm), J3 right over it
+CL_Y = 46.7                         # each port's power cluster: its frame's top
+PWR_SPLIT = 54.6                    # the power plane: +3V3 above, +5V_A / +5V_B under (MID_X between them)
 MID_X = 50.0
-UP_Y = 66.5                         # over each receptacle: its VBUS 22 µF, CC resistors, LED
-# the hub's pairs (hs_pairs()): each port's lane in the corridor over the clusters (its centreline), and, for
-# USB-C 2–6, its USBLC6 west of the receptacle and its D− on the way down to it (D+ 0.4 mm east): clear of the
-# R(k+2)/R(k+3) pads of the cluster west of it and of its own USBLC6's pin 4 and 5 pads
-LANES = {1: 48.5, 2: 49.6, 3: 50.7, 4: 51.8, 5: 52.9, 6: 54.0}
+UP_Y = 56.5                         # over each receptacle: its VBUS 22 µF, CC resistors, LED
+# each USB-C's USBLC6 (2–6 west of the receptacle, between two clusters: the pair comes straight down to it)
 ESD_PX = {n: USBS[n - 1] - (6.9 if n == 2 else 7.4) for n in range(2, 7)}
-DROP_DN = {n: 18.44 if n == 2 else USBS[n - 1] - 9.6 for n in range(2, 7)}
-# the two 5 V converters: the bay node's LMR51625 block (bay-node/design.py) at an offset, the node's own layout:
-# A at the west end, B in the bottom-right corner (behind the port wall: nothing in it over 3 mm)
-BUCKS = {"A": (2.4, -7.0), "B": (92.0, 25.4)}
-# their feedback dividers (100k over 18k): B's where the node has them, over its converter; A's beside its
-# converter's west side
-FB_R = {"A": ((6.9, 35.8, 270), (6.9, 38.8, 270)),
-        "B": ((4 + BUCKS["B"][0], 40.6 + BUCKS["B"][1], 0), (4 + BUCKS["B"][0], 42.2 + BUCKS["B"][1], 180))}
-J1_ROT = 270
+# the two 5 V converters: the bay node's LMR51625 block (bay-node/design.py) at an offset, the node's own layout,
+# along the top edge: A in the top-left corner, B in the top-right one (each over its plane tongue, down the
+# cradle's band at its end); their feedback dividers (100k over 18k) beside each converter's west side
+BUCKS = {"A": (2.4, -39.7), "B": (74.0, -39.7)}
+FB_R = {key: ((dx + 4.5, 3.1, 270), (dx + 4.5, 6.1, 270)) for key, (dx, _) in BUCKS.items()}
+J1_ROT = 90
 
 
 # The hub crystal's block, the v2's (the layout review, 2026-10-28): its lines drawn on F.Cu with no via, its
@@ -160,18 +156,18 @@ ARRAYS = {"10k": ("4D02WGJ0103TCE", "C25725")}
 # ref: (net, name, pad Ø, x, y); each sheet places its own (testpoints())
 TPS = {
     # the supplies: VIN, +5V_A, +5V_B, +5V_L, +3V3, with GND
-    "TP7": ("+3V3", "+3V3", 1.5, 104.0, 11.0), "TP8": ("GND", "GND", 1.5, 16.0, 44.6),
-    "TP9": ("+5V_A", "+5V_A", 1.5, 8.0, 44.6), "TP41": ("+5V_B", "+5V_B", 1.5, 112.5, 69.5),
-    "TP42": ("VIN", "VIN", 1.5, 100.0, 62.5), "TP43": ("GND", "GND", 1.5, 103.0, 62.5),
-    "TP44": ("+5V_L", "+5V_L", 1.5, 88.6, 34.0),
+    "TP7": ("+3V3", "+3V3", 1.5, LDO[0], 10.6), "TP8": ("GND", "GND", 1.5, 17.0, 15.6),
+    "TP9": ("+5V_A", "+5V_A", 1.5, 20.0, 15.6), "TP41": ("+5V_B", "+5V_B", 1.5, 90.5, 10.6),
+    "TP42": ("VIN", "VIN", 1.5, 78.6, 22.6), "TP43": ("GND", "GND", 1.5, 81.6, 22.6),
+    "TP44": ("+5V_L", "+5V_L", 1.5, 85.4, 11.4),
     # the hub's reset and core rail, with a GND
     "TP20": ("HUB_RST_N", "HUB RST", 1.0, HX - 0.5, HY - 14.0), "TP21": ("GND", "GND", 1.5, HX + 3.5, HY - 14.9),
     "TP22": ("HUB_1V8", "1V8", 1.5, HX + 5.0, HY + 4.25),
     # the board side of the lead's I²C and INT, with a GND
-    "TP23": ("INT", "INT", 1.0, LEAD[0] + 5.8, LEAD[1] - 0.5), "TP24": ("SDA", "SDA", 1.0, LEAD[0] + 5.8, LEAD[1] + 2.0),
-    "TP25": ("SCL", "SCL", 1.0, LEAD[0] + 5.8, LEAD[1] + 4.5), "TP26": ("GND", "GND", 1.5, LEAD[0] + 5.8, LEAD[1] + 7.3),
+    "TP23": ("INT", "INT", 1.0, LEAD[0] + 4.0, LEAD[1] - 0.5), "TP24": ("SDA", "SDA", 1.0, LEAD[0] + 4.0, LEAD[1] - 3.0),
+    "TP25": ("SCL", "SCL", 1.0, LEAD[0] + 4.0, LEAD[1] - 5.5), "TP26": ("GND", "GND", 1.5, LEAD[0] + 4.0, LEAD[1] - 8.3),
     # GND by the expander
-    "TP27": ("GND", "GND", 1.5, 19.6, 44.6),
+    "TP27": ("GND", "GND", 1.5, EXP[0] - 4.0, EXP[1] + 2.6),
     # each port's FAULT_N (port(): TP{k + 1}) by its switch
     **{f"TP{100 * n + 1}": (f"PORT{n}_FLT_N", f"FLT{n}", 1.0, USBS[n - 1] + 4.0, CL_Y + 6.5) for n in range(1, 7)},
 }
@@ -225,14 +221,15 @@ def port(b: Board, n: int):
     s.tag(v5, (20, 18), "up")
     s.wire((20, 18), (20, 21), f"{sw}.IN")
     # the cluster in a 12 × 8 mm frame over the port's USB-C (x0, y0 its corner), the v2's; port 1's 0.6 mm east, its
-    # pair coming down the west edge past its ILIM resistor
+    # pair coming down the west edge past its ILIM resistor (upright there: clear of the cradle's band)
     x0, y0 = cx - (4.4 if n == 1 else 5.0), CL_Y
     part(s, sw, "vbus_sw_latch", {"IN": v5, "GND": "GND", "EN": p + "EN", "~{FAULT}": p + "FLT_N",
                                   "ILIM": p + "ILIM", "OUT": p + "5V_SW"}, pcb=P(x0 + 2.45, y0 + 2.2, 180),
          sch=at(30, 22, fields=(-4, -4)))
     C(s, f"C{k + 1}", "1u", v5, "GND", size="0402", pcb=P(x0 + 5.13, y0 + 2.9, 90), sch=at(15, 24))
     s.wire(f"C{k + 1}.1", (15, 21), (20, 21))
-    R(s, f"R{k + 1}", "47k", p + "ILIM", "GND", size="0402", pcb=P(x0 - 0.97, y0 + 2.2, 180), sch=at(22, 28))
+    R(s, f"R{k + 1}", "47k", p + "ILIM", "GND", size="0402",
+      pcb=P(x0 - 0.97, y0 + 2.2, 180) if n > 1 else P(x0 - 0.5, y0 + 2.2, 90), sch=at(22, 28))
     s.wire(f"{sw}.ILIM", (22, 24), f"R{k + 1}.1")
     # the port is off until the node switches it on
     R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(x0 + 9.75, y0 + 3.65, 90), sch=at(14, 36))
@@ -252,8 +249,8 @@ def port(b: Board, n: int):
     # Over the receptacle, between the cluster and it: VBUS's bulk capacitor, the CC resistors, the VBUS LED and
     # its 1k (on the switched 5 V before the shunt: the INA226 doesn't count it).  Port 1, whose USBLC6 stands
     # here too (the cradle's band leaves it no room beside its receptacle), has them shifted east of it
-    ux = [cx - 2.6, cx - 0.55, cx + 0.55, cx + 2.4, cx + 4.0] if n > 1 else [cx - 0.9, cx + 0.75, cx + 1.85, cx + 3.7,
-                                                                            cx + 5.3]
+    ux = [cx - 2.6, cx - 0.55, cx + 0.55, cx + 2.4, cx + 4.0] if n > 1 else [cx - 0.6, cx + 1.05, cx + 2.15, cx + 4.0,
+                                                                            cx + 5.6]
     C(s, f"C{k + 2}", "22u", p + "VBUS", "GND", size="0805", pcb=P(ux[0], UP_Y, 90), sch=at(55, 35.5))
     s.wire(f"C{k + 2}.1", (55, 33))
     C(s, f"C{k + 3}", "100n", "+3V3", "GND", size="0402", pcb=P(x0 + 8.03, y0 + 0.9, 180), sch=at(80, 18))
@@ -278,7 +275,7 @@ def port(b: Board, n: int):
     # pair comes straight down between two clusters.  Port 1's west of its receptacle, over it (the cradle's band
     # beside it): its pair comes down the board's west edge.  Its VBUS 100 nF right over its pin 5.  ESD_PX: each
     # pair's way down between its pins' pads and the cluster west of it
-    ex_ = (ESD_PX[n], USB_Y, 180) if n > 1 else (cx - 4.2, UP_Y - 0.25, 180)
+    ex_ = (ESD_PX[n], USB_Y, 180) if n > 1 else (cx - 3.65, UP_Y - 0.25, 180)
     part(s, esd, "esd", {"1": p + "CONN_DN", "6": p + "DN", "3": p + "CONN_DP", "4": p + "DP", "5": v5,
                          "2": "GND"}, pcb=P(*ex_), sch=at(84, 76))
     s.wire(f"{usb}.B7", f"{esd}.1")
@@ -316,8 +313,8 @@ def power_sheet(b: Board):
     part(s, "C60", "cap33u50", {"1": "VIN", "2": "GND"}, "33u", pcb=P(*BULK, 0),
          sch=at(40, 30))
     # EN 100k/10k, as the node's: both converters start above 13.5 V and stop below 10.8 V; by converter B
-    R(s, "R50", "100k", "VIN", "BUCK_EN", size="0402", pcb=P(97.1, 61.6, 90), sch=at(29, 41.5))
-    R(s, "R51", "10k", "BUCK_EN", "GND", size="0402", pcb=P(98.2, 61.6, 90), sch=at(29, 48.5))
+    R(s, "R50", "100k", "VIN", "BUCK_EN", size="0402", pcb=P(76.4, 10.6, 90), sch=at(29, 41.5))
+    R(s, "R51", "10k", "BUCK_EN", "GND", size="0402", pcb=P(77.5, 10.6, 90), sch=at(29, 48.5))
     s.wire("R50.2", "R51.1")
     for i, (key, out, x0) in enumerate((("A", "+5V_A", 70), ("B", "+5V_B", 140))):
         dx, dy = BUCKS[key]
@@ -382,9 +379,9 @@ def hub_sheet(b: Board):
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V_L"}, in_bom=False, on_board=False, sch=at(28, 16))
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False, sch=at(34, 16))
     # the lead's bulk, the v2's C1 (22 µF 1206), by pin 8
-    C(s, "C1", "22u", "+5V_L", "GND", size="1206", pcb=P(LEAD[0] - 3.4, LEAD[1] + 12.5, 90), sch=at(64, 30))
+    C(s, "C1", "22u", "+5V_L", "GND", size="1206", pcb=P(LEAD[0] - 2.4, LEAD[1] - 13.0, 90), sch=at(64, 30))
     part(s, "U4", "esd4", {"D1+": "LEAD_SDA", "D1-": "LEAD_SCL", "D2+": "LEAD_INT", "D2-": None, "GND": "GND"},
-         pcb=P(LEAD[0] + 2.75, LEAD[1] - 0.6, 90), sch=at(48, 30, fields=(-3, -6)))
+         pcb=P(LEAD[0] + 3.25, LEAD[1] + 0.9, 90), sch=at(48, 30, fields=(-3, -6)))
 
     s.frame("3.3 V for the hub, the expander and the INA226s (AP2114H, SOT-223 on copper)",
             6, 56, 70, 86)
@@ -413,10 +410,10 @@ def hub_sheet(b: Board):
         hub[f"OCS{n}_N"] = None
     for n in range(4, 8):
         hub[f"LED_B{n}_N"] = None
-    # its south face's DN1–5 to USB-C 2–6: the pairs come down into the corridor over the clusters and turn west in
-    # lanes, the lowest dropping off first, none crossing (drawn: hs_pairs()).  Its west face's DN6 to USB-C 1: west
-    # over the crystal's keep-out, north round it and down its west side into the corridor's top lane.  DN7
-    # declared but unused, left enabled with nothing on it (the v2's ports 6 and 7)
+    # its south face's DN1–5 to USB-C 2–6: the pairs come down into the corridor over the clusters, DN3 straight on
+    # down to USB-C 4, DN1–2 turning west and DN4–5 east in lanes, none crossing.  Its west face's DN6 to USB-C 1:
+    # west over the crystal's keep-out and down the board's west edge.  DN7 declared but unused, left enabled with
+    # nothing on it (the v2's ports 6 and 7)
     for dn in range(1, 7):
         n = dn + 1 if dn <= 5 else 1
         hub[f"USBDN{dn}_DP/PRT_DIS_P{dn}"] = f"PORT{n}_DP"
@@ -478,10 +475,10 @@ def hub_sheet(b: Board):
     s.frame("I²C isolation: open with the board's 3.3 V off (the node's pull-ups can't feed it)", 172, 106, 232, 148)
     for i, (q, r, line, val) in enumerate((("Q1", "R6", "SDA", "4.7k"), ("Q2", "R7", "SCL", "4.7k"),
                                            ("Q3", "R8", "INT", "10k"))):
-        y = LEAD[1] + 2.5 + 4.0 * i
-        part(s, q, "nfet", {"G": "+3V3", "S": line, "D": "LEAD_" + line}, pcb=P(LEAD[0] + 2.75, y, 90),
+        y = LEAD[1] - 10.4 + 4.0 * i
+        part(s, q, "nfet", {"G": "+3V3", "S": line, "D": "LEAD_" + line}, pcb=P(LEAD[0] + 3.25, y, 90),
              sch=at(186, 118 + 12 * i))
-        R(s, r, val, "+3V3", line, size="0402", pcb=P(LEAD[0] + 2.75, LEAD[1] + 13.1 + 1.0 * i, 0),
+        R(s, r, val, "+3V3", line, size="0402", pcb=P(LEAD[0] + 3.25, LEAD[1] - 15.4 + 1.0 * i, 0),
           sch=at(212, 116 + 12 * i))
     testpoints(s, ["TP7", "TP8", "TP44", "TP20", "TP21", "TP22", "TP23", "TP24", "TP25", "TP26", "TP27"],
                "Test points (rear face, bare pads, not in the BOM): +3V3, the hub's reset and 1.8 V, the lead's "
@@ -504,85 +501,10 @@ def hub_sheet(b: Board):
 
 
 # ---------------------------------------------------------------------------------------- drawn copper
-def offset(poly, d):
-    """A polyline (mm) shifted d mm sideways, mitred at its corners: to the west when it heads down the board (+y),
-    to the north when it heads west, to the east when it heads up.  A differential pair's two lines from its
-    centreline (the v2's)."""
-    out = []
-    for i, (x, y) in enumerate(poly):
-        ns = []
-        segs = ([(poly[i - 1], poly[i])] if i else []) + ([(poly[i], poly[i + 1])] if i < len(poly) - 1 else [])
-        for (ax, ay), (bx, by) in segs:
-            L = math.hypot(bx - ax, by - ay)
-            ns.append((-(by - ay) / L, (bx - ax) / L))
-        (n1x, n1y), (n2x, n2y) = ns[0], ns[-1]
-        k = 1 + n1x * n2x + n1y * n2y
-        out.append((round(x + d * (n1x + n2x) / k, 4), round(y + d * (n1y + n2y) / k, 4)))
-    return out
-
-
-def hs_pairs():
-    """The USB pairs, drawn (the v2's HS review, 2026-10-22: over a continuous GND reference, F.Cu above In1;
-    Freerouting puts them on B.Cu, each line its own way).  D− and D+ either side of each pair's centreline
-    (offset(), D− on its right-hand side), USB_W lines 0.15 mm apart (≈ 90 Ω: the USB netclass); they leave the
-    hub's pins at their 0.5 mm pitch and close up.  No length-matching bumps (the layout review: on USB they make it
-    worse).
-    * USB-C 2–6 (the south face, DN1–5): down side by side under the hub (ports 3 and 4, 5 and 6 each 50 µm out
-      from their pins' centre: C15 and C16, pins 5 and 10's 100 nF, between them), west in the corridor's lanes
-      (LANES), the lowest dropping off first, each down past the cluster west of it (DROP_DN) to its USBLC6: D+
-      into pin 4, D− on past it to pin 6.
-    * USB-C 1 (the west face, DN6): west between C12 and the crystal's keep-out, north round it, west, down its
-      west side into the top lane, west, up over converter A's outputs and down the board's west edge to its
-      USBLC6 over its receptacle.
-    The upstream pair (pins 58/59: boxed in by USB-C 1's pair, C13 and the crystal's keep-out, it leaves under the
-    hub's body) is left to the router for now.  Returns (tracks, vias)."""
-    tracks, vias = [], []
-    hp, c = (USB_W + 0.15) / 2, 0.8
-    sy, top = HY + 4.4125, HY + 4.9             # the hub's south row, the pairs' start under it
-
-    def keep(pts):
-        """no point within 0.1 mm of the last one kept (a sliver otherwise)"""
-        out = [pts[0]]
-        for q in pts[1:-1]:
-            if math.dist(q, out[-1]) >= 0.1:
-                out.append(q)
-        return out + [pts[-1]]
-
-    def esd_pins(x, y):
-        """a USBLC6's pin 4 (D+) and pin 6 (D−), turned 180°: its hub side, west"""
-        return (x - 1.138, y - 0.95), (x - 1.138, y + 0.95)
-
-    for n, (pin, d) in {2: (1, 0.0), 3: (3, -0.05), 4: (6, 0.05), 5: (8, -0.05), 6: (11, 0.05)}.items():
-        px = HX - 3.5 + 0.5 * (pin - 1)                 # its pins' centre
-        x, y, xd = px + d, LANES[n], DROP_DN[n] + hp
-        p4, p6 = esd_pins(ESD_PX[n], USB_Y)
-        # each line straight out of its pin, then in to the pair's pitch by y top + 0.4 (C15/C16 just under)
-        cl = [(x, top + 0.4), (x, y - c), (x - c, y), (xd + c, y), (xd, y + c), (xd, p4[1] - 0.4)]
-        dn = keep([(px - 0.25, sy), (px - 0.25, top)] + offset(cl, hp) +
-                  [(xd - hp, p6[1] - 0.5), (xd - hp + 0.5, p6[1]), p6])
-        dp = keep([(px + 0.25, sy), (px + 0.25, top)] + offset(cl, -hp) + [(xd + hp + 0.4, p4[1]), p4])
-        tracks += [(f"PORT{n}_DN", "F.Cu", USB_W, dn), (f"PORT{n}_DP", "F.Cu", USB_W, dp)]
-
-    # USB-C 1: north round the keep-out at x 95, west at y 35.9, down at x 90.7; up over converter A from x 26.5,
-    # down the west edge at x 5.9
-    p4, p6 = esd_pins(USBS[0] - 4.2, UP_Y - 0.25)
-    y1, xe, ye = LANES[1], 5.85, 46.6
-    cl = [(HX - 4.9, HY - 1.45), (95.0 + c, HY - 1.45), (95.0, HY - 1.45 - c), (95.0, 35.9 + c), (95.0 - c, 35.9),
-          (90.7 + c, 35.9), (90.7, 35.9 + c), (90.7, y1 - c), (90.7 - c, y1), (26.5, y1), (26.5 - (y1 - ye), ye),
-          (xe + c, ye), (xe, ye + c), (xe, p4[1] - 0.4)]
-    # D+ straight out of pin 54 (its line on the pin's row), D− in from pin 53 by 0.1 mm: clear of C12's pad
-    dn = keep([(HX - 4.4125, HY - 1.75), (HX - 4.8, HY - 1.75)] + offset(cl, hp) +
-              [(xe - hp, p6[1] - 0.5), (xe - hp + 0.5, p6[1]), p6])
-    dp = keep([(HX - 4.4125, HY - 1.25), (HX - 4.9, HY - 1.25)] + offset(cl, -hp) + [(xe + hp + 0.4, p4[1]), p4])
-    tracks += [("PORT1_DN", "F.Cu", USB_W, dn), ("PORT1_DP", "F.Cu", USB_W, dp)]
-
-    return tracks, vias
-
-
 def drawn():
     """The copper drawn before the routing that the v2 already had round its hub, which stands here as on the v2
-    (one row lower): the crystal's block, each 100 nF in the pin → cap → via order, the exposed pad's vias, the USB
-    pairs.  Returns (tracks, vias)."""
+    (in the middle of the top edge): the crystal's block, each 100 nF in the pin → cap → via order, the exposed
+    pad's vias.  Returns (tracks, vias)."""
     hand_tracks, hand_vias = [], []
     # the hub's reset supervisor in the pin → cap → via order: VCC (U5 pin 3) straight up to C6, C6 on east to
     # its via
@@ -634,9 +556,6 @@ def drawn():
                         ("+3V3", "F.Cu", 0.25, [(x, HY + 4.4125), (x, HY + 5.92)]),
                         ("GND", "F.Cu", 0.25, [(x, HY + 6.88), (x, HY + 7.6)])]
         hand_vias += [("+3V3", x, HY + 3.75, 0.5, 0.3), ("GND", x, HY + 7.6, 0.5, 0.3)]
-    t, v = hs_pairs()
-    hand_tracks += t
-    hand_vias += v
     # pin 64's: the pin down to C11 (its 100 nF) right below the corner, and its via inwards, under the hub's
     # body, off that line (it sat on it, between the pin and C11).  C11 is an exception to the pin → cap → via
     # order: no via fits past its +3V3 pad, between R1's RBIAS pad west and port 1's D− east
@@ -673,26 +592,27 @@ def board() -> Board:
         port(b, n)
 
     cw, ch = CORNER
-    outline = [(0, 0, 1.0), (W, 0, 1.0), (W, H - ch, 0.5), (W - cw, H - ch, 0.5), (W - cw, H, 0)]
+    corner = [(W, H - ch, 0.5), (W - cw, H - ch, 0.5), (W - cw, H, 0)] if cw else [(W, H, 1.0)]
+    outline = [(0, 0, 1.0), (W, 0, 1.0), *corner]
     for x0, x1, top in reversed(NOTCHES):
         outline += [(x1, H, 0), (x1, top, 0.5), (x0, top, 0.5), (x0, H, 0)]
     outline += [(0, H, 1.0)]
     # The power plane (In2): +3V3 over the top of the board, down to the split under the clusters (PWR_SPLIT); under
-    # it, +5V_A west of x 50 (ports 1–3) and +5V_B east (ports 4–6), 0.2 mm apart, never joined.  +5V_A reaches its
-    # area from under converter A (west, middle) down the cradle's west band (nothing else uses it, either face);
-    # converter B stands in its own, the bottom-right corner.  Each port switch's IN takes its 5 V by a track down
-    # past the split, as the v2's.  All 1.4 mm from the edge, notches included
+    # it, +5V_A west of x 50 (ports 1–3) and +5V_B east (ports 4–6), 0.2 mm apart, never joined.  Each converter
+    # stands on a tongue of its own output in a top corner, and the tongue runs down the cradle's band at its end
+    # (nothing else uses it, either face) to its area.  Each port switch's IN takes its 5 V by a track down past the
+    # split, as the v2's.  All 1.4 mm from the edge, notches included
     E = 1.4
     bottom = [pt for x0, x1, top in reversed(NOTCHES)
               for pt in ((x1 + E, H - E), (x1 + E, top - E), (x0 - E, top - E), (x0 - E, H - E))]
-    TONGUE = (31.5, 23.0, 46.2)         # +5V_A under converter A: top, east edge, bottom (the west band below it)
-    IN_5VA = [(E, TONGUE[0]), (TONGUE[1], TONGUE[0]), (TONGUE[1], TONGUE[2]), (5.4, TONGUE[2]),
-              (5.4, PWR_SPLIT + 0.1), (MID_X - 0.1, PWR_SPLIT + 0.1),
+    TA, TBX, TB = 23.4, 77.0, 13.8      # converter A's tongue's east edge, B's west edge, their bottom
+    IN_5VA = [(E, E), (TA, E), (TA, TB), (5.4, TB), (5.4, PWR_SPLIT + 0.1), (MID_X - 0.1, PWR_SPLIT + 0.1),
               *[pt for pt in bottom if pt[0] < MID_X], (MID_X - 0.1, H - E), (E, H - E)]
-    IN_5VB = [(MID_X + 0.1, PWR_SPLIT + 0.1), (W - E, PWR_SPLIT + 0.1), (W - E, H - ch - E), (W - cw - E, H - ch - E),
-              (W - cw - E, H - E), *[pt for pt in bottom if pt[0] > MID_X], (MID_X + 0.1, H - E)]
-    IN_3V3 = [(E, E), (W - E, E), (W - E, PWR_SPLIT - 0.1), (5.6, PWR_SPLIT - 0.1), (5.6, TONGUE[2] + 0.2),
-              (TONGUE[1] + 0.2, TONGUE[2] + 0.2), (TONGUE[1] + 0.2, TONGUE[0] - 0.2), (E, TONGUE[0] - 0.2)]
+    IN_5VB = [(TBX, E), (W - E, E), (W - E, H - ch - E), (W - cw - E, H - ch - E), (W - cw - E, H - E),
+              *[pt for pt in bottom if pt[0] > MID_X], (MID_X + 0.1, H - E), (MID_X + 0.1, PWR_SPLIT + 0.1),
+              (W - 5.4, PWR_SPLIT + 0.1), (W - 5.4, TB), (TBX, TB)]
+    IN_3V3 = [(TA + 0.2, E), (TBX - 0.2, E), (TBX - 0.2, TB + 0.2), (W - 5.6, TB + 0.2), (W - 5.6, PWR_SPLIT - 0.1),
+              (5.6, PWR_SPLIT - 0.1), (5.6, TB + 0.2), (TA + 0.2, TB + 0.2)]
     hand_tracks, hand_vias = drawn()
     six = LAYERS == 6                   # X6_LAYERS=6: F · GND · sig · sig · power · B (the v2's 6-layer stack)
     pwr = "In4.Cu" if six else "In2.Cu"
@@ -724,25 +644,27 @@ def board() -> Board:
             {"name": f"edge{i}", "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
                      for i, (x0, y0, x1, y1) in enumerate((
                          (0, 0, W, 0.35), (W - 0.35, 0, W, H), (0, H - 0.35, W, H), (0, 0, 0.35, H),
-                         (W - cw - 0.35, H - ch - 0.35, W, H),
+                         *([(W - cw - 0.35, H - ch - 0.35, W, H)] if cw else []),
                          *((x0 - 0.35, top - 0.35, x1 + 0.35, H) for x0, x1, top in NOTCHES)))] + [
-            # B.Cu runs over the power plane: no B.Cu track crosses its splits (+3V3 / +5V, +5V_A / +5V_B, the +5V_A
-            # tongue's edges), so a signal that does crosses on F.Cu over the GND plane (the v2's RF review)
+            # B.Cu runs over the power plane: no B.Cu track crosses its splits (+3V3 / +5V, +5V_A / +5V_B, the
+            # tongues' edges), so a signal that does crosses on F.Cu over the GND plane (the v2's RF review)
             {"name": name, "layers": ["B.Cu", "In3.Cu"] if six else ["B.Cu"], "tracks_only": True,
              "poly": [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]}
             for name, (x0, y0, x1, y1) in (
                 ("split", (0.35, PWR_SPLIT - 0.5, W - 0.35, PWR_SPLIT + 0.5)),
                 ("split-ab", (MID_X - 0.5, PWR_SPLIT, MID_X + 0.5, H - 0.35)),
-                ("split-5va-top", (0.35, TONGUE[0] - 0.6, TONGUE[1] + 0.6, TONGUE[0] + 0.4)),
-                ("split-5va-east", (TONGUE[1] - 0.4, TONGUE[0] - 0.6, TONGUE[1] + 0.6, TONGUE[2] + 0.6)),
-                ("split-5va-foot", (5.0, TONGUE[2] - 0.4, TONGUE[1] + 0.6, TONGUE[2] + 0.6)),
-                ("split-5va-band", (5.0, TONGUE[2] - 0.4, 6.0, PWR_SPLIT)))],
+                ("split-5va-east", (TA - 0.4, 0.35, TA + 0.6, TB + 0.6)),
+                ("split-5va-foot", (5.0, TB - 0.4, TA + 0.6, TB + 0.6)),
+                ("split-5va-band", (5.0, TB - 0.4, 6.0, PWR_SPLIT)),
+                ("split-5vb-west", (TBX - 0.6, 0.35, TBX + 0.4, TB + 0.6)),
+                ("split-5vb-foot", (TBX - 0.6, TB - 0.4, W - 5.0, TB + 0.6)),
+                ("split-5vb-band", (W - 6.0, TB - 0.4, W - 5.0, PWR_SPLIT)))],
         "texts": [
-            {"text": "DATA ×6 v1.0", "x": 50.0, "y": 78.0, "size": 0.8},
+            {"text": "DATA ×6 v1.0", "x": 50.0, "y": H - 2.5, "size": 0.8},
             *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
             # the two leads' connectors, named on the rear face where they plug in
-            {"text": "LEAD", "x": LEAD[0], "y": LEAD[1] - 3.6, "size": 0.8, "layer": "B.SilkS"},
+            {"text": "LEAD", "x": LEAD[0], "y": LEAD[1] + 3.6, "size": 0.8, "layer": "B.SilkS"},
             {"text": "VIN 20 V", "x": VIN_J[0], "y": VIN_J[1] + 4.0, "size": 0.8, "layer": "B.SilkS"},
         ],
     }

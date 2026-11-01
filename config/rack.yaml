@@ -329,25 +329,29 @@ pcb:
   data_port_x6:             # DATA ×6 (electronics/data-port-x6, prototype, 2026-10-31): six ports for the porte-revues
                             # bays, power only since 2026-10-31 (hub, switch and INA226 per port; no pin header: the
                             # DATA ×4 v2 keeps the logic); same frame as the v2: board x = drawer x − x0, KiCad y =
-                            # top_z − drawer z.  It stands where the v2 stands, 10 mm taller (the cradle's uprights grow
-                            # with it), its front face towards the port wall (six U's at 15 mm).
-                            # 120 mm long (the user, 2026-10-31: 100 left each pin chain a 7.6 mm column, too narrow to
-                            # route on 4 layers); the 20 mm more to the right (drawer x 104–124)
-    size: [120, 80]
-    corner_notch: [1.5, 5.0]   # its bottom-right corner cut (width, height): the drag chain foot's boss
+                            # top_z − drawer z.  It stands where the v2 stands, its front face towards the port wall
+                            # (six U's at 15.5 mm).  100 × 70 since it lost the logic (2026-11-01), the v2's outline
+                            # (one cradle and drawer for both): the six USB-C on the common 15.5 mm grid (the v2's four
+                            # on positions 2–5), the converters, the hub and the leads' connectors over them
+    size: [100, 70]
+    corner_notch: [0, 0]       # its bottom-right corner cut (width, height): none at 100 mm (the 120 mm board's
+                               # cleared the drag chain foot's boss)
     x0: 4
-    top_z: 82.5
+    top_z: 72.5
     face_y: 7.4
     thickness: 1.6
     layers: 4
     cradle: 5.5
-    notches: { x: [39, 69], size: [3.4, 6.5] }   # DRAWER x (not board x) of their centres: between ports 2–3, 4–5
-    usb: [12.5, 27.5, 42.5, 57.5, 72.5, 87.5]    # board x of the six vertical USB-C, 15 mm apart, mouths to the wall
+    notches: { x: [38.5, 69.5], size: [3.4, 6.5] }   # DRAWER x (not board x) of their centres: between ports 2–3, 4–5
+    usb: [11.25, 26.75, 42.25, 57.75, 73.25, 88.75]  # board x of the six vertical USB-C, 15.5 mm apart (the grid shared
+                                                     # with the v2: its 15.24 mm headers fit), mouths to the wall
     usb_z: 11
-    lead: [93, 58.5]        # J1, the PH 8 lead (the v2's pinout), rear face: board x, drawer z of its centre; its pins
-                            # run down the board, 2 mm apart, pin 1 at the top.  Over the hub, out of the USB pairs' way
-    vin: [110, 21.3]        # J3, the 20 V input (PH 3 vertical, VIN–GND–VIN, rear face, hand-soldered): board x,
-                            # drawer z of its centre (pin 2); lying, its pins along the board 2 mm apart, by the chain
+    lead: [89, 41]          # J1, the PH 8 lead (the v2's pinout), rear face: board x, drawer z of its centre; its pins
+                            # run up the board, 2 mm apart, pin 8 (+5V) at the top.  At the east end, its upstream
+                            # pins level with the hub's; the lead runs behind the board to the rear cable window
+    vin: [81.2, 55.5]       # J3, the 20 V input (PH 3 vertical, VIN–GND–VIN, rear face, hand-soldered): board x,
+                            # drawer z of its centre (pin 2); lying, its pins along the board 2 mm apart, under
+                            # converter B
   camera_pod:             # the board in each camera pod, beside the Arducam Mega, mounted components (LEDs) down
     size: [40, 27]          # X × Y; KiCad y=0 is the edge beside the camera (the LEDs), x=40 the lead's edge
     thickness: 1.6
