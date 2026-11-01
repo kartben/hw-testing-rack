@@ -36,8 +36,32 @@ struct dut_power_reading {
 };
 
 int dut_init(void);
+/* Node rev B: DATA_VIN on at boot (CONFIG_BAY_DATA_POWER_AT_BOOT), after ports_init() */
+void dut_start(void);
+/*
+ * Rev B: -EIO or -ENODEV when the DATA lead's power-on rule keeps DATA_VIN
+ * off (dut_lead_state() says why)
+ */
 int dut_power_set(bool on);
 bool dut_power_get(void);
+
+/* Node rev B: why DATA_VIN went off, or would not go on (docs/firmware.md) */
+enum dut_lead {
+	DUT_LEAD_OK,         /* on, or off on request */
+	DUT_LEAD_BUS,        /* SCL or SDA held low: the lead reversed? */
+	DUT_LEAD_METER,      /* the node's INA226 does not answer */
+	DUT_LEAD_SHORT,      /* no DATA_VIN, or a ~FLT, once switched on */
+	DUT_LEAD_FAULT,      /* a ~FLT while on */
+	DUT_LEAD_NO_BOARD,   /* no DATA board answered (ports.c) */
+	DUT_LEAD_BOARD_GONE, /* the DATA board stopped answering (ports.c) */
+};
+
+/* mv: DATA_VIN when it was refused (DUT_LEAD_SHORT); may be NULL */
+enum dut_lead dut_lead_state(int32_t *mv);
+/* NULL for DUT_LEAD_OK */
+const char *dut_lead_str(enum dut_lead why);
+/* ports.c: switch DATA_VIN off until the next power on (from any thread) */
+void dut_lead_lost(enum dut_lead why);
 int dut_power_cycle(k_timeout_t off_time);
 /* FAULT pin as it is right now (current limit / thermal shutdown) */
 bool dut_fault_active(void);

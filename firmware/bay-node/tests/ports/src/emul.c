@@ -5,6 +5,10 @@
  * their registers.  The node's own INA226 (0x40) measures the board on
  * DUT_5V: the ports that are on and the board itself, its ALERT on gpio0.
  *
+ * Node rev B (dut_port's vin-efuse): the board is powered while the eFuse's
+ * enable (dut_port's EN) is high, and the node's INA226 reads DATA_VIN, the
+ * board's 5 V converted from it at 88 %.
+ *
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -20,10 +24,34 @@
 
 #include "emul.h"
 
+#define EFUSE DT_PROP(DT_NODELABEL(dut_port), vin_efuse)
+
+static const struct gpio_dt_spec lead_en = GPIO_DT_SPEC_GET(DT_NODELABEL(dut_port), enable_gpios);
+
 static bool powered = true;
+static bool board_there = true;
+static bool lead_short;
+static int vin_mv = 20000;
 static int offline;
 
 static void board_update(void);
+
+/* DUT_5V on (rev A), or the eFuse on (rev B): DATA_VIN */
+static bool lead_powered(void)
+{
+	if (EFUSE) {
+		return !lead_short && gpio_emul_output_get(lead_en.port, lead_en.pin) > 0;
+	}
+	return powered;
+}
+
+/* The board's chips have power and are there to answer */
+static bool board_up(void)
+{
+	return lead_powered() && board_there;
+}
+
+static void chips_follow(void);
 
 /* --- TCA6408A / TCA9534A ---------------------------------------------------- */
 
@@ -95,8 +123,9 @@ static int io_transfer(const struct emul *target, struct i2c_msg *msgs, int num_
 
 	ARG_UNUSED(addr);
 
-	if (!powered) {
-		offline++;
+	chips_follow();
+	if (!board_up()) {
+		offline += !lead_powered();
 		return -EIO;
 	}
 	if (num_msgs == 1 && !(msgs[0].flags & I2C_MSG_READ) && msgs[0].len == 2) {
@@ -166,7 +195,7 @@ static bool port_en(int n)
 {
 	const struct io_data *d = ios[wiring[n].io];
 
-	return powered && !(d->cfg & BIT(wiring[n].en)) && (d->out & BIT(wiring[n].en));
+	return board_up() && !(d->cfg & BIT(wiring[n].en)) && (d->out & BIT(wiring[n].en));
 }
 
 static int port_mv(int n)
@@ -183,8 +212,8 @@ static int port_mv(int n)
 	return MAX(mv, ext_mv[n]);
 }
 
-/* The node's shunt: 2.5 uV/LSB across 50 mOhm, 20 LSB per mA */
-static int16_t meter_shunt(void)
+/* What the node's INA226 measures, mA: DUT_5V (rev A), or DATA_VIN (rev B) */
+static int meter_ma(void)
 {
 	int ma = board_ma;
 
@@ -193,7 +222,25 @@ static int16_t meter_shunt(void)
 			ma += inas[wiring[n].ina - 0x40]->ma;
 		}
 	}
-	return (int16_t)CLAMP(ma * 20, INT16_MIN, INT16_MAX);
+	if (EFUSE) {
+		/* The board's 5 V from DATA_VIN at 88 % */
+		return board_up() ? ma * 5000 * 100 / (vin_mv * 88) : 0;
+	}
+	return ma;
+}
+
+static int meter_mv(void)
+{
+	if (EFUSE) {
+		return lead_powered() ? vin_mv : 0;
+	}
+	return 5000;
+}
+
+/* The node's shunt: 2.5 uV/LSB across 50 mOhm, 20 LSB per mA */
+static int16_t meter_shunt(void)
+{
+	return (int16_t)CLAMP(meter_ma() * 20, INT16_MIN, INT16_MAX);
 }
 
 static int port_of(uint8_t addr)
@@ -214,8 +261,9 @@ static int ina_transfer(const struct emul *target, struct i2c_msg *msgs, int num
 
 	ARG_UNUSED(addr);
 
-	if ((!powered && n >= 0) || (n < 0 && !meter_present)) {
-		offline += n >= 0;
+	chips_follow();
+	if ((n >= 0 && !board_up()) || (n < 0 && !meter_present)) {
+		offline += n >= 0 && !lead_powered();
 		return -EIO;
 	}
 	if (num_msgs == 1 && !(msgs[0].flags & I2C_MSG_READ) && msgs[0].len == 3) {
@@ -247,7 +295,7 @@ static int ina_transfer(const struct emul *target, struct i2c_msg *msgs, int num
 								 INT16_MAX);
 			break;
 		case 0x02: /* 1.25 mV/LSB */
-			v = (n < 0 ? 5000 : port_mv(n)) * 4 / 5;
+			v = (n < 0 ? meter_mv() : port_mv(n)) * 4 / 5;
 			break;
 		case 0x06:
 			v = d->mask;
@@ -307,22 +355,57 @@ static void board_update(void)
 	(void)gpio_emul_input_set(alert.port, alert.pin, !fire);
 }
 
+/* Power-on defaults of the board's chips (not the node's INA226) */
+static void chips_reset(void)
+{
+	for (int i = 0; i < (int)ARRAY_SIZE(ios); i++) {
+		io_reset(ios[i]);
+	}
+	for (int i = 1; i < (int)ARRAY_SIZE(inas); i++) {
+		if (inas[i] != NULL) {
+			inas[i]->config = 0x4127;
+		}
+	}
+}
+
+/* Rev B: the chips start from their defaults each time DATA_VIN comes back */
+static void chips_follow(void)
+{
+	static bool was_up = true;
+	bool up = board_up();
+
+	if (EFUSE && up && !was_up) {
+		chips_reset();
+	}
+	was_up = up;
+}
+
 /* --- For the test --------------------------------------------------------------- */
 
 void emul_power(bool on)
 {
 	if (on && !powered) {
-		/* Power-on defaults */
-		for (int i = 0; i < (int)ARRAY_SIZE(ios); i++) {
-			io_reset(ios[i]);
-		}
-		for (int i = 1; i < (int)ARRAY_SIZE(inas); i++) {
-			if (inas[i] != NULL) {
-				inas[i]->config = 0x4127;
-			}
-		}
+		chips_reset();
 	}
 	powered = on;
+	board_update();
+}
+
+void emul_vin(int mv)
+{
+	vin_mv = mv;
+	board_update();
+}
+
+void emul_lead_short(bool shorted)
+{
+	lead_short = shorted;
+	board_update();
+}
+
+void emul_board(bool there)
+{
+	board_there = there;
 	board_update();
 }
 

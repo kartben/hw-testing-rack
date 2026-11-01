@@ -169,8 +169,8 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Feature | Implementation |
 |---|---|
 | USB/IP export of the DUT | `CONFIG_USBIP` on `zephyr_uhc0` (= `&usb_otg`, DWC2 host, ESP32-S3 FS quirk), with the rack's patch (`zephyr/patches.yml`); TCP 3240; bus id by port: `1-1` (`1-1.<n>` behind a hub) |
-| DUT power | TPS2553 EN on IO41, kept **on** at boot (the board pulls it up); `bay power on/off/cycle` |
-| Over-current | TPS2553 ~FAULT on IO40 (interrupt): logged and counted; after `CONFIG_BAY_DUT_FAULT_OFF_MS` (1 s) in current limit VBUS is switched off and the fault latched until `bay power on` |
+| DUT power | TPS2553 EN on IO41, kept **on** at boot (the board pulls it up); `bay power on/off/cycle`.  Node rev B (`dut_port`'s `vin-efuse`): IO41 is the TPS26600's SHDN on the DATA lead's 20–28 V, **off** at boot and on only through [the DATA lead's power-on rule](../docs/firmware.md#the-data-leads-power-on-rule-node-rev-b) (SCL/SDA high, the INA226 answers, DATA_VIN up, the DATA board answers within `CONFIG_BAY_DATA_ANSWER_MS`); `CONFIG_BAY_DATA_POWER_AT_BOOT` tries it at boot |
+| Over-current | TPS2553 ~FAULT on IO40 (interrupt): logged and counted; after `CONFIG_BAY_DUT_FAULT_OFF_MS` (1 s) in current limit VBUS is switched off and the fault latched until `bay power on`.  Rev B: the eFuse's ~FLT, or a DATA board that misses two polls, switches DATA_VIN off at once until `bay power on` |
 | Telemetry | INA226 @ 0x40 through the Zephyr sensor API (`ti,ina226`, 50 mΩ, 50 µA/LSB, 4× averaging, 8.8 ms a reading): bus mV, mA, mW in `bay power` / `bay status` |
 | Data path | reads PC_DET (IO13) and SVC (IO15); `bay mode classic` drives MUX_FORCE_PC (IO14), persisted |
 | SERVICE mode | stops the USB host and routes the internal PHY to the USB-Serial-JTAG (`CONFIG_BAY_SERVICE_PHY_HANDOVER`); restarts the host when SERVICE goes off |

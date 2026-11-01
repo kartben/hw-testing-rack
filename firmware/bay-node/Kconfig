@@ -11,6 +11,40 @@ config BAY_DUT_FAULT_OFF_MS
 	  The TPS2553 limits the current by itself and keeps retrying.  If its
 	  FAULT flag stays asserted this long, the firmware switches VBUS off
 	  and latches the fault until the next "bay power on".  0 disables.
+	  Node rev B (dut_port's vin-efuse): the eFuse's ~FLT switches
+	  DATA_VIN off at once instead.
+
+config BAY_DATA_POWER_AT_BOOT
+	bool "Node rev B: DATA_VIN on at boot, once the power-on checks pass"
+	default y
+	help
+	  The eFuse on the DATA lead is off until the firmware switches it
+	  on (docs/firmware.md, the DATA lead's power-on rule).  Off: DATA_VIN
+	  stays off until "bay power on".
+
+config BAY_DATA_FLT_BLANK_MS
+	int "Node rev B: ~FLT ignored this long after the eFuse goes on (ms)"
+	default 20
+	help
+	  The TPS26600 holds ~FLT low while it is off and while it ramps
+	  (4-5 ms soft start).
+
+config BAY_DATA_VIN_MIN_MV
+	int "Node rev B: DATA_VIN must read at least this once on (mV)"
+	default 15000
+	help
+	  Read by the node's INA226 after BAY_DATA_FLT_BLANK_MS.  Less, or a
+	  ~FLT, means a short on the lead (a camera lead in J7 shorts J7.1 to
+	  GND): DATA_VIN goes off again.  The rack's VIN is 20-28 V; the DATA
+	  boards' converters start above 13.5 V.
+
+config BAY_DATA_ANSWER_MS
+	int "Node rev B: the DATA board must answer within this (ms)"
+	default 1000
+	help
+	  Its expander, after DATA_VIN goes on (its converters start, its
+	  hub's reset holds up to 560 ms).  No answer: no board, or the wrong
+	  lead on J7: DATA_VIN goes off until the next "bay power on".
 
 config BAY_POWER_CYCLE_MS
 	int "Default off time of a DUT power cycle (ms)"
@@ -90,7 +124,12 @@ config BAY_PORTS_SETTLE_MS
 
 config BAY_PORTS_POLL_MS
 	int "DATA x4: how often the ports' ~FAULT lines are read (ms)"
+	default 20 if $(dt_nodelabel_bool_prop,dut_port,vin-efuse)
 	default 100
+	help
+	  Node rev B: the DATA lead has no INT line, so the poll is also how
+	  the node sees a fault or a board that went away; two missed polls
+	  in a row switch DATA_VIN off.
 
 config BAY_PORTS_ON_AT_BOOT
 	bool "DATA x4: every port on at boot and after each DUT_5V on"

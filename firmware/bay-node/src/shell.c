@@ -130,6 +130,17 @@ static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
+/* Node rev B: why the DATA lead's power-on rule kept DATA_VIN off */
+static int power_result(const struct shell *sh, int ret)
+{
+	const char *why = dut_lead_str(dut_lead_state(NULL));
+
+	if (ret != 0 && why != NULL) {
+		shell_error(sh, "DATA_VIN stays off: %s", why);
+	}
+	return ret;
+}
+
 static int cmd_power(const struct shell *sh, size_t argc, char **argv)
 {
 	uint32_t ms = CONFIG_BAY_POWER_CYCLE_MS;
@@ -140,7 +151,7 @@ static int cmd_power(const struct shell *sh, size_t argc, char **argv)
 	}
 
 	if (strcmp(argv[1], "on") == 0) {
-		return dut_power_set(true);
+		return power_result(sh, dut_power_set(true));
 	}
 	if (strcmp(argv[1], "off") == 0) {
 		return dut_power_set(false);
@@ -149,7 +160,7 @@ static int cmd_power(const struct shell *sh, size_t argc, char **argv)
 		if (argc > 2 && parse_ms(sh, argv[2], &ms) != 0) {
 			return -EINVAL;
 		}
-		return dut_power_cycle(K_MSEC(ms));
+		return power_result(sh, dut_power_cycle(K_MSEC(ms)));
 	}
 
 	shell_error(sh, "usage: bay power [on|off|cycle [ms]]");

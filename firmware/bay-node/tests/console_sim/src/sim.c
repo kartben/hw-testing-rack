@@ -62,6 +62,25 @@ uint32_t dut_fault_count(void)
 	return 0;
 }
 
+enum dut_lead dut_lead_state(int32_t *mv)
+{
+	if (mv != NULL) {
+		*mv = 0;
+	}
+	return DUT_LEAD_OK;
+}
+
+const char *dut_lead_str(enum dut_lead why)
+{
+	ARG_UNUSED(why);
+	return NULL;
+}
+
+void dut_lead_lost(enum dut_lead why)
+{
+	ARG_UNUSED(why);
+}
+
 int dut_reset_set(bool asserted)
 {
 	if (asserted) {

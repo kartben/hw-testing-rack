@@ -11,7 +11,11 @@
  * the pins.
  *
  *  - The board is probed after each DUT_5V on: no answer at 0x20, no board,
- *    a one-port node (today's DUT, dut.c).
+ *    a one-port node (today's DUT, dut.c).  Node rev B (DATA_VIN through an
+ *    eFuse, dut.c): the board must answer within CONFIG_BAY_DATA_ANSWER_MS,
+ *    and two polls without an answer switch DATA_VIN off (no INT line on the
+ *    lead: the poll, every CONFIG_BAY_PORTS_POLL_MS, is how a fault or a board
+ *    that went away shows).
  *  - No I2C to it while DUT_5V is off.  Before DUT_5V goes off every EN goes
  *    low; after it comes back, CONFIG_BAY_PORTS_SETTLE_MS later, both
  *    expanders and the four INA226 are set up again, every port off.
@@ -74,9 +78,13 @@ LOG_MODULE_REGISTER(ports, CONFIG_BAY_LOG_LEVEL);
 /* Averages 16, 1.1 ms conversions, shunt and bus continuous */
 #define INA_CONFIG_VALUE 0x4527
 
+/* Node rev B: DATA_VIN through an eFuse, off when the board does not answer */
+#define EFUSE DT_PROP(DT_NODELABEL(dut_port), vin_efuse)
+
 #define IO_MAX       2
-#define FAIL_LIMIT   3    /* polls without an answer: the board is gone */
+#define FAIL_LIMIT   (EFUSE ? 2 : 3) /* polls without an answer: the board is gone */
 #define REPROBE_MS   2000 /* while DUT_5V is on and no board answers */
+#define ANSWER_TRY_MS 100 /* rev B: probes within CONFIG_BAY_DATA_ANSWER_MS */
 #define REFUSED_MS   1000 /* a wanted port the budget refused: try again */
 #define RELEASE_MS   5    /* EN to BOOT and RESET released: the port's VBUS is up */
 #define SHED_MS      20   /* a port shed to the next reading: the meter averages 8.8 ms */
@@ -155,6 +163,7 @@ static bool chips_up; /* DUT_5V on and the chips set up */
 static int failures;
 static uint32_t admissions;
 static int64_t shed_at;
+static int64_t powered_at; /* the last DUT_5V / DATA_VIN on */
 static struct gpio_callback alert_cb;
 static K_MUTEX_DEFINE(lock);
 
@@ -424,6 +433,13 @@ static void setup_handler(struct k_work *work)
 		LOG_INF("DATA x4: %d ports, every port off; switching on the wanted ones", NPORTS);
 		k_work_reschedule(&admit_work, K_NO_WAIT);
 		k_work_reschedule(&poll_work, K_MSEC(CONFIG_BAY_PORTS_POLL_MS));
+	} else if (EFUSE) {
+		/* No one-port node on rev B: no board, no DATA_VIN */
+		if (k_uptime_get() - powered_at < CONFIG_BAY_DATA_ANSWER_MS) {
+			k_work_reschedule(&setup_work, K_MSEC(ANSWER_TRY_MS));
+		} else {
+			dut_lead_lost(DUT_LEAD_NO_BOARD);
+		}
 	} else {
 		if (had) {
 			LOG_WRN("DATA x4 not answering: a one-port node until it does");
@@ -585,7 +601,11 @@ static void poll_handler(struct k_work *work)
 	}
 	if (gone) {
 		LOG_ERR("DATA x4 stopped answering: its ports are off");
-		k_work_reschedule(&setup_work, K_MSEC(REPROBE_MS));
+		if (EFUSE) {
+			dut_lead_lost(DUT_LEAD_BOARD_GONE);
+		} else {
+			k_work_reschedule(&setup_work, K_MSEC(REPROBE_MS));
+		}
 		return;
 	}
 	if (over) {
@@ -597,6 +617,7 @@ static void poll_handler(struct k_work *work)
 void ports_dut_power(bool on)
 {
 	if (on) {
+		powered_at = k_uptime_get();
 		k_work_reschedule(&setup_work, K_MSEC(CONFIG_BAY_PORTS_SETTLE_MS));
 		return;
 	}

@@ -1,0 +1,33 @@
+/*
+ * Node rev B on native_sim: the DATA x4 of the ports test on the emulated
+ * I2C bus (i2c0), powered through the eFuse on the DATA lead (dut_port's
+ * vin-efuse), the node's own INA226 on DATA_VIN, SCL and SDA seen as two
+ * emulated GPIOs.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "../../data-x4.dtsi"
+
+/ {
+	dut_port: dut-port {
+		compatible = "hwtr,dut-port";
+		enable-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
+		fault-gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+		power-monitor = <&node_meter>;
+		vin-efuse;
+		bus-gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>, <&gpio0 12 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&i2c0 {
+	/* Read raw by dut.c and ports.c; its driver is not started */
+	node_meter: ina226@40 {
+		compatible = "ti,ina226";
+		reg = <0x40>;
+		current-lsb-microamps = <50>;
+		rshunt-micro-ohms = <50000>;
+		alert-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+		zephyr,deferred-init;
+	};
+};

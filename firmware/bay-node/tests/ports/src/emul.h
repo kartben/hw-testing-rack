@@ -32,4 +32,11 @@ void emul_alert(bool wired);
 /* Port 1-4 while off: its VBUS falls from 5 V to 0 in discharge_ms, or a board holds it at ext_mv */
 void emul_port_vbus(int port, int ext_mv, int discharge_ms);
 
+/* Node rev B (the eFuse's EN powers the board): the rack's VIN, 20 V by default */
+void emul_vin(int mv);
+/* A short on the lead: DATA_VIN stays at 0 with the eFuse on */
+void emul_lead_short(bool shorted);
+/* A DATA board on the lead or not (none: nothing answers, nothing draws) */
+void emul_board(bool there);
+
 #endif

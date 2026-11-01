@@ -32,7 +32,9 @@ properties:
     description: |
       TPS2553 EN.  Active = DUT VBUS on.  The bay node pulls EN up, so the
       DUT is powered before (and without) any firmware: the firmware must
-      keep the line in its current state when it configures it.
+      keep the line in its current state when it configures it.  With
+      vin-efuse, the eFuse's SHDN instead, pulled down: off until the
+      firmware's checks pass.
       DATA x4: EN is pulled down, every port is off until the firmware
       switches it on, one at a time, within the bay's budget (the
       admission rule); after each DUT_5V on, every port is off again.
@@ -63,6 +65,26 @@ properties:
   power-monitor:
     type: phandle
     description: Sensor (INA226) measuring the DUT VBUS voltage and current.
+
+  vin-efuse:
+    type: boolean
+    description: |
+      Node rev B: enable-gpios drives the SHDN of a TPS26600 eFuse on the
+      rack's VIN (20-28 V), out on the DATA lead as DATA_VIN, and
+      power-monitor reads DATA_VIN.  SHDN is pulled down: off without
+      firmware.  The firmware switches it on only after the checks of the
+      DATA lead's power-on rule (docs/firmware.md), and off until the next
+      power on after a fault, a DATA board that stops answering or none at
+      all.  fault-gpios is the eFuse's ~FLT, also low while it is off or
+      ramping.
+
+  bus-gpios:
+    type: phandle-array
+    description: |
+      With vin-efuse: SCL then SDA of the I2C bus out on the DATA lead,
+      only read (the pins stay the I2C controller's).  Both must idle high
+      before the eFuse goes on: a lead plugged the wrong way round holds
+      SCL low.
 
   uart:
     type: phandle

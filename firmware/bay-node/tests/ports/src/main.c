@@ -33,6 +33,13 @@ bool dut_power_get(void)
 	return dut_on;
 }
 
+/* Node rev B only (the eFuse on the DATA lead): not this test's dut_port */
+void dut_lead_lost(enum dut_lead why)
+{
+	ARG_UNUSED(why);
+	ztest_test_fail();
+}
+
 int usb_host_port_device(uint8_t hub_port, uint16_t *vid, uint16_t *pid)
 {
 	ARG_UNUSED(hub_port);
