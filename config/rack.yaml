@@ -225,10 +225,10 @@ cables:
   # F746G-DISCO): its straight plug fits beside it, bends up and arches over to the socket (style side).
   # A board facing the port wall far enough from it for two straight plugs (a converted bay's): straight
   # at both ends too, the cable lying in an S between them (style straight; no right angle where none is needed).
-  c-to-c:       { label: "USB-C ↔ USB-C 90°, 15 cm",            a: usb-c, b: usb-c,   length: 150 }
-  c-to-micro-b: { label: "USB-C ↔ micro-B straight, 25 cm, on a micro-B 90° adapter", a: usb-c, b: micro-b,
+  c-to-c:       { label: "USB-C straight ↔ USB-C 90°, 15 cm",   a: usb-c, b: usb-c,   length: 150 }
+  c-to-micro-b: { label: "USB-C straight ↔ micro-B straight, 25 cm, on a micro-B 90° adapter", a: usb-c, b: micro-b,
                   length: 250, style: adapter }
-  c-to-mini-b:  { label: "USB-C ↔ mini-B straight, 25 cm", a: usb-c, b: mini-b,
+  c-to-mini-b:  { label: "USB-C straight ↔ mini-B straight, 25 cm", a: usb-c, b: mini-b,
                   length: 250, style: side }       # the F746G-DISCO: its USB faces the side wall, 49 mm away
   c-to-c-straight:       { label: "USB-C ↔ USB-C, straight, 15–20 cm", a: usb-c, b: usb-c,   length: 150, style: straight }
   c-to-c-straight-20:    { label: "USB-C ↔ USB-C, straight, 20 cm", a: usb-c, b: usb-c,      length: 200, style: straight }

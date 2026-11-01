@@ -3780,7 +3780,7 @@
 },
 {
 "category": "Cables",
-"item": "USB-C ↔ USB-C 90°, 15 cm (DUT cable: BEAGLEPLAY, GIGA + display, WIO TERMINAL)",
+"item": "USB-C straight ↔ USB-C 90°, 15 cm (DUT cable: BEAGLEPLAY, GIGA + display, WIO TERMINAL)",
 "supplier": "AliExpress 1005009683032517 (HDR Store, flat USB 2.0 cable, \"Type-C-bend-straight\", 15cm)",
 "qty": 3,
 "unit_eur": 3.69,
@@ -3810,7 +3810,7 @@
 },
 {
 "category": "Cables",
-"item": "USB-C ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64)",
+"item": "USB-C straight ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64)",
 "supplier": "AliExpress 1005007989121951 (Waveshare, flat USB 2.0 cable, \"Straight-Straight\", 25cm)",
 "qty": 2,
 "unit_eur": 4.39,
