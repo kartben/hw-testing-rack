@@ -10,8 +10,6 @@
 //   -D 'PART="strip"'    the strip over the receptacles (PETG), its top face down: no supports
 //   -D 'PART="strip_in_place"'   the same, where it goes, for the viewer and the checks
 //   -D 'PART="board"'    the board's stand-in (outline, notches), for the viewer and the checks
-//   -D 'BOARD="x4"'      the strip's port numbers for a DATA ×4 v2: 1–4 over slots 2–5 (the ×6's 1–6 by
-//                        default); nothing else differs
 //
 // - The board stands on the drawer floor, its front face 7.4 mm behind the port wall's back face (the
 //   receptacles' mouths 1 mm behind it), and slides down from above into two end slots (0.15 mm a side).
@@ -30,12 +28,11 @@
 //   first, then the board.  A U at each of the six slots (on a v2 the end two stay empty), the strip screwed
 //   between each two (no room outside the end ports).  The comb keeps 2.1 mm off the board's face (the parts
 //   under each receptacle); the T-heads' bars reach into it, 4.7 mm wide, 1.1 mm off the USB-C left of each
-//   notch.  The port numbers are debossed in the strip's front face, the board's own (BOARD).
+//   notch.  No port numbers: on either board port 1 is the leftmost seen from the DUT's side (docs/mechanical.md).
 // Print: as installed (bottom down), PETG, no supports; the base bridges ≤ 16 mm between its feet.
 include <../lib/carrier.scad>
 
 PART = "cradle";
-BOARD = "x6";
 
 // a warning until the v2 is re-placed on the ×6's grid (pcb.data_port_x4_v2), then an assert again
 if (!(DATA_X6_SIZE == DATA_V2_SIZE && DATA_X6_X0 == DATA_V2_X0 && DATA_X6_T == DATA_V2_T
@@ -46,9 +43,6 @@ V2_X0 = DATA_X6_X0;                       // its left edge
 V2_Y = DATA_PCB_Y0 + DATA_X6_FACE_Y;      // its front face (the receptacles' mouths 1 mm behind the port wall)
 V2_Z0 = DRAWER_BOTTOM;                    // its bottom edge, on the floor
 PORT_XS = DATA_PORTS;                     // the drawer's slots (lib/carrier.scad), the receptacles standing
-// the strip's numbers, [x, label]: the board's port n over its U
-LABELS = BOARD == "x4" ? [for (i = [1 : 4]) [PORT_XS[i], str(i)]]             // the v2 in slots 2–5
-                       : [for (i = [0 : len(PORT_XS) - 1]) [PORT_XS[i], str(i + 1)]];
 GAP = 0.15;                               // per side in the slots and at the base's edge
 END = 5.5;                                // the board's ends inside the slots (no parts there, either face)
 UW = 2.4;                                 // the uprights' front and rear walls
@@ -155,8 +149,6 @@ module strip() difference() {
         translate([x, GUARD_SY, COMB_TOP - EPS]) cylinder(d = PT_CLEAR, h = STRIP_TOP - COMB_TOP + 2 * EPS, $fn = 24);
         translate([x - SEAT[0] / 2, COMB_Y[0] - 1, STRIP_TOP - SEAT[1]]) cube([SEAT[0], COMB_Y[1] - COMB_Y[0] + 2, SEAT[1] + 1]);
     }
-    // the board's port numbers in its front face, over each U it uses (above the port wall's top)
-    for (l = LABELS) translate([l[0], COMB_Y[0], (COMB_TOP + STRIP_TOP) / 2 + 0.3]) rotate([90, 0, 0]) deboss(l[1], cap = 3);
     // the visual language: a 0.8 round on its top's long edges
     translate([STRIP_X[0] - 0.1, COMB_Y[0], STRIP_TOP]) mirror([0, 0, 1]) edge_round(STRIP_X[1] - STRIP_X[0] + 0.2);
     translate([STRIP_X[0] - 0.1, COMB_Y[1], STRIP_TOP]) mirror([0, 1, 0]) mirror([0, 0, 1]) edge_round(STRIP_X[1] - STRIP_X[0] + 0.2);
