@@ -547,6 +547,13 @@ def hub_sheet(b: Board):
     ]
 
 
+# GND vias filling the stitching grid's gaps (drawn()): where no grid via fits, the farthest pour point first; the
+# second ties the rear pour's long strip at x 25.9 (one via held it).  Left: 4.84 mm at most, by USB-C 3's cluster
+GND_FILL = [(34.02, 43.48), (25.9, 33.9), (89.9, 6.9), (78.28, 25.75), (53.75, 55.81), (28.9, 39.9), (18.4, 7.27),
+            (20.9, 55.63), (25.95, 29.52), (63.9, 39.9), (11.9, 26.9), (23.9, 38.9), (30.18, 27.27), (49.55, 53.05),
+            (74.18, 56.8), (80.65, 14.7), (83.67, 50.4), (21.71, 50.95)]
+
+
 # ---------------------------------------------------------------------------------------- drawn copper
 def offset(poly, d):
     """A polyline (mm) shifted d mm sideways, mitred at its corners: to the west when it heads down the board (+y),
@@ -812,6 +819,9 @@ def drawn():
     hand_tracks += [("+3V3", "F.Cu", 0.25, [p64, (HX - 4.7, p64[1] + 0.2875), (HX - 4.7, HY + 5.72)]),
                     ("+3V3", "F.Cu", 0.25, [p64, (HX - 3.6, HY + 3.6)])]
     hand_vias.append(("+3V3", HX - 3.6, HY + 3.6, 0.5, 0.3))
+    # GND vias where the 4 mm stitching grid leaves the outer pours more than 4.5 mm from one (the layout review,
+    # 2026-11-01: its grid is 4–5 mm), each inside both pours' fill: farthest gap first
+    hand_vias += [("GND", x, y, 0.6, 0.3) for x, y in GND_FILL]
     return hand_tracks, hand_vias
 
 
@@ -913,7 +923,10 @@ def board() -> Board:
         "dru": XTAL_RULE + BOARD_RULES,
         "keepouts": [
             # the crystal's block (dropped once routed), as the v2's
-            {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP}] + [
+            {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP},
+            # no rear pour in the 0.7 mm strip by USB-C 6's cluster (x 91.5) that one via alone held: no room for a second
+            {"name": "gnd-strip-6", "layers": ["B.Cu"], "fills_only": True,
+             "poly": [(91.0, 47.0), (92.0, 47.0), (92.0, 51.6), (91.0, 51.6)]}] + [
             # each USB pair's band on F.Cu (the layout review: 3 × the track width between a fast bus and other
             # nets' lines, the enables and faults first): no other track along it, vias in (dropped once routed)
             {"name": f"core:usb{n}", "layers": ["F.Cu"], "tracks_only": True,
