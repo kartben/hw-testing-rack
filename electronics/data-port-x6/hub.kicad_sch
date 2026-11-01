@@ -13380,27 +13380,9 @@
 			)
 		)
 	)
-	(wire
-		(pts
-			(xy 386.08 228.6)
-			(xy 386.08 226.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0b685eb9-c409-5259-85fe-0d46c77b4e70")
-	)
-	(label "HUB_CFG2"
-		(at 386.08 226.06 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0e70588a-306e-541a-b4f3-bae39fef95eb")
+	(no_connect
+		(at 386.08 228.6)
+		(uuid "28dbde4a-d16f-5d21-9c08-31e8cf9f13a1")
 	)
 	(wire
 		(pts
@@ -13413,7 +13395,7 @@
 		)
 		(uuid "81950022-eddc-5a67-aaeb-8bcafb5be4c7")
 	)
-	(label "HUB_SWP7"
+	(label "HUB_SWP6"
 		(at 383.54 226.06 90)
 		(fields_autoplaced yes)
 		(effects
@@ -13435,7 +13417,7 @@
 		)
 		(uuid "fc2de155-4a44-565d-b298-0ffb157bbfe3")
 	)
-	(label "HUB_SWP6"
+	(label "HUB_SWP7"
 		(at 381 226.06 90)
 		(fields_autoplaced yes)
 		(effects
@@ -13446,13 +13428,31 @@
 		)
 		(uuid "7686ddad-af4d-55f0-b92d-139e0258acd1")
 	)
-	(no_connect
-		(at 378.46 228.6)
-		(uuid "a4410f07-ed08-54ba-99b5-dc24784b7b6a")
+	(wire
+		(pts
+			(xy 378.46 228.6)
+			(xy 378.46 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ae4c17bf-a4a3-5e03-9fdb-4a11c84607d4")
+	)
+	(label "HUB_CFG2"
+		(at 378.46 226.06 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e83aa44c-cfa6-5687-bdae-58ad8e8da06e")
 	)
 	(no_connect
-		(at 378.46 238.76)
-		(uuid "04065ac5-b1b5-5172-a2cb-4dadd3d48a40")
+		(at 386.08 238.76)
+		(uuid "4b062226-acc3-500b-a0da-ac1dd66177f1")
 	)
 	(symbol
 		(lib_id "Interface_Expansion:TCA9535RTWR")
@@ -18235,8 +18235,8 @@
 	)
 	(wire
 		(pts
-			(xy 386.08 238.76)
-			(xy 386.08 243.84)
+			(xy 378.46 238.76)
+			(xy 378.46 243.84)
 		)
 		(stroke
 			(width 0)
@@ -18810,7 +18810,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 386.08 243.84 180)
+		(at 378.46 243.84 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18819,7 +18819,7 @@
 		(fields_autoplaced yes)
 		(uuid "1ebe20bf-a63a-598b-9107-287e2d4edf40")
 		(property "Reference" "#PWR02067"
-			(at 386.08 243.84 0)
+			(at 378.46 243.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18828,7 +18828,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 386.08 247.65 0)
+			(at 378.46 247.65 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18836,7 +18836,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 386.08 243.84 0)
+			(at 378.46 243.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18845,7 +18845,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 386.08 243.84 0)
+			(at 378.46 243.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18854,7 +18854,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 386.08 243.84 0)
+			(at 378.46 243.84 0)
 			(effects
 				(font
 					(size 1.27 1.27)

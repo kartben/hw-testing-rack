@@ -163,7 +163,7 @@ ARRAYS = {"10k": ("4D02WGJ0103TCE", "C25725")}
 TPS = {
     # the supplies: VIN, +5V_A, +5V_B, +5V_L, +3V3, with GND
     "TP7": ("+3V3", "+3V3", 1.5, LDO[0], 10.6), "TP8": ("GND", "GND", 1.5, 17.0, 15.6),
-    "TP9": ("+5V_A", "+5V_A", 1.5, 20.0, 15.6), "TP41": ("+5V_B", "+5V_B", 1.5, 90.5, 10.6),
+    "TP9": ("+5V_A", "+5V_A", 1.5, 20.0, 10.9), "TP41": ("+5V_B", "+5V_B", 1.5, 90.5, 10.6),
     "TP42": ("VIN", "VIN", 1.5, 78.6, 22.6), "TP43": ("GND", "GND", 1.5, 81.6, 22.6),
     "TP44": ("+5V_L", "+5V_L", 1.5, 85.4, 11.4),
     # the hub's reset and core rail, with a GND
@@ -453,13 +453,15 @@ def hub_sheet(b: Board):
     R(s, "R9", "10k", "HUB_SWP5", "GND", size="0402", pcb=P(HX + 4.7, HY - 7.1, 90), sch=at(118, 92))
     for i, (nets, x, y, rot) in enumerate(((["HUB_SWP1", "HUB_BOOST0", "HUB_SWP2", "HUB_BOOST1"], HX - 4.8, HY - 7.1, 270),
                                            (["HUB_CFG1", "HUB_CFG0", "HUB_NONREM1", "HUB_GANG"], HX + 0.8, HY - 9.4, 90),
-                                           (["HUB_CFG2", "HUB_SWP7", "HUB_SWP6", None], HX + 3.5, HY + 7.6, 90))):
+                                           ([None, "HUB_SWP6", "HUB_SWP7", "HUB_CFG2"], HX + 3.5, HY + 6.85, 270))):
+        # RN3 under the hub's south-east corner, its signal pads up to the pins (pin 4 under CFG_SEL2, pin 3 under
+        # SWP7), its rail pads down: the USB-C 5–6 pairs' lanes run right under it
         up = ("HUB_CFG1", "HUB_CFG2")
         rarray(s, f"RN{1 + i}", "10k", [(net, ("+3V3" if net in up else "GND") if net else None) for net in nets],
                P(x, y, rot), sch=at(126 + 12 * i, 92, rot=180, fields=(3, 0)))
         rail(s, "GND", [f"RN{1 + i}.{9 - q}" for q in range(1, 5) if nets[q - 1] and nets[q - 1] not in up], 2, "down")
-        if nets[0] in up:
-            rail(s, "+3V3", [f"RN{1 + i}.8"], 2, "down")
+        if any(net in up for net in nets):
+            rail(s, "+3V3", [f"RN{1 + i}.{9 - q}" for q in range(1, 5) if nets[q - 1] in up], 2, "down")
 
     s.frame("TCA9535 expander (0x20): each port's EN and FAULT_N; its spare pins pulled down", 172, 10, 232, 60)
     # no RESET pin (the TCA6408A's): power-on reset only.  Its 100 nF right over VCC
@@ -473,7 +475,7 @@ def hub_sheet(b: Board):
     for pin in spare:
         exp[pin] = f"EXP_{pin}"
     part(s, "U2", "tca9535", exp, pcb=P(x, y, 0), sch=at(202, 34, fields=(-4, -12)))
-    C(s, "C18", "100n", "+3V3", "GND", size="0402", pcb=P(x, y - 3.6, 90), sch=at(184, 24))
+    C(s, "C18", "100n", "+3V3", "GND", size="0402", pcb=P(x + 0.25, y - 3.6, 90), sch=at(184, 24))
     pairs = [(f"EXP_{pin}", "GND") for pin in reversed(spare)]
     rarray(s, "RN10", "10k", pairs, P(x + 3.7, y, 0), sch=at(224, 50))
     rail(s, "GND", [f"RN10.{9 - q}" for q in range(1, 5)], 2, "down")
@@ -596,10 +598,11 @@ def drawn():
     hand_vias += [("GND", HX + 1.2 * i, HY + 1.2 * j, 0.5, 0.3) for i in (-1, 0, 1) for j in (-1, 0, 1)]
     hand_tracks += [("GND", "F.Cu", 0.2, [(HX + 4.4125, HY + 2.75), (HX + 2.95, HY + 2.75), (HX + 2.25, HY + 2.05),
                                           (HX, HY)]),
-                    ("GND", "F.Cu", 0.2, [(HX + 3.75, HY + 7.1), (HX + 3.25, HY + 7.1)]),
-                    # its via over pads 6 / 7, away from pad 8 (CFG_SEL2's pull-up, +3V3 since CFG_SEL 110)
-                    ("GND", "F.Cu", 0.2, [(HX + 3.25, HY + 7.1), (HX + 3.5, HY + 6.85), (HX + 3.5, HY + 6.45)])]
-    hand_vias.append(("GND", HX + 3.5, HY + 6.45, 0.5, 0.3))
+                    ("GND", "F.Cu", 0.2, [(HX + 3.75, HY + 7.35), (HX + 3.25, HY + 7.35)]),
+                    # its via under pads 6 / 7, between them and USB-C 6's lane, away from pad 5 (CFG_SEL2's pull-up,
+                    # +3V3 since CFG_SEL 110)
+                    ("GND", "F.Cu", 0.2, [(HX + 3.25, HY + 7.35), (HX + 3.5, HY + 7.6), (HX + 3.5, HY + 8.15)])]
+    hand_vias.append(("GND", HX + 3.5, HY + 8.15, 0.5, 0.3))
     t, v = xtal_block()
     hand_tracks += t
     hand_vias += v
@@ -619,6 +622,11 @@ def drawn():
     p52 = (HX - 4.4125, HY - 2.25)                                      # U1 pin 52
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [p52, (HX - 5.72, p52[1]), (HX - 5.72, HY - 3.05)]))
     hand_vias.append(("+3V3", HX - 5.72, HY - 3.05, 0.5, 0.3))
+    # C18 (the expander's 100 nF) in the pin → cap → via order: VCC (U2 pin 21) straight up into it, C18 on east to
+    # its via
+    p21 = (EXP[0] + 0.25, EXP[1] - 1.9375)                              # U2 pin 21
+    hand_tracks.append(("+3V3", "F.Cu", 0.25, [p21, (p21[0], EXP[1] - 3.09), (p21[0] + 0.95, EXP[1] - 3.09)]))
+    hand_vias.append(("+3V3", p21[0] + 0.95, EXP[1] - 3.09, 0.5, 0.3))
     # C13 (pin 57's 100 nF) likewise, on pin 57's line: the pin west to it, C13 on down to its via
     p57 = (HX - 4.4125, HY + 0.25)                                      # U1 pin 57
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [p57, (HX - 5.72, p57[1]), (HX - 5.72, HY + 0.95)]))
