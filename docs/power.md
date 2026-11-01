@@ -14,8 +14,8 @@ under A1 that holds the **power hub v0.5**:
   ([bom/sourcing.md](../bom/sourcing.md)).  28 V opens once every one is rated 60 V or more, and with a 140 W charger.
   VBUS is the rack bus (VRACK): there is no input switch, the eFuses keep the
   rows off until the contract is final;
-* an **eFuse per row** (TPS26600, 1.6 A), off until the controller turns it on.  Four row outputs;
-  rows C and D are not fitted for now, since the rack has two rows (what refitting takes:
+* an **eFuse per row** (TPS26600, 1.6 A), off until the controller turns it on.  Four row outputs,
+  all fitted since 2026-11-01: a third row is coming (C and D were DNP from 2026-10-23,
   [electronics.md](electronics.md#power-hub-v05--4-layers-76--100-mm));
 * the **rack controller** (an ESP32-S3, CAN master; see [can.md](can.md) and
   [electronics.md](electronics.md#power-hub-v05--4-layers-76--100-mm)).  The box is
@@ -93,6 +93,10 @@ count in that bay's row.  The default 100 W charger (20 V) carries the realistic
 row is capped at **≈ 32 W** by its eFuse (1.6 A): a typical row draws 8–15 W, four bays at their
 worst ≈ 44 W.  The 140 W EPR option (28 V) covers 12 bays' worst case (≈ 130 W), and caps a row at
 ≈ 45 W.
+A third row stays on the 100 W charger: 12 bays draw ≈ 30–40 W realistically, and their worst case
+(≈ 130 W) is past the contract, so the hub's budget shares the 100 W between the rows and the bays
+([below](#keeping-the-rows-inside-the-contract)): a port's power-on waits for room in its bay's
+share, and the rows shed D first.
 The hub knows both sides: the contract (the CH224A: the charger's offers and
 the current granted) and each row's current (the eFuses' IMON).  When the negotiated power is below
 the worst case, it budgets ([below](#keeping-the-rows-inside-the-contract)): it limits or sheds rows before

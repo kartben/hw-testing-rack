@@ -312,7 +312,7 @@ with JLC's rails) it gets JLC's 4-layer offer, without the $25 engineering fee
 |---|---|---|
 | USB-C PD in | GCT USB4105 (5 A) → SMAJ30A → VRACK, 100 µF / 50 V; no input switch | the whole rack's current, ≤ 5 A, in top pours.  VBUS is VRACK: the eFuses keep the rows off until the contract is final and block reverse current, so nothing switches the input (the AP33772S version had a 5 mΩ shunt and back-to-back IRF7842 NMOS here) |
 | PD sink | WCH CH224A (ESSOP-10): 9 V at plug-in (CFG1 6.8 k, the one-resistor mode, I²C on), its own Rd on CC1/CC2, supply (VHV and VBUS tied) through 56 Ω + 1 µF 50 V, I²C + PG to the controller, its own LED in the front wall (PD) | the controller asks for 20 V over I²C (28 V EPR opt-in); rows stay locked out below 15 V; the chip keeps the contract through controller resets.  Its pins are rated 32 V: the RC takes surges' fast edges off |
-| Rows A–D | 4 × TPS26600 (1.6 A, soft start 100 nF: ≈ 16 ms at 20 V, 22 ms at 28 V, UV 15 V / OV 31–34 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md).  A row of four nodes is ≈ 450 µF: the soft start charges it at ≈ 0.56 A, under the limit even at the corners; the eFuse takes ≈ 7–9 W typically, ≈ 14 W worst, for 19–24 ms, inside TI's thermal-shutdown curve with its 30 % margin (Fig. 55).  22 nF until 2026-10-23 needed ≈ 2.6 A; 47 nF until 2026-10-26 met the shutdown time at 28 V and 85 °C (datasheet audit U1).  **Rows C and D are not fitted for now** (below) |
+| Rows A–D | 4 × TPS26600 (1.6 A, soft start 100 nF: ≈ 16 ms at 20 V, 22 ms at 28 V, UV 15 V / OV 31–34 V, current-limit mode, auto-retry) → 6-pin JST PH S6B-PH-SM4-TB on the left edge | pinout and bus in [can.md](can.md).  A row of four nodes is ≈ 450 µF: the soft start charges it at ≈ 0.56 A, under the limit even at the corners; the eFuse takes ≈ 7–9 W typically, ≈ 14 W worst, for 19–24 ms, inside TI's thermal-shutdown curve with its 30 % margin (Fig. 55).  22 nF until 2026-10-23 needed ≈ 2.6 A; 47 nF until 2026-10-26 met the shutdown time at 28 V and 85 °C (datasheet audit U1).  **All four rows fitted** since 2026-11-01 (below) |
 | Row control | SHDN pulled low by 10 k (the pin sources up to 10 µA: 0.1 V, under its 0.55 V threshold; 100 k gave 1 V, enough to turn a row on without firmware); the controller drives ROW_EN high through 10 k (1.65 V) | **rows are off without firmware**; on once the contract is final, one after the other |
 | Per row | ON (green, from the row's own output through 18 k by the eFuse: 1.4 mA, 37 mW at 28 V); FAULT (red) from the row's ROW_EN into the open-drain FLT, so it lights only for a fault on an enabled row (the TPS26600 also pulls FLT low while a row is off or starting); FLT also to the controller (100 k pull-up); a B5819W from GND to the output at the connector, for the cable's kick when the eFuse cuts a short | Kingbright KPA-3010 side-view LEDs in the box's front wall |
 | Row current | IMON 18 k → 1.4 V/A, 1 k + 47 nF to the ESP32's ADC: the pin is a current source, so τ = (18k + 1k) × 47 nF ≈ 0.9 ms (the firmware polls every 250 ms) | |
@@ -983,27 +983,17 @@ current limit and IMON, the CH224A's CFG1, the buck's FB).
 | CAN | 2: TJA1462AT, PESD2CAN |
 | shared | 13: 100n, 47n, 1 µF 0805, 10 µF 1206, green LED, USB4105, B5819W (the buck's OR and, since the PCBA review, each row's output), 1k, 100k, 10k, 5.1k, 56 Ω, 18k |
 
-**Rows C and D are not fitted for now** (the user, 2026-10-23: the rack has two rows).  Their
-footprints and routing stay; `FITTED` in `design.py` marks their costly parts DNP, so the JLC BOM and
-CPL leave them out:
-- the eFuses U13 / U14;
-- the row connectors J4 / J5;
-- the front LEDs D13 / D14 (ON) and D23 / D24 (FAULT).
+**All four rows are fitted** (the user, 2026-11-01: a third row is coming).  From 2026-10-23 rows C
+and D were DNP: their eFuses U13 / U14, row connectors J4 / J5 and front LEDs D13 / D14 (ON),
+D23 / D24 (FAULT).  JLC's quote of 2026-10-23 left them out; `JLC_SINCE_QUOTE` adds them back
+(+$9.46 of parts and +$0.32 of joints for the 2 hubs, no part type more).
 
-Their passives stay fitted: FLT's 100k pull-up keeps FLT high, and the 18k IMON resistor keeps IMON at
-0 V, so the controller sees no phantom fault or current.  The BAT54S and B5819W of each row stay too
-(a cent each).  The firmware disables rows C and D in the hub's devicetree.
+`FITTED` in `design.py` still lists the rows fitted.  A row left out keeps its footprints and routing,
+its eFuse, connector and LEDs DNP; its passives stay, so FLT stays high (100k) and IMON at 0 V (18k),
+and the firmware disables the row in the hub's devicetree (`power_hub.dtsi`, its `status`).
 
-Fitting a row later:
-- **The TPS26600:** HTSSOP-16 with an exposed pad under it.  It needs a hot plate (or bottom heat)
-  and hot air, solder paste on the pad.  An iron alone can't reach the pad.
-- **The S6B connector:** iron and flux.  It is side entry, mouth to the board's edge, in line with
-  the power box's window.
-- **The two side-view LEDs:** iron or hot air, each centred on its hole in the box's front wall
-  (x = the row's pair ± 3 mm).
-- **Firmware:** enable the row in the devicetree.
-- **The charger:** a third row wants the 140 W EPR charger.  At 20 V a row is capped at ≈ 32 W, and
-  three rows of four bays outgrow 100 W at their worst ([power.md](power.md#the-charger)).
+The charger stays the 100 W one: at 20 V a row is capped at ≈ 32 W, and three rows of four bays outgrow
+100 W only at their worst, which the hub's budget sheds ([power.md](power.md#budget)).
 
 The routing did not move.  JLC assembles at least 2 boards in Standard PCBA, so one hub plus a spare
 is the minimum.  The MINI-1, like every ESP32 module JLC stocks, is "Standard PCBA only"; the

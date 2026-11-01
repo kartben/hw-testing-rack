@@ -53,9 +53,9 @@ RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["power_hub"]
 W, H = CFG["size"]
 ROWS = ["A", "B", "C", "D"]
-# Rows fitted on this build: the rack has two rows (the user, 2026-10-23).  The others keep their footprints and
-# routing; their eFuse, connector and LEDs are DNP, their passives stay (FLT pulled up, IMON at 0 V)
-FITTED = ["A", "B"]
+# Rows fitted on this build: all four (the user, 2026-11-01; A and B only from 2026-10-23).  A row left out keeps its
+# footprints and routing; its eFuse, connector and LEDs are DNP, its passives stay (FLT pulled up, IMON at 0 V)
+FITTED = ROWS
 ROW_Y = CFG["rows"]                 # KiCad y of each row connector (left edge)
 LED_X = CFG["front"]["leds"]        # ON/FAULT pair centres A–D, then PD, CTL
 USB_X = CFG["front"]["usb"]

@@ -195,7 +195,14 @@ JLC_SINCE_QUOTE = {
                    # L1 rated for 28 V EPR (bom/sourcing.md, 2026-11-01): the IHLP2525CZEK4R7M01 (C48009678, extended,
                    # $0.69) for the FXL0630-4R7-M (C167220, extended, $0.096), on the same feeder: no part type more
                    "bay-node": [("IHLP2525CZ for the FXL0630 (L1, 28 V EPR): 10 at JLC's price", "components", 5.94)],
-                   "power-hub": [("IHLP2525CZ for the FXL0630 (L1, 28 V EPR): 2 at JLC's price", "components", 1.19)]}
+                   "power-hub": [("IHLP2525CZ for the FXL0630 (L1, 28 V EPR): 2 at JLC's price", "components", 1.19),
+                                 # rows C and D fitted again (the user, 2026-11-01), DNP in the quote: per hub 2
+                                 # TPS26600 ($1.5518), 2 S6B ($0.3922), 2 green ($0.2414) and 2 red ($0.1785) LEDs,
+                                 # 62 joints more (452 → 514) at the quote's rate ($2.30 for 904); all four already on
+                                 # rows A and B, no part type more
+                                 ("rows C and D fitted: their eFuses, connectors and LEDs, 2 hubs at JLC's price",
+                                  "components", 9.46),
+                                 ("rows C and D fitted: their joints, 2 hubs", "SMT", 0.32)]}
 
 # JLC's fees, as its real quotes of 2026-10-23 charge them (its help page "PCB Assembly Cost" of 2026-09-09
 # still says $25.56 / $8.21 / $1.53 and $8.18 / $1.53 / $3.07) and the jlcpcb.com calculator (2026-10-19,
@@ -215,11 +222,11 @@ JLC_FEES = {
 # "decision": a trade-off for the user.  A lever applied in a board leaves this list for its quote.
 JLC_LEVERS = {
     "power-hub": [
-        # rows C and D not fitted: in the real quote of 2026-10-23.  The console USB-C J6 in HRO instead of the GCT
-        # saves nothing: the PD input J1 stays GCT, so the HRO is a part type more ($1.55), as much as it saves
+        # the console USB-C J6 in HRO instead of the GCT saves nothing: the PD input J1 stays GCT, so the HRO is a part
+        # type more ($1.55), as much as it saves
         ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
-         "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check (2 a board, rows "
-         "A and B)", 1.33, "decision"),
+         "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check (4 a board, rows "
+         "A–D)", 2.66, "decision"),
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's "
          "C7519", 0.25, "decision"),
     ],
