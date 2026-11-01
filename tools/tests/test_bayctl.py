@@ -322,7 +322,7 @@ class LabOnly(unittest.TestCase):
             bayctl.get_bay(b, "B3.3")
 
     def test_errors(self):
-        for bad, msg in [({"B3.5": {}}, "a sub-slot is"), ({"A1": {"platform": "x"}, "A1.1": {}}, "holds one board"),
+        for bad, msg in [({"B3.7": {}}, "a sub-slot is"), ({"A1": {"platform": "x"}, "A1.1": {}}, "holds one board"),
                          ({"B3.2": {"console": "aux"}}, "no AUX UART"), ({"B3.x": {}}, "sub-slot"),
                          ({"A1": {"console": "serial"}}, "console must be")]:
             with self.assertRaisesRegex(bayctl.BayError, msg, msg=bad):

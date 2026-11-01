@@ -1000,6 +1000,8 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
                 for peg in plate_layout.layout_bay(rack, bay.id).pegs:
                     for name, _ in peg.parts:
                         counts[name] += 1
+        elif rack.is_dense(bay.id):         # `plate: slots`: the slotted bin in the plate's place
+            counts["slot_bin"] += 1
         elif rack.is_multi(bay.id):         # `plate: boards`: the former plates
             counts[f"plate_bay_{bay.id.lower()}"] += 1
         else:

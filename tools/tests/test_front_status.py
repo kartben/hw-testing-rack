@@ -34,8 +34,8 @@ class FrontStatus(unittest.TestCase):
             self.assertEqual(s["id"], bid)
             addrs.add(s["addr"])
             slots = self.rack.duts(bid)
-            if self.rack.is_multi(bid):
-                self.assertEqual(len(s["ports"]), 4)
+            if self.rack.is_multi(bid) or self.rack.is_dense(bid):                       # a DATA ×4's, a dense bay's ×6
+                self.assertEqual(len(s["ports"]), 6 if self.rack.is_dense(bid) else 4)
                 on = {sl.slot for sl in slots}
                 self.assertEqual({k + 1 for k, p in enumerate(s["ports"]) if p["on"]}, on, bid)
                 self.assertGreater(s["dut"]["ma"], sum(p["ma"] for p in s["ports"]))      # its hub on top

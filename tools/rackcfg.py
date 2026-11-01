@@ -23,18 +23,23 @@ class Bay:
 
 
 # ---- the boards under test in a bay (config/rack.yaml › population) ------------------------------------
-MAX_SLOTS = 4           # a DATA ×4 board in the drawer: four DUTs on one bay node (docs/multi-dut-node.md)
+MAX_SLOTS = 6           # the DATA ×6's ports: up to six DUTs on one bay node (a dense bay's, `plate: slots`)
+X4_SLOTS = 4            # a DATA ×4 board in the drawer: four DUTs on one bay node (docs/multi-dut-node.md)
 ROLES = ("analyzer",)   # a sub-slot's board that is no board under test: gusmanb's logic analyzer on a Pico 2
                         # (config/rack.yaml › analyzer, docs/multi-dut-node.md › "A logic analyzer in a sub-slot")
-PLATE_KINDS = ("pegs", "boards")   # a bay's plate: "pegs" (default), the one honeycomb plate for every board,
-                            # the boards held by clip-in pegs (tools/plate_layout.py); "boards", a converted bay's
-                            # own plate with each board's standoffs or fences at its `at` (board_plate.scad › BAY)
+PLATE_KINDS = ("pegs", "boards", "slots")   # a bay's plate: "pegs" (default), the one honeycomb plate for every
+                            # board, the boards held by clip-in pegs (tools/plate_layout.py); "boards", a converted
+                            # bay's own plate with each board's standoffs or fences at its `at` (board_plate.scad ›
+                            # BAY); "slots", a dense bay's slotted bin (drawer.slot_bin, parts/slot_bin.scad): its
+                            # boards on edge, one per DATA ×6 port
 NODE_BUTTONS = ((7.5, 21.5), (15.5, 21.5))   # the node's RESET and BOOT (KiCad), lib/carrier.scad NODE_RESET, NODE_BOOT
 BUTTON_HOLE_R = 1.6     # the plate's pin holes over them (Ø3.2)
 BUTTON_CLEAR = 3.0      # a board's footprint stays this far from those holes: a pin must reach the buttons
 BOARD_PAD = 2.5         # a board's footprint beyond its outline: fences (2.3), standoffs over edge holes
 BOARD_GAP = 7.0         # packing: between two boards' outlines
 REAR_GAP_MAX = 26.0     # board_plate.scad: room for the USB plug and the cable's bend behind a board
+DENSE_CLEAR = 0.6       # a dense bay's board in its lane, per side (drawer.slot_bin)
+DENSE_TALL = 82.0       # how tall it may stand: 85 from the bin's floor to the cap plate (or tray) over a 120 row
 
 
 @dataclass
@@ -59,13 +64,15 @@ def dut_slots(bay_id: str, entry: dict | None) -> list[Slot]:
         if e.get("board"):
             raise ValueError(f"{bay_id}: `board` and `boards` both set: one or the other")
         items = e.get("boards") or []
-        if not 1 <= len(items) <= MAX_SLOTS:
-            raise ValueError(f"{bay_id}: `boards` holds 1 to {MAX_SLOTS} boards, not {len(items)}")
+        # a dense bay's boards (`plate: slots`) go on the DATA ×6's six ports, a converted bay's on its DATA ×4's
+        top, name = (MAX_SLOTS, "DATA ×6") if e.get("plate") == "slots" else (X4_SLOTS, "DATA ×4")
+        if not 1 <= len(items) <= top:
+            raise ValueError(f"{bay_id}: `boards` holds 1 to {top} boards, not {len(items)}")
         out = {}
         for k, it in enumerate(items, 1):
             n = int((it or {}).get("slot", k))
-            if not 1 <= n <= MAX_SLOTS:
-                raise ValueError(f"{bay_id}: slot {n}: DATA ×4 ports are 1 to {MAX_SLOTS}")
+            if not 1 <= n <= top:
+                raise ValueError(f"{bay_id}: slot {n}: {name} ports are 1 to {top}")
             if n in out:
                 raise ValueError(f"{bay_id}: two boards on slot {n}")
             if not (it or {}).get("board"):
@@ -218,12 +225,18 @@ class Rack:
         return dut_slots(bay_id, self.raw.get("population", {}).get(bay_id))
 
     def is_multi(self, bay_id: str) -> bool:
-        """A converted bay: its drawer holds a DATA ×4 board and up to four boards (`boards:`)."""
-        return "boards" in (self.raw.get("population", {}).get(bay_id) or {})
+        """A converted bay: its drawer holds a DATA ×4 board and up to four boards (`boards:`), not a dense bay's
+        DATA ×6 (is_dense)."""
+        return "boards" in (self.raw.get("population", {}).get(bay_id) or {}) and not self.is_dense(bay_id)
+
+    def is_dense(self, bay_id: str) -> bool:
+        """A dense bay (`plate: slots`): the slotted bin in its drawer, up to six boards on edge on the DATA ×6."""
+        return self.plate_kind(bay_id) == "slots"
 
     def plate_kind(self, bay_id: str) -> str:
         """A bay's plate (population › plate): "pegs", the honeycomb plate and its pegs (every bay unless it says
-        otherwise), or "boards", a converted bay's own plate with its boards' standoffs or fences."""
+        otherwise), "boards", a converted bay's own plate with its boards' standoffs or fences, or "slots", a dense
+        bay's slotted bin."""
         k = (self.raw.get("population", {}).get(bay_id) or {}).get("plate", "pegs")
         if k not in PLATE_KINDS:
             raise ValueError(f"{bay_id}: plate {k!r}, not one of {PLATE_KINDS}")
@@ -416,6 +429,41 @@ class Rack:
                 if x0 < a1 and a0 < x1 and y0 < b1 and b0 < y1:
                     problems.append(f"{n1} and {n2} overlap")
         return problems
+
+    def dense_layout(self, bay_id: str, boards: dict | None = None) -> list[dict]:
+        """A dense bay's boards on edge in the slotted bin (drawer.slot_bin), in port order: {slot, board, o, lane,
+        turn, at, env, problems}.  o: the board turned USB to the port wall (orient_board); lane: (x0, x1) of its
+        lane, plate coords; turn: -90, stood on its left edge (its USB the nearer, its top face to the left), +90 on
+        its right edge (top face right), a turn about y; at: where its PCB's front-left corner as it lies (bottom
+        face) goes, (plate x, drawer y, z over the bin's floor), centred in its lane against the front stop; env:
+        (under, over) its PCB's bottom face (boards.yaml › on_edge); problems: what keeps it out of its lane."""
+        lib = boards if boards is not None else load_boards()
+        sb, lanes = self.drawer["slot_bin"], self.slot_lanes()
+        y0 = sb["front"][0] + sb["wall"] + 0.3
+        out = []
+        for sl in self.duts(bay_id):
+            if sl.board not in lib:
+                raise ValueError(f"{sl.id}: no board {sl.board!r} in mechanical/boards/boards.yaml")
+            bd = lib[sl.board]
+            o = orient_board({**bd, "orient": "rear"})
+            under, over = bd.get("on_edge") or (bd.get("standoff", 6), bd.get("pcb_t", 1.6) + bd.get("height", 10))
+            x0, x1 = lanes[sl.slot - 1]
+            xc = (x0 + x1) / 2
+            turn = -90 if o["usb_x"] <= o["w"] / 2 else 90
+            at = (xc - (under - over) / 2, y0, 0.0) if turn < 0 else (xc - (over - under) / 2, y0, o["w"])
+            problems = []
+            if under + over + 2 * DENSE_CLEAR > x1 - x0:
+                problems.append(f"{sl.id}: {under + over:.1f} mm thick, its lane takes {x1 - x0 - 2 * DENSE_CLEAR:.1f}")
+            if y0 + o["l"] > sb["dividers"][0]:
+                problems.append(f"{sl.id}: {o['l']:.1f} mm long, past the dividers' end by "
+                                f"{y0 + o['l'] - sb['dividers'][0]:.1f}")
+            if o["w"] > DENSE_TALL:
+                problems.append(f"{sl.id}: {o['w']:.1f} mm tall on edge, the row above leaves {DENSE_TALL:g}")
+            if sl.orient or sl.at:
+                problems.append(f"{sl.id}: `orient` and `at` are a plate's: a dense bay's lanes place its boards")
+            out.append({"slot": sl, "board": sl.board, "o": o, "lane": (x0, x1), "turn": turn, "at": at,
+                        "env": (under, over), "problems": problems})
+        return out
 
     def multi_bays(self) -> list[str]:
         """The converted bays, in rack order."""

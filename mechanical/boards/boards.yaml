@@ -14,6 +14,9 @@
 #
 # standoff     = plate-to-PCB distance (Nucleo morpho pins stick out underneath!)
 # height       = tallest component above the PCB (viewer only)
+# on_edge      = a dense bay's board on edge in its lane (config/rack.yaml › drawer.slot_bin): how far it reaches
+#                under its PCB's bottom face and over it (PCB, parts, a plug in its USB), mm; standoff and
+#                pcb_t + height when not given (they are the plate's, with a margin)
 # fence        = true → hole-less corner-fence mounting
 # orient: side = turn the debug USB towards the drawer's right wall; the board then sits to the
 #                left of its plate.  For a board too long for a plug behind it, and for a small
@@ -44,6 +47,7 @@ boards:
     pegs: { keepout: [[left, 2, 16], [top, 17, 66], [bottom, 26, 66], [right, 30, 48]] }   # jack; headers; ICSP, Qwiic
     standoff: 6
     height: 11
+    on_edge: [1.8, 12.7]    # the THT pins 1.8 under, the jack 11 over the PCB (Arduino's model, 14.5)
     color: "#00878f"
     model: { web: true, recolour: { "#010a20": "#00828a" },
              credit: "UNO R4 WiFi model © Arduino S.r.l., CC BY-SA 4.0 (recoloured)" }
@@ -92,6 +96,7 @@ boards:
     pegs: { keepout: [[left, 4, 60], [right, 4, 60]] }        # the morpho headers' pins under the long edges
     standoff: 12
     height: 12
+    on_edge: [8.9, 10.1]    # 19 overall, measured (the user, 2026-10-31): the morpho pins 8.9 under
     color: "#f2f2f2"
     model: { flip: true, web: true, recolour: { "#003700": "#f4f4f2" },
              credit: "NUCLEO-G474RE (MB1367) model © STMicroelectronics, Open Platform License Agreement" }
@@ -162,6 +167,7 @@ boards:
     pegs: { keepout: [[left, 0, 62.74], [right, 0, 62.74], [bottom, 0, 25.4]] }   # headers; both USB ports
     standoff: 10            # header pins underneath
     height: 8
+    on_edge: [8.5, 6.5]     # the pins 8.5 under, a USB-C overmold 4.85 over the parts: 15 overall
     color: "#151515"
     source: "Espressif DXF ESP32-S3-DevKitC-1 v1.1"
     verified: true
@@ -183,6 +189,7 @@ boards:
     pegs: { keepout: [[left, 0, 51.8], [right, 0, 51.8], [bottom, 0, 25.4]] }     # headers; both USB ports
     standoff: 10
     height: 8
+    on_edge: [8.5, 6.5]     # the S3's form factor
     color: "#151515"
     source: "Espressif dimension drawing v1.2"
     verified: true
@@ -272,6 +279,7 @@ boards:
     usb: { edge: bottom, pos: 36.0, type: usb-c, z: 6.3 }   # z: its centre above the plate (Seeed's model)
     standoff: 11.0
     height: 0.5
+    on_edge: [11.0, 4.4]    # its case, as Seeed's model (15.4 overall)
     color: "#f2f2f0"
     screen: { at: [11.52, 14.39], size: [48.96, 36.72], px: [320, 240], top: "-y", z: 1.6, demo: widgets }
                             # the ILI9341's active area behind the front's clear window; the image turned so it reads from the

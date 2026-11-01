@@ -327,7 +327,7 @@ class Lab:
             for k in self.bays:
                 n = rackcfg.split_slot(k)[1]
                 if n is not None and not 1 <= n <= rackcfg.MAX_SLOTS:
-                    raise ValueError(f"{k}: a sub-slot is <bay>.<1-{rackcfg.MAX_SLOTS}>, a DATA ×4 port")
+                    raise ValueError(f"{k}: a sub-slot is <bay>.<1-{rackcfg.MAX_SLOTS}>, a DATA board's port")
         except ValueError as e:
             raise BayError(f"config/lab.yaml: {e}") from None
 

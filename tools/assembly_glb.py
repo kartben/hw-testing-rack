@@ -205,7 +205,7 @@ def part_category(name):
         return "pcbgreen" if name.startswith("dataport_pcb") else "silver"
     for prefix, cat in (("ladder_", "ladders"), ("brace_", "braces"), ("tray", "trays"), ("floor_plate", "frameplates"),
                         ("cap_plate", "frameplates"), ("drawer", "drawers"), ("chain_", "chainparts"),
-                        ("plate", "plates"), ("camera_", "cameras"), ("power_box_", "powerbox")):
+                        ("plate", "plates"), ("slot_bin", "plates"), ("camera_", "cameras"), ("power_box_", "powerbox")):
         if name.startswith(prefix):
             return cat
     return "trays"
@@ -421,12 +421,12 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         add(with_mat(g, mat(part_category(it["part"]))), f"{part_category(it['part'])}:{it['part']}",
             place(it.get("space"), it.get("row"), local), it.get("bay"))
     for b in scene_json["boards"]:
+        # a dense bay's board stands on edge: turned about y round its PCB's corner (rack.json › boards › rot)
+        local = translate(np.add(b["pos"], [0, drawer_dy(b), 0])) @ rot_xyz(b.get("rot", [0, 0, 0]))
         for m in real_board(b) or board_meshes(b):
-            add(m, f"boards:{b['id']}", place("row", b["row"], translate(np.add(b["pos"], [0, drawer_dy(b), 0]))),
-                b.get("bay"))
+            add(m, f"boards:{b['id']}", place("row", b["row"], local), b.get("bay"))
         if b.get("screen") and (q := screen_quad(b["screen"])) is not None:
-            add(q, f"screen:{b['id']}", place("row", b["row"], translate(np.add(b["pos"], [0, drawer_dy(b), 0]))),
-                b.get("bay"))
+            add(q, f"screen:{b['id']}", place("row", b["row"], local), b.get("bay"))
     for p in scene_json["pcbs"]:
         dy = drawer_dy(p) if p.get("movable") else 0.0
         for m in pcb.get(p["board"], []):

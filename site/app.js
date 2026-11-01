@@ -176,7 +176,7 @@ function partMaterial(name) {
   if (name === 'floor_plate' || name === 'cap_plate') return MAT.framePlates;
   if (name.startsWith('drawer')) return MAT.drawers;      // a drawer, or a sled bay's sled and port block
   if (name.startsWith('chain_')) return MAT.chainParts;
-  if (name === 'plate' || name.startsWith('plate_')) return MAT.plates;
+  if (name === 'plate' || name.startsWith('plate_') || name === 'slot_bin') return MAT.plates;   // a dense bay's bin too
   if (name === 'peg_cam') return MAT.cams;
   if (name.startsWith('peg_')) return MAT.pegs;
   if (name === 'camera_diffuser' || name === 'podpcb_parts') return MAT.powerLabels;
@@ -379,6 +379,7 @@ function makeBoard(b) {
   g.add(lbl);
   if (b.screen) g.add(makeScreen(b.screen));
   g.position.set(...b.pos);
+  if (b.rot) g.rotation.set(deg(b.rot[0]), deg(b.rot[1]), deg(b.rot[2]));   // a dense bay's, on edge
   return g;
 }
 

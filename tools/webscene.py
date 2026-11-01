@@ -40,6 +40,7 @@ WEB_PARTS = {
     "podpcb_parts": ("parts/camera_pod.scad", {"PART": "podpcb_parts"}),
     "podpcb_dupont": ("parts/camera_pod.scad", {"PART": "podpcb_dupont"}),     # with the KiCad pod board
     "plate": ("parts/board_plate.scad", {}),                                 # the honeycomb plate
+    "slot_bin": ("parts/slot_bin.scad", {}),                                 # a dense bay's, in its place
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {"PART": "lid"}),
     "power_box_labels": ("parts/power_box.scad", {"PART": "labels"}),
@@ -370,9 +371,9 @@ def front_status(rack, bid: str, info: dict) -> dict:
     ma = lambda sl: SCREEN_ANALYZER_MA if sl.role == "analyzer" else SCREEN_MA.get(sl.board, 50)
     st = {"id": bid, "addr": f"192.168.1.{60 + 16 * row + n}", "fault": False,
           "path": "classic" if info.get("pc_cable") else "usbip"}
-    if rack.is_multi(bid):
+    if rack.is_multi(bid) or rack.is_dense(bid):    # a dense bay's six ports (the display shows its first four)
         on = {sl.slot: ma(sl) for sl in slots}
-        st["ports"] = [{"on": k in on, "ma": on.get(k, 0)} for k in range(1, 5)]
+        st["ports"] = [{"on": k in on, "ma": on.get(k, 0)} for k in range(1, 7 if rack.is_dense(bid) else 5)]
         st["dut"] = {"mv": 4990 + 7 * n, "ma": sum(on.values()) + SCREEN_HUB_MA}
     else:
         st["ports"] = None                       # no DATA ×4: "1  -" … "4  -"
@@ -543,7 +544,8 @@ def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoi
     tightest bend (a thin USB cable's by default; a Dupont wire's: DUPONT); step, the segments' length
     (ROD_STEP by default; a jumper's 5 mm: the shape barely changes, the solve is 8 times faster); push, how hard
     it is kept off boxes and other cables (a penalty's weight: a ribbon's free wire ends need more).  Its spare
-    length starts out bowed away from `outward` (an x, y: the bay's middle), so neighbours bulge apart.  SLSQP (scipy) on the segments' directions: the length
+    length starts out bowed away from `outward` (an x, y: the bay's middle), so neighbours bulge apart, and up (0.6 of the
+    sideways bow, or `outward`'s third value).  SLSQP (scipy) on the segments' directions: the length
     is exact by construction.  `guess`: a path to start from (another route's points).  Returns (points,
     shortfall, note): shortfall > 0 when the plugs are too far apart for the cable, or no shape reaching both
     was found (the guess is returned then); note says what is wrong with a shape that was found (a cable too
@@ -565,7 +567,8 @@ def rod_cable(a, b, length, floor_z=-1e9, ceil_z=1e9, boxes=(), guess=None, avoi
     side = side / (np.linalg.norm(side) or 1.0)
     if outward is not None and np.dot(side[:2], (pa + pb)[:2] / 2 - np.asarray(outward, float)[:2]) < 0:
         side = -side
-    bow = (side + np.array([0.0, 0.0, 0.6])) / np.linalg.norm(side + np.array([0.0, 0.0, 0.6]))
+    up = np.array([0.0, 0.0, outward[2] if outward is not None and len(outward) > 2 else 0.6])
+    bow = (side + up) / np.linalg.norm(side + up)
     bump = np.sin(np.linspace(0.0, math.pi, n + 1))[:, None] * bow
     lo, hi = 0.0, length
 
@@ -1401,16 +1404,22 @@ def build(rack) -> Path:
         return (bx, by, dz + d["bottom"] + d["plate"]), (bx + o["w"], by + o["l"], top)
 
     def dut_board(i, bay, slot, board_id, bd, o, bx, by, dz, dy, drawer, ctype, port, others=(), drawn=None, mid=None,
-                  dxw=None):
+                  dxw=None, edge=None):
         """A board on its plate (front-left corner bx, by; o: rackcfg.orient_board) and its DUT cable from its DATA
         port (port: the plug end there, port_ends): a straight USB-C plug through the port wall's slot into the
         DATA board's receptacle, turned with it, the board's own connector (micro-B, USB-C…) at the other end.  A
         board's USB facing the port wall: a right-angle plug (`right`), or for a micro-B / mini-B board a 90°
         adapter with a straight plug standing on it (`adapter`); a small board turned to the side wall (orient:
         side): a straight plug (`straight`); a board facing the port wall from far enough (a converted bay's): a
-        straight plug, the two facing each other.  The cable at its true length, as it lies (rod_cable)."""
+        straight plug, the two facing each other.  The cable at its true length, as it lies (rod_cable).  edge: a
+        dense bay's board on edge in its lane (rackcfg.dense_layout): (turn, z of its PCB's corner, its box, the
+        bin's floor): the board turned about y, its plug turned with it."""
         bz = dz + d["bottom"] + d["plate"] + bd.get("standoff", 6)
+        turn = 0
+        if edge:
+            turn, bz, own_box, floor_z = edge
         items["boards"].append({"bay": bay, **({"slot": slot} if slot else {}), "row": i, "id": board_id,
+                                **({"rot": [0, turn, 0]} if turn else {}),
                                 "name": bd["name"], "label": bd.get("short", ""),
                                 "pos": [round(bx, 2), round(by, 2), round(bz, 2)],
                                 "size": [o["w"], o["l"], 1.6], "height": bd.get("height", 10),
@@ -1427,7 +1436,11 @@ def build(rack) -> Path:
         if "z" in bd["usb"]:            # a whole device's connector: its centre this high above the plate
             zc = bz - bd.get("standoff", 6) + bd["usb"]["z"]
         ux = o["usb_x"]
-        if o["usb_side"]:
+        if turn:                     # on edge: its USB's mouth turned with it about y, the plug standing
+            zl, s_ = zc - bz, (1 if turn > 0 else -1)
+            end_b = {"at": [bx + s_ * zl, by + o["l"] + 0.6, bz - s_ * ux], "dir": [0, -1, 0], "up": [s_, 0, 0],
+                     "type": btype, "style": b_style}
+        elif o["usb_side"]:
             end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": b_style}
         else:
             end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": b_style}
@@ -1439,11 +1452,15 @@ def build(rack) -> Path:
             end_b = {"at": [round(float(c), 2) for c in mouth], "dir": [0, 0, -1], "up": end_b["dir"],
                      "type": btype, "style": "straight"}
             ends_b.append(end_b)
-        floor_z = dz + d["bottom"] + d["plate"]
+        if not edge:
+            floor_z, own_box = dz + d["bottom"] + d["plate"], board_box(bd, o, bx, by, dz)
         best = None
         # port: the plug end at the DATA port, or a list of them to try in turn: the first where the cable lies
         # clear (reaches, touches nothing) is taken, else the one it fits best
-        for k, end_a in enumerate(port if isinstance(port, list) else [port]):
+        # mid: which way its spare length bows (away from it), or a list of ways to try in turn, as the ports
+        tries = [(k, e_, m_) for k, e_ in enumerate(port if isinstance(port, list) else [port])
+                 for m_ in (mid if isinstance(mid, list) else [mid])]
+        for k, end_a, mid_ in tries:
             end_a = dict(end_a)
             sx = end_a["at"][0]
             free = cable_free_length(cables_cfg[ctype], end_a, end_b)
@@ -1454,14 +1471,14 @@ def build(rack) -> Path:
             # the cable as it lies, its whole length: on the plate, under the camera pod, out of the boards and the
             # port wall (rod_cable); the routes above only give it a start
             wall = ((sx - 200, dy + port_wall_y - d["wall"], dz), (sx + 200, dy + port_wall_y + 1, dz + d["wall_height"]))
-            boxes = [board_box(bd, o, bx, by, dz), *others, wall]
+            boxes = [own_box, *others, wall]
             if dxw is not None:          # the drawer's side walls and front panel, as high as the cable may rise: it
                 top = ARCH_TOP_MAX + 10  # stays in the drawer, which slides in its tray
                 boxes += [((dxw - 30, dy, dz), (dxw + d["wall"], dy + port_wall_y, top)),
                           ((dxw + rack.drawer_w - d["wall"], dy, dz), (dxw + rack.drawer_w + 30, dy + port_wall_y, top)),
                           ((dxw - 30, dy - 30, dz), (dxw + rack.drawer_w + 30, dy + d["front_thickness"], top))]
             pts, short, note = rod_cable(end_a, end_b, free, floor_z, ARCH_TOP_MAX, boxes, guess=guess,
-                                         avoid=drawn or (), outward=mid)
+                                         avoid=drawn or (), outward=mid_)
             lost = bool(short and not short0)
             if lost:
                 pts, short = guess, short0
@@ -1635,7 +1652,54 @@ def build(rack) -> Path:
                         layer="plates", bay=b.id, movable=drawer)
             placed = {pb.slot: pb.at for pb in lay.boards}
             meta["pegs"] = {"count": len(lay.pegs), "notes": lay.notes}
-        if info and rack.is_multi(b.id):
+        if info and rack.is_dense(b.id):
+            # a dense bay: the slotted bin in the plate's place, its boards on edge in their lanes, each on the DATA
+            # ×6's port of its lane (rackcfg.dense_layout), its straight cable to it through the cable zone
+            add("slot_bin", (dxw + plate_x0, dy + plate_y0, dz + d["bottom"]), row=i, layer="plates", bay=b.id,
+                movable=drawer)
+            sb = d["slot_bin"]
+            floor = dz + d["bottom"] + sb["floor"]
+            fy, fh = sb["front"]
+            ry, rh = sb["dividers"]
+            # its walls, for the cables to keep out of: the front stop and the dividers
+            walls = [((dxw + plate_x0, dy + fy, floor), (dxw + plate_x0 + plate_w, dy + fy + sb["wall"], floor + fh))]
+            walls += [((dxw + plate_x0 + x, dy + fy, floor), (dxw + plate_x0 + x + sb["wall"], dy + ry, floor + rh))
+                      for x in [0.0] + [x1 for _, x1 in rack.slot_lanes()]]
+            lay = rack.dense_layout(b.id, boards)
+            for e in lay:
+                for p_ in e["problems"]:
+                    print(f"warning: {p_}")
+            ports = port_ends(rack, "data_port_x6", dxw, dy + dp_y0, dz)
+
+            def edge_box(e):
+                """What a board on edge fills: its lane's width of it, from the bin's floor up to its top."""
+                (under, over), o_ = e["env"], e["o"]
+                x, y = dxw + plate_x0 + e["at"][0], dy + e["at"][1]
+                x_lo, x_hi = (x - over, x + under) if e["turn"] < 0 else (x - under, x + over)
+                return (x_lo, y, floor), (x_hi, y + o_["l"], floor + o_["w"])
+            drawn = []
+            # the long boards' cables first: theirs have the most to spare, a loop in the cable zone that the short
+            # boards' cables, tauter, then go round
+            for e in sorted(lay, key=lambda e: -e["o"]["l"]):
+                sl, o = e["slot"], e["o"]
+                bd = {**boards[e["board"]], "orient": "rear"}
+                others = walls + [edge_box(f) for f in lay if f is not e]
+                # its spare length bows away from the lane's wall nearer its plug (its USB ≈ 3 mm off the PCB), or
+                # else the other way, or up, if it lies against a wall or a cable
+                bx = dxw + plate_x0 + e["at"][0]
+                x_usb, (lx0, lx1) = bx + (3.0 if e["turn"] > 0 else -3.0), [dxw + plate_x0 + v for v in e["lane"]]
+                away = [(lx0 - 10.0, dy), (lx1 + 10.0, dy)][::1 if x_usb < (lx0 + lx1) / 2 else -1]
+                away.append((*away[0], 4.0))     # last, a loop standing up: a long board's cable has most to spare
+                dut_board(i, b.id, sl.id, e["board"], bd, o, bx, dy + e["at"][1], dz, dy, drawer, sl.cable,
+                          ports[sl.slot - 1], others, drawn, away, dxw, edge=(e["turn"], floor + e["at"][2], edge_box(e), floor))
+            slots = [{"id": e["slot"].id, "port": e["slot"].slot, "board": boards[e["board"]]["name"], "board_id": e["board"],
+                      "cable": cables_cfg[e["slot"].cable]["label"], "usb": boards[e["board"]]["usb"]["type"],
+                      "verified": boards[e["board"]].get("verified", False)} for e in lay]
+            meta.update({"board": f"{len(slots)} boards on edge on a DATA ×6", "slots": slots, "dense": True,
+                         "data_port": [f"DATA ×6 port {sl_['port']}" for sl_ in slots],
+                         "open": bool(info.get("open")) and drawer, "mount": rack.mount(b.id),
+                         "verified": all(sl_["verified"] for sl_ in slots)})
+        elif info and rack.is_multi(b.id):
             # a converted bay: one plate (the honeycomb one, or board_plate.scad › BAY), its boards where the peg
             # layout (or rackcfg.bay_layout) puts them, each on its own DATA ×4 port
             if not pegs_plate:
