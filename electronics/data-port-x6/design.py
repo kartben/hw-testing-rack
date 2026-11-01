@@ -62,8 +62,10 @@ CL_Y = 46.7                         # each port's power cluster: its frame's top
 PWR_SPLIT = 54.6                    # the power plane: +3V3 above, +5V_A / +5V_B under (MID_X between them)
 MID_X = 50.0
 UP_Y = 56.5                         # over each receptacle: its VBUS 22 µF, CC resistors, LED
-# each USB-C's USBLC6 (2–6 west of the receptacle, between two clusters: the pair comes straight down to it)
+# each USB-C's USBLC6 (2–6 west of the receptacle, between two clusters: the pair comes straight down to it;
+# USB-C 1's over its receptacle, clear of the cradle's band: ESD1)
 ESD_PX = {n: USBS[n - 1] - (6.9 if n == 2 else 7.4) for n in range(2, 7)}
+ESD1 = (USBS[0] - 3.65, UP_Y - 0.25)
 # the hub's pairs (hs_pairs()): each one's lane in the corridor under the hub (its centreline; USB-C 2–3 west,
 # 5–6 east, 4 straight down), and its way down between the cluster west of it and its own to its USBLC6 (D−'s
 # line; D+ 0.4 mm east): clear of the R(k+2)/R(k+3) pads west of it and of its USBLC6's pin 4 and 5 pads
@@ -281,7 +283,7 @@ def port(b: Board, n: int):
     # pair comes straight down between two clusters.  Port 1's west of its receptacle, over it (the cradle's band
     # beside it): its pair comes down the board's west edge.  Its VBUS 100 nF right over its pin 5.  ESD_PX: each
     # pair's way down between its pins' pads and the cluster west of it
-    ex_ = (ESD_PX[n], USB_Y, 180) if n > 1 else (cx - 3.65, UP_Y - 0.25, 180)
+    ex_ = (ESD_PX[n], USB_Y, 180) if n > 1 else (*ESD1, 180)
     part(s, esd, "esd", {"1": p + "CONN_DN", "6": p + "DN", "3": p + "CONN_DP", "4": p + "DP", "5": v5,
                          "2": "GND"}, pcb=P(*ex_), sch=at(84, 76))
     s.wire(f"{usb}.B7", f"{esd}.1")
@@ -577,7 +579,7 @@ def hs_pairs():
 
     # USB-C 1: west from the pins, north round the keep-out at x HX − 8, west at y HY − 3.6, down the west edge at
     # x 5.2 (in the cradle's band, which only parts must keep clear of), past R101
-    p4, p6 = esd_pins(USBS[0] - 4.2, UP_Y - 0.25)
+    p4, p6 = esd_pins(*ESD1)
     xn, yw, xe = HX - 8.0, HY - 3.6, 5.2
     cl = [(HX - 4.9, HY - 1.45), (xn + c, HY - 1.45), (xn, HY - 1.45 - c), (xn, yw + c), (xn - c, yw), (xe + c, yw),
           (xe, yw + c), (xe, p4[1] - 0.4)]
@@ -638,7 +640,7 @@ def drawn():
         vs = (x0 + 8.51, CL_Y + 2.45)
         hand_tracks.append(("+3V3", "F.Cu", 0.25, [vs, (vs[0], CL_Y + 0.15)]))
         hand_vias.append(("+3V3", vs[0], CL_Y + 0.15, 0.5, 0.3))
-        ex, ey = (ESD_PX[n], USB_Y) if n > 1 else (cx - 3.65, UP_Y - 0.25)
+        ex, ey = (ESD_PX[n], USB_Y) if n > 1 else ESD1
         v5 = "+5V_A" if n <= 3 else "+5V_B"
         top = ey - (2.9 if n > 1 else 2.35)
         hand_tracks.append((v5, "F.Cu", 0.25, [(ex - 1.138, ey), (ex, ey), (ex, top)]))
