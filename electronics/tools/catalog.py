@@ -328,7 +328,11 @@ CAT = {
     "tca9535": Cat("Interface_Expansion:TCA9535RTWR", "Package_DFN_QFN:WQFN-24-1EP_4x4mm_P0.5mm_EP2.45x2.45mm",
                    "TCA9535RTWR", "Texas Instruments", "C129354", 1.28,
                    datasheet="https://www.ti.com/lit/ds/symlink/tca9535.pdf",
-                   description="16-bit I2C I/O expander, push-pull outputs, open-drain INT, WQFN-24 4 × 4"),
+                   description="16-bit I2C I/O expander, push-pull outputs, open-drain INT, WQFN-24 4 × 4",
+                   # KiCad has no WQFN-24 4 × 4 body with this exposed pad: its TI RTW one (same outline, pins
+                   # and pitch; only the exposed pad underneath differs)
+                   model=("${KICAD10_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/Texas_RTW_WQFN-24-1EP_4x4mm_P0.5mm_EP2.7x2.7mm.step",
+                          (0, 0, 0), (0, 0, 0))),
     "tca9534": Cat("Interface_Expansion:TCA9534", "Package_SO:TSSOP-16_4.4x5mm_P0.65mm", "TCA9534APWR",
                    "Texas Instruments", "C206010", 1.36, datasheet="https://www.ti.com/lit/ds/symlink/tca9534a.pdf",
                    description="8-bit I2C I/O expander, push-pull outputs, A version (0x38–0x3F)"),
