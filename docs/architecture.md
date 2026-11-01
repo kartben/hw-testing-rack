@@ -73,7 +73,7 @@ flowchart LR
     MUXD["MUX_DUT<br/>FSUSB42"]
     MUXP["MUX_PC<br/>FSUSB42"]
     OR["OR gate"]
-    SW["TPS2553<br/>VBUS switch"]
+    SW["TPS26600<br/>eFuse on VIN"]
     INA["INA226"]
   end
   DUT["Board under test"] -- "USB data" --> MUXD
@@ -81,7 +81,7 @@ flowchart LR
   MUXD -- "HSD2 (classic)" --> MUXP
   PC["Laptop on the<br/>front PC port"] --> MUXP
   MUXP -- "HSD2 (SERVICE)" --> ESP
-  SW -- "5 V ≤1.4 A" --> INA --> DUT
+  SW -- "20–28 V ≤1.6 A" --> INA -- "DATA board: its own 5 V" --> DUT
   PC -. "VBUS sensed only" .-> OR --> MUXD
   ESP -. "MUX_FORCE_PC" .-> OR
   ESP -. "Wi-Fi: USB/IP, REST, mDNS" .-> LAN(("LAN"))

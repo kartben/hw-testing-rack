@@ -10,7 +10,7 @@
 		(company "hw-testing-rack")
 		(comment 1 "ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf")
 		(comment 2 "Generated from electronics/bay-node/design.py — edit the Python, then regenerate")
-		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT power on the DATA lead · USB 2.0 muxes · INA226 · AUX")
+		(comment 3 "Row bus 20–28 V + CAN + POS in/out · 20–28 V/1.6 A eFused supply on the DATA lead · USB 2.0 muxes · INA226 · AUX")
 	)
 	(lib_symbols)
 	(sheet
@@ -225,7 +225,7 @@
 			)
 		)
 	)
-	(text "DUT power switch, monitor and AUX"
+	(text "DATA lead's eFused supply, its"
 		(exclude_from_sim no)
 		(at 227.33 77.47 0)
 		(effects
@@ -235,6 +235,17 @@
 			(justify left bottom)
 		)
 		(uuid "1bafdb06-e022-59a7-bdaf-3290432e76af")
+	)
+	(text "monitor and AUX"
+		(exclude_from_sim no)
+		(at 227.33 81.28 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "29b129ae-041c-5479-bcc0-8201edff0b7b")
 	)
 	(sheet
 		(at 320.04 70)
@@ -626,32 +637,6 @@
 	)
 	(polyline
 		(pts
-			(xy 242.57 50.8)
-			(xy 242.57 69.85)
-		)
-		(stroke
-			(width 0.5)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "f3e6d3dc-c59a-5e1b-b1fa-bde74f55d1f1")
-	)
-	(circle
-		(center 242.57 50.8)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "2f966a58-37ab-5aaf-9b1f-274172c341dc")
-	)
-	(polyline
-		(pts
 			(xy 337.82 50.8)
 			(xy 337.82 69.85)
 		)
@@ -756,7 +741,7 @@
 		)
 		(uuid "2516458d-20d9-5223-8a0c-7ccc2fbc0da1")
 	)
-	(text "DUT_5V, I2C_SCL/SDA"
+	(text "DATA_VIN, I2C_SCL/SDA"
 		(exclude_from_sim no)
 		(at 181.61 121.92 0)
 		(effects
@@ -823,9 +808,36 @@
 	)
 	(polyline
 		(pts
+			(xy -2.54 100.33)
+			(xy -2.54 153.67)
+			(xy 255.27 153.67)
+			(xy 255.27 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "d2f74902-05a3-5aea-957e-7b059f219c19")
+	)
+	(text "VIN"
+		(exclude_from_sim no)
+		(at 0 152.4 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "17620959-7019-5fa0-b0a8-d4391d8a5ee4")
+	)
+	(polyline
+		(pts
 			(xy 76.2 100.33)
-			(xy 76.2 153.67)
-			(xy 335.28 153.67)
+			(xy 76.2 163.83)
+			(xy 335.28 163.83)
 			(xy 335.28 100.33)
 		)
 		(stroke
@@ -839,7 +851,7 @@
 	)
 	(text "CAN_RXD/TXD, POS_IN/OUT"
 		(exclude_from_sim no)
-		(at 78.74 152.4 0)
+		(at 78.74 162.56 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -850,9 +862,9 @@
 	)
 	(polyline
 		(pts
-			(xy -2.54 100.33)
-			(xy -2.54 163.83)
-			(xy 342.9 163.83)
+			(xy -10.16 100.33)
+			(xy -10.16 173.99)
+			(xy 342.9 173.99)
 			(xy 342.9 100.33)
 		)
 		(stroke
@@ -866,7 +878,7 @@
 	)
 	(text "CAN_H/L, POS_IN_CONN, POS_OUT_CONN"
 		(exclude_from_sim no)
-		(at 0 162.56 0)
+		(at -7.62 172.72 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -878,8 +890,8 @@
 	(polyline
 		(pts
 			(xy 68.58 100.33)
-			(xy 68.58 173.99)
-			(xy 421.64 173.99)
+			(xy 68.58 184.15)
+			(xy 421.64 184.15)
 			(xy 421.64 100.33)
 		)
 		(stroke
@@ -893,7 +905,7 @@
 	)
 	(text "CAM_CS/LED/SCK, CAM_MISO, CAM_MOSI"
 		(exclude_from_sim no)
-		(at 71.12 172.72 0)
+		(at 71.12 182.88 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -902,9 +914,9 @@
 		)
 		(uuid "b6f69592-3032-5ab2-b262-75917bca5e51")
 	)
-	(text_box "Bay node — one per bay.  Sheets:\n  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51625 buck, AP2114H\n  MCU: ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM), reset/boot, status LED, UART pads\n  USB: front PC port, the DUT's USB on the DATA lead (J7), two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS2553D switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT\n  Camera: JST PH 8 to the bay's Arducam Mega (SPI2, 5 V through a PTC) and its LEDs (AO3400A low side)\n  Rack bus: TJA1462AT CAN transceiver on the row pair, POS token in/out (docs/can.md)\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
+	(text_box "Bay node — one per bay.  Sheets:\n  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51625 buck, AP2114H\n  MCU: ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM), reset/boot, status LED, UART pads\n  USB: front PC port, the DUT's USB on the DATA lead (J7), two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)\n  DUT power & AUX: TPS26600 eFuse on VIN → shunt → DATA_VIN, INA226 monitor, AUX UART/RESET/BOOT\n  Camera: JST PH 8 to the bay's Arducam Mega (SPI2, 5 V through a PTC) and its LEDs (AO3400A low side)\n  Rack bus: TJA1462AT CAN transceiver on the row pair, POS token in/out (docs/can.md)\n\nMode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)\n                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DATA_VIN/AUX\n                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected\nGPIO firmware can also force classic mode (MUX_FORCE_PC)."
 		(exclude_from_sim no)
-		(at 30 189.23 0)
+		(at 30 199.39 0)
 		(size 360 33.02)
 		(margins 2 2 2 2)
 		(stroke

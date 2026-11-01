@@ -338,11 +338,7 @@
       },
       {
         "netclass": "Power",
-        "pattern": "*DUT_5V_SW"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "*DUT_5V"
+        "pattern": "*DATA_VIN_SW"
       },
       {
         "netclass": "Power",

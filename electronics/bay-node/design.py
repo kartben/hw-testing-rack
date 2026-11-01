@@ -6,11 +6,11 @@ Functions
     Reverse-polarity P-FET, TVS, LMR51625 synchronous buck to 5 V / 2.5 A, 3.3 V LDO for the logic.
   * CAN: TJA1462AT on the ESP32-S3 TWAI, tapping the pair that runs J1 → J2 (no termination).
   * POS: token in on J1.6, out on J2.1 (J2 is J1 mirrored), each through 10k + a BAT54S clamp (survives VRACK on it).
-  * DUT power: DUT_5V through a TPS2553D current-limited switch (≈1.4 A) and a 50 mΩ shunt read by an
-    INA226; the DUT's D+/D- through ESD.
-  * DATA (JST PH 8, side entry, right edge): the DUT's USB and power, the node's I²C and an INT line on
-    an 8-wire lead to the drawer's DATA port board (electronics/data-port: USB-C, Rp, ESD; it leaves the
-    I²C and INT pins open) or a DATA ×4 board.  The node has no DUT receptacle of its own.
+  * DATA power: VIN through a TPS26600 eFuse (≈1.6 A, off until the firmware turns it on) and a 50 mΩ
+    shunt read by an INA226: DATA_VIN, the DATA board's supply (it makes its ports' 5 V); the DUT's D+/D-
+    through ESD.
+  * DATA (JST PH 8, side entry, right edge): DATA_VIN, the DUT's USB, the node's I²C and an INT line on
+    an 8-wire lead to the drawer's DATA board (DATA ×6 or ×4).  The node has no DUT receptacle of its own.
   * Two USB 2.0 muxes:
       MUX_DUT: DUT ↔ ESP32-S3 USB-OTG (USB/IP mode, default)
                DUT ↔ front PC port      (classic mode: plug a laptop and the
@@ -27,8 +27,8 @@ Functions
   * WS2812B status LED behind the fascia, RESET/BOOT buttons, UART test pads.
 
 Net names follow the power path: VRACK (daisy chain) → Q1 → VIN → buck →
-+5V → TPS2553 → DUT_5V_SW → 50 mΩ shunt → DUT_5V (the DUT's VBUS).  The
-INA226 itself runs from +3V3 and reads the drop across the shunt.
++5V, and VIN → TPS26600 → DATA_VIN_SW → 50 mΩ shunt → DATA_VIN (the DATA
+lead's supply).  The INA226 itself runs from +3V3 and reads the drop across the shunt.
 
 Schematic: every part has an `sch=` position (0.1" grid units, see
 electronics/tools/eda.py) and the main paths are drawn as wires.
@@ -62,6 +62,7 @@ DX = W - 64                  # the board grew 10 mm on the right (2026-10-19): w
 # Draw the USB pairs of the classic-mode path by hand (usb_hs_routes) for High-Speed, or leave them
 # to Freerouting (full speed only is designed for; the ESD/mux GND and VBUS escapes stay drawn)
 USB_HS_PAIRS = True
+EFUSE = (50.6, 50.5)         # the DATA lead's eFuse U9 (rot 90), in the free area south of the shunt R19
 
 
 def P(x, y, rot=0, side="top", **kw):
@@ -193,18 +194,18 @@ def board() -> Board:
     b = Board("bay-node", "Bay node", "0.5",
               comments=["ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf",
                         "Generated from electronics/bay-node/design.py — edit the Python, then regenerate",
-                        "Row bus 20–28 V + CAN + POS in/out · 5 V/1.4 A switched DUT power on the DATA lead · USB 2.0 muxes · INA226 · AUX"])
+                        "Row bus 20–28 V + CAN + POS in/out · 20–28 V/1.6 A eFused supply on the DATA lead · USB 2.0 muxes · INA226 · AUX"])
     b.root_notes = [
         "Bay node — one per bay.  Sheets:",
         "  Power: row cable (JST PH 6: bus, GND, CAN_H, CAN_L, GND, POS), reverse protection, LMR51625 buck, AP2114H",
         "  MCU: ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM), reset/boot, status LED, UART pads",
         "  USB: front PC port, the DUT's USB on the DATA lead (J7), two FSUSB42 muxes + OR gate (classic / USB-IP / service modes)",
-        "  DUT power & AUX: TPS2553D switch → shunt → DUT_5V, INA226 monitor, AUX UART/RESET/BOOT",
+        "  DUT power & AUX: TPS26600 eFuse on VIN → shunt → DATA_VIN, INA226 monitor, AUX UART/RESET/BOOT",
         "  Camera: JST PH 8 to the bay's Arducam Mega (SPI2, 5 V through a PTC) and its LEDs (AO3400A low side)",
         "  Rack bus: TJA1462AT CAN transceiver on the row pair, POS token in/out (docs/can.md)",
         "",
         "Mode truth table:  SERVICE=0, PC unplugged → DUT↔ESP32 (USB/IP)",
-        "                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DUT_5V/AUX",
+        "                   SERVICE=0, PC plugged   → DUT↔PC (classic), ESP32 still controls DATA_VIN/AUX",
         "                   SERVICE=1               → PC↔ESP32 (flash/console), DUT data disconnected",
         "GPIO firmware can also force classic mode (MUX_FORCE_PC).",
     ]
@@ -254,6 +255,30 @@ def board() -> Board:
         ("SHUNT_P", "F.Cu", [(54.1, 43.0), (54.7, 42.4), (55.6, 42.4)]),
         ("SHUNT_N", "F.Cu", [(55.0, 43.15), (55.45, 43.6), (55.6, 43.6)]),
     ]
+    # the DATA lead's eFuse U9 (TPS26600, rot 90: pins 16 … 9 along its north side, 1 … 8 along its south side,
+    # 0.65 mm apart from the west), drawn: OUT (16/15) north and east into the shunt R19, IN (1/2) south through
+    # C20 to VIN, taken at TP6 from the buck's feed (after Q1, on D2's clamp); UVLO, OVP, MODE, RTN and GND onto
+    # the exposed pad, six vias down to In1; dVdT, ILIM and SHDN straight to their parts
+    ex, ey = EFUSE
+    col = [ex - 2.275 + 0.65 * k for k in range(8)]
+    top, bot = ey - 2.8625, ey + 2.8625
+    efuse_tracks = [
+        ("DATA_VIN_SW", "F.Cu", 0.4, [(col[1], top), (col[0], top)]),
+        ("DATA_VIN_SW", "F.Cu", 0.8, [(col[0], top), (col[0], 41.538), (55.6, 41.538)]),
+        ("VIN", "F.Cu", 0.4, [(col[1], bot), (col[0], bot)]),
+        ("VIN", "F.Cu", 0.8, [(col[0], bot), (col[0], 54.8), (48.65, 55.125), (48.65, 55.45)]),
+        ("VIN", "F.Cu", 0.8, [(48.65, 55.45), (46.6, 55.45), (46.6, 67.6)]),
+        ("VIN", "B.Cu", 0.8, [(46.6, 67.6), (46.6, 68.6), (48.0, 70.0)]),
+        ("GND", "F.Cu", 0.25, [(col[7], top), (col[7], ey - 1.4)]),
+        *[("GND", "F.Cu", 0.25, [(col[k], bot), (col[k], ey + 1.4)]) for k in (2, 4, 5, 7)],
+        ("DATA_DVDT", "F.Cu", 0.25, [(col[4], top), (col[4], 45.625)]),
+        ("DATA_ILIM", "F.Cu", 0.25, [(col[5], top), (col[5], 46.6), (52.55, 45.625)]),
+        ("DUT_EN", "F.Cu", 0.25, [(col[6], bot), (col[6], 55.375)]),
+        # D8's cathode (the lead's kick clamp) straight into J7.1
+        ("DATA_VIN", "F.Cu", 0.6, [(63.15, 37.6), (63.75, 37.0), (66.25, 37.0)]),
+    ]
+    efuse_vias = [("VIN", 46.6, 67.6, 0.8, 0.4),
+                  *[("GND", ex + dx, ey + dy) for dx in (-1.5, 0.0, 1.5) for dy in (-0.75, 0.75)]]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
         # 4 layers: signals + GND / GND only / power only / signals + GND.  In1 is a solid GND plane;
@@ -281,7 +306,7 @@ def board() -> Board:
         "plane_nets": {"+5V": "In2.Cu", "+3V3": "In2.Cu"},
         # nets carrying power (≳ 0.5 A): their IC, connector and big pads connect solid to the pours, small
         # parts keep reliefs (pcbgen.power_pads); the number is the spokes a relieved pad of theirs keeps
-        "power_nets": {"GND": 1, "VRACK": 2, "VIN": 2, "+5V": 2, "DUT_5V*": 2, "CAM_5V": 2},
+        "power_nets": {"GND": 1, "VRACK": 2, "VIN": 2, "+5V": 2, "DATA_VIN*": 2, "CAM_5V": 2},
         # each decoupling capacitor and the power pin it serves: within 2 mm of it, its GND within 1 mm of a via
         # (electronics/tools/decoupling.py, the layout review, 2026-10-28).  Bulk, bootstrap and RC capacitors
         # serve no one pin: left out.  The buck's input is TI's three (SLUSF64B table 8-1): C4, the 100 nF across
@@ -299,7 +324,7 @@ def board() -> Board:
             {"layer": "B.Cu", "net": "GND"},
             # In2 areas with exact outlines that don't overlap (the router takes each outline as copper
             # of its net).  +3V3 under the module, the LDO and the logic around it (mux cluster, INA226);
-            # +5V from the buck to the LDO input, the DUT switch, the camera fuse and U8; the VRACK strip
+            # +5V from the buck to the LDO input, the camera fuse and U8; the VRACK strip
             # between J1 and J2; +3V3 again under the front edge (LED, SERVICE switch)
             {"layer": "In2.Cu", "net": "+3V3", "priority": 1,
              "poly": [(0.4, 0.4), (51.85, 0.4), (51.85, 30.0), (47.85, 30.0), (47.85, 44.0), (22.0, 44.0),
@@ -338,13 +363,6 @@ def board() -> Board:
             # C12, vias down to the +3V3 area on In2; exclusive, as the buck's (a track once cut C12 off it)
             {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 3, "exclusive": 0.5,
              "poly": [(8.4, 26.0), (17.2, 26.0), (17.2, 32.2), (8.4, 32.2)]},
-            # the DUT switch's input (up to its ≈ 1.5 A limit): U9.IN and C20 on a top-side island, three vias
-            # down to In2's +5V (one 0.3 mm via and a 0.4 mm track before: pcba-review N4).  The vias sit in a
-            # row west of C20, and the island reaches the pin only along C20's row: rail → C20 → pin (the
-            # pin → cap → via rule)
-            {"layer": "F.Cu", "net": "+5V", "name": "dutsw-in", "priority": 3, "connection": "solid",
-             "poly": [(49.7, 37.75), (53.4, 37.75), (53.4, 39.6), (53.55, 39.6), (53.55, 41.45), (52.55, 41.45),
-                      (52.55, 39.1), (49.7, 39.1)]},
         ],
         # C4's (the buck's 100 nF input capacitor) own GND via, right beside its GND pad (decoupling check)
         "vias": [("GND", 9.95, 46.6),
@@ -362,7 +380,7 @@ def board() -> Board:
                  *[("+3V3", x, y) for x, y in ((9.2, 26.8), (10.6, 26.8), (12.0, 26.8), (13.4, 26.8),
                                                (14.8, 26.8), (15.2, 28.4), (9.0, 29.8), (9.0, 31.5))],
                  ("+3V3", 41.5, 43.0), ("+3V3", 41.5, PWR_Y - 1.5),
-                 *[("+5V", x, y) for x, y in ((50.1, 38.6), (50.85, 38.6), (51.6, 38.6))],          # U9's input island
+                 *efuse_vias,
                  *hs_vias,
                  *[(net, *xy) for net, _, _, xy, via, _, _ in TP_ROUND2 if via],       # the second round's test pads
                  *[(net, *pts[-1], 0.6, 0.3) for net, _, pts in decap_ties],           # the decoupling ties' vias
@@ -370,7 +388,7 @@ def board() -> Board:
                                                            ("SHUNT_P", 54.1, 43.0), ("SHUNT_N", 55.0, 43.15))]],
         # the front +3V3 area of In2 (LED, SERVICE switch) is cut off by the VRACK strip: fed from the
         # main +3V3 area by a B.Cu track
-        "tracks": [*hs_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)]),
+        "tracks": [*hs_tracks, *efuse_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)]),
                    *[(net, "F.Cu", w, pts) for net, w, pts in decap_ties],
                    *[(net, layer, 0.25, pts) for net, layer, pts in shunt_pair]],
         # ESP32 antenna: no copper on any layer under/around the antenna (the WROOM-1's rear 6 mm, ±24 mm)
@@ -381,7 +399,7 @@ def board() -> Board:
             {"text": "hw-testing-rack · bay node v0.5", "x": 32, "y": 56, "size": 0.8, "layer": "B.SilkS"},
             # the test pads' names, bottom side: the supply row (TP5–TP10) and the UART block (TP1–TP4)
             *({"text": t, "x": 45.0 + 3 * i, "y": 74.2, "size": 0.8, "rot": 90, "layer": "B.SilkS"}
-              for i, t in enumerate(("GND", "VIN", "5V", "3V3", "DUT 5V", "CAM 5V"))),
+              for i, t in enumerate(("GND", "VIN", "5V", "3V3", "DATA VIN", "CAM 5V"))),
             *({"text": t, "x": 41.0, "y": y, "size": 0.8, "layer": "B.SilkS"}
               for t, y in (("RX", 10.2), ("GND", 12.8), ("EN", 15.4), ("FLT", 18.0), ("SDA", 20.6), ("GND", 23.2))),
             *({"text": t, "x": 48.0, "y": y, "size": 0.8, "layer": "B.SilkS"}
@@ -497,11 +515,10 @@ def board() -> Board:
         part(s, f"TP{5 + i}", "testpad", {"1": net}, net, pcb=P(45.0 + 3 * i, 70.0, 0, "bottom"), in_bom=False,
              sch=at(92 + 6 * i, 57, rot=90, fields="left"))
     s.notes_at = (6, 64, 110)
-    s.note("LMR51625YDDCR (2.5 A; a bay draws ≤ 2.25 A): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):")
+    s.note("LMR51625YDDCR (2.5 A; the node alone, ≤ 0.8 A: the DATA lead takes VIN): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):")
     s.note("  L 4.7 µH (FXL0630, 7.5 A sat guaranteed, 9 A typ);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.")
     s.note("  At 2.25 A from 28 V the inductor peaks at ≈ 2.65 A (0.8 A ripple), under the 2.9 A minimum peak current limit.")
-    s.note("FB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V: ≈ 4.75 V still reaches the DATA board at 1.4 A over 50 cm")
-    s.note("  of PH lead (switch, shunt, one PH pin each way); everything on +5V takes it (TJA1462AT ≤ 5.5 V).")
+    s.note("FB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V; everything on +5V takes it (TJA1462AT ≤ 5.5 V).")
     s.note("EN 100k/10k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node")
     s.note("  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.")
     s.note("Layout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island")
@@ -641,17 +658,17 @@ def board() -> Board:
     # The layout review: 2.2 mm from the pin)
     C(u, "C26", "100n", "+5V", "GND", pcb=P(51.6, 36.45, 180), sch=at(124, 64))
 
-    # the drawer's DATA board on an 8-wire PH lead (the camera's lead type, 'Same direction'): VBUS, GND,
-    # D−, D+, GND as before, then the node's I²C (the INA226's bus, 2.2k pull-ups on this board) and an
-    # open-drain, active-low INT (10k pull-up here, 1k in series at the connector).  The single DATA port
-    # board leaves pins 6–8 open; a later DATA ×4 board uses them (its I²C devices must keep off 0x40).
-    # Side entry on the right edge (like J2: pin 1 towards the front), its mouth towards the drag chain's fixed
-    # end; the pair from U8 is drawn in usb_hs_routes.  DUT_5V comes after the shunt.
+    # the drawer's DATA board on an 8-wire PH lead (the camera's lead type, 'Same direction'): DATA_VIN (the
+    # eFused VIN, 20–28 V: the board makes its own 5 V), GND, D−, D+, GND, then the node's I²C (the INA226's
+    # bus, 2.2k pull-ups on this board) and an open-drain, active-low INT (10k pull-up here, 1k in series at the
+    # connector); the DATA board's I²C devices keep off 0x40.  Side entry on the right edge (like J2: pin 1
+    # towards the front), its mouth towards the drag chain's fixed end; the pair from U8 is drawn in
+    # usb_hs_routes.  DATA_VIN comes after the shunt.
     u.frame("DATA: the DUT's USB, I²C and INT on an 8-wire PH lead to the drawer's DATA board", 106, 75, 160, 100)
-    part(u, "J7", "ph8", {"1": "DUT_5V", "2": "GND", "3": "DUT_CONN_DP", "4": "DUT_CONN_DN", "5": "GND", "6": "I2C_SDA",
+    part(u, "J7", "ph8", {"1": "DATA_VIN", "2": "GND", "3": "DUT_CONN_DP", "4": "DUT_CONN_DN", "5": "GND", "6": "I2C_SDA",
                            "7": "I2C_SCL", "8": "DATA_INT_C"}, "DATA",
          pcb=P(EDGE_X, CFG["right"]["data"], 90), sch=at(152, 86, fields=(1, -7)))
-    for pin, dy, net in (("1", -3, "DUT_5V"), ("2", -2, "GND"), ("3", -1, "DUT_CONN_DP"), ("4", 0, "DUT_CONN_DN"),
+    for pin, dy, net in (("1", -3, "DATA_VIN"), ("2", -2, "GND"), ("3", -1, "DUT_CONN_DP"), ("4", 0, "DUT_CONN_DN"),
                          ("5", 1, "GND"), ("6", 2, "I2C_SDA"), ("7", 3, "I2C_SCL"), ("8", 4, "DATA_INT_C")):
         u.wire(f"J7.{pin}", (143, 86 + dy))
         u.tag(net, (143, 86 + dy), "left")
@@ -688,34 +705,45 @@ def board() -> Board:
     u.note("MUX_SEL = PC_DET OR MUX_FORCE_PC: a laptop on the front port takes the DUT over automatically.")
 
     # ------------------------------------------------------------------ DUT power + AUX
-    d = b.sheet("DUT power & AUX", "dut.kicad_sch", "DUT power switch, monitor and AUX")
-    d.frame("DUT power path: +5V → TPS2553D switch → 50 mΩ shunt → DUT_5V (J7.1), INA226 across the shunt",
+    d = b.sheet("DUT power & AUX", "dut.kicad_sch", "DATA lead's eFused supply, its monitor and AUX")
+    d.frame("DATA power path: VIN → TPS26600 eFuse → 50 mΩ shunt → DATA_VIN (J7.1), INA226 across the shunt",
             6, 12, 124, 46)
-    d.tag("+5V", (18, 29), "up")
-    d.wire((18, 29), "U9.IN")
-    # the switch, its resistors, the shunt and the DUT_5V cap between U8 and J5, by J7.1; R17 / R18 over the
-    # In2 +3V3 area west of them, the INA226 by the module (its sense pair runs ≈ 18 mm, Kelvin)
-    C(d, "C20", "100n", "+5V", "GND", pcb=P(53.35, 38.5, 0), sch=at(22, 30.5))     # at U9.IN, on its island
-    part(d, "U9", "vbus_sw", {"IN": "+5V", "GND": "GND", "EN": "DUT_EN", "~{FAULT}": "DUT_FLT_N", "ILIM": "DUT_ILIM",
-                              "OUT": "DUT_5V_SW"}, pcb=P(52.0, 42.0, 270), sch=at(40, 30, fields=(-4, -4)))
-    R(d, "R16", "18k", "DUT_ILIM", "GND", pcb=P(52.0, 46.0, 0), sch=at(31, 33.5))
+    # the eFuse and its parts in the free area south of the shunt (EFUSE), the shunt and DATA_VIN's
+    # capacitor where the 5 V switch had them, by J7.1; R18 over the In2 +3V3 area west of them, the INA226
+    # by the module (its sense pair runs ≈ 18 mm, Kelvin)
+    d.tag("VIN", (18, 25), "up")
+    d.wire((18, 25), "U9.IN")
+    C(d, "C20", "1u", "VIN", "GND", size="0805", pcb=P(48.65, 56.4, 270), sch=at(24, 26.5))     # at U9.IN
+    part(d, "U9", "efuse", {"IN": "VIN", "GND": "GND", "RTN": "GND", "UVLO": "GND", "OVP": "GND", "MODE": "GND",
+                            "~{SHDN}": "DUT_EN", "ILIM": "DATA_ILIM", "dVdT": "DATA_DVDT", "IMON": None,
+                            "~{FLT}": "DUT_FLT_N", "OUT": "DATA_VIN_SW"},
+         pcb=P(*EFUSE, 90), sch=at(40, 30, fields=(-4, -8)))
+    d.wire("U9.UVLO", (33, 28), (31, 28))
+    d.wire("U9.MODE", (33, 34), (33, 28))
+    d.wire("U9.OVP", (33, 31))
+    d.tag("GND", (31, 28), "down")
+    # SHDN: off by default (10k to GND: the pin sources up to 10 µA, 0.1 V, under its 0.55 V threshold); the
+    # firmware drives DUT_EN high (≥ 1 V turns it on)
+    d.wire("U9.~{SHDN}", (16, 35))
+    R(d, "R17", "10k", "DUT_EN", "GND", pcb=P(EFUSE[0] + 1.625, 56.2, 270), sch=at(30, 36.5))
+    d.tag("DUT_EN", (16, 35), "left")
+    R(d, "R16", "7.5k", "DATA_ILIM", "GND", pcb=P(52.55, 44.8, 90), sch=at(50, 35.5))
     d.wire("U9.ILIM", "R16.1")
-    R(d, "R17", "100k", "+3V3", "DUT_EN", pcb=P(45.2, 41.2, 0), sch=at(26, 35.5))
-    d.wire("U9.EN", (28, 31), (28, 38), (16, 38))
-    d.wire("R17.2", (26, 38))
-    d.tag("DUT_EN", (16, 38), "left")
-    R(d, "R18", "10k", "+3V3", "DUT_FLT_N", pcb=P(45.2, 43.0, 0), sch=at(52, 35.5))
-    d.wire("U9.~{FAULT}", (48, 31), (48, 38), (55, 38))
-    d.wire("R18.2", (52, 38))
-    d.tag("DUT_FLT_N", (55, 38), "right")
-    # Kelvin shunt: pins 1/4 carry the DUT current, pins 2/3 are sense pads on the inner edge of each
+    C(d, "C29", "22n", "DATA_DVDT", "GND", pcb=P(EFUSE[0] + 0.325, 44.8, 90), sch=at(47, 40.5))
+    d.wire("U9.dVdT", (47, 35), "C29.1")
+    R(d, "R18", "10k", "+3V3", "DUT_FLT_N", pcb=P(45.2, 43.0, 0), sch=at(55, 28.5))
+    d.wire("U9.~{FLT}", (58, 30))
+    d.tag("DUT_FLT_N", (58, 30), "right")
+    # Kelvin shunt: pins 1/4 carry the DATA board's current, pins 2/3 are sense pads on the inner edge of each
     # terminal (bench:R_1206_3216Metric_Kelvin), so the INA226 reads the resistor, not the load copper
-    part(d, "R19", "shunt50m", {"1": "DUT_5V_SW", "4": "DUT_5V", "2": "SHUNT_P", "3": "SHUNT_N"}, "50m",
+    part(d, "R19", "shunt50m", {"1": "DATA_VIN_SW", "4": "DATA_VIN", "2": "SHUNT_P", "3": "SHUNT_N"}, "50m",
          pcb=P(55.6, 43.0, 270), sch=at(62, 33.5))
-    d.wire("U9.OUT", (62, 29), "R19.1")
+    d.wire("U9.OUT", (46, 25), (46, 21), (62, 21), "R19.1")
     d.wire("R19.4", (62, 40), (100, 40))
-    d.tag("DUT_5V", (100, 40), "right")
-    C(d, "C21", "22u", "DUT_5V", "GND", size="1206", pcb=P(57.2, 38.6, 0), sch=at(96, 41.5))
+    d.tag("DATA_VIN", (100, 40), "right")
+    C(d, "C21", "1u", "DATA_VIN", "GND", size="0805", pcb=P(56.675, 38.6, 0), sch=at(96, 41.5))
+    # the lead's kick when the eFuse cuts a short (OUT ≥ −0.3 V): a Schottky from GND, at J7
+    part(d, "D8", "schottky", {"K": "DATA_VIN", "A": "GND"}, pcb=P(61.5, 37.6, 180), sch=at(90, 41.5, rot=270))
     part(d, "U10", "ina226", {"VS": "+3V3", "GND": "GND", "A0": "GND", "A1": "GND", "SDA": "I2C_SDA",
                               "SCL": "I2C_SCL", "~{Alert}": "INA_ALERT_N", "Vin+": "SHUNT_P", "Vin-": "SHUNT_N",
                               # Vbus on Vin- (the shunt's load-side Kelvin pad: DUT_5V), joined at the pins (8, 9)
@@ -771,8 +799,8 @@ def board() -> Board:
                     ("AUX_BOOT_N", (88, 76))):
         d.tag(net, xy, "right")
 
-    d.frame("Test pads (bottom side): DUT_5V in the supply row; faults and I²C in the debug block", 116, 46, 160, 64)
-    part(d, "TP9", "testpad", {"1": "DUT_5V"}, "DUT_5V", pcb=P(57.0, 70.0, 0, "bottom"), in_bom=False,
+    d.frame("Test pads (bottom side): DATA_VIN in the supply row; faults and I²C in the debug block", 116, 46, 160, 64)
+    part(d, "TP9", "testpad", {"1": "DATA_VIN"}, "DATA_VIN", pcb=P(57.0, 70.0, 0, "bottom"), in_bom=False,
          sch=at(122, 56, rot=90, fields="left"))
     # the faults and the I²C bus, 1.0 mm, in the bottom-side debug block beside the UART pads (x 43.2 / 45.8)
     for i, (ref, net, xy) in enumerate((("TP13", "DUT_FLT_N", (43.2, 18.0)), ("TP14", "INA_ALERT_N", (45.8, 18.0)),
@@ -783,10 +811,14 @@ def board() -> Board:
     for i, (x, y) in enumerate(CFG["holes"]):
         part(d, f"H{i + 1}", "hole", {}, "M3", pcb=P(x, y, 0), in_bom=False, sch=at(122 + 9 * i, 73))
     d.notes_at = (6, 52, 60)
-    d.note("TPS2553: ILIM 18k → 1.34–1.52 A.  EN is pulled up: DUT_5V is on")
-    d.note("  even with no firmware; ~FAULT flags current limit / over-temperature.")
+    d.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A a contact).")
+    d.note("  t_dVdT ≈ 8.65e3 · V_IN · C_dVdT → 22 nF: 3.8 ms at 20 V, 5.3 ms at 28 V; ≈ 0.3 A into 60 µF.")
+    d.note("  SHDN pulled down: DATA_VIN is OFF until the firmware drives DUT_EN high (≥ 1 V).")
+    d.note("  UVLO / OVP / MODE to GND: internal 15 V / 31–34 V, current limit, auto-retry.")
+    d.note("  ~FLT: limit, over-temperature, UV/OV; also low while off or starting.")
     d.note("INA226 (I2C 0x40) runs from +3V3: it measures the drop across")
-    d.note("  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DUT_5V at the shunt.")
+    d.note("  R19 (50 mΩ → 1.64 A full scale, Kelvin sense pads); Vbus on Vin-: DATA_VIN")
+    d.note("  (≤ 34 V behind the eFuse's OVP: 36 V range, 40 V maximum).")
     d.note("AUX: TX/RX through 1k, VREF = +3V3 through 1k (R23, a level hint),")
     d.note("  RESET/BOOT open-drain (2N7002, 100k gate pull-downs).")
 
@@ -932,7 +964,7 @@ NETCLASSES = [
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
      # +3V3 stays in Default: its current runs in In2's +3V3 area, its tracks are pin taps and a 0.4 mm feed to the
      # front area (LEDs, SERVICE, U11's Vio); PC_VBUS only reaches R11, the PC-detect divider
-     "_patterns": ["*VRACK", "*VIN", "+5V", "*DUT_5V_SW", "*DUT_5V", "*BUCK_SW", "*CAM_5V"]},
+     "_patterns": ["*VRACK", "*VIN", "+5V", "*DATA_VIN_SW", "*BUCK_SW", "*CAM_5V"]},
     {"name": "USB", "clearance": 0.15, "track_width": 0.2, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.25, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,
