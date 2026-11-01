@@ -72,7 +72,9 @@ module box4() difference() {
             translate([X0, YF, Z0]) cube([X1 - X0, SKIRT[1] - YF, TOP4 - Z0]);
             translate([X0 + T, YF + T, Z0 - EPS]) cube([X1 - X0 - 2 * T, SKIRT[0] - YF - T, TOP4 - T - Z0 + EPS]);
         }
-        translate([X0 + T, SKIRT[0], SKIRT_Z0]) cube([X1 - X0 - 2 * T, SKIRT[1] - SKIRT[0], Z0 - SKIRT_Z0 + EPS]);
+        // (the skirt between the drawer's side walls, 0.1 off them)
+        translate([DRAWER_WALL + 0.1, SKIRT[0], SKIRT_Z0])
+            cube([DRAWER_W - 2 * DRAWER_WALL - 0.2, SKIRT[1] - SKIRT[0], Z0 - SKIRT_Z0 + EPS]);
         for (x = COVER_TABS) bump(x);
         // on the rear wall's top, a ledge (45° under it, as printed)
         translate([X0, SKIRT[1] - EPS, Z0]) rotate([90, 0, 90]) linear_extrude(X1 - X0)
