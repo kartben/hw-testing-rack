@@ -1,6 +1,7 @@
 # Assembly
 
-Order of work for the default build: 8 bays, 4 columns × 2 rows.  Quantities:
+Order of work for the default build: 12 bays, 4 columns × 3 rows (row C on top: dense bays, a slotted bin in
+each drawer instead of the board plate).  Quantities:
 [`bom/README.md`](../bom/README.md).  An illustrated, IKEA-style notice (one bay,
 then adding the next one) is drawn from the same models by
 [`tools/notice/`](../tools/notice/README.md).

@@ -32,7 +32,9 @@ row, stacked on base ladders and topped by cap strips; each bay's **tray**
 slides into the grooves of its two ladders; an X **brace** behind every bay and
 row keeps the grid square.  Rows are tilted 20° by default and stacked
 `rows[].height` apart; the column pitch is 165.8 mm.  The default build is
-two rows of four bays (a third row is one more `rows` entry; the power hub has four row outputs).
+three rows of four bays: rows A and B of plate bays, and on top row C, 120 mm high, of dense bays whose
+boards stand on edge in a slotted bin, six to a bay (`population › plate: slots`, `drawer.slot_bin`).  A
+fourth row is one more `rows` entry; the power hub has four row outputs.
 
 Changing the config regenerates everything that depends on it: the OpenSCAD
 constants, the web scene, the BOM and the PCB outlines/connector positions.
