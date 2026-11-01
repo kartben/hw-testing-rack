@@ -984,11 +984,10 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
                  "supplier": "any", "qty": math.ceil(total_g / 1000 * 1.1 * 10) / 10, "unit": "kg",
                  "unit_eur": PETG_EUR_PER_KG, "notes": f"≈{total_g / 1000:.1f} kg estimated + 10 % waste, "
                                                     f"{sum(counts.values())} parts"})
-    # optional, outside the totals: the rear bays' covers, printed once a bay is validated (a lid over a one-board
-    # bay, a box over a DATA ×4 standing in its cradle)
-    n_multi = sum(1 for b in rack.bays() if rack.is_multi(b.id))
+    # optional, outside the totals: the rear bays' covers, printed once a bay is validated (a box over the DATA board
+    # standing in its cradle, every bay's since the single DATA port board's retirement)
     opt_g = 0.0
-    for name, qty in (("cover_lid1", n_bays - n_multi), ("cover_box4", n_multi)):
+    for name, qty in (("cover_box4", n_bays),):
         stl = stl_dir / f"{name}.stl"
         if qty == 0 or not stl.exists():
             continue
@@ -999,7 +998,7 @@ def printed(rack) -> tuple[list[dict], list[dict]]:
     if opt_g:
         rows.append({"category": "Printed parts", "group": "covers", "item": "Rear bay covers (optional)",
                      "supplier": "printed", "qty": n_bays, "unit_eur": 0,
-                     "notes": f"one per bay: cover_lid1 over a one-board bay, cover_box4 over a DATA ×4; "
+                     "notes": f"one per bay: cover_box4 over the standing DATA board; "
                               f"≈{opt_g:.0f} g more PETG, not in the filament line"})
     return rows, prints
 

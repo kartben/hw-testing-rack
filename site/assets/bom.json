@@ -3524,7 +3524,7 @@
 "supplier": "printed",
 "qty": 8,
 "unit_eur": 0,
-"notes": "one per bay: cover_lid1 over a one-board bay, cover_box4 over a DATA ×4; ≈108 g more PETG, not in the filament line",
+"notes": "one per bay: cover_box4 over the standing DATA board; ≈250 g more PETG, not in the filament line",
 "unit": "pcs",
 "ext_eur": 0.0
 },
@@ -4232,18 +4232,10 @@
 "stl": "mechanical/stl/x4_strip.stl"
 },
 {
-"part": "cover_lid1",
-"qty": 6,
-"grams_each": 7.6,
-"grams_total": 45.6,
-"stl": "mechanical/stl/cover_lid1.stl",
-"optional": true
-},
-{
 "part": "cover_box4",
-"qty": 2,
+"qty": 8,
 "grams_each": 31.3,
-"grams_total": 62.6,
+"grams_total": 250.2,
 "stl": "mechanical/stl/cover_box4.stl",
 "optional": true
 }

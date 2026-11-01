@@ -1,19 +1,19 @@
-// Drawer covers (optional): the rear bay closed from above, printed once a bay is validated
-// (docs/printed-parts-review.md, finding 17; the drawer-covers study).  One family, one fixing:
+// Drawer cover (optional): the rear bay closed from above, printed once a bay is validated
+// (docs/printed-parts-review.md, finding 17; the drawer-covers study).
 //
-//   -D 'PART="lid1"'   a single DATA port board's bay: a flat lid on the four walls' tops
-//   -D 'PART="box4"'   a DATA ×4 bay: the same outline and fixing raised into a box over the standing v2 in its
-//                      cradle, its four headers' Dupont blocks under a notch in the front (it lifts off with the
-//                      DUT leads plugged), a window in front of each port's LED and D1, vents over the board
+//   -D 'PART="box4"'   a box over the standing DATA board in its cradle (either board: the DATA ×4 v2's four
+//                      headers' Dupont blocks under a notch in the front, so it lifts off with the DUT leads
+//                      plugged; a window in front of each v2 port's LED and D1), vents over the board
 //
-// Both hook over the port wall's front face (lips between the U's, clear of the plugs' overmolds) and click
+// It hooks over the port wall's front face (lips between the U's, clear of the plugs' overmolds) and clicks
 // into two pockets in the rear wall's inner face with two side-hinged tabs: each a strip of the rear skirt, free
 // at one end, run up through a slot in the top to the bed, so it bends in the print plane (1.2 % for its 0.7 mm
-// bump).  Lift the rear with a fingertip in the hole (or the box by its sides): the bumps let go both ways.
+// bump).  Lift it by its sides: the bumps let go both ways.  The flat lid over the single DATA port board
+// (cover_lid1) is retired with that board (2026-11-01): every bay's board stands.
 // Drawer coordinates (parts/drawer.scad).  Print: top face down, PETG, no supports.
 include <../lib/carrier.scad>
 
-PART = "lid1";
+PART = "box4";
 T = 1.6;                                   // walls
 Z0 = DRAWER_WALL_H;                        // the drawer walls' top
 PW = DRAWER_PORT_WALL_Y;                   // the port wall's back face; its front face PW − DRAWER_WALL
@@ -58,17 +58,6 @@ module tab_cuts(xc, top, plate_z0) {
 
 module lips() for (s = LIP_SEGS) translate([s[0], YF, Z0 - LIP]) cube([s[1] - s[0], T, LIP + EPS]);
 
-module lid1() difference() {
-    union() {
-        translate([X0, YF, Z0]) cube([X1 - X0, YB - YF, T]);
-        lips();
-        for (x = COVER_TABS) tab(x, Z0 + T);
-    }
-    for (x = COVER_TABS) tab_cuts(x, Z0 + T, Z0);
-    translate([FOOT[0], FOOT[1], Z0 - 1]) cylinder(d = 7, h = T + 2);                     // the foot's screw
-    translate([64, YB - 12, Z0 - 1]) hull() for (x = [0, 10]) translate([x + 2, 4, 0]) cylinder(d = 4, h = T + 2);   // a finger hole
-}
-
 module box4() difference() {
     union() {
         // the shell: front wall in front of the port wall, sides on the drawer's side walls, the rear skirt inside
@@ -98,7 +87,5 @@ module box4() difference() {
     translate([FOOT[0], FOOT[1], TOP4 - T - 1]) cylinder(d = 7, h = T + 2);
 }
 
-if (PART == "lid1") rotate([180, 0, 0]) lid1();
-else if (PART == "box4") rotate([180, 0, 0]) box4();
-else if (PART == "lid1_in_place") lid1();
+if (PART == "box4") rotate([180, 0, 0]) box4();
 else if (PART == "box4_in_place") box4();
