@@ -4735,7 +4735,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.vishay.com/docs/34104/ihlp-2525cz-01.pdf"
 			(at 146.05 116.84 0)
 			(effects
 				(font
@@ -4744,7 +4744,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "4.7 µH, 7.5 A sat (9 A typ), 5.5 A rms, 33 mΩ, molded"
+		(property "Description" "4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat (ΔT 40 °C), 37 mΩ (40 max), molded"
 			(at 146.05 116.84 0)
 			(effects
 				(font
@@ -4753,7 +4753,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "FXL0630-4R7-M"
+		(property "MPN" "IHLP2525CZEK4R7M01"
 			(at 146.05 116.84 0)
 			(effects
 				(font
@@ -4762,7 +4762,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "cjiang"
+		(property "Manufacturer" "Vishay"
 			(at 146.05 116.84 0)
 			(effects
 				(font
@@ -4771,7 +4771,16 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C167220"
+		(property "LCSC" "C48009678"
+			(at 146.05 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternative" "IHLP2525CZER4R7M01 (C553961): the same part on a 2000-piece reel"
 			(at 146.05 116.84 0)
 			(effects
 				(font
@@ -8185,7 +8194,7 @@
 		)
 		(uuid "3350fcc4-5d6b-5625-8dcb-82b692119f01")
 	)
-	(text_box "LMR51625YDDCR (2.5 A; the node alone, ≤ 0.8 A: the DATA lead takes VIN): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):\n  L 4.7 µH (FXL0630, 7.5 A sat guaranteed, 9 A typ);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.\n  At 2.25 A from 28 V the inductor peaks at ≈ 2.65 A (0.8 A ripple), under the 2.9 A minimum peak current limit.\nFB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V; everything on +5V takes it (TJA1462AT ≤ 5.5 V).\nEN 100k/10k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node\n  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.\nLayout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island\n  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.\nInput: SUD50P06 P-FET (reverse polarity, Vgs clamped by the 12 V zener); SMBJ33A clamps hot-plug ringing below 54 V (U1: 63 V abs max).\nVRACK is 20 V, or 28 V (EPR), from the hub's USB-C PD supply: SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the buck runs\n  4.3–60 V and starts above 13.5 V, the P-FET and the zener clamp are rated 60 V / 12 V.  At 20 V a row draws more current: ≤ 1.6 A."
+	(text_box "LMR51625YDDCR (2.5 A; the node alone, ≤ 0.8 A: the DATA lead takes VIN): 1.1 MHz, PFM at light load, spread spectrum.  TI SLUSF64B table 8-1 (5 V, 1.1 MHz):\n  L 4.7 µH (Vishay IHLP2525CZ: 75 V for 28 V EPR, 10 A sat);  COUT 3 × 22 µF/25 V (≥ 33 µF left after DC-bias derating);  CIN 2 × 10 µF/50 V + 100 nF;  CB 100 nF.\n  At 2.25 A from 28 V the inductor peaks at ≈ 2.65 A (0.8 A ripple), under the 2.9 A minimum peak current limit.\nFB 100k/18k: VOUT = 0.8 V × (1 + 100/18) = 5.24 V; everything on +5V takes it (TJA1462AT ≤ 5.5 V).\nEN 100k/10k: the buck starts above 13.5 V and stops below 10.8 V (VEN 1.226 V, 0.241 V hysteresis), so no node\n  draws its low-voltage inrush while the hub's eFuse is soft-starting the row.\nLayout: C4/C2/C3 straddle U1's VIN and GND pins on the top layer; CIN, U1 and COUT share one top-side GND island\n  with vias to the In1 plane; the FB divider sits at the FB pin, its +5V sense comes from COUT on another layer.\nInput: SUD50P06 P-FET (reverse polarity, Vgs clamped by the 12 V zener); SMBJ33A clamps hot-plug ringing below 54 V (U1: 63 V abs max).\nVRACK is 20 V, or 28 V (EPR), from the hub's USB-C PD supply: SMBJ33A stands off 33 V (28 V + 5 % = 29.4 V), the buck runs\n  4.3–60 V and starts above 13.5 V, the P-FET and the zener clamp are rated 60 V / 12 V.  At 20 V a row draws more current: ≤ 1.6 A."
 		(exclude_from_sim no)
 		(at 15.24 162.56 0)
 		(size 279.4 29.21)

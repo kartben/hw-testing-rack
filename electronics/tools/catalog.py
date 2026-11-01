@@ -70,15 +70,22 @@ CAT = {
     # its inductor: TI SLUSF64B table 8-1 (LMR51625, 5 V, 1.1 MHz), the same FXL0630 footprint
     "buck_l47": Cat("Device:L", "Inductor_SMD:L_Changjiang_FXL0630", "FXL0630-4R7-M", "cjiang", "C167220", 0.10,
                     description="4.7 µH, 7.5 A sat (9 A typ), 5.5 A rms, 33 mΩ, molded"),
-    # the same values rated 75 V, for a 28 V EPR rail (the FXL0630's is 30 V): Vishay IHLP-2525CZ-01 (doc 34104),
-    # its terminals inside the FXL0630's pads, so on the same footprint (bom/sourcing.md, 2026-11-01); JLC's footprint
-    # of the series (C506574's) has its pads along x as ours: no CPL turn
-    "buck_l47_75v": Cat("Device:L", "Inductor_SMD:L_Changjiang_FXL0630", "IHLP2525CZEK4R7M01", "Vishay Intertech",
-                        "C48009678", 0.56, datasheet="https://www.vishay.com/doc?34104",
-                        description="4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat, 37 / 40 mΩ, molded"),
+    # the same 4.7 µH rated for 28 V EPR (bom/sourcing.md): Vishay doc 34104 (rev. 01-Oct-2026) p. 1, "Rated
+    # operating voltage (across inductor) = 75 V", where the FXL0630 withstands 30 V.  It keeps the FXL0630 land:
+    # Vishay's pad layout (p. 1: 3.429 mm gap, 8.255 mm over both, 3.429 high) is within 0.14 mm of it, and its
+    # terminals (1.27 × 3.18 mm, 2.16–3.43 mm from the centre) sit on its pads.  JLC draws it centred, pads along
+    # x (C553961's EasyEDA land): no CPL correction.  The body is KiCad's IHLP-2525 model
+    "buck_l47_75v": Cat("Device:L", "Inductor_SMD:L_Changjiang_FXL0630", "IHLP2525CZEK4R7M01", "Vishay", "C48009678",
+                        0.69, datasheet="https://www.vishay.com/docs/34104/ihlp-2525cz-01.pdf",
+                        alt="IHLP2525CZER4R7M01 (C553961): the same part on a 2000-piece reel",
+                        description="4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat (ΔT 40 °C), 37 mΩ (40 max), molded",
+                        model=("${KICAD10_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_Vishay_IHLP-2525.step", (0, 0, 0),
+                               (0, 0, 0))),
     "buck_l_75v": Cat("Device:L", "Inductor_SMD:L_Changjiang_FXL0630", "IHLP2525CZER3R3M01", "Vishay Intertech",
                       "C506574", 0.71, datasheet="https://www.vishay.com/doc?34104",
-                      description="3.3 µH, 75 V, 13.5 A sat (−20 %), 6 A heat, 28 / 30 mΩ, molded"),
+                      description="3.3 µH, 75 V, 13.5 A sat (−20 %), 6 A heat, 28 / 30 mΩ, molded",
+                      model=("${KICAD10_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_Vishay_IHLP-2525.step", (0, 0, 0),
+                             (0, 0, 0))),
     "ldo": Cat("Regulator_Linear:AMS1117-3.3", "Package_TO_SOT_SMD:SOT-223-3_TabPin2", "AMS1117-3.3", "AMS", "C6186",
                0.21, basic=True, description="3.3 V 1 A LDO"),
     "pfet": Cat("Transistor_FET:SUD50P06-15", "Package_TO_SOT_SMD:TO-252-2", "SUD50P06-15(UMW)", "UMW", "C7503186",

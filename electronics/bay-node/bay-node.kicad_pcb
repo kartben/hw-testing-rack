@@ -10285,7 +10285,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.vishay.com/docs/34104/ihlp-2525cz-01.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -10296,7 +10296,7 @@
 				)
 			)
 		)
-		(property "Description" "4.7 µH, 7.5 A sat (9 A typ), 5.5 A rms, 33 mΩ, molded"
+		(property "Description" "4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat (ΔT 40 °C), 37 mΩ (40 max), molded"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -10319,7 +10319,7 @@
 				)
 			)
 		)
-		(property "MPN" "FXL0630-4R7-M"
+		(property "MPN" "IHLP2525CZEK4R7M01"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -10331,7 +10331,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "cjiang"
+		(property "Manufacturer" "Vishay"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -10343,11 +10343,23 @@
 				)
 			)
 		)
-		(property "LCSC" "C167220"
+		(property "LCSC" "C48009678"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "79262d7a-d401-4a7e-9dd9-f4704f6787db")
+			(effects
+				(font
+					(size 1.27 1.27)
+					(thickness 0.15)
+				)
+			)
+		)
+		(property "Alternative" "IHLP2525CZER4R7M01 (C553961): the same part on a 2000-piece reel"
+			(at 0 0 0)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "5ea0c9b9-32f6-4f2b-939f-58c4e7ad9833")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10580,7 +10592,7 @@
 			(uuid "1140b6d7-66e9-4fc1-be96-b740db56e5dd")
 		)
 		(embedded_fonts no)
-		(model "${KICAD10_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_Changjiang_FXL0630.step"
+		(model "${KICAD10_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_Vishay_IHLP-2525.step"
 			(offset
 				(xyz 0 0 0)
 			)

@@ -185,7 +185,10 @@ JLC_SINCE_QUOTE = {
                    # (C6186, basic, $0.2048), stable with its ceramic output capacitor (datasheet audit F1)
                    "camera-pod": [("AP2114H-3.3 for the AMS1117 (datasheet audit F1): its extended part type",
                                    "extended parts", 3.09),
-                                  ("AP2114H-3.3 for the AMS1117: 2 at JLC's price", "components", 0.05)]}
+                                  ("AP2114H-3.3 for the AMS1117: 2 at JLC's price", "components", 0.05)],
+                   # L1 rated for 28 V EPR (bom/sourcing.md, 2026-11-01): the IHLP2525CZEK4R7M01 (C48009678, extended,
+                   # $0.69) for the FXL0630-4R7-M (C167220, extended, $0.096), on the same feeder: no part type more
+                   "bay-node": [("IHLP2525CZ for the FXL0630 (L1, 28 V EPR): 10 at JLC's price", "components", 5.94)]}
 
 # JLC's fees, as its real quotes of 2026-10-23 charge them (its help page "PCB Assembly Cost" of 2026-09-09
 # still says $25.56 / $8.21 / $1.53 and $8.18 / $1.53 / $3.07) and the jlcpcb.com calculator (2026-10-19,
