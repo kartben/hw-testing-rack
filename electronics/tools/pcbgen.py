@@ -602,7 +602,7 @@ class PcbBuilder:
             tx.SetLayer(pcbnew.F_SilkS if t.get("layer", "F.SilkS") == "F.SilkS" else pcbnew.B_SilkS)
             sz = t.get("size", 1.0)
             tx.SetTextSize(V(sz, sz))
-            tx.SetTextThickness(MM(sz * 0.15))
+            tx.SetTextThickness(MM(t.get("thickness", sz * 0.15)))     # its stroke, else 15 % of its height
             if t.get("layer") == "B.SilkS":
                 tx.SetMirrored(True)
             tx.SetTextAngleDegrees(t.get("rot", 0))

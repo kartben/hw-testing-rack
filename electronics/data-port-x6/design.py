@@ -961,12 +961,14 @@ def board() -> Board:
                 ("split-5vb-west", (TBX - 0.6, 0.35, TBX + 0.4, TB + 0.6)),
                 ("split-5vb-foot", (TBX - 0.6, TB - 0.4, W - 5.0, TB + 0.6)),
                 ("split-5vb-band", (W - 6.0, TB - 0.4, W - 5.0, PWR_SPLIT)))],
+        # 0.8 mm text in 0.15 mm strokes (the layout review: 0.15 at least; 15 % of 0.8 would give 0.12)
         "texts": [
-            {"text": "DATA ×6 v1.0", "x": 50.4, "y": H - 2.5, "size": 0.8},     # between USB-C 3 and 4's rows
-            *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "layer": "B.SilkS"}
+            {"text": "DATA ×6 v1.0", "x": 50.4, "y": H - 2.5, "size": 0.8, "thickness": 0.15},   # by USB-C 3 and 4
+            *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "thickness": 0.15, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
             # the lead's connector, named on the rear face where it plugs in: it brings the 20 V
-            {"text": "LEAD 20 V", "x": LEAD[0], "y": LEAD[1] + 3.6, "size": 0.8, "layer": "B.SilkS"},
+            {"text": "LEAD 20 V", "x": LEAD[0], "y": LEAD[1] + 3.6, "size": 0.8, "thickness": 0.15,
+             "layer": "B.SilkS"},
         ],
     }
     return b
