@@ -617,6 +617,10 @@ class NodeApi(unittest.TestCase):
                             "--ms", "10"], capture_output=True, text=True, timeout=30)
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("VBUS on", r.stdout)
+        r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(lab), "power", "a1", "on", "--when",
+                            "available"], capture_output=True, text=True, timeout=30)
+        self.assertNotEqual(r.returncode, 0)                            # one DUT: no budget to wait on
+        self.assertIn("sub-slot's", r.stderr)
 
     def test_one_board(self):
         """A one-board node: one slot, named by the bay's position (here A1, whatever the node calls itself)."""
@@ -807,6 +811,45 @@ class MultiNodeApi(unittest.TestCase):
         self.assertIn("USB hub 0424:2517 USB2517 hub", out)
         self.assertIn("1-1.1    B3.1   1fc9:0143  MCU-LINK on-board (r0E7) CMSIS-DAP V3.172 (NXP Semiconductors)", out)
         self.assertIn("1a86:7523  CH340 serial adapter", out)
+
+    def test_queued(self):
+        """A power on the bay's budget has no room for fails (409); `--when available` queues it ("queued",
+        exit 0) and the port goes on by itself once there is room; `--wait` blocks until then, or cancels it
+        and fails; `cancel` withdraws it (docs/multi-dut-node.md, Power budget)."""
+        b4 = self.bays["B3.4"]
+        draw = f"http://127.0.0.1:{self.port}/dev/draw?port=1&ma="
+
+        def run(*args):
+            return subprocess.run([sys.executable, str(BAYCTL), "--lab", str(self.lab), *args],
+                                  capture_output=True, text=True, timeout=30)
+
+        bayctl.control(b4, "power", {"action": "off"})
+        urllib.request.urlopen(draw + "900").read()                     # B3.1 leaves no room
+        try:
+            r = run("power", "B3.4", "on")
+            self.assertEqual(r.returncode, 1)                           # unchanged: refused, not queued
+            self.assertIn("409", r.stderr)
+            self.assertFalse(bayctl.port_doc(b4)["power"]["queued"])
+            self.assertIn("B3.4: queued", self.cli("power", "B3.4", "on", "--when", "available"))
+            self.assertEqual(bayctl.port_doc(b4)["power"]["state"], "waiting")
+            self.assertIn("B3.4: queued power on cancelled", self.cli("power", "B3.4", "cancel"))
+            self.assertIn("B3.4: nothing queued", self.cli("power", "B3.4", "cancel"))
+            r = run("power", "B3.4", "on", "--wait", "1")
+            self.assertEqual(r.returncode, 1)                           # no room within a second: cancelled
+            self.assertIn("B3.4: queued", r.stdout)
+            self.assertIn("cancelled", r.stderr)
+            p = bayctl.port_doc(b4)["power"]
+            self.assertFalse(p["on"] or p["queued"])
+            r = run("power", "B3.4", "off", "--when", "available")
+            self.assertEqual(r.returncode, 1)
+            self.assertIn("go with on", r.stderr)
+            threading.Timer(1.0, lambda: urllib.request.urlopen(draw + "0").read()).start()
+            out = self.cli("power", "B3.4", "on", "--wait", "20")       # room within a second: on
+            self.assertIn("B3.4: queued", out)
+            self.assertIn("B3.4: on", out)
+            self.assertTrue(bayctl.port_doc(b4)["power"]["on"])
+        finally:
+            urllib.request.urlopen(draw + "0").read()
 
 
 class LiveRack(unittest.TestCase):

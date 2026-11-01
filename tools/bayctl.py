@@ -5,6 +5,8 @@
     python tools/bayctl.py status B3                    the node's /api/status
     python tools/bayctl.py ports B3                     the node's ports: board, power, USB device, busid, client
     python tools/bayctl.py power B3 on|off|cycle [--ms 2000]
+    python tools/bayctl.py power B3.4 on --when available | --wait 600    on once the bay's budget has room
+    python tools/bayctl.py power B3.4 cancel            withdraw such a queued power on
     python tools/bayctl.py reset B3 [--ms 100]          pulse the DUT's RESET line (AUX)
     python tools/bayctl.py boot B3 [--power-cycle]      DUT into its ROM bootloader (AUX BOOT + RESET, or + power)
     python tools/bayctl.py mode B3 usbip|classic
@@ -32,7 +34,10 @@
 A bay with a DATA ×4 board holds up to four boards, sub-slots B3.1 to B3.4 (docs/multi-dut-node.md):
 name one (`power B3.2 cycle`, `attach B3.2 --follow`, `prepare B3.2`, `lease B3.2`) or the whole bay
 (`power B3 off`: every port the node has).  The node's own commands (status, mode, access, update) take
-either.  A sub-slot given `role: analyzer` in config/lab.yaml holds the bay's logic analyzer, not a board
+either.  A port's power on that the bay's power budget has no room for fails (409); with `--when
+available` it is queued instead ("queued", exit 0) and the port goes on by itself once there is room;
+`--wait SECONDS` queues it the same way and blocks until it is on, cancelling it and failing after
+SECONDS; `power B3.4 cancel` (or `off`) withdraws it.  A sub-slot given `role: analyzer` in config/lab.yaml holds the bay's logic analyzer, not a board
 under test: `list` shows it, `hwmap` leaves it out, and the whole bay's reset, boot, attach and detach pass
 it by (name it: `attach B3.3`; `boot B3.3 --power-cycle` puts it in BOOTSEL through the BOOT wire).
 
@@ -740,6 +745,39 @@ def control(bay: Bay, what: str, body: dict) -> dict:
     if bay.slot:
         return api(bay, f"/api/ports/{bay.slot}/{what}", body)
     return api(bay, f"/api/{what}", body)
+
+
+def cancel_queued(bay: Bay) -> bool:
+    """Withdraw a sub-slot's queued power on; False when none was queued (409)."""
+    try:
+        control(bay, "power", {"action": "cancel"})
+    except BayError as e:
+        if e.status != 409:
+            raise
+        return False
+    return True
+
+
+def wait_powered(bays: list[Bay], timeout: float, step: float = 0.5, say=print) -> None:
+    """Block until each sub-slot's port is on; after `timeout` s, cancel the ones still queued and fail."""
+    left = list(bays)
+    end = time.monotonic() + timeout
+    while True:
+        for bay in list(left):
+            if (port_doc(bay).get("power") or {}).get("on"):
+                say(f"{bay.id}: on")
+                left.remove(bay)
+        if not left or time.monotonic() >= end:
+            break
+        time.sleep(step)
+    # Cancelled, unless it went on meanwhile: it would come on later, behind the caller's back
+    late = [b for b in left if cancel_queued(b) or not (port_doc(b).get("power") or {}).get("on")]
+    for bay in left:
+        if bay not in late:
+            say(f"{bay.id}: on")
+    if late:
+        raise BayError(f"{', '.join(b.id for b in late)}: no room in the bay's budget after {timeout:g} s: "
+                       f"the queued power on is cancelled")
 
 
 # ------------------------------------------------------------------------- USB/IP (Linux)
@@ -1493,8 +1531,15 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("ports").add_argument("bay")
     p = sub.add_parser("power")
     p.add_argument("bay")
-    p.add_argument("action", choices=["on", "off", "cycle"])
+    p.add_argument("action", choices=["on", "off", "cycle", "cancel"],
+                   help="cancel: withdraw a sub-slot's queued power on (--when available)")
     p.add_argument("--ms", type=int, default=1000)
+    p.add_argument("--when", choices=["available"],
+                   help="on, a sub-slot: when the bay's power budget has no room, queue the request (prints "
+                        "\"queued\", exit 0) instead of failing: the port goes on by itself once there is room")
+    p.add_argument("--wait", type=float, metavar="SECONDS",
+                   help="on, a sub-slot: as --when available, then block until the port is on; after SECONDS, "
+                        "cancel the request and fail")
     p = sub.add_parser("power-port", help=argparse.SUPPRESS)       # PDUDaemon: port number instead of bay id
     p.add_argument("port", type=int)
     p.add_argument("action", choices=["on", "off", "cycle"])
@@ -1653,8 +1698,29 @@ def main(argv: list[str] | None = None) -> int:
             body = {"action": a.action}
             if a.action == "cycle":
                 body["ms"] = getattr(a, "ms", 1000)
+            queue = getattr(a, "when", None) or getattr(a, "wait", None) is not None
+            if queue and a.action != "on":
+                raise BayError("--when and --wait go with on")
+            if queue or a.action == "cancel":
+                whole = [b.id for b in targets if not b.slot]
+                if whole:
+                    raise BayError(f"{', '.join(whole)}: a queued power on is a sub-slot's (a DATA ×4 port, "
+                                   f"within the bay's power budget)")
+            if queue:
+                body["when"] = "available"
+            queued = []
             for bay in targets:
-                _print_control(bay, control(bay, "power", body))
+                if a.action == "cancel":
+                    print(f"{bay.id}: " + ("queued power on cancelled" if cancel_queued(bay) else "nothing queued"))
+                    continue
+                r = control(bay, "power", body)
+                if queue and (r.get("power") or {}).get("queued"):
+                    print(f"{bay.id}: queued, on as soon as the bay's budget has room")
+                    queued.append(bay)
+                else:
+                    _print_control(bay, r)
+            if queued and getattr(a, "wait", None) is not None:
+                wait_powered(queued, a.wait)
         elif a.cmd in ("reset", "boot"):
             for bay in dut_targets(bays, a.bay):
                 if a.cmd == "reset":

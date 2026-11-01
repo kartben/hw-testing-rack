@@ -255,6 +255,19 @@ $ python tools/bayctl.py mode B4 classic  # hand the DUT to the laptop on the fr
 $ python tools/bayctl.py status B3
 ```
 
+A DATA ×4 port's power on fails (409, exit 1) when the bay's power budget
+has no room for it ([multi-dut-node.md](multi-dut-node.md#power-budget)).
+A script that can wait asks for it explicitly:
+
+```console
+$ python tools/bayctl.py power B3.4 on --when available   # queued (exit 0): on by itself once there is room
+$ python tools/bayctl.py power B3.4 on --wait 600         # the same, and block until it is on
+$ python tools/bayctl.py power B3.4 cancel                # withdraw a queued power on (an off does too)
+```
+
+`--wait` gives up after its timeout: it cancels the request, so the port
+does not come on later behind the script's back, and exits 1.
+
 ## Limits
 
 * **Access control is address based, without TLS.**  The rules keep

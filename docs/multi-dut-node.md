@@ -118,7 +118,9 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 > be: `{"action": "on", "when": "available"}` answers 202 and the port waits in its turn, in the same
 > order as the others, until it goes on by itself (logged: queued, started); an `off` or
 > `{"action": "cancel"}` withdraws it (logged: cancelled).  On the page, the port's **As soon as
-> possible** box next to Power on; a queued port shows **Queued** and a Cancel button.
+> possible** box next to Power on; a queued port shows **Queued** and a Cancel button.  From a
+> script: `bayctl power B3.4 on --when available` (or `--wait SECONDS`), `bayctl power B3.4 cancel`
+> ([ci.md](ci.md#by-hand)).
 >
 > ![Power card on a rev B bay: DATA_VIN, the bay's draw, the hub's grant and a port waiting for power](img/web-ui-budget.png)
 

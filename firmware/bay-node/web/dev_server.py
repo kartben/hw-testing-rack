@@ -222,6 +222,7 @@ def short_port(d: dict) -> dict:
 
 
 def ports_doc(ip: int = 0) -> list[dict]:
+    admit()                             # the node's admission runs on its own: any poll sees it here
     return [port_doc(pt, ip) for pt in ports] if multi() else [one_port_doc(status(ip))]
 
 
