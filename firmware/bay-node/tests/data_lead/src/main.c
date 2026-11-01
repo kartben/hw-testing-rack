@@ -6,7 +6,8 @@
  * short; the board must answer within a second; off for good on a ~FLT or a
  * board that stops answering, until the next power on.  Then the ports'
  * budget in mW on DATA_VIN: the hub's grant admits them, a lower grant sheds
- * the last ones switched on, without a grant the bay's own limit.
+ * the last ones switched on, without a grant the bay's own limit; a refused
+ * request is not queued unless it asked to be (on as soon as there is room).
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -409,6 +410,67 @@ ZTEST(data_lead, test_12_no_grant)
 	zassert_false(pi.wanted);
 	zassert_false(pi.waiting);
 	zassert_equal(ports_waiting(), 0);
+}
+
+ZTEST(data_lead, test_13_queued)
+{
+	struct port_info pi;
+
+	/* Three ports on and idle (the board's 1.7 W), 2 W granted: no room for the fourth */
+	grant_mw = 8000;
+	zassert_ok(dut_power_set(true));
+	k_sleep(K_MSEC(1500));
+	zassert_ok(ports_power(4, false, NULL));
+	zassert_equal(ports_on(), 3);
+	grant_mw = 2000;
+	k_sleep(K_MSEC(300));
+
+	/* Queued: off, wanted, waiting in its turn as the ports wanted at boot */
+	zassert_equal(ports_power_wait(4), -EINPROGRESS);
+	zassert_ok(ports_info(4, &pi));
+	zassert_false(pi.on);
+	zassert_true(pi.queued && pi.wanted && pi.waiting);
+	zassert_equal(ports_waiting(), 1);
+	k_sleep(K_MSEC(500));
+	zassert_false(port_on_slot(4), "still no room");
+
+	/* Room: on by itself */
+	grant_mw = 8000;
+	k_sleep(K_MSEC(1000));
+	zassert_true(port_on_slot(4));
+	zassert_ok(ports_info(4, &pi));
+	zassert_false(pi.queued);
+	zassert_equal(ports_waiting(), 0);
+
+	/* Cancelled: off, no longer wanted, never started */
+	zassert_ok(ports_power(4, false, NULL));
+	grant_mw = 2000;
+	k_sleep(K_MSEC(300));
+	zassert_equal(ports_power_wait(4), -EINPROGRESS);
+	zassert_ok(ports_power_cancel(4));
+	zassert_ok(ports_info(4, &pi));
+	zassert_false(pi.queued || pi.wanted || pi.waiting);
+	zassert_equal(ports_power_cancel(4), -EALREADY, "nothing left to cancel");
+	grant_mw = 8000;
+	k_sleep(K_MSEC(1000));
+	zassert_false(port_on_slot(4));
+
+	/* An explicit off withdraws it too */
+	grant_mw = 2000;
+	k_sleep(K_MSEC(300));
+	zassert_equal(ports_power_wait(4), -EINPROGRESS);
+	zassert_ok(ports_power(4, false, NULL));
+	zassert_ok(ports_info(4, &pi));
+	zassert_false(pi.queued || pi.wanted);
+	grant_mw = 8000;
+	k_sleep(K_MSEC(1000));
+	zassert_false(port_on_slot(4));
+
+	/* With room it goes on at once */
+	zassert_ok(ports_power_wait(4));
+	zassert_true(port_on_slot(4));
+	zassert_ok(ports_info(4, &pi));
+	zassert_false(pi.queued);
 }
 
 ZTEST_SUITE(data_lead, NULL, suite_setup, before, NULL, NULL);

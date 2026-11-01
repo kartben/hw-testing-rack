@@ -93,7 +93,7 @@ device (VID:PID, product, serial, busid) and the USB/IP client attached.
 `dut.c` stays the bay's DUT_5V; `ports.c` adds the DATA ×4's ports, and a
 one-port node answers `/api/ports` with its one DUT as port 1.
 
-![USB devices card on a DATA ×4 bay (B3.1–B3.4): per-port power, reset, bootloader, current, lease state and board target](img/web-ui-ports.png)
+![USB devices card on a DATA ×4 bay (B3.1–B3.4): per-port power, reset, bootloader, current, lease state and board target; B3.4 queued until the bay has room](img/web-ui-ports.png)
 
 ## Power budget
 
@@ -114,7 +114,11 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 > bay fits; the ALERT still sheds at once above 1.5 A on DATA_VIN (`CONFIG_BAY_PORTS_SHED_MA`), under
 > the eFuse's 1.76 A.  A port that waits for power, or that was shed, stays wanted and comes back in
 > turn once there is room; the API and the page show it as waiting (shed), and STATUS tells the hub
-> how many wait.  A request the budget refuses (409) is not queued, as on rev A.
+> how many wait.  A request the budget refuses (409) is not queued, as on rev A, unless it asks to
+> be: `{"action": "on", "when": "available"}` answers 202 and the port waits in its turn, in the same
+> order as the others, until it goes on by itself (logged: queued, started); an `off` or
+> `{"action": "cancel"}` withdraws it (logged: cancelled).  On the page, the port's **As soon as
+> possible** box next to Power on; a queued port shows **Queued** and a Cancel button.
 >
 > ![Power card on a rev B bay: DATA_VIN, the bay's draw, the hub's grant and a port waiting for power](img/web-ui-budget.png)
 
@@ -219,7 +223,7 @@ an unpowered board.
 | Endpoint | |
 |---|---|
 | `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 2, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.2"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` (hub port n is USB-C n) |
-| `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}`; 409 when the bay's budget has no room for it ([Power budget](#power-budget)) |
+| `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}`; 409 when the bay's budget has no room for it ([Power budget](#power-budget)); `{"action": "on", "when": "available"}` queues it instead (202), `{"action": "cancel"}` withdraws that |
 | `POST /api/ports/<n>/reset`, `/boot` | as today, for one port; `/boot` with `{"power_cycle": true}`: BOOT held across a power cycle of the port instead of a RESET pulse (a board whose RESET is not wired: [the analyzer](#a-logic-analyzer-in-a-sub-slot)) |
 | `GET /api/status` | adds `ports` (the same objects, shorter) |
 | `/api/power`, `/api/reset`, `/api/boot` | unchanged on a one-port node; on a multi-port node they need `"port": n` (409 without) |

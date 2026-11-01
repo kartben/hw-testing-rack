@@ -183,7 +183,11 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
     &[data-st=lease] { color: var(--lease); font-weight: 500; }
     &[data-st=wait] { color: var(--service); font-weight: 500; }
   }
-  & .port-acts { display: flex; flex-wrap: wrap; gap: 6px; }
+  & .port-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  & .asap { font-size: 0.8rem; color: var(--muted); display: inline-flex; align-items: center; gap: 5px;
+            margin-right: 4px; cursor: pointer;
+    & input { margin: 0; accent-color: var(--usbip); }
+  }
   & .port-left { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
   & .none { color: var(--muted); padding: 6px 0; grid-column: 1 / -1; }
 }
@@ -632,6 +636,8 @@ let boardsDoc = null;
 let boardTargets = null;
 let usbFetchedAt = 0;
 let usbRetry;
+/* The DATA x4 ports whose Power on waits for room ("As soon as possible" ticked) */
+const asap = new Set();
 
 const LABEL = {
   fault: "fault", service: "service", classic: "classic", off: "power off",
@@ -747,7 +753,8 @@ function renderBudget(b, multi) {
 }
 
 const DONE = { on: "Power on", off: "Power off", cycle: "Power cycled", reset: "Target reset",
-  boot: "Target in bootloader", usbip: "USB/IP mode", classic: "Classic mode" };
+  boot: "Target in bootloader", usbip: "USB/IP mode", classic: "Classic mode", queue: "Power on",
+  cancel: "Queued power on cancelled" };
 
 async function run(btn, path, body, what) {
   if (btn?.dataset.confirm && !(await confirmed(btn.dataset.confirm))) return;
@@ -757,8 +764,11 @@ async function run(btn, path, body, what) {
     if (btn?.dataset.port) {
       const req = { ...body, port: Number(btn.dataset.port) };
       if (btn.dataset.arg === "power_cycle") req.power_cycle = true;
-      render(await api(path, req));
-      toast(`${btn.dataset.slot || `Port ${btn.dataset.port}`}: ${DONE[what]}`);
+      const doc = await api(path, req);
+      render(doc);
+      const queued = what === "queue" && doc.ports?.find((p) => p.port === req.port)?.power.queued;
+      toast(`${btn.dataset.slot || `Port ${btn.dataset.port}`}: ${queued
+        ? "queued, on as soon as the bay has room" : DONE[what]}`);
     } else if (path === "/api/power" && (status?.ports?.length ?? 0) > 1) {
       const fromFault = btn?.closest(".banner");
       const targets = fromFault
@@ -820,6 +830,9 @@ function portBar(p, board = null) {
       rel.dataset.yours = Boolean(p.lease.yours);
       info.append(rel);
     }
+  } else if (p.power.queued) {
+    info.dataset.st = "wait";
+    info.textContent = "Queued · on as soon as the bay has room";
   } else if (p.power.state === "shed" || p.power.state === "waiting") {
     info.dataset.st = "wait";
     info.textContent = p.power.state === "shed"
@@ -850,8 +863,20 @@ function portBar(p, board = null) {
       mkBtn("Cycle", "power", "cycle", "", null, `Power cycle ${p.slot}`),
       mkBtn("Off", "power", "off", "danger", `Switch ${p.slot}'s 5 V off?`, `Switch ${p.slot}'s 5 V off`),
     );
+  } else if (p.power.queued) {
+    acts.append(mkBtn("Cancel", "power", "cancel", "", null, `Withdraw ${p.slot}'s queued power on`));
   } else {
+    /* Ticked, a Power on the budget has no room for waits for it instead of failing (409) */
+    const box = el("label", "asap");
+    const tick = el("input");
+    tick.type = "checkbox";
+    tick.dataset.asap = p.port;
+    tick.checked = asap.has(p.port);
+    tick.disabled = Boolean(denied);
+    box.title = `If the bay's power budget has no room, ${p.slot} goes on by itself once there is`;
+    box.append(tick, "As soon as possible");
     acts.append(
+      box,
       mkBtn("Power on", "power", "on", "primary", null, `Switch ${p.slot}'s 5 V on`),
       mkBtn("Bootloader", "boot", "power_cycle", "", null, `Hold BOOT across power-on on ${p.slot}`),
     );
@@ -1979,12 +2004,21 @@ document.addEventListener("click", async (ev) => {
   }
 
   const action = btn.dataset.action;
-  if (action === "power") run(btn, "/api/power", { action: btn.dataset.arg }, btn.dataset.arg);
+  if (action === "power") {
+    const body = { action: btn.dataset.arg };
+    if (body.action === "on" && asap.has(Number(btn.dataset.port))) body.when = "available";
+    run(btn, "/api/power", body, body.when ? "queue" : body.action);
+  }
   else if (action === "reset") run(btn, "/api/reset", {}, "reset");
   else if (action === "boot") run(btn, "/api/boot", {}, "boot");
 });
 
 document.addEventListener("change", (ev) => {
+  if (ev.target.dataset.asap) {
+    const n = Number(ev.target.dataset.asap);
+    if (ev.target.checked) asap.add(n);
+    else asap.delete(n);
+  }
   if (ev.target.name === "mode") run(null, "/api/mode", { mode: ev.target.value }, ev.target.value);
   if (ev.target.name === "cam-light" && cam.shown) camShow(cam.live);
   if (ev.target.name === "baud") {

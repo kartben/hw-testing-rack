@@ -149,6 +149,7 @@ struct port {
 	bool refused; /* the budget, or its VBUS, kept it off: said once */
 	bool foreign; /* its VBUS is up while off: waits for that, not for power */
 	bool shed;    /* switched off by the shedding, wanted back */
+	bool queued;  /* a request to switch it on as soon as the budget has room */
 	uint32_t seq; /* when it went on: the last one goes first when the bay sheds */
 	int32_t need; /* shed: what it drew, the room it needs to come back (mA, rev B mW) */
 	uint32_t faults;
@@ -541,7 +542,7 @@ static void setup_handler(struct k_work *work)
 static void admit_handler(struct k_work *work)
 {
 	int next = -1, ret = 0;
-	bool more = false, said = false, granted = false;
+	bool more = false, said = false, granted = false, queued = false;
 	int32_t bay = 0, limit = 0;
 
 	ARG_UNUSED(work);
@@ -557,7 +558,11 @@ static void admit_handler(struct k_work *work)
 		}
 	}
 	if (next >= 0) {
+		queued = ports[next].queued;
 		ret = port_on(next, false);
+		if (ret == 0) {
+			ports[next].queued = false;
+		}
 		if ((ret == -EBUSY || ret == -EALREADY) && !ports[next].refused) {
 			ports[next].refused = true;
 			said = ret == -EBUSY;
@@ -571,7 +576,7 @@ static void admit_handler(struct k_work *work)
 		return;
 	}
 	if (ret == 0) {
-		LOG_INF("port %u on", cfg[next].slot);
+		LOG_INF("port %u on%s", cfg[next].slot, queued ? ": its queued request started" : "");
 	} else if (said) {
 		LOG_WRN("port %u waits for power: the bay draws %d %s (budget %d %s%s)", cfg[next].slot,
 			bay, unit(), limit, unit(), granted ? ", the hub's grant" : "");
@@ -832,6 +837,7 @@ int ports_info(int slot, struct port_info *pi)
 	pi->latched = ports[i].latched;
 	pi->waiting = waiting(i);
 	pi->shed = ports[i].shed;
+	pi->queued = ports[i].queued && !ports[i].on;
 	pi->faults = ports[i].faults;
 	pi->meter = ports[i].on && read_meter(i, &pi->mv, &pi->ma) == 0;
 	k_mutex_unlock(&lock);
@@ -854,10 +860,14 @@ static int power_on(int slot, int32_t *others, bool keep_boot)
 	ret = ports[i].on ? 0 : port_on(i, keep_boot);
 	/*
 	 * Refused by the budget: not wanted either, it would come on behind the
-	 * caller's back.  VBUS still up: wanted, on once it has dropped.
+	 * caller's back (unless a queued request asked for that).  VBUS still
+	 * up: wanted, on once it has dropped.
 	 */
-	ports[i].wanted = ret == 0 || ret == -EALREADY;
+	ports[i].wanted = ret == 0 || ret == -EALREADY || ports[i].queued;
 	ports[i].refused = ret == -EALREADY;
+	if (ret == 0) {
+		ports[i].queued = false;
+	}
 	if (!ports[i].wanted) {
 		ports[i].shed = false;
 	}
@@ -873,9 +883,67 @@ static int power_on(int slot, int32_t *others, bool keep_boot)
 	return ret;
 }
 
+int ports_power_wait(int slot)
+{
+	int i = index_of(slot);
+	int ret;
+
+	if (i < 0) {
+		return i;
+	}
+
+	k_mutex_lock(&lock, K_FOREVER);
+	ret = ports[i].on ? 0 : port_on(i, false);
+	if (ret == 0) {
+		ports[i].wanted = true;
+		ports[i].queued = false;
+	} else if (ret == -EBUSY || ret == -EAGAIN || ret == -EALREADY) {
+		/* No room yet, the board not set up, or a foreign VBUS: in its turn */
+		ports[i].wanted = true;
+		ports[i].queued = true;
+		ports[i].refused = ret == -EALREADY;
+		ret = -EINPROGRESS;
+	}
+	k_mutex_unlock(&lock);
+
+	if (ret == -EINPROGRESS) {
+		LOG_INF("port %d queued: on as soon as the bay's budget has room", slot);
+		k_work_reschedule(&admit_work, K_MSEC(REFUSED_MS));
+	} else {
+		LOG_INF("port %d on%s", slot, ret == 0 ? "" : ": refused");
+	}
+	return ret;
+}
+
+int ports_power_cancel(int slot)
+{
+	int i = index_of(slot);
+	bool was;
+
+	if (i < 0) {
+		return i;
+	}
+
+	k_mutex_lock(&lock, K_FOREVER);
+	was = ports[i].queued && !ports[i].on;
+	if (was) {
+		ports[i].queued = false;
+		ports[i].wanted = false;
+		ports[i].shed = false;
+		ports[i].need = 0;
+	}
+	k_mutex_unlock(&lock);
+
+	if (was) {
+		LOG_INF("port %d: its queued request cancelled", slot);
+	}
+	return was ? 0 : -EALREADY;
+}
+
 int ports_power(int slot, bool on, int32_t *others)
 {
 	int i = index_of(slot);
+	bool queued;
 	int ret;
 
 	if (on) {
@@ -886,14 +954,16 @@ int ports_power(int slot, bool on, int32_t *others)
 	}
 
 	k_mutex_lock(&lock, K_FOREVER);
+	queued = ports[i].queued && !ports[i].on;
 	ports[i].wanted = false;
+	ports[i].queued = false;
 	ports[i].shed = false;
 	ports[i].foreign = false;
 	ports[i].need = 0;
 	ret = port_off(i);
 	k_mutex_unlock(&lock);
 
-	LOG_INF("port %d off", slot);
+	LOG_INF("port %d off%s", slot, queued ? ": its queued request cancelled" : "");
 	return ret;
 }
 
@@ -1030,6 +1100,18 @@ int ports_power_cycle(int slot, k_timeout_t off_time, int32_t *others)
 	ARG_UNUSED(slot);
 	ARG_UNUSED(off_time);
 	ARG_UNUSED(others);
+	return -ENOENT;
+}
+
+int ports_power_wait(int slot)
+{
+	ARG_UNUSED(slot);
+	return -ENOENT;
+}
+
+int ports_power_cancel(int slot)
+{
+	ARG_UNUSED(slot);
 	return -ENOENT;
 }
 

@@ -85,6 +85,7 @@ struct port_info {
 	bool latched;     /* off after a fault, until switched on again */
 	bool waiting;     /* wanted, off: waiting for its turn or for power */
 	bool shed;        /* switched off by the shedding, back once there is room */
+	bool queued;      /* asked on as soon as there is room (ports_power_wait()) */
 	bool meter;       /* mv, ma, mw read */
 	bool usb;         /* a device on its hub port: vid, pid */
 	uint32_t faults;
@@ -126,6 +127,15 @@ int ports_info(int slot, struct port_info *pi);
  * the board is not set up (DUT_5V off), or the port is off (RESET, BOOT)
  */
 int ports_power(int slot, bool on, int32_t *others);
+/*
+ * On as soon as the budget has room: 0 when on now; -EINPROGRESS queued (no
+ * room yet, the board not set up, or a foreign VBUS), the port wanted and
+ * waiting in its turn, as the ports wanted at boot.  An off, or
+ * ports_power_cancel(), withdraws it.
+ */
+int ports_power_wait(int slot);
+/* A queued request withdrawn (the port stays off); -EALREADY: none waits */
+int ports_power_cancel(int slot);
 int ports_power_cycle(int slot, k_timeout_t off_time, int32_t *others);
 int ports_reset_pulse(int slot, k_timeout_t width);
 /* BOOT held across a RESET pulse, or across a power cycle of the port */

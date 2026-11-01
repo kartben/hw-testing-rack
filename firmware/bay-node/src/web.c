@@ -524,19 +524,21 @@ static int port_json(char *buf, size_t size, int port, uint32_t ip, bool full)
 
 	if (!full) {
 		return snprintf(buf, size,
-				"{\"slot\":\"%s\",\"port\":%u,\"power\":{\"on\":%s,\"ma\":%d,\"state\":\"%s\"},"
-				"\"fault\":%s,\"usb\":%s,\"usbip\":%s,\"lease\":%s}",
+				"{\"slot\":\"%s\",\"port\":%u,\"power\":{\"on\":%s,\"ma\":%d,\"state\":\"%s\","
+				"\"queued\":%s},\"fault\":%s,\"usb\":%s,\"usbip\":%s,\"lease\":%s}",
 				name, pi.slot, pi.on ? "true" : "false", pi.ma, port_state(&pi),
-				pi.latched ? "true" : "false", usb, usbip, lease_str);
+				pi.queued ? "true" : "false", pi.latched ? "true" : "false", usb, usbip,
+				lease_str);
 	}
 	return snprintf(buf, size,
 			"{\"slot\":\"%s\",\"port\":%u,\"hub_port\":%s%.0u,"
 			"\"power\":{\"on\":%s,\"mv\":%d,\"ma\":%d,\"mw\":%d,\"faults\":%u,"
-			"\"state\":\"%s\"},"
+			"\"state\":\"%s\",\"queued\":%s},"
 			"\"fault\":%s,\"usb\":%s,\"usbip\":%s,\"lease\":%s}",
 			name, pi.slot, port > 0 ? "" : "null", port > 0 ? pi.hub_port : 0,
 			pi.on ? "true" : "false", pi.mv, pi.ma, pi.mw, pi.faults, port_state(&pi),
-			pi.latched ? "true" : "false", usb, usbip, lease_str);
+			pi.queued ? "true" : "false", pi.latched ? "true" : "false", usb, usbip,
+			lease_str);
 }
 
 /*
@@ -724,6 +726,7 @@ struct action_req {
 	int32_t ms;
 	int32_t port;
 	bool power_cycle;
+	char *when;
 };
 
 static const struct json_obj_descr action_descr[] = {
@@ -732,6 +735,7 @@ static const struct json_obj_descr action_descr[] = {
 	JSON_OBJ_DESCR_PRIM(struct action_req, ms, JSON_TOK_NUMBER),
 	JSON_OBJ_DESCR_PRIM(struct action_req, port, JSON_TOK_NUMBER),
 	JSON_OBJ_DESCR_PRIM(struct action_req, power_cycle, JSON_TOK_TRUE),
+	JSON_OBJ_DESCR_PRIM(struct action_req, when, JSON_TOK_STRING),
 };
 
 #define ACTION_FIELD_ACTION BIT(0)
@@ -739,6 +743,7 @@ static const struct json_obj_descr action_descr[] = {
 #define ACTION_FIELD_MS     BIT(2)
 #define ACTION_FIELD_PORT   BIT(3)
 #define ACTION_FIELD_PC     BIT(4)
+#define ACTION_FIELD_WHEN   BIT(5)
 
 /* user_data of a /api/ports/<n>/<what> resource: the action, the port above */
 #define PORT_ACTION(what, port) ((what) | ((port) << 8))
@@ -784,9 +789,20 @@ static const char *do_port_action(enum api_action what, int port, const struct a
 	switch (what) {
 	case API_POWER:
 		if (!(fields & ACTION_FIELD_ACTION)) {
-			return "action must be on, off or cycle";
+			return "action must be on, off, cycle or cancel";
 		}
-		if (strcmp(req->action, "on") == 0) {
+		if ((fields & ACTION_FIELD_WHEN) &&
+		    (strcmp(req->action, "on") != 0 || strcmp(req->when, "available") != 0)) {
+			return "\"when\": \"available\" goes with \"action\": \"on\"";
+		}
+		if (strcmp(req->action, "on") == 0 && (fields & ACTION_FIELD_WHEN)) {
+			/* On as soon as the budget has room: 202 while it waits */
+			ret = ports_power_wait(port);
+			if (ret == -EINPROGRESS) {
+				*code = HTTP_202_ACCEPTED;
+				ret = 0;
+			}
+		} else if (strcmp(req->action, "on") == 0) {
 			ret = ports_power(port, true, &others);
 		} else if (strcmp(req->action, "off") == 0) {
 			ret = ports_power(port, false, NULL);
@@ -794,8 +810,14 @@ static const char *do_port_action(enum api_action what, int port, const struct a
 			/* Without "ms", as long as its VBUS takes to fall under 1 V (2 s at most) */
 			ms = (fields & ACTION_FIELD_MS) ? req->ms : 0;
 			ret = ports_power_cycle(port, K_MSEC(ms), &others);
+		} else if (strcmp(req->action, "cancel") == 0) {
+			ret = ports_power_cancel(port);
+			if (ret == -EALREADY) {
+				*code = HTTP_409_CONFLICT;
+				return "no queued request on this port";
+			}
 		} else {
-			return "action must be on, off or cycle";
+			return "action must be on, off, cycle or cancel";
 		}
 		break;
 	case API_RESET:
@@ -872,6 +894,9 @@ static const char *do_action(enum api_action what, int port, const struct action
 		}
 		if ((fields & ACTION_FIELD_PC) && req->power_cycle) {
 			return "power_cycle is a DATA x4 port's";
+		}
+		if (fields & ACTION_FIELD_WHEN) {
+			return "\"when\" is a DATA x4 port's";
 		}
 	}
 
@@ -988,6 +1013,10 @@ static int action_handler(struct http_client_ctx *client, enum http_transaction_
 	if (err != NULL) {
 		respond_error(rsp, code, err);
 		return 0;
+	}
+	/* A port's request queued until the budget has room */
+	if (code == HTTP_202_ACCEPTED) {
+		rsp->status = code;
 	}
 
 	/* /api/ports/<n>/...: the port's object; otherwise the status document */
