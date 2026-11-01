@@ -113,7 +113,8 @@ def xtal_block():
     c10, c8, r1 = (HX - 5.66, HY + 3.45), (HX - 6.8, HY + 4.38), (HX - 5.75, HY + 6.09)       # their pads 1
     tracks += [("HUB_1V8PLL", "F.Cu", 0.127, [p62, (c10[0] + 0.7, p62[1]), c10]),
                ("HUB_1V8PLL", "F.Cu", 0.127, [c10, (c10[0] - (c8[1] - c10[1]), c8[1]), c8]),
-               ("RBIAS", "F.Cu", 0.127, [p63, (HX - 5.12, p63[1]), (HX - 5.12, HY + 5.2), (r1[0], HY + 5.83), r1])]
+               ("RBIAS", "F.Cu", 0.127, [p63, (HX - 4.92, p63[1]), (HX - 5.12, p63[1] + 0.2), (HX - 5.12, HY + 5.2),
+                                         (r1[0], HY + 5.83), r1])]
     # and C10's, C8's and R1's GND dog-bones, down (the automatic ones, kept further from drawn tracks than from
     # routed ones, would not fit)
     gnd += [((c10[0], HY + 4.41), (c10[0], HY + 5.05)), ((c8[0], HY + 5.34), (c8[0], HY + 5.98)),
@@ -781,7 +782,7 @@ def drawn():
         ex, ey = ESD_PX[n], USB_Y
         v5 = "+5V_A" if n <= 3 else "+5V_B"
         top = ey - 2.9
-        hand_tracks.append((v5, "F.Cu", 0.25, [(ex - 1.138, ey), (ex, ey), (ex, top)]))
+        hand_tracks.append((v5, "F.Cu", 0.25, [(ex - 1.138, ey), (ex - 0.3, ey), (ex, ey - 0.3), (ex, top)]))
         hand_vias.append((v5, ex, top, 0.5, 0.3))
     # C13 (pin 57's 100 nF) likewise, on pin 57's line: the pin west to it, C13 on down to its via
     p57 = (HX - 4.4125, HY + 0.25)                                      # U1 pin 57
