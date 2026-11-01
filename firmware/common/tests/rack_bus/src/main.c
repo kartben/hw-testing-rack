@@ -358,8 +358,9 @@ ZTEST(rack_bus, test_enumerate)
 	plug(1, 2, true);
 	plug(3, 1, true);
 
-	rack_hub_enumerate(&sim.hub, rows_mask(), 0, sim.now);
-	run(2000);
+	/* The hub's four rows on, C with nothing on it */
+	rack_hub_enumerate(&sim.hub, 0xf, 0, sim.now);
+	run(3000);
 
 	zassert_equal(sim.hub.phase, RACK_HUB_IDLE);
 	zassert_equal(rack_hub_count(&sim.hub), 6);
@@ -368,7 +369,8 @@ ZTEST(rack_bus, test_enumerate)
 	zassert_equal(sim.hub.count[2], 0);
 	zassert_equal(sim.hub.count[3], 1);
 	assert_ids();
-	zassert_true(sim.hub_pos[0] && sim.hub_pos[1] && sim.hub_pos[3], "POS up on the rows");
+	zassert_true(sim.hub_pos[0] && sim.hub_pos[1] && sim.hub_pos[2] && sim.hub_pos[3],
+		     "POS up on the rows");
 
 	/* STATUS and INFO arrive */
 	run(1500);

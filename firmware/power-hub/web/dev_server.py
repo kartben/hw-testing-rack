@@ -3,10 +3,10 @@
     python firmware/power-hub/web/dev_server.py [port]      # then open http://localhost:8767
 
 Same endpoints and JSON as src/web.c.  The "hub" is a dict the POSTs change:
-a 140 W EPR charger, rows A and B of bay nodes on the rack bus (CAN) as on
-the first build (rows C and D not fitted), their currents.  Test hooks:
+a 140 W EPR charger, rows A to C of bay nodes on the rack bus (CAN), row D's
+output on with nothing on it (the rack has three rows), their currents.  Test hooks:
 
-    /dev/drop             the charger renegotiates down to 20 V / 1.5 A (30 W): row B shed
+    /dev/drop             the charger renegotiates down to 20 V / 1.5 A (30 W): row C shed
     /dev/restore          back to the 140 W charger
     /dev/fault?row=B      row B's eFuse trips (current limit), /dev/fault?row=B&off=1 clears it
     /dev/lose?node=0x13   a node stops sending STATUS
@@ -40,7 +40,7 @@ from devserver import Admin, Firmware, PageHandler, make_image  # noqa: E402
 WEB = Path(__file__).resolve().parent
 START = time.monotonic() - 2 * 86400 - 5 * 3600
 ROWS = "ABCD"
-FITTED = "AB"   # power_hub.dtsi: rows C and D are not fitted on the first build
+FITTED = "ABCD"   # power_hub.dtsi: all four rows (a bench stand-in disables the ones it lacks)
 MARGIN_PCT = 10  # CONFIG_HUB_BUDGET_MARGIN_PCT
 # Each bay's GRANT (src/budget.c budget_grant_mw()): its share of its row's eFuse and of the contract
 ROW_LIMIT_MA = 1600   # CONFIG_HUB_ROW_LIMIT_MA
@@ -71,6 +71,7 @@ NODES = {
     ("A", 3): ("bay-a3", 420, "attached"),
     ("B", 1): ("bay-b1", 60, "classic"), ("B", 2): ("bay-b2", 0, "off"),
     ("B", 3): ("bay-b3", 140, "enumerated"),
+    ("C", 1): ("bay-c1", 250, "attached"), ("C", 2): ("bay-c2", 120, "usbip"),
 }
 
 # Bays with a camera (node ids: A1, A3, B3), and the one someone is watching
@@ -271,17 +272,18 @@ class Handler(PageHandler):
                 self.json(200, events_doc())
             elif path == "/dev/drop":
                 hub["charger"] = CHARGER_30W
-                hub["rows"]["B"]["shed"] = hub["rows"]["B"]["on"]
+                # D draws nothing (src/budget.c passes it over): C goes
+                hub["rows"]["C"]["shed"] = hub["rows"]["C"]["on"]
                 hub["sheds"] += 1
                 event("pd", "contract: 20.0 V / 1.50 A (30 W)")
-                event("row", "row B shed: 1.52 A > 1.35 A budget")
+                event("row", "row C shed: 1.45 A > 1.35 A budget")
                 self.json(200, status())
             elif path == "/dev/restore":
                 hub["charger"] = CHARGER_140W
                 for r in hub["rows"].values():
                     r["shed"] = False
                 event("pd", "contract: 20 V / 5.00 A (100 W)")
-                event("row", "row B back: the budget has room for it again")
+                event("row", "row C back: the budget has room for it again")
                 enumerate_rack("rows back")
                 self.json(200, status())
             elif path == "/dev/fault":
@@ -398,9 +400,9 @@ def serve(port: int = 8767) -> ThreadingHTTPServer:
                                (-2 * 86400 - 5 * 3600 + 1, "pd",
                                 "contract: 9 V / 3.00 A (27 W), too low for the rows"),
                                (-2 * 86400 - 5 * 3600 + 3, "pd", "contract: 20 V / 5.00 A (100 W)"),
-                               (-2 * 86400 - 5 * 3600 + 3, "row", "rows A, B on (staggered, 300 ms)"),
+                               (-2 * 86400 - 5 * 3600 + 3, "row", "rows A, B, C, D on (staggered, 300 ms)"),
                                (-3 * 3600, "fault", "row B: eFuse in current limit for 40 ms"),
-                               (-754, "can", "enumeration (node 0x11 rebooted): 6 nodes")):
+                               (-754, "can", "enumeration (node 0x11 rebooted): 8 nodes")):
             events.append((now + dt, kind, text))
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     server.daemon_threads = True

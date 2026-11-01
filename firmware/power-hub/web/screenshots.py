@@ -3,8 +3,8 @@
     pip install playwright
     python firmware/power-hub/web/screenshots.py            # -> docs/img/hub-ui-*.png
 
-Runs dev_server.py in-process (a simulated hub: 140 W EPR charger, six
-bays in rows A and B), opens the page in the installed Chrome (--channel
+Runs dev_server.py in-process (a simulated hub: 140 W EPR charger, eight
+bays in rows A to C, row D empty), opens the page in the installed Chrome (--channel
 msedge for Edge), lets it collect samples for the input sparkline, then
 shoots: the claim dialog, then as the admin the rack in dark and light, the
 charger renegotiating down to 30 W with a row shed, an eFuse fault and a
@@ -61,7 +61,7 @@ def main() -> None:
         s.shoot(dark, "hub-ui-dark")
         s.shoot(light, "hub-ui-light")
 
-        s.poke("/dev/drop", wait=3 * POLL_S)    # the charger renegotiates to 30 W: row B shed
+        s.poke("/dev/drop", wait=3 * POLL_S)    # the charger renegotiates to 30 W: row C shed
         s.shoot(dark, "hub-ui-shed")
         s.poke("/dev/restore")
 

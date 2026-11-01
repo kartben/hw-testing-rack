@@ -90,17 +90,27 @@ uint32_t budget_grant_mw(const struct budget *b, uint32_t row_bays, uint32_t rac
 	return share > own_mw ? (uint32_t)(share - own_mw) : 0;
 }
 
-/* The next row to shed: the first one on in the shed order, -1 none */
+/*
+ * The next row to shed: the first one on in the shed order that draws
+ * something (an empty row, an output the rack does not use, frees nothing),
+ * else the first one on; -1 none
+ */
 static int shed_candidate(const struct budget_rows *rows)
 {
+	int first = -1;
+
 	for (const char *c = rows->order; *c != '\0'; c++) {
 		int r = *c - 'A';
 
-		if (r >= 0 && r < BUDGET_ROWS && (rows->on & BIT(r))) {
+		if (r < 0 || r >= BUDGET_ROWS || !(rows->on & BIT(r))) {
+			continue;
+		}
+		if (rows->ma[r] > 0) {
 			return r;
 		}
+		first = first < 0 ? r : first;
 	}
-	return -1;
+	return first;
 }
 
 /* The next row to bring back: the last shed one in the shed order, -1 none */

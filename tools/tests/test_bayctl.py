@@ -1248,19 +1248,18 @@ class Update(unittest.TestCase):
         out = cli("hub", "status")
         self.assertIn("PD 20.0 V / 5.00 A", out)    # 28 V EPR is opt-in (CONFIG_HUB_PD_EPR)
         self.assertIn("row A  ON", out)
-        self.assertIn("row C  not fitted", out)
-        self.assertIn("row D  not fitted", out)
+        self.assertRegex(out, r"row C  ON .* C1\(")
+        self.assertRegex(out, r"row D  ON +0 mA")      # all four rows fitted, nothing on D
 
         out = cli("row", "B", "off")
         self.assertIn("row B  OFF", out)
         out = cli("row", "B", "on")
         self.assertIn("row B  ON", out)
 
-        # A row the hub does not have (power_hub.dtsi: rows C and D are not fitted)
-        r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(lab), "row", "D", "on"],
-                           capture_output=True, text=True, timeout=30, env=env)
-        self.assertEqual(r.returncode, 1)
-        self.assertIn("row not fitted", r.stderr)
+        # A row a hub does not have (a bench stand-in's overlay disables it): /api/status says absent
+        with mock.patch("builtins.print") as say:
+            bayctl._print_hub_row({"name": "D", "state": "absent"})
+        say.assert_called_once_with("row D  not fitted")
 
         out = cli("hub", "pd", "20v")
         self.assertIn("PD 20.0 V / 5.00 A", out)

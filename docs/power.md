@@ -122,7 +122,9 @@ contracts in `tests/budget`):
   `hub budget cap <W>` (saved, in watts, so it follows the voltage).
 * **Over the budget for 1 s**, or **past the contract itself for 250 ms**
   (before the charger's overcurrent protection), the next row in the shed
-  order goes off: D, C, B, then A by default (`hub shed`).  IMON is summed
+  order goes off: D, C, B, then A by default (`hub shed`), skipping a row
+  that draws nothing (row D's output on a rack of three rows): shedding it
+  would free nothing.  IMON is summed
   every 250 ms; one row at a time, each shed waiting for what the others draw
   without it.
 * **Back, the last shed first**, once the budget has room for the most that

@@ -240,7 +240,7 @@ Until a node is claimed it is open, as it always was.
 
 ### Wi-Fi in the rack
 
-Eight nodes (sixteen with rows C and D), the hub and the DUTs' own radios
+Twelve nodes in rows A–C (sixteen if row D is used), the hub and the DUTs' own radios
 share one room, with each node's antenna about 10 cm from its DUTs.  So each
 node (and the hub, through `common/lib/net.c`) sets its station's radio
 before every connection.  A BabbleSim model of the rack

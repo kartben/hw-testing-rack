@@ -2,8 +2,8 @@
 
 Firmware for the ESP32-S3 on the [power hub](../../electronics/power-hub/design.py),
 the rack controller in the power box: it takes the rack's power from a
-USB-C PD charger, switches and meters the rows (A and B on the first build:
-C and D are not fitted), and runs the rack bus
+USB-C PD charger, switches and meters its four rows (A–D; the rack uses A–C),
+and runs the rack bus
 (CAN) that finds every bay node and tells it where it sits.
 
 > **Status:** builds against Zephyr main (pinned in [`west.yml`](../west.yml));
@@ -12,7 +12,7 @@ C and D are not fitted), and runs the rack bus
 > ([`common/tests/rack_bus`](../common/tests/rack_bus/)).  See
 > [open items](#open-items).
 
-![The hub's status page (simulated hub): the USB-C PD contract and the charger's offers, the rack bus, rows A and B with their bays (C and D not fitted), the events](../../docs/img/hub-ui-dark.png)
+![The hub's status page (simulated hub): the USB-C PD contract and the charger's offers, the rack bus, rows A to C with their bays and row D on with nothing on it, the events](../../docs/img/hub-ui-dark.png)
 
 ```
 firmware/power-hub/
@@ -82,7 +82,7 @@ uart:~$ hub status
 | Sequencing | rows stay off until the contract has held for 500 ms, then come on one after the other (300 ms apart); the rack bus is enumerated 2 s after the last one, when the nodes have booted |
 | Controller reset | the row enables are held (ESP32-S3 pad hold, RTC domain): a hub reboot or a firmware update does not power-cycle the rack; the rows found on are enumerated again |
 | Shedding | the rows stay inside the charger's contract (`src/budget.c`, [docs/power.md](../../docs/power.md#keeping-the-rows-inside-the-contract)): the budget is the granted current less 10 % (`hub budget margin`), or a cap by hand (`hub budget cap <W>`); IMON summed every 250 ms, over the budget for 1 s or past the contract for 250 ms, the next row in the shed order (default D, C, B, A) goes off; it comes back, the last shed first, once the budget has room for the most it drew plus 0.2 A for 10 s (twice as long each time it is shed again within a minute).  No contract at all: every row off, back with the next one |
-| Row control | `hub row <A–D> on\|off\|cycle [ms]`, the page's buttons, `POST /api/row`; on/off is saved.  A row disabled in the devicetree is not fitted (rows C and D on the first build, `power_hub.dtsi`): never enabled, no FLT interrupt, not in the budget; the API and the shell refuse it, `/api/status` lists it as `absent` and the page leaves it out |
+| Row control | `hub row <A–D> on\|off\|cycle [ms]`, the page's buttons, `POST /api/row`; on/off is saved.  A row disabled in the devicetree is not fitted (the rows a bench stand-in lacks: B–D on the CoreS3 and the XIAO overlays): never enabled, no FLT interrupt, not in the budget; the API and the shell refuse it, `/api/status` lists it as `absent` and the page leaves it out |
 | Faults | each eFuse's FLT (current limit, over-temperature) as an event, a count and the page's red row, counted only while the row is on and 50 ms after it was turned on (`HUB_ROW_FLT_BLANK_MS`: past its soft start, 22 ms at 28 V with the 100 nF dVdT, ≤ 39 ms at the worst corner) (the TPS2660 also asserts FLT in shutdown and start-up); a contract lost (PG) as an event |
 | Telemetry | the contract, the granted current, the protocol and PG from the CH224A (it measures nothing); VBUS from the controller's ADC divider; each row's current from IMON |
 | Rack bus | TWAI at 250 kbit/s on the TJA1462AT (CAN SIC; STB through `can-transceiver-gpio`); enumeration over the POS tokens, the node table, commands to nodes with retries; the RACK frame every second |
@@ -136,9 +136,9 @@ bootloader; power-cycle the board; open the bay's own page, and its
 camera's live view when it has one).  A small camera mark follows the bays
 that have a camera, red while someone watches (STATUS byte 6).
 
-| ![The hub's page, light theme](../../docs/img/hub-ui-light.png) | ![The charger renegotiated down to 30 W: row B shed](../../docs/img/hub-ui-shed.png) |
+| ![The hub's page, light theme](../../docs/img/hub-ui-light.png) | ![The charger renegotiated down to 30 W: row C shed](../../docs/img/hub-ui-shed.png) |
 |---|---|
-| Light theme | The charger renegotiated down to 30 W: row B shed until there is room again |
+| Light theme | The charger renegotiated down to 30 W: row C shed until there is room again (D, first in the order, draws nothing) |
 
 ![Row B's eFuse in current limit, node B3 silent](../../docs/img/hub-ui-fault.png)
 
@@ -168,10 +168,10 @@ python firmware/power-hub/web/dev_server.py        # http://localhost:8767
 python firmware/power-hub/web/screenshots.py       # docs/img/hub-ui-*.png (Playwright)
 ```
 
-The simulated hub has the same endpoints, a 140 W EPR charger and six
-bays in rows A and B (C and D not fitted, as on the first build), unclaimed
+The simulated hub has the same endpoints, a 140 W EPR charger and eight
+bays in rows A to C (row D on, with nothing on it), unclaimed
 (claim it from the page, then `/dev/boot` presses BOOT); `/dev/drop` makes
-the charger renegotiate down to 30 W (row B shed), `/dev/fault?row=B` trips
+the charger renegotiate down to 30 W (row C shed: D, first in the shed order, draws nothing), `/dev/fault?row=B` trips
 an eFuse, `/dev/lose?node=0x13` silences a node;
 `/dev/image?version=0.6.0` is an image to try the update with (laid out as
 `zephyr.signed.bin`, unsigned), `/dev/rollback` makes the next update roll
