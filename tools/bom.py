@@ -176,9 +176,9 @@ JLC_FINISH = {}
 # here until their real quotes of 2026-10-23.
 JLC_SINCE_QUOTE = {
                    # the v2 panel's quote of 2026-11-01 left C60 unplaced: its RVT1H330M0607 (C72509) is
-                   # Standard-only at JLC.  Priced as an Economic 33 µF 50 V in the same 6.3 × 7.7 mm case would
-                   # be, the catalogue's alternate VH1H330ME077000CE0 (C240518, extended, $0.0594), until the
-                   # board's owner picks one
+                   # Standard-only at JLC.  Priced as the Economic 33 µF 50 V in the same 6.3 × 7.7 mm case that
+                   # replaced it on the board since (cap33u50, 2026-11-01): VH1H330ME077000CE0 (C240518, extended,
+                   # $0.0594)
                    "data-port-x4-v2-panel": [("C60 (33 µF 50 V), Standard-only at JLC: 4 Economic ones at JLC's price",
                                               "components", 0.24),
                                              ("C60: its extended part type", "extended parts", 3.09)],

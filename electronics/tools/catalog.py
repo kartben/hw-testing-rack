@@ -99,10 +99,16 @@ CAT = {
                   description="TVS 33 V stand-off, 1500 W (unidirectional)"),
     "cap100u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_8x10", "RVT1H101M0810", "Honor Elec", "C3352", 0.069,
                      description="100 µF 50 V aluminium electrolytic"),
-    # DATA ×6: the 20 V input's bulk at its PH 3, against the overshoot of a hot plug (the Électronique session's
-    # pick, 2026-10-31: the family of the node's C1, 6.3 × 7.7 mm)
-    "cap33u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_6.3x7.7", "RVT1H330M0607", "ROQANG", "C72509", 0.039,
-                    alt="VH1H330ME077000CE0 (C240518): 33 µF 50 V, 6.3 × 7.7 mm",
+    # DATA ×6 and ×4 v2: the 20 V input's bulk, against the overshoot of a hot plug (the Électronique session's
+    # pick, 2026-10-31: the family of the node's C1, 6.3 × 7.7 mm).  Changzhou Huawei's VH since 2026-11-01: JLC
+    # places ROQANG's RVT (C72509) on Standard PCBA only, so the Economic order left C60 off.  Its ripple, 60 mA at
+    # 120 Hz and 90 mA from 10 kHz (VH datasheet), is the RVT's (63 mA): the ceramics beside it take the
+    # converter's 1.1 MHz input current (≈ 1.3 A rms at 3 A out), this one ≈ 30 mA of it
+    "cap33u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_6.3x7.7", "VH1H330ME077000CE0",
+                    "Changzhou Huawei Electronics", "C240518", 0.059,
+                    datasheet="https://datasheet.lcsc.com/datasheet/pdf/103ae59e803ab6b5426707d6cb484da6.pdf",
+                    alt="Panasonic EEEFK1H330XP (C344076): 33 µF 50 V, 6.3 × 7.7 mm, 146 mA at 120 Hz; RVT1H330M0607 "
+                        "(C72509, JLC Standard PCBA only)",
                     description="33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm"),
     "cap220u50": Cat("Device:C_Polarized", "Capacitor_SMD:CP_Elec_10x10", "RVT1H221M1010", "Honor Elec", "C3358", 0.14,
                      description="220 µF 50 V aluminium electrolytic"),

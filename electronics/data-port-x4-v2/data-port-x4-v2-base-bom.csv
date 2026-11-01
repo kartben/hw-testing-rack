@@ -8,7 +8,7 @@ Designator,Qty,Value,Footprint,MPN,Manufacturer,LCSC,Description,DNP,Alternative
 "C31,C34,C47",3,4.7u,C_0402_1005Metric,CL05A475MP5NRNC,Samsung Electro-Mechanics,C23733,Capacitor 4.7u 0402,yes,,
 "C32,C33",2,4.7u,C_0402_1005Metric_RP,CL05A475MP5NRNC,Samsung Electro-Mechanics,C23733,Capacitor 4.7u 0402,yes,,
 "C48,C49",2,15p,C_0402_1005Metric,0402CG150J500NT,FH (Guangdong Fenghua Advanced Tech),C1548,Capacitor 15p 0402,yes,,
-C60,1,33u,CP_Elec_6.3x7.7,RVT1H330M0607,ROQANG,C72509,"33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm",,"VH1H330ME077000CE0 (C240518): 33 µF 50 V, 6.3 × 7.7 mm",
+C60,1,33u,CP_Elec_6.3x7.7,VH1H330ME077000CE0,Changzhou Huawei Electronics,C240518,"33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm",,"Panasonic EEEFK1H330XP (C344076): 33 µF 50 V, 6.3 × 7.7 mm, 146 mA at 120 Hz; RVT1H330M0607 (C72509, JLC Standard PCBA only)",
 "C61,C62",2,10u,C_1206_3216Metric,CL31A106KBHNNNE,Samsung Electro-Mechanics,C13585,Capacitor 10u 1206,,,
 "C63,C64",2,100n,C_0603_1608Metric,CC0603KRX7R9BB104,YAGEO,C14663,Capacitor 100n 0603,,,
 "C65,C66,C67",3,22u,C_1206_3216Metric,CL31A226KAHNNNE,Samsung Electro-Mechanics,C12891,Capacitor 22u 1206,,,

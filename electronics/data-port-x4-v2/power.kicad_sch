@@ -1489,7 +1489,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://datasheet.lcsc.com/datasheet/pdf/103ae59e803ab6b5426707d6cb484da6.pdf"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -1507,7 +1507,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RVT1H330M0607"
+		(property "MPN" "VH1H330ME077000CE0"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -1516,7 +1516,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "ROQANG"
+		(property "Manufacturer" "Changzhou Huawei Electronics"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -1525,7 +1525,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C72509"
+		(property "LCSC" "C240518"
 			(at 101.6 76.2 0)
 			(effects
 				(font
@@ -1534,7 +1534,7 @@
 				(hide yes)
 			)
 		)
-		(property "Alternative" "VH1H330ME077000CE0 (C240518): 33 µF 50 V, 6.3 × 7.7 mm"
+		(property "Alternative" "Panasonic EEEFK1H330XP (C344076): 33 µF 50 V, 6.3 × 7.7 mm, 146 mA at 120 Hz; RVT1H330M0607 (C72509, JLC Standard PCBA only)"
 			(at 101.6 76.2 0)
 			(effects
 				(font

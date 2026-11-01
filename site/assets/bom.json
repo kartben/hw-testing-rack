@@ -2117,18 +2117,18 @@
 "group": "data-port-x4-v2",
 "item": "33u — 33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm",
 "ref": "C60",
-"mpn": "RVT1H330M0607",
-"manufacturer": "ROQANG",
+"mpn": "VH1H330ME077000CE0",
+"manufacturer": "Changzhou Huawei Electronics",
 "supplier": "LCSC/JLCPCB",
-"part": "C72509",
+"part": "C240518",
 "qty": 2,
-"unit_eur": 0.0359,
+"unit_eur": 0.0543,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 2 boards; alternative: VH1H330ME077000CE0 (C240518): 33 µF 50 V, 6.3 × 7.7 mm",
+"notes": "1 per board × 2 boards; alternative: Panasonic EEEFK1H330XP (C344076): 33 µF 50 V, 6.3 × 7.7 mm, 146 mA at 120 Hz; RVT1H330M0607 (C72509, JLC Standard PCBA only)",
 "unit": "pcs",
-"ext_eur": 0.07
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -3143,18 +3143,18 @@
 "group": "data-port-x4-v2-base",
 "item": "33u — 33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm",
 "ref": "C60",
-"mpn": "RVT1H330M0607",
-"manufacturer": "ROQANG",
+"mpn": "VH1H330ME077000CE0",
+"manufacturer": "Changzhou Huawei Electronics",
 "supplier": "LCSC/JLCPCB",
-"part": "C72509",
+"part": "C240518",
 "qty": 2,
-"unit_eur": 0.0359,
+"unit_eur": 0.0543,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
-"notes": "1 per board × 2 boards; alternative: VH1H330ME077000CE0 (C240518): 33 µF 50 V, 6.3 × 7.7 mm",
+"notes": "1 per board × 2 boards; alternative: Panasonic EEEFK1H330XP (C344076): 33 µF 50 V, 6.3 × 7.7 mm, 146 mA at 120 Hz; RVT1H330M0607 (C72509, JLC Standard PCBA only)",
 "unit": "pcs",
-"ext_eur": 0.07
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -3868,10 +3868,10 @@
 "item": "Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-11-01, adjusted",
 "qty": 1,
-"unit_eur": 1.98,
-"notes": "quoted components $101.52 + $0.24 since (≈ €93.62) for 2 panels; catalogue unit prices give €91.64",
+"unit_eur": 1.9,
+"notes": "quoted components $101.52 + $0.24 since (≈ €93.62) for 2 panels; catalogue unit prices give €91.72",
 "unit": "pcs",
-"ext_eur": 1.98
+"ext_eur": 1.9
 },
 {
 "category": "Electronics",

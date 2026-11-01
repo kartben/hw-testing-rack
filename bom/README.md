@@ -289,7 +289,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 1u — Capacitor 1u 0402 | 18  | 0.01 | 0.11 | LCSC/JLCPCB C52923 |
 | Electronics | 4.7u — Capacitor 4.7u 0402 | 4  | 0.01 | 0.04 | LCSC/JLCPCB C23733 |
 | Electronics | 15p — Capacitor 15p 0402 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C1548 |
-| Electronics | 33u — 33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm | 2  | 0.04 | 0.07 | LCSC/JLCPCB C72509 |
+| Electronics | 33u — 33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm | 2  | 0.05 | 0.11 | LCSC/JLCPCB C240518 |
 | Electronics | 10u — Capacitor 10u 1206 | 4  | 0.25 | 1.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 4  | 0.01 | 0.05 | LCSC/JLCPCB C14663 |
 | Electronics | 22u — Capacitor 22u 1206 | 6  | 0.11 | 0.68 | LCSC/JLCPCB C12891 |
@@ -346,7 +346,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | 33p — Capacitor 33p 0402 | 4  | 0.00 | 0.01 | LCSC/JLCPCB C1562 |
 | Electronics | 100n — Capacitor 100n 0402 | 40  | 0.01 | 0.20 | LCSC/JLCPCB C1525 |
 | Electronics | 4.7u — Capacitor 4.7u 0402 | 4  | 0.01 | 0.04 | LCSC/JLCPCB C23733 |
-| Electronics | 33u — 33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm | 2  | 0.04 | 0.07 | LCSC/JLCPCB C72509 |
+| Electronics | 33u — 33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm | 2  | 0.05 | 0.11 | LCSC/JLCPCB C240518 |
 | Electronics | 10u — Capacitor 10u 1206 | 4  | 0.25 | 1.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 4  | 0.01 | 0.05 | LCSC/JLCPCB C14663 |
 | Electronics | 22u — Capacitor 22u 1206 | 6  | 0.11 | 0.68 | LCSC/JLCPCB C12891 |
@@ -387,7 +387,7 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
 | Electronics | Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | JLCPCB quote 2026-11-01 |
 | Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 78.22 | 78.22 | JLCPCB quote 2026-11-01, adjusted |
-| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 1.98 | 1.98 | JLCPCB quote 2026-11-01, adjusted |
+| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 1.90 | 1.90 | JLCPCB quote 2026-11-01, adjusted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 3.1 kg | 20.00 | 62.00 | any |
 | Printed parts | Rear bay covers (optional) | 8  | 0.00 | 0.00 | printed |
