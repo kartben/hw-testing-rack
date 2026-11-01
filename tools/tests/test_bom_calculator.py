@@ -29,7 +29,7 @@ class Orders(unittest.TestCase):
         q = bom.JLC_QUOTE["data-port-x4-v2-panel"]
         if q.get("stale_since"):
             self.skipTest(f"the panel's quote is stale since {q['stale_since']}: {q['stale']}")
-        for n, usd in ((2, 238.78), (5, 375.43), (10, 604.01)):
+        for n, usd in ((2, 238.78), (5, 375.45), (10, 604.08)):
             self.assertAlmostEqual(bom.panel_order(n, self.orders)["total"], usd, delta=0.02)
 
     def test_volume_is_order_cost(self):
@@ -42,7 +42,7 @@ class Orders(unittest.TestCase):
         # at the quoted quantity an order is its quote: as adjusted for the rack's order (the panel), else the
         # quote, what changed since on its PCBA lines (JLC_SINCE_QUOTE) and the rack's mask colour (the quotes
         # are green)
-        for name in ("data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel", "data-port", "camera-pod"):
+        for name in ("data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel", "data-port-x6", "camera-pod"):
             q = bom.JLC_QUOTE[name]
             since = sum(usd for _, line, usd in bom.JLC_SINCE_QUOTE.get(name, []) if line in q["pcba"])
             want = self.orders[name]["total"] if name in self.orders else                 q["total"] + since + sum(bom.mask_colour(name).values())
@@ -54,8 +54,18 @@ class Orders(unittest.TestCase):
         self.assertEqual([bom.assembled_of("Economic", n, p) for n, p in ((1, 5), (2, 5), (3, 5), (6, 10), (60, 75))],
                          [2, 2, 5, 10, 75])
         self.assertEqual(bom.assembled_of("Standard", 9, 10), 9)
-        o = bom.order_cost("data-port", 6, self.orders)
-        self.assertEqual((o["pcbs"], o["assembled"], o["total"]), (10, 10, 40.76))     # the rack's six: the quote
+        o = bom.order_cost("data-port-x6", 6, self.orders)          # six wanted: JLC assembles the ten, the estimate
+        self.assertEqual((o["pcbs"], o["assembled"], o["total"]), (10, 10, bom.JLC_QUOTE["data-port-x6"]["total"]))
+
+    def test_data_board_per_bay(self):
+        # each bay's DATA board from its population: a converted bay's DATA ×4 v2 (the panel: one logic, one base),
+        # every other bay's (plate or dense) a DATA ×6; the single DATA port board is not ordered
+        rack = rackcfg.load()
+        bays = list(rack.bays())
+        self.assertNotIn("data-port", self.orders)
+        self.assertEqual(self.orders["data-port-x6"]["need"], sum(1 for b in bays if not rack.is_multi(b.id)))
+        self.assertEqual(sum(self.orders[n]["need"] * (2 if n in bom.PANELS else 1) for n in self.orders
+                             if n.startswith("data-port")), len(bays))
 
     def test_at_least_two(self):
         for name in self.orders:

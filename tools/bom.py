@@ -76,20 +76,23 @@ JLC_QUOTE = {
         "pcba": {"setup": 25.75, "stencil": 8.27, "components": 40.41, "feeders": 51.15, "SMT": 2.30,
                  "X-ray": 3.30, "packaging": 0.50, "special components": 0.12},
     },
-    # the drawer's DATA port board (v1.0, 2 layers, parts on one side), one per node but the converted bays'
-    # (a DATA ×4 instead): six.  JLC's real quote, 2026-10-23 (jlcpcb.com, the user's account, main's d44251a
-    # Gerbers, JLC BOM and CPL uploaded with the user's OK): 10 PCBs, all 10 assembled, green, lead-free HASL,
-    # Economic PCBA: $40.76.  Economic assembles every PCB of an order, 2 of 5 its one exception
-    # (assembled_of()), so the six come with four spares: JLC's form offers 10 of 10 and nothing between (the
-    # estimate, 7 of 10, was not orderable).  JLC charges the USB4105 (J1) as a special component ($0.03 a
-    # piece), adds its nitrogen reflow, mandatory with Economic PCBA ($0.99), and no deburring with PCBA.
-    "data-port": {
-        "pcbs": 10, "assembled": 10, "spares": 4, "service": "Economic", "total": 40.76, "date": "2026-10-23",
-        "from_fab": True,
-        "spec": "2-layer 40×17 mm, lead-free HASL",
-        "pcb": {"special offer": 5.00, "lead-free HASL": 1.10},
-        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 13.61, "extended parts": 9.27, "SMT": 0.70,
-                 "special components": 0.30, "nitrogen reflow": 0.99},
+    # the DATA ×6 (electronics/data-port-x6: six USB-C ports, power only, standing in the drawer's cradle), every
+    # bay's DATA board but a converted bay's (a DATA ×4 v2): ten.  It replaces the single DATA port board, retired
+    # on 2026-10-31 (its real quote of 2026-10-23: $40.76 for 10).  An estimate until a real quote, from the
+    # committed JLC BOM and CPL (2026-11-02), green, Economic PCBA (no Standard-only part since C60's
+    # VH1H330ME077000CE0), 10 PCBs, all 10 assembled: the PCB at the calculator's price for the v2's outline and
+    # stack-up (100 × 70, 4 layers, JLC04161H-7628, ENIG: JLC_PCB_PRICE); setup and stencil at Economic's fees;
+    # 13 extended types × $3.09 (C25725, C25796, C20615800 preferred); its parts at JLC's breaks for 10 boards
+    # (jlc_parts.json, $188.54) × 1.051, the v2 panel's real quote of 2026-11-01 over the same prices (JLC's
+    # attrition); the joints (686 a board) at that quote's rate, $6.77 for 2 × 1,871; the six USB-C special
+    # components ($0.03 a piece).  The HRO TYPE-C-31-D-06 (C2689964) until the board takes the GCT
+    # USB4145-03-0170-C (C5181332, extended too: ≈ $1.08 each at 60, against $0.29)
+    "data-port-x6": {
+        "pcbs": 10, "assembled": 10, "service": "Economic", "total": 294.55, "estimate": True, "from_fab": True,
+        "spec": "4-layer 100×70 mm, JLC04161H-7628, ENIG",
+        "pcb": {"board": 19.40, "ENIG": 12.80},
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 198.18, "extended parts": 40.17, "SMT": 12.41,
+                 "special components": 1.80},
     },
     # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS).  JLC's real quote,
     # 2026-10-23 (as the DATA port's): 5 PCBs, 2 assembled, green, lead-free HASL, Economic PCBA: $27.28, the
@@ -247,14 +250,6 @@ JLC_LEVERS = {
         ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's C7519 (4 a "
          "board)", 1.01, "decision"),
     ],
-    "data-port": [
-        ("USB-C J1: HRO TYPE-C-31-M-12 (C165948, 5 A, 20 V) instead of the GCT USB4105: a new footprint, "
-         "re-route, mechanical check", 5.88, "decision"),
-        ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
-         "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check", 3.16, "decision"),
-        ("USBLC6-2SC6 second source (UMW C2687116, same SOT-23-6 and pinout) instead of ST's "
-         "C7519", 1.01, "decision"),
-    ],
     "camera-pod": [
         ("JST PH SMD clones instead of JST's S*B / B8B-PH-SM4-TB, no-name ≈ $0.06 (SHOU HAN 2.0-xP WT / LT; "
          "CJT A2001WR / WV at $0.16-0.20 saves about 60 % of this): footprint geometry to check", 0.79, "decision"),
@@ -273,14 +268,14 @@ JLC_PCB_PRICE = {
     # a single board, $25.50 / $32.40 / $100.30 / $149.70 in ENIG, 110 × 142 for the panel, $53.10 for 5)
     "data-port-x4-v2": {5: 25.40, 10: 32.20, 50: 92.90, 100: 136.20},  # 4-layer 100 × 70 mm, ENIG
     "data-port-x4-v2-base": {5: 13.20, 10: 19.40, 50: 74.90, 100: 111.90},  # the same PCB, lead-free HASL
+    "data-port-x6": {5: 25.40, 10: 32.20, 50: 92.90, 100: 136.20},     # the v2's outline and stack-up, ENIG
     # the order panel (electronics/data-port-x4-v2/fab/*-panel-*): a logic and a base on one 100 × 142 mm panel,
     # 4-layer ENIG, mouse bites, one design: no panel fee (2026-10-23, every quantity JLC sells)
     "data-port-x4-v2-panel": {5: 52.00, 10: 62.50, 15: 72.80, 20: 83.30, 25: 93.60, 30: 104.10, 50: 145.60,
                               75: 187.00, 100: 233.50, 125: 280.10, 150: 327.95, 200: 421.15},
-    # 2-layer 40 × 17 mm and 40 × 27 mm.  With PCBA, JLC charges no deburring (the real quotes of 2026-10-23:
-    # $6.10 for 10 DATA ports, $5.10 for 5 pods): the calculator's $0.10 at 5 and $0.20 at 10 are out; the 50
-    # and 100 points still carry it (a few dimes)
-    "data-port": {5: 5.10, 10: 6.10, 50: 17.10, 100: 20.90},
+    # 2-layer 40 × 27 mm.  With PCBA, JLC charges no deburring (the real quote of 2026-10-23: $5.10 for 5 pods,
+    # as for 10 single DATA port boards): the calculator's $0.10 at 5 and $0.20 at 10 are out; the 50 and 100
+    # points still carry it (a few dimes)
     "camera-pod": {5: 5.10, 10: 6.20, 50: 18.80, 100: 24.20},
 }
 JLC_PCB_QTY = (5, 10, 15, 20, 25, 30, 50, 75, 100, 125, 150, 200)
@@ -293,10 +288,10 @@ JLC_PCB_QTY = (5, 10, 15, 20, 25, 30, 50, 75, 100, 125, 150, 200)
 JLC_FINISHES = {
     "bay-node": ("lead-free HASL", "ENIG", {5: 25.40, 10: 32.10, 50: 90.40, 100: 131.70}),
     "power-hub": ("lead-free HASL", "ENIG", {5: 25.60, 10: 32.60, 50: 104.60, 100: 157.90}),
-    "data-port": ("lead-free HASL", "ENIG", {5: 20.80, 10: 21.90, 50: 29.30, 100: 33.80}),
     "camera-pod": ("lead-free HASL", "ENIG", {5: 20.80, 10: 22.00, 50: 31.30, 100: 37.80}),
     "data-port-x4-v2": ("ENIG", "lead-free HASL", {5: 13.20, 10: 19.40, 50: 74.90, 100: 111.90}),
     "data-port-x4-v2-base": ("lead-free HASL", "ENIG", {5: 25.40, 10: 32.20, 50: 92.90, 100: 136.20}),
+    "data-port-x6": ("ENIG", "lead-free HASL", {5: 13.20, 10: 19.40, 50: 74.90, 100: 111.90}),
     "data-port-x4-v2-panel": ("ENIG", "lead-free HASL", {5: 39.20, 10: 48.30, 15: 57.40, 20: 66.50, 25: 75.60,
                                                          30: 84.70, 50: 121.10, 75: 156.00, 100: 196.10,
                                                          125: 236.20, 150: 276.60, 200: 357.85}),
@@ -530,12 +525,15 @@ def electronics(rack) -> tuple[list[dict], dict]:
     components figure.  Also returns the adjusted order per board."""
     prices = _catalog_prices()
     n_nodes = rack.units * len(rack.rows)          # every carrier unit gets a node (double bays: 2nd is optional)
-    n_x4 = sum(1 for b in rack.bays() if rack.is_multi(b.id))     # converted bays: a DATA ×4, no DATA port
+    # each bay's DATA board, from its population: a converted bay (wires to its boards) a DATA ×4 v2, every other
+    # bay (a plate bay, a dense bay) a DATA ×6.  The single DATA port board is retired (2026-10-31): not ordered
+    n_x4 = sum(1 for b in rack.bays() if rack.is_multi(b.id))
+    n_x6 = sum(1 for b in rack.bays() if not rack.is_multi(b.id))
     n_v2 = sum(1 for b in rack.bays() if rack.is_multi(b.id)        # those showing the v2 (`x4: v2`) take its
                and (rack.raw.get("population", {}).get(b.id) or {}).get("x4") == "v2")   # logic variant, the
     rows, orders = [], {}                                              # others its base (v1 is not ordered)
     n_panel = min(n_v2, n_x4 - n_v2)                                  # a logic and a base per order panel
-    for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port", n_nodes - n_x4),
+    for name, need in (("bay-node", n_nodes), ("power-hub", 1), ("data-port-x6", n_x6),
                        ("camera-pod", CAMERA_SETS), ("data-port-x4-v2-panel", n_panel),
                        ("data-port-x4-v2", n_v2 - n_panel), ("data-port-x4-v2-base", n_x4 - n_v2 - n_panel)):
         if not need:
@@ -675,10 +673,7 @@ def jlc_cost_md(cost: list[dict]) -> list[str]:
           f"${JLC_FEES['enig over lf-hasl']:.2f} over lead-free HASL.  A panel of different designs pays "
           f"${JLC_FEES['panel']:.2f} more at PCBA and a fee at PCB.  "
           "Every board goes in one cart: one shipment for the lot "
-          f"(${JLC_SHIPPING_USD:.0f}), the only cost the designs share.  With one cart, a DATA port + camera pod "
-          "panel would save at most ≈ $6: one setup, one stencil, the S8B's feeder and one bare-PCB line "
-          "(≈ $15) less the $8.21 panel fee, before JLC's different-design fee at PCB; not worth a panel that "
-          "must carry 7 ports for 2 pods.", "",
+          f"(${JLC_SHIPPING_USD:.0f}), the only cost the designs share.", "",
           "| Board | PCBA | Needed / assembled | Part types (extended) | Type fees | Once per order | With the boards | Today "
           "| After obvious levers | After decisions |",
           "|---|---|---|---|---:|---:|---:|---:|---:|---:|"]
@@ -1106,12 +1101,12 @@ def hardware(rack) -> list[dict]:
          "qty": max(0, n_drawer - chain_m), "unit_eur": 2.17,
          "notes": "Olimex does not sell them alone; this generic chain ships with one pair per metre.  The listing "
                   "is for the non-opening 7×7 type: check one on the open links before buying the lot"},
-        # the drawer's DATA port: our own small board (electronics/data-port, in the Electronics lines)
-        # on the rear-bay floor, on an 8-wire PH lead from the node's J7 through the drag chain (USB, the
-        # node's I²C and INT for a later DATA ×4 board): the camera's lead too, one type for both
+        # each drawer's DATA board (the DATA ×6, or a converted bay's DATA ×4 v2, in the Electronics lines),
+        # standing at the drawer's back, on an 8-wire PH lead from the node's J7 through the drag chain (USB,
+        # the node's I²C and its switched 20 V): the camera's lead too, one type for both
         # (pin n ↔ pin 9−n); 8 pins, so a 6-pin row cable cannot go in
         {"category": "Cables", "item": "JST PH 8-pin lead, pin n ↔ pin 9−n (flat, no twist), 50 cm, lot of 5 "
-                                      "(DATA leads: node J7 → drag chain → DATA port board; camera leads: node J6 → "
+                                      "(DATA leads: node J7 → drag chain → DATA board; camera leads: node J6 → "
                                       "pod J1)",
          "supplier": f"AliExpress {PH_LEAD_URL}, \"Same direction\", 8P, Length50CM",
          "qty": math.ceil((n_bays + CAMERA_SETS) / 5), "unit": "lot", "unit_eur": 4.5,
@@ -1347,7 +1342,8 @@ def main():
            "up to the estimated components figure.  *Order* applies what changed since: the through-hole "
            "connectors hand-soldered from loose LCSC parts (LCSC shipping extra).  The DATA ×4 v2's two "
           "variants go on one order panel (data-port-x4-v2-panel: one logic and one base per panel, one Economic "
-          "order); their own estimates stay for single orders.  Re-quote before ordering (the "
+          "order); their own estimates stay for single orders.  Every other bay's DATA board, the DATA ×6, is an "
+          "estimate from JLC's fees and parts prices until a real quote.  Re-quote before ordering (the "
            "full PCBA quote needs the user's JLC sign-in).", "",
            "| Board | Order | Line | USD |", "|---|---|---|---:|"]
     for name, q in JLC_QUOTE.items():

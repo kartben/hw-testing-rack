@@ -266,7 +266,7 @@
    ],
    [
     "C598310",
-    4,
+    6,
     "KPA-3010CGCK"
    ],
    [
@@ -281,7 +281,7 @@
    ],
    [
     "C4555382",
-    2,
+    4,
     "FAULT"
    ],
    [
@@ -296,7 +296,7 @@
    ],
    [
     "C265405",
-    2,
+    4,
     "S6B-PH-SM4-TB(LF)(SN)"
    ],
    [
@@ -386,7 +386,7 @@
    ],
    [
     "C544399",
-    2,
+    4,
     "TPS26600PWPR"
    ]
   ],
@@ -422,7 +422,7 @@
     "15p"
    ],
    [
-    "C72509",
+    "C240518",
     1,
     "33u"
    ],
@@ -664,7 +664,7 @@
     "4.7u"
    ],
    [
-    "C72509",
+    "C240518",
     1,
     "33u"
    ],
@@ -819,41 +819,181 @@
     "X322524MSB4SI"
    ]
   ],
-  "data-port": [
+  "data-port-x6": [
    [
-    "C14663",
-    1,
-    "100n"
+    "C45783",
+    8,
+    "22u"
    ],
    [
-    "C15850",
-    1,
-    "10u"
+    "C1562",
+    2,
+    "33p"
    ],
    [
     "C1525",
-    1,
+    23,
     "100n"
    ],
    [
-    "C5184243",
-    1,
-    "DATA"
-   ],
-   [
-    "C265121",
-    1,
-    "LEAD"
-   ],
-   [
-    "C23206",
+    "C23733",
     2,
+    "4.7u"
+   ],
+   [
+    "C240518",
+    1,
+    "33u"
+   ],
+   [
+    "C13585",
+    4,
+    "10u"
+   ],
+   [
+    "C14663",
+    4,
+    "100n"
+   ],
+   [
+    "C12891",
+    6,
+    "22u"
+   ],
+   [
+    "C52923",
+    6,
+    "1u"
+   ],
+   [
+    "C2297",
+    6,
+    "KT-0805G"
+   ],
+   [
+    "C2689964",
+    6,
+    "TYPE-C-31-D-06"
+   ],
+   [
+    "C48009678",
+    2,
+    "4.7u"
+   ],
+   [
+    "C8545",
+    2,
+    "2N7002"
+   ],
+   [
+    "C25752",
+    1,
+    "12k"
+   ],
+   [
+    "C25744",
+    17,
+    "10k"
+   ],
+   [
+    "C25900",
+    2,
+    "4.7k"
+   ],
+   [
+    "C26083",
+    1,
+    "1M"
+   ],
+   [
+    "C25741",
+    1,
+    "100k"
+   ],
+   [
+    "C25803",
+    2,
+    "100k"
+   ],
+   [
+    "C25810",
+    2,
+    "18k"
+   ],
+   [
+    "C2933099",
+    6,
+    "45.3k"
+   ],
+   [
+    "C25796",
+    12,
     "56k"
    ],
    [
-    "C7519",
+    "C25334",
+    6,
+    "100m"
+   ],
+   [
+    "C11702",
+    6,
+    "1k"
+   ],
+   [
+    "C25725",
+    4,
+    "10k"
+   ],
+   [
+    "C478081",
     1,
+    "USB2517I-JZX"
+   ],
+   [
+    "C129354",
+    1,
+    "TCA9535RTWR"
+   ],
+   [
+    "C150716",
+    1,
+    "AP2114H-3.3TRG1"
+   ],
+   [
+    "C20615800",
+    1,
+    "H5VU25UC"
+   ],
+   [
+    "C347371",
+    1,
+    "MAX809S"
+   ],
+   [
+    "C44991044",
+    2,
+    "LMR51625YDDCR"
+   ],
+   [
+    "C111738",
+    6,
+    "TPS2553DBVR-1"
+   ],
+   [
+    "C49851",
+    6,
+    "INA226AIDGSR"
+   ],
+   [
+    "C7519",
+    6,
     "USBLC6-2SC6"
+   ],
+   [
+    "C15643",
+    1,
+    "X322524MSB4SI"
    ]
   ],
   "camera-pod": [
@@ -1176,6 +1316,48 @@
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
+  },
+  "C129354": {
+   "mfr": "TCA9535RTWR",
+   "package": "WQFN-24-EP(4x4)",
+   "stock": 5230,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 1.2844
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 1.0549
+    },
+    {
+     "qFrom": 30,
+     "qTo": 99,
+     "price": 0.9278
+    },
+    {
+     "qFrom": 100,
+     "qTo": 499,
+     "price": 0.7842
+    },
+    {
+     "qFrom": 500,
+     "qTo": 999,
+     "price": 0.7215
+    },
+    {
+     "qFrom": 1000,
+     "qTo": null,
+     "price": 0.6917
+    }
+   ],
+   "category": "Interface",
+   "manufacturer": null,
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live) (added 2026-11-02)",
+   "lcsc_stock": 4960
   },
   "C130008": {
    "mfr": "LSF0108RKSR",
@@ -1893,22 +2075,6 @@
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
   },
-  "C23206": {
-   "mfr": "0603WAF5602T5E",
-   "package": "0603",
-   "stock": 836786,
-   "tier": "basic",
-   "priceBreaks": [
-    {
-     "qFrom": 1,
-     "qTo": null,
-     "price": 0.003
-    }
-   ],
-   "category": "Resistors",
-   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
-  },
   "C23212": {
    "mfr": "0603WAF6801T5E",
    "package": "0603",
@@ -1981,6 +2147,48 @@
    "category": "Capacitors",
    "manufacturer": "Samsung Electro-Mechanics",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
+  },
+  "C240518": {
+   "mfr": "VH1H330ME077000CE0",
+   "package": "SMD,D6.3xL7.7mm",
+   "stock": 14145,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 10,
+     "qTo": 99,
+     "price": 0.0595
+    },
+    {
+     "qFrom": 100,
+     "qTo": 299,
+     "price": 0.0468
+    },
+    {
+     "qFrom": 300,
+     "qTo": 999,
+     "price": 0.0404
+    },
+    {
+     "qFrom": 1000,
+     "qTo": 4999,
+     "price": 0.0356
+    },
+    {
+     "qFrom": 5000,
+     "qTo": 9999,
+     "price": 0.0318
+    },
+    {
+     "qFrom": 10000,
+     "qTo": null,
+     "price": 0.0299
+    }
+   ],
+   "category": "Capacitors",
+   "manufacturer": null,
+   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live) (added 2026-11-02)",
+   "lcsc_stock": 14140
   },
   "C25092": {
    "mfr": "0402WGF220JTCE",
@@ -3654,48 +3862,6 @@
    "category": "Resistors",
    "manufacturer": "Milliohm",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
-  },
-  "C72509": {
-   "mfr": "RVT1H330M0607",
-   "package": "SMD,D6.3xL7.7mm",
-   "stock": 490,
-   "tier": "extended",
-   "priceBreaks": [
-    {
-     "qFrom": 20,
-     "qTo": 199,
-     "price": 0.0395
-    },
-    {
-     "qFrom": 200,
-     "qTo": 999,
-     "price": 0.0315
-    },
-    {
-     "qFrom": 1000,
-     "qTo": 1999,
-     "price": 0.0273
-    },
-    {
-     "qFrom": 2000,
-     "qTo": 9999,
-     "price": 0.0247
-    },
-    {
-     "qFrom": 10000,
-     "qTo": 19999,
-     "price": 0.0224
-    },
-    {
-     "qFrom": 20000,
-     "qTo": null,
-     "price": 0.0211
-    }
-   ],
-   "category": "Capacitors",
-   "manufacturer": null,
-   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live) (added 2026-11-01)",
-   "lcsc_stock": 480
   },
   "C7420333": {
    "mfr": "BAT54S",
