@@ -224,11 +224,12 @@ def supply(n: int) -> str:
 def low_parts(n: int) -> dict:
     """Each port's parts by its receptacle, {name: (x, y, rot)}: the VBUS LED and its 1k lying over the receptacle,
     under the shunt and the INA226; its VBUS 22 µF and the CC1 and CC2 56k in a row under it, over the board's
-    edge (USB-C 4's CC2 clear of the comb notch east of it).  Nothing east of a receptacle: the next port's hub pair
-    comes down there."""
+    edge, ending 2 mm east of its axis: the front face stays free of parts 7 wide × 6 tall round each comb notch,
+    where the cradle's T-heads come up (east of USB-C 2 and 4: their rows stop 0.06 mm short of it).  Nothing else
+    east of a receptacle: the next port's hub pair comes down there."""
     cx = USBS[n - 1]
     return {"r1k": (cx - 1.9, USB_Y - 5.85, 0), "led": (cx + 1.2, USB_Y - 5.9, 180),
-            "c22": (cx - 0.4, USB_Y + 6.1, 0), "cc1": (cx - 3.15, USB_Y + 6.1, 0), "cc2": (cx + 2.35, USB_Y + 6.1, 0)}
+            "c22": (cx + 0.25, USB_Y + 6.1, 0), "cc1": (cx - 4.55, USB_Y + 6.1, 0), "cc2": (cx - 2.5, USB_Y + 6.1, 0)}
 
 
 def port(b: Board, n: int):
@@ -884,7 +885,7 @@ def board() -> Board:
                 ("split-5vb-foot", (TBX - 0.6, TB - 0.4, W - 5.0, TB + 0.6)),
                 ("split-5vb-band", (W - 6.0, TB - 0.4, W - 5.0, PWR_SPLIT)))],
         "texts": [
-            {"text": "DATA ×6 v1.0", "x": 51.8, "y": H - 2.5, "size": 0.8},     # between USB-C 3 and 4's rows
+            {"text": "DATA ×6 v1.0", "x": 50.4, "y": H - 2.5, "size": 0.8},     # between USB-C 3 and 4's rows
             *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
             # the two leads' connectors, named on the rear face where they plug in
