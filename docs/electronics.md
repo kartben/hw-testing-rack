@@ -1146,7 +1146,7 @@ matter for JLC: they stay in the table for an order where JLC places them.
 | C150716 AP2114H-3.3 SOT-223 | node U2 (since 2026-10-23), DATA ×4 v2 U3, camera pod U1 (since the datasheet audit's F1) | 180°, as C6186 (fit: −0.03 mm x) | to confirm |
 | C25725, C48442, C26075 4 × 0402 arrays | DATA ×4 v2 RN… | 90° (four equal resistors: 90° or 270°) | to confirm |
 | C347371 MAX809S SOT-23 (UMW) | DATA ×4 v2 U5 | 180°, as the other SOT-23s (not fitted: no EasyEDA data on 2026-10-25) | to confirm |
-| C48009678 Vishay IHLP2525CZEK4R7M01 | node L1, hub L1 (since 2026-11-01) | none (fit on C553961's EasyEDA land, the same part on another reel: centred, pads along x; the EK listing has no footprint) | to confirm |
+| C48009678 Vishay IHLP2525CZEK4R7M01 | node L1, hub L1, DATA ×6 L2 L3 (since 2026-11-01) | none (fit on C553961's EasyEDA land, the same part on another reel: centred, pads along x; the EK listing has no footprint) | to confirm |
 
 Checked by the fit and left alone: resistors, capacitors and the PTC (0603,
 0805, 1206), the electrolytics (+ pad), the diodes and LEDs (cathode side),
