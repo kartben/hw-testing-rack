@@ -2097,9 +2097,15 @@ def tidy_board(b: Board, path: Path):
     if kw is None:
         return
     from route_metrics import diff_pairs
-    names = {str(n) for n in pcbnew.LoadBoard(str(path)).GetNetsByName().keys()}
+    board = pcbnew.LoadBoard(str(path))
+    names = {str(n) for n in board.GetNetsByName().keys()}
     cores = [(spec["layer"], b.pcb_net_name(spec["net"]), inset_poly(spec["poly"], spec["exclusive"]))
              for spec in b.pcb.get("zones", []) if spec.get("exclusive")]
+    # the "core:" keep-outs (a crystal's block: dropped from the file before the session's import) bar the
+    # straightened runs as they barred the router: no net's run is pulled across them
+    cores += [(layer, None, [ko["poly"]]) for ko in b.pcb.get("keepouts", [])
+              if ko.get("name", "").startswith("core:") and not ko.get("vias_only")
+              for layer in ko.get("layers", [board.GetLayerName(l) for l in copper_of(board)])]
     kw = {**kw, "skip": [n for pair in diff_pairs(b, names) for n in pair], "cores": cores,
           "fanout": [list(f) for f in b.pcb.get("fanout", [])]}
     subprocess.run([sys.executable, "-c", "import sys, json; sys.path.insert(0, sys.argv[1]); import pcbgen; "
