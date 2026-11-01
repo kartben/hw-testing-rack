@@ -705,14 +705,14 @@ python3 firmware/bay-node/tests/console_sim/run.py --workspace <west workspace> 
 From `electronics/bay-node/design.py` (U3, ESP32-S3-WROOM-1-N8R8: 8 MB flash, 8 MB octal PSRAM on IO35–IO37;
 the WROOM-1 has no IO26/IO33/IO34); devicetree in
 [`boards/hwtr/bay_node/bay_node.dtsi`](boards/hwtr/bay_node/bay_node.dtsi) and
-[`bay_node-pinctrl.dtsi`](boards/hwtr/bay_node/bay_node-pinctrl.dtsi).
+[`bay_node-pinctrl.dtsi`](boards/hwtr/bay_node/bay_node-pinctrl.dtsi).  IO4 is free since node rev B: the DATA
+lead lost its INT (map B), and the node polls the DATA board over I²C.
 
 | ESP32-S3 | Net | Use | Devicetree |
 |---|---|---|---|
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
 | IO1 | I2C_SCL | I²C0; also out on J7.7 to the drawer's DATA board | `&i2c0` |
 | IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (2.2k pull-ups, 100 kHz: the DATA lead; `i2c-400k.overlay` tries 400 kHz); also out on J7.6 to the drawer's DATA board (its devices keep off 0x40) | `&i2c0`, `ina226` |
-| IO4 | DATA_INT | DATA board interrupt ← J7.8 (1k series, 10k pull-up; open drain, active low), for a later DATA ×4 board | — (no driver yet) |
 | IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.8 LED_K (100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
 | IO8 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω, 10k pull-up) | `&spi2` `cs-gpios` |
 | IO9 | CAM_MISO | camera SPI2 MISO ← J6.6 (33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
@@ -730,8 +730,8 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 | IO21 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
 | IO38 | LED_DIN | WS2812B (33 Ω), RMT channel 0 (the DevKitC-1 v1.1's own RGB LED pin) | `status_led` |
 | IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up): over 1.25 A on DUT_5V, the DATA ×4 port switched on last goes off (`src/ports.c`) | `ina226` `alert-gpios` |
-| IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up) | `dut_port` `fault-gpios` |
-| IO41 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware) | `dut_port` `enable-gpios` |
+| IO40 | DUT_FLT_N | TPS26600 ~FLT, the DATA lead's eFuse (10k pull-up) | `dut_port` `fault-gpios` |
+| IO41 | DUT_EN | TPS26600 SHDN, the DATA lead's VIN (R17 10k pull-down: off without firmware) | `dut_port` `enable-gpios` |
 | IO42 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
 | IO47 | AUX_TX | UART1 TX → AUX pin 3 (1k) | `&uart1` (`dut_port` `uart`) |
 | IO48 | AUX_BOOT_CTL | 2N7002 Q3 → AUX BOOT (open drain, 100k pull-down) | `dut_port` `boot-gpios` |
