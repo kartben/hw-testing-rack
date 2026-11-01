@@ -23,7 +23,8 @@ does and adds:
   board's, through a ferrite.
 
 Its 5 V from the rack's 20 V (VIN), which the node switches onto the lead's pin 8 through its eFuse (the user,
-2026-11-01, as the DATA ×6): one LMR51625, the bay node's and the DATA ×6's block, in the top-left corner, its
+2026-11-01, as the DATA ×6): one LMR51635 (3.5 A), the DATA ×6's block with the family's 3.5 A part, in the
+top-left corner, its
 output down the cradle's band on the power plane.  The lead's pin 1 is open: INT left it (the node polls).
 
 v1's PCBA-review fixes (docs/pcba-review.md, X1–X11) carried over: the lead's SDA and SCL through two 2N7002
@@ -121,7 +122,7 @@ CP = (47.0, 12.9)                   # the co-processor, top centre, turned 180°
 HX, HY = 87.5, 15.0                 # the hub, top-right corner, turned 90°: its DN pins face down, to the ports
 XT = (HX - 8.9, HY + 1.75)          # its 24 MHz crystal Y1, 2 mm west of XTAL1/XTAL2 (pins 61/60, y 17.25 / 16.75)
 MX_EXP = (19.3, 17.6)               # the matrix expander (TCA9534A), turned 90°: under the 5 V converter, by U7
-# the 5 V converter (power_sheet()): the DATA ×6's converter A, its LMR51625 block, at an offset in the top-left
+# the 5 V converter (power_sheet()): the DATA ×6's converter A block (an LMR51635 here), at an offset in the top-left
 # corner (U13's centre); its output's plane tongue (TA wide, TB deep) runs down the cradle's band to the +5V area.
 # VIN's 33 µF under it, between the band and the matrix expander (7.7 mm tall: over the strip on the comb)
 BUCK = (11.0, 4.6)
@@ -833,7 +834,7 @@ def power_sheet(b: Board):
     s.wire("R50.2", "R51.1")
     # the DATA ×6's converter A, part for part and at the same offsets from U13
     x0 = 70
-    s.frame("+5V: LMR51625, synchronous, 1.1 MHz, 2.5 A (the bay node's block, the DATA ×6's; TI SLUSF64B)",
+    s.frame("+5V: LMR51635, synchronous, 1.1 MHz, 3.5 A (the DATA ×6's block, TI SLUSF64B table 8-2)",
             x0 - 4, 10, x0 + 64, 50)
     s.tag("VIN", (x0 + 2, 16), "up")
     s.wire((x0 + 2, 16), (x0 + 25, 16), (x0 + 25, 23), "U13.VIN")
@@ -844,13 +845,13 @@ def power_sheet(b: Board):
         s.wire((x0 + x, 16), f"{c_}.1")
     s.tag("BUCK_EN", (x0 + 19, 22), "left")
     s.wire((x0 + 19, 22), (x0 + 23, 22), (x0 + 23, 25), "U13.EN")
-    part(s, "U13", "buck25", {"VIN": "VIN", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
+    part(s, "U13", "buck", {"VIN": "VIN", "EN": "BUCK_EN", "CB": "BUCK_CB", "SW": "BUCK_SW", "FB": "BUCK_FB",
                               "GND": "GND"}, pcb=P(bx, by, 0), sch=at(x0 + 30, 24, fields=(-4, -4)))
     C(s, "C64", "100n", "BUCK_CB", "BUCK_SW", pcb=P(bx + 1.6, by - 2.5, 0), sch=at(x0 + 41.5, 19, rot=90))
     s.wire("U13.CB", (x0 + 36, 23), (x0 + 36, 19), "C64.1")
     s.wire("C64.2", (x0 + 43, 24))
-    # 4.7 µH rated 75 V (the 28 V EPR rail ahead; the FXL0630's 30 V would not do), on the FXL0630's footprint
-    part(s, "L2", "buck_l47_75v", {"1": "BUCK_SW", "2": "+5V"}, "4.7u", pcb=P(bx + 7.7, by, 0),
+    # 3.3 µH rated 75 V (the 28 V EPR rail ahead; the FXL0630's 30 V would not do), on the FXL0630's footprint
+    part(s, "L2", "buck_l_75v", {"1": "BUCK_SW", "2": "+5V"}, "3.3u", pcb=P(bx + 7.7, by, 0),
          sch=at(x0 + 47.5, 24, rot=90))
     s.wire("U13.SW", (x0 + 43, 24), "L2.1")
     s.wire("L2.2", (x0 + 62, 24))
@@ -867,14 +868,18 @@ def power_sheet(b: Board):
     testpoints(s, ["TP40"], "Bring-up test point on the rear face (B.Cu): VIN")
     s.notes_at = (6, 56, 200)
     s.notes = [
-        "The DATA ×6's converter (TI SLUSF64B table 8-1: 4.7 µH Vishay IHLP2525CZ, 75 V; 2 × 10 µF + 100 nF in,",
-        "  3 × 22 µF out).",
-        "+5V: the four ports, the 3.3 V LDO (≤ 0.46 A) and the matrix: 2.46 A at 0.5 A a port, under the LMR51625's",
-        "  2.5 A; 3.04 A with all four at the TPS2553s' 0.644 A limit: the node's power budget (the four INA226s)",
-        "  keeps their sum under 2.5 A.",
+        "The DATA ×6's converter with the family's 3.5 A part (TI SLUSF64B table 8-2, LMR51635, 5 V, 1.1 MHz: 3.3 µH",
+        "  Vishay IHLP2525CZ, 75 V, 13.5 A sat; 2 × 10 µF + 100 nF in, 3 × 22 µF out), PFM and spread spectrum as the",
+        "  ×6's LMR51625.",
+        "+5V: the four ports, the 3.3 V LDO (≤ 0.46 A) and the matrix: 2.46 A at 0.5 A a port; at worst, all four at",
+        "  the TPS2553s' 0.644 A limit, 3.04 A, under the LMR51635's 3.5 A with no help from the node's firmware.",
+        "  The inductor then peaks at 3.63 A from 28 V (1.17 A ripple), 3.93 A at the worst corner (L −20 %, 0.99 MHz),",
+        "  under the LMR51635's 4.2 A minimum peak limit (SLUSF64B §6.5: 4.2 / 5.1 / 6.0 A; valley 3.2 / 4.0 / 4.8 A);",
+        "  from 13.5 V: peak 3.48 A, valley 2.60 A.  No frequency foldback (tON 170 ns ≥ 70, tOFF 556 ns ≥ 200).",
         "FB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.",
         "VIN on J1.8, the node's VRACK through its eFuse (TPS26600, off by default): no second protection here.",
-        "  ≈ 0.75 A at 20 V for the converter's 2.5 A, 1.1 A at 13.5 V, 0.55 A at 28 V; a PH contact carries 2 A.",
+        "  At the 3.04 A worst case (η ≈ 88 %): 0.91 A at 20 V, 1.21 A at 15 V, 1.34 A at 13.5 V, 0.65 A at 28 V;",
+        "  the converter's full 3.5 A: 1.39 A at 15 V.  Under the node eFuse's 1.76 A; a PH contact carries 2 A.",
     ]
 
 
@@ -1222,13 +1227,14 @@ def board() -> Board:
     b.root_paper, b.root_buses = "A2", True
     b.root_notes = [
         "DATA ×4 v2.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226",
-        "  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an LMR51625 5 V from the lead's 20 V, an AP2114H 3.3 V;",
+        "  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an LMR51635 5 V from the lead's 20 V, an AP2114H 3.3 V;",
         "  the PH 8 lead from the node's J7.",
         "Pins: 32 on two CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 5, a TCA9534A for",
         "  the matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled;",
         "  v1 stays the other bays' board.",
         "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×6's lead.",
-        "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 0.75 A at 20 V · +5V 5.24 V, ≤ 2.5 A (the node's budget) ·",
+        "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 0.91 A at 20 V (1.21 A at 15 V) · +5V 5.24 V, ≤ 3.04 A (the",
+        "  ports at their 0.644 A limit + 0.46 A; the LMR51635's 3.5 A) ·",
         "  PORTn_VBUS 5.1–5.24 V, 0.52–0.64 A limit · +3V3 3.3 V (AP2114H), ≤ 0.5 A · +5V_MX, −5V (sheet Matrix) ·",
         "  +3V3_CP, +1V1 (sheet Co-processor) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own regulators).",
         "I²C: TCA6408A 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45, TCA9534A 0x38; the node's INA226 0x40.",

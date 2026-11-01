@@ -7862,7 +7862,7 @@
 				)
 			)
 		)
-		(property "Value" "LMR51625YDDCR"
+		(property "Value" "LMR51635YDDCR"
 			(at 0 2.4 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -7874,7 +7874,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lmr51625.pdf"
+		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/lmr51635.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -7885,7 +7885,7 @@
 				)
 			)
 		)
-		(property "Description" "4.3–60 V 2.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum"
+		(property "Description" "4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -7908,7 +7908,7 @@
 				)
 			)
 		)
-		(property "MPN" "LMR51625YDDCR"
+		(property "MPN" "LMR51635YDDCR"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -7932,7 +7932,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C44991044"
+		(property "LCSC" "C45262770"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -7944,7 +7944,7 @@
 				)
 			)
 		)
-		(property "Alternative" "LMR51625YFDDCR (C45262768): same, forced PWM, no spread spectrum; LMR51635YDDCR (C45262770): 3.5 A, 3.3 µH"
+		(property "Alternative" "LMR51635YFDDCR (C44750836): same, forced PWM, no spread spectrum"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -17704,7 +17704,7 @@
 				)
 			)
 		)
-		(property "Value" "4.7u"
+		(property "Value" "3.3u"
 			(at 0 4.25 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -17716,7 +17716,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.vishay.com/docs/34104/ihlp-2525cz-01.pdf"
+		(property "Datasheet" "https://www.vishay.com/doc?34104"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -17727,7 +17727,7 @@
 				)
 			)
 		)
-		(property "Description" "4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat (ΔT 40 °C), 37 mΩ (40 max), molded"
+		(property "Description" "3.3 µH, 75 V, 13.5 A sat (−20 %), 6 A heat, 28 / 30 mΩ, molded"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -17750,7 +17750,7 @@
 				)
 			)
 		)
-		(property "MPN" "IHLP2525CZEK4R7M01"
+		(property "MPN" "IHLP2525CZER3R3M01"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -17762,7 +17762,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Vishay"
+		(property "Manufacturer" "Vishay Intertech"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -17774,23 +17774,11 @@
 				)
 			)
 		)
-		(property "LCSC" "C48009678"
+		(property "LCSC" "C506574"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
 			(uuid "ace80294-bc62-400c-b810-f01bd075eb8e")
-			(effects
-				(font
-					(size 1.27 1.27)
-					(thickness 0.15)
-				)
-			)
-		)
-		(property "Alternative" "IHLP2525CZER4R7M01 (C553961): the same part on a 2000-piece reel"
-			(at 0 0 0)
-			(layer "F.Fab")
-			(hide yes)
-			(uuid "e03e4a14-9e67-4915-b950-d0632f4e697b")
 			(effects
 				(font
 					(size 1.27 1.27)

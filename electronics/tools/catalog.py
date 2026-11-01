@@ -61,7 +61,8 @@ CAT = {
                   description="3.3 µH, 9.5 A sat, 8.5 A rms, 22 mΩ, molded"),
     # both boards' buck since 2026-10-23: the family's 2.5 A part, same DDC package and pinout (TI SLUSF64B
     # table 5-1), same EasyEDA footprint; a bay draws ≤ 2.25 A (docs/power-distribution-review.md), the hub's
-    # controller < 0.7 A.  "buck" and "buck_l" (the LMR51635 and its 3.3 µH) are on neither board now
+    # controller < 0.7 A.  "buck" and "buck_l" (the LMR51635 and its 3.3 µH, TI table 8-2): the DATA ×4 v2's
+    # converter since 2026-11-01 (four ports at their limit and its logic: 3.04 A)
     "buck25": Cat("bench:LMR51635", "Package_TO_SOT_SMD:TSOT-23-6", "LMR51625YDDCR", "Texas Instruments",
                   "C44991044", 1.19, datasheet="https://www.ti.com/lit/ds/symlink/lmr51625.pdf",
                   alt="LMR51625YFDDCR (C45262768): same, forced PWM, no spread spectrum; "
