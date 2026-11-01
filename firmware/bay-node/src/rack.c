@@ -140,6 +140,7 @@ static void fill_status(void *ctx, struct rack_status *st)
 		st->dut_mv = (uint16_t)CLAMP(r.bus_mv, 0, 0xFFFE);
 		st->dut_ma = (uint16_t)CLAMP(r.current_ma, 0, 0xFFFE);
 	}
+	st->waiting = (uint8_t)MIN(ports_waiting(), UINT8_MAX);
 }
 
 static void fill_info(void *ctx, struct rack_info *info)

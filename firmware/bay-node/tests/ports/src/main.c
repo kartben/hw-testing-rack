@@ -40,6 +40,13 @@ void dut_lead_lost(enum dut_lead why)
 	ztest_test_fail();
 }
 
+bool bay_rack_grant(struct rack_grant *g)
+{
+	ARG_UNUSED(g);
+	ztest_test_fail();
+	return false;
+}
+
 int usb_host_port_device(uint8_t hub_port, uint16_t *vid, uint16_t *pid)
 {
 	ARG_UNUSED(hub_port);

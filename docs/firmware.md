@@ -115,7 +115,9 @@ board makes its own 5 V from it.  The eFuse is **off** until the firmware turns 
 7. **Budget**: the node's INA226 now reads the DATA board's VIN current (1 A at 20 V is 20 W, ≈ 4 A at
    5 V): the DATA ×4 admission and shedding thresholds in mA at 5 V
    ([multi-dut-node.md](multi-dut-node.md#power-budget)) become a power budget (the INA226's power
-   register), checked against the row's share of the rack's budget.
+   register), checked against the row's share of the rack's budget.  In the firmware: shunt current ×
+   bus voltage, against the hub's grant for the bay (GRANT, [rack-protocol.md](rack-protocol.md)) or
+   `CONFIG_BAY_PORTS_LIMIT_MW` without one.
 
 ## Power hub application
 

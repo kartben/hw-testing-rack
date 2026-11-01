@@ -88,14 +88,18 @@ LOG_MODULE_REGISTER(ports, CONFIG_BAY_LOG_LEVEL);
 #define REFUSED_MS   1000 /* a wanted port the budget refused: try again */
 #define RELEASE_MS   5    /* EN to BOOT and RESET released: the port's VBUS is up */
 #define SHED_MS      20   /* a port shed to the next reading: the meter averages 8.8 ms */
+#define OVER_POLLS   (EFUSE ? 2 : 1) /* polls over the budget before a port is shed */
+#define CONV_PCT     88   /* rev B: the DATA board's converters, DATA_VIN to its 5 V */
 
 /* DATA x4 v2: the matrix expander (TCA9534A, not fitted on the base v2), its P7 MARK */
 #define MX_MARK 7
 
 /*
- * The node's own INA226 (dut_port's power-monitor) on DUT_5V: what the whole
- * bay draws.  Its driver sets it up (dut.c reads it); this file reads its
- * shunt and sets its ALERT for the shedding.
+ * The node's own INA226 (dut_port's power-monitor) on DUT_5V, or DATA_VIN on
+ * node rev B: what the whole bay draws.  Its driver sets it up (dut.c reads
+ * it); this file reads its shunt and bus voltage and sets its ALERT for the
+ * shedding.  The budget is in mA on DUT_5V (rev A), in mW on DATA_VIN against
+ * the hub's grant (rev B).
  */
 #define METER     DT_PHANDLE(DT_NODELABEL(dut_port), power_monitor)
 #define HAS_METER DT_NODE_HAS_PROP(DT_NODELABEL(dut_port), power_monitor)
@@ -143,8 +147,10 @@ struct port {
 	bool on;
 	bool latched; /* off after a fault, until switched on again */
 	bool refused; /* the budget, or its VBUS, kept it off: said once */
+	bool foreign; /* its VBUS is up while off: waits for that, not for power */
+	bool shed;    /* switched off by the shedding, wanted back */
 	uint32_t seq; /* when it went on: the last one goes first when the bay sheds */
-	int32_t need; /* shed: what it drew, the room it needs to come back (mA) */
+	int32_t need; /* shed: what it drew, the room it needs to come back (mA, rev B mW) */
 	uint32_t faults;
 };
 
@@ -162,6 +168,8 @@ static bool present;  /* the board answered at the last probe */
 static bool chips_up; /* DUT_5V on and the chips set up */
 static int failures;
 static uint32_t admissions;
+static uint32_t sheds;
+static int over_polls;
 static int64_t shed_at;
 static int64_t powered_at; /* the last DUT_5V / DATA_VIN on */
 static struct gpio_callback alert_cb;
@@ -256,6 +264,83 @@ static int32_t bay_ma(void)
 	return ports_ma() + CONFIG_BAY_PORTS_BOARD_MA;
 }
 
+/*
+ * Rev B, what the bay draws from DATA_VIN, mW (lock held): the node's INA226,
+ * or without it the ports and the board at 5 V through the converters.
+ */
+static int32_t bay_mw(void)
+{
+	uint8_t shunt = INA_SHUNT, bus_reg = INA_BUS, s[2], v[2];
+
+	if (meter.bus != NULL && i2c_write_read_dt(&meter, &shunt, 1, s, sizeof(s)) == 0 &&
+	    i2c_write_read_dt(&meter, &bus_reg, 1, v, sizeof(v)) == 0) {
+		int64_t ma = MAX((int64_t)(int16_t)sys_get_be16(s) * 2500 / METER_UOHM, 0);
+
+		return (int32_t)(ma * (sys_get_be16(v) * 5 / 4) / 1000);
+	}
+	return (ports_ma() + CONFIG_BAY_PORTS_BOARD_MA) * 5 * 100 / CONV_PCT;
+}
+
+/* What the bay draws, in its budget's unit: mA on DUT_5V, rev B mW on DATA_VIN */
+static int32_t bay_draw(void)
+{
+	return EFUSE ? bay_mw() : bay_ma();
+}
+
+/* A port's draw in that unit, 0 unread (lock held, chips up) */
+static int32_t port_draw(int i)
+{
+	int32_t mv, ma;
+
+	if (read_meter(i, &mv, &ma) != 0) {
+		return 0;
+	}
+	ma = MAX(ma, 0);
+	return EFUSE ? (int32_t)((int64_t)mv * ma / 1000 * 100 / CONV_PCT) : ma;
+}
+
+/* What a port is switched on within: rev B the hub's grant, or the bay's own limit */
+static int32_t budget_limit(bool *granted)
+{
+	struct rack_grant g;
+
+	*granted = false;
+	if (!EFUSE) {
+		return CONFIG_BAY_PORTS_BUDGET_MA;
+	}
+	if (bay_rack_grant(&g)) {
+		*granted = true;
+		return g.mw;
+	}
+	return CONFIG_BAY_PORTS_LIMIT_MW;
+}
+
+static int32_t budget_reserve(void)
+{
+	return EFUSE ? CONFIG_BAY_PORTS_RESERVE_MW : CONFIG_BAY_PORTS_RESERVE_MA;
+}
+
+/*
+ * Over the budget, the last port switched on goes (lock held): rev A over
+ * CONFIG_BAY_PORTS_SHED_MA; rev B over the grant, or over that current on
+ * DATA_VIN (the ALERT's level, below the eFuse's)
+ */
+static bool over_budget(int32_t *draw)
+{
+	bool granted;
+
+	*draw = bay_draw();
+	if (EFUSE) {
+		return *draw > budget_limit(&granted) || bay_ma() > CONFIG_BAY_PORTS_SHED_MA;
+	}
+	return *draw > CONFIG_BAY_PORTS_SHED_MA;
+}
+
+static const char *unit(void)
+{
+	return EFUSE ? "mW" : "mA";
+}
+
 /* The node's INA226 ALERT while its shunt reads over CONFIG_BAY_PORTS_SHED_MA */
 static void meter_setup(void)
 {
@@ -293,12 +378,13 @@ static int line_write(int i, uint8_t pin, bool asserted)
 static int port_on(int i, bool keep_boot)
 {
 	int32_t mv, ma;
+	bool granted;
 	int ret;
 
 	if (!chips_up) {
 		return -EAGAIN;
 	}
-	if (bay_ma() + MAX(CONFIG_BAY_PORTS_RESERVE_MA, ports[i].need) > CONFIG_BAY_PORTS_BUDGET_MA) {
+	if (bay_draw() + MAX(budget_reserve(), ports[i].need) > budget_limit(&granted)) {
 		return -EBUSY;
 	}
 	/* Sink-only, no CC detection: a VBUS already there is not ours to meet */
@@ -310,8 +396,10 @@ static int port_on(int i, bool keep_boot)
 		if (!ports[i].refused) {
 			LOG_WRN("port %u: VBUS %d mV while off, not switched on", cfg[i].slot, mv);
 		}
+		ports[i].foreign = true;
 		return -EALREADY;
 	}
+	ports[i].foreign = false;
 	/* A latched TPS2553-1 restarts on an EN low-to-high edge */
 	if (ports[i].latched) {
 		(void)en_write(i, false);
@@ -323,6 +411,7 @@ static int port_on(int i, bool keep_boot)
 	ports[i].on = true;
 	ports[i].latched = false;
 	ports[i].refused = false;
+	ports[i].shed = false;
 	ports[i].need = 0;
 	ports[i].seq = ++admissions;
 
@@ -452,8 +541,8 @@ static void setup_handler(struct k_work *work)
 static void admit_handler(struct k_work *work)
 {
 	int next = -1, ret = 0;
-	bool more = false, said = false;
-	int32_t bay = 0;
+	bool more = false, said = false, granted = false;
+	int32_t bay = 0, limit = 0;
 
 	ARG_UNUSED(work);
 
@@ -472,7 +561,8 @@ static void admit_handler(struct k_work *work)
 		if ((ret == -EBUSY || ret == -EALREADY) && !ports[next].refused) {
 			ports[next].refused = true;
 			said = ret == -EBUSY;
-			bay = bay_ma();
+			bay = bay_draw();
+			limit = budget_limit(&granted);
 		}
 	}
 	k_mutex_unlock(&lock);
@@ -483,8 +573,8 @@ static void admit_handler(struct k_work *work)
 	if (ret == 0) {
 		LOG_INF("port %u on", cfg[next].slot);
 	} else if (said) {
-		LOG_WRN("port %u waits: the bay draws %d mA (budget %d mA)", cfg[next].slot, bay,
-			CONFIG_BAY_PORTS_BUDGET_MA);
+		LOG_WRN("port %u waits for power: the bay draws %d %s (budget %d %s%s)", cfg[next].slot,
+			bay, unit(), limit, unit(), granted ? ", the hub's grant" : "");
 	}
 	if (ret != 0 || more) {
 		k_work_reschedule(&admit_work,
@@ -494,13 +584,14 @@ static void admit_handler(struct k_work *work)
 }
 
 /*
- * The bay over CONFIG_BAY_PORTS_SHED_MA: the last port switched on goes off,
- * still wanted (it comes back once the budget has room for what it drew),
- * and the bay is read again once the meter has a new average.
+ * The bay over its budget (over_budget()): the last port switched on goes
+ * off, still wanted (it comes back once the budget has room for what it
+ * drew), and the bay is read again once the meter has a new average.
  */
 static void shed_handler(struct k_work *work)
 {
-	int32_t bay = 0, mv, ma = 0;
+	int32_t bay = 0, drew = 0;
+	bool over = false;
 	int64_t wait;
 	int last = -1;
 
@@ -514,20 +605,21 @@ static void shed_handler(struct k_work *work)
 		return;
 	}
 	if (chips_up) {
-		bay = bay_ma();
+		over = over_budget(&bay);
 	}
-	for (int i = 0; i < NPORTS && bay > CONFIG_BAY_PORTS_SHED_MA; i++) {
+	for (int i = 0; i < NPORTS && over; i++) {
 		if (ports[i].on && (last < 0 || ports[i].seq > ports[last].seq)) {
 			last = i;
 		}
 	}
 	if (last >= 0) {
-		if (read_meter(last, &mv, &ma) != 0) {
-			ma = 0;
-		}
+		drew = port_draw(last);
 		(void)port_off(last);
-		ports[last].need = MAX(ma, 0);
+		ports[last].need = drew;
 		ports[last].refused = false;
+		ports[last].shed = true;
+		sheds++;
+		over_polls = 0;
 		shed_at = k_uptime_get();
 	}
 	k_mutex_unlock(&lock);
@@ -535,8 +627,8 @@ static void shed_handler(struct k_work *work)
 	if (last < 0) {
 		return;
 	}
-	LOG_WRN("the bay draws %d mA, over %d mA: port %u off (it drew %d mA) until there is room",
-		bay, CONFIG_BAY_PORTS_SHED_MA, cfg[last].slot, ma);
+	LOG_WRN("the bay draws %d %s, over its budget: port %u shed (it drew %d %s) until there is "
+		"room", bay, unit(), cfg[last].slot, drew, unit());
 	k_work_reschedule(&shed_work, K_MSEC(SHED_MS));
 	k_work_reschedule(&admit_work, K_MSEC(REFUSED_MS));
 }
@@ -556,6 +648,7 @@ static void poll_handler(struct k_work *work)
 	uint8_t in[IO_MAX];
 	int ret = 0;
 	bool gone = false, over = false;
+	int32_t draw;
 	uint32_t tripped = 0;
 
 	ARG_UNUSED(work);
@@ -590,7 +683,9 @@ static void poll_handler(struct k_work *work)
 				tripped |= BIT(i);
 			}
 		}
-		over = bay_ma() > CONFIG_BAY_PORTS_SHED_MA;
+		/* Rev B: two polls over the grant in a row, a start's surge is not shed */
+		over_polls = over_budget(&draw) ? over_polls + 1 : 0;
+		over = over_polls >= OVER_POLLS;
 	}
 	k_mutex_unlock(&lock);
 
@@ -635,8 +730,11 @@ void ports_dut_power(bool on)
 	}
 	for (int i = 0; i < NPORTS; i++) {
 		ports[i].on = false;
+		ports[i].shed = false;
+		ports[i].need = 0;
 	}
 	chips_up = false;
+	over_polls = 0;
 	k_mutex_unlock(&lock);
 }
 
@@ -674,6 +772,41 @@ int ports_count(void)
 	return present ? NPORTS : 0;
 }
 
+/* Wanted, off, not in a fault and not waiting for a foreign VBUS to go (lock held) */
+static bool waiting(int i)
+{
+	return chips_up && ports[i].wanted && !ports[i].on && !ports[i].latched && !ports[i].foreign;
+}
+
+int ports_waiting(void)
+{
+	int n = 0;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	for (int i = 0; i < NPORTS; i++) {
+		n += waiting(i);
+	}
+	k_mutex_unlock(&lock);
+
+	return n;
+}
+
+int ports_budget(struct ports_budget *pb)
+{
+	*pb = (struct ports_budget){.power = EFUSE};
+	k_mutex_lock(&lock, K_FOREVER);
+	pb->limit = budget_limit(&pb->granted);
+	pb->reserve = budget_reserve();
+	pb->draw = chips_up ? bay_draw() : 0;
+	for (int i = 0; i < NPORTS; i++) {
+		pb->waiting += waiting(i);
+	}
+	pb->sheds = sheds;
+	k_mutex_unlock(&lock);
+
+	return present ? 0 : -ENODEV;
+}
+
 static int index_of(int slot)
 {
 	for (int i = 0; i < NPORTS; i++) {
@@ -697,6 +830,8 @@ int ports_info(int slot, struct port_info *pi)
 	pi->on = ports[i].on;
 	pi->wanted = ports[i].wanted;
 	pi->latched = ports[i].latched;
+	pi->waiting = waiting(i);
+	pi->shed = ports[i].shed;
 	pi->faults = ports[i].faults;
 	pi->meter = ports[i].on && read_meter(i, &pi->mv, &pi->ma) == 0;
 	k_mutex_unlock(&lock);
@@ -723,8 +858,11 @@ static int power_on(int slot, int32_t *others, bool keep_boot)
 	 */
 	ports[i].wanted = ret == 0 || ret == -EALREADY;
 	ports[i].refused = ret == -EALREADY;
+	if (!ports[i].wanted) {
+		ports[i].shed = false;
+	}
 	if (ret == -EBUSY && others != NULL) {
-		*others = bay_ma();
+		*others = bay_draw();
 	}
 	k_mutex_unlock(&lock);
 
@@ -749,6 +887,8 @@ int ports_power(int slot, bool on, int32_t *others)
 
 	k_mutex_lock(&lock, K_FOREVER);
 	ports[i].wanted = false;
+	ports[i].shed = false;
+	ports[i].foreign = false;
 	ports[i].need = 0;
 	ret = port_off(i);
 	k_mutex_unlock(&lock);
@@ -857,6 +997,17 @@ int ports_init(void)
 int ports_count(void)
 {
 	return 0;
+}
+
+int ports_waiting(void)
+{
+	return 0;
+}
+
+int ports_budget(struct ports_budget *pb)
+{
+	ARG_UNUSED(pb);
+	return -ENOENT;
 }
 
 int ports_info(int slot, struct port_info *pi)

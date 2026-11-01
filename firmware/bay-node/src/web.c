@@ -779,13 +779,19 @@ static const char *do_port_action(enum api_action what, int port, const struct a
 	switch (ret) {
 	case 0:
 		return NULL;
-	case -EBUSY:
+	case -EBUSY: {
+		struct ports_budget pb;
+		const char *u;
+
+		(void)ports_budget(&pb);
+		u = pb.power ? "mW" : "mA";
 		*code = HTTP_409_CONFLICT;
 		snprintf(action_err, sizeof(action_err),
-			 "no room in the bay's budget: the bay draws %d mA, %d mA kept for a "
-			 "start, %d mA in all", others, CONFIG_BAY_PORTS_RESERVE_MA,
-			 CONFIG_BAY_PORTS_BUDGET_MA);
+			 "no room in the bay's budget: the bay draws %d %s, %d %s kept for a "
+			 "start, %d %s in all%s", others, u, pb.reserve, u, pb.limit, u,
+			 pb.granted ? " (the hub's grant)" : "");
 		return action_err;
+	}
 	case -EALREADY:
 		*code = HTTP_409_CONFLICT;
 		return "the port's VBUS is up while it is off (a board powered from elsewhere): "

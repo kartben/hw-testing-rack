@@ -4,7 +4,9 @@
  * docs/firmware.md.  Off at boot; on only with SCL and SDA high and the
  * node's INA226 answering; ~FLT ignored while the eFuse ramps; off again on a
  * short; the board must answer within a second; off for good on a ~FLT or a
- * board that stops answering, until the next power on.
+ * board that stops answering, until the next power on.  Then the ports'
+ * budget in mW on DATA_VIN: the hub's grant admits them, a lower grant sheds
+ * the last ones switched on, without a grant the bay's own limit.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -25,12 +27,23 @@ static const struct gpio_dt_spec scl = GPIO_DT_SPEC_GET_BY_IDX(DUT, bus_gpios, 0
 static const struct gpio_dt_spec sda = GPIO_DT_SPEC_GET_BY_IDX(DUT, bus_gpios, 1);
 
 static bool off_at_boot;
+static int count_at_boot = -1, offline_at_boot = -1;
+static int grant_mw = -1; /* the hub's grant, -1 none */
 
 /* --- What dut.c and ports.c need from the rest of the node ------------------ */
 
 void aux_dut_power(bool on)
 {
 	ARG_UNUSED(on);
+}
+
+bool bay_rack_grant(struct rack_grant *g)
+{
+	if (grant_mw < 0) {
+		return false;
+	}
+	*g = (struct rack_grant){.mw = (uint16_t)grant_mw, .flags = RACK_GRANT_ROW};
+	return true;
 }
 
 int usb_host_port_device(uint8_t hub_port, uint16_t *vid, uint16_t *pid)
@@ -62,6 +75,23 @@ static void flt_release_handler(struct k_work *work)
 
 static K_WORK_DELAYABLE_DEFINE(flt_release, flt_release_handler);
 
+/* The ports' INA226s (data-x4.dtsi) */
+static const uint8_t ina[4] = {0x41, 0x43, 0x44, 0x45};
+
+static void ports_draw(int ma)
+{
+	for (int i = 0; i < 4; i++) {
+		emul_ina_ma(ina[i], ma);
+	}
+}
+
+static bool port_on_slot(int slot)
+{
+	struct port_info pi;
+
+	return ports_info(slot, &pi) == 0 && pi.on;
+}
+
 static int ports_on(void)
 {
 	struct port_info pi;
@@ -83,6 +113,10 @@ static void *suite_setup(void)
 	/* On the node they stay the I2C controller's pins: here plain inputs */
 	zassert_ok(gpio_pin_configure_dt(&scl, GPIO_INPUT));
 	zassert_ok(gpio_pin_configure_dt(&sda, GPIO_INPUT));
+	/* What ports.c did after its first set-up delay, DATA_VIN still off */
+	k_sleep(K_MSEC(100));
+	count_at_boot = ports_count();
+	offline_at_boot = emul_offline();
 	return NULL;
 }
 
@@ -100,24 +134,28 @@ static void before(void *f)
 	emul_board(true);
 	emul_meter(true);
 	emul_board_ma(300);
+	grant_mw = -1;
 	for (int io = 0; io < 2; io++) {
 		for (int pin = 0; pin < 8; pin++) {
 			emul_io_pin(io, pin, true);
 		}
+	}
+	for (int i = 0; i < 4; i++) {
+		emul_ina_ma(ina[i], 0);
 	}
 	k_sleep(K_MSEC(50));
 }
 
 /* --- Tests ------------------------------------------------------------------ */
 
-ZTEST(data_lead, test_1_off_at_boot)
+ZTEST(data_lead, test_01_off_at_boot)
 {
 	zassert_true(off_at_boot, "the eFuse stays off until the checks pass");
-	zassert_equal(ports_count(), 0, "no I2C to an unpowered board");
-	zassert_equal(emul_offline(), 0);
+	zassert_equal(count_at_boot, 0, "no board set up while DATA_VIN is off");
+	zassert_equal(offline_at_boot, 0, "no I2C to an unpowered board");
 }
 
-ZTEST(data_lead, test_2_on)
+ZTEST(data_lead, test_02_on)
 {
 	zassert_ok(dut_power_set(true));
 	zassert_true(lead_on());
@@ -134,7 +172,7 @@ ZTEST(data_lead, test_2_on)
 	zassert_equal(ports_on(), 0);
 }
 
-ZTEST(data_lead, test_3_lead_reversed)
+ZTEST(data_lead, test_03_lead_reversed)
 {
 	/* A lead plugged 1:1 holds SCL near 0.6 V */
 	(void)gpio_emul_input_set(scl.port, scl.pin, 0);
@@ -154,7 +192,7 @@ ZTEST(data_lead, test_3_lead_reversed)
 	zassert_true(lead_on());
 }
 
-ZTEST(data_lead, test_4_meter_missing)
+ZTEST(data_lead, test_04_meter_missing)
 {
 	emul_meter(false);
 	zassert_equal(dut_power_set(true), -ENODEV);
@@ -162,7 +200,7 @@ ZTEST(data_lead, test_4_meter_missing)
 	zassert_equal(dut_lead_state(NULL), DUT_LEAD_METER);
 }
 
-ZTEST(data_lead, test_5_short)
+ZTEST(data_lead, test_05_short)
 {
 	int32_t mv = -1;
 
@@ -183,7 +221,7 @@ ZTEST(data_lead, test_5_short)
 	zassert_equal(dut_lead_state(NULL), DUT_LEAD_SHORT);
 }
 
-ZTEST(data_lead, test_6_flt_blanked_while_ramping)
+ZTEST(data_lead, test_06_flt_blanked_while_ramping)
 {
 	/* ~FLT low while the eFuse is off, high 5 ms after it ramps: ignored */
 	flt_set(true);
@@ -194,7 +232,7 @@ ZTEST(data_lead, test_6_flt_blanked_while_ramping)
 	zassert_false(dut_fault_active());
 }
 
-ZTEST(data_lead, test_7_flt_while_on)
+ZTEST(data_lead, test_07_flt_while_on)
 {
 	uint32_t faults = dut_fault_count();
 
@@ -223,7 +261,7 @@ ZTEST(data_lead, test_7_flt_while_on)
 	zassert_equal(dut_lead_state(NULL), DUT_LEAD_OK);
 }
 
-ZTEST(data_lead, test_8_no_board)
+ZTEST(data_lead, test_08_no_board)
 {
 	emul_board(false);
 	zassert_ok(dut_power_set(true), "DATA_VIN reads right: on");
@@ -244,7 +282,7 @@ ZTEST(data_lead, test_8_no_board)
 	zassert_equal(ports_count(), 4);
 }
 
-ZTEST(data_lead, test_9_board_gone)
+ZTEST(data_lead, test_09_board_gone)
 {
 	zassert_ok(dut_power_set(true));
 	k_sleep(K_MSEC(300));
@@ -265,6 +303,112 @@ ZTEST(data_lead, test_9_board_gone)
 	/* Switched off on request: the reason goes */
 	zassert_ok(dut_power_set(false));
 	zassert_equal(dut_lead_state(NULL), DUT_LEAD_OK);
+}
+
+/*
+ * The budget in watts on DATA_VIN (20 V here; the board's 5 V at 88 %): the
+ * board alone 1.7 W, each port drawing 200 mA at 5 V about 1.14 W more
+ * (2.84, 3.96, 5.1, 6.24 W with one to four on); 0.6 W kept for a start.
+ */
+
+ZTEST(data_lead, test_10_grant_admits)
+{
+	struct ports_budget pb;
+	struct port_info pi;
+
+	/* 4 W from the hub: two ports (3.96 W), the third would need 4.56 W */
+	grant_mw = 4000;
+	ports_draw(200);
+	zassert_ok(dut_power_set(true));
+	k_sleep(K_MSEC(1500));
+	zassert_equal(ports_on(), 2, "%d ports on", ports_on());
+	zassert_equal(ports_waiting(), 2);
+	zassert_ok(ports_info(3, &pi));
+	zassert_true(pi.waiting);
+	zassert_false(pi.shed);
+	zassert_ok(ports_budget(&pb));
+	zassert_true(pb.power);
+	zassert_true(pb.granted);
+	zassert_equal(pb.limit, 4000);
+	zassert_equal(pb.reserve, CONFIG_BAY_PORTS_RESERVE_MW);
+	zassert_within(pb.draw, 3960, 50, "the bay draws %d mW", pb.draw);
+	zassert_equal(pb.waiting, 2);
+
+	/* The hub grants more: the waiting ports come on, one after the other */
+	grant_mw = 8000;
+	k_sleep(K_MSEC(2000));
+	zassert_equal(ports_on(), 4);
+	zassert_equal(ports_waiting(), 0);
+}
+
+ZTEST(data_lead, test_11_shed_over_the_grant)
+{
+	struct ports_budget pb;
+	struct port_info pi;
+	uint32_t sheds;
+
+	grant_mw = 8000;
+	ports_draw(200);
+	zassert_ok(dut_power_set(true));
+	k_sleep(K_MSEC(1500));
+	zassert_equal(ports_on(), 4);
+	zassert_ok(ports_budget(&pb));
+	sheds = pb.sheds;
+
+	/* The grant drops to 3 W: the last ports switched on go until the bay fits (2.84 W) */
+	grant_mw = 3000;
+	k_sleep(K_MSEC(300));
+	zassert_equal(ports_on(), 1, "%d ports on", ports_on());
+	zassert_true(port_on_slot(1), "the first one switched on stays");
+	for (int slot = 2; slot <= 4; slot++) {
+		zassert_ok(ports_info(slot, &pi));
+		zassert_true(pi.shed, "port %d shed", slot);
+		zassert_true(pi.waiting && pi.wanted, "port %d wanted back", slot);
+	}
+	zassert_ok(ports_budget(&pb));
+	zassert_equal(pb.sheds - sheds, 3);
+
+	/* No room for what they drew: they stay off */
+	k_sleep(K_MSEC(1500));
+	zassert_equal(ports_on(), 1);
+
+	/* Room again: back, one after the other */
+	grant_mw = 8000;
+	k_sleep(K_MSEC(2500));
+	zassert_equal(ports_on(), 4);
+	zassert_ok(ports_info(4, &pi));
+	zassert_false(pi.shed);
+}
+
+ZTEST(data_lead, test_12_no_grant)
+{
+	struct ports_budget pb;
+	struct port_info pi;
+
+	/* No hub: the bay's own limit */
+	ports_draw(200);
+	zassert_ok(dut_power_set(true));
+	k_sleep(K_MSEC(1500));
+	zassert_equal(ports_on(), 4);
+	zassert_ok(ports_budget(&pb));
+	zassert_false(pb.granted);
+	zassert_equal(pb.limit, CONFIG_BAY_PORTS_LIMIT_MW);
+
+	/*
+	 * A request the budget refuses is not queued: off, not wanted, not
+	 * waiting.  The ports idle now (the board's 1.7 W), 2 W granted: no room
+	 * for a start (0.6 W), nothing to shed either.
+	 */
+	ports_draw(0);
+	zassert_ok(ports_power(4, false, NULL));
+	grant_mw = 2000;
+	k_sleep(K_MSEC(300));
+	zassert_equal(ports_on(), 3, "nothing shed");
+	zassert_equal(ports_power(4, true, NULL), -EBUSY);
+	zassert_ok(ports_info(4, &pi));
+	zassert_false(pi.wanted);
+	zassert_false(pi.waiting);
+	zassert_equal(ports_waiting(), 0);
 }
 
 ZTEST_SUITE(data_lead, NULL, suite_setup, before, NULL, NULL);

@@ -62,10 +62,12 @@ config BAY_PORTS_BUDGET_MA
 	int "DATA x4: a port goes on only if the bay stays within this (mA)"
 	default 1150
 	help
-	  The node's TPS2553 feeds the DATA x4 through DUT_5V and limits at
-	  1.34-1.52 A.  A port goes on only if what the bay draws (the node's
-	  INA226 on DUT_5V: the board itself counts) plus BAY_PORTS_RESERVE_MA
-	  stays within this (docs/multi-dut-node.md, Power budget).
+	  Node rev A: the node's TPS2553 feeds the DATA x4 through DUT_5V and
+	  limits at 1.34-1.52 A.  A port goes on only if what the bay draws
+	  (the node's INA226 on DUT_5V: the board itself counts) plus
+	  BAY_PORTS_RESERVE_MA stays within this (docs/multi-dut-node.md,
+	  Power budget).  Node rev B counts in watts on DATA_VIN instead:
+	  BAY_PORTS_LIMIT_MW and the hub's grant.
 
 config BAY_PORTS_RESERVE_MA
 	int "DATA x4: kept for a port's start (mA)"
@@ -74,14 +76,36 @@ config BAY_PORTS_RESERVE_MA
 	  A port shed by BAY_PORTS_SHED_MA needs room for what it drew
 	  instead, if that is more.
 
+config BAY_PORTS_LIMIT_MW
+	int "Node rev B: the bay's own power limit on DATA_VIN, without a grant (mW)"
+	default 25000
+	help
+	  A port goes on only if what the bay draws on DATA_VIN (the node's
+	  INA226: the DATA board itself counts) plus BAY_PORTS_RESERVE_MW
+	  stays within the hub's grant (GRANT, docs/rack-protocol.md), or
+	  within this when no grant came for 3 s (no hub, or an older one).
+	  Over it, the port switched on last goes off.  1.25 A at 20 V, under
+	  the eFuse's 1.76 A.
+
+config BAY_PORTS_RESERVE_MW
+	int "Node rev B: kept for a port's start (mW)"
+	default 600
+	help
+	  BAY_PORTS_RESERVE_MA's 100 mA at 5 V, through the DATA board's
+	  converters.  A shed port needs room for what it drew instead, if
+	  that is more.
+
 config BAY_PORTS_SHED_MA
 	int "DATA x4: over this, the last port switched on goes off (mA)"
+	default 1500 if $(dt_nodelabel_bool_prop,dut_port,vin-efuse)
 	default 1250
 	help
 	  The node's INA226 ALERT (its shunt over this, about 9 ms with
 	  4 averages), or the poll as a backup: the port switched on last goes
 	  off, before the node's TPS2553 (1.34 A minimum) cuts the whole bay.
 	  It stays wanted and comes back once the budget has room for it.
+	  Node rev B: the current on DATA_VIN, below the eFuse's 1.76 A; the
+	  grant is checked on top, at each poll.
 
 config BAY_PORTS_BOARD_MA
 	int "DATA x4: the board's own draw, without a node meter (mA)"

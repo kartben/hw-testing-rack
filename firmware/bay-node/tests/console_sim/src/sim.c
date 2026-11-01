@@ -309,6 +309,12 @@ bool bay_rack_hub(struct rack_hub_state *st)
 	return true;
 }
 
+bool bay_rack_grant(struct rack_grant *g)
+{
+	*g = (struct rack_grant){.mw = 5400, .flags = RACK_GRANT_ROW};
+	return true;
+}
+
 void bay_rack_info_changed(void)
 {
 }

@@ -103,6 +103,18 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 > From node rev B the lead carries VIN (20–28 V) through a TPS26600 eFuse instead of DUT_5V, and the
 > DATA boards make their own 5 V: the thresholds below, in mA at 5 V on the node's INA226, become a
 > power budget.  The power-on rule: [firmware.md](firmware.md#the-data-leads-power-on-rule-node-rev-b).
+>
+> **Node rev B, in the firmware** (`src/ports.c`, tested on native_sim in `tests/data_lead`): the
+> same admission and shedding, in **mW on DATA_VIN** (the node's INA226: shunt current × bus
+> voltage).  The limit is the hub's grant for the bay (GRANT, [rack-protocol.md](rack-protocol.md),
+> 5.4 W with 12 bays on a 100 W charger), or `CONFIG_BAY_PORTS_LIMIT_MW` (25 W) when no grant came
+> for 3 s; 0.6 W is kept for a start (`CONFIG_BAY_PORTS_RESERVE_MW`); a shed port needs room for what
+> it drew, its 5 V power through the board's converters (88 %).  Over the grant for two 20 ms polls
+> in a row, the last port switched on is shed (logged, counted), then one more every 20 ms until the
+> bay fits; the ALERT still sheds at once above 1.5 A on DATA_VIN (`CONFIG_BAY_PORTS_SHED_MA`), under
+> the eFuse's 1.76 A.  A port that waits for power, or that was shed, stays wanted and comes back in
+> turn once there is room; the API and the page show it as waiting (shed), and STATUS tells the hub
+> how many wait.  A request the budget refuses (409) is not queued, as on rev A.
 
 - **Per port**, a TPS2553-1: limit ≈ 0.48–0.58 A, 7.5 ms deglitch, then
   latched off until EN toggles.  The firmware reports the port's fault and

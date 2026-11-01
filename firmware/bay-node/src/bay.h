@@ -83,6 +83,8 @@ struct port_info {
 	bool on;
 	bool wanted;      /* to be on after each DUT_5V on */
 	bool latched;     /* off after a fault, until switched on again */
+	bool waiting;     /* wanted, off: waiting for its turn or for power */
+	bool shed;        /* switched off by the shedding, back once there is room */
 	bool meter;       /* mv, ma, mw read */
 	bool usb;         /* a device on its hub port: vid, pid */
 	uint32_t faults;
@@ -96,13 +98,32 @@ struct port_info {
 int ports_init(void);
 /* Ports of the DATA x4 that answered, 0 without one (a one-port node) */
 int ports_count(void);
+/* Ports wanted on and kept off, waiting for their turn or for power (STATUS byte 7) */
+int ports_waiting(void);
+
+/*
+ * The bay's budget for its ports: mA on DUT_5V (node rev A), mW on DATA_VIN
+ * (rev B: the hub's grant, or CONFIG_BAY_PORTS_LIMIT_MW without one)
+ */
+struct ports_budget {
+	bool power;       /* mW (rev B), else mA */
+	bool granted;     /* the limit is the hub's grant */
+	int32_t limit;    /* a port goes on only within it; over it one is shed (rev B) */
+	int32_t reserve;  /* kept for a port's start */
+	int32_t draw;     /* what the bay draws now */
+	uint8_t waiting;  /* ports_waiting() */
+	uint32_t sheds;   /* ports shed since boot */
+};
+
+/* -ENODEV: no board answers; -ENOENT: no DATA x4 in the devicetree */
+int ports_budget(struct ports_budget *pb);
 /* slot 1..4; -ENOENT no such port, -ENODEV no board */
 int ports_info(int slot, struct port_info *pi);
 /*
- * -EBUSY: the budget has no room (others: what the bay draws, mA, may be
- * NULL); -EALREADY: its VBUS is up while it is off (a board powered from
- * elsewhere), it comes on once that has gone; -EAGAIN: the board
- * is not set up (DUT_5V off), or the port is off (RESET, BOOT)
+ * -EBUSY: the budget has no room (others: what the bay draws, in the
+ * budget's unit, may be NULL); -EALREADY: its VBUS is up while it is off (a
+ * board powered from elsewhere), it comes on once that has gone; -EAGAIN:
+ * the board is not set up (DUT_5V off), or the port is off (RESET, BOOT)
  */
 int ports_power(int slot, bool on, int32_t *others);
 int ports_power_cycle(int slot, k_timeout_t off_time, int32_t *others);
