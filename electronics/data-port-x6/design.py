@@ -180,6 +180,10 @@ ARRAYS = {"10k": ("4D02WGJ0103TCE", "C25725")}
 # The bring-up test points (the DFT rule): bare pads on the rear face, named on B.SilkS under each; 1.5 mm on GND and
 # the rails, 1.0 mm on signals; each > 2 mm from the THT pads, clear of the cradle's ends and the push band.
 # ref: (net, name, pad Ø, x, y); each sheet places its own (testpoints())
+# each port's VBUS test pad on one of its vias between its cluster and its USB-C (drawn: drawn()), USB-C 2's on a via
+# of its own at its VBUS line's corner (the design review, 2026-11-01)
+VBUS_TP = {1: (7.594, 53.602), 2: (19.045, 55.75), 3: (37.458, 53.602), 4: (52.334, 51.945), 5: (68.844, 53.602),
+           6: (85.281, 53.67)}
 TPS = {
     # the supplies: VIN, +5V_A, +5V_B, +3V3, with GND
     "TP7": ("+3V3", "+3V3", 1.5, LDO[0], 10.6), "TP8": ("GND", "GND", 1.5, 17.0, 15.6),
@@ -195,6 +199,12 @@ TPS = {
     "TP27": ("GND", "GND", 1.5, EXP[0] - 4.0, EXP[1] + 2.6),
     # each port's FAULT_N (port(): TP{k + 1}) by its switch
     **{f"TP{100 * n + 1}": (f"PORT{n}_FLT_N", f"FLT{n}", 1.0, COLS[n - 1] + 4.0, CL_Y + 6.5) for n in range(1, 7)},
+    # its VBUS (port(): TP{k + 2})
+    **{f"TP{100 * n + 2}": (f"PORT{n}_VBUS", f"VBUS{n}", 1.5, *VBUS_TP[n]) for n in range(1, 7)},
+    # GND along the ports (the others all sit at y 44 or above): a probe's ground for the VBUS and FAULT_N pads, each
+    # clear of the clusters' fan-out vias
+    "TP45": ("GND", "GND", 1.5, 21.9, 54.4), "TP46": ("GND", "GND", 1.5, 49.4, 54.9),
+    "TP47": ("GND", "GND", 1.5, 80.4, 53.9),
 }
 
 
@@ -278,7 +288,7 @@ def port(b: Board, n: int):
     R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(ina_x(n) + 2.24, y0 + 3.65, 90), sch=at(14, 36))
     R(s, f"R{k + 3}", "10k", "+3V3", p + "FLT_N", size="0402", pcb=P(ina_x(n) + 2.24, y0 + 5.6, 90),
       sch=at(40, 36))
-    testpoints(s, [f"TP{k + 1}"], "Test point (rear face): FAULT_N", 108, 62)
+    testpoints(s, [f"TP{k + 1}", f"TP{k + 2}"], "Test points (rear face): FAULT_N, VBUS", 108, 62)
     part(s, sh, "shunt100m", {"1": p + "5V_SW", "4": p + "VBUS", "2": p + "SNS_P", "3": p + "SNS_N"},
          "100m", pcb=P(x0 + 2.77, y0 + 5.4, 0), sch=at(46, 23))
     s.wire(f"{sw}.OUT", f"{sh}.1")
@@ -386,7 +396,8 @@ def power_sheet(b: Board):
         s.wire((x0 + 62, 33.5), (x0 + 36, 33.5), (x0 + 36, 25), f"{u}.FB")
         s.part(f"#FLG{9 + i}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": out}, in_bom=False, on_board=False,
                sch=at(x0 + 58, 14))
-    testpoints(s, ["TP9", "TP41", "TP42", "TP43"], "Test points (rear face): +5V_A, +5V_B, VIN, GND", 6, 78)
+    testpoints(s, ["TP9", "TP41", "TP42", "TP43", "TP45", "TP46", "TP47"],
+               "Test points (rear face): +5V_A, +5V_B, VIN, GND", 6, 78)
     s.notes_at = (6, 56, 200)
     s.notes = [
         "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).",
@@ -758,6 +769,8 @@ def drawn():
         vs = (ina_x(n) + 1.0, CL_Y + 2.45)
         hand_tracks.append(("+3V3", "F.Cu", 0.25, [vs, (vs[0], CL_Y + 0.15)]))
         hand_vias.append(("+3V3", vs[0], CL_Y + 0.15, 0.5, 0.3))
+        # the via under its VBUS test pad (TPS), kept where the router had it
+        hand_vias.append((f"PORT{n}_VBUS", *VBUS_TP[n], 0.6, 0.3))
         ex, ey = ESD_PX[n], USB_Y
         v5 = "+5V_A" if n <= 3 else "+5V_B"
         top = ey - 2.9

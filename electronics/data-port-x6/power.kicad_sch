@@ -5962,6 +5962,486 @@
 			)
 		)
 	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 157.48 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "3f74606c-df46-58d0-bbb9-cf9d268d7163")
+		(property "Reference" "TP45"
+			(at 161.342 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 163.442 234.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 157.48 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 157.48 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 157.48 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 157.48 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 157.48 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "27f04a03-a593-5855-99cc-f7036fddcc7c")
+		)
+		(instances
+			(project "data-port-x6"
+				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
+					(reference "TP45")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 157.48 233.68)
+			(xy 157.48 236.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c39afc63-5e73-53e2-8539-eda4648b18e1")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 157.48 236.22 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a2956295-52e2-5c6d-aabe-04050bb00a18")
+		(property "Reference" "#PWR03020"
+			(at 157.48 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 157.48 240.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 157.48 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 157.48 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 157.48 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "7cd2c14b-fc6e-51ac-bb5b-121e48cf0ee5")
+		)
+		(instances
+			(project "data-port-x6"
+				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
+					(reference "#PWR03020")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 187.96 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "ab0e1e4f-63c4-58c0-bef0-0114a7c273e9")
+		(property "Reference" "TP46"
+			(at 191.822 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 193.922 234.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 187.96 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 187.96 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 187.96 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 187.96 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 187.96 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ab54afbb-642c-5c69-969b-2302acfe284d")
+		)
+		(instances
+			(project "data-port-x6"
+				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
+					(reference "TP46")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 187.96 233.68)
+			(xy 187.96 236.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "91d9d4d5-7209-53d2-943f-bf6943153da2")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 187.96 236.22 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "851fada5-2092-579c-bffb-7d4e77a0cfbb")
+		(property "Reference" "#PWR03021"
+			(at 187.96 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 187.96 240.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 187.96 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 187.96 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 187.96 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c22a14c9-c223-5ac5-8913-7a9dbb45b17e")
+		)
+		(instances
+			(project "data-port-x6"
+				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
+					(reference "#PWR03021")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 218.44 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d7f34095-5f25-5473-a6f2-7b9817608a97")
+		(property "Reference" "TP47"
+			(at 222.302 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 224.402 234.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 218.44 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 218.44 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 218.44 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 218.44 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 218.44 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4c2dd0ed-0efc-51a7-ae7b-8a0676f89aec")
+		)
+		(instances
+			(project "data-port-x6"
+				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
+					(reference "TP47")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 218.44 233.68)
+			(xy 218.44 236.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "20b134bc-fd12-52e5-b53e-5243a200ce3c")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 218.44 236.22 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "7c8925f6-1fb8-584f-8770-90d62c1c33d4")
+		(property "Reference" "#PWR03022"
+			(at 218.44 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 218.44 240.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 218.44 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 218.44 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 218.44 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "fd9d5998-23f9-5afa-885a-d77d1f4cb738")
+		)
+		(instances
+			(project "data-port-x6"
+				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
+					(reference "#PWR03022")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(wire
 		(pts
 			(xy 73.66 109.22)
@@ -6770,7 +7250,7 @@
 	)
 	(rectangle
 		(start 15.24 198.12)
-		(end 162.56 248.92)
+		(end 254 248.92)
 		(stroke
 			(width 0.2)
 			(type dash)

@@ -3912,6 +3912,111 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 325.12 193.04 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d54bd47d-9b68-5b8d-93ab-1d56a8a3cb79")
+		(property "Reference" "TP602"
+			(at 329.507 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "test pad"
+			(at 331.082 194.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+			(at 325.12 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 325.12 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 325.12 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "test pad"
+			(at 325.12 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 325.12 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "29bb9224-5663-5a60-8fad-28732a3f2fd2")
+		)
+		(instances
+			(project "data-port-x6"
+				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/506fe7bc-5b14-5098-88f9-0220f2b20d85"
+					(reference "TP602")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 325.12 193.04)
+			(xy 325.12 195.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9b3fdcbd-a3f6-5892-9bce-928446377113")
+	)
+	(label "PORT6_VBUS"
+		(at 325.12 195.58 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "55d76840-ca69-57fe-812a-58a8d0c968fa")
+	)
+	(symbol
 		(lib_id "Device:R_Shunt")
 		(at 116.84 58.42 0)
 		(unit 1)
@@ -6709,7 +6814,7 @@
 	)
 	(rectangle
 		(start 274.32 157.48)
-		(end 330.2 208.28)
+		(end 360.68 208.28)
 		(stroke
 			(width 0.2)
 			(type dash)
@@ -6719,7 +6824,7 @@
 		)
 		(uuid "8ee0017f-48d1-5a6b-a4c8-cb7bdfcdfebb")
 	)
-	(text "Test point (rear face): FAULT_N"
+	(text "Test points (rear face): FAULT_N, VBUS"
 		(exclude_from_sim no)
 		(at 275.59 160.02 0)
 		(effects
