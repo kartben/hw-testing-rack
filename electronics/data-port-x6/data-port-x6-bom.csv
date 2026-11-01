@@ -16,7 +16,7 @@ J301,1,PORT3,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C26
 J401,1,PORT4,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,
 J501,1,PORT5,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,
 J601,1,PORT6,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,
-"L2,L3",2,4.7u,L_Changjiang_FXL0630,IHLP2525CZEK4R7M01,Vishay Intertech,C48009678,"4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat, 37 / 40 mΩ, molded",,,
+"L2,L3",2,4.7u,L_Changjiang_FXL0630,IHLP2525CZEK4R7M01,Vishay,C48009678,"4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat (ΔT 40 °C), 37 mΩ (40 max), molded",,IHLP2525CZER4R7M01 (C553961): the same part on a 2000-piece reel,
 "Q1,Q2",2,2N7002,SOT-23,2N7002,CJ,C8545,N-MOSFET 60 V (open-drain AUX outputs),,,
 R1,1,12k,R_0402_1005Metric,0402WGF1202TCE,UNI-ROYAL(Uniroyal Elec),C25752,Resistor 12k 0402,,,
 "R3,R4,R5,R9,R51,R102,R103,R202,R203,R302,R303,R402,R403,R502,R503,R602,R603",17,10k,R_0402_1005Metric,0402WGF1002TCE,UNI-ROYAL(Uniroyal Elec),C25744,Resistor 10k 0402,,,

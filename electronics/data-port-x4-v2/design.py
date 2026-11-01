@@ -883,6 +883,29 @@ def power_sheet(b: Board):
     ]
 
 
+def buck_copper(sw: str, out: str, bx: float, by: float, tag: str) -> tuple[list, list]:
+    """The converter's switch node and output as pours on F.Cu, the output's with vias down to its power plane: the
+    layout review (2026-11-01) found the inductor's output reaching the plane through one via and a 0.4 mm track,
+    the switch node through 0.45 mm tracks.  (bx, by): U13's centre, the block's offsets as power_sheet()'s.
+    Returns (zones, vias)."""
+    def at_(pts):
+        return [(round(bx + x, 3), round(by + y, 3)) for x, y in pts]
+    zones = [
+        # the switch node: U13's SW pin, C64's pad and L2's input pad, as small as it can be
+        {"layer": "F.Cu", "net": sw, "name": f"{tag}-sw", "priority": 3, "exclusive": 0.3, "connection": "solid",
+         "poly": at_([(1.0, -0.3), (1.95, -0.3), (1.95, -3.1), (5.95, -3.1), (5.95, 1.85), (3.3, 1.85), (3.3, 0.3),
+                      (1.0, 0.3)])},
+        # the output: L2's pad and the three 22 µF's, round L2's body
+        {"layer": "F.Cu", "net": out, "name": f"{tag}-out", "priority": 3, "exclusive": 0.3, "connection": "solid",
+         "poly": at_([(9.25, -3.0), (12.8, -3.0), (12.8, 5.85), (4.85, 5.85), (4.85, 3.7), (9.25, 3.7)])},
+    ]
+    # five vias: two between the 22 µF, three round L2's output pad (two north, one south at its body's edge), all
+    # within the power plane (the v2's +5V tongue ends 0.5 mm east of the pad)
+    vias = [(out, round(bx + x, 3), round(by + y, 3), 0.6, 0.3)
+            for x, y in ((7.25, 4.05), (9.75, 4.05), (11.0, 2.6), (10.0, -2.35), (11.4, -2.35))]
+    return zones, vias
+
+
 # ------------------------------------------------------------------------------------ matrix (full)
 def matrix_sheet(b: Board):
     s = b.sheet("Matrix", "matrix.kicad_sch", "Crosspoints, −5 V, the node's matrix expander")
@@ -1295,6 +1318,8 @@ def board() -> Board:
     lx, ly = LDO
     hand_vias += [("+3V3", x, y, 0.5, 0.3) for x in (lx - 3.05, lx + 3.05) for y in (ly - 5.1, ly - 3.5, ly - 1.9)]
     hand_vias += [("+5V", lx + dx, ly + 4.8, 0.6, 0.3) for dx in (1.9, 3.15)]
+    buck_zones, v = buck_copper("BUCK_SW", "+5V", *BUCK, "buck")
+    hand_vias += v
     # The links only the pours used to make, drawn: with one open Freerouting skips its optimizer, and its routes
     # stay as first found (micro-jogs leaving the pads, the user's find, 2026-10-22).  A drawn track joins its pad
     # for Freerouting only on the pad's very centre (2.5 µm off, the HS pairs and the switches' IN stayed open):
@@ -1719,6 +1744,7 @@ def board() -> Board:
             {"layer": "F.Cu", "net": "+5V", "name": "ldo-vin", "priority": 3, "exclusive": 0.3,
              "poly": [(LDO[0] + 1.3, LDO[1] + 2.0), (LDO[0] + 3.75, LDO[1] + 2.0), (LDO[0] + 3.75, LDO[1] + 6.5),
                       (LDO[0] + 1.3, LDO[1] + 6.5)]},
+            *buck_zones,
             {"layer": "F.Cu", "net": "GND", "holes": [VREG_HOLE]},
             {"layer": "B.Cu", "net": "GND"},
             *vreg_zones,

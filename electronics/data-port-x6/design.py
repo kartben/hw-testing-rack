@@ -422,6 +422,29 @@ def power_sheet(b: Board):
     ]
 
 
+def buck_copper(sw: str, out: str, bx: float, by: float, tag: str) -> tuple[list, list]:
+    """The converter's switch node and output as pours on F.Cu, the output's with vias down to its power plane: the
+    layout review (2026-11-01) found the inductor's output reaching the plane through one via and a 0.4 mm track,
+    the switch node through 0.45 mm tracks.  (bx, by): U13's centre, each block's offsets as power_sheet()'s.
+    Returns (zones, vias)."""
+    def at_(pts):
+        return [(round(bx + x, 3), round(by + y, 3)) for x, y in pts]
+    zones = [
+        # the switch node: U13's SW pin, C64's pad and L2's input pad, as small as it can be
+        {"layer": "F.Cu", "net": sw, "name": f"{tag}-sw", "priority": 3, "exclusive": 0.3, "connection": "solid",
+         "poly": at_([(1.0, -0.3), (1.95, -0.3), (1.95, -3.1), (5.95, -3.1), (5.95, 1.85), (3.3, 1.85), (3.3, 0.3),
+                      (1.0, 0.3)])},
+        # the output: L2's pad and the three 22 µF's, round L2's body
+        {"layer": "F.Cu", "net": out, "name": f"{tag}-out", "priority": 3, "exclusive": 0.3, "connection": "solid",
+         "poly": at_([(9.25, -3.0), (12.8, -3.0), (12.8, 5.85), (4.85, 5.85), (4.85, 3.7), (9.25, 3.7)])},
+    ]
+    # five vias: two between the 22 µF, three round L2's output pad (two north, one south at its body's edge), all
+    # within the power plane (the v2's +5V tongue ends 0.5 mm east of the pad)
+    vias = [(out, round(bx + x, 3), round(by + y, 3), 0.6, 0.3)
+            for x, y in ((7.25, 4.05), (9.75, 4.05), (11.0, 2.6), (10.0, -2.35), (11.4, -2.35))]
+    return zones, vias
+
+
 # ----------------------------------------------------------------------------------- hub, lead, 3.3 V
 def hub_sheet(b: Board):
     s = b.sheet("Hub", "hub.kicad_sch", "Lead, hub, expander, 3.3 V")
@@ -885,6 +908,11 @@ def board() -> Board:
     IN_3V3 = [(TA + 0.2, E), (TBX - 0.2, E), (TBX - 0.2, TB + 0.2), (W - 5.6, TB + 0.2), (W - 5.6, PWR_SPLIT - 0.1),
               (5.6, PWR_SPLIT - 0.1), (5.6, TB + 0.2), (TA + 0.2, TB + 0.2)]
     hand_tracks, hand_vias = drawn()
+    buck_zones = []
+    for key, (dx, dy) in BUCKS.items():
+        z, v = buck_copper(f"BUCK{key}_SW", f"+5V_{key}", 8 + dx, 44 + dy, f"buck{key.lower()}")
+        buck_zones += z
+        hand_vias += v
     six = LAYERS == 6                   # X6_LAYERS=6: F · GND · sig · sig · power · B (the v2's 6-layer stack)
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
@@ -922,6 +950,7 @@ def board() -> Board:
                   {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "poly": IN_3V3},
                   {"layer": pwr, "net": "+5V_A", "name": "pwr-5va", "poly": IN_5VA},
                   {"layer": pwr, "net": "+5V_B", "name": "pwr-5vb", "poly": IN_5VB},
+                  *buck_zones,
                   {"layer": "F.Cu", "net": "GND"}, {"layer": "B.Cu", "net": "GND"}],
         "tracks": hand_tracks, "vias": hand_vias,
         # the 100 nF that cannot keep the pin → cap → via order where they sit (decoupling.py), with the measures

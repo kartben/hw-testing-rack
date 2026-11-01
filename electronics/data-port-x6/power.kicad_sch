@@ -2665,7 +2665,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.vishay.com/doc?34104"
+		(property "Datasheet" "https://www.vishay.com/docs/34104/ihlp-2525cz-01.pdf"
 			(at 298.45 60.96 0)
 			(effects
 				(font
@@ -2674,7 +2674,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat, 37 / 40 mΩ, molded"
+		(property "Description" "4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat (ΔT 40 °C), 37 mΩ (40 max), molded"
 			(at 298.45 60.96 0)
 			(effects
 				(font
@@ -2692,7 +2692,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Vishay Intertech"
+		(property "Manufacturer" "Vishay"
 			(at 298.45 60.96 0)
 			(effects
 				(font
@@ -2702,6 +2702,15 @@
 			)
 		)
 		(property "LCSC" "C48009678"
+			(at 298.45 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternative" "IHLP2525CZER4R7M01 (C553961): the same part on a 2000-piece reel"
 			(at 298.45 60.96 0)
 			(effects
 				(font
@@ -4479,7 +4488,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" "https://www.vishay.com/doc?34104"
+		(property "Datasheet" "https://www.vishay.com/docs/34104/ihlp-2525cz-01.pdf"
 			(at 476.25 60.96 0)
 			(effects
 				(font
@@ -4488,7 +4497,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat, 37 / 40 mΩ, molded"
+		(property "Description" "4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat (ΔT 40 °C), 37 mΩ (40 max), molded"
 			(at 476.25 60.96 0)
 			(effects
 				(font
@@ -4506,7 +4515,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "Vishay Intertech"
+		(property "Manufacturer" "Vishay"
 			(at 476.25 60.96 0)
 			(effects
 				(font
@@ -4516,6 +4525,15 @@
 			)
 		)
 		(property "LCSC" "C48009678"
+			(at 476.25 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Alternative" "IHLP2525CZER4R7M01 (C553961): the same part on a 2000-piece reel"
 			(at 476.25 60.96 0)
 			(effects
 				(font
