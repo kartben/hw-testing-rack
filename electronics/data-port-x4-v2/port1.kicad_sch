@@ -5379,7 +5379,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e05c541c-c96f-599d-a9d4-c0e837bda7b7")
-		(property "Reference" "#PWR03001"
+		(property "Reference" "#PWR04001"
 			(at 76.2 68.58 0)
 			(effects
 				(font
@@ -5429,7 +5429,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03001")
+					(reference "#PWR04001")
 					(unit 1)
 				)
 			)
@@ -5617,7 +5617,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1628024a-b1c1-503f-8a44-3f74dceee4e4")
-		(property "Reference" "#PWR03002"
+		(property "Reference" "#PWR04002"
 			(at 38.1 67.31 0)
 			(effects
 				(font
@@ -5667,7 +5667,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03002")
+					(reference "#PWR04002")
 					(unit 1)
 				)
 			)
@@ -5789,7 +5789,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "71c9254f-c668-5b12-8957-243437c1d5b3")
-		(property "Reference" "#PWR03003"
+		(property "Reference" "#PWR04003"
 			(at 55.88 77.47 0)
 			(effects
 				(font
@@ -5839,7 +5839,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03003")
+					(reference "#PWR04003")
 					(unit 1)
 				)
 			)
@@ -5994,7 +5994,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "45777c07-1f84-54d0-a02a-dc1b06afc14f")
-		(property "Reference" "#PWR03004"
+		(property "Reference" "#PWR04004"
 			(at 35.56 97.79 0)
 			(effects
 				(font
@@ -6044,7 +6044,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03004")
+					(reference "#PWR04004")
 					(unit 1)
 				)
 			)
@@ -6166,7 +6166,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7185a5ab-55fc-50ac-b037-50642a525760")
-		(property "Reference" "#PWR03005"
+		(property "Reference" "#PWR04005"
 			(at 101.6 85.09 0)
 			(effects
 				(font
@@ -6216,7 +6216,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03005")
+					(reference "#PWR04005")
 					(unit 1)
 				)
 			)
@@ -6612,7 +6612,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "766b33f6-feee-56aa-8f7b-9c96e4953d18")
-		(property "Reference" "#PWR03006"
+		(property "Reference" "#PWR04006"
 			(at 180.34 53.34 0)
 			(effects
 				(font
@@ -6662,7 +6662,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03006")
+					(reference "#PWR04006")
 					(unit 1)
 				)
 			)
@@ -6689,7 +6689,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7b5c293e-0ae2-570e-af01-f6cdb0513b93")
-		(property "Reference" "#PWR03007"
+		(property "Reference" "#PWR04007"
 			(at 180.34 55.88 0)
 			(effects
 				(font
@@ -6739,44 +6739,15 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03007")
+					(reference "#PWR04007")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(wire
-		(pts
-			(xy 177.8 68.58)
-			(xy 180.34 68.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5aa73781-4d48-5a16-a94b-c9e42508bced")
-	)
-	(global_label "INT"
-		(shape bidirectional)
-		(at 180.34 68.58 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "45af9901-209a-5077-964e-4e2a5e7360f6")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 180.34 68.58 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
+	(no_connect
+		(at 177.8 68.58)
+		(uuid "474492a1-cd32-5866-ad23-5f6fb877f7b1")
 	)
 	(wire
 		(pts
@@ -6865,7 +6836,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d93b63ac-e5ae-5383-8065-e8ce49ebad43")
-		(property "Reference" "#PWR03008"
+		(property "Reference" "#PWR04008"
 			(at 167.64 45.72 0)
 			(effects
 				(font
@@ -6915,7 +6886,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03008")
+					(reference "#PWR04008")
 					(unit 1)
 				)
 			)
@@ -6942,7 +6913,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "45034b81-c366-5389-bc05-bcfb397a2625")
-		(property "Reference" "#PWR03009"
+		(property "Reference" "#PWR04009"
 			(at 167.64 76.2 0)
 			(effects
 				(font
@@ -6992,7 +6963,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03009")
+					(reference "#PWR04009")
 					(unit 1)
 				)
 			)
@@ -7136,7 +7107,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "015058e2-2e36-556d-9ee5-66088fb3bfb6")
-		(property "Reference" "#PWR03010"
+		(property "Reference" "#PWR04010"
 			(at 139.7 96.52 0)
 			(effects
 				(font
@@ -7186,7 +7157,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03010")
+					(reference "#PWR04010")
 					(unit 1)
 				)
 			)
@@ -7308,7 +7279,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "aa4f4e88-d453-55f9-98f6-7560296bc3e7")
-		(property "Reference" "#PWR03011"
+		(property "Reference" "#PWR04011"
 			(at 203.2 39.37 0)
 			(effects
 				(font
@@ -7358,7 +7329,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03011")
+					(reference "#PWR04011")
 					(unit 1)
 				)
 			)
@@ -7385,7 +7356,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a05ad215-323d-5ee7-ba09-638c87a98f13")
-		(property "Reference" "#PWR03012"
+		(property "Reference" "#PWR04012"
 			(at 203.2 52.07 0)
 			(effects
 				(font
@@ -7435,7 +7406,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03012")
+					(reference "#PWR04012")
 					(unit 1)
 				)
 			)
@@ -7674,7 +7645,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5f71ccae-cba7-5bfe-bbdb-b2dc14b20740")
-		(property "Reference" "#PWR03013"
+		(property "Reference" "#PWR04013"
 			(at 245.11 76.2 0)
 			(effects
 				(font
@@ -7724,7 +7695,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03013")
+					(reference "#PWR04013")
 					(unit 1)
 				)
 			)
@@ -7891,7 +7862,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1a775c97-fa42-59f3-b056-b67564eefa47")
-		(property "Reference" "#PWR03014"
+		(property "Reference" "#PWR04014"
 			(at 127 218.44 0)
 			(effects
 				(font
@@ -7941,7 +7912,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03014")
+					(reference "#PWR04014")
 					(unit 1)
 				)
 			)
@@ -7998,7 +7969,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e9c6b86a-31f8-500d-af86-14f77dabe123")
-		(property "Reference" "#PWR03015"
+		(property "Reference" "#PWR04015"
 			(at 119.38 218.44 0)
 			(effects
 				(font
@@ -8048,7 +8019,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03015")
+					(reference "#PWR04015")
 					(unit 1)
 				)
 			)
@@ -8080,7 +8051,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 157.48 163.83 0)
 			(effects
 				(font
@@ -8098,7 +8069,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 56k 0603"
+		(property "Description" "Resistor 56k 0402"
 			(at 157.48 163.83 0)
 			(effects
 				(font
@@ -8107,7 +8078,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23206"
+		(property "LCSC" "C25796"
 			(at 157.48 163.83 0)
 			(effects
 				(font
@@ -8116,7 +8087,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF5602T5E"
+		(property "MPN" "0402WGF5602TCE"
 			(at 157.48 163.83 0)
 			(effects
 				(font
@@ -8197,7 +8168,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
 			(at 167.64 163.83 0)
 			(effects
 				(font
@@ -8215,7 +8186,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 56k 0603"
+		(property "Description" "Resistor 56k 0402"
 			(at 167.64 163.83 0)
 			(effects
 				(font
@@ -8224,7 +8195,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C23206"
+		(property "LCSC" "C25796"
 			(at 167.64 163.83 0)
 			(effects
 				(font
@@ -8233,7 +8204,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF5602T5E"
+		(property "MPN" "0402WGF5602TCE"
 			(at 167.64 163.83 0)
 			(effects
 				(font
@@ -8425,7 +8396,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "20f41c21-2169-5e9e-9e30-f8f2973702d1")
-		(property "Reference" "#PWR03016"
+		(property "Reference" "#PWR04016"
 			(at 213.36 203.2 0)
 			(effects
 				(font
@@ -8475,7 +8446,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03016")
+					(reference "#PWR04016")
 					(unit 1)
 				)
 			)
@@ -8535,7 +8506,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ae210c2a-0b9a-55a4-8936-a15b5c0da515")
-		(property "Reference" "#PWR03017"
+		(property "Reference" "#PWR04017"
 			(at 213.36 185.42 0)
 			(effects
 				(font
@@ -8585,7 +8556,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03017")
+					(reference "#PWR04017")
 					(unit 1)
 				)
 			)
@@ -8740,7 +8711,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "faa25057-ac57-5985-b026-80c7277bd9b5")
-		(property "Reference" "#PWR03018"
+		(property "Reference" "#PWR04018"
 			(at 243.84 186.69 0)
 			(effects
 				(font
@@ -8790,7 +8761,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03018")
+					(reference "#PWR04018")
 					(unit 1)
 				)
 			)
@@ -8817,7 +8788,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "621c9a36-dc64-5341-b242-722d5ade898a")
-		(property "Reference" "#PWR03019"
+		(property "Reference" "#PWR04019"
 			(at 243.84 199.39 0)
 			(effects
 				(font
@@ -8867,7 +8838,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03019")
+					(reference "#PWR04019")
 					(unit 1)
 				)
 			)
@@ -9019,7 +8990,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "64a8afa4-b599-5ef3-a17a-716492ebf311")
-		(property "Reference" "#PWR03020"
+		(property "Reference" "#PWR04020"
 			(at 459.74 71.12 0)
 			(effects
 				(font
@@ -9069,7 +9040,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03020")
+					(reference "#PWR04020")
 					(unit 1)
 				)
 			)
@@ -9483,7 +9454,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c70e0b2c-8d32-5151-9fda-dad0d35cddbd")
-		(property "Reference" "#PWR03021"
+		(property "Reference" "#PWR04021"
 			(at 203.2 452.12 0)
 			(effects
 				(font
@@ -9533,7 +9504,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03021")
+					(reference "#PWR04021")
 					(unit 1)
 				)
 			)
@@ -9967,7 +9938,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "95539eb3-d9be-52f7-a0c9-50ccca29b009")
-		(property "Reference" "#PWR03022"
+		(property "Reference" "#PWR04022"
 			(at 350.52 67.31 0)
 			(effects
 				(font
@@ -10017,7 +9988,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03022")
+					(reference "#PWR04022")
 					(unit 1)
 				)
 			)
@@ -10139,7 +10110,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "febfc0b8-349a-520d-b42c-14768934b425")
-		(property "Reference" "#PWR03023"
+		(property "Reference" "#PWR04023"
 			(at 350.52 92.71 0)
 			(effects
 				(font
@@ -10189,7 +10160,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03023")
+					(reference "#PWR04023")
 					(unit 1)
 				)
 			)
@@ -10343,7 +10314,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e1bf55ee-0232-52fa-a5a5-b020e48a5950")
-		(property "Reference" "#PWR03024"
+		(property "Reference" "#PWR04024"
 			(at 76.2 452.12 0)
 			(effects
 				(font
@@ -10393,7 +10364,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03024")
+					(reference "#PWR04024")
 					(unit 1)
 				)
 			)
@@ -10643,7 +10614,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9deccbfd-e5fb-56b3-9dc9-00814832a41a")
-		(property "Reference" "#PWR03025"
+		(property "Reference" "#PWR04025"
 			(at 71.12 340.36 0)
 			(effects
 				(font
@@ -10693,7 +10664,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03025")
+					(reference "#PWR04025")
 					(unit 1)
 				)
 			)
@@ -11304,7 +11275,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "28fad8ae-7a20-5e1b-aad2-79a655f86af6")
-		(property "Reference" "#PWR03026"
+		(property "Reference" "#PWR04026"
 			(at 162.56 340.36 0)
 			(effects
 				(font
@@ -11354,7 +11325,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03026")
+					(reference "#PWR04026")
 					(unit 1)
 				)
 			)
@@ -12683,7 +12654,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "352b7207-f45e-507d-8338-ebf5a3f12441")
-		(property "Reference" "#PWR03027"
+		(property "Reference" "#PWR04027"
 			(at 411.48 336.55 0)
 			(effects
 				(font
@@ -12733,7 +12704,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03027")
+					(reference "#PWR04027")
 					(unit 1)
 				)
 			)
@@ -12972,7 +12943,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2756a8f9-1fe0-5dee-bacb-b24e0c68585a")
-		(property "Reference" "#PWR03028"
+		(property "Reference" "#PWR04028"
 			(at 457.2 336.55 0)
 			(effects
 				(font
@@ -13022,7 +12993,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03028")
+					(reference "#PWR04028")
 					(unit 1)
 				)
 			)
@@ -13802,7 +13773,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0d568420-1957-58a3-a1ab-2d46ba28e7e1")
-		(property "Reference" "#PWR03029"
+		(property "Reference" "#PWR04029"
 			(at 50.8 45.72 0)
 			(effects
 				(font
@@ -13852,7 +13823,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03029")
+					(reference "#PWR04029")
 					(unit 1)
 				)
 			)
@@ -13923,7 +13894,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b6392f9f-e51c-58dc-8484-af30964369d0")
-		(property "Reference" "#PWR03030"
+		(property "Reference" "#PWR04030"
 			(at 335.28 347.98 0)
 			(effects
 				(font
@@ -13973,7 +13944,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/125dc686-f76a-5214-936e-4da94614514c"
-					(reference "#PWR03030")
+					(reference "#PWR04030")
 					(unit 1)
 				)
 			)

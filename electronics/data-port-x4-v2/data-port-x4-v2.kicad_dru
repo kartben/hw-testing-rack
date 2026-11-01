@@ -6,6 +6,16 @@
 (rule "one thermal spoke is enough"
 	(constraint min_resolved_spokes 1))
 
+(rule "Supply, Power and Port: 0.25 mm at least, but in the hub's and the co-processor's fan-out, and the matrix's few-mA ±5 V"
+	(severity error)
+	(condition "A.Type == 'Track' && (A.hasNetclass('Supply') || A.hasNetclass('Power') || A.hasNetclass('Port')) && !A.intersectsCourtyard('U1') && !A.intersectsCourtyard('U11') && !A.intersectsCourtyard('C16') && !(A.NetName == '/Co-processor/+1V1') && !(A.NetName == '+5V_MX') && !(A.NetName == '-5V')")
+	(constraint track_width (min 0.25mm)))
+
+(rule "Sensitive: 0.75 mm off USB, 3 times its track width"
+	(severity error)
+	(condition "A.hasNetclass('USB') && B.hasNetclass('Sensitive')")
+	(constraint clearance (min 0.75mm)))
+
 (rule "crystal Y1: XI, XO and GND only over its parts"
 	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Hub/XI' && A.NetName != '/Hub/XO' && A.NetName != 'GND' && (A.intersectsCourtyard('Y1') || A.intersectsCourtyard('C4') || A.intersectsCourtyard('C5') || A.intersectsCourtyard('R10'))")
 	(constraint disallow track via))
@@ -16,14 +26,14 @@
 	(constraint disallow track via))
 
 (rule "power pins connect solid"
-	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '+3V3' || A.NetName == '+5V' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == 'GND') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
+	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '+3V3' || A.NetName == '+5V' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == 'GND' || A.NetName == 'VIN') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
 	(constraint zone_connection solid))
 
 (rule "power nets: 2 spokes where relieved"
-	(condition "A.Type == 'Pad' && (A.NetName == '+3V3' || A.NetName == '+5V' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS')")
+	(condition "A.Type == 'Pad' && (A.NetName == '+3V3' || A.NetName == '+5V' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == 'VIN')")
 	(constraint min_resolved_spokes 2))
 
 (rule "power pins through the board: 4 spokes of 0.8 mm where relieved"
-	(condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole' && (A.NetName == '+3V3' || A.NetName == '+5V' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
+	(condition "A.Type == 'Pad' && A.Pad_Type == 'Through-hole' && (A.NetName == '+3V3' || A.NetName == '+5V' || A.NetName == '+5V_MX' || A.NetName == '-5V' || A.NetName == '/Co-processor/+1V1' || A.NetName == '/Co-processor/+3V3_CP' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == 'VIN') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
 	(constraint thermal_spoke_width (min 0.8mm))
 	(constraint min_resolved_spokes 4))

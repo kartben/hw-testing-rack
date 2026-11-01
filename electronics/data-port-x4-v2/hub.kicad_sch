@@ -5167,27 +5167,9 @@
 			)
 		)
 	)
-	(wire
-		(pts
-			(xy 45.72 68.58)
-			(xy 48.26 68.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0fc27c92-8990-5c3f-87ff-aaa0b34de837")
-	)
-	(label "LEAD_INT"
-		(at 48.26 68.58 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a52a8517-15d9-5ec4-98db-b1dfd1371637")
+	(no_connect
+		(at 45.72 68.58)
+		(uuid "c78e43dd-92ef-5545-ac24-64c46e2be4f4")
 	)
 	(wire
 		(pts
@@ -5442,212 +5424,25 @@
 		)
 		(uuid "60990abc-c728-5d9a-895d-afc98cfffea1")
 	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 48.26 86.36 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(global_label "VIN"
+		(shape bidirectional)
+		(at 48.26 86.36 0)
 		(fields_autoplaced yes)
-		(uuid "5eb9898d-7545-5bd9-a7ea-eb0beeafe955")
-		(property "Reference" "#PWR02003"
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fd8af7bc-4b7c-574b-97b3-181385af038a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 48.26 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 54.05 86.36 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 48.26 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 48.26 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 48.26 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "4e0e32b3-0779-5f21-96ff-da8db6411b50")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02003")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 71.12 40.64 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board no)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1fb6c8bb-587e-50ee-bb8f-304919bb8278")
-		(property "Reference" "#FLG01"
-			(at 76.286 39.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 77.336 41.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 71.12 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 71.12 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 71.12 40.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "14c37586-7e6d-5bed-8dcb-0430aa0e51e1")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#FLG01")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 71.12 40.64)
-			(xy 71.12 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e85f5984-9736-592d-bb25-5f6f9b9400a1")
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 71.12 43.18 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "00ff5ecd-a383-5fa7-b968-5da411d53584")
-		(property "Reference" "#PWR02004"
-			(at 71.12 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 71.12 46.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 71.12 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 71.12 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 71.12 43.18 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "0044645d-1e30-539f-bc0b-b95b34656466")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02004")
-					(unit 1)
-				)
 			)
 		)
 	)
@@ -5738,7 +5533,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0ade104b-9596-525d-ba2c-a049131b8ab9")
-		(property "Reference" "#PWR02005"
+		(property "Reference" "#PWR02003"
 			(at 86.36 43.18 0)
 			(effects
 				(font
@@ -5788,7 +5583,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02005")
+					(reference "#PWR02003")
 					(unit 1)
 				)
 			)
@@ -5978,7 +5773,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "bae686f7-6433-59c2-b6b8-371b32f069de")
-		(property "Reference" "#PWR02006"
+		(property "Reference" "#PWR02004"
 			(at 121.92 91.44 0)
 			(effects
 				(font
@@ -6028,33 +5823,15 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02006")
+					(reference "#PWR02004")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(wire
-		(pts
-			(xy 134.62 73.66)
-			(xy 137.16 73.66)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a54e70be-e7f2-5e5a-9832-5cb51f075d98")
-	)
-	(label "LEAD_INT"
-		(at 137.16 73.66 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "977dde59-4073-5ce1-abf4-b9d789e8475b")
+	(no_connect
+		(at 134.62 73.66)
+		(uuid "7c0eff38-0874-5c8a-a513-46747284953c")
 	)
 	(no_connect
 		(at 134.62 78.74)
@@ -6075,255 +5852,6 @@
 	(no_connect
 		(at 109.22 68.58)
 		(uuid "dd0e5dea-9d39-511d-99fb-a9046404da27")
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 162.56 76.2 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "a5c94ccf-8592-5cf2-9d9f-50af4c16ec52")
-		(property "Reference" "C1"
-			(at 166.642 74.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "22u"
-			(at 167.167 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
-			(at 162.56 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 162.56 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Capacitor 22u 1206"
-			(at 162.56 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C12891"
-			(at 162.56 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "CL31A226KAHNNNE"
-			(at 162.56 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "Samsung Electro-Mechanics"
-			(at 162.56 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "a8eadae1-908a-5fb8-a5e1-b69f56c62836")
-		)
-		(pin "2"
-			(uuid "3c153ea4-3601-585f-9b30-cadd6323dd15")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "C1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 162.56 72.39)
-			(xy 162.56 69.85)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ad29f9ba-6fe5-5274-9593-e465a8cfa38e")
-	)
-	(symbol
-		(lib_id "power:+5V")
-		(at 162.56 69.85 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "8b95d08a-9d36-5ad4-ad98-b1780e46e6f8")
-		(property "Reference" "#PWR02007"
-			(at 162.56 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+5V"
-			(at 162.56 66.04 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 162.56 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 162.56 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 162.56 69.85 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "656eb1fb-ac50-59c4-8504-977ab041468d")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02007")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 162.56 80.01)
-			(xy 162.56 82.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9e9bf210-e3bd-5700-8b2a-88d9a71bd661")
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 162.56 82.55 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "facabff3-8a86-5367-8ebe-11d2974e0446")
-		(property "Reference" "#PWR02008"
-			(at 162.56 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 162.56 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 162.56 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 162.56 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 162.56 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "05a4bc7c-afd7-5d4e-b39f-31326f8b1b0a")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02008")
-					(unit 1)
-				)
-			)
-		)
 	)
 	(symbol
 		(lib_id "Regulator_Linear:AMS1117-3.3")
@@ -6444,7 +5972,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "831ced45-7a63-58ea-b862-33bc8c38c1c0")
-		(property "Reference" "#PWR02009"
+		(property "Reference" "#PWR02005"
 			(at 86.36 185.42 0)
 			(effects
 				(font
@@ -6494,7 +6022,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02009")
+					(reference "#PWR02005")
 					(unit 1)
 				)
 			)
@@ -6616,7 +6144,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "862a45c6-e717-5aaa-a441-9ebfcb80e6ae")
-		(property "Reference" "#PWR02010"
+		(property "Reference" "#PWR02006"
 			(at 50.8 189.23 0)
 			(effects
 				(font
@@ -6666,7 +6194,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02010")
+					(reference "#PWR02006")
 					(unit 1)
 				)
 			)
@@ -6788,7 +6316,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "627fb411-1e9f-58c2-b0d0-8b95a27634e1")
-		(property "Reference" "#PWR02011"
+		(property "Reference" "#PWR02007"
 			(at 111.76 189.23 0)
 			(effects
 				(font
@@ -6838,7 +6366,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02011")
+					(reference "#PWR02007")
 					(unit 1)
 				)
 			)
@@ -7281,7 +6809,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "207c13be-704f-5386-a7a6-476226eb555e")
-		(property "Reference" "#PWR02012"
+		(property "Reference" "#PWR02008"
 			(at 281.94 147.32 0)
 			(effects
 				(font
@@ -7331,7 +6859,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02012")
+					(reference "#PWR02008")
 					(unit 1)
 				)
 			)
@@ -7358,7 +6886,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d5264032-15f6-5173-bb3b-18ee4b23eb6f")
-		(property "Reference" "#PWR02013"
+		(property "Reference" "#PWR02009"
 			(at 281.94 149.86 0)
 			(effects
 				(font
@@ -7408,7 +6936,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02013")
+					(reference "#PWR02009")
 					(unit 1)
 				)
 			)
@@ -8057,7 +7585,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d7f9f69a-fb4e-5111-9d39-a681307f7376")
-		(property "Reference" "#PWR02014"
+		(property "Reference" "#PWR02010"
 			(at 299.72 205.74 0)
 			(effects
 				(font
@@ -8107,7 +7635,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02014")
+					(reference "#PWR02010")
 					(unit 1)
 				)
 			)
@@ -8405,7 +7933,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d8a02f38-32d8-5e01-bacf-665ed5e26abc")
-		(property "Reference" "#PWR02015"
+		(property "Reference" "#PWR02011"
 			(at 238.76 170.18 0)
 			(effects
 				(font
@@ -8455,7 +7983,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02015")
+					(reference "#PWR02011")
 					(unit 1)
 				)
 			)
@@ -8577,7 +8105,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "56f01f5c-695a-563f-b7d3-5beb37b6d3b0")
-		(property "Reference" "#PWR02016"
+		(property "Reference" "#PWR02012"
 			(at 223.52 179.07 0)
 			(effects
 				(font
@@ -8627,7 +8155,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02016")
+					(reference "#PWR02012")
 					(unit 1)
 				)
 			)
@@ -8749,7 +8277,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2e1faf10-f8e0-577a-9e9a-9d5544f58499")
-		(property "Reference" "#PWR02017"
+		(property "Reference" "#PWR02013"
 			(at 254 179.07 0)
 			(effects
 				(font
@@ -8799,7 +8327,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02017")
+					(reference "#PWR02013")
 					(unit 1)
 				)
 			)
@@ -9060,7 +8588,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a0f27d8c-3fa2-5486-ab9b-6a5c30434a48")
-		(property "Reference" "#PWR02018"
+		(property "Reference" "#PWR02014"
 			(at 203.2 54.61 0)
 			(effects
 				(font
@@ -9110,7 +8638,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02018")
+					(reference "#PWR02014")
 					(unit 1)
 				)
 			)
@@ -9137,7 +8665,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1c1afeba-3771-55c9-b847-97b279b078fa")
-		(property "Reference" "#PWR02019"
+		(property "Reference" "#PWR02015"
 			(at 203.2 67.31 0)
 			(effects
 				(font
@@ -9187,7 +8715,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02019")
+					(reference "#PWR02015")
 					(unit 1)
 				)
 			)
@@ -9309,7 +8837,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b11ac68d-5fcb-5c62-8ab8-83fcc2521291")
-		(property "Reference" "#PWR02020"
+		(property "Reference" "#PWR02016"
 			(at 218.44 54.61 0)
 			(effects
 				(font
@@ -9359,7 +8887,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02020")
+					(reference "#PWR02016")
 					(unit 1)
 				)
 			)
@@ -9386,7 +8914,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "161dabcc-d213-5193-b19e-e57faf95fd53")
-		(property "Reference" "#PWR02021"
+		(property "Reference" "#PWR02017"
 			(at 218.44 67.31 0)
 			(effects
 				(font
@@ -9436,7 +8964,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02021")
+					(reference "#PWR02017")
 					(unit 1)
 				)
 			)
@@ -9558,7 +9086,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e9090883-8109-5306-ae14-d4b6328b3dbe")
-		(property "Reference" "#PWR02022"
+		(property "Reference" "#PWR02018"
 			(at 233.68 54.61 0)
 			(effects
 				(font
@@ -9608,7 +9136,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02022")
+					(reference "#PWR02018")
 					(unit 1)
 				)
 			)
@@ -9635,7 +9163,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c7e875b3-af49-5b58-b2a5-aaff5f5ce80b")
-		(property "Reference" "#PWR02023"
+		(property "Reference" "#PWR02019"
 			(at 233.68 67.31 0)
 			(effects
 				(font
@@ -9685,7 +9213,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02023")
+					(reference "#PWR02019")
 					(unit 1)
 				)
 			)
@@ -9807,7 +9335,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a347f3ba-4872-59da-beaf-661705603155")
-		(property "Reference" "#PWR02024"
+		(property "Reference" "#PWR02020"
 			(at 248.92 54.61 0)
 			(effects
 				(font
@@ -9857,7 +9385,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02024")
+					(reference "#PWR02020")
 					(unit 1)
 				)
 			)
@@ -9884,7 +9412,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2881fa51-b0eb-5d2b-be58-8b74805e8d93")
-		(property "Reference" "#PWR02025"
+		(property "Reference" "#PWR02021"
 			(at 248.92 67.31 0)
 			(effects
 				(font
@@ -9934,7 +9462,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02025")
+					(reference "#PWR02021")
 					(unit 1)
 				)
 			)
@@ -10056,7 +9584,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1203491e-d1cc-5c3a-8c71-b9476be5f30d")
-		(property "Reference" "#PWR02026"
+		(property "Reference" "#PWR02022"
 			(at 264.16 54.61 0)
 			(effects
 				(font
@@ -10106,7 +9634,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02026")
+					(reference "#PWR02022")
 					(unit 1)
 				)
 			)
@@ -10133,7 +9661,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7316d1df-f70b-5f18-8753-28321853600e")
-		(property "Reference" "#PWR02027"
+		(property "Reference" "#PWR02023"
 			(at 264.16 67.31 0)
 			(effects
 				(font
@@ -10183,7 +9711,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02027")
+					(reference "#PWR02023")
 					(unit 1)
 				)
 			)
@@ -10305,7 +9833,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5ffb4c78-47a7-553c-ae71-15d70ff02806")
-		(property "Reference" "#PWR02028"
+		(property "Reference" "#PWR02024"
 			(at 279.4 54.61 0)
 			(effects
 				(font
@@ -10355,7 +9883,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02028")
+					(reference "#PWR02024")
 					(unit 1)
 				)
 			)
@@ -10382,7 +9910,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "731d2d73-71bc-501a-b98e-7542bac402bc")
-		(property "Reference" "#PWR02029"
+		(property "Reference" "#PWR02025"
 			(at 279.4 67.31 0)
 			(effects
 				(font
@@ -10432,7 +9960,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02029")
+					(reference "#PWR02025")
 					(unit 1)
 				)
 			)
@@ -10554,7 +10082,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f7b2de83-22d3-5d15-b828-cf06a9bf9d3e")
-		(property "Reference" "#PWR02030"
+		(property "Reference" "#PWR02026"
 			(at 294.64 54.61 0)
 			(effects
 				(font
@@ -10604,7 +10132,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02030")
+					(reference "#PWR02026")
 					(unit 1)
 				)
 			)
@@ -10631,7 +10159,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "7ecaea62-eaec-51bb-83ef-5ad2b9cd0209")
-		(property "Reference" "#PWR02031"
+		(property "Reference" "#PWR02027"
 			(at 294.64 67.31 0)
 			(effects
 				(font
@@ -10681,7 +10209,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02031")
+					(reference "#PWR02027")
 					(unit 1)
 				)
 			)
@@ -10825,7 +10353,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "305d447a-5b89-565e-af54-dcede4e57371")
-		(property "Reference" "#PWR02032"
+		(property "Reference" "#PWR02028"
 			(at 325.12 67.31 0)
 			(effects
 				(font
@@ -10875,7 +10403,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02032")
+					(reference "#PWR02028")
 					(unit 1)
 				)
 			)
@@ -11019,7 +10547,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "783618cf-a104-5a55-8a7a-75af63c0ea03")
-		(property "Reference" "#PWR02033"
+		(property "Reference" "#PWR02029"
 			(at 340.36 67.31 0)
 			(effects
 				(font
@@ -11069,7 +10597,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02033")
+					(reference "#PWR02029")
 					(unit 1)
 				)
 			)
@@ -11213,7 +10741,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c84e944c-e933-58f2-a882-ad7f8764f1a9")
-		(property "Reference" "#PWR02034"
+		(property "Reference" "#PWR02030"
 			(at 370.84 67.31 0)
 			(effects
 				(font
@@ -11263,7 +10791,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02034")
+					(reference "#PWR02030")
 					(unit 1)
 				)
 			)
@@ -11407,7 +10935,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d0f7c030-c78f-5b2a-845a-b4c2eef65ec2")
-		(property "Reference" "#PWR02035"
+		(property "Reference" "#PWR02031"
 			(at 386.08 67.31 0)
 			(effects
 				(font
@@ -11457,7 +10985,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02035")
+					(reference "#PWR02031")
 					(unit 1)
 				)
 			)
@@ -11601,7 +11129,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8ef3b820-5c29-5183-85fa-1f1136069821")
-		(property "Reference" "#PWR02036"
+		(property "Reference" "#PWR02032"
 			(at 213.36 240.03 0)
 			(effects
 				(font
@@ -11651,7 +11179,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02036")
+					(reference "#PWR02032")
 					(unit 1)
 				)
 			)
@@ -11785,7 +11313,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "467b37cf-b592-57ef-8078-581729005eee")
-		(property "Reference" "#PWR02037"
+		(property "Reference" "#PWR02033"
 			(at 228.6 215.9 0)
 			(effects
 				(font
@@ -11835,7 +11363,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02037")
+					(reference "#PWR02033")
 					(unit 1)
 				)
 			)
@@ -11884,7 +11412,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "92c08a5a-5c0e-5d9f-b9be-363d0aaf7b32")
-		(property "Reference" "#PWR02038"
+		(property "Reference" "#PWR02034"
 			(at 228.6 190.5 0)
 			(effects
 				(font
@@ -11934,7 +11462,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02038")
+					(reference "#PWR02034")
 					(unit 1)
 				)
 			)
@@ -12056,7 +11584,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c3491213-4cdc-50c5-83b7-2eb4b70dd995")
-		(property "Reference" "#PWR02039"
+		(property "Reference" "#PWR02035"
 			(at 198.12 207.01 0)
 			(effects
 				(font
@@ -12106,7 +11634,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02039")
+					(reference "#PWR02035")
 					(unit 1)
 				)
 			)
@@ -12133,7 +11661,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "ef2e26b7-551a-55ae-8cf4-bba2c783b5f5")
-		(property "Reference" "#PWR02040"
+		(property "Reference" "#PWR02036"
 			(at 198.12 219.71 0)
 			(effects
 				(font
@@ -12183,7 +11711,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02040")
+					(reference "#PWR02036")
 					(unit 1)
 				)
 			)
@@ -12327,7 +11855,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b80f6166-9429-5b8d-8074-e81cd24c0ed0")
-		(property "Reference" "#PWR02041"
+		(property "Reference" "#PWR02037"
 			(at 254 240.03 0)
 			(effects
 				(font
@@ -12377,7 +11905,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02041")
+					(reference "#PWR02037")
 					(unit 1)
 				)
 			)
@@ -12521,7 +12049,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6dddbd46-e892-5627-b38f-b1d73a11a443")
-		(property "Reference" "#PWR02042"
+		(property "Reference" "#PWR02038"
 			(at 269.24 240.03 0)
 			(effects
 				(font
@@ -12571,7 +12099,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02042")
+					(reference "#PWR02038")
 					(unit 1)
 				)
 			)
@@ -12715,7 +12243,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "88fcd56c-5962-5c23-8216-1843b6a7c3e1")
-		(property "Reference" "#PWR02043"
+		(property "Reference" "#PWR02039"
 			(at 284.48 240.03 0)
 			(effects
 				(font
@@ -12765,7 +12293,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02043")
+					(reference "#PWR02039")
 					(unit 1)
 				)
 			)
@@ -12909,7 +12437,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "47166402-1ef9-51f9-8491-aa76a04ddc9a")
-		(property "Reference" "#PWR02044"
+		(property "Reference" "#PWR02040"
 			(at 299.72 240.03 0)
 			(effects
 				(font
@@ -12959,7 +12487,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02044")
+					(reference "#PWR02040")
 					(unit 1)
 				)
 			)
@@ -13869,7 +13397,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "dcb33f10-dab1-5474-a7a5-b4a3f65f4a6d")
-		(property "Reference" "#PWR02045"
+		(property "Reference" "#PWR02041"
 			(at 510.54 78.74 0)
 			(effects
 				(font
@@ -13919,7 +13447,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02045")
+					(reference "#PWR02041")
 					(unit 1)
 				)
 			)
@@ -14057,38 +13585,9 @@
 			)
 		)
 	)
-	(wire
-		(pts
-			(xy 497.84 60.96)
-			(xy 495.3 60.96)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fd21a6c3-d322-585d-a642-b716aaf87b7a")
-	)
-	(global_label "INT"
-		(shape bidirectional)
-		(at 495.3 60.96 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a186eddc-b479-5d47-957a-11d4737e2fb7")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 495.3 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
+	(no_connect
+		(at 497.84 60.96)
+		(uuid "1bd0fbc6-28e6-5903-a4ff-010bc0f0c888")
 	)
 	(wire
 		(pts
@@ -14177,7 +13676,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "58bcd40e-378f-5d38-ad6e-bccbcb411c9d")
-		(property "Reference" "#PWR02046"
+		(property "Reference" "#PWR02042"
 			(at 510.54 45.72 0)
 			(effects
 				(font
@@ -14227,7 +13726,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02046")
+					(reference "#PWR02042")
 					(unit 1)
 				)
 			)
@@ -14254,7 +13753,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b4017f20-fb7b-5178-8de8-c1de9218eda0")
-		(property "Reference" "#PWR02047"
+		(property "Reference" "#PWR02043"
 			(at 508 45.72 0)
 			(effects
 				(font
@@ -14304,7 +13803,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02047")
+					(reference "#PWR02043")
 					(unit 1)
 				)
 			)
@@ -14331,7 +13830,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a56991dc-5352-5055-a8d4-65ab6916966a")
-		(property "Reference" "#PWR02048"
+		(property "Reference" "#PWR02044"
 			(at 495.3 71.12 0)
 			(effects
 				(font
@@ -14381,7 +13880,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02048")
+					(reference "#PWR02044")
 					(unit 1)
 				)
 			)
@@ -14408,7 +13907,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c433bc63-496d-5472-a477-8ec16e14e796")
-		(property "Reference" "#PWR02049"
+		(property "Reference" "#PWR02045"
 			(at 508 78.74 0)
 			(effects
 				(font
@@ -14458,7 +13957,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02049")
+					(reference "#PWR02045")
 					(unit 1)
 				)
 			)
@@ -14580,7 +14079,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b613246b-2d60-58e4-b1ef-b56c774808b3")
-		(property "Reference" "#PWR02050"
+		(property "Reference" "#PWR02046"
 			(at 467.36 44.45 0)
 			(effects
 				(font
@@ -14630,7 +14129,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02050")
+					(reference "#PWR02046")
 					(unit 1)
 				)
 			)
@@ -14657,7 +14156,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "47af3913-1c68-5ccc-adc7-7df764330989")
-		(property "Reference" "#PWR02051"
+		(property "Reference" "#PWR02047"
 			(at 467.36 57.15 0)
 			(effects
 				(font
@@ -14707,7 +14206,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02051")
+					(reference "#PWR02047")
 					(unit 1)
 				)
 			)
@@ -14829,7 +14328,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2e07cfc0-eb94-5d55-a5b4-dca238a97022")
-		(property "Reference" "#PWR02052"
+		(property "Reference" "#PWR02048"
 			(at 452.12 74.93 0)
 			(effects
 				(font
@@ -14879,7 +14378,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02052")
+					(reference "#PWR02048")
 					(unit 1)
 				)
 			)
@@ -15222,7 +14721,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "31041fbc-3851-5835-b747-4ed86c6ace4f")
-		(property "Reference" "#PWR02053"
+		(property "Reference" "#PWR02049"
 			(at 510.54 149.86 0)
 			(effects
 				(font
@@ -15272,7 +14771,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02053")
+					(reference "#PWR02049")
 					(unit 1)
 				)
 			)
@@ -15410,38 +14909,9 @@
 			)
 		)
 	)
-	(wire
-		(pts
-			(xy 497.84 132.08)
-			(xy 495.3 132.08)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "862883f9-db67-59bb-8b74-26f9c6f02c4c")
-	)
-	(global_label "INT"
-		(shape bidirectional)
-		(at 495.3 132.08 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "4b3ca5b4-6647-5f2a-84e7-cf68cac22684")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 495.3 132.08 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
+	(no_connect
+		(at 497.84 132.08)
+		(uuid "d1cc857c-c72f-5544-8931-87c8ae96c035")
 	)
 	(wire
 		(pts
@@ -15530,7 +15000,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "53346331-ec19-576f-8504-0b1ae1066cdf")
-		(property "Reference" "#PWR02054"
+		(property "Reference" "#PWR02050"
 			(at 510.54 116.84 0)
 			(effects
 				(font
@@ -15580,7 +15050,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02054")
+					(reference "#PWR02050")
 					(unit 1)
 				)
 			)
@@ -15607,7 +15077,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1d9aa3de-b691-5b29-a6f0-d839d4947698")
-		(property "Reference" "#PWR02055"
+		(property "Reference" "#PWR02051"
 			(at 508 116.84 0)
 			(effects
 				(font
@@ -15657,7 +15127,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02055")
+					(reference "#PWR02051")
 					(unit 1)
 				)
 			)
@@ -15684,7 +15154,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6cd14245-d979-513e-bcc6-a81d1c39e368")
-		(property "Reference" "#PWR02056"
+		(property "Reference" "#PWR02052"
 			(at 495.3 142.24 0)
 			(effects
 				(font
@@ -15734,7 +15204,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02056")
+					(reference "#PWR02052")
 					(unit 1)
 				)
 			)
@@ -15761,7 +15231,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "df2547ae-cd63-54e6-a707-03e12ad47434")
-		(property "Reference" "#PWR02057"
+		(property "Reference" "#PWR02053"
 			(at 508 149.86 0)
 			(effects
 				(font
@@ -15811,7 +15281,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02057")
+					(reference "#PWR02053")
 					(unit 1)
 				)
 			)
@@ -15933,7 +15403,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c3f0b4aa-8526-580d-aea6-1038ddad97d3")
-		(property "Reference" "#PWR02058"
+		(property "Reference" "#PWR02054"
 			(at 467.36 115.57 0)
 			(effects
 				(font
@@ -15983,7 +15453,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02058")
+					(reference "#PWR02054")
 					(unit 1)
 				)
 			)
@@ -16010,7 +15480,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cae25434-8b3a-5197-b997-0155f253fa12")
-		(property "Reference" "#PWR02059"
+		(property "Reference" "#PWR02055"
 			(at 467.36 128.27 0)
 			(effects
 				(font
@@ -16060,7 +15530,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02059")
+					(reference "#PWR02055")
 					(unit 1)
 				)
 			)
@@ -16182,7 +15652,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5558009c-48a6-502f-b1cb-0dd18ccf7906")
-		(property "Reference" "#PWR02060"
+		(property "Reference" "#PWR02056"
 			(at 452.12 146.05 0)
 			(effects
 				(font
@@ -16232,7 +15702,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02060")
+					(reference "#PWR02056")
 					(unit 1)
 				)
 			)
@@ -16379,7 +15849,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "36894aae-3278-565f-bb7f-a5a8aa560479")
-		(property "Reference" "#PWR02061"
+		(property "Reference" "#PWR02057"
 			(at 474.98 223.52 0)
 			(effects
 				(font
@@ -16429,7 +15899,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02061")
+					(reference "#PWR02057")
 					(unit 1)
 				)
 			)
@@ -16606,7 +16076,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cfc42d32-2f89-51b4-96bf-fcd78da21409")
-		(property "Reference" "#PWR02062"
+		(property "Reference" "#PWR02058"
 			(at 533.4 212.09 0)
 			(effects
 				(font
@@ -16656,7 +16126,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02062")
+					(reference "#PWR02058")
 					(unit 1)
 				)
 			)
@@ -16814,7 +16284,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1d56dc35-7951-54cc-aedc-f11fdcf39ca4")
-		(property "Reference" "#PWR02063"
+		(property "Reference" "#PWR02059"
 			(at 474.98 259.08 0)
 			(effects
 				(font
@@ -16864,7 +16334,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02063")
+					(reference "#PWR02059")
 					(unit 1)
 				)
 			)
@@ -17041,7 +16511,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "88c00281-b596-5276-81a4-e4a04d1e2380")
-		(property "Reference" "#PWR02064"
+		(property "Reference" "#PWR02060"
 			(at 533.4 247.65 0)
 			(effects
 				(font
@@ -17091,7 +16561,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02064")
+					(reference "#PWR02060")
 					(unit 1)
 				)
 			)
@@ -17121,441 +16591,6 @@
 		(uuid "bb87bac9-b18d-5978-9999-8e7d69441f5b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 533.4 260.35 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Transistor_FET:2N7002")
-		(at 482.6 294.64 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "2c4aa696-cf25-5c65-ac17-1836c5737449")
-		(property "Reference" "Q3"
-			(at 489.095 293.37 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "2N7002"
-			(at 491.195 295.91 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-			(at 482.6 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 482.6 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "N-MOSFET 60 V (open-drain AUX outputs)"
-			(at 482.6 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "2N7002"
-			(at 482.6 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "CJ"
-			(at 482.6 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C8545"
-			(at 482.6 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "fdda96d3-81d1-5635-ab22-22808666e8d7")
-		)
-		(pin "2"
-			(uuid "74b86415-15ec-5663-99fb-8a7960538b19")
-		)
-		(pin "3"
-			(uuid "5ddadf62-26ae-5155-bb07-9e1704e9b7b6")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "Q3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 477.52 294.64)
-			(xy 474.98 294.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1568bb49-c66c-5f12-887b-0cd0c0c172b7")
-	)
-	(symbol
-		(lib_id "power:+3V3")
-		(at 474.98 294.64 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "66760941-a1e3-5291-bf0a-eecc947cedf9")
-		(property "Reference" "#PWR02065"
-			(at 474.98 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 468.66 294.64 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 474.98 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 474.98 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 474.98 294.64 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "8a3204f9-ddb2-5f97-b8f2-06746740284a")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02065")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 485.14 299.72)
-			(xy 485.14 302.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5c4799b3-6ae4-5dca-a9da-c7004c8ab914")
-	)
-	(global_label "INT"
-		(shape bidirectional)
-		(at 485.14 302.26 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "3174f4bd-7981-5ddc-9b43-10b640890a0b")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 485.14 302.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 485.14 289.56)
-			(xy 485.14 287.02)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c62b9ee6-7afc-526f-afa0-0babb4f30652")
-	)
-	(label "LEAD_INT"
-		(at 485.14 287.02 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "71cdc3d0-b2e7-5b1a-8db8-f8e93fbea46f")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 533.4 289.56 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "9e32b9dd-0f13-5320-8c21-a7d3e33b79f9")
-		(property "Reference" "R8"
-			(at 536.466 288.29 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 536.991 290.83 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
-			(at 533.4 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 533.4 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor 10k 0402"
-			(at 533.4 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C25744"
-			(at 533.4 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "0402WGF1002TCE"
-			(at 533.4 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "UNI-ROYAL(Uniroyal Elec)"
-			(at 533.4 289.56 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "e84b42ab-ba5d-5c82-919f-fecd1606374f")
-		)
-		(pin "2"
-			(uuid "76a191be-9cc2-5a50-b302-3957966a7092")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "R8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 533.4 285.75)
-			(xy 533.4 283.21)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "25e80cf9-0ffd-5e18-9252-870135bb614b")
-	)
-	(symbol
-		(lib_id "power:+3V3")
-		(at 533.4 283.21 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "ad11b4ac-81ab-55ea-b8e5-565b796964ba")
-		(property "Reference" "#PWR02066"
-			(at 533.4 283.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 533.4 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 533.4 283.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 533.4 283.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 533.4 283.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "cd552c04-e48c-5b62-aae8-c49a7920ea18")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02066")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 533.4 293.37)
-			(xy 533.4 295.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1aec159d-706b-53de-a3d7-28c1a5b7b27a")
-	)
-	(global_label "INT"
-		(shape bidirectional)
-		(at 533.4 295.91 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "2e465160-24ad-5d5d-9bc1-ba7f0277ef7d")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 533.4 295.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17669,7 +16704,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f172a839-5355-5780-872f-f48c75e60328")
-		(property "Reference" "#PWR02067"
+		(property "Reference" "#PWR02061"
 			(at 629.92 78.74 0)
 			(effects
 				(font
@@ -17719,7 +16754,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02067")
+					(reference "#PWR02061")
 					(unit 1)
 				)
 			)
@@ -17829,7 +16864,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c0a4a16e-56b0-5904-ab25-deb5abc12fe1")
-		(property "Reference" "#PWR02068"
+		(property "Reference" "#PWR02062"
 			(at 660.4 78.74 0)
 			(effects
 				(font
@@ -17879,7 +16914,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02068")
+					(reference "#PWR02062")
 					(unit 1)
 				)
 			)
@@ -17989,7 +17024,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "512b70a0-78dd-5618-8e7e-3a9f746cafec")
-		(property "Reference" "#PWR02069"
+		(property "Reference" "#PWR02063"
 			(at 690.88 78.74 0)
 			(effects
 				(font
@@ -18039,7 +17074,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02069")
+					(reference "#PWR02063")
 					(unit 1)
 				)
 			)
@@ -18254,7 +17289,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b584ef0d-5757-50ba-b712-39ddd6c3c151")
-		(property "Reference" "#PWR02070"
+		(property "Reference" "#PWR02064"
 			(at 751.84 78.74 0)
 			(effects
 				(font
@@ -18304,7 +17339,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02070")
+					(reference "#PWR02064")
 					(unit 1)
 				)
 			)
@@ -18424,8 +17459,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "baee2946-bd01-526d-b69e-bf87f6a31e9d")
-		(property "Reference" "TP23"
+		(uuid "c54eed1c-48e8-5deb-a2fa-1ccd10bdc8c7")
+		(property "Reference" "TP24"
 			(at 816.662 74.93 0)
 			(effects
 				(font
@@ -18487,12 +17522,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "e8927207-1e3f-5bdf-a9d4-bb9475b2e82d")
+			(uuid "e86ea7c3-3398-5648-a67b-684f4f57e237")
 		)
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "TP23")
+					(reference "TP24")
 					(unit 1)
 				)
 			)
@@ -18507,9 +17542,9 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "3ffce129-18e1-568c-9e24-fb7955cc59fc")
+		(uuid "1950da45-74bc-5496-ab79-6c81fe496162")
 	)
-	(global_label "INT"
+	(global_label "SDA"
 		(shape bidirectional)
 		(at 812.8 78.74 270)
 		(fields_autoplaced yes)
@@ -18519,7 +17554,7 @@
 			)
 			(justify right)
 		)
-		(uuid "823e4719-5a62-5b14-95a8-ea4083e0fe6d")
+		(uuid "52fbd45a-5b0e-5c0b-b42c-b492e4bf6dce")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 812.8 78.74 0)
 			(effects
@@ -18540,8 +17575,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "c54eed1c-48e8-5deb-a2fa-1ccd10bdc8c7")
-		(property "Reference" "TP24"
+		(uuid "45400ad0-71e7-5bea-b15e-f8d2c0afe22b")
+		(property "Reference" "TP25"
 			(at 633.782 110.49 0)
 			(effects
 				(font
@@ -18603,12 +17638,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "e86ea7c3-3398-5648-a67b-684f4f57e237")
+			(uuid "eff59da2-5c5e-52ff-8d27-18f38a78a508")
 		)
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "TP24")
+					(reference "TP25")
 					(unit 1)
 				)
 			)
@@ -18623,9 +17658,9 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "1950da45-74bc-5496-ab79-6c81fe496162")
+		(uuid "360b4e32-399d-5e19-88f0-7fd82479d6fe")
 	)
-	(global_label "SDA"
+	(global_label "SCL"
 		(shape bidirectional)
 		(at 629.92 114.3 270)
 		(fields_autoplaced yes)
@@ -18635,7 +17670,7 @@
 			)
 			(justify right)
 		)
-		(uuid "52fbd45a-5b0e-5c0b-b42c-b492e4bf6dce")
+		(uuid "68a08d2d-2fea-55cf-97a2-9bca31e5926f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 629.92 114.3 0)
 			(effects
@@ -18656,8 +17691,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "45400ad0-71e7-5bea-b15e-f8d2c0afe22b")
-		(property "Reference" "TP25"
+		(uuid "c01f478b-0f87-5296-96b2-974a651ac12a")
+		(property "Reference" "TP26"
 			(at 664.262 110.49 0)
 			(effects
 				(font
@@ -18673,7 +17708,7 @@
 				)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
 			(at 660.4 111.76 0)
 			(effects
 				(font
@@ -18719,12 +17754,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "eff59da2-5c5e-52ff-8d27-18f38a78a508")
+			(uuid "ab23289a-7d26-51cb-8a07-5cc34a7ee5e5")
 		)
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "TP25")
+					(reference "TP26")
 					(unit 1)
 				)
 			)
@@ -18739,27 +17774,71 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "360b4e32-399d-5e19-88f0-7fd82479d6fe")
+		(uuid "860cea44-f29e-57ed-aa5c-841e49359dcb")
 	)
-	(global_label "SCL"
-		(shape bidirectional)
-		(at 660.4 114.3 270)
+	(symbol
+		(lib_id "power:GND")
+		(at 660.4 114.3 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
 		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "68a08d2d-2fea-55cf-97a2-9bca31e5926f")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+		(uuid "f586833c-b6e5-5011-8caf-8b712ddb8139")
+		(property "Reference" "#PWR02065"
 			(at 660.4 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
 				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 660.4 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 660.4 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 660.4 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 660.4 114.3 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9112a3ff-dece-5283-b1dc-2055601de055")
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
+					(reference "#PWR02065")
+					(unit 1)
+				)
 			)
 		)
 	)
@@ -18772,8 +17851,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "c01f478b-0f87-5296-96b2-974a651ac12a")
-		(property "Reference" "TP26"
+		(uuid "07abfca2-6870-53f9-8552-c7de2376034f")
+		(property "Reference" "TP27"
 			(at 694.742 110.49 0)
 			(effects
 				(font
@@ -18835,12 +17914,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "ab23289a-7d26-51cb-8a07-5cc34a7ee5e5")
+			(uuid "28065dc5-1c90-598a-ae85-dbfd1d914f5f")
 		)
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "TP26")
+					(reference "TP27")
 					(unit 1)
 				)
 			)
@@ -18855,7 +17934,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "860cea44-f29e-57ed-aa5c-841e49359dcb")
+		(uuid "3cbacb73-9501-5631-91d6-0b461e9e331f")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -18866,8 +17945,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "f586833c-b6e5-5011-8caf-8b712ddb8139")
-		(property "Reference" "#PWR02071"
+		(uuid "fe1464da-f8f0-5295-9a05-8ab1669f67d7")
+		(property "Reference" "#PWR02066"
 			(at 690.88 114.3 0)
 			(effects
 				(font
@@ -18912,12 +17991,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "9112a3ff-dece-5283-b1dc-2055601de055")
+			(uuid "97cc567e-cab3-5e46-a0b1-25f9fc6f7406")
 		)
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02071")
+					(reference "#PWR02066")
 					(unit 1)
 				)
 			)
@@ -18932,8 +18011,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "07abfca2-6870-53f9-8552-c7de2376034f")
-		(property "Reference" "TP27"
+		(uuid "d091ebc1-ea81-5f84-b455-ad3c2443e431")
+		(property "Reference" "TP28"
 			(at 725.222 110.49 0)
 			(effects
 				(font
@@ -18995,12 +18074,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "28065dc5-1c90-598a-ae85-dbfd1d914f5f")
+			(uuid "4485b247-cb50-50b7-9545-a3ab7466569c")
 		)
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "TP27")
+					(reference "TP28")
 					(unit 1)
 				)
 			)
@@ -19015,7 +18094,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "3cbacb73-9501-5631-91d6-0b461e9e331f")
+		(uuid "07048f08-4c52-564e-9a7a-98dc7ed4c494")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -19026,8 +18105,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "fe1464da-f8f0-5295-9a05-8ab1669f67d7")
-		(property "Reference" "#PWR02072"
+		(uuid "ab8c0c9e-67aa-595f-8196-84b6d34d73a0")
+		(property "Reference" "#PWR02067"
 			(at 721.36 114.3 0)
 			(effects
 				(font
@@ -19072,12 +18151,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "97cc567e-cab3-5e46-a0b1-25f9fc6f7406")
+			(uuid "d9c66bb0-d366-5502-8bd9-03954451c842")
 		)
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02072")
+					(reference "#PWR02067")
 					(unit 1)
 				)
 			)
@@ -19092,8 +18171,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "d091ebc1-ea81-5f84-b455-ad3c2443e431")
-		(property "Reference" "TP28"
+		(uuid "ab360478-2d37-5002-b0ed-734764532262")
+		(property "Reference" "TP38"
 			(at 755.702 110.49 0)
 			(effects
 				(font
@@ -19109,7 +18188,7 @@
 				)
 			)
 		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
 			(at 751.84 111.76 0)
 			(effects
 				(font
@@ -19155,12 +18234,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "4485b247-cb50-50b7-9545-a3ab7466569c")
+			(uuid "64d867f5-94aa-5fae-b060-146c61ecfd84")
 		)
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "TP28")
+					(reference "TP38")
 					(unit 1)
 				)
 			)
@@ -19175,73 +18254,18 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "07048f08-4c52-564e-9a7a-98dc7ed4c494")
+		(uuid "c785ae46-2c95-5508-89e3-d37e8231de6f")
 	)
-	(symbol
-		(lib_id "power:GND")
-		(at 751.84 114.3 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+	(label "EXP1_RST_N"
+		(at 751.84 114.3 270)
 		(fields_autoplaced yes)
-		(uuid "ab8c0c9e-67aa-595f-8196-84b6d34d73a0")
-		(property "Reference" "#PWR02073"
-			(at 751.84 114.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
 			)
+			(justify right bottom)
 		)
-		(property "Value" "GND"
-			(at 751.84 118.11 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 751.84 114.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 751.84 114.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 751.84 114.3 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "d9c66bb0-d366-5502-8bd9-03954451c842")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02073")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "ab8cbef7-0b5d-5ec9-a2b4-baf05c228a24")
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
@@ -19252,8 +18276,8 @@
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "ab360478-2d37-5002-b0ed-734764532262")
-		(property "Reference" "TP38"
+		(uuid "628f48d1-2743-5649-a1ad-1c92249352c6")
+		(property "Reference" "TP39"
 			(at 786.182 110.49 0)
 			(effects
 				(font
@@ -19315,12 +18339,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "64d867f5-94aa-5fae-b060-146c61ecfd84")
+			(uuid "bf1fe356-83f1-56cd-b1e1-b612f35fa0de")
 		)
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "TP38")
+					(reference "TP39")
 					(unit 1)
 				)
 			)
@@ -19335,115 +18359,10 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "c785ae46-2c95-5508-89e3-d37e8231de6f")
-	)
-	(label "EXP1_RST_N"
-		(at 782.32 114.3 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "ab8cbef7-0b5d-5ec9-a2b4-baf05c228a24")
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 812.8 111.76 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "628f48d1-2743-5649-a1ad-1c92249352c6")
-		(property "Reference" "TP39"
-			(at 816.662 110.49 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "test pad"
-			(at 818.762 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 812.8 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 812.8 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 812.8 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "test pad"
-			(at 812.8 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "-"
-			(at 812.8 111.76 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "bf1fe356-83f1-56cd-b1e1-b612f35fa0de")
-		)
-		(instances
-			(project "data-port-x4-v2"
-				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "TP39")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 812.8 111.76)
-			(xy 812.8 114.3)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
 		(uuid "6e4f2d32-03a6-5546-861c-208b6c0b880f")
 	)
 	(label "EXP2_RST_N"
-		(at 812.8 114.3 270)
+		(at 782.32 114.3 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -19910,7 +18829,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3749f30a-f636-5bc5-a4a3-6b4e9a02e41d")
-		(property "Reference" "#PWR02074"
+		(property "Reference" "#PWR02068"
 			(at 60.96 167.64 0)
 			(effects
 				(font
@@ -19960,7 +18879,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02074")
+					(reference "#PWR02068")
 					(unit 1)
 				)
 			)
@@ -19976,7 +18895,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2b833b07-edf2-5ee9-8567-56b856b9aab1")
-		(property "Reference" "#PWR02075"
+		(property "Reference" "#PWR02069"
 			(at 127 175.26 0)
 			(effects
 				(font
@@ -20026,7 +18945,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02075")
+					(reference "#PWR02069")
 					(unit 1)
 				)
 			)
@@ -20042,7 +18961,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "0fd0f6bd-372a-5637-9a25-4c729ecbbfe9")
-		(property "Reference" "#PWR02076"
+		(property "Reference" "#PWR02070"
 			(at 303.53 104.14 0)
 			(effects
 				(font
@@ -20092,7 +19011,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02076")
+					(reference "#PWR02070")
 					(unit 1)
 				)
 			)
@@ -20108,7 +19027,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a3808c01-a501-5f94-acfd-2c34ae58266c")
-		(property "Reference" "#PWR02077"
+		(property "Reference" "#PWR02071"
 			(at 325.12 243.84 0)
 			(effects
 				(font
@@ -20158,7 +19077,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02077")
+					(reference "#PWR02071")
 					(unit 1)
 				)
 			)
@@ -20174,7 +19093,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b8b1c501-16e2-54b5-b538-c8189b87e2b0")
-		(property "Reference" "#PWR02078"
+		(property "Reference" "#PWR02072"
 			(at 353.06 243.84 0)
 			(effects
 				(font
@@ -20224,7 +19143,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02078")
+					(reference "#PWR02072")
 					(unit 1)
 				)
 			)
@@ -20240,7 +19159,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e73d5c01-58de-53f8-a228-3661a64bebaf")
-		(property "Reference" "#PWR02079"
+		(property "Reference" "#PWR02073"
 			(at 355.6 243.84 0)
 			(effects
 				(font
@@ -20290,7 +19209,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02079")
+					(reference "#PWR02073")
 					(unit 1)
 				)
 			)
@@ -20306,7 +19225,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2e40c819-bd5e-55dc-84fe-07c3dd5fd2b3")
-		(property "Reference" "#PWR02080"
+		(property "Reference" "#PWR02074"
 			(at 383.54 243.84 0)
 			(effects
 				(font
@@ -20356,7 +19275,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02080")
+					(reference "#PWR02074")
 					(unit 1)
 				)
 			)
@@ -20372,7 +19291,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a6368650-5e01-5003-9012-d25f9d410aae")
-		(property "Reference" "#PWR02081"
+		(property "Reference" "#PWR02075"
 			(at 386.08 243.84 0)
 			(effects
 				(font
@@ -20422,7 +19341,7 @@
 		(instances
 			(project "data-port-x4-v2"
 				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a/45a04347-8732-5237-9e3b-340287b3f578"
-					(reference "#PWR02081")
+					(reference "#PWR02075")
 					(unit 1)
 				)
 			)
@@ -20462,7 +19381,7 @@
 		)
 		(uuid "5ef27468-47a8-565b-8e94-cb6e4bae2fea")
 	)
-	(text "Lead from the bay node's J7 (JST PH 8, vertical, on the rear face): SDA, SCL and INT through a H5VU25UC"
+	(text "Lead from the bay node's J7 (JST PH 8, vertical, on the rear face): SDA and SCL through a H5VU25UC; pin 8 VIN (sheet Power), pin 1 open"
 		(exclude_from_sim no)
 		(at 16.51 27.94 0)
 		(effects
@@ -20558,7 +19477,7 @@
 		)
 		(uuid "9ec79756-4982-5106-924c-1880d33be3c1")
 	)
-	(text "I²C isolation: open with DUT_5V off, so the node's pull-ups cannot feed this board"
+	(text "I²C isolation: open with VIN off, so the node's pull-ups cannot feed this board"
 		(exclude_from_sim no)
 		(at 438.15 195.58 0)
 		(effects
@@ -20582,7 +19501,7 @@
 		)
 		(uuid "dc18b3c3-c369-55f9-a82f-925be323228a")
 	)
-	(text "Bring-up test points on the rear face (B.Cu, bare pads, not in the BOM): +3V3, +5V, the hub's reset and 1.8 V, the lead's I²C and INT, the expanders' RESET, GND"
+	(text "Bring-up test points on the rear face (B.Cu, bare pads, not in the BOM): +3V3, +5V, the hub's reset and 1.8 V, the lead's I²C, the expanders' RESET, GND"
 		(exclude_from_sim no)
 		(at 610.87 27.94 0)
 		(effects
@@ -20594,7 +19513,7 @@
 		)
 		(uuid "4d454d51-5134-5c43-8b19-e12794a6a3c6")
 	)
-	(text_box "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).\nHub: CFG_SEL[2:0] = 110 (internal default configuration, strap options disabled: DS00001598C Table 5-2):\n  self-powered, ports switched and sensed one by one (here by the expanders), no port disabled, D+ / D− not\n  sampled at reset; the other strap pins keep their pull-downs, unread.  Ports 6 and 7 enabled, unused\n  (cosmetic).  On purpose: PRTPWR unused and OCS_N on their pull-ups (the node switches each port and reads\n  its FAULT_N through the expanders); VBUS_DET on 3.3 V (self-powered hub).\nHub port n = USB-C n (busid 1-1.n) for n = 1–4; port 5 = the co-processor.\nExpander pins are inputs at power-up; the EN pull-downs keep every port off until the node writes.\nINT (J1.1 → the node's IO4): both expanders' INT and the four INA226 ALERTs, open drain, wired-OR, through Q3.\nI²C and INT: the node's pull-ups on LEAD_*, 4.7k / 4.7k / 10k here; with DUT_5V off the chips here lose\n  their registers: the node sets them up again after each DUT_5V on, and leaves this board's addresses alone while off.\nJ1 (through-hole) stands on the rear face: soldered by hand (the PCBA places the front face only)."
+	(text_box "Hub reset: U5 (MAX809S, 2.93 V, ≥ 150 ms, push-pull) on RESET_N (errata DS80000628A, Module 2).\nHub: CFG_SEL[2:0] = 110 (internal default configuration, strap options disabled: DS00001598C Table 5-2):\n  self-powered, ports switched and sensed one by one (here by the expanders), no port disabled, D+ / D− not\n  sampled at reset; the other strap pins keep their pull-downs, unread.  Ports 6 and 7 enabled, unused\n  (cosmetic).  On purpose: PRTPWR unused and OCS_N on their pull-ups (the node switches each port and reads\n  its FAULT_N through the expanders); VBUS_DET on 3.3 V (self-powered hub).\nHub port n = USB-C n (busid 1-1.n) for n = 1–4; port 5 = the co-processor.\nExpander pins are inputs at power-up; the EN pull-downs keep every port off until the node writes.\nNo INT on the lead (J1.1 open): the node polls the expanders and the INA226s every 10–20 ms.\nI²C: the node's pull-ups on LEAD_*, 4.7k / 4.7k here; with VIN off the chips here lose their registers:\n  the node sets them up again after each VIN on, and leaves this board's addresses alone while off.\nJ1 (through-hole) stands on the rear face: soldered by hand (the PCBA places the front face only)."
 		(exclude_from_sim no)
 		(at 15.24 279.4 0)
 		(size 558.8 31.75)

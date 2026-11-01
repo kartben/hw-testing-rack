@@ -13,7 +13,7 @@
 	)
 	(lib_symbols)
 	(sheet
-		(at 69.85 68.58)
+		(at 35.56 70)
 		(size 52 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -29,7 +29,7 @@
 		)
 		(uuid "45a04347-8732-5237-9e3b-340287b3f578")
 		(property "Sheetname" "Hub"
-			(at 69.85 67.31 0)
+			(at 35.56 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -38,7 +38,7 @@
 			)
 		)
 		(property "Sheetfile" "hub.kicad_sch"
-			(at 69.85 99.06 0)
+			(at 35.56 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -56,7 +56,7 @@
 	)
 	(text "Lead, hub, expanders, 3.3 V"
 		(exclude_from_sim no)
-		(at 72.39 76.2 0)
+		(at 38.1 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -66,7 +66,7 @@
 		(uuid "e368f490-66d9-576a-a6f4-e967916ce7ae")
 	)
 	(sheet
-		(at 137.16 68.58)
+		(at 102.87 70)
 		(size 52 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -80,9 +80,9 @@
 		(fill
 			(color 255 255 225 1)
 		)
-		(uuid "125dc686-f76a-5214-936e-4da94614514c")
-		(property "Sheetname" "Port 1"
-			(at 137.16 67.31 0)
+		(uuid "348a7008-95ef-5b7f-ad9e-1a5c45e7cb72")
+		(property "Sheetname" "Power"
+			(at 102.87 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -90,8 +90,8 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "port1.kicad_sch"
-			(at 137.16 99.06 0)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 102.87 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -107,30 +107,30 @@
 			)
 		)
 	)
-	(text "USB-C 1: switch, current"
+	(text "20 V input, the 5 V"
 		(exclude_from_sim no)
-		(at 139.7 76.2 0)
+		(at 105.41 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "c8fbf712-6fe8-5b42-987b-224ce0b85628")
+		(uuid "7da613fe-ed63-55c8-9d63-a06693cd9b3e")
 	)
-	(text "sense, ESD, header; pins"
+	(text "converter"
 		(exclude_from_sim no)
-		(at 139.7 80.01 0)
+		(at 105.41 81.28 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "a18b2581-141d-57e3-a6a5-93c392342031")
+		(uuid "ae6dfe16-26f5-58e4-9a15-21c5afe094c7")
 	)
 	(sheet
-		(at 204.47 68.58)
+		(at 170.18 70)
 		(size 52 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -144,9 +144,9 @@
 		(fill
 			(color 255 255 225 1)
 		)
-		(uuid "ac14d110-b641-5e40-a282-77d7516cd3e4")
-		(property "Sheetname" "Port 2"
-			(at 204.47 67.31 0)
+		(uuid "125dc686-f76a-5214-936e-4da94614514c")
+		(property "Sheetname" "Port 1"
+			(at 170.18 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -154,8 +154,8 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "port2.kicad_sch"
-			(at 204.47 99.06 0)
+		(property "Sheetfile" "port1.kicad_sch"
+			(at 170.18 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -171,30 +171,30 @@
 			)
 		)
 	)
-	(text "USB-C 2: switch, current"
+	(text "USB-C 1: switch, current"
 		(exclude_from_sim no)
-		(at 207.01 76.2 0)
+		(at 172.72 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "cb68845c-f44d-59b9-8a46-b65d252cafa7")
+		(uuid "c8fbf712-6fe8-5b42-987b-224ce0b85628")
 	)
 	(text "sense, ESD, header; pins"
 		(exclude_from_sim no)
-		(at 207.01 80.01 0)
+		(at 172.72 81.28 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "c23c4129-de74-5021-a2a5-0f2b20a5f337")
+		(uuid "a18b2581-141d-57e3-a6a5-93c392342031")
 	)
 	(sheet
-		(at 271.78 68.58)
+		(at 237.49 70)
 		(size 52 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -208,9 +208,9 @@
 		(fill
 			(color 255 255 225 1)
 		)
-		(uuid "76303e69-a9f7-592c-9301-ccf39b66bdac")
-		(property "Sheetname" "Port 3"
-			(at 271.78 67.31 0)
+		(uuid "ac14d110-b641-5e40-a282-77d7516cd3e4")
+		(property "Sheetname" "Port 2"
+			(at 237.49 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -218,8 +218,8 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "port3.kicad_sch"
-			(at 271.78 99.06 0)
+		(property "Sheetfile" "port2.kicad_sch"
+			(at 237.49 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -235,30 +235,30 @@
 			)
 		)
 	)
-	(text "USB-C 3: switch, current"
+	(text "USB-C 2: switch, current"
 		(exclude_from_sim no)
-		(at 274.32 76.2 0)
+		(at 240.03 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "25232fb7-ed9c-522e-b350-18197bde934f")
+		(uuid "cb68845c-f44d-59b9-8a46-b65d252cafa7")
 	)
 	(text "sense, ESD, header; pins"
 		(exclude_from_sim no)
-		(at 274.32 80.01 0)
+		(at 240.03 81.28 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "e1e91637-10ff-512c-a746-4c4d0f9caa69")
+		(uuid "c23c4129-de74-5021-a2a5-0f2b20a5f337")
 	)
 	(sheet
-		(at 339.09 68.58)
+		(at 304.8 70)
 		(size 52 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -272,9 +272,9 @@
 		(fill
 			(color 255 255 225 1)
 		)
-		(uuid "ac7695c8-b192-5d16-b2f9-3d2966451868")
-		(property "Sheetname" "Port 4"
-			(at 339.09 67.31 0)
+		(uuid "76303e69-a9f7-592c-9301-ccf39b66bdac")
+		(property "Sheetname" "Port 3"
+			(at 304.8 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -282,8 +282,8 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "port4.kicad_sch"
-			(at 339.09 99.06 0)
+		(property "Sheetfile" "port3.kicad_sch"
+			(at 304.8 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -299,30 +299,30 @@
 			)
 		)
 	)
-	(text "USB-C 4: switch, current"
+	(text "USB-C 3: switch, current"
 		(exclude_from_sim no)
-		(at 341.63 76.2 0)
+		(at 307.34 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "7dc5b23e-5506-561f-95cd-bbe3f1c3e9e0")
+		(uuid "25232fb7-ed9c-522e-b350-18197bde934f")
 	)
 	(text "sense, ESD, header; pins"
 		(exclude_from_sim no)
-		(at 341.63 80.01 0)
+		(at 307.34 81.28 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "1f9b92f4-db17-547f-a5e3-24f9864ac976")
+		(uuid "e1e91637-10ff-512c-a746-4c4d0f9caa69")
 	)
 	(sheet
-		(at 406.4 68.58)
+		(at 372.11 70)
 		(size 52 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -336,9 +336,9 @@
 		(fill
 			(color 255 255 225 1)
 		)
-		(uuid "502396b8-bd6b-5893-a2f3-d22d4d678cde")
-		(property "Sheetname" "Matrix"
-			(at 406.4 67.31 0)
+		(uuid "ac7695c8-b192-5d16-b2f9-3d2966451868")
+		(property "Sheetname" "Port 4"
+			(at 372.11 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -346,8 +346,8 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "matrix.kicad_sch"
-			(at 406.4 99.06 0)
+		(property "Sheetfile" "port4.kicad_sch"
+			(at 372.11 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -363,30 +363,30 @@
 			)
 		)
 	)
-	(text "Crosspoints, −5 V, the"
+	(text "USB-C 4: switch, current"
 		(exclude_from_sim no)
-		(at 408.94 76.2 0)
+		(at 374.65 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "e6fdf53b-2c97-55a4-8754-a571f8121ba6")
+		(uuid "7dc5b23e-5506-561f-95cd-bbe3f1c3e9e0")
 	)
-	(text "node's matrix expander"
+	(text "sense, ESD, header; pins"
 		(exclude_from_sim no)
-		(at 408.94 80.01 0)
+		(at 374.65 81.28 0)
 		(effects
 			(font
 				(size 1.8 1.8)
 			)
 			(justify left bottom)
 		)
-		(uuid "6d30530a-dcfe-5fe6-b658-61b15ffe9f8e")
+		(uuid "1f9b92f4-db17-547f-a5e3-24f9864ac976")
 	)
 	(sheet
-		(at 473.71 68.58)
+		(at 439.42 70)
 		(size 52 30.48)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -400,9 +400,9 @@
 		(fill
 			(color 255 255 225 1)
 		)
-		(uuid "0ac51c55-9033-5c6b-81d3-0bad3de74b2b")
-		(property "Sheetname" "Co-processor"
-			(at 473.71 67.31 0)
+		(uuid "502396b8-bd6b-5893-a2f3-d22d4d678cde")
+		(property "Sheetname" "Matrix"
+			(at 439.42 69.85 0)
 			(effects
 				(font
 					(size 2 2)
@@ -410,8 +410,8 @@
 				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "coproc.kicad_sch"
-			(at 473.71 99.06 0)
+		(property "Sheetfile" "matrix.kicad_sch"
+			(at 439.42 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -427,9 +427,73 @@
 			)
 		)
 	)
+	(text "Crosspoints, −5 V, the"
+		(exclude_from_sim no)
+		(at 441.96 77.47 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "e6fdf53b-2c97-55a4-8754-a571f8121ba6")
+	)
+	(text "node's matrix expander"
+		(exclude_from_sim no)
+		(at 441.96 81.28 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+			)
+			(justify left bottom)
+		)
+		(uuid "6d30530a-dcfe-5fe6-b658-61b15ffe9f8e")
+	)
+	(sheet
+		(at 506.73 70)
+		(size 52 30.48)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.3)
+			(type solid)
+		)
+		(fill
+			(color 255 255 225 1)
+		)
+		(uuid "0ac51c55-9033-5c6b-81d3-0bad3de74b2b")
+		(property "Sheetname" "Co-processor"
+			(at 506.73 69.85 0)
+			(effects
+				(font
+					(size 2 2)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "coproc.kicad_sch"
+			(at 506.73 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "data-port-x4-v2"
+				(path "/6eede3c9-04e8-5df8-9dbf-dd766ca3200a"
+					(page "9")
+				)
+			)
+		)
+	)
 	(text "RP2354B analyzer / co-"
 		(exclude_from_sim no)
-		(at 476.25 76.2 0)
+		(at 509.27 77.47 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -440,7 +504,7 @@
 	)
 	(text "processor on hub port 5"
 		(exclude_from_sim no)
-		(at 476.25 80.01 0)
+		(at 509.27 81.28 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -451,8 +515,8 @@
 	)
 	(polyline
 		(pts
-			(xy 58.42 57.15)
-			(xy 529.59 57.15)
+			(xy 24.13 58.42)
+			(xy 562.61 58.42)
 		)
 		(stroke
 			(width 0.5)
@@ -465,7 +529,7 @@
 	)
 	(text "+3V3"
 		(exclude_from_sim no)
-		(at 55.88 57.15 0)
+		(at 21.59 58.42 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -477,8 +541,8 @@
 	)
 	(polyline
 		(pts
-			(xy 72.39 57.15)
-			(xy 72.39 68.58)
+			(xy 45.72 58.42)
+			(xy 45.72 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -490,7 +554,7 @@
 		(uuid "c3df543c-a14e-51e9-ba4e-9c1349c3f015")
 	)
 	(circle
-		(center 72.39 57.15)
+		(center 45.72 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -503,8 +567,8 @@
 	)
 	(polyline
 		(pts
-			(xy 139.7 57.15)
-			(xy 139.7 68.58)
+			(xy 180.34 58.42)
+			(xy 180.34 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -516,7 +580,7 @@
 		(uuid "0292e5a6-43af-580e-99e8-40b1bc0a1964")
 	)
 	(circle
-		(center 139.7 57.15)
+		(center 180.34 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -529,8 +593,8 @@
 	)
 	(polyline
 		(pts
-			(xy 207.01 57.15)
-			(xy 207.01 68.58)
+			(xy 247.65 58.42)
+			(xy 247.65 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -542,7 +606,7 @@
 		(uuid "fa97abd5-4582-5b59-861c-7530c37b3437")
 	)
 	(circle
-		(center 207.01 57.15)
+		(center 247.65 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -555,8 +619,8 @@
 	)
 	(polyline
 		(pts
-			(xy 274.32 57.15)
-			(xy 274.32 68.58)
+			(xy 314.96 58.42)
+			(xy 314.96 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -568,7 +632,7 @@
 		(uuid "734dca62-14ef-535c-b6d8-3d14af101043")
 	)
 	(circle
-		(center 274.32 57.15)
+		(center 314.96 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -581,8 +645,8 @@
 	)
 	(polyline
 		(pts
-			(xy 341.63 57.15)
-			(xy 341.63 68.58)
+			(xy 382.27 58.42)
+			(xy 382.27 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -594,7 +658,7 @@
 		(uuid "1a408f18-a6f6-56cf-a172-b74c3bb0d3fe")
 	)
 	(circle
-		(center 341.63 57.15)
+		(center 382.27 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -607,8 +671,8 @@
 	)
 	(polyline
 		(pts
-			(xy 408.94 57.15)
-			(xy 408.94 68.58)
+			(xy 449.58 58.42)
+			(xy 449.58 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -620,7 +684,7 @@
 		(uuid "a983f502-0a37-5748-bd0d-57ecb704b874")
 	)
 	(circle
-		(center 408.94 57.15)
+		(center 449.58 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -633,8 +697,8 @@
 	)
 	(polyline
 		(pts
-			(xy 476.25 57.15)
-			(xy 476.25 68.58)
+			(xy 516.89 58.42)
+			(xy 516.89 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -646,7 +710,7 @@
 		(uuid "2eb6c160-4c7a-5e1f-8c3e-1bf5fe62909c")
 	)
 	(circle
-		(center 476.25 57.15)
+		(center 516.89 58.42)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -659,8 +723,8 @@
 	)
 	(polyline
 		(pts
-			(xy 58.42 49.53)
-			(xy 529.59 49.53)
+			(xy 24.13 50.8)
+			(xy 562.61 50.8)
 		)
 		(stroke
 			(width 0.5)
@@ -673,7 +737,7 @@
 	)
 	(text "+5V"
 		(exclude_from_sim no)
-		(at 55.88 49.53 0)
+		(at 21.59 50.8 0)
 		(effects
 			(font
 				(size 1.8 1.8)
@@ -685,8 +749,8 @@
 	)
 	(polyline
 		(pts
-			(xy 83.82 49.53)
-			(xy 83.82 68.58)
+			(xy 53.34 50.8)
+			(xy 53.34 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -698,7 +762,7 @@
 		(uuid "9844834c-ad52-5966-add1-e9035fbe47c7")
 	)
 	(circle
-		(center 83.82 49.53)
+		(center 53.34 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -711,8 +775,34 @@
 	)
 	(polyline
 		(pts
-			(xy 151.13 49.53)
-			(xy 151.13 68.58)
+			(xy 120.65 50.8)
+			(xy 120.65 69.85)
+		)
+		(stroke
+			(width 0.5)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "5d51d06b-72e5-518d-9c53-661bba6a5a9f")
+	)
+	(circle
+		(center 120.65 50.8)
+		(radius 0.6)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type outline)
+		)
+		(uuid "fff1d387-ec05-5156-b93b-8e32cf5a9bcc")
+	)
+	(polyline
+		(pts
+			(xy 187.96 50.8)
+			(xy 187.96 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -724,7 +814,7 @@
 		(uuid "b3dcc2cf-dbfa-5bb0-868d-27734b045f3e")
 	)
 	(circle
-		(center 151.13 49.53)
+		(center 187.96 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -737,8 +827,8 @@
 	)
 	(polyline
 		(pts
-			(xy 218.44 49.53)
-			(xy 218.44 68.58)
+			(xy 255.27 50.8)
+			(xy 255.27 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -750,7 +840,7 @@
 		(uuid "e5c67754-8095-5ab8-a456-a42f25bd5ff1")
 	)
 	(circle
-		(center 218.44 49.53)
+		(center 255.27 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -763,8 +853,8 @@
 	)
 	(polyline
 		(pts
-			(xy 285.75 49.53)
-			(xy 285.75 68.58)
+			(xy 322.58 50.8)
+			(xy 322.58 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -776,7 +866,7 @@
 		(uuid "3b715df8-c56b-5f0b-bf36-0c81f2d8b851")
 	)
 	(circle
-		(center 285.75 49.53)
+		(center 322.58 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -789,8 +879,8 @@
 	)
 	(polyline
 		(pts
-			(xy 353.06 49.53)
-			(xy 353.06 68.58)
+			(xy 389.89 50.8)
+			(xy 389.89 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -802,7 +892,7 @@
 		(uuid "6f6409ed-7667-5afb-9b85-63cffed213da")
 	)
 	(circle
-		(center 353.06 49.53)
+		(center 389.89 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -815,8 +905,8 @@
 	)
 	(polyline
 		(pts
-			(xy 420.37 49.53)
-			(xy 420.37 68.58)
+			(xy 457.2 50.8)
+			(xy 457.2 69.85)
 		)
 		(stroke
 			(width 0.5)
@@ -828,7 +918,7 @@
 		(uuid "30e75434-a3e8-5f06-909d-e080a753b3cc")
 	)
 	(circle
-		(center 420.37 49.53)
+		(center 457.2 50.8)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -841,8 +931,8 @@
 	)
 	(polyline
 		(pts
-			(xy 58.42 41.91)
-			(xy 529.59 41.91)
+			(xy 24.13 43.18)
+			(xy 562.61 43.18)
 		)
 		(stroke
 			(width 0.3)
@@ -855,7 +945,7 @@
 	)
 	(text "SCL SDA"
 		(exclude_from_sim no)
-		(at 55.88 41.91 0)
+		(at 21.59 43.18 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -866,8 +956,8 @@
 	)
 	(polyline
 		(pts
-			(xy 95.25 41.91)
-			(xy 95.25 68.58)
+			(xy 60.96 43.18)
+			(xy 60.96 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -879,7 +969,7 @@
 		(uuid "d7e361f0-3d54-59bc-9f61-1e915dd44b3a")
 	)
 	(circle
-		(center 95.25 41.91)
+		(center 60.96 43.18)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -892,8 +982,8 @@
 	)
 	(polyline
 		(pts
-			(xy 162.56 41.91)
-			(xy 162.56 68.58)
+			(xy 195.58 43.18)
+			(xy 195.58 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -905,7 +995,7 @@
 		(uuid "c3d8afeb-5c32-5d11-aa2d-91ab377a3898")
 	)
 	(circle
-		(center 162.56 41.91)
+		(center 195.58 43.18)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -918,8 +1008,8 @@
 	)
 	(polyline
 		(pts
-			(xy 229.87 41.91)
-			(xy 229.87 68.58)
+			(xy 262.89 43.18)
+			(xy 262.89 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -931,7 +1021,7 @@
 		(uuid "ea880fe0-caec-545a-a60c-484241205d19")
 	)
 	(circle
-		(center 229.87 41.91)
+		(center 262.89 43.18)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -944,8 +1034,8 @@
 	)
 	(polyline
 		(pts
-			(xy 297.18 41.91)
-			(xy 297.18 68.58)
+			(xy 330.2 43.18)
+			(xy 330.2 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -957,7 +1047,7 @@
 		(uuid "c7c0f254-4985-5ecf-992e-63dbe9476a3d")
 	)
 	(circle
-		(center 297.18 41.91)
+		(center 330.2 43.18)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -970,8 +1060,8 @@
 	)
 	(polyline
 		(pts
-			(xy 364.49 41.91)
-			(xy 364.49 68.58)
+			(xy 397.51 43.18)
+			(xy 397.51 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -983,7 +1073,7 @@
 		(uuid "b405f371-b095-5860-ac41-e02f03ba6501")
 	)
 	(circle
-		(center 364.49 41.91)
+		(center 397.51 43.18)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -996,8 +1086,8 @@
 	)
 	(polyline
 		(pts
-			(xy 431.8 41.91)
-			(xy 431.8 68.58)
+			(xy 464.82 43.18)
+			(xy 464.82 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -1009,7 +1099,7 @@
 		(uuid "67d729ac-7f22-5c7a-bd8c-d11bdf20610c")
 	)
 	(circle
-		(center 431.8 41.91)
+		(center 464.82 43.18)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -1022,163 +1112,8 @@
 	)
 	(polyline
 		(pts
-			(xy 58.42 34.29)
-			(xy 529.59 34.29)
-		)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "a5c108af-98c3-5922-873b-d1e48e358e40")
-	)
-	(text "INT"
-		(exclude_from_sim no)
-		(at 55.88 34.29 0)
-		(effects
-			(font
-				(size 1.4 1.4)
-			)
-			(justify right)
-		)
-		(uuid "7b7fe05f-6479-5268-9923-62e25b15ffac")
-	)
-	(polyline
-		(pts
-			(xy 107.95 34.29)
-			(xy 107.95 68.58)
-		)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "2883f748-e9b0-5016-ac69-a86b82fe7568")
-	)
-	(circle
-		(center 107.95 34.29)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "1565fbe5-aa26-5880-89a7-cb625c3ba91d")
-	)
-	(polyline
-		(pts
-			(xy 175.26 34.29)
-			(xy 175.26 68.58)
-		)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "cfa879b9-8a1e-589d-b226-f19396208d8b")
-	)
-	(circle
-		(center 175.26 34.29)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "78529390-484c-5d88-b216-3bf236e8f05b")
-	)
-	(polyline
-		(pts
-			(xy 242.57 34.29)
-			(xy 242.57 68.58)
-		)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "288882c7-6c14-5309-8366-b344f1750e14")
-	)
-	(circle
-		(center 242.57 34.29)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "a97bc9bc-c9a5-55df-bb44-4c241fe5ea1d")
-	)
-	(polyline
-		(pts
-			(xy 309.88 34.29)
-			(xy 309.88 68.58)
-		)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "b159189b-9b5c-5723-b062-bcac7f5f1b2d")
-	)
-	(circle
-		(center 309.88 34.29)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "bd70b49c-436a-5550-9e8f-b0cb570814dd")
-	)
-	(polyline
-		(pts
-			(xy 377.19 34.29)
-			(xy 377.19 68.58)
-		)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid "771138bf-5d56-5299-8b9f-c2ddc7794ea0")
-	)
-	(circle
-		(center 377.19 34.29)
-		(radius 0.6)
-		(stroke
-			(width 0.3)
-			(type default)
-		)
-		(fill
-			(type outline)
-		)
-		(uuid "8d19aa5f-3ae3-5242-a9bf-9f090655b1a5")
-	)
-	(polyline
-		(pts
-			(xy 58.42 26.67)
-			(xy 529.59 26.67)
+			(xy 24.13 35.56)
+			(xy 562.61 35.56)
 		)
 		(stroke
 			(width 0.3)
@@ -1191,7 +1126,7 @@
 	)
 	(text "+5V_MX"
 		(exclude_from_sim no)
-		(at 55.88 26.67 0)
+		(at 21.59 35.56 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1202,8 +1137,8 @@
 	)
 	(polyline
 		(pts
-			(xy 186.69 26.67)
-			(xy 186.69 68.58)
+			(xy 203.2 35.56)
+			(xy 203.2 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -1215,7 +1150,7 @@
 		(uuid "ea8b1a45-67c3-529c-8e65-06156c59d97c")
 	)
 	(circle
-		(center 186.69 26.67)
+		(center 203.2 35.56)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -1228,8 +1163,8 @@
 	)
 	(polyline
 		(pts
-			(xy 254 26.67)
-			(xy 254 68.58)
+			(xy 270.51 35.56)
+			(xy 270.51 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -1241,7 +1176,7 @@
 		(uuid "548c124a-f906-55ae-8574-179728e111cb")
 	)
 	(circle
-		(center 254 26.67)
+		(center 270.51 35.56)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -1254,8 +1189,8 @@
 	)
 	(polyline
 		(pts
-			(xy 321.31 26.67)
-			(xy 321.31 68.58)
+			(xy 337.82 35.56)
+			(xy 337.82 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -1267,7 +1202,7 @@
 		(uuid "cdd82c44-c56d-579e-84e1-900344451035")
 	)
 	(circle
-		(center 321.31 26.67)
+		(center 337.82 35.56)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -1280,8 +1215,8 @@
 	)
 	(polyline
 		(pts
-			(xy 388.62 26.67)
-			(xy 388.62 68.58)
+			(xy 405.13 35.56)
+			(xy 405.13 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -1293,7 +1228,7 @@
 		(uuid "a24de757-20a8-5459-b310-47a1bea883e3")
 	)
 	(circle
-		(center 388.62 26.67)
+		(center 405.13 35.56)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -1306,8 +1241,8 @@
 	)
 	(polyline
 		(pts
-			(xy 455.93 26.67)
-			(xy 455.93 68.58)
+			(xy 472.44 35.56)
+			(xy 472.44 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -1319,7 +1254,7 @@
 		(uuid "58984bf0-59e6-5de6-93b7-e0ef5702ff1c")
 	)
 	(circle
-		(center 455.93 26.67)
+		(center 472.44 35.56)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -1332,8 +1267,8 @@
 	)
 	(polyline
 		(pts
-			(xy 523.24 26.67)
-			(xy 523.24 68.58)
+			(xy 539.75 35.56)
+			(xy 539.75 69.85)
 		)
 		(stroke
 			(width 0.3)
@@ -1345,7 +1280,7 @@
 		(uuid "52c2d391-182a-5de3-94a8-4d267f3058ae")
 	)
 	(circle
-		(center 523.24 26.67)
+		(center 539.75 35.56)
 		(radius 0.6)
 		(stroke
 			(width 0.3)
@@ -1358,10 +1293,10 @@
 	)
 	(polyline
 		(pts
-			(xy 114.3 99.06)
-			(xy 114.3 115.57)
-			(xy 144.78 115.57)
-			(xy 144.78 99.06)
+			(xy 80.01 100.33)
+			(xy 80.01 110.49)
+			(xy 110.49 110.49)
+			(xy 110.49 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1370,58 +1305,25 @@
 		(fill
 			(type none)
 		)
-		(uuid "892b1578-7505-5d76-a4b8-7155d663010f")
+		(uuid "17e20448-b063-5dae-96f1-47c9bf825afc")
 	)
-	(text "PORT1_BOOT_IO,"
+	(text "VIN"
 		(exclude_from_sim no)
-		(at 115.57 107.95 0)
+		(at 81.28 109.22 0)
 		(effects
 			(font
 				(size 1.4 1.4)
 			)
 			(justify left bottom)
 		)
-		(uuid "58012949-8bd0-5a8e-8a22-7a6844593a0c")
-	)
-	(text "PORT1_DN/DP/EN,"
-		(exclude_from_sim no)
-		(at 115.57 110.49 0)
-		(effects
-			(font
-				(size 1.4 1.4)
-			)
-			(justify left bottom)
-		)
-		(uuid "f548a2c2-5d12-52d4-93d2-47cb10ef008c")
-	)
-	(text "PORT1_FLT_N,"
-		(exclude_from_sim no)
-		(at 115.57 111.76 0)
-		(effects
-			(font
-				(size 1.4 1.4)
-			)
-			(justify left bottom)
-		)
-		(uuid "d99f1a4c-9580-51d9-a427-455820346ea8")
-	)
-	(text "PORT1_RST_IO"
-		(exclude_from_sim no)
-		(at 115.57 114.3 0)
-		(effects
-			(font
-				(size 1.4 1.4)
-			)
-			(justify left bottom)
-		)
-		(uuid "70741f71-df10-505e-ba7b-3234aae9af90")
+		(uuid "84765be6-9f71-54d6-98cc-0f9f84579417")
 	)
 	(polyline
 		(pts
-			(xy 383.54 99.06)
-			(xy 383.54 125.73)
-			(xy 414.02 125.73)
-			(xy 414.02 99.06)
+			(xy 416.56 100.33)
+			(xy 416.56 120.65)
+			(xy 447.04 120.65)
+			(xy 447.04 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1434,7 +1336,7 @@
 	)
 	(text "PORT4_B1/B2/B3/B4/B5/B6/B7/B8"
 		(exclude_from_sim no)
-		(at 384.81 124.46 0)
+		(at 417.83 119.38 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1445,10 +1347,10 @@
 	)
 	(polyline
 		(pts
-			(xy 443.23 99.06)
-			(xy 443.23 138.43)
-			(xy 481.33 138.43)
-			(xy 481.33 99.06)
+			(xy 476.25 100.33)
+			(xy 476.25 133.35)
+			(xy 514.35 133.35)
+			(xy 514.35 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1461,7 +1363,7 @@
 	)
 	(text "-5V, BUS_A/B/C/D/E/F/G/H,"
 		(exclude_from_sim no)
-		(at 444.5 134.62 0)
+		(at 477.52 129.54 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1472,7 +1374,7 @@
 	)
 	(text "CP_BOOT_N, CP_RUN, MARK"
 		(exclude_from_sim no)
-		(at 444.5 137.16 0)
+		(at 477.52 132.08 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1483,10 +1385,10 @@
 	)
 	(polyline
 		(pts
-			(xy 106.68 99.06)
-			(xy 106.68 148.59)
-			(xy 212.09 148.59)
-			(xy 212.09 99.06)
+			(xy 72.39 100.33)
+			(xy 72.39 143.51)
+			(xy 177.8 143.51)
+			(xy 177.8 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1495,25 +1397,25 @@
 		(fill
 			(type none)
 		)
-		(uuid "b8588c8d-bc84-5874-a02e-d2c32ef93de9")
+		(uuid "892b1578-7505-5d76-a4b8-7155d663010f")
 	)
-	(text "PORT2_BOOT_IO, PORT2_DN/DP/EN, PORT2_FLT_N, PORT2_RST_IO"
+	(text "PORT1_BOOT_IO, PORT1_DN/DP/EN, PORT1_FLT_N, PORT1_RST_IO"
 		(exclude_from_sim no)
-		(at 107.95 147.32 0)
+		(at 73.66 142.24 0)
 		(effects
 			(font
 				(size 1.4 1.4)
 			)
 			(justify left bottom)
 		)
-		(uuid "921d7180-cdbe-50d5-8dca-c2e6b34bb99d")
+		(uuid "58012949-8bd0-5a8e-8a22-7a6844593a0c")
 	)
 	(polyline
 		(pts
-			(xy 316.23 99.06)
-			(xy 316.23 158.75)
-			(xy 429.26 158.75)
-			(xy 429.26 99.06)
+			(xy 349.25 100.33)
+			(xy 349.25 153.67)
+			(xy 462.28 153.67)
+			(xy 462.28 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1526,7 +1428,7 @@
 	)
 	(text "PORT3_B1/B2/B3/B4/B5/B6/B7/B8"
 		(exclude_from_sim no)
-		(at 317.5 157.48 0)
+		(at 350.52 152.4 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1537,10 +1439,10 @@
 	)
 	(polyline
 		(pts
-			(xy 375.92 99.06)
-			(xy 375.92 168.91)
-			(xy 488.95 168.91)
-			(xy 488.95 99.06)
+			(xy 408.94 100.33)
+			(xy 408.94 163.83)
+			(xy 521.97 163.83)
+			(xy 521.97 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1553,7 +1455,7 @@
 	)
 	(text "CP_ADC4"
 		(exclude_from_sim no)
-		(at 377.19 167.64 0)
+		(at 410.21 162.56 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1564,10 +1466,10 @@
 	)
 	(polyline
 		(pts
-			(xy 99.06 99.06)
-			(xy 99.06 179.07)
-			(xy 287.02 179.07)
-			(xy 287.02 99.06)
+			(xy 64.77 100.33)
+			(xy 64.77 173.99)
+			(xy 245.11 173.99)
+			(xy 245.11 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1576,25 +1478,25 @@
 		(fill
 			(type none)
 		)
-		(uuid "c40f4d35-3620-5072-a0e8-30d244748fa3")
+		(uuid "b8588c8d-bc84-5874-a02e-d2c32ef93de9")
 	)
-	(text "PORT3_BOOT_IO, PORT3_DN/DP/EN, PORT3_FLT_N, PORT3_RST_IO"
+	(text "PORT2_BOOT_IO, PORT2_DN/DP/EN, PORT2_FLT_N, PORT2_RST_IO"
 		(exclude_from_sim no)
-		(at 100.33 177.8 0)
+		(at 66.04 172.72 0)
 		(effects
 			(font
 				(size 1.4 1.4)
 			)
 			(justify left bottom)
 		)
-		(uuid "5211bc61-de14-5ae0-bd36-296630405f75")
+		(uuid "921d7180-cdbe-50d5-8dca-c2e6b34bb99d")
 	)
 	(polyline
 		(pts
-			(xy 241.3 99.06)
-			(xy 241.3 189.23)
-			(xy 436.88 189.23)
-			(xy 436.88 99.06)
+			(xy 274.32 100.33)
+			(xy 274.32 184.15)
+			(xy 469.9 184.15)
+			(xy 469.9 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1607,7 +1509,7 @@
 	)
 	(text "PORT2_B1/B2/B3/B4/B5/B6/B7/B8"
 		(exclude_from_sim no)
-		(at 242.57 187.96 0)
+		(at 275.59 182.88 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1618,10 +1520,10 @@
 	)
 	(polyline
 		(pts
-			(xy 300.99 99.06)
-			(xy 300.99 199.39)
-			(xy 496.57 199.39)
-			(xy 496.57 99.06)
+			(xy 341.63 100.33)
+			(xy 341.63 194.31)
+			(xy 529.59 194.31)
+			(xy 529.59 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1634,7 +1536,7 @@
 	)
 	(text "CP_ADC3"
 		(exclude_from_sim no)
-		(at 302.26 198.12 0)
+		(at 342.9 193.04 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1645,10 +1547,10 @@
 	)
 	(polyline
 		(pts
-			(xy 91.44 99.06)
-			(xy 91.44 209.55)
-			(xy 361.95 209.55)
-			(xy 361.95 99.06)
+			(xy 57.15 100.33)
+			(xy 57.15 204.47)
+			(xy 327.66 204.47)
+			(xy 327.66 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1657,25 +1559,25 @@
 		(fill
 			(type none)
 		)
-		(uuid "4d969ba3-946e-522a-8835-f60c1ea59669")
+		(uuid "c40f4d35-3620-5072-a0e8-30d244748fa3")
 	)
-	(text "PORT4_BOOT_IO, PORT4_DN/DP/EN, PORT4_FLT_N, PORT4_RST_IO"
+	(text "PORT3_BOOT_IO, PORT3_DN/DP/EN, PORT3_FLT_N, PORT3_RST_IO"
 		(exclude_from_sim no)
-		(at 92.71 208.28 0)
+		(at 58.42 203.2 0)
 		(effects
 			(font
 				(size 1.4 1.4)
 			)
 			(justify left bottom)
 		)
-		(uuid "4a4cab06-f407-5131-865d-62ca55142517")
+		(uuid "5211bc61-de14-5ae0-bd36-296630405f75")
 	)
 	(polyline
 		(pts
-			(xy 173.99 99.06)
-			(xy 173.99 219.71)
-			(xy 444.5 219.71)
-			(xy 444.5 99.06)
+			(xy 207.01 100.33)
+			(xy 207.01 214.63)
+			(xy 477.52 214.63)
+			(xy 477.52 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1688,7 +1590,7 @@
 	)
 	(text "PORT1_B1/B2/B3/B4/B5/B6/B7/B8"
 		(exclude_from_sim no)
-		(at 175.26 218.44 0)
+		(at 208.28 213.36 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1699,10 +1601,10 @@
 	)
 	(polyline
 		(pts
-			(xy 233.68 99.06)
-			(xy 233.68 229.87)
-			(xy 504.19 229.87)
-			(xy 504.19 99.06)
+			(xy 266.7 100.33)
+			(xy 266.7 224.79)
+			(xy 537.21 224.79)
+			(xy 537.21 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1715,7 +1617,7 @@
 	)
 	(text "CP_ADC2"
 		(exclude_from_sim no)
-		(at 234.95 228.6 0)
+		(at 267.97 223.52 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1726,10 +1628,37 @@
 	)
 	(polyline
 		(pts
-			(xy 166.37 99.06)
-			(xy 166.37 240.03)
-			(xy 511.81 240.03)
-			(xy 511.81 99.06)
+			(xy 49.53 100.33)
+			(xy 49.53 234.95)
+			(xy 394.97 234.95)
+			(xy 394.97 100.33)
+		)
+		(stroke
+			(width 0.3)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "4d969ba3-946e-522a-8835-f60c1ea59669")
+	)
+	(text "PORT4_BOOT_IO, PORT4_DN/DP/EN, PORT4_FLT_N, PORT4_RST_IO"
+		(exclude_from_sim no)
+		(at 50.8 233.68 0)
+		(effects
+			(font
+				(size 1.4 1.4)
+			)
+			(justify left bottom)
+		)
+		(uuid "4a4cab06-f407-5131-865d-62ca55142517")
+	)
+	(polyline
+		(pts
+			(xy 199.39 100.33)
+			(xy 199.39 245.11)
+			(xy 544.83 245.11)
+			(xy 544.83 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1742,7 +1671,7 @@
 	)
 	(text "CP_ADC1"
 		(exclude_from_sim no)
-		(at 167.64 238.76 0)
+		(at 200.66 243.84 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1753,10 +1682,10 @@
 	)
 	(polyline
 		(pts
-			(xy 83.82 99.06)
-			(xy 83.82 250.19)
-			(xy 519.43 250.19)
-			(xy 519.43 99.06)
+			(xy 41.91 100.33)
+			(xy 41.91 255.27)
+			(xy 552.45 255.27)
+			(xy 552.45 100.33)
 		)
 		(stroke
 			(width 0.3)
@@ -1769,7 +1698,7 @@
 	)
 	(text "CP_HUB_DN/DP"
 		(exclude_from_sim no)
-		(at 85.09 248.92 0)
+		(at 43.18 254 0)
 		(effects
 			(font
 				(size 1.4 1.4)
@@ -1778,10 +1707,10 @@
 		)
 		(uuid "8c0c8468-cdc1-5a11-bd29-da2b51a70874")
 	)
-	(text_box "DATA ×4 v2.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226\n  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an AP2114H 3.3 V; the PH 8 lead from the node's J7.\nPins: 32 on two CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 5, a TCA9534A for\n  the matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled;\n  v1 stays the other bays' board.\nLead pinout here: 1 INT · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 +5V (the node's J7 mirrored).\nI²C: TCA6408A 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45, TCA9534A 0x38; the node's INA226 0x40.\nAssembled as DATA-4x-logic (as drawn) or DATA-4x (BOM/CPL '-base': the matrix, the co-processor and the\n  ports' pin chains not fitted)."
+	(text_box "DATA ×4 v2.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226\n  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an LMR51625 5 V from the lead's 20 V, an AP2114H 3.3 V;\n  the PH 8 lead from the node's J7.\nPins: 32 on two CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 5, a TCA9534A for\n  the matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled;\n  v1 stays the other bays' board.\nLead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×6's lead.\nRails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 0.75 A at 20 V · +5V 5.24 V, ≤ 2.5 A (the node's budget) ·\n  PORTn_VBUS 5.1–5.24 V, 0.50–0.62 A limit · +3V3 3.3 V (AP2114H), ≤ 0.5 A · +5V_MX, −5V (sheet Matrix) ·\n  +3V3_CP, +1V1 (sheet Co-processor) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own regulators).\nI²C: TCA6408A 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45, TCA9534A 0x38; the node's INA226 0x40.\nAssembled as DATA-4x-logic (as drawn) or DATA-4x (BOM/CPL '-base': the matrix, the co-processor and the\n  ports' pin chains not fitted)."
 		(exclude_from_sim no)
-		(at 30 265.43 0)
-		(size 534 25.4)
+		(at 30 270.51 0)
+		(size 534 34.29)
 		(margins 2 2 2 2)
 		(stroke
 			(width 0)

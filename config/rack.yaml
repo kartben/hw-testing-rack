@@ -314,26 +314,30 @@ pcb:
                             # routing portfolio and its fixes route it clean); X4V2_LAYERS=6 still builds the 6-layer
                             # stack-up for a comparison
     cradle: 5.5             # each end's 5.5 mm in the cradle's slots (and its latches), both faces free of parts
-    notches: { x: [35, 71], size: [3.4, 6.5], tee: [-2.2, 2.5] }   # its bottom edge's two notches (drawer x of
-                            # their centres; width, depth), the cradle's T-heads; tee: each T-head bar's ends off its
-                            # notch's centre (x4_cradle.scad reads it), the bar 0.5 under the notch's depth: the front
-                            # face free of parts over it, 0.3 mm round.  Rear face bare 5.3–9.3 mm above the bottom
-                            # edge (the base's push band)
-    usb: [22, 40, 58, 76]   # board x of the four vertical USB-C (HRO TYPE-C-31-D-06, 6.4 mm tall), mouths towards the
-                            # wall: drawer x 26, 44, 62, 80, v1's ports
+    notches: { x: [38.5, 69.5], size: [3.4, 6.5], tee: [-2.2, 2.5] }   # its bottom edge's two notches (drawer x of
+                            # their centres; width, depth), the cradle's T-heads, as the DATA ×6's (2026-11-01); tee:
+                            # each T-head bar's ends off its notch's centre (x4_cradle.scad reads it), the bar 0.5 under
+                            # the notch's depth: the front face free of parts over it, 0.3 mm round.  Rear face bare
+                            # 5.3–9.3 mm above the bottom edge (the base's push band)
+    usb: [28.95, 44.45, 59.95, 75.45]   # board x of the four vertical USB-C (HRO TYPE-C-31-D-06, 6.4 mm tall), mouths
+                            # towards the wall: the DATA ×6's positions 2–5 (drawer x 32.95 … 79.45, 15.5 mm apart), so
+                            # one drawer takes either board (layout B, 2026-11-01; the headers stay at their x)
+    usb_rot: [90, 90, 90, 90]   # each one's turn on the board: standing, slot upright, all alike, as the DATA ×6's
     usb_z: 11               # their axis: the port wall's openings, as v1's
     header: { x: [22, 40, 58, 76], z: 28.5, odd_z: 27.23, even_z: 29.77, cols: 6,
               names: [GND, VREF, P5, P1, P6, P2, P7, P3, P8, P4, RESET, BOOT] }
                             # per port a 2 × 6 2.54 through-hole header (hand-soldered, its tails 1.5 mm out of the rear
-                            # face) on the FRONT face, pins forward, centred on its USB-C's x and on drawer z 28.5 (layout
+                            # face) on the FRONT face, pins forward, centred on v1's port x and on drawer z 28.5 (layout
                             # B, 2026-10-21: its names over it, its port number and VBUS LED by its west end), pin 1
                             # at x − 6.35: column k (from the left) holds pins 2k−1 on the lower row (odd_z) and 2k on the
                             # upper one.  Read as rows (the user, 2026-10-20): upper VREF 1 2 3 4 BOOT, lower GND 5 6 7 8
                             # RESET.  names: in pin order 1–12
-    lead: [90, 34]          # J1, the JST PH 8 vertical through-hole (B8B-PH-K-S) on the REAR face, soldered by hand: board
-                            # x and drawer z of its centre.  Its pins run DOWN the board, every 2 mm, from pin 1 (INT) at
-                            # z 41 to pin 8 (+5V) at z 27; the housing 4.5 (x) × 17.9 (z), 6.0 off the face, its mouth
-                            # towards the rear: the lead plugs in from behind and drops into the cable window
+    lead: [89, 41]          # J1, the JST PH 8 vertical through-hole (B8B-PH-K-S) on the REAR face, soldered by hand: board
+                            # x and drawer z of its centre, the DATA ×6's (the user, 2026-11-01: one lead and one cable
+                            # window for both).  Its pins run UP the board, every 2 mm, from pin 1 at z 34 to pin 8 at
+                            # z 48, the ×6's map: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN (the node's
+                            # switched 20 V); the housing 4.5 (x) × 17.9 (z), 6.0 off the face, its mouth towards the
+                            # rear: the lead plugs in from behind and drops into the cable window
   data_port_x6:             # DATA ×6 (electronics/data-port-x6, prototype, 2026-10-31): six ports for the porte-revues
                             # bays, power only since 2026-10-31 (hub, switch and INA226 per port; no pin header: the
                             # DATA ×4 v2 keeps the logic); same frame as the v2: board x = drawer x − x0, KiCad y =

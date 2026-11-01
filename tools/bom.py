@@ -155,9 +155,12 @@ JLC_QUOTE = {
     # components $86.73, SMT $6.57, packaging $0.51, special components $0.48), $254.46 with the RP2354B: $46.60
     # more an order.
     # One logic and one base per panel; the variants' own estimates above stay for single orders (the BOM
-    # page's calculator).
+    # page's calculator).  Stale since the v2's rework of 2026-11-01 (layout B on the DATA ×6's grid, its own 5 V
+    # from the rack's 20 V, the lead's map B): priced by the calculator until a re-quote
     "data-port-x4-v2-panel": {
         "pcbs": 5, "assembled": 2, "service": "Economic", "total": 201.72, "date": "2026-10-23", "from_fab": True,
+        "stale_since": "2026-11-01",
+        "stale": "the v2's rework changed its BOM (layout B, its own 5 V converter, the lead's map B)",
         "boards": ("data-port-x4-v2", "data-port-x4-v2-base"),
         "spec": "4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites",
         "pcb": {"engineering": 25.00, "ENIG": 18.20, "board": 8.80},

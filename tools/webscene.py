@@ -168,20 +168,21 @@ def x4v2_header_pins(raw: dict, port: int) -> list[tuple[float, float, str]]:
 # The standing v2's main parts, until its KiCad model exists: the study's banded placement on 100 × 70
 # (docs/data-x4-v2-layout-options.md), every face's parts in bands across the board.  (face: -1 the front, towards
 # the DUTs, +1 the rear; board x of the body's left end, drawer z of its bottom, w along x, h along z, its height
-# off the face, colour).  Per port at its USB-C's x (cx); then the shared parts.
+# off the face, colour).  Per port at its USB-C's x (cx), its pin chain at its header's (hx, layout B); then the
+# shared parts.
 IC, ARRAY, METAL = "#1b1b1d", "#2b2b2d", "#c9ccd1"
 
 
-def x4v2_parts(usb_x) -> list[tuple]:
+def x4v2_parts(usb_x, hdr_x) -> list[tuple]:
     out = []
-    for cx in usb_x:
+    for cx, hx in zip(usb_x, hdr_x):
         out += [(-1, cx - 4.5, 18.0, 3.0, 3.0, 1.0, IC),                                         # INA226
                 (-1, cx - 1.0, 18.7, 1.6, 3.2, 0.6, "#3c3c3e"),                                  # 100 mR shunt
                 (-1, cx + 1.6, 18.1, 2.9, 2.8, 1.1, IC),                                         # TPS2553
                 (-1, cx + 5.2, 8.6, 2.8, 2.9, 1.1, IC),                                          # USBLC6
-                (+1, cx - 2.25, 30.75, 4.5, 2.5, 0.9, IC),                                       # LSF0108
-                (+1, cx - 4.5, 26.0, 2.5, 1.0, 0.55, IC), (+1, cx + 2.0, 26.0, 2.5, 1.0, 0.55, IC),  # TPD4E05U06 ×2
-                *[(+1, cx - 5.2 + 2.6 * k, 35.0, 2.0, 1.0, 0.45, ARRAY) for k in range(4)]]       # 0402 × 4 arrays
+                (+1, hx - 2.25, 30.75, 4.5, 2.5, 0.9, IC),                                       # LSF0108
+                (+1, hx - 4.5, 26.0, 2.5, 1.0, 0.55, IC), (+1, hx + 2.0, 26.0, 2.5, 1.0, 0.55, IC),  # TPD4E05U06 ×2
+                *[(+1, hx - 5.2 + 2.6 * k, 35.0, 2.0, 1.0, 0.45, ARRAY) for k in range(4)]]       # 0402 × 4 arrays
     return out + [(-1, 60.0, 52.0, 9.0, 9.0, 0.9, IC),                                           # USB2517 hub
                   (-1, 71.0, 56.0, 3.2, 2.5, 0.8, METAL),                                        # 24 MHz crystal
                   (-1, 76.0, 55.8, 2.9, 2.8, 1.1, IC),                                           # LDO
@@ -1321,14 +1322,14 @@ def build(rack) -> Path:
                 slab(bx, bx + bw, z0 + nh, z0 + bh)                       # the board, its bottom strip between the notches
                 for x_a, x_b in zip([bx] + [c + nw / 2 for c in cuts], [c - nw / 2 for c in cuts] + [bx + bw]):
                     slab(x_a, x_b, z0, z0 + nh)
-                for n in range(1, 5):          # the vertical USB-C, their mouths 1 mm behind the port wall
-                    add("dataport_usb_x4", (dxw_ + x4_port_x(rack, n), y_face - v["face_y"] + 1.0, plenum + dp_z), row=i,
+                for ux in v["usb"]:            # the vertical USB-C, their mouths 1 mm behind the port wall
+                    add("dataport_usb_x4", (dxw_ + vx0 + ux, y_face - v["face_y"] + 1.0, plenum + dp_z), row=i,
                         layer="drawers", bay=bid, movable=drawer)
                 pins = [[round(c, 3) for c in pt] for n in range(1, 5) for pt, _ in x4v2_header_points(dxw_, dy, plenum, n)]
                 items["headers"].append({"bay": bid, "row": i, "space": "row", "movable": drawer, "board": "DATA ×4 v2",
                                          "pins": [[x, round(y + HEADER["BASE"], 3), z] for x, y, z in pins],
                                          "dir": [0, -1, 0], "tail": t + 1.5})   # through-hole, pins forward
-                for face, x, z, w, h, hh, col in x4v2_parts(v["usb"]):
+                for face, x, z, w, h, hh, col in x4v2_parts(v["usb"], v["header"]["x"]):
                     y = y_face - hh if face < 0 else y_face + t
                     items["boxes"].append({"kind": "chip", "pos": [round(bx + x, 3), round(y, 3), round(plenum + z, 3)],
                                            "size": [w, hh, h], "color": col, **mv})
