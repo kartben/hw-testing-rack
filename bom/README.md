@@ -7,15 +7,15 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 |---|---:|
 | Electronics | 711 |
 | Cables | 177 |
-| Printed parts | 84 |
+| Printed parts | 86 |
 | Cameras | 64 |
 | Power | 58 |
 | Motion | 29 |
-| Fasteners | 13 |
+| Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,143** |
+| **Total** | **1,147** |
 
-≈ **€95 per bay** all-in.
+≈ **€96 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -170,8 +170,8 @@ One rack (12 bay-node, 1 power-hub, 10 data-port, 2 camera-pod, 1 data-port-x4-v
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
 | slot_bin | 4 | 56.7 | `mechanical/stl/slot_bin.stl` |
 | tray | 12 | 82.0 | `mechanical/stl/tray.stl` |
-| x4_cradle | 2 | 12.0 | `mechanical/stl/x4_cradle.stl` |
-| x4_strip | 2 | 1.0 | `mechanical/stl/x4_strip.stl` |
+| x4_cradle | 12 | 12.0 | `mechanical/stl/x4_cradle.stl` |
+| x4_strip | 12 | 1.0 | `mechanical/stl/x4_strip.stl` |
 | cover_box4 (optional) | 12 | 31.1 | `mechanical/stl/cover_box4.stl` |
 
 ## Line items
@@ -400,13 +400,13 @@ One rack (12 bay-node, 1 power-hub, 10 data-port, 2 camera-pod, 1 data-port-x4-v
 | Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 78.22 | 78.22 | JLCPCB quote 2026-11-01, adjusted |
 | Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 1.90 | 1.90 | JLCPCB quote 2026-11-01, adjusted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
-| Printed parts | PETG filament | 4.2 kg | 20.00 | 84.00 | any |
+| Printed parts | PETG filament | 4.3 kg | 20.00 | 86.00 | any |
 | Printed parts | Rear bay covers (optional) | 12  | 0.00 | 0.00 | printed |
-| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 128  | 0.03 | 3.84 | AliExpress (bulk) / Ruthex |
+| Fasteners | M3 heat-set insert, 5.7 mm (generic brass, Ruthex-compatible holes) | 158  | 0.03 | 4.74 | AliExpress (bulk) / Ruthex |
 | Fasteners | M3 square nut, DIN 562 (5.5 × 5.5 × 1.8) | 80  | 0.02 | 1.60 | AliExpress (bulk) |
-| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods, the DATA ×4 cradle | 148  | 0.02 | 2.96 | AliExpress (bulk) |
+| Fasteners | M3×8 pan head, Phillips (ISO 7045): rear braces, chain anchor, node PCB, power box lid, camera pods, the DATA board's cradle | 178  | 0.02 | 3.56 | AliExpress (bulk) |
 | Fasteners | M3 male-female hex spacer, 12 mm + 6 mm thread, brass (≤ 5.5 mm AF) | 4  | 0.10 | 0.40 | AliExpress (bulk) |
-| Fasteners | PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 "ST", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, 2 for the DATA port board, the guide lip's stop; a sled bay: 2 DATA, its stop and 2 port-block locks (and 2 sled locks if fixed); a DATA ×4 bay: no DATA board (its cradle takes M3 × 8 into inserts), 5 for the strip over its receptacles; every bay, 2 that pull its front onto the drawer from inside | 123  | 0.02 | 2.46 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
+| Fasteners | PT 2.3×8 pan head, thread-forming for plastics (M2.3×8 "ST", head ≤ Ø4.5): every printed pilot.  A drawer bay: the foot lock, 4 for the chain's end pieces, the guide lip's stop; a sled bay: its stop and 2 port-block locks (and 2 sled locks if fixed); every bay: 5 for the strip over its DATA board's receptacles (its cradle takes M3 × 8 into inserts), 2 that pull its front onto the drawer from inside | 153  | 0.02 | 3.06 | AliExpress (bulk, HZYUEGOU: M2.3×8 self-tapping pan head, stainless, ≈ €2.13 / 100) |
 | Fasteners | M2×5 pan head, ISO 7045 (the front display: 4 through its frame into the module's stand-offs, from behind) | 48  | 0.02 | 0.96 | AliExpress (bulk) |
 | Fasteners | M2.5 washer, DIN 125 (chain end pieces: their tab holes can be 4.3 mm) | 44  | 0.01 | 0.44 | AliExpress (bulk) |
 | Motion | Drag chain 7×7 mm, links open on both sides (outer 13.5 × 10.2 mm, R18), ≈ 180 mm per drawer with its two end pieces | 3 m | 4.00 | 12.00 | Olimex DRAG-CHAIN-7X7 |
