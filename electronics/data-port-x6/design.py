@@ -145,6 +145,19 @@ XTAL_RULE = """
 # USB lines' width off them, against a coupled spike that would switch a port off or reset the hub
 MIN_WIDTH_EXCEPT = {"courtyards": ["U1"], "nets": ["HUB_1V8PLL"], "why": "in the hub's fan-out"}
 
+# Where the printed cradle (mechanical/parts/x4_cradle.scad) holds the board, no part, its courtyard included (DRC:
+# footprint keep-outs, pcbgen's "parts:" rule areas, copper free to pass): each end's band in the slots on both
+# faces, and on the front face each T-head's bar, 0.3 mm round it: from notches.tee off its notch's centre, up to
+# 0.5 mm under the notch's depth (the cradle's own numbers)
+_TEE = (CFG["notches"]["tee"][0] - 0.3, CFG["notches"]["tee"][1] + 0.3)
+CRADLE_KEEPOUTS = [
+    {"name": f"cradle-{end}", "footprints": True, "layers": ["F.Cu", "B.Cu"],
+     "poly": [(x0, 0), (x0 + CRADLE, 0), (x0 + CRADLE, H), (x0, H)]}
+    for end, x0 in (("w", 0.0), ("e", W - CRADLE))] + [
+    {"name": f"t-head-{i}", "footprints": True, "layers": ["F.Cu"],
+     "poly": [(xc + _TEE[0], H - _ND + 0.2), (xc + _TEE[1], H - _ND + 0.2), (xc + _TEE[1], H), (xc + _TEE[0], H)]}
+    for i, xc in enumerate((x0 + x1) / 2 for x0, x1, _ in NOTCHES)]
+
 def P(x, y, rot=0, side="top"):
     """A placement on the board (KiCad: y = 0 the top edge); the front face is the top side."""
     return {"x": x, "y": y, "rot": rot, "side": side}
@@ -920,7 +933,7 @@ def board() -> Board:
                    "6's pairs: 0.17 mm to each"},
         "dru": XTAL_RULE,
         "min_width_except": MIN_WIDTH_EXCEPT,
-        "keepouts": [
+        "keepouts": CRADLE_KEEPOUTS + [
             # the crystal's block (dropped once routed), as the v2's
             {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP},
             # no rear pour in the 0.7 mm strip by USB-C 6's cluster (x 91.5) that one via alone held: no room for a second

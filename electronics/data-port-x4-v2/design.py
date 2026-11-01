@@ -77,6 +77,18 @@ CRADLE = CFG["cradle"]              # each end's band in the cradle's slots: no 
 _NW, _ND = CFG["notches"]["size"]
 NOTCHES = [(x - CFG["x0"] - _NW / 2, x - CFG["x0"] + _NW / 2, H - _ND)   # (x0, x1, top y) of the bottom-edge notches
            for x in CFG["notches"]["x"]]
+# Where the printed cradle (mechanical/parts/x4_cradle.scad) holds the board, no part, its courtyard included (DRC:
+# footprint keep-outs, pcbgen's "parts:" rule areas, copper free to pass): each end's band in the slots on both
+# faces, and on the front face each T-head's bar, 0.3 mm round it: from notches.tee off its notch's centre, up to
+# 0.5 mm under the notch's depth (the cradle's own numbers)
+_TEE = (CFG["notches"]["tee"][0] - 0.3, CFG["notches"]["tee"][1] + 0.3)
+CRADLE_KEEPOUTS = [
+    {"name": f"cradle-{end}", "footprints": True, "layers": ["F.Cu", "B.Cu"],
+     "poly": [(x0, 0), (x0 + CRADLE, 0), (x0 + CRADLE, H), (x0, H)]}
+    for end, x0 in (("w", 0.0), ("e", W - CRADLE))] + [
+    {"name": f"t-head-{i}", "footprints": True, "layers": ["F.Cu"],
+     "poly": [(xc + _TEE[0], H - _ND + 0.2), (xc + _TEE[1], H - _ND + 0.2), (xc + _TEE[1], H), (xc + _TEE[0], H)]}
+    for i, xc in enumerate((x0 + x1) / 2 for x0, x1, _ in NOTCHES)]
 USB_Y = TOP_Z - CFG["usb_z"]        # the vertical USB-C's axis (z 11)
 HDR_Y = TOP_Z - CFG["header"]["z"]  # the 2 × 6 headers' centre: odd pins (GND, P5, P6…) on the lower row
 # J1's pin 1: the lead's centre (board x, drawer z) less half its 8 pins' 14 mm span, pins running down
@@ -1576,7 +1588,7 @@ def board() -> Board:
             "C46": "U11 pin 10 (DVDD, east face): C46 3.9 mm away, the two meet through vias; C47 (4.7 uF) 2.0 mm "
                    "from pin 32, no via"},
         "dru": XTAL_RULE + XTAL2_RULE,
-        "keepouts": [
+        "keepouts": CRADLE_KEEPOUTS + [
             # the hub crystal's block: no other net's track or via on either face (dropped once routed)
             {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP},
             {"name": "core:xtal-y2", "layers": ["F.Cu"], "poly": XTAL2_KEEP},

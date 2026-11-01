@@ -63308,6 +63308,37 @@
 		(uuid "c874aad5-7599-40e5-8481-39478a8200e0")
 	)
 	(zone
+		(layer "F.Cu")
+		(uuid "31b2238a-f1a8-47f5-832a-91e23716a955")
+		(name "parts:t-head-1")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(keepout
+			(tracks allowed)
+			(vias allowed)
+			(pads allowed)
+			(copperpour allowed)
+			(footprints not_allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+			(island_removal_mode 0)
+		)
+		(polygon
+			(pts
+				(xy 63 63.7) (xy 68.3 63.7) (xy 68.3 70) (xy 63 70)
+			)
+		)
+	)
+	(zone
 		(net "GND")
 		(layer "F.Cu")
 		(uuid "5b592829-47d0-44f7-b402-3bb95a3d5373")
@@ -68098,6 +68129,99 @@
 				(xy 32.164301 18.319569) (xy 32.16435 18.31964) (xy 32.166902 18.317783) (xy 32.166849 18.317713)
 				(xy 32.171991 18.313767) (xy 32.172 18.313762) (xy 32.193771 18.291989) (xy 32.197427 18.288515)
 				(xy 32.469079 18.043222) (xy 32.524939 18.018257) (xy 32.535427 18.0177) (xy 33.45953 18.0177)
+			)
+		)
+	)
+	(zone
+		(layer "F.Cu")
+		(uuid "b0f4df42-4591-4fd0-a70d-0c10b34acb3c")
+		(name "parts:t-head-0")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(keepout
+			(tracks allowed)
+			(vias allowed)
+			(pads allowed)
+			(copperpour allowed)
+			(footprints not_allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+			(island_removal_mode 0)
+		)
+		(polygon
+			(pts
+				(xy 32 63.7) (xy 37.3 63.7) (xy 37.3 70) (xy 32 70)
+			)
+		)
+	)
+	(zone
+		(layers "F.Cu" "B.Cu")
+		(uuid "3d2319ba-a52d-43c4-ab85-edd82165e4e8")
+		(name "parts:cradle-e")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(keepout
+			(tracks allowed)
+			(vias allowed)
+			(pads allowed)
+			(copperpour allowed)
+			(footprints not_allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+			(island_removal_mode 0)
+		)
+		(polygon
+			(pts
+				(xy 94.5 0) (xy 100 0) (xy 100 70) (xy 94.5 70)
+			)
+		)
+	)
+	(zone
+		(layers "F.Cu" "B.Cu")
+		(uuid "e3aa59e3-4354-4c43-92a2-4b7d5400a4d2")
+		(name "parts:cradle-w")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(keepout
+			(tracks allowed)
+			(vias allowed)
+			(pads allowed)
+			(copperpour allowed)
+			(footprints not_allowed)
+		)
+		(placement
+			(enabled no)
+			(sheetname "")
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+			(island_removal_mode 0)
+		)
+		(polygon
+			(pts
+				(xy 0 0) (xy 5.5 0) (xy 5.5 70) (xy 0 70)
 			)
 		)
 	)
