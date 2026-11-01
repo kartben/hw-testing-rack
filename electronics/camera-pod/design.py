@@ -3,7 +3,11 @@
 It ties the camera and its light to the bay node's J6 with nothing to crimp or solder:
 
 * J1, JST PH 8 (side entry) on the right edge: a ready-made double-ended PH 8 lead ("Same
-  direction", pin n to pin 9−n) from the node's J6; its pinout here is J6's mirrored.
+  direction", pin n to pin 9−n) from the node's J6; its pinout here is J6's mirrored, GND on both end
+  pins (1 GND · 2 CS · 3 LED_K · 4 MISO · 5 MOSI · 6 CAM_5V · 7 SCK · 8 GND, node rev B): this lead
+  plugged into the node's DATA socket J7 by mistake puts the node's eFused 20 V on this board's GND
+  only, between two of its pins, a short the node's eFuse cuts; a 1:1 lead in J6 puts CAM_5V on the
+  LEDs' cathodes (pin 3), not on a camera line.
 * J2, a 1 × 6 2.54 mm header in the Mega's own order (VCC GND SCK MISO MOSI CS, names on the
   silkscreen): the camera's own cable plugs onto it.
 * The Mega runs from 3.3 V, an AP2114H on CAM_5V: its MISO is then a 3.3 V output, whatever the
@@ -56,7 +60,7 @@ TP_ROUND2 = [
     ("MOSI", (28.7148, 14.5445), "MOSI"),
     ("MISO", (25.6824, 18.8196), "MISO"),
     ("CS", (29.493, 19.2218), "CS"),
-    ("LED_K", (35.0758, 14.2588), "LED"),
+    ("LED_K", (35.3, 9.0), "LED"),           # on LED_K's new feed east of J1 (node rev B), 14.3 before
 ]
 
 def board() -> Board:
@@ -67,13 +71,13 @@ def board() -> Board:
     b.root_notes = [
         "Camera pod v1.0 — PH 8 lead from the bay node's J6, 1 × 6 header for the Arducam Mega's cable,",
         "  AP2114H 3.3 V for the camera, four white 2835 LEDs switched by the node (LED_K).",
-        "Lead pinout here: 1 LED_K · 2 CS · 3 MISO · 4 MOSI · 5 GND · 6 SCK · 7 GND · 8 CAM_5V",
+        "Lead pinout here: 1 GND · 2 CS · 3 LED_K · 4 MISO · 5 MOSI · 6 CAM_5V · 7 SCK · 8 GND",
         "  (the node's J6 mirrored: one 'Same direction' PH 8 cable).",
     ]
     s = b.sheet("Pod", "pod.kicad_sch", "Lead, camera header, 3.3 V, light")
     s.block("Lead from the bay node's J6 (JST PH 8, side entry)")
-    part(s, "J1", "ph8", {"1": "LED_K", "2": "CS", "3": "MISO", "4": "MOSI", "5": "GND", "6": "SCK", "7": "GND",
-                          "8": "CAM_5V"}, "LEAD", pcb=P(W - PH_EDGE, CFG["lead"], 90))
+    part(s, "J1", "ph8", {"1": "GND", "2": "CS", "3": "LED_K", "4": "MISO", "5": "MOSI", "6": "CAM_5V", "7": "SCK",
+                          "8": "GND"}, "LEAD", pcb=P(W - PH_EDGE, CFG["lead"], 90))
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "CAM_5V"}, in_bom=False, on_board=False)
     s.part("#FLG02", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "GND"}, in_bom=False, on_board=False)
     s.block("The Arducam Mega's cable (1 × 6, 2.54 mm, its own order) and its 3.3 V")
@@ -140,7 +144,19 @@ def board() -> Board:
         # the pin → cap → via rule (the layout review): J2.1 (the camera's VCC) reaches its rail only through C3, the
         # 100 nF right above it.  The rail (no plane on this board) comes in on C3's far side, at the end of its stub
         "tracks": [("+3V3", "F.Cu", 0.4, [(hx - 6.35, hy - 1.66), (hx - 6.35, hy - 4.225)]),
-                   ("+3V3", "F.Cu", 0.4, [(hx - 6.35, hy - 4.225), (hx - 5.25, hy - 4.225)])],
+                   ("+3V3", "F.Cu", 0.4, [(hx - 6.35, hy - 4.225), (hx - 5.25, hy - 4.225)]),
+                   # J1's lead pins (node rev B), each one pin up from before: SCK from J1.7 west and down to its
+                   # test pad, then its old diagonal; MOSI (J1.5) and MISO (J1.4) straight onto their old diagonals;
+                   # CAM_5V (J1.6) and LED_K (J1.3) out of their pads' east ends and north past J1.7–J1.8
+                   ("SCK", "F.Cu", 0.25, [(32.25, 8.0), (29.7886, 8.0), (29.7886, 11.9593)]),
+                   ("SCK", "F.Cu", 0.25, [(29.7886, 11.9593), (24.6233, 17.1246)]),
+                   ("MOSI", "F.Cu", 0.25, [(32.25, 12.0), (31.2593, 12.0), (29.2593, 14.0)]),
+                   ("MISO", "F.Cu", 0.25, [(32.25, 14.0), (30.502, 14.0), (28.502, 16.0)]),
+                   ("CAM_5V", "F.Cu", 0.4, [(32.25, 10.0), (34.5, 10.0), (34.5, 4.9), (28.5, 4.9)]),
+                   # … and on to R4 under its LED_A4 pad, where its feed from J1.8 ran
+                   ("CAM_5V", "F.Cu", 0.25, [(28.5, 4.9), (25.0, 8.42), (23.1075, 8.42), (22.0875, 7.4)]),
+                   ("LED_K", "F.Cu", 0.3, [(32.25, 16.0), (34.8, 16.0), (35.3, 15.5), (35.3, 9.0)]),
+                   ("LED_K", "F.Cu", 0.3, [(35.3, 9.0), (35.3, 4.2), (33.7, 2.6)])],
         "stitch": 3.0,
         "texts": [
             {"text": "VCC GND SCK MISO MOSI CS", "x": hx, "y": hy + 4.3, "size": 0.8},

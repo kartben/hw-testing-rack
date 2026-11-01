@@ -279,7 +279,18 @@ def board() -> Board:
         # meets it (Freerouting takes a wire ending mid-segment as unconnected)
         ("DATA_VIN", "F.Cu", 0.6, [(63.15, 37.6), (63.75, 37.0), (65.4743, 37.0), (66.25, 37.0)]),
     ]
-    efuse_vias = [("VIN", 46.6, 67.6, 0.8, 0.4),
+    # the camera lead's J6 (node rev B: 1 GND · 2 SCK · 3 CAM_5V · 4 MOSI · 5 MISO · 6 LED_K · 7 CS · 8 GND): SCK
+    # from its test pad TP18 into J6.2 from the west; CAM_5V (from F1, past J6's north end, through C27) into J6.3
+    # at its pad's east end, so it doesn't cross the SPI lines.  LED_K (≤ 102 mA) is the router's: drawn round
+    # J6's south end it fenced off POS_OUT's way south
+    cam_tracks = [
+        # SCK under C28's GND via on B.Cu, up between J6.1 and J6.2 (the gap west of J6.3 is C28's)
+        ("CAM_SCK_C", "B.Cu", 0.25, [(54.3875, 14.2), (54.3875, 12.1625), (55.35, 11.2)]),
+        ("CAM_SCK_C", "F.Cu", 0.25, [(55.35, 11.2), (56.35, 12.2), (58.5, 12.2)]),
+        ("CAM_5V", "F.Cu", 0.6, [(53.5, 8.6), (54.05, 9.15), (64.575, 9.15), (64.575, 14.2)]),
+        ("CAM_5V", "F.Cu", 0.6, [(64.575, 14.2), (58.5, 14.2)]),
+    ]
+    efuse_vias = [("VIN", 46.6, 67.6, 0.8, 0.4), ("CAM_SCK_C", 55.35, 11.2, 0.6, 0.3),
                   *[("GND", ex + dx, ey + dy) for dx in (-1.5, 0.0, 1.5) for dy in (-0.75, 0.75)]]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
@@ -318,7 +329,7 @@ def board() -> Board:
         "decoupling": {"C2": ("U1.VIN", 3.0), "C4": "U1.VIN", "C11": "U2.VI", "C12": "U2.VO",
                        "C13": "U3.3V3", "C14": "U3.3V3", "C16": "D4.VDD", "C17": "U5.VCC", "C18": "U6.VCC",
                        "C19": "U7.5", "C20": "U9.IN", "C22": "U10.VS", "C23": "U11.VDD", "C24": "U11.Vio",
-                       "C25": "U4.5", "C26": "U8.5", "C27": "J6.1", "C28": "U12.5"},
+                       "C25": "U4.5", "C26": "U8.5", "C27": ("J6.3", 3.0), "C28": "U12.5"},
         "stitch": 4.0,
         "zones": [
             {"layer": "In1.Cu", "net": "GND"},
@@ -390,7 +401,7 @@ def board() -> Board:
                                                            ("SHUNT_P", 54.1, 43.0), ("SHUNT_N", 55.0, 43.15))]],
         # the front +3V3 area of In2 (LED, SERVICE switch) is cut off by the VRACK strip: fed from the
         # main +3V3 area by a B.Cu track
-        "tracks": [*hs_tracks, *efuse_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)]),
+        "tracks": [*hs_tracks, *efuse_tracks, *cam_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)]),
                    *[(net, "F.Cu", w, pts) for net, w, pts in decap_ties],
                    *[(net, layer, 0.25, pts) for net, layer, pts in shunt_pair]],
         # ESP32 antenna: no copper on any layer under/around the antenna (the WROOM-1's rear 6 mm, ±24 mm)
@@ -891,20 +902,24 @@ def board() -> Board:
     c = b.sheet("Camera", "cam.kicad_sch", "Camera lead: Arducam Mega SPI and its LEDs")
     c.frame("J6: JST PH 8 to the bay's camera pod (Arducam Mega 3MP SPI + white LEDs), ≈ 50 cm", 6, 6, 120, 60)
     cx, cy = CFG["cam"]
-    part(c, "J6", "ph8v", {"1": "CAM_5V", "2": "GND", "3": "CAM_SCK_C", "4": "GND", "5": "CAM_MOSI_C",
-                           "6": "CAM_MISO_C", "7": "CAM_CS_C", "8": "LED_K"}, "CAM",
+    # GND on both end pins (node rev B): a DATA lead plugged in here carries no VIN, and the pod's end GND pins
+    # meet J7.1 and J7.8 when a camera lead goes into J7 by mistake (the eFuse cuts that short).  CAM_5V on pin
+    # 3 keeps it off a DATA board's GND pins whichever way a DATA lead goes in, and LED_K on pin 6, opposite it:
+    # a 1:1 camera lead puts CAM_5V on the pod's LED cathodes, not on a camera line
+    part(c, "J6", "ph8v", {"1": "GND", "2": "CAM_SCK_C", "3": "CAM_5V", "4": "CAM_MOSI_C", "5": "CAM_MISO_C",
+                           "6": "LED_K", "7": "CAM_CS_C", "8": "GND"}, "CAM",
          pcb=P(cx, cy, 270), sch=at(100, 30, fields=(1, -7)))
-    for n, net in ((1, "CAM_5V"), (3, "CAM_SCK_C"), (5, "CAM_MOSI_C"), (6, "CAM_MISO_C"), (7, "CAM_CS_C"), (8, "LED_K")):
+    for n, net in ((2, "CAM_SCK_C"), (3, "CAM_5V"), (4, "CAM_MOSI_C"), (5, "CAM_MISO_C"), (6, "LED_K"), (7, "CAM_CS_C")):
         c.wire(f"J6.{n}", (92, 26 + n))
         c.tag(net, (92, 26 + n), "left")
-    c.wire("J6.2", (84, 28))
-    c.wire("J6.4", (84, 30))
-    c.wire((84, 28), (84, 31), net="GND")
-    c.tag("GND", (84, 31), "down")
+    c.wire("J6.1", (84, 27))
+    c.wire("J6.8", (84, 34))
+    c.wire((84, 27), (84, 35), net="GND")
+    c.tag("GND", (84, 35), "down")
     part(c, "F1", "pptc750", {"1": "+5V", "2": "CAM_5V"}, "0.75A", pcb=P(cx - 5.5, cy - 7.2, 90), sch=at(20, 14, rot=90))
-    # right above J6.1 (CAM_5V), in the notch of the connector's courtyard, on the feed from F1 (decoupling
-    # check, the layout review: left of F1 it was 4.3 mm from the pin)
-    C(c, "C27", "100n", "CAM_5V", "GND", pcb=P(cx - 2.8, cy - 8.8, 0), sch=at(30, 16))
+    # CAM_5V reaches J6.3 at its pad's east end (cam_tracks): from the west it would cross the SPI lines.  C27 on
+    # the feed, east of J6's body, its pad 2.9 mm from J6.3's (the connector's own limit, 3 mm)
+    C(c, "C27", "100n", "CAM_5V", "GND", pcb=P(65.4, 14.2, 0), sch=at(30, 16))
     # SPI: 33 Ω in series at the node end of the lead (a few cm of track from U3: the source, for a 50 cm lead)
     rx, ry = cx - 11.5, cy - 8.2
     R(c, "R31", "33", "CAM_SCK", "CAM_SCK_P", pcb=P(rx, ry, 0), sch=at(50, 24, rot=90))
@@ -936,7 +951,7 @@ def board() -> Board:
     part(c, "TP10", "testpad", {"1": "CAM_5V"}, "CAM_5V", pcb=P(60.0, 70.0, 0, "bottom"), in_bom=False,
          sch=at(136, 14, rot=90, fields="left"))
     c.notes_at = (6, 64, 114)
-    c.note("Lead pinout: 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K (the LEDs' cathode side).")
+    c.note("Lead pinout: 1 GND · 2 SCK · 3 CAM_5V · 4 MOSI · 5 MISO · 6 LED_K (the LEDs' cathode side) · 7 CS · 8 GND.")
     c.note("SPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k")
     c.note("  pull-up: deselected before firmware), IO7 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).")
     c.note("CAM_5V through F1 (0.75 A PTC, 1.5 A trip): the camera ≤ 317 mA (Arducam) + the LEDs ≤ 102 mA.  USBLC6s on the lead side of the 33 Ω.")

@@ -65,8 +65,8 @@ later, take its tray out first.
    `chain_anchor` and the moving one to the `chain_foot`'s fin, each with
    2 × PT 2.3×8 and washers, tab against the part's flat face.  Check the
    DATA lead with a meter first: pin n to pin 9−n on all 8 ("Same direction";
-   a 1:1 lead puts the node's SCL on GND; the camera's PH 8 lead the same, its
-   MOSI and CS).  Open the links, lay the lead in ([cabling.md](cabling.md))
+   a 1:1 lead swaps the signals and leaves the DATA board unpowered, the
+   camera's PH 8 lead the same).  Open the links, lay the lead in ([cabling.md](cabling.md))
    and close them.
    Anchor onto the tray: 2 × M3×8 into its inserts; plug the lead into the
    node's DATA header (J7, on its right edge).

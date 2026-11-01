@@ -5768,8 +5768,8 @@
 	)
 	(wire
 		(pts
-			(xy 248.92 68.58)
-			(xy 233.68 68.58)
+			(xy 248.92 71.12)
+			(xy 233.68 71.12)
 		)
 		(stroke
 			(width 0)
@@ -5790,6 +5790,17 @@
 	)
 	(wire
 		(pts
+			(xy 248.92 76.2)
+			(xy 233.68 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "36c66db8-1587-5f6a-b0c5-0e5f46011e20")
+	)
+	(wire
+		(pts
 			(xy 248.92 78.74)
 			(xy 233.68 78.74)
 		)
@@ -5797,7 +5808,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "36c66db8-1587-5f6a-b0c5-0e5f46011e20")
+		(uuid "5e77c040-bc80-5332-b870-7a2bad9103e4")
 	)
 	(wire
 		(pts
@@ -5808,7 +5819,7 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "5e77c040-bc80-5332-b870-7a2bad9103e4")
+		(uuid "937fdfc4-336e-5048-bec5-29f91663232c")
 	)
 	(wire
 		(pts
@@ -5819,23 +5830,12 @@
 			(width 0)
 			(type default)
 		)
-		(uuid "937fdfc4-336e-5048-bec5-29f91663232c")
-	)
-	(wire
-		(pts
-			(xy 248.92 86.36)
-			(xy 233.68 86.36)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
 		(uuid "97d12a2f-0367-5eed-820e-b1c21bfdc2f4")
 	)
 	(wire
 		(pts
-			(xy 248.92 71.12)
-			(xy 213.36 71.12)
+			(xy 248.92 68.58)
+			(xy 213.36 68.58)
 		)
 		(stroke
 			(width 0)
@@ -5845,8 +5845,8 @@
 	)
 	(wire
 		(pts
-			(xy 248.92 76.2)
-			(xy 213.36 76.2)
+			(xy 248.92 86.36)
+			(xy 213.36 86.36)
 		)
 		(stroke
 			(width 0)
@@ -5856,8 +5856,8 @@
 	)
 	(wire
 		(pts
-			(xy 213.36 71.12)
-			(xy 213.36 78.74)
+			(xy 213.36 68.58)
+			(xy 213.36 88.9)
 		)
 		(stroke
 			(width 0)
@@ -5866,13 +5866,13 @@
 		(uuid "7d0e6c13-5997-5790-bae8-c5a0257dc34e")
 	)
 	(junction
-		(at 213.36 76.2)
+		(at 213.36 86.36)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "59661e97-6ac0-567e-9250-164563840c7a")
 	)
-	(label "CAM_5V"
-		(at 233.68 68.58 180)
+	(label "CAM_SCK_C"
+		(at 233.68 71.12 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5882,7 +5882,7 @@
 		)
 		(uuid "cfbe6f51-9daa-5c21-96ca-3df9a8995a71")
 	)
-	(label "CAM_SCK_C"
+	(label "CAM_5V"
 		(at 233.68 73.66 180)
 		(fields_autoplaced yes)
 		(effects
@@ -5894,7 +5894,7 @@
 		(uuid "a939eb92-dc47-539d-8c57-cfd5f9082721")
 	)
 	(label "CAM_MOSI_C"
-		(at 233.68 78.74 180)
+		(at 233.68 76.2 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5905,7 +5905,7 @@
 		(uuid "b8514855-418d-5eb9-98ed-2695e9ebb3f3")
 	)
 	(label "CAM_MISO_C"
-		(at 233.68 81.28 180)
+		(at 233.68 78.74 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5915,8 +5915,8 @@
 		)
 		(uuid "0405c943-d260-5f33-ae17-e7ac469958d0")
 	)
-	(label "CAM_CS_C"
-		(at 233.68 83.82 180)
+	(label "LED_K"
+		(at 233.68 81.28 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5926,8 +5926,8 @@
 		)
 		(uuid "8ca6678a-e4d8-53e8-bbbe-f6bcf02c2d0d")
 	)
-	(label "LED_K"
-		(at 233.68 86.36 180)
+	(label "CAM_CS_C"
+		(at 233.68 83.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5939,7 +5939,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 213.36 78.74 0)
+		(at 213.36 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5948,7 +5948,7 @@
 		(fields_autoplaced yes)
 		(uuid "837d15f9-8cc5-5f88-82c5-6ceda8324dee")
 		(property "Reference" "#PWR07014"
-			(at 213.36 78.74 0)
+			(at 213.36 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5957,7 +5957,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 213.36 82.55 0)
+			(at 213.36 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5965,7 +5965,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 213.36 78.74 0)
+			(at 213.36 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5974,7 +5974,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 213.36 78.74 0)
+			(at 213.36 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5983,7 +5983,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 213.36 78.74 0)
+			(at 213.36 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6075,7 +6075,7 @@
 		)
 		(uuid "d0739ef4-6e3e-5675-b50e-d2b3aaffd0e8")
 	)
-	(text_box "Lead pinout: 1 CAM_5V · 2 GND · 3 SCK · 4 GND · 5 MOSI · 6 MISO · 7 CS · 8 LED_K (the LEDs' cathode side).\nSPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k\n  pull-up: deselected before firmware), IO7 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).\nCAM_5V through F1 (0.75 A PTC, 1.5 A trip): the camera ≤ 317 mA (Arducam) + the LEDs ≤ 102 mA.  USBLC6s on the lead side of the 33 Ω.\nThe camera pod board runs the Mega from 3.3 V (its own AP2114H): MISO is 3.3 V and R35 stays unpopulated.\n  For a camera fed 5 V that drives MISO at 5 V instead: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V."
+	(text_box "Lead pinout: 1 GND · 2 SCK · 3 CAM_5V · 4 MOSI · 5 MISO · 6 LED_K (the LEDs' cathode side) · 7 CS · 8 GND.\nSPI2 through the GPIO matrix, mode 0, 4 MHz (2 MHz fallback): IO11 SCK, IO10 MOSI, IO9 MISO, IO8 CS (10k\n  pull-up: deselected before firmware), IO7 the light (R36 holds it off at boot; LEDC PWM ≥ 20 kHz or on/off).\nCAM_5V through F1 (0.75 A PTC, 1.5 A trip): the camera ≤ 317 mA (Arducam) + the LEDs ≤ 102 mA.  USBLC6s on the lead side of the 33 Ω.\nThe camera pod board runs the Mega from 3.3 V (its own AP2114H): MISO is 3.3 V and R35 stays unpopulated.\n  For a camera fed 5 V that drives MISO at 5 V instead: R33 → 330 Ω and fit R35 (680 Ω): 3.37 V."
 		(exclude_from_sim no)
 		(at 15.24 162.56 0)
 		(size 289.56 17.78)

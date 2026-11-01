@@ -187,8 +187,8 @@ plugs into the power box's rear wall.
     budget (`BAY_PORTS_BUDGET_MA`), as in the rack.
 * **Cameras:** the bay's own node drives its camera (SPI) and light: a
   ready-made 50 cm JST-PH 8 lead, "Same direction" (≈ 45 cm routed between
-  the plugs), up out of J6 (vertical, at the node's rear right; pins: CAM_5V,
-  GND, SCK, GND, MOSI, MISO, CS, LED_K), right to the rear slot's right end (tray x ≈ 76)
+  the plugs), up out of J6 (vertical, at the node's rear right; pins: GND, SCK,
+  CAM_5V, MOSI, MISO, LED_K, CS, GND), right to the rear slot's right end (tray x ≈ 76)
   and only then back along the plenum.  Run straight back from J6, it would pass 18 mm from the
   node's antenna (on its rear edge, left of J6); this way it keeps 30 mm
   ([architecture.md](architecture.md#radio-the-nodes-antennas-and-the-racks-wi-fi)).  Out
