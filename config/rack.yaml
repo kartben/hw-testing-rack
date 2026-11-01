@@ -87,6 +87,18 @@ drawer:
                          # the plate, for 20 mm in front of the receptacle's mouth.  The slot's width, `length`
                          # from the mouth to the edge, `depth` from the top (a 1.5 mm floor): 0.65 by its
                          # sides, 0.8 under it.  No peg hole near one (rackcfg.plate_holes)
+  slot_bin:              # a dense bay's bin, the "porte-revues" (population › plate: slots; parts/slot_bin.scad): one
+                         # printed part in the plate's place, its boards on edge in six equal lanes, lane k (from
+                         # the left) to the DATA ×6's port k, USB to the port wall; behind the lanes, a cable zone
+                         # where each short straight cable reaches its port.  The rack's tilt slides each board
+                         # forwards to the front stop.  Any board up to 19.8 mm thick overall, ≈ 100 long, 82 tall
+    floor: 2.4           # over the drawer floor: the plate's pins (2.2) go into it
+    recess: 1.4          # under the ports' plugs, the plate's recesses (port_recess) this deep: 1.3 under an overmold
+    wall: 1.2            # its end walls and five dividers: six lanes of 21.0
+    front: [17.0, 12.0]  # its front stop: drawer y of its front face, height over the floor (behind the display's
+                         # PCB and the front's screws)
+    dividers: [105.0, 40.0]  # their rear end (drawer y) and height over the floor: past the longest board (a
+                         # NUCLEO-64 to y 101), the outer lanes' cables fanning in to their ports behind them
 
 plate_grid:              # the board plate: one honeycomb for every board, and clip-in pegs that hold them
                          # (mechanical/lib/hexgrid.scad, parts/pegs.scad; tools/plate_layout.py places them)

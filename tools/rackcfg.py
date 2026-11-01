@@ -324,6 +324,15 @@ class Rack:
         return [(v["x0"] + u - px0 - r["width"] / 2, mouth - r["length"], v["x0"] + u - px0 + r["width"] / 2, d)
                 for u in v["usb"]]
 
+    def slot_lanes(self) -> list[tuple[float, float]]:
+        """A dense bay's bin (drawer.slot_bin): its six lanes, (x0, x1) between their walls in plate coords, lane k
+        (from the left) for the DATA ×6's port k."""
+        sb, (w, _) = self.drawer["slot_bin"], self.plate_size
+        n = len(self.raw["pcb"]["data_port_x6"]["usb"])
+        t = sb["wall"]
+        lane = (w - (n + 1) * t) / n
+        return [(t + k * (lane + t), t + k * (lane + t) + lane) for k in range(n)]
+
     def plate_holes(self) -> list[tuple[int, int, float, float]]:
         """The honeycomb's holes, (row, col, x, y) in plate coords: rows along X from the front (row 1), the
         long rows (odd) one hole longer than the short ones, each row centred; none within `margin` of the
@@ -632,6 +641,12 @@ def scad_config(rack: Rack) -> str:
         "HEX_HOLES": [[x, y] for _, _, x, y in rack.plate_holes()],
         "PLATE_PORT_RECESSES": [[round(c, 3) for c in r_] for r_ in rack.plate_port_recesses()],
         "PLATE_PORT_RECESS_DEPTH": rack.drawer["port_recess"]["depth"],
+        "SLOT_BIN_FLOOR": rack.drawer["slot_bin"]["floor"],
+        "SLOT_BIN_RECESS": rack.drawer["slot_bin"]["recess"],
+        "SLOT_BIN_WALL": rack.drawer["slot_bin"]["wall"],
+        "SLOT_BIN_FRONT": rack.drawer["slot_bin"]["front"],
+        "SLOT_BIN_DIVIDERS": rack.drawer["slot_bin"]["dividers"],
+        "SLOT_BIN_LANES": [[round(c, 3) for c in l_] for l_ in rack.slot_lanes()],
         "HEX_ROWS": sorted({(r, y) for r, _, _, y in rack.plate_holes()}),
         "PEG_STOP": [rack.plate_grid["stop"][k] for k in ("offset", "angle", "neck", "ledge", "lip")],
         "PEG_CAM": [rack.plate_grid["cam"][k] for k in ("r0", "r1", "arc", "under")],

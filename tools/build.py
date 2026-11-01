@@ -120,6 +120,7 @@ def part_jobs(rack) -> list[tuple[str, str, dict]]:
         ("chain_link", "parts/chain_parts.scad", {"PART": "link"}),
         ("chain_bar", "parts/chain_parts.scad", {"PART": "bar"}),
         ("plate", "parts/board_plate.scad", {}),                                # the honeycomb plate
+        ("slot_bin", "parts/slot_bin.scad", {}),                                # a dense bay's bin, in its place
         ("camera_pod", "parts/camera_pod.scad", {"PART": "pod"}),
         ("camera_diffuser", "parts/camera_pod.scad", {"PART": "diffuser"}),
         ("power_box_base", "parts/power_box.scad", {"PART": "base"}),
