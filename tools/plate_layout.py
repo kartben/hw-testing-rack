@@ -38,6 +38,7 @@ CAM_BODY_R = 8.0           # the cam swept round its pivot (spiral r1 + its flan
 CAM_TOP = 4.8              # the cam's top above its own bottom (flange 1 + band 2 + grip 1.8)
 PLUG_HALF = 6.5            # a USB plug's half width (12.4 overmold) and a margin
 PLUG_LEN = 26.0            # its way out of the board: plug, its strain relief, the cable's first bend
+DATA_RECEPTACLE_H = 6.4    # a standing DATA board's vertical USB-C: its mouth this far off the board's face
 WINDOW = 10.0              # how far a board may move from its hint
 WINDOW_ALONE = 30.0        # ... along its USB edge, when it is its bay's only board
 WALL_GAP = 0.5             # a board leaning on the drawer's wall or front: its edge this far off the wall's face
@@ -119,6 +120,14 @@ class Grid:
         self.holes = rack.plate_holes()
         self.w, self.d = rack.plate_size
         dr = rack.drawer
+        # the DATA ×6's plugs (straight, through the port wall's slots, turned with their receptacles): each one's
+        # way over the plate's rear, (x0, y0, x1, y1) in plate terms, whichever port a bay's DUT cable takes
+        v = rack.raw["pcb"]["data_port_x6"]
+        px0, py0 = rack.plate_origin
+        mouth = dr["depth"] - dr["rear_bay"] + v["face_y"] - DATA_RECEPTACLE_H - py0
+        self.data_plugs = [(v["x0"] + u - px0 - half, mouth - PLUG_LEN, v["x0"] + u - px0 + half, mouth)
+                           for u, r in zip(v["usb"], v.get("usb_rot", [0] * len(v["usb"])))
+                           for half in [(3.5 if r == 90 else 6.2) + 1.0]]
         # the drawer's side walls reach above a board's PCB up to this standoff: such a board may lean on one
         # (WALL_GAP off it) instead of on stops; the front panel is always tall enough
         self.wall_h_max = dr["wall_height"] - dr["bottom"] - dr["plate"] - PCB_T - 0.5
@@ -635,7 +644,7 @@ def layout_bay(rack: rackcfg.Rack, bay_id: str, boards: dict | None = None, bobb
 
 
 def place_bobbin(g: Grid, scene: Scene, lay: Layout) -> Peg | None:
-    """The cable's bobbin: a free hole near the port wall, away from the USB plug's way."""
+    """The cable's bobbin: a free hole near the port wall, away from the USB plug's way and the DATA ports'."""
     if not lay.boards:
         return None
     pb = lay.boards[0]
@@ -646,6 +655,8 @@ def place_bobbin(g: Grid, scene: Scene, lay: Layout) -> Peg | None:
         if y < g.d - 40 or not scene.peg_ok(p, ""):
             continue
         if any(circle_in_rect(x, y, 8.5, rect) for _, rect, _ in scene.boards):
+            continue
+        if any(circle_in_rect(x, y, 6.0, rect) for rect in g.data_plugs):
             continue
         cost = -abs(x - ux) * 0.3 + (g.d - y) * 0.2
         if best is None or cost < best[0]:

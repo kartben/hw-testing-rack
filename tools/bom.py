@@ -325,14 +325,18 @@ JST_PH_LEADS = {152: ("ASPHSPH24K152", "455-3082-ND", {1: 0.35, 10: 0.299, 25: 0
 # few listings offer both: those boards take a 90° adapter (sold as up / down / left / right sets, keep
 # the one whose female faces up) and a cable with a straight micro-B / mini-B plug.
 DUT_CABLES = {
-    "c-to-c": {"supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)", "unit_eur": 2.5,
-               "notes": "both plugs bent across their wide face (up / down, not left / right); USB-C is "
-                        "reversible, so either bend works.  Check the listing says data, not charge only"},
+    "c-to-c": {"supplier": "AliExpress (USB-C ↔ USB-C 90°, 15 cm, one bend: listing to pick; was 1005013255525639, "
+                           "OLAF, \"double coudé\")", "unit_eur": 2.5,
+               "notes": "straight at the drawer (the port wall's slots stand since 2026-11-01), bent at the board "
+                        "across its wide face (up / down, not left / right); USB-C is reversible, so either bend "
+                        "works.  Check the listing says data, not charge only"},
     "c-to-micro-b": {"supplier": "AliExpress 2251832791887129 (HOQO, \"to Micro Male\", 25 cm)", "unit_eur": 1.0,
-                     "notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end any up / down bend"},
+                     "notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end straight (the port "
+                              "wall's slots stand since 2026-11-01): check the listing has it, else pick another"},
     "c-to-mini-b": {"supplier": "AliExpress 2251832791887129 (HOQO, \"to Mini Male\", 25 cm)", "unit_eur": 1.0,
                     "notes": "the F746G-DISCO's ST-LINK port (CN14) is mini-B, facing the side wall with 49 mm to it: "
-                             "the straight mini-B plug fits, no adapter"},
+                             "the straight mini-B plug fits, no adapter; the USB-C end straight (the port wall's slots "
+                             "stand since 2026-11-01): check the listing has it"},
     "c-to-micro-b-straight": {"supplier": "AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data)",
                               "unit_eur": 2.0,
                               "notes": "straight at both ends, a loop over the plate (a converted bay's Pico 2): "

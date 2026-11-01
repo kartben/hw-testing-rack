@@ -3780,11 +3780,11 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: BEAGLEPLAY, GIGA + display, WIO TERMINAL)",
-"supplier": "AliExpress 1005013255525639 (OLAF, \"double coudé\" C ↔ C, 15 cm)",
+"item": "USB-C ↔ USB-C 90°, 15 cm (DUT cable: BEAGLEPLAY, GIGA + display, WIO TERMINAL)",
+"supplier": "AliExpress (USB-C ↔ USB-C 90°, 15 cm, one bend: listing to pick; was 1005013255525639, OLAF, \"double coudé\")",
 "qty": 3,
 "unit_eur": 2.5,
-"notes": "both plugs bent across their wide face (up / down, not left / right); USB-C is reversible, so either bend works.  Check the listing says data, not charge only",
+"notes": "straight at the drawer (the port wall's slots stand since 2026-11-01), bent at the board across its wide face (up / down, not left / right); USB-C is reversible, so either bend works.  Check the listing says data, not charge only",
 "unit": "pcs",
 "ext_eur": 7.5
 },
@@ -3810,11 +3810,11 @@
 },
 {
 "category": "Cables",
-"item": "USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64)",
+"item": "USB-C ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64)",
 "supplier": "AliExpress 2251832791887129 (HOQO, \"to Micro Male\", 25 cm)",
 "qty": 2,
 "unit_eur": 1.0,
-"notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end any up / down bend",
+"notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end straight (the port wall's slots stand since 2026-11-01): check the listing has it, else pick another",
 "unit": "pcs",
 "ext_eur": 2.0
 },

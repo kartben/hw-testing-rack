@@ -102,6 +102,33 @@ def x4_port_x(rack, n: int) -> float:
     return x4["x0"] + x4["usb"][n - 1]
 
 
+USBC_RECEPTACLE_H = 6.4     # a standing board's vertical USB-C (HRO TYPE-C-31-D-06): its mouth this far off the face
+
+
+def port_ends(rack, key: str, dxw: float, wall_y: float, dz: float) -> list[dict]:
+    """A standing DATA board's ports (key: its pcb section, data_port_x6 or data_port_x4_v2), 1 to n left to right
+    as seen from the DUT: the plug end of each, in the row's frame (dxw: the drawer's x, wall_y: the port wall's
+    back face, dz: the drawer's z).  A straight USB-C plug pushed into the receptacle's mouth through the wall's
+    slot, turned with the receptacle (usb_rot 90: standing, its width along z)."""
+    v = rack.raw["pcb"][key]
+    rot = v.get("usb_rot", [0] * len(v["usb"]))
+    y = wall_y + v["face_y"] - USBC_RECEPTACLE_H
+    return [{"at": [round(dxw + v["x0"] + u, 3), round(y, 3), round(dz + v["usb_z"], 3)], "dir": [0, 1, 0],
+             "up": [1, 0, 0] if r == 90 else [0, 0, 1], "type": "usb-c", "style": "straight"}
+            for u, r in zip(v["usb"], rot)]
+
+
+def plug_box(end: dict) -> tuple:
+    """A straight USB plug's box (its overmold and strain relief), in the row's frame: from its mouth back along
+    its axis, W across, H along its "up"."""
+    p = USB_PLUGS.get(end["type"], USB_PLUGS["usb-c"])
+    at, dv = np.array(end["at"], float), np.array(end["dir"], float)
+    up = np.array(end.get("up", (0, 0, 1)), float)
+    across = np.cross(up, dv)
+    half = np.abs(across) * p["W"] / 2 + np.abs(up) * p["H"] / 2
+    back = at - dv * (p["L"] + p["REL"])
+    return tuple(np.minimum(at, back) - half), tuple(np.maximum(at, back) + half)
+
 
 def dataport_parts(rack) -> dict:
     """The DATA port board's stand-in (parts/usb_plugs.scad), sized from config/rack.yaml › pcb.data_port, and
@@ -1379,15 +1406,15 @@ def build(rack) -> Path:
         top = dz + d["bottom"] + d["plate"] + bd.get("standoff", 6) + 1.6 + bd.get("height", 10)
         return (bx, by, dz + d["bottom"] + d["plate"]), (bx + o["w"], by + o["l"], top)
 
-    def dut_board(i, bay, slot, board_id, bd, o, bx, by, dz, dy, drawer, ctype, sx, others=(), drawn=None, mid=None,
+    def dut_board(i, bay, slot, board_id, bd, o, bx, by, dz, dy, drawer, ctype, port, others=(), drawn=None, mid=None,
                   dxw=None):
-        """A board on its plate (front-left corner bx, by; o: rackcfg.orient_board) and its short DUT cable from
-        the DATA socket at drawer x sx: USB-C into the panel-mount socket on the drawer's port wall, the board's
-        own connector (micro-B, USB-C…) at the other end.  A board's USB facing the port wall: right-angle plugs
-        (`right`), or for a micro-B / mini-B board a 90° adapter with a straight plug standing on it (`adapter`),
-        and an arch in between; a small board turned to the side wall (orient: side): straight plugs
-        (`straight`) and one flat bend; a board facing the port wall from far enough (a converted bay's):
-        straight plugs too, facing each other, and an S on the plate."""
+        """A board on its plate (front-left corner bx, by; o: rackcfg.orient_board) and its DUT cable from its DATA
+        port (port: the plug end there, port_ends): a straight USB-C plug through the port wall's slot into the
+        DATA board's receptacle, turned with it, the board's own connector (micro-B, USB-C…) at the other end.  A
+        board's USB facing the port wall: a right-angle plug (`right`), or for a micro-B / mini-B board a 90°
+        adapter with a straight plug standing on it (`adapter`); a small board turned to the side wall (orient:
+        side): a straight plug (`straight`); a board facing the port wall from far enough (a converted bay's): a
+        straight plug, the two facing each other.  The cable at its true length, as it lies (rod_cable)."""
         bz = dz + d["bottom"] + d["plate"] + bd.get("standoff", 6)
         items["boards"].append({"bay": bay, **({"slot": slot} if slot else {}), "row": i, "id": board_id,
                                 "name": bd["name"], "label": bd.get("short", ""),
@@ -1401,8 +1428,6 @@ def build(rack) -> Path:
                                 **({"screen": scr} if (scr := board_screen(bd)) else {})})
         btype = cables_cfg[ctype].get("b", "usb-c")
         style = cables_cfg[ctype].get("style", "right")
-        end_a = {"at": [sx, dy + dp_y0 - 0.28, dz + port_z], "dir": [0, 1, 0],   # the DATA board's USB-C, 0.28 proud of its edge
-                 "type": "usb-c", "style": "straight" if style == "straight" else "right"}
         b_style = "straight" if style == "side" else style
         zc = bz + 1.6 + (1.4 if btype != "usb-c" else 1.65)
         if "z" in bd["usb"]:            # a whole device's connector: its centre this high above the plate
@@ -1412,43 +1437,58 @@ def build(rack) -> Path:
             end_b = {"at": [bx + o["w"] + 0.6, by + ux, zc], "dir": [-1, 0, 0], "type": btype, "style": b_style}
         else:
             end_b = {"at": [bx + ux, by + o["l"] + 0.6, zc], "dir": [0, -1, 0], "type": btype, "style": b_style}
-        ends = [end_a, end_b]
+        ends_b = [end_b]
         if style == "adapter":       # the cable's own plug: straight, down into the adapter's female
             p = USB_PLUGS[btype]
             bd_ = np.array(end_b["dir"], float)
             mouth = np.array(end_b["at"]) - bd_ * p["AD"] / 2 + np.array([0, 0, p["ATOP"]])
             end_b = {"at": [round(float(c), 2) for c in mouth], "dir": [0, 0, -1], "up": end_b["dir"],
                      "type": btype, "style": "straight"}
-            ends.append(end_b)
-        free = cable_free_length(cables_cfg[ctype], end_a, end_b)
-        route = {"straight": flat_cable, "side": side_arch_cable}.get(style, arch_cable)
-        if style == "straight" and np.dot(end_a["dir"], end_b["dir"]) < -0.9:
-            route = s_cable              # the board's USB faces the port wall: the plugs face each other
-        guess, short0 = route(end_a, end_b, free)
-        # the cable as it lies, its whole length: on the plate, under the camera pod, out of the boards and the
-        # port wall (rod_cable); the routes above only give it a start
+            ends_b.append(end_b)
         floor_z = dz + d["bottom"] + d["plate"]
-        wall = ((sx - 200, dy + port_wall_y - d["wall"], dz), (sx + 200, dy + port_wall_y + 1, dz + d["wall_height"]))
-        boxes = [board_box(bd, o, bx, by, dz), *others, wall]
-        if dxw is not None:          # the drawer's side walls and front panel, as high as the cable may rise: it stays in
-            top = ARCH_TOP_MAX + 10  # the drawer, which slides in its tray
-            boxes += [((dxw - 30, dy, dz), (dxw + d["wall"], dy + port_wall_y, top)),
-                      ((dxw + rack.drawer_w - d["wall"], dy, dz), (dxw + rack.drawer_w + 30, dy + port_wall_y, top)),
-                      ((dxw - 30, dy - 30, dz), (dxw + rack.drawer_w + 30, dy + d["front_thickness"], top))]
-        pts, short, note = rod_cable(end_a, end_b, free, floor_z, ARCH_TOP_MAX, boxes, guess=guess,
-                                     avoid=drawn or (), outward=mid)
-        if short and not short0:
+        best = None
+        # port: the plug end at the DATA port, or a list of them to try in turn: the first where the cable lies
+        # clear (reaches, touches nothing) is taken, else the one it fits best
+        for k, end_a in enumerate(port if isinstance(port, list) else [port]):
+            end_a = dict(end_a)
+            sx = end_a["at"][0]
+            free = cable_free_length(cables_cfg[ctype], end_a, end_b)
+            route = {"straight": flat_cable, "side": side_arch_cable}.get(style, arch_cable)
+            if style == "straight" and np.dot(end_a["dir"], end_b["dir"]) < -0.9:
+                route = s_cable              # the board's USB faces the port wall: the plugs face each other
+            guess, short0 = route(end_a, end_b, free)
+            # the cable as it lies, its whole length: on the plate, under the camera pod, out of the boards and the
+            # port wall (rod_cable); the routes above only give it a start
+            wall = ((sx - 200, dy + port_wall_y - d["wall"], dz), (sx + 200, dy + port_wall_y + 1, dz + d["wall_height"]))
+            boxes = [board_box(bd, o, bx, by, dz), *others, wall]
+            if dxw is not None:          # the drawer's side walls and front panel, as high as the cable may rise: it
+                top = ARCH_TOP_MAX + 10  # stays in the drawer, which slides in its tray
+                boxes += [((dxw - 30, dy, dz), (dxw + d["wall"], dy + port_wall_y, top)),
+                          ((dxw + rack.drawer_w - d["wall"], dy, dz), (dxw + rack.drawer_w + 30, dy + port_wall_y, top)),
+                          ((dxw - 30, dy - 30, dz), (dxw + rack.drawer_w + 30, dy + d["front_thickness"], top))]
+            pts, short, note = rod_cable(end_a, end_b, free, floor_z, ARCH_TOP_MAX, boxes, guess=guess,
+                                         avoid=drawn or (), outward=mid)
+            lost = bool(short and not short0)
+            if lost:
+                pts, short = guess, short0
+            score = (bool(short), short or 0.0, lost, bool(note))
+            if best is None or score < best[0]:
+                best = (score, k, end_a, pts, short, note, lost)
+            if not short and not note and not lost:
+                break
+        _, k, end_a, pts, short, note, lost = best
+        if lost:
             print(f"warning: {slot or bay}: no rest shape found for the {ctype} cable: drawn along its route")
-            pts, short = guess, short0
         if note:
             print(f"warning: {slot or bay}: the {ctype} cable: {note}")
         if short:
             print(f"warning: {slot or bay}: the {ctype} cable is {short:.0f} mm too short "
-                  f"from the DATA socket to the board")
+                  f"from the DATA port to the board")
         if drawn is not None:            # the bay's next cables keep off this one
             drawn.append(pts)
         cable(pts, row=i, kind="dut", bay=bay, type=ctype, label=cables_cfg[ctype]["label"], a="usb-c", b=btype,
-              ends=ends, radius=1.9, movable=drawer)
+              ends=[end_a, *ends_b], radius=1.9, movable=drawer)
+        return k
 
     def route_jumpers(i, bid, spec, boards_at, dut_pins, dy, dz, dxw, drawer, drawn, v2, base=False):
         """A converted bay's Dupont jumpers (population › jumpers: per board, {DATA ×4 header pin: board pin}),
@@ -1502,9 +1542,13 @@ def build(rack) -> Path:
                  ((dxw - 30, dy, dz), (dxw + d["wall"], dy + d["depth"], top_)),
                  ((dxw + rack.drawer_w - d["wall"], dy, dz), (dxw + rack.drawer_w + 30, dy + d["depth"], top_)),
                  ((dxw - 30, dy - 30, dz), (dxw + rack.drawer_w + 30, dy + d["front_thickness"], top_))]
-        p = USB_PLUGS["usb-c"]                      # the straight USB-C plugs in the port wall's sockets
-        plugs = [((dxw + x4_port_x(rack, n) - p["W"] / 2, dy + port_wall_y - p["L"] - p["REL"], dz + port_z - p["H"] / 2),
-                  (dxw + x4_port_x(rack, n) + p["W"] / 2, dy + port_wall_y, dz + port_z + p["H"] / 2)) for n in range(1, 5)]
+        # the straight USB-C plugs in the board's ports, through the port wall's slots
+        if v2:
+            plugs = [plug_box(e) for e in port_ends(rack, "data_port_x4_v2", dxw, dy + port_wall_y, dz)]
+        else:
+            p = USB_PLUGS["usb-c"]
+            plugs = [((dxw + x4_port_x(rack, n) - p["W"] / 2, dy + port_wall_y - p["L"] - p["REL"], dz + port_z - p["H"] / 2),
+                      (dxw + x4_port_x(rack, n) + p["W"] / 2, dy + port_wall_y, dz + port_z + p["H"] / 2)) for n in range(1, 5)]
         if v2:                       # the standing v2 and its cradle's uprights (their walls round its ends)
             vx0, y_face, z0 = x4v2_frame(dy, dz)
             (bw, bh), t = raw["pcb"]["data_port_x4_v2"]["size"], raw["pcb"]["data_port_x4_v2"]["thickness"]
@@ -1610,8 +1654,14 @@ def build(rack) -> Path:
                 at = placed.get(e["slot"].id, e["at"])
                 boards_at.append(({**e, "at": at}, dxw + plate_x0 + at[0], dy + plate_y0 + at[1]))
             drawn = []
+            # each board's DATA port: the standing v2's (pcb.data_port_x4_v2), or v1's lying receptacle at the wall
+            if info.get("x4") in ("v2", "base"):
+                ports = port_ends(rack, "data_port_x4_v2", dxw, dy + dp_y0, dz)
+            else:
+                ports = [{"at": [dxw + x4_port_x(rack, n), dy + dp_y0 - 0.28, dz + port_z], "dir": [0, 1, 0],
+                          "type": "usb-c", "style": "straight"} for n in range(1, 5)]
             # the middle of the bay's cables (between its ports and its boards' USB): each spare length bows away from it
-            mid_x = sum(dxw + x4_port_x(rack, e["slot"].slot) + ex + e["o"]["usb_x"]
+            mid_x = sum(ports[e["slot"].slot - 1]["at"][0] + ex + e["o"]["usb_x"]
                         for e, ex, _ in boards_at) / (2 * len(boards_at))
             for e, ex, ey in boards_at:
                 # the board as turned on this plate: to the port wall unless its entry says `orient: side`
@@ -1619,7 +1669,7 @@ def build(rack) -> Path:
                 bd = {**boards[e["board"]], "orient": sl.orient or "rear"}
                 others = [board_box(boards[f["board"]], f["o"], fx, fy, dz) for f, fx, fy in boards_at if f is not e]
                 dut_board(i, b.id, sl.id, e["board"], bd, o, ex, ey, dz, dy, drawer, sl.cable,
-                          dxw + x4_port_x(rack, sl.slot), others, drawn, (mid_x, dy), dxw)
+                          ports[sl.slot - 1], others, drawn, (mid_x, dy), dxw)
                 slots.append({"id": sl.id, "port": sl.slot, "board": bd["name"], "board_id": e["board"],
                               "cable": cables_cfg[sl.cable]["label"], "usb": bd["usb"]["type"],
                               "verified": bd.get("verified", False)})
@@ -1640,7 +1690,9 @@ def build(rack) -> Path:
             jumpers_drawn[b.id] = route_jumpers(i, b.id, info.get("jumpers"), boards_at, dut_pins, dy, dz, dxw,
                                                 drawer, drawn, v2, base=info.get("x4") == "base")
             meta["jumpers"] = len(jumpers_drawn[b.id])
-            meta.update({"board": f"{len(slots)} boards on a DATA ×4", "slots": slots, "data_port": ["×4"],
+            x4_name = {"v2": "DATA ×4 v2", "base": "DATA-4x"}.get(info.get("x4"), "DATA ×4")
+            meta.update({"board": f"{len(slots)} boards on a DATA ×4", "slots": slots,
+                         "data_port": [f"{x4_name} port {sl_['port']}" for sl_ in slots],
                          "open": bool(info.get("open")) and drawer, "mount": rack.mount(b.id),
                          "verified": all(sl_["verified"] for sl_ in slots)})
         elif info:
@@ -1659,15 +1711,11 @@ def build(rack) -> Path:
                     rear_gap = max(3, min(26, plate_d - o["l"] - 4))
                     bx = dxw + plate_x0 + (plate_w - o["w"]) / 2
                     by = dy + plate_y0 + plate_d - rear_gap - o["l"]
-            # the DATA socket goes in the port farther from the board's USB (the right one for a USB turned to
-            # the right wall), so the two plugs never meet
-            if o["usb_side"]:
-                sx = dxw + max(data_ports)
-            else:
-                sx = max((dxw + px for px in data_ports), key=lambda x: abs(x - (bx + o["usb_x"])))
-            meta["data_port"] = ["left" if sx - dxw < rack.drawer_w / 2 else "right"]
-            dut_board(i, b.id, None, info["board"], bd, o, bx, by, dz, dy, drawer, info["cable"], sx,
-                      mid=(dxw + rack.drawer_w / 2, dy), dxw=dxw)
+            # its DUT on the DATA ×6's port 1, the leftmost seen from the DUT (one DUT per bay); the next one if its
+            # cable, at its true length, does not reach from there or lies against a board or a wall
+            k = dut_board(i, b.id, None, info["board"], bd, o, bx, by, dz, dy, drawer, info["cable"],
+                          port_ends(rack, "data_port_x6", dxw, dy + dp_y0, dz), mid=(dxw + rack.drawer_w / 2, dy), dxw=dxw)
+            meta["data_port"] = [f"DATA ×6 port {k + 1}"]
             meta.update({"board": bd["name"], "board_id": info["board"], "cable": cab["label"],
                          "usb": bd["usb"]["type"], "classic": bool(info.get("pc_cable")), "open": bool(info.get("open")) and drawer, "mount": rack.mount(b.id),
                          "verified": bd.get("verified", False)})

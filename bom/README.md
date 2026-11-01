@@ -391,10 +391,10 @@ One rack (8 bay-node, 1 power-hub, 6 data-port, 2 camera-pod, 1 data-port-x4-v2-
 | Cables | Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), black, 10 m (the crimped feeds) | 1 spool | 4.00 | 4.00 | AliExpress (UL1007 24AWG) |
 | Cables | Crimper for open-barrel contacts, 28–18 AWG (the crimped feeds' contacts) | 1  | 20.00 | 20.00 | IWISS SN-28B (or Engineer PA-09, ≈ €40) |
 | Cables | Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie anchors at its front right (docs/cabling.md) | 12  | 0.02 | 0.24 | AliExpress (bulk) |
-| Cables | USB-C 90° ↔ USB-C 90°, 15 cm (DUT cable: BEAGLEPLAY, GIGA + display, WIO TERMINAL) | 3  | 2.50 | 7.50 | AliExpress 1005013255525639 (OLAF, "double coudé" C ↔ C, 15 cm) |
+| Cables | USB-C ↔ USB-C 90°, 15 cm (DUT cable: BEAGLEPLAY, GIGA + display, WIO TERMINAL) | 3  | 2.50 | 7.50 | AliExpress (USB-C ↔ USB-C 90°, 15 cm, one bend: listing to pick; was 1005013255525639, OLAF, "double coudé") |
 | Cables | USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: NANO MATTER, XIAO) | 3  | 2.00 | 6.00 | AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps) |
 | Cables | USB-C ↔ USB-C, straight, 20 cm (DUT cable: UNO R4) | 1  | 2.00 | 2.00 | AliExpress (USB-C ↔ USB-C, straight, 20 cm, USB 2.0 data) |
-| Cables | USB-C 90° ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64) | 2  | 1.00 | 2.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
+| Cables | USB-C ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64) | 2  | 1.00 | 2.00 | AliExpress 2251832791887129 (HOQO, "to Micro Male", 25 cm) |
 | Cables | USB-C ↔ micro-B, straight, 15 cm (DUT cable: PICO 2) | 3  | 2.00 | 6.00 | AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data) |
 | Cables | Micro-B 90° adapter, male → female, up and down, one of each per board | 4  | 1.00 | 4.00 | AliExpress (DIY-018, "UP" and "DOWN") |
 | Analyzer | Raspberry Pi Pico 2 (RP2350), the logic analyzer in B3.3 | 1  | 5.50 | 5.50 | Raspberry Pi approved reseller (Kubii, The Pi Hut, Pimoroni) |

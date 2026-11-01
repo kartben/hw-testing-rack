@@ -50,17 +50,20 @@ bay node (plenum)                                 drawer
    with ~3 cm out of the fixed end for the node and the port board's end out
    of the moving end, then snap the bars back.
 3. **Drawer → board: a short cable that belongs to the board.**  USB-C on
-   the drawer side, whatever the board needs on the other (C, micro-B or
-   mini-B).  Two layouts, set by the board's plate:
+   the drawer side, a **straight** plug standing in one of the port wall's
+   slots (an angled one only if its cable leaves upwards), whatever the
+   board needs on the other (C, micro-B or mini-B).  It goes in the DATA ×6's
+   port 1, the leftmost seen from the board, or the next one where the
+   cable does not lie clear from port 1 (A3 and B4: port 2).  Two layouts,
+   set by the board's plate:
    * **a small board** (Pico, ESP32 DevKitC, UNO R4: `orient: side`) turns
      its USB towards the right wall: a plain **straight** 15–20 cm cable
      leaves the DATA port forwards, bends once (≥ 10 mm radius) and
      lies flat on the plate into the board's side;
    * **a long board** (Nucleo, nRF DK, FRDM) faces its USB to the port wall,
-     17–23 mm away, too close for a straight plug: the cable leaves the
-     socket through a **right-angle** USB-C and makes a small arch over the
-     board's rear edge.  At the board, a USB-C port takes a right-angle plug
-     too (a 15 cm C ↔ C bent at both ends); a micro-B or mini-B port takes a
+     17–23 mm away: the cable leaves the DATA port forwards and makes a
+     small arch over the board's rear edge.  At the board, a USB-C port takes a right-angle plug
+     too (a 15 cm C ↔ C bent at the board's end); a micro-B or mini-B port takes a
      **90° adapter** (male → female, its female facing up) with the cable's
      straight plug standing on it (20 cm, 25 cm for the F746G-DISCO, whose
      mini-B faces the right wall).  A right-angle micro-B / mini-B plug is

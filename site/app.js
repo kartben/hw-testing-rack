@@ -996,7 +996,7 @@ function select(id, showPanel = true) {
       ${credit ? `<dt>3D model</dt><dd>${credit}</dd>` : ''}
       <dt>Debug USB</dt><dd>${b.usb ?? '—'}</dd>
       <dt>Cable</dt><dd>${b.slots ? [...new Set(b.slots.map((s) => s.cable))].join('<br>') : (b.cable ?? '—')}</dd>
-      <dt>DATA socket</dt><dd>${b.data_port ? b.data_port.join(' + ') + ' position' : '—'}</dd>
+      <dt>DATA port</dt><dd>${b.data_port ? b.data_port.join(' + ') : '—'}</dd>
       ${b.pegs ? `<dt>Plate</dt><dd>honeycomb, ${b.pegs.count} pegs <span class="sub">(python tools/plate_layout.py ${b.id})</span>${b.pegs.notes.map((n) => `<br><span class="sub">${n}</span>`).join('')}</dd>` : ''}
       <dt>USB/IP</dt><dd>ESP32-S3 node · <code>usbip attach -r bay-${b.id.toLowerCase()}.local -b ${b.slots ? '1-1.n' : '1-1'}</code>${b.slots ? ' <span class="sub">(n = the port)</span>' : ''}</dd>
     </dl>
