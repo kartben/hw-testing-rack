@@ -165,13 +165,13 @@ TPS = {
     "TP7": ("+3V3", "+3V3", 1.5, LDO[0], 10.6), "TP8": ("GND", "GND", 1.5, 17.0, 15.6),
     "TP9": ("+5V_A", "+5V_A", 1.5, 20.0, 10.9), "TP41": ("+5V_B", "+5V_B", 1.5, 90.5, 10.6),
     "TP42": ("VIN", "VIN", 1.5, 78.6, 22.6), "TP43": ("GND", "GND", 1.5, 81.6, 22.6),
-    "TP44": ("+5V_L", "+5V_L", 1.5, 85.4, 11.4),
+    "TP44": ("+5V_L", "+5V_L", 1.5, 85.4, 10.9),
     # the hub's reset and core rail, with a GND
     "TP20": ("HUB_RST_N", "HUB RST", 1.0, HX - 0.5, HY - 14.0), "TP21": ("GND", "GND", 1.5, HX + 3.5, HY - 14.9),
     "TP22": ("HUB_1V8", "1V8", 1.5, HX + 5.0, HY + 4.25),
-    # the board side of the lead's I²C and INT, with a GND
-    "TP23": ("INT", "INT", 1.0, LEAD[0] + 4.0, LEAD[1] - 0.5), "TP24": ("SDA", "SDA", 1.0, LEAD[0] + 4.0, LEAD[1] - 3.0),
-    "TP25": ("SCL", "SCL", 1.0, LEAD[0] + 4.0, LEAD[1] - 5.5), "TP26": ("GND", "GND", 1.5, LEAD[0] + 4.0, LEAD[1] - 8.3),
+    # the board side of the lead's I²C and INT, with a GND: a row under J1, 2 mm clear of its housing (rear face)
+    "TP23": ("INT", "INT", 1.0, LEAD[0] - 3.0, LEAD[1] + 5.5), "TP24": ("SDA", "SDA", 1.0, LEAD[0] - 0.5, LEAD[1] + 5.5),
+    "TP25": ("SCL", "SCL", 1.0, LEAD[0] + 2.0, LEAD[1] + 5.5), "TP26": ("GND", "GND", 1.5, LEAD[0] + 4.5, LEAD[1] + 5.5),
     # GND by the expander
     "TP27": ("GND", "GND", 1.5, EXP[0] - 4.0, EXP[1] + 2.6),
     # each port's FAULT_N (port(): TP{k + 1}) by its switch
@@ -286,7 +286,9 @@ def port(b: Board, n: int):
                          "2": "GND"}, pcb=P(*ex_), sch=at(84, 76))
     s.wire(f"{usb}.B7", f"{esd}.1")
     s.wire(f"{usb}.A6", f"{esd}.3")
-    cap = (ex_[0] + 1.0, ex_[1] - 2.6) if n > 1 else (ex_[0], ex_[1] - 2.35)
+    # its VBUS 100 nF over it, its supply pad on the body's centre line: VBUS (pin 5) runs under the body and up
+    # between the pin rows into it (drawn in drawn())
+    cap = (ex_[0] + 0.48, ex_[1] - (2.3 if n > 1 else 2.35))
     C(s, f"C{k + 4}", "100n", v5, "GND", size="0402", pcb=P(*cap, 0), sch=at(96, 76))
 
     s.notes_at = (108, 50, 50)
@@ -395,7 +397,8 @@ def hub_sheet(b: Board):
     s.wire((24, 66), (24, 69), "U3.VI")
     part(s, "U3", "ldo_1a", {"VI": "+5V_L", "VO": "+3V3", "GND": "GND"}, pcb=P(*LDO, 0),
          sch=at(34, 69, fields=(-3, -4)))
-    C(s, "C2", "22u", "+5V_L", "GND", size="0805", pcb=P(LDO[0] + 5.6, LDO[1] + 1.8, 90), sch=at(20, 72))
+    # its input 22 µF west of it, by VI (pin 3); its output one east, by the tab (VO)
+    C(s, "C2", "22u", "+5V_L", "GND", size="0805", pcb=P(LDO[0] - 6.2, LDO[1] + 2.3, 180), sch=at(20, 72))
     s.wire("C2.1", (20, 69), (24, 69))
     C(s, "C3", "22u", "+3V3", "GND", size="0805", pcb=P(LDO[0] + 5.6, LDO[1] - 1.8, 90), sch=at(44, 72))
     s.wire("U3.VO", (44, 69), "C3.1")
@@ -627,6 +630,20 @@ def drawn():
     p21 = (EXP[0] + 0.25, EXP[1] - 1.9375)                              # U2 pin 21
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [p21, (p21[0], EXP[1] - 3.09), (p21[0] + 0.95, EXP[1] - 3.09)]))
     hand_vias.append(("+3V3", p21[0] + 0.95, EXP[1] - 3.09, 0.5, 0.3))
+    # each port's INA226: VS (pin 6, turned 90°) straight up into its 100 nF, then on to its via (the v2's).  Its
+    # USBLC6: VBUS (pin 5) under the body to its centre line and up between the pin rows into its 100 nF, then on
+    # to a via in its 5 V area (port 1's 100 nF stands north of the plane split: its via comes before it, exempt)
+    for n, cx in enumerate(USBS, 1):
+        x0 = cx - (4.4 if n == 1 else 5.0)
+        vs = (x0 + 8.51, CL_Y + 2.45)
+        hand_tracks.append(("+3V3", "F.Cu", 0.25, [vs, (vs[0], CL_Y + 0.15)]))
+        hand_vias.append(("+3V3", vs[0], CL_Y + 0.15, 0.5, 0.3))
+        ex, ey = (ESD_PX[n], USB_Y) if n > 1 else (cx - 3.65, UP_Y - 0.25)
+        v5 = "+5V_A" if n <= 3 else "+5V_B"
+        top = ey - (2.9 if n > 1 else 2.35)
+        hand_tracks.append((v5, "F.Cu", 0.25, [(ex - 1.138, ey), (ex, ey), (ex, top)]))
+        if n > 1:
+            hand_vias.append((v5, ex, top, 0.5, 0.3))
     # C13 (pin 57's 100 nF) likewise, on pin 57's line: the pin west to it, C13 on down to its via
     p57 = (HX - 4.4125, HY + 0.25)                                      # U1 pin 57
     hand_tracks.append(("+3V3", "F.Cu", 0.25, [p57, (HX - 5.72, p57[1]), (HX - 5.72, HY + 0.95)]))
@@ -723,6 +740,22 @@ def board() -> Board:
         "plane_nets": {"+5V_A": pwr, "+5V_B": pwr, "+3V3": pwr},
         "power_nets": {"GND": 1, "VIN": 2, "+5V_A": 2, "+5V_B": 2, "+5V_L": 2, "+3V3": 2, "PORT?_VBUS": 2,
                        "PORT?_5V_SW": 2},
+        # each decoupling capacitor's pin (electronics/tools/decoupling.py: its pad ≤ 2 mm from the pin, its GND pad
+        # ≤ 1 mm from a GND via; 100 nF and less in the pin → cap → via order).  As the v2's round the hub; C8 and
+        # C7, VDD18PLL's and VDD18's 4.7 µF, are their 100 nF's stores, behind them: their own 2.5 mm limit.  Each
+        # converter's first 10 µF its own 3 mm, as the bay node's.  Not declared: bulk (C1, J1's; C60, VIN's; each
+        # port's VBUS 22 µF; the converters' second 10 µF and their 22 µF outputs), the crystal's load capacitors,
+        # the converters' bootstrap capacitors
+        "decoupling": {
+            "C2": "U3.3", "C3": "U3.2", "C6": "U5.3",                                   # the LDO in and out, MAX809S
+            "C7": ("U1.25", 2.5), "C9": "U1.25", "C8": ("U1.62", 2.5), "C10": "U1.62",  # the hub's VDD18, PLL
+            "C11": "U1.64", "C12": "U1.52", "C13": "U1.57", "C14": "U1.24", "C15": "U1.5", "C16": "U1.10",
+            "C17": "U1.46",                                                               # its seven 3.3 V pins
+            "C18": "U2.21",                                                               # the expander
+            "C61": ("U13.VIN", 3.0), "C63": "U13.VIN", "C71": ("U14.VIN", 3.0), "C73": "U14.VIN",  # the converters
+            **{f"C{k + 1}": f"U{k + 1}.1" for k in range(100, 700, 100)},             # each port's switch IN
+            **{f"C{k + 3}": f"U{k + 2}.6" for k in range(100, 700, 100)},             # its INA226
+            **{f"C{k + 4}": f"U{k + 3}.5" for k in range(100, 700, 100)}},            # its USBLC6's VBUS
         "stitch": 4.0,
         "edge_fence": {"pitch": 5.0, "inset": 0.9},
         "zones": [{"layer": "In1.Cu", "net": "GND"},
@@ -731,6 +764,17 @@ def board() -> Board:
                   {"layer": pwr, "net": "+5V_B", "name": "pwr-5vb", "poly": IN_5VB},
                   {"layer": "F.Cu", "net": "GND"}, {"layer": "B.Cu", "net": "GND"}],
         "tracks": hand_tracks, "vias": hand_vias,
+        # the 100 nF that cannot keep the pin → cap → via order where they sit (decoupling.py), with the measures
+        "decoupling_order_exempt": {
+            "C11": "U1 pin 64's via under the case, beyond the pin; none fits past C11's pad: R1's RBIAS pad west "
+                   "and USB-C 2's D- east, 0.42 and 0.57 mm from it (a via takes 0.7)",
+            "C15": "U1 pin 5's via under the case, beyond the pin; none fits past C15's pad between USB-C 3 and 4's "
+                   "pairs: 0.17 mm to each",
+            "C16": "U1 pin 10's via under the case, beyond the pin; none fits past C16's pad between USB-C 5 and "
+                   "6's pairs: 0.17 mm to each",
+            "C104": "U103 (USB-C 1's USBLC6, over its receptacle) has C104 over its pin 5, north of the plane split: "
+                    "past C104's pad In2 is +3V3, so +5V_A comes up by a via under U103's body, between the pin and "
+                    "C104 (1.75 mm from the pin); USB-C 1's pair walls the west edge off"},
         "dru": XTAL_RULE,
         "keepouts": [
             # the crystal's block (dropped once routed), as the v2's
