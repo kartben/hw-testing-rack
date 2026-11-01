@@ -705,8 +705,8 @@ python3 firmware/bay-node/tests/console_sim/run.py --workspace <west workspace> 
 From `electronics/bay-node/design.py` (U3, ESP32-S3-WROOM-1-N8R8: 8 MB flash, 8 MB octal PSRAM on IO35–IO37;
 the WROOM-1 has no IO26/IO33/IO34); devicetree in
 [`boards/hwtr/bay_node/bay_node.dtsi`](boards/hwtr/bay_node/bay_node.dtsi) and
-[`bay_node-pinctrl.dtsi`](boards/hwtr/bay_node/bay_node-pinctrl.dtsi).  IO4 is free since node rev B: the DATA
-lead lost its INT (map B), and the node polls the DATA board over I²C.
+[`bay_node-pinctrl.dtsi`](boards/hwtr/bay_node/bay_node-pinctrl.dtsi).  Since node rev B the DATA lead has no INT
+(map B): the node polls the DATA board over I²C, and IO4 carries the camera's CS.
 
 | ESP32-S3 | Net | Use | Devicetree |
 |---|---|---|---|
