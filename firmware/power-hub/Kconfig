@@ -124,6 +124,16 @@ config HUB_RESTORE_HOLD_S
 	int "Contract stable and room to spare this long before a shed row comes back (s)"
 	default 10
 
+config HUB_ROW_EMPTY_MA
+	int "A row with no node that draws less than this is empty (mA)"
+	default 100
+	help
+	  The shed order passes over an empty row (an output the rack does
+	  not use): shedding it would free nothing.  Empty: the rack bus
+	  found no node on it and its IMON reads less than this, well above
+	  IMON's reading with no load (offset and noise, tens of mA).  A
+	  row of nodes the bus cannot reach that draws more keeps its turn.
+
 config HUB_RESTORE_MARGIN_MA
 	int "Room needed beyond the most a shed row drew before it comes back (mA)"
 	default 200

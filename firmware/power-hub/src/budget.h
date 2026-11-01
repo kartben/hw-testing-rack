@@ -15,7 +15,8 @@
  *  - above the limit for CONFIG_HUB_SHED_HOLD_MS, or above the base itself
  *    for CONFIG_HUB_SHED_FAST_MS (before the charger's overcurrent
  *    protection cuts the whole rack), the next row in the shed order goes,
- *    passing over a row that draws nothing (an output the rack does not use);
+ *    passing over an empty row (no node on the rack bus and IMON under
+ *    CONFIG_HUB_ROW_EMPTY_MA: an output the rack does not use);
  *  - a shed row comes back, the last shed first, once the limit has room
  *    for the most it drew plus CONFIG_HUB_RESTORE_MARGIN_MA, for its
  *    restore hold (CONFIG_HUB_RESTORE_HOLD_S); shed again within
@@ -60,6 +61,7 @@ struct budget_rows {
 	int32_t ma[BUDGET_ROWS]; /* IMON, 0 when off */
 	uint8_t on;              /* rows on */
 	uint8_t shed;            /* rows shed for lack of power and wanted back */
+	uint8_t found;           /* rows the rack bus found a node on */
 	const char *order;       /* shed first to last, e.g. "DCBA" */
 };
 

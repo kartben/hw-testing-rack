@@ -91,9 +91,9 @@ uint32_t budget_grant_mw(const struct budget *b, uint32_t row_bays, uint32_t rac
 }
 
 /*
- * The next row to shed: the first one on in the shed order that draws
- * something (an empty row, an output the rack does not use, frees nothing),
- * else the first one on; -1 none
+ * The next row to shed: the first one on in the shed order that is not
+ * empty (no node on the bus and next to no current: an output the rack does
+ * not use, whose shedding frees nothing), else the first one on; -1 none
  */
 static int shed_candidate(const struct budget_rows *rows)
 {
@@ -105,7 +105,7 @@ static int shed_candidate(const struct budget_rows *rows)
 		if (r < 0 || r >= BUDGET_ROWS || !(rows->on & BIT(r))) {
 			continue;
 		}
-		if (rows->ma[r] > 0) {
+		if ((rows->found & BIT(r)) || rows->ma[r] >= CONFIG_HUB_ROW_EMPTY_MA) {
 			return r;
 		}
 		first = first < 0 ? r : first;

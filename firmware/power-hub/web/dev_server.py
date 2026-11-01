@@ -272,7 +272,7 @@ class Handler(PageHandler):
                 self.json(200, events_doc())
             elif path == "/dev/drop":
                 hub["charger"] = CHARGER_30W
-                # D draws nothing (src/budget.c passes it over): C goes
+                # D is empty, no node and no current (src/budget.c passes it over): C goes
                 hub["rows"]["C"]["shed"] = hub["rows"]["C"]["on"]
                 hub["sheds"] += 1
                 event("pd", "contract: 20.0 V / 1.50 A (30 W)")

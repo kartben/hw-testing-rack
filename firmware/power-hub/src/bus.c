@@ -338,3 +338,16 @@ int bus_row_nodes(int row, struct rack_hub_node nodes[RACK_POSITIONS + 1])
 
 	return n;
 }
+
+uint8_t bus_rows_found(void)
+{
+	uint8_t m = 0;
+
+	k_mutex_lock(&lock, K_FOREVER);
+	for (int r = 0; r < RACK_ROWS; r++) {
+		m |= hub.count[r] != 0 ? BIT(r) : 0;
+	}
+	k_mutex_unlock(&lock);
+
+	return m;
+}

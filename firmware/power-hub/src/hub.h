@@ -155,6 +155,8 @@ int bus_cmd(uint8_t node, uint8_t op, const uint8_t *args, uint8_t nargs);
 void bus_status(struct hub_bus_status *st);
 /* Copy of a row's nodes, [1..RACK_POSITIONS]; returns the row's node count */
 int bus_row_nodes(int row, struct rack_hub_node nodes[RACK_POSITIONS + 1]);
+/* The rows with a node found on them (bit 0 = A) */
+uint8_t bus_rows_found(void);
 
 /* --- Settings (main.c) ----------------------------------------------------- */
 

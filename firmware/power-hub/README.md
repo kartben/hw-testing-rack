@@ -138,7 +138,7 @@ that have a camera, red while someone watches (STATUS byte 6).
 
 | ![The hub's page, light theme](../../docs/img/hub-ui-light.png) | ![The charger renegotiated down to 30 W: row C shed](../../docs/img/hub-ui-shed.png) |
 |---|---|
-| Light theme | The charger renegotiated down to 30 W: row C shed until there is room again (D, first in the order, draws nothing) |
+| Light theme | The charger renegotiated down to 30 W: row C shed until there is room again (D, first in the order, is empty) |
 
 ![Row B's eFuse in current limit, node B3 silent](../../docs/img/hub-ui-fault.png)
 
@@ -171,7 +171,7 @@ python firmware/power-hub/web/screenshots.py       # docs/img/hub-ui-*.png (Play
 The simulated hub has the same endpoints, a 140 W EPR charger and eight
 bays in rows A to C (row D on, with nothing on it), unclaimed
 (claim it from the page, then `/dev/boot` presses BOOT); `/dev/drop` makes
-the charger renegotiate down to 30 W (row C shed: D, first in the shed order, draws nothing), `/dev/fault?row=B` trips
+the charger renegotiate down to 30 W (row C shed: D, first in the shed order, is empty), `/dev/fault?row=B` trips
 an eFuse, `/dev/lose?node=0x13` silences a node;
 `/dev/image?version=0.6.0` is an image to try the update with (laid out as
 `zephyr.signed.bin`, unsigned), `/dev/rollback` makes the next update roll

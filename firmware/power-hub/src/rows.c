@@ -300,7 +300,7 @@ static int32_t read_imon(int row)
 
 static void sample_handler(struct k_work *work)
 {
-	struct budget_rows in = {.order = shed_order};
+	struct budget_rows in = {.order = shed_order, .found = bus_rows_found()};
 	enum budget_act act;
 	int32_t total = 0, limit, base;
 	int row = -1;

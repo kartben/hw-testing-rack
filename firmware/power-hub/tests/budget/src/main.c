@@ -3,7 +3,8 @@
  * the budget from the contract (100 W at 20 V, 140 W at 28 V EPR, 60 W with
  * a 3 A cable), a cap in watts, a row shed before the charger's limit (after
  * the hold, or at once past the contract), the shed order, an empty row
- * passed over (it would free nothing), a shed row back
+ * passed over (it would free nothing) but not one with a node or a real
+ * current, a shed row back
  * only with room to spare and after its hold, a row that flaps waiting
  * longer, nothing back while the contract settles.
  *
@@ -39,7 +40,8 @@ static void start(uint32_t mv, uint32_t ma, struct budget_rows *in, int32_t each
 	budget_init(&b, 10, 0);
 	contract(true, mv, ma);
 	now = 1000;
-	*in = (struct budget_rows){.on = 0xf, .order = "DCBA"};
+	/* Every row with nodes on it */
+	*in = (struct budget_rows){.on = 0xf, .found = 0xf, .order = "DCBA"};
 	for (int r = 0; r < BUDGET_ROWS; r++) {
 		in->ma[r] = each_ma;
 	}
@@ -287,17 +289,42 @@ ZTEST(budget, test_an_empty_row_is_not_shed)
 	int64_t after;
 	int row;
 
-	/* A rack of three rows: A-C at 1.4 A, D's output on with nothing on it */
+	/*
+	 * A rack of three rows: A-C at 1.4 A, D's output on with no node on it,
+	 * its IMON reading 15 mA of offset and noise
+	 */
 	start(20000, 5000, &in, 1400);
-	in.ma[D] = 0;
+	in.found = BIT(A) | BIT(B) | BIT(C);
+	in.ma[D] = 15;
 	zassert_equal(run(&in, 30000, &row, NULL), BUDGET_KEEP);
 
 	/* Past the contract: C goes at once, not D, which would free nothing */
 	in.ma[C] = 2300;
 	zassert_equal(run(&in, 30000, &row, &after), BUDGET_SHED);
-	zassert_equal(row, C, "D draws nothing: C");
+	zassert_equal(row, C, "D is empty: C");
 	zassert_between_inclusive(after, FAST, FAST + SAMPLE, "%lld ms", (long long)after);
 	zassert_equal(in.on, BIT(A) | BIT(B) | BIT(D), "D stays on");
+}
+
+ZTEST(budget, test_a_row_with_a_node_keeps_its_turn)
+{
+	struct budget_rows in;
+	int row;
+
+	/* D with one idle node, reading as little as an empty row: first, as the order says */
+	start(20000, 5000, &in, 1400);
+	in.ma[D] = 15;
+	in.ma[C] = 2300;
+	zassert_equal(run(&in, 30000, &row, NULL), BUDGET_SHED);
+	zassert_equal(row, D);
+
+	/* D with no node the bus can reach, but drawing 0.3 A: not empty either */
+	start(20000, 5000, &in, 1400);
+	in.found = BIT(A) | BIT(B) | BIT(C);
+	in.ma[D] = 300;
+	in.ma[C] = 2300;
+	zassert_equal(run(&in, 30000, &row, NULL), BUDGET_SHED);
+	zassert_equal(row, D);
 }
 
 ZTEST(budget, test_28v_then_20v_with_a_3a_cable)
