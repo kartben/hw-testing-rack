@@ -63,6 +63,30 @@ The Mega 3MP has a 1/4" sensor, and its stock 2.8 mm lens gives 90° diagonally 
 (D / H / V) on a 1/4" sensor.  It is end-of-life.  **Arducam LN005** (M27210H08, 2.1 mm) gives ≈ 106–115° D, scaled
 from the stock lens.  A shorter focal length can need a shorter holder to focus: try it on the first camera.
 
+## DUT cables at the standing port wall (2026-11-01)
+
+The DATA ×6 (and v2) receptacles stand, 15.5 mm apart: the drawer end of a DUT cable is a straight USB-C (an angled
+one only if its cable leaves upwards), its overmold within the USB-IF 12.35 × 6.5 mm ([docs/cabling.md](../docs/cabling.md)).
+No listing gives the overmold: the ends below were sized on the photos.  Measure the first cable on arrival.
+
+| Cable (config/rack.yaml) | Before | After (prices for one, VAT incl.) | Alternative |
+|---|---|---|---|
+| `c-to-c`, 15 cm: straight in the drawer, 90° at the board (BeaglePlay, Wio Terminal, GIGA) | OLAF 1005013255525639, "Dual Elbow" (both ends bent) | HDR Store 1005009683032517, "Type-C-bend-straight", 15 cm, €3.69: flat 4-wire USB 2.0, heat-shrunk ends ≈ 10 × 4 mm | BESTAR 1005001325015941 (ADT-Link FPC), "T1-T2", 15 cm, €6.79: sleeved board end ≈ 10.5–12 × 4 mm |
+| `c-to-micro-b`, 25 cm, on the 90° adapter (NUCLEO-64, NUCLEO-144) | HOQO 2251832791887129: no longer sold in France, USB-C end bent | Waveshare 1005007989121951, "Straight-Straight", 25 cm, €4.39: same flat cable as above | BESTAR 1005002786476442 (ADT-Link FPC), "T1B-W1", 25 cm, €8.06 |
+| `c-to-mini-b`, 25 cm (no board in the population) | HOQO 2251832791887129: no longer sold in France | to pick when a mini-B board returns: neither family has a mini-B end | |
+| `c-to-micro-b-straight`, 15 cm (Pico 2) | listing to pick (the 2026-10-19 cart: BESTAR "T1B-W1") | Waveshare 1005007989121951, "Straight-Straight", 15 cm, €3.69 | BESTAR 1005002786476442, "T1B-W1", 15 cm, €6.99 |
+| `c-to-c-straight`, 15–20 cm (Nano Matter, XIAO) | listing to pick | HDR Store 1005009683032517, "straight-straight", 15 cm, €3.69 | BESTAR 1005001325015941, "T1-T1", 15 cm, €6.79 |
+| `c-to-c-straight-20`, 20 cm (UNO R4) | listing to pick (the 2026-10-19 cart: a USB 3.2 cable, 1005006804935384, overmold not given) | HDR Store 1005009683032517, "straight-straight", 20 cm, €4.09 | BESTAR 1005001325015941, "T1-T1", 20 cm, €7.49 |
+
+The HDR and Waveshare cables look like one maker's flat 4-wire USB 2.0 cable (the same heat-shrunk ends,
+straight, bent or side-bent on order).  Its "bend" is across the plug's wide face, as the board ends need.  A flat
+cable or FPC bends across its face only: at a standing slot its face stands too, so the arch over a board's rear
+edge takes a quarter twist along the cable.  Rejected: OLAF's "Elbow Straight C-C" (€2.65; its straight end is a
+round aluminium barrel, thicker than 6.5 mm by the photos) and the DJI-remote "15 cm" cables (both plugs L-shaped).
+
+To check on arrival: each USB-C end within 12.35 × 6.5 mm; BESTAR 1005001325015941 is titled USB 3.1 (10 Gbit/s)
+but its photos show ADT-Link's USB 2.0 boards (UT1B), so check its end width too.
+
 ## Outside AliExpress
 
 | Item | Source | Price (2026-10-19) |

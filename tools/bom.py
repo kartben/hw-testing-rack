@@ -319,34 +319,49 @@ JST_PH_LEADS = {152: ("ASPHSPH24K152", "455-3082-ND", {1: 0.35, 10: 0.299, 25: 0
                 305: ("ASPHSPH24K305", "455-3083-ND", {1: 0.44, 10: 0.374, 25: 0.35, 50: 0.3334, 100: 0.3175})}
 
 
-# DUT cables (DATA port → board), per cable type of config/rack.yaml.  Listings found on 2026-10-18;
-# AliExpress then asked for a captcha, so variants and the data lines are to be checked on the page.
+# DUT cables (DATA port → board), per cable type of config/rack.yaml.  Listings picked on 2026-11-01 for
+# the standing port wall: the drawer end is a straight USB-C (an angled one only if its cable leaves
+# upwards) whose overmold stays within the USB-IF 12.35 × 6.5 mm.  None of these listings gives the
+# overmold: the ends were sized on the photos (flat cables: a heat-shrunk end ≈ 10 × 4 mm), so measure the
+# first one on arrival.  A flat cable bends across its face only: at a standing slot its face stands too,
+# and an arch over a board's rear edge takes a quarter twist along the cable.
 # A right-angle micro-B or mini-B plug is not reversible, its "up" / "down" naming varies by seller and
 # few listings offer both: those boards take a 90° adapter (sold as up / down / left / right sets, keep
 # the one whose female faces up) and a cable with a straight micro-B / mini-B plug.
 DUT_CABLES = {
-    "c-to-c": {"supplier": "AliExpress (USB-C ↔ USB-C 90°, 15 cm, one bend: listing to pick; was 1005013255525639, "
-                           "OLAF, \"double coudé\")", "unit_eur": 2.5,
-               "notes": "straight at the drawer (the port wall's slots stand since 2026-11-01), bent at the board "
-                        "across its wide face (up / down, not left / right); USB-C is reversible, so either bend "
-                        "works.  Check the listing says data, not charge only"},
-    "c-to-micro-b": {"supplier": "AliExpress 2251832791887129 (HOQO, \"to Micro Male\", 25 cm)", "unit_eur": 1.0,
-                     "notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end straight (the port "
-                              "wall's slots stand since 2026-11-01): check the listing has it, else pick another"},
-    "c-to-mini-b": {"supplier": "AliExpress 2251832791887129 (HOQO, \"to Mini Male\", 25 cm)", "unit_eur": 1.0,
+    "c-to-c": {"supplier": "AliExpress 1005009683032517 (HDR Store, flat USB 2.0 cable, \"Type-C-bend-straight\", "
+                           "15cm)", "unit_eur": 3.69,
+               "notes": "the straight end in the drawer, the bent one at the board, bent across its wide face (up / "
+                        "down); 4 wires, USB 2.0 data.  Alternative: AliExpress 1005001325015941 (BESTAR, ADT-Link "
+                        "FPC, \"T1-T2\", 15CM, €6.79; titled USB 3.1, its photos show ADT's USB 2.0 boards).  Not "
+                        "the OLAF \"Elbow Straight C-C\" (1005013255525639): its straight end is a round aluminium "
+                        "barrel, thicker than 6.5 mm by the photos"},
+    "c-to-micro-b": {"supplier": "AliExpress 1005007989121951 (Waveshare, flat USB 2.0 cable, \"Straight-Straight\", "
+                                 "25cm)", "unit_eur": 4.39,
+                     "notes": "the micro-B plug stands on the board's 90° adapter, the USB-C end straight in the "
+                              "drawer.  Alternative: AliExpress 1005002786476442 (BESTAR, ADT-Link FPC, \"T1B-W1\", "
+                              "25CM, €8.06).  The HOQO listing of 2026-10-18 (2251832791887129) is no longer sold in "
+                              "France, and its USB-C end was bent"},
+    "c-to-mini-b": {"supplier": "AliExpress (USB-C ↔ mini-B, straight, 25 cm, USB 2.0 data: listing to pick)",
+                    "unit_eur": 4.0,
                     "notes": "the F746G-DISCO's ST-LINK port (CN14) is mini-B, facing the side wall with 49 mm to it: "
-                             "the straight mini-B plug fits, no adapter; the USB-C end straight (the port wall's slots "
-                             "stand since 2026-11-01): check the listing has it"},
-    "c-to-micro-b-straight": {"supplier": "AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data)",
-                              "unit_eur": 2.0,
+                             "the straight mini-B plug fits, no adapter.  No board in the population takes it "
+                             "(2026-11-01), and the HOQO listing is no longer sold in France; the flat cables above "
+                             "and ADT-Link's FPCs had no mini-B end on AliExpress.  The USB-C end straight, within "
+                             "12.35 × 6.5 mm"},
+    "c-to-micro-b-straight": {"supplier": "AliExpress 1005007989121951 (Waveshare, flat USB 2.0 cable, "
+                                          "\"Straight-Straight\", 15cm)", "unit_eur": 3.69,
                               "notes": "straight at both ends, a loop over the plate (a converted bay's Pico 2): "
-                                       "15 cm takes a seller's ±5 mm, 10 cm would have to be within 3; listing still "
-                                       "to pick, check it says data"},
-    "c-to-c-straight-20": {"supplier": "AliExpress (USB-C ↔ USB-C, straight, 20 cm, USB 2.0 data)", "unit_eur": 2.0,
-                           "notes": "straight at both ends; any short C ↔ C that states data"},
-    "c-to-c-straight": {"supplier": "AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps)", "unit_eur": 2.0,
-                        "notes": "straight at both ends; any short C ↔ C that states data (many short ones are "
-                                 "charge-only)"},
+                                       "15 cm takes a seller's ±5 mm, 10 cm would have to be within 3.  Alternative: "
+                                       "AliExpress 1005002786476442 (BESTAR, ADT-Link FPC, \"T1B-W1\", 15CM, €6.99)"},
+    "c-to-c-straight-20": {"supplier": "AliExpress 1005009683032517 (HDR Store, flat USB 2.0 cable, "
+                                       "\"straight-straight\", 20cm)", "unit_eur": 4.09,
+                           "notes": "straight at both ends.  Alternative: AliExpress 1005001325015941 (BESTAR, "
+                                    "ADT-Link FPC, \"T1-T1\", 20CM, €7.49)"},
+    "c-to-c-straight": {"supplier": "AliExpress 1005009683032517 (HDR Store, flat USB 2.0 cable, "
+                                    "\"straight-straight\", 15cm)", "unit_eur": 3.69,
+                        "notes": "straight at both ends, 15–20 cm.  Alternative: AliExpress 1005001325015941 "
+                                 "(BESTAR, ADT-Link FPC, \"T1-T1\", 15CM, €6.79)"},
 }
 
 

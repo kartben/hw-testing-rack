@@ -3781,52 +3781,52 @@
 {
 "category": "Cables",
 "item": "USB-C ↔ USB-C 90°, 15 cm (DUT cable: BEAGLEPLAY, GIGA + display, WIO TERMINAL)",
-"supplier": "AliExpress (USB-C ↔ USB-C 90°, 15 cm, one bend: listing to pick; was 1005013255525639, OLAF, \"double coudé\")",
+"supplier": "AliExpress 1005009683032517 (HDR Store, flat USB 2.0 cable, \"Type-C-bend-straight\", 15cm)",
 "qty": 3,
-"unit_eur": 2.5,
-"notes": "straight at the drawer (the port wall's slots stand since 2026-11-01), bent at the board across its wide face (up / down, not left / right); USB-C is reversible, so either bend works.  Check the listing says data, not charge only",
+"unit_eur": 3.69,
+"notes": "the straight end in the drawer, the bent one at the board, bent across its wide face (up / down); 4 wires, USB 2.0 data.  Alternative: AliExpress 1005001325015941 (BESTAR, ADT-Link FPC, \"T1-T2\", 15CM, €6.79; titled USB 3.1, its photos show ADT's USB 2.0 boards).  Not the OLAF \"Elbow Straight C-C\" (1005013255525639): its straight end is a round aluminium barrel, thicker than 6.5 mm by the photos",
 "unit": "pcs",
-"ext_eur": 7.5
+"ext_eur": 11.07
 },
 {
 "category": "Cables",
 "item": "USB-C ↔ USB-C, straight, 15–20 cm (DUT cable: NANO MATTER, XIAO)",
-"supplier": "AliExpress (USB-C ↔ USB-C, 15–20 cm, USB 2.0 data, 480 Mbps)",
+"supplier": "AliExpress 1005009683032517 (HDR Store, flat USB 2.0 cable, \"straight-straight\", 15cm)",
 "qty": 3,
-"unit_eur": 2.0,
-"notes": "straight at both ends; any short C ↔ C that states data (many short ones are charge-only)",
+"unit_eur": 3.69,
+"notes": "straight at both ends, 15–20 cm.  Alternative: AliExpress 1005001325015941 (BESTAR, ADT-Link FPC, \"T1-T1\", 15CM, €6.79)",
 "unit": "pcs",
-"ext_eur": 6.0
+"ext_eur": 11.07
 },
 {
 "category": "Cables",
 "item": "USB-C ↔ USB-C, straight, 20 cm (DUT cable: UNO R4)",
-"supplier": "AliExpress (USB-C ↔ USB-C, straight, 20 cm, USB 2.0 data)",
+"supplier": "AliExpress 1005009683032517 (HDR Store, flat USB 2.0 cable, \"straight-straight\", 20cm)",
 "qty": 1,
-"unit_eur": 2.0,
-"notes": "straight at both ends; any short C ↔ C that states data",
+"unit_eur": 4.09,
+"notes": "straight at both ends.  Alternative: AliExpress 1005001325015941 (BESTAR, ADT-Link FPC, \"T1-T1\", 20CM, €7.49)",
 "unit": "pcs",
-"ext_eur": 2.0
+"ext_eur": 4.09
 },
 {
 "category": "Cables",
 "item": "USB-C ↔ micro-B straight, 25 cm, on a micro-B 90° adapter (DUT cable: NUCLEO-144, NUCLEO-64)",
-"supplier": "AliExpress 2251832791887129 (HOQO, \"to Micro Male\", 25 cm)",
+"supplier": "AliExpress 1005007989121951 (Waveshare, flat USB 2.0 cable, \"Straight-Straight\", 25cm)",
 "qty": 2,
-"unit_eur": 1.0,
-"notes": "the micro-B plug stands on the board's 90° adapter; the USB-C end straight (the port wall's slots stand since 2026-11-01): check the listing has it, else pick another",
+"unit_eur": 4.39,
+"notes": "the micro-B plug stands on the board's 90° adapter, the USB-C end straight in the drawer.  Alternative: AliExpress 1005002786476442 (BESTAR, ADT-Link FPC, \"T1B-W1\", 25CM, €8.06).  The HOQO listing of 2026-10-18 (2251832791887129) is no longer sold in France, and its USB-C end was bent",
 "unit": "pcs",
-"ext_eur": 2.0
+"ext_eur": 8.78
 },
 {
 "category": "Cables",
 "item": "USB-C ↔ micro-B, straight, 15 cm (DUT cable: PICO 2)",
-"supplier": "AliExpress (USB-C ↔ micro-B, straight, 15 cm, USB 2.0 data)",
+"supplier": "AliExpress 1005007989121951 (Waveshare, flat USB 2.0 cable, \"Straight-Straight\", 15cm)",
 "qty": 3,
-"unit_eur": 2.0,
-"notes": "straight at both ends, a loop over the plate (a converted bay's Pico 2): 15 cm takes a seller's ±5 mm, 10 cm would have to be within 3; listing still to pick, check it says data",
+"unit_eur": 3.69,
+"notes": "straight at both ends, a loop over the plate (a converted bay's Pico 2): 15 cm takes a seller's ±5 mm, 10 cm would have to be within 3.  Alternative: AliExpress 1005002786476442 (BESTAR, ADT-Link FPC, \"T1B-W1\", 15CM, €6.99)",
 "unit": "pcs",
-"ext_eur": 6.0
+"ext_eur": 11.07
 },
 {
 "category": "Cables",
@@ -3932,12 +3932,12 @@
 "Printed parts": 62.0,
 "Fasteners": 8.98,
 "Motion": 18.85,
-"Cables": 78.69999999999999,
+"Cables": 101.28,
 "Analyzer": 7.0,
 "Power": 58.0,
 "Cameras": 64.1
 },
-"total_eur": 968.2,
+"total_eur": 990.78,
 "prints": [
 {
 "part": "bay_label_a1",
