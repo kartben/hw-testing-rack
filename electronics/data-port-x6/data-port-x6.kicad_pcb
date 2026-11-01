@@ -12511,7 +12511,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.vishay.com/doc?34104"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -12522,7 +12522,7 @@
 				)
 			)
 		)
-		(property "Description" "4.7 µH, 7.5 A sat (9 A typ), 5.5 A rms, 33 mΩ, molded"
+		(property "Description" "4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat, 37 / 40 mΩ, molded"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -12545,7 +12545,7 @@
 				)
 			)
 		)
-		(property "MPN" "FXL0630-4R7-M"
+		(property "MPN" "IHLP2525CZEK4R7M01"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -12557,7 +12557,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "cjiang"
+		(property "Manufacturer" "Vishay Intertech"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -12569,7 +12569,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C167220"
+		(property "LCSC" "C48009678"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23370,7 +23370,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.vishay.com/doc?34104"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23381,7 +23381,7 @@
 				)
 			)
 		)
-		(property "Description" "4.7 µH, 7.5 A sat (9 A typ), 5.5 A rms, 33 mΩ, molded"
+		(property "Description" "4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat, 37 / 40 mΩ, molded"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23404,7 +23404,7 @@
 				)
 			)
 		)
-		(property "MPN" "FXL0630-4R7-M"
+		(property "MPN" "IHLP2525CZEK4R7M01"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23416,7 +23416,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "cjiang"
+		(property "Manufacturer" "Vishay Intertech"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -23428,7 +23428,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C167220"
+		(property "LCSC" "C48009678"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)

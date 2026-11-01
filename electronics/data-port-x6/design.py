@@ -393,7 +393,8 @@ def power_sheet(b: Board):
         C(s, f"C{c0 + 3}", "100n", cb, lx, pcb=P(9.6 + dx, 41.5 + dy, 0), sch=at(x0 + 41.5, 19, rot=90))
         s.wire(f"{u}.CB", (x0 + 36, 23), (x0 + 36, 19), f"C{c0 + 3}.1")
         s.wire(f"C{c0 + 3}.2", (x0 + 43, 24))
-        part(s, f"L{2 + i}", "buck_l47", {"1": lx, "2": out}, "4.7u", pcb=P(15.7 + dx, 44 + dy, 0),
+        # 4.7 µH rated 75 V (the 28 V EPR rail ahead; the FXL0630's 30 V would not do), on the same footprint
+        part(s, f"L{2 + i}", "buck_l47_75v", {"1": lx, "2": out}, "4.7u", pcb=P(15.7 + dx, 44 + dy, 0),
              sch=at(x0 + 47.5, 24, rot=90))
         s.wire(f"{u}.SW", (x0 + 43, 24), f"L{2 + i}.1")
         s.wire(f"L{2 + i}.2", (x0 + 62, 24))
