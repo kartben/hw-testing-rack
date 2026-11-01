@@ -44,6 +44,9 @@ JLC_SHIPPING = "DHL ≈ $27–40"
 # shipment for the lot, the middle of JLC's DHL range.  It is the only cost the designs share in one
 # order: setup, stencil and part-type fees stay per design.
 JLC_SHIPPING_USD = 34.00
+# A quote the board has outgrown (its BOM changed and nobody has re-quoted yet) carries "stale_since" (a date) and
+# "stale" (why): its order is then priced as the calculator prices it, its part types and parts from the BOM, the
+# BOM page and README say so, and the tests that compare the BOM with the quote skip it until a re-quote.
 JLC_QUOTE = {
     # The order the user chose on 2026-10-19 ("10 en HASL"): 10 PCBs, lead-free HASL, all 10 assembled (8 bays
     # and 2 spares).  JLC's real quote, 2026-10-23 (jlcpcb.com, the user's account, main's f9916db Gerbers, JLC
@@ -562,12 +565,18 @@ def electronics(rack) -> tuple[list[dict], dict]:
         jlc = {r["part"]: _tier(r["part"], r["basic"]) for r in mine if r["part"] and not r["hand_solder"]}
         unit = "panels" if "boards" in q else "boards"
         n_ext = sum(1 for tier in jlc.values() if tier == "extended")   # the types Economic PCBA charges
+        if q.get("stale_since"):              # a stale quote: its part lines from the BOM, the calculator's way
+            if "extended parts" in pcba:
+                pcba["extended parts"] = round(n_ext * JLC_FEES[q["service"]]["per type"], 2)
+            pcba["components"] = round(sum(r["qty"] * r["unit_eur"] for r in mine) / USD_EUR, 2)
+            changes.append(f"quote stale since {q['stale_since']}: {q['stale']}; parts and extended types from the "
+                           "BOM until a re-quote")
         orders[name] = {"pcb": pcb, "pcba": pcba, "changes": changes,
                         "total": round(sum(pcb.values()) + sum(pcba.values()), 2),
                         "need": need, "types": len(jlc), "extended": n_ext,
                         "preferred": sum(1 for tier in jlc.values() if tier == "preferred"),
                         "standard_only": sorted({r["mpn"] for r in mine if r.get("standard_only")})}
-        if q["service"] == "Economic" and "extended parts" in pcba and \
+        if q["service"] == "Economic" and "extended parts" in pcba and not q.get("stale_since") and \
                 abs(pcba["extended parts"] - n_ext * JLC_FEES["Economic"]["per type"]) > 0.01:
             print(f"warning: {name}'s quote charges ${pcba['extended parts']:.2f} for extended types, but its BOM has "
                   f"{n_ext} (${n_ext * JLC_FEES['Economic']['per type']:.2f}): re-quote")
@@ -577,6 +586,8 @@ def electronics(rack) -> tuple[list[dict], dict]:
                     all(lcsc != l for b in q.get("boards", (name,)) for l, _, _ in JLC_MIN_BUY.get(b, [])):
                 print(f"warning: JLC sells {lcsc} ({name}) by {moq} at least: add it to JLC_MIN_BUY")
         src = "estimate, not quoted" if q.get("estimate") else f"JLCPCB quote {q.get('date', JLC_QUOTE_DATE)}"
+        if q.get("stale_since"):
+            src = f"calculator (the JLCPCB quote of {q.get('date', JLC_QUOTE_DATE)} is stale since {q['stale_since']})"
         pcb_src = src + (", adjusted" if name in JLC_FINISH or pcb != q["pcb"] else "")
         pcba_src = src + (", adjusted" if pcba != q["pcba"] else "")
         spec = q["spec"].replace("ENIG", JLC_FINISH[name][0]) if name in JLC_FINISH else q["spec"]
@@ -1338,6 +1349,9 @@ def main():
         md.append(f"| {name} | {order} | PCB: {_usd(q['pcb'])} | {sum(q['pcb'].values()):.2f} |")
         md.append(f"| | | PCBA: {_usd(q['pcba'])} | {sum(q['pcba'].values()):.2f} |")
         md.append(f"| | | **{'Estimated' if q.get('estimate') else 'Quoted'} total** | **{q['total']:.2f}** |")
+        if q.get("stale_since"):
+            md.append(f"| | | *Quote stale since {q['stale_since']}: {q['stale']}.  The order below is the "
+                      "calculator's until a re-quote* | |")
         if name in orders:
             o = orders[name]
             md.append(f"| | | Order (indicative): {'; '.join(o['changes']) or 'as quoted'} | {o['total']:.2f} |")
