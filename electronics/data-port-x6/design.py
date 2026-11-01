@@ -282,8 +282,11 @@ def port(b: Board, n: int):
          sch=at(30, 22, fields=(-4, -4)))
     C(s, f"C{k + 1}", "1u", v5, "GND", size="0402", pcb=P(x0 + 5.13, y0 + 2.9, 90), sch=at(15, 24))
     s.wire(f"C{k + 1}.1", (15, 21), (20, 21))
-    R(s, f"R{k + 1}", "47k", p + "ILIM", "GND", size="0402",
-      pcb=P(x0 - 0.97, y0 + 2.2, 180) if n > 1 else P(x0 - 0.5, y0 + 2.2, 90), sch=at(22, 28))
+    # 45.3k: 524 mA at the least, so a DUT drawing its full 500 mA never trips it (47k's 505 mA fell to 499.7 with
+    # its 1 %); no JLC basic part between 39k and 47k, so an extended one
+    R(s, f"R{k + 1}", "45.3k", p + "ILIM", "GND", size="0402",
+      pcb=P(x0 - 0.97, y0 + 2.2, 180) if n > 1 else P(x0 - 0.5, y0 + 2.2, 90), sch=at(22, 28),
+      fields={"LCSC": "C2933099", "MPN": "FRC0402F4532TS", "Manufacturer": "FOJAN"})
     s.wire(f"{sw}.ILIM", (22, 24), f"R{k + 1}.1")
     # the port is off until the node switches it on
     R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(ina_x(n) + 2.24, y0 + 3.65, 90), sch=at(14, 36))
@@ -342,7 +345,8 @@ def port(b: Board, n: int):
     hp = n - 1 if n > 1 else 6
     s.notes = [f"Port {n} = hub port {hp}, busid 1-1.{hp}; supplied by {v5}.",
                f"INA226 at 0x{INA_HEX[n - 1]:02x}; EN and FAULT_N on the TCA9535 U2 (0x20).",
-               "ILIM 47k: 0.50–0.62 A; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.",
+               "ILIM 45.3k: 524 / 577 / 638 mA min / typ / max (TI SLVS841G §8.5.1 eq. 1–3), 519–644 mA with the",
+               "  resistor's 1 %; the -1 latches off after 7.5 ms in limit, FAULT_N flags it.",
                "INA226 Vbus on the shunt's load-side sense pad (= VBUS).",
                "EN pulled down: the port stays off until the node switches it on.",
                "Source only (Rp from the switched VBUS); a back-feeding source trips the TPS2553 (latched)."]
@@ -403,11 +407,11 @@ def power_sheet(b: Board):
     s.notes = [
         "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).",
         "+5V_A: ports 1–3; +5V_B: ports 4–6 and the 3.3 V LDO (≤ 0.46 A).  Never in parallel: the power plane's +5V",
-        "  split left / right.  +5V_A 1.5 A at 0.5 A a port, 1.86 A at the TPS2553s' 0.62 A limit; +5V_B 0.46 A more:",
-        "  2.32 A at the limit, under the LMR51625's 2.5 A.",
+        "  split left / right.  +5V_A 1.5 A at 0.5 A a port, 1.93 A at the TPS2553s' 0.644 A limit (45.3k, 1 %);",
+        "  +5V_B 0.46 A more: 2.39 A at the limit, under the LMR51625's 2.5 A.",
         "FB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.",
         "VIN on J1.8, the node's VRACK through its eFuse (TPS26600, ≈ 1.5 A, off by default): no second protection here.",
-        "  ≈ 1.0 A at 20 V (1.2 A at the ports' limit), 1.5 A at 13.5 V, 0.75 A at 28 V; a PH contact carries 2 A.",
+        "  ≈ 1.0 A at 20 V (1.3 A at the ports' limit), 1.5 A at 13.5 V, 0.75 A at 28 V; a PH contact carries 2 A.",
     ]
 
 
@@ -840,9 +844,9 @@ def board() -> Board:
         "  DATA ×4 v2 keeps the logic).  One face assembled.",
         "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×4 v2's lead.",
         "I²C: TCA9535 0x20, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C; the node's 0x40.",
-        "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 1.2 A at 20 V · +5V_A / +5V_B 5.24 V, ≤ 1.86 A / 2.32 A",
-        "  (ports 1–3 / 4–6 at the 0.62 A limit, +5V_B with the 3.3 V LDO's 0.46 A) ·",
-        "  PORTn_VBUS 5.1–5.24 V, 0.50–0.62 A limit ·",
+        "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 1.3 A at 20 V · +5V_A / +5V_B 5.24 V, ≤ 1.93 A / 2.39 A",
+        "  (ports 1–3 / 4–6 at the 0.644 A limit, +5V_B with the 3.3 V LDO's 0.46 A) ·",
+        "  PORTn_VBUS 5.1–5.24 V, 0.52–0.64 A limit ·",
         "  +3V3 3.3 V (AP2114H), ≤ 0.5 A (the hub 0.42 A at most) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own",
         "  regulators).",
     ]
