@@ -155,13 +155,14 @@ module solo_lid() lid(S_W, S_D, S_ZL, S_LIDS, S_BTN, S_NTOP,
 
 // ---------------------------------------------------------------- Quad
 // the DATA ×4 v2 (config/rack.yaml › pcb.data_port_x4_v2; x4_cradle.scad): 100 × 70 × 1.6, its four USB-C on its
-// front face (mouths 6.4 off it), 2 × 6 headers at 26 over its bottom edge, VBUS LEDs at 33, D1, J1 on its rear face.
+// front face (mouths DATA_V2_USB_H off it), 2 × 6 headers at 26 over its bottom edge, VBUS LEDs at 33, D1, J1 on its rear face.
 // Its USB-C and its headers at their own board x (layout B moves the USB-C onto the drawer's slots, not the headers)
 V2 = [100, 70, 1.6];
 V2_USB = DATA_V2_USB;  V2_USB_ROT = DATA_V2_USB_ROT;  V2_HDR = DATA_V2_HDR_X;
 V2_USB_Z = 8.5;  V2_HDR_Z = 26;  V2_LED_Z = 33;  V2_D1 = [55.4, 67.6];
 Q_W = 107;  Q_D = 95.5;
-Q_VX = 3.5;  Q_VY = T + 1 + 6.4;  Q_VZ = FL;       // the v2: left end, front face (mouths 1 mm behind the wall), bottom
+Q_VX = 3.5;  Q_VY = T + DRAWER_PORT_MOUTH + DATA_V2_USB_H;  Q_VZ = FL;   // the v2: left end, front face (mouths
+                                          // DRAWER_PORT_MOUTH behind the wall), bottom
 Q_SLOT = [V2[2] + 0.3, 4];                // its ends' slots: width, depth
 Q_SHELF = [Q_VZ + V2[1] + 0.5, 2];        // the node's shelf: underside, thickness
 Q_NX = 14;  Q_NY = 2.5;  Q_NZ = Q_SHELF[0] + Q_SHELF[1] + 4.5;   // the node on 4.5 mm bosses (6.5 for the insert)

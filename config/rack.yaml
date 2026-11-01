@@ -81,6 +81,9 @@ drawer:
                          # 2026-10-21: printed, after a test print, back to magnets if it doesn't suit
   magnet: [6, 3]         # the detent magnets (detent: magnet): Ø × t, one in the drawer, one in the tray's ledge
   plate: 5.0             # board plate thickness: the pegs' clip sits inside it (plate_grid)
+  port_mouth: 1.0        # the standing DATA boards' USB-C mouths behind the port wall's back face: a straight plug's
+                         # overmold (its top 1.2 over the wall's) goes in until the plug seats.  A board's front face
+                         # stands port_mouth + its usb_h behind the wall (rackcfg: pcb.<board>.face_y)
   port_recess: { width: 7.8, length: 22, depth: 3.5 }   # under each DATA port's slot, in the plate's rear
                          # edge (only: a plate turned round carries its boards the wrong way): a standing USB-IF overmold
                          # (12.35 tall on the ports' axis) comes down to 4.8 over the drawer floor, 2.7 into
@@ -353,7 +356,8 @@ pcb:
     size: [100, 70]         # length (drawer x) × height (z), 1.6 thick; these mirror x4_cradle.scad (V2, V2_X0, V2_Y, NOTCH*)
     x0: 4                   # drawer x of its left edge (the board spans x 4–104); its bottom edge on the drawer floor
     top_z: 72.5             # drawer z of its top edge (the drawer's underside z = 0, its floor's top 2.5)
-    face_y: 7.4             # its front face behind the port wall's back face (the receptacles' mouths 1 mm behind the wall)
+    usb_h: 6.4              # its standing USB-C's mouth off its front face (HRO TYPE-C-31-D-06): the board stands
+                            # drawer.port_mouth + usb_h behind the port wall's back face (rackcfg derives face_y)
     thickness: 1.6
     layers: 4               # F · GND · power (+3V3 above y 55.7, +5V below) · B: 4 layers again since 2026-10-23 (the
                             # routing portfolio and its fixes route it clean); X4V2_LAYERS=6 still builds the 6-layer
@@ -395,7 +399,7 @@ pcb:
                                # cleared the drag chain foot's boss)
     x0: 4
     top_z: 72.5
-    face_y: 7.4
+    usb_h: 6.4                 # as the v2's
     thickness: 1.6
     layers: 4
     cradle: 5.5

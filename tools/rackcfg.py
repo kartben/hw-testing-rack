@@ -110,6 +110,13 @@ def split_slot(name: str) -> tuple[str, int | None]:
 class Rack:
     raw: dict
 
+    def __post_init__(self):
+        # a standing DATA board's front face behind the port wall (face_y): its USB-C's mouths drawer.port_mouth
+        # behind the wall, usb_h off the board (config/rack.yaml): the receptacle's height is one value
+        for v in self.raw.get("pcb", {}).values():
+            if isinstance(v, dict) and "usb_h" in v:
+                v["face_y"] = round(self.raw["drawer"]["port_mouth"] + v["usb_h"], 3)
+
     # ---- frame (the panel frame: ladders, trays, braces) ----------------
     @property
     def panel_t(self) -> float:
@@ -333,7 +340,7 @@ class Rack:
         v = self.raw["pcb"]["data_port_x6"]
         d = self.plate_size[1]
         px0, py0 = self.plate_origin
-        mouth = dr["depth"] - dr["rear_bay"] + v["face_y"] - 6.4 - py0   # the receptacle's mouth (6.4 off the face)
+        mouth = dr["depth"] - dr["rear_bay"] + dr["port_mouth"] - py0     # the receptacles' mouths
         return [(v["x0"] + u - px0 - r["width"] / 2, mouth - r["length"], v["x0"] + u - px0 + r["width"] / 2, d)
                 for u in v["usb"]]
 
@@ -675,6 +682,7 @@ def scad_config(rack: Rack) -> str:
         "DRAWER_FRONT_H": d["front_height"],
         "DRAWER_FRONT_T": d["front_thickness"],
         "DRAWER_PLATE_GAP": list(rack.plate_gaps),
+        "DRAWER_PORT_MOUTH": rack.drawer["port_mouth"],
         **display_consts(d.get("display")),
         "DRAWER_REAR_BAY": d["rear_bay"],
         "DRAWER_FLANGE": d["flange"],
@@ -734,6 +742,7 @@ def scad_config(rack: Rack) -> str:
         "DATA_V2_X0": r["pcb"]["data_port_x4_v2"]["x0"],
         "DATA_V2_T": r["pcb"]["data_port_x4_v2"]["thickness"],
         "DATA_V2_FACE_Y": r["pcb"]["data_port_x4_v2"]["face_y"],
+        "DATA_V2_USB_H": r["pcb"]["data_port_x4_v2"]["usb_h"],
         "DATA_V2_USB": r["pcb"]["data_port_x4_v2"]["usb"],
         # each USB-C's turn (0 lying, 90 standing), 0 until the v2's layout B records it
         "DATA_V2_USB_ROT": r["pcb"]["data_port_x4_v2"].get("usb_rot", [0] * len(r["pcb"]["data_port_x4_v2"]["usb"])),
@@ -745,6 +754,7 @@ def scad_config(rack: Rack) -> str:
         "DATA_X6_X0": r["pcb"]["data_port_x6"]["x0"],
         "DATA_X6_T": r["pcb"]["data_port_x6"]["thickness"],
         "DATA_X6_FACE_Y": r["pcb"]["data_port_x6"]["face_y"],
+        "DATA_X6_USB_H": r["pcb"]["data_port_x6"]["usb_h"],
         "DATA_X6_USB": r["pcb"]["data_port_x6"]["usb"],
         "DATA_X6_USB_ROT": r["pcb"]["data_port_x6"]["usb_rot"],
         "DATA_X6_NOTCH_X": r["pcb"]["data_port_x6"]["notches"]["x"],

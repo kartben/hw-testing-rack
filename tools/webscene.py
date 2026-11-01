@@ -103,9 +103,6 @@ def x4_port_x(rack, n: int) -> float:
     return x4["x0"] + x4["usb"][n - 1]
 
 
-USBC_RECEPTACLE_H = 6.4     # a standing board's vertical USB-C (HRO TYPE-C-31-D-06): its mouth this far off the face
-
-
 def port_ends(rack, key: str, dxw: float, wall_y: float, dz: float) -> list[dict]:
     """A standing DATA board's ports (key: its pcb section, data_port_x6 or data_port_x4_v2), 1 to n left to right
     as seen from the DUT: the plug end of each, in the row's frame (dxw: the drawer's x, wall_y: the port wall's
@@ -113,7 +110,7 @@ def port_ends(rack, key: str, dxw: float, wall_y: float, dz: float) -> list[dict
     slot, turned with the receptacle (usb_rot 90: standing, its width along z)."""
     v = rack.raw["pcb"][key]
     rot = v.get("usb_rot", [0] * len(v["usb"]))
-    y = wall_y + v["face_y"] - USBC_RECEPTACLE_H
+    y = wall_y + rack.drawer["port_mouth"]
     return [{"at": [round(dxw + v["x0"] + u, 3), round(y, 3), round(dz + v["usb_z"], 3)], "dir": [0, 1, 0],
              "up": [1, 0, 0] if r == 90 else [0, 0, 1], "type": "usb-c", "style": "straight"}
             for u, r in zip(v["usb"], rot)]
@@ -1326,7 +1323,7 @@ def build(rack) -> Path:
                 for x_a, x_b in zip([bx] + [c + nw / 2 for c in cuts], [c - nw / 2 for c in cuts] + [bx + bw]):
                     slab(x_a, x_b, z0, z0 + nh)
                 for ux in v["usb"]:            # the vertical USB-C, their mouths 1 mm behind the port wall
-                    add("dataport_usb_x4", (dxw_ + vx0 + ux, y_face - v["face_y"] + 1.0, plenum + dp_z), row=i,
+                    add("dataport_usb_x4", (dxw_ + vx0 + ux, y_face - v["face_y"] + d["port_mouth"], plenum + dp_z), row=i,
                         layer="drawers", bay=bid, movable=drawer)
                 pins = [[round(c, 3) for c in pt] for n in range(1, 5) for pt, _ in x4v2_header_points(dxw_, dy, plenum, n)]
                 items["headers"].append({"bay": bid, "row": i, "space": "row", "movable": drawer, "board": "DATA ×4 v2",

@@ -38,7 +38,6 @@ CAM_BODY_R = 8.0           # the cam swept round its pivot (spiral r1 + its flan
 CAM_TOP = 4.8              # the cam's top above its own bottom (flange 1 + band 2 + grip 1.8)
 PLUG_HALF = 6.5            # a USB plug's half width (12.4 overmold) and a margin
 PLUG_LEN = 26.0            # its way out of the board: plug, its strain relief, the cable's first bend
-DATA_RECEPTACLE_H = 6.4    # a standing DATA board's vertical USB-C: its mouth this far off the board's face
 WINDOW = 10.0              # how far a board may move from its hint
 WINDOW_ALONE = 30.0        # ... along its USB edge, when it is its bay's only board
 WALL_GAP = 0.5             # a board leaning on the drawer's wall or front: its edge this far off the wall's face
@@ -124,7 +123,7 @@ class Grid:
         # way over the plate's rear, (x0, y0, x1, y1) in plate terms, whichever port a bay's DUT cable takes
         v = rack.raw["pcb"]["data_port_x6"]
         px0, py0 = rack.plate_origin
-        mouth = dr["depth"] - dr["rear_bay"] + v["face_y"] - DATA_RECEPTACLE_H - py0
+        mouth = dr["depth"] - dr["rear_bay"] + dr["port_mouth"] - py0     # the receptacles' mouths
         self.data_plugs = [(v["x0"] + u - px0 - half, mouth - PLUG_LEN, v["x0"] + u - px0 + half, mouth)
                            for u, r in zip(v["usb"], v.get("usb_rot", [0] * len(v["usb"])))
                            for half in [(3.5 if r == 90 else 6.2) + 1.0]]

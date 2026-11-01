@@ -62,9 +62,9 @@ ROOT_R = 0.8;                             // the keyhole at the slit's foot: the
 // the guard.  HRO TYPE-C-31-D-06, from its drawing (the user, 2026-10-26): 8.94 × 3.16 × 6.40 nominal, the
 // general tolerances' max taken here; its legs reach ±2.15 off the axis, ≈ 0.8 above the board (1.5 allowed).
 // It stands (its slot upright, 2026-11-01): its length along z, its depth along x
-USBC_BODY = [9.14, 3.31, 6.6];            // max: length (z), depth (x), height off the board (y)
+USBC_BODY = [9.14, 3.31, DATA_X6_USB_H + 0.2];   // max: length (z), depth (x), height off the board (y)
 GUARD_GAP = 0.1;                          // round the max body: 0.2 / 0.175 a side round a nominal one
-COMB_Y = [V2_Y - 6.4 + 0.2, V2_Y - 2.1];  // 0.2 behind the mouths; 0.65 clear of the USBLC6s (1.45 tall) beside them
+COMB_Y = [V2_Y - DATA_X6_USB_H + 0.2, V2_Y - 2.1];   // 0.2 behind the mouths; 0.65 clear of the USBLC6s (1.45 tall)
 COMB_TOP = PORT_Z + USBC_BODY[0] / 2 + GUARD_GAP;   // GUARD_GAP over the bodies' top: the strip closes the U's there
 STRIP_TOP = COMB_TOP + 5;                 // 5 mm: ≈ 0.02 mm under 20 N between two screws (2 mm: 0.45)
 SEAT = [5.5, 2];                          // a slot across the strip for each screw's head (≤ Ø4.5): width, depth
