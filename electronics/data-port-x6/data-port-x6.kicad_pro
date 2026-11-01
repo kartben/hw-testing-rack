@@ -394,10 +394,6 @@
       },
       {
         "netclass": "Power",
-        "pattern": "*+5V_L"
-      },
-      {
-        "netclass": "Power",
         "pattern": "*VIN"
       },
       {

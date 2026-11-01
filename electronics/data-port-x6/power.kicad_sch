@@ -135,193 +135,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector_Generic:Conn_01x03"
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "J"
-				(at 0 5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "Conn_01x03"
-				(at 0 -5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "connector"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Connector*:*_1x??_*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "Conn_01x03_1_1"
-				(rectangle
-					(start -1.27 3.81)
-					(end 1.27 -3.81)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(rectangle
-					(start -1.27 2.667)
-					(end 0 2.413)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 0.127)
-					(end 0 -0.127)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(rectangle
-					(start -1.27 -2.413)
-					(end 0 -2.667)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -5.08 2.54 0)
-					(length 3.81)
-					(name "Pin_1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 3.81)
-					(name "Pin_2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -5.08 -2.54 0)
-					(length 3.81)
-					(name "Pin_3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Device:C"
 			(pin_numbers
 				(hide yes)
@@ -1401,226 +1214,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x03")
-		(at 40.64 76.2 0)
-		(mirror y)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "409de526-3eac-581e-8b23-ac7f0f7e5334")
-		(property "Reference" "J3"
-			(at 36.61 60.96 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "VIN"
-			(at 37.135 63.5 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_PH_B3B-PH-K_1x03_P2.00mm_Vertical"
-			(at 40.64 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 40.64 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "JST PH 3-pin, top entry, 2 A"
-			(at 40.64 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MPN" "B3B-PH-K-S(LF)(SN)"
-			(at 40.64 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer" "JST"
-			(at 40.64 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC" "C131339"
-			(at 40.64 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "b25d2309-ac4d-582f-9f4c-925c361ff2de")
-		)
-		(pin "2"
-			(uuid "17ee9d04-97d9-50bd-9c2d-42d213e450fb")
-		)
-		(pin "3"
-			(uuid "6c0b78e4-6b16-5262-bb54-0b90c9a642f5")
-		)
-		(instances
-			(project "data-port-x6"
-				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "J3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 45.72 73.66)
-			(xy 48.26 73.66)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5ec4a840-3afc-562b-911e-138c053b40ce")
-	)
-	(label "VIN"
-		(at 48.26 73.66 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "bc161e2c-5524-5212-a0d3-37ee3f1f9dc6")
-	)
-	(wire
-		(pts
-			(xy 45.72 76.2)
-			(xy 48.26 76.2)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "07312886-06bb-5c7b-8b2f-a757ec0771db")
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 48.26 76.2 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "f92a1469-8034-537e-b166-cc314c4dd92c")
-		(property "Reference" "#PWR03001"
-			(at 48.26 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 54.05 76.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 48.26 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 48.26 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 48.26 76.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "dfd1f3e2-2f9d-5d8b-a4b8-ab945e9cb73b")
-		)
-		(instances
-			(project "data-port-x6"
-				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03001")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 45.72 78.74)
-			(xy 48.26 78.74)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "98223a91-3378-5c19-b1b9-000427cfb6c7")
-	)
-	(label "VIN"
-		(at 48.26 78.74 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "98c4738d-8254-5137-9a39-070bea452df0")
-	)
-	(symbol
 		(lib_id "power:PWR_FLAG")
 		(at 71.12 45.72 0)
 		(unit 1)
@@ -1697,16 +1290,27 @@
 		)
 		(uuid "94ac45b4-0c91-5540-bd49-834d3242a831")
 	)
-	(label "VIN"
+	(global_label "VIN"
+		(shape bidirectional)
 		(at 71.12 48.26 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify right)
 		)
-		(uuid "b98cb921-436c-5db2-83e4-0da66434f29e")
+		(uuid "abb9aeb5-3ad2-5756-8440-2bf58bb4d404")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 71.12 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Device:C_Polarized")
@@ -1823,16 +1427,27 @@
 		)
 		(uuid "bb9c9a62-e7ad-50c7-93d8-794869e943f2")
 	)
-	(label "VIN"
+	(global_label "VIN"
+		(shape bidirectional)
 		(at 101.6 69.85 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify left)
 		)
-		(uuid "6108455c-31db-51c8-9ad9-102e974911c0")
+		(uuid "15919de6-1444-582c-9cad-4077f9b30b11")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 101.6 69.85 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
 	)
 	(wire
 		(pts
@@ -1855,7 +1470,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2ca68b4f-3969-5236-aaee-31c795482f27")
-		(property "Reference" "#PWR03002"
+		(property "Reference" "#PWR03001"
 			(at 101.6 82.55 0)
 			(effects
 				(font
@@ -1905,7 +1520,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03002")
+					(reference "#PWR03001")
 					(unit 1)
 				)
 			)
@@ -2017,16 +1632,27 @@
 		)
 		(uuid "a44b13bd-0cf4-5504-bd2d-80592647498f")
 	)
-	(label "VIN"
+	(global_label "VIN"
+		(shape bidirectional)
 		(at 73.66 99.06 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify left)
 		)
-		(uuid "98ad9670-f751-5b3f-b819-f15f625aab13")
+		(uuid "b78df3d6-8283-546d-967c-86f23fae11c7")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 73.66 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -2144,7 +1770,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "48714849-c3fc-5d76-916b-fd965d0d4dc9")
-		(property "Reference" "#PWR03003"
+		(property "Reference" "#PWR03002"
 			(at 73.66 129.54 0)
 			(effects
 				(font
@@ -2194,7 +1820,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03003")
+					(reference "#PWR03002")
 					(unit 1)
 				)
 			)
@@ -2316,7 +1942,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "cf6f835a-5c73-5042-83f7-065473f9e08f")
-		(property "Reference" "#PWR03004"
+		(property "Reference" "#PWR03003"
 			(at 193.04 55.88 0)
 			(effects
 				(font
@@ -2366,7 +1992,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03004")
+					(reference "#PWR03003")
 					(unit 1)
 				)
 			)
@@ -2488,7 +2114,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "157001bd-5507-514d-be8f-4a57baccc8b1")
-		(property "Reference" "#PWR03005"
+		(property "Reference" "#PWR03004"
 			(at 203.2 55.88 0)
 			(effects
 				(font
@@ -2538,7 +2164,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03005")
+					(reference "#PWR03004")
 					(unit 1)
 				)
 			)
@@ -2660,7 +2286,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5ac389a5-0361-5be0-9ff8-981ef30f5c18")
-		(property "Reference" "#PWR03006"
+		(property "Reference" "#PWR03005"
 			(at 213.36 55.88 0)
 			(effects
 				(font
@@ -2710,7 +2336,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03006")
+					(reference "#PWR03005")
 					(unit 1)
 				)
 			)
@@ -2853,7 +2479,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3a2b1812-60ec-531d-bd47-f084c1a45e66")
-		(property "Reference" "#PWR03007"
+		(property "Reference" "#PWR03006"
 			(at 254 71.12 0)
 			(effects
 				(font
@@ -2903,7 +2529,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03007")
+					(reference "#PWR03006")
 					(unit 1)
 				)
 			)
@@ -3215,7 +2841,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c19f4441-439d-5030-88cf-3b7e99f6f7ab")
-		(property "Reference" "#PWR03008"
+		(property "Reference" "#PWR03007"
 			(at 304.8 71.12 0)
 			(effects
 				(font
@@ -3265,7 +2891,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03008")
+					(reference "#PWR03007")
 					(unit 1)
 				)
 			)
@@ -3387,7 +3013,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "1078b58e-794b-5783-b603-e87f4e7e1ef9")
-		(property "Reference" "#PWR03009"
+		(property "Reference" "#PWR03008"
 			(at 314.96 71.12 0)
 			(effects
 				(font
@@ -3437,7 +3063,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03009")
+					(reference "#PWR03008")
 					(unit 1)
 				)
 			)
@@ -3559,7 +3185,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "5da5dcc1-2ba8-5ec4-8ef4-458369018526")
-		(property "Reference" "#PWR03010"
+		(property "Reference" "#PWR03009"
 			(at 325.12 71.12 0)
 			(effects
 				(font
@@ -3609,7 +3235,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03010")
+					(reference "#PWR03009")
 					(unit 1)
 				)
 			)
@@ -3859,7 +3485,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "055bc3a2-21de-5d6d-ba19-7b920cbc6c0c")
-		(property "Reference" "#PWR03011"
+		(property "Reference" "#PWR03010"
 			(at 335.28 100.33 0)
 			(effects
 				(font
@@ -3909,7 +3535,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03011")
+					(reference "#PWR03010")
 					(unit 1)
 				)
 			)
@@ -4130,7 +3756,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2e27236a-964d-5cfe-8b8b-be852e27e941")
-		(property "Reference" "#PWR03012"
+		(property "Reference" "#PWR03011"
 			(at 370.84 55.88 0)
 			(effects
 				(font
@@ -4180,7 +3806,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03012")
+					(reference "#PWR03011")
 					(unit 1)
 				)
 			)
@@ -4302,7 +3928,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "abbb9956-0e17-5a91-a830-efbb466f4340")
-		(property "Reference" "#PWR03013"
+		(property "Reference" "#PWR03012"
 			(at 381 55.88 0)
 			(effects
 				(font
@@ -4352,7 +3978,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03013")
+					(reference "#PWR03012")
 					(unit 1)
 				)
 			)
@@ -4474,7 +4100,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "133b5dc7-00b6-5ca6-9619-7a2aa90e28b7")
-		(property "Reference" "#PWR03014"
+		(property "Reference" "#PWR03013"
 			(at 391.16 55.88 0)
 			(effects
 				(font
@@ -4524,7 +4150,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03014")
+					(reference "#PWR03013")
 					(unit 1)
 				)
 			)
@@ -4667,7 +4293,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e6be77f2-646b-5475-810c-f456a4327e0a")
-		(property "Reference" "#PWR03015"
+		(property "Reference" "#PWR03014"
 			(at 431.8 71.12 0)
 			(effects
 				(font
@@ -4717,7 +4343,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03015")
+					(reference "#PWR03014")
 					(unit 1)
 				)
 			)
@@ -5029,7 +4655,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "887035a8-79bd-509a-a566-67a295c2dabf")
-		(property "Reference" "#PWR03016"
+		(property "Reference" "#PWR03015"
 			(at 482.6 71.12 0)
 			(effects
 				(font
@@ -5079,7 +4705,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03016")
+					(reference "#PWR03015")
 					(unit 1)
 				)
 			)
@@ -5201,7 +4827,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c13c0887-de4e-5650-bd63-9805e40551a0")
-		(property "Reference" "#PWR03017"
+		(property "Reference" "#PWR03016"
 			(at 492.76 71.12 0)
 			(effects
 				(font
@@ -5251,7 +4877,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03017")
+					(reference "#PWR03016")
 					(unit 1)
 				)
 			)
@@ -5373,7 +4999,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2ff419a2-8b57-552e-b6b8-a289e201b38d")
-		(property "Reference" "#PWR03018"
+		(property "Reference" "#PWR03017"
 			(at 502.92 71.12 0)
 			(effects
 				(font
@@ -5423,7 +5049,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03018")
+					(reference "#PWR03017")
 					(unit 1)
 				)
 			)
@@ -5673,7 +5299,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e94b18a6-c2d5-5967-a62a-74e3918e8c5d")
-		(property "Reference" "#PWR03019"
+		(property "Reference" "#PWR03018"
 			(at 513.08 100.33 0)
 			(effects
 				(font
@@ -5723,7 +5349,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03019")
+					(reference "#PWR03018")
 					(unit 1)
 				)
 			)
@@ -6154,16 +5780,27 @@
 		)
 		(uuid "e94889f2-7aaf-5358-9eea-6eb08367dc21")
 	)
-	(label "VIN"
+	(global_label "VIN"
+		(shape bidirectional)
 		(at 96.52 236.22 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify right)
 		)
-		(uuid "80e52ea0-e41b-5023-87a8-f7ce3c24a427")
+		(uuid "fed61cee-f153-53d1-86ee-7818e313c624")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 96.52 236.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
@@ -6269,7 +5906,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b8d09292-cd40-5b30-b783-32f47f696c96")
-		(property "Reference" "#PWR03020"
+		(property "Reference" "#PWR03019"
 			(at 127 236.22 0)
 			(effects
 				(font
@@ -6319,7 +5956,7 @@
 		(instances
 			(project "data-port-x6"
 				(path "/2b6bffc0-bcbb-54d1-905c-a31f8741300c/aeec55e0-6708-5800-a838-1d11ae6d6b99"
-					(reference "#PWR03020")
+					(reference "#PWR03019")
 					(unit 1)
 				)
 			)
@@ -6872,16 +6509,27 @@
 		(color 0 0 0 0)
 		(uuid "5952f4d4-7048-5a6a-9d8c-f17168b64f5f")
 	)
-	(label "VIN"
+	(global_label "VIN"
+		(shape bidirectional)
 		(at 182.88 40.64 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify left)
 		)
-		(uuid "8bab8561-c228-5672-9308-9d78f9550de5")
+		(uuid "95b082e3-f6cb-528c-a1aa-01f08cb53641")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 182.88 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
 	)
 	(label "BUCK_EN"
 		(at 226.06 55.88 180)
@@ -6916,16 +6564,27 @@
 			)
 		)
 	)
-	(label "VIN"
+	(global_label "VIN"
+		(shape bidirectional)
 		(at 360.68 40.64 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify left)
 		)
-		(uuid "9a4ab804-6409-54ac-ae1b-8c9a145b5755")
+		(uuid "12a4d394-e328-5e29-a553-4093802cdcb5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 360.68 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
 	)
 	(label "BUCK_EN"
 		(at 403.86 55.88 180)
@@ -7049,7 +6708,7 @@
 		)
 		(uuid "a84acc71-7626-5c74-9fee-30cb6e89e134")
 	)
-	(text "VIN: the rack's 20 V from the node (after its reverse protection), a PH 3 VIN–GND–VIN on the rear face"
+	(text "VIN: the rack's 20 V, switched by the node (its eFuse), from the PH 8 lead's pin 8 (J1, sheet Hub)"
 		(exclude_from_sim no)
 		(at 16.51 27.94 0)
 		(effects
@@ -7133,7 +6792,7 @@
 		)
 		(uuid "d609dd40-39ff-5074-9458-89ec5072f3f3")
 	)
-	(text_box "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).\n+5V_A: ports 1–3; +5V_B: ports 4–6 (the logic takes +5V_L, J1.8).  Never in parallel: the power plane's +5V\n  split left / right.  Each 1.5 A at 0.5 A a port, 1.86 A at the TPS2553s' 0.62 A limit (≈ 1 W lost each).\nVIN on J3 (PH 3: 1 VIN, 2 GND, 3 VIN): either pre-crimped lead direction fits.\nFB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.\nVIN from the node's VRACK after its reverse-protection P-FET (node rev. B): no second protection here.\n  ≈ 0.95 A at 20 V, 0.7 A at 28 V; a PH contact carries 2 A."
+	(text_box "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).\n+5V_A: ports 1–3; +5V_B: ports 4–6 and the 3.3 V LDO (≤ 0.46 A).  Never in parallel: the power plane's +5V\n  split left / right.  +5V_A 1.5 A at 0.5 A a port, 1.86 A at the TPS2553s' 0.62 A limit; +5V_B 0.46 A more:\n  2.32 A at the limit, under the LMR51625's 2.5 A.\nFB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.\nVIN on J1.8, the node's VRACK through its eFuse (TPS26600, ≈ 1.5 A, off by default): no second protection here.\n  ≈ 1.0 A at 20 V (1.2 A at the ports' limit), 1.5 A at 13.5 V, 0.75 A at 28 V; a PH contact carries 2 A."
 		(exclude_from_sim no)
 		(at 15.24 142.24 0)
 		(size 508 20.32)
