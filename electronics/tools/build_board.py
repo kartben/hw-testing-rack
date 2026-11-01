@@ -499,6 +499,8 @@ def main():
                     "(pcbgen.tidy_board, as after --ses), no re-route")
     ap.add_argument("--clean", action="store_true", help="take the antennas off the PCB as it is (dead ends, lone "
                     "vias, doubled tracks, slivers: pcbgen.clean_antennas, as after --ses and --tidy), no re-route")
+    ap.add_argument("--rules", action="store_true", help="rewrite the rules of the PCB as it is from the design "
+                    "(.kicad_dru, the .kicad_pro's DRC settings: pcbgen.write_rules), then DRC; no re-route")
     a = ap.parse_args()
     mod = load_design(a.board)
     b = mod.board()
@@ -518,6 +520,14 @@ def main():
         m = check_models(outdir, b.name, b.pcb.get("no_model", ()))
         sys.exit(1 if e["errors"] or copper or d["unconnected"] or d["parity"] or m["problems"] else 0)
     import pcbgen  # needs pcbnew
+    if a.rules:
+        pcbgen.write_rules(b, outdir, getattr(mod, "NETCLASSES", None))
+        (outdir / "build").mkdir(exist_ok=True)
+        d = drc_readonly(outdir, b.name)
+        print(f"DRC: {d['violations']}  unconnected={d['unconnected']}  parity={d['parity']}")
+        for it in d["items"][:80]:
+            print("  ", it)
+        return
     if a.ses or a.tidy or a.clean:
         if a.ses:
             pcbgen.import_session(b, outdir, Path(a.routed) if a.routed else None)
@@ -535,7 +545,7 @@ def main():
             print("  ", it)
         if a.sch_only:
             return
-        pb = pcbgen.PcbBuilder(b, outdir)
+        pb = pcbgen.PcbBuilder(b, outdir, getattr(mod, "NETCLASSES", None))
         pb.build(route=False, defer_pours=a.dsn)
         if a.dsn:
             pcbgen.export_dsn(b, outdir)

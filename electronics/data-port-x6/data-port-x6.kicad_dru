@@ -6,19 +6,19 @@
 (rule "one thermal spoke is enough"
 	(constraint min_resolved_spokes 1))
 
-(rule "crystal Y1: XI, XO and GND only over its parts"
-	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Hub/XI' && A.NetName != '/Hub/XO' && A.NetName != 'GND' && (A.intersectsCourtyard('Y1') || A.intersectsCourtyard('C4') || A.intersectsCourtyard('C5') || A.intersectsCourtyard('R10'))")
-	(constraint disallow track via))
-
-(rule "Power, Port and Supply: 0.25 mm at least, but in the hub's fan-out"
+(rule "Supply, Power and Port: 0.25 mm at least, but in the hub's fan-out"
 	(severity error)
-	(condition "A.Type == 'Track' && (A.hasNetclass('Power') || A.hasNetclass('Port') || A.hasNetclass('Supply')) && !A.intersectsCourtyard('U1') && A.NetName != '/Hub/HUB_1V8PLL'")
+	(condition "A.Type == 'Track' && (A.hasNetclass('Supply') || A.hasNetclass('Power') || A.hasNetclass('Port')) && !A.intersectsCourtyard('U1') && !(A.NetName == '/Hub/HUB_1V8PLL')")
 	(constraint track_width (min 0.25mm)))
 
-(rule "enables, faults, resets: 0.75 mm off the USB pairs"
+(rule "Sensitive: 0.75 mm off USB, 3 times its track width"
 	(severity error)
 	(condition "A.hasNetclass('USB') && B.hasNetclass('Sensitive')")
 	(constraint clearance (min 0.75mm)))
+
+(rule "crystal Y1: XI, XO and GND only over its parts"
+	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Hub/XI' && A.NetName != '/Hub/XO' && A.NetName != 'GND' && (A.intersectsCourtyard('Y1') || A.intersectsCourtyard('C4') || A.intersectsCourtyard('C5') || A.intersectsCourtyard('R10'))")
+	(constraint disallow track via))
 
 (rule "power pins connect solid"
 	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '+3V3' || A.NetName == '+5V_A' || A.NetName == '+5V_B' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == '/Port 5/PORT5_5V_SW' || A.NetName == '/Port 5/PORT5_VBUS' || A.NetName == '/Port 6/PORT6_5V_SW' || A.NetName == '/Port 6/PORT6_VBUS' || A.NetName == 'GND' || A.NetName == 'VIN') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")

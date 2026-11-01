@@ -106,6 +106,13 @@ every board is built and checked with them; a board that declares nothing gets n
 - A netclass pattern (`_patterns` in `NETCLASSES`) that matches no net stops the build.  KiCad compares
   a pattern with the whole net name, sheet path included: a bare `VIN` misses a sub-sheet's `/Power/VIN`
   and leaves it in Default without a word.  The error names the wildcard that reaches it (`*VIN`).
+- A class's `_min_width` (mm) becomes a DRC error under that track width, except where
+  `b.pcb["min_width_except"]` says (courtyards, nets: a fine-pitch part's fan-out).
+- A `Sensitive` class (enables, faults, resets) beside a `USB` class is kept 3 × the USB track width off
+  it, the layout review's spacing between a fast bus and the lines outside it.
+
+`tools/kicad.sh <board> --rules` rewrites a routed board's `.kicad_dru` and its `.kicad_pro` DRC settings
+from the design, then runs DRC, without touching its copper.
 
 How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 

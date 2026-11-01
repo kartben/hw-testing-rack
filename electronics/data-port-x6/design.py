@@ -138,21 +138,12 @@ XTAL_RULE = """
 	(constraint disallow track via))
 """
 
-# The layout review's checks as rules (2026-11-01): the supplies' widths (the hub's fine-pitch fan-out aside: its
+# The layout review's checks as rules (2026-11-01), generated from NETCLASSES (electronics/tools/netrules.py): the
+# supplies' widths (Supply, Power, Port: "_min_width"), the hub's fine-pitch fan-out aside (MIN_WIDTH_EXCEPT: its
 # 1.8 V pins' lines neck down at the pads, and HUB_1V8PLL's whole 3 mm, drawn in the crystal's block from pin 62 to
-# C10 and C8 between XI and RBIAS, is 0.127), and the enables, faults and resets (the Sensitive class)
-# kept 3 × the USB lines' width off them, against a coupled spike that would switch a port off or reset the hub
-BOARD_RULES = """
-(rule "Power, Port and Supply: 0.25 mm at least, but in the hub's fan-out"
-	(severity error)
-	(condition "A.Type == 'Track' && (A.hasNetclass('Power') || A.hasNetclass('Port') || A.hasNetclass('Supply')) && !A.intersectsCourtyard('U1') && A.NetName != '/Hub/HUB_1V8PLL'")
-	(constraint track_width (min 0.25mm)))
-
-(rule "enables, faults, resets: 0.75 mm off the USB pairs"
-	(severity error)
-	(condition "A.hasNetclass('USB') && B.hasNetclass('Sensitive')")
-	(constraint clearance (min 0.75mm)))
-"""
+# C10 and C8 between XI and RBIAS, is 0.127); and the enables, faults and resets (the Sensitive class) kept 3 × the
+# USB lines' width off them, against a coupled spike that would switch a port off or reset the hub
+MIN_WIDTH_EXCEPT = {"courtyards": ["U1"], "nets": ["HUB_1V8PLL"], "why": "in the hub's fan-out"}
 
 def P(x, y, rot=0, side="top"):
     """A placement on the board (KiCad: y = 0 the top edge); the front face is the top side."""
@@ -240,7 +231,7 @@ def rarray(s, ref, value, pairs, pcb, sch=None):
 
 def ina_x(n: int) -> float:
     """Port n's INA226 (board x), its 100 nF over it and its EN and FAULT_N pull-ups 2.24 mm east of it: those stand
-    0.77 mm from the next pair's D− line (BOARD_RULES: the Sensitive class 0.75 mm off USB); port 1's cluster sits
+    0.77 mm from the next pair's D− line (the Sensitive class 0.75 mm off USB: netrules.py); port 1's cluster sits
     0.1 mm nearer its drop than the others to theirs"""
     return COLS[n - 1] - (4.4 if n == 1 else 5.0) + 7.51 - (0.16 if n == 1 else 0.07)
 
@@ -925,7 +916,8 @@ def board() -> Board:
                    "pairs: 0.17 mm to each",
             "C16": "U1 pin 10's via under the case, beyond the pin; none fits past C16's pad between USB-C 5 and "
                    "6's pairs: 0.17 mm to each"},
-        "dru": XTAL_RULE + BOARD_RULES,
+        "dru": XTAL_RULE,
+        "min_width_except": MIN_WIDTH_EXCEPT,
         "keepouts": [
             # the crystal's block (dropped once routed), as the v2's
             {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP},
@@ -985,16 +977,16 @@ NETCLASSES = [
     {"name": "Supply", "clearance": 0.1, "track_width": 0.25, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 5,
-     "_patterns": ["+3V3", "*HUB_1V8", "*HUB_1V8PLL"]},
+     "_patterns": ["+3V3", "*HUB_1V8", "*HUB_1V8PLL"], "_min_width": 0.25},
     {"name": "Power", "clearance": 0.15, "track_width": 0.6, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
-     "_patterns": ["+5V_A", "+5V_B", "*VIN", "*BUCK?_SW"]},
+     "_patterns": ["+5V_A", "+5V_B", "*VIN", "*BUCK?_SW"], "_min_width": 0.25},
     {"name": "Port", "clearance": 0.1, "track_width": 0.3, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,
-     "_patterns": ["*PORT?_5V_SW", "*PORT?_VBUS"]},
-    # the enables, faults and resets: Default's widths, kept off the USB pairs (BOARD_RULES)
+     "_patterns": ["*PORT?_5V_SW", "*PORT?_VBUS"], "_min_width": 0.25},
+    # the enables, faults and resets: Default's widths, kept 3 × USB_W off the USB pairs (netrules.py)
     {"name": "Sensitive", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 6,

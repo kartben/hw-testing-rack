@@ -186,9 +186,10 @@ def load_fp(fpid: str) -> pcbnew.FOOTPRINT:
 
 
 class PcbBuilder:
-    def __init__(self, b: Board, outdir: Path):
+    def __init__(self, b: Board, outdir: Path, netclasses: list[dict] | None = None):
         self.b = b
         self.outdir = outdir
+        self.netclasses = netclasses          # design.py's NETCLASSES: the rules netrules.py generates from them
         self.path = outdir / f"{b.name}.kicad_pcb"
         self.board = pcbnew.NewBoard(str(self.path))
         self.nets: dict[str, pcbnew.NETINFO_ITEM] = {}
@@ -222,12 +223,7 @@ class PcbBuilder:
         ds.m_MinThroughDrill = MM(SMALL_VIA[1])
         ds.m_CopperEdgeClearance = MM(0.3)
         ds.SetBoardThickness(MM(1.6))
-        # custom DRC rules, next to the project (KiCad and kicad-cli read <board>.kicad_dru)
-        dru = DRU
-        if self.b.pcb.get("edge_parts"):
-            dru += DRU_EDGE.format(cond=" || ".join(f"A.memberOfFootprint('{r}')" for r in self.b.pcb["edge_parts"]))
-        dru += self.b.pcb.get("dru", "")           # the board's own rules (design.py)
-        (self.outdir / f"{self.b.name}.kicad_dru").write_text(dru, encoding="utf-8")
+        # the custom DRC rules (<board>.kicad_dru, dru_text()) are written once the parts are placed (build())
         tb = bd.GetTitleBlock()
         tb.SetTitle(self.b.title)
         tb.SetRevision(self.b.rev)
@@ -421,30 +417,14 @@ class PcbBuilder:
         return z
 
     # -------------------------------------------------------------- power pads
+    def net_names(self) -> list[str]:
+        return [str(n) for n in self.board.GetNetsByName().keys()]
+
     def power_net_names(self) -> dict[str, int]:
-        """b.pcb["power_nets"] {net pattern: minimum spokes} → {board net name: minimum spokes}."""
-        out = {}
-        for name in (str(n) for n in self.board.GetNetsByName().keys()):
-            for pat, n in self.b.pcb["power_nets"].items():
-                if fnmatch.fnmatchcase(name.split("/")[-1], pat):
-                    out[name] = n
-                    break
-        return out
+        return power_net_names(self.b, self.net_names())
 
     def power_rules(self) -> str:
-        """The power nets' DRC rules (DRU_POWER_*) with the board's own net names: power pins solid, and
-        each net's minimum spokes on a pad that keeps a relief."""
-        power = self.power_net_names()
-        cond = lambda names: " || ".join(f"A.NetName == '{x}'" for x in sorted(names))
-        out = DRU_POWER_SOLID.format(nets=cond(power),
-                                     parts=" || ".join(f"A.memberOfFootprint('{p}*')" for p in POWER_PARTS))
-        for n in sorted({n for n in power.values() if n > 1}):
-            out += DRU_POWER_SPOKES.format(n=n, nets=cond(x for x, m in power.items() if m == n))
-        supplies = [x for x, m in power.items() if m > 1]          # GND's (1) are returns, often signal ones
-        if supplies:
-            out += DRU_POWER_THT.format(nets=cond(supplies),
-                                        parts=" || ".join(f"A.memberOfFootprint('{p}*')" for p in POWER_PARTS))
-        return out
+        return power_rules(self.b, self.net_names())
 
     def power_pads(self) -> list[str]:
         """Pads that carry a board's power (b.pcb["power_nets"]: GND, the bus, the supplies, ≳ 0.5 A) must
@@ -641,9 +621,10 @@ class PcbBuilder:
         if self.b.pcb.get("power_nets"):
             for line in self.power_pads():
                 print(line)
-            # the power nets' DRC rules need the board's net names: added once the parts are placed
-            dru = self.outdir / f"{self.b.name}.kicad_dru"
-            dru.write_text(dru.read_text(encoding="utf-8") + self.power_rules(), encoding="utf-8")
+        # the custom DRC rules, next to the project (KiCad and kicad-cli read <board>.kicad_dru), once the parts are
+        # placed: the power nets' need the board's net names
+        (self.outdir / f"{self.b.name}.kicad_dru").write_text(dru_text(self.b, self.netclasses, self.net_names()),
+                                                             encoding="utf-8")
         if self.b.pcb.get("fanout_nets"):
             specs = {self.b.pcb_net_name(k): v for k, v in self.b.pcb["fanout_nets"].items()}
             islands = [(self.b.pcb_net_name(z["net"]), z["poly"]) for z in self.b.pcb.get("zones", [])
@@ -663,6 +644,70 @@ class PcbBuilder:
         write_stackup(self.path, self.b.pcb)
         write_via_rules(self.path.with_suffix(".kicad_pro"))
         return self.path
+
+
+def power_net_names(b: Board, names) -> dict[str, int]:
+    """b.pcb["power_nets"] {net pattern: minimum spokes} → {board net name: minimum spokes}."""
+    out = {}
+    for name in names:
+        for pat, n in b.pcb.get("power_nets", {}).items():
+            if fnmatch.fnmatchcase(name.split("/")[-1], pat):
+                out[name] = n
+                break
+    return out
+
+
+def power_rules(b: Board, names) -> str:
+    """The power nets' DRC rules (DRU_POWER_*) with the board's own net names: power pins solid, and
+    each net's minimum spokes on a pad that keeps a relief."""
+    power = power_net_names(b, names)
+    cond = lambda names: " || ".join(f"A.NetName == '{x}'" for x in sorted(names))
+    out = DRU_POWER_SOLID.format(nets=cond(power),
+                                 parts=" || ".join(f"A.memberOfFootprint('{p}*')" for p in POWER_PARTS))
+    for n in sorted({n for n in power.values() if n > 1}):
+        out += DRU_POWER_SPOKES.format(n=n, nets=cond(x for x, m in power.items() if m == n))
+    supplies = [x for x, m in power.items() if m > 1]          # GND's (1) are returns, often signal ones
+    if supplies:
+        out += DRU_POWER_THT.format(nets=cond(supplies),
+                                    parts=" || ".join(f"A.memberOfFootprint('{p}*')" for p in POWER_PARTS))
+    return out
+
+
+def dru_text(b: Board, netclasses, names) -> str:
+    """<board>.kicad_dru: the shared rules (DRU, DRU_EDGE for b.pcb["edge_parts"]), those the board's netclasses
+    ask for (netrules.class_rules: power widths, the Sensitive class off the fast buses), the board's own
+    (b.pcb["dru"], last but the power nets': a later rule of the same constraint wins), then its power nets'
+    (power_rules) with the board's net names (`names`)."""
+    from netrules import class_rules
+    exc = b.pcb.get("min_width_except") or {}
+    unknown = [r for r in exc.get("courtyards", ()) if r not in b.parts]
+    if unknown:
+        raise SystemExit(f"{b.name}: min_width_except names no such part: {', '.join(unknown)}")
+    dru = DRU
+    if b.pcb.get("edge_parts"):
+        dru += DRU_EDGE.format(cond=" || ".join(f"A.memberOfFootprint('{r}')" for r in b.pcb["edge_parts"]))
+    dru += class_rules(netclasses, b.pcb, b.pcb_net_name)
+    dru += b.pcb.get("dru", "")           # the board's own rules (design.py)
+    if b.pcb.get("power_nets"):
+        dru += power_rules(b, names)
+    return dru
+
+
+def write_rules(b: Board, outdir: Path, netclasses=None) -> Path:
+    """The rules of the PCB as it is, from the design (build_board.py --rules; no placement, no re-route): the
+    .kicad_dru with the board's net names, the .kicad_pro's DRC settings.  The netclasses themselves stay as the
+    last full build wrote them (KiCad keeps them in its own order); their patterns are checked all the same."""
+    from netrules import unmatched_patterns
+    bad = unmatched_patterns(netclasses, {b.pcb_net_name(n) for n in b.nets()})
+    if bad:
+        raise SystemExit(f"{b.name}: " + "\n".join(bad))
+    path = outdir / f"{b.name}.kicad_pcb"
+    board = pcbnew.LoadBoard(str(path))
+    dru = outdir / f"{b.name}.kicad_dru"
+    dru.write_text(dru_text(b, netclasses, [str(n) for n in board.GetNetsByName().keys()]), encoding="utf-8")
+    write_via_rules(path.with_suffix(".kicad_pro"))
+    print("rules:", dru.name, path.with_suffix(".kicad_pro").name)
+    return dru
 
 
 # the project's own 3D models (electronics/lib/3dmodels), relative to each board's project folder

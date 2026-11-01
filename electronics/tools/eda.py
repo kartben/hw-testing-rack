@@ -1225,12 +1225,13 @@ def write_project(b: Board, outdir: Path, netclasses: list[dict] | None = None):
          "via_drill": 0.3, "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6,
          "bus_width": 12, "line_style": 0, "pcb_color": "rgba(0, 0, 0, 0.000)",
          "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2147483647},
-        *({k: v for k, v in nc.items() if k != "_patterns"} for nc in (netclasses or []) if nc["name"] != "Default"),
+        # keys starting with "_" are the generator's (patterns, netrules.py's rules), not KiCad's
+        *({k: v for k, v in nc.items() if not k.startswith("_")} for nc in (netclasses or []) if nc["name"] != "Default"),
     ]
     # an entry named "Default" in the board's list tunes the default class (clearance, widths)
     for nc in netclasses or []:
         if nc["name"] == "Default":
-            classes[0].update({k: v for k, v in nc.items() if k != "_patterns"})
+            classes[0].update({k: v for k, v in nc.items() if not k.startswith("_")})
     patterns = [{"netclass": nc["name"], "pattern": pat}
                 for nc in (netclasses or []) for pat in nc.get("_patterns", [])]
     pro = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {

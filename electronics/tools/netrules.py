@@ -5,11 +5,24 @@ return, so every board is built and checked with them.  A board that declares no
 
 * Every netclass pattern must match a net of the board (unmatched_patterns): KiCad matches a pattern against the
   whole net name, sheet path included, so a bare "VIN" silently misses a sub-sheet's "/Power/VIN".
+* A class's "_min_width" (mm): its tracks at least that wide, a DRC error, but where b.pcb["min_width_except"] says
+  (min_width_rules).
+* A "Sensitive" class (enables, faults, resets) beside a "USB" class: 3 × the USB track width between them, the
+  layout review's spacing between a fast bus and the lines outside it that must not pick up its edges
+  (sensitive_rules).
+
+Keys starting with "_" stay out of the .kicad_pro (eda.write_project).  No track_angle constraint here, ever: KiCad
+drops the whole .kicad_dru on it, silently.
 """
 
 from __future__ import annotations
 
 import re
+
+# the classes the spacing rule pairs: the lines that must stay quiet, and the fast buses they keep off
+SENSITIVE = "Sensitive"
+FAST = ("USB",)
+FAST_SPACING = 3            # × the fast class's track width
 
 
 def kicad_pattern_match(pattern: str, name: str) -> bool:
@@ -44,3 +57,67 @@ def unmatched_patterns(netclasses, names) -> list[str]:
                         f"{', '.join(hits[:4])}{' ...' if len(hits) > 4 else ''})")
             out.append(msg)
     return out
+
+
+def _mm(v: float) -> str:
+    return f"{round(float(v), 4):g}"
+
+
+def _listed(names: list[str]) -> str:
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " and " + names[-1]
+
+
+def min_width_rules(netclasses, pcb: dict, net_name=lambda n: n) -> str:
+    """The classes that declare "_min_width" (mm) keep every track at least that wide, a DRC error: one rule per
+    width, the widest last (a net in two classes keeps the wider floor: the last rule that matches wins).
+    b.pcb["min_width_except"]: {"courtyards": [references], "nets": [net names], "why": "..."} where the floor
+    doesn't hold (a fine-pitch part's fan-out necking down at its pads, a line drawn thinner on purpose); net_name
+    turns a design's net name into the board's (Board.pcb_net_name).  A net is excepted as !(A.NetName == '…'):
+    the order panel renames that form for each copy (panelize.py)."""
+    widths: dict[float, list[str]] = {}
+    for nc in netclasses or []:
+        if nc.get("_min_width") is not None:
+            widths.setdefault(float(nc["_min_width"]), []).append(nc["name"])
+    exc = pcb.get("min_width_except") or {}
+    unless = "".join(f" && !A.intersectsCourtyard('{r}')" for r in exc.get("courtyards", ()))
+    unless += "".join(f" && !(A.NetName == '{net_name(n)}')" for n in exc.get("nets", ()))
+    why = f", but {exc['why']}" if exc.get("why") else ""
+    out = []
+    for w, names in sorted(widths.items()):
+        classes = " || ".join(f"A.hasNetclass('{n}')" for n in names)
+        out.append(f'\n(rule "{_listed(names)}: {_mm(w)} mm at least{why}"\n'
+                   f"\t(severity error)\n"
+                   f"\t(condition \"A.Type == 'Track' && ({classes}){unless}\")\n"
+                   f"\t(constraint track_width (min {_mm(w)}mm)))\n")
+    return "".join(out)
+
+
+def sensitive_spacing(netclasses) -> list[tuple[str, str, float]]:
+    """(the Sensitive class, a fast class, their clearance in mm) for each FAST class a board declares beside a
+    Sensitive one: FAST_SPACING × the fast class's track width (its pairs' width if wider)."""
+    byname = {nc["name"]: nc for nc in netclasses or []}
+    if SENSITIVE not in byname:
+        return []
+    out = []
+    for fast in FAST:
+        if fast in byname:
+            nc = byname[fast]
+            w = max(float(nc.get("track_width", 0)), float(nc.get("diff_pair_width", 0)))
+            if w <= 0:
+                raise ValueError(f"netclass {fast}: no track_width to keep the {SENSITIVE} class off it by")
+            out.append((SENSITIVE, fast, round(FAST_SPACING * w, 4)))
+    return out
+
+
+def sensitive_rules(netclasses) -> str:
+    """The Sensitive class kept sensitive_spacing() off each fast class, a DRC error (a clearance rule: KiCad checks
+    a pair both ways round, tracks, vias, pads and pours alike)."""
+    return "".join(f'\n(rule "{s}: {_mm(c)} mm off {f}, {FAST_SPACING} times its track width"\n'
+                   f"\t(severity error)\n"
+                   f"\t(condition \"A.hasNetclass('{f}') && B.hasNetclass('{s}')\")\n"
+                   f"\t(constraint clearance (min {_mm(c)}mm)))\n" for s, f, c in sensitive_spacing(netclasses))
+
+
+def class_rules(netclasses, pcb: dict, net_name=lambda n: n) -> str:
+    """Every rule the board's netclasses ask for, as .kicad_dru text ("" when they ask for none)."""
+    return min_width_rules(netclasses, pcb, net_name) + sensitive_rules(netclasses)
