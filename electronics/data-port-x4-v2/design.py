@@ -307,6 +307,14 @@ XTAL2_RULE = """
 	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Co-processor/CP_XIN' && A.NetName != '/Co-processor/CP_XOUT' && A.NetName != '/Co-processor/CP_XTAL' && A.NetName != 'GND' && (A.intersectsCourtyard('Y2') || A.intersectsCourtyard('C48') || A.intersectsCourtyard('C49') || A.intersectsCourtyard('R22'))")
 	(constraint disallow track via))
 """
+# the layout review (2026-11-01): silkscreen text a 0.15 mm stroke at least (the 0.8 mm names' 15 % was 0.12)
+SILK_TEXT = 0.15
+SILK_RULE = f"""
+(rule "silkscreen text: a {SILK_TEXT} mm stroke at least"
+	(severity error)
+	(layer "?.Silkscreen")
+	(constraint text_thickness (min {SILK_TEXT}mm)))
+"""
 
 
 def p_lines(n: int):
@@ -1828,7 +1836,7 @@ def board() -> Board:
                    "line north and the VREF vias south.  C45 0.51 mm west of the pin",
             "C46": "U11 pin 10 (DVDD, east face): C46 3.9 mm away, the two meet through vias; C47 (4.7 uF) 2.0 mm "
                    "from pin 32, no via"},
-        "dru": XTAL_RULE + XTAL2_RULE,
+        "dru": XTAL_RULE + XTAL2_RULE + SILK_RULE,
         "min_width_except": MIN_WIDTH_EXCEPT,
         "keepouts": CRADLE_KEEPOUTS + [
             # the hub crystal's block: no other net's track or via on either face (dropped once routed)
@@ -1878,7 +1886,7 @@ def board() -> Board:
                   "boards": [{"tag": "L", "variant": None, "rot": 0}, {"tag": "B", "variant": "base", "rot": 180}]},
         # the base DATA-4x: this PCB with the logic left off (module docstring)
         "variants": {"base": {"dnp": logic_only(b)}},
-        "texts": [
+        "texts": [{**t, "thickness": max(SILK_TEXT, 0.15 * t["size"])} for t in [
             {"text": "DATA ×4 v2.0", "x": 28.0, "y": 1.9, "size": 0.8},     # off the panel's tab at x 9, east of the 5 V converter
             # layout B (the usability review, the user's "oui je valide", 2026-10-21): each header's pin names in
             # two lines over it, read with the jumpers in, stacked as its rows (the even, upper row's over the odd,
@@ -1888,9 +1896,10 @@ def board() -> Board:
                "y": HDR_Y - (4.6 if i % 2 == 1 else 3.4), "size": 0.8}
               for n in range(4) for i in range(12)),
             # the bring-up test points' names, on the rear face under each pad (mirrored, read from behind), and
-            # what the base doesn't have (only GND is live there): the co-processor's row and core rail, the matrix
-            *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "layer": "B.SilkS"}
-              for net, name, d, x, y in TPS.values()),
+            # what the base doesn't have (only GND is live there): the co-processor's row and core rail, the matrix.
+            # TP25's (SCL) over its pad: under it, at a 0.15 mm stroke, it touched TP26's ring
+            *({"text": name, "x": x, "y": y + (-1 if ref == "TP25" else 1) * (d / 2 + 0.75), "size": 0.8,
+               "layer": "B.SilkS"} for ref, (net, name, d, x, y) in TPS.items()),
             # the SWD header's pin names, read on the front face, alternately over and under it from pin 1 (west)
             *({"text": name, "x": SWD_HDR[0] + 2.54 * i, "y": SWD_HDR[1] + (-2.1 if i % 2 == 0 else 2.1), "size": 0.8}
               for i, (_, name) in enumerate(SWD_PINS)),
@@ -1898,7 +1907,7 @@ def board() -> Board:
             {"text": "LOGIC ONLY", "x": 9.5, "y": 12.9, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 43.12, "y": 18.4, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 55.0, "y": 21.75, "size": 0.8, "layer": "B.SilkS"},
-        ],
+        ]],
     }
     return b
 
