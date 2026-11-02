@@ -145,7 +145,7 @@ Each section lists its own; the ones that matter most:
    - XTAL2 amplitude (drive level).
 4. **CH446Q R_on at ±5 V** (no figure for a 10 V span, U4e): it needs ≲ 120 Ω for a 1.8 V board's I²C low with
    the 2.2k on.  Also the −5 V rail and its ripple, and the crosspoints' VEE current.
-5. **+5V_MX at no load ≤ 5.25 V** (TPS60400 VI max; 10 mV of margin at the node's 5.24 V).
+5. **+5V_MX at no load ≤ 5.25 V** (TPS60400 VI max; 10 mV of margin at the node's 5.24 V).  Done 2026-11-01: R53 18.7k, +5V 5.08 V (4.94–5.22 V at the worst corner).
 6. **VBUS under 0.5 A ≥ 4.75 V.**  This needs +5V ≥ 4.87 V at the board.
 7. **An empty port's VBUS decays with τ ≈ 18 s** (INA226 830 kΩ, 22 µF): the node's "refuse EN while VBUS is
    there" rule must allow for it.
@@ -264,7 +264,7 @@ Also from the same search: **RP2354B C39843328 shows 0 in stock at JLC** (2026-1
 | ADC pins type / range | GPIO40–47 are "Digital IO / Analogue" (standard, **not FT**): VPIN −0.5 … IOVDD + 0.5 V; ADC input 0 … ADC_AVDD; "voltage on the ADC inputs must not exceed IOVDD" | — | — | [DS] Table 1673 p.1331, Table 1680 p.1335, Table 1685 p.1338, §6.1.5 p.401 |
 | GPIO40–43 = VREF n / 2 | ≤ IOVDD | 10k/10k from VREF ≤ 3.6 V gives ≤ 1.8 V; 5 kΩ source | OK powered | [DS] §12.4 p.965–966 |
 | GPIO40–43, board off | IOVDD = 0 means VPIN ≤ 0.5 V | Self-powered DUT with this board unpowered (DUT_5V off): 1.8 V behind 10k, so ≤ 0.26 mA per pin (≤ 1 mA for four) flows through the ESD diodes into +3V3_CP. RP specifies no injection current | **to check by the user (U8)** | [DS] Table 1680 p.1335 |
-| GPIO44 = +5V_MX × 47/147 | ≤ IOVDD | ≤ 1.68 V at 5.24 V; 32 kΩ source. +5V_MX is up before the AP2114H output, so during start-up the pin is > IOVDD + 0.5 with ≤ 40 µA injected (transient) | OK (transient check) | [DS] Table 1680 p.1335 |
+| GPIO44 = +5V_MX × 47/147 | ≤ IOVDD | ≤ 1.67 V at 5.22 V; 32 kΩ source. +5V_MX is up before the AP2114H output, so during start-up the pin is > IOVDD + 0.5 with ≤ 40 µA injected (transient) | OK (transient check) | [DS] Table 1680 p.1335 |
 | **GPIO45 = −5 V sense** | VPIN ≥ −0.5 V | 47k to +3V3_CP, 100k to −5V: nominally 0.65 V. **If +3V3_CP < 1.6 V while −5 V is present, the pin goes below −0.5 V** (−1.6 V open circuit with +3V3_CP = 0; clamped by the ESD diode, ≈ 35 µA). This happens while the AP2114H starts after the TPS60400, and at power-down, where −5 V on C28 (light load) can outlive +3V3 | **to fix** (free) | [DS] Table 1680 p.1335 |
 | −5 V absent, +3V3_CP present | ≤ ADC_AVDD | 3.3 × 100/147 = 2.24 V | OK | [DS] Table 1685 p.1338 |
 | ADC source impedance | "The ADC input is capacitive … about 1 pF … effective impedance, even when sampling at 500 kS/s, is over 100 kΩ. DC measurements have no need to buffer" | 5 kΩ (VREF), 32 kΩ (±5 V); no pin capacitor | OK for DC / slow sampling; check round-robin at full rate | [DS] §12.4.3 p.967 |
@@ -360,7 +360,7 @@ Notes:
 |---|---|---|---|---|
 | Pinout / flow-through | I/O1 = 1↔6, I/O2 = 3↔4, GND 2, VBUS 5. Fig. 18: line in on 1/3, out on 6/4 | Connector side on 1 (D−) and 3 (D+), hub side on 6 and 4; the lines run through the pads | OK | ST Fig. 1 p1, Fig. 18 p9 |
 | VBUS pin | To the bus supply, with CBUS = 100 nF | Pin 5 on +5V (always on with the board), C104/204/304/404 100 nF at ≈ 3 mm | OK. +5V rather than the switched PORTn_VBUS keeps the upper diodes on a live rail when a port is off | ST Fig. 14 p8, Fig. 18 p9 |
-| Stand-off | IRM ≤ 150 nA at VRM 5.25 V; VBR ≥ 6 V | +5V 5.0–5.24 V | OK (at the edge of VRM) | ST Table 2 p2 |
+| Stand-off | IRM ≤ 150 nA at VRM 5.25 V; VBR ≥ 6 V | +5V 4.94–5.22 V | OK (under VRM) | ST Table 2 p2 |
 | HS loading | Ci/o-GND 2.5 typ / 3.5 max pF, matching 0.015 pF; for USB 2.0 up to 480 Mb/s | One per port, D± only | OK | ST Table 2 p2, p1, p7 |
 | ESD rating | IEC 61000-4-2 level 4: 15 kV air, 8 kV contact (15 kV contact absolute) | n/a | OK | ST p1, Table 1 p2 |
 | Placement | "as close as possible to the disturbance source (generally the connector)"; short GND and VBUS tracks | 7 mm from the receptacle axis (cx + 7.0), 100 nF at pin 5 | OK. GND via length: check in layout | ST §2.3 p5–6; AN26.2 §3.1 p6 |
@@ -387,8 +387,8 @@ The manual read here is WCH's Chinese one, version 1C, from an LCSC mirror; WCH'
 
 | Reference element | Datasheet / guide | Ours | Verdict | Source |
 |---|---|---|---|---|
-| VDD (single-supply range) | VDD 4–13.2 V (GND = 0), with VDD > GND + 4 V | +5V_MX 4.75–5.24 V | OK (0.75 V margin over GND + 4 V) | CH446 §6.2 p6 |
-| VEE and VDD − VEE | VEE −8.8 to 0 V, VDD − VEE < 13.2 V; "VDD=5V & VEE=−5V (VDD−VEE=10V)" is one of the recommended combinations | VEE −4.7 to −5.24 V, span 9.5–10.5 V | OK as read; **to check by the user (U4a)** | CH446 §6.2 p6 |
+| VDD (single-supply range) | VDD 4–13.2 V (GND = 0), with VDD > GND + 4 V | +5V_MX 4.75–5.22 V | OK (0.75 V margin over GND + 4 V) | CH446 §6.2 p6 |
+| VEE and VDD − VEE | VEE −8.8 to 0 V, VDD − VEE < 13.2 V; "VDD=5V & VEE=−5V (VDD−VEE=10V)" is one of the recommended combinations | VEE −4.7 to −5.22 V, span 9.5–10.4 V | OK as read; **to check by the user (U4a)** | CH446 §6.2 p6 |
 | Absolute maximum supply | VDD ≤ 16 V (VEE = GND), VEE ≥ −16 V (VDD = GND) | span ≤ 10.5 V | OK | CH446 §6.1 p6 |
 | Supply polarity and sequencing | Pin table: VDD "必须大于等于 GND", VEE "必须小于等于 GND". No other sequencing or latch-up clause in v1C | VEE starts at 0 V and goes negative as the pump starts; the TPS60400's active Schottky stops OUT going positive (R40/R41 push ≈ 22 µA in until then) | OK | CH446 §4.1 p2; TPS §8.4.1 p12 |
 | Analog pin range | Recommended VEE…VDD; absolute VEE − 0.5…VDD + 0.5 | Bus 0–3.3 V (≈ 3.6–4.2 V with a 5 V VREF). +3V3 is derived from the same +5V through the LDO, so the pull-ups never exceed VDD while it ramps | OK | CH446 §6.1–6.2 p6 |
@@ -424,8 +424,8 @@ Notes:
 
 | Reference element | Datasheet / guide | Ours | Verdict | Source |
 |---|---|---|---|---|
-| Input voltage | Recommended 1.8–5.25 V; absolute 5.5 V | +5V_MX 5.0–5.24 V | OK. Only 10 mV of margin at the top: check the no-load +5V | TPS §7.3 p4, §7.1 p4 |
-| Output voltage limit | OUT absolute −5.5 V; VO ≈ −(VI − RO·IO), RO ≈ 12–15 Ω | ≈ −VI = −5.0 to −5.24 V | OK | TPS §7.1 p4, §8.3.1 p11, §7.5 p5 |
+| Input voltage | Recommended 1.8–5.25 V; absolute 5.5 V | +5V_MX 4.94–5.22 V (R53 18.7k since 2026-11-01) | OK: 30 mV of margin at the worst corner | TPS §7.3 p4, §7.1 p4 |
+| Output voltage limit | OUT absolute −5.5 V; VO ≈ −(VI − RO·IO), RO ≈ 12–15 Ω | ≈ −VI = −4.94 to −5.22 V | OK | TPS §7.1 p4, §8.3.1 p11, §7.5 p5 |
 | Output current | ≤ 60 mA | R41 path (3.3 + 5.24)/147k ≈ 58 µA, plus 2 × CH446 VEE (not specified, µA) | OK, < 1 % of rating | TPS §7.3 p4 |
 | Capacitor values for the -400 | Table 9-1: TPS60400 CI = C(fly) = CO = 1 µF (-401 10 µF, -402 3.3 µF, -403 1 µF); ceramic X5R/X7R | C26 fly, C27 in, C28 out: all 1 µF 0402 25 V X5R (C52923) | OK | TPS Table 9-1 p14, Table 9-3 p14 |
 | CO minimum after DC bias | ROC: CO ≥ 1 µF. §9.2.1.2.4: "Smaller capacitance values can be used with light loads if higher output ripple can be tolerated" | All three caps see ≈ 5 V. A 0402 1 µF X5R typically keeps ≈ 40–60 % at 5 V, so ≈ 0.4–0.6 µF | **to check by the user (U10)** | TPS §7.3 p4, §9.2.1.2.4 p14. Samsung DC-bias curve not retrieved (product page has no data) |
@@ -476,7 +476,7 @@ Notes:
 | DUT off: VREF held at 0 V by its rail | SLVA675 §5.6: "If either Vref_A or Vref_B are grounded, the switch behaves as an open circuit" | VREF at 0 V through the DUT's dead rail | OK: highs are clamped at ≈ 0 V on the DUT side, so no back-powering | SLVA675B §5.6 p6 |
 | Board off, DUT powered | EN low → Hi-Z | Vref_B = EN discharges through 200k into the dead +5V_MX → Hi-Z | OK. The CH446 is shielded while unpowered (the VREF divider does feed GPIO40–43, see notes) | LSF Table 8-1 p11 |
 | VREF unwired (≈ 0.39 V via 10k + 10k) | Behaviour below the 0.65 V minimum is not specified. The FET conducts while either side is below ≈ Vref_A (gate = Vref_A + VTH; "acts as a passive switch when the input signal is below Vref_A − 0.5 V"); EN is not low | Docs say "under the 0.65 V the LSF needs to translate … the group passes nothing" | **To fix** (docs and firmware, no BOM): lows still pass both ways, highs into A clamp at ≈ 0.4 V. Harmless, but the "isolated" claim is not backed | LSF §6.3 p5, §8.3.2 p11; SLVA675 §1 p2 |
-| VREF at 5 V | Vref_B < Vref_A + 0.8 V is outside spec. §9.2.4 allows it with A-side pull-ups, but it needs Vref_B > Vref_A | Vref_B = +5V_MX (4.75–5.24 V) ≤ VREF: the reference FET is off, the gate sits at +5V_MX, and the bus rises to +5V_MX − VTH (with body effect) ≈ 3.6–4.2 V | Justified deviation, as the docs say. The docs' "≈ 4.0–4.2 V" is a bit high at +5V_MX 4.75 V: check | LSF §9.2.4 p19, Table 9-2 p14 |
+| VREF at 5 V | Vref_B < Vref_A + 0.8 V is outside spec. §9.2.4 allows it with A-side pull-ups, but it needs Vref_B > Vref_A | Vref_B = +5V_MX (4.75–5.22 V) ≤ VREF: the reference FET is off, the gate sits at +5V_MX, and the bus rises to +5V_MX − VTH (with body effect) ≈ 3.6–4.2 V | Justified deviation, as the docs say. The docs' "≈ 4.0–4.2 V" is a bit high at +5V_MX 4.75 V: check | LSF §9.2.4 p19, Table 9-2 p14 |
 | ESD on the Vref_A pin | ±2000 V HBM / ±1000 V CDM only (JEP155 note: a manufacturing-control level) | Header pin 2 (VREF) runs straight to Vref_A, which biases all eight pass gates. P1–P8 on the same header get the IEC ±8 kV H5VU25UC | **To fix** | LSF §6.2 p5; H5V p1 |
 
 Notes:
@@ -534,7 +534,7 @@ Every symbol pin map was checked against the datasheet pinout in the generated s
 |---|---|---|---|---|
 | Pinout DBV | 1 IN, 2 GND, 3 EN, 4 FAULT, 5 ILIM, 6 OUT | The symbol has the same pins 1–6 | OK | [TPS] §6 Pin Functions p.5 |
 | Latch-off (-1) | Latches off after the FAULT deglitch. It stays off until EN is toggled or power is cycled (UVLO 2.35/2.45 V) | The node toggles EN through the TCA6408A | OK | [TPS] §9.3.3 p.14, §10.1.1 p.17, §7.5 p.7 |
-| VIN | ROC 2.5–6.5 V, abs max 7 V | +5V, 5.0–5.24 V | OK | [TPS] §7.1 p.5, §7.3 p.6 |
+| VIN | ROC 2.5–6.5 V, abs max 7 V | +5V, 4.94–5.22 V | OK | [TPS] §7.1 p.5, §7.3 p.6 |
 | R_ILIM range | 15–232 kΩ, 1 % | 47k 1 % 0402 (C25792) | OK | [TPS] §7.3 p.6 |
 | Current limit | Eq. 1: IOSmin = 25230/R^1.016, IOSnom = 23950/R^0.977, IOSmax = 22980/R^0.94 (temperature and process included, resistor tolerance not) | 47k gives 505 / 557 / 616 mA; ±1 % on the resistor gives 500–622 mA. design.py's "0.50–0.62 A" is right | OK | [TPS] Eq. 1 p.15, §10.2.1.2.3 p.19 |
 | Limit vs USB load | "the minimum current-limit threshold … exceed the maximum current-limit draw"; a high-power function takes 500 mA | IOSmin is 500–505 mA. It meets 500 mA with no margin at the worst corner. The 3 mA VBUS LED (on 5V_SW) is also counted | OK | [TPS] §10.2.3.2.1 p.23 |
@@ -562,7 +562,7 @@ The 22 µF on OUT is justified because every port has its own limiter. A hot-plu
 | Shunt power | — (0.25 W part) | 0.62² × 0.1 Ω = 38 mW, 15 % of rating | OK | catalog C25334 |
 | Kelvin | IN+/IN− by a Kelvin or 4-wire connection | Kelvin 1206 footprint (net-tie 1-2, 3-4). IN+ on SNS_P (switch side), IN− on SNS_N (load side) | OK | [INA] §8.4.1 p.31 |
 | VBUS pin | 0–36 V, 830 kΩ; the example ties VBUS to IN− (load side) | Load-side sense pad (= PORTn_VBUS) | OK | [INA] §5.5 p.5, §6.5.1 p.15 |
-| Common mode | 0–36 V regardless of VS; 40 V across the inputs | 0–5.24 V. An unpowered board with a back-feeding DUT stays inside these limits | OK | [INA] p.1, §6.4.2 p.14 |
+| Common mode | 0–36 V regardless of VS; 40 V across the inputs | 0–5.22 V. An unpowered board with a back-feeding DUT stays inside these limits | OK | [INA] p.1, §6.4.2 p.14 |
 | Input filter | Only needed for transients at harmonics of 500 kHz (> 1 MHz): ≤ 10 Ω and 0.1–1 µF | None | OK | [INA] §6.4.2 p.14 |
 | dV/dt protection | 10 Ω in series with each input against hard-short dV/dt "in systems where large currents are available" | None | justified deviation | [INA] §6.4.2 p.14 |
 | Alert | Open drain, VOL ≤ 0.4 V at 3 mA; may float when unused; off at reset (Mask/Enable = 0) | Wired-OR on INT with 10k to +3V3 (R8), plus the node's pull-up through Q3 | OK | [INA] §6.3.1.2 p.12, §5.5 p.6 |
@@ -592,7 +592,7 @@ Tying RESET directly to +3V3 gives the same static level as a pull-up, and the p
 | Reference element | Datasheet / guide | Ours | Verdict | Source |
 |---|---|---|---|---|
 | Pinout SOT-223 (H) | 1 GND, 2 VOUT (tab), 3 VIN; the fixed SOT-223 part has no EN | AMS1117-3.3 symbol (1 GND, 2 VO, 3 VI) on SOT-223-3_TabPin2. Not to be confused with HA: 1 VIN, 2 GND, 3 VOUT | OK | [AP] Fig. 2 p.2, Pin Descriptions p.3 |
-| VIN | ROC 2.5–6.0 V, abs max 6.5 V | 5.0–5.24 V | OK | [AP] p.7 |
+| VIN | ROC 2.5–6.0 V, abs max 6.5 V | 4.94–5.22 V | OK | [AP] p.7 |
 | CIN | 4.7 µF (typical application) | C2 22 µF 0805 X5R 25 V (≈ 10–13 µF at 5 V), ≈ 3 mm from VIN, on a +5V island with 2 vias | OK | [AP] Fig. 47 p.25, p.12 |
 | COUT | "Stable with 4.7 µF flexible cap: ceramic, tantalum and aluminum electrolytic"; no ESR window, no maximum | C3 22 µF 0805 X5R (≈ 13–16 µF at 3.3 V) at the tab, plus ≈ 40 × 100 nF and the FB2 branch | OK | [AP] p.1, Fig. 47 p.25 |
 | Dropout | 450 mV typ / 750 mV max at 1 A; Fig. 32 shows ≈ 0.15–0.18 V at 0.4 A | At 0.39 A: ≈ 0.18 V typ, 0.29 V max. It regulates down to +5V ≈ 3.6 V | OK | [AP] p.12, Fig. 32 p.21 |
@@ -636,7 +636,7 @@ The ferrite on FB1 still isolates +5V_MX from the ports' HF edges and from USB n
 | Reference element | Datasheet / guide | Ours | Verdict | Source |
 |---|---|---|---|---|
 | Rp value | Default USB Power: 56 kΩ ±20 % pulled up to 4.75–5.5 V (or 36 kΩ to 3.3 V, or 80 µA) | 56k 1 % 0603 (C23206) | OK | [TC] §4.11.1 Table 4-24 p.235 |
-| Rp pull-up voltage | 4.75–5.5 V. Other voltages are allowed if < 5.5 V and the CC voltage stays in the sink's ranges | PORTn_VBUS ≈ +5V − ≤ 0.12 V. CC across Rd 5.1k ±10 % is 0.36–0.48 V for VBUS 4.75–5.24 V, inside vRd-USB (0.25–0.61 V) | OK | [TC] Table 4-24 p.235, Table 4-36 p.241 |
+| Rp pull-up voltage | 4.75–5.5 V. Other voltages are allowed if < 5.5 V and the CC voltage stays in the sink's ranges | PORTn_VBUS ≈ +5V − ≤ 0.12 V. CC across Rd 5.1k ±10 % is 0.36–0.48 V for VBUS 4.75–5.22 V, inside vRd-USB (0.25–0.61 V) | OK | [TC] Table 4-24 p.235, Table 4-36 p.241 |
 | One Rp per CC | Separate Rp on CC1 and CC2 | One on each | OK | [TC] §4.5.2.2.7.1 p.175 |
 | Source behaviour | Unattached.SRC: "The port shall not drive VBUS" until a sink (Rd) is detected | VBUS, and Rp with it, is on whenever the node enables the port. There is no Rd detection | justified deviation | [TC] §4.5.2.2.7.1 p.175 |
 | Advertisement vs limit | Default power is 500 mA for USB 2.0 | IOS min 500–505 mA | OK | [TPS] §10.2.3.2.1 p.23 |

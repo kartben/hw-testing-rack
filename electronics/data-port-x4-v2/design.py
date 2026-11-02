@@ -864,7 +864,9 @@ def power_sheet(b: Board):
         C(s, f"C{65 + j}", "22u", "+5V", "GND", size="1206", pcb=P(bx + 6 + 2.5 * j, by + 6.5, 270),
           sch=at(x0 + x, 25.5))
     R(s, "R52", "100k", "+5V", "BUCK_FB", pcb=P(bx - 3.5, by - 1.2, 270), sch=at(x0 + 62, 30))
-    R(s, "R53", "18k", "BUCK_FB", "GND", pcb=P(bx - 3.5, by + 1.8, 270), sch=at(x0 + 62, 37))
+    # 18.7k, not the node's 18k: 5.08 V, under the TPS60400's 5.25 V (U9, the matrix's −5 V) at the worst corner
+    R(s, "R53", "18.7k", "BUCK_FB", "GND", pcb=P(bx - 3.5, by + 1.8, 270), sch=at(x0 + 62, 37),
+      fields={"LCSC": "C11476", "MPN": "0402WGF1872TCE", "Manufacturer": "UNI-ROYAL(Uniroyal Elec)"})
     s.wire("R52.2", "R53.1")
     s.wire((x0 + 62, 33.5), (x0 + 36, 33.5), (x0 + 36, 25), "U13.FB")
     s.part("#FLG03", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False,
@@ -880,7 +882,8 @@ def power_sheet(b: Board):
         "  The inductor then peaks at 3.63 A from 28 V (1.17 A ripple), 3.93 A at the worst corner (L −20 %, 0.99 MHz),",
         "  under the LMR51635's 4.2 A minimum peak limit (SLUSF64B §6.5: 4.2 / 5.1 / 6.0 A; valley 3.2 / 4.0 / 4.8 A);",
         "  from 13.5 V: peak 3.48 A, valley 2.60 A.  No frequency foldback (tON 170 ns ≥ 70, tOFF 556 ns ≥ 200).",
-        "FB 100k/18k: 5.24 V, as the node's.",
+        "FB 100k/18.7k: 5.08 V, 4.94–5.22 V with VFB 0.792–0.808 V (SLUSF64B §6.5) and the 1 % resistors: under",
+        "  the TPS60400's 5.25 V (U9, sheet Matrix), which the node's 18k (5.10–5.39 V) was not.",
         "EN 100k/10k: on above 13.5 V typ., up to 14.8 V on the EN threshold's 1.103–1.349 V (SLUSF64B §6.5) and",
         "  15.1 V with the 1 % resistors: the rack's 20 V clears it.  Off below 10.8 V typ.",
         "VIN on J1.8, the node's VRACK through its eFuse (TPS26600, off by default): no second protection here.",
@@ -1269,9 +1272,9 @@ def board() -> Board:
         "  v1 stays the other bays' board.",
         "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×6's lead.",
         "Rails: VIN 20 V (on above 13.5 V typ., 15.1 V at worst; ≤ 28 V), ≤ 0.91 A at 20 V (1.21 A at 15 V) ·",
-        "  +5V 5.24 V, ≤ 3.04 A (the",
+        "  +5V 5.08 V (4.94–5.22 V), ≤ 3.04 A (the",
         "  ports at their 0.644 A limit + 0.46 A; the LMR51635's 3.5 A) ·",
-        "  PORTn_VBUS 5.1–5.24 V, 0.52–0.64 A limit · +3V3 3.3 V (AP2114H), ≤ 0.5 A · +5V_MX, −5V (sheet Matrix) ·",
+        "  PORTn_VBUS 4.82–5.22 V, 0.52–0.64 A limit · +3V3 3.3 V (AP2114H), ≤ 0.5 A · +5V_MX, −5V (sheet Matrix) ·",
         "  +3V3_CP, +1V1 (sheet Co-processor) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own regulators).",
         "I²C: TCA6408A 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45, TCA9534A 0x38; the node's INA226 0x40.",
         "Assembled as DATA-4x-logic (as drawn) or DATA-4x (BOM/CPL '-base': the matrix, the co-processor and the",

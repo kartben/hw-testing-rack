@@ -195,9 +195,16 @@ JLC_SINCE_QUOTE = {
                                              # R23/R24 since: 27 Ω (C25100, extended) for 22 Ω (C25092, basic), as
                                              # Raspberry Pi specifies (the datasheet audit, 2026-11-01)
                                              ("R23/R24 27 Ω (C25100) for 22 Ω: its extended part type",
-                                              "extended parts", 3.09)],
+                                              "extended parts", 3.09),
+                                             # R53 since: 18.7k (C11476, extended) for 18k (basic), the +5V under the
+                                             # TPS60400's 5.25 V (the datasheet audit, 2026-11-01)
+                                             ("R53 18.7k (C11476) for 18k: its extended part type", "extended parts",
+                                              3.09)],
                    "data-port-x4-v2": [("USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 8 at JLC's price",
-                                        "components", 9.43)],
+                                        "components", 9.43),
+                                       ("R23/R24 27 Ω (C25100) for 22 Ω: its extended part type", "extended parts",
+                                        3.09),
+                                       ("R53 18.7k (C11476) for 18k: its extended part type", "extended parts", 3.09)],
                    "data-port-x4-v2-base": [("USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 8 at JLC's price",
                                              "components", 9.43)],
                    # the pod's U1 since the quote: the AP2114H-3.3 (C150716, extended, $0.2314) for the AMS1117
