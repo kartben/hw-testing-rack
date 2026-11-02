@@ -70,6 +70,7 @@ from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
 
 import rackcfg  # noqa: E402
+from silk import SILK_RULE, SILK_TEXT  # noqa: E402
 
 RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["data_port_x4_v2"]
@@ -327,14 +328,8 @@ ANGLE_RULE = """
 	(condition "A.Type == 'Track' && (A.hasNetclass('USB') || A.NetName == '/Hub/XI' || A.NetName == '/Hub/XO' || A.NetName == '/Co-processor/CP_XIN' || A.NetName == '/Co-processor/CP_XOUT' || A.NetName == '/Co-processor/CP_XTAL')")
 	(constraint track_angle (min 134)))
 """
-# the layout review (2026-11-01): silkscreen text a 0.15 mm stroke at least (the 0.8 mm names' 15 % was 0.12)
-SILK_TEXT = 0.15
-SILK_RULE = f"""
-(rule "silkscreen text: a {SILK_TEXT} mm stroke at least"
-	(severity error)
-	(layer "?.Silkscreen")
-	(constraint text_thickness (min {SILK_TEXT}mm)))
-"""
+# and the layout review's (2026-11-01) silkscreen text a 0.15 mm stroke at least (the 0.8 mm names' 15 % was
+# 0.12): silk.SILK_RULE, shared with the DATA ×6
 
 
 def p_lines(n: int):

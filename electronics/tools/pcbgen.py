@@ -606,7 +606,41 @@ class PcbBuilder:
             if t.get("layer") == "B.SilkS":
                 tx.SetMirrored(True)
             tx.SetTextAngleDegrees(t.get("rot", 0))
+            if t.get("just") in ("left", "right"):
+                tx.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_LEFT if t["just"] == "left" else pcbnew.GR_TEXT_H_ALIGN_RIGHT)
+            if t.get("style") == "disc":
+                self.knocked_out(tx, t["d"])
+                continue
             self.board.Add(tx)
+
+    def knocked_out(self, tx, d: float):
+        """The text cut out of a filled silk disc d mm across, centred on it (silk.port_mark()): a polygon, the disc
+        less the glyphs' outlines (KiCad's own knockout text cuts a tight rectangle instead, 0.1–0.2 mm round the
+        glyph, under JLC's 0.15 mm line).  One filled shape per outline left: a closed glyph (6, 8, 9, 0, 4)
+        leaves an island of disc inside its loop."""
+        tx.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_CENTER)
+        tx.SetVertJustify(pcbnew.GR_TEXT_V_ALIGN_CENTER)
+        c = tx.GetPosition()
+        disc = pcbnew.SHAPE_POLY_SET()
+        disc.NewOutline()
+        for i in range(72):
+            a = 2 * math.pi * i / 72
+            disc.Append(c.x + MM(d / 2 * math.cos(a)), c.y + MM(d / 2 * math.sin(a)))
+        glyph = pcbnew.SHAPE_POLY_SET()
+        tx.TransformTextToPolySet(glyph, 0, MM(0.005), pcbnew.ERROR_INSIDE)
+        disc.BooleanSubtract(glyph)
+        for i in range(disc.OutlineCount()):
+            one = pcbnew.SHAPE_POLY_SET()
+            one.AddOutline(disc.Outline(i))
+            for j in range(disc.HoleCount(i)):
+                one.AddHole(disc.Hole(i, j))
+            one.Fracture()
+            s = pcbnew.PCB_SHAPE(self.board, pcbnew.SHAPE_T_POLY)
+            s.SetLayer(tx.GetLayer())
+            s.SetPolyShape(one)
+            s.SetFilled(True)
+            s.SetWidth(0)
+            self.board.Add(s)
 
     # -------------------------------------------------------------- routing
     def autoroute(self, passes: int = 40):
