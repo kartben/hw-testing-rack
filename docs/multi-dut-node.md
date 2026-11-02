@@ -97,8 +97,9 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 
 ## Power budget
 
-> The DATA ×4 board as designed (v1.0, `electronics/data-port-x4`,
-> [electronics.md](electronics.md#data-4-v10--4-layers-108--24-mm)), not built yet.
+> Node rev A: the DATA ×4 on the node's DUT_5V, as designed until 2026-11-01 (v1.0,
+> [electronics.md](electronics.md#data-4-v10--4-layers-100--37-mm), retired unbuilt; then the v2,
+> before it made its own 5 V from VIN).  No board takes DUT_5V any more; the firmware keeps the path.
 >
 > From node rev B the lead carries VIN (20–28 V) through a TPS26600 eFuse instead of DUT_5V, and the
 > DATA boards make their own 5 V: the thresholds below, in mA at 5 V on the node's INA226, become a
@@ -121,6 +122,17 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 > possible** box next to Power on; a queued port shows **Queued** and a Cancel button.  From a
 > script: `bayctl power B3.4 on --when available` (or `--wait SECONDS`), `bayctl power B3.4 cancel`
 > ([ci.md](ci.md#by-hand)).
+>
+> **What that guarantees on rev B, with the DATA ×4 v2:** the board draws ≈ 0.4 A at 5 V with four
+> High-Speed ports busy, ≈ 0.53 A at worst (0.51 A through U3, the 3.3 V LDO that feeds the hub, the
+> co-processor, the expanders and the INA226s, plus the matrix and the four port LEDs:
+> [electronics.md](electronics.md#data-4-v20--100--70-mm-standing)).  That is 2.3–3.0 W of the 5.4 W
+> grant, and the ports share the rest, 0.55–0.42 A at 5 V.  **One port at its full 500 mA** only with
+> the board at its typical draw (2.3 + 2.8 W); **four ports at ≲ 105 mA each** with it at its worst
+> (≲ 135 mA typical).  A bay with a camera gets 2.5 W less (`CONFIG_HUB_CAMERA_OWN_MW`): 2.9 W, under
+> the v2's own worst case, so a port goes on there only with the board near its typical draw, and runs
+> at ≲ 110 mA.  Without a grant (25 W), all four at 500 mA.  Without the node's meter the board counts
+> as `CONFIG_BAY_PORTS_BOARD_MA`, 550 mA on rev B.
 >
 > ![Power card on a rev B bay: DATA_VIN, the bay's draw, the hub's grant and a port waiting for power](img/web-ui-budget.png)
 
@@ -146,7 +158,7 @@ one-port node answers `/api/ports` with its one DUT as port 1.
   does the same without the interrupt (the stand-ins have no ALERT line).
   All well before the node's 1.34 A and its 1 s cut of the whole bay.  A shed
   port stays wanted: it comes back once the budget has room for what it drew.
-- **What that guarantees**, with the board at its 0.46 A worst case: **one
+- **What that guarantees** (rev A), with the board at its 0.46 A worst case: **one
   port at its full 500 mA**, always (0.46 + 0.1 A to start it, 0.96 A
   running); **four ports only at ≲ 190 mA each** (the fourth starts at
   0.46 + 3 × 0.19 + 0.1 = 1.13 A, and 1.22 A running stays under the shed).

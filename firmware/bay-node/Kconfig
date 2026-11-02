@@ -109,11 +109,14 @@ config BAY_PORTS_SHED_MA
 
 config BAY_PORTS_BOARD_MA
 	int "DATA x4: the board's own draw, without a node meter (mA)"
+	default 550 if $(dt_nodelabel_bool_prop,dut_port,vin-efuse)
 	default 500
 	help
 	  Without the node's INA226 (a stand-in, or it does not answer), the
-	  bay's draw is the ports' sum plus this: the hub, the co-processor,
-	  the LEDs (0.3-0.46 A).
+	  bay's draw is the ports' sum plus this, at 5 V: the hub, the
+	  co-processor, the LEDs.  Node rev B, the DATA x4 v2: up to 0.53 A
+	  (0.51 A through its 3.3 V LDO, the matrix, the port LEDs).  Rev A,
+	  the board on DUT_5V: 0.3-0.46 A.
 
 config BAY_PORTS_VBUS_OFF_MV
 	int "DATA x4: a power cycle waits for the port's VBUS under this (mV)"
