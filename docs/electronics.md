@@ -31,6 +31,15 @@ finds them in the board file, and `tools/tests/test_antennas.py` holds every
 board to none, but the ones `electronics/antennas.json` still lists.  KiCad's
 DRC reports a dangling track or via as an error.
 
+**Zone priorities** (2026-11-02): two pours of different nets on one layer,
+closer than their clearance, must not share a priority.  One of them pulls
+back, and with equal priorities KiCad picks it by the zones' UUIDs, which are
+new at each rebuild and in each panel copy.  The fill can then flip between
+builds while DRC stays clean (the DATA ×4 v2's panel halves, the DATA ×6's
+power plane).  `electronics/tools/zoneprio.py` finds such pairs in the board
+file; `--check` prints them and fails on any, and
+`tools/tests/test_zone_priorities.py` holds every board to none.
+
 **Decoupling** (the same review): each board's `design.py` names, in
 `b.pcb["decoupling"]`, the power pin every decoupling capacitor serves.
 `electronics/tools/decoupling.py` measures, from the board file, the capacitor's

@@ -29,6 +29,7 @@ REPO = HERE.parents[1]
 from catalog import HAND_SOLDER_LCSC  # noqa: E402
 from fab_dates import undate  # noqa: E402
 from eda import generate_schematic  # noqa: E402
+import zoneprio  # noqa: E402
 
 
 def load_design(name: str):
@@ -516,10 +517,16 @@ def main():
         for it in (e["items"] + d["items"])[:80]:
             print("  ", it)
         copper = {k: v for k, v in d["violations"].items() if not k.startswith(("silk", "lib_"))}
+        # pours KiCad would rank by their UUIDs (zoneprio.py): DRC is clean either way, the fill is not
+        ranked = zoneprio.findings(outdir / f"{b.name}.kicad_pcb")
+        print(f"zone priorities: {len(ranked)} equal-priority pairs within clearance")
+        for it in ranked:
+            print("  ", it)
         if a.fab:
             export_fab(outdir, b.name, b)       # gives catalog models to the board first (apply_models)
         m = check_models(outdir, b.name, b.pcb.get("no_model", ()))
-        sys.exit(1 if e["errors"] or copper or d["unconnected"] or d["parity"] or m["problems"] else 0)
+        sys.exit(1 if e["errors"] or copper or d["unconnected"] or d["parity"] or m["problems"] or ranked
+                 else 0)
     import pcbgen  # needs pcbnew
     if a.rules:
         pcbgen.write_rules(b, outdir, getattr(mod, "NETCLASSES", None))
