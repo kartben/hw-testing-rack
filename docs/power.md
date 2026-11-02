@@ -93,10 +93,15 @@ count in that bay's row.  The default 100 W charger (20 V) carries the realistic
 row is capped at **≈ 32 W** by its eFuse (1.6 A): a typical row draws 8–15 W, four bays at their
 worst ≈ 44 W.  The 140 W EPR option (28 V) covers 12 bays' worst case (≈ 130 W), and caps a row at
 ≈ 45 W.
-A third row stays on the 100 W charger: 12 bays draw ≈ 30–40 W realistically, and their worst case
-(≈ 130 W) is past the contract, so the hub's budget shares the 100 W between the rows and the bays
+A third row stays on the 100 W charger.  Twelve bays draw ≈ 45–75 W realistically (≈ 60 W midway):
+every bay's DATA board now carries a USB2517I hub, ≈ 2.1–2.6 W each with its converter, 25–31 W for
+the rack before any DUT (the table and the 8-bay figures above predate them).  The rows: A ≈ 14–21 W,
+B ≈ 16–25 W (the camera on B2), C ≈ 16–30 W (the dense row's 18 boards).  At the top of that range
+row C's boards would ask more than its 28.8 W (the eFuse's 1.6 A less the margin), and its bays'
+grants hold it there: ports wait or are shed.  The worst case runs into the rows' eFuses (3 × 32 W,
+≈ 96 W), past the budget's 90 W, so the hub's budget shares the 100 W between the rows and the bays
 ([below](#keeping-the-rows-inside-the-contract)): a port's power-on waits for room in its bay's
-share, and the rows shed D first.
+share, and the rows shed C first (D, empty, is passed over).
 The hub knows both sides: the contract (the CH224A: the charger's offers and
 the current granted) and each row's current (the eFuses' IMON).  When the negotiated power is below
 the worst case, it budgets ([below](#keeping-the-rows-inside-the-contract)): it limits or sheds rows before
@@ -148,7 +153,7 @@ contracts in `tests/budget`):
 What it cannot catch: a step faster than its 250–500 ms, beyond what the
 charger tolerates for that long (rows of bays all jumping to their 1.5 A at
 once).  On the default 100 W charger that only matters past 8 bays at
-their worst case; the realistic rack draws ≈ 35–40 W with margins.
+their worst case; the realistic rack (12 bays) draws ≈ 45–75 W ([above](#budget)).
 
 Each row has its own eFuse, set to **1.6 A**: rows are wired with JST PH (2 A
 per contact, on 24 AWG: the row cables are built from 24 AWG leads), so the limit protects the connectors and the cables
