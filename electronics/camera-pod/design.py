@@ -39,7 +39,7 @@ sys.path.insert(0, str(HERE.parents[1] / "tools"))
 
 from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
-from silk import LOGO_W, SILK_RULE, SILK_TEXT, title_block  # noqa: E402
+from silk import LOGO_W, POD_TITLE_SCALE, SILK_RULE, SILK_TEXT, title_block  # noqa: E402
 
 import rackcfg  # noqa: E402
 
@@ -175,10 +175,11 @@ def board() -> Board:
             *({"text": lab, "x": x, "y": y + 1.35, "size": 0.8, "layer": "B.SilkS"} for _, (x, y), lab in TP_ROUND2),
         ]] + [
             # the title block, as on every board (silk.title_block()): in the rear face's top-right corner as read
-            # from below, against both edges, between H1 and the SCK test pad (the board's one band free for it;
-            # its 0.6 mm logo-to-line gap is set by this band): 1 mm clear of other silk (TP5's ring), 0.3 mm of
-            # pads and holes (silkair.py)
-            *title_block("CAM POD v1.0", 1 + LOGO_W, 1),
+            # from below, against the rear edge and 3 mm in, between H1 and the SCK test pad (the board's one band
+            # free for it; its 0.6 mm logo-to-line gap is set by this band).  Scaled to POD_TITLE_SCALE, the
+            # largest that keeps H1's screw head clear (its courtyard + 0.5 mm), 1 mm of other silk (TP5's ring,
+            # the LED and SCK names), 0.3 mm of pads and holes (silkair.py); its line 0.07 mm past the logo
+            *title_block("CAM POD v1.0", 1 + 3 + 0.07 + LOGO_W * POD_TITLE_SCALE, 1, scale=POD_TITLE_SCALE),
         ],
     }
     return b

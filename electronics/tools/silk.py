@@ -59,6 +59,11 @@ LOGO_W = 25.5                   # mm, the same on every board (the user, 2026-11
 TITLE_DATE = "2026-11"          # the boards' revision date (the NextPCB prototypes)
 TITLE_GAP = 0.6                 # mm from the logo to the line under it (the camera pod's 40 × 27 sets it)
 TITLE_BEARING = 0.4             # mm: KiCad's font starts a line's ink this far from its anchor
+# The camera pod (40 × 27) has no spot for the full block clear of H1's screw head, its test pads and their names:
+# its block is scaled down as a whole (the user, 2026-11-02: "plus petit"), the largest scale that fits.  Floors:
+# the logo's gaps LOGO_GAP_FLOOR (the least a fab takes for a hollow shape), the name 1.0 mm, the date 0.8 mm.
+POD_TITLE_SCALE = 0.96
+LOGO_GAP_FLOOR = 0.20           # mm
 
 
 def _svg_rings(svg: Path) -> list[list[tuple[float, float]]]:
@@ -128,18 +133,24 @@ def logo(x: float, y: float, w: float = LOGO_W, layer: str = "B.SilkS") -> dict:
     return {"style": "poly", "layer": layer, "polys": polys, "w": w, "h": k * d["size_units"][1]}
 
 
-def title_block(name: str, x: float, y: float, date: str = TITLE_DATE, layer: str = "B.SilkS") -> list[dict]:
+def title_block(name: str, x: float, y: float, date: str = TITLE_DATE, layer: str = "B.SilkS",
+                scale: float = 1.0) -> list[dict]:
     """Every board's title block, the same on all (the user, 2026-11-02): the logo LOGO_W wide, and TITLE_GAP
     under it one line, left-aligned with it: the board's name and revision at 1.5 mm, then 1.5 mm further the
     revision's date (fixed per revision, never the build's) at 1.0 mm on the same baseline.  (x, y) is its
     top-left corner as read, on the rear face read from below.  The line is as long as the name: pcbgen places
-    the date from the name's ink ("after")."""
-    mark = logo(x, y, layer=layer)
+    the date from the name's ink ("after").  `scale` shrinks the whole block (POD_TITLE_SCALE, the camera pod's
+    only), strokes kept at SILK_TEXT at least."""
+    assert LOGO_GAP * scale >= LOGO_GAP_FLOOR - 1e-4 and 1.5 * scale >= 1.0 and 1.0 * scale >= 0.8
+    mark = logo(x, y, w=LOGO_W * scale, layer=layer)
     sx = -1 if layer == "B.SilkS" else 1
-    base = round(y + mark["h"] + TITLE_GAP + 1.82, 3)      # the baseline: 1.5 mm capitals' ink is 1.82 mm over it
-    line = {"x": round(x - sx * TITLE_BEARING, 3), "y": base, "layer": layer, "just": "left", "vjust": "bottom"}
-    return [mark, {"text": name, "size": 1.5, "thickness": 0.25, **line},
-            {"text": date, "size": 1.0, "thickness": SILK_TEXT, "after": 1.5, **line}]
+    base = round(y + mark["h"] + (TITLE_GAP + 1.82) * scale, 3)    # 1.5 mm capitals' ink is 1.82 mm over it
+    line = {"x": round(x - sx * TITLE_BEARING * scale, 3), "y": base, "layer": layer, "just": "left",
+            "vjust": "bottom"}
+    return [mark, {"text": name, "size": round(1.5 * scale, 3), "thickness": max(SILK_TEXT, round(0.25 * scale, 3)),
+                   **line},
+            {"text": date, "size": round(1.0 * scale, 3), "thickness": SILK_TEXT, "after": round(1.5 * scale, 3),
+             **line}]
 
 
 if __name__ == "__main__":

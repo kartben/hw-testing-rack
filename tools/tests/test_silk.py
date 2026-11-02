@@ -20,6 +20,7 @@ from flowthru import _all, _get, parse  # noqa: E402
 # The boards that carry the common title block, and their names (the user, 2026-11-02: one style on all four)
 TITLED = {"power-hub": "POWER HUB v0.5", "bay-node": "BAY NODE v0.5", "data-port-x4-v2": "DATA ×4 v2.0",
           "data-port-x6": "DATA ×6 v1.0", "camera-pod": "CAM POD v1.0"}
+SCALED = {"camera-pod": silk.POD_TITLE_SCALE}      # the one board whose block is smaller (silk.py says why)
 
 
 class Marks(unittest.TestCase):
@@ -68,9 +69,10 @@ class Boards(unittest.TestCase):
                 pts = [(float(q[1]), float(q[2])) for p in polys for q in _all(_get(p, "pts"), "xy")]
                 x0, y0 = min(x for x, _ in pts), min(y for _, y in pts)
                 x1, y1 = max(x for x, _ in pts), max(y for _, y in pts)
-                mark = silk.logo(0, 0)
+                k = SCALED.get(board, 1.0)
+                mark = silk.logo(0, 0, w=silk.LOGO_W * k)
                 self.assertEqual(len(polys), len(mark["polys"]))
-                self.assertAlmostEqual(x1 - x0, silk.LOGO_W, places=2)
+                self.assertAlmostEqual(x1 - x0, silk.LOGO_W * k, places=2)
                 self.assertAlmostEqual(y1 - y0, mark["h"], places=2)
                 texts = {t[1]: t for t in _all(root, "gr_text")}
                 name, date = texts.get(title), texts.get(silk.TITLE_DATE)
@@ -78,9 +80,9 @@ class Boards(unittest.TestCase):
                 self.assertIsNotNone(date, silk.TITLE_DATE)
                 (nx, ny), (dx, dy) = ((float(v) for v in _get(t, "at")[1:3]) for t in (name, date))
                 self.assertEqual({_get(t, "layer")[1] for t in (name, date)}, {"B.SilkS"})
-                self.assertAlmostEqual(nx, x1 + silk.TITLE_BEARING, places=2)   # read from below, it runs to −x
+                self.assertAlmostEqual(nx, x1 + silk.TITLE_BEARING * k, places=2)   # read from below, it runs to −x
                 self.assertAlmostEqual(dy, ny, places=3)
-                self.assertGreater(ny - 1.82, y1)
+                self.assertGreater(ny - 1.82 * k, y1)
                 self.assertLess(dx, nx - 10)
                 self.assertFalse([t for t in texts if "hw-testing-rack" in t])
 
@@ -139,3 +141,17 @@ class Logo(unittest.TestCase):
         """No line under LOGO_INK: eroded by half of it, every part stays one piece."""
         er = self.silk.buffer(-(silk.LOGO_INK / 2))
         self.assertEqual(len(getattr(er, "geoms", [er])), len(self.silk.geoms))
+
+    def test_pod_scale(self):
+        """The camera pod's smaller block: its gaps LOGO_GAP_FLOOR at least, its lines still LOGO_INK."""
+        from shapely.geometry import Polygon
+        from shapely.ops import unary_union
+        m = silk.logo(0.0, 0.0, w=silk.LOGO_W * silk.POD_TITLE_SCALE, layer="F.SilkS")
+        g = unary_union([Polygon(p[0], p[1:]) for p in m["polys"]])
+        parts = list(g.geoms)
+        self.assertGreaterEqual(min(a.distance(b) for i, a in enumerate(parts) for b in parts[i + 1:]),
+                                silk.LOGO_GAP_FLOOR)
+        er = g.buffer(-(silk.LOGO_INK / 2))
+        self.assertEqual(len(getattr(er, "geoms", [er])), len(parts))
+        _, name, date = silk.title_block("CAM POD v1.0", 30.0, 1.0, scale=silk.POD_TITLE_SCALE)
+        self.assertTrue(name["size"] >= 1.0 and date["size"] >= 0.8 and date["thickness"] >= silk.SILK_TEXT)
