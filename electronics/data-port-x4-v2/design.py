@@ -1997,10 +1997,10 @@ def board() -> Board:
             {"text": "LOGIC ONLY", "x": 55.0, "y": 21.75, "size": 0.8, "layer": "B.SilkS"},
         ]] + [
             # the title block, as on every board (silk.title_block(), its own strokes, not the rule above): in the
-            # rear face's top-right corner as read from below, slid 17 mm in and 18.5 mm down, the nearest spot
-            # clear of the test pads, their names, and by 4 mm the connectors (J2, the headers); this board has no
-            # free edge for it
-            *title_block("DATA ×4 v2.0", 1 + 17 + LOGO_W, 1 + 18.5),
+            # rear face's top-right corner as read from below, slid 17 mm in and 19 mm down: the nearest spot 1 mm
+            # clear of other silk (LOGIC ONLY, STB1), 0.3 mm of pads and holes, 4 mm of the connectors (J2, the
+            # headers; silkair.py); this board has no free edge for it
+            *title_block("DATA ×4 v2.0", 1 + 17 + LOGO_W, 1 + 19),
             # each USB-C's port number (silk.port_mark(), as the DATA ×6's; its own stroke, not the rule above),
             # left of its body: the band over the receptacles holds the headers and the clusters, so this one
             # shows on the bench, not over the wall (the silkscreen plan, 2026-11-02)

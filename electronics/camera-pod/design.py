@@ -175,9 +175,10 @@ def board() -> Board:
             *({"text": lab, "x": x, "y": y + 1.35, "size": 0.8, "layer": "B.SilkS"} for _, (x, y), lab in TP_ROUND2),
         ]] + [
             # the title block, as on every board (silk.title_block()): in the rear face's top-right corner as read
-            # from below, against the rear edge and 2 mm in, between H1 and the SCK test pad (the board's one band
-            # free for it; its 0.6 mm logo-to-line gap is set by this band)
-            *title_block("CAM POD v1.0", 1 + 2 + LOGO_W, 1),
+            # from below, against both edges, between H1 and the SCK test pad (the board's one band free for it;
+            # its 0.6 mm logo-to-line gap is set by this band): 1 mm clear of other silk (TP5's ring), 0.3 mm of
+            # pads and holes (silkair.py)
+            *title_block("CAM POD v1.0", 1 + LOGO_W, 1),
         ],
     }
     return b

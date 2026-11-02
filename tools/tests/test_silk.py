@@ -85,6 +85,19 @@ class Boards(unittest.TestCase):
                 self.assertFalse([t for t in texts if "hw-testing-rack" in t])
 
 
+    def test_title_blocks_air(self):
+        """silkair.py: 1 mm from other silk, 0.3 mm from pads, holes and courtyards, 4 mm from the connectors,
+        on the shapes KiCad plots (pcbnew; build_board.py --check runs it in the Hardware CI)."""
+        try:
+            import silkair
+        except ImportError:
+            self.skipTest("pcbnew")
+        for board in TITLED:
+            with self.subTest(board=board):
+                found = silkair.findings(ROOT / "electronics" / board / f"{board}.kicad_pcb")
+                self.assertEqual(found, [], "\n".join(found))
+
+
 class Logo(unittest.TestCase):
     """The logo's silk variant at LOGO_W: its gaps LOGO_GAP, its lines LOGO_INK, read from the outlines the boards
     take (bitbunk-logo.silk.json), and those the same as the SVG gives."""

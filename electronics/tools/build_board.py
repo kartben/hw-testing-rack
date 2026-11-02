@@ -522,11 +522,16 @@ def main():
         print(f"zone priorities: {len(ranked)} equal-priority pairs within clearance")
         for it in ranked:
             print("  ", it)
+        import silkair      # needs pcbnew: the title block's air, on the shapes KiCad plots
+        crowded = silkair.findings(outdir / f"{b.name}.kicad_pcb")
+        print(f"title block: {len(crowded)} items closer than its air")
+        for it in crowded:
+            print("  ", it)
         if a.fab:
             export_fab(outdir, b.name, b)       # gives catalog models to the board first (apply_models)
         m = check_models(outdir, b.name, b.pcb.get("no_model", ()))
         sys.exit(1 if e["errors"] or copper or d["unconnected"] or d["parity"] or m["problems"] or ranked
-                 else 0)
+                 or crowded else 0)
     import pcbgen  # needs pcbnew
     if a.rules:
         pcbgen.write_rules(b, outdir, getattr(mod, "NETCLASSES", None))

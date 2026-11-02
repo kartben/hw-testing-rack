@@ -312,10 +312,10 @@ def board() -> Board:
               for _, _, d, xy, _, lab in TP_ROUND2),
         ]] + [
             # the title block, as on every board (silk.title_block(), its own strokes, not the rule above): in the
-            # rear face's top-right corner as read from below, against the rear edge, its line's end 2.75 mm in
-            # from the corner, clear of the test pads and their names, and by 4 mm the connectors; its line (the
-            # name, then the date) 27.16 mm long, the longest of the boards'
-            *title_block("POWER HUB v0.5", 1 + 2.75 + 27.16, 1),
+            # rear face's top-right corner as read from below, its line's end 2 mm in and 0.75 mm down from the
+            # corner: the nearest spot 1 mm clear of other silk (VSNS), 0.3 mm of pads and holes, 4 mm of the
+            # connectors (silkair.py); its line (the name, then the date) 27.16 mm long, the longest of the boards'
+            *title_block("POWER HUB v0.5", 1 + 2 + 27.16, 1 + 0.75),
         ],
     }
 

@@ -1048,9 +1048,10 @@ def board() -> Board:
             # over the port wall in use (the silkscreen plan, 2026-11-02), port 1 leftmost from the DUT side
             *(port_mark(n, x, 42.5) for n, x in enumerate(USBS, 1)),
             # the title block, as on every board (silk.title_block()): in the rear face's top-right corner as read
-            # from below, against the rear edge and slid 19.25 mm in, the nearest spot clear of the test pads,
-            # their names and, by 4 mm, the connectors (the user, 2026-11-02: away from the connectors)
-            *title_block("DATA ×6 v1.0", 1 + 19.25 + LOGO_W, 1),
+            # from below, against the rear edge and slid 19 mm in: the nearest spot 1 mm clear of other silk
+            # (+5V_A, TP9), 0.3 mm of pads and holes, 4 mm of the connectors (silkair.py; the user, 2026-11-02:
+            # away from the connectors)
+            *title_block("DATA ×6 v1.0", 1 + 19 + LOGO_W, 1),
             *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "thickness": 0.15, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
             # the lead's connector, named on the rear face where it plugs in (it brings the 20 V), and each of

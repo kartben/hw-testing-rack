@@ -444,8 +444,8 @@ def board() -> Board:
                "layer": "B.SilkS"} for _, _, d, xy, _, lab, off in TP_ROUND2),
         ]] + [
             # the title block, as on every board (silk.title_block(), its own strokes, not the rule above): in the
-            # rear face's top-right corner as read from below, against both edges, clear of the test pads and
-            # their names, and by 4 mm the connectors
+            # rear face's top-right corner as read from below, against both edges: 1 mm clear of other silk, 0.3 mm
+            # of pads and holes, 4 mm of the connectors (silkair.py)
             *title_block("BAY NODE v0.5", 1 + LOGO_W, 1),
         ],
     }
