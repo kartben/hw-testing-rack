@@ -805,11 +805,11 @@ GPIO (IO5 or IO6) would let the firmware restart the camera alone.
 Every board's title block is the same (`electronics/tools/silk.py`, `title_block()`): the BitBunk logo
 25.5 mm wide (the user, 2026-11-02), and 0.6 mm under it one line, left-aligned with it: the board's name and
 revision at 1.5 mm, then 1.5 mm further the revision's date at 1.0 mm on the same baseline (pcbgen places it
-from the name's ink).  On B.SilkS, read from below; about 10.3 mm tall.
+from the name's ink).  On B.SilkS, read from below; about 10.3 mm tall, so it fits the camera pod's 40 × 27.
 Each sits in the rear face's top-right corner as read from below (top view: x 0, y 0), slid inward only as far
 as needed to clear that board's holes, test pads and their names by 0.3 mm and its connectors by 4 mm (the
-user: away from the connectors).  The bay node takes the corner itself; the power hub and the DATA ×6 stay
-against the rear edge, 2.75 and 19.25 mm in; the DATA ×4 v2, with no free edge, is 17 mm
+user: away from the connectors).  The bay node takes the corner itself; the power hub, the DATA ×6 and the
+camera pod stay against the rear edge, 2.75, 19.25 and 2 mm in; the DATA ×4 v2, with no free edge, is 17 mm
 in and 18.5 mm down.  No one offset is clear on all of them, at any corner; this corner has the smallest
 slides.
 
