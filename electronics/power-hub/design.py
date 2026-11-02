@@ -46,6 +46,7 @@ sys.path.insert(0, str(HERE.parents[1] / "tools"))
 
 from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
+from silk import title_block  # noqa: E402
 
 import rackcfg  # noqa: E402
 
@@ -298,7 +299,6 @@ def board() -> Board:
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
         "keepouts": [{"name": "antenna", "poly": [(21.3, -0.1), (38.7, -0.1), (38.7, 5.6), (21.3, 5.6)]}],
         "texts": [{**t, "thickness": max(SILK_TEXT, 0.15 * t["size"])} for t in [
-            {"text": "hw-testing-rack · power hub v0.5", "x": 58, "y": 74, "size": 1.0},
             *[{"text": ch, "x": 13.8, "y": ROW_Y[k] + 8.3, "size": 1.2} for k, ch in enumerate(ROWS)],
             # the bottom-side test pads' names (TP1–TP7, the controller sheet): bring-up probes (the DFT rule, 2026-10-26)
             *({"text": t, "x": x, "y": y, "size": 0.8, "layer": "B.SilkS"}
@@ -310,7 +310,12 @@ def board() -> Board:
               for k, ch in enumerate(ROWS) for t, dy in ((f"FLT {ch}", 0.0), (f"IMON {ch}", 2.6))),
             *({"text": lab, "x": xy[0], "y": xy[1] + d / 2 + 0.85, "size": 0.8, "layer": "B.SilkS"}
               for _, _, d, xy, _, lab in TP_ROUND2),
-        ]],
+        ]] + [
+            # the title block, as on every board (silk.title_block(), its own strokes, not the rule above): in the
+            # rear face's top-left corner as read from below, slid 11.5 mm in and 11 mm down, clear of H1, the
+            # test pads and their names, and by 4 mm the connectors
+            *title_block("POWER HUB v0.5", W - 1 - 11.5, 1 + 11),
+        ],
     }
 
     # ------------------------------------------------------------------ input
