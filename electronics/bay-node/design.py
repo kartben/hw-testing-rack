@@ -200,6 +200,13 @@ SILK_RULE = f"""
 	(layer "?.Silkscreen")
 	(constraint text_thickness (min {SILK_TEXT}mm)))
 """
+# DATA_VIN carries the DATA lead's whole supply (up to the eFuse's 1.76 A): 0.6 mm all along R19.4 → J7.1, where
+# the router once necked it to 0.45 mm beside R19's sense pad
+DATA_VIN_RULE = """
+(rule "DATA_VIN: 0.6 mm all along"
+	(condition "A.NetName == 'DATA_VIN'")
+	(constraint track_width (min 0.6mm)))
+"""
 
 
 def board() -> Board:
@@ -270,17 +277,25 @@ def board() -> Board:
     # the DATA lead's eFuse U9 (TPS26600, rot 90: pins 16 … 9 along its north side, 1 … 8 along its south side,
     # 0.65 mm apart from the west), drawn: OUT (16/15) north and east into the shunt R19, IN (1/2) south through
     # C20 to VIN, taken at TP6 from the buck's feed (after Q1, on D2's clamp); UVLO, OVP, MODE, RTN and GND onto
-    # the exposed pad, six vias down to In1; dVdT, ILIM and SHDN straight to their parts
+    # the exposed pad, six vias down to In1; dVdT, ILIM and SHDN straight to their parts.  Each doubled pair
+    # (IN 1/2, OUT 15/16: paralleled, as the datasheet means them) sits under one solid block (efuse_blocks) and
+    # is fed between its two pins, across both: OUT 1.1 mm (R19.1's pad end and DUT_EN's via allow no more),
+    # IN 1.2 mm (pin 3's clearance), down to TP6 through two vias (the second north of In2's VRACK strip,
+    # which the first already notches)
     ex, ey = EFUSE
     col = [ex - 2.275 + 0.65 * k for k in range(8)]
     top, bot = ey - 2.8625, ey + 2.8625
+    mid = (col[0] + col[1]) / 2
+    efuse_blocks = [{"layer": "F.Cu", "net": n, "connection": "solid", "name": nm, "priority": 3,
+                     "poly": [(col[0] - 0.2, y - 0.7875), (col[1] + 0.2, y - 0.7875), (col[1] + 0.2, y + 0.7875),
+                              (col[0] - 0.2, y + 0.7875)]}
+                    for n, nm, y in (("DATA_VIN_SW", "efuse-out", top), ("VIN", "efuse-in", bot))]
     efuse_tracks = [
-        ("DATA_VIN_SW", "F.Cu", 0.4, [(col[1], top), (col[0], top)]),
-        ("DATA_VIN_SW", "F.Cu", 0.8, [(col[0], top), (col[0], 41.538), (55.6, 41.538)]),
-        ("VIN", "F.Cu", 0.4, [(col[1], bot), (col[0], bot)]),
-        ("VIN", "F.Cu", 0.8, [(col[0], bot), (col[0], 54.8), (48.65, 55.125), (48.65, 55.45)]),
-        ("VIN", "F.Cu", 0.8, [(48.65, 55.45), (46.6, 55.45), (46.6, 67.6)]),
-        ("VIN", "B.Cu", 0.8, [(46.6, 67.6), (46.6, 68.6), (48.0, 70.0)]),
+        ("DATA_VIN_SW", "F.Cu", 0.4, [(col[1], top), (mid, top), (col[0], top)]),
+        ("DATA_VIN_SW", "F.Cu", 1.1, [(mid, top), (mid, 41.4), (55.6, 41.4), (55.6, 41.5375)]),
+        ("VIN", "F.Cu", 0.4, [(col[1], bot), (mid, bot), (col[0], bot)]),
+        ("VIN", "F.Cu", 1.2, [(mid, bot), (mid, 55.45), (46.6, 55.45), (46.6, 65.0), (46.6, 67.6)]),
+        ("VIN", "B.Cu", 1.2, [(46.6, 65.0), (46.6, 67.6), (46.6, 68.6), (48.0, 70.0)]),
         ("GND", "F.Cu", 0.25, [(col[7], top), (col[7], ey - 1.4)]),
         *[("GND", "F.Cu", 0.25, [(col[k], bot), (col[k], ey + 1.4)]) for k in (2, 4, 5, 7)],
         ("DATA_DVDT", "F.Cu", 0.25, [(col[4], top), (col[4], 45.625)]),
@@ -301,7 +316,7 @@ def board() -> Board:
         ("CAM_5V", "F.Cu", 0.6, [(53.5, 8.6), (54.05, 9.15), (64.575, 9.15), (64.575, 14.2)]),
         ("CAM_5V", "F.Cu", 0.6, [(64.575, 14.2), (58.5, 14.2)]),
     ]
-    efuse_vias = [("VIN", 46.6, 67.6, 0.8, 0.4), ("CAM_SCK_C", 55.35, 11.2, 0.6, 0.3),
+    efuse_vias = [("VIN", 46.6, 65.0, 0.8, 0.4), ("VIN", 46.6, 67.6, 0.8, 0.4), ("CAM_SCK_C", 55.35, 11.2, 0.6, 0.3),
                   *[("GND", ex + dx, ey + dy) for dx in (-1.5, 0.0, 1.5) for dy in (-0.75, 0.75)]]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
@@ -324,7 +339,7 @@ def board() -> Board:
 (rule "USB4105 {r}: GND pads beside its own pegs"
 	(condition "A.memberOfFootprint('{r}') && B.memberOfFootprint('{r}')")
 	(constraint hole_clearance (min 0.19mm)))
-""" for r in ("J3",)) + SILK_RULE,
+""" for r in ("J3",)) + SILK_RULE + DATA_VIN_RULE,
         "defer_pours": False,
         # net: (plane, via Ø, drill, track width)
         "fanout_nets": {"GND": ("In1.Cu", 0.5, 0.3, 0.25), "+3V3": ("In2.Cu", 0.6, 0.3, 0.25),
@@ -386,6 +401,7 @@ def board() -> Board:
             # stitched to In1 around the pad (no via in the pad)
             {"layer": "F.Cu", "net": "GND", "name": "esp-gnd", "priority": 3,
              "poly": [(27.3, 12.0), (33.7, 12.0), (33.7, 18.4), (27.3, 18.4)]},
+            *efuse_blocks,
             # AP2114H tab: ≈ 0.8 W at Wi-Fi peaks (1.94 V × 0.4 A), ≈ 1 W at Espressif's 0.5 A; top-side copper on the tab and
             # C12, vias down to the +3V3 area on In2; exclusive, as the buck's (a track once cut C12 off it)
             {"layer": "F.Cu", "net": "+3V3", "connection": "solid", "name": "ldo-tab", "priority": 3, "exclusive": 0.5,

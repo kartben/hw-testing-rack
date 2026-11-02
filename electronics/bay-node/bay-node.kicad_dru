@@ -20,6 +20,10 @@
 	(layer "?.Silkscreen")
 	(constraint text_thickness (min 0.15mm)))
 
+(rule "DATA_VIN: 0.6 mm all along"
+	(condition "A.NetName == 'DATA_VIN'")
+	(constraint track_width (min 0.6mm)))
+
 (rule "power pins connect solid"
 	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '+5V' || A.NetName == '/Camera/CAM_5V' || A.NetName == '/DUT power & AUX/DATA_VIN_SW' || A.NetName == '/Power/VRACK' || A.NetName == 'DATA_VIN' || A.NetName == 'GND' || A.NetName == 'VIN') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
 	(constraint zone_connection solid))
