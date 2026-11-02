@@ -571,9 +571,10 @@ def port(b: Board, n: int):
     for r, sig, dx, sy in ((f"R{k + 7}", "RST", 1.0, 34), (f"R{k + 8}", "BOOT", -0.5, 44)):
         R(s, r, "1k", p + sig + "_IO", p + sig + "_N", size="0402", pcb=P(ex + dx, ey - 2.2, 270),
           sch=at(150, sy, rot=90))
-    # X6: the expander's RESET/BOOT inputs pulled up (they float with nothing plugged in)
+    # X6: the expander's RESET/BOOT inputs pulled up (they float with nothing plugged in), against the header's
+    # courtyard: 0.75 mm off the USB pair coming down the gap east of them (the Sensitive class)
     for r, sig, j, y, rot in ((f"R{k + 9}", "RST", 0, ys[2], 270), (f"R{k + 10}", "BOOT", 1, ys[1], 90)):
-        R(s, r, "100k", "+3V3", p + sig + "_IO", size="0402", pcb=P(hx + 9.0, y, rot),
+        R(s, r, "100k", "+3V3", p + sig + "_IO", size="0402", pcb=P(hx + 8.7, y, rot),
           sch=at(138, (34, 44)[j] - 5))
         s.wire(f"{r}.2", (138, (34, 44)[j]), f"R{k + 7 + j}.1")
         s.wire((128, (34, 44)[j]), (138, (34, 44)[j]), net=p + sig + "_IO")
@@ -1116,7 +1117,7 @@ def coproc_sheet(b: Board):
       sch=at(140, 90, rot=90))
     R(s, "R25", "10k", "+3V3_CP", "CP_RUN", size="0402", pcb=P(cx - 3.8, 5.4, 0),
       sch=at(166, 84))
-    R(s, "R26", "1k", "CP_BOOT_N", "CP_QSPI_SS", size="0402", pcb=P(cx + 3.5, cy + 10.4, 270),
+    R(s, "R26", "1k", "CP_BOOT_N", "CP_QSPI_SS", size="0402", pcb=P(cx + 3.85, cy + 9.4, 270),
       sch=at(178, 86, rot=90))
     R(s, "R27", "1k", "CP_LED", "CP_LED_A", size="0402", pcb=P(cx + 6.4, 5.4, 0),
       sch=at(178, 68, rot=90))
@@ -1173,20 +1174,22 @@ def hs_centrelines():
     its band keeps other tracks off on F.Cu: from 8 mm under the hub (clear of its pins and C15) to its end by its
     USBLC6.  Each comes down 2.65 mm east of its USBLC6's hub pins (ports 1 and 2 past their cluster first, east
     under the next one), turns west 0.8 mm over its axis and ends 1.45 mm east of them, where its lines open out to
-    them.  Every turn 45° (ANGLE_RULE).  {n: (centreline, band)}"""
+    them.  Every turn 45° (ANGLE_RULE).  Ports 1–3 down their header gap 10.1 mm east of the header's centre: 0.75 mm
+    off its RESET/BOOT pull-ups; lanes 1 and 2 0.35 mm lower west of port 3's drop (lane 3 gone): 0.75 mm off the
+    ESDs' RESET_N and BOOT_N vias above them (the Sensitive class).  {n: (centreline, band)}"""
     def end(n, *down):
         xe = USBS[n - 1] + ESD_DX + 2.6                   # where the lines open out
         return [*down, (xe + 1.2, USB_Y - 0.8), (xe + 0.4, USB_Y), (xe, USB_Y)]
 
     x1, x2 = (USBS[n - 1] + ESD_DX + 3.8 for n in (1, 2))
-    cl = {1: [(84.0, 20.55), (84.0, 35.15), (80.0, 39.15), (32.85, 39.15), (32.05, 39.95), (32.05, 48.05),
-              (33.8, 49.8),
+    cl = {1: [(84.0, 20.55), (84.0, 35.15), (80.0, 39.15), (67.35, 39.15), (67.0, 39.5), (32.9, 39.5), (32.1, 40.3),
+              (32.1, 48.1), (33.8, 49.8),
               *end(1, (33.8, 55.9), (34.6, 56.7), (x1 - 0.8, 56.7), (x1, 57.5))],
-          2: [(84.975, 20.55), (84.975, 35.585), (80.41, 40.15), (50.75, 40.15), (49.95, 40.95),
-              *end(2, (49.95, 55.9), (50.75, 56.7), (x2 - 0.8, 56.7), (x2, 57.5))],
-          3: [(86.525, 20.55), (86.525, 35.455), (80.83, 41.15), (68.85, 41.15), (68.05, 41.95), (68.05, 49.65),
+          2: [(84.975, 20.55), (84.975, 35.585), (80.41, 40.15), (67.8, 40.15), (67.45, 40.5), (50.9, 40.5),
+              (50.1, 41.3), *end(2, (50.1, 56.05), (50.75, 56.7), (x2 - 0.8, 56.7), (x2, 57.5))],
+          3: [(86.525, 20.55), (86.525, 35.455), (80.83, 41.15), (68.9, 41.15), (68.1, 41.95), (68.1, 49.7),
               (68.85, 50.45),
-              *end(3, (68.85, 50.95), (69.75, 51.85), (69.75, 59.85), (69.3, 60.3))],
+              *end(3, (68.85, 50.85), (69.75, 51.75), (69.75, 59.85), (69.3, 60.3))],
           4: [(87.5, 20.55), (87.5, 47.65), (88.9, 49.05), (88.9, USB_Y - 0.8), (88.1, USB_Y), end(4)[-1]]}
     assert abs(cl[3][-4][0] - cl[3][-3][0]) < 1e-9, "USB-C 3's drop (past U6) straight down to its turn"
     return {n: (c, [(c[0][0], HY + 8.0)] + c[1:]) for n, c in cl.items()}
@@ -1730,15 +1733,26 @@ def board() -> Board:
                         (net, "F.Cu", 0.127, [r12, (r12[0], r12[1] - 0.55), (cx - 2.25, r12[1] - 0.55),
                                               (cx - 2.25, LSF_Y + 1.1875)])]
         hand_vias.append((net, *via, 0.5, 0.3))
-    # Ports 1–3's RESET_N likewise, drawn into its ESD's (U109–U309) pin 5 from below (the router joined it between
-    # pins 5 and 6 on port 2): header pin 11 up on B.Cu, east of pin 12 and under the pairs' trunk, a via under pin 5,
-    # then pin 5, pin 6 and the 1k R(k+7) in a line (port 4's ESD stands elsewhere: the router's is right)
+    # Ports 1–3's RESET_N likewise, drawn into its ESD's (U109–U309) pin 5 (the router joined it between pins 5 and
+    # 6 on port 2): header pin 11 up on B.Cu, east of pin 12 and under the pairs' trunk, to a via east of pin 5 (not
+    # under it: 0.75 mm off port 1's lane, the Sensitive class), then pin 5, pin 6 and the 1k R(k+7) in a line (port
+    # 4's ESD stands elsewhere: the router's is right)
     for cx in HDRS[:3]:
         net = f"PORT{HDRS.index(cx) + 1}_RST_N"
         p5, p6, r7 = (cx + 7.0, 37.2 + 0.4375), (cx + 7.0, 37.2 - 0.4375), (cx + 7.0, 35.0 + 0.51)
-        hdr, via = (cx + 6.35, HDR_Y + 1.27), (cx + 7.0, 38.35)
-        hand_tracks += [(net, "B.Cu", 0.127, [hdr, (cx + 7.4, hdr[1] - 1.05), (cx + 7.4, via[1] + 0.4), via]),
+        hdr, via = (cx + 6.35, HDR_Y + 1.27), (cx + 7.75, p5[1])
+        hand_tracks += [(net, "B.Cu", 0.127, [hdr, (cx + 7.4, hdr[1] - 1.05), (cx + 7.4, via[1] + 0.35), via]),
                         (net, "F.Cu", 0.127, [via, p5]), (net, "F.Cu", 0.127, [p5, p6, r7])]
+        hand_vias.append((net, *via, 0.5, 0.3))
+    # and BOOT_N: header pin 12 up on B.Cu to a via west of the ESD's pin 1 (0.75 mm off port 1's lane), on F.Cu
+    # under pin 1 (no connect) into pin 2 from below, pin 9 and the 1k R(k+8): flow-through as RESET_N
+    for cx in HDRS[:3]:
+        net = f"PORT{HDRS.index(cx) + 1}_BOOT_N"
+        p2, p9, r8 = (cx + 5.5, 37.2 + 0.4375), (cx + 5.5, 37.2 - 0.4375), (cx + 5.5, 35.0 + 0.51)
+        hdr, via = (cx + 6.35, HDR_Y - 1.27), (cx + 4.5, 38.15)
+        hand_tracks += [(net, "B.Cu", 0.127, [hdr, (cx + 6.35, 40.3), (cx + 4.5, 38.45), via]),
+                        (net, "F.Cu", 0.127, [via, (cx + 5.35, via[1]), (cx + 5.5, via[1] - 0.15), p2]),
+                        (net, "F.Cu", 0.127, [p2, p9, r8])]
         hand_vias.append((net, *via, 0.5, 0.3))
     # the hub's south VDD33 pin 5 takes its via inwards, under its body (between the pads and the UP pair): its
     # automatic fan-out via sat right below the row, between the downstream pairs, and boxed port 2's D− in
@@ -1943,8 +1957,9 @@ USB_W = 0.15 if LAYERS == 6 else 0.25
 # (MIN_WIDTH_EXCEPT: the hub's 0.5 mm and the co-processor's 0.4 mm pins, whose lines neck down at the pads; the
 # hub's pin 10 to C16, 0.2 mm between two pairs; the core regulator's +1V1 sense line, 0.15 mm on purpose; the
 # matrix's ±5 V, a few mA, necked by the router between the crosspoints' and the LSF0108s' pins); and the
-# board's enables, faults and resets (the Sensitive class) kept 3 × the USB lines' width off them, against a coupled
-# spike that would switch a port off or reset the hub, an expander, the crosspoints or the co-processor
+# board's enables, faults, resets, boot lines and selects (the Sensitive class) kept 3 × the USB lines' width off
+# them, against a coupled spike that would switch a port off, reset or boot a DUT, reset the hub, an expander, the
+# crosspoints or the co-processor, or latch a crosspoint (its STB) or the co-processor's flash (its QSPI SS)
 MIN_WIDTH_EXCEPT = {"courtyards": ["U1", "U11", "C16"], "nets": ["+1V1", "+5V_MX", "-5V"],
                     "why": "in the hub's and the co-processor's fan-out, and the matrix's few-mA ±5 V"}
 # X4: KiCad names a sheet's local nets "/Port n/PORTn_…": the patterns need their leading "*"
@@ -1970,7 +1985,9 @@ NETCLASSES = [
     {"name": "Sensitive", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 6,
-     "_patterns": ["*PORT?_EN", "*PORT?_FLT_N", "*HUB_RST_N", "*BUCK_EN", "*EXP?_RST_N", "*MX_RST", "*CP_RUN"]},
+     "_patterns": ["*PORT?_EN", "*PORT?_FLT_N", "*HUB_RST_N", "*BUCK_EN", "*EXP?_RST_N", "*MX_RST", "*CP_RUN",
+                   "*PORT?_RST_IO", "*PORT?_BOOT_IO", "*PORT?_RST_N", "*PORT?_BOOT_N", "*CP_BOOT_N", "*CP_QSPI_SS",
+                   "*MX_STB?"]},
     # ≈ 90 Ω differential on the outer layers: over 0.1 mm of 3313 prepreg on 6 layers, 0.2 mm of 7628 on 4
     {"name": "USB", "clearance": 0.127, "track_width": USB_W, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": USB_W, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,

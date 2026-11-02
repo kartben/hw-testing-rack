@@ -456,6 +456,34 @@
         "pattern": "*CP_RUN"
       },
       {
+        "netclass": "Sensitive",
+        "pattern": "*PORT?_RST_IO"
+      },
+      {
+        "netclass": "Sensitive",
+        "pattern": "*PORT?_BOOT_IO"
+      },
+      {
+        "netclass": "Sensitive",
+        "pattern": "*PORT?_RST_N"
+      },
+      {
+        "netclass": "Sensitive",
+        "pattern": "*PORT?_BOOT_N"
+      },
+      {
+        "netclass": "Sensitive",
+        "pattern": "*CP_BOOT_N"
+      },
+      {
+        "netclass": "Sensitive",
+        "pattern": "*CP_QSPI_SS"
+      },
+      {
+        "netclass": "Sensitive",
+        "pattern": "*MX_STB?"
+      },
+      {
         "netclass": "USB",
         "pattern": "*_DP"
       },
