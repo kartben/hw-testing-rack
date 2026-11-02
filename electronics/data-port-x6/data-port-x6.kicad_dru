@@ -25,6 +25,11 @@
 	(layer "?.Silkscreen")
 	(constraint text_thickness (min 0.15mm)))
 
+(rule "USB pairs and crystal lines: no corner sharper than 45 degrees"
+	(severity error)
+	(condition "A.Type == 'Track' && (A.hasNetclass('USB') || A.NetName == '/Hub/XI' || A.NetName == '/Hub/XO')")
+	(constraint track_angle (min 134)))
+
 (rule "power pins connect solid"
 	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '+3V3' || A.NetName == '+5V_A' || A.NetName == '+5V_B' || A.NetName == '/Port 1/PORT1_5V_SW' || A.NetName == '/Port 1/PORT1_VBUS' || A.NetName == '/Port 2/PORT2_5V_SW' || A.NetName == '/Port 2/PORT2_VBUS' || A.NetName == '/Port 3/PORT3_5V_SW' || A.NetName == '/Port 3/PORT3_VBUS' || A.NetName == '/Port 4/PORT4_5V_SW' || A.NetName == '/Port 4/PORT4_VBUS' || A.NetName == '/Port 5/PORT5_5V_SW' || A.NetName == '/Port 5/PORT5_VBUS' || A.NetName == '/Port 6/PORT6_5V_SW' || A.NetName == '/Port 6/PORT6_VBUS' || A.NetName == 'GND' || A.NetName == 'VIN') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
 	(constraint zone_connection solid))

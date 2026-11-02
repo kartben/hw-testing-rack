@@ -140,6 +140,14 @@ XTAL_RULE = """
 	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Hub/XI' && A.NetName != '/Hub/XO' && A.NetName != 'GND' && (A.intersectsCourtyard('Y1') || A.intersectsCourtyard('C4') || A.intersectsCourtyard('C5') || A.intersectsCourtyard('R10'))")
 	(constraint disallow track via))
 """
+# the layout review (2026-11-01): no corner sharper than 45° on the USB pairs and the crystal's lines, as the v2's
+# (KiCad takes the minimum in whole degrees, and a drawn 45° turn measures 134.9999°: hence 134)
+ANGLE_RULE = """
+(rule "USB pairs and crystal lines: no corner sharper than 45 degrees"
+	(severity error)
+	(condition "A.Type == 'Track' && (A.hasNetclass('USB') || A.NetName == '/Hub/XI' || A.NetName == '/Hub/XO')")
+	(constraint track_angle (min 134)))
+"""
 
 # The layout review's checks as rules (2026-11-01), generated from NETCLASSES (electronics/tools/netrules.py): the
 # supplies' widths (Supply, Power, Port: "_min_width"), the hub's fine-pitch fan-out aside (MIN_WIDTH_EXCEPT: its
@@ -756,10 +764,13 @@ def conn_pairs():
         a9, a7, a6, a4 = (c(-USBC_COL, d) for d in (-1.25, -0.25, 0.25, 1.25))
         b4, b6, b7, b9 = (c(USBC_COL, d) for d in (-1.25, -0.25, 0.25, 1.25))
         v1, vn, vs = (ex + 2.15, e1[1]), c(-2.35, -0.3), c(0.0, 0.6)       # D−'s vias: by its pin, by A7, between
+        # USB-C 1's v1 sits 1.2 mm west of vn (the others' 4.6): straight, D− would turn 67° there (ANGLE_RULE);
+        # one more bend splits it into two of 43°
+        under = [v1, (v1[0] + 0.45, v1[1] - 0.95), vn, vs] if n == 1 else [v1, vn, vs]
         tracks += [(p + "CONN_DP", "F.Cu", USB_W, [e3, (dx0, e3[1]), (dx0 + 1.2, a6[1]), a6]),
                    (p + "CONN_DP", "F.Cu", USB_W, [a6, c(-0.4, 0.25), c(0.4, -0.25), b6]),
                    (p + "CONN_DN", "F.Cu", USB_W, [e1, v1]),
-                   (p + "CONN_DN", "B.Cu", USB_W, [v1, vn, vs]),
+                   (p + "CONN_DN", "B.Cu", USB_W, under),
                    (p + "CONN_DN", "F.Cu", USB_W, [vn, a7]),
                    (p + "CONN_DN", "F.Cu", USB_W, [vs, c(0.4, 0.25), b7]),
                    (p + "VBUS", "F.Cu", 0.3, [a9, b4]), (p + "VBUS", "F.Cu", 0.3, [a4, b9])]
@@ -967,7 +978,8 @@ def board() -> Board:
         "skew": {"tol": 1.0, "links": {"UP": (("UP_DP",), ("UP_DN",)),
                                        **{f"PORT{n}": ((f"PORT{n}_DP", f"PORT{n}_CONN_DP"),
                                                        (f"PORT{n}_DN", f"PORT{n}_CONN_DN")) for n in range(1, 7)}},
-                 "loose": {"PORT1": (4.05, "as routed 2026-11-02, not compensated yet"),
+                 "loose": {"PORT1": (4.15, "as routed 2026-11-02 (+0.13 mm with D−'s bend for ANGLE_RULE), "
+                                     "not compensated yet"),
                            **{f"PORT{n}": (2.95, "as routed 2026-11-02, not compensated yet") for n in range(2, 7)}}},
         "zones": [{"layer": "In1.Cu", "net": "GND"},
                   # the three areas 0.2 mm apart along their splits, under the planes' clearance: one of each pair
@@ -988,7 +1000,7 @@ def board() -> Board:
                    "pairs: 0.17 mm to each",
             "C16": "U1 pin 10's via under the case, beyond the pin; none fits past C16's pad between USB-C 5 and "
                    "6's pairs: 0.17 mm to each"},
-        "dru": XTAL_RULE + SILK_RULE,
+        "dru": XTAL_RULE + SILK_RULE + ANGLE_RULE,
         "min_width_except": MIN_WIDTH_EXCEPT,
         "keepouts": CRADLE_KEEPOUTS + [
             # the crystal's block (dropped once routed), as the v2's
