@@ -1,10 +1,13 @@
-"""The USB pairs' skew, from the .kicad_pcb text alone (no pcbnew: it runs in CI).
+"""The USB links' skew, from the .kicad_pcb text alone (no pcbnew: it runs in CI).
 
-A board lists its High-Speed pairs in design.py, b.pcb["match"] = {"tol": mm, "pairs": [(P net, N net), …]}: the
-two lines of each must run the same length within `tol` (tracks only; a via joins the two faces at the same
-place on both lines).  tools/tests/test_pair_skew.py checks every board that lists them.
+A link is what the signal sees from one chip's pin to the far pin: the hub's pair on to its USBLC6, then the ESD's
+crossover on to the receptacle, one line a side made of several nets.  A board lists its High-Speed links in
+design.py, b.pcb["skew"] = {"tol": mm, "links": {name: ((P nets…), (N nets…)), …}, "loose": {name: (mm, why)}}:
+the two sides of each run the same length within `tol` (tracks only; a via joins the two faces at the same place
+on both lines), or within its own figure where "loose" gives one, with its reason.
+tools/tests/test_pair_skew.py checks every board that lists them.
 
-    python skew.py BOARD.kicad_pcb P,N [P,N …]      → one line per pair: its lines' lengths and their skew
+    python skew.py BOARD.kicad_pcb P[+P…],N[+N…] …      → one line per link: its sides' lengths and their skew
 """
 from __future__ import annotations
 
@@ -24,12 +27,18 @@ def lengths(path) -> dict[str, float]:
     return out
 
 
-def skews(path, pairs) -> list[tuple[str, str, float, float]]:
-    """(P net, N net, P length, N length) for each pair; a net with no track has length 0."""
+def skews(path, links) -> list[tuple[str, float, float, list[str]]]:
+    """(name, P side's length, N side's length, nets with no track) for each link ({name: (P nets, N nets)})."""
     got = lengths(path)
-    return [(p, n, got.get(_net_of(p), 0.0), got.get(_net_of(n), 0.0)) for p, n in pairs]
+    out = []
+    for name, (ps, ns) in links.items():
+        missing = [x for x in (*ps, *ns) if not got.get(_net_of(x))]
+        out.append((name, sum(got.get(_net_of(x), 0.0) for x in ps), sum(got.get(_net_of(x), 0.0) for x in ns),
+                    missing))
+    return out
 
 
 if __name__ == "__main__":
-    for p, n, lp, ln in skews(Path(sys.argv[1]), [a.split(",") for a in sys.argv[2:]]):
-        print(f"{p:24s} {lp:8.3f}  {n:24s} {ln:8.3f}  skew {lp - ln:+.3f} mm")
+    spec = {a: tuple(tuple(s.split("+")) for s in a.split(",")) for a in sys.argv[2:]}
+    for name, lp, ln, missing in skews(Path(sys.argv[1]), spec):
+        print(f"{name:40s} {lp:8.3f} {ln:8.3f}  skew {lp - ln:+.3f} mm{'  no track: ' + ' '.join(missing) if missing else ''}")

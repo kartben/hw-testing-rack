@@ -961,6 +961,13 @@ def board() -> Board:
             **{f"C{k + 4}": f"U{k + 3}.5" for k in range(100, 700, 100)}},            # its USBLC6's VBUS
         "stitch": 4.0,
         "edge_fence": {"pitch": 5.0, "inset": 0.9},
+        # each High-Speed link, chip pin to far pin (tools/tests/test_pair_skew.py): the upstream pair within 1 mm;
+        # the ports' links not compensated yet (D− 2.9–4.0 mm longer), held where they stand until they are
+        "skew": {"tol": 1.0, "links": {"UP": (("UP_DP",), ("UP_DN",)),
+                                       **{f"PORT{n}": ((f"PORT{n}_DP", f"PORT{n}_CONN_DP"),
+                                                       (f"PORT{n}_DN", f"PORT{n}_CONN_DN")) for n in range(1, 7)}},
+                 "loose": {"PORT1": (4.05, "as routed 2026-11-02, not compensated yet"),
+                           **{f"PORT{n}": (2.95, "as routed 2026-11-02, not compensated yet") for n in range(2, 7)}}},
         "zones": [{"layer": "In1.Cu", "net": "GND"},
                   {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "poly": IN_3V3},
                   {"layer": pwr, "net": "+5V_A", "name": "pwr-5va", "poly": IN_5VA},

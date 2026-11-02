@@ -402,16 +402,16 @@ def offset(poly, d):
     return out
 
 
-def bumps(poly, seg, n, h, top=0.15, gap=0.15):
-    """n bumps h mm deep on the polyline's segment `seg`, centred on it, towards offset()'s side (away from the pair's
-    other line), their flanks at 45° (ANGLE_RULE), `top` mm across and `gap` mm apart: each adds (2√2 − 2) h mm of
-    length to the shorter line of a pair."""
+def bumps(poly, seg, n, h, top=0.15, gap=0.15, tail=None):
+    """n bumps h mm deep on the polyline's segment `seg`, centred on it (or ending `tail` mm before its end),
+    towards offset()'s side (away from the pair's other line), their flanks at 45° (ANGLE_RULE), `top` mm across and
+    `gap` mm apart: each adds (2√2 − 2) h mm of length to the shorter line of a pair."""
     (ax, ay), (bx, by) = poly[seg], poly[seg + 1]
     L = math.dist((ax, ay), (bx, by))
     ux, uy = (bx - ax) / L, (by - ay) / L
     span = n * (2 * h + top) + (n - 1) * gap
     assert span < L - 0.1, (span, L)
-    s, pts = (L - span) / 2, []
+    s, pts = (L - span) / 2 if tail is None else L - span - tail, []
     for _ in range(n):
         for d, o in ((0, 0), (h, h), (h + top, h), (2 * h + top, 0)):
             pts.append((round(ax + ux * (s + d) - uy * o, 4), round(ay + uy * (s + d) + ux * o, 4)))
@@ -1167,6 +1167,9 @@ def coproc_sheet(b: Board):
 # ---------------------------------------------------------------------------------------------- the USB pairs
 HS_PIN = {1: 1, 2: 3, 3: 6, 4: 8}                     # each port's D− pin, on the hub's south row
 HS_BAND = 0.45      # each pair's band: 0.45 mm past its lines' outer edges (3 × their 0.15 mm gap)
+# the depth of the 45° bump on each port's D− (hs_lines()): as deep as ports 1–2's drop allows; port 3's 1 mm, under
+# SCL's via by U6 (its drop's west side holds SCL's drawn line)
+LINK_BUMP = {1: 1.3, 2: 1.3, 3: 1.0, 4: 1.3}
 
 
 def hs_centrelines():
@@ -1205,9 +1208,17 @@ def hs_pairs():
     (offset(), D− on its right-hand side), USB_W lines 0.15 mm apart (≈ 90 Ω: the USB netclass); they leave the
     hub's pins at its 0.5 mm pitch and close up, ports 2 and 3 each 25 µm out from their pins' centre (C15, pin 5's
     100 nF, fits between them), and open out at 45° round pin 5 to the USBLC6's pins 6 and 4, both alike.  No
-    length-matching bumps (the layout review: on USB they make it worse): D− ends 0.5–0.7 mm short of D+ (and the
-    USBLC6 to the receptacle 1 mm more, conn_pairs()).  Returns the tracks."""
-    tracks = []
+    length-matching bumps (the layout review: on USB they make it worse) but one: D− ends 0.5–0.7 mm short of D+,
+    and the USBLC6's crossover to the receptacle 1 mm more (conn_pairs()), so each link (hub pin to receptacle pin) is
+    made up by one 45° bump, LINK_BUMP deep, on D−'s last run down to its USBLC6, 0.12 mm before its end (1.08 mm,
+    port 3's 0.83: each link within 1 mm, tools/tests/test_pair_skew.py).  Returns the tracks."""
+    return [t for n, (dn, dp, _) in hs_lines().items()
+            for t in ((f"PORT{n}_DN", "F.Cu", USB_W, dn), (f"PORT{n}_DP", "F.Cu", USB_W, dp))]
+
+
+def hs_lines():
+    """{n: (D− line, D+ line, D−'s bump: its four corners)} for hs_pairs()."""
+    out = {}
     hp = (USB_W + 0.15) / 2
     for n, (c, _) in hs_centrelines().items():
         px = HX - 3.5 + 0.5 * (HS_PIN[n] - 1)                       # its two pins' centre
@@ -1218,8 +1229,11 @@ def hs_pairs():
         # no point within 0.1 mm of the last one kept (a sliver otherwise)
         dn, dp = ([q for i, q in enumerate(pts) if i in (0, len(pts) - 1) or math.dist(q, pts[i - 1]) >= 0.1]
                   for pts in (dn, dp))
-        tracks += [(f"PORT{n}_DN", "F.Cu", USB_W, dn), (f"PORT{n}_DP", "F.Cu", USB_W, dp)]
-    return tracks
+        k = max(i for i in range(len(dn) - 1) if abs(dn[i][0] - dn[i + 1][0]) < 1e-6        # D−'s last run down
+                and abs(dn[i][1] - dn[i + 1][1]) > 2 * LINK_BUMP[n] + 0.35)
+        dn = bumps(dn, k, 1, LINK_BUMP[n], tail=0.12)
+        out[n] = (dn, dp, dn[k + 1:k + 5])
+    return out
 
 
 def conn_pairs():
@@ -1802,6 +1816,11 @@ def board() -> Board:
         "edge_fence": {"pitch": 5.0, "inset": 0.9},
         "match": {"tol": 1.0, "pairs": [("UP_DP", "UP_DN"), *((f"PORT{n}_DP", f"PORT{n}_DN") for n in range(1, 5)),
                                         *((f"PORT{n}_CONN_DP", f"PORT{n}_CONN_DN") for n in range(1, 5))]},
+        # each High-Speed link as the signal sees it, chip pin to far pin, within 1 mm (tools/tests/test_pair_skew.py):
+        # the hub's upstream pair; each port's hub pair on through its USBLC6 to the receptacle
+        "skew": {"tol": 1.0, "links": {"UP": (("UP_DP",), ("UP_DN",)),
+                                       **{f"PORT{n}": ((f"PORT{n}_DP", f"PORT{n}_CONN_DP"),
+                                                       (f"PORT{n}_DN", f"PORT{n}_CONN_DN")) for n in range(1, 5)}}},
         "zones": [
             {"layer": "In1.Cu", "net": "GND"},
             # +3V3 over +5V: their outlines 0.2 mm apart, under the planes' clearance, so one pulls back 0.1 mm
@@ -1886,6 +1905,11 @@ def board() -> Board:
             *({"name": f"core:usb{n}", "layers": ["F.Cu"], "tracks_only": True,
                "poly": offset(band, bw) + offset(band, -bw)[::-1]}
               for bw in [(USB_W + 0.15) / 2 + USB_W / 2 + HS_BAND] for n, (_, band) in sorted(hs_centrelines().items())),
+            # and round each D−'s bump, which leaves the pair's band
+            *({"name": f"core:usb{n}b", "layers": ["F.Cu"], "tracks_only": True,
+               "poly": [(min(x for x, _ in bp) - d, bp[0][1] - d), (bp[0][0], bp[0][1] - d),
+                        (bp[0][0], bp[-1][1] + d), (min(x for x, _ in bp) - d, bp[-1][1] + d)]}
+              for d in [USB_W / 2 + HS_BAND] for n, (_, _, bp) in sorted(hs_lines().items())),
             # no via round the SWD header's hand-soldered pins (a GND stitching via landed 0.4 mm from pin 1's pad):
             # a bridge on the rear face would ground SWCLK
             {"name": "swd-hdr", "layers": ["F.Cu", "B.Cu"], "vias_only": True,
