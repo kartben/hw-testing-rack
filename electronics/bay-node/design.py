@@ -48,6 +48,7 @@ sys.path.insert(0, str(HERE.parents[1] / "tools"))
 
 from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
+from silk import title_block  # noqa: E402
 
 import rackcfg  # noqa: E402
 
@@ -422,7 +423,6 @@ def board() -> Board:
             {"name": "antenna", "poly": [(8.0, -0.1), (56.0, -0.1), (56.0, 6.0), (8.0, 6.0)]},
         ],
         "texts": [{**t, "thickness": max(SILK_TEXT, 0.15 * t["size"])} for t in [
-            {"text": "hw-testing-rack · bay node v0.5", "x": 32, "y": 56, "size": 0.8, "layer": "B.SilkS"},
             # the test pads' names, bottom side: the supply row (TP5–TP10) and the UART block (TP1–TP4)
             *({"text": t, "x": 45.0 + 3 * i, "y": 74.2, "size": 0.8, "rot": 90, "layer": "B.SilkS"}
               for i, t in enumerate(("GND", "VIN", "5V", "3V3", "DATA VIN", "CAM 5V"))),
@@ -442,7 +442,12 @@ def board() -> Board:
             {"text": "BOOT", "x": 15.5, "y": 25.4, "size": 0.8},
             *({"text": lab, "x": xy[0] + (off or (0, 0))[0], "y": xy[1] + (off[1] if off else d / 2 + 0.85), "size": 0.8,
                "layer": "B.SilkS"} for _, _, d, xy, _, lab, off in TP_ROUND2),
-        ]],
+        ]] + [
+            # the title block, as on every board (silk.title_block(), its own strokes, not the rule above): in the
+            # rear face's top-left corner as read from below, against the edge and 21 mm down, clear of H2, the
+            # test pads and their names, and by 4 mm the connectors
+            *title_block("BAY NODE v0.5", W - 1, 1 + 21),
+        ],
     }
 
     # ------------------------------------------------------------------ power
