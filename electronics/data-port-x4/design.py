@@ -1395,9 +1395,10 @@ def board() -> Board:
     # the VIN island into the +5V plane, between the VIN pin and C2
     lx, ly = LDO
     hand_vias += [("+3V3", x, y, 0.5, 0.3) for x in (lx - 3.05, lx + 3.05) for y in (ly - 5.1, ly - 3.5, ly - 1.9)]
-    # nine more through the island's west part, which a B.Cu +3V3 area doubles (LDO_WEST): over the In2 +5V band
-    # there, they tie the two faces' copper only
-    hand_vias += [("+3V3", x, y, 0.5, 0.3) for x in (2.5, 3.85, 5.2) for y in (ly - 5.1, ly - 3.5, ly - 1.9)]
+    # three more through the island's west part, which a B.Cu +3V3 area doubles (LDO_WEST): over the In2 +5V band's
+    # edge there, they tie the two faces' copper only.  No more further west: two columns at x 2.5 and 3.85 left the
+    # band 1.3 mm of copper across, under all of the +5V's 3.09 A (2026-11-02)
+    hand_vias += [("+3V3", 5.2, y, 0.5, 0.3) for y in (ly - 5.1, ly - 3.5, ly - 1.9)]
     hand_vias += [("+5V", lx + dx, ly + 4.8, 0.6, 0.3) for dx in (1.9, 3.15)]
     buck_zones, v = buck_copper("BUCK_SW", "+5V", *BUCK, "buck")
     hand_vias += v
@@ -1934,6 +1935,11 @@ def board() -> Board:
             {"name": "swd-hdr", "layers": ["F.Cu", "B.Cu"], "vias_only": True,
              "poly": [(SWD_HDR[0] - 1.6, SWD_HDR[1] - 1.6), (SWD_HDR[0] + 4 * 2.54 + 1.6, SWD_HDR[1] - 1.6),
                       (SWD_HDR[0] + 4 * 2.54 + 1.6, SWD_HDR[1] + 1.6), (SWD_HDR[0] - 1.6, SWD_HDR[1] + 1.6)]},
+            # no via in the +5V band (the tongue's run down the cradle's band, 4 mm wide, all of the +5V's 3.09 A):
+            # a GND stitching via there took 1.1 mm of it at every 4 mm (2026-11-02).  The edge fence's GND vias
+            # (x 0.9) tie the outer pours there; LDO_WEST's vias at x 5.2 stay, on the band's edge
+            {"name": "5v-band", "layers": [pwr], "vias_only": True,
+             "poly": [(1.3, TB), (4.65, TB), (4.65, PWR_SPLIT + 1.5), (1.3, PWR_SPLIT + 1.5)]},
             # the core regulator (the audit's fixes 2 and 3, RP2350 DS §6.3.8.1 and Fig. 27): the router's tracks
             # off the block below the VREG pins (a "core:" area, dropped once routed: +1V1 leaves by its two V_OUT
             # vias, +3V3_CP by VREG_VIN's inner end), up to the V_OUT vias, so USB_DM / USB_DP (pins 66, 67) leave
