@@ -38,7 +38,7 @@ WANTED = [
     # power hub v0.4
     ("C", "10n", "0603", "50V"), ("C", "4.7n", "0603", "50V"), ("R", "680", "0603", ""), ("R", "330", "0603", ""),
     ("R", "56", "0603", ""),
-    # power hub v0.5 (USB-C PD)
+    # power hub v1.0 (USB-C PD)
     ("R", "6.2k", "0603", ""), ("R", "200", "0603", ""), ("R", "39k", "0603", ""), ("R", "27k", "0603", ""),
     ("R", "47k", "0603", ""),
     ("R", "2.2k", "0603", ""),         # the bay node's I2C pull-ups with a DATA board on the bus (pcba-review N2)

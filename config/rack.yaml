@@ -306,7 +306,7 @@ pcb:
     right: { data: 30.0 }   # KiCad Y of J7's centre (DATA, PH 8 side entry on the right edge, pin 1 at the front)
     aux: [69.1, 50.6]       # J5 (AUX, PH 6 side entry on the right edge, pin 1 at the front), its centre, KiCad
     cam: [59.0, 17.2]       # J6, the camera lead (JST PH 8, vertical: plugged from above, at the rear right), its centre, KiCad
-  power_hub:                # v0.5: USB-C PD in (CH224A), eFuses, rack controller (ESP32-S3, CAN master)
+  power_hub:                # v1.0: USB-C PD in (CH224A), eFuses, rack controller (ESP32-S3, CAN master)
     size: [76, 100]         # X × Y; KiCad y=0 is the REAR edge, y=100 the front edge (like the bay node)
     thickness: 1.6
     layers: 4               # as the bay node: In1 solid GND, In2 power only, signals outside

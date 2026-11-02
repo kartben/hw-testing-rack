@@ -4,7 +4,7 @@
 //   openscad -D 'PART="lid"'  -o power_box_lid.stl  parts/power_box.scad
 //   openscad -D 'PART="labels"'     -o power_box_labels.stl     parts/power_box.scad   (optional inlays)
 //
-// Inside: the power hub v0.5 (USB-C PD sink, an eFuse per row, the rack controller: ESP32-S3 / CAN
+// Inside: the power hub v1.0 (USB-C PD sink, an eFuse per row, the rack controller: ESP32-S3 / CAN
 // master) on four standoffs.  Its USB-C PD input looks out of the rear wall: the rack's only
 // supply is a USB PD 3.1 charger outside it, on a 5 A cable, so there is no mains anywhere in the
 // rack.  The hub's 6-pin row connectors reach into cut-outs in the left wall (out through the base
@@ -53,7 +53,7 @@ GX = [for (g = grid_lines(CARRIER_W)) let (x = g - PBOX_X) if (x > SOCKET_PAD[0]
 GY = [for (g = grid_lines(FLOOR_D)) let (y = FLOOR_Y0 + g - BOX_Y0) if (y > SOCKET_PAD[0] / 2 + T && y < D - SOCKET_PAD[0] / 2 - T) y];
 SOCKETS = [for (gx = [GX[0], GX[len(GX) - 1]], gy = [GY[0], GY[len(GY) - 1]]) [gx, gy]];
 
-// ---------------------------------------------------------------- hub v0.5 (pcb.power_hub)
+// ---------------------------------------------------------------- hub v1.0 (pcb.power_hub)
 HUB_FRONT_Y = T + HUB_FRONT_GAP;
 function hub_xy(k) = [HUB_X0 + k[0], HUB_FRONT_Y + (HUB_SIZE[1] - k[1])];   // KiCad -> box
 HUB_TOP = HUB_Z + HUB_T;

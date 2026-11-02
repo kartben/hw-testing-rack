@@ -18,7 +18,7 @@ import silk  # noqa: E402
 from flowthru import _all, _get, parse  # noqa: E402
 
 # The boards that carry the common title block, and their names (the user, 2026-11-02: one style on all four)
-TITLED = {"power-hub": "POWER HUB v0.5", "bay-node": "BAY NODE v0.5", "data-port-x4-v2": "DATA ×4 v2.0",
+TITLED = {"power-hub": "POWER HUB v1.0", "bay-node": "BAY NODE v1.0", "data-port-x4-v2": "DATA ×4 v1.0",
           "data-port-x6": "DATA ×6 v1.0", "camera-pod": "CAM POD v1.0"}
 SCALED = {"camera-pod": silk.POD_TITLE_SCALE}      # the one board whose block is smaller (silk.py says why)
 

@@ -6,7 +6,7 @@
 	(paper "A2")
 	(title_block
 		(title "Power hub — Four eFused row outputs (6-pin JST PH)")
-		(rev "0.5")
+		(rev "1.0")
 		(company "hw-testing-rack")
 		(comment 1 "USB-C PD distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack")
 		(comment 2 "Generated from electronics/power-hub/design.py — edit the Python, then regenerate")

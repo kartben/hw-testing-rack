@@ -3,7 +3,7 @@
 **Goal:** "something I can just plug in."  The rack runs from **one USB-C PD
 charger**, outside the rack, on one cable: no mains anywhere in the printed
 parts.  The cable plugs into the **power box**, a printed box in the base cell
-under A1 that holds the **power hub v0.5**:
+under A1 that holds the **power hub v1.0**:
 
 * a **USB PD 3.2 sink** (WCH CH224A) that asks the charger for 9 V at
   plug-in, then for 20 V when the controller asks over I²C (28 V EPR when the charger offers it, once
@@ -16,16 +16,16 @@ under A1 that holds the **power hub v0.5**:
   rows off until the contract is final;
 * an **eFuse per row** (TPS26600, 1.6 A), off until the controller turns it on.  Four row outputs,
   all fitted since 2026-11-01: a third row is coming (C and D were DNP from 2026-10-23,
-  [electronics.md](electronics.md#power-hub-v05--4-layers-76--100-mm));
+  [electronics.md](electronics.md#power-hub-v10--4-layers-76--100-mm));
 * the **rack controller** (an ESP32-S3, CAN master; see [can.md](can.md) and
-  [electronics.md](electronics.md#power-hub-v05--4-layers-76--100-mm)).  The box is
+  [electronics.md](electronics.md#power-hub-v10--4-layers-76--100-mm)).  The box is
   drawn around its outline and connector positions in `config/rack.yaml` ›
   `pcb.power_hub`.
 
 One 6-pin JST PH feed per row (VRACK, CAN, POS) runs from the box's left wall to
 the row's first node.  Box and lid: [mechanical.md](mechanical.md#power-box).
 
-![The power box, lid off: the hub v0.5, the charger's USB-C cable at the rear, the status LEDs at the front](img/power-box.jpg)
+![The power box, lid off: the hub v1.0, the charger's USB-C cable at the rear, the status LEDs at the front](img/power-box.jpg)
 
 *Lid off, labels inlaid in white.  Left: from the rear, the charger's USB-C cable (PD IN) and the row outputs' windows (A–D).  Right: from the front, the status LEDs (ON / FAULT per row, PD, CTL) and the console USB-C.*
 

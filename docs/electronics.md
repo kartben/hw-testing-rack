@@ -78,7 +78,7 @@ to the LDO input, the DUT switch, the camera fuse and the DUT-side ESD part; the
 between J1 and J2; +3V3 again under the front edge, fed by a B.Cu track) · B.Cu signals + GND
 pour.  No signal is routed on In2.  The board declares JLCPCB's standard
 JLC04161H-7628 build (0.21 mm prepreg between F.Cu and In1, 1.065 mm core, 0.5 oz
-inner copper) and lead-free HASL (since 2026-10-19; ENIG before); the hub v0.5 the same build,
+inner copper) and lead-free HASL (since 2026-10-19; ENIG before); the hub v1.0 the same build,
 lead-free HASL too since its quote (`stackup` / `finish` in `design.py`, written into the board by `pcbgen.py`).  Before routing,
 every GND and supply pin gets a short track to a via of its own on its plane (`fanout_nets` in
 `design.py`, `fanout_pads()` in `pcbgen.py`), locked so Freerouting keeps it: no pin depends on
@@ -149,13 +149,13 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 5. Finally KiCad's own DRC lists the GND pads still unconnected, and each gets
    a short track to a GND via or to a spot where a small via fits.
 
-> **Status: bay node v0.5 — the row cable becomes 6-pin (VRACK 20 / 28 V, CAN, POS:
+> **Status: bay node v1.0 — the row cable becomes 6-pin (VRACK 20 / 28 V, CAN, POS:
 > [can.md](can.md)), CAN transceiver and POS token added, GCT USB4105 receptacles, the bay's camera on
-> J6 (Arducam Mega SPI + LEDs, PH 8) with the WROOM-1-N8R8 module (octal PSRAM; the board 10 mm longer at the rear), autorouted, checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v0.5 —
+> J6 (Arducam Mega SPI + LEDs, PH 8) with the WROOM-1-N8R8 module (octal PSRAM; the board 10 mm longer at the rear), autorouted, checked with Konnect ([review-konnect.md](review-konnect.md)), not yet ordered.  Power hub v1.0 —
 > USB-C PD input (CH224A, no input switch), 4 layers, rows off until the controller enables them, autorouted,
 > checked with Konnect, quoted (2026-10-19, with the AP33772S before), not yet ordered.  Camera pod v1.0 — lead, the camera's header and 3.3 V, the
 > light, autorouted, not yet ordered or quoted.  DATA port v1.0 — the drawer's USB-C port on a
-> 8-wire lead to the node's J7, autorouted, not yet ordered or quoted.  DATA ×4 v1.0 — a converted bay's
+> 8-wire lead to the node's J7, autorouted, not yet ordered or quoted.  DATA ×4, first design — a converted bay's
 > drawer board (hub, four switched and measured USB-C), autorouted, checked with Konnect, not yet ordered
 > or quoted.**  On every board ERC is clean and DRC reports
 > no copper errors, no unconnected items and full schematic parity.  The buck's hot loop, the
@@ -203,7 +203,7 @@ counted as the 1.6 mm they cross).  Moving U4–U8 or the connectors means re-dr
 each terminal, tied to it by net-tie pad groups, so the INA226 reads the resistor and not the load
 copper.
 
-**GPIO map** (v0.5: each signal leaves the module on the edge that faces where it goes): right
+**GPIO map** (since v0.5: each signal leaves the module on the edge that faces where it goes): right
 column IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/IO1 I²C SDA/SCL (the DUT power block
 sits in the rear-right corner) · IO42 POS_OUT towards J2 · IO38 LED; bottom row IO47/IO21 UART1
 TX/RX · IO12 AUX_RST · IO48 AUX_BOOT · IO13 PC_DET · IO14 MUX_FORCE_PC and the camera on SPI2
@@ -307,7 +307,7 @@ lead and a port board like a bay.
   needs one under 5 mm tall ([printed-parts-fdm-review.md](printed-parts-fdm-review.md)), and the
   usual 100 µF / 50 V cans are 8 × 10 or larger.
 
-## Power hub v0.5 — 4 layers, 76 × 100 mm
+## Power hub v1.0 — 4 layers, 76 × 100 mm
 
 One per rack.  It lives in the power box ([mechanical.md](mechanical.md#power-box)); its outline,
 holes, row connectors, front LEDs and rear PD input are set in `config/rack.yaml` ›
@@ -394,7 +394,7 @@ side, no Standard-only part), ≈ $34 for 10 PCBs with 8 assembled (estimate in 
 A review of both boards with the Konnect MCP server (findings, fixes, what is
 still open) is in [review-konnect.md](review-konnect.md).
 
-## DATA ×4 v1.0 — 4 layers, 100 × 37 mm
+## DATA ×4, first design (retired) — 4 layers, 100 × 37 mm
 
 **Retired 2026-10-26:** never ordered; the DATA ×4 v2's base variant does its job, and its folder
 (electronics/data-port-x4) is gone (git history keeps it).  This section stays because the v2 builds on it.
@@ -452,7 +452,11 @@ a LiPo charging takes more than a port's 0.5 A.
 JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $85 for 5 PCBs with 2 assembled
 (estimate in `tools/bom.py`).
 
-## DATA ×4 v2.0 — 100 × 70 mm, standing
+## DATA ×4 v1.0 (data-port-x4-v2) — 100 × 70 mm, standing
+
+Printed and in its KiCad title block as v1.0 (2026-11-02): no DATA ×4 was ever made, so this is the first
+revision built; "v2" stays in its folder and file names and in the text below, where it tells it from
+the first design.
 
 v1 plus virtual wires and a logic analyzer: 32 switchable pins on 8 buses and an RP2354B
 co-processor (the why in [data-x4-v2-research.md](data-x4-v2-research.md), its firmware in

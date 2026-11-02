@@ -602,7 +602,7 @@
     ]
   ],
   "text_variables": {
-    "REV": "2.0"
+    "REV": "1.0"
   },
   "tuning_profiles": {
     "meta": {

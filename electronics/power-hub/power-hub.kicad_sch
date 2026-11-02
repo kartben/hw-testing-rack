@@ -6,7 +6,7 @@
 	(paper "A3")
 	(title_block
 		(title "Power hub — Overview")
-		(rev "0.5")
+		(rev "1.0")
 		(company "hw-testing-rack")
 		(comment 1 "USB-C PD distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack")
 		(comment 2 "Generated from electronics/power-hub/design.py — edit the Python, then regenerate")
@@ -378,7 +378,7 @@
 		)
 		(uuid "f047cd72-8093-5349-881b-317f1ec4702c")
 	)
-	(text_box "Power hub v0.5 — USB-C PD in (CH224A: 9 V, then 20 V or 28 V EPR as the controller asks) = VRACK → 4 × TPS26600 eFuse (1.6 A) → 6-pin JST PH rows A–D.\nRack controller: ESP32-S3-MINI-1 on VBUS, TJA1462AT (CAN master, star bus, both terminations here), POS token per row.\nRows are OFF without firmware: SHDN is pulled low; the controller turns each row on once the PD contract is final."
+	(text_box "Power hub v1.0 — USB-C PD in (CH224A: 9 V, then 20 V or 28 V EPR as the controller asks) = VRACK → 4 × TPS26600 eFuse (1.6 A) → 6-pin JST PH rows A–D.\nRack controller: ESP32-S3-MINI-1 on VBUS, TJA1462AT (CAN master, star bus, both terminations here), POS token per row.\nRows are OFF without firmware: SHDN is pulled low; the controller turns each row on once the PD contract is final."
 		(exclude_from_sim no)
 		(at 30 148.59 0)
 		(size 360 12.7)

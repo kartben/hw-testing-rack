@@ -7,7 +7,7 @@ and runs the rack bus
 (CAN) that finds every bay node and tells it where it sits.
 
 > **Status:** builds against Zephyr main (pinned in [`west.yml`](../west.yml));
-> **not yet run on hardware** — no hub v0.5 has been assembled.  The rack
+> **not yet run on hardware** — no hub v1.0 has been assembled.  The rack
 > bus protocol runs in a simulated rack on native_sim
 > ([`common/tests/rack_bus`](../common/tests/rack_bus/)).  See
 > [open items](#open-items).

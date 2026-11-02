@@ -1,7 +1,7 @@
 # Rack bus (CAN)
 
-> **Status: decided.**  The power hub v0.5 (USB-C PD in, rack controller, CAN master) is
-> laid out and routed (`electronics/power-hub`); so is the bay node v0.5 (`electronics/bay-node`:
+> **Status: decided.**  The power hub v1.0 (USB-C PD in, rack controller, CAN master) is
+> laid out and routed (`electronics/power-hub`); so is the bay node v1.0 (`electronics/bay-node`:
 > 6-pin J1/J2, TJA1462AT + PESD2CAN on the pair, POS in and out).  Both firmwares speak the
 > rack bus ([rack-protocol.md](rack-protocol.md)): the hub as the master
 > (`firmware/power-hub`), each node as a client (`firmware/bay-node/src/rack.c`); tested on a

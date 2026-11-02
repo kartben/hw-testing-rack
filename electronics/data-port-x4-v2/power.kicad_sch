@@ -6,7 +6,7 @@
 	(paper "A2")
 	(title_block
 		(title "DATA ×4 v2 — 20 V input, the 5 V converter")
-		(rev "2.0")
+		(rev "1.0")
 		(company "hw-testing-rack")
 		(comment 1 "A converted bay's drawer board: four USB-C behind a hub, 32 switchable pins on 8 buses, a logic analyzer (hw-testing-rack)")
 		(comment 2 "Generated from electronics/data-port-x4-v2/design.py — edit the Python, then regenerate")

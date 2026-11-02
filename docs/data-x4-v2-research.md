@@ -5,7 +5,7 @@ between the four boards of a converted bay, switched from the web UI, for a buil
 web UI, sized "to the maximum we can handle", then for a co-processor ("pourquoi pas de coprocessor ?")
 and for an assembly variant without the analyzer.  The illustrated version (UI mock, to-scale placement,
 tables) is the page [Fils virtuels et analyseur](https://claude.ai/artifact/DeudMxKuwkSjVR6naQZj55)
-(French, private to the owner).  v1 ([electronics.md](electronics.md), "DATA ×4 v1.0") is the base: v2
+(French, private to the owner).  v1 ([electronics.md](electronics.md), "DATA ×4, first design") is the base: v2
 only adds to it.
 
 ## Proposal

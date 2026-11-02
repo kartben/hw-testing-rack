@@ -1,5 +1,5 @@
 /*
- * hw-testing-rack power hub v0.5: ESP32-S3-MINI-1-N8 (8 MB flash, no PSRAM),
+ * hw-testing-rack power hub v1.0: ESP32-S3-MINI-1-N8 (8 MB flash, no PSRAM),
  * the rack controller: USB-C PD sink, four eFused rows, the rack bus master.
  *
  * SPDX-License-Identifier: Apache-2.0

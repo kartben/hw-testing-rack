@@ -234,7 +234,7 @@ CAT = {
                   description="dual Schottky in series: clamps a line to GND and +3V3"),
     "hdr2x8": Cat("Connector_Generic:Conn_02x08_Odd_Even", "Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical",
                   "2x8 pin header 2.54 mm", "generic", "", 0.10, description="control header (DNP by default)"),
-    # power hub v0.5: USB-C PD input.  The CH224A (WCH) since 2026-10-19: the AP33772S had no stock anywhere
+    # power hub v1.0: USB-C PD input.  The CH224A (WCH) since 2026-10-19: the AP33772S had no stock anywhere
     # (Global Sourcing only).  PD 3.2 sink, EPR 28 V, I2C at 0x22, single-byte transfers (status, request; the
     # source's PDOs at 0x60-0x8F, which V2.1's Table 5-3 lists for both parts, readable under 100 W: to check);
     # KiCad's CH224K symbol and footprint (the CH224A has its pinout, WCH; its pin 1 is VHV, rated 32 V).

@@ -203,7 +203,7 @@ SILK_RULE = f"""
 
 
 def board() -> Board:
-    b = Board("bay-node", "Bay node", "0.5",
+    b = Board("bay-node", "Bay node", "1.0",
               comments=["ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf",
                         "Generated from electronics/bay-node/design.py — edit the Python, then regenerate",
                         "Row bus 20–28 V + CAN + POS in/out · 20–28 V/1.76 A eFused supply on the DATA lead · USB 2.0 muxes · INA226 · AUX"])
@@ -447,7 +447,7 @@ def board() -> Board:
             # rear face's top-right corner as read from below, against the rear edge and 5.25 mm in: clear of H1's
             # screw head (its courtyard + 0.5 mm), 1 mm of other silk, 0.3 mm of pads and holes, 4 mm of the
             # connectors (silkair.py)
-            *title_block("BAY NODE v0.5", 1 + 5.25 + LOGO_W, 1),
+            *title_block("BAY NODE v1.0", 1 + 5.25 + LOGO_W, 1),
         ],
     }
 

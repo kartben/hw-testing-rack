@@ -103,7 +103,7 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 ## Power budget
 
 > Node rev A: the DATA ×4 on the node's DUT_5V, as designed until 2026-11-01 (v1.0,
-> [electronics.md](electronics.md#data-4-v10--4-layers-100--37-mm), retired unbuilt; then the v2,
+> [electronics.md](electronics.md#data-4-first-design-retired--4-layers-100--37-mm), retired unbuilt; then the v2,
 > before it made its own 5 V from VIN).  No board takes DUT_5V any more; the firmware keeps the path.
 >
 > From node rev B the lead carries VIN (20–28 V) through a TPS26600 eFuse instead of DUT_5V, and the
@@ -131,7 +131,7 @@ one-port node answers `/api/ports` with its one DUT as port 1.
 > **What that guarantees on rev B, with the DATA ×4 v2:** the board draws ≈ 0.4 A at 5 V with four
 > High-Speed ports busy, ≈ 0.53 A at worst (0.51 A through U3, the 3.3 V LDO that feeds the hub, the
 > co-processor, the expanders and the INA226s, plus the matrix and the four port LEDs:
-> [electronics.md](electronics.md#data-4-v20--100--70-mm-standing)).  That is 2.3–3.0 W of the 5.4 W
+> [electronics.md](electronics.md#data-4-v10-data-port-x4-v2--100--70-mm-standing)).  That is 2.3–3.0 W of the 5.4 W
 > grant, and the ports share the rest, 0.55–0.42 A at 5 V.  **One port at its full 500 mA** only with
 > the board at its typical draw (2.3 + 2.8 W); **four ports at ≲ 105 mA each** with it at its worst
 > (≲ 135 mA typical).  A bay with a camera gets 2.5 W less (`CONFIG_HUB_CAMERA_OWN_MW`): 2.9 W, under

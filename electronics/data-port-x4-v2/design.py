@@ -1,4 +1,4 @@
-"""DATA ×4 v2.0 — the analyzer bays' drawer board, v1 plus virtual wires and a logic analyzer.
+"""DATA ×4 v1.0 (data-port-x4-v2) — the analyzer bays' drawer board, v1 plus virtual wires and a logic analyzer.
 
 docs/data-x4-v2-research.md is the why; electronics.md › "DATA ×4 v2" the what.  v1 (electronics/
 data-port-x4) stays the board of the other converted bays (decided 2026-10-20).  v2 keeps everything v1
@@ -1307,13 +1307,13 @@ def logic_only(b: Board) -> list[str]:
 
 
 def board() -> Board:
-    b = Board("data-port-x4-v2", "DATA ×4 v2", "2.0",
+    b = Board("data-port-x4-v2", "DATA ×4 v2", "1.0",
               comments=["A converted bay's drawer board: four USB-C behind a hub, 32 switchable pins on 8 buses, "
                         "a logic analyzer (hw-testing-rack)",
                         "Generated from electronics/data-port-x4-v2/design.py — edit the Python, then regenerate"])
     b.root_paper, b.root_buses = "A2", True
     b.root_notes = [
-        "DATA ×4 v2.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226",
+        "DATA ×4 v1.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226",
         "  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an LMR51635 5 V from the lead's 20 V, an AP2114H 3.3 V;",
         "  the PH 8 lead from the node's J7.",
         "Pins: 32 on two CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 5, a TCA9534A for",
@@ -2000,7 +2000,7 @@ def board() -> Board:
             # rear face's top-right corner as read from below, slid 17 mm in and 19 mm down: the nearest spot 1 mm
             # clear of other silk (LOGIC ONLY, STB1), 0.3 mm of pads and holes, 4 mm of the connectors (J2, the
             # headers; silkair.py); this board has no free edge for it
-            *title_block("DATA ×4 v2.0", 1 + 17 + LOGO_W, 1 + 19),
+            *title_block("DATA ×4 v1.0", 1 + 17 + LOGO_W, 1 + 19),
             # each USB-C's port number (silk.port_mark(), as the DATA ×6's; its own stroke, not the rule above),
             # left of its body: the band over the receptacles holds the headers and the clusters, so this one
             # shows on the bench, not over the wall (the silkscreen plan, 2026-11-02)

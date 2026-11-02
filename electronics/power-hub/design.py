@@ -1,4 +1,4 @@
-"""Power hub v0.5 — one per rack, in the power box under A1 (mechanical/parts/power_box.scad).
+"""Power hub v1.0 — one per rack, in the power box under A1 (mechanical/parts/power_box.scad).
 
 USB-C PD in, from a dedicated USB PD charger (100 W at 20 V by default, 140 W EPR at 28 V as an option)
 on a 5 A e-marked cable.
@@ -125,11 +125,11 @@ SILK_RULE = f"""
 
 
 def board() -> Board:
-    b = Board("power-hub", "Power hub", "0.5",
+    b = Board("power-hub", "Power hub", "1.0",
               comments=["USB-C PD distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack",
                         "Generated from electronics/power-hub/design.py — edit the Python, then regenerate"])
     b.root_notes = [
-        "Power hub v0.5 — USB-C PD in (CH224A: 9 V, then 20 V or 28 V EPR as the controller asks) = VRACK → 4 × TPS26600 "
+        "Power hub v1.0 — USB-C PD in (CH224A: 9 V, then 20 V or 28 V EPR as the controller asks) = VRACK → 4 × TPS26600 "
         "eFuse (1.6 A) → 6-pin JST PH rows A–D.",
         "Rack controller: ESP32-S3-MINI-1 on VBUS, TJA1462AT (CAN master, star bus, both "
         "terminations here), POS token per row.",
@@ -317,7 +317,7 @@ def board() -> Board:
             # the side edge, centred in the band between the front edge and FLT A / IMON A (y 81.05–88.65 keep the
             # air): 1 mm clear of other silk, 0.3 mm of pads and holes, 4 mm of the connectors, and clear of H3's
             # and H4's screw heads (silkair.py)
-            *title_block("POWER HUB v0.5", W - 1 - 14, 84.85),
+            *title_block("POWER HUB v1.0", W - 1 - 14, 84.85),
         ],
     }
 
