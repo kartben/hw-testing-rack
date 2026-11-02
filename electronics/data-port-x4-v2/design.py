@@ -237,7 +237,7 @@ def xtal_block():
               ("XI", "F.Cu", 0.127, [r_xi, (r_xi[0] + 0.26, p61[1]), p61]),
               ("XI", "F.Cu", 0.127, [xi, c4]),
               ("XO", "F.Cu", 0.127, [xo, (x + 0.25, y), (r_xo[0] - 0.26, y), r_xo]),
-              ("XO", "F.Cu", 0.127, [r_xo, (r_xo[0] + 0.26, p60[1]), p60]),
+              ("XO", "F.Cu", 0.127, [r_xo, (r_xo[0] + 0.26, r_xo[1]), (r_xo[0] + 0.52, p60[1]), p60]),
               ("XO", "F.Cu", 0.127, [xo, c5])]
     gnd = [((x + 0.85, y - 1.1), (x + 0.85, y - 2.25)),        # Y1.2 (north-east), up
            ((x - 0.85, y + 1.1), (x - 0.85, y + 2.25)),        # Y1.4 (south-west), down
@@ -285,8 +285,8 @@ def xtal2_block():
     gnd = [((x + 4.4, 1.12), (x + 5.09, 0.84), 0.25), ((x - 1.4, 0.92), (x - 2.06, 0.92), 0.25),
            ((x + 0.2, 1.35), (x + 1.24, 0.75), 0.2)]
     return [("CP_XIN", "F.Cu", 0.127, [pin30, (x + 0.2, 7.38), (x + 1.07, 6.51), (x + 1.07, 2.98), (x + 2.05, 2.0),
-                                         (x + 2.4, 2.0), y1]),
-            ("CP_XIN", "F.Cu", 0.127, [(x + 2.4, 2.0), (x + 2.48, 2.08), c48]),
+                                         y1]),
+            ("CP_XIN", "F.Cu", 0.127, [y1, (x + 3.2, 1.35), (x + 3.93, 2.08), c48]),
             ("CP_XOUT", "F.Cu", 0.127, [pin31, (x - 0.2, 7.45), (x + 0.15, 7.1), (x + 0.15, 4.4), (x - 0.2, 4.05),
                                           (x - 1.46, 4.05), r1]),
             ("CP_XTAL", "F.Cu", 0.127, [r2, (x + 0.04, 2.89), y3]),
@@ -306,6 +306,14 @@ XTAL2_RULE = """
 	(layer F.Cu)
 	(condition "(A.Type == 'Track' || A.Type == 'Via') && A.NetName != '/Co-processor/CP_XIN' && A.NetName != '/Co-processor/CP_XOUT' && A.NetName != '/Co-processor/CP_XTAL' && A.NetName != 'GND' && (A.intersectsCourtyard('Y2') || A.intersectsCourtyard('C48') || A.intersectsCourtyard('C49') || A.intersectsCourtyard('R22'))")
 	(constraint disallow track via))
+"""
+# the layout review (2026-11-01): no corner sharper than 45° on the USB pairs and the crystals' lines (KiCad takes
+# the minimum in whole degrees, and a drawn 45° turn measures 134.9999°: hence 134)
+ANGLE_RULE = """
+(rule "USB pairs and crystal lines: no corner sharper than 45 degrees"
+	(severity error)
+	(condition "A.Type == 'Track' && (A.hasNetclass('USB') || A.NetName == '/Hub/XI' || A.NetName == '/Hub/XO' || A.NetName == '/Co-processor/CP_XIN' || A.NetName == '/Co-processor/CP_XOUT' || A.NetName == '/Co-processor/CP_XTAL')")
+	(constraint track_angle (min 134)))
 """
 # the layout review (2026-11-01): silkscreen text a 0.15 mm stroke at least (the 0.8 mm names' 15 % was 0.12)
 SILK_TEXT = 0.15
@@ -392,24 +400,6 @@ def offset(poly, d):
         k = 1 + n1x * n2x + n1y * n2y
         out.append((round(x + d * (n1x + n2x) / k, 4), round(y + d * (n1y + n2y) / k, 4)))
     return out
-
-
-def bumps(poly, y_at, n, h, w=0.5):
-    """n bumps h mm high and w mm wide on the polyline's vertical stretch that spans y_at, towards offset()'s side:
-    length for the shorter line of a pair, away from the other one."""
-    for i, ((ax, ay), (bx, by)) in enumerate(zip(poly, poly[1:])):
-        if abs(ax - bx) < 1e-6 and min(ay, by) <= y_at <= max(ay, by):
-            s = 1 if by > ay else -1
-            pts, y = [], y_at
-            for _ in range(n):
-                pts += [(ax, y), (ax - s * h, y), (ax - s * h, y + s * w), (ax, y + s * w)]
-                y += 2 * s * w
-            return poly[:i + 1] + pts + poly[i + 1:]
-    raise ValueError(f"no vertical stretch spans y {y_at}")
-
-
-def plen(poly):
-    return sum(math.dist(a, b) for a, b in zip(poly, poly[1:]))
 
 
 def testpoints(s, refs, title, x0=232):
@@ -1162,17 +1152,19 @@ def hs_centrelines():
     its band keeps other tracks off on F.Cu: from 8 mm under the hub (clear of its pins and C15) to its end by its
     USBLC6.  Each comes down 2.65 mm east of its USBLC6's hub pins (ports 1 and 2 past their cluster first, east
     under the next one), turns west 0.8 mm over its axis and ends 1.45 mm east of them, where its lines open out to
-    them.  {n: (centreline, band)}"""
+    them.  Every turn 45° (ANGLE_RULE).  {n: (centreline, band)}"""
     def end(n, *down):
         xe = USBS[n - 1] + ESD_DX + 2.6                   # where the lines open out
         return [*down, (xe + 1.2, USB_Y - 0.8), (xe + 0.4, USB_Y), (xe, USB_Y)]
 
     x1, x2 = (USBS[n - 1] + ESD_DX + 3.8 for n in (1, 2))
-    cl = {1: [(84.0, 20.55), (84.0, 35.15), (80.0, 39.15), (32.05, 39.15), (32.05, 48.05), (33.8, 49.8),
+    cl = {1: [(84.0, 20.55), (84.0, 35.15), (80.0, 39.15), (32.85, 39.15), (32.05, 39.95), (32.05, 48.05),
+              (33.8, 49.8),
               *end(1, (33.8, 55.9), (34.6, 56.7), (x1 - 0.8, 56.7), (x1, 57.5))],
-          2: [(84.975, 20.55), (84.975, 35.585), (80.41, 40.15), (49.95, 40.15),
+          2: [(84.975, 20.55), (84.975, 35.585), (80.41, 40.15), (50.75, 40.15), (49.95, 40.95),
               *end(2, (49.95, 55.9), (50.75, 56.7), (x2 - 0.8, 56.7), (x2, 57.5))],
-          3: [(86.525, 20.55), (86.525, 35.455), (80.83, 41.15), (68.05, 41.15), (68.05, 49.65), (68.85, 50.45),
+          3: [(86.525, 20.55), (86.525, 35.455), (80.83, 41.15), (68.85, 41.15), (68.05, 41.95), (68.05, 49.65),
+              (68.85, 50.45),
               *end(3, (68.85, 50.95), (69.75, 51.85), (69.75, 59.85), (69.3, 60.3))],
           4: [(87.5, 20.55), (87.5, 47.65), (88.9, 49.05), (88.9, USB_Y - 0.8), (88.1, USB_Y), end(4)[-1]]}
     assert abs(cl[3][-4][0] - cl[3][-3][0]) < 1e-9, "USB-C 3's drop (past U6) straight down to its turn"
@@ -1236,7 +1228,8 @@ def conn_pairs():
         tracks += [(p + "CONN_DN", "F.Cu", USB_W, [e1, c(3.8, -0.95), c(2.6, 0.25), b7]),
                    (p + "CONN_DN", "F.Cu", USB_W, [b7, c(0.4, 0.25), c(-0.4, -0.25), a7]),
                    (p + "CONN_DP", "F.Cu", USB_W, [e3, v1]),
-                   (p + "CONN_DP", "B.Cu", USB_W, [v1, vn, vs]),
+                   # north, then west through the via by B6 and back down at 45° to the one between the columns
+                   (p + "CONN_DP", "B.Cu", USB_W, [v1, c(3.4, 0.35), c(2.75, -0.3), vn, c(1.6, -0.3), c(0.7, 0.6), vs]),
                    (p + "CONN_DP", "F.Cu", USB_W, [vn, b6]),
                    (p + "CONN_DP", "F.Cu", USB_W, [vs, c(-0.4, 0.25), a6]),
                    ("GND", "F.Cu", 0.25, [e2, gv]),
@@ -1431,8 +1424,9 @@ def board() -> Board:
     # CP_DP (the co-processor's USB D+, Full Speed) from pin 67 up along the south pad row's inner edge, under the
     # case (0.15 mm there, its netclass's 0.127 mm from CP_DN and from the pads), to B.Cu east of CP_ADC3's line,
     # and on down to R23: it ran between pins 68-69 and C38, where pin 69 now goes down to its capacitor
-    hand_tracks += [("CP_DP", "F.Cu", 0.15, [(CP[0] - 1.4, CP[1] + 4.95), (CP[0] - 1.4, CP[1] + 4.32),
-                                             (CP[0] - 0.12, CP[1] + 4.32), (CP[0] + 0.1, CP[1] + 4.1)]),
+    hand_tracks += [("CP_DP", "F.Cu", 0.15, [(CP[0] - 1.4, CP[1] + 4.95), (CP[0] - 1.4, CP[1] + 4.42),
+                                             (CP[0] - 1.3, CP[1] + 4.32), (CP[0] - 0.12, CP[1] + 4.32),
+                                             (CP[0] + 0.1, CP[1] + 4.1)]),
                     ("CP_DP", "B.Cu", 0.25, [(CP[0] + 0.1, CP[1] + 4.1), (CP[0] + 0.1, CP[1] + 5.7), (48.379, 19.879),
                                              (48.379, 22.134)]),
                     ("CP_DP", "F.Cu", 0.25, [(48.379, 22.134), (48.744, 22.134), (49.4, 22.79)])]
@@ -1676,7 +1670,7 @@ def board() -> Board:
     # the hub's decoupling), comes up past its east side and runs down the board's east side on F.Cu to J1's
     # pins 6 (D+, the upper since J1 stands as the DATA ×6's) and 5 (D−), from the east.  D+ the inner line of
     # both its turns: it comes up first, west of D− (D− runs on to its via east of it).  D− goes 2 mm further, to
-    # pin 5, and round the outside: two bumps on D+, east of RN3
+    # pin 5, and round the outside; no bumps on D+ to make it up (the layout review: on USB they make it worse)
     jx, j5, j6 = LEAD[0], LEAD[1] - 8.0, LEAD[1] - 10.0
     up_dn_b = [(HX - 2.75, HY + 0.6), (HX - 2.75, HY + 2.15), (HX - 2.3, HY + 2.6), (HX + 7.35, HY + 2.6)]
     up_dp_b = [(HX - 3.3, HY + 1.4), (HX - 3.3, HY + 2.55), (HX - 2.85, HY + 3.0), (HX + 6.15, HY + 3.0),
@@ -1686,8 +1680,6 @@ def board() -> Board:
     up_dp_f = [up_dp_b[-1], (HX + 6.75, HY + 3.6), (HX + 6.75, j6 - 0.5), (HX + 6.25, j6), (jx, j6)]
     up_dn_esc = [(HX - 4.4125, HY + 0.75), up_dn_b[0]]
     up_dp_esc = [(HX - 4.4125, HY + 1.25), up_dp_b[0]]
-    gap = plen(up_dn_esc) + plen(up_dn_b) + plen(up_dn_f) - plen(up_dp_esc) - plen(up_dp_b) - plen(up_dp_f)
-    up_dp_f = bumps(up_dp_f, 24.0, 2, gap / 4)
     hand_tracks += [("UP_DN", "F.Cu", USB_W, up_dn_esc), ("UP_DN", "B.Cu", USB_W, up_dn_b),
                     ("UP_DN", "F.Cu", USB_W, up_dn_f), ("UP_DP", "F.Cu", USB_W, up_dp_esc),
                     ("UP_DP", "B.Cu", USB_W, up_dp_b), ("UP_DP", "F.Cu", USB_W, up_dp_f)]
@@ -1761,11 +1753,9 @@ def board() -> Board:
         "power_nets": {"GND": 1, "VIN": 2, "+5V": 2, "+5V_MX": 2, "-5V": 2, "+3V3": 2, "+3V3_CP": 2, "+1V1": 2,
                        "PORT?_VBUS": 2, "PORT?_5V_SW": 2},
         "stitch": 4.0,
-        # the RF review (2026-10-21): GND vias every 5 mm round the edge, 0.9 mm in, drawn before the routing; and
-        # each USB pair's lines matched within 1 mm after it (meanders on the shorter line)
+        # the RF review (2026-10-21): GND vias every 5 mm round the edge, 0.9 mm in, drawn before the routing (its
+        # pairs' lines matched within 1 mm by meanders after it: dropped, the layout review: on USB they make it worse)
         "edge_fence": {"pitch": 5.0, "inset": 0.9},
-        "match": {"tol": 1.0, "pairs": [*((f"PORT{n}_DP", f"PORT{n}_DN") for n in range(1, 5)),
-                                        ("CP_HUB_DP", "CP_HUB_DN"), ("UP_DP", "UP_DN")]},
         "zones": [
             {"layer": "In1.Cu", "net": "GND"},
             # +3V3 over +5V: their outlines 0.2 mm apart, under the planes' clearance, so one pulls back 0.1 mm
@@ -1839,7 +1829,7 @@ def board() -> Board:
                    "line north and the VREF vias south.  C45 0.51 mm west of the pin",
             "C46": "U11 pin 10 (DVDD, east face): C46 3.9 mm away, the two meet through vias; C47 (4.7 uF) 2.0 mm "
                    "from pin 32, no via"},
-        "dru": XTAL_RULE + XTAL2_RULE + SILK_RULE,
+        "dru": XTAL_RULE + XTAL2_RULE + SILK_RULE + ANGLE_RULE,
         "min_width_except": MIN_WIDTH_EXCEPT,
         "keepouts": CRADLE_KEEPOUTS + [
             # the hub crystal's block: no other net's track or via on either face (dropped once routed)
