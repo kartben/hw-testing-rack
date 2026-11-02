@@ -148,6 +148,8 @@ TABS, TAB_W = (9.0, 91.0), 6.0
 # bring out, never a USB pair; each > 2 mm from the THT pads and J1, clear of the cradle's 5.5 mm ends, the push
 # band and the notches, and kept from one revision to the next.  ref: (net, name, pad Ø, x, y); each sheet places
 # its own (testpoint())
+# each port's VBUS test pad (TPS): a via on its VBUS line where the rear face has room for the pad
+VBUS_TP = {1: (21.715, 60.25), 2: (39.695, 63.545), 3: (55.067, 67.777), 4: (70.567, 67.777)}
 TPS = {
     # the co-processor's row along the top edge: BOOTSEL, RUN, SWD, a GND and its 3.3 V; its core rail under it, on
     # that rail's own rear track
@@ -176,6 +178,9 @@ TPS = {
     "TP27": ("GND", "GND", 1.5, 24.4, 56.15), "TP28": ("GND", "GND", 1.5, 71.5, 56.15),
     "TP101": ("PORT1_FLT_N", "FLT1", 1.0, 24.3, 50.64), "TP201": ("PORT2_FLT_N", "FLT2", 1.0, 39.75, 53.76),
     "TP301": ("PORT3_FLT_N", "FLT3", 1.0, 56.68, 49.3), "TP401": ("PORT4_FLT_N", "FLT4", 1.0, 74.75, 49.9),
+    # and its VBUS (port(): TP{k + 2}), on a via of its own on its VBUS line between its cluster and its USB-C
+    # (drawn: VBUS_TP), each > 2 mm from the receptacle's stakes (the design review, 2026-11-02, as on the DATA ×6)
+    **{f"TP{100 * n + 2}": (f"PORT{n}_VBUS", f"VBUS{n}", 1.5, *VBUS_TP[n]) for n in range(1, 5)},
     # the crosspoints' eight buses (the co-processor's GPIO2–9), behind its east side where they all pass: A, B, E
     # and F on a rear track of their own, C, D, G and H beside one (H, front only, through a via), with a GND
     # (the design review, 2026-10-27)
@@ -492,7 +497,7 @@ def port(b: Board, n: int):
     # X3: the port is off until the node switches it on
     R(s, f"R{k + 2}", "10k", p + "EN", "GND", size="0402", pcb=P(x0 + 9.9, y0 + 3.65, 90), sch=at(14, 36))
     R(s, f"R{k + 3}", "10k", "+3V3", p + "FLT_N", size="0402", pcb=P(x0 + 9.9, y0 + 5.6, 90), sch=at(40, 36))
-    testpoints(s, [f"TP{k + 1}"], "Bring-up test point on the rear face (B.Cu): FAULT_N")
+    testpoints(s, [f"TP{k + 1}", f"TP{k + 2}"], "Bring-up test points on the rear face (B.Cu): FAULT_N, VBUS")
     # Kelvin shunt: pins 1/4 carry the port's current, 2/3 are sense pads at the resistor's own ends; pin 1
     # under the switch's OUT
     part(s, sh, "shunt100m", {"1": p + "5V_SW", "4": p + "VBUS", "2": p + "SNS_P", "3": p + "SNS_N"},
@@ -1426,6 +1431,8 @@ def board() -> Board:
     t, v = conn_pairs()
     hand_tracks += t
     hand_vias += v
+    # the via under each port's VBUS test pad (TPS), on the router's VBUS line
+    hand_vias += [(f"PORT{n}_VBUS", *VBUS_TP[n], 0.6, 0.3) for n in range(1, 5)]
     # the co-processor's 3.3 V (+3V3_CP) into its In2 island right past FB2, C31 and R25: from R25's pad down to
     # a via in the island (the feed used to reach the island through IOVDD pin 41, under the case), so that each
     # IOVDD pin can reach the rail through its own 100 nF alone
@@ -1969,8 +1976,10 @@ def board() -> Board:
               for n in range(4) for i in range(12)),
             # the bring-up test points' names, on the rear face under each pad (mirrored, read from behind), and
             # what the base doesn't have (only GND is live there): the co-processor's row and core rail, the matrix.
-            # TP25's (SCL) over its pad: under it, at a 0.15 mm stroke, it touched TP26's ring
-            *({"text": name, "x": x, "y": y + (-1 if ref == "TP25" else 1) * (d / 2 + 0.75), "size": 0.8,
+            # TP25's (SCL) over its pad: under it, at a 0.15 mm stroke, it touched TP26's ring; ports 3 and 4's
+            # VBUS over theirs, by the bottom edge's fence
+            *({"text": name, "x": x, "y": y + (-1 if ref in ("TP25", "TP302", "TP402") else 1) * (d / 2 + 0.75),
+               "size": 0.8,
                "layer": "B.SilkS"} for ref, (net, name, d, x, y) in TPS.items()),
             # the SWD header's pin names, read on the front face, alternately over and under it from pin 1 (west)
             *({"text": name, "x": SWD_HDR[0] + 2.54 * i, "y": SWD_HDR[1] + (-2.1 if i % 2 == 0 else 2.1), "size": 0.8}
