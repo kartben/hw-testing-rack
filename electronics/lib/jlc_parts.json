@@ -502,9 +502,9 @@
     "1k"
    ],
    [
-    "C25092",
+    "C25100",
     2,
-    "22"
+    "27"
    ],
    [
     "C25741",
@@ -522,9 +522,9 @@
     "100k"
    ],
    [
-    "C25810",
+    "C11476",
     1,
-    "18k"
+    "18.7k"
    ],
    [
     "C2933099",
@@ -739,9 +739,9 @@
     "100k"
    ],
    [
-    "C25810",
+    "C11476",
     1,
-    "18k"
+    "18.7k"
    ],
    [
     "C2933099",
@@ -1259,6 +1259,22 @@
    "category": "Circuit Protection",
    "manufacturer": "MDD(Microdiode Semiconductor)",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
+  },
+  "C11476": {
+   "mfr": "0402WGF1872TCE",
+   "package": "0402",
+   "stock": 12343,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": null,
+     "price": 0.0018
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "JLC's parts library through the jlc MCP (2026-11-02): tier, stock, unit price; the catalog snapshot has no prices (added 2026-11-02)"
   },
   "C11702": {
    "mfr": "0402WGF1001TCE",
@@ -2190,21 +2206,21 @@
    "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live) (added 2026-11-02)",
    "lcsc_stock": 14140
   },
-  "C25092": {
-   "mfr": "0402WGF220JTCE",
+  "C25100": {
+   "mfr": "0402WGF270JTCE",
    "package": "0402",
-   "stock": 3686811,
-   "tier": "basic",
+   "stock": 40024,
+   "tier": "extended",
    "priceBreaks": [
     {
      "qFrom": 1,
      "qTo": null,
-     "price": 0.002
+     "price": 0.0013
     }
    ],
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
+   "source": "JLC's parts library through the jlc MCP (2026-11-02): tier, stock, unit price; the catalog snapshot has no prices (added 2026-11-02)"
   },
   "C25105": {
    "mfr": "0402WGF330JTCE",

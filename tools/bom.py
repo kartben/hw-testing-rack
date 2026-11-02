@@ -206,7 +206,9 @@ JLC_SINCE_QUOTE = {
                                         3.09),
                                        ("R53 18.7k (C11476) for 18k: its extended part type", "extended parts", 3.09)],
                    "data-port-x4-v2-base": [("USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 8 at JLC's price",
-                                             "components", 9.43)],
+                                             "components", 9.43),
+                                            ("R53 18.7k (C11476) for 18k: its extended part type", "extended parts",
+                                             3.09)],
                    # the pod's U1 since the quote: the AP2114H-3.3 (C150716, extended, $0.2314) for the AMS1117
                    # (C6186, basic, $0.2048), stable with its ceramic output capacitor (datasheet audit F1)
                    "camera-pod": [("AP2114H-3.3 for the AMS1117 (datasheet audit F1): its extended part type",
