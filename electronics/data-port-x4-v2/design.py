@@ -402,6 +402,27 @@ def offset(poly, d):
     return out
 
 
+def bumps(poly, seg, n, h, top=0.15, gap=0.15):
+    """n bumps h mm deep on the polyline's segment `seg`, centred on it, towards offset()'s side (away from the pair's
+    other line), their flanks at 45° (ANGLE_RULE), `top` mm across and `gap` mm apart: each adds (2√2 − 2) h mm of
+    length to the shorter line of a pair."""
+    (ax, ay), (bx, by) = poly[seg], poly[seg + 1]
+    L = math.dist((ax, ay), (bx, by))
+    ux, uy = (bx - ax) / L, (by - ay) / L
+    span = n * (2 * h + top) + (n - 1) * gap
+    assert span < L - 0.1, (span, L)
+    s, pts = (L - span) / 2, []
+    for _ in range(n):
+        for d, o in ((0, 0), (h, h), (h + top, h), (2 * h + top, 0)):
+            pts.append((round(ax + ux * (s + d) - uy * o, 4), round(ay + uy * (s + d) + ux * o, 4)))
+        s += 2 * h + top + gap
+    return poly[:seg + 1] + pts + poly[seg + 1:]
+
+
+def plen(poly):
+    return sum(math.dist(a, b) for a, b in zip(poly, poly[1:]))
+
+
 def testpoints(s, refs, title, x0=232):
     """The sheet's bring-up test points (TPS) in a frame of their own, top right (x0: the frame's left side, inside
     the sheet's paper: A1 for the sheets with a full right-hand column), seven to a row"""
@@ -1181,8 +1202,8 @@ def hs_pairs():
     (offset(), D− on its right-hand side), USB_W lines 0.15 mm apart (≈ 90 Ω: the USB netclass); they leave the
     hub's pins at its 0.5 mm pitch and close up, ports 2 and 3 each 25 µm out from their pins' centre (C15, pin 5's
     100 nF, fits between them), and open out at 45° round pin 5 to the USBLC6's pins 6 and 4, both alike.  No
-    length-matching bumps (the layout review: on USB they make it worse): D− ends 0.5–0.7 mm short of D+, USBLC6
-    to receptacle included.  Returns the tracks."""
+    length-matching bumps (the layout review: on USB they make it worse): D− ends 0.5–0.7 mm short of D+ (and the
+    USBLC6 to the receptacle 1 mm more, conn_pairs()).  Returns the tracks."""
     tracks = []
     hp = (USB_W + 0.15) / 2
     for n, (c, _) in hs_centrelines().items():
@@ -1225,11 +1246,12 @@ def conn_pairs():
         # out of the way of D−'s diagonal, which starts at cx + 3.8, clear of D+'s via by B6
         gv = (ex, ey + 0.55)
         v1, vn, vs = (ex - 2.15, e3[1]), c(2.35, -0.3), c(0.0, 0.6)          # D+'s vias: by its pin, by B6, between
-        tracks += [(p + "CONN_DN", "F.Cu", USB_W, [e1, c(3.8, -0.95), c(2.6, 0.25), b7]),
+        # D+ (longer: the crossing) through its via by B6 within 45° either way, the shortest such way; D− 0.25 mm north
+        # off pin 1 first (0.2 mm longer): the two within 1 mm (test_pair_skew)
+        tracks += [(p + "CONN_DN", "F.Cu", USB_W, [e1, c(4.1625, -1.2), c(4.05, -1.2), c(2.6, 0.25), b7]),
                    (p + "CONN_DN", "F.Cu", USB_W, [b7, c(0.4, 0.25), c(-0.4, -0.25), a7]),
                    (p + "CONN_DP", "F.Cu", USB_W, [e3, v1]),
-                   # north, then west through the via by B6 and back down at 45° to the one between the columns
-                   (p + "CONN_DP", "B.Cu", USB_W, [v1, c(3.4, 0.35), c(2.75, -0.3), vn, c(1.6, -0.3), c(0.7, 0.6), vs]),
+                   (p + "CONN_DP", "B.Cu", USB_W, [v1, c(3.4, 0.66), c(2.5, -0.24), vn, vs]),
                    (p + "CONN_DP", "F.Cu", USB_W, [vn, b6]),
                    (p + "CONN_DP", "F.Cu", USB_W, [vs, c(-0.4, 0.25), a6]),
                    ("GND", "F.Cu", 0.25, [e2, gv]),
@@ -1670,7 +1692,9 @@ def board() -> Board:
     # the hub's decoupling), comes up past its east side and runs down the board's east side on F.Cu to J1's
     # pins 6 (D+, the upper since J1 stands as the DATA ×6's) and 5 (D−), from the east.  D+ the inner line of
     # both its turns: it comes up first, west of D− (D− runs on to its via east of it).  D− goes 2 mm further, to
-    # pin 5, and round the outside; no bumps on D+ to make it up (the layout review: on USB they make it worse)
+    # pin 5, and round the outside: a High-Speed pair, so D+ makes it up (within 1 mm: tools/tests/test_pair_skew.py)
+    # by 45° bumps, three west of its run down the east side, as deep as RN3 leaves room for, two north of its run
+    # into pin 6 for the rest
     jx, j5, j6 = LEAD[0], LEAD[1] - 8.0, LEAD[1] - 10.0
     up_dn_b = [(HX - 2.75, HY + 0.6), (HX - 2.75, HY + 2.15), (HX - 2.3, HY + 2.6), (HX + 7.35, HY + 2.6)]
     up_dp_b = [(HX - 3.3, HY + 1.4), (HX - 3.3, HY + 2.55), (HX - 2.85, HY + 3.0), (HX + 6.15, HY + 3.0),
@@ -1680,6 +1704,11 @@ def board() -> Board:
     up_dp_f = [up_dp_b[-1], (HX + 6.75, HY + 3.6), (HX + 6.75, j6 - 0.5), (HX + 6.25, j6), (jx, j6)]
     up_dn_esc = [(HX - 4.4125, HY + 0.75), up_dn_b[0]]
     up_dp_esc = [(HX - 4.4125, HY + 1.25), up_dp_b[0]]
+    gap = plen(up_dn_esc) + plen(up_dn_b) + plen(up_dn_f) - plen(up_dp_esc) - plen(up_dp_b) - plen(up_dp_f)
+    k = 2 * math.sqrt(2) - 2
+    hh = (gap - 3 * k * 1.4) / (2 * k)
+    assert 0 < hh <= 0.6, hh
+    up_dp_f = bumps(bumps(up_dp_f, 3, 2, hh), 1, 3, 1.4)
     hand_tracks += [("UP_DN", "F.Cu", USB_W, up_dn_esc), ("UP_DN", "B.Cu", USB_W, up_dn_b),
                     ("UP_DN", "F.Cu", USB_W, up_dn_f), ("UP_DP", "F.Cu", USB_W, up_dp_esc),
                     ("UP_DP", "B.Cu", USB_W, up_dp_b), ("UP_DP", "F.Cu", USB_W, up_dp_f)]
@@ -1753,9 +1782,12 @@ def board() -> Board:
         "power_nets": {"GND": 1, "VIN": 2, "+5V": 2, "+5V_MX": 2, "-5V": 2, "+3V3": 2, "+3V3_CP": 2, "+1V1": 2,
                        "PORT?_VBUS": 2, "PORT?_5V_SW": 2},
         "stitch": 4.0,
-        # the RF review (2026-10-21): GND vias every 5 mm round the edge, 0.9 mm in, drawn before the routing (its
-        # pairs' lines matched within 1 mm by meanders after it: dropped, the layout review: on USB they make it worse)
+        # the RF review (2026-10-21): GND vias every 5 mm round the edge, 0.9 mm in, drawn before the routing; and
+        # each High-Speed pair's lines matched within 1 mm (tools/tests/test_pair_skew.py): all drawn, so the router's
+        # meanders (tune_pairs()) find nothing to lengthen; the co-processor's Full-Speed pair (CP_HUB) not listed
         "edge_fence": {"pitch": 5.0, "inset": 0.9},
+        "match": {"tol": 1.0, "pairs": [("UP_DP", "UP_DN"), *((f"PORT{n}_DP", f"PORT{n}_DN") for n in range(1, 5)),
+                                        *((f"PORT{n}_CONN_DP", f"PORT{n}_CONN_DN") for n in range(1, 5))]},
         "zones": [
             {"layer": "In1.Cu", "net": "GND"},
             # +3V3 over +5V: their outlines 0.2 mm apart, under the planes' clearance, so one pulls back 0.1 mm
