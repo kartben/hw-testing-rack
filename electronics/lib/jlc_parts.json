@@ -452,9 +452,9 @@
     "GZ2012D601TF"
    ],
    [
-    "C2689964",
+    "C5181332",
     4,
-    "TYPE-C-31-D-06"
+    "USB4145-03-0170-C"
    ],
    [
     "C42411119",
@@ -694,9 +694,9 @@
     "KT-0805G"
    ],
    [
-    "C2689964",
+    "C5181332",
     4,
-    "TYPE-C-31-D-06"
+    "USB4145-03-0170-C"
    ],
    [
     "C506574",
@@ -2566,48 +2566,6 @@
    "manufacturer": null,
    "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 4813
-  },
-  "C2689964": {
-   "mfr": "TYPE-C-31-D-06",
-   "package": "SMD",
-   "stock": 2736,
-   "tier": "extended",
-   "priceBreaks": [
-    {
-     "qFrom": 5,
-     "qTo": 49,
-     "price": 0.2842
-    },
-    {
-     "qFrom": 50,
-     "qTo": 149,
-     "price": 0.2261
-    },
-    {
-     "qFrom": 150,
-     "qTo": 499,
-     "price": 0.2011
-    },
-    {
-     "qFrom": 500,
-     "qTo": 2499,
-     "price": 0.1615
-    },
-    {
-     "qFrom": 2500,
-     "qTo": 4999,
-     "price": 0.1476
-    },
-    {
-     "qFrom": 5000,
-     "qTo": null,
-     "price": 0.1393
-    }
-   ],
-   "category": "Connectors",
-   "manufacturer": null,
-   "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
-   "lcsc_stock": 2580
   },
   "C28323": {
    "mfr": "CL21B105KBFNNNE",

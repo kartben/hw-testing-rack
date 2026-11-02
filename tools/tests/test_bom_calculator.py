@@ -24,12 +24,12 @@ class Orders(unittest.TestCase):
 
     def test_panel_reproduces_the_quote(self):
         # the 1 × 2 base + logic panel: JLC's real quote of 2026-11-01 (green, Economic, $235.45), the C60 it
-        # left unplaced (Standard-only, JLC_SINCE_QUOTE), its parts scaled from the quote's at JLC's price
-        # breaks, its special components a piece
+        # left unplaced (Standard-only) and the GCT USB4145 USB-C since (JLC_SINCE_QUOTE), its parts scaled from
+        # the quote's at JLC's price breaks, its special components a piece
         q = bom.JLC_QUOTE["data-port-x4-v2-panel"]
         if q.get("stale_since"):
             self.skipTest(f"the panel's quote is stale since {q['stale_since']}: {q['stale']}")
-        for n, usd in ((2, 238.78), (5, 375.45), (10, 604.08)):
+        for n, usd in ((2, 253.68), (5, 407.19), (10, 672.58)):
             self.assertAlmostEqual(bom.panel_order(n, self.orders)["total"], usd, delta=0.02)
 
     def test_volume_is_order_cost(self):

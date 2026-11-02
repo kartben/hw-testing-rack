@@ -183,9 +183,19 @@ JLC_SINCE_QUOTE = {
                    # Standard-only at JLC.  Priced as the Economic 33 µF 50 V in the same 6.3 × 7.7 mm case that
                    # replaced it on the board since (cap33u50, 2026-11-01): VH1H330ME077000CE0 (C240518, extended,
                    # $0.0594)
+                   # and the v2's four USB-C since its quotes: the GCT USB4145-03-0170-C (C5181332, extended,
+                   # $1.4632 below 10, $1.2156 at 10-29), the DATA ×6's (2026-11-02), for the HRO TYPE-C-31-D-06
+                   # (C2689964, extended, $0.2842 at 5-49): one extended type for another, the same 16 pads and 4
+                   # stakes, a special component ($0.03 a piece) too
                    "data-port-x4-v2-panel": [("C60 (33 µF 50 V), Standard-only at JLC: 4 Economic ones at JLC's price",
                                               "components", 0.24),
-                                             ("C60: its extended part type", "extended parts", 3.09)],
+                                             ("C60: its extended part type", "extended parts", 3.09),
+                                             ("USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 16 at JLC's price",
+                                              "components", 14.90)],
+                   "data-port-x4-v2": [("USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 8 at JLC's price",
+                                        "components", 9.43)],
+                   "data-port-x4-v2-base": [("USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 8 at JLC's price",
+                                             "components", 9.43)],
                    # the pod's U1 since the quote: the AP2114H-3.3 (C150716, extended, $0.2314) for the AMS1117
                    # (C6186, basic, $0.2048), stable with its ceramic output capacitor (datasheet audit F1)
                    "camera-pod": [("AP2114H-3.3 for the AMS1117 (datasheet audit F1): its extended part type",
