@@ -167,8 +167,8 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
 | slot_bin | 4 | 56.7 | `mechanical/stl/slot_bin.stl` |
 | tray | 12 | 82.0 | `mechanical/stl/tray.stl` |
-| x4_cradle | 12 | 12.0 | `mechanical/stl/x4_cradle.stl` |
-| x4_strip | 12 | 1.0 | `mechanical/stl/x4_strip.stl` |
+| x4_cradle | 12 | 12.5 | `mechanical/stl/x4_cradle.stl` |
+| x4_strip | 12 | 1.3 | `mechanical/stl/x4_strip.stl` |
 | cover_box4 (optional) | 12 | 31.1 | `mechanical/stl/cover_box4.stl` |
 
 ## Line items
@@ -486,11 +486,11 @@ One bay out of the rack, on a desk ([docs/standalone.md](../docs/standalone.md))
 | PT 2.3×8 pan head, thread-forming | 2 | 0.02 | 0.04 | AliExpress (bulk) |
 | Rubber bumper, self-adhesive, Ø10 × 3 mm | 4 | 0.05 | 0.20 | AliExpress (bulk) |
 
-**Quad (the node + the DATA ×4 v2)**: ≈ €5.83, 99 g of PETG
+**Quad (the node + the DATA ×4 v2)**: ≈ €5.84, 100 g of PETG
 
 | Item | Qty | Unit € | Total € | Source |
 |---|---:|---:|---:|---|
-| standalone_quad_base (printed) | 1 | 1.48 | 1.48 | `mechanical/stl/standalone_quad_base.stl` |
+| standalone_quad_base (printed) | 1 | 1.49 | 1.49 | `mechanical/stl/standalone_quad_base.stl` |
 | standalone_quad_shelf (printed) | 1 | 0.22 | 0.22 | `mechanical/stl/standalone_quad_shelf.stl` |
 | standalone_quad_lid (printed) | 1 | 0.28 | 0.28 | `mechanical/stl/standalone_quad_lid.stl` |
 | USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a "decoy" board, ≤ 30 × 21 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md) | 1 | 2.00 | 2.00 | AliExpress 3256811726090162; its size goes in config/rack.yaml › standalone.pd_module |

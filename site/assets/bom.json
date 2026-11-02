@@ -5294,15 +5294,15 @@
 {
 "part": "x4_cradle",
 "qty": 12,
-"grams_each": 12.0,
-"grams_total": 143.4,
+"grams_each": 12.5,
+"grams_total": 149.7,
 "stl": "mechanical/stl/x4_cradle.stl"
 },
 {
 "part": "x4_strip",
 "qty": 12,
-"grams_each": 1.0,
-"grams_total": 12.6,
+"grams_each": 1.3,
+"grams_total": 16.0,
 "stl": "mechanical/stl/x4_strip.stl"
 },
 {
@@ -9017,10 +9017,10 @@
 {
 "item": "standalone_quad_base (printed)",
 "qty": 1,
-"grams": 73.9,
-"unit_eur": 1.48,
+"grams": 74.4,
+"unit_eur": 1.49,
 "stl": "mechanical/stl/standalone_quad_base.stl",
-"ext_eur": 1.48
+"ext_eur": 1.49
 },
 {
 "item": "standalone_quad_shelf (printed)",
@@ -9088,8 +9088,8 @@
 "ext_eur": 0.2
 }
 ],
-"total_eur": 5.83,
-"grams": 99.1
+"total_eur": 5.84,
+"grams": 99.6
 },
 "desk_frame": {
 "title": "Desk frame, for either (the rack's honeycomb plate in it: the DUTs held by its pegs)",

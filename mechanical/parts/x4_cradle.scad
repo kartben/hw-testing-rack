@@ -11,10 +11,10 @@
 //   -D 'PART="strip_in_place"'   the same, where it goes, for the viewer and the checks
 //   -D 'PART="board"'    the board's stand-in (outline, notches), for the viewer and the checks
 //
-// - The board stands on the drawer floor, its front face 7.4 mm behind the port wall's back face (the
+// - The board stands on the drawer floor, its front face 8.46 mm behind the port wall's back face (the
 //   receptacles' mouths 1 mm behind it), and slides down from above into two end slots (0.15 mm a side).
 // - Plugging in pushes the board back onto the base's front edge, right behind the receptacles (relieved
-//   round their shell legs).  Unplugging pulls it forwards onto the slots' front walls and two T-heads that
+//   round their shell stakes).  Unplugging pulls it forwards onto the slots' front walls and two T-heads that
 //   come through notches in its bottom edge, between slots 2–3 and 4–5.
 // - A latch finger at each upright's top snaps over the board's top edge: press it back to lift the board.  It
 //   bends across its layers, so it is long and its root is round: 0.21 % (docs/printed-parts-review.md).
@@ -51,17 +51,17 @@ OW = 1.2;                                 // their outer wall
 NOTCH = DATA_X6_NOTCH;                    // the board's bottom-edge notches: width, height
 NOTCH_X = DATA_X6_NOTCH_X;                // their centres, drawer x: between slots 2–3 and 4–5
 // a T-head's bar in front of the board, from the comb to the slot's front face: its ends off the notch's centre.
-// Its left end 1.1 off the USB-C on its left (ports 2 and 4: their shell legs at ±2.3), its right end 0.8 past
+// Its left end 1.4 off the USB-C on its left (ports 2 and 4: their stakes' pads at ±1.98), its right end 0.8 past
 // the notch (rack.yaml's notches.tee: the boards keep their front face free of parts over it, 0.3 mm round)
 TEE = DATA_X6_TEE;
 BASE = [DATA_PCB_Z, 4.0];                 // the base: its underside (the bosses' top), thickness
-LEG_RELIEF = [7, 1.2];                    // round each receptacle's shell legs on the rear face (±2.15 across): width, depth
+LEG_RELIEF = [7, 1.2];                    // round each receptacle's shell stakes on the rear face (±1.98 across): width, depth
 LATCH = [40, 0.8];                        // the latch finger: free length, hook over the board's top edge
 SLIT = 1.0;                               // the slit that frees it from the outer wall
 ROOT_R = 0.8;                             // the keyhole at the slit's foot: the finger's root round
-// the guard.  HRO TYPE-C-31-D-06, from its drawing (the user, 2026-10-26): 8.94 × 3.16 × 6.40 nominal, the
-// general tolerances' max taken here; its legs reach ±2.15 off the axis, ≈ 0.8 above the board (1.5 allowed).
-// It stands (its slot upright, 2026-11-01): its length along z, its depth along x
+// the guard.  GCT USB4145-03-0170-C (the boards' since 2026-11-02): 8.94 × 3.16 × 7.46 nominal, the general
+// tolerances' max taken here; its shell stakes at ±4.00 along it, ±1.43 across, 0.1 through the board.  It
+// stands (its slot upright, 2026-11-01): its length along z, its depth along x
 USBC_BODY = [9.14, 3.31, DATA_X6_USB_H + 0.2];   // max: length (z), depth (x), height off the board (y)
 GUARD_GAP = 0.1;                          // round the max body: 0.2 / 0.175 a side round a nominal one
 COMB_Y = [V2_Y - DATA_X6_USB_H + 0.2, V2_Y - 2.1];   // 0.2 behind the mouths; 0.65 clear of the USBLC6s (1.45 tall)
@@ -90,6 +90,10 @@ GUARD_SCREWS = concat([for (x = [PORT_XS[0] - 9]) if (on_strip(x)) x],
                       [for (i = [0 : len(PORT_XS) - 2]) (PORT_XS[i] + PORT_XS[i + 1]) / 2],
                       [for (x = [PORT_XS[len(PORT_XS) - 1] + 9]) if (on_strip(x)) x]);
 assert(X_L >= DRAWER_WALL + 0.3, "the left upright hits the drawer's wall");
+// the base's post at x 95, behind USB-C 6: 1 mm off the board's rear face (the shell stakes and their solder)
+POST_D = 5;
+POST = [95, V2_Y + V2[2] + 1 + POST_D / 2];
+assert(norm(POST - BOSSES[2]) - POST_D / 2 - BOSS_D / 2 >= 0.5, "the base's post at x 95 meets the third boss");
 
 // the left upright, a U-channel round the board's left end: front wall, outer wall, rear wall.  The rear
 // wall's top is a latch finger (slit from the outer wall, its foot rounded into the finger's root), its hook
@@ -171,10 +175,12 @@ module cradle() {
                 cylinder(d = BOSS_D + 4, h = BASE[0] - V2_Z0 + EPS);
                 translate([0, 0, -EPS]) cylinder(d = BOSS_D + 0.8, h = BASE[0]);
             }
-            // and Ø6 posts where the drawer's floor is bare, so the base bridges ≤ 16 mm as printed (the one at
-            // x 95 forward of the third boss; docs/printed-parts-fdm-review.md, item 3)
-            for (p = [[36, BOSSES[1][1]], [78, BOSSES[1][1]], [95, 179]])
+            // and posts where the drawer's floor is bare, so the base bridges ≤ 16 mm as printed
+            // (docs/printed-parts-fdm-review.md, item 3): Ø6 on the bosses' line, Ø5 at x 95 between the board
+            // and the third boss
+            for (p = [[36, BOSSES[1][1]], [78, BOSSES[1][1]]])
                 translate([p[0], p[1], V2_Z0]) cylinder(d = 6, h = BASE[0] - V2_Z0 + EPS);
+            translate([POST[0], POST[1], V2_Z0]) cylinder(d = POST_D, h = BASE[0] - V2_Z0 + EPS);
             // the T-heads: a bar from the comb to the board's bottom, a fin through its notch, a riser behind it
             // up to the base
             for (x = NOTCH_X) {
@@ -189,7 +195,7 @@ module cradle() {
             cylinder(d = M3_CLEAR, h = BASE[1] + 2 * EPS);
             translate([0, 0, BASE[1] - 2.4]) cylinder(d = 6.2, h = 2.4 + 2 * EPS);     // an M3 pan head, flush
         }
-        // reliefs round each receptacle's shell legs, through the rear face
+        // reliefs round each receptacle's shell stakes, through the rear face
         for (x = PORT_XS) translate([x - LEG_RELIEF[0] / 2, Y_R - EPS, BASE[0] - EPS]) cube([LEG_RELIEF[0], LEG_RELIEF[1], BASE[1] + 2 * EPS]);
     }
 }

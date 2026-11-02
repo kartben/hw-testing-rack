@@ -356,7 +356,7 @@ pcb:
     size: [100, 70]         # length (drawer x) × height (z), 1.6 thick; these mirror x4_cradle.scad (V2, V2_X0, V2_Y, NOTCH*)
     x0: 4                   # drawer x of its left edge (the board spans x 4–104); its bottom edge on the drawer floor
     top_z: 72.5             # drawer z of its top edge (the drawer's underside z = 0, its floor's top 2.5)
-    usb_h: 6.4              # its standing USB-C's mouth off its front face (HRO TYPE-C-31-D-06): the board stands
+    usb_h: 7.46             # its standing USB-C's mouth off its front face (GCT USB4145-03-0170-C): the board stands
                             # drawer.port_mouth + usb_h behind the port wall's back face (rackcfg derives face_y)
     thickness: 1.6
     layers: 4               # F · GND · power (+3V3 above y 55.7, +5V below) · B: 4 layers again since 2026-10-23 (the
@@ -368,7 +368,7 @@ pcb:
                             # each T-head bar's ends off its notch's centre (x4_cradle.scad reads it), the bar 0.5 under
                             # the notch's depth: the front face free of parts over it, 0.3 mm round.  Rear face bare
                             # 5.3–9.3 mm above the bottom edge (the base's push band)
-    usb: [28.95, 44.45, 59.95, 75.45]   # board x of the four vertical USB-C (HRO TYPE-C-31-D-06, 6.4 mm tall), mouths
+    usb: [28.95, 44.45, 59.95, 75.45]   # board x of the four vertical USB-C (GCT USB4145-03-0170-C, 7.46 mm tall), mouths
                             # towards the wall: the DATA ×6's positions 2–5 (drawer x 32.95 … 79.45, 15.5 mm apart), so
                             # one drawer takes either board (layout B, 2026-11-01; the headers stay at their x)
     usb_rot: [90, 90, 90, 90]   # each one's turn on the board: standing, slot upright, all alike, as the DATA ×6's
@@ -399,7 +399,7 @@ pcb:
                                # cleared the drag chain foot's boss)
     x0: 4
     top_z: 72.5
-    usb_h: 6.4                 # as the v2's
+    usb_h: 7.46                # as the v2's
     thickness: 1.6
     layers: 4
     cradle: 5.5
