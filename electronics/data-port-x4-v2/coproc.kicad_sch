@@ -8494,7 +8494,7 @@
 				)
 			)
 		)
-		(property "Value" "22"
+		(property "Value" "27"
 			(at 355.6 215.976 90)
 			(effects
 				(font
@@ -8520,7 +8520,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 22 0402"
+		(property "Description" "Resistor 27 0402"
 			(at 355.6 213.36 0)
 			(effects
 				(font
@@ -8529,7 +8529,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25092"
+		(property "LCSC" "C25100"
 			(at 355.6 213.36 0)
 			(effects
 				(font
@@ -8538,7 +8538,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0402WGF220JTCE"
+		(property "MPN" "0402WGF270JTCE"
 			(at 355.6 213.36 0)
 			(effects
 				(font
@@ -8644,7 +8644,7 @@
 				)
 			)
 		)
-		(property "Value" "22"
+		(property "Value" "27"
 			(at 355.6 231.216 90)
 			(effects
 				(font
@@ -8670,7 +8670,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 22 0402"
+		(property "Description" "Resistor 27 0402"
 			(at 355.6 228.6 0)
 			(effects
 				(font
@@ -8679,7 +8679,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25092"
+		(property "LCSC" "C25100"
 			(at 355.6 228.6 0)
 			(effects
 				(font
@@ -8688,7 +8688,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0402WGF220JTCE"
+		(property "MPN" "0402WGF270JTCE"
 			(at 355.6 228.6 0)
 			(effects
 				(font
@@ -13780,7 +13780,7 @@
 		)
 		(uuid "522a0b2c-018c-56d9-9e3a-16407021440e")
 	)
-	(text "12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 5 (22 Ω), RUN, BOOTSEL, LED, SWD"
+	(text "12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 5 (27 Ω), RUN, BOOTSEL, LED, SWD"
 		(exclude_from_sim no)
 		(at 316.23 144.78 0)
 		(effects

@@ -12296,7 +12296,7 @@
 				)
 			)
 		)
-		(property "Value" "22"
+		(property "Value" "27"
 			(at 0 1.17 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -12319,7 +12319,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 22 0402"
+		(property "Description" "Resistor 27 0402"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -12342,7 +12342,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25092"
+		(property "LCSC" "C25100"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -12354,7 +12354,7 @@
 				)
 			)
 		)
-		(property "MPN" "0402WGF220JTCE"
+		(property "MPN" "0402WGF270JTCE"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -28900,7 +28900,7 @@
 				)
 			)
 		)
-		(property "Value" "22"
+		(property "Value" "27"
 			(at 0 1.17 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -28923,7 +28923,7 @@
 				)
 			)
 		)
-		(property "Description" "Resistor 22 0402"
+		(property "Description" "Resistor 27 0402"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -28946,7 +28946,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C25092"
+		(property "LCSC" "C25100"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)
@@ -28958,7 +28958,7 @@
 				)
 			)
 		)
-		(property "MPN" "0402WGF220JTCE"
+		(property "MPN" "0402WGF270JTCE"
 			(at 0 0 270)
 			(layer "F.Fab")
 			(hide yes)

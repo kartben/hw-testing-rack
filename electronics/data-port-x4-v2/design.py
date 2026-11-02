@@ -1071,7 +1071,7 @@ def coproc_sheet(b: Board):
           sch=at(70 + 5 * i, 24))
     rail(s, "+1V1", [f"C{45 + i}.1" for i in range(3)], -1)
     rail(s, "GND", [f"C{45 + i}.2" for i in range(3)], 1, "down")
-    s.frame("12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 5 (22 Ω), RUN, BOOTSEL, LED, SWD",
+    s.frame("12 MHz crystal (ABM8-272-T3, 15 pF, 1k on XOUT), USB on hub port 5 (27 Ω), RUN, BOOTSEL, LED, SWD",
             124, 56, 228, 98)
     # over the north face's XIN (pin 30) and XOUT (31): XIN to its pin 1 (right), XOUT through R22 to pin 3 (left);
     # the lines drawn, the block kept clear on F.Cu (xtal2_block())
@@ -1084,13 +1084,13 @@ def coproc_sheet(b: Board):
     R(s, "R22", "1k", "CP_XOUT", "CP_XTAL", size="0402", pcb=P(cx - 1.6, 3.4, 90),
       sch=at(156, 68, rot=270))
     s.wire("C49.1", (146, 68), "R22.2")
-    # The USB series resistors: 22 Ω, a JLC basic part, where the Pico 2 and Raspberry Pi's design guide fit 27 Ω (no
-    # basic part in any size).  The RP2350's USB is Full Speed only: its driver's own impedance plus 22 Ω stays
-    # inside USB's 28–44 Ω Full Speed driver window, nearer its middle than with 33 Ω
-    usb22 = {"LCSC": "C25092", "MPN": "0402WGF220JTCE", "Manufacturer": "UNI-ROYAL(Uniroyal Elec)"}
-    R(s, "R23", "22", "CP_DP", "CP_HUB_DP", size="0402", pcb=P(cx + 2.4, cy + 10.4, 270), fields=usb22,
+    # The USB series resistors: 27 Ω, the only value Raspberry Pi specifies (RP2350 datasheet §1.2.2 Table 2 and
+    # Table 1673; Hardware design with RP2350 §5.1), which publishes no figure for the driver's own impedance to
+    # justify another.  No JLC basic part: the basic resistors' UNI-ROYAL series, extended
+    usb27 = {"LCSC": "C25100", "MPN": "0402WGF270JTCE", "Manufacturer": "UNI-ROYAL(Uniroyal Elec)"}
+    R(s, "R23", "27", "CP_DP", "CP_HUB_DP", size="0402", pcb=P(cx + 2.4, cy + 10.4, 270), fields=usb27,
       sch=at(140, 84, rot=90))
-    R(s, "R24", "22", "CP_DN", "CP_HUB_DN", size="0402", pcb=P(cx + 1.3, cy + 10.4, 270), fields=usb22,
+    R(s, "R24", "27", "CP_DN", "CP_HUB_DN", size="0402", pcb=P(cx + 1.3, cy + 10.4, 270), fields=usb27,
       sch=at(140, 90, rot=90))
     R(s, "R25", "10k", "+3V3_CP", "CP_RUN", size="0402", pcb=P(cx - 3.8, 5.4, 0),
       sch=at(166, 84))

@@ -191,7 +191,11 @@ JLC_SINCE_QUOTE = {
                                               "components", 0.24),
                                              ("C60: its extended part type", "extended parts", 3.09),
                                              ("USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 16 at JLC's price",
-                                              "components", 14.90)],
+                                              "components", 14.90),
+                                             # R23/R24 since: 27 Ω (C25100, extended) for 22 Ω (C25092, basic), as
+                                             # Raspberry Pi specifies (the datasheet audit, 2026-11-01)
+                                             ("R23/R24 27 Ω (C25100) for 22 Ω: its extended part type",
+                                              "extended parts", 3.09)],
                    "data-port-x4-v2": [("USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 8 at JLC's price",
                                         "components", 9.43)],
                    "data-port-x4-v2-base": [("USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 8 at JLC's price",
