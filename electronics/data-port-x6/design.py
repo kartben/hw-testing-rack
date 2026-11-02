@@ -34,7 +34,7 @@ from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
 
 import rackcfg  # noqa: E402
-from silk import SILK_RULE, port_mark  # noqa: E402
+from silk import SILK_RULE, lead_pin_names, port_mark  # noqa: E402
 
 RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["data_port_x6"]
@@ -1034,9 +1034,11 @@ def board() -> Board:
             {"text": "DATA ×6 v1.0", "x": 50.4, "y": H - 2.5, "size": 0.8, "thickness": 0.15},   # by USB-C 3 and 4
             *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "thickness": 0.15, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
-            # the lead's connector, named on the rear face where it plugs in: it brings the 20 V
-            {"text": "LEAD 20 V", "x": LEAD[0], "y": LEAD[1] + 3.6, "size": 0.8, "thickness": 0.15,
+            # the lead's connector, named on the rear face where it plugs in (it brings the 20 V), and each of
+            # its pins beside the housing, pin 1 lowest (the silkscreen plan, 2026-11-02)
+            {"text": "LEAD 20 V", "x": LEAD[0], "y": LEAD[1] + 3.6, "size": 1.0, "thickness": 0.15,
              "layer": "B.SilkS"},
+            *lead_pin_names(LEAD[0] + 2.75, LEAD[1], ["NC", "SCL", "SDA", "GND", "D-", "D+", "GND", "VIN"]),
         ],
     }
     return b
