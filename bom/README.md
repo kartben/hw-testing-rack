@@ -339,13 +339,13 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | GZ2012D601TF — ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805 | 4  | 0.02 | 0.07 | LCSC/JLCPCB C1017 |
 | Electronics | LEAD — JST PH 8-pin, vertical, through-hole | 2  | 0.08 | 0.16 | LCSC (hand-solder, buy loose) C157974 |
 | Electronics | SWD — pin header 1 × 5, 2.54 mm, through-hole | 2  | 0.04 | 0.07 | LCSC (hand-solder, buy loose) C32713271 |
-| Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
+| Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 2  | 0.99 | 1.99 | LCSC/JLCPCB C5181332 |
 | Electronics | PINS1 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins | 2  | 0.09 | 0.17 | LCSC (hand-solder, buy loose) C32713279 |
-| Electronics | PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
+| Electronics | PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 2  | 0.99 | 1.99 | LCSC/JLCPCB C5181332 |
 | Electronics | PINS2 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins | 2  | 0.09 | 0.17 | LCSC (hand-solder, buy loose) C32713279 |
-| Electronics | PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
+| Electronics | PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 2  | 0.99 | 1.99 | LCSC/JLCPCB C5181332 |
 | Electronics | PINS3 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins | 2  | 0.09 | 0.17 | LCSC (hand-solder, buy loose) C32713279 |
-| Electronics | PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
+| Electronics | PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 2  | 0.99 | 1.99 | LCSC/JLCPCB C5181332 |
 | Electronics | PINS4 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins | 2  | 0.09 | 0.17 | LCSC (hand-solder, buy loose) C32713279 |
 | Electronics | AOTA-B201610S3R3-101-T — 3.3 µH 2.4 A molded inductor, 0806, polarity dot on pad 1 (RP2350 core regulator) | 2  | 0.26 | 0.52 | LCSC/JLCPCB C42411119 |
 | Electronics | 3.3u — 3.3 µH, 75 V, 13.5 A sat (−20 %), 6 A heat, 28 / 30 mΩ, molded | 2  | 0.65 | 1.31 | LCSC/JLCPCB C506574 |
@@ -395,13 +395,13 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | 1u — Capacitor 1u 0402 | 8  | 0.01 | 0.05 | LCSC/JLCPCB C52923 |
 | Electronics | KT-0805G — green LED 0805 | 8  | 0.02 | 0.15 | LCSC/JLCPCB C2297 |
 | Electronics | LEAD — JST PH 8-pin, vertical, through-hole | 2  | 0.08 | 0.16 | LCSC (hand-solder, buy loose) C157974 |
-| Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
+| Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 2  | 0.99 | 1.99 | LCSC/JLCPCB C5181332 |
 | Electronics | PINS1 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins | 2  | 0.09 | 0.17 | LCSC (hand-solder, buy loose) C32713279 |
-| Electronics | PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
+| Electronics | PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 2  | 0.99 | 1.99 | LCSC/JLCPCB C5181332 |
 | Electronics | PINS2 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins | 2  | 0.09 | 0.17 | LCSC (hand-solder, buy loose) C32713279 |
-| Electronics | PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
+| Electronics | PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 2  | 0.99 | 1.99 | LCSC/JLCPCB C5181332 |
 | Electronics | PINS3 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins | 2  | 0.09 | 0.17 | LCSC (hand-solder, buy loose) C32713279 |
-| Electronics | PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 2  | 0.26 | 0.52 | LCSC/JLCPCB C2689964 |
+| Electronics | PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 2  | 0.99 | 1.99 | LCSC/JLCPCB C5181332 |
 | Electronics | PINS4 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins | 2  | 0.09 | 0.17 | LCSC (hand-solder, buy loose) C32713279 |
 | Electronics | 3.3u — 3.3 µH, 75 V, 13.5 A sat (−20 %), 6 A heat, 28 / 30 mΩ, molded | 2  | 0.65 | 1.31 | LCSC/JLCPCB C506574 |
 | Electronics | 2N7002 — N-MOSFET 60 V (open-drain AUX outputs) | 4  | 0.02 | 0.07 | LCSC/JLCPCB C8545 |
@@ -429,7 +429,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
 | Electronics | Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | JLCPCB quote 2026-11-01 |
 | Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 78.22 | 78.22 | JLCPCB quote 2026-11-01, adjusted |
-| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | 1.90 | 1.90 | JLCPCB quote 2026-11-01, adjusted |
+| Electronics | Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above | 1  | -9.86 | -9.86 | JLCPCB quote 2026-11-01, adjusted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 4.3 kg | 20.00 | 86.00 | any |
 | Printed parts | Rear bay covers (optional) | 12  | 0.00 | 0.00 | printed |

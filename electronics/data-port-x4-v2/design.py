@@ -103,6 +103,8 @@ HDR_Y = TOP_Z - CFG["header"]["z"]  # the 2 × 6 headers' centre: odd pins (GND,
 # its pair comes down east of it and in from the east, the DATA ×6's cell turned east to west (conn_pairs())
 HDRS = CFG["header"]["x"]
 USBS = CFG["usb"]
+# the receptacles' two pad columns (GCT USB4145's land, turned 90°): ±1.485 mm off its axis, 0.5 mm pitch
+USBC_COL = 1.485
 assert CFG["usb_rot"] == [90] * 4, "conn_pairs() draws the four USB-C standing"
 CLX = [20.9, 38.4, 52.9, 71.9]
 ESD_DX = 5.55
@@ -501,9 +503,9 @@ def port(b: Board, n: int):
     s.frame(f"USB-C {n} (source): Rp 56k on each CC; USBLC6 in flow-through (connector side | hub side)",
             6, 50, 108, 100)
     # vertical receptacle, standing (its slot upright, as the DATA ×6's), its mouth through the port wall's opening
-    part(s, usb, "usbc_v", {"VBUS": p + "VBUS", "GND": "GND", "CC1": p + "CC1", "CC2": p + "CC2",
-                            "D+": p + "CONN_DP", "D-": p + "CONN_DN", "SBU1": None, "SBU2": None,
-                            "SHIELD": "GND"}, f"PORT{n}", pcb=P(cx, USB_Y, 90), sch=at(50, 76, fields=(-8, -11)))
+    part(s, usb, "usbc_vg", {"VBUS": p + "VBUS", "GND": "GND", "CC1": p + "CC1", "CC2": p + "CC2",
+                             "D+": p + "CONN_DP", "D-": p + "CONN_DN", "SBU1": None, "SBU2": None,
+                             "SHIELD": "GND"}, f"PORT{n}", pcb=P(cx, USB_Y, 90), sch=at(50, 76, fields=(-8, -11)))
     s.wire(f"{usb}.A7", f"{usb}.B7")
     s.wire(f"{usb}.A6", f"{usb}.B6")
     # the CC resistors in the row under the receptacle, west of its 22 µF.  Source only: Rp from the switched VBUS,
@@ -1209,13 +1211,14 @@ def conn_pairs():
 
         def c(dx, dy):
             return cx + dx, USB_Y + dy
-        # the A column at cx − 0.85, the B column at cx + 0.85, 0.5 mm pitch
-        a9, a7, a6, a4 = (c(-0.85, d) for d in (-1.25, -0.25, 0.25, 1.25))
-        b4, b6, b7, b9 = (c(0.85, d) for d in (-1.25, -0.25, 0.25, 1.25))
+        a9, a7, a6, a4 = (c(-USBC_COL, d) for d in (-1.25, -0.25, 0.25, 1.25))
+        b4, b6, b7, b9 = (c(USBC_COL, d) for d in (-1.25, -0.25, 0.25, 1.25))
         e1, e2, e3 = ((ex - 1.1375, ey + d) for d in (-0.95, 0.0, 0.95))         # pins 1 (D−), 2 (GND), 3 (D+)
-        gv = (ex - 2.15, ey)
-        v1, vn, vs = (gv[0], e3[1]), c(1.85, -0.3), c(0.0, 0.6)                # D+'s vias: by its pin, by B6, between
-        tracks += [(p + "CONN_DN", "F.Cu", USB_W, [e1, c(3.4, -0.95), c(2.2, 0.25), b7]),
+        # the USBLC6 5.55 mm off its receptacle: its GND via under its body (south of the +5V line from its pin 5),
+        # out of the way of D−'s diagonal, which starts at cx + 3.8, clear of D+'s via by B6
+        gv = (ex, ey + 0.55)
+        v1, vn, vs = (ex - 2.15, e3[1]), c(2.35, -0.3), c(0.0, 0.6)          # D+'s vias: by its pin, by B6, between
+        tracks += [(p + "CONN_DN", "F.Cu", USB_W, [e1, c(3.8, -0.95), c(2.6, 0.25), b7]),
                    (p + "CONN_DN", "F.Cu", USB_W, [b7, c(0.4, 0.25), c(-0.4, -0.25), a7]),
                    (p + "CONN_DP", "F.Cu", USB_W, [e3, v1]),
                    (p + "CONN_DP", "B.Cu", USB_W, [v1, vn, vs]),
@@ -1226,6 +1229,11 @@ def conn_pairs():
                    (p + "VBUS", "F.Cu", 0.3, [a9, b4]), (p + "VBUS", "F.Cu", 0.3, [a4, b9])]
         vias += [(p + "CONN_DP", *v, 0.5, 0.3) for v in (v1, vn, vs)] + [("GND", *gv, 0.5, 0.3),
                                                                           ("+5V", ex, ey - 2.9, 0.5, 0.3)]
+        # and the two VBUS crossings joined under the A column on B.Cu, clear of D+'s way to its via between the
+        # columns (the DATA ×6's, mirrored): CC1 / CC2 leave the columns' outer ends free
+        vbn, vbs = c(0.0, -1.25), c(-0.6, 1.25)
+        tracks.append((p + "VBUS", "B.Cu", 0.3, [vbn, c(-0.9, -0.35), c(-0.9, 0.95), vbs]))
+        vias += [(p + "VBUS", *v, 0.6, 0.3) for v in (vbn, vbs)]
     return tracks, vias
 
 
@@ -1303,8 +1311,21 @@ def board() -> Board:
         y0 = PWR_Y
         pin_in = (x0 + 2.45 + 1.1375, y0 + 2.2 + 0.95)        # the switch's IN (pin 1, turned 180°): its centre
         c1 = (x0 + 5.13, y0 + 2.9 + 0.48)                     # its 1 µF's +5V pad
-        via = (c1[0] + 0.5, PWR_SPLIT + 1.1)                   # right of the shunt's VBUS pad, left of the INA226
-        hand_tracks.append(("+5V", "F.Cu", 0.6, [pin_in, c1, (via[0], c1[1] + 0.5), via]))
+        x5 = c1[0] + 0.5                                       # right of the shunt's VBUS pad, left of the INA226
+        # its via into the +5V area 2.5 mm off its USB-C's axis, clear of the GCT's north stakes and post: USB-C 1's
+        # straight down, 3's and 4's by a diagonal under the INA226, 2's along the split band, over its shunt's pad
+        cx = USBS[n - 1]
+        vx = (cx - 2.5 if x5 < cx else cx + 2.5) if abs(x5 - cx) < 2.5 else x5
+        via, d = (vx, PWR_SPLIT + 1.1), abs(vx - x5)
+        s = 1 if vx > x5 else -1
+        if d <= 0.3:
+            path = [(vx, c1[1] + 0.5), via]
+        elif d <= 1.2:
+            path = [(x5, c1[1] + 0.5), (x5, via[1] - d), via]
+        else:
+            path = [(x5, c1[1] + 0.5), (x5, PWR_SPLIT + 0.2), (x5 + 0.3 * s, PWR_SPLIT + 0.5),
+                    (vx - 0.3 * s, PWR_SPLIT + 0.5), (vx, PWR_SPLIT + 0.8), via]
+        hand_tracks.append(("+5V", "F.Cu", 0.6, [pin_in, c1, *path]))
         hand_vias.append(("+5V", *via, 0.6, 0.3))
         # the INA226's VS (pin 6, turned 90°) straight up to its 100 nF (C103-C403), then its via: the pin → cap →
         # via order.  The via north of it on ports 1 and 3, east of it on 2 and 4, where the port's EN line (and

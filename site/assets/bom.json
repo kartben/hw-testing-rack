@@ -2871,20 +2871,20 @@
 {
 "category": "Electronics",
 "group": "data-port-x4-v2",
-"item": "PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
+"item": "PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J101",
-"mpn": "TYPE-C-31-D-06",
-"manufacturer": "HRO",
+"mpn": "USB4145-03-0170-C",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C2689964",
+"part": "C5181332",
 "qty": 2,
-"unit_eur": 0.2576,
+"unit_eur": 0.9936,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.52
+"ext_eur": 1.99
 },
 {
 "category": "Electronics",
@@ -2907,20 +2907,20 @@
 {
 "category": "Electronics",
 "group": "data-port-x4-v2",
-"item": "PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
+"item": "PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J201",
-"mpn": "TYPE-C-31-D-06",
-"manufacturer": "HRO",
+"mpn": "USB4145-03-0170-C",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C2689964",
+"part": "C5181332",
 "qty": 2,
-"unit_eur": 0.2576,
+"unit_eur": 0.9936,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.52
+"ext_eur": 1.99
 },
 {
 "category": "Electronics",
@@ -2943,20 +2943,20 @@
 {
 "category": "Electronics",
 "group": "data-port-x4-v2",
-"item": "PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
+"item": "PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J301",
-"mpn": "TYPE-C-31-D-06",
-"manufacturer": "HRO",
+"mpn": "USB4145-03-0170-C",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C2689964",
+"part": "C5181332",
 "qty": 2,
-"unit_eur": 0.2576,
+"unit_eur": 0.9936,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.52
+"ext_eur": 1.99
 },
 {
 "category": "Electronics",
@@ -2979,20 +2979,20 @@
 {
 "category": "Electronics",
 "group": "data-port-x4-v2",
-"item": "PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
+"item": "PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J401",
-"mpn": "TYPE-C-31-D-06",
-"manufacturer": "HRO",
+"mpn": "USB4145-03-0170-C",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C2689964",
+"part": "C5181332",
 "qty": 2,
-"unit_eur": 0.2576,
+"unit_eur": 0.9936,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.52
+"ext_eur": 1.99
 },
 {
 "category": "Electronics",
@@ -3879,20 +3879,20 @@
 {
 "category": "Electronics",
 "group": "data-port-x4-v2-base",
-"item": "PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
+"item": "PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J101",
-"mpn": "TYPE-C-31-D-06",
-"manufacturer": "HRO",
+"mpn": "USB4145-03-0170-C",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C2689964",
+"part": "C5181332",
 "qty": 2,
-"unit_eur": 0.2576,
+"unit_eur": 0.9936,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.52
+"ext_eur": 1.99
 },
 {
 "category": "Electronics",
@@ -3915,20 +3915,20 @@
 {
 "category": "Electronics",
 "group": "data-port-x4-v2-base",
-"item": "PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
+"item": "PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J201",
-"mpn": "TYPE-C-31-D-06",
-"manufacturer": "HRO",
+"mpn": "USB4145-03-0170-C",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C2689964",
+"part": "C5181332",
 "qty": 2,
-"unit_eur": 0.2576,
+"unit_eur": 0.9936,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.52
+"ext_eur": 1.99
 },
 {
 "category": "Electronics",
@@ -3951,20 +3951,20 @@
 {
 "category": "Electronics",
 "group": "data-port-x4-v2-base",
-"item": "PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
+"item": "PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J301",
-"mpn": "TYPE-C-31-D-06",
-"manufacturer": "HRO",
+"mpn": "USB4145-03-0170-C",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C2689964",
+"part": "C5181332",
 "qty": 2,
-"unit_eur": 0.2576,
+"unit_eur": 0.9936,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.52
+"ext_eur": 1.99
 },
 {
 "category": "Electronics",
@@ -3987,20 +3987,20 @@
 {
 "category": "Electronics",
 "group": "data-port-x4-v2-base",
-"item": "PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
+"item": "PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J401",
-"mpn": "TYPE-C-31-D-06",
-"manufacturer": "HRO",
+"mpn": "USB4145-03-0170-C",
+"manufacturer": "GCT",
 "supplier": "LCSC/JLCPCB",
-"part": "C2689964",
+"part": "C5181332",
 "qty": 2,
-"unit_eur": 0.2576,
+"unit_eur": 0.9936,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.52
+"ext_eur": 1.99
 },
 {
 "category": "Electronics",
@@ -4480,10 +4480,10 @@
 "item": "Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-11-01, adjusted",
 "qty": 1,
-"unit_eur": 1.9,
-"notes": "quoted components $101.52 + $0.24 since (≈ €93.62) for 2 panels; catalogue unit prices give €91.72",
+"unit_eur": -9.86,
+"notes": "quoted components $101.52 + $0.24 since (≈ €93.62) for 2 panels; catalogue unit prices give €103.48",
 "unit": "pcs",
-"ext_eur": 1.9
+"ext_eur": -9.86
 },
 {
 "category": "Electronics",
@@ -4846,7 +4846,7 @@
 }
 ],
 "by_category": {
-"Electronics": 993.6299999999991,
+"Electronics": 993.6299999999993,
 "Printed parts": 86.0,
 "Fasteners": 14.76,
 "Motion": 29.36,

@@ -18,13 +18,13 @@ D1,1,KT-0805G,LED_0805_2012Metric,KT-0805G,Hubei KENTO,C2297,green LED 0805,yes,
 "FB1,FB2",2,GZ2012D601TF,L_0805_2012Metric,GZ2012D601TF,Sunlord,C1017,"ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805",yes,,
 J1,1,LEAD,JST_PH_B8B-PH-K_1x08_P2.00mm_Vertical,B8B-PH-K-S(LF)(SN),JST,C157974,"JST PH 8-pin, vertical, through-hole",,,"hand-solder, buy loose (LCSC)"
 J2,1,SWD,PinHeader_1x05_P2.54mm_Vertical,HX PZ2.54-1x5P ZZ,hanxia,C32713271,"pin header 1 × 5, 2.54 mm, through-hole",yes,,"hand-solder, buy loose (LCSC)"
-J101,1,PORT1,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,
+J101,1,PORT1,USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical,USB4145-03-0170-C,GCT,C5181332,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",,,
 J102,1,PINS1,PinHeader_2x06_P2.54mm_Vertical,HX PZ2.54-2x6P ZZ,hanxia,C32713279,"pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",,,"hand-solder, buy loose (LCSC)"
-J201,1,PORT2,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,
+J201,1,PORT2,USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical,USB4145-03-0170-C,GCT,C5181332,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",,,
 J202,1,PINS2,PinHeader_2x06_P2.54mm_Vertical,HX PZ2.54-2x6P ZZ,hanxia,C32713279,"pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",,,"hand-solder, buy loose (LCSC)"
-J301,1,PORT3,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,
+J301,1,PORT3,USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical,USB4145-03-0170-C,GCT,C5181332,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",,,
 J302,1,PINS3,PinHeader_2x06_P2.54mm_Vertical,HX PZ2.54-2x6P ZZ,hanxia,C32713279,"pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",,,"hand-solder, buy loose (LCSC)"
-J401,1,PORT4,USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical,TYPE-C-31-D-06,HRO,C2689964,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",,,
+J401,1,PORT4,USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical,USB4145-03-0170-C,GCT,C5181332,"USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",,,
 J402,1,PINS4,PinHeader_2x06_P2.54mm_Vertical,HX PZ2.54-2x6P ZZ,hanxia,C32713279,"pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",,,"hand-solder, buy loose (LCSC)"
 L1,1,AOTA-B201610S3R3-101-T,L_Abracon_AOTA-B201610,AOTA-B201610S3R3-101-T,Abracon LLC,C42411119,"3.3 µH 2.4 A molded inductor, 0806, polarity dot on pad 1 (RP2350 core regulator)",yes,"LCSC stock low (1 on 2026-10-19): JLC Global Sourcing; YSMC201612H-3R3MB (C41405891, unmarked polarity) only at our own risk, per Raspberry Pi",
 L2,1,3.3u,L_Changjiang_FXL0630,IHLP2525CZER3R3M01,Vishay Intertech,C506574,"3.3 µH, 75 V, 13.5 A sat (−20 %), 6 A heat, 28 / 30 mΩ, molded",,,

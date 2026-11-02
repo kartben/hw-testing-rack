@@ -1675,7 +1675,7 @@ def fanout_pads(board, specs: dict, islands: list, only=None) -> list[tuple[str,
                 for p in fp.Pads():
                     if p.GetNetCode() != code and p.IsOnLayer(layer):
                         p.TransformShapeToPolygon(sh, layer, clr, err, pcbnew.ERROR_OUTSIDE)
-            for z in board.Zones():
+            for z in [*board.Zones(), *(z for fp in board.GetFootprints() for z in fp.Zones())]:   # and footprints'
                 if z.GetIsRuleArea() and z.IsOnLayer(layer) and (z.GetDoNotAllowTracks() or z.GetDoNotAllowVias()):
                     sh.Append(z.Outline())
             obst[layer] = sh

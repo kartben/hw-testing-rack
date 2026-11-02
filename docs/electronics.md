@@ -464,7 +464,7 @@ in `config/rack.yaml` › `pcb.data_port_x4_v2`.
   - two T-heads come up through notches in the bottom edge (3.4 × 6.5 mm at x 31 and 67), against
     unplugging, with 7 × 6 mm of the front face free round each;
   - the base pushes on the rear face 5.3–9.3 mm above the bottom edge, which stays bare.
-- **USB-C.**  Vertical receptacles (HRO TYPE-C-31-D-06, 6.4 mm tall) on the front face, which faces the
+- **USB-C.**  Vertical receptacles (GCT USB4145-03-0170-C, 7.46 mm tall, its four shell stakes 1.70 mm long through the 1.6 mm board; the HRO TYPE-C-31-D-06 until 2026-11-02, whose 0.95 mm legs were drawn for 0.8 mm) on the front face, which faces the
   wall.  Their mouths sit 1 mm behind the wall's openings, at the ports' x and z 11, as v1's.
 - **One-sided assembly.**  Every part JLC places is on the front face, so JLC's Economic assembly applies.
 - **Rear face.**  Only the lead's PH 8 and the headers' tails, all soldered by hand.  J1 is a through-hole
