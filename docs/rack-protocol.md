@@ -70,7 +70,7 @@ lower one wins and the other retries.
 | 6 | flags: bit 0 the bay is reserved (access lease), 1 the bay has a camera, 2 someone is watching it (a stream or a snapshot under way); older nodes send 0, a hub ignores bits it does not know |
 | 7 | DATA ports waiting for power: wanted on, kept off by the bay's grant (older nodes: 0) |
 
-Node rev B: bytes 2–5 read the DATA lead's supply, DATA_VIN (20–28 V), after the eFuse.
+Node v1.0: bytes 2–5 read the DATA lead's supply, DATA_VIN (20–28 V), after the eFuse.
 
 ### INFO `0x300 + id`
 

@@ -53,7 +53,7 @@ drawer:
   front_thickness: 4
   plate_gap: [0.3, 3.2]  # between the board plate and the left, right walls (0.3 each until 2026-10-26): the
                          # display's lead runs at floor level in the right one
-  display:               # the node rev B's front display (the user, 2026-10-26): Waveshare 1.9inch Touch LCD (31122),
+  display:               # the node v1.0's front display (the user, 2026-10-26): Waveshare 1.9inch Touch LCD (31122),
                          # turned over (its SH 12 header down, its lead at floor level to the rear bay)
     glass: [52.36, 28.80]  # cover glass W × H (Waveshare's drawing); its PCB 51.0 × 26.6 centred behind it
     pcb: [51.0, 26.6]

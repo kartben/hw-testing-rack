@@ -86,7 +86,7 @@ def dut_current_ma(t: float) -> int:
 PORTS = 1           # the boards the node serves; 1: today's one DUT (node["dut"])
 ports: list[dict] = []
 UP_S = 0.8          # a board's USB enumeration after power on or reset
-# The admission rule (docs/multi-dut-node.md, Power budget; ports.c), node rev B: a port goes on only
+# The admission rule (docs/multi-dut-node.md, Power budget; ports.c), node v1.0: a port goes on only
 # if what the bay draws on DATA_VIN (the node's INA226: the DATA x4 board itself counts) plus a
 # reserve for its inrush stays within the hub's grant
 GRANT_MW = 5400     # the hub's GRANT: 100 W at 20 V, 12 bays, four a row
@@ -1158,7 +1158,7 @@ def status(ip: int = 0) -> dict:
                     "rfc2217": any(c["id"] == "rfc2217" for c in access.fake), "raw": False,
                     "rx": len(console.log), "tx": console.tx, "dropped": 0},
             "access": access.summary(ip), "firmware": firmware.doc(), "camera": camera.doc()}
-    # A DATA x4 bay is node rev B's: mW on the DATA lead against the hub's grant.  The one-DUT node
+    # A DATA x4 bay is node v1.0's: mW on the DATA lead against the hub's grant.  The one-DUT node
     # is a stand-in's, in mA on its 5 V (the page shows no budget for it)
     s["budget"] = ({"unit": "mW", "limit": GRANT_MW, "granted": True, "reserve": RESERVE_MW,
                     "draw": dut["mw"], "waiting": sum(pt["waiting"] for pt in ports), "sheds": 0,

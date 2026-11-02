@@ -11,11 +11,11 @@ config BAY_DUT_FAULT_OFF_MS
 	  The TPS2553 limits the current by itself and keeps retrying.  If its
 	  FAULT flag stays asserted this long, the firmware switches VBUS off
 	  and latches the fault until the next "bay power on".  0 disables.
-	  Node rev B (dut_port's vin-efuse): the eFuse's ~FLT switches
+	  Node v1.0 (dut_port's vin-efuse): the eFuse's ~FLT switches
 	  DATA_VIN off at once instead.
 
 config BAY_DATA_POWER_AT_BOOT
-	bool "Node rev B: DATA_VIN on at boot, once the power-on checks pass"
+	bool "Node v1.0: DATA_VIN on at boot, once the power-on checks pass"
 	default y
 	help
 	  The eFuse on the DATA lead is off until the firmware switches it
@@ -23,14 +23,14 @@ config BAY_DATA_POWER_AT_BOOT
 	  stays off until "bay power on".
 
 config BAY_DATA_FLT_BLANK_MS
-	int "Node rev B: ~FLT ignored this long after the eFuse goes on (ms)"
+	int "Node v1.0: ~FLT ignored this long after the eFuse goes on (ms)"
 	default 20
 	help
 	  The TPS26600 holds ~FLT low while it is off and while it ramps
 	  (4-5 ms soft start).
 
 config BAY_DATA_VIN_MIN_MV
-	int "Node rev B: DATA_VIN must read at least this once on (mV)"
+	int "Node v1.0: DATA_VIN must read at least this once on (mV)"
 	default 15000
 	help
 	  Read by the node's INA226 after BAY_DATA_FLT_BLANK_MS.  Less, or a
@@ -39,7 +39,7 @@ config BAY_DATA_VIN_MIN_MV
 	  boards' converters start above 13.5 V.
 
 config BAY_DATA_ANSWER_MS
-	int "Node rev B: the DATA board must answer within this (ms)"
+	int "Node v1.0: the DATA board must answer within this (ms)"
 	default 1000
 	help
 	  Its expander, after DATA_VIN goes on (its converters start, its
@@ -62,11 +62,11 @@ config BAY_PORTS_BUDGET_MA
 	int "DATA x4: a port goes on only if the bay stays within this (mA)"
 	default 1150
 	help
-	  Node rev A: the node's TPS2553 feeds the DATA x4 through DUT_5V and
+	  The first node design (never built): the node's TPS2553 feeds the DATA x4 through DUT_5V and
 	  limits at 1.34-1.52 A.  A port goes on only if what the bay draws
 	  (the node's INA226 on DUT_5V: the board itself counts) plus
 	  BAY_PORTS_RESERVE_MA stays within this (docs/multi-dut-node.md,
-	  Power budget).  Node rev B counts in watts on DATA_VIN instead:
+	  Power budget).  Node v1.0 counts in watts on DATA_VIN instead:
 	  BAY_PORTS_LIMIT_MW and the hub's grant.
 
 config BAY_PORTS_RESERVE_MA
@@ -77,7 +77,7 @@ config BAY_PORTS_RESERVE_MA
 	  instead, if that is more.
 
 config BAY_PORTS_LIMIT_MW
-	int "Node rev B: the bay's own power limit on DATA_VIN, without a grant (mW)"
+	int "Node v1.0: the bay's own power limit on DATA_VIN, without a grant (mW)"
 	default 25000
 	help
 	  A port goes on only if what the bay draws on DATA_VIN (the node's
@@ -88,7 +88,7 @@ config BAY_PORTS_LIMIT_MW
 	  the eFuse's 1.76 A.
 
 config BAY_PORTS_RESERVE_MW
-	int "Node rev B: kept for a port's start (mW)"
+	int "Node v1.0: kept for a port's start (mW)"
 	default 600
 	help
 	  BAY_PORTS_RESERVE_MA's 100 mA at 5 V, through the DATA board's
@@ -104,7 +104,7 @@ config BAY_PORTS_SHED_MA
 	  4 averages), or the poll as a backup: the port switched on last goes
 	  off, before the node's TPS2553 (1.34 A minimum) cuts the whole bay.
 	  It stays wanted and comes back once the budget has room for it.
-	  Node rev B: the current on DATA_VIN, below the eFuse's 1.76 A; the
+	  Node v1.0: the current on DATA_VIN, below the eFuse's 1.76 A; the
 	  grant is checked on top, at each poll.
 
 config BAY_PORTS_BOARD_MA
@@ -114,8 +114,8 @@ config BAY_PORTS_BOARD_MA
 	help
 	  Without the node's INA226 (a stand-in, or it does not answer), the
 	  bay's draw is the ports' sum plus this, at 5 V: the hub, the
-	  co-processor, the LEDs.  Node rev B, the DATA x4 v2: up to 0.53 A
-	  (0.51 A through its 3.3 V LDO, the matrix, the port LEDs).  Rev A,
+	  co-processor, the LEDs.  Node v1.0, the DATA x4 v2: up to 0.53 A
+	  (0.51 A through its 3.3 V LDO, the matrix, the port LEDs).  The first design,
 	  the board on DUT_5V: 0.3-0.46 A.
 
 config BAY_PORTS_VBUS_OFF_MV
@@ -154,7 +154,7 @@ config BAY_PORTS_POLL_MS
 	default 20 if $(dt_nodelabel_bool_prop,dut_port,vin-efuse)
 	default 100
 	help
-	  Node rev B: the DATA lead has no INT line, so the poll is also how
+	  Node v1.0: the DATA lead has no INT line, so the poll is also how
 	  the node sees a fault or a board that went away; two missed polls
 	  in a row switch DATA_VIN off.
 

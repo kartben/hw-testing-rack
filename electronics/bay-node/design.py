@@ -290,7 +290,7 @@ def board() -> Board:
         # meets it (Freerouting takes a wire ending mid-segment as unconnected)
         ("DATA_VIN", "F.Cu", 0.6, [(63.15, 37.6), (63.75, 37.0), (65.4743, 37.0), (66.25, 37.0)]),
     ]
-    # the camera lead's J6 (node rev B: 1 GND · 2 SCK · 3 CAM_5V · 4 MOSI · 5 MISO · 6 LED_K · 7 CS · 8 GND): SCK
+    # the camera lead's J6 (node v1.0: 1 GND · 2 SCK · 3 CAM_5V · 4 MOSI · 5 MISO · 6 LED_K · 7 CS · 8 GND): SCK
     # from its test pad TP18 into J6.2 from the west; CAM_5V (from F1, past J6's north end, through C27) into J6.3
     # at its pad's east end, so it doesn't cross the SPI lines.  LED_K (≤ 102 mA) is the router's: drawn round
     # J6's south end it fenced off POS_OUT's way south
@@ -607,7 +607,7 @@ def board() -> Board:
         "IO13": "PC_DET", "IO14": "MUX_FORCE_PC",
         "IO11": "CAM_SCK", "IO10": "CAM_MOSI", "IO9": "CAM_MISO",
         # left column -> the rack bus block (CAN, POS_IN), SERVICE, the camera's light; the camera's CS on IO4, the
-        # rear end (node rev B, IO8 before): under the module, east along the B.Cu lane INT freed, to its 33 Ω
+        # rear end (node v1.0, IO8 before): under the module, east along the B.Cu lane INT freed, to its 33 Ω
         "IO15": "SVC", "IO16": "POS_IN", "IO17": "CAN_RXD", "IO18": "CAN_TXD",
         "IO4": "CAM_CS", "IO7": "CAM_LED",
         "TXD0": "U0TX", "RXD0": "U0RX",
@@ -633,7 +633,7 @@ def board() -> Board:
     m.note("GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/1 I2C SDA/SCL · IO47/21 UART1 TX/RX (AUX) ·")
     m.note("IO12 AUX_RST · IO48 AUX_BOOT · IO38 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·")
     m.note("IO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO42 POS_OUT · camera SPI2: IO11 SCK · IO10 MOSI · IO9 MISO · IO4 CS ·")
-    m.note("IO7 light.  Free: IO5, IO6, IO8 (the camera's CS until node rev B).  IO35–IO37 are the octal PSRAM's;")
+    m.note("IO7 light.  Free: IO5, IO6, IO8 (the camera's CS until node v1.0).  IO35–IO37 are the octal PSRAM's;")
     m.note("the WROOM-1 has no IO26/IO33/IO34.  The I²C bus (IO1/IO2) also goes out on J7.6/7 to the drawer's DATA board.")
     m.note("The map is the ESP32-S3-DevKitC-1 v1.1's (N8R8) as is: the bench stand-in needs no remap.")
     m.note("Strapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY).")
@@ -694,7 +694,7 @@ def board() -> Board:
     # the drawer's DATA board on an 8-wire PH lead (the camera's lead type, 'Same direction'): DATA_VIN (the
     # eFused VIN, 20–28 V: the board makes its own 5 V), GND, D−, D+, GND, the node's I²C (the INA226's bus,
     # 2.2k pull-ups on this board; the DATA board's I²C devices keep off 0x40) and GND on pin 8.  Pin 8 is GND
-    # since node rev B (no INT: the node polls the DATA board): a camera lead plugged in here, either way round,
+    # since node v1.0 (no INT: the node polls the DATA board): a camera lead plugged in here, either way round,
     # lands J7.1 on one of the pod's end GND pins and J7.8 on the other, a short the eFuse cuts, and a 1:1 DATA
     # lead puts J7.1 on the DATA board's unconnected pin 1.  Side entry on the right edge (like J2: pin 1
     # towards the front), its mouth towards the drag chain's fixed end; the pair from U8 is drawn in
@@ -925,7 +925,7 @@ def board() -> Board:
     c = b.sheet("Camera", "cam.kicad_sch", "Camera lead: Arducam Mega SPI and its LEDs")
     c.frame("J6: JST PH 8 to the bay's camera pod (Arducam Mega 3MP SPI + white LEDs), ≈ 50 cm", 6, 6, 120, 60)
     cx, cy = CFG["cam"]
-    # GND on both end pins (node rev B): a DATA lead plugged in here carries no VIN, and the pod's end GND pins
+    # GND on both end pins (node v1.0): a DATA lead plugged in here carries no VIN, and the pod's end GND pins
     # meet J7.1 and J7.8 when a camera lead goes into J7 by mistake (the eFuse cuts that short).  CAM_5V on pin
     # 3 keeps it off a DATA board's GND pins whichever way a DATA lead goes in, and LED_K on pin 6, opposite it:
     # a 1:1 camera lead puts CAM_5V on the pod's LED cathodes, not on a camera line

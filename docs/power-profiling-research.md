@@ -24,10 +24,10 @@ microamps in sleep, hundreds of milliamps when awake, and the wake-ups in betwee
   - Nano Matter: source mode on 3V3, its LED jumper cut.
   - XIAO: source mode on the battery pads.
   - UNO R4, GIGA R1, Wio Terminal, BeaglePlay: no MCU-only point, so board level only.
-- **Rev A:** a PPK2 on each low-power bay, on a DATA ×4 port (the PC reaches it over USB/IP), wired
+- **v1.0:** a PPK2 on each low-power bay, on a DATA ×4 port (the PC reaches it over USB/IP), wired
   to the DUT's measurement point by a short 2-wire lead.  That gives 0.2 µA–1 A at 100 kS/s, Nordic's
   app, and twister's power harness once its PPK2 support lands.  No design work, ≈ €100 a bay.
-- **Rev B, if many bays or CI need it:** a "rack profiler" module (section 5).  It is a cheap PPK2
+- **The next revision, if many bays or CI need it:** a "rack profiler" module (section 5).  It is a cheap PPK2
   equivalent that sits on the plate beside its DUT, on a DATA ×4 port, with a fail-safe bypass so the
   DUT keeps its power when the profiler is off.  ≈ $15 of parts and an RP2350, weeks of design and
   calibration.
@@ -89,8 +89,8 @@ General rules for every board:
 |---|---|---|---|
 | a. The node's INA226, fast (140 µs, ≈ 5 kS/s, captured into PSRAM) | VBUS, the whole kit, 50 µA steps | firmware only | board level: regressions, active phases.  Worth doing, but not "low power" |
 | b. The v2's per-port INA226s, fast | each port's VBUS, 25 µA steps | firmware only | as a, one port at a time (the shared I²C bus) |
-| c. **A PPK2 per low-power bay**, on a DATA ×4 port, through USB/IP | the MCU domain (section 3), 0.2 µA–1 A, 100 kS/s | ≈ €100 a bay; a DATA ×4 port | **rev A** |
-| d. **A rack profiler module** (section 5) on a DATA ×4 port, on the plate | the MCU domain, 1 µA–500 mA, 100 kS/s | ≈ $15 of parts + PCB and assembly, 2–4 weeks of design | **rev B**, if more than a few bays or CI need it |
+| c. **A PPK2 per low-power bay**, on a DATA ×4 port, through USB/IP | the MCU domain (section 3), 0.2 µA–1 A, 100 kS/s | ≈ €100 a bay; a DATA ×4 port | **v1.0** |
+| d. **A rack profiler module** (section 5) on a DATA ×4 port, on the plate | the MCU domain, 1 µA–500 mA, 100 kS/s | ≈ $15 of parts + PCB and assembly, 2–4 weeks of design | **the next revision**, if more than a few bays or CI need it |
 | e. Inside a node or a DATA board | — | — | no: the lead has to reach the DUT's jumper anyway, and the node has no spare ADC or DRAM |
 
 A bay with a single DATA port has no free USB port for a profiler.  Low-power bays take a DATA ×4
@@ -145,11 +145,11 @@ A bay with a single DATA port has no free USB port for a profiler.  Low-power ba
 
 ## 7. Recommendation
 
-1. **Rev A:** a PPK2 on each low-power bay (a DATA ×4 bay), wired to the DUT's MCU point after that
+1. **v1.0:** a PPK2 on each low-power bay (a DATA ×4 bay), wired to the DUT's MCU point after that
    board's one-time preparation (section 3).  Document the wiring per board.  Check that the 100 kS/s
    stream holds through USB/IP.
-2. **Rev A, firmware:** a twister `PowerMonitor` for those bays.  Later, the INA226 fast capture for
+2. **v1.0, firmware:** a twister `PowerMonitor` for those bays.  Later, the INA226 fast capture for
    board-level traces (option a).
-3. **Rev B:** the rack profiler module (section 5) once the PPK2 bays show how many units are needed;
+3. **The next revision:** the rack profiler module (section 5) once the PPK2 bays show how many units are needed;
    below about five, PPK2s cost less than the design time.
 4. **Not:** µA on VBUS, a profiler inside the node, INA228/229 while LCSC has none.

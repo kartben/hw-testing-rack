@@ -543,9 +543,9 @@ static int port_json(char *buf, size_t size, int port, uint32_t ip, bool full)
 
 /*
  * /api/status's "budget": what the bay's ports are switched on within (node
- * rev B: mW on DATA_VIN, the hub's grant or the bay's own limit; rev A: mA on
+ * v1.0: mW on DATA_VIN, the hub's grant or the bay's own limit; the first design: mA on
  * DUT_5V), what it draws, the ports waiting, the sheds; and why the DATA
- * lead is off (rev B), null when it is not
+ * lead is off (v1.0), null when it is not
  */
 static int budget_status_json(char *buf, size_t size)
 {
@@ -2213,7 +2213,7 @@ PROMETHEUS_COUNTER_DEFINE(bay_aux_tx_bytes_total, "Bytes from the client to the 
 PROMETHEUS_COUNTER_DEFINE(bay_access_refused_total, "Connections and requests the rules refused",
 			  BAY_LABEL, &bay_collector);
 PROMETHEUS_GAUGE_DEFINE(bay_power_limit_watts,
-			"Node rev B: what the DATA ports are switched on within (the hub's grant)",
+			"Node v1.0: what the DATA ports are switched on within (the hub's grant)",
 			BAY_LABEL, &bay_collector);
 PROMETHEUS_GAUGE_DEFINE(bay_ports_waiting, "DATA ports wanted on and kept off, waiting for power",
 			BAY_LABEL, &bay_collector);

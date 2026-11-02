@@ -36,16 +36,16 @@ struct dut_power_reading {
 };
 
 int dut_init(void);
-/* Node rev B: DATA_VIN on at boot (CONFIG_BAY_DATA_POWER_AT_BOOT), after ports_init() */
+/* Node v1.0: DATA_VIN on at boot (CONFIG_BAY_DATA_POWER_AT_BOOT), after ports_init() */
 void dut_start(void);
 /*
- * Rev B: -EIO or -ENODEV when the DATA lead's power-on rule keeps DATA_VIN
+ * v1.0: -EIO or -ENODEV when the DATA lead's power-on rule keeps DATA_VIN
  * off (dut_lead_state() says why)
  */
 int dut_power_set(bool on);
 bool dut_power_get(void);
 
-/* Node rev B: why DATA_VIN went off, or would not go on (docs/firmware.md) */
+/* Node v1.0: why DATA_VIN went off, or would not go on (docs/firmware.md) */
 enum dut_lead {
 	DUT_LEAD_OK,         /* on, or off on request */
 	DUT_LEAD_BUS,        /* SCL or SDA held low: the lead reversed? */
@@ -103,13 +103,13 @@ int ports_count(void);
 int ports_waiting(void);
 
 /*
- * The bay's budget for its ports: mA on DUT_5V (node rev A), mW on DATA_VIN
- * (rev B: the hub's grant, or CONFIG_BAY_PORTS_LIMIT_MW without one)
+ * The bay's budget for its ports: mA on DUT_5V (the first node design, never built), mW on DATA_VIN
+ * (v1.0: the hub's grant, or CONFIG_BAY_PORTS_LIMIT_MW without one)
  */
 struct ports_budget {
-	bool power;       /* mW (rev B), else mA */
+	bool power;       /* mW (v1.0), else mA */
 	bool granted;     /* the limit is the hub's grant */
-	int32_t limit;    /* a port goes on only within it; over it one is shed (rev B) */
+	int32_t limit;    /* a port goes on only within it; over it one is shed (v1.0) */
 	int32_t reserve;  /* kept for a port's start */
 	int32_t draw;     /* what the bay draws now */
 	uint8_t waiting;  /* ports_waiting() */

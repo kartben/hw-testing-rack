@@ -306,7 +306,7 @@ function bayTile(n) {
   a.dataset.state = n.state;
   a.dataset.id = n.id;
   a.dataset.camera = n.camera ?? "none";
-  // Node rev B reports its DATA lead (20-28 V) and keeps it within the grant, in watts
+  // Node v1.0 reports its DATA lead (20-28 V) and keeps it within the grant, in watts
   const lead = n.grant_mw != null && n.dut_mv > 6000;
   a.title = [`${[n.name, n.ip].filter(Boolean).join(" · ")} · node 0x${n.id.toString(16).padStart(2, "0")} · ${n.mac ?? ""}`,
     CAM_LABEL[n.camera], lead ? `DATA lead granted ${fix(n.grant_mw, 1)} W` : "",

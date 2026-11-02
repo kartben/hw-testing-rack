@@ -6206,7 +6206,7 @@
 		)
 		(uuid "f4ec8d2a-1eb9-56d3-b800-af50c495c063")
 	)
-	(text_box "GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/1 I2C SDA/SCL · IO47/21 UART1 TX/RX (AUX) ·\nIO12 AUX_RST · IO48 AUX_BOOT · IO38 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·\nIO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO42 POS_OUT · camera SPI2: IO11 SCK · IO10 MOSI · IO9 MISO · IO4 CS ·\nIO7 light.  Free: IO5, IO6, IO8 (the camera's CS until node rev B).  IO35–IO37 are the octal PSRAM's;\nthe WROOM-1 has no IO26/IO33/IO34.  The I²C bus (IO1/IO2) also goes out on J7.6/7 to the drawer's DATA board.\nThe map is the ESP32-S3-DevKitC-1 v1.1's (N8R8) as is: the bench stand-in needs no remap.\nStrapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY)."
+	(text_box "GPIO map: IO41 DUT_EN · IO40 DUT_FLT_N · IO39 INA_ALERT · IO2/1 I2C SDA/SCL · IO47/21 UART1 TX/RX (AUX) ·\nIO12 AUX_RST · IO48 AUX_BOOT · IO38 LED · IO13 PC_DET · IO14 MUX_FORCE_PC · IO15 SVC · IO19/20 USB (OTG/JTAG) ·\nIO18/17 CAN TX/RX (TWAI) · IO16 POS_IN · IO42 POS_OUT · camera SPI2: IO11 SCK · IO10 MOSI · IO9 MISO · IO4 CS ·\nIO7 light.  Free: IO5, IO6, IO8 (the camera's CS until node v1.0).  IO35–IO37 are the octal PSRAM's;\nthe WROOM-1 has no IO26/IO33/IO34.  The I²C bus (IO1/IO2) also goes out on J7.6/7 to the drawer's DATA board.\nThe map is the ESP32-S3-DevKitC-1 v1.1's (N8R8) as is: the bench stand-in needs no remap.\nStrapping pins IO0/IO3/IO45/IO46 are not used for I/O.  USB is full-speed only (one internal PHY)."
 		(exclude_from_sim no)
 		(at 15.24 177.8 0)
 		(size 269.24 20.32)

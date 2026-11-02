@@ -1,5 +1,5 @@
 /*
- * Node rev B on native_sim: the DATA x4 of the ports test on the emulated
+ * Node v1.0 on native_sim: the DATA x4 of the ports test on the emulated
  * I2C bus (i2c0), powered through the eFuse on the DATA lead (dut_port's
  * vin-efuse), the node's own INA226 on DATA_VIN, SCL and SDA seen as two
  * emulated GPIOs.

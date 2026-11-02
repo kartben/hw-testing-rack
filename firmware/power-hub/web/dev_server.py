@@ -46,7 +46,7 @@ MARGIN_PCT = 10  # CONFIG_HUB_BUDGET_MARGIN_PCT
 ROW_LIMIT_MA = 1600   # CONFIG_HUB_ROW_LIMIT_MA
 NODE_OWN_MW = 1800    # CONFIG_HUB_NODE_OWN_MW
 CAMERA_OWN_MW = 2500  # CONFIG_HUB_CAMERA_OWN_MW
-# A node rev B's DATA lead: its DATA board (≈ 0.38 A at 5 V) and the board on it, through ≈ 88 %
+# A node v1.0's DATA lead: its DATA board (≈ 0.38 A at 5 V) and the board on it, through ≈ 88 %
 DATA_BOARD_MA = 380
 LINE_DROP_MV = 150
 
@@ -141,7 +141,7 @@ def grant_mw(c: dict | None, row_bays: int, rack_bays: int, camera: bool) -> int
 
 
 def nodes_of(row: str, t: float) -> list[dict]:
-    """A powered row's nodes, rev B: each reports its DATA lead (DATA_VIN, its STATUS) and gets a GRANT."""
+    """A powered row's nodes, v1.0: each reports its DATA lead (DATA_VIN, its STATUS) and gets a GRANT."""
     if not powered(row):
         return []
     c = contract()

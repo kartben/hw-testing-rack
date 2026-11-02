@@ -1,8 +1,8 @@
 /*
  * DUT power, fault handling, INA226 readout and AUX RESET/BOOT.
  *
- * Node rev A and the stand-ins: a TPS2553 on the DUT's VBUS, on from the
- * start (its EN is pulled up).  Node rev B (dut_port's vin-efuse): a TPS26600
+ * The first node design (never built) and the stand-ins: a TPS2553 on the DUT's VBUS, on from the
+ * start (its EN is pulled up).  Node v1.0 (dut_port's vin-efuse): a TPS26600
  * eFuse on VIN, out on the DATA lead as DATA_VIN, off until the DATA lead's
  * power-on rule lets it on (docs/firmware.md):
  *  - before: SCL and SDA idle high and the node's INA226 answers;
@@ -181,7 +181,7 @@ static void fault_work_handler(struct k_work *work)
 {
 	ARG_UNUSED(work);
 
-	/* Rev A: the TPS2553 limits by itself, act only on a persistent FAULT */
+	/* The first design: the TPS2553 limits by itself, act only on a persistent FAULT */
 	if (!EFUSE && gpio_pin_get_dt(&flt) <= 0) {
 		return;
 	}
@@ -283,8 +283,8 @@ int dut_init(void)
 	}
 
 	/*
-	 * Rev A: EN is pulled up on the board, the DUT is already powered: keep
-	 * it so.  Rev B: the eFuse is off until the power-on rule lets it on.
+	 * The first design: EN is pulled up on the board, the DUT is already powered: keep
+	 * it so.  v1.0: the eFuse is off until the power-on rule lets it on.
 	 */
 	ret = gpio_pin_configure_dt(&en, EFUSE ? GPIO_OUTPUT_INACTIVE : GPIO_OUTPUT_ACTIVE);
 	if (ret != 0) {
@@ -378,7 +378,7 @@ int dut_power_cycle(k_timeout_t off_time)
 
 bool dut_fault_active(void)
 {
-	/* Rev B: ~FLT is low whenever the eFuse is off */
+	/* v1.0: ~FLT is low whenever the eFuse is off */
 	return (!EFUSE || power_on) && gpio_pin_get_dt(&flt) > 0;
 }
 

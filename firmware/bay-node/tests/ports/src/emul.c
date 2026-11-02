@@ -5,7 +5,7 @@
  * their registers.  The node's own INA226 (0x40) measures the board on
  * DUT_5V: the ports that are on and the board itself, its ALERT on gpio0.
  *
- * Node rev B (dut_port's vin-efuse): the board is powered while the eFuse's
+ * Node v1.0 (dut_port's vin-efuse): the board is powered while the eFuse's
  * enable (dut_port's EN) is high, and the node's INA226 reads DATA_VIN, the
  * board's 5 V converted from it at 88 %.
  *
@@ -36,7 +36,7 @@ static int offline;
 
 static void board_update(void);
 
-/* DUT_5V on (rev A), or the eFuse on (rev B): DATA_VIN */
+/* DUT_5V on (the first design), or the eFuse on (v1.0): DATA_VIN */
 static bool lead_powered(void)
 {
 	if (EFUSE) {
@@ -212,7 +212,7 @@ static int port_mv(int n)
 	return MAX(mv, ext_mv[n]);
 }
 
-/* What the node's INA226 measures, mA: DUT_5V (rev A), or DATA_VIN (rev B) */
+/* What the node's INA226 measures, mA: DUT_5V (the first design), or DATA_VIN (v1.0) */
 static int meter_ma(void)
 {
 	int ma = board_ma;
@@ -368,7 +368,7 @@ static void chips_reset(void)
 	}
 }
 
-/* Rev B: the chips start from their defaults each time DATA_VIN comes back */
+/* v1.0: the chips start from their defaults each time DATA_VIN comes back */
 static void chips_follow(void)
 {
 	static bool was_up = true;

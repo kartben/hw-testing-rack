@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 #
-# Node rev B's DATA lead (src/dut.c with src/ports.c) on native_sim: the
+# Node v1.0's DATA lead (src/dut.c with src/ports.c) on native_sim: the
 # eFuse's power-on rule against the emulated DATA x4 of the ports test,
 # powered by the eFuse's enable.  ztest.
 

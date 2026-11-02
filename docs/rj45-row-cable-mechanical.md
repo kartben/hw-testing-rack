@@ -21,7 +21,7 @@ drawer closed everything clears.
 - **The bay-to-bay cords are made to length, 12 cm.**  A 0.15 m stock cord leaves 28–30 mm of slack,
   and there is nowhere to put it.  The feeds are stock: 0.25 / 0.5 / 0.75 / 0.75 m for rows A–D.
 - **Mechanical effort: about 3 days** after the node and hub layouts, regeneration included
-  (section 5).  That fits rev B, as the electrical study recommends.
+  (section 5).  That fits the next revision, as the electrical study recommends.
 
 ## Model
 
@@ -136,7 +136,7 @@ plenum, x 147–162.  Between the boots the cord runs 46 mm straight, at y 20, z
 - **Feeds:** the hub's plugs are reached through the base ladder's window, from the rack's left side.
   The first bay's IN plug is reached from the left side too: its boot stands out of the face.
 
-## 5. Changes and effort (mechanical, rev B)
+## 5. Changes and effort (mechanical, next revision)
 
 | Part | Change | Effort |
 |---|---|---|

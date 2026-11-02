@@ -129,7 +129,7 @@ def main() -> None:
         dev_server.ports[0]["client"] = ip("192.168.1.41")
         dev_server.ports[2]["lease"] = {"holder": ip("192.168.1.41"), "note": "twister job 8812",
                                         "until": time.monotonic() + 3600}
-        # B3.1's FRDM board draws 300 mA: no room left in the hub's 5.4 W (node rev B) for B3.4's
+        # B3.1's FRDM board draws 300 mA: no room left in the hub's 5.4 W (node v1.0) for B3.4's
         # start, asked on as soon as there is
         dev_server.ports[0]["draw"] = 300
         dev_server.ports[3].update(on=False, waiting=True, queued=True)

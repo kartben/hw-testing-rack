@@ -1,12 +1,12 @@
-# ESP32-S31 for the bay node rev B? (research)
+# ESP32-S31 for the bay node v1.0? (research)
 
 **Status (2026-10-22): research only, nothing changed.**  The user asked for a feasibility check of
 Espressif's ESP32-S31, "puisqu'il y a déjà des draft PRs pour ajouter le support dans Zephyr".  The question
-is whether a rev B bay node (and maybe the power hub) should move from the ESP32-S3-WROOM-1-N8R8 to an S31
+is whether a v1.0 bay node (and maybe the power hub) should move from the ESP32-S3-WROOM-1-N8R8 to an S31
 module.  It follows [mcu-alternatives.md](mcu-alternatives.md), which looked at the BL616 for the same
 reasons: a high-speed USB host, and cheaper assembly.
 
-**Answer: not for rev B now; prototype first.**
+**Answer: not for v1.0 now; prototype first.**
 - The chip fixes the node's real limits: a high-speed host with 16 channels whose DMA reaches PSRAM, an
   Ethernet MAC, 802.15.4 and CAN FD.
 - But in Zephyr it is two untouched draft PRs, with no Wi-Fi and no Ethernet.
@@ -134,7 +134,7 @@ OFDMA and target wake time help in a crowded rack only with a Wi-Fi 6 access poi
 
 ## What it would cost
 
-**The node (rev B)**, `electronics/bay-node`:
+**The node (v1.0)**, `electronics/bay-node`:
 - **Module.**  Same 18 × 25.5 outline, new pin map: the 27 signals in `design.py` move.  The HS pair leaves
   from inner pads 54/55, under the module: via-in-pad or vias next to the pads, 90 Ω to the FSUSB42.
 - **USB.**  The service mode moves to USB Serial/JTAG's own pins (33/34).  The PC port's mux then switches
@@ -173,7 +173,7 @@ PR itself is a month-old draft.
 
 ## Recommendation
 
-**Rev B stays on the ESP32-S3.**  Revisit the S31 once all of these hold:
+**v1.0 stays on the ESP32-S3.**  Revisit the S31 once all of these hold:
 1. the SoC PR (119851) and its hal_espressif PR are on Zephyr main;
 2. S31 Wi-Fi works in Zephyr (blobs in hal_espressif, the driver enabled);
 3. split transactions (120876 or a successor) are merged, or proven by us on the S31;
@@ -191,7 +191,7 @@ PR itself is a month-old draft.
 3. **Ethernet:** the same tests over RMII 100BASE-TX (a LAN8720 board), to see whether HS USB/IP reaches
    tens of Mbit/s.
 
-**Meanwhile, for rev B on the S3:**
+**Meanwhile, for v1.0 on the S3:**
 - If the RJ45 row cable comes, its T1S pair can be served by a LAN8651 on the camera's SPI bus
   (`eth_lan865x`, upstream).  That needs no new MCU.
 - The DRAM squeeze stays the node's main risk: the next lever is `CONFIG_ESP32_WIFI_NET_ALLOC_SPIRAM`

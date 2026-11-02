@@ -12,15 +12,15 @@ document covers the electrical side and the verdict; the mechanical side is Mech
   - The CAN pair is a real twisted pair.
   - POS goes through a straight cord when IN and OUT share one pinout.
   - Drop and heating are small, and the cords cost less than the JST leads with no crimping.
-- **What stops it for rev A is misplugging.**  20–28 V on an Ethernet port burns the port's
+- **What stops it for v1.0 is misplugging.**  20–28 V on an Ethernet port burns the port's
   termination resistors (1.3–2.6 W each) within seconds.
   - Every free OUT jack in the rack is live: there is always one, on the last node of each row.
   - The hub can probe its own outputs before switching them on.  Real protection also needs a
     switched, probed VRACK pass-through on every node.
   - That redesigns the node, the hub and the power box's wall, and shortens the drawer's stroke, about 1–2 weeks,
-    right before the rev A order.
-- **Recommendation: no-go for rev A.**  Keep PH 6 and JST's 24 AWG leads, which were just decided.
-  **Go for rev B**, with hub probing, a switched OUT on each node and the pinout below.  Possibly add
+    right before the v1.0 order.
+- **Recommendation: no-go for v1.0.**  Keep PH 6 and JST's 24 AWG leads, which were just decided.
+  **Go for the next revision**, with hub probing, a switched OUT on each node and the pinout below.  Possibly add
   10BASE-T1S on the CAN pair (section 5).
 
 ## 1. Pinout (straight cord, T568A or B: the pairs are the same)
@@ -67,7 +67,7 @@ No 8P8C without magnetics is a JLC basic part.  The candidates (sizes from JLC's
   The jacks go where J1 / J2 / the hub's row connectors are, with no new windows in the trays or
   ladders.  It costs the drawer 12 mm of stroke (140 → 128), the base ladder's diagonal reversed,
   four cut-outs in the power box wall, and 12 cm hop cords made to length.  About 3 days of
-  mechanical work, for rev B."  In detail:
+  mechanical work, for the next revision."  In detail:
   - The RJ-064-1 (≤ 11 mm, tab down) clears the left ledge by 0.5 mm and the drawer by 3 mm.  A
     13.3 mm jack hits the ledge.  A mid-mount jack drops the latch below the windows' bottom.
   - On the hub it sits 1 mm under the lid, with the lid's rim notched.
@@ -162,7 +162,7 @@ what makes RJ45 safe in a lab full of laptops.
 | Assembly | 72 leads clicked in, 12 contacts crimped | none |
 | **Net** | | ≈ −€10 to −€20 a rack; the 72 leads aren't clicked in, but 9 jumpers get crimped plugs |
 
-**Schedule:** about 1–2 weeks before the rev A order.
+**Schedule:** about 1–2 weeks before the v1.0 order.
 - Node: J1/J2 and the switched OUT, ≈ 2 days.
 - Hub: jacks and the probe, ≈ 1–2 days.
 - Firmware: the probes and 1b, ≈ 3 days.
@@ -172,7 +172,7 @@ what makes RJ45 safe in a lab full of laptops.
 
 ## 7. Go / no-go
 
-**No-go for rev A.**  The gain is convenience (stock feed cords, latching plugs) and ≈ €10–20 a rack;
+**No-go for v1.0.**  The gain is convenience (stock feed cords, latching plugs) and ≈ €10–20 a rack;
 the 12 cm jumpers still have to be made to length.  The cost:
 - a node and hub redesign;
 - a mechanical round, and 12 mm of drawer stroke (128 mm instead of 140);
@@ -180,7 +180,7 @@ the 12 cm jumpers still have to be made to length.  The cost:
 
 PH 6 with JST's 24 AWG leads meets the electrical need today.
 
-**Go for rev B,** as one change:
+**Go for the next revision,** as one change:
 - the RJ45 pinout above;
 - the C7205199 jack;
 - hub probing (level 1);

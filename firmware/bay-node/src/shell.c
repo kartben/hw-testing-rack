@@ -143,7 +143,7 @@ static int cmd_status(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
-/* Node rev B: why the DATA lead's power-on rule kept DATA_VIN off */
+/* Node v1.0: why the DATA lead's power-on rule kept DATA_VIN off */
 static int power_result(const struct shell *sh, int ret)
 {
 	const char *why = dut_lead_str(dut_lead_state(NULL));

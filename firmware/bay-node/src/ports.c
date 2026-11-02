@@ -11,7 +11,7 @@
  * the pins.
  *
  *  - The board is probed after each DUT_5V on: no answer at 0x20, no board,
- *    a one-port node (today's DUT, dut.c).  Node rev B (DATA_VIN through an
+ *    a one-port node (today's DUT, dut.c).  Node v1.0 (DATA_VIN through an
  *    eFuse, dut.c): the board must answer within CONFIG_BAY_DATA_ANSWER_MS,
  *    and two polls without an answer switch DATA_VIN off (no INT line on the
  *    lead: the poll, every CONFIG_BAY_PORTS_POLL_MS, is how a fault or a board
@@ -78,28 +78,28 @@ LOG_MODULE_REGISTER(ports, CONFIG_BAY_LOG_LEVEL);
 /* Averages 16, 1.1 ms conversions, shunt and bus continuous */
 #define INA_CONFIG_VALUE 0x4527
 
-/* Node rev B: DATA_VIN through an eFuse, off when the board does not answer */
+/* Node v1.0: DATA_VIN through an eFuse, off when the board does not answer */
 #define EFUSE DT_PROP(DT_NODELABEL(dut_port), vin_efuse)
 
 #define IO_MAX       2
 #define FAIL_LIMIT   (EFUSE ? 2 : 3) /* polls without an answer: the board is gone */
 #define REPROBE_MS   2000 /* while DUT_5V is on and no board answers */
-#define ANSWER_TRY_MS 100 /* rev B: probes within CONFIG_BAY_DATA_ANSWER_MS */
+#define ANSWER_TRY_MS 100 /* v1.0: probes within CONFIG_BAY_DATA_ANSWER_MS */
 #define REFUSED_MS   1000 /* a wanted port the budget refused: try again */
 #define RELEASE_MS   5    /* EN to BOOT and RESET released: the port's VBUS is up */
 #define SHED_MS      20   /* a port shed to the next reading: the meter averages 8.8 ms */
 #define OVER_POLLS   (EFUSE ? 2 : 1) /* polls over the budget before a port is shed */
-#define CONV_PCT     88   /* rev B: the DATA board's converters, DATA_VIN to its 5 V */
+#define CONV_PCT     88   /* v1.0: the DATA board's converters, DATA_VIN to its 5 V */
 
 /* DATA x4 v2: the matrix expander (TCA9534A, not fitted on the base v2), its P7 MARK */
 #define MX_MARK 7
 
 /*
  * The node's own INA226 (dut_port's power-monitor) on DUT_5V, or DATA_VIN on
- * node rev B: what the whole bay draws.  Its driver sets it up (dut.c reads
+ * node v1.0: what the whole bay draws.  Its driver sets it up (dut.c reads
  * it); this file reads its shunt and bus voltage and sets its ALERT for the
- * shedding.  The budget is in mA on DUT_5V (rev A), in mW on DATA_VIN against
- * the hub's grant (rev B).
+ * shedding.  The budget is in mA on DUT_5V (the first design), in mW on DATA_VIN against
+ * the hub's grant (v1.0).
  */
 #define METER     DT_PHANDLE(DT_NODELABEL(dut_port), power_monitor)
 #define HAS_METER DT_NODE_HAS_PROP(DT_NODELABEL(dut_port), power_monitor)
@@ -151,7 +151,7 @@ struct port {
 	bool shed;    /* switched off by the shedding, wanted back */
 	bool queued;  /* a request to switch it on as soon as the budget has room */
 	uint32_t seq; /* when it went on: the last one goes first when the bay sheds */
-	int32_t need; /* shed: what it drew, the room it needs to come back (mA, rev B mW) */
+	int32_t need; /* shed: what it drew, the room it needs to come back (mA, v1.0 mW) */
 	uint32_t faults;
 };
 
@@ -266,7 +266,7 @@ static int32_t bay_ma(void)
 }
 
 /*
- * Rev B, what the bay draws from DATA_VIN, mW (lock held): the node's INA226,
+ * v1.0, what the bay draws from DATA_VIN, mW (lock held): the node's INA226,
  * or without it the ports and the board at 5 V through the converters.
  */
 static int32_t bay_mw(void)
@@ -282,7 +282,7 @@ static int32_t bay_mw(void)
 	return (ports_ma() + CONFIG_BAY_PORTS_BOARD_MA) * 5 * 100 / CONV_PCT;
 }
 
-/* What the bay draws, in its budget's unit: mA on DUT_5V, rev B mW on DATA_VIN */
+/* What the bay draws, in its budget's unit: mA on DUT_5V, v1.0 mW on DATA_VIN */
 static int32_t bay_draw(void)
 {
 	return EFUSE ? bay_mw() : bay_ma();
@@ -300,7 +300,7 @@ static int32_t port_draw(int i)
 	return EFUSE ? (int32_t)((int64_t)mv * ma / 1000 * 100 / CONV_PCT) : ma;
 }
 
-/* What a port is switched on within: rev B the hub's grant, or the bay's own limit */
+/* What a port is switched on within: v1.0 the hub's grant, or the bay's own limit */
 static int32_t budget_limit(bool *granted)
 {
 	struct rack_grant g;
@@ -322,8 +322,8 @@ static int32_t budget_reserve(void)
 }
 
 /*
- * Over the budget, the last port switched on goes (lock held): rev A over
- * CONFIG_BAY_PORTS_SHED_MA; rev B over the grant, or over that current on
+ * Over the budget, the last port switched on goes (lock held): the first design over
+ * CONFIG_BAY_PORTS_SHED_MA; v1.0 over the grant, or over that current on
  * DATA_VIN (the ALERT's level, below the eFuse's)
  */
 static bool over_budget(int32_t *draw)
@@ -524,7 +524,7 @@ static void setup_handler(struct k_work *work)
 		k_work_reschedule(&admit_work, K_NO_WAIT);
 		k_work_reschedule(&poll_work, K_MSEC(CONFIG_BAY_PORTS_POLL_MS));
 	} else if (EFUSE) {
-		/* No one-port node on rev B: no board, no DATA_VIN */
+		/* No one-port node on v1.0: no board, no DATA_VIN */
 		if (k_uptime_get() - powered_at < CONFIG_BAY_DATA_ANSWER_MS) {
 			k_work_reschedule(&setup_work, K_MSEC(ANSWER_TRY_MS));
 		} else {
@@ -688,7 +688,7 @@ static void poll_handler(struct k_work *work)
 				tripped |= BIT(i);
 			}
 		}
-		/* Rev B: two polls over the grant in a row, a start's surge is not shed */
+		/* v1.0: two polls over the grant in a row, a start's surge is not shed */
 		over_polls = over_budget(&draw) ? over_polls + 1 : 0;
 		over = over_polls >= OVER_POLLS;
 	}

@@ -69,7 +69,7 @@ properties:
   vin-efuse:
     type: boolean
     description: |
-      Node rev B: enable-gpios drives the SHDN of a TPS26600 eFuse on the
+      Node v1.0: enable-gpios drives the SHDN of a TPS26600 eFuse on the
       rack's VIN (20-28 V), out on the DATA lead as DATA_VIN, and
       power-monitor reads DATA_VIN.  SHDN is pulled down: off without
       firmware.  The firmware switches it on only after the checks of the

@@ -169,8 +169,8 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Feature | Implementation |
 |---|---|
 | USB/IP export of the DUT | `CONFIG_USBIP` on `zephyr_uhc0` (= `&usb_otg`, DWC2 host, ESP32-S3 FS quirk), with the rack's patch (`zephyr/patches.yml`); TCP 3240; bus id by port: `1-1` (`1-1.<n>` behind a hub) |
-| DUT power | TPS2553 EN on IO41, kept **on** at boot (the board pulls it up); `bay power on/off/cycle`.  Node rev B (`dut_port`'s `vin-efuse`): IO41 is the TPS26600's SHDN on the DATA lead's 20–28 V, **off** at boot and on only through [the DATA lead's power-on rule](../docs/firmware.md#the-data-leads-power-on-rule-node-rev-b) (SCL/SDA high, the INA226 answers, DATA_VIN up, the DATA board answers within `CONFIG_BAY_DATA_ANSWER_MS`); `CONFIG_BAY_DATA_POWER_AT_BOOT` tries it at boot |
-| Over-current | TPS2553 ~FAULT on IO40 (interrupt): logged and counted; after `CONFIG_BAY_DUT_FAULT_OFF_MS` (1 s) in current limit VBUS is switched off and the fault latched until `bay power on`.  Rev B: the eFuse's ~FLT, or a DATA board that misses two polls, switches DATA_VIN off at once until `bay power on` |
+| DUT power | TPS2553 EN on IO41, kept **on** at boot (the board pulls it up); `bay power on/off/cycle`.  Node v1.0 (`dut_port`'s `vin-efuse`): IO41 is the TPS26600's SHDN on the DATA lead's 20–28 V, **off** at boot and on only through [the DATA lead's power-on rule](../docs/firmware.md#the-data-leads-power-on-rule-node-v10) (SCL/SDA high, the INA226 answers, DATA_VIN up, the DATA board answers within `CONFIG_BAY_DATA_ANSWER_MS`); `CONFIG_BAY_DATA_POWER_AT_BOOT` tries it at boot |
+| Over-current | TPS2553 ~FAULT on IO40 (interrupt): logged and counted; after `CONFIG_BAY_DUT_FAULT_OFF_MS` (1 s) in current limit VBUS is switched off and the fault latched until `bay power on`.  v1.0: the eFuse's ~FLT, or a DATA board that misses two polls, switches DATA_VIN off at once until `bay power on` |
 | Telemetry | INA226 @ 0x40 through the Zephyr sensor API (`ti,ina226`, 50 mΩ, 50 µA/LSB, 4× averaging, 8.8 ms a reading): bus mV, mA, mW in `bay power` / `bay status` |
 | Data path | reads PC_DET (IO13) and SVC (IO15); `bay mode classic` drives MUX_FORCE_PC (IO14), persisted |
 | SERVICE mode | stops the USB host and routes the internal PHY to the USB-Serial-JTAG (`CONFIG_BAY_SERVICE_PHY_HANDOVER`); restarts the host when SERVICE goes off |
@@ -315,7 +315,7 @@ main actions.
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract; `camera` (camera builds): `GET /api/camera` without the settings and choices; `last_fault`: the fatal error that restarted the node ("fatal error 4 in usbh: …"), "" none since power-on; `budget`: what the ports are switched on within, `unit` `mW` (node rev B, on DATA_VIN) or `mA` (rev A, on DUT_5V), `limit` (the hub's grant when `granted`, else the bay's own), `reserve` for a start, `draw` now, `waiting` ports, `sheds` since boot, `board` (a DATA board answers), `lead_off`: why rev B's DATA lead is off ("SCL or SDA held low: DATA lead reversed?", …), null when it is not; each port's `power.state`: `on`, `off`, `fault`, `waiting` (wanted, kept off for its turn or for power), `shed` (shed for power, back once there is room); `power.queued`: a request to switch it on as soon as there is room is waiting |
+| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract; `camera` (camera builds): `GET /api/camera` without the settings and choices; `last_fault`: the fatal error that restarted the node ("fatal error 4 in usbh: …"), "" none since power-on; `budget`: what the ports are switched on within, `unit` `mW` (node v1.0, on DATA_VIN) or `mA` (the first design, on DUT_5V), `limit` (the hub's grant when `granted`, else the bay's own), `reserve` for a start, `draw` now, `waiting` ports, `sheds` since boot, `board` (a DATA board answers), `lead_off`: why v1.0's DATA lead is off ("SCL or SDA held low: DATA lead reversed?", …), null when it is not; each port's `power.state`: `on`, `off`, `fault`, `waiting` (wanted, kept off for its turn or for power), `shed` (shed for power, back once there is room); `power.queued`: a request to switch it on as soon as there is room is waiting |
 | `POST /api/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}` |
 | `POST /api/reset` | `{"ms": 100}` (body optional) |
 | `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |
@@ -333,7 +333,7 @@ main actions.
 | `GET /console/ws/<n>?t=<ticket>` | WebSocket to the AUX UART, `n` < `CONFIG_BAY_CONSOLE_WEB_CLIENTS` (see below) |
 | `GET /api/camera` | the camera: `present` (false: no camera answered on J6), `model`, `port`, `resolution`, `quality`, `light` (the bay's setting), `rotation`, `lit`, `clients`, `streams`, `frames`, `errors`, `last_bytes`, `last_ms`, `fps`; its `settings` and the `choices` (lists and ranges) |
 | `POST /api/camera` | any of the settings ([Camera](#camera)), e.g. `{"exposure": 1200, "white_balance": "cloudy", "brightness": -1}`, and `"reset": true` (image settings back to automatic first); all or nothing, saved; control right; 404 without a camera |
-| `GET /metrics` | Prometheus: `bay_dut_vbus_volts`, `bay_dut_current_amperes`, `bay_dut_power_watts`, `bay_dut_power_on`, `bay_dut_fault`, `bay_dut_faults_total`, `bay_usb_devices`, `bay_usbip_sessions`, `bay_aux_{rx,tx}_bytes_total`, `bay_access_refused_total`, `bay_power_limit_watts` (rev B: the grant, or the bay's own limit), `bay_ports_waiting`, `bay_ports_shed_total`, all labelled `bay="<id>"` |
+| `GET /metrics` | Prometheus: `bay_dut_vbus_volts`, `bay_dut_current_amperes`, `bay_dut_power_watts`, `bay_dut_power_on`, `bay_dut_fault`, `bay_dut_faults_total`, `bay_usb_devices`, `bay_usbip_sessions`, `bay_aux_{rx,tx}_bytes_total`, `bay_access_refused_total`, `bay_power_limit_watts` (v1.0: the grant, or the bay's own limit), `bay_ports_waiting`, `bay_ports_shed_total`, all labelled `bay="<id>"` |
 | `GET /api/access` | the caller's address and rights, the lease, the connections; signed: the rules and the refusal log too |
 | `POST /api/lease` | `{"ttl_s": 3600, "note": "twister job 8812"}` reserves or renews, `{"release": true}` ends it |
 | `GET /api/access/nonce` | a single-use nonce (60 s) to sign an admin request |
@@ -705,7 +705,7 @@ python3 firmware/bay-node/tests/console_sim/run.py --workspace <west workspace> 
 From `electronics/bay-node/design.py` (U3, ESP32-S3-WROOM-1-N8R8: 8 MB flash, 8 MB octal PSRAM on IO35–IO37;
 the WROOM-1 has no IO26/IO33/IO34); devicetree in
 [`boards/hwtr/bay_node/bay_node.dtsi`](boards/hwtr/bay_node/bay_node.dtsi) and
-[`bay_node-pinctrl.dtsi`](boards/hwtr/bay_node/bay_node-pinctrl.dtsi).  Since node rev B the DATA lead has no INT
+[`bay_node-pinctrl.dtsi`](boards/hwtr/bay_node/bay_node-pinctrl.dtsi).  Since node v1.0 the DATA lead has no INT
 (map B): the node polls the DATA board over I²C, and IO4 carries the camera's CS.
 
 | ESP32-S3 | Net | Use | Devicetree |
@@ -713,11 +713,11 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 | IO0 | BOOT | SW2 BOOT button (strapping pin, 10k pull-up); input once booted | `boot_button` (`sw0`), `gpio-keys` |
 | IO1 | I2C_SCL | I²C0; also out on J7.7 to the drawer's DATA board | `&i2c0` |
 | IO2 | I2C_SDA | I²C0 → INA226 @ 0x40 (2.2k pull-ups, 100 kHz: the DATA lead; `i2c-400k.overlay` tries 400 kHz); also out on J7.6 to the drawer's DATA board (its devices keep off 0x40) | `&i2c0`, `ina226` |
-| IO4 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω; 10k pull-up R37 beside the pin; IO8 before node rev B) | `&spi2` `cs-gpios` |
-| IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.6 LED_K (J6.8 before node rev B; 100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
-| IO9 | CAM_MISO | camera SPI2 MISO ← J6.5 (J6.6 before node rev B; 33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
-| IO10 | CAM_MOSI | camera SPI2 MOSI → J6.4 (J6.5 before node rev B; 33 Ω) | `&spi2` |
-| IO11 | CAM_SCK | camera SPI2 SCK → J6.2 (J6.3 before node rev B; 33 Ω), mode 0, 4 MHz | `&spi2` |
+| IO4 | CAM_CS | camera SPI2 CS → J6.7 (33 Ω; 10k pull-up R37 beside the pin; IO8 before node v1.0) | `&spi2` `cs-gpios` |
+| IO7 | CAM_LED | camera light: AO3400A Q4 gate → J6.6 LED_K (J6.8 before node v1.0; 100k pull-down: off at boot), LEDC PWM ≥ 20 kHz or on/off | `camera_light` (`pwm-leds`, `&ledc0` channel 0, 25 kHz) |
+| IO9 | CAM_MISO | camera SPI2 MISO ← J6.5 (J6.6 before node v1.0; 33 Ω; R35 divider footprint if the Mega drives 5 V) | `&spi2` (`camera`: `arducam,mega`) |
+| IO10 | CAM_MOSI | camera SPI2 MOSI → J6.4 (J6.5 before node v1.0; 33 Ω) | `&spi2` |
+| IO11 | CAM_SCK | camera SPI2 SCK → J6.2 (J6.3 before node v1.0; 33 Ω), mode 0, 4 MHz | `&spi2` |
 | IO12 | AUX_RST_CTL | 2N7002 Q2 → AUX RESET (open drain, 100k pull-down) | `dut_port` `reset-gpios` |
 | IO13 | PC_DET | front port VBUS via 10k/20k: laptop plugged | `usb_mux` `pc-detect-gpios` |
 | IO14 | MUX_FORCE_PC | OR gate → MUX_DUT SEL: force classic (100k pull-down) | `usb_mux` `force-pc-gpios` |
@@ -729,9 +729,9 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 | IO20 | ESP_DP | USB D+ | `zephyr_uhc0: &usb_otg` |
 | IO21 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
 | IO38 | LED_DIN | WS2812B (33 Ω), RMT channel 0 (the DevKitC-1 v1.1's own RGB LED pin) | `status_led` |
-| IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up): over 1.25 A on the DATA lead's supply (DUT_5V; DATA_VIN, 20–28 V, from node rev B), the DATA ×4 port switched on last goes off (`src/ports.c`) | `ina226` `alert-gpios` |
-| IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up); from node rev B the TPS26600's ~FLT, also low while it is off or ramping | `dut_port` `fault-gpios` |
-| IO41 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware); from node rev B the TPS26600's SHDN (10k pull-down: **off** without firmware, [docs/firmware.md](../docs/firmware.md#the-data-leads-power-on-rule-node-rev-b)) | `dut_port` `enable-gpios` |
+| IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up): over 1.25 A on the DATA lead's supply (DUT_5V; DATA_VIN, 20–28 V, from node v1.0), the DATA ×4 port switched on last goes off (`src/ports.c`) | `ina226` `alert-gpios` |
+| IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up); from node v1.0 the TPS26600's ~FLT, also low while it is off or ramping | `dut_port` `fault-gpios` |
+| IO41 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware); from node v1.0 the TPS26600's SHDN (10k pull-down: **off** without firmware, [docs/firmware.md](../docs/firmware.md#the-data-leads-power-on-rule-node-v10)) | `dut_port` `enable-gpios` |
 | IO42 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
 | IO47 | AUX_TX | UART1 TX → AUX pin 3 (1k) | `&uart1` (`dut_port` `uart`) |
 | IO48 | AUX_BOOT_CTL | 2N7002 Q3 → AUX BOOT (open drain, 100k pull-down) | `dut_port` `boot-gpios` |
@@ -743,7 +743,7 @@ Each signal sits on the module edge that faces where it goes on the board: the r
 the DUT power block (I²C at its rear end) and POS_OUT runs to J2 (docs/can.md); the bottom row the
 AUX connector (right half), the mode logic and the camera's SPI (left half); the left column the
 rack bus block (CAN transceiver, POS input), SERVICE, the camera's light, and its CS at the column's
-rear end (IO4 since node rev B: under the module along the B.Cu lane the DATA board's INT left;
+rear end (IO4 since node v1.0: under the module along the B.Cu lane the DATA board's INT left;
 IO8 before).  IO5, IO6 and IO8 are free.  The rack bus protocol runs on the CAN pins (`src/rack.c`, [docs/rack-protocol.md](../docs/rack-protocol.md)).
 Strapping pins IO3/IO45/IO46 are not used; IO39–IO42 are the pad JTAG pins, free as GPIOs since
 the node debugs over USB-Serial-JTAG.  The map is chosen so that an ESP32-S3-DevKitC-1 v1.1

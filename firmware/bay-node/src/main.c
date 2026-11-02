@@ -247,7 +247,7 @@ int main(void)
 	if (ret != 0) {
 		LOG_ERR("DATA x4 ports init failed: %d", ret);
 	}
-	/* Node rev B: DATA_VIN on once the DATA lead's power-on checks pass */
+	/* Node v1.0: DATA_VIN on once the DATA lead's power-on checks pass */
 	dut_start();
 
 	ret = usb_mux_init(stored_force_pc);

@@ -104,7 +104,7 @@ jobs:
           - name: ports
             board: native_sim/native/64
             app: firmware/bay-node/tests/ports
-          # Node rev B's DATA lead (src/dut.c, src/ports.c): the eFuse's
+          # Node v1.0's DATA lead (src/dut.c, src/ports.c): the eFuse's
           # power-on rule against the same emulated board, run below
           - name: data_lead
             board: native_sim/native/64

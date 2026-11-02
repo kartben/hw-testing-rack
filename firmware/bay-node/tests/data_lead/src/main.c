@@ -1,5 +1,5 @@
 /*
- * Node rev B's DATA lead (src/dut.c, src/ports.c) against the emulated
+ * Node v1.0's DATA lead (src/dut.c, src/ports.c) against the emulated
  * DATA x4, powered by the eFuse's enable: the power-on rule of
  * docs/firmware.md.  Off at boot; on only with SCL and SDA high and the
  * node's INA226 answering; ~FLT ignored while the eFuse ramps; off again on a

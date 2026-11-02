@@ -33,7 +33,7 @@ bool dut_power_get(void)
 	return dut_on;
 }
 
-/* Node rev B only (the eFuse on the DATA lead): not this test's dut_port */
+/* Node v1.0 only (the eFuse on the DATA lead): not this test's dut_port */
 void dut_lead_lost(enum dut_lead why)
 {
 	ARG_UNUSED(why);

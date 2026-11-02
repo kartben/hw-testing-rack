@@ -4,7 +4,7 @@ It ties the camera and its light to the bay node's J6 with nothing to crimp or s
 
 * J1, JST PH 8 (side entry) on the right edge: a ready-made double-ended PH 8 lead ("Same
   direction", pin n to pin 9−n) from the node's J6; its pinout here is J6's mirrored, GND on both end
-  pins (1 GND · 2 CS · 3 LED_K · 4 MISO · 5 MOSI · 6 CAM_5V · 7 SCK · 8 GND, node rev B): this lead
+  pins (1 GND · 2 CS · 3 LED_K · 4 MISO · 5 MOSI · 6 CAM_5V · 7 SCK · 8 GND, node v1.0): this lead
   plugged into the node's DATA socket J7 by mistake puts the node's eFused 20 V on this board's GND
   only, between two of its pins, a short the node's eFuse cuts; a 1:1 lead in J6 puts CAM_5V on the
   LEDs' cathodes (pin 3), not on a camera line.
@@ -61,7 +61,7 @@ TP_ROUND2 = [
     ("MOSI", (28.7148, 14.5445), "MOSI"),
     ("MISO", (25.6824, 18.8196), "MISO"),
     ("CS", (29.493, 19.2218), "CS"),
-    ("LED_K", (35.3, 9.0), "LED"),           # on LED_K's new feed east of J1 (node rev B), 14.3 before
+    ("LED_K", (35.3, 9.0), "LED"),           # on LED_K's new feed east of J1 (node v1.0), 14.3 before
 ]
 
 def board() -> Board:
@@ -146,7 +146,7 @@ def board() -> Board:
         # 100 nF right above it.  The rail (no plane on this board) comes in on C3's far side, at the end of its stub
         "tracks": [("+3V3", "F.Cu", 0.4, [(hx - 6.35, hy - 1.66), (hx - 6.35, hy - 4.225)]),
                    ("+3V3", "F.Cu", 0.4, [(hx - 6.35, hy - 4.225), (hx - 5.25, hy - 4.225)]),
-                   # J1's lead pins (node rev B), each one pin up from before: SCK from J1.7 west and down to its
+                   # J1's lead pins (node v1.0), each one pin up from before: SCK from J1.7 west and down to its
                    # test pad, then its old diagonal; MOSI (J1.5) and MISO (J1.4) straight onto their old diagonals;
                    # CAM_5V (J1.6) and LED_K (J1.3) out of their pads' east ends and north past J1.7–J1.8
                    ("SCK", "F.Cu", 0.25, [(32.25, 8.0), (29.7886, 8.0), (29.7886, 11.9593)]),
