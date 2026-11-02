@@ -1007,7 +1007,13 @@ def board() -> Board:
             {"name": "core:xtal-y1", "layers": ["F.Cu", "B.Cu"], "poly": XTAL_KEEP},
             # no rear pour in the 0.7 mm strip by USB-C 6's cluster (x 91.5) that one via alone held: no room for a second
             {"name": "gnd-strip-6", "layers": ["B.Cu"], "fills_only": True,
-             "poly": [(91.0, 47.0), (92.0, 47.0), (92.0, 51.6), (91.0, 51.6)]}] + [
+             "poly": [(91.0, 47.0), (92.0, 47.0), (92.0, 51.6), (91.0, 51.6)]},
+            # no via in either +5V band (each tongue's run down the cradle's band, 4 mm wide, its three ports' 1.93 A):
+            # a GND stitching via there took 1.1 mm of it at every 4 mm (2026-11-02).  The edge fence's GND vias
+            # (x 0.9) tie the outer pours there
+            *({"name": f"5v{k}-band", "layers": [pwr], "vias_only": True,
+               "poly": [(x0, TB), (x1, TB), (x1, PWR_SPLIT + 1.9), (x0, PWR_SPLIT + 1.9)]}
+              for k, (x0, x1) in (("a", (1.3, 5.5)), ("b", (W - 5.5, W - 1.3))))] + [
             # each USB pair's band on F.Cu (the layout review: 3 × the track width between a fast bus and other
             # nets' lines, the enables and faults first): no other track along it, vias in (dropped once routed)
             {"name": f"core:usb{n}", "layers": ["F.Cu"], "tracks_only": True,
