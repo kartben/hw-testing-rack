@@ -158,6 +158,22 @@ def board() -> Board:
                    "connection": "solid",
                    "poly": [(17.2, ef_y(k) - 2.65), (23.85, ef_y(k) - 2.65), (23.85, ef_y(k) - 1.35), (17.2, ef_y(k) - 1.35)]}
                   for k, ch in enumerate(ROWS)]
+    # per eFuse, TI's layout (SLVSDG2G §12.1, figure 71): a VOUT plane on the top layer over the doubled OUT pins
+    # (15/16), and the output path to the connector's pin 6 sized for twice the eFuse's 1.6 A: ≈ 1.5 mm of outer
+    # 1 oz (IPC-2221, 10 °C).  Pours 1.5 mm wide along the drawn 0.8 mm tracks (F.Cu over the eFuse and along the
+    # row, B.Cu beside the connector, F.Cu into pin 6): the fill keeps 0.15 mm from the router's tracks beside
+    # them, so it narrows where one runs closer (row D's run between POS_D and ROW_EN_D: ≈ 1.07 mm)
+    out_pours = []
+    for k, ch in enumerate(ROWS):
+        yc, yj = ef_y(k), ROW_Y[k]
+        for layer, name, poly in (
+                ("F.Cu", "out", [(12.45, yj - 5.75), (31.35, yj - 5.75), (31.35, yc - 1.325), (EF_X + 2.075, yc - 1.325),
+                                 (EF_X + 2.075, yc - 2.7), (29.85, yc - 2.7), (29.85, yj - 4.25), (12.45, yj - 4.25)]),
+                ("B.Cu", "leg", [(12.45, yj - 5.75), (15.8, yj - 5.75), (15.8, yj - 4.25), (15.0, yj - 4.25),
+                                 (15.0, yj + 4.25), (15.8, yj + 4.25), (15.8, yj + 5.75), (12.45, yj + 5.75)]),
+                ("F.Cu", "pin6", [(8.0, yj + 4.25), (15.8, yj + 4.25), (15.8, yj + 5.75), (8.0, yj + 5.75)])):
+            out_pours.append({"layer": layer, "net": f"ROW_{ch}", "name": f"row-{ch}-{name}", "priority": 3,
+                              "connection": "solid", "clearance": 0.15, "poly": poly})
     tracks = []
     for k, ch in enumerate(ROWS):
         yc = ef_y(k)
@@ -258,6 +274,7 @@ def board() -> Board:
              "exclusive": 0.6, "poly": [(56.0, 7.6), (58.3, 7.6), (58.3, 6.6), (59.95, 6.6), (59.95, 8.8), (63.65, 8.8),
                                         (63.65, 6.6), (68.2, 6.6), (68.2, 10.6), (56.0, 10.6)]},
             *in_islands,
+            *out_pours,
             # buck hot loop (as the bay node, TI SLUSF64B §8.4)
             {"layer": "F.Cu", "net": "GND", "connection": "solid", "name": "buck-gnd", "priority": 3,
              "poly": [(58.05, 12.5 + BY), (60.1, 12.5 + BY), (60.1, 14.2 + BY), (61.9, 14.2 + BY), (61.9, 18.3 + BY),
@@ -434,6 +451,7 @@ def board() -> Board:
     o.note("  a fault on an enabled row (FLT is also low while a row is off or starting).")
     o.note("D41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.")
     o.note("UVLO / OVP / MODE to GND: internal 15 V / 31–34 V (typ 32.6 V) thresholds, current-limit mode, auto-retry.")
+    o.note("RTN to GND: the eFuses' own reverse-polarity block unused (TI allows it): VRACK is the PD source's output.")
 
     # ------------------------------------------------------------------ controller
     c = b.sheet("Controller", "controller.kicad_sch", "Rack controller: supplies, ESP32-S3, USB-C, CAN", paper="A2")
