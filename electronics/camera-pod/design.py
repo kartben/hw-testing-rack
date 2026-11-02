@@ -159,8 +159,14 @@ def board() -> Board:
                    ("LED_K", "F.Cu", 0.3, [(32.25, 16.0), (34.8, 16.0), (35.3, 15.5), (35.3, 9.0)]),
                    ("LED_K", "F.Cu", 0.3, [(35.3, 9.0), (35.3, 4.2), (33.7, 2.6)])],
         "stitch": 3.0,
-        # every text at a 0.15 mm stroke at least, as the other boards (NextPCB's least line; SILK_RULE holds it)
-        "dru": SILK_RULE,
+        # every text at a 0.15 mm stroke at least, as the other boards (NextPCB's least line; SILK_RULE holds it);
+        # the pours 0.5 mm from the edge (tracks and pads keep 0.3, J1 over it on purpose): NextPCB assembles the
+        # pod in a 1 × 2 panel on mouse-bite tabs, and a bite must not nick or bare a pour
+        "dru": SILK_RULE + """
+(rule "pours 0.5 mm from the board edge (mouse bites)"
+	(condition "A.Type == 'Zone'")
+	(constraint edge_clearance (min 0.5mm)))
+""",
         "texts": [{**t, "thickness": max(SILK_TEXT, 0.15 * t["size"])} for t in [
             {"text": "VCC GND SCK MISO MOSI CS", "x": hx, "y": hy + 4.3, "size": 0.8},
             *({"text": t, "x": 6.0 + 3 * i, "y": 19.6, "size": 0.8, "layer": "B.SilkS"}

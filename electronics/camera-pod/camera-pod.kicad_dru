@@ -16,6 +16,10 @@
 	(layer "?.Silkscreen")
 	(constraint text_thickness (min 0.15mm)))
 
+(rule "pours 0.5 mm from the board edge (mouse bites)"
+	(condition "A.Type == 'Zone'")
+	(constraint edge_clearance (min 0.5mm)))
+
 (rule "power pins connect solid"
 	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '/Pod/CAM_5V' || A.NetName == 'GND') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
 	(constraint zone_connection solid))
