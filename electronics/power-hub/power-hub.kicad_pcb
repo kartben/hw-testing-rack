@@ -49776,7 +49776,7 @@
 	(segment
 		(start 28.360869 19.396372)
 		(end 28.1727 19.2082)
-		(width 0.125)
+		(width 0.127)
 		(layer "B.Cu")
 		(net "ADC_IMON_D")
 		(uuid "97e696b9-4a74-43d2-8281-e1adb0692407")
@@ -49824,7 +49824,7 @@
 	(segment
 		(start 28.360869 19.396372)
 		(end 28.360868 19.558668)
-		(width 0.125)
+		(width 0.127)
 		(layer "B.Cu")
 		(net "ADC_IMON_D")
 		(uuid "f8aa98da-0496-4164-a045-efd49075ffcf")
@@ -53986,7 +53986,7 @@
 	(segment
 		(start 38.4982 11.8272)
 		(end 38.7085 11.8272)
-		(width 0.125)
+		(width 0.127)
 		(layer "F.Cu")
 		(net "I2C_PU")
 		(uuid "73fb30a8-6801-4185-bf2d-116e7f1c9633")

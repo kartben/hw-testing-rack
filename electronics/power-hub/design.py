@@ -209,6 +209,9 @@ def board() -> Board:
         # the module's LGA pads; HASL saves ≈ $12.70 on 5 boards, and JLC X-rays the module either way
         "inner": [("In1.GND", "power"), ("In2.PWR", "power")],
         "stackup": "JLC04161H-7628", "finish": "HASL",
+        # NextPCB's 5/5 mil tier (the order's rules check, 2026-11-02): no track under 0.127 mm, the router's
+        # 0.125 mm necks widened to it (pcbgen.tidy_tracks)
+        "min_track": 0.127,
         "edge_parts": ["J*", "U4", "D1*", "D2*", "D3", "D8"],
         "defer_pours": False,
         # net: (plane, via Ø, drill, track width); pins over another net's area are routed instead
