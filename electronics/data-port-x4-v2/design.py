@@ -2017,6 +2017,13 @@ NETCLASSES = [
      "diff_pair_width": USB_W, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 3,
      "_patterns": ["*_DP", "*_DN"]},
+    # the two I²C buses, this board's (SCL/SDA: the expanders, the INA226s, the crosspoints' control) and the lead's
+    # (LEAD_SCL/LEAD_SDA, to the node, behind Q1/Q2): a class of their own, as slow as Default (the layout review:
+    # every signal in a class)
+    {"name": "I2C", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
+     "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
+     "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 7,
+     "_patterns": ["SCL", "SDA", "*LEAD_SCL", "*LEAD_SDA"]},
     {"name": "Pins", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 4,

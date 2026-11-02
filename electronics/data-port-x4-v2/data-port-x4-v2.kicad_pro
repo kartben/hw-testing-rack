@@ -365,6 +365,21 @@
         "wire_width": 6
       },
       {
+        "name": "I2C",
+        "clearance": 0.1,
+        "track_width": 0.127,
+        "via_diameter": 0.5,
+        "via_drill": 0.3,
+        "diff_pair_width": 0.2,
+        "diff_pair_gap": 0.15,
+        "wire_width": 6,
+        "bus_width": 12,
+        "line_style": 0,
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 7
+      },
+      {
         "bus_width": 12,
         "clearance": 0.1,
         "diff_pair_gap": 0.15,
@@ -490,6 +505,22 @@
       {
         "netclass": "USB",
         "pattern": "*_DN"
+      },
+      {
+        "netclass": "I2C",
+        "pattern": "SCL"
+      },
+      {
+        "netclass": "I2C",
+        "pattern": "SDA"
+      },
+      {
+        "netclass": "I2C",
+        "pattern": "*LEAD_SCL"
+      },
+      {
+        "netclass": "I2C",
+        "pattern": "*LEAD_SDA"
       },
       {
         "netclass": "Pins",
