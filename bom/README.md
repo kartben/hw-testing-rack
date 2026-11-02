@@ -280,12 +280,12 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | 1u — Capacitor 1u 0402 | 60  | 0.01 | 0.38 | LCSC/JLCPCB C52923 |
 | Electronics | KT-0805G — green LED 0805 | 60  | 0.02 | 1.10 | LCSC/JLCPCB C2297 |
 | Electronics | LEAD — JST PH 8-pin, vertical, through-hole | 10  | 0.08 | 0.79 | LCSC (hand-solder, buy loose) C157974 |
-| Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 10  | 0.26 | 2.58 | LCSC/JLCPCB C2689964 |
-| Electronics | PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 10  | 0.26 | 2.58 | LCSC/JLCPCB C2689964 |
-| Electronics | PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 10  | 0.26 | 2.58 | LCSC/JLCPCB C2689964 |
-| Electronics | PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 10  | 0.26 | 2.58 | LCSC/JLCPCB C2689964 |
-| Electronics | PORT5 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 10  | 0.26 | 2.58 | LCSC/JLCPCB C2689964 |
-| Electronics | PORT6 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS | 10  | 0.26 | 2.58 | LCSC/JLCPCB C2689964 |
+| Electronics | PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 10  | 0.99 | 9.94 | LCSC/JLCPCB C5181332 |
+| Electronics | PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 10  | 0.99 | 9.94 | LCSC/JLCPCB C5181332 |
+| Electronics | PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 10  | 0.99 | 9.94 | LCSC/JLCPCB C5181332 |
+| Electronics | PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 10  | 0.99 | 9.94 | LCSC/JLCPCB C5181332 |
+| Electronics | PORT5 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 10  | 0.99 | 9.94 | LCSC/JLCPCB C5181332 |
+| Electronics | PORT6 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes | 10  | 0.99 | 9.94 | LCSC/JLCPCB C5181332 |
 | Electronics | 4.7u — 4.7 µH, 75 V, 10 A sat (−20 %), 5.5 A heat (ΔT 40 °C), 37 mΩ (40 max), molded | 20  | 0.63 | 12.70 | LCSC/JLCPCB C48009678 |
 | Electronics | 2N7002 — N-MOSFET 60 V (open-drain AUX outputs) | 20  | 0.02 | 0.37 | LCSC/JLCPCB C8545 |
 | Electronics | 12k — Resistor 12k 0402 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C25752 |
@@ -312,7 +312,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 10  | 0.09 | 0.87 | LCSC/JLCPCB C15643 |
 | Electronics | Bare PCB data-port-x6 (4-layer 100×70 mm, JLC04161H-7628, ENIG) | 10  | 2.96 | 29.62 | estimate, not quoted |
 | Electronics | Economic PCBA, 10 boards: setup, stencil, extended parts, SMT, special components | 1  | 59.04 | 59.04 | estimate, not quoted |
-| Electronics | Components data-port-x6: JLC quote minus the catalogue prices above | 1  | -29.55 | -29.55 | estimate, not quoted |
+| Electronics | Components data-port-x6: JLC quote minus the catalogue prices above | 1  | -73.71 | -73.71 | estimate, not quoted |
 | Electronics | 10u — Capacitor 10u 0805 | 2  | 0.04 | 0.08 | LCSC/JLCPCB C15850 |
 | Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
 | Electronics | 100n — Capacitor 100n 0603 | 2  | 0.01 | 0.02 | LCSC/JLCPCB C14663 |

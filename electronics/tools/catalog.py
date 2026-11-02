@@ -257,6 +257,15 @@ CAT = {
                   "TYPE-C-31-D-06", "HRO", "C2689964", 0.28,
                   description="USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS",
                   model=("easyeda/C2689964.step", (0, 0, 3.62), (0, 0, 0))),   # its STEP is centred on the body: the leads at z −3.62
+    # the same again, 7.46 mm tall, its four shell stakes 1.70 mm long for a 1.6 mm board (the D-06's 0.95 mm legs are
+    # drawn for a 0.8 mm one): the DATA boards' receptacle from 2026-11-01, the user's pick.  No free model: our own
+    # (tools/make_step_models.py).  JLC's own library, Economic PCBA: $1.08 at 30+
+    "usbc_vg": Cat("Connector:USB_C_Receptacle_USB2.0_16P", "bench:USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical",
+                   "USB4145-03-0170-C", "GCT", "C5181332", 1.08,
+                   datasheet="https://datasheet.lcsc.com/datasheet/pdf/7bd44d75856c69ca2c793ff7d877f483.pdf",
+                   description="USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, "
+                               "1.70 mm shell stakes",
+                   model=("USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical.step", (0, 0, 0), (0, 0, 0))),
     "nfet_pwr": Cat("Transistor_FET:Si4162DY", "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm", "IRF7842TRPBF", "Infineon",
                     "C495809", 0.84, datasheet="https://www.infineon.com/dgdl/irf7842pbf.pdf",
                     description="N-MOSFET 40 V 18 A 5 mΩ, SO-8 (Si4162DY symbol: same S-S-S-G-D-D-D-D pinout)"),

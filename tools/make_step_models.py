@@ -9,6 +9,9 @@ KiCad's STEP reader shows), as FreeCAD's console mode exports none.  Output: ele
 * WS2812B-2020.step: Worldsemi WS2812B-2020, 2.0 × 2.0 × 0.84 mm, white body, a 1.5 × 1.5 mm
   window on top.  Origin at the body's centre, on the board: it sits on KiCad's
   LED_WS2812B-2020_PLCC4_2.0x2.0mm footprint without an offset.
+* USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical: GCT USB4145-03-0170-C, the standing USB-C: its shell
+  (8.94 × 3.16 × 7.46 mm, its mouth open), the insulator's tongue and the four shell stakes.  Origin at the land's
+  centre, on the board: on the bench footprint of the same name without an offset.
 * QFN-80_10x10x0.85mm, QFN-64_9x9x0.9mm, DHVQFN-20_2.5x4.5x0.85mm: the leadless packages
   KiCad's 3D library has no model for (RP2354B, USB2517I, LSF0108 RKS): a black
   body at the datasheet's size and a pin-1 dot at the footprints' pin 1 corner (KiCad −x, −y).  Origin at
@@ -37,6 +40,22 @@ window = Part.makeBox(1.5, 1.5, 0.19, App.Vector(-0.75, -0.75, 0.64))
 solids = [body, window]
 """, [(0.93, 0.93, 0.91), (0.86, 0.88, 0.82)]),
 }
+# GCT USB4145-03-0170-C, the standing USB-C (drawing USB4145 rev A1, sheet 1): its shell a stadium 8.94 × 3.16 mm,
+# 7.46 mm tall, open 8.34 × 2.56 down 4.65 mm on the black insulator's tongue; four 0.70 × 0.30 mm shell stakes at
+# (±4.00, ±1.43), 1.70 mm under the board.  Origin at the land's centre, on the board
+MODELS["USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical"] = ("""
+def stadium(L, W, h, z):
+    r = W / 2
+    s = Part.makeBox(L - W, W, h, App.Vector(-(L - W) / 2, -r, z))
+    s = s.fuse([Part.makeCylinder(r, h, App.Vector(-(L - W) / 2, 0, z)),
+                Part.makeCylinder(r, h, App.Vector((L - W) / 2, 0, z))])
+    return s.removeSplitter()
+shell = stadium(8.94, 3.16, 7.46, 0).cut(stadium(8.34, 2.56, 4.65, 7.46 - 4.65))
+tongue = Part.makeBox(6.6, 0.7, 4.3, App.Vector(-3.3, -0.35, 7.46 - 4.65))
+stakes = [Part.makeBox(0.70, 0.30, 1.70, App.Vector(sx * 4.0 - 0.35, sy * 1.43 - 0.15, -1.70))
+          for sx in (-1, 1) for sy in (-1, 1)]
+solids = [shell, tongue] + stakes
+""", [(0.76, 0.77, 0.79), (0.1, 0.1, 0.1)] + [(0.76, 0.77, 0.79)] * 4)
 # leadless ICs: body w × l × h (KiCad x × y), pin 1 at KiCad (−x, −y), i.e. STEP (−x, +y)
 for _name, (_w, _l, _h) in {"QFN-80_10x10x0.85mm": (10.0, 10.0, 0.85), "QFN-64_9x9x0.9mm": (9.0, 9.0, 0.9),
                             "DHVQFN-20_2.5x4.5x0.85mm": (2.5, 4.5, 0.85)}.items():

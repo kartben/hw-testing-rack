@@ -46,6 +46,8 @@ NOTCHES = [(x - CFG["x0"] - _NW / 2, x - CFG["x0"] + _NW / 2, H - _ND) for x in 
 CORNER = CFG["corner_notch"]        # the bottom-right corner's cut (width, height): none at 100 mm
 USBS = CFG["usb"]                   # board x of the six vertical USB-C
 USB_ROT = CFG["usb_rot"]            # each one's turn: all six standing (90), as conn_pairs() draws them
+# the receptacles' two pad columns (GCT USB4145's land, turned 90°): ±1.485 mm off its axis, 0.5 mm pitch
+USBC_COL = 1.485
 assert USB_ROT == [90] * 6, "conn_pairs() draws the six USB-C standing"
 # each port's cluster, its USBLC6 and its hub pair's drop: 2.2 mm west of its receptacle.  The receptacles moved east
 # so that USB-C 1 stands with its USBLC6 beside it, clear of the cradle's band (2026-11-01); the clusters stayed,
@@ -324,9 +326,9 @@ def port(b: Board, n: int):
 
     s.frame(f"USB-C {n} (source): Rp 56k on each CC; USBLC6 in flow-through (connector side | hub side)",
             6, 50, 104, 100)
-    part(s, usb, "usbc_v", {"VBUS": p + "VBUS", "GND": "GND", "CC1": p + "CC1", "CC2": p + "CC2",
-                            "D+": p + "CONN_DP", "D-": p + "CONN_DN", "SBU1": None, "SBU2": None,
-                            "SHIELD": "GND"}, f"PORT{n}", pcb=P(cx, USB_Y, USB_ROT[n - 1]),
+    part(s, usb, "usbc_vg", {"VBUS": p + "VBUS", "GND": "GND", "CC1": p + "CC1", "CC2": p + "CC2",
+                             "D+": p + "CONN_DP", "D-": p + "CONN_DN", "SBU1": None, "SBU2": None,
+                             "SHIELD": "GND"}, f"PORT{n}", pcb=P(cx, USB_Y, USB_ROT[n - 1]),
          sch=at(50, 76, fields=(-8, -11)))
     s.wire(f"{usb}.A7", f"{usb}.B7")
     s.wire(f"{usb}.A6", f"{usb}.B6")
@@ -737,17 +739,20 @@ def conn_pairs():
         p = f"PORT{n}_"
         ex, ey = ESD_PX[n], USB_Y
         e3, e1 = (ex + 1.1375, ey - 0.95), (ex + 1.1375, ey + 0.95)         # its pins 3 (D+) and 1 (D−), turned 180°
-        gv = (ex + 2.15, ey)
+        # USB-C 1's USBLC6 stands 5.7 mm off its receptacle, the others 9.1–9.6: its GND via under its body (south of
+        # the VBUS pin's line to C104), out of the way of D+'s diagonal, which starts 0.4 mm earlier (cx − 3.8),
+        # clear of D−'s via by A7
+        gv = (ex, ey + 0.55) if n == 1 else (ex + 2.15, ey)
+        dx0 = cx - 3.8 if n == 1 else ex + 2.3
         tracks.append(("GND", "F.Cu", 0.25, [(ex + 1.1375, ey), gv]))
         vias.append(("GND", *gv, 0.5, 0.3))
 
         def c(dx, dy):
             return cx + dx, USB_Y + dy
-        # the A column at cx − 0.85, the B column at cx + 0.85, 0.5 mm pitch
-        a9, a7, a6, a4 = (c(-0.85, d) for d in (-1.25, -0.25, 0.25, 1.25))
-        b4, b6, b7, b9 = (c(0.85, d) for d in (-1.25, -0.25, 0.25, 1.25))
-        v1, vn, vs = (ex + 2.15, e1[1]), c(-1.85, -0.3), c(0.0, 0.6)        # D−'s vias: by its pin, by A7, between
-        tracks += [(p + "CONN_DP", "F.Cu", USB_W, [e3, (ex + 2.3, e3[1]), (ex + 3.5, a6[1]), a6]),
+        a9, a7, a6, a4 = (c(-USBC_COL, d) for d in (-1.25, -0.25, 0.25, 1.25))
+        b4, b6, b7, b9 = (c(USBC_COL, d) for d in (-1.25, -0.25, 0.25, 1.25))
+        v1, vn, vs = (ex + 2.15, e1[1]), c(-2.35, -0.3), c(0.0, 0.6)       # D−'s vias: by its pin, by A7, between
+        tracks += [(p + "CONN_DP", "F.Cu", USB_W, [e3, (dx0, e3[1]), (dx0 + 1.2, a6[1]), a6]),
                    (p + "CONN_DP", "F.Cu", USB_W, [a6, c(-0.4, 0.25), c(0.4, -0.25), b6]),
                    (p + "CONN_DN", "F.Cu", USB_W, [e1, v1]),
                    (p + "CONN_DN", "B.Cu", USB_W, [v1, vn, vs]),
@@ -755,6 +760,12 @@ def conn_pairs():
                    (p + "CONN_DN", "F.Cu", USB_W, [vs, c(0.4, 0.25), b7]),
                    (p + "VBUS", "F.Cu", 0.3, [a9, b4]), (p + "VBUS", "F.Cu", 0.3, [a4, b9])]
         vias += [(p + "CONN_DN", *v, 0.5, 0.3) for v in (v1, vn, vs)]
+        # and the two VBUS crossings joined under the B column on B.Cu, clear of D−'s way to its via between the
+        # columns: on the GCT's longer pads the router no longer found a way round, and CC1 / CC2 leave the
+        # columns' outer ends free
+        vbn, vbs = c(0.0, -1.25), c(0.6, 1.25)
+        tracks.append((p + "VBUS", "B.Cu", 0.3, [vbn, c(0.9, -0.35), c(0.9, 0.95), vbs]))
+        vias += [(p + "VBUS", *v, 0.6, 0.3) for v in (vbn, vbs)]
     return tracks, vias
 
 

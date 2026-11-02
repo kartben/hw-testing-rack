@@ -1873,7 +1873,9 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
     filler = pcbnew.ZONE_FILLER(board)
     gnd_code = gnd.GetNetCode()
     copper = copper_of(board)
-    keepouts = [z for z in board.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
+    # the board's via keep-outs and its footprints' own (an unplated hole's, e.g. a USB-C's locating posts)
+    keepouts = [z for z in [*board.Zones(), *(z for fp in board.GetFootprints() for z in fp.Zones())]
+                if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
     def ring_of(rad):
         return [(0, 0)] + [(rad * math.cos(a), rad * math.sin(a)) for a in [k * math.pi / 8 for k in range(16)]]
 
@@ -1949,8 +1951,9 @@ def stitch_gnd(board, gnd, pitch_mm: float, via_d: float = 0.6, drill: float = 0
                 pt = pcbnew.VECTOR2I(int(x + MM(dx)), int(y + MM(dy)))
                 if not any(pp.Contains(pt) for pp in polys):
                     return False
-        for z in keepouts:
-            if z.Outline().Contains(pcbnew.VECTOR2I(int(x), int(y))):
+        for z in keepouts:                    # the via's land, not only its centre, off them
+            if any(z.Outline().Contains(pcbnew.VECTOR2I(int(x + MM(dx)), int(y + MM(dy))))
+                   for dx, dy in ring_of(via_d / 2)):
                 return False
         if smd.Collide(pcbnew.VECTOR2I(int(x), int(y)), MM(via_d) // 2):
             return False
@@ -2157,7 +2160,8 @@ def edge_fence(board, outline, gnd, pitch: float, inset: float, via_d: float = 0
              if t.GetClass() == "PCB_VIA"]
     holes += [(p.GetPosition().x, p.GetPosition().y, max(p.GetDrillSize().x, p.GetDrillSize().y))
               for fp in board.GetFootprints() for p in fp.Pads() if p.GetDrillSize().x > 0]
-    keep = [z for z in board.Zones() if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
+    keep = [z for z in [*board.Zones(), *(z for fp in board.GetFootprints() for z in fp.Zones())]
+            if z.GetIsRuleArea() and z.GetDoNotAllowVias()]
     ring = [(MM(x), MM(y)) for x, y in inset_poly(outline, inset)[0]]
     segs = list(zip(ring, ring[1:] + ring[:1]))
     lens = [math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in segs]

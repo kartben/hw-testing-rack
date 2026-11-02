@@ -5372,7 +5372,7 @@
 				)
 			)
 		)
-		(property "Footprint" "bench:USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical"
+		(property "Footprint" "bench:USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical"
 			(at 127 193.04 0)
 			(effects
 				(font
@@ -5381,7 +5381,7 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://datasheet.lcsc.com/datasheet/pdf/7bd44d75856c69ca2c793ff7d877f483.pdf"
 			(at 127 193.04 0)
 			(effects
 				(font
@@ -5390,7 +5390,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 6.4 mm), 5 A on VBUS"
+		(property "Description" "USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes"
 			(at 127 193.04 0)
 			(effects
 				(font
@@ -5399,7 +5399,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "TYPE-C-31-D-06"
+		(property "MPN" "USB4145-03-0170-C"
 			(at 127 193.04 0)
 			(effects
 				(font
@@ -5408,7 +5408,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer" "HRO"
+		(property "Manufacturer" "GCT"
 			(at 127 193.04 0)
 			(effects
 				(font
@@ -5417,7 +5417,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2689964"
+		(property "LCSC" "C5181332"
 			(at 127 193.04 0)
 			(effects
 				(font

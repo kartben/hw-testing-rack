@@ -16,10 +16,14 @@ pad (the bay node's U3).
 
 QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm_Paste4x4: the stock QFN-64 with its exposed pad's paste cut into 16
 windows that clear a 3 × 3 grid of vias at 1.2 mm (the DATA ×4 v2's USB2517, its vias drawn by the board).
+
+USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical: GCT's standing USB-C with 1.70 mm shell stakes (the DATA boards'
+receptacles from 2026-11-01), from GCT's recommended layout.
 """
 
 from __future__ import annotations
 
+import math
 import os
 from pathlib import Path
 
@@ -199,6 +203,99 @@ def usb_c_hro_31d06() -> pcbnew.FOOTPRINT:
     return fp
 
 
+def usb_c_gct_usb4145() -> pcbnew.FOOTPRINT:
+    """GCT USB4145-03-0170-C (LCSC C5181332), a vertical (top-mount) USB 2.0 receptacle, 7.46 mm tall, its four
+    shell stakes 1.70 mm long for a 1.6 mm board (the HRO TYPE-C-31-D-06's 0.95 mm legs are drawn for 0.8 mm).
+    GCT's recommended PCB layout (drawing USB4145 rev A1, sheet 2): 16 pads 0.30 × 1.15 mm at 0.5 mm in two rows
+    whose inner edges are 1.82 mm apart (A at −y, B at +y, each row's GND at its ends, x ±2.75 as the D-06's),
+    four plated stake slots 1.10 × 0.60 mm in 1.60 × 1.10 mm pads at (±4.00, ±1.43), pasted (pin-in-paste, the
+    SMT reflow solders them), and the two locating posts' holes, unplated: Ø0.66 mm west, a 0.86 × 0.66 mm slot
+    east.  Pin numbers as Connector:USB_C_Receptacle_USB2.0_16P, the shell SH."""
+    name = "USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical"
+    fp = pcbnew.FOOTPRINT(None)
+    pins = {"A1": -2.75, "A4": -1.25, "A5": -0.75, "A6": -0.25, "A7": 0.25, "A8": 0.75, "A9": 1.25, "A12": 2.75,
+            "B1": 2.75, "B4": 1.25, "B5": 0.75, "B6": 0.25, "B7": -0.25, "B8": -0.75, "B9": -1.25, "B12": -2.75}
+    for num, x in pins.items():
+        pad = pcbnew.PAD(fp)
+        pad.SetAttribute(pcbnew.PAD_ATTRIB_SMD)
+        pad.SetShape(pcbnew.F_Cu, pcbnew.PAD_SHAPE_RECT)
+        pad.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(0.3), MM(1.15)))
+        pad.SetLayerSet(pcbnew.PAD.SMDMask())
+        pad.SetNumber(num)
+        pad.SetFPRelativePosition(pcbnew.VECTOR2I(MM(x), MM(-1.485 if num[0] == "A" else 1.485)))
+        fp.Add(pad)
+    for x, y in ((4.0, 1.43), (4.0, -1.43), (-4.0, -1.43), (-4.0, 1.43)):
+        pad = pcbnew.PAD(fp)
+        pad.SetAttribute(pcbnew.PAD_ATTRIB_PTH)
+        pad.SetShape(pcbnew.F_Cu, pcbnew.PAD_SHAPE_OVAL)
+        pad.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(1.6), MM(1.1)))
+        pad.SetDrillShape(pcbnew.PAD_DRILL_SHAPE_OBLONG)
+        pad.SetDrillSize(pcbnew.VECTOR2I(MM(1.1), MM(0.6)))
+        layers = pcbnew.PAD.PTHMask()
+        layers.AddLayer(pcbnew.F_Paste)
+        pad.SetLayerSet(layers)
+        pad.SetNumber("SH")
+        pad.SetFPRelativePosition(pcbnew.VECTOR2I(MM(x), MM(y)))
+        fp.Add(pad)
+    for x, w in ((-4.0, 0.66), (4.0, 0.86)):
+        pad = pcbnew.PAD(fp)
+        pad.SetAttribute(pcbnew.PAD_ATTRIB_NPTH)
+        pad.SetShape(pcbnew.F_Cu, pcbnew.PAD_SHAPE_CIRCLE if w == 0.66 else pcbnew.PAD_SHAPE_OVAL)
+        pad.SetSize(pcbnew.F_Cu, pcbnew.VECTOR2I(MM(w), MM(0.66)))
+        if w != 0.66:
+            pad.SetDrillShape(pcbnew.PAD_DRILL_SHAPE_OBLONG)
+        pad.SetDrillSize(pcbnew.VECTOR2I(MM(w), MM(0.66)))
+        pad.SetLayerSet(pcbnew.PAD.UnplatedHoleMask())
+        pad.SetFPRelativePosition(pcbnew.VECTOR2I(MM(x), 0))
+        fp.Add(pad)
+        # a keep-out for tracks and vias round each hole, its edge clearance (0.3 mm) out: the autorouter sees no
+        # copper there to keep away from (KiCad's DRC holds an unplated hole to the board edge's clearance)
+        ko = pcbnew.ZONE(fp)
+        ko.SetIsRuleArea(True)
+        ko.SetDoNotAllowTracks(True)
+        ko.SetDoNotAllowVias(True)
+        ko.SetDoNotAllowPads(False)
+        ko.SetDoNotAllowZoneFills(False)
+        ko.SetDoNotAllowFootprints(False)
+        layers = pcbnew.LSET()
+        layers.AddLayer(pcbnew.F_Cu)
+        layers.AddLayer(pcbnew.B_Cu)
+        ko.SetLayerSet(layers)                            # the routing layers
+        r, off = 0.33 + 0.3, (w - 0.66) / 2               # a stadium: the hole's half-width, out by 0.3 mm
+        outline = ko.Outline()
+        outline.NewOutline()
+        for side, a0 in ((1, -90), (-1, 90)):             # its east half-circle, then its west one
+            for k in range(9):
+                a_ = math.radians(a0 + 22.5 * k)
+                outline.Append(MM(x + side * off + r * math.cos(a_)), MM(r * math.sin(a_)))
+        fp.Add(ko)
+    # the courtyard 0.1 mm past the stakes' pads along the body (the DATA boards' VBUS LED and 22 µF sit 0.15 mm
+    # beyond it), 0.3 mm past the signal pads across it
+    for layer, w, hw, hh in ((pcbnew.F_CrtYd, 0.05, 4.9, 2.35), (pcbnew.F_Fab, 0.1, 4.47, 1.58)):
+        rect = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_RECT)
+        rect.SetLayer(layer)
+        rect.SetWidth(MM(w))
+        rect.SetStart(pcbnew.VECTOR2I(MM(-hw), MM(-hh)))
+        rect.SetEnd(pcbnew.VECTOR2I(MM(hw), MM(hh)))
+        fp.Add(rect)
+    for y in (-2.45, 2.45):                     # silkscreen: the long sides, clear of the pads
+        line = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_SEGMENT)
+        line.SetLayer(pcbnew.F_SilkS)
+        line.SetWidth(MM(0.12))
+        line.SetStart(pcbnew.VECTOR2I(MM(-2.2), MM(y)))
+        line.SetEnd(pcbnew.VECTOR2I(MM(2.2), MM(y)))
+        fp.Add(line)
+    fp.SetAttributes(pcbnew.FP_SMD)
+    fp.SetFPID(pcbnew.LIB_ID("bench", name))
+    fp.Value().SetText(name)
+    fp.Reference().SetText("REF**")
+    fp.SetLibDescription("USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, mouth away from the board, "
+                         "7.46 mm): GCT USB4145-03-0170-C (LCSC C5181332), 1.70 mm shell stakes for a 1.6 mm board, "
+                         "land from GCT's recommended PCB layout")
+    fp.SetKeywords("usb c type-c receptacle vertical top mount gct usb4145 16p")
+    return fp
+
+
 def dfn2510_10l() -> pcbnew.FOOTPRINT:
     """DFN2510-10L (2.5 × 1.0 × 0.5 mm, 0.5 mm pitch), hongjiacheng's recommended land for its H5VU25UC 4-line
     ESD array (LCSC C20615800; datasheet rev 2.0, p. 3): pads 0.675 mm long in two rows 0.875 mm apart (1.55 mm
@@ -338,6 +435,7 @@ def c0402_rp() -> pcbnew.FOOTPRINT:
 MAKERS = {"R_1206_3216Metric_Kelvin": kelvin_1206, "ESP32-S3-WROOM-1_NoEPVias": wroom_no_ep_vias,
           "PinHeader_2x06_P2.54mm_Vertical_SMD_Tight": header_2x6_smd_tight,
           "USB_C_Receptacle_HRO_TYPE-C-31-D-06_Vertical": usb_c_hro_31d06,
+          "USB_C_Receptacle_GCT_USB4145-03-0170-C_Vertical": usb_c_gct_usb4145,
           "DFN2510-10L_2.5x1.0mm_P0.5mm": dfn2510_10l, "L_Abracon_AOTA-B201610": aota_b201610,
           "C_0402_1005Metric_RP": c0402_rp, "QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm_Paste4x4": qfn64_paste4x4}
 
