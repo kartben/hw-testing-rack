@@ -1,8 +1,8 @@
-"""DATA ×4 v1.0 (data-port-x4-v2) — the analyzer bays' drawer board, v1 plus virtual wires and a logic analyzer.
+"""DATA ×4 v1.0 (data-port-x4) — the analyzer bays' drawer board, v1 plus virtual wires and a logic analyzer.
 
-docs/data-x4-v2-research.md is the why; electronics.md › "DATA ×4 v2" the what.  v1 (electronics/
-data-port-x4) stays the board of the other converted bays (decided 2026-10-20).  v2 keeps everything v1
-does and adds:
+docs/data-x4-v2-research.md is the why; electronics.md › "DATA ×4 v1.0" the what.  v1 (the first DATA ×4,
+retired unbuilt on 2026-10-26; this folder held it) was to stay the board of the other converted bays (decided
+2026-10-20).  v2 keeps everything v1 does and adds:
 
 * per port, 8 pins P1–P8 and the board's VREF on a 2 × 6 through-hole header, soldered by hand (GND,
   VREF, P1–P8, RESET_N, BOOT_N): each pin through H5VU25UC ESD and 100 Ω to an LSF0108 (A side = the DUT's VREF, B side =
@@ -1307,10 +1307,10 @@ def logic_only(b: Board) -> list[str]:
 
 
 def board() -> Board:
-    b = Board("data-port-x4-v2", "DATA ×4 v2", "1.0",
+    b = Board("data-port-x4", "DATA ×4 v2", "1.0",
               comments=["A converted bay's drawer board: four USB-C behind a hub, 32 switchable pins on 8 buses, "
                         "a logic analyzer (hw-testing-rack)",
-                        "Generated from electronics/data-port-x4-v2/design.py — edit the Python, then regenerate"])
+                        "Generated from electronics/data-port-x4/design.py — edit the Python, then regenerate"])
     b.root_paper, b.root_buses = "A2", True
     b.root_notes = [
         "DATA ×4 v1.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226",

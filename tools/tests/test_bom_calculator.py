@@ -26,7 +26,7 @@ class Orders(unittest.TestCase):
         # the 1 × 2 base + logic panel: JLC's real quote of 2026-11-01 (green, Economic, $235.45), the C60 it
         # left unplaced (Standard-only), the GCT USB4145 USB-C, R23/R24's 27 Ω and R53's 18.7k since
         # (JLC_SINCE_QUOTE), its parts scaled from the quote's at JLC's price breaks, its special components a piece
-        q = bom.JLC_QUOTE["data-port-x4-v2-panel"]
+        q = bom.JLC_QUOTE["data-port-x4-panel"]
         if q.get("stale_since"):
             self.skipTest(f"the panel's quote is stale since {q['stale_since']}: {q['stale']}")
         for n, usd in ((2, 259.86), (5, 413.37), (10, 678.76)):
@@ -42,7 +42,7 @@ class Orders(unittest.TestCase):
         # at the quoted quantity an order is its quote: as adjusted for the rack's order (the panel), else the
         # quote, what changed since on its PCBA lines (JLC_SINCE_QUOTE) and the rack's mask colour (the quotes
         # are green)
-        for name in ("data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel", "data-port-x6", "camera-pod"):
+        for name in ("data-port-x4", "data-port-x4-base", "data-port-x4-panel", "data-port-x6", "camera-pod"):
             q = bom.JLC_QUOTE[name]
             since = sum(usd for _, line, usd in bom.JLC_SINCE_QUOTE.get(name, []) if line in q["pcba"])
             want = self.orders[name]["total"] if name in self.orders else                 q["total"] + since + sum(bom.mask_colour(name).values())
@@ -78,17 +78,17 @@ class Orders(unittest.TestCase):
         # JLC's quotes of 2026-10-23 buy L1 by 5, and a real quote's components carry JLC's own purchase:
         # no minimum-buy line on the logic alone or the panel
         line = "L1 minimum purchase (5)"
-        self.assertEqual(bom.JLC_MIN_BUY["data-port-x4-v2"][0][1], 5)
-        self.assertNotIn(line, bom.order_cost("data-port-x4-v2", 2, self.orders)["once_lines"])
+        self.assertEqual(bom.JLC_MIN_BUY["data-port-x4"][0][1], 5)
+        self.assertNotIn(line, bom.order_cost("data-port-x4", 2, self.orders)["once_lines"])
         self.assertNotIn(line, bom.panel_order(2, self.orders)["once_lines"])
 
     def test_panel_is_the_racks_order(self):
         # one order panel carries the rack's logic and base; their parts lines stay per board
-        self.assertIn("data-port-x4-v2-panel", self.orders)
-        self.assertNotIn("data-port-x4-v2", self.orders)
-        self.assertNotIn("data-port-x4-v2-base", self.orders)
-        o = self.orders["data-port-x4-v2-panel"]
-        q = bom.JLC_QUOTE["data-port-x4-v2-panel"]
+        self.assertIn("data-port-x4-panel", self.orders)
+        self.assertNotIn("data-port-x4", self.orders)
+        self.assertNotIn("data-port-x4-base", self.orders)
+        o = self.orders["data-port-x4-panel"]
+        q = bom.JLC_QUOTE["data-port-x4-panel"]
         if q.get("stale_since"):
             self.skipTest(f"the panel's quote is stale since {q['stale_since']}: {q['stale']}")
         # JLC's quote of 2026-11-01: 50 types, 24 placed extended of which 3 preferred (C25725, C25796,
@@ -118,13 +118,13 @@ class Orders(unittest.TestCase):
             # a price break can make n + 1 boards cheaper than n (JLC buys every part at the break reached)
             self.assertTrue(all(usd > 0 for usd in o["total"]), name)
             self.assertLess(o["total"][0], o["total"][-1], name)
-        self.assertIn("data-port-x4-v2-panel", c["orders"])
+        self.assertIn("data-port-x4-panel", c["orders"])
         # the boards JLC assembles: 3 logic boards are 5 (Economic), 9 nodes are 9 (Standard)
         n = c["n"]
-        self.assertEqual(c["orders"]["data-port-x4-v2"]["assembled"][n.index(3)], 5)
+        self.assertEqual(c["orders"]["data-port-x4"]["assembled"][n.index(3)], 5)
         self.assertEqual(c["orders"]["bay-node"]["assembled"][n.index(9)], 9)
-        self.assertEqual(sorted(c["design"]["data-port-x4-v2"]),
-                         ["data-port-x4-v2", "data-port-x4-v2-base", "data-port-x4-v2-panel"])
+        self.assertEqual(sorted(c["design"]["data-port-x4"]),
+                         ["data-port-x4", "data-port-x4-base", "data-port-x4-panel"])
 
 
 if __name__ == "__main__":

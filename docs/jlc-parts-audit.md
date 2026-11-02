@@ -24,7 +24,7 @@ generated: [`bom/jlc-parts.md`](../bom/jlc-parts.md).  The costs per board and p
 - One rack takes 8 nodes, 1 hub, 6 DATA ports, 2 camera pods and a DATA ×4 for each converted bay:
   - B3 (`x4: v2`) takes the v2 logic variant: 100 × 70, ENIG, every JLC part on one face, Economic.
   - B1 takes the v2's base variant: the same PCB with the logic left off.
-  - Both are ordered together, one of each on a 1 × 2 order panel (`data-port-x4-v2-panel`, ENIG,
+  - Both are ordered together, one of each on a 1 × 2 order panel (`data-port-x4-panel`, ENIG,
     mouse bites, one Economic order): one panel per rack. Their own single-order estimates stay for
     the BOM page's calculator.
   - The v1 (100 × 37) is not ordered for the prototype (the user, 2026-10-20).
@@ -98,8 +98,8 @@ cost $236.85 apart, against $207.86 on the panel.
   types of parts") and leaves it unticked. Tick them before ordering.
 - **What stays in the account:**
   - the Gerber uploads, the panel's twice and the board's twice (the quote page's Upload History);
-  - four PCBA drafts it saved automatically: "data-port-x4-v2-panel-gerbers" (green, black) and
-    "data-port-x4-v2-gerbers" (logic, base).
+  - four PCBA drafts it saved automatically: "data-port-x4-panel-gerbers" (green, black) and
+    "data-port-x4-gerbers" (logic, base).
   The user can delete them; nothing is in the cart.
 
 **The DATA port and the camera pod: real quotes (2026-10-23).** main's Gerbers, JLC BOM and CPL (d44251a),
@@ -217,7 +217,7 @@ board's owner, and the trade-off ones need the user.
 | **USBLC6-2SC6 second source**: ST C7519 ($0.12–0.18) → UMW C2687116 ($0.042 at 100) or TECH PUBLIC C2827654 ($0.036) | node (4), hub, DATA ports, DATA ×4 v2 and its base (4 each) (47 a rack) | ≈ $38 | decision | Same SOT-23-6 and pinout, so pins 1 / 6 and 3 / 4 still join inside and the flow-through layout holds. Check the clamp voltage and capacitance against ST's (0.35 pF line-to-line on the UMW) |
 | **DATA ×4 USB hub**: USB2514B → CH334R or FE1.1s | DATA ×4 v1 | — | moot | v1 is not ordered; the v2's USB2517I serves 7 ports (the four, the analyzer, two spare) |
 | **DATA ×4 at most 100 mm long**: 108 × 24 → 100 × 37 mm | DATA ×4 | the 5-board order went from $104.17 to $85.37 (bare PCB $31.90 → $13.10, JLC's 4-layer offer; no deburring line at 37 mm) | **applied** (1c0dfbd, 6954594) | The offer stops at 10 PCBs: above that JLC's $25 engineering fee is back, so at 50 and 100 PCBs the board costs $53.80 and $73.40, $6–11 more than at 108 × 24 (calculator, 2026-10-20). v1 is not ordered for the prototype since: the converted bays take the v2 |
-| **DATA ×4 v2 logic and base on one 1 × 2 panel** (the same PCB twice, one CPL, ENIG, one Economic order) | DATA ×4 v2 | ≈ $26 for the rack's 2 + 2 ($237.21 against $263.40), ≈ $37 at 5 + 5, ≈ $61 at 10 + 10 | **applied** (the orchestrator; bom.py's `data-port-x4-v2-panel`) | 100 × 142 with a 2 mm mouse-bite gap: one setup and stencil, each type loaded once, no panel fee (one design). The tabs join along the 100 mm edges, away from the ends: the ends sit in the cradle's slots with 0.5 mm to spare. The nubs on the bottom edge (floor, notches at x 31 / 67) and the top edge (latch hooks) are sanded flush. The base goes ENIG; as many bases as logics. A V-cut joint is below |
+| **DATA ×4 v2 logic and base on one 1 × 2 panel** (the same PCB twice, one CPL, ENIG, one Economic order) | DATA ×4 v2 | ≈ $26 for the rack's 2 + 2 ($237.21 against $263.40), ≈ $37 at 5 + 5, ≈ $61 at 10 + 10 | **applied** (the orchestrator; bom.py's `data-port-x4-panel`) | 100 × 142 with a 2 mm mouse-bite gap: one setup and stencil, each type loaded once, no panel fee (one design). The tabs join along the 100 mm edges, away from the ends: the ends sit in the cradle's slots with 0.5 mm to spare. The nubs on the bottom edge (floor, notches at x 31 / 67) and the top edge (latch hooks) are sanded flush. The base goes ENIG; as many bases as logics. A V-cut joint is below |
 | **The same panel, V-cut** instead of mouse bites | DATA ×4 v2 | nothing for the rack's 2 + 2 ($263.70 against $263.40), ≈ $11 at 5 + 5, ≈ $34 at 10 + 10: $26–27 more than mouse bites | decision | JLC's Economic panels take mouse bites only, so a V-cut panel is Standard PCBA: $25.56 setup, $8.21 stencil, $1.53 for each of 41 types. It needs 5 mm rails with fiducials (100 × 150, $52.60 for 5) and ≥ 0.4 mm of copper from both V-cut 100 mm edges; the board keeps 0.3. The 1 mm corner radii at those edges come out square. In return: a clean straight edge, and Standard's SPI and adjustable reflow under the 0.4 mm QFN-80 |
 | **DATA ×4 v2 base in lead-free HASL** when ordered alone | v2 base | $12.20 per order | single orders only | Its finest pitch is the hub's 0.5 mm QFN, which v1 put on HASL. The rack's base is on the ENIG panel; the HASL estimate stays for a single base order (the BOM page's calculator) |
 | **DATA ×4 v2 resistor arrays** → basic 0402 resistors | DATA ×4 v2 (logic) | $9.21 per order (3 extended types at Economic's $3.07) | **declined** (the v2 session, 2026-10-20) | They stay: 60 resistors in place of 15 arrays means re-placing and re-routing the pin chains. In the base, RN1–RN3 sit over the hub's 0.5 mm strap pins, where a row of 0402s doesn't fit |
@@ -463,7 +463,7 @@ reverse-charge VAT. TTC at 20 %: JLC ≈ €893, NextPCB ≈ €1,823 plus shipp
 - No quote was saved, so there is no quote ID.
 
 **AISLER** ("Amazing Assembly", the workspace's Sandbox projects: bay-node INPFROEN, power-hub
-QHORQCSY, data-port ROVDFBNW, camera-pod RQKSLXZJ, data-port-x4-v2 BCVHQQWW).
+QHORQCSY, data-port ROVDFBNW, camera-pod RQKSLXZJ, data-port-x4 BCVHQQWW).
 - Each total is the checkout's own "Net Total" (PCB, stencil, assembly, parts). The BOM tab's prices
   are the parts alone: the node's 8 cost €401.14 in parts out of €1,314.92.
 - Parts at AISLER's distributors cost far more than at LCSC in these small quantities: the hub's parts

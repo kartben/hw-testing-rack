@@ -38,7 +38,7 @@ class Placement(unittest.TestCase):
 
 class CommittedPanel(unittest.TestCase):
     def test_halves_match_variants(self):
-        name = "data-port-x4-v2"
+        name = "data-port-x4"
         outdir = REPO / "electronics" / name
         if not (outdir / "fab" / f"{name}-panel-cpl-jlcpcb.csv").exists():
             self.skipTest("no panel outputs")

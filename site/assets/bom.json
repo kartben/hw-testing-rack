@@ -2600,7 +2600,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "22u — Capacitor 22u 0805",
 "ref": "C2,C3,C102,C202,C302,C402",
 "mpn": "CL21A226MAQNNNE",
@@ -2618,7 +2618,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "33p — Capacitor 33p 0402",
 "ref": "C4,C5",
 "mpn": "0402CG330J500NT",
@@ -2636,7 +2636,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "100n — Capacitor 100n 0402",
 "ref": "C6,C9,C10,C11,C12,C13,C14,C15,C16,C17,C18,C19,C20,C22,C23,C25,C29,C35,C36,C37,C38,C39,C40,C41,C42,C43,C44,C45,C46,C103,C104,C105,C203,C204,C205,C303,C304,C305,C403,C404,C405",
 "mpn": "CL05B104KO5NNNC",
@@ -2654,7 +2654,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "4.7u — Capacitor 4.7u 0402",
 "ref": "C7,C8,C31,C34,C47",
 "mpn": "CL05A475MP5NRNC",
@@ -2672,7 +2672,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "1u — Capacitor 1u 0402",
 "ref": "C21,C24,C26,C27,C28,C101,C201,C301,C401",
 "mpn": "CL05A105KA5NQNC",
@@ -2690,7 +2690,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "4.7u — Capacitor 4.7u 0402",
 "ref": "C32,C33",
 "mpn": "CL05A475MP5NRNC",
@@ -2708,7 +2708,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "15p — Capacitor 15p 0402",
 "ref": "C48,C49",
 "mpn": "0402CG150J500NT",
@@ -2726,7 +2726,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "33u — 33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm",
 "ref": "C60",
 "mpn": "VH1H330ME077000CE0",
@@ -2744,7 +2744,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "10u — Capacitor 10u 1206",
 "ref": "C61,C62",
 "mpn": "CL31A106KBHNNNE",
@@ -2762,7 +2762,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "100n — Capacitor 100n 0603",
 "ref": "C63,C64",
 "mpn": "CC0603KRX7R9BB104",
@@ -2780,7 +2780,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "22u — Capacitor 22u 1206",
 "ref": "C65,C66,C67",
 "mpn": "CL31A226KAHNNNE",
@@ -2798,7 +2798,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "KT-0805G — green LED 0805",
 "ref": "D1,D101,D201,D301,D401",
 "mpn": "KT-0805G",
@@ -2816,7 +2816,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "GZ2012D601TF — ferrite bead 600 Ω @ 100 MHz, 500 mA, 0805",
 "ref": "FB1,FB2",
 "mpn": "GZ2012D601TF",
@@ -2834,7 +2834,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "LEAD — JST PH 8-pin, vertical, through-hole",
 "ref": "J1",
 "mpn": "B8B-PH-K-S(LF)(SN)",
@@ -2852,7 +2852,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "SWD — pin header 1 × 5, 2.54 mm, through-hole",
 "ref": "J2",
 "mpn": "HX PZ2.54-1x5P ZZ",
@@ -2870,7 +2870,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J101",
 "mpn": "USB4145-03-0170-C",
@@ -2888,7 +2888,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "PINS1 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",
 "ref": "J102",
 "mpn": "HX PZ2.54-2x6P ZZ",
@@ -2906,7 +2906,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J201",
 "mpn": "USB4145-03-0170-C",
@@ -2924,7 +2924,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "PINS2 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",
 "ref": "J202",
 "mpn": "HX PZ2.54-2x6P ZZ",
@@ -2942,7 +2942,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J301",
 "mpn": "USB4145-03-0170-C",
@@ -2960,7 +2960,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "PINS3 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",
 "ref": "J302",
 "mpn": "HX PZ2.54-2x6P ZZ",
@@ -2978,7 +2978,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J401",
 "mpn": "USB4145-03-0170-C",
@@ -2996,7 +2996,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "PINS4 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",
 "ref": "J402",
 "mpn": "HX PZ2.54-2x6P ZZ",
@@ -3014,7 +3014,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "AOTA-B201610S3R3-101-T — 3.3 µH 2.4 A molded inductor, 0806, polarity dot on pad 1 (RP2350 core regulator)",
 "ref": "L1",
 "mpn": "AOTA-B201610S3R3-101-T",
@@ -3032,7 +3032,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "3.3u — 3.3 µH, 75 V, 13.5 A sat (−20 %), 6 A heat, 28 / 30 mΩ, molded",
 "ref": "L2",
 "mpn": "IHLP2525CZER3R3M01",
@@ -3050,7 +3050,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "2N7002 — N-MOSFET 60 V (open-drain AUX outputs)",
 "ref": "Q1,Q2",
 "mpn": "2N7002",
@@ -3068,7 +3068,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "12k — Resistor 12k 0402",
 "ref": "R1",
 "mpn": "0402WGF1202TCE",
@@ -3086,7 +3086,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "10k — Resistor 10k 0402",
 "ref": "R3,R4,R5,R9,R11,R12,R20,R25,R40,R51,R102,R103,R112,R113,R202,R203,R212,R213,R302,R303,R312,R313,R402,R403,R412,R413",
 "mpn": "0402WGF1002TCE",
@@ -3104,7 +3104,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "4.7k — Resistor 4.7k 0402",
 "ref": "R6,R7",
 "mpn": "0402WGF4701TCE",
@@ -3122,7 +3122,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "1M — Resistor 1M 0402",
 "ref": "R10",
 "mpn": "0402WGF1004TCE",
@@ -3140,7 +3140,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "33 — Resistor 33 0402",
 "ref": "R21",
 "mpn": "0402WGF330JTCE",
@@ -3158,7 +3158,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "1k — Resistor 1k 0402",
 "ref": "R22,R26,R27,R107,R108,R114,R207,R208,R214,R307,R308,R314,R407,R408,R414",
 "mpn": "0402WGF1001TCE",
@@ -3176,7 +3176,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "27 — Resistor 27 0402",
 "ref": "R23,R24",
 "mpn": "0402WGF270JTCE",
@@ -3194,7 +3194,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "100k — Resistor 100k 0402",
 "ref": "R38,R41,R50,R109,R110,R115,R209,R210,R215,R309,R310,R315,R409,R410,R415",
 "mpn": "0402WGF1003TCE",
@@ -3212,7 +3212,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "47k — Resistor 47k 0402",
 "ref": "R39",
 "mpn": "0402WGF4702TCE",
@@ -3230,7 +3230,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "100k — Resistor 100k 0603",
 "ref": "R52",
 "mpn": "0603WAF1003T5E",
@@ -3248,7 +3248,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "18.7k — Resistor 18.7k 0603",
 "ref": "R53",
 "mpn": "0603WAF1872T5E",
@@ -3266,7 +3266,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "45.3k — Resistor 45.3k 0402",
 "ref": "R101,R201,R301,R401",
 "mpn": "FRC0402F4532TS",
@@ -3284,7 +3284,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "56k — Resistor 56k 0402",
 "ref": "R104,R105,R204,R205,R304,R305,R404,R405",
 "mpn": "0402WGF5602TCE",
@@ -3302,7 +3302,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "100m — 100 mΩ 1 % 0.25 W, as a current shunt",
 "ref": "R106,R206,R306,R406",
 "mpn": "1206W4F100LT5E",
@@ -3320,7 +3320,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "200k — Resistor 200k 0402",
 "ref": "R111,R211,R311,R411",
 "mpn": "0402WGF2003TCE",
@@ -3338,7 +3338,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "10k — 4 × resistor array 0402, 5 %",
 "ref": "RN1,RN2,RN3,RN8,RN9",
 "mpn": "4D02WGJ0103TCE",
@@ -3356,7 +3356,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "2.2k — 4 × resistor array 0402, 5 %",
 "ref": "RN6,RN7",
 "mpn": "4D02WGJ0222TCE",
@@ -3374,7 +3374,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "100 — 4 × resistor array 0402, 5 %",
 "ref": "RN101,RN102,RN201,RN202,RN301,RN302,RN401,RN402",
 "mpn": "4D02WGJ0101TCE",
@@ -3392,7 +3392,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "USB2517I-JZX — USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial",
 "ref": "U1",
 "mpn": "USB2517I-JZX",
@@ -3410,7 +3410,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT",
 "ref": "U2,U6",
 "mpn": "TCA6408ARGTR",
@@ -3428,7 +3428,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "AP2114H-3.3TRG1 — 3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223",
 "ref": "U3",
 "mpn": "AP2114H-3.3TRG1",
@@ -3446,7 +3446,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "H5VU25UC — 4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair)",
 "ref": "U4,U105,U106,U108,U109,U205,U206,U208,U209,U305,U306,U308,U309,U405,U406,U408,U409",
 "mpn": "H5VU25UC",
@@ -3464,7 +3464,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "MAX809S — reset supervisor 2.93 V, ≥ 150 ms, push-pull active-low RESET, SOT-23",
 "ref": "U5",
 "mpn": "MAX809S",
@@ -3482,7 +3482,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "CH446Q — 8 × 16 analog crosspoint switch, 45–65 Ω at 12 V span, serial or parallel addressing",
 "ref": "U7,U8",
 "mpn": "CH446Q",
@@ -3500,7 +3500,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "TPS60400DBVR — charge pump voltage inverter, 60 mA",
 "ref": "U9",
 "mpn": "TPS60400DBVR",
@@ -3518,7 +3518,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "TCA9534APWR — 8-bit I2C I/O expander, push-pull outputs, A version (0x38–0x3F)",
 "ref": "U10",
 "mpn": "TCA9534APWR",
@@ -3536,7 +3536,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "RP2354B — RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO)",
 "ref": "U11",
 "mpn": "RP2354B",
@@ -3554,7 +3554,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "LMR51635YDDCR — 4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum",
 "ref": "U13",
 "mpn": "LMR51635YDDCR",
@@ -3572,7 +3572,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit",
 "ref": "U101,U201,U301,U401",
 "mpn": "TPS2553DBVR-1",
@@ -3590,7 +3590,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "INA226AIDGSR — 36 V current/voltage/power monitor, I2C",
 "ref": "U102,U202,U302,U402",
 "mpn": "INA226AIDGSR",
@@ -3608,7 +3608,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "USBLC6-2SC6 — USB ESD protection",
 "ref": "U103,U203,U303,U403",
 "mpn": "USBLC6-2SC6",
@@ -3626,7 +3626,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "LSF0108RKSR — 8-bit passive FET level translator, auto-bidirectional, open drain and push-pull (TI's RKS VQFN-20 has the BQ pinout)",
 "ref": "U107,U207,U307,U407",
 "mpn": "LSF0108RKSR",
@@ -3644,7 +3644,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225",
 "ref": "Y1",
 "mpn": "X322524MSB4SI",
@@ -3662,7 +3662,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2",
+"group": "data-port-x4",
 "item": "ABM8-272-T3 — 12 MHz crystal, 10 pF load, 50 Ω ESR, ±30 ppm, 3225",
 "ref": "Y2",
 "mpn": "ABM8-272-T3",
@@ -3680,7 +3680,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "22u — Capacitor 22u 0805",
 "ref": "C2,C3,C102,C202,C302,C402",
 "mpn": "CL21A226MAQNNNE",
@@ -3698,7 +3698,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "33p — Capacitor 33p 0402",
 "ref": "C4,C5",
 "mpn": "0402CG330J500NT",
@@ -3716,7 +3716,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "100n — Capacitor 100n 0402",
 "ref": "C6,C9,C10,C11,C12,C13,C14,C15,C16,C17,C18,C19,C103,C104,C203,C204,C303,C304,C403,C404",
 "mpn": "CL05B104KO5NNNC",
@@ -3734,7 +3734,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "4.7u — Capacitor 4.7u 0402",
 "ref": "C7,C8",
 "mpn": "CL05A475MP5NRNC",
@@ -3752,7 +3752,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "33u — 33 µF 50 V aluminium electrolytic, 6.3 × 7.7 mm",
 "ref": "C60",
 "mpn": "VH1H330ME077000CE0",
@@ -3770,7 +3770,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "10u — Capacitor 10u 1206",
 "ref": "C61,C62",
 "mpn": "CL31A106KBHNNNE",
@@ -3788,7 +3788,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "100n — Capacitor 100n 0603",
 "ref": "C63,C64",
 "mpn": "CC0603KRX7R9BB104",
@@ -3806,7 +3806,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "22u — Capacitor 22u 1206",
 "ref": "C65,C66,C67",
 "mpn": "CL31A226KAHNNNE",
@@ -3824,7 +3824,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "1u — Capacitor 1u 0402",
 "ref": "C101,C201,C301,C401",
 "mpn": "CL05A105KA5NQNC",
@@ -3842,7 +3842,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "KT-0805G — green LED 0805",
 "ref": "D101,D201,D301,D401",
 "mpn": "KT-0805G",
@@ -3860,7 +3860,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "LEAD — JST PH 8-pin, vertical, through-hole",
 "ref": "J1",
 "mpn": "B8B-PH-K-S(LF)(SN)",
@@ -3878,7 +3878,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "PORT1 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J101",
 "mpn": "USB4145-03-0170-C",
@@ -3896,7 +3896,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "PINS1 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",
 "ref": "J102",
 "mpn": "HX PZ2.54-2x6P ZZ",
@@ -3914,7 +3914,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "PORT2 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J201",
 "mpn": "USB4145-03-0170-C",
@@ -3932,7 +3932,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "PINS2 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",
 "ref": "J202",
 "mpn": "HX PZ2.54-2x6P ZZ",
@@ -3950,7 +3950,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "PORT3 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J301",
 "mpn": "USB4145-03-0170-C",
@@ -3968,7 +3968,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "PINS3 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",
 "ref": "J302",
 "mpn": "HX PZ2.54-2x6P ZZ",
@@ -3986,7 +3986,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "PORT4 — USB-C receptacle, USB 2.0, 16 pins, vertical (top mount, 7.46 mm), 5 A on VBUS, 1.70 mm shell stakes",
 "ref": "J401",
 "mpn": "USB4145-03-0170-C",
@@ -4004,7 +4004,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "PINS4 — pin header 2 × 6, 2.54 mm, through-hole, soldered by hand: Dupont jumpers to a DUT's pins",
 "ref": "J402",
 "mpn": "HX PZ2.54-2x6P ZZ",
@@ -4022,7 +4022,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "3.3u — 3.3 µH, 75 V, 13.5 A sat (−20 %), 6 A heat, 28 / 30 mΩ, molded",
 "ref": "L2",
 "mpn": "IHLP2525CZER3R3M01",
@@ -4040,7 +4040,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "2N7002 — N-MOSFET 60 V (open-drain AUX outputs)",
 "ref": "Q1,Q2",
 "mpn": "2N7002",
@@ -4058,7 +4058,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "12k — Resistor 12k 0402",
 "ref": "R1",
 "mpn": "0402WGF1202TCE",
@@ -4076,7 +4076,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "10k — Resistor 10k 0402",
 "ref": "R3,R4,R5,R9,R11,R12,R51,R102,R103,R202,R203,R302,R303,R402,R403",
 "mpn": "0402WGF1002TCE",
@@ -4094,7 +4094,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "4.7k — Resistor 4.7k 0402",
 "ref": "R6,R7",
 "mpn": "0402WGF4701TCE",
@@ -4112,7 +4112,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "1M — Resistor 1M 0402",
 "ref": "R10",
 "mpn": "0402WGF1004TCE",
@@ -4130,7 +4130,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "100k — Resistor 100k 0402",
 "ref": "R50,R109,R110,R209,R210,R309,R310,R409,R410",
 "mpn": "0402WGF1003TCE",
@@ -4148,7 +4148,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "100k — Resistor 100k 0603",
 "ref": "R52",
 "mpn": "0603WAF1003T5E",
@@ -4166,7 +4166,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "18.7k — Resistor 18.7k 0603",
 "ref": "R53",
 "mpn": "0603WAF1872T5E",
@@ -4184,7 +4184,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "45.3k — Resistor 45.3k 0402",
 "ref": "R101,R201,R301,R401",
 "mpn": "FRC0402F4532TS",
@@ -4202,7 +4202,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "56k — Resistor 56k 0402",
 "ref": "R104,R105,R204,R205,R304,R305,R404,R405",
 "mpn": "0402WGF5602TCE",
@@ -4220,7 +4220,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "100m — 100 mΩ 1 % 0.25 W, as a current shunt",
 "ref": "R106,R206,R306,R406",
 "mpn": "1206W4F100LT5E",
@@ -4238,7 +4238,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "1k — Resistor 1k 0402",
 "ref": "R107,R108,R114,R207,R208,R214,R307,R308,R314,R407,R408,R414",
 "mpn": "0402WGF1001TCE",
@@ -4256,7 +4256,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "10k — 4 × resistor array 0402, 5 %",
 "ref": "RN1,RN2,RN3",
 "mpn": "4D02WGJ0103TCE",
@@ -4274,7 +4274,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "USB2517I-JZX — USB 2.0 hub, 7 ports, one transaction translator per port (MTT), industrial",
 "ref": "U1",
 "mpn": "USB2517I-JZX",
@@ -4292,7 +4292,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "TCA6408ARGTR — 8-bit I2C I/O expander, 5.5 V tolerant I/O, open-drain INT",
 "ref": "U2,U6",
 "mpn": "TCA6408ARGTR",
@@ -4310,7 +4310,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "AP2114H-3.3TRG1 — 3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223",
 "ref": "U3",
 "mpn": "AP2114H-3.3TRG1",
@@ -4328,7 +4328,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "H5VU25UC — 4-line ESD, 0.8 pF, 5 V stand-off, DFN2510-10L, flow-through (6, 7, 9, 10 NC inside; our copper joins each pair)",
 "ref": "U4,U109,U209,U309,U409",
 "mpn": "H5VU25UC",
@@ -4346,7 +4346,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "MAX809S — reset supervisor 2.93 V, ≥ 150 ms, push-pull active-low RESET, SOT-23",
 "ref": "U5",
 "mpn": "MAX809S",
@@ -4364,7 +4364,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "LMR51635YDDCR — 4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum",
 "ref": "U13",
 "mpn": "LMR51635YDDCR",
@@ -4382,7 +4382,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit",
 "ref": "U101,U201,U301,U401",
 "mpn": "TPS2553DBVR-1",
@@ -4400,7 +4400,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "INA226AIDGSR — 36 V current/voltage/power monitor, I2C",
 "ref": "U102,U202,U302,U402",
 "mpn": "INA226AIDGSR",
@@ -4418,7 +4418,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "USBLC6-2SC6 — USB ESD protection",
 "ref": "U103,U203,U303,U403",
 "mpn": "USBLC6-2SC6",
@@ -4436,7 +4436,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-base",
+"group": "data-port-x4-base",
 "item": "X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225",
 "ref": "Y1",
 "mpn": "X322524MSB4SI",
@@ -4454,8 +4454,8 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-panel",
-"item": "Bare PCB data-port-x4-v2-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites)",
+"group": "data-port-x4-panel",
+"item": "Bare PCB data-port-x4-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites)",
 "supplier": "JLCPCB quote 2026-11-01",
 "qty": 5,
 "unit_eur": 9.568,
@@ -4465,7 +4465,7 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-panel",
+"group": "data-port-x4-panel",
 "item": "Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components",
 "supplier": "JLCPCB quote 2026-11-01, adjusted",
 "qty": 1,
@@ -4476,8 +4476,8 @@
 },
 {
 "category": "Electronics",
-"group": "data-port-x4-v2-panel",
-"item": "Components data-port-x4-v2-panel: JLC quote minus the catalogue prices above",
+"group": "data-port-x4-panel",
+"item": "Components data-port-x4-panel: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-11-01, adjusted",
 "qty": 1,
 "unit_eur": 3.87,
@@ -5409,7 +5409,7 @@
 "nitrogen reflow": 0.86
 }
 },
-"data-port-x4-v2": {
+"data-port-x4": {
 "pcbs": 5,
 "assembled": 2,
 "service": "Economic",
@@ -5431,7 +5431,7 @@
 "special components": 0.24
 }
 },
-"data-port-x4-v2-base": {
+"data-port-x4-base": {
 "pcbs": 5,
 "assembled": 2,
 "service": "Economic",
@@ -5453,7 +5453,7 @@
 "special components": 0.24
 }
 },
-"data-port-x4-v2-panel": {
+"data-port-x4-panel": {
 "pcbs": 5,
 "assembled": 2,
 "service": "Economic",
@@ -5461,8 +5461,8 @@
 "date": "2026-11-01",
 "from_fab": true,
 "boards": [
-"data-port-x4-v2",
-"data-port-x4-v2-base"
+"data-port-x4",
+"data-port-x4-base"
 ],
 "spec": "4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites",
 "pcb": {
@@ -5582,7 +5582,7 @@
 "preferred": 0,
 "standard_only": []
 },
-"data-port-x4-v2-panel": {
+"data-port-x4-panel": {
 "pcb": {
 "engineering": 25.0,
 "ENIG": 18.2,
@@ -5728,7 +5728,7 @@
 ]
 },
 {
-"board": "data-port-x4-v2-panel",
+"board": "data-port-x4-panel",
 "service": "Economic",
 "standard_only": [],
 "need": 1,
@@ -5801,7 +5801,7 @@
 "50": 1.8,
 "100": 1.38
 },
-"data-port-x4-v2-panel": {
+"data-port-x4-panel": {
 "2": 129.93,
 "5": 82.67,
 "10": 67.88,
@@ -5814,7 +5814,7 @@
 "power-hub": 20.36,
 "data-port-x6": 23.09,
 "camera-pod": 1.15,
-"data-port-x4-v2-panel": 45.82
+"data-port-x4-panel": 45.82
 },
 "racks": {
 "1": {
@@ -5823,7 +5823,7 @@
 "power-hub": 155.95,
 "data-port-x6": 348.36,
 "camera-pod": 30.42,
-"data-port-x4-v2-panel": 259.86
+"data-port-x4-panel": 259.86
 },
 "shipping": 34.0,
 "per_rack": 1139.07
@@ -5834,7 +5834,7 @@
 "power-hub": 232.07,
 "data-port-x6": 1302.06,
 "camera-pod": 39.86,
-"data-port-x4-v2-panel": 413.36
+"data-port-x4-panel": 413.36
 },
 "shipping": 34.0,
 "per_rack": 607.63
@@ -5845,7 +5845,7 @@
 "power-hub": 347.82,
 "data-port-x6": 2359.02,
 "camera-pod": 53.66,
-"data-port-x4-v2-panel": 678.75
+"data-port-x4-panel": 678.75
 },
 "shipping": 34.0,
 "per_rack": 520.94
@@ -7219,7 +7219,7 @@
 200
 ]
 },
-"data-port-x4-v2-panel": {
+"data-port-x4-panel": {
 "total": [
 259.86,
 259.86,
@@ -7533,7 +7533,7 @@
 200
 ]
 },
-"data-port-x4-v2": {
+"data-port-x4": {
 "total": [
 171.06,
 171.06,
@@ -7847,7 +7847,7 @@
 200
 ]
 },
-"data-port-x4-v2-base": {
+"data-port-x4-base": {
 "total": [
 93.92,
 93.92,
@@ -8595,7 +8595,7 @@
 240.94
 ]
 },
-"data-port-x4-v2-panel": {
+"data-port-x4-panel": {
 "now": "ENIG",
 "alt": "lead-free HASL",
 "total": [
@@ -8703,7 +8703,7 @@
 8729.72
 ]
 },
-"data-port-x4-v2": {
+"data-port-x4": {
 "now": "ENIG",
 "alt": "lead-free HASL",
 "total": [
@@ -8811,7 +8811,7 @@
 5412.44
 ]
 },
-"data-port-x4-v2-base": {
+"data-port-x4-base": {
 "now": "lead-free HASL",
 "alt": "ENIG",
 "total": [
@@ -8921,16 +8921,16 @@
 }
 },
 "panels": {
-"data-port-x4-v2-panel": [
-"data-port-x4-v2",
-"data-port-x4-v2-base"
+"data-port-x4-panel": [
+"data-port-x4",
+"data-port-x4-base"
 ]
 },
 "design": {
-"data-port-x4-v2": [
-"data-port-x4-v2-panel",
-"data-port-x4-v2",
-"data-port-x4-v2-base"
+"data-port-x4": [
+"data-port-x4-panel",
+"data-port-x4",
+"data-port-x4-base"
 ]
 }
 },

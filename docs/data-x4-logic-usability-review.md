@@ -2,11 +2,11 @@
 
 **Status (2026-10-20): review only, nothing changed on the board.**  **Applied 2026-10-21** in the v2 session's pass (one re-route): findings 1 (layout B, the user's "oui je valide"), 2 (the bias from +5V_MX, with the VREF dividers at 10k / 10k: through 100k / 100k an unwired VREF floats up to ≈ 2.1 V on the bias current and the group passes), 3 (the VBUS LEDs), 4 (U12 out), 5 (22 Ω, earlier) and 7 (docs); 6, the bus header, later.  The BOM: 17 extended types (the 22 Ω swap had taken the 20 to
 18 already), the panel order $229.91 → $226.88.  The user asked for a usability review of
-the DATA-4x-logic (the standing DATA ×4 v2, [electronics.md](electronics.md) › "DATA ×4 v1.0 (data-port-x4-v2)"): the Dupont
+the DATA-4x-logic (the standing DATA ×4 v2, [electronics.md](electronics.md) › "DATA ×4 v1.0 (data-port-x4)"): the Dupont
 headers ("je me demande si on pourrait pas avoir quelque chose de complètement groupé si au final les
 connexions sont complètement virtuelles"), features in excess or missing, and what would simplify the
 board.  Mock-ups, to scale from the routed board's footprints:
-[`electronics/data-port-x4-v2/docs/review/`](../electronics/data-port-x4-v2/docs/review/).
+[`electronics/data-port-x4/docs/review/`](../electronics/data-port-x4/docs/review/).
 
 Costs are per **panel order** as the rack orders it: 2 panels, so 2 logic and 2 base boards, $237.21
 (`tools/bom.py` › `panel_order(2)`, with 92f09f4's preferred tier: 20 extended types to load).  The logic's own share is ≈ $76 of it: parts $30.5, 11 extended part
@@ -59,13 +59,13 @@ pins".  Physically each board still sits in front of its port, so its group stay
 
 ### Three layouts
 
-![A: today](../electronics/data-port-x4-v2/docs/review/headers-a-today.svg)
+![A: today](../electronics/data-port-x4/docs/review/headers-a-today.svg)
 
-![B: per port, tidied](../electronics/data-port-x4-v2/docs/review/headers-b-per-port.svg)
+![B: per port, tidied](../electronics/data-port-x4/docs/review/headers-b-per-port.svg)
 
-![C: one bank](../electronics/data-port-x4-v2/docs/review/headers-c-one-bank.svg)
+![C: one bank](../electronics/data-port-x4/docs/review/headers-c-one-bank.svg)
 
-![The jumpers seen from above in B3](../electronics/data-port-x4-v2/docs/review/jumpers-top-view.svg)
+![The jumpers seen from above in B3](../electronics/data-port-x4/docs/review/jumpers-top-view.svg)
 
 | | A: today | **B: per port, tidied** | C: one bank, 4 × 12 |
 |---|---|---|---|

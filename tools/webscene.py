@@ -1293,7 +1293,7 @@ def build(rack) -> Path:
             add("x4_cradle", (dxw_, dy, plenum), row=i, layer="drawers", bay=bid, movable=drawer)
             add("x4_strip", (dxw_, dy, plenum), row=i, layer="drawers", bay=bid, movable=drawer)
             # its assembly: the v2's base lacks the logic (tools/pcb_glb.py)
-            model = "data-port-x4-v2" + ("-base" if variant == "base" else "") if x4 else "data-port-x6"
+            model = "data-port-x4" + ("-base" if variant == "base" else "") if x4 else "data-port-x6"
             if (SITE_ASSETS / "pcb" / f"{model}.glb").exists():
                 # the routed board, every body (tools/pcb_glb.py: x right, -KiCad y, its front face up), stood up:
                 # KiCad y down from its top edge, its front face towards the port wall

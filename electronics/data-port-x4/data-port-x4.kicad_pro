@@ -264,7 +264,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "data-port-x4-v2.kicad_pro",
+    "filename": "data-port-x4.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -291,13 +291,45 @@
         "diff_pair_gap": 0.15,
         "diff_pair_width": 0.2,
         "line_style": 0,
-        "name": "Supply",
+        "name": "I2C",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
+        "priority": 7,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.25,
+        "track_width": 0.127,
         "tuning_profile": "",
         "via_diameter": 0.5,
+        "via_drill": 0.3,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.1,
+        "diff_pair_gap": 0.15,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "name": "Pins",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 4,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.127,
+        "tuning_profile": "",
+        "via_diameter": 0.5,
+        "via_drill": 0.3,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.1,
+        "diff_pair_gap": 0.15,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "name": "Port",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.3,
+        "tuning_profile": "",
+        "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
       },
@@ -323,30 +355,31 @@
         "diff_pair_gap": 0.15,
         "diff_pair_width": 0.2,
         "line_style": 0,
-        "name": "Port",
+        "name": "Sensitive",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
+        "priority": 6,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.3,
+        "track_width": 0.127,
         "tuning_profile": "",
-        "via_diameter": 0.6,
+        "via_diameter": 0.5,
         "via_drill": 0.3,
         "wire_width": 6
       },
       {
-        "name": "Sensitive",
+        "bus_width": 12,
         "clearance": 0.1,
-        "track_width": 0.127,
+        "diff_pair_gap": 0.15,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "name": "Supply",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 5,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.25,
+        "tuning_profile": "",
         "via_diameter": 0.5,
         "via_drill": 0.3,
-        "diff_pair_width": 0.2,
-        "diff_pair_gap": 0.15,
-        "wire_width": 6,
-        "bus_width": 12,
-        "line_style": 0,
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 6
+        "wire_width": 6
       },
       {
         "bus_width": 12,
@@ -359,37 +392,6 @@
         "priority": 3,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.25,
-        "tuning_profile": "",
-        "via_diameter": 0.5,
-        "via_drill": 0.3,
-        "wire_width": 6
-      },
-      {
-        "name": "I2C",
-        "clearance": 0.1,
-        "track_width": 0.127,
-        "via_diameter": 0.5,
-        "via_drill": 0.3,
-        "diff_pair_width": 0.2,
-        "diff_pair_gap": 0.15,
-        "wire_width": 6,
-        "bus_width": 12,
-        "line_style": 0,
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 7
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.1,
-        "diff_pair_gap": 0.15,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
-        "name": "Pins",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.127,
         "tuning_profile": "",
         "via_diameter": 0.5,
         "via_drill": 0.3,
@@ -557,47 +559,47 @@
     "legacy_lib_list": [],
     "top_level_sheets": [
       {
-        "filename": "data-port-x4-v2.kicad_sch",
-        "name": "data-port-x4-v2",
+        "filename": "data-port-x4.kicad_sch",
+        "name": "data-port-x4",
         "uuid": "00000000-0000-0000-0000-000000000000"
       }
     ]
   },
   "sheets": [
     [
-      "6eede3c9-04e8-5df8-9dbf-dd766ca3200a",
+      "528ef17d-c8dc-5c1a-833a-a87b511a511e",
       "Root"
     ],
     [
-      "45a04347-8732-5237-9e3b-340287b3f578",
+      "5317ddbc-6eaf-528d-8064-6ad358d0599a",
       "Hub"
     ],
     [
-      "348a7008-95ef-5b7f-ad9e-1a5c45e7cb72",
+      "6008d11d-8ef4-5f46-9c77-e344633ba7c3",
       "Power"
     ],
     [
-      "125dc686-f76a-5214-936e-4da94614514c",
+      "9928a256-70f2-5569-a706-9fcdb03c5cf4",
       "Port 1"
     ],
     [
-      "ac14d110-b641-5e40-a282-77d7516cd3e4",
+      "3a8a5f19-4bd3-5061-96b6-414dcd8ce0fa",
       "Port 2"
     ],
     [
-      "76303e69-a9f7-592c-9301-ccf39b66bdac",
+      "aa9a208a-e28d-5481-bb3a-e956eb409243",
       "Port 3"
     ],
     [
-      "ac7695c8-b192-5d16-b2f9-3d2966451868",
+      "1322461c-0213-589c-8e70-a0caa3b282c5",
       "Port 4"
     ],
     [
-      "502396b8-bd6b-5893-a2f3-d22d4d678cde",
+      "7368c65d-a494-51e3-8d91-54b27c64a745",
       "Matrix"
     ],
     [
-      "0ac51c55-9033-5c6b-81d3-0bad3de74b2b",
+      "1ed92c95-15a7-532a-ba63-ea5b1a7eb42a",
       "Co-processor"
     ]
   ],

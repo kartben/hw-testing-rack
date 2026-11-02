@@ -2,8 +2,8 @@
 # The order panel of a board assembled two ways (electronics/tools/panelize.py), in the KiCad Docker image plus
 # KiKit (built here once: the image tools/kicad.sh uses, with `pip install kikit`).
 #
-#   tools/panel.sh data-port-x4-v2            # after tools/kicad.sh data-port-x4-v2 --fab (it reads the variants' files)
-#   tools/panel.sh data-port-x4-v2 --check    # only the panel's BOM/CPL halves against the variants'
+#   tools/panel.sh data-port-x4            # after tools/kicad.sh data-port-x4 --fab (it reads the variants' files)
+#   tools/panel.sh data-port-x4 --check    # only the panel's BOM/CPL halves against the variants'
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 BASE="${KICAD_IMAGE:-kicad/kicad:10.0-full}"

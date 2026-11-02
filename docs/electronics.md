@@ -397,7 +397,7 @@ still open) is in [review-konnect.md](review-konnect.md).
 ## DATA ×4, first design (retired) — 4 layers, 100 × 37 mm
 
 **Retired 2026-10-26:** never ordered; the DATA ×4 v2's base variant does its job, and its folder
-(electronics/data-port-x4) is gone (git history keeps it).  This section stays because the v2 builds on it.
+(electronics/data-port-x4 then) is gone (git history keeps it; the folder name now holds the standing board below).  This section stays because the v2 builds on it.
 
 A converted bay's drawer board (×1 per converted bay, `population › boards:` in `config/rack.yaml`): one
 bay node serves up to four small USB boards, sub-slots `<bay>.1`–`.4` ([multi-dut-node.md](multi-dut-node.md)).
@@ -452,11 +452,11 @@ a LiPo charging takes more than a port's 0.5 A.
 JLC: Economic PCBA (one side, no module, 4 layers allowed), ≈ $85 for 5 PCBs with 2 assembled
 (estimate in `tools/bom.py`).
 
-## DATA ×4 v1.0 (data-port-x4-v2) — 100 × 70 mm, standing
+## DATA ×4 v1.0 (data-port-x4) — 100 × 70 mm, standing
 
 Printed and in its KiCad title block as v1.0 (2026-11-02): no DATA ×4 was ever made, so this is the first
-revision built; "v2" stays in its folder and file names and in the text below, where it tells it from
-the first design.
+revision built.  Its folder and files are `electronics/data-port-x4` (`data-port-x4-v2` until 2026-11-02);
+"v2" stays in the text below, where it tells it from the first design.
 
 v1 plus virtual wires and a logic analyzer: 32 switchable pins on 8 buses and an RP2354B
 co-processor (the why in [data-x4-v2-research.md](data-x4-v2-research.md), its firmware in
@@ -500,9 +500,9 @@ in `config/rack.yaml` › `pcb.data_port_x4_v2`.
 
 **Two assemblies.**  `design.py` declares a variant, `b.pcb["variants"]["base"]`.  `build_board.py` then
 writes a BOM and a CPL for each assembly of the same PCB, from the same Gerbers:
-- **DATA-4x-logic**, everything fitted: `fab/data-port-x4-v2-bom-jlcpcb.csv`, `…-cpl-jlcpcb.csv`.
-- **DATA-4x**, the base: `fab/data-port-x4-v2-base-bom-jlcpcb.csv`, `…-base-cpl-jlcpcb.csv`, and the
-  detailed `data-port-x4-v2-base-bom.csv`, where the unfitted parts carry DNP.  91 parts stay off:
+- **DATA-4x-logic**, everything fitted: `fab/data-port-x4-bom-jlcpcb.csv`, `…-cpl-jlcpcb.csv`.
+- **DATA-4x**, the base: `fab/data-port-x4-base-bom-jlcpcb.csv`, `…-base-cpl-jlcpcb.csv`, and the
+  detailed `data-port-x4-base-bom.csv`, where the unfitted parts carry DNP.  91 parts stay off:
   - the matrix sheet whole: both CH446Q, the TPS60400 and its capacitors, the TCA9534A, FB1;
   - the co-processor sheet whole: the RP2354B, its ferrite, crystal, core regulator, USB 27 Ω, LED, bus
     pull-ups and dividers;
@@ -555,15 +555,15 @@ for the rack's 2 + 2, against $270 as two orders.
     (C6, along the edge).  C17, the hub's 100 nF, sat 1.84 mm from tab1's bites, across the joint; it now
     sits over its pin 46, 7.6 mm in (R3, the strap it took the spot of, over RN1).
   - The silkscreen "DATA ×4 v2.0" moved off the left tab, to x 17.
-- **Files:** `fab/data-port-x4-v2-panel-gerbers.zip`, `-panel-bom-jlcpcb.csv` (41 lines) and
+- **Files:** `fab/data-port-x4-panel-gerbers.zip`, `-panel-bom-jlcpcb.csv` (41 lines) and
   `-panel-cpl-jlcpcb.csv`.
   - The CPL has 316 parts: 204 on the logic board (`<ref>_L`), 112 on the base (`<ref>_B`).
   - The base's 92 logic parts are DNP; their pads stay.
 - **Checks.**  DRC: 0 errors, 0 unconnected, the boards' 4 silkscreen warnings twice.  All 418 models
   resolve.  Each half matches its variant's BOM and CPL.  Each copy's zone fills equal the board's.
 
-Rebuild it after any change to the board: `tools/kicad.sh data-port-x4-v2 --fab`, then
-`tools/panel.sh data-port-x4-v2`.
+Rebuild it after any change to the board: `tools/kicad.sh data-port-x4 --fab`, then
+`tools/panel.sh data-port-x4`.
 
 | Block | Parts | Notes |
 |---|---|---|

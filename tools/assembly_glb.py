@@ -366,7 +366,7 @@ def build(open_frac=None, explode=0.0, out_path=OUT, with_pc=False, explode_bay=
         tf, g = parts.graph[node]
         geoms[node] = parts.geometry[g].copy().apply_transform(tf)
     pcb = {}
-    for name in ("bay-node", "power-hub", "data-port", "camera-pod", "data-port-x4-v2", "data-port-x4-v2-base",
+    for name in ("bay-node", "power-hub", "data-port", "camera-pod", "data-port-x4", "data-port-x4-base",
                  "data-port-x6"):
         # the v2's viewer copy is meshopt-compressed (trimesh can't read it): its plain twin from tools/pcb_glb.py
         f = REPO / "render" / "assets" / "pcb" / f"{name}.glb"

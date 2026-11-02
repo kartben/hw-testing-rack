@@ -315,7 +315,7 @@ CAT = {
                   "Diodes Incorporated", "C150716", 0.23,
                   datasheet="https://www.diodes.com/assets/Datasheets/AP2114.pdf",
                   description="3.3 V 1 A LDO, 450 mV dropout at 1 A, SOT-223"),
-    # DATA ×4 v2 (electronics/data-port-x4-v2, docs/data-x4-v2-research.md), checked 2026-10-19: the 7-port hub,
+    # DATA ×4 v2 (electronics/data-port-x4, docs/data-x4-v2-research.md), checked 2026-10-19: the 7-port hub,
     # the 2 × 6 SMD pin header per port, the matrix, its translators and ESD, the co-processor and its parts
     "usb2517": Cat("bench:USB2517I", "bench:QFN-64-1EP_9x9mm_P0.5mm_EP4.7x4.7mm_Paste4x4", "USB2517I-JZX",
                    "Microchip Tech", "C478081", 4.51,

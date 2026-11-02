@@ -390,7 +390,7 @@
     "TPS26600PWPR"
    ]
   ],
-  "data-port-x4-v2": [
+  "data-port-x4": [
    [
     "C45783",
     6,
@@ -642,7 +642,7 @@
     "ABM8-272-T3"
    ]
   ],
-  "data-port-x4-v2-base": [
+  "data-port-x4-base": [
    [
     "C45783",
     6,

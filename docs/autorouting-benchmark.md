@@ -36,7 +36,7 @@ decide.
 
 ## How it was measured
 
-- **Boards:** data-port (2 layers), camera-pod (2), bay-node (4), power-hub (4), data-port-x4-v2 (6, as on main
+- **Boards:** data-port (2 layers), camera-pod (2), bay-node (4), power-hub (4), data-port-x4 (6, as on main
   after its tidy pass).  Each is placed as `design.py` places it (`tools/kicad.sh <board> --dsn`), with the
   tracks and vias it draws and locks: the USB High-Speed pairs, the supply feeds, the fan-out vias.
 - **One verdict for every router:**
@@ -57,7 +57,7 @@ decide.
 python tools/route_farm.py bay-node                     # prepare, route the portfolio, score, report
 python tools/route_farm.py bay-node --runs single       # only the pipeline's run (kicad.sh --route, FR_OPT_THREADS=1)
 python tools/route_farm.py bay-node --apply             # + install the best run in electronics/bay-node
-ROUTE_FARM_HOSTS=hosts.json python tools/route_farm.py data-port-x4-v2 --score-on mac
+ROUTE_FARM_HOSTS=hosts.json python tools/route_farm.py data-port-x4 --score-on mac
 ```
 
 - **prepare:** runs `tools/kicad.sh <board> --dsn` (a new mode), then puts the committed board files back.  The
@@ -357,9 +357,9 @@ zephyrbox), 2026-10-22:
   plane, it made Freerouting take the RP2354B's 0.4 mm pins as joined through it, though they have no room for a
   via: 12–14 links open in every run.  A pin with no room would need a drawn link to its decoupling capacitor's
   via first.
-- **The rack's board since 2026-10-23** (the user's choice): `electronics/data-port-x4-v2` on 4 layers, routed
+- **The rack's board since 2026-10-23** (the user's choice): `electronics/data-port-x4` on 4 layers, routed
   with `ripup30-order2`'s session (750 vias, 5194 mm, 1930 bends once imported), its order panel too.  The 6-layer
-  board was kept as `electronics/data-port-x4-v2-6l` until 2026-10-25 (removed; `X4V2_LAYERS=6` still builds
+  board was kept as `electronics/data-port-x4-6l` until 2026-10-25 (removed; `X4V2_LAYERS=6` still builds
   that stack-up).  The comparison (cost, vias in pads, return paths) is in docs/electronics.md.
 
 ## Our own router?

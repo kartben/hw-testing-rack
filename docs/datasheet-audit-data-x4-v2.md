@@ -2,7 +2,7 @@
 
 2026-10-24, before the JLC order (the cart waits on it).  The user's question: "pour les circuits intégrés clés …
 a-t-on tout intégré en respectant les schémas de référence des datasheets ?"  This file covers the DATA ×4 v2
-(electronics/data-port-x4-v2): the logic assembly (DATA-4x-logic, as drawn) and, where it differs, the base one
+(electronics/data-port-x4): the logic assembly (DATA-4x-logic, as drawn) and, where it differs, the base one
 (DATA-4x).  docs/datasheet-audit.md covers the node, the hub box, the camera pod and the DATA port.
 
 **Method.**

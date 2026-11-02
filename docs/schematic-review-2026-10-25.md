@@ -102,11 +102,11 @@ Each row names the page and the question; the answer settles the change.
   - the docstring calls J5 vertical, but it is side entry;
   - the camera note says "its own AMS1117" (update with audit F1);
   - the POS note changes with S1.
-- `data-port-x4-v2/catalog.py` says "SMD pin header"; the headers are THT.
+- `data-port-x4/catalog.py` says "SMD pin header"; the headers are THT.
 - `electronics.md`:
   - the bay node's cost paragraph still names the merged values "I²C 5.1k, AUX VREF 33 Ω";
   - "22 k Rp → 1.5 A" for the DUT port.
-- `data-port-x4-v2-6l`: removed 2026-10-25 (the user), with its CI matrix entry and references.
+- `data-port-x4-6l`: removed 2026-10-25 (the user), with its CI matrix entry and references.
 
 ## Not checked
 

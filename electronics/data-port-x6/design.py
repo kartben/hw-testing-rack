@@ -1,6 +1,6 @@
 """DATA ×6 v1.0 — the porte-revues bays' drawer board: six USB-C behind a hub, each switched and measured.
 
-The power half of the DATA ×4 v2 (electronics/data-port-x4-v2), widened to six ports for the porte-revues bays.
+The power half of the DATA ×4 v2 (electronics/data-port-x4), widened to six ports for the porte-revues bays.
 Their boards stand in a slotted tray with no Dupont lead, so this board has no pin header, crosspoint or
 co-processor; the DATA ×4 v2 keeps the logic (the user, 2026-10-31: "une carte 4x logic et une 6x purement
 power").

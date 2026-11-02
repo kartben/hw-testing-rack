@@ -756,7 +756,7 @@ def shot(name, out, samples, res):
     c = bay_center("B3")
     # B3's front display and its standing DATA ×4: the drawer's two ends
     b3 = (subject(sc, ("screen:front:B3",)) +
-          subject(sc, ("pcb:data-port-x4-v2",), c + Vector((-0.018, -0.067, -0.030)), 0.08))
+          subject(sc, ("pcb:data-port-x4",), c + Vector((-0.018, -0.067, -0.030)), 0.08))
     if name == "desk":
         # the whole rack and the laptop it is wired to
         aim(cam, (-0.40, -2.15, 0.50), (0.50, 0.05, 0.30), 58, 5.6)

@@ -28,9 +28,9 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-BOARDS = ("bay-node", "power-hub", "data-port-x4-v2", "data-port-x4-v2-base", "data-port-x6", "camera-pod")
+BOARDS = ("bay-node", "power-hub", "data-port-x4", "data-port-x4-base", "data-port-x6", "camera-pod")
 # an assembly variant's files sit in its PCB's folder, under its own name (electronics/tools/build_board.py)
-VARIANT_OF = {"data-port-x4-v2-base": "data-port-x4-v2"}
+VARIANT_OF = {"data-port-x4-base": "data-port-x4"}
 OUT = REPO / "electronics" / "lib" / "jlc_parts.json"
 # the wrapper sits in the server's checkout (it uses the server's node_modules); default: node on PATH and
 # the checkout in ~/.local/mcp/jlcpcb-skill-mcp
