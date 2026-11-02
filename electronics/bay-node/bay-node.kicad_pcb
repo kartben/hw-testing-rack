@@ -44324,7 +44324,7 @@
 	(segment
 		(start 52.184125 21.14845)
 		(end 52.5706 21.1235)
-		(width 0.125)
+		(width 0.127)
 		(layer "F.Cu")
 		(net "/Camera/CAM_CS_P")
 		(uuid "3318e5c3-513e-4dd1-a97d-809db5892179")

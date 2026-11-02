@@ -300,6 +300,9 @@ def board() -> Board:
         # ("fanout_nets"), so none depends on the outer GND pours, which stay as a bonus, tied to
         # In1 by stitching vias.  Every pour connects pads through thermal reliefs (pcbgen.py).
         "inner": [("In1.GND", "power"), ("In2.PWR", "power")],
+        # NextPCB's 5/5 mil tier (the order's rules check, 2026-11-02): no track under 0.127 mm, the router's
+        # 0.125 mm necks widened to it (pcbgen.tidy_tracks)
+        "min_track": 0.127,
         # JLC's standard 4-layer build (In1 sits 0.21 mm under F.Cu, In2 0.21 mm over B.Cu), lead-free
         # HASL (the user, 2026-10-19: 10 boards in HASL, $12.60 less than ENIG; no BGA, the finest pitch
         # is 0.5 mm; HASL may dome a little under the WROOM-1's exposed pad)
