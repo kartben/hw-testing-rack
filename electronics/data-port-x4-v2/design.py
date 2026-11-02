@@ -1974,7 +1974,7 @@ def board() -> Board:
             # lower row's), and a big port number by it, beside the port's VBUS LED
             *({"text": str(n), "x": HDRS[n - 1] - 7.4, "y": HDR_Y - 7.0, "size": 2.0} for n in range(1, 5)),
             *({"text": HDR_PINS[i], "x": HDRS[n] - 6.35 + 2.54 * (i // 2),
-               "y": HDR_Y - (4.6 if i % 2 == 1 else 3.4), "size": 0.8}
+               "y": HDR_Y - (4.58 if i % 2 == 1 else 3.38), "size": 0.9}
               for n in range(4) for i in range(12)),
             # the bring-up test points' names, on the rear face under each pad (mirrored, read from behind), and
             # what the base doesn't have (only GND is live there): the co-processor's row and core rail, the matrix.
@@ -1986,6 +1986,7 @@ def board() -> Board:
             # the SWD header's pin names, read on the front face, alternately over and under it from pin 1 (west)
             *({"text": name, "x": SWD_HDR[0] + 2.54 * i, "y": SWD_HDR[1] + (-2.1 if i % 2 == 0 else 2.1), "size": 0.8}
               for i, (_, name) in enumerate(SWD_PINS)),
+            {"text": "CP", "x": SWD_HDR[0] - 3.8, "y": SWD_HDR[1] + 0.25, "size": 1.0},   # whose SWD: the co-processor's
             # the lead's connector, named on the rear face where it plugs in (it brings the 20 V), and each of its
             # pins beside the housing, pin 1 lowest: as the DATA ×6's (the silkscreen plan, 2026-11-02)
             {"text": "LEAD 20 V", "x": LEAD[0], "y": LEAD[1] + 3.6, "size": 1.0, "layer": "B.SilkS"},
