@@ -34,6 +34,7 @@ from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
 
 import rackcfg  # noqa: E402
+from silk import SILK_RULE, port_mark  # noqa: E402
 
 RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["data_port_x6"]
@@ -983,7 +984,7 @@ def board() -> Board:
                    "pairs: 0.17 mm to each",
             "C16": "U1 pin 10's via under the case, beyond the pin; none fits past C16's pad between USB-C 5 and "
                    "6's pairs: 0.17 mm to each"},
-        "dru": XTAL_RULE,
+        "dru": XTAL_RULE + SILK_RULE,
         "min_width_except": MIN_WIDTH_EXCEPT,
         "keepouts": CRADLE_KEEPOUTS + [
             # the crystal's block (dropped once routed), as the v2's
@@ -1027,6 +1028,9 @@ def board() -> Board:
                 ("split-5vb-band", (W - 6.0, TB - 0.4, W - 5.0, PWR_SPLIT)))],
         # 0.8 mm text in 0.15 mm strokes (the layout review: 0.15 at least; 15 % of 0.8 would give 0.12)
         "texts": [
+            # each port's number on its USB-C's axis, 7.8 mm over the strip that holds the receptacles: what shows
+            # over the port wall in use (the silkscreen plan, 2026-11-02), port 1 leftmost from the DUT side
+            *(port_mark(n, x, 42.5) for n, x in enumerate(USBS, 1)),
             {"text": "DATA ×6 v1.0", "x": 50.4, "y": H - 2.5, "size": 0.8, "thickness": 0.15},   # by USB-C 3 and 4
             *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "thickness": 0.15, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
