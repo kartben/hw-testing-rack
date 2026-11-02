@@ -148,6 +148,12 @@ TABS, TAB_W = (9.0, 91.0), 6.0
 # bring out, never a USB pair; each > 2 mm from the THT pads and J1, clear of the cradle's 5.5 mm ends, the push
 # band and the notches, and kept from one revision to the next.  ref: (net, name, pad Ø, x, y); each sheet places
 # its own (testpoint())
+# GND vias filling the stitching grid's gaps (as on the DATA ×6): the outer pours' point farthest from a GND via
+# first, a via where it fits inside both outer pours; 7.05 mm at worst before (by port 4's lane at (85, 41)),
+# 5.4 mm after, in the pairs' bundle under the hub, where no via fits
+GND_FILL = [(89.07, 31.7), (22.2, 46.2), (88.7, 41.7), (80.65, 44.09), (27.27, 44.22), (62.09, 7.15), (28.43, 33.7),
+            (25.2, 6.2), (33.57, 44.2), (60.68, 46.13), (44.31, 31.75), (63.7, 17.2), (9.2, 2.7), (30.61, 22.11),
+            (74.61, 13.29), (51.2, 55.2), (88.83, 47.72), (48.7, 29.7)]
 # each port's VBUS test pad (TPS): a via on its VBUS line where the rear face has room for the pad
 VBUS_TP = {1: (21.715, 60.25), 2: (39.695, 63.545), 3: (55.067, 67.777), 4: (70.567, 67.777)}
 TPS = {
@@ -1433,6 +1439,8 @@ def board() -> Board:
     hand_vias += v
     # the via under each port's VBUS test pad (TPS), on the router's VBUS line
     hand_vias += [(f"PORT{n}_VBUS", *VBUS_TP[n], 0.6, 0.3) for n in range(1, 5)]
+    # and the stitching's gaps filled (GND_FILL)
+    hand_vias += [("GND", x, y, 0.6, 0.3) for x, y in GND_FILL]
     # the co-processor's 3.3 V (+3V3_CP) into its In2 island right past FB2, C31 and R25: from R25's pad down to
     # a via in the island (the feed used to reach the island through IOVDD pin 41, under the case), so that each
     # IOVDD pin can reach the rail through its own 100 nF alone
