@@ -331,6 +331,20 @@ def board() -> Board:
         ("CAM_5V", "F.Cu", 0.6, [(53.5, 8.6), (54.05, 9.15), (64.575, 9.15), (64.575, 14.2)]),
         ("CAM_5V", "F.Cu", 0.6, [(64.575, 14.2), (58.5, 14.2)]),
     ]
+    # VIN from Q1 (after the reverse-polarity FET, on D2's clamp) to TP6 and so to U9: 1.7 mm (TI's 2 × 1.76 A), two
+    # vias at each change of layer (three at Q1, with the buck's branch's), none on In2's VRACK strip.  F.Cu over Q1.3 and D2.1; B.Cu under the CAN
+    # transceiver (U11), between the GND vias; F.Cu past the PC pair's bend (the +5V track bars B.Cu there); B.Cu
+    # under SVC and the GND vias' row into TP6.  The router took it in 0.6 mm through single vias
+    vin_feed = [
+        ("VIN", "F.Cu", 1.7, [(17.28, 71.04), (18.9984, 71.04), (22.0, 71.04), (22.0, 70.15)]),
+        ("VIN", "F.Cu", 0.8, [(18.9984, 71.04), (18.9984, 71.6508)]),           # the buck's branch's via
+        ("VIN", "B.Cu", 1.7, [(19.7, 70.6), (20.85, 69.45), (31.55, 69.45), (32.4, 70.3), (32.4, 72.3)]),
+        ("VIN", "F.Cu", 1.2, [(32.4, 71.2), (32.4, 72.3), (32.75, 72.65)]),
+        ("VIN", "F.Cu", 1.7, [(32.75, 72.65), (34.65, 74.55), (36.8, 74.55)]),
+        ("VIN", "B.Cu", 1.7, [(35.8, 74.55), (36.25, 74.1), (43.9, 74.1), (48.0, 70.0)]),
+    ]
+    vin_vias = [("VIN", x, y, 0.8, 0.4) for x, y in ((18.9984, 71.6508), (19.7, 70.6), (20.8, 70.6), (32.4, 71.2),
+                                                     (32.4, 72.3), (35.8, 74.55), (36.8, 74.55))]
     efuse_vias = [*[("VIN", 46.6, y, 0.8, 0.4) for y in (63.8, 65.0, 67.6)], ("CAM_SCK_C", 55.35, 11.2, 0.6, 0.3),
                   *[("GND", ex + dx, ey + dy) for dx in (-1.5, 0.0, 1.5) for dy in (-0.75, 0.75)]]
     b.pcb = {
@@ -439,6 +453,7 @@ def board() -> Board:
                                                (14.8, 26.8), (15.2, 28.4), (9.0, 29.8), (9.0, 31.5))],
                  ("+3V3", 41.5, 43.0), ("+3V3", 41.5, PWR_Y - 1.5),
                  *efuse_vias,
+                 *vin_vias,
                  *hs_vias,
                  *[(net, *xy) for net, _, _, xy, via, _, _ in TP_ROUND2 if via],       # the second round's test pads
                  *[(net, *pts[-1], 0.6, 0.3) for net, _, pts in decap_ties],           # the decoupling ties' vias
@@ -446,7 +461,7 @@ def board() -> Board:
                                                            ("SHUNT_P", 54.1, 43.0), ("SHUNT_N", 55.0, 43.15))]],
         # the front +3V3 area of In2 (LED, SERVICE switch) is cut off by the VRACK strip: fed from the
         # main +3V3 area by a B.Cu track
-        "tracks": [*hs_tracks, *efuse_tracks, *cam_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)]),
+        "tracks": [*hs_tracks, *efuse_tracks, *vin_feed, *cam_tracks, ("+3V3", "B.Cu", 0.4, [(41.5, 43.0), (41.5, PWR_Y - 1.5)]),
                    *[(net, "F.Cu", w, pts) for net, w, pts in decap_ties],
                    *[(net, layer, 0.25, pts) for net, layer, pts in shunt_pair]],
         # ESP32 antenna: no copper on any layer under/around the antenna (the WROOM-1's rear 6 mm, ±24 mm)
