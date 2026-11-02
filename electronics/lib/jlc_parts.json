@@ -522,7 +522,7 @@
     "100k"
    ],
    [
-    "C11476",
+    "C22893",
     1,
     "18.7k"
    ],
@@ -739,7 +739,7 @@
     "100k"
    ],
    [
-    "C11476",
+    "C22893",
     1,
     "18.7k"
    ],
@@ -1259,22 +1259,6 @@
    "category": "Circuit Protection",
    "manufacturer": "MDD(Microdiode Semiconductor)",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
-  },
-  "C11476": {
-   "mfr": "0402WGF1872TCE",
-   "package": "0402",
-   "stock": 12343,
-   "tier": "extended",
-   "priceBreaks": [
-    {
-     "qFrom": 1,
-     "qTo": null,
-     "price": 0.0018
-    }
-   ],
-   "category": "Resistors",
-   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
-   "source": "JLC's parts library through the jlc MCP (2026-11-02): tier, stock, unit price; the catalog snapshot has no prices (added 2026-11-02)"
   },
   "C11702": {
    "mfr": "0402WGF1001TCE",
@@ -2000,6 +1984,32 @@
    "category": "Resistors",
    "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
    "source": "local-db (snapshot stock); tier and stock from JLC's parts library (live)"
+  },
+  "C22893": {
+   "mfr": "0603WAF1872T5E",
+   "package": "0603",
+   "stock": 59396,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 999,
+     "price": 0.0019
+    },
+    {
+     "qFrom": 1000,
+     "qTo": 4999,
+     "price": 0.0015
+    },
+    {
+     "qFrom": 5000,
+     "qTo": null,
+     "price": 0.0013
+    }
+   ],
+   "category": "Resistors",
+   "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
+   "source": "JLC's parts library through the jlc MCP (2026-11-02): tier, stock, unit price; the catalog snapshot has no prices (added 2026-11-02)"
   },
   "C2297": {
    "mfr": "KT-0805G",

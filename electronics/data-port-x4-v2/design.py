@@ -874,7 +874,7 @@ def power_sheet(b: Board):
     R(s, "R52", "100k", "+5V", "BUCK_FB", pcb=P(bx - 3.5, by - 1.2, 270), sch=at(x0 + 62, 30))
     # 18.7k, not the node's 18k: 5.08 V, under the TPS60400's 5.25 V (U9, the matrix's −5 V) at the worst corner
     R(s, "R53", "18.7k", "BUCK_FB", "GND", pcb=P(bx - 3.5, by + 1.8, 270), sch=at(x0 + 62, 37),
-      fields={"LCSC": "C11476", "MPN": "0402WGF1872TCE", "Manufacturer": "UNI-ROYAL(Uniroyal Elec)"})
+      fields={"LCSC": "C22893", "MPN": "0603WAF1872T5E", "Manufacturer": "UNI-ROYAL(Uniroyal Elec)"})
     s.wire("R52.2", "R53.1")
     s.wire((x0 + 62, 33.5), (x0 + 36, 33.5), (x0 + 36, 25), "U13.FB")
     s.part("#FLG03", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False,

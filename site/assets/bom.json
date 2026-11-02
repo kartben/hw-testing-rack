@@ -3251,10 +3251,10 @@
 "group": "data-port-x4-v2",
 "item": "18.7k — Resistor 18.7k 0603",
 "ref": "R53",
-"mpn": "0402WGF1872TCE",
+"mpn": "0603WAF1872T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C11476",
+"part": "C22893",
 "qty": 2,
 "unit_eur": 0.0,
 "basic": false,
@@ -4169,10 +4169,10 @@
 "group": "data-port-x4-v2-base",
 "item": "18.7k — Resistor 18.7k 0603",
 "ref": "R53",
-"mpn": "0402WGF1872TCE",
+"mpn": "0603WAF1872T5E",
 "manufacturer": "UNI-ROYAL(Uniroyal Elec)",
 "supplier": "LCSC/JLCPCB",
-"part": "C11476",
+"part": "C22893",
 "qty": 2,
 "unit_eur": 0.0,
 "basic": false,
@@ -4470,7 +4470,7 @@
 "supplier": "JLCPCB quote 2026-11-01, adjusted",
 "qty": 1,
 "unit_eur": 83.9,
-"notes": "setup $8.24, stencil $1.55, extended parts $74.16, SMT $6.77, special components $0.48; C60 (33 µF 50 V), Standard-only at JLC: 4 Economic ones at JLC's price (+$0.24 components); C60: its extended part type (+$3.09 extended parts); USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 16 at JLC's price (+$14.90 components); R23/R24 27 Ω (C25100) for 22 Ω: its extended part type (+$3.09 extended parts); R53 18.7k (C11476) for 18k: its extended part type (+$3.09 extended parts)",
+"notes": "setup $8.24, stencil $1.55, extended parts $74.16, SMT $6.77, special components $0.48; C60 (33 µF 50 V), Standard-only at JLC: 4 Economic ones at JLC's price (+$0.24 components); C60: its extended part type (+$3.09 extended parts); USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 16 at JLC's price (+$14.90 components); R23/R24 27 Ω (C25100) for 22 Ω: its extended part type (+$3.09 extended parts); R53 18.7k (C22893) for 18k: its extended part type (+$3.09 extended parts)",
 "unit": "pcs",
 "ext_eur": 83.9
 },
@@ -5601,7 +5601,7 @@
 "C60: its extended part type (+$3.09 extended parts)",
 "USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 16 at JLC's price (+$14.90 components)",
 "R23/R24 27 Ω (C25100) for 22 Ω: its extended part type (+$3.09 extended parts)",
-"R53 18.7k (C11476) for 18k: its extended part type (+$3.09 extended parts)"
+"R53 18.7k (C22893) for 18k: its extended part type (+$3.09 extended parts)"
 ],
 "total": 259.86,
 "need": 1,
@@ -7321,8 +7321,8 @@
 4690.16,
 4690.16,
 4690.16,
-6664.99,
-8793.01
+6665.0,
+8793.02
 ],
 "pcbs": [
 5,
@@ -7636,7 +7636,7 @@
 2883.1,
 2883.1,
 4129.69,
-5449.33
+5449.34
 ],
 "pcbs": [
 5,
@@ -7949,8 +7949,8 @@
 1653.16,
 1653.16,
 1653.16,
-2352.63,
-3105.27
+2352.64,
+3105.28
 ],
 "pcbs": [
 5,
@@ -8699,8 +8699,8 @@
 4652.76,
 4652.76,
 4652.76,
-6613.64,
-8729.71
+6613.65,
+8729.72
 ]
 },
 "data-port-x4-v2": {
@@ -8808,7 +8808,7 @@
 2858.8,
 2858.8,
 4099.09,
-5412.43
+5412.44
 ]
 },
 "data-port-x4-v2-base": {
@@ -8915,8 +8915,8 @@
 1677.46,
 1677.46,
 1677.46,
-2383.23,
-3142.17
+2383.24,
+3142.18
 ]
 }
 },

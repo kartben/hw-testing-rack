@@ -3608,7 +3608,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C11476"
+		(property "LCSC" "C22893"
 			(at 335.28 93.98 0)
 			(effects
 				(font
@@ -3617,7 +3617,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0402WGF1872TCE"
+		(property "MPN" "0603WAF1872T5E"
 			(at 335.28 93.98 0)
 			(effects
 				(font

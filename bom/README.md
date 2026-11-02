@@ -52,7 +52,7 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | data-port-x4-v2-panel | 5 panels (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites), 2 assembled: 2 of each board, Economic PCBA | PCB: engineering $25.00, ENIG $18.20, board $8.80 | 52.00 |
 | | | PCBA: setup $8.24, stencil $1.55, components $101.52, extended parts $64.89, SMT $6.77, special components $0.48 | 183.45 |
 | | | **Quoted total** | **235.45** |
-| | | Order (indicative): C60 (33 µF 50 V), Standard-only at JLC: 4 Economic ones at JLC's price (+$0.24 components); C60: its extended part type (+$3.09 extended parts); USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 16 at JLC's price (+$14.90 components); R23/R24 27 Ω (C25100) for 22 Ω: its extended part type (+$3.09 extended parts); R53 18.7k (C11476) for 18k: its extended part type (+$3.09 extended parts) | 259.86 |
+| | | Order (indicative): C60 (33 µF 50 V), Standard-only at JLC: 4 Economic ones at JLC's price (+$0.24 components); C60: its extended part type (+$3.09 extended parts); USB-C: GCT USB4145 for the HRO TYPE-C-31-D-06, 16 at JLC's price (+$14.90 components); R23/R24 27 Ω (C25100) for 22 Ω: its extended part type (+$3.09 extended parts); R53 18.7k (C22893) for 18k: its extended part type (+$3.09 extended parts) | 259.86 |
 
 ## JLC cost
 
@@ -360,7 +360,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | 100k — Resistor 100k 0402 | 30  | 0.00 | 0.04 | LCSC/JLCPCB C25741 |
 | Electronics | 47k — Resistor 47k 0402 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C25792 |
 | Electronics | 100k — Resistor 100k 0603 | 2  | 0.00 | 0.01 | LCSC/JLCPCB C25803 |
-| Electronics | 18.7k — Resistor 18.7k 0603 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C11476 |
+| Electronics | 18.7k — Resistor 18.7k 0603 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C22893 |
 | Electronics | 45.3k — Resistor 45.3k 0402 | 8  | 0.00 | 0.00 | LCSC/JLCPCB C2933099 |
 | Electronics | 56k — Resistor 56k 0402 | 16  | 0.00 | 0.03 | LCSC/JLCPCB C25796 |
 | Electronics | 100m — 100 mΩ 1 % 0.25 W, as a current shunt | 8  | 0.01 | 0.07 | LCSC/JLCPCB C25334 |
@@ -411,7 +411,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | 1M — Resistor 1M 0402 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C26083 |
 | Electronics | 100k — Resistor 100k 0402 | 18  | 0.00 | 0.03 | LCSC/JLCPCB C25741 |
 | Electronics | 100k — Resistor 100k 0603 | 2  | 0.00 | 0.01 | LCSC/JLCPCB C25803 |
-| Electronics | 18.7k — Resistor 18.7k 0603 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C11476 |
+| Electronics | 18.7k — Resistor 18.7k 0603 | 2  | 0.00 | 0.00 | LCSC/JLCPCB C22893 |
 | Electronics | 45.3k — Resistor 45.3k 0402 | 8  | 0.00 | 0.00 | LCSC/JLCPCB C2933099 |
 | Electronics | 56k — Resistor 56k 0402 | 16  | 0.00 | 0.03 | LCSC/JLCPCB C25796 |
 | Electronics | 100m — 100 mΩ 1 % 0.25 W, as a current shunt | 8  | 0.01 | 0.07 | LCSC/JLCPCB C25334 |
