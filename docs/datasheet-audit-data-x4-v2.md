@@ -133,9 +133,11 @@ depends on them.
 
 Each section lists its own; the ones that matter most:
 1. **U3 AP2114H thermal.**
-   - It dissipates 0.60–0.76 W.  Diodes gives 128 °C/W bare and asks for ≥ 30 % thermal margin.
+   - It dissipates 0.74 W typical, ≈ 1.0 W at worst (0.51 A from 5.22 V).  Diodes gives 128 °C/W bare and asks
+     for ≥ 30 % thermal margin; ≤ 125 °C at 40 °C takes ≤ 86 °C/W.  Since 2026-11-02 its tab's +3V3 copper runs
+     west to the edge band on both faces, fifteen vias (six into the +3V3 plane).
    - Measure the tab temperature in the closed drawer, with four High-Speed ports streaming and the RP2354B
-     capturing.  Pass: θJA ≤ ≈ 100 °C/W.
+     capturing.  Pass: θJA ≤ ≈ 86 °C/W.
    - If it fails: more copper, or 1 Ω in series with VIN.
 2. **RP2354B DVDD.**  1.1 V ±3 %, transients within ±100 mV under load.  Check L1's dot before power-up.
 3. **Hub.**

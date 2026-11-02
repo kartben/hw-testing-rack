@@ -136,6 +136,7 @@ PWR_Y = 48.4                        # each port's power cluster (switch, shunt, 
 # U3, the 3.3 V LDO (SOT-223, turned 90°: its tab up over the +3V3 area, its pins down over +5V), in the
 # left-hand column across the power plane's split
 LDO = (9.7, 55.7)
+LDO_WEST = 1.6                      # its +3V3 copper's west edge, inside the edge fence's GND vias (x 0.9)
 # The order's panel (electronics/tools/panelize.py, tools/panel.sh): this board as drawn (DATA-4x-logic) and,
 # turned 180°, the base (DATA-4x), top edge to top edge 2 mm apart, so the bottom edges and the slot ends stay
 # milled.  Two mouse-bite tabs join them where both top edges are bare: at x 9 and 91 (each the other's mirror,
@@ -688,12 +689,14 @@ def hub_sheet(b: Board):
     s.frame("3.3 V for the hub, the expanders and the INA226s (AP2114H, SOT-223 on copper)", 6, 56, 70, 86)
     s.tag("+5V", (24, 66), "up")
     s.wire((24, 66), (24, 69), "U3.VI")
-    # The USB2517I draws 330 mA with four High-Speed ports busy (its datasheet, all supplies, typical; 420 mA
-    # with seven): ≈ 0.35 A in all, 0.6–0.7 W in the LDO from 5.0–5.24 V, twice v1's (its USB2514B: 155 mA).
-    # Too much for v1's AP2112K in SOT-23-5, so an AP2114H: the same low dropout (≈ 0.16 V at 0.35 A: the hub
-    # keeps running while the ports sag the +5V, as v1 wants), 1 A, in SOT-223, its tab on a top-side +3V3
-    # island with six vias into the +3V3 plane (Diodes gives 128 °C/W bare and no figure for a board's copper:
-    # the bring-up measures it).  Its VIN pin on a +5V island with two vias
+    # The USB2517I draws 330 mA with four High-Speed ports busy (DS00001598C Table 8-2, all supplies, typical;
+    # 460 mA at most, with seven), the co-processor ≤ 45 mA, the expanders, the INA226s and the pull-ups the rest:
+    # 0.51 A at worst, ≈ 0.9 W in the LDO from the +5V's 5.08 V (1.0 W from 5.22 V), 0.74 W typical.  Too much
+    # for v1's AP2112K in SOT-23-5, so an AP2114H: the same low dropout (the hub keeps running while the ports sag
+    # the +5V, as v1 wants), 1 A, in SOT-223, thermal shutdown at 160 °C (p.12).  Diodes gives 128 °C/W bare
+    # (p.7): ≤ 125 °C at 40 °C takes ≤ 86 °C/W, so its tab sits on a top-side +3V3 island that runs west to the
+    # edge band, doubled by a rear one, with fifteen vias (six into the +3V3 plane) and the In1 GND plane under
+    # it all; the bring-up measures it.  Its VIN pin on a +5V island with two vias
     part(s, "U3", "ldo_1a", {"VI": "+5V", "VO": "+3V3", "GND": "GND"}, pcb=P(*LDO, 90),
          sch=at(34, 69, fields=(-3, -4)))
     C(s, "C2", "22u", "+5V", "GND", size="0805", pcb=P(LDO[0] + 2.9, LDO[1] + 6.9, 270), sch=at(20, 72))
@@ -897,18 +900,18 @@ def power_sheet(b: Board):
         "The DATA ×6's converter with the family's 3.5 A part (TI SLUSF64B table 8-2, LMR51635, 5 V, 1.1 MHz: 3.3 µH",
         "  Vishay IHLP2525CZ, 75 V, 13.5 A sat; 2 × 10 µF + 100 nF in, 3 × 22 µF out), PFM and spread spectrum as the",
         "  ×6's LMR51625.",
-        "+5V: the four ports, the 3.3 V LDO (≤ 0.46 A) and the matrix: 2.46 A at 0.5 A a port; at worst, all four at",
-        "  the TPS2553s' 0.644 A limit, 3.04 A, under the LMR51635's 3.5 A with no help from the node's firmware.",
-        "  The inductor then peaks at 3.63 A from 28 V (1.17 A ripple), 3.93 A at the worst corner (L −20 %, 0.99 MHz),",
+        "+5V: the four ports, the 3.3 V LDO (≤ 0.51 A) and the matrix: 2.51 A at 0.5 A a port; at worst, all four at",
+        "  the TPS2553s' 0.644 A limit, 3.09 A, under the LMR51635's 3.5 A with no help from the node's firmware.",
+        "  The inductor then peaks at 3.68 A from 28 V (1.17 A ripple), 3.98 A at the worst corner (L −20 %, 0.99 MHz),"
         "  under the LMR51635's 4.2 A minimum peak limit (SLUSF64B §6.5: 4.2 / 5.1 / 6.0 A; valley 3.2 / 4.0 / 4.8 A);",
-        "  from 13.5 V: peak 3.48 A, valley 2.60 A.  No frequency foldback (tON 170 ns ≥ 70, tOFF 556 ns ≥ 200).",
+        "  from 13.5 V: peak 3.53 A, valley 2.65 A.  No frequency foldback (tON 170 ns ≥ 70, tOFF 556 ns ≥ 200).",
         "FB 100k/18.7k: 5.08 V, 4.94–5.22 V with VFB 0.792–0.808 V (SLUSF64B §6.5) and the 1 % resistors: under",
         "  the TPS60400's 5.25 V (U9, sheet Matrix), which the node's 18k (5.10–5.39 V) was not.",
         "EN 100k/10k: on above 13.5 V typ., up to 14.8 V on the EN threshold's 1.103–1.349 V (SLUSF64B §6.5) and",
         "  15.1 V with the 1 % resistors: the rack's 20 V clears it.  Off below 10.8 V typ.",
         "VIN on J1.8, the node's VRACK through its eFuse (TPS26600, off by default): no second protection here.",
-        "  At the 3.04 A worst case (η ≈ 88 %): 0.91 A at 20 V, 1.21 A at 15 V, 1.34 A at 13.5 V, 0.65 A at 28 V;",
-        "  the converter's full 3.5 A: 1.39 A at 15 V.  Under the node eFuse's 1.76 A; a PH contact carries 2 A.",
+        "  At the 3.09 A worst case from 5.22 V (η ≈ 88 %): 0.92 A at 20 V, 1.22 A at 15 V, 1.36 A at 13.5 V, 0.65 A",
+        "  at 28 V; the converter's full 3.5 A: 1.38 A at 15 V.  Under the node eFuse's 1.76 A; a PH contact carries 2 A.",
     ]
 
 
@@ -1311,10 +1314,10 @@ def board() -> Board:
         "  the matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled;",
         "  v1 stays the other bays' board.",
         "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×6's lead.",
-        "Rails: VIN 20 V (on above 13.5 V typ., 15.1 V at worst; ≤ 28 V), ≤ 0.91 A at 20 V (1.21 A at 15 V) ·",
-        "  +5V 5.08 V (4.94–5.22 V), ≤ 3.04 A (the",
-        "  ports at their 0.644 A limit + 0.46 A; the LMR51635's 3.5 A) ·",
-        "  PORTn_VBUS 4.82–5.22 V, 0.52–0.64 A limit · +3V3 3.3 V (AP2114H), ≤ 0.5 A · +5V_MX, −5V (sheet Matrix) ·",
+        "Rails: VIN 20 V (on above 13.5 V typ., 15.1 V at worst; ≤ 28 V), ≤ 0.92 A at 20 V (1.22 A at 15 V) ·",
+        "  +5V 5.08 V (4.94–5.22 V), ≤ 3.09 A (the",
+        "  ports at their 0.644 A limit + 0.51 A; the LMR51635's 3.5 A) ·",
+        "  PORTn_VBUS 4.82–5.22 V, 0.52–0.64 A limit · +3V3 3.3 V (AP2114H), ≤ 0.51 A · +5V_MX, −5V (sheet Matrix) ·",
         "  +3V3_CP, +1V1 (sheet Co-processor) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own regulators).",
         "I²C: TCA6408A 0x20 / 0x21, INA226 0x41 / 0x43 / 0x44 / 0x45, TCA9534A 0x38; the node's INA226 0x40.",
         "Assembled as DATA-4x-logic (as drawn) or DATA-4x (BOM/CPL '-base': the matrix, the co-processor and the",
@@ -1386,6 +1389,9 @@ def board() -> Board:
     # the VIN island into the +5V plane, between the VIN pin and C2
     lx, ly = LDO
     hand_vias += [("+3V3", x, y, 0.5, 0.3) for x in (lx - 3.05, lx + 3.05) for y in (ly - 5.1, ly - 3.5, ly - 1.9)]
+    # nine more through the island's west part, which a B.Cu +3V3 area doubles (LDO_WEST): over the In2 +5V band
+    # there, they tie the two faces' copper only
+    hand_vias += [("+3V3", x, y, 0.5, 0.3) for x in (2.5, 3.85, 5.2) for y in (ly - 5.1, ly - 3.5, ly - 1.9)]
     hand_vias += [("+5V", lx + dx, ly + 4.8, 0.6, 0.3) for dx in (1.9, 3.15)]
     buck_zones, v = buck_copper("BUCK_SW", "+5V", *BUCK, "buck")
     hand_vias += v
@@ -1834,8 +1840,11 @@ def board() -> Board:
             # U3 (AP2114H, ≈ 0.65 W): top-side copper on its tab with C3's +3V3 pad, and on VIN with C2's +5V
             # pad, each with its vias to its plane; exclusive, so the router keeps its tracks off them
             {"layer": "F.Cu", "net": "+3V3", "name": "ldo-vout", "priority": 3, "exclusive": 0.3,
-             "poly": [(LDO[0] - 3.6, LDO[1] - 5.8), (LDO[0] + 3.6, LDO[1] - 5.8), (LDO[0] + 3.6, LDO[1] - 1.3),
-                      (LDO[0] - 3.6, LDO[1] - 1.3)]},
+             "poly": [(LDO_WEST, LDO[1] - 5.8), (LDO[0] + 3.6, LDO[1] - 5.8), (LDO[0] + 3.6, LDO[1] - 1.3),
+                      (LDO_WEST, LDO[1] - 1.3)]},
+            # and under it on the rear face, as far as the +5V_MX line at x 8.3
+            {"layer": "B.Cu", "net": "+3V3", "name": "ldo-back", "priority": 3, "exclusive": 0.3,
+             "poly": [(LDO_WEST, LDO[1] - 5.8), (7.9, LDO[1] - 5.8), (7.9, LDO[1] - 1.3), (LDO_WEST, LDO[1] - 1.3)]},
             {"layer": "F.Cu", "net": "+5V", "name": "ldo-vin", "priority": 3, "exclusive": 0.3,
              "poly": [(LDO[0] + 1.3, LDO[1] + 2.0), (LDO[0] + 3.75, LDO[1] + 2.0), (LDO[0] + 3.75, LDO[1] + 6.5),
                       (LDO[0] + 1.3, LDO[1] + 6.5)]},
