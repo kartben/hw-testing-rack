@@ -70,7 +70,7 @@ from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
 
 import rackcfg  # noqa: E402
-from silk import SILK_RULE, SILK_TEXT, lead_pin_names, port_mark  # noqa: E402
+from silk import SILK_RULE, SILK_TEXT, lead_pin_names, port_mark, title_block  # noqa: E402
 
 RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["data_port_x4_v2"]
@@ -1969,7 +1969,6 @@ def board() -> Board:
         # the base DATA-4x: this PCB with the logic left off (module docstring)
         "variants": {"base": {"dnp": logic_only(b)}},
         "texts": [{**t, "thickness": max(SILK_TEXT, 0.15 * t["size"])} for t in [
-            {"text": "DATA ×4 v2.0", "x": 28.0, "y": 1.9, "size": 0.8},     # off the panel's tab at x 9, east of the 5 V converter
             # layout B (the usability review, the user's "oui je valide", 2026-10-21): each header's pin names in
             # two lines over it, read with the jumpers in, stacked as its rows (the even, upper row's over the odd,
             # lower row's), and a big port number by it, beside the port's VBUS LED
@@ -1996,6 +1995,9 @@ def board() -> Board:
             {"text": "LOGIC ONLY", "x": 43.12, "y": 18.4, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 55.0, "y": 21.75, "size": 0.8, "layer": "B.SilkS"},
         ]] + [
+            # the board's name and revision, 1.5 mm, and the date under it (the silkscreen plan): off the panel's
+            # tab at x 9, east of the 5 V converter.  Their own strokes, not the rule above
+            *title_block("DATA ×4 v2.0", 31.5, 1.75, "2026-11", dx2=-3.5, dy2=2.15),
             # each USB-C's port number (silk.port_mark(), as the DATA ×6's; its own stroke, not the rule above),
             # left of its body: the band over the receptacles holds the headers and the clusters, so this one
             # shows on the bench, not over the wall (the silkscreen plan, 2026-11-02)
