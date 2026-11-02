@@ -970,8 +970,12 @@ def board() -> Board:
                  "loose": {"PORT1": (4.05, "as routed 2026-11-02, not compensated yet"),
                            **{f"PORT{n}": (2.95, "as routed 2026-11-02, not compensated yet") for n in range(2, 7)}}},
         "zones": [{"layer": "In1.Cu", "net": "GND"},
-                  {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "poly": IN_3V3},
-                  {"layer": pwr, "net": "+5V_A", "name": "pwr-5va", "poly": IN_5VA},
+                  # the three areas 0.2 mm apart along their splits, under the planes' clearance: one of each pair
+                  # pulls back.  With equal priorities KiCad picks by the zones' UUIDs, new at each rebuild and in
+                  # each panel copy (the v2's halves flipped at random): by priority, in the order the routed
+                  # board had (+5V_A over +3V3 over +5V_B, its fill unchanged)
+                  {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "priority": 1, "poly": IN_3V3},
+                  {"layer": pwr, "net": "+5V_A", "name": "pwr-5va", "priority": 2, "poly": IN_5VA},
                   {"layer": pwr, "net": "+5V_B", "name": "pwr-5vb", "poly": IN_5VB},
                   *buck_zones,
                   {"layer": "F.Cu", "net": "GND"}, {"layer": "B.Cu", "net": "GND"}],
