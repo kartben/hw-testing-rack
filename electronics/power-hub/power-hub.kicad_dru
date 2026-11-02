@@ -19,6 +19,11 @@
 	(condition "A.memberOfFootprint('J6') && B.memberOfFootprint('J6')")
 	(constraint hole_clearance (min 0.19mm)))
 
+(rule "silkscreen text: a 0.15 mm stroke at least"
+	(severity error)
+	(layer "?.Silkscreen")
+	(constraint text_thickness (min 0.15mm)))
+
 (rule "power pins connect solid"
 	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '+5V' || A.NetName == '/Controller/+5V_BUCK' || A.NetName == '/Controller/USB_VBUS' || A.NetName == '/Outputs/ROW_A' || A.NetName == '/Outputs/ROW_B' || A.NetName == '/Outputs/ROW_C' || A.NetName == '/Outputs/ROW_D' || A.NetName == 'GND' || A.NetName == 'VRACK') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
 	(constraint zone_connection solid))

@@ -112,6 +112,15 @@ TP_ROUND2 = [
     ("VBUS_SENSE", "c", 1.0, (33.1723, 10.0181), False, "VSNS"),
     ("GND", "c", 1.5, (55.95, 71.95), True, "GND"),
 ]
+# NextPCB's legend (the order's rules check, 2026-11-02): silkscreen text a 0.15 mm stroke at least (the 0.8 mm
+# names' 15 % was 0.12), as the DATA boards'
+SILK_TEXT = 0.15
+SILK_RULE = f"""
+(rule "silkscreen text: a {SILK_TEXT} mm stroke at least"
+	(severity error)
+	(layer "?.Silkscreen")
+	(constraint text_thickness (min {SILK_TEXT}mm)))
+"""
 
 
 def board() -> Board:
@@ -236,7 +245,7 @@ def board() -> Board:
 (rule "USB4105 {r}: GND pads beside its own pegs"
 	(condition "A.memberOfFootprint('{r}') && B.memberOfFootprint('{r}')")
 	(constraint hole_clearance (min 0.19mm)))
-""" for r in ("J1", "J6")),
+""" for r in ("J1", "J6")) + SILK_RULE,
         "zones": [
             {"layer": "In1.Cu", "net": "GND"},
             {"layer": "F.Cu", "net": "GND"},
@@ -288,7 +297,7 @@ def board() -> Board:
                   + [(net, "F.Cu", w, pts) for net, w, pts, _ in decap_ties],
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
         "keepouts": [{"name": "antenna", "poly": [(21.3, -0.1), (38.7, -0.1), (38.7, 5.6), (21.3, 5.6)]}],
-        "texts": [
+        "texts": [{**t, "thickness": max(SILK_TEXT, 0.15 * t["size"])} for t in [
             {"text": "hw-testing-rack · power hub v0.5", "x": 58, "y": 74, "size": 1.0},
             *[{"text": ch, "x": 13.8, "y": ROW_Y[k] + 8.3, "size": 1.2} for k, ch in enumerate(ROWS)],
             # the bottom-side test pads' names (TP1–TP7, the controller sheet): bring-up probes (the DFT rule, 2026-10-26)
@@ -301,7 +310,7 @@ def board() -> Board:
               for k, ch in enumerate(ROWS) for t, dy in ((f"FLT {ch}", 0.0), (f"IMON {ch}", 2.6))),
             *({"text": lab, "x": xy[0], "y": xy[1] + d / 2 + 0.85, "size": 0.8, "layer": "B.SilkS"}
               for _, _, d, xy, _, lab in TP_ROUND2),
-        ],
+        ]],
     }
 
     # ------------------------------------------------------------------ input
