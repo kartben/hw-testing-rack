@@ -70,7 +70,7 @@ from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
 
 import rackcfg  # noqa: E402
-from silk import SILK_RULE, SILK_TEXT, port_mark  # noqa: E402
+from silk import SILK_RULE, SILK_TEXT, lead_pin_names, port_mark  # noqa: E402
 
 RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["data_port_x4_v2"]
@@ -1987,6 +1987,10 @@ def board() -> Board:
             # the SWD header's pin names, read on the front face, alternately over and under it from pin 1 (west)
             *({"text": name, "x": SWD_HDR[0] + 2.54 * i, "y": SWD_HDR[1] + (-2.1 if i % 2 == 0 else 2.1), "size": 0.8}
               for i, (_, name) in enumerate(SWD_PINS)),
+            # the lead's connector, named on the rear face where it plugs in (it brings the 20 V), and each of its
+            # pins beside the housing, pin 1 lowest: as the DATA ×6's (the silkscreen plan, 2026-11-02)
+            {"text": "LEAD 20 V", "x": LEAD[0], "y": LEAD[1] + 3.6, "size": 1.0, "layer": "B.SilkS"},
+            *lead_pin_names(LEAD[0] + 2.75, LEAD[1], ["NC", "SCL", "SDA", "GND", "D-", "D+", "GND", "VIN"]),
             {"text": "LOGIC ONLY", "x": 28.0, "y": 6.6, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 9.5, "y": 12.9, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 43.12, "y": 18.4, "size": 0.8, "layer": "B.SilkS"},
