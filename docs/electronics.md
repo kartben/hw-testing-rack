@@ -800,6 +800,18 @@ For a later bay node: CAM_5V has only the PTC, no switch, and the Mega has no re
 camera needs a power cycle of the whole bay (the review's P3).  A load switch on CAM_5V from a free
 GPIO (IO5 or IO6) would let the firmware restart the camera alone.
 
+## Title block
+
+Every board's title block is the same (`electronics/tools/silk.py`, `title_block()`): the BitBunk logo
+25.6 mm wide, under it the board's name and revision at 1.5 mm, then the revision's date at 1.0 mm,
+left-aligned, on B.SilkS and read from below.  The logo is not printable as drawn: the boards on its shelves have pins and chips 1–2
+units wide.  `derive_logo()` makes its silk variant from `bitbunk-logo.svg`: each shelf's board a plain
+silhouette, the gaps round the frame, the B, the boards and the i's dot opened to the wordmark's tightest
+letter gap, the slivers left by those cuts dropped.  At 25.6 mm its gaps are 0.25 mm (0.15 left after a
+0.05 mm ink spread a side) and its lines 0.30 mm or more; `tools/tests/test_silk.py` holds both.  The
+outlines the boards take are `bitbunk-logo.silk.json`, written by `python3 electronics/tools/silk.py`
+(shapely, which the KiCad image lacks); the test checks they still match the SVG.
+
 ## Test pads
 
 Every board has bare test pads on the bottom.  Each is named on B.SilkS.  They are not in the BOM or the CPL, so there is no part and no assembly fee.  Supply and GND pads are 1.5 mm; signal pads are 1.0 mm.  Every pad is more than 2 mm from any THT pad or hole.  On the four boards below, the closest is 4.7 mm (the pod's second GND).  On the DATA ×4 v2 it is 2.1 mm (TP27, by J101); TP23 is 2.0 mm from J1's courtyard.  Their positions are fixed in each `design.py`, so a fixture or a probe card still fits after a new revision.

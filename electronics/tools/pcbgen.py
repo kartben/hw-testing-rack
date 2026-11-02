@@ -596,6 +596,9 @@ class PcbBuilder:
     # -------------------------------------------------------------- texts
     def texts(self):
         for t in self.b.pcb.get("texts", []):
+            if t.get("style") == "poly":
+                self.silk_polys(t)
+                continue
             tx = pcbnew.PCB_TEXT(self.board)
             tx.SetText(t["text"])
             tx.SetPosition(V(t["x"], t["y"]))
@@ -612,6 +615,24 @@ class PcbBuilder:
                 self.knocked_out(tx, t["d"])
                 continue
             self.board.Add(tx)
+
+    def silk_polys(self, t: dict):
+        """Filled silk outlines (silk.logo()): each an outline then its holes, in mm."""
+        for rings in t["polys"]:
+            one = pcbnew.SHAPE_POLY_SET()
+            for k, ring in enumerate(rings):
+                chain = pcbnew.SHAPE_LINE_CHAIN()
+                for x, y in ring:
+                    chain.Append(MM(x), MM(y))
+                chain.SetClosed(True)
+                one.AddOutline(chain) if k == 0 else one.AddHole(chain)
+            one.Fracture()
+            s = pcbnew.PCB_SHAPE(self.board, pcbnew.SHAPE_T_POLY)
+            s.SetLayer(pcbnew.F_SilkS if t["layer"] == "F.SilkS" else pcbnew.B_SilkS)
+            s.SetPolyShape(one)
+            s.SetFilled(True)
+            s.SetWidth(0)
+            self.board.Add(s)
 
     def knocked_out(self, tx, d: float):
         """The text cut out of a filled silk disc d mm across, centred on it (silk.port_mark()): a polygon, the disc

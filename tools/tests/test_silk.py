@@ -15,6 +15,10 @@ ROOT = HERE.parents[1]
 sys.path.insert(0, str(ROOT / "electronics" / "tools"))
 
 import silk  # noqa: E402
+from flowthru import _all, _get, parse  # noqa: E402
+
+# The boards that carry the common title block, and their names (the user, 2026-11-02: one style on all four)
+TITLED = {}
 
 
 class Marks(unittest.TestCase):
@@ -38,5 +42,81 @@ class Marks(unittest.TestCase):
         self.assertTrue(all(n["size"] >= 1.0 and n["thickness"] >= silk.SILK_TEXT for n in names))
 
     def test_title_block(self):
-        name, date = silk.title_block("DATA x6 v1.0", 17.0, 22.75, "2026-11")
-        self.assertEqual((name["size"], date["size"], date["y"]), (1.5, 1.0, 24.75))
+        mark, name, date = silk.title_block("DATA ×6 v1.0", 60.0, 2.0)
+        self.assertEqual((mark["style"], mark["w"], name["size"], date["size"], date["text"]),
+                         ("poly", silk.LOGO_W, 1.5, 1.0, silk.TITLE_DATE))
+        self.assertTrue(all(e["layer"] == "B.SilkS" for e in (mark, name, date)))
+        xs = [x for p in mark["polys"] for r in p for x, _ in r]
+        self.assertAlmostEqual(max(xs), 60.0, places=3)         # read from below: it runs towards −x
+        self.assertAlmostEqual(min(xs), 60.0 - silk.LOGO_W, places=3)
+        self.assertTrue(name["y"] - 0.75 >= 2.0 + mark["h"] and date["y"] > name["y"])
+
+
+class Boards(unittest.TestCase):
+    """Every titled board carries the same block: the logo LOGO_W wide on B.SilkS, its name and the date under it
+    at the logo's left edge as read from below; and no board keeps the old "hw-testing-rack" line."""
+
+    def test_title_blocks(self):
+        for board, title in TITLED.items():
+            with self.subTest(board=board):
+                root = parse((ROOT / "electronics" / board / f"{board}.kicad_pcb").read_text(encoding="utf-8"))
+                polys = [p for p in _all(root, "gr_poly") if _get(p, "layer")[1] == "B.SilkS"]
+                pts = [(float(q[1]), float(q[2])) for p in polys for q in _all(_get(p, "pts"), "xy")]
+                x0, y0 = min(x for x, _ in pts), min(y for _, y in pts)
+                x1, y1 = max(x for x, _ in pts), max(y for _, y in pts)
+                mark = silk.logo(0, 0)
+                self.assertEqual(len(polys), len(mark["polys"]))
+                self.assertAlmostEqual(x1 - x0, silk.LOGO_W, places=2)
+                self.assertAlmostEqual(y1 - y0, mark["h"], places=2)
+                texts = {t[1]: t for t in _all(root, "gr_text")}
+                for line in (title, silk.TITLE_DATE):
+                    t = texts.get(line)
+                    self.assertIsNotNone(t, line)
+                    at = _get(t, "at")
+                    self.assertEqual(_get(t, "layer")[1], "B.SilkS")
+                    self.assertAlmostEqual(float(at[1]), x1, places=2)
+                    self.assertGreater(float(at[2]), y1)
+                self.assertFalse([t for t in texts if "hw-testing-rack" in t])
+
+
+class Logo(unittest.TestCase):
+    """The logo's silk variant at LOGO_W: its gaps LOGO_GAP, its lines LOGO_INK, read from the outlines the boards
+    take (bitbunk-logo.silk.json), and those the same as the SVG gives."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            from shapely.geometry import Polygon
+            from shapely.ops import unary_union
+        except ImportError:
+            raise unittest.SkipTest("shapely")
+        m = silk.logo(0.0, 0.0, layer="F.SilkS")
+        cls.silk = unary_union([Polygon(p[0], p[1:]) for p in m["polys"]])
+
+    def test_same_as_the_svg(self):
+        from shapely import affinity
+        fresh = silk.derive_logo()
+        x0, y0, x1, _ = fresh.bounds
+        k = silk.LOGO_W / (x1 - x0)
+        fresh = affinity.scale(affinity.translate(fresh, -x0, -y0), k, k, origin=(0, 0))
+        self.assertLess(fresh.hausdorff_distance(self.silk), 1e-3)          # mm: the rounding alone
+
+    def test_gaps(self):
+        """Between its parts LOGO_GAP at least; and the ink may spread up to half of it a side before any gap or
+        counter closes (the background, eroded by that much, keeps its pieces and its holes)."""
+        parts = list(self.silk.geoms)
+        least = min(a.distance(b) for i, a in enumerate(parts) for b in parts[i + 1:])
+        self.assertGreaterEqual(least, silk.LOGO_GAP - 1e-6)
+        from shapely.geometry import box
+        bg = box(*self.silk.buffer(1).bounds).difference(self.silk)
+        er = bg.buffer(-(silk.LOGO_GAP / 2 - 1e-3))
+
+        def shape(g):
+            gs = list(getattr(g, "geoms", [g]))
+            return len(gs), sum(len(p.interiors) for p in gs)
+        self.assertEqual(shape(er), shape(bg))
+
+    def test_ink(self):
+        """No line under LOGO_INK: eroded by half of it, every part stays one piece."""
+        er = self.silk.buffer(-(silk.LOGO_INK / 2))
+        self.assertEqual(len(getattr(er, "geoms", [er])), len(self.silk.geoms))
