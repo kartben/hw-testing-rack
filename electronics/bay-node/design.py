@@ -277,25 +277,40 @@ def board() -> Board:
     # the DATA lead's eFuse U9 (TPS26600, rot 90: pins 16 … 9 along its north side, 1 … 8 along its south side,
     # 0.65 mm apart from the west), drawn: OUT (16/15) north and east into the shunt R19, IN (1/2) south through
     # C20 to VIN, taken at TP6 from the buck's feed (after Q1, on D2's clamp); UVLO, OVP, MODE, RTN and GND onto
-    # the exposed pad, six vias down to In1; dVdT, ILIM and SHDN straight to their parts.  Each doubled pair
-    # (IN 1/2, OUT 15/16: paralleled, as the datasheet means them) sits under one solid block (efuse_blocks) and
-    # is fed between its two pins, across both: OUT 1.1 mm (R19.1's pad end and DUT_EN's via allow no more),
-    # IN 1.2 mm (pin 3's clearance), down to TP6 through two vias (the second north of In2's VRACK strip,
-    # which the first already notches)
+    # the exposed pad, six vias down to In1; dVdT, ILIM and SHDN straight to their parts.  TI's layout (SLVSDG2G
+    # §12.1, figure 71): the doubled pins (IN 1/2, OUT 15/16) under a VIN and a VOUT plane on the top layer, the
+    # power path sized for twice the full-load current (2 × 1.76 A: ≈ 1.7 mm of outer 1 oz, IPC-2221 at 10 °C).
+    # Exact outlines 0.15 mm from every other net's copper (the router takes an outline as its net's copper):
+    # VIN over pins 1/2 and C20, its C_IN; VOUT from pins 15/16 to R19.1, 1.63 mm at its narrowest (3.7 mm
+    # between AUX_VREF and DUT_FLT_N); DATA_VIN from R19.4 to J7.1, 1.74 mm along its diagonal.  The drawn
+    # tracks stay under them, a pin-to-pin link for the router; VIN comes down from TP6 at 1.7 mm through three
+    # vias, the second and third north of In2's VRACK strip, which the first already notches
     ex, ey = EFUSE
     col = [ex - 2.275 + 0.65 * k for k in range(8)]
     top, bot = ey - 2.8625, ey + 2.8625
     mid = (col[0] + col[1]) / 2
-    efuse_blocks = [{"layer": "F.Cu", "net": n, "connection": "solid", "name": nm, "priority": 3,
-                     "poly": [(col[0] - 0.2, y - 0.7875), (col[1] + 0.2, y - 0.7875), (col[1] + 0.2, y + 0.7875),
-                              (col[0] - 0.2, y + 0.7875)]}
-                    for n, nm, y in (("DATA_VIN_SW", "efuse-out", top), ("VIN", "efuse-in", bot))]
+    efuse_pours = [
+        ("VIN", "efuse-in", [(48.125, 52.575), (49.275, 52.575), (49.275, 54.3), (49.6, 54.625), (49.6, 56.65),
+                             (45.75, 56.65), (45.75, 54.3), (48.125, 54.3)]),
+        # round AUX_VREF's jog (west), DUT_FLT_N's and DUT_EN's vias (south), the GND via over the band (north)
+        ("DATA_VIN_SW", "efuse-out", [(47.722, 48.425), (47.722, 42.8), (47.84, 42.8), (47.84, 42.1), (47.722, 42.1),
+                                      (47.722, 40.0), (51.5, 40.0), (51.5, 40.4), (52.4, 40.4), (52.4, 40.0),
+                                      (56.475, 40.0), (56.475, 41.85), (55.2, 41.85), (55.2, 42.1), (54.611, 42.1),
+                                      (54.211, 42.5), (51.45, 42.5), (51.45, 42.03), (49.533, 42.03), (49.533, 42.85),
+                                      (49.35, 43.033), (49.35, 46.7), (49.175, 46.875), (49.175, 48.425)]),
+        # R19.4's east end (clear of the sense pads), then 45° between the GND vias and R24 to J7.1
+        ("DATA_VIN", "data-vin", [(56.0, 42.25), (58.39, 42.25), (63.99, 36.65), (66.25, 36.65), (66.25, 37.5),
+                                  (65.6, 37.5), (58.15, 44.95), (56.0, 44.95)]),
+    ]
+    efuse_blocks = [{"layer": "F.Cu", "net": n, "connection": "solid", "name": nm, "priority": 3, "clearance": 0.15,
+                     "poly": poly} for n, nm, poly in efuse_pours]
     efuse_tracks = [
         ("DATA_VIN_SW", "F.Cu", 0.4, [(col[1], top), (mid, top), (col[0], top)]),
         ("DATA_VIN_SW", "F.Cu", 1.1, [(mid, top), (mid, 41.4), (55.6, 41.4), (55.6, 41.5375)]),
         ("VIN", "F.Cu", 0.4, [(col[1], bot), (mid, bot), (col[0], bot)]),
-        ("VIN", "F.Cu", 1.2, [(mid, bot), (mid, 55.45), (46.6, 55.45), (46.6, 65.0), (46.6, 67.6)]),
-        ("VIN", "B.Cu", 1.2, [(46.6, 65.0), (46.6, 67.6), (46.6, 68.6), (48.0, 70.0)]),
+        ("VIN", "F.Cu", 1.2, [(mid, bot), (mid, 55.45)]),
+        ("VIN", "F.Cu", 1.7, [(mid, 55.45), (46.6, 55.45), (46.6, 63.8), (46.6, 65.0), (46.6, 67.6)]),
+        ("VIN", "B.Cu", 1.7, [(46.6, 63.8), (46.6, 65.0), (46.6, 67.6), (46.6, 68.6), (48.0, 70.0)]),
         ("GND", "F.Cu", 0.25, [(col[7], top), (col[7], ey - 1.4)]),
         *[("GND", "F.Cu", 0.25, [(col[k], bot), (col[k], ey + 1.4)]) for k in (2, 4, 5, 7)],
         ("DATA_DVDT", "F.Cu", 0.25, [(col[4], top), (col[4], 45.625)]),
@@ -316,7 +331,7 @@ def board() -> Board:
         ("CAM_5V", "F.Cu", 0.6, [(53.5, 8.6), (54.05, 9.15), (64.575, 9.15), (64.575, 14.2)]),
         ("CAM_5V", "F.Cu", 0.6, [(64.575, 14.2), (58.5, 14.2)]),
     ]
-    efuse_vias = [("VIN", 46.6, 65.0, 0.8, 0.4), ("VIN", 46.6, 67.6, 0.8, 0.4), ("CAM_SCK_C", 55.35, 11.2, 0.6, 0.3),
+    efuse_vias = [*[("VIN", 46.6, y, 0.8, 0.4) for y in (63.8, 65.0, 67.6)], ("CAM_SCK_C", 55.35, 11.2, 0.6, 0.3),
                   *[("GND", ex + dx, ey + dy) for dx in (-1.5, 0.0, 1.5) for dy in (-0.75, 0.75)]]
     b.pcb = {
         "size": (W, H), "layers": CFG["layers"], "corner_radius": 2.0, "passes": 60,
@@ -784,8 +799,9 @@ def board() -> Board:
     d.tag("DUT_FLT_N", (58, 30), "right")
     # Kelvin shunt: pins 1/4 carry the DATA board's current, pins 2/3 are sense pads on the inner edge of each
     # terminal (bench:R_1206_3216Metric_Kelvin), so the INA226 reads the resistor, not the load copper
+    # its power ends solid on the VOUT and DATA_VIN pours (its sense pads sit on tracks: pcbgen would relieve both)
     part(d, "R19", "shunt50m", {"1": "DATA_VIN_SW", "4": "DATA_VIN", "2": "SHUNT_P", "3": "SHUNT_N"}, "50m",
-         pcb=P(55.6, 43.0, 270), sch=at(62, 33.5))
+         pcb={**P(55.6, 43.0, 270), "solid": ["1", "4"]}, sch=at(62, 33.5))
     d.wire("U9.OUT", (46, 25), (46, 21), (62, 21), "R19.1")
     d.wire("R19.4", (62, 40), (100, 40))
     d.tag("DATA_VIN", (100, 40), "right")
@@ -865,6 +881,7 @@ def board() -> Board:
     d.note("  t_dVdT ≈ 8.65e3 · V_IN · C_dVdT → 22 nF: 3.8 ms at 20 V, 5.3 ms at 28 V; ≈ 0.3 A into 60 µF.")
     d.note("  SHDN pulled down: DATA_VIN is OFF until the firmware drives DUT_EN high (≥ 1 V).")
     d.note("  UVLO / OVP / MODE to GND: internal 15 V / 31–34 V, current limit, auto-retry.")
+    d.note("  RTN to GND: the eFuse's own reverse-polarity block unused (TI allows it): Q1 does it upstream.")
     d.note("  ~FLT: limit, over-temperature, UV/OV; also low while off or starting.")
     d.note("INA226 (I2C 0x40) runs from +3V3: it measures the drop across")
     d.note("  R19 (50 mΩ → 1.64 A full scale: the ×6's 1.5 A reads, only an overload saturates; Kelvin sense pads);")

@@ -293,8 +293,10 @@ class PcbBuilder:
                     pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_THERMAL)
                     self.__dict__.setdefault("relief_refs", set()).add(p.ref)
                 if num in hint.get("solid", ()):
-                    # a supply pin with no room for 4 spokes (DRU_POWER_THT), such as a 2 mm row's end pin: solid
+                    # a supply pin with no room for 4 spokes (DRU_POWER_THT), such as a 2 mm row's end pin, or a
+                    # shunt's power ends whose Kelvin sense pads sit on tracks: solid; power_pads() leaves these alone
                     pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_FULL)
+                    self.__dict__.setdefault("solid_refs", set()).add(p.ref)
                 if num in nets:
                     pad.SetNet(self.net(self.b.pcb_net_name(nets[num])))
                 elif num in pins:
@@ -446,7 +448,7 @@ class PcbBuilder:
           * a small part (R, C, D, Q, LED) gets the same connection on all its ends, against tombstoning:
             where one end sits on a solid pour, solid if every end sits on a pour (a decoupling capacitor
             between a power island and the GND pour: the lowest inductance too), reliefs if an end is a
-            track; otherwise the pours' reliefs (`relief` in a placement forces reliefs);
+            track; otherwise the pours' reliefs (`relief` in a placement forces reliefs, `solid` its pads solid);
           * through-hole pins keep their reliefs, so they can be soldered; a hand-soldered one gets 0.8 mm
             spokes.
         Run once the zones exist (it looks up the pour each pad sits in).  Returns a summary per net."""
@@ -484,7 +486,7 @@ class PcbBuilder:
                         pad.GetLocalZoneConnection() != pcbnew.ZONE_CONNECTION_FULL:
                     pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_FULL)
                     done.setdefault(pad.GetNetname().split("/")[-1], []).append(f"{ref}.{pad.GetNumber()}")
-            if big or ref in getattr(self, "relief_refs", ()):
+            if big or ref in getattr(self, "relief_refs", ()) or ref in getattr(self, "solid_refs", ()):
                 continue
             # a small part: the same connection on every end
             modes = []                      # (pad, its connection: local, else its pour's; None off a pour)
