@@ -83,15 +83,16 @@ JLC_QUOTE = {
     # VH1H330ME077000CE0), 10 PCBs, all 10 assembled: the PCB at the calculator's price for the v2's outline and
     # stack-up (100 × 70, 4 layers, JLC04161H-7628, ENIG: JLC_PCB_PRICE); setup and stencil at Economic's fees;
     # 13 extended types × $3.09 (C25725, C25796, C20615800 preferred); its parts at JLC's breaks for 10 boards
-    # (jlc_parts.json, $188.54) × 1.051, the v2 panel's real quote of 2026-11-01 over the same prices (JLC's
+    # (jlc_parts.json, $239.73) × 1.051, the v2 panel's real quote of 2026-11-01 over the same prices (JLC's
     # attrition); the joints (686 a board) at that quote's rate, $6.77 for 2 × 1,871; the six USB-C special
-    # components ($0.03 a piece).  The HRO TYPE-C-31-D-06 (C2689964) until the board takes the GCT
-    # USB4145-03-0170-C (C5181332, extended too: ≈ $1.08 each at 60, against $0.29)
+    # components ($0.03 a piece).  Its USB-C the GCT USB4145-03-0170-C (C5181332, extended, $1.08 each at 60 on
+    # JLC's part page, 2026-11-01), which replaced the HRO TYPE-C-31-D-06 ($0.23 at 60, the estimate $294.55):
+    # same joints, extended types and special fee, $53.81 more in parts
     "data-port-x6": {
-        "pcbs": 10, "assembled": 10, "service": "Economic", "total": 294.55, "estimate": True, "from_fab": True,
+        "pcbs": 10, "assembled": 10, "service": "Economic", "total": 348.36, "estimate": True, "from_fab": True,
         "spec": "4-layer 100×70 mm, JLC04161H-7628, ENIG",
         "pcb": {"board": 19.40, "ENIG": 12.80},
-        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 198.18, "extended parts": 40.17, "SMT": 12.41,
+        "pcba": {"setup": 8.24, "stencil": 1.55, "components": 251.99, "extended parts": 40.17, "SMT": 12.41,
                  "special components": 1.80},
     },
     # the camera pod board (v1.0, 2 layers, one side), one per camera (CAMERA_SETS).  JLC's real quote,

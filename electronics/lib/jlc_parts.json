@@ -871,9 +871,9 @@
     "KT-0805G"
    ],
    [
-    "C2689964",
+    "C5181332",
     6,
-    "TYPE-C-31-D-06"
+    "USB4145-03-0170-C"
    ],
    [
     "C48009678",
@@ -3647,6 +3647,47 @@
    "manufacturer": null,
    "source": "live; tier and stock from JLC's parts library (live); prices from LCSC's product page (live)",
    "lcsc_stock": 14765
+  },
+  "C5181332": {
+   "mfr": "USB4145-03-0170-C",
+   "package": "SMD",
+   "stock": 3046,
+   "tier": "extended",
+   "priceBreaks": [
+    {
+     "qFrom": 1,
+     "qTo": 9,
+     "price": 1.4632
+    },
+    {
+     "qFrom": 10,
+     "qTo": 29,
+     "price": 1.2156
+    },
+    {
+     "qFrom": 30,
+     "qTo": 99,
+     "price": 1.0794
+    },
+    {
+     "qFrom": 100,
+     "qTo": 599,
+     "price": 0.9252
+    },
+    {
+     "qFrom": 600,
+     "qTo": 1199,
+     "price": 0.8563
+    },
+    {
+     "qFrom": 1200,
+     "qTo": null,
+     "price": 0.8268
+    }
+   ],
+   "category": "USB Connectors",
+   "manufacturer": "Global Connector Technology",
+   "source": "JLC's part page (jlcpcb.com/partdetail/C5181332, 2026-11-01): tier, stock, price breaks; the catalog snapshot has no prices (added 2026-11-02)"
   },
   "C5184243": {
    "mfr": "USB4105-GF-A-120",

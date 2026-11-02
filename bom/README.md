@@ -5,7 +5,7 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 
 | Category | Cost (€) |
 |---|---:|
-| Electronics | 944 |
+| Electronics | 994 |
 | Cables | 177 |
 | Printed parts | 86 |
 | Cameras | 64 |
@@ -13,9 +13,9 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Motion | 29 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,380** |
+| **Total** | **1,430** |
 
-≈ **€115 per bay** all-in.
+≈ **€119 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -34,9 +34,9 @@ USD, without the one shipment (DHL ≈ $27–40, a line of its own) and import V
 | | | **Quoted total** | **145.00** |
 | | | Order (indicative): IHLP2525CZ for the FXL0630 (L1, 28 V EPR): 2 at JLC's price (+$1.19 components); rows C and D fitted: their eFuses, connectors and LEDs, 2 hubs at JLC's price (+$9.46 components); rows C and D fitted: their joints, 2 hubs (+$0.32 SMT) | 155.97 |
 | data-port-x6 | 10 PCBs (4-layer 100×70 mm, JLC04161H-7628, ENIG), 10 assembled, Economic PCBA | PCB: board $19.40, ENIG $12.80 | 32.20 |
-| | | PCBA: setup $8.24, stencil $1.55, components $198.18, extended parts $40.17, SMT $12.41, special components $1.80 | 262.35 |
-| | | **Estimated total** | **294.55** |
-| | | Order (indicative): as quoted | 294.55 |
+| | | PCBA: setup $8.24, stencil $1.55, components $251.99, extended parts $40.17, SMT $12.41, special components $1.80 | 316.16 |
+| | | **Estimated total** | **348.36** |
+| | | Order (indicative): as quoted | 348.36 |
 | camera-pod | 5 PCBs (2-layer 40×27 mm, lead-free HASL), 2 assembled, Economic PCBA | PCB: special offer $4.00, lead-free HASL $1.10 | 5.10 |
 | | | PCBA: setup $8.24, stencil $1.55, components $2.08, extended parts $9.27, SMT $0.18, nitrogen reflow $0.86 | 22.18 |
 | | | **Quoted total** | **27.28** |
@@ -62,11 +62,11 @@ What each order pays once, whatever the number of boards, against what grows wit
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
 | bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 12 / 10 | 44 (23 + 1 pref.) | 68.20 | 115.94 | 156.56 | **272.50** | 272.50 | 247.27 |
 | power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (15 + 2 pref.) | 51.15 | 98.87 | 57.10 | **155.97** | 155.97 | 153.06 |
-| data-port-x6 | Economic | 10 / 10 | 35 (13 + 3 pref.) | 40.17 | 82.16 | 212.39 | **294.55** | 294.55 | 294.55 |
+| data-port-x6 | Economic | 10 / 10 | 35 (13 + 3 pref.) | 40.17 | 82.16 | 266.20 | **348.36** | 348.36 | 348.36 |
 | camera-pod | Economic | 2 / 2 | 8 (4) | 12.36 | 28.11 | 2.31 | **30.42** | 30.42 | 29.63 |
 | data-port-x4-v2-panel | Economic | 1 / 2 | 50 (22 + 3 pref.) | 67.98 | 129.77 | 109.01 | **238.78** | 238.78 | 236.76 |
 | shipping | one cart, DHL | | | | 34.00 | | 34.00 | 34.00 | 34.00 |
-| **All** | | | | | | | **1026.22** | **1026.22** | **995.27** |
+| **All** | | | | | | | **1080.03** | **1080.03** | **1049.08** |
 
 Levers (*obvious*: an engineering choice the board's owner applies; *decision*: the user's):
 
@@ -89,7 +89,7 @@ Unit cost (USD) of a board for n assembled in one order: the fees per order spre
 |---|---:|---:|---:|---:|---:|---:|
 | bay-node | 72.48 | 39.35 | 27.25 | 17.22 | 14.72 | 13.75 |
 | power-hub | 77.97 | 46.41 | 34.78 | 24.01 | 21.22 | 20.36 |
-| data-port-x6 | 61.77 | 38.33 | 29.46 | 21.48 | 19.21 | 18.71 |
+| data-port-x6 | 67.64 | 43.34 | 34.84 | 26.04 | 23.59 | 23.09 |
 | camera-pod | 15.21 | 6.78 | 3.99 | 1.80 | 1.38 | 1.15 |
 | data-port-x4-v2-panel | 119.39 | 75.09 | 60.41 | 44.71 | 41.26 | 40.24 |
 
@@ -97,9 +97,9 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 
 | Racks | bay-node | power-hub | data-port-x6 | camera-pod | data-port-x4-v2-panel | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
-| 1 | 310.48 | 155.95 | 294.55 | 30.42 | 238.78 | **1064.18** |
-| 5 | 203.36 | 46.41 | 214.75 | 7.97 | 75.09 | **554.38** |
-| 10 | 173.62 | 34.78 | 192.09 | 5.37 | 60.41 | **469.66** |
+| 1 | 310.48 | 155.95 | 348.36 | 30.42 | 238.78 | **1117.99** |
+| 5 | 203.36 | 46.41 | 260.41 | 7.97 | 75.09 | **600.04** |
+| 10 | 173.62 | 34.78 | 235.90 | 5.37 | 60.41 | **513.47** |
 
 ## Printed parts
 
@@ -312,7 +312,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 10  | 0.09 | 0.87 | LCSC/JLCPCB C15643 |
 | Electronics | Bare PCB data-port-x6 (4-layer 100×70 mm, JLC04161H-7628, ENIG) | 10  | 2.96 | 29.62 | estimate, not quoted |
 | Electronics | Economic PCBA, 10 boards: setup, stencil, extended parts, SMT, special components | 1  | 59.04 | 59.04 | estimate, not quoted |
-| Electronics | Components data-port-x6: JLC quote minus the catalogue prices above | 1  | -73.71 | -73.71 | estimate, not quoted |
+| Electronics | Components data-port-x6: JLC quote minus the catalogue prices above | 1  | -24.21 | -24.21 | estimate, not quoted |
 | Electronics | 10u — Capacitor 10u 0805 | 2  | 0.04 | 0.08 | LCSC/JLCPCB C15850 |
 | Electronics | 22u — Capacitor 22u 1206 | 2  | 0.11 | 0.23 | LCSC/JLCPCB C12891 |
 | Electronics | 100n — Capacitor 100n 0603 | 2  | 0.01 | 0.02 | LCSC/JLCPCB C14663 |
