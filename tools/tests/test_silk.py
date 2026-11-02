@@ -18,7 +18,7 @@ import silk  # noqa: E402
 from flowthru import _all, _get, parse  # noqa: E402
 
 # The boards that carry the common title block, and their names (the user, 2026-11-02: one style on all four)
-TITLED = {}
+TITLED = {"data-port-x6": "DATA ×6 v1.0"}
 
 
 class Marks(unittest.TestCase):
