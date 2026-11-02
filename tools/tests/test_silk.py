@@ -89,7 +89,8 @@ class Boards(unittest.TestCase):
 
     def test_title_blocks_air(self):
         """silkair.py: 1 mm from other silk, 0.3 mm from pads, holes and courtyards, 4 mm from the connectors,
-        on the shapes KiCad plots (pcbnew; build_board.py --check runs it in the Hardware CI)."""
+        0.5 mm outside a mounting hole's courtyard (its screw head), on the shapes KiCad plots (pcbnew;
+        build_board.py --check runs it in the Hardware CI)."""
         try:
             import silkair
         except ImportError:

@@ -807,13 +807,16 @@ Every board's title block is the same (`electronics/tools/silk.py`, `title_block
 revision at 1.5 mm, then 1.5 mm further the revision's date at 1.0 mm on the same baseline (pcbgen places it
 from the name's ink).  On B.SilkS, read from below; about 10.3 mm tall, so it fits the camera pod's 40 × 27.
 Each sits in the rear face's top-right corner as read from below (top view: x 0, y 0), at the nearest spot
-that keeps 1 mm from any other silk text or mark, 0.3 mm from pads, holes and courtyards, and 4 mm from the
-connectors (the user: away from the connectors).  `electronics/tools/silkair.py` measures it on the shapes
-KiCad plots (text ink, outlines); `build_board.py --check` fails on a closer item.  The camera pod's block is
-the whole block at 0.96 scale (`POD_TITLE_SCALE`: the largest that clears H1's screw head, its test pads and
-their names; the user, 2026-11-02), 3 mm along the rear edge; the bay node stays against the rear edge
-5.25 mm in (clear of H1's screw head), the DATA ×6 19 mm in; the power hub is 2 mm in and 0.75 mm down; the DATA ×4 v2, with no free edge, 17 mm in and 19 mm
-down.  No one offset is clear on all of them, at any corner; this corner has the smallest slides.
+that keeps 1 mm from any other silk text or mark, 0.3 mm from pads, holes and courtyards, 4 mm from the
+connectors (the user: away from the connectors), and 0.5 mm outside a mounting hole's courtyard, where its
+screw head, washer or standoff sits.  `electronics/tools/silkair.py` measures it on the shapes KiCad plots
+(text ink, outlines); `build_board.py --check` fails on a closer item.  The bay node stays against the rear
+edge 5.25 mm in (clear of H1's screw head), the DATA ×6 19 mm in; the DATA ×4 v2, with no free edge, is 17 mm
+in and 19 mm down.  The camera pod's is the whole block at 0.96 scale (`POD_TITLE_SCALE`: the largest that
+clears H1's screw head, its test pads and their names; the user, 2026-11-02), 3 mm along the rear edge.  The
+power hub's corner has no spot clear of H2's screw head, VSNS and the UART pads nearer than 26 mm down: its
+block is in the rear face's bottom-left as read from below (the user's pick), 14 mm in from the side edge and
+centred between the front edge and FLT A / IMON A.
 
 The logo is not printable as drawn: the boards on its shelves have pins and chips 1–2 units wide.
 `derive_logo()` makes its silk variant from `bitbunk-logo.svg`: each shelf's board a plain silhouette, the

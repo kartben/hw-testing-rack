@@ -3,7 +3,9 @@
 The block (the logo's outlines, the board's name and the date) keeps SILK_AIR mm from any other silk text or mark
 on its face (test pads' names and rings, parts' outlines), HARD_AIR mm from pads, holes and parts' courtyards, and
 CONN_AIR mm from the connectors (J*: their pads, holes and courtyards; the user, 2026-11-02: away from the
-connectors).  A test pad's courtyard does not count: silk beside a pad does not hinder a probe.
+connectors), and MOUNT_AIR mm outside a mounting hole's courtyard, whatever its face: the bare hole's screw head,
+washer or standoff covers that much (an M3's 6.4 mm courtyard, a head or standoff 5.5–6 mm across).  A test
+pad's courtyard does not count: silk beside a pad does not hinder a probe.
 
     python3 silkair.py BOARD.kicad_pcb [...]      → one line per item too close, exit status 1 if any
 
@@ -16,7 +18,7 @@ import sys
 
 import pcbnew
 
-SILK_AIR, HARD_AIR, CONN_AIR = 1.0, 0.3, 4.0      # mm
+SILK_AIR, HARD_AIR, CONN_AIR, MOUNT_AIR = 1.0, 0.3, 4.0, 0.5      # mm
 TITLE_TEXT = re.compile(r" v\d+\.\d+$|^\d{4}-\d{2}$")     # the block's two lines: "NAME vX.Y", "YYYY-MM"
 ERR = pcbnew.FromMM(0.005)
 
@@ -56,6 +58,11 @@ def parts(board) -> tuple[pcbnew.SHAPE_POLY_SET, list[tuple[str, float, pcbnew.S
                 ps = pcbnew.SHAPE_POLY_SET()
                 p.TransformHoleToPolygon(ps, 0, ERR, pcbnew.ERROR_INSIDE)
                 others.append((f"{ref} hole", CONN_AIR if conn else HARD_AIR, ps))
+        if "MountingHole" in str(fp.GetFPID().GetLibItemName()):
+            for side_crt in (pcbnew.F_CrtYd, pcbnew.B_CrtYd):
+                crt = fp.GetCourtyard(side_crt)
+                if not crt.IsEmpty():
+                    others.append((f"{ref} (mounting hole) courtyard", MOUNT_AIR, pcbnew.SHAPE_POLY_SET(crt)))
         if fp.GetLayer() == pcbnew.B_Cu and not ref.startswith("TP"):
             crt = fp.GetCourtyard(pcbnew.B_CrtYd)
             if not crt.IsEmpty():
