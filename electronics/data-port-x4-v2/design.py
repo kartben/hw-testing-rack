@@ -70,7 +70,7 @@ from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
 
 import rackcfg  # noqa: E402
-from silk import SILK_RULE, SILK_TEXT  # noqa: E402
+from silk import SILK_RULE, SILK_TEXT, port_mark  # noqa: E402
 
 RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["data_port_x4_v2"]
@@ -1991,7 +1991,12 @@ def board() -> Board:
             {"text": "LOGIC ONLY", "x": 9.5, "y": 12.9, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 43.12, "y": 18.4, "size": 0.8, "layer": "B.SilkS"},
             {"text": "LOGIC ONLY", "x": 55.0, "y": 21.75, "size": 0.8, "layer": "B.SilkS"},
-        ]],
+        ]] + [
+            # each USB-C's port number (silk.port_mark(), as the DATA ×6's; its own stroke, not the rule above),
+            # left of its body: the band over the receptacles holds the headers and the clusters, so this one
+            # shows on the bench, not over the wall (the silkscreen plan, 2026-11-02)
+            *(port_mark(n, x - 4.3, 64.3) for n, x in enumerate(USBS, 1)),
+        ],
     }
     return b
 
