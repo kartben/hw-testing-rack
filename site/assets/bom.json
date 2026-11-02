@@ -9018,7 +9018,7 @@
 {
 "item": "standalone_quad_base (printed)",
 "qty": 1,
-"grams": 74.4,
+"grams": 74.3,
 "unit_eur": 1.49,
 "stl": "mechanical/stl/standalone_quad_base.stl",
 "ext_eur": 1.49
@@ -9090,7 +9090,7 @@
 }
 ],
 "total_eur": 5.84,
-"grams": 99.6
+"grams": 99.5
 },
 "desk_frame": {
 "title": "Desk frame, for either (the rack's honeycomb plate in it: the DUTs held by its pegs)",

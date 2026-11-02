@@ -19,8 +19,9 @@ beyond its boards; optional, outside the rack's totals).
   node's front right, component face down (USB-C is reversible), its USB-C (the DUT's port) in the front face
   above the node's row.  Its lead (PH 8, 15 cm) goes from the node's J7 to the board's PH 8.
 - **Quad.**  The DATA ×4 v2 stands behind the front face in two side slots on the floor, its four USB-C through
-  the face, each 2 × 6 header under a window (a Dupont housing plugs in through it), its VBUS LEDs and D1 behind
-  windows, the port numbers 1–4 debossed.  The node lies on a shelf over it, front edge forward: PC port, SERVICE
+  the face, each 2 × 6 header under a window (a Dupont housing plugs in through it), its VBUS LEDs behind
+  windows, D1 and the SWD header J2 behind one more (the Debug Probe's lead plugs in from the front), the port
+  numbers 1–4 debossed.  The node lies on a shelf over it, front edge forward: PC port, SERVICE
   and status at the top of the front face.  The shelf rests on the slots' rails and two 45° ledges, 0.5 over the
   v2's top edge, so the board can't lift out.
 - **Both.**  At the back, the PD module's USB-C, upright: the module (config/rack.yaml › standalone.pd_module)

@@ -155,11 +155,13 @@ module solo_lid() lid(S_W, S_D, S_ZL, S_LIDS, S_BTN, S_NTOP,
 
 // ---------------------------------------------------------------- Quad
 // the DATA ×4 v2 (config/rack.yaml › pcb.data_port_x4_v2; x4_cradle.scad): 100 × 70 × 1.6, its four USB-C on its
-// front face (mouths DATA_V2_USB_H off it), 2 × 6 headers at 26 over its bottom edge, VBUS LEDs at 33, D1, J1 on its rear face.
+// front face (mouths DATA_V2_USB_H off it), 2 × 6 headers at 26 over its bottom edge, VBUS LEDs at 33, D1 and the SWD
+// header J2 at the top, J1 on its rear face.
 // Its USB-C and its headers at their own board x (layout B moves the USB-C onto the drawer's slots, not the headers)
 V2 = [100, 70, 1.6];
 V2_USB = DATA_V2_USB;  V2_USB_ROT = DATA_V2_USB_ROT;  V2_HDR = DATA_V2_HDR_X;
 V2_USB_Z = 8.5;  V2_HDR_Z = 26;  V2_LED_Z = 33;  V2_D1 = [55.4, 67.6];
+V2_J2 = [64.28, 66];                      // J2, the RP2354's SWD header (1 × 5 along x, fitted by hand): its centre
 Q_W = 107;  Q_D = 95.5;
 Q_VX = 3.5;  Q_VY = T + DRAWER_PORT_MOUTH + DATA_V2_USB_H;  Q_VZ = FL;   // the v2: left end, front face (mouths
                                           // DRAWER_PORT_MOUTH behind the wall), bottom
@@ -197,7 +199,11 @@ module quad_base() difference() {
         translate([x - 5.2, -EPS, Q_VZ + V2_LED_Z]) rotate([-90, 0, 0]) cylinder(d = 3, h = T + 2);
         translate([x + 3, 0, Q_VZ + V2_LED_Z]) rotate([90, 0, 0]) deboss(str(k + 1), cap = 5.5);
     }
-    translate([Q_VX + V2_D1[0], -EPS, Q_VZ + V2_D1[1]]) rotate([-90, 0, 0]) cylinder(d = 3, h = T + 2);
+    // D1 and J2 through one window, the Debug Probe's lead plugging into J2 from the front (apart, the wall between
+    // them would be 0.4 mm): a rectangle round D1's Ø3 and J2 with 0.6 a side, r 1 corners
+    let (x0 = V2_D1[0] - 1.5, x1 = V2_J2[0] + 6.35 + 0.6, z0 = V2_J2[1] - 1.27 - 0.6, z1 = V2_D1[1] + 1.5)
+        hull() for (x = [x0 + 1, x1 - 1], z = [z0 + 1, z1 - 1])
+            translate([Q_VX + x, -EPS, Q_VZ + z]) rotate([-90, 0, 0]) cylinder(r = 1, h = T + 2, $fn = 24);
     node_front(Q_NX, Q_NTOP);
     name_recess(Q_W - 31, Q_NZ - 2);
     pd_cut(Q_PDX, Q_D);
