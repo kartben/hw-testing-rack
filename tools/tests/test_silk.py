@@ -21,12 +21,12 @@ class Marks(unittest.TestCase):
     def test_port_mark_within_limits(self):
         m = silk.port_mark(6, 10.0, 20.0)
         self.assertEqual((m["text"], m["style"], m["d"]), ("6", "disc", silk.MARK_D))
-        self.assertGreaterEqual(m["thickness"], 0.2)
+        self.assertGreaterEqual(m["thickness"], silk.MARK_GAP - 1e-9)
         self.assertGreaterEqual(m["size"], 1.5)
 
     def test_port_mark_refuses_a_thin_or_small_character(self):
         with self.assertRaises(AssertionError):
-            silk.port_mark(1, 0, 0, stroke=0.15)
+            silk.port_mark(1, 0, 0, stroke=0.28)
         with self.assertRaises(AssertionError):
             silk.port_mark(1, 0, 0, size=1.2)
         with self.assertRaises(AssertionError):
