@@ -109,7 +109,8 @@ TP_ROUND2 = [
     ("ROW_EN_A", "c", 1.0, (13.0284, 96.6659), True, "EN A"),
     ("ROW_EN_B", "c", 1.0, (16.1067, 59.6979), True, "EN B"),
     ("ROW_EN_C", "c", 1.0, (20.6796, 57.3601), True, "EN C"),
-    ("ROW_EN_D", "c", 1.0, (29.6951, 24.4507), True, "EN D"),
+    # on its B.Cu track: its via sat where row D's output pour needs the room (2026-11-02)
+    ("ROW_EN_D", "c", 1.0, (28.7, 23.45), False, "EN D"),
     ("VBUS_SENSE", "c", 1.0, (33.1723, 10.0181), False, "VSNS"),
     ("GND", "c", 1.5, (55.95, 71.95), True, "GND"),
 ]
@@ -162,8 +163,13 @@ def board() -> Board:
     # per eFuse, TI's layout (SLVSDG2G §12.1, figure 71): a VOUT plane on the top layer over the doubled OUT pins
     # (15/16), and the output path to the connector's pin 6 sized for twice the eFuse's 1.6 A: ≈ 1.5 mm of outer
     # 1 oz (IPC-2221, 10 °C).  Pours 1.5 mm wide along the drawn 0.8 mm tracks (F.Cu over the eFuse and along the
-    # row, B.Cu beside the connector, F.Cu into pin 6): the fill keeps 0.15 mm from the router's tracks beside
-    # them, so it narrows where one runs closer (row D's run between POS_D and ROW_EN_D: ≈ 1.07 mm)
+    # row, B.Cu beside the connector, F.Cu into pin 6).
+    # the router keeps other nets' tracks the Power class's 0.2 mm off each pour along the row and up over the eFuse
+    # ("core:" keep-outs: routing only, dropped at the session's import), so every row's pour fills its 1.5 mm
+    row_cores = [{"name": f"core:row-{ch}", "layers": ["F.Cu"], "tracks_only": True,
+                  "poly": [(12.25, ROW_Y[k] - 5.95), (31.55, ROW_Y[k] - 5.95), (31.55, ef_y(k) - 2.7),
+                           (29.65, ef_y(k) - 2.7), (29.65, ROW_Y[k] - 4.05), (12.25, ROW_Y[k] - 4.05)]}
+                 for k, ch in enumerate(ROWS)]
     out_pours = []
     for k, ch in enumerate(ROWS):
         yc, yj = ef_y(k), ROW_Y[k]
@@ -317,7 +323,7 @@ def board() -> Board:
         "tracks": tracks + [("GND", "F.Cu", 0.3, [(58.8, 7.08), (58.35, 6.63), (58.35, 5.3)])]
                   + [(net, "F.Cu", w, pts) for net, w, pts, _ in decap_ties],
         # ESP32 antenna: no copper on any layer under/around it (module top 5 mm + the rear edge)
-        "keepouts": [{"name": "antenna", "poly": [(21.3, -0.1), (38.7, -0.1), (38.7, 5.6), (21.3, 5.6)]}],
+        "keepouts": [{"name": "antenna", "poly": [(21.3, -0.1), (38.7, -0.1), (38.7, 5.6), (21.3, 5.6)]}, *row_cores],
         "texts": [{**t, "thickness": max(SILK_TEXT, 0.15 * t["size"])} for t in [
             *[{"text": ch, "x": 13.8, "y": ROW_Y[k] + 8.3, "size": 1.2} for k, ch in enumerate(ROWS)],
             # the bottom-side test pads' names (TP1–TP7, the controller sheet): bring-up probes (the DFT rule, 2026-10-26)
