@@ -127758,6 +127758,7 @@
 		(uuid "a9c66039-1df2-4931-a6e6-c52aafc2fb41")
 		(name "pwr-3v3")
 		(hatch edge 0.5)
+		(priority 1)
 		(connect_pads
 			(clearance 0.25)
 		)
@@ -137814,7 +137815,7 @@
 		(uuid "ddcd59d3-5647-4b9e-964b-6d4cde9f7706")
 		(name "pwr-3v3cp")
 		(hatch edge 0.5)
-		(priority 1)
+		(priority 2)
 		(connect_pads
 			(clearance 0.25)
 		)

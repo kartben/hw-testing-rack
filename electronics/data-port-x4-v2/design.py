@@ -1768,11 +1768,14 @@ def board() -> Board:
                                         ("CP_HUB_DP", "CP_HUB_DN"), ("UP_DP", "UP_DN")]},
         "zones": [
             {"layer": "In1.Cu", "net": "GND"},
-            {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "poly": IN_3V3},
+            # +3V3 over +5V: their outlines 0.2 mm apart, under the planes' clearance, so one pulls back 0.1 mm
+            # along the split; with equal priorities KiCad picks by the zones' UUIDs, new in each of the panel's
+            # copies (its halves flipped at random).  The board had +3V3 win: now by priority
+            {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "priority": 1, "poly": IN_3V3},
             {"layer": pwr, "net": "+5V", "name": "pwr-5v", "poly": IN_5V},
             # the co-processor's island in the DSN with the planes, not added after the routing: deferred,
             # Freerouting saw its vias as unconnected and joined the IOVDD pins by tracks under U11
-            {"layer": pwr, "net": "+3V3_CP", "name": "pwr-3v3cp", "priority": 1, "poly": ISLAND},
+            {"layer": pwr, "net": "+3V3_CP", "name": "pwr-3v3cp", "priority": 2, "poly": ISLAND},
             # U3 (AP2114H, ≈ 0.65 W): top-side copper on its tab with C3's +3V3 pad, and on VIN with C2's +5V
             # pad, each with its vias to its plane; exclusive, so the router keeps its tracks off them
             {"layer": "F.Cu", "net": "+3V3", "name": "ldo-vout", "priority": 3, "exclusive": 0.3,
