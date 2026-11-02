@@ -39,7 +39,7 @@ sys.path.insert(0, str(HERE.parents[1] / "tools"))
 
 from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
-from silk import LOGO_W, title_block  # noqa: E402
+from silk import LOGO_W, SILK_RULE, SILK_TEXT, title_block  # noqa: E402
 
 import rackcfg  # noqa: E402
 
@@ -159,12 +159,15 @@ def board() -> Board:
                    ("LED_K", "F.Cu", 0.3, [(32.25, 16.0), (34.8, 16.0), (35.3, 15.5), (35.3, 9.0)]),
                    ("LED_K", "F.Cu", 0.3, [(35.3, 9.0), (35.3, 4.2), (33.7, 2.6)])],
         "stitch": 3.0,
-        "texts": [
+        # every text at a 0.15 mm stroke at least, as the other boards (NextPCB's least line; SILK_RULE holds it)
+        "dru": SILK_RULE,
+        "texts": [{**t, "thickness": max(SILK_TEXT, 0.15 * t["size"])} for t in [
             {"text": "VCC GND SCK MISO MOSI CS", "x": hx, "y": hy + 4.3, "size": 0.8},
             *({"text": t, "x": 6.0 + 3 * i, "y": 19.6, "size": 0.8, "layer": "B.SilkS"}
               for i, t in enumerate(("GND", "5V", "3V3"))),
             {"text": "GND", "x": 33.0, "y": 19.6, "size": 0.8, "layer": "B.SilkS"},
             *({"text": lab, "x": x, "y": y + 1.35, "size": 0.8, "layer": "B.SilkS"} for _, (x, y), lab in TP_ROUND2),
+        ]] + [
             # the title block, as on every board (silk.title_block()): in the rear face's top-right corner as read
             # from below, against the rear edge and 2 mm in, between H1 and the SCK test pad (the board's one band
             # free for it; its 0.6 mm logo-to-line gap is set by this band)

@@ -11,6 +11,11 @@
 	(condition "(A.memberOfFootprint('J1')) && B.Layer == 'Edge.Cuts'")
 	(constraint silk_clearance (min -10mm)))
 
+(rule "silkscreen text: a 0.15 mm stroke at least"
+	(severity error)
+	(layer "?.Silkscreen")
+	(constraint text_thickness (min 0.15mm)))
+
 (rule "power pins connect solid"
 	(condition "A.Type == 'Pad' && A.Pad_Type == 'SMD' && (A.NetName == '/Pod/CAM_5V' || A.NetName == 'GND') && (A.memberOfFootprint('U*') || A.memberOfFootprint('J*') || A.memberOfFootprint('L*'))")
 	(constraint zone_connection solid))
