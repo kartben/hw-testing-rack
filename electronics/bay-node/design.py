@@ -186,9 +186,19 @@ TP_ROUND2 = [
     ("AUX_RX", "d", 1.0, (57.8491, 42.1314), False, "AUX RX", None),
     ("AUX_RST_CTL", "d", 1.0, (60.55, 48.0991), True, "RST", None),
     ("AUX_BOOT_CTL", "d", 1.0, (57.8041, 48.3534), False, "BOOT", None),
-    ("POS_OUT", "d", 1.0, (61.438, 45.3665), False, "POS OUT", (3.2, 0.0)),
+    # its name 3.35 mm east: at a 0.15 mm stroke, 3.2 touched TP31's ring
+    ("POS_OUT", "d", 1.0, (61.438, 45.3665), False, "POS OUT", (3.35, 0.0)),
     ("GND", "d", 1.5, (58.4, 45.4), True, "GND", None),
 ]
+# NextPCB's legend (the order's rules check, 2026-11-02): silkscreen text a 0.15 mm stroke at least (the 0.8 mm
+# names' 15 % was 0.12, PC's 0.135), as the DATA boards'
+SILK_TEXT = 0.15
+SILK_RULE = f"""
+(rule "silkscreen text: a {SILK_TEXT} mm stroke at least"
+	(severity error)
+	(layer "?.Silkscreen")
+	(constraint text_thickness (min {SILK_TEXT}mm)))
+"""
 
 
 def board() -> Board:
@@ -313,7 +323,7 @@ def board() -> Board:
 (rule "USB4105 {r}: GND pads beside its own pegs"
 	(condition "A.memberOfFootprint('{r}') && B.memberOfFootprint('{r}')")
 	(constraint hole_clearance (min 0.19mm)))
-""" for r in ("J3",)),
+""" for r in ("J3",)) + SILK_RULE,
         "defer_pours": False,
         # net: (plane, via Ø, drill, track width)
         "fanout_nets": {"GND": ("In1.Cu", 0.5, 0.3, 0.25), "+3V3": ("In2.Cu", 0.6, 0.3, 0.25),
@@ -411,7 +421,7 @@ def board() -> Board:
         "keepouts": [
             {"name": "antenna", "poly": [(8.0, -0.1), (56.0, -0.1), (56.0, 6.0), (8.0, 6.0)]},
         ],
-        "texts": [
+        "texts": [{**t, "thickness": max(SILK_TEXT, 0.15 * t["size"])} for t in [
             {"text": "hw-testing-rack · bay node v0.5", "x": 32, "y": 56, "size": 0.8, "layer": "B.SilkS"},
             # the test pads' names, bottom side: the supply row (TP5–TP10) and the UART block (TP1–TP4)
             *({"text": t, "x": 45.0 + 3 * i, "y": 74.2, "size": 0.8, "rot": 90, "layer": "B.SilkS"}
@@ -432,7 +442,7 @@ def board() -> Board:
             {"text": "BOOT", "x": 15.5, "y": 25.4, "size": 0.8},
             *({"text": lab, "x": xy[0] + (off or (0, 0))[0], "y": xy[1] + (off[1] if off else d / 2 + 0.85), "size": 0.8,
                "layer": "B.SilkS"} for _, _, d, xy, _, lab, off in TP_ROUND2),
-        ],
+        ]],
     }
 
     # ------------------------------------------------------------------ power
