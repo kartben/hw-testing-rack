@@ -538,7 +538,7 @@ def hub_sheet(b: Board):
         if any(net in up for net in nets):
             rail(s, "+3V3", [f"RN{1 + i}.{9 - q}" for q in range(1, 5) if nets[q - 1] in up], 2, "down")
 
-    s.frame("TCA9535 expander (0x20): each port's EN and FAULT_N; its spare pins pulled down", 172, 10, 232, 60)
+    s.frame("TCA9535 expander (0x20): each port's EN and FAULT_N; its spare pins pulled down", 169, 10, 229, 60)
     # no RESET pin (the TCA6408A's): power-on reset only.  Its 100 nF right over VCC
     x, y = EXP
     exp = {"VCC": "+3V3", "GND": "GND", "EPAD": "GND", "A0": "GND", "A1": "GND", "A2": "GND", "SCL": "SCL",
@@ -549,19 +549,19 @@ def hub_sheet(b: Board):
     spare = [pin for pin in ("P14", "P15", "P16", "P17") if pin not in exp]
     for pin in spare:
         exp[pin] = f"EXP_{pin}"
-    part(s, "U2", "tca9535", exp, pcb=P(x, y, 0), sch=at(202, 34, fields=(-4, -12)))
-    C(s, "C18", "100n", "+3V3", "GND", size="0402", pcb=P(x + 0.25, y - 3.6, 90), sch=at(184, 24))
+    part(s, "U2", "tca9535", exp, pcb=P(x, y, 0), sch=at(199, 34, fields=(-4, -12)))
+    C(s, "C18", "100n", "+3V3", "GND", size="0402", pcb=P(x + 0.25, y - 3.6, 90), sch=at(181, 24))
     pairs = [(f"EXP_{pin}", "GND") for pin in reversed(spare)]
-    rarray(s, "RN10", "10k", pairs, P(x + 3.7, y, 0), sch=at(224, 50))
+    rarray(s, "RN10", "10k", pairs, P(x + 3.7, y, 0), sch=at(221, 50))
     rail(s, "GND", [f"RN10.{9 - q}" for q in range(1, 5)], 2, "down")
 
-    s.frame("I²C isolation: open with the board's 3.3 V off (the node's pull-ups can't feed it)", 172, 106, 232, 148)
+    s.frame("I²C isolation: open with the board's 3.3 V off (the node's pull-ups can't feed it)", 169, 106, 229, 148)
     for i, (q, r, line, val) in enumerate((("Q1", "R6", "SDA", "4.7k"), ("Q2", "R7", "SCL", "4.7k"))):
         y = LEAD[1] - 10.4 + 4.0 * i
         part(s, q, "nfet", {"G": "+3V3", "S": line, "D": "LEAD_" + line}, pcb=P(LEAD[0] + 3.25, y, 90),
-             sch=at(186, 118 + 12 * i))
+             sch=at(183, 118 + 12 * i))
         R(s, r, val, "+3V3", line, size="0402", pcb=P(LEAD[0] + 3.25, LEAD[1] - 15.4 + 1.0 * i, 0),
-          sch=at(212, 116 + 12 * i))
+          sch=at(209, 116 + 12 * i))
     testpoints(s, ["TP7", "TP8", "TP20", "TP21", "TP22", "TP24", "TP25", "TP26", "TP27"],
                "Test points (rear face, bare pads, not in the BOM): +3V3, the hub's reset and 1.8 V, the lead's "
                "I²C, GND", 6, 136, per_row=12)

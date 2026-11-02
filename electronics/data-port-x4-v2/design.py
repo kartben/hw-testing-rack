@@ -404,13 +404,14 @@ def plen(poly):
     return sum(math.dist(a, b) for a, b in zip(poly, poly[1:]))
 
 
-def testpoints(s, refs, title):
-    """The sheet's bring-up test points (TPS) in a frame of their own, top right, seven to a row"""
-    s.frame(title, 240, 10, 330, 30 + 14 * ((len(refs) + 6) // 7))
+def testpoints(s, refs, title, x0=232):
+    """The sheet's bring-up test points (TPS) in a frame of their own, top right (x0: the frame's left side, inside
+    the sheet's paper: A1 for the sheets with a full right-hand column), seven to a row"""
+    s.frame(title, x0, 10, x0 + 90, 30 + 14 * ((len(refs) + 6) // 7))
     for i, ref in enumerate(refs):
         net, _, d, x, y = TPS[ref]
         part(s, ref, "testpad" if d > 1.2 else "testpad1", {"1": net}, pcb=P(x, y, 0, "bottom"), in_bom=False,
-             sch=at(248 + 12 * (i % 7), 30 + 14 * (i // 7)))
+             sch=at(x0 + 8 + 12 * (i % 7), 30 + 14 * (i // 7)))
 
 
 def rail(s, net, pins, dy, d="up"):
@@ -448,7 +449,7 @@ def port(b: Board, n: int):
     p = f"PORT{n}_"
     a = n % 2 == 1                      # the left port of its pair: its crosspoint is to its right (east)
     s = b.sheet(f"Port {n}", f"port{n}.kicad_sch", f"USB-C {n}: switch, current sense, ESD, header; pins")
-    s.paper = "A2"
+    s.paper = "A1"
     sw, sh, ina, usb, esd = f"U{k + 1}", f"R{k + 6}", f"U{k + 2}", f"J{k + 1}", f"U{k + 3}"
     s.frame(f"Port {n} power: +5V → TPS2553-1 → {p}5V_SW → 100 mΩ shunt → {p}VBUS, the INA226 across the shunt",
             6, 10, 108, 44)
@@ -643,7 +644,7 @@ def port(b: Board, n: int):
 # ----------------------------------------------------------------------------------- hub, lead, power
 def hub_sheet(b: Board):
     s = b.sheet("Hub", "hub.kicad_sch", "Lead, hub, expanders, 3.3 V")
-    s.paper = "A2"
+    s.paper = "A1"
     s.frame("Lead from the bay node's J7 (JST PH 8, vertical, on the rear face): SDA and SCL through a H5VU25UC; "
             "pin 8 VIN (sheet Power), pin 1 open", 6, 10, 70, 50)
     # through-hole on the rear face, soldered by hand (JLC's Economic assembly places the front face only), where
@@ -822,7 +823,7 @@ def hub_sheet(b: Board):
 # ------------------------------------------------------------------------------------------- 20 V → 5 V
 def power_sheet(b: Board):
     s = b.sheet("Power", "power.kicad_sch", "20 V input, the 5 V converter")
-    s.paper = "A3"
+    s.paper = "A2"
     s.frame("VIN: the rack's 20 V, switched by the node (its eFuse), from the PH 8 lead's pin 8 (J1, sheet Hub)",
             6, 10, 62, 50)
     s.part("#FLG01", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "VIN"}, in_bom=False, on_board=False, sch=at(28, 18))
@@ -867,7 +868,7 @@ def power_sheet(b: Board):
     s.wire((x0 + 62, 33.5), (x0 + 36, 33.5), (x0 + 36, 25), "U13.FB")
     s.part("#FLG03", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False,
            sch=at(x0 + 58, 14))
-    testpoints(s, ["TP40"], "Bring-up test point on the rear face (B.Cu): VIN")
+    testpoints(s, ["TP40"], "Bring-up test point on the rear face (B.Cu): VIN", x0=138)
     s.notes_at = (6, 56, 200)
     s.notes = [
         "The DATA ×6's converter with the family's 3.5 A part (TI SLUSF64B table 8-2, LMR51635, 5 V, 1.1 MHz: 3.3 µH",
@@ -911,7 +912,7 @@ def buck_copper(sw: str, out: str, bx: float, by: float, tag: str) -> tuple[list
 # ------------------------------------------------------------------------------------ matrix (full)
 def matrix_sheet(b: Board):
     s = b.sheet("Matrix", "matrix.kicad_sch", "Crosspoints, −5 V, the node's matrix expander")
-    s.paper = "A2"
+    s.paper = "A1"
     for c, (chx, chy) in enumerate(CHIP):
         na, nb = 2 * c + 1, 2 * c + 2
         u, y0 = f"U{7 + c}", 10 + 74 * c
@@ -989,7 +990,7 @@ def matrix_sheet(b: Board):
 def coproc_sheet(b: Board):
     s = b.sheet("Co-processor", "coproc.kicad_sch", "RP2354B analyzer / co-processor on hub port 5")
     cx, cy = CP
-    s.paper = "A2"
+    s.paper = "A1"
     s.frame("RP2354B, wired like a Pico 2 (gusmanb's PICO_2 UF2 runs as it is); its decoupling", 6, 10, 120, 118)
     gp = {"GPIO0": "CP_TRIG", "GPIO1": "CP_TRIG", "GPIO14": "MARK", "GPIO25": "CP_LED",
           "GPIO44/ADC4": "CP_SNS_5V", "GPIO45/ADC5": "CP_SNS_N5V"}
@@ -1100,9 +1101,9 @@ def coproc_sheet(b: Board):
     testpoints(s, ["TP1", "TP2", "TP3", "TP10", "TP11", "TP12", "TP13"],
                "Bring-up test points on the rear face (B.Cu): SWD, RUN, BOOTSEL, its rails, GND (logic only)")
     s.frame("SWD header (J2, 1 × 5 through-hole, fitted by hand): the Debug Probe on 1–3, RUN and VTref for others",
-            240, 50, 330, 84)
+            232, 50, 322, 84)
     part(s, "J2", "hdr5", {str(i + 1): net for i, (net, _) in enumerate(SWD_PINS)}, "SWD", pcb=P(*SWD_HDR, 90),
-         sch=at(270, 68))
+         sch=at(262, 68))
     s.frame("Bus pull-ups: 10k to 3.3 V always (the LSFs' B side), 2.2k switched by the co-processor "
             "(GPIO10–13, 16–19); the ±5 V rails into the ADC", 124, 102, 228, 144)
     # right of the east face: the 2.2k arrays by the enables (A at the top), the 10k arrays right of them,

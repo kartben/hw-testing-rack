@@ -3,7 +3,7 @@
 	(generator "hw-testing-rack-eda")
 	(generator_version "10.0")
 	(uuid "45a04347-8732-5237-9e3b-340287b3f578")
-	(paper "A2")
+	(paper "A1")
 	(title_block
 		(title "DATA ×4 v2 — Lead, hub, expanders, 3.3 V")
 		(rev "2.0")
@@ -16602,7 +16602,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 629.92 76.2 0)
+		(at 609.6 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -16611,7 +16611,7 @@
 		(fields_autoplaced yes)
 		(uuid "81359a8b-63a2-5979-925d-16f44ce759f8")
 		(property "Reference" "TP7"
-			(at 633.257 74.93 0)
+			(at 612.937 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16619,7 +16619,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 635.882 77.47 0)
+			(at 615.562 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16627,7 +16627,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16636,7 +16636,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16645,7 +16645,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16654,7 +16654,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16663,7 +16663,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16685,8 +16685,8 @@
 	)
 	(wire
 		(pts
-			(xy 629.92 76.2)
-			(xy 629.92 78.74)
+			(xy 609.6 76.2)
+			(xy 609.6 78.74)
 		)
 		(stroke
 			(width 0)
@@ -16696,7 +16696,7 @@
 	)
 	(symbol
 		(lib_id "power:+3V3")
-		(at 629.92 78.74 180)
+		(at 609.6 78.74 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -16705,7 +16705,7 @@
 		(fields_autoplaced yes)
 		(uuid "f172a839-5355-5780-872f-f48c75e60328")
 		(property "Reference" "#PWR02061"
-			(at 629.92 78.74 0)
+			(at 609.6 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16714,7 +16714,7 @@
 			)
 		)
 		(property "Value" "+3V3"
-			(at 629.92 82.55 0)
+			(at 609.6 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16722,7 +16722,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 629.92 78.74 0)
+			(at 609.6 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16731,7 +16731,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 629.92 78.74 0)
+			(at 609.6 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16740,7 +16740,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 629.92 78.74 0)
+			(at 609.6 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16762,7 +16762,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 660.4 76.2 0)
+		(at 640.08 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -16771,7 +16771,7 @@
 		(fields_autoplaced yes)
 		(uuid "85730d8f-7412-5d11-b607-82e18638d2c8")
 		(property "Reference" "TP8"
-			(at 663.737 74.93 0)
+			(at 643.417 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16779,7 +16779,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 666.362 77.47 0)
+			(at 646.042 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16787,7 +16787,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 660.4 76.2 0)
+			(at 640.08 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16796,7 +16796,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 660.4 76.2 0)
+			(at 640.08 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16805,7 +16805,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 660.4 76.2 0)
+			(at 640.08 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16814,7 +16814,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 660.4 76.2 0)
+			(at 640.08 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16823,7 +16823,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 660.4 76.2 0)
+			(at 640.08 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16845,8 +16845,8 @@
 	)
 	(wire
 		(pts
-			(xy 660.4 76.2)
-			(xy 660.4 78.74)
+			(xy 640.08 76.2)
+			(xy 640.08 78.74)
 		)
 		(stroke
 			(width 0)
@@ -16856,7 +16856,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 660.4 78.74 0)
+		(at 640.08 78.74 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -16865,7 +16865,7 @@
 		(fields_autoplaced yes)
 		(uuid "c0a4a16e-56b0-5904-ab25-deb5abc12fe1")
 		(property "Reference" "#PWR02062"
-			(at 660.4 78.74 0)
+			(at 640.08 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16874,7 +16874,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 660.4 82.55 0)
+			(at 640.08 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16882,7 +16882,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 660.4 78.74 0)
+			(at 640.08 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16891,7 +16891,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 660.4 78.74 0)
+			(at 640.08 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16900,7 +16900,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 660.4 78.74 0)
+			(at 640.08 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16922,7 +16922,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 690.88 76.2 0)
+		(at 670.56 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -16931,7 +16931,7 @@
 		(fields_autoplaced yes)
 		(uuid "4b5ba412-f041-5a0a-b141-8564132b5331")
 		(property "Reference" "TP9"
-			(at 694.217 74.93 0)
+			(at 673.897 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16939,7 +16939,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 696.842 77.47 0)
+			(at 676.522 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16947,7 +16947,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 690.88 76.2 0)
+			(at 670.56 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16956,7 +16956,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 690.88 76.2 0)
+			(at 670.56 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16965,7 +16965,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 690.88 76.2 0)
+			(at 670.56 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16974,7 +16974,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 690.88 76.2 0)
+			(at 670.56 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16983,7 +16983,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 690.88 76.2 0)
+			(at 670.56 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17005,8 +17005,8 @@
 	)
 	(wire
 		(pts
-			(xy 690.88 76.2)
-			(xy 690.88 78.74)
+			(xy 670.56 76.2)
+			(xy 670.56 78.74)
 		)
 		(stroke
 			(width 0)
@@ -17016,7 +17016,7 @@
 	)
 	(symbol
 		(lib_id "power:+5V")
-		(at 690.88 78.74 180)
+		(at 670.56 78.74 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -17025,7 +17025,7 @@
 		(fields_autoplaced yes)
 		(uuid "512b70a0-78dd-5618-8e7e-3a9f746cafec")
 		(property "Reference" "#PWR02063"
-			(at 690.88 78.74 0)
+			(at 670.56 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17034,7 +17034,7 @@
 			)
 		)
 		(property "Value" "+5V"
-			(at 690.88 82.55 0)
+			(at 670.56 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17042,7 +17042,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 690.88 78.74 0)
+			(at 670.56 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17051,7 +17051,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 690.88 78.74 0)
+			(at 670.56 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17060,7 +17060,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 690.88 78.74 0)
+			(at 670.56 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17082,7 +17082,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 721.36 76.2 0)
+		(at 701.04 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -17091,7 +17091,7 @@
 		(fields_autoplaced yes)
 		(uuid "a3896309-5ff4-5756-9fb3-37c50c67719a")
 		(property "Reference" "TP20"
-			(at 725.222 74.93 0)
+			(at 704.902 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17099,7 +17099,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 727.322 77.47 0)
+			(at 707.002 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17107,7 +17107,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 721.36 76.2 0)
+			(at 701.04 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17116,7 +17116,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 721.36 76.2 0)
+			(at 701.04 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17125,7 +17125,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 721.36 76.2 0)
+			(at 701.04 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17134,7 +17134,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 721.36 76.2 0)
+			(at 701.04 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17143,7 +17143,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 721.36 76.2 0)
+			(at 701.04 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17165,8 +17165,8 @@
 	)
 	(wire
 		(pts
-			(xy 721.36 76.2)
-			(xy 721.36 78.74)
+			(xy 701.04 76.2)
+			(xy 701.04 78.74)
 		)
 		(stroke
 			(width 0)
@@ -17175,7 +17175,7 @@
 		(uuid "1970f777-1200-5d87-9ed8-7e7a2958fcba")
 	)
 	(label "HUB_RST_N"
-		(at 721.36 78.74 270)
+		(at 701.04 78.74 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -17187,7 +17187,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 751.84 76.2 0)
+		(at 731.52 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -17196,7 +17196,7 @@
 		(fields_autoplaced yes)
 		(uuid "4e5592a4-fde6-5b16-a007-f56c6a9336f2")
 		(property "Reference" "TP21"
-			(at 755.702 74.93 0)
+			(at 735.382 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17204,7 +17204,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 757.802 77.47 0)
+			(at 737.482 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17212,7 +17212,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 751.84 76.2 0)
+			(at 731.52 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17221,7 +17221,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 751.84 76.2 0)
+			(at 731.52 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17230,7 +17230,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 751.84 76.2 0)
+			(at 731.52 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17239,7 +17239,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 751.84 76.2 0)
+			(at 731.52 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17248,7 +17248,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 751.84 76.2 0)
+			(at 731.52 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17270,8 +17270,8 @@
 	)
 	(wire
 		(pts
-			(xy 751.84 76.2)
-			(xy 751.84 78.74)
+			(xy 731.52 76.2)
+			(xy 731.52 78.74)
 		)
 		(stroke
 			(width 0)
@@ -17281,7 +17281,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 751.84 78.74 0)
+		(at 731.52 78.74 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -17290,7 +17290,7 @@
 		(fields_autoplaced yes)
 		(uuid "b584ef0d-5757-50ba-b712-39ddd6c3c151")
 		(property "Reference" "#PWR02064"
-			(at 751.84 78.74 0)
+			(at 731.52 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17299,7 +17299,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 751.84 82.55 0)
+			(at 731.52 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17307,7 +17307,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 751.84 78.74 0)
+			(at 731.52 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17316,7 +17316,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 751.84 78.74 0)
+			(at 731.52 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17325,7 +17325,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 751.84 78.74 0)
+			(at 731.52 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17347,7 +17347,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 782.32 76.2 0)
+		(at 762 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -17356,7 +17356,7 @@
 		(fields_autoplaced yes)
 		(uuid "7eabf5f2-2fe0-5133-9b13-c4de29cf675b")
 		(property "Reference" "TP22"
-			(at 786.182 74.93 0)
+			(at 765.862 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17364,7 +17364,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 788.282 77.47 0)
+			(at 767.962 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17372,7 +17372,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 782.32 76.2 0)
+			(at 762 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17381,7 +17381,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 782.32 76.2 0)
+			(at 762 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17390,7 +17390,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 782.32 76.2 0)
+			(at 762 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17399,7 +17399,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 782.32 76.2 0)
+			(at 762 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17408,7 +17408,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 782.32 76.2 0)
+			(at 762 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17430,8 +17430,8 @@
 	)
 	(wire
 		(pts
-			(xy 782.32 76.2)
-			(xy 782.32 78.74)
+			(xy 762 76.2)
+			(xy 762 78.74)
 		)
 		(stroke
 			(width 0)
@@ -17440,7 +17440,7 @@
 		(uuid "aedea81e-80e2-590e-b4f9-aa52d77ab6c8")
 	)
 	(label "HUB_1V8"
-		(at 782.32 78.74 270)
+		(at 762 78.74 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -17452,7 +17452,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 812.8 76.2 0)
+		(at 792.48 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -17461,7 +17461,7 @@
 		(fields_autoplaced yes)
 		(uuid "c54eed1c-48e8-5deb-a2fa-1ccd10bdc8c7")
 		(property "Reference" "TP24"
-			(at 816.662 74.93 0)
+			(at 796.342 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17469,7 +17469,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 818.762 77.47 0)
+			(at 798.442 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17477,7 +17477,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 812.8 76.2 0)
+			(at 792.48 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17486,7 +17486,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 812.8 76.2 0)
+			(at 792.48 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17495,7 +17495,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 812.8 76.2 0)
+			(at 792.48 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17504,7 +17504,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 812.8 76.2 0)
+			(at 792.48 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17513,7 +17513,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 812.8 76.2 0)
+			(at 792.48 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17535,8 +17535,8 @@
 	)
 	(wire
 		(pts
-			(xy 812.8 76.2)
-			(xy 812.8 78.74)
+			(xy 792.48 76.2)
+			(xy 792.48 78.74)
 		)
 		(stroke
 			(width 0)
@@ -17546,7 +17546,7 @@
 	)
 	(global_label "SDA"
 		(shape bidirectional)
-		(at 812.8 78.74 270)
+		(at 792.48 78.74 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -17556,7 +17556,7 @@
 		)
 		(uuid "52fbd45a-5b0e-5c0b-b42c-b492e4bf6dce")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 812.8 78.74 0)
+			(at 792.48 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17568,7 +17568,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 629.92 111.76 0)
+		(at 609.6 111.76 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -17577,7 +17577,7 @@
 		(fields_autoplaced yes)
 		(uuid "45400ad0-71e7-5bea-b15e-f8d2c0afe22b")
 		(property "Reference" "TP25"
-			(at 633.782 110.49 0)
+			(at 613.462 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17585,7 +17585,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 635.882 113.03 0)
+			(at 615.562 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17593,7 +17593,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 629.92 111.76 0)
+			(at 609.6 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17602,7 +17602,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 629.92 111.76 0)
+			(at 609.6 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17611,7 +17611,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 629.92 111.76 0)
+			(at 609.6 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17620,7 +17620,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 629.92 111.76 0)
+			(at 609.6 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17629,7 +17629,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 629.92 111.76 0)
+			(at 609.6 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17651,8 +17651,8 @@
 	)
 	(wire
 		(pts
-			(xy 629.92 111.76)
-			(xy 629.92 114.3)
+			(xy 609.6 111.76)
+			(xy 609.6 114.3)
 		)
 		(stroke
 			(width 0)
@@ -17662,7 +17662,7 @@
 	)
 	(global_label "SCL"
 		(shape bidirectional)
-		(at 629.92 114.3 270)
+		(at 609.6 114.3 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -17672,7 +17672,7 @@
 		)
 		(uuid "68a08d2d-2fea-55cf-97a2-9bca31e5926f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 629.92 114.3 0)
+			(at 609.6 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17684,7 +17684,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 660.4 111.76 0)
+		(at 640.08 111.76 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -17693,7 +17693,7 @@
 		(fields_autoplaced yes)
 		(uuid "c01f478b-0f87-5296-96b2-974a651ac12a")
 		(property "Reference" "TP26"
-			(at 664.262 110.49 0)
+			(at 643.942 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17701,7 +17701,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 666.362 113.03 0)
+			(at 646.042 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17709,7 +17709,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 660.4 111.76 0)
+			(at 640.08 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17718,7 +17718,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 660.4 111.76 0)
+			(at 640.08 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17727,7 +17727,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 660.4 111.76 0)
+			(at 640.08 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17736,7 +17736,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 660.4 111.76 0)
+			(at 640.08 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17745,7 +17745,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 660.4 111.76 0)
+			(at 640.08 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17767,8 +17767,8 @@
 	)
 	(wire
 		(pts
-			(xy 660.4 111.76)
-			(xy 660.4 114.3)
+			(xy 640.08 111.76)
+			(xy 640.08 114.3)
 		)
 		(stroke
 			(width 0)
@@ -17778,7 +17778,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 660.4 114.3 0)
+		(at 640.08 114.3 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -17787,7 +17787,7 @@
 		(fields_autoplaced yes)
 		(uuid "f586833c-b6e5-5011-8caf-8b712ddb8139")
 		(property "Reference" "#PWR02065"
-			(at 660.4 114.3 0)
+			(at 640.08 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17796,7 +17796,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 660.4 118.11 0)
+			(at 640.08 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17804,7 +17804,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 660.4 114.3 0)
+			(at 640.08 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17813,7 +17813,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 660.4 114.3 0)
+			(at 640.08 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17822,7 +17822,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 660.4 114.3 0)
+			(at 640.08 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17844,7 +17844,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 690.88 111.76 0)
+		(at 670.56 111.76 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -17853,7 +17853,7 @@
 		(fields_autoplaced yes)
 		(uuid "07abfca2-6870-53f9-8552-c7de2376034f")
 		(property "Reference" "TP27"
-			(at 694.742 110.49 0)
+			(at 674.422 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17861,7 +17861,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 696.842 113.03 0)
+			(at 676.522 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17869,7 +17869,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 690.88 111.76 0)
+			(at 670.56 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17878,7 +17878,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 690.88 111.76 0)
+			(at 670.56 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17887,7 +17887,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 690.88 111.76 0)
+			(at 670.56 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17896,7 +17896,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 690.88 111.76 0)
+			(at 670.56 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17905,7 +17905,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 690.88 111.76 0)
+			(at 670.56 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17927,8 +17927,8 @@
 	)
 	(wire
 		(pts
-			(xy 690.88 111.76)
-			(xy 690.88 114.3)
+			(xy 670.56 111.76)
+			(xy 670.56 114.3)
 		)
 		(stroke
 			(width 0)
@@ -17938,7 +17938,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 690.88 114.3 0)
+		(at 670.56 114.3 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -17947,7 +17947,7 @@
 		(fields_autoplaced yes)
 		(uuid "fe1464da-f8f0-5295-9a05-8ab1669f67d7")
 		(property "Reference" "#PWR02066"
-			(at 690.88 114.3 0)
+			(at 670.56 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17956,7 +17956,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 690.88 118.11 0)
+			(at 670.56 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17964,7 +17964,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 690.88 114.3 0)
+			(at 670.56 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17973,7 +17973,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 690.88 114.3 0)
+			(at 670.56 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17982,7 +17982,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 690.88 114.3 0)
+			(at 670.56 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18004,7 +18004,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 721.36 111.76 0)
+		(at 701.04 111.76 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18013,7 +18013,7 @@
 		(fields_autoplaced yes)
 		(uuid "d091ebc1-ea81-5f84-b455-ad3c2443e431")
 		(property "Reference" "TP28"
-			(at 725.222 110.49 0)
+			(at 704.902 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18021,7 +18021,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 727.322 113.03 0)
+			(at 707.002 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18029,7 +18029,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 721.36 111.76 0)
+			(at 701.04 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18038,7 +18038,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 721.36 111.76 0)
+			(at 701.04 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18047,7 +18047,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 721.36 111.76 0)
+			(at 701.04 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18056,7 +18056,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 721.36 111.76 0)
+			(at 701.04 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18065,7 +18065,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 721.36 111.76 0)
+			(at 701.04 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18087,8 +18087,8 @@
 	)
 	(wire
 		(pts
-			(xy 721.36 111.76)
-			(xy 721.36 114.3)
+			(xy 701.04 111.76)
+			(xy 701.04 114.3)
 		)
 		(stroke
 			(width 0)
@@ -18098,7 +18098,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 721.36 114.3 0)
+		(at 701.04 114.3 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18107,7 +18107,7 @@
 		(fields_autoplaced yes)
 		(uuid "ab8c0c9e-67aa-595f-8196-84b6d34d73a0")
 		(property "Reference" "#PWR02067"
-			(at 721.36 114.3 0)
+			(at 701.04 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18116,7 +18116,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 721.36 118.11 0)
+			(at 701.04 118.11 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18124,7 +18124,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 721.36 114.3 0)
+			(at 701.04 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18133,7 +18133,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 721.36 114.3 0)
+			(at 701.04 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18142,7 +18142,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 721.36 114.3 0)
+			(at 701.04 114.3 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18164,7 +18164,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 751.84 111.76 0)
+		(at 731.52 111.76 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18173,7 +18173,7 @@
 		(fields_autoplaced yes)
 		(uuid "ab360478-2d37-5002-b0ed-734764532262")
 		(property "Reference" "TP38"
-			(at 755.702 110.49 0)
+			(at 735.382 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18181,7 +18181,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 757.802 113.03 0)
+			(at 737.482 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18189,7 +18189,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 751.84 111.76 0)
+			(at 731.52 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18198,7 +18198,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 751.84 111.76 0)
+			(at 731.52 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18207,7 +18207,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 751.84 111.76 0)
+			(at 731.52 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18216,7 +18216,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 751.84 111.76 0)
+			(at 731.52 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18225,7 +18225,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 751.84 111.76 0)
+			(at 731.52 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18247,8 +18247,8 @@
 	)
 	(wire
 		(pts
-			(xy 751.84 111.76)
-			(xy 751.84 114.3)
+			(xy 731.52 111.76)
+			(xy 731.52 114.3)
 		)
 		(stroke
 			(width 0)
@@ -18257,7 +18257,7 @@
 		(uuid "c785ae46-2c95-5508-89e3-d37e8231de6f")
 	)
 	(label "EXP1_RST_N"
-		(at 751.84 114.3 270)
+		(at 731.52 114.3 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -18269,7 +18269,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 782.32 111.76 0)
+		(at 762 111.76 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -18278,7 +18278,7 @@
 		(fields_autoplaced yes)
 		(uuid "628f48d1-2743-5649-a1ad-1c92249352c6")
 		(property "Reference" "TP39"
-			(at 786.182 110.49 0)
+			(at 765.862 110.49 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18286,7 +18286,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 788.282 113.03 0)
+			(at 767.962 113.03 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18294,7 +18294,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 782.32 111.76 0)
+			(at 762 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18303,7 +18303,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 782.32 111.76 0)
+			(at 762 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18312,7 +18312,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 782.32 111.76 0)
+			(at 762 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18321,7 +18321,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 782.32 111.76 0)
+			(at 762 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18330,7 +18330,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 782.32 111.76 0)
+			(at 762 111.76 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18352,8 +18352,8 @@
 	)
 	(wire
 		(pts
-			(xy 782.32 111.76)
-			(xy 782.32 114.3)
+			(xy 762 111.76)
+			(xy 762 114.3)
 		)
 		(stroke
 			(width 0)
@@ -18362,7 +18362,7 @@
 		(uuid "6e4f2d32-03a6-5546-861c-208b6c0b880f")
 	)
 	(label "EXP2_RST_N"
-		(at 782.32 114.3 270)
+		(at 762 114.3 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -19490,8 +19490,8 @@
 		(uuid "5b8e63e1-e9e3-52f4-9082-63e283700539")
 	)
 	(rectangle
-		(start 609.6 25.4)
-		(end 838.2 147.32)
+		(start 589.28 25.4)
+		(end 817.88 147.32)
 		(stroke
 			(width 0.2)
 			(type dash)
@@ -19503,7 +19503,7 @@
 	)
 	(text "Bring-up test points on the rear face (B.Cu, bare pads, not in the BOM): +3V3, +5V, the hub's reset and 1.8 V, the lead's I²C, the expanders' RESET, GND"
 		(exclude_from_sim no)
-		(at 610.87 27.94 0)
+		(at 590.55 27.94 0)
 		(effects
 			(font
 				(size 1.8 1.8)

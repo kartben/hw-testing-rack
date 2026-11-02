@@ -3,7 +3,7 @@
 	(generator "hw-testing-rack-eda")
 	(generator_version "10.0")
 	(uuid "ac7695c8-b192-5d16-b2f9-3d2966451868")
-	(paper "A2")
+	(paper "A1")
 	(title_block
 		(title "DATA ×4 v2 — USB-C 4: switch, current sense, ESD, header; pins")
 		(rev "2.0")
@@ -6257,7 +6257,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 629.92 76.2 0)
+		(at 609.6 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -6266,7 +6266,7 @@
 		(fields_autoplaced yes)
 		(uuid "b0b1b513-9c2e-5262-a9d3-9e822a8878bb")
 		(property "Reference" "TP401"
-			(at 634.307 74.93 0)
+			(at 613.987 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6274,7 +6274,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 635.882 77.47 0)
+			(at 615.562 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6282,7 +6282,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6291,7 +6291,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6300,7 +6300,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6309,7 +6309,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6318,7 +6318,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 629.92 76.2 0)
+			(at 609.6 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6340,8 +6340,8 @@
 	)
 	(wire
 		(pts
-			(xy 629.92 76.2)
-			(xy 629.92 78.74)
+			(xy 609.6 76.2)
+			(xy 609.6 78.74)
 		)
 		(stroke
 			(width 0)
@@ -6351,7 +6351,7 @@
 	)
 	(global_label "PORT4_FLT_N"
 		(shape bidirectional)
-		(at 629.92 78.74 270)
+		(at 609.6 78.74 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6361,7 +6361,7 @@
 		)
 		(uuid "fc3df537-7307-51ea-8d46-440acdc5a96d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 629.92 78.74 0)
+			(at 609.6 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14096,8 +14096,8 @@
 		(uuid "4de4d9f0-b922-5f91-a28d-5e041dd994f5")
 	)
 	(rectangle
-		(start 609.6 25.4)
-		(end 838.2 111.76)
+		(start 589.28 25.4)
+		(end 817.88 111.76)
 		(stroke
 			(width 0.2)
 			(type dash)
@@ -14109,7 +14109,7 @@
 	)
 	(text "Bring-up test point on the rear face (B.Cu): FAULT_N"
 		(exclude_from_sim no)
-		(at 610.87 27.94 0)
+		(at 590.55 27.94 0)
 		(effects
 			(font
 				(size 1.8 1.8)

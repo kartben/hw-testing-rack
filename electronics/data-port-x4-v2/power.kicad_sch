@@ -3,7 +3,7 @@
 	(generator "hw-testing-rack-eda")
 	(generator_version "10.0")
 	(uuid "348a7008-95ef-5b7f-ad9e-1a5c45e7cb72")
-	(paper "A3")
+	(paper "A2")
 	(title_block
 		(title "DATA ×4 v2 — 20 V input, the 5 V converter")
 		(rev "2.0")
@@ -3872,7 +3872,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 629.92 76.2 0)
+		(at 370.84 76.2 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -3881,7 +3881,7 @@
 		(fields_autoplaced yes)
 		(uuid "ce5cf622-e44a-5e1b-8248-73d607392886")
 		(property "Reference" "TP40"
-			(at 633.782 74.93 0)
+			(at 374.702 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3889,7 +3889,7 @@
 			)
 		)
 		(property "Value" "test pad"
-			(at 635.882 77.47 0)
+			(at 376.802 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3897,7 +3897,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.5mm"
-			(at 629.92 76.2 0)
+			(at 370.84 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3906,7 +3906,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 629.92 76.2 0)
+			(at 370.84 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3915,7 +3915,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 629.92 76.2 0)
+			(at 370.84 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3924,7 +3924,7 @@
 			)
 		)
 		(property "MPN" "test pad"
-			(at 629.92 76.2 0)
+			(at 370.84 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3933,7 +3933,7 @@
 			)
 		)
 		(property "Manufacturer" "-"
-			(at 629.92 76.2 0)
+			(at 370.84 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3955,8 +3955,8 @@
 	)
 	(wire
 		(pts
-			(xy 629.92 76.2)
-			(xy 629.92 78.74)
+			(xy 370.84 76.2)
+			(xy 370.84 78.74)
 		)
 		(stroke
 			(width 0)
@@ -3966,7 +3966,7 @@
 	)
 	(global_label "VIN"
 		(shape bidirectional)
-		(at 629.92 78.74 270)
+		(at 370.84 78.74 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3976,7 +3976,7 @@
 		)
 		(uuid "f50095dd-1742-54f8-9815-ae63d397a7c9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 629.92 78.74 0)
+			(at 370.84 78.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4457,8 +4457,8 @@
 		(uuid "176bfb5a-d9ac-515a-9db9-e318ea320401")
 	)
 	(rectangle
-		(start 609.6 25.4)
-		(end 838.2 111.76)
+		(start 350.52 25.4)
+		(end 579.12 111.76)
 		(stroke
 			(width 0.2)
 			(type dash)
@@ -4470,7 +4470,7 @@
 	)
 	(text "Bring-up test point on the rear face (B.Cu): VIN"
 		(exclude_from_sim no)
-		(at 610.87 27.94 0)
+		(at 351.79 27.94 0)
 		(effects
 			(font
 				(size 1.8 1.8)
