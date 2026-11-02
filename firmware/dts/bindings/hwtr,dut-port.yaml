@@ -93,13 +93,16 @@ properties:
   sub-slot:
     type: int
     description: |
-      DATA x4: the port's number, 1-4 (sub-slot <bay>.<n>, config/rack.yaml).
+      DATA board: the port's number, 1-4 on a DATA x4, 1-6 on a DATA x6,
+      port 1 leftmost from the DUT side (sub-slot <bay>.<n>,
+      config/rack.yaml).
 
   hub-port:
     type: int
     description: |
-      DATA x4: the hub's downstream port wired to it; the USB/IP busid is
-      1-1.<hub-port>.
+      DATA board: the hub's downstream port wired to it; the USB/IP busid
+      is 1-1.<hub-port>.  DATA x4: the sub-slot.  DATA x6: 6 for sub-slot
+      1, n - 1 for sub-slot n.
 
   tx-gpios:
     type: phandle-array

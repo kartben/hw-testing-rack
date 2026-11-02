@@ -32,7 +32,7 @@ it sits; no `uart`.  The board's wiring stays data, not code:
 dut_port1: dut-port-1 {
 	compatible = "hwtr,dut-port";
 	sub-slot = <1>;                 /* A1.1 */
-	hub-port = <1>;                 /* the hub's downstream port wired to it (n on DATA ×4) */
+	hub-port = <1>;                 /* the hub's downstream port wired to it (n on DATA ×4; ×6: busid, below) */
 	enable-gpios = <&ports_io0 2 GPIO_ACTIVE_HIGH>;
 	fault-gpios = <&ports_io0 3 GPIO_ACTIVE_LOW>;
 	reset-gpios = <&ports_io0 0 GPIO_ACTIVE_LOW>;   /* open drain, emulated (below) */
@@ -71,6 +71,11 @@ a fallback; the spike checks which hubs really switch).
   boards that reset together can swap.  The node names it by where it is
   plugged instead, as Linux does: `1-1.<hub port>` (root port 1, then the hub's
   port), so `A1.2` is always the same busid.  A one-board node keeps `1-1`.
+  On DATA ×4 hub port n is USB-C n.  The DATA ×6 wires port 1 to hub port 6
+  and port n to hub port n − 1 (`electronics/data-port-x6/design.py`, hub
+  sheet), so its `data-x6.dtsi`, not written yet, gives sub-slot 1
+  `hub-port = <6>` and sub-slot n `hub-port = <n − 1>`; leases stop at port 4
+  until `ACL_MAX_PORTS` (`hwtr/acl.h`) goes to 6.
 - **The hub is hidden** from `usbip list`; only the boards are exported.
 - **A board that disconnects** ends its USB/IP session (the client sees a
   detach); when it comes back, it is listed again under the same busid, and
@@ -236,7 +241,7 @@ an unpowered board.
 
 | Endpoint | |
 |---|---|
-| `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 2, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.2"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` (hub port n is USB-C n) |
+| `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 2, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.2"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` (`port` is the sub-slot, USB-C n; `hub_port` is n on DATA ×4, 6 for port 1 and n − 1 for port n on DATA ×6) |
 | `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}`; 409 when the bay's budget has no room for it ([Power budget](#power-budget)); `{"action": "on", "when": "available"}` queues it instead (202), `{"action": "cancel"}` withdraws that |
 | `POST /api/ports/<n>/reset`, `/boot` | as today, for one port; `/boot` with `{"power_cycle": true}`: BOOT held across a power cycle of the port instead of a RESET pulse (a board whose RESET is not wired: [the analyzer](#a-logic-analyzer-in-a-sub-slot)) |
 | `GET /api/status` | adds `ports` (the same objects, shorter) |
