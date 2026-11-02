@@ -474,8 +474,8 @@ in `config/rack.yaml` › `pcb.data_port_x4_v2`.
 - **Holding.**  A printed cradle on the drawer's DATA ×4 bosses holds the board (the Mechanics session's
   interface, 2026-10-20), so the board has no holes:
   - its slots take each end's 5.5 mm; both faces keep those bands free of parts;
-  - two T-heads come up through notches in the bottom edge (3.4 × 6.5 mm at x 31 and 67), against
-    unplugging, with 7 × 6 mm of the front face free round each;
+  - two T-heads come up through notches in the bottom edge (3.4 × 4.5 mm at x 31 and 67), against
+    unplugging, with the front face free over each T-head bar (5.3 × 4.3 mm);
   - the base pushes on the rear face 5.3–9.3 mm above the bottom edge, which stays bare.
 - **USB-C.**  Vertical receptacles (GCT USB4145-03-0170-C, 7.46 mm tall, its four shell stakes 1.70 mm long through the 1.6 mm board; the HRO TYPE-C-31-D-06 until 2026-11-02, whose 0.95 mm legs were drawn for 0.8 mm) on the front face, which faces the
   wall.  Their mouths sit 1 mm behind the wall's openings, at the ports' x and z 11, as v1's.

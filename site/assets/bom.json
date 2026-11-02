@@ -5294,8 +5294,8 @@
 {
 "part": "x4_cradle",
 "qty": 12,
-"grams_each": 12.5,
-"grams_total": 149.7,
+"grams_each": 12.4,
+"grams_total": 149.2,
 "stl": "mechanical/stl/x4_cradle.stl"
 },
 {

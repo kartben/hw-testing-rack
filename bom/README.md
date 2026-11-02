@@ -167,7 +167,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | power_box_lid | 1 | 15.2 | `mechanical/stl/power_box_lid.stl` |
 | slot_bin | 4 | 56.7 | `mechanical/stl/slot_bin.stl` |
 | tray | 12 | 82.0 | `mechanical/stl/tray.stl` |
-| x4_cradle | 12 | 12.5 | `mechanical/stl/x4_cradle.stl` |
+| x4_cradle | 12 | 12.4 | `mechanical/stl/x4_cradle.stl` |
 | x4_strip | 12 | 1.3 | `mechanical/stl/x4_strip.stl` |
 | cover_box4 (optional) | 12 | 31.1 | `mechanical/stl/cover_box4.stl` |
 
