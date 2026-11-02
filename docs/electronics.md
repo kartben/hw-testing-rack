@@ -803,18 +803,23 @@ GPIO (IO5 or IO6) would let the firmware restart the camera alone.
 ## Title block
 
 Every board's title block is the same (`electronics/tools/silk.py`, `title_block()`): the BitBunk logo
-25.6 mm wide, under it the board's name and revision at 1.5 mm, then the revision's date at 1.0 mm,
-left-aligned, on B.SilkS and read from below.  Each sits in the rear face's top-left corner as read from
-below (top view: x max, y 0), slid inward only as far as needed to clear that board's holes, test pads and
-their names by 0.3 mm and its connectors by 4 mm (the user: away from the connectors): the power hub 11.5 mm
-in and 11 mm down, the bay node 21 mm down, the DATA ×6 22 and 19.5 mm, the DATA ×4 v2 17.5 and 22 mm (it has
-no free edge).  No one offset is clear on all four, at any corner.  The logo is not printable as drawn: the boards on its shelves have pins and chips 1–2
-units wide.  `derive_logo()` makes its silk variant from `bitbunk-logo.svg`: each shelf's board a plain
-silhouette, the gaps round the frame, the B, the boards and the i's dot opened to the wordmark's tightest
-letter gap, the slivers left by those cuts dropped.  At 25.6 mm its gaps are 0.25 mm (0.15 left after a
-0.05 mm ink spread a side) and its lines 0.30 mm or more; `tools/tests/test_silk.py` holds both.  The
-outlines the boards take are `bitbunk-logo.silk.json`, written by `python3 electronics/tools/silk.py`
-(shapely, which the KiCad image lacks); the test checks they still match the SVG.
+25.5 mm wide (the user, 2026-11-02), and 0.6 mm under it one line, left-aligned with it: the board's name and
+revision at 1.5 mm, then 1.5 mm further the revision's date at 1.0 mm on the same baseline (pcbgen places it
+from the name's ink).  On B.SilkS, read from below; about 10.3 mm tall.
+Each sits in the rear face's top-right corner as read from below (top view: x 0, y 0), slid inward only as far
+as needed to clear that board's holes, test pads and their names by 0.3 mm and its connectors by 4 mm (the
+user: away from the connectors).  The bay node takes the corner itself; the power hub and the DATA ×6 stay
+against the rear edge, 2.75 and 19.25 mm in; the DATA ×4 v2, with no free edge, is 17 mm
+in and 18.5 mm down.  No one offset is clear on all of them, at any corner; this corner has the smallest
+slides.
+
+The logo is not printable as drawn: the boards on its shelves have pins and chips 1–2 units wide.
+`derive_logo()` makes its silk variant from `bitbunk-logo.svg`: each shelf's board a plain silhouette, the
+gaps round the frame, the B, the boards and the i's dot opened to the wordmark's tightest letter gap, the
+slivers left by those cuts dropped.  At 25.5 mm its gaps are 0.25 mm (0.15 left after a 0.05 mm ink spread a
+side) and its lines 0.30 mm or more; `tools/tests/test_silk.py` holds both.  The outlines the boards take are
+`bitbunk-logo.silk.json`, written by `python3 electronics/tools/silk.py` (shapely, which the KiCad image
+lacks); the test checks they still match the SVG.
 
 ## Test pads
 

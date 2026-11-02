@@ -70,7 +70,7 @@ from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
 
 import rackcfg  # noqa: E402
-from silk import SILK_RULE, SILK_TEXT, lead_pin_names, port_mark, title_block  # noqa: E402
+from silk import LOGO_W, SILK_RULE, SILK_TEXT, lead_pin_names, port_mark, title_block  # noqa: E402
 
 RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["data_port_x4_v2"]
@@ -1997,9 +1997,10 @@ def board() -> Board:
             {"text": "LOGIC ONLY", "x": 55.0, "y": 21.75, "size": 0.8, "layer": "B.SilkS"},
         ]] + [
             # the title block, as on every board (silk.title_block(), its own strokes, not the rule above): in the
-            # rear face's top-left corner as read from below, slid 17.5 mm in and 22 mm down, the nearest spot
-            # clear of the test pads, their names, and by 4 mm the connectors (J1's housing, J2)
-            *title_block("DATA ×4 v2.0", W - 1 - 17.5, 1 + 22),
+            # rear face's top-right corner as read from below, slid 17 mm in and 18.5 mm down, the nearest spot
+            # clear of the test pads, their names, and by 4 mm the connectors (J2, the headers); this board has no
+            # free edge for it
+            *title_block("DATA ×4 v2.0", 1 + 17 + LOGO_W, 1 + 18.5),
             # each USB-C's port number (silk.port_mark(), as the DATA ×6's; its own stroke, not the rule above),
             # left of its body: the band over the receptacles holds the headers and the clusters, so this one
             # shows on the bench, not over the wall (the silkscreen plan, 2026-11-02)

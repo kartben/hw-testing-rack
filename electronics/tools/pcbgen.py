@@ -595,6 +595,7 @@ class PcbBuilder:
 
     # -------------------------------------------------------------- texts
     def texts(self):
+        prev = None
         for t in self.b.pcb.get("texts", []):
             if t.get("style") == "poly":
                 self.silk_polys(t)
@@ -611,10 +612,24 @@ class PcbBuilder:
             tx.SetTextAngleDegrees(t.get("rot", 0))
             if t.get("just") in ("left", "right"):
                 tx.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_LEFT if t["just"] == "left" else pcbnew.GR_TEXT_H_ALIGN_RIGHT)
+            if t.get("vjust") in ("top", "bottom"):
+                tx.SetVertJustify(pcbnew.GR_TEXT_V_ALIGN_TOP if t["vjust"] == "top" else pcbnew.GR_TEXT_V_ALIGN_BOTTOM)
             if t.get("style") == "disc":
                 self.knocked_out(tx, t["d"])
                 continue
+            if "after" in t:        # on the previous text's line, t["after"] mm past its ink as read
+                a, b = self.ink(prev), self.ink(tx)
+                dx = (a.GetLeft() - MM(t["after"]) - b.GetRight() if tx.IsMirrored()
+                      else a.GetRight() + MM(t["after"]) - b.GetLeft())
+                tx.SetPosition(tx.GetPosition() + pcbnew.VECTOR2I(dx, 0))
             self.board.Add(tx)
+            prev = tx
+
+    @staticmethod
+    def ink(tx):
+        ps = pcbnew.SHAPE_POLY_SET()
+        tx.TransformTextToPolySet(ps, 0, MM(0.005), pcbnew.ERROR_INSIDE)
+        return ps.BBox()
 
     def silk_polys(self, t: dict):
         """Filled silk outlines (silk.logo()): each an outline then its holes, in mm."""

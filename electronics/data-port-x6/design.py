@@ -34,7 +34,7 @@ from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
 
 import rackcfg  # noqa: E402
-from silk import SILK_RULE, lead_pin_names, port_mark, title_block  # noqa: E402
+from silk import LOGO_W, SILK_RULE, lead_pin_names, port_mark, title_block  # noqa: E402
 
 RACK = rackcfg.load()
 CFG = RACK.raw["pcb"]["data_port_x6"]
@@ -1047,10 +1047,10 @@ def board() -> Board:
             # each port's number on its USB-C's axis, 7.8 mm over the strip that holds the receptacles: what shows
             # over the port wall in use (the silkscreen plan, 2026-11-02), port 1 leftmost from the DUT side
             *(port_mark(n, x, 42.5) for n, x in enumerate(USBS, 1)),
-            # the title block, as on every board (silk.title_block()): in the rear face's top-left corner as read
-            # from below, slid 22 mm in and 19.5 mm down, the nearest spot clear of the test pads, their names
-            # and, by 4 mm, J1's housing (the user, 2026-11-02: away from the connectors)
-            *title_block("DATA ×6 v1.0", W - 1 - 22, 1 + 19.5),
+            # the title block, as on every board (silk.title_block()): in the rear face's top-right corner as read
+            # from below, against the rear edge and slid 19.25 mm in, the nearest spot clear of the test pads,
+            # their names and, by 4 mm, the connectors (the user, 2026-11-02: away from the connectors)
+            *title_block("DATA ×6 v1.0", 1 + 19.25 + LOGO_W, 1),
             *({"text": name, "x": x, "y": y + d / 2 + 0.75, "size": 0.8, "thickness": 0.15, "layer": "B.SilkS"}
               for net, name, d, x, y in TPS.values()),
             # the lead's connector, named on the rear face where it plugs in (it brings the 20 V), and each of

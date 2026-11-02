@@ -55,8 +55,10 @@ LOGO_SVG = Path(__file__).with_name("bitbunk-logo.svg")
 LOGO_SILK = LOGO_SVG.with_suffix(".silk.json")
 LOGO_G, LOGO_R = 5.54, 1.7      # SVG units
 LOGO_GAP, LOGO_INK = 0.25, 0.15     # mm: its least gap (0.15 left after a 0.05 mm spread a side) and line
-LOGO_W = 25.6                   # mm: the narrowest at which its gaps are LOGO_GAP (the same on every board)
+LOGO_W = 25.5                   # mm, the same on every board (the user, 2026-11-02): its gaps LOGO_GAP, to 0.1 µm
 TITLE_DATE = "2026-11"          # the boards' revision date (the NextPCB prototypes)
+TITLE_GAP = 0.6                 # mm from the logo to the line under it (the camera pod's 40 × 27 sets it)
+TITLE_BEARING = 0.4             # mm: KiCad's font starts a line's ink this far from its anchor
 
 
 def _svg_rings(svg: Path) -> list[list[tuple[float, float]]]:
@@ -127,15 +129,17 @@ def logo(x: float, y: float, w: float = LOGO_W, layer: str = "B.SilkS") -> dict:
 
 
 def title_block(name: str, x: float, y: float, date: str = TITLE_DATE, layer: str = "B.SilkS") -> list[dict]:
-    """Every board's title block, the same on all (the user, 2026-11-02): the logo LOGO_W wide, under it the
-    board's name and revision at 1.5 mm, then the revision's date (fixed per revision, never the build's) at
-    1.0 mm, left-aligned; (x, y) its top-left corner as read, on the rear face read from below."""
+    """Every board's title block, the same on all (the user, 2026-11-02): the logo LOGO_W wide, and TITLE_GAP
+    under it one line, left-aligned with it: the board's name and revision at 1.5 mm, then 1.5 mm further the
+    revision's date (fixed per revision, never the build's) at 1.0 mm on the same baseline.  (x, y) is its
+    top-left corner as read, on the rear face read from below.  The line is as long as the name: pcbgen places
+    the date from the name's ink ("after")."""
     mark = logo(x, y, layer=layer)
-    y1 = round(y + mark["h"] + 1.0 + 0.75, 3)          # the name's middle: 1 mm under the logo
-    return [mark,
-            {"text": name, "x": x, "y": y1, "size": 1.5, "thickness": 0.25, "layer": layer, "just": "left"},
-            {"text": date, "x": x, "y": round(y1 + 0.75 + 0.6 + 0.5, 3), "size": 1.0, "thickness": SILK_TEXT,
-             "layer": layer, "just": "left"}]
+    sx = -1 if layer == "B.SilkS" else 1
+    base = round(y + mark["h"] + TITLE_GAP + 1.82, 3)      # the baseline: 1.5 mm capitals' ink is 1.82 mm over it
+    line = {"x": round(x - sx * TITLE_BEARING, 3), "y": base, "layer": layer, "just": "left", "vjust": "bottom"}
+    return [mark, {"text": name, "size": 1.5, "thickness": 0.25, **line},
+            {"text": date, "size": 1.0, "thickness": SILK_TEXT, "after": 1.5, **line}]
 
 
 if __name__ == "__main__":

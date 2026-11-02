@@ -48,7 +48,7 @@ sys.path.insert(0, str(HERE.parents[1] / "tools"))
 
 from catalog import C, R, part  # noqa: E402
 from eda import Board  # noqa: E402
-from silk import title_block  # noqa: E402
+from silk import LOGO_W, title_block  # noqa: E402
 
 import rackcfg  # noqa: E402
 
@@ -444,9 +444,9 @@ def board() -> Board:
                "layer": "B.SilkS"} for _, _, d, xy, _, lab, off in TP_ROUND2),
         ]] + [
             # the title block, as on every board (silk.title_block(), its own strokes, not the rule above): in the
-            # rear face's top-left corner as read from below, against the edge and 21 mm down, clear of H2, the
-            # test pads and their names, and by 4 mm the connectors
-            *title_block("BAY NODE v0.5", W - 1, 1 + 21),
+            # rear face's top-right corner as read from below, against both edges, clear of the test pads and
+            # their names, and by 4 mm the connectors
+            *title_block("BAY NODE v0.5", 1 + LOGO_W, 1),
         ],
     }
 

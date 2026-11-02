@@ -50,12 +50,14 @@ class Marks(unittest.TestCase):
         xs = [x for p in mark["polys"] for r in p for x, _ in r]
         self.assertAlmostEqual(max(xs), 60.0, places=3)         # read from below: it runs towards −x
         self.assertAlmostEqual(min(xs), 60.0 - silk.LOGO_W, places=3)
-        self.assertTrue(name["y"] - 0.75 >= 2.0 + mark["h"] and date["y"] > name["y"])
+        self.assertGreaterEqual(name["y"] - 1.82, 2.0 + mark["h"] + silk.TITLE_GAP - 1e-3)     # capitals' ink
+        self.assertEqual((name["y"], date["after"], name["vjust"]), (date["y"], 1.5, "bottom"))   # one baseline
 
 
 class Boards(unittest.TestCase):
-    """Every titled board carries the same block: the logo LOGO_W wide on B.SilkS, its name and the date under it
-    at the logo's left edge as read from below; and no board keeps the old "hw-testing-rack" line."""
+    """Every titled board carries the same block: the logo LOGO_W wide on B.SilkS, its name and then the date on
+    one line under it, from the logo's left edge as read from below; and no board keeps the old "hw-testing-rack"
+    line."""
 
     def test_title_blocks(self):
         self.assertEqual(len(TITLED), 4)            # the four boards ordered from NextPCB
@@ -71,13 +73,15 @@ class Boards(unittest.TestCase):
                 self.assertAlmostEqual(x1 - x0, silk.LOGO_W, places=2)
                 self.assertAlmostEqual(y1 - y0, mark["h"], places=2)
                 texts = {t[1]: t for t in _all(root, "gr_text")}
-                for line in (title, silk.TITLE_DATE):
-                    t = texts.get(line)
-                    self.assertIsNotNone(t, line)
-                    at = _get(t, "at")
-                    self.assertEqual(_get(t, "layer")[1], "B.SilkS")
-                    self.assertAlmostEqual(float(at[1]), x1, places=2)
-                    self.assertGreater(float(at[2]), y1)
+                name, date = texts.get(title), texts.get(silk.TITLE_DATE)
+                self.assertIsNotNone(name, title)
+                self.assertIsNotNone(date, silk.TITLE_DATE)
+                (nx, ny), (dx, dy) = ((float(v) for v in _get(t, "at")[1:3]) for t in (name, date))
+                self.assertEqual({_get(t, "layer")[1] for t in (name, date)}, {"B.SilkS"})
+                self.assertAlmostEqual(nx, x1 + silk.TITLE_BEARING, places=2)   # read from below, it runs to −x
+                self.assertAlmostEqual(dy, ny, places=3)
+                self.assertGreater(ny - 1.82, y1)
+                self.assertLess(dx, nx - 10)
                 self.assertFalse([t for t in texts if "hw-testing-rack" in t])
 
 
@@ -108,7 +112,7 @@ class Logo(unittest.TestCase):
         counter closes (the background, eroded by that much, keeps its pieces and its holes)."""
         parts = list(self.silk.geoms)
         least = min(a.distance(b) for i, a in enumerate(parts) for b in parts[i + 1:])
-        self.assertGreaterEqual(least, silk.LOGO_GAP - 1e-6)
+        self.assertGreaterEqual(least, silk.LOGO_GAP - 1e-4)       # 25.5 mm: 0.24999
         from shapely.geometry import box
         bg = box(*self.silk.buffer(1).bounds).difference(self.silk)
         er = bg.buffer(-(silk.LOGO_GAP / 2 - 1e-3))
