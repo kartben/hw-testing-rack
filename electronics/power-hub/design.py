@@ -137,8 +137,9 @@ def board() -> Board:
     ]
 
     # ------------------------------------------------------------------ PCB
-    # In2 (power only): VRACK under the input, along the band at y ≈ 37.5 (8 mm wide: up to 5 A towards
-    # the four rows; 5 mm before pcba-review H12) and down the eFuse column;
+    # In2 (power only): VRACK under the input, along the band at y ≈ 19–29.6 (up to 5 A towards the four rows,
+    # 0.5 oz: 5 mm before pcba-review H12, then 8 mm, which R94's notch and U14's exposed-pad vias narrowed to
+    # 4 mm; 10.6 mm east of the eFuse column since 2026-11-02, ≥ 5.7 mm at those) and down the eFuse column;
     # +3V3 everywhere else, one piece wrapping around it.  Outlines don't overlap: the router takes
     # each as copper of its net.
     in2 = [
@@ -146,10 +147,10 @@ def board() -> Board:
         # equal priorities KiCad's tie-break is the zones' UUIDs, new at each build, and the split moved
         {"layer": "In2.Cu", "net": "VRACK", "priority": 2,
          # a notch over row D's FLT pull-up (R94): its +3V3 pin gets the +3V3 area under it
-         "poly": [(16.2, 21.6), (45.6, 21.6), (45.6, 0.4), (75.6, 0.4), (75.6, 29.6), (35.5, 29.6), (35.5, 26.2),
-                  (31.5, 26.2), (31.5, 29.6), (24.6, 29.6), (24.6, 84.0), (16.2, 84.0)]},
+         "poly": [(16.2, 21.6), (24.6, 21.6), (24.6, 19.0), (45.6, 19.0), (45.6, 0.4), (75.6, 0.4), (75.6, 29.6),
+                  (35.5, 29.6), (35.5, 26.2), (31.5, 26.2), (31.5, 29.6), (24.6, 29.6), (24.6, 84.0), (16.2, 84.0)]},
         {"layer": "In2.Cu", "net": "+3V3", "priority": 1,
-         "poly": [(0.4, 0.4), (45.2, 0.4), (45.2, 21.2), (15.8, 21.2), (15.8, 84.4),
+         "poly": [(0.4, 0.4), (45.2, 0.4), (45.2, 18.6), (24.2, 18.6), (24.2, 21.2), (15.8, 21.2), (15.8, 84.4),
                   (25.0, 84.4), (25.0, 30.0), (31.1, 30.0), (31.1, 25.8), (35.9, 25.8), (35.9, 30.0), (75.6, 30.0),
                   (75.6, H - 0.4), (0.4, H - 0.4)]},
     ]
@@ -297,8 +298,10 @@ def board() -> Board:
             # each row's output: F.Cu → B.Cu beside the connector → F.Cu at its pin 6
             *[(f"ROW_{ch}", x, ROW_Y[k] + dy, 0.8, 0.4) for k, ch in enumerate(ROWS) for dy in (-5.0, 5.0)
               for x in (13.2, 14.3, 15.4)],
-            # the input pour down to In2 (VRACK), beside the connector's left VBUS pads
+            # the input pour down to In2 (VRACK), beside the connector's left VBUS pads, and across it (up to 5 A:
+            # five 0.4 mm vias, clear of the CC lines and ADC_IMON_B under it on B.Cu)
             *[("VRACK", 57.0, y, 0.8, 0.4) for y in (8.2, 9.8)],
+            *[("VRACK", x, y, 0.8, 0.4) for x, y in ((58.6, 9.8), (64.2, 9.6), (67.5, 8.3))],
             # CC1 under the VBUS pour, on B.Cu
             ("PD_CC1", PD_X + 1.25, 8.15, 0.5, 0.3),
             ("GND", 60.5, H - 15.05, 0.5, 0.3),         # U5's GND pin, between the USB pair's wires
