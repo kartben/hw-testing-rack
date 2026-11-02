@@ -830,7 +830,8 @@ def power_sheet(b: Board):
     # the input's bulk against a hot plug's overshoot (the node's lead is ≈ 50 cm, the converter's ceramics alone
     # ring), the DATA ×6's: right under the converter's 10 µF, where its 7.7 mm clear the strip on the cradle's comb
     part(s, "C60", "cap33u50", {"1": "VIN", "2": "GND"}, "33u", pcb=P(*BULK, 0), sch=at(40, 30))
-    # EN 100k/10k, as the node's: the converter starts above 13.5 V and stops below 10.8 V; west of its 10 µF
+    # EN 100k/10k, as the node's: the converter starts above 13.5 V typ. (15.1 V at worst) and stops below 10.8 V;
+    # west of its 10 µF
     bx, by = BUCK
     R(s, "R50", "100k", "VIN", "BUCK_EN", size="0402", pcb=P(bx - 4.7, by + 4.7, 90), sch=at(29, 41.5))
     R(s, "R51", "10k", "BUCK_EN", "GND", size="0402", pcb=P(bx - 3.6, by + 4.7, 90), sch=at(29, 48.5))
@@ -879,7 +880,9 @@ def power_sheet(b: Board):
         "  The inductor then peaks at 3.63 A from 28 V (1.17 A ripple), 3.93 A at the worst corner (L −20 %, 0.99 MHz),",
         "  under the LMR51635's 4.2 A minimum peak limit (SLUSF64B §6.5: 4.2 / 5.1 / 6.0 A; valley 3.2 / 4.0 / 4.8 A);",
         "  from 13.5 V: peak 3.48 A, valley 2.60 A.  No frequency foldback (tON 170 ns ≥ 70, tOFF 556 ns ≥ 200).",
-        "FB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.",
+        "FB 100k/18k: 5.24 V, as the node's.",
+        "EN 100k/10k: on above 13.5 V typ., up to 14.8 V on the EN threshold's 1.103–1.349 V (SLUSF64B §6.5) and",
+        "  15.1 V with the 1 % resistors: the rack's 20 V clears it.  Off below 10.8 V typ.",
         "VIN on J1.8, the node's VRACK through its eFuse (TPS26600, off by default): no second protection here.",
         "  At the 3.04 A worst case (η ≈ 88 %): 0.91 A at 20 V, 1.21 A at 15 V, 1.34 A at 13.5 V, 0.65 A at 28 V;",
         "  the converter's full 3.5 A: 1.39 A at 15 V.  Under the node eFuse's 1.76 A; a PH contact carries 2 A.",
@@ -1265,7 +1268,8 @@ def board() -> Board:
         "  the matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled;",
         "  v1 stays the other bays' board.",
         "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×6's lead.",
-        "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 0.91 A at 20 V (1.21 A at 15 V) · +5V 5.24 V, ≤ 3.04 A (the",
+        "Rails: VIN 20 V (on above 13.5 V typ., 15.1 V at worst; ≤ 28 V), ≤ 0.91 A at 20 V (1.21 A at 15 V) ·",
+        "  +5V 5.24 V, ≤ 3.04 A (the",
         "  ports at their 0.644 A limit + 0.46 A; the LMR51635's 3.5 A) ·",
         "  PORTn_VBUS 5.1–5.24 V, 0.52–0.64 A limit · +3V3 3.3 V (AP2114H), ≤ 0.5 A · +5V_MX, −5V (sheet Matrix) ·",
         "  +3V3_CP, +1V1 (sheet Co-processor) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own regulators).",

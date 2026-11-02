@@ -371,7 +371,8 @@ def power_sheet(b: Board):
     # ring), right by J1.8, before either converter's 10 µF
     part(s, "C60", "cap33u50", {"1": "VIN", "2": "GND"}, "33u", pcb=P(*BULK, 0),
          sch=at(40, 30))
-    # EN 100k/10k, as the node's: both converters start above 13.5 V and stop below 10.8 V; by converter B
+    # EN 100k/10k, as the node's: both converters start above 13.5 V typ. (15.1 V at worst) and stop below 10.8 V;
+    # by converter B
     R(s, "R50", "100k", "VIN", "BUCK_EN", size="0402", pcb=P(76.4, 10.6, 90), sch=at(29, 41.5))
     R(s, "R51", "10k", "BUCK_EN", "GND", size="0402", pcb=P(77.5, 10.6, 90), sch=at(29, 48.5))
     s.wire("R50.2", "R51.1")
@@ -418,7 +419,9 @@ def power_sheet(b: Board):
         "+5V_A: ports 1–3; +5V_B: ports 4–6 and the 3.3 V LDO (≤ 0.46 A).  Never in parallel: the power plane's +5V",
         "  split left / right.  +5V_A 1.5 A at 0.5 A a port, 1.93 A at the TPS2553s' 0.644 A limit (45.3k, 1 %);",
         "  +5V_B 0.46 A more: 2.39 A at the limit, under the LMR51625's 2.5 A.",
-        "FB 100k/18k: 5.24 V, as the node's.  EN 100k/10k: on above 13.5 V, off below 10.8 V.",
+        "FB 100k/18k: 5.24 V, as the node's.",
+        "EN 100k/10k: on above 13.5 V typ., up to 14.8 V on the EN threshold's 1.103–1.349 V (SLUSF64B §6.5) and",
+        "  15.1 V with the 1 % resistors: the rack's 20 V clears it.  Off below 10.8 V typ.",
         "VIN on J1.8, the node's VRACK through its eFuse (TPS26600, ≈ 1.5 A, off by default): no second protection here.",
         "  ≈ 1.0 A at 20 V (1.3 A at the ports' limit), 1.5 A at 13.5 V, 0.75 A at 28 V; a PH contact carries 2 A.",
     ]
@@ -885,7 +888,8 @@ def board() -> Board:
         "  DATA ×4 v2 keeps the logic).  One face assembled.",
         "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×4 v2's lead.",
         "I²C: TCA9535 0x20, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C; the node's 0x40.",
-        "Rails: VIN 20 V (13.5–28 V; on above 13.5 V), ≤ 1.3 A at 20 V · +5V_A / +5V_B 5.24 V, ≤ 1.93 A / 2.39 A",
+        "Rails: VIN 20 V (on above 13.5 V typ., 15.1 V at worst; ≤ 28 V), ≤ 1.3 A at 20 V ·",
+        "  +5V_A / +5V_B 5.24 V, ≤ 1.93 A / 2.39 A",
         "  (ports 1–3 / 4–6 at the 0.644 A limit, +5V_B with the 3.3 V LDO's 0.46 A) ·",
         "  PORTn_VBUS 5.1–5.24 V, 0.52–0.64 A limit ·",
         "  +3V3 3.3 V (AP2114H), ≤ 0.5 A (the hub 0.42 A at most) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own",
