@@ -327,7 +327,7 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
 * **DATA ×4 co-processor (U11, an RP2350B with no flash, since 2026-11-03)** — it runs from SRAM what is
   loaded at each power-up: gusmanb's analyzer built from its pinned tag as a RAM image (its PICO_2 build
   already runs `copy_to_ram`; `no_flash` instead, the same 384 KB buffer).  **The node loads it**
-  (`src/coproc.c`, written, tested on native_sim): `bayctl coproc load B3 LogicAnalyzer.uf2` stores the image
+  (`src/coproc.c`, tested on native_sim and on the bench): `bayctl coproc load B3 LogicAnalyzer.uf2` stores the image
   in the node's `coproc` partition (admin), and whenever the device on the co-processor's hub port shows up in
   its bootloader (2e8a:000f) the node does what `picotool load -x` does: EXCLUSIVE_ACCESS, WRITE in 1 KB
   chunks read from flash into the host controller's own buffers, then REBOOT2 into the RAM image (the region
@@ -339,7 +339,13 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   an image that does not start.  **Open, for the datasheet check:** which SRAM the ROM keeps for itself
   while in BOOTSEL (RP2350 datasheet §5.6: the loader writes from the image's address on, as picotool does),
   and whether REBOOT2's RAM_IMAGE asks for an image hash with secure boot off (§5.4.8; the build has none,
-  and picotool's load runs it).  Not on the bench yet.  **Bench, 2026-11-03:** a Pico 2
+  and picotool's load runs it).  **On the bench (2026-11-03):** the bench XIAO, updated over Wi-Fi, with an
+  erased Pico 2 on port 3 of its hub standing in for U11 (a bench overlay sets `hub-port`).  gusmanb's
+  `no_flash` build (40,704 bytes) was stored in 0.5 s; the node loaded it in 60 ms when it restarted with the
+  Pico already in its bootloader, and in 59 ms after the Pico was unplugged and plugged back (a power cycle:
+  back in BOOTSEL by itself).  Each time the analyzer then enumerated (1209:3020) and was exported over USB/IP
+  as usual; no failure.  picotool over USB/IP took 1.4–1.7 s for the same load.  **Bench, 2026-11-03,
+  earlier:** a Pico 2
   (RP2350A) with its flash erased, behind the bench XIAO's hub, over USB/IP from a Linux host.  It came back
   in BOOTSEL (2e8a:000f) after every reset (6 reboots by picotool, and once while being wired); its USB
   serial number (the chip id) is the same without flash; `picotool load -x` of the RAM build took 1.4–1.7 s
