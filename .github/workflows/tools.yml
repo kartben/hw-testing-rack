@@ -24,3 +24,15 @@ jobs:
         run: |
           python tools/bayctl.py --lab config/lab.example.yaml hwmap -o rack-map.yaml --python python3
           cat rack-map.yaml
+
+  web:
+    name: Web modules (node --test)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      # The logic analyzer's protocol, capture model and decoders, against a fake analyzer
+      - name: Logic analyzer (firmware/common/web/analyzer)
+        run: node --test "firmware/common/web/analyzer/test/*.test.mjs"
