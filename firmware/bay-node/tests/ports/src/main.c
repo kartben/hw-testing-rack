@@ -220,9 +220,11 @@ ZTEST(ports, test_4_dut5v_cycle)
 ZTEST(ports, test_5_reset_boot)
 {
 	uint8_t log[16];
+	uint8_t marks[16];
 	int n;
 
 	(void)emul_io_cfg_log(0, log, ARRAY_SIZE(log));
+	(void)emul_mark_log(marks, ARRAY_SIZE(marks));
 
 	/* RESET: an output (low) for the pulse, then an input again */
 	zassert_ok(ports_reset_pulse(1, K_MSEC(10)));
@@ -231,6 +233,11 @@ ZTEST(ports, test_5_reset_boot)
 	zassert_equal(log[0] & BIT(0), 0, "RESET asserted");
 	zassert_equal(log[1] & BIT(0), BIT(0), "RESET released");
 	zassert_equal(emul_io_reg(0, 1) & BIT(0), 0, "its output register bit stays 0");
+	/* MARK high from the RESET to its release, low again after */
+	zassert_equal(emul_mark_log(marks, ARRAY_SIZE(marks)), 2);
+	zassert_equal(marks[0], 0, "raised once RESET is asserted");
+	zassert_equal(marks[1], 1, "high until RESET is released");
+	zassert_equal(emul_io_reg(2, 1) & BIT(7), 0, "then low");
 
 	/* BOOT held across a RESET pulse (port 2: BOOT 6, RESET 7) */
 	zassert_ok(ports_boot(2, false, NULL));
@@ -242,12 +249,18 @@ ZTEST(ports, test_5_reset_boot)
 	zassert_equal(log[3] & (BIT(6) | BIT(7)), BIT(6) | BIT(7), "BOOT released");
 
 	/* BOOT held across a power cycle of the port: off holds both, on releases RESET only */
+	(void)emul_mark_log(marks, ARRAY_SIZE(marks));
 	zassert_ok(ports_boot(2, true, NULL));
 	n = emul_io_cfg_log(0, log, ARRAY_SIZE(log));
 	zassert_equal(n, 3);
 	zassert_equal(log[0] & (BIT(6) | BIT(7)), 0, "off: both held");
 	zassert_equal(log[1] & (BIT(6) | BIT(7)), BIT(7), "on: RESET released, BOOT held");
 	zassert_equal(log[2] & (BIT(6) | BIT(7)), BIT(6) | BIT(7), "then BOOT released");
+	/* MARK high while the port is off, down once it is on again */
+	zassert_equal(emul_mark_log(marks, ARRAY_SIZE(marks)), 3);
+	zassert_equal(marks[0], 0);
+	zassert_equal(marks[1], 1);
+	zassert_equal(marks[2], 0);
 	zassert_equal(emul_io_reg(0, 1) & EN_B, EN_B, "port 2 back on");
 
 	/* Switched on: BOOT released first, then RESET */

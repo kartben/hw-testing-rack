@@ -198,7 +198,11 @@ one-port node answers `/api/ports` with its one DUT as port 1.
     that charge being well under 3.5 V.
   - v2: the matrix expander's MARK (TCA9534A P7) an output, low, at each
     set-up; the rest of that expander belongs to the co-processor's rules
-    below.
+    below.  MARK goes high while the node holds a port's RESET (a reset
+    pulse, a boot) or has a port off for a power cycle, until the last of
+    them ends: the analyzer's CH13 (the co-processor's GPIO14) falls when a
+    board starts again, and the bay page's "Capture and reset" triggers on
+    that edge.
 - **DUT_5V off.**  The board's I²C and INT reach the node through three
   2N7002s, gate on the board's +3V3: with DUT_5V off they open, the node's
   pull-ups cannot feed the dead board through its chips' clamps, and the

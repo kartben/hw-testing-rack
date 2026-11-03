@@ -967,6 +967,33 @@ int ports_power(int slot, bool on, int32_t *others)
 	return ret;
 }
 
+#if DT_NODE_EXISTS(DT_NODELABEL(ports_mx))
+/*
+ * MARK (the matrix expander's P7, the co-processor's GPIO14: the analyzer's
+ * CH13) is high while the node holds a port's RESET or has it off for a power
+ * cycle, until the last of them ends: its falling edge is a board starting
+ * again, what the bay page's "Capture and reset" triggers on.  Only P7 is an
+ * output: the other bits of the output register do not matter.
+ */
+static int marks;
+
+static void mark(bool up)
+{
+	k_mutex_lock(&lock, K_FOREVER);
+	marks += up ? 1 : -1;
+	if (chips_up && marks == (up ? 1 : 0)) {
+		(void)i2c_reg_write_byte(bus, DT_REG_ADDR(DT_NODELABEL(ports_mx)), IO_OUTPUT,
+					 up ? 0xFF : (uint8_t)~BIT(MX_MARK));
+	}
+	k_mutex_unlock(&lock);
+}
+#else
+static void mark(bool up)
+{
+	ARG_UNUSED(up);
+}
+#endif
+
 /* Off for off_time, then until its VBUS reads under CONFIG_BAY_PORTS_VBUS_OFF_MV (or the timeout) */
 static int power_cycle(int slot, k_timeout_t off_time, int32_t *others, bool keep_boot)
 {
@@ -978,6 +1005,7 @@ static int power_cycle(int slot, k_timeout_t off_time, int32_t *others, bool kee
 	if (ret != 0) {
 		return ret;
 	}
+	mark(true);
 	k_sleep(off_time);
 
 	until = k_uptime_get() + CONFIG_BAY_PORTS_DISCHARGE_MS;
@@ -995,7 +1023,10 @@ static int power_cycle(int slot, k_timeout_t off_time, int32_t *others, bool kee
 			CONFIG_BAY_PORTS_DISCHARGE_MS);
 	}
 
-	return power_on(slot, others, keep_boot);
+	ret = power_on(slot, others, keep_boot);
+	mark(false);
+
+	return ret;
 }
 
 int ports_power_cycle(int slot, k_timeout_t off_time, int32_t *others)
@@ -1027,9 +1058,12 @@ int ports_reset_pulse(int slot, k_timeout_t width)
 	if (ret != 0) {
 		return ret;
 	}
+	mark(true);
 	k_sleep(width);
+	ret = line_set(slot, true, false);
+	mark(false);
 
-	return line_set(slot, true, false);
+	return ret;
 }
 
 int ports_boot(int slot, bool power_cycle_it, int32_t *others)

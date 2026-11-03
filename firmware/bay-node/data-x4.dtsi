@@ -181,7 +181,8 @@
 	 * DATA x4 v2: the matrix expander (TCA9534A, not fitted on the base v2),
 	 * register-compatible too: P0 DAT, P1 CK, P2/P3 STB, P4 RST, P5 RUN,
 	 * P6 BOOTSEL, P7 MARK.  P0-P4 drive the crosspoints (crosspoint_u7/u8
-	 * above), P5-P6 the co-processor; src/ports.c drives MARK low at set-up
+	 * above), P5-P6 the co-processor; src/ports.c drives MARK: low at
+	 * set-up, high around a port's resets and power cycles
 	 * (docs/multi-dut-node.md).
 	 */
 	ports_mx: gpio@38 {

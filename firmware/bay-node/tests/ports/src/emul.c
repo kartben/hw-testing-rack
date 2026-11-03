@@ -68,6 +68,9 @@ struct io_data {
 };
 
 static struct io_data *ios[3]; /* 0x20, 0x21, 0x38 */
+/* The v2's MARK (0x38's P7) at each CONFIG write of 0x20 and 0x21 */
+static uint8_t mark_log[64];
+static int nmark;
 
 static int io_index(uint8_t addr)
 {
@@ -110,6 +113,9 @@ static void io_write(struct io_data *d, uint8_t reg, uint8_t val)
 		d->cfg = val;
 		if (d->ncfg < (int)ARRAY_SIZE(d->cfg_log)) {
 			d->cfg_log[d->ncfg++] = val;
+		}
+		if (d != ios[2] && ios[2] != NULL && nmark < (int)ARRAY_SIZE(mark_log)) {
+			mark_log[nmark++] = !(ios[2]->cfg & BIT(7)) && (ios[2]->out & BIT(7));
 		}
 		break;
 	default:
@@ -430,6 +436,15 @@ int emul_io_cfg_log(int io, uint8_t *out, int max)
 
 	memcpy(out, ios[io]->cfg_log, n);
 	ios[io]->ncfg = 0;
+	return n;
+}
+
+int emul_mark_log(uint8_t *out, int max)
+{
+	int n = MIN(nmark, max);
+
+	memcpy(out, mark_log, n);
+	nmark = 0;
 	return n;
 }
 
