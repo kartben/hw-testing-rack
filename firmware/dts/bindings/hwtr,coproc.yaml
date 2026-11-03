@@ -13,6 +13,7 @@ description: |
     coproc: coproc {
         compatible = "hwtr,coproc";
         hub-port = <5>;
+        mark-gpios = <&ports_mx 7 GPIO_ACTIVE_HIGH>;
     };
 
 compatible: "hwtr,coproc"
@@ -25,3 +26,10 @@ properties:
       The downstream port of the hub on the node's root port the
       co-processor is wired to (DATA x4: 5).  0: the device on the root
       port itself, with no hub between.
+
+  mark-gpios:
+    type: phandle-array
+    description: |
+      The node's MARK into the co-processor (DATA x4: the matrix expander's
+      P7, U11's GPIO14, the analyzer's CH13): high while the node holds a
+      port's RESET or has it off for a power cycle.

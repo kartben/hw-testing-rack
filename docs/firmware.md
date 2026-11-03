@@ -324,13 +324,14 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
 
 ## Open items
 
-* **The matrix expander (U10, TCA9534A at 0x38) before the Wires series drives it** — `src/ports.c` sets
-  it up with raw I²C writes (MARK, P7, the only output) and changes MARK alone by a read-modify-write at each
-  reset or power cycle of a port.  Once the CH446Q drivers drive P0–P4 (DAT, CK, STB, RST) and `coproc
-  reload` P5–P6 (RUN, BOOTSEL) through the `ti,tca9538` driver, MARK has to go through that same driver
-  (`gpio_pin_set` on `ports_mx` 7), or the whole chip through one shadow byte: the driver writes its cached
-  output register back with each pin it sets, and would put MARK back where it last saw it.  The first commit
-  of the Wires series, along with the set-up again after each DUT_5V on (the chip forgets its registers).
+* **The matrix expander (U10, TCA9534A at 0x38), through its driver since 2026-11-03** — the CH446Q
+  drivers drive P0–P4 (DAT, CK, STB, RST) through the `ti,tca9538` driver, and `coproc reload` will drive
+  P5–P6 (RUN, BOOTSEL) the same way, so MARK (P7, the coproc node's `mark-gpios`) goes through it too: the
+  driver writes its cached output register with each pin it sets, a raw write would be undone.  `src/ports.c`
+  starts the driver the first time the chip answers (it is `zephyr,deferred-init`, and absent on a base
+  board); after each DUT_5V on, configuring MARK writes the chip's output and direction registers back from
+  the driver's copy, the crosspoints' lines with them.  The ports ztest checks both on the emulated board.
+  **Not tried on hardware** (no DATA ×4 yet).
 
 * **DATA ×4 co-processor (U11, an RP2350B with no flash, since 2026-11-03)** — it runs from SRAM what is
   loaded at each power-up: gusmanb's analyzer built from its pinned tag as a RAM image (its PICO_2 build

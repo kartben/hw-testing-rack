@@ -10,6 +10,7 @@
  */
 
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/gpio.h>
 #include <zephyr/ztest.h>
 
 #include "bay.h"
@@ -118,6 +119,17 @@ static void before(void *f)
 
 /* --- Tests ------------------------------------------------------------------ */
 
+/* P0-P4 of the matrix expander (DAT, CK, both STB, RST) outputs at these levels, through its driver */
+static void crosspoint_lines(uint8_t levels)
+{
+	const struct device *mx = DEVICE_DT_GET(DT_NODELABEL(ports_mx));
+
+	zassert_true(device_is_ready(mx), "the expander's driver started with the board");
+	for (gpio_pin_t pin = 0; pin < 5; pin++) {
+		zassert_ok(gpio_pin_configure(mx, pin, (levels & BIT(pin)) ? GPIO_OUTPUT_HIGH : GPIO_OUTPUT_LOW));
+	}
+}
+
 ZTEST(ports, test_1_start)
 {
 	zassert_equal(ports_count(), 4);
@@ -191,6 +203,9 @@ ZTEST(ports, test_4_dut5v_cycle)
 {
 	int before_off;
 
+	/* The crosspoints' lines set through the expander's driver before DUT_5V goes off */
+	crosspoint_lines(0x0a);
+
 	/* Every EN low while the chips still answer */
 	ports_dut_power(false);
 	zassert_equal(emul_io_reg(0, 1) & (EN_A | EN_B), 0);
@@ -212,6 +227,9 @@ ZTEST(ports, test_4_dut5v_cycle)
 	zassert_equal(emul_ina_config(0x43), 0x4527, "INA226 set up again");
 	zassert_equal(emul_io_reg(1, 3), HELD, "ports 3 and 4 off, RESET and BOOT held");
 	zassert_equal(emul_io_reg(1, 1), 0);
+	/* The matrix expander written back from its driver's copy: P0-P4 as they were, MARK low */
+	zassert_equal(emul_io_reg(2, 3), 0x60);
+	zassert_equal(emul_io_reg(2, 1) & 0x9f, 0x0a);
 	zassert_equal(ports_on(), 1, "%d ports on 50 ms after DUT_5V on", ports_on());
 	k_sleep(K_MSEC(1200));
 	zassert_equal(ports_on(), 4);
@@ -220,13 +238,16 @@ ZTEST(ports, test_4_dut5v_cycle)
 ZTEST(ports, test_5_reset_boot)
 {
 	uint8_t log[16];
-	uint8_t marks[16];
+	uint8_t marks[16]; /* the matrix expander's outputs, MARK bit 7 */
+	uint8_t mx;
 	int n;
 
 	(void)emul_io_cfg_log(0, log, ARRAY_SIZE(log));
-	(void)emul_mark_log(marks, ARRAY_SIZE(marks));
-	/* The matrix expander's other outputs as the crosspoints would leave them */
-	emul_io_set(2, 1, 0x35);
+	(void)emul_mx_log(marks, ARRAY_SIZE(marks));
+	/* The crosspoints' lines through the expander's driver, as their driver leaves them */
+	crosspoint_lines(0x15);
+	mx = emul_io_reg(2, 1);
+	zassert_equal(mx & 0x9f, 0x15);
 
 	/* RESET: an output (low) for the pulse, then an input again */
 	zassert_ok(ports_reset_pulse(1, K_MSEC(10)));
@@ -235,11 +256,12 @@ ZTEST(ports, test_5_reset_boot)
 	zassert_equal(log[0] & BIT(0), 0, "RESET asserted");
 	zassert_equal(log[1] & BIT(0), BIT(0), "RESET released");
 	zassert_equal(emul_io_reg(0, 1) & BIT(0), 0, "its output register bit stays 0");
-	/* MARK high from the RESET to its release, low again after */
-	zassert_equal(emul_mark_log(marks, ARRAY_SIZE(marks)), 2);
-	zassert_equal(marks[0], 0, "raised once RESET is asserted");
-	zassert_equal(marks[1], 1, "high until RESET is released");
-	zassert_equal(emul_io_reg(2, 1), 0x35, "then low, P0-P6 as they were");
+	/* MARK high from the RESET to its release, low again after; P0-P4 never move */
+	zassert_equal(emul_mx_log(marks, ARRAY_SIZE(marks)), 2);
+	zassert_equal(marks[0], mx, "raised once RESET is asserted");
+	zassert_equal(marks[1], mx | BIT(7), "high until RESET is released");
+	zassert_equal(emul_io_reg(2, 1), mx, "then low, P0-P6 as they were");
+	zassert_equal(emul_io_reg(2, 3), 0x60, "P0-P4 and MARK outputs");
 
 	/* BOOT held across a RESET pulse (port 2: BOOT 6, RESET 7) */
 	zassert_ok(ports_boot(2, false, NULL));
@@ -251,7 +273,7 @@ ZTEST(ports, test_5_reset_boot)
 	zassert_equal(log[3] & (BIT(6) | BIT(7)), BIT(6) | BIT(7), "BOOT released");
 
 	/* BOOT held across a power cycle of the port: off holds both, on releases RESET only */
-	(void)emul_mark_log(marks, ARRAY_SIZE(marks));
+	(void)emul_mx_log(marks, ARRAY_SIZE(marks));
 	zassert_ok(ports_boot(2, true, NULL));
 	n = emul_io_cfg_log(0, log, ARRAY_SIZE(log));
 	zassert_equal(n, 3);
@@ -259,10 +281,10 @@ ZTEST(ports, test_5_reset_boot)
 	zassert_equal(log[1] & (BIT(6) | BIT(7)), BIT(7), "on: RESET released, BOOT held");
 	zassert_equal(log[2] & (BIT(6) | BIT(7)), BIT(6) | BIT(7), "then BOOT released");
 	/* MARK high while the port is off, down once it is on again */
-	zassert_equal(emul_mark_log(marks, ARRAY_SIZE(marks)), 3);
-	zassert_equal(marks[0], 0);
-	zassert_equal(marks[1], 1);
-	zassert_equal(marks[2], 0);
+	zassert_equal(emul_mx_log(marks, ARRAY_SIZE(marks)), 3);
+	zassert_equal(marks[0], mx);
+	zassert_equal(marks[1], mx | BIT(7));
+	zassert_equal(marks[2], mx);
 	zassert_equal(emul_io_reg(0, 1) & EN_B, EN_B, "port 2 back on");
 
 	/* Switched on: BOOT released first, then RESET */

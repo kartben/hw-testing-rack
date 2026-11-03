@@ -78,6 +78,7 @@
 	coproc: coproc {
 		compatible = "hwtr,coproc";
 		hub-port = <5>;
+		mark-gpios = <&ports_mx 7 GPIO_ACTIVE_HIGH>;
 	};
 
 	/*
@@ -132,7 +133,8 @@
 	/*
 	 * The DATA x4's chips, through the DATA lead and the board's isolation
 	 * FETs, powered from DUT_5V: src/ports.c drives them, never the drivers
-	 * (zephyr,deferred-init, and nothing initializes them).
+	 * (zephyr,deferred-init, and nothing initializes them), except the
+	 * matrix expander's (ports_mx, below).
 	 */
 	ports_io0: gpio@20 {
 		compatible = "ti,tca9538";
@@ -181,9 +183,11 @@
 	 * DATA x4 v2: the matrix expander (TCA9534A, not fitted on the base v2),
 	 * register-compatible too: P0 DAT, P1 CK, P2/P3 STB, P4 RST, P5 RUN,
 	 * P6 BOOTSEL, P7 MARK.  P0-P4 drive the crosspoints (crosspoint_u7/u8
-	 * above), P5-P6 the co-processor; src/ports.c drives MARK: low at
-	 * set-up, high around a port's resets and power cycles
-	 * (docs/multi-dut-node.md).
+	 * above), P5-P6 the co-processor, P7 its MARK (the coproc node's
+	 * mark-gpios, src/ports.c: high around a port's resets and power
+	 * cycles).  Through its driver, unlike the board's other chips:
+	 * src/ports.c starts it the first time it answers, and writes it back
+	 * after each DUT_5V on (docs/multi-dut-node.md).
 	 */
 	ports_mx: gpio@38 {
 		compatible = "ti,tca9538";

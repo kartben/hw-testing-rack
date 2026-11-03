@@ -196,9 +196,10 @@ one-port node answers `/api/ports` with its one DUT as port 1.
     against the INA226's ≈ 830 kΩ bus input, once its LED, before the
     shunt, stops conducting): its cycle waits the 2 s and it goes back on,
     that charge being well under 3.5 V.
-  - v2: the matrix expander's MARK (TCA9534A P7) an output, low, at each
-    set-up; the rest of that expander belongs to the co-processor's rules
-    below.  MARK goes high while the node holds a port's RESET (a reset
+  - v2: the matrix expander (TCA9534A) through its driver, shared with the
+    crosspoints' (rules below): started the first time it answers, its
+    registers written back from the driver's copy at each set-up, MARK
+    (P7) an output, low.  MARK goes high while the node holds a port's RESET (a reset
     pulse, a boot) or has a port off for a power cycle, until the last of
     them ends: the analyzer's CH13 (the co-processor's GPIO14) falls when a
     board starts again, and the bay page's "Capture and reset" triggers on

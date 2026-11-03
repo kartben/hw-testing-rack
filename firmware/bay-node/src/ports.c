@@ -8,7 +8,8 @@
  * through the GPIO and sensor drivers (whose cached state would not match a
  * chip that has just been powered up).  The devicetree still describes them
  * (dut_port1-4 on ports_io0/1, port1-4_sense): it gives the addresses and
- * the pins.
+ * the pins.  The one exception is the matrix expander (ports_mx): its driver
+ * drives it, because the crosspoints' driver shares it (MARK, below).
  *
  *  - The board is probed after each DUT_5V on: no answer at 0x20, no board,
  *    a one-port node (today's DUT, dut.c).  Node v1.0 (DATA_VIN through an
@@ -91,8 +92,20 @@ LOG_MODULE_REGISTER(ports, CONFIG_BAY_LOG_LEVEL);
 #define OVER_POLLS   (EFUSE ? 2 : 1) /* polls over the budget before a port is shed */
 #define CONV_PCT     88   /* v1.0: the DATA board's converters, DATA_VIN to its 5 V */
 
-/* DATA x4 v2: the matrix expander (TCA9534A, not fitted on the base v2), its P7 MARK */
-#define MX_MARK 7
+/*
+ * DATA x4 v2: U11's MARK, the matrix expander's P7 (TCA9534A, not fitted on
+ * the base v2), as the coproc node's mark-gpios.  It is high while the node
+ * holds a port's RESET or has it off for a power cycle, until the last of
+ * them ends: its falling edge is a board starting again, what the bay page's
+ * "Capture and reset" triggers on (the analyzer's CH13).  Through the
+ * expander's driver, shared with the crosspoints' (DAT, CK, STB, RST): MARK
+ * changes only its pin, and the crosspoints' writes keep MARK.
+ */
+#define HAS_MARK DT_NODE_HAS_PROP(DT_NODELABEL(coproc), mark_gpios)
+#if HAS_MARK
+static const struct gpio_dt_spec mark_line = GPIO_DT_SPEC_GET(DT_NODELABEL(coproc), mark_gpios);
+static int marks; /* actions holding MARK high (lock held) */
+#endif
 
 /*
  * The node's own INA226 (dut_port's power-monitor) on DUT_5V, or DATA_VIN on
@@ -449,6 +462,29 @@ static int port_off(int i)
 	return ret;
 }
 
+#if HAS_MARK
+/*
+ * The expander's driver starts the first time the chip answers.  After
+ * DUT_5V was off the chip starts from its defaults again: configuring MARK
+ * writes its output and direction registers back from the driver's copy,
+ * the crosspoints' pins with them (lock held).
+ */
+static void mx_setup(void)
+{
+	uint8_t in;
+
+	if (i2c_reg_read_byte(bus, DT_REG_ADDR(DT_GPIO_CTLR(DT_NODELABEL(coproc), mark_gpios)),
+			      IO_INPUT, &in) != 0) {
+		return; /* no matrix: a base board */
+	}
+	if (!device_is_ready(mark_line.port) && device_init(mark_line.port) != 0) {
+		LOG_ERR("DATA x4: the matrix expander's driver did not start");
+		return;
+	}
+	(void)gpio_pin_configure_dt(&mark_line, marks > 0 ? GPIO_OUTPUT_ACTIVE : GPIO_OUTPUT_INACTIVE);
+}
+#endif
+
 /* Probe and set up the board, every port off (lock held) */
 static int setup_chips(void)
 {
@@ -489,13 +525,8 @@ static int setup_chips(void)
 		LOG_ERR("DATA x4 set-up failed (%d)", ret);
 		return ret;
 	}
-#if DT_NODE_EXISTS(DT_NODELABEL(ports_mx))
-	/* MARK an output, low (its register first); the rest of the expander is the co-processor's */
-	if (i2c_reg_write_byte(bus, DT_REG_ADDR(DT_NODELABEL(ports_mx)), IO_OUTPUT,
-			       (uint8_t)~BIT(MX_MARK)) == 0) {
-		(void)i2c_reg_write_byte(bus, DT_REG_ADDR(DT_NODELABEL(ports_mx)), IO_CONFIG,
-					 (uint8_t)~BIT(MX_MARK));
-	}
+#if HAS_MARK
+	mx_setup();
 #endif
 	meter_setup();
 
@@ -967,23 +998,13 @@ int ports_power(int slot, bool on, int32_t *others)
 	return ret;
 }
 
-#if DT_NODE_EXISTS(DT_NODELABEL(ports_mx))
-/*
- * MARK (the matrix expander's P7, the co-processor's GPIO14: the analyzer's
- * CH13) is high while the node holds a port's RESET or has it off for a power
- * cycle, until the last of them ends: its falling edge is a board starting
- * again, what the bay page's "Capture and reset" triggers on.  Only P7
- * changes: P0-P6 are the crosspoints' and the co-processor's.
- */
-static int marks;
-
+#if HAS_MARK
 static void mark(bool up)
 {
 	k_mutex_lock(&lock, K_FOREVER);
 	marks += up ? 1 : -1;
-	if (chips_up && marks == (up ? 1 : 0)) {
-		(void)i2c_reg_update_byte(bus, DT_REG_ADDR(DT_NODELABEL(ports_mx)), IO_OUTPUT,
-					  BIT(MX_MARK), up ? BIT(MX_MARK) : 0);
+	if (chips_up && marks == (up ? 1 : 0) && device_is_ready(mark_line.port)) {
+		(void)gpio_pin_set_dt(&mark_line, up);
 	}
 	k_mutex_unlock(&lock);
 }
