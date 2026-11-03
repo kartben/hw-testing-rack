@@ -29,6 +29,11 @@ jobs:
       - name: Viewer assets (meshes, scene, BOM)
         # PCB models come from the committed site/assets/pcb/*.glb (KiCad export, see tools/pcb_glb.py)
         run: python tools/build.py web
+      # The logic analyzer page, as the bay node will serve it (firmware/common/web/analyzer)
+      - name: Logic analyzer page
+        run: |
+          mkdir -p site/analyzer
+          cp firmware/common/web/analyzer/*.html firmware/common/web/analyzer/*.css firmware/common/web/analyzer/*.mjs site/analyzer/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Logic analyzer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M1 11h3V5h3v6h3V5h3v6h2' fill='none' stroke='%233b82f6' stroke-width='1.6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="analyzer.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <h1>Logic analyzer</h1>
+      <div class="sub">gusmanb's LogicAnalyzer firmware on a Pico 2 or the DATA ×4's co-processor, from this browser</div>
+    </div>
+    <span class="pill" id="pill"><i></i><span id="pill-text">Not connected</span></span>
+  </header>
+
+  <div class="notice" id="no-serial" hidden><span><b>This browser has no Web Serial.</b> Use Chrome or Edge on a
+    computer to reach an analyzer on its USB. The demo capture works anywhere.</span></div>
+
+  <main>
+    <section class="card">
+      <h2>Analyzer <span id="where">–</span></h2>
+      <div class="row">
+        <button class="primary" id="connect">Connect…</button>
+        <button id="disconnect" hidden>Disconnect</button>
+        <button id="demo">Load the demo capture</button>
+        <span class="grow"></span>
+      </div>
+      <dl class="info" id="info" hidden>
+        <div><dt>Board</dt><dd id="i-board">–</dd></div>
+        <div><dt>Firmware</dt><dd id="i-version">–</dd></div>
+        <div><dt>Fastest</dt><dd id="i-rate">–</dd></div>
+        <div><dt>Buffer</dt><dd id="i-buffer">–</dd></div>
+        <div><dt>Channels</dt><dd id="i-channels">–</dd></div>
+      </dl>
+      <p class="hint" id="connect-hint">Plug in a Pico 2 running gusmanb's analyzer (it shows up as 1209:3020), then
+        Connect and pick it.</p>
+    </section>
+
+    <section class="card" id="capture-card">
+      <h2>Capture <span id="depth-meta"></span></h2>
+      <div class="settings">
+        <label>Sample rate <select id="rate"></select></label>
+        <label>Samples <select id="length"></select></label>
+        <label>Before trigger <select id="pre">
+          <option value="0.1">10 %</option><option value="0.2" selected>20 %</option><option value="0.5">50 %</option>
+        </select></label>
+        <label>Trigger on <select id="trig-ch"></select></label>
+        <label>Edge <select id="trig-edge">
+          <option value="fall">falling ↓</option><option value="rise">rising ↑</option>
+        </select></label>
+        <span class="depth" id="depth">–</span>
+      </div>
+      <div class="chans" id="chans"></div>
+      <div class="row">
+        <button id="more-ch" class="small">Channels 9–24</button>
+      </div>
+      <div class="row">
+        <button class="primary" id="capture" disabled>Capture</button>
+        <button id="cancel" hidden>Cancel</button>
+        <span class="state" id="state"><i></i><span>Connect an analyzer, or load the demo</span></span>
+        <progress id="progress" max="1" value="0" hidden></progress>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Signals <span id="cap-meta"></span></h2>
+      <div class="viewer">
+        <div class="vtools">
+          <button data-zoom="in" aria-label="Zoom in">＋</button>
+          <button data-zoom="out" aria-label="Zoom out">－</button>
+          <button data-zoom="fit">Fit</button>
+          <button id="clear-cursors">Clear cursors</button>
+          <output id="readout"></output>
+        </div>
+        <canvas class="wave" id="wave" aria-label="Captured signals, one lane per channel"></canvas>
+      </div>
+      <p class="hint">Drag to pan, Ctrl + wheel or pinch to zoom; click for cursor 1, again for cursor 2 and the time
+        between them.</p>
+    </section>
+  </main>
+  <footer>
+    <span>Part of <a href="https://github.com/kartben/hw-testing-rack">hw-testing-rack</a> (Apache-2.0).</span>
+    <span>The analyzer itself runs <a href="https://github.com/gusmanb/logicanalyzer">gusmanb's LogicAnalyzer</a>
+      firmware (GPL-3.0); this page only speaks its protocol.</span>
+  </footer>
+</div>
+<script type="module" src="app.mjs"></script>
+</body>
+</html>

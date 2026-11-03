@@ -338,7 +338,11 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   and its boards under test.  **Later, once DATA ×4 boards run tests all day:** restart the co-processor alone
   (`bay coproc reload`, `bayctl coproc reload`), through its RUN line on the TCA9534A (P5: works even if its
   firmware hangs), and the SDK's reset-to-BOOTSEL request (what `picotool reboot -u -f` sends) on a stand-in
-  with no DATA board.  The
+  with no DATA board.  **Our own analyzer page** (`firmware/common/web/analyzer`, on Pages at
+  [kartben.github.io/hw-testing-rack/analyzer](https://kartben.github.io/hw-testing-rack/analyzer/)): native ES
+  modules that speak gusmanb's protocol (written from its wire format; checked on the bench Pico 2: the
+  sample width follows the highest channel asked for, bit i is the i-th channel asked for), Web Serial for an
+  analyzer on the PC's USB today, the node's relay to come.  The
   native_sim test (`firmware/bay-node/tests/coproc`) loads into an RP2350 bootloader emulated on the virtual
   USB bus, and checks a stalled WRITE, a bootloader that stops answering (the node gives up after 10 s) and
   an image that does not start.  **Open, for the datasheet check:** which SRAM the ROM keeps for itself

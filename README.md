@@ -7,7 +7,7 @@ ESP32-S3 in each bay.**
 
 ![The rack on a desk, a laptop wired to one bay's front port](docs/img/photo-desk.jpg)
 
-**[▶ Interactive 3D model](https://kartben.github.io/hw-testing-rack/)** · [BOM](bom/README.md) ·
+**[▶ Interactive 3D model](https://kartben.github.io/hw-testing-rack/)** · [Logic analyzer](https://kartben.github.io/hw-testing-rack/analyzer/) · [BOM](bom/README.md) ·
 [Architecture](docs/architecture.md) · [Mechanics](docs/mechanical.md) · [Cabling](docs/cabling.md) ·
 [Power](docs/power.md) · [Electronics](docs/electronics.md) · [Assembly](docs/assembly.md) ·
 [Firmware](docs/firmware.md) · [Standalone bays](docs/standalone.md) · [CI](docs/ci.md)
