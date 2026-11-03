@@ -10,6 +10,7 @@
  *                      whose pins change must not be leased to another
  *                      address.  -> the same as GET, and "changed": the
  *                      switches moved.
+ *   GET  /wires-card.mjs  the bay page's card for it (web/wires-card.mjs)
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -144,4 +145,12 @@ static struct http_resource_detail_dynamic wires_detail = {
 	.cb = wires_handler,
 };
 
+static const uint8_t card_mjs_gz[] = {
+#include "wires-card.mjs.gz.inc"
+};
+
+static struct http_resource_detail_static card_detail =
+	HWTR_WEB_STATIC_GZ(card_mjs_gz, "text/javascript");
+
 HWTR_HTTP_RESOURCE_DEFINE(bay_wires_res, bay_http, "/api/wires", &wires_detail);
+HWTR_HTTP_RESOURCE_DEFINE(bay_wires_card_res, bay_http, "/wires-card.mjs", &card_detail);

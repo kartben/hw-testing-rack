@@ -51,12 +51,15 @@ const save = () => {
 };
 
 let status = null, host = location.hostname, info = PICO_2;
+/* The buses' names on the node (the Wires card's, /api/wires): a bus this browser has not named takes its */
+let wireNames = [];
 let busy = null, cap = null, capReset = null, capAt = null, viewer = null;
 /* How the last capture went, [text, colour]: the state line keeps it while the analyzer is usable */
 let outcome = null;
 
 const sorted = (on) => [...on].sort((a, b) => a - b);
-const chName = (c) => (c === MARK ? "Mark" : settings.names[c] ? `${BUSES[c]} · ${settings.names[c]}` : BUSES[c]);
+const busName = (c) => settings.names[c] || wireNames[c] || "";
+const chName = (c) => (c === MARK ? "Mark" : busName(c) ? `${BUSES[c]} · ${busName(c)}` : BUSES[c]);
 const laneColor = (c) => (c === MARK ? "--mark" : `--lane-${c % 8}`);
 
 function setState(text, color = "var(--muted)") {
@@ -73,7 +76,7 @@ function renderChannels() {
       <input type="checkbox" data-ch="${c}" ${settings.on.includes(c) ? "checked" : ""} aria-label="${label}">
       <b>${label}</b>${extra}</label>`;
   $("la-chans").innerHTML = BUSES.map((b, c) => chip(c, b,
-    `<input type="text" data-name="${c}" value="${esc(settings.names[c] ?? "")}" placeholder="name"
+    `<input type="text" data-name="${c}" value="${esc(settings.names[c] ?? "")}" placeholder="${esc(wireNames[c] || "name")}"
             aria-label="Bus ${b}: what it carries" maxlength="24">`)).join("") +
     chip(MARK, "Mark", "<small>node events</small>");
 }
@@ -286,6 +289,19 @@ const pickable = () => (cap ? [...cap.channels] : sorted(settings.on));
 
 export function mount() {
   viewer = new Viewer($("la-wave"), { onReadout: (t) => ($("la-readout").textContent = t) });
+  /* The Wires card read the node's names: placeholders here, nothing re-drawn under the typing */
+  document.addEventListener("hwtr-wires", (e) => {
+    wireNames = e.detail.names ?? [];
+    for (const input of $("la-chans").querySelectorAll("input[data-name]")) {
+      input.placeholder = wireNames[Number(input.dataset.name)] || "name";
+    }
+    if (!busy) {
+      renderSettings();
+      if (cap) {
+        showCapture();
+      }
+    }
+  });
   renderChannels();
   renderSettings();
   renderDecoders();

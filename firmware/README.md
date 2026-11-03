@@ -467,6 +467,24 @@ focused once, by hand, at the real distance (lens tip to board ≈ 75–80 mm).
 4. Hold the lens still and tighten the nut finger-tight; check with one
    more snapshot, then set the resolution back (640 × 480 for the stream).
 
+### Wires
+
+![Wires card of a DATA ×4 bay (simulated): each port's 2 × 6 header as printed, its board and VREF; the buses A–H named, each with its pins: a UART each way between B3.2 and B3.3, I²C from B3.1 to the 1.8 V board in B3.4 (tagged 1.8 ↔ 3.3 V), SPI; one pin moved and not applied yet](../docs/img/web-ui-wires.png)
+
+On a DATA ×4 bay the page has a card for the pin matrix (`web/wires-card.mjs`,
+served as `/wires-card.mjs`; `/api/wires`, `src/wires.c`).  Each port's
+header is drawn as printed on the board; a P pin tapped goes on one of the
+buses A–H, which the analyzer reads as CH1–8.  Changes are staged, then
+**Apply** sends them together: the node opens every switch that moves before
+it closes any.  **Open all** stages every pin off the buses.  The buses'
+names are kept on the node, and the Logic analyzer card names its lanes
+with them.  A port's pins stay open while it is off (striped), or while its
+VREF reads under 0.65 V; on the v1.0 the node has no VREF reading yet
+(`VREF ?`).  A tag marks a bus joining a 1.8 V and a 3.3 V board, a single
+pin (probe only) and two pins of one board.  `bayctl wire B3 A=2:P1,3:P2`
+does the same from a terminal; the card shows the line.  Not tried on
+hardware yet.
+
 ### Logic analyzer
 
 ![Logic analyzer card of a DATA ×4 bay (simulated): This page or USB/IP, the co-processor's image, the rate and trigger, the buses A–H named, the Mark lane; after Capture and reset on B3.2, its boot banner on bus A decoded as UART, then I²C and SPI, and the node's reset pulse on Mark](../docs/img/web-ui-analyzer.png)

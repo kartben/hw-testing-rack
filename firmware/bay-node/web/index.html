@@ -232,17 +232,83 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
   .usbdev .ma { text-align: left; }
 }
 @media (max-width: 600px) { .term { height: 360px; } .toolbar .group.end { margin-left: 0; } }
-/* The logic analyzer (/analyzer/card.mjs); its viewer reads the colours below.  Lanes follow the
-   resistor colour code, bus A brown to H grey */
+/* The buses A-H (the analyzer's CH1-8), in the resistor colour code: A brown to H grey */
+:root {
+  --lane-0: light-dark(#8b5a2b, #b8875a); --lane-1: light-dark(#dc2626, #f87171);
+  --lane-2: light-dark(#ea580c, #fb923c); --lane-3: light-dark(#a16207, #facc15);
+  --lane-4: light-dark(#16a34a, #4ade80); --lane-5: light-dark(#2563eb, #60a5fa);
+  --lane-6: light-dark(#7c3aed, #a78bfa); --lane-7: light-dark(#6b7280, #9ca3af);
+}
+/* The pin matrix (/wires-card.mjs): each port's header as printed, then the buses */
+#wire-card {
+  & [hidden] { display: none !important; }
+  & .wires { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px 20px; align-items: start; }
+  & .ports { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  & .port { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px 12px; background: var(--soft); min-width: 0;
+    & .port-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; min-width: 0; }
+    & .port-h b { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+    & .board { color: var(--muted); font-size: 0.82rem; flex: 1; min-width: 0; overflow: hidden;
+               text-overflow: ellipsis; white-space: nowrap; }
+    & .vref { font: 600 0.72rem/1 var(--mono); padding: 3px 7px; border-radius: 6px; white-space: nowrap;
+              color: var(--ok); background: color-mix(in srgb, var(--ok) 12%, transparent); }
+    & .vref.low { color: var(--service); background: color-mix(in srgb, var(--service) 12%, transparent); }
+    & .vref.none { color: var(--muted); background: var(--card); }
+    &[data-held] .pin { background-image: repeating-linear-gradient(135deg, transparent 0 5px,
+                        color-mix(in srgb, var(--muted) 18%, transparent) 5px 7px); } }
+  & .hdr { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+  & .fix { display: grid; place-items: center; min-height: 42px; border-radius: 8px; font: 600 0.62rem/1 system-ui, sans-serif;
+           letter-spacing: 0.04em; color: var(--muted); border: 1px dashed var(--line); background: var(--card); }
+  & .pin { min-height: 42px; padding: 3px 0 4px; display: grid; place-items: center; gap: 1px; border-radius: 8px;
+           min-width: 0; background: var(--card); border: 1.5px solid var(--line);
+    & small { font: 500 0.62rem/1 var(--mono); color: var(--muted); }
+    & b { font-size: 0.95rem; line-height: 1; color: var(--muted); }
+    &.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--card)); & b { color: var(--c); } }
+    &.pending { border-style: dashed; box-shadow: 0 0 0 2px color-mix(in srgb, var(--usbip) 30%, transparent); } }
+  & .buses { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  & .buses li { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center;
+    padding: 7px 0; border-top: 1px solid var(--line);
+    &:first-child { border-top: 0; }
+    & .bdot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+              font: 700 0.72rem/1 system-ui, sans-serif; color: var(--card); background: var(--c); }
+    & input { font: inherit; border: 0; background: transparent; color: var(--text); padding: 3px 4px; font-weight: 550;
+              width: 100%; min-width: 0; border-radius: 6px; }
+    & input:focus { background: var(--soft); outline: 1px solid var(--line); }
+    & input::placeholder { color: var(--muted); font-weight: 400; font-style: italic; }
+    & .ch { font: 0.72rem var(--mono); color: var(--muted); }
+    & .bpins { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+    & .bpins code { font: 0.74rem var(--mono); padding: 1px 6px; border-radius: 6px; color: var(--c);
+                    background: color-mix(in srgb, var(--c) 12%, transparent); }
+    & .bpins code.pending { outline: 1.5px dashed color-mix(in srgb, var(--usbip) 60%, transparent); }
+    &.free .bpins { color: var(--muted); font-size: 0.78rem; }
+    &.free .bdot { background: color-mix(in srgb, var(--c) 40%, var(--soft)); } }
+  & .wire-foot { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center;
+    & .grow { flex: 1 1 auto; } & #wire-pending { font-size: 0.85rem; color: var(--muted); }
+    & #wire-pending.dirty { color: var(--usbip); font-weight: 600; } }
+}
+@media (max-width: 880px) { #wire-card .wires { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 560px) { #wire-card .ports { grid-template-columns: minmax(0, 1fr); } }
+#wire-pick {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
+  padding: 16px; width: min(360px, calc(100vw - 32px)); box-shadow: 0 16px 48px #0005;
+  &::backdrop { background: #0003; }
+  & h3 { margin: 0 0 2px; font-size: 1rem; } & p { margin: 0 0 12px; color: var(--muted); font-size: 0.82rem; }
+  & .pickgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  & .pickgrid button { display: flex; align-items: center; gap: 8px; text-align: left; padding: 7px 9px; font-weight: 500;
+                       font-size: 0.85rem; min-width: 0; }
+  & .pickgrid button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+  & .pickgrid button i { font-style: normal; width: 20px; height: 20px; flex: none; border-radius: 50%; display: grid;
+                         place-items: center; font: 700 0.7rem/1 system-ui, sans-serif; color: var(--card); background: var(--c); }
+  & .pickgrid button[aria-current=true] { border-color: var(--c); background: color-mix(in srgb, var(--c) 14%, var(--soft)); }
+  & .pickgrid .free { grid-column: 1 / -1; justify-content: center; color: var(--muted); }
+  & .note { margin: 10px 0 0; font-size: 0.78rem; color: var(--service); }
+  & [hidden] { display: none; }
+}
+/* The logic analyzer (/analyzer/card.mjs); its viewer reads the colours below and the lanes above */
 #la-card {
   --accent: #3b82f6; --cursor: #3b82f6;
   --grid: light-dark(#eef0f3, #1c2028);
   --trigger: light-dark(#b45309, #f59e0b);
   --mark: light-dark(#d97706, #fbbf24);
-  --lane-0: light-dark(#8b5a2b, #b8875a); --lane-1: light-dark(#dc2626, #f87171);
-  --lane-2: light-dark(#ea580c, #fb923c); --lane-3: light-dark(#a16207, #facc15);
-  --lane-4: light-dark(#16a34a, #4ade80); --lane-5: light-dark(#2563eb, #60a5fa);
-  --lane-6: light-dark(#7c3aed, #a78bfa); --lane-7: light-dark(#6b7280, #9ca3af);
   --dec-data: light-dark(#dbeafe, #1e3a5f); --dec-addr: light-dark(#ede9fe, #3b2a63);
   --dec-ctl: light-dark(#e5e7eb, #2a2f3a); --dec-err: light-dark(#fee2e2, #5b1d1d);
   --dec-text: light-dark(#1f2937, #e5e7eb);
@@ -453,6 +519,30 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
         <span id="con-clients"></span>
         <a href="/xterm-LICENSE.txt">xterm.js (MIT)</a>
       </div>
+    </section>
+
+    <section class="card" id="wire-card" hidden>
+      <h2>Wires <span id="wire-meta">–</span></h2>
+      <div class="notice" id="wire-note" hidden><span id="wire-note-text"></span></div>
+      <div class="wires">
+        <div>
+          <div class="ports" id="wire-ports"></div>
+          <p class="hint" style="margin-top:10px">Each header as printed on the board: tap a P pin to put it on a bus.
+            A port's pins stay open while its board is off or its VREF reads under 0.65 V.</p>
+        </div>
+        <ul class="buses" id="wire-buses"></ul>
+      </div>
+      <div class="wire-foot">
+        <span class="grow"></span>
+        <span id="wire-pending">All applied</span>
+        <button id="wire-discard" disabled>Discard</button>
+        <button class="primary" id="wire-apply" disabled>Apply</button>
+        <button class="danger" id="wire-open-all" title="Every pin off the buses (then Apply)">Open all</button>
+      </div>
+      <p class="hint">A wire passes about 5 MHz SPI or SWD, 400 kHz I²C, 3 Mbd UART (estimates, to be measured).
+        Every bus rests at 3.3 V through a 10 kΩ pull-up on the board, so an idle wire reads 1.  Apply goes
+        break-before-make: every switch that moves opens before any closes.</p>
+      <div class="cmd"><code id="wire-cli">bayctl wire B3 …</code><button data-copy="wire-cli">Copy</button></div>
     </section>
 
     <section class="card" id="la-card" hidden>
@@ -730,6 +820,14 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
     <button value="ok" class="primary">Confirm</button>
   </form>
 </dialog>
+<div id="wire-pick" popover>
+  <h3 id="wire-pick-t">–</h3>
+  <p id="wire-pick-s">–</p>
+  <div class="pickgrid" id="wire-pick-grid"></div>
+  <p class="note" id="wire-pick-note" hidden>This wire joins a 1.8 V and a 3.3 V board: the level shifters
+    translate, up to about 1–2 MHz.</p>
+</div>
+
 <div id="la-reset" popover>
   <h3>Capture and reset</h3>
   <p>Arms the analyzer, then pulses a board's RESET.  The capture starts as the board leaves reset; the
@@ -861,7 +959,22 @@ function render(s) {
   ].filter(Boolean).join(" · ");
   if (s.access) renderRights(s.access);
   renderCamera(s);
+  renderWires(s);
   renderAnalyzer(s);
+}
+
+/* The DATA x4's pin matrix: its card's code (/wires-card.mjs) loads on a bay with four ports */
+let wireCard = null;
+function renderWires(s) {
+  const multi = (s.ports?.length ?? 0) > 1;
+  $("wire-card").hidden = !multi;
+  if (!multi) return;
+  wireCard ??= import("/wires-card.mjs").then((m) => m.mount());
+  wireCard.then((card) => card.update(s, host, (slot) => usbDoc?.devices?.find((d) => d.slot === slot)?.name ?? ""))
+    .catch((e) => {
+      wireCard = null;
+      $("wire-meta").textContent = `not loaded: ${e.message}`;
+    });
 }
 
 /* The DATA x4's logic analyzer: its card's code (/analyzer/card.mjs) loads once the bay has one */

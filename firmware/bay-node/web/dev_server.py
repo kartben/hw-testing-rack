@@ -72,7 +72,8 @@ ANALYZER = WEB.parents[1] / "common" / "web" / "analyzer"
 ANALYZER_STATIC = {f"/analyzer/{m}.mjs": (ANALYZER / f"{m}.mjs", "text/javascript")
                    for m in ("capture", "decoders", "decoding", "protocol", "relay", "vcd", "viewer")}
 STATIC = {"/": (WEB / "index.html", "text/html"), **COMMON_STATIC, **XTERM_STATIC, **ANALYZER_STATIC,
-          "/analyzer/card.mjs": (WEB / "analyzer-card.mjs", "text/javascript")}
+          "/analyzer/card.mjs": (WEB / "analyzer-card.mjs", "text/javascript"),
+          "/wires-card.mjs": (WEB / "wires-card.mjs", "text/javascript")}
 START = time.monotonic() - 3 * 3600 - 17 * 60
 WEB_SLOTS = 2
 LOG_WINDOW = 16384 - 512

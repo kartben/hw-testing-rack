@@ -9,7 +9,7 @@ installed Chrome (--channel msedge for Edge, or --channel chromium after
 for the sparkline (and of the fake board's log for the console), then
 shoots each state, then access control (web-ui-access*.png): the node
 claimed with a key made up for the run, rules, a CI job holding the bay;
-then a DATA x4 bay's ports, a board target's dialog and the logic analyzer card.
+then a DATA x4 bay's ports, a board target's dialog, the Wires card and the logic analyzer card.
 The browser and server plumbing is firmware/common/web/shots.py.
 """
 
@@ -158,7 +158,30 @@ def main() -> None:
         time.sleep(0.5)
         shoot(light, "web-ui-board-target", "#board-settings")
 
+        shoot_wires(dark, shoot)
         shoot_analyzer(dark, shoot)
+
+
+# The mock's wiring: a UART each way between B3.2 and B3.3, I2C from B3.1 to B3.4 (a 1.8 V board), SPI
+WIRES = {"A": ["2/1", "3/2"], "B": ["3/1", "2/2"], "C": ["1/3", "4/3"], "D": ["1/4", "4/4"],
+         "E": ["2/5", "3/5"], "F": ["2/6", "3/6"], "G": ["2/7", "3/7"], "H": ["3/8", "2/8"]}
+WIRE_NAMES = ["UART B3.2 → B3.3", "UART B3.3 → B3.2", "I²C SDA", "I²C SCL", "SPI CS", "SPI SCK", "SPI MOSI",
+              "SPI MISO"]
+
+
+def shoot_wires(page, shoot) -> None:
+    """The Wires card with the mock's wiring applied, then one pin moved and not applied yet."""
+    dev_server.wires.wanted = {tuple(map(int, k.split("/"))): b for b, ks in WIRES.items() for k in ks}
+    dev_server.wires.names = list(WIRE_NAMES)
+    page.set_viewport_size({"width": DESKTOP["width"], "height": 1100})
+    page.reload()
+    time.sleep(2 * POLL_S)
+    page.click("#wire-ports .pin[data-key='4/2']")
+    page.wait_for_selector("#wire-pick:popover-open")
+    page.click("#wire-pick-grid button[data-bus='H']")
+    page.evaluate("document.activeElement.blur()")
+    time.sleep(0.5)
+    shoot(page, "web-ui-wires", "#wire-card")
 
 
 # What the buses carry in the simulated bay, and the decoders on them (the card keeps both in the browser)
