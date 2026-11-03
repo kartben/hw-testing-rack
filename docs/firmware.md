@@ -341,7 +341,9 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   and TDS).  The native_sim test (`firmware/bay-node/tests/wires`) runs `ports.c`, `wires.c` and the real
   expander and crosspoint drivers against two CH446Q emulated behind the emulated board: the exact switch
   per pin and bus, break-before-make, a port off and on, a DUT_5V cycle, MARK toggling during a 16-pin
-  change (nothing garbled), POST's body.  **Not tried on hardware.**  **No VREF reading** on the v1.0: only
+  change (nothing garbled), POST's body.  From a laptop: `bayctl wire B3 A=2:P1,3:P2 --name A="UART B3.2 TX"`
+  (`bayctl wire B3` shows it, `--open-all` clears it); `dev_server.py --ports 4` simulates the matrix, with
+  made-up VREF readings (`/dev/vref?port=4&mv=200` holds a port open).  **Not tried on hardware.**  **No VREF reading** on the v1.0: only
   U11's ADC sees VREF (GPIO40–43), and gusmanb's analyzer does not report it, so the 0.65 V hold waits on a
   reading (`"vref_mv": null`); which way to get one is the user's choice.  **On the bench, when the boards
   arrive:**

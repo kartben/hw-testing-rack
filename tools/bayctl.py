@@ -30,6 +30,8 @@
     python tools/bayctl.py update IMAGE --hub           the power hub itself (BAYCTL_HUB, lab.yaml `hub:`, or rack.local)
     python tools/bayctl.py coproc load B3 FILE.uf2 [--name NAME]   the DATA ×4 co-processor's image (a no_flash UF2)
     python tools/bayctl.py coproc status B3             the co-processor's stored image
+    python tools/bayctl.py wire B3 [A=2:P1,3:P2 ...] [--name A=UART] [--open-all]
+                                                        the DATA ×4's pin matrix: pins on the buses A-H
     python tools/bayctl.py row A|B|C|D on|off|cycle [--ms 1000]   switch or cycle a rack row on the power hub
     python tools/bayctl.py hub [status|events|enumerate|pd|node|claim]   inspect or control the power hub
 
@@ -1285,6 +1287,77 @@ def coproc_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
     return 0
 
 
+# ------------------------------------------------------------------------- the DATA ×4's pin matrix
+
+BUSES = "ABCDEFGH"
+
+
+def wire_pin(text: str) -> tuple[int, int]:
+    """A port pin, `2:P1`, `2:1` or `B3.2:P1`: (port, pin)."""
+    m = re.fullmatch(r"(?:[A-Za-z]\d+\.)?([1-4])[:/][Pp]?([1-8])", text.strip())
+    if not m:
+        raise BayError(f"{text!r}: a pin is <port>:P<pin>, port 1-4 and pin 1-8 (2:P1, B3.2:P1)")
+    return int(m[1]), int(m[2])
+
+
+def wires_body(assign: list[str], names: list[str], doc: dict, open_all: bool = False) -> dict:
+    """POST /api/wires's body: the pins of `A=2:P1,3:P2` arguments (every other pin off the buses), or none
+    with open_all; the names of `A=UART` arguments over the node's (doc: its GET /api/wires)."""
+    body: dict = {}
+    if assign or open_all:
+        if assign and open_all:
+            raise BayError("pins or --open-all, not both")
+        pins: dict[tuple[int, int], str] = {}
+        for arg in assign:
+            bus, _, spec = arg.partition("=")
+            bus = bus.strip().upper()
+            if len(bus) != 1 or bus not in BUSES or not spec:
+                raise BayError(f"{arg!r}: <bus>=<pin>[,<pin>...], the bus A-H")
+            for text in spec.split(","):
+                key = wire_pin(text)
+                if pins.get(key, bus) != bus:
+                    raise BayError(f"{text}: on bus {pins[key]} and {bus}: a pin goes on one bus")
+                pins[key] = bus
+        body["pins"] = [{"port": p, "pin": n, "bus": b} for (p, n), b in sorted(pins.items())]
+    if names:
+        new = list(doc.get("names") or [""] * len(BUSES))
+        for arg in names:
+            bus, _, name = arg.partition("=")
+            bus = bus.strip().upper()
+            if len(bus) != 1 or bus not in BUSES:
+                raise BayError(f"{arg!r}: --name <bus>=<name>, the bus A-H")
+            new[BUSES.index(bus)] = name
+        body["names"] = new
+    return body
+
+
+def _print_wires(bay_id: str, d: dict) -> None:
+    held = {p["port"] for p in d["ports"] if p["held"]}
+    print(f"{bay_id}: " + ("the matrix answers" if d["matrix"] else "no matrix (DATA ×4 off, or a base board)")
+          + (f", {d['error']}" if d.get("error") else ""))
+    for i, bus in enumerate(BUSES):
+        pins = [f"{bay_id}.{p['port']}:P{p['pin']}{'' if p['closed'] else ' (held open)'}"
+                for p in d["pins"] if p["bus"] == bus]
+        name = d["names"][i] if i < len(d.get("names", [])) else ""
+        print(f"  {bus}  {name or '-':24} {' '.join(pins) or 'free'}")
+    for p in d["ports"]:
+        if p["port"] in held:
+            why = "off" if not p["on"] else f"VREF {p['vref_mv']} mV"
+            print(f"  {bay_id}.{p['port']}: pins held open ({why})")
+
+
+def wire_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
+    dev = node_bay(bays, a.bay)
+    doc = api(dev, "/api/wires")
+    body = wires_body(a.set, a.name, doc, a.open_all)
+    if body:
+        doc = api(dev, "/api/wires", body)
+        if doc.get("changed"):
+            print(f"{dev.id}: {doc['changed']} switch{'es' if doc['changed'] > 1 else ''} moved, break-before-make")
+    _print_wires(dev.id, doc)
+    return 0
+
+
 def _print_access(d: dict) -> None:
     lease_ = d.get("lease")
     print(f"you {d['you']}{' (' + d['source'] + ')' if d.get('source') else ''}: {', '.join(d['allow']) or 'nothing'}"
@@ -1686,6 +1759,12 @@ def main(argv: list[str] | None = None) -> int:
     q.add_argument("uf2", type=Path)
     q.add_argument("--name", help="what the node shows (12 characters; default: the file's name)")
     cps.add_parser("status").add_argument("bay")
+    p = sub.add_parser("wire", help="the DATA ×4's pin matrix: port pins on the buses A-H")
+    p.add_argument("bay")
+    p.add_argument("set", nargs="*", metavar="BUS=PINS",
+                   help="the pins from now on, e.g. A=2:P1,3:P2 (every other pin off the buses)")
+    p.add_argument("--name", action="append", default=[], metavar="BUS=NAME", help="what a bus carries")
+    p.add_argument("--open-all", action="store_true", help="every pin off the buses")
     p = sub.add_parser("row", help="switch or power-cycle a rack row (A-D) on the power hub")
     p.add_argument("row", choices=list("ABCDabcd"), metavar="ROW")
     p.add_argument("action", choices=["on", "off", "cycle"])
@@ -1910,6 +1989,8 @@ def main(argv: list[str] | None = None) -> int:
             return update_cli(a, bays)
         elif a.cmd == "coproc":
             return coproc_cli(a, bays)
+        elif a.cmd == "wire":
+            return wire_cli(a, bays)
     except BayError as e:
         print(f"bayctl: {e}", file=sys.stderr)
         return 1

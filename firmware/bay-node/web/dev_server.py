@@ -30,8 +30,11 @@ as the firmware's build does (board_targets.py).  Test hooks:
                           out as zephyr.signed.bin; the bay's own id by default)
     /dev/camera           unplug or plug the camera
     /dev/usb?preset=xiao[&port=n]   another device on the one DUT's port, or on port n
+    /dev/vref?port=n&mv=0   port n's VREF as the co-processor would read it (under 650 mV: its pins held open)
 
-With --ports 4 the co-processor runs gusmanb's analyzer (an image is stored):
+With --ports 4 the board's pin matrix answers /api/wires (src/wires.c's rules,
+the ports' VREF made up: 3.3 V, and 1.8 V on B3.4), and the co-processor runs
+gusmanb's analyzer (an image is stored):
 /api/analyzer and the page's WebSocket /analyzer/ws, which answers the
 analyzer's ID and capture requests with made-up signals: a UART on bus A and
 B, I2C on C and D, SPI on E to H, and the node's MARK on CH13 around a reset.
@@ -1151,6 +1154,76 @@ class LogicAnalyzer:
 logic = LogicAnalyzer()
 
 
+# --- The DATA x4's pin matrix (src/wires.c) -------------------------------------------
+
+WIRE_BUSES = "ABCDEFGH"
+
+
+class Wires:
+    """/api/wires: each port pin on one bus at most, held open while its port is off or its VREF reads under
+    0.65 V.  The node has no VREF reading yet (null); here it is made up, B3.4 a 1.8 V board."""
+
+    def __init__(self) -> None:
+        self.wanted: dict[tuple[int, int], str] = {}
+        self.names = [""] * len(WIRE_BUSES)
+        self.vref = {1: 3300, 2: 3310, 3: 3290, 4: 1800}
+
+    def held(self, port: int) -> bool:
+        pt = next((x for x in ports if x["port"] == port), None)
+        return pt is None or not pt["on"] or self.vref.get(port, 0) < 650
+
+    def closed(self) -> dict[tuple[int, int], str]:
+        return {k: b for k, b in self.wanted.items() if not self.held(k[0])}
+
+    def doc(self, changed: int | None = None) -> dict:
+        d = {"matrix": True, "error": None, "names": list(self.names),
+             "pins": [{"port": p, "pin": n, "bus": b, "closed": not self.held(p)}
+                      for (p, n), b in sorted(self.wanted.items())],
+             "ports": [{"port": pt["port"], "on": pt["on"], "vref_mv": self.vref.get(pt["port"]),
+                        "held": self.held(pt["port"])} for pt in ports]}
+        if changed is not None:
+            d["changed"] = changed
+        return d
+
+    def post(self, body: dict, ip: int) -> tuple[int, dict]:
+        wanted = None
+        if "pins" in body:
+            wanted = {}
+            for e in body["pins"] if isinstance(body["pins"], list) else [None]:
+                if not isinstance(e, dict) or e.get("port") not in range(1, 5) or e.get("pin") not in range(1, 9):
+                    return 400, {"error": "port: 1-4, pin: 1-8"}
+                if e.get("bus") not in list(WIRE_BUSES):
+                    return 400, {"error": "bus: A-H"}
+                if (e["port"], e["pin"]) in wanted:
+                    return 400, {"error": "a pin goes on one bus"}
+                wanted[(e["port"], e["pin"])] = e["bus"]
+        names = body.get("names")
+        if names is not None and (not isinstance(names, list) or len(names) != len(WIRE_BUSES)):
+            return 400, {"error": "names: one per bus, A to H"}
+        if names is not None and any(not isinstance(x, str) or len(x) >= 24 or re.search(r'["\\<>]|[\x00-\x1f]', x)
+                                     for x in names):
+            return 400, {"error": "a name: under 24 characters, no quotes, backslashes or angle brackets"}
+        if wanted is not None:
+            for pt in ports:
+                mine = lambda w: {k: b for k, b in w.items() if k[0] == pt["port"]}  # noqa: E731
+                if mine(wanted) != mine(self.wanted) and port_reserved(pt, ip):
+                    return 423, {"error": f"{slot_name(pt['port'])} is reserved by another address"}
+        if names is not None:
+            self.names = list(names)
+        changed = 0
+        if wanted is not None:
+            before = self.closed()
+            self.wanted = wanted
+            after = self.closed()
+            # Each pin that moves opens one switch and closes another
+            changed = sum((k in before and before[k] != after.get(k)) + (k in after and after[k] != before.get(k))
+                          for k in set(before) | set(after))
+        return 200, self.doc(changed)
+
+
+wires = Wires()
+
+
 # --- The fake camera: an Arducam Mega looking down at the drawer -------------
 
 CAM_RESOLUTIONS = ["320x240", "640x480", "1280x720", "1600x1200", "1920x1080"]
@@ -1565,6 +1638,14 @@ class Handler(BaseHTTPRequestHandler):
             self.websocket(int(path.rsplit("/", 1)[1]), query.get("t", [""])[0])
         elif path == "/analyzer/ws":
             self.analyzer_ws(query.get("t", [""])[0])
+        elif path == "/api/wires":
+            if not multi():
+                self.json(404, {"error": "not found"})
+            elif not self.refused("status"):
+                self.json(200, wires.doc())
+        elif path == "/dev/vref":
+            wires.vref[int(query.get("port", ["1"])[0])] = int(query.get("mv", ["0"])[0])
+            self.json(200, wires.doc())
         elif path == "/api/analyzer":
             if not multi():
                 self.json(404, {"error": "not found"})
@@ -1776,6 +1857,8 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/analyzer":
             return self.json(*logic.set_owner(body)) if multi() else self.json(404, {"error": "not found"})
+        if path == "/api/wires":
+            return self.json(*wires.post(body, self.peer())) if multi() else self.json(404, {"error": "not found"})
         m = re.fullmatch(r"/api/ports/(\d+)/(power|reset|boot)", path)
         if m:
             return self.port_post(int(m[1]), m[2], body, port_reply=True)

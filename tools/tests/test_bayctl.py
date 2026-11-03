@@ -1248,6 +1248,93 @@ class Coproc(unittest.TestCase):
                 self.assertIn("LogicAnalyze, 256 bytes at 0x20000000", r.stdout)
 
 
+class Wires(unittest.TestCase):
+    """The DATA ×4's pin matrix: bayctl wire against the simulated node (dev_server.py --ports 4)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.proc, cls.port = start_node("--ports", "4")
+        cls.lab = lab_file({"bays": {"B3": {"host": "127.0.0.1", "http_port": cls.port}}})
+        cls.bays = bayctl.load_bays(lab_yaml=cls.lab)
+        cls.node = bayctl.node_bay(cls.bays, "B3")
+        deadline = time.monotonic() + 10
+        while not all(p["on"] for p in bayctl.api(cls.node, "/api/wires")["ports"]):
+            if time.monotonic() > deadline:
+                cls.proc.kill()
+                raise AssertionError("the ports never came on")
+            time.sleep(0.1)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.proc.terminate()
+        cls.proc.wait(5)
+
+    def cli(self, *args) -> str:
+        r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(self.lab), "wire", "B3", *args],
+                           capture_output=True, text=True, timeout=30)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return r.stdout
+
+    def test_body(self):
+        self.assertEqual(bayctl.wire_pin("2:P1"), (2, 1))
+        self.assertEqual(bayctl.wire_pin("B3.4:8"), (4, 8))
+        for bad in ("5:P1", "2:P9", "P1", "2-1"):
+            with self.assertRaises(bayctl.BayError):
+                bayctl.wire_pin(bad)
+        doc = {"names": ["x"] * 8}
+        self.assertEqual(bayctl.wires_body(["A=2:P1,3:P2", "b=3:P1"], ["H=MISO"], doc),
+                         {"pins": [{"port": 2, "pin": 1, "bus": "A"}, {"port": 3, "pin": 1, "bus": "B"},
+                                   {"port": 3, "pin": 2, "bus": "A"}],
+                          "names": ["x"] * 7 + ["MISO"]})
+        self.assertEqual(bayctl.wires_body([], [], doc, open_all=True), {"pins": []})
+        self.assertEqual(bayctl.wires_body([], [], doc), {})
+        for assign in (["A=2:P1", "B=2:P1"], ["I=2:P1"], ["A"]):
+            with self.assertRaises(bayctl.BayError):
+                bayctl.wires_body(assign, [], doc)
+
+    def test_wire(self):
+        out = self.cli("A=2:P1,3:P2", "B=3:P1,2:P2", "--name", "A=UART B3.2 TX", "--name", "B=UART B3.3 TX")
+        self.assertIn("4 switches moved, break-before-make", out)
+        self.assertIn("  A  UART B3.2 TX             B3.2:P1 B3.3:P2", out)
+        self.assertIn("  B  UART B3.3 TX             B3.2:P2 B3.3:P1", out)
+        self.assertIn("  C  -                        free", out)
+        d = bayctl.api(self.node, "/api/wires")
+        self.assertEqual(len(d["pins"]), 4)
+        self.assertTrue(all(p["closed"] for p in d["pins"]))
+
+        # The names alone leave the pins; a pin on a port without VREF is held open
+        self.cli("--name", "C=SDA")
+        self.assertEqual(len(bayctl.api(self.node, "/api/wires")["pins"]), 4)
+        urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/vref?port=4&mv=200").read()
+        try:
+            out = self.cli("C=1:P3,4:P3")
+            self.assertIn("B3.4:P3 (held open)", out)
+            self.assertIn("B3.4: pins held open (VREF 200 mV)", out)
+        finally:
+            urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/vref?port=4&mv=1800").read()
+
+        # Refused: one pin on two buses; a port another address holds
+        with self.assertRaisesRegex(bayctl.BayError, "400 a pin goes on one bus"):
+            bayctl.api(self.node, "/api/wires", {"pins": [{"port": 1, "pin": 1, "bus": "A"},
+                                                          {"port": 1, "pin": 1, "bus": "B"}]})
+        b3 = self.bays["B3.3"]
+        bayctl.lease(b3, 600, "t")
+        urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/peer?ip=192.168.1.99").read()
+        try:
+            with self.assertRaisesRegex(bayctl.BayError, "423 B3.3 is reserved"):
+                bayctl.api(self.node, "/api/wires", {"pins": [{"port": 3, "pin": 1, "bus": "A"}]})
+            # B3.3's pins left as they are: allowed
+            keep = [{k: p[k] for k in ("port", "pin", "bus")} for p in bayctl.api(self.node, "/api/wires")["pins"]
+                    if p["port"] == 3]
+            bayctl.api(self.node, "/api/wires", {"pins": keep + [{"port": 1, "pin": 8, "bus": "H"}]})
+        finally:
+            urllib.request.urlopen(f"http://127.0.0.1:{self.port}/dev/peer").read()
+            bayctl.release(b3)
+
+        self.assertIn("free", self.cli("--open-all"))
+        self.assertEqual(bayctl.api(self.node, "/api/wires")["pins"], [])
+
+
 class Update(unittest.TestCase):
     """Firmware updates against the simulated hub (firmware/power-hub/web/dev_server.py)."""
 
