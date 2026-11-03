@@ -1,9 +1,30 @@
 /*
- * The coproc partition on the simulated flash, past its default partitions;
- * writes in 4-byte blocks as the ESP32-S3's flash
+ * The coproc partition on the simulated flash, past its default partitions,
+ * writes in 4-byte blocks as the ESP32-S3's flash; Zephyr's virtual USB bus
+ * (a host controller with a device controller on it, as tests/subsys/usb/host)
+ * and the co-processor on its root port, no hub between.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
+/delete-node/ &zephyr_udc0;
+
+/ {
+	zephyr_uhc0: uhc_vrt0 {
+		compatible = "zephyr,uhc-virtual";
+
+		zephyr_udc0: udc_vrt0 {
+			compatible = "zephyr,udc-virtual";
+			num-bidir-endpoints = <8>;
+			maximum-speed = "full-speed";
+		};
+	};
+
+	coproc: coproc {
+		compatible = "hwtr,coproc";
+		hub-port = <0>;
+	};
+};
 
 &flash0 {
 	write-block-size = <4>;

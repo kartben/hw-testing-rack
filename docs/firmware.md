@@ -325,10 +325,21 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
 ## Open items
 
 * **DATA ×4 co-processor (U11, an RP2350B with no flash, since 2026-11-03)** — it runs from SRAM what is
-  loaded at each power-up.  Needed: gusmanb's analyzer built from its pinned tag as a RAM image (its PICO_2
-  build already runs `copy_to_ram`; `no_flash` instead, the same 384 KB buffer), loaded by the lab server
-  (`picotool load -x` over USB/IP) at first; then a PICOBOOT RAM loader on the node (write, then REBOOT2 to
-  the RAM image), reloading whenever the co-processor shows up in BOOTSEL.  **Bench, 2026-11-03:** a Pico 2
+  loaded at each power-up: gusmanb's analyzer built from its pinned tag as a RAM image (its PICO_2 build
+  already runs `copy_to_ram`; `no_flash` instead, the same 384 KB buffer).  **The node loads it**
+  (`src/coproc.c`, written, tested on native_sim): `bayctl coproc load B3 LogicAnalyzer.uf2` stores the image
+  in the node's `coproc` partition (admin), and whenever the device on the co-processor's hub port shows up in
+  its bootloader (2e8a:000f) the node does what `picotool load -x` does: EXCLUSIVE_ACCESS, WRITE in 1 KB
+  chunks read from flash into the host controller's own buffers, then REBOOT2 into the RAM image (the region
+  from the image to the SRAM's end).  The device is not exported while it is loaded; with no image, or after
+  two loads in a row that come straight back to the bootloader, it is left to USB/IP and `picotool` from the
+  lab.  `/api/coproc` and `bay coproc` say how the last load went.  336 bytes of DRAM, no thread.  The
+  native_sim test (`firmware/bay-node/tests/coproc`) loads into an RP2350 bootloader emulated on the virtual
+  USB bus, and checks a stalled WRITE, a bootloader that stops answering (the node gives up after 10 s) and
+  an image that does not start.  **Open, for the datasheet check:** which SRAM the ROM keeps for itself
+  while in BOOTSEL (RP2350 datasheet §5.6: the loader writes from the image's address on, as picotool does),
+  and whether REBOOT2's RAM_IMAGE asks for an image hash with secure boot off (§5.4.8; the build has none,
+  and picotool's load runs it).  Not on the bench yet.  **Bench, 2026-11-03:** a Pico 2
   (RP2350A) with its flash erased, behind the bench XIAO's hub, over USB/IP from a Linux host.  It came back
   in BOOTSEL (2e8a:000f) after every reset (6 reboots by picotool, and once while being wired); its USB
   serial number (the chip id) is the same without flash; `picotool load -x` of the RAM build took 1.4–1.7 s
@@ -337,7 +348,8 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   with `picotool reboot -u -f` (the SDK's reset interface), no button.  The RAM build: tag v6.0.0.0,
   `BOARD_PICO_2`, `TURBO_MODE 0`, `pico_set_binary_type(LogicAnalyzer no_flash)`, pico-sdk 2.0.0 (the
   release's), its VS Code include made `OPTIONAL`; with gcc 15, pioasm 2.0.0 needs `-include cstdint`.  It
-  loads 126 KB (code and data) and zeroes 391 KB at start (the 384 KB buffer), of the 520 KB.
+  loads 40 KB (code and data: 40,704 bytes from 0x20000000) and zeroes 391 KB at start (the 384 KB
+  buffer), of the 520 KB.
 
 * **Hardware bring-up** — nothing has run on a bay node yet (board
   definition, INA226 calibration, LED timing, SERVICE PHY handover).

@@ -423,7 +423,7 @@ static int cmd_aux(const struct shell *sh, size_t argc, char **argv)
 #if defined(CONFIG_BAY_COPROC)
 static int cmd_coproc(const struct shell *sh, size_t argc, char **argv)
 {
-	char json[384];
+	char json[512];
 
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);

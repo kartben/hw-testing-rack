@@ -248,7 +248,7 @@ an unpowered board.
 | `/api/power`, `/api/reset`, `/api/boot` | unchanged on a one-port node; on a multi-port node they need `"port": n` (409 without) |
 | `GET /api/boards`, `GET` / `PUT /api/ports/<n>/board` | each sub-slot's Zephyr board target (board, runner, probe id, console), saved on the node for the board in it ([firmware/README.md › Board targets](../firmware/README.md#board-targets)) |
 | `/metrics` | the DUT metrics labelled `port="A1.2"` |
-| `GET /api/coproc` | the DATA ×4 co-processor's stored image: `{"image": {"name": "gusmanb 6.0", "size": 126272, "addr": "0x20000000", "sha256": ...} \| null, "upload": "idle", "error": null}`; also in `/api/status` as `coproc` |
+| `GET /api/coproc` | the DATA ×4 co-processor's stored image: `{"image": {"name": "gusmanb 6.0", "size": 126272, "addr": "0x20000000", "sha256": ...} \| null, "upload": "idle", "error": null, "load": {"state": "loaded", "loads": 3, "failures": 0, "last_ms": 380, "error": null}}` (`state`: idle, loading, started, loaded, failed, `left to USB/IP`); also in `/api/status` as `coproc` |
 | `POST /api/coproc/begin`, `POST /api/coproc?ticket=` | admin: a new image into the node's `coproc` partition, as the firmware updates (the hash and the admin signature on `begin`, the body with the ticket): a 64-byte header (`struct coproc_hdr`, `src/bay.h`), then the bytes for the co-processor's SRAM.  Refused if it is not an RP2350 Arm image wholly in its SRAM (a `no_flash` build) or larger than the partition; the old image is gone once an upload starts |
 
 ## Access control and leases

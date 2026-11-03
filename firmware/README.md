@@ -173,6 +173,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Over-current | TPS2553 ~FAULT on IO40 (interrupt): logged and counted; after `CONFIG_BAY_DUT_FAULT_OFF_MS` (1 s) in current limit VBUS is switched off and the fault latched until `bay power on`.  v1.0: the eFuse's ~FLT, or a DATA board that misses two polls, switches DATA_VIN off at once until `bay power on` |
 | Telemetry | INA226 @ 0x40 through the Zephyr sensor API (`ti,ina226`, 50 mΩ, 50 µA/LSB, 4× averaging, 8.8 ms a reading): bus mV, mA, mW in `bay power` / `bay status` |
 | Data path | reads PC_DET (IO13) and SVC (IO15); `bay mode classic` drives MUX_FORCE_PC (IO14), persisted |
+| DATA ×4 co-processor | its image (a `no_flash` UF2, `bayctl coproc load`) in the `coproc` partition, loaded into its SRAM over PICOBOOT whenever it shows up in its bootloader on hub port 5 (`src/coproc.c`, [docs/firmware.md](../docs/firmware.md#open-items)); `/api/coproc`, `bay coproc` |
 | SERVICE mode | stops the USB host and routes the internal PHY to the USB-Serial-JTAG (`CONFIG_BAY_SERVICE_PHY_HANDOVER`); restarts the host when SERVICE goes off |
 | AUX console | UART1 (IO47 TX / IO21 RX), interrupt driven, shared by the web console (WebSocket, xterm.js), an RFC 2217 server (port 4001) and raw TCP (port 4000); settings persisted per bay; BREAK; TX released while the DUT is off.  See [Serial console](#serial-console) |
 | AUX RESET/BOOT | open-drain pulses (IO12/IO48): `bay reset`, `bay boot`, the console's buttons, optionally RFC 2217 DTR/RTS (esptool) |
