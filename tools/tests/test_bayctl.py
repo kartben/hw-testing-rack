@@ -9,6 +9,7 @@ server.  BAYCTL_HUB=none for every test that does not set its own: no lookup of 
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import itertools
 import json
@@ -1157,6 +1158,94 @@ class Pty(unittest.TestCase):
             p.stdin.close()
             p.stdout.close()
             srv.close()
+
+
+def uf2(blocks: list[tuple[int, bytes, int, int]]) -> bytes:
+    """A UF2 file from (address, data, family, flags) blocks."""
+    import struct
+    return b"".join(struct.pack("<8I", 0x0A324655, 0x9E5D5157, flags, addr, len(data), i, len(blocks), family)
+                    + data.ljust(476, b"\0") + struct.pack("<I", 0x0AB16F30)
+                    for i, (addr, data, family, flags) in enumerate(blocks))
+
+
+class Coproc(unittest.TestCase):
+    """The DATA ×4 co-processor's image: a UF2 read by bayctl, stored on the simulated node (dev_server.py)."""
+
+    ARM, ABS, RP2040, FAM = 0xE48BFF59, 0xE48BFF57, 0xE48BFF56, 0x2000
+
+    @classmethod
+    def setUpClass(cls):
+        cls.proc, cls.port = start_node("--ports", "4")
+        cls.node = bayctl.Bay(id="B3", board="bay-node", host="127.0.0.1", http_port=cls.port)
+        cls.key = os.urandom(32)
+        # Claimed with the test key: someone presses BOOT
+        threading.Timer(1.0, lambda: urllib.request.urlopen(f"http://127.0.0.1:{cls.port}/dev/boot")).start()
+        bayctl.access_claim(cls.node, cls.key, say=lambda *_: None)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.proc.terminate()
+        cls.proc.wait(5)
+
+    def test_uf2_ram_image(self):
+        a, b = bytes(range(256)), bytes(255 - i for i in range(256))
+        # Two blocks in SRAM, picotool's RP2350-E10 block at the top of flash left out
+        addr, body = bayctl.uf2_ram_image(uf2([(0x10FFFF00, bytes(256), self.ABS, self.FAM),
+                                               (0x20000000, a, self.ARM, self.FAM),
+                                               (0x20000100, b, self.ARM, self.FAM)]))
+        self.assertEqual((addr, body), (0x20000000, a + b))
+        # A gap between blocks: zeros
+        addr, body = bayctl.uf2_ram_image(uf2([(0x20000200, b, self.ARM, self.FAM),
+                                               (0x20000000, a, self.ARM, self.FAM)]))
+        self.assertEqual(body, a + bytes(256) + b)
+        for bad, why in ((uf2([(0x10000000, a, self.ARM, self.FAM)]), "no_flash"),
+                         (uf2([(0x20081F80, a, self.ARM, self.FAM)]), "SRAM"),
+                         (uf2([(0x20000000, a, self.RP2040, self.FAM)]), "RP2350 Arm"),
+                         (uf2([(0x20000000, a, self.ARM, 0)]), "RP2350 Arm"),
+                         (b"PK\x03\x04" + bytes(508), "not a UF2"),
+                         (bytes(100), "not a UF2")):
+            with self.assertRaisesRegex(bayctl.BayError, why):
+                bayctl.uf2_ram_image(bad)
+
+    def test_image(self):
+        img = bayctl.coproc_image(0x20000000, b"\x01\x02\x03", "gusmanb 6.0")
+        self.assertEqual(len(img), 64 + 3)
+        self.assertEqual(img[:4], b"HWCP")
+        self.assertEqual(img[20:52], hashlib.sha256(b"\x01\x02\x03").digest())
+        self.assertEqual(img[52:64], b"gusmanb 6.0\0")
+        for bad in ("a name of thirteen", "café"):
+            with self.assertRaises(bayctl.BayError):
+                bayctl.coproc_image(0x20000000, b"x", bad)
+
+    def test_load_and_status(self):
+        addr, body = bayctl.uf2_ram_image(uf2([(0x20000000 + 256 * i, bytes([i]) * 256, self.ARM, self.FAM)
+                                               for i in range(40)]))
+        r = bayctl.coproc_load(self.node, bayctl.coproc_image(addr, body, "test 1.0"), self.key, say=lambda *_: None)
+        self.assertEqual(r["image"], {"name": "test 1.0", "size": 40 * 256, "addr": "0x20000000",
+                                      "sha256": hashlib.sha256(body).hexdigest()})
+        self.assertEqual(bayctl.api(self.node, "/api/status")["coproc"]["image"]["name"], "test 1.0")
+
+        # Without the admin key: refused before any byte
+        with self.assertRaisesRegex(bayctl.BayError, "403"):
+            bayctl.coproc_load(self.node, bayctl.coproc_image(addr, body, "x"), os.urandom(32), say=lambda *_: None)
+        # A body that is not the header's: refused, and the old image is gone
+        img = bytearray(bayctl.coproc_image(addr, body, "y"))
+        img[-1] ^= 1
+        with self.assertRaisesRegex(bayctl.BayError, "the header's SHA-256 is not the image's"):
+            bayctl.coproc_load(self.node, bytes(img), self.key, say=lambda *_: None)
+        self.assertIsNone(bayctl.api(self.node, "/api/coproc")["image"])
+
+        # The command line, with the rack's key in BAYCTL_KEY
+        lab = lab_file({"bays": {"B3": {"host": "127.0.0.1", "http_port": self.port}}})
+        with tempfile.TemporaryDirectory() as d:
+            f = Path(d) / "LogicAnalyzer.uf2"
+            f.write_bytes(uf2([(0x20000000, bytes(256), self.ARM, self.FAM)]))
+            env = {**os.environ, "BAYCTL_KEY": self.key.hex()}
+            for args in (["coproc", "load", "B3", str(f)], ["coproc", "status", "B3"]):
+                r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(lab), *args],
+                                   capture_output=True, text=True, timeout=30, env=env)
+                self.assertEqual(r.returncode, 0, r.stderr)
+                self.assertIn("LogicAnalyze, 256 bytes at 0x20000000", r.stdout)
 
 
 class Update(unittest.TestCase):

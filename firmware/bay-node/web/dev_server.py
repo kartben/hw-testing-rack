@@ -43,7 +43,9 @@ import math
 import os
 import random
 import re
+import secrets
 import socket
+import struct
 import sys
 import threading
 import time
@@ -850,6 +852,66 @@ access = Access()
 firmware = Firmware("0.5.0", "bay-node/bay_node")
 
 
+class Coproc:
+    """The DATA ×4 co-processor's image (src/coproc.c): the same checks and refusals, kept in memory."""
+
+    MAGIC, FAMILY, SRAM, AREA = 0x50435748, 0xE48BFF59, (0x20000000, 0x20082000), 256 * 1024
+
+    def __init__(self) -> None:
+        self.image: dict | None = None
+        self.ticket: dict | None = None
+        self.error: str | None = None
+
+    def doc(self) -> dict:
+        return {"image": self.image, "upload": "ready" if self.ticket else "idle", "error": self.error}
+
+    def begin(self, ip: str, body: dict) -> tuple[int, dict]:
+        size, sha = body.get("size"), str(body.get("sha256", ""))
+        if not isinstance(size, int) or size <= 0 or not re.fullmatch(r"[0-9a-fA-F]{64}", sha):
+            return 400, {"error": "size and sha256 (64 hex digits) needed"}
+        if size <= 64 or size > self.AREA:
+            return 413, {"error": "size: larger than the coproc partition"}
+        self.ticket = {"ticket": secrets.token_hex(8), "ip": ip, "size": size, "sha256": sha.lower(),
+                       "until": time.monotonic() + 60}
+        return 200, {"ticket": self.ticket["ticket"]}
+
+    def _refuse(self, why: str) -> tuple[int, dict]:
+        self.error, self.ticket = why, None
+        return 400, {"error": why}
+
+    def upload(self, ip: str, ticket: str, raw: bytes) -> tuple[int, dict]:
+        t = self.ticket
+        if not t or t["ticket"] != ticket or t["ip"] != ip or time.monotonic() > t["until"]:
+            return 403, {"error": "no such ticket: begin again"}
+        self.image = None                   # the old image goes when an upload starts
+        if len(raw) > t["size"]:
+            return self._refuse("more bytes than announced")
+        if len(raw) < t["size"]:
+            return self._refuse("fewer bytes than announced")
+        if hashlib.sha256(raw).hexdigest() != t["sha256"]:
+            return self._refuse("SHA-256 does not match")
+        magic, version, hdr_size, family, addr, size = struct.unpack_from("<IHHIII", raw)
+        if magic != self.MAGIC or version != 1 or hdr_size != 64:
+            return self._refuse("not a co-processor image (make it with bayctl coproc load)")
+        if family != self.FAMILY:
+            return self._refuse("not an RP2350 Arm image")
+        if size == 0 or size > self.AREA - 64:
+            return self._refuse("image larger than the coproc partition")
+        if addr % 4 or addr < self.SRAM[0] or addr > self.SRAM[1] - size:
+            return self._refuse("image outside the RP2350's SRAM (a no_flash build is needed)")
+        if len(raw) - 64 != size:
+            return self._refuse("the header's size is not the image's")
+        if hashlib.sha256(raw[64:]).digest() != raw[20:52]:
+            return self._refuse("the header's SHA-256 is not the image's")
+        name = raw[52:64].split(b"\0")[0].decode("ascii", "replace")
+        self.image = {"name": name, "size": size, "addr": f"0x{addr:08x}", "sha256": raw[20:52].hex()}
+        self.ticket, self.error = None, None
+        return 200, self.doc()
+
+
+coproc = Coproc()
+
+
 # --- The fake camera: an Arducam Mega looking down at the drawer -------------
 
 CAM_RESOLUTIONS = ["320x240", "640x480", "1280x720", "1600x1200", "1920x1080"]
@@ -1158,6 +1220,8 @@ def status(ip: int = 0) -> dict:
                     "rfc2217": any(c["id"] == "rfc2217" for c in access.fake), "raw": False,
                     "rx": len(console.log), "tx": console.tx, "dropped": 0},
             "access": access.summary(ip), "firmware": firmware.doc(), "camera": camera.doc()}
+    if ports:                           # a DATA ×4 bay: its co-processor
+        s["coproc"] = coproc.doc()
     # A DATA x4 bay is node v1.0's: mW on the DATA lead against the hub's grant.  The one-DUT node
     # is a stand-in's, in mA on its 5 V (the page shows no budget for it)
     s["budget"] = ({"unit": "mW", "limit": GRANT_MW, "granted": True, "reserve": RESERVE_MW,
@@ -1306,6 +1370,8 @@ class Handler(BaseHTTPRequestHandler):
             self.json(200, {"nonce": access.nonce()})
         elif path == "/api/update":
             self.json(200, firmware.doc())
+        elif path == "/api/coproc":
+            self.json(200, coproc.doc())
         elif path == "/api/camera":
             if not self.refused("status"):
                 self.json(200, camera.doc(full=True))
@@ -1409,11 +1475,18 @@ class Handler(BaseHTTPRequestHandler):
         if url.path == "/api/update":
             ticket = parse_qs(url.query).get("ticket", [""])[0]
             return self.json(*firmware.upload(self.client_address[0], ticket, raw))
+        if url.path == "/api/coproc":
+            ticket = parse_qs(url.query).get("ticket", [""])[0]
+            return self.json(*coproc.upload(self.client_address[0], ticket, raw))
         try:
             body = json.loads(raw or b"{}")
         except json.JSONDecodeError:
             return self.json(400, {"error": "bad JSON"})
         path = urlsplit(self.path).path
+        if path == "/api/coproc/begin":
+            if not access.admin(self.headers.get("X-Bay-Auth", ""), "POST", path, raw):
+                return self.json(403, {"error": "admin only: unlock with the admin key"})
+            return self.json(*coproc.begin(self.client_address[0], body))
         if path == "/api/update/begin":
             if not access.admin(self.headers.get("X-Bay-Auth", ""), "POST", path, raw):
                 return self.json(403, {"error": "admin only: unlock with the admin key"})

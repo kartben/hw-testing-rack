@@ -28,6 +28,8 @@
     python tools/bayctl.py update IMAGE B3 [...]        firmware over the network (zephyr.signed.bin)
     python tools/bayctl.py update IMAGE --all           every bay node the hub lists, one after the other
     python tools/bayctl.py update IMAGE --hub           the power hub itself (BAYCTL_HUB, lab.yaml `hub:`, or rack.local)
+    python tools/bayctl.py coproc load B3 FILE.uf2 [--name NAME]   the DATA ×4 co-processor's image (a no_flash UF2)
+    python tools/bayctl.py coproc status B3             the co-processor's stored image
     python tools/bayctl.py row A|B|C|D on|off|cycle [--ms 1000]   switch or cycle a rack row on the power hub
     python tools/bayctl.py hub [status|events|enumerate|pd|node|claim]   inspect or control the power hub
 
@@ -1114,8 +1116,8 @@ def hub_cli(a: argparse.Namespace) -> int:
     return 0
 
 
-def _post_image(dev: Bay, ticket: str, data: bytes, timeout: float) -> dict:
-    req = urllib.request.Request(f"{dev.url}/api/update?ticket={ticket}", data=data, method="POST",
+def _post_image(dev: Bay, ticket: str, data: bytes, timeout: float, path: str = "/api/update") -> dict:
+    req = urllib.request.Request(f"{dev.url}{path}?ticket={ticket}", data=data, method="POST",
                                  headers={"Content-Type": "application/octet-stream"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -1207,6 +1209,80 @@ def update_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
             skipped.append(dev.id)
     print(f"updated: {', '.join(done) or 'none'}" + (f"; skipped: {', '.join(skipped)}" if skipped else ""))
     return 1 if skipped else 0
+
+
+# The DATA ×4 co-processor's image (firmware/bay-node/src/coproc.c): the bytes for its SRAM, from the UF2 of a
+# no_flash build, after a 64-byte header (struct coproc_hdr in src/bay.h)
+UF2_MAGIC = (0x0A324655, 0x9E5D5157, 0x0AB16F30)
+UF2_FAMILY_RP2350_ARM_S = 0xE48BFF59
+UF2_FAMILY_ABSOLUTE = 0xE48BFF57        # the RP2350-E10 workaround block picotool adds: no data for us
+RP2350_SRAM = (0x20000000, 0x20082000)
+COPROC_MAGIC = 0x50435748
+
+
+def uf2_ram_image(data: bytes) -> tuple[int, bytes]:
+    """The SRAM address and the bytes of an RP2350 Arm UF2 that loads into SRAM; BayError otherwise.  Gaps
+    between its blocks are zeros."""
+    import struct
+    if len(data) < 512 or len(data) % 512:
+        raise BayError("not a UF2 file")
+    chunks = []
+    for off in range(0, len(data), 512):
+        m0, m1, flags, addr, n, _, _, family = struct.unpack_from("<8I", data, off)
+        if (m0, m1, struct.unpack_from("<I", data, off + 508)[0]) != UF2_MAGIC or n > 476:
+            raise BayError(f"not a UF2 file (block {off // 512})")
+        if flags & 0x1 or (flags & 0x2000 and family == UF2_FAMILY_ABSOLUTE):
+            continue
+        if not flags & 0x2000 or family != UF2_FAMILY_RP2350_ARM_S:
+            raise BayError(f"not an RP2350 Arm UF2 (family 0x{family:08x})")
+        if addr < RP2350_SRAM[0] or addr + n > RP2350_SRAM[1]:
+            raise BayError(f"block at 0x{addr:08x}: not in the RP2350's SRAM (build with "
+                           "pico_set_binary_type(... no_flash))")
+        chunks.append((addr, data[off + 32:off + 32 + n]))
+    if not chunks:
+        raise BayError("no data in this UF2")
+    start = min(a for a, _ in chunks)
+    out = bytearray(max(a + len(c) for a, c in chunks) - start)
+    for a, c in chunks:
+        out[a - start:a - start + len(c)] = c
+    return start, bytes(out)
+
+
+def coproc_image(addr: int, body: bytes, name: str) -> bytes:
+    """The upload: the header the node checks, then the bytes for SRAM."""
+    import struct
+    if not name.isascii() or not name.isprintable() or len(name) > 12:
+        raise BayError(f"image name {name!r}: 12 printable ASCII characters at most")
+    return struct.pack("<IHHIII32s12s", COPROC_MAGIC, 1, 64, UF2_FAMILY_RP2350_ARM_S, addr, len(body),
+                       hashlib.sha256(body).digest(), name.encode()) + body
+
+
+def coproc_load(dev: Bay, image: bytes, key: bytes, say=print) -> dict:
+    """Store the image on the node (admin); it loads it at the co-processor's next BOOTSEL."""
+    t0 = time.monotonic()
+    begun = api(dev, "/api/coproc/begin", {"size": len(image), "sha256": hashlib.sha256(image).hexdigest()},
+                key=key)
+    r = _post_image(dev, begun["ticket"], image, timeout=60, path="/api/coproc")
+    im = r["image"]
+    say(f"{dev.id}: co-processor image {im['name'] or '(no name)'}, {im['size']} bytes at {im['addr']}, "
+        f"stored in {time.monotonic() - t0:.1f} s")
+    return r
+
+
+def coproc_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
+    dev = node_bay(bays, a.bay)
+    if a.coproc_cmd == "load":
+        addr, body = uf2_ram_image(a.uf2.read_bytes())
+        coproc_load(dev, coproc_image(addr, body, a.name if a.name is not None else a.uf2.stem[:12]),
+                    admin_key())
+        return 0
+    d = api(dev, "/api/coproc")
+    im = d.get("image")
+    print(f"{dev.id}: " + (f"{im['name'] or '(no name)'}, {im['size']} bytes at {im['addr']}, "
+                           f"sha256 {im['sha256'][:16]}…" if im else "no co-processor image"))
+    if d.get("error"):
+        print(f"  last upload refused: {d['error']}")
+    return 0
 
 
 def _print_access(d: dict) -> None:
@@ -1603,6 +1679,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--hub", action="store_true", help="the power hub itself")
     p.add_argument("--force", action="store_true", help="also reserved bays")
     p.add_argument("--timeout", type=float, default=420.0, help="restart and trial, per device (s)")
+    p = sub.add_parser("coproc", help="the DATA ×4 co-processor's image, loaded into its SRAM by the node")
+    cps = p.add_subparsers(dest="coproc_cmd", required=True)
+    q = cps.add_parser("load", help="store a no_flash UF2 on the node (admin)")
+    q.add_argument("bay")
+    q.add_argument("uf2", type=Path)
+    q.add_argument("--name", help="what the node shows (12 characters; default: the file's name)")
+    cps.add_parser("status").add_argument("bay")
     p = sub.add_parser("row", help="switch or power-cycle a rack row (A-D) on the power hub")
     p.add_argument("row", choices=list("ABCDabcd"), metavar="ROW")
     p.add_argument("action", choices=["on", "off", "cycle"])
@@ -1825,6 +1908,8 @@ def main(argv: list[str] | None = None) -> int:
             return access_cli(a, bays)
         elif a.cmd == "update":
             return update_cli(a, bays)
+        elif a.cmd == "coproc":
+            return coproc_cli(a, bays)
     except BayError as e:
         print(f"bayctl: {e}", file=sys.stderr)
         return 1
