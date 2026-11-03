@@ -119,6 +119,11 @@ jobs:
           - name: data_lead
             board: native_sim/native/64
             app: firmware/bay-node/tests/data_lead
+          # The pin matrix (src/wires.c) with ports.c and the real drivers,
+          # against two CH446Q emulated behind the same board, run below
+          - name: wires
+            board: native_sim/native/64
+            app: firmware/bay-node/tests/wires
           # The hub's power budget (src/budget.c) with made-up contracts and
           # row currents, run below
           - name: hub_budget
@@ -194,10 +199,10 @@ jobs:
         if: matrix.name == 'usbip'
         run: python3 hw-testing-rack/firmware/common/tests/usbip/test_usbip.py --exe build/zephyr/zephyr.exe
 
-      - name: Rack bus protocol / firmware updates / DATA x4 ports / co-processor image and analyzer / DATA lead / hub budget / USB hub / DNS-SD / CH446Q on native_sim
+      - name: Rack bus protocol / firmware updates / DATA x4 ports / co-processor image and analyzer / DATA lead / pin matrix / hub budget / USB hub / DNS-SD / CH446Q on native_sim
         if: >-
           matrix.name == 'rack_bus' || matrix.name == 'update' || matrix.name == 'ports' ||
-          matrix.name == 'coproc' || matrix.name == 'analyzer' ||
+          matrix.name == 'coproc' || matrix.name == 'analyzer' || matrix.name == 'wires' ||
           matrix.name == 'data_lead' || matrix.name == 'hub_budget' || matrix.name == 'usbh_hub' ||
           matrix.name == 'dnssd' || matrix.name == 'ch446q'
         run: |

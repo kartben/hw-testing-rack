@@ -33,6 +33,8 @@ target_sources_ifdef(CONFIG_BAY_DISPLAY app PRIVATE src/display.c)
 target_sources_ifdef(CONFIG_BAY_COPROC app PRIVATE src/coproc.c src/coproc_http.c)
 # Its logic analyzer, relayed to the bay page: /analyzer/ws, /api/analyzer
 target_sources_ifdef(CONFIG_BAY_ANALYZER app PRIVATE src/analyzer.c src/analyzer_http.c)
+# The DATA x4's pin matrix: /api/wires
+target_sources_ifdef(CONFIG_BAY_WIRES app PRIVATE src/wires.c src/wires_http.c)
 # The USB devices' strings: read with the host's own control requests
 target_sources_ifdef(CONFIG_USBIP app PRIVATE src/usb_info.c)
 if(CONFIG_USBIP)

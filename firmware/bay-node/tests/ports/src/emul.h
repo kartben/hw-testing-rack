@@ -14,14 +14,28 @@
 void emul_power(bool on);
 /* Transfers the unpowered board was sent */
 int emul_offline(void);
-/* io 0: 0x20 (ports 1-2), 1: 0x21 (ports 3-4), 2: 0x38 (the v2's matrix expander) */
+/* io 0: 0x20 (ports 1-2), 1: 0x21 (ports 3-4), 2: 0x38 (the matrix expander) */
 uint8_t emul_io_reg(int io, uint8_t reg);
 /* What drives an input pin from outside (FAULT_N: 0 = fault) */
 void emul_io_pin(int io, uint8_t pin, bool level);
 /* The CONFIG register values written since the last call */
 int emul_io_cfg_log(int io, uint8_t *out, int max);
-/* The v2's matrix expander's output register (0x38, MARK on P7) at each of those writes on 0x20 and 0x21 */
+/* The matrix expander's output register (0x38, MARK on P7) at each of those writes on 0x20 and 0x21 */
 int emul_mx_log(uint8_t *out, int max);
+/* The two crosspoints behind 0x38: a switch write, chip 0 U7, 1 U8 */
+struct emul_xp_event {
+	uint8_t chip;
+	uint8_t x;
+	uint8_t y;
+	bool on;
+};
+/* The Y lines chip's X line x is joined to */
+uint8_t emul_xp_y(int chip, int x);
+/* The switch writes since the last call, in order */
+int emul_xp_log(struct emul_xp_event *out, int max);
+/* RST pulses seen; DAT or CK moving while a strobe was high, DAT moving with a CK or STB edge */
+int emul_xp_resets(void);
+int emul_xp_glitches(void);
 /* A port's draw while it is on (0x41, 0x43-0x45) */
 void emul_ina_ma(uint8_t addr, int ma);
 uint16_t emul_ina_config(uint8_t addr);

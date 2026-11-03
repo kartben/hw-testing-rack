@@ -143,7 +143,7 @@ ZTEST(ports, test_1_start)
 	}
 	zassert_equal(emul_ina_config(0x41), 0x4527, "INA226 averaging set");
 	zassert_equal(emul_ina_config(0x45), 0x4527);
-	/* The v2's MARK (TCA9534A P7) an output, low; the other pins left inputs */
+	/* MARK (the matrix expander's P7) an output, low; the other pins left inputs */
 	zassert_equal(emul_io_reg(2, 3), 0x7F);
 	zassert_equal(emul_io_reg(2, 1) & BIT(7), 0);
 	/* The node's ALERT on its shunt over 1250 mA: 62.5 mV across 50 mOhm, 2.5 uV/LSB */

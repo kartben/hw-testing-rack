@@ -216,6 +216,28 @@ int coproc_image_info(char *name, size_t name_len, uint32_t *size, uint32_t *add
 /* The image and the upload, as a JSON object */
 int coproc_json(char *buf, size_t size);
 
+/* --- DATA x4 pin matrix (wires.c) ------------------------------------------ */
+
+#define WIRES_PORTS     4
+#define WIRES_PORT_PINS 8
+#define WIRES_PINS      (WIRES_PORTS * WIRES_PORT_PINS) /* pin p: P(p % 8 + 1) of port p / 8 + 1 */
+#define WIRES_BUSES     8                               /* A-H: the analyzer's CH1-8 */
+#define WIRES_NAME_LEN  24
+
+/* ports.c: the matrix answers (its driver set up) or is going away; a port goes on or off */
+void wires_matrix(bool up);
+void wires_port(int slot, bool on);
+/* Each pin's bus (0-7, -1 none) from now on: the switches changed, or -errno */
+int wires_set(const int8_t wanted[WIRES_PINS]);
+/* What is asked, what the switches are (either may be NULL) */
+void wires_get(int8_t wanted[WIRES_PINS], int8_t closed[WIRES_PINS]);
+void wires_name(int bus, const char *name);
+/* POST /api/wires's body (rewritten in place): the pins asked, the names, or -EINVAL and why */
+int wires_parse(char *body, size_t len, int8_t wanted[WIRES_PINS], bool *has_pins,
+		char names[WIRES_BUSES][WIRES_NAME_LEN], bool *has_names, const char **why);
+/* The matrix as a JSON object; changed >= 0: the switches the last change moved */
+int wires_json(char *buf, size_t size, int changed);
+
 /* --- Logic analyzer relay (analyzer.c) ------------------------------------ */
 
 enum analyzer_owner {

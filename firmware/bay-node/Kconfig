@@ -129,6 +129,15 @@ config BAY_COPROC
 	  loads it whenever the device on the coproc node's hub port shows up
 	  there (src/coproc.c).
 
+config BAY_WIRES
+	bool "DATA x4: the pin matrix, wires between boards (/api/wires)"
+	default y if $(dt_nodelabel_enabled,port_pins)
+	select MUX
+	help
+	  Any of the 32 port pins on any of the buses A-H through the board's
+	  two CH446Q crosspoints, break-before-make, a port's pins open while
+	  it is off (src/wires.c).
+
 config BAY_ANALYZER
 	bool "DATA x4: the co-processor's logic analyzer, relayed to the bay page"
 	default y

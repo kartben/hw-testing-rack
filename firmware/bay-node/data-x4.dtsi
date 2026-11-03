@@ -82,7 +82,7 @@
 	};
 
 	/*
-	 * DATA x4 v2: the pin matrix, two CH446Q (MUX controllers, a control
+	 * The pin matrix, two CH446Q (MUX controllers, a control
 	 * line per X) on the TCA9534A, sharing DAT, CK and RST.  Like the
 	 * expander they run from DUT_5V: the application initializes them once
 	 * the board is up.
@@ -180,7 +180,7 @@
 	};
 
 	/*
-	 * DATA x4 v2: the matrix expander (TCA9534A, not fitted on the base v2),
+	 * The matrix expander (TCA9534A, not fitted on the base DATA-4x),
 	 * register-compatible too: P0 DAT, P1 CK, P2/P3 STB, P4 RST, P5 RUN,
 	 * P6 BOOTSEL, P7 MARK.  P0-P4 drive the crosspoints (crosspoint_u7/u8
 	 * above), P5-P6 the co-processor, P7 its MARK (the coproc node's

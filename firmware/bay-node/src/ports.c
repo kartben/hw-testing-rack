@@ -93,8 +93,8 @@ LOG_MODULE_REGISTER(ports, CONFIG_BAY_LOG_LEVEL);
 #define CONV_PCT     88   /* v1.0: the DATA board's converters, DATA_VIN to its 5 V */
 
 /*
- * DATA x4 v2: U11's MARK, the matrix expander's P7 (TCA9534A, not fitted on
- * the base v2), as the coproc node's mark-gpios.  It is high while the node
+ * DATA x4: U11's MARK, the matrix expander's P7 (TCA9534A, not fitted on
+ * the base DATA-4x), as the coproc node's mark-gpios.  It is high while the node
  * holds a port's RESET or has it off for a power cycle, until the last of
  * them ends: its falling edge is a board starting again, what the bay page's
  * "Capture and reset" triggers on (the analyzer's CH13).  Through the
@@ -436,6 +436,12 @@ static int port_on(int i, bool keep_boot)
 	if (ret == 0 && cfg[i].rst != 0xFF) {
 		ret = line_write(i, cfg[i].rst, false);
 	}
+#if defined(CONFIG_BAY_WIRES)
+	/* Its pins back on their buses, now that it runs */
+	if (ret == 0) {
+		wires_port(cfg[i].slot, true);
+	}
+#endif
 	return ret;
 }
 
@@ -446,6 +452,10 @@ static int port_off(int i)
 	int ret;
 
 	ports[i].on = false;
+#if defined(CONFIG_BAY_WIRES)
+	/* Its pins off the buses while it still has power */
+	wires_port(cfg[i].slot, false);
+#endif
 	if (!chips_up) {
 		return 0;
 	}
@@ -482,6 +492,9 @@ static void mx_setup(void)
 		return;
 	}
 	(void)gpio_pin_configure_dt(&mark_line, marks > 0 ? GPIO_OUTPUT_ACTIVE : GPIO_OUTPUT_INACTIVE);
+#if defined(CONFIG_BAY_WIRES)
+	wires_matrix(true);
+#endif
 }
 #endif
 
@@ -700,6 +713,9 @@ static void poll_handler(struct k_work *work)
 	if (ret != 0) {
 		gone = ++failures >= FAIL_LIMIT;
 		if (gone) {
+#if defined(CONFIG_BAY_WIRES)
+			wires_matrix(false);
+#endif
 			chips_up = false;
 			present = false;
 			for (int i = 0; i < NPORTS; i++) {
@@ -758,6 +774,10 @@ void ports_dut_power(bool on)
 	k_work_cancel_delayable(&admit_work);
 	k_work_cancel_delayable(&shed_work);
 	k_mutex_lock(&lock, K_FOREVER);
+#if defined(CONFIG_BAY_WIRES)
+	/* Every switch open while the chips still answer */
+	wires_matrix(false);
+#endif
 	if (chips_up) {
 		for (int k = 0; k < nio; k++) {
 			io[k].out = 0;

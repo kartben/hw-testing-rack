@@ -333,6 +333,28 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   the driver's copy, the crosspoints' lines with them.  The ports ztest checks both on the emulated board.
   **Not tried on hardware** (no DATA ×4 yet).
 
+* **The pin matrix, `/api/wires` (`src/wires.c`, since 2026-11-03)** — any of the 32 port pins on one of the
+  buses A–H, through the two CH446Q's mux driver.  What is asked is kept apart from the switches: a port's
+  pins open before it goes off and close again once it is on; a change opens every switch it moves before it
+  closes any (break-before-make); after DUT_5V the driver's copy is cleared and the pins come back with
+  their ports.  The CH446Q driver writes DAT on its own before CK or STB rises (the datasheet audit's TAS
+  and TDS).  The native_sim test (`firmware/bay-node/tests/wires`) runs `ports.c`, `wires.c` and the real
+  expander and crosspoint drivers against two CH446Q emulated behind the emulated board: the exact switch
+  per pin and bus, break-before-make, a port off and on, a DUT_5V cycle, MARK toggling during a 16-pin
+  change (nothing garbled), POST's body.  **Not tried on hardware.**  **No VREF reading** on the v1.0: only
+  U11's ADC sees VREF (GPIO40–43), and gusmanb's analyzer does not report it, so the 0.65 V hold waits on a
+  reading (`"vref_mv": null`); which way to get one is the user's choice.  **On the bench, when the boards
+  arrive:**
+  1. The crosspoint map: each port pin (P1–P8 of each header) on each bus, read with the analyzer or a
+     meter, against `port_pins` in `data-x4.dtsi` (the X lines) and the bus order D C B A E F G H (the Y
+     lines).
+  2. Break-before-make: move a pin between two buses with a signal on one and watch the other, on a scope
+     or with the analyzer itself (no overlap of the two switches).
+  3. MARK during a reset: Capture and reset on the bay page, the Mark lane falling as the board leaves
+     reset.
+  4. A port off: its pins open first (no current into the unpowered board through the bus).
+  5. The CH446Q's R_on at ±5 V (the datasheet audit's U4e), and a 1.8 V board's I²C through it.
+
 * **DATA ×4 co-processor (U11, an RP2350B with no flash, since 2026-11-03)** — it runs from SRAM what is
   loaded at each power-up: gusmanb's analyzer built from its pinned tag as a RAM image (its PICO_2 build
   already runs `copy_to_ram`; `no_flash` instead, the same 384 KB buffer).  **The node loads it**

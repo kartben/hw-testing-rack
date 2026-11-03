@@ -1,6 +1,6 @@
 /*
  * A DATA x4 board on native_sim's emulated I2C bus: two TCA6408A (as
- * "ti,tca9538", register compatible), the v2's TCA9534A and four INA226,
+ * "ti,tca9538", register compatible), the matrix expander (TCA9534A) and four INA226,
  * powered from DUT_5V like the real board.  Unpowered they NACK and forget
  * their registers.  The node's own INA226 (0x40) measures the board on
  * DUT_5V: the ports that are on and the board itself, its ALERT on gpio0.
@@ -68,7 +68,7 @@ struct io_data {
 };
 
 static struct io_data *ios[3]; /* 0x20, 0x21, 0x38 */
-/* The v2's matrix expander (0x38): its output register at each CONFIG write of 0x20 and 0x21 */
+/* The matrix expander (0x38): its output register at each CONFIG write of 0x20 and 0x21 */
 static uint8_t mx_log[64];
 static int nmx;
 
@@ -100,6 +100,88 @@ static uint8_t io_read(const struct io_data *d, uint8_t reg)
 	}
 }
 
+/* --- The two CH446Q behind 0x38 ---------------------------------------- */
+
+/*
+ * P0 DAT, P1 CK, P2 U7's STB, P3 U8's STB, P4 RST, pulled up on the board (an
+ * input reads high; the other inputs low).  Both chips shift DAT in on CK's
+ * rising edge; the one whose STB goes high sets the switch its 7-bit address
+ * names (y * 16 + x) to DAT, which must then hold until STB falls.  DAT
+ * must not change in the write that raises CK or STB (TAS, TDS).
+ */
+#define XP_DAT BIT(0)
+#define XP_CK  BIT(1)
+#define XP_RST BIT(4)
+
+static const uint8_t xp_stb[2] = {BIT(2), BIT(3)};
+
+static struct {
+	uint8_t lines;
+	uint8_t addr;
+	uint8_t y[2][16];
+	struct emul_xp_event log[256];
+	int n;
+	int resets;
+	int glitches; /* DAT or CK moved while a strobe was high */
+} xp;
+
+static void xp_update(const struct io_data *d)
+{
+	uint8_t now = ((d->out & ~d->cfg) | (d->cfg & XP_RST)) & 0x1F;
+	uint8_t rose = now & ~xp.lines;
+
+	if (now & XP_RST) {
+		xp.resets += (rose & XP_RST) != 0;
+		memset(xp.y, 0, sizeof(xp.y));
+	} else {
+		if ((xp.lines & (xp_stb[0] | xp_stb[1])) && ((now ^ xp.lines) & (XP_DAT | XP_CK))) {
+			xp.glitches++;
+		}
+		if ((rose & (XP_CK | xp_stb[0] | xp_stb[1])) && ((now ^ xp.lines) & XP_DAT)) {
+			xp.glitches++;
+		}
+		if (rose & XP_CK) {
+			xp.addr = ((xp.addr << 1) | ((now & XP_DAT) ? 1 : 0)) & 0x7F;
+		}
+		for (int c = 0; c < 2; c++) {
+			if (rose & xp_stb[c]) {
+				uint8_t x = xp.addr & 0xF, y = xp.addr >> 4;
+				bool on = now & XP_DAT;
+
+				WRITE_BIT(xp.y[c][x], y, on);
+				if (xp.n < (int)ARRAY_SIZE(xp.log)) {
+					xp.log[xp.n++] = (struct emul_xp_event){c, x, y, on};
+				}
+			}
+		}
+	}
+	xp.lines = now;
+}
+
+uint8_t emul_xp_y(int chip, int x)
+{
+	return xp.y[chip][x];
+}
+
+int emul_xp_log(struct emul_xp_event *out, int max)
+{
+	int n = MIN(xp.n, max);
+
+	memcpy(out, xp.log, n * sizeof(*out));
+	xp.n = 0;
+	return n;
+}
+
+int emul_xp_resets(void)
+{
+	return xp.resets;
+}
+
+int emul_xp_glitches(void)
+{
+	return xp.glitches;
+}
+
 static void io_write(struct io_data *d, uint8_t reg, uint8_t val)
 {
 	switch (reg) {
@@ -120,6 +202,9 @@ static void io_write(struct io_data *d, uint8_t reg, uint8_t val)
 		break;
 	default:
 		break;
+	}
+	if (d == ios[2]) {
+		xp_update(d);
 	}
 }
 
@@ -366,6 +451,10 @@ static void chips_reset(void)
 {
 	for (int i = 0; i < (int)ARRAY_SIZE(ios); i++) {
 		io_reset(ios[i]);
+	}
+	/* The crosspoints with them: held in reset until the expander drives RST */
+	if (ios[2] != NULL) {
+		xp_update(ios[2]);
 	}
 	for (int i = 1; i < (int)ARRAY_SIZE(inas); i++) {
 		if (inas[i] != NULL) {
