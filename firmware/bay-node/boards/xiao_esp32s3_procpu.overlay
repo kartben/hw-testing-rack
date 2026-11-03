@@ -94,6 +94,21 @@
 	status = "disabled";
 };
 
+/*
+ * The co-processor's image in the 8 MB flash's upper half, which the board's
+ * 4 MB layout leaves free (MCUboot, built from the board alone, keeps its
+ * slots)
+ */
+&flash0 {
+	partitions {
+		coproc_partition: partition@400000 {
+			compatible = "zephyr,mapped-partition";
+			label = "coproc";
+			reg = <0x400000 DT_SIZE_K(256)>;
+		};
+	};
+};
+
 /* The node's bus on the board's I2C0 pins (D4 SDA, D5 SCL) */
 &i2c0 {
 	pinctrl-0 = <&i2c0_default>;

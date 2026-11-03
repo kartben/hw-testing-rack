@@ -9,7 +9,7 @@
 
 #include <espressif/esp32s3/esp32s3.dtsi>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
-#include <espressif/partitions_0x0_default_8M.dtsi>
+#include "bay_node-partitions.dtsi"
 #include "bay_node-pinctrl.dtsi"
 #include "bay_node.dtsi"
 

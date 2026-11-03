@@ -33,7 +33,7 @@ drivers, Wi-Fi, the web pages' CSS, helpers and tooling.
 
 | | |
 |---|---|
-| Board | `bay_node/esp32s3/procpu` in `firmware/boards/hwtr/bay_node/` (ESP32-S3-WROOM-1-N8R8: 8 MB of flash, two 3.75 MB image slots; 8 MB of octal PSRAM for the camera's frames and a few large buffers; the pin map of a DevKitC-1 v1.1), pin map from `electronics/bay-node/design.py` |
+| Board | `bay_node/esp32s3/procpu` in `firmware/boards/hwtr/bay_node/` (ESP32-S3-WROOM-1-N8R8: 8 MB of flash, two 3.62 MB image slots and 256 KB for the DATA ×4 co-processor's image; 8 MB of octal PSRAM for the camera's frames and a few large buffers; the pin map of a DevKitC-1 v1.1), pin map from `electronics/bay-node/design.py` |
 | Bindings | `hwtr,dut-port` (TPS2553 EN/FAULT, AUX RESET/BOOT, INA226, AUX UART), `hwtr,usb-mux` (MUX_FORCE_PC, PC_DET, SVC) |
 | Stand-in | `esp32s3_devkitc/esp32s3/procpu` + `firmware/bay-node/boards/esp32s3_devkitc_procpu.overlay` (same GPIO map) |
 | Bench node | `m5stack_stamps3/esp32s3/procpu` + `firmware/bay-node/boards/m5stack_stamps3_procpu.*`: serial console, network and web page on a StampS3, no USB host (its USB-C is the node's console) |
@@ -201,7 +201,7 @@ hub.
 > included), confirmed 6 s later.  A bench build whose health check never
 > passes (a 40 s trial) restarted unconfirmed and MCUboot put the previous
 > firmware back: running again 143 s after the start.  Still to check on the
-> first boards: the bay node's own layout (3.75 MB slots), the rack bus in
+> first boards: the bay node's own layout (3.62 MB slots), the rack bus in
 > the trial, the watchdog, a power loss during a swap.
 
 Both boards boot through **MCUboot**, built in front of the application by
@@ -255,7 +255,9 @@ updates them anyway).  The hub is `rack.local` unless `BAYCTL_HUB` or `config/la
 says `hub:`.
 
 **Cost.**  MCUboot: 48 KB of its 64 KB partition.  The images: 1.07 MB (bay,
-camera included), 0.79 MB (hub), in 3.75 MB slots.  RAM: MCUboot's layout
+camera included), 0.79 MB (hub), in 3.62 MB slots (the bay node: Zephyr's 8 MB layout
+with 128 KB less in each, for the `coproc` partition, `boards/hwtr/bay_node/bay_node-partitions.dtsi`;
+the hub keeps 3.75 MB).  RAM: MCUboot's layout
 leaves the application 18 KB less DRAM; with the USB/IP buffer pool down
 from 64 KB to 48 KB the bay was at 96.6 % (12.7 KB free).  The camera
 costs DRAM too (its thread, the driver's fixed 4 KB work-queue stack, four

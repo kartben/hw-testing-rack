@@ -485,7 +485,7 @@ buffer and state go to PSRAM: in internal RAM the node overflows by 15 KB.
 
 | On bay_node | Without | With the display |
 |---|---|---|
-| Image | 1059 KB | 1307 KB (+247 KB, of a 3840 KB slot) |
+| Image | 1059 KB | 1307 KB (+247 KB, of a 3712 KB slot) |
 | Internal RAM (dram0) | 345424 B, 90.7 % | 351136 B, 92.2 % (+5.7 KB: LVGL's thread stack, touch queue) |
 | PSRAM, static | | +44.5 KB (27 KB render buffer, 16 KB LVGL heap) |
 

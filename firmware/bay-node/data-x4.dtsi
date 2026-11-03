@@ -71,6 +71,16 @@
 	};
 
 	/*
+	 * U11, the co-processor: an RP2350B with no flash on hub port 5, the
+	 * analyzer loaded into its SRAM from the coproc partition at each
+	 * power-up
+	 */
+	coproc: coproc {
+		compatible = "hwtr,coproc";
+		hub-port = <5>;
+	};
+
+	/*
 	 * DATA x4 v2: the pin matrix, two CH446Q (MUX controllers, a control
 	 * line per X) on the TCA9534A, sharing DAT, CK and RST.  Like the
 	 * expander they run from DUT_5V: the application initializes them once

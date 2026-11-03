@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  The DATA x4's co-processor (U11, an RP2350B with no flash) on the node's
+  USB host: at each power-up it comes up in its ROM's USB bootloader
+  (2e8a:000f), and the node loads the image kept in its `coproc` flash
+  partition into its SRAM (PICOBOOT), then lets the firmware that starts be
+  exported like any device.  Only the device on this hub port is loaded: an
+  RP2350 board under test in BOOTSEL is left to USB/IP.
+
+  Example:
+
+    coproc: coproc {
+        compatible = "hwtr,coproc";
+        hub-port = <5>;
+    };
+
+compatible: "hwtr,coproc"
+
+properties:
+  hub-port:
+    type: int
+    required: true
+    description: |
+      The downstream port of the hub on the node's root port the
+      co-processor is wired to (DATA x4: 5).  0: the device on the root
+      port itself, with no hub between.
