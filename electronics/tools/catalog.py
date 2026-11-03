@@ -376,6 +376,14 @@ CAT = {
     "tps60400": Cat("Regulator_SwitchedCapacitor:TPS60400DBV", "Package_TO_SOT_SMD:SOT-23-5", "TPS60400DBVR",
                     "Texas Instruments", "C9839", 0.79, datasheet="https://www.ti.com/lit/ds/symlink/tps60400.pdf",
                     description="charge pump voltage inverter, 60 mA"),
+    # the RP2350B, the RP2354B less its in-package flash (RP2350 datasheet §14.3: the same die, pinout and
+    # package); DATA ×4's U11 since 2026-11-03 (NextPCB had no RP2354B): it boots to the USB bootloader and runs
+    # what is loaded into its SRAM.  The RP2354B stays a drop-in that boots from its own flash
+    "rp2350b": Cat("MCU_RaspberryPi:RP2350B", "Package_DFN_QFN:QFN-80-1EP_10x10mm_P0.4mm_EP3.4x3.4mm", "RP2350B",
+                   "Raspberry Pi", "C42415655", 1.28,
+                   datasheet="https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf",
+                   description="RP2350, no flash in the package, QFN-80 (48 GPIO)",
+                   model=("QFN-80_10x10x0.85mm.step", (0, 0, 0), (0, 0, 0))),
     "rp2354b": Cat("MCU_RaspberryPi:RP2354B", "Package_DFN_QFN:QFN-80-1EP_10x10mm_P0.4mm_EP3.4x3.4mm", "RP2354B",
                    "Raspberry Pi", "C39843328", 1.52,
                    datasheet="https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf",

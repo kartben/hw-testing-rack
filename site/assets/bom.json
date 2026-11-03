@@ -3555,20 +3555,20 @@
 {
 "category": "Electronics",
 "group": "data-port-x4",
-"item": "RP2354B — RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO)",
+"item": "RP2350B — RP2350, no flash in the package, QFN-80 (48 GPIO)",
 "ref": "U11",
-"mpn": "RP2354B",
+"mpn": "RP2350B",
 "manufacturer": "Raspberry Pi",
 "supplier": "LCSC/JLCPCB",
-"part": "C39843328",
+"part": "C42415655",
 "qty": 2,
-"unit_eur": 1.3984,
+"unit_eur": 1.1776,
 "basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 2.8
+"ext_eur": 2.36
 },
 {
 "category": "Electronics",
@@ -4498,10 +4498,10 @@
 "item": "Components data-port-x4-panel: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-11-01, adjusted",
 "qty": 1,
-"unit_eur": 3.87,
-"notes": "quoted components $101.52 + $15.14 since (≈ €107.33) for 2 panels; catalogue unit prices give €103.46",
+"unit_eur": 4.31,
+"notes": "quoted components $101.52 + $15.14 since (≈ €107.33) for 2 panels; catalogue unit prices give €103.02",
 "unit": "pcs",
-"ext_eur": 3.87
+"ext_eur": 4.31
 },
 {
 "category": "Electronics",

@@ -204,9 +204,9 @@ JLC_CPL_FIX = {
     "C598310": ("LED_Kingbright_KPA-3010_3x2x1mm", 0, 0.0, 0.825),           # hub D3 D8 D11–D14 (green)
     "C4555382": ("LED_Kingbright_KPA-3010_3x2x1mm", 0, 0.0, 0.825),          # hub D21–D24 (red)
     "C181499": ("VQFN-16-1EP_3x3mm_P0.5mm_EP1.45x1.45mm", 270, 0.0, 0.0),    # x4 U2 U6 (TCA6408A)
-    # DATA ×4 v2's, fitted on 2026-10-20 the same way (bottom parts un-mirrored first).  RP2354B C39843328,
-    # USB2517I C478081, ABM8 C20625731, the inductor C42411119 fit as they are; the LED C2297 too, by
-    # function (JLC numbers its anode 1, KiCad its cathode)
+    # DATA ×4 v2's, fitted on 2026-10-20 the same way (bottom parts un-mirrored first).  RP2354B C39843328 (and
+    # the RP2350B C42415655, its package), USB2517I C478081, ABM8 C20625731, the inductor C42411119 fit as they
+    # are; the LED C2297 too, by function (JLC numbers its anode 1, KiCad its cathode)
     "C109471": ("LQFP-44_10x10mm_P0.8mm", 270, 0.0, 0.0),                    # x4 v2 U7 U8 (CH446Q)
     "C130008": ("DHVQFN-20-1EP_2.5x4.5mm_P0.5mm_EP1x3mm", 270, 0.0, 0.0),    # x4 v2 U107–U407 (LSF0108)
     "C20615800": ("DFN2510-10L_2.5x1.0mm_P0.5mm", 270, 0.0, 0.0),            # x4 v2 U4, U105… (H5VU25UC: its pins

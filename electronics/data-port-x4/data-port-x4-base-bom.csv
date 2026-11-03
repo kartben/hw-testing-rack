@@ -59,7 +59,7 @@ U5,1,MAX809S,SOT-23,MAX809S,"UMW(Youtai Semiconductor Co., Ltd.)",C347371,"reset
 "U7,U8",2,CH446Q,LQFP-44_10x10mm_P0.8mm,CH446Q,WCH(Jiangsu Qin Heng),C109471,"8 × 16 analog crosspoint switch, 45–65 Ω at 12 V span, serial or parallel addressing",yes,,
 U9,1,TPS60400DBVR,SOT-23-5,TPS60400DBVR,Texas Instruments,C9839,"charge pump voltage inverter, 60 mA",yes,,
 U10,1,TCA9534APWR,TSSOP-16_4.4x5mm_P0.65mm,TCA9534APWR,Texas Instruments,C206010,"8-bit I2C I/O expander, push-pull outputs, A version (0x38–0x3F)",yes,,
-U11,1,RP2354B,QFN-80-1EP_10x10mm_P0.4mm_EP3.4x3.4mm,RP2354B,Raspberry Pi,C39843328,"RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO)",yes,,
+U11,1,RP2350B,QFN-80-1EP_10x10mm_P0.4mm_EP3.4x3.4mm,RP2350B,Raspberry Pi,C42415655,"RP2350, no flash in the package, QFN-80 (48 GPIO)",yes,,
 U13,1,LMR51635YDDCR,TSOT-23-6,LMR51635YDDCR,Texas Instruments,C45262770,"4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum",,"LMR51635YFDDCR (C44750836): same, forced PWM, no spread spectrum",
 "U101,U201,U301,U401",4,TPS2553DBVR-1,SOT-23-6,TPS2553DBVR-1,Texas Instruments,C111738,"adjustable current-limited power switch, latch-off after 7.5 ms in limit",,,
 "U102,U202,U302,U402",4,INA226AIDGSR,TSSOP-10_3x3mm_P0.5mm,INA226AIDGSR,Texas Instruments,C49851,"36 V current/voltage/power monitor, I2C",,,

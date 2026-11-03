@@ -5,7 +5,7 @@
 	(uuid "1ed92c95-15a7-532a-ba63-ea5b1a7eb42a")
 	(paper "A1")
 	(title_block
-		(title "DATA ×4 v2 — RP2354B analyzer / co-processor on hub port 5")
+		(title "DATA ×4 v2 — RP2350B analyzer / co-processor on hub port 5")
 		(rev "1.0")
 		(company "hw-testing-rack")
 		(comment 1 "A converted bay's drawer board: four USB-C behind a hub, 32 switchable pins on 8 buses, a logic analyzer (hw-testing-rack)")
@@ -1930,7 +1930,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "MCU_RaspberryPi:RP2354B"
+		(symbol "MCU_RaspberryPi:RP2350B"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1947,7 +1947,7 @@
 					(justify left)
 				)
 			)
-			(property "Value" "RP2354B"
+			(property "Value" "RP2350B"
 				(at 17.526 54.864 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1980,7 +1980,7 @@
 					)
 				)
 			)
-			(property "Description" "A microcontroller by Raspberry Pi, dual CPU architecture (ARM Cortex-M33 / RISC-V Hazard3), 150MHz, 2MB flash, 520KB SRAM, 12 PIO state machines, VQFN-80"
+			(property "Description" "A microcontroller by Raspberry Pi, dual CPU architecture (ARM Cortex-M33 / RISC-V Hazard3), 150MHz, no flash, 520KB SRAM, 12 PIO state machines, VQFN-80"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2013,7 +2013,7 @@
 					)
 				)
 			)
-			(property "ki_keywords" "RPi Pico USB QSPI I2C UART ADC SC1512"
+			(property "ki_keywords" "RPi Pico USB QSPI I2C UART ADC SC1510"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -2035,7 +2035,7 @@
 					)
 				)
 			)
-			(symbol "RP2354B_0_1"
+			(symbol "RP2350B_0_1"
 				(rectangle
 					(start -21.59 52.07)
 					(end 21.59 -54.61)
@@ -2048,7 +2048,7 @@
 					)
 				)
 			)
-			(symbol "RP2354B_1_0"
+			(symbol "RP2350B_1_0"
 				(pin power_in line
 					(at 12.7 55.88 270)
 					(length 3.81)
@@ -2540,7 +2540,7 @@
 					)
 				)
 			)
-			(symbol "RP2354B_1_1"
+			(symbol "RP2350B_1_1"
 				(pin bidirectional line
 					(at 25.4 38.1 180)
 					(length 3.81)
@@ -3905,7 +3905,7 @@
 		)
 	)
 	(symbol
-		(lib_id "MCU_RaspberryPi:RP2354B")
+		(lib_id "MCU_RaspberryPi:RP2350B")
 		(at 152.4 177.8 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -3922,7 +3922,7 @@
 				)
 			)
 		)
-		(property "Value" "RP2354B"
+		(property "Value" "RP2350B"
 			(at 130.675 111.76 0)
 			(effects
 				(font
@@ -3948,7 +3948,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO)"
+		(property "Description" "RP2350, no flash in the package, QFN-80 (48 GPIO)"
 			(at 152.4 177.8 0)
 			(effects
 				(font
@@ -3957,7 +3957,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "RP2354B"
+		(property "MPN" "RP2350B"
 			(at 152.4 177.8 0)
 			(effects
 				(font
@@ -3975,7 +3975,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C39843328"
+		(property "LCSC" "C42415655"
 			(at 152.4 177.8 0)
 			(effects
 				(font
@@ -13732,7 +13732,7 @@
 		)
 		(uuid "830b3c61-623a-52e5-8feb-55ec2e431acd")
 	)
-	(text "RP2354B, wired like a Pico 2 (gusmanb's PICO_2 UF2 runs as it is); its decoupling"
+	(text "RP2350B, wired like a Pico 2 less its flash (the analyzer loaded into SRAM at power-up); its decoupling"
 		(exclude_from_sim no)
 		(at 16.51 27.94 0)
 		(effects

@@ -15,9 +15,11 @@ retired unbuilt on 2026-10-26; this folder held it) was to stay the board of the
   Y lines joined are the eight buses A–H, each pulled up to 3.3 V by 10k (the B-side pull-up of
   whatever pins it joins).  The node writes them through a TCA9534A (0x38: DAT, CK, one
   STB per chip, RST held high until the node writes it: all switches open at power-up);
-* an RP2354B co-processor wired like a Pico 2 (12 MHz ABM8-272-T3, its core regulator as Raspberry Pi
-  lays it out), on hub port 5: the stock gusmanb LogicAnalyzer UF2 sees the buses on CH1–8 (GPIO2–9,
-  GPIO0 → 1 bridged for its triggers); our firmware later switches 2.2k pull-ups per bus (GPIO10–13,
+* an RP2350B co-processor wired like a Pico 2 less its flash (12 MHz ABM8-272-T3, its core regulator as
+  Raspberry Pi lays it out), on hub port 5.  With no flash it comes up in the USB bootloader at each power-up
+  and runs what is loaded into its SRAM (picotool load -x over USB/IP from the lab server, later the node);
+  an RP2354B is a drop-in that boots from its in-package flash instead.  gusmanb's LogicAnalyzer (its PICO_2
+  build, as a RAM image) sees the buses on CH1–8 (GPIO2–9, GPIO0 → 1 bridged for its triggers); our firmware later switches 2.2k pull-ups per bus (GPIO10–13,
   16–19) and reads the VREFs (GPIO40–43, through 100k) and the ±5 V rails (GPIO44–45).  The node holds its RUN
   and   BOOTSEL (QSPI_SS through 1k) on the TCA9534A, and the mark line (GPIO14) for triggers.  Its 3.3 V from the
   board's, through a ferrite.
@@ -218,7 +220,7 @@ EXP_LINES = {"a": {"P0": "RST_IO", "P1": "BOOT_IO", "P2": "EN", "P3": "FLT_N"},
 BUSES = "ABCDEFGH"
 # the CH446Q's Y lines: Y0–Y3 leave by its north side (and its north-east corner), Y4–Y7 by its south side
 Y_BUS = "DCBAEFGH"
-# the 2.2k pull-up enables on the RP2354B's east face, either side of its 3.3 V pin 15 (A at GPIO19 … D at
+# the 2.2k pull-up enables on the RP2350B's east face, either side of its 3.3 V pin 15 (A at GPIO19 … D at
 # GPIO16, E at GPIO13 … H at GPIO10), the arrays RN6/RN7 right beside them in the same order
 PU_GPIO = {"A": 19, "B": 18, "C": 17, "D": 16, "E": 13, "F": 12, "G": 11, "H": 10}
 # The pin chain of a port, straight up from its header: header → H5VU25UC → 100 Ω → LSF0108 (A face down,
@@ -624,7 +626,7 @@ def port(b: Board, n: int):
     # port's VBUS, so a group is a voltage domain of its own, any board on any group.  TI requires Vref_B ≥
     # Vref_A + 0.8 V and recommends 1.0 V: with +5V_MX at 4.75 V, VREF up to ≈ 3.9 V translates as specified.  A 5 V
     # board with TTL inputs takes VREF from its own 3.3 V pin; at a 5 V VREF the bus rises to ≈ 4.0–4.2 V (outside
-    # TI's conditions, harmless: the other ports clamp to their VREF, the RP2354B's GPIO tolerate 5 V powered)
+    # TI's conditions, harmless: the other ports clamp to their VREF, the RP2350B's GPIO tolerate 5 V powered)
     R(s, f"R{k + 11}", "200k", "+5V_MX", p + "VREFB", size="0402", pcb=P(bx, by, 0), sch=at(162, 122))
     # 0.15 mm west of the column: its GND pad clear of the LSF0108's pin-1 mark (silk over a pad otherwise)
     C(s, f"C{k + 5}", "100n", p + "VREFB", "GND", size="0402", pcb=P(bx - 0.15, by + 1.1, 0), sch=at(162, 130))
@@ -1023,10 +1025,11 @@ def matrix_sheet(b: Board):
 
 # -------------------------------------------------------------------------------- co-processor (full)
 def coproc_sheet(b: Board):
-    s = b.sheet("Co-processor", "coproc.kicad_sch", "RP2354B analyzer / co-processor on hub port 5")
+    s = b.sheet("Co-processor", "coproc.kicad_sch", "RP2350B analyzer / co-processor on hub port 5")
     cx, cy = CP
     s.paper = "A1"
-    s.frame("RP2354B, wired like a Pico 2 (gusmanb's PICO_2 UF2 runs as it is); its decoupling", 6, 10, 120, 118)
+    s.frame("RP2350B, wired like a Pico 2 less its flash (the analyzer loaded into SRAM at power-up); its decoupling",
+            6, 10, 120, 118)
     gp = {"GPIO0": "CP_TRIG", "GPIO1": "CP_TRIG", "GPIO14": "MARK", "GPIO25": "CP_LED",
           "GPIO44/ADC4": "CP_SNS_5V", "GPIO45/ADC5": "CP_SNS_N5V"}
     for i, bus in enumerate(BUSES):
@@ -1047,7 +1050,9 @@ def coproc_sheet(b: Board):
     # turned 180°: GPIO2–9 at the south-east corner (the buses, A and B on the south face), the pull-up
     # enables up the east face, the ADC west (the ports' VREFs), the core regulator and USB south-west,
     # XIN/XOUT, SWD, RUN and the LED north (the top edge)
-    part(s, "U11", "rp2354b", rp, pcb=P(cx, cy, 180), sch=at(60, 70, fields=(-10, -27)))
+    # the RP2350B (2026-11-03: NextPCB had no RP2354B): QSPI_SS still selects BOOTSEL, SCLK and SD0–SD3 stay
+    # open.  An RP2354B fits as it is and boots from its own flash (RP2350 datasheet §14.3)
+    part(s, "U11", "rp2350b", rp, pcb=P(cx, cy, 180), sch=at(60, 70, fields=(-10, -27)))
     rail(s, "+3V3_CP", ["U11.USB_OTP_VDD", "U11.ADC_AVDD", "U11.QSPI_IOVDD", "U11.IOVDD", "U11.VREG_VIN"], -3)
     rail(s, "+1V1", ["U11.VREG_FB", "U11.DVDD"], -5)
     rail(s, "GND", ["U11.VREG_PGND", "U11.GND"], 2, "down")
@@ -1316,7 +1321,7 @@ def board() -> Board:
         "DATA ×4 v1.0 — USB2517I hub (7 ports), four USB-C (sub-slots A1.1–A1.4) each with a TPS2553-1, an INA226",
         "  and ESD, two TCA6408A for EN/FAULT/RESET/BOOT, an LMR51635 5 V from the lead's 20 V, an AP2114H 3.3 V;",
         "  the PH 8 lead from the node's J7.",
-        "Pins: 32 on two CH446Q (±5 V), LSF0108 per port, an RP2354B analyzer on hub port 5, a TCA9534A for",
+        "Pins: 32 on two CH446Q (±5 V), LSF0108 per port, an RP2350B analyzer on hub port 5, a TCA9534A for",
         "  the matrix and the co-processor's RUN/BOOTSEL.  Standing behind the port wall, one face assembled;",
         "  v1 stays the other bays' board.",
         "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×6's lead.",
@@ -1815,7 +1820,7 @@ def board() -> Board:
         # In2 over GND, In3 over the power plane
         "inner": ([("In1.GND", "power"), ("In2.SIG", "signal"), ("In3.SIG", "signal"), ("In4.PWR", "power")]
                   if six else [("In1.GND", "power"), ("In2.PWR", "power")]),
-        "stackup": "JLC06161H-3313" if six else "JLC04161H-7628", "finish": "ENIG",   # flat for the RP2354B's 0.4 mm QFN-80
+        "stackup": "JLC06161H-3313" if six else "JLC04161H-7628", "finish": "ENIG",   # flat for the RP2350B's 0.4 mm QFN-80
         "edge_parts": [],
         "defer_pours": False,
         # net: (plane, via Ø, drill, track width); pins over another net's area are routed instead

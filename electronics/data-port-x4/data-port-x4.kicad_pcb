@@ -4126,7 +4126,7 @@
 				)
 			)
 		)
-		(property "Value" "RP2354B"
+		(property "Value" "RP2350B"
 			(at 0 6.3 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -4149,7 +4149,7 @@
 				)
 			)
 		)
-		(property "Description" "RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO)"
+		(property "Description" "RP2350, no flash in the package, QFN-80 (48 GPIO)"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -4172,7 +4172,7 @@
 				)
 			)
 		)
-		(property "MPN" "RP2354B"
+		(property "MPN" "RP2350B"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)
@@ -4196,7 +4196,7 @@
 				)
 			)
 		)
-		(property "LCSC" "C39843328"
+		(property "LCSC" "C42415655"
 			(at 0 0 180)
 			(layer "F.Fab")
 			(hide yes)

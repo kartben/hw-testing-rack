@@ -317,6 +317,13 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
 
 ## Open items
 
+* **DATA ×4 co-processor (U11, an RP2350B with no flash, since 2026-11-03)** — it runs from SRAM what is
+  loaded at each power-up.  Needed: gusmanb's analyzer built from its pinned tag as a RAM image (its PICO_2
+  build already runs `copy_to_ram`; `no_flash` instead, the same 384 KB buffer), loaded by the lab server
+  (`picotool load -x` over USB/IP) at first; then a PICOBOOT RAM loader on the node (write, then REBOOT2 to
+  the RAM image), reloading whenever the co-processor shows up in BOOTSEL.  Bench checks: the flashless boot
+  lands in BOOTSEL every time, the USB serial number without flash.
+
 * **Hardware bring-up** — nothing has run on a bay node yet (board
   definition, INA226 calibration, LED timing, SERVICE PHY handover).
 * **Interrupt OUT / isochronous transfers and hubs** in `uhc_dwc2`: needed

@@ -1,6 +1,10 @@
 # DATA ×4 v2 co-processor: the firmware question (research)
 
-**Status (2026-10-19): research and a build-only spike, nothing designed.**  The user asked for the
+**Status (2026-10-19): research and a build-only spike, nothing designed.**  **2026-11-03:** U11 is an
+RP2350B (NextPCB had no RP2354B): no flash, so it comes up in the USB bootloader at each power-up and runs a
+RAM image loaded into its SRAM (`picotool load -x` from the lab server over USB/IP, later the node over
+PICOBOOT).  "Reflashing" below becomes loading the wanted image; an RP2354B fitted instead boots from its own
+flash as described.  The user asked for the
 co-processor's firmware to be studied on its own ("recherche le fw zephyr dans une session indépendante"),
 apart from the board research in [data-x4-v2-research.md](data-x4-v2-research.md).  That note puts an
 RP2354B on the DATA ×4 v2, on its own port of a 7-port hub behind the node, with the stock gusmanb

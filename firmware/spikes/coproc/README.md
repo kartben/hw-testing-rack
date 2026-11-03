@@ -1,6 +1,6 @@
 # Co-processor spike: what Zephyr gives an RP2350 today
 
-A build-only spike for the DATA ×4 v2 co-processor (an RP2354B behind the
+A build-only spike for the DATA ×4 v2 co-processor (an RP2350B, an RP2354B until 2026-11-03, behind the
 drawer's hub, [docs/data-x4-v2-research.md](../../../docs/data-x4-v2-research.md)).
 It answers "how much of our own firmware would be ours?" with code, not
 guesses; the findings are in

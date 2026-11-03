@@ -377,7 +377,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | CH446Q — 8 × 16 analog crosspoint switch, 45–65 Ω at 12 V span, serial or parallel addressing | 4  | 1.46 | 5.85 | LCSC/JLCPCB C109471 |
 | Electronics | TPS60400DBVR — charge pump voltage inverter, 60 mA | 2  | 0.73 | 1.45 | LCSC/JLCPCB C9839 |
 | Electronics | TCA9534APWR — 8-bit I2C I/O expander, push-pull outputs, A version (0x38–0x3F) | 2  | 1.25 | 2.50 | LCSC/JLCPCB C206010 |
-| Electronics | RP2354B — RP2350 with 2 MB flash in the package, QFN-80 (48 GPIO) | 2  | 1.40 | 2.80 | LCSC/JLCPCB C39843328 |
+| Electronics | RP2350B — RP2350, no flash in the package, QFN-80 (48 GPIO) | 2  | 1.18 | 2.36 | LCSC/JLCPCB C42415655 |
 | Electronics | LMR51635YDDCR — 4.3–60 V 3.5 A synchronous buck, 1.1 MHz, PFM + spread spectrum | 2  | 1.73 | 3.46 | LCSC/JLCPCB C45262770 |
 | Electronics | TPS2553DBVR-1 — adjustable current-limited power switch, latch-off after 7.5 ms in limit | 8  | 0.27 | 2.13 | LCSC/JLCPCB C111738 |
 | Electronics | INA226AIDGSR — 36 V current/voltage/power monitor, I2C | 8  | 0.69 | 5.52 | LCSC/JLCPCB C49851 |
@@ -430,7 +430,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225 | 2  | 0.09 | 0.17 | LCSC/JLCPCB C15643 |
 | Electronics | Bare PCB data-port-x4-panel (4-layer 100×142 mm panel of a logic and a base, JLC04161H-7628, ENIG, mouse bites) | 5  | 9.57 | 47.84 | JLCPCB quote 2026-11-01 |
 | Electronics | Economic PCBA, 2 panels: setup, stencil, extended parts, SMT, special components | 1  | 83.90 | 83.90 | JLCPCB quote 2026-11-01, adjusted |
-| Electronics | Components data-port-x4-panel: JLC quote minus the catalogue prices above | 1  | 3.87 | 3.87 | JLCPCB quote 2026-11-01, adjusted |
+| Electronics | Components data-port-x4-panel: JLC quote minus the catalogue prices above | 1  | 4.31 | 4.31 | JLCPCB quote 2026-11-01, adjusted |
 | Electronics | JLCPCB shipping: every board in one cart | 1  | 31.28 | 31.28 | JLCPCB |
 | Printed parts | PETG filament | 4.3 kg | 20.00 | 86.00 | any |
 | Printed parts | Rear bay covers (optional) | 12  | 0.00 | 0.00 | printed |

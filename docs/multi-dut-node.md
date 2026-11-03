@@ -221,20 +221,20 @@ TCA9534A.  The driver is written, for Zephyr's MUX subsystem
 native_sim against emulated chips): each chip's X line is a control line,
 its state the mask of the Y lines (buses) it joins; `port_pins` in
 `firmware/bay-node/data-x4.dtsi` names the 32 port pins `p1-1` … `p4-8`.
-No virtual-wire API on top yet.  The RP2354B drives the buses' pull-ups;
+No virtual-wire API on top yet.  The RP2350B drives the buses' pull-ups;
 its firmware is not written yet.  Both keep the node's rule: nothing drives
 an unpowered board.
 
 - The matrix switches stay open while their port is off (MX_RST high, the
   default until the node writes the TCA9534A), and open when it goes off.
-- A port's switches stay open while its VREF reads under 0.65 V (the RP2354B's GPIO40–43, VREF / 2 through
+- A port's switches stay open while its VREF reads under 0.65 V (the RP2350B's GPIO40–43, VREF / 2 through
   100k: under 0.33 V).  An unwired VREF sits at ≈ 0.4 V, where the LSF0108 is not specified as off (EN stays
   high): only the crosspoint isolates that group (the v2 datasheet audit's fix 8).
 - Break-before-make: a route opens its old crosspoint before closing the new
   one; two sources never share a line.
 - Open-drain drive: a line is pulled low or let go (to its pull-up), never
   driven high into a board's pin.
-- The RP2354B's internal pull-downs are cleared on GPIO10–13 and 16–19 (the
+- The RP2350B's internal pull-downs are cleared on GPIO10–13 and 16–19 (the
   2.2k pull-up enables A–H) before anything else.
 
 ## REST API
@@ -338,7 +338,7 @@ string of a port's USB device.
 ## A logic analyzer in a sub-slot
 
 > Decided 2026-10-19 ([data-x4-v2-research.md](data-x4-v2-research.md), "Decided"): until the
-> DATA ×4 v2's RP2354B, one of B3's Pico 2, **B3.3**, runs gusmanb's LogicAnalyzer, stock.  No
+> DATA ×4 v2's RP2350B, one of B3's Pico 2, **B3.3**, runs gusmanb's LogicAnalyzer, stock.  No
 > firmware of ours; ≈ €7 with its jumpers (BOM, "Analyzer").
 
 **Config.**
@@ -427,7 +427,7 @@ string of a port's USB device.
 3. BOOT on TP6 through the port's 1k enters BOOTSEL.  The pegs clear the header strips.
 4. The chip is an A4.  The zip's sha256 goes into `config/rack.yaml` › `analyzer`.
 
-**Next, not started** (v2's RP2354B reuses all of it):
+**Next, not started** (v2's RP2350B reuses all of it):
 
 1. The simulated analyzer and `/api/la/…` in `dev_server.py`: the contract.
 2. `bayctl capture`, against it: `.sr` and sigrok-cli decoding, the decoders' CI oracle.
