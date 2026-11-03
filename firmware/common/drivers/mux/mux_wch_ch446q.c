@@ -16,7 +16,9 @@
  * A switch is set by shifting its 7-bit address (y * 16 + x, AY2 first) into
  * DAT on the rising edges of CK, then presenting its state on DAT (1 closes)
  * and pulsing STB.  When DAT, CK and STB are on the same GPIO port (an I2C
- * expander, typically), each step is a single port write: 16 writes a switch.
+ * expander, typically), each step is a single port write: 17 writes a switch.
+ * An expander changes its pins together, so DAT never changes in the write
+ * that raises CK or STB: the chip wants it there first (TAS, TDS).
  */
 
 #define DT_DRV_COMPAT wch_ch446q
@@ -117,7 +119,10 @@ static int ch446q_write_switch(const struct device *dev, uint8_t x, uint8_t y, b
 		}
 	}
 	if (ret == 0) {
-		ret = ch446q_line_write(cfg, on ? 1 : 0, CH446Q_KEEP, 1);
+		ret = ch446q_line_write(cfg, on ? 1 : 0, CH446Q_KEEP, CH446Q_KEEP);
+	}
+	if (ret == 0) {
+		ret = ch446q_line_write(cfg, CH446Q_KEEP, CH446Q_KEEP, 1);
 	}
 	if (ret == 0) {
 		ret = ch446q_line_write(cfg, CH446Q_KEEP, CH446Q_KEEP, 0);

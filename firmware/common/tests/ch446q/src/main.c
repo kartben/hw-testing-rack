@@ -83,6 +83,8 @@ static void chip_update(struct chip *c)
 			c->shift = ((c->shift << 1) | data) & 0x7F;
 		}
 		if (strobe && !c->strobe_was) {
+			/* DAT set up before STB rises (TDS), not with it */
+			c->faults += data != c->data_was;
 			c->data_strobe = data;
 		} else if (strobe && data != c->data_strobe) {
 			c->faults++; /* DAT must hold until STB falls */
@@ -159,7 +161,7 @@ ZTEST(ch446q, test_1_set)
 	 */
 	before = writes[0];
 	zassert_ok(mux_control_set(u7, &x4, BIT(2) | BIT(7)));
-	zassert_equal(writes[0] - before, 16, "%d port writes for one switch", writes[0] - before);
+	zassert_equal(writes[0] - before, 17, "%d port writes for one switch", writes[0] - before);
 	zassert_ok(mux_state_get(u7, &x4, &state));
 	zassert_equal(state, BIT(2) | BIT(7));
 
@@ -189,7 +191,7 @@ ZTEST(ch446q, test_2_disconnect)
 	/* X7 of U7 opens, switch by switch; U8 keeps its switches, RST never moves */
 	before = writes[0];
 	zassert_ok(mux_control_disconnect(u7, p1_2));
-	zassert_equal(writes[0] - before, 8 * 16);
+	zassert_equal(writes[0] - before, 8 * 17);
 	zassert_equal(u7_chip->y_mask[7], 0);
 	zassert_equal(u8_chip->y_mask[15], 0x3C);
 	zassert_equal(u7_chip->resets, resets, "disconnect must not pulse the shared reset");
