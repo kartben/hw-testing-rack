@@ -324,6 +324,14 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
 
 ## Open items
 
+* **The matrix expander (U10, TCA9534A at 0x38) before the Wires series drives it** — `src/ports.c` sets
+  it up with raw I²C writes (MARK, P7, the only output) and changes MARK alone by a read-modify-write at each
+  reset or power cycle of a port.  Once the CH446Q drivers drive P0–P4 (DAT, CK, STB, RST) and `coproc
+  reload` P5–P6 (RUN, BOOTSEL) through the `ti,tca9538` driver, MARK has to go through that same driver
+  (`gpio_pin_set` on `ports_mx` 7), or the whole chip through one shadow byte: the driver writes its cached
+  output register back with each pin it sets, and would put MARK back where it last saw it.  The first commit
+  of the Wires series, along with the set-up again after each DUT_5V on (the chip forgets its registers).
+
 * **DATA ×4 co-processor (U11, an RP2350B with no flash, since 2026-11-03)** — it runs from SRAM what is
   loaded at each power-up: gusmanb's analyzer built from its pinned tag as a RAM image (its PICO_2 build
   already runs `copy_to_ram`; `no_flash` instead, the same 384 KB buffer).  **The node loads it**

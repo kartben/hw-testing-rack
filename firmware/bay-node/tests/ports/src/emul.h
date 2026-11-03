@@ -18,6 +18,8 @@ int emul_offline(void);
 uint8_t emul_io_reg(int io, uint8_t reg);
 /* What drives an input pin from outside (FAULT_N: 0 = fault) */
 void emul_io_pin(int io, uint8_t pin, bool level);
+/* A register as if something else had written it */
+void emul_io_set(int io, uint8_t reg, uint8_t val);
 /* The CONFIG register values written since the last call */
 int emul_io_cfg_log(int io, uint8_t *out, int max);
 /* The v2's MARK (0x38's P7, 1 = high) at each of those writes on 0x20 and 0x21 */

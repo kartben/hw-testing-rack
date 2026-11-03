@@ -439,6 +439,11 @@ int emul_io_cfg_log(int io, uint8_t *out, int max)
 	return n;
 }
 
+void emul_io_set(int io, uint8_t reg, uint8_t val)
+{
+	io_write(ios[io], reg, val);
+}
+
 int emul_mark_log(uint8_t *out, int max)
 {
 	int n = MIN(nmark, max);

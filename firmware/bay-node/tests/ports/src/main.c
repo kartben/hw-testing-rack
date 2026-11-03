@@ -225,6 +225,8 @@ ZTEST(ports, test_5_reset_boot)
 
 	(void)emul_io_cfg_log(0, log, ARRAY_SIZE(log));
 	(void)emul_mark_log(marks, ARRAY_SIZE(marks));
+	/* The matrix expander's other outputs as the crosspoints would leave them */
+	emul_io_set(2, 1, 0x35);
 
 	/* RESET: an output (low) for the pulse, then an input again */
 	zassert_ok(ports_reset_pulse(1, K_MSEC(10)));
@@ -237,7 +239,7 @@ ZTEST(ports, test_5_reset_boot)
 	zassert_equal(emul_mark_log(marks, ARRAY_SIZE(marks)), 2);
 	zassert_equal(marks[0], 0, "raised once RESET is asserted");
 	zassert_equal(marks[1], 1, "high until RESET is released");
-	zassert_equal(emul_io_reg(2, 1) & BIT(7), 0, "then low");
+	zassert_equal(emul_io_reg(2, 1), 0x35, "then low, P0-P6 as they were");
 
 	/* BOOT held across a RESET pulse (port 2: BOOT 6, RESET 7) */
 	zassert_ok(ports_boot(2, false, NULL));

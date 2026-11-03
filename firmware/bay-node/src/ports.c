@@ -972,8 +972,8 @@ int ports_power(int slot, bool on, int32_t *others)
  * MARK (the matrix expander's P7, the co-processor's GPIO14: the analyzer's
  * CH13) is high while the node holds a port's RESET or has it off for a power
  * cycle, until the last of them ends: its falling edge is a board starting
- * again, what the bay page's "Capture and reset" triggers on.  Only P7 is an
- * output: the other bits of the output register do not matter.
+ * again, what the bay page's "Capture and reset" triggers on.  Only P7
+ * changes: P0-P6 are the crosspoints' and the co-processor's.
  */
 static int marks;
 
@@ -982,8 +982,8 @@ static void mark(bool up)
 	k_mutex_lock(&lock, K_FOREVER);
 	marks += up ? 1 : -1;
 	if (chips_up && marks == (up ? 1 : 0)) {
-		(void)i2c_reg_write_byte(bus, DT_REG_ADDR(DT_NODELABEL(ports_mx)), IO_OUTPUT,
-					 up ? 0xFF : (uint8_t)~BIT(MX_MARK));
+		(void)i2c_reg_update_byte(bus, DT_REG_ADDR(DT_NODELABEL(ports_mx)), IO_OUTPUT,
+					  BIT(MX_MARK), up ? BIT(MX_MARK) : 0);
 	}
 	k_mutex_unlock(&lock);
 }
