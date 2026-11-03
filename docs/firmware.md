@@ -333,7 +333,12 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   chunks read from flash into the host controller's own buffers, then REBOOT2 into the RAM image (the region
   from the image to the SRAM's end).  The device is not exported while it is loaded; with no image, or after
   two loads in a row that come straight back to the bootloader, it is left to USB/IP and `picotool` from the
-  lab.  `/api/coproc` and `bay coproc` say how the last load went.  336 bytes of DRAM, no thread.  The
+  lab.  `/api/coproc` and `bay coproc` say how the last load went.  336 bytes of DRAM, no thread.  A new
+  image runs from the co-processor's next power-up; the board powers it, so today that means the whole DATA ×4
+  and its boards under test.  **Later, once DATA ×4 boards run tests all day:** restart the co-processor alone
+  (`bay coproc reload`, `bayctl coproc reload`), through its RUN line on the TCA9534A (P5: works even if its
+  firmware hangs), and the SDK's reset-to-BOOTSEL request (what `picotool reboot -u -f` sends) on a stand-in
+  with no DATA board.  The
   native_sim test (`firmware/bay-node/tests/coproc`) loads into an RP2350 bootloader emulated on the virtual
   USB bus, and checks a stalled WRITE, a bootloader that stops answering (the node gives up after 10 s) and
   an image that does not start.  **Open, for the datasheet check:** which SRAM the ROM keeps for itself
