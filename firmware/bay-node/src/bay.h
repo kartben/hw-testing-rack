@@ -216,6 +216,29 @@ int coproc_image_info(char *name, size_t name_len, uint32_t *size, uint32_t *add
 /* The image and the upload, as a JSON object */
 int coproc_json(char *buf, size_t size);
 
+/* --- Logic analyzer relay (analyzer.c) ------------------------------------ */
+
+enum analyzer_owner {
+	ANALYZER_PAGE,  /* the bay page, through /analyzer/ws */
+	ANALYZER_USBIP, /* USB/IP: gusmanb's desktop app, PulseView */
+};
+
+/* The page's end of the relay: its WebSocket (analyzer_http.c), a stand-in in tests */
+struct analyzer_page {
+	/* What the analyzer sent; < 0 drops the page */
+	int (*send)(struct analyzer_page *p, const uint8_t *data, size_t len);
+	/* What the page sent, without waiting: its length, 0 for nothing, < 0 once it left */
+	int (*recv)(struct analyzer_page *p, uint8_t *buf, size_t size);
+	void (*close)(struct analyzer_page *p);
+};
+
+/* The page from ip takes the analyzer: -ENODEV not there, -EACCES USB/IP's, -EBUSY taken */
+int analyzer_attach(struct analyzer_page *p, uint32_t ip);
+/* Hands the analyzer to the page or to USB/IP (a page connected is closed) */
+int analyzer_set_owner(enum analyzer_owner owner);
+/* Owner, presence, page, byte counts, as a JSON object */
+int analyzer_json(char *buf, size_t size);
+
 /* --- USB devices: identity, classes, strings (usb_info.c) ----------------- */
 
 #define USB_INFO_MAX 8

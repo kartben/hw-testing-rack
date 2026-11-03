@@ -109,6 +109,11 @@ jobs:
           - name: coproc
             board: native_sim/native/64
             app: firmware/bay-node/tests/coproc
+          # Its logic analyzer relayed to the bay page (src/analyzer.c),
+          # against an analyzer emulated on the virtual USB bus, run below
+          - name: analyzer
+            board: native_sim/native/64
+            app: firmware/bay-node/tests/analyzer
           # Node v1.0's DATA lead (src/dut.c, src/ports.c): the eFuse's
           # power-on rule against the same emulated board, run below
           - name: data_lead
@@ -189,10 +194,10 @@ jobs:
         if: matrix.name == 'usbip'
         run: python3 hw-testing-rack/firmware/common/tests/usbip/test_usbip.py --exe build/zephyr/zephyr.exe
 
-      - name: Rack bus protocol / firmware updates / DATA x4 ports / co-processor image / DATA lead / hub budget / USB hub / DNS-SD / CH446Q on native_sim
+      - name: Rack bus protocol / firmware updates / DATA x4 ports / co-processor image and analyzer / DATA lead / hub budget / USB hub / DNS-SD / CH446Q on native_sim
         if: >-
           matrix.name == 'rack_bus' || matrix.name == 'update' || matrix.name == 'ports' ||
-          matrix.name == 'coproc' ||
+          matrix.name == 'coproc' || matrix.name == 'analyzer' ||
           matrix.name == 'data_lead' || matrix.name == 'hub_budget' || matrix.name == 'usbh_hub' ||
           matrix.name == 'dnssd' || matrix.name == 'ch446q'
         run: |

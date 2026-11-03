@@ -249,6 +249,8 @@ an unpowered board.
 | `GET /api/boards`, `GET` / `PUT /api/ports/<n>/board` | each sub-slot's Zephyr board target (board, runner, probe id, console), saved on the node for the board in it ([firmware/README.md › Board targets](../firmware/README.md#board-targets)) |
 | `/metrics` | the DUT metrics labelled `port="A1.2"` |
 | `GET /api/coproc` | the DATA ×4 co-processor's stored image: `{"image": {"name": "gusmanb 6.0", "size": 126272, "addr": "0x20000000", "sha256": ...} \| null, "upload": "idle", "error": null, "load": {"state": "loaded", "loads": 3, "failures": 0, "last_ms": 380, "error": null}}` (`state`: idle, loading, started, loaded, failed, `left to USB/IP`); also in `/api/status` as `coproc` |
+| `GET /api/analyzer`, `POST /api/analyzer` | the co-processor's logic analyzer (1209:3020 on its hub port): `{"owner": "page", "present": true, "busid": "1-1.5", "page": {"ip": "10.0.0.7", "since_s": 42} \| null, "from_device": 393221, "to_device": 53, "dropped": 0, "error": null}`.  `POST {"owner": "page" \| "usbip"}` (Control right) hands it to the bay page or to USB/IP (gusmanb's desktop app, PulseView) at once, without a re-plug; a page connected is closed |
+| `GET /analyzer/ws?t=` | the bay page's end of the analyzer: binary WebSocket messages both ways, gusmanb's protocol byte for byte (the page speaks it, `firmware/common/web/analyzer`).  The ticket comes from `POST /api/console/ticket` (Console right).  One page at a time: the same address takes it over (a reload), another gets refused |
 | `POST /api/coproc/begin`, `POST /api/coproc?ticket=` | admin: a new image into the node's `coproc` partition, as the firmware updates (the hash and the admin signature on `begin`, the body with the ticket): a 64-byte header (`struct coproc_hdr`, `src/bay.h`), then the bytes for the co-processor's SRAM.  Refused if it is not an RP2350 Arm image wholly in its SRAM (a `no_flash` build) or larger than the partition; the old image is gone once an upload starts |
 
 ## Access control and leases
@@ -435,7 +437,10 @@ string of a port's USB device.
 2. `bayctl capture`, against it: `.sr` and sigrok-cli decoding, the decoders' CI oracle.
 3. The web UI's "Analyzer" card: a canvas viewer and JS decoders.
 4. The node's USB host class and gusmanb client, written from a protocol description (no GPL code
-   copied).  A mode switch between that client and the USB/IP export.
+   copied).  A mode switch between that client and the USB/IP export.  Done differently for the
+   co-processor's port (2026-11-03): the node only relays its serial port to the bay page
+   (`/analyzer/ws`), the page is the gusmanb client, and `/api/analyzer` switches between the page
+   and USB/IP.  A sub-slot's analyzer stays USB/IP's.
 
 ## Resources
 

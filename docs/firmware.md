@@ -342,7 +342,21 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   [kartben.github.io/hw-testing-rack/analyzer](https://kartben.github.io/hw-testing-rack/analyzer/)): native ES
   modules that speak gusmanb's protocol (written from its wire format; checked on the bench Pico 2: the
   sample width follows the highest channel asked for, bit i is the i-th channel asked for), Web Serial for an
-  analyzer on the PC's USB today, the node's relay to come.  The page also loads a `no_flash` build into a
+  analyzer on the PC's USB.  **The node relays U11's** (`src/analyzer.c`, `/analyzer/ws`): a host class
+  takes 1209:3020 on the co-processor's hub port, sets DTR, and passes its CDC bulk endpoints to the page's
+  WebSocket byte for byte.  1 KB bulk INs from the host controller's buffers, the next one read while the
+  last goes to the page and no further: a slow page slows the analyzer down and nothing piles up in the
+  node; with no page the data is dropped.  `POST /api/analyzer` hands the device to USB/IP instead
+  (gusmanb's desktop app, PulseView) and back, by giving it to the USB host's classes again, without a
+  re-plug.  A work queue of its own (its 3 KB stack in PSRAM, as the network's threads): +696 bytes of DRAM,
+  bay_node 91.28 %.  The native_sim test (`firmware/bay-node/tests/analyzer`) runs it against an analyzer
+  emulated on the virtual USB bus: the ID request and its answer, 20 KB to a slow page in order, no page,
+  one page at a time, USB/IP and back, unplugged.  **On the bench (2026-11-03):** the bench XIAO and its
+  Pico 2, `protocol.mjs` over the WebSocket from a Linux host: the ID in 62 ms, then a whole 384 KB
+  capture of the node's AUX UART (2 MS/s, triggered on its start bit) in 1.05 s, 367 KB/s, decoded intact,
+  nothing dropped (278 KB/s when each read waited for the page).  Switched to USB/IP, it was on offer as
+  1-1.3 and the WebSocket was refused; switched back, the next capture came through.  The page's side of
+  it is the bay page's next card.  The page also loads a `no_flash` build into a
   blank RP2350 through WebUSB, as the node does (PICOBOOT; tested against a fake bootloader, not yet on a
   board).  **Open, for the datasheet check:** whether the RP2350's boot ROM has Windows bind WinUSB to its
   PICOBOOT interface by itself (Microsoft OS 2.0 descriptors), which WebUSB needs there.  The

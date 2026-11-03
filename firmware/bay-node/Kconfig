@@ -129,6 +129,17 @@ config BAY_COPROC
 	  loads it whenever the device on the coproc node's hub port shows up
 	  there (src/coproc.c).
 
+config BAY_ANALYZER
+	bool "DATA x4: the co-processor's logic analyzer, relayed to the bay page"
+	default y
+	depends on BAY_COPROC && HTTP_SERVER_WEBSOCKET
+	help
+	  gusmanb's LogicAnalyzer firmware on the co-processor (1209:3020):
+	  relayed to the bay page through /analyzer/ws, or left to USB/IP
+	  for gusmanb's desktop app or PulseView (POST /api/analyzer).  One
+	  WebSocket context more, a work queue with its stack in PSRAM
+	  (src/analyzer.c).
+
 config BAY_PORTS_VBUS_OFF_MV
 	int "DATA x4: a power cycle waits for the port's VBUS under this (mV)"
 	default 1000
@@ -449,11 +460,16 @@ config UHC_BUF_POOL_SIZE
 config USBH_USB_DEVICE_HEAP
 	default 4096 if ESP_SPIRAM
 
+# One per web console (BAY_CONSOLE_WEB_CLIENTS), one for the analyzer's page
+config WEBSOCKET_MAX_CONTEXTS
+	default 3 if BAY_ANALYZER
+	default 2
+
 # usbip listener + its sessions (6, and a `usbip list` meanwhile; 1 and a
 # list without PSRAM), AUX raw and RFC 2217 listeners + clients, telnet
-# listener + client, HTTP listener + 6 clients, 2 web consoles, DHCP, mDNS,
-# spare (a web console is a socket plus a websocket descriptor); the camera's
-# listener and 3 clients (a camera means PSRAM)
+# listener + client, HTTP listener + 6 clients, 2 web consoles, the logic
+# analyzer's page, DHCP, mDNS, spare (a WebSocket is a socket plus a websocket
+# descriptor); the camera's listener and 3 clients (a camera means PSRAM)
 config NET_MAX_CONTEXTS
 	default 34 if BAY_CAMERA
 	default 30 if ESP_SPIRAM
