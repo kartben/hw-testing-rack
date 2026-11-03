@@ -31,6 +31,7 @@
   --dec-data: light-dark(#dbeafe, #1e3a5f);
   --dec-addr: light-dark(#ede9fe, #3b2a63);
   --dec-ctl: light-dark(#e5e7eb, #2a2f3a);
+  --dec-err: light-dark(#fee2e2, #5b1d1d);
   --dec-text: light-dark(#1f2937, #e5e7eb);
   --radius: 14px;
   --mono: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
@@ -98,6 +99,17 @@ progress { width: 140px; height: 6px; accent-color: var(--accent); }
   & output { margin-left: auto; font: 0.78rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; } }
 @media (max-width: 560px) { .vtools output { margin-left: 0; flex-basis: 100%; } }
 canvas.wave { display: block; width: 100%; touch-action: pan-y; cursor: crosshair; }
+.decs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.dec-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border-radius: 9px;
+  font-size: 0.82rem; border: 1px solid var(--line); background: var(--soft);
+  & b { font-weight: 600; } & button { padding: 1px 7px; } }
+dialog { border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
+  padding: 20px; width: min(380px, calc(100vw - 32px)); box-shadow: 0 16px 48px #0005;
+  &::backdrop { background: #0006; }
+  & h3 { margin: 0 0 14px; font-size: 1rem; }
+  & form, & .dec-lines { display: grid; gap: 10px; }
+  & label { display: grid; gap: 4px; font-size: 0.82rem; color: var(--muted); font-weight: 550; }
+  & .btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 6px; } }
 .hint { color: var(--muted); font-size: 0.82rem; margin: 0; }
 footer { margin-top: 20px; color: var(--muted); font-size: 0.82rem; display: flex; flex-wrap: wrap; gap: 6px 16px;
   & a { color: inherit; } }

@@ -69,12 +69,14 @@
 
     <section class="card">
       <h2>Signals <span id="cap-meta"></span></h2>
+      <div class="decs" id="decs" aria-label="Decoders"></div>
       <div class="viewer">
         <div class="vtools">
           <button data-zoom="in" aria-label="Zoom in">＋</button>
           <button data-zoom="out" aria-label="Zoom out">－</button>
           <button data-zoom="fit">Fit</button>
           <button id="clear-cursors">Clear cursors</button>
+          <button id="vcd" disabled title="For PulseView, GTKWave and sigrok's decoders">Download .vcd</button>
           <output id="readout"></output>
         </div>
         <canvas class="wave" id="wave" aria-label="Captured signals, one lane per channel"></canvas>
@@ -89,6 +91,17 @@
       firmware (GPL-3.0); this page only speaks its protocol.</span>
   </footer>
 </div>
+<dialog id="dec-dlg">
+  <form id="dec-form">
+    <h3>Add a decoder</h3>
+    <label>Protocol <select id="dec-type"></select></label>
+    <div id="dec-lines" class="dec-lines"></div>
+    <div class="btns">
+      <button value="cancel" formnovalidate>Cancel</button>
+      <button class="primary" value="add">Add</button>
+    </div>
+  </form>
+</dialog>
 <script type="module" src="app.mjs"></script>
 </body>
 </html>

@@ -215,7 +215,10 @@ export class Viewer {
       g.lineTo(X, H - 4);
       g.stroke();
       g.fillStyle = css("--muted");
-      g.fillText(fmtTime(Math.abs(t) < nice / 1e6 ? 0 : t), X + 3, 12);
+      const label = fmtTime(Math.abs(t) < nice / 1e6 ? 0 : t);
+      if (X + 3 + g.measureText(label).width <= Wd) {
+        g.fillText(label, X + 3, 12);
+      }
     }
     if (!this.cap) {
       g.fillStyle = css("--muted");

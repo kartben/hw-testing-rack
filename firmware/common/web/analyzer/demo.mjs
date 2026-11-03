@@ -127,7 +127,17 @@ export function demoCapture() {
   const i = i2c(0x48, 0x00, [0x1a, 0x60], 400e3, u2.end + 25e-6);
   const s = spi([0x9f, 0, 0, 0], [0xff, 0xef, 0x40, 0x18], 4e6, i.end + 25e-6);
   const w = ws2812([[255, 128, 0], [0, 64, 255], [24, 200, 40]], s.end + 25e-6);
-  const pre = Math.round(20e-6 * RATE), post = Math.round((w.end + 30e-6) * RATE);
+  /* The LEDs latch 50 µs after their last bit: the capture runs past it */
+  const pre = Math.round(20e-6 * RATE), post = Math.round((w.end + 70e-6) * RATE);
   const samples = rasterize([u.edges, u2.edges, i.sda, i.scl, s.cs, s.sck, s.mo, w.edges], pre + post, pre);
   return new Capture({ channels: [0, 1, 2, 3, 4, 5, 6, 7], rate: RATE, pre, post, samples });
 }
+
+/* The decoders the demo comes with (channel numbers) */
+export const DEMO_DECODERS = [
+  { type: "uart", lines: { rx: 0 }, baud: 1e6 },
+  { type: "uart", lines: { rx: 1 }, baud: 1e6 },
+  { type: "i2c", lines: { sda: 2, scl: 3 } },
+  { type: "spi", lines: { cs: 4, sck: 5, mosi: 6 }, mode: 0 },
+  { type: "ws2812", lines: { din: 7 } },
+];

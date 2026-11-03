@@ -33,6 +33,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      # The logic analyzer's protocol, capture model and decoders, against a fake analyzer
+      # The logic analyzer's protocol and capture model against a fake analyzer, its decoders and .vcd export
       - name: Logic analyzer (firmware/common/web/analyzer)
         run: node --test "firmware/common/web/analyzer/test/*.test.mjs"

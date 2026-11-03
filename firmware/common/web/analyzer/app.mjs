@@ -1,15 +1,18 @@
 /*
  * The standalone logic analyzer page (index.html): an analyzer on this
- * computer's USB through Web Serial, its capture settings, the viewer.
- * Channel names and settings stay in this browser.
+ * computer's USB through Web Serial, its capture settings, the viewer, the
+ * decoders, the .vcd export.  Channel names, settings and decoders stay in
+ * this browser.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 import { Capture, depth } from "./capture.mjs";
-import { DEMO_NAMES, demoCapture } from "./demo.mjs";
+import { BAUDS, DECODERS } from "./decoders.mjs";
+import { DEMO_DECODERS, DEMO_NAMES, demoCapture } from "./demo.mjs";
 import { Analyzer, MAX_CHANNELS, TRIGGER } from "./protocol.mjs";
 import { knownSerial, openSerial, serialSupported } from "./serial.mjs";
+import { toVcd } from "./vcd.mjs";
 import { Viewer, fmtTime } from "./viewer.mjs";
 
 const $ = (id) => document.getElementById(id);
@@ -32,6 +35,7 @@ const settings = {
   pre: saved.pre ?? 0.2,
   trig: saved.trig ?? 0,
   edge: saved.edge ?? "fall",
+  decoders: saved.decoders ?? [],
 };
 const save = () => {
   try {
@@ -43,6 +47,9 @@ const save = () => {
 
 const viewer = new Viewer($("wave"), { onReadout: (t) => ($("readout").textContent = t) });
 let analyzer = null, transport = null, info = null, busy = null, cap = null, capNames = [];
+/* The demo brings its own decoders, the user's stay as they are */
+let demoDecoders = null;
+const decoders = () => demoDecoders ?? settings.decoders;
 let wide = settings.on.some((c) => c >= 8);
 
 const chName = (c) => settings.names[c] || `CH${c + 1}`;
@@ -212,6 +219,7 @@ $("capture").addEventListener("click", async () => {
     });
     cap = new Capture(r);
     capNames = on.map(chName);
+    demoDecoders = null;
     setState(`Captured at ${new Date().toLocaleTimeString()}`, "var(--ok)");
     showCapture();
   } catch (e) {
@@ -227,19 +235,141 @@ $("cancel").addEventListener("click", () => busy?.abort());
 
 /* --- The viewer ------------------------------------------------------------------ */
 
+const laneName = (k) => settings.names[cap.channels[k]] || capNames[k] || `CH${cap.channels[k] + 1}`;
+
+/* A decoder's rows, under the last lane it reads; a decoder that cannot run says why */
+function decode(d) {
+  const spec = DECODERS[d.type], k = {};
+  let anchor = -1;
+  for (const line of spec.lines) {
+    const role = line.replace("?", ""), c = d.lines[role];
+    if (c === undefined || c === null) {
+      if (!line.endsWith("?")) {
+        return { anchor, rows: [] };
+      }
+      continue;
+    }
+    k[role] = cap.channels.indexOf(c);
+    if (k[role] < 0) {
+      return { anchor: cap.channels.length - 1, rows: [{ label: spec.name, items: [
+        { t0: cap.time(0), t1: cap.time(cap.count - 1), kind: "err", text: `CH${c + 1} is not in this capture` }] }] };
+    }
+    anchor = Math.max(anchor, k[role]);
+  }
+  try {
+    return { anchor, rows: spec.run(cap, d, k) };
+  } catch (e) {
+    return { anchor, rows: [{ label: spec.name, items: [
+      { t0: cap.time(0), t1: cap.time(cap.count - 1), kind: "err", text: e.message }] }] };
+  }
+}
+
 function showCapture() {
-  const rows = cap.channels.map((c, k) => ({ k, name: settings.names[c] || capNames[k] || `CH${c + 1}`,
-                                             color: `--lane-${c % 8}` }));
+  const decoded = decoders().map(decode);
+  const rows = [];
+  cap.channels.forEach((c, k) => {
+    rows.push({ k, name: laneName(k), color: `--lane-${c % 8}` });
+    for (const d of decoded.filter((x) => x.anchor === k)) {
+      rows.push(...d.rows);
+    }
+  });
   $("cap-meta").textContent = `${cap.count.toLocaleString("en-US")} samples at ${cap.rate / 1e6} MS/s, ` +
                               `${fmtTime(cap.count / cap.rate)}`;
+  $("vcd").disabled = false;
   viewer.show(cap, rows);
+  renderDecoders();
 }
 
 $("demo").addEventListener("click", () => {
   cap = demoCapture();
   capNames = DEMO_NAMES;
+  demoDecoders = structuredClone(DEMO_DECODERS);
   setState("Demo capture: made-up signals", "var(--muted)");
   showCapture();
+});
+
+$("vcd").addEventListener("click", () => {
+  const url = URL.createObjectURL(new Blob([toVcd(cap, cap.channels.map((_, k) => laneName(k)))],
+                                           { type: "text/plain" }));
+  const a = Object.assign(document.createElement("a"), {
+    href: url, download: `capture-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.vcd`,
+  });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+/* --- Decoders ---------------------------------------------------------------------- */
+
+const lineText = (d) => Object.entries(d.lines).filter(([, c]) => c !== null && c !== undefined)
+  .map(([role, c]) => `${role.toUpperCase()} ${chName(c)}`).join(", ");
+
+function renderDecoders() {
+  $("decs").innerHTML = decoders().map((d, i) => `
+    <span class="dec-chip"><b>${DECODERS[d.type].name}</b> ${lineText(d)}${d.baud ? ` · ${d.baud >= 1e6 ? `${d.baud / 1e6} M` : `${d.baud} `}Bd` : ""}${d.type === "spi" ? ` · mode ${d.mode ?? 0}` : ""}
+      <button class="small" data-remove="${i}" aria-label="Remove this decoder">✕</button></span>`).join("") +
+    `<button class="small" id="add-dec">+ Decoder</button>`;
+}
+
+$("decs").addEventListener("click", (e) => {
+  const rm = e.target.closest("[data-remove]");
+  if (rm) {
+    decoders().splice(Number(rm.dataset.remove), 1);
+    save();
+    if (cap) {
+      showCapture();
+    }
+  } else if (e.target.closest("#add-dec")) {
+    openDecoderDialog();
+  }
+});
+
+/* The channels a decoder can read: the capture's, else the ones picked for the next */
+const pickable = () => (cap ? [...cap.channels] : [...settings.on].sort((a, b) => a - b));
+
+function renderDecoderForm() {
+  const type = $("dec-type").value, spec = DECODERS[type], chans = pickable();
+  $("dec-lines").innerHTML = spec.lines.map((line, i) => {
+    const role = line.replace("?", ""), optional = line.endsWith("?");
+    return `<label>${role.toUpperCase()}${optional ? " (optional)" : ""}
+      <select data-line="${role}">${optional ? '<option value="">none</option>' : ""}${chans.map((c) =>
+        `<option value="${c}" ${!optional && chans[i] === c ? "selected" : ""}>${chName(c)}</option>`).join("")}</select></label>`;
+  }).join("") + (type === "uart" ? `<label>Baud rate <select id="dec-baud">${BAUDS.map((b) =>
+    `<option value="${b}" ${b === 115200 ? "selected" : ""}>${b.toLocaleString("en-US")}</option>`).join("")}</select></label>` : "")
+    + (type === "spi" ? `<label>Mode <select id="dec-mode">${[0, 1, 2, 3].map((m) =>
+    `<option value="${m}">${m}</option>`).join("")}</select></label>` : "");
+}
+
+function openDecoderDialog() {
+  $("dec-type").innerHTML = Object.entries(DECODERS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join("");
+  renderDecoderForm();
+  $("dec-dlg").showModal();
+}
+
+$("dec-type").addEventListener("change", renderDecoderForm);
+$("dec-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (e.submitter?.value === "cancel") {
+    $("dec-dlg").close();
+    return;
+  }
+  const d = { type: $("dec-type").value, lines: {} };
+  for (const sel of $("dec-lines").querySelectorAll("select[data-line]")) {
+    d.lines[sel.dataset.line] = sel.value === "" ? null : Number(sel.value);
+  }
+  if (d.type === "uart") {
+    d.baud = Number($("dec-baud").value);
+  }
+  if (d.type === "spi") {
+    d.mode = Number($("dec-mode").value);
+  }
+  decoders().push(d);
+  save();
+  $("dec-dlg").close();
+  if (cap) {
+    showCapture();
+  } else {
+    renderDecoders();
+  }
 });
 for (const b of document.querySelectorAll("[data-zoom]")) {
   b.addEventListener("click", () => (b.dataset.zoom === "fit" ? viewer.fit()
