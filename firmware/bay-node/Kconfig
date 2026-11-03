@@ -118,6 +118,17 @@ config BAY_PORTS_BOARD_MA
 	  (0.51 A through its 3.3 V LDO, the matrix, the port LEDs).  The first design,
 	  the board on DUT_5V: 0.3-0.46 A.
 
+config BAY_COPROC
+	bool "DATA x4: the co-processor's image, loaded into its SRAM"
+	default y if $(dt_nodelabel_enabled,coproc) && $(dt_nodelabel_enabled,coproc_partition)
+	depends on USBIP && HWTR_ADMIN && FLASH_MAP
+	help
+	  The co-processor (U11, an RP2350B with no flash) comes up in its
+	  ROM's USB bootloader at each power-up.  The node keeps its image in
+	  the coproc partition (uploaded with bayctl coproc load, admin) and
+	  loads it whenever the device on the coproc node's hub port shows up
+	  there (src/coproc.c).
+
 config BAY_PORTS_VBUS_OFF_MV
 	int "DATA x4: a power cycle waits for the port's VBUS under this (mV)"
 	default 1000

@@ -29,6 +29,8 @@ target_sources(app PRIVATE
 )
 target_sources_ifdef(CONFIG_BAY_CAMERA app PRIVATE src/camera.c)
 target_sources_ifdef(CONFIG_BAY_DISPLAY app PRIVATE src/display.c)
+# The DATA x4 co-processor's image: /api/coproc, its loader
+target_sources_ifdef(CONFIG_BAY_COPROC app PRIVATE src/coproc.c src/coproc_http.c)
 # The USB devices' strings: read with the host's own control requests
 target_sources_ifdef(CONFIG_USBIP app PRIVATE src/usb_info.c)
 if(CONFIG_USBIP)

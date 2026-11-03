@@ -177,6 +177,45 @@ int usb_host_usbip_client(const char *busid, uint32_t *ip, uint32_t *since_s);
 /* Whether USB/IP reads the device ahead (enum usbip_read_ahead, 0: no) */
 int usb_host_read_ahead(const struct usb_device_descriptor *desc);
 
+/* --- DATA x4 co-processor image (coproc.c) -------------------------------- */
+
+#define COPROC_MAGIC		    0x50435748U /* "HWCP" */
+#define COPROC_FAMILY_RP2350_ARM_S  0xe48bff59U /* the UF2 family */
+#define COPROC_TICKET_LEN	    8
+#define COPROC_TICKET_HEX	    (2 * COPROC_TICKET_LEN + 1)
+
+/* The coproc partition's first 64 bytes, little-endian; the image follows */
+struct coproc_hdr {
+	uint32_t magic;
+	uint16_t version;   /* 1 */
+	uint16_t hdr_size;  /* 64 */
+	uint32_t family;    /* COPROC_FAMILY_RP2350_ARM_S */
+	uint32_t addr;      /* where the image goes in the co-processor's SRAM */
+	uint32_t size;      /* its length */
+	uint8_t sha256[32]; /* its hash */
+	char name[12];      /* what it is, for people: "gusmanb 6.0" */
+};
+
+enum coproc_upload_state {
+	COPROC_UPLOAD_IDLE,
+	COPROC_UPLOAD_READY,     /* a ticket was given, the upload has not started */
+	COPROC_UPLOAD_RECEIVING,
+};
+
+/* An upload of size bytes with this hash: a ticket for one minute, from ip */
+int coproc_begin(uint32_t ip, uint32_t size, const uint8_t sha256[32],
+		 char ticket_hex[COPROC_TICKET_HEX], const char **why);
+/* The upload's next bytes, written to the partition as they come */
+int coproc_write(uint32_t ip, const char *ticket_hex, const uint8_t *data, size_t len,
+		 const char **why);
+/* Checked and stored: the image is loaded from the co-processor's next BOOTSEL on */
+int coproc_finish(const char **why);
+void coproc_abort(const char *why);
+/* The stored image: 0, or -ENOENT */
+int coproc_image_info(char *name, size_t name_len, uint32_t *size, uint32_t *addr);
+/* The image and the upload, as a JSON object */
+int coproc_json(char *buf, size_t size);
+
 /* --- USB devices: identity, classes, strings (usb_info.c) ----------------- */
 
 #define USB_INFO_MAX 8

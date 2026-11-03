@@ -619,6 +619,9 @@ static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 #endif
 		status_append("budget", budget_status_json);
 		status_append("ports", ports_status_json);
+#if defined(CONFIG_BAY_COPROC)
+		status_append("coproc", coproc_json);
+#endif
 	}
 
 	rsp->body = resp_buf;

@@ -420,6 +420,23 @@ static int cmd_aux(const struct shell *sh, size_t argc, char **argv)
 	return ret;
 }
 
+#if defined(CONFIG_BAY_COPROC)
+static int cmd_coproc(const struct shell *sh, size_t argc, char **argv)
+{
+	char json[384];
+
+	ARG_UNUSED(argc);
+	ARG_UNUSED(argv);
+
+	if (coproc_json(json, sizeof(json)) < 0) {
+		shell_error(sh, "no room for the state");
+		return -ENOMEM;
+	}
+	shell_print(sh, "%s", json);
+	return 0;
+}
+#endif
+
 static int cmd_id(const struct shell *sh, size_t argc, char **argv)
 {
 	int ret;
@@ -698,6 +715,10 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_bay,
 #if defined(CONFIG_BAY_CAMERA)
 	SHELL_CMD_ARG(camera, &sub_camera, "The bay camera: its state and settings", cmd_camera,
 		      1, 0),
+#endif
+#if defined(CONFIG_BAY_COPROC)
+	SHELL_CMD_ARG(coproc, NULL, "DATA x4 co-processor: its stored image, the upload (JSON)",
+		      cmd_coproc, 1, 0),
 #endif
 	SHELL_CMD_ARG(access, &sub_access, "Access control: rules, lease, admin key",
 		      cmd_access_status, 1, 0),
