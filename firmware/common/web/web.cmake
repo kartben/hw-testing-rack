@@ -18,6 +18,18 @@ function(hwtr_web_assets service)
     COMPILE_DEFINITIONS HWTR_WEB_SERVICE=${service})
 endfunction()
 
+# hwtr_web_analyzer(<service>): the logic analyzer's modules, /analyzer/<name>.mjs
+function(hwtr_web_analyzer service)
+  set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated)
+  foreach(name capture decoders decoding protocol relay vcd viewer)
+    generate_inc_file_for_target(app ${HWTR_WEB_DIR}/analyzer/${name}.mjs
+      ${gen_dir}/analyzer-${name}.mjs.gz.inc --gzip)
+  endforeach()
+  target_sources(app PRIVATE ${HWTR_WEB_DIR}/analyzer_assets.c)
+  set_source_files_properties(${HWTR_WEB_DIR}/analyzer_assets.c PROPERTIES
+    COMPILE_DEFINITIONS HWTR_WEB_SERVICE=${service})
+endfunction()
+
 # hwtr_web_update(<service>): GET and POST /api/update, POST /api/update/begin,
 # when the application is built with MCUboot (CONFIG_HWTR_UPDATE)
 function(hwtr_web_update service)

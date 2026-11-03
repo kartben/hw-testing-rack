@@ -9,13 +9,14 @@ installed Chrome (--channel msedge for Edge, or --channel chromium after
 for the sparkline (and of the fake board's log for the console), then
 shoots each state, then access control (web-ui-access*.png): the node
 claimed with a key made up for the run, rules, a CI job holding the bay;
-last a DATA x4 bay's ports and a board target's dialog.
+then a DATA x4 bay's ports, a board target's dialog and the logic analyzer card.
 The browser and server plumbing is firmware/common/web/shots.py.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 import time
@@ -156,6 +157,37 @@ def main() -> None:
         light.evaluate("document.activeElement.blur()")
         time.sleep(0.5)
         shoot(light, "web-ui-board-target", "#board-settings")
+
+        shoot_analyzer(dark, shoot)
+
+
+# What the buses carry in the simulated bay, and the decoders on them (the card keeps both in the browser)
+ANALYZER_SETTINGS = {
+    "on": [0, 1, 2, 3, 4, 5, 6, 7], "rate": 10e6, "pre": 0.2, "trig": "0:fall",
+    "names": {"0": "B3.2 TX", "1": "B3.3 TX", "2": "SDA", "3": "SCL", "4": "CS", "5": "SCK", "6": "MOSI",
+              "7": "MISO"},
+    "decoders": [{"type": "uart", "lines": {"rx": 0}, "baud": 115200},
+                 {"type": "i2c", "lines": {"sda": 2, "scl": 3}},
+                 {"type": "spi", "lines": {"cs": 4, "sck": 5, "mosi": 6, "miso": 7}, "mode": 0}],
+}
+
+
+def shoot_analyzer(page, shoot) -> None:
+    """The logic analyzer card after "Capture and reset" on B3.2: the simulated analyzer's boot banner
+    on bus A, then I2C and SPI, the node's MARK around the reset."""
+    dev_server.coproc.image = {"name": "gusmanb 6.0", "size": 40704, "addr": "0x20000000",
+                               "sha256": "61b75a29" * 8}
+    page.set_viewport_size({"width": DESKTOP["width"], "height": 1100})
+    page.evaluate(f"localStorage.setItem('hwtr-bay-analyzer', '{json.dumps(ANALYZER_SETTINGS)}')")
+    page.reload()
+    time.sleep(2 * POLL_S)
+    page.click("#la-cap-reset")
+    page.click("#la-reset-ports button[data-port='2']")
+    page.wait_for_function("document.getElementById('la-state').textContent.includes('Captured')",
+                           timeout=30000)
+    page.evaluate("document.activeElement.blur()")
+    time.sleep(0.5)
+    shoot(page, "web-ui-analyzer", "#la-card")
 
 
 if __name__ == "__main__":

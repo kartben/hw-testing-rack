@@ -232,6 +232,67 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
   .usbdev .ma { text-align: left; }
 }
 @media (max-width: 600px) { .term { height: 360px; } .toolbar .group.end { margin-left: 0; } }
+/* The logic analyzer (/analyzer/card.mjs); its viewer reads the colours below.  Lanes follow the
+   resistor colour code, bus A brown to H grey */
+#la-card {
+  --accent: #3b82f6; --cursor: #3b82f6;
+  --grid: light-dark(#eef0f3, #1c2028);
+  --trigger: light-dark(#b45309, #f59e0b);
+  --mark: light-dark(#d97706, #fbbf24);
+  --lane-0: light-dark(#8b5a2b, #b8875a); --lane-1: light-dark(#dc2626, #f87171);
+  --lane-2: light-dark(#ea580c, #fb923c); --lane-3: light-dark(#a16207, #facc15);
+  --lane-4: light-dark(#16a34a, #4ade80); --lane-5: light-dark(#2563eb, #60a5fa);
+  --lane-6: light-dark(#7c3aed, #a78bfa); --lane-7: light-dark(#6b7280, #9ca3af);
+  --dec-data: light-dark(#dbeafe, #1e3a5f); --dec-addr: light-dark(#ede9fe, #3b2a63);
+  --dec-ctl: light-dark(#e5e7eb, #2a2f3a); --dec-err: light-dark(#fee2e2, #5b1d1d);
+  --dec-text: light-dark(#1f2937, #e5e7eb);
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  & [hidden] { display: none !important; }
+  & .la-top { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+  & .la-coproc { font-size: 0.84rem; color: var(--muted); }
+  & .la-set { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: end;
+    & label { display: grid; gap: 4px; font-size: 0.78rem; color: var(--muted); font-weight: 550; }
+    & .la-depth { margin-left: auto; align-self: center; font-size: 0.82rem; color: var(--muted);
+                  font-variant-numeric: tabular-nums; } }
+  & select { font: inherit; font-size: 0.88rem; padding: 6px 8px; border-radius: 8px;
+             border: 1px solid var(--line); background: var(--soft); color: var(--text); }
+  & .la-chans { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px;
+    & label { display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 8px; border-radius: 9px;
+              min-width: 0; border: 1px solid var(--line); background: var(--soft); }
+    & label:has(:checked) { border-color: color-mix(in srgb, var(--c) 55%, transparent);
+                            background: color-mix(in srgb, var(--c) 10%, var(--soft)); }
+    & input[type=checkbox] { margin: 0; accent-color: var(--c); }
+    & b { font: 600 0.8rem var(--mono); }
+    & small { font-size: 0.75rem; color: var(--muted); }
+    & input[type=text] { font: inherit; font-size: 0.82rem; border: 0; background: transparent; color: var(--text);
+                         padding: 2px 4px; width: 100%; min-width: 0; border-radius: 6px; }
+    & input[type=text]:focus { background: var(--card); outline: 1px solid var(--line); } }
+  & .la-actions { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+  & .la-state { font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; min-width: 0;
+    & i { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--muted)); flex: none; } }
+  & progress { width: 140px; height: 6px; accent-color: var(--accent); }
+  & .la-decs { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  & .dec-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border-radius: 9px;
+    font-size: 0.82rem; border: 1px solid var(--line); background: var(--soft);
+    & b { font-weight: 600; } & button { padding: 1px 7px; } }
+  & .la-viewer { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
+  & .la-vtools { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; padding: 8px 10px;
+    border-bottom: 1px solid var(--line); background: var(--soft);
+    & button { padding: 3px 9px; font-size: 0.8rem; border-radius: 8px; font-weight: 500; }
+    & .la-cap-meta { font-size: 0.78rem; color: var(--muted); }
+    & output { margin-left: auto; font: 0.78rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; } }
+  & canvas { display: block; width: 100%; touch-action: pan-y; cursor: crosshair; }
+}
+@media (max-width: 560px) { #la-card .la-set .la-depth, #la-card .la-vtools output { margin-left: 0; flex-basis: 100%; } }
+#la-reset {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
+  padding: 20px; width: min(380px, calc(100vw - 32px)); box-shadow: 0 16px 48px #0004;
+  &::backdrop { background: #0003; }
+  & h3 { margin: 0 0 8px; font-size: 1rem; }
+  & p { margin: 0 0 14px; color: var(--muted); font-size: 0.88rem; }
+}
+#la-dec-dlg .la-dec-lines { display: grid; gap: 10px; margin-top: 10px;
+  & label { display: grid; gap: 4px; font-size: 0.82rem; color: var(--muted); font-weight: 550; } }
 </style>
 </head>
 <body data-state="offline">
@@ -391,6 +452,54 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
         <div class="cmd"><code id="rfc-cmd">python -m serial.tools.miniterm rfc2217://…:4001 115200</code><button data-copy="rfc-cmd">Copy</button></div>
         <span id="con-clients"></span>
         <a href="/xterm-LICENSE.txt">xterm.js (MIT)</a>
+      </div>
+    </section>
+
+    <section class="card" id="la-card" hidden>
+      <h2>Logic analyzer <span id="la-meta">–</span></h2>
+      <div class="la-top">
+        <div class="seg" role="radiogroup" aria-label="Who uses the analyzer">
+          <label><input type="radio" name="la-owner" value="page">This page</label>
+          <label><input type="radio" name="la-owner" value="usbip">USB/IP</label>
+        </div>
+        <span class="la-coproc" id="la-coproc"></span>
+      </div>
+      <div class="notice" id="la-note" hidden><span id="la-note-text"></span></div>
+      <div class="cmd" id="la-usbip" hidden><code id="la-usbip-cmd">sudo usbip attach -r … -b 1-1.5</code><button data-copy="la-usbip-cmd">Copy</button></div>
+      <div class="la-set">
+        <label>Sample rate <select id="la-rate"></select></label>
+        <label>Trigger <select id="la-trig"></select></label>
+        <label>Before trigger <select id="la-pre">
+          <option value="0.1">10 %</option><option value="0.2">20 %</option><option value="0.5">50 %</option>
+        </select></label>
+        <span class="la-depth" id="la-depth">–</span>
+      </div>
+      <div class="la-chans" id="la-chans" aria-label="Channels: the buses, and the node's mark"></div>
+      <div class="la-actions">
+        <button class="primary" id="la-cap" disabled>Capture</button>
+        <button popovertarget="la-reset" id="la-cap-reset" disabled>Capture and reset…</button>
+        <button id="la-cancel" hidden>Cancel</button>
+        <span class="la-state" id="la-state"><i></i><span>–</span></span>
+        <progress id="la-prog" max="1" value="0" hidden></progress>
+      </div>
+      <div class="la-decs" id="la-decs" aria-label="Decoders"></div>
+      <p class="hint" id="la-empty">No capture yet.  The buses are what the Wires card joins to the boards'
+        pins; this page holds the analyzer only while it captures.</p>
+      <div id="la-view" hidden>
+        <div class="la-viewer">
+          <div class="la-vtools">
+            <button data-la-zoom="in" aria-label="Zoom in">＋</button>
+            <button data-la-zoom="out" aria-label="Zoom out">－</button>
+            <button data-la-zoom="fit">Fit</button>
+            <button id="la-clear">Clear cursors</button>
+            <button id="la-vcd" disabled title="For PulseView, GTKWave and sigrok's decoders">Download .vcd</button>
+            <span class="la-cap-meta" id="la-cap-meta"></span>
+            <output id="la-readout"></output>
+          </div>
+          <canvas id="la-wave" aria-label="Captured signals, one lane per bus"></canvas>
+        </div>
+        <p class="hint">Drag to pan, Ctrl + wheel or pinch to zoom; click for cursor 1, again for cursor 2 and the
+          time between them.</p>
       </div>
     </section>
   </main>
@@ -621,6 +730,26 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
     <button value="ok" class="primary">Confirm</button>
   </form>
 </dialog>
+<div id="la-reset" popover>
+  <h3>Capture and reset</h3>
+  <p>Arms the analyzer, then pulses a board's RESET.  The capture starts as the board leaves reset; the
+    Mark lane shows the pulse.</p>
+  <div class="row" id="la-reset-ports"></div>
+</div>
+
+<dialog id="la-dec-dlg" class="small-dlg">
+  <form id="la-dec-form">
+    <h3>Add a decoder</h3>
+    <label for="la-dec-type">Protocol</label>
+    <select id="la-dec-type"></select>
+    <div id="la-dec-lines" class="la-dec-lines"></div>
+    <div class="btns">
+      <button type="button" data-close>Cancel</button>
+      <button type="submit" class="primary">Add</button>
+    </div>
+  </form>
+</dialog>
+
 <div id="toast" popover="manual"></div>
 
 <script type="module">
@@ -732,6 +861,19 @@ function render(s) {
   ].filter(Boolean).join(" · ");
   if (s.access) renderRights(s.access);
   renderCamera(s);
+  renderAnalyzer(s);
+}
+
+/* The DATA x4's logic analyzer: its card's code (/analyzer/card.mjs) loads once the bay has one */
+let laCard = null;
+function renderAnalyzer(s) {
+  $("la-card").hidden = !s.analyzer;
+  if (!s.analyzer) return;
+  laCard ??= import("/analyzer/card.mjs").then((m) => m.mount());
+  laCard.then((card) => card.update(s, host)).catch((e) => {
+    laCard = null;
+    $("la-meta").textContent = `not loaded: ${e.message}`;
+  });
 }
 
 /*

@@ -467,6 +467,25 @@ focused once, by hand, at the real distance (lens tip to board ≈ 75–80 mm).
 4. Hold the lens still and tighten the nut finger-tight; check with one
    more snapshot, then set the resolution back (640 × 480 for the stream).
 
+### Logic analyzer
+
+![Logic analyzer card of a DATA ×4 bay (simulated): This page or USB/IP, the co-processor's image, the rate and trigger, the buses A–H named, the Mark lane; after Capture and reset on B3.2, its boot banner on bus A decoded as UART, then I²C and SPI, and the node's reset pulse on Mark](../docs/img/web-ui-analyzer.png)
+
+On a DATA ×4 bay the co-processor runs gusmanb's LogicAnalyzer, and the
+bay page has a card for it (`web/analyzer-card.mjs`, served as
+`/analyzer/card.mjs`; it loads only when `/api/status` has an `analyzer`).
+Its channels are the buses A–H, which the Wires card joins to the boards'
+pins, and the node's MARK on CH13.  The card captures through the node's
+relay (`src/analyzer.c`, `/analyzer/ws`) with the analyzer page's own
+modules (the protocol, the viewer, the decoders), and holds the analyzer
+only while it captures.  **Capture and reset** turns the Mark lane on, arms
+the analyzer on MARK's fall and pulses a board's RESET: the capture starts
+as the board leaves reset.  **USB/IP** hands the analyzer to gusmanb's
+desktop app or PulseView (`usbip attach` on the busid it shows) until it is
+switched back.  Bus names, settings and decoders stay in the browser.
+`dev_server.py --ports 4` simulates the analyzer: a UART on A and B, I²C on
+C and D, SPI on E–H, MARK around a reset.
+
 ### Front display (study)
 
 A Waveshare 1.9" touch LCD (ST7789V2, 320 × 170; CST816 touch on I2C) with

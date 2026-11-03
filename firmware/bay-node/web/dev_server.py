@@ -30,6 +30,11 @@ as the firmware's build does (board_targets.py).  Test hooks:
                           out as zephyr.signed.bin; the bay's own id by default)
     /dev/camera           unplug or plug the camera
     /dev/usb?preset=xiao[&port=n]   another device on the one DUT's port, or on port n
+
+With --ports 4 the co-processor runs gusmanb's analyzer (an image is stored):
+/api/analyzer and the page's WebSocket /analyzer/ws, which answers the
+analyzer's ID and capture requests with made-up signals: a UART on bus A and
+B, I2C on C and D, SPI on E to H, and the node's MARK on CH13 around a reset.
 """
 
 from __future__ import annotations
@@ -59,8 +64,12 @@ sys.path.insert(0, str(WEB.parents[1] / "common" / "web"))
 import board_targets  # noqa: E402
 from devserver import COMMON_STATIC, XTERM_STATIC, Firmware, make_image, ws_frame, ws_read  # noqa: E402
 
-# The page, and what firmware/common serves on the node too (/rack.css, xterm.js)
-STATIC = {"/": (WEB / "index.html", "text/html"), **COMMON_STATIC, **XTERM_STATIC}
+# The page, and what firmware/common serves on the node too (/rack.css, xterm.js, the analyzer's modules)
+ANALYZER = WEB.parents[1] / "common" / "web" / "analyzer"
+ANALYZER_STATIC = {f"/analyzer/{m}.mjs": (ANALYZER / f"{m}.mjs", "text/javascript")
+                   for m in ("capture", "decoders", "decoding", "protocol", "relay", "vcd", "viewer")}
+STATIC = {"/": (WEB / "index.html", "text/html"), **COMMON_STATIC, **XTERM_STATIC, **ANALYZER_STATIC,
+          "/analyzer/card.mjs": (WEB / "analyzer-card.mjs", "text/javascript")}
 START = time.monotonic() - 3 * 3600 - 17 * 60
 WEB_SLOTS = 2
 LOG_WINDOW = 16384 - 512
@@ -436,6 +445,7 @@ def port_act(pt: dict, what: str, body: dict) -> tuple[int, str | None] | None:
         if not pt["on"]:                  # RESET and BOOT are held while the port is off
             return 503, "the port is off, or the DATA board is not set up (DUT_5V off?)"
         time.sleep(0.3 if what == "boot" else min(int(body.get("ms", 100)), 500) / 1000)
+        logic.reset.set()                 # MARK falls: the board starts again
         if pt["on"]:
             pt["client"] = None           # a reset re-enumerates the board, under the same busid
             pt["up_at"] = time.monotonic() + UP_S
@@ -863,7 +873,10 @@ class Coproc:
         self.error: str | None = None
 
     def doc(self) -> dict:
-        return {"image": self.image, "upload": "ready" if self.ticket else "idle", "error": self.error}
+        load = ({"state": "loaded", "loads": 1, "failures": 0, "last_ms": 59, "error": None} if self.image
+                else {"state": "idle", "loads": 0, "failures": 0, "last_ms": 0, "error": None})
+        return {"image": self.image, "upload": "ready" if self.ticket else "idle", "error": self.error,
+                "load": load}
 
     def begin(self, ip: str, body: dict) -> tuple[int, dict]:
         size, sha = body.get("size"), str(body.get("sha256", ""))
@@ -910,6 +923,232 @@ class Coproc:
 
 
 coproc = Coproc()
+
+
+# --- The co-processor's logic analyzer (src/analyzer.c) and gusmanb's firmware on it ------
+
+LA_ID = b"LOGIC_ANALYZER_PICO_2_V6_0\nFREQ:100000000\nBLASTFREQ:200000000\nBUFFER:393216\nCHANNELS:24\n"
+LA_BUFFER = 393216
+LA_MARK = 12                # CH13: the node's MARK
+LA_SEND_BPS = 360 * 1024    # what the node's relay sends on the bench
+
+
+def uart_edges(t: float, text: bytes, baud: int) -> list[tuple[float, int]]:
+    """8N1 from t, a stop bit and a half between characters."""
+    out, bit = [], 1 / baud
+    for ch in text:
+        for i, b in enumerate([0] + [(ch >> i) & 1 for i in range(8)] + [1]):
+            out.append((t + i * bit, b))
+        t += 11.5 * bit
+    return out
+
+
+def i2c_edges(t: float, hz: float, parts) -> tuple[list, list]:
+    """SDA and SCL from t: "S" a (repeated) start, "P" a stop, (byte, acked) a byte and its ninth bit."""
+    q, sda, scl = 1 / hz / 4, [], []
+    for part in parts:
+        if part == "S":
+            sda.append((t, 1)), scl.append((t + q, 1)), sda.append((t + 2 * q, 0)), scl.append((t + 3 * q, 0))
+            t += 4 * q
+        elif part == "P":
+            sda.append((t, 0)), scl.append((t + q, 1)), sda.append((t + 2 * q, 1))
+            t += 3 * q
+        else:
+            byte, acked = part
+            for b in [(byte >> (7 - i)) & 1 for i in range(8)] + [0 if acked else 1]:
+                sda.append((t, b)), scl.append((t + q, 1)), scl.append((t + 3 * q, 0))
+                t += 4 * q
+    return sda, scl
+
+
+def spi_edges(t: float, hz: float, mosi_bytes: bytes, miso_bytes: bytes) -> tuple[list, list, list, list]:
+    """CS, SCK, MOSI and MISO from t, mode 0, MSB first."""
+    h, cs, sck, mosi, miso = 1 / hz / 2, [(t, 0)], [], [], []
+    t += h
+    for mo, mi in zip(mosi_bytes, miso_bytes):
+        for i in range(8):
+            mosi.append((t, (mo >> (7 - i)) & 1)), miso.append((t, (mi >> (7 - i)) & 1))
+            sck.append((t + h, 1)), sck.append((t + 2 * h, 0))
+            t += 2 * h
+    cs.append((t + h, 1)), miso.append((t + h, 1))
+    return cs, sck, mosi, miso
+
+
+def la_scenario(reset: bool) -> dict[int, tuple[int, list]]:
+    """Each channel: its level before its first change, and its changes (seconds from the trigger, level)."""
+    t0 = 1.2e-3 if reset else 0.0
+    a = uart_edges(t0, b"*** Booting Zephyr OS build v4.3.0 ***\r\n" if reset else b"Hello from B3.2\r\n", 115200)
+    b = uart_edges(t0 + 4.4e-3 if reset else 2.2e-3, b"ack\r\n", 115200)
+    sda, scl = i2c_edges(t0 + 6e-3 if reset else 4.5e-3, 400e3,
+                         ["S", (0x90, True), (0x00, True), "S", (0x91, True), (0x1A, True), (0x60, False), "P"])
+    cs, sck, mosi, miso = spi_edges(t0 + 8e-3 if reset else 6.5e-3, 4e6, b"\x9f\0\0\0", b"\xff\xef\x40\x18")
+    return {0: (1, a), 1: (1, b), 2: (1, sda), 3: (1, scl), 4: (1, cs), 5: (0, sck), 6: (0, mosi), 7: (1, miso),
+            LA_MARK: (0, [(-0.1, 1), (0.0, 0)]) if reset else (0, [])}
+
+
+def la_samples(channels: list[int], rate: int, pre: int, post: int, trigger: tuple[int, bool]) -> bytes:
+    """The capture as gusmanb's firmware sends it: a word a sample, bit i = channels[i]."""
+    reset = trigger[0] == LA_MARK
+    lines = la_scenario(reset)
+    # The trigger at 0: the first edge of its channel in its direction
+    level, changes = lines.get(trigger[0], (0, []))
+    shift = 0.0
+    for t, lv in changes:
+        if lv != level and lv == (0 if trigger[1] else 1):
+            shift = t
+            break
+        level = lv
+    n, bps = pre + post, 1 if max(channels) < 8 else 2 if max(channels) < 16 else 4
+    words = 0
+    for bit, c in enumerate(channels):
+        level, changes = lines.get(c, (0, []))
+        one = bytes([1 << (bit % 8)])
+        lane, start = bytearray(n), 0
+        for t, lv in changes:
+            i = min(n, max(0, round((t - shift) * rate) + pre))
+            if level and i > start:
+                lane[start:i] = one * (i - start)
+            start, level = max(start, i), lv
+        if level and n > start:
+            lane[start:n] = one * (n - start)
+        word = bytearray(n * bps)
+        word[bit // 8::bps] = lane
+        words |= int.from_bytes(word, "little")
+    return words.to_bytes(n * bps, "little")
+
+
+def la_requests(buf: bytearray):
+    """The requests in what the page sent, unescaped: (command, data); buf keeps what is left."""
+    while (start := buf.find(b"\x55\xaa")) >= 0 and (end := buf.find(b"\xaa\x55", start + 2)) >= 0:
+        body, out, esc = buf[start + 2:end], bytearray(), False
+        for b in body:
+            if esc:
+                out.append(b ^ 0xF0)
+                esc = False
+            elif b == 0xF0:
+                esc = True
+            else:
+                out.append(b)
+        del buf[:end + 2]
+        if out:
+            yield out[0], bytes(out[1:])
+
+
+class LogicAnalyzer:
+    """/api/analyzer and /analyzer/ws as the node's relay serves them, gusmanb's analyzer behind."""
+
+    def __init__(self) -> None:
+        self.owner = "page"
+        self.lock = threading.Lock()
+        self.page: tuple[int, float, socket.socket] | None = None
+        self.from_device = self.to_device = 0
+        self.reset = threading.Event()
+
+    def present(self) -> bool:
+        return multi() and coproc.image is not None
+
+    def doc(self) -> dict:
+        with self.lock:
+            page = ({"ip": ip_str(self.page[0]), "since_s": int(time.monotonic() - self.page[1])}
+                    if self.page else None)
+        return {"owner": self.owner, "present": self.present(), "busid": f"1-1.{PORTS + 1}", "page": page,
+                "from_device": self.from_device, "to_device": self.to_device, "dropped": 0, "error": None}
+
+    def kick(self) -> None:
+        with self.lock:
+            if self.page:
+                try:
+                    self.page[2].shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
+
+    def set_owner(self, body: dict) -> tuple[int, dict]:
+        if body.get("owner") not in ("page", "usbip"):
+            return 400, {"error": 'owner: "page" or "usbip"'}
+        self.owner = body["owner"]
+        if self.owner == "usbip":
+            self.kick()
+        return 200, self.doc()
+
+    def refusal(self, ip: int) -> str | None:
+        """Why the node would not give this page the analyzer"""
+        with self.lock:
+            other = self.page is not None and self.page[0] != ip
+        return ("no analyzer" if not self.present() else "the analyzer is USB/IP's" if self.owner != "page"
+                else "another address has the analyzer" if other else None)
+
+    def serve(self, handler, ip: int) -> None:
+        """The page's WebSocket, upgraded: one page at a time, the same address takes it over."""
+        sock, send_lock, buf = handler.connection, threading.Lock(), bytearray()
+        waiting = threading.Event()     # a capture waits for its trigger: any byte cancels it
+        cancel = threading.Event()
+        self.kick()
+        with self.lock:
+            self.page = (ip, time.monotonic(), sock)
+
+        def send(data: bytes) -> None:
+            with send_lock:
+                sock.sendall(ws_frame(2, data))
+            self.from_device += len(data)
+
+        def capture(req: bytes) -> None:
+            kind, trig, inverted = req[0], req[1], bool(req[2])
+            channels = list(req[6:6 + req[30]])
+            rate, pre, post = struct.unpack_from("<III", req, 32)
+            self.reset.clear()
+            waiting.set()
+            # Triggered on MARK: a reset of a port releases it; else the board's own traffic, soon
+            fired = (self.reset.wait(30) if trig == LA_MARK else not cancel.wait(0.4)) and not cancel.is_set()
+            waiting.clear()
+            if not fired:
+                return
+            data = la_samples(channels, rate, pre, post, (trig, inverted))
+            data = struct.pack("<I", pre + post) + data + b"\0"
+            for i in range(0, len(data), 16384):
+                send(data[i:i + 16384])
+                time.sleep(min(16384, len(data) - i) / LA_SEND_BPS)
+
+        try:
+            while (frame := ws_read(handler.rfile)) is not None:
+                opcode, data = frame
+                if opcode == 8:
+                    break
+                if opcode == 9:
+                    with send_lock:
+                        sock.sendall(ws_frame(10, data))
+                if opcode not in (1, 2):
+                    continue
+                self.to_device += len(data)
+                if waiting.is_set():
+                    cancel.set()        # gusmanb: any byte cancels a capture waiting for its trigger
+                    continue
+                buf += data
+                for cmd, body in la_requests(buf):
+                    if cmd == 0:
+                        send(LA_ID)
+                    elif cmd == 1 and len(body) >= 48:
+                        channels = list(body[6:6 + body[30]])
+                        bps = 1 if max(channels, default=0) < 8 else 2 if max(channels) < 16 else 4
+                        pre, post = struct.unpack_from("<II", body, 36)
+                        if not channels or pre + post > LA_BUFFER // bps:
+                            send(b"CAPTURE_ERROR\n")
+                            continue
+                        send(b"CAPTURE_STARTED\n")
+                        cancel.clear()
+                        threading.Thread(target=capture, args=(body,), daemon=True).start()
+                    elif cmd == 4:
+                        send(b"RESTARTING_BOOTLOADER\n")
+        except OSError:
+            pass
+        finally:
+            cancel.set()
+            with self.lock:
+                if self.page and self.page[2] is sock:
+                    self.page = None
+        handler.close_connection = True
+
+
+logic = LogicAnalyzer()
 
 
 # --- The fake camera: an Arducam Mega looking down at the drawer -------------
@@ -1220,8 +1459,9 @@ def status(ip: int = 0) -> dict:
                     "rfc2217": any(c["id"] == "rfc2217" for c in access.fake), "raw": False,
                     "rx": len(console.log), "tx": console.tx, "dropped": 0},
             "access": access.summary(ip), "firmware": firmware.doc(), "camera": camera.doc()}
-    if ports:                           # a DATA ×4 bay: its co-processor
+    if ports:                           # a DATA ×4 bay: its co-processor and its analyzer
         s["coproc"] = coproc.doc()
+        s["analyzer"] = logic.doc()
     # A DATA x4 bay is node v1.0's: mW on the DATA lead against the hub's grant.  The one-DUT node
     # is a stand-in's, in mA on its 5 V (the page shows no budget for it)
     s["budget"] = ({"unit": "mW", "limit": GRANT_MW, "granted": True, "reserve": RESERVE_MW,
@@ -1323,6 +1563,13 @@ class Handler(BaseHTTPRequestHandler):
             self.send(200, file.read_bytes(), ctype)
         elif path.startswith("/console/ws/"):
             self.websocket(int(path.rsplit("/", 1)[1]), query.get("t", [""])[0])
+        elif path == "/analyzer/ws":
+            self.analyzer_ws(query.get("t", [""])[0])
+        elif path == "/api/analyzer":
+            if not multi():
+                self.json(404, {"error": "not found"})
+            elif not self.refused("status"):
+                self.json(200, logic.doc())
         elif path == "/api/status":
             if not self.refused("status"):
                 self.json(200, status(self.peer()))
@@ -1466,6 +1713,24 @@ class Handler(BaseHTTPRequestHandler):
                     console.info.pop(slot, None)
         self.close_connection = True
 
+    def analyzer_ws(self, ticket: str) -> None:
+        # Like the node: a console ticket, and the analyzer this page's to take
+        with access.lock:
+            ip, until = access.tickets.pop(ticket, (0, 0))
+        if until < time.monotonic() or access.check("console", ip) != "ok":
+            return self.json(403, {"error": "no console ticket"})
+        if (why := logic.refusal(ip)) is not None:
+            return self.json(409, {"error": why})
+        key = self.headers.get("Sec-WebSocket-Key", "")
+        accept = base64.b64encode(hashlib.sha1(
+            (key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").encode()).digest()).decode()
+        self.send_response(101)
+        self.send_header("Upgrade", "websocket")
+        self.send_header("Connection", "Upgrade")
+        self.send_header("Sec-WebSocket-Accept", accept)
+        self.end_headers()
+        logic.serve(self, ip)
+
     def do_POST(self) -> None:  # noqa: N802
         length = int(self.headers.get("Content-Length") or 0)
         raw = self.rfile.read(length)
@@ -1509,6 +1774,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.json(200, camera.doc(full=True))
         if self.refused("console" if path in ("/api/aux", "/api/aux/break") else "control"):
             return
+        if path == "/api/analyzer":
+            return self.json(*logic.set_owner(body)) if multi() else self.json(404, {"error": "not found"})
         m = re.fullmatch(r"/api/ports/(\d+)/(power|reset|boot)", path)
         if m:
             return self.port_post(int(m[1]), m[2], body, port_reply=True)
@@ -1760,6 +2027,8 @@ if __name__ == "__main__":
                     help="boards the node serves: 4 for a bay with a DATA ×4 board (docs/multi-dut-node.md)")
     a = ap.parse_args()
     set_ports(a.ports)
+    if a.ports > 1:
+        coproc.image = {"name": "gusmanb 6.0", "size": 40704, "addr": "0x20000000", "sha256": "61b75a29" * 8}
     print(f"bay node mock on http://localhost:{a.port} (camera on port {a.port + 1})"
           + (f", {a.ports} ports" if a.ports > 1 else ""))
     serve(a.port).serve_forever()

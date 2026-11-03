@@ -7,6 +7,9 @@
  *                              ways, the analyzer's own protocol.  The ticket
  *                              comes from POST /api/console/ticket (Console
  *                              right), as for the web consoles.
+ *   GET  /analyzer/card.mjs    the bay page's card for it (web/analyzer-card.mjs);
+ *                              the modules it imports are firmware/common's
+ *                              (hwtr_web_analyzer())
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -229,5 +232,15 @@ static struct http_resource_detail_dynamic analyzer_detail = {
 	.cb = analyzer_handler,
 };
 
+/* --- /analyzer/card.mjs ------------------------------------------------------------ */
+
+static const uint8_t card_mjs_gz[] = {
+#include "analyzer-card.mjs.gz.inc"
+};
+
+static struct http_resource_detail_static card_detail =
+	HWTR_WEB_STATIC_GZ(card_mjs_gz, "text/javascript");
+
 HWTR_HTTP_RESOURCE_DEFINE(bay_analyzer_res, bay_http, "/api/analyzer", &analyzer_detail);
+HWTR_HTTP_RESOURCE_DEFINE(bay_analyzer_card_res, bay_http, "/analyzer/card.mjs", &card_detail);
 HWTR_HTTP_RESOURCE_DEFINE(bay_analyzer_ws_res, bay_http, "/analyzer/ws", &ws_detail);

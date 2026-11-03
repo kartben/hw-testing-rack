@@ -8,7 +8,7 @@
  */
 
 import { Capture, depth } from "./capture.mjs";
-import { BAUDS, DECODERS } from "./decoders.mjs";
+import { captureRows, decoderFields, decoderFrom, decoderLabel, decoderTypes, esc } from "./decoding.mjs";
 import { DEMO_DECODERS, DEMO_NAMES, demoCapture } from "./demo.mjs";
 import { loadRam, openBootrom, usbSupported } from "./picoboot.mjs";
 import { Analyzer, MAX_CHANNELS, TRIGGER } from "./protocol.mjs";
@@ -74,7 +74,7 @@ function renderChannels() {
     <label style="--c: var(--lane-${c % 8})">
       <input type="checkbox" data-ch="${c}" ${settings.on.includes(c) ? "checked" : ""} aria-label="CH${c + 1}">
       <small>CH${c + 1}</small>
-      <input type="text" data-name="${c}" value="${(settings.names[c] ?? "").replace(/"/g, "&quot;")}"
+      <input type="text" data-name="${c}" value="${esc(settings.names[c] ?? "")}"
              placeholder="name" aria-label="CH${c + 1} name" maxlength="24">
     </label>`).join("");
   $("more-ch").textContent = wide ? "Channels 1–8 only" : "Channels 9–24";
@@ -94,7 +94,7 @@ function renderSettings() {
     `<option value="${l}" ${l === settings.length ? "selected" : ""}>${l.toLocaleString("en-US")}${d && l === d.samples ? " (all)" : ""}</option>`).join("");
   $("pre").value = String(settings.pre);
   $("trig-ch").innerHTML = on.map((c) =>
-    `<option value="${c}" ${c === settings.trig ? "selected" : ""}>${chName(c)}</option>`).join("");
+    `<option value="${c}" ${c === settings.trig ? "selected" : ""}>${esc(chName(c))}</option>`).join("");
   if (!on.includes(settings.trig) && on.length) {
     settings.trig = on[0];
   }
@@ -239,42 +239,8 @@ $("cancel").addEventListener("click", () => busy?.abort());
 
 const laneName = (k) => settings.names[cap.channels[k]] || capNames[k] || `CH${cap.channels[k] + 1}`;
 
-/* A decoder's rows, under the last lane it reads; a decoder that cannot run says why */
-function decode(d) {
-  const spec = DECODERS[d.type], k = {};
-  let anchor = -1;
-  for (const line of spec.lines) {
-    const role = line.replace("?", ""), c = d.lines[role];
-    if (c === undefined || c === null) {
-      if (!line.endsWith("?")) {
-        return { anchor, rows: [] };
-      }
-      continue;
-    }
-    k[role] = cap.channels.indexOf(c);
-    if (k[role] < 0) {
-      return { anchor: cap.channels.length - 1, rows: [{ label: spec.name, items: [
-        { t0: cap.time(0), t1: cap.time(cap.count - 1), kind: "err", text: `CH${c + 1} is not in this capture` }] }] };
-    }
-    anchor = Math.max(anchor, k[role]);
-  }
-  try {
-    return { anchor, rows: spec.run(cap, d, k) };
-  } catch (e) {
-    return { anchor, rows: [{ label: spec.name, items: [
-      { t0: cap.time(0), t1: cap.time(cap.count - 1), kind: "err", text: e.message }] }] };
-  }
-}
-
 function showCapture() {
-  const decoded = decoders().map(decode);
-  const rows = [];
-  cap.channels.forEach((c, k) => {
-    rows.push({ k, name: laneName(k), color: `--lane-${c % 8}` });
-    for (const d of decoded.filter((x) => x.anchor === k)) {
-      rows.push(...d.rows);
-    }
-  });
+  const rows = captureRows(cap, decoders(), laneName);
   $("cap-meta").textContent = `${cap.count.toLocaleString("en-US")} samples at ${cap.rate / 1e6} MS/s, ` +
                               `${fmtTime(cap.count / cap.rate)}`;
   $("vcd").disabled = false;
@@ -302,12 +268,9 @@ $("vcd").addEventListener("click", () => {
 
 /* --- Decoders ---------------------------------------------------------------------- */
 
-const lineText = (d) => Object.entries(d.lines).filter(([, c]) => c !== null && c !== undefined)
-  .map(([role, c]) => `${role.toUpperCase()} ${chName(c)}`).join(", ");
-
 function renderDecoders() {
   $("decs").innerHTML = decoders().map((d, i) => `
-    <span class="dec-chip"><b>${DECODERS[d.type].name}</b> ${lineText(d)}${d.baud ? ` · ${d.baud >= 1e6 ? `${d.baud / 1e6} M` : `${d.baud} `}Bd` : ""}${d.type === "spi" ? ` · mode ${d.mode ?? 0}` : ""}
+    <span class="dec-chip">${decoderLabel(d, chName)}
       <button class="small" data-remove="${i}" aria-label="Remove this decoder">✕</button></span>`).join("") +
     `<button class="small" id="add-dec">+ Decoder</button>`;
 }
@@ -329,20 +292,11 @@ $("decs").addEventListener("click", (e) => {
 const pickable = () => (cap ? [...cap.channels] : [...settings.on].sort((a, b) => a - b));
 
 function renderDecoderForm() {
-  const type = $("dec-type").value, spec = DECODERS[type], chans = pickable();
-  $("dec-lines").innerHTML = spec.lines.map((line, i) => {
-    const role = line.replace("?", ""), optional = line.endsWith("?");
-    return `<label>${role.toUpperCase()}${optional ? " (optional)" : ""}
-      <select data-line="${role}">${optional ? '<option value="">none</option>' : ""}${chans.map((c) =>
-        `<option value="${c}" ${!optional && chans[i] === c ? "selected" : ""}>${chName(c)}</option>`).join("")}</select></label>`;
-  }).join("") + (type === "uart" ? `<label>Baud rate <select id="dec-baud">${BAUDS.map((b) =>
-    `<option value="${b}" ${b === 115200 ? "selected" : ""}>${b.toLocaleString("en-US")}</option>`).join("")}</select></label>` : "")
-    + (type === "spi" ? `<label>Mode <select id="dec-mode">${[0, 1, 2, 3].map((m) =>
-    `<option value="${m}">${m}</option>`).join("")}</select></label>` : "");
+  $("dec-lines").innerHTML = decoderFields($("dec-type").value, pickable(), chName);
 }
 
 function openDecoderDialog() {
-  $("dec-type").innerHTML = Object.entries(DECODERS).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join("");
+  $("dec-type").innerHTML = decoderTypes();
   renderDecoderForm();
   $("dec-dlg").showModal();
 }
@@ -354,17 +308,7 @@ $("dec-form").addEventListener("submit", (e) => {
     $("dec-dlg").close();
     return;
   }
-  const d = { type: $("dec-type").value, lines: {} };
-  for (const sel of $("dec-lines").querySelectorAll("select[data-line]")) {
-    d.lines[sel.dataset.line] = sel.value === "" ? null : Number(sel.value);
-  }
-  if (d.type === "uart") {
-    d.baud = Number($("dec-baud").value);
-  }
-  if (d.type === "spi") {
-    d.mode = Number($("dec-mode").value);
-  }
-  decoders().push(d);
+  decoders().push(decoderFrom($("dec-type").value, $("dec-lines")));
   save();
   $("dec-dlg").close();
   if (cap) {

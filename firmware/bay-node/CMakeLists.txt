@@ -58,6 +58,11 @@ hwtr_web_assets(bay_http)
 hwtr_web_xterm(bay_http)
 # Firmware updates (when built with MCUboot): /api/update, /api/update/begin
 hwtr_web_update(bay_http)
+# The logic analyzer's card (/analyzer/card.mjs) and the modules it shares with the analyzer page
+if(CONFIG_BAY_ANALYZER)
+  generate_inc_file_for_target(app web/analyzer-card.mjs ${gen_dir}/analyzer-card.mjs.gz.inc --gzip)
+  hwtr_web_analyzer(bay_http)
+endif()
 
 # HTTP resources of the bay_http service live in their own iterable section
 zephyr_linker_sources(SECTIONS web/sections-rom.ld)

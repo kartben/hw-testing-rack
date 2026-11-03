@@ -363,8 +363,12 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   Pico 2, `protocol.mjs` over the WebSocket from a Linux host: the ID in 62 ms, then a whole 384 KB
   capture of the node's AUX UART (2 MS/s, triggered on its start bit) in 1.05 s, 367 KB/s, decoded intact,
   nothing dropped (278 KB/s when each read waited for the page).  Switched to USB/IP, it was on offer as
-  1-1.3 and the WebSocket was refused; switched back, the next capture came through.  The page's side of
-  it is the bay page's next card.  The page also loads a `no_flash` build into a
+  1-1.3 and the WebSocket was refused; switched back, the next capture came through.  **The bay page's
+  card** ([firmware/README.md › Logic analyzer](../firmware/README.md#logic-analyzer)): the node serves it
+  with the analyzer page's modules (`/analyzer/*.mjs`, gzipped: +224 bytes of DRAM for their resources,
+  bay_node 91.34 %); "Capture and reset" triggers on MARK's fall.  From the card on the bench XIAO, a
+  capture of a line sent to its AUX UART came back decoded.  MARK and "Capture and reset" are checked on
+  the simulated node only (the bench has no DATA ×4).  The analyzer page also loads a `no_flash` build into a
   blank RP2350 through WebUSB, as the node does (PICOBOOT; tested against a fake bootloader, not yet on a
   board).  **Open, for the datasheet check:** whether the RP2350's boot ROM has Windows bind WinUSB to its
   PICOBOOT interface by itself (Microsoft OS 2.0 descriptors), which WebUSB needs there.  The

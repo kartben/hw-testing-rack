@@ -239,8 +239,12 @@ static const struct json_obj_descr status_descr[] = {
 	JSON_OBJ_DESCR_OBJECT(struct status_doc, rack, status_rack_descr),
 };
 
-/* Responses are built in the HTTP server thread, one at a time (/metrics too) */
-static BAY_EXT_RAM char resp_buf[3072];
+/*
+ * Responses are built in the HTTP server thread, one at a time (/metrics too).
+ * A DATA x4 bay's status with its camera, co-processor and analyzer comes
+ * near 3 KB.
+ */
+static BAY_EXT_RAM char resp_buf[IS_ENABLED(CONFIG_BAY_ANALYZER) ? 4096 : 3072];
 
 /* X-Bay-Auth, kept from the first callback of a request */
 HWTR_WEB_AUTH_CAPTURE(bay_auth_header);
@@ -621,6 +625,9 @@ static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 		status_append("ports", ports_status_json);
 #if defined(CONFIG_BAY_COPROC)
 		status_append("coproc", coproc_json);
+#endif
+#if defined(CONFIG_BAY_ANALYZER)
+		status_append("analyzer", analyzer_json);
 #endif
 	}
 
