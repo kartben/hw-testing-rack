@@ -177,7 +177,9 @@ static int upload_handler(struct http_client_ctx *client, enum http_transaction_
 	ret = coproc_write(peer_ip(client->fd), ticket, req->data, req->data_len, &why);
 	if (ret != 0) {
 		answered = true;
-		reply(rsp, ret == -EPERM ? HTTP_403_FORBIDDEN : HTTP_400_BAD_REQUEST,
+		reply(rsp, ret == -EPERM   ? HTTP_403_FORBIDDEN
+			   : ret == -EBUSY ? HTTP_409_CONFLICT
+					   : HTTP_400_BAD_REQUEST,
 		      "{\"error\":\"%s\"}", why);
 		return 0;
 	}

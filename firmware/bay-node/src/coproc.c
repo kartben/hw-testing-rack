@@ -300,6 +300,12 @@ int coproc_write(uint32_t ip, const char *ticket_hex, const uint8_t *data, size_
 		k_mutex_unlock(&lock);
 		return -EPERM;
 	}
+	/* A load started after the ticket: it reads the partition, the ticket waits */
+	if (up.state == COPROC_UPLOAD_READY && loading()) {
+		*why = "the co-processor is being loaded: try again in a few seconds";
+		k_mutex_unlock(&lock);
+		return -EBUSY;
+	}
 	if (up.state == COPROC_UPLOAD_READY) {
 		if (flash_area_open(AREA_ID, &up.fa) != 0 ||
 		    flash_get_page_info_by_offs(flash_area_get_device(up.fa), up.fa->fa_off,

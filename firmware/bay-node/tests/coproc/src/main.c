@@ -344,4 +344,28 @@ ZTEST(loader, test_5_no_image)
 	unplug();
 }
 
+ZTEST(loader, test_6_upload_while_loading)
+{
+	size_t len = make_image(0x20000000, BODY_SIZE);
+	char ticket[COPROC_TICKET_HEX];
+	const char *why = NULL;
+	uint8_t sha[32];
+
+	/* A ticket, then a load that takes its time, then the upload's bytes */
+	sha_of(image, len, sha);
+	zassert_ok(coproc_begin(IP, len, sha, ticket, &why));
+	emu.mute = true;
+	zassert_ok(picoboot_emu_plug());
+	zassert_true(json_soon("\"state\":\"loading\"", 1000));
+	zassert_equal(coproc_write(IP, ticket, image, 64, &why), -EBUSY);
+	zassert_true(json_soon("\"name\":\"test 1.0\"", 10), "the image stays");
+	zassert_false(header_erased());
+
+	/* Once the load is over the same ticket goes on */
+	zassert_true(json_soon("the bootloader stopped answering", 3000));
+	zassert_ok(coproc_write(IP, ticket, image, len, &why), "%s", why);
+	zassert_ok(coproc_finish(&why), "%s", why);
+	unplug();
+}
+
 ZTEST_SUITE(loader, NULL, loader_setup, loader_before, NULL, NULL);
