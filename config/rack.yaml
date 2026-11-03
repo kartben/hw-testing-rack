@@ -259,10 +259,12 @@ analyzer:
   project: https://github.com/gusmanb/logicanalyzer        # GPL-3.0: point at the exact tag, the UF2 is not redistributed
   app: "6.0.0.1"          # the desktop app, release v6.0.0.1 (logicanalyzer_6.0.0.1-<os>.zip): sigrok decoders included
   firmware:               # by board: the release that carries it, its asset (a zip holding the UF2) and size in bytes
-    rpi-pico2: { release: v6.0.0.0, asset: logic-analyzer-firmware_v6.0.0_BOARD_PICO_2.zip, size: 32325 }
+    rpi-pico2: { release: v6.0.0.0, asset: logic-analyzer-firmware_v6.0.0_BOARD_PICO_2.zip, size: 32325,
+                 sha256: 1179fcb165064913855875cd9e96bd11f2a86a2b5a8eaab340f9826a9d0f665a }
                           # 6.0.0.1 changed only the apps.  Not the _Turbo build (a 400 MHz overclock, 200 MS/s).
-                          # Its sha256 goes here once downloaded (GitHub gives no digest for assets of that age)
+                          # The sha256: downloaded 2026-11-03 (GitHub gives no digest for assets of that age)
   usb: "1209:3020"        # what it enumerates as: one CDC ACM port, "Dr. Gusman" "LogicAnalyzer"; the app finds it by this
+                          # (plus the SDK's reset interface: `picotool reboot -u -f` takes it to BOOTSEL)
 
 cables:
   # DUT cables (DATA socket → board), `length` end to end.  A board whose USB faces the port wall: a

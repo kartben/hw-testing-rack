@@ -62,7 +62,7 @@ drivers, Wi-Fi, the web pages' CSS, helpers and tooling.
 | Access control | written, tested on native_sim | per node: which address may use status, control, console, USB/IP, shell, camera (Zephyr packet filter for TCP, a check per HTTP request); a CI reservation (lease); kicks and a refusal log; admin key claimed with a press on BOOT, admin requests signed (HMAC).  See [`firmware/README.md`](../firmware/README.md#access-control) |
 | Board targets | written, tested on native_sim | per slot, in NVS: the Zephyr board, west runner, probe id and console twister uses, saved for the USB device in the slot (another board is flagged); set on the page from suggestions by USB ID (`mechanical/boards/boards.yaml`), read by `bayctl hwmap`.  See [`firmware/README.md`](../firmware/README.md#board-targets) |
 | Control interface | written | `bay …` shell on the UART test pads and over telnet; status page, serial console and JSON API on `http://bay-<id>.local/` (`/api/power`, `/api/reset`, `/api/boot`, `/api/mode`, `/api/aux`) |
-| Updates | written, tested on native_sim, not on hardware | over Wi-Fi: MCUboot (sysbuild), signed images sent with the admin key, a test boot, the new firmware confirms itself once Wi-Fi and the rack bus are back, else MCUboot goes back; the page, `bayctl update`.  [Programming › Over the network](#over-the-network); USB through the front port in SERVICE mode |
+| Updates | written, tested on native_sim; update and rollback run on the bench XIAO (2026-11-03), not on a bay node yet | over Wi-Fi: MCUboot (sysbuild), signed images sent with the admin key, a test boot, the new firmware confirms itself once Wi-Fi and the rack bus are back, else MCUboot goes back; the page, `bayctl update`.  [Programming › Over the network](#over-the-network); USB through the front port in SERVICE mode |
 | Camera | written, simulated, not on hardware | optional Arducam Mega on J6 (`arducam,mega` on SPI2, 4 MHz) and its light (`pwm-leds` on LEDC, 25 kHz): snapshots and an MJPEG stream on TCP 8081 for every client at once, frames in PSRAM cut at their JPEG end, the light only while someone watches; per-bay settings (resolution, quality, exposure and gain auto or manual, white balance, brightness, contrast, saturation, sharpness, display rotation) applied between frames; its own access right; STATUS tells the hub.  [`firmware/README.md`](../firmware/README.md#camera) |
 
 ![The node's status page (simulated node): live V/I/P, power and reset actions, USB/IP state](img/web-ui-dark.png)
@@ -195,9 +195,14 @@ hub.
 > **Status:** written; tested on native_sim (`firmware/common/tests/update`:
 > the upload into slot 1, the test boot request, the trial, the rollback),
 > against the simulated boards (the pages, `bayctl`), and built for every
-> board.  **Not run on an ESP32-S3 yet**: MCUboot's swap, the rollback, the
-> watchdog and a power loss during a swap are to be checked on the first
-> boards.
+> board.  **On an ESP32-S3**, the bench XIAO (`xiao_esp32s3`, MCUboot's test
+> key, its 1.31 MB slots), 2026-11-03, with `bayctl`'s update over Wi-Fi:
+> 1053 KB sent in 21–23 s, the node back 58–59 s after the start (the swap
+> included), confirmed 6 s later.  A bench build whose health check never
+> passes (a 40 s trial) restarted unconfirmed and MCUboot put the previous
+> firmware back: running again 143 s after the start.  Still to check on the
+> first boards: the bay node's own layout (3.75 MB slots), the rack bus in
+> the trial, the watchdog, a power loss during a swap.
 
 Both boards boot through **MCUboot**, built in front of the application by
 sysbuild: `west build --sysbuild`.  `west flash` then writes MCUboot at 0
@@ -217,7 +222,7 @@ west flash -d build-bay                  # MCUboot, then the signed application
 |---|---|
 | Begin | an admin request, `POST /api/update/begin` with the image's size and SHA-256, signed with the device's admin key like every other admin action (`X-Bay-Auth`, [`firmware/common/lib/admin.c`](../firmware/common/lib/admin.c)), gets a single-use ticket (one minute, this address).  Refused while the running firmware is on trial; a reserved bay only with `force` |
 | Upload | `POST /api/update?ticket=…` with the image: written to slot 1 as it streams in (no copy in RAM), hashed and read on the way.  Refused at the first bytes if it is not an MCUboot image, at the end if the size, the SHA-256 or the image id differ; nothing is written for anyone without the key |
-| Test boot | MCUboot is asked for a test swap and the device restarts 1.5 s later.  MCUboot checks the signature (ECDSA P-256), swaps (swap using offset; ≈ 10–30 s for 1 MB, to be measured) and boots the new firmware |
+| Test boot | MCUboot is asked for a test swap and the device restarts 1.5 s later.  MCUboot checks the signature (ECDSA P-256), swaps (swap using offset) and boots the new firmware: on the bench XIAO the node answers again ≈ 35 s after the restart, swap, boot and Wi-Fi included |
 | Trial | the new firmware must get back, for 5 s in a row and within 3 minutes (`CONFIG_HWTR_UPDATE_TRIAL_S`), what worked when the image arrived: Wi-Fi, and the rack bus (a node: an address from the hub and the hub heard; the hub: CAN error-active with at least one node).  An update on a desk, without a rack, only needs Wi-Fi.  The watchdog (`watchdog0`, 30 s) runs meanwhile |
 | Confirmed, or rolled back | it confirms itself and stays; otherwise (not healthy in time, or hung) it restarts unconfirmed and MCUboot swaps the previous firmware back.  The page, `/api/update` and the hub's event log say which |
 
@@ -321,8 +326,16 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   loaded at each power-up.  Needed: gusmanb's analyzer built from its pinned tag as a RAM image (its PICO_2
   build already runs `copy_to_ram`; `no_flash` instead, the same 384 KB buffer), loaded by the lab server
   (`picotool load -x` over USB/IP) at first; then a PICOBOOT RAM loader on the node (write, then REBOOT2 to
-  the RAM image), reloading whenever the co-processor shows up in BOOTSEL.  Bench checks: the flashless boot
-  lands in BOOTSEL every time, the USB serial number without flash.
+  the RAM image), reloading whenever the co-processor shows up in BOOTSEL.  **Bench, 2026-11-03:** a Pico 2
+  (RP2350A) with its flash erased, behind the bench XIAO's hub, over USB/IP from a Linux host.  It came back
+  in BOOTSEL (2e8a:000f) after every reset (6 reboots by picotool, and once while being wired); its USB
+  serial number (the chip id) is the same without flash; `picotool load -x` of the RAM build took 1.4–1.7 s
+  over Wi-Fi, start included, and 1209:3020 was there within a second; gusmanb's TerminalCapture 6.0.0.1
+  (`capture`, headless) read the node's AUX UART intact at 2 MS/s.  The stock firmware reboots into BOOTSEL
+  with `picotool reboot -u -f` (the SDK's reset interface), no button.  The RAM build: tag v6.0.0.0,
+  `BOARD_PICO_2`, `TURBO_MODE 0`, `pico_set_binary_type(LogicAnalyzer no_flash)`, pico-sdk 2.0.0 (the
+  release's), its VS Code include made `OPTIONAL`; with gcc 15, pioasm 2.0.0 needs `-include cstdint`.  It
+  loads 126 KB (code and data) and zeroes 391 KB at start (the 384 KB buffer), of the 520 KB.
 
 * **Hardware bring-up** — nothing has run on a bay node yet (board
   definition, INA226 calibration, LED timing, SERVICE PHY handover).

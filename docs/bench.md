@@ -162,7 +162,8 @@ AP's setup for a rack is in [firmware/README.md › Wi-Fi in the rack](../firmwa
 the DUT's 5 V is whatever feeds the 5V pin: a bench 5 V supply or a USB breakout, which powers the XIAO
 too.  The DUT's power is always on; `bay power` drives D2 (DUT_EN), which can switch a high-side switch
 in that feed only if the XIAO runs from a LiPo on its BAT pads.  **Never feed the 5V pin while a PC is
-on the USB-C.**
+on the USB-C.**  A self-powered hub that puts its own 5 V on its upstream port (the bench's Genesys
+GL3523, 2026-11-03) powers the XIAO through the USB-C: nothing on the 5V pin then.
 
 ### Pin map
 
