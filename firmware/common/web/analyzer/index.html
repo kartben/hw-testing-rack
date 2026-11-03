@@ -39,6 +39,15 @@
       </dl>
       <p class="hint" id="connect-hint">Plug in a Pico 2 running gusmanb's analyzer (it shows up as 1209:3020), then
         Connect and pick it.</p>
+      <div class="ram" id="ram" hidden>
+        <p class="hint">A blank RP2350 (in its bootloader, 2e8a:000f) can run the analyzer from its RAM: pick your
+          <code>no_flash</code> build of gusmanb's firmware, then load it.  It is gone when the board loses power.</p>
+        <div class="row">
+          <label class="file"><input type="file" id="ram-file" accept=".uf2">Choose the UF2…</label>
+          <span class="hint" id="ram-what">no file</span>
+          <button id="ram-load" disabled>Load into an RP2350…</button>
+        </div>
+      </div>
     </section>
 
     <section class="card" id="capture-card">

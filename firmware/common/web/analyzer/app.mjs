@@ -10,8 +10,10 @@
 import { Capture, depth } from "./capture.mjs";
 import { BAUDS, DECODERS } from "./decoders.mjs";
 import { DEMO_DECODERS, DEMO_NAMES, demoCapture } from "./demo.mjs";
+import { loadRam, openBootrom, usbSupported } from "./picoboot.mjs";
 import { Analyzer, MAX_CHANNELS, TRIGGER } from "./protocol.mjs";
 import { knownSerial, openSerial, serialSupported } from "./serial.mjs";
+import { uf2RamImage } from "./uf2.mjs";
 import { toVcd } from "./vcd.mjs";
 import { Viewer, fmtTime } from "./viewer.mjs";
 
@@ -377,10 +379,48 @@ for (const b of document.querySelectorAll("[data-zoom]")) {
 }
 $("clear-cursors").addEventListener("click", () => viewer.clearCursors());
 
+/* --- A blank RP2350: the analyzer into its RAM (WebUSB) -------------------------------- */
+
+let ramImage = null;
+
+$("ram-file").addEventListener("change", async () => {
+  const f = $("ram-file").files[0];
+  if (!f) {
+    return;
+  }
+  ramImage = null;
+  try {
+    ramImage = uf2RamImage(new Uint8Array(await f.arrayBuffer()));
+    $("ram-what").textContent = `${f.name}: ${ramImage.body.length.toLocaleString("en-US")} bytes at 0x${ramImage.addr.toString(16)}`;
+  } catch (e) {
+    $("ram-what").textContent = `${f.name}: ${e.message}`;
+  }
+  $("ram-load").disabled = !ramImage;
+});
+
+$("ram-load").addEventListener("click", async () => {
+  $("ram-load").disabled = true;
+  try {
+    const boot = await openBootrom();
+    await loadRam(boot, ramImage, (sent, total) => setState(`Loading ${Math.round(sent / 1024)} of ${Math.round(total / 1024)} KB`,
+                                                            "var(--accent)"));
+    setState("Loaded: the analyzer starts, then Connect… and pick it", "var(--ok)");
+    /* A port this page was given before comes back by itself */
+    setTimeout(() => !analyzer && serialSupported() && knownSerial().then((p) => p && connect(p)), 1500);
+  } catch (e) {
+    if (e.name !== "NotFoundError") {
+      setState(`Not loaded: ${e.message}`, "var(--fault)");
+    }
+  } finally {
+    $("ram-load").disabled = !ramImage;
+  }
+});
+
 /* --- Start ---------------------------------------------------------------------- */
 
 renderChannels();
 renderSettings();
+$("ram").hidden = !usbSupported();
 if (!serialSupported()) {
   $("no-serial").hidden = false;
   $("connect").disabled = true;

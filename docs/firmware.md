@@ -342,7 +342,10 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   [kartben.github.io/hw-testing-rack/analyzer](https://kartben.github.io/hw-testing-rack/analyzer/)): native ES
   modules that speak gusmanb's protocol (written from its wire format; checked on the bench Pico 2: the
   sample width follows the highest channel asked for, bit i is the i-th channel asked for), Web Serial for an
-  analyzer on the PC's USB today, the node's relay to come.  The
+  analyzer on the PC's USB today, the node's relay to come.  The page also loads a `no_flash` build into a
+  blank RP2350 through WebUSB, as the node does (PICOBOOT; tested against a fake bootloader, not yet on a
+  board).  **Open, for the datasheet check:** whether the RP2350's boot ROM has Windows bind WinUSB to its
+  PICOBOOT interface by itself (Microsoft OS 2.0 descriptors), which WebUSB needs there.  The
   native_sim test (`firmware/bay-node/tests/coproc`) loads into an RP2350 bootloader emulated on the virtual
   USB bus, and checks a stalled WRITE, a bootloader that stops answering (the node gives up after 10 s) and
   an image that does not start.  **Open, for the datasheet check:** which SRAM the ROM keeps for itself
