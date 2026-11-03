@@ -446,7 +446,7 @@ def board() -> Board:
         R(o, f"R{100 + n}", "10k", f"POS_{ch}", f"POS_{ch}_CONN", pcb=P(11.0, yj - 6.9, 90))
         # the row cable's inductive kick when the eFuse cuts a short: a Schottky to GND at the connector, its
         # cathode on the output track (TPS2660 §12.1; OUT ≥ −0.3 V)
-        part(o, f"D{40 + n}", "schottky", {"A": "GND", "K": f"ROW_{ch}"}, pcb=P(11.5, yj + 6.635, 270))
+        part(o, f"D{40 + n}", "schottky60", {"A": "GND", "K": f"ROW_{ch}"}, pcb=P(11.65, yj + 5.835, 270))
         part(o, f"D{30 + n}", "bat54s", {"A": "GND", "K": "+3V3", "COM": f"POS_{ch}"}, pcb=P(16.6, yj + 7.6, 0))
     o.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 7.5k ≈ 1.6 A (JST PH: 2 A per contact).")
     o.note("t_dVdT = 8e3 · V_IN · C_dVdT → 100 nF ≈ 16 ms at 20 V, 22 ms at 28 V.  A row of four nodes (≈ 450 µF) then")
@@ -458,7 +458,10 @@ def board() -> Board:
     o.note("The firmware holds ROW_EN with the ESP32's GPIO hold, so a controller reset leaves the rows as they were.")
     o.note("FLT: open drain, 100k to 3.3 V for the controller; the red LED (1k) is fed from ROW_EN: it lights only for")
     o.note("  a fault on an enabled row (FLT is also low while a row is off or starting).")
-    o.note("D41–D44 B5819W: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short.")
+    o.note("D41–D44: GND → each row's output at its connector, for the cable's kick when the eFuse cuts a short: B260A")
+    o.note("  class (TI EVM SLVUAV3A D5, Table 13 p.16), here the DFLS260-7 in PowerDI-123 for room.  A trip takes OUT")
+    o.note("  briefly below its -0.3 V rating, as on TI's EVM; SLVSDG2G gives no transient figure for OUT (7.1 p.6).")
+    o.note("  60 V, not 40: with OVP to GND, OUT follows VRACK up to D1's clamp (48 V) for the 6 us before OVP opens.")
     o.note("UVLO / OVP / MODE to GND: internal 15 V / 31–34 V (typ 32.6 V) thresholds, current-limit mode, auto-retry.")
     o.note("RTN to GND: the eFuses' own reverse-polarity block unused (TI allows it): VRACK is the PD source's output.")
 

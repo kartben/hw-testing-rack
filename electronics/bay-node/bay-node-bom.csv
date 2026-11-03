@@ -12,7 +12,7 @@ D2,1,SMBJ33A,D_SMB,SMBJ33A,Brightking,C78419,"TVS 33 V stand-off, 600 W (unidire
 D4,1,WS2812B-2020-V6,LED_WS2812B-2020_PLCC4_2.0x2.0mm,WS2812B-2020-V6,Worldsemi,C52917434,"addressable RGB LED, 3.3–5.3 V",,WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping,
 D5,1,PESD2CAN,SOT-23,"PESD2CAN,215",Nexperia,C75176,"CAN bus ESD protection, 24 V stand-off",,,
 "D6,D7",2,BAT54S,SOT-23,BAT54S,hongjiacheng,C7420333,dual Schottky in series: clamps a line to GND and +3V3,,,
-D8,1,B5819W SL,D_SOD-123,B5819W SL,Changjing,C8598,40 V 1 A Schottky,,,
+D8,1,DFLS260-7,D_PowerDI-123,DFLS260-7,Diodes Inc.,C209346,"60 V 2 A Schottky, 0.62 V at 2 A",,,
 F1,1,0.75A,Fuse_1206_3216Metric,SMD1206P075TF,RUILON,C20987,"PTC 0.75 A hold, 1.5 A trip, 1206",,,
 J1,1,ROW IN,JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal,S6B-PH-SM4-TB(LF)(SN),JST,C265405,"JST PH 6-pin, side entry, SMD",,,
 J2,1,ROW OUT,JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal,S6B-PH-SM4-TB(LF)(SN),JST,C265405,"JST PH 6-pin, side entry, SMD",,,

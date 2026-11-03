@@ -237,20 +237,20 @@
 {
 "category": "Electronics",
 "group": "bay-node",
-"item": "B5819W SL — 40 V 1 A Schottky",
+"item": "DFLS260-7 — 60 V 2 A Schottky, 0.62 V at 2 A",
 "ref": "D8",
-"mpn": "B5819W SL",
-"manufacturer": "Changjing",
+"mpn": "DFLS260-7",
+"manufacturer": "Diodes Inc.",
 "supplier": "LCSC/JLCPCB",
-"part": "C8598",
+"part": "C209346",
 "qty": 10,
-"unit_eur": 0.0276,
-"basic": true,
+"unit_eur": 0.3128,
+"basic": false,
 "standard_only": false,
 "hand_solder": false,
 "notes": "1 per board × 10 boards",
 "unit": "pcs",
-"ext_eur": 0.28
+"ext_eur": 3.13
 },
 {
 "category": "Electronics",
@@ -892,10 +892,10 @@
 "item": "Components bay-node: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-23, adjusted",
 "qty": 1,
-"unit_eur": -25.59,
-"notes": "quoted components $143.36 + $5.94 since (≈ €137.36) for 10 boards; catalogue unit prices give €162.95",
+"unit_eur": -28.44,
+"notes": "quoted components $143.36 + $5.94 since (≈ €137.36) for 10 boards; catalogue unit prices give €165.80",
 "unit": "pcs",
-"ext_eur": -25.59
+"ext_eur": -28.44
 },
 {
 "category": "Electronics",
@@ -1063,19 +1063,19 @@
 "category": "Electronics",
 "group": "power-hub",
 "item": "B5819W SL — 40 V 1 A Schottky",
-"ref": "D4,D5,D41,D42,D43,D44",
+"ref": "D4,D5",
 "mpn": "B5819W SL",
 "manufacturer": "Changjing",
 "supplier": "LCSC/JLCPCB",
 "part": "C8598",
-"qty": 12,
+"qty": 4,
 "unit_eur": 0.0276,
 "basic": true,
 "standard_only": false,
 "hand_solder": false,
-"notes": "6 per board × 2 boards",
+"notes": "2 per board × 2 boards",
 "unit": "pcs",
-"ext_eur": 0.33
+"ext_eur": 0.11
 },
 {
 "category": "Electronics",
@@ -1166,6 +1166,24 @@
 "notes": "4 per board × 2 boards",
 "unit": "pcs",
 "ext_eur": 0.1
+},
+{
+"category": "Electronics",
+"group": "power-hub",
+"item": "DFLS260-7 — 60 V 2 A Schottky, 0.62 V at 2 A",
+"ref": "D41,D42,D43,D44",
+"mpn": "DFLS260-7",
+"manufacturer": "Diodes Inc.",
+"supplier": "LCSC/JLCPCB",
+"part": "C209346",
+"qty": 8,
+"unit_eur": 0.3128,
+"basic": false,
+"standard_only": false,
+"hand_solder": false,
+"notes": "4 per board × 2 boards",
+"unit": "pcs",
+"ext_eur": 2.5
 },
 {
 "category": "Electronics",
@@ -1645,10 +1663,10 @@
 "item": "Components power-hub: JLC quote minus the catalogue prices above",
 "supplier": "JLCPCB quote 2026-10-23, adjusted",
 "qty": 1,
-"unit_eur": 4.73,
-"notes": "quoted components $40.41 + $10.65 since (≈ €46.98) for 2 boards; catalogue unit prices give €42.25",
+"unit_eur": 2.45,
+"notes": "quoted components $40.41 + $10.65 since (≈ €46.98) for 2 boards; catalogue unit prices give €44.53",
 "unit": "pcs",
-"ext_eur": 4.73
+"ext_eur": 2.45
 },
 {
 "category": "Electronics",
@@ -5501,7 +5519,7 @@
 "total": 272.5,
 "need": 12,
 "types": 44,
-"extended": 23,
+"extended": 24,
 "preferred": 1,
 "standard_only": [
 "ESP32-S3-WROOM-1-N8R8",
@@ -5530,8 +5548,8 @@
 ],
 "total": 155.97,
 "need": 1,
-"types": 33,
-"extended": 15,
+"types": 34,
+"extended": 16,
 "preferred": 2,
 "standard_only": [
 "ESP32-S3-MINI-1-N8"
@@ -5623,7 +5641,7 @@
 "assembled": 10,
 "pcbs": 10,
 "types": 44,
-"extended": 23,
+"extended": 24,
 "preferred": 1,
 "type_fee": 68.2,
 "once": 115.94,
@@ -5663,10 +5681,10 @@
 "need": 1,
 "assembled": 2,
 "pcbs": 5,
-"types": 33,
-"extended": 15,
+"types": 34,
+"extended": 16,
 "preferred": 2,
-"type_fee": 51.15,
+"type_fee": 52.7,
 "once": 98.87,
 "per_board": 57.1,
 "total": 155.97,

@@ -230,6 +230,11 @@ CAT = {
                       model=("easyeda/C598310.step", (0, -1.0, 0.51), (0, 0, 0))),     # the green one's: same package
     "schottky": Cat("Device:D_Schottky", "Diode_SMD:D_SOD-123", "B5819W SL", "Changjing", "C8598", 0.03, basic=True,
                     description="40 V 1 A Schottky"),
+    # the eFuse outputs' kick clamp (bay node D8, power hub D41-D44): the B260A class of TI's TPS26600-02EVM (60 V,
+    # 2 A, 50 A surge), here in PowerDI-123 for room; 0.62 V max at 2 A (Diodes DS31476 p.2, the B260A 0.70 V)
+    "schottky60": Cat("Device:D_Schottky", "Diode_SMD:D_PowerDI-123", "DFLS260-7", "Diodes Inc.", "C209346", 0.34,
+                      datasheet="https://www.diodes.com/assets/Datasheets/DFLS260.pdf",
+                      description="60 V 2 A Schottky, 0.62 V at 2 A"),
     "bat54s": Cat("Diode:BAT54S", "Package_TO_SOT_SMD:SOT-23", "BAT54S", "hongjiacheng", "C7420333", 0.013,
                   description="dual Schottky in series: clamps a line to GND and +3V3"),
     "hdr2x8": Cat("Connector_Generic:Conn_02x08_Odd_Even", "Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical",

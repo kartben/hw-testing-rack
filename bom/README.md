@@ -60,8 +60,8 @@ What each order pays once, whatever the number of boards, against what grows wit
 
 | Board | PCBA | Needed / assembled | Part types (extended) | Type fees | Once per order | With the boards | Today | After obvious levers | After decisions |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|
-| bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 12 / 10 | 44 (23 + 1 pref.) | 68.20 | 115.94 | 156.56 | **272.50** | 272.50 | 247.27 |
-| power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 33 (15 + 2 pref.) | 51.15 | 98.87 | 57.10 | **155.97** | 155.97 | 153.06 |
+| bay-node | Standard (ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6) | 12 / 10 | 44 (24 + 1 pref.) | 68.20 | 115.94 | 156.56 | **272.50** | 272.50 | 247.27 |
+| power-hub | Standard (ESP32-S3-MINI-1-N8) | 1 / 2 | 34 (16 + 2 pref.) | 52.70 | 98.87 | 57.10 | **155.97** | 155.97 | 153.06 |
 | data-port-x6 | Economic | 10 / 10 | 35 (13 + 3 pref.) | 40.17 | 82.16 | 266.20 | **348.36** | 348.36 | 348.36 |
 | camera-pod | Economic | 2 / 2 | 8 (4) | 12.36 | 28.11 | 2.31 | **30.42** | 30.42 | 29.63 |
 | data-port-x4-panel | Economic | 1 / 2 | 50 (24 + 3 pref.) | 74.16 | 135.95 | 123.91 | **259.86** | 259.86 | 257.84 |
@@ -188,7 +188,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | WS2812B-2020-V6 — addressable RGB LED, 3.3–5.3 V | 10  | 0.08 | 0.83 | LCSC/JLCPCB C52917434 |
 | Electronics | PESD2CAN — CAN bus ESD protection, 24 V stand-off | 10  | 0.07 | 0.72 | LCSC/JLCPCB C75176 |
 | Electronics | BAT54S — dual Schottky in series: clamps a line to GND and +3V3 | 20  | 0.01 | 0.24 | LCSC/JLCPCB C7420333 |
-| Electronics | B5819W SL — 40 V 1 A Schottky | 10  | 0.03 | 0.28 | LCSC/JLCPCB C8598 |
+| Electronics | DFLS260-7 — 60 V 2 A Schottky, 0.62 V at 2 A | 10  | 0.31 | 3.13 | LCSC/JLCPCB C209346 |
 | Electronics | 0.75A — PTC 0.75 A hold, 1.5 A trip, 1206 | 10  | 0.07 | 0.74 | LCSC/JLCPCB C20987 |
 | Electronics | ROW IN — JST PH 6-pin, side entry, SMD | 10  | 0.36 | 3.59 | LCSC/JLCPCB C265405 |
 | Electronics | ROW OUT — JST PH 6-pin, side entry, SMD | 10  | 0.36 | 3.59 | LCSC/JLCPCB C265405 |
@@ -225,7 +225,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 10  | 0.93 | 9.29 | LCSC/JLCPCB C3234095 |
 | Electronics | Bare PCB bay-node (4-layer 74×90 mm (84×90 with JLC's rails), lead-free HASL) | 10  | 1.78 | 17.85 | JLCPCB quote 2026-10-23 |
 | Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, packaging, special components | 1  | 95.50 | 95.50 | JLCPCB quote 2026-10-23, adjusted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -25.59 | -25.59 | JLCPCB quote 2026-10-23, adjusted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -28.44 | -28.44 | JLCPCB quote 2026-10-23, adjusted |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 24  | 0.01 | 0.30 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0805 | 20  | 0.03 | 0.54 | LCSC/JLCPCB C28323 |
@@ -235,12 +235,13 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | 1u — Capacitor 1u 0603 | 4  | 0.01 | 0.05 | LCSC/JLCPCB C15849 |
 | Electronics | SMAJ30A — TVS 30 V stand-off, 400 W (unidirectional): above a 28 V EPR contract | 2  | 0.04 | 0.08 | LCSC/JLCPCB C113965 |
 | Electronics | PD — green LED, side view 3 × 2 × 1 mm | 2  | 0.22 | 0.44 | LCSC/JLCPCB C598310 |
-| Electronics | B5819W SL — 40 V 1 A Schottky | 12  | 0.03 | 0.33 | LCSC/JLCPCB C8598 |
+| Electronics | B5819W SL — 40 V 1 A Schottky | 4  | 0.03 | 0.11 | LCSC/JLCPCB C8598 |
 | Electronics | CTL — green LED, side view 3 × 2 × 1 mm | 2  | 0.22 | 0.44 | LCSC/JLCPCB C598310 |
 | Electronics | PESD2CAN,215 — CAN bus ESD protection, 24 V stand-off | 2  | 0.07 | 0.14 | LCSC/JLCPCB C75176 |
 | Electronics | ON — green LED, side view 3 × 2 × 1 mm | 8  | 0.22 | 1.77 | LCSC/JLCPCB C598310 |
 | Electronics | FAULT — red LED, side view 3 × 2 × 1 mm | 8  | 0.17 | 1.32 | LCSC/JLCPCB C4555382 |
 | Electronics | BAT54S — dual Schottky in series: clamps a line to GND and +3V3 | 8  | 0.01 | 0.10 | LCSC/JLCPCB C7420333 |
+| Electronics | DFLS260-7 — 60 V 2 A Schottky, 0.62 V at 2 A | 8  | 0.31 | 2.50 | LCSC/JLCPCB C209346 |
 | Electronics | PD IN — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS | 2  | 0.84 | 1.67 | LCSC/JLCPCB C5184243 |
 | Electronics | ROW A — JST PH 6-pin, side entry, SMD | 2  | 0.36 | 0.72 | LCSC/JLCPCB C265405 |
 | Electronics | ROW B — JST PH 6-pin, side entry, SMD | 2  | 0.36 | 0.72 | LCSC/JLCPCB C265405 |
@@ -268,7 +269,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | TPS26600PWPR — 4.2–60 V 2.23 A eFuse | 8  | 1.42 | 11.33 | LCSC/JLCPCB C544399 |
 | Electronics | Bare PCB power-hub (4-layer 76×100 mm (86×100 with JLC's rails), lead-free HASL) | 5  | 2.43 | 12.14 | JLCPCB quote 2026-10-23 |
 | Electronics | Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components | 1  | 84.37 | 84.37 | JLCPCB quote 2026-10-23, adjusted |
-| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 4.73 | 4.73 | JLCPCB quote 2026-10-23, adjusted |
+| Electronics | Components power-hub: JLC quote minus the catalogue prices above | 1  | 2.45 | 2.45 | JLCPCB quote 2026-10-23, adjusted |
 | Electronics | 22u — Capacitor 22u 0805 | 80  | 0.18 | 14.28 | LCSC/JLCPCB C45783 |
 | Electronics | 33p — Capacitor 33p 0402 | 20  | 0.00 | 0.06 | LCSC/JLCPCB C1562 |
 | Electronics | 100n — Capacitor 100n 0402 | 230  | 0.01 | 1.17 | LCSC/JLCPCB C1525 |

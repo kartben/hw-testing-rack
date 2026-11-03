@@ -318,7 +318,7 @@ def board() -> Board:
         ("DUT_EN", "F.Cu", 0.25, [(col[6], bot), (col[6], 55.375)]),
         # D8's cathode (the lead's kick clamp) straight into J7.1; a vertex where the router's DATA_VIN from R19
         # meets it (Freerouting takes a wire ending mid-segment as unconnected)
-        ("DATA_VIN", "F.Cu", 0.6, [(63.15, 37.6), (63.75, 37.0), (65.4743, 37.0), (66.25, 37.0)]),
+        ("DATA_VIN", "F.Cu", 0.6, [(62.2, 37.6), (63.15, 37.6), (63.75, 37.0), (65.4743, 37.0), (66.25, 37.0)]),
     ]
     # the camera lead's J6 (node v1.0: 1 GND · 2 SCK · 3 CAM_5V · 4 MOSI · 5 MISO · 6 LED_K · 7 CS · 8 GND): SCK
     # from its test pad TP18 into J6.2 from the west; CAM_5V (from F1, past J6's north end, through C27) into J6.3
@@ -822,7 +822,7 @@ def board() -> Board:
     d.tag("DATA_VIN", (100, 40), "right")
     C(d, "C21", "1u", "DATA_VIN", "GND", size="0805", pcb=P(56.675, 38.6, 0), sch=at(96, 41.5))
     # the lead's kick when the eFuse cuts a short (OUT ≥ −0.3 V): a Schottky from GND, at J7
-    part(d, "D8", "schottky", {"K": "DATA_VIN", "A": "GND"}, pcb=P(61.5, 37.6, 180), sch=at(90, 41.5, rot=270))
+    part(d, "D8", "schottky60", {"K": "DATA_VIN", "A": "GND"}, pcb=P(61.35, 37.6, 180), sch=at(90, 41.5, rot=270))
     part(d, "U10", "ina226", {"VS": "+3V3", "GND": "GND", "A0": "GND", "A1": "GND", "SDA": "I2C_SDA",
                               "SCL": "I2C_SCL", "~{Alert}": "INA_ALERT_N", "Vin+": "SHUNT_P", "Vin-": "SHUNT_N",
                               # Vbus on Vin- (the shunt's load-side Kelvin pad: DUT_5V), joined at the pins (8, 9)
@@ -897,6 +897,10 @@ def board() -> Board:
     d.note("  SHDN pulled down: DATA_VIN is OFF until the firmware drives DUT_EN high (≥ 1 V).")
     d.note("  UVLO / OVP / MODE to GND: internal 15 V / 31–34 V, current limit, auto-retry.")
     d.note("  RTN to GND: the eFuse's own reverse-polarity block unused (TI allows it): Q1 does it upstream.")
+    d.note("  D8 at J7, the lead's kick clamp: B260A class (TI EVM SLVUAV3A D5, Table 13 p.16), here the DFLS260-7 in")
+    d.note("  PowerDI-123 for room.  A short-circuit trip takes OUT briefly below its -0.3 V rating, as on TI's EVM;")
+    d.note("  SLVSDG2G gives no transient figure for OUT (7.1 p.6).  60 V, not 40: with OVP to GND, OUT follows IN up to")
+    d.note("  D2's clamp (53 V) for the 6 us before OVP opens.")
     d.note("  ~FLT: limit, over-temperature, UV/OV; also low while off or starting.")
     d.note("INA226 (I2C 0x40) runs from +3V3: it measures the drop across")
     d.note("  R19 (50 mΩ → 1.64 A full scale: the ×6's 1.5 A reads, only an overload saturates; Kelvin sense pads);")

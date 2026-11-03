@@ -12,7 +12,7 @@ Electronics,bay-node,"SMBJ33A — TVS 33 V stand-off, 600 W (unidirectional)",10
 Electronics,bay-node,"WS2812B-2020-V6 — addressable RGB LED, 3.3–5.3 V",10,pcs,0.0828,0.83,LCSC/JLCPCB,C52917434,WS2812B-2020-V6,Worldsemi,D4,1 per board × 10 boards; alternative: WS2812C-2020-V6 (C55109522) is Economic-PCBA capable; check its pinout before swapping
 Electronics,bay-node,"PESD2CAN — CAN bus ESD protection, 24 V stand-off",10,pcs,0.0718,0.72,LCSC/JLCPCB,C75176,"PESD2CAN,215",Nexperia,D5,1 per board × 10 boards
 Electronics,bay-node,BAT54S — dual Schottky in series: clamps a line to GND and +3V3,20,pcs,0.012,0.24,LCSC/JLCPCB,C7420333,BAT54S,hongjiacheng,"D6,D7",2 per board × 10 boards
-Electronics,bay-node,B5819W SL — 40 V 1 A Schottky,10,pcs,0.0276,0.28,LCSC/JLCPCB,C8598,B5819W SL,Changjing,D8,1 per board × 10 boards
+Electronics,bay-node,"DFLS260-7 — 60 V 2 A Schottky, 0.62 V at 2 A",10,pcs,0.3128,3.13,LCSC/JLCPCB,C209346,DFLS260-7,Diodes Inc.,D8,1 per board × 10 boards
 Electronics,bay-node,"0.75A — PTC 0.75 A hold, 1.5 A trip, 1206",10,pcs,0.0736,0.74,LCSC/JLCPCB,C20987,SMD1206P075TF,RUILON,F1,1 per board × 10 boards
 Electronics,bay-node,"ROW IN — JST PH 6-pin, side entry, SMD",10,pcs,0.3588,3.59,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J1,1 per board × 10 boards
 Electronics,bay-node,"ROW OUT — JST PH 6-pin, side entry, SMD",10,pcs,0.3588,3.59,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 10 boards
@@ -49,7 +49,7 @@ Electronics,bay-node,"INA226AIDGSR — 36 V current/voltage/power monitor, I2C",
 Electronics,bay-node,"TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout)",10,pcs,0.9292,9.29,LCSC/JLCPCB,C3234095,TJA1462AT/0Z,NXP Semiconductors,U11,"1 per board × 10 boards; alternative: Same pinout: TI TCAN1462VDRQ1 (C7399456, SIC, bus pins ±58 V; LCSC stock 0 on 2026-10-18 and 19) or TCAN1044AVDRQ1 (C3234993, no SIC, ±58 V)"
 Electronics,bay-node,"Bare PCB bay-node (4-layer 74×90 mm (84×90 with JLC's rails), lead-free HASL)",10,pcs,1.7848,17.85,JLCPCB quote 2026-10-23,,,,,"special offer $14.00, lead-free HASL $5.40 = $19.40 for 10 PCBs, 10 of them assembled"
 Electronics,bay-node,"Standard PCBA, 10 boards: setup, stencil, feeders, SMT, packaging, special components",1,pcs,95.5,95.5,"JLCPCB quote 2026-10-23, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $62.00, SMT $6.96, packaging $0.52, special components $0.30; IHLP2525CZ for the FXL0630 (L1, 28 V EPR): 10 at JLC's price (+$5.94 components); Standard because ESP32-S3-WROOM-1-N8R8, WS2812B-2020-V6 cannot be placed with Economic PCBA"
-Electronics,bay-node,Components bay-node: JLC quote minus the catalogue prices above,1,pcs,-25.59,-25.59,"JLCPCB quote 2026-10-23, adjusted",,,,,quoted components $143.36 + $5.94 since (≈ €137.36) for 10 boards; catalogue unit prices give €162.95
+Electronics,bay-node,Components bay-node: JLC quote minus the catalogue prices above,1,pcs,-28.44,-28.44,"JLCPCB quote 2026-10-23, adjusted",,,,,quoted components $143.36 + $5.94 since (≈ €137.36) for 10 boards; catalogue unit prices give €165.80
 Electronics,power-hub,10u — Capacitor 10u 1206,8,pcs,0.2504,2.0,LCSC/JLCPCB,C13585,CL31A106KBHNNNE,Samsung Electro-Mechanics,"C1,C9,C104,C105",4 per board × 2 boards
 Electronics,power-hub,100n — Capacitor 100n 0603,24,pcs,0.0124,0.3,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,"C2,C3,C10,C21,C22,C23,C24,C106,C107,C114,C116,C117",12 per board × 2 boards
 Electronics,power-hub,1u — Capacitor 1u 0805,20,pcs,0.0268,0.54,LCSC/JLCPCB,C28323,CL21B105KBFNNNE,Samsung Electro-Mechanics,"C4,C11,C12,C13,C14,C31,C32,C33,C34,C111",10 per board × 2 boards
@@ -59,12 +59,13 @@ Electronics,power-hub,22u — Capacitor 22u 1206,10,pcs,0.1138,1.14,LCSC/JLCPCB,
 Electronics,power-hub,1u — Capacitor 1u 0603,4,pcs,0.013,0.05,LCSC/JLCPCB,C15849,CL10A105KB8NNNC,Samsung Electro-Mechanics,"C115,C120",2 per board × 2 boards
 Electronics,power-hub,"SMAJ30A — TVS 30 V stand-off, 400 W (unidirectional): above a 28 V EPR contract",2,pcs,0.0405,0.08,LCSC/JLCPCB,C113965,SMAJ30A,MDD,D1,1 per board × 2 boards
 Electronics,power-hub,"PD — green LED, side view 3 × 2 × 1 mm",2,pcs,0.2208,0.44,LCSC/JLCPCB,C598310,KPA-3010CGCK,Kingbright,D3,1 per board × 2 boards
-Electronics,power-hub,B5819W SL — 40 V 1 A Schottky,12,pcs,0.0276,0.33,LCSC/JLCPCB,C8598,B5819W SL,Changjing,"D4,D5,D41,D42,D43,D44",6 per board × 2 boards
+Electronics,power-hub,B5819W SL — 40 V 1 A Schottky,4,pcs,0.0276,0.11,LCSC/JLCPCB,C8598,B5819W SL,Changjing,"D4,D5",2 per board × 2 boards
 Electronics,power-hub,"CTL — green LED, side view 3 × 2 × 1 mm",2,pcs,0.2208,0.44,LCSC/JLCPCB,C598310,KPA-3010CGCK,Kingbright,D8,1 per board × 2 boards
 Electronics,power-hub,"PESD2CAN,215 — CAN bus ESD protection, 24 V stand-off",2,pcs,0.0718,0.14,LCSC/JLCPCB,C75176,"PESD2CAN,215",Nexperia,D9,1 per board × 2 boards
 Electronics,power-hub,"ON — green LED, side view 3 × 2 × 1 mm",8,pcs,0.2208,1.77,LCSC/JLCPCB,C598310,KPA-3010CGCK,Kingbright,"D11,D12,D13,D14",4 per board × 2 boards
 Electronics,power-hub,"FAULT — red LED, side view 3 × 2 × 1 mm",8,pcs,0.1656,1.32,LCSC/JLCPCB,C4555382,KPA-3010SURCK,Kingbright,"D21,D22,D23,D24",4 per board × 2 boards
 Electronics,power-hub,BAT54S — dual Schottky in series: clamps a line to GND and +3V3,8,pcs,0.012,0.1,LCSC/JLCPCB,C7420333,BAT54S,hongjiacheng,"D31,D32,D33,D34",4 per board × 2 boards
+Electronics,power-hub,"DFLS260-7 — 60 V 2 A Schottky, 0.62 V at 2 A",8,pcs,0.3128,2.5,LCSC/JLCPCB,C209346,DFLS260-7,Diodes Inc.,"D41,D42,D43,D44",4 per board × 2 boards
 Electronics,power-hub,"PD IN — USB-C receptacle, USB 2.0, 16 pins, 5 A on VBUS",2,pcs,0.8372,1.67,LCSC/JLCPCB,C5184243,USB4105-GF-A-120,GCT,J1,1 per board × 2 boards
 Electronics,power-hub,"ROW A — JST PH 6-pin, side entry, SMD",2,pcs,0.3588,0.72,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J2,1 per board × 2 boards
 Electronics,power-hub,"ROW B — JST PH 6-pin, side entry, SMD",2,pcs,0.3588,0.72,LCSC/JLCPCB,C265405,S6B-PH-SM4-TB(LF)(SN),JST,J3,1 per board × 2 boards
@@ -92,7 +93,7 @@ Electronics,power-hub,"TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95�
 Electronics,power-hub,TPS26600PWPR — 4.2–60 V 2.23 A eFuse,8,pcs,1.4168,11.33,LCSC/JLCPCB,C544399,TPS26600PWPR,Texas Instruments,"U11,U12,U13,U14",4 per board × 2 boards
 Electronics,power-hub,"Bare PCB power-hub (4-layer 76×100 mm (86×100 with JLC's rails), lead-free HASL)",5,pcs,2.4288,12.14,JLCPCB quote 2026-10-23,,,,,"special offer $8.00, lead-free HASL $5.20 = $13.20 for 5 PCBs, 2 of them assembled"
 Electronics,power-hub,"Standard PCBA, 2 boards: setup, stencil, feeders, SMT, X-ray, packaging, special components",1,pcs,84.37,84.37,"JLCPCB quote 2026-10-23, adjusted",,,,,"setup $25.75, stencil $8.27, feeders $51.15, SMT $2.62, X-ray $3.30, packaging $0.50, special components $0.12; IHLP2525CZ for the FXL0630 (L1, 28 V EPR): 2 at JLC's price (+$1.19 components); rows C and D fitted: their eFuses, connectors and LEDs, 2 hubs at JLC's price (+$9.46 components); rows C and D fitted: their joints, 2 hubs (+$0.32 SMT); Standard because ESP32-S3-MINI-1-N8 cannot be placed with Economic PCBA"
-Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,4.73,4.73,"JLCPCB quote 2026-10-23, adjusted",,,,,quoted components $40.41 + $10.65 since (≈ €46.98) for 2 boards; catalogue unit prices give €42.25
+Electronics,power-hub,Components power-hub: JLC quote minus the catalogue prices above,1,pcs,2.45,2.45,"JLCPCB quote 2026-10-23, adjusted",,,,,quoted components $40.41 + $10.65 since (≈ €46.98) for 2 boards; catalogue unit prices give €44.53
 Electronics,data-port-x6,22u — Capacitor 22u 0805,80,pcs,0.1785,14.28,LCSC/JLCPCB,C45783,CL21A226MAQNNNE,Samsung Electro-Mechanics,"C2,C3,C102,C202,C302,C402,C502,C602",8 per board × 10 boards
 Electronics,data-port-x6,33p — Capacitor 33p 0402,20,pcs,0.0029,0.06,LCSC/JLCPCB,C1562,0402CG330J500NT,FH (Guangdong Fenghua Advanced Tech),"C4,C5",2 per board × 10 boards
 Electronics,data-port-x6,100n — Capacitor 100n 0402,230,pcs,0.0051,1.17,LCSC/JLCPCB,C1525,CL05B104KO5NNNC,Samsung Electro-Mechanics,"C6,C9,C10,C11,C12,C13,C14,C15,C16,C17,C18,C103,C104,C203,C204,C303,C304,C403,C404,C503,C504,C603,C604",23 per board × 10 boards
