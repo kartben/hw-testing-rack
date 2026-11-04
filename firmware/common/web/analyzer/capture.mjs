@@ -1,11 +1,12 @@
 /*
  * A capture as the viewer and the decoders read it: each channel's level
  * changes, times from the trigger.  Built from what Analyzer.capture()
- * resolves to (protocol.mjs).
+ * resolves to (protocol.mjs), or from a capture file.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { DECODERS } from "./decoders.mjs";
 import { bytesPerSample } from "./protocol.mjs";
 
 export const RATES = [1e6, 2e6, 5e6, 10e6, 20e6, 25e6, 50e6, 100e6];
@@ -13,9 +14,12 @@ export const RATES = [1e6, 2e6, 5e6, 10e6, 20e6, 25e6, 50e6, 100e6];
 const MIN_SAMPLES = 1000;
 
 export class Capture {
-  /* channels: the analyzer's channel numbers, 0-based; samples: words, bit i = channels[i] */
-  constructor({ channels, rate, pre, post, samples, stamps = new Uint32Array(0) }) {
-    Object.assign(this, { channels, rate, pre, post, samples, stamps });
+  /*
+   * channels: the analyzer's channel numbers, 0-based; samples: words, bit i = channels[i];
+   * names: what a file calls its channels, in that order
+   */
+  constructor({ channels, rate, pre, post, samples, stamps = new Uint32Array(0), names = null }) {
+    Object.assign(this, { channels, rate, pre, post, samples, stamps, names });
     this.cache = new Map();
   }
 
@@ -61,6 +65,99 @@ export class Capture {
   firstLevel(k) {
     return this.samples.length ? this.level(k, 0) : 0;
   }
+}
+
+/*
+ * A capture file: JSON, what a test or a script can read too.  samples is
+ * base64 of the words, little-endian, bytesPerSample each, bit i = channels[i];
+ * time 0 is sample pre, the trigger; names and decoders are as they were saved.
+ */
+const FILE_FORMAT = "hwtr-analyzer-capture";
+
+function toBase64(bytes) {
+  let s = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(s);
+}
+
+function fromBase64(text) {
+  const s = atob(text), out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) {
+    out[i] = s.charCodeAt(i);
+  }
+  return out;
+}
+
+/* names: one per captured channel; extra: source, saved... */
+export function toFile(cap, names, decoders, extra = {}) {
+  const s = cap.samples;
+  return JSON.stringify({
+    format: FILE_FORMAT, version: 1, ...extra,
+    channels: cap.channels, names, rate: cap.rate, pre: cap.pre, post: cap.post, decoders,
+    stamps: [...cap.stamps], bytesPerSample: s.BYTES_PER_ELEMENT,
+    samples: toBase64(new Uint8Array(s.buffer, s.byteOffset, s.byteLength)),
+  });
+}
+
+/* The decoders a file may bring: known types, numbers where numbers go, nothing else */
+function fileDecoders(list) {
+  const num = (v) => (Number.isFinite(v) ? v : undefined);
+  return (Array.isArray(list) ? list : []).filter((d) => Object.hasOwn(DECODERS, d?.type)).map((d) => {
+    const lines = {};
+    for (const line of DECODERS[d.type].lines) {
+      const role = line.replace("?", "");
+      lines[role] = Number.isInteger(d.lines?.[role]) ? d.lines[role] : null;
+    }
+    const out = { type: d.type, lines };
+    if (num(d.baud) > 0) {
+      out.baud = d.baud;
+    }
+    if ([0, 1, 2, 3].includes(d.mode)) {
+      out.mode = d.mode;
+    }
+    return out;
+  });
+}
+
+/* {cap, decoders, ...the file's own fields}; throws what is wrong with it */
+export function fromFile(text) {
+  let f;
+  try {
+    f = JSON.parse(text);
+  } catch {
+    throw new Error("not a capture file: it is not JSON");
+  }
+  if (f?.format !== FILE_FORMAT) {
+    throw new Error("not a capture file");
+  }
+  if (f.version !== 1) {
+    throw new Error(`capture file version ${f.version}: this page reads version 1`);
+  }
+  const Word = { 1: Uint8Array, 2: Uint16Array, 4: Uint32Array }[f.bytesPerSample];
+  const count = f.pre + f.post;
+  if (!Word || !(f.rate > 0) || !Number.isInteger(count) || f.pre < 0 || f.post < 0 || typeof f.samples !== "string" ||
+      !Array.isArray(f.channels) || !f.channels.every((c) => Number.isInteger(c) && c >= 0) ||
+      f.channels.length > f.bytesPerSample * 8) {
+    throw new Error("damaged capture file");
+  }
+  let bytes;
+  try {
+    bytes = fromBase64(f.samples);
+  } catch {
+    throw new Error("damaged capture file: its samples");
+  }
+  if (bytes.length !== count * f.bytesPerSample) {
+    throw new Error(`damaged capture file: ${bytes.length} bytes of samples, ${count * f.bytesPerSample} expected`);
+  }
+  const names = f.channels.map((c, k) => String(f.names?.[k] ?? `CH${c + 1}`));
+  return {
+    ...f,
+    decoders: fileDecoders(f.decoders),
+    cap: new Capture({ channels: f.channels, rate: f.rate, pre: f.pre, post: f.post, names,
+                       samples: new Word(bytes.buffer), stamps: Uint32Array.from(Array.isArray(f.stamps) ? f.stamps : []) }),
+  };
 }
 
 /*

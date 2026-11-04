@@ -232,6 +232,12 @@ export function mount() {
     onSettings: renderSettings,
     fileStem: () => (status?.id || "bay").toLowerCase(),
     readColor: "var(--usbip)",
+    onOpened: (text, color) => {
+      /* The reset that started the last capture is not this file's */
+      capReset = null;
+      outcome = [text, color];
+      panel.setState(text, color);
+    },
   });
   settings = panel.settings;
   /* The Wires card read the node's names: placeholders here, nothing re-drawn under the typing */

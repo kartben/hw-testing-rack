@@ -29,6 +29,7 @@ const panel = new Panel({
   onSettings: () => renderSettings(),
   fileStem: () => "capture",
   readColor: "var(--accent)",
+  onOpened: (text, color) => panel.setState(text, color),
 });
 function settings() {
   return panel.settings;
@@ -158,7 +159,6 @@ $("la-cap").addEventListener("click", async () => {
       trigger: { type: TRIGGER.EDGE, channel: s.trig, inverted: s.edge === "fall" },
     }, () => panel.setState(`Waiting for ${chName(s.trig)} ${s.edge === "fall" ? "↓" : "↑"}`, "var(--warn)"));
     capNames = on.map(chName);
-    panel.ownDecoders = null;
     panel.setState(`Captured at ${new Date().toLocaleTimeString()}`, "var(--ok)");
     panel.captured(cap);
   } catch (e) {

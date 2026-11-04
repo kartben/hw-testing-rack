@@ -514,6 +514,13 @@ rate.  It warns when the duration does not fit, or when the rate is low for a
 decoder (under ten samples a bit for a UART, 10 MS/s for WS2812B; for I²C and
 SPI, once a capture shows clock pulses 1 or 2 samples wide), with a button for
 a rate that does.
+
+**Save capture** writes a JSON file with the samples, the names and the
+decoders; **Open a capture…** reads it back on either page, with no analyzer
+there.  `format`, `version`, `channels`, `names`, `rate`, `pre`, `post`,
+`decoders`, `bytesPerSample` and `samples` (base64 of little-endian words, bit
+*i* = `channels[i]`, sample `pre` the trigger) are all a script needs to read it.
+**Download .vcd** stays for PulseView and GTKWave.
 `dev_server.py --ports 4` simulates the analyzer: a UART on A and B, I²C on
 C and D, SPI on E–H, MARK around a reset.
 

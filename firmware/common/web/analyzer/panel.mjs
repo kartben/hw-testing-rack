@@ -3,15 +3,15 @@
  * (bay-node/web/analyzer-card.mjs) share: the settings kept in this browser,
  * the state line, the channels' events, the sample rate and the share before
  * the trigger, the settings folding away after a capture, a capture's
- * progress, the viewer and its tools, the decoded table, the decoders, the
- * .vcd.  Both pages hold the same element ids (la-*), and a #la-view it fills.
+ * progress, the viewer and its tools, the decoded table, the decoders, saving
+ * and opening a capture, the .vcd.  Both pages hold the same element ids (la-*), and a #la-view it fills.
  * What stays theirs: how they reach the analyzer, their channels' chips, names
  * and colours, their trigger.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Capture, RATES, fastestFor, slowestOver, timing } from "./capture.mjs";
+import { Capture, RATES, fastestFor, fromFile, slowestOver, timing, toFile } from "./capture.mjs";
 import { captureNotes, captureRows, decoderFields, decoderFrom, decoderLabel, decoderTypes, entriesOf, esc, matching,
          rateNeeds } from "./decoding.mjs";
 import { toVcd } from "./vcd.mjs";
@@ -33,6 +33,7 @@ const VIEW_HTML = `
       <button data-la-zoom="out" aria-label="Zoom out">－</button>
       <button data-la-zoom="fit">Fit</button>
       <button id="la-clear">Clear cursors</button>
+      <button id="la-save" disabled title="A file this page can open again, with its names and decoders">Save capture</button>
       <button id="la-vcd" disabled title="For PulseView, GTKWave and sigrok's decoders">Download .vcd</button>
       <button id="la-full">Full screen</button>
       <span class="la-cap-meta" id="la-cap-meta"></span>
@@ -59,6 +60,10 @@ const VIEW_CSS = `
 #la-fold > summary { cursor: pointer; font-size: 0.88rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 #la-fold[open] > summary { margin-bottom: 12px; }
 #la-fold > div { display: flex; flex-direction: column; gap: 14px; }
+#la-open-btn { font-size: 0.85rem; font-weight: 550; padding: 7px 12px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--soft); color: var(--text); }
+#la-open-btn:has(:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+#la-open { position: absolute; opacity: 0; width: 1px; height: 1px; }
 #la-warn { display: grid; gap: 6px; }
 #la-warn > div { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
 #la-view { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 12px; min-width: 0; }
@@ -109,10 +114,17 @@ export class Panel {
    * store: the settings' localStorage key, defaults: the settings it does not hold;
    * chName(c): a channel's name; laneName(k): the capture's k-th lane's; laneColor(c): its custom property;
    * moreRows(cap, rows): the page's own rows; onShow(): a capture is on screen; onSettings(): a setting changed;
-   * fileStem(): the start of a file's name; readColor: the state line's while a capture is read
+   * fileStem(): the start of a file's name; readColor: the state line's while a capture is read;
+   * onOpened(text, color): a file was opened, or not, and what to say
    */
-  constructor({ store, defaults, chName, laneName, laneColor, moreRows, onShow, onSettings, fileStem, readColor }) {
-    Object.assign(this, { store, chName, laneName, laneColor, moreRows, onShow, onSettings, fileStem, readColor });
+  constructor({ store, defaults, chName, laneName, laneColor, moreRows, onShow, onSettings, fileStem, readColor, onOpened }) {
+    Object.assign(this, { store, chName, laneColor, moreRows, onShow, onSettings, fileStem, readColor, onOpened });
+    /* What a file calls its channels comes first */
+    this.laneName = (k) => this.cap.names?.[k] ?? laneName(k);
+    this.chNameNow = (c) => {
+      const k = this.cap?.names ? this.cap.channels.indexOf(c) : -1;
+      return k >= 0 ? this.cap.names[k] : chName(c);
+    };
     this.settings = { duration: 0, ...defaults, ...this.#load() };
     this.info = PICO_2;
     this.cap = null;
@@ -127,6 +139,8 @@ export class Panel {
     document.adoptedStyleSheets.push(sheet);
     $("la-view").innerHTML = VIEW_HTML;
     $("la-fold").insertAdjacentHTML("afterend", `<div class="notice" id="la-warn" style="--c: var(--trigger)" hidden></div>`);
+    $("la-cancel").insertAdjacentHTML("afterend", `<label id="la-open-btn">Open a capture…
+      <input type="file" id="la-open" accept=".json,application/json"></label>`);
     this.viewer = new Viewer($("la-wave"), { onReadout: (t) => ($("la-readout").textContent = t) });
     this.#listen();
   }
@@ -198,7 +212,7 @@ export class Panel {
       offer(n.text, slowestOver(this.info, n.need));
     }
     if (this.cap && this.cap.rate === s.rate) {
-      for (const n of captureNotes(this.cap, this.decoders, this.chName)) {
+      for (const n of captureNotes(this.cap, this.decoders, this.chNameNow)) {
         offer(n.text, slowestOver(this.info, n.need));
       }
     }
@@ -246,6 +260,7 @@ export class Panel {
     $("la-cap-meta").textContent = `${cap.count.toLocaleString("en-US")} samples at ${cap.rate / 1e6} MS/s, ` +
                                    `${fmtTime(cap.count / cap.rate)}`;
     $("la-vcd").disabled = false;
+    $("la-save").disabled = false;
     this.onShow?.();
     this.viewer.show(cap, rows);
     this.renderDecoders();
@@ -257,9 +272,33 @@ export class Panel {
 
   /* A capture to read: the settings fold away, the viewer comes up */
   captured(cap) {
+    this.ownDecoders = null;
     this.show(cap);
     $("la-fold").open = false;
     $("la-view").scrollIntoView({ block: "start" });
+  }
+
+  async #open(file) {
+    try {
+      const { cap, decoders, saved } = fromFile(await file.text());
+      this.ownDecoders = decoders;
+      this.viewer.cap = null;
+      this.show(cap);
+      $("la-fold").open = false;
+      $("la-view").scrollIntoView({ block: "start" });
+      this.onOpened(`Opened ${file.name}${saved ? `, saved ${String(saved).slice(0, 16).replace("T", " ")}` : ""}`, "var(--muted)");
+    } catch (e) {
+      this.onOpened(`${file.name}: ${e.message}`, "var(--fault)");
+    }
+  }
+
+  #download(text, type, extension) {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const a = Object.assign(document.createElement("a"), {
+      href: url, download: `${this.fileStem()}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}${extension}`,
+    });
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   /* After a change a capture on screen shows */
@@ -317,7 +356,7 @@ export class Panel {
 
   renderDecoders() {
     $("la-decs").innerHTML = this.decoders.map((d, i) => `
-      <span class="dec-chip">${decoderLabel(d, this.chName)}
+      <span class="dec-chip">${decoderLabel(d, this.chNameNow)}
         <button class="small" data-remove="${i}" aria-label="Remove this decoder">✕</button></span>`).join("") +
       `<button class="small" id="la-add-dec">+ Decoder</button>`;
   }
@@ -325,7 +364,7 @@ export class Panel {
   /* The channels a decoder can read: the capture's, else the ones picked for the next */
   #renderDecoderForm() {
     $("la-dec-lines").innerHTML = decoderFields($("la-dec-type").value,
-                                                this.cap ? [...this.cap.channels] : sorted(this.settings.on), this.chName);
+                                                this.cap ? [...this.cap.channels] : sorted(this.settings.on), this.chNameNow);
   }
 
   /* --- Events ---------------------------------------------------------------------- */
@@ -425,15 +464,17 @@ export class Panel {
         this.#pick(at < 0 ? 0 : Math.min(this.found.length - 1, Math.max(0, at + step)));
       }
     });
-    $("la-vcd").addEventListener("click", () => {
-      const cap = this.cap;
-      const url = URL.createObjectURL(new Blob([toVcd(cap, cap.channels.map((_, k) => this.laneName(k)))],
-                                               { type: "text/plain" }));
-      const a = Object.assign(document.createElement("a"), {
-        href: url, download: `${this.fileStem()}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.vcd`,
-      });
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    const names = () => this.cap.channels.map((_, k) => this.laneName(k));
+    $("la-vcd").addEventListener("click", () => this.#download(toVcd(this.cap, names()), "text/plain", ".vcd"));
+    $("la-save").addEventListener("click", () => this.#download(
+      toFile(this.cap, names(), this.decoders, { source: this.fileStem(), saved: new Date().toISOString() }),
+      "application/json", ".capture.json"));
+    $("la-open").addEventListener("change", async () => {
+      const f = $("la-open").files[0];
+      if (f) {
+        await this.#open(f);
+      }
+      $("la-open").value = "";
     });
   }
 }
