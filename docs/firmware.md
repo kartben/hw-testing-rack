@@ -400,6 +400,9 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   at 2 MS/s of a line on AUX, read back exactly in the decoded table; search, a row's jump, the tooltip, the
   keys, save and reopen, a second capture, and a cancel while it waited.  `bayctl capture` on the same bench:
   that line in `run.decoded.json`, a trigger that never came exited 3, and the analyzer answered after.
+  A real I²C device on that card: the XIAO expansion board's PCF8563, read every 100 ms at 100 kHz by Zephyr's
+  driver, on buses B and C at 2 MS/s: address, register, repeated start, seven bytes and the final NACK, the
+  time decoded by hand agreeing with what the driver read.
   **Not tried on hardware:** `bayctl capture --reset` (MARK again), and the standalone page's settings on an
   analyzer on the PC's USB.  **The decoders added after it** (`decoders.mjs`, written from the protocols'
   public descriptions, no sigrok code): on the bench, a UART's lines and PWM on a stream of `U` (57.602 kHz, 50.0 %
