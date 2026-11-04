@@ -766,7 +766,8 @@ JLC_PARTS_MARKUP = 1.12                     # JLC's part prices and attrition ag
 # minimum, the PCBA line it lands on)
 # L1 (C42411119): JLC's PCBA quote of 2026-10-23 buys 5 for 2 boards (its library lists 26 to buy into a
 # parts library; 32 and a pre-order on 2026-10-20, 197 in stock on 2026-10-23)
-JLC_MIN_BUY = {"data-port-x4": [("C42411119", 5, "L1 minimum purchase (5)")]}
+JLC_MIN_BUY = {"data-port-x4": [("C42411119", 5, "L1 minimum purchase (5)")],
+               "power-hub": [("C5184243", 8, "J1 J6 minimum purchase (8)")]}
 # an order panel: one PCB carrying one board of each design, one PCBA order (panel_order)
 PANELS = {"data-port-x4-panel": ("data-port-x4", "data-port-x4-base")}
 

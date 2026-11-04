@@ -29,7 +29,7 @@ class Orders(unittest.TestCase):
         q = bom.JLC_QUOTE["data-port-x4-panel"]
         if q.get("stale_since"):
             self.skipTest(f"the panel's quote is stale since {q['stale_since']}: {q['stale']}")
-        for n, usd in ((2, 259.86), (5, 413.37), (10, 678.76)):
+        for n, usd in ((2, 259.86), (5, 412.67), (10, 677.81)):
             self.assertAlmostEqual(bom.panel_order(n, self.orders)["total"], usd, delta=0.02)
 
     def test_volume_is_order_cost(self):

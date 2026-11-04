@@ -83,23 +83,23 @@ Levers (*obvious*: an engineering choice the board's owner applies; *decision*: 
 
 ### At volume
 
-Unit cost (USD) of a board for n assembled in one order: the fees per order spread over n; the parts at JLC's price breaks for that quantity (the quoted components scaled by [`jlc-parts.md`](jlc-parts.md)'s prices, catalog of 2026-10-20); X-ray per board by JLC's tiers; the bare PCBs at JLC's price for that quantity (`JLC_PCB_PRICE`, measured on the calculator).  *Floor*: parts at the 100-board breaks, joints, X-ray and PCB per board, once the fees per order no longer count.
+Unit cost (USD) of a board for n assembled in one order: the fees per order spread over n; the parts at JLC's price breaks for that quantity (the quoted components scaled by [`jlc-parts.md`](jlc-parts.md)'s prices, catalog of 2026-11-04); X-ray per board by JLC's tiers; the bare PCBs at JLC's price for that quantity (`JLC_PCB_PRICE`, measured on the calculator).  *Floor*: parts at the 100-board breaks, joints, X-ray and PCB per board, once the fees per order no longer count.
 
 | Board | 2 | 5 | 10 | 50 | 100 | Floor |
 |---|---:|---:|---:|---:|---:|---:|
-| bay-node | 72.48 | 39.35 | 27.25 | 17.22 | 14.72 | 13.75 |
-| power-hub | 77.97 | 46.41 | 34.78 | 24.01 | 21.22 | 20.36 |
-| data-port-x6 | 67.64 | 43.34 | 34.84 | 26.04 | 23.59 | 23.09 |
-| camera-pod | 15.21 | 6.78 | 3.99 | 1.80 | 1.38 | 1.15 |
-| data-port-x4-panel | 129.93 | 82.67 | 67.88 | 50.64 | 46.90 | 45.82 |
+| bay-node | 72.62 | 39.50 | 27.25 | 17.17 | 14.58 | 13.62 |
+| power-hub | 77.97 | 46.40 | 34.78 | 23.67 | 20.94 | 20.08 |
+| data-port-x6 | 67.90 | 43.33 | 34.84 | 25.83 | 23.45 | 22.95 |
+| camera-pod | 15.21 | 6.78 | 3.98 | 1.79 | 1.38 | 1.15 |
+| data-port-x4-panel | 129.93 | 82.53 | 67.78 | 50.32 | 46.68 | 45.61 |
 
 One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x4-panel) when building several in one order, one shipment ($34, held: it grows with the weight):
 
 | Racks | bay-node | power-hub | data-port-x6 | camera-pod | data-port-x4-panel | Per rack |
 |---|---:|---:|---:|---:|---:|---:|
 | 1 | 310.48 | 155.95 | 348.36 | 30.42 | 259.86 | **1139.07** |
-| 5 | 203.36 | 46.41 | 260.41 | 7.97 | 82.67 | **607.63** |
-| 10 | 173.62 | 34.78 | 235.90 | 5.37 | 67.88 | **520.94** |
+| 5 | 202.78 | 46.40 | 258.26 | 7.97 | 82.53 | **604.74** |
+| 10 | 171.90 | 34.78 | 234.54 | 5.36 | 67.78 | **517.76** |
 
 ## Printed parts
 
