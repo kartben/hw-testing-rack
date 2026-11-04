@@ -78,7 +78,8 @@ export function rateNeeds(decoders, rate) {
 export function captureNotes(cap, decoders, chName) {
   const out = [];
   for (const d of decoders) {
-    const c = d.type === "i2c" ? d.lines.scl : d.type === "spi" ? d.lines.sck : d.type === "pwm" ? d.lines.in : undefined;
+    const c = d.type === "i2c" ? d.lines.scl : d.type === "spi" ? d.lines.sck : d.type === "pwm" ? d.lines.in
+            : d.type === "swd" ? d.lines.swclk : undefined;
     const k = c === undefined || c === null ? -1 : cap.channels.indexOf(c);
     const e = k < 0 ? [] : cap.edges(k);
     let thin = Infinity;

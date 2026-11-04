@@ -1,6 +1,6 @@
 /*
  * Protocol decoders on a capture (capture.mjs), in the browser: UART, I²C,
- * SPI, WS2812B, PWM, 1-Wire, CAN.  Each takes the capture and the lanes it reads (k: the
+ * SPI, WS2812B, PWM, 1-Wire, CAN, SWD.  Each takes the capture and the lanes it reads (k: the
  * index in cap.channels) and returns rows of boxes for the viewer:
  * {label, items: [{t0, t1, text, kind}]}, times in seconds from the
  * trigger, kind data, addr, ctl or err.  A row may also say how its boxes make
@@ -573,6 +573,102 @@ export function can(cap, { k, baud = 500000, label }) {
   return [{ label: label ?? `CAN ${baud / 1e3} kbit/s`, items, frames }];
 }
 
+const SWD_READ = { 0: "IDCODE", 4: "CTRL/STAT", 8: "RESEND", 12: "RDBUFF" };
+const SWD_WRITE = { 0: "ABORT", 4: "CTRL/STAT", 8: "SELECT", 12: "TARGETSEL" };
+const SWD_ACK = { 1: "OK", 2: "WAIT", 4: "FAULT" };
+const SWD_RESET_BITS = 50;      /* SWDIO high this many clocks at least: a line reset */
+const JTAG_TO_SWD = 0xe79e;
+
+/*
+ * SWD: a bit per rising edge of SWCLK, SWDIO read just before it, since the
+ * host changes it while the clock is low and the target after the edge.  A
+ * request is start, APnDP, RnW, A[2:3], parity, stop, park, found by its stop,
+ * park and parity; then a turnaround and a 3-bit ACK; on OK 32 bits of data
+ * and their parity, with a turnaround before a write's or after a read's.
+ * A write to DP 0xC, TARGETSEL, gets no ACK from anyone and goes straight on.
+ * Bits are LSB first.
+ */
+export function swd(cap, { swclk, swdio, label = "SWD" }) {
+  const e = cap.edges(swclk), first = cap.firstLevel(swclk), at = [], bits = [], items = [], frames = [];
+  for (let m = 1; m < e.length; m++) {
+    /* The level after e[m] is the first one's, flipped m times */
+    if ((first ^ (m & 1)) === 1) {
+      at.push(e[m]);
+      bits.push(cap.level(swdio, Math.max(0, e[m] - 1)));
+    }
+  }
+  const box = (a, b, text, kind, more = {}) => {
+    const it = { t0: cap.time(at[a]), t1: cap.time(at[Math.min(b, at.length - 1)]), text, kind, ...more };
+    items.push(it);
+    return it;
+  };
+  const word = (from, n) => {
+    let v = 0;
+    for (let i = n - 1; i >= 0; i--) {
+      v = v * 2 + bits[from + i];
+    }
+    return v;
+  };
+  const n = bits.length;
+  let i = 0;
+  while (i < n) {
+    if (!bits[i]) {
+      i++;
+      continue;
+    }
+    let run = 1;
+    while (i + run < n && bits[i + run]) {
+      run++;
+    }
+    if (run >= SWD_RESET_BITS) {
+      const it = box(i, i + run, "line reset", "ctl");
+      frames.push({ ...it, items: [it], hex: "", fields: { event: "line reset" } });
+      i += run;
+      if (i + 16 <= n && word(i, 16) === JTAG_TO_SWD) {
+        const sel = box(i, i + 16, "JTAG to SWD", "ctl");
+        frames.push({ ...sel, items: [sel], hex: "", fields: { event: "JTAG to SWD" } });
+        i += 16;
+      }
+      continue;
+    }
+    if (i + 13 > n) {
+      break;
+    }
+    const [, apndp, rnw, a2, a3, parity, stop, park] = bits.slice(i, i + 8);
+    if (stop !== 0 || park !== 1 || ((apndp ^ rnw ^ a2 ^ a3) !== parity)) {
+      i++;
+      continue;
+    }
+    const addr = (a3 << 3) | (a2 << 2), blind = !apndp && !rnw && addr === 12;
+    const name = apndp ? `AP 0x${hex(addr, 1)}` : `DP ${(rnw ? SWD_READ : SWD_WRITE)[addr]}`;
+    const parts = [box(i, i + 8, `${rnw ? "R" : "W"} ${name}`, "addr", { value: addr })];
+    const code = word(i + 9, 3), ack = blind ? "none" : SWD_ACK[code] ?? "no ACK";
+    if (!blind) {
+      parts.push(box(i + 9, i + 12, ack, ack === "OK" || ack === "WAIT" ? "ctl" : "err"));
+    }
+    let next = i + 13, data = null, parityOk = null;
+    if (ack === "OK" || blind) {
+      const from = rnw ? i + 12 : i + 13;
+      if (from + 33 > n) {
+        parts.push(box(from, n - 1, "cut off", "err"));
+        next = n;
+      } else {
+        data = word(from, 32);
+        parityOk = bits.slice(from, from + 32).reduce((a, b) => a ^ b, 0) === bits[from + 32];
+        parts.push(box(from, from + 33, `0x${hex(data, 8)}${parityOk ? "" : " parity"}`, parityOk ? "data" : "err", { value: data }));
+        next = from + 33 + (rnw ? 1 : 0);
+      }
+    }
+    frames.push({
+      t0: parts[0].t0, t1: parts.at(-1).t1, text: parts.map((x) => x.text).join(" "),
+      kind: parts.some((x) => x.kind === "err") ? "err" : "data", hex: data === null ? "" : hex(data, 8), items: parts,
+      fields: { ap: !!apndp, read: !!rnw, addr, ack, data, parityOk },
+    });
+    i = next;
+  }
+  return [{ label, items, frames }];
+}
+
 /*
  * The decoders the page offers: their name, the lines they read (a "?" one
  * may be left out), what they need besides; run() gets the lines as lanes.
@@ -586,6 +682,7 @@ export const DECODERS = {
   pwm: { name: "PWM / clock", lines: ["in"], run: (cap, d, k) => pwm(cap, { k: k.in }) },
   onewire: { name: "1-Wire", lines: ["dq"], run: (cap, d, k) => onewire(cap, { k: k.dq }) },
   can: { name: "CAN", lines: ["rx"], run: (cap, d, k) => can(cap, { k: k.rx, baud: d.baud ?? 500000 }) },
+  swd: { name: "SWD", lines: ["swclk", "swdio"], run: (cap, d, k) => swd(cap, k) },
 };
 
 export const BAUDS = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 1e6, 2e6, 3e6];

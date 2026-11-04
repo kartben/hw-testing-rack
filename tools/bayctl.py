@@ -1402,7 +1402,7 @@ def analyzer_channel(text: str) -> int:
 
 def parse_decoder(text: str) -> dict:
     """uart:rx=A,baud=115200, i2c:sda=C,scl=D, spi:cs=E,sck=F,mosi=G[,miso=H][,mode=0], ws2812:din=A, pwm:in=A, onewire:dq=A,
-    can:rx=A,baud=500000."""
+    can:rx=A,baud=500000, swd:swclk=A,swdio=B."""
     kind, _, spec = text.partition(":")
     d: dict = {"type": kind.strip().lower(), "lines": {}}
     for part in filter(None, spec.split(",")):
@@ -1887,7 +1887,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--trigger", help="<channel>[:fall|:rise] (default the first channel, falling)")
     p.add_argument("--reset", metavar="SLOT", help="trigger as this board leaves reset (MARK, CH13): B3.2")
     p.add_argument("--decode", action="append", default=[], metavar="SPEC",
-                   help="uart:rx=A,baud=115200  i2c:sda=C,scl=D  spi:cs=E,sck=F,mosi=G[,miso=H][,mode=0]  ws2812:din=A  pwm:in=A  onewire:dq=A  can:rx=A,baud=500000")
+                   help="uart:rx=A,baud=115200  i2c:sda=C,scl=D  spi:cs=E,sck=F,mosi=G[,miso=H][,mode=0]  ws2812:din=A  pwm:in=A  onewire:dq=A  can:rx=A,baud=500000  swd:swclk=A,swdio=B")
     p.add_argument("--timeout", type=float, default=10, help="seconds to wait for the trigger: exit 3 after (default 10)")
     p.add_argument("-o", "--output", help="start of the files' names: <it>.capture.json, <it>.decoded.json")
     p = sub.add_parser("wire", help="the DATA ×4's pin matrix: port pins on the buses A-H")
