@@ -331,7 +331,7 @@ export class Panel {
       html += `<div class="la-trow${e.it.kind === "err" ? " err" : ""}" style="top: ${i * TABLE_ROW}px" data-i="${i}"
         aria-selected="${e === this.picked}"><span class="t">${fmtTime(e.it.t0)}</span>
         <span class="d">${esc(e.label)}${e.lane ? ` <small>${esc(e.lane)}</small>` : ""}</span>
-        <b>${esc(e.it.text ?? "")}</b><span class="x">${e.hex}</span></div>`;
+        <b title="${esc(e.it.text ?? "")}">${esc(e.it.text ?? "")}</b><span class="x" title="${e.hex}">${e.hex}</span></div>`;
     }
     $("la-trows").innerHTML = html;
   }
@@ -349,7 +349,7 @@ export class Panel {
       box.scrollTop = y + TABLE_ROW - box.clientHeight;
     }
     this.#drawTable();
-    this.viewer.reveal(e.it);
+    this.viewer.reveal(e.it, e.items);
   }
 
   /* --- Decoders ------------------------------------------------------------------- */

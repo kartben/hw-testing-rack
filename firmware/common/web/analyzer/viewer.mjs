@@ -139,9 +139,9 @@ export class Viewer {
     this.draw();
   }
 
-  /* Bring this item into view, marked: as close as the view already is, or nearer if it would not read */
-  reveal(it) {
-    this.selected = it;
+  /* Bring this item into view, these boxes marked: as close as the view already is, or nearer if it would not read */
+  reveal(it, items = [it]) {
+    this.selected = new Set(items);
     const w = Math.max(it.t1 - it.t0, 1 / this.cap.rate);
     const span = Math.max(w * 6, Math.min(this.view.t1 - this.view.t0, w * 60)), mid = (it.t0 + it.t1) / 2;
     this.setRange(mid - span / 2, mid + span / 2);
@@ -441,7 +441,7 @@ export class Viewer {
       g.beginPath();
       g.roundRect(X0, y + 4, Math.max(1, X1 - X0 - 1), RH - 8, 4);
       g.fill();
-      if (it === this.selected) {
+      if (this.selected?.has(it)) {
         g.strokeStyle = css("--cursor");
         g.lineWidth = 2;
         g.stroke();

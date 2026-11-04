@@ -3,7 +3,9 @@
  * SPI, WS2812B.  Each takes the capture and the lanes it reads (k: the
  * index in cap.channels) and returns rows of boxes for the viewer:
  * {label, items: [{t0, t1, text, kind}]}, times in seconds from the
- * trigger, kind data, addr, ctl or err.
+ * trigger, kind data, addr, ctl or err.  A row may also say how its boxes make
+ * up messages, one row each in the decoded table: frames: [{t0, t1, text, kind,
+ * hex, items, fields}], fields what a script reads of it.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -25,6 +27,36 @@ function changes(cap, ks) {
     }
   }
   return Int32Array.from(all).sort();
+}
+
+/* What ends a UART's message: a newline, or a pause of this many bytes' time */
+const PAUSE_BYTES = 10;
+
+/* A UART's bytes as messages: a line of text, or what came in one go */
+function uartMessages(items) {
+  const frames = [];
+  let group = [];
+  const flush = () => {
+    if (group.length) {
+      frames.push({
+        t0: group[0].t0, t1: group.at(-1).t1, text: group.map((x) => x.text).join(""),
+        kind: group.some((x) => x.kind === "err") ? "err" : "data",
+        hex: group.map((x) => hex(x.value)).join(" "), items: group, fields: { bytes: group.map((x) => x.value) },
+      });
+      group = [];
+    }
+  };
+  for (const it of items) {
+    if (group.length && it.t0 - group.at(-1).t1 > PAUSE_BYTES * (it.t1 - it.t0)) {
+      flush();
+    }
+    group.push(it);
+    if (it.value === 0x0a) {
+      flush();
+    }
+  }
+  flush();
+  return frames;
 }
 
 /*
@@ -65,7 +97,7 @@ export function uart(cap, { k, baud, bits = 8, parity = "none", stop = 1, invert
                  text: err ? `${shown(v)} ${err}` : shown(v), kind: err ? "err" : "data" });
     after = s + P * (frame + 0.5);
   }
-  return [{ label: label ?? `UART ${baud >= 1e6 ? `${baud / 1e6} M` : `${baud} `}Bd`, items }];
+  return [{ label: label ?? `UART ${baud >= 1e6 ? `${baud / 1e6} M` : `${baud} `}Bd`, items, frames: uartMessages(items) }];
 }
 
 /* I²C: START, the address with R/W, data bytes, ACK or NACK after each, STOP */

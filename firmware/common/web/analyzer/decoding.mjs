@@ -93,12 +93,15 @@ export function captureNotes(cap, decoders, chName) {
 /* A decoded value in hex */
 export const hexOf = (v) => (v === undefined ? "" : `0x${v.toString(16).toUpperCase().padStart(2, "0")}`);
 
-/* The viewer's rows as one list in time order: {it, label, lane, hex, hay}, hay what a search looks in */
+/*
+ * The viewer's rows as the table's list, in time order: {it, items, label, lane, hex, hay}.  it: what the row says, a
+ * row's frame or its box; items: the boxes it marks in the viewer; hay: what a search looks in, both hex spellings.
+ */
 export function entriesOf(rows) {
-  return rows.filter((r) => r.items).flatMap((r) => r.items.map((it) => {
-    const hex = hexOf(it.value);
-    return { it, label: r.label, lane: r.lane ?? "", hex,
-             hay: `${it.text} ${hex} ${r.label} ${r.lane ?? ""}`.toLowerCase() };
+  return rows.filter((r) => r.items).flatMap((r) => (r.frames ?? r.items).map((it) => {
+    const hex = it.hex ?? hexOf(it.value);
+    return { it, items: it.items ?? [it], label: r.label, lane: r.lane ?? "", hex,
+             hay: `${it.text} ${hex} ${hex.replace(/\b(?=[0-9A-F]{2}\b)/g, "0x")} ${r.label} ${r.lane ?? ""}`.toLowerCase() };
   })).sort((a, b) => a.it.t0 - b.it.t0);
 }
 

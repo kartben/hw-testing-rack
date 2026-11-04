@@ -10,7 +10,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { i2c } from "../decoders.mjs";
+import { Capture } from "../capture.mjs";
+import { i2c, uart } from "../decoders.mjs";
 import { captureRows, entriesOf, hexOf, matching } from "../decoding.mjs";
 import { demoCapture } from "../demo.mjs";
 import { itemAt, itemLines, valueText } from "../viewer.mjs";
@@ -91,4 +92,70 @@ test("a decoded row knows the lane it sits under", () => {
   const out = captureRows(cap, [{ type: "uart", lines: { rx: 0 }, baud: 1e6 }], (k) => `L${k}`);
   assert.equal(out.find((r) => r.items).lane, "L0");
   assert.ok(!("lane" in out[0]), "a lane is not its own");
+});
+
+/* A UART's bytes, 10 µs each, from this time on */
+function bytes(text, t = 0, width = 10e-6) {
+  return [...text].map((c, i) => ({ t0: t + i * width, t1: t + (i + 1) * width, value: c.charCodeAt(0),
+                                    text: c === "\n" ? "\\n" : c === "\r" ? "\\r" : c, kind: "data" }));
+}
+
+/* What uart() makes of a capture of these bytes: a capture carries them for real */
+function line(rate, baud, chunks) {
+  const per = rate / baud, gaps = [];
+  let i = Math.round(5 * per);
+  for (const [text, pause] of chunks) {
+    for (const c of text) {
+      gaps.push([i, c.charCodeAt(0)]);
+      i += Math.round(10 * per);
+    }
+    i += Math.round((pause ?? 0) * per);
+  }
+  const samples = new Uint8Array(i + Math.round(5 * per)).fill(1);
+  for (const [at, v] of gaps) {
+    [0, ...Array.from({ length: 8 }, (_, b) => (v >> b) & 1), 1].forEach((b, n) =>
+      samples.fill(b, at + Math.round(n * per), at + Math.round((n + 1) * per)));
+  }
+  return new Capture({ channels: [0], rate, pre: 0, post: samples.length, samples });
+}
+
+test("a UART's table rows: a line of text, whole", () => {
+  const cap = line(1e7, 1e6, [["Booting Zephyr\r\n"], ["*** ready\r\n"], ["no end yet"]]);
+  const [row] = uart(cap, { k: 0, baud: 1e6 });
+  assert.deepEqual(row.frames.map((f) => f.text), ["Booting Zephyr\\r\\n", "*** ready\\r\\n", "no end yet"]);
+  assert.equal(row.frames[1].hex.split(" ")[0], "2A");
+  assert.deepEqual(row.frames[1].fields.bytes.slice(0, 3), [0x2a, 0x2a, 0x2a]);
+  assert.equal(row.frames[0].items.length, 16);
+  assert.equal(row.items.length, 16 + 11 + 10, "the viewer keeps a box a byte");
+});
+
+test("a pause ends a binary message", () => {
+  const cap = line(1e7, 1e6, [["\x01\x02\x03", 50], ["\x04\x05", 150], ["\x06"]]);
+  const [row] = uart(cap, { k: 0, baud: 1e6 });
+  assert.deepEqual(row.frames.map((f) => f.hex), ["01 02 03 04 05", "06"], "50 bit times is 5 bytes: not a pause");
+});
+
+test("a framing error marks its line", () => {
+  const cap = line(1e7, 1e6, [["ok\n"], ["bad"]]);
+  /* The stop bit of the last byte held low */
+  const per = 10, n = cap.samples.length, end = n - 5 * per - per;
+  cap.samples.fill(0, end, end + per);
+  const [row] = uart(new Capture({ channels: [0], rate: 1e7, pre: 0, post: n, samples: cap.samples }), { k: 0, baud: 1e6 });
+  assert.deepEqual(row.frames.map((f) => f.kind), ["data", "err"]);
+});
+
+test("the table searches a whole word, and both spellings of hex", () => {
+  const cap = line(1e7, 1e6, [["Booting Zephyr\r\n"], ["*** ready\r\n"]]);
+  const e = entriesOf(captureRows(cap, [{ type: "uart", lines: { rx: 0 }, baud: 1e6 }], () => "TX"));
+  assert.equal(e.length, 2);
+  assert.deepEqual(matching(e, "booting").map((x) => x.it.t0), [e[0].it.t0]);
+  assert.equal(matching(e, "ready").length, 1);
+  assert.equal(matching(e, "0x42").length, 1, "B, written the way C does");
+  assert.equal(matching(e, "2A 2A").length, 1, "the hex column as shown");
+  assert.equal(e[0].items.length, 16, "a row marks all its boxes");
+});
+
+test("a row without frames: a table row a box", () => {
+  const e = entriesOf([{ label: "x", items: bytes("ab") }]);
+  assert.deepEqual(e.map((x) => [x.it.text, x.items.length, x.hex]), [["a", 1, "0x61"], ["b", 1, "0x62"]]);
 });
