@@ -9,7 +9,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { Capture, depth } from "../capture.mjs";
+import { Capture, timing } from "../capture.mjs";
 import { Analyzer, TRIGGER, bytesPerSample, captureRequest, frame } from "../protocol.mjs";
 import { FakeAnalyzer } from "./fake_analyzer.mjs";
 
@@ -104,8 +104,10 @@ test("a refused capture, and a cancelled one", async () => {
   assert.equal((await a.identify()).board, "PICO_2");
 });
 
-test("depth: the samples a capture holds", () => {
-  assert.deepEqual(depth(PICO2, [0, 7], 10e6), { samples: 393216, seconds: 0.0393216, bits: 8 });
-  assert.equal(depth(PICO2, [0, 12], 1e6).samples, 196608);
-  assert.equal(depth(PICO2, [20], 1e6).samples, 98304);
+test("timing: the samples a capture holds", () => {
+  const t = timing(PICO2, [0, 7], 10e6);
+  assert.deepEqual([t.samples, t.bits], [393216, 8]);
+  assert.equal(t.held, 393216 / 10e6);
+  assert.equal(timing(PICO2, [0, 12], 1e6).samples, 196608);
+  assert.equal(timing(PICO2, [20], 1e6).samples, 98304);
 });

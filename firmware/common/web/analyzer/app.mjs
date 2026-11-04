@@ -6,7 +6,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { depth } from "./capture.mjs";
 import { esc } from "./decoding.mjs";
 import { DEMO_DECODERS, DEMO_NAMES, demoCapture } from "./demo.mjs";
 import { Panel, sorted } from "./panel.mjs";
@@ -17,13 +16,12 @@ import { uf2RamImage } from "./uf2.mjs";
 import { fmtTime } from "./viewer.mjs";
 
 const $ = (id) => document.getElementById(id);
-const LENGTHS = [1000, 10000, 50000, 100000, 200000];
 
 let analyzer = null, transport = null, info = null, capNames = [];
 
 const panel = new Panel({
   store: "hwtr-analyzer",
-  defaults: { names: {}, on: [0, 1, 2, 3, 4, 5, 6, 7], rate: 10e6, length: 100000, pre: 0.2, trig: 0, edge: "fall",
+  defaults: { names: {}, on: [0, 1, 2, 3, 4, 5, 6, 7], rate: 10e6, duration: 10e-3, pre: 0.2, trig: 0, edge: "fall",
               decoders: [] },
   chName: (c) => settings().names[c] || `CH${c + 1}`,
   laneName: (k) => settings().names[panel.cap.channels[k]] || capNames[k] || `CH${panel.cap.channels[k] + 1}`,
@@ -59,27 +57,16 @@ function renderChannels() {
 }
 
 function renderSettings() {
-  const s = settings();
-  panel.renderRate(info?.maxRate ?? 100e6);
-  const on = sorted(s.on);
-  const d = info && on.length ? depth(info, on, s.rate) : null;
-  const lengths = [...LENGTHS.filter((l) => !d || l < d.samples), ...(d ? [d.samples] : [])];
-  if (!lengths.includes(s.length)) {
-    s.length = lengths.at(-1);
-  }
-  $("length").innerHTML = lengths.map((l) =>
-    `<option value="${l}" ${l === s.length ? "selected" : ""}>${l.toLocaleString("en-US")}${d && l === d.samples ? " (all)" : ""}</option>`).join("");
+  const s = settings(), on = sorted(s.on);
+  const t = panel.renderTiming(on);
   $("trig-ch").innerHTML = on.map((c) =>
     `<option value="${c}" ${c === s.trig ? "selected" : ""}>${esc(chName(c))}</option>`).join("");
   if (!on.includes(s.trig) && on.length) {
     s.trig = on[0];
   }
   $("trig-edge").value = s.edge;
-  panel.summary([`${s.rate / 1e6} MS/s`, fmtTime(s.length / s.rate), `trigger ${chName(s.trig)} ${s.edge === "fall" ? "↓" : "↑"}`,
+  panel.summary([`${s.rate / 1e6} MS/s`, fmtTime(t.seconds), `trigger ${chName(s.trig)} ${s.edge === "fall" ? "↓" : "↑"}`,
                  `${on.length} channel${on.length === 1 ? "" : "s"}`]);
-  $("depth").textContent = d
-    ? `${s.length.toLocaleString("en-US")} samples (${d.bits}-bit) · ${fmtTime(s.length / s.rate)}`
-    : on.length ? "" : "pick at least one channel";
   $("la-cap").disabled = !analyzer || !!panel.busy || !on.length;
   panel.save();
 }
@@ -92,10 +79,9 @@ $("more-ch").addEventListener("click", () => {
   renderChannels();
   renderSettings();
 });
-for (const id of ["length", "trig-ch", "trig-edge"]) {
+for (const id of ["trig-ch", "trig-edge"]) {
   $(id).addEventListener("change", () => {
     const s = settings();
-    s.length = Number($("length").value);
     s.trig = Number($("trig-ch").value);
     s.edge = $("trig-edge").value;
     renderSettings();
@@ -123,6 +109,7 @@ async function connect(port) {
   $("i-rate").textContent = `${info.maxRate / 1e6} MS/s`;
   $("i-buffer").textContent = `${(info.buffer / 1024).toLocaleString("en-US")} KB`;
   $("i-channels").textContent = info.channels;
+  panel.setInfo(info);
   $("info").hidden = false;
   $("connect").hidden = true;
   $("disconnect").hidden = false;
@@ -137,6 +124,7 @@ async function disconnect() {
   panel.busy?.abort();
   await transport?.close();
   transport = analyzer = info = null;
+  panel.setInfo(null);
   $("info").hidden = true;
   $("connect").hidden = false;
   $("disconnect").hidden = true;
@@ -160,14 +148,13 @@ if (serialSupported()) {
 
 $("la-cap").addEventListener("click", async () => {
   const s = settings(), on = sorted(s.on);
-  const pre = Math.round(s.length * s.pre);
   panel.begin();
   $("la-cap").disabled = true;
   $("la-cancel").hidden = false;
   panel.setState("Sending the settings…", "var(--warn)");
   try {
     const cap = await panel.read(analyzer, {
-      channels: on, rate: s.rate, pre, post: s.length - pre,
+      ...panel.request(on),
       trigger: { type: TRIGGER.EDGE, channel: s.trig, inverted: s.edge === "fall" },
     }, () => panel.setState(`Waiting for ${chName(s.trig)} ${s.edge === "fall" ? "↓" : "↑"}`, "var(--warn)"));
     capNames = on.map(chName);

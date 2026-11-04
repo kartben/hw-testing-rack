@@ -11,13 +11,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Capture } from "./capture.mjs";
-import { captureRows, decoderFields, decoderFrom, decoderLabel, decoderTypes, entriesOf, esc, matching } from "./decoding.mjs";
+import { Capture, RATES, fastestFor, slowestOver, timing } from "./capture.mjs";
+import { captureNotes, captureRows, decoderFields, decoderFrom, decoderLabel, decoderTypes, entriesOf, esc, matching,
+         rateNeeds } from "./decoding.mjs";
 import { toVcd } from "./vcd.mjs";
 import { Viewer, fmtTime } from "./viewer.mjs";
 
 const $ = (id) => document.getElementById(id);
-const RATES = [1e6, 2e6, 5e6, 10e6, 20e6, 25e6, 50e6, 100e6];
+/* gusmanb's Pico 2 build, until the analyzer says (Analyzer.identify()) */
+const PICO_2 = { maxRate: 100e6, buffer: 393216, channels: 24 };
+/* What the Duration list offers, in seconds: 0 is as long as the buffer holds */
+const DURATIONS = [100e-6, 200e-6, 500e-6, 1e-3, 2e-3, 5e-3, 10e-3, 20e-3, 50e-3, 100e-3, 200e-3, 500e-3, 1, 2];
+const roundTime = (s) => fmtTime(s).replace(/\.0+ /, " ");
 
 const TABLE_ROW = 27; /* px, for the rows it draws: only those in sight */
 
@@ -54,6 +59,8 @@ const VIEW_CSS = `
 #la-fold > summary { cursor: pointer; font-size: 0.88rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 #la-fold[open] > summary { margin-bottom: 12px; }
 #la-fold > div { display: flex; flex-direction: column; gap: 14px; }
+#la-warn { display: grid; gap: 6px; }
+#la-warn > div { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
 #la-view { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 12px; min-width: 0; }
 #la-view[hidden] { display: none; }
 #la-view:fullscreen { background: var(--card); padding: 10px; overflow: auto; }
@@ -106,7 +113,8 @@ export class Panel {
    */
   constructor({ store, defaults, chName, laneName, laneColor, moreRows, onShow, onSettings, fileStem, readColor }) {
     Object.assign(this, { store, chName, laneName, laneColor, moreRows, onShow, onSettings, fileStem, readColor });
-    this.settings = { ...defaults, ...this.#load() };
+    this.settings = { duration: 0, ...defaults, ...this.#load() };
+    this.info = PICO_2;
     this.cap = null;
     this.busy = null;
     /* The demo brings its own decoders, the user's stay as they are */
@@ -118,6 +126,7 @@ export class Panel {
     sheet.replaceSync(VIEW_CSS);
     document.adoptedStyleSheets.push(sheet);
     $("la-view").innerHTML = VIEW_HTML;
+    $("la-fold").insertAdjacentHTML("afterend", `<div class="notice" id="la-warn" style="--c: var(--trigger)" hidden></div>`);
     this.viewer = new Viewer($("la-wave"), { onReadout: (t) => ($("la-readout").textContent = t) });
     this.#listen();
   }
@@ -143,10 +152,58 @@ export class Panel {
     $("la-state").querySelector("span").textContent = text;
   }
 
-  renderRate(maxRate) {
-    $("la-rate").innerHTML = RATES.filter((r) => r <= maxRate).map((r) =>
-      `<option value="${r}" ${r === this.settings.rate ? "selected" : ""}>${r / 1e6} MS/s</option>`).join("");
-    $("la-pre").value = String(this.settings.pre);
+  /* What the analyzer says it is, or back to the Pico 2's until one answers */
+  setInfo(info) {
+    this.info = info ?? PICO_2;
+  }
+
+  /* The capture these channels get with the settings; the fields that show it, and what to mind */
+  renderTiming(on) {
+    const s = this.settings;
+    $("la-rate").innerHTML = RATES.filter((r) => r <= this.info.maxRate).map((r) =>
+      `<option value="${r}" ${r === s.rate ? "selected" : ""}>${r / 1e6} MS/s</option>`).join("");
+    $("la-pre").value = String(s.pre);
+    const t = timing(this.info, on, s.rate, s.duration);
+    $("la-dur").innerHTML = `<option value="0" ${s.duration ? "" : "selected"}>All it holds (${fmtTime(t.held)})</option>` +
+      DURATIONS.map((d) => `<option value="${d}" ${d === s.duration ? "selected" : ""}>${roundTime(d)}</option>`).join("");
+    $("la-depth").textContent = on.length
+      ? `${t.samples.toLocaleString("en-US")} samples (${t.bits}-bit) · ${fmtTime(t.seconds)}` : "pick at least one channel";
+    this.#renderWarnings(on, t);
+    return t;
+  }
+
+  /* What a capture asks of the analyzer, but its trigger */
+  request(on) {
+    const s = this.settings, { samples } = timing(this.info, on, s.rate, s.duration);
+    const pre = Math.round(samples * s.pre);
+    return { channels: on, rate: s.rate, pre, post: samples - pre };
+  }
+
+  #renderWarnings(on, t) {
+    const s = this.settings, lines = [];
+    const offer = (text, rate) => {
+      const line = `<div><span>${esc(text)}</span>${rate && rate !== s.rate
+        ? `<button class="small" data-rate="${rate}">Use ${rate / 1e6} MS/s</button>` : ""}</div>`;
+      /* Two decoders at one speed say it once */
+      if (!lines.includes(line)) {
+        lines.push(line);
+      }
+    };
+    if (on.length && !t.fits) {
+      const rate = fastestFor(this.info, on, s.duration);
+      offer(`At ${s.rate / 1e6} MS/s the buffer holds ${fmtTime(t.held)} of the ${roundTime(s.duration)} asked` +
+            (rate ? "." : ", and no rate holds it all."), rate);
+    }
+    for (const n of rateNeeds(this.decoders, s.rate)) {
+      offer(n.text, slowestOver(this.info, n.need));
+    }
+    if (this.cap && this.cap.rate === s.rate) {
+      for (const n of captureNotes(this.cap, this.decoders, this.chName)) {
+        offer(n.text, slowestOver(this.info, n.need));
+      }
+    }
+    $("la-warn").innerHTML = lines.join("");
+    $("la-warn").hidden = !lines.length;
   }
 
   /* The settings in one line, on the fold */
@@ -195,6 +252,7 @@ export class Panel {
     this.entries = entriesOf(rows);
     this.picked = null;
     this.#renderTable();
+    this.onSettings();
   }
 
   /* A capture to read: the settings fold away, the viewer comes up */
@@ -291,13 +349,21 @@ export class Panel {
         }
       }
     });
-    for (const id of ["la-rate", "la-pre"]) {
+    for (const id of ["la-rate", "la-dur", "la-pre"]) {
       $(id).addEventListener("change", () => {
         s.rate = Number($("la-rate").value);
+        s.duration = Number($("la-dur").value);
         s.pre = Number($("la-pre").value);
         this.onSettings();
       });
     }
+    $("la-warn").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-rate]");
+      if (b) {
+        s.rate = Number(b.dataset.rate);
+        this.onSettings();
+      }
+    });
     $("la-cancel").addEventListener("click", () => this.busy?.abort());
 
     $("la-decs").addEventListener("click", (e) => {

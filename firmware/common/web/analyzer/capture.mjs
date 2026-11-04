@@ -8,6 +8,10 @@
 
 import { bytesPerSample } from "./protocol.mjs";
 
+export const RATES = [1e6, 2e6, 5e6, 10e6, 20e6, 25e6, 50e6, 100e6];
+/* The fewest samples a capture takes: a shorter one says nothing */
+const MIN_SAMPLES = 1000;
+
 export class Capture {
   /* channels: the analyzer's channel numbers, 0-based; samples: words, bit i = channels[i] */
   constructor({ channels, rate, pre, post, samples, stamps = new Uint32Array(0) }) {
@@ -59,9 +63,24 @@ export class Capture {
   }
 }
 
-/* Samples and seconds a capture holds with these channels at this rate (info: Analyzer.identify()) */
-export function depth(info, channels, rate) {
+/*
+ * What a capture of this many seconds (0: as long as it can) takes with these
+ * channels at this rate (info: Analyzer.identify()): the samples and the
+ * seconds it gets, what the buffer holds, whether the seconds asked fit.
+ */
+export function timing(info, channels, rate, asked = 0) {
   const bps = bytesPerSample(channels.length ? channels : [0]);
-  const samples = Math.floor(info.buffer / bps);
-  return { samples, seconds: samples / rate, bits: bps * 8 };
+  const most = Math.floor(info.buffer / bps);
+  const samples = asked ? Math.min(most, Math.max(MIN_SAMPLES, Math.round(asked * rate))) : most;
+  return { samples, seconds: samples / rate, held: most / rate, bits: bps * 8, fits: !asked || asked * rate <= most };
+}
+
+/* The fastest rate at which the buffer holds this many seconds, or null */
+export function fastestFor(info, channels, seconds) {
+  return RATES.filter((r) => r <= info.maxRate && timing(info, channels, r).held >= seconds).at(-1) ?? null;
+}
+
+/* The slowest rate of at least this many samples per second, or null */
+export function slowestOver(info, need) {
+  return RATES.find((r) => r <= info.maxRate && r >= need) ?? null;
 }

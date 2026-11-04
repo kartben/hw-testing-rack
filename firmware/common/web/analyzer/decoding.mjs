@@ -51,6 +51,45 @@ export function captureRows(cap, decoders, name, color = (c) => `--lane-${c % 8}
   return rows;
 }
 
+/* Samples a bit: what reads a known speed well; a UART's decoder stops under 4 */
+const GOOD_UART = 10;
+const WS2812_RATE = 10e6;
+/* A clock pulse this many samples wide or less is hardly seen */
+const THIN_PULSE = 2;
+
+/* What these decoders ask of a rate, known before the capture: [{text, need}], need in samples per second */
+export function rateNeeds(decoders, rate) {
+  const out = [];
+  for (const d of decoders) {
+    const need = d.type === "uart" ? (d.baud ?? 115200) * GOOD_UART : d.type === "ws2812" ? WS2812_RATE : 0;
+    if (rate < need) {
+      const what = d.type === "uart" ? `UART at ${(d.baud ?? 115200).toLocaleString("en-US")} Bd` : DECODERS[d.type].name;
+      out.push({ text: `${what} reads well from ${need / 1e6} MS/s up, ${rate / 1e6} MS/s is low.`, need });
+    }
+  }
+  return out;
+}
+
+/* What a capture says of its rate, for the clocks whose speed nobody asked: [{text, need}] */
+export function captureNotes(cap, decoders, chName) {
+  const out = [];
+  for (const d of decoders) {
+    const c = d.type === "i2c" ? d.lines.scl : d.type === "spi" ? d.lines.sck : undefined;
+    const k = c === undefined || c === null ? -1 : cap.channels.indexOf(c);
+    const e = k < 0 ? [] : cap.edges(k);
+    let thin = Infinity;
+    for (let i = 2; i < e.length; i++) {
+      thin = Math.min(thin, e[i] - e[i - 1]);
+    }
+    if (thin <= THIN_PULSE) {
+      out.push({ text: `${chName(c)}'s shortest pulse is ${thin} sample${thin === 1 ? "" : "s"} wide: ` +
+                       `${DECODERS[d.type].name} may read wrong at ${cap.rate / 1e6} MS/s.`,
+                 need: cap.rate * (THIN_PULSE + 2) / thin });
+    }
+  }
+  return out;
+}
+
 /* A decoded value in hex */
 export const hexOf = (v) => (v === undefined ? "" : `0x${v.toString(16).toUpperCase().padStart(2, "0")}`);
 

@@ -508,6 +508,12 @@ screen** gives it the window.  The decoded data is also a table: search it,
 click a row or walk it with the arrows, and the viewer jumps there.  Over a
 box, a tooltip gives its value.  With the viewer focused, + and − zoom, ← and
 → pan, 0 fits and Esc clears the cursors.
+
+You ask for a duration, and the card says what the buffer holds at that
+rate.  It warns when the duration does not fit, or when the rate is low for a
+decoder (under ten samples a bit for a UART, 10 MS/s for WS2812B; for I²C and
+SPI, once a capture shows clock pulses 1 or 2 samples wide), with a button for
+a rate that does.
 `dev_server.py --ports 4` simulates the analyzer: a UART on A and B, I²C on
 C and D, SPI on E–H, MARK around a reset.
 

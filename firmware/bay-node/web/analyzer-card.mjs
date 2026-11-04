@@ -15,15 +15,13 @@
 import { $, api, toast } from "/rack.mjs";
 import { esc } from "./decoding.mjs";
 import { Panel, sorted } from "./panel.mjs";
-import { Analyzer, TRIGGER, bytesPerSample, maxSamples } from "./protocol.mjs";
+import { Analyzer, TRIGGER } from "./protocol.mjs";
 import { openRelay } from "./relay.mjs";
 import { fmtTime } from "./viewer.mjs";
 
 const BUSES = [..."ABCDEFGH"]; /* CH1-8: the buses, the co-processor's GPIO2-9 */
 const MARK = 12;               /* CH13: the node's MARK, GPIO14 */
-/* gusmanb's Pico 2 build, until the analyzer says (Analyzer.identify()) */
-const PICO_2 = { maxRate: 100e6, buffer: 393216, channels: 24 };
-let panel = null, settings = null, status = null, host = location.hostname, info = PICO_2;
+let panel = null, settings = null, status = null, host = location.hostname;
 /* The buses' names on the node (the Wires card's, /api/wires): a bus this browser has not named takes its */
 let wireNames = [];
 let capReset = null, capAt = null;
@@ -50,20 +48,16 @@ function renderChannels() {
 
 function renderSettings() {
   const on = sorted(settings.on);
-  panel.renderRate(info.maxRate);
+  const t = panel.renderTiming(on);
   if (!on.includes(Number(settings.trig.split(":")[0])) && on.length) {
     settings.trig = `${on[0]}:fall`;
   }
   $("la-trig").innerHTML = on.flatMap((c) => ["fall", "rise"].map((e) =>
     `<option value="${c}:${e}" ${`${c}:${e}` === settings.trig ? "selected" : ""}>${esc(chName(c))} ${e === "fall" ? "↓" : "↑"}${
       c === MARK ? (e === "fall" ? " (a board starts)" : " (the node acts)") : ""}</option>`)).join("");
-  const n = on.length ? maxSamples(info.buffer, on) : 0;
   const [tc, te] = settings.trig.split(":");
-  panel.summary([`${settings.rate / 1e6} MS/s`, fmtTime(n / settings.rate), `trigger ${chName(Number(tc))} ${te === "fall" ? "↓" : "↑"}`,
+  panel.summary([`${settings.rate / 1e6} MS/s`, fmtTime(t.seconds), `trigger ${chName(Number(tc))} ${te === "fall" ? "↓" : "↑"}`,
                  `${on.length} channel${on.length === 1 ? "" : "s"}`]);
-  $("la-depth").textContent = on.length
-    ? `${n.toLocaleString("en-US")} samples (${bytesPerSample(on) * 8}-bit) · ${fmtTime(n / settings.rate)}`
-    : "pick at least one channel";
   panel.save();
   renderAvailability();
 }
@@ -161,10 +155,9 @@ async function capture(reset) {
     }
     const analyzer = new Analyzer(t);
     /* A node may also accept the WebSocket, then close it at once: why, from the status */
-    info = await withTimeout(analyzer.identify(), 3000, "the analyzer does not answer")
-      .catch((e) => Promise.reject(new Error(refusal(e))));
-    const total = maxSamples(info.buffer, on), pre = Math.round(total * settings.pre);
-    const cap = await panel.read(analyzer, { channels: on, rate: settings.rate, pre, post: total - pre, trigger: trig }, () => {
+    panel.setInfo(await withTimeout(analyzer.identify(), 3000, "the analyzer does not answer")
+      .catch((e) => Promise.reject(new Error(refusal(e)))));
+    const cap = await panel.read(analyzer, { ...panel.request(on), trigger: trig }, () => {
       if (reset) {
         panel.setState(`Resetting ${reset.slot}…`, "var(--service)");
         api("/api/reset", { port: reset.port })
