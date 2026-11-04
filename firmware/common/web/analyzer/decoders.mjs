@@ -1,6 +1,6 @@
 /*
  * Protocol decoders on a capture (capture.mjs), in the browser: UART, I²C,
- * SPI, WS2812B, PWM, 1-Wire.  Each takes the capture and the lanes it reads (k: the
+ * SPI, WS2812B, PWM, 1-Wire, CAN.  Each takes the capture and the lanes it reads (k: the
  * index in cap.channels) and returns rows of boxes for the viewer:
  * {label, items: [{t0, t1, text, kind}]}, times in seconds from the
  * trigger, kind data, addr, ctl or err.  A row may also say how its boxes make
@@ -416,6 +416,163 @@ export function onewire(cap, { k, label = "1-Wire" }) {
   return [{ label, items, frames }];
 }
 
+const CAN_SAMPLE_POINT = 0.7;   /* of a bit, from its start */
+const CAN_IDLE_BITS = 7;        /* recessive this long: the bus is free again, whatever came before */
+
+class CanStop extends Error {}
+
+/*
+ * Classic CAN on a controller's TX or RX line, dominant low: base and extended
+ * frames, data and remote, bit stuffing, the CRC, the ACK slot.  A frame's
+ * start synchronizes hard, each recessive to dominant edge again.  An FD frame
+ * is named and skipped.  After an error it waits for the bus to go idle.
+ * A sender's own TX pin shows no ACK: nobody else drives that wire.
+ */
+export function can(cap, { k, baud = 500000, label }) {
+  const P = cap.rate / baud;
+  if (P < 4) {
+    throw new Error(`CAN at ${baud / 1e3} kbit/s needs ${(4 * baud / 1e6).toFixed(1)} MS/s at least`);
+  }
+  const e = cap.edges(k), first = cap.firstLevel(k), items = [], frames = [];
+  /* The level after e[m] is the first one's, flipped m times */
+  const falling = (m) => (first ^ (m & 1)) === 0;
+  let m = 1, after = 0;
+
+  const skipToIdle = (from) => {
+    for (let n = 1; n < e.length; n++) {
+      const start = e[n], end = n + 1 < e.length ? e[n + 1] : cap.count;
+      if (!falling(n) && end > from && end - Math.max(start, from) >= CAN_IDLE_BITS * P) {
+        return Math.max(start, from) + CAN_IDLE_BITS * P;
+      }
+    }
+    return cap.count;
+  };
+
+  while (m < e.length) {
+    if (e[m] < after || !falling(m)) {
+      m++;
+      continue;
+    }
+    /* A frame from this start of frame */
+    const sof = e[m], boxes = [];
+    let pos = sof, scan = m, run = 0, last = -1, crcBits = [], fields = null, bad = null, end = sof;
+    const raw = () => {
+      /* An edge to dominant near where this bit starts is where it starts */
+      while (scan < e.length && e[scan] < pos - P / 2) {
+        scan++;
+      }
+      for (let n = scan; n < e.length && e[n] <= pos + P / 2; n++) {
+        if (falling(n)) {
+          pos = e[n];
+          break;
+        }
+      }
+      const at = pos + CAN_SAMPLE_POINT * P;
+      if (at >= cap.count) {
+        throw new CanStop("cut off");
+      }
+      const v = cap.level(k, Math.round(at));
+      pos += P;
+      return v;
+    };
+    /* A bit of the stuffed part: after five alike, a sixth of the opposite level that is not data */
+    const bit = () => {
+      if (run === 5) {
+        const stuff = raw();
+        if (stuff === last) {
+          throw new CanStop("stuff error");
+        }
+        last = stuff;
+        run = 1;
+      }
+      const v = raw();
+      run = v === last ? run + 1 : 1;
+      last = v;
+      crcBits.push(v);
+      return v;
+    };
+    const read = (n) => {
+      let v = 0;
+      for (let i = 0; i < n; i++) {
+        v = v * 2 + bit();
+      }
+      return v;
+    };
+    const box = (a, b, text, kind, more = {}) => boxes.push({ t0: cap.time(a), t1: cap.time(b), text, kind, ...more });
+    try {
+      bit();                      /* start of frame */
+      let id = read(11);
+      const b12 = bit(), ide = bit();
+      let rtr = b12, fd = false;
+      if (ide) {
+        id = id * 2 ** 18 + read(18);
+        rtr = bit();
+        fd = bit() === 1;
+        bit();
+      } else {
+        fd = bit() === 1;
+      }
+      if (fd) {
+        throw new CanStop("CAN FD frame: not read");
+      }
+      const dlc = read(4), n = rtr ? 0 : Math.min(dlc, 8);
+      const idText = `0x${hex(id, ide ? 8 : 3)}${rtr ? " RTR" : ""} [${dlc}]`;
+      box(sof, pos, idText, "addr", { value: id });
+      const data = [];
+      for (let i = 0; i < n; i++) {
+        const from = pos, v = read(8);
+        data.push(v);
+        box(from, pos, `0x${hex(v)}`, "data", { value: v });
+      }
+      let crc = 0;
+      for (const b of crcBits) {
+        const top = b ^ ((crc >> 14) & 1);
+        crc = (crc << 1) & 0x7fff;
+        if (top) {
+          crc ^= 0x4599;
+        }
+      }
+      const from = pos, got = read(15);
+      /* The stuffing stops with the CRC; a stuff bit after its last five alike still comes */
+      if (run === 5) {
+        raw();
+      }
+      const crcOk = got === crc;
+      box(from, pos, crcOk ? "CRC" : `CRC 0x${hex(got, 4)}, 0x${hex(crc, 4)} expected`, crcOk ? "ctl" : "err");
+      const delimiter = raw(), ackStart = pos, ack = raw() === 0;
+      const ackEnd = pos;
+      raw();
+      box(ackStart, ackEnd, ack ? "ACK" : "no ACK", "ctl");
+      if (!delimiter) {
+        box(ackStart - P, ackStart, "CRC delimiter low", "err");
+      }
+      fields = { id, extended: !!ide, rtr: !!rtr, dlc, data, crcOk, ack };
+      end = pos + 7 * P;
+    } catch (err) {
+      if (!(err instanceof CanStop)) {
+        throw err;
+      }
+      bad = err.message;
+    }
+    if (bad) {
+      /* From where the last box ended: what was read stays readable */
+      box(boxes.length ? cap.index(boxes.at(-1).t1) : sof, Math.min(pos, cap.count - 1), bad, "err");
+      end = bad === "cut off" ? cap.count : skipToIdle(pos);
+    }
+    items.push(...boxes);
+    frames.push({
+      t0: boxes[0].t0, t1: boxes.at(-1).t1,
+      text: boxes.filter((x) => x.text !== "CRC" && x.kind !== "ctl").map((x) => x.text).join(" ") +
+            (fields && !fields.ack ? " (no ACK)" : ""),
+      kind: boxes.some((x) => x.kind === "err") ? "err" : "data",
+      hex: fields ? fields.data.map((v) => hex(v)).join(" ") : "", items: boxes, fields: fields ?? { error: bad },
+    });
+    after = end;
+    m++;
+  }
+  return [{ label: label ?? `CAN ${baud / 1e3} kbit/s`, items, frames }];
+}
+
 /*
  * The decoders the page offers: their name, the lines they read (a "?" one
  * may be left out), what they need besides; run() gets the lines as lanes.
@@ -428,6 +585,8 @@ export const DECODERS = {
   ws2812: { name: "WS2812B", lines: ["din"], run: (cap, d, k) => ws2812(cap, { k: k.din }) },
   pwm: { name: "PWM / clock", lines: ["in"], run: (cap, d, k) => pwm(cap, { k: k.in }) },
   onewire: { name: "1-Wire", lines: ["dq"], run: (cap, d, k) => onewire(cap, { k: k.dq }) },
+  can: { name: "CAN", lines: ["rx"], run: (cap, d, k) => can(cap, { k: k.rx, baud: d.baud ?? 500000 }) },
 };
 
 export const BAUDS = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 1e6, 2e6, 3e6];
+export const CAN_RATES = [125000, 250000, 500000, 1000000];

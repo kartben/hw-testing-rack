@@ -510,7 +510,9 @@ bytes make one row per line of text, or per burst of a binary protocol, so a
 search finds a whole word.  **PWM / clock** gives a signal's frequency and duty
 cycle; periods alike to a sample make one box, so a change shows.  **1-Wire**
 reads resets, presence, ROM commands and codes with their CRC, and bytes, at
-standard speed.  Over a
+standard speed.  **CAN** reads classic frames on a controller's TX or RX pin,
+before its transceiver: identifier, data, CRC and ACK; an FD frame is named and
+skipped.  Over a
 box, a tooltip gives its value.  With the viewer focused, + and − zoom, ← and
 → pan, 0 fits and Esc clears the cursors.
 

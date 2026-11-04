@@ -7,7 +7,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { BAUDS, DECODERS } from "./decoders.mjs";
+import { BAUDS, CAN_RATES, DECODERS } from "./decoders.mjs";
 
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -55,6 +55,8 @@ export function captureRows(cap, decoders, name, color = (c) => `--lane-${c % 8}
 const GOOD_UART = 10;
 const WS2812_RATE = 10e6;
 const ONEWIRE_RATE = 1e6;
+/* Samples a bit for CAN, whose decoder stops under 4 */
+const GOOD_CAN = 10;
 /* A clock pulse this many samples wide or less is hardly seen */
 const THIN_PULSE = 2;
 
@@ -63,7 +65,7 @@ export function rateNeeds(decoders, rate) {
   const out = [];
   for (const d of decoders) {
     const need = d.type === "uart" ? (d.baud ?? 115200) * GOOD_UART : d.type === "ws2812" ? WS2812_RATE
-               : d.type === "onewire" ? ONEWIRE_RATE : 0;
+               : d.type === "onewire" ? ONEWIRE_RATE : d.type === "can" ? (d.baud ?? 500000) * GOOD_CAN : 0;
     if (rate < need) {
       const what = d.type === "uart" ? `UART at ${(d.baud ?? 115200).toLocaleString("en-US")} Bd` : DECODERS[d.type].name;
       out.push({ text: `${what} reads well from ${need / 1e6} MS/s up, ${rate / 1e6} MS/s is low.`, need });
@@ -118,7 +120,8 @@ export function decoderLabel(d, chName) {
   const lines = Object.entries(d.lines).filter(([, c]) => c !== null && c !== undefined)
     .map(([role, c]) => `${role.toUpperCase()} ${esc(chName(c))}`).join(", ");
   return `<b>${DECODERS[d.type].name}</b> ${lines}` +
-    (d.baud ? ` · ${d.baud >= 1e6 ? `${d.baud / 1e6} M` : `${d.baud} `}Bd` : "") +
+    (d.type === "can" ? ` · ${(d.baud ?? 500000) / 1e3} kbit/s`
+                      : d.baud ? ` · ${d.baud >= 1e6 ? `${d.baud / 1e6} M` : `${d.baud} `}Bd` : "") +
     (d.type === "spi" ? ` · mode ${d.mode ?? 0}` : "");
 }
 
@@ -135,6 +138,8 @@ export function decoderFields(type, chans, chName) {
         `<option value="${c}" ${!optional && chans[i] === c ? "selected" : ""}>${esc(chName(c))}</option>`).join("")}</select></label>`;
   }).join("") + (type === "uart" ? `<label>Baud rate <select data-baud>${BAUDS.map((b) =>
     `<option value="${b}" ${b === 115200 ? "selected" : ""}>${b.toLocaleString("en-US")}</option>`).join("")}</select></label>` : "")
+    + (type === "can" ? `<label>Bit rate <select data-baud>${CAN_RATES.map((b) =>
+    `<option value="${b}" ${b === 500000 ? "selected" : ""}>${b / 1e3} kbit/s</option>`).join("")}</select></label>` : "")
     + (type === "spi" ? `<label>Mode <select data-mode>${[0, 1, 2, 3].map((m) =>
     `<option value="${m}">${m}</option>`).join("")}</select></label>` : "");
 }
@@ -145,7 +150,7 @@ export function decoderFrom(type, root) {
   for (const sel of root.querySelectorAll("select[data-line]")) {
     d.lines[sel.dataset.line] = sel.value === "" ? null : Number(sel.value);
   }
-  if (type === "uart") {
+  if (type === "uart" || type === "can") {
     d.baud = Number(root.querySelector("[data-baud]").value);
   }
   if (type === "spi") {
