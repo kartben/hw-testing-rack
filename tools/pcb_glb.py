@@ -477,7 +477,7 @@ FROM_STEP = ("data-port-x4", "data-port-x6")     # boards whose fab GLB is their
 VARIANTS = {"data-port-x4": ("base",)}   # and their assembly variants, each its own model: <board>-<variant>.glb
 
 
-VIEWER_BOARDS = ("bay-node", "power-hub", "data-port", "camera-pod", "data-port-x4", "data-port-x6")   # the boards the viewer draws
+VIEWER_BOARDS = ("bay-node", "power-hub", "camera-pod", "data-port-x4", "data-port-x6")   # the boards the viewer draws
 
 
 def main(boards=VIEWER_BOARDS):
@@ -490,7 +490,7 @@ def main(boards=VIEWER_BOARDS):
     boards = [b for b in boards if b != "--strict"] or list(VIEWER_BOARDS)
     if boards[0] == "--check":
         bad = 0
-        for b in boards[1:] or ("bay-node", "power-hub", "data-port", "camera-pod"):
+        for b in boards[1:] or ("bay-node", "power-hub", "camera-pod"):
             try:
                 check_coverage(b, strict=True)
             except SystemExit as e:
