@@ -110,7 +110,9 @@ async function run(spec) {
     for (const n of rateNeeds(decoders, rate)) {
       console.error(`warning: ${n.text}`);
     }
-    const pre = Math.round(plan.samples * spec.pre), signal = AbortSignal.timeout(spec.timeout * 1000);
+    /* The analyzer says nothing until the capture ends: the wait is the trigger's and the capture's */
+    const pre = Math.round(plan.samples * spec.pre);
+    const signal = AbortSignal.timeout(Math.ceil((spec.timeout + plan.seconds) * 1000));
     let raw;
     try {
       raw = await analyzer.capture({
