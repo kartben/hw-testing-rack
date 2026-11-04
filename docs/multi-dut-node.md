@@ -445,7 +445,9 @@ string of a port's USB device.
 1. The simulated analyzer and `/api/la/…` in `dev_server.py`: the contract.  Done for the
    co-processor (2026-11-03): `dev_server.py --ports 4` answers gusmanb's requests behind
    `/analyzer/ws`, with `/api/analyzer`.
-2. `bayctl capture`, against it: `.sr` and sigrok-cli decoding, the decoders' CI oracle.
+2. `bayctl capture`, against it: `.sr` and sigrok-cli decoding, the decoders' CI oracle.  Done differently
+   (2026-11-04): the page's own decoders on Node, saved in the page's capture file
+   ([firmware/README.md](../firmware/README.md#logic-analyzer)), so the command line and the viewer agree.
 3. The web UI's "Analyzer" card: a canvas viewer and JS decoders.  Done (2026-11-03): the bay
    page's Logic analyzer card ([firmware/README.md](../firmware/README.md#logic-analyzer)), with
    Capture and reset on the node's MARK.

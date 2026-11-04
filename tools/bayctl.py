@@ -32,6 +32,10 @@
     python tools/bayctl.py coproc status B3             the co-processor's stored image
     python tools/bayctl.py wire B3 [A=2:P1,3:P2 ...] [--name A=UART] [--open-all]
                                                         the DATA ×4's pin matrix: pins on the buses A-H
+    python tools/bayctl.py capture B3 [--ch A,B] [--rate 10M] [--duration 20ms] [--trigger A:fall | --reset B3.2]
+                           [--decode uart:rx=A,baud=115200 ...] [--timeout 10] [-o run1]
+                                                        the DATA ×4's logic analyzer: saves run1.capture.json (the bay
+                                                        page opens it) and run1.decoded.json; needs Node 22 or later
     python tools/bayctl.py row A|B|C|D on|off|cycle [--ms 1000]   switch or cycle a rack row on the power hub
     python tools/bayctl.py hub [status|events|enumerate|pd|node|claim]   inspect or control the power hub
 
@@ -80,6 +84,7 @@ import os
 import re
 import secrets
 import shlex
+import shutil
 import socket
 import subprocess
 import sys
@@ -1358,6 +1363,119 @@ def wire_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
     return 0
 
 
+# ------------------------------------------------------------------------- the DATA ×4's logic analyzer
+
+ANALYZER_CAPTURE = Path(__file__).resolve().parent / "analyzer_capture.mjs"
+MARK_CHANNEL = 12       # CH13: the node's MARK (docs/multi-dut-node.md)
+
+
+def parse_rate(text: str) -> int:
+    """Samples per second: 10M, 2.5M, 500k, 1000000."""
+    m = re.fullmatch(r"([\d.]+)\s*([kKmM]?)", text.strip())
+    if not m:
+        raise BayError(f"{text!r}: a rate is 10M, 500k or 1000000")
+    return round(float(m[1]) * {"": 1, "k": 1e3, "m": 1e6}[m[2].lower()])
+
+
+def parse_duration(text: str) -> float:
+    """Seconds: 20ms, 100us, 1s; `all`, 0, is as long as the buffer holds."""
+    if text.strip().lower() == "all":
+        return 0.0
+    m = re.fullmatch(r"([\d.]+)\s*(us|µs|ms|s)", text.strip())
+    if not m:
+        raise BayError(f"{text!r}: a duration is 100us, 20ms, 1s or all")
+    return float(m[1]) * {"us": 1e-6, "µs": 1e-6, "ms": 1e-3, "s": 1.0}[m[2]]
+
+
+def analyzer_channel(text: str) -> int:
+    """A channel, 0-based: a bus A-H, mark, or CH1-CH24."""
+    t = text.strip().upper()
+    if len(t) == 1 and t in BUSES:
+        return BUSES.index(t)
+    if t == "MARK":
+        return MARK_CHANNEL
+    m = re.fullmatch(r"(?:CH)?(\d+)", t)
+    if m and 1 <= int(m[1]) <= 24:
+        return int(m[1]) - 1
+    raise BayError(f"{text!r}: a channel is a bus A-H, mark, or CH1-CH24")
+
+
+def parse_decoder(text: str) -> dict:
+    """uart:rx=A,baud=115200, i2c:sda=C,scl=D, spi:cs=E,sck=F,mosi=G[,miso=H][,mode=0], ws2812:din=A."""
+    kind, _, spec = text.partition(":")
+    d: dict = {"type": kind.strip().lower(), "lines": {}}
+    for part in filter(None, spec.split(",")):
+        key, _, value = part.partition("=")
+        key = key.strip().lower()
+        if not value:
+            raise BayError(f"{text!r}: {key}=<value>")
+        if key in ("baud", "mode"):
+            try:
+                d[key] = int(value)
+            except ValueError:
+                raise BayError(f"{text!r}: {key} is a number") from None
+        else:
+            d["lines"][key] = analyzer_channel(value)
+    return d
+
+
+def analyzer_name(channel: int, wire_names: list[str]) -> str:
+    """As the bay page's card names a channel: the bus and what the node says it carries."""
+    if channel == MARK_CHANNEL:
+        return "Mark"
+    if channel >= len(BUSES):
+        return f"CH{channel + 1}"
+    name = wire_names[channel] if channel < len(wire_names) else ""
+    return f"{BUSES[channel]} · {name}" if name else BUSES[channel]
+
+
+def capture_spec(a: argparse.Namespace, dev: Bay, wire_names: list[str], stamp: str) -> dict:
+    """What analyzer_capture.mjs does for these arguments.  The channels asked for (A-H by default), and whatever
+    the trigger and the decoders read."""
+    decoders = [parse_decoder(x) for x in a.decode]
+    used = [analyzer_channel(x) for x in a.ch.split(",")] if a.ch else list(range(len(BUSES)))
+    if not used:
+        raise BayError("--ch: at least one channel")
+    reset = None
+    if a.reset:
+        if a.trigger:
+            raise BayError("--reset triggers on MARK: not with --trigger")
+        bay, port = rackcfg.split_slot(a.reset)
+        if not port or bay.lower() != dev.id.split(".")[0].lower():
+            raise BayError(f"--reset {a.reset}: one of {dev.id}'s ports, such as {dev.id}.2")
+        reset = {"port": int(port), "slot": a.reset.upper()}
+        channel, edge = MARK_CHANNEL, "fall"        # MARK falls as the board leaves reset
+    else:
+        name, _, edge = (a.trigger or (BUSES[used[0]] if used[0] < len(BUSES) else f"CH{used[0] + 1}")).partition(":")
+        channel = analyzer_channel(name)
+        edge = (edge or "fall").lower()
+        if edge not in ("fall", "rise"):
+            raise BayError(f"--trigger {a.trigger}: <channel>[:fall|:rise]")
+    for extra in [channel] + [c for d in decoders for c in d["lines"].values()]:
+        if extra not in used:
+            used.append(extra)
+    used.sort()
+    if not 0 <= a.pre <= 100:
+        raise BayError("--pre: a percentage")
+    return {"origin": dev.url, "source": dev.id, "channels": used, "names": [analyzer_name(c, wire_names) for c in used],
+            "rate": parse_rate(a.rate), "seconds": parse_duration(a.duration), "pre": a.pre / 100,
+            "trigger": {"channel": channel, "edge": edge}, "reset": reset, "decoders": decoders,
+            "timeout": a.timeout, "out": a.output or f"{dev.id.lower()}-{stamp}"}
+
+
+def capture_cli(a: argparse.Namespace, bays: dict[str, Bay]) -> int:
+    dev = node_bay(bays, a.bay)
+    try:
+        wire_names = api(dev, "/api/wires").get("names") or []
+    except BayError:
+        wire_names = []
+    spec = capture_spec(a, dev, wire_names, time.strftime("%Y%m%d-%H%M%S"))
+    node = shutil.which("node")
+    if not node:
+        raise BayError("bayctl capture runs the bay page's decoders on Node: install Node 22 or later")
+    return subprocess.run([node, str(ANALYZER_CAPTURE)], input=json.dumps(spec), text=True, encoding="utf-8").returncode
+
+
 def _print_access(d: dict) -> None:
     lease_ = d.get("lease")
     print(f"you {d['you']}{' (' + d['source'] + ')' if d.get('source') else ''}: {', '.join(d['allow']) or 'nothing'}"
@@ -1759,6 +1877,18 @@ def main(argv: list[str] | None = None) -> int:
     q.add_argument("uf2", type=Path)
     q.add_argument("--name", help="what the node shows (12 characters; default: the file's name)")
     cps.add_parser("status").add_argument("bay")
+    p = sub.add_parser("capture", help="the DATA ×4's logic analyzer: one capture, saved and decoded, no browser")
+    p.add_argument("bay")
+    p.add_argument("--ch", help="channels: buses A-H, mark, CH1-CH24 (default A-H; what the trigger and decoders read is added)")
+    p.add_argument("--rate", default="10M", help="samples per second: 10M, 500k (default 10M)")
+    p.add_argument("--duration", default="all", help="100us, 20ms, 1s, or all the buffer holds (default)")
+    p.add_argument("--pre", type=float, default=20, help="percent of the capture before the trigger (default 20)")
+    p.add_argument("--trigger", help="<channel>[:fall|:rise] (default the first channel, falling)")
+    p.add_argument("--reset", metavar="SLOT", help="trigger as this board leaves reset (MARK, CH13): B3.2")
+    p.add_argument("--decode", action="append", default=[], metavar="SPEC",
+                   help="uart:rx=A,baud=115200  i2c:sda=C,scl=D  spi:cs=E,sck=F,mosi=G[,miso=H][,mode=0]  ws2812:din=A")
+    p.add_argument("--timeout", type=float, default=10, help="seconds to wait for the trigger: exit 3 after (default 10)")
+    p.add_argument("-o", "--output", help="start of the files' names: <it>.capture.json, <it>.decoded.json")
     p = sub.add_parser("wire", help="the DATA ×4's pin matrix: port pins on the buses A-H")
     p.add_argument("bay")
     p.add_argument("set", nargs="*", metavar="BUS=PINS",
@@ -1991,6 +2121,8 @@ def main(argv: list[str] | None = None) -> int:
             return coproc_cli(a, bays)
         elif a.cmd == "wire":
             return wire_cli(a, bays)
+        elif a.cmd == "capture":
+            return capture_cli(a, bays)
     except BayError as e:
         print(f"bayctl: {e}", file=sys.stderr)
         return 1

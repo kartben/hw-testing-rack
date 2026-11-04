@@ -9,12 +9,15 @@ server.  BAYCTL_HUB=none for every test that does not set its own: no lookup of 
 
 from __future__ import annotations
 
+import argparse
+import base64
 import hashlib
 import importlib.util
 import itertools
 import json
 import os
 import re
+import shutil
 import socket
 import subprocess
 import sys
@@ -1246,6 +1249,158 @@ class Coproc(unittest.TestCase):
                                    capture_output=True, text=True, timeout=30, env=env)
                 self.assertEqual(r.returncode, 0, r.stderr)
                 self.assertIn("LogicAnalyze, 256 bytes at 0x20000000", r.stdout)
+
+
+def node_major() -> int:
+    node = shutil.which("node")
+    if not node:
+        return 0
+    return int(subprocess.run([node, "-p", "process.versions.node.split('.')[0]"], capture_output=True, text=True).stdout)
+
+
+class CaptureArgs(unittest.TestCase):
+    """bayctl capture's arguments, with no node."""
+
+    def args(self, **over):
+        return argparse.Namespace(**{"ch": None, "rate": "10M", "duration": "all", "pre": 20, "trigger": None, "reset": None,
+                                     "decode": [], "timeout": 10, "output": None, **over})
+
+    def spec(self, names=(), **over):
+        return bayctl.capture_spec(self.args(**over), bayctl.Bay(id="B3", board="bay-node", host="h"), list(names), "now")
+
+    def test_values(self):
+        self.assertEqual([bayctl.parse_rate(x) for x in ("10M", "2.5m", "500k", "1000000")], [10_000_000, 2_500_000, 500_000, 1_000_000])
+        self.assertEqual([bayctl.parse_duration(x) for x in ("all", "1s", "20ms")], [0.0, 1.0, 0.02])
+        self.assertAlmostEqual(bayctl.parse_duration("100us"), 1e-4)
+        self.assertEqual([bayctl.analyzer_channel(x) for x in ("A", "h", "mark", "CH13", "24")], [0, 7, 12, 12, 23])
+        for bad, fn in ((" fast", bayctl.parse_rate), ("20", bayctl.parse_duration), ("I", bayctl.analyzer_channel),
+                        ("CH25", bayctl.analyzer_channel), ("uart:rx", bayctl.parse_decoder), ("uart:baud=x", bayctl.parse_decoder)):
+            with self.assertRaises(bayctl.BayError, msg=bad):
+                fn(bad)
+
+    def test_decoders(self):
+        self.assertEqual(bayctl.parse_decoder("uart:rx=A,baud=115200"), {"type": "uart", "lines": {"rx": 0}, "baud": 115200})
+        self.assertEqual(bayctl.parse_decoder("spi:cs=E,sck=F,mosi=G,mode=3"),
+                         {"type": "spi", "lines": {"cs": 4, "sck": 5, "mosi": 6}, "mode": 3})
+
+    def test_channels_follow_what_reads_them(self):
+        s = self.spec()
+        self.assertEqual(s["channels"], list(range(8)))
+        self.assertEqual(s["trigger"], {"channel": 0, "edge": "fall"})
+        s = self.spec(ch="B", trigger="D:rise", decode=["uart:rx=C"])
+        self.assertEqual(s["channels"], [1, 2, 3])
+        self.assertEqual(s["trigger"], {"channel": 3, "edge": "rise"})
+        self.assertEqual(self.spec(ch="CH9")["trigger"]["channel"], 8)
+
+    def test_names_as_on_the_card(self):
+        s = self.spec(ch="A,B,CH9,mark", names=["UART"])
+        self.assertEqual(s["names"], ["A · UART", "B", "CH9", "Mark"])
+
+    def test_reset(self):
+        s = self.spec(reset="b3.2")
+        self.assertEqual(s["reset"], {"port": 2, "slot": "B3.2"})
+        self.assertEqual(s["trigger"], {"channel": 12, "edge": "fall"})
+        self.assertIn(12, s["channels"])
+        for bad in ({"reset": "B3"}, {"reset": "B2.1"}, {"reset": "B3.2", "trigger": "A"}):
+            with self.assertRaises(bayctl.BayError, msg=bad):
+                self.spec(**bad)
+
+    def test_output(self):
+        self.assertEqual(self.spec()["out"], "b3-now")
+        self.assertEqual(self.spec(output="run1")["out"], "run1")
+
+
+@unittest.skipUnless(node_major() >= 22, "bayctl capture needs Node 22 or later")
+class CaptureRun(unittest.TestCase):
+    """bayctl capture against the simulated node (dev_server.py --ports 4): its analyzer sends a UART, I²C and SPI."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.proc, cls.port = start_node("--ports", "4")
+        cls.lab = lab_file({"bays": {"B3": {"host": "127.0.0.1", "http_port": cls.port}}})
+        cls.node = bayctl.node_bay(bayctl.load_bays(lab_yaml=cls.lab), "B3")
+        cls.dir = Path(tempfile.mkdtemp())
+        deadline = time.monotonic() + 15
+        while not bayctl.api(cls.node, "/api/analyzer")["present"]:
+            if time.monotonic() > deadline:
+                cls.proc.kill()
+                raise RuntimeError("no analyzer on the simulated node")
+            time.sleep(0.2)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.proc.kill()
+        cls.proc.wait()
+
+    def run_cli(self, name, *args):
+        out = self.dir / name
+        r = subprocess.run([sys.executable, str(BAYCTL), "--lab", str(self.lab), "capture", "B3", "-o", str(out), *args],
+                           capture_output=True, text=True, encoding="utf-8", timeout=60)
+        return r, out
+
+    def docs(self, out):
+        return (json.loads(Path(f"{out}.capture.json").read_text(encoding="utf-8")),
+                json.loads(Path(f"{out}.decoded.json").read_text(encoding="utf-8")))
+
+    def test_uart_decoded(self):
+        r, out = self.run_cli("uart", "--ch", "A", "--duration", "5ms", "--decode", "uart:rx=A,baud=115200")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(r.stdout.splitlines()[0], "armed")
+        self.assertIn("50,000 samples at 10 MS/s, 5.000 ms", r.stdout)
+        cap, dec = self.docs(out)
+        self.assertEqual((cap["format"], cap["channels"], cap["rate"], cap["pre"] + cap["post"], cap["bytesPerSample"]),
+                         ("hwtr-analyzer-capture", [0], 10_000_000, 50_000, 1))
+        self.assertEqual(len(base64.b64decode(cap["samples"])), 50_000)
+        self.assertEqual(cap["decoders"], [{"type": "uart", "lines": {"rx": 0}, "baud": 115200}])
+        row = dec["rows"][0]
+        self.assertEqual((row["label"], row["lane"]), ("UART 115200 Bd", "A"))
+        self.assertEqual(bytes(row["values"]), b"Hello from B3.2\r\n")        # what a test asserts
+        self.assertEqual(row["items"][0]["text"], "H")
+
+    def test_i2c_and_spi(self):
+        r, out = self.run_cli("bus", "--rate", "20M", "--duration", "10ms", "--trigger", "A",
+                              "--decode", "i2c:sda=C,scl=D", "--decode", "spi:cs=E,sck=F,mosi=G,miso=H")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        rows = {x["label"]: x for x in self.docs(out)[1]["rows"]}
+        self.assertEqual(rows["I²C"]["values"], [0x48, 0x00, 0x48, 0x1A, 0x60])
+        self.assertEqual(rows["SPI MOSI"]["values"], [0x9F, 0, 0, 0])
+        self.assertEqual(rows["SPI MISO"]["values"], [0xFF, 0xEF, 0x40, 0x18])
+
+    def test_reset_triggers_on_mark(self):
+        r, out = self.run_cli("reset", "--reset", "B3.2", "--ch", "A", "--duration", "10ms", "--decode", "uart:rx=A,baud=115200")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        cap, dec = self.docs(out)
+        self.assertEqual((cap["channels"], cap["bytesPerSample"], cap["names"]), ([0, 12], 2, ["A", "Mark"]))
+        self.assertTrue(bytes(dec["rows"][0]["values"]).startswith(b"*** Booting Zephyr"))
+
+    def test_warnings_go_to_stderr(self):
+        r, _ = self.run_cli("low", "--ch", "A", "--rate", "1M", "--duration", "1s", "--decode", "uart:rx=A,baud=115200")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("the buffer holds", r.stderr)
+        self.assertIn("115,200 Bd reads well from 1.152 MS/s up", r.stderr)
+
+    def test_no_trigger_exits_3(self):
+        r, out = self.run_cli("late", "--ch", "A", "--trigger", "mark:fall", "--timeout", "1")
+        self.assertEqual(r.returncode, 3, r.stderr)
+        self.assertIn("no trigger in 1 s", r.stderr)
+        self.assertFalse(Path(f"{out}.capture.json").exists())
+
+    def test_missing_line_and_rate_refused(self):
+        r, _ = self.run_cli("bad", "--decode", "uart:baud=9600")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("uart needs rx=", r.stderr)
+        r, _ = self.run_cli("fast", "--rate", "200M")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("goes up to 100 MS/s", r.stderr)
+
+    def test_usbip_holds_it(self):
+        bayctl.api(self.node, "/api/analyzer", {"owner": "usbip"})
+        try:
+            r, _ = self.run_cli("busy", "--ch", "A")
+        finally:
+            bayctl.api(self.node, "/api/analyzer", {"owner": "page"})
+        self.assertEqual(r.returncode, 1)
+        self.assertIn("USB/IP has the analyzer", r.stderr)
 
 
 class Wires(unittest.TestCase):

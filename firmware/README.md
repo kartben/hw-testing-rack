@@ -521,6 +521,22 @@ there.  `format`, `version`, `channels`, `names`, `rate`, `pre`, `post`,
 `decoders`, `bytesPerSample` and `samples` (base64 of little-endian words, bit
 *i* = `channels[i]`, sample `pre` the trigger) are all a script needs to read it.
 **Download .vcd** stays for PulseView and GTKWave.
+
+`bayctl capture` does the same with no browser, so that a test can assert what
+a board sent:
+
+```bash
+python tools/bayctl.py capture B3 --ch A --rate 10M --duration 20ms --trigger A:fall \
+    --decode uart:rx=A,baud=115200 -o run1
+```
+
+It prints `armed` once the analyzer waits, then saves `run1.capture.json`, which
+either page opens, and `run1.decoded.json`, with each decoded row's boxes and
+its `values` in order.  `--reset B3.2` triggers as that board leaves reset.  A
+trigger that does not come in `--timeout` seconds exits 3.  It runs the page's
+own modules on Node 22 or later (`tools/analyzer_capture.mjs`), so its results
+are what the viewer shows; the rest of bayctl needs only Python.  For sigrok's
+many other decoders, `sigrok-cli` reads the page's .vcd as a program of its own.
 `dev_server.py --ports 4` simulates the analyzer: a UART on A and B, I²C on
 C and D, SPI on E–H, MARK around a reset.
 
