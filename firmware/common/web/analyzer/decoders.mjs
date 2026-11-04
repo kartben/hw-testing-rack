@@ -89,8 +89,8 @@ export function i2c(cap, { sda, scl, label = "I²C" }) {
       bits.push(d);
       if (bits.length === 9) {
         const b = bits.slice(0, 8).reduce((v, x) => (v << 1) | x, 0), ack = bits[8] ? "NACK" : "ACK";
-        pending = isAddr ? { text: `${b & 1 ? "R" : "W"} 0x${hex(b >> 1)} ${ack}`, kind: "addr" }
-                         : { text: `0x${hex(b)} ${ack}`, kind: "data" };
+        pending = isAddr ? { text: `${b & 1 ? "R" : "W"} 0x${hex(b >> 1)} ${ack}`, kind: "addr", value: b >> 1 }
+                         : { text: `0x${hex(b)} ${ack}`, kind: "data", value: b };
         pending.t0 = cap.time(first);
         isAddr = false;
         bits = [];

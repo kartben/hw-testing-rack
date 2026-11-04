@@ -1,8 +1,10 @@
 /*
  * The capture on a canvas: one lane per channel, decoded rows under them (a
- * row's items: [t0, t1, text, kind] or a colour swatch), time from the
- * trigger.  Drag to pan, Ctrl + wheel or pinch to zoom, click for cursor 1,
- * click again for cursor 2.  Colours are CSS custom properties, resolved by
+ * row's items: {t0, t1, text, kind, value}), time from the trigger.  Drag to
+ * pan, Ctrl + wheel or pinch to zoom, click for cursor 1, click again for
+ * cursor 2; a box's value shows on hover.  With the canvas focused: + and -
+ * zoom, the arrows pan (Shift: further), 0 fits, Esc clears the cursors.
+ * Colours are CSS custom properties, resolved by
  * the browser (light-dark() included): a lane's own (--lane-0 to --lane-7,
  * the resistor colour code, CH1 brown), --text, --muted, --grid, --card,
  * --trigger, --cursor, --dec-data, --dec-addr, --dec-ctl, --dec-text.
@@ -33,6 +35,33 @@ export function fmtTime(s) {
        : a >= 1e-6 ? `${(s * 1e6).toFixed(2)} µs` : `${(s * 1e9).toFixed(0)} ns`;
 }
 
+/* The item at t, items in time order; slack (seconds) makes a thin box easier to hit */
+export function itemAt(items, t, slack = 0) {
+  let lo = 0, hi = items.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (items[mid].t1 + slack < t) {
+      lo = mid + 1;
+    } else {
+      hi = mid;
+    }
+  }
+  const it = items[lo];
+  return it && it.t0 - slack <= t ? it : null;
+}
+
+/* A decoded value as hex and decimal, and in binary while it is short */
+export function valueText(v) {
+  const hex = `0x${v.toString(16).toUpperCase().padStart(2, "0")}`;
+  return v < 256 ? `${hex} · ${v} · 0b${v.toString(2).padStart(8, "0")}` : `${hex} · ${v}`;
+}
+
+/* What the tooltip says about an item, line by line */
+export function itemLines(it) {
+  return [it.text, ...(it.value === undefined ? [] : [valueText(it.value)]),
+          `${fmtTime(it.t0)}, lasts ${fmtTime(it.t1 - it.t0)}`];
+}
+
 export class Viewer {
   constructor(canvas, { onReadout } = {}) {
     this.cv = canvas;
@@ -48,6 +77,13 @@ export class Viewer {
     this.probe = document.createElement("span");
     this.probe.hidden = true;
     canvas.after(this.probe);
+    this.tip = document.createElement("div");
+    this.tip.hidden = true;
+    this.tip.style.cssText = "position: fixed; z-index: 10; pointer-events: none; white-space: pre; padding: 5px 8px; " +
+      "border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); " +
+      "font: 11.5px/1.45 var(--mono); box-shadow: 0 4px 16px #0003;";
+    canvas.after(this.tip);
+    canvas.tabIndex = 0;
     this.#listen();
     new ResizeObserver(() => this.draw()).observe(canvas);
     globalThis.matchMedia?.("(prefers-color-scheme: dark)").addEventListener("change", () => this.draw());
@@ -97,6 +133,12 @@ export class Viewer {
     this.draw();
   }
 
+  /* Move the view by this share of its width */
+  pan(share) {
+    const v = this.view, dt = (v.t1 - v.t0) * share;
+    this.setRange(v.t0 + dt, v.t1 + dt);
+  }
+
   clearCursors() {
     this.cursors = [];
     this.draw();
@@ -117,8 +159,34 @@ export class Viewer {
     return this.view.t0 + (px - L) / W * (this.view.t1 - this.view.t0);
   }
 
+  /* The box under the pointer, in its tooltip */
+  #showTip(e, r) {
+    const px = e.clientX - r.left, row = this.rows[Math.floor((e.clientY - r.top - TOP) / RH)];
+    const L = this.#labelW(), W = this.cv.clientWidth - L - 8;
+    const it = !this.drag?.moved && this.cap && px > L && row?.items
+      ? itemAt(row.items, this.#tAt(px), 3 / W * (this.view.t1 - this.view.t0)) : null;
+    this.tip.hidden = !it;
+    if (it) {
+      this.tip.textContent = itemLines(it).join("\n");
+      const room = (a, size, max) => (a + 14 + size > max ? Math.max(0, a - 14 - size) : a + 14);
+      this.tip.style.left = `${room(e.clientX, this.tip.offsetWidth, innerWidth)}px`;
+      this.tip.style.top = `${room(e.clientY, this.tip.offsetHeight, innerHeight)}px`;
+    }
+  }
+
+  #key(e) {
+    const act = { "+": () => this.zoom(0.5), "=": () => this.zoom(0.5), "-": () => this.zoom(2), "_": () => this.zoom(2),
+                  ArrowLeft: () => this.pan(e.shiftKey ? -1 : -0.25), ArrowRight: () => this.pan(e.shiftKey ? 1 : 0.25),
+                  0: () => this.fit(), Escape: () => this.clearCursors() }[e.key];
+    if (act && this.cap && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      act();
+    }
+  }
+
   #listen() {
     const cv = this.cv;
+    cv.addEventListener("keydown", (e) => this.#key(e));
     cv.addEventListener("wheel", (e) => {
       if (!e.ctrlKey && !e.metaKey) {
         return;
@@ -150,6 +218,7 @@ export class Viewer {
         this.#clamp();
       }
       this.hover = this.#tAt(e.clientX - r.left);
+      this.#showTip(e, r);
       this.draw();
     });
     cv.addEventListener("pointerup", (e) => {
@@ -167,6 +236,7 @@ export class Viewer {
       this.drag = null;
     });
     cv.addEventListener("pointerleave", () => {
+      this.tip.hidden = true;
       if (!this.drag) {
         this.hover = null;
         this.draw();
