@@ -74,6 +74,7 @@ export class Viewer {
     this.hover = null;
     /* The height the rows may fill (full screen); else 60 % of the window's */
     this.height = null;
+    this.selected = null;
     this.ys = [];
     this.touches = new Map();
     this.drag = null;
@@ -101,6 +102,7 @@ export class Viewer {
     const keep = this.cap && cap && this.cap.rate === cap.rate && this.cap.count === cap.count;
     this.cap = cap;
     this.rows = rows;
+    this.selected = null;
     if (!keep) {
       this.cursors = [];
       this.fit();
@@ -135,6 +137,14 @@ export class Viewer {
     this.view = { t0, t1: t0 + w };
     this.#clamp();
     this.draw();
+  }
+
+  /* Bring this item into view, marked: as close as the view already is, or nearer if it would not read */
+  reveal(it) {
+    this.selected = it;
+    const w = Math.max(it.t1 - it.t0, 1 / this.cap.rate);
+    const span = Math.max(w * 6, Math.min(this.view.t1 - this.view.t0, w * 60)), mid = (it.t0 + it.t1) / 2;
+    this.setRange(mid - span / 2, mid + span / 2);
   }
 
   /* Move the view by this share of its width */
@@ -431,6 +441,11 @@ export class Viewer {
       g.beginPath();
       g.roundRect(X0, y + 4, Math.max(1, X1 - X0 - 1), RH - 8, 4);
       g.fill();
+      if (it === this.selected) {
+        g.strokeStyle = css("--cursor");
+        g.lineWidth = 2;
+        g.stroke();
+      }
       if (it.text && X1 - X0 > 14) {
         g.fillStyle = it.color ? (it.light ? "#111" : "#fff") : css("--dec-text");
         g.font = `10.5px ${mono}`;

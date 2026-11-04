@@ -487,7 +487,7 @@ hardware yet.
 
 ### Logic analyzer
 
-![Logic analyzer card of a DATA ×4 bay (simulated): This page or USB/IP, the co-processor's image, the rate and trigger, the buses A–H named, the Mark lane; after Capture and reset on B3.2, its boot banner on bus A decoded as UART, then I²C and SPI, and the node's reset pulse on Mark](../docs/img/web-ui-analyzer.png)
+![Logic analyzer card of a DATA ×4 bay (simulated) after Capture and reset on B3.2: the settings folded to one line, the buses A–H named with the Mark lane, the decoded rows under them, and the decoded table with its search](../docs/img/web-ui-analyzer.png)
 
 On a DATA ×4 bay the co-processor runs gusmanb's LogicAnalyzer, and the
 bay page has a card for it (`web/analyzer-card.mjs`, served as
@@ -501,6 +501,13 @@ the analyzer on MARK's fall and pulses a board's RESET: the capture starts
 as the board leaves reset.  **USB/IP** hands the analyzer to gusmanb's
 desktop app or PulseView (`usbip attach` on the busid it shows) until it is
 switched back.  Bus names, settings and decoders stay in the browser.
+
+The card and the standalone analyzer page are one UI (`panel.mjs`).  After a
+capture the settings fold to one line and the viewer takes the room; **Full
+screen** gives it the window.  The decoded data is also a table: search it,
+click a row or walk it with the arrows, and the viewer jumps there.  Over a
+box, a tooltip gives its value.  With the viewer focused, + and − zoom, ← and
+→ pan, 0 fits and Esc clears the cursors.
 `dev_server.py --ports 4` simulates the analyzer: a UART on A and B, I²C on
 C and D, SPI on E–H, MARK around a reset.
 

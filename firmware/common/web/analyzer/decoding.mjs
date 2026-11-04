@@ -45,10 +45,28 @@ export function captureRows(cap, decoders, name, color = (c) => `--lane-${c % 8}
   cap.channels.forEach((c, k) => {
     rows.push({ k, name: name(k), color: color(c) });
     for (const d of decoded.filter((x) => x.anchor === k)) {
-      rows.push(...d.rows);
+      rows.push(...d.rows.map((r) => ({ ...r, lane: name(k) })));
     }
   });
   return rows;
+}
+
+/* A decoded value in hex */
+export const hexOf = (v) => (v === undefined ? "" : `0x${v.toString(16).toUpperCase().padStart(2, "0")}`);
+
+/* The viewer's rows as one list in time order: {it, label, lane, hex, hay}, hay what a search looks in */
+export function entriesOf(rows) {
+  return rows.filter((r) => r.items).flatMap((r) => r.items.map((it) => {
+    const hex = hexOf(it.value);
+    return { it, label: r.label, lane: r.lane ?? "", hex,
+             hay: `${it.text} ${hex} ${r.label} ${r.lane ?? ""}`.toLowerCase() };
+  })).sort((a, b) => a.it.t0 - b.it.t0);
+}
+
+/* The entries a search keeps: every word found, in any case */
+export function matching(entries, query) {
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  return words.length ? entries.filter((e) => words.every((w) => e.hay.includes(w))) : entries;
 }
 
 /* A decoder in a few words, as HTML: "<b>UART</b> RX TX line · 115,200 Bd" (chName(c): a channel's name) */

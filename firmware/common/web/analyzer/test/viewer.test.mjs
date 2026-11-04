@@ -1,6 +1,6 @@
 /*
- * What viewer.mjs works out without a canvas: the box under the pointer and
- * what its tooltip says.
+ * What the viewer and the decoded table work out without a page: the box under
+ * the pointer, what its tooltip says, the table's list and its search.
  *
  *   node --test "firmware/common/web/analyzer/test/*.test.mjs"
  *
@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { i2c } from "../decoders.mjs";
+import { captureRows, entriesOf, hexOf, matching } from "../decoding.mjs";
 import { demoCapture } from "../demo.mjs";
 import { itemAt, itemLines, valueText } from "../viewer.mjs";
 
@@ -49,4 +50,45 @@ test("I²C boxes carry their value", () => {
   const addr = decoded.find((x) => x.kind === "addr"), data = decoded.find((x) => x.kind === "data");
   assert.match(addr.text, new RegExp(`0x${addr.value.toString(16).toUpperCase().padStart(2, "0")} `));
   assert.match(data.text, new RegExp(`^0x${data.value.toString(16).toUpperCase().padStart(2, "0")} `));
+});
+
+const rows = [
+  { k: 0, name: "TX", color: "--lane-0" },
+  { label: "UART 1 MBd", lane: "TX", items: [{ t0: 2, t1: 3, text: "A", value: 0x41, kind: "data" },
+                                             { t0: 5, t1: 6, text: "B parity", value: 0x42, kind: "err" }] },
+  { label: "I²C", lane: "SDA", items: [{ t0: 1, t1: 1.5, text: "S", kind: "ctl" },
+                                       { t0: 4, t1: 4.5, text: "W 0x3C ACK", value: 0x3c, kind: "addr" }] },
+];
+
+test("the table's list: every decoded row, in time order", () => {
+  const e = entriesOf(rows);
+  assert.deepEqual(e.map((x) => x.it.text), ["S", "A", "W 0x3C ACK", "B parity"]);
+  assert.deepEqual([e[0].label, e[0].lane, e[0].hex], ["I²C", "SDA", ""]);
+  assert.deepEqual([e[1].label, e[1].lane, e[1].hex], ["UART 1 MBd", "TX", "0x41"]);
+  assert.deepEqual(entriesOf([{ k: 0, name: "lane only" }]), []);
+});
+
+test("hex as the table shows it", () => {
+  assert.equal(hexOf(5), "0x05");
+  assert.equal(hexOf(0x123456), "0x123456");
+  assert.equal(hexOf(undefined), "");
+});
+
+test("a search keeps what holds every word, in any case", () => {
+  const e = entriesOf(rows), texts = (q) => matching(e, q).map((x) => x.it.text);
+  assert.equal(matching(e, ""), e, "no words: the whole list");
+  assert.equal(matching(e, "   "), e);
+  assert.deepEqual(texts("parity"), ["B parity"]);
+  assert.deepEqual(texts("0X41"), ["A"], "the hex column");
+  assert.deepEqual(texts("i²c"), ["S", "W 0x3C ACK"], "the decoder");
+  assert.deepEqual(texts("tx"), ["A", "B parity"], "the lane");
+  assert.deepEqual(texts("sda ack"), ["W 0x3C ACK"], "two words");
+  assert.deepEqual(texts("nothing"), []);
+});
+
+test("a decoded row knows the lane it sits under", () => {
+  const cap = demoCapture();
+  const out = captureRows(cap, [{ type: "uart", lines: { rx: 0 }, baud: 1e6 }], (k) => `L${k}`);
+  assert.equal(out.find((r) => r.items).lane, "L0");
+  assert.ok(!("lane" in out[0]), "a lane is not its own");
 });
