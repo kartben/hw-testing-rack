@@ -59,7 +59,9 @@ electronics/
   tools/                  schematic-as-code (eda.py), PCB builder (pcbgen.py), catalogue, LCSC resolver
   bay-node/               design.py + generated KiCad project, fab/, docs/
   power-hub/              design.py + generated KiCad project, fab/, docs/
-  data-port/              the drawer's USB-C port board: design.py + generated KiCad project, fab/, docs/
+  data-port-x6/           the drawer's DATA ×6, six USB-C, power only (the default): design.py + KiCad, fab/, docs/
+  data-port-x4/           the DATA ×4 v2, four USB-C and the logic, for bays with wires: design.py + KiCad, fab/, docs/
+  data-port/              the single-port board, retired from the rack, kept for the standalone Solo box
   camera-pod/             the camera pod's board (lead, camera header, 3.3 V, LEDs): design.py + KiCad, fab/, docs/
   lib/                    custom symbol(s), cached JLC basic passives
 site/                     GitHub Pages: three.js viewer + BOM page (assets generated)
@@ -78,7 +80,8 @@ Docker (for KiCad 10, Freerouting and — if not installed locally — OpenSCAD)
 python tools/build.py all                    # config → STLs → web viewer assets
 tools/kicad.sh bay-node --route --fab        # schematic, PCB, autoroute, Gerbers/BOM/CPL, renders
 tools/kicad.sh power-hub --route --fab
-tools/kicad.sh data-port --route --fab
+tools/kicad.sh data-port-x6 --fab            # fab outputs of the routed board, no re-route
+tools/kicad.sh data-port-x4 --fab
 tools/kicad.sh camera-pod --route --fab
 python tools/bom.py                          # full rack BOM
 python -m http.server -d site 8000           # open http://localhost:8000

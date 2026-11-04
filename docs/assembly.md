@@ -88,15 +88,11 @@ later, take its tray out first.
    under the drawer): nothing to fit.  With `drawer.detent: magnet` instead,
    magnets first, one under the drawer and one in the tray's left ledge: stack
    the pair, mark both outer faces, glue each magnet marked face down into its
-   pocket with a drop of CA, and let it set before the drawer goes in.  The rear bay takes either DATA board, components up, its USB-C
-   edge against the port wall (each receptacle behind a U), PT 2.3×8 from
-   above: the DATA port board on its two Ø5 bosses, its USB-C behind the
-   fourth U (the rightmost).  The DATA
-   lead comes up through the cable window at the rear right and along the
-   rear wall into the DATA port board's PH from the rear.  The standing
-   DATA ×4 v2 goes in its printed `x4_cradle` instead: an M3 heat-set insert
+   pocket with a drop of CA, and let it set before the drawer goes in.  The rear bay takes either standing DATA
+   board, the DATA ×6 or the DATA ×4 v2, in the printed `x4_cradle`: an M3 heat-set insert
    into each of the drawer's three Ø8 DATA ×4 bosses, the cradle onto them
-   (3 × M3×8), the lead up the window and into the board's rear PH, then
+   (3 × M3×8), the DATA lead up through the cable window at the rear right
+   and into the board's rear PH, then
    the board slid down into the cradle's slots, receptacles towards the wall,
    until both latches click (the receptacles drop into the comb's U's).
    Then the strip on the comb, its tongues in the U's, and its 5 PT 2.3×8

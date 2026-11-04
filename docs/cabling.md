@@ -10,18 +10,18 @@ as it can be without ever being taut**.
 bay node (plenum)                                 drawer
  ┌──────────┐  DATA lead: JST PH 8-pin, ~40 cm    ┌────────────────────────────────────┐
  │ DATA J7  ├──────┐                              │ [DATA]◀── short cable ──▶ board    │
- └──────────┘      │  ┌─ drag chain 7×7 R18 ─┐    │   ▲ port board on the drawer floor │
+ └──────────┘      │  ┌─ drag chain 7×7 R18 ─┐    │   ▲ DATA board in the rear bay     │
                    └─▶│ fixed end   moving end├───┼─▶ up through the cable window      │
                       └──────────────────────┘    └────────────────────────────────────┘
 ```
 
-1. **Node → drawer: a small port board and an 8-wire lead.**  The drawer's
-   DATA port is our own 40 × 17 mm board ([electronics/data-port](../electronics/data-port/design.py)):
-   a USB-C receptacle (a source: Rp 22k on CC1/CC2, USBLC6 ESD at the
-   receptacle) screwed components up to the floor behind the port wall
-   (2 × PT 2.3×8, one each end), its mouth behind a U in the wall: the
-   board's short cable plugs into it.  A JST PH 8-pin lead (VBUS, GND, D+, D−, GND, then
-   the node's I²C and INT, which the port board leaves open, for a later DATA ×4 board) plugs
+1. **Node → drawer: a standing DATA board and an 8-wire lead.**  Every drawer
+   holds one DATA board: a DATA ×6 ([electronics/data-port-x6](../electronics/data-port-x6/design.py),
+   six USB-C, power only), or a DATA ×4 v2 ([electronics/data-port-x4](../electronics/data-port-x4/design.py))
+   in a bay whose boards need wires.  It stands in a printed cradle behind the
+   port wall, each USB-C mouth behind a slot in the wall: a board's short cable
+   plugs into it.  A JST PH 8-pin lead (DATA_VIN, GND, D+, D−, GND, SDA, SCL, GND at
+   the node's end) plugs
    into the node's **DATA** header (J7, side entry on the node's right edge,
    facing the chain; the node's only DUT port), runs ~3 cm in the plenum to the
    chain's fixed end, through the drag chain, out of its moving end
@@ -29,16 +29,18 @@ bay node (plenum)                                 drawer
    front lifted ~4 mm so that, the drawer out, it rides over the row cable on
    its tie anchors; low over the tray floor behind) and up through the cable
    window at the rear right
-   of the drawer, then along its rear wall into the port board's rear edge
-   (a DATA ×4's PH is right over the window).  It never needs to be touched again.  (A sled or fixed
+   of the drawer, into the PH on the DATA board's rear face, right over the
+   window.  It never needs to be touched again.  (A sled or fixed
    bay has no chain: the lead runs from J7 back along the plenum, right of
    the node, under the sled, and up through the port block's window into its
    PH, its slack coiled in the plenum.)  It is the rack's
    camera's PH 8 lead type (pin n ↔ pin 9−n, both plugs the same face up: the
-   port board's pinout is J7's mirrored), with 8 pins so a 6-pin row cable
+   DATA board's pinout is J7's mirrored), with 8 pins so a 6-pin row cable
    (VRACK, up to 28 V) cannot go in; twist D+/D− (pins 3-4) by hand.  (A
    USB-C coupler with a 90° extension came first: two off-the-shelf parts
-   whose sizes vary by seller, and a stiff cable to bend in the window.)
+   whose sizes vary by seller, and a stiff cable to bend in the window; then
+   a single-port 40 × 17 mm board, retired from the rack on 2026-10-31 and
+   kept for the standalone Solo box.)
 2. **The drag chain lies flat in the plenum** and bends in the horizontal
    plane: Olimex DRAG-CHAIN-7X7, 7 × 7 mm inside, 13.5 × 10.2 mm outside,
    R18, ≈ 180 mm with its two end pieces.  Its fixed end is screwed to the
@@ -92,8 +94,8 @@ drawer below, which still opens.
 **AUX.**  For boards without a USB serial bridge or to drive RESET/BOOT:
 the node's JST PH 6 (GND, 3V3 ref, TX, RX, RESET, BOOT) can follow the same
 path through the chain (a 6-wire PH lead fits alongside the USB cable),
-up the drawer's cable window and through one of the port wall's free U's
-(the DATA port board uses only the fourth), then flying leads to the board.
+up the drawer's cable window and through one of the port wall's free U's,
+then flying leads to the board.
 
 **Dupont jumpers in a converted bay.**  The DATA ×4's headers (v1: a 1 × 3
 GND, RESET, BOOT per port, pins up; the v2, standing at the back of the

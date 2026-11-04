@@ -368,6 +368,10 @@ like the bay node's yet.
 
 ## DATA port v1.0 — 2 layers, 40 × 17 mm
 
+**Retired from the rack on 2026-10-31:** every drawer now holds a DATA ×6, or a DATA ×4 v2 where a bay
+needs wires, and the drawer has lost this board's bosses.  It stays for the standalone Solo box
+([standalone.md](standalone.md)) and the assembly notice's drawer step, which still draws it.
+
 The drawer's USB-C port for the board under test (×1 per drawer): a small board screwed
 components up to the floor of the drawer's rear bay (2 × PT 2.3×8 from above, one each end), the
 receptacle's mouth behind a U in the port wall, an 8-wire JST PH lead from its rear edge to
