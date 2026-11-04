@@ -403,8 +403,11 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   **Not tried on hardware:** `bayctl capture --reset` (MARK again), and the standalone page's settings on an
   analyzer on the PC's USB.  **The decoders added after it** (`decoders.mjs`, written from the protocols'
   public descriptions, no sigrok code): on the bench, a UART's lines and PWM on a stream of `U` (57.602 kHz, 50.0 %
-  for 57.6 kHz).  1-Wire, CAN and SWD have no real signal there yet: their signals are built from the protocols'
-  timings.  Read side by side with `sigrok-cli` 0.7.2, run as a separate program on the same .vcd files, every
+  for 57.6 kHz).  SWD's host side too: the XIAO driving Zephyr's `zephyr,swdp-gpio` at 2.5 MHz into buses B and C, read
+  at 100 MS/s, gives back the sequence sent, wake from dormant, line reset, TARGETSEL and each access in order.  No
+  target has answered yet, so a real target's ACK and data are **not tried on hardware**; `sigrok-cli` does not follow
+  that unanswered traffic, so the sequence sent is the reference there.  1-Wire and CAN have no real signal yet.  For
+  those three, signals built from the protocols' timings were read side by side with `sigrok-cli` 0.7.2, run as a separate program on the same .vcd files, every
   value agrees: ROM commands and codes; identifiers, data and stuffing; SWD requests, ACKs and data.  One
   difference: on a remote frame it goes on to read data bytes after the DLC, where ISO 11898-1 has none, as we read
   it.  Two test signals changed for the comparison: more than 480 µs after a 1-Wire reset (at exactly 480 µs it lost

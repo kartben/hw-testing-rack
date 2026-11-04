@@ -53,7 +53,8 @@ const VIEW_HTML = `
   </div>
   <p class="hint">Drag to pan, Ctrl + wheel or pinch to zoom; click for cursor 1, again for cursor 2 and the time
     between them.  A box's value shows on hover.  Once clicked: + and − zoom, ← and → pan, 0 fits, Esc clears the
-    cursors.  A row of the table jumps there.</p>`;
+    cursors.  A row of the table jumps there.  A trigger fires at once if its line already rests at the level its
+    edge leads to.</p>`;
 
 /* The viewer's block and the fold: the same on both pages */
 const VIEW_CSS = `

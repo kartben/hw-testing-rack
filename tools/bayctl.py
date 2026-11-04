@@ -1884,7 +1884,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--rate", default="10M", help="samples per second: 10M, 500k (default 10M)")
     p.add_argument("--duration", default="all", help="100us, 20ms, 1s, or all the buffer holds (default)")
     p.add_argument("--pre", type=float, default=20, help="percent of the capture before the trigger (default 20)")
-    p.add_argument("--trigger", help="<channel>[:fall|:rise] (default the first channel, falling)")
+    p.add_argument("--trigger", help="<channel>[:fall|:rise] (default the first channel, falling); it fires at once "
+                                     "if the line already rests at the level the edge leads to")
     p.add_argument("--reset", metavar="SLOT", help="trigger as this board leaves reset (MARK, CH13): B3.2")
     p.add_argument("--decode", action="append", default=[], metavar="SPEC",
                    help="uart:rx=A,baud=115200  i2c:sda=C,scl=D  spi:cs=E,sck=F,mosi=G[,miso=H][,mode=0]  ws2812:din=A  pwm:in=A  onewire:dq=A  can:rx=A,baud=500000  swd:swclk=A,swdio=B")

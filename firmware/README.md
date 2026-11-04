@@ -517,6 +517,9 @@ resets and the switch from JTAG: what to look at when a flash fails.  Over a
 box, a tooltip gives its value.  With the viewer focused, + and − zoom, ← and
 → pan, 0 fits and Esc clears the cursors.
 
+A trigger fires at once if its line already rests at the level the edge leads
+to, seen on the bench: `A:fall` on a line that is low does not wait for a fall.
+
 You ask for a duration, and the card says what the buffer holds at that
 rate.  It warns when the duration does not fit, or when the rate is low for a
 decoder (under ten samples a bit for a UART, 10 MS/s for WS2812B; for I²C and
