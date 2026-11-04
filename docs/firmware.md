@@ -401,7 +401,14 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   keys, save and reopen, a second capture, and a cancel while it waited.  `bayctl capture` on the same bench:
   that line in `run.decoded.json`, a trigger that never came exited 3, and the analyzer answered after.
   **Not tried on hardware:** `bayctl capture --reset` (MARK again), and the standalone page's settings on an
-  analyzer on the PC's USB.  The analyzer page also loads a `no_flash` build into a
+  analyzer on the PC's USB.  **The decoders added after it** (`decoders.mjs`, written from the protocols'
+  public descriptions, no sigrok code): on the bench, a UART's lines and PWM on a stream of `U` (57.602 kHz, 50.0 %
+  for 57.6 kHz).  1-Wire, CAN and SWD have no real signal there yet: their signals are built from the protocols'
+  timings.  Read side by side with `sigrok-cli` 0.7.2, run as a separate program on the same .vcd files, every
+  value agrees: ROM commands and codes; identifiers, data and stuffing; SWD requests, ACKs and data.  One
+  difference: on a remote frame it goes on to read data bytes after the DLC, where ISO 11898-1 has none, as we read
+  it.  Two test signals changed for the comparison: more than 480 µs after a 1-Wire reset (at exactly 480 µs it lost
+  the first bit), and a low turnaround after an SWD read (it took a high one for a start bit).  The analyzer page also loads a `no_flash` build into a
   blank RP2350 through WebUSB, as the node does (PICOBOOT; tested against a fake bootloader, not yet on a
   board).  **Open, for the datasheet check:** whether the RP2350's boot ROM has Windows bind WinUSB to its
   PICOBOOT interface by itself (Microsoft OS 2.0 descriptors), which WebUSB needs there.  The
