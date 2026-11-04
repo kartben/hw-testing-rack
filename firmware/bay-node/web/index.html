@@ -341,15 +341,8 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
   & .dec-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 10px; border-radius: 9px;
     font-size: 0.82rem; border: 1px solid var(--line); background: var(--soft);
     & b { font-weight: 600; } & button { padding: 1px 7px; } }
-  & .la-viewer { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
-  & .la-vtools { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; padding: 8px 10px;
-    border-bottom: 1px solid var(--line); background: var(--soft);
-    & button { padding: 3px 9px; font-size: 0.8rem; border-radius: 8px; font-weight: 500; }
-    & .la-cap-meta { font-size: 0.78rem; color: var(--muted); }
-    & output { margin-left: auto; font: 0.78rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; } }
-  & canvas { display: block; width: 100%; touch-action: pan-y; cursor: crosshair; }
 }
-@media (max-width: 560px) { #la-card .la-set .la-depth, #la-card .la-vtools output { margin-left: 0; flex-basis: 100%; } }
+@media (max-width: 560px) { #la-card .la-set .la-depth { margin-left: 0; flex-basis: 100%; } }
 #la-reset {
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--text);
   padding: 20px; width: min(380px, calc(100vw - 32px)); box-shadow: 0 16px 48px #0004;
@@ -556,6 +549,9 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
       </div>
       <div class="notice" id="la-note" hidden><span id="la-note-text"></span></div>
       <div class="cmd" id="la-usbip" hidden><code id="la-usbip-cmd">sudo usbip attach -r … -b 1-1.5</code><button data-copy="la-usbip-cmd">Copy</button></div>
+      <details id="la-fold" open>
+      <summary id="la-sum">–</summary>
+      <div>
       <div class="la-set">
         <label>Sample rate <select id="la-rate"></select></label>
         <label>Trigger <select id="la-trig"></select></label>
@@ -565,6 +561,8 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
         <span class="la-depth" id="la-depth">–</span>
       </div>
       <div class="la-chans" id="la-chans" aria-label="Channels: the buses, and the node's mark"></div>
+      </div>
+      </details>
       <div class="la-actions">
         <button class="primary" id="la-cap" disabled>Capture</button>
         <button popovertarget="la-reset" id="la-cap-reset" disabled>Capture and reset…</button>
@@ -575,23 +573,7 @@ button.chk { width: 26px; height: 26px; padding: 0; border-radius: 7px; border: 
       <div class="la-decs" id="la-decs" aria-label="Decoders"></div>
       <p class="hint" id="la-empty">No capture yet.  The buses are what the Wires card joins to the boards'
         pins; this page holds the analyzer only while it captures.</p>
-      <div id="la-view" hidden>
-        <div class="la-viewer">
-          <div class="la-vtools">
-            <button data-la-zoom="in" aria-label="Zoom in">＋</button>
-            <button data-la-zoom="out" aria-label="Zoom out">－</button>
-            <button data-la-zoom="fit">Fit</button>
-            <button id="la-clear">Clear cursors</button>
-            <button id="la-vcd" disabled title="For PulseView, GTKWave and sigrok's decoders">Download .vcd</button>
-            <span class="la-cap-meta" id="la-cap-meta"></span>
-            <output id="la-readout"></output>
-          </div>
-          <canvas id="la-wave" aria-label="Captured signals, one lane per bus"></canvas>
-        </div>
-        <p class="hint">Drag to pan, Ctrl + wheel or pinch to zoom; click for cursor 1, again for cursor 2 and the
-          time between them.  A box's value shows on hover.  Once clicked: + and − zoom, ← and → pan, 0 fits, Esc
-          clears the cursors.</p>
-      </div>
+      <div id="la-view" hidden></div>
     </section>
   </main>
 

@@ -75,6 +75,8 @@ function renderSettings() {
     s.trig = on[0];
   }
   $("trig-edge").value = s.edge;
+  panel.summary([`${s.rate / 1e6} MS/s`, fmtTime(s.length / s.rate), `trigger ${chName(s.trig)} ${s.edge === "fall" ? "↓" : "↑"}`,
+                 `${on.length} channel${on.length === 1 ? "" : "s"}`]);
   $("depth").textContent = d
     ? `${s.length.toLocaleString("en-US")} samples (${d.bits}-bit) · ${fmtTime(s.length / s.rate)}`
     : on.length ? "" : "pick at least one channel";
@@ -171,7 +173,7 @@ $("la-cap").addEventListener("click", async () => {
     capNames = on.map(chName);
     panel.ownDecoders = null;
     panel.setState(`Captured at ${new Date().toLocaleTimeString()}`, "var(--ok)");
-    panel.show(cap);
+    panel.captured(cap);
   } catch (e) {
     panel.setState(e.name === "AbortError" ? "Cancelled" : e.message, e.name === "AbortError" ? "var(--muted)" : "var(--fault)");
   } finally {

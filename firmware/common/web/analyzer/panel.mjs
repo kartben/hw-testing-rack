@@ -2,10 +2,10 @@
  * What the analyzer page (app.mjs) and the bay page's card
  * (bay-node/web/analyzer-card.mjs) share: the settings kept in this browser,
  * the state line, the channels' events, the sample rate and the share before
- * the trigger, a capture's progress, the viewer and its tools, the decoders,
- * the .vcd.  Both pages hold the same element ids (la-*).  What stays theirs:
- * how they reach the analyzer, their channels' chips, names and colours, their
- * trigger.
+ * the trigger, the settings folding away after a capture, a capture's
+ * progress, the viewer and its tools, the decoders, the .vcd.  Both pages hold the same element ids (la-*), and a #la-view it fills.
+ * What stays theirs: how they reach the analyzer, their channels' chips, names
+ * and colours, their trigger.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -17,6 +17,43 @@ import { Viewer, fmtTime } from "./viewer.mjs";
 
 const $ = (id) => document.getElementById(id);
 const RATES = [1e6, 2e6, 5e6, 10e6, 20e6, 25e6, 50e6, 100e6];
+
+const VIEW_HTML = `
+  <div class="la-viewer">
+    <div class="la-vtools">
+      <button data-la-zoom="in" aria-label="Zoom in">＋</button>
+      <button data-la-zoom="out" aria-label="Zoom out">－</button>
+      <button data-la-zoom="fit">Fit</button>
+      <button id="la-clear">Clear cursors</button>
+      <button id="la-vcd" disabled title="For PulseView, GTKWave and sigrok's decoders">Download .vcd</button>
+      <button id="la-full">Full screen</button>
+      <span class="la-cap-meta" id="la-cap-meta"></span>
+      <output id="la-readout"></output>
+    </div>
+    <canvas id="la-wave" aria-label="Captured signals, one lane per channel"></canvas>
+  </div>
+  <p class="hint">Drag to pan, Ctrl + wheel or pinch to zoom; click for cursor 1, again for cursor 2 and the time
+    between them.  A box's value shows on hover.  Once clicked: + and − zoom, ← and → pan, 0 fits, Esc clears the
+    cursors.</p>`;
+
+/* The viewer's block and the fold: the same on both pages */
+const VIEW_CSS = `
+#la-fold > summary { cursor: pointer; font-size: 0.88rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+#la-fold[open] > summary { margin-bottom: 12px; }
+#la-fold > div { display: flex; flex-direction: column; gap: 14px; }
+#la-view { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 12px; min-width: 0; }
+#la-view[hidden] { display: none; }
+#la-view:fullscreen { background: var(--card); padding: 10px; overflow: auto; }
+#la-view .la-viewer { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
+#la-view .la-vtools { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; padding: 8px 10px;
+  border-bottom: 1px solid var(--line); background: var(--soft); }
+#la-view .la-vtools button { padding: 3px 9px; font-size: 0.8rem; border-radius: 8px; font-weight: 500; }
+#la-view .la-cap-meta { font-size: 0.78rem; color: var(--muted); }
+#la-view output { margin-left: auto; font: 0.78rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+#la-view canvas { display: block; width: 100%; touch-action: pan-y; cursor: crosshair; }
+@media (max-width: 560px) {
+  #la-view output { margin-left: 0; flex-basis: 100%; }
+}`;
 
 export const sorted = (on) => [...on].sort((a, b) => a - b);
 
@@ -34,6 +71,10 @@ export class Panel {
     this.busy = null;
     /* The demo brings its own decoders, the user's stay as they are */
     this.ownDecoders = null;
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(VIEW_CSS);
+    document.adoptedStyleSheets.push(sheet);
+    $("la-view").innerHTML = VIEW_HTML;
     this.viewer = new Viewer($("la-wave"), { onReadout: (t) => ($("la-readout").textContent = t) });
     this.#listen();
   }
@@ -63,6 +104,11 @@ export class Panel {
     $("la-rate").innerHTML = RATES.filter((r) => r <= maxRate).map((r) =>
       `<option value="${r}" ${r === this.settings.rate ? "selected" : ""}>${r / 1e6} MS/s</option>`).join("");
     $("la-pre").value = String(this.settings.pre);
+  }
+
+  /* The settings in one line, on the fold */
+  summary(parts) {
+    $("la-sum").textContent = parts.join(" · ");
   }
 
   get decoders() {
@@ -103,6 +149,13 @@ export class Panel {
     this.onShow?.();
     this.viewer.show(cap, rows);
     this.renderDecoders();
+  }
+
+  /* A capture to read: the settings fold away, the viewer comes up */
+  captured(cap) {
+    this.show(cap);
+    $("la-fold").open = false;
+    $("la-view").scrollIntoView({ block: "start" });
   }
 
   /* After a change a capture on screen shows */
@@ -189,6 +242,15 @@ export class Panel {
                                                                     : this.viewer.zoom(b.dataset.laZoom === "in" ? 0.5 : 2)));
     }
     $("la-clear").addEventListener("click", () => this.viewer.clearCursors());
+    $("la-full").addEventListener("click", () => (document.fullscreenElement ? document.exitFullscreen()
+                                                                             : $("la-view").requestFullscreen()));
+    document.addEventListener("fullscreenchange", () => {
+      const full = !!document.fullscreenElement;
+      $("la-full").textContent = full ? "Leave full screen" : "Full screen";
+      /* The window less the tools and their margins */
+      this.viewer.height = full ? innerHeight - 90 : null;
+      this.viewer.draw();
+    });
     $("la-vcd").addEventListener("click", () => {
       const cap = this.cap;
       const url = URL.createObjectURL(new Blob([toVcd(cap, cap.channels.map((_, k) => this.laneName(k)))],

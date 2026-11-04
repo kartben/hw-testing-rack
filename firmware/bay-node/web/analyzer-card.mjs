@@ -58,6 +58,9 @@ function renderSettings() {
     `<option value="${c}:${e}" ${`${c}:${e}` === settings.trig ? "selected" : ""}>${esc(chName(c))} ${e === "fall" ? "↓" : "↑"}${
       c === MARK ? (e === "fall" ? " (a board starts)" : " (the node acts)") : ""}</option>`)).join("");
   const n = on.length ? maxSamples(info.buffer, on) : 0;
+  const [tc, te] = settings.trig.split(":");
+  panel.summary([`${settings.rate / 1e6} MS/s`, fmtTime(n / settings.rate), `trigger ${chName(Number(tc))} ${te === "fall" ? "↓" : "↑"}`,
+                 `${on.length} channel${on.length === 1 ? "" : "s"}`]);
   $("la-depth").textContent = on.length
     ? `${n.toLocaleString("en-US")} samples (${bytesPerSample(on) * 8}-bit) · ${fmtTime(n / settings.rate)}`
     : "pick at least one channel";
@@ -178,7 +181,7 @@ async function capture(reset) {
       renderChannels();
     }
     outcome = [`Captured at ${capAt}`, "var(--ok)"];
-    panel.show(cap);
+    panel.captured(cap);
   } catch (e) {
     const cancelled = e.name === "AbortError";
     outcome = cancelled ? ["Cancelled", "var(--muted)"] : [e.message, "var(--fault)"];

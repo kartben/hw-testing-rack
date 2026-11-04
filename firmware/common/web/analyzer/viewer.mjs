@@ -12,8 +12,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-const RH = 26;     /* row height */
-const TOP = 22;    /* the time axis */
+const RH = 26;        /* a decoded row's height, and a lane's least */
+const LANE_MAX = 56; /* a lane's most */
+const TOP = 22;      /* the time axis */
 
 /* The first index whose value is past v (a in ascending order) */
 function upperBound(a, v) {
@@ -71,6 +72,9 @@ export class Viewer {
     this.view = { t0: 0, t1: 1 };
     this.cursors = [];
     this.hover = null;
+    /* The height the rows may fill (full screen); else 60 % of the window's */
+    this.height = null;
+    this.ys = [];
     this.touches = new Map();
     this.drag = null;
     /* A canvas cannot read light-dark(): an element computes the colours */
@@ -161,7 +165,8 @@ export class Viewer {
 
   /* The box under the pointer, in its tooltip */
   #showTip(e, r) {
-    const px = e.clientX - r.left, row = this.rows[Math.floor((e.clientY - r.top - TOP) / RH)];
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    const row = py < TOP ? null : this.rows[this.ys.findLastIndex((y) => y <= py)];
     const L = this.#labelW(), W = this.cv.clientWidth - L - 8;
     const it = !this.drag?.moved && this.cap && px > L && row?.items
       ? itemAt(row.items, this.#tAt(px), 3 / W * (this.view.t1 - this.view.t0)) : null;
@@ -261,7 +266,16 @@ export class Viewer {
     const mono = style.getPropertyValue("--mono").trim() || "ui-monospace, monospace";
     const sans = style.getPropertyValue("--sans").trim() || "system-ui, sans-serif";
     const dpr = globalThis.devicePixelRatio || 1, Wd = cv.clientWidth, L = this.#labelW();
-    const H = TOP + Math.max(1, this.rows.length) * RH + 8, W = Wd - L - 8;
+    const lanes = this.rows.filter((r) => !r.items).length, decoded = this.rows.length - lanes;
+    const room = (this.height ?? globalThis.innerHeight * 0.6) - TOP - 8 - decoded * RH;
+    const LH = Math.round(Math.min(LANE_MAX, Math.max(RH, room / Math.max(1, lanes))));
+    let bottom = TOP;
+    this.ys = this.rows.map((r) => {
+      const y = bottom;
+      bottom += r.items ? RH : LH;
+      return y;
+    });
+    const H = Math.max(bottom, TOP + RH) + 8, W = Wd - L - 8;
     cv.style.height = `${H}px`;
     cv.width = Math.round(Wd * dpr);
     cv.height = Math.round(H * dpr);
@@ -297,10 +311,10 @@ export class Viewer {
     }
 
     this.rows.forEach((r, i) => {
-      const y = TOP + i * RH, hi = y + 5, lo = y + RH - 7;
+      const y = this.ys[i], rh = r.items ? RH : LH, hi = y + 5, lo = y + rh - 7;
       g.save();
       g.beginPath();
-      g.rect(0, y, L - 8, RH);
+      g.rect(0, y, L - 8, rh);
       g.clip();
       if (r.items) {
         g.fillStyle = css("--muted");
@@ -309,11 +323,11 @@ export class Viewer {
       } else {
         g.fillStyle = css(r.color);
         g.beginPath();
-        g.arc(12, y + RH / 2, 4.5, 0, 7);
+        g.arc(12, y + rh / 2, 4.5, 0, 7);
         g.fill();
         g.fillStyle = css("--text");
         g.font = `12px ${sans}`;
-        g.fillText(r.name, 24, y + RH / 2 + 4);
+        g.fillText(r.name, 24, y + rh / 2 + 4);
       }
       g.restore();
       if (!this.cap) {
@@ -321,7 +335,7 @@ export class Viewer {
       }
       g.save();
       g.beginPath();
-      g.rect(L, y, W, RH);
+      g.rect(L, y, W, rh);
       g.clip();
       if (r.items) {
         this.#drawItems(g, r.items, x, y, css, mono);

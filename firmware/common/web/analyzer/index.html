@@ -30,16 +30,16 @@
         <button id="demo">Load the demo capture</button>
         <span class="grow"></span>
       </div>
-      <dl class="info" id="info" hidden>
+      <dl class="info folds" id="info" hidden>
         <div><dt>Board</dt><dd id="i-board">–</dd></div>
         <div><dt>Firmware</dt><dd id="i-version">–</dd></div>
         <div><dt>Fastest</dt><dd id="i-rate">–</dd></div>
         <div><dt>Buffer</dt><dd id="i-buffer">–</dd></div>
         <div><dt>Channels</dt><dd id="i-channels">–</dd></div>
       </dl>
-      <p class="hint" id="connect-hint">Plug in a Pico 2 running gusmanb's analyzer (it shows up as 1209:3020), then
+      <p class="hint folds" id="connect-hint">Plug in a Pico 2 running gusmanb's analyzer (it shows up as 1209:3020), then
         Connect and pick it.</p>
-      <div class="ram" id="ram" hidden>
+      <div class="ram folds" id="ram" hidden>
         <p class="hint">A blank RP2350 (in its bootloader, 2e8a:000f) can run the analyzer from its RAM: pick your
           <code>no_flash</code> build of gusmanb's firmware, then load it.  It is gone when the board loses power.</p>
         <div class="row">
@@ -52,6 +52,9 @@
 
     <section class="card" id="capture-card">
       <h2>Capture <span id="depth-meta"></span></h2>
+      <details id="la-fold" open>
+      <summary id="la-sum">–</summary>
+      <div>
       <div class="settings">
         <label>Sample rate <select id="la-rate"></select></label>
         <label>Samples <select id="length"></select></label>
@@ -68,6 +71,8 @@
       <div class="row">
         <button id="more-ch" class="small">Channels 9–24</button>
       </div>
+      </div>
+      </details>
       <div class="row">
         <button class="primary" id="la-cap" disabled>Capture</button>
         <button id="la-cancel" hidden>Cancel</button>
@@ -77,22 +82,9 @@
     </section>
 
     <section class="card">
-      <h2>Signals <span id="la-cap-meta"></span></h2>
+      <h2>Signals</h2>
       <div class="decs" id="la-decs" aria-label="Decoders"></div>
-      <div class="viewer">
-        <div class="vtools">
-          <button data-la-zoom="in" aria-label="Zoom in">＋</button>
-          <button data-la-zoom="out" aria-label="Zoom out">－</button>
-          <button data-la-zoom="fit">Fit</button>
-          <button id="la-clear">Clear cursors</button>
-          <button id="la-vcd" disabled title="For PulseView, GTKWave and sigrok's decoders">Download .vcd</button>
-          <output id="la-readout"></output>
-        </div>
-        <canvas class="wave" id="la-wave" aria-label="Captured signals, one lane per channel"></canvas>
-      </div>
-      <p class="hint">Drag to pan, Ctrl + wheel or pinch to zoom; click for cursor 1, again for cursor 2 and the time
-        between them.  A box's value shows on hover.  Once clicked: + and − zoom, ← and → pan, 0 fits, Esc clears
-        the cursors.</p>
+      <div id="la-view"></div>
     </section>
   </main>
   <footer>
