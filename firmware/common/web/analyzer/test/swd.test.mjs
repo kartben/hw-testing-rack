@@ -115,3 +115,26 @@ test("at 4 samples a bit it still reads, and a thinner clock is flagged", () => 
   const cap = wires(stream, { half: 100e-9, rate: 20e6 });
   assert.match(captureNotes(cap, [{ type: "swd", lines: { swclk: 0, swdio: 1 } }], () => "SWCLK")[0].text, /^SWCLK's shortest pulse is 2 samples wide: SWD/);
 });
+
+const ALERT = [0x92, 0xf3, 0x09, 0x62, 0x95, 0x2d, 0x85, 0x86, 0xe9, 0xaf, 0xdd, 0xe3, 0xa2, 0x0e, 0xbc, 0x19].flatMap((b) => lsb(b, 8));
+
+test("waking from dormant is named, and its bits make no request", () => {
+  const row = decode([...reset(8), ...ALERT, ...idle(4), ...lsb(0x1a, 8), ...reset(), ...idle(8), ...read(false, 0, 0x4c013477)]);
+  assert.deepEqual(row.frames.map((f) => f.text), ["wake from dormant: SWD", "line reset", "R DP IDCODE OK 0x4C013477"]);
+});
+
+test("the alert with another activation code", () => {
+  assert.deepEqual(decode([...reset(8), ...ALERT, ...idle(4), ...lsb(0x50, 8), ...idle(4)]).frames.map((f) => f.text), ["selection alert"]);
+});
+
+test("nobody answers, and the host clocks on with the line high: each request is still found", () => {
+  /* What Zephyr's bit-bang driver does after a bad ACK: a turnaround, 32 bits and a parity's worth of clocks, the line pulled up */
+  const silent = (req) => [...req, ...TRN, 1, 1, 1, ...Array(34).fill(1)];
+  const row = decode([...idle(), ...silent(request(false, true, 0)), ...silent(request(false, false, 4)), ...silent(request(false, false, 8)),
+                      ...silent(request(true, true, 0xc)), ...idle(4)]);
+  assert.deepEqual(row.frames.map((f) => f.text), ["R DP IDCODE no ACK", "W DP CTRL/STAT no ACK", "W DP SELECT no ACK", "R AP 0xC no ACK"]);
+});
+
+test("a request with five ones of its own still reads", () => {
+  assert.equal(decode([...idle(), ...read(true, 0xc, 3)]).frames[0].text, "R AP 0xC OK 0x00000003");
+});

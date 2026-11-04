@@ -578,6 +578,10 @@ const SWD_WRITE = { 0: "ABORT", 4: "CTRL/STAT", 8: "SELECT", 12: "TARGETSEL" };
 const SWD_ACK = { 1: "OK", 2: "WAIT", 4: "FAULT" };
 const SWD_RESET_BITS = 50;      /* SWDIO high this many clocks at least: a line reset */
 const JTAG_TO_SWD = 0xe79e;
+/* ADIv5.2's selection alert, in the order it goes on the wire: what wakes a target from dormant */
+const SWD_ALERT = [0x92, 0xf3, 0x09, 0x62, 0x95, 0x2d, 0x85, 0x86, 0xe9, 0xaf, 0xdd, 0xe3, 0xa2, 0x0e, 0xbc, 0x19];
+const SWD_ACTIVATION = 0x1a;    /* after the alert and 4 low bits */
+const SWD_REQUEST_ONES = 5;     /* start, APnDP, RnW, A[2:3]: a request opens with five ones at most */
 
 /*
  * SWD: a bit per rising edge of SWCLK, SWDIO read just before it, since the
@@ -586,7 +590,8 @@ const JTAG_TO_SWD = 0xe79e;
  * park and parity; then a turnaround and a 3-bit ACK; on OK 32 bits of data
  * and their parity, with a turnaround before a write's or after a read's.
  * A write to DP 0xC, TARGETSEL, gets no ACK from anyone and goes straight on.
- * Bits are LSB first.
+ * Bits are LSB first.  With nobody answering, a host clocks on with the line
+ * high: in a run of ones too long to open a request, the request is at its end.
  */
 export function swd(cap, { swclk, swdio, label = "SWD" }) {
   const e = cap.edges(swclk), first = cap.firstLevel(swclk), at = [], bits = [], items = [], frames = [];
@@ -610,6 +615,14 @@ export function swd(cap, { swclk, swdio, label = "SWD" }) {
     return v;
   };
   const n = bits.length;
+  const alertAt = (at) => at + 128 <= n && SWD_ALERT.every((b, k) => word(at + 8 * k, 8) === b);
+  const isRequest = (at) => {
+    if (at + 8 > n || !bits[at]) {
+      return false;
+    }
+    const [, ap, rd, a2, a3, parity, stop, park] = bits.slice(at, at + 8);
+    return stop === 0 && park === 1 && (ap ^ rd ^ a2 ^ a3) === parity;
+  };
   let i = 0;
   while (i < n) {
     if (!bits[i]) {
@@ -619,6 +632,13 @@ export function swd(cap, { swclk, swdio, label = "SWD" }) {
     let run = 1;
     while (i + run < n && bits[i + run]) {
       run++;
+    }
+    if (alertAt(i + run)) {
+      const code = i + run + 140 <= n ? word(i + run + 132, 8) : null;
+      const it = box(i, i + run + 140, code === SWD_ACTIVATION ? "wake from dormant: SWD" : "selection alert", "ctl");
+      frames.push({ ...it, items: [it], hex: "", fields: { event: it.text } });
+      i += run + 140;
+      continue;
     }
     if (run >= SWD_RESET_BITS) {
       const it = box(i, i + run, "line reset", "ctl");
@@ -631,14 +651,24 @@ export function swd(cap, { swclk, swdio, label = "SWD" }) {
       }
       continue;
     }
+    if (run > SWD_REQUEST_ONES) {
+      let at = i + run - 1;
+      while (at >= i + run - SWD_REQUEST_ONES && !isRequest(at)) {
+        at--;
+      }
+      i = at >= i + run - SWD_REQUEST_ONES ? at : i + run;
+      if (!isRequest(i)) {
+        continue;
+      }
+    }
     if (i + 13 > n) {
       break;
     }
-    const [, apndp, rnw, a2, a3, parity, stop, park] = bits.slice(i, i + 8);
-    if (stop !== 0 || park !== 1 || ((apndp ^ rnw ^ a2 ^ a3) !== parity)) {
+    if (!isRequest(i)) {
       i++;
       continue;
     }
+    const [, apndp, rnw, a2, a3] = bits.slice(i, i + 5);
     const addr = (a3 << 3) | (a2 << 2), blind = !apndp && !rnw && addr === 12;
     const name = apndp ? `AP 0x${hex(addr, 1)}` : `DP ${(rnw ? SWD_READ : SWD_WRITE)[addr]}`;
     const parts = [box(i, i + 8, `${rnw ? "R" : "W"} ${name}`, "addr", { value: addr })];
