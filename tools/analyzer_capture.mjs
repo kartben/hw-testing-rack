@@ -79,6 +79,7 @@ function decodedDoc(cap, rows, spec, saved) {
       label: r.label, lane: r.lane,
       items: r.items.map(({ t0, t1, text, kind, value }) => ({ t0, t1, text, kind, value })),
       values: r.items.filter((it) => it.value !== undefined && it.kind !== "err").map((it) => it.value),
+      ...(r.stats ? { stats: r.stats } : {}),
       ...(r.frames ? { frames: r.frames.map(({ t0, t1, text, kind, hex, fields }) => ({ t0, t1, text, kind, hex, ...fields })) } : {}),
     })),
   };

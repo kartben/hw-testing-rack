@@ -507,7 +507,8 @@ capture the settings fold to one line and the viewer takes the room; **Full
 screen** gives it the window.  The decoded data is also a table: search it,
 click a row or walk it with the arrows, and the viewer jumps there.  A UART's
 bytes make one row per line of text, or per burst of a binary protocol, so a
-search finds a whole word.  Over a
+search finds a whole word.  **PWM / clock** gives a signal's frequency and duty
+cycle; periods alike to a sample make one box, so a change shows.  Over a
 box, a tooltip gives its value.  With the viewer focused, + and − zoom, ← and
 → pan, 0 fits and Esc clears the cursors.
 
@@ -535,7 +536,8 @@ python tools/bayctl.py capture B3 --ch A --rate 10M --duration 20ms --trigger A:
 It prints `armed` once the analyzer waits, then saves `run1.capture.json`, which
 either page opens, and `run1.decoded.json`, with each decoded row's boxes, its
 `values` in order and, where the decoder groups them, its `frames` (a UART's
-lines, with their `bytes`).  `--reset B3.2` triggers as that board leaves reset.  A
+lines, with their `bytes`) and `stats` (PWM's frequency and duty cycle: `min`,
+`max`, `mean`).  `--reset B3.2` triggers as that board leaves reset.  A
 trigger that does not come in `--timeout` seconds exits 3.  It runs the page's
 own modules on Node 22 or later (`tools/analyzer_capture.mjs`), so its results
 are what the viewer shows; the rest of bayctl needs only Python.  For sigrok's

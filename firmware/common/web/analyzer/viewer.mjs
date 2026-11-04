@@ -59,7 +59,7 @@ export function valueText(v) {
 
 /* What the tooltip says about an item, line by line */
 export function itemLines(it) {
-  return [it.text, ...(it.value === undefined ? [] : [valueText(it.value)]),
+  return [it.text, ...(it.detail ? [it.detail] : []), ...(it.value === undefined ? [] : [valueText(it.value)]),
           `${fmtTime(it.t0)}, lasts ${fmtTime(it.t1 - it.t0)}`];
 }
 

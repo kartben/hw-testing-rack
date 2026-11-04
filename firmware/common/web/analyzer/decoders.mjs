@@ -1,6 +1,6 @@
 /*
  * Protocol decoders on a capture (capture.mjs), in the browser: UART, I²C,
- * SPI, WS2812B.  Each takes the capture and the lanes it reads (k: the
+ * SPI, WS2812B, PWM.  Each takes the capture and the lanes it reads (k: the
  * index in cap.channels) and returns rows of boxes for the viewer:
  * {label, items: [{t0, t1, text, kind}]}, times in seconds from the
  * trigger, kind data, addr, ctl or err.  A row may also say how its boxes make
@@ -231,6 +231,53 @@ export function ws2812(cap, { k, label = "WS2812B" }) {
   return [{ label, items }];
 }
 
+const hz = (f) => (f >= 1e6 ? `${(f / 1e6).toFixed(3)} MHz` : f >= 1e3 ? `${(f / 1e3).toFixed(3)} kHz` : `${f.toFixed(2)} Hz`);
+
+/*
+ * PWM or a clock: from each rising edge to the next, the frequency and the
+ * share of the period spent high.  Periods alike to a sample make one box, so
+ * a steady signal is one box and a change shows.  stats: over the whole lane,
+ * what a test asserts.
+ */
+export function pwm(cap, { k, label = "PWM" }) {
+  const e = cap.edges(k), first = cap.firstLevel(k), items = [];
+  const periods = [];
+  for (let m = 1; m + 2 < e.length; m++) {
+    /* e[m] is a change: the level after it is the first one's, flipped m times */
+    if ((first ^ (m & 1)) === 1) {
+      periods.push({ at: e[m], high: e[m + 1] - e[m], period: e[m + 2] - e[m] });
+    }
+  }
+  let run = null;
+  const flush = () => {
+    if (run) {
+      const period = run.periods / run.count, high = run.highs / run.count, f = cap.rate / period, duty = 100 * high / period;
+      items.push({ t0: cap.time(run.from), t1: cap.time(run.to), kind: "data", text: `${hz(f)} · ${duty.toFixed(1)} %`,
+                   freq: f, duty, count: run.count,
+                   detail: `${run.count} period${run.count === 1 ? "" : "s"}, ${(1e6 * period / cap.rate).toPrecision(5)} µs each` });
+    }
+    run = null;
+  };
+  for (const p of periods) {
+    if (run && (Math.abs(p.period - run.period) > 1 || Math.abs(p.high - run.high) > 1)) {
+      flush();
+    }
+    run ??= { from: p.at, to: p.at, period: p.period, high: p.high, count: 0, periods: 0, highs: 0 };
+    run.to = p.at + p.period;
+    run.count++;
+    run.periods += p.period;
+    run.highs += p.high;
+  }
+  flush();
+  const stats = periods.length ? (() => {
+    const freqs = periods.map((p) => cap.rate / p.period), duties = periods.map((p) => 100 * p.high / p.period);
+    const sum = (a) => a.reduce((x, y) => x + y, 0), span = (a) => ({ min: Math.min(...a), max: Math.max(...a) });
+    return { periods: periods.length, freq: { ...span(freqs), mean: cap.rate * periods.length / sum(periods.map((p) => p.period)) },
+             duty: { ...span(duties), mean: 100 * sum(periods.map((p) => p.high)) / sum(periods.map((p) => p.period)) } };
+  })() : { periods: 0 };
+  return [{ label, items, stats }];
+}
+
 /*
  * The decoders the page offers: their name, the lines they read (a "?" one
  * may be left out), what they need besides; run() gets the lines as lanes.
@@ -241,6 +288,7 @@ export const DECODERS = {
   spi: { name: "SPI", lines: ["cs", "sck", "mosi", "miso?"],
          run: (cap, d, k) => spi(cap, { ...k, mode: d.mode ?? 0 }) },
   ws2812: { name: "WS2812B", lines: ["din"], run: (cap, d, k) => ws2812(cap, { k: k.din }) },
+  pwm: { name: "PWM / clock", lines: ["in"], run: (cap, d, k) => pwm(cap, { k: k.in }) },
 };
 
 export const BAUDS = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 1e6, 2e6, 3e6];
