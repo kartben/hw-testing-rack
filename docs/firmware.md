@@ -395,7 +395,13 @@ and [`firmware/power-hub/README.md`](../firmware/power-hub/README.md#first-boot)
   with the analyzer page's modules (`/analyzer/*.mjs`, gzipped: +224 bytes of DRAM for their resources,
   bay_node 91.34 %); "Capture and reset" triggers on MARK's fall.  From the card on the bench XIAO, a
   capture of a line sent to its AUX UART came back decoded.  MARK and "Capture and reset" are checked on
-  the simulated node only (the bench has no DATA ×4).  The analyzer page also loads a `no_flash` build into a
+  the simulated node only (the bench has no DATA ×4).  **One UI, 2026-11-04** (`panel.mjs`, one more module:
+  bay_node 91.41 %), in Chrome on the bench XIAO's card, the Pico 2 running the fork's `no_flash` build: 20 ms
+  at 2 MS/s of a line on AUX, read back exactly in the decoded table; search, a row's jump, the tooltip, the
+  keys, save and reopen, a second capture, and a cancel while it waited.  `bayctl capture` on the same bench:
+  that line in `run.decoded.json`, a trigger that never came exited 3, and the analyzer answered after.
+  **Not tried on hardware:** `bayctl capture --reset` (MARK again), and the standalone page's settings on an
+  analyzer on the PC's USB.  The analyzer page also loads a `no_flash` build into a
   blank RP2350 through WebUSB, as the node does (PICOBOOT; tested against a fake bootloader, not yet on a
   board).  **Open, for the datasheet check:** whether the RP2350's boot ROM has Windows bind WinUSB to its
   PICOBOOT interface by itself (Microsoft OS 2.0 descriptors), which WebUSB needs there.  The
