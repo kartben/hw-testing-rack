@@ -70,7 +70,7 @@ from devserver import COMMON_STATIC, XTERM_STATIC, Firmware, make_image, ws_fram
 # The page, and what firmware/common serves on the node too (/rack.css, xterm.js, the analyzer's modules)
 ANALYZER = WEB.parents[1] / "common" / "web" / "analyzer"
 ANALYZER_STATIC = {f"/analyzer/{m}.mjs": (ANALYZER / f"{m}.mjs", "text/javascript")
-                   for m in ("capture", "decoders", "decoding", "protocol", "relay", "vcd", "viewer")}
+                   for m in ("capture", "decoders", "decoding", "panel", "protocol", "relay", "vcd", "viewer")}
 STATIC = {"/": (WEB / "index.html", "text/html"), **COMMON_STATIC, **XTERM_STATIC, **ANALYZER_STATIC,
           "/analyzer/card.mjs": (WEB / "analyzer-card.mjs", "text/javascript"),
           "/wires-card.mjs": (WEB / "wires-card.mjs", "text/javascript")}

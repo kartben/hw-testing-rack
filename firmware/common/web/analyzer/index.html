@@ -53,9 +53,9 @@
     <section class="card" id="capture-card">
       <h2>Capture <span id="depth-meta"></span></h2>
       <div class="settings">
-        <label>Sample rate <select id="rate"></select></label>
+        <label>Sample rate <select id="la-rate"></select></label>
         <label>Samples <select id="length"></select></label>
-        <label>Before trigger <select id="pre">
+        <label>Before trigger <select id="la-pre">
           <option value="0.1">10 %</option><option value="0.2" selected>20 %</option><option value="0.5">50 %</option>
         </select></label>
         <label>Trigger on <select id="trig-ch"></select></label>
@@ -64,31 +64,31 @@
         </select></label>
         <span class="depth" id="depth">–</span>
       </div>
-      <div class="chans" id="chans"></div>
+      <div class="chans" id="la-chans"></div>
       <div class="row">
         <button id="more-ch" class="small">Channels 9–24</button>
       </div>
       <div class="row">
-        <button class="primary" id="capture" disabled>Capture</button>
-        <button id="cancel" hidden>Cancel</button>
-        <span class="state" id="state"><i></i><span>Connect an analyzer, or load the demo</span></span>
-        <progress id="progress" max="1" value="0" hidden></progress>
+        <button class="primary" id="la-cap" disabled>Capture</button>
+        <button id="la-cancel" hidden>Cancel</button>
+        <span class="state" id="la-state"><i></i><span>Connect an analyzer, or load the demo</span></span>
+        <progress id="la-prog" max="1" value="0" hidden></progress>
       </div>
     </section>
 
     <section class="card">
-      <h2>Signals <span id="cap-meta"></span></h2>
-      <div class="decs" id="decs" aria-label="Decoders"></div>
+      <h2>Signals <span id="la-cap-meta"></span></h2>
+      <div class="decs" id="la-decs" aria-label="Decoders"></div>
       <div class="viewer">
         <div class="vtools">
-          <button data-zoom="in" aria-label="Zoom in">＋</button>
-          <button data-zoom="out" aria-label="Zoom out">－</button>
-          <button data-zoom="fit">Fit</button>
-          <button id="clear-cursors">Clear cursors</button>
-          <button id="vcd" disabled title="For PulseView, GTKWave and sigrok's decoders">Download .vcd</button>
-          <output id="readout"></output>
+          <button data-la-zoom="in" aria-label="Zoom in">＋</button>
+          <button data-la-zoom="out" aria-label="Zoom out">－</button>
+          <button data-la-zoom="fit">Fit</button>
+          <button id="la-clear">Clear cursors</button>
+          <button id="la-vcd" disabled title="For PulseView, GTKWave and sigrok's decoders">Download .vcd</button>
+          <output id="la-readout"></output>
         </div>
-        <canvas class="wave" id="wave" aria-label="Captured signals, one lane per channel"></canvas>
+        <canvas class="wave" id="la-wave" aria-label="Captured signals, one lane per channel"></canvas>
       </div>
       <p class="hint">Drag to pan, Ctrl + wheel or pinch to zoom; click for cursor 1, again for cursor 2 and the time
         between them.</p>
@@ -100,11 +100,11 @@
       firmware (GPL-3.0); this page only speaks its protocol.</span>
   </footer>
 </div>
-<dialog id="dec-dlg">
-  <form id="dec-form">
+<dialog id="la-dec-dlg">
+  <form id="la-dec-form">
     <h3>Add a decoder</h3>
-    <label>Protocol <select id="dec-type"></select></label>
-    <div id="dec-lines" class="dec-lines"></div>
+    <label>Protocol <select id="la-dec-type"></select></label>
+    <div id="la-dec-lines" class="dec-lines"></div>
     <div class="btns">
       <button value="cancel" formnovalidate>Cancel</button>
       <button class="primary" value="add">Add</button>

@@ -3,8 +3,8 @@
  * running gusmanb's analyzer, through the node's relay (relay.mjs,
  * src/analyzer.c).  Who has it (this page or USB/IP), a capture, "Capture and
  * reset" (the capture starts as a board leaves reset: the node's MARK on
- * CH13), the viewer and decoders of the analyzer page.  The node serves it as
- * /analyzer/card.mjs, beside those shared modules.
+ * CH13), and what panel.mjs shares with the analyzer page.  The node serves it
+ * as /analyzer/card.mjs, beside those shared modules.
  *
  * The page holds the analyzer only while it captures: another address can
  * use it in between.  Bus names, settings and decoders stay in this browser.
@@ -13,59 +13,26 @@
  */
 
 import { $, api, toast } from "/rack.mjs";
-import { Capture } from "./capture.mjs";
-import { captureRows, decoderFields, decoderFrom, decoderLabel, decoderTypes, esc } from "./decoding.mjs";
+import { esc } from "./decoding.mjs";
+import { Panel, sorted } from "./panel.mjs";
 import { Analyzer, TRIGGER, bytesPerSample, maxSamples } from "./protocol.mjs";
 import { openRelay } from "./relay.mjs";
-import { toVcd } from "./vcd.mjs";
-import { Viewer, fmtTime } from "./viewer.mjs";
+import { fmtTime } from "./viewer.mjs";
 
 const BUSES = [..."ABCDEFGH"]; /* CH1-8: the buses, the co-processor's GPIO2-9 */
 const MARK = 12;               /* CH13: the node's MARK, GPIO14 */
-const RATES = [1e6, 2e6, 5e6, 10e6, 20e6, 25e6, 50e6, 100e6];
 /* gusmanb's Pico 2 build, until the analyzer says (Analyzer.identify()) */
 const PICO_2 = { maxRate: 100e6, buffer: 393216, channels: 24 };
-const STORE = "hwtr-bay-analyzer";
-
-const saved = (() => {
-  try {
-    return JSON.parse(localStorage.getItem(STORE) ?? "{}");
-  } catch {
-    return {};
-  }
-})();
-const settings = {
-  on: saved.on ?? [0, 1, 2, 3, 4, 5, 6, 7],
-  names: saved.names ?? {},
-  rate: saved.rate ?? 10e6,
-  pre: saved.pre ?? 0.2,
-  trig: saved.trig ?? "0:fall",
-  decoders: saved.decoders ?? [],
-};
-const save = () => {
-  try {
-    localStorage.setItem(STORE, JSON.stringify(settings));
-  } catch {
-    /* private window: settings last as long as the page */
-  }
-};
-
-let status = null, host = location.hostname, info = PICO_2;
+let panel = null, settings = null, status = null, host = location.hostname, info = PICO_2;
 /* The buses' names on the node (the Wires card's, /api/wires): a bus this browser has not named takes its */
 let wireNames = [];
-let busy = null, cap = null, capReset = null, capAt = null, viewer = null;
+let capReset = null, capAt = null;
 /* How the last capture went, [text, colour]: the state line keeps it while the analyzer is usable */
 let outcome = null;
 
-const sorted = (on) => [...on].sort((a, b) => a - b);
 const busName = (c) => settings.names[c] || wireNames[c] || "";
 const chName = (c) => (c === MARK ? "Mark" : busName(c) ? `${BUSES[c]} · ${busName(c)}` : BUSES[c]);
 const laneColor = (c) => (c === MARK ? "--mark" : `--lane-${c % 8}`);
-
-function setState(text, color = "var(--muted)") {
-  $("la-state").style.setProperty("--c", color);
-  $("la-state").querySelector("span").textContent = text;
-}
 
 /* --- Settings ------------------------------------------------------------------ */
 
@@ -83,34 +50,32 @@ function renderChannels() {
 
 function renderSettings() {
   const on = sorted(settings.on);
-  $("la-rate").innerHTML = RATES.filter((r) => r <= info.maxRate).map((r) =>
-    `<option value="${r}" ${r === settings.rate ? "selected" : ""}>${r / 1e6} MS/s</option>`).join("");
+  panel.renderRate(info.maxRate);
   if (!on.includes(Number(settings.trig.split(":")[0])) && on.length) {
     settings.trig = `${on[0]}:fall`;
   }
   $("la-trig").innerHTML = on.flatMap((c) => ["fall", "rise"].map((e) =>
     `<option value="${c}:${e}" ${`${c}:${e}` === settings.trig ? "selected" : ""}>${esc(chName(c))} ${e === "fall" ? "↓" : "↑"}${
       c === MARK ? (e === "fall" ? " (a board starts)" : " (the node acts)") : ""}</option>`)).join("");
-  $("la-pre").value = String(settings.pre);
   const n = on.length ? maxSamples(info.buffer, on) : 0;
   $("la-depth").textContent = on.length
     ? `${n.toLocaleString("en-US")} samples (${bytesPerSample(on) * 8}-bit) · ${fmtTime(n / settings.rate)}`
     : "pick at least one channel";
-  save();
+  panel.save();
   renderAvailability();
 }
 
 /* What the buttons can do now: the analyzer this page's, no capture running */
 function renderAvailability() {
   const a = status?.analyzer;
-  const usable = a?.owner === "page" && a.present && !busy;
+  const usable = a?.owner === "page" && a.present && !panel.busy;
   $("la-cap").disabled = !usable || !settings.on.length;
   /* MARK is the DATA x4's: a one-board node (a stand-in) has nothing to trigger on */
   $("la-cap-reset").hidden = !(status?.ports?.length > 1);
   $("la-cap-reset").disabled = !usable || !status.ports?.some((p) => p.power.on);
-  $("la-cancel").hidden = !busy;
+  $("la-cancel").hidden = !panel.busy;
   for (const r of document.querySelectorAll("input[name=la-owner]")) {
-    r.disabled = !!busy;
+    r.disabled = !!panel.busy;
   }
 }
 
@@ -132,7 +97,7 @@ function update(s, pageHost) {
   status = s;
   host = pageHost;
   const a = s.analyzer;
-  if (!busy) {
+  if (!panel.busy) {
     for (const r of document.querySelectorAll("input[name=la-owner]")) {
       r.checked = r.value === a.owner;
     }
@@ -145,7 +110,7 @@ function update(s, pageHost) {
     : a.owner === "usbip"
       ? [`<b>Exported over USB/IP</b> as busid <code>${a.busid}</code>, for gusmanb's desktop app or PulseView.
           This page captures again once you switch it back.`, "var(--usbip)"]
-      : other && !busy
+      : other && !panel.busy
         ? [`<b>In use by ${a.page.ip}</b> for ${a.page.since_s} s: it is free again after their capture.`, "var(--lease)"]
         : null;
   $("la-note").hidden = !note;
@@ -155,10 +120,10 @@ function update(s, pageHost) {
   }
   $("la-usbip").hidden = a.owner !== "usbip" || !a.present;
   $("la-usbip-cmd").textContent = `sudo usbip attach -r ${host} -b ${a.busid}`;
-  $("la-meta").textContent = busy ? "capturing" : !a.present ? "not there" : a.owner === "usbip" ? "USB/IP"
+  $("la-meta").textContent = panel.busy ? "capturing" : !a.present ? "not there" : a.owner === "usbip" ? "USB/IP"
                            : capAt ? `last capture ${capAt}` : "ready";
-  if (!busy) {
-    setState(...(a.owner === "page" && a.present ? outcome ?? ["Ready", "var(--ok)"] : ["–"]));
+  if (!panel.busy) {
+    panel.setState(...(a.owner === "page" && a.present ? outcome ?? ["Ready", "var(--ok)"] : ["–"]));
   }
   renderAvailability();
 }
@@ -181,10 +146,10 @@ async function capture(reset) {
   const [tc, te] = reset ? [MARK, "fall"] : settings.trig.split(":");
   const trig = { type: TRIGGER.EDGE, channel: Number(tc), inverted: te === "fall" };
   let t = null;
-  busy = new AbortController();
+  panel.begin();
   renderAvailability();
   $("la-meta").textContent = "capturing";
-  setState("Opening the analyzer…", "var(--service)");
+  panel.setState("Opening the analyzer…", "var(--service)");
   try {
     try {
       t = await openRelay();
@@ -196,25 +161,16 @@ async function capture(reset) {
     info = await withTimeout(analyzer.identify(), 3000, "the analyzer does not answer")
       .catch((e) => Promise.reject(new Error(refusal(e))));
     const total = maxSamples(info.buffer, on), pre = Math.round(total * settings.pre);
-    const r = await analyzer.capture({ channels: on, rate: settings.rate, pre, post: total - pre, trigger: trig }, {
-      signal: busy.signal,
-      onStarted: () => {
-        if (reset) {
-          setState(`Resetting ${reset.slot}…`, "var(--service)");
-          api("/api/reset", { port: reset.port })
-            .then(() => setState(`Waiting for ${reset.slot} to leave reset`, "var(--service)"))
-            .catch((e) => setState(`${reset.slot} not reset: ${e.message}`, "var(--fault)"));
-        } else {
-          setState(`Waiting for ${chName(trig.channel)} ${te === "fall" ? "↓" : "↑"}`, "var(--service)");
-        }
-      },
-      onData: (got, n) => {
-        $("la-prog").hidden = false;
-        $("la-prog").value = got / n;
-        setState(`Reading ${Math.round(got / 1024)} of ${Math.round(n / 1024)} KB`, "var(--usbip)");
-      },
+    const cap = await panel.read(analyzer, { channels: on, rate: settings.rate, pre, post: total - pre, trigger: trig }, () => {
+      if (reset) {
+        panel.setState(`Resetting ${reset.slot}…`, "var(--service)");
+        api("/api/reset", { port: reset.port })
+          .then(() => panel.setState(`Waiting for ${reset.slot} to leave reset`, "var(--service)"))
+          .catch((e) => panel.setState(`${reset.slot} not reset: ${e.message}`, "var(--fault)"));
+      } else {
+        panel.setState(`Waiting for ${chName(trig.channel)} ${te === "fall" ? "↓" : "↑"}`, "var(--service)");
+      }
     });
-    cap = new Capture(r);
     capReset = reset ?? null;
     capAt = new Date().toLocaleTimeString();
     if (reset && !settings.on.includes(MARK)) {
@@ -222,15 +178,14 @@ async function capture(reset) {
       renderChannels();
     }
     outcome = [`Captured at ${capAt}`, "var(--ok)"];
-    showCapture();
+    panel.show(cap);
   } catch (e) {
     const cancelled = e.name === "AbortError";
     outcome = cancelled ? ["Cancelled", "var(--muted)"] : [e.message, "var(--fault)"];
   } finally {
     await t?.close();
-    busy = null;
-    $("la-prog").hidden = true;
-    setState(...outcome);
+    panel.end();
+    panel.setState(...outcome);
     renderSettings();
     if (status) {
       update(status, host);
@@ -241,7 +196,7 @@ async function capture(reset) {
 /* --- The viewer ------------------------------------------------------------------------- */
 
 /* MARK's pulses as a row under its lane: what the node did, the one this page asked for named */
-function markRow() {
+function markRow(cap) {
   const k = cap.channels.indexOf(MARK);
   if (k < 0) {
     return null;
@@ -259,78 +214,51 @@ function markRow() {
   return { k, row: { label: "Node", items } };
 }
 
-function showCapture() {
-  const rows = captureRows(cap, settings.decoders, (k) => chName(cap.channels[k]), laneColor);
-  const mark = markRow();
-  if (mark) {
-    rows.splice(rows.findIndex((r) => r.k === mark.k) + 1, 0, mark.row);
-  }
-  $("la-cap-meta").textContent = `${cap.count.toLocaleString("en-US")} samples at ${cap.rate / 1e6} MS/s, ` +
-                                 `${fmtTime(cap.count / cap.rate)}`;
-  $("la-view").hidden = false;
-  $("la-empty").hidden = true;
-  $("la-vcd").disabled = false;
-  viewer.show(cap, rows);
-  renderDecoders();
-}
-
-/* --- Decoders ---------------------------------------------------------------------- */
-
-function renderDecoders() {
-  $("la-decs").innerHTML = settings.decoders.map((d, i) => `
-    <span class="dec-chip">${decoderLabel(d, chName)}
-      <button class="small" data-remove="${i}" aria-label="Remove this decoder">✕</button></span>`).join("") +
-    `<button class="small" id="la-add-dec">+ Decoder</button>`;
-}
-
-const pickable = () => (cap ? [...cap.channels] : sorted(settings.on));
-
 /* --- Wiring ------------------------------------------------------------------------- */
 
 export function mount() {
-  viewer = new Viewer($("la-wave"), { onReadout: (t) => ($("la-readout").textContent = t) });
+  panel = new Panel({
+    store: "hwtr-bay-analyzer",
+    defaults: { on: [0, 1, 2, 3, 4, 5, 6, 7], names: {}, rate: 10e6, pre: 0.2, trig: "0:fall", decoders: [] },
+    chName,
+    laneName: (k) => chName(panel.cap.channels[k]),
+    laneColor,
+    moreRows: (cap, rows) => {
+      const mark = markRow(cap);
+      if (mark) {
+        rows.splice(rows.findIndex((r) => r.k === mark.k) + 1, 0, mark.row);
+      }
+    },
+    onShow: () => {
+      $("la-view").hidden = false;
+      $("la-empty").hidden = true;
+    },
+    onSettings: renderSettings,
+    fileStem: () => (status?.id || "bay").toLowerCase(),
+    readColor: "var(--usbip)",
+  });
+  settings = panel.settings;
   /* The Wires card read the node's names: placeholders here, nothing re-drawn under the typing */
   document.addEventListener("hwtr-wires", (e) => {
     wireNames = e.detail.names ?? [];
     for (const input of $("la-chans").querySelectorAll("input[data-name]")) {
       input.placeholder = wireNames[Number(input.dataset.name)] || "name";
     }
-    if (!busy) {
+    if (!panel.busy) {
       renderSettings();
-      if (cap) {
-        showCapture();
+      if (panel.cap) {
+        panel.show();
       }
     }
   });
   renderChannels();
   renderSettings();
-  renderDecoders();
+  panel.renderDecoders();
 
-  $("la-chans").addEventListener("change", (e) => {
-    const c = Number(e.target.dataset.ch);
-    if (Number.isInteger(c)) {
-      settings.on = e.target.checked ? [...new Set([...settings.on, c])] : settings.on.filter((x) => x !== c);
-      renderSettings();
-    }
+  $("la-trig").addEventListener("change", () => {
+    settings.trig = $("la-trig").value;
+    renderSettings();
   });
-  $("la-chans").addEventListener("input", (e) => {
-    const c = Number(e.target.dataset.name);
-    if (Number.isInteger(c)) {
-      settings.names[c] = e.target.value.trim();
-      renderSettings();
-      if (cap) {
-        showCapture();
-      }
-    }
-  });
-  for (const id of ["la-rate", "la-trig", "la-pre"]) {
-    $(id).addEventListener("change", () => {
-      settings.rate = Number($("la-rate").value);
-      settings.trig = $("la-trig").value;
-      settings.pre = Number($("la-pre").value);
-      renderSettings();
-    });
-  }
 
   for (const r of document.querySelectorAll("input[name=la-owner]")) {
     r.addEventListener("change", async () => {
@@ -345,7 +273,6 @@ export function mount() {
   }
 
   $("la-cap").addEventListener("click", () => capture());
-  $("la-cancel").addEventListener("click", () => busy?.abort());
   $("la-reset").addEventListener("beforetoggle", (e) => {
     if (e.newState !== "open") {
       return;
@@ -360,51 +287,6 @@ export function mount() {
       $("la-reset").hidePopover();
       capture({ port: Number(b.dataset.port), slot: b.dataset.slot });
     }
-  });
-
-  $("la-decs").addEventListener("click", (e) => {
-    const rm = e.target.closest("[data-remove]");
-    if (rm) {
-      settings.decoders.splice(Number(rm.dataset.remove), 1);
-      save();
-      if (cap) {
-        showCapture();
-      } else {
-        renderDecoders();
-      }
-    } else if (e.target.closest("#la-add-dec")) {
-      $("la-dec-type").innerHTML = decoderTypes();
-      $("la-dec-lines").innerHTML = decoderFields($("la-dec-type").value, pickable(), chName);
-      $("la-dec-dlg").showModal();
-    }
-  });
-  $("la-dec-type").addEventListener("change", () => {
-    $("la-dec-lines").innerHTML = decoderFields($("la-dec-type").value, pickable(), chName);
-  });
-  $("la-dec-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-    settings.decoders.push(decoderFrom($("la-dec-type").value, $("la-dec-lines")));
-    save();
-    $("la-dec-dlg").close();
-    if (cap) {
-      showCapture();
-    } else {
-      renderDecoders();
-    }
-  });
-
-  for (const b of document.querySelectorAll("[data-la-zoom]")) {
-    b.addEventListener("click", () => (b.dataset.laZoom === "fit" ? viewer.fit()
-                                                                  : viewer.zoom(b.dataset.laZoom === "in" ? 0.5 : 2)));
-  }
-  $("la-clear").addEventListener("click", () => viewer.clearCursors());
-  $("la-vcd").addEventListener("click", () => {
-    const url = URL.createObjectURL(new Blob([toVcd(cap, cap.channels.map(chName))], { type: "text/plain" }));
-    const a = Object.assign(document.createElement("a"), {
-      href: url, download: `${(status?.id || "bay").toLowerCase()}-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.vcd`,
-    });
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
 
   return { update };

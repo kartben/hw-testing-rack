@@ -21,7 +21,7 @@ endfunction()
 # hwtr_web_analyzer(<service>): the logic analyzer's modules, /analyzer/<name>.mjs
 function(hwtr_web_analyzer service)
   set(gen_dir ${ZEPHYR_BINARY_DIR}/include/generated)
-  foreach(name capture decoders decoding protocol relay vcd viewer)
+  foreach(name capture decoders decoding panel protocol relay vcd viewer)
     generate_inc_file_for_target(app ${HWTR_WEB_DIR}/analyzer/${name}.mjs
       ${gen_dir}/analyzer-${name}.mjs.gz.inc --gzip)
   endforeach()

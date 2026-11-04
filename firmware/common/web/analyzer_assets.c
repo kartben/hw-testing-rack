@@ -21,6 +21,10 @@ static const uint8_t decoding_mjs_gz[] = {
 #include "analyzer-decoding.mjs.gz.inc"
 };
 
+static const uint8_t panel_mjs_gz[] = {
+#include "analyzer-panel.mjs.gz.inc"
+};
+
 static const uint8_t protocol_mjs_gz[] = {
 #include "analyzer-protocol.mjs.gz.inc"
 };
@@ -46,6 +50,7 @@ static const uint8_t viewer_mjs_gz[] = {
 MODULE(capture);
 MODULE(decoders);
 MODULE(decoding);
+MODULE(panel);
 MODULE(protocol);
 MODULE(relay);
 MODULE(vcd);
