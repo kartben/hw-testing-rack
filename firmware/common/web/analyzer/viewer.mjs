@@ -75,6 +75,7 @@ export class Viewer {
     /* The height the rows may fill (full screen); else 60 % of the window's */
     this.height = null;
     this.selected = null;
+    this.mark = null;
     this.ys = [];
     this.touches = new Map();
     this.drag = null;
@@ -103,6 +104,7 @@ export class Viewer {
     this.cap = cap;
     this.rows = rows;
     this.selected = null;
+    this.mark = null;
     if (!keep) {
       this.cursors = [];
       this.fit();
@@ -128,8 +130,10 @@ export class Viewer {
     this.draw();
   }
 
+  /* Around at, else the marked boxes while they are in view, else the middle */
   zoom(k, at) {
-    const v = this.view, t = at ?? (v.t0 + v.t1) / 2;
+    const v = this.view, mark = this.mark >= v.t0 && this.mark <= v.t1 ? this.mark : null;
+    const t = at ?? mark ?? (v.t0 + v.t1) / 2;
     const [a, b] = this.span;
     const minSpan = this.cap ? 8 / this.cap.rate : 1e-9;
     const w = Math.min(b - a, Math.max(minSpan, (v.t1 - v.t0) * k));
@@ -142,6 +146,7 @@ export class Viewer {
   /* Bring this item into view, these boxes marked: as close as the view already is, or nearer if it would not read */
   reveal(it, items = [it]) {
     this.selected = new Set(items);
+    this.mark = (it.t0 + it.t1) / 2;
     const w = Math.max(it.t1 - it.t0, 1 / this.cap.rate);
     const span = Math.max(w * 6, Math.min(this.view.t1 - this.view.t0, w * 60)), mid = (it.t0 + it.t1) / 2;
     this.setRange(mid - span / 2, mid + span / 2);
