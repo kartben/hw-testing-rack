@@ -54,6 +54,7 @@ export function captureRows(cap, decoders, name, color = (c) => `--lane-${c % 8}
 /* Samples a bit: what reads a known speed well; a UART's decoder stops under 4 */
 const GOOD_UART = 10;
 const WS2812_RATE = 10e6;
+const ONEWIRE_RATE = 1e6;
 /* A clock pulse this many samples wide or less is hardly seen */
 const THIN_PULSE = 2;
 
@@ -61,7 +62,8 @@ const THIN_PULSE = 2;
 export function rateNeeds(decoders, rate) {
   const out = [];
   for (const d of decoders) {
-    const need = d.type === "uart" ? (d.baud ?? 115200) * GOOD_UART : d.type === "ws2812" ? WS2812_RATE : 0;
+    const need = d.type === "uart" ? (d.baud ?? 115200) * GOOD_UART : d.type === "ws2812" ? WS2812_RATE
+               : d.type === "onewire" ? ONEWIRE_RATE : 0;
     if (rate < need) {
       const what = d.type === "uart" ? `UART at ${(d.baud ?? 115200).toLocaleString("en-US")} Bd` : DECODERS[d.type].name;
       out.push({ text: `${what} reads well from ${need / 1e6} MS/s up, ${rate / 1e6} MS/s is low.`, need });

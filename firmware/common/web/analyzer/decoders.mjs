@@ -1,6 +1,6 @@
 /*
  * Protocol decoders on a capture (capture.mjs), in the browser: UART, I²C,
- * SPI, WS2812B, PWM.  Each takes the capture and the lanes it reads (k: the
+ * SPI, WS2812B, PWM, 1-Wire.  Each takes the capture and the lanes it reads (k: the
  * index in cap.channels) and returns rows of boxes for the viewer:
  * {label, items: [{t0, t1, text, kind}]}, times in seconds from the
  * trigger, kind data, addr, ctl or err.  A row may also say how its boxes make
@@ -278,6 +278,144 @@ export function pwm(cap, { k, label = "PWM" }) {
   return [{ label, items, stats }];
 }
 
+const W1_ROM_COMMANDS = { 0x33: "READ ROM", 0x55: "MATCH ROM", 0xcc: "SKIP ROM", 0xf0: "SEARCH ROM", 0xec: "ALARM SEARCH",
+                          0x3c: "OVERDRIVE SKIP", 0x69: "OVERDRIVE MATCH" };
+
+/* 1-Wire's CRC-8 (x^8 + x^5 + x^4 + 1, LSB first): a ROM code with its CRC comes to 0 */
+function w1Crc(bytes) {
+  let crc = 0;
+  for (const b of bytes) {
+    crc ^= b;
+    for (let i = 0; i < 8; i++) {
+      crc = crc & 1 ? (crc >> 1) ^ 0x8c : crc >> 1;
+    }
+  }
+  return crc;
+}
+
+/*
+ * 1-Wire at standard speed, on the one line; overdrive is not read.  Low for
+ * 480 µs or more (from 360 here) is a reset, then a device answers with a low
+ * of 60 to 240 µs, 15 to 60 µs after the release.  Otherwise each fall starts a
+ * bit slot, read 15 µs on, whoever drives it; bytes LSB first.  After a reset
+ * the first byte is a ROM command: READ and MATCH are followed by the 8 bytes
+ * of a ROM code, SEARCH by bits that make no bytes.  frames: from a reset to the next.
+ */
+export function onewire(cap, { k, label = "1-Wire" }) {
+  const e = cap.edges(k), first = cap.firstLevel(k), us = (n) => n * cap.rate / 1e6, items = [], frames = [];
+  if (us(15) < 2) {
+    throw new Error(`1-Wire needs ${(2 / 15).toFixed(2)} MS/s at least`);
+  }
+  let frame = null, bits = [], from = 0, end = 0, phase = "data", rom = [], romFrom = 0, searchFrom = 0, searchBits = 0;
+  const push = (it) => {
+    items.push(it);
+    frame?.items.push(it);
+  };
+  const box = (a, b, text, kind, more = {}) => push({ t0: cap.time(a), t1: cap.time(b), text, kind, ...more });
+  const flushBits = () => {
+    if (bits.length) {
+      box(from, end, `${bits.length} bit${bits.length === 1 ? "" : "s"}`, "err");
+    }
+    bits = [];
+    if (phase === "search" && searchBits) {
+      box(searchFrom, end, `${searchBits} search bits`, "ctl");
+    }
+    searchBits = 0;
+    if (phase === "rom" && rom.length) {
+      box(romFrom, end, `ROM cut after ${rom.length} bytes`, "err");
+    }
+    rom = [];
+  };
+  const close = () => {
+    flushBits();
+    if (frame) {
+      const f = frame, shown = f.items.filter((x) => x.text !== "reset" && x.text !== "presence");
+      const values = f.items.filter((x) => x.value !== undefined);
+      frames.push({ t0: f.items[0].t0, t1: f.items.at(-1).t1, text: shown.map((x) => x.text).join(" ") || "reset",
+                    kind: f.items.some((x) => x.kind === "err") ? "err" : "data",
+                    hex: values.map((x) => hex(x.value, 2)).join(" "), items: f.items,
+                    fields: { presence: f.presence, command: f.command, rom: f.rom, bytes: f.bytes } });
+    }
+    frame = null;
+  };
+  const byte = (v) => {
+    if (phase === "command") {
+      const name = W1_ROM_COMMANDS[v];
+      box(from, end, name ? `0x${hex(v)} ${name}` : `0x${hex(v)}`, "addr", { value: v });
+      if (frame) {
+        frame.command = name ?? null;
+      }
+      phase = v === 0x33 || v === 0x55 ? "rom" : v === 0xf0 || v === 0xec ? "search" : "data";
+      rom = [];
+      romFrom = end;
+      searchFrom = end;
+    } else if (phase === "rom") {
+      if (!rom.length) {
+        romFrom = from;
+      }
+      rom.push(v);
+      if (rom.length === 8) {
+        const good = w1Crc(rom) === 0;
+        const code = [...rom].reverse().map((x) => hex(x)).join("");
+        box(romFrom, end, `ROM ${code}${good ? "" : " CRC bad"}`, good ? "addr" : "err");
+        if (frame) {
+          frame.rom = code;
+          frame.bytes.push(...rom);
+        }
+        rom = [];
+        phase = "data";
+      }
+    } else {
+      box(from, end, `0x${hex(v)}`, "data", { value: v });
+      frame?.bytes.push(v);
+    }
+  };
+  for (let m = 1; m < e.length; m++) {
+    /* The level after e[m] is the first one's, flipped m times: a fall starts everything */
+    if ((first ^ (m & 1)) !== 0) {
+      continue;
+    }
+    const i = e[m], release = m + 1 < e.length ? e[m + 1] : cap.count, low = release - i;
+    if (low >= us(360)) {
+      close();
+      frame = { items: [], presence: false, command: null, rom: null, bytes: [] };
+      box(i, release, "reset", "ctl");
+      const next = m + 2 < e.length ? e[m + 2] : Infinity, back = m + 3 < e.length ? e[m + 3] : cap.count;
+      const width = back - next;
+      if (next - release <= us(120) && width >= us(30) && width <= us(480)) {
+        box(next, back, "presence", "ctl");
+        frame.presence = true;
+        m += 2;
+      } else {
+        box(release, Math.min(cap.count - 1, release + us(240)), "no presence", "err");
+      }
+      phase = "command";
+      continue;
+    }
+    if (low > us(120)) {
+      box(i, release, `low ${(low * 1e6 / cap.rate).toFixed(0)} µs`, "err");
+      continue;
+    }
+    const bit = cap.level(k, Math.min(cap.count - 1, Math.round(i + us(15))));
+    end = Math.min(cap.count - 1, Math.round(i + us(60)));
+    if (phase === "search") {
+      searchBits++;
+      continue;
+    }
+    if (!bits.length) {
+      from = i;
+    }
+    bits.push(bit);
+    if (bits.length === 8) {
+      const v = bits.reduceRight((a, b) => (a << 1) | b, 0);
+      bits = [];
+      byte(v);
+    }
+  }
+  close();
+  return [{ label, items, frames }];
+}
+
 /*
  * The decoders the page offers: their name, the lines they read (a "?" one
  * may be left out), what they need besides; run() gets the lines as lanes.
@@ -289,6 +427,7 @@ export const DECODERS = {
          run: (cap, d, k) => spi(cap, { ...k, mode: d.mode ?? 0 }) },
   ws2812: { name: "WS2812B", lines: ["din"], run: (cap, d, k) => ws2812(cap, { k: k.din }) },
   pwm: { name: "PWM / clock", lines: ["in"], run: (cap, d, k) => pwm(cap, { k: k.in }) },
+  onewire: { name: "1-Wire", lines: ["dq"], run: (cap, d, k) => onewire(cap, { k: k.dq }) },
 };
 
 export const BAUDS = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 1e6, 2e6, 3e6];
