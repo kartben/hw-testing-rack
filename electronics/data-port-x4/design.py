@@ -903,6 +903,9 @@ def power_sheet(b: Board):
     s.part("#FLG03", "power:PWR_FLAG", "PWR_FLAG", "", {"1": "+5V"}, in_bom=False, on_board=False,
            sch=at(x0 + 58, 14))
     testpoints(s, ["TP40"], "Bring-up test point on the rear face (B.Cu): VIN", x0=138)
+    s.frame("Fiducials (top face, for the pick-and-place camera)", 6, 78, 52, 98)
+    for i, (x, y) in enumerate(FIDUCIALS):
+        part(s, f"FID{i + 1}", "fiducial", {}, pcb=P(x, y, 0), in_bom=False, sch=at(14 + 12 * i, 92))
     s.notes_at = (6, 56, 200)
     s.notes = [
         "The DATA ×6's converter with the family's 3.5 A part (TI SLUSF64B table 8-2, LMR51635, 5 V, 1.1 MHz: 3.3 µH",
@@ -1309,6 +1312,12 @@ def logic_only(b: Board) -> list[str]:
         refs += [f"U{k + 5}", f"U{k + 6}", f"RN{k + 1}", f"RN{k + 2}", f"U{k + 7}", f"R{k + 11}", f"C{k + 5}",
                  f"R{k + 12}", f"R{k + 13}", f"U{k + 8}", f"R{k + 15}"]
     return sorted(r for r in refs if r in b.parts and b.parts[r].in_bom and not r.startswith("#"))
+
+
+# The fiducials: three on the top face, the only one a machine places parts on (J1, on the rear face, is soldered by
+# hand), as far apart as the routed board leaves room with 3 mm of clear board round each (1.5 mm from the centre
+# to any other copper, courtyard or silkscreen) and 3 mm at least from an edge.
+FIDUCIALS = [(74.5, 3.75), (7.0, 46.25), (90.25, 66.0)]
 
 
 def board() -> Board:

@@ -789,6 +789,102 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Mechanical:Fiducial"
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "FID"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Fiducial"
+				(at 0 3.175 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Fiducial Marker"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "fiducial marker"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Fiducial*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Fiducial_0_1"
+				(circle
+					(center 0 0)
+					(radius 1.27)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "bench:LMR51635"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -3986,6 +4082,246 @@
 			)
 		)
 	)
+	(symbol
+		(lib_id "Mechanical:Fiducial")
+		(at 35.56 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "178556eb-7432-5cbf-be44-e69636ec894c")
+		(property "Reference" "FID1"
+			(at 39.93 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "fiducial"
+			(at 42.03 234.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Fiducial:Fiducial_1mm_Mask2mm"
+			(at 35.56 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 35.56 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "fiducial"
+			(at 35.56 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 35.56 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/6008d11d-8ef4-5f46-9c77-e344633ba7c3"
+					(reference "FID1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:Fiducial")
+		(at 66.04 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "27d64f36-1944-57ac-98ff-bd9b2547b8c0")
+		(property "Reference" "FID2"
+			(at 70.41 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "fiducial"
+			(at 72.51 234.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Fiducial:Fiducial_1mm_Mask2mm"
+			(at 66.04 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 66.04 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 66.04 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "fiducial"
+			(at 66.04 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 66.04 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/6008d11d-8ef4-5f46-9c77-e344633ba7c3"
+					(reference "FID2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:Fiducial")
+		(at 96.52 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2b508e39-6e4e-578b-a184-a4ecf29b34dd")
+		(property "Reference" "FID3"
+			(at 100.89 232.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "fiducial"
+			(at 102.99 234.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Fiducial:Fiducial_1mm_Mask2mm"
+			(at 96.52 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 96.52 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 96.52 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MPN" "fiducial"
+			(at 96.52 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "-"
+			(at 96.52 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "data-port-x4"
+				(path "/528ef17d-c8dc-5c1a-833a-a87b511a511e/6008d11d-8ef4-5f46-9c77-e344633ba7c3"
+					(reference "FID3")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(wire
 		(pts
 			(xy 73.66 109.22)
@@ -4479,6 +4815,30 @@
 			(justify left bottom)
 		)
 		(uuid "acd62297-61d5-5089-856b-e9a9989864e5")
+	)
+	(rectangle
+		(start 15.24 198.12)
+		(end 132.08 248.92)
+		(stroke
+			(width 0.2)
+			(type dash)
+		)
+		(fill
+			(type none)
+		)
+		(uuid "71e72988-f265-5ccb-b9d6-eb81392910ec")
+	)
+	(text "Fiducials (top face, for the pick-and-place camera)"
+		(exclude_from_sim no)
+		(at 16.51 200.66 0)
+		(effects
+			(font
+				(size 1.8 1.8)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "2781e7ee-44d9-5078-9b16-e720d3f8fdbc")
 	)
 	(text_box "The DATA ×6's converter with the family's 3.5 A part (TI SLUSF64B table 8-2, LMR51635, 5 V, 1.1 MHz: 3.3 µH\n  Vishay IHLP2525CZ, 75 V, 13.5 A sat; 2 × 10 µF + 100 nF in, 3 × 22 µF out), PFM and spread spectrum as the\n  ×6's LMR51625.\n+5V: the four ports, the 3.3 V LDO (≤ 0.51 A) and the matrix: 2.51 A at 0.5 A a port; at worst, all four at\n  the TPS2553s' 0.644 A limit, 3.09 A, under the LMR51635's 3.5 A with no help from the node's firmware.\n  The inductor then peaks at 3.68 A from 28 V (1.17 A ripple), 3.98 A at the worst corner (L −20 %, 0.99 MHz),  under the LMR51635's 4.2 A minimum peak limit (SLUSF64B §6.5: 4.2 / 5.1 / 6.0 A; valley 3.2 / 4.0 / 4.8 A);\n  from 13.5 V: peak 3.53 A, valley 2.65 A.  No frequency foldback (tON 170 ns ≥ 70, tOFF 556 ns ≥ 200).\nFB 100k/18.7k: 5.08 V, 4.94–5.22 V with VFB 0.792–0.808 V (SLUSF64B §6.5) and the 1 % resistors: under\n  the TPS60400's 5.25 V (U9, sheet Matrix), which the node's 18k (5.10–5.39 V) was not.\nEN 100k/10k: on above 13.5 V typ., up to 14.8 V on the EN threshold's 1.103–1.349 V (SLUSF64B §6.5) and\n  15.1 V with the 1 % resistors: the rack's 20 V clears it.  Off below 10.8 V typ.\nVIN on J1.8, the node's VRACK through its eFuse (TPS26600, off by default): no second protection here.\n  At the 3.09 A worst case from 5.22 V (η ≈ 88 %): 0.92 A at 20 V, 1.22 A at 15 V, 1.36 A at 13.5 V, 0.65 A\n  at 28 V; the converter's full 3.5 A: 1.38 A at 15 V.  Under the node eFuse's 1.76 A; a PH contact carries 2 A."
 		(exclude_from_sim no)

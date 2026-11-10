@@ -219,7 +219,7 @@ def build(name: str) -> int:
         wr.writerow(["Designator", "Mid X", "Mid Y", "Layer", "Rotation"])
         for row in csv.DictReader(fi):
             base = row["Ref"].rpartition("_")[0]
-            if base.startswith(("H", "TP")) or lcsc.get(base) in HAND_SOLDER_LCSC or base not in lcsc:
+            if base.startswith(("H", "TP", "FID")) or lcsc.get(base) in HAND_SOLDER_LCSC or base not in lcsc:
                 continue
             wr.writerow(build_board.jlc_cpl_row(row, lcsc[base]))
     rows = []
