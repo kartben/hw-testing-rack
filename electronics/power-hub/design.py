@@ -125,6 +125,12 @@ SILK_RULE = f"""
 """
 
 
+# The fiducials: three on the top face, the only one a machine places parts on, as far apart as the routed board
+# leaves room with 3 mm of clear board round each (1.5 mm from the centre to any other copper, courtyard or
+# silkscreen) and 3 mm at least from an edge.
+FIDUCIALS = [(5.75, 9.75), (70.25, 54.0), (10.25, 94.75)]
+
+
 def board() -> Board:
     b = Board("power-hub", "Power hub", "1.0",
               comments=["USB-C PD distribution + rack controller (ESP32-S3, CAN master) for the hw-testing-rack",
@@ -570,6 +576,8 @@ def board() -> Board:
     c.block("Mounting (M3, on the power box's standoffs)")
     for i, (x, y) in enumerate(CFG["holes"]):
         part(c, f"H{i + 1}", "hole", {}, "M3", pcb=P(x, y, 0), in_bom=False)
+    for i, (x, y) in enumerate(FIDUCIALS):
+        part(c, f"FID{i + 1}", "fiducial", {}, pcb=P(x, y, 0), in_bom=False)
     c.note("GPIO: IO1/2/4/5 IMON A–D, IO6 VBUS_SENSE (ADC1) · IO7/8/9 CAN TX/RX/STB · IO10–13 POS A–D ·")
     c.note("  IO14–17 ROW_EN A–D · IO18/21/47/33 FLT A–D · IO39 PD_INT, IO40/41 PD_SCL/SDA, IO42 I2C_PU · IO35 CTL LED ·")
     c.note("  IO19/20 USB.  Strapping IO3/45/46 unused.")
