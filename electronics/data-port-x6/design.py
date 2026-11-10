@@ -425,6 +425,9 @@ def power_sheet(b: Board):
                sch=at(x0 + 58, 14))
     testpoints(s, ["TP9", "TP41", "TP42", "TP43", "TP45", "TP46", "TP47"],
                "Test points (rear face): +5V_A, +5V_B, VIN, GND", 6, 78)
+    s.frame("Fiducials (top face, for the pick-and-place camera)", 106, 78, 152, 98)
+    for i, (x, y) in enumerate(FIDUCIALS):
+        part(s, f"FID{i + 1}", "fiducial", {}, pcb=P(x, y, 0), in_bom=False, sch=at(114 + 12 * i, 92))
     s.notes_at = (6, 56, 200)
     s.notes = [
         "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).",
@@ -923,6 +926,12 @@ def drawn():
 
 
 # ---------------------------------------------------------------------------------------------- board
+# The fiducials: three on the top face, the only one a machine places parts on (J1, on the rear face, is soldered by
+# hand), as far apart as the routed board leaves room with 3 mm of clear board round each (1.5 mm from the centre
+# to any other copper, courtyard or silkscreen) and 3 mm at least from an edge.
+FIDUCIALS = [(9.75, 17.75), (90.25, 18.0), (18.0, 66.25)]
+
+
 def board() -> Board:
     b = Board("data-port-x6", "DATA ×6", "1.0",
               comments=["A porte-revues drawer board: six switched, measured USB-C behind a hub "
