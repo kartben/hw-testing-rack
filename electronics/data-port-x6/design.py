@@ -983,7 +983,9 @@ def board() -> Board:
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
         "size": (W, H), "layers": LAYERS, "outline": outline, "passes": 80,
-        "min_track": 0.09, "min_clearance": 0.1, "hole_clearance": 0.2,
+        # 4 mil tracks at least (2026-11-10, the fab's DFM check): every neck the router left at 0.095 mm had
+        # the room for it; the 0.1 mm clearance is unchanged
+        "min_track": 0.1016, "min_clearance": 0.1, "hole_clearance": 0.2,
         "inner": ([("In1.GND", "power"), ("In2.SIG", "signal"), ("In3.SIG", "signal"), ("In4.PWR", "power")]
                   if six else [("In1.GND", "power"), ("In2.PWR", "power")]),
         "stackup": "JLC06161H-3313" if six else "JLC04161H-7628", "finish": "ENIG",
