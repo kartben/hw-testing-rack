@@ -459,6 +459,38 @@ def buck_copper(sw: str, out: str, bx: float, by: float, tag: str) -> tuple[list
     return zones, vias
 
 
+def ldo_copper() -> tuple[list, list, list]:
+    """U3's copper (the PCB review's X6-02, 2026-11-09): the AP2114H's tab had one 0.25 mm track to one via, for
+    0.33 to ≈ 0.5 A from +5V_B's 5.24 V (0.65 to ≈ 1 W; Diodes gives 128 °C/W bare, shutdown at 160 °C).  As the
+    v2's now: its tab on a top-side +3V3 island with C3's pad, doubled on the rear face, and twelve vias through
+    both into the +3V3 plane, the In1 GND plane under it all; the bring-up measures it.
+      * F.Cu: from under U3's body (east of its GND via) to 0.6 mm short of R54 / R55, between the edge fence's
+        vias north and the 4 mm GND vias' row south; stepped down east of the tab, under C3's GND pad and
+        +5V_B's track from R54;
+      * B.Cu: the same, to 0.3 mm short of the plane's +3V3 / +5V_B split, stepped down under U3's +5V_B feed, which
+        crosses it on the routed board (from its via by C3 to U3.3): the vias on either side tie both parts;
+      * ten new vias, 1.3 mm apart at least (their holes in the GND plane leave it whole), none in a pad, each
+        0.4 mm or more from the +5V_B feed on B.Cu.  The two the fan-out gave the tab and C3 (pads in an
+        island of their net get none) are drawn with their tracks, where the routed board has them.
+    Returns (zones, tracks, vias)."""
+    lx, ly = LDO
+    front = [(-0.2, -3.15), (4.55, -3.15), (4.55, -1.75), (8.6, -1.75), (8.6, 2.7), (-0.2, 2.7)]
+    back = [(-0.2, -3.15), (4.55, -3.15), (4.55, -1.2), (7.7, -1.2), (7.7, 2.7), (-0.2, 2.7)]
+    zones = [{"layer": "F.Cu", "net": "+3V3", "name": "ldo-vout", "priority": 3, "exclusive": 0.3,
+              "poly": [(round(lx + x, 3), round(ly + y, 3)) for x, y in front]},
+             {"layer": "B.Cu", "net": "+3V3", "name": "ldo-back", "priority": 3,
+              "poly": [(round(lx + x, 3), round(ly + y, 3)) for x, y in back]}]
+    tracks = [("+3V3", "F.Cu", 0.25, [(lx + 3.15, ly), (lx + 4.5, ly)]),              # the tab to its via
+              ("+3V3", "F.Cu", 0.25, [(lx + 5.6, ly - 0.85), (lx + 5.6, ly)])]         # C3 to its own
+    vias = [("+3V3", round(lx + x, 3), round(ly + y, 3), 0.5, 0.3)
+            for x, y in ((4.5, 0.0), (5.6, 0.0),                                        # the fan-out's two
+                         (1.5, -2.6), (3.5, -2.7),                                      # north of the tab
+                         (1.2, -1.3), (1.4, 1.4),                                       # under the body
+                         (2.5, 2.4), (4.1, 2.4),                                        # south of the tab
+                         (4.9, 1.3), (5.7, 2.4), (6.5, 1.3), (7.1, 0.0))]               # east of it
+    return zones, tracks, vias
+
+
 # ----------------------------------------------------------------------------------- hub, lead, 3.3 V
 def hub_sheet(b: Board):
     s = b.sheet("Hub", "hub.kicad_sch", "Lead, hub, expander, 3.3 V")
@@ -940,6 +972,9 @@ def board() -> Board:
         z, v = buck_copper(f"BUCK{key}_SW", f"+5V_{key}", 8 + dx, 44 + dy, f"buck{key.lower()}")
         buck_zones += z
         hand_vias += v
+    ldo_zones, t, v = ldo_copper()
+    hand_tracks += t
+    hand_vias += v
     six = LAYERS == 6                   # X6_LAYERS=6: F · GND · sig · sig · power · B (the v2's 6-layer stack)
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
@@ -989,7 +1024,7 @@ def board() -> Board:
                   {"layer": pwr, "net": "+3V3", "name": "pwr-3v3", "priority": 1, "poly": IN_3V3},
                   {"layer": pwr, "net": "+5V_A", "name": "pwr-5va", "priority": 2, "poly": IN_5VA},
                   {"layer": pwr, "net": "+5V_B", "name": "pwr-5vb", "poly": IN_5VB},
-                  *buck_zones,
+                  *buck_zones, *ldo_zones,
                   {"layer": "F.Cu", "net": "GND"}, {"layer": "B.Cu", "net": "GND"}],
         "tracks": hand_tracks, "vias": hand_vias,
         # the 100 nF that cannot keep the pin → cap → via order where they sit (decoupling.py), with the measures
