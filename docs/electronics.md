@@ -849,6 +849,22 @@ Every board has bare test pads on the bottom.  Each is named on B.SilkS.  They a
 | DATA port | 5V (VBUS), GND; a second GND by the receptacle (kicad-happy review DP-6) |
 | DATA ×4 v2 | 32, listed with the board above: 8 GND; +3V3, +5V, the hub's 1V8 and the logic's −5V, +5V_MX, +3V3_CP, +1V1; SWDIO, SWCLK, RUN, BOOT; the matrix's DAT, CK, STB1, STB2, MX RST; HUB RST; INT, SDA, SCL; FLT1–FLT4 |
 
+## Fiducials
+
+Each of the five ordered boards has three fiducials on its top face (FID1–FID3), the marks a pick-and-place camera aligns on.  Each is 1 mm of bare copper in a 2 mm mask opening (KiCad's `Fiducial_1mm_Mask2mm`).  They are not in the BOM or the CPL.  The bottom faces have none: no machine places a part there.
+
+Their positions are in each `design.py` (`FIDUCIALS`).  On each board they form the widest triangle among the places the routed board leaves free.  A place counts as free when the mark's centre is 1.5 mm from any other copper, courtyard or silkscreen, and 3 mm from an edge.  The camera pod is too small for that: its marks keep 1.15 mm to other copper, and two are 1.75 mm from an edge.
+
+They were added to the routed boards on 2026-11-10 without moving a track, a via or a part.  `design.py` places them like any other part, so a regenerated board has them at the same places.
+
+| Board | FID1 | FID2 | FID3 |
+|---|---|---|---|
+| Bay node | 5.75, 5.75 | 70.25, 6.0 | 58.0, 86.25 |
+| Power hub | 5.75, 9.75 | 70.25, 54.0 | 10.25, 94.75 |
+| Camera pod | 27.5, 3.5 | 1.75, 22.5 | 38.0, 25.25 |
+| DATA ×4 v2 | 74.5, 3.75 | 7.0, 46.25 | 90.25, 66.0 |
+| DATA ×6 | 9.75, 17.75 | 90.25, 18.0 | 18.0, 66.25 |
+
 ## Bring-up measurements
 
 What the PCBA review ([pcba-review.md](pcba-review.md)) left to the bench, per board, on the first ones built.  The datasheet audit ([datasheet-audit.md](datasheet-audit.md), 2026-10-24) adds its own bring-up checks.  So does the schematic review ([schematic-review-2026-10-25.md](schematic-review-2026-10-25.md)).
