@@ -209,6 +209,13 @@ DATA_VIN_RULE = """
 """
 
 
+# The fiducials: three on the top face, the only one a machine places parts on, as far apart as the routed board
+# leaves room with 3 mm of clear board round each (1.5 mm from the centre to any other copper, courtyard or
+# silkscreen) and 3 mm at least from an edge.  FID1 is left of the module's antenna keep-out, in the GND pour
+# that was there already.
+FIDUCIALS = [(5.75, 5.75), (70.25, 6.0), (58.0, 86.25)]
+
+
 def board() -> Board:
     b = Board("bay-node", "Bay node", "1.0",
               comments=["ESP32-S3 USB/IP host for one bay of the hw-testing-rack shelf",
@@ -897,6 +904,9 @@ def board() -> Board:
     d.frame("Mounting (M3, matches the carrier standoffs)", 116, 66, 160, 80)
     for i, (x, y) in enumerate(CFG["holes"]):
         part(d, f"H{i + 1}", "hole", {}, "M3", pcb=P(x, y, 0), in_bom=False, sch=at(122 + 9 * i, 73))
+    d.frame("Fiducials (top side, for the pick-and-place camera)", 6, 76, 52, 90)
+    for i, (x, y) in enumerate(FIDUCIALS):
+        part(d, f"FID{i + 1}", "fiducial", {}, pcb=P(x, y, 0), in_bom=False, sch=at(14 + 12 * i, 84))
     d.notes_at = (6, 52, 60)
     d.note("TPS26600: I_LIM ≈ 12 A·kΩ / R_ILIM → 6.8k ≈ 1.76 A (1.67–1.85 A at ±5 %), under JST PH's 2 A a contact.")
     d.note("  The DATA ×6 draws ≈ 1.0 A at 20 V (1.2 A with its six ports at their 0.62 A limit), 0.75 A at 28 V,")
