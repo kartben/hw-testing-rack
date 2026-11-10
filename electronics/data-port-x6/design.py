@@ -983,9 +983,10 @@ def board() -> Board:
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
         "size": (W, H), "layers": LAYERS, "outline": outline, "passes": 80,
-        # 4 mil tracks at least (2026-11-10, the fab's DFM check): every neck the router left at 0.095 mm had
-        # the room for it; the 0.1 mm clearance is unchanged
-        "min_track": 0.1016, "min_clearance": 0.1, "hole_clearance": 0.2,
+        # the fab's DFM limits (2026-11-10): 4 mil tracks and gaps, 8 mil from a hole to another net's copper.
+        # The 0.5 / 0.3 mm via's 0.1 mm ring and a 4 mil gap leave 0.2016 mm from its hole to a track, 1.6 um
+        # short: a re-route may put tracks there, the DRC then names them (they move away by a few um)
+        "min_track": 0.1016, "min_clearance": 0.1016, "hole_clearance": 0.2032,
         "inner": ([("In1.GND", "power"), ("In2.SIG", "signal"), ("In3.SIG", "signal"), ("In4.PWR", "power")]
                   if six else [("In1.GND", "power"), ("In2.PWR", "power")]),
         "stackup": "JLC06161H-3313" if six else "JLC04161H-7628", "finish": "ENIG",
@@ -1113,8 +1114,8 @@ def board() -> Board:
 
 USB_W = 0.15 if LAYERS == 6 else 0.25    # ≈ 90 Ω over 0.1 mm of 3313 prepreg on 6 layers, 0.2 mm of 7628 on 4
 NETCLASSES = [
-    {"name": "Default", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3},
-    {"name": "Supply", "clearance": 0.1, "track_width": 0.25, "via_diameter": 0.5, "via_drill": 0.3,
+    {"name": "Default", "clearance": 0.1016, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3},
+    {"name": "Supply", "clearance": 0.1016, "track_width": 0.25, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 5,
      "_patterns": ["+3V3", "*HUB_1V8", "*HUB_1V8PLL"], "_min_width": 0.25},
@@ -1122,12 +1123,12 @@ NETCLASSES = [
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
      "_patterns": ["+5V_A", "+5V_B", "*VIN", "*BUCK?_SW"], "_min_width": 0.25},
-    {"name": "Port", "clearance": 0.1, "track_width": 0.3, "via_diameter": 0.6, "via_drill": 0.3,
+    {"name": "Port", "clearance": 0.1016, "track_width": 0.3, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,
      "_patterns": ["*PORT?_5V_SW", "*PORT?_VBUS"], "_min_width": 0.25},
     # the enables, faults and resets: Default's widths, kept 3 × USB_W off the USB pairs (netrules.py)
-    {"name": "Sensitive", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
+    {"name": "Sensitive", "clearance": 0.1016, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 6,
      "_patterns": ["*PORT?_EN", "*PORT?_FLT_N", "*HUB_RST_N", "*BUCK_EN"]},
