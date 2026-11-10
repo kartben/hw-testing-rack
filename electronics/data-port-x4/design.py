@@ -1817,10 +1817,12 @@ def board() -> Board:
     pwr = "In4.Cu" if six else "In2.Cu"
     b.pcb = {
         "size": (W, H), "layers": LAYERS, "outline": outline, "passes": 80,
-        # dense: JLC's multilayer floor (0.09 mm tracks and spaces, 0.2 mm from a via hole to a track); 0.1 mm
-        # clearance and the 0.5 / 0.3 mm via keep the hole 0.2 mm from any track.  4 mil tracks at least all the
-        # same (2026-11-10, the fab's DFM check): the necks the router left at 0.095 mm had the room for it
-        "min_track": 0.1016, "min_clearance": 0.1, "hole_clearance": 0.2,
+        # dense: JLC's multilayer floor is 0.09 mm tracks and spaces, 0.2 mm from a via hole to a track.  The
+        # board asks the fab's DFM limits instead (2026-11-10): 4 mil tracks and gaps, 8 mil from a hole to
+        # another net's copper.  The 0.5 / 0.3 mm via's 0.1 mm ring and a 4 mil gap leave 0.2016 mm from its
+        # hole to a track, 1.6 um short: a re-route may put tracks there, the DRC then names them (they move
+        # away by a few um)
+        "min_track": 0.1016, "min_clearance": 0.1016, "hole_clearance": 0.2032,
         # every signal layer beside a plane: F over GND (the USB pairs), B over the power plane; on 6 layers
         # In2 over GND, In3 over the power plane
         "inner": ([("In1.GND", "power"), ("In2.SIG", "signal"), ("In3.SIG", "signal"), ("In4.PWR", "power")]
@@ -2039,10 +2041,10 @@ MIN_WIDTH_EXCEPT = {"courtyards": ["U1", "U11", "C16"], "nets": ["+1V1", "+5V_MX
                     "why": "in the hub's and the co-processor's fan-out, and the matrix's few-mA ±5 V"}
 # X4: KiCad names a sheet's local nets "/Port n/PORTn_…": the patterns need their leading "*"
 NETCLASSES = [
-    # dense board: 0.127 mm signal tracks, 0.1 mm clearance (JLC's multilayer minimum is 0.09) and the 0.5 /
+    # dense board: 0.127 mm signal tracks, 4 mil clearance (JLC's multilayer minimum is 0.09 mm) and the 0.5 /
     # 0.3 mm via (JLC's recommended ring, no extra cost) wherever the current allows
-    {"name": "Default", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3},
-    {"name": "Supply", "clearance": 0.1, "track_width": 0.25, "via_diameter": 0.5, "via_drill": 0.3,
+    {"name": "Default", "clearance": 0.1016, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3},
+    {"name": "Supply", "clearance": 0.1016, "track_width": 0.25, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 5,
      "_patterns": ["+3V3", "*+3V3_CP", "*+1V1", "-5V", "+5V_MX"], "_min_width": 0.25},
@@ -2053,11 +2055,11 @@ NETCLASSES = [
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 1,
      "_patterns": ["+5V", "*VIN", "*BUCK_SW"], "_min_width": 0.25},
-    {"name": "Port", "clearance": 0.1, "track_width": 0.3, "via_diameter": 0.6, "via_drill": 0.3,
+    {"name": "Port", "clearance": 0.1016, "track_width": 0.3, "via_diameter": 0.6, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2,
      "_patterns": ["*PORT?_5V_SW", "*PORT?_VBUS"], "_min_width": 0.25},
-    {"name": "Sensitive", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
+    {"name": "Sensitive", "clearance": 0.1016, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 6,
      "_patterns": ["*PORT?_EN", "*PORT?_FLT_N", "*HUB_RST_N", "*BUCK_EN", "*EXP?_RST_N", "*MX_RST", "*CP_RUN",
@@ -2071,11 +2073,11 @@ NETCLASSES = [
     # the two I²C buses, this board's (SCL/SDA: the expanders, the INA226s, the crosspoints' control) and the lead's
     # (LEAD_SCL/LEAD_SDA, to the node, behind Q1/Q2): a class of their own, as slow as Default (the layout review:
     # every signal in a class)
-    {"name": "I2C", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
+    {"name": "I2C", "clearance": 0.1016, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 7,
      "_patterns": ["SCL", "SDA", "*LEAD_SCL", "*LEAD_SDA"]},
-    {"name": "Pins", "clearance": 0.1, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
+    {"name": "Pins", "clearance": 0.1016, "track_width": 0.127, "via_diameter": 0.5, "via_drill": 0.3,
      "diff_pair_width": 0.2, "diff_pair_gap": 0.15, "wire_width": 6, "bus_width": 12, "line_style": 0,
      "pcb_color": "rgba(0, 0, 0, 0.000)", "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 4,
      "_patterns": ["*PORT?_P?", "*PORT?_A?", "*PORT?_B?", "BUS_?"]},
