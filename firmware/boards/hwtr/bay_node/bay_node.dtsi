@@ -35,7 +35,7 @@
 		compatible = "hwtr,dut-port";
 		/* IO41 DUT_EN -> TPS26600 SHDN (U9, 10k pull-down: DATA_VIN off without firmware) */
 		enable-gpios = <&gpio1 9 GPIO_ACTIVE_HIGH>;
-		/* IO40 DUT_FLT_N <- TPS26600 ~FLT (10k pull-up): low in a fault, and while off or ramping */
+		/* IO40 DUT_FLT_N <- 1k (R43) <- TPS26600 ~FLT (10k pull-up): low in a fault, and while off or ramping */
 		fault-gpios = <&gpio1 8 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 		vin-efuse;
 		/* IO1 SCL, IO2 SDA: read before DATA_VIN goes on (the DATA lead's power-on rule) */

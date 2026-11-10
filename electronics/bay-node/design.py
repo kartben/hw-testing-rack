@@ -282,7 +282,7 @@ def board() -> Board:
     # power path sized for twice the full-load current (2 × 1.76 A: ≈ 1.7 mm of outer 1 oz, IPC-2221 at 10 °C).
     # Exact outlines 0.15 mm from every other net's copper (the router takes an outline as its net's copper):
     # VIN over pins 1/2 and C20, its C_IN; VOUT from pins 15/16 to R19.1, 1.63 mm at its narrowest (3.7 mm
-    # between AUX_VREF and DUT_FLT_N); DATA_VIN from R19.4 to J7.1, 1.74 mm along its diagonal.  The drawn
+    # between AUX_VREF and DATA_FLT_N); DATA_VIN from R19.4 to J7.1, 1.74 mm along its diagonal.  The drawn
     # tracks stay under them, a pin-to-pin link for the router; VIN comes down from TP6 at 1.7 mm through three
     # vias, the second and third north of In2's VRACK strip, which the first already notches
     ex, ey = EFUSE
@@ -292,7 +292,7 @@ def board() -> Board:
     efuse_pours = [
         ("VIN", "efuse-in", [(48.125, 52.575), (49.275, 52.575), (49.275, 54.3), (49.6, 54.625), (49.6, 56.65),
                              (45.75, 56.65), (45.75, 54.3), (48.125, 54.3)]),
-        # round AUX_VREF's jog (west), DUT_FLT_N's and DUT_EN's vias (south), the GND via over the band (north)
+        # round AUX_VREF's jog (west), DATA_FLT_N's and DUT_EN's vias (south), the GND via over the band (north)
         ("DATA_VIN_SW", "efuse-out", [(47.722, 48.425), (47.722, 42.8), (47.84, 42.8), (47.84, 42.1), (47.722, 42.1),
                                       (47.722, 40.0), (51.5, 40.0), (51.5, 40.4), (52.4, 40.4), (52.4, 40.0),
                                       (56.475, 40.0), (56.475, 41.85), (55.2, 41.85), (55.2, 42.1), (54.611, 42.1),
@@ -794,7 +794,7 @@ def board() -> Board:
     C(d, "C20", "1u", "VIN", "GND", size="0805", pcb=P(48.65, 56.4, 270), sch=at(24, 26.5))     # at U9.IN
     part(d, "U9", "efuse", {"IN": "VIN", "GND": "GND", "RTN": "GND", "UVLO": "GND", "OVP": "GND", "MODE": "GND",
                             "~{SHDN}": "DUT_EN", "ILIM": "DATA_ILIM", "dVdT": "DATA_DVDT", "IMON": None,
-                            "~{FLT}": "DUT_FLT_N", "OUT": "DATA_VIN_SW"},
+                            "~{FLT}": "DATA_FLT_N", "OUT": "DATA_VIN_SW"},
          pcb=P(*EFUSE, 90), sch=at(40, 30, fields=(-4, -8)))
     d.wire("U9.UVLO", (33, 28), (31, 28))
     d.wire("U9.MODE", (33, 34), (33, 28))
@@ -809,9 +809,17 @@ def board() -> Board:
     d.wire("U9.ILIM", "R16.1")
     C(d, "C29", "22n", "DATA_DVDT", "GND", pcb=P(EFUSE[0] + 0.325, 44.8, 90), sch=at(47, 40.5))
     d.wire("U9.dVdT", (47, 35), "C29.1")
-    R(d, "R18", "10k", "+3V3", "DUT_FLT_N", pcb=P(45.2, 43.0, 0), sch=at(55, 28.5))
-    d.wire("U9.~{FLT}", (58, 30))
-    d.tag("DUT_FLT_N", (58, 30), "right")
+    R(d, "R18", "10k", "+3V3", "DATA_FLT_N", pcb=P(45.2, 43.0, 0), sch=at(51, 28.5))
+    # ~FLT to IO40 through 1k (the PCB review's BN-01, 2026-11-09): in USB-OTG download boot the ROM drives IO40
+    # (MTDO) high (Espressif's hardware design guidelines, the pads' state in download boot) while ~FLT, open
+    # drain, is low: U9 is off, SHDN held low by R17.  Wired straight, the review reckons 17 to 28 mA into a pin
+    # whose absolute maximum is 10 mA, at every flash by the ROM; through R43, 3.3 mA at most.  R18 stays on the
+    # eFuse's side, so the low level IO40 reads is ~FLT's own.  On the trunk's F.Cu run between the module and
+    # the eFuse, pin 2 (IO40's side, with TP13) north
+    R(d, "R43", "1k", "DATA_FLT_N", "DUT_FLT_N", pcb=P(39.5, 29.4, 90), sch=at(54.5, 30, rot=90))
+    d.wire("U9.~{FLT}", "R43.1")
+    d.wire("R43.2", (57, 30))
+    d.tag("DUT_FLT_N", (57, 30), "right")
     # Kelvin shunt: pins 1/4 carry the DATA board's current, pins 2/3 are sense pads on the inner edge of each
     # terminal (bench:R_1206_3216Metric_Kelvin), so the INA226 reads the resistor, not the load copper
     # its power ends solid on the VOUT and DATA_VIN pours (its sense pads sit on tracks: pcbgen would relieve both)
@@ -901,7 +909,8 @@ def board() -> Board:
     d.note("  PowerDI-123 for room.  A short-circuit trip takes OUT briefly below its -0.3 V rating, as on TI's EVM;")
     d.note("  SLVSDG2G gives no transient figure for OUT (7.1 p.6).  60 V, not 40: with OVP to GND, OUT follows IN up to")
     d.note("  D2's clamp (53 V) for the 6 us before OVP opens.")
-    d.note("  ~FLT: limit, over-temperature, UV/OV; also low while off or starting.")
+    d.note("  ~FLT: limit, over-temperature, UV/OV; also low while off or starting.  1k (R43) to IO40, which the")
+    d.note("  ROM drives high in USB-OTG download boot: 3.3 mA at most into ~FLT (10 mA absolute maximum).")
     d.note("INA226 (I2C 0x40) runs from +3V3: it measures the drop across")
     d.note("  R19 (50 mΩ → 1.64 A full scale: the ×6's 1.5 A reads, only an overload saturates; Kelvin sense pads);")
     d.note("  Vbus on Vin-: DATA_VIN")

@@ -817,7 +817,7 @@ the WROOM-1 has no IO26/IO33/IO34); devicetree in
 | IO21 | AUX_RX | UART1 RX ← AUX pin 4 (1k) | `&uart1` |
 | IO38 | LED_DIN | WS2812B (33 Ω), RMT channel 0 (the DevKitC-1 v1.1's own RGB LED pin) | `status_led` |
 | IO39 | INA_ALERT_N | INA226 ~ALERT (10k pull-up): over 1.25 A on the DATA lead's supply (DUT_5V; DATA_VIN, 20–28 V, from node v1.0), the DATA ×4 port switched on last goes off (`src/ports.c`) | `ina226` `alert-gpios` |
-| IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up); from node v1.0 the TPS26600's ~FLT, also low while it is off or ramping | `dut_port` `fault-gpios` |
+| IO40 | DUT_FLT_N | TPS2553 ~FAULT (10k pull-up); from node v1.0 the TPS26600's ~FLT through 1k (R43), also low while it is off or ramping | `dut_port` `fault-gpios` |
 | IO41 | DUT_EN | TPS2553 EN (100k pull-up: on without firmware); from node v1.0 the TPS26600's SHDN (10k pull-down: **off** without firmware, [docs/firmware.md](../docs/firmware.md#the-data-leads-power-on-rule-node-v10)) | `dut_port` `enable-gpios` |
 | IO42 | POS_OUT | POS token to J2.1 (10k, BAT54S clamp): low until addressed | `rack_bus` `pos-out-gpios` |
 | IO47 | AUX_TX | UART1 TX → AUX pin 3 (1k) | `&uart1` (`dut_port` `uart`) |

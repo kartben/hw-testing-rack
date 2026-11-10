@@ -174,7 +174,7 @@ desk, feed 15–30 V on J1 (pin 1 +, pins 2 / 5 GND): the buck starts above 13.5
 After a flash the port drops for a second (reset), comes back, and the node
 picks SERVICE up again; `bay status` and the LED show it.
 
-**Once, at the first flash (irreversible):** burn the eFuse that disables USB-OTG download (`espefuse.py --port <port> burn_efuse DIS_USB_OTG_DOWNLOAD_MODE 1`).  In USB-OTG download boot the ROM drives IO40 high and IO39 / IO38 low (ESP32-S3 Hardware Design Guidelines §1.3.13, Table 12).  On the node IO40 is DUT_FLT_N: it would fight the TPS2553D's open-drain ~FAULT if the DUT faults then.  We never use OTG download: UART0 and USB-Serial-JTAG download, our two flashing paths, stay.  An eFuse can't be unburnt; never burn `STRAP_JTAG_SEL` (GPIO3 floats).  Datasheet audit F5.
+**Once, at the first flash (irreversible):** burn the eFuse that disables USB-OTG download (`espefuse.py --port <port> burn_efuse DIS_USB_OTG_DOWNLOAD_MODE 1`).  In USB-OTG download boot the ROM drives IO40 high and IO39 / IO38 low (ESP32-S3 Hardware Design Guidelines §1.3.13, Table 12).  On the node IO40 is DUT_FLT_N, the TPS26600's open-drain ~FLT, low whenever the eFuse is off (its default): the ROM would drive it high against that.  R43 (1k in series, the PCB review's BN-01, 2026-11-09) holds the current to 3.3 mA, under the pin's 10 mA; burning `DIS_USB_OTG_DOWNLOAD_MODE` removes the conflict.  We never use OTG download: UART0 and USB-Serial-JTAG download, our two flashing paths, stay.  An eFuse can't be unburnt; never burn `STRAP_JTAG_SEL` (GPIO3 floats).  Datasheet audit F5.
 
 ### Power hub
 

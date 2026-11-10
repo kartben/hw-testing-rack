@@ -208,7 +208,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | 6.8k — Resistor 6.8k 0603 | 10  | 0.00 | 0.02 | LCSC/JLCPCB C23212 |
 | Electronics | 50m — 50 mΩ 1 % 1 W current shunt | 10  | 0.11 | 1.10 | LCSC/JLCPCB C601102 |
 | Electronics | 2.2k — Resistor 2.2k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C4190 |
-| Electronics | 1k — Resistor 1k 0603 | 30  | 0.00 | 0.05 | LCSC/JLCPCB C21190 |
+| Electronics | 1k — Resistor 1k 0603 | 40  | 0.00 | 0.07 | LCSC/JLCPCB C21190 |
 | Electronics | 150k — Resistor 150k 0603 | 20  | 0.00 | 0.03 | LCSC/JLCPCB C22807 |
 | Electronics | RESET — tactile switch 5.1 × 5.1 mm | 10  | 0.02 | 0.18 | LCSC/JLCPCB C318884 |
 | Electronics | BOOT — tactile switch 5.1 × 5.1 mm | 10  | 0.02 | 0.18 | LCSC/JLCPCB C318884 |
@@ -225,7 +225,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Electronics | TJA1462AT — CAN FD SIC transceiver, VCC 5 V, VIO 2.95–5.5 V, bus pins −36/+40 V (MCP2562 pinout) | 10  | 0.93 | 9.29 | LCSC/JLCPCB C3234095 |
 | Electronics | Bare PCB bay-node (4-layer 74×90 mm (84×90 with JLC's rails), lead-free HASL) | 10  | 1.78 | 17.85 | JLCPCB quote 2026-10-23 |
 | Electronics | Standard PCBA, 10 boards: setup, stencil, feeders, SMT, packaging, special components | 1  | 95.50 | 95.50 | JLCPCB quote 2026-10-23, adjusted |
-| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -28.44 | -28.44 | JLCPCB quote 2026-10-23, adjusted |
+| Electronics | Components bay-node: JLC quote minus the catalogue prices above | 1  | -28.46 | -28.46 | JLCPCB quote 2026-10-23, adjusted |
 | Electronics | 10u — Capacitor 10u 1206 | 8  | 0.25 | 2.00 | LCSC/JLCPCB C13585 |
 | Electronics | 100n — Capacitor 100n 0603 | 24  | 0.01 | 0.30 | LCSC/JLCPCB C14663 |
 | Electronics | 1u — Capacitor 1u 0805 | 20  | 0.03 | 0.54 | LCSC/JLCPCB C28323 |
