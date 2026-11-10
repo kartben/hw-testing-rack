@@ -1705,9 +1705,13 @@ def board() -> Board:
     vreg_zones = [{"layer": "F.Cu", "net": net, "name": name, "priority": 3, "connection": "solid", "clearance": 0.15,
                    "min_width": 0.15, "poly": [(ux + x, uy + y) for x, y in poly]} for net, name, poly in VREG]
     VREG_HOLE = [(ux - 4.55, uy + 3.9), (ux - 1.25, uy + 3.9), (ux - 1.25, uy + 9.75), (ux - 4.55, uy + 9.75)]
-    # and the exposed pad down to the GND plane: a via between its paste windows, drawn (Freerouting doesn't
-    # always fan the pad out); more of them, and its buses can't pass under the pad on B.Cu
-    hand_vias.append(("GND", ux + 0.565, uy + 0.565, 0.5, 0.3))
+    # and the exposed pad down to the GND plane: vias between its paste windows, drawn (Freerouting doesn't
+    # always fan the pad out).  Three of the four crossings (the PCB review's X4B-03, 2026-11-09: the pad is the
+    # chip's only ground but VREG_PGND, and one via left it no spare): the south-east one it had, and the two
+    # west ones, which stand between the buses that pass under the pad on B.Cu (BUS_B 0.31 mm from the north one,
+    # BUS_A 0.108 mm from the south one, for the board's 0.1 mm).  BUS_B runs through the north-east crossing
+    hand_vias += [("GND", ux + 0.565, uy + 0.565, 0.5, 0.3), ("GND", ux - 0.565, uy - 0.565, 0.5, 0.3),
+                  ("GND", ux - 0.565, uy + 0.565, 0.5, 0.3)]
     # the hub's pairs on F.Cu (hs_pairs())
     hand_tracks += hs_pairs()
     # Port 3's pair comes down just east of U6, whose east pins (SCL, port 4's RST_IO and BOOT_IO; INT unconnected) leave
