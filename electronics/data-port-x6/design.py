@@ -79,7 +79,7 @@ LANES = {2: HY + 9.0, 3: HY + 10.1, 5: HY + 10.1, 6: HY + 9.0}
 DROP_DN = {n: ESD_PX[n] - 2.2 for n in range(2, 7)}
 # the two 5 V converters: the bay node's LMR51625 block (bay-node/design.py) at an offset, the node's own layout,
 # along the top edge: A in the top-left corner, B in the top-right one (each over its plane tongue, down the
-# cradle's band at its end); their feedback dividers (100k over 18k) beside each converter's west side
+# cradle's band at its end); their feedback dividers (100k over 18.7k) beside each converter's west side
 BUCKS = {"A": (2.4, -39.7), "B": (74.0, -39.7)}
 FB_R = {key: ((dx + 4.5, 3.1, 270), (dx + 4.5, 6.1, 270)) for key, (dx, _) in BUCKS.items()}
 J1_ROT = 90
@@ -415,7 +415,10 @@ def power_sheet(b: Board):
             C(s, f"C{c0 + 4 + j}", "22u", out, "GND", size="1206", pcb=P(14 + 2.5 * j + dx, 50.5 + dy, 270),
               sch=at(x0 + x, 25.5))
         R(s, f"R{r0}", "100k", out, fb, pcb=P(*FB_R[key][0]), sch=at(x0 + 62, 30))
-        R(s, f"R{r0 + 1}", "18k", fb, "GND", pcb=P(*FB_R[key][1]), sch=at(x0 + 62, 37))
+        # 18.7k, as the v2's, not the node's 18k (the PCB review's X6-07, 2026-11-09): 5.08 V, 4.94–5.22 V at the
+        # corners, where 18k gave 5.24 V and up to 5.39 V with no load, over USB 2.0's 5.25 V at a downstream port
+        R(s, f"R{r0 + 1}", "18.7k", fb, "GND", pcb=P(*FB_R[key][1]), sch=at(x0 + 62, 37),
+          fields={"LCSC": "C22893", "MPN": "0603WAF1872T5E", "Manufacturer": "UNI-ROYAL(Uniroyal Elec)"})
         s.wire(f"R{r0}.2", f"R{r0 + 1}.1")
         s.wire((x0 + 62, 33.5), (x0 + 36, 33.5), (x0 + 36, 25), f"{u}.FB")
         s.part(f"#FLG{9 + i}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": out}, in_bom=False, on_board=False,
@@ -428,7 +431,8 @@ def power_sheet(b: Board):
         "+5V_A: ports 1–3; +5V_B: ports 4–6 and the 3.3 V LDO (≤ 0.46 A).  Never in parallel: the power plane's +5V",
         "  split left / right.  +5V_A 1.5 A at 0.5 A a port, 1.93 A at the TPS2553s' 0.644 A limit (45.3k, 1 %);",
         "  +5V_B 0.46 A more: 2.39 A at the limit, under the LMR51625's 2.5 A.",
-        "FB 100k/18k: 5.24 V, as the node's.",
+        "FB 100k/18.7k: 5.08 V, 4.94–5.22 V with VFB 0.792–0.808 V (SLUSF64B §6.5) and the 1 % resistors, as the",
+        "  DATA ×4 v2's: within USB 2.0's 4.75–5.25 V at a port (the node's 18k gave 5.24 V, 5.39 V at worst).",
         "EN 100k/10k: on above 13.5 V typ., up to 14.8 V on the EN threshold's 1.103–1.349 V (SLUSF64B §6.5) and",
         "  15.1 V with the 1 % resistors: the rack's 20 V clears it.  Off below 10.8 V typ.",
         "VIN on J1.8, the node's VRACK through its eFuse (TPS26600, ≈ 1.5 A, off by default): no second protection here.",
@@ -461,7 +465,7 @@ def buck_copper(sw: str, out: str, bx: float, by: float, tag: str) -> tuple[list
 
 def ldo_copper() -> tuple[list, list, list]:
     """U3's copper (the PCB review's X6-02, 2026-11-09): the AP2114H's tab had one 0.25 mm track to one via, for
-    0.33 to ≈ 0.5 A from +5V_B's 5.24 V (0.65 to ≈ 1 W; Diodes gives 128 °C/W bare, shutdown at 160 °C).  As the
+    0.33 to ≈ 0.5 A from +5V_B's 5.08 V (0.6 to ≈ 0.9 W; Diodes gives 128 °C/W bare, shutdown at 160 °C).  As the
     v2's now: its tab on a top-side +3V3 island with C3's pad, doubled on the rear face, and twelve vias through
     both into the +3V3 plane, the In1 GND plane under it all; the bring-up measures it.
       * F.Cu: from under U3's body (east of its GND via) to 0.6 mm short of R54 / R55, between the edge fence's
@@ -933,9 +937,9 @@ def board() -> Board:
         "Lead pinout here: 1 NC · 2 SCL · 3 SDA · 4 GND · 5 D− · 6 D+ · 7 GND · 8 VIN — the DATA ×4 v2's lead.",
         "I²C: TCA9535 0x20, INA226 0x41 / 0x43 / 0x44 / 0x45 / 0x47 / 0x4C; the node's 0x40.",
         "Rails: VIN 20 V (on above 13.5 V typ., 15.1 V at worst; ≤ 28 V), ≤ 1.3 A at 20 V ·",
-        "  +5V_A / +5V_B 5.24 V, ≤ 1.93 A / 2.39 A",
+        "  +5V_A / +5V_B 5.08 V (4.94–5.22 V), ≤ 1.93 A / 2.39 A",
         "  (ports 1–3 / 4–6 at the 0.644 A limit, +5V_B with the 3.3 V LDO's 0.46 A) ·",
-        "  PORTn_VBUS 5.1–5.24 V, 0.52–0.64 A limit ·",
+        "  PORTn_VBUS 4.94–5.08 V, 0.52–0.64 A limit ·",
         "  +3V3 3.3 V (AP2114H), ≤ 0.5 A (the hub 0.42 A at most) · HUB_1V8 / HUB_1V8PLL 1.8 V (the hub's own",
         "  regulators).",
     ]

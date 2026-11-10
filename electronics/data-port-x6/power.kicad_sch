@@ -3396,8 +3396,8 @@
 				)
 			)
 		)
-		(property "Value" "18k"
-			(at 338.871 95.25 0)
+		(property "Value" "18.7k"
+			(at 339.921 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3422,7 +3422,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 18k 0603"
+		(property "Description" "Resistor 18.7k 0603"
 			(at 335.28 93.98 0)
 			(effects
 				(font
@@ -3431,7 +3431,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25810"
+		(property "LCSC" "C22893"
 			(at 335.28 93.98 0)
 			(effects
 				(font
@@ -3440,7 +3440,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF1802T5E"
+		(property "MPN" "0603WAF1872T5E"
 			(at 335.28 93.98 0)
 			(effects
 				(font
@@ -5219,8 +5219,8 @@
 				)
 			)
 		)
-		(property "Value" "18k"
-			(at 516.671 95.25 0)
+		(property "Value" "18.7k"
+			(at 517.721 95.25 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5245,7 +5245,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Resistor 18k 0603"
+		(property "Description" "Resistor 18.7k 0603"
 			(at 513.08 93.98 0)
 			(effects
 				(font
@@ -5254,7 +5254,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C25810"
+		(property "LCSC" "C22893"
 			(at 513.08 93.98 0)
 			(effects
 				(font
@@ -5263,7 +5263,7 @@
 				(hide yes)
 			)
 		)
-		(property "MPN" "0603WAF1802T5E"
+		(property "MPN" "0603WAF1872T5E"
 			(at 513.08 93.98 0)
 			(effects
 				(font
@@ -7290,10 +7290,10 @@
 		)
 		(uuid "d609dd40-39ff-5074-9458-89ec5072f3f3")
 	)
-	(text_box "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).\n+5V_A: ports 1–3; +5V_B: ports 4–6 and the 3.3 V LDO (≤ 0.46 A).  Never in parallel: the power plane's +5V\n  split left / right.  +5V_A 1.5 A at 0.5 A a port, 1.93 A at the TPS2553s' 0.644 A limit (45.3k, 1 %);\n  +5V_B 0.46 A more: 2.39 A at the limit, under the LMR51625's 2.5 A.\nFB 100k/18k: 5.24 V, as the node's.\nEN 100k/10k: on above 13.5 V typ., up to 14.8 V on the EN threshold's 1.103–1.349 V (SLUSF64B §6.5) and\n  15.1 V with the 1 % resistors: the rack's 20 V clears it.  Off below 10.8 V typ.\nVIN on J1.8, the node's VRACK through its eFuse (TPS26600, ≈ 1.5 A, off by default): no second protection here.\n  ≈ 1.0 A at 20 V (1.3 A at the ports' limit), 1.5 A at 13.5 V, 0.75 A at 28 V; a PH contact carries 2 A."
+	(text_box "Two LMR51625 as the bay node's (TI SLUSF64B table 8-1: 4.7 µH FXL0630, 2 × 10 µF + 100 nF in, 3 × 22 µF out).\n+5V_A: ports 1–3; +5V_B: ports 4–6 and the 3.3 V LDO (≤ 0.46 A).  Never in parallel: the power plane's +5V\n  split left / right.  +5V_A 1.5 A at 0.5 A a port, 1.93 A at the TPS2553s' 0.644 A limit (45.3k, 1 %);\n  +5V_B 0.46 A more: 2.39 A at the limit, under the LMR51625's 2.5 A.\nFB 100k/18.7k: 5.08 V, 4.94–5.22 V with VFB 0.792–0.808 V (SLUSF64B §6.5) and the 1 % resistors, as the\n  DATA ×4 v2's: within USB 2.0's 4.75–5.25 V at a port (the node's 18k gave 5.24 V, 5.39 V at worst).\nEN 100k/10k: on above 13.5 V typ., up to 14.8 V on the EN threshold's 1.103–1.349 V (SLUSF64B §6.5) and\n  15.1 V with the 1 % resistors: the rack's 20 V clears it.  Off below 10.8 V typ.\nVIN on J1.8, the node's VRACK through its eFuse (TPS26600, ≈ 1.5 A, off by default): no second protection here.\n  ≈ 1.0 A at 20 V (1.3 A at the ports' limit), 1.5 A at 13.5 V, 0.75 A at 28 V; a PH contact carries 2 A."
 		(exclude_from_sim no)
 		(at 15.24 142.24 0)
-		(size 508 25.4)
+		(size 508 26.67)
 		(margins 1.5 1.5 1.5 1.5)
 		(stroke
 			(width 0)

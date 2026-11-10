@@ -119,7 +119,7 @@ Electronics,data-port-x6,4.7k — Resistor 4.7k 0402,20,pcs,0.0019,0.04,LCSC/JLC
 Electronics,data-port-x6,1M — Resistor 1M 0402,10,pcs,0.0018,0.02,LCSC/JLCPCB,C26083,0402WGF1004TCE,UNI-ROYAL(Uniroyal Elec),R10,1 per board × 10 boards
 Electronics,data-port-x6,100k — Resistor 100k 0402,10,pcs,0.0014,0.01,LCSC/JLCPCB,C25741,0402WGF1003TCE,UNI-ROYAL(Uniroyal Elec),R50,1 per board × 10 boards
 Electronics,data-port-x6,100k — Resistor 100k 0603,20,pcs,0.0029,0.06,LCSC/JLCPCB,C25803,0603WAF1003T5E,UNI-ROYAL(Uniroyal Elec),"R52,R54",2 per board × 10 boards
-Electronics,data-port-x6,18k — Resistor 18k 0603,20,pcs,0.0037,0.07,LCSC/JLCPCB,C25810,0603WAF1802T5E,UNI-ROYAL(Uniroyal Elec),"R53,R55",2 per board × 10 boards
+Electronics,data-port-x6,18.7k — Resistor 18.7k 0603,20,pcs,0.0,0.0,LCSC/JLCPCB,C22893,0603WAF1872T5E,UNI-ROYAL(Uniroyal Elec),"R53,R55",2 per board × 10 boards
 Electronics,data-port-x6,45.3k — Resistor 45.3k 0402,60,pcs,0.0,0.0,LCSC/JLCPCB,C2933099,FRC0402F4532TS,FOJAN,"R101,R201,R301,R401,R501,R601",6 per board × 10 boards
 Electronics,data-port-x6,56k — Resistor 56k 0402,120,pcs,0.0017,0.2,LCSC/JLCPCB,C25796,0402WGF5602TCE,UNI-ROYAL(Uniroyal Elec),"R104,R105,R204,R205,R304,R305,R404,R405,R504,R505,R604,R605",12 per board × 10 boards
 Electronics,data-port-x6,"100m — 100 mΩ 1 % 0.25 W, as a current shunt",60,pcs,0.0088,0.53,LCSC/JLCPCB,C25334,1206W4F100LT5E,UNI-ROYAL(Uniroyal Elec),"R106,R206,R306,R406,R506,R606",6 per board × 10 boards
@@ -136,8 +136,8 @@ Electronics,data-port-x6,"INA226AIDGSR — 36 V current/voltage/power monitor, I
 Electronics,data-port-x6,USBLC6-2SC6 — USB ESD protection,60,pcs,0.1656,9.94,LCSC/JLCPCB,C7519,USBLC6-2SC6,STMicroelectronics,"U103,U203,U303,U403,U503,U603",6 per board × 10 boards; alternative: C2687116 (UMW clone)
 Electronics,data-port-x6,"X322524MSB4SI — 24 MHz crystal, 20 pF load, ±10 ppm, 3225",10,pcs,0.0874,0.87,LCSC/JLCPCB,C15643,X322524MSB4SI,YXC Crystal Oscillators,Y1,1 per board × 10 boards
 Electronics,data-port-x6,"Bare PCB data-port-x6 (4-layer 100×70 mm, JLC04161H-7628, ENIG)",10,pcs,2.9624,29.62,"estimate, not quoted",,,,,"board $19.40, ENIG $12.80 = $32.20 for 10 PCBs, 10 of them assembled"
-Electronics,data-port-x6,"Economic PCBA, 10 boards: setup, stencil, extended parts, SMT, special components",1,pcs,59.04,59.04,"estimate, not quoted",,,,,"setup $8.24, stencil $1.55, extended parts $40.17, SMT $12.41, special components $1.80"
-Electronics,data-port-x6,Components data-port-x6: JLC quote minus the catalogue prices above,1,pcs,-24.21,-24.21,"estimate, not quoted",,,,,quoted components $251.99 (≈ €231.83) for 10 boards; catalogue unit prices give €256.04
+Electronics,data-port-x6,"Economic PCBA, 10 boards: setup, stencil, extended parts, SMT, special components",1,pcs,61.88,61.88,"estimate, not quoted",,,,,"setup $8.24, stencil $1.55, extended parts $43.26, SMT $12.41, special components $1.80"
+Electronics,data-port-x6,Components data-port-x6: JLC quote minus the catalogue prices above,1,pcs,-24.14,-24.14,"estimate, not quoted",,,,,quoted components $251.99 (≈ €231.83) for 10 boards; catalogue unit prices give €255.97
 Electronics,camera-pod,10u — Capacitor 10u 0805,2,pcs,0.0403,0.08,LCSC/JLCPCB,C15850,CL21A106KAYNNNE,Samsung Electro-Mechanics,C1,1 per board × 2 boards
 Electronics,camera-pod,22u — Capacitor 22u 1206,2,pcs,0.1138,0.23,LCSC/JLCPCB,C12891,CL31A226KAHNNNE,Samsung Electro-Mechanics,C2,1 per board × 2 boards
 Electronics,camera-pod,100n — Capacitor 100n 0603,2,pcs,0.0124,0.02,LCSC/JLCPCB,C14663,CC0603KRX7R9BB104,YAGEO,C3,1 per board × 2 boards
