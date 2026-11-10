@@ -412,6 +412,9 @@ CAT = {
     "testpad1": Cat("Connector:TestPoint", "TestPoint:TestPoint_Pad_D1.0mm", "test pad", "-", "", 0.0),
     "hole": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_3.2mm_M3", "M3 mounting hole", "-", "", 0.0),
     "hole25": Cat("Mechanical:MountingHole", "MountingHole:MountingHole_2.7mm_M2.5", "M2.5 / PT 2.6 mounting hole", "-", "", 0.0),
+    # a mark the pick-and-place camera aligns on: 1 mm of bare copper in a 2 mm mask opening, three per assembled
+    # face, out of the BOM and the CPL
+    "fiducial": Cat("Mechanical:Fiducial", "Fiducial:Fiducial_1mm_Mask2mm", "fiducial", "-", "", 0.0),
 }
 
 HAND_SOLDER_LCSC = {c.lcsc for c in CAT.values() if c.hand_solder}

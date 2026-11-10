@@ -309,7 +309,7 @@ def export_fab(outdir: Path, name: str, b):
     fixed, cpl = [], []
     with raw.open() as fi:
         for row in csv.DictReader(fi):
-            if row["Ref"].startswith(("H", "TP")) or lcsc.get(row["Ref"]) in HAND_SOLDER_LCSC:
+            if row["Ref"].startswith(("H", "TP", "FID")) or lcsc.get(row["Ref"]) in HAND_SOLDER_LCSC:
                 continue
             cpl.append(jlc_cpl_row(row, lcsc.get(row["Ref"], "")))
             if lcsc.get(row["Ref"]) in JLC_CPL_FIX:

@@ -64,6 +64,11 @@ TP_ROUND2 = [
     ("LED_K", (35.3, 9.0), "LED"),           # on LED_K's new feed east of J1 (node v1.0), 14.3 before
 ]
 
+# The fiducials: three on the top face, the only one a machine places parts on, as far apart as the board leaves
+# room.  This board is too small for the 3 mm of clear board round each that the larger ones keep: here 2.3 mm
+# at least (1.15 mm from the centre to any other copper, courtyards apart), and two of them 1.75 mm from an edge.
+FIDUCIALS = [(27.5, 3.5), (1.75, 22.5), (38.0, 25.25)]
+
 def board() -> Board:
     b = Board("camera-pod", "Camera pod", "1.0",
               comments=["The bay camera pod's board: lead in, the Arducam Mega's header, its 3.3 V, the light "
@@ -102,6 +107,8 @@ def board() -> Board:
         R(s, f"R{n}", "100", "CAM_5V", f"LED_A{n}", size="0805", pcb=P(x, CFG["led_y"] + 4.2, 0))
     for i, (x, y) in enumerate(CFG["holes"]):
         part(s, f"H{i + 1}", "hole25", {}, "PT2.6", pcb=P(x, y, 0), in_bom=False)
+    for i, (x, y) in enumerate(FIDUCIALS):
+        part(s, f"FID{i + 1}", "fiducial", {}, pcb=P(x, y, 0), in_bom=False)
     s.block("Test pads (bottom side, labelled): no short to GND, then CAM_5V and 3.3 V at power-up")
     # bare 1.5 mm pads, no part, no paste, out of the BOM (the bring-up DFT rule, 2026-10-26)
     for i, net in enumerate(("GND", "CAM_5V", "+3V3")):
