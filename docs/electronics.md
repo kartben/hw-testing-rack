@@ -167,7 +167,7 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 
 ## Revisions at the fab
 
-v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece`: 5 PCBs and 2 assembled boards of each, at NextPCB.
+v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece`: 5 PCBs and 2 assembled boards of each, at NextPCB.  What to check when they arrive: [bring-up.md](bring-up.md).
 
 | Board | Revision | Sent | Status |
 |---|---|---|---|
@@ -185,7 +185,7 @@ v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece
 
 [`electronics/released.json`](../electronics/released.json) holds the list, with the SHA-256 of each file sent.  `python tools/released.py` compares it with the tree, and `tools/tests/test_released_boards.py` runs it with the other tool tests: a commit that changes a v1.0 board's fabrication files without a new revision fails there.  Firmware, documentation, 3D models and renders are free to change: they are not in the list.
 
-What the bench finds on v1.0 (a wrong value, a swapped pin, a bodge wire) is fixed in the next revision, not in v1.0.
+What the bench finds on v1.0 (a wrong value, a swapped pin, a bodge wire) is written down in [bring-up.md](bring-up.md#what-the-bench-finds) and fixed in the next revision, not in v1.0.
 
 ## Bay node (×1 per unit) — 4 layers, 74 × 90 mm
 

@@ -165,6 +165,8 @@ pod is screwed: its plug covers the rear-left screw.
 
 ## 7. Bring-up
 
+The first boards, one checklist each, in order: [bring-up.md](bring-up.md).
+
 Per node: SERVICE on → laptop on the PC port → flash → SERVICE off.  Then
 `usbip list -r bay-<id>.local`.  See [firmware.md](firmware.md).  With a
 camera: focus its lens on the plate from the bay page's live view, then

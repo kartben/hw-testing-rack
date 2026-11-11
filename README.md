@@ -151,7 +151,8 @@ and went through a schematic review
 datasheet audit.  **Their v1.0 went to fabrication on 2026-11-11** and is
 frozen: a change to a board now takes a new revision
 ([electronics.md › Revisions at the fab](docs/electronics.md#revisions-at-the-fab)).
-None is on the bench yet.  The node firmware:
+None is on the bench yet; what to check when they arrive:
+[bring-up.md](docs/bring-up.md).  The node firmware:
 [firmware.md](docs/firmware.md).
 Board outlines marked `verified: false` in `boards.yaml` are approximate.
 
