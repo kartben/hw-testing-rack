@@ -1,6 +1,6 @@
 """Serve the bay node web page with a simulated node, to work on the UI without one.
 
-    python firmware/bay-node/web/dev_server.py [port] [--ports 4]    # then open http://localhost:8766
+    python firmware/bay-node/web/dev_server.py [port] [--ports 4|6]    # then open http://localhost:8766
 
 Same endpoints and JSON as src/web.c, the web console's WebSockets
 (/console/ws/<n>) and access control included, and the camera's port
@@ -12,7 +12,9 @@ grabbed).  The "node" is a dict the
 POSTs change; its DUT is a fake Zephyr board that boots, logs in colour and
 runs a tiny shell on the console.  With --ports 4 it is a bay with a DATA ×4
 board (docs/multi-dut-node.md): four boards, sub-slots B3.1 to B3.4, served by
-/api/ports and /api/ports/<n>/{power,reset,boot}, leased one by one.  Each slot's
+/api/ports and /api/ports/<n>/{power,reset,boot}, leased one by one.  With --ports 6 it
+is a DATA ×6 instead: six boards, B3.1 to B3.6, USB-C 1 on hub port 6 and USB-C n on
+n - 1, no RESET or BOOT line, no matrix, no co-processor.  Each slot's
 Zephyr board target (GET /api/boards, GET and PUT /api/ports/<n>/board, src/boards.c)
 lives in memory; /board-targets.json is built from mechanical/boards/boards.yaml
 as the firmware's build does (board_targets.py).  Test hooks:
@@ -96,7 +98,7 @@ def dut_current_ma(t: float) -> int:
     return 90 + burst + int(6 * math.sin(t / 3)) + random.randint(-3, 3)
 
 
-# --- Ports: a bay with a DATA ×4 board (--ports 4) ---------------------------
+# --- Ports: a bay with a DATA ×4 board (--ports 4) or a DATA ×6 (--ports 6) ---
 
 PORTS = 1           # the boards the node serves; 1: today's one DUT (node["dut"])
 ports: list[dict] = []
@@ -112,16 +114,28 @@ STAGGER_S = 0.3     # the ports' start, one after the other
 DISCHARGE_S = 0.3   # a power cycle without "ms": until the port's VBUS is under 1 V (2 s at most)
 
 
+def hub_port(n: int) -> int:
+    """The hub's port wired to port n: a DATA x4's USB-C n is hub port n; a DATA x6's USB-C 1 is hub
+    port 6 and USB-C n hub port n - 1 (data-x6.dtsi)."""
+    return n if PORTS != 6 else 6 if n == 1 else n - 1
+
+
+def x4() -> bool:
+    """A DATA x4: its pin matrix, co-processor and RESET/BOOT lines (a DATA x6 has none)."""
+    return PORTS == 4
+
+
 def set_ports(n: int) -> None:
-    """Port n is the hub's port n (DATA x4: USB-C n), so its busid is 1-1.<n> (A1.2 -> 1-1.2).
-    DATA x4's ports come up off (EN pulled down): the firmware switches them on one by one, each
-    through the admission rule."""
+    """Port n on its hub port (hub_port()), so its busid is 1-1.<hub port> (A1.2 -> 1-1.2 on a
+    DATA x4).  The ports come up off (EN pulled down): the firmware switches them on one by one,
+    each through the admission rule."""
     global PORTS
     PORTS = n
-    ports[:] = [{"port": i, "hub_port": i, "on": False, "latched": False, "faults": 0, "up_at": 0.0,
-                 "client": None, "lease": None, "draw": 0, "foreign": False, "waiting": False,
-                 "queued": False,
-                 "usb": dict(USB_PRESETS[X4_PRESETS[i - 1]])}
+    presets = X4_PRESETS + X6_MORE
+    ports[:] = [{"port": i, "hub_port": hub_port(i), "on": False, "latched": False, "faults": 0,
+                 "up_at": 0.0, "client": None, "lease": None, "draw": 0, "foreign": False,
+                 "waiting": False, "queued": False,
+                 "usb": dict(USB_PRESETS[presets[i - 1]])}
                 for i in range(1, n + 1)] if n > 1 else []
     start = time.monotonic()
     for k, pt in enumerate(ports):
@@ -200,7 +214,7 @@ def port_doc(pt: dict, ip: int = 0) -> dict:
     ma = port_ma(pt, now)
     mv = 5080 - ma // 10 if pt["on"] else 0
     usb = {**pt["usb"], "busid": f"1-1.{pt['hub_port']}"} if pt["on"] and now >= pt["up_at"] else None
-    return {"slot": slot_name(pt["port"]), "port": pt["port"], "hub_port": pt["hub_port"],
+    return {"slot": slot_name(pt["port"]), "port": pt["port"], "hub_port": pt["hub_port"], "lines": x4(),
             "power": {"on": pt["on"], "mv": mv, "ma": ma, "mw": ma * mv // 1000, "faults": pt["faults"],
                       "state": power_state(pt["on"], pt["latched"], pt["waiting"]),
                       "queued": pt["queued"] and not pt["on"]},
@@ -215,7 +229,7 @@ def one_port_doc(s: dict) -> dict:
     client = next((c for c in access.fake if c["service"] == "usbip"), None)
     usb = ({"vid": "2fe3", "pid": "0004", "product": "USB-DEV", "serial": "005EC0A1", "busid": "1-1"}
            if dut["on"] and s["usb"]["devices"] else None)
-    return {"slot": slot_name(1), "port": 1, "hub_port": None,
+    return {"slot": slot_name(1), "port": 1, "hub_port": None, "lines": True,
             "power": {**{k: dut[k] for k in ("on", "mv", "ma", "mw", "faults")},
                       "state": power_state(dut["on"], dut["latched"]), "queued": False},
             "fault": dut["latched"],
@@ -230,7 +244,7 @@ def power_state(on: bool, latched: bool, waiting: bool = False) -> str:
 
 def short_port(d: dict) -> dict:
     """The same object, shorter: /api/status's `ports`."""
-    return {"slot": d["slot"], "port": d["port"],
+    return {"slot": d["slot"], "port": d["port"], "hub_port": d["hub_port"], "lines": d["lines"],
             "power": {k: d["power"][k] for k in ("on", "ma", "state", "queued")},
             "fault": d["fault"], "usb": {"busid": d["usb"]["busid"]} if d["usb"] else None,
             "usbip": d["usbip"], "lease": d["lease"]}
@@ -275,6 +289,7 @@ USB_KNOWN = {("1a86", "7523"): "CH340 serial adapter", ("0403", "6001"): "FT232 
              ("2e8a", "0003"): "RP2040 in BOOTSEL", ("1fc9", "0143"): "MCU-Link",
              ("0483", "374b"): "ST-LINK/V2-1"}
 X4_PRESETS = ["mculink", "ft232", "pico", "ch340"]   # DATA x4 ports 1..4
+X6_MORE = ["nucleo", "ft232"]                          # and a DATA x6's ports 5 and 6
 usb_one = "nucleo"                                      # a one-port bay's DUT: /dev/usb?preset=
 USB_SINCE = {}                                          # busid -> when its USB/IP client attached
 HUB = {"vid": "0424", "pid": "2517", "name": "USB2517 hub", "data_x4": True}
@@ -311,7 +326,7 @@ def usb_doc() -> dict:
                 pt = ports[d["port"] - 1]
                 devs.append(usb_dev_doc(pt["usb"], d["usb"]["busid"], d["slot"], d["hub_port"],
                                         pt["client"], d["power"]["ma"]))
-        return {"hub": HUB, "devices": devs}
+        return {"hub": {**HUB, "data_x4": x4()}, "devices": devs}
     d = one_port_doc(s)
     client = next((c["peer"] for c in access.fake if c["service"] == "usbip"), None)
     devs = [usb_dev_doc(USB_PRESETS[usb_one], "1-1", d["slot"], None, client, None)] if d["usb"] else []
@@ -446,6 +461,8 @@ def port_act(pt: dict, what: str, body: dict) -> tuple[int, str | None] | None:
         pt.update(on=True, latched=False, client=None, waiting=False, queued=False)
         pt["up_at"] = time.monotonic() + UP_S
     else:
+        if not x4():                      # a DATA x6: no RESET or BOOT line
+            return 400, "this port has no such line"
         if not pt["on"]:                  # RESET and BOOT are held while the port is off
             return 503, "the port is off, or the DATA board is not set up (DUT_5V off?)"
         time.sleep(0.3 if what == "boot" else min(int(body.get("ms", 100)), 500) / 1000)
@@ -1049,7 +1066,7 @@ class LogicAnalyzer:
         self.reset = threading.Event()
 
     def present(self) -> bool:
-        return multi() and coproc.image is not None
+        return x4() and coproc.image is not None
 
     def doc(self) -> dict:
         with self.lock:
@@ -1533,10 +1550,11 @@ def status(ip: int = 0) -> dict:
                     "rfc2217": any(c["id"] == "rfc2217" for c in access.fake), "raw": False,
                     "rx": len(console.log), "tx": console.tx, "dropped": 0},
             "access": access.summary(ip), "firmware": firmware.doc(), "camera": camera.doc()}
-    if ports:                           # a DATA ×4 bay: its co-processor and its analyzer
+    if x4():                            # a DATA ×4 bay: its co-processor and its analyzer
         s["coproc"] = coproc.doc()
         s["analyzer"] = logic.doc()
-    # A DATA x4 bay is node v1.0's: mW on the DATA lead against the hub's grant.  The one-DUT node
+    s["data_board"] = {4: "x4", 6: "x6"}.get(PORTS)
+    # A DATA x4 or x6 bay is node v1.0's: mW on the DATA lead against the hub's grant.  The one-DUT node
     # is a stand-in's, in mA on its 5 V (the page shows no budget for it)
     s["budget"] = ({"unit": "mW", "limit": GRANT_MW, "granted": True, "reserve": RESERVE_MW,
                     "draw": dut["mw"], "waiting": sum(pt["waiting"] for pt in ports), "sheds": 0,
@@ -1857,9 +1875,9 @@ class Handler(BaseHTTPRequestHandler):
         if self.refused("console" if path in ("/api/aux", "/api/aux/break") else "control"):
             return
         if path == "/api/analyzer":
-            return self.json(*logic.set_owner(body)) if multi() else self.json(404, {"error": "not found"})
+            return self.json(*logic.set_owner(body)) if x4() else self.json(404, {"error": "not found"})
         if path == "/api/wires":
-            return self.json(*wires.post(body, self.peer())) if multi() else self.json(404, {"error": "not found"})
+            return self.json(*wires.post(body, self.peer())) if x4() else self.json(404, {"error": "not found"})
         m = re.fullmatch(r"/api/ports/(\d+)/(power|reset|boot)", path)
         if m:
             return self.port_post(int(m[1]), m[2], body, port_reply=True)
@@ -2107,11 +2125,12 @@ if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser(description="The bay node's web page and API, on a simulated node.")
     ap.add_argument("port", type=int, nargs="?", default=8766)
-    ap.add_argument("--ports", type=int, default=1, choices=range(1, 5),
-                    help="boards the node serves: 4 for a bay with a DATA ×4 board (docs/multi-dut-node.md)")
+    ap.add_argument("--ports", type=int, default=1, choices=(1, 4, 6),
+                    help="boards the node serves: 4 for a bay with a DATA ×4 board, 6 for a DATA ×6 "
+                         "(docs/multi-dut-node.md)")
     a = ap.parse_args()
     set_ports(a.ports)
-    if a.ports > 1:
+    if a.ports == 4:
         coproc.image = {"name": "gusmanb 6.0", "size": 40704, "addr": "0x20000000", "sha256": "61b75a29" * 8}
     print(f"bay node mock on http://localhost:{a.port} (camera on port {a.port + 1})"
           + (f", {a.ports} ports" if a.ports > 1 else ""))

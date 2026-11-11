@@ -27,7 +27,7 @@
 #define ACL_NOTE_LEN    39
 #define ACL_LOG_SIZE    16
 #define ACL_MAX_BLOCKS  4
-#define ACL_MAX_PORTS   4
+#define ACL_MAX_PORTS   6 /* a DATA x6 */
 #define ACL_KEY_LEN     32
 #define ACL_MAC_LEN     32
 
@@ -111,7 +111,7 @@ int acl_source_of(const struct acl_rules *r, uint32_t ip);
 /* May this address open (or keep) a connection to this service now? */
 enum acl_verdict acl_check(const struct acl_state *s, int64_t now, enum acl_service svc,
 			   uint32_t ip);
-/* Same for a DATA x4 sub-slot (port 1..ACL_MAX_PORTS) */
+/* Same for a DATA board's sub-slot (port 1..ACL_MAX_PORTS) */
 enum acl_verdict acl_check_port(const struct acl_state *s, int64_t now, enum acl_service svc,
 				int port, uint32_t ip);
 

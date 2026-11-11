@@ -216,7 +216,7 @@ static int cmd_boot(const struct shell *sh, size_t argc, char **argv)
 	return -EINVAL;
 }
 
-/* "bay port": the DATA x4's ports, or one of them */
+/* "bay port": the DATA board's ports, or one of them */
 /* The USB devices: bus id, IDs, name, maker, serial, USB/IP client */
 static int cmd_usb(const struct shell *sh, size_t argc, char **argv)
 {
@@ -262,15 +262,17 @@ static int cmd_port(const struct shell *sh, size_t argc, char **argv)
 
 	if (argc == 1) {
 		if (ports_count() == 0) {
-			shell_print(sh, "no DATA x4 answering: a one-port node");
+			shell_print(sh, "no DATA board answering: a one-port node");
 			return 0;
 		}
+		shell_print(sh, "%s, %d ports", ports_board() == DATA_X6 ? "DATA x6" : "DATA x4",
+			    ports_count());
 		for (int i = 1; i <= ports_count(); i++) {
 			if (ports_info(i, &pi) != 0) {
 				continue;
 			}
-			shell_print(sh, "port %u: %s%s%s, %d mV %d mA, %u faults, %s", pi.slot,
-				    pi.on ? "on" : "off", pi.latched ? " (fault)" : "",
+			shell_print(sh, "port %u (1-1.%u): %s%s%s, %d mV %d mA, %u faults, %s", pi.slot,
+				    pi.hub_port, pi.on ? "on" : "off", pi.latched ? " (fault)" : "",
 				    pi.wanted ? "" : " (off by hand)", pi.mv, pi.ma, pi.faults,
 				    pi.usb ? "a USB device" : "no USB device");
 		}
@@ -303,6 +305,8 @@ static int cmd_port(const struct shell *sh, size_t argc, char **argv)
 		shell_error(sh, "no room in the budget: the bay draws %d mA", others);
 	} else if (ret == -EALREADY) {
 		shell_error(sh, "port %ld: VBUS up while off (powered from elsewhere); on once gone", n);
+	} else if (ret == -ENOTSUP) {
+		shell_error(sh, "port %ld has no RESET or BOOT line (a DATA x6)", n);
 	} else if (ret != 0) {
 		shell_error(sh, "port %ld: %d", n, ret);
 	}

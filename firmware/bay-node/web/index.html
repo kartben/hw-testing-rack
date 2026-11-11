@@ -847,7 +847,7 @@ let boardsDoc = null;
 let boardTargets = null;
 let usbFetchedAt = 0;
 let usbRetry;
-/* The DATA x4 ports whose Power on waits for room ("As soon as possible" ticked) */
+/* The DATA board's ports whose Power on waits for room ("As soon as possible" ticked) */
 const asap = new Set();
 
 const LABEL = {
@@ -947,12 +947,12 @@ function render(s) {
   renderAnalyzer(s);
 }
 
-/* The DATA x4's pin matrix: its card's code (/wires-card.mjs) loads on a bay with four ports */
+/* The DATA x4's pin matrix: its card's code (/wires-card.mjs) loads on a bay with a DATA x4 (not on a DATA x6) */
 let wireCard = null;
 function renderWires(s) {
-  const multi = (s.ports?.length ?? 0) > 1;
-  $("wire-card").hidden = !multi;
-  if (!multi) return;
+  const x4 = s.data_board === "x4";
+  $("wire-card").hidden = !x4;
+  if (!x4) return;
   wireCard ??= import("/wires-card.mjs").then((m) => m.mount());
   wireCard.then((card) => card.update(s, host, (slot) => usbDoc?.devices?.find((d) => d.slot === slot)?.name ?? ""))
     .catch((e) => {
@@ -961,11 +961,12 @@ function renderWires(s) {
     });
 }
 
-/* The DATA x4's logic analyzer: its card's code (/analyzer/card.mjs) loads once the bay has one */
+/* The DATA x4's logic analyzer: its card's code (/analyzer/card.mjs) loads once the bay has one (never on a DATA x6) */
 let laCard = null;
 function renderAnalyzer(s) {
-  $("la-card").hidden = !s.analyzer;
-  if (!s.analyzer) return;
+  const shown = Boolean(s.analyzer) && s.data_board !== "x6";
+  $("la-card").hidden = !shown;
+  if (!shown) return;
   laCard ??= import("/analyzer/card.mjs").then((m) => m.mount());
   laCard.then((card) => card.update(s, host)).catch((e) => {
     laCard = null;
@@ -1031,7 +1032,7 @@ async function run(btn, path, body, what) {
   }
 }
 
-/* --- USB devices: GET /api/usb, the board's devices and a DATA x4's ------- */
+/* --- USB devices: GET /api/usb, the board's devices and a DATA board's ----- */
 
 const KIND = [["CMSIS-DAP", "i-probe"], ["Debug probe", "i-probe"], ["Serial", "i-serial"],
   ["CDC ACM", "i-serial"], ["Mass storage", "i-drive"]];
@@ -1095,10 +1096,16 @@ function portBar(p, board = null) {
     if (title) b.title = title;
     return b;
   };
+  /* A DATA x6's ports have no RESET or BOOT line */
+  const lines = p.lines !== false;
   if (p.power.on) {
+    if (lines) {
+      acts.append(
+        mkBtn("Reset", "reset", null, "", null, `Pulse ${p.slot}'s RESET line`),
+        mkBtn("Bootloader", "boot", null, "", null, `Hold BOOT across a RESET pulse on ${p.slot}`),
+      );
+    }
     acts.append(
-      mkBtn("Reset", "reset", null, "", null, `Pulse ${p.slot}'s RESET line`),
-      mkBtn("Bootloader", "boot", null, "", null, `Hold BOOT across a RESET pulse on ${p.slot}`),
       mkBtn("Cycle", "power", "cycle", "", null, `Power cycle ${p.slot}`),
       mkBtn("Off", "power", "off", "danger", `Switch ${p.slot}'s 5 V off?`, `Switch ${p.slot}'s 5 V off`),
     );
@@ -1114,11 +1121,10 @@ function portBar(p, board = null) {
     tick.disabled = Boolean(denied);
     box.title = `If the bay's power budget has no room, ${p.slot} goes on by itself once there is`;
     box.append(tick, "As soon as possible");
-    acts.append(
-      box,
-      mkBtn("Power on", "power", "on", "primary", null, `Switch ${p.slot}'s 5 V on`),
-      mkBtn("Bootloader", "boot", "power_cycle", "", null, `Hold BOOT across power-on on ${p.slot}`),
-    );
+    acts.append(box, mkBtn("Power on", "power", "on", "primary", null, `Switch ${p.slot}'s 5 V on`));
+    if (lines) {
+      acts.append(mkBtn("Bootloader", "boot", "power_cycle", "", null, `Hold BOOT across power-on on ${p.slot}`));
+    }
   }
   const left = el("span", "port-left");
   left.append(info);
@@ -1193,7 +1199,7 @@ function usbRow(d, port = null, slot = null) {
   return li;
 }
 
-/* A DATA x4 port with nothing enumerated on it */
+/* A DATA board's port with nothing enumerated on it */
 function emptyRow(p, slot = null) {
   const li = el("li");
   li.dataset.st = p.fault ? "fault" : "empty";
@@ -1205,7 +1211,7 @@ function emptyRow(p, slot = null) {
   );
   li.append(id, el("div", "kinds"));
   const where = el("div", "where");
-  where.append(el("b", null, p.slot), el("code", null, `1-1.${p.port}`));
+  where.append(el("b", null, p.slot), el("code", null, `1-1.${p.hub_port ?? p.port}`));
   const st = el("div", "st");
   st.append(el("i"), el("span", null, p.fault ? "Fault" : p.power.on ? "No device" : "Power off"));
   const ma = el("div", "ma", p.power.ma != null ? `${fix(p.power.ma, 3)} A` : "");
@@ -1221,7 +1227,7 @@ function renderUsb(doc) {
   const carrier = (devs, b) => b && (devs.find((d) => d.busid === b.device?.busid) ?? devs[0]);
   const rows = multi
     ? status.ports.flatMap((p) => {
-        const devs = doc.devices.filter((d) => d.slot === p.slot || d.hub_port === p.port);
+        const devs = doc.devices.filter((d) => d.slot === p.slot || d.hub_port === (p.hub_port ?? p.port));
         const b = slots.find((s) => s.port === p.port);
         const c = carrier(devs, b);
         return devs.length ? devs.map((d) => usbRow(d, p, d === c ? b : null)) : [emptyRow(p, b)];
@@ -1235,8 +1241,9 @@ function renderUsb(doc) {
     list.append(li);
   }
   const n = doc.devices.length;
+  const board = { x4: "DATA ×4", x6: "DATA ×6" }[status?.data_board];
   $("usb-meta").textContent = !doc.hub && !multi ? plural(n, "device")
-    : doc.hub?.data_x4 || multi ? `DATA ×4 hub${doc.hub ? ` (${doc.hub.name})` : ""} · ${n} of ${status?.ports?.length ?? 4} ports in use`
+    : board || multi ? `${board ?? "DATA board"} hub${doc.hub ? ` (${doc.hub.name})` : ""} · ${n} of ${status?.ports?.length} ports in use`
     : `${plural(n, "device")} behind ${doc.hub.name}`;
 }
 

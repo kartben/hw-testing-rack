@@ -28,7 +28,7 @@
 LOG_MODULE_REGISTER(display, CONFIG_BAY_LOG_LEVEL);
 
 #define REFRESH_MS 1000
-#define NPORTS     4
+#define NPORTS     6 /* a DATA x6's; a DATA x4 shows four */
 
 static lv_obj_t *id_label;
 static lv_obj_t *addr_label;
@@ -104,7 +104,9 @@ static void refresh(lv_timer_t *timer)
 		  lv_palette_main(LV_PALETTE_RED));
 
 	for (int i = 0; i < NPORTS; i++) {
-		if (ports_info(i + 1, &pi) != 0) {
+		if (i >= MAX(ports_count(), 4)) {
+			label_set(port_label[i], "", lv_palette_main(LV_PALETTE_GREY));
+		} else if (ports_info(i + 1, &pi) != 0) {
 			snprintf(text, sizeof(text), "%d  -", i + 1);
 			label_set(port_label[i], text, lv_palette_main(LV_PALETTE_GREY));
 		} else if (pi.latched) {
@@ -148,9 +150,10 @@ int display_init(void)
 	addr_label = label_add(&lv_font_montserrat_14, LV_ALIGN_TOP_RIGHT, -10, 16);
 	dut_label = label_add(&lv_font_montserrat_28, LV_ALIGN_LEFT_MID, 10, -6);
 	fault_label = label_add(&lv_font_montserrat_14, LV_ALIGN_RIGHT_MID, -10, -6);
+	/* Two rows of three: ports 1-3, then 4-6 */
 	for (int i = 0; i < NPORTS; i++) {
 		port_label[i] = label_add(&lv_font_montserrat_14, LV_ALIGN_BOTTOM_LEFT,
-					  10 + i * 77, -34);
+					  10 + (i % 3) * 100, -52 + (i / 3) * 18);
 	}
 	usb_label = label_add(&lv_font_montserrat_14, LV_ALIGN_BOTTOM_LEFT, 10, -10);
 

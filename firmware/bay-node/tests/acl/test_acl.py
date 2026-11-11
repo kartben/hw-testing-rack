@@ -272,9 +272,11 @@ class TestAcl(unittest.TestCase):
         self.assertEqual(acl.take(3000, "192.168.1.41", 60), 0)
         # While the whole bay is leased by .41, .42 cannot lease any port
         self.assertEqual(acl.take_port(4000, 1, "192.168.1.42", 60), -EBUSY)
-        # Bounds on port index
+        # Bounds on port index: 1-6, a DATA x6's
         self.assertEqual(acl.take_port(0, 0, "192.168.1.41", 60), -EINVAL)
-        self.assertEqual(acl.take_port(0, 5, "192.168.1.41", 60), -EINVAL)
+        self.assertEqual(acl.take_port(0, 7, "192.168.1.41", 60), -EINVAL)
+        self.assertEqual(acl.take_port(5000, 6, "192.168.1.41", 60, "sub-slot B3.6"), 0)
+        self.assertEqual(self.lib.shim_port_lease_note(6), b"sub-slot B3.6")
         self.assertEqual(acl.release_port(0, 0, "192.168.1.41"), -EINVAL)
 
     # --- Kicks, log -------------------------------------------------------------

@@ -242,9 +242,12 @@ static const struct json_obj_descr status_descr[] = {
 /*
  * Responses are built in the HTTP server thread, one at a time (/metrics too).
  * A DATA x4 bay's status with its camera, co-processor and analyzer comes
- * near 3 KB.
+ * near 3 KB; a DATA x6's six ports, each leased with a note, take some 2 KB.
+ * With PSRAM it costs no DRAM.
  */
-static BAY_EXT_RAM char resp_buf[IS_ENABLED(CONFIG_BAY_ANALYZER) ? 4096 : 3072];
+static BAY_EXT_RAM char resp_buf[IS_ENABLED(CONFIG_ESP_SPIRAM)     ? 6144
+				 : IS_ENABLED(CONFIG_BAY_ANALYZER) ? 4096
+								   : 3072];
 
 /* X-Bay-Auth, kept from the first callback of a request */
 HWTR_WEB_AUTH_CAPTURE(bay_auth_header);
@@ -476,7 +479,9 @@ static const char *port_state(const struct port_info *pi)
 
 /*
  * One object of GET /api/ports (full) or of /api/status's ports (short):
- * a DATA x4 port, or the one DUT as port 1 (no hub: busid 1-1)
+ * a DATA board's port, or the one DUT as port 1 (no hub: busid 1-1).
+ * lines: it has RESET and BOOT (the one DUT's AUX, a DATA x4's port; not a
+ * DATA x6's).
  */
 static int port_json(char *buf, size_t size, int port, uint32_t ip, bool full)
 {
@@ -494,7 +499,8 @@ static int port_json(char *buf, size_t size, int port, uint32_t ip, bool full)
 	} else {
 		pi = (struct port_info){.slot = 1, .on = dut_power_get(),
 					.latched = dut_fault_latched() || dut_fault_active(),
-					.faults = dut_fault_count(), .usb = usb_host_device_count() > 0};
+					.faults = dut_fault_count(), .usb = usb_host_device_count() > 0,
+					.lines = true};
 		if (dut_power_read(&r) == 0) {
 			pi.mv = r.bus_mv;
 			pi.ma = r.current_ma;
@@ -528,21 +534,23 @@ static int port_json(char *buf, size_t size, int port, uint32_t ip, bool full)
 
 	if (!full) {
 		return snprintf(buf, size,
-				"{\"slot\":\"%s\",\"port\":%u,\"power\":{\"on\":%s,\"ma\":%d,\"state\":\"%s\","
+				"{\"slot\":\"%s\",\"port\":%u,\"hub_port\":%s%.0u,\"lines\":%s,"
+				"\"power\":{\"on\":%s,\"ma\":%d,\"state\":\"%s\","
 				"\"queued\":%s},\"fault\":%s,\"usb\":%s,\"usbip\":%s,\"lease\":%s}",
-				name, pi.slot, pi.on ? "true" : "false", pi.ma, port_state(&pi),
-				pi.queued ? "true" : "false", pi.latched ? "true" : "false", usb, usbip,
-				lease_str);
+				name, pi.slot, port > 0 ? "" : "null", port > 0 ? pi.hub_port : 0,
+				pi.lines ? "true" : "false", pi.on ? "true" : "false", pi.ma,
+				port_state(&pi), pi.queued ? "true" : "false",
+				pi.latched ? "true" : "false", usb, usbip, lease_str);
 	}
 	return snprintf(buf, size,
-			"{\"slot\":\"%s\",\"port\":%u,\"hub_port\":%s%.0u,"
+			"{\"slot\":\"%s\",\"port\":%u,\"hub_port\":%s%.0u,\"lines\":%s,"
 			"\"power\":{\"on\":%s,\"mv\":%d,\"ma\":%d,\"mw\":%d,\"faults\":%u,"
 			"\"state\":\"%s\",\"queued\":%s},"
 			"\"fault\":%s,\"usb\":%s,\"usbip\":%s,\"lease\":%s}",
 			name, pi.slot, port > 0 ? "" : "null", port > 0 ? pi.hub_port : 0,
-			pi.on ? "true" : "false", pi.mv, pi.ma, pi.mw, pi.faults, port_state(&pi),
-			pi.queued ? "true" : "false", pi.latched ? "true" : "false", usb, usbip,
-			lease_str);
+			pi.lines ? "true" : "false", pi.on ? "true" : "false", pi.mv, pi.ma, pi.mw,
+			pi.faults, port_state(&pi), pi.queued ? "true" : "false",
+			pi.latched ? "true" : "false", usb, usbip, lease_str);
 }
 
 /*
@@ -600,6 +608,16 @@ static int ports_status_json(char *buf, size_t size)
 	return ports_json_array(buf, size, status_ip, false);
 }
 
+/* /api/status's data_board: the board on the DATA lead, "x4" or "x6", null without one */
+static int data_board_json(char *buf, size_t size)
+{
+	static const char *const names[] = {
+		[DATA_NONE] = "null", [DATA_X4] = "\"x4\"", [DATA_X6] = "\"x6\""};
+	int n = snprintf(buf, size, "%s", names[ports_board()]);
+
+	return n < 0 || (size_t)n >= size ? -ENOMEM : n;
+}
+
 static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 {
 	static struct status_doc s;
@@ -623,6 +641,7 @@ static void respond_status(struct http_response_ctx *rsp, uint32_t ip)
 #endif
 		status_append("budget", budget_status_json);
 		status_append("ports", ports_status_json);
+		status_append("data_board", data_board_json);
 #if defined(CONFIG_BAY_COPROC)
 		status_append("coproc", coproc_json);
 #endif
@@ -1266,7 +1285,8 @@ static int usb_json(char *buf, size_t size)
 			      hub->vid, hub->pid);
 		p = bay_json_str(p, end, hub->product[0] ? hub->product
 				     : hub->known ? hub->known : "USB hub");
-		p += snprintf(p, end - p, ",\"data_x4\":%s}", ports_count() > 0 ? "true" : "false");
+		p += snprintf(p, end - p, ",\"data_x4\":%s}",
+			      ports_board() == DATA_X4 ? "true" : "false");
 	} else {
 		p += snprintf(p, end - p, "null");
 	}
