@@ -387,6 +387,13 @@ ZTEST(loader, test_7_data_x6)
 	zassert_equal(emu.cmds, 0, "%u commands to a board under test", emu.cmds);
 	zassert_equal(emu.written, 0);
 	unplug();
+
+	/* Nor on a board the node does not know */
+	board = DATA_UNKNOWN;
+	zassert_ok(picoboot_emu_plug());
+	k_msleep(500);
+	zassert_equal(emu.cmds, 0, "%u commands behind an unknown board", emu.cmds);
+	unplug();
 }
 
 ZTEST_SUITE(loader, NULL, loader_setup, loader_before, NULL, NULL);

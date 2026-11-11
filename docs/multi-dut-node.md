@@ -95,9 +95,12 @@ included, each board's ports grouped under its own node (`data_x4`,
   relay) leave that port alone while a DATA ×6 is on the lead, so a Pico 2 in
   BOOTSEL there stays USB/IP's.  The page shows neither the Wires card nor the
   Logic analyzer card on it.
-- `GET /api/status` says which: `"data_board": "x4"`, `"x6"` or `null`; each
-  port says whether it has RESET and BOOT (`"lines"`), and a DATA ×6's ports
-  answer `/reset` and `/boot` with "this port has no such line".
+- `GET /api/status` says which: `"data_board": "x4"`, `"x6"`, `"unknown"`
+  (something at 0x20 that is neither: left alone, and the co-processor's
+  port with it) or `null`; the bay page shows it as a badge in its header,
+  red for an unknown board.  Each port says whether it has RESET and BOOT
+  (`"lines"`), and a DATA ×6's ports answer `/reset` and `/boot` with "this
+  port has no such line".
 
 ## Names and USB/IP
 
@@ -291,7 +294,7 @@ Both keep the node's rule: nothing drives an unpowered board.
 | `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 2, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.2"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` (`port` is the sub-slot, USB-C n; `hub_port` is n on DATA ×4, 6 for port 1 and n − 1 for port n on DATA ×6) |
 | `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}`; 409 when the bay's budget has no room for it ([Power budget](#power-budget)); `{"action": "on", "when": "available"}` queues it instead (202), `{"action": "cancel"}` withdraws that |
 | `POST /api/ports/<n>/reset`, `/boot` | as today, for one port; `/boot` with `{"power_cycle": true}`: BOOT held across a power cycle of the port instead of a RESET pulse (a board whose RESET is not wired: [the analyzer](#a-logic-analyzer-in-a-sub-slot)) |
-| `GET /api/status` | adds `ports` (the same objects, shorter) and `data_board`: `"x4"`, `"x6"` or `null` |
+| `GET /api/status` | adds `ports` (the same objects, shorter) and `data_board`: `"x4"`, `"x6"`, `"unknown"` or `null` |
 | `/api/power`, `/api/reset`, `/api/boot` | unchanged on a one-port node; on a multi-port node they need `"port": n` (409 without) |
 | `GET /api/boards`, `GET` / `PUT /api/ports/<n>/board` | each sub-slot's Zephyr board target (board, runner, probe id, console), saved on the node for the board in it ([firmware/README.md › Board targets](../firmware/README.md#board-targets)) |
 | `/metrics` | the DUT metrics labelled `port="A1.2"` |

@@ -569,7 +569,7 @@ ZTEST(ports_x6, test_6_neither)
 	dut_on = true;
 	ports_dut_power(true);
 	k_sleep(K_MSEC(300));
-	zassert_equal(ports_board(), DATA_NONE);
+	zassert_equal(ports_board(), DATA_UNKNOWN, "said, not taken for no board");
 	zassert_equal(ports_count(), 0);
 	zassert_equal(emul_io_cfg_log(0, log, ARRAY_SIZE(log)), 0, "its config written");
 	zassert_equal(emul_io_reg(0, 1), 0xFF, "its outputs untouched");

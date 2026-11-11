@@ -236,6 +236,7 @@ static struct port ports[MAX_PORTS];
 static struct io io[IO_MAX];
 static int nio;
 static bool present;  /* the board answered at the last probe */
+static bool unknown;  /* at the last probe, something answered at 0x20 that is neither board */
 static bool chips_up; /* DUT_5V on and the chips set up */
 static int failures;
 static uint32_t admissions;
@@ -630,6 +631,7 @@ static int setup_chips(void)
 	int ret = 0;
 
 	present = b != NULL;
+	unknown = odd;
 	if (!present) {
 		return odd ? -ENOTSUP : -ENODEV;
 	}
@@ -976,7 +978,7 @@ enum data_board ports_board(void)
 {
 	const struct board *b = brd;
 
-	return present && b != NULL ? b->kind : DATA_NONE;
+	return present && b != NULL ? b->kind : unknown ? DATA_UNKNOWN : DATA_NONE;
 }
 
 /* Wanted, off, not in a fault and not waiting for a foreign VBUS to go (lock held) */

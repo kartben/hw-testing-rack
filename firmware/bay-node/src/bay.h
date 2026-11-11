@@ -101,11 +101,16 @@ int ports_init(void);
 /* Ports of the DATA board that answered, 0 without one (a one-port node) */
 int ports_count(void);
 
-/* The DATA board the last probe found on the lead, DATA_NONE while none answers */
+/*
+ * The DATA board the last probe found on the lead, DATA_NONE while none
+ * answers; DATA_UNKNOWN: something answers at 0x20, but neither as a DATA x4
+ * nor as a DATA x6 (left alone, its ports off)
+ */
 enum data_board {
 	DATA_NONE,
 	DATA_X4,
 	DATA_X6,
+	DATA_UNKNOWN,
 };
 
 enum data_board ports_board(void);

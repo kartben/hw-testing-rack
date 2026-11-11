@@ -59,7 +59,7 @@ the meter first: pin n goes to pin 9 − n.
 | A USB device in port 1, `bay usb` | the device on 1-1.6, behind the hub |
 | `bay port 1`, device plugged | its voltage and current |
 | `bay port 1 reset` | "port 1 has no RESET or BOOT line (a DATA x6)": the board was taken for a DATA ×6 |
-| The bay page | six ports; no Wires card, no Logic analyzer card |
+| The bay page | the header's badge says "DATA ×6" (a red "Unknown DATA board": the node did not take it for one); six ports; no Wires card, no Logic analyzer card |
 | `bay port 1 off` | VBUS1 back to 0 V, the device gone |
 
 The same on ports 2 to 6.  The chips the node should find on I²C: 0x20 (the expander) and

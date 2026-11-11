@@ -261,6 +261,11 @@ static int cmd_port(const struct shell *sh, size_t argc, char **argv)
 	int ret;
 
 	if (argc == 1) {
+		if (ports_board() == DATA_UNKNOWN) {
+			shell_print(sh, "a board answers at 0x20, but neither as a DATA x4 nor as a "
+					"DATA x6: left alone, its ports off");
+			return 0;
+		}
 		if (ports_count() == 0) {
 			shell_print(sh, "no DATA board answering: a one-port node");
 			return 0;

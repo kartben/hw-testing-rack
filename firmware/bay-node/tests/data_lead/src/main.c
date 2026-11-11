@@ -505,6 +505,7 @@ ZTEST(data_lead, test_15_neither)
 	zassert_false(lead_on());
 	zassert_equal(dut_lead_state(NULL), DUT_LEAD_NO_BOARD);
 	zassert_equal(ports_count(), 0);
+	zassert_equal(ports_board(), DATA_UNKNOWN, "kept while the lead is off, for the page");
 }
 
 ZTEST_SUITE(data_lead, NULL, suite_setup, before, NULL, NULL);

@@ -608,11 +608,14 @@ static int ports_status_json(char *buf, size_t size)
 	return ports_json_array(buf, size, status_ip, false);
 }
 
-/* /api/status's data_board: the board on the DATA lead, "x4" or "x6", null without one */
+/*
+ * /api/status's data_board: the board on the DATA lead, "x4" or "x6", null
+ * without one; "unknown": something at 0x20 that is neither, left alone
+ */
 static int data_board_json(char *buf, size_t size)
 {
-	static const char *const names[] = {
-		[DATA_NONE] = "null", [DATA_X4] = "\"x4\"", [DATA_X6] = "\"x6\""};
+	static const char *const names[] = {[DATA_NONE] = "null", [DATA_X4] = "\"x4\"",
+					    [DATA_X6] = "\"x6\"", [DATA_UNKNOWN] = "\"unknown\""};
 	int n = snprintf(buf, size, "%s", names[ports_board()]);
 
 	return n < 0 || (size_t)n >= size ? -ENOMEM : n;

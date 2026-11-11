@@ -311,6 +311,14 @@ ZTEST(analyzer, test_7_data_x6)
 	zassert_true(SOON(atomic_get(&usbip_binds) == 1, 2000), "USB/IP never took it");
 	zassert_equal(cdc.line_sets, 0, "the relay set its DTR");
 	zassert_equal(analyzer_attach(&new_page(0)->page, IP1), -ENODEV);
+
+	/* The same behind a board the node does not know */
+	zassert_ok(cdc_emu_unplug());
+	k_msleep(100);
+	board = DATA_UNKNOWN;
+	zassert_ok(cdc_emu_plug());
+	zassert_true(SOON(atomic_get(&usbip_binds) == 2, 2000), "USB/IP never took it");
+	zassert_equal(cdc.line_sets, 0, "the relay set its DTR");
 }
 
 ZTEST_SUITE(analyzer, NULL, analyzer_setup, analyzer_before, NULL, NULL);
