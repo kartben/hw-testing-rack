@@ -34,8 +34,9 @@
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 #include "../../boards/hwtr/bay_node/bay_node-pinctrl.dtsi"
 #include "../../boards/hwtr/bay_node/bay_node.dtsi"
-/* A DATA x4 on D4/D5 (the board's I2C0) */
+/* A DATA board on D4/D5 (the board's I2C0) */
 #include "../data-x4.dtsi"
+#include "../data-x6.dtsi"
 
 &pinctrl {
 	xiao_aux_uart: xiao_aux_uart {

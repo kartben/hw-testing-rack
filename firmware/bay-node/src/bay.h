@@ -75,10 +75,10 @@ int dut_boot_set(bool asserted);
 int dut_enter_bootloader(void);
 int dut_power_read(struct dut_power_reading *r);
 
-/* --- DATA x4 ports (ports.c) ---------------------------------------------- */
+/* --- A DATA board's ports (ports.c): a DATA x4's or a DATA x6's ----------- */
 
 struct port_info {
-	uint8_t slot;     /* DATA x4 port, 1-4: sub-slot <bay>.<slot> */
+	uint8_t slot;     /* the board's port, 1-4 or 1-6: sub-slot <bay>.<slot> */
 	uint8_t hub_port; /* busid 1-1.<hub_port> */
 	bool on;
 	bool wanted;      /* to be on after each DUT_5V on */
@@ -88,6 +88,7 @@ struct port_info {
 	bool queued;      /* asked on as soon as there is room (ports_power_wait()) */
 	bool meter;       /* mv, ma, mw read */
 	bool usb;         /* a device on its hub port: vid, pid */
+	bool lines;       /* RESET and BOOT lines (a DATA x4's; a DATA x6 has none) */
 	uint32_t faults;
 	int32_t mv;
 	int32_t ma;
@@ -97,8 +98,17 @@ struct port_info {
 };
 
 int ports_init(void);
-/* Ports of the DATA x4 that answered, 0 without one (a one-port node) */
+/* Ports of the DATA board that answered, 0 without one (a one-port node) */
 int ports_count(void);
+
+/* The DATA board the last probe found on the lead, DATA_NONE while none answers */
+enum data_board {
+	DATA_NONE,
+	DATA_X4,
+	DATA_X6,
+};
+
+enum data_board ports_board(void);
 /* Ports wanted on and kept off, waiting for their turn or for power (STATUS byte 7) */
 int ports_waiting(void);
 
@@ -116,9 +126,9 @@ struct ports_budget {
 	uint32_t sheds;   /* ports shed since boot */
 };
 
-/* -ENODEV: no board answers; -ENOENT: no DATA x4 in the devicetree */
+/* -ENODEV: no board answers; -ENOENT: no DATA board in the devicetree */
 int ports_budget(struct ports_budget *pb);
-/* slot 1..4; -ENOENT no such port, -ENODEV no board */
+/* slot 1..ports_count(); -ENOENT no such port, -ENODEV no board */
 int ports_info(int slot, struct port_info *pi);
 /*
  * -EBUSY: the budget has no room (others: what the bay draws, in the
@@ -165,7 +175,7 @@ const char *bay_data_path_str(enum bay_data_path path);
 int usb_host_device_count(void);
 /* Open TCP sessions on the USB/IP port (an attached client keeps one) */
 int usb_host_usbip_sessions(void);
-/* The device on the hub's downstream port n (a DATA x4 port): 0, or -ENODEV */
+/* The device on the hub's downstream port n (a DATA board's port): 0, or -ENODEV */
 int usb_host_port_device(uint8_t hub_port, uint16_t *vid, uint16_t *pid);
 bool usb_host_running(void);
 /* SERVICE mode: stop the host and route the PHY to USB-Serial-JTAG */
@@ -499,7 +509,7 @@ int access_json(char *buf, size_t size, uint32_t ip, bool admin);
 
 #define BOARDS_MAX 4
 
-/* The slots: a DATA x4's ports, or the bay's one DUT as port 1 */
+/* The slots: a DATA board's ports, or the bay's one DUT as port 1 */
 int boards_slots(void);
 /* GET /api/boards; one slot's object (-ENOENT: no such port) */
 int boards_json(char *buf, size_t size);

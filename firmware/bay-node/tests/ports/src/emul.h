@@ -1,5 +1,6 @@
 /*
- * The emulated DATA x4 board (emul.c), for the test.
+ * The emulated DATA board (emul.c), for the test: a DATA x4 unless
+ * emul_board_kind() says otherwise.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -16,7 +17,7 @@ void emul_power(bool on);
 int emul_offline(void);
 /* io 0: 0x20 (ports 1-2), 1: 0x21 (ports 3-4), 2: 0x38 (the matrix expander) */
 uint8_t emul_io_reg(int io, uint8_t reg);
-/* What drives an input pin from outside (FAULT_N: 0 = fault) */
+/* What drives an input pin from outside (FAULT_N: 0 = fault); a DATA x6's U2 is io 0, pins 0-15 */
 void emul_io_pin(int io, uint8_t pin, bool level);
 /* The CONFIG register values written since the last call */
 int emul_io_cfg_log(int io, uint8_t *out, int max);
@@ -36,7 +37,7 @@ int emul_xp_log(struct emul_xp_event *out, int max);
 /* RST pulses seen; DAT or CK moving while a strobe was high, DAT moving with a CK or STB edge */
 int emul_xp_resets(void);
 int emul_xp_glitches(void);
-/* A port's draw while it is on (0x41, 0x43-0x45) */
+/* A port's draw while it is on (0x41, 0x43-0x45; a DATA x6's also 0x47, 0x4C) */
 void emul_ina_ma(uint8_t addr, int ma);
 uint16_t emul_ina_config(uint8_t addr);
 uint16_t emul_ina_reg(uint8_t addr, uint8_t reg);
@@ -45,7 +46,7 @@ void emul_board_ma(int ma);
 void emul_meter(bool present);
 /* Its ALERT wired to the node (a stand-in has none: the poll sheds) */
 void emul_alert(bool wired);
-/* Port 1-4 while off: its VBUS falls from 5 V to 0 in discharge_ms, or a board holds it at ext_mv */
+/* Port 1-4 (1-6) while off: its VBUS falls from 5 V to 0 in discharge_ms, or a board holds it at ext_mv */
 void emul_port_vbus(int port, int ext_mv, int discharge_ms);
 
 /* Node v1.0 (the eFuse's EN powers the board): the rack's VIN, 20 V by default */
@@ -54,5 +55,9 @@ void emul_vin(int mv);
 void emul_lead_short(bool shorted);
 /* A DATA board on the lead or not (none: nothing answers, nothing draws) */
 void emul_board(bool there);
+/* Which: 4 a DATA x4 (the default), 6 a DATA x6, 1 an expander at 0x20 alone (neither) */
+void emul_board_kind(int kind);
+/* A DATA x6's U2 (0x20): its register pair, 0 input, 1 output, 2 polarity, 3 config; P1x the high byte */
+uint16_t emul_x6_reg(int pair);
 
 #endif

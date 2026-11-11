@@ -8,6 +8,7 @@
  */
 
 #include "../../data-x4.dtsi"
+#include "../../data-x6.dtsi"
 
 / {
 	dut_port: dut-port {

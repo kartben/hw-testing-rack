@@ -107,11 +107,14 @@ static atomic_t kick;
 
 /* --- The device ------------------------------------------------------------- */
 
+/* The co-processor's port; a DATA x6's hub port 5 is its USB-C 6, a board under test */
 static bool on_port(const struct usb_device *udev)
 {
-	return HUB_PORT == 0 ? udev->hub == NULL
-			     : udev->hub != NULL && udev->hub->hub == NULL &&
-				       udev->hub_port == HUB_PORT;
+	bool here = HUB_PORT == 0 ? udev->hub == NULL
+				  : udev->hub != NULL && udev->hub->hub == NULL &&
+					    udev->hub_port == HUB_PORT;
+
+	return here && ports_board() != DATA_X6;
 }
 
 static bool is_analyzer(const struct usb_device *udev)

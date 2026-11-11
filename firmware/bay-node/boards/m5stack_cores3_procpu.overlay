@@ -37,6 +37,7 @@
 /* A DATA x4 on Grove port A */
 #define DATA_X4_I2C i2c1
 #include "../data-x4.dtsi"
+#include "../data-x6.dtsi"
 
 /* USB_OTG_EN is the DUT's power switch (dut_port below), not a regulator */
 /delete-node/ &usb_otg_reg;

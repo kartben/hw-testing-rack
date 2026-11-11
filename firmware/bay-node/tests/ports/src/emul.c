@@ -5,6 +5,11 @@
  * their registers.  The node's own INA226 (0x40) measures the board on
  * DUT_5V: the ports that are on and the board itself, its ALERT on gpio0.
  *
+ * Or a DATA x6 (emul_board_kind()): one TCA9535 at 0x20, the same address
+ * as the DATA x4's first expander (register pairs, port 0 then port 1),
+ * and six INA226, the DATA x4's four and 0x47, 0x4C; no 0x21, no matrix.
+ * Or a stray expander at 0x20 alone, neither board.
+ *
  * Node v1.0 (dut_port's vin-efuse): the board is powered while the eFuse's
  * enable (dut_port's EN) is high, and the node's INA226 reads DATA_VIN, the
  * board's 5 V converted from it at 88 %.
@@ -33,6 +38,7 @@ static bool board_there = true;
 static bool lead_short;
 static int vin_mv = 20000;
 static int offline;
+static int kind = 4; /* 4 a DATA x4, 6 a DATA x6, 1 an expander at 0x20 alone */
 
 static void board_update(void);
 
@@ -59,11 +65,11 @@ static void chips_follow(void);
 
 struct io_data {
 	uint8_t addr;
-	uint8_t out;
-	uint8_t pol;
-	uint8_t cfg;
-	uint8_t pins; /* what drives the input pins from outside */
-	uint8_t cfg_log[64];
+	uint16_t out; /* 8-bit chips use the low byte */
+	uint16_t pol;
+	uint16_t cfg;
+	uint16_t pins; /* what drives the input pins from outside */
+	uint16_t cfg_log[64];
 	int ncfg;
 };
 
@@ -77,27 +83,53 @@ static int io_index(uint8_t addr)
 	return addr == 0x38 ? 2 : addr & 1;
 }
 
+/* The DATA x6's TCA9535: 16 lines, register pairs */
+static bool wide(const struct io_data *d)
+{
+	return kind == 6 && d->addr == 0x20;
+}
+
+/* 0x20 on every board; 0x21 and the matrix expander on a DATA x4 only */
+static bool io_there(const struct io_data *d)
+{
+	return d->addr == 0x20 || kind == 4;
+}
+
+/* A register: the 8-bit chips' number, or a TCA9535's pair (reg / 2) and its byte */
+static uint16_t *io_reg(struct io_data *d, uint8_t reg)
+{
+	switch (wide(d) ? reg / 2 : reg) {
+	case 1:
+		return &d->out;
+	case 2:
+		return &d->pol;
+	case 3:
+		return &d->cfg;
+	default:
+		return NULL;
+	}
+}
+
 static void io_reset(struct io_data *d)
 {
-	d->out = 0xFF;
+	d->out = 0xFFFF;
 	d->pol = 0;
-	d->cfg = 0xFF;
+	d->cfg = 0xFFFF;
 	d->ncfg = 0;
 }
 
-static uint8_t io_read(const struct io_data *d, uint8_t reg)
+static uint16_t io_input(const struct io_data *d)
 {
-	switch (reg) {
-	case 0:
-		/* Inputs from outside, outputs as driven */
-		return ((d->pins & d->cfg) | (d->out & ~d->cfg)) ^ d->pol;
-	case 1:
-		return d->out;
-	case 2:
-		return d->pol;
-	default:
-		return d->cfg;
-	}
+	/* Inputs from outside, outputs as driven */
+	return ((d->pins & d->cfg) | (d->out & ~d->cfg)) ^ d->pol;
+}
+
+static uint8_t io_read(struct io_data *d, uint8_t reg)
+{
+	uint16_t *r = io_reg(d, reg);
+	uint16_t v = r != NULL ? *r : io_input(d);
+
+	return (v >> (wide(d) ? (reg & 1) * 8 : 0)) & 0xFF;
 }
 
 /* --- The two CH446Q behind 0x38 ---------------------------------------- */
@@ -184,27 +216,25 @@ int emul_xp_glitches(void)
 
 static void io_write(struct io_data *d, uint8_t reg, uint8_t val)
 {
-	switch (reg) {
-	case 1:
-		d->out = val;
-		break;
-	case 2:
-		d->pol = val;
-		break;
-	case 3:
-		d->cfg = val;
-		if (d->ncfg < (int)ARRAY_SIZE(d->cfg_log)) {
-			d->cfg_log[d->ncfg++] = val;
-		}
-		if (d != ios[2] && ios[2] != NULL && nmx < (int)ARRAY_SIZE(mx_log)) {
-			mx_log[nmx++] = ios[2]->out;
-		}
-		break;
-	default:
-		break;
+	uint16_t *r = io_reg(d, reg);
+	int shift = wide(d) ? (reg & 1) * 8 : 0;
+
+	if (r != NULL) {
+		*r = (*r & ~(0xFF << shift)) | (val << shift);
 	}
 	if (d == ios[2]) {
 		xp_update(d);
+	}
+}
+
+/* After a write that set the CONFIG register(s): logged, with the matrix expander's outputs */
+static void io_cfg_written(struct io_data *d)
+{
+	if (d->ncfg < (int)ARRAY_SIZE(d->cfg_log)) {
+		d->cfg_log[d->ncfg++] = d->cfg;
+	}
+	if (d != ios[2] && ios[2] != NULL && nmx < (int)ARRAY_SIZE(mx_log)) {
+		mx_log[nmx++] = ios[2]->out;
 	}
 }
 
@@ -215,18 +245,29 @@ static int io_transfer(const struct emul *target, struct i2c_msg *msgs, int num_
 	ARG_UNUSED(addr);
 
 	chips_follow();
-	if (!board_up()) {
+	if (!board_up() || !io_there(d)) {
 		offline += !lead_powered();
 		return -EIO;
 	}
-	if (num_msgs == 1 && !(msgs[0].flags & I2C_MSG_READ) && msgs[0].len == 2) {
-		io_write(d, msgs[0].buf[0], msgs[0].buf[1]);
+	/* One register, or a TCA9535's pair: its bytes alternate, port 0 then port 1 */
+	if (num_msgs == 1 && !(msgs[0].flags & I2C_MSG_READ) &&
+	    (msgs[0].len == 2 || (wide(d) && msgs[0].len == 3))) {
+		uint8_t cmd = msgs[0].buf[0];
+
+		for (uint32_t i = 1; i < msgs[0].len; i++) {
+			io_write(d, wide(d) ? (cmd & ~1) | ((cmd + i - 1) & 1) : cmd, msgs[0].buf[i]);
+		}
+		if (io_reg(d, cmd) == &d->cfg) {
+			io_cfg_written(d);
+		}
 		board_update();
 		return 0;
 	}
 	if (num_msgs == 2 && !(msgs[0].flags & I2C_MSG_READ) && (msgs[1].flags & I2C_MSG_READ)) {
+		uint8_t cmd = msgs[0].buf[0];
+
 		for (uint32_t i = 0; i < msgs[1].len; i++) {
-			msgs[1].buf[i] = io_read(d, msgs[0].buf[0] + i);
+			msgs[1].buf[i] = io_read(d, wide(d) ? (cmd & ~1) | ((cmd + i) & 1) : cmd + i);
 		}
 		return 0;
 	}
@@ -242,7 +283,7 @@ static int io_init(const struct emul *target, const struct device *parent)
 	ARG_UNUSED(parent);
 	d->addr = target->bus.i2c->addr;
 	io_reset(d);
-	d->pins = 0xFF; /* FAULT_N pulled up, RESET and BOOT on 100k pull-ups */
+	d->pins = 0xFFFF; /* FAULT_N pulled up, RESET and BOOT on 100k pull-ups */
 	ios[io_index(d->addr)] = d;
 	return 0;
 }
@@ -267,26 +308,41 @@ struct ina_data {
 	int ma;
 };
 
-static struct ina_data *inas[6]; /* by address - 0x40 */
+static struct ina_data *inas[16]; /* by address - 0x40 */
 static bool meter_present = true;
 static bool alert_wired = true;
 static int board_ma = 300;
 
-/* Port n: its expander, EN pin and INA226 (data-x4.dtsi) */
-static const struct {
+/* Port n: its expander, EN pin and INA226 (data-x4.dtsi, data-x6.dtsi) */
+struct wire {
 	uint8_t io, en, ina;
-} wiring[4] = {{0, 2, 0x41}, {0, 4, 0x43}, {1, 2, 0x44}, {1, 4, 0x45}};
+};
 
-static bool en_was[4];
-static int64_t off_at[4];
-static int discharge_ms[4];
-static int ext_mv[4];
+static const struct wire x4_wiring[4] = {{0, 2, 0x41}, {0, 4, 0x43}, {1, 2, 0x44}, {1, 4, 0x45}};
+static const struct wire x6_wiring[6] = {{0, 0, 0x41}, {0, 2, 0x43}, {0, 4, 0x44},
+					 {0, 6, 0x45}, {0, 8, 0x47}, {0, 10, 0x4C}};
+
+static int nports(void)
+{
+	return kind == 6 ? 6 : kind == 4 ? 4 : 0;
+}
+
+static const struct wire *wiring(int n)
+{
+	return kind == 6 ? &x6_wiring[n] : &x4_wiring[n];
+}
+
+static bool en_was[6];
+static int64_t off_at[6];
+static int discharge_ms[6];
+static int ext_mv[6];
 
 static bool port_en(int n)
 {
-	const struct io_data *d = ios[wiring[n].io];
+	const struct io_data *d = ios[wiring(n)->io];
+	uint16_t en = BIT(wiring(n)->en);
 
-	return board_up() && !(d->cfg & BIT(wiring[n].en)) && (d->out & BIT(wiring[n].en));
+	return board_up() && !(d->cfg & en) && (d->out & en);
 }
 
 static int port_mv(int n)
@@ -308,9 +364,9 @@ static int meter_ma(void)
 {
 	int ma = board_ma;
 
-	for (int n = 0; n < 4; n++) {
-		if (port_en(n) && inas[wiring[n].ina - 0x40] != NULL) {
-			ma += inas[wiring[n].ina - 0x40]->ma;
+	for (int n = 0; n < nports(); n++) {
+		if (port_en(n) && inas[wiring(n)->ina - 0x40] != NULL) {
+			ma += inas[wiring(n)->ina - 0x40]->ma;
 		}
 	}
 	if (EFUSE) {
@@ -334,10 +390,11 @@ static int16_t meter_shunt(void)
 	return (int16_t)CLAMP(meter_ma() * 20, INT16_MIN, INT16_MAX);
 }
 
+/* The port an INA226 measures on the board there now, -1 none (the node's, or not on it) */
 static int port_of(uint8_t addr)
 {
-	for (int n = 0; n < 4; n++) {
-		if (wiring[n].ina == addr) {
+	for (int n = 0; n < nports(); n++) {
+		if (wiring(n)->ina == addr) {
 			return n;
 		}
 	}
@@ -348,13 +405,14 @@ static int ina_transfer(const struct emul *target, struct i2c_msg *msgs, int num
 {
 	struct ina_data *d = target->data;
 	int n = port_of(d->addr);
+	bool node = d->addr == 0x40;
 	uint16_t v;
 
 	ARG_UNUSED(addr);
 
 	chips_follow();
-	if ((n >= 0 && !board_up()) || (n < 0 && !meter_present)) {
-		offline += n >= 0 && !lead_powered();
+	if (node ? !meter_present : !board_up() || n < 0) {
+		offline += !node && !lead_powered();
 		return -EIO;
 	}
 	if (num_msgs == 1 && !(msgs[0].flags & I2C_MSG_READ) && msgs[0].len == 3) {
@@ -375,18 +433,18 @@ static int ina_transfer(const struct emul *target, struct i2c_msg *msgs, int num
 		board_update();
 		return 0;
 	}
-	if (num_msgs == 2 && (msgs[1].flags & I2C_MSG_READ) && msgs[1].len == 2) {
+	if (num_msgs == 2 && (msgs[1].flags & I2C_MSG_READ) && msgs[1].len >= 1 && msgs[1].len <= 2) {
 		switch (msgs[0].buf[0]) {
 		case 0x00:
 			v = d->config;
 			break;
 		case 0x01: /* 2.5 uV/LSB across 100 mOhm: 40 LSB per mA, saturated at 81.92 mV */
-			v = n < 0 ? meter_shunt()
-				  : (uint16_t)(int16_t)CLAMP(port_en(n) ? d->ma * 40 : 0, INT16_MIN,
-								 INT16_MAX);
+			v = node ? meter_shunt()
+				 : (uint16_t)(int16_t)CLAMP(port_en(n) ? d->ma * 40 : 0, INT16_MIN,
+								INT16_MAX);
 			break;
 		case 0x02: /* 1.25 mV/LSB */
-			v = (n < 0 ? meter_mv() : port_mv(n)) * 4 / 5;
+			v = (node ? meter_mv() : port_mv(n)) * 4 / 5;
 			break;
 		case 0x06:
 			v = d->mask;
@@ -399,7 +457,9 @@ static int ina_transfer(const struct emul *target, struct i2c_msg *msgs, int num
 			break;
 		}
 		msgs[1].buf[0] = v >> 8;
-		msgs[1].buf[1] = v & 0xFF;
+		if (msgs[1].len == 2) {
+			msgs[1].buf[1] = v & 0xFF;
+		}
 		return 0;
 	}
 	return -EIO;
@@ -434,7 +494,7 @@ static void board_update(void)
 	const struct ina_data *m = inas[0];
 	bool fire;
 
-	for (int n = 0; n < 4; n++) {
+	for (int n = 0; n < nports(); n++) {
 		bool en = port_en(n);
 
 		if (en_was[n] && !en) {
@@ -504,6 +564,20 @@ void emul_board(bool there)
 	board_update();
 }
 
+void emul_board_kind(int k)
+{
+	kind = k;
+	memset(en_was, 0, sizeof(en_was));
+	board_update();
+}
+
+uint16_t emul_x6_reg(int pair)
+{
+	struct io_data *d = ios[0];
+
+	return pair == 0 ? io_input(d) : *io_reg(d, pair * 2);
+}
+
 int emul_offline(void)
 {
 	return offline;
@@ -523,7 +597,9 @@ int emul_io_cfg_log(int io, uint8_t *out, int max)
 {
 	int n = MIN(ios[io]->ncfg, max);
 
-	memcpy(out, ios[io]->cfg_log, n);
+	for (int i = 0; i < n; i++) {
+		out[i] = ios[io]->cfg_log[i] & 0xFF;
+	}
 	ios[io]->ncfg = 0;
 	return n;
 }

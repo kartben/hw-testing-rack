@@ -67,6 +67,15 @@ static struct usbh_class_api usbip_api = {
 /* Sorts after "analyzer", as usbip_0... in the node */
 USBH_DEFINE_CLASS(usbip_stand_in, &usbip_api, NULL, NULL);
 
+/* --- The DATA board (src/ports.c, not in this test): a DATA x4 unless a test says - */
+
+static enum data_board board = DATA_X4;
+
+enum data_board ports_board(void)
+{
+	return board;
+}
+
 /* --- The page's stand-in ---------------------------------------------------------- */
 
 struct test_page {
@@ -173,6 +182,7 @@ static void analyzer_before(void *fixture)
 	zassert_ok(analyzer_set_owner(ANALYZER_PAGE));
 	atomic_clear(&usbip_binds);
 	atomic_clear(&usbip_removals);
+	board = DATA_X4;
 }
 
 /* --- Tests ---------------------------------------------------------------------------- */
@@ -291,6 +301,16 @@ ZTEST(analyzer, test_6_unplugged)
 	/* Back: taken again */
 	plug(2);
 	zassert_ok(analyzer_attach(&new_page(2)->page, IP1));
+}
+
+ZTEST(analyzer, test_7_data_x6)
+{
+	/* On a DATA x6 the co-processor's hub port is its USB-C 6: whatever is there is USB/IP's */
+	board = DATA_X6;
+	zassert_ok(cdc_emu_plug());
+	zassert_true(SOON(atomic_get(&usbip_binds) == 1, 2000), "USB/IP never took it");
+	zassert_equal(cdc.line_sets, 0, "the relay set its DTR");
+	zassert_equal(analyzer_attach(&new_page(0)->page, IP1), -ENODEV);
 }
 
 ZTEST_SUITE(analyzer, NULL, analyzer_setup, analyzer_before, NULL, NULL);

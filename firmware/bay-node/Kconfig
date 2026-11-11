@@ -59,7 +59,7 @@ config BAY_BOOTLOADER_HOLD_MS
 	default 200
 
 config BAY_PORTS_BUDGET_MA
-	int "DATA x4: a port goes on only if the bay stays within this (mA)"
+	int "DATA board: a port goes on only if the bay stays within this (mA)"
 	default 1150
 	help
 	  The first node design (never built): the node's TPS2553 feeds the DATA x4 through DUT_5V and
@@ -70,7 +70,7 @@ config BAY_PORTS_BUDGET_MA
 	  BAY_PORTS_LIMIT_MW and the hub's grant.
 
 config BAY_PORTS_RESERVE_MA
-	int "DATA x4: kept for a port's start (mA)"
+	int "DATA board: kept for a port's start (mA)"
 	default 100
 	help
 	  A port shed by BAY_PORTS_SHED_MA needs room for what it drew
@@ -96,7 +96,7 @@ config BAY_PORTS_RESERVE_MW
 	  that is more.
 
 config BAY_PORTS_SHED_MA
-	int "DATA x4: over this, the last port switched on goes off (mA)"
+	int "DATA board: over this, the last port switched on goes off (mA)"
 	default 1500 if $(dt_nodelabel_bool_prop,dut_port,vin-efuse)
 	default 1250
 	help
@@ -108,7 +108,7 @@ config BAY_PORTS_SHED_MA
 	  grant is checked on top, at each poll.
 
 config BAY_PORTS_BOARD_MA
-	int "DATA x4: the board's own draw, without a node meter (mA)"
+	int "DATA board: its own draw, without a node meter (mA)"
 	default 550 if $(dt_nodelabel_bool_prop,dut_port,vin-efuse)
 	default 500
 	help
@@ -116,7 +116,8 @@ config BAY_PORTS_BOARD_MA
 	  bay's draw is the ports' sum plus this, at 5 V: the hub, the
 	  co-processor, the LEDs.  Node v1.0, the DATA x4 v2: up to 0.53 A
 	  (0.51 A through its 3.3 V LDO, the matrix, the port LEDs).  The first design,
-	  the board on DUT_5V: 0.3-0.46 A.
+	  the board on DUT_5V: 0.3-0.46 A.  A DATA x6, with neither co-processor
+	  nor matrix, is counted the same: an upper bound for it.
 
 config BAY_COPROC
 	bool "DATA x4: the co-processor's image, loaded into its SRAM"
@@ -150,13 +151,13 @@ config BAY_ANALYZER
 	  (src/analyzer.c).
 
 config BAY_PORTS_VBUS_OFF_MV
-	int "DATA x4: a power cycle waits for the port's VBUS under this (mV)"
+	int "DATA board: a power cycle waits for the port's VBUS under this (mV)"
 	default 1000
 	help
 	  Under 1 V the board on the port is well below any brown-out: off.
 
 config BAY_PORTS_DISCHARGE_MS
-	int "DATA x4: a power cycle waits this long at most for that (ms)"
+	int "DATA board: a power cycle waits this long at most for that (ms)"
 	default 2000
 	help
 	  The TPS2553-1 does not discharge its output: a board on the port
@@ -164,7 +165,7 @@ config BAY_PORTS_DISCHARGE_MS
 	  LED stops conducting; it goes back on after this.
 
 config BAY_PORTS_VBUS_FOREIGN_MV
-	int "DATA x4: a port whose VBUS reads over this while off stays off (mV)"
+	int "DATA board: a port whose VBUS reads over this while off stays off (mV)"
 	default 3500
 	help
 	  The ports are sink-only, with no CC detection: a board powered from
@@ -173,15 +174,15 @@ config BAY_PORTS_VBUS_FOREIGN_MV
 	  under this.
 
 config BAY_PORTS_STAGGER_MS
-	int "DATA x4: between two ports switched on one after the other (ms)"
+	int "DATA board: between two ports switched on one after the other (ms)"
 	default 300
 
 config BAY_PORTS_SETTLE_MS
-	int "DATA x4: after DUT_5V on, before the board's chips are set up (ms)"
+	int "DATA board: after DUT_5V on, before the board's chips are set up (ms)"
 	default 5
 
 config BAY_PORTS_POLL_MS
-	int "DATA x4: how often the ports' ~FAULT lines are read (ms)"
+	int "DATA board: how often the ports' ~FAULT lines are read (ms)"
 	default 20 if $(dt_nodelabel_bool_prop,dut_port,vin-efuse)
 	default 100
 	help
@@ -190,7 +191,7 @@ config BAY_PORTS_POLL_MS
 	  in a row switch DATA_VIN off.
 
 config BAY_PORTS_ON_AT_BOOT
-	bool "DATA x4: every port on at boot and after each DUT_5V on"
+	bool "DATA board: every port on at boot and after each DUT_5V on"
 	default y
 	help
 	  Off: the ports stay off until switched on.  A port switched off by
@@ -327,7 +328,7 @@ config BAY_DISPLAY
 	depends on LVGL && DISPLAY
 	help
 	  A status screen on the display chosen as zephyr,display: bay id,
-	  address, DUT power, DATA x4 ports, USB/IP sessions.  Built with the
+	  address, DUT power, DATA board ports, USB/IP sessions.  Built with the
 	  front-display snippet (firmware/snippets/front-display).
 
 config BAY_LED_BRIGHTNESS
@@ -352,7 +353,7 @@ config ESP_SPIRAM_HEAP_SIZE
 	default 1572864 if BAY_CAMERA
 
 # Several DUTs over USB/IP, one session each: a DATA x4's 4 ports, the logic
-# variant's co-processor on hub port 5 and a spare.  A session is a thread
+# variant's co-processor on hub port 5 and a spare, or a DATA x6's 6 ports.  A session is a thread
 # (2 KB stack) and a socket; the hub, the DUTs and their descriptors need the
 # hub spike's UHC sizing.  The internal RAM for it comes from the Wi-Fi
 # adapter's heap, moved to PSRAM (25 KB of the system heap instead of 51; the

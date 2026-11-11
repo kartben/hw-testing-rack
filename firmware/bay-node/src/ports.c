@@ -1,25 +1,35 @@
 /*
- * The drawer's DATA x4 board: four boards behind a hub, each on its own
- * switch (TPS2553-1), current sense (INA226) and RESET/BOOT lines, on two
- * TCA6408A expanders (docs/multi-dut-node.md).
+ * The drawer's DATA board, behind a hub (docs/multi-dut-node.md): a DATA x4,
+ * four boards each on its own switch (TPS2553-1), current sense (INA226)
+ * and RESET/BOOT lines, on two TCA6408A expanders; or a DATA x6, six boards
+ * each on its switch and current sense, their EN and FAULT_N on one TCA9535,
+ * no RESET/BOOT.
  *
  * The board runs from DUT_5V and its chips lose their registers with it, so
  * this file drives them itself over I2C, with shadow registers, instead of
  * through the GPIO and sensor drivers (whose cached state would not match a
  * chip that has just been powered up).  The devicetree still describes them
- * (dut_port1-4 on ports_io0/1, port1-4_sense): it gives the addresses and
- * the pins.  The one exception is the matrix expander (ports_mx): its driver
- * drives it, because the crosspoints' driver shares it (MARK, below).
+ * (data-x4.dtsi, data-x6.dtsi: the ports grouped per board): it gives the
+ * addresses and the pins.  The one exception is the DATA x4's matrix
+ * expander (ports_mx): its driver drives it, because the crosspoints' driver
+ * shares it (MARK, below).
  *
  *  - The board is probed after each DUT_5V on: no answer at 0x20, no board,
- *    a one-port node (today's DUT, dut.c).  Node v1.0 (DATA_VIN through an
+ *    a one-port node (today's DUT, dut.c).  Both boards answer at 0x20; only
+ *    a DATA x4 has a second expander (0x21), only a DATA x6 an INA226 at
+ *    0x4C (its port 6's), so the probe reads those next and drives the board
+ *    that answered.  One image serves both, and a board is driven only once
+ *    it is known: the TCA6408A and the TCA9535 keep their output and
+ *    direction registers at different places.  A board that answers at 0x20
+ *    and at neither of the others is left alone, as no board.
+ *  - Node v1.0 (DATA_VIN through an
  *    eFuse, dut.c): the board must answer within CONFIG_BAY_DATA_ANSWER_MS,
  *    and two polls without an answer switch DATA_VIN off (no INT line on the
  *    lead: the poll, every CONFIG_BAY_PORTS_POLL_MS, is how a fault or a board
  *    that went away shows).
  *  - No I2C to it while DUT_5V is off.  Before DUT_5V goes off every EN goes
- *    low; after it comes back, CONFIG_BAY_PORTS_SETTLE_MS later, both
- *    expanders and the four INA226 are set up again, every port off.
+ *    low; after it comes back, CONFIG_BAY_PORTS_SETTLE_MS later, the
+ *    expanders and the INA226s are set up again, every port off.
  *  - Ports come up off (EN pulled down) and go on one at a time, every
  *    CONFIG_BAY_PORTS_STAGGER_MS, through the admission rule: what the bay
  *    draws plus CONFIG_BAY_PORTS_RESERVE_MA must stay within
@@ -32,8 +42,9 @@
  *  - A port's ~FAULT (the TPS2553-1 latches off after 7.5 ms in current
  *    limit) is polled every CONFIG_BAY_PORTS_POLL_MS: the port is marked
  *    latched and goes off; "on" again restarts it.
- *  - RESET and BOOT are open drain, emulated: output register 0, the pin an
- *    output to assert, an input (100k pull-up, reads 1) to release.  A port
+ *  - A DATA x6's spare expander lines (P14-P17, pulled down) are outputs, low.
+ *  - A DATA x4's RESET and BOOT are open drain, emulated: output register 0,
+ *    the pin an output to assert, an input (100k pull-up, reads 1) to release.  A port
  *    that is off holds both asserted (no pull-up feeds an unpowered board);
  *    after EN, BOOT is released, then RESET.
  *  - The ports are sink-only, with no CC detection: a port whose VBUS reads
@@ -61,9 +72,12 @@
 
 LOG_MODULE_REGISTER(ports, CONFIG_BAY_LOG_LEVEL);
 
-#if DT_NODE_EXISTS(DT_NODELABEL(dut_port1))
+#if DT_NODE_EXISTS(DT_NODELABEL(data_x4))
 
-/* TCA6408A registers (the TCA9534A's are the same) */
+/*
+ * TCA6408A registers (the TCA9534A's are the same).  A TCA9535 has each one
+ * as a pair at twice the number, port 0 then port 1 (the PCA9555's map).
+ */
 #define IO_INPUT    0x00
 #define IO_OUTPUT   0x01
 #define IO_POLARITY 0x02
@@ -131,6 +145,7 @@ struct port_cfg {
 	uint8_t rst; /* 0xFF: none */
 	uint8_t bst;
 	uint8_t ina; /* the INA226's I2C address */
+	bool wide;   /* the expander is a TCA9535: 16 lines */
 	uint32_t rshunt_uohm;
 };
 
@@ -146,12 +161,49 @@ struct port_cfg {
 		.rst = PIN_OR_NONE(node, reset_gpios),                                             \
 		.bst = PIN_OR_NONE(node, boot_gpios),                                              \
 		.ina = DT_REG_ADDR(DT_PHANDLE(node, power_monitor)),                               \
+		.wide = DT_NODE_HAS_COMPAT(DT_GPIO_CTLR(node, enable_gpios), nxp_pca95xx),        \
 		.rshunt_uohm = DT_PROP(DT_PHANDLE(node, power_monitor), rshunt_micro_ohms),        \
 	},))
 
-static const struct port_cfg cfg[] = {DT_FOREACH_STATUS_OKAY(hwtr_dut_port, PORT_CFG)};
+#define HAS_X6 DT_NODE_EXISTS(DT_NODELABEL(data_x6))
 
-#define NPORTS ARRAY_SIZE(cfg)
+static const struct port_cfg cfg_x4[] = {DT_FOREACH_CHILD_STATUS_OKAY(DT_NODELABEL(data_x4), PORT_CFG)};
+#if HAS_X6
+static const struct port_cfg cfg_x6[] = {DT_FOREACH_CHILD_STATUS_OKAY(DT_NODELABEL(data_x6), PORT_CFG)};
+#define X6_PORTS ARRAY_SIZE(cfg_x6)
+#else
+#define X6_PORTS 0
+#endif
+
+#define MAX_PORTS MAX(ARRAY_SIZE(cfg_x4), X6_PORTS)
+
+#if HAS_X6
+/* Under one node name the two expanders at 0x20 merge, and the DATA x4's becomes the DATA x6's */
+BUILD_ASSERT(!DT_SAME_NODE(DT_NODELABEL(ports_io0), DT_NODELABEL(ports_x6_io)) &&
+		     DT_NODE_HAS_COMPAT(DT_NODELABEL(ports_io0), ti_tca9538),
+	     "data-x6.dtsi: its expander's node must not be the DATA x4's");
+#endif
+
+/* The address both boards answer at: the DATA x4's first expander, the DATA x6's only one */
+#define SHARED_IO DT_REG_ADDR(DT_NODELABEL(ports_io0))
+
+struct board {
+	enum data_board kind;
+	const char *name;
+	const struct port_cfg *cfg;
+	uint8_t nports;
+	uint8_t ident; /* an address only this board answers at */
+	bool logic;    /* the DATA x4's co-processor, matrix and MARK */
+};
+
+static const struct board boards[] = {
+	/* Its second expander */
+	{DATA_X4, "DATA x4", cfg_x4, ARRAY_SIZE(cfg_x4), DT_REG_ADDR(DT_NODELABEL(ports_io1)), true},
+#if HAS_X6
+	/* Its port 6's INA226 */
+	{DATA_X6, "DATA x6", cfg_x6, ARRAY_SIZE(cfg_x6), DT_REG_ADDR(DT_NODELABEL(port6_sense)), false},
+#endif
+};
 
 static const struct device *const bus = DEVICE_DT_GET(DT_BUS(DT_NODELABEL(ports_io0)));
 
@@ -171,11 +223,16 @@ struct port {
 /* An expander's shadow registers: the chip loses them with DUT_5V */
 struct io {
 	uint8_t addr;
-	uint8_t out;
-	uint8_t cfg;
+	bool wide; /* a TCA9535: 16 lines, register pairs */
+	uint16_t out;
+	uint16_t cfg;
 };
 
-static struct port ports[NPORTS];
+/* The board the last probe found, kept while it is away: its ports, its expanders */
+static const struct board *brd;
+static const struct port_cfg *cfg;
+static int nports;
+static struct port ports[MAX_PORTS];
 static struct io io[IO_MAX];
 static int nio;
 static bool present;  /* the board answered at the last probe */
@@ -208,9 +265,20 @@ static struct io *io_of(const struct port_cfg *c)
 	return NULL;
 }
 
-static int io_write(const struct io *x, uint8_t reg, uint8_t val)
+static int io_write(const struct io *x, uint8_t reg, uint16_t val)
 {
-	return i2c_reg_write_byte(bus, x->addr, reg, val);
+	uint8_t buf[3] = {x->wide ? reg * 2 : reg, val & 0xFF, val >> 8};
+
+	return i2c_write(bus, buf, x->wide ? 3 : 2, x->addr);
+}
+
+static int io_input(const struct io *x, uint16_t *val)
+{
+	uint8_t reg = IO_INPUT, buf[2] = {0};
+	int ret = i2c_write_read(bus, x->addr, &reg, 1, buf, x->wide ? 2 : 1);
+
+	*val = sys_get_le16(buf);
+	return ret;
 }
 
 static int ina_read(uint8_t addr, uint8_t reg, uint16_t *val)
@@ -255,7 +323,7 @@ static int32_t ports_ma(void)
 {
 	int32_t total = 0, mv, ma;
 
-	for (int i = 0; i < NPORTS; i++) {
+	for (int i = 0; i < nports; i++) {
 		if (ports[i].on && read_meter(i, &mv, &ma) == 0) {
 			total += MAX(ma, 0);
 		}
@@ -438,7 +506,7 @@ static int port_on(int i, bool keep_boot)
 	}
 #if defined(CONFIG_BAY_WIRES)
 	/* Its pins back on their buses, now that it runs */
-	if (ret == 0) {
+	if (ret == 0 && brd->logic) {
 		wires_port(cfg[i].slot, true);
 	}
 #endif
@@ -454,7 +522,9 @@ static int port_off(int i)
 	ports[i].on = false;
 #if defined(CONFIG_BAY_WIRES)
 	/* Its pins off the buses while it still has power */
-	wires_port(cfg[i].slot, false);
+	if (brd->logic) {
+		wires_port(cfg[i].slot, false);
+	}
 #endif
 	if (!chips_up) {
 		return 0;
@@ -498,30 +568,94 @@ static void mx_setup(void)
 }
 #endif
 
+/* The board's expanders, as many as its ports use (lock held) */
+static int ios_of(const struct board *b, struct io *out)
+{
+	int n = 0;
+
+	for (int i = 0; i < b->nports; i++) {
+		bool known = false;
+
+		for (int k = 0; k < n; k++) {
+			known |= out[k].addr == b->cfg[i].io;
+		}
+		if (!known) {
+			if (n == IO_MAX) {
+				return -EINVAL;
+			}
+			out[n++] = (struct io){.addr = b->cfg[i].io, .wide = b->cfg[i].wide};
+		}
+	}
+	return n;
+}
+
+/* Another board than the last one: its ports, every one as at boot (lock held) */
+static void use_board(const struct board *b)
+{
+	brd = b;
+	cfg = b->cfg;
+	nports = b->nports;
+	nio = ios_of(b, io);
+	for (int i = 0; i < MAX_PORTS; i++) {
+		ports[i] = (struct port){.wanted = IS_ENABLED(CONFIG_BAY_PORTS_ON_AT_BOOT)};
+	}
+}
+
+/*
+ * Which board is on the lead (lock held): see the top of this file.  odd:
+ * something answers at 0x20 but at neither board's own address.
+ */
+static const struct board *probe(bool *odd)
+{
+	uint8_t in;
+
+	*odd = false;
+	if (i2c_reg_read_byte(bus, SHARED_IO, IO_INPUT, &in) != 0) {
+		return NULL;
+	}
+	for (int b = 0; b < ARRAY_SIZE(boards); b++) {
+		if (i2c_reg_read_byte(bus, boards[b].ident, 0, &in) == 0) {
+			return &boards[b];
+		}
+	}
+	*odd = true;
+	return NULL;
+}
+
 /* Probe and set up the board, every port off (lock held) */
 static int setup_chips(void)
 {
-	uint8_t in;
-	int ret = i2c_reg_read_byte(bus, io[0].addr, IO_INPUT, &in);
+	bool odd;
+	const struct board *b = probe(&odd);
+	int ret = 0;
 
-	present = ret == 0;
+	present = b != NULL;
 	if (!present) {
-		return -ENODEV;
+		return odd ? -ENOTSUP : -ENODEV;
+	}
+	if (b != brd) {
+		use_board(b);
 	}
 
 	for (int k = 0; k < nio && ret == 0; k++) {
 		struct io *x = &io[k];
+		uint16_t used = 0;
 
 		/* Output register 0, then EN, RESET and BOOT outputs: off, both lines asserted */
 		x->out = 0;
-		x->cfg = 0xFF;
-		for (int i = 0; i < NPORTS; i++) {
+		x->cfg = x->wide ? 0xFFFF : 0xFF;
+		for (int i = 0; i < nports; i++) {
 			if (cfg[i].io == x->addr) {
 				x->cfg &= ~BIT(cfg[i].en);
-				x->cfg &= cfg[i].rst != 0xFF ? ~BIT(cfg[i].rst) : 0xFF;
-				x->cfg &= cfg[i].bst != 0xFF ? ~BIT(cfg[i].bst) : 0xFF;
+				x->cfg &= cfg[i].rst != 0xFF ? ~BIT(cfg[i].rst) : 0xFFFF;
+				x->cfg &= cfg[i].bst != 0xFF ? ~BIT(cfg[i].bst) : 0xFFFF;
+				used |= BIT(cfg[i].en) | BIT(cfg[i].flt);
+				used |= (cfg[i].rst != 0xFF ? BIT(cfg[i].rst) : 0) |
+					(cfg[i].bst != 0xFF ? BIT(cfg[i].bst) : 0);
 			}
 		}
+		/* The lines no port uses (a DATA x6's P14-P17, pulled down): outputs, low */
+		x->cfg &= used;
 		ret = io_write(x, IO_OUTPUT, x->out);
 		if (ret == 0) {
 			ret = io_write(x, IO_POLARITY, 0);
@@ -530,16 +664,18 @@ static int setup_chips(void)
 			ret = io_write(x, IO_CONFIG, x->cfg);
 		}
 	}
-	for (int i = 0; i < NPORTS && ret == 0; i++) {
+	for (int i = 0; i < nports && ret == 0; i++) {
 		ret = ina_write(cfg[i].ina, INA_CONFIG, INA_CONFIG_VALUE);
 		ports[i].on = false;
 	}
 	if (ret != 0) {
-		LOG_ERR("DATA x4 set-up failed (%d)", ret);
+		LOG_ERR("%s set-up failed (%d)", brd->name, ret);
 		return ret;
 	}
 #if HAS_MARK
-	mx_setup();
+	if (brd->logic) {
+		mx_setup();
+	}
 #endif
 	meter_setup();
 
@@ -550,6 +686,7 @@ static int setup_chips(void)
 
 static void setup_handler(struct k_work *work)
 {
+	static bool said_odd;
 	bool had = present;
 	int ret;
 
@@ -563,8 +700,14 @@ static void setup_handler(struct k_work *work)
 	ret = setup_chips();
 	k_mutex_unlock(&lock);
 
+	if (ret == -ENOTSUP && !said_odd) {
+		LOG_ERR("a board answers at 0x%02x, but neither as a DATA x4 nor as a DATA x6: "
+			"left alone", SHARED_IO);
+	}
+	said_odd = ret == -ENOTSUP;
 	if (ret == 0) {
-		LOG_INF("DATA x4: %d ports, every port off; switching on the wanted ones", NPORTS);
+		LOG_INF("%s: %d ports, every port off; switching on the wanted ones", brd->name,
+			nports);
 		k_work_reschedule(&admit_work, K_NO_WAIT);
 		k_work_reschedule(&poll_work, K_MSEC(CONFIG_BAY_PORTS_POLL_MS));
 	} else if (EFUSE) {
@@ -576,7 +719,7 @@ static void setup_handler(struct k_work *work)
 		}
 	} else {
 		if (had) {
-			LOG_WRN("DATA x4 not answering: a one-port node until it does");
+			LOG_WRN("%s not answering: a one-port node until it does", brd->name);
 		}
 		k_work_reschedule(&setup_work, K_MSEC(REPROBE_MS));
 	}
@@ -592,7 +735,7 @@ static void admit_handler(struct k_work *work)
 	ARG_UNUSED(work);
 
 	k_mutex_lock(&lock, K_FOREVER);
-	for (int i = 0; i < NPORTS && chips_up; i++) {
+	for (int i = 0; i < nports && chips_up; i++) {
 		if (ports[i].wanted && !ports[i].on && !ports[i].latched) {
 			if (next < 0) {
 				next = i;
@@ -656,7 +799,7 @@ static void shed_handler(struct k_work *work)
 	if (chips_up) {
 		over = over_budget(&bay);
 	}
-	for (int i = 0; i < NPORTS && over; i++) {
+	for (int i = 0; i < nports && over; i++) {
 		if (ports[i].on && (last < 0 || ports[i].seq > ports[last].seq)) {
 			last = i;
 		}
@@ -694,7 +837,7 @@ static void alert_isr(const struct device *dev, struct gpio_callback *cb, uint32
 /* ~FAULT of the ports that are on, whether the board still answers, the bay's draw */
 static void poll_handler(struct k_work *work)
 {
-	uint8_t in[IO_MAX];
+	uint16_t in[IO_MAX];
 	int ret = 0;
 	bool gone = false, over = false;
 	int32_t draw;
@@ -708,7 +851,7 @@ static void poll_handler(struct k_work *work)
 		return;
 	}
 	for (int k = 0; k < nio && ret == 0; k++) {
-		ret = i2c_reg_read_byte(bus, io[k].addr, IO_INPUT, &in[k]);
+		ret = io_input(&io[k], &in[k]);
 	}
 	if (ret != 0) {
 		gone = ++failures >= FAIL_LIMIT;
@@ -718,13 +861,13 @@ static void poll_handler(struct k_work *work)
 #endif
 			chips_up = false;
 			present = false;
-			for (int i = 0; i < NPORTS; i++) {
+			for (int i = 0; i < nports; i++) {
 				ports[i].on = false;
 			}
 		}
 	} else {
 		failures = 0;
-		for (int i = 0; i < NPORTS; i++) {
+		for (int i = 0; i < nports; i++) {
 			const struct io *x = io_of(&cfg[i]);
 			bool flt = (in[x - io] & BIT(cfg[i].flt)) == 0; /* ~FAULT, active low */
 
@@ -741,13 +884,13 @@ static void poll_handler(struct k_work *work)
 	}
 	k_mutex_unlock(&lock);
 
-	for (int i = 0; i < NPORTS; i++) {
+	for (int i = 0; i < nports; i++) {
 		if (tripped & BIT(i)) {
 			LOG_ERR("port %u in current limit: off (\"on\" again to retry)", cfg[i].slot);
 		}
 	}
 	if (gone) {
-		LOG_ERR("DATA x4 stopped answering: its ports are off");
+		LOG_ERR("%s stopped answering: its ports are off", brd->name);
 		if (EFUSE) {
 			dut_lead_lost(DUT_LEAD_BOARD_GONE);
 		} else {
@@ -784,7 +927,7 @@ void ports_dut_power(bool on)
 			(void)io_write(&io[k], IO_OUTPUT, 0);
 		}
 	}
-	for (int i = 0; i < NPORTS; i++) {
+	for (int i = 0; i < nports; i++) {
 		ports[i].on = false;
 		ports[i].shed = false;
 		ports[i].need = 0;
@@ -796,17 +939,18 @@ void ports_dut_power(bool on)
 
 int ports_init(void)
 {
+	struct io check[IO_MAX];
+
 	if (!device_is_ready(bus)) {
 		return -ENODEV;
 	}
 
-	for (int i = 0; i < NPORTS; i++) {
-		if (io_of(&cfg[i]) == NULL) {
-			if (nio == IO_MAX) {
-				return -EINVAL;
-			}
-			io[nio++].addr = cfg[i].io;
+	for (int b = 0; b < ARRAY_SIZE(boards); b++) {
+		if (ios_of(&boards[b], check) < 0) {
+			return -EINVAL;
 		}
+	}
+	for (int i = 0; i < MAX_PORTS; i++) {
 		ports[i].wanted = IS_ENABLED(CONFIG_BAY_PORTS_ON_AT_BOOT);
 	}
 	/* The node's INA226 ALERT (IO39): the bay over CONFIG_BAY_PORTS_SHED_MA */
@@ -825,7 +969,14 @@ int ports_init(void)
 
 int ports_count(void)
 {
-	return present ? NPORTS : 0;
+	return present ? nports : 0;
+}
+
+enum data_board ports_board(void)
+{
+	const struct board *b = brd;
+
+	return present && b != NULL ? b->kind : DATA_NONE;
 }
 
 /* Wanted, off, not in a fault and not waiting for a foreign VBUS to go (lock held) */
@@ -839,7 +990,7 @@ int ports_waiting(void)
 	int n = 0;
 
 	k_mutex_lock(&lock, K_FOREVER);
-	for (int i = 0; i < NPORTS; i++) {
+	for (int i = 0; i < nports; i++) {
 		n += waiting(i);
 	}
 	k_mutex_unlock(&lock);
@@ -854,7 +1005,7 @@ int ports_budget(struct ports_budget *pb)
 	pb->limit = budget_limit(&pb->granted);
 	pb->reserve = budget_reserve();
 	pb->draw = chips_up ? bay_draw() : 0;
-	for (int i = 0; i < NPORTS; i++) {
+	for (int i = 0; i < nports; i++) {
 		pb->waiting += waiting(i);
 	}
 	pb->sheds = sheds;
@@ -865,9 +1016,12 @@ int ports_budget(struct ports_budget *pb)
 
 static int index_of(int slot)
 {
-	for (int i = 0; i < NPORTS; i++) {
+	if (!present) {
+		return slot >= 1 && slot <= MAX_PORTS ? -ENODEV : -ENOENT;
+	}
+	for (int i = 0; i < nports; i++) {
 		if (cfg[i].slot == slot) {
-			return present ? i : -ENODEV;
+			return i;
 		}
 	}
 	return -ENOENT;
@@ -881,7 +1035,8 @@ int ports_info(int slot, struct port_info *pi)
 		return i;
 	}
 
-	*pi = (struct port_info){.slot = cfg[i].slot, .hub_port = cfg[i].hub_port};
+	*pi = (struct port_info){.slot = cfg[i].slot, .hub_port = cfg[i].hub_port,
+				 .lines = cfg[i].rst != 0xFF || cfg[i].bst != 0xFF};
 	k_mutex_lock(&lock, K_FOREVER);
 	pi->on = ports[i].on;
 	pi->wanted = ports[i].wanted;
@@ -1023,7 +1178,7 @@ static void mark(bool up)
 {
 	k_mutex_lock(&lock, K_FOREVER);
 	marks += up ? 1 : -1;
-	if (chips_up && marks == (up ? 1 : 0) && device_is_ready(mark_line.port)) {
+	if (chips_up && brd->logic && marks == (up ? 1 : 0) && device_is_ready(mark_line.port)) {
 		(void)gpio_pin_set_dt(&mark_line, up);
 	}
 	k_mutex_unlock(&lock);
@@ -1127,7 +1282,7 @@ int ports_boot(int slot, bool power_cycle_it, int32_t *others)
 	return ret;
 }
 
-#else /* no DATA x4 in the devicetree: a one-port node */
+#else /* no DATA board in the devicetree: a one-port node */
 
 void ports_dut_power(bool on)
 {
@@ -1142,6 +1297,11 @@ int ports_init(void)
 int ports_count(void)
 {
 	return 0;
+}
+
+enum data_board ports_board(void)
+{
+	return DATA_NONE;
 }
 
 int ports_waiting(void)

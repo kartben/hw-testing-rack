@@ -133,6 +133,7 @@ static void before(void *f)
 	emul_vin(20000);
 	emul_lead_short(false);
 	emul_board(true);
+	emul_board_kind(4);
 	emul_meter(true);
 	emul_board_ma(300);
 	grant_mw = -1;
@@ -471,6 +472,39 @@ ZTEST(data_lead, test_13_queued)
 	zassert_true(port_on_slot(4));
 	zassert_ok(ports_info(4, &pi));
 	zassert_false(pi.queued);
+}
+
+ZTEST(data_lead, test_14_data_x6)
+{
+	int on = 0;
+
+	/* A DATA x6 on the lead instead: it answers in time, its six ports come on */
+	emul_board_kind(6);
+	for (int pin = 0; pin < 16; pin++) {
+		emul_io_pin(0, pin, true);
+	}
+	zassert_ok(dut_power_set(true));
+	k_sleep(K_MSEC(2500));
+	zassert_true(lead_on(), "it answered: DATA_VIN stays on");
+	zassert_equal(dut_lead_state(NULL), DUT_LEAD_OK);
+	zassert_equal(ports_board(), DATA_X6);
+	zassert_equal(ports_count(), 6);
+	for (int i = 1; i <= 6; i++) {
+		on += port_on_slot(i);
+	}
+	zassert_equal(on, 6);
+	zassert_ok(dut_power_set(false));
+}
+
+ZTEST(data_lead, test_15_neither)
+{
+	/* Something at 0x20 that is neither board: as no board, DATA_VIN off */
+	emul_board_kind(1);
+	zassert_ok(dut_power_set(true));
+	k_sleep(K_MSEC(CONFIG_BAY_DATA_ANSWER_MS + 300));
+	zassert_false(lead_on());
+	zassert_equal(dut_lead_state(NULL), DUT_LEAD_NO_BOARD);
+	zassert_equal(ports_count(), 0);
 }
 
 ZTEST_SUITE(data_lead, NULL, suite_setup, before, NULL, NULL);

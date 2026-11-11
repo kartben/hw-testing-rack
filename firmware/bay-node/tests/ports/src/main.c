@@ -4,7 +4,10 @@
  * latched fault, DUT_5V off and on (no I2C while off, the chips set up
  * again), RESET/BOOT (held while a port is off), a board that stops
  * answering and comes back, the shedding on the meter's ALERT or the poll,
- * the budget without a meter, and a port's VBUS while it is off.
+ * the budget without a meter, and a port's VBUS while it is off.  Then
+ * (ports_x6, after ports by name) a DATA x6 put in its place: found, its six
+ * ports on their hub ports, its 16-bit expander, a fault, its meters, no
+ * RESET/BOOT; and a board that is neither, left alone.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -412,3 +415,170 @@ ZTEST(ports, test_9_vbus)
 }
 
 ZTEST_SUITE(ports, NULL, suite_setup, before, NULL, NULL);
+
+/* --- A DATA x6 in the DATA x4's place ------------------------------------------ */
+
+/* U2 (0x20): port n's EN on line 2n - 2, its FAULT_N on 2n - 1; P14-P17 spare */
+#define X6_EN    0x0555
+#define X6_FLT   0x0AAA
+#define X6_SPARE 0xF000
+#define X6_IN    0
+#define X6_OUT   1
+#define X6_CFG   3
+
+static const uint8_t x6_ina[6] = {0x41, 0x43, 0x44, 0x45, 0x47, 0x4C};
+
+/* The lead off, another board on it, on again */
+static void swap_board(int kind)
+{
+	ports_dut_power(false);
+	dut_on = false;
+	emul_power(false);
+	emul_board_kind(kind);
+	emul_power(true);
+	dut_on = true;
+	ports_dut_power(true);
+}
+
+static int x6_on(void)
+{
+	int n = 0;
+
+	for (int i = 1; i <= 6; i++) {
+		n += port_on(i);
+	}
+	return n;
+}
+
+static void *x6_setup(void)
+{
+	swap_board(6);
+	k_sleep(K_MSEC(2500));
+	return NULL;
+}
+
+static void x6_before(void *f)
+{
+	ARG_UNUSED(f);
+
+	emul_meter(true);
+	emul_alert(true);
+	emul_board_ma(300);
+	for (int pin = 0; pin < 16; pin++) {
+		emul_io_pin(0, pin, true);
+	}
+	for (int i = 0; i < 6; i++) {
+		emul_port_vbus(i + 1, 0, 0);
+		emul_ina_ma(x6_ina[i], 0);
+	}
+	for (int i = 1; i <= 6; i++) {
+		(void)ports_power(i, true, NULL);
+	}
+}
+
+ZTEST(ports_x6, test_1_found)
+{
+	static const uint8_t hub[6] = {6, 1, 2, 3, 4, 5};
+	struct port_info pi;
+
+	zassert_equal(ports_board(), DATA_X6);
+	zassert_equal(ports_count(), 6);
+	zassert_equal(x6_on(), 6, "%d of 6 on", x6_on());
+	/* EN and the spare lines outputs, EN high and the spare ones low; FAULT_N inputs */
+	zassert_equal(emul_x6_reg(X6_CFG), X6_FLT, "config 0x%04x", emul_x6_reg(X6_CFG));
+	zassert_equal(emul_x6_reg(X6_OUT) & (X6_EN | X6_SPARE), X6_EN);
+	for (int i = 0; i < 6; i++) {
+		zassert_equal(emul_ina_config(x6_ina[i]), 0x4527, "INA226 0x%02x set up", x6_ina[i]);
+	}
+	/* USB-C 1 on hub port 6, USB-C n on n - 1; no RESET or BOOT line */
+	for (int i = 1; i <= 6; i++) {
+		zassert_ok(ports_info(i, &pi));
+		zassert_equal(pi.hub_port, hub[i - 1], "port %d on hub port %u", i, pi.hub_port);
+		zassert_false(pi.lines);
+	}
+	zassert_equal(ports_info(7, &pi), -ENOENT);
+}
+
+ZTEST(ports_x6, test_2_switch)
+{
+	zassert_ok(ports_power(5, false, NULL));
+	zassert_equal(emul_x6_reg(X6_OUT) & X6_EN, X6_EN & ~BIT(8), "port 5's EN (P10) low only");
+	zassert_false(port_on(5));
+	zassert_ok(ports_power(5, true, NULL));
+	zassert_equal(emul_x6_reg(X6_OUT) & X6_EN, X6_EN);
+	zassert_ok(ports_power_cycle(6, K_MSEC(20), NULL));
+	zassert_true(port_on(6));
+}
+
+ZTEST(ports_x6, test_3_fault)
+{
+	struct port_info pi;
+
+	/* Port 6's FAULT_N (P13) low: off and latched, the others on */
+	emul_io_pin(0, 11, false);
+	k_sleep(K_MSEC(250));
+	zassert_ok(ports_info(6, &pi));
+	zassert_false(pi.on);
+	zassert_true(pi.latched);
+	zassert_true(pi.faults >= 1);
+	zassert_equal(emul_x6_reg(X6_OUT) & BIT(10), 0, "its EN low");
+	zassert_equal(x6_on(), 5);
+
+	emul_io_pin(0, 11, true);
+	zassert_ok(ports_power(6, true, NULL));
+	zassert_ok(ports_info(6, &pi));
+	zassert_true(pi.on);
+	zassert_false(pi.latched);
+}
+
+ZTEST(ports_x6, test_4_meters)
+{
+	struct port_info pi;
+
+	/* Each port read on its own INA226: ports 5 and 6 on the DATA x6's own two */
+	emul_ina_ma(0x47, 150);
+	emul_ina_ma(0x4C, 250);
+	zassert_ok(ports_info(5, &pi));
+	zassert_true(pi.meter);
+	zassert_equal(pi.ma, 150);
+	zassert_within(pi.mv, 5050, 2);
+	zassert_ok(ports_info(6, &pi));
+	zassert_equal(pi.ma, 250);
+	zassert_ok(ports_info(1, &pi));
+	zassert_equal(pi.ma, 0);
+}
+
+ZTEST(ports_x6, test_5_no_lines)
+{
+	zassert_equal(ports_reset_pulse(1, K_MSEC(10)), -ENOTSUP);
+	zassert_equal(ports_boot(1, false, NULL), -ENOTSUP);
+	zassert_true(port_on(1), "still on");
+}
+
+ZTEST(ports_x6, test_6_neither)
+{
+	uint8_t log[8];
+
+	/* An expander at 0x20 alone: no board, nothing written to it */
+	ports_dut_power(false);
+	dut_on = false;
+	emul_power(false);
+	emul_board_kind(1);
+	emul_power(true);
+	(void)emul_io_cfg_log(0, log, ARRAY_SIZE(log));
+	dut_on = true;
+	ports_dut_power(true);
+	k_sleep(K_MSEC(300));
+	zassert_equal(ports_board(), DATA_NONE);
+	zassert_equal(ports_count(), 0);
+	zassert_equal(emul_io_cfg_log(0, log, ARRAY_SIZE(log)), 0, "its config written");
+	zassert_equal(emul_io_reg(0, 1), 0xFF, "its outputs untouched");
+
+	/* The DATA x6 back: found again */
+	swap_board(6);
+	k_sleep(K_MSEC(100));
+	zassert_equal(ports_board(), DATA_X6);
+	zassert_equal(ports_count(), 6);
+}
+
+ZTEST_SUITE(ports_x6, NULL, x6_setup, x6_before, NULL, NULL);

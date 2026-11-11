@@ -1,0 +1,115 @@
+/*
+ * A DATA x6 board in the drawer (docs/multi-dut-node.md): six ports,
+ * sub-slots <bay>.1-6, behind the same DATA lead (J7) as a DATA x4, power
+ * only: no pin header, matrix, co-processor or RESET/BOOT lines.  Included
+ * after data-x4.dtsi, wherever it is: the lead takes either board, one image
+ * serves both, and src/ports.c tells them apart each time it probes.
+ *
+ * Both boards answer at 0x20 (here a TCA9535, 16 lines; on the DATA x4 a
+ * TCA6408A, 8 lines), so this expander's node is disabled: its address and
+ * pins only, no driver (src/ports.c drives it, as the DATA x4's), and no
+ * second enabled node at that address.  src/ports.c checks at build time
+ * that the two stay apart.  Ports 1-4's INA226 sit at the DATA
+ * x4's addresses, on the same 100 mOhm shunts: they share its nodes.
+ * Hub port 6 is USB-C 1, hub port n - 1 is USB-C n (the DATA x4: n).
+ * Pins: electronics/data-port-x6/design.py.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+	/* The ports, as src/ports.c takes them: one group per board */
+	data_x6: data-x6 {
+		/* U2's P00-P13: port n's EN on line 2n - 2, FAULT_N on the next */
+		dut_x6_port1: dut-port-1 {
+			compatible = "hwtr,dut-port";
+			sub-slot = <1>;
+			hub-port = <6>;
+			enable-gpios = <&ports_x6_io 0 GPIO_ACTIVE_HIGH>;
+			fault-gpios = <&ports_x6_io 1 GPIO_ACTIVE_LOW>;
+			power-monitor = <&port1_sense>;
+		};
+
+		dut_x6_port2: dut-port-2 {
+			compatible = "hwtr,dut-port";
+			sub-slot = <2>;
+			hub-port = <1>;
+			enable-gpios = <&ports_x6_io 2 GPIO_ACTIVE_HIGH>;
+			fault-gpios = <&ports_x6_io 3 GPIO_ACTIVE_LOW>;
+			power-monitor = <&port2_sense>;
+		};
+
+		dut_x6_port3: dut-port-3 {
+			compatible = "hwtr,dut-port";
+			sub-slot = <3>;
+			hub-port = <2>;
+			enable-gpios = <&ports_x6_io 4 GPIO_ACTIVE_HIGH>;
+			fault-gpios = <&ports_x6_io 5 GPIO_ACTIVE_LOW>;
+			power-monitor = <&port3_sense>;
+		};
+
+		dut_x6_port4: dut-port-4 {
+			compatible = "hwtr,dut-port";
+			sub-slot = <4>;
+			hub-port = <3>;
+			enable-gpios = <&ports_x6_io 6 GPIO_ACTIVE_HIGH>;
+			fault-gpios = <&ports_x6_io 7 GPIO_ACTIVE_LOW>;
+			power-monitor = <&port4_sense>;
+		};
+
+		dut_x6_port5: dut-port-5 {
+			compatible = "hwtr,dut-port";
+			sub-slot = <5>;
+			hub-port = <4>;
+			enable-gpios = <&ports_x6_io 8 GPIO_ACTIVE_HIGH>;
+			fault-gpios = <&ports_x6_io 9 GPIO_ACTIVE_LOW>;
+			power-monitor = <&port5_sense>;
+		};
+
+		dut_x6_port6: dut-port-6 {
+			compatible = "hwtr,dut-port";
+			sub-slot = <6>;
+			hub-port = <5>;
+			enable-gpios = <&ports_x6_io 10 GPIO_ACTIVE_HIGH>;
+			fault-gpios = <&ports_x6_io 11 GPIO_ACTIVE_LOW>;
+			power-monitor = <&port6_sense>;
+		};
+	};
+};
+
+/* The bus data-x4.dtsi put the DATA lead on */
+&DATA_X4_I2C {
+	/*
+	 * U2, the TCA9535: register pairs (port 0 then port 1), the PCA9555's
+	 * map.  P14-P17 are spare, pulled down: src/ports.c makes them outputs,
+	 * low.  A name of its own: as gpio@20 it would be the DATA x4's
+	 * ports_io0, the two merged into one node.
+	 */
+	ports_x6_io: gpio-x6@20 {
+		compatible = "nxp,pca95xx";
+		reg = <0x20>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		ngpios = <16>;
+		status = "disabled";
+	};
+
+	/* Ports 5 and 6: 100 mOhm shunts, as the others */
+	port5_sense: ina226@47 {
+		compatible = "ti,ina226";
+		reg = <0x47>;
+		current-lsb-microamps = <25>;
+		rshunt-micro-ohms = <100000>;
+		zephyr,deferred-init;
+	};
+
+	port6_sense: ina226@4c {
+		compatible = "ti,ina226";
+		reg = <0x4c>;
+		current-lsb-microamps = <25>;
+		rshunt-micro-ohms = <100000>;
+		zephyr,deferred-init;
+	};
+};

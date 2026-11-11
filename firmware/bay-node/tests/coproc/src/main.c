@@ -204,6 +204,15 @@ ZTEST_SUITE(coproc, NULL, NULL, NULL, NULL, NULL);
 
 /* --- The loader --------------------------------------------------------------- */
 
+/* --- The DATA board (src/ports.c, not in this test): a DATA x4 unless a test says - */
+
+static enum data_board board = DATA_X4;
+
+enum data_board ports_board(void)
+{
+	return board;
+}
+
 USBH_CONTROLLER_DEFINE(test_uhs_ctx, DEVICE_DT_GET(DT_NODELABEL(zephyr_uhc0)));
 
 /* A fresh image of BODY_SIZE bytes at 0x20000000: the loader's tries start again */
@@ -255,6 +264,7 @@ static void loader_before(void *fixture)
 	(void)picoboot_emu_unplug();
 	k_msleep(100);
 	picoboot_emu_reset();
+	board = DATA_X4;
 	store();
 }
 
@@ -365,6 +375,17 @@ ZTEST(loader, test_6_upload_while_loading)
 	zassert_true(json_soon("the bootloader stopped answering", 3000));
 	zassert_ok(coproc_write(IP, ticket, image, len, &why), "%s", why);
 	zassert_ok(coproc_finish(&why), "%s", why);
+	unplug();
+}
+
+ZTEST(loader, test_7_data_x6)
+{
+	/* On a DATA x6 the co-processor's hub port is its USB-C 6: a board under test, never loaded */
+	board = DATA_X6;
+	zassert_ok(picoboot_emu_plug());
+	k_msleep(500);
+	zassert_equal(emu.cmds, 0, "%u commands to a board under test", emu.cmds);
+	zassert_equal(emu.written, 0);
 	unplug();
 }
 

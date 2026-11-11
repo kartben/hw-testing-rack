@@ -749,10 +749,15 @@ static int coproc_class_probe(struct usbh_class_data *const c_data, struct usb_d
 
 	ARG_UNUSED(c_data);
 
-	/* Only the co-processor: an RP2350 board under test in BOOTSEL is USB/IP's */
+	/*
+	 * Only the co-processor: an RP2350 board under test in BOOTSEL is
+	 * USB/IP's, and so is anything on a DATA x6, whose hub port 5 is its
+	 * USB-C 6
+	 */
 	here = HUB_PORT == 0 ? udev->hub == NULL
 			     : udev->hub != NULL && udev->hub->hub == NULL &&
 				       udev->hub_port == HUB_PORT;
+	here = here && ports_board() != DATA_X6;
 	if (iface != USBH_CLASS_IFNUM_DEVICE || !here) {
 		return -ENOTSUP;
 	}
