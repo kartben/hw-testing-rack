@@ -29,6 +29,15 @@ The generator rebuilds the PCB from scratch.  Once you start hand-routing in
 KiCad, stop running `tools/kicad.sh <board>` on that board (or keep the
 routed `.kicad_pcb` aside) and use `--check --fab` in CI to verify and export.
 
+## A board that is at the fab
+
+A board revision that was ordered is frozen: v1.0 of the five boards, since
+2026-11-11 ([electronics.md › Revisions at the fab](docs/electronics.md#revisions-at-the-fab)).
+To change such a board, raise its revision in its `design.py` first (the
+`Board(…)` call and the silkscreen title block), then make the change.
+`python tools/released.py` (run by the tool tests) fails when a released
+revision's Gerbers, BOM or placement file differ from what was sent.
+
 ## Measuring a board
 
 Boards marked `verified: false` in `boards.yaml` have approximate outlines and

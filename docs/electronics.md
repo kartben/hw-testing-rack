@@ -165,6 +165,28 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 > fine — just don't re-run the generator over them (or move the routed board
 > aside first).
 
+## Revisions at the fab
+
+v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece`: 5 PCBs and 2 assembled boards of each, at NextPCB.
+
+| Board | Revision | Sent | Status |
+|---|---|---|---|
+| Bay node (`bay-node`) | v1.0 | 2026-11-11 | at the fab |
+| Power hub (`power-hub`) | v1.0 | 2026-11-11 | at the fab |
+| Camera pod (`camera-pod`) | v1.0 | 2026-11-11 | at the fab |
+| DATA ×6 (`data-port-x6`) | v1.0 | 2026-11-11 | at the fab |
+| DATA ×4 (`data-port-x4`), assembled with its logic | v1.0 | 2026-11-11 | at the fab |
+
+**A released revision is frozen.**  Its Gerbers, BOM and placement file stay as they were sent, so the repository always shows the boards that are on the bench.  From now on any change to one of these boards goes into a new revision, however small: a silkscreen text, a part value, one track.
+
+1. In the board's `design.py`, raise the revision in `Board(…, "1.0")` and in its title block (`title_block("… v1.0", …)`), then make the change.
+2. Regenerate the board (`tools/kicad.sh <board> --fab`; `--route` only if it needs a new routing) and update this page's headings.
+3. Leave the released entry alone.  When the new revision is ordered, add its own entry: `python tools/released.py --record <board> --date … --fab …` prints it.
+
+[`electronics/released.json`](../electronics/released.json) holds the list, with the SHA-256 of each file sent.  `python tools/released.py` compares it with the tree, and `tools/tests/test_released_boards.py` runs it with the other tool tests: a commit that changes a v1.0 board's fabrication files without a new revision fails there.  Firmware, documentation, 3D models and renders are free to change: they are not in the list.
+
+What the bench finds on v1.0 (a wrong value, a swapped pin, a bodge wire) is fixed in the next revision, not in v1.0.
+
 ## Bay node (×1 per unit) — 4 layers, 74 × 90 mm
 
 Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF in

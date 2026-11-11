@@ -1,0 +1,75 @@
+{
+  "about": "Board revisions that went to a fab, with the SHA-256 of the files they were sent with (a .csv's line ends left out).  A board that still carries one of these revisions must keep these files: tools/released.py and tools/tests/test_released_boards.py check it.  To change a released board, give it a new revision first (docs/electronics.md, Revisions at the fab).  Entries are never edited: add one when a new revision is ordered (python tools/released.py --record <board> ...).",
+  "releases": [
+    {
+      "board": "bay-node",
+      "rev": "1.0",
+      "date": "2026-11-11",
+      "fab": "NextPCB",
+      "pcbs": 5,
+      "assembled": 2,
+      "commit": "125c4ece5ab40402b755c1fa6c45cc61faf4351a",
+      "files": {
+        "fab/bay-node-gerbers.zip": "5b593b1210521b7f4e4675f25f8b2cc69ce10fcf91c87088ecb8106fd0a5e700",
+        "bay-node-bom.csv": "07aadb8c5051b8b67ac51e05daaa3d17d0907fd83ae296c5d2e533bd5e813e8b",
+        "fab/bay-node-cpl-jlcpcb.csv": "2d7b4b1a16e6565dd985f434007c7310f55bd6d927fa6794a1896ad9555e2de6"
+      }
+    },
+    {
+      "board": "power-hub",
+      "rev": "1.0",
+      "date": "2026-11-11",
+      "fab": "NextPCB",
+      "pcbs": 5,
+      "assembled": 2,
+      "commit": "125c4ece5ab40402b755c1fa6c45cc61faf4351a",
+      "files": {
+        "fab/power-hub-gerbers.zip": "32c1f6328acebf7dd335162d208816e45aae510e8bf764d52d8f1824c2fa970d",
+        "power-hub-bom.csv": "debed13fea96ce418a5cbc99258dc39bc6a09259bc3d7c9f6927731535172f73",
+        "fab/power-hub-cpl-jlcpcb.csv": "fc8541f2d19cea4bd6b8fa521fc1304998ec8d2b676a18f3c20b2748bf5da4d0"
+      }
+    },
+    {
+      "board": "camera-pod",
+      "rev": "1.0",
+      "date": "2026-11-11",
+      "fab": "NextPCB",
+      "pcbs": 5,
+      "assembled": 2,
+      "commit": "125c4ece5ab40402b755c1fa6c45cc61faf4351a",
+      "files": {
+        "fab/camera-pod-gerbers.zip": "3eda078dcbf658f289da546f00ea968b6fdc186f5d4d83b79c442bf7a965e2da",
+        "camera-pod-bom.csv": "cd9ae854d4d43bd32a11e15ef6ee25398bf99e3b5f38af7e54f771ca1d78d489",
+        "fab/camera-pod-cpl-jlcpcb.csv": "206e1d873d9d31e38799c92267a9c06bb84b6b557de19bca3c80330d9de4365e"
+      }
+    },
+    {
+      "board": "data-port-x6",
+      "rev": "1.0",
+      "date": "2026-11-11",
+      "fab": "NextPCB",
+      "pcbs": 5,
+      "assembled": 2,
+      "commit": "125c4ece5ab40402b755c1fa6c45cc61faf4351a",
+      "files": {
+        "fab/data-port-x6-gerbers.zip": "f609dfcfd0fc28b8ff8aa5b6fc97a1bc1e2d5e60d0dbb43f729391e8c6f84096",
+        "data-port-x6-bom.csv": "d5582060bb3288e03381c33670300a0f0e33e292358ca35ac9e9eee0e9cea524",
+        "fab/data-port-x6-cpl-jlcpcb.csv": "45c63234d5f54dc331324a166bb92d41aa8553c8c515c940e90af10467b603d4"
+      }
+    },
+    {
+      "board": "data-port-x4",
+      "rev": "1.0",
+      "date": "2026-11-11",
+      "fab": "NextPCB",
+      "pcbs": 5,
+      "assembled": 2,
+      "commit": "125c4ece5ab40402b755c1fa6c45cc61faf4351a",
+      "files": {
+        "fab/data-port-x4-gerbers.zip": "fc54973e4e396d8666ed767e8c4e6c4262d8cb654e163f39a6f3c786f3c18668",
+        "data-port-x4-bom.csv": "5f1b539c9ff2398525a32483a3345cbd7c31c48bcf45553257ad832aa9ec0aa4",
+        "fab/data-port-x4-cpl-jlcpcb.csv": "b15cdfb6e8d68c19c3211846d42357174ba91a184b1ee833440e96551b5594b0"
+      }
+    }
+  ]
+}
