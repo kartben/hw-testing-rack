@@ -10,7 +10,7 @@ so the first one sets the reference for the second.
 | 1 | Power hub | [bring-up/power-hub.md](bring-up/power-hub.md) | a USB-C PD charger |
 | 2 | Bay node | [bring-up/bay-node.md](bring-up/bay-node.md) | a bench supply, then the hub |
 | 3 | Camera pod | [bring-up/camera-pod.md](bring-up/camera-pod.md) | a working node, an Arducam Mega |
-| 4 | DATA ×6 | [bring-up/data-port-x6.md](bring-up/data-port-x6.md) | a bench supply; a working node whose firmware knows the board (not written yet) |
+| 4 | DATA ×6 | [bring-up/data-port-x6.md](bring-up/data-port-x6.md) | a bench supply; a working node (its firmware drives the board since 2026-11-11, tested in simulation only) |
 | 5 | DATA ×4 | [bring-up/data-port-x4.md](bring-up/data-port-x4.md) | a working node |
 | 6 | The rack bus | [bring-up/rack.md](bring-up/rack.md) | the hub and two nodes |
 

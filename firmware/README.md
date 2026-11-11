@@ -44,6 +44,7 @@ firmware/
     boards/esp32s3_devkitc_procpu.overlay   stand-in: same pin map on a DevKitC-1
     i2c-400k.overlay             the I²C bus at 400 kHz, to try at bring-up (100 kHz by default)
     app.overlay, data-x4.dtsi    a DATA ×4 on the DATA lead (the application's, not the board's: MCUboot)
+    data-x6.dtsi                 or a DATA ×6: the same lead and image, told apart at each probe
     boards/m5stack_stamps3_procpu.*         bench node on a StampS3: console + network, no USB host
     boards/m5stack_cores3_procpu.*          bench node on a CoreS3: USB host and USB/IP on its USB-C ([docs/bench.md](../docs/bench.md))
     boards/xiao_esp32s3_procpu.*            bench node on a XIAO ESP32-S3: octal PSRAM as the node, USB host on its USB-C (same doc)
@@ -183,6 +184,7 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | Access control | who may use which service, a CI reservation, an admin key confirmed by a BOOT press; Zephyr's packet filter for the TCP services, a check per HTTP request.  See [Access control](#access-control) |
 | USB devices | each enumerated device on the page's USB devices card, in `/api/usb` and `bay usb`: its name (the product string, else a table of known IDs, else vid:pid), maker, serial number, the classes of its interfaces (CDC ACM, HID, mass storage, CMSIS-DAP…), speed, bus id and slot, and its USB/IP client.  A thread reads each device's strings once, as it shows up, into PSRAM (`src/usb_info.c`) |
 | DATA ×4 | a DATA ×4 board in the drawer (probed after each DUT_5V on): four ports, each switched on through the bay's budget, its ~FAULT, current and RESET/BOOT; `bay port`, `/api/ports`.  See [docs/multi-dut-node.md](../docs/multi-dut-node.md) |
+| DATA ×6 | a DATA ×6 instead, on the same lead with the same image: the probe tells the boards apart (a DATA ×4 answers at 0x21, a DATA ×6 at 0x4C); six ports, each switched on through the bay's budget, its ~FAULT and current, no RESET/BOOT; the co-processor's hub port is its USB-C 6, left to USB/IP.  Tested on native_sim, not on a board yet ([docs/multi-dut-node.md › Which board](../docs/multi-dut-node.md#which-board-data-4-or-data-6)) |
 | Board targets | each slot's Zephyr board, runner, probe and console, in NVS for the device in it; `/api/boards`, the page's Edit; `bayctl hwmap` reads them ([Board targets](#board-targets)) |
 | Rack bus | CAN on the row cable (TWAI, IO18 TX / IO17 RX, 250 kbit/s) and the POS token (IO16 in, IO42 out): the node takes its position from the hub (node id = row × 16 + position, `C3` = 0x23), sends STATUS every second and INFO (IP, firmware) every 10 s, an ALERT on a DUT fault, and runs the hub's commands (power, reset, bootloader, identify, reboot; the ones that disturb the board are refused while the bay is reserved).  `src/rack.c` on `common/lib/rack_node.c`; the protocol is [docs/rack-protocol.md](../docs/rack-protocol.md) |
 | Network | Wi-Fi station, DHCP, Wi-Fi credentials library (settings or build time), reconnects on its own; hostname `bay-<id>` answered over mDNS, its services advertised over DNS-SD (below); no power save, 20 MHz channels and 11 dBm of TX power, see [Wi-Fi in the rack](#wi-fi-in-the-rack) (`common/lib/net.c`, as the hub) |
@@ -204,9 +206,9 @@ $ python -m serial.tools.miniterm rfc2217://bay-b3.local:4001 115200   # DUT con
 | `bay boot` | hold BOOT, pulse RESET, release BOOT 200 ms later: ROM bootloader on most MCUs |
 | `bay boot hold` / `release` | hold / release the BOOT strap |
 | `bay usb` | the USB devices: bus id, vid:pid, name and maker, serial number, read-ahead, USB/IP client |
-| `bay port` | a DATA ×4's ports: on/off, fault, V/I, USB device |
+| `bay port` | the DATA board (×4 or ×6) and its ports: busid, on/off, fault, V/I, USB device |
 | `bay port <n> on` / `off` / `cycle [ms]` | one port (`on` through the bay's budget, and clears a latched fault) |
-| `bay port <n> reset` / `boot [cycle]` | its RESET pulse; BOOT held across a RESET pulse, or across a power cycle of the port |
+| `bay port <n> reset` / `boot [cycle]` | its RESET pulse; BOOT held across a RESET pulse, or across a power cycle of the port (a DATA ×4's ports; a DATA ×6 has no such line) |
 | `bay mode [usbip\|classic]` | show, or force/release classic mode (persistent) |
 | `bay aux` | AUX UART settings, consoles connected, byte counters |
 | `bay aux <baud> [8N1]` | set and save the AUX UART baud rate and format (`7E1`, `8O2`, …) |
@@ -316,12 +318,12 @@ main actions.
 
 | Endpoint | |
 |---|---|
-| `GET /api/status` | everything `bay status` shows, as JSON; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract; `camera` (camera builds): `GET /api/camera` without the settings and choices; `last_fault`: the fatal error that restarted the node ("fatal error 4 in usbh: …"), "" none since power-on; `budget`: what the ports are switched on within, `unit` `mW` (node v1.0, on DATA_VIN) or `mA` (the first design, on DUT_5V), `limit` (the hub's grant when `granted`, else the bay's own), `reserve` for a start, `draw` now, `waiting` ports, `sheds` since boot, `board` (a DATA board answers), `lead_off`: why v1.0's DATA lead is off ("SCL or SDA held low: DATA lead reversed?", …), null when it is not; each port's `power.state`: `on`, `off`, `fault`, `waiting` (wanted, kept off for its turn or for power), `shed` (shed for power, back once there is room); `power.queued`: a request to switch it on as soon as there is room is waiting |
+| `GET /api/status` | everything `bay status` shows, as JSON; `data_board`: the board on the DATA lead, `\"x4\"`, `\"x6\"` or `null`; `rack`: `node` (0 before the hub gave one), `pos` (`"C3"`), the hub's contract; `camera` (camera builds): `GET /api/camera` without the settings and choices; `last_fault`: the fatal error that restarted the node ("fatal error 4 in usbh: …"), "" none since power-on; `budget`: what the ports are switched on within, `unit` `mW` (node v1.0, on DATA_VIN) or `mA` (the first design, on DUT_5V), `limit` (the hub's grant when `granted`, else the bay's own), `reserve` for a start, `draw` now, `waiting` ports, `sheds` since boot, `board` (a DATA board answers), `lead_off`: why v1.0's DATA lead is off ("SCL or SDA held low: DATA lead reversed?", …), null when it is not; each port's `power.state`: `on`, `off`, `fault`, `waiting` (wanted, kept off for its turn or for power), `shed` (shed for power, back once there is room); `power.queued`: a request to switch it on as soon as there is room is waiting |
 | `POST /api/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}` |
 | `POST /api/reset` | `{"ms": 100}` (body optional) |
 | `POST /api/boot` | DUT into its bootloader (BOOT held across a RESET pulse) |
-| `GET /api/ports` | the boards: a DATA ×4's four ports, or the one DUT as port 1 ([docs/multi-dut-node.md](../docs/multi-dut-node.md)) |
-| `GET /api/usb` | the USB devices: `{"hub": {vid, pid, name, data_x4} or null, "devices": [{busid, slot, hub_port, vid, pid, name, name_from (product, table, ids), manufacturer, serial, strings, speed, classes, ttys, usbip: {client, since_s, offered, read_ahead}, ma}]}`; `offered`: the USB/IP service exports it (not a hub, within `USBIP_DEVICES_COUNT`); `ttys`: the interfaces a host makes a tty of, numbered as udev does (`[{"if": "02"}]`, `"port": 0` for a serial bridge's); the strings come from the devices, escaped; the serial numbers are for everyone with the status right (twister hardware maps) |
+| `GET /api/ports` | the boards: a DATA ×4's four ports or a DATA ×6's six, or the one DUT as port 1, each with its `hub_port` and `lines` (it has RESET and BOOT) ([docs/multi-dut-node.md](../docs/multi-dut-node.md)) |
+| `GET /api/usb` | the USB devices: `{"hub": {vid, pid, name, data_x4 (true on a DATA ×4 only)} or null, "devices": [{busid, slot, hub_port, vid, pid, name, name_from (product, table, ids), manufacturer, serial, strings, speed, classes, ttys, usbip: {client, since_s, offered, read_ahead}, ma}]}`; `offered`: the USB/IP service exports it (not a hub, within `USBIP_DEVICES_COUNT`); `ttys`: the interfaces a host makes a tty of, numbered as udev does (`[{"if": "02"}]`, `"port": 0` for a serial bridge's); the strings come from the devices, escaped; the serial numbers are for everyone with the status right (twister hardware maps) |
 | `POST /api/ports/<n>/power`, `/reset`, `/boot` | one port; `boot` takes `{"power_cycle": true}`; 409 when the bay's budget has no room (the message gives the draw, the reserve and the limit, and says when it is the hub's grant; the request is not queued).  `{"action": "on", "when": "available"}` queues it instead: 202 and `power.state` `waiting` until it goes on by itself, in its turn among the ports waiting; `{"action": "cancel"}` (409 when nothing is queued) or an `off` withdraws it.  On a DATA ×4 node `/api/power`, `/reset` and `/boot` need `"port": n` |
 | `GET /api/boards` | each slot's [board target](#board-targets) and the device in the slot now: `{"slots": [{slot, port, board, runner, probe_id, console, map, pinned: {vid, pid, serial}, device: {busid, vid, pid, manufacturer, product, serial, strings, ttys}, mismatch}]}`, `null` where unset or empty |
 | `GET`, `PUT /api/ports/<n>/board` | one slot's (`n` is 1 on a one-board node); `PUT {"board": "nucleo_g474re", "runner": "stm32cubeprogrammer", "probe_id": "…", "console": "usb" \| "usb:02" \| "aux" \| "none", "map": true}` saves it for the device in the slot now, or for `"pin": {"vid", "pid", "serial"}` (a restore); no `board` clears it; control right, and the port's lease |
@@ -373,7 +375,7 @@ installed Chrome or Edge) regenerates `docs/img/web-ui-*.png`.
 
 ### Board targets
 
-Each slot (the bay, or a DATA ×4's A1.1–A1.4) keeps the Zephyr board in it,
+Each slot (the bay, or a DATA board's A1.1–A1.4 or A1.1–A1.6) keeps the Zephyr board in it,
 in NVS (`src/boards.c`): its target, west runner, probe id, the console
 twister reads, and whether it goes in the hardware map.  The USB devices
 card shows it under the device, with Edit (control right); the dialog

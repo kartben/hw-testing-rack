@@ -55,6 +55,7 @@ drivers, Wi-Fi, the web pages' CSS, helpers and tooling.
 | SERVICE mode | written | stops the USB host and gives the ESP32-S3's single PHY back to the USB-Serial-JTAG (flash/JTAG from the front port); restarts it afterwards |
 | AUX console | written, host-tested | UART1 (IO47/IO21) shared by a web console in the status page (xterm.js over a WebSocket, 16 KB replayed to late clients), an RFC 2217 server on port 4001 (pyserial, labgrid, esptool) and raw TCP on port 4000; baud/format/Enter/echo saved per bay; BREAK; TX released while the DUT is off |
 | AUX RESET/BOOT | written | pulses on IO12/IO48 (`bay reset`, `bay boot`, console buttons), optionally RFC 2217 DTR/RTS like an ESP auto-reset circuit |
+| DATA boards | written, tested on native_sim, not on hardware | a DATA ×4 or a DATA ×6 on the DATA lead, one image for both, told apart at each probe (0x21 a DATA ×4, 0x4C a DATA ×6): each port switched on through the bay's budget, its ~FAULT, V and I; a DATA ×4's RESET/BOOT, pin matrix and co-processor; `bay port`, `/api/ports`, `data_board` in `/api/status` ([multi-dut-node.md](multi-dut-node.md#which-board-data-4-or-data-6)) |
 | Status LED | written | WS2812B on IO38 (RMT): fault / service / classic / power off / no network / USB/IP idle / enumerated / attached |
 | Identity | written | `bay id <id>` (settings) → hostname `bay-<id>.local` over mDNS; without an id, the rack position from the hub (`bay-c3.local`) |
 | Discovery | written, tested on native_sim | DNS-SD under the hostname: `_http._tcp`, `_usbip._tcp` while the DUT is on the S3's USB, `_rfc2217._tcp` while it listens; TXT `id`, `pos`, `fw`, `mode`, `slots` (DATA ×4); kept in step every 2 s (`firmware/common/lib/dnssd.c`).  The hub: `_http._tcp` |
@@ -96,7 +97,9 @@ board makes its own 5 V from it.  The eFuse is **off** until the firmware turns 
    must be high; otherwise off again (a camera lead in J7 shorts J7.1 to GND through the pod: the
    eFuse limits, FLT goes low, the bus voltage stays near 0).  The node does not measure VIN before
    the eFuse, so the firmware checks a floor instead: `CONFIG_BAY_DATA_VIN_MIN_MV`, 15 V.
-3. **The board answers**: the DATA board's expander (0x20) within 1 s (its converters start above
+3. **The board answers**: the DATA board within 1 s, its expander (0x20) and the address that says
+   which board it is (0x21 a DATA ×4, 0x4C a DATA ×6; [multi-dut-node.md › Which
+   board](multi-dut-node.md#which-board-data-4-or-data-6)) (its converters start above
    13.5 V, its hub's reset holds ≤ 560 ms).  No answer: switch off (no board, or the wrong lead on J7)
    and probe again only on the next `bay power on`.
 4. **While on**: FLT low, or the board stops answering on I²C (two missed polls in a row), switches

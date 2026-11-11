@@ -1,7 +1,9 @@
 # One node, four boards: the firmware side
 
 > **Status: the minimal firmware is written (`firmware/bay-node/src/ports.c`,
-> tested on native_sim against an emulated board), not run on a DATA ×4 yet;
+> tested on native_sim against an emulated board), not run on a DATA ×4 yet.
+> Since 2026-11-11 the same image drives a DATA ×6 too ([Which
+> board](#which-board-data-4-or-data-6)), tested the same way, not run on one;
 > the tools and the node's simulator follow it (see Tools and "In the
 > firmware").**  Density epic, decision 3
 > (2026-10-19): one node serves up to four small USB-native boards through a
@@ -13,12 +15,12 @@
 
 ## What the firmware sees
 
-| | Today (one DUT) | With DATA ×4 |
-|---|---|---|
-| USB | the DUT on the S3's OTG port, or the front PC port (classic mode) | a hub on the OTG port, 4 DUTs behind it; classic mode: the laptop sees the hub and the 4 DUTs at high speed |
-| Power | TPS2553 + INA226 on the node | one switch and one current sense per port on DATA ×4 (≈ 0.5 A each), reached over I²C on J7 (PH-8: I²C, an interrupt) |
-| RESET / BOOT | two node GPIOs | per port, through an I²C expander on DATA ×4 (two TCA6408A) |
-| Console | the AUX UART | the boards' own USB (CDC): no AUX per sub-slot |
+| | Today (one DUT) | With DATA ×4 | With DATA ×6 |
+|---|---|---|---|
+| USB | the DUT on the S3's OTG port, or the front PC port (classic mode) | a hub on the OTG port, 4 DUTs behind it; classic mode: the laptop sees the hub and the 4 DUTs at high speed | the same hub chip, 6 DUTs behind it |
+| Power | TPS2553 + INA226 on the node | one switch and one current sense per port on DATA ×4 (≈ 0.5 A each), reached over I²C on J7 (PH-8: I²C, an interrupt) | the same, six ports, on the same lead |
+| RESET / BOOT | two node GPIOs | per port, through an I²C expander on DATA ×4 (two TCA6408A) | none: its one TCA9535 carries the six EN and FAULT_N |
+| Console | the AUX UART | the boards' own USB (CDC): no AUX per sub-slot | the same |
 
 A node without DATA ×4 stays a one-port node: everything below keeps
 working with N = 1, and today's API keeps its meaning.
@@ -61,6 +63,42 @@ for a board that hangs its USB.  On DATA ×4 the hub's PRTPWR pins are not
 wired: `SetPortFeature(PORT_POWER)` does nothing there (on a bench hub it stays
 a fallback; the spike checks which hubs really switch).
 
+### Which board: DATA ×4 or DATA ×6
+
+The DATA ×6 (`electronics/data-port-x6`) plugs into the same lead: six ports,
+power only, no pin header, matrix, co-processor or RESET/BOOT lines.  One
+image serves both: `data-x6.dtsi` follows `data-x4.dtsi` wherever it is
+included, each board's ports grouped under its own node (`data_x4`,
+`data_x6`), and `ports.c` picks the group at each probe, after each DUT_5V
+(node v1.0: DATA_VIN) on:
+
+- Both boards answer at **0x20**: the DATA ×4's first TCA6408A, the DATA ×6's
+  TCA9535.  Only a DATA ×4 has a second expander, at **0x21**; only a DATA ×6
+  has an INA226 at **0x4C** (its port 6's).  The probe reads 0x20, then 0x21,
+  then 0x4C, and drives the board that answered.
+- Why not one address alone: the two expanders keep their registers at
+  different places (the TCA6408A's output register is 1 and its direction
+  register 3; the TCA9535's are the pairs 2–3 and 6–7), so writing one's set-up
+  into the other would make the wrong lines outputs.  A board is driven only
+  once both of its addresses have answered; something at 0x20 that answers at
+  neither 0x21 nor 0x4C is left alone, as no board (node v1.0: DATA_VIN goes
+  off after `CONFIG_BAY_DATA_ANSWER_MS`, as with no board).
+- The DATA ×6's ports 1–4 have their INA226 at the DATA ×4's addresses (0x41,
+  0x43, 0x44, 0x45), on the same 100 mΩ shunts: they share the DATA ×4's
+  nodes; ports 5 and 6 are at 0x47 and 0x4C.  Its TCA9535 node is
+  `status = "disabled"`: its address and pins only, no driver, and no second
+  enabled node at 0x20.
+- Its expander: port n's EN on line 2n − 2, its FAULT_N on 2n − 1 (P00–P13);
+  the spare lines P14–P17, pulled down, become outputs, low.
+- **Its hub port 5 is USB-C 6**, a board under test, where a DATA ×4 has its
+  co-processor: `coproc.c` (the image loader) and `analyzer.c` (the analyzer's
+  relay) leave that port alone while a DATA ×6 is on the lead, so a Pico 2 in
+  BOOTSEL there stays USB/IP's.  The page shows neither the Wires card nor the
+  Logic analyzer card on it.
+- `GET /api/status` says which: `"data_board": "x4"`, `"x6"` or `null`; each
+  port says whether it has RESET and BOOT (`"lines"`), and a DATA ×6's ports
+  answer `/reset` and `/boot` with "this port has no such line".
+
 ## Names and USB/IP
 
 - A sub-slot is the bay's position plus its port: `A1.2`.  The node knows
@@ -73,15 +111,16 @@ a fallback; the spike checks which hubs really switch).
   port), so `A1.2` is always the same busid.  A one-board node keeps `1-1`.
   On DATA ×4 hub port n is USB-C n.  The DATA ×6 wires port 1 to hub port 6
   and port n to hub port n − 1 (`electronics/data-port-x6/design.py`, hub
-  sheet), so its `data-x6.dtsi`, not written yet, gives sub-slot 1
-  `hub-port = <6>` and sub-slot n `hub-port = <n − 1>`; leases stop at port 4
-  until `ACL_MAX_PORTS` (`hwtr/acl.h`) goes to 6.
+  sheet), so its `data-x6.dtsi` gives sub-slot 1 `hub-port = <6>` and
+  sub-slot n `hub-port = <n − 1>`; leases go up to port 6 (`ACL_MAX_PORTS`,
+  `hwtr/acl.h`).
 - **The hub is hidden** from `usbip list`; only the boards are exported.
 - **A board that disconnects** ends its USB/IP session (the client sees a
   detach); when it comes back, it is listed again under the same busid, and
   `bayctl attach --follow` re-attaches it.
-- **Sessions.**  `CONFIG_USBIP_DEVICES_COUNT=4`: one thread and a 2 KB stack
-  each.
+- **Sessions.**  `CONFIG_USBIP_DEVICES_COUNT` is 6 with PSRAM (a DATA ×6's
+  six boards; a DATA ×4's four, its co-processor and a spare): one thread and
+  a 2 KB stack each.
 
 The busid, the hidden hub and the session that ends with its board are
 done: a patch to Zephyr's `subsys/usb/host/usbip.c` that the workspace
@@ -93,10 +132,11 @@ not yet on a node or behind a real hub.
 ## Per-port state
 
 Each sub-slot gets what the single DUT has today: power on / off / cycle, a
-latched fault, its current (V, mA, mW), RESET and BOOT pulses, its USB
-device (VID:PID, product, serial, busid) and the USB/IP client attached.
-`dut.c` stays the bay's DUT_5V; `ports.c` adds the DATA ×4's ports, and a
-one-port node answers `/api/ports` with its one DUT as port 1.
+latched fault, its current (V, mA, mW), RESET and BOOT pulses (a DATA ×4's
+ports; a DATA ×6's have none), its USB device (VID:PID, product, serial,
+busid) and the USB/IP client attached.  `dut.c` stays the bay's DUT_5V;
+`ports.c` adds the DATA board's ports, and a one-port node answers
+`/api/ports` with its one DUT as port 1.
 
 ![USB devices card on a DATA ×4 bay (B3.1–B3.4): per-port power, reset, bootloader, current, lease state and board target; B3.4 queued until the bay has room](img/web-ui-ports.png)
 
@@ -251,7 +291,7 @@ Both keep the node's rule: nothing drives an unpowered board.
 | `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 2, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.2"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` (`port` is the sub-slot, USB-C n; `hub_port` is n on DATA ×4, 6 for port 1 and n − 1 for port n on DATA ×6) |
 | `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}`; 409 when the bay's budget has no room for it ([Power budget](#power-budget)); `{"action": "on", "when": "available"}` queues it instead (202), `{"action": "cancel"}` withdraws that |
 | `POST /api/ports/<n>/reset`, `/boot` | as today, for one port; `/boot` with `{"power_cycle": true}`: BOOT held across a power cycle of the port instead of a RESET pulse (a board whose RESET is not wired: [the analyzer](#a-logic-analyzer-in-a-sub-slot)) |
-| `GET /api/status` | adds `ports` (the same objects, shorter) |
+| `GET /api/status` | adds `ports` (the same objects, shorter) and `data_board`: `"x4"`, `"x6"` or `null` |
 | `/api/power`, `/api/reset`, `/api/boot` | unchanged on a one-port node; on a multi-port node they need `"port": n` (409 without) |
 | `GET /api/boards`, `GET` / `PUT /api/ports/<n>/board` | each sub-slot's Zephyr board target (board, runner, probe id, console), saved on the node for the board in it ([firmware/README.md › Board targets](../firmware/README.md#board-targets)) |
 | `/metrics` | the DUT metrics labelled `port="A1.2"` |
@@ -343,6 +383,16 @@ Done (minimal version, `src/ports.c`, 2026-10-20):
   BOOT (held while off), a board that goes and comes back, the shedding (on
   the ALERT and by the poll), the budget without a node meter, a port's VBUS
   while off and its power cycle.
+- The DATA ×6 (2026-11-11): `data-x6.dtsi`, the probe that tells the boards
+  apart, the TCA9535's register pairs, no RESET/BOOT, its hub ports, the
+  co-processor's and the analyzer's port left alone on it, leases up to port
+  6, the page and the CoreS3's screen for six ports.  `tests/ports` puts a
+  DATA ×6 in the DATA ×4's place (suite `ports_x6`: found, its six ports on
+  their hub ports, its expander's lines, a fault on port 6, ports 5 and 6's
+  meters, no RESET/BOOT, a board that is neither left alone);
+  `tests/data_lead` the same on node v1.0's lead; `tests/coproc` and
+  `tests/analyzer` a device on hub port 5 behind a DATA ×6, left to USB/IP.
+  On native_sim only: no DATA ×6 has been on a node yet.
 
 Not yet: leases per port, the USB/IP
 client per port, `/metrics` by port, the CAN PORTS frame, the product

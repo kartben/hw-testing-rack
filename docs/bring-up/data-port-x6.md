@@ -4,9 +4,11 @@ The drawer's board: six switched and measured USB-C ports behind a USB hub, fed 
 DATA lead (20 V, USB and I²C).  Test pad names are the ones printed on the rear face.  Back to
 [bring-up.md](../bring-up.md).
 
-**The node's firmware does not drive this board yet.**  It knows the DATA ×4's chips; the
-DATA ×6's description (`data-x6.dtsi`) is still to be written
-([multi-dut-node.md](../multi-dut-node.md)).  Stages 1 to 3 need no firmware.  Stage 4 waits for it.
+The node's firmware drives this board since 2026-11-11: one image for the DATA ×4 and the DATA
+×6, which it tells apart on I²C ([multi-dut-node.md › Which
+board](../multi-dut-node.md#which-board-data-4-or-data-6)).  That support is tested on native_sim
+against an emulated board only: stage 4 is its first run on hardware.  Stages 1 to 3 need no
+firmware.
 
 ## 0. Solder
 
@@ -42,19 +44,22 @@ Bench supply, limit 0.3 A, on the VIN and GND pads.  Raise the voltage from 0 to
 | FLT1 … FLT6 | 3.3 V |
 | The supply's current | well under the limit: write it down |
 
-## 4. On a node (once the firmware knows the board)
+## 4. On a node
 
 A DATA lead (JST PH 8, "Same direction") from the node's J7 (DATA) to J1.  Check the lead with
 the meter first: pin n goes to pin 9 − n.
 
 | Check | Expect |
 |---|---|
-| `bay power on` | DATA VIN at the row's voltage; the board answers; no fault |
+| `bay power on` | DATA VIN at the row's voltage; the log says "DATA x6: 6 ports, every port off; switching on the wanted ones"; no fault |
 | `bay usb` | the board's hub |
-| `bay port` | six ports, all off |
+| `bay port` | "DATA x6, 6 ports": port 1 on busid 1-1.6, port n on 1-1.(n − 1); each on, one after the other (`CONFIG_BAY_PORTS_ON_AT_BOOT`) |
+| `bay port 1 off` | VBUS1 at 0 V |
 | `bay port 1 on` | VBUS1 at 4.94–5.08 V |
-| A USB device in port 1, `bay usb` | the device, behind the hub |
+| A USB device in port 1, `bay usb` | the device on 1-1.6, behind the hub |
 | `bay port 1`, device plugged | its voltage and current |
+| `bay port 1 reset` | "port 1 has no RESET or BOOT line (a DATA x6)": the board was taken for a DATA ×6 |
+| The bay page | six ports; no Wires card, no Logic analyzer card |
 | `bay port 1 off` | VBUS1 back to 0 V, the device gone |
 
 The same on ports 2 to 6.  The chips the node should find on I²C: 0x20 (the expander) and
