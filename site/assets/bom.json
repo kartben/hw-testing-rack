@@ -4836,12 +4836,13 @@
 },
 {
 "category": "Cameras",
-"item": "M12 lens, 1/4\", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK)",
-"supplier": "AliExpress",
+"item": "Arducam LN018 M12 lens (M40160M12), 1/4\", 1.6 mm, 145° diagonal, 118° × 92° (the stock 90° is too narrow for a NUCLEO-144 / nRF DK)",
+"supplier": "Welectron (8.90 € TTC)",
 "qty": 2,
-"unit_eur": 3.0,
+"unit_eur": 7.48,
+"notes": "focus it on the first camera: a wide lens can need a shorter holder (bom/sourcing.md)",
 "unit": "pcs",
-"ext_eur": 6.0
+"ext_eur": 14.96
 },
 {
 "category": "Cameras",
@@ -4871,9 +4872,9 @@
 "Cables": 176.9,
 "Analyzer": 7.0,
 "Power": 58.0,
-"Cameras": 64.1
+"Cameras": 73.06
 },
-"total_eur": 1451.98,
+"total_eur": 1460.94,
 "prints": [
 {
 "part": "bay_label_a1",

@@ -249,7 +249,7 @@ until the PD contract is final, so a node sees one clean power-up.
 only sensed.  The DUT's USB-C is on the DATA board in the drawer, a source (56 k Rp, "default USB power"), its VBUS
 switched here.
 
-**Camera (J6).**  Each bay's camera, an Arducam Mega 3MP SPI (M12 version B0434, ≈ 120° lens) in
+**Camera (J6).**  Each bay's camera, an Arducam Mega 3MP SPI (M12 version B0434, the 145° LN018 lens) in
 the pod under the bay's ceiling, and its 2–4 white 5 V LEDs hang on one ≈ 50 cm PH 8 lead from the
 bay's own node.  SPI2 runs in mode 0 at 4 MHz (2 MHz fallback); the 33 Ω series resistors sit
 under J6, 50–65 mm of track from the module, i.e. at the source as far as the 50 cm lead is concerned;

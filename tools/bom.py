@@ -1230,8 +1230,10 @@ def hardware(rack) -> list[dict]:
              "supplier": "Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey", "qty": cams, "unit_eur": 28.25,
              "notes": "on arrival: its header's order (VCC GND SCK MISO MOSI CS) and its MISO high level when fed 5 V "
                       "(≤ 3.6 V, or change R33 and fit R35 on the node)"},
-            {"category": "Cameras", "item": "M12 lens, 1/4\", ≈ 120° diagonal (the stock 90° is too narrow for a "
-                                           "NUCLEO-144 / nRF DK)", "supplier": "AliExpress", "qty": cams, "unit_eur": 3.0},
+            {"category": "Cameras", "item": "Arducam LN018 M12 lens (M40160M12), 1/4\", 1.6 mm, 145° diagonal, "
+                                           "118° × 92° (the stock 90° is too narrow for a NUCLEO-144 / nRF DK)",
+             "supplier": "Welectron (8.90 € TTC)", "qty": cams, "unit_eur": 7.48,
+             "notes": "focus it on the first camera: a wide lens can need a shorter holder (bom/sourcing.md)"},
             # the pod board (electronics/camera-pod, in the Electronics lines) carries the light and the
             # Mega's 3.3 V: nothing to crimp or solder
             # (the camera lead, node J6 → pod J1, is the DATA lead's type: in the Cables lines)

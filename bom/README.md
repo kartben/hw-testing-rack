@@ -8,14 +8,14 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Electronics | 1,016 |
 | Cables | 177 |
 | Printed parts | 86 |
-| Cameras | 64 |
+| Cameras | 73 |
 | Power | 58 |
 | Motion | 29 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,452** |
+| **Total** | **1,461** |
 
-≈ **€121 per bay** all-in.
+≈ **€122 per bay** all-in.
 
 Full line-item list: [`rack-bom.csv`](rack-bom.csv) · per-board JLCPCB files: `electronics/<board>/fab/` · interactive table: the viewer's BOM page.
 
@@ -464,7 +464,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Power | USB PD charger, 100 W (20 V × 5 A), single port (e.g. Anker Nano 100 W, A2679) | 1  | 46.00 | 46.00 | Anker (anker.com/fr) / UGREEN / any PD 100 W |
 | Power | USB-C to USB-C cable, 5 A, e-marked (100 W or 240 W rated), 1–2 m | 1  | 12.00 | 12.00 | any (check the 5 A e-marker) |
 | Cameras | Arducam Mega 3MP SPI camera, M12 version (B0434), 33 × 33 mm | 2  | 28.25 | 56.50 | Welectron (33.90 € TTC) / Arducam (≈ $30) / DigiKey |
-| Cameras | M12 lens, 1/4", ≈ 120° diagonal (the stock 90° is too narrow for a NUCLEO-144 / nRF DK) | 2  | 3.00 | 6.00 | AliExpress |
+| Cameras | Arducam LN018 M12 lens (M40160M12), 1/4", 1.6 mm, 145° diagonal, 118° × 92° (the stock 90° is too narrow for a NUCLEO-144 / nRF DK) | 2  | 7.48 | 14.96 | Welectron (8.90 € TTC) |
 | Cameras | Cable JST XH 2.54 6-pin → Dupont female, one 6-pin housing, 10–20 cm (the Mega → pod J2, VCC GND SCK MISO MOSI CS in order) | 2  | 0.50 | 1.00 | AliExpress |
 | Cameras | Pod hardware: 2 × PT 2.6×14 (the pod board, through the diffuser's posts), cable ties 2.5 × 100 (the lead: 1 at the tray's rear slot, 3 under the ceiling) | 2 set | 0.30 | 0.60 | AliExpress (bulk) |
 

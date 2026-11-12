@@ -35,7 +35,7 @@ ESP32-S3 in each bay.**
   the hub: a USB PD 3.1 sink (20 or 28 V from one charger, no mains in the
   rack) and an eFuse per row; a 60 V-rated buck in every bay.  The same row
   cables carry a CAN bus for the rack controller ([can.md](docs/can.md)).
-* **Cameras** — an optional Arducam Mega (SPI, ~120° M12 lens) and white LEDs behind a diffuser hang from a bay's ceiling, driven by the bay's own node.
+* **Cameras** — an optional Arducam Mega (SPI, 145° M12 lens) and white LEDs behind a diffuser hang from a bay's ceiling, driven by the bay's own node.
 * **Everything is generated** from [`config/rack.yaml`](config/rack.yaml):
   OpenSCAD parts, KiCad schematics *and* PCBs (schematic-as-code, Freerouting),
   the BOM with LCSC part numbers, and the interactive viewer.
@@ -94,7 +94,7 @@ change (`tools/kicad.sh … --fab` runs it on its board).
 For screenshots the viewer takes URL parameters: `?bay=B4&openbay=1&view=dut&hideui`
 pulls bay B4's drawer out and frames its DUT cable (DATA port to board), with no UI.
 `?bay=B2&view=camera&camlight=1&preview=B2` looks into a camera bay with its LEDs on and opens what
-its camera sees (an Arducam Mega with a ~120° lens: fisheye, noise, auto-exposure and JPEG, at 5 fps).
+its camera sees (an Arducam Mega with a 145° lens: fisheye, noise, auto-exposure and JPEG, at 5 fps).
 
 The viewer lights the rack like the photos: a real room (Poly Haven's "Small Empty Room 1", CC0, cut to
 512 × 256 in `site/assets/env/`), AgX with Blender's "Medium High Contrast" look, PETG with its layer lines.

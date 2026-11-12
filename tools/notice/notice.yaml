@@ -286,7 +286,7 @@ pages:
     footer: "{name} · camera"
     parts: {kp: 1, kd: 1, kb: 1, km: 1, kl: 1}
     hardware: {m3x6: 4, pt26x14: 2, tie: 4}
-    note: "Any bay takes a camera: its ceiling has the 4 inserts. Fit the 120° M12 lens in the Mega first; its XH → Dupont cable goes with it."
+    note: "Any bay takes a camera: its ceiling has the 4 inserts. Fit the LN018 M12 lens in the Mega first; its XH → Dupont cable goes with it."
 
   - file: D-01.dc.html
     board: {title: "Camera: 1–2", row: titleD}

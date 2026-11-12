@@ -1,5 +1,5 @@
 // Camera pod — hangs from a bay's ceiling (the bottom of the tray above, or the cap plate) and looks
-// straight down at the board: an Arducam Mega 3MP SPI camera in its case (B0434, a ~120° M12 lens) and
+// straight down at the board: an Arducam Mega 3MP SPI camera in its case (B0434, the 145° LN018 lens) and
 // the pod board right behind it (electronics/camera-pod: the PH-8 lead from the bay's own node J6, the
 // Mega's 3.3 V and header, four white LEDs along the edge beside the camera), so nothing is soldered.
 //
@@ -29,7 +29,7 @@ PAD = P + 6;                            // the plate's half-width around the ins
 
 MEGA_CASE = [34, 34, 12];               // the case: x × y × height, its back against the plate (PLACEHOLDER)
 MEGA_HOLDER = [14, 6];                  // the M12 holder under the case: square, height (PLACEHOLDER)
-MEGA_OPTIC = [14, 9.5];                 // the ~120° lens: Ø, length out of the holder
+MEGA_OPTIC = [14, 9.5];                 // the LN018 lens: Ø, length out of the holder (10 mm overall)
 MEGA_XH = [15, 6, 7];                   // its white XH 6-pin on the case's right side: along y, out, height (PLACEHOLDER)
 // the sleeve's window on the XH's side, open from the case's face: the XH and its plug slide up through it as the
 // case goes in; 3 mm wider than the XH each side and 1 mm over its top (width along y, height over the case's face)

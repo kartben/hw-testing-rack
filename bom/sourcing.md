@@ -97,9 +97,24 @@ codes in JLC's stock?  (Vishay's magnetics@vishay.com.)
 ## Camera lens
 
 The Mega 3MP has a 1/4" sensor, and its stock 2.8 mm lens gives 90° diagonally (75° × 56°).  The worst board needs
-90° × 67°.  **Arducam LN006** (M40180H10, 1/4", 1.8 mm, 650 nm IR-cut) has a published 125° / 100° / 75°
-(D / H / V) on a 1/4" sensor.  It is end-of-life.  **Arducam LN005** (M27210H08, 2.1 mm) gives ≈ 106–115° D, scaled
-from the stock lens.  A shorter focal length can need a shorter holder to focus: try it on the first camera.
+90° × 67°, along the bay's depth × across it.  The lens sits 30.5 mm under the ceiling at bay (64, 84), so in a
+165 mm row it looks at the PCBs from ≈ 80–87 mm (rack.json, 2026-11-12):
+* a NUCLEO-144 needs 81° × 60° at its PCB and 92° × 70° at its tallest parts;
+* the GIGA + display in B2 needs 63° × 63° at its PCB and 73° × 73° at its tallest parts.
+
+So the stock lens is too narrow even for B2.
+
+**Arducam LN018** (M40160M12, 1/4", 1.6 mm, F2.0, 650 nm IR-cut, Ø14 × 10 mm) is the pick (2026-11-12).  It has a
+published 145° / 118° / 92° (D / H / V) on a 1/4" sensor, so the worst board fits with margin.  The image is more
+fisheye at the rim than with a 125° lens.
+
+Rejected:
+* **Arducam LN006** (M40180H10, 1.8 mm, 125° / 100° / 75°), the earlier pick, is end-of-life.  Welectron lists it as
+  sold out (2026-11-12).
+* **Arducam LN014** (M40210M09S, 2.1 mm, low distortion) gives 105° / 80° / 65°, too narrow.  A 2.1 mm rectilinear
+  lens on this sensor gives ≈ 81° × 65°.  One reseller's 93° × 70° does not fit a < 1 % distortion lens.
+
+A shorter focal length can need a shorter holder to focus.  Try it on the first camera.
 
 ## DUT cables at the standing port wall (2026-11-01)
 
@@ -129,7 +144,7 @@ but its photos show ADT-Link's USB 2.0 boards (UT1B), so check its end width too
 
 | Item | Source | Price (2026-10-19) |
 |---|---|---|
-| Arducam Mega 3MP M12 (B0434) ×2, LN006 lens ×2 | Welectron | €33.90 + €8.90 each, VAT incl. |
+| Arducam Mega 3MP M12 (B0434) ×2, LN018 lens ×2 | Welectron | €33.90 + €8.90 each, VAT incl. (2026-11-12) |
 | Arduino GIGA R1 WiFi + GIGA Display Shield | DigiKey FR (Arduino Store: €77.90 + €73.20) | €61.11 + €55.84 HT |
 | USB PD 3.1 EPR charger, single port, 28 V × 5 A | Apple 140 W USB-C adapter (Amazon.fr) | €78.37 |
 | USB-C cable, 240 W e-marked | UGREEN 240 W PD 3.1, 1 or 2 m (Amazon.fr) | €10.82 |

@@ -195,7 +195,7 @@ peg of their layouts, and the PCBs with their mounting holes.
 
 `camera_pod.scad`: two printed parts under the ceiling (the bottom of the tray
 above, or the cap plate) for an Arducam Mega 3MP SPI camera in its case (B0434,
-a ~120° M12 lens) and the pod board right behind it
+the 145° LN018 M12 lens) and the pod board right behind it
 ([electronics/camera-pod](../electronics/camera-pod/): the PH-8 lead's J1, the
 Mega's header J2, four white LEDs along the edge beside the camera: nothing to
 solder).  The **pod** (dark PETG, opaque) takes 2 × M3×8 on a diagonal into the camera
