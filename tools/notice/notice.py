@@ -53,6 +53,11 @@ def m_rotz(deg):
 
 
 FLIP = M([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0]])   # a fastener pointing up (its head below)
+
+
+def R_x90():
+    """A board stood up about x: (x, y, z) -> (x, -z, y), its face (+z) towards -y, its y up."""
+    return M([[1, 0, 0, 0], [0, 0, -1, 0], [0, 1, 0, 0]])
 POD_PLATE_T = 3.0                                          # camera_pod.scad PLATE_T
 
 
@@ -354,6 +359,7 @@ def row_mouths():
 
 # ------------------------------------------------------------------ drag chain, DATA socket (run.py: rackcfg chain, drawer)
 CH, DATA = C.get("CHAIN"), C.get("DATA")
+CR = C.get("CRADLE") or {}                 # the DATA cradle's screws (run.py cradle_screws)
 if CH:                                         # chain_parts.scad / lib/carrier.scad names
     CHAIN_W, CHAIN_H = CH["outer"]             # across the side plates (vertical) x in the bend plane
     CHAIN_Z = CH["bottom"] + CHAIN_W / 2 + 0.6
@@ -472,14 +478,21 @@ def plug_up(m, n, rot=0.0):
     return s
 
 
+def plug_back(m, n):
+    """JST PHR-n housing in a vertical header standing on a board's rear face (the DATA ×6's J1, its pins up
+    the board), its mouth m: plug_up turned so that its lead leaves rearwards (+y)."""
+    s = plug_up(V(0, 0, 0), n, 90.0)
+    s.rotate(V(0, 0, 0), V(1, 0, 0), -90)
+    s.translate(m)
+    return s
+
+
 def data_port_ph():
-    """The DATA port board's side-entry PH (node.py's parts/data_port.json), tray coordinates of its
+    """The DATA ×6's J1 (its PH 8 lead, vertical on the board's rear face, 6.0 tall): tray coordinates of its
     mouth and its opening's direction (towards the rear), drawer closed."""
-    j = json.load(open(os.path.join(PARTS, "data_port.json")))
-    c = j["ph"][0]
-    x0 = C["DRAWER_X0"] + DATA["x"] - DATA["pcb"]["usb"]
-    o = V(x0, C["DRAWER_Y0"] + DATA["wall_y"], C["PLENUM"] + DATA["pcb_z"])
-    return o + V(*c["mouth"]), c["out"], c["pins"]
+    lx, lz = DATA["lead"]
+    return V(C["DRAWER_X0"] + DATA["x0"] + lx, C["DRAWER_Y0"] + DATA["face_y"] + DATA["thickness"] + 6.0,
+             C["PLENUM"] + lz), (0, 1), 8
 
 
 _lead_cache = {}
@@ -523,8 +536,8 @@ def _data_lead_shape(part="full"):
                 keep.insert(0, a)
                 if run > 30:
                     break
-            return Part.makeCompound([plug(pm, pout, pn), pipe(keep, r)])
-        return Part.makeCompound([plug(pm, pout, pn), pipe([(end.x + 1.5, end.y + 4, C["PLENUM"] - 9)] + tail[4:], 1.8)])
+            return Part.makeCompound([plug_back(pm, pn), pipe(keep, r)])
+        return Part.makeCompound([plug_back(pm, pn), pipe([(end.x + 1.5, end.y + 4, C["PLENUM"] - 9)] + tail[4:], 1.8)])
     if dl:
         pts = [tuple(q) for q in dl["to_chain"]][:-1]
     else:
@@ -539,14 +552,14 @@ def _data_lead_shape(part="full"):
             sols.append(plug(V(mx, my - 15, CHAIN_Z), (0, 1), pn))
         else:
             lead.append(to_board)
-            sols.append(plug(pm, pout, pn))
+            sols.append(plug_back(pm, pn))
         return Part.makeCompound(sols + [pipe(q, r) for q in lead])
     if part == "free":
         pts += [(mx, my - 7, CHAIN_Z), (mx, my - 13.1, CHAIN_Z)]           # straight on out of the mouth
         sols.append(plug(V(mx, my - 15, CHAIN_Z), (0, 1), pn))
     else:
         pts += tail
-        sols.append(plug(pm, pout, pn))
+        sols.append(plug_back(pm, pn))
     return Part.makeCompound(sols + [pipe(pts, r)])
 
 
@@ -711,14 +724,20 @@ def bay_chain_instances(inst, child, j, mt):
             inst[f"s_ce{j}{side}{n}"] = ("pt26x8", mt.multiply(x_screw(x + head * 0.5, y, CHAIN_Z, head)))
             child[f"ce{j}"] += [(f"w_ce{j}{side}{n}", None, "follow"), (f"s_ce{j}{side}{n}", None, "follow")]
     dmt = mt.multiply(m_tr(C["DRAWER_X0"], C["DRAWER_Y0"], C["PLENUM"]))   # drawer coordinates
-    # the DATA port board on its two bosses, components up, its front edge on the port wall's back face
-    dp, x0 = DATA["pcb"], DATA["x"] - DATA["pcb"]["usb"]
-    inst[f"dp{j}"] = ("data_port", dmt.multiply(m_tr(x0, DATA["wall_y"], DATA["pcb_z"])))
-    child[f"dr{j}"].append((f"dp{j}", None, "follow"))
-    for n, (hx, hy) in enumerate(dp["holes"]):              # 2 x PT 2.6 x 8 from above into the bosses
-        inst[f"s_dp{j}_{n}"] = ("pt26x8", dmt.multiply(m_tr(x0 + hx, DATA["wall_y"] + dp["size"][1] - hy,
-                                                           DATA["pcb_z"] + dp["thickness"])))
-        child[f"dr{j}"].append((f"s_dp{j}_{n}", None, "follow"))
+    # the DATA ×6, standing in its cradle at the back of the rear bay, its front face (components) towards the
+    # port wall: node.py's frame (x, y up from the bottom edge, z out of the front face) turned up about x
+    inst[f"dp{j}"] = ("data_port", dmt.multiply(m_tr(DATA["x0"], DATA["face_y"] + DATA["thickness"], DATA["z0"]))
+                      .multiply(R_x90()))
+    inst[f"xc{j}"] = ("x4_cradle", dmt)                    # the cradle on the three bosses, the strip on its comb
+    inst[f"xs{j}"] = ("x4_strip", dmt)
+    child[f"dr{j}"] += [(f"dp{j}", None, "follow"), (f"xc{j}", None, "follow"), (f"xs{j}", None, "follow")]
+    for n, (bx, by) in enumerate(CR.get("bosses", [])):     # inserts in the bosses, 3 x M3 x 8 down through the base
+        inst[f"i_xc{j}_{n}"] = ("insert", dmt.multiply(m_tr(bx, by, CR["boss_top"])))
+        inst[f"s_xc{j}_{n}"] = ("m3x8", dmt.multiply(m_tr(bx, by, CR["head_z"])))
+        child[f"dr{j}"] += [(f"i_xc{j}_{n}", None, "follow"), (f"s_xc{j}_{n}", None, "follow")]
+    for n, x in enumerate(CR.get("strip_x", [])):           # 5 x PT 2.3 x 8 down through the strip into the comb
+        inst[f"s_xs{j}_{n}"] = ("pt23x8", dmt.multiply(m_tr(x, CR["strip_y"], CR["strip_head_z"])))
+        child[f"dr{j}"].append((f"s_xs{j}_{n}", None, "follow"))
     # the foot lock: PT 2.6 x 8 from inside the rear bay (on its boss), down into the foot's tongue
     inst[f"s_cf{j}"] = ("pt26x8", dmt.multiply(m_tr(mx - C["DRAWER_X0"], CH["foot_y"], C["DRAWER_BOTTOM"] + 4)))
     child[f"dr{j}"].append((f"s_cf{j}", NORMAL, "own"))
@@ -906,7 +925,9 @@ def power_box_instances(inst, child):
         child["pl"].append((f"s_pl_{n}", (0, 0, 1), "screw"))
     inst["charger"] = ("charger", m_tr(*charger_at()))
     inst["xtl"] = ("lead_alone", m_tr(0, 0, 0))       # the DATA lead on its own, for the parts pages
-    inst["dpx"] = ("data_port", m_tr(0, 0, 0))        # the DATA port board on its own
+    inst["dpx"] = ("data_port", m_tr(0, 0, 0))        # the DATA ×6 on its own
+    inst["xcx"] = ("x4_cradle", m_tr(0, 0, 0))        # its cradle and strip on their own
+    inst["xsx"] = ("x4_strip", m_tr(0, 0, 0))
     inst["dcx"] = ("chain_full", m_tr(0, 0, 0))       # the chain with its end pieces, for the parts pages
     inst["pdc"] = ("pd_cable", m_tr(0, 0, 0))
     inst["feed"] = ("feed", m_tr(0, 0, 0))
@@ -1153,10 +1174,14 @@ STEPS = {
     "a10o": {"view": (-1.1, -0.7, 0.75), "old": A("ca0", "cf0", "ce0", "co0"), "add": {"cb0": (0, 0, 0), "cxf0": (0, 0, 0)},
              "hide": ["s_ca0_0", "s_ca0_1"], "frame": {"at": tuple(m_row(0, T + CL).multVec(V(112, 135, 10))), "size": 270}},
     # the drawer's DATA board: on its bosses, 2 x PT 2.6 x 8 from above; the lead up through the window into its PH
-    "a12s": {"view": (0.35, 1.1, 1.5), "old": A("dr0"), "add": {"dp0": n_(25), "s_dp0_0": n_(42), "s_dp0_1": n_(42), "dls0": (0, 0, 0)},
+    # the drawer's DATA ×6 (docs/assembly.md §4): the cradle onto the three bosses (3 x M3 x 8 into their inserts), the
+    # lead's plug into the board's rear PH, the board down into the cradle's slots; the strip on the comb (5 x PT 2.3 x 8)
+    "a12s": {"view": (0.35, 1.1, 1.5), "old": A("dr0") + [f"i_xc0_{n}" for n in range(3)],
+             "add": {"xc0": n_(14), **{f"s_xc0_{n}": n_(34) for n in range(3)}, "dp0": n_(95), "dls0": n_(95),
+                     "xs0": plus(n_(45), (0, -34, 0)), **{f"s_xs0_{n}": plus(n_(62), (0, -34, 0)) for n in range(5)}},
              "hide": ["s_dr0", "s_cf0", *PLATE[0]], "screw_gap": 0,
-             "frame": {"at": tuple(m_row(0, T + CL).multVec(V(C["DRAWER_X0"] + DATA["x"] - 12, C["DRAWER_Y0"] + DATA["wall_y"] + 10,
-                                                                  C["PLENUM"] + DATA["pcb_z"] + 12))), "size": 200}},
+             "frame": {"at": tuple(m_row(0, T + CL).multVec(V(C["DRAWER_X0"] + DATA["x0"] + 52, C["DRAWER_Y0"] + DATA["face_y"] - 12,
+                                                                  C["PLENUM"] + 80))), "size": 300}},
     "b1": {"view": ISO_R, "old": BAY0, "add": {"lb2": (90, 0, 0), "fp1": (0, -120, 0)}, "clic": True},
     "b2": {"view": (0.9, 1.5, 0.85), "old": BAY0 + A("lb2", "fp1"), "add": {"bb1": (0, 80, 0)}, "screw_gap": 45, "detail": True},
     "pin_b": {"view": (0.45, 1.2, 0.5), "old": A("lb1", "bb0"), "add": {"bb1": (0, 12, 0)}, "screw_gap": 16,
@@ -1669,7 +1694,7 @@ THUMBS = {
     "fp": ("fp0", ISO), "tr": ("tr0", ISO), "dr": ("dr0", ISO), "cp": ("cp0", ISO),
     "bb": ("bb0", (0, 1, 0.15)), "nd": ("nd0", ISO),
     "pb": ("pb", ISO), "pl": ("pl", ISO), "hb": ("hb", ISO), "ch": ("charger", ISO),
-    "an": ("ca0", ISO), "ft": ("cf0", ISO_R), "dc": ("dcx", (-0.2, -0.5, 1.5)), "xt": ("xtl", (0.1, -0.55, 1.0)), "dp": ("dpx", ISO),
+    "an": ("ca0", ISO), "ft": ("cf0", ISO_R), "dc": ("dcx", (-0.2, -0.5, 1.5)), "xt": ("xtl", (0.1, -0.55, 1.0)), "dp": ("dpx", ISO), "xc": ("xcx", ISO_R), "xs": ("xsx", ISO),
     "hx": ("pl0", ISO), "ps": ("pg0_1", (-0.9, -1.2, 0.8)), "pc": ("pcx", (-0.9, -1.2, 0.8)), "po": ("pg0_10", (-0.9, -1.2, 0.8)),
     "pp": ("pg1_1", (-0.9, -1.2, 0.8)),
     "kp": ("k_camera_pod", (-0.9, -1.2, -0.9)), "kd": ("k_camera_diffuser", (-0.9, -1.2, -0.9)), "kb": ("kbx", (-0.9, -1.2, -0.9)),

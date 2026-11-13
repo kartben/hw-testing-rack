@@ -97,7 +97,8 @@ line.  After `run.py`:
 * **Real fasteners.**  ISO 7045 pan-head Phillips screws and heat-set inserts
   from FreeCAD's Fasteners workbench, threads included.
 * **The boards as the viewer has them** (the bay node, the power hub, the
-  DATA port board on the drawer floor).  KiCad's STEP export of each board,
+  DATA ×6 standing in its cradle at the back of the drawer, `x4_cradle.scad`
+  with its strip; the camera pod's board is `camera_pod.scad`'s stand-in).  KiCad's STEP export of each board,
   its 3D models resolved from KiCad's library and `electronics/lib/3dmodels`
   (`${KIPRJMOD}`), in the `kicad/kicad:10.0-full` image.  Where
   `electronics/tools/build_board.py` has `export_3d_coverage`, the same run
@@ -114,10 +115,10 @@ line.  After `run.py`:
 * **Bought parts in the bay**: the drag chain (Olimex 7 × 7) is drawn with
   `chain_parts.scad`'s link and removable bar at its size, pinned along the
   centre line `config/rack.yaml` › `chain` gives between its two rigid end
-  pieces (closed, open, or its bars pulled out); the 5-wire PH DATA lead from
-  the node's vertical J7 through the chain into the DATA board's side-entry
-  PH, its connectors' positions from the two `.kicad_pcb` (`chain_shape`,
-  `chain_ends_shape`, `data_lead_shape`).  Cables are swept splines (`pipe`:
+  pieces (closed, open, or its bars pulled out); the PH 8 DATA lead from
+  the node's vertical J7 through the chain into the DATA ×6's J1 on its rear
+  face, along the viewer's route (`chain_shape`, `chain_ends_shape`,
+  `data_lead_shape`).  Cables are swept splines (`pipe`:
   one sweep, or a few fused end to end where OpenCASCADE refuses the whole).
 * **The row cable from the board.**  `notice.yaml` › `row_cable` names the two
   connectors (node 0's out, node 1's in); their pin count and position come

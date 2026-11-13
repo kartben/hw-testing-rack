@@ -33,7 +33,9 @@ parts:                 # thumbnail key (notice.py THUMBS): name on the pages
   ft: Chain foot
   dc: Drag chain
   xt: DATA lead (JST PH 8)
-  dp: DATA port board
+  dp: DATA ×6
+  xc: DATA cradle
+  xs: Port strip
   hx: Board plate
   ps: Stop
   pc: Cam on its base
@@ -75,17 +77,17 @@ pages:
     tools: PH1, magnetic, shaft ≤ Ø 5 · insert iron
 
   # counts per bay from bom/rack-bom.csv: inserts 4 per ladder, 6 in the tray, 4 under the cap plate (a camera's
-  # mount); M3x8 4 per brace + 2 for the chain anchor; M3x6 the node; PT 2.6x8: 4 chain ends, 2 DATA board, the
-  # foot lock; PT 2.3x8 the stop; 4 washers.  The plate's pegs: python tools/plate_layout.py A1 (a NUCLEO-64)
+  # mount), 3 in the drawer's bosses (the DATA cradle); M3x8 4 per brace + 2 for the chain anchor + 3 for the cradle;
+  # M3x6 the node; PT 2.6x8: 4 chain ends, the foot lock; PT 2.3x8 the stop, the strip's 5; 4 washers.  The plate's pegs: python tools/plate_layout.py A1 (a NUCLEO-64)
   - file: A-pieces.dc.html
     board: {title: "One bay: parts", row: titleA}
     kind: parts
     title: One bay, parts
     page: 2
     footer: "{name}"
-    parts: {lb: 2, la: 2, lc: 2, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1, hx: 1, ps: 3, pc: 3, po: 1}
-    hardware: {insert: 26, m3x8: 10, m3x6: 4, pt26x8: 7, pt23x8: 1, w25: 4, mag: 2}
-    note: "First, heat-set the inserts: 4 per ladder (rear edge), 6 in the tray, 4 under the cap plate. Glue the 2 magnets (drawer, tray ledge) with CA: they must attract. Drag chain: ≈ 180 mm with its two end pieces. Pegs: python tools/plate_layout.py &lt;bay&gt;."
+    parts: {lb: 2, la: 2, lc: 2, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1, xc: 1, xs: 1, hx: 1, ps: 3, pc: 3, po: 1}
+    hardware: {insert: 29, m3x8: 13, m3x6: 4, pt26x8: 5, pt23x8: 6, w25: 4, mag: 2}
+    note: "First, heat-set the inserts: 4 per ladder (rear edge), 6 in the tray, 4 under the cap plate, 3 in the drawer's bosses. Glue the 2 magnets (drawer, tray ledge) with CA: they must attract. Drag chain: ≈ 180 mm with its two end pieces. Pegs: python tools/plate_layout.py &lt;bay&gt;."
 
   - file: A-01.dc.html
     board: {title: "One bay: 1–2", row: titleA}
@@ -134,7 +136,7 @@ pages:
     page: 7
     footer: "{name}"
     steps:
-      - {n: 9, drawing: a12s, alt: "Drawer: the DATA board on its two bosses, components up, its USB-C behind the port wall's fourth U; 2 screws from above. The lead up the cable window at the rear right, along the rear wall into its PH", parts: {dp: 1}, hardware: {pt26x8: 2}}
+      - {n: 9, drawing: a12s, alt: "Drawer, rear bay: the cradle onto the three bosses. The lead up the cable window into the board's rear PH, then the board down into the cradle, receptacles towards the wall, until both latches click. The strip on the comb", parts: {xc: 1, dp: 1, xs: 1}, hardware: {m3x8: 3, pt23x8: 5}}
       - {n: 10, drawing: t3, alt: "Drawer onto the tray's ledges, its groove over the chain foot: lock the foot from the rear bay, then the stop screw down through the left lip", parts: {dr: 1}, hardware: {pt26x8: 1, pt23x8: 1}}
 
   - file: A-06.dc.html
@@ -184,8 +186,8 @@ pages:
     page: 12
     footer: "{name} · next bay"
     banner: "The middle ladder is shared. Heat-set the new inserts and glue the magnets (CA, attracting) first."
-    parts: {lb: 1, la: 1, lc: 1, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1, hx: 1, pp: 1, pc: 2, po: 1}
-    hardware: {jumper: 1, tie: 2, insert: 18, m3x8: 10, m3x6: 4, pt26x8: 7, pt23x8: 1, w25: 4, mag: 2}   # the new lb and la, the tray, the cap plate
+    parts: {lb: 1, la: 1, lc: 1, fp: 1, tr: 1, dr: 1, cp: 1, bb: 2, nd: 1, an: 1, ft: 1, dc: 1, xt: 1, dp: 1, xc: 1, xs: 1, hx: 1, pp: 1, pc: 2, po: 1}
+    hardware: {jumper: 1, tie: 2, insert: 21, m3x8: 13, m3x6: 4, pt26x8: 5, pt23x8: 6, w25: 4, mag: 2}   # the new lb and la, the tray, the cap plate
 
   - file: B-01.dc.html
     board: {title: "Next bay: 1–2", row: titleB}
@@ -205,7 +207,7 @@ pages:
     footer: "{name} · next bay"
     steps:
       - {n: 3, drawing: b3r, alt: "Row ladder onto the new base ladder", parts: {la: 1}, clic: true}
-      - {n: 4, drawing: b3t, alt: "Its tray, fitted at the bench as steps 5–14 (its plate's own layout), slides in", parts: {tr: 1, nd: 1, dc: 1, dr: 1, hx: 1}, hardware: {m3x6: 4, m3x8: 2, pt26x8: 7, pt23x8: 1, w25: 4}, clic: true}
+      - {n: 4, drawing: b3t, alt: "Its tray, fitted at the bench as steps 5–14 (its plate's own layout), slides in", parts: {tr: 1, nd: 1, dc: 1, dr: 1, hx: 1}, hardware: {m3x6: 4, m3x8: 5, pt26x8: 5, pt23x8: 6, w25: 4}, clic: true}
 
   - file: B-03.dc.html
     board: {title: "Next bay: 5–6", row: titleB}

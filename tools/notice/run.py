@@ -76,6 +76,8 @@ PARTS = {
     "mega_camera": ("parts/camera_pod.scad", {"PART": "mega"}),
     "podpcb": ("parts/camera_pod.scad", {"PART": "podpcb"}),
     "podpcb_parts": ("parts/camera_pod.scad", {"PART": "podpcb_parts"}),
+    "x4_cradle": ("parts/x4_cradle.scad", {"PART": "cradle"}),          # the standing DATA board's cradle and the
+    "x4_strip": ("parts/x4_cradle.scad", {"PART": "strip_in_place"}),   # strip over its receptacles (drawer coordinates)
 }
 USB_PIECES = {"right": ("right", "mold"), "straight": ("straight", "mold"), "adapter": ("adapter", "mold"),
               "adapter_metal": ("adapter", "metal")}      # a DUT cable's ends: mold (+ the shell), or the 90° adapter
@@ -96,7 +98,7 @@ JOBS = ["done", "b3t", "b5a", "c_done", "t3", "p3", "t4", "b1", "c5", "b2", "t2"
         "k3", "p4", "t1", "a4", "k2", "k2m", "a12s", "a9b", "a10o", "p2", "p1", "k1", "b3r", "a3", "a2", "a1", "c0", "c1", "c2",
         "pin", "pin_b", "hook", "clip"] \
        + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch",
-                                  "an", "ft", "dc", "xt", "dp", "hx", "ps", "pc", "po", "pp", "kp", "kd", "kb", "km", "kl")] \
+                                  "an", "ft", "dc", "xt", "dp", "xc", "xs", "hx", "ps", "pc", "po", "pp", "kp", "kd", "kb", "km", "kl")] \
        + [f"hw:{h}" for h in ("m3x8", "m3x6", "pt26x8", "pt23x8", "pt26x14", "w25", "sp12", "mag", "insert", "jumper",
                               "usbc", "tie")]
 
@@ -130,7 +132,7 @@ def csg() -> None:
         subprocess.run(cmd + [str(src)], cwd=MECH, check=True, capture_output=True)
 
 
-BOARDS = {"bay-node": "bay_node", "power-hub": "hub", "data-port": "data_port"}   # KiCad board -> its solid in <build>/parts
+BOARDS = {"bay-node": "bay_node", "power-hub": "hub", "data-port-x6": "data_port"}   # KiCad board -> its solid in <build>/parts
 
 
 def node_step(NODE: str = "bay-node") -> None:
@@ -261,8 +263,15 @@ def viewer_bays(rack) -> dict:
 
         def local(q):
             return [round(q[0] - xb, 3), q[1], q[2]]
+        parts = []
+        for i in scene["instances"]:
+            if i.get("bay") == bay and i.get("layer") == "cameras":
+                if i["part"] == "podpcb_dupont":    # the viewer's pod board is its KiCad model, with only the
+                    parts += [("podpcb", local(i["pos"])), ("podpcb_parts", local(i["pos"]))]   # Dupont left;
+                else:                               # the notice draws camera_pod.scad's board and parts (the
+                    parts.append((i["part"], local(i["pos"])))                                  # Dupont in them)
         out["camera"] = {
-            "parts": [(i["part"], local(i["pos"])) for i in scene["instances"] if i.get("bay") == bay and i.get("layer") == "cameras"],
+            "parts": parts,
             "lead": next(({"points": [local(q) for q in c["points"]], "radius": c.get("radius", 1.5),
                            "ends": [{**e, "at": local(e["at"])} for e in c.get("ends", [])]}
                           for c in scene["cables"] if c.get("bay") == bay and "Camera lead" in c.get("label", "")), None),
@@ -275,6 +284,24 @@ def viewer_bays(rack) -> dict:
 def rackcfg_boards() -> dict:
     import rackcfg
     return rackcfg.load_boards()
+
+
+def cradle_screws() -> dict:
+    """The DATA cradle's 3 × M3 × 8 (down into the drawer's bosses) and the strip's 5 × PT 2.3 × 8, in drawer
+    coordinates: OpenSCAD's own numbers (parts/x4_cradle.scad)."""
+    probe, echo = BUILD / "csg" / "_cradle_probe.scad", BUILD / "csg" / "_cradle_probe.echo"
+    probe.write_text(f'include <{(MECH / "parts" / "x4_cradle.scad").as_posix()}>\n'
+                     'echo(CRADLE=[BOSSES, BASE, GUARD_SCREWS, GUARD_SY, STRIP_TOP, SEAT[1]]);\n', encoding="utf-8")
+    echo.unlink(missing_ok=True)
+    subprocess.run(openscad_cmd() + ["-D", 'PART="none"', "-o", str(echo), str(probe)], cwd=MECH, capture_output=True)
+    import json
+    import re
+    m = re.search(r"CRADLE = (\[.*\])", echo.read_text(errors="replace") if echo.exists() else "")
+    if not m:
+        return {}
+    bosses, base, xs, sy, top, seat = json.loads(m.group(1))
+    return {"bosses": bosses, "boss_top": base[0], "head_z": base[0] + base[1] - 2.4,   # its counterbores, 2.4 deep
+            "strip_x": xs, "strip_y": sy, "strip_head_z": top - seat}
 
 
 def pod_screws() -> dict:
@@ -322,9 +349,11 @@ def main() -> None:
     c["POWER_BOX"] = {**rack.power_box(), "hub_pcb": rack.raw["pcb"]["power_hub"]}
     d, node = rack.drawer, rack.node                 # the drag chain, the DATA socket, the node's DUT port
     c["CHAIN"] = {**rack.chain, "bottom": rack.carrier["bottom"]}
-    dp = rack.raw["pcb"]["data_port"]               # the DATA port board on the rear-bay floor (lib/carrier.scad DATA_PCB_*)
-    c["DATA"] = {"x": rack.data_port_x[0], "wall_y": d["depth"] - d["rear_bay"], "z": d["bottom"] + 8.5,   # PORT_Z
-                 "wall": d["wall"], "pcb": dp, "pcb_z": d["bottom"] + 8.5 - 1.63 - dp["thickness"]}
+    # every bay's DATA board, the DATA ×6, standing at the back of the drawer's rear bay in its cradle
+    # (parts/x4_cradle.scad), its front face towards the port wall (drawer coordinates: x0, face_y, bottom)
+    dp = rack.raw["pcb"]["data_port_x6"]
+    c["DATA"] = {"x0": dp["x0"], "face_y": d["depth"] - d["rear_bay"] + dp["face_y"], "z0": d["bottom"],
+                 "size": dp["size"], "thickness": dp["thickness"], "lead": dp["lead"]}
     c["NODE_DATA"] = [node["size"][0] + 0.4, node["size"][1] - node["right"]["data"], node["thickness"] + 1.6]
     c["NODE_HOLES"] = node["holes"]                 # M3, KiCad coordinates (y from the rear edge)
     import webscene                                  # the USB plugs' sizes, as the viewer draws them
@@ -342,6 +371,7 @@ def main() -> None:
     PARTS.update(usb_parts())
     csg()
     c["POD_SCREWS"] = pod_screws()
+    c["CRADLE"] = cradle_screws()
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     conv = BUILD / "parts" / "convert_log.txt"
     conv.unlink(missing_ok=True)
