@@ -12,7 +12,7 @@ index:                 # the canvas's project/canvas.json: its title, and a row 
   title: Bay assembly
   createdOnFiles: {v: 1, at: "2026-10-17T17:20:00Z"}
   rows: {titleA: "1 · One bay", titleB: "2 · Add a bay", titleC: "3 · Power box", titleD: "4 · Camera (optional)"}
-name: TESTBÅS
+name: BITBÜNK
 credit: hw-testing-rack
 
 # The cable between two neighbouring nodes (step B-5): node 0's `from` connector to node 1's `to`,
@@ -68,7 +68,7 @@ pages:
   - file: Main.dc.html
     board: {title: "Cover", row: titleA}
     kind: cover
-    title: TESTBÅS, cover
+    title: BITBÜNK, cover
     drawing: cover
     alt: Assembled bay
     people: 1

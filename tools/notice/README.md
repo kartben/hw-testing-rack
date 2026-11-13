@@ -12,6 +12,7 @@ are generated from one data file.
 | `notice.py` | the drawings: scenes (`STEPS`), thumbnails (`THUMBS`), hardware icons (`hw_shape`) |
 | `pages.py` | `notice.yaml` + the drawings' canvas addresses (`assets.json`) → the page files and the canvas index (`canvas.json`) |
 | `run.py` | everything up to the drawings, then the list of drawings to upload |
+| `pdf.py` | the built pages and the local drawings → one A4 PDF, `mechanical/build/notice/<name>.pdf` (Edge or Chrome, headless) |
 | `jobs.py` | on another machine (`NOTICE_REMOTE`): the drawings, within its memory |
 
 ## Regenerating
@@ -83,6 +84,9 @@ line.  After `run.py`:
    canvas is overwritten, so port it into `notice.yaml` or `pages.py` first
    (`pages.py check <dir of the read copy>` shows the differences).
 4. Commit `assets.json`.
+5. The PDF: `python tools/notice/pdf.py` builds the pages again and prints
+   them, with the drawings of `out/`, one A4 page per artboard in the
+   canvas's order (the canvas's own Export PDF gives the same pages).
 
 ## How the drawings are made
 
