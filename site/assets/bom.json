@@ -4661,7 +4661,7 @@
 "supplier": "LCSC C495652",
 "qty": 14,
 "unit_eur": 0.0451,
-"notes": "12 cables and 2 spares; the cable works either way round, the colours only make it readable (docs/cabling.md)",
+"notes": "12 cables and 2 spares; the cable works either way round, the colours only make it readable (docs/cabling.md).  Mouser FR has the red one on special order only: the natural PHR-6 does, the IN end then being the light one",
 "unit": "pcs",
 "ext_eur": 0.63
 },
@@ -4674,6 +4674,16 @@
 "notes": "12 cables and 2 spares",
 "unit": "pcs",
 "ext_eur": 0.55
+},
+{
+"category": "Cables",
+"item": "Heat-shrink tube 2:1, Ø 9.5 mm, black, 1 m: 10 mm bands holding each row cable's six leads flat as a ribbon",
+"supplier": "AliExpress (bulk)",
+"qty": 1,
+"unit": "m",
+"unit_eur": 1.0,
+"notes": "3 bands a cable, one more every 15 cm on a feed: ≈ 47 bands; slip them on before filling the second housing (they do not pass over one).  A turn of tape does instead",
+"ext_eur": 1.0
 },
 {
 "category": "Cables",
@@ -4869,12 +4879,12 @@
 "Printed parts": 86.0,
 "Fasteners": 14.76,
 "Motion": 29.36,
-"Cables": 176.9,
+"Cables": 177.9,
 "Analyzer": 7.0,
 "Power": 58.0,
 "Cameras": 73.06
 },
-"total_eur": 1460.94,
+"total_eur": 1461.94,
 "prints": [
 {
 "part": "bay_label_a1",

@@ -438,11 +438,20 @@ def _row_cables(rack) -> list[dict]:
         {"category": "Cables", "item": "JST PH 6-pin housing PHR-6-R, red: a row cable's IN end (the node's J1)",
          "supplier": "LCSC C495652", "qty": cables + 2, "unit_eur": round(0.049 * USD_EUR, 4),
          "notes": f"{cables} cables and 2 spares; the cable works either way round, the colours only make it "
-                  "readable (docs/cabling.md)"},
+                  "readable (docs/cabling.md).  Mouser FR has the red one on special order only: the natural "
+                  "PHR-6 does, the IN end then being the light one"},
         {"category": "Cables", "item": "JST PH 6-pin housing PHR-6-BK, black: a row cable's OUT end (the node's J2, "
                                       "the hub's row outputs)",
          "supplier": "LCSC C495651", "qty": cables + 2, "unit_eur": round(0.043 * USD_EUR, 4),
          "notes": f"{cables} cables and 2 spares"},
+        # each row cable a flat ribbon (the user, 2026-11-16): its six leads side by side, held by heat-shrink
+        # bands slipped on before the second housing is filled (docs/cabling.md)
+        {"category": "Cables", "item": "Heat-shrink tube 2:1, Ø 9.5 mm, black, 1 m: 10 mm bands holding each row "
+                                      "cable's six leads flat as a ribbon",
+         "supplier": "AliExpress (bulk)", "qty": 1, "unit": "m", "unit_eur": 1.0,
+         "notes": f"3 bands a cable, one more every 15 cm on a feed: ≈ {3 * cables + sum(int(cm // 15) for cm in feeds)} "
+                  "bands; slip them on before filling the second housing (they do not pass over one).  A turn "
+                  "of tape does instead"},
     ]
     if long_:                                   # beyond JST's 305 mm: crimped
         wire_m = sum(6 * (cm + 4) / 100 for _, cm in long_)

@@ -152,7 +152,9 @@ plugs into the power box's rear wall.
   ladder's window.  It runs forward along that ladder's outer face, climbs the
   rack's left side tied to the ladders, and enters the first bay's left window
   to its node's IN connector.  Out to the left and back in from the left, it
-  takes a half turn along the way.  Give the CAN pair 2–3 twists per 10 cm.
+  takes a half turn along the way.  It lies flat like the jumpers, a ribbon:
+  the CAN pair runs between its two GND leads, and at these lengths the lines
+  are electrically short ([can.md](can.md#bus)).
 * **Making the row cables** (the user's pick, 2026-10-21: [power-distribution-review.md](power-distribution-review.md#decision-real-awg-24-leads)).
   JST rates PH's 2 A only on 24 AWG, and no ready-made 6-pin cable states 24 AWG with this pinout.  So
   each cable is six single leads in two housings (the parts are in the BOM).
@@ -171,8 +173,13 @@ plugs into the power box's rear wall.
     black one: outermost left to outermost right, and so on inwards.  Push each contact in until it
     clicks, then tug it.
   - **Marking (optional):** the leads are all black.  Plug the red end into a node's J1 and put a red
-    stripe (marker or heat-shrink) at both ends of the lead on J1's pin 1, VRACK.  Twist the two
-    middle leads (CAN) 2–3 turns per 10 cm, and hold the six together with a few small cable ties.
+    stripe (marker or heat-shrink) at both ends of the lead on J1's pin 1, VRACK.
+  - **A flat ribbon** (the user's pick, 2026-11-16): fill the red housing, slip three 10 mm bands
+    of 9.5 mm heat-shrink over the six leads (they do not pass over a housing), then fill the black
+    one.  Lay the six side by side in housing order, with no lead crossing another, and shrink one
+    band 2 cm from each housing and one in the middle (a feed: one every 15 cm or so).  The CAN
+    pair stays between its two GND leads, so it needs no twist.  A turn of tape does instead of a
+    band.
   - **Before use:** ring every cable with a meter, red 1 to black 6 and so on, and check that no two
     positions short.
 * **A node on the bench:** it runs only from its row, never from USB.  To

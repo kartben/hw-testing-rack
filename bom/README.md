@@ -6,14 +6,14 @@ Configuration: **12 bays** (4 columns × 3 rows) in the panel frame. Prices are 
 | Category | Cost (€) |
 |---|---:|
 | Electronics | 1,016 |
-| Cables | 177 |
+| Cables | 178 |
 | Printed parts | 86 |
 | Cameras | 73 |
 | Power | 58 |
 | Motion | 29 |
 | Fasteners | 15 |
 | Analyzer | 7 |
-| **Total** | **1,461** |
+| **Total** | **1,462** |
 
 ≈ **€122 per bay** all-in.
 
@@ -448,6 +448,7 @@ One rack (12 bay-node, 1 power-hub, 10 data-port-x6, 2 camera-pod, 1 data-port-x
 | Cables | JST PH pre-crimped lead ASPHSPH24K305, 305 mm, 24 AWG UL1007, SPH-002T-P0.5S at both ends (row cables: the feed to row A, 6 a cable) | 8  | 0.44 | 3.52 | Digi-Key FR 455-3083-ND (or Mouser FR) |
 | Cables | JST PH 6-pin housing PHR-6-R, red: a row cable's IN end (the node's J1) | 14  | 0.05 | 0.63 | LCSC C495652 |
 | Cables | JST PH 6-pin housing PHR-6-BK, black: a row cable's OUT end (the node's J2, the hub's row outputs) | 14  | 0.04 | 0.55 | LCSC C495651 |
+| Cables | Heat-shrink tube 2:1, Ø 9.5 mm, black, 1 m: 10 mm bands holding each row cable's six leads flat as a ribbon | 1 m | 1.00 | 1.00 | AliExpress (bulk) |
 | Cables | JST PH crimp contact SPH-002T-P0.5S, 24–30 AWG, insulation Ø 0.8–1.5 mm (the feeds JST's leads don't reach: row B (60 cm), row C (80 cm)) | 50  | 0.01 | 0.41 | LCSC C111515 |
 | Cables | Wire, 24 AWG stranded, UL1007 (Ø ≈ 1.4 mm, within the contact's 1.5), black, 10 m (the crimped feeds) | 1 spool | 4.00 | 4.00 | AliExpress (UL1007 24AWG) |
 | Cables | Crimper for open-barrel contacts, 28–18 AWG (the crimped feeds' contacts) | 1  | 20.00 | 20.00 | IWISS SN-28B (or Engineer PA-09, ≈ €40) |
