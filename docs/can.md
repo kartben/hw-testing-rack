@@ -52,9 +52,8 @@ swap, and the next node simply stays off.
 | 6 | POS in | VRACK | POS: addressing token, into a node on J1.6, out of it (or of the hub) on pin 1 |
 
 * Bay-to-bay jumpers: 120 mm.
-* Feeds from the power box: ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C.  Feeds
-  and jumpers alike are flat ribbons (2026-11-16): the CAN pair runs between
-  its two GND leads, untwisted, the lines being electrically short (below).
+* Feeds from the power box: ≈ 0.25 / 0.45 / 0.6 m for rows A / B / C.  Give
+  the CAN pair 2–3 twists per 10 cm on the feeds; the jumpers don't need it.
 
 ## Bus
 
