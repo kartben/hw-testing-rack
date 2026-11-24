@@ -1,0 +1,39 @@
+{#- The left-hand menu: the pages of the current section, under their captions (docs/_toc.yml).
+    A page's own pages show when it, or one of them, is open. -#}
+{%- macro entry(p, level) %}
+<li class="bb-nav-l{{ level }}{% if p.current %} bb-here{% endif %}{% if p.open %} bb-open{% endif %}">
+  <a href="{{ p.url }}"{% if p.current %} aria-current="page"{% endif %}>{{ p.title }}</a>
+  {%- if p.groups and (p.open or level == 1 and p.groups|length == 1 and not p.groups[0].caption) %}
+  {%- for g in p.groups %}
+  {%- if g.caption %}<p class="bb-nav-subcaption">{{ g.caption }}</p>{% endif %}
+  <ul>
+    {%- for c in g.pages %}{{ entry(c, level + 1) }}{% endfor %}
+  </ul>
+  {%- endfor %}
+  {%- endif %}
+</li>
+{%- endmacro %}
+{%- if bb_nav %}
+<nav class="bb-nav" aria-label="{{ bb_nav.title }}">
+  <p class="bb-nav-section">{{ bb_nav.title }}</p>
+  <ul>
+    <li class="bb-nav-l1{% if bb_nav.index.current %} bb-here bb-open{% endif %}">
+      <a href="{{ bb_nav.index.url }}"{% if bb_nav.index.current %} aria-current="page"{% endif %}>{{ bb_nav.index.title }}</a>
+    </li>
+  </ul>
+  {%- for part in bb_nav.parts %}
+  {%- if part.caption %}<p class="bb-nav-caption">{{ part.caption }}</p>{% endif %}
+  <ul>
+    {%- for p in part.pages %}{{ entry(p, 1) }}{% endfor %}
+  </ul>
+  {%- endfor %}
+</nav>
+{%- else %}
+<nav class="bb-nav" aria-label="Sections">
+  <ul>
+    {%- for s in bb_sections %}
+    <li class="bb-nav-l1"><a href="{{ s.url }}">{{ s.title }}</a></li>
+    {%- endfor %}
+  </ul>
+</nav>
+{%- endif %}

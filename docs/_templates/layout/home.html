@@ -1,0 +1,19 @@
+{#- The site's first page: no side columns.  Until November 2026 the 3D viewer lived at this address,
+    with its settings in the query string (?bay=B4&openbay=1): such a link is sent on to viewer/. -#}
+{%- extends "layout.html" -%}
+
+{%- block extrahead %}
+  {{ super() }}
+  {% include "components/meta-opengraph.html" %}
+  <script>
+    if (/[?&](bay|openbay|open|view|explode|xray|preview|camlight|hideui|quality|eye|look|capture|debug)(=|&|$)/.test(location.search)) {
+      location.replace("viewer/" + location.search + location.hash);
+    }
+  </script>
+{%- endblock %}
+
+{% block body %}<div class="bb-home">{{ body }}</div>{% endblock %}
+
+{% block afterarticle %}
+{% include "partials/page-bottom.html" %}
+{% endblock %}

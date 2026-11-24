@@ -1,0 +1,15 @@
+{#- One link at the foot of a page of the build's main line: the next page of docs/_toc.yml's `next` list.
+    No page has a "Previous", and the pages of Use, Reference and Engineering have neither. -#}
+{%- if bb_next %}
+<div class="navigation bb-next flex print:hidden">
+  <div class="navigation-next">
+    <a href="{{ bb_next.url }}">
+      <div class="page-info">
+        <span>Next{% if bb_next.section != bb_section %} · {{ bb_next.section }}{% endif %}</span>
+        <div class="title">{{ bb_next.title }}</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div>
+</div>
+{%- endif %}

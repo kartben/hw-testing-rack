@@ -1,0 +1,9 @@
+{#- The top bar: one link per section of docs/_toc.yml; the one the current page belongs to is marked. -#}
+<ul>
+  {%- for s in bb_sections %}
+  <li class="link{% if s.current %} bb-current{% endif %}{% if s.quiet %} bb-quiet{% endif %}">
+    <a href="{{ s.url }}"{% if s.current %} aria-current="true"{% endif %}>{{ s.title }}</a>
+  </li>
+  {%- endfor %}
+  <li class="link bb-out"><a href="{{ pathto(bitbunk_viewer, 1) }}">3D model</a></li>
+</ul>

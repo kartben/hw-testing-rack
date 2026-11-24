@@ -1,0 +1,30 @@
+{#- Section / parent page / this page.  The section is the top bar's; a page shows its own title here, never the
+    short one of the menu. -#}
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList">
+      {%- for c in bb_crumbs %}
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="{{ c.url }}"><span itemprop="name">{{ c.title }}</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="{{ loop.index }}" />
+      </li>
+      {%- endfor %}
+      <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">{{ title|striptags }}</strong>
+        <meta itemprop="position" content="{{ bb_crumbs|count + 1 }}" />
+      </li>
+    </ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div>
