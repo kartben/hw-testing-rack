@@ -19,7 +19,31 @@ are generated from one data file.
 ```bash
 python tools/notice/run.py                 # every drawing → mechanical/build/notice/out/*.svg, then the upload list
 python tools/notice/run.py a3 pin          # some of them
+python tools/notice/run.py d1 thumb:xc     # a step, a part's card and chip
 python tools/notice/run.py --dry           # does it still build? every scene, nothing drawn
+```
+
+The names are `notice.py`'s steps and details (`a1`, `pin`, `t3`, `done`,
+the drawer at the bench `d1` to `d4` with the latch's detail `latch`, and so
+on), `thumb:<part>` for a part's card and chip (`card_<part>`, `chip_<part>`;
+today's drawer adds `df` its front, `xc` the cradle, `xs` its strip and `x6`
+the DATA x6), and `hw:<fastener>` for a hardware icon; `run.py`'s `JOBS`
+lists them all.  Whatever the names, every run first remakes the constants,
+the solids and the boards (a few minutes), then draws only those.
+
+Without OpenSCAD installed, put on the path a script named `openscad` that
+runs the `openscad/openscad` image with the repository mounted at its own
+path (`run.py` hands OpenSCAD absolute paths, so the `/work` mount of
+`tools/build.py`'s `RACK_OPENSCAD_DOCKER` does not do here):
+
+```bash
+mkdir -p ~/bin/openscad-docker && cat > ~/bin/openscad-docker/openscad <<'EOF'
+#!/bin/sh
+R=$(git rev-parse --show-toplevel)
+exec docker run --rm -v "$R:$R" -w "$PWD" openscad/openscad:latest openscad "$@"
+EOF
+chmod +x ~/bin/openscad-docker/openscad
+PATH=~/bin/openscad-docker:$PATH python tools/notice/run.py d1
 ```
 
 A full run takes about 40 minutes (four FreeCAD processes); it ends with
@@ -93,7 +117,8 @@ line.  After `run.py`:
 * **Real fasteners.**  ISO 7045 pan-head Phillips screws and heat-set inserts
   from FreeCAD's Fasteners workbench, threads included.
 * **The boards as the viewer has them** (the bay node, the power hub, the
-  DATA port board on the drawer floor).  KiCad's STEP export of each board,
+  DATA port board on the drawer floor, and the DATA x6 standing in today's
+  drawer's cradle).  KiCad's STEP export of each board,
   its 3D models resolved from KiCad's library and `electronics/lib/3dmodels`
   (`${KIPRJMOD}`), in the `kicad/kicad:10.0-full` image.  Where
   `electronics/tools/build_board.py` has `export_3d_coverage`, the same run
@@ -132,6 +157,10 @@ line.  After `run.py`:
 tray's guide lip; fixed).
 
 Needs FreeCAD 1.x with the Fasteners workbench (`FREECADCMD=` if `freecadcmd`
-is not on the path), OpenSCAD, and Docker (or kicad-cli, without the coverage
-report) for the boards.  Projections are cached in
+is not on the path), OpenSCAD (or the Docker script under Regenerating), and
+Docker (or kicad-cli, without the coverage report) for the boards.  The
+numbers of today's drawer (its front's joint, the cradle's bosses, its
+strip's screws and latch) are OpenSCAD's own, read from `drawer.scad` and
+`x4_cradle.scad` by an echo probe; if one is missing, `run.py` says so,
+`notice.py` has no steps `d1` to `d4` and `latch`, and `--dry` fails on them.  Projections are cached in
 `mechanical/build/notice/out/cache/`; `run.py` always recomputes them.

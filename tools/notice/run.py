@@ -7,18 +7,20 @@
     python tools/notice/run.py --dry            # steps 1-3, then every scene built, nothing drawn: does the
                                                 # notice still build on this state? (minutes, exit 1 if not)
 
-1. the panel frame's constants (OpenSCAD probe, tools/panel_proto.py) -> <build>/constants.json;
+1. the panel frame's constants (OpenSCAD probe, tools/panel_proto.py) -> <build>/constants.json,
+   with the camera pod's screws and today's drawer's numbers (OpenSCAD echo probes);
 2. the printed parts of one bay -> OpenSCAD CSG -> exact solids (csg2part.py, in freecadcmd);
-3. the bay node: KiCad's STEP export and 3D coverage report, stand-ins for the parts without a
-   body (node.py);
+3. the boards (the bay node, the power hub, the DATA port and the DATA x6): KiCad's STEP export
+   and 3D coverage report, stand-ins for the parts without a body (node.py);
 4. the drawings: notice.py in four freecadcmd processes -> <build>/out/*.svg, or on another
    machine (below);
 5. pages.py plan: the drawings the canvas doesn't have yet.  Then upload, record, build and
    publish the pages: README.md, Publishing.  A full run takes about 40 minutes here.
 
 <build> is mechanical/build/notice.  Needs FreeCAD 1.x with the Fasteners workbench
-(FREECADCMD=path/to/freecadcmd if it is not found), OpenSCAD, and kicad-cli (or Docker) for
-the bay node (without it, the node is drawn as a bare board).
+(FREECADCMD=path/to/freecadcmd if it is not found), OpenSCAD (an `openscad` on the path; without
+it, a script of that name that runs it in Docker: README.md), and kicad-cli (or Docker) for the
+boards (without it, the node is drawn as a bare board).
 
 Step 4 elsewhere: NOTICE_REMOTE is a command that runs its last argument in a shell on a
 machine with FreeCAD + Fasteners + shapely at <NOTICE_REMOTE_DIR>/env/bin/freecadcmd
@@ -60,6 +62,10 @@ PARTS = {
     "floor_plate": ("parts/tray.scad", {"PART": "floor_plate"}),
     "cap_plate": ("parts/tray.scad", {"PART": "cap_plate"}),
     "drawer_light": ("parts/drawer.scad", {}),
+    "drawer_front": ("parts/drawer.scad", {"PART": "front_in_place"}),   # today's drawer: its front, as assembled,
+    "x4_cradle": ("parts/x4_cradle.scad", {"PART": "cradle"}),             # the cradle on the rear bay's bosses,
+    "x4_strip": ("parts/x4_cradle.scad", {"PART": "strip_in_place"}),      # its strip over the receptacles,
+    "x6_slot": ("parts/x4_cradle.scad", {"PART": "board"}),                # and the board's plain outline (the latch)
     "power_box_base": ("parts/power_box.scad", {"PART": "base"}),
     "power_box_lid": ("parts/power_box.scad", {}, "lid();"),     # as assembled (it prints top face down)
     "chain_anchor": ("parts/chain_parts.scad", {"PART": "anchor"}),
@@ -93,10 +99,11 @@ def usb_parts() -> dict:
     return out
 # heaviest first, dealt round-robin to the processes
 JOBS = ["done", "b3t", "b5a", "c_done", "t3", "p3", "t4", "b1", "c5", "b2", "t2", "c3", "c4", "b4", "cover", "a7", "a6",
-        "k3", "p4", "t1", "a4", "k2", "k2m", "a12s", "a9b", "a10o", "p2", "p1", "k1", "b3r", "a3", "a2", "a1", "c0", "c1", "c2",
-        "pin", "pin_b", "hook", "clip"] \
+        "k3", "p4", "t1", "d3", "d4", "d2", "d1", "a4", "k2", "k2m", "a12s", "a9b", "a10o", "p2", "p1", "k1", "b3r", "a3", "a2",
+        "a1", "c0", "c1", "c2", "pin", "pin_b", "hook", "clip", "latch"] \
        + [f"thumb:{p}" for p in ("lb", "la", "lc", "fp", "tr", "dr", "cp", "bb", "nd", "pb", "pl", "hb", "ch",
-                                  "an", "ft", "dc", "xt", "dp", "hx", "ps", "pc", "po", "pp", "kp", "kd", "kb", "km", "kl")] \
+                                  "an", "ft", "dc", "xt", "dp", "hx", "ps", "pc", "po", "pp", "kp", "kd", "kb", "km", "kl",
+                                  "df", "xc", "xs", "x6")] \
        + [f"hw:{h}" for h in ("m3x8", "m3x6", "pt26x8", "pt23x8", "pt26x14", "w25", "sp12", "mag", "insert", "jumper",
                               "usbc", "tie")]
 
@@ -130,7 +137,8 @@ def csg() -> None:
         subprocess.run(cmd + [str(src)], cwd=MECH, check=True, capture_output=True)
 
 
-BOARDS = {"bay-node": "bay_node", "power-hub": "hub", "data-port": "data_port"}   # KiCad board -> its solid in <build>/parts
+BOARDS = {"bay-node": "bay_node", "power-hub": "hub", "data-port": "data_port",    # KiCad board -> its solid in <build>/parts
+          "data-port-x6": "data_x6"}
 
 
 def node_step(NODE: str = "bay-node") -> None:
@@ -296,6 +304,34 @@ def pod_screws() -> dict:
             "inserts": json.loads(m.group(4))}
 
 
+X6_NUMBERS = {"parts/drawer.scad": ["JOINTS", "JOINT_Y", "JOINT_T", "JOINT_Z", "X4_HOLES", "X4_BOSS_D", "DATA_PCB_Z",
+                                    "DATA_WIN_Y"],
+              "parts/x4_cradle.scad": ["BOSSES", "BASE", "GUARD_SCREWS", "GUARD_SY", "COMB_TOP", "STRIP_TOP", "SEAT", "V2_X0",
+                                       "V2_Y", "V2_Z0", "V2", "TOP", "X_L", "OW", "SLIT", "UW", "Y_F", "Y_R", "LATCH", "GAP",
+                                       "WIN_X", "WIN_Y", "PORT_XS", "PORT_Z"]}
+
+
+def x6_numbers(rack) -> dict:
+    """Today's drawer, for notice.py's steps d1-d4 and latch: the front's joint (its two PT 2.3 x 8), the cradle's bosses,
+    its strip's screws and latch, as OpenSCAD's own numbers (parts/drawer.scad, parts/x4_cradle.scad); and the DATA x6
+    (config/rack.yaml › pcb.data_port_x6).  {} if a number is missing: notice.py then leaves those steps out."""
+    import json
+    import re
+    out = {}
+    for scad, keys in X6_NUMBERS.items():
+        probe, echo = BUILD / "csg" / f"_probe_{Path(scad).stem}.scad", BUILD / "csg" / f"_probe_{Path(scad).stem}.echo"
+        probe.write_text(f'include <{(MECH / scad).as_posix()}>\n' + "".join(f"echo({k}={k});\n" for k in keys), encoding="utf-8")
+        echo.unlink(missing_ok=True)
+        subprocess.run(openscad_cmd() + ["-D", 'PART="none"', "-o", str(echo), str(probe)], cwd=MECH, capture_output=True)
+        found = dict(re.findall(r"ECHO: (\w+) = (.*)", echo.read_text(errors="replace") if echo.exists() else ""))
+        miss = [k for k in keys if k not in found]
+        if miss:
+            print(f"{scad}: no value for {' '.join(miss)}: steps d1-d4 and latch left out")
+            return {}
+        out.update({k: json.loads(found[k]) for k in keys})
+    return {**out, "pcb": rack.raw["pcb"]["data_port_x6"]}
+
+
 def outputs(name: str) -> list[str]:
     """The drawings a job writes (out/<name>.svg)."""
     kind, _, k = name.rpartition(":")
@@ -342,6 +378,7 @@ def main() -> None:
     PARTS.update(usb_parts())
     csg()
     c["POD_SCREWS"] = pod_screws()
+    c["X6"] = x6_numbers(rack)
     (BUILD / "constants.json").write_text(json.dumps(c, indent=1), encoding="utf-8")
     conv = BUILD / "parts" / "convert_log.txt"
     conv.unlink(missing_ok=True)
