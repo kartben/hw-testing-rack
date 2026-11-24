@@ -1,11 +1,11 @@
 # Mechanical design
 
 Everything is parametric OpenSCAD driven by
-[`config/rack.yaml`](../config/rack.yaml) → `mechanical/generated/config.scad`.
-Every part prints **without supports**; the largest, the row ladders of the
-165 mm rows, are 203.3 × 238.8 mm on the bed.  To rebuild the STLs, see
-[Get the STL files](print/stl-files.md); which bed takes which part, see
-[Printer, filament, settings](print/printer-and-settings.md).
+[`config/rack.yaml`](../config/rack.yaml) → `mechanical/generated/config.scad`
+(`python tools/build.py config`).  Printable STLs: `python tools/build.py stl`
+(OpenSCAD from `PATH`, or the `openscad/openscad` Docker image).  Every part
+prints **without supports**; the row ladders (203 × 241 mm) need a 256 × 256 mm
+bed (Bambu X1/P1/A1, H2D …), everything else fits 250 × 210.
 
 ## Frame: the panel frame
 
@@ -25,7 +25,7 @@ The column pitch is 165.8 mm: a 158 mm tray, a 7.4 mm ladder and 0.2 mm of
 clearance on each side (`frame.panel_thickness`, `frame.panel_clearance`).
 Rows are stacked with `rows[].height` of vertical pitch and tilted by
 `frame.tilt` (20°, a stadium: every board, LED and label faces you).  The
-default 4 × 3 rack, rows of 165, 165 and 120 mm, is 671 × 225 × 618.7 mm.
+default 4 × 3 rack is 671 × 225 × 664 mm.
 
 ![Side view: the 20° stadium rows, bay B3 pulled out](img/side.jpg)
 
@@ -47,9 +47,9 @@ constants it reads.)
 | Drawer front | `drawer.scad` (`PART="front"`) | 41 mm tall, printed face down, the face that shows on the bed (Bambu Studio, H2D: 33 min, 14.0 g, no supports): finger pull and label recess on the left, and the node's 1.9" touch display (Waveshare 31122) on the right, through a plain window 0.15 mm round its glass.  The module goes in from the front, its glass 0.3 mm behind the face, its four stand-offs onto a frame behind the front: a leg either side of the window and two bars at the holes' heights, which bridge between the legs as printed (a 0.2 mm skin over each hole, which the screw pierces).  4 × M2×5 from behind; a press on the glass goes straight into the frame.  Its depth to the stand-offs' ends (`drawer.display.seat`, 8.6 mm assumed) is to measure on arrival: off by some, the glass only stands out or sinks in by as much.  It is screwed on from inside the drawer: a PT 2.3×8 either side, along the drawer, through a post at the side wall's front end into the front's back (a boss on the left, the display frame's right leg on the right).  Each stops 0.3 mm short of its post, so the screws pull the whole front onto the walls' and the floor's front ends.  A drawer and a sled take the same front |
 | Bay label | `label.scad` (`ID="B3"`, `PART="body"` / `"inlay"`) | 54.7 × 12 × 1 mm (100 before the display) for the drawer front's recess, the bay's ID in 7 mm capitals debossed 0.8 mm into the face that shows and filled flush by the H2D's second nozzle. That face prints on the bed (the text is mirrored in the source). `tools/build.py` makes two STLs per bay that register, `bay_label_<bay>` and `bay_label_<bay>_inlay`: in Bambu Studio load both at once and answer yes to loading them as one object with multiple parts, then give the inlay the light filament (the power box's labels work the same way). One colour only? Print the body and stick 12 mm tape over it |
 | DATA board cradle | `x4_cradle.scad` | holds either standing DATA board, the DATA ×6 (every bay's) or the DATA ×4 v2 (where the DUT is wired; `docs/data-x4-v2-layout-options.md`, option B), both 100 × 70 mm with the same notches, at the back of the rear bay, its USB-C standing in the port wall's slots: a base on the three DATA ×4 bosses (3 × M3×8 into heat-set inserts in them, clear of the cable window), two uprights whose 1.9 mm slots take the board's ends (5.5 mm, no parts there), a latch finger at each upright's top that snaps over the board's top edge (press it back to lift the board out), and two T-heads through notches in the board's bottom edge, their bars 4.7 mm wide, 1.4 mm off the stakes of the USB-C left of each notch.  Plugging in pushes the board onto the base's front edge, right behind the receptacles (relieved round their shell stakes); unplugging pulls it onto the slots and the T-heads.  The board's PH 8 lead, on its rear face, goes over the base into the window.  In front of the board, a comb on the drawer floor holds each standing receptacle's body in a U (0.1 mm round the GCT USB4145's max body, its bottom flat with r 1 corners, open on top so the board still drops in, up to just over the bodies), 2.1 mm off the board's face (the parts under each receptacle).  Bambu Studio, H2D, PETG 0.20: 1 h 40, 14.9 g, no supports.  The same cradle fits a sled bay's port block |
-| DATA board strip | `x4_cradle.scad` (`PART="strip"`) | closes the comb's U's over the receptacles: its underside 0.1 mm over the bodies, 5 × PT 2.3×8 into the comb between the ports (heads in slots across the strip), so a cable pulled any way bears on the cradle, not on the receptacles' joints (the design review, picked 2026-10-26).  5 mm tall for stiffness between the screws.  Off before the board comes out.  No port numbers (port 1 is the leftmost seen from the DUT's side, see the drawer): one STL for both boards.  Prints top face down, no supports: 7 min, 1.3 g |
+| DATA board strip | `x4_cradle.scad` (`PART="strip"`) | closes the comb's U's over the receptacles: its underside 0.1 mm over the bodies, 5 × PT 2.3×8 into the comb between the ports (heads in slots across the strip), so a cable pulled any way bears on the cradle, not on the receptacles' joints (the design review, the user's pick 2026-10-26).  5 mm tall for stiffness between the screws.  Off before the board comes out.  No port numbers (port 1 is the leftmost seen from the DUT's side, see the drawer): one STL for both boards.  Prints top face down, no supports: 7 min, 1.3 g |
 | Rear bay cover (optional) | `covers.scad` (`PART="box4"`) | closes the drawer's rear bay from above once the bay works: `cover_box4`, a box over the standing DATA board in its cradle, either board (51 g, 1 h 42 on the H2D), a window in front of each DATA ×4 v2 port's VBUS LED and D1, vents over the board, and a notch along its front over the v2's four headers, so it lifts off with the DUT leads plugged.  A notch over each of the port wall's slots: a standing plug's overmold rises 1.2 mm over the walls' top (0.525 mm clear, SolidCraft).  It hooks over the port wall's front face (lips past the end slots, clear of the plugs) and clicks into two pockets in the rear wall's inner face: two tabs cut from the rear skirt, hinged on one side so they flex in the print plane (1.2 % for the 0.7 mm bump).  Lift it by its sides.  A hole over the chain foot's lock screw.  Printed top face down, no supports.  A sled bay's port block takes it too.  The flat `cover_lid1` over the single DATA port board is retired with that board (2026-11-01) |
-| Standalone bays (optional) | `standalone.scad` (`PART="solo_base"`, `"solo_lid"`, `"quad_base"`, `"quad_shelf"`, `"quad_lid"`, `"desk_frame"`) | one bay on a desk, out of the rack, with the same boards ([One bay on a desk](build/one-bay-on-a-desk.md)): the Solo (the node and the single DATA port board, 106 × 95.5 × 31 mm), the Quad (the node on a shelf over the standing DATA ×4 v2, 107 × 95.5 × 94 mm), both fed by a USB-C PD trigger module at 20 V on a seat at the back, and a desk frame for the rack's honeycomb plate whose dock takes either box's front feet.  Bases upright, lids top face down, the shelf and the frame flat; no supports |
+| Standalone bays (optional) | `standalone.scad` (`PART="solo_base"`, `"solo_lid"`, `"quad_base"`, `"quad_shelf"`, `"quad_lid"`, `"desk_frame"`) | one bay on a desk, out of the rack, with the same boards ([standalone.md](standalone.md)): the Solo (the node and the single DATA port board, 106 × 95.5 × 31 mm), the Quad (the node on a shelf over the standing DATA ×4 v2, 107 × 95.5 × 94 mm), both fed by a USB-C PD trigger module at 20 V on a seat at the back, and a desk frame for the rack's honeycomb plate whose dock takes either box's front feet.  Bases upright, lids top face down, the shelf and the frame flat; no supports |
 | Sled / port block | `drawer.scad` (`PART="sled"`, `"block"`) | a bay without a drag chain (`population` › `mount: sled` or `fixed`, same tray): the drawer cut 1 mm in front of its port wall.  The **sled** (its front and two flange segments at its rear; its floor ends open under the plate) slides on the same ledges, the stop screw limiting it (≈ 110 mm); unplug the DUT cable, then pull it.  The **port block** (the drawer's rear bay: port wall, DATA board, cable window) stays behind it, locked by 2 × PT 2.3×8 through the guide lips and its flanges into the ledges; its DATA lead comes straight from J7 (≈ 22 cm).  A **fixed** bay is a sled bay with 2 × PT 2.3×8 more through the sled's flanges.  The block's rear bay is the drawer's: either DATA board.  No chain, foot, anchor or magnets: ≈ €2–3.5 and the chain steps saved per bay; back to a drawer at any time |
 | Chain foot / anchor | `chain_parts.scad` | take the chain's end pieces (tab with 2 holes 8 mm apart, PT 2.3×8 + washers).  The anchor is a block outside the fixed run, on two M3 inserts in the tray; the foot carries the moving end on a fin outside the moving run and slides into the drawer's rear-open groove, locked by one PT 2.3×8 from inside the rear bay.  A printable link (and its removable bar, so the cable can be laid in) is included if you'd rather not buy chain |
 | Board plate and pegs | `board_plate.scad`, `pegs.scad` | one honeycomb plate for every board, 5 mm thick, and the clip-in pegs that hold the boards on it (stops, cams on their bases, pins, a cable bobbin), placed by `tools/plate_layout.py`: [below](#the-board-plate-and-its-pegs) |
@@ -71,11 +71,12 @@ flange still under the lips.  Want smoother?  Print the trays in a POM-like
 
 If the tab doesn't suit after a test print, `drawer.detent: magnet` brings back a
 pair of 6 × 3 mm magnets (one in the drawer, one in the left ledge, on a pad,
-≈ 10 N) and the BOM lists them.  The magnet pockets are a slip fit (Ø + 0.25 mm)
-and the magnets are glued: the other magnet pulls each one out through its
+≈ 10 N) and the BOM lists them.  The magnet pockets are a slip fit (Ø + 0.25 mm):
+**glue the magnets**, a drop of CA gel in each pocket.  The other magnet pulls each one out through its
 pocket's mouth, and the drawer's boss leaves a 0.9 mm wall around its pocket,
-too thin to press-fit into.  To glue them, see
-[The frame and the first bay](build/first-bay.md#a-rear-cover-and-detent-magnets-both-optional).
+too thin to press-fit into.  **Check the polarity first**: stack the pair, mark both outer
+faces, and glue the marked faces into the pockets, so the two bare faces
+attract.
 
 ### Drag chain
 
@@ -85,8 +86,9 @@ that open on both sides, so the DATA lead can be laid in (its PH plugs,
 the model takes the outer size (13.5 × 10.2 mm) and the end pieces (a tab
 with 2 holes 8 mm apart) from Electrokit's listing of the same generic chain
 (41017996).  The bend radius is not published anywhere: the model keeps
-R18.  To measure the chain and enter it in `config/rack.yaml › chain`, see
-[Measure before you print](print/index.md#enter-your-measurements).  Olimex sells it by the metre
+R18.  **Measure the chain on arrival** and set `config/rack.yaml › chain`:
+`outer`, `radius`, `end_holes` and `end_length`, the rigid length of an end
+piece from its mouth to its pivot on the chain.  Olimex sells it by the metre
 and, like every seller of this generic chain, with one pair of end pieces per
 metre; it does not sell them alone, so the other drawers' pairs come from
 AliExpress (see the BOM).
@@ -134,11 +136,14 @@ the drawer's floor, its magnet and the drag chain never see a peg.  The hex
 keeps a peg from turning.
 
 **The pegs** (`pegs.scad`; heights are the boards' standoffs, `boards.yaml` ›
-`standoff`, one STL per height in use).  The four kinds, their files and what
-each does: see [Put a board in a bay](use/mount-a-board.md#the-plate-and-its-four-kinds-of-peg).
-What those pages leave out: the stop's neck is Ø 4.6; the cam's spiral band is
-undercut 20° and self-locking, as the spiral rises less than friction holds; a
-pin stands on a pad as wide as its hole's copper ring.
+`standoff`, one STL per height in use):
+
+| Peg | STL | What it does |
+|---|---|---|
+| Stop | `peg_stop_h<H>` | an eccentric post: its ledge carries the PCB's edge, its neck (Ø 4.6) touches the edge, a 45° lip above it holds the edge down.  The post sits 3.55 mm off the plug's axis, so the 6 turns of the hex are 6 places in each hole: the layout gives the turn (the arrow on the flange points to the post).  The stops place a board |
+| Cam on its base | `peg_base_h<H>` + `peg_cam` | the base's split pin carries a cam with a spiral band (3 mm of travel), undercut 20°: turned clockwise it pushes the board onto its stops and presses the PCB's top edge down; turned on, it falls open.  Self-locking: the spiral rises less than friction holds.  The cams clamp a board |
+| Pin | `peg_pin_d<hole>_h<H>` | an eccentric pin through one of the board's mounting holes (Ø hole − 0.3), on a pad as wide as the hole's copper ring: for a board whose long edges are lined with headers (the Pico 2), with cams on the other edges |
+| Bobbin | `peg_bobbin` | the DUT cable's spare length loops round it, under its 45° cap |
 
 **Where they go: `tools/plate_layout.py`.**  A board is held the way a fixture
 holds a part: per axis a datum edge (stops, or the drawer's wall) and a cam
@@ -155,17 +160,29 @@ The display's frame and screws (over the plate's front-right corner) and the
 front's joints (its front corners) hang over the plate: a peg's flange passes
 under them, nothing else does, and no board goes there.
 
-To run the tool, read its output and mount a board, see
-[Put a board in a bay](use/mount-a-board.md#ask-the-tool-where-the-pegs-go).
+```bash
+python tools/plate_layout.py B3          # the pegs of a bay: row, hole, turn, edge
+```
 
-**Not every board yet.**  To do this, see
-[A board that is not in the library](use/add-a-board.md#if-pegs-cannot-hold-it).
+The viewer shows every peg in its hole, turned as the layout says (cams in
+orange); the BOM counts them.  To mount a board: clip the stops and the cam
+bases in, cams open; put the board in, against the stops; turn each cam
+clockwise until it bites.  To take it out, turn the cams on until they fall
+open.
+
+**Not every board yet.**  The ESP32-S3/C6-DevKitC (headers along both long
+edges, both USB on a short one, no holes) and the i.MX EVKs (wider than the
+plate leaves room for pegs) get no layout: a bay with one of them says
+`plate: boards` and keeps the former plates below.  The GIGA R1 + display
+stack (B2) does too, the shield hiding the GIGA's edges.
 
 **The former plates** (`board_plate.scad` with `BOARD=` or a converted bay's
-`BAY=`, `population` › `plate: boards`).  To do this, see
-[A board that is not in the library](use/add-a-board.md#if-pegs-cannot-hold-it).
+`BAY=`, `population` › `plate: boards`): the board's own plate, heat-set
+inserts or, for hole-less or unverified boards, corner fences and support pads.
 
-**Printing.**  To do this, see [Parts and quantities](print/parts-list.md#plates-pegs-and-slot-bins-follow-your-boards).
+**Printing.**  The plate flat, 2–3 walls, no support (its holes' ledges are 45°);
+≈ 75 g of PETG (its 2.8 mm webs print solid).  The pegs upright, flange down; the cams
+flange down.  Every overhang is 45° or less but the pegs' 1 mm flange rims.
 
 **Checked in SolidCraft** (STEP from the SCAD through `tools/notice/csg2part.py`):
 B3's four boards, B4's UNO R4 and A1's NUCLEO-64 on the real plate with every
@@ -193,11 +210,10 @@ against it (`pcb.camera_pod`).  The **diffuser** (white PETG) is a 1 mm floor
 7 mm under the LEDs (glare on screens and glossy boards) on two posts that clamp
 the board to its standoffs (2 × PT 2.6×14 through both), open round J2's Dupont
 housing.  The Mega's case is a placeholder (`MEGA_*`: Arducam gives 33 × 33 mm,
-35 mm with the stock M12, no drawing); to measure it and enter its size, see
-[Measure before you print](print/index.md#enter-your-measurements).
+35 mm with the stock M12, no drawing): measure the first one before printing.
 The camera runs from the bay's **own** node (J6, JST-PH 8), its lead through
-the tray's rear slot and up under the ceiling.  To print, fit and wire it, see
-[Parts and quantities](print/parts-list.md#power-box-and-camera) and [Add a camera](build/camera.md).
+the tray's rear slot and up under the ceiling ([cabling.md](cabling.md)).  Print
+the pod upside down, the diffuser floor down; no supports.
 
 ## Power box
 
@@ -218,9 +234,10 @@ negotiation and the budget: [power.md](power.md).
 | Lid | `power_box.scad` (`PART="lid"`) | printed top face down. A rim locates it inside the walls, and 4 × M3×8 go into the M3×12 male-female hex spacers that hold the hub down (their tops are flush with the walls). Vents over the PD input and the buck. Two pin holes (RST and BOOT debossed 0.4 mm beside them, 3 mm capitals, one colour) with guide tubes down to 1 mm above the hub's buttons: recover the controller with the box closed |
 | Label inlays (optional) | `power_box.scad` (`PART="labels"`) | exactly the walls' engravings' volume: load it with the base as one object (two parts) and give it the second nozzle's filament. White letters flush in a black box read at a glance; engraved in one colour, the labels only show under grazing light |
 
-To print it, see [Printer, filament, settings](print/printer-and-settings.md#slicer-settings);
-to fit the hub and place the box, see [Power box and charger](build/power-box.md).  VRACK reaches the first node
-of each row through one 6-pin JST PH feed ([Make the row cables](build/row-cables.md)); 6-pin
+Both print without supports (PETG, 3 walls).  Print the base at 0.12–0.16 mm layers: its
+labels stand on vertical walls, where the layer height sets their vertical definition (a 5.25 mm
+capital is 33–44 layers instead of 26 at 0.2 mm).  VRACK reaches the first node
+of each row through one 6-pin JST PH feed ([cabling.md](cabling.md#row-power)); 6-pin
 jumpers carry it, and the CAN bus, from node to node through the windows in
 the tray walls and the shared ladder.
 
@@ -228,7 +245,7 @@ the tray walls and the shared ladder.
 
 * Double-width bays for i.MX-class EVKs (the aluminium frame had them): a
   324 mm tray and drawer, no ladder in between.
-* Rows taller than 165 mm: a 185 mm row makes a 258.8 mm ladder (an H2D-class bed).
+* Rows taller than 165 mm: a 185 mm row makes a 261 mm ladder (an H2D-class bed).
 
 ## Checks
 
@@ -240,10 +257,12 @@ bearing faces.
 
 ## Printing
 
-To do this, see [Printer, filament, settings](print/printer-and-settings.md) and
-[Parts and quantities](print/parts-list.md).
+| | |
+|---|---|
+| Material | PETG |
+| Layer | 0.2 mm, 3 walls, 15 % gyroid (braces: 100 %, they are mostly perimeter) |
+| Slicer | Bambu Studio, H2D, 0.20 mm Standard with three changes (`docs/printed-parts-fdm-review.md`, item 2): elephant-foot compensation 0.15 mm (`elefant_foot_compensation`), X-Y hole compensation 0.1 mm (`xy_hole_compensation`: the inserts' Ø4.0 holes and the bed-side screw holes come out true), `max_bridge_length` 30 mm (PETG bridges the lips' and windows' spans; at 10 the slicer asks for supports nothing needs).  Supports off, everywhere; the auto brim stays on (it only triggers on the DATA ×4 cradle) |
+| Inserts | Ruthex-type M3 × 5.7 (Ø4.0 holes), M2.5, M2 |
+| Filament | see the BOM.  Sliced (Bambu Studio, H2D, 0.20 mm Standard, PETG): a bay on its own ≈ 487 g, each bay added beside it ≈ 382 g, each extra cell in a large grid ≈ 217 g (tray 100 g, drawer 49 g and its front 14 g, ladder 44 g, brace 8 g) |
 
-The slicer's figures that the print pages quote from this document (Bambu Studio,
-H2D, 0.20 mm Standard, PETG): a bay on its own ≈ 487 g, each bay added beside it
-≈ 382 g, each extra cell in a large grid ≈ 217 g (tray 100 g, drawer 49 g and
-its front 14 g, ladder 44 g, brace 8 g).
+Orientation is baked into the exported STLs (`mechanical/stl/`).

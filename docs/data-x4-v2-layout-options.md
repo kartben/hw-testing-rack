@@ -2,7 +2,7 @@
 
 **Status (2026-10-20): study only, nothing designed or changed.**  The v2 board (analyzer, crosspoint
 matrix, level shifters: [data-x4-v2-research.md](data-x4-v2-research.md)) does not route at 108 × 37 mm on
-4 layers, and on 6 layers Freerouting plateaus at 25–40 open links.  The question was whether either of these
+4 layers, and on 6 layers Freerouting plateaus at 25–40 open links.  The user asked whether either of these
 would make it easy:
 - a much deeper board ("une profondeur de genre 50 mm");
 - a board standing vertically at the back of the drawer, with vertical USB-C receptacles.
@@ -44,12 +44,12 @@ horizontal in the drawer's 40 mm rear bay (drawer 208 deep, e899c01).
   board pays no engineering fee: ≈ $295 / $452 for 5 / 10 boards, −$59 / −$49.
 - It puts the headers where the jumpers go, facing the boards.
 - It does not make routing easy.  The extra room helps, but placement decides more than area, and
-  4 layers stayed out of reach in every proxy.  The layout remains the v2 design's work, with the
+  4 layers stayed out of reach in every proxy.  The layout remains the v2 design session's work, with the
   co-processor right beside the crosspoints.
 
 ## Routing room: an experiment
 
-To see what room alone buys, the v2 design's placed board (2026-10-20 09:30, read-only copy) was turned
+To see what room alone buys, the v2 session's placed board (2026-10-20 09:30, read-only copy) was turned
 into routing proxies.  All of them went through the same flow:
 1. the locked pre-routes and the outer GND pours removed, the DSN exported by KiCad 10;
 2. Freerouting 2.5.0 on zephyrbox, at most 40 passes (it stops earlier when a pass gains nothing);
@@ -61,7 +61,7 @@ KiCad's unconnected items are then split in three:
   flow;
 - **signal links**, the real work.
 
-The baseline here is worse than the v2 design's own 25–40, because that flow pre-routes the USB pairs,
+The baseline here is worse than the v2 session's own 25–40, because that flow pre-routes the USB pairs,
 the shunts and the plane ties.  Compare the rows with each other, not with that figure.
 
 | Proxy | Layers | Board | Signal links | Local supplies | Plane-net pads |
@@ -101,10 +101,10 @@ What it shows:
 - **A quick re-placement did not.**  The banded boards moved whole blocks as they were: the co-processor
   ended far from the left crosspoint, and the blocks' fan-outs still face their old directions.  They did
   no better: 41 at 115 × 60, 61 at 100 × 60, 66 at 100 × 70.  Placement decides more than area.
-- **4 layers stays out of reach.**  Every 4-layer proxy left 72–118 signal links, and the v2 design also
+- **4 layers stays out of reach.**  Every 4-layer proxy left 72–118 signal links, and the v2 session also
   stayed above 85 at 4 layers.  So the 4-layer prices below are not realistic.  With every part on one
   face, a 6-layer board still has B.Cu as a free routing layer.
-- **Freerouting finishes none of them.**  On the same 108 × 37 board, the v2 design's own flow
+- **Freerouting finishes none of them.**  On the same 108 × 37 board, the v2 session's own flow
   (pre-routes, plane handling, structural fixes) leaves 28 links after 21 passes, where this proxy flow
   leaves 67 signal links.  A 100 × 60 board gives that
   work more room: a band for buses A–H, a column per port, the co-processor beside both CH446Q and the
@@ -117,7 +117,7 @@ What it shows:
 - **Fit.**
   - A 108 × 50 board from the port wall's back face (drawer y 166) reaches y 216.  SolidCraft finds
     346 mm³ in the drawer's rear wall (y 206–208).
-  - It needs a 53 mm rear bay, so a 219 mm drawer and a ≈ 221 mm tray.  The mechanical design found that
+  - It needs a 53 mm rear bay, so a 219 mm drawer and a ≈ 221 mm tray.  The Mechanics session found that
     ≥ 45 mm already needs `CARRIER_D` 210 → 220.
 - **What changes.**
   - `config/rack.yaml` › the carrier and drawer depths.
@@ -188,7 +188,7 @@ U's.  JLC-stocked, USB 2.0, 16-pin, SMD with shell legs (2026-10-20):
 - The housings (z 29.5–34.5) overhang only the plate's last 7 mm, above the USB plugs' cables.
 - The port LEDs sit on the top edge of the front face, where the user and the camera see them.
 
-**Holding: the slot (suggested with the question).** A printed cradle acts as a card guide:
+**Holding: the slot (user's idea).** A printed cradle acts as a card guide:
 - a base screwed onto today's DATA ×4 bosses with the same PT 2.3 × 8 from above, leaving the cable window
   open;
 - two uprights, each with a 1.9 mm slot for the board's 1.6 mm edges;
@@ -219,7 +219,7 @@ The board comes out the same way, without tools once the lead is unplugged.
 - The single DATA board, v1 and v1′ keep their bosses and ledges.  The cradle only needs nothing on the
   floor above z 7.8 in the band y 172.5–176.5 behind the port wall, which is true today.
 - If v1′ ends up ≤ 28 mm deep, the rear bay could shrink again and give the plate those 10 mm back.  That
-  is for the mechanical design to decide.
+  is the Mechanics session's call.
 - A sled bay's port block has the same rear bay, so it takes the same cradle.  With the sled out, the
   headers face the user ≈ 110–150 mm inside the bay.
 
@@ -233,7 +233,7 @@ The board comes out the same way, without tools once the lead is unplugged.
   the USB plugs and v1′'s PH.
 - **Cost.**
   - v1′ needs a fifth hub port for the co-processor (USB2517I instead of USB2514B, +$2.7) and the stacking
-    header.  It was being redesigned on 2026-10-20.
+    header.  Its session is redesigning it now.
   - Two boards mean two designs: one panel in one order, or two orders.
 - **Gain.**  It is modular: bays without an analyzer keep v1′ alone.  But the matrix stays crowded under its
   four headers on a 108 × 35 hat.
@@ -252,7 +252,7 @@ The board comes out the same way, without tools once the lead is unplugged.
   - B: the v2 stand-in becomes vertical.  Its outline, receptacles and header pins turn towards −y,
     `route_jumpers` starts the ribbons forward instead of up, the PH 8 lead ends on the rear face, and the
     cradle is a new printed part.  About the size of the v2 stand-in's own change.  Done (2026-10-20): B3
-    shows it in its cradle, from this study's geometry until the v2 design's own.
+    shows it in its cradle, from this study's geometry until the v2 session's own.
   - C: a second outline and standoffs.
 - **Assembly notice** (`tools/notice`).  Today its drawer step shows the single DATA port board only.
   - A: every frame page regenerated (the pipeline does it), every callout checked.
@@ -265,7 +265,7 @@ The board comes out the same way, without tools once the lead is unplugged.
 
 ## JLC cost
 
-Figures from the JLC cost study (2026-10-20): the jlcpcb.com calculator for the bare boards, JLC's fee
+Figures from the JLC-cost session (2026-10-20): the jlcpcb.com calculator for the bare boards, JLC's fee
 page and capabilities page for the assembly.  USD, indicative, no shipping.  The parts are held equal: 39
 types, ≈ 1,082 joints, $154.62 / $278.50 of components for 5 / 10 boards.
 
@@ -322,6 +322,6 @@ Notes:
   - The checks:
     - `inspect.interference` and `inspect.clearance`, with the drawer closed and open (−140 mm);
     - a swept volume of the board over the stroke, against the tray above and the pod.
-  - The scripts and results were kept outside the repository (`data-x4-v2-layout/`).
-- **Routing proxies.**  KiCad 10 Python on a copy of the v2 design's board, Freerouting 2.5.0 on
+  - The scripts and results are in the session notes folder (`data-x4-v2-layout/`).
+- **Routing proxies.**  KiCad 10 Python on a copy of the v2 session's board, Freerouting 2.5.0 on
   zephyrbox, KiCad's DRC for the counts.

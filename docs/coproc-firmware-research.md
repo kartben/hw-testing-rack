@@ -4,8 +4,8 @@
 RP2350B (NextPCB had no RP2354B): no flash, so it comes up in the USB bootloader at each power-up and runs a
 RAM image loaded into its SRAM (`picotool load -x` from the lab server over USB/IP, later the node over
 PICOBOOT).  "Reflashing" below becomes loading the wanted image; an RP2354B fitted instead boots from its own
-flash as described.  This note studies the
-co-processor's firmware on its own,
+flash as described.  The user asked for the
+co-processor's firmware to be studied on its own ("recherche le fw zephyr dans une session indépendante"),
 apart from the board research in [data-x4-v2-research.md](data-x4-v2-research.md).  That note puts an
 RP2354B on the DATA ×4 v2, on its own port of a 7-port hub behind the node, with the stock gusmanb
 analyzer first and a Zephyr firmware of ours later, estimated at 4–6 k lines and 8–12 weeks.  This note
@@ -255,7 +255,7 @@ Pinning the co-processor on a Zephyr release in its own manifest would cut the b
 has no network exposure, so no security reason to follow main.  The price is a second workspace in the
 repo.
 
-## What could go upstream (drafts only, each approved first)
+## What could go upstream (drafts only, with the user's OK)
 
 None filed.  In order of size:
 
@@ -269,5 +269,5 @@ None filed.  In order of size:
 | Ring and chaining in `dma_rpi_pico` | larger | drivers (#118562, our capture) program `hardware_dma` behind Zephyr's back today |
 | A USB host CDC-ACM class for `usbh` | larger | the node would talk to gusmanb and to any CDC DUT without its own class |
 
-Drafts only, as decided: the first two can be draft PRs as soon as they are wanted, the rest after
+The user asked for drafts only: the first two can be draft PRs as soon as they are wanted, the rest after
 the bench.

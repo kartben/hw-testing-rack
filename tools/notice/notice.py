@@ -1174,7 +1174,7 @@ STEPS = {
     "a10o": {"view": (-1.1, -0.7, 0.75), "old": A("ca0", "cf0", "ce0", "co0"), "add": {"cb0": (0, 0, 0), "cxf0": (0, 0, 0)},
              "hide": ["s_ca0_0", "s_ca0_1"], "frame": {"at": tuple(m_row(0, T + CL).multVec(V(112, 135, 10))), "size": 270}},
     # the drawer's DATA board: on its bosses, 2 x PT 2.6 x 8 from above; the lead up through the window into its PH
-    # the drawer's DATA ×6 (docs/build/fit-out-a-tray.md): the cradle onto the three bosses (3 x M3 x 8 into their inserts), the
+    # the drawer's DATA ×6 (docs/assembly.md §4): the cradle onto the three bosses (3 x M3 x 8 into their inserts), the
     # lead's plug into the board's rear PH, the board down into the cradle's slots; the strip on the comb (5 x PT 2.3 x 8)
     "a12s": {"view": (0.35, 1.1, 1.5), "old": A("dr0") + [f"i_xc0_{n}" for n in range(3)],
              "add": {"xc0": n_(14), **{f"s_xc0_{n}": n_(34) for n in range(3)}, "dp0": n_(95), "dls0": n_(95),
@@ -1194,7 +1194,7 @@ STEPS = {
     "done": {"view": ISO_R, "old": [], "add": {i: (0, 0, 0) for i in BAY0 + BAY1}, "slot": "done"},
 }
 
-# ------------------------------------------------------------------ docs/build/fit-out-a-tray.md: each tray fitted at the bench
+# ------------------------------------------------------------------ docs/assembly.md §4: each tray fitted at the bench
 FRAME0 = ["lb0", "lb1", "fp0", "bb0", "la0", "la1"]
 TRAY0, TRAY1 = ["tr0", "nd0", "dr0"] + CHAIN0, ["tr1", "nd1", "dr1"] + CHAIN1   # with their children: the fitted trays
 POD0 = [i for i in INST if i.startswith("k_")]
@@ -1232,11 +1232,11 @@ STEPS.update({
     "b3r": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1"), "add": {"la2": (0, 0, 70)}, "clic": True},
     "b3t": {"view": ISO_R, "old": BAY0 + A("lb2", "fp1", "bb1", "la2"), "add": {i: u_(-150) for i in TRAY1}, "clic": True,
             "arrow_ids": ["tr1"], "fitted": True, "dim": PLATE[1]},
-    # the camera (docs/build/camera.md): the pod at the bench, under the ceiling, its lead
+    # the camera (docs/assembly.md §6): the pod at the bench, under the ceiling, its lead
     "k1": {"view": (-0.6, -1.2, -0.8), "old": [], "add": {"k_camera_pod": (0, 0, 0), "k_podpcb": n_(-14), "k_podpcb_parts": n_(-14),
            "k_camera_diffuser": n_(-28), "s_kd0": n_(-46), "s_kd1": n_(-46)}, "arrows": False},
     # the pod under the ceiling first (the drawer out), then the XH onto J2 and into the Mega, the Mega up into the
-    # sleeve: the XH's mated plug sits under the pod's front-left screw (docs/build/camera.md)
+    # sleeve: the XH's mated plug sits under the pod's front-left screw (docs/assembly.md §6)
     "k2": {"view": (-0.6, -1.3, -0.7), "old": A("la0", "la1", "lc0", "lc1", "cp0", "tr0") + [f"i_k{n}" for n in range(4)],
            "add": {**{i: n_(-30) for i in POD0 if i != "k_mega_camera"}, "s_kd0": n_(-30), "s_kd1": n_(-30),
                    **{f"s_k{n}": n_(-48) for n in range(4)}},

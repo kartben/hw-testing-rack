@@ -1,11 +1,11 @@
 # Printed parts: design review
 
-**Status (2026-10-21): the obvious print-and-break fixes, the decided trade-offs and the visual language are in (see [Implemented](#implemented-2026-10-21)), but finding 5 (the camera sleeve: it waits for the Mega's real case) and 10 (the anchor printed into the tray: deferred).**  A complete
-review of every 3D-printed part, against these aims: simple, not over-engineered, good-looking where
+**Status (2026-10-21): the obvious print-and-break fixes, the user's calls and the visual language are in (see [Implemented](#implemented-2026-10-21)), but finding 5 (the camera sleeve: it waits for the Mega's real case) and 10 (the anchor printed into the tray: deferred by the user).**  The user
+asked for a complete review of every 3D-printed part: simple, not over-engineered, good-looking where
 it can be (rounded edges, elegant and useful markings), with assembly systems that are strong and state
 of the art for FDM PETG, checked by simulation; heat-set inserts where they belong, captive square nuts
-in a slot (nut traps) where they are simpler.  The mechanical design implements the findings
-picked.
+in a slot (nut traps) where they are simpler.  Mechanics owns the parts and implements what the user
+picks.
 
 How this was checked:
 - every part as an exact solid from its OpenSCAD source (`tools/notice/csg2part.py`), in its print
@@ -23,12 +23,12 @@ How this was checked:
 Allowable strain used for the verdicts, PETG on the H2D at 0.2 mm: **3 % one-off / 1.5 % repeated when
 the beam bends in the print plane** (PETG's own short-term figure is about 4 %); **1 % / 0.5 % when it
 bends across the layers** (a vertical finger on a part printed standing: the root is a layer joint, 50–70 %
-of the in-plane strength, and the first to fatigue).  Grams and times come from the BOM and the tray's
-print plan (H2D, 0.20 mm Standard, PETG).
+of the in-plane strength, and the first to fatigue).  Grams and times come from the BOM and the tray
+session's print plan (H2D, 0.20 mm Standard, PETG).
 
 ## Implemented (2026-10-21)
 
-Findings 1, 2, 4, 6, 7, 8, 9 and part of 15, as picked, and 3 as decided.  Every part re-checked: an exact
+Findings 1, 2, 4, 6, 7, 8, 9 and part of 15, as the orchestrator picked them, and 3 as the user decided it.  Every part re-checked: an exact
 solid (`csg2part`), `proto/overhang.py` (as built: `review/overhang_built.json`), `proto/snaps.py` and
 `proto/fem_snaps.py` (the `BUILT` and `built_*` cases), SolidCraft on the joints touched.
 
@@ -41,7 +41,7 @@ solid (`csg2part`), `proto/overhang.py` (as built: `review/overhang_built.json`)
 | 4 | Pegs | relief Ø4.4 × 2 in the column's top, split 6.5 | 1.44 → 0.69 % | 38 → 26 MPa (the 64 drawn, scaled to y 0.15: linear) | **head kept at Ø3.9**: the half-pins bend (head − the cam's 3.6 bore) / 2 = 0.15, not (head − pin) / 2; a Ø3.7 head would hold the cam by 0.05 a side |
 | 8 | Pegs | `SKIN_H` 3.4, the slot run 0.15 past the flat's corner (3.7 free) | 2.33 → 1.53 % | — | — |
 | 6 | Ladders | `HOOK_ROOT` 10, the reliefs' ends round (R0.6) | 2.0 → 1.3 % | 56 → 40 MPa | — |
-| 3 | Ladders | (decided) a DIN 562 M3 square nut in a 5.9 × 5.9 × 2.2 pocket open to the ladder's top face, 2.2 from the rear edge, a plain Ø3.4 hole; a 0.1 mm rib in the pocket holds the nut while the ladder stands | — | — | the rib is new.  SolidCraft (brace strap, M3 × 8 pan head, nut): 0.2 round the nut but the rib's 0.17 mm³ press, the screw through the whole nut and 1 mm past it; the pockets sit 8 mm behind the trays' rear ends, so they stay reachable from the back at every level: a nut goes in just before its brace screw.  BOM: 142 → 82 inserts, + 60 nuts, the M3 × 8 unchanged |
+| 3 | Ladders | (decided by the user) a DIN 562 M3 square nut in a 5.9 × 5.9 × 2.2 pocket open to the ladder's top face, 2.2 from the rear edge, a plain Ø3.4 hole; a 0.1 mm rib in the pocket holds the nut while the ladder stands | — | — | the rib is new.  SolidCraft (brace strap, M3 × 8 pan head, nut): 0.2 round the nut but the rib's 0.17 mm³ press, the screw through the whole nut and 1 mm past it; the pockets sit 8 mm behind the trays' rear ends, so they stay reachable from the back at every level: a nut goes in just before its brace screw.  BOM: 142 → 82 inserts, + 60 nuts, the M3 × 8 unchanged |
 | 15 | Drawer, plate | the v1-only ledges gone; `board_plate.scad`'s `MODE="snap"` and `universal` plate gone | — | — | **two ledges kept** under the single DATA board's front edge, either side of its USB4105 (they carried it too); **`ladder_a` / `ladder_b` kept**: the BOM, the viewer and the notice name them per row |
 
 Overhangs facing down steeper than 45° (mm²): tray 6,034 → 5,008 (all bridges now; the lips' 2 × 473 and the
@@ -72,15 +72,15 @@ that gap) so a rear tab can flex, or a shelf the case slides onto.
 | 7 | Tray | The latch arms: 1.1 %, fine (1.5 % allowed for repeated use), square slot ends | round the three slots' ends R0.5; arm 32 mm: 0.75 % | 1 h | low | obvious | [latch_arm](../mechanical/review/pairs/latch_arm.png) |
 | 8 | Pegs | The plug's spring skins: 2.3 % in the print plane, pegs are moved at every re-layout (1.5 % allowed) | SKIN_H 3.4, the slot run to the skin's end: 1.5 % | 1 h | low | obvious | [peg_skin](../mechanical/review/pairs/peg_skin.png) |
 | 9 | Chain anchor | Its insert pockets go 0.2 mm through the tray's floor (bosses 5.5 tall, inserts 5.7 deep): a hole in the first layer | bosses 7.5 tall (or M3 × 4 inserts) | 10 min | none | obvious | [anchor_boss](../mechanical/review/pairs/anchor_boss.png) |
-| 10 | Chain anchor | A separate 1.4 g block on 2 inserts and 2 M3 × 8, 7 per rack | print it as part of the tray once the chain is measured: −7 parts, −14 inserts, −14 screws | 2 h | the chain's end piece must be known | **trade-off** | — |
+| 10 | Chain anchor | A separate 1.4 g block on 2 inserts and 2 M3 × 8, 7 per rack | print it as part of the tray once the chain is measured: −7 parts, −14 inserts, −14 screws | 2 h | the chain's end piece must be known | **user** | — |
 | 11 | All | No common visual language: vertical edges r 1.2 / 1.5 / 2 / 3 / 4 or none (the tray), no bed chamfers, 5 label sizes | the family below: R3 outer verticals on big parts, R1.5 on small, 0.5 × 45° on every bed edge, text debossed 0.6 mm ≥ 4.5 mm high, arrows and screw callouts | 1 day | cosmetic | obvious | [visual_language](../mechanical/review/pairs/visual_language.png) |
-| 12 | Label | `bay_label` is a blank 100 × 12 strip | the bay ID debossed 0.8 mm and filled by the H2D's second nozzle: one object, two colours, readable at a glance | 1 h | needs a second filament loaded | **trade-off** | [visual_language](../mechanical/review/pairs/visual_language.png) |
-| 12b | Power box | Inlaid 5.25 mm capitals on three walls and the lid, judged "un peu moche et inutile" | walls bare, only the row letters at the windows and `PD IN` at the rear USB-C; or the same with 3 mm debossed letters under the LED pairs | 1 h | none | **trade-off** | [power_box_labels](../mechanical/review/pairs/power_box_labels.png) |
-| 13 | BOM | 6 screw types | M3 × 8 everywhere M3 × 6 is used (node, lid, pods: the inserts and spacers take 8); PT 2.3 × 8 everywhere PT 2.6 × 8 is used (pilots 1.9): 4 types | ½ day | none | **trade-off** | — |
-| 14 | Drawer | The magnet detent: 2 magnets, CA glue, a polarity check, a pad and two pockets per bay, for a 0.7 N job | a printed spring tab in the left ledge (20 × 2.5, bump 0.6: 0.56 % in-plane, ≈ 3 N hold) and a notch under the drawer: no parts, no glue | ½ day | wears; weaker than the magnets' ≈ 10 N | **trade-off** | [detent](../mechanical/review/pairs/detent.png) |
+| 12 | Label | `bay_label` is a blank 100 × 12 strip | the bay ID debossed 0.8 mm and filled by the H2D's second nozzle: one object, two colours, readable at a glance | 1 h | needs a second filament loaded | **user** | [visual_language](../mechanical/review/pairs/visual_language.png) |
+| 12b | Power box | Inlaid 5.25 mm capitals on three walls and the lid: "un peu moche et inutile" (user) | walls bare, only the row letters at the windows and `PD IN` at the rear USB-C; or the same with 3 mm debossed letters under the LED pairs | 1 h | none | **user** | [power_box_labels](../mechanical/review/pairs/power_box_labels.png) |
+| 13 | BOM | 6 screw types | M3 × 8 everywhere M3 × 6 is used (node, lid, pods: the inserts and spacers take 8); PT 2.3 × 8 everywhere PT 2.6 × 8 is used (pilots 1.9): 4 types | ½ day | none | **user** | — |
+| 14 | Drawer | The magnet detent: 2 magnets, CA glue, a polarity check, a pad and two pockets per bay, for a 0.7 N job | a printed spring tab in the left ledge (20 × 2.5, bump 0.6: 0.56 % in-plane, ≈ 3 N hold) and a notch under the drawer: no parts, no glue | ½ day | wears; weaker than the magnets' ≈ 10 N | **user** | [detent](../mechanical/review/pairs/detent.png) |
 | 15 | Drawer, plate, ladders | Dead geometry: the drawer's four front ledges (DATA ×4 v1, not ordered), `board_plate.scad`'s snap and universal modes, `ladder_a` = `ladder_b` and `brace_a` = `brace_b` as separate STLs while the rows are equal | remove; one `ladder_row` and one `brace_row` STL | 2 h | none | obvious | — |
-| 16 | Camera pod | 4 × M3 × 6 and 4 inserts for a 12 g pod | 2 screws (a diagonal) and a locating rib; the grid stays | 1 h | none | **trade-off** | — |
-| 17 | Covers (concept) | V3 + the 1× lid as the tray's design proposes; their detent tabs must flex in the print plane | side-hinged tabs, as the camera sleeve | — | — | **trade-off** (open) | — |
+| 16 | Camera pod | 4 × M3 × 6 and 4 inserts for a 12 g pod | 2 screws (a diagonal) and a locating rib; the grid stays | 1 h | none | **user** | — |
+| 17 | Covers (concept) | V3 + the 1× lid as the tray session proposes; their detent tabs must flex in the print plane | side-hinged tabs, as the camera sleeve | — | — | **user** (open) | — |
 
 Findings 1, 2, 4, 5, 6, 7, 8, 9 are print-and-break risks: none of the parts has been printed yet, and
 these would show on the first bay.  The rest is simplicity and looks.
@@ -232,7 +232,7 @@ print plane.
 
 ### Drawer, sled, port block (`drawer.scad`)
 
-47 g, 2 h 10.  The rack's visible face.
+47 g, 2 h 10.  The user's face of the rack.
 - **Simplicity.** The four front ledges under a DATA ×4 v1's edge (`X4_LEDGES`) serve a board that is not
   ordered; the v2 stands in its cradle on the three bosses (finding 15).  The single board's two bosses stay.
 - **Looks.** The front panel: R3 on its vertical corners (1.2 today; the only rounded part of the drawer),
@@ -240,7 +240,7 @@ print plane.
   edge round the scoop.  Port numbers `1 2 3 4` debossed in the bed face of the rear bay in front of each U.
   `review/pairs/visual_language.png`.
 - **Assembly.** The flange, the two plate pins, the foot groove and lock screw: fine.  The detent:
-  finding 14 (decided so; the magnets work, they just cost five assembly steps per bay).  The elephant's
+  finding 14 (the user's call; the magnets work, they just cost five assembly steps per bay).  The elephant's
   foot on the running face: the slicer's compensation does it; a 0.4 chamfer on the bottom outline makes
   it certain.
 
@@ -333,9 +333,9 @@ the USB plug 1.70), the box over the v2 in its cradle (cradle 0.40, Dupont block
 covers clear of the tray, the camera pod and the cap plate (> 3 mm), and so is their sweep over the travel.
 Faces steeper than 45° as printed: none but the 45° ledges and bump ramps.
 
-## If the obvious set is picked
+## If the user picks the obvious set
 
-For the mechanical design, in one pass (about 2 days), each a small change in the SCAD:
+For Mechanics, in one pass (about 2 days), each a small change in the SCAD:
 1. `tray.scad`: the lip's 45° underside, the fascia under the ledge, a gusset at y 10; R0.5 slot ends,
    `LATCH_ARM` 32; anchor bosses 7.5.
 2. `x4_cradle.scad`: `LATCH` [40, 0.8], the slit 1.0, R0.8 at its foot.
@@ -348,4 +348,4 @@ For the mechanical design, in one pass (about 2 days), each a small change in th
 Then the STLs, `bom/README.md`, the notice (when the design freezes) and `docs/mechanical.md`.
 
 Decided and in: nut traps on the ladders (3), the ID inlay (12), four screw types (13), a printed detent (14),
-2 pod screws (16), the covers (17).  Deferred: the anchor in the tray (10).
+2 pod screws (16), the covers (17).  Deferred by the user: the anchor in the tray (10).

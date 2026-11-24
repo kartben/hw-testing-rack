@@ -1,33 +1,34 @@
 # DATA-4x-logic: usability and simplification review
 
-**Status (2026-10-20): review only, nothing changed on the board.**  **Applied 2026-10-21** in one pass of the v2 design (one re-route): findings 1 (layout B, approved), 2 (the bias from +5V_MX, with the VREF dividers at 10k / 10k: through 100k / 100k an unwired VREF floats up to ≈ 2.1 V on the bias current and the group passes), 3 (the VBUS LEDs), 4 (U12 out), 5 (22 Ω, earlier) and 7 (docs); 6, the bus header, later.  The BOM: 17 extended types (the 22 Ω swap had taken the 20 to
-18 already), the panel order $229.91 → $226.88.  A usability review of
+**Status (2026-10-20): review only, nothing changed on the board.**  **Applied 2026-10-21** in the v2 session's pass (one re-route): findings 1 (layout B, the user's "oui je valide"), 2 (the bias from +5V_MX, with the VREF dividers at 10k / 10k: through 100k / 100k an unwired VREF floats up to ≈ 2.1 V on the bias current and the group passes), 3 (the VBUS LEDs), 4 (U12 out), 5 (22 Ω, earlier) and 7 (docs); 6, the bus header, later.  The BOM: 17 extended types (the 22 Ω swap had taken the 20 to
+18 already), the panel order $229.91 → $226.88.  The user asked for a usability review of
 the DATA-4x-logic (the standing DATA ×4 v2, [electronics.md](electronics.md) › "DATA ×4 v1.0 (data-port-x4)"): the Dupont
-headers (could they be grouped, since the connections are virtual?), features in excess or missing, and what would simplify the
+headers ("je me demande si on pourrait pas avoir quelque chose de complètement groupé si au final les
+connexions sont complètement virtuelles"), features in excess or missing, and what would simplify the
 board.  Mock-ups, to scale from the routed board's footprints:
 [`electronics/data-port-x4/docs/review/`](../electronics/data-port-x4/docs/review/).
 
 Costs are per **panel order** as the rack orders it: 2 panels, so 2 logic and 2 base boards, $237.21
 (`tools/bom.py` › `panel_order(2)`, with 92f09f4's preferred tier: 20 extended types to load).  The logic's own share is ≈ $76 of it: parts $30.5, 11 extended part
 types $33.8 (at $3.07 each, loaded once per order), L1's minimum purchase $9.5, joints ≈ $2.
-*Obvious*: an engineering call made with the board's design; *trade-off*: a real trade-off, to be decided.
+*Obvious*: an engineering call the board's session makes and reports; *user*: a real trade-off.
 
 ## Ranked findings
 
 | # | Finding | Call | $ a panel order | Effort | Risk |
 |---|---|---|---|---|---|
-| 1 | Keep one header per port, tidied (**layout B**): names above the header, the header 2 mm lower (z 28.5), a big port number by each | obvious (names, numbers); the layout is a trade-off | 0 | ½ day | low |
-| 2 | Untie each pin group from its USB port: bias the LSF0108's Vref_B/EN from +5V_MX, not PORTn_VBUS.  A group becomes a voltage domain any board can use | obvious, reported | 0 | 1 h + re-route | low |
-| 3 | A green VBUS LED per port, by its header | trade-off (the open LED question) | +0.40 | in 1 | low |
+| 1 | Keep one header per port, tidied (**layout B**): names above the header, the header 2 mm lower (z 28.5), a big port number by each | obvious (names, numbers); the layout is the user's | 0 | ½ day | low |
+| 2 | Untie each pin group from its USB port: bias the LSF0108's Vref_B/EN from +5V_MX, not PORTn_VBUS.  A group becomes a voltage domain any board can use | obvious, told to the user | 0 | 1 h + re-route | low |
+| 3 | A green VBUS LED per port, by its header | user (the open LED question) | +0.40 | in 1 | low |
 | 4 | U12 out: the co-processor's 3.3 V from +3V3 through a ferrite | obvious | −3.50 | 1 h | low |
 | 5 | R23/R24: 22 Ω basic (C25092) instead of 27 Ω extended | obvious | −3.07 | 10 min | none |
-| 6 | A BUS A–H + GND header on the top edge, for a scope or an outside tool | trade-off | +0.60 | ½ day | low |
+| 6 | A BUS A–H + GND header on the top edge, for a scope or an outside tool | user | +0.60 | ½ day | low |
 | 7 | The base solders two 2 × 1 pieces (GND/VREF, BOOT/RST), not the 2 × 6 | obvious (docs, viewer) | ≈ 0 | docs | none |
-| 8 | One bank (**layout C**, 4 × 12) | trade-off: not recommended | 0 | 1–2 days | medium |
+| 8 | One bank (**layout C**, 4 × 12) | user: not recommended | 0 | 1–2 days | medium |
 | 9 | The 12 MHz crystal as JLC basic (C9002) | not recommended | −4.30 | 1 h | the stock UF2 |
 | 10 | A smaller matrix, or one 24-bit expander for all | not recommended | −5 / −6 | days | half the pins / firmware |
 
-Findings 1–7 fit one pass of the v2 design and one re-route: about a day, −$5.6 a panel order net.  None
+Findings 1–7 fit one pass of the v2 session and one re-route: about a day, −$5.6 a panel order net.  None
 changes the board's size, its 4 layers, the cradle interface or the panel.
 
 ## 1. The Dupont headers: four groups or one block?
@@ -85,7 +86,7 @@ re-placed middle third and a re-route, for no electrical gain: the groups stay f
 header.  B keeps what works in A (one block per board, straight ribbons, straight pin chains) and fixes
 what doesn't: the names you can't read once wired, the hidden port numbers, no sign of a port being on.
 Moving GND, RESET and BOOT together at one end was considered and dropped: it would change the pin order
-set on 10-20, and the base gets the same 4 pins per port from two 2 × 1 pieces anyway.
+the user set on 10-20, and the base gets the same 4 pins per port from two 2 × 1 pieces anyway.
 
 ## 2. Features in excess
 
@@ -117,7 +118,7 @@ together.
 | A GND per row, keying | No: one GND per header, the USB cable carries ground; Dupont housings have no key and a shrouded 2 × 6 (≈ 23 mm) does not fit the 18 mm pitch | — |
 | An LED per bus | No: it would load the bus | — |
 | A "3V3" pin beside VREF, for a jumper cap on 3.3 V boards | No: one forgotten cap puts 3.3 V on a 1.8 V board | — |
-| Strain relief for the ribbons | A tie point on the cradle under the headers (mechanical design), not the board | — |
+| Strain relief for the ribbons | A tie point on the cradle under the headers (Mechanics), not the board | — |
 
 Firmware check, no board change: RESET and BOOT should only ever be pulled low or released (open drain,
 as the TCA9534A's RUN and BOOTSEL), never driven high through the 1k into a 1.8 V board.
@@ -136,9 +137,9 @@ What can't be simplified without losing a decided function: the −5 V (I²C at 
 (1.8 V boards), the ESD and 100 Ω (hand-plugged pins), the TCA9534A (wires that survive the co-processor),
 and the 4 layers, already the minimum.
 
-## If B is picked
+## If the user picks B
 
-For the v2 design, in one pass and one re-route:
+For the v2 session, in one pass and one re-route:
 - `design.py`, the header band:
   - the headers 2 mm lower (`rack.yaml` › `header.z` 28.5, `odd_z` / `even_z`), the RESET/BOOT resistor
     columns with them;

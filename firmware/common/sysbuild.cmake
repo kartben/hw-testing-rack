@@ -29,7 +29,7 @@ if(hwtr_key_dir STREQUAL hwtr_mcuboot_dir)
   message(WARNING "${DEFAULT_IMAGE}: signed with MCUboot's public test key "
     "(${SB_CONFIG_BOOT_SIGNATURE_KEY_FILE}): any image signed with it boots.  "
     "Fine on a desk; for a rack set HWTR_SIGNING_KEY to your own key "
-    "(docs/build/get-the-firmware.md, Sign with your own key) and build pristine.")
+    "(docs/firmware.md, Signing key) and build pristine.")
   set_config_bool(${DEFAULT_IMAGE} CONFIG_HWTR_UPDATE_TEST_KEY y)
 else()
   set_config_bool(${DEFAULT_IMAGE} CONFIG_HWTR_UPDATE_TEST_KEY n)

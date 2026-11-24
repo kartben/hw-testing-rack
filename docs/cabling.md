@@ -1,16 +1,209 @@
 # Cabling
 
-This document was split into the pages of the documentation site:
+Three rules drove the design: **no loose cable spans between bays**, **a
+board stays connected while you work on it**, and **each cable is as short
+as it can be without ever being taut**.
 
-* The three rules, every cable and its pinout: [Cables and pinouts](reference/cables.md).
-* The DUT cable path, the DATA lead and the drag chain: [Fit out a tray](build/fit-out-a-tray.md).
-* The cable to the board: [Put a board in a bay](use/mount-a-board.md#the-cable-to-the-data-board).
-* Classic mode: [A laptop on the front port](use/front-port.md).
-* AUX: [Serial console](use/serial-console.md#wire-the-aux-lead).
-* Dupont jumpers on a DATA ×4: [Wires between boards](use/wires.md).
-* Cameras: [Add a camera](build/camera.md#route-the-lead).
-* A node on the bench: [Flash the hub and the nodes](build/flash.md#flash-a-node); a node alone: [One bay on a desk](build/one-bay-on-a-desk.md#power-from-a-pd-trigger-module).
+## The DUT cable path (per bay)
+
+```
+bay node (plenum)                                 drawer
+ ┌──────────┐  DATA lead: JST PH 8-pin, ~40 cm    ┌────────────────────────────────────┐
+ │ DATA J7  ├──────┐                              │ [DATA]◀── short cable ──▶ board    │
+ └──────────┘      │  ┌─ drag chain 7×7 R18 ─┐    │   ▲ DATA board in the rear bay     │
+                   └─▶│ fixed end   moving end├───┼─▶ up through the cable window      │
+                      └──────────────────────┘    └────────────────────────────────────┘
+```
+
+1. **Node → drawer: a standing DATA board and an 8-wire lead.**  Every drawer
+   holds one DATA board: a DATA ×6 ([electronics/data-port-x6](../electronics/data-port-x6/design.py),
+   six USB-C, power only), or a DATA ×4 v2 ([electronics/data-port-x4](../electronics/data-port-x4/design.py))
+   in a bay whose boards need wires.  It stands in a printed cradle behind the
+   port wall, each USB-C mouth behind a slot in the wall: a board's short cable
+   plugs into it.  A JST PH 8-pin lead (DATA_VIN, GND, D+, D−, GND, SDA, SCL, GND at
+   the node's end) plugs
+   into the node's **DATA** header (J7, side entry on the node's right edge,
+   facing the chain; the node's only DUT port), runs ~3 cm in the plenum to the
+   chain's fixed end, through the drag chain, out of its moving end
+   (forwards, then a U-turn in front of it, between the chain's runs, its
+   front lifted ~4 mm so that, the drawer out, it rides over the row cable on
+   its tie anchors; low over the tray floor behind) and up through the cable
+   window at the rear right
+   of the drawer, into the PH on the DATA board's rear face, right over the
+   window.  It never needs to be touched again.  (A sled or fixed
+   bay has no chain: the lead runs from J7 back along the plenum, right of
+   the node, under the sled, and up through the port block's window into its
+   PH, its slack coiled in the plenum.)  It is the rack's
+   camera's PH 8 lead type (pin n ↔ pin 9−n, both plugs the same face up: the
+   DATA board's pinout is J7's mirrored), with 8 pins so a 6-pin row cable
+   (VRACK, up to 28 V) cannot go in; twist D+/D− (pins 3-4) by hand.  (A
+   USB-C coupler with a 90° extension came first: two off-the-shelf parts
+   whose sizes vary by seller, and a stiff cable to bend in the window; then
+   a single-port 40 × 17 mm board, retired from the rack on 2026-10-31 and
+   kept for the standalone Solo box.)
+2. **The drag chain lies flat in the plenum** and bends in the horizontal
+   plane: Olimex DRAG-CHAIN-7X7, 7 × 7 mm inside, 13.5 × 10.2 mm outside,
+   R18, ≈ 180 mm with its two end pieces.  Its fixed end is screwed to the
+   tray's anchor, its moving end to the drawer foot.  Open the drawer 140 mm
+   and the U-bend rolls forward 70 mm: the lead never drags, kinks or snags.
+   **Lay the lead in, don't thread it:** its PH plugs (12 mm wide) do not
+   pass a 7 × 7 channel.  Open the links (their bars snap off on both
+   sides), lay the lead in from the fixed end's mouth to the moving end's,
+   with ~3 cm out of the fixed end for the node and the port board's end out
+   of the moving end, then snap the bars back.
+3. **Drawer → board: a short cable that belongs to the board.**  USB-C on
+   the drawer side, a **straight** plug standing in one of the port wall's
+   slots (an angled one only if its cable leaves upwards), whatever the
+   board needs on the other (C, micro-B or mini-B).  It goes in the DATA ×6's
+   port 1, the leftmost seen from the board, or the next one where the
+   cable does not lie clear from port 1 (A3 and B4: port 2).  Two layouts,
+   set by the board's plate:
+   * **a small board** (Pico, ESP32 DevKitC, UNO R4: `orient: side`) turns
+     its USB towards the right wall: a plain **straight** 15–20 cm cable
+     leaves the DATA port forwards, bends once (≥ 10 mm radius) and
+     lies flat on the plate into the board's side;
+   * **a long board** (Nucleo, nRF DK, FRDM) faces its USB to the port wall,
+     17–23 mm away: the cable leaves the DATA port forwards and makes a
+     small arch over the board's rear edge.  At the board, a USB-C port takes a right-angle plug
+     too (a 15 cm C ↔ C bent at the board's end); a micro-B or mini-B port takes a
+     **90° adapter** (male → female, its female facing up) with the cable's
+     straight plug standing on it (20 cm, 25 cm for the F746G-DISCO, whose
+     mini-B faces the right wall).  A right-angle micro-B / mini-B plug is
+     not reversible and sellers name "up" and "down" either way; the
+     adapters come in up / down / left / right sets, so keep whichever one
+     faces up.  The arch stays under ~105 mm above the row (a camera pod
+     hangs down to 120): loop any spare length round the plate's bobbin,
+     beside the board, not over it (the camera looks at it).
+   Swapping boards = moving a few pegs and swapping the cable; the bay doesn't care.
+
+**USB-C or micro-B in every bay?**  Yes — the bay's port is always USB-C and
+the short cable adapts.  The BOM lists one per board type
+([bom/README.md](../bom/README.md)); pick cables that state data (USB 2.0,
+480 Mbps): many short ones are charge-only.
+
+**Classic mode, no cable juggling.**  Plug a laptop into the bay's front
+**PC** port and the node's mux hands the board's USB data to the laptop
+automatically (VBUS from the laptop is only sensed, never used: the board
+stays powered — and current-monitored — by the shelf).  Unplug and it's back
+on USB/IP.  Or simply unplug the short cable from the drawer port and use
+your own.  A cable left plugged (a laptop beside the rack) takes a right-angle
+plug and runs along the tray's fascia to a cable tie round the nearest side
+ladder's front post, then down the rack's side: nothing hangs in front of the
+drawer below, which still opens.
+
+**AUX.**  For boards without a USB serial bridge or to drive RESET/BOOT:
+the node's JST PH 6 (GND, 3V3 ref, TX, RX, RESET, BOOT) can follow the same
+path through the chain (a 6-wire PH lead fits alongside the USB cable),
+up the drawer's cable window and through one of the port wall's free U's,
+then flying leads to the board.
+
+**Dupont jumpers in a converted bay.**  The DATA ×4's headers (v1: a 1 × 3
+GND, RESET, BOOT per port, pins up; the v2, standing at the back of the
+drawer: a 2 × 6 GND, VREF, P1–P8, RESET, BOOT on its front face, pins forward,
+of which the base DATA-4x carries only GND, RESET and BOOT: its pin chain is not
+fitted, so it solders two 2 × 1 pieces per port, the header's end columns GND/VREF
+and RESET/BOOT) take female–female Dupont jumpers to the board's own pins, its pin
+headers soldered pins up.  Wire only what the board needs: no GND wire (the
+USB cable carries it), RESET and BOOT where the board breaks them out (B1, on a
+base: the Pico 2's RUN), and on DATA-4x-logic the VREF its level shifter needs
+beside the signals (B3: a UART between B3.1 and B3.2).  VREF is the board's I/O
+supply (1.8 or 3.3 V); a 5 V board with TTL inputs (AVR, most 5 V Arduinos)
+takes it from its own 3.3 V pin (electronics.md › DATA ×4 v2, "The VREF rule").
+RESET and BOOT work against the board's own pull-ups of 4.7 kΩ or more (1k in
+series on the DATA ×4).  Tear a board's wires off the strip
+together and peel only their ends, 2 cm or so (more where the pins spread): a
+small ribbon over the port wall (off v2, straight forwards over it), 20 cm
+(30 cm where that does not reach).
+Take the strip's colours in the order its wires lie onto the pins at both ends,
+so that the wires do not cross.  The viewer draws them so
+(`population › jumpers` in `config/rack.yaml`; `tools/webscene.py`: the ribbon
+as an elastic strip, stiff across its width, every wire straight out of its
+housing for 5 mm, as long as the strip's and in its colour order, coloured GND
+black, VREF red, RESET brown, BOOT green, the signals by bus).
+
+## Two-cable boards
+
+i.MX EVKs and friends often want a debug cable *and* a power/OTG cable.  The
+aluminium frame gave them **double-width bays** (two nodes, two drawers, so two
+DATA ports, each with its own switched, current-limited, metered VBUS); the
+panel frame has no double bay yet (see [mechanical.md](mechanical.md)).
 
 ## Row power
 
-Now on [Make the row cables](build/row-cables.md); the routes on [Add a bay, then a row](build/add-a-bay.md#the-jumper-between-two-nodes) and [Power box and charger](build/power-box.md#now-the-row-feeds).
+The rack bus, **VRACK**, is 20 or 28 V: whatever the hub negotiated with the
+USB-C PD charger ([power.md](power.md)).  The charger's 5 A e-marked cable
+plugs into the power box's rear wall.
+
+* **Bay to bay:** 6-pin JST PH jumpers in 24 AWG (below), 152 mm leads for 120 mm routed (VRACK,
+  GND, CAN_H, CAN_L, GND, POS: [can.md](can.md)), plugged into the node's right (OUT) and
+  the next node's left (IN) connectors through the windows in both tray walls
+  and the shared ladder (from the plugs forward to the fascia).  From the
+  node's OUT it heads for the tray's front right and crosses that side at
+  y ≤ 9 mm, tied to the two anchors on the floor there: a drawer pulled out
+  brings its chain foot to 12 mm from the front, right where the jumper used
+  to run.  It turns back up to the next node's IN inside the ladder.  Every OUT connector (the node's right one, the hub's row
+  outputs) has the IN pinout mirrored, so the jumper lies **flat, with no
+  twist**: pin n ↔ pin 7−n, both plugs showing the same face when the cable
+  lies on a table.  (The v0.4 nodes had 2-pin, 24 V-only jumpers.)
+* **Power box to row:** one 6-pin JST PH feed per row, **the same cable** as
+  the jumpers (pin n ↔ pin 7−n), ≈ 0.25 / 0.45 / 0.6 m routed for rows A / B / C (leads of
+  305 mm / 60 cm / 80 cm).
+  Each plugs into the power box's left wall, reached through the left base
+  ladder's window.  It runs forward along that ladder's outer face, climbs the
+  rack's left side tied to the ladders, and enters the first bay's left window
+  to its node's IN connector.  Out to the left and back in from the left, it
+  takes a half turn along the way.  Give the CAN pair 2–3 twists per 10 cm.
+* **Making the row cables** (the user's pick, 2026-10-21: [power-distribution-review.md](power-distribution-review.md#decision-real-awg-24-leads)).
+  JST rates PH's 2 A only on 24 AWG, and no ready-made 6-pin cable states 24 AWG with this pinout.  So
+  each cable is six single leads in two housings (the parts are in the BOM).
+  - **Leads:** JST's own pre-crimped ones: UL1007 24 AWG, black, an SPH-002T-P0.5S contact at each
+    end.  ASPHSPH24K152 (152 mm) makes the jumpers and ASPHSPH24K305 (305 mm) row A's feed: no
+    crimping.  JST makes none longer, so the feeds to rows B and C (60 and 80 cm) are crimped.  Use
+    SPH-002T-P0.5S contacts on UL1007 24 AWG wire with a cheap ratchet crimper (IWISS SN-28B); make a
+    few practice crimps first.  Check that wire on arrival: count the strands and measure one.  24 AWG
+    is 7 × 0.20 mm, 11 × 0.16 or 19 × 0.12 (≈ 0.21 mm²); 7 × 0.16 is 26 AWG.
+  - **Housings:** a red PHR-6-R at one end, a black PHR-6-BK at the other.  The cable works either way
+    round; the convention only makes it readable.  The red end goes into the node's IN (J1), the black
+    end into an OUT (the node's J2, a hub row output).  The red housing's position n is then J1's
+    pin n: 1 VRACK, 2 GND, 3 CAN_H, 4 CAN_L, 5 GND, 6 POS.
+  - **Insert order, for pin n ↔ pin 7−n:** hold both housings the same way, latch up, mating faces
+    away from you.  Each lead goes from a position of the red housing to the mirrored position of the
+    black one: outermost left to outermost right, and so on inwards.  Push each contact in until it
+    clicks, then tug it.
+  - **Marking (optional):** the leads are all black.  Plug the red end into a node's J1 and put a red
+    stripe (marker or heat-shrink) at both ends of the lead on J1's pin 1, VRACK.
+  - **Holding the six together** (2026-11-16): fill the red housing.  On a feed, twist the two
+    middle leads (CAN) 2–3 turns per 10 cm now, while the other end is still free.  Slip three
+    10 mm bands of 6.4 mm heat-shrink over the six leads (they do not pass over a housing), then
+    fill the black one.  Shrink one band 2 cm from each housing and one in the middle (a feed: one
+    every 15 cm or so): the six close into a round bundle, about 4.5 mm across.  Small cable ties
+    or a turn of tape do instead of bands.
+  - **Before use:** ring every cable with a meter, red 1 to black 6 and so on, and check that no two
+    positions short.
+* **A node on the bench:** it runs only from its row, never from USB.  To
+  flash or try one on a desk, give its IN connector 15–30 V (J1.1 +, J1.2 /
+  J1.5 GND; e.g. a 19–24 V laptop or lab supply: the buck starts above
+  13.5 V); the PC port then reaches the ESP32.
+* **A node alone (standalone box, no hub):** a USB-C PD trigger module wired to J1 (pin 1 +, pin 2
+  GND) supplies it.
+  - **The module:** a CH224K one, set to **20 V** (resistor, jumper or DIP switch), on any PD charger
+    that offers 20 V (≥ 30 W).  A bay draws ≤ 13 W from it, camera included.
+  - **Other voltages:** 15 V works too, for a charger without 20 V; 12 V and 9 V don't, since the buck
+    needs 13.5 V to start.
+  - **Without PD, or if the charger lacks the voltage asked for:** count on the module staying at
+    5 V, its fallback isn't documented.  The node then stays off; nothing is harmed.
+  - **Without the hub:** J1.6 (POS) stays low, so the node never takes a rack address and never
+    transmits on CAN.  A DATA ×4 still shares the node's 1.4 A DUT switch, under the firmware's port
+    budget (`BAY_PORTS_BUDGET_MA`), as in the rack.
+* **Cameras:** the bay's own node drives its camera (SPI) and light: a
+  ready-made 50 cm JST-PH 8 lead, "Same direction" (≈ 45 cm routed between
+  the plugs), up out of J6 (vertical, at the node's rear right; pins: GND, SCK,
+  CAM_5V, MOSI, MISO, LED_K, CS, GND), right to the rear slot's right end (tray x ≈ 76)
+  and only then back along the plenum.  Run straight back from J6, it would pass 18 mm from the
+  node's antenna (on its rear edge, left of J6); this way it keeps 30 mm
+  ([architecture.md](architecture.md#radio-the-nodes-antennas-and-the-racks-wi-fi)).  Out
+  of the tray's rear slot (a cable tie),
+  straight up behind the tray's rear wall, forwards under the ceiling (cable
+  ties through the ceiling's windows, right of the node above), down behind
+  the pod and into the pod board's J1 from its right.  The board carries the
+  LEDs; an XH → Dupont cable goes from the Mega's side to the board's J2.

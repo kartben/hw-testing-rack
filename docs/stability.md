@@ -1,6 +1,6 @@
 # Stability: can the rack tip over? (study, 2026-10-25)
 
-Is the rack stable?  A study, no change to the parts.
+The user asked whether the rack is stable.  A study, no change to the parts.
 
 ## Verdict
 
@@ -134,6 +134,6 @@ restoring moment of 11.8 N·m with 2 rows and 25 N·m with 4.  Today the worst c
   - the screws clear the plates and the box;
   - a Ø8 screwdriver shaft has 70 mm free above each head.  That is 78 mm to row A's tray at the
     front screws and 133 mm at the rear ones.
-- **When:** drive them at step 4 of [build/first-bay.md](build/first-bay.md), once the base brace is on.  Later,
+- **When:** drive them at step 2 of [assembly.md](assembly.md), once the base brace is on.  Later,
   a stubby screwdriver reaches them under row A.
 - **Use bosses without inserts.**  An M3 insert would stop the screw.

@@ -4661,7 +4661,7 @@
 "supplier": "LCSC C495652",
 "qty": 14,
 "unit_eur": 0.0451,
-"notes": "12 cables and 2 spares; the cable works either way round, the colours only make it readable (docs/reference/cables.md).  Mouser FR has the red one on special order only: the natural PHR-6 does, the IN end then being the light one",
+"notes": "12 cables and 2 spares; the cable works either way round, the colours only make it readable (docs/cabling.md).  Mouser FR has the red one on special order only: the natural PHR-6 does, the IN end then being the light one",
 "unit": "pcs",
 "ext_eur": 0.63
 },
@@ -4717,7 +4717,7 @@
 },
 {
 "category": "Cables",
-"item": "Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie anchors at its front right (docs/build/add-a-bay.md)",
+"item": "Cable tie 2.5 × 100 mm: the row jumpers, 2 each, through the tray's two tie anchors at its front right (docs/cabling.md)",
 "supplier": "AliExpress (bulk)",
 "qty": 18,
 "unit_eur": 0.02,
@@ -8984,7 +8984,7 @@
 "ext_eur": 0.29
 },
 {
-"item": "USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a \"decoy\" board, ≤ 30 × 21 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/build/one-bay-on-a-desk.md)",
+"item": "USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a \"decoy\" board, ≤ 30 × 21 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md)",
 "supplier": "AliExpress 3256811726090162; its size goes in config/rack.yaml › standalone.pd_module",
 "qty": 1,
 "unit_eur": 2.0,
@@ -9071,7 +9071,7 @@
 "ext_eur": 0.28
 },
 {
-"item": "USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a \"decoy\" board, ≤ 30 × 21 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/build/one-bay-on-a-desk.md)",
+"item": "USB-C PD trigger module, CH224K with a DIP switch set to 20 V (a \"decoy\" board, ≤ 30 × 21 mm): feeds the node's J1 in place of the power hub, from any PD charger offering 20 V, ≥ 30 W (docs/cabling.md)",
 "supplier": "AliExpress 3256811726090162; its size goes in config/rack.yaml › standalone.pd_module",
 "qty": 1,
 "unit_eur": 2.0,

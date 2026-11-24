@@ -167,9 +167,8 @@ How the routing flow keeps ground honest (`electronics/tools/pcbgen.py`):
 
 ## Revisions at the fab
 
-v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece`: 5 PCBs and 2 assembled boards of each, at NextPCB.  What to check when they arrive: [Check each PCB on the bench](build/check-the-pcbs/index.md).
+v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece`: 5 PCBs and 2 assembled boards of each, at NextPCB.  What to check when they arrive: [bring-up.md](bring-up.md).
 
-<!-- site:revisions-at-the-fab -->
 | Board | Revision | Sent | Status |
 |---|---|---|---|
 | Bay node (`bay-node`) | v1.0 | 2026-11-11 | at the fab |
@@ -177,7 +176,6 @@ v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece
 | Camera pod (`camera-pod`) | v1.0 | 2026-11-11 | at the fab |
 | DATA ×6 (`data-port-x6`) | v1.0 | 2026-11-11 | at the fab |
 | DATA ×4 (`data-port-x4`), assembled with its logic | v1.0 | 2026-11-11 | at the fab |
-<!-- /site:revisions-at-the-fab -->
 
 **A released revision is frozen.**  Its Gerbers, BOM and placement file stay as they were sent, so the repository always shows the boards that are on the bench.  From now on any change to one of these boards goes into a new revision, however small: a silkscreen text, a part value, one track.
 
@@ -187,7 +185,7 @@ v1.0 of the five boards went to fabrication on 2026-11-11, from commit `125c4ece
 
 [`electronics/released.json`](../electronics/released.json) holds the list, with the SHA-256 of each file sent.  `python tools/released.py` compares it with the tree, and `tools/tests/test_released_boards.py` runs it with the other tool tests: a commit that changes a v1.0 board's fabrication files without a new revision fails there.  Firmware, documentation, 3D models and renders are free to change: they are not in the list.
 
-What the bench finds on v1.0 (a wrong value, a swapped pin, a bodge wire) goes into an issue ([Known issues › Report a finding](reference/known-limitations.md#report-a-finding)) and is fixed in the next revision, not in v1.0.
+What the bench finds on v1.0 (a wrong value, a swapped pin, a bodge wire) is written down in [bring-up.md](bring-up.md#what-the-bench-finds) and fixed in the next revision, not in v1.0.
 
 ## Bay node (×1 per unit) — 4 layers, 74 × 90 mm
 
@@ -203,7 +201,7 @@ Sheets: **Power · MCU · USB · DUT power & AUX · Rack bus** — see the PDF i
 | 3.3 V | AP2114H-3.3 (U2, C150716, SOT-223) | logic only; stable with the ceramic C11 / C12, where the AMS1117 it replaced (the schematic counter-review, 2026-10-23) guaranteed it only with 22 µF tantalum; the same SOT-223 pinout and copper |
 | MCU | ESP32-S3-WROOM-1-N8R8 (8 MB flash, 8 MB octal PSRAM for the camera's frames; the DevKitC-1-N8R8's module), C2913201 | antenna on the rear edge, keep-out on all layers (the footprint's own ±24 mm band); `bench:ESP32-S3-WROOM-1_NoEPVias` (no 0.2 mm vias in the exposed pad: a GND island stitched around it); rated −40…+65 °C |
 | DATA power | TPS26600 eFuse (U9: R_ILIM 6.8k → ≈ 1.76 A, 1.67–1.85 A: above the DATA ×6's ≈ 1.5 A fully loaded at 15 V, 1.0–1.2 A at 20 V, under the PH contact's 2 A; dVdT 22 nF → 3.8 ms at 20 V, 5.3 ms at 28 V; UVLO, OVP and MODE to GND: 15 V, 31–34 V, current limit with auto-retry), DFLS260-7 (D8: 60 V, 2 A, 0.62 V at 2 A, the B260A class of TI's TPS26600-02EVM, in PowerDI-123) from GND to DATA_VIN at J7 for the lead's kick when it cuts a short, 50 mΩ Kelvin shunt, INA226 @0x40 | VIN (after Q1, on D2's clamp) → DATA_VIN_SW → shunt → DATA_VIN, the DATA board's supply (it makes its ports' 5 V); the INA226 runs from +3V3 and reads the shunt's own sense pads (SHUNT_P/N), Vbus tied to Vin− at its pins (DATA_VIN at the shunt's load end, ≤ 34 V behind the eFuse's OVP); default **off** (SHDN pulled down by R17): the firmware turns it on; fault flag (~FLT, 10k pull-up R18; also low while off or starting) to IO40 through 1k (R43, the PCB review's BN-01, 2026-11-09: in USB-OTG download boot the ROM drives IO40 high against ~FLT, which is low while the eFuse is off; R43 holds that to 3.3 mA, under the pin's 10 mA) |
-| USB | 2 × FSUSB42 + 74LVC1G32 (150k from its output back to PC_DET for ≈ 0.14 V of hysteresis: the laptop's VBUS rises far slower than its 10 ns/V, datasheet audit F3), 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [Front port and classic mode](use/front-port.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
+| USB | 2 × FSUSB42 + 74LVC1G32 (150k from its output back to PC_DET for ≈ 0.14 V of hysteresis: the laptop's VBUS rises far slower than its 10 ns/V, datasheet audit F3), 2 × USBLC6-2SC6 (100 nF on each VBUS pin: C25, C26), 1 × USB-C GCT USB4105-GF-A-120 (J3, the PC port) | modes in [architecture.md](architecture.md); the DUT side leaves on the DATA lead (J7), no receptacle on the node since the 74 × 90 re-layout (below); the classic-mode path (J3 → J7) is hand-routed for High-Speed, see below |
 | UI | WS2812B-2020, SERVICE slide switch, RESET/BOOT, UART pads | |
 | AUX | J5, JST PH 6, side entry, SMD (S6B-PH-SM4-TB, the row cable's type) on the right edge: GND, 3V3 (1k: a reference for the DUT's levels, not a supply), TX/RX (1k), RESET/BOOT open-drain (2N7002) | in front of J7, both facing the drag chain's fixed end (below), its 2N7002s and resistors in a column on its left; `pcb.bay_node.aux` is its centre |
 | DATA | J7, JST PH 8, side entry, SMD (S8B-PH-SM4-TB, the data port's J2 type) on the right edge: 1 DATA_VIN (20–28 V, ≤ 1.76 A) · 2 GND · 3 D+ · 4 D− · 5 GND · 6 SDA · 7 SCL · 8 GND (an INT until node v1.0: the node polls the DATA board); USB through U8 (USBLC6, flow-through, at the lead's node end), I²C = the node's bus (IO2/IO1, 2.2k pull-ups) | the node's only DUT port: the lead to the drawer's DATA board (×6, or ×4 where a DUT needs wires), which makes its own 5 V from DATA_VIN; `pcb.bay_node.right.data` is its centre (KiCad y) |
@@ -279,8 +277,8 @@ J7 (both side entry again since the 74 × 90 re-layout, below).  The power hub k
 
 **74 × 90 mm, the DUT on the DATA lead only.**  AUX and DATA leave the node to the right, to the
 drag chain's fixed end, CAM to the rear, along the plenum to the tray's rear slot; on 64 mm they sat
-30 × 38 mm apart, with no room left on the right edge.  Chosen on 2026-10-19: a board 10 mm
-wider on the right, then, the same day, dropping the DUT receptacle J4: in the rack every DUT hangs
+30 × 38 mm apart, with no room left on the right edge.  The user chose (2026-10-19) a board 10 mm
+wider on the right, then, the same day, to drop the DUT receptacle J4: in the rack every DUT hangs
 on the DATA lead (a port board, or a DATA ×4 board, in the drawer), and a DUT on the bench takes
 the same lead and a port board.  J7 DATA (S8B, centre y 30.0) and J5 AUX (S6B, y 50.6) now enter
 from the right edge, facing the chain, pin 1 to the front; J6 CAM stays vertical at the rear right
@@ -394,12 +392,12 @@ like the bay node's yet.
 
 **Retired from the rack on 2026-10-31:** every drawer now holds a DATA ×6, or a DATA ×4 v2 where a bay
 needs wires, and the drawer has lost this board's bosses.  It stays for the standalone Solo box
-([One bay on a desk](build/one-bay-on-a-desk.md)) and the assembly notice's drawer step, which still draws it.
+([standalone.md](standalone.md)) and the assembly notice's drawer step, which still draws it.
 
 The drawer's USB-C port for the board under test (×1 per drawer): a small board screwed
 components up to the floor of the drawer's rear bay (2 × PT 2.3×8 from above, one each end), the
 receptacle's mouth behind a U in the port wall, an 8-wire JST PH lead from its rear edge to
-the node's J7 through the drag chain ([Cables and pinouts](reference/cables.md)).  It replaces the USB-C coupler
+the node's J7 through the drag chain ([cabling.md](cabling.md)).  It replaces the USB-C coupler
 and the 90° extension.  Geometry in `config/rack.yaml` › `pcb.data_port`.
 
 | Block | Parts | Notes |
@@ -443,7 +441,7 @@ bosses (the v2's first three); no fourth (v2's own lands outside it).
 | I²C isolation | three 2N7002 (Q1–Q3), gate on +3V3, one per line (NXP AN10441's shifter, 3.3 V on both sides); 4.7k / 4.7k / 10k pull-ups on this board's side, the node's on the lead's (`BUS_*`) | with DUT_5V off the FETs open: the node's pull-ups cannot feed the dead +3V3 through the INA226 and TCA6408A clamps (INA226: VS + 0.3 V at most), and the node's own INA226 keeps its bus.  The firmware sets the expanders and INA226s up again after each DUT_5V on and leaves them alone while it is off |
 | Hub | USB2514B (U1) on its straps (CFG_SEL 00, NON_REM 00: every strap pin on a 100k to GND, NON_REM1 sharing CFG_SEL0's), 24 MHz crystal hand-routed with no via (XI 6 mm, XO 7.7 mm), 12k RBIAS, RC reset | multi-TT, self-powered, off the I²C bus; hub port n is USB-C n (busid `1-1.n`); PRTPWR and OCS_N unused: the switches follow the expanders |
 | Ports ×4 | TPS2553DBVR-1 (47k: 0.50–0.62 A; limits for 7.5 ms, then latches off until EN toggles) → 100 mΩ Kelvin shunt → VBUS; INA226 across the shunt; GCT USB4105 with Rp 56k on each CC ("default USB power"); USBLC6 in flow-through | `+5V` → `PORTn_5V_SW` → `PORTn_VBUS`, 0.4 mm tracks (netclass Port); INA226 at 0x41 / 0x43 / 0x44 / 0x45 for ports 1–4 (the node's own is 0x40), its Vbus on the shunt's load-side sense pad; 100 nF at each USBLC6's VBUS pin |
-| Expanders | two TCA6408A in the rear row, each between the two ports it drives: U2 (0x20) ports 1–2, U6 (0x21) ports 3–4.  Left port of a pair: P0 RESET, P1 BOOT, P2 EN, P3 FAULT_N; right port: P4 EN, P5 FAULT_N, P6 BOOT, P7 RESET | only SDA, SCL and INT cross the board; the pins come up as inputs: **every port off until the firmware enables it** (EN pulled down by 10k, decided 2026-10-19: four ports at 0.50–0.62 A would trip the node's 1.34–1.52 A switch), RESET/BOOT held released; both INT wired-OR with the four INA226 ALERTs to the node's IO4.  KiCad's VQFN-16 footprint with TI's 1.45 mm exposed pad (RGT0016A) |
+| Expanders | two TCA6408A in the rear row, each between the two ports it drives: U2 (0x20) ports 1–2, U6 (0x21) ports 3–4.  Left port of a pair: P0 RESET, P1 BOOT, P2 EN, P3 FAULT_N; right port: P4 EN, P5 FAULT_N, P6 BOOT, P7 RESET | only SDA, SCL and INT cross the board; the pins come up as inputs: **every port off until the firmware enables it** (EN pulled down by 10k, the owner's decision of 2026-10-19: four ports at 0.50–0.62 A would trip the node's 1.34–1.52 A switch), RESET/BOOT held released; both INT wired-OR with the four INA226 ALERTs to the node's IO4.  KiCad's VQFN-16 footprint with TI's 1.45 mm exposed pad (RGT0016A) |
 | RESET / BOOT | per port the expander pin, open drain emulated (output register 0, the pin switched between input and output low), through 1k to a 1 × 3 2.54 mm header (GND, RESET_N, BOOT_N) | Dupont jumpers to the board's own pins; the header is not fitted (decision of 2026-10-19: decided later, soldered by hand), the 1k are.  100k pull-ups (0402) hold each expander input high with nothing plugged in: the TCA6408A has no pull-ups and no interrupt mask, a floating input would raise INT |
 | 3.3 V | AP2112K-3.3 (U3) on top-side copper (VIN, EN and GND islands with vias to the planes) | ≈ 50 mV dropout: the hub, the expanders and the INA226s keep running down to ≈ 3.4 V in while the ports sag, so the firmware still sees the bay and sheds a port.  Keep a 600 mA part with thermal shutdown here: the hub draws up to 155 mA at high speed with four ports busy (84 mA at full speed), ≈ 0.31 W in the LDO from 5.24 V, above what a 200 mA SOT-23 LDO such as the basic XC6206 is rated for (tried and reverted, 2026-10-19) |
 
@@ -490,16 +488,16 @@ v1 plus virtual wires and a logic analyzer: 32 switchable pins on 8 buses and an
 co-processor (the why in [data-x4-v2-research.md](data-x4-v2-research.md), its firmware in
 [coproc-firmware-research.md](coproc-firmware-research.md)).  One PCB, two assemblies: DATA-4x-logic
 for the analyzer bays (B3 first), and the base DATA-4x for the other converted bays, the same board with
-the logic left off (decided 2026-10-20: "pour la data 4x on attend la version verticale"; v1 is not
+the logic left off (the user, 2026-10-20: "pour la data 4x on attend la version verticale"; v1 is not
 ordered for the proto).  Its key ICs against their datasheets and design guides, before the order:
-[datasheet-audit-data-x4-v2.md](datasheet-audit-data-x4-v2.md) (2026-10-24: nine items to fix, ten questions to check by hand).
+[datasheet-audit-data-x4-v2.md](datasheet-audit-data-x4-v2.md) (2026-10-24: nine items to fix, ten questions for the user).
 
 **It stands.**  The board stands behind the port wall instead of lying in the drawer's rear bay
 ([data-x4-v2-layout-options.md](data-x4-v2-layout-options.md), option B, decided 2026-10-20).  Geometry
 in `config/rack.yaml` › `pcb.data_port_x4_v2`.
 - **Size and place.**  100 × 70 mm, drawer x 4–104.  KiCad x = drawer x − 4 and y = 72.5 − z, so
   y = 0 is the top edge.  The bottom edge rests on the drawer floor.
-- **Holding.**  A printed cradle on the drawer's DATA ×4 bosses holds the board (the mechanical design's
+- **Holding.**  A printed cradle on the drawer's DATA ×4 bosses holds the board (the Mechanics session's
   interface, 2026-10-20), so the board has no holes:
   - its slots take each end's 5.5 mm; both faces keep those bands free of parts;
   - two T-heads come up through notches in the bottom edge (3.4 × 4.5 mm at x 31 and 67), against
@@ -511,7 +509,7 @@ in `config/rack.yaml` › `pcb.data_port_x4_v2`.
 - **Rear face.**  Only the lead's PH 8 and the headers' tails, all soldered by hand.  J1 is a through-hole
   JST B8B-PH-K-S (C157974) at x 90, its pins in a vertical row (z 41 → 27): the lead comes up from the
   cable window beside the board's right end and plugs in from the rear.
-- **SWD header** (decided 2026-10-27, on a review suggestion).  J2 is a 1 × 5 2.54 mm through-hole header
+- **SWD header** (the user, 2026-10-27, on a review suggestion).  J2 is a 1 × 5 2.54 mm through-hole header
   (hanxia HX PZ2.54-1x5P ZZ, C32713271), soldered by hand, on the logic only.
   - Its pins: 1 SWCLK · 2 GND · 3 SWDIO · 4 RUN · 5 3V3 (the probe's VTref: the board's +3V3, on the power
     plane there; +3V3_CP is the same rail through FB2).
@@ -538,7 +536,7 @@ writes a BOM and a CPL for each assembly of the same PCB, from the same Gerbers:
     and the VREF divider.
 
 What stays is v1's board, checked against v1's list of functions and review fixes (the DATA ×4
-review of 2026-10-20):
+session's review, 2026-10-20):
 - the hub;
 - the four ports, each with its switch (off by default), R_ILIM, INA226, USBLC6, CC resistors, VBUS
   bulk capacitor and VBUS LED;
@@ -565,7 +563,7 @@ places on lead-free HASL. If the base is ordered on its own, HASL saves $12.
 The logic's core-regulator inductor (L1, Abracon AOTA-B201610S3R3-101-T, C42411119) had 3 in JLC's stock
 that day: JLC Global Sourcing, as `catalog.py` notes.
 
-**Order panel** (decided 2026-10-20).  One 1 × 2 mouse-bite panel, ENIG, Economic: $240
+**Order panel** (the orchestrator's call, 2026-10-20).  One 1 × 2 mouse-bite panel, ENIG, Economic: $240
 for the rack's 2 + 2, against $270 as two orders.
 - **Layout.**  100 × 142 mm.  The logic board stays as drawn; the base is turned 180° above it, top edge
   to top edge, 2 mm apart.  The bottom edges, which carry the T-head notches and sit on the cradle's base,
@@ -575,9 +573,9 @@ for the rack's 2 + 2, against $270 as two orders.
   top: the co-processor's test pads (on the rear), the crystal, CP_RUN and the bus tracks.
   - Each tab is 6 mm wide, with seven 0.6 mm holes at a 1 mm pitch (0.4 mm between holes) on each side,
     0.2 mm into the edge: 28 holes, within JLC's guide (5–8 a set, 0.35–0.4 mm apart).
-  - The guide also asks for a set every 50–60 mm; these are 82 mm apart, so the tabs are cut, never snapped:
-    bending the joint strains the 0402s along the top edge.  How to part it:
-    [Solder the connectors](build/solder-the-connectors.md#part-a-data-4-panel).
+  - The guide also asks for a set every 50–60 mm; these are 82 mm apart.  **Depanel by cutting the tabs**
+    (side cutters through the bites, then sand), not by snapping the joint: bending it strains the 0402s
+    along the top edge.
   - No copper within 1.2 mm of the edge there (`b.pcb["keepouts"]` "tab0", "tab1").  From a hole's edge
     (`tools/panel.sh`): the nearest copper 0.85 mm (a GND via beside a tab), the nearest courtyard 2.93 mm
     (C6, along the edge).  C17, the hub's 100 nF, sat 1.84 mm from tab1's bites, across the joint; it now
@@ -597,16 +595,16 @@ Rebuild it after any change to the board: `tools/kicad.sh data-port-x4 --fab`, t
 |---|---|---|
 | Lead | J1 on the rear face (pin 1 INT at the top … pin 8 +5V at the bottom); SDA, SCL and INT through an H5VU25UC (U4, right beside pins 1–3), then a 2N7002 each (Q1–Q3, gate on +3V3) with 4.7k / 4.7k / 10k pull-ups on this side (R6–R8) | One ESD part where v1 has two USBLC6.  The FETs work as v1's (PCBA review X2): with DUT_5V off they open, so the node's pull-ups cannot feed this board's dead +3V3 through the chips' clamps.  They sit in the right-hand column under J1; its +5V pin lands on a +5V tab of the power plane |
 | Hub | USB2517I (U1) on its internal default configuration (CFG_SEL 110: strap options disabled, no SMBus; the other strap pins keep their pull-downs, unread), 24 MHz crystal, RBIAS 12k | 7 ports: 1–4 the USB-C (busid `1-1.n` as v1), 5 the co-processor, 6–7 declared but unused (cosmetic: the host sees a 7-port hub).  On purpose: PRTPWR unused and OCS_N open on their internal pull-ups, since the node switches each port (EN) and reads its FAULT_N through the expanders; VBUS_DET on 3.3 V, right for a self-powered hub.  Top-right corner, right over J1, turned so the downstream pins face down towards the ports; its 24 MHz crystal (Y1) 2 mm west of XTAL1/XTAL2 (the layout review, 2026-10-28): XI and XO drawn on F.Cu with no via, 5.4 and 7.5 mm with the branches to their load capacitors (C4, C5, each on its pad) and to R10, XO under the case between its two east pads; the F.Cu and B.Cu GND pours round it, In1 under it, and no other net's track or via over its four parts (a DRC rule).  Before, XI ran 16 mm and XO 19 mm through two vias.  The straps sit in two rows over its north face (RN1, RN2, R3–R5, R9), plus RN3 at its south-east corner.  CFG_SEL 110 keeps D+ / D− from being read as port-disable straps (below).  RESET_N comes from a MAX809S supervisor (U5, UMW, C347371; the audit's fix 6): its errata (DS80000628A, Module 2) say the internal POR misses a brown-out and name a MAX809S, so a DUT_5V sag can no longer leave the hub hung.  1 MΩ (R10) across its crystal, as the datasheet's Fig. 9-1 draws it, and 4.7 µF on VDD18 / VDD18PLL (C7, C8: the 1.0 µF ± 20 % the datasheet asks had no margin left once a 0402's DC bias is counted; VDD18PLL's 100 nF, C10, 0.6 mm from pin 62, C8 right behind it, under the crystal); the audit's U2 and U10 |
-| Ports ×4 | As v1; EN pulled down (a port stays off until the node switches it on), R_ILIM right beside the switch's ILIM pin, the INA226's Vbus on the shunt's load-side sense pad, 100 nF at each USBLC6's VBUS pin | PCBA review X3, X4, X9.  Each port's power cluster sits between its header and its receptacle.  The USBLC6 is right of the receptacle, the CC resistors left of it  A green VBUS LED per port (D101–D401, KT-0805G through 1k, ≈ 3 mA) on its switched 5 V, before the shunt, so the INA226 doesn't count it: on while the port is on (decided 2026-10-21).  **Source only**: Rp from the switched VBUS, no CC detection.  A foreign source that back-feeds a port is cut by the TPS2553 within ≈ 4 ms (latched, FAULT_N); the node's firmware will refuse EN while Vbus is already there |
+| Ports ×4 | As v1; EN pulled down (a port stays off until the node switches it on), R_ILIM right beside the switch's ILIM pin, the INA226's Vbus on the shunt's load-side sense pad, 100 nF at each USBLC6's VBUS pin | PCBA review X3, X4, X9.  Each port's power cluster sits between its header and its receptacle.  The USBLC6 is right of the receptacle, the CC resistors left of it  A green VBUS LED per port (D101–D401, KT-0805G through 1k, ≈ 3 mA) on its switched 5 V, before the shunt, so the INA226 doesn't count it: on while the port is on (the user, 2026-10-21).  **Source only**: Rp from the switched VBUS, no CC detection.  A foreign source that back-feeds a port is cut by the TPS2553 within ≈ 4 ms (latched, FAULT_N); the node's firmware will refuse EN while Vbus is already there |
 | Expanders | As v1 (U2 0x20, U6 0x21); 100k pull-ups on the RESET/BOOT expander lines; each RESET through 10k to +3V3 (R11, R12) | X6: they float with nothing plugged in.  TI asks for a pull-up on RESET when nothing drives it (the audit's U9).  Each pair's expander sits between its two power clusters |
 | 3.3 V | AP2114H-3.3 (U3, C150716, SOT-223) from +5V, 22 µF in and out (C2, C3) | It takes the hub, the expanders and the INA226s.  The USB2517I draws 330 mA with four High-Speed ports busy (its datasheet, all supplies, typical; 460 mA at most, with seven), against the USB2514B's 155 mA on v1; with the co-processor, the expanders, the INA226s and the pull-ups, 0.51 A at worst.  That is 0.74 W typical in the LDO, ≈ 1.0 W at worst from the +5V's 5.22 V, too much for v1's AP2112K in SOT-23-5.  The AP2114H keeps v1's low dropout (≈ 0.16 V at 0.35 A), so the hub keeps running while the ports sag the +5V.  It is rated 1 A with thermal shutdown at 160 °C, 128 °C/W bare.  Its tab sits on +3V3 copper that runs west to the edge band on both faces, with fifteen vias (six into the +3V3 plane), its VIN on a +5V island with two vias; Diodes gives no figure for board copper, so the bring-up measures it (pass: ≤ ≈ 86 °C/W in the closed drawer: ≤ 125 °C at 40 °C).  Left-hand column, across the power plane's split.  The AMS1117 (basic) would save $3.07 but drops 1.1 V.  Since 2026-10-21 it also feeds the co-processor (+3V3_CP through FB2, ≈ 15–45 mA), in the 0.51 A above |
-| Headers ×4 | 2 × 6 2.54 mm through-hole (J102–J402), read as two rows: upper VREF · P1 · P2 · P3 · P4 · BOOT, lower GND · P5 · P6 · P7 · P8 · RESET | Soldered by hand, not by JLC (hanxia HX PZ2.54-2x6P ZZ, C32713279): out of the JLC BOM and CPL.  Through-hole, easier to solder than the SMD version (decided 2026-10-20).  The rear face carries only J1, so the tails (1.5 mm) are free.  Layout B (the usability review; approved 2026-10-21): one 2 × 6 per port, centred at the port's x and z 28.5, pins forward over the plate.  The odd pins are on the lower row, the even on the upper.  The names are on the silkscreen over each header, where they stay readable with the jumpers in, in two lines stacked like the rows (VREF, GND, BOOT, RST spelt out); a big port number and the port's VBUS LED sit over its west end.  Each port's pins are a voltage domain of their own (its VREF), so the four groups stay four whatever the header (layouts A and C, and the one bank, in the review).  RESET/BOOT go through an H5VU25UC in flow-through (U109–U409, fitted on the base too; the audit's fix 7 and the schematic review's N4), then 1k as v1, the 1k right behind the ESD over the header's east end (port 4's over its LSF0108's east end, clear of the pairs coming down from the hub); the expander lines' 100k pull-ups in a column right of the header (ports 1–3's lowered since the HS review, 2026-10-22: the band over the headers carries the USB pairs).  VREF has an H5VU25UC of its own (U108–U408, logic only), west of the port's LED: VREF and RESET/BOOT sit at the header's two ends, 12.7 mm apart under the pairs' trunk, too far for one part in flow-through on both.  Strain-relieve the jumpers (tie them down) rather than letting them pull on the header.  The DUT's own RESET/BOOT pull-ups should be 4.7 kΩ or more: against a 1 kΩ pull-up, the 1k in series stops an asserted line at ≈ 1.65 V |
+| Headers ×4 | 2 × 6 2.54 mm through-hole (J102–J402), read as two rows: upper VREF · P1 · P2 · P3 · P4 · BOOT, lower GND · P5 · P6 · P7 · P8 · RESET | Soldered by hand, not by JLC (hanxia HX PZ2.54-2x6P ZZ, C32713279): out of the JLC BOM and CPL.  Through-hole, easier to solder than the SMD version (the user, 2026-10-20).  The rear face carries only J1, so the tails (1.5 mm) are free.  Layout B (the usability review; the user, 2026-10-21: "oui je valide"): one 2 × 6 per port, centred at the port's x and z 28.5, pins forward over the plate.  The odd pins are on the lower row, the even on the upper.  The names are on the silkscreen over each header, where they stay readable with the jumpers in, in two lines stacked like the rows (VREF, GND, BOOT, RST spelt out); a big port number and the port's VBUS LED sit over its west end.  Each port's pins are a voltage domain of their own (its VREF), so the four groups stay four whatever the header (layouts A and C, and the one bank, in the review).  RESET/BOOT go through an H5VU25UC in flow-through (U109–U409, fitted on the base too; the audit's fix 7 and the schematic review's N4), then 1k as v1, the 1k right behind the ESD over the header's east end (port 4's over its LSF0108's east end, clear of the pairs coming down from the hub); the expander lines' 100k pull-ups in a column right of the header (ports 1–3's lowered since the HS review, 2026-10-22: the band over the headers carries the USB pairs).  VREF has an H5VU25UC of its own (U108–U408, logic only), west of the port's LED: VREF and RESET/BOOT sit at the header's two ends, 12.7 mm apart under the pairs' trunk, too far for one part in flow-through on both.  Strain-relieve the jumpers (tie them down) rather than letting them pull on the header.  The DUT's own RESET/BOOT pull-ups should be 4.7 kΩ or more: against a 1 kΩ pull-up, the 1k in series stops an asserted line at ≈ 1.65 V |
 | Pins ×4 | 2 × H5VU25UC in flow-through, 100 Ω per pin (4 × 0402 arrays), LSF0108 (U107–U407); VREF through a third H5VU25UC (U108–U408) | A side = the DUT's VREF, B side = 3.3 V.  Vref_B and EN come from the board's +5V_MX through 200k (the usability review, 2026-10-21; before, from the port's VBUS): each group is a voltage domain of its own, any board on any group, two groups for a board that needs 16 pins.  TI requires Vref_B ≥ Vref_A + 0.8 V and recommends 1.0 V: with +5V_MX at its 4.75 V low, a VREF up to ≈ 3.9 V translates as specified (the VREF rule below).  The bias current (≈ 20 µA) leaves the LSF0108 by Vref_A, so the VREF divider to the co-processor's ADC (VREF / 2, then 100k to the pin: the audit's U8) is 10k / 10k: an unwired VREF stays ≈ 0.4 V, under the 0.65 V minimum TI specifies for translation (through 100k / 100k it would float up to ≈ 2.1 V and translate).  That alone does not isolate the group: TI guarantees the off state only with EN low (SDLS966M §8.3.2), and under Vref_A + VTH the pass gates still conduct, so lows pass both ways and highs into A clamp at ≈ 0.4 V (the audit's fix 8; how it behaves at ≈ 0.4 V is a bench check).  The isolation is the crosspoints': the firmware keeps a port's switches open while its VREF reads under 0.65 V (GPIO40–43 under 0.33 V).  A DUT that is off (SLVA675B §5.6) and a board that is off (EN low with +5V_MX off) do isolate.  A wired VREF supplies VREF / 20k (165 µA at 3.3 V).  The ESD arrays are hongjiacheng's H5VU25UC (C20615800, JLC "preferred extended": no part-type fee) in place of TI's TPD4E05U06 (2026-10-20).  The same I/O and GND pins (I/O 1, 2, 4, 5; GND 8); its 3, 6, 7, 9, 10 have no internal connection (its function diagram, checked 2026-10-25), and our copper joins each line's pair of pads; its own DFN2510-10L land (`bench:`, pads 3 and 8 one bar).  The 32 P lines are drawn and locked in `design.py` › `p_lines()` (the kicad-happy review's X2-1, 2026-10-27: Freerouting had run six of them from the header straight to the 100 Ω array, the ESD on a stub), every port alike: header pin → B.Cu under the USB pairs that cross the band on F.Cu → a via (two staggered rows) → the ESD pad → across to its partner → the 100 Ω array.  Each array's GND pads, between its two middle lanes, go down to a via of their own.  `electronics/tools/flowthru.py` checks every listed line (`flow-through.json`: the P lines, VREF, RESET and BOOT) runs connector → ESD pad → partner pad → next part with no bypass or stub, and `tools/tests/test_flow_through.py` runs it in CI for every board that lists its lines.  Ports 1 and 4's 5V_SW (to the VBUS LED) are drawn too, past the header where the P lines left room.  Its stand-off is 5 V (TI's 5.5 V), breakdown 6 V at least: every line it guards stays at 5 V or less, a DUT's pins at its VREF (≤ 5 V), the lead's I²C and INT at 3.3 V |
 | Matrix | 2 × CH446Q at ±5 V (U7: ports 1–2, U8: ports 3–4; their Y0–Y7 joined = buses D C B A E F G H), TPS60400 for −5 V (U9), TCA9534A at 0x38 (U10); their +5V (+5V_MX) through a 600 Ω ferrite (FB1, GZ2012D601TF) | The −5 V stays on purpose: at a single 5 V the CH446Q's R_on is 120–225 Ω, and a 1.8 V board's I²C low through it would fail.  The ferrite gives the matrix a DC path of its own (≈ 1 µH low down, it filters little at the pump's 50–250 kHz).  It carries the crosspoints, the inverter, the four LSF0108s' bias and the +5V sense divider: ≈ 1–4 mA; the co-processor takes +3V3 since 2026-10-21.  TCA9534A: P0 DAT · P1 CK · P2 STB U7 · P3 STB U8 · P4 RST (pulled up: every switch open until the node writes it) · P5 co-processor RUN · P6 BOOTSEL · P7 mark.  Each bus is pulled up to 3.3 V by 10k (RN8, RN9), the B-side pull-up of whatever pins it joins |
-| Co-processor | RP2350B (U11) wired like a Pico 2 less its flash: it comes up in the USB bootloader and the analyzer is loaded into its SRAM at each power-up (an RP2354B is a drop-in that boots from its in-package flash; NextPCB had none, 2026-11-03); 12 MHz ABM8-272-T3, core regulator with 3.3 µH and 3 × 4.7 µF; its 3.3 V (+3V3_CP) from the board's +3V3 through a 600 Ω ferrite (FB2, C1017) | The core regulator is Raspberry Pi's RP2350B Minimal R4 block, turned 180° with the chip (the audit's fixes 1–3): CIN and COUT across VIN / PGND, L1 behind them along the chip's edge, its dot (pad 1, the land's silk and fab dot) on +1V1 as Fig. 26 draws it (read by hand, 2026-10-25).  Its copper is theirs: the LX, +1V1 and PGND copper areas of their RP2350B Minimal R4-S1 file, turned with the chip, with their two V_OUT vias (VREG_FB taken there) and PGND's two adjacent GND vias; CFILT on its own via.  CIN and COUT sit on Raspberry Pi's own 0402 land (pads 0.56 mm apart, 0.94 mm pitch), so LX runs between them 0.3 mm wide as theirs.  The F.Cu GND pour leaves a hole round the block, so its high-current GND meets the main GND only through those two vias ("only connect to main GND at one point"), and nothing else lies under L1 or beside LX; no copper under LX and L1 on In1, In2 and B.Cu either.  Raspberry Pi's hardware design guide (Release 3) asks for exactly their layout: "if you choose not to use our example, then you do so at your own risk".  DVDD pin 32, the furthest from the regulator, on 4.7 µF (C47).  GPIO45 reads −5 V through 10k / 100k from +3V3_CP (R40, R41: 2.55 V nominal, ≥ −0.48 V even unpowered).  Hub port 5.  GPIO2–9 = buses A–H (gusmanb's CH1–8); GPIO0 → GPIO1 bridged (its trigger); GPIO14 = mark; GPIO25 = LED.  GPIO19, 18, 17, 16, 13, 12, 11, 10 switch the 2.2k pull-ups of buses A–H (our firmware); RN6/RN7 sit right beside them on the same face.  GPIO40, 43, 42, 41 = VREF 1–4 / 2 (through 100k; ports 2 and 4 swapped so their lines reach B.Cu round C45, DVDD pin 51's 100 nF), GPIO44–45 = the ±5 V rails.  SWD on J2, a 1 × 5 2.54 mm header on the front face's top edge (SWCLK, GND, SWDIO, RUN, 3V3; logic only), and on two test pads on the rear face, along the top edge, beside a GND (TP1–TP3).  Its crystal Y2 (the layout review, 2026-10-28): the lines drawn on F.Cu with no via, XIN 7.8 mm up between the case's two bottom pads to the top-right one, XOUT 5.6 mm up beside it and over C47 (no longer under its body, between its pads) to R22, C48 and C49 on their pads; no other net over its parts on F.Cu (a DRC rule: BUS_D, which passed under it with a via, goes round); the slow SWD/RUN lines to J2 still run under it on B.Cu, In1's solid GND between.  No LDO of its own since 2026-10-21 (the usability review: an extended part type less): U3 takes its ≈ 15–45 mA.  USB through 27 Ω (R23/R24, C25100, extended), the value Raspberry Pi specifies (22 Ω basic until 2026-11-01: Raspberry Pi publishes no driver impedance to justify it) |
+| Co-processor | RP2350B (U11) wired like a Pico 2 less its flash: it comes up in the USB bootloader and the analyzer is loaded into its SRAM at each power-up (an RP2354B is a drop-in that boots from its in-package flash; NextPCB had none, 2026-11-03); 12 MHz ABM8-272-T3, core regulator with 3.3 µH and 3 × 4.7 µF; its 3.3 V (+3V3_CP) from the board's +3V3 through a 600 Ω ferrite (FB2, C1017) | The core regulator is Raspberry Pi's RP2350B Minimal R4 block, turned 180° with the chip (the audit's fixes 1–3): CIN and COUT across VIN / PGND, L1 behind them along the chip's edge, its dot (pad 1, the land's silk and fab dot) on +1V1 as Fig. 26 draws it (the user's reading, 2026-10-25).  Its copper is theirs: the LX, +1V1 and PGND copper areas of their RP2350B Minimal R4-S1 file, turned with the chip, with their two V_OUT vias (VREG_FB taken there) and PGND's two adjacent GND vias; CFILT on its own via.  CIN and COUT sit on Raspberry Pi's own 0402 land (pads 0.56 mm apart, 0.94 mm pitch), so LX runs between them 0.3 mm wide as theirs.  The F.Cu GND pour leaves a hole round the block, so its high-current GND meets the main GND only through those two vias ("only connect to main GND at one point"), and nothing else lies under L1 or beside LX; no copper under LX and L1 on In1, In2 and B.Cu either.  Raspberry Pi's hardware design guide (Release 3) asks for exactly their layout: "if you choose not to use our example, then you do so at your own risk".  DVDD pin 32, the furthest from the regulator, on 4.7 µF (C47).  GPIO45 reads −5 V through 10k / 100k from +3V3_CP (R40, R41: 2.55 V nominal, ≥ −0.48 V even unpowered).  Hub port 5.  GPIO2–9 = buses A–H (gusmanb's CH1–8); GPIO0 → GPIO1 bridged (its trigger); GPIO14 = mark; GPIO25 = LED.  GPIO19, 18, 17, 16, 13, 12, 11, 10 switch the 2.2k pull-ups of buses A–H (our firmware); RN6/RN7 sit right beside them on the same face.  GPIO40, 43, 42, 41 = VREF 1–4 / 2 (through 100k; ports 2 and 4 swapped so their lines reach B.Cu round C45, DVDD pin 51's 100 nF), GPIO44–45 = the ±5 V rails.  SWD on J2, a 1 × 5 2.54 mm header on the front face's top edge (SWCLK, GND, SWDIO, RUN, 3V3; logic only), and on two test pads on the rear face, along the top edge, beside a GND (TP1–TP3).  Its crystal Y2 (the layout review, 2026-10-28): the lines drawn on F.Cu with no via, XIN 7.8 mm up between the case's two bottom pads to the top-right one, XOUT 5.6 mm up beside it and over C47 (no longer under its body, between its pads) to R22, C48 and C49 on their pads; no other net over its parts on F.Cu (a DRC rule: BUS_D, which passed under it with a via, goes round); the slow SWD/RUN lines to J2 still run under it on B.Cu, In1's solid GND between.  No LDO of its own since 2026-10-21 (the usability review: an extended part type less): U3 takes its ≈ 15–45 mA.  USB through 27 Ω (R23/R24, C25100, extended), the value Raspberry Pi specifies (22 Ω basic until 2026-11-01: Raspberry Pi publishes no driver impedance to justify it) |
 
 **Hub configuration: CFG_SEL 110 (2026-10-25).**  The USB2517 reads CFG_SEL[2:0] as RESET_N rises; 110 is
-"Internal Default Configuration, Strap Options are Disabled" (DS00001598C Table 5-2 p. 16, read by hand;
+"Internal Default Configuration, Strap Options are Disabled" (DS00001598C Table 5-2 p. 16, the user's reading;
 100 and 101 add dynamic power switching, 111 is ganged / LED mode).
 - The hub loads Table 7-1's internal defaults (§7.4 p. 41; straps override them only when enabled, §7.5).  They
   are what the straps used to set (Table 7-1 pp. 19–20): CFG1 9Bh (self-powered, individual port power switching,
@@ -618,7 +616,7 @@ Rebuild it after any change to the board: `tools/kicad.sh data-port-x4 --fab`, t
 - CFG_SEL1 (HS_IND, pin 42) and CFG_SEL2 (pin 13) go up through their 10k (one element each of RN2 and RN3),
   CFG_SEL0 (SCL) stays down: static, stable at RESET_N's rise.  HS_IND drives after reset (I/O12, 12 mA): its
   10k takes 0.33 mA, and no LED hangs on it (CFG_SEL1 high makes it active low).
-- The pins that were straps keep their pull-downs (RN1, R3, R4, R5, R9; decided 2026-10-27).  110
+- The pins that were straps keep their pull-downs (RN1, R3, R4, R5, R9; the user's call, 2026-10-27).  110
   no longer reads them, but they are LED outputs and SUSP_IND, I/O12 buffers that may go high-impedance with
   nothing on them.  Nothing in DS00001598C says their input receiver is off then (Table 5-3 p. 16; Table 8-2
   p. 50 gives a ±10 µA tri-state leakage only).  The 10k keep the floating inputs from drawing current or
@@ -721,7 +719,7 @@ Dense rules at JLC's multilayer floor:
 - 0.5 / 0.3 mm vias;
 - 0.2 mm from a via hole to a track (JLC's minimum).
 
-Routing (2026-10-22, after jogs were found where tracks leave J1's pads).  Freerouting's optimizer only
+Routing (2026-10-22, after the user found jogs where tracks leave J1's pads).  Freerouting's optimizer only
 runs on a board it sees fully routed, and its first-found routes leave many pads by a short straight, a
 0.2 mm jog and then their diagonal.  So nothing is left for the pours to join:
 - each QFN's exposed pad takes a via in the pad (left open at 4 layers: fine in a thermal pad, below); the
@@ -738,7 +736,7 @@ runs on a board it sees fully routed, and its first-found routes leave many pads
 After the import, `tidy` (pcbgen's `tidy_tracks()`, on every board since 2026-10-22) straightens what the
 optimizer leaves: a run of the router's segments becomes the fewest straight and 45° segments that join its
 ends, where that is no longer and the clearances allow, and a run holding one under 0.6 mm loses it.  Its last
-step (`unjog()`, since 2026-10-26, when micro zigzags were found) takes the router's micro-jogs: a few short
+step (`unjog()`, since 2026-10-26, the user's find of micro zigzags) takes the router's micro-jogs: a few short
 segments (each under 0.25 mm, 0.2 mm aside in all) stepping a track sideways between two parallel runs, often
 where it necks down to pass two pads, or up and back down.  One run slides onto the other's line, each segment
 keeping its width.  Where the clearance needs the offset, the jog becomes one 45° step.  The DATA ×4 v2 lost 39
@@ -756,7 +754,7 @@ Power tracks:
 The USB pairs.  The hub's host is the node's ESP32-S3, full speed only (12 Mbit/s), except in classic mode:
 a laptop on the bay's PC port then takes the hub at High Speed.  After the RF review (2026-10-21, against
 a bench node whose Wi-Fi a USB 3 hub beside its antenna knocked out; this board has no SuperSpeed) and the
-HS review (2026-10-22, the rule set that day: "keep them over a continuous GND reference, preferably on F.Cu
+HS review (2026-10-22, the user's rule: "keep them over a continuous GND reference, preferably on F.Cu
 above In1.Cu"):
 - the five High-Speed pairs are drawn and locked in `design.py` as coupled pairs: their two lines side by
   side all the way, 0.15 mm apart (≈ 90 Ω, below), equal in length by construction (two bumps on D−, where
@@ -790,7 +788,7 @@ above In1.Cu"):
 
 ENIG, flat for the RP2350B's 0.4 mm QFN-80.
 
-**Stackup: 4 layers** again since 2026-10-23, JLC04161H-7628: F.Cu signals and the High-Speed
+**Stackup: 4 layers** again since 2026-10-23 (the user's choice), JLC04161H-7628: F.Cu signals and the High-Speed
 pairs · In1 GND · In2 power (+3V3 / +5V, the +3V3_CP island) · B.Cu signals.
 - Why: the routing portfolio and its fixes (split planes, straightening, the neck-down floor, no via in an SMD pad)
   route it clean, cheaper and faster than 6 ([autorouting-benchmark.md](autorouting-benchmark.md), "The DATA ×4
@@ -838,19 +836,19 @@ GPIO (IO5 or IO6) would let the firmware restart the camera alone.
 ## Title block
 
 Every board's title block is the same (`electronics/tools/silk.py`, `title_block()`): the BitBunk logo
-25.5 mm wide (decided 2026-11-02), and 0.6 mm under it one line, left-aligned with it: the board's name and
+25.5 mm wide (the user, 2026-11-02), and 0.6 mm under it one line, left-aligned with it: the board's name and
 revision at 1.5 mm, then 1.5 mm further the revision's date at 1.0 mm on the same baseline (pcbgen places it
 from the name's ink).  On B.SilkS, read from below; about 10.3 mm tall, so it fits the camera pod's 40 × 27.
 Each sits in the rear face's top-right corner as read from below (top view: x 0, y 0), at the nearest spot
 that keeps 1 mm from any other silk text or mark, 0.3 mm from pads, holes and courtyards, 4 mm from the
-connectors (away from the connectors, as decided), and 0.5 mm outside a mounting hole's courtyard, where its
+connectors (the user: away from the connectors), and 0.5 mm outside a mounting hole's courtyard, where its
 screw head, washer or standoff sits.  `electronics/tools/silkair.py` measures it on the shapes KiCad plots
 (text ink, outlines); `build_board.py --check` fails on a closer item.  The bay node stays against the rear
 edge 5.25 mm in (clear of H1's screw head), the DATA ×6 19 mm in; the DATA ×4 v2, with no free edge, is 17 mm
 in and 19 mm down.  The camera pod's is the whole block at 0.96 scale (`POD_TITLE_SCALE`: the largest that
-clears H1's screw head, its test pads and their names; decided 2026-11-02), 3 mm along the rear edge.  The
+clears H1's screw head, its test pads and their names; the user, 2026-11-02), 3 mm along the rear edge.  The
 power hub's corner has no spot clear of H2's screw head, VSNS and the UART pads nearer than 26 mm down: its
-block is in the rear face's bottom-left as read from below (as picked), 14 mm in from the side edge and
+block is in the rear face's bottom-left as read from below (the user's pick), 14 mm in from the side edge and
 centred between the front edge and FLT A / IMON A.
 
 The logo is not printable as drawn: the boards on its shelves have pins and chips 1–2 units wide.
@@ -924,9 +922,9 @@ where it didn't matter (e.g. 150k RT, 100k/18k FB).
   turns the bay node's, the power hub's, the DATA port's, the camera pod's and the DATA ×4 v2's into
   `site/assets/pcb/<board>.glb`, each drawn where the rack puts the board; the DATA ×4 v2's GLB is its STEP's, every body, kept whole and
   meshopt-compressed, with a plain copy in `render/assets/pcb` for the renders.  Every board is painted in
-  the rack's solder mask, `config/rack.yaml › pcb.solder_mask` (green since 2026-10-23, black from 2026-10-21: JLC's
-  Economic PCBA takes 4 layers in green only; the colour to tick in the order:
-  [Order the PCBs](plan/order-the-pcbs.md#the-options-of-each-order)); the v2's both faces are painted
+  the rack's solder mask, `config/rack.yaml › pcb.solder_mask` (black since 2026-10-21: JLC's satin black, white
+  silkscreen, the traces showing only by their relief; tick "PCB Color: Black" in the JLC order, free on 2 layers,
+  $8.00 an order on 4, which the BOM adds); the v2's both faces are painted
   from `build/<board>-art.json`, so its base variant's empty footprints show);
 * `build/<board>-3d.json`: which placed parts the 3D export gives a body.
 
@@ -992,8 +990,8 @@ bay node's estimate of 2026-10-19 (below) replaced it there:
 | bay node | 20 PCBs, 4-layer ENIG (JLC adds 5 mm edge rails for Standard PCBA), 16 assembled, Standard | $58.90 | $308.81, of which components $181.21 and feeders $65.10 | **$367.71** |
 | power hub v0.3 (replaced by v0.4) | 5 PCBs, 2-layer ENIG, 2 assembled, Economic | $25.70 | $48.43, of which components $17.56 and extended parts $15.45 | **$74.13** |
 
-**Bay node order: 10 PCBs, lead-free HASL, 10 assembled** (decided 2026-10-19: 8 bays and 2
-spares).  Not re-quoted yet (the full PCBA quote needs a JLC sign-in): `tools/bom.py`
+**Bay node order: 10 PCBs, lead-free HASL, 10 assembled** (the user, 2026-10-19: 8 bays and 2
+spares).  Not re-quoted yet (the full PCBA quote needs the user's JLC sign-in): `tools/bom.py`
 carries an estimate from JLC's current fees, ≈ **$319**.  PCB $19.50 (10 × 74 × 90 mm 4-layer HASL,
 $19.30 read live, the same as at 64 × 90: JLC's offer covers up to 100 × 100 mm; + the 5 mm rails
 Standard PCBA may add; no engineering fee up to 10 PCBs).  PCBA $299:
@@ -1016,7 +1014,7 @@ ESP32-S3 module, so it needs Standard PCBA, with X-ray, like the bay node.
 Two parts were out of stock that day:
 - **TCAN1462V (U6), LCSC C7399456.**  Quoted as its documented alternate, NXP's TJA1462AT/0Z
   (C3234095, 10 500 in stock): same SOIC-8 pinout, signal improvement kept, bus pins −36 / +40 V
-  instead of ±58 V.  Both boards take it since (hub U6, node U11; decided 2026-10-19), and the
+  instead of ±58 V.  Both boards take it since (hub U6, node U11; the user, 2026-10-19), and the
   TCAN1462V stays an alternate.
 - **AP33772S FA01 (U1).**  LCSC has 0 (the FA02 is out until ≈ 14/12/2026), so it was left out of the
   quote.  It comes through JLC Global Sourcing from DigiKey: 5 parts with JLC's reported ≈ 50 % markup,
@@ -1025,7 +1023,7 @@ Two parts were out of stock that day:
 `tools/bom.py` carries the quote plus that U1 line, ≈ $243.  The estimate before was ≈ $227: X-ray
 cost less than estimated, feeders more.
 
-That was found dear.  What JLC charges for, checked on its calculator (2026-10-19, 5 boards,
+The user found that dear.  What JLC charges for, checked on its calculator (2026-10-19, 5 boards,
 4 layers):
 - **The $25 engineering fee comes from the length.**  At 86 × 100 mm (the rails included) JLC's
   4-layer offer applies: $8 instead of $25 + $7.50.
@@ -1069,7 +1067,7 @@ current limit and IMON, the CH224A's CFG1, the buck's FB).
 | CAN | 2: TJA1462AT, PESD2CAN |
 | shared | 13: 100n, 47n, 1 µF 0805, 10 µF 1206, green LED, USB4105, B5819W (the buck's OR), 1k, 100k, 10k, 5.1k, 56 Ω, 18k |
 
-**All four rows are fitted** (decided 2026-11-01: a third row is coming).  From 2026-10-23 rows C
+**All four rows are fitted** (the user, 2026-11-01: a third row is coming).  From 2026-10-23 rows C
 and D were DNP: their eFuses U13 / U14, row connectors J4 / J5 and front LEDs D13 / D14 (ON),
 D23 / D24 (FAULT).  JLC's quote of 2026-10-23 left them out; `JLC_SINCE_QUOTE` adds them back
 (+$9.46 of parts and +$0.32 of joints for the 2 hubs, no part type more).
@@ -1112,7 +1110,7 @@ extended part types (C295747, C265405, ≈ $3 loading fee each per order), ≈ +
 board over the through-hole ones, and nothing left to solder by hand on the node.  Rev 0.5 (the rack
 bus) turns J1/J2 into the 6-pin S6B (C265405, already the AUX connector: no new type) and adds three
 extended part types, the CAN transceiver (TCAN1462V, C7399456, then the TJA1462AT, C3234095, when it ran out; alternate TCAN1044AV, C3234993), the PESD2CAN (C75176) and the BAT54S (C7420333).
-Its USB-C receptacles become the GCT USB4105-GF-A-120 (C5184243, the part chosen for the
+Its USB-C receptacles become the GCT USB4105-GF-A-120 (C5184243, the part the user chose for the
 hub: 5 A on VBUS), one extended type for another.  In all ≈ +$9 of loading fees per order and
 ≈ +$2.38 of parts per board, $1.44 of it for the two GCT receptacles.  `JLC_SINCE_QUOTE` in
 `tools/bom.py` adds both to the node's order: ≈ **$387.73** for 16 assembled nodes, against

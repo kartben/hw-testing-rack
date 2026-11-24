@@ -45,7 +45,7 @@ dut_port1: dut-port-1 {
 ```
 
 The expanders' pins come up as inputs.  On DATA ×4 each EN is pulled down
-(decided after the PCBA review, 2026-10-19): four ports at
+(the owner's decision after the PCBA review, 2026-10-19): four ports at
 0.50–0.62 A each would trip the node's 1.34–1.52 A switch, so every port
 stays off until the firmware switches it on within the bay's budget
 ([Power budget](#power-budget)).  That is the one exception to the
@@ -104,19 +104,23 @@ included, each board's ports grouped under its own node (`data_x4`,
 
 ## Names and USB/IP
 
-How a sub-slot is named, its busid on each DATA board, the hidden hub and what a client sees when a board
-goes and comes back: [Bays, ports and addresses](use/names.md) and
-[USB/IP and flashing](use/usb-and-flashing.md).
-
-- The node knows its position from the rack bus (`bay_rack_position()`), its
-  ports from the devicetree.
+- A sub-slot is the bay's position plus its port: `A1.2`.  The node knows
+  its position from the rack bus (`bay_rack_position()`), its ports from the
+  devicetree.
 - **busid.**  Zephyr's USB/IP names a device `1-<address>`, the address the
   host gave at enumeration: it changes when a board re-enumerates, and two
   boards that reset together can swap.  The node names it by where it is
   plugged instead, as Linux does: `1-1.<hub port>` (root port 1, then the hub's
-  port).  The DATA ×6's `data-x6.dtsi` gives sub-slot 1 `hub-port = <6>` and
-  sub-slot n `hub-port = <n − 1>` (`electronics/data-port-x6/design.py`, hub
-  sheet); leases go up to port 6 (`ACL_MAX_PORTS`, `hwtr/acl.h`).
+  port), so `A1.2` is always the same busid.  A one-board node keeps `1-1`.
+  On DATA ×4 hub port n is USB-C n.  The DATA ×6 wires port 1 to hub port 6
+  and port n to hub port n − 1 (`electronics/data-port-x6/design.py`, hub
+  sheet), so its `data-x6.dtsi` gives sub-slot 1 `hub-port = <6>` and
+  sub-slot n `hub-port = <n − 1>`; leases go up to port 6 (`ACL_MAX_PORTS`,
+  `hwtr/acl.h`).
+- **The hub is hidden** from `usbip list`; only the boards are exported.
+- **A board that disconnects** ends its USB/IP session (the client sees a
+  detach); when it comes back, it is listed again under the same busid, and
+  `bayctl attach --follow` re-attaches it.
 - **Sessions.**  `CONFIG_USBIP_DEVICES_COUNT` is 6 with PSRAM (a DATA ×6's
   six boards; a DATA ×4's four, its co-processor and a spare): one thread and
   a 2 KB stack each.
@@ -130,11 +134,14 @@ not yet on a node or behind a real hub.
 
 ## Per-port state
 
-What each port reports, and the words for its states:
-[Bay node HTTP API](reference/node-api.md#ports-of-a-data-board) and
-[States and error messages](reference/states-and-messages.md#a-ports-states).  `dut.c` stays the bay's
-DUT_5V; `ports.c` adds the DATA board's ports, and a one-port node answers `/api/ports` with its one DUT as
-port 1.
+Each sub-slot gets what the single DUT has today: power on / off / cycle, a
+latched fault, its current (V, mA, mW), RESET and BOOT pulses (a DATA ×4's
+ports; a DATA ×6's have none), its USB device (VID:PID, product, serial,
+busid) and the USB/IP client attached.  `dut.c` stays the bay's DUT_5V;
+`ports.c` adds the DATA board's ports, and a one-port node answers
+`/api/ports` with its one DUT as port 1.
+
+![USB devices card on a DATA ×4 bay (B3.1–B3.4): per-port power, reset, bootloader, current, lease state and board target; B3.4 queued until the bay has room](img/web-ui-ports.png)
 
 ## Power budget
 
@@ -157,8 +164,12 @@ port 1.
 > the eFuse's 1.76 A.  A port that waits for power, or that was shed, stays wanted and comes back in
 > turn once there is room; the API and the page show it as waiting (shed), and STATUS tells the hub
 > how many wait.  A request the budget refuses (409) is not queued, as on the first design, unless it asks to
-> be: how to ask for a port as soon as there is room, from the page, `bayctl` or HTTP, is on
-> [Power budget and queued ports](use/power-budget.md#ask-for-power-as-soon-as-there-is-room).
+> be: `{"action": "on", "when": "available"}` answers 202 and the port waits in its turn, in the same
+> order as the others, until it goes on by itself (logged: queued, started); an `off` or
+> `{"action": "cancel"}` withdraws it (logged: cancelled).  On the page, the port's **As soon as
+> possible** box next to Power on; a queued port shows **Queued** and a Cancel button.  From a
+> script: `bayctl power B3.4 on --when available` (or `--wait SECONDS`), `bayctl power B3.4 cancel`
+> ([ci.md](ci.md#by-hand)).
 >
 > **What that guarantees on v1.0, with the DATA ×4 v2:** the board draws ≈ 0.4 A at 5 V with four
 > High-Speed ports busy, ≈ 0.53 A at worst (0.51 A through U3, the 3.3 V LDO that feeds the hub, the
@@ -170,6 +181,8 @@ port 1.
 > the v2's own worst case, so a port goes on there only with the board near its typical draw, and runs
 > at ≲ 110 mA.  Without a grant (25 W), all four at 500 mA.  Without the node's meter the board counts
 > as `CONFIG_BAY_PORTS_BOARD_MA`, 550 mA on v1.0.
+>
+> ![Power card on a v1.0 bay: DATA_VIN, the bay's draw, the hub's grant and a port waiting for power](img/web-ui-budget.png)
 
 - **Per port**, a TPS2553-1: limit ≈ 0.48–0.58 A, 7.5 ms deglitch, then
   latched off until EN toggles.  The firmware reports the port's fault and
@@ -259,8 +272,7 @@ its state the mask of the Y lines (buses) it joins; `port_pins` in
 On top, `/api/wires` (`src/wires.c`, since 2026-11-03; not tried on
 hardware) puts any pin on one bus and keeps the first three rules below.
 The RP2350B drives the buses' pull-ups; that firmware is not written yet.
-Both keep the node's rule: nothing drives an unpowered board.  What the rules mean for someone who wires
-boards, and the `bayctl wire` and `/api/wires` commands: [Wires between boards](use/wires.md).
+Both keep the node's rule: nothing drives an unpowered board.
 
 - The matrix switches stay open while their port is off (MX_RST high, the
   default until the node writes the TCA9534A), and open when it goes off.
@@ -277,21 +289,33 @@ boards, and the `bayctl wire` and `/api/wires` commands: [Wires between boards](
 
 ## REST API
 
-Every route, its body, the right it needs and its status codes: [Bay node HTTP API](reference/node-api.md).
+| Endpoint | |
+|---|---|
+| `GET /api/ports` | `[{"slot": "A1.2", "port": 2, "hub_port": 2, "power": {...}, "fault": ..., "usb": {"vid": ..., "pid": ..., "product": ..., "busid": "1-1.2"} \| null, "usbip": {"client": "10.0.4.17"} \| null, "lease": ...}]` (`port` is the sub-slot, USB-C n; `hub_port` is n on DATA ×4, 6 for port 1 and n − 1 for port n on DATA ×6) |
+| `POST /api/ports/<n>/power` | `{"action": "on" \| "off" \| "cycle", "ms": 1000}`; 409 when the bay's budget has no room for it ([Power budget](#power-budget)); `{"action": "on", "when": "available"}` queues it instead (202), `{"action": "cancel"}` withdraws that |
+| `POST /api/ports/<n>/reset`, `/boot` | as today, for one port; `/boot` with `{"power_cycle": true}`: BOOT held across a power cycle of the port instead of a RESET pulse (a board whose RESET is not wired: [the analyzer](#a-logic-analyzer-in-a-sub-slot)) |
+| `GET /api/status` | adds `ports` (the same objects, shorter) and `data_board`: `"x4"`, `"x6"`, `"unknown"` or `null` |
+| `/api/power`, `/api/reset`, `/api/boot` | unchanged on a one-port node; on a multi-port node they need `"port": n` (409 without) |
+| `GET /api/boards`, `GET` / `PUT /api/ports/<n>/board` | each sub-slot's Zephyr board target (board, runner, probe id, console), saved on the node for the board in it ([firmware/README.md › Board targets](../firmware/README.md#board-targets)) |
+| `/metrics` | the DUT metrics labelled `port="A1.2"` |
+| `GET /api/coproc` | the DATA ×4 co-processor's stored image: `{"image": {"name": "gusmanb 6.0", "size": 126272, "addr": "0x20000000", "sha256": ...} \| null, "upload": "idle", "error": null, "load": {"state": "loaded", "loads": 3, "failures": 0, "last_ms": 380, "error": null}}` (`state`: idle, loading, started, loaded, failed, `left to USB/IP`); also in `/api/status` as `coproc` |
+| `GET /api/wires` | the pin matrix: `{"matrix": true, "error": null, "names": ["UART B3.2 TX", "", …], "pins": [{"port": 2, "pin": 1, "bus": "A", "closed": true}, …], "ports": [{"port": 1, "on": true, "vref_mv": null, "held": false}, …]}`: each bus's name (A–H, the analyzer's CH1–8), the pins asked for and whether their switch is closed now, each port and whether its pins are held open (off, or VREF under 0.65 V) |
+| `POST /api/wires` | `{"pins": [{"port": 2, "pin": 1, "bus": "A"}, …], "names": [8 strings]}` (Control right): the pins from now on, each on one bus, every other pin off the buses (`"pins": []` opens them all); the names if given.  Break-before-make: every switch that opens does before any closes.  A port whose pins change must not be leased to another address (423).  → the same as GET, plus `"changed"`: the switches moved |
+| `GET /api/analyzer`, `POST /api/analyzer` | the co-processor's logic analyzer (1209:3020 on its hub port): `{"owner": "page", "present": true, "busid": "1-1.5", "page": {"ip": "10.0.0.7", "since_s": 42} \| null, "from_device": 393221, "to_device": 53, "dropped": 0, "error": null}`.  `POST {"owner": "page" \| "usbip"}` (Control right) hands it to the bay page or to USB/IP (gusmanb's desktop app, PulseView) at once, without a re-plug; a page connected is closed.  Also in `/api/status` as `analyzer` |
+| `GET /analyzer/ws?t=` | the bay page's end of the analyzer: binary WebSocket messages both ways, gusmanb's protocol byte for byte (the page speaks it, `firmware/common/web/analyzer`).  The ticket comes from `POST /api/console/ticket` (Console right).  One page at a time: the same address takes it over (a reload), another gets refused |
+| `POST /api/coproc/begin`, `POST /api/coproc?ticket=` | admin: a new image into the node's `coproc` partition, as the firmware updates (the hash and the admin signature on `begin`, the body with the ticket): a 64-byte header (`struct coproc_hdr`, `src/bay.h`), then the bytes for the co-processor's SRAM.  Refused if it is not an RP2350 Arm image wholly in its SRAM (a `no_flash` build) or larger than the partition; the old image is gone once an upload starts |
 
 ## Access control and leases
 
-How to reserve a bay or a port, and what each kind stops: [Reserve a bay](use/reserve-a-bay.md).
-
+- The services stay (status, control, console, usbip, shell, camera).
+- **A lease takes sub-slots**: `{"ttl_s": 3600, "ports": ["A1.2"]}` (no
+  `ports`: the whole bay, as today).  Control of a leased port, and its
+  USB/IP import, belong to the holder; the other ports stay free.
 - USB/IP shares one TCP port (3240) for every board, so the per-port check
-  cannot be the packet filter: the node would check at **import** time (the
-  busid names the port).  That needs a policy hook in Zephyr's USB/IP service,
-  not written: a port's lease does not cover its USB/IP import today.
+  cannot be the packet filter: the node checks at **import** time (the busid
+  names the port).  That needs a policy hook in Zephyr's USB/IP service.
 
 ## Rack bus (CAN)
-
-Not built: function 0x7 went to the hub's GRANT (`RACK_FN_GRANT`, `hwtr/rack_proto.h`), and
-`RACK_PROTO_VERSION` is still 1.
 
 - **STATUS** keeps the node's totals (the sum of the currents, flags ORed),
   so a hub that does not know ports still shows the bay; a new byte 6 bit,
@@ -308,9 +332,15 @@ Not built: function 0x7 went to the hub's GRANT (`RACK_FN_GRANT`, `hwtr/rack_pro
 
 ## Tools
 
-A port's board target, its keys in the lab file and the `bayctl` commands that name it:
-[Board targets](use/board-targets.md), [config/lab.yaml](reference/lab-yaml.md) and
-[bayctl](reference/bayctl.md).
+- Each sub-slot's board target lives on its node (`GET /api/boards`, set
+  on the page), and the node says how many ports it has; `config/lab.yaml`
+  only overrides, by sub-slot (`bays: {A1.2: {runner: openocd}}`).
+- `bayctl attach A1.2` asks `bay-a1.local/api/ports` for port 2's busid and
+  runs `usbip attach -r bay-a1.local -b 1-1.2`; a new `--follow` re-attaches
+  after a reset.  `bayctl power A1.2 cycle`, `bayctl reset A1.2`; a bare
+  `A1` still means the whole bay.
+- `bayctl hwmap` and the labgrid / twister exports: one target per sub-slot
+  (the twister map leaves [the analyzer](#a-logic-analyzer-in-a-sub-slot) out).
 
 Done on the tools side (2026-10-19), against the simulated node: a bay's
 `boards:` in `config/rack.yaml` (`tools/rackcfg.py` › `dut_slots`,
@@ -470,9 +500,9 @@ string of a port's USB device.
    `/analyzer/ws`, with `/api/analyzer`.
 2. `bayctl capture`, against it: `.sr` and sigrok-cli decoding, the decoders' CI oracle.  Done differently
    (2026-11-04): the page's own decoders on Node, saved in the page's capture file
-   ([Logic analyzer](use/logic-analyzer.md)), so the command line and the viewer agree.
+   ([firmware/README.md](../firmware/README.md#logic-analyzer)), so the command line and the viewer agree.
 3. The web UI's "Analyzer" card: a canvas viewer and JS decoders.  Done (2026-11-03): the bay
-   page's Logic analyzer card ([Logic analyzer](use/logic-analyzer.md)), with
+   page's Logic analyzer card ([firmware/README.md](../firmware/README.md#logic-analyzer)), with
    Capture and reset on the node's MARK.
 4. The node's USB host class and gusmanb client, written from a protocol description (no GPL code
    copied).  A mode switch between that client and the USB/IP export.  Done differently for the

@@ -202,7 +202,7 @@ ASSEMBLY_WRAPPERS = {
 LADDER_UP = "multmatrix([[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]])"
 BRACE_UP = "multmatrix([[1, 0, 0, 0], [0, 0, -1, PR + BRACE_T], [0, 1, 0, 0], [0, 0, 0, 1]])"
 
-LAYER_H = 0.2       # mm, docs/print/printer-and-settings.md › Slicer settings
+LAYER_H = 0.2       # mm, docs/mechanical.md › Printing
 
 
 def print_up(name: str) -> list[int]:
@@ -351,8 +351,8 @@ def board_screen(bd: dict) -> dict | None:
 # area (42.72 × 22.70 mm: Waveshare's 1.9" LCD), at rack.yaml › drawer.display.active in the glass
 SCREEN_PX = (320, 170)
 SCREEN_AREA = (42.72, 22.70)
-# what each board draws in the bay's illustration, mA: the bayctl listing of docs/use/set-up-your-machine.md where
-# it has one, else a typical idle draw (the notes' DUT current survey); a DATA ×4's own hub on top of its ports'
+# what each board draws in the bay's illustration, mA: docs/ci.md's bayctl listing where it has one, else a
+# typical idle draw (the notes' DUT current survey); a DATA ×4's own hub on top of its ports'
 SCREEN_MA = {"nucleo-64": 92, "nucleo-144": 88, "giga-r1-display": 210, "xiao": 41, "rpi-pico2": 13,
              "beagleplay": 420, "wio-terminal": 120, "arduino-nano-matter": 15, "arduino-uno-r4": 38}
 SCREEN_ANALYZER_MA = 23
@@ -361,8 +361,8 @@ SCREEN_HUB_MA = 60
 
 def front_status(rack, bid: str, info: dict) -> dict:
     """What a bay's front display shows (display.c's refresh(): its position, address, the DUT rail, a DATA ×4's
-    ports, USB/IP sessions and the data path), as the viewer's illustration: the addresses of the bayctl listing
-    in docs/use/set-up-your-machine.md (row A from .61, row B from .77), every board powered and healthy."""
+    ports, USB/IP sessions and the data path), as the viewer's illustration: the addresses of docs/ci.md's
+    listing (row A from .61, row B from .77), every board powered and healthy."""
     row, n = ord(bid[0]) - ord("A"), int(bid[1:])
     slots = rack.duts(bid)
     ma = lambda sl: SCREEN_ANALYZER_MA if sl.role == "analyzer" else SCREEN_MA.get(sl.board, 50)
@@ -739,7 +739,7 @@ def camera_lead(j6, x0, row_h, tilt, lens, mount, depth, cp):
     b0 = (lx - (cp["leds"][0] + cp["leds"][-1]) / 2, ly + POD_SLEEVE_Y / 2 + 0.5)    # the board's KiCad origin
     board = lambda kx, ky, z: pod((b0[0] + kx, b0[1] + ky, z))
     p0, d = plug_exit(j6)
-    xs, top = x0 + 76.0, up_z - 2.0       # the rear slot's right end: 30 mm from the node's antenna (docs/build/camera.md)
+    xs, top = x0 + 76.0, up_z - 2.0       # the rear slot's right end: 30 mm from the node's antenna (cabling.md)
     zr = 12.0                                         # along the plenum floor, through the rear slot
     yc = depth + 2.5                                  # the climb, just behind the tray's rear wall
     j1 = board(cp["size"][0], cp["lead"], POD_FACE_Z - 2.8)
@@ -1874,7 +1874,7 @@ def build(rack) -> Path:
             x0u, x0n = rack.unit_x(u), rack.unit_x(u + 1)
             xa = x0u + node["x0"] + node["size"][0]
             xb = x0n + node["x0"]
-            for k in range(6):                                    # JST's pre-crimped leads: all black (docs/build/row-cables.md)
+            for k in range(6):                                    # JST's pre-crimped leads: all black (docs/cabling.md)
                 col = DUPONT_COLOURS["black"]
                 y = vy + 5 - 2 * k                                # JST PH, 2 mm pitch, 24 AWG
                 yf = 4.4 + 0.85 * (5 - k)                         # bunched at the front: 4.4–8.65

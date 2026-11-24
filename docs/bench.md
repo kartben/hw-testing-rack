@@ -28,7 +28,7 @@ does), the muxes or the eFuses.
 
 ## Building and flashing
 
-From a west workspace made from `firmware/west.yml` ([Build or download the firmware](build/get-the-firmware.md)), `<board>` being
+From a west workspace made from `firmware/west.yml` (firmware/README.md, Building), `<board>` being
 `m5stack_cores3/esp32s3/procpu` or `xiao_esp32s3/esp32s3/procpu`:
 
 ```
@@ -155,7 +155,7 @@ in the box).  Without it, `wifi scan` shows the access point around −90 dBm an
 fails with "Connection timeout".  Keep the antenna 30–50 cm from a USB 3 hub: right next to one (a
 Genesys USB 3.1 hub with its card reader), the node kept losing its Wi-Fi ("AP not found") and its
 USB host saw transaction errors.  The node transmits at 11 dBm on 20 MHz channels (`radio`); the
-AP's setup for a rack is in [Wi-Fi in the rack](use/wifi.md#one-access-point-one-fixed-channel).
+AP's setup for a rack is in [firmware/README.md › Wi-Fi in the rack](../firmware/README.md#wi-fi-in-the-rack).
 
 **Its USB-C in host mode.**  On Seeed's schematic the USB-C's VBUS is the 5V pin, with nothing between
 (the diode sits between VBUS and the regulator) and 5.1 kΩ Rd on CC: the XIAO never sources VBUS.  So

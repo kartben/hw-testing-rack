@@ -1,4 +1,4 @@
-// Standalone bays (docs/build/one-bay-on-a-desk.md): one bay out of the rack, on a desk.  The boards are the rack's own, as they
+// Standalone bays (docs/standalone.md): one bay out of the rack, on a desk.  The boards are the rack's own, as they
 // are: the bay node, the single DATA port board or the DATA ×4 v2.  A bought USB-C PD trigger module fixed at 20 V
 // (config/rack.yaml › standalone.pd_module) feeds the node's J1 in place of the power hub.
 //
@@ -14,8 +14,8 @@
 // Front: the node's PC port, SERVICE switch and status window, as on the tray's fascia, and the DUT port(s).
 // Rear: the PD module's USB-C; the wall thinned to 1.2 over the node's antenna.  Lid: RESET / BOOT pin holes over
 // guide tubes, a window over J6 (the camera lead plugs in from above), vents over the node's buck.
-// Print: bases upright, lids top face down, the shelf and the frame flat; PETG, no supports (docs/print/printer-and-settings.md ›
-// Slicer settings).  4 × M3 × 8 into heat-set inserts hold each lid, as many the node.
+// Print: bases upright, lids top face down, the shelf and the frame flat; PETG, no supports (docs/mechanical.md ›
+// Printing).  4 × M3 × 8 into heat-set inserts hold each lid, as many the node.
 include <../lib/carrier.scad>
 
 PART = "solo_base";

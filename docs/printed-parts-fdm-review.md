@@ -1,11 +1,11 @@
 # Printed parts: FDM printability review
 
-**Status (2026-10-21): the approved items are in: 1, 2, 3, 4, 5 and 7; 6 and 8 declined (the profile's
+**Status (2026-10-21): the user's yeses are in: items 1, 2, 3, 4, 5 and 7; 6 and 8 declined (the profile's
 hole and elephant-foot compensations cover them).  Two deviations: item 3's foot at x 95 stands at y 179, forward
 of the third boss (at the bosses' line it would stand on it); item 7's 45° ceiling is the label recess's top
 edge: the finger pull's notch opens upwards and has no ceiling, the 233 mm of overhang wall at z 18–20 is the
-recess's 0.9 mm top over its 116 mm (twice, one per perimeter).  Earlier: findings only, each item a yes or a no,
-the mechanical design implementing the yeses.  Covers the covers too (cover_lid1, cover_box4, and the pockets they click into in the
+recess's 0.9 mm top over its 116 mm (twice, one per perimeter).  Earlier: findings only, each item a yes/no for
+the user, Mechanics implementing the yeses.  Covers the covers too (cover_lid1, cover_box4, and the pockets they click into in the
 drawer and the port block): sliced from the STLs of the commit that added them.**  Companion to
 [printed-parts-review.md](printed-parts-review.md) (design review): this
 one asks what the printer will make of each part.  Every STL of `main` (30 parts, in the orientation
@@ -18,7 +18,7 @@ fill, brim) clustered by layer band and 15 mm cell so each feature has a place, 
 auto-orient applied.  Then the part geometry against the usual FDM rules: layer direction versus load,
 overhangs past 45°, horizontal holes, bridges over pockets, insert and sliding clearances, elephant's foot,
 wall widths, text depth, warping.  The slicer settings used, the per-run results, the cluster analysis and
-the close-ups were kept outside the repository (160 MB of G-code).
+the close-ups are in the review session's notes (not in the repo: 160 MB of G-code).
 
 What the slicer says, in one line: **every designed orientation is the one the auto-orient picks**, gap fill
 is zero everywhere (Arachne walls: no wall is a bad multiple of the line width), and **three parts get a
@@ -179,6 +179,6 @@ its clearance, the sliding face is unaffected, and the first printed tray tells.
 - Material: PETG stays.  PLA bridges and overhangs better (items 1 and 5 would matter less) but creeps
   under the drawer's load and softens near the PSU; the clips were sized for PETG.
 - Camera pod lips: still rigid 0.8 mm bending across the layers; already decided in the design review
-  (side-hinged tab), pending in the mechanical design.
+  (side-hinged tab), pending with Mechanics.
 - Tray left guide: its gusset moved off the node's C1; the span it leaves is item 9.  Items 1 and 5 are on
   the runner and the rear wall, not the guide.

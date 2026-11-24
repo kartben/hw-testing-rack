@@ -1,9 +1,9 @@
 # RJ45 row cable: feasibility (research, 2026-10-22)
 
-The idea: carry the row bus on Ethernet Cat5e patch cords instead of the 6-pin JST PH cables.
+The user's idea: carry the row bus on Ethernet Cat5e patch cords instead of the 6-pin JST PH cables.
 The row bus is VRACK, GND, CAN_H, CAN_L, GND and POS (docs/can.md).  A study, no change yet.  This
-document covers the electrical side and the verdict; the mechanical side is
-[rj45-row-cable-mechanical.md](rj45-row-cable-mechanical.md).
+document covers the electrical side and the verdict; the mechanical side is Mechanics'
+([rj45-row-cable-mechanical.md](rj45-row-cable-mechanical.md)).
 
 ## Verdict
 
@@ -63,7 +63,7 @@ No 8P8C without magnetics is a JLC basic part.  The candidates (sizes from JLC's
   and checks, plus the switched OUT (section 4).
 - **Hub B1:** four jacks at 17.5 mm pitch down the left edge fit (14.7 mm each).  The re-placement and
   the probe circuit take ≈ 1 day.
-- **Mechanics** ([its study](rj45-row-cable-mechanical.md)), its verdict: "Mechanically it fits.
+- **Mechanics** ([their study](rj45-row-cable-mechanical.md)), their verdict: "Mechanically it fits.
   The jacks go where J1 / J2 / the hub's row connectors are, with no new windows in the trays or
   ladders.  It costs the drawer 12 mm of stroke (140 → 128), the base ladder's diagonal reversed,
   four cut-outs in the power box wall, and 12 cm hop cords made to length.  About 3 days of
@@ -97,8 +97,8 @@ At 0.8 A a conductor this runs above PoE++'s ≈ 0.5 A, but the rack has short, 
 - **Copper:** stranded pure copper ("CU", "BC").  Never CCA (copper-clad aluminium): ≈ 1.6× the
   resistance and brittle.  On arrival, a magnet test or a scratch shows silver.
 - **Gauge:** 24 or 26 AWG.  28 AWG slim cords are fine for the ≤ 0.25 m jumpers; standard Ø 5.5 mm
-  cords route too (the mechanical study), so slim ones aren't needed.
-- **Lengths ([the mechanical study](rj45-row-cable-mechanical.md)):** 12 cm jumpers, made to length: a 0.15 m cord's slack has nowhere to go,
+  cords route too (Mechanics), so slim ones aren't needed.
+- **Lengths ([Mechanics](rj45-row-cable-mechanical.md)):** 12 cm jumpers, made to length: a 0.15 m cord's slack has nowhere to go,
   and stock 0.1 m cords are likely too short for the 92 mm between the mouths.  So the jumpers need
   RJ45 plugs crimped on (a crimper and plugs, ≈ €20), or a cord maker's custom length.  The feeds are
   0.25 / 0.5 / 0.75 / 0.75 m for rows A–D, stock lengths (≈ €1.5–3 each from EU shops that state pure

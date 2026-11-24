@@ -46,7 +46,7 @@ jobs:
       matrix:
         include:
           # The ESP32-S3 builds go through sysbuild: MCUboot, then the application
-          # signed for it (firmware updates over the network, docs/use/update-firmware.md).
+          # signed for it (firmware updates over the network, docs/firmware.md).
           # CI has no signing key: these images are signed with MCUboot's public
           # TEST key (the build says so), fine to try on a desk, not for a rack.
           - name: bay_node

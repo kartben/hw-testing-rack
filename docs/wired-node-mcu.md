@@ -1,6 +1,6 @@
 # A wired bay node: which MCU (research)
 
-**Status (2026-10-24): research only, no board or firmware changed.**  The idea, verbatim: "On
+**Status (2026-10-24): research only, no board or firmware changed.**  The user's idea, verbatim: "On
 faisait du Ethernet classique sur chaque port. Chaque contrôleur se connecterait sur un switch qu'on
 pourrait avoir en bas de la baie. Et du coup, peut-être on pourrait regarder un microcontrôleur qui ne
 soit pas le ESP32 mais pour lequel il y aurait un Ethernet qui est plus facile et plus économique.
@@ -35,7 +35,7 @@ flashes.  "#n" are pull requests on zephyrproject-rtos/zephyr.
 - **Rack side:**
   - a 16- or 24-port switch at the bottom;
   - star home runs of slim Cat6;
-  - a standard 13.5 mm magjack (adapting the tray's height is accepted);
+  - a standard 13.5 mm magjack (the user accepts adapting the tray's height);
   - keep CAN.
 
 ## What the node needs, in order
@@ -170,7 +170,7 @@ of the WROOM-1.
 - PMODE[2:0] left open (internal pull-ups) means auto-negotiation, all modes (p. 10).
 - LINKLED and ACTLED drive the jack's LEDs.
 - It draws 128–132 mA at 3.3 V on a 100 Mbit/s link (p. 60).  The S3 draws less with Wi-Fi off.  The
-  3V3 regulator's margin is to check in the power budget.
+  power-budget session checks the 3V3 regulator's margin.
 
 **Firmware:**
 - `net.c` brings up the Ethernet interface with DHCP and the same mDNS / DNS-SD.
@@ -221,16 +221,16 @@ of the WROOM-1.
 - The RJ-064-1 (C7205199, SMD, shielded, 15.3 × 14.7 × 10.75 mm, $0.34) fits at J1/J2's place.  It
   clears the drawer by 3 mm and the left ledge by 0.5 mm.
 - A 13.3–13.5 mm jack hits the ledge.  That is a standard magjack such as the HR911105A or the
-  HR913550A.  **Adapting the tray's height where needed is accepted** (2026-10-24).  So a standard
+  HR913550A.  **The user accepts adapting the tray's height where needed** (2026-10-24).  So a standard
   magjack (HR913550A, C163507, THT with LEDs, ≈ $0.95) is the default.
 - Without touching the tray: the RJ-064-1 has no magnetics, so a discrete transformer goes beside it.
   The H1102NLT (C18584, Pulse, SMD 12.7 × 7.1 mm, $0.41, 55 k in stock) makes $0.75 for the pair,
   cheaper than the magjack.  A low-profile magjack (Bel L829-1J1T-43, C5271177, ≈ 11.3 mm) costs
   $6.90.
 - Where: the rear edge, where the antenna keep-out (6 mm × ±24 mm) frees room once Wi-Fi goes, or
-  J1/J2's side.  It is an item for the node's design, and the tray's design checks the plug's path.
+  J1/J2's side.  It is a design-session item, and the tray session checks the plug's path.
 
-**A star, no RJ45 daisy chain** (decided 2026-10-24).  Each node has one RJ45, wired to the switch.
+**A star, no RJ45 daisy chain** (the user, 2026-10-24).  Each node has one RJ45, wired to the switch.
 The row cable (VRACK, CAN, POS) stays today's daisy-chained PH 6.
 - That also keeps the one hazard the RJ45 row-cable study found out of the rack: VRACK on an RJ45 that a
   laptop's cord can reach.
@@ -260,7 +260,7 @@ on the bench: if the position chain is the only thing left, a managed switch can
 2. **For wired Ethernet: S3 + W5500.**
    - Bench first: an ESP32-S3-DevKitC-1 (the bench stand-in) with a W5500 board, on the node's pins.
      Measure USB/IP flashing and the camera at the same time.
-   - Then a node revision: the W5500 and its jack, and the Wi-Fi antenna
+   - Then a node revision in the design session: the W5500 and its jack, and the Wi-Fi antenna
      keep-out either kept (Wi-Fi fallback) or freed.
 3. **If a new MCU is wanted later**, in this order:
    1. **ESP32-P4**, once in stock.
@@ -295,7 +295,7 @@ JLC/LCSC prices, 2026-10-24.
 | MCXN947 | FRDM-MCXN947 | $26.25, 0 in stock (13 weeks) | |
 | CH32V307 | CH32V307V-EVT-R1 | not priced | Zephyr board, `netif:eth` |
 
-## To check by hand
+## To check by the user
 
 1. **W5500 crystal load capacitance.**
    - Datasheet v1.1.0, <https://docs.wiznet.io/img/products/w5500/W5500_ds_v110e.pdf>.

@@ -1,15 +1,8 @@
 name: Pages
 
-# The published site: the documentation (Sphinx, docs/) at its root, the interactive 3D model under
-# viewer/ (site/, its assets built here), the logic analyzer page under analyzer/, and under downloads/
-# the files a builder takes away: the STL files in one archive, and each PCB's fabrication files.
-
 on:
   push:
     branches: [main]
-  pull_request:
-    paths: ["docs/**", "site/**", "bom/**", "config/rack.yaml", "tools/bayctl.py", "tools/bom.py", "tools/notice/notice.yaml",
-            "README.md", "CONTRIBUTING.md", "firmware/README.md", "firmware/power-hub/README.md", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages-${{ github.ref }}
+  group: pages
   cancel-in-progress: true
 
 jobs:
@@ -29,60 +22,23 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
-          cache-dependency-path: |
-            tools/requirements.txt
-            docs/requirements.txt
       - name: Python deps
-        run: pip install -r tools/requirements.txt -r docs/requirements.txt
-      - id: pages
-        if: github.event_name != 'pull_request'
-        uses: actions/configure-pages@v5
-
-      # Every warning is an error: a broken link or a missing drawing stops the build.
-      - name: Documentation
-        run: sphinx-build -W --keep-going -b html docs _site
-        env:
-          DOCS_BASEURL: ${{ steps.pages.outputs.base_url }}
-
+        run: pip install -r tools/requirements.txt
       - name: OpenSCAD
         run: sudo apt-get update && sudo apt-get install -y openscad fonts-liberation
       - name: Viewer assets (meshes, scene, BOM)
         # PCB models come from the committed site/assets/pcb/*.glb (KiCad export, see tools/pcb_glb.py)
         run: python tools/build.py web
-      - name: 3D viewer, under viewer/
-        run: |
-          mkdir -p _site/viewer
-          cp -r site/. _site/viewer/
       # The logic analyzer page, as the bay node will serve it (firmware/common/web/analyzer)
-      - name: Logic analyzer page, under analyzer/
+      - name: Logic analyzer page
         run: |
-          mkdir -p _site/analyzer
-          cp firmware/common/web/analyzer/*.html firmware/common/web/analyzer/*.css firmware/common/web/analyzer/*.mjs _site/analyzer/
-      # What the pages link as /downloads/...: every committed STL in one archive, and one archive per PCB with
-      # its fabrication files (Gerbers, the assembly BOM and the placement file, as electronics/<pcb>/fab holds them)
-      - name: Downloads
-        run: |
-          mkdir -p _site/downloads
-          (cd mechanical && zip -q -r ../_site/downloads/bitbunk-stl.zip stl)
-          for pcb in power-hub bay-node camera-pod data-port-x6 data-port-x4; do
-            (cd electronics/$pcb && zip -q -r ../../_site/downloads/$pcb-fab.zip fab)
-          done
-          ls -l _site/downloads
-      # The BOM page was at the site's root before the documentation took it.
-      - name: Old address of the BOM page
-        run: |
-          printf '%s\n' '<!doctype html><meta charset="utf-8"><title>Moved</title>' \
-            '<link rel="canonical" href="viewer/bom.html"><meta http-equiv="refresh" content="0; url=viewer/bom.html">' \
-            '<p>The BOM page is at <a href="viewer/bom.html">viewer/bom.html</a>.</p>' > _site/bom.html
-
+          mkdir -p site/analyzer
+          cp firmware/common/web/analyzer/*.html firmware/common/web/analyzer/*.css firmware/common/web/analyzer/*.mjs site/analyzer/
       - uses: actions/upload-pages-artifact@v3
-        if: github.event_name != 'pull_request'
         with:
-          path: _site
+          path: site
 
   deploy:
-    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-24.04
     environment:

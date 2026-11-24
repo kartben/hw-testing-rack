@@ -1,10 +1,10 @@
 # One rack's Wi-Fi in ns-3: capacity, latency, limits
 
 **Status (2026-10-24): a simulation study, nothing changed in the design or the firmware.**  A
-reviewer holds that Wi-Fi in a rack is a bad idea; it stays for now, and this study puts the risk
+reviewer holds that Wi-Fi in a rack is a bad idea; the user keeps it for now and asked for the risk
 in numbers: airtime, latency, retransmissions and USB/IP goodput, and when one channel stops being
-enough.  How the rack's Wi-Fi disturbs the DUTs' BLE radios is another study (BabbleSim,
-[wifi-coexistence.md](wifi-coexistence.md)).  Wired options for later: W5500 Ethernet, 10BASE-T1S.
+enough.  How the rack's Wi-Fi disturbs the DUTs' BLE radios is another study (BabbleSim, the firmware
+session).  Wired options for later: W5500 Ethernet, 10BASE-T1S.
 
 The scenario, the sweep, the run script and the result CSVs are in
 [`tools/ns3-wifi-capacity/`](../tools/ns3-wifi-capacity/README.md).
@@ -231,7 +231,7 @@ The same three layouts, on the spectrum PHY:
   puts −23 to −35 dBm into the node's channel, against the AP's −49 dBm.  So every one of the node's
   receptions that overlaps a DUT frame fails, and nothing makes them take turns, since neither hears
   the other.  Control requests then take seconds, TCP retransmits, and some nodes starve.
-- **On the rack's channel they share by carrier sense**, as [use/wifi.md](use/wifi.md#boards-that-use-bluetooth-or-wi-fi-themselves) says: at 8 flashes
+- **On the rack's channel they share by carrier sense**, as architecture.md says: at 8 flashes
   258 kB/s per node and 150 ms at p95, with every node served.
 - **Moving the rack away from the neighbour's BSS still helps.**  The neighbour is 12 m away, and its
   leakage is negligible.
@@ -417,9 +417,9 @@ At MCS 11 with 16 bays, single-user gets 362 kB/s at 12 flashes and 266 at 16; O
   The protocol set and the HE features are the binary blob's defaults.
   - hal_espressif has DL OFDMA reception statistics and TB PPDU structures.
   - Whether the C5, C6 or S31 blob answers trigger frames (UL OFDMA) by default is in "To check by
-    hand" below, as is those clients' HE-MCS cap.
+    the user" below, as is those clients' HE-MCS cap.
 
-### To check by hand (Wi-Fi 6)
+### To check by the user (Wi-Fi 6)
 
 1. **The HE-MCS cap of an ESP32-C6, C5 or S31 client**, in HE20, 1 spatial stream.
    - Espressif datasheets: <https://www.espressif.com/en/support/documents/technical-documents>
@@ -480,7 +480,7 @@ At MCS 11 with 16 bays, single-user gets 362 kB/s at 12 flashes and 266 at 16; O
 1. **A dedicated AP for the rack, on 6 or 11, never 1** (the hub PLL's harmonic sits at 2.400 GHz).
    - Pick the channel where no neighbour is heard.  Moving the rack off a neighbour's BSS is worth
      doing.
-   - **The DUTs' Wi-Fi inside the bays goes on the rack's channel**, as [use/wifi.md](use/wifi.md#boards-that-use-bluetooth-or-wi-fi-themselves) says.  At 3 cm
+   - **The DUTs' Wi-Fi inside the bays goes on the rack's channel**, as architecture.md says.  At 3 cm
      a neighbouring channel leaks more into the node than the AP's signal, so neither side defers and
      the node's receptions fail: control requests take seconds (near-field pass).  On the same channel
      they take turns.

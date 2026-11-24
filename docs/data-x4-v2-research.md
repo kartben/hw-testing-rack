@@ -1,9 +1,11 @@
 # DATA ×4 v2: virtual wires, a co-processor, two assembly variants (research)
 
-**Status (2026-10-19): research only, nothing designed.**  What was asked: real electrical links
-between the four boards of a converted bay, switched from the web UI, a built-in logic analyzer with a
-web UI, sized "to the maximum we can handle", then a co-processor ("pourquoi pas de coprocessor ?")
-and an assembly variant without the analyzer.  v1 ([electronics.md](electronics.md), "DATA ×4, first design") is the base: v2
+**Status (2026-10-19): research only, nothing designed.**  The user asked for real electrical links
+between the four boards of a converted bay, switched from the web UI, for a built-in logic analyzer with a
+web UI, sized "to the maximum we can handle", then for a co-processor ("pourquoi pas de coprocessor ?")
+and for an assembly variant without the analyzer.  The illustrated version (UI mock, to-scale placement,
+tables) is the page [Fils virtuels et analyseur](https://claude.ai/artifact/DeudMxKuwkSjVR6naQZj55)
+(French, private to the owner).  v1 ([electronics.md](electronics.md), "DATA ×4, first design") is the base: v2
 only adds to it.
 
 ## Proposal
@@ -97,12 +99,12 @@ the cards.
 * Concept placement (courtyards, checked for overlaps per side, not routed): top keeps all of v1 plus the
   headers, LSF0108s, ESD and arrays (52 % of the board); bottom takes the two CH446Q, the charge pump,
   the TCA9534A and the RP2354B block (21 %).  The four holes move, so do the drawer's bosses
-  (`DATA_X4_HOLES`, the tray's design).  Single-sided would need ≈ 108 × 35 mm, which does not fit.
+  (`DATA_X4_HOLES`, tray session).  Single-sided would need ≈ 108 × 35 mm, which does not fit.
 * The rule "no tracks on inner layers" leaves two routing layers for 32 pins, 8 buses and the
   co-processor's USB: the main design risk.  Each CH446Q under its two ports, a straight via from the
   translator above, buses on the bottom; fallback 6 layers (signal/GND/signal/signal/power/signal).
 * The Dupont jumpers leave the rear headers upwards and over the port wall: the headroom above the rear
-  bay is to be checked with the tray's design.
+  bay is to be checked with the tray session.
 
 ## Cost of the full variant
 
@@ -113,12 +115,12 @@ pull-ups and dividers $0.8, TCA9534A $1.4, headers and passives $0.5.  To be con
 
 Recommended: v1 validates everything v2 keeps (hub behind the FS host, per-port power and measurement,
 EN/FAULT/RESET/BOOT, USB/IP of 4 DUTs, the rear-bay mechanics, the PH 8 lead), for about the price of the
-future base variant; v2 still needs designing, the bosses moved and, for the full variant, a dearer
+future base variant; v2 still needs a design session, the bosses moved and, for the full variant, a dearer
 Standard order.
 
 ## Second pass: checks and findings (2026-10-19)
 
-A second pass checked what the first left open.  Nothing above changes
+A second session took the research over and checked what the first left open.  Nothing above changes
 except where noted.
 
 ### USB host channels (affects v1 too)
@@ -160,10 +162,10 @@ RST pulled up until the node configures.  LCSC C109471 $1.59, 1,744 in stock, Ec
 (SG Micro, an MT8816 second source): 0 in stock, $10.9.  The speed estimates above hold: I²C at
 400 kHz with 2.2 k gives V_OL ≈ 0.6 V at the far board (limit 0.99 V at 3.3 V).
 
-### Matrix alternatives: CH449F, CH446X (question of 2026-10-19)
+### Matrix alternatives: CH449F, CH446X (user question, 2026-10-19)
 
-WCH's CH449F and CH446X, checked.  Datasheets: CH449DS1 v1.1 (2022-05-23, wch.cn file 350),
-CH446DS1.  Prices are LCSC figures at 10 pieces, given with the question; stock from the JLC parts library the same day.
+The user asked about WCH's CH449F and CH446X.  Datasheets: CH449DS1 v1.1 (2022-05-23, wch.cn file 350),
+CH446DS1.  Prices are the user's LCSC figures at 10 pieces; stock from the JLC parts library the same day.
 
 | | CH446Q × 2 (kept) | CH449F × 8 (same 32 × 8) | CH446X × 4 |
 |---|---|---|---|
@@ -179,7 +181,7 @@ CH446DS1.  Prices are LCSC figures at 10 pieces, given with the question; stock 
 | Control | serial DAT + CK shared, one STB per chip, no address (the node's TCA9534A, 17 writes per crosspoint); state at power-up unspecified, RST held | I²C-like, write only, one ADDR pin: **2 chips per bus** (0x19–0x1B, 0x29–0x2B; free on the node's bus); 8 chips need a TCA9548A mux; one write sets a whole 4 × 4; power-on and low-voltage reset open everything | as CH446Q |
 | JLC (2026-10-19) | C109471, 1,744 in stock, Extended, Economic | C54973457, 377 in stock (≈ 47 boards), Extended, Economic | C3018882, 42 in stock, Extended |
 
-The question's summary is half right: ≈ 5 Ω is typical at 0 V, but the 28 Ω is the CH449F's maximum at
+The user's summary is half right: ≈ 5 Ω is typical at 0 V, but the 28 Ω is the CH449F's maximum at
 **VDD = 3.3 V** with a 2 V signal (typical 20 Ω).  At VDD = 5 V it stays ≤ 15 Ω over our 0–3.4 V.
 
 Speed, with the same Elmore assumptions as above: the CH449F's low R_on is undone at the board level.
@@ -194,10 +196,10 @@ with fewer buses per chip.
 size, but for the same 32 × 8 it takes 8 chips plus an I²C mux, ≈ 3 × the cost, 4 × the bus
 connections on our two routing layers, 377 in stock and a 6.5 mA switch, for no speed gain.  It would
 fit a reduced matrix: 4 pins per port on 8 buses, one chip per port (≈ $5 with the mux, no −5 V, each
-bus on 4 chips); the maximum was asked for.  The CH446X has only 5 Y lines: 8 buses take 4 chips.
+bus on 4 chips); the user asked for the maximum.  The CH446X has only 5 Y lines: 8 buses take 4 chips.
 The CH448F (dual 8:1 mux, $0.47) joins one input at a time: a probe selector, not wires.  No mix.
 
-### An analyzer without the matrix, single-sided? (question of 2026-10-19)
+### An analyzer without the matrix, single-sided? (user question, 2026-10-19)
 
 A middle variant: base + the RP2354 analyzer tapping the port pins directly through the LSF0108s (P1–P4
 of each port = CH1–16, 16-bit mode, ≈ 196 k samples; 24 channels at most with gusmanb), no matrix, all
@@ -294,7 +296,7 @@ channels, libsigrok's `raspberrypi-pico` driver) is marked work in progress (7 s
 Nothing sits over the rear bay: B3 has no camera (`config/rack.yaml` › `cameras: [B2]`), and in a
 camera bay the pod hangs over the plate's middle (lens at bay (64, 84)), far from the rear bay
 (drawer y 166–194).  The bay is ≈ 165 mm high; the jumpers need ≈ 25–30 mm above the board.
-No change for the tray beyond moving the bosses.
+No change for the tray session beyond moving the bosses.
 
 ### JLC cost
 
@@ -326,14 +328,14 @@ B3.3, set up in [multi-dut-node.md](multi-dut-node.md#a-logic-analyzer-in-a-sub-
    board only, on JLC06161H-3313 with every signal layer beside a plane.  JLC: $51.90 against $32.10
    for 5 bare boards (ENIG is forced at 6 layers), 8–9 days instead of 3–4; assembly fees don't depend
    on the layer count.  The "two assembly variants, one PCB" plan above is dropped.
-   Stack: first F · GND · signal · +5V · +3V3 · B, which left about 50 links open; then (decided the same day)
+   Stack: first F · GND · signal · +5V · +3V3 · B, which left about 50 links open; then (user, same day)
    F · GND · signal · signal · power (+5V and +3V3 areas) · B, the fallback named above: four signal
    layers, each still beside a plane.
-2. **The 2 × 6 headers are SMD, soldered by hand** (out of the JLC BOM and CPL), in the middle of
+2. **The 2 × 6 headers are SMD, soldered by the user** (out of the JLC BOM and CPL), in the middle of
    the board.  That keeps v1's four holes, so both boards drop into the universal drawer unchanged;
    through-hole tails would have blocked the crosspoints underneath, and a part with locating pegs
    (hanxia TP-D) puts its pegs there too.  Wider pads (1.3 mm) instead.  The standing board of item 4 has
-   nothing on its rear face under them, so its headers are through-hole (easier to solder by hand).
+   nothing on its rear face under them, so its headers are through-hole (the user, easier to solder).
 3. **Analog output: none** ("Pas de sortie analogique").  Costed for the record, none of it on the board:
    - a DAC7311 (12-bit SPI, buffered, about $1.7, 9 µs settling, so sine waves to about 10 kHz) on bus H,
      the matrix taking it to any pin, with a 0 Ω option across each port's LSF on P8 (that pin then loses
@@ -353,7 +355,7 @@ B3.3, set up in [multi-dut-node.md](multi-dut-node.md#a-logic-analyzer-in-a-sub-
    - Layers: 4 ("si on peut repasser à 4 couches ce serait top").  Every signal routes at 4 layers on the
      standing board, as at 6.
 5. **The base DATA-4x is this board with the logic left off** ("pour la data 4x on attend la version
-   verticale"; suggested earlier: "la 4x classique pourrait être la même que la logique mais
+   verticale"; the user had suggested it: "la 4x classique pourrait être la même que la logique mais
    simplement avec des dnp").  v1 is not ordered for the proto.  The "two assembly variants, one PCB" plan
    above comes back, on one face: same Gerbers, a BOM and a CPL per assembly (`b.pcb["variants"]`,
    electronics.md › DATA ×4 v2, with its price).  Both fit in 100 × 100 at 4 layers, so a smaller

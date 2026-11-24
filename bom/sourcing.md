@@ -5,15 +5,11 @@ prices change: check them again on the day of the order.
 
 ## CH224A (power hub U1, since 2026-10-19)
 
-<!-- site:ch224a -->
-
 | Part | LCSC / JLC | Price (LCSC) | Notes |
 |---|---|---|---|
 | WCH **CH224A** (ESSOP-10, C42459160: the BOM's part) | **12 739** | $0.43 | 1 mm pitch, pin-compatible with the CH224K |
 | WCH CH224Q (DFN-10 2 × 2, C46061833) | 11 650 | $0.45 | same chip and I2C map, a smaller leadless package |
 | Hynetek HUSB238A-BB001-QN16R (QFN-16 3 × 3, C24833806) | 2 919 | $0.64 | gate driver; EPR registers not in the public datasheet |
-
-<!-- /site:ch224a -->
 
 The CH224A replaced the AP33772S below: LCSC had none, and JLC would have bought it through Global Sourcing
 (≈ $20 for 5).  It drives no switch: the hub's VBUS is VRACK, and the eFuses keep the rows off.
@@ -41,8 +37,6 @@ which covers 8 bays ([docs/power.md](../docs/power.md)).
 
 ## TCAN1462V (hub U6, node U11)
 
-<!-- site:can-transceiver -->
-
 At the hub's JLC quote (2026-10-19) the TCAN1462VDRQ1 (C7399456) had no stock at LCSC (0, as on 2026-10-18).
 JLC asks for another part.  Both alternates in the catalogue keep the SOIC-8 footprint and pinout (VIO on
 pin 5, STB on pin 8), so nothing is re-routed:
@@ -52,25 +46,17 @@ pin 5, STB on pin 8), so nothing is re-routed:
 | NXP TJA1462AT/0Z (C3234095) | 10 500 | $0.83 (10+) | keeps signal improvement; bus pins −36 / +40 V instead of ±58 V (VRACK, 28 V, sits two pins away) |
 | TI TCAN1044AVDRQ1 (C3234993) | 23 540 | $0.43 | ±58 V; no signal improvement (the star bus at 250 kbit/s works without it) |
 
-<!-- /site:can-transceiver -->
-
 The hub quote used the TJA1462AT/0Z, and both boards take it since (hub U6, node U11; the user, 2026-10-19).
 The TCAN1462V stays the alternate.
 
 ## USB4105 (node J3, hub J1 / J6, data port J1)
-
-<!-- site:usb4105 -->
 
 LCSC has stock (3 685 on 2026-10-19), but JLC flags the GCT USB4105-GF-A-120 (C5184243) as hard to process
 (its four shell stakes are through-hole).  It adds $0.03 a piece, and its BOM page leaves the line unticked
 (quantity 0).  **Tick it again at every order**, or the board comes without its USB-C.  The part stays: it is
 rated 5 A (the hub's PD input carries up to 5 A at 28 V), and the stakes hold it against plug forces.
 
-<!-- /site:usb4105 -->
-
 ## Buck inductors rated for 28 V EPR (2026-11-01)
-
-<!-- site:inductors-28v -->
 
 28 V EPR stays locked out while the buck inductors withstand 30 V ([docs/power.md](../docs/power.md),
 [docs/datasheet-audit.md](../docs/datasheet-audit.md), U2).  Wanted: a part in the FXL0630 footprint (KiCad's
@@ -108,11 +94,7 @@ Rejected, by the maker's sheet:
 To check: the 75 V line is new in Vishay's sheet (the revision of 10-Aug-06 had none).  Does it hold for the date
 codes in JLC's stock?  (Vishay's magnetics@vishay.com.)
 
-<!-- /site:inductors-28v -->
-
 ## Camera lens
-
-<!-- site:camera-lens -->
 
 The Mega 3MP has a 1/4" sensor, and its stock 2.8 mm lens gives 90° diagonally (75° × 56°).  The worst board needs
 90° × 67°, along the bay's depth × across it.  The lens sits 30.5 mm under the ceiling at bay (64, 84), so in a
@@ -134,15 +116,11 @@ Rejected:
 
 A shorter focal length can need a shorter holder to focus.  Try it on the first camera.
 
-<!-- /site:camera-lens -->
-
 ## DUT cables at the standing port wall (2026-11-01)
 
 The DATA ×6 (and v2) receptacles stand, 15.5 mm apart: the drawer end of a DUT cable is a straight USB-C (an angled
-one only if its cable leaves upwards), its overmold within the USB-IF 12.35 × 6.5 mm ([docs/reference/cables.md](../docs/reference/cables.md#the-cable-to-your-board)).
+one only if its cable leaves upwards), its overmold within the USB-IF 12.35 × 6.5 mm ([docs/cabling.md](../docs/cabling.md)).
 No listing gives the overmold: the ends below were sized on the photos.  Measure the first cable on arrival.
-
-<!-- site:dut-cables -->
 
 | Cable (config/rack.yaml) | Before | After (prices for one, VAT incl.) | Alternative |
 |---|---|---|---|
@@ -162,11 +140,7 @@ round aluminium barrel, thicker than 6.5 mm by the photos) and the DJI-remote "1
 To check on arrival: each USB-C end within 12.35 × 6.5 mm; BESTAR 1005001325015941 is titled USB 3.1 (10 Gbit/s)
 but its photos show ADT-Link's USB 2.0 boards (UT1B), so check its end width too.
 
-<!-- /site:dut-cables -->
-
 ## Outside AliExpress
-
-<!-- site:outside-aliexpress -->
 
 | Item | Source | Price (2026-10-19) |
 |---|---|---|
@@ -176,5 +150,3 @@ but its photos show ADT-Link's USB 2.0 boards (UT1B), so check its end width too
 | USB-C cable, 240 W e-marked | UGREEN 240 W PD 3.1, 1 or 2 m (Amazon.fr) | €10.82 |
 | Drag chain 7×7, 2 m | Olimex DRAG-CHAIN-7X7 | €4.00/m + VAT |
 | PETG, 3 kg | Bambu Lab EU store (PETG HF: discontinued, stock left) | €15.99–19.99/kg |
-
-<!-- /site:outside-aliexpress -->

@@ -1,7 +1,7 @@
 # A debug probe on the DATA-4x-logic (research)
 
-**Status (2026-10-21): research only, nothing designed or changed.**  A study of a
-built-in SWD probe (item 5 of the list of 2026-10-21).  The idea: boards without a probe (Pico 2,
+**Status (2026-10-21): research only, nothing designed or changed.**  The user asked for a study of a
+built-in SWD probe ("Lance une étude pour 5 et 6", item 5).  The idea: boards without a probe (Pico 2,
 most XIAO) have no SWD in the rack today.  The RP2354B of the DATA-4x-logic
 ([electronics.md](electronics.md) › DATA ×4 v2.0) could run a CMSIS-DAP probe besides the gusmanb
 analyzer, and the CH446Q matrix would take SWCLK and SWDIO to the board.  Builds on
@@ -106,7 +106,7 @@ Zephyr's probe today:
 - Only option 3 needs a port.  The USB2517I has two spare ones, 6 and 7, unrouted today.
 
 **Interfaces and channels over USB/IP:**
-- The CMSIS-DAP v2 interface is bulk, so the node's DWC2 host carries it ([reference/known-limitations.md](reference/known-limitations.md#by-design-usb): HID v1 fails).
+- The CMSIS-DAP v2 interface is bulk, so the node's DWC2 host carries it ([ci.md](ci.md): HID v1 fails).
 - A debug session keeps at most the DAP's IN endpoint pending: one host channel, while OpenOCD or pyOCD
   is connected.
 - debugprobe's CDC UART holds two host channels only while a client keeps it open.
@@ -149,7 +149,7 @@ The SWD signals only ever see the board's VREF, and a 5 V board follows the rule
 
 **Which buses.**
 - The probe's signals sit on fixed RP2354B pins, so on fixed buses.
-- The matrix takes any P pin of any port to any bus.  So you jumper the board's SWCLK and SWDIO to
+- The matrix takes any P pin of any port to any bus.  So the user jumpers the board's SWCLK and SWDIO to
   any P pins, plus VREF and GND.  Without VREF the group passes nothing, by design.
 - The jumpers are declared where B3's are today, in `config/rack.yaml` › `population` › `jumpers`, e.g.
   `B3.2: { VREF: 3V3, P3: SWCLK, P4: SWDIO }`.  The board's pin names come from `boards.yaml` ›
@@ -227,7 +227,7 @@ one of which is the stand-in analyzer until v2.
 ## West and twister
 
 The probe is just another USB device behind the node: the co-processor's busid (`1-1.5`) exported over
-USB/IP, as the rack does for DUT probes today ([use/usb-and-flashing.md](use/usb-and-flashing.md)).  The flow:
+USB/IP, as the rack does for DUT probes today ([ci.md](ci.md)).  The flow:
 
 1. `bayctl prepare B3.2 --probe`.  This step is new: today's `prepare` attaches the DUT's own device.
    - It makes sure the co-processor runs the probe image (a PICOBOOT swap if not, ≈ 3 s).
@@ -270,7 +270,7 @@ Twister reads the probe's serial from `probe_id`, and from `id` when there is no
 **One probe per drawer.**  Twister treats every map entry as its own device, and would run B3.1 and B3.2
 at once on the same probe.
 - Fix: the pre-script waits for the drawer's probe lease, and the post-script releases it.  The node
-  already has per-bay leases ([use/reserve-a-bay.md](use/reserve-a-bay.md)).
+  already has per-bay leases ([ci.md](ci.md) › Access control).
 - Or list one SWD sub-slot per drawer in the map.
 
 **USB/IP latency.**
@@ -295,7 +295,7 @@ Counted on top of what the v2 and co-processor plans already contain: the node's
 |---|---|---|
 | Parts per board | $0 | ≈ $2.5 |
 | JLC per order | $0 | ≈ $3 (one extended part type) |
-| Layout | none | an ≈ 11 × 10 mm block, hub port 6, two bus taps: an item for the board's design |
+| Layout | none | an ≈ 11 × 10 mm block, hub port 6, two bus taps: a design-session item |
 
 Upkeep:
 - Option 1: none of ours.  Pin the debugprobe release in `config/rack.yaml`, as gusmanb is pinned.
@@ -313,7 +313,7 @@ Upkeep:
 - **20 cm Dupont jumpers** on SWD: fine at 1–4 MHz with a GND jumper beside the pair; above that,
   ringing and crosstalk.
 - **One probe per drawer**: four boards, one debug session at a time.  The lease serialises CI jobs; a
-  debug session by hand holds it too.
+  human session holds it too.
 - **Bus sharing**: a virtual wire on buses A–D would collide with the probe.  The node must refuse one
   while the probe image runs.
 - **Host tools**:

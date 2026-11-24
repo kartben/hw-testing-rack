@@ -52,7 +52,3 @@ electronics/lib/3dmodels/easyeda/
 
 # Local PCBA review records (pcba-design-skills); the summary is docs/pcba-review.md
 .pcba-workflow/
-
-# the documentation site, built locally (sphinx-build -b html docs docs/_build/html)
-docs/_build/
-_site/
