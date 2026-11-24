@@ -44,7 +44,7 @@ extensions = [
 ]
 
 exclude_patterns = [
-    "_build", "_ext", "_templates", "_toc.yml", "requirements.txt", "Thumbs.db", ".DS_Store",
+    "_build", "_ext", "_templates", "_toc.yml", "requirements.txt", "STYLE.md", "Thumbs.db", ".DS_Store",
     # the old addresses of documents that were split into pages: each is a few lines that say where its content
     # went, for links from outside; not a page of the site
     "architecture.md", "assembly.md", "bring-up.md", "cabling.md", "ci.md", "standalone.md",

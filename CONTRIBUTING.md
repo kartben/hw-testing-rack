@@ -1,6 +1,7 @@
 # Contributing
 
 <!-- site:contributing -->
+<!-- site:contributing-table -->
 Everything is generated from sources you can diff:
 
 | Change | Edit | Regenerate |
@@ -13,6 +14,7 @@ Everything is generated from sources you can diff:
 | BOM roll-up | `tools/bom.py` | `python tools/bom.py` |
 | Viewer | `site/*.html`, `site/app.js` | `python tools/build.py web` |
 | Renders | `render/render.py` (headless), `render/live_scene.py` + `render/live_render.py` (technical), `render/live_photo.py` (photo set) in a running Blender | `python tools/assembly_glb.py`, then `tools/render.sh` or `tools/blender_live.py exec …` |
+<!-- /site:contributing-table -->
 
 ## Toolchain
 
@@ -51,3 +53,11 @@ How to measure a board and write its entry: [A board that is not in the library]
 prints LCSC ids, stock, price and basic/extended status.  The same server is
 configured for Claude Code in `.mcp.json` (local, not committed).
 <!-- /site:jlc-parts -->
+
+## Writing the documentation
+
+The published site is built from `docs/` with Sphinx (`sphinx-build -W -b html docs docs/_build/html`, after
+`pip install -r tools/requirements.txt -r docs/requirements.txt`). Its pages follow
+[docs/STYLE.md](docs/STYLE.md): the voice, what a page must not sound like, the status line, where a fact has
+its home, and the directives that keep counts, pin maps and a tool's help out of hand-typed text. The
+navigation is `docs/_toc.yml`. A still of the 3D model for a page: `python tools/viewer_still.py`.
